@@ -939,8 +939,8 @@ package Errout is
    --  contain error message insertion characters in the normal manner, and in
    --  particular may start with | to flag a non-serious error.
 
-   procedure Error_Msg_Ada_2020_Feature (Feature : String; Loc : Source_Ptr);
-   --  Analogous to Error_Msg_Ada_2012_Feature
+   procedure Error_Msg_Ada_2022_Feature (Feature : String; Loc : Source_Ptr);
+   --  Analogous to Error_Msg_Ada_2012_Feature, for Ada 2022
 
    procedure dmsg (Id : Error_Msg_Id) renames Erroutc.dmsg;
    --  Debugging routine to dump an error message

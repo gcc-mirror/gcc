@@ -566,7 +566,7 @@ Aspect Unreferenced
 
 This boolean aspect is equivalent to :ref:`pragma Unreferenced<Pragma-Unreferenced>`.
 
-When using the ``-gnat2020`` switch, this aspect is also supported on formal
+When using the ``-gnat2022`` switch, this aspect is also supported on formal
 parameters, which is in particular the only form possible for expression
 functions.
 

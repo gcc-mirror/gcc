@@ -1280,7 +1280,7 @@ package body Ch4 is
       if Nkind (Aggr_Node) /= N_Aggregate
            and then
          Nkind (Aggr_Node) /= N_Extension_Aggregate
-         and then Ada_Version < Ada_2020
+         and then Ada_Version < Ada_2022
       then
          Error_Msg
            ("aggregate may not have single positional component", Aggr_Sloc);
@@ -1399,7 +1399,7 @@ package body Ch4 is
       if Token = Tok_Left_Bracket then
          Scan;
 
-         --  Special case for null aggregate in Ada 2020
+         --  Special case for null aggregate in Ada 2022
 
          if Token = Tok_Right_Bracket then
             Scan;   --  past ]
@@ -1601,7 +1601,7 @@ package body Ch4 is
          --  identifier or OTHERS follows (the latter cases are missing
          --  comma cases). Also assume positional if a semicolon follows,
          --  which can happen if there are missing parens.
-         --  In Ada_2012 and Ada_2020 an iterated association can appear.
+         --  In Ada 2012 and 2022 an iterated association can appear.
 
          elsif Nkind (Expr_Node) in
            N_Iterated_Component_Association | N_Iterated_Element_Association
@@ -2928,7 +2928,7 @@ package body Ch4 is
                Scan; -- past minus
 
             when Tok_At_Sign =>  --  AI12-0125 : target_name
-               Error_Msg_Ada_2020_Feature ("target name", Token_Ptr);
+               Error_Msg_Ada_2022_Feature ("target name", Token_Ptr);
 
                Node1 := P_Name;
                return Node1;
@@ -3396,7 +3396,7 @@ package body Ch4 is
 
       procedure Build_Iterated_Element_Association;
       --  If the iterator includes a key expression or a filter, it is
-      --  an Ada_2020 Iterator_Element_Association within a container
+      --  an Ada 2022 Iterator_Element_Association within a container
       --  aggregate.
 
       ----------------------------------------
@@ -3432,7 +3432,7 @@ package body Ch4 is
       Save_Scan_State (State);
 
       --  A lookahead is necessary to differentiate between the
-      --  Ada 2012 form with a choice list, and the Ada 202x element
+      --  Ada 2012 form with a choice list, and the Ada 2022 element
       --  iterator form, recognized by the presence of "OF". Other
       --  disambiguation requires context and is done during semantic
       --  analysis. Note that "for X in E" is syntactically ambiguous:
@@ -3463,7 +3463,7 @@ package body Ch4 is
 
          if Token = Tok_Use then
 
-            --  Ada_2020 Key-expression is present, rewrite node as an
+            --  Ada 2022 Key-expression is present, rewrite node as an
             --  Iterated_Element_Association.
 
             Scan;  --  past USE
@@ -3471,7 +3471,7 @@ package body Ch4 is
             Set_Key_Expression (Assoc_Node, P_Expression);
 
          elsif Present (Filter) then
-            --  A loop_parameter_specification also indicates an Ada_2020
+            --  A loop_parameter_specification also indicates an Ada 2022
             --  construct, in contrast with a subtype indication used in
             --  array aggregates.
 
@@ -3481,7 +3481,7 @@ package body Ch4 is
          TF_Arrow;
          Set_Expression (Assoc_Node, P_Expression);
 
-      elsif Ada_Version >= Ada_2020
+      elsif Ada_Version >= Ada_2022
         and then Token = Tok_Of
       then
          Restore_Scan_State (State);
@@ -3504,7 +3504,7 @@ package body Ch4 is
          Set_Expression (Assoc_Node, P_Expression);
       end if;
 
-      Error_Msg_Ada_2020_Feature ("iterated component", Token_Ptr);
+      Error_Msg_Ada_2022_Feature ("iterated component", Token_Ptr);
 
       return Assoc_Node;
    end P_Iterated_Component_Association;
@@ -3689,7 +3689,7 @@ package body Ch4 is
             Result : constant Node_Id :=
               Make_Expression_With_Actions (Loc, Actions, Expression);
          begin
-            Error_Msg_Ada_2020_Feature ("declare expression", Loc);
+            Error_Msg_Ada_2022_Feature ("declare expression", Loc);
 
             return Result;
          end;

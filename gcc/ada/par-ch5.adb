@@ -1714,7 +1714,7 @@ package body Ch5 is
         (Loop_Param_Specification_Node, P_Discrete_Subtype_Definition);
 
       if Token = Tok_When then
-         Error_Msg_Ada_2020_Feature ("iterator filter", Token_Ptr);
+         Error_Msg_Ada_2022_Feature ("iterator filter", Token_Ptr);
 
          Scan; -- past WHEN
          Set_Iterator_Filter
@@ -1775,7 +1775,7 @@ package body Ch5 is
       Set_Name (Node1, P_Name);
 
       if Token = Tok_When then
-         Error_Msg_Ada_2020_Feature ("iterator filter", Token_Ptr);
+         Error_Msg_Ada_2022_Feature ("iterator filter", Token_Ptr);
 
          Scan; -- past WHEN
          Set_Iterator_Filter

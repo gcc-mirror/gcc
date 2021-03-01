@@ -4237,7 +4237,7 @@ node_is_component (Node_Id gnat_node)
    We implement 3 different semantics of atomicity in this function:
 
      1. the Ada 95/2005/2012 semantics of the Atomic aspect/pragma,
-     2. the Ada 2020 semantics of the Atomic aspect/pragma,
+     2. the Ada 2022 semantics of the Atomic aspect/pragma,
      3. the semantics of the Volatile_Full_Access GNAT aspect/pragma.
 
   They are mutually exclusive and the FE should have rejected conflicts.  */
@@ -4284,7 +4284,7 @@ get_atomic_access (Node_Id gnat_node, atomic_acces_t *type, bool *sync)
     gnat_node = Expression (gnat_node);
 
   /* Up to Ada 2012, for Atomic itself, only reads and updates of the object as
-     a whole require atomic access (RM C.6(15)).  But, starting with Ada 2020,
+     a whole require atomic access (RM C.6(15)).  But, starting with Ada 2022,
      reads of or writes to a nonatomic subcomponent of the object also require
      atomic access (RM C.6(19)).  */
   if (node_is_atomic (gnat_node))
@@ -4295,7 +4295,7 @@ get_atomic_access (Node_Id gnat_node, atomic_acces_t *type, bool *sync)
       for (gnat_temp = gnat_node, gnat_parent = Parent (gnat_temp);
 	   node_is_component (gnat_parent) && Prefix (gnat_parent) == gnat_temp;
 	   gnat_temp = gnat_parent, gnat_parent = Parent (gnat_temp))
-	if (Ada_Version < Ada_2020 || node_is_atomic (gnat_parent))
+	if (Ada_Version < Ada_2022 || node_is_atomic (gnat_parent))
 	  goto not_atomic;
 	else
 	  as_a_whole = false;
@@ -4314,7 +4314,7 @@ get_atomic_access (Node_Id gnat_node, atomic_acces_t *type, bool *sync)
   for (gnat_temp = gnat_node;
        node_is_component (gnat_temp);
        gnat_temp = Prefix (gnat_temp))
-    if ((Ada_Version >= Ada_2020 && node_is_atomic (Prefix (gnat_temp)))
+    if ((Ada_Version >= Ada_2022 && node_is_atomic (Prefix (gnat_temp)))
 	|| node_is_volatile_full_access (Prefix (gnat_temp)))
       {
 	*type = OUTER_ATOMIC;

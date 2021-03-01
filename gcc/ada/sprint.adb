@@ -2493,7 +2493,7 @@ package body Sprint is
 
             --  AI12-0275: Object_Renaming_Declaration without explicit subtype
 
-            elsif Ada_Version >= Ada_2020 then
+            elsif Ada_Version >= Ada_2022 then
                null;
 
             else

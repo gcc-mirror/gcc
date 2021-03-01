@@ -385,13 +385,13 @@ begin
          end if;
 
       --------------
-      -- Ada_2020 --
+      -- Ada_2022 --
       --------------
 
-      when Pragma_Ada_2020 =>
+      when Pragma_Ada_2022 =>
          if Arg_Count = 0 then
-            Ada_Version := Ada_2020;
-            Ada_Version_Explicit := Ada_2020;
+            Ada_Version := Ada_2022;
+            Ada_Version_Explicit := Ada_2022;
             Ada_Version_Pragma := Pragma_Node;
          end if;
 

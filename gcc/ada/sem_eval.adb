@@ -140,7 +140,7 @@ package body Sem_Eval is
    Checking_For_Potentially_Static_Expression : Boolean := False;
    --  Global flag that is set True during Analyze_Static_Expression_Function
    --  in order to verify that the result expression of a static expression
-   --  function is a potentially static function (see RM202x 6.8(5.3)).
+   --  function is a potentially static function (see RM2022 6.8(5.3)).
 
    -----------------------
    -- Local Subprograms --
@@ -2303,7 +2303,7 @@ package body Sem_Eval is
       then
          Eval_Intrinsic_Call (N, Entity (Name (N)));
 
-      --  Ada 202x (AI12-0075): If checking for potentially static expressions
+      --  Ada 2022 (AI12-0075): If checking for potentially static expressions
       --  is enabled and we have a call to a static function, substitute a
       --  static value for the call, to allow folding the expression. This
       --  supports checking the requirement of RM 6.8(5.3/5) in
@@ -2594,7 +2594,7 @@ package body Sem_Eval is
             return;
          end if;
 
-      --  Ada 202x (AI12-0075): If checking for potentially static expressions
+      --  Ada 2022 (AI12-0075): If checking for potentially static expressions
       --  is enabled and we have a reference to a formal parameter of mode in,
       --  substitute a static value for the reference, to allow folding the
       --  expression. This supports checking the requirement of RM 6.8(5.3/5)
@@ -3436,7 +3436,7 @@ package body Sem_Eval is
    --  Relational operations are static functions, so the result is static if
    --  both operands are static (RM 4.9(7), 4.9(20)), except that up to Ada
    --  2012, for strings the result is never static, even if the operands are.
-   --  The string case was relaxed in Ada 2020, see AI12-0201.
+   --  The string case was relaxed in Ada 2022, see AI12-0201.
 
    --  However, for internally generated nodes, we allow string equality and
    --  inequality to be static. This is because we rewrite A in "ABC" as an
@@ -3777,12 +3777,12 @@ package body Sem_Eval is
            and then Right_Len /= Uint_Minus_1
            and then Left_Len /= Right_Len
          then
-            --  AI12-0201: comparison of string is static in Ada 202x
+            --  AI12-0201: comparison of string is static in Ada 2022
 
             Fold_Uint
               (N,
                Test (Nkind (N) = N_Op_Ne),
-               Static => Ada_Version >= Ada_2020
+               Static => Ada_Version >= Ada_2022
                            and then Is_String_Type (Left_Typ));
             Warn_On_Known_Condition (N);
             return;
@@ -3802,16 +3802,16 @@ package body Sem_Eval is
         (N, Left, Right, Is_Static_Expression, Fold);
 
       --  Comparisons of scalars can give static results.
-      --  In addition starting with Ada 202x (AI12-0201), comparison of strings
+      --  In addition starting with Ada 2022 (AI12-0201), comparison of strings
       --  can also give static results, and as noted above, we also allow for
       --  earlier Ada versions internally generated equality and inequality for
       --  strings.
-      --  ??? The Comes_From_Source test below isn't correct and will accept
-      --  some cases that are illegal in Ada 2012. and before. Now that Ada
-      --  202x has relaxed the rules, this doesn't really matter.
+      --  The Comes_From_Source test below isn't correct and will accept
+      --  some cases that are illegal in Ada 2012 and before. Now that Ada
+      --  2022 has relaxed the rules, this doesn't really matter.
 
       if Is_String_Type (Left_Typ) then
-         if Ada_Version < Ada_2020
+         if Ada_Version < Ada_2022
            and then (Comes_From_Source (N)
                       or else Nkind (N) not in N_Op_Eq | N_Op_Ne)
          then
@@ -4107,7 +4107,7 @@ package body Sem_Eval is
       end if;
 
       --  If original node was a type conversion, then result if non-static
-      --  up to Ada 2012. AI12-0201 changes that with Ada 202x.
+      --  up to Ada 2012. AI12-0201 changes that with Ada 2022.
 
       if Nkind (Original_Node (N)) = N_Type_Conversion
         and then Ada_Version <= Ada_2012
@@ -4269,13 +4269,13 @@ package body Sem_Eval is
       --  Conversion_OK is set, in which case it counts as integer.
 
       --  Fold conversion, case of string type. The result is static starting
-      --  with Ada 202x (AI12-0201).
+      --  with Ada 2022 (AI12-0201).
 
       if Is_String_Type (Target_Type) then
          Fold_Str
            (N,
             Strval (Get_String_Val (Operand)),
-            Static => Ada_Version >= Ada_2020);
+            Static => Ada_Version >= Ada_2022);
          return;
 
       --  Fold conversion, case of integer target type
@@ -6597,7 +6597,7 @@ package body Sem_Eval is
    --  match if they are set (unless checking an actual for a formal derived
    --  type). The use of 'Object_Size can cause this to be false even if the
    --  types would otherwise match in the Ada 95 RM sense, but this deviation
-   --  is adopted by AI12-059 which introduces Object_Size in Ada 2020.
+   --  is adopted by AI12-059 which introduces Object_Size in Ada 2022.
 
    function Subtypes_Statically_Match
      (T1                      : Entity_Id;

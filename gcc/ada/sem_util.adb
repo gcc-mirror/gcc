@@ -149,7 +149,7 @@ package body Sem_Util is
    --  have a default.
 
    function Is_Preelaborable_Function (Id : Entity_Id) return Boolean;
-   --  Ada 2020: Determine whether the specified function is suitable as the
+   --  Ada 2022: Determine whether the specified function is suitable as the
    --  name of a call in a preelaborable construct (RM 10.2.1(7/5)).
 
    type Null_Status_Kind is
@@ -10146,7 +10146,7 @@ package body Sem_Util is
       then
          Discrim_Value_Status := Static_Expr;
       else
-         if Ada_Version >= Ada_2020 then
+         if Ada_Version >= Ada_2022 then
             if Original_Node (Discrim_Value) /= Discrim_Value
                and then Nkind (Discrim_Value) = N_Type_Conversion
                and then Etype (Original_Node (Discrim_Value))
@@ -10185,13 +10185,13 @@ package body Sem_Util is
             --  components are being gathered for an aggregate, in which case
             --  the caller must check Report_Errors.
             --
-            --  In Ada 2020 the above rules are relaxed. A nonstatic governing
+            --  In Ada 2022 the above rules are relaxed. A nonstatic governing
             --  discriminant is OK as long as it has a static subtype and
             --  every value of that subtype (and there must be at least one)
             --  selects the same variant.
 
             if OK_Scope_For_Discrim_Value_Error_Messages then
-               if Ada_Version >= Ada_2020 then
+               if Ada_Version >= Ada_2022 then
                   Error_Msg_FE
                     ("value for discriminant & must be static or " &
                      "discriminant's nominal subtype must be static " &
@@ -15517,7 +15517,7 @@ package body Sem_Util is
          return Is_Tagged_Type (Etype (Obj))
            and then Is_Aliased_View (Expression (Obj));
 
-      --  Ada 202x AI12-0228
+      --  Ada 2022 AI12-0228
 
       elsif Nkind (Obj) = N_Qualified_Expression
         and then Ada_Version >= Ada_2012
@@ -18362,10 +18362,10 @@ package body Sem_Util is
 
             when N_Function_Call =>
 
-               --  Ada 2020 (AI12-0175): Calls to certain functions that are
+               --  Ada 2022 (AI12-0175): Calls to certain functions that are
                --  essentially unchecked conversions are preelaborable.
 
-               if Ada_Version >= Ada_2020
+               if Ada_Version >= Ada_2022
                  and then Nkind (Expr) = N_Function_Call
                  and then Is_Entity_Name (Name (Expr))
                  and then Is_Preelaborable_Function (Entity (Name (Expr)))
@@ -18597,7 +18597,7 @@ package body Sem_Util is
                     and then Is_Object_Reference (Expression (N));
 
                else
-                  --  AI12-0226: In Ada 202x a value conversion of an object is
+                  --  AI12-0226: In Ada 2022 a value conversion of an object is
                   --  an object.
 
                   return Is_Object_Reference (Expression (N));
@@ -19291,8 +19291,8 @@ package body Sem_Util is
            and then Aggregate_Type /= Any_Composite
          then
             if Is_Array_Type (Aggregate_Type) then
-               if Ada_Version >= Ada_2020 then
-                  --  For Ada_2020, this predicate returns True for
+               if Ada_Version >= Ada_2022 then
+                  --  For Ada 2022, this predicate returns True for
                   --  any "repeatedly evaluated" expression.
                   return True;
                end if;
@@ -19705,10 +19705,10 @@ package body Sem_Util is
       elsif Nkind (N) = N_Null then
          return True;
 
-      --  Ada 2020 (AI12-0175): Calls to certain functions that are essentially
+      --  Ada 2022 (AI12-0175): Calls to certain functions that are essentially
       --  unchecked conversions are preelaborable.
 
-      elsif Ada_Version >= Ada_2020
+      elsif Ada_Version >= Ada_2022
         and then Nkind (N) = N_Function_Call
         and then Is_Entity_Name (Name (N))
         and then Is_Preelaborable_Function (Entity (Name (N)))
@@ -20210,11 +20210,11 @@ package body Sem_Util is
 
    function Is_Static_Function (Subp : Entity_Id) return Boolean is
    begin
-      --  Always return False for pre Ada 2020 to e.g. ignore the Static
-      --  aspect in package Interfaces for Ada_Version < 2020 and also
+      --  Always return False for pre Ada 2022 to e.g. ignore the Static
+      --  aspect in package Interfaces for Ada_Version < 2022 and also
       --  for efficiency.
 
-      return Ada_Version >= Ada_2020
+      return Ada_Version >= Ada_2022
         and then Has_Aspect (Subp, Aspect_Static)
         and then
           (No (Find_Value_Of_Aspect (Subp, Aspect_Static))
@@ -30845,7 +30845,7 @@ package body Sem_Util is
                --  type case correctly, so we avoid that problem by
                --  returning True here.
                return True;
-            elsif Ada_Version < Ada_2020 then
+            elsif Ada_Version < Ada_2022 then
                return False;
             elsif not Is_Conditionally_Evaluated (Expr) then
                return False;

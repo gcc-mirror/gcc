@@ -9944,7 +9944,7 @@ This boolean aspect is equivalent to @ref{10b,,pragma Unmodified}.
 
 This boolean aspect is equivalent to @ref{10c,,pragma Unreferenced}.
 
-When using the @code{-gnat2020} switch, this aspect is also supported on formal
+When using the @code{-gnat2022} switch, this aspect is also supported on formal
 parameters, which is in particular the only form possible for expression
 functions.
 

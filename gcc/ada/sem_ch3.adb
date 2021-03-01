@@ -3195,7 +3195,7 @@ package body Sem_Ch3 is
                --  so that pre/postconditions can be handled directly on the
                --  generated wrapper.
 
-               if Ada_Version >= Ada_2020
+               if Ada_Version >= Ada_2022
                  and then Present (Aspect_Specifications (N))
                then
                   Build_Access_Subprogram_Wrapper (N);
@@ -11100,7 +11100,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  Ada 2005 (AI95-0414) and Ada 2020 (AI12-0269): Diagnose failure to
+         --  Ada 2005 (AI95-0414) and Ada 2022 (AI12-0269): Diagnose failure to
          --  match No_Return in parent, but do it unconditionally in Ada 95 too
          --  for procedures, since this is our pragma.
 
@@ -15816,7 +15816,7 @@ package body Sem_Ch3 is
       --  that functions with controlling access results of record extensions
       --  with a null extension part require overriding (AI95-00391/06).
 
-      --  Ada 202x (AI12-0042): Similarly, set those properties for
+      --  Ada 2022 (AI12-0042): Similarly, set those properties for
       --  implementing the rule of RM 7.3.2(6.1/4).
 
       --  A subprogram subject to pragma Extensions_Visible with value False
@@ -15973,7 +15973,7 @@ package body Sem_Ch3 is
          Set_Mechanism (New_Subp, Mechanism (Parent_Subp));
       end if;
 
-      --  Ada 2020 (AI12-0279): If a Yield aspect is specified True for a
+      --  Ada 2022 (AI12-0279): If a Yield aspect is specified True for a
       --  primitive subprogram S of a type T, then the aspect is inherited
       --  by the corresponding primitive subprogram of each descendant of T.
 

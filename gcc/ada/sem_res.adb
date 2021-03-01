@@ -2120,7 +2120,7 @@ package body Sem_Res is
             end loop;
          end if;
 
-         --  Additional message and hint if the ambiguity involves an Ada2020
+         --  Additional message and hint if the ambiguity involves an Ada 2022
          --  container aggregate.
 
          Check_Ambiguous_Aggregate (N);
@@ -2786,7 +2786,7 @@ package body Sem_Res is
             elsif Nkind (N) = N_Aggregate
               and then Etype (N) = Any_Composite
             then
-               if Ada_Version >= Ada_2020
+               if Ada_Version >= Ada_2022
                  and then Has_Aspect (Typ, Aspect_Aggregate)
                then
                   Resolve_Container_Aggregate (N, Typ);
@@ -4830,9 +4830,9 @@ package body Sem_Res is
                end if;
 
                --  Check for nonatomic subcomponent of a full access object
-               --  in Ada 2020 (RM C.6 (12)).
+               --  in Ada 2022 (RM C.6 (12)).
 
-               if Ada_Version >= Ada_2020
+               if Ada_Version >= Ada_2022
                  and then Is_Subcomponent_Of_Full_Access_Object (A)
                  and then not Is_Atomic_Object (A)
                then
@@ -6699,7 +6699,7 @@ package body Sem_Res is
             Scope_Loop : while Scop /= Standard_Standard loop
                if Same_Or_Aliased_Subprograms (Nam, Scop) then
 
-                  --  Ada 202x (AI12-0075): Static functions are never allowed
+                  --  Ada 2022 (AI12-0075): Static functions are never allowed
                   --  to make a recursive call, as specified by 6.8(5.4/5).
 
                   if Is_Static_Function (Scop) then
@@ -7130,7 +7130,7 @@ package body Sem_Res is
 
       Warn_On_Overlapping_Actuals (Nam, N);
 
-      --  Ada 202x (AI12-0075): If the call is a static call to a static
+      --  Ada 2022 (AI12-0075): If the call is a static call to a static
       --  expression function, then we want to "inline" the call, replacing
       --  it with the folded static result. This is not done if the checking
       --  for a potentially static expression is enabled or if an error has
@@ -9401,7 +9401,7 @@ package body Sem_Res is
       end if;
 
       --  If the array type is atomic and the component is not, then this is
-      --  worth a warning before Ada 2020, since we have a situation where the
+      --  worth a warning before Ada 2022, since we have a situation where the
       --  access to the component may cause extra read/writes of the atomic
       --  object, or partial word accesses, both of which may be unexpected.
 
@@ -9412,7 +9412,7 @@ package body Sem_Res is
                                  and then Has_Atomic_Components
                                             (Entity (Prefix (N)))))
         and then not Is_Atomic (Component_Type (Array_Type))
-        and then Ada_Version < Ada_2020
+        and then Ada_Version < Ada_2022
       then
          Error_Msg_N
            ("??access to non-atomic component of atomic array", Prefix (N));
@@ -10982,7 +10982,7 @@ package body Sem_Res is
       if Nkind (N) = N_Selected_Component then
 
          --  If the record type is atomic and the component is not, then this
-         --  is worth a warning before Ada 2020, since we have a situation
+         --  is worth a warning before Ada 2022, since we have a situation
          --  where the access to the component may cause extra read/writes of
          --  the atomic object, or partial word accesses, both of which may be
          --  unexpected.
@@ -10990,7 +10990,7 @@ package body Sem_Res is
          if Is_Atomic_Ref_With_Address (N)
            and then not Is_Atomic (Entity (S))
            and then not Is_Atomic (Etype (Entity (S)))
-           and then Ada_Version < Ada_2020
+           and then Ada_Version < Ada_2022
          then
             Error_Msg_N
               ("??access to non-atomic component of atomic record",

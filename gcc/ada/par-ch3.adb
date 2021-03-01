@@ -1486,7 +1486,7 @@ package body Ch3 is
       --  access_definition
 
       elsif Token = Tok_Renames then
-         Error_Msg_Ada_2020_Feature
+         Error_Msg_Ada_2022_Feature
            ("object renaming without subtype", Token_Ptr);
 
          Scan; -- past renames

@@ -88,10 +88,10 @@ package Einfo is
 --  default size of objects, creates chaos, and major incompatibilities in
 --  existing code.
 
---  The Ada 2020 RM acknowledges it and adopts GNAT's Object_Size attribute
+--  The Ada 2022 RM acknowledges it and adopts GNAT's Object_Size attribute
 --  for determining the default size of objects, but stops short of applying
 --  it universally like GNAT. Indeed the notable exceptions are nonaliased
---  stand-alone objects, which are not covered by Object_Size in Ada 2020.
+--  stand-alone objects, which are not covered by Object_Size in Ada 2022.
 
 --  We proceed as follows, for discrete and fixed-point subtypes, we have
 --  two separate sizes for each subtype:
@@ -118,7 +118,7 @@ package Einfo is
 --       base type, and the Object_Size of a derived first subtype is copied
 --       from the parent first subtype.
 
---    The Ada 2020 RM defined attribute Object_Size uses this implementation.
+--    The Ada 2022 RM defined attribute Object_Size uses this implementation.
 
 --    The Value_Size, which is the number of bits required to store a value
 --    of the type. This size can be referred to using the Value_Size
@@ -157,7 +157,7 @@ package Einfo is
 
 --    Value_Size and Object_Size may be explicitly set for any subtype using
 --    an attribute definition clause. Note that the use of such a clause can
---    cause the RM 13.1(14) rule to be violated, in Ada 95 and 2020 for the
+--    cause the RM 13.1(14) rule to be violated, in Ada 95 and 2022 for the
 --    Value_Size attribute, but only in Ada 95 for the Object_Size attribute.
 --    If access types reference aliased objects whose subtypes have differing
 --    Object_Size values as a result of explicit attribute definition clauses,
@@ -2335,7 +2335,7 @@ package Einfo is
 --    Is_Full_Access (synth)
 --       Defined in all type entities, and also in constants, components and
 --       variables. Set if an aspect/pragma Atomic/Shared, or an aspect/pragma
---       Volatile_Full_Access or an Ada 2020 aspect Full_Access_Only applies
+--       Volatile_Full_Access or an Ada 2022 aspect Full_Access_Only applies
 --       to the entity. In the case of private and incomplete types, the flag
 --       applies to both the partial view and the full view.
 
@@ -3377,7 +3377,7 @@ package Einfo is
 
 --    Is_Volatile_Full_Access (Flag285)
 --       Defined in all type entities, and also in constants, components, and
---       variables. Set if an aspect/pragma Volatile_Full_Access or an Ada 2020
+--       variables. Set if an aspect/pragma Volatile_Full_Access or an Ada 2022
 --       aspect Full_Access_Only applies to the entity. In the case of private
 --       and incomplete types, this flag is set in both the partial view and
 --       the full view.

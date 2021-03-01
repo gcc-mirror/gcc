@@ -1113,7 +1113,7 @@ package body Sem_Ch5 is
                --  assignment, and gets tied up with itself.
 
                --  We also omit the warning if the RHS includes target names,
-               --  that is to say the Ada2020 "@" that denotes an instance of
+               --  that is to say the Ada 2022 "@" that denotes an instance of
                --  the LHS, which indicates that the current value is being
                --  used. Note that this implicit reference to the entity on
                --  the RHS is not treated as a source reference.

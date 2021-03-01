@@ -1020,10 +1020,10 @@ package body Sem_Type is
       elsif T2 = Any_Composite and then Is_Aggregate_Type (T1) then
          return True;
 
-      --  In Ada_2020, an aggregate is compatible with the type that
-      --  as the ccorrespoding aspect.
+      --  In Ada_2022, an aggregate is compatible with the type that
+      --  as the corresponding aspect.
 
-      elsif Ada_Version >= Ada_2020
+      elsif Ada_Version >= Ada_2022
         and then T2 = Any_Composite
         and then Present (Find_Aspect (T1, Aspect_Aggregate))
       then

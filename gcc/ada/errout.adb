@@ -670,22 +670,22 @@ package body Errout is
    end Error_Msg_Ada_2012_Feature;
 
    --------------------------------
-   -- Error_Msg_Ada_2020_Feature --
+   -- Error_Msg_Ada_2022_Feature --
    --------------------------------
 
-   procedure Error_Msg_Ada_2020_Feature (Feature : String; Loc : Source_Ptr) is
+   procedure Error_Msg_Ada_2022_Feature (Feature : String; Loc : Source_Ptr) is
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg (Feature & " is an Ada 2020 feature", Loc);
+      if Ada_Version < Ada_2022 then
+         Error_Msg (Feature & " is an Ada 2022 feature", Loc);
 
          if No (Ada_Version_Pragma) then
-            Error_Msg ("\unit must be compiled with -gnat2020 switch", Loc);
+            Error_Msg ("\unit must be compiled with -gnat2022 switch", Loc);
          else
             Error_Msg_Sloc := Sloc (Ada_Version_Pragma);
             Error_Msg ("\incompatible with Ada version set#", Loc);
          end if;
       end if;
-   end Error_Msg_Ada_2020_Feature;
+   end Error_Msg_Ada_2022_Feature;
 
    ------------------
    -- Error_Msg_AP --

@@ -1581,8 +1581,10 @@ package body Switch.C is
                elsif Switch_Chars (Ptr .. Ptr + 3) = "2012" then
                   Ada_Version := Ada_2012;
 
-               elsif Switch_Chars (Ptr .. Ptr + 3) = "2020" then
-                  Ada_Version := Ada_2020;
+               elsif Switch_Chars (Ptr .. Ptr + 3) = "2020"
+                 or else Switch_Chars (Ptr .. Ptr + 3) = "2022"
+               then
+                  Ada_Version := Ada_2022;
 
                else
                   Bad_Switch ("-gnat" & Switch_Chars (Ptr .. Ptr + 3));

@@ -4818,10 +4818,10 @@ package body Sem_Prag is
          then
             null;
 
-         --  For Ada 2020, pre/postconditions can appear on formal subprograms
+         --  For Ada 2022, pre/postconditions can appear on formal subprograms
 
          elsif Nkind (Subp_Decl) = N_Formal_Concrete_Subprogram_Declaration
-            and then Ada_Version >= Ada_2020
+            and then Ada_Version >= Ada_2022
          then
             null;
 
@@ -7258,7 +7258,7 @@ package body Sem_Prag is
       procedure Process_Atomic_Independent_Shared_Volatile is
          procedure Check_Full_Access_Only (Ent : Entity_Id);
          --  Apply legality checks to type or object Ent subject to the
-         --  Full_Access_Only aspect in Ada 2020 (RM C.6(8.2)).
+         --  Full_Access_Only aspect in Ada 2022 (RM C.6(8.2)).
 
          procedure Mark_Component_Or_Object (Ent : Entity_Id);
          --  Appropriately set flags on the given entity, either an array or
@@ -7430,7 +7430,7 @@ package body Sem_Prag is
             --  Attribute belongs on the base type. If the view of the type is
             --  currently private, it also belongs on the underlying type.
 
-            --  In Ada 2020, the pragma can apply to a formal type, for which
+            --  In Ada 2022, the pragma can apply to a formal type, for which
             --  there may be no underlying type.
 
             if Prag_Id = Pragma_Atomic
@@ -7541,14 +7541,14 @@ package body Sem_Prag is
 
          Check_Duplicate_Pragma (E);
 
-         --  Check the constraints of Full_Access_Only in Ada 2020. Note that
+         --  Check the constraints of Full_Access_Only in Ada 2022. Note that
          --  they do not apply to GNAT's Volatile_Full_Access because 1) this
          --  aspect subsumes the Volatile aspect and 2) nesting is supported
          --  for this aspect and the outermost enclosing VFA object prevails.
 
          --  Note also that we used to forbid specifying both Atomic and VFA on
          --  the same type or object, but the restriction has been lifted in
-         --  light of the semantics of Full_Access_Only and Atomic in Ada 2020.
+         --  light of the semantics of Full_Access_Only and Atomic in Ada 2022.
 
          if Prag_Id = Pragma_Volatile_Full_Access
            and then From_Aspect_Specification (N)
@@ -11334,7 +11334,7 @@ package body Sem_Prag is
                Warn    => Treat_Restrictions_As_Warnings,
                Profile => Ravenscar);
 
-            --  Set the following restriction which was added to Ada 2020,
+            --  Set the following restriction which was added to Ada 2022,
             --  but as a binding interpretation:
             --     No_Dependence => Ada.Synchronous_Barriers
             --  for Ravenscar (and therefore for Ravenscar variants) but not
@@ -12529,15 +12529,15 @@ package body Sem_Prag is
          end;
 
          --------------
-         -- Ada_2020 --
+         -- Ada_2022 --
          --------------
 
-         --  pragma Ada_2020;
+         --  pragma Ada_2022;
 
          --  Note: this pragma also has some specific processing in Par.Prag
-         --  because we want to set the Ada 2020 version mode during parsing.
+         --  because we want to set the Ada 2022 version mode during parsing.
 
-         when Pragma_Ada_2020 =>
+         when Pragma_Ada_2022 =>
             GNAT_Pragma;
 
             Check_Arg_Count (0);
@@ -12546,8 +12546,8 @@ package body Sem_Prag is
 
             --  Now set appropriate Ada mode
 
-            Ada_Version          := Ada_2020;
-            Ada_Version_Explicit := Ada_2020;
+            Ada_Version          := Ada_2022;
+            Ada_Version_Explicit := Ada_2022;
             Ada_Version_Pragma   := N;
 
          -------------------------------------
@@ -13507,7 +13507,7 @@ package body Sem_Prag is
                    and then Nkind (Object_Definition (D)) =
                                        N_Constrained_Array_Definition)
               or else
-                 (Ada_Version >= Ada_2020
+                 (Ada_Version >= Ada_2022
                    and then Nkind (D) = N_Formal_Type_Declaration)
             then
                --  The flag is set on the base type, or on the object
@@ -19793,7 +19793,7 @@ package body Sem_Prag is
                   raise Pragma_Exit;
                end if;
 
-               --  Loop to find matching procedures or functions (Ada 2020)
+               --  Loop to find matching procedures or functions (Ada 2022)
 
                E := Entity (Id);
 
@@ -19801,10 +19801,10 @@ package body Sem_Prag is
                while Present (E)
                  and then Scope (E) = Current_Scope
                loop
-                  --  Ada 2020 (AI12-0269): A function can be No_Return
+                  --  Ada 2022 (AI12-0269): A function can be No_Return
 
                   if Ekind (E) in E_Generic_Procedure | E_Procedure
-                    or else (Ada_Version >= Ada_2020
+                    or else (Ada_Version >= Ada_2022
                               and then
                              Ekind (E) in E_Generic_Function | E_Function)
                   then
@@ -19896,7 +19896,7 @@ package body Sem_Prag is
                   then
                      Set_No_Return (Entity (Id));
 
-                  elsif Ada_Version >= Ada_2020 then
+                  elsif Ada_Version >= Ada_2022 then
                      Error_Pragma_Arg
                        ("no subprogram& found for pragma%", Arg);
 
@@ -30656,17 +30656,17 @@ package body Sem_Prag is
                elsif Present (Generic_Parent (Specification (Stmt))) then
                   return Stmt;
 
-               --  Ada 2020: contract on formal subprogram or on generated
+               --  Ada 2022: contract on formal subprogram or on generated
                --  Access_Subprogram_Wrapper, which appears after the related
                --  Access_Subprogram declaration.
 
                elsif Is_Generic_Actual_Subprogram (Defining_Entity (Stmt))
-                 and then Ada_Version >= Ada_2020
+                 and then Ada_Version >= Ada_2022
                then
                   return Stmt;
 
                elsif Is_Access_Subprogram_Wrapper (Defining_Entity (Stmt))
-                 and then Ada_Version >= Ada_2020
+                 and then Ada_Version >= Ada_2022
                then
                   return Stmt;
                end if;
@@ -31140,7 +31140,7 @@ package body Sem_Prag is
       Pragma_Ada_2005                       => -1,
       Pragma_Ada_12                         => -1,
       Pragma_Ada_2012                       => -1,
-      Pragma_Ada_2020                       => -1,
+      Pragma_Ada_2022                       => -1,
       Pragma_Aggregate_Individually_Assign  => 0,
       Pragma_All_Calls_Remote               => -1,
       Pragma_Allow_Integer_Address          => -1,

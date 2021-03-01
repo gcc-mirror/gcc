@@ -380,7 +380,7 @@ package Sem_Util is
    --  means that for sure CE cannot be raised.
 
    procedure Check_Ambiguous_Aggregate (Call : Node_Id);
-   --  Additional information on an ambiguous call in Ada_2020 when a
+   --  Additional information on an ambiguous call in Ada_2022 when a
    --  subprogram call has an actual that is an aggregate, and the
    --  presence of container aggregates (or types with the correwponding
    --  aspect)  provides an additional interpretation. Message indicates
@@ -2002,7 +2002,7 @@ package Sem_Util is
 
    function Is_Full_Access_Object (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to a full access
-   --  object as per Ada 2020 RM C.6(8.2).
+   --  object as per Ada 2022 RM C.6(8.2).
 
    function Is_Fully_Initialized_Type (Typ : Entity_Id) return Boolean;
    --  Typ is a type entity. This function returns true if this type is fully
@@ -3374,7 +3374,7 @@ package Sem_Util is
          --  (typically a 'Old attribute reference), returns True if
          --     - the expression is conditionally evaluated; and
          --     - its determining expressions are all known on entry; and
-         --     - Ada_Version >= Ada_2020.
+         --     - Ada_Version >= Ada_2022.
          --  See RM 6.1.1 for definitions of these terms.
          --
          --  Also returns True if Expr is of an anonymous access type;
