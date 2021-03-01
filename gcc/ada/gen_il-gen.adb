@@ -860,9 +860,9 @@ package body Gen_IL.Gen is
       function Field_Size (F : Field_Enum) return Bit_Offset is
         (Field_Size (Field_Table (F).Field_Type));
 
-      function To_Bit_Offset (F : Field_Enum; Offset : Field_Offset)
-        return Bit_Offset is
-          (Bit_Offset (Offset) * Field_Size (F));
+      function To_Bit_Offset (F : Field_Enum; Offset : Field_Offset'Base)
+        return Bit_Offset'Base is
+          (Bit_Offset'Base (Offset) * Field_Size (F));
       function First_Bit (F : Field_Enum; Offset : Field_Offset)
         return Bit_Offset is
           (To_Bit_Offset (F, Offset));
@@ -964,7 +964,9 @@ package body Gen_IL.Gen is
                end if;
             end loop;
 
-            raise Illegal with "No available field offset for " & Image (F);
+            raise Illegal with "No available field offset for " & Image (F) &
+              "; need to increase Gen_IL.Internals.Bit_Offset'Last (" &
+              Image (Gen_IL.Internals.Bit_Offset'Last) & " is too small)";
          end Choose_Offset;
 
          Num_Concrete_Have_Field : array (Field_Enum) of Type_Count :=
