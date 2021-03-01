@@ -50,7 +50,7 @@ public:
     ::Btype *type = TyTyResolveCompile::compile (ctx, resolved_type);
     Bexpression *value = CompileExpr::Compile (constant.get_expr (), ctx);
 
-    std::string ident = self->get_name () + "::" + constant.get_identifier ();
+    std::string ident = self->get_name () + "_" + constant.get_identifier ();
     Bexpression *const_expr = ctx->get_backend ()->named_constant_expression (
       type, constant.get_identifier (), value, constant.get_locus ());
 
@@ -95,7 +95,7 @@ public:
 
     unsigned int flags = 0;
     std::string fn_identifier
-      = self->get_name () + "::" + function.function_name;
+      = self->get_name () + "_" + function.function_name;
 
     // if its the main fn or pub visibility mark its as DECL_PUBLIC
     // please see https://github.com/Rust-GCC/gccrs/pull/137
@@ -259,7 +259,7 @@ public:
 
     unsigned int flags = 0;
     std::string fn_identifier
-      = self->get_name () + "::" + method.get_method_name ();
+      = self->get_name () + "_" + method.get_method_name ();
 
     // if its the main fn or pub visibility mark its as DECL_PUBLIC
     // please see https://github.com/Rust-GCC/gccrs/pull/137
