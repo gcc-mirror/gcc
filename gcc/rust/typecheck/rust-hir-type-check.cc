@@ -110,8 +110,8 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 
   expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
     bool is_final_stmt = expr.is_final_stmt (s);
-    bool is_final_expr
-      = is_final_stmt && (!expr.has_expr () || !expr.tail_expr_reachable ());
+    bool has_final_expr = expr.has_expr () && expr.tail_expr_reachable ();
+    bool stmt_is_final_expr = is_final_stmt && !has_final_expr;
 
     auto resolved = TypeCheckStmt::Resolve (s, inside_loop);
     if (resolved == nullptr)
@@ -120,7 +120,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 	return false;
       }
 
-    if (is_final_expr)
+    if (stmt_is_final_expr)
       {
 	delete block_tyty;
 	block_tyty = resolved;

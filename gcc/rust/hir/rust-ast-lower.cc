@@ -115,7 +115,7 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
 			  tail_reachable, std::move (inner_attribs),
 			  std::move (outer_attribs), expr.get_locus ());
 
-  terminated = block_did_terminate || expr.has_tail_expr ();
+  terminated = block_did_terminate;
 }
 
 void
