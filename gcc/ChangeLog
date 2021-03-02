@@ -1,3 +1,22 @@
+2021-03-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/99271
+	* config/arm/thumb2.md (nonsecure_call_reg_thumb2_fpcxt): New pattern.
+	(nonsecure_call_value_reg_thumb2_fpcxt): Likewise.
+	(nonsecure_call_reg_thumb2): Restrict to using r4 for the callee
+	address and disable when the FPCXT is not available.
+	(nonsecure_call_value_reg_thumb2): Likewise.
+
+2021-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/99234
+	* config/i386/i386.c (ix86_compute_frame_layout): For a SEH target,
+	point the hard frame pointer to the SSE register save area instead
+	of the general register save area.  Perform only minimal adjustment
+	for small frames if it is initially not correctly aligned.
+	(ix86_expand_prologue): Remove early saves for a SEH target.
+	* config/i386/winnt.c (struct seh_frame_state): Document constraint.
+
 2021-02-23  Qian Jianhua  <qianjh@cn.fujitsu.com>
 
 	* config/aarch64/aarch64-cost-tables.h (a64fx_extra_costs): New.
