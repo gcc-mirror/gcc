@@ -548,35 +548,6 @@ gcn_goacc_reduction (gcall *call)
     }
 }
 
-/* Implement TARGET_GOACC_ADJUST_PROPAGATION_RECORD.
- 
-   Tweak (worker) propagation record, e.g. to put it in shared memory.  */
-
-tree
-gcn_goacc_adjust_propagation_record (tree record_type, bool sender,
-				     const char *name)
-{
-  tree type = record_type;
-
-  TYPE_ADDR_SPACE (type) = ADDR_SPACE_LDS;
-
-  if (!sender)
-    type = build_pointer_type (type);
-
-  tree decl = create_tmp_var_raw (type, name);
-
-  if (sender)
-    {
-      DECL_CONTEXT (decl) = NULL_TREE;
-      TREE_STATIC (decl) = 1;
-    }
-
-  if (sender)
-    varpool_node::finalize_decl (decl);
-
-  return decl;
-}
-
 tree
 gcn_goacc_adjust_private_decl (location_t, tree var, int level)
 {
@@ -602,6 +573,35 @@ gcn_goacc_adjust_private_decl (location_t, tree var, int level)
     machfun->use_flat_addressing = true;
 
   return var;
+}
+
+/* Implement TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD.
+
+   Create OpenACC worker state propagation record in shared memory.  */
+
+tree
+gcn_goacc_create_worker_broadcast_record (tree record_type, bool sender,
+					  const char *name)
+{
+  tree type = record_type;
+
+  TYPE_ADDR_SPACE (type) = ADDR_SPACE_LDS;
+
+  if (!sender)
+    type = build_pointer_type (type);
+
+  tree decl = create_tmp_var_raw (type, name);
+
+  if (sender)
+    {
+      DECL_CONTEXT (decl) = NULL_TREE;
+      TREE_STATIC (decl) = 1;
+    }
+
+  if (sender)
+    varpool_node::finalize_decl (decl);
+
+  return decl;
 }
 
 /* }}}  */

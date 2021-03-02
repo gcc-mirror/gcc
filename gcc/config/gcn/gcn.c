@@ -6513,11 +6513,11 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_GIMPLIFY_VA_ARG_EXPR gcn_gimplify_va_arg_expr
 #undef TARGET_OMP_DEVICE_KIND_ARCH_ISA
 #define TARGET_OMP_DEVICE_KIND_ARCH_ISA gcn_omp_device_kind_arch_isa
-#undef  TARGET_GOACC_ADJUST_PROPAGATION_RECORD
-#define TARGET_GOACC_ADJUST_PROPAGATION_RECORD \
-  gcn_goacc_adjust_propagation_record
 #undef  TARGET_GOACC_ADJUST_PRIVATE_DECL
 #define TARGET_GOACC_ADJUST_PRIVATE_DECL gcn_goacc_adjust_private_decl
+#undef  TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD
+#define TARGET_GOACC_CREATE_WORKER_BROADCAST_RECORD \
+  gcn_goacc_create_worker_broadcast_record
 #undef  TARGET_GOACC_FORK_JOIN
 #define TARGET_GOACC_FORK_JOIN gcn_fork_join
 #undef  TARGET_GOACC_REDUCTION

@@ -1756,6 +1756,17 @@ private variables at OpenACC device-lowering time using the\n\
 rtx, (tree var),
 NULL)
 
+DEFHOOK
+(create_worker_broadcast_record,
+"Create a record used to propagate local-variable state from an active\n\
+worker to other workers.  A possible implementation might adjust the type\n\
+of REC to place the new variable in shared GPU memory.\n\
+\n\
+Presence of this target hook indicates that middle end neutering/broadcasting\n\
+be used.",
+tree, (tree rec, bool sender, const char *name),
+NULL)
+
 HOOK_VECTOR_END (goacc)
 
 /* Functions relating to vectorization.  */
