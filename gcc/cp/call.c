@@ -4914,10 +4914,8 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 	  || TYPE_REFFN_P (totype)
 	  || (TYPE_REF_P (totype)
 	      && TYPE_PTRFN_P (TREE_TYPE (totype))))
-	for (ovl_iterator iter (TREE_VALUE (convs)); iter; ++iter)
+	for (tree fn : ovl_range (TREE_VALUE (convs)))
 	  {
-	    tree fn = *iter;
-
 	    if (DECL_NONCONVERTING_P (fn))
 	      continue;
 
@@ -5981,10 +5979,8 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
     which = non_templates;
 
  again:
-  for (lkp_iterator iter (fns); iter; ++iter)
+  for (tree fn : lkp_range (fns))
     {
-      fn = *iter;
-
       if (check_converting && DECL_NONCONVERTING_P (fn))
 	continue;
       if (check_list_ctor && !is_list_ctor (fn))
@@ -7016,10 +7012,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	     the usual deallocation function, so we shouldn't complain
 	     about using the operator delete (void *, size_t).  */
 	  if (DECL_CLASS_SCOPE_P (fn))
-	    for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns));
-		 iter; ++iter)
+	    for (tree elt : lkp_range (MAYBE_BASELINK_FUNCTIONS (fns)))
 	      {
-		tree elt = *iter;
 		if (usual_deallocation_fn_p (elt)
 		    && FUNCTION_ARG_CHAIN (elt) == void_list_node)
 		  goto ok;
@@ -7062,9 +7056,8 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
        allocation function. If the lookup finds a single matching
        deallocation function, that function will be called; otherwise, no
        deallocation function will be called."  */
-    for (lkp_iterator iter (MAYBE_BASELINK_FUNCTIONS (fns)); iter; ++iter)
+    for (tree elt : lkp_range (MAYBE_BASELINK_FUNCTIONS (fns)))
       {
-	tree elt = *iter;
 	dealloc_info di_elt;
 	if (usual_deallocation_fn_p (elt, &di_elt))
 	  {
@@ -9669,10 +9662,8 @@ has_trivial_copy_assign_p (tree type, bool access, bool *hasassign)
   /* Iterate over overloads of the assignment operator, checking
      accessible copy assignments for triviality.  */
 
-  for (ovl_iterator oi (fns); oi; ++oi)
+  for (tree f : ovl_range (fns))
     {
-      tree f = *oi;
-
       /* Skip operators that aren't copy assignments.  */
       if (!copy_fn_p (f))
 	continue;
@@ -9715,10 +9706,8 @@ has_trivial_copy_p (tree type, bool access, bool hasctor[2])
   tree fns = get_class_binding (type, complete_ctor_identifier);
   bool all_trivial = true;
 
-  for (ovl_iterator oi (fns); oi; ++oi)
+  for (tree f : ovl_range (fns))
     {
-      tree f = *oi;
-
       /* Skip template constructors.  */
       if (TREE_CODE (f) != FUNCTION_DECL)
 	continue;
