@@ -402,16 +402,9 @@ build_base_path (enum tree_code code,
   if (TREE_SIDE_EFFECTS (expr) && (null_test || virtual_access))
     expr = save_expr (expr);
 
-  /* Now that we've saved expr, build the real null test.  */
+  /* Store EXPR and build the real null test just before returning.  */
   if (null_test)
-    {
-      tree zero = cp_convert (TREE_TYPE (expr), nullptr_node, complain);
-      null_test = build2_loc (input_location, NE_EXPR, boolean_type_node,
-			      expr, zero);
-      /* This is a compiler generated comparison, don't emit
-	 e.g. -Wnonnull-compare warning for it.  */
-      TREE_NO_WARNING (null_test) = 1;
-    }
+    null_test = expr;
 
   /* If this is a simple base reference, express it as a COMPONENT_REF.  */
   if (code == PLUS_EXPR && !virtual_access
@@ -516,14 +509,8 @@ build_base_path (enum tree_code code,
 
  out:
   if (null_test)
-    {
-      expr = fold_build3_loc (input_location, COND_EXPR, target_type, null_test,
-			      expr, build_zero_cst (target_type));
-      /* Avoid warning for the whole conditional expression (in addition
-	 to NULL_TEST itself -- see above) in case the result is used in
-	 a nonnull context that the front end -Wnonnull checks.  */
-      TREE_NO_WARNING (expr) = 1;
-    }
+    /* Wrap EXPR in a null test.  */
+    expr = build_if_nonnull (null_test, expr, complain);
 
   return expr;
 }

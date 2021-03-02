@@ -38,13 +38,17 @@ void static_cast_const_C_ptr (B *p)
 
 void dynamic_cast_C_ptr (B *p)
 {
-  // The dynamic_cast might fail so a warning is justified.
-  dynamic_cast<C*>(p->bptr ())->g ();         // { dg-warning "\\\[-Wnonnull" }
+  /* Unlike static_cast, dynamic cast may return null even for a nonnull
+     operand but detecting assumptions to the contrary isn't -Wnonnull's
+     purpose.  Verify -Wnonnull isn't issued, either for the implicitly
+     emitted null check or for other reasons (the latter may be worth
+     warning for by some other warning).  See also pr99251.  */
+  dynamic_cast<C*>(p->bptr ())->g ();         // { dg-bogus "\\\[-Wnonnull" }
 }
 
 void dynamic_cast_const_C_ptr (B *p)
 {
-  dynamic_cast<const C*>(p->bptr ())->g ();   // { dg-warning "\\\[-Wnonnull" }
+  dynamic_cast<const C*>(p->bptr ())->g ();   // { dg-bogus "\\\[-Wnonnull" }
 }
 
 
@@ -107,11 +111,15 @@ void static_cast_const_D_ptr (B *p)
 
 void dynamic_cast_D_ptr (B *p)
 {
-  // The dynamic_cast might fail so a warning is justified.
-  dynamic_cast<D*>(p->bptr ())->g ();         // { dg-warning "\\\[-Wnonnull" }
+  /* Unlike static_cast, dynamic cast may return null even for a nonnull
+     operand but detecting assumptions to the contrary isn't -Wnonnull's
+     purpose.  Verify -Wnonnull isn't issued, either for the implicitly
+     emitted null check or for other reasons (the latter may be worth
+     warning for by some other warning).  See also pr99251.  */
+  dynamic_cast<D*>(p->bptr ())->g ();         // { dg-bogus "\\\[-Wnonnull" }
 }
 
 void dynamic_cast_const_D_ptr (B *p)
 {
-  dynamic_cast<const D*>(p->bptr ())->g ();   // { dg-warning "\\\[-Wnonnull" }
+  dynamic_cast<const D*>(p->bptr ())->g ();   // { dg-bogus "\\\[-Wnonnull" }
 }

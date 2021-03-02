@@ -7279,6 +7279,7 @@ extern void emit_support_tinfos			(void);
 extern bool emit_tinfo_decl			(tree);
 extern unsigned get_pseudo_tinfo_index		(tree);
 extern tree get_pseudo_tinfo_type		(unsigned);
+extern tree build_if_nonnull			(tree, tree, tsubst_flags_t);
 
 /* in search.c */
 extern tree get_parent_with_private_access 	(tree decl, tree binfo);
