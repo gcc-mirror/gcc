@@ -261,9 +261,8 @@ int main ()
 	}
       else if (acc_on_device (acc_device_radeon))
 	{
-	  /* The GCC GCN back end is limited to num_workers (16).
-	     Temporarily set this to 1 until multiple workers are permitted. */
-	  workers_actual = 1; // 16;
+	  /* The GCC GCN back end is limited to num_workers (16).  */
+	  workers_actual = 16;
 	}
       else
 	__builtin_abort ();
@@ -313,9 +312,8 @@ int main ()
 	}
       else if (acc_on_device (acc_device_radeon))
 	{
-	  /* The GCC GCN back end is limited to num_workers (16).
-	     Temporarily set this to 1 until multiple workers are permitted. */
-	  workers_actual = 1; // 16;
+	  /* The GCC GCN back end is limited to num_workers (16).  */
+	  workers_actual = 16;
 	}
       else
 	__builtin_abort ();
@@ -465,8 +463,6 @@ int main ()
 	}
       else if (acc_on_device (acc_device_radeon))
 	{
-	  /* Temporary setting, until multiple workers are permitted.  */
-	  workers_actual = 1;
 	  /* See above comments about GCN vectors_actual.  */
 	  vectors_actual = 1;
 	}

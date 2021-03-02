@@ -62,11 +62,6 @@ bool flag_bypass_init_error = false
 mbypass-init-error
 Target RejectNegative Var(flag_bypass_init_error)
 
-bool flag_worker_partitioning = false
-
-macc-experimental-workers
-Target Var(flag_worker_partitioning) Init(0)
-
 int stack_size_opt = -1
 
 mstack-size=
