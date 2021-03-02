@@ -133,7 +133,7 @@ struct sat_info : subst_info
   bool diagnose_unsatisfaction;
 };
 
-static tree satisfy_constraint (tree, tree, sat_info);
+static tree satisfy_constraint_expression (tree, tree, sat_info);
 
 /* True if T is known to be some type other than bool. Note that this
    is false for dependent types and errors.  */
@@ -594,26 +594,12 @@ map_arguments (tree parms, tree args)
   return parms;
 }
 
-/* Build the parameter mapping for EXPR using ARGS.  */
+/* Build the parameter mapping for EXPR using ARGS, where CTX_PARMS
+   are the template parameters in scope for EXPR.  */
 
 static tree
-build_parameter_mapping (tree expr, tree args, tree decl)
+build_parameter_mapping (tree expr, tree args, tree ctx_parms)
 {
-  tree ctx_parms = NULL_TREE;
-  if (decl)
-    {
-      gcc_assert (TREE_CODE (decl) == TEMPLATE_DECL);
-      ctx_parms = DECL_TEMPLATE_PARMS (decl);
-    }
-  else if (current_template_parms)
-    {
-      /* TODO: This should probably be the only case, but because the
-	 point of declaration of concepts is currently set after the
-	 initializer, the template parameter lists are not available
-	 when normalizing concept definitions, hence the case above.  */
-      ctx_parms = current_template_parms;
-    }
-
   tree parms = find_template_parameters (expr, ctx_parms);
   tree map = map_arguments (parms, args);
   return map;
@@ -645,39 +631,49 @@ parameter_mapping_equivalent_p (tree t1, tree t2)
 
 struct norm_info : subst_info
 {
-  explicit norm_info (tsubst_flags_t complain)
-    : subst_info (tf_warning_or_error | complain, NULL_TREE),
-      context()
+  explicit norm_info (tsubst_flags_t cmp)
+    : norm_info (NULL_TREE, cmp)
   {}
 
   /* Construct a top-level context for DECL.  */
 
   norm_info (tree in_decl, tsubst_flags_t complain)
-    : subst_info (tf_warning_or_error | complain, in_decl),
-      context (make_context (in_decl)),
-      orig_decl (in_decl)
-  {}
+    : subst_info (tf_warning_or_error | complain, in_decl)
+  {
+    if (in_decl)
+      {
+	initial_parms = DECL_TEMPLATE_PARMS (in_decl);
+	if (generate_diagnostics ())
+	  context = build_tree_list (NULL_TREE, in_decl);
+      }
+    else
+      initial_parms = current_template_parms;
+  }
 
   bool generate_diagnostics() const
   {
     return complain & tf_norm;
   }
 
-  tree make_context(tree in_decl)
-  {
-    if (generate_diagnostics ())
-      return build_tree_list (NULL_TREE, in_decl);
-    return NULL_TREE;
-  }
-
   void update_context(tree expr, tree args)
   {
     if (generate_diagnostics ())
       {
-	tree map = build_parameter_mapping (expr, args, in_decl);
+	tree map = build_parameter_mapping (expr, args, ctx_parms ());
 	context = tree_cons (map, expr, context);
       }
     in_decl = get_concept_check_template (expr);
+  }
+
+  /* Returns the template parameters that are in scope for the current
+     normalization context.  */
+
+  tree ctx_parms()
+  {
+    if (in_decl)
+      return DECL_TEMPLATE_PARMS (in_decl);
+    else
+      return initial_parms;
   }
 
   /* Provides information about the source of a constraint. This is a
@@ -685,13 +681,13 @@ struct norm_info : subst_info
      declaration. The PURPOSE, for concept checks is a parameter mapping
      for that check.  */
 
-  tree context;
+  tree context = NULL_TREE;
 
   /* The declaration whose constraints we're normalizing.  The targets
      of the parameter mapping of each atom will be in terms of the
      template parameters of ORIG_DECL.  */
 
-  tree orig_decl = NULL_TREE;
+  tree initial_parms = NULL_TREE;
 };
 
 static tree normalize_expression (tree, tree, norm_info);
@@ -773,7 +769,7 @@ normalize_atom (tree t, tree args, norm_info info)
     return normalize_concept_check (t, args, info);
 
   /* Build the parameter mapping for the atom.  */
-  tree map = build_parameter_mapping (t, args, info.in_decl);
+  tree map = build_parameter_mapping (t, args, info.ctx_parms ());
 
   /* Build a new info object for the atom.  */
   tree ci = build_tree_list (t, info.context);
@@ -803,10 +799,8 @@ normalize_atom (tree t, tree args, norm_info info)
 	      tree target = TREE_PURPOSE (node);
 	      TREE_VEC_ELT (targets, i++) = target;
 	    }
-	  tree ctx_parms = (info.orig_decl
-			    ? DECL_TEMPLATE_PARMS (info.orig_decl)
-			    : current_template_parms);
-	  tree target_parms = find_template_parameters (targets, ctx_parms);
+	  tree target_parms = find_template_parameters (targets,
+							info.initial_parms);
 	  TREE_TYPE (map) = target_parms;
 	}
 
@@ -983,14 +977,22 @@ normalize_nontemplate_requirements (tree decl, bool diag = false)
 /* Normalize an EXPR as a constraint.  */
 
 static tree
-normalize_constraint_expression (tree expr, bool diag)
+normalize_constraint_expression (tree expr, norm_info info)
 {
   if (!expr || expr == error_mark_node)
     return expr;
+
+  if (!info.generate_diagnostics ())
+    if (tree *p = hash_map_safe_get (normalized_map, expr))
+      return *p;
+
   ++processing_template_decl;
-  norm_info info (diag ? tf_norm : tf_none);
   tree norm = get_normalized_constraints (expr, info);
   --processing_template_decl;
+
+  if (!info.generate_diagnostics ())
+    hash_map_safe_put<hm_ggc> (normalized_map, expr, norm);
+
   return norm;
 }
 
@@ -2086,16 +2088,14 @@ tsubst_compound_requirement (tree t, tree args, subst_info info)
 static tree
 tsubst_nested_requirement (tree t, tree args, subst_info info)
 {
-  /* Perform satisfaction quietly with the regular normal form.  */
+  /* Perform satisfaction quietly first.  */
   sat_info quiet (tf_none, info.in_decl);
-  tree norm = TREE_VALUE (TREE_TYPE (t));
-  tree diag_norm = TREE_PURPOSE (TREE_TYPE (t));
-  tree result = satisfy_constraint (norm, args, quiet);
+  tree result = satisfy_constraint_expression (t, args, quiet);
   if (result == error_mark_node)
     {
-      /* Replay the error using the diagnostic normal form.  */
+      /* Replay the error.  */
       sat_info noisy (tf_warning_or_error, info.in_decl);
-      satisfy_constraint (diag_norm, args, noisy);
+      satisfy_constraint_expression (t, args, noisy);
     }
   if (result != boolean_true_node)
     return error_mark_node;
@@ -3040,8 +3040,22 @@ satisfy_constraint_expression (tree t, tree args, sat_info info)
       tree tmpl = get_concept_check_template (id);
       norm = normalize_concept_definition (tmpl, info.noisy ());
     }
+  else if (TREE_CODE (t) == NESTED_REQ)
+    {
+      norm_info ninfo (info.noisy () ? tf_norm : tf_none);
+      /* The TREE_TYPE contains the set of template parameters that were in
+	 scope for this nested requirement; use them as the initial template
+	 parameters for normalization.  */
+      ninfo.initial_parms = TREE_TYPE (t);
+      norm = normalize_constraint_expression (TREE_OPERAND (t, 0), ninfo);
+    }
+  else if (EXPR_P (t))
+    {
+      norm_info ninfo (info.noisy () ? tf_norm : tf_none);
+      norm = normalize_constraint_expression (t, ninfo);
+    }
   else
-    norm = normalize_constraint_expression (t, info.noisy ());
+    gcc_unreachable ();
 
   /* Perform satisfaction.  */
   return satisfy_constraint (norm, args, info);
@@ -3301,15 +3315,9 @@ finish_compound_requirement (location_t loc, tree expr, tree type, bool noexcept
 tree
 finish_nested_requirement (location_t loc, tree expr)
 {
-  /* We need to normalize the constraints now, at parse time, while
-     we have the necessary template context.  We normalize twice,
-     once without diagnostic information and once with, which we'll
-     later use for quiet and noisy satisfaction respectively.  */
-  tree norm = normalize_constraint_expression (expr, /*diag=*/false);
-  tree diag_norm = normalize_constraint_expression (expr, /*diag=*/true);
-
-  /* Build the constraint, saving its two normalizations as its type.  */
-  tree r = build1 (NESTED_REQ, build_tree_list (diag_norm, norm), expr);
+  /* Build the requirement, saving the set of in-scope template
+     parameters as its type.  */
+  tree r = build1 (NESTED_REQ, current_template_parms, expr);
   SET_EXPR_LOCATION (r, loc);
   return r;
 }
@@ -3710,12 +3718,9 @@ diagnose_type_requirement (tree req, tree args, tree in_decl)
 static void
 diagnose_nested_requirement (tree req, tree args)
 {
-  /* Quietly check for satisfaction first using the regular normal form.
-     We can elaborate details later if needed.  */
-  tree norm = TREE_VALUE (TREE_TYPE (req));
-  tree diag_norm = TREE_PURPOSE (TREE_TYPE (req));
-  sat_info info (tf_none, NULL_TREE);
-  tree result = satisfy_constraint (norm, args, info);
+  /* Quietly check for satisfaction first.  */
+  sat_info quiet (tf_none, NULL_TREE);
+  tree result = satisfy_constraint_expression (req, args, quiet);
   if (result == boolean_true_node)
     return;
 
@@ -3723,10 +3728,11 @@ diagnose_nested_requirement (tree req, tree args)
   location_t loc = cp_expr_location (expr);
   if (diagnosing_failed_constraint::replay_errors_p ())
     {
-      /* Replay the substitution error using the diagnostic normal form.  */
+      /* Replay the substitution error with re-normalized requirements.  */
       inform (loc, "nested requirement %qE is not satisfied, because", expr);
+
       sat_info noisy (tf_warning_or_error, NULL_TREE, /*diag_unsat=*/true);
-      satisfy_constraint (diag_norm, args, noisy);
+      satisfy_constraint_expression (req, args, noisy);
     }
   else
     inform (loc, "nested requirement %qE is not satisfied", expr);
