@@ -3240,7 +3240,9 @@ calls.
 Attribute @code{malloc} indicates that a function is @code{malloc}-like,
 i.e., that the pointer @var{P} returned by the function cannot alias any
 other pointer valid when the function returns, and moreover no
-pointers to valid objects occur in any storage addressed by @var{P}.
+pointers to valid objects occur in any storage addressed by @var{P}. In
+addition, the GCC predicts that a function with the attribute returns
+non-null in most cases.
 
 Independently, the form of the attribute with one or two arguments
 associates @code{deallocator} as a suitable deallocation function for
@@ -3248,13 +3250,14 @@ pointers returned from the @code{malloc}-like function.  @var{ptr-index}
 denotes the positional argument to which when the pointer is passed in
 calls to @code{deallocator} has the effect of deallocating it.
 
-Using the attribute with no arguments is designed to improve optimization.
-The compiler predicts that a function with the attribute returns non-null
-in most cases.  Functions like @code{malloc} and @code{calloc} have this
-property because they return a pointer to uninitialized or zeroed-out
-storage.  However, functions like @code{realloc} do not have this property,
-as they may return pointers to storage containing pointers to existing
-objects.
+Using the attribute with no arguments is designed to improve optimization
+by relying on the aliasing property it implies.  Functions like @code{malloc}
+and @code{calloc} have this property because they return a pointer to
+uninitialized or zeroed-out, newly obtained storage.  However, functions
+like @code{realloc} do not have this property, as they may return pointers
+to storage containing pointers to existing objects.  Additionally, since
+all such functions are assumed to return null only infrequently, callers
+can be optimized based on that assumption.
 
 Associating a function with a @var{deallocator} helps detect calls to
 mismatched allocation and deallocation functions and diagnose them under
