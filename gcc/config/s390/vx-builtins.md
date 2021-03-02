@@ -2312,3 +2312,58 @@
   "TARGET_VXE2 && UINTVAL (operands[2]) < GET_MODE_NUNITS (<V_HW_HSD:MODE>mode)"
   "vstebr<bhfgq>\t%v1,%0,%2"
   [(set_attr "op_type" "VRX")])
+
+
+;;
+;; NNPA Facility
+;;
+
+(define_insn "vclfnhs_v8hi"
+  [(set (match_operand:V4SF                0 "register_operand"  "=v")
+	(unspec:V4SF [(vec_select:V4HI
+		       (match_operand:V8HI 1 "register_operand"   "v")
+		       (parallel [(const_int 0) (const_int 1) (const_int 2) (const_int 3)]))
+		      (match_operand:QI    2 "const_mask_operand" "C")]
+		     UNSPEC_NNPA_VCLFNHS_V8HI))]
+  "TARGET_NNPA"
+  "vclfnh\t%v0,%v1,2,%2"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vclfnls_v8hi"
+  [(set (match_operand:V4SF                0 "register_operand"   "=v")
+	(unspec:V4SF [(vec_select:V4HI
+		       (match_operand:V8HI 1 "register_operand"   "v")
+		       (parallel [(const_int 4) (const_int 5) (const_int 6) (const_int 7)]))
+		      (match_operand:QI    2 "const_mask_operand"  "C")]
+		     UNSPEC_NNPA_VCLFNLS_V8HI))]
+  "TARGET_NNPA"
+  "vclfnl\t%v0,%v1,2,%2"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vcrnfs_v8hi"
+  [(set (match_operand:V8HI               0 "register_operand"   "=v")
+	(unspec:V8HI [(match_operand:V4SF 1 "register_operand"    "v")
+		      (match_operand:V4SF 2 "register_operand"    "v")
+		      (match_operand:QI   3 "const_mask_operand"  "C")]
+		     UNSPEC_NNPA_VCRNFS_V8HI))]
+  "TARGET_NNPA"
+  "vcrnf\t%v0,%v1,%v2,%3,2"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vcfn_v8hi"
+  [(set (match_operand:V8HI               0 "register_operand"   "=v")
+	(unspec:V8HI [(match_operand:V8HI 1 "register_operand"    "v")
+		      (match_operand:QI   2 "const_mask_operand"  "C")]
+		     UNSPEC_NNPA_VCFN_V8HI))]
+  "TARGET_NNPA"
+  "vcfn\t%v0,%v1,1,%2"
+  [(set_attr "op_type" "VRR")])
+
+(define_insn "vcnf_v8hi"
+  [(set (match_operand:V8HI               0 "register_operand"   "=v")
+	(unspec:V8HI [(match_operand:V8HI 1 "register_operand"    "v")
+		      (match_operand:QI   2 "const_mask_operand"  "C")]
+		     UNSPEC_NNPA_VCNF_V8HI))]
+  "TARGET_NNPA"
+  "vcnf\t%v0,%v1,%2,1"
+  [(set_attr "op_type" "VRR")])
