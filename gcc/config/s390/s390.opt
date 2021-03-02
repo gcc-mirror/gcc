@@ -116,6 +116,9 @@ EnumValue
 Enum(processor_type) String(arch13) Value(PROCESSOR_8561_Z15)
 
 EnumValue
+Enum(processor_type) String(arch14) Value(PROCESSOR_ARCH14)
+
+EnumValue
 Enum(processor_type) String(native) Value(PROCESSOR_NATIVE) DriverOnly
 
 mbackchain

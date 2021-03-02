@@ -10264,6 +10264,22 @@ proc check_effective_target_s390_vxe2 { } {
     } "-march=arch13 -mzarch" ]
 }
 
+# Same as above but for the arch14 NNPA facility.
+proc check_effective_target_s390_nnpa { } {
+    if ![istarget s390*-*-*] then {
+	return 0;
+    }
+
+    return [check_runtime s390_check_nnpa {
+	int main (void)
+	{
+	    asm ("vzero %%v24\n\t"
+		 "vcrnf %%v24,%%v24,%%v24,0,2" : : : "v24");
+	    return 0;
+	}
+    } "-march=arch14 -mzarch" ]
+}
+
 #For versions of ARM architectures that have hardware div insn,
 #disable the divmod transform
 

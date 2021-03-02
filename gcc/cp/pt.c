@@ -15710,15 +15710,15 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			       ? tf_ignore_bad_quals : 0));
 	      }
 	    else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
-		     && PLACEHOLDER_TYPE_CONSTRAINTS (t)
+		     && PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t)
 		     && (r = (TEMPLATE_PARM_DESCENDANTS
 			      (TEMPLATE_TYPE_PARM_INDEX (t))))
 		     && (r = TREE_TYPE (r))
-		     && !PLACEHOLDER_TYPE_CONSTRAINTS (r))
+		     && !PLACEHOLDER_TYPE_CONSTRAINTS_INFO (r))
 	      /* Break infinite recursion when substituting the constraints
 		 of a constrained placeholder.  */;
 	    else if (TREE_CODE (t) == TEMPLATE_TYPE_PARM
-		     && !PLACEHOLDER_TYPE_CONSTRAINTS (t)
+		     && !PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t)
 		     && !CLASS_PLACEHOLDER_TEMPLATE (t)
 		     && (arg = TEMPLATE_TYPE_PARM_INDEX (t),
 			 r = TEMPLATE_PARM_DESCENDANTS (arg))
@@ -15741,8 +15741,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		  {
 		    /* Propagate constraints on placeholders since they are
 		       only instantiated during satisfaction.  */
-		    if (tree constr = PLACEHOLDER_TYPE_CONSTRAINTS (t))
-		      PLACEHOLDER_TYPE_CONSTRAINTS (r) = constr;
+		    if (tree ci = PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t))
+		      PLACEHOLDER_TYPE_CONSTRAINTS_INFO (r) = ci;
 		    else if (tree pl = CLASS_PLACEHOLDER_TEMPLATE (t))
 		      {
 			pl = tsubst_copy (pl, args, complain, in_decl);
@@ -28183,7 +28183,8 @@ make_constrained_placeholder_type (tree type, tree con, tree args)
   expr = build_concept_check (expr, type, args, tf_warning_or_error);
   --processing_template_decl;
 
-  PLACEHOLDER_TYPE_CONSTRAINTS (type) = expr;
+  PLACEHOLDER_TYPE_CONSTRAINTS_INFO (type)
+    = build_tree_list (current_template_parms, expr);
 
   /* Our canonical type depends on the constraint.  */
   TYPE_CANONICAL (type) = canonical_type_parameter (type);
@@ -29423,9 +29424,11 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
    from INIT.  AUTO_NODE is the TEMPLATE_TYPE_PARM used for 'auto' in TYPE.
    The CONTEXT determines the context in which auto deduction is performed
    and is used to control error diagnostics.  FLAGS are the LOOKUP_* flags.
-   OUTER_TARGS are used during template argument deduction
-   (context == adc_unify) to properly substitute the result, and is ignored
-   in other contexts.
+
+   OUTER_TARGS is used during template argument deduction (context == adc_unify)
+   to properly substitute the result.  It's also used in the adc_unify and
+   adc_requirement contexts to communicate the the necessary template arguments
+   to satisfaction.  OUTER_TARGS is ignored in other contexts.
 
    For partial-concept-ids, extra args may be appended to the list of deduced
    template arguments prior to determining constraint satisfaction.  */
@@ -29517,9 +29520,13 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 		 || ((TREE_CODE (init) == COMPONENT_REF
 		      || TREE_CODE (init) == SCOPE_REF)
 		     && !REF_PARENTHESIZED_P (init)));
+      tree deduced = finish_decltype_type (init, id, complain);
+      deduced = canonicalize_type_argument (deduced, complain);
+      if (deduced == error_mark_node)
+	return error_mark_node;
       targs = make_tree_vec (1);
-      TREE_VEC_ELT (targs, 0)
-	= finish_decltype_type (init, id, tf_warning_or_error);
+      TREE_VEC_ELT (targs, 0) = deduced;
+      /* FIXME: These errors ought to be diagnosed at parse time. */
       if (type != auto_node)
 	{
           if (complain & tf_error)
@@ -29582,30 +29589,21 @@ do_auto_deduction (tree type, tree init, tree auto_node,
     }
 
   /* Check any placeholder constraints against the deduced type. */
-  if (flag_concepts && !processing_template_decl)
-    if (tree check = NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (auto_node)))
+  if (flag_concepts)
+    if (NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (auto_node)))
       {
-        /* Use the deduced type to check the associated constraints. If we
-           have a partial-concept-id, rebuild the argument list so that
-           we check using the extra arguments. */
-	check = unpack_concept_check (check);
-	gcc_assert (TREE_CODE (check) == TEMPLATE_ID_EXPR);
-	tree cdecl = TREE_OPERAND (check, 0);
-	if (OVL_P (cdecl))
-	  cdecl = OVL_FIRST (cdecl);
-        tree cargs = TREE_OPERAND (check, 1);
-        if (TREE_VEC_LENGTH (cargs) > 1)
-          {
-            cargs = copy_node (cargs);
-            TREE_VEC_ELT (cargs, 0) = TREE_VEC_ELT (targs, 0);
-          }
-        else
-          cargs = targs;
+	if (processing_template_decl)
+	  /* In general we can't check satisfaction until we know all
+	     template arguments.  */
+	  return type;
 
-	/* Rebuild the check using the deduced arguments.  */
-	check = build_concept_check (cdecl, cargs, tf_none);
+	if ((context == adc_return_type || context == adc_variable_type)
+	    && current_function_decl
+	    && DECL_TEMPLATE_INFO (current_function_decl))
+	  outer_targs = DECL_TI_ARGS (current_function_decl);
 
-	if (!constraints_satisfied_p (check))
+	tree full_targs = add_to_template_args (outer_targs, targs);
+	if (!constraints_satisfied_p (auto_node, full_targs))
           {
             if (complain & tf_warning_or_error)
               {
@@ -29630,15 +29628,16 @@ do_auto_deduction (tree type, tree init, tree auto_node,
                            "placeholder constraints");
                     break;
                   }
-		diagnose_constraints (input_location, check, targs);
+		diagnose_constraints (input_location, auto_node, full_targs);
               }
             return error_mark_node;
           }
       }
 
-  if (processing_template_decl && context != adc_unify)
-    outer_targs = current_template_args ();
-  targs = add_to_template_args (outer_targs, targs);
+  if (context == adc_unify)
+    targs = add_to_template_args (outer_targs, targs);
+  else if (processing_template_decl)
+    targs = add_to_template_args (current_template_args (), targs);
   return tsubst (type, targs, complain, NULL_TREE);
 }
 
@@ -29665,10 +29664,12 @@ splice_late_return_type (tree type, tree late_return_type)
 	TREE_VEC_ELT (auto_vec, 0) = new_auto;
 	tree targs = add_outermost_template_args (current_template_args (),
 						  auto_vec);
-	/* FIXME: We should also rebuild the constraint to refer to the new
-	   auto.  */
-	PLACEHOLDER_TYPE_CONSTRAINTS (new_auto)
-	  = PLACEHOLDER_TYPE_CONSTRAINTS (auto_node);
+	/* Also rebuild the constraint info in terms of the new auto.  */
+	if (tree ci = PLACEHOLDER_TYPE_CONSTRAINTS_INFO (auto_node))
+	  PLACEHOLDER_TYPE_CONSTRAINTS_INFO (new_auto)
+	    = build_tree_list (current_template_parms,
+			       tsubst_constraint (TREE_VALUE (ci), targs,
+						  tf_none, NULL_TREE));
 	TYPE_CANONICAL (new_auto) = canonical_type_parameter (new_auto);
 	return tsubst (type, targs, tf_none, NULL_TREE);
       }

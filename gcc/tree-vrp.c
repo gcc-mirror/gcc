@@ -2180,8 +2180,8 @@ register_edge_assert_for (tree name, edge e,
   /* In the case of NAME == 1 or NAME != 0, for BIT_AND_EXPR defining
      statement of NAME we can assert both operands of the BIT_AND_EXPR
      have nonzero value.  */
-  if (((comp_code == EQ_EXPR && integer_onep (val))
-       || (comp_code == NE_EXPR && integer_zerop (val))))
+  if ((comp_code == EQ_EXPR && integer_onep (val))
+      || (comp_code == NE_EXPR && integer_zerop (val)))
     {
       gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
@@ -2193,28 +2193,36 @@ register_edge_assert_for (tree name, edge e,
 	  register_edge_assert_for_1 (op0, NE_EXPR, e, asserts);
 	  register_edge_assert_for_1 (op1, NE_EXPR, e, asserts);
 	}
+      else if (is_gimple_assign (def_stmt)
+	       && (TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt))
+		   == tcc_comparison))
+	register_edge_assert_for_1 (name, NE_EXPR, e, asserts);
     }
 
   /* In the case of NAME == 0 or NAME != 1, for BIT_IOR_EXPR defining
      statement of NAME we can assert both operands of the BIT_IOR_EXPR
      have zero value.  */
-  if (((comp_code == EQ_EXPR && integer_zerop (val))
-       || (comp_code == NE_EXPR && integer_onep (val))))
+  if ((comp_code == EQ_EXPR && integer_zerop (val))
+      || (comp_code == NE_EXPR
+	  && integer_onep (val)
+	  && TYPE_PRECISION (TREE_TYPE (name)) == 1))
     {
       gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
       /* For BIT_IOR_EXPR only if NAME == 0 both operands have
 	 necessarily zero value, or if type-precision is one.  */
       if (is_gimple_assign (def_stmt)
-	  && (gimple_assign_rhs_code (def_stmt) == BIT_IOR_EXPR
-	      && (TYPE_PRECISION (TREE_TYPE (name)) == 1
-	          || comp_code == EQ_EXPR)))
+	  && gimple_assign_rhs_code (def_stmt) == BIT_IOR_EXPR)
 	{
 	  tree op0 = gimple_assign_rhs1 (def_stmt);
 	  tree op1 = gimple_assign_rhs2 (def_stmt);
 	  register_edge_assert_for_1 (op0, EQ_EXPR, e, asserts);
 	  register_edge_assert_for_1 (op1, EQ_EXPR, e, asserts);
 	}
+      else if (is_gimple_assign (def_stmt)
+	       && (TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt))
+		   == tcc_comparison))
+	register_edge_assert_for_1 (name, EQ_EXPR, e, asserts);
     }
 
   /* Sometimes we can infer ranges from (NAME & MASK) == VALUE.  */

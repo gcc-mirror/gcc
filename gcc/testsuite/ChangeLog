@@ -1,3 +1,19 @@
+2021-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR target/99313
+	* gcc.target/s390/target-attribute/pr99313.c: New test.
+
+2021-03-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99294
+	* g++.dg/modules/pr99294.h: New.
+	* g++.dg/modules/pr99294_a.C: New.
+	* g++.dg/modules/pr99294_b.C: New.
+
+2021-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/eh/seh-xmm-unwind.C: New test.
+
 2021-02-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* g++.dg/coroutines/pr94879-folly-1.C: Make final suspend

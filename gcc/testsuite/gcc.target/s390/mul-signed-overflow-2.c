@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { s390_z14_hw } } } */
 /* z14 only because we need msrkc, msc, msgrkc, msgc  */
 /* { dg-options "-O3 -march=z14 -mzarch --save-temps" } */
 

@@ -24,5 +24,4 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Declaration of the conversion function to IEEE 128-bit floating point from
    string using snprintf.  */
 
-extern int __sprintfkf (char *restrict, const char *restrict, ...);
-
+extern int __sprintfkf (char *restrict, const char *restrict, _Float128);

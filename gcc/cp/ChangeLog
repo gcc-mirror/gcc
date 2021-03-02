@@ -1,3 +1,11 @@
+2021-03-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99294
+	* class.c (fixup_type_variants): Propagate mode, precision,
+	alignment & emptiness.
+	* module.cc (trees_out::type_node): Use TYPE_ALIGN_RAW.
+	(trees_in::tree_node): Rematerialize alignment here.
+
 2021-02-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90333

@@ -28817,6 +28817,18 @@ cp_parser_requirement_parameter_list (cp_parser *parser)
   if (!parens.require_close (parser))
     return error_mark_node;
 
+  /* Modify the declared parameters by removing their context
+     so they don't refer to the enclosing scope and explicitly
+     indicating that they are constraint variables. */
+  for (tree parm = parms; parm; parm = TREE_CHAIN (parm))
+    {
+      if (parm == void_list_node || parm == explicit_void_list_node)
+	break;
+      tree decl = TREE_VALUE (parm);
+      DECL_CONTEXT (decl) = NULL_TREE;
+      CONSTRAINT_VAR_P (decl) = true;
+    }
+
   return parms;
 }
 

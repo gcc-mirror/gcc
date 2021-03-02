@@ -545,8 +545,6 @@ public:
 class dedupe_winners
 {
 public:
-  dedupe_winners (engine *eng) : m_engine (eng) {}
-
   ~dedupe_winners ()
   {
     /* Delete all keys, but not the saved_diagnostics.  */
@@ -642,8 +640,6 @@ public:
   }
 
 private:
-  engine *m_engine;
-
   /* This maps from each dedupe_key to a current best saved_diagnostic.  */
 
   typedef hash_map<const dedupe_key *, saved_diagnostic *,
@@ -679,7 +675,7 @@ diagnostic_manager::emit_saved_diagnostics (const exploded_graph &eg)
      instance.  This partitions the saved diagnostics by dedupe_key,
      generating exploded_paths for them, and retaining the best one in each
      partition.  */
-  dedupe_winners best_candidates (eg.get_engine ());
+  dedupe_winners best_candidates;
 
   int i;
   saved_diagnostic *sd;
