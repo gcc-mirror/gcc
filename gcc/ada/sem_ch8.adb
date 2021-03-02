@@ -810,11 +810,19 @@ package body Sem_Ch8 is
             --  that are used in iterators. This is an optimization, but it
             --  also prevents typing anomalies when the prefix is further
             --  expanded.
+
             --  Note that we cannot just use the Is_Limited_Record flag because
             --  it does not apply to records with limited components, for which
             --  this syntactic flag is not set, but whose size is also fixed.
 
-            elsif Is_Limited_Type (Typ) then
+            --  Note also that we need to build the constrained subtype for an
+            --  array in order to make the bounds explicit in most cases, but
+            --  not if the object comes from an extended return statement, as
+            --  this would create dangling references to them later on.
+
+            elsif Is_Limited_Type (Typ)
+              and then (not Is_Array_Type (Typ) or else Is_Return_Object (Id))
+            then
                null;
 
             else
