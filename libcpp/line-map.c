@@ -2431,6 +2431,14 @@ rich_location::maybe_add_fixit (location_t start,
       stop_supporting_fixits ();
       return;
     }
+  /* If we have very long lines, tokens will eventually fall back to
+     having column == 0.
+     We can't handle fix-it hints that use such locations.  */
+  if (exploc_start.column == 0 || exploc_next_loc.column == 0)
+    {
+      stop_supporting_fixits ();
+      return;
+    }
 
   const char *newline = strchr (new_content, '\n');
   if (newline)

@@ -3288,14 +3288,14 @@ test_one_liner_many_fixits_2 ()
   rich_location richloc (line_table, equals);
   for (int i = 0; i < 19; i++)
     {
-      location_t loc = linemap_position_for_column (line_table, i * 2);
+      location_t loc = linemap_position_for_column (line_table, (i * 2) + 1);
       richloc.add_fixit_insert_before (loc, "a");
     }
   ASSERT_EQ (19, richloc.get_num_fixit_hints ());
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ (" foo = bar.field;\n"
 		"     ^\n"
-		"a a a a a a a a a a a a a a a a a a a\n",
+		" a a a a a a a a a a a a a a a a a a a\n",
 		pp_formatted_text (dc.printer));
 }
 
