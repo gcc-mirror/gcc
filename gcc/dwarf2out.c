@@ -28267,13 +28267,17 @@ output_macinfo_op (macinfo_entry *ref)
     case DW_MACINFO_define:
     case DW_MACINFO_undef:
       len = strlen (ref->info) + 1;
-      if (!dwarf_strict
+      if ((!dwarf_strict || dwarf_version >= 5)
 	  && len > (size_t) dwarf_offset_size
 	  && !DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET
 	  && (debug_str_section->common.flags & SECTION_MERGE) != 0)
 	{
-	  ref->code = ref->code == DW_MACINFO_define
-		      ? DW_MACRO_define_strp : DW_MACRO_undef_strp;
+	  if (dwarf_split_debug_info && dwarf_version >= 5)
+	    ref->code = ref->code == DW_MACINFO_define
+			? DW_MACRO_define_strx : DW_MACRO_undef_strx;
+	  else
+	    ref->code = ref->code == DW_MACINFO_define
+			? DW_MACRO_define_strp : DW_MACRO_undef_strp;
 	  output_macinfo_op (ref);
 	  return;
 	}
@@ -28285,7 +28289,18 @@ output_macinfo_op (macinfo_entry *ref)
       dw2_asm_output_nstring (ref->info, -1, "The macro");
       break;
     case DW_MACRO_define_strp:
+      dw2_asm_output_data (1, ref->code, "Define macro strp");
+      goto do_DW_MACRO_define_strpx;
     case DW_MACRO_undef_strp:
+      dw2_asm_output_data (1, ref->code, "Undefine macro strp");
+      goto do_DW_MACRO_define_strpx;
+    case DW_MACRO_define_strx:
+      dw2_asm_output_data (1, ref->code, "Define macro strx");
+      goto do_DW_MACRO_define_strpx;
+    case DW_MACRO_undef_strx:
+      dw2_asm_output_data (1, ref->code, "Undefine macro strx");
+      /* FALLTHRU */
+    do_DW_MACRO_define_strpx:
       /* NB: dwarf2out_finish performs:
 	   1. save_macinfo_strings
 	   2. hash table traverse of index_string
@@ -28302,10 +28317,6 @@ output_macinfo_op (macinfo_entry *ref)
       gcc_assert (node
 		  && (node->form == DW_FORM_strp
 		      || node->form == dwarf_FORM (DW_FORM_strx)));
-      dw2_asm_output_data (1, ref->code,
-			   ref->code == DW_MACRO_define_strp
-			   ? "Define macro strp"
-			   : "Undefine macro strp");
       dw2_asm_output_data_uleb128 (ref->lineno, "At line number %lu",
 				   (unsigned long) ref->lineno);
       if (node->form == DW_FORM_strp)
@@ -28475,7 +28486,7 @@ save_macinfo_strings (void)
           case DW_MACINFO_define:
           case DW_MACINFO_undef:
             len = strlen (ref->info) + 1;
-            if (!dwarf_strict
+	    if ((!dwarf_strict || dwarf_version >= 5)
                 && len > (unsigned) dwarf_offset_size
                 && !DWARF2_INDIRECT_STRING_SUPPORT_MISSING_ON_TARGET
                 && (debug_str_section->common.flags & SECTION_MERGE) != 0)
@@ -28489,6 +28500,8 @@ save_macinfo_strings (void)
 	    /* Fall through. */
 	  case DW_MACRO_define_strp:
 	  case DW_MACRO_undef_strp:
+	  case DW_MACRO_define_strx:
+	  case DW_MACRO_undef_strx:
             set_indirect_string (find_AT_string (ref->info));
             break;
           default:
