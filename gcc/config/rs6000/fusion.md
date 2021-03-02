@@ -35,7 +35,7 @@
    (set (match_dup 2)
         (compare:CC (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -56,7 +56,7 @@
    (set (match_dup 2)
         (compare:CCUNS (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -77,7 +77,7 @@
    (set (match_dup 2)
         (compare:CC (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -98,7 +98,7 @@
    (set (match_dup 2)
         (compare:CCUNS (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -119,7 +119,7 @@
    (set (match_dup 2)
         (compare:CC (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -140,7 +140,7 @@
    (set (match_dup 2)
         (compare:CCUNS (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -161,7 +161,7 @@
    (set (match_dup 2)
         (compare:CC (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -182,7 +182,7 @@
    (set (match_dup 2)
         (compare:CCUNS (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -203,7 +203,7 @@
    (set (match_dup 2)
         (compare:CC (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -224,7 +224,7 @@
    (set (match_dup 2)
         (compare:CCUNS (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -245,7 +245,7 @@
    (set (match_dup 2)
         (compare:CC (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -266,7 +266,7 @@
    (set (match_dup 2)
         (compare:CCUNS (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -287,7 +287,7 @@
    (set (match_dup 2)
         (compare:CC (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -308,7 +308,7 @@
    (set (match_dup 2)
         (compare:CCUNS (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -329,7 +329,7 @@
    (set (match_dup 2)
         (compare:CCUNS (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -350,7 +350,7 @@
    (set (match_dup 2)
         (compare:CCUNS (match_dup 0) (match_dup 3)))]
   ""
-  [(set_attr "type" "load")
+  [(set_attr "type" "fused_load_cmpi")
    (set_attr "cost" "8")
    (set_attr "length" "8")])
 
@@ -369,7 +369,7 @@
    and %3,%1,%0\;and %3,%3,%2
    and %3,%1,%0\;and %3,%3,%2
    and %4,%1,%0\;and %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -387,7 +387,7 @@
    andc %3,%1,%0\;and %3,%3,%2
    andc %3,%1,%0\;and %3,%3,%2
    andc %4,%1,%0\;and %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -405,7 +405,7 @@
    eqv %3,%1,%0\;and %3,%3,%2
    eqv %3,%1,%0\;and %3,%3,%2
    eqv %4,%1,%0\;and %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -423,7 +423,7 @@
    nand %3,%1,%0\;and %3,%3,%2
    nand %3,%1,%0\;and %3,%3,%2
    nand %4,%1,%0\;and %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -441,7 +441,7 @@
    nor %3,%1,%0\;and %3,%3,%2
    nor %3,%1,%0\;and %3,%3,%2
    nor %4,%1,%0\;and %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -459,7 +459,7 @@
    or %3,%1,%0\;and %3,%3,%2
    or %3,%1,%0\;and %3,%3,%2
    or %4,%1,%0\;and %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -477,7 +477,7 @@
    orc %3,%1,%0\;and %3,%3,%2
    orc %3,%1,%0\;and %3,%3,%2
    orc %4,%1,%0\;and %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -495,7 +495,7 @@
    xor %3,%1,%0\;and %3,%3,%2
    xor %3,%1,%0\;and %3,%3,%2
    xor %4,%1,%0\;and %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -513,7 +513,7 @@
    and %3,%1,%0\;andc %3,%3,%2
    and %3,%1,%0\;andc %3,%3,%2
    and %4,%1,%0\;andc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -531,7 +531,7 @@
    andc %3,%1,%0\;andc %3,%3,%2
    andc %3,%1,%0\;andc %3,%3,%2
    andc %4,%1,%0\;andc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -549,7 +549,7 @@
    eqv %3,%1,%0\;andc %3,%3,%2
    eqv %3,%1,%0\;andc %3,%3,%2
    eqv %4,%1,%0\;andc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -567,7 +567,7 @@
    nand %3,%1,%0\;andc %3,%3,%2
    nand %3,%1,%0\;andc %3,%3,%2
    nand %4,%1,%0\;andc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -585,7 +585,7 @@
    nor %3,%1,%0\;andc %3,%3,%2
    nor %3,%1,%0\;andc %3,%3,%2
    nor %4,%1,%0\;andc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -603,7 +603,7 @@
    or %3,%1,%0\;andc %3,%3,%2
    or %3,%1,%0\;andc %3,%3,%2
    or %4,%1,%0\;andc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -621,7 +621,7 @@
    orc %3,%1,%0\;andc %3,%3,%2
    orc %3,%1,%0\;andc %3,%3,%2
    orc %4,%1,%0\;andc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -639,7 +639,7 @@
    xor %3,%1,%0\;andc %3,%3,%2
    xor %3,%1,%0\;andc %3,%3,%2
    xor %4,%1,%0\;andc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -657,7 +657,7 @@
    and %3,%1,%0\;eqv %3,%3,%2
    and %3,%1,%0\;eqv %3,%3,%2
    and %4,%1,%0\;eqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -675,7 +675,7 @@
    andc %3,%1,%0\;eqv %3,%3,%2
    andc %3,%1,%0\;eqv %3,%3,%2
    andc %4,%1,%0\;eqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -693,7 +693,7 @@
    eqv %3,%1,%0\;eqv %3,%3,%2
    eqv %3,%1,%0\;eqv %3,%3,%2
    eqv %4,%1,%0\;eqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -711,7 +711,7 @@
    nand %3,%1,%0\;eqv %3,%3,%2
    nand %3,%1,%0\;eqv %3,%3,%2
    nand %4,%1,%0\;eqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -729,7 +729,7 @@
    nor %3,%1,%0\;eqv %3,%3,%2
    nor %3,%1,%0\;eqv %3,%3,%2
    nor %4,%1,%0\;eqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -747,7 +747,7 @@
    or %3,%1,%0\;eqv %3,%3,%2
    or %3,%1,%0\;eqv %3,%3,%2
    or %4,%1,%0\;eqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -765,7 +765,7 @@
    orc %3,%1,%0\;eqv %3,%3,%2
    orc %3,%1,%0\;eqv %3,%3,%2
    orc %4,%1,%0\;eqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -783,7 +783,7 @@
    xor %3,%1,%0\;eqv %3,%3,%2
    xor %3,%1,%0\;eqv %3,%3,%2
    xor %4,%1,%0\;eqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -801,7 +801,7 @@
    and %3,%1,%0\;nand %3,%3,%2
    and %3,%1,%0\;nand %3,%3,%2
    and %4,%1,%0\;nand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -819,7 +819,7 @@
    andc %3,%1,%0\;nand %3,%3,%2
    andc %3,%1,%0\;nand %3,%3,%2
    andc %4,%1,%0\;nand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -837,7 +837,7 @@
    eqv %3,%1,%0\;nand %3,%3,%2
    eqv %3,%1,%0\;nand %3,%3,%2
    eqv %4,%1,%0\;nand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -855,7 +855,7 @@
    nand %3,%1,%0\;nand %3,%3,%2
    nand %3,%1,%0\;nand %3,%3,%2
    nand %4,%1,%0\;nand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -873,7 +873,7 @@
    nor %3,%1,%0\;nand %3,%3,%2
    nor %3,%1,%0\;nand %3,%3,%2
    nor %4,%1,%0\;nand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -891,7 +891,7 @@
    or %3,%1,%0\;nand %3,%3,%2
    or %3,%1,%0\;nand %3,%3,%2
    or %4,%1,%0\;nand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -909,7 +909,7 @@
    orc %3,%1,%0\;nand %3,%3,%2
    orc %3,%1,%0\;nand %3,%3,%2
    orc %4,%1,%0\;nand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -927,7 +927,7 @@
    xor %3,%1,%0\;nand %3,%3,%2
    xor %3,%1,%0\;nand %3,%3,%2
    xor %4,%1,%0\;nand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -945,7 +945,7 @@
    and %3,%1,%0\;nor %3,%3,%2
    and %3,%1,%0\;nor %3,%3,%2
    and %4,%1,%0\;nor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -963,7 +963,7 @@
    andc %3,%1,%0\;nor %3,%3,%2
    andc %3,%1,%0\;nor %3,%3,%2
    andc %4,%1,%0\;nor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -981,7 +981,7 @@
    eqv %3,%1,%0\;nor %3,%3,%2
    eqv %3,%1,%0\;nor %3,%3,%2
    eqv %4,%1,%0\;nor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -999,7 +999,7 @@
    nand %3,%1,%0\;nor %3,%3,%2
    nand %3,%1,%0\;nor %3,%3,%2
    nand %4,%1,%0\;nor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1017,7 +1017,7 @@
    nor %3,%1,%0\;nor %3,%3,%2
    nor %3,%1,%0\;nor %3,%3,%2
    nor %4,%1,%0\;nor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1035,7 +1035,7 @@
    or %3,%1,%0\;nor %3,%3,%2
    or %3,%1,%0\;nor %3,%3,%2
    or %4,%1,%0\;nor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1053,7 +1053,7 @@
    orc %3,%1,%0\;nor %3,%3,%2
    orc %3,%1,%0\;nor %3,%3,%2
    orc %4,%1,%0\;nor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1071,7 +1071,7 @@
    xor %3,%1,%0\;nor %3,%3,%2
    xor %3,%1,%0\;nor %3,%3,%2
    xor %4,%1,%0\;nor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1089,7 +1089,7 @@
    and %3,%1,%0\;or %3,%3,%2
    and %3,%1,%0\;or %3,%3,%2
    and %4,%1,%0\;or %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1107,7 +1107,7 @@
    andc %3,%1,%0\;or %3,%3,%2
    andc %3,%1,%0\;or %3,%3,%2
    andc %4,%1,%0\;or %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1125,7 +1125,7 @@
    eqv %3,%1,%0\;or %3,%3,%2
    eqv %3,%1,%0\;or %3,%3,%2
    eqv %4,%1,%0\;or %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1143,7 +1143,7 @@
    nand %3,%1,%0\;or %3,%3,%2
    nand %3,%1,%0\;or %3,%3,%2
    nand %4,%1,%0\;or %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1161,7 +1161,7 @@
    nor %3,%1,%0\;or %3,%3,%2
    nor %3,%1,%0\;or %3,%3,%2
    nor %4,%1,%0\;or %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1179,7 +1179,7 @@
    or %3,%1,%0\;or %3,%3,%2
    or %3,%1,%0\;or %3,%3,%2
    or %4,%1,%0\;or %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1197,7 +1197,7 @@
    orc %3,%1,%0\;or %3,%3,%2
    orc %3,%1,%0\;or %3,%3,%2
    orc %4,%1,%0\;or %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1215,7 +1215,7 @@
    xor %3,%1,%0\;or %3,%3,%2
    xor %3,%1,%0\;or %3,%3,%2
    xor %4,%1,%0\;or %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1233,7 +1233,7 @@
    and %3,%1,%0\;orc %3,%3,%2
    and %3,%1,%0\;orc %3,%3,%2
    and %4,%1,%0\;orc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1251,7 +1251,7 @@
    andc %3,%1,%0\;orc %3,%3,%2
    andc %3,%1,%0\;orc %3,%3,%2
    andc %4,%1,%0\;orc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1269,7 +1269,7 @@
    eqv %3,%1,%0\;orc %3,%3,%2
    eqv %3,%1,%0\;orc %3,%3,%2
    eqv %4,%1,%0\;orc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1287,7 +1287,7 @@
    nand %3,%1,%0\;orc %3,%3,%2
    nand %3,%1,%0\;orc %3,%3,%2
    nand %4,%1,%0\;orc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1305,7 +1305,7 @@
    nor %3,%1,%0\;orc %3,%3,%2
    nor %3,%1,%0\;orc %3,%3,%2
    nor %4,%1,%0\;orc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1323,7 +1323,7 @@
    or %3,%1,%0\;orc %3,%3,%2
    or %3,%1,%0\;orc %3,%3,%2
    or %4,%1,%0\;orc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1341,7 +1341,7 @@
    orc %3,%1,%0\;orc %3,%3,%2
    orc %3,%1,%0\;orc %3,%3,%2
    orc %4,%1,%0\;orc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1359,7 +1359,7 @@
    xor %3,%1,%0\;orc %3,%3,%2
    xor %3,%1,%0\;orc %3,%3,%2
    xor %4,%1,%0\;orc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1377,7 +1377,7 @@
    and %3,%1,%0\;xor %3,%3,%2
    and %3,%1,%0\;xor %3,%3,%2
    and %4,%1,%0\;xor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1395,7 +1395,7 @@
    andc %3,%1,%0\;xor %3,%3,%2
    andc %3,%1,%0\;xor %3,%3,%2
    andc %4,%1,%0\;xor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1413,7 +1413,7 @@
    eqv %3,%1,%0\;xor %3,%3,%2
    eqv %3,%1,%0\;xor %3,%3,%2
    eqv %4,%1,%0\;xor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1431,7 +1431,7 @@
    nand %3,%1,%0\;xor %3,%3,%2
    nand %3,%1,%0\;xor %3,%3,%2
    nand %4,%1,%0\;xor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1449,7 +1449,7 @@
    nor %3,%1,%0\;xor %3,%3,%2
    nor %3,%1,%0\;xor %3,%3,%2
    nor %4,%1,%0\;xor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1467,7 +1467,7 @@
    or %3,%1,%0\;xor %3,%3,%2
    or %3,%1,%0\;xor %3,%3,%2
    or %4,%1,%0\;xor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1485,7 +1485,7 @@
    orc %3,%1,%0\;xor %3,%3,%2
    orc %3,%1,%0\;xor %3,%3,%2
    orc %4,%1,%0\;xor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1503,7 +1503,7 @@
    xor %3,%1,%0\;xor %3,%3,%2
    xor %3,%1,%0\;xor %3,%3,%2
    xor %4,%1,%0\;xor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1521,7 +1521,7 @@
    vand %3,%1,%0\;vand %3,%3,%2
    vand %3,%1,%0\;vand %3,%3,%2
    vand %4,%1,%0\;vand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1539,7 +1539,7 @@
    vandc %3,%1,%0\;vand %3,%3,%2
    vandc %3,%1,%0\;vand %3,%3,%2
    vandc %4,%1,%0\;vand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1557,7 +1557,7 @@
    veqv %3,%1,%0\;vand %3,%3,%2
    veqv %3,%1,%0\;vand %3,%3,%2
    veqv %4,%1,%0\;vand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1575,7 +1575,7 @@
    vnand %3,%1,%0\;vand %3,%3,%2
    vnand %3,%1,%0\;vand %3,%3,%2
    vnand %4,%1,%0\;vand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1593,7 +1593,7 @@
    vnor %3,%1,%0\;vand %3,%3,%2
    vnor %3,%1,%0\;vand %3,%3,%2
    vnor %4,%1,%0\;vand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1611,7 +1611,7 @@
    vor %3,%1,%0\;vand %3,%3,%2
    vor %3,%1,%0\;vand %3,%3,%2
    vor %4,%1,%0\;vand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1629,7 +1629,7 @@
    vorc %3,%1,%0\;vand %3,%3,%2
    vorc %3,%1,%0\;vand %3,%3,%2
    vorc %4,%1,%0\;vand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1647,7 +1647,7 @@
    vxor %3,%1,%0\;vand %3,%3,%2
    vxor %3,%1,%0\;vand %3,%3,%2
    vxor %4,%1,%0\;vand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1665,7 +1665,7 @@
    vand %3,%1,%0\;vandc %3,%3,%2
    vand %3,%1,%0\;vandc %3,%3,%2
    vand %4,%1,%0\;vandc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1683,7 +1683,7 @@
    vandc %3,%1,%0\;vandc %3,%3,%2
    vandc %3,%1,%0\;vandc %3,%3,%2
    vandc %4,%1,%0\;vandc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1701,7 +1701,7 @@
    veqv %3,%1,%0\;vandc %3,%3,%2
    veqv %3,%1,%0\;vandc %3,%3,%2
    veqv %4,%1,%0\;vandc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1719,7 +1719,7 @@
    vnand %3,%1,%0\;vandc %3,%3,%2
    vnand %3,%1,%0\;vandc %3,%3,%2
    vnand %4,%1,%0\;vandc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1737,7 +1737,7 @@
    vnor %3,%1,%0\;vandc %3,%3,%2
    vnor %3,%1,%0\;vandc %3,%3,%2
    vnor %4,%1,%0\;vandc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1755,7 +1755,7 @@
    vor %3,%1,%0\;vandc %3,%3,%2
    vor %3,%1,%0\;vandc %3,%3,%2
    vor %4,%1,%0\;vandc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1773,7 +1773,7 @@
    vorc %3,%1,%0\;vandc %3,%3,%2
    vorc %3,%1,%0\;vandc %3,%3,%2
    vorc %4,%1,%0\;vandc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1791,7 +1791,7 @@
    vxor %3,%1,%0\;vandc %3,%3,%2
    vxor %3,%1,%0\;vandc %3,%3,%2
    vxor %4,%1,%0\;vandc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1809,7 +1809,7 @@
    vand %3,%1,%0\;veqv %3,%3,%2
    vand %3,%1,%0\;veqv %3,%3,%2
    vand %4,%1,%0\;veqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1827,7 +1827,7 @@
    vandc %3,%1,%0\;veqv %3,%3,%2
    vandc %3,%1,%0\;veqv %3,%3,%2
    vandc %4,%1,%0\;veqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1845,7 +1845,7 @@
    veqv %3,%1,%0\;veqv %3,%3,%2
    veqv %3,%1,%0\;veqv %3,%3,%2
    veqv %4,%1,%0\;veqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1863,7 +1863,7 @@
    vnand %3,%1,%0\;veqv %3,%3,%2
    vnand %3,%1,%0\;veqv %3,%3,%2
    vnand %4,%1,%0\;veqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1881,7 +1881,7 @@
    vnor %3,%1,%0\;veqv %3,%3,%2
    vnor %3,%1,%0\;veqv %3,%3,%2
    vnor %4,%1,%0\;veqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1899,7 +1899,7 @@
    vor %3,%1,%0\;veqv %3,%3,%2
    vor %3,%1,%0\;veqv %3,%3,%2
    vor %4,%1,%0\;veqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1917,7 +1917,7 @@
    vorc %3,%1,%0\;veqv %3,%3,%2
    vorc %3,%1,%0\;veqv %3,%3,%2
    vorc %4,%1,%0\;veqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1935,7 +1935,7 @@
    vxor %3,%1,%0\;veqv %3,%3,%2
    vxor %3,%1,%0\;veqv %3,%3,%2
    vxor %4,%1,%0\;veqv %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1953,7 +1953,7 @@
    vand %3,%1,%0\;vnand %3,%3,%2
    vand %3,%1,%0\;vnand %3,%3,%2
    vand %4,%1,%0\;vnand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1971,7 +1971,7 @@
    vandc %3,%1,%0\;vnand %3,%3,%2
    vandc %3,%1,%0\;vnand %3,%3,%2
    vandc %4,%1,%0\;vnand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -1989,7 +1989,7 @@
    veqv %3,%1,%0\;vnand %3,%3,%2
    veqv %3,%1,%0\;vnand %3,%3,%2
    veqv %4,%1,%0\;vnand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2007,7 +2007,7 @@
    vnand %3,%1,%0\;vnand %3,%3,%2
    vnand %3,%1,%0\;vnand %3,%3,%2
    vnand %4,%1,%0\;vnand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2025,7 +2025,7 @@
    vnor %3,%1,%0\;vnand %3,%3,%2
    vnor %3,%1,%0\;vnand %3,%3,%2
    vnor %4,%1,%0\;vnand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2043,7 +2043,7 @@
    vor %3,%1,%0\;vnand %3,%3,%2
    vor %3,%1,%0\;vnand %3,%3,%2
    vor %4,%1,%0\;vnand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2061,7 +2061,7 @@
    vorc %3,%1,%0\;vnand %3,%3,%2
    vorc %3,%1,%0\;vnand %3,%3,%2
    vorc %4,%1,%0\;vnand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2079,7 +2079,7 @@
    vxor %3,%1,%0\;vnand %3,%3,%2
    vxor %3,%1,%0\;vnand %3,%3,%2
    vxor %4,%1,%0\;vnand %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2097,7 +2097,7 @@
    vand %3,%1,%0\;vnor %3,%3,%2
    vand %3,%1,%0\;vnor %3,%3,%2
    vand %4,%1,%0\;vnor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2115,7 +2115,7 @@
    vandc %3,%1,%0\;vnor %3,%3,%2
    vandc %3,%1,%0\;vnor %3,%3,%2
    vandc %4,%1,%0\;vnor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2133,7 +2133,7 @@
    veqv %3,%1,%0\;vnor %3,%3,%2
    veqv %3,%1,%0\;vnor %3,%3,%2
    veqv %4,%1,%0\;vnor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2151,7 +2151,7 @@
    vnand %3,%1,%0\;vnor %3,%3,%2
    vnand %3,%1,%0\;vnor %3,%3,%2
    vnand %4,%1,%0\;vnor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2169,7 +2169,7 @@
    vnor %3,%1,%0\;vnor %3,%3,%2
    vnor %3,%1,%0\;vnor %3,%3,%2
    vnor %4,%1,%0\;vnor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2187,7 +2187,7 @@
    vor %3,%1,%0\;vnor %3,%3,%2
    vor %3,%1,%0\;vnor %3,%3,%2
    vor %4,%1,%0\;vnor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2205,7 +2205,7 @@
    vorc %3,%1,%0\;vnor %3,%3,%2
    vorc %3,%1,%0\;vnor %3,%3,%2
    vorc %4,%1,%0\;vnor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2223,7 +2223,7 @@
    vxor %3,%1,%0\;vnor %3,%3,%2
    vxor %3,%1,%0\;vnor %3,%3,%2
    vxor %4,%1,%0\;vnor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2241,7 +2241,7 @@
    vand %3,%1,%0\;vor %3,%3,%2
    vand %3,%1,%0\;vor %3,%3,%2
    vand %4,%1,%0\;vor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2259,7 +2259,7 @@
    vandc %3,%1,%0\;vor %3,%3,%2
    vandc %3,%1,%0\;vor %3,%3,%2
    vandc %4,%1,%0\;vor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2277,7 +2277,7 @@
    veqv %3,%1,%0\;vor %3,%3,%2
    veqv %3,%1,%0\;vor %3,%3,%2
    veqv %4,%1,%0\;vor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2295,7 +2295,7 @@
    vnand %3,%1,%0\;vor %3,%3,%2
    vnand %3,%1,%0\;vor %3,%3,%2
    vnand %4,%1,%0\;vor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2313,7 +2313,7 @@
    vnor %3,%1,%0\;vor %3,%3,%2
    vnor %3,%1,%0\;vor %3,%3,%2
    vnor %4,%1,%0\;vor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2331,7 +2331,7 @@
    vor %3,%1,%0\;vor %3,%3,%2
    vor %3,%1,%0\;vor %3,%3,%2
    vor %4,%1,%0\;vor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2349,7 +2349,7 @@
    vorc %3,%1,%0\;vor %3,%3,%2
    vorc %3,%1,%0\;vor %3,%3,%2
    vorc %4,%1,%0\;vor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2367,7 +2367,7 @@
    vxor %3,%1,%0\;vor %3,%3,%2
    vxor %3,%1,%0\;vor %3,%3,%2
    vxor %4,%1,%0\;vor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2385,7 +2385,7 @@
    vand %3,%1,%0\;vorc %3,%3,%2
    vand %3,%1,%0\;vorc %3,%3,%2
    vand %4,%1,%0\;vorc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2403,7 +2403,7 @@
    vandc %3,%1,%0\;vorc %3,%3,%2
    vandc %3,%1,%0\;vorc %3,%3,%2
    vandc %4,%1,%0\;vorc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2421,7 +2421,7 @@
    veqv %3,%1,%0\;vorc %3,%3,%2
    veqv %3,%1,%0\;vorc %3,%3,%2
    veqv %4,%1,%0\;vorc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2439,7 +2439,7 @@
    vnand %3,%1,%0\;vorc %3,%3,%2
    vnand %3,%1,%0\;vorc %3,%3,%2
    vnand %4,%1,%0\;vorc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2457,7 +2457,7 @@
    vnor %3,%1,%0\;vorc %3,%3,%2
    vnor %3,%1,%0\;vorc %3,%3,%2
    vnor %4,%1,%0\;vorc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2475,7 +2475,7 @@
    vor %3,%1,%0\;vorc %3,%3,%2
    vor %3,%1,%0\;vorc %3,%3,%2
    vor %4,%1,%0\;vorc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2493,7 +2493,7 @@
    vorc %3,%1,%0\;vorc %3,%3,%2
    vorc %3,%1,%0\;vorc %3,%3,%2
    vorc %4,%1,%0\;vorc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2511,7 +2511,7 @@
    vxor %3,%1,%0\;vorc %3,%3,%2
    vxor %3,%1,%0\;vorc %3,%3,%2
    vxor %4,%1,%0\;vorc %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2529,7 +2529,7 @@
    vand %3,%1,%0\;vxor %3,%3,%2
    vand %3,%1,%0\;vxor %3,%3,%2
    vand %4,%1,%0\;vxor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2547,7 +2547,7 @@
    vandc %3,%1,%0\;vxor %3,%3,%2
    vandc %3,%1,%0\;vxor %3,%3,%2
    vandc %4,%1,%0\;vxor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2565,7 +2565,7 @@
    veqv %3,%1,%0\;vxor %3,%3,%2
    veqv %3,%1,%0\;vxor %3,%3,%2
    veqv %4,%1,%0\;vxor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2583,7 +2583,7 @@
    vnand %3,%1,%0\;vxor %3,%3,%2
    vnand %3,%1,%0\;vxor %3,%3,%2
    vnand %4,%1,%0\;vxor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2601,7 +2601,7 @@
    vnor %3,%1,%0\;vxor %3,%3,%2
    vnor %3,%1,%0\;vxor %3,%3,%2
    vnor %4,%1,%0\;vxor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2619,7 +2619,7 @@
    vor %3,%1,%0\;vxor %3,%3,%2
    vor %3,%1,%0\;vxor %3,%3,%2
    vor %4,%1,%0\;vxor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2637,7 +2637,7 @@
    vorc %3,%1,%0\;vxor %3,%3,%2
    vorc %3,%1,%0\;vxor %3,%3,%2
    vorc %4,%1,%0\;vxor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2655,6 +2655,6 @@
    vxor %3,%1,%0\;vxor %3,%3,%2
    vxor %3,%1,%0\;vxor %3,%3,%2
    vxor %4,%1,%0\;vxor %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])

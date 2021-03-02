@@ -135,7 +135,7 @@ sub gen_ld_cmpi_p10
 	  print "   (set (match_dup 2)\n";
 	  print "        (compare:${ccmode} (match_dup 0) (match_dup 3)))]\n";
 	  print "  \"\"\n";
-	  print "  [(set_attr \"type\" \"load\")\n";
+	  print "  [(set_attr \"type\" \"fused_load_cmpi\")\n";
 	  print "   (set_attr \"cost\" \"8\")\n";
 	  print "   (set_attr \"length\" \"8\")])\n";
 	  print "\n";
@@ -159,18 +159,20 @@ sub gen_2logical
     my ($kind, $vchr, $mode, $pred, $constraint, $cr, $outer, $outer_op,
 	$outer_comp, $outer_inv, $outer_rtl, $inner, $inner_comp, $inner_inv,
 	$inner_rtl, $inner_op, $both_commute, $c4, $bc, $inner_arg0,
-	$inner_arg1, $inner_exp, $outer_arg2, $outer_exp, $insn);
+	$inner_arg1, $inner_exp, $outer_arg2, $outer_exp, $insn, $fuse_type);
   KIND: foreach $kind ('scalar','vector') {
       if ( $kind eq 'vector' ) {
 	  $vchr = "v";
 	  $mode = "VM";
 	  $pred = "altivec_register_operand";
 	  $constraint = "v";
+	  $fuse_type = "fused_vector";
       } else {
 	  $vchr = "";
 	  $mode = "GPR";
 	  $pred = "gpc_reg_operand";
 	  $constraint = "r";
+	  $fuse_type = "fused_arith_logical";
       }
       $c4 = "${constraint},${constraint},${constraint},${constraint}";
     OUTER: foreach $outer ( @logicals ) {
@@ -227,7 +229,7 @@ sub gen_2logical
    ${inner_op} %3,%1,%0\\;${outer_op} %3,%3,%2
    ${inner_op} %3,%1,%0\\;${outer_op} %3,%3,%2
    ${inner_op} %4,%1,%0\\;${outer_op} %3,%4,%2"
-  [(set_attr "type" "logical")
+  [(set_attr "type" "$fuse_type")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 EOF
