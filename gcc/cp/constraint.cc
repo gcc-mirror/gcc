@@ -1989,39 +1989,19 @@ type_deducible_p (tree expr, tree type, tree placeholder, tree args,
      references are preserved in the result.  */
   expr = force_paren_expr_uneval (expr);
 
-  /* Replace the constraints with the instantiated constraints. This
-     substitutes args into any template parameters in the trailing
-     result type.  */
-  tree saved_constr = PLACEHOLDER_TYPE_CONSTRAINTS (placeholder);
-  tree subst_constr
-    = tsubst_constraint (saved_constr,
-			 args,
-			 info.complain | tf_partial,
-			 info.in_decl);
+  /* When args is NULL, we're evaluating a non-templated requires expression,
+     but even those are parsed under processing_template_decl == 1, and so the
+     placeholder 'auto' inside this return-type-requirement has level 2.  In
+     order to have all parms and arguments match up for satisfaction, we need
+     to pass an empty level of OUTER_TARGS in this case.  */
+  if (!args)
+    args = make_tree_vec (0);
 
-  if (subst_constr == error_mark_node)
-    return false;
+  tree deduced_type = do_auto_deduction (type, expr, placeholder,
+					 info.complain, adc_requirement,
+					 /*outer_targs=*/args);
 
-  PLACEHOLDER_TYPE_CONSTRAINTS (placeholder) = subst_constr;
-
-  /* Temporarily unlink the canonical type.  */
-  tree saved_type = TYPE_CANONICAL (placeholder);
-  TYPE_CANONICAL (placeholder) = NULL_TREE;
-
-  tree deduced_type
-    = do_auto_deduction (type,
-			 expr,
-			 placeholder,
-			 info.complain,
-			 adc_requirement);
-
-  PLACEHOLDER_TYPE_CONSTRAINTS (placeholder) = saved_constr;
-  TYPE_CANONICAL (placeholder) = saved_type;
-
-  if (deduced_type == error_mark_node)
-    return false;
-
-  return true;
+  return deduced_type != error_mark_node;
 }
 
 /* True if EXPR can not be converted to TYPE.  */
@@ -2286,35 +2266,10 @@ tsubst_parameter_mapping (tree map, tree args, subst_info info)
         return error_mark_node;
       tree parm = TREE_VALUE (p);
       tree arg = TREE_PURPOSE (p);
-      tree new_arg = NULL_TREE;
-      if (TYPE_P (arg))
-        {
-          /* If a template parameter is declared with a placeholder, we can
-             get those in the argument list if decltype is applied to the
-             placeholder. For example:
-
-		template<auto T>
-		  requires C<decltype(T)>
-		void f() { }
-
-	     The normalized argument for C will be an auto type, so we'll
-             need to deduce the actual argument from the corresponding
-             initializer (whatever argument is provided for T), and use
-             that result in the instantiated parameter mapping.  */
-          if (tree auto_node = type_uses_auto (arg))
-            {
-              int level;
-              int index;
-	      template_parm_level_and_index (parm, &level, &index);
-	      tree init = TMPL_ARG (args, level, index);
-              new_arg = do_auto_deduction (arg, init, auto_node,
-					   complain, adc_variable_type,
-					   make_tree_vec (0));
-            }
-        }
-      else if (ARGUMENT_PACK_P (arg))
+      tree new_arg;
+      if (ARGUMENT_PACK_P (arg))
 	new_arg = tsubst_argument_pack (arg, args, complain, in_decl);
-      if (!new_arg)
+      else
 	{
 	  new_arg = tsubst_template_arg (arg, args, complain, in_decl);
 	  if (TYPE_P (new_arg))
@@ -3020,6 +2975,36 @@ satisfy_associated_constraints (tree t, tree args, sat_info info)
   return satisfy_constraint (t, args, info);
 }
 
+/* Return the normal form of the constraints on the placeholder 'auto'
+   type T.  */
+
+static tree
+normalize_placeholder_type_constraints (tree t, bool diag)
+{
+  gcc_assert (is_auto (t));
+  tree ci = PLACEHOLDER_TYPE_CONSTRAINTS_INFO (t);
+  if (!ci)
+    return NULL_TREE;
+
+  tree constr = TREE_VALUE (ci);
+  /* The TREE_PURPOSE contains the set of template parameters that were in
+     scope for this placeholder type; use them as the initial template
+     parameters for normalization.  */
+  tree initial_parms = TREE_PURPOSE (ci);
+  /* The 'auto' itself is used as the first argument in its own constraints,
+     and its level is one greater than its template depth.  So in order to
+     capture all used template parameters, we need to add an extra level of
+     template parameters to the context; a dummy level suffices.  */
+  initial_parms
+    = tree_cons (size_int (initial_parms
+			   ? TMPL_PARMS_DEPTH (initial_parms) + 1 : 1),
+		 make_tree_vec (0), initial_parms);
+
+  norm_info info (diag ? tf_norm : tf_none);
+  info.initial_parms = initial_parms;
+  return normalize_constraint_expression (constr, info);
+}
+
 /* Evaluate EXPR as a constraint expression using ARGS, returning a
    satisfaction value. */
 
@@ -3028,8 +3013,6 @@ satisfy_constraint_expression (tree t, tree args, sat_info info)
 {
   if (t == error_mark_node)
     return error_mark_node;
-
-  gcc_assert (EXPR_P (t));
 
   /* Get the normalized constraints.  */
   tree norm;
@@ -3053,6 +3036,12 @@ satisfy_constraint_expression (tree t, tree args, sat_info info)
     {
       norm_info ninfo (info.noisy () ? tf_norm : tf_none);
       norm = normalize_constraint_expression (t, ninfo);
+    }
+  else if (is_auto (t))
+    {
+      norm = normalize_placeholder_type_constraints (t, info.noisy ());
+      if (!norm)
+	return boolean_true_node;
     }
   else
     gcc_unreachable ();
