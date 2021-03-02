@@ -15467,7 +15467,9 @@ package body Sem_Util is
          when N_Parameter_Association =>
             return N = Explicit_Actual_Parameter (Parent (N));
 
-         when N_Subprogram_Call =>
+         when N_Entry_Call_Statement
+            | N_Subprogram_Call
+         =>
             return Is_List_Member (N)
               and then
                 List_Containing (N) = Parameter_Associations (Parent (N));

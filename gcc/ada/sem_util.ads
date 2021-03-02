@@ -1726,7 +1726,7 @@ package Sem_Util is
    --  subprogram call.
 
    function Is_Actual_Parameter (N : Node_Id) return Boolean;
-   --  Determines if N is an actual parameter in a subprogram call
+   --  Determines if N is an actual parameter in a subprogram or entry call
 
    function Is_Actual_Tagged_Parameter (N : Node_Id) return Boolean;
    --  Determines if N is an actual parameter of a formal of tagged type in a
