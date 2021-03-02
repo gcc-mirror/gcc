@@ -1,3 +1,9 @@
+2021-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/99020
+	* sem_ch3.adb (Build_Discriminated_Subtype): Set the Cloned_Subtype
+	only if the type is not private.
+
 2021-02-26  YunQiang Su  <yunqiang.su@cipunited.com>
 
 	PR ada/98996

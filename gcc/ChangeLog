@@ -1,3 +1,42 @@
+2021-03-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/44107
+	PR target/48097
+	* config/darwin-protos.h (darwin_should_restore_cfa_state): New.
+	* config/darwin.c (darwin_should_restore_cfa_state): New.
+	* config/darwin.h (TARGET_ASM_SHOULD_RESTORE_CFA_STATE): New.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in: Document TARGET_ASM_SHOULD_RESTORE_CFA_STATE.
+	* dwarf2cfi.c (connect_traces): If the target requests, restore
+	the CFA expression after a DW_CFA_restore.
+	* target.def (TARGET_ASM_SHOULD_RESTORE_CFA_STATE): New hook.
+
+2021-03-01  Martin Liska  <mliska@suse.cz>
+
+	PR target/99313
+	* optc-save-gen.awk: Add 4 more exceptions.
+
+2021-03-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99294
+	* tree.h (TYPE_ALIGN_RAW): New accessor.
+	(TYPE_ALIGN): Use it.
+
+2021-03-01  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/98338
+	* ipa-fnsummary.c (compute_fn_summary): Fix sanity check.
+
+2021-03-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/99234
+	* config/i386/i386.c (ix86_compute_frame_layout): For a SEH target,
+	point the hard frame pointer to the SSE register save area instead
+	of the general register save area.  Perform only minimal adjustment
+	for small frames if it is initially not correctly aligned.
+	(ix86_expand_prologue): Remove early saves for a SEH target.
+	* config/i386/winnt.c (struct seh_frame_state): Document constraint.
+
 2021-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/99304
