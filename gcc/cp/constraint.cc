@@ -1962,7 +1962,7 @@ tsubst_simple_requirement (tree t, tree args, subst_info info)
   tree expr = tsubst_valid_expression_requirement (t0, args, info);
   if (expr == error_mark_node)
     return error_mark_node;
-  return finish_simple_requirement (EXPR_LOCATION (t), expr);
+  return boolean_true_node;
 }
 
 /* Substitute through the type requirement.  */
@@ -1974,7 +1974,7 @@ tsubst_type_requirement (tree t, tree args, subst_info info)
   tree type = tsubst (t0, args, info.complain, info.in_decl);
   if (type == error_mark_node)
     return error_mark_node;
-  return finish_type_requirement (EXPR_LOCATION (t), type);
+  return boolean_true_node;
 }
 
 /* True if TYPE can be deduced from EXPR.  */
@@ -2080,8 +2080,7 @@ tsubst_compound_requirement (tree t, tree args, subst_info info)
 	return error_mark_node;
     }
 
-  return finish_compound_requirement (EXPR_LOCATION (t),
-				      expr, type, noexcept_p);
+  return boolean_true_node;
 }
 
 static tree
@@ -2100,7 +2099,7 @@ tsubst_nested_requirement (tree t, tree args, subst_info info)
     }
   if (result != boolean_true_node)
     return error_mark_node;
-  return result;
+  return boolean_true_node;
 }
 
 /* Substitute ARGS into the requirement T.  */
@@ -2123,24 +2122,6 @@ tsubst_requirement (tree t, tree args, subst_info info)
       break;
     }
   gcc_unreachable ();
-}
-
-/* Substitute ARGS into the list of requirements T. Note that
-   substitution failures here result in ill-formed programs. */
-
-static tree
-tsubst_requirement_body (tree t, tree args, subst_info info)
-{
-  tree result = NULL_TREE;
-  while (t)
-    {
-      tree req = tsubst_requirement (TREE_VALUE (t), args, info);
-      if (req == error_mark_node)
-	return error_mark_node;
-      result = tree_cons (NULL_TREE, req, result);
-      t = TREE_CHAIN (t);
-    }
-  return nreverse (result);
 }
 
 static tree
@@ -2168,7 +2149,7 @@ declare_constraint_vars (tree parms, tree vars)
    if an error occurred.  */
 
 static tree
-check_constaint_variables (tree t, tree args, subst_info info)
+check_constraint_variables (tree t, tree args, subst_info info)
 {
   tree types = NULL_TREE;
   tree p = t;
@@ -2193,7 +2174,7 @@ static tree
 tsubst_constraint_variables (tree t, tree args, subst_info info)
 {
   /* Perform a trial substitution to check for type errors.  */
-  tree parms = check_constaint_variables (t, args, info);
+  tree parms = check_constraint_variables (t, args, info);
   if (parms == error_mark_node)
     return error_mark_node;
 
@@ -2253,19 +2234,20 @@ tsubst_requires_expr (tree t, tree args,
       return t;
     }
 
-  tree parms = REQUIRES_EXPR_PARMS (t);
-  if (parms)
+  if (tree parms = REQUIRES_EXPR_PARMS (t))
     {
       parms = tsubst_constraint_variables (parms, args, info);
       if (parms == error_mark_node)
 	return boolean_false_node;
     }
 
-  tree reqs = REQUIRES_EXPR_REQS (t);
-  reqs = tsubst_requirement_body (reqs, args, info);
-  if (reqs == error_mark_node)
-    return boolean_false_node;
-
+  for (tree reqs = REQUIRES_EXPR_REQS (t); reqs; reqs = TREE_CHAIN (reqs))
+    {
+      tree req = TREE_VALUE (reqs);
+      tree result = tsubst_requirement (req, args, info);
+      if (result == error_mark_node)
+	return boolean_false_node;
+    }
   return boolean_true_node;
 }
 
