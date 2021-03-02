@@ -37,6 +37,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     imports_(),
     imported_unsafe_(false),
     current_file_imported_unsafe_(false),
+    current_file_imported_embed_(false),
     packages_(),
     init_functions_(),
     var_deps_(),
@@ -468,6 +469,9 @@ Gogo::import_package(const std::string& filename,
       this->current_file_imported_unsafe_ = true;
       return;
     }
+
+  if (filename == "embed")
+    this->current_file_imported_embed_ = true;
 
   Imports::const_iterator p = this->imports_.find(filename);
   if (p != this->imports_.end())
@@ -2717,6 +2721,7 @@ Gogo::clear_file_scope()
     }
 
   this->current_file_imported_unsafe_ = false;
+  this->current_file_imported_embed_ = false;
 }
 
 // Queue up a type-specific hash function for later writing.  These

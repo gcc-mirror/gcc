@@ -1321,7 +1321,7 @@ Parse::declaration()
       embeds = new(std::vector<std::string>);
       this->lex_->get_and_clear_embeds(embeds);
 
-      if (!this->gogo_->is_embed_imported())
+      if (!this->gogo_->current_file_imported_embed())
 	{
 	  go_error_at(token->location(),
 		      "invalid go:embed: missing import %<embed%>");
