@@ -4,7 +4,7 @@
 /* { dg-additional-options "-O2" }
    { dg-additional-options "-fopt-info-optimized-omp" }
    { dg-additional-options "-fdump-tree-ompexp" }
-   { dg-additional-options "-fdump-tree-oaccdevlow" } */
+   { dg-additional-options "-fdump-tree-oaccloops" } */
 
 /* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
    aspects of that functionality.  */
@@ -28,14 +28,14 @@ void ROUTINE ()
    { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(omp declare target \\(nohost worker\\), oacc function \\(0 1, 1 0, 1 0\\)\\)\\)" 1 "ompexp" } } */
 
 /* Check the offloaded function's classification.
-   { dg-final { scan-tree-dump-times "(?n)Function is OpenACC routine level 1" 1 "oaccdevlow" } }
-   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'ROUTINE' has 'nohost' clause" 1 "oaccdevlow" { target c } } }
-   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'void ROUTINE\\(\\)' has 'nohost' clause" 1 "oaccdevlow" { target { c++ && { ! offloading_enabled } } } } }
-   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'ROUTINE\\(\\)' has 'nohost' clause" 1 "oaccdevlow" { target { c++ && offloading_enabled } } } }
-   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'ROUTINE' discarded" 1 "oaccdevlow" { target c } } }
-   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'void ROUTINE\\(\\)' discarded" 1 "oaccdevlow" { target { c++ && { ! offloading_enabled } } } } }
-   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'ROUTINE\\(\\)' discarded" 1 "oaccdevlow" { target { c++ && offloading_enabled } } } }
+   { dg-final { scan-tree-dump-times "(?n)Function is OpenACC routine level 1" 1 "oaccloops" } }
+   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'ROUTINE' has 'nohost' clause" 1 "oaccloops" { target c } } }
+   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'void ROUTINE\\(\\)' has 'nohost' clause" 1 "oaccloops" { target { c++ && { ! offloading_enabled } } } } }
+   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'ROUTINE\\(\\)' has 'nohost' clause" 1 "oaccloops" { target { c++ && offloading_enabled } } } }
+   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'ROUTINE' discarded" 1 "oaccloops" { target c } } }
+   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'void ROUTINE\\(\\)' discarded" 1 "oaccloops" { target { c++ && { ! offloading_enabled } } } } }
+   { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'ROUTINE\\(\\)' discarded" 1 "oaccloops" { target { c++ && offloading_enabled } } } }
    TODO See PR101551 for 'offloading_enabled' differences.
-   { dg-final { scan-tree-dump-not "(?n)Compute dimensions" "oaccdevlow" } }
-   { dg-final { scan-tree-dump-not "(?n)__attribute__\\(.*omp declare target \\(nohost" "oaccdevlow" } }
-   { dg-final { scan-tree-dump-not "(?n)void ROUTINE \\(\\)" "oaccdevlow" } } */
+   { dg-final { scan-tree-dump-not "(?n)Compute dimensions" "oaccloops" } }
+   { dg-final { scan-tree-dump-not "(?n)__attribute__\\(.*omp declare target \\(nohost" "oaccloops" } }
+   { dg-final { scan-tree-dump-not "(?n)void ROUTINE \\(\\)" "oaccloops" } } */

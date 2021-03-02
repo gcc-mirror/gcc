@@ -5,7 +5,7 @@
 ! With optimizations disabled, we currently don't expect that 'acc_on_device' "evaluates at compile time to a constant".
 ! { dg-skip-if "TODO PR82391" { *-*-* } { "-O0" } }
 
-! { dg-additional-options "-fdump-tree-oaccdevlow" }
+! { dg-additional-options "-fdump-tree-oaccloops" }
 
 program main
   use openacc
@@ -58,6 +58,6 @@ function fact_nohost(x) result(res)
 
   res = fact(x)
 end function fact_nohost
-! { dg-final { scan-tree-dump-times {(?n)^OpenACC routine 'fact_nohost' has 'nohost' clause\.$} 1 oaccdevlow { target { ! offloading_enabled } } } }
-! { dg-final { scan-tree-dump-times {(?n)^OpenACC routine 'fact_nohost_' has 'nohost' clause\.$} 1 oaccdevlow { target offloading_enabled } } }
+! { dg-final { scan-tree-dump-times {(?n)^OpenACC routine 'fact_nohost' has 'nohost' clause\.$} 1 oaccloops { target { ! offloading_enabled } } } }
+! { dg-final { scan-tree-dump-times {(?n)^OpenACC routine 'fact_nohost_' has 'nohost' clause\.$} 1 oaccloops { target offloading_enabled } } }
 !TODO See PR101551 for 'offloading_enabled' differences.

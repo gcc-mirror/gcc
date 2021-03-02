@@ -4,7 +4,7 @@
 ! { dg-additional-options "-O2" }
 ! { dg-additional-options "-fopt-info-optimized-omp" }
 ! { dg-additional-options "-fdump-tree-ompexp" }
-! { dg-additional-options "-fdump-tree-oaccdevlow" }
+! { dg-additional-options "-fdump-tree-oaccloops" }
 
 ! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
 ! aspects of that functionality.
@@ -27,13 +27,13 @@ end subroutine ROUTINE
 ! { dg-final { scan-tree-dump-times "(?n)__attribute__\\(\\(oacc function \\(0 1, 1 0, 1 0\\), omp declare target \\(nohost worker\\)\\)\\)" 1 "ompexp" } }
 
 ! Check the offloaded function's classification.
-! { dg-final { scan-tree-dump-times "(?n)Function is OpenACC routine level 1" 1 "oaccdevlow" } }
-! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'routine' has 'nohost' clause" 1 "oaccdevlow" { target { ! offloading_enabled } } } }
-! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'routine_' has 'nohost' clause" 1 "oaccdevlow" { target offloading_enabled } } }
-! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'routine' discarded" 1 "oaccdevlow" { target { ! offloading_enabled } } } }
-! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'routine_' discarded" 1 "oaccdevlow" { target offloading_enabled } } }
-! { dg-final { scan-tree-dump-not "(?n)Compute dimensions" "oaccdevlow" } }
-! { dg-final { scan-tree-dump-not "(?n)__attribute__\\(.*omp declare target \\(nohost" "oaccdevlow" } }
-! { dg-final { scan-tree-dump-not "(?n)void routine \\(\\)" "oaccdevlow" { target { ! offloading_enabled } } } }
-! { dg-final { scan-tree-dump-not "(?n)void routine_ \\(\\)" "oaccdevlow" { target offloading_enabled } } }
+! { dg-final { scan-tree-dump-times "(?n)Function is OpenACC routine level 1" 1 "oaccloops" } }
+! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'routine' has 'nohost' clause" 1 "oaccloops" { target { ! offloading_enabled } } } }
+! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'routine_' has 'nohost' clause" 1 "oaccloops" { target offloading_enabled } } }
+! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'routine' discarded" 1 "oaccloops" { target { ! offloading_enabled } } } }
+! { dg-final { scan-tree-dump-times "(?n)OpenACC routine 'routine_' discarded" 1 "oaccloops" { target offloading_enabled } } }
+! { dg-final { scan-tree-dump-not "(?n)Compute dimensions" "oaccloops" } }
+! { dg-final { scan-tree-dump-not "(?n)__attribute__\\(.*omp declare target \\(nohost" "oaccloops" } }
+! { dg-final { scan-tree-dump-not "(?n)void routine \\(\\)" "oaccloops" { target { ! offloading_enabled } } } }
+! { dg-final { scan-tree-dump-not "(?n)void routine_ \\(\\)" "oaccloops" { target offloading_enabled } } }
 !TODO See PR101551 for 'offloading_enabled' differences.

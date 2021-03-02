@@ -1367,6 +1367,7 @@ oacc_loop_xform_head_tail (gcall *from, int level)
 	}
       else if (gimple_call_internal_p (stmt, IFN_GOACC_REDUCTION))
 	*gimple_call_arg_ptr (stmt, 3) = replacement;
+      update_stmt (stmt);
 
       gsi_next (&gsi);
       while (gsi_end_p (gsi))
@@ -1392,25 +1393,28 @@ oacc_loop_process (oacc_loop *loop)
       gcall *call;
       
       for (ix = 0; loop->ifns.iterate (ix, &call); ix++)
-	switch (gimple_call_internal_fn (call))
-	  {
-	  case IFN_GOACC_LOOP:
+	{
+	  switch (gimple_call_internal_fn (call))
 	    {
-	      bool is_e = gimple_call_arg (call, 5) == integer_minus_one_node;
-	      gimple_call_set_arg (call, 5, is_e ? e_mask_arg : mask_arg);
-	      if (!is_e)
-		gimple_call_set_arg (call, 4, chunk_arg);
+	    case IFN_GOACC_LOOP:
+	      {
+		bool is_e = gimple_call_arg (call, 5) == integer_minus_one_node;
+		gimple_call_set_arg (call, 5, is_e ? e_mask_arg : mask_arg);
+		if (!is_e)
+		  gimple_call_set_arg (call, 4, chunk_arg);
+	      }
+	      break;
+
+	    case IFN_GOACC_TILE:
+	      gimple_call_set_arg (call, 3, mask_arg);
+	      gimple_call_set_arg (call, 4, e_mask_arg);
+	      break;
+
+	    default:
+	      gcc_unreachable ();
 	    }
-	    break;
-
-	  case IFN_GOACC_TILE:
-	    gimple_call_set_arg (call, 3, mask_arg);
-	    gimple_call_set_arg (call, 4, e_mask_arg);
-	    break;
-
-	  default:
-	    gcc_unreachable ();
-	  }
+	  update_stmt (call);
+	}
 
       unsigned dim = GOMP_DIM_GANG;
       unsigned mask = loop->mask | loop->e_mask;
@@ -1912,7 +1916,7 @@ is_sync_builtin_call (gcall *call)
    point (including the host fallback).  */
 
 static unsigned int
-execute_oacc_device_lower ()
+execute_oacc_loop_designation ()
 {
   tree attrs = oacc_get_fn_attrib (current_function_decl);
 
@@ -1981,6 +1985,8 @@ execute_oacc_device_lower ()
 	gcc_unreachable ();
     }
 
+  /* This doesn't belong into 'pass_oacc_loop_designation' conceptually, but
+     it's a convenient place, so...  */
   if (is_oacc_routine)
     {
       tree attr = lookup_attribute ("omp declare target",
@@ -2088,9 +2094,23 @@ execute_oacc_device_lower ()
 	free_oacc_loop (l);
     }
 
-  /* Offloaded targets may introduce new basic blocks, which require
-     dominance information to update SSA.  */
-  calculate_dominance_info (CDI_DOMINATORS);
+  free_oacc_loop (loops);
+
+  return 0;
+}
+
+static unsigned int
+execute_oacc_device_lower ()
+{
+  tree attrs = oacc_get_fn_attrib (current_function_decl);
+
+  if (!attrs)
+    /* Not an offloaded function.  */
+    return 0;
+
+  int dims[GOMP_DIM_MAX];
+  for (unsigned i = 0; i < GOMP_DIM_MAX; i++)
+    dims[i] = oacc_get_fn_dim_size (current_function_decl, i);
 
   hash_map<tree, tree> adjusted_vars;
 
@@ -2355,8 +2375,6 @@ execute_oacc_device_lower ()
 	  }
     }
 
-  free_oacc_loop (loops);
-
   return 0;
 }
 
@@ -2397,6 +2415,36 @@ default_goacc_dim_limit (int ARG_UNUSED (axis))
 
 namespace {
 
+const pass_data pass_data_oacc_loop_designation =
+{
+  GIMPLE_PASS, /* type */
+  "oaccloops", /* name */
+  OPTGROUP_OMP, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  PROP_cfg, /* properties_required */
+  0 /* Possibly PROP_gimple_eomp.  */, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_update_ssa | TODO_cleanup_cfg, /* todo_flags_finish */
+};
+
+class pass_oacc_loop_designation : public gimple_opt_pass
+{
+public:
+  pass_oacc_loop_designation (gcc::context *ctxt)
+    : gimple_opt_pass (pass_data_oacc_loop_designation, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *) { return flag_openacc; };
+
+  virtual unsigned int execute (function *)
+    {
+      return execute_oacc_loop_designation ();
+    }
+
+}; // class pass_oacc_loop_designation
+
 const pass_data pass_data_oacc_device_lower =
 {
   GIMPLE_PASS, /* type */
@@ -2428,6 +2476,12 @@ public:
 }; // class pass_oacc_device_lower
 
 } // anon namespace
+
+gimple_opt_pass *
+make_pass_oacc_loop_designation (gcc::context *ctxt)
+{
+  return new pass_oacc_loop_designation (ctxt);
+}
 
 gimple_opt_pass *
 make_pass_oacc_device_lower (gcc::context *ctxt)
