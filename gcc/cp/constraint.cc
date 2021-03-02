@@ -2319,15 +2319,15 @@ tsubst_parameter_mapping (tree map, tree args, subst_info info)
 	  new_arg = tsubst_template_arg (arg, args, complain, in_decl);
 	  if (TYPE_P (new_arg))
 	    new_arg = canonicalize_type_argument (new_arg, complain);
-	  if (TREE_CODE (new_arg) == TYPE_ARGUMENT_PACK)
+	}
+      if (TREE_CODE (new_arg) == TYPE_ARGUMENT_PACK)
+	{
+	  tree pack_args = ARGUMENT_PACK_ARGS (new_arg);
+	  for (int i = 0; i < TREE_VEC_LENGTH (pack_args); i++)
 	    {
-	      tree pack_args = ARGUMENT_PACK_ARGS (new_arg);
-	      for (int i = 0; i < TREE_VEC_LENGTH (pack_args); i++)
-		{
-		  tree& pack_arg = TREE_VEC_ELT (pack_args, i);
-		  if (TYPE_P (pack_arg))
-		    pack_arg = canonicalize_type_argument (pack_arg, complain);
-		}
+	      tree& pack_arg = TREE_VEC_ELT (pack_args, i);
+	      if (TYPE_P (pack_arg))
+		pack_arg = canonicalize_type_argument (pack_arg, complain);
 	    }
 	}
       if (new_arg == error_mark_node)
@@ -3253,15 +3253,6 @@ evaluate_concept_check (tree check, tsubst_flags_t complain)
 tree
 finish_requires_expr (location_t loc, tree parms, tree reqs)
 {
-  /* Modify the declared parameters by removing their context
-     so they don't refer to the enclosing scope and explicitly
-     indicating that they are constraint variables. */
-  for (tree parm = parms; parm; parm = DECL_CHAIN (parm))
-    {
-      DECL_CONTEXT (parm) = NULL_TREE;
-      CONSTRAINT_VAR_P (parm) = true;
-    }
-
   /* Build the node. */
   tree r = build_min (REQUIRES_EXPR, boolean_type_node, parms, reqs, NULL_TREE);
   TREE_SIDE_EFFECTS (r) = false;

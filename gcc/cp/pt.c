@@ -29517,9 +29517,13 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 		 || ((TREE_CODE (init) == COMPONENT_REF
 		      || TREE_CODE (init) == SCOPE_REF)
 		     && !REF_PARENTHESIZED_P (init)));
+      tree deduced = finish_decltype_type (init, id, complain);
+      deduced = canonicalize_type_argument (deduced, complain);
+      if (deduced == error_mark_node)
+	return error_mark_node;
       targs = make_tree_vec (1);
-      TREE_VEC_ELT (targs, 0)
-	= finish_decltype_type (init, id, tf_warning_or_error);
+      TREE_VEC_ELT (targs, 0) = deduced;
+      /* FIXME: These errors ought to be diagnosed at parse time. */
       if (type != auto_node)
 	{
           if (complain & tf_error)
