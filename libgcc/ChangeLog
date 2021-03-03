@@ -1,3 +1,9 @@
+2021-03-02  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/_sprintfkf.h (__sprintfkf): Fix prototype to match
+	the function.
+	* config/rs6000/_sprintfkf.c: Include _sprintfkf.h.
+
 2021-02-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgcc/99236

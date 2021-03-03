@@ -1,3 +1,9 @@
+2021-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/99323
+	* line-map.c (rich_location::maybe_add_fixit): Reject fix-it hints
+	at column 0.
+
 2021-02-24  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/98718

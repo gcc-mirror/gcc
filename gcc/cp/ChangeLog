@@ -1,3 +1,94 @@
+2021-03-02  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/99251
+	* class.c (build_base_path): Call build_if_nonnull.
+	* cp-tree.h (build_if_nonnull): Declare.
+	* rtti.c (ifnonnull): Rename...
+	(build_if_nonnull): ...to this.  Set no-warning bit on COND_EXPR.
+	(build_dynamic_cast_1): Adjust to name change.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96443
+	PR c++/96960
+	* constraint.cc (type_deducible_p): Don't substitute into the
+	constraints, and instead just pass 'args' to do_auto_deduction
+	as the outer template arguments.
+	(tsubst_parameter_mapping): Remove confused code for handling
+	placeholder type arguments.
+	(normalize_placeholder_type_constraint): Define.
+	(satisfy_constraint_expression): Use it to handle placeholder
+	'auto' types.
+	* cp-tree.h (PLACEHOLDER_TYPE_CONSTRAINTS_INFO): Define.
+	(PLACEHOLDER_TYPE_CONSTRAINTS): Redefine in terms of the above.
+	* pt.c (tsubst) <case TEMPLATE_TYPE_PARM>: Use
+	PLACEHOLDER_TYPE_CONSTRAINTS_INFO instead.
+	(make_constrained_placeholder_type): Set
+	PLACEHOLDER_TYPE_CONSTRAINTS_INFO instead.
+	(do_auto_deduction): Clarify comments about the outer_targs
+	parameter.  Rework satisfaction of a placeholder type constraint
+	to pass in the complete set of template arguments directly to
+	constraints_satisfied_p.
+	(splice_late_return_type): Use PLACEHOLDER_TYPE_CONSTRAINTS_INFO
+	instead.  Also rebuild the the constraint info on the new auto.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (build_parameter_mapping): Rely on the caller to
+	determine the in-scope template parameters.
+	(norm_info::norm_info): Delegate the tsubst_flags_t constructor
+	to the two-parameter constructor.  In the two-parameter
+	constructor, fold in the definition of make_context, set
+	initial_parms appropriately, and don't set the now-removed
+	orig_decl member.
+	(norm_info::make_context): Remove, now that its only use is
+	inlined into the caller.
+	(norm_info::update_context): Adjust call to
+	build_parameter_mapping to pass in the relevant set of in-scope
+	template parameters.
+	(norm_info::ctx_parms): Define this member function.
+	(norm_info::context): Initialize to NULL_TREE.
+	(norm_info::orig_decl): Remove this data member.
+	(norm_info::initial_parms): Define this data member.
+	(normalize_atom): Adjust call to build_parameter_mapping to pass
+	in the relevant set of in-scope template parameters.  Use
+	info.initial_parms instead of info.orig_decl.
+	(normalize_constraint_expression): Take a norm_info object
+	instead of a bool.  Cache the result of normalization.
+	(tsubst_nested_requirement): Call satisfy_constraint_expression
+	instead of satisfy_constraint, so that we normalize on demand.
+	(satisfy_constraint_expression): Handle a NESTED_REQ argument.
+	Adjust call to normalize_constraint_expression.
+	(finish_nested_requirement): Set the TREE_TYPE of the NESTED_REQ
+	to current_template_parms.
+	(diagnose_nested_requirements): Go through
+	satisfy_constraint_expression, as with tsubst_nested_requirement.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (tsubst_parameter_mapping): Canonicalize the
+	arguments of a substituted TYPE_ARGUMENT_PACK even if we've
+	started with a TYPE_ARGUMENT_PACK.
+	(finish_requires_expr): Don't set DECL_CONTEXT and
+	CONSTRAINT_VAR_P on each of the introduced parameters here.
+	* parser.c (cp_parser_requirement_parameter_list): Instead set
+	these fields earlier, here.
+	* pt.c (do_auto_deduction): Canonicalize the result of
+	do_auto_deduction.  Pass 'complain' to finish_decltype_type.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (tsubst_simple_requirement): Just return
+	boolean_true_node on success.
+	(tsubst_type_requirement): Likewise.
+	(tsubst_compound_requirement): Likewise.
+	(tsubst_nested_requirement): Likewise.
+	(tsubst_requirement_body): Remove.
+	(check_constaint_variables): Rename to ...
+	(check_constraint_variables): ... this.
+	(tsubst_constraint_variables): Adjust.
+	(tsubst_requires_expr): Fold tsubst_requirement_body into here.
+
 2021-03-01  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99294

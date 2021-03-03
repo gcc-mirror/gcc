@@ -3490,18 +3490,6 @@ push_local_extern_decl_alias (tree decl)
   DECL_LOCAL_DECL_ALIAS (decl) = alias;
 }
 
-/* NS needs to be exported, mark it and all its parents as exported.  */
-
-static void
-implicitly_export_namespace (tree ns)
-{
-  while (!DECL_MODULE_EXPORT_P (ns))
-    {
-      DECL_MODULE_EXPORT_P (ns) = true;
-      ns = CP_DECL_CONTEXT (ns);
-    }
-}
-
 /* DECL is a global or module-purview entity.  If it has non-internal
    linkage, and we have a module vector, record it in the appropriate
    slot.  We have already checked for duplicates.  */
@@ -3741,10 +3729,6 @@ do_pushdecl (tree decl, bool hiding)
 	    decl = update_binding (NULL, binding, mslot, old,
 				   match, hiding);
 
-	    if (match == decl && DECL_MODULE_EXPORT_P (decl)
-		&& !DECL_MODULE_EXPORT_P (level->this_entity))
-	      implicitly_export_namespace (level->this_entity);
-
 	    return decl;
 	  }
 
@@ -3839,16 +3823,9 @@ do_pushdecl (tree decl, bool hiding)
 	    }
 
 	  if (level->kind == sk_namespace
-	      && TREE_PUBLIC (level->this_entity))
-	    {
-	      if (TREE_CODE (decl) != CONST_DECL
-		  && DECL_MODULE_EXPORT_P (decl)
-		  && !DECL_MODULE_EXPORT_P (level->this_entity))
-		implicitly_export_namespace (level->this_entity);
-
-	      if (!not_module_p ())
-		maybe_record_mergeable_decl (slot, name, decl);
-	    }
+	      && TREE_PUBLIC (level->this_entity)
+	      && !not_module_p ())
+	    maybe_record_mergeable_decl (slot, name, decl);
 	}
     }
   else
@@ -3936,7 +3913,8 @@ lookup_class_binding (tree klass, tree name)
 
 /* Given a namespace-level binding BINDING, walk it, calling CALLBACK
    for all decls of the current module.  When partitions are involved,
-   decls might be mentioned more than once.   */
+   decls might be mentioned more than once.   Return the accumulation of
+   CALLBACK results.  */
 
 unsigned
 walk_module_binding (tree binding, bitmap partitions,
@@ -8932,9 +8910,10 @@ push_namespace (tree name, bool make_inline)
     {
       /* A public namespace is exported only if explicitly marked, or
 	 it contains exported entities.  */
-      if (!DECL_MODULE_EXPORT_P (ns) && TREE_PUBLIC (ns)
-	  && module_exporting_p ())
-	implicitly_export_namespace (ns);
+      if (TREE_PUBLIC (ns) && module_exporting_p ())
+	DECL_MODULE_EXPORT_P (ns) = true;
+      if (module_purview_p ())
+	DECL_MODULE_PURVIEW_P (ns) = true;
 
       if (make_inline && !DECL_NAMESPACE_INLINE_P (ns))
 	{
@@ -8966,12 +8945,12 @@ pop_namespace (void)
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 }
 
-/* An import is defining namespace NAME inside CTX.  Find or create
-   that namespace and add it to the container's binding-vector.  */
+/* An IMPORT is an import that is defining namespace NAME inside CTX.  Find or
+   create that namespace and add it to the container's binding-vector.   */
 
 tree
-add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
-			bool visible_p, bool inline_p)
+add_imported_namespace (tree ctx, tree name, location_t loc, unsigned import, 
+			bool inline_p, bool visible_p)
 {
   // FIXME: Something is not correct about the VISIBLE_P handling.  We
   // need to insert this namespace into
@@ -8980,9 +8959,10 @@ add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
   // (c) Do we need to put it in the CURRENT slot?  This is the
   // confused piece.
 
-  gcc_checking_assert (origin);
   tree *slot = find_namespace_slot (ctx, name, true);
   tree decl = reuse_namespace (slot, ctx, name);
+
+  /* Creating and binding.  */
   if (!decl)
     {
       decl = make_namespace (ctx, name, loc, inline_p);
@@ -9010,7 +8990,7 @@ add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
       tree final = last->slots[jx];
       if (visible_p == !STAT_HACK_P (final)
 	  && MAYBE_STAT_DECL (final) == decl
-	  && last->indices[jx].base + last->indices[jx].span == origin
+	  && last->indices[jx].base + last->indices[jx].span == import
 	  && (BINDING_VECTOR_NUM_CLUSTERS (*slot) > 1
 	      || (BINDING_VECTOR_SLOTS_PER_CLUSTER > BINDING_SLOTS_FIXED
 		  && jx >= BINDING_SLOTS_FIXED)))
@@ -9021,7 +9001,7 @@ add_imported_namespace (tree ctx, tree name, unsigned origin, location_t loc,
     }
 
   /* Append a new slot.  */
-  tree *mslot = &(tree &)*append_imported_binding_slot (slot, name, origin);
+  tree *mslot = &(tree &)*append_imported_binding_slot (slot, name, import);
 
   gcc_assert (!*mslot);
   *mslot = visible_p ? decl : stat_hack (decl, NULL_TREE);

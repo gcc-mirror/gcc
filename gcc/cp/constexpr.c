@@ -2257,7 +2257,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 {
   /* Handle concept checks separately.  */
   if (concept_check_p (t))
-    return evaluate_concept_check (t, tf_warning_or_error);
+    return evaluate_concept_check (t);
 
   location_t loc = cp_expr_loc_or_input_loc (t);
   tree fun = get_function_named_in_call (t);
@@ -6905,7 +6905,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
          '!requires (T t) { ... }' which is not transformed into
          a constraint.  */
       if (!processing_template_decl)
-        return satisfy_constraint_expression (t);
+	return evaluate_requires_expr (t);
       else
         *non_constant_p = true;
       return t;
@@ -6941,7 +6941,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
 	if (!processing_template_decl
 	    && !uid_sensitive_constexpr_evaluation_p ())
-	  r = evaluate_concept_check (t, tf_warning_or_error);
+	  r = evaluate_concept_check (t);
 	else
 	  *non_constant_p = true;
 

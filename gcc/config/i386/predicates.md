@@ -1486,6 +1486,10 @@
 (define_predicate "div_operator"
   (match_code "div"))
 
+;; Return true if this is a and, ior or xor operation.
+(define_predicate "logic_operator"
+  (match_code "and,ior,xor"))
+
 ;; Return true if this is a plus, minus, and, ior or xor operation.
 (define_predicate "plusminuslogic_operator"
   (match_code "plus,minus,and,ior,xor"))

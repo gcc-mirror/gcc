@@ -4237,8 +4237,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 		    ? warning_at (loc, opt,
 				  (maybe
 				   ? G_("%K%qD may write %E or more bytes "
-					"into a region of size %E "
-					"the destination")
+					"into a region of size %E")
 				   : G_("%K%qD writing %E or more bytes "
 					"into a region of size %E overflows "
 					"the destination")),

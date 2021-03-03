@@ -2414,8 +2414,6 @@ find_partition_fixes (bool flag_only)
 void
 fixup_partitions (void)
 {
-  basic_block bb;
-
   if (!crtl->has_bb_partition)
     return;
 
@@ -2436,10 +2434,61 @@ fixup_partitions (void)
   /* Do the partition fixup after all necessary blocks have been converted to
      cold, so that we only update the region crossings the minimum number of
      places, which can require forcing edges to be non fallthru.  */
-  while (! bbs_to_fix.is_empty ())
+  if (! bbs_to_fix.is_empty ())
     {
-      bb = bbs_to_fix.pop ();
-      fixup_new_cold_bb (bb);
+      do
+	{
+	  basic_block bb = bbs_to_fix.pop ();
+	  fixup_new_cold_bb (bb);
+	}
+      while (! bbs_to_fix.is_empty ());
+
+      /* Fix up hot cold block grouping if needed.  */
+      if (crtl->bb_reorder_complete && current_ir_type () == IR_RTL_CFGRTL)
+	{
+	  basic_block bb, first = NULL, second = NULL;
+	  int current_partition = BB_UNPARTITIONED;
+
+	  FOR_EACH_BB_FN (bb, cfun)
+	    {
+	      if (current_partition != BB_UNPARTITIONED
+		  && BB_PARTITION (bb) != current_partition)
+		{
+		  if (first == NULL)
+		    first = bb;
+		  else if (second == NULL)
+		    second = bb;
+		  else
+		    {
+		      /* If we switch partitions for the 3rd, 5th etc. time,
+			 move bbs first (inclusive) .. second (exclusive) right
+			 before bb.  */
+		      basic_block prev_first = first->prev_bb;
+		      basic_block prev_second = second->prev_bb;
+		      basic_block prev_bb = bb->prev_bb;
+		      prev_first->next_bb = second;
+		      second->prev_bb = prev_first;
+		      prev_second->next_bb = bb;
+		      bb->prev_bb = prev_second;
+		      prev_bb->next_bb = first;
+		      first->prev_bb = prev_bb;
+		      rtx_insn *prev_first_insn = PREV_INSN (BB_HEAD (first));
+		      rtx_insn *prev_second_insn
+			= PREV_INSN (BB_HEAD (second));
+		      rtx_insn *prev_bb_insn = PREV_INSN (BB_HEAD (bb));
+		      SET_NEXT_INSN (prev_first_insn) = BB_HEAD (second);
+		      SET_PREV_INSN (BB_HEAD (second)) = prev_first_insn;
+		      SET_NEXT_INSN (prev_second_insn) = BB_HEAD (bb);
+		      SET_PREV_INSN (BB_HEAD (bb)) = prev_second_insn;
+		      SET_NEXT_INSN (prev_bb_insn) = BB_HEAD (first);
+		      SET_PREV_INSN (BB_HEAD (first)) = prev_bb_insn;
+		      second = NULL;
+		    }
+		}
+	      current_partition = BB_PARTITION (bb);
+	    }
+	  gcc_assert (!second);
+	}
     }
 }
 

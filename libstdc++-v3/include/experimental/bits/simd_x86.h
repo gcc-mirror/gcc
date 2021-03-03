@@ -55,10 +55,10 @@ template <typename _TV,
 
 // }}}
 // __interleave128_lo {{{
-template <typename _Ap, typename _B, typename _Tp = common_type_t<_Ap, _B>,
+template <typename _Ap, typename _Bp, typename _Tp = common_type_t<_Ap, _Bp>,
 	  typename _Trait = _VectorTraits<_Tp>>
   _GLIBCXX_SIMD_INTRINSIC constexpr _Tp
-  __interleave128_lo(const _Ap& __av, const _B& __bv)
+  __interleave128_lo(const _Ap& __av, const _Bp& __bv)
   {
     const _Tp __a(__av);
     const _Tp __b(__bv);

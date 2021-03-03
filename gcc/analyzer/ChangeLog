@@ -1,3 +1,8 @@
+2021-03-02  Martin Liska  <mliska@suse.cz>
+
+	* diagnostic-manager.cc (diagnostic_manager::emit_saved_diagnostics):
+	Do not pass engine.
+
 2021-02-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (exploded_path::exploded_path): New copy-ctor.

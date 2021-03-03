@@ -1317,6 +1317,7 @@ typedef struct GTY(()) dw_loc_list_struct {
   const char *begin; /* Label and addr_entry for start of range */
   addr_table_entry *begin_entry;
   const char *end;  /* Label for end of range */
+  addr_table_entry *end_entry;
   char *ll_symbol; /* Label for beginning of location list.
 		      Only on head of list.  */
   char *vl_symbol; /* Label for beginning of view list.  Ditto.  */
@@ -10101,6 +10102,7 @@ new_loc_list (dw_loc_descr_ref expr, const char *begin, var_loc_view vbegin,
   retlist->begin = begin;
   retlist->begin_entry = NULL;
   retlist->end = end;
+  retlist->end_entry = NULL;
   retlist->expr = expr;
   retlist->section = section;
   retlist->vbegin = vbegin;
@@ -10327,10 +10329,10 @@ output_loc_list (dw_loc_list_ref list_head)
 
       if (dwarf_version >= 5)
 	{
-	  if (dwarf_split_debug_info)
+	  if (dwarf_split_debug_info && HAVE_AS_LEB128)
 	    {
 	      dwarf2out_maybe_output_loclist_view_pair (curr);
-	      /* For -gsplit-dwarf, emit DW_LLE_starx_length, which has
+	      /* For -gsplit-dwarf, emit DW_LLE_startx_length, which has
 		 uleb128 index into .debug_addr and uleb128 length.  */
 	      dw2_asm_output_data (1, DW_LLE_startx_length,
 				   "DW_LLE_startx_length (%s)",
@@ -10338,12 +10340,25 @@ output_loc_list (dw_loc_list_ref list_head)
 	      dw2_asm_output_data_uleb128 (curr->begin_entry->index,
 					   "Location list range start index "
 					   "(%s)", curr->begin);
-	      /* FIXME: This will ICE ifndef HAVE_AS_LEB128.
-		 For that case we probably need to emit DW_LLE_startx_endx,
-		 but we'd need 2 .debug_addr entries rather than just one.  */
 	      dw2_asm_output_delta_uleb128 (curr->end, curr->begin,
 					    "Location list length (%s)",
 					    list_head->ll_symbol);
+	    }
+	  else if (dwarf_split_debug_info)
+	    {
+	      dwarf2out_maybe_output_loclist_view_pair (curr);
+	      /* For -gsplit-dwarf without usable .uleb128 support, emit
+		 DW_LLE_startx_endx, which has two uleb128 indexes into
+		 .debug_addr.  */
+	      dw2_asm_output_data (1, DW_LLE_startx_endx,
+				   "DW_LLE_startx_endx (%s)",
+				   list_head->ll_symbol);
+	      dw2_asm_output_data_uleb128 (curr->begin_entry->index,
+					   "Location list range start index "
+					   "(%s)", curr->begin);
+	      dw2_asm_output_data_uleb128 (curr->end_entry->index,
+					   "Location list range end index "
+					   "(%s)", curr->end);
 	    }
 	  else if (!have_multiple_function_sections && HAVE_AS_LEB128)
 	    {
@@ -31301,12 +31316,14 @@ index_location_lists (dw_die_ref die)
 	       to the hash table.  In the rare case of DWARF[234] >= 64KB
 	       location expression, we'll just waste unused address table entry
 	       for it.  */
-            if (curr->begin_entry != NULL
-                || skip_loc_list_entry (curr))
+	    if (curr->begin_entry != NULL || skip_loc_list_entry (curr))
               continue;
 
             curr->begin_entry
 	      = add_addr_table_entry (xstrdup (curr->begin), ate_kind_label);
+	    if (dwarf_version >= 5 && !HAVE_AS_LEB128)
+	      curr->end_entry
+		= add_addr_table_entry (xstrdup (curr->end), ate_kind_label);
           }
       }
 
