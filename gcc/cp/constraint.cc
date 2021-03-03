@@ -100,17 +100,31 @@ struct subst_info
 
 /* Provides additional context for satisfaction.
 
-   The flag noisy() controls whether to diagnose ill-formed satisfaction,
-   such as the satisfaction value of an atom being non-bool or non-constant.
+   During satisfaction:
+    - The flag noisy() controls whether to diagnose ill-formed satisfaction,
+      such as the satisfaction value of an atom being non-bool or non-constant.
+    - The flag diagnose_unsatisfaction_p() controls whether to additionally
+      explain why a constraint is not satisfied.
+    - We enter satisfaction with noisy+unsat from diagnose_constraints.
+    - We enter satisfaction with noisy-unsat from the replay inside
+      constraint_satisfaction_value.
+    - We enter satisfaction quietly (both flags cleared) from
+      constraints_satisfied_p.
 
-   The flag diagnose_unsatisfaction_p() controls whether to explain why
-   a constraint is not satisfied.
-
-   The entrypoints to satisfaction for which we set noisy+unsat are
-   diagnose_constraints and diagnose_nested_requirement.  The entrypoint for
-   which we set noisy-unsat is the replay inside constraint_satisfaction_value.
-   From constraints_satisfied_p, we enter satisfaction quietly (both flags
-   cleared).  */
+   During evaluation of a requires-expression:
+    - The flag noisy() controls whether to diagnose ill-formed types and
+      expressions inside its requirements.
+    - The flag diagnose_unsatisfaction_p() controls whether to additionally
+      explain why the requires-expression evaluates to false.
+    - We enter tsubst_requires_expr with noisy+unsat from
+      diagnose_atomic_constraint and potentially from
+      satisfy_nondeclaration_constraints.
+    - We enter tsubst_requires_expr with noisy-unsat from
+      cp_parser_requires_expression when processing a requires-expression that
+      appears outside a template.
+    - We enter tsubst_requires_expr quietly (both flags cleared) when
+      substituting through a requires-expression as part of template
+      instantiation.  */
 
 struct sat_info : subst_info
 {
@@ -1926,22 +1940,44 @@ hash_placeholder_constraint (tree c)
   return val;
 }
 
-/* Substitute through the simple requirement.  */
+/* Substitute through the expression of a simple requirement or
+   compound requirement.  */
 
 static tree
-tsubst_valid_expression_requirement (tree t, tree args, subst_info info)
+tsubst_valid_expression_requirement (tree t, tree args, sat_info info)
 {
-  tree r = tsubst_expr (t, args, info.complain, info.in_decl, false);
-  if (convert_to_void (r, ICV_STATEMENT, info.complain) == error_mark_node)
-    return error_mark_node;
-  return r;
+  tree r = tsubst_expr (t, args, tf_none, info.in_decl, false);
+  if (convert_to_void (r, ICV_STATEMENT, tf_none) != error_mark_node)
+    return r;
+
+  if (info.diagnose_unsatisfaction_p ())
+    {
+      location_t loc = cp_expr_loc_or_input_loc (t);
+      if (diagnosing_failed_constraint::replay_errors_p ())
+	{
+	  inform (loc, "the required expression %qE is invalid, because", t);
+	  if (r == error_mark_node)
+	    tsubst_expr (t, args, info.complain, info.in_decl, false);
+	  else
+	    convert_to_void (r, ICV_STATEMENT, info.complain);
+	}
+      else
+	inform (loc, "the required expression %qE is invalid", t);
+    }
+  else if (info.noisy ())
+    {
+      r = tsubst_expr (t, args, info.complain, info.in_decl, false);
+      convert_to_void (r, ICV_STATEMENT, info.complain);
+    }
+
+  return error_mark_node;
 }
 
 
 /* Substitute through the simple requirement.  */
 
 static tree
-tsubst_simple_requirement (tree t, tree args, subst_info info)
+tsubst_simple_requirement (tree t, tree args, sat_info info)
 {
   tree t0 = TREE_OPERAND (t, 0);
   tree expr = tsubst_valid_expression_requirement (t0, args, info);
@@ -1950,13 +1986,41 @@ tsubst_simple_requirement (tree t, tree args, subst_info info)
   return boolean_true_node;
 }
 
+/* Subroutine of tsubst_type_requirement that performs the actual substitution
+   and diagnosing.  Also used by tsubst_compound_requirement.  */
+
+static tree
+tsubst_type_requirement_1 (tree t, tree args, sat_info info, location_t loc)
+{
+  tree r = tsubst (t, args, tf_none, info.in_decl);
+  if (r != error_mark_node)
+    return r;
+
+  if (info.diagnose_unsatisfaction_p ())
+    {
+      if (diagnosing_failed_constraint::replay_errors_p ())
+	{
+	  /* Replay the substitution error.  */
+	  inform (loc, "the required type %qT is invalid, because", t);
+	  tsubst (t, args, info.complain, info.in_decl);
+	}
+      else
+	inform (loc, "the required type %qT is invalid", t);
+    }
+  else if (info.noisy ())
+    tsubst (t, args, info.complain, info.in_decl);
+
+  return error_mark_node;
+}
+
+
 /* Substitute through the type requirement.  */
 
 static tree
-tsubst_type_requirement (tree t, tree args, subst_info info)
+tsubst_type_requirement (tree t, tree args, sat_info info)
 {
   tree t0 = TREE_OPERAND (t, 0);
-  tree type = tsubst (t0, args, info.complain, info.in_decl);
+  tree type = tsubst_type_requirement_1 (t0, args, info, EXPR_LOCATION (t));
   if (type == error_mark_node)
     return error_mark_node;
   return boolean_true_node;
@@ -2013,7 +2077,7 @@ expression_convertible_p (tree expr, tree type, subst_info info)
 /* Substitute through the compound requirement.  */
 
 static tree
-tsubst_compound_requirement (tree t, tree args, subst_info info)
+tsubst_compound_requirement (tree t, tree args, sat_info info)
 {
   tree t0 = TREE_OPERAND (t, 0);
   tree t1 = TREE_OPERAND (t, 1);
@@ -2021,13 +2085,20 @@ tsubst_compound_requirement (tree t, tree args, subst_info info)
   if (expr == error_mark_node)
     return error_mark_node;
 
+  location_t loc = cp_expr_loc_or_input_loc (expr);
+
   /* Check the noexcept condition.  */
   bool noexcept_p = COMPOUND_REQ_NOEXCEPT_P (t);
   if (noexcept_p && !expr_noexcept_p (expr, tf_none))
-    return error_mark_node;
+    {
+      if (info.diagnose_unsatisfaction_p ())
+	inform (loc, "%qE is not %<noexcept%>", expr);
+      else
+	return error_mark_node;
+    }
 
   /* Substitute through the type expression, if any.  */
-  tree type = tsubst (t1, args, info.complain, info.in_decl);
+  tree type = tsubst_type_requirement_1 (t1, args, info, EXPR_LOCATION (t));
   if (type == error_mark_node)
     return error_mark_node;
 
@@ -2039,29 +2110,76 @@ tsubst_compound_requirement (tree t, tree args, subst_info info)
       if (tree placeholder = type_uses_auto (type))
 	{
 	  if (!type_deducible_p (expr, type, placeholder, args, quiet))
-	    return error_mark_node;
+	    {
+	      if (info.diagnose_unsatisfaction_p ())
+		{
+		  if (diagnosing_failed_constraint::replay_errors_p ())
+		    {
+		      inform (loc,
+			      "%qE does not satisfy return-type-requirement, "
+			      "because", t0);
+		      /* Further explain the reason for the error.  */
+		      type_deducible_p (expr, type, placeholder, args, info);
+		    }
+		  else
+		    inform (loc,
+			    "%qE does not satisfy return-type-requirement", t0);
+		}
+	      return error_mark_node;
+	    }
 	}
       else if (!expression_convertible_p (expr, type, quiet))
-	return error_mark_node;
+	{
+	  if (info.diagnose_unsatisfaction_p ())
+	    {
+	      if (diagnosing_failed_constraint::replay_errors_p ())
+		{
+		  inform (loc, "cannot convert %qE to %qT because", t0, type);
+		  /* Further explain the reason for the error.  */
+		  expression_convertible_p (expr, type, info);
+		}
+	      else
+		inform (loc, "cannot convert %qE to %qT", t0, type);
+	    }
+	  return error_mark_node;
+	}
     }
 
   return boolean_true_node;
 }
 
+/* Substitute through the nested requirement.  */
+
 static tree
-tsubst_nested_requirement (tree t, tree args, subst_info info)
+tsubst_nested_requirement (tree t, tree args, sat_info info)
 {
   sat_info quiet (tf_none, info.in_decl);
   tree result = constraint_satisfaction_value (t, args, quiet);
-  if (result != boolean_true_node)
-    return error_mark_node;
-  return boolean_true_node;
+  if (result == boolean_true_node)
+    return boolean_true_node;
+
+  if (result == boolean_false_node
+      && info.diagnose_unsatisfaction_p ())
+    {
+      tree expr = TREE_OPERAND (t, 0);
+      location_t loc = cp_expr_location (t);
+      if (diagnosing_failed_constraint::replay_errors_p ())
+	{
+	  /* Replay the substitution error.  */
+	  inform (loc, "nested requirement %qE is not satisfied, because", expr);
+	  constraint_satisfaction_value (t, args, info);
+	}
+      else
+	inform (loc, "nested requirement %qE is not satisfied", expr);
+    }
+
+  return error_mark_node;
 }
 
 /* Substitute ARGS into the requirement T.  */
 
 static tree
-tsubst_requirement (tree t, tree args, subst_info info)
+tsubst_requirement (tree t, tree args, sat_info info)
 {
   iloc_sentinel loc_s (cp_expr_location (t));
   switch (TREE_CODE (t))
@@ -2151,29 +2269,21 @@ tsubst_constraint_variables (tree t, tree args, subst_info info)
    in its requirements ... In such cases, the expression evaluates
    to false; it does not cause the program to be ill-formed.
 
-   However, there are cases where substitution must produce a
-   new requires-expression, that is not a template constraint.
-   For example:
+   When substituting through a REQUIRES_EXPR as part of template
+   instantiation, we call this routine with info.quiet() true.
 
-        template<typename T>
-        class X {
-          template<typename U>
-          static constexpr bool var = requires (U u) { T::fn(u); };
-        };
+   When evaluating a REQUIRES_EXPR that appears outside a template in
+   cp_parser_requires_expression, we call this routine with
+   info.noisy() true.
 
-   In the instantiation of X<Y> (assuming Y defines fn), then the
-   instantiated requires-expression would include Y::fn(u). If any
-   substitution in the requires-expression fails, we can immediately
-   fold the expression to false, as would be the case e.g., when
-   instantiation X<int>.  */
+   Finally, when diagnosing unsatisfaction from diagnose_atomic_constraint
+   and when diagnosing a false REQUIRES_EXPR via diagnose_constraints,
+   we call this routine with info.diagnose_unsatisfaction_p() true.  */
 
-tree
-tsubst_requires_expr (tree t, tree args,
-		      tsubst_flags_t complain, tree in_decl)
+static tree
+tsubst_requires_expr (tree t, tree args, sat_info info)
 {
   local_specialization_stack stack (lss_copy);
-
-  subst_info info (complain, in_decl);
 
   /* A requires-expression is an unevaluated context.  */
   cp_unevaluated u;
@@ -2186,7 +2296,7 @@ tsubst_requires_expr (tree t, tree args,
 	 checked out of order, so instead just remember the template
 	 arguments and wait until we can substitute them all at once.  */
       t = copy_node (t);
-      REQUIRES_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, complain);
+      REQUIRES_EXPR_EXTRA_ARGS (t) = build_extra_args (t, args, info.complain);
       return t;
     }
 
@@ -2197,14 +2307,30 @@ tsubst_requires_expr (tree t, tree args,
 	return boolean_false_node;
     }
 
+  tree result = boolean_true_node;
   for (tree reqs = REQUIRES_EXPR_REQS (t); reqs; reqs = TREE_CHAIN (reqs))
     {
       tree req = TREE_VALUE (reqs);
-      tree result = tsubst_requirement (req, args, info);
-      if (result == error_mark_node)
-	return boolean_false_node;
+      if (tsubst_requirement (req, args, info) == error_mark_node)
+	{
+	  result = boolean_false_node;
+	  if (info.diagnose_unsatisfaction_p ())
+	    /* Keep going so that we diagnose all failed requirements.  */;
+	  else
+	    break;
+	}
     }
-  return boolean_true_node;
+  return result;
+}
+
+/* Public wrapper for the above.  */
+
+tree
+tsubst_requires_expr (tree t, tree args,
+		      tsubst_flags_t complain, tree in_decl)
+{
+  sat_info info (complain, in_decl);
+  return tsubst_requires_expr (t, args, info);
 }
 
 /* Substitute ARGS into the constraint information CI, producing a new
@@ -2790,7 +2916,7 @@ get_mapped_args (tree map)
   return args;
 }
 
-static void diagnose_atomic_constraint (tree, tree, tree, subst_info);
+static void diagnose_atomic_constraint (tree, tree, tree, sat_info);
 
 /* Compute the satisfaction of an atomic constraint.  */
 
@@ -2976,14 +3102,10 @@ satisfy_nondeclaration_constraints (tree t, tree args, sat_info info)
   /* Handle REQUIRES_EXPR directly, bypassing satisfaction.  */
   if (TREE_CODE (t) == REQUIRES_EXPR)
     {
-      /* TODO: Remove this assert and the special casing of REQUIRES_EXPRs
-	 from diagnose_constraints once we merge tsubst_requires_expr and
-	 diagnose_requires_expr.  */
-      gcc_assert (!info.diagnose_unsatisfaction_p ());
       auto ovr = make_temp_override (current_constraint_diagnosis_depth);
       if (info.noisy ())
 	++current_constraint_diagnosis_depth;
-      return tsubst_requires_expr (t, args, info.complain, info.in_decl);
+      return tsubst_requires_expr (t, args, info);
     }
 
   /* Get the normalized constraints.  */
@@ -3466,11 +3588,10 @@ get_constraint_error_location (tree t)
 
 /* Emit a diagnostic for a failed trait.  */
 
-void
-diagnose_trait_expr (tree expr, tree map)
+static void
+diagnose_trait_expr (tree expr, tree args)
 {
   location_t loc = cp_expr_location (expr);
-  tree args = get_mapped_args (map);
 
   /* Build a "fake" version of the instantiated trait, so we can
      get the instantiated types from result.  */
@@ -3550,192 +3671,11 @@ diagnose_trait_expr (tree expr, tree map)
     }
 }
 
-static tree
-diagnose_valid_expression (tree expr, tree args, tree in_decl)
-{
-  tree result = tsubst_expr (expr, args, tf_none, in_decl, false);
-  if (result != error_mark_node
-      && convert_to_void (result, ICV_STATEMENT, tf_none) != error_mark_node)
-    return result;
-
-  location_t loc = cp_expr_loc_or_input_loc (expr);
-  if (diagnosing_failed_constraint::replay_errors_p ())
-    {
-      /* Replay the substitution error.  */
-      inform (loc, "the required expression %qE is invalid, because", expr);
-      if (result == error_mark_node)
-	tsubst_expr (expr, args, tf_error, in_decl, false);
-      else
-	convert_to_void (result, ICV_STATEMENT, tf_error);
-    }
-  else
-    inform (loc, "the required expression %qE is invalid", expr);
-
-  return error_mark_node;
-}
-
-static tree
-diagnose_valid_type (tree type, tree args, tree in_decl)
-{
-  tree result = tsubst (type, args, tf_none, in_decl);
-  if (result != error_mark_node)
-    return result;
-
-  location_t loc = cp_expr_loc_or_input_loc (type);
-  if (diagnosing_failed_constraint::replay_errors_p ())
-    {
-      /* Replay the substitution error.  */
-      inform (loc, "the required type %qT is invalid, because", type);
-      tsubst (type, args, tf_error, in_decl);
-    }
-  else
-    inform (loc, "the required type %qT is invalid", type);
-
-  return error_mark_node;
-}
-
-static void
-diagnose_simple_requirement (tree req, tree args, tree in_decl)
-{
-  diagnose_valid_expression (TREE_OPERAND (req, 0), args, in_decl);
-}
-
-static void
-diagnose_compound_requirement (tree req, tree args, tree in_decl)
-{
-  tree expr = TREE_OPERAND (req, 0);
-  expr = diagnose_valid_expression (expr, args, in_decl);
-  if (expr == error_mark_node)
-    return;
-
-  location_t loc = cp_expr_loc_or_input_loc (expr);
-
-  /* Check the noexcept condition.  */
-  if (COMPOUND_REQ_NOEXCEPT_P (req) && !expr_noexcept_p (expr, tf_none))
-    inform (loc, "%qE is not %<noexcept%>", expr);
-
-  tree type = TREE_OPERAND (req, 1);
-  type = diagnose_valid_type (type, args, in_decl);
-  if (type == error_mark_node)
-    return;
-
-  if (type)
-    {
-      subst_info quiet (tf_none, in_decl);
-      subst_info noisy (tf_error, in_decl);
-
-      /* Check the expression against the result type.  */
-      if (tree placeholder = type_uses_auto (type))
-	{
-	  if (!type_deducible_p (expr, type, placeholder, args, quiet))
-	    {
-	      tree orig_expr = TREE_OPERAND (req, 0);
-	      if (diagnosing_failed_constraint::replay_errors_p ())
-		{
-		  inform (loc,
-			  "%qE does not satisfy return-type-requirement, "
-			  "because", orig_expr);
-		  /* Further explain the reason for the error.  */
-		  type_deducible_p (expr, type, placeholder, args, noisy);
-		}
-	      else
-		inform (loc, "%qE does not satisfy return-type-requirement",
-			orig_expr);
-	    }
-	}
-      else if (!expression_convertible_p (expr, type, quiet))
-	{
-	  tree orig_expr = TREE_OPERAND (req, 0);
-	  if (diagnosing_failed_constraint::replay_errors_p ())
-	    {
-	      inform (loc, "cannot convert %qE to %qT because", orig_expr, type);
-	      /* Further explain the reason for the error.  */
-	      expression_convertible_p (expr, type, noisy);
-	    }
-	  else
-	    inform (loc, "cannot convert %qE to %qT", orig_expr, type);
-	}
-    }
-}
-
-static void
-diagnose_type_requirement (tree req, tree args, tree in_decl)
-{
-  tree type = TREE_OPERAND (req, 0);
-  diagnose_valid_type (type, args, in_decl);
-}
-
-static void
-diagnose_nested_requirement (tree req, tree args)
-{
-  /* Quietly check for satisfaction first.  */
-  sat_info quiet (tf_none, NULL_TREE);
-  tree result = satisfy_nondeclaration_constraints (req, args, quiet);
-  if (result == boolean_true_node)
-    return;
-
-  tree expr = TREE_OPERAND (req, 0);
-  location_t loc = cp_expr_location (expr);
-  if (diagnosing_failed_constraint::replay_errors_p ())
-    {
-      /* Replay the substitution error with re-normalized requirements.  */
-      inform (loc, "nested requirement %qE is not satisfied, because", expr);
-
-      sat_info noisy (tf_warning_or_error, NULL_TREE, /*diag_unsat=*/true);
-      satisfy_nondeclaration_constraints (req, args, noisy);
-    }
-  else
-    inform (loc, "nested requirement %qE is not satisfied", expr);
-
-}
-
-static void
-diagnose_requirement (tree req, tree args, tree in_decl)
-{
-  iloc_sentinel loc_s (cp_expr_location (req));
-  switch (TREE_CODE (req))
-    {
-    case SIMPLE_REQ:
-      return diagnose_simple_requirement (req, args, in_decl);
-    case COMPOUND_REQ:
-      return diagnose_compound_requirement (req, args, in_decl);
-    case TYPE_REQ:
-      return diagnose_type_requirement (req, args, in_decl);
-    case NESTED_REQ:
-      return diagnose_nested_requirement (req, args);
-    default:
-       gcc_unreachable ();
-    }
-}
-
-static void
-diagnose_requires_expr (tree expr, tree map, tree in_decl)
-{
-  local_specialization_stack stack (lss_copy);
-  tree parms = TREE_OPERAND (expr, 0);
-  tree body = TREE_OPERAND (expr, 1);
-  tree args = get_mapped_args (map);
-
-  cp_unevaluated u;
-  subst_info info (tf_warning_or_error, NULL_TREE);
-  tree vars = tsubst_constraint_variables (parms, args, info);
-  if (vars == error_mark_node)
-    return;
-
-  tree p = body;
-  while (p)
-    {
-      tree req = TREE_VALUE (p);
-      diagnose_requirement (req, args, in_decl);
-      p = TREE_CHAIN (p);
-    }
-}
-
 /* Diagnose a substitution failure in the atomic constraint T when applied
    with the instantiated parameter mapping MAP.  */
 
 static void
-diagnose_atomic_constraint (tree t, tree map, tree result, subst_info info)
+diagnose_atomic_constraint (tree t, tree map, tree result, sat_info info)
 {
   /* If the constraint is already ill-formed, we've previously diagnosed
      the reason. We should still say why the constraints aren't satisfied.  */
@@ -3756,13 +3696,19 @@ diagnose_atomic_constraint (tree t, tree map, tree result, subst_info info)
   /* Generate better diagnostics for certain kinds of expressions.  */
   tree expr = ATOMIC_CONSTR_EXPR (t);
   STRIP_ANY_LOCATION_WRAPPER (expr);
+  tree args = get_mapped_args (map);
   switch (TREE_CODE (expr))
     {
     case TRAIT_EXPR:
-      diagnose_trait_expr (expr, map);
+      diagnose_trait_expr (expr, args);
       break;
     case REQUIRES_EXPR:
-      diagnose_requires_expr (expr, map, info.in_decl);
+      gcc_checking_assert (info.diagnose_unsatisfaction_p ());
+      /* Clear in_decl before replaying the substitution to avoid emitting
+	 seemingly unhelpful "in declaration ..." notes that follow some
+	 substitution failure error messages.  */
+      info.in_decl = NULL_TREE;
+      tsubst_requires_expr (expr, args, info);
       break;
     default:
       if (!same_type_p (TREE_TYPE (result), boolean_type_node))
@@ -3827,15 +3773,7 @@ diagnose_constraints (location_t loc, tree t, tree args)
 
   /* Replay satisfaction, but diagnose unsatisfaction.  */
   sat_info noisy (tf_warning_or_error, NULL_TREE, /*diag_unsat=*/true);
-  if (TREE_CODE (t) == REQUIRES_EXPR)
-    {
-      gcc_assert (!args);
-      ++current_constraint_diagnosis_depth;
-      diagnose_requires_expr (t, /*map=*/NULL_TREE, /*in_decl=*/NULL_TREE);
-      --current_constraint_diagnosis_depth;
-    }
-  else
-    constraint_satisfaction_value (t, args, noisy);
+  constraint_satisfaction_value (t, args, noisy);
 
   static bool suggested_p;
   if (concepts_diagnostics_max_depth_exceeded_p
