@@ -1461,7 +1461,10 @@ cp_omp_mappable_type_1 (tree type, bool notes)
     {
       tree field;
       for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-	if (VAR_P (field))
+	if (VAR_P (field)
+	    /* Fields that are 'static constexpr' can be folded away at compile
+	       time, thus does not interfere with mapping.  */
+	    && !DECL_DECLARED_CONSTEXPR_P (field))
 	  {
 	    if (notes)
 	      inform (DECL_SOURCE_LOCATION (field),
