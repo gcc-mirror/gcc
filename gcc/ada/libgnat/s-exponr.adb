@@ -57,8 +57,8 @@ function System.Exponr (Left : Num; Right : Integer) return Num is
    subtype Double_T is Double_Real.Double_T;
    --  The double floating-point type
 
-   subtype Negative is Integer range Integer'First .. -1;
-   --  The range of negative exponents
+   subtype Safe_Negative is Integer range Integer'First + 1 .. -1;
+   --  The range of safe negative exponents
 
    function Expon (Left : Num; Right : Natural) return Num;
    --  Routine used if Right is greater than 4
@@ -113,8 +113,11 @@ begin
             return Num'Machine (Sqr * Sqr);
          end;
 
-      when Negative =>
+      when Safe_Negative =>
          return Num'Machine (1.0 / Exponr (Left, -Right));
+
+      when Integer'First =>
+         return Num'Machine (1.0 / (Exponr (Left, Integer'Last) * Left));
 
       when others =>
          return Num'Machine (Expon (Left, Right));
