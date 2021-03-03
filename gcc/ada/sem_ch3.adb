@@ -4760,7 +4760,7 @@ package body Sem_Ch3 is
       --  Now establish the proper kind and type of the object
 
       if Ekind (Id) = E_Void then
-         Reinit_Field_To_Zero (Id, Next_Inlined_Subprogram);
+         Reinit_Field_To_Zero (Id, F_Next_Inlined_Subprogram);
       end if;
 
       if Constant_Present (N) then
@@ -6181,7 +6181,7 @@ package body Sem_Ch3 is
       if Nkind (Def) = N_Constrained_Array_Definition then
 
          if Ekind (T) in Incomplete_Or_Private_Kind then
-            Reinit_Field_To_Zero (T, Stored_Constraint);
+            Reinit_Field_To_Zero (T, F_Stored_Constraint);
          else
             pragma Assert (Ekind (T) = E_Void);
          end if;
@@ -6228,7 +6228,7 @@ package body Sem_Ch3 is
       else pragma Assert (Nkind (Def) = N_Unconstrained_Array_Definition);
 
          if Ekind (T) in Incomplete_Or_Private_Kind then
-            Reinit_Field_To_Zero (T, Stored_Constraint);
+            Reinit_Field_To_Zero (T, F_Stored_Constraint);
          else
             pragma Assert (Ekind (T) = E_Void);
          end if;
@@ -9747,7 +9747,7 @@ package body Sem_Ch3 is
       if Ekind (Derived_Type) in Incomplete_Or_Private_Kind
         and then Ekind (Parent_Base) in Modular_Integer_Kind | Array_Kind
       then
-         Reinit_Field_To_Zero (Derived_Type, Stored_Constraint);
+         Reinit_Field_To_Zero (Derived_Type, F_Stored_Constraint);
       end if;
 
       Set_Scope                  (Derived_Type, Current_Scope);
@@ -12532,7 +12532,7 @@ package body Sem_Ch3 is
       Set_Associated_Node_For_Itype (Full, Related_Nod);
 
       if Ekind (Full) in Incomplete_Or_Private_Kind then
-         Reinit_Field_To_Zero (Full, Private_Dependents);
+         Reinit_Field_To_Zero (Full, F_Private_Dependents);
       end if;
 
       --  Set common attributes for all subtypes: kind, convention, etc.
@@ -19225,19 +19225,19 @@ package body Sem_Ch3 is
       --  cannot have any invariants.
 
       if Ekind (CW_Type) in Incomplete_Or_Private_Kind then
-         Reinit_Field_To_Zero (CW_Type, Private_Dependents);
+         Reinit_Field_To_Zero (CW_Type, F_Private_Dependents);
 
       elsif Ekind (CW_Type) in Concurrent_Kind then
-         Reinit_Field_To_Zero (CW_Type, First_Private_Entity);
-         Reinit_Field_To_Zero (CW_Type, Scope_Depth_Value);
+         Reinit_Field_To_Zero (CW_Type, F_First_Private_Entity);
+         Reinit_Field_To_Zero (CW_Type, F_Scope_Depth_Value);
 
          if Ekind (CW_Type) in Task_Kind then
-            Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Checks_OK_Id);
-            Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Warnings_OK_Id);
+            Reinit_Field_To_Zero (CW_Type, F_Is_Elaboration_Checks_OK_Id);
+            Reinit_Field_To_Zero (CW_Type, F_Is_Elaboration_Warnings_OK_Id);
          end if;
 
          if Ekind (CW_Type) in E_Task_Type | E_Protected_Type then
-            Reinit_Field_To_Zero (CW_Type, SPARK_Aux_Pragma_Inherited);
+            Reinit_Field_To_Zero (CW_Type, F_SPARK_Aux_Pragma_Inherited);
          end if;
       end if;
 
@@ -19624,7 +19624,7 @@ package body Sem_Ch3 is
       Analyze_And_Resolve (Mod_Expr, Any_Integer);
 
       if Ekind (T) in Incomplete_Or_Private_Kind then
-         Reinit_Field_To_Zero (T, Stored_Constraint);
+         Reinit_Field_To_Zero (T, F_Stored_Constraint);
       end if;
 
       Set_Etype (T, T);
@@ -20428,7 +20428,7 @@ package body Sem_Ch3 is
          Id := Defining_Identifier (Discr);
 
          if Ekind (Id) = E_In_Parameter then
-            Reinit_Field_To_Zero (Id, Discriminal_Link);
+            Reinit_Field_To_Zero (Id, F_Discriminal_Link);
          end if;
 
          Mutate_Ekind (Id, E_Discriminant);
@@ -21316,7 +21316,7 @@ package body Sem_Ch3 is
             Set_Subtype_Indication
               (Parent (Priv_Dep), New_Occurrence_Of (Full_T, Sloc (Priv_Dep)));
             Reinit_Field_To_Zero
-              (Priv_Dep, Private_Dependents,
+              (Priv_Dep, F_Private_Dependents,
                Old_Ekind => E_Incomplete_Subtype);
             Mutate_Ekind (Priv_Dep, Subtype_Kind (Ekind (Full_T)));
             Set_Etype (Priv_Dep, Full_T);

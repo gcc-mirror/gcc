@@ -2676,7 +2676,7 @@ package body Einfo.Utils is
    function Scope_Depth_Set (Id : E) return B is
    begin
       return not Is_Record_Type (Id)
-        and then not Field_Is_Initial_Zero (Id, Scope_Depth_Value);
+        and then not Field_Is_Initial_Zero (Id, F_Scope_Depth_Value);
       --  We can't call Scope_Depth_Value here, because Empty is not a valid
       --  value of type Uint.
    end Scope_Depth_Set;

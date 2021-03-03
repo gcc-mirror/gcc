@@ -1848,7 +1848,7 @@ package body Sem_Ch6 is
          --  Visible generic entity is callable within its own body
 
          Mutate_Ekind       (Gen_Id,  Ekind (Body_Id));
-         Reinit_Field_To_Zero (Body_Id, Has_Out_Or_In_Out_Parameter,
+         Reinit_Field_To_Zero (Body_Id, F_Has_Out_Or_In_Out_Parameter,
            Old_Ekind =>
              (E_Function | E_Procedure |
                 E_Generic_Function | E_Generic_Procedure => True,
@@ -1929,7 +1929,7 @@ package body Sem_Ch6 is
 
       --  Outside of its body, unit is generic again
 
-      Reinit_Field_To_Zero (Gen_Id, Has_Nested_Subprogram,
+      Reinit_Field_To_Zero (Gen_Id, F_Has_Nested_Subprogram,
         Old_Ekind => (E_Function | E_Procedure => True, others => False));
       Mutate_Ekind (Gen_Id, Kind);
       Generate_Reference (Gen_Id, Body_Id, 'b', Set_Ref => False);
@@ -4610,16 +4610,16 @@ package body Sem_Ch6 is
             Reference_Body_Formals (Spec_Id, Body_Id);
          end if;
 
-         Reinit_Field_To_Zero (Body_Id, Has_Out_Or_In_Out_Parameter);
-         Reinit_Field_To_Zero (Body_Id, Needs_No_Actuals,
+         Reinit_Field_To_Zero (Body_Id, F_Has_Out_Or_In_Out_Parameter);
+         Reinit_Field_To_Zero (Body_Id, F_Needs_No_Actuals,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
-         Reinit_Field_To_Zero (Body_Id, Is_Predicate_Function,
+         Reinit_Field_To_Zero (Body_Id, F_Is_Predicate_Function,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
-         Reinit_Field_To_Zero (Body_Id, Protected_Subprogram,
+         Reinit_Field_To_Zero (Body_Id, F_Protected_Subprogram,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
 
          if Ekind (Body_Id) = E_Procedure then
-            Reinit_Field_To_Zero (Body_Id, Receiving_Entry);
+            Reinit_Field_To_Zero (Body_Id, F_Receiving_Entry);
          end if;
 
          Mutate_Ekind (Body_Id, E_Subprogram_Body);

@@ -900,12 +900,12 @@ package body Atree is
    end Check_Vanishing_Fields;
 
    Nkind_Offset : constant Field_Offset :=
-     Node_Field_Descriptors (Nkind).Offset;
+     Node_Field_Descriptors (F_Nkind).Offset;
 
    procedure Set_Node_Kind_Type is new Set_8_Bit_Field (Node_Kind) with Inline;
 
    procedure Init_Nkind (N : Node_Id; Val : Node_Kind) is
-      pragma Assert (Field_Is_Initial_Zero (N, Nkind));
+      pragma Assert (Field_Is_Initial_Zero (N, F_Nkind));
    begin
       Set_Node_Kind_Type (N, Nkind_Offset, Val);
    end Init_Nkind;
@@ -953,7 +953,7 @@ package body Atree is
    end Mutate_Nkind;
 
    Ekind_Offset : constant Field_Offset :=
-     Entity_Field_Descriptors (Ekind).Offset;
+     Entity_Field_Descriptors (F_Ekind).Offset;
 
    procedure Set_Entity_Kind_Type is new Set_8_Bit_Field (Entity_Kind)
      with Inline;
@@ -1323,11 +1323,11 @@ package body Atree is
             --  we can't just call Set_Chars, because Empty is of the wrong
             --  type, and is outside the range of Name_Id.
 
-            Reinit_Field_To_Zero (New_Id, Chars);
-            Reinit_Field_To_Zero (New_Id, Has_Private_View);
-            Reinit_Field_To_Zero (New_Id, Is_Elaboration_Checks_OK_Node);
-            Reinit_Field_To_Zero (New_Id, Is_Elaboration_Warnings_OK_Node);
-            Reinit_Field_To_Zero (New_Id, Is_SPARK_Mode_On_Node);
+            Reinit_Field_To_Zero (New_Id, F_Chars);
+            Reinit_Field_To_Zero (New_Id, F_Has_Private_View);
+            Reinit_Field_To_Zero (New_Id, F_Is_Elaboration_Checks_OK_Node);
+            Reinit_Field_To_Zero (New_Id, F_Is_Elaboration_Warnings_OK_Node);
+            Reinit_Field_To_Zero (New_Id, F_Is_SPARK_Mode_On_Node);
 
             --  Change the node type
 

@@ -284,110 +284,118 @@ package body Treepr is
    function Image (F : Node_Field) return String is
    begin
       case F is
-         when Alloc_For_BIP_Return =>
+         when F_Alloc_For_BIP_Return =>
             return "Alloc_For_BIP_Return";
-         when Assignment_OK =>
+         when F_Assignment_OK =>
             return "Assignment_OK";
-         when Backwards_OK =>
+         when F_Backwards_OK =>
             return "Backwards_OK";
-         when Conversion_OK =>
+         when F_Conversion_OK =>
             return "Conversion_OK";
-         when Forwards_OK =>
+         when F_Forwards_OK =>
             return "Forwards_OK";
-         when Has_SP_Choice =>
+         when F_Has_SP_Choice =>
             return "Has_SP_Choice";
-         when Is_Elaboration_Checks_OK_Node =>
+         when F_Is_Elaboration_Checks_OK_Node =>
             return "Is_Elaboration_Checks_OK_Node";
-         when Is_Elaboration_Warnings_OK_Node =>
+         when F_Is_Elaboration_Warnings_OK_Node =>
             return "Is_Elaboration_Warnings_OK_Node";
-         when Is_Known_Guaranteed_ABE =>
+         when F_Is_Known_Guaranteed_ABE =>
             return "Is_Known_Guaranteed_ABE";
-         when Is_SPARK_Mode_On_Node =>
+         when F_Is_SPARK_Mode_On_Node =>
             return "Is_SPARK_Mode_On_Node";
-         when Local_Raise_Not_OK =>
+         when F_Local_Raise_Not_OK =>
             return "Local_Raise_Not_OK";
-         when SCIL_Controlling_Tag =>
+         when F_SCIL_Controlling_Tag =>
             return "SCIL_Controlling_Tag";
-         when SCIL_Entity =>
+         when F_SCIL_Entity =>
             return "SCIL_Entity";
-         when SCIL_Tag_Value =>
+         when F_SCIL_Tag_Value =>
             return "SCIL_Tag_Value";
-         when SCIL_Target_Prim =>
+         when F_SCIL_Target_Prim =>
             return "SCIL_Target_Prim";
-         when Shift_Count_OK =>
+         when F_Shift_Count_OK =>
             return "Shift_Count_OK";
-         when Split_PPC =>
+         when F_Split_PPC =>
             return "Split_PPC";
-         when TSS_Elist =>
+         when F_TSS_Elist =>
             return "TSS_Elist";
 
          when others =>
-            return Capitalize (F'Img);
+            declare
+               Result : constant String := Capitalize (F'Img);
+            begin
+               return Result (3 .. Result'Last); -- Remove "F_"
+            end;
       end case;
    end Image;
 
    function Image (F : Entity_Field) return String is
    begin
       case F is
-         when BIP_Initialization_Call =>
+         when F_BIP_Initialization_Call =>
             return "BIP_Initialization_Call";
-         when Body_Needed_For_SAL =>
+         when F_Body_Needed_For_SAL =>
             return "Body_Needed_For_SAL";
-         when CR_Discriminant =>
+         when F_CR_Discriminant =>
             return "CR_Discriminant";
-         when DT_Entry_Count =>
+         when F_DT_Entry_Count =>
             return "DT_Entry_Count";
-         when DT_Offset_To_Top_Func =>
+         when F_DT_Offset_To_Top_Func =>
             return "DT_Offset_To_Top_Func";
-         when DT_Position =>
+         when F_DT_Position =>
             return "DT_Position";
-         when DTC_Entity =>
+         when F_DTC_Entity =>
             return "DTC_Entity";
-         when Has_Inherited_DIC =>
+         when F_Has_Inherited_DIC =>
             return "Has_Inherited_DIC";
-         when Has_Own_DIC =>
+         when F_Has_Own_DIC =>
             return "Has_Own_DIC";
-         when Has_RACW =>
+         when F_Has_RACW =>
             return "Has_RACW";
-         when Ignore_SPARK_Mode_Pragmas =>
+         when F_Ignore_SPARK_Mode_Pragmas =>
             return "Ignore_SPARK_Mode_Pragmas";
-         when Is_Constr_Subt_For_UN_Aliased =>
+         when F_Is_Constr_Subt_For_UN_Aliased =>
             return "Is_Constr_Subt_For_UN_Aliased";
-         when Is_CPP_Class =>
+         when F_Is_CPP_Class =>
             return "Is_CPP_Class";
-         when Is_CUDA_Kernel =>
+         when F_Is_CUDA_Kernel =>
             return "Is_CUDA_Kernel";
-         when Is_DIC_Procedure =>
+         when F_Is_DIC_Procedure =>
             return "Is_DIC_Procedure";
-         when Is_Discrim_SO_Function =>
+         when F_Is_Discrim_SO_Function =>
             return "Is_Discrim_SO_Function";
-         when Is_Elaboration_Checks_OK_Id =>
+         when F_Is_Elaboration_Checks_OK_Id =>
             return "Is_Elaboration_Checks_OK_Id";
-         when Is_Elaboration_Warnings_OK_Id =>
+         when F_Is_Elaboration_Warnings_OK_Id =>
             return "Is_Elaboration_Warnings_OK_Id";
-         when Is_RACW_Stub_Type =>
+         when F_Is_RACW_Stub_Type =>
             return "Is_RACW_Stub_Type";
-         when OK_To_Rename =>
+         when F_OK_To_Rename =>
             return "OK_To_Rename";
-         when Referenced_As_LHS =>
+         when F_Referenced_As_LHS =>
             return "Referenced_As_LHS";
-         when RM_Size =>
+         when F_RM_Size =>
             return "RM_Size";
-         when SPARK_Aux_Pragma =>
+         when F_SPARK_Aux_Pragma =>
             return "SPARK_Aux_Pragma";
-         when SPARK_Aux_Pragma_Inherited =>
+         when F_SPARK_Aux_Pragma_Inherited =>
             return "SPARK_Aux_Pragma_Inherited";
-         when SPARK_Pragma =>
+         when F_SPARK_Pragma =>
             return "SPARK_Pragma";
-         when SPARK_Pragma_Inherited =>
+         when F_SPARK_Pragma_Inherited =>
             return "SPARK_Pragma_Inherited";
-         when SSO_Set_High_By_Default =>
+         when F_SSO_Set_High_By_Default =>
             return "SSO_Set_High_By_Default";
-         when SSO_Set_Low_By_Default =>
+         when F_SSO_Set_Low_By_Default =>
             return "SSO_Set_Low_By_Default";
 
          when others =>
-            return Capitalize (F'Img);
+            declare
+               Result : constant String := Capitalize (F'Img);
+            begin
+               return Result (3 .. Result'Last); -- Remove "F_"
+            end;
       end case;
    end Image;
 
@@ -646,8 +654,8 @@ package body Treepr is
          Should_Print : constant Entity_Field_Set :=
            --  Set of fields that should be printed. False for fields that were
            --  already printed above.
-           (Ekind
-            | Basic_Convention => False, -- Convention was printed
+           (F_Ekind
+            | F_Basic_Convention => False, -- Convention was printed
             others => True);
       begin
          --  Outer loop makes flags come out last
@@ -1372,31 +1380,31 @@ package body Treepr is
            --  Set of fields that should be printed. False for fields that were
            --  already printed above, and for In_List, which we don't bother
            --  printing.
-           (Nkind
-            | Chars
-            | Comes_From_Source
-            | Analyzed
-            | Error_Posted
-            | Is_Ignored_Ghost_Node
-            | Check_Actuals
-            | Link -- Parent was printed
-            | Sloc
-            | Left_Opnd
-            | Right_Opnd
-            | Entity
-            | Assignment_OK
-            | Do_Range_Check
-            | Has_Dynamic_Length_Check
-            | Has_Aspects
-            | Is_Controlling_Actual
-            | Is_Overloaded
-            | Is_Static_Expression
-            | Must_Not_Freeze
-            | Small_Paren_Count -- Paren_Count was printed
-            | Raises_Constraint_Error
-            | Do_Overflow_Check
-            | Etype
-            | In_List
+           (F_Nkind
+            | F_Chars
+            | F_Comes_From_Source
+            | F_Analyzed
+            | F_Error_Posted
+            | F_Is_Ignored_Ghost_Node
+            | F_Check_Actuals
+            | F_Link -- Parent was printed
+            | F_Sloc
+            | F_Left_Opnd
+            | F_Right_Opnd
+            | F_Entity
+            | F_Assignment_OK
+            | F_Do_Range_Check
+            | F_Has_Dynamic_Length_Check
+            | F_Has_Aspects
+            | F_Is_Controlling_Actual
+            | F_Is_Overloaded
+            | F_Is_Static_Expression
+            | F_Must_Not_Freeze
+            | F_Small_Paren_Count -- Paren_Count was printed
+            | F_Raises_Constraint_Error
+            | F_Do_Overflow_Check
+            | F_Etype
+            | F_In_List
               => False,
 
             others => True);
@@ -1415,7 +1423,7 @@ package body Treepr is
                      --  Special case for End_Span, which also prints the
                      --  End_Location.
 
-                     if Fields (Field_Index) = End_Span then
+                     if Fields (Field_Index) = F_End_Span then
                         Print_End_Span (N);
 
                      else
@@ -2227,7 +2235,7 @@ package body Treepr is
                   --  but what concerns us now is looking for descendants in
                   --  the tree.
 
-                 and then F /= Next_Entity -- See below for why we skip this
+                 and then F /= F_Next_Entity -- See below for why we skip this
                then
                   Visit_Descendant (Get_Union_Id (N, FD.Offset));
                end if;

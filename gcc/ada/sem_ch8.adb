@@ -3278,8 +3278,8 @@ package body Sem_Ch8 is
          --  constructed later at the freeze point, so indicate that the
          --  completion has not been seen yet.
 
-         Reinit_Field_To_Zero (New_S, Has_Out_Or_In_Out_Parameter);
-         Reinit_Field_To_Zero (New_S, Needs_No_Actuals,
+         Reinit_Field_To_Zero (New_S, F_Has_Out_Or_In_Out_Parameter);
+         Reinit_Field_To_Zero (New_S, F_Needs_No_Actuals,
            Old_Ekind => (E_Function | E_Procedure => True, others => False));
          Mutate_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
@@ -6835,7 +6835,7 @@ package body Sem_Ch8 is
 
       case Nkind (N) is
          when N_Selected_Component =>
-            Reinit_Field_To_Zero (N, Is_Prefixed_Call);
+            Reinit_Field_To_Zero (N, F_Is_Prefixed_Call);
             Change_Selected_Component_To_Expanded_Name (N);
 
          when N_Expanded_Name =>

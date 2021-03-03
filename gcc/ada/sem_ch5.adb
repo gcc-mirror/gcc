@@ -1320,7 +1320,7 @@ package body Sem_Ch5 is
 
             else
                if Ekind (Ent) = E_Label then
-                  Reinit_Field_To_Zero (Ent, Enclosing_Scope);
+                  Reinit_Field_To_Zero (Ent, F_Enclosing_Scope);
                end if;
 
                Mutate_Ekind (Ent, E_Block);
@@ -3760,7 +3760,7 @@ package body Sem_Ch5 is
             --  parser for generic units.
 
             if Ekind (Ent) = E_Label then
-               Reinit_Field_To_Zero (Ent, Enclosing_Scope);
+               Reinit_Field_To_Zero (Ent, F_Enclosing_Scope);
                Mutate_Ekind (Ent, E_Loop);
 
                if Nkind (Parent (Ent)) = N_Implicit_Label_Declaration then
