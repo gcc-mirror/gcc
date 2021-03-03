@@ -2697,167 +2697,11 @@ pending_map_t *pending_table;
    completed.  */
 vec<tree, va_heap, vl_embed> *post_load_decls;
 
-/* Values keyed to some unsigned integer.  This is not GTY'd, so if
-   T is tree they must be reachable via some other path.  */
-
-template<typename T>
-class uintset {
-public:
-  unsigned key;  /* Entity index of the other entity.  */
-
-  /* Payload.  */
-  unsigned allocp2 : 5;  /* log(2) allocated pending  */
-  unsigned num : 27;    /* Number of pending.  */
-
-  /* Trailing array of values.   */
-  T values[1];
-
-public:
-  /* Even with ctors, we're very pod-like.  */
-  uintset (unsigned uid)
-    : key (uid), allocp2 (0), num (0)
-  {
-  }
-  /* Copy constructor, which is exciting because of the trailing
-     array.  */
-  uintset (const uintset *from)
-  {
-    size_t size = (offsetof (uintset, values)
-		   + sizeof (uintset::values) * from->num);
-    memmove (this, from, size);
-    if (from->num)
-      allocp2++;
-  }
-
-public:
-  struct traits : delete_ptr_hash<uintset> {
-    typedef unsigned compare_type;
-    typedef typename delete_ptr_hash<uintset>::value_type value_type;
-
-    /* Hash and equality for compare_type.  */
-    inline static hashval_t hash (const compare_type k)
-    {
-      return hashval_t (k);
-    }
-    inline static hashval_t hash (const value_type v)
-    {
-      return hash (v->key);
-    }
-
-    inline static bool equal (const value_type v, const compare_type k)
-    {
-      return v->key == k;
-    }
-  };
-
-public:
-  class hash : public hash_table<traits> 
-  {
-    typedef typename traits::compare_type key_t;
-    typedef hash_table<traits> parent;
-
-  public:
-    hash (size_t size)
-      : parent (size)
-    {
-    }
-    ~hash ()
-    {
-    }
-
-  private:
-    uintset **find_slot (key_t key, insert_option insert)
-    {
-      return this->find_slot_with_hash (key, traits::hash (key), insert);
-    }
-
-  public:
-    uintset *get (key_t key, bool extract = false);
-    bool add (key_t key, T value);
-    uintset *create (key_t key, unsigned num, T init = 0);
-  };
-};
-
-/* Add VALUE to KEY's uintset, creating it if necessary.  Returns true
-   if we created the uintset.  */
-
-template<typename T>
-bool
-uintset<T>::hash::add (typename uintset<T>::hash::key_t key, T value)
-{
-  uintset **slot = this->find_slot (key, INSERT);
-  uintset *set = *slot;
-  bool is_new = !set;
-
-  if (is_new || set->num == (1u << set->allocp2))
-    {
-      if (set)
-	{
-	  unsigned n = set->num * 2;
-	  size_t new_size = (offsetof (uintset, values)
-			     + sizeof (uintset (0u).values) * n);
-	  uintset *new_set = new (::operator new (new_size)) uintset (set);
-	  delete set;
-	  set = new_set;
-	}
-      else
-	set = new (::operator new (sizeof (*set))) uintset (key);
-      *slot = set;
-    }
-
-  set->values[set->num++] = value;
-
-  return is_new;
-}
-
-template<typename T>
-uintset<T> *
-uintset<T>::hash::create (typename uintset<T>::hash::key_t key, unsigned num,
-			  T init)
-{
-  unsigned p2alloc = 0;
-  for (unsigned v = num; v != 1; v = (v >> 1) | (v & 1))
-    p2alloc++;
-
-  size_t new_size = (offsetof (uintset, values)
-		     + (sizeof (uintset (0u).values) << p2alloc));
-  uintset *set = new (::operator new (new_size)) uintset (key);
-  set->allocp2 = p2alloc;
-  set->num = num;
-  while (num--)
-    set->values[num] = init;
-
-  uintset **slot = this->find_slot (key, INSERT);
-  gcc_checking_assert (!*slot);
-  *slot = set;
-
-  return set;
-}
-
-/* Locate KEY's uintset, potentially removing it from the hash table  */
-
-template<typename T>
-uintset<T> *
-uintset<T>::hash::get (typename uintset<T>::hash::key_t key, bool extract)
-{
-  uintset *res = NULL;
-
-  if (uintset **slot = this->find_slot (key, NO_INSERT))
-    {
-      res = *slot;
-      if (extract)
-	/* We need to remove the pendset without deleting it. */
-	traits::mark_deleted (*slot);
-    }
-
-  return res;
-}
-
 /* Some entities are attached to another entitity for ODR purposes.
    For example, at namespace scope, 'inline auto var = []{};', that
    lambda is attached to 'var', and follows its ODRness.  */
-typedef uintset<tree> attachset;
-static attachset::hash *attached_table;
+typedef hash_map<tree, auto_vec<tree>> attached_map_t;
+static attached_map_t *attached_table;
 
 /********************************************************************/
 /* Tree streaming.   The tree streaming is very specific to the tree
@@ -7865,13 +7709,13 @@ trees_out::decl_value (tree decl, depset *dep)
       && !is_key_order ())
     {
       /* Stream the attached entities.  */
-      attachset *set = attached_table->get (DECL_UID (inner));
-      unsigned num = set->num;
+      auto *attach_vec = attached_table->get (inner);
+      unsigned num = attach_vec->length ();
       if (streaming_p ())
 	u (num);
       for (unsigned ix = 0; ix != num; ix++)
 	{
-	  tree attached = set->values[ix];
+	  tree attached = (*attach_vec)[ix];
 	  tree_node (attached);
 	  if (streaming_p ())
 	    dump (dumper::MERGE)
@@ -8169,13 +8013,14 @@ trees_in::decl_value ()
       && DECL_MODULE_ATTACHMENTS_P (inner))
     {
       /* Read and maybe install the attached entities.  */
-      attachset *set
-	= attached_table->get (DECL_UID (STRIP_TEMPLATE (existing)));
+      bool existed;
+      auto &set = attached_table->get_or_insert (STRIP_TEMPLATE (existing),
+						 &existed);
       unsigned num = u ();
-      if (!is_new == !set)
+      if (is_new == existed)
 	set_overrun ();
       if (is_new)
-	set = attached_table->create (DECL_UID (inner), num, NULL_TREE);
+	set.reserve (num);
       for (unsigned ix = 0; !get_overrun () && ix != num; ix++)
 	{
 	  tree attached = tree_node ();
@@ -8183,8 +8028,8 @@ trees_in::decl_value ()
 	    && dump ("Read %d[%u] %s attached decl %N", tag, ix,
 		     is_new ? "new" : "matched", attached);
 	  if (is_new)
-	    set->values[ix] = attached;
-	  else if (set->values[ix] != attached)
+	    set.quick_push (attached);
+	  else if (set[ix] != attached)
 	    set_overrun ();
 	}
     }
@@ -10650,12 +10495,12 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    tree scope = LAMBDA_EXPR_EXTRA_SCOPE (CLASSTYPE_LAMBDA_EXPR
 						  (TREE_TYPE (inner)));
 	    gcc_checking_assert (TREE_CODE (scope) == VAR_DECL);
-	    attachset *root = attached_table->get (DECL_UID (scope));
-	    unsigned ix = root->num;
+	    auto *root = attached_table->get (scope);
+	    unsigned ix = root->length ();
 	    /* If we don't find it, we'll write a really big number
 	       that the reader will ignore.  */
 	    while (ix--)
-	      if (root->values[ix] == inner)
+	      if ((*root)[ix] == inner)
 		break;
 
 	    /* Use the attached-to decl as the 'name'.  */
@@ -10951,10 +10796,10 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		if (DECL_LANG_SPECIFIC (name)
 		    && VAR_OR_FUNCTION_DECL_P (name)
 		    && DECL_MODULE_ATTACHMENTS_P (name))
-		  if (attachset *set = attached_table->get (DECL_UID (name)))
-		    if (key.index < set->num)
+		  if (auto *set = attached_table->get (name))
+		    if (key.index < set->length ())
 		      {
-			existing = set->values[key.index];
+			existing = (*set)[key.index];
 			if (existing)
 			  {
 			    gcc_checking_assert
@@ -18736,13 +18581,15 @@ maybe_attach_decl (tree ctx, tree decl)
   gcc_checking_assert (DECL_NAMESPACE_SCOPE_P (ctx));
 
  if (!attached_table)
-    attached_table = new attachset::hash (EXPERIMENT (1, 400));
+    attached_table = new attached_map_t (EXPERIMENT (1, 400));
 
-  if (attached_table->add (DECL_UID (ctx), decl))
-    {
-      retrofit_lang_decl (ctx);
-      DECL_MODULE_ATTACHMENTS_P (ctx) = true;
-    }
+ auto &vec = attached_table->get_or_insert (ctx);
+ if (!vec.length ())
+   {
+     retrofit_lang_decl (ctx);
+     DECL_MODULE_ATTACHMENTS_P (ctx) = true;
+   }
+ vec.safe_push (decl);
 }
 
 /* Create the flat name string.  It is simplest to have it handy.  */
@@ -19051,7 +18898,7 @@ direct_import (module_state *import, cpp_reader *reader)
   if (import->loadedness < ML_LANGUAGE)
     {
       if (!attached_table)
-	attached_table = new attachset::hash (EXPERIMENT (1, 400));
+	attached_table = new attached_map_t (EXPERIMENT (1, 400));
       import->read_language (true);
     }
 
