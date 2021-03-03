@@ -104,7 +104,9 @@ static unsigned int gomp_requires_mask;
 
 /* Start/end of .gnu.gomp.requires section of program, defined in
    crtoffloadbegin/end.o.  */
+__attribute__((weak))
 extern const unsigned int __requires_mask_table[];
+__attribute__((weak))
 extern const unsigned int __requires_mask_table_end[];
 
 /* Similar to gomp_realloc, but release register_lock before gomp_fatal.  */
