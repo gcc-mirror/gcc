@@ -1,3 +1,8 @@
+2021-03-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* decl2.cc (cp_omp_mappable_type_1): Allow fields with
+	DECL_DECLARED_CONSTEXPR_P to be mapped.
+
 2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* parser.cc (cp_parser_simple_declaration): Set

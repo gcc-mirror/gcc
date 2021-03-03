@@ -1,3 +1,8 @@
+2021-03-03  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* g++.dg/goacc/static-constexpr-1.C: New test.
+	* g++.dg/gomp/static-constexpr-1.C: New test.
+
 2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-c++-common/gomp/requires-4.c: Remove prune of "not supported yet".
