@@ -3824,8 +3824,8 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
 	       the parameter to return_value().  */
 	    if (!maybe_await_stmt)
 	      maybe_await_stmt = tsi_stmt_ptr (tsi_last (ret_list));
-	    expr = build1_loc (loc, GOTO_EXPR, void_type_node, awpts->fs_label);
-	    finish_expr_stmt (expr);
+	    TREE_USED (awpts->fs_label) = 1;
+	    add_stmt (build_stmt (loc, GOTO_EXPR, awpts->fs_label));
 	    *stmt = pop_stmt_list (ret_list);
 	    /* Once this is complete, we will have processed subtrees.  */
 	    *do_subtree = 0;
