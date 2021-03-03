@@ -195,7 +195,7 @@ static void checkModFileAlias(OutBuffer *buf, OutBuffer *dotmods,
         const char *m = (*ms)[j];
         const char *q = strchr(m, '=');
         assert(q);
-        if (dotmods->length() <= (size_t)(q - m) && memcmp(dotmods->peekChars(), m, q - m) == 0)
+        if (dotmods->length() == (size_t)(q - m) && memcmp(dotmods->peekChars(), m, q - m) == 0)
         {
             buf->reset();
             size_t qlen = strlen(q + 1);
