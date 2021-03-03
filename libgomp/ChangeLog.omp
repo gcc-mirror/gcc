@@ -1,5 +1,8 @@
 2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* plugin/plugin-hsa.c (GOMP_OFFLOAD_supported_features): New
+	function.
+
 	* target.c (__requires_mask_table, __requires_mask_table_end): Add
 	'__attribute__((weak))'.
 
