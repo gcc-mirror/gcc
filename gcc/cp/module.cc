@@ -2644,6 +2644,10 @@ depset *depset::make_entity (tree entity, entity_kind ek, bool is_defn)
   return r;
 }
 
+/* Decls that need some post processing once a batch of lazy loads has
+   completed.  */
+vec<tree, va_heap, vl_embed> *post_load_decls;
+
 /* Values keyed to some unsigned integer.  This is not GTY'd, so if
    T is tree they must be reachable via some other path.  */
 
@@ -14023,6 +14027,21 @@ make_mapper (location_t loc)
   return mapper;
 }
 
+static unsigned lazy_snum;
+
+static bool
+recursive_lazy (unsigned snum = ~0u)
+{
+  if (lazy_snum)
+    {
+      error_at (input_location, "recursive lazy load");
+      return true;
+    }
+
+  lazy_snum = snum;
+  return false;
+}
+
 /* If THIS is the current purview, issue an import error and return false.  */
 
 bool
@@ -15016,11 +15035,7 @@ module_state::read_cluster (unsigned snum)
       if (abstract)
 	;
       else if (DECL_ABSTRACT_P (decl))
-	{
-	  bool cloned = maybe_clone_body (decl);
-	  if (!cloned)
-	    from ()->set_error ();
-	}
+	vec_safe_push (post_load_decls, decl);
       else
 	{
 	  bool aggr = aggregate_value_p (DECL_RESULT (decl), decl);
@@ -17267,6 +17282,33 @@ module_state::write_inits (elf_out *to, depset::hash &table, unsigned *crc_ptr)
   return count;
 }
 
+/* We have to defer some post-load processing until we've completed
+   reading, because they can cause more reading.  */
+
+static void
+post_load_processing ()
+{
+  if (!post_load_decls)
+    return;
+
+  tree old_cfd = current_function_decl;
+  struct function *old_cfun = cfun;
+  while (post_load_decls->length ())
+    {
+      tree decl = post_load_decls->pop ();
+
+      dump () && dump ("Post-load processing of %N", decl);
+
+      gcc_checking_assert (DECL_ABSTRACT_P (decl));
+      /* Cloning can cause loading -- specifically operator delete for
+	 the deleting dtor.  */
+      maybe_clone_body (decl);
+    }
+
+  cfun = old_cfun;
+  current_function_decl = old_cfd;
+}
+
 bool
 module_state::read_inits (unsigned count)
 {
@@ -17276,6 +17318,7 @@ module_state::read_inits (unsigned count)
   dump () && dump ("Reading %u initializers", count);
   dump.indent ();
 
+  lazy_snum = ~0u;
   for (unsigned ix = 0; ix != count; ix++)
     {
       /* Merely referencing the decl causes its initializer to be read
@@ -17287,6 +17330,8 @@ module_state::read_inits (unsigned count)
       if (decl)
 	dump ("Initializer:%u for %N", count, decl);
     }
+  lazy_snum = 0;
+  post_load_processing ();
   dump.outdent ();
   if (!sec.end (from ()))
     return false;  
@@ -18025,21 +18070,6 @@ module_state::read_preprocessor (bool outermost)
   return check_read (outermost, ok);
 }
 
-static unsigned lazy_snum;
-
-static bool
-recursive_lazy (unsigned snum = ~0u)
-{
-  if (lazy_snum)
-    {
-      error_at (input_location, "recursive lazy load");
-      return true;
-    }
-
-  lazy_snum = snum;
-  return false;
-}
-
 /* Read language state.  */
 
 bool
@@ -18114,16 +18144,15 @@ module_state::read_language (bool outermost)
 
       unsigned hwm = counts[MSC_sec_hwm];
       for (unsigned ix = counts[MSC_sec_lwm]; ok && ix != hwm; ix++)
-	{
-	  if (!load_section (ix, NULL))
-	    {
-	      ok = false;
-	      break;
-	    }
-	  ggc_collect ();
-	}
-
+	if (!load_section (ix, NULL))
+	  {
+	    ok = false;
+	    break;
+	  }
       lazy_snum = 0;
+      post_load_processing ();
+
+      ggc_collect ();
 
       if (ok && CHECKING_P)
 	for (unsigned ix = 0; ix != entity_num; ix++)
@@ -18873,6 +18902,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
     {
       ok = module->load_section (snum, mslot);
       lazy_snum = 0;
+      post_load_processing ();
     }
 
   dump.pop (n);
@@ -18929,6 +18959,7 @@ lazy_load_specializations (tree tmpl)
 	  function_depth--;
 	}
       lazy_snum = 0;
+      post_load_processing ();
     }
 
   timevar_stop (TV_MODULE_IMPORT);
@@ -18969,6 +19000,7 @@ lazy_load_members (tree decl)
 		       set->num, import_entity_module (ident),
 		       ident - import_entity_module (ident)->entity_lwm, decl);
       pendset_lazy_load (set, false);
+      post_load_processing ();
       dump.pop (n);
 
       function_depth--;
