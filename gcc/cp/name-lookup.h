@@ -453,6 +453,7 @@ extern void cp_emit_debug_info_for_using (tree, tree);
 
 extern void finish_nonmember_using_decl (tree scope, tree name);
 extern void finish_using_directive (tree target, tree attribs);
+void push_local_extern_decl_alias (tree decl);
 extern tree pushdecl (tree, bool hiding = false);
 extern tree pushdecl_outermost_localscope (tree);
 extern tree pushdecl_top_level (tree);

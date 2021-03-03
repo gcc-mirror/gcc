@@ -3374,7 +3374,7 @@ set_decl_context_in_fn (tree ctx, tree decl)
 /* DECL is a local extern decl.  Find or create the namespace-scope
    decl that it aliases.  Also, determines the linkage of DECL.  */
 
-static void
+void
 push_local_extern_decl_alias (tree decl)
 {
   if (dependent_type_p (TREE_TYPE (decl)))
@@ -3408,7 +3408,7 @@ push_local_extern_decl_alias (tree decl)
 
       if (binding && TREE_CODE (binding) != TREE_LIST)
 	for (ovl_iterator iter (binding); iter; ++iter)
-	  if (decls_match (*iter, decl))
+	  if (decls_match (decl, *iter, /*record_versions*/false))
 	    {
 	      alias = *iter;
 	      break;
