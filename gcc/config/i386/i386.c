@@ -6660,7 +6660,8 @@ ix86_compute_frame_layout (void)
       frame->hard_frame_pointer_offset = frame->sse_reg_save_offset;
 
       /* If we can leave the frame pointer where it is, do so.  Also, return
-	 the establisher frame for __builtin_frame_address (0).  */
+	 the establisher frame for __builtin_frame_address (0) or else if the
+	 frame overflows the SEH maximum frame size.  */
       const HOST_WIDE_INT diff
 	= frame->stack_pointer_offset - frame->hard_frame_pointer_offset;
       if (diff <= 255)
@@ -6678,6 +6679,8 @@ ix86_compute_frame_layout (void)
 	     frame that is addressable with 8-bit offsets.  */
 	  frame->hard_frame_pointer_offset = frame->stack_pointer_offset - 128;
 	}
+      else
+	frame->hard_frame_pointer_offset = frame->hfp_save_offset;
     }
 }
 
