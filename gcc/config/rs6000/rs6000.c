@@ -4474,6 +4474,14 @@ rs6000_option_override_internal (bool global_init_p)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2LOGICAL;
 
   if (TARGET_POWER10
+      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_LOGADD) == 0)
+    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_LOGADD;
+
+  if (TARGET_POWER10
+      && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_ADDLOG) == 0)
+    rs6000_isa_flags |= OPTION_MASK_P10_FUSION_ADDLOG;
+
+  if (TARGET_POWER10
       && (rs6000_isa_flags_explicit & OPTION_MASK_P10_FUSION_2ADD) == 0)
     rs6000_isa_flags |= OPTION_MASK_P10_FUSION_2ADD;
 
