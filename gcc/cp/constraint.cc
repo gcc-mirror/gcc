@@ -841,6 +841,8 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
     if (tree *p = hash_map_safe_get (normalized_map, tmpl))
       return *p;
 
+  push_nested_class_guard pncs (DECL_CONTEXT (d));
+
   tree args = generic_targs_for (tmpl);
   tree ci = get_constraints (decl);
   tree norm = get_normalized_constraints_from_info (ci, args, tmpl, diag);
