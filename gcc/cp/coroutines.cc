@@ -2332,6 +2332,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
   finish_switch_stmt (destroy_dispatcher);
 
   finish_then_clause (lsb_if);
+  begin_else_clause (lsb_if);
 
   tree dispatcher = begin_switch_stmt ();
   finish_switch_cond (rat, dispatcher);
@@ -2369,6 +2370,7 @@ build_actor_fn (location_t loc, tree coro_frame_type, tree actor, tree fnbody,
 
   /* Insert the prototype dispatcher.  */
   finish_switch_stmt (dispatcher);
+  finish_else_clause (lsb_if);
 
   finish_if_stmt (lsb_if);
 
