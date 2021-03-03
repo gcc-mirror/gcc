@@ -1,3 +1,10 @@
+2021-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/99095
+	* sem_ch8.adb (Check_Constrained_Object): Restrict again the special
+	optimization for limited types to non-array types except in the case
+	of an extended return statement.
+
 2021-02-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (components_to_record): If the first component

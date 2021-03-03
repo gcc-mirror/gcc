@@ -1,3 +1,14 @@
+2021-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/limited5.adb: New test.
+
+2021-03-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/read-thread-pointer.c: New.
+
 2021-03-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc.target/arm/cmse/cmse-18.c: New test.

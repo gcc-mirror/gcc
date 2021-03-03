@@ -1,3 +1,21 @@
+2021-03-02  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-03-01  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/98338
+	* ipa-fnsummary.c (compute_fn_summary): Fix sanity check.
+
+2021-03-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2020-07-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.md (get_thread_pointer<mode>): New.
+	(TP_REGNUM): Ditto.
+	* doc/extend.texi (Target Builtins): Add RISC-V built-in section.
+	Document __builtin_thread_pointer.
+
 2021-03-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/99271
