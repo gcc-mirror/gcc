@@ -288,6 +288,7 @@
   DONE;
 }
   [(set_attr "type" "vecload,vecstore,veclogical")
+   (set_attr "size" "256")
    (set_attr "length" "*,*,8")])
 
 
