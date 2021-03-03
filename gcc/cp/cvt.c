@@ -1170,7 +1170,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
   /* Explicitly evaluate void-converted concept checks since their
      satisfaction may produce ill-formed programs.  */
    if (concept_check_p (expr))
-     expr = evaluate_concept_check (expr, tf_warning_or_error);
+     expr = evaluate_concept_check (expr);
 
   if (VOID_TYPE_P (TREE_TYPE (expr)))
     return expr;

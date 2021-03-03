@@ -1381,7 +1381,7 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	 normal functions.  */
       if (concept_check_p (stmt))
 	{
-	  *stmt_p = evaluate_concept_check (stmt, tf_warning_or_error);
+	  *stmt_p = evaluate_concept_check (stmt);
 	  * walk_subtrees = 0;
 	  break;
 	}
@@ -1453,15 +1453,14 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
     case REQUIRES_EXPR:
       /* Emit the value of the requires-expression.  */
-      *stmt_p = constant_boolean_node (constraints_satisfied_p (stmt),
-				       boolean_type_node);
+      *stmt_p = evaluate_requires_expr (stmt);
       *walk_subtrees = 0;
       break;
 
     case TEMPLATE_ID_EXPR:
       gcc_assert (concept_check_p (stmt));
       /* Emit the value of the concept check.  */
-      *stmt_p = evaluate_concept_check (stmt, tf_warning_or_error);
+      *stmt_p = evaluate_concept_check (stmt);
       walk_subtrees = 0;
       break;
 

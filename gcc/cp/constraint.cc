@@ -107,10 +107,9 @@ struct subst_info
    a constraint is not satisfied.
 
    The entrypoints to satisfaction for which we set noisy+unsat are
-   diagnose_constraints and diagnose_nested_requirement.  The entrypoints for
-   which we set noisy-unsat are the replays inside constraint_satisfaction_value,
-   evaluate_concept_check and tsubst_nested_requirement.  In other entrypoints,
-   e.g. constraints_satisfied_p, we enter satisfaction quietly (both flags
+   diagnose_constraints and diagnose_nested_requirement.  The entrypoint for
+   which we set noisy-unsat is the replay inside constraint_satisfaction_value.
+   From constraints_satisfied_p, we enter satisfaction quietly (both flags
    cleared).  */
 
 struct sat_info : subst_info
@@ -133,7 +132,7 @@ struct sat_info : subst_info
   bool diagnose_unsatisfaction;
 };
 
-static tree satisfy_constraint_expression (tree, tree, sat_info);
+static tree constraint_satisfaction_value (tree, tree, sat_info);
 
 /* True if T is known to be some type other than bool. Note that this
    is false for dependent types and errors.  */
@@ -956,22 +955,6 @@ normalize_concept_definition (tree tmpl, bool diag = false)
     hash_map_safe_put<hm_ggc> (normalized_map, tmpl, norm);
 
   return norm;
-}
-
-/* Returns the normal form of TMPL's requirements.  */
-
-static tree
-normalize_template_requirements (tree tmpl, bool diag = false)
-{
-  return get_normalized_constraints_from_decl (tmpl, diag);
-}
-
-/* Returns the normal form of TMPL's requirements.  */
-
-static tree
-normalize_nontemplate_requirements (tree decl, bool diag = false)
-{
-  return get_normalized_constraints_from_decl (decl, diag);
 }
 
 /* Normalize an EXPR as a constraint.  */
@@ -2068,15 +2051,8 @@ tsubst_compound_requirement (tree t, tree args, subst_info info)
 static tree
 tsubst_nested_requirement (tree t, tree args, subst_info info)
 {
-  /* Perform satisfaction quietly first.  */
   sat_info quiet (tf_none, info.in_decl);
-  tree result = satisfy_constraint_expression (t, args, quiet);
-  if (result == error_mark_node)
-    {
-      /* Replay the error.  */
-      sat_info noisy (tf_warning_or_error, info.in_decl);
-      satisfy_constraint_expression (t, args, noisy);
-    }
+  tree result = constraint_satisfaction_value (t, args, quiet);
   if (result != boolean_true_node)
     return error_mark_node;
   return boolean_true_node;
@@ -2459,7 +2435,7 @@ struct sat_hasher : ggc_ptr_hash<sat_entry>
 /* Cache the result of satisfy_atom.  */
 static GTY((deletable)) hash_table<sat_hasher> *sat_cache;
 
-/* Cache the result of constraint_satisfaction_value.  */
+/* Cache the result of satisfy_declaration_constraints.  */
 static GTY((deletable)) hash_map<tree, tree> *decl_satisfied_cache;
 
 /* A tool used by satisfy_atom to help manage satisfaction caching and to
@@ -2941,7 +2917,7 @@ satisfy_constraint_r (tree t, tree args, sat_info info)
 /* Check that the normalized constraint T is satisfied for ARGS.  */
 
 static tree
-satisfy_constraint (tree t, tree args, sat_info info)
+satisfy_normalized_constraints (tree t, tree args, sat_info info)
 {
   auto_timevar time (TV_CONSTRAINT_SAT);
 
@@ -2955,24 +2931,6 @@ satisfy_constraint (tree t, tree args, sat_info info)
   deferring_access_check_sentinel acs (dk_no_deferred);
 
   return satisfy_constraint_r (t, args, info);
-}
-
-/* Check the normalized constraints T against ARGS, returning a satisfaction
-   value (either true, false, or error).  */
-
-static tree
-satisfy_associated_constraints (tree t, tree args, sat_info info)
-{
-  /* If there are no constraints then this is trivially satisfied.  */
-  if (!t)
-    return boolean_true_node;
-
-  /* If any arguments depend on template parameters, we can't
-     check constraints. Pretend they're satisfied for now.  */
-  if (args && uses_template_parms (args))
-    return boolean_true_node;
-
-  return satisfy_constraint (t, args, info);
 }
 
 /* Return the normal form of the constraints on the placeholder 'auto'
@@ -3005,19 +2963,34 @@ normalize_placeholder_type_constraints (tree t, bool diag)
   return normalize_constraint_expression (constr, info);
 }
 
-/* Evaluate EXPR as a constraint expression using ARGS, returning a
-   satisfaction value. */
+/* Evaluate the constraints of T using ARGS, returning a satisfaction value.
+   Here, T can be a concept-id, nested-requirement, placeholder 'auto', or
+   requires-expression.  */
 
 static tree
-satisfy_constraint_expression (tree t, tree args, sat_info info)
+satisfy_nondeclaration_constraints (tree t, tree args, sat_info info)
 {
   if (t == error_mark_node)
     return error_mark_node;
 
+  /* Handle REQUIRES_EXPR directly, bypassing satisfaction.  */
+  if (TREE_CODE (t) == REQUIRES_EXPR)
+    {
+      /* TODO: Remove this assert and the special casing of REQUIRES_EXPRs
+	 from diagnose_constraints once we merge tsubst_requires_expr and
+	 diagnose_requires_expr.  */
+      gcc_assert (!info.diagnose_unsatisfaction_p ());
+      auto ovr = make_temp_override (current_constraint_diagnosis_depth);
+      if (info.noisy ())
+	++current_constraint_diagnosis_depth;
+      return tsubst_requires_expr (t, args, info.complain, info.in_decl);
+    }
+
   /* Get the normalized constraints.  */
   tree norm;
-  if (args == NULL_TREE && concept_check_p (t))
+  if (concept_check_p (t))
     {
+      gcc_assert (!args);
       tree id = unpack_concept_check (t);
       args = TREE_OPERAND (id, 1);
       tree tmpl = get_concept_check_template (id);
@@ -3032,11 +3005,6 @@ satisfy_constraint_expression (tree t, tree args, sat_info info)
       ninfo.initial_parms = TREE_TYPE (t);
       norm = normalize_constraint_expression (TREE_OPERAND (t, 0), ninfo);
     }
-  else if (EXPR_P (t))
-    {
-      norm_info ninfo (info.noisy () ? tf_norm : tf_none);
-      norm = normalize_constraint_expression (t, ninfo);
-    }
   else if (is_auto (t))
     {
       norm = normalize_placeholder_type_constraints (t, info.noisy ());
@@ -3047,23 +3015,16 @@ satisfy_constraint_expression (tree t, tree args, sat_info info)
     gcc_unreachable ();
 
   /* Perform satisfaction.  */
-  return satisfy_constraint (norm, args, info);
+  return satisfy_normalized_constraints (norm, args, info);
 }
 
-/* Used only to evaluate requires-expressions during constant expression
-   evaluation.  */
-
-tree
-satisfy_constraint_expression (tree expr)
-{
-  sat_info info (tf_none, NULL_TREE);
-  return satisfy_constraint_expression (expr, NULL_TREE, info);
-}
+/* Evaluate the associated constraints of the template specialization T
+   according to INFO, returning a satisfaction value.  */
 
 static tree
 satisfy_declaration_constraints (tree t, sat_info info)
 {
-  gcc_assert (DECL_P (t));
+  gcc_assert (DECL_P (t) && TREE_CODE (t) != TEMPLATE_DECL);
   const tree saved_t = t;
 
   /* For inherited constructors, consider the original declaration;
@@ -3083,25 +3044,23 @@ satisfy_declaration_constraints (tree t, sat_info info)
     if (tree *result = hash_map_safe_get (decl_satisfied_cache, saved_t))
       return *result;
 
-  /* Get the normalized constraints.  */
-  tree norm = NULL_TREE;
   tree args = NULL_TREE;
   if (tree ti = DECL_TEMPLATE_INFO (t))
     {
-      tree tmpl = TI_TEMPLATE (ti);
-      norm = normalize_template_requirements (tmpl, info.noisy ());
-
       /* The initial parameter mapping is the complete set of
 	 template arguments substituted into the declaration.  */
       args = TI_ARGS (ti);
       if (inh_ctor_targs)
 	args = add_outermost_template_args (args, inh_ctor_targs);
+
+      /* If any arguments depend on template parameters, we can't
+	 check constraints. Pretend they're satisfied for now.  */
+      if (uses_template_parms (args))
+	return boolean_true_node;
     }
-  else
-    {
-      /* These should be empty until we allow constraints on non-templates.  */
-      norm = normalize_nontemplate_requirements (t, info.noisy ());
-    }
+
+  /* Get the normalized constraints.  */
+  tree norm = get_normalized_constraints_from_decl (t, info.noisy ());
 
   unsigned ftc_count = vec_safe_length (failed_type_completions);
 
@@ -3111,7 +3070,7 @@ satisfy_declaration_constraints (tree t, sat_info info)
       if (!push_tinst_level (t))
 	return result;
       push_access_scope (t);
-      result = satisfy_associated_constraints (norm, args, info);
+      result = satisfy_normalized_constraints (norm, args, info);
       pop_access_scope (t);
       pop_tinst_level ();
     }
@@ -3134,6 +3093,10 @@ satisfy_declaration_constraints (tree t, sat_info info)
   return result;
 }
 
+/* Evaluate the associated constraints of the template T using ARGS as the
+   innermost set of template arguments and according to INFO, returning a
+   satisfaction value.  */
+
 static tree
 satisfy_declaration_constraints (tree t, tree args, sat_info info)
 {
@@ -3144,14 +3107,19 @@ satisfy_declaration_constraints (tree t, tree args, sat_info info)
 
   args = add_outermost_template_args (t, args);
 
+  /* If any arguments depend on template parameters, we can't
+     check constraints. Pretend they're satisfied for now.  */
+  if (uses_template_parms (args))
+    return boolean_true_node;
+
   tree result = boolean_true_node;
-  if (tree norm = normalize_template_requirements (t, info.noisy ()))
+  if (tree norm = get_normalized_constraints_from_decl (t, info.noisy ()))
     {
       if (!push_tinst_level (t, args))
 	return result;
       tree pattern = DECL_TEMPLATE_RESULT (t);
       push_access_scope (pattern);
-      result = satisfy_associated_constraints (norm, args, info);
+      result = satisfy_normalized_constraints (norm, args, info);
       pop_access_scope (pattern);
       pop_tinst_level ();
     }
@@ -3159,62 +3127,50 @@ satisfy_declaration_constraints (tree t, tree args, sat_info info)
   return result;
 }
 
-static tree
-constraint_satisfaction_value (tree t, sat_info info)
-{
-  tree r;
-  if (DECL_P (t))
-    r = satisfy_declaration_constraints (t, info);
-  else
-    r = satisfy_constraint_expression (t, NULL_TREE, info);
-  if (r == error_mark_node && info.quiet ()
-      && !(DECL_P (t) && TREE_NO_WARNING (t)))
-    {
-      /* Replay the error with re-normalized requirements.  */
-      sat_info noisy (tf_warning_or_error, info.in_decl);
-      constraint_satisfaction_value (t, noisy);
-      if (DECL_P (t))
-	/* Avoid giving these errors again.  */
-	TREE_NO_WARNING (t) = true;
-    }
-  return r;
-}
+/* A wrapper around satisfy_declaration_constraints and
+   satisfy_nondeclaration_constraints which additionally replays
+   quiet ill-formed satisfaction noisily, so that ill-formed
+   satisfaction always gets diagnosed.  */
 
 static tree
 constraint_satisfaction_value (tree t, tree args, sat_info info)
 {
   tree r;
   if (DECL_P (t))
-    r = satisfy_declaration_constraints (t, args, info);
-  else
-    r = satisfy_constraint_expression (t, args, info);
-  if (r == error_mark_node && info.quiet ())
     {
-      /* Replay the error with re-normalized requirements.  */
+      if (args)
+	r = satisfy_declaration_constraints (t, args, info);
+      else
+	r = satisfy_declaration_constraints (t, info);
+    }
+  else
+    r = satisfy_nondeclaration_constraints (t, args, info);
+  if (r == error_mark_node && info.quiet ()
+      && !(DECL_P (t) && TREE_NO_WARNING (t)))
+    {
+      /* Replay the error noisily.  */
       sat_info noisy (tf_warning_or_error, info.in_decl);
       constraint_satisfaction_value (t, args, noisy);
+      if (DECL_P (t) && !args)
+	/* Avoid giving these errors again.  */
+	TREE_NO_WARNING (t) = true;
     }
   return r;
 }
 
-/* True iff the result of satisfying T is BOOLEAN_TRUE_NODE and false
-   otherwise, even in the case of errors.  */
+/* True iff the result of satisfying T using ARGS is BOOLEAN_TRUE_NODE
+   and false otherwise, even in the case of errors.
+
+   Here, T can be:
+     - a template declaration
+     - a template specialization (in which case ARGS must be empty)
+     - a concept-id (in which case ARGS must be empty)
+     - a nested-requirement
+     - a placeholder 'auto'
+     - a requires-expression.  */
 
 bool
-constraints_satisfied_p (tree t)
-{
-  if (!flag_concepts)
-    return true;
-
-  sat_info quiet (tf_none, NULL_TREE);
-  return constraint_satisfaction_value (t, quiet) == boolean_true_node;
-}
-
-/* True iff the result of satisfying T with ARGS is BOOLEAN_TRUE_NODE
-    and false otherwise, even in the case of errors.  */
-
-bool
-constraints_satisfied_p (tree t, tree args)
+constraints_satisfied_p (tree t, tree args/*= NULL_TREE */)
 {
   if (!flag_concepts)
     return true;
@@ -3227,7 +3183,7 @@ constraints_satisfied_p (tree t, tree args)
    evaluation of template-ids as id-expressions.  */
 
 tree
-evaluate_concept_check (tree check, tsubst_flags_t complain)
+evaluate_concept_check (tree check)
 {
   if (check == error_mark_node)
     return error_mark_node;
@@ -3236,14 +3192,19 @@ evaluate_concept_check (tree check, tsubst_flags_t complain)
 
   /* Check for satisfaction without diagnostics.  */
   sat_info quiet (tf_none, NULL_TREE);
-  tree result = satisfy_constraint_expression (check, NULL_TREE, quiet);
-  if (result == error_mark_node && (complain & tf_error))
-    {
-      /* Replay the error with re-normalized requirements.  */
-      sat_info noisy (tf_warning_or_error, NULL_TREE);
-      satisfy_constraint_expression (check, NULL_TREE, noisy);
-    }
-  return result;
+  return constraint_satisfaction_value (check, /*args=*/NULL_TREE, quiet);
+}
+
+/* Evaluate the requires-expression T, returning either boolean_true_node
+   or boolean_false_node.  This is used during gimplification and constexpr
+   evaluation.  */
+
+tree
+evaluate_requires_expr (tree t)
+{
+  gcc_assert (TREE_CODE (t) == REQUIRES_EXPR);
+  sat_info quiet (tf_none, NULL_TREE);
+  return constraint_satisfaction_value (t, /*args=*/NULL_TREE, quiet);
 }
 
 /*---------------------------------------------------------------------------
@@ -3709,7 +3670,7 @@ diagnose_nested_requirement (tree req, tree args)
 {
   /* Quietly check for satisfaction first.  */
   sat_info quiet (tf_none, NULL_TREE);
-  tree result = satisfy_constraint_expression (req, args, quiet);
+  tree result = satisfy_nondeclaration_constraints (req, args, quiet);
   if (result == boolean_true_node)
     return;
 
@@ -3721,7 +3682,7 @@ diagnose_nested_requirement (tree req, tree args)
       inform (loc, "nested requirement %qE is not satisfied, because", expr);
 
       sat_info noisy (tf_warning_or_error, NULL_TREE, /*diag_unsat=*/true);
-      satisfy_constraint_expression (req, args, noisy);
+      satisfy_nondeclaration_constraints (req, args, noisy);
     }
   else
     inform (loc, "nested requirement %qE is not satisfied", expr);
@@ -3854,7 +3815,7 @@ diagnosing_failed_constraint::replay_errors_p ()
 }
 
 /* Emit diagnostics detailing the failure ARGS to satisfy the constraints
-   of T. Here, T can be either a constraint or a declaration.  */
+   of T.  Here, T and ARGS are as in constraints_satisfied_p.  */
 
 void
 diagnose_constraints (location_t loc, tree t, tree args)
@@ -3866,8 +3827,13 @@ diagnose_constraints (location_t loc, tree t, tree args)
 
   /* Replay satisfaction, but diagnose unsatisfaction.  */
   sat_info noisy (tf_warning_or_error, NULL_TREE, /*diag_unsat=*/true);
-  if (!args)
-    constraint_satisfaction_value (t, noisy);
+  if (TREE_CODE (t) == REQUIRES_EXPR)
+    {
+      gcc_assert (!args);
+      ++current_constraint_diagnosis_depth;
+      diagnose_requires_expr (t, /*map=*/NULL_TREE, /*in_decl=*/NULL_TREE);
+      --current_constraint_diagnosis_depth;
+    }
   else
     constraint_satisfaction_value (t, args, noisy);
 
