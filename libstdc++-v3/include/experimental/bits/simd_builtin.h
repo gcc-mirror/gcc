@@ -894,12 +894,12 @@ template <typename _Tp, typename _Mp, typename _Abi, size_t _Np>
     class _SimdCastType2
     {
       using _Ap = __intrinsic_type_t<_Tp, _Np>;
-      using _B = __vector_type_t<_Tp, _Np>;
+      using _Bp = __vector_type_t<_Tp, _Np>;
       _SimdMember _M_data;
 
     public:
       _SimdCastType2(_Ap __a) : _M_data(__vector_bitcast<_Tp>(__a)) {}
-      _SimdCastType2(_B __b) : _M_data(__b) {}
+      _SimdCastType2(_Bp __b) : _M_data(__b) {}
       operator _SimdMember() const { return _M_data; }
     };
 
