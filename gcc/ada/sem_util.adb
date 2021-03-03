@@ -18871,27 +18871,14 @@ package body Sem_Util is
       ------------------------------
 
       function Within_Volatile_Function (Id : Entity_Id) return Boolean is
-         Func_Id : Entity_Id;
+         pragma Assert (Ekind (Id) = E_Return_Statement);
+
+         Func_Id : constant Entity_Id := Return_Applies_To (Id);
 
       begin
-         --  Traverse the scope stack looking for a [generic] function
+         pragma Assert (Ekind (Func_Id) in E_Function | E_Generic_Function);
 
-         Func_Id := Id;
-         while Present (Func_Id) and then Func_Id /= Standard_Standard loop
-            if Ekind (Func_Id) in E_Function | E_Generic_Function then
-
-               --  ??? This routine could just use Return_Applies_To, but it
-               --  is currently wrongly called by unanalyzed return statements
-               --  coming from expression functions.
-               pragma Assert (Func_Id = Return_Applies_To (Id));
-
-               return Is_Volatile_Function (Func_Id);
-            end if;
-
-            Func_Id := Scope (Func_Id);
-         end loop;
-
-         return False;
+         return Is_Volatile_Function (Func_Id);
       end Within_Volatile_Function;
 
       --  Local variables
@@ -18901,6 +18888,15 @@ package body Sem_Util is
    --  Start of processing for Is_OK_Volatile_Context
 
    begin
+      --  Ignore context restriction when doing preanalysis, e.g. on a copy of
+      --  an expression function, because this copy is not fully decorated and
+      --  it is not possible to reliably decide the legality of the context.
+      --  Any violations will be reported anyway when doing the full analysis.
+
+      if not Full_Analysis then
+         return True;
+      end if;
+
       --  For actual parameters within explicit parameter associations switch
       --  the context to the corresponding subprogram call.
 
