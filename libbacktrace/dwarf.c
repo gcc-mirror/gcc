@@ -2857,20 +2857,15 @@ read_line_program (struct backtrace_state *state, struct dwarf_data *ddata,
 		uint64_t fileno;
 
 		fileno = read_uleb128 (line_buf);
-		if (fileno == 0)
-		  filename = "";
-		else
+		if (fileno >= hdr->filenames_count)
 		  {
-		    if (fileno >= hdr->filenames_count)
-		      {
-			dwarf_buf_error (line_buf,
-					 ("invalid file number in "
-					  "line number program"),
-					 0);
-			return 0;
-		      }
-		    filename = hdr->filenames[fileno];
+		    dwarf_buf_error (line_buf,
+				     ("invalid file number in "
+				      "line number program"),
+				     0);
+		    return 0;
 		  }
+		filename = hdr->filenames[fileno];
 	      }
 	      break;
 	    case DW_LNS_set_column:
@@ -3298,21 +3293,15 @@ read_function_entry (struct backtrace_state *state, struct dwarf_data *ddata,
 		case DW_AT_call_file:
 		  if (val.encoding == ATTR_VAL_UINT)
 		    {
-		      if (val.u.uint == 0)
-			function->caller_filename = "";
-		      else
+		      if (val.u.uint >= lhdr->filenames_count)
 			{
-			  if (val.u.uint >= lhdr->filenames_count)
-			    {
-			      dwarf_buf_error (unit_buf,
-					       ("invalid file number in "
-						"DW_AT_call_file attribute"),
-					       0);
-			      return 0;
-			    }
-			  function->caller_filename =
-			    lhdr->filenames[val.u.uint];
+			  dwarf_buf_error (unit_buf,
+					   ("invalid file number in "
+					    "DW_AT_call_file attribute"),
+					   0);
+			  return 0;
 			}
+		      function->caller_filename = lhdr->filenames[val.u.uint];
 		    }
 		  break;
 
