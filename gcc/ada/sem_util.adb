@@ -21105,9 +21105,11 @@ package body Sem_Util is
    begin
       pragma Assert (Ekind (Func_Id) in E_Function | E_Generic_Function);
 
-      --  A function declared within a protected type is volatile
+      --  A protected function is volatile
 
-      if Is_Protected_Type (Scope (Func_Id)) then
+      if Nkind (Parent (Unit_Declaration_Node (Func_Id))) =
+           N_Protected_Definition
+      then
          return True;
 
       --  An instance of Ada.Unchecked_Conversion is a volatile function if
