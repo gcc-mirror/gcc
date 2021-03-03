@@ -133,8 +133,15 @@ complete_type (tree type)
 	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = has_nontrivial_dtor;
 	}
     }
-  else if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
-    instantiate_class_template (TYPE_MAIN_VARIANT (type));
+  else if (CLASS_TYPE_P (type))
+    {
+      if (modules_p ())
+	/* TYPE could be a class member we've not loaded the definition of.  */ 
+	lazy_load_pendings (TYPE_NAME (TYPE_MAIN_VARIANT (type)));
+
+      if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+	instantiate_class_template (TYPE_MAIN_VARIANT (type));
+    }
 
   return type;
 }

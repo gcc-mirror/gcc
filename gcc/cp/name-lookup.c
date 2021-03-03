@@ -1916,10 +1916,10 @@ get_class_binding_direct (tree klass, tree name, bool want_type)
 static void
 maybe_lazily_declare (tree klass, tree name)
 {
-  tree main_decl = TYPE_NAME (TYPE_MAIN_VARIANT (klass));
-  if (DECL_LANG_SPECIFIC (main_decl)
-      && DECL_MODULE_PENDING_MEMBERS_P (main_decl))
-    lazy_load_members (main_decl);
+  /* See big comment anout module_state::write_pendings regarding adding a check
+     bit.  */
+  if (modules_p ())
+    lazy_load_pendings (TYPE_NAME (klass));
 
   /* Lazily declare functions, if we're going to search these.  */
   if (IDENTIFIER_CTOR_P (name))
@@ -4098,57 +4098,6 @@ set_module_binding (tree ns, tree name, unsigned mod, int mod_glob,
   *mslot = bind;
 
   return true;
-}
-
-void
-note_pending_specializations (tree ns, tree name, bool is_header)
-{
-  if (tree *slot = find_namespace_slot (ns, name, false))
-    if (TREE_CODE (*slot) == BINDING_VECTOR)
-      {
-	tree vec = *slot;
-	BINDING_VECTOR_PENDING_SPECIALIZATIONS_P (vec) = true;
-	if (is_header)
-	  BINDING_VECTOR_PENDING_IS_HEADER_P (vec) = true;
-	else
-	  BINDING_VECTOR_PENDING_IS_PARTITION_P (vec) = true;
-      }
-}
-
-void
-load_pending_specializations (tree ns, tree name)
-{
-  tree *slot = find_namespace_slot (ns, name, false);
-
-  if (!slot || TREE_CODE (*slot) != BINDING_VECTOR
-      || !BINDING_VECTOR_PENDING_SPECIALIZATIONS_P (*slot))
-    return;
-
-  tree vec = *slot;
-  BINDING_VECTOR_PENDING_SPECIALIZATIONS_P (vec) = false;
-
-  bool do_header = BINDING_VECTOR_PENDING_IS_HEADER_P (vec);
-  bool do_partition = BINDING_VECTOR_PENDING_IS_PARTITION_P (vec);
-  BINDING_VECTOR_PENDING_IS_HEADER_P (vec) = false;
-  BINDING_VECTOR_PENDING_IS_PARTITION_P (vec) = false;
-
-  gcc_checking_assert (do_header | do_partition);
-  binding_cluster *cluster = BINDING_VECTOR_CLUSTER_BASE (vec);
-  unsigned ix = BINDING_VECTOR_NUM_CLUSTERS (vec);
-  if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
-    {
-      ix--;
-      cluster++;
-    }
-
-  for (; ix--; cluster++)
-    for (unsigned jx = 0; jx != BINDING_VECTOR_SLOTS_PER_CLUSTER; jx++)
-      if (cluster->indices[jx].span
-	  && cluster->slots[jx].is_lazy ()
-	  && lazy_specializations_p (cluster->indices[jx].base,
-				     do_header, do_partition))
-	lazy_load_binding (cluster->indices[jx].base, ns, name,
-			   &cluster->slots[jx]);
 }
 
 void

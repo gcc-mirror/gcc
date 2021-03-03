@@ -53,16 +53,13 @@ along with GCC; see the file COPYING3.  If not see
    the third indicates whether it was an import into this TU or not.
 
    The more detailed flags are DECL_MODULE_PARTITION_P,
-   DECL_MODULE_ENTITY_P & DECL_MODULE_PENDING_SPECIALIZATIONS_P.  The
-   first is set in a primary interface unit on decls that were read
-   from module partitions (these will have DECL_MODULE_IMPORT_P set
-   too).  Such decls will be streamed out to the primary's CMI.
-   DECL_MODULE_ENTITY_P is set when an entity is imported, even if it
-   matched a non-imported entity.  Such a decl will not have
-   DECL_MODULE_IMPORT_P set, even though it has an entry in the entity
-   map and array.  DECL_MODULE_PENDING_SPECIALIZATIONS_P is set on a
-   primary template, and indicates there are specializations that
-   should be streamed in before trying to specialize this template.
+   DECL_MODULE_ENTITY_P.  The first is set in a primary interface unit
+   on decls that were read from module partitions (these will have
+   DECL_MODULE_IMPORT_P set too).  Such decls will be streamed out to
+   the primary's CMI.  DECL_MODULE_ENTITY_P is set when an entity is
+   imported, even if it matched a non-imported entity.  Such a decl
+   will not have DECL_MODULE_IMPORT_P set, even though it has an entry
+   in the entity map and array.
 
    Header units are module-like.
 
@@ -2644,6 +2641,58 @@ depset *depset::make_entity (tree entity, entity_kind ek, bool is_defn)
   return r;
 }
 
+class pending_key
+{
+public:
+  tree ns;
+  tree id;
+};
+
+template<>
+struct default_hash_traits<pending_key>
+{
+  using value_type = pending_key;
+
+  static const bool empty_zero_p = false;
+  static hashval_t hash (const value_type &k)
+  {
+    hashval_t h = IDENTIFIER_HASH_VALUE (k.id);
+    h = iterative_hash_hashval_t (DECL_UID (k.ns), h);
+
+    return h;
+  }
+  static bool equal (const value_type &k, const value_type &l)
+  {
+    return k.ns == l.ns && k.id == l.id;
+  }
+  static void mark_empty (value_type &k)
+  {
+    k.ns = k.id = NULL_TREE;
+  }
+  static void mark_deleted (value_type &k)
+  {
+    k.ns = NULL_TREE;
+    gcc_checking_assert (k.id);
+  }
+  static bool is_empty (const value_type &k)
+  {
+    return k.ns == NULL_TREE && k.id == NULL_TREE;
+  }
+  static bool is_deleted (const value_type &k)
+  {
+    return k.ns == NULL_TREE && k.id != NULL_TREE;
+  }
+  static void remove (value_type &)
+  {
+  }
+};
+
+typedef hash_map<pending_key, auto_vec<unsigned>> pending_map_t;
+
+/* Not-loaded entities that are keyed to a namespace-scope
+   identifier.  See module_state::write_pendings for details.  */
+pending_map_t *pending_table;
+
 /* Decls that need some post processing once a batch of lazy loads has
    completed.  */
 vec<tree, va_heap, vl_embed> *post_load_decls;
@@ -2803,20 +2852,6 @@ uintset<T>::hash::get (typename uintset<T>::hash::key_t key, bool extract)
 
   return res;
 }
-
-/* Entities keyed to some other entity.  When we load the other
-   entity, we mark it in some way to indicate there are further
-   entities to load when you start looking inside it.  For instance
-   template specializations are keyed to their most general template.
-   When we instantiate that, we need to know all the partial
-   specializations (to pick the right template), and all the known
-   specializations (to avoid reinstantiating it, and/or whether it's
-   extern).  The values split into two ranges.  If !MSB set, indices
-   into the entity array.  If MSB set, an indirection to another
-   pendset.  */
-
-typedef uintset<unsigned> pendset;
-static pendset::hash *pending_table;
 
 /* Some entities are attached to another entitity for ODR purposes.
    For example, at namespace scope, 'inline auto var = []{};', that
@@ -3709,8 +3744,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_inits (unsigned count);
 
  private:
-  void write_pendings (elf_out *to, vec<depset *> depsets,
-		      depset::hash &, unsigned count, unsigned *crc_ptr);
+  unsigned write_pendings (elf_out *to, vec<depset *> depsets,
+			   depset::hash &, unsigned *crc_ptr);
   bool read_pendings (unsigned count);
 
  private:
@@ -5644,7 +5679,7 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.dependent_init_p);
   WB (lang->u.base.module_purview_p);
   if (VAR_OR_FUNCTION_DECL_P (t))
-    WB (lang->u.base.module_pending_p);
+    WB (lang->u.base.module_attached_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -5714,7 +5749,7 @@ trees_in::lang_decl_bools (tree t)
   RB (lang->u.base.dependent_init_p);
   RB (lang->u.base.module_purview_p);
   if (VAR_OR_FUNCTION_DECL_P (t))
-    RB (lang->u.base.module_pending_p);
+    RB (lang->u.base.module_attached_p);
   switch (lang->u.base.selector)
     {
     default:
@@ -7572,12 +7607,7 @@ trees_in::install_entity (tree decl)
 
   /* Insert the real decl into the entity ary.  */
   unsigned ident = state->entity_lwm + entity_index - 1;
-  binding_slot &elt = (*entity_ary)[ident];
-
-  /* See module_state::read_pendings for how this got set.  */
-  int pending = elt.get_lazy () & 3;
-
-  elt = decl;
+  (*entity_ary)[ident] = decl;
 
   /* And into the entity map, if it's not already there.  */
   if (!DECL_LANG_SPECIFIC (decl)
@@ -7591,26 +7621,6 @@ trees_in::install_entity (tree decl)
       unsigned &slot = entity_map->get_or_insert (DECL_UID (decl), &existed);
       gcc_checking_assert (!existed);
       slot = ident;
-    }
-  else if (pending != 0)
-    {
-      unsigned key_ident = import_entity_index (decl);
-      if (pending & 1)
-	if (!pending_table->add (key_ident, ~ident))
-	  pending &= ~1;
-
-      if (pending & 2)
-	if (!pending_table->add (~key_ident, ~ident))
-	  pending &= ~2;
-    }
-
-  if (pending & 1)
-    DECL_MODULE_PENDING_SPECIALIZATIONS_P (decl) = true;
-
-  if (pending & 2)
-    {
-      DECL_MODULE_PENDING_MEMBERS_P (decl) = true;
-      gcc_checking_assert (TREE_CODE (decl) != TEMPLATE_DECL);
     }
 
   return true;
@@ -10558,7 +10568,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		// FIXME: What if the return type is a voldemort?
 		key.ret = fndecl_declared_return_type (inner);
 	    }
-
 	  break;
 
 	case MK_field:
@@ -13225,6 +13234,28 @@ depset::hash::add_mergeable (depset *mergeable)
   dep->deps.safe_push (mergeable);
 }
 
+/* Find the innermost-namespace scope of DECL, and that
+   namespace-scope decl.  */
+
+tree
+find_pending_key (tree decl, tree *decl_p = nullptr)
+{
+  tree ns = decl;
+  do
+    {
+      decl = ns;
+      ns = CP_DECL_CONTEXT (ns);
+      if (TYPE_P (ns))
+	ns = TYPE_NAME (ns);
+    }
+  while (TREE_CODE (ns) != NAMESPACE_DECL);
+
+  if (decl_p)
+    *decl_p = decl;
+
+  return ns;
+}
+
 /* Iteratively find dependencies.  During the walk we may find more
    entries on the same binding that need walking.  */
 
@@ -13259,12 +13290,21 @@ depset::hash::find_dependencies (module_state *module)
 		walker.tree_node (OVL_FUNCTION (decl));
 	      else if (TREE_VISITED (decl))
 		/* A global tree.  */;
-	      else if (TREE_CODE (decl) == NAMESPACE_DECL
-		       && !DECL_NAMESPACE_ALIAS (decl))
+	      else if (item->get_entity_kind () == EK_NAMESPACE)
 		add_namespace_context (current, CP_DECL_CONTEXT (decl));
 	      else
 		{
 		  walker.mark_declaration (decl, current->has_defn ());
+
+		  if (!walker.is_key_order ()
+		      && (item->get_entity_kind () == EK_SPECIALIZATION
+			  || item->get_entity_kind () == EK_PARTIAL
+			  || (item->get_entity_kind () == EK_DECL
+			      && item->is_member ())))
+		    {
+		      tree ns = find_pending_key (decl, nullptr);
+		      add_namespace_context (item, ns);
+		    }
 
 		  // FIXME: Perhaps p1815 makes this redundant? Or at
 		  // least simplifies it.  Voldemort types are only
@@ -13707,43 +13747,6 @@ depset::hash::connect ()
 
   deps.release ();
   return connector.result;
-}
-
-/* Load the entities referred to by this pendset.  */
-
-static bool
-pendset_lazy_load (pendset *pendings, bool specializations_p)
-{
-  bool ok = true;
-
-  for (unsigned ix = 0; ok && ix != pendings->num; ix++)
-    {
-      unsigned index = pendings->values[ix];
-      if (index & ~(~0u >> 1))
-	{
-	  /* An indirection.  */
-	  if (specializations_p)
-	    index = ~index;
-	  pendset *other = pending_table->get (index, true);
-	  if (!pendset_lazy_load (other, specializations_p))
-	    ok = false;
-	}
-      else
-	{
-	  module_state *module = import_entity_module (index);
-	  binding_slot *slot = &(*entity_ary)[index];
-	  if (!slot->is_lazy ())
-	    dump () && dump ("Specialiation %M[%u] already loaded",
-			     module, index - module->entity_lwm);
-	  else if (!module->lazy_load (index - module->entity_lwm, slot))
-	    ok = false;
-	}
-    }
-
-  /* We own set, so delete it now.  */
-  delete pendings;
-
-  return ok;
 }
 
 /* Initialize location spans.  */
@@ -14665,12 +14668,8 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  break;
 
 	case depset::EK_DECL:
-	  if (b->is_member ())
-	    {
-	    case depset::EK_SPECIALIZATION:  /* Yowzer! */
-	    case depset::EK_PARTIAL:  /* Hey, let's do it again! */
-	      counts[MSC_pendings]++;
-	    }
+	case depset::EK_SPECIALIZATION:
+	case depset::EK_PARTIAL:
 	  b->cluster = counts[MSC_entities]++;
 	  sec.mark_declaration (b->get_entity (), b->has_defn ());
 	  /* FALLTHROUGH  */
@@ -14688,10 +14687,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   dump (dumper::CLUSTER) && (dump.outdent (), true);
 
   /* Ensure every imported decl is referenced before we start
-     streaming.  This ensures that we never encounter the
-     situation where this cluster instantiates some implicit
-     member that importing some other decl causes to be
-     instantiated.  */
+     streaming.  This ensures that we never encounter the situation
+     where this cluster instantiates some implicit member that
+     importing some other decl causes to be instantiated.  */
   sec.set_importing (+1);
   for (unsigned ix = 0; ix != size; ix++)
     {
@@ -14704,14 +14702,14 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
 	  if (dep->is_binding ())
 	    {
-	      /* A cross-module using decl could be here.  */
 	      for (unsigned ix = dep->deps.length (); --ix;)
 		{
 		  depset *bind = dep->deps[ix];
-		  if (bind->get_entity_kind () == depset::EK_USING
-		      && bind->deps[1]->is_import ())
+		  if (bind->get_entity_kind () == depset::EK_USING)
+		    bind = bind->deps[1];
+		  if (bind->is_import ())
 		    {
-		      tree import = bind->deps[1]->get_entity ();
+		      tree import = bind->get_entity ();
 		      if (!TREE_VISITED (import))
 			{
 			  sec.tree_node (import);
@@ -15397,98 +15395,208 @@ module_state::read_entities (unsigned count, unsigned lwm, unsigned hwm)
 
 /* Write the pending table to MOD_SNAME_PFX.pnd
 
-   Specializations & partials are keyed to their primary template.
-   Members are keyed to their context.
+   The pending table holds information about clusters that need to be
+   loaded because they contain information about something that is not
+   found by namespace-scope lookup.
 
-   For specializations & partials, primary templates are keyed to the
-   (namespace name) of their originating decl (because that's the only
-   handle we have).  */
+   The three cases are:
 
-void
+   (a) Template (maybe-partial) specializations that we have
+   instantiated or defined.  When an importer needs to instantiate
+   that template, they /must have/ the partial, explicit & extern
+   specializations available.  If they have the other specializations
+   available, they'll have less work to do.  Thus, when we're about to
+   instantiate FOO, we have to be able to ask 'are there any
+   specialization of FOO in our imports?'.
+
+   (b) (Maybe-implicit) member functions definitions.  A class could
+   be defined in one header, and an inline member defined in a
+   different header (this occurs in the STL).  Similarly, like the
+   specialization case, an implicit member function could have been
+   'instantiated' in one module, and it'd be nice to not have to
+   reinstantiate it in another.
+
+   (c) A member classes completed elsewhere.  A member class could be
+   declared in one header and defined in another.  We need to know to
+   load the class definition before looking in it.  This turns out to
+   be a specific case of #b, so we can treat these the same.  But it
+   does highlight an issue -- there could be an intermediate import
+   between the outermost containing namespace-scope class and the
+   innermost being-defined member class.  This is actually possible
+   with all of these cases, so be aware -- we're not just talking of
+   one level of import to get to the innermost namespace.
+
+   This gets complicated fast, it took me multiple attempts to even
+   get something remotely working.  Partially because I focussed on
+   optimizing what I think turns out to be a smaller problem, given
+   the known need to do the more general case *anyway*.  I document
+   the smaller problem, because it does appear to be the natural way
+   to do it.  It's trap!
+
+   **** THE TRAP
+
+   Let's refer to the primary template or the containing class as the
+   KEY.  And the specialization or member as the PENDING-ENTITY.  (To
+   avoid having to say those mouthfuls all the time.)
+
+   In either case, we have an entity and we need some way of mapping
+   that to a set of entities that need to be loaded before we can
+   proceed with whatever processing of the entity we were going to do.
+
+   We need to link the key to the pending-entity in some way.  Given a
+   key, tell me the pending-entities I need to have loaded.  However
+   we tie the key to the pending-entity must not rely on the key being
+   loaded -- that'd defeat the lazy loading scheme.
+
+   As the key will be an import in we know its entity number (either
+   because we imported it, or we're writing it out too).  Thus we can
+   generate a map of key-indices to pending-entities.  The
+   pending-entity indices will be into our span of the entity table,
+   and thus allow them to be lazily loaded.  The key index will be
+   into another slot of the entity table.  Notice that this checking
+   could be expensive, we don't want to iterate over a bunch of
+   pending-entity indices (across multiple imports), every time we're
+   about do to the thing with the key.  We need to quickly determine
+   'definitely nothing needed'.
+
+   That's almost good enough, except that key indices are not unique
+   in a couple of cases :( Specifically the Global Module or a module
+   partition can result in multiple modules assigning an entity index
+   for the key.  The decl-merging on loading will detect that so we
+   only have one Key loaded, and in the entity hash it'll indicate the
+   entity index of first load.  Which might be different to how we
+   know it.  Notice this is restricted to GM entities or this-module
+   entities.  Foreign imports cannot have this.
+
+   We can simply resolve this in the direction of how this module
+   referred to the key to how the importer knows it.  Look in the
+   entity table slot that we nominate, maybe lazy load it, and then
+   lookup the resultant entity in the entity hash to learn how the
+   importer knows it.
+
+   But we need to go in the other direction :( Given the key, find all
+   the index-aliases of that key.  We can partially solve that by
+   adding an alias hash table.  Whenever we load a merged decl, add or
+   augment a mapping from the entity (or its entity-index) to the
+   newly-discovered index.  Then when we look for pending entities of
+   a key, we also iterate over this aliases this mapping provides.
+
+   But that requires the alias to be loaded.  And that's not
+   necessarily true.
+
+   *** THE SIMPLER WAY
+
+   The remaining fixed thing we have is the innermost namespace
+   containing the ultimate namespace-scope container of the key and
+   the name of that container (which might be the key itself).  I.e. a
+   namespace-decl/identifier/module tuple.  Let's call this the
+   top-key.  We'll discover that the module is not important here,
+   because of cross-module possibilities mentioned in case #c above.
+   We can't markup namespace-binding slots.  The best we can do is
+   mark the binding vector with 'there's something here', and have
+   another map from namespace/identifier pairs to a vector of pending
+   entity indices.
+
+   Maintain a pending-entity map.  This is keyed by top-key, and
+   maps to a vector of pending-entity indices.  On the binding vector
+   have flags saying whether the pending-name-entity map has contents.
+   (We might want to further extend the key to be GM-vs-Partition and
+   specialization-vs-member, but let's not get ahead of ourselves.)
+
+   For every key-like entity, find the outermost namespace-scope
+   name.  Use that to lookup in the pending-entity map and then make
+   sure the specified entities are loaded.
+
+   An optimization might be to have a flag in each key-entity saying
+   that it's top key might be in the entity table.  It's not clear to
+   me how to set that flag cheaply -- cheaper than just looking.
+
+   FIXME: It'd be nice to have a bit in decls to tell us whether to
+   even try this.  We can have a 'already done' flag, that we set when
+   we've done KLASS's lazy pendings.  When we import a module that
+   registers pendings on the same top-key as KLASS we need to clear
+   the flag.  A recursive walk of the top-key clearing the bit will
+   suffice.  Plus we only need to recurse on classes that have the bit
+   set.  (That means we need to set the bit on parents of KLASS here,
+   don't forget.)  However, first: correctness, second: efficiency.  */
+
+unsigned
 module_state::write_pendings (elf_out *to, vec<depset *> depsets,
-			      depset::hash &table,
-			      unsigned count, unsigned *crc_p)
+			      depset::hash &table, unsigned *crc_p)
 {
-  dump () && dump ("Writing %u pendings", count);
+  dump () && dump ("Writing pending-entities");
   dump.indent ();
 
   trees_out sec (to, this, table);
   sec.begin ();
 
+  unsigned count = 0;
+  tree cache_ns = NULL_TREE;
+  tree cache_id = NULL_TREE;
+  unsigned cache_section = ~0;
   for (unsigned ix = 0; ix < depsets.length (); ix++)
     {
       depset *d = depsets[ix];
-      depset::entity_kind kind = d->get_entity_kind ();
-      tree key = NULL_TREE;
-      bool is_spec = false;
-      
 
-      if (kind == depset::EK_SPECIALIZATION)
+      if (d->is_binding ())
+	continue;
+
+      if (d->is_import ())
+	continue;
+
+      if (!(d->get_entity_kind () == depset::EK_SPECIALIZATION
+	    || d->get_entity_kind () == depset::EK_PARTIAL
+	    || (d->get_entity_kind () == depset::EK_DECL && d->is_member ())))
+	continue;
+
+      tree key_decl = nullptr;
+      tree key_ns = find_pending_key (d->get_entity (), &key_decl);
+      tree key_name = DECL_NAME (key_decl);
+
+      if (IDENTIFIER_ANON_P (key_name))
 	{
-	  is_spec = true;
-	  key = reinterpret_cast <spec_entry *> (d->deps[0])->tmpl;
-	}
-      else if (kind == depset::EK_PARTIAL)
-	{
-	  is_spec = true;
-	  key = CLASSTYPE_TI_TEMPLATE (TREE_TYPE (d->get_entity ()));
-	}
-      else if (kind == depset::EK_DECL && d->is_member ())
-	{
-	  tree ctx = DECL_CONTEXT (d->get_entity ());
-	  key = TYPE_NAME (ctx);
-	  if (tree ti = CLASSTYPE_TEMPLATE_INFO (ctx))
-	    if (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti)) == key)
-	      key = TI_TEMPLATE (ti);
-	}
-
-      // FIXME:OPTIMIZATION More than likely when there is one pending
-      // member, there will be others.  All written in the same
-      // section and keyed to the same class.  We only need to record
-      // one of them.  The same is not true for specializations
-
-      if (key)
-	{
-	  gcc_checking_assert (!d->is_import ());
-
-	  {
-	    /* Key the entity to its key.  */
-	    depset *key_dep = table.find_dependency (key);
-	    if (key_dep->get_entity_kind () == depset::EK_REDIRECT)
-	      key_dep = key_dep->deps[0];
-	    unsigned key_origin
-	      = key_dep->is_import () ? key_dep->section : 0;
-	    sec.u (key_origin);
-	    sec.u (key_dep->cluster);
-	    sec.u (d->cluster);
-	    dump () && dump ("%s %N entity:%u keyed to %M[%u] %N",
-			     is_spec ? "Specialization" : "Member",
-			     d->get_entity (),
-			     d->cluster, (*modules)[key_origin],
-			     key_dep->cluster, key);
-	  }
-
-	  if (is_spec)
-	    {
-	      /* Key the general template to the originating decl.  */
-	      tree origin = get_originating_module_decl (key);
-	      sec.tree_node (CP_DECL_CONTEXT (origin));
-	      sec.tree_node (DECL_NAME (origin));
-
-	      unsigned origin_ident = import_entity_index (origin);
-	      module_state *origin_from = this;
-	      if (!(origin_ident & ~(~0u>>1)))
-		origin_from = import_entity_module (origin_ident);
-	      sec.u (origin_from->remap);
-	    }
+	  gcc_checking_assert (IDENTIFIER_LAMBDA_P (key_name));
+	  if (tree attached = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (key_decl)))
+	    key_name = DECL_NAME (attached);
 	  else
-	    sec.tree_node (NULL);
-	  count--;
+	    {
+	      /* There's nothing to attach it to.  Must
+		 always reinstantiate.  */
+	      dump ()
+		&& dump ("Unattached lambda %N[%u] section:%u",
+			 d->get_entity_kind () == depset::EK_DECL
+			 ? "Member" : "Specialization", d->get_entity (),
+			 d->cluster, d->section);
+	      continue;
+	    }
 	}
+
+      char const *also = "";
+      if (d->section == cache_section
+	  && key_ns == cache_ns
+	  && key_name == cache_id)
+	/* Same section & key as previous, no need to repeat ourselves.  */
+	also = "also ";
+      else
+	{
+	  cache_ns = key_ns;
+	  cache_id = key_name;
+	  cache_section = d->section;
+	  gcc_checking_assert (table.find_dependency (cache_ns));
+	  sec.tree_node (cache_ns);
+	  sec.tree_node (cache_id);
+	  sec.u (d->cluster);
+	  count++;
+	}
+      dump () && dump ("Pending %s %N entity:%u section:%u %skeyed to %P",
+		       d->get_entity_kind () == depset::EK_DECL
+		       ? "member" : "specialization", d->get_entity (),
+		       d->cluster, cache_section, also, cache_ns, cache_id);
       }
-  gcc_assert (!count);
   sec.end (to, to->name (MOD_SNAME_PFX ".pnd"), crc_p);
   dump.outdent ();
+
+  return count;
 }
 
 bool
@@ -15504,95 +15612,34 @@ module_state::read_pendings (unsigned count)
 
   for (unsigned ix = 0; ix != count; ix++)
     {
-      unsigned key_origin = slurp->remap_module (sec.u ());
-      unsigned key_index = sec.u ();
-      unsigned ent_index = sec.u ();
-      module_state *from = (*modules)[key_origin];
-      tree ns = sec.tree_node ();
+      pending_key key;
+      unsigned index;
 
-      if (!key_origin
-	  || key_index >= from->entity_num || ent_index >= entity_num
-	  || (ns && TREE_CODE (ns) != NAMESPACE_DECL))
+      key.ns = sec.tree_node ();
+      key.id = sec.tree_node ();
+      index = sec.u ();
+
+      if (!key.ns || !key.id
+	  || !(TREE_CODE (key.ns) == NAMESPACE_DECL
+	       && !DECL_NAMESPACE_ALIAS (key.ns))
+	  || !identifier_p (key.id)
+	  || index >= entity_num)
 	sec.set_overrun ();
 
       if (sec.get_overrun ())
 	break;
 
-      bool loaded = false;
-      dump () && dump ("%s keyed to %M[%u] entity:%u",
-		       ns ? "Specialization" : "Member",
-		       from, key_index, ent_index);
-      unsigned key_ident = from->entity_lwm + key_index;
-      if (pending_table->add (ns ? key_ident : ~key_ident,
-			      ent_index + entity_lwm))
-	{
-	  binding_slot &slot = (*entity_ary)[key_ident];
-	  if (slot.is_lazy ())
-	    slot.or_lazy (ns ? 1 : 2);
-	  else
-	    {
-	      tree key = slot;
+      dump () && dump ("Pending:%u keyed to %P", index, key.ns, key.id);
 
-	      loaded = true;
-	      if (ns)
-		{
-		  if (key && TREE_CODE (key) == TEMPLATE_DECL)
-		    DECL_MODULE_PENDING_SPECIALIZATIONS_P (key) = true;
-		  else
-		    sec.set_overrun ();
-		}
-	      else
-		{
-		  if (key && TREE_CODE (key) == TYPE_DECL)
-		    DECL_MODULE_PENDING_MEMBERS_P (key) = true;
-		  else
-		    sec.set_overrun ();
-		}
-	    }
-	}
-
-      if (ns)
-	{
-	  /* We also need to mark the namespace binding of the
-	     originating template, so we know to set its pending
-	     specializations flag, when we load it.  */
-	  tree name = sec.tree_node ();
-	  unsigned origin = slurp->remap_module (sec.u ());
-	  if (!origin || !name || TREE_CODE (name) != IDENTIFIER_NODE)
-	    sec.set_overrun ();
-	  if (sec.get_overrun ())
-	    break;
-
-	  module_state *origin_from = (*modules)[origin];
-	  if (!loaded
-	      && (origin_from->is_header ()
-		  || (origin_from->is_partition ()
-		      || origin_from->is_module ())))
-	    note_pending_specializations (ns, name, origin_from->is_header ());
-	}
+      index += entity_lwm;
+      auto &vec = pending_table->get_or_insert (key);
+      vec.safe_push (index);
     }
 
   dump.outdent ();
   if (!sec.end (from ()))
     return false;
   return true;
-}
-
-/* Return true if module MOD cares about lazy specializations keyed to
-   possibly duplicated entity bindings.  */
-
-bool
-lazy_specializations_p (unsigned mod, bool header_p, bool partition_p)
-{
-  module_state *module = (*modules)[mod];
-
-  if (module->is_header ())
-    return header_p;
-
-  if (module->is_module () || module->is_partition ())
-    return partition_p;
-
-  return false;
 }
 
 /* Read & write locations.  */
@@ -17873,6 +17920,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	}
     }
 
+  /* depset::cluster - entity number (on entities)
+     depset::section - cluster number  */
   /* We'd better have written as many sections and found as many
      namespaces as we predicted.  */
   gcc_assert (counts[MSC_sec_hwm] == to->get_section_limit ()
@@ -17892,8 +17941,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   counts[MSC_bindings] = write_bindings (to, sccs, &crc);
 
   /* Write the unnamed.  */
-  if (counts[MSC_pendings])
-    write_pendings (to, sccs, table, counts[MSC_pendings], &crc);
+  counts[MSC_pendings] = write_pendings (to, sccs, table, &crc);
 
   /* Write the import table.  */
   if (config.num_imports > 1)
@@ -18928,14 +18976,19 @@ lazy_load_binding (unsigned mod, tree ns, tree id, binding_slot *mslot)
 	    module->get_flatname ());
 }
 
-/* Load any pending specializations of TMPL.  Called just before
-   instantiating TMPL.  */
+/* Load any pending entities keyed to the top-key of DECL.  */
 
 void
-lazy_load_specializations (tree tmpl)
+lazy_load_pendings (tree decl)
 {
-  gcc_checking_assert (DECL_MODULE_PENDING_SPECIALIZATIONS_P (tmpl)
-		       && DECL_MODULE_ENTITY_P (tmpl));
+  tree key_decl;
+  pending_key key;
+  key.ns = find_pending_key (decl, &key_decl);
+  key.id = DECL_NAME (key_decl);
+
+  auto *pending_vec = pending_table ? pending_table->get (key) : nullptr;
+  if (!pending_vec)
+    return;
 
   int count = errorcount + warningcount;
 
@@ -18943,21 +18996,32 @@ lazy_load_specializations (tree tmpl)
   bool ok = !recursive_lazy ();
   if (ok)
     {
-      unsigned ident = import_entity_index (tmpl);
-      if (pendset *set = pending_table->get (ident, true))
+      function_depth++; /* Prevent GC */
+      unsigned n = dump.push (NULL);
+      dump () && dump ("Reading %u pending entities keyed to %P",
+		       pending_vec->length (), key.ns, key.id);
+      for (unsigned ix = pending_vec->length (); ix--;)
 	{
-	  function_depth++; /* Prevent GC */
-	  unsigned n = dump.push (NULL);
-	  dump ()
-	    && dump ("Reading %u pending specializations keyed to %M[%u] %N",
-		     set->num, import_entity_module (ident),
-		     ident - import_entity_module (ident)->entity_lwm, tmpl);
-	  if (!pendset_lazy_load (set, true))
-	    ok = false;
-	  dump.pop (n);
+	  unsigned index = (*pending_vec)[ix];
+	  binding_slot *slot = &(*entity_ary)[index];
 
-	  function_depth--;
+	  if (slot->is_lazy ())
+	    {
+	      module_state *import = import_entity_module (index);
+	      if (!import->lazy_load (index - import->entity_lwm, slot))
+		ok = false;
+	    }
+	  else if (dump ())
+	    {
+	      module_state *import = import_entity_module (index);
+	      dump () && dump ("Entity %M[%u] already loaded",
+			       import, index - import->entity_lwm);
+	    }
 	}
+
+      pending_table->remove (key);
+      dump.pop (n);
+      function_depth--;
       lazy_snum = 0;
       post_load_processing ();
     }
@@ -18965,47 +19029,12 @@ lazy_load_specializations (tree tmpl)
   timevar_stop (TV_MODULE_IMPORT);
 
   if (!ok)
-    fatal_error (input_location, "failed to load specializations keyed to %qD",
-		 tmpl);
+    fatal_error (input_location, "failed to load pendings for %<%E%s%E%>",
+		 key.ns, &"::"[key.ns == global_namespace ? 2 : 0], key.id);
 
   if (count != errorcount + warningcount)
-    inform (input_location,
-	    "during load of specializations keyed to %qD", tmpl);
-}
-
-void
-lazy_load_members (tree decl)
-{
-  gcc_checking_assert (DECL_MODULE_PENDING_MEMBERS_P (decl));
-  if (!DECL_MODULE_ENTITY_P (decl))
-    {
-      // FIXME: I can't help feeling that DECL_TEMPLATE_RESULT should
-      // be inserted into the entity map, or perhaps have the same
-      // DECL_UID as the template, so I don't have to do this dance
-      // here and elsewhere.  It also simplifies when DECL is a
-      // partial specialization.  (also noted elsewhere as an issue)
-      tree ti = CLASSTYPE_TEMPLATE_INFO (TREE_TYPE (decl));
-      tree tmpl = TI_TEMPLATE (ti);
-      gcc_checking_assert (DECL_TEMPLATE_RESULT (tmpl) == decl);
-      decl = tmpl;
-    }
-
-  timevar_start (TV_MODULE_IMPORT);
-  unsigned ident = import_entity_index (decl);
-  if (pendset *set = pending_table->get (~ident, true))
-    {
-      function_depth++; /* Prevent GC */
-      unsigned n = dump.push (NULL);
-      dump () && dump ("Reading %u pending members keyed to %M[%u] %N",
-		       set->num, import_entity_module (ident),
-		       ident - import_entity_module (ident)->entity_lwm, decl);
-      pendset_lazy_load (set, false);
-      post_load_processing ();
-      dump.pop (n);
-
-      function_depth--;
-    }
-  timevar_stop (TV_MODULE_IMPORT);
+    inform (input_location, "during load of pendings for %<%E%s%E%>",
+	    key.ns, &"::"[key.ns == global_namespace ? 2 : 0], key.id);
 }
 
 static void
@@ -19532,7 +19561,7 @@ preprocess_module (module_state *module, location_t from_loc,
 	{
 	  unsigned n = dump.push (NULL);
 
-	  dump () && dump ("Reading %s preprocessor state", module);
+	  dump () && dump ("Reading %M preprocessor state", module);
 	  name_pending_imports (reader, false);
 
 	  /* Preserve the state of the line-map.  */
@@ -19873,8 +19902,7 @@ init_modules (cpp_reader *reader)
 
   if (!flag_preprocess_only)
     {
-      pending_table = new pendset::hash (EXPERIMENT (1, 400));
-
+      pending_table = new pending_map_t (EXPERIMENT (1, 400));
       entity_map = new entity_map_t (EXPERIMENT (1, 400));
       vec_safe_reserve (entity_ary, EXPERIMENT (1, 400));
     }

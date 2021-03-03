@@ -11,4 +11,4 @@ struct frob::inner
 };
 
 // { dg-final { scan-lang-dump { Cluster members:\n  \[0\]=decl definition '::frob@foo:part1:1::inner'\n  \[1\]=decl declaration '::frob@foo:part1:1::inner::inner'\n} module } }
-// { dg-final { scan-lang-dump {Member '::frob@foo:part1:1::inner' entity:0 keyed to foo:part1\[0\] '::frob@foo:part1:1'} module } }
+// { dg-final { scan-lang-dump {Pending member '::frob@foo:part1:1::inner' entity:0 section:. keyed to '::frob'} module } }
