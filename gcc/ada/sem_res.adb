@@ -12607,10 +12607,9 @@ package body Sem_Res is
       --  the point where actions for the slice are analyzed). Note that this
       --  is different from freezing the itype immediately, which might be
       --  premature (e.g. if the slice is within a transient scope). This needs
-      --  to be done only if expansion is enabled, or in GNATprove mode to
-      --  capture the associated run-time exceptions if any.
+      --  to be done only if expansion is enabled.
 
-      elsif Expander_Active or GNATprove_Mode then
+      elsif Expander_Active then
          Ensure_Defined (Typ => Slice_Subtype, N => N);
       end if;
    end Set_Slice_Subtype;
