@@ -7808,7 +7808,31 @@ trees_out::decl_value (tree decl, depset *dep)
     }
 
   if (!is_key_order ())
-    tree_node (get_constraints (decl));
+    {
+      if (mk & MK_template_mask
+	  || mk == MK_partial
+	  || mk == MK_friend_spec)
+	{
+	  if (mk != MK_partial)
+	    {
+	      // FIXME: We should make use of the merge-key by
+	      // exposing it outside of key_mergeable.  But this gets
+	      // the job done.
+	      auto *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
+
+	      if (streaming_p ())
+		u (get_mergeable_specialization_flags (entry->tmpl, decl));
+	      tree_node (entry->tmpl);
+	      tree_node (entry->args);
+	    }
+	  else
+	    {
+	      tree_node (CLASSTYPE_TI_TEMPLATE (TREE_TYPE (inner)));
+	      tree_node (CLASSTYPE_TI_ARGS (TREE_TYPE (inner)));
+	    }
+	}
+      tree_node (get_constraints (decl));
+    }
 
   if (streaming_p ())
     {
@@ -8096,7 +8120,22 @@ trees_in::decl_value ()
 	       || (stub_decl && !tree_node_vals (stub_decl))))
     goto bail;
 
-  tree constraints = tree_node ();
+  spec_entry spec;
+  unsigned spec_flags = 0;
+  if (mk & MK_template_mask
+      || mk == MK_partial
+      || mk == MK_friend_spec)
+    {
+      if (mk == MK_partial)
+	spec_flags = 2;
+      else
+	spec_flags = u ();
+
+      spec.tmpl = tree_node ();
+      spec.args = tree_node ();
+    }
+  /* Hold constraints on the spec field, for a short while.  */
+  spec.spec = tree_node ();
 
   dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (decl), decl);
 
@@ -8157,8 +8196,13 @@ trees_in::decl_value ()
 	    }
 	}
 
-      if (constraints)
-	set_constraints (decl, constraints);
+      if (spec.spec)
+	set_constraints (decl, spec.spec);
+      if (mk & MK_template_mask
+	  || mk == MK_partial)
+	/* Add to specialization tables now that constraints etc are
+	   added.  */
+	add_mergeable_specialization (spec.tmpl, spec.args, decl, spec_flags);
 
       if (TREE_CODE (decl) == INTEGER_CST && !TREE_OVERFLOW (decl))
 	{
@@ -8245,6 +8289,15 @@ trees_in::decl_value ()
 
       /* And our result is the existing node.  */
       decl = existing;
+    }
+
+  if (mk == MK_friend_spec)
+    {
+      tree e = match_mergeable_specialization (true, &spec);
+      if (!e)
+	add_mergeable_specialization (spec.tmpl, spec.args, decl, spec_flags);
+      else if (e != existing)
+	set_overrun ();
     }
 
   if (is_typedef)
@@ -10415,8 +10468,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
       tree_node (entry->tmpl);
       tree_node (entry->args);
-      if (streaming_p ())
-	u (get_mergeable_specialization_flags (entry->tmpl, decl));
       if (mk & MK_tmpl_decl_mask)
 	if (flag_concepts && TREE_CODE (inner) == VAR_DECL)
 	  {
@@ -10504,16 +10555,6 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		key.ret = fndecl_declared_return_type (inner);
 	    }
 
-	  if (mk == MK_friend_spec)
-	    {
-	      gcc_checking_assert (dep && dep->is_special ());
-	      spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
-
-	      tree_node (entry->tmpl);
-	      tree_node (entry->args);
-	      if (streaming_p ())
-		u (get_mergeable_specialization_flags (entry->tmpl, decl));
-	    }
 	  break;
 
 	case MK_field:
@@ -10763,7 +10804,6 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       spec_entry spec;
       spec.tmpl = tree_node ();
       spec.args = tree_node ();
-      unsigned flags = u ();
 
       DECL_NAME (decl) = DECL_NAME (spec.tmpl);
       DECL_CONTEXT (decl) = DECL_CONTEXT (spec.tmpl);
@@ -10800,7 +10840,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	remove_constraints (inner);
 
       if (!existing)
-	add_mergeable_specialization (spec.tmpl, spec.args, decl, flags);
+	; /* We'll add to the table once read.  */
       else if (mk & MK_tmpl_decl_mask)
 	{
 	  /* A declaration specialization.  */
@@ -10885,8 +10925,6 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		  break;
 		}
 	    }
-	  if (!existing)
-	    add_mergeable_specialization (key.ret, key.args, decl, 2);
 	}
       else
 	switch (TREE_CODE (container))
@@ -11054,22 +11092,6 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		  }
 	      }
 	  }
-
-      if (mk == MK_friend_spec)
-	{
-	  spec_entry spec;
-	  spec.tmpl = tree_node ();
-	  spec.args = tree_node ();
-	  spec.spec = decl;
-	  unsigned flags = u ();
-
-	  tree e = match_mergeable_specialization (true, &spec);
-	  if (!e)
-	    add_mergeable_specialization (spec.tmpl, spec.args,
-					  existing ? existing : decl, flags);
-	  else if (e != existing)
-	    set_overrun ();
-	}
     }
 
   dump (dumper::MERGE)
