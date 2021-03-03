@@ -1,3 +1,58 @@
+2021-03-02  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.misc-tests/outputs.exp: Skip @file -save-temps
+	tests if target test-framework has -L or -I options.
+
+2021-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/99323
+	* gcc.dg/pr99323-1.c: New test.
+	* gcc.dg/pr99323-2.c: New test.
+
+2021-03-02  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/99251
+	* g++.dg/warn/Wnonnull9.C: Expect no warnings.
+	* g++.dg/warn/Wnonnull12.C: New test.
+
+2021-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/limited5.adb: New test.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96443
+	PR c++/96960
+	* g++.dg/concepts/abbrev9.C: New test.
+	* g++.dg/cpp2a/concepts-lambda15.C: New test.
+	* g++.dg/cpp2a/concepts-placeholder3.C: New test.
+	* g++.dg/cpp2a/concepts-return-req2.C: New test.
+	* g++.dg/cpp2a/concepts-ts1.C: Add dg-bogus directive to the
+	call to f15 that we expect to accept.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/cpp1z/auto1.C: New test.
+
+2021-03-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-nnpa-fp16-convert.c: New test.
+	* gcc.target/s390/zvector/vec-nnpa-fp32-convert-1.c: New test.
+	* gcc.target/s390/zvector/vec_convert_from_fp16.c: New test.
+	* gcc.target/s390/zvector/vec_convert_to_fp16.c: New test.
+	* gcc.target/s390/zvector/vec_extend_to_fp32_hi.c: New test.
+	* gcc.target/s390/zvector/vec_extend_to_fp32_lo.c: New test.
+	* gcc.target/s390/zvector/vec_round_from_fp32.c: New test.
+
+2021-03-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* lib/target-supports.exp: Add check for nnpa facility.
+
+2021-03-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/mul-signed-overflow-1.c: Run only on z14.
+	* gcc.target/s390/mul-signed-overflow-2.c: Run only on z14.
+
 2021-03-01  Martin Liska  <mliska@suse.cz>
 
 	PR target/99313

@@ -1,3 +1,10 @@
+2021-03-02  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/98818
+	* dwarf.c (dwarf_buf_error): Add errnum parameter.  Change all
+	callers.
+	* backtrace.h: Update backtrace_error_callback comment.
+
 2021-02-12  Ian Lance Taylor  <iant@golang.org>
 
 	* configure.ac: Check for objcopy --add-gnu-debuglink by using

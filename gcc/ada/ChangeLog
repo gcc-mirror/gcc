@@ -1,3 +1,15 @@
+2021-03-02  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR bootstrap/98590
+	* cstreams.c: Ensure fileno_unlocked() is visible on Cygwin.
+
+2021-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/99095
+	* sem_ch8.adb (Check_Constrained_Object): Restrict again the special
+	optimization for limited types to non-array types except in the case
+	of an extended return statement.
+
 2021-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/99020

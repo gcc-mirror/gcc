@@ -1,3 +1,89 @@
+2021-03-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.md (tls_get_tpointer_internal): Prepend
+	period to symbol name.
+	(tls_get_addr_internal<mode>): Same.
+
+2021-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/99323
+	* diagnostic-show-locus.c
+	(selftest::test_one_liner_many_fixits_2): Fix accidental usage of
+	column 0.
+
+2021-03-02  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99276
+	* builtins.c (warn_for_access): Remove stray warning text.
+
+2021-03-02  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99295
+	* doc/extend.texi (attribute malloc): Reword and clarify nonaliasing
+	property.
+
+2021-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99319
+	* dwarf2out.c (output_macinfo_op): Use DW_MACRO_*_str* even with
+	-gdwarf-5 -gstrict-dwarf.  For -gsplit-dwarf -gdwarf-5 use
+	DW_MACRO_*_strx instead of DW_MACRO_*_strp.  Handle
+	DW_MACRO_define_strx and DW_MACRO_undef_strx.
+	(save_macinfo_strings): Use DW_MACRO_*_str* even with
+	-gdwarf-5 -gstrict-dwarf.  Handle DW_MACRO_define_strx and
+	DW_MACRO_undef_strx.
+
+2021-03-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-builtin-types.def (BT_FN_V4SF_V8HI_UINT): New
+	builtin signature.
+	(BT_FN_V8HI_V8HI_UINT): Likewise.
+	(BT_FN_V8HI_V4SF_V4SF_UINT): Likewise.
+	* config/s390/s390-builtins.def (B_NNPA): New macro definition.
+	(s390_vclfnhs, s390_vclfnls, s390_vcrnfs, s390_vcfn, s390_vcnf):
+	New builtin definitions.
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Bump
+	vector extension version.
+	* config/s390/s390.c (s390_expand_builtin): Check if builtins are
+	available with current -march level.
+	* config/s390/s390.md (UNSPEC_NNPA_VCLFNHS_V8HI)
+	(UNSPEC_NNPA_VCLFNLS_V8HI, UNSPEC_NNPA_VCRNFS_V8HI)
+	(UNSPEC_NNPA_VCFN_V8HI, UNSPEC_NNPA_VCNF_V8HI): New constants.
+	* config/s390/vecintrin.h (vec_extend_to_fp32_hi): New macro.
+	(vec_extend_to_fp32_lo): Likewise.
+	(vec_round_from_fp32): Likewise.
+	(vec_convert_to_fp16): Likewise.
+	(vec_convert_from_fp16): Likewise.
+	* config/s390/vx-builtins.md (vclfnhs_v8hi): New insn pattern.
+	(vclfnls_v8hi): Likewise.
+	(vcrnfs_v8hi): Likewise.
+	(vcfn_v8hi): Likewise.
+	(vcnf_v8hi): Likewise.
+
+2021-03-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* common/config/s390/s390-common.c (processor_flags_table): New entry.
+	* config.gcc: Enable arch14 for --with-arch and --with-tune.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu): Pick
+	arch14 for unknown CPU models.
+	* config/s390/s390-opts.h (enum processor_type): Add PROCESSOR_ARCH14.
+	* config/s390/s390.c (s390_issue_rate): Add case for PROCESSOR_ARCH14.
+	(s390_get_sched_attrmask): Likewise.
+	(s390_get_unit_mask): Likewise.
+	* config/s390/s390.h (enum processor_flags): Add PF_NNPA and PF_ARCH14.
+	(TARGET_CPU_ARCH14, TARGET_CPU_ARCH14_P, TARGET_CPU_NNPA)
+	(TARGET_CPU_NNPA_P, TARGET_ARCH14, TARGET_ARCH14_P, TARGET_NNPA)
+	(TARGET_NNPA_P): New macro definitions.
+	* config/s390/s390.md ("cpu_facility", "enabled"): Add arch14 and nnpa.
+	* config/s390/s390.opt: Add PROCESSOR_ARCH14.
+
+2021-03-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/95757
+	* tree-vrp.c (register_edge_assert_for): Remove superfluous ()s around
+	condition.  Call register_edge_assert_for_1 for == 0, != 0, == 1 and
+	!= 1 comparisons if name is lhs of a comparison.
+
 2021-03-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/44107
