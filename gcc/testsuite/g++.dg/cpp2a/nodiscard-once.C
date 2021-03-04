@@ -1,6 +1,6 @@
 /* nodiscard attribute tests  */
 /* { dg-do compile { target c++2a } } */
-/* { dg-options "-O -ftrack-macro-expansion=0" } */
+/* { dg-options "-O" } */
 
 [[nodiscard, nodiscard]] int check1 (void); /* { dg-error "nodiscard\[^\n\r]*can appear at most once" } */
 
