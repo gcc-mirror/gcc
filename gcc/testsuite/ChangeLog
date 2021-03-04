@@ -1,3 +1,117 @@
+2021-03-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.misc-tests/outputs.exp: Enumerate tests.
+
+2021-03-04  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.misc-tests/outputs.exp: Append discriminating
+	suffixes to tests with duplicate names.
+	(outest): Assert that each running test has a unique
+	name.
+
+2021-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/96963
+	PR middle-end/94655
+	* gcc.dg/Wstringop-overflow-47.c: Xfail tests.
+	* gcc.dg/Wstringop-overflow-65.c: New test.
+	* gcc.dg/Warray-bounds-69.c: Same.
+
+2021-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96474
+	* g++.dg/cpp1z/class-deduction83.C: New test.
+
+2021-03-03  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vcvt_fXX_fXX.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vcvtx.c:
+	New test.
+
+2021-03-03  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmovn_high.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vqmovn_high.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vqmovun_high.c:
+	New test.
+
+2021-03-03  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vrshrn_high_n.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vshrn_high_n.c:
+	New test.
+
+2021-03-03  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vXXXhn_high.inc:
+	New test template.
+	* gcc.target/aarch64/advsimd-intrinsics/vaddhn_high.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vraddhn_high.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vrsubhn_high.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vsubhn_high.c:
+	New test.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82959
+	* g++.dg/cpp1z/eval-order10.C: New test.
+
+2021-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97034
+	PR c++/99009
+	* g++.dg/cpp1z/class-deduction81.C: New test.
+	* g++.dg/cpp1z/class-deduction82.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr8.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr9.C: New test.
+	* g++.dg/cpp2a/class-deduction-aggr10.C: New test.
+
+2021-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95675
+	* g++.dg/cpp0x/decltype-call5.C: New test.
+	* g++.dg/cpp0x/decltype-call6.C: New test.
+
+2021-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr95798-1.c: Add -fomit-frame-pointer to
+	dg-options.
+	* gcc.target/i386/pr95798-2.c: Likewise.
+
+2021-03-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99344
+	* g++.dg/modules/namespace-2_a.C
+	* g++.dg/modules/pr99344_a.C
+	* g++.dg/modules/pr99344_b.C
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99321
+	* gcc.target/i386/pr99321.c: New test.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99324
+	* gcc.c-torture/compile/pr99324.c: New test.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99085
+	* gcc.dg/graphite/pr99085.c: New test.
+
+2021-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96078
+	* g++.dg/ext/attr-flatten1.C: New test.
+
 2021-03-02  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.misc-tests/outputs.exp: Skip @file -save-temps

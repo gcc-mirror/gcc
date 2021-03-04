@@ -160,8 +160,8 @@ if test x"$enable_offload_targets" != x; then
       nvptx*)
 	case "${target}" in
 	  aarch64*-*-* | powerpc64le-*-* | x86_64-*-*)
-	    case " ${CC} ${CFLAGS} " in
-	      *" -m32 "* | *" -mx32 "*)
+	    case "$ac_cv_sizeof_void_p" in
+	      4)
 		# PR libgomp/65099: Currently, we only support offloading in
 		# 64-bit configurations.
 		PLUGIN_NVPTX=0
@@ -218,8 +218,8 @@ if test x"$enable_offload_targets" != x; then
       amdgcn*)
 	case "${target}" in
 	  x86_64-*-*)
-	    case " ${CC} ${CFLAGS} " in
-	      *" -m32 "*|*" -mx32 "*)
+	    case "$ac_cv_sizeof_void_p" in
+	      4)
 		PLUGIN_GCN=0
 		;;
 	      *)

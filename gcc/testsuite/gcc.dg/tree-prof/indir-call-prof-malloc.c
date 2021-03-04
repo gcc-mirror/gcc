@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -ldl" } */
+/* { dg-options "-O2 -ldl -fprofile-correction" } */
 
 #define _GNU_SOURCE
 #include <stdio.h>

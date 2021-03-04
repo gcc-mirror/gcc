@@ -1467,6 +1467,9 @@ function_resolver::require_vector_type (unsigned int argno,
 {
   tree expected = acle_vector_types[0][type];
   tree actual = get_argument_type (argno);
+  if (actual == error_mark_node)
+    return false;
+
   if (!matches_type_p (expected, actual))
     {
       error_at (location, "passing %qT to argument %d of %qE, which"

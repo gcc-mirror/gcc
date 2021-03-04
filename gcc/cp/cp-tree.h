@@ -1678,21 +1678,10 @@ check_constraint_info (tree t)
 #define DECL_MODULE_ENTITY_P(NODE) \
   (DECL_LANG_SPECIFIC (DECL_MODULE_CHECK (NODE))->u.base.module_entity_p)
 
-/* True if there are unloaded specializations keyed to this template.  */
-#define DECL_MODULE_PENDING_SPECIALIZATIONS_P(NODE)	\
-  (DECL_LANG_SPECIFIC (TEMPLATE_DECL_CHECK (NODE))	\
-   ->u.base.module_pending_p)
-
-/* True if this class has unloaded members.  These should be loaded
-   before we do member lookups.   */
-#define DECL_MODULE_PENDING_MEMBERS_P(NODE)		\
-  (DECL_LANG_SPECIFIC (TYPE_DECL_CHECK (NODE))		\
-   ->u.base.module_pending_p)
-
 /* DECL that has attached decls for ODR-relatedness.  */
 #define DECL_MODULE_ATTACHMENTS_P(NODE)			\
   (DECL_LANG_SPECIFIC (TREE_CHECK2(NODE,FUNCTION_DECL,VAR_DECL))\
-   ->u.base.module_pending_p)
+   ->u.base.module_attached_p)
 
 /* Whether this is an exported DECL.  Held on any decl that can appear
    at namespace scope (function, var, type, template, const or
@@ -2771,10 +2760,8 @@ struct GTY(()) lang_decl_base {
   unsigned module_import_p : 1;     	   /* from an import */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
 					      hash.  */
-  /* TEMPLATE_DECL has specializations or,
-     TYPE_DECL has class members yet to load, or
-     VAR_DECL or FUNCTION_DECL has attached decls.     */
-  unsigned module_pending_p : 1;
+  /* VAR_DECL or FUNCTION_DECL has attached decls.     */
+  unsigned module_attached_p : 1;
 
   /* 12 spare bits.  */
 };
@@ -7025,9 +7012,7 @@ extern void mangle_module (int m, bool include_partition);
 extern void mangle_module_fini ();
 extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       binding_slot *bslot);
-extern void lazy_load_specializations (tree tmpl);
-extern void lazy_load_members (tree decl);
-extern bool lazy_specializations_p (unsigned, bool, bool);
+extern void lazy_load_pendings (tree decl);
 extern module_state *preprocess_module (module_state *, location_t,
 					bool in_purview, 
 					bool is_import, bool export_p,

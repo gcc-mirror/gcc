@@ -32,7 +32,7 @@ static struct
   FILE *outf;			/* Stream to write to.  */
   const cpp_token *prev;	/* Previous token.  */
   const cpp_token *source;	/* Source token for spacing.  */
-  int src_line;			/* Line number currently being written.  */
+  unsigned src_line;		/* Line number currently being written.  */
   bool printed;			/* True if something output at line.  */
   bool first_time;		/* pp_file_change hasn't been called yet.  */
   bool prev_was_system_token;	/* True if the previous token was a
@@ -213,7 +213,7 @@ token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
   /* Subtle logic to output a space if and only if necessary.  */
   if (avoid_paste)
     {
-      int src_line = LOCATION_LINE (loc);
+      unsigned src_line = LOCATION_LINE (loc);
 
       if (print.source == NULL)
 	print.source = token;
@@ -237,7 +237,7 @@ token_streamer::stream (cpp_reader *pfile, const cpp_token *token,
     }
   else if (token->flags & PREV_WHITE)
     {
-      int src_line = LOCATION_LINE (loc);
+      unsigned src_line = LOCATION_LINE (loc);
 
       if (src_line != print.src_line
 	  && do_line_adjustments
@@ -437,7 +437,7 @@ static bool
 maybe_print_line_1 (location_t src_loc, FILE *stream)
 {
   bool emitted_line_marker = false;
-  int src_line = LOCATION_LINE (src_loc);
+  unsigned src_line = LOCATION_LINE (src_loc);
   const char *src_file = LOCATION_FILE (src_loc);
 
   /* End the previous line of text.  */
@@ -451,6 +451,7 @@ maybe_print_line_1 (location_t src_loc, FILE *stream)
   if (!flag_no_line_commands
       && src_line >= print.src_line
       && src_line < print.src_line + 8
+      && src_loc != UNKNOWN_LOCATION
       && strcmp (src_file, print.src_file) == 0)
     {
       while (src_line > print.src_line)

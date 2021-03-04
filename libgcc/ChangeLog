@@ -1,3 +1,15 @@
+2021-03-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97461
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Check sys/mman.h header file
+	* libgcov-driver.c (struct gcov_kvp): Remove static
+	pre-allocated pool and use a dynamic one.
+	* libgcov.h (MMAP_CHUNK_SIZE): New.
+	(gcov_counter_add): Use mmap to allocate pool for struct
+	gcov_kvp.
+
 2021-03-02  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/_sprintfkf.h (__sprintfkf): Fix prototype to match

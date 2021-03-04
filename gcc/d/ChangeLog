@@ -1,3 +1,8 @@
+2021-03-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99337
+	* dmd/MERGE: Merge upstream dmd a3c9bf422.
+
 2021-02-13  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 7132b3537.

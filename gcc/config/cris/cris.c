@@ -150,7 +150,7 @@ static rtx cris_function_incoming_arg (cumulative_args_t,
 static void cris_function_arg_advance (cumulative_args_t,
 				       const function_arg_info &);
 static rtx_insn *cris_md_asm_adjust (vec<rtx> &, vec<rtx> &,
-				     vec<const char *> &,
+				     vec<machine_mode> &, vec<const char *> &,
 				     vec<rtx> &, HARD_REG_SET &);
 
 static void cris_option_override (void);
@@ -3501,8 +3501,9 @@ cris_function_arg_advance (cumulative_args_t ca_v,
 
 static rtx_insn *
 cris_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
-		    vec<const char *> &constraints,
-		    vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+		    vec<machine_mode> & /*input_modes*/,
+		    vec<const char *> &constraints, vec<rtx> &clobbers,
+		    HARD_REG_SET &clobbered_regs)
 {
   /* For the time being, all asms clobber condition codes.
      Revisit when there's a reasonable use for inputs/outputs

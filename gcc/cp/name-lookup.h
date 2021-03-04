@@ -177,17 +177,6 @@ struct GTY(()) tree_binding_vec {
 #define MODULE_BINDING_PARTITION_P(NODE)		\
   (OVERLOAD_CHECK (NODE)->base.volatile_flag)
 
-/* There are specializations of a template keyed to this binding.  */
-#define BINDING_VECTOR_PENDING_SPECIALIZATIONS_P(NODE) \
-  (BINDING_VECTOR_CHECK (NODE)->base.public_flag)
-/* The key is in a header unit (not a named module partition or
-   primary).  */
-#define BINDING_VECTOR_PENDING_IS_HEADER_P(NODE) \
-  (BINDING_VECTOR_CHECK (NODE)->base.protected_flag)
-/* The key is in a named module (primary or partition).  */
-#define BINDING_VECTOR_PENDING_IS_PARTITION_P(NODE) \
-  (BINDING_VECTOR_CHECK (NODE)->base.private_flag)
-
 extern void set_identifier_type_value (tree, tree);
 extern void push_binding (tree, tree, cp_binding_level*);
 extern void pop_local_binding (tree, tree);
@@ -507,8 +496,6 @@ extern unsigned walk_module_binding (tree binding, bitmap partitions,
 extern tree add_imported_namespace (tree ctx, tree name, location_t,
 				    unsigned module,
 				    bool inline_p, bool visible_p);
-extern void note_pending_specializations (tree ns, tree name, bool is_header);
-extern void load_pending_specializations (tree ns, tree name);
 extern const char *get_cxx_dialect_name (enum cxx_dialect dialect);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

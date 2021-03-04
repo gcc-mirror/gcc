@@ -1,3 +1,8 @@
+2021-03-03  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (read_line_program): Don't special case file 0.
+	(read_function_entry): Likewise.
+
 2021-03-02  Ian Lance Taylor  <iant@golang.org>
 
 	PR libbacktrace/98818
