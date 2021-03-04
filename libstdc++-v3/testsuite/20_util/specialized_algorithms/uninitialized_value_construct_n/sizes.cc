@@ -42,10 +42,15 @@ test02()
     int operator>(void*) { return value != 0; }
   };
 
-  int i[3];
+  int i[5] = { 1, 2, 3, 4, 5 };
   Size n = {4};
   auto j = std::__uninitialized_default_n(i, n);
   VERIFY( j == (i + 4) );
+  VERIFY( i[0] == 0 );
+  VERIFY( i[1] == 0 );
+  VERIFY( i[2] == 0 );
+  VERIFY( i[3] == 0 );
+  VERIFY( i[4] == 5 );
 }
 
 int
