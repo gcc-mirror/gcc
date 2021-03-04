@@ -426,7 +426,7 @@ allocate_gcov_kvp (void)
     {
       void *ptr = mmap (NULL, MMAP_CHUNK_SIZE,
 			PROT_READ | PROT_WRITE,
-			MAP_PRIVATE | MAP_ANONYMOUS, 0, 0);
+			MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
       if (ptr != MAP_FAILED)
 	{
 	  __gcov_kvp_dynamic_pool = ptr;
