@@ -139,12 +139,6 @@ package Sinfo.Utils is
      (N : N_Inclusive_Has_Entity; Val : Node_Id)
       renames Set_Entity_Or_Associated_Node;
 
-   function F_Associated_Node return Node_Field renames
-     F_Entity_Or_Associated_Node;
-   function F_Entity return Node_Field renames
-     F_Entity_Or_Associated_Node;
-   --  Note that we are renaming the enumeration literals here
-
    ---------------
    -- Debugging --
    ---------------

@@ -1272,13 +1272,21 @@ package body Treepr is
             Print_Eol;
          end if;
 
-         --  Print Entity field if operator (other cases of Entity
-         --  are in the table, so are handled in the normal circuit)
+         --  Deal with Entity_Or_Associated_Node. If N has both, then just
+         --  print Entity; they are the same thing.
 
-         if Nkind (N) in N_Op and then Present (Entity (N)) then
+         if N in N_Inclusive_Has_Entity and then Present (Entity (N)) then
             Print_Str (Prefix);
             Print_Str ("Entity = ");
             Print_Node_Ref (Entity (N));
+            Print_Eol;
+
+         elsif N in N_Has_Associated_Node
+           and then Present (Associated_Node (N))
+         then
+            Print_Str (Prefix);
+            Print_Str ("Associated_Node = ");
+            Print_Node_Ref (Associated_Node (N));
             Print_Eol;
          end if;
 
@@ -1391,7 +1399,7 @@ package body Treepr is
             | F_Sloc
             | F_Left_Opnd
             | F_Right_Opnd
-            | F_Entity
+            | F_Entity_Or_Associated_Node -- one of them was printed
             | F_Assignment_OK
             | F_Do_Range_Check
             | F_Has_Dynamic_Length_Check
