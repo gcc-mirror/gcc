@@ -3489,6 +3489,12 @@ static GTY(()) limbo_die_node *limbo_die_list;
    DW_AT_{,MIPS_}linkage_name once their DECL_ASSEMBLER_NAMEs are set.  */
 static GTY(()) limbo_die_node *deferred_asm_name;
 
+/* A list of DIEs for which we may have to add a notional code range to the
+   parent DIE.  This happens for parents of nested offload kernels, and is
+   necessary because the parents don't exist on the offload target, yet GDB
+   expects parents of real functions to also appear to exist.  */
+static GTY(()) limbo_die_node *notional_parents_list;
+
 struct dwarf_file_hasher : ggc_ptr_hash<dwarf_file_data>
 {
   typedef const char *compare_type;
@@ -23793,34 +23799,25 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	  dw_fde_ref fde = fun->fde;
 	  if (fde->dw_fde_begin)
 	    {
-	      dw_attr_node *low = get_AT (subr_die, DW_AT_low_pc);
-	      dw_attr_node *high = get_AT (subr_die, DW_AT_high_pc);
-	      if (low && high)
-		{
-		  /* Replace the existing value, it will have come from
-		     the "omp target entrypoint" case below.  */
-		  free (low->dw_attr_val.v.val_lbl_id);
-		  low->dw_attr_val.v.val_lbl_id = xstrdup (fde->dw_fde_begin);
-		  free (high->dw_attr_val.v.val_lbl_id);
-		  high->dw_attr_val.v.val_lbl_id = xstrdup (fde->dw_fde_end);
-		}
-	      else
-		/* We have already generated the labels.  */
-		add_AT_low_high_pc (subr_die, fde->dw_fde_begin,
-				    fde->dw_fde_end, false);
+	      /* We have already generated the labels.  */
+	      add_AT_low_high_pc (subr_die, fde->dw_fde_begin,
+				  fde->dw_fde_end, false);
 
 	     /* Offload kernel functions are nested within a parent function
 	        that doesn't actually exist within the offload object.  GDB
 		will ignore the function and everything nested within unless
-		we give it a notional code range (the values aren't
-		important, as long as they are valid).  */
+		we give the parent a code range.  We can't do it here because
+		that breaks the case where the parent actually does exist (as
+		it does on the host-side), so we defer the fixup for later.  */
 	     if (lookup_attribute ("omp target entrypoint",
-				   DECL_ATTRIBUTES (decl))
-		 && subr_die->die_parent
-		 && subr_die->die_parent->die_tag == DW_TAG_subprogram
-		 && !get_AT_low_pc (subr_die->die_parent))
-	       add_AT_low_high_pc (subr_die->die_parent, fde->dw_fde_begin,
-				   fde->dw_fde_end, false);
+				   DECL_ATTRIBUTES (decl)))
+	       {
+		 limbo_die_node *node = ggc_cleared_alloc<limbo_die_node> ();
+		 node->die = subr_die;
+		 node->created_for = decl;
+		 node->next = notional_parents_list;
+		 notional_parents_list = node;
+	       }
 	    }
 	  else
 	    {
@@ -32126,6 +32123,37 @@ flush_limbo_die_list (void)
     }
 }
 
+/* Add a code range to the notional parent function (which does not actually
+   exist) so that GDB does not ignore all the child functions.  The actual
+   values do not matter, but need to be valid labels, so we simply copy those
+   from the child function.
+
+   Typically this occurs when we have an offload kernel, where the parent
+   function only exists in the host-side portion of the code.  */
+
+static void
+fixup_notional_parents (void)
+{
+  limbo_die_node *node;
+
+  while ((node = notional_parents_list))
+    {
+      dw_die_ref die = node->die;
+      dw_die_ref parent = die->die_parent;
+      notional_parents_list = node->next;
+
+      if (parent
+	  && parent->die_tag == DW_TAG_subprogram
+	  && !get_AT_low_pc (parent))
+	{
+	  dw_attr_node *low = get_AT (die, DW_AT_low_pc);
+	  dw_attr_node *high = get_AT (die, DW_AT_high_pc);
+
+	  add_AT_low_high_pc (parent, AT_lbl (low), AT_lbl (high), false);
+	}
+    }
+}
+
 /* Reset DIEs so we can output them again.  */
 
 static void
@@ -32191,6 +32219,9 @@ dwarf2out_finish (const char *filename)
 
   /* Flush out any latecomers to the limbo party.  */
   flush_limbo_die_list ();
+
+  /* Insert an notional parent code ranges.  */
+  fixup_notional_parents ();
 
   if (inline_entry_data_table)
     gcc_assert (inline_entry_data_table->is_empty ());
@@ -33279,6 +33310,7 @@ dwarf2out_cc_finalize (void)
   single_comp_unit_die = NULL;
   comdat_type_list = NULL;
   limbo_die_list = NULL;
+  notional_parents_list = NULL;
   file_table = NULL;
   decl_die_table = NULL;
   common_block_die_table = NULL;
