@@ -2697,7 +2697,9 @@ find_interesting_subtree (tree *expr_p, int *dosub, void *d)
 
 struct var_nest_node
 {
-  var_nest_node () = default;
+  var_nest_node ()
+    : var(NULL_TREE), init(NULL_TREE),
+      prev(NULL), next(NULL), then_cl(NULL), else_cl(NULL) {}
   var_nest_node (tree v, tree i, var_nest_node *p, var_nest_node *n)
     : var(v), init(i), prev(p), next(n)
     {
