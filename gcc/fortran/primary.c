@@ -676,26 +676,6 @@ done:
 	  goto cleanup;
 	}
       kind = gfc_default_double_kind;
-
-      if (kind == 4)
-	{
-	  if (flag_real4_kind == 8)
-	    kind = 8;
-	  if (flag_real4_kind == 10)
-	    kind = 10;
-	  if (flag_real4_kind == 16)
-	    kind = 16;
-	}
-
-      if (kind == 8)
-	{
-	  if (flag_real8_kind == 4)
-	    kind = 4;
-	  if (flag_real8_kind == 10)
-	    kind = 10;
-	  if (flag_real8_kind == 16)
-	    kind = 16;
-	}
       break;
 
     case 'q':
@@ -725,26 +705,6 @@ done:
     default:
       if (kind == -2)
 	kind = gfc_default_real_kind;
-
-      if (kind == 4)
-	{
-	  if (flag_real4_kind == 8)
-	    kind = 8;
-	  if (flag_real4_kind == 10)
-	    kind = 10;
-	  if (flag_real4_kind == 16)
-	    kind = 16;
-	}
-
-      if (kind == 8)
-	{
-	  if (flag_real8_kind == 4)
-	    kind = 4;
-	  if (flag_real8_kind == 10)
-	    kind = 10;
-	  if (flag_real8_kind == 16)
-	    kind = 16;
-	}
 
       if (gfc_validate_kind (BT_REAL, kind, true) < 0)
 	{
