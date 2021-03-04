@@ -1,3 +1,63 @@
+2021-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/99234
+	* config/i386/i386.c (ix86_compute_frame_layout): For a SEH target,
+	point back the hard frame pointer to its default location when the
+	frame is larger than SEH_MAX_FRAME_SIZE.
+
+2021-03-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98758
+	* tree-data-ref.c (int_divides_p): Use lambda_int arguments.
+	(lambda_matrix_right_hermite): Avoid undefinedness with
+	signed integer abs and multiplication.
+	(analyze_subscript_affine_affine): Use lambda_int.
+
+2021-03-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98640
+	* tree-ssa-sccvn.c (visit_nary_op): Do not try to
+	handle plus or minus from a truncated operand to be
+	sign-extended.
+
+2021-03-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98526
+	* tree-vect-loop.c (vect_model_reduction_cost): Remove costing
+	of the actual reduction op for the regular case.
+	(vectorizable_reduction): Cost the stmts
+	vect_transform_reduction produces here.
+
+2021-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97897
+	* tree-complex.c (complex_propagate::visit_stmt): Make sure
+	abnormally used SSA names are VARYING.
+	(complex_propagate::visit_phi): Likewise.
+
+2021-03-03  Tom de Vries  <tdevries@suse.de>
+
+	Backported from master:
+	2021-02-05  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/98656
+	* tree-switch-conversion.c (jump_table_cluster::emit): Add loc
+	argument.
+	(bit_test_cluster::emit): Reuse location_t for newly created
+	gswitch statement.
+	(switch_decision_tree::try_switch_expansion): Preserve
+	location_t.
+	* tree-switch-conversion.h: Change function signatures.
+
 2021-03-02  Jan Hubicka  <jh@suse.cz>
 
 	Backported from master:

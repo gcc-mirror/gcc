@@ -1,3 +1,24 @@
+2021-03-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98758
+	* gcc.dg/torture/pr98758.c: New testcase.
+
+2021-03-03  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98640
+	* gcc.dg/torture/pr98640.c: New testcase.
+
+2021-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97897
+	* gcc.dg/pr97897.c: New testcase.
+
 2021-03-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/limited5.adb: New test.
