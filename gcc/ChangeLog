@@ -1,3 +1,10 @@
+2021-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/99234
+	* config/i386/i386.c (ix86_compute_frame_layout): For a SEH target,
+	point back the hard frame pointer to its default location when the
+	frame is larger than SEH_MAX_FRAME_SIZE.
+
 2021-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/99234
