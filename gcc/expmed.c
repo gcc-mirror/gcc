@@ -625,9 +625,16 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
       /* If xop0 is a register, we need it in OP_MODE
 	 to make it acceptable to the format of insv.  */
       if (GET_CODE (xop0) == SUBREG)
-	/* We can't just change the mode, because this might clobber op0,
-	   and we will need the original value of op0 if insv fails.  */
-	xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
+	{
+	  /* If such a SUBREG can't be created, give up.  */
+	  if (!validate_subreg (op_mode, GET_MODE (SUBREG_REG (xop0)),
+				SUBREG_REG (xop0), SUBREG_BYTE (xop0)))
+	    return false;
+	  /* We can't just change the mode, because this might clobber op0,
+	     and we will need the original value of op0 if insv fails.  */
+	  xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0),
+				 SUBREG_BYTE (xop0));
+	}
       if (REG_P (xop0) && GET_MODE (xop0) != op_mode)
 	xop0 = gen_lowpart_SUBREG (op_mode, xop0);
     }
