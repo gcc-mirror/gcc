@@ -6054,15 +6054,52 @@
   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
-(define_insn "aarch64_<sur>q<r>shr<u>n2_n<mode>"
+(define_insn "aarch64_<sur>q<r>shr<u>n2_n<mode>_insn_le"
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
-        (unspec:<VNARROWQ2> [(match_operand:<VNARROWQ> 1 "register_operand" "0")
-			     (match_operand:VQN 2 "register_operand" "w")
-			     (match_operand:SI 3 "aarch64_simd_shift_imm_offset_<ve_mode>" "i")]
-                            VQSHRN_N))]
-  "TARGET_SIMD"
+	(vec_concat:<VNARROWQ2>
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")
+	  (unspec:<VNARROWQ> [(match_operand:VQN 2 "register_operand" "w")
+			      (match_operand:VQN 3
+				"aarch64_simd_shift_imm_vec_<vn_mode>")]
+			     VQSHRN_N)))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
   "<sur>q<r>shr<u>n2\\t%<vn2>0.<V2ntype>, %<v>2.<Vtype>, %3"
   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
+)
+
+(define_insn "aarch64_<sur>q<r>shr<u>n2_n<mode>_insn_be"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+          (unspec:<VNARROWQ> [(match_operand:VQN 2 "register_operand" "w")
+			      (match_operand:VQN 3
+				"aarch64_simd_shift_imm_vec_<vn_mode>")]
+			     VQSHRN_N)
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+  "<sur>q<r>shr<u>n2\\t%<vn2>0.<V2ntype>, %<v>2.<Vtype>, %3"
+  [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
+)
+
+(define_expand "aarch64_<sur>q<r>shr<u>n2_n<mode>"
+  [(match_operand:<VNARROWQ2> 0 "register_operand")
+   (match_operand:<VNARROWQ> 1 "register_operand")
+   (unspec:<VNARROWQ>
+	[(match_operand:VQN 2 "register_operand")
+	 (match_operand:SI 3 "aarch64_simd_shift_imm_offset_<vn_mode>")]
+        VQSHRN_N)]
+  "TARGET_SIMD"
+  {
+    operands[3] = aarch64_simd_gen_const_vector_dup (<MODE>mode,
+						 INTVAL (operands[3]));
+
+    if (BYTES_BIG_ENDIAN)
+      emit_insn (gen_aarch64_<sur>q<r>shr<u>n2_n<mode>_insn_be (operands[0],
+				operands[1], operands[2], operands[3]));
+    else
+      emit_insn (gen_aarch64_<sur>q<r>shr<u>n2_n<mode>_insn_le (operands[0],
+				operands[1], operands[2], operands[3]));
+    DONE;
+  }
 )
 
 
