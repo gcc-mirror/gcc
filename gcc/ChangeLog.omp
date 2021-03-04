@@ -1,3 +1,12 @@
+2021-03-04  Andrew Stubbs <ams@codesourcery.com>
+
+	* dwarf2out.cc (notional_parents_list): New file variable.
+	(gen_subprogram_die): Record offload kernel functions in
+	notional_parents_list.
+	(fixup_notional_parents): New function.
+	(dwarf2out_finish): Call fixup_notional_parents.
+	(dwarf2out_c_finalize): Reset notional_parents_list.
+
 2021-03-01  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-expand.cc (expand_oacc_for): Convert .tile variable to
