@@ -1,3 +1,163 @@
+2021-03-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99170
+	* module.cc (post_load_decls): New.
+	(lazy_snum, recursive_lazy): Move earlier.
+	(module_state::read_cluster): Push cloning onto post_load_decls.
+	(post_load_processing): New.  Do the cloning here.
+	(module_state::read_inits): Call post_load_processing.
+	(module_state::read_language): Likewise.
+	(lazy_load_binding, lazy_load_specializations): Likewise
+	(lazy_load_members): Likewise
+
+2021-03-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99170
+	* module.cc (trees_out::decl_value): Stream specialization keys
+	after decl.
+	(trees_in::decl_value): Stream them back and insert after
+	completing the decl.
+	(trees_out::key_mergeable): Drop some streaming here ...
+	(trees_in::key_mergeable): ... and here.  Don't insert into
+	specialization tables.
+
+2021-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (struct sat_info): Document the different
+	meanings of noisy() and diagnose_unsatisfaction_p() during
+	satisfaction and requires-expression evaluation.
+	(tsubst_valid_expression_requirement): Take a sat_info instead
+	of a subst_info.  Perform the substitution quietly first.  Fold
+	in error-replaying code from diagnose_valid_expression.
+	(tsubst_simple_requirement): Take a sat_info instead of a
+	subst_info.
+	(tsubst_type_requirement_1): New.  Fold in error-replaying code
+	from diagnose_valid_type.
+	(tsubst_type_requirement): Use the above.  Take a sat_info
+	instead of a subst_info.
+	(tsubst_compound_requirement): Likewise.  Fold in
+	error-replaying code from diagnose_compound_requirement.
+	(tsubst_nested_requirement): Take a sat_info instead of a
+	subst_info.  Fold in error-replaying code from
+	diagnose_nested_requirement.
+	(tsubst_requirement): Take a sat_info instead of a subst_info.
+	(tsubst_requires_expr): Split into two versions, one that takes
+	a sat_info argument and another that takes a complain and
+	in_decl argument.  Remove outdated documentation.  Document the
+	effects of the sat_info argument.  Don't short-circuit
+	processing of requirements when diagnosing unsatisfaction,
+	mirroring diagnose_requires_expr.
+	(satisfy_nondeclaration_constraint) <case REQUIRES_EXPR>: Remove
+	assert, and se the three-parameter version of tsubst_requires_expr.
+	(diagnose_trait_expr): Make static.  Take a template argument
+	vector instead of a parameter mapping.
+	(diagnose_valid_expression): Remove.
+	(diagnose_valid_type): Remove.
+	(diagnose_simple_requirement): Remove.
+	(diagnose_compound_requirement): Remove.
+	(diagnose_type_requirement): Remove.
+	(diagnose_nested_requirement): Remove.
+	(diagnose_requirement): Remove.
+	(diagnose_requires_expr): Remove.
+	(diagnose_atomic_constraint): Take a sat_info instead of a
+	subst_info.  Adjust call to diagnose_trait_expr.  Call
+	tsubst_requires_expr instead of diagnose_requires_expr.
+	(diagnose_constraints): Remove special casing of REQUIRES_EXPR
+	and just always call constraint_satisfaction_value.
+
+2021-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	* constexpr.c (cxx_eval_call_expression): Adjust call to
+	evaluate_concept_check.
+	(cxx_eval_constant_expression) <case REQUIRES_EXPR>: Use
+	evaluate_requires_expression instead of
+	satisfy_constraint_expression.
+	<case TEMPLATE_ID_EXPR>: Adjust call to evaluate_concept_check.
+	* constraint.cc (struct sat_info): Adjust comment about which
+	satisfaction entrypoints use noisy-unsat.
+	(normalize_template_requirements): Remove (and adjust callers
+	appropriately).
+	(normalize_nontemplate_requirements): Likewise.
+	(tsubst_nested_requirement): Use constraint_satisfaction_value
+	instead of satisfy_constraint_expression, which'll do the
+	noisy replaying of ill-formed quiet satisfaction for us.
+	(decl_satisfied_cache): Adjust comment.
+	(satisfy_constraint): Rename to ...
+	(satisfy_normalized_constraints): ... this.
+	(satisfy_associated_constraints): Remove (and make its
+	callers check for dependent arguments).
+	(satisfy_constraint_expression): Rename to ...
+	(satisfy_nondeclaration_constraints): ... this.  Assert that
+	'args' is empty when 't' is a concept-id.  Removing handling
+	bare constraint-expressions, and handle REQUIRES_EXPRs
+	specially.  Adjust comment accordingly.
+	(satisfy_declaration_constraints): Assert in the two-parameter
+	version that 't' is not a TEMPLATE_DECL.  Adjust following
+	removal of normalize_(non)?template_requirements and
+	satisfy_asociated_constraints.
+	(constraint_satisfaction_value): Combine the two- and
+	three-parameter versions in the natural way.
+	(constraints_satisfied_p): Combine the one- and two-parameter
+	versions in the natural way.  Improve documentation.
+	(evaluate_requires_expr): Define.
+	(evaluate_concept_check): Remove 'complain' parameter.  Use
+	constraint_satisfaction_value instead of
+	satisfy_constraint_expression.
+	(diagnose_nested_requirement): Adjust following renaming of
+	satisfy_constraint_expression.
+	(diagnose_constraints): Handle REQUIRES_EXPR by going through
+	diagnose_requires_expr directly instead of treating it as a
+	constraint-expression.  Improve documentation.
+	* cp-gimplify.c (cp_genericize_r) <case CALL_EXPR>: Adjust call
+	to evaluate_concept_check.
+	<case REQUIRES_EXPR>: Use evaluate_requires_expr instead of
+	constraints_satisfied_p.
+	<case TEMPLATE_ID_EXPR>: Adjust call to evaluate_concept_check.
+	* cp-tree.h (evaluate_requires_expr): Declare.
+	(evaluate_concept_check): Remove tsubst_flag_t parameter.
+	(satisfy_constraint_expression): Remove declaration.
+	(constraints_satisfied_p): Remove one-parameter declaration.
+	Add a default argument to the two-parameter declaration.
+	* cvt.c (convert_to_void): Adjust call to
+	evaluate_concept_check.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82959
+	* call.c (op_is_ordered): Handle TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR
+	and COMPOUND_EXPR.
+
+2021-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97034
+	PR c++/99009
+	* pt.c (build_deduction_guide): Use INNERMOST_TEMPLATE_ARGS.
+	(maybe_aggr_guide): Use the original template type where needed.  In
+	a class member template, partially instantiate the result of
+	collect_ctor_idx_types.
+	(do_class_deduction): Defer the deduction until the enclosing
+	scope is non-dependent.
+
+2021-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95675
+	* call.c (build_temp): Wrap a CALL_EXPR in a TARGET_EXPR
+	if it didn't get one before.
+
+2021-03-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99344
+	* module.cc (trees_out::decl_node): Small refactor.
+	(depset::hash::add_binding_entity): Return true on meeting an
+	import.  Set namespace's import here.
+	(module_state:write_namespaces): Inform of purview too.
+	(module_state:read_namespaces): Adjust.
+	* name-lookup.c (implicitly_export_namespace): Delete.
+	(do_pushdecl): Don't call it.
+	(push_namespace): Likewise, set purview.
+	(add_imported_namespace): Reorder parms.
+	* name-lookup.h (add_imported_namespace): Alter param ordering.
+
 2021-03-02  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/99251

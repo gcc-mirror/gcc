@@ -1,3 +1,19 @@
+2021-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/abi/post/i386-solaris/baseline_symbols.txt: Regenerate.
+	* config/abi/post/i386-solaris/amd64/baseline_symbols.txt:
+	Likewise.
+	* config/abi/post/sparc-solaris/baseline_symbols.txt: Likewise.
+	* config/abi/post/sparc-solaris/sparcv9/baseline_symbols.txt:
+	Likewise.
+
+2021-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* include/experimental/bits/simd.h: Replace reserved _X, _B by
+	_Xp, _Bp.
+	* include/experimental/bits/simd_builtin.h: Likewise.
+	* include/experimental/bits/simd_x86.h: Likewise.
+
 2021-02-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/99301

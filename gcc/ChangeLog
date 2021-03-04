@@ -1,3 +1,88 @@
+2021-03-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/96963
+	PR middle-end/94655
+	* builtins.c (handle_array_ref): New helper.
+	(handle_mem_ref): New helper.
+	(compute_objsize_r): Factor out ARRAY_REF and MEM_REF handling
+	into new helper functions.  Correct a workaround for vectorized
+	assignments.
+
+2021-03-03  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/dfp.md (extendddtd2, trunctddd2, *cmp<mode>_internal1,
+	floatditd2, ftrunc<mode>2, fix<mode>di2, dfp_ddedpd_<mode>,
+	dfp_denbcd_<mode>, dfp_dxex_<mode>, dfp_diex_<mode>,
+	*dfp_sgnfcnc_<mode>, dfp_dscli_<mode>, dfp_dscri_<mode>): Update size
+	attribute for Power10.
+	* config/rs6000/mma.md (*movoo): Likewise.
+	* config/rs6000/rs6000.md (define_attr "size"): Add 256.
+	(define_mode_attr bits): Add DD/TD modes.
+	* config/rs6000/sync.md (load_quadpti, store_quadpti, load_lockedpti,
+	store_conditionalpti): Update size attribute for Power10.
+
+2021-03-03  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR bootstrap/92002
+	* config/sparc/t-sparc (tree-ssanames.o-warn): Don't error for
+	-Wuninitialized, -Wmaybe-uninitialized.
+	(wide-int.o-warn): Likewise.
+
+2021-03-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* common/config/arm/arm-common.c: Include configargs.h.
+	(arm_config_default): New function.
+	(arm_target_mode): Renamed from arm_target_thumb_only.  Handle
+	processors that do not support Thumb.  Take into account the
+	--with-mode configuration setting for selecting the default.
+	* config/arm/arm.h (OPTION_DEFAULT_SPECS): Remove entry for 'mode'.
+	(TARGET_MODE_SPEC_FUNCTIONS): Update for function name change.
+
+2021-03-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97461
+	* gcov-io.h (GCOV_PREALLOCATED_KVP): Remove.
+
+2021-03-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/99234
+	* config/i386/i386.c (ix86_compute_frame_layout): For a SEH target,
+	point back the hard frame pointer to its default location when the
+	frame is larger than SEH_MAX_FRAME_SIZE.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99321
+	* config/i386/predicates.md (logic_operator): New define_predicate.
+	* config/i386/i386.md (mov + mem using comm arith peephole2):
+	Punt if operands[1] is EXT_REX_SSE_REGNO_P, AVX512BW is not enabled
+	and the inner mode is [QH]Imode.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99090
+	* dwarf2out.c (dw_loc_list_struct): Add end_entry member.
+	(new_loc_list): Clear end_entry.
+	(output_loc_list): Only use DW_LLE_startx_length for -gsplit-dwarf
+	if HAVE_AS_LEB128, otherwise use DW_LLE_startx_endx.  Fix comment
+	typo.
+	(index_location_lists): For dwarf_version >= 5 without HAVE_AS_LEB128,
+	initialize also end_entry.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99085
+	* cfgrtl.c (fixup_partitions): When changing some bbs from hot to cold
+	partitions, if in non-layout mode after reorder_blocks also move
+	affected blocks to ensure a single partition transition.
+
+2021-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96078
+	* cgraphunit.c (process_function_and_variable_attributes): Don't
+	warn about flatten on an alias if the target also has it.
+	* cgraph.h (symtab_node::get_alias_target_tree): New.
+
 2021-03-02  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.md (tls_get_tpointer_internal): Prepend
