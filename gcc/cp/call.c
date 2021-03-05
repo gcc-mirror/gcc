@@ -8947,8 +8947,13 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
   /* OK, we're actually calling this inherited constructor; set its deletedness
      appropriately.  We can get away with doing this here because calling is
      the only way to refer to a constructor.  */
-  if (DECL_INHERITED_CTOR (fn))
-    deduce_inheriting_ctor (fn);
+  if (DECL_INHERITED_CTOR (fn)
+      && !deduce_inheriting_ctor (fn))
+    {
+      if (complain & tf_error)
+	mark_used (fn);
+      return error_mark_node;
+    }
 
   /* Make =delete work with SFINAE.  */
   if (DECL_DELETED_FN (fn))

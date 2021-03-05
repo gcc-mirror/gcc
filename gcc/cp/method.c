@@ -2789,9 +2789,9 @@ explain_implicit_non_constexpr (tree decl)
 
 /* DECL is an instantiation of an inheriting constructor template.  Deduce
    the correct exception-specification and deletedness for this particular
-   specialization.  */
+   specialization.  Return true if the deduction succeeds; false otherwise.  */
 
-void
+bool
 deduce_inheriting_ctor (tree decl)
 {
   decl = DECL_ORIGIN (decl);
@@ -2804,6 +2804,8 @@ deduce_inheriting_ctor (tree decl)
 			   /*diag*/false,
 			   &inh,
 			   FUNCTION_FIRST_USER_PARMTYPE (decl));
+  if (spec == error_mark_node)
+    return false;
   if (TREE_CODE (inherited_ctor_binfo (decl)) != TREE_BINFO)
     /* Inherited the same constructor from different base subobjects.  */
     deleted = true;
@@ -2818,6 +2820,8 @@ deduce_inheriting_ctor (tree decl)
       TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
       SET_DECL_INHERITED_CTOR (clone, inh);
     }
+
+  return true;
 }
 
 /* Implicitly declare the special function indicated by KIND, as a
@@ -2993,9 +2997,17 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       if (raises != error_mark_node)
 	fn_type = build_exception_variant (fn_type, raises);
       else
-	/* Can happen, eg, in C++98 mode for an ill-formed non-static data
-	   member initializer (c++/89914).  */
-	gcc_assert (seen_error ());
+	{
+	  /* Can happen, e.g., in C++98 mode for an ill-formed non-static data
+	     member initializer (c++/89914).  Also, in C++98, we might have
+	     failed to deduce RAISES, so try again but complain this time.  */
+	  if (cxx_dialect < cxx11)
+	    synthesized_method_walk (type, kind, const_p, nullptr, nullptr,
+				     nullptr, nullptr, /*diag=*/true,
+				     &inherited_ctor, inherited_parms);
+	  /* We should have seen an error at this point.  */
+	  gcc_assert (seen_error ());
+	}
     }
   fn = build_lang_decl (FUNCTION_DECL, name, fn_type);
   if (kind != sfk_inheriting_constructor)
