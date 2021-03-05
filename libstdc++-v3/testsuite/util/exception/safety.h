@@ -279,6 +279,20 @@ namespace __gnu_test
 	: _F_erase_point(&container_type::erase),
 	  _F_erase_range(&container_type::erase) { }
       };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3>
+      struct erase_base<__gnu_debug::basic_string<_Tp1, _Tp2, _Tp3>>
+      {
+	typedef __gnu_debug::basic_string<_Tp1, _Tp2, _Tp3>     container_type;
+	typedef typename container_type::iterator 	iterator;
+
+	iterator (container_type::* _F_erase_point)(iterator);
+	iterator (container_type::* _F_erase_range)(iterator, iterator);
+
+	erase_base()
+	: _F_erase_point(&container_type::erase),
+	  _F_erase_range(&container_type::erase) { }
+      };
 #endif
 
     // Specialization, as forward_list has erase_after.
@@ -697,6 +711,24 @@ namespace __gnu_test
       struct insert_base<std::basic_string<_Tp1, _Tp2, _Tp3>>
       {
 	typedef std::basic_string<_Tp1, _Tp2, _Tp3> 	container_type;
+	typedef typename container_type::iterator 	iterator;
+	typedef typename container_type::const_iterator	const_iterator;
+	typedef typename container_type::value_type 	value_type;
+
+#if _GLIBCXX_USE_CXX11_ABI == 0 || __cplusplus < 201103L
+	iterator (container_type::* _F_insert_point)(iterator, value_type);
+#else
+	iterator (container_type::* _F_insert_point)(const_iterator,
+						     value_type);
+#endif
+
+	insert_base() : _F_insert_point(&container_type::insert) { }
+      };
+
+    template<typename _Tp1, typename _Tp2, typename _Tp3>
+      struct insert_base<__gnu_debug::basic_string<_Tp1, _Tp2, _Tp3>>
+      {
+	typedef __gnu_debug::basic_string<_Tp1, _Tp2, _Tp3> 	container_type;
 	typedef typename container_type::iterator 	iterator;
 	typedef typename container_type::const_iterator	const_iterator;
 	typedef typename container_type::value_type 	value_type;

@@ -18,5 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <string>
+#include <debug/string>
 
 template class std::basic_string<char>;
+template class __gnu_debug::basic_string<char>;

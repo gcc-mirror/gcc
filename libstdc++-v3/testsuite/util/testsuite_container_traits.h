@@ -22,6 +22,7 @@
 
 #include <bits/stdc++.h>
 #include <ext/vstring.h>
+#include <debug/string>
 
 namespace __gnu_test
 {
@@ -119,6 +120,17 @@ namespace __gnu_test
 
   template<typename _Tp1, typename _Tp2, typename _Tp3>
     struct traits<std::basic_string<_Tp1, _Tp2, _Tp3>> : public traits_base
+    {
+      typedef std::true_type    is_container;
+      typedef std::true_type    is_reversible;
+      typedef std::true_type    is_allocator_aware;
+
+      typedef std::true_type	has_erase;
+      typedef std::true_type	has_insert;
+    };
+
+  template<typename _Tp1, typename _Tp2, typename _Tp3>
+    struct traits<__gnu_debug::basic_string<_Tp1, _Tp2, _Tp3>> : public traits_base
     {
       typedef std::true_type    is_container;
       typedef std::true_type    is_reversible;

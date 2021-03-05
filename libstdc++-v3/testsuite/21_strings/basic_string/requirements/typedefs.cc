@@ -19,9 +19,12 @@
 
 #include <testsuite_containers.h>
 #include <string>
+#include <debug/string>
 
 // Check container for required typedefs.
 __gnu_test::types<std::string> t1;
+__gnu_test::types<__gnu_debug::string> dt1;
 #ifdef _GLIBCXX_USE_WCHAR_T
 __gnu_test::types<std::wstring> t2;
+__gnu_test::types<__gnu_debug::wstring> dt2;
 #endif
