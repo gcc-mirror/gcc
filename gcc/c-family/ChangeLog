@@ -1,3 +1,16 @@
+2021-03-04  Richard Biener  <rguenther@suse.de>
+
+	* c-pretty-print.c (c_pretty_printer::direct_abstract_declarator):
+	Handle ERROR_MARK.
+
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99325
+	* c-ppoutput.c (print): Change src_line type from int to unsigned.
+	(token_streamer::stream) Likewise.
+	(maybe_print_line_1): Likewise.  Don't strcmp src_file if src_loc is
+	UNKNOWN_LOCATION.
+
 2021-03-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/99324

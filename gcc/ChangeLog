@@ -1,3 +1,42 @@
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93235
+	* expmed.c (store_bit_field_using_insv): Return false of xop0 is a
+	SUBREG and a SUBREG to op_mode can't be created.
+
+2021-03-04  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99381
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_resolver::require_vector_type): Handle error_mark_node.
+
+2021-03-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* cfgexpand.c (expand_asm_loc): Pass new parameter.
+	(expand_asm_stmt): Likewise.
+	* config/arm/aarch-common-protos.h (arm_md_asm_adjust): Add new
+	parameter.
+	* config/arm/aarch-common.c (arm_md_asm_adjust): Likewise.
+	* config/arm/arm.c (thumb1_md_asm_adjust): Likewise.
+	* config/cris/cris.c (cris_md_asm_adjust): Likewise.
+	* config/i386/i386.c (ix86_md_asm_adjust): Likewise.
+	* config/mn10300/mn10300.c (mn10300_md_asm_adjust): Likewise.
+	* config/nds32/nds32.c (nds32_md_asm_adjust): Likewise.
+	* config/pdp11/pdp11.c (pdp11_md_asm_adjust): Likewise.
+	* config/rs6000/rs6000.c (rs6000_md_asm_adjust): Likewise.
+	* config/vax/vax.c (vax_md_asm_adjust): Likewise.
+	* config/visium/visium.c (visium_md_asm_adjust): Likewise.
+	* doc/tm.texi (md_asm_adjust): Likewise.
+	* target.def (md_asm_adjust): Likewise.
+
+2021-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/97855
+	* tree-pretty-print.c: Poison pp_printf.
+	(dump_decl_name): Avoid use of pp_printf.
+	(dump_block_node): Likewise.
+	(dump_generic_node): Likewise.
+
 2021-03-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/96963

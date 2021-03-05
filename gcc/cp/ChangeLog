@@ -1,3 +1,64 @@
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88146
+	PR c++/99362
+	* cvt.c (convert_to_void): Revert 2019-10-17 changes.  Clarify
+	comment.
+
+2021-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99170
+	* module.cc (class uintset): Delete.
+	(typedef attached_map_t): A hash map.
+	(attached_table): Use attached_map_t.  Adjust uses ...
+	(trees_out::decl_value, trees_in::decl_value): ... here ...
+	(trees_out::key_mergeable): ... here ...
+	(trees_in::key_mergeable): ... here ...
+	(maybe_attach_decl): ... here ...
+	(direct_import): ... and here.
+
+2021-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99170
+	* cp-tree.h
+	* lex.c (cxx_dup_lang_specific_decl): Adjust for module_attached_p
+	rename.
+	* module.cc (class pending_key): New.
+	(default_hash_traits<pending_key>): New specialization.
+	(pending_map_t): New typedef.
+	(pending_table): Replace old table.
+	(trees_out::lang_decl_bools): Adjust.
+	(trees_in::lang_decl_bools): Adjust.
+	(trees_in::install_entity): Drop pending member and specialization
+	handling.
+	(find_pending_key): New.
+	(depset::hash::fiund_dependencies): Use it.
+	(pendset_lazy_load): Delete.
+	(module_state::write_cluster): Don't count pendings here.  Bye
+	Duff's device-like thing.
+	(module_state::write_pendings): Reimplement.
+	(module_state::read_pendings): Reimplement.
+	(lazy_specializations_p): Delete.
+	(module_state::write): Adjust write_pendings call.
+	(lazy_load_pendings): New.
+	(lazy_load_specializations): Delete.
+	(lazy_load_members): Delete.
+	(init_modules):	Adjust.
+	* name-lookup.c (maybe_lazily_declare):	Call lazy_load_pendings
+	not lazy_load_members.
+	(note_pending_specializations): Delete.
+	(load_pending_specializations): Delete.
+	* name-lookup.h	(BINDING_VECTR_PENDING_SPECIALIZATIONS_P): Delete.
+	(BINDING_VECTOR_PENDING_MEMBERS_P): Delete.
+	(BINDING_VECTR_PENDING_MEMBERS_P): Delete.
+	(note_pending_specializations): Delete.
+	(load_pending_specializations): Delete.
+	* pt.c (lookup_template_class_1): Call lazy_load_pendings not
+	lazy_load_specializations.
+	(instantiate_template_class_1): Likewise.
+	(instantiate_decl): Call lazy_load_pendings.
+	* typeck.c (complete_type): Likewise.
+
 2021-03-03  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99170

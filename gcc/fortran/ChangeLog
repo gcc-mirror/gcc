@@ -1,3 +1,10 @@
+2021-03-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99355
+	* decl.c (gfc_match_old_kind_spec, gfc_match_kind_spec): Avoid
+	redoing kind conversions.
+	* primary.c (match_real_constant): Likewise.
+
 2021-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/99303
