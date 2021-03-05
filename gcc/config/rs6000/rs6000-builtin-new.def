@@ -187,6 +187,12 @@
 ; Builtins that have been around since time immemorial or are just
 ; considered available everywhere.
 [always]
+; __builtin_cfstring is for Darwin, which will replace the decl we
+; create here with another one during subtarget processing.  We just
+; need to ensure it has a slot in the builtin enumeration.
+  void __builtin_cfstring ();
+    CFSTRING nothing {}
+
   void __builtin_cpu_init ();
     CPU_INIT nothing {cpu}
 
