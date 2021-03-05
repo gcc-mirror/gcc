@@ -230,7 +230,8 @@ matmul_i16_avx128_fma3 (gfc_array_i16 * const restrict retarray,
 	}
     }
 
-  if (rxstride == 1 && axstride == 1 && bxstride == 1)
+  if (rxstride == 1 && axstride == 1 && bxstride == 1
+      && GFC_DESCRIPTOR_RANK (b) != 1)
     {
       /* This block of code implements a tuned matmul, derived from
          Superscalar GEMM-based level 3 BLAS,  Beta version 0.1
@@ -788,7 +789,8 @@ matmul_i16_avx128_fma4 (gfc_array_i16 * const restrict retarray,
 	}
     }
 
-  if (rxstride == 1 && axstride == 1 && bxstride == 1)
+  if (rxstride == 1 && axstride == 1 && bxstride == 1
+      && GFC_DESCRIPTOR_RANK (b) != 1)
     {
       /* This block of code implements a tuned matmul, derived from
          Superscalar GEMM-based level 3 BLAS,  Beta version 0.1
