@@ -1,5 +1,5 @@
 // PR c++/98810
-// { dg-do compile { target c++20 } }
+// { dg-do compile { target c++2a } }
 
 template <auto> struct a {};
 template <int i, a <i> s = a <i> {}> using b = a <s>;
