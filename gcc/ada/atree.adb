@@ -23,10 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  WARNING: There is a C version of this package. Any changes to this source
---  file must be properly reflected in the file atree.h which is a C header
---  file containing equivalent definitions for use by gigi.
-
 --  Assertions in this package are too slow, and are mostly needed when working
 --  on this package itself, or on gen_il, so we disable them.
 --  To debug low-level bugs in this area, comment out the following pragmas,

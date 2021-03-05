@@ -3030,7 +3030,7 @@ package body Sem_Warn is
       --  if we have seen the address of the subprogram being taken, or if the
       --  subprogram is used as a generic actual (in the latter cases the
       --  context may force use of IN OUT, even if the parameter is not
-      --  modifies for this particular case.
+      --  modified for this particular case.
 
       -----------------------
       -- No_Warn_On_In_Out --
