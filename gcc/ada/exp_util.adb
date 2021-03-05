@@ -5322,7 +5322,7 @@ package body Exp_Util is
    procedure Expand_Static_Predicates_In_Choices (N : Node_Id) is
       pragma Assert (Nkind (N) in N_Case_Statement_Alternative | N_Variant);
 
-      Choices : constant List_Id := Discrete_Choices (N);
+      Choices : List_Id := Discrete_Choices (N);
 
       Choice : Node_Id;
       Next_C : Node_Id;
@@ -5330,6 +5330,13 @@ package body Exp_Util is
       C      : Node_Id;
 
    begin
+      --  If this is an "others" alternative, we need to process any static
+      --  predicates in its Others_Discrete_Choices.
+
+      if Nkind (First (Choices)) = N_Others_Choice then
+         Choices := Others_Discrete_Choices (First (Choices));
+      end if;
+
       Choice := First (Choices);
       while Present (Choice) loop
          Next_C := Next (Choice);
