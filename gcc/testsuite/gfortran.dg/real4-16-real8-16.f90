@@ -3,6 +3,7 @@
 ! { dg-require-effective-target fortran_real_16 }
 !
 ! PR fortran/99355
+! PR fortran/99355 comment 10 to 13 + PR fortran/57871
 !
 
 program test
@@ -10,6 +11,7 @@ program test
   real*4:: r2
   real(4) :: r3
   real(selected_real_kind(p=6)) :: r4
+  integer, parameter :: k4 = 4, k8 = 8
 
   double precision :: d1
   real*8 :: d2
@@ -19,6 +21,6 @@ program test
 
   !print '(tr3,a10,10(tr1,i2))', 'single', kind(r1), kind(r2), kind(r3), kind(r4)
   !print '(tr3,a10,10(tr1,i2))', 'double', kind(d1), kind(d2), kind(d3), kind(d4), kind(d5)
-  if (any ([kind(1.0), kind(r1), kind(r2), kind(r3), kind(r4)] /= 16)) stop 1
-  if (any ([kind(1.d0), kind(d1), kind(d2), kind(d3), kind(d4), kind(d5)] /= 16)) stop 2
+  if (any ([kind(1.0), kind(1.0_4), kind(1.0_k4), kind(r1), kind(r2), kind(r3), kind(r4)] /= 16)) stop 1
+  if (any ([kind(1.d0), kind(1.0_8), kind(1.0_k8), kind(d1), kind(d2), kind(d3), kind(d4), kind(d5)] /= 16)) stop 2
 end program test
