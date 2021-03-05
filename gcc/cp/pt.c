@@ -26154,6 +26154,7 @@ instantiate_decl (tree d, bool defer_ok, bool expl_inst_class_mem_p)
     }
   else
     {
+      set_instantiating_module (d);
       if (variable_template_p (gen_tmpl))
 	note_variable_template_instantiation (d);
       instantiate_body (td, args, d, false);
