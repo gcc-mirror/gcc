@@ -11816,6 +11816,8 @@ instantiate_class_template_1 (tree type)
   input_location = DECL_SOURCE_LOCATION (TYPE_NAME (type)) =
     DECL_SOURCE_LOCATION (typedecl);
 
+  set_instantiating_module (TYPE_NAME (type));
+
   TYPE_PACKED (type) = TYPE_PACKED (pattern);
   SET_TYPE_ALIGN (type, TYPE_ALIGN (pattern));
   TYPE_USER_ALIGN (type) = TYPE_USER_ALIGN (pattern);

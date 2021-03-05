@@ -1,3 +1,97 @@
+2021-03-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/prune.exp: Prune useless output caused by a linker bug.
+
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93235
+	* gcc.target/aarch64/pr93235.c: New test.
+
+2021-03-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/99105
+	* gcc.dg/tree-prof/indir-call-prof-malloc.c: Use profile
+	correction as the wrapped malloc is called one more time
+	from libgcov.
+	* gcc.dg/tree-prof/pr97461.c: Likewise.
+
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88146
+	PR c++/99362
+	* g++.dg/cpp2a/nodiscard-constructor.c: Renamed to ...
+	* g++.dg/cpp2a/nodiscard-constructor1.C: ... this.  Remove
+	-ftrack-macro-expansion=0 from dg-options.  Don't use (?n) in
+	dg-warning regexps, instead replace .* with \[^\n\r]*.
+	* g++.dg/cpp2a/nodiscard-constructor2.C: New test.
+	* g++.dg/cpp2a/nodiscard-reason-only-one.C: Remove
+	-ftrack-macro-expansion=0 from dg-options.
+	* g++.dg/cpp2a/nodiscard-reason-nonstring.C: Likewise.
+	* g++.dg/cpp2a/nodiscard-once.C: Likewise.
+
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99325
+	* gcc.dg/cpp/line11.c: New test.
+	* gcc.dg/cpp/line12.c: New test.
+
+2021-03-04  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99381
+	* gcc.target/aarch64/pr99381.c: New test.
+
+2021-03-04  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/mul-signed-overflow-1.c: Compile on old
+	machines.
+	* gcc.target/s390/mul-signed-overflow-2.c: Likewise.
+
+2021-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99170
+	* g++.dg/modules/pr99170-1_a.H: New.
+	* g++.dg/modules/pr99170-1_b.C: New.
+	* g++.dg/modules/pr99170-2.h: New.
+	* g++.dg/modules/pr99170-2_a.C: New.
+	* g++.dg/modules/pr99170-2_b.C: New.
+	* g++.dg/modules/pr99170-3_a.H: New.
+	* g++.dg/modules/pr99170-3_b.C: New.
+	* g++.dg/modules/inst-2_b.C: Adjust scan.
+	* g++.dg/modules/inst-4_a.C: Adjust scan.
+	* g++.dg/modules/inst-4_b.C: Adjust scan.
+	* g++.dg/modules/member-def-1_b.C: Adjust scan.
+	* g++.dg/modules/member-def-1_c.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-1_a.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-1_b.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-2_b.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-2_c.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-2_d.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-3_a.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-3_b.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-4_a.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-4_b.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-5_a.C: Adjust scan.
+	* g++.dg/modules/tpl-spec-5_b.C: Adjust scan.
+
+2021-03-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99355
+	* gfortran.dg/real4-10-real8-10.f90: New test.
+	* gfortran.dg/real4-10-real8-16.f90: New test.
+	* gfortran.dg/real4-10-real8-4.f90: New test.
+	* gfortran.dg/real4-10.f90: New test.
+	* gfortran.dg/real4-16-real8-10.f90: New test.
+	* gfortran.dg/real4-16-real8-16.f90: New test.
+	* gfortran.dg/real4-16-real8-4.f90: New test.
+	* gfortran.dg/real4-16.f90: New test.
+	* gfortran.dg/real4-8-real8-10.f90: New test.
+	* gfortran.dg/real4-8-real8-16.f90: New test.
+	* gfortran.dg/real4-8-real8-4.f90: New test.
+	* gfortran.dg/real4-8.f90: New test.
+	* gfortran.dg/real8-10.f90: New test.
+	* gfortran.dg/real8-16.f90: New test.
+	* gfortran.dg/real8-4.f90: New test.
+
 2021-03-04  Hans-Peter Nilsson  <hp@axis.com>
 
 	* gcc.misc-tests/outputs.exp: Enumerate tests.

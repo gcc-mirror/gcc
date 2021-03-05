@@ -3450,8 +3450,9 @@ process_address_1 (int nop, bool check_only_p,
      i.e. bcst_mem_operand in i386 backend.  */
   else if (MEM_P (mem)
 	   && !(INSN_CODE (curr_insn) < 0
-		&& get_constraint_type (cn) == CT_FIXED_FORM
-	        && constraint_satisfied_p (op, cn)))
+		&& (cn == CONSTRAINT__UNKNOWN
+		    || (get_constraint_type (cn) == CT_FIXED_FORM
+			&& constraint_satisfied_p (op, cn)))))
     decompose_mem_address (&ad, mem);
   else if (GET_CODE (op) == SUBREG
 	   && MEM_P (SUBREG_REG (op)))

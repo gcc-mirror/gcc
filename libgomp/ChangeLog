@@ -1,3 +1,11 @@
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Add AC_CHECK_SIZEOF([void *]).
+	* plugin/configfrag.ac: Check $ac_cv_sizeof_void_p value instead of
+	checking of -m32 or -mx32 options on the command line.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
 2021-02-27  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* testsuite/libgomp.c-c++-common/pr96390.c: Require alias

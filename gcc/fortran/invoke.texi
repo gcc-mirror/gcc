@@ -520,13 +520,24 @@ representation of the translated Fortran code, produced by
 @cindex options, real kind type promotion
 Promote all @code{REAL(KIND=M)} entities to @code{REAL(KIND=N)} entities.
 If @code{REAL(KIND=N)} is unavailable, then an error will be issued.
-All other real kind types are unaffected by this option.
+The @code{-freal-4-} flags also affect the default real kind and the
+@code{-freal-8-} flags also the double-precision real kind.  All other
+real-kind types are unaffected by this option.  The promotion is also
+applied to real literal constants of default and double-precision kind
+and a specified kind number of 4 or 8, respectively.
+However, @code{-fdefault-real-8}, @code{-fdefault-real-10},
+@code{-fdefault-real-10}, and @code{-fdefault-double-8} take precedence
+for the default and double-precision real kinds, both for real literal
+constants and for declarations without a kind number.
+Note that for @code{REAL(KIND=KIND(1.0))} the literal may get promoted and
+then the result may get promoted again.
 These options should be used with care and may not be suitable for your
 codes.  Areas of possible concern include calls to external procedures,
 alignment in @code{EQUIVALENCE} and/or @code{COMMON}, generic interfaces,
-BOZ literal constant conversion, and I/O.  Inspection of the intermediate
-representation of the translated Fortran code, produced by
-@option{-fdump-tree-original}, is suggested.
+BOZ literal constant conversion, and I/O and calls to intrinsic procedures
+when passing a value to the @code{kind=} dummy argument.  Inspection of the
+intermediate representation of the translated Fortran code, produced by
+@option{-fdump-fortran-original} or @option{-fdump-tree-original}, is suggested.
 
 @item -std=@var{std}
 @opindex @code{std=}@var{std} option

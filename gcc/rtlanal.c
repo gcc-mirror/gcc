@@ -5053,11 +5053,17 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	    gcc_unreachable ();
 	  }
 
+	/* Note that mode_width <= HOST_BITS_PER_WIDE_INT, see above.  */
 	if (result_width < mode_width)
 	  nonzero &= (HOST_WIDE_INT_1U << result_width) - 1;
 
 	if (result_low > 0)
-	  nonzero &= ~((HOST_WIDE_INT_1U << result_low) - 1);
+	  {
+	    if (result_low < HOST_BITS_PER_WIDE_INT)
+	      nonzero &= ~((HOST_WIDE_INT_1U << result_low) - 1);
+	    else
+	      nonzero = 0;
+	  }
       }
       break;
 

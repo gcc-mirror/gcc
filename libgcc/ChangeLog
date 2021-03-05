@@ -1,3 +1,18 @@
+2021-03-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/99105
+	* libgcov-driver.c (write_top_counters): Rename to ...
+	(write_topn_counters): ... this.
+	(write_one_data): Pre-allocate buffer for number of items
+	in the corresponding linked lists.
+	* libgcov.h (malloc_mmap): New function.
+	(allocate_gcov_kvp): Use it.
+
+2021-03-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/99385
+	* libgcov.h (allocate_gcov_kvp): Call mmap with fd equal to -1.
+
 2021-03-03  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/97461
