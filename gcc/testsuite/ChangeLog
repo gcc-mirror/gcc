@@ -1,3 +1,14 @@
+2021-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98810
+	* g++.dg/cpp2a/nontype-class-defarg1.C: New test.
+
+2021-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95675
+	* g++.dg/cpp0x/decltype-call5.C: New test.
+	* g++.dg/cpp0x/decltype-call6.C: New test.
+
 2021-03-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/eh/seh-xmm-unwind.C: New test.
