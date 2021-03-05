@@ -14496,20 +14496,25 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  gcc_unreachable ();
 
 	case depset::EK_BINDING:
-	  dump (dumper::CLUSTER)
-	    && dump ("[%u]=%s %P", ix, b->entity_kind_name (),
-		     b->get_entity (), b->get_name ());
-	  for (unsigned jx = b->deps.length (); jx--;)
-	    {
-	      depset *dep = b->deps[jx];
-	      if (jx)
-		gcc_checking_assert (dep->get_entity_kind () == depset::EK_USING
-				     || TREE_VISITED (dep->get_entity ()));
-	      else
-		gcc_checking_assert (dep->get_entity_kind ()
-				     == depset::EK_NAMESPACE
-				     && dep->get_entity () == b->get_entity ());
-	    }
+	  {
+	    dump (dumper::CLUSTER)
+	      && dump ("[%u]=%s %P", ix, b->entity_kind_name (),
+		       b->get_entity (), b->get_name ());
+	    depset *ns_dep = b->deps[0];
+	    gcc_checking_assert (ns_dep->get_entity_kind ()
+				 == depset::EK_NAMESPACE
+				 && ns_dep->get_entity () == b->get_entity ());
+	    for (unsigned jx = b->deps.length (); --jx;)
+	      {
+		depset *dep = b->deps[jx];
+		// We could be declaring something that is also a
+		// (merged) import
+		gcc_checking_assert (dep->is_import ()
+				     || TREE_VISITED (dep->get_entity ())
+				     || (dep->get_entity_kind ()
+					 == depset::EK_USING));
+	      }
+	  }
 	  break;
 
 	case depset::EK_DECL:
