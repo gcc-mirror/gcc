@@ -7534,6 +7534,13 @@ package body Exp_Ch6 is
              Suppress  => All_Checks);
       end if;
 
+      --  If the result is of an unconstrained array subtype with fixed lower
+      --  bound, then sliding to that bound may be needed.
+
+      if Is_Fixed_Lower_Bound_Array_Subtype (R_Type) then
+         Expand_Sliding_Conversion (Exp, R_Type);
+      end if;
+
       --  If we are returning a nonscalar object that is possibly unaligned,
       --  then copy the value into a temporary first. This copy may need to
       --  expand to a loop of component operations.

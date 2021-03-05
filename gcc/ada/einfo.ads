@@ -2589,6 +2589,16 @@ package Einfo is
 --       an anonymous base type (e.g. for integer type declarations or
 --       constrained array declarations).
 
+--    Is_Fixed_Lower_Bound_Array_Subtype
+--       Defined in type entities. True for unconstrained array types and
+--       subtypes where at least one index has a range specified with a fixed
+--       lower bound (range syntax is "<expression> .. <>").
+
+--    Is_Fixed_Lower_Bound_Index_Subtype
+--       Defined in type entities. True for an index of an unconstrained array
+--       type or subtype whose range is specified with a fixed lower bound
+--       (range syntax is "<expression> .. <>").
+
 --    Is_Fixed_Point_Type (synthesized)
 --       Applies to all entities, true for decimal and ordinary fixed
 --       point types and subtypes.

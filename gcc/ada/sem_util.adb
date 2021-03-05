@@ -1683,6 +1683,7 @@ package body Sem_Util is
       Subt        : Entity_Id;
       Disc_Type   : Entity_Id;
       Obj         : Node_Id;
+      Index       : Node_Id;
 
    begin
       Loc := Sloc (N);
@@ -1713,6 +1714,8 @@ package body Sem_Util is
 
       if Is_Array_Type (T) then
          Constraints := New_List;
+         Index := First_Index (T);
+
          for J in 1 .. Number_Dimensions (T) loop
 
             --  Build an array subtype declaration with the nominal subtype and
@@ -1720,13 +1723,24 @@ package body Sem_Util is
             --  local declarations for the subprogram, for analysis before any
             --  reference to the formal in the body.
 
-            Lo :=
-              Make_Attribute_Reference (Loc,
-                Prefix         =>
-                  Duplicate_Subexpr_No_Checks (Obj, Name_Req => True),
-                Attribute_Name => Name_First,
-                Expressions    => New_List (
-                  Make_Integer_Literal (Loc, J)));
+            --  If this is for an index with a fixed lower bound, then use
+            --  the fixed lower bound as the lower bound of the actual
+            --  subtype's corresponding index.
+
+            if not Is_Constrained (T)
+              and then Is_Fixed_Lower_Bound_Index_Subtype (Etype (Index))
+            then
+               Lo := New_Copy_Tree (Type_Low_Bound (Etype (Index)));
+
+            else
+               Lo :=
+                 Make_Attribute_Reference (Loc,
+                   Prefix         =>
+                     Duplicate_Subexpr_No_Checks (Obj, Name_Req => True),
+                   Attribute_Name => Name_First,
+                   Expressions    => New_List (
+                     Make_Integer_Literal (Loc, J)));
+            end if;
 
             Hi :=
               Make_Attribute_Reference (Loc,
@@ -1737,6 +1751,8 @@ package body Sem_Util is
                   Make_Integer_Literal (Loc, J)));
 
             Append (Make_Range (Loc, Lo, Hi), Constraints);
+
+            Next_Index (Index);
          end loop;
 
       --  If the type has unknown discriminants there is no constrained

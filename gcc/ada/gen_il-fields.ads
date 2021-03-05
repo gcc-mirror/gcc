@@ -705,6 +705,8 @@ package Gen_IL.Fields is
       Is_Exported,
       Is_Finalized_Transient,
       Is_First_Subtype,
+      Is_Fixed_Lower_Bound_Array_Subtype,
+      Is_Fixed_Lower_Bound_Index_Subtype,
       Is_Formal_Subprogram,
       Is_Frozen,
       Is_Generic_Actual_Subprogram,

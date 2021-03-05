@@ -4773,6 +4773,13 @@ package body Sem_Res is
                --  Expand_Actuals routine in Exp_Ch6.
             end if;
 
+            --  If the formal is of an unconstrained array subtype with fixed
+            --  lower bound, then sliding to that bound may be needed.
+
+            if Is_Fixed_Lower_Bound_Array_Subtype (F_Typ) then
+               Expand_Sliding_Conversion (A, F_Typ);
+            end if;
+
             --  An actual associated with an access parameter is implicitly
             --  converted to the anonymous access type of the formal and must
             --  satisfy the legality checks for access conversions.
