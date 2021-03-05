@@ -93,6 +93,9 @@ static hash_map<edge, tree> *edge_to_cases;
 
 static bitmap touched_switch_bbs;
 
+/* OpenMP region idxs for blocks during cfg pass.  */
+static vec<int> bb_to_omp_idx;
+
 /* CFG statistics.  */
 struct cfg_stats_d
 {
@@ -372,6 +375,9 @@ execute_build_cfg (void)
       dump_scope_blocks (dump_file, dump_flags);
     }
   cleanup_tree_cfg ();
+
+  bb_to_omp_idx.release ();
+
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   replace_loop_annotate ();
   return 0;
@@ -724,8 +730,7 @@ get_abnormal_succ_dispatcher (basic_block bb)
    if COMPUTED_GOTO is false, otherwise factor the computed gotos.  */
 
 static void
-handle_abnormal_edges (basic_block *dispatcher_bbs,
-		       basic_block for_bb, int *bb_to_omp_idx,
+handle_abnormal_edges (basic_block *dispatcher_bbs, basic_block for_bb,
 		       auto_vec<basic_block> *bbs, bool computed_goto)
 {
   basic_block *dispatcher = dispatcher_bbs + (computed_goto ? 1 : 0);
@@ -733,7 +738,7 @@ handle_abnormal_edges (basic_block *dispatcher_bbs,
   basic_block bb;
   bool inner = false;
 
-  if (bb_to_omp_idx)
+  if (!bb_to_omp_idx.is_empty ())
     {
       dispatcher = dispatcher_bbs + 2 * bb_to_omp_idx[for_bb->index];
       if (bb_to_omp_idx[for_bb->index] != 0)
@@ -748,7 +753,7 @@ handle_abnormal_edges (basic_block *dispatcher_bbs,
       /* Check if there are any basic blocks that need to have
 	 abnormal edges to this dispatcher.  If there are none, return
 	 early.  */
-      if (bb_to_omp_idx == NULL)
+      if (bb_to_omp_idx.is_empty ())
 	{
 	  if (bbs->is_empty ())
 	    return;
@@ -790,7 +795,7 @@ handle_abnormal_edges (basic_block *dispatcher_bbs,
 
 	  FOR_EACH_VEC_ELT (*bbs, idx, bb)
 	    {
-	      if (bb_to_omp_idx
+	      if (!bb_to_omp_idx.is_empty ()
 		  && bb_to_omp_idx[bb->index] != bb_to_omp_idx[for_bb->index])
 		continue;
 
@@ -820,7 +825,7 @@ handle_abnormal_edges (basic_block *dispatcher_bbs,
 	  /* Create predecessor edges of the dispatcher.  */
 	  FOR_EACH_VEC_ELT (*bbs, idx, bb)
 	    {
-	      if (bb_to_omp_idx
+	      if (!bb_to_omp_idx.is_empty ()
 		  && bb_to_omp_idx[bb->index] != bb_to_omp_idx[for_bb->index])
 		continue;
 	      make_edge (bb, *dispatcher, EDGE_ABNORMAL);
@@ -957,7 +962,6 @@ make_edges (void)
   struct omp_region *cur_region = NULL;
   auto_vec<basic_block> ab_edge_goto;
   auto_vec<basic_block> ab_edge_call;
-  int *bb_to_omp_idx = NULL;
   int cur_omp_region_idx = 0;
 
   /* Create an edge from entry to the first block with executable
@@ -971,7 +975,7 @@ make_edges (void)
     {
       int mer;
 
-      if (bb_to_omp_idx)
+      if (!bb_to_omp_idx.is_empty ())
 	bb_to_omp_idx[bb->index] = cur_omp_region_idx;
 
       mer = make_edges_bb (bb, &cur_region, &cur_omp_region_idx);
@@ -980,8 +984,8 @@ make_edges (void)
       else if (mer == 2)
 	ab_edge_call.safe_push (bb);
 
-      if (cur_region && bb_to_omp_idx == NULL)
-	bb_to_omp_idx = XCNEWVEC (int, n_basic_blocks_for_fn (cfun));
+      if (cur_region && bb_to_omp_idx.is_empty ())
+	bb_to_omp_idx.safe_grow_cleared (n_basic_blocks_for_fn (cfun), true);
     }
 
   /* Computed gotos are hell to deal with, especially if there are
@@ -1006,7 +1010,7 @@ make_edges (void)
       basic_block *dispatcher_bbs = dispatcher_bb_array;
       int count = n_basic_blocks_for_fn (cfun);
 
-      if (bb_to_omp_idx)
+      if (!bb_to_omp_idx.is_empty ())
 	dispatcher_bbs = XCNEWVEC (basic_block, 2 * count);
 
       FOR_EACH_BB_FN (bb, cfun)
@@ -1024,12 +1028,12 @@ make_edges (void)
 	      /* Make an edge to every label block that has been marked as a
 		 potential target for a computed goto or a non-local goto.  */
 	      if (FORCED_LABEL (target))
-		handle_abnormal_edges (dispatcher_bbs, bb, bb_to_omp_idx,
-				       &ab_edge_goto, true);
+		handle_abnormal_edges (dispatcher_bbs, bb, &ab_edge_goto,
+				       true);
 	      if (DECL_NONLOCAL (target))
 		{
-		  handle_abnormal_edges (dispatcher_bbs, bb, bb_to_omp_idx,
-					 &ab_edge_call, false);
+		  handle_abnormal_edges (dispatcher_bbs, bb, &ab_edge_call,
+					 false);
 		  break;
 		}
 	    }
@@ -1044,16 +1048,14 @@ make_edges (void)
 		  && ((gimple_call_flags (call_stmt) & ECF_RETURNS_TWICE)
 		      || gimple_call_builtin_p (call_stmt,
 						BUILT_IN_SETJMP_RECEIVER)))
-		handle_abnormal_edges (dispatcher_bbs, bb, bb_to_omp_idx,
-				       &ab_edge_call, false);
+		handle_abnormal_edges (dispatcher_bbs, bb, &ab_edge_call,
+				       false);
 	    }
 	}
 
-      if (bb_to_omp_idx)
+      if (!bb_to_omp_idx.is_empty ())
 	XDELETE (dispatcher_bbs);
     }
-
-  XDELETE (bb_to_omp_idx);
 
   omp_free_regions ();
 }
@@ -2301,6 +2303,30 @@ remove_bb (basic_block bb)
 		  new_bb = single_succ (new_bb);
 		  gcc_assert (new_bb != bb);
 		}
+	      if ((unsigned) bb->index < bb_to_omp_idx.length ()
+		  && ((unsigned) new_bb->index >= bb_to_omp_idx.length ()
+		      || (bb_to_omp_idx[bb->index]
+			  != bb_to_omp_idx[new_bb->index])))
+		{
+		  /* During cfg pass make sure to put orphaned labels
+		     into the right OMP region.  */
+		  unsigned int i;
+		  int idx;
+		  new_bb = NULL;
+		  FOR_EACH_VEC_ELT (bb_to_omp_idx, i, idx)
+		    if (i >= NUM_FIXED_BLOCKS
+			&& idx == bb_to_omp_idx[bb->index]
+			&& i != (unsigned) bb->index)
+		      {
+			new_bb = BASIC_BLOCK_FOR_FN (cfun, i);
+			break;
+		      }
+		  if (new_bb == NULL)
+		    {
+		      new_bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+		      gcc_assert (new_bb != bb);
+		    }
+		}
 	      new_gsi = gsi_after_labels (new_bb);
 	      gsi_remove (&i, false);
 	      gsi_insert_before (&new_gsi, stmt, GSI_NEW_STMT);
@@ -2319,6 +2345,8 @@ remove_bb (basic_block bb)
 	}
     }
 
+  if ((unsigned) bb->index < bb_to_omp_idx.length ())
+    bb_to_omp_idx[bb->index] = -1;
   remove_phi_nodes_and_edges_for_unreachable_block (bb);
   bb->il.gimple.seq = NULL;
   bb->il.gimple.phi_nodes = NULL;
