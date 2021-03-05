@@ -578,12 +578,8 @@ __gnat_error_handler (int sig, siginfo_t *si ATTRIBUTE_UNUSED, void *ucontext)
 
 #ifndef __ia64__
 #define HAVE_GNAT_ALTERNATE_STACK 1
-/* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.
-   It must be larger than MINSIGSTKSZ and hopefully near 2 * SIGSTKSZ.  */
-# if 16 * 1024 < MINSIGSTKSZ
-#  error "__gnat_alternate_stack too small"
-# endif
-char __gnat_alternate_stack[16 * 1024];
+/* This must be in keeping with System.OS_Interface.Alternate_Stack_Size.  */
+char __gnat_alternate_stack[32 * 1024];
 #endif
 
 #ifdef __XENO__
