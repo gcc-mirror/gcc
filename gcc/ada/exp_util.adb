@@ -6220,6 +6220,9 @@ package body Exp_Util is
                                         | N_Discriminant_Association
                                         | N_Parameter_Association
                                         | N_Pragma_Argument_Association
+                                        | N_Aggregate
+                                        | N_Delta_Aggregate
+                                        | N_Extension_Aggregate
               and then Nkind (Parent (Par)) not in N_Function_Call
                                                  | N_Procedure_Call_Statement
                                                  | N_Entry_Call_Statement
