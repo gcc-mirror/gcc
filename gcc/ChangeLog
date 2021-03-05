@@ -1,3 +1,10 @@
+2021-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96078
+	* cgraphunit.c (process_function_and_variable_attributes): Don't
+	warn about flatten on an alias if the target also has it.
+	* cgraph.h (symtab_node::get_alias_target_tree): New.
+
 2021-03-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/99234

@@ -1,3 +1,21 @@
+2021-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96199
+	* cp-tree.h (struct push_nested_class_guard): New.
+	* constraint.cc (get_normalized_constraints_from_decl): Use it.
+
+2021-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95675
+	* call.c (build_temp): Wrap a CALL_EXPR in a TARGET_EXPR
+	if it didn't get one before.
+
+2021-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98810
+	* pt.c (tsubst_copy) [VIEW_CONVERT_EXPR]: Add const
+	to a class non-type template argument that needs it.
+
 2021-02-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/90333

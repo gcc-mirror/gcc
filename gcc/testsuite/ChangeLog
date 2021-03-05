@@ -1,3 +1,19 @@
+2021-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95675
+	* g++.dg/cpp0x/decltype-call5.C: New test.
+	* g++.dg/cpp0x/decltype-call6.C: New test.
+
+2021-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96078
+	* g++.dg/ext/attr-flatten1.C: New test.
+
+2021-03-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98810
+	* g++.dg/cpp2a/nontype-class-defarg1.C: New test.
+
 2021-03-03  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
