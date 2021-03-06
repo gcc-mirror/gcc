@@ -1,3 +1,7 @@
+2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp2a/nontype-class-defarg1.C: Use target c++2a.
+
 2021-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98810
