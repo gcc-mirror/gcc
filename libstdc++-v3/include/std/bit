@@ -68,6 +68,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __rotl(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
+      if _GLIBCXX17_CONSTEXPR ((_Nd & (_Nd - 1)) == 0)
+	{
+	  // Variant for power of two _Nd which the compiler can
+	  // easily pattern match.
+	  constexpr unsigned __uNd = _Nd;
+	  const unsigned __r = __s;
+	  return (__x << (__r % __uNd)) | (__x >> ((-__r) % __uNd));
+	}
       const int __r = __s % _Nd;
       if (__r == 0)
 	return __x;
@@ -82,6 +90,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __rotr(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
+      if _GLIBCXX17_CONSTEXPR ((_Nd & (_Nd - 1)) == 0)
+	{
+	  // Variant for power of two _Nd which the compiler can
+	  // easily pattern match.
+	  constexpr unsigned __uNd = _Nd;
+	  const unsigned __r = __s;
+	  return (__x >> (__r % __uNd)) | (__x << ((-__r) % __uNd));
+	}
       const int __r = __s % _Nd;
       if (__r == 0)
 	return __x;
