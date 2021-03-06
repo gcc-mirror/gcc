@@ -1968,6 +1968,13 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	if (quals & TYPE_QUAL_VOLATILE)
 	  pp_string (pp, "volatile ");
 
+	if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (node)))
+	  {
+	    pp_string (pp, "<address-space-");
+	    pp_decimal_int (pp, TYPE_ADDR_SPACE (node));
+	    pp_string (pp, "> ");
+	  }
+
         /* Print the name of the structure.  */
         if (TREE_CODE (node) == RECORD_TYPE)
 	  pp_string (pp, "struct ");
