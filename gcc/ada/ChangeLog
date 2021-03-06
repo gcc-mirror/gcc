@@ -1,3 +1,10 @@
+2021-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/99264
+	* init.c (__gnat_alternate_sta) [Linux]: Remove preprocessor test on
+	MINSIGSTKSZ and bump size to 32KB.
+	* libgnarl/s-osinte__linux.ads (Alternate_Stack_Size): Bump to 32KB.
+
 2021-03-02  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	PR bootstrap/98590

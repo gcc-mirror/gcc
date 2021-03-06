@@ -1,3 +1,112 @@
+2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99374
+	* g++.dg/cpp1z/noexcept-type23.C: New test.
+
+2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99120
+	* g++.dg/warn/Wshadow-17.C: New test.
+
+2021-03-05  Jason Merrill  <jason@redhat.com>
+
+	PR c/99363
+	* gcc.dg/attr-flatten-1.c: Adjust.
+
+2021-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99322
+	* c-c++-common/gomp/pr99322.c: New test.
+
+2021-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99245
+	* g++.dg/modules/pr99245_a.H: New.
+	* g++.dg/modules/pr99245_b.H: New.
+
+2021-03-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/99218
+	* gfortran.dg/matmul_21.f90: New test.
+
+2021-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99377
+	* g++.dg/modules/pr99377_a.H: New.
+	* g++.dg/modules/pr99377_b.C: New.
+	* g++.dg/modules/pr99377_c.C: New.
+
+2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98118
+	* g++.dg/coroutines/pr98118.C: New test.
+
+2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95616
+	* g++.dg/coroutines/pr95616-0-no-exceptions.C: New test.
+	* g++.dg/coroutines/pr95616-0.C: New test.
+	* g++.dg/coroutines/pr95616-1-no-exceptions.C: New test.
+	* g++.dg/coroutines/pr95616-1.C: New test.
+	* g++.dg/coroutines/pr95616-2.C: New test.
+	* g++.dg/coroutines/pr95616-3-no-exceptions.C: New test.
+	* g++.dg/coroutines/pr95616-3.C: New test.
+	* g++.dg/coroutines/pr95616-4.C: New test.
+	* g++.dg/coroutines/pr95616-5.C: New test.
+	* g++.dg/coroutines/pr95616-6.C: New test.
+
+2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95615
+	* g++.dg/coroutines/torture/pr95615-01.C: New test.
+	* g++.dg/coroutines/torture/pr95615-02.C: New test.
+	* g++.dg/coroutines/torture/pr95615-03.C: New test.
+	* g++.dg/coroutines/torture/pr95615-04.C: New test.
+	* g++.dg/coroutines/torture/pr95615-05.C: New test.
+	* g++.dg/coroutines/torture/pr95615.inc: New file.
+
+2021-03-05  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99378
+	* gcc.target/i386/pr99123-2.c: New.
+
+2021-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99389
+	* g++.dg/modules/pr99389_a.H: New.
+	* g++.dg/modules/pr99389_b.C: New.
+	* g++.dg/modules/pr99389_c.C: New.
+
+2021-03-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/99137
+	* c-c++-common/goacc/asyncwait-1.c: Update dg-error; add
+	additional test.
+
+2021-03-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/real4-10-real8-10.f90: Add check for real literals
+	with '_kind' number.
+	* gfortran.dg/real4-10-real8-16.f90: Likewise.
+	* gfortran.dg/real4-10-real8-4.f90: Likewise.
+	* gfortran.dg/real4-10.f90: Likewise.
+	* gfortran.dg/real4-16-real8-10.f90: Likewise.
+	* gfortran.dg/real4-16-real8-16.f90: Likewise.
+	* gfortran.dg/real4-16-real8-4.f90: Likewise.
+	* gfortran.dg/real4-16.f90: Likewise.
+	* gfortran.dg/real4-8-real8-10.f90: Likewise.
+	* gfortran.dg/real4-8-real8-16.f90: Likewise.
+	* gfortran.dg/real4-8-real8-4.f90: Likewise.
+	* gfortran.dg/real4-8.f90: Likewise.
+	* gfortran.dg/real8-10.f90: Likewise.
+	* gfortran.dg/real8-16.f90: Likewise.
+	* gfortran.dg/real8-4.f90: Likewise.
+
+2021-03-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR debug/66668
+	* gcc.dg/debug/dwarf2/stacked-qualified-types-3.c: xfail for cris-*-*
+
 2021-03-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lib/prune.exp: Prune useless output caused by a linker bug.

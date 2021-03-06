@@ -1,3 +1,43 @@
+2021-03-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99322
+	* tree-cfg.c (bb_to_omp_idx): New variable.
+	(execute_build_cfg): Release the bb_to_omp_idx vector after
+	cleanup_tree_cfg returns.
+	(handle_abnormal_edges): Remove bb_to_omp_idx argument, adjust
+	for bb_to_omp_idx being a vec<int> instead of pointer to array
+	of ints.
+	(make_edges): Remove bb_to_omp_idx local variable, don't pass
+	it to handle_abnormal_edges, adjust for bb_to_omp_idx being a
+	vec<int> instead of pointer to array of ints and don't free/release
+	it at the end.
+	(remove_bb): When removing a bb and placing forced label somewhere
+	else, ensure it is put into the same OpenMP region during cfg
+	pass if possible or to entry successor as fallback.  Unregister
+	bb from bb_to_omp_idx.
+
+2021-03-05  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99378
+	* lra-constraints.c (process_address_1): Skip decomposing address
+	for asm insn operand with unknown constraint.
+
+2021-03-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98078
+	* cgraph.c (cgraph_edge::set_call_stmt): Do not update all
+	corresponding speculative edges if we are about to resolve
+	sepculation.  Make edge direct (and so resolve speculations) before
+	removing it from call_site_hash.
+	(cgraph_edge::make_direct): Relax the initial assert to allow calling
+	the function on speculative direct edges.
+
+2021-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/99376
+	* rtlanal.c (nonzero_bits1) <arithmetic operators>: If the number
+	of low-order zero bits is too large, set the result to 0 directly.
+
 2021-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/93235

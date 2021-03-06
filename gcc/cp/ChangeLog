@@ -1,3 +1,66 @@
+2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99374
+	* call.c (standard_conversion): When converting pointers to
+	member, don't return NULL when the bases are equivalent but
+	incomplete.
+
+2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99120
+	* name-lookup.c (check_local_shadow): Check if the type of decl
+	is non-null before checking TYPE_PTR*.
+
+2021-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99245
+	* module.cc (module_state::write_cluster): Relax binding assert.
+
+2021-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99377
+	* pt.c (instantiate_decl): Call set_instantiating_module.
+
+2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98118
+	* coroutines.cc (build_co_await): Use type_build_ctor_call()
+	to determine cases when a CTOR needs to be built.
+	(flatten_await_stmt): Likewise.
+	(morph_fn_to_coro): Likewise.
+
+2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95616
+	* coroutines.cc (coro_diagnose_throwing_fn): New helper.
+	(coro_diagnose_throwing_final_aw_expr): New helper.
+	(build_co_await): Diagnose throwing final await expression
+	components.
+	(build_init_or_final_await): Diagnose a throwing promise
+	final_suspend() call.
+
+2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95615
+	* coroutines.cc (struct param_info): Track parameter copies that need
+	a DTOR.
+	(coro_get_frame_dtor): New helper function factored from build_actor().
+	(build_actor_fn): Use coro_get_frame_dtor().
+	(morph_fn_to_coro): Track parameters that need DTORs on exception,
+	likewise the frame promise and the return object.  On exception, run the
+	DTORs for these, destroy the frame and then rethrow the exception.
+
+2021-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99389
+	* pt.c (instantiate_class_template_1): Set instantiating module
+	here.
+
+2021-03-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/99137
+	* parser.c (cp_parser_oacc_clause_async): Reject comma expressions.
+
 2021-03-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88146

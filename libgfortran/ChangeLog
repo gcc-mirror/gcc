@@ -1,3 +1,34 @@
+2021-03-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/99218
+	* m4/matmul_internal.m4: Invoke tuned matmul only for rank(b)>1.
+	* generated/matmul_c10.c: Regenerated.
+	* generated/matmul_c16.c: Likewise.
+	* generated/matmul_c4.c: Likewise.
+	* generated/matmul_c8.c: Likewise.
+	* generated/matmul_i1.c: Likewise.
+	* generated/matmul_i16.c: Likewise.
+	* generated/matmul_i2.c: Likewise.
+	* generated/matmul_i4.c: Likewise.
+	* generated/matmul_i8.c: Likewise.
+	* generated/matmul_r10.c: Likewise.
+	* generated/matmul_r16.c: Likewise.
+	* generated/matmul_r4.c: Likewise.
+	* generated/matmul_r8.c: Likewise.
+	* generated/matmulavx128_c10.c: Likewise.
+	* generated/matmulavx128_c16.c: Likewise.
+	* generated/matmulavx128_c4.c: Likewise.
+	* generated/matmulavx128_c8.c: Likewise.
+	* generated/matmulavx128_i1.c: Likewise.
+	* generated/matmulavx128_i16.c: Likewise.
+	* generated/matmulavx128_i2.c: Likewise.
+	* generated/matmulavx128_i4.c: Likewise.
+	* generated/matmulavx128_i8.c: Likewise.
+	* generated/matmulavx128_r10.c: Likewise.
+	* generated/matmulavx128_r16.c: Likewise.
+	* generated/matmulavx128_r4.c: Likewise.
+	* generated/matmulavx128_r8.c: Likewise.
+
 2021-03-03  Vittorio Zecca  <zeccav@gmail.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
