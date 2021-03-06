@@ -17110,14 +17110,17 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TEMPLATE_ID_EXPR:
       {
 	/* Substituted template arguments */
-	tree fn = TREE_OPERAND (t, 0);
+	tree tmpl = TREE_OPERAND (t, 0);
 	tree targs = TREE_OPERAND (t, 1);
 
-	fn = tsubst_copy (fn, args, complain, in_decl);
+	tmpl = tsubst_copy (tmpl, args, complain, in_decl);
 	if (targs)
 	  targs = tsubst_template_args (targs, args, complain, in_decl);
 
-	return lookup_template_function (fn, targs);
+	if (variable_template_p (tmpl))
+	  return lookup_template_variable (tmpl, targs);
+	else
+	  return lookup_template_function (tmpl, targs);
       }
 
     case TREE_LIST:
