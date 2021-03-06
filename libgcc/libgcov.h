@@ -172,6 +172,16 @@ extern struct gcov_info *gcov_list;
 #define ATTRIBUTE_HIDDEN
 #endif
 
+#if HAVE_SYS_MMAN_H
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
+
+#if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+#endif
+
 #include "gcov-io.h"
 
 /* Structures embedded in coveraged program.  The structures generated
