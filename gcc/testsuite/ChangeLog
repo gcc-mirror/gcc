@@ -1,3 +1,12 @@
+2021-03-06  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-03-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/99137
+	* c-c++-common/goacc/asyncwait-1.c: Update dg-error; add
+	additional test.
+
 2021-03-05  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp2a/nontype-class-defarg1.C: Use target c++2a.
