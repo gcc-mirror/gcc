@@ -1,3 +1,27 @@
+2021-03-06  Patrick Palka  <ppalka@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99287
+	* g++.dg/cpp2a/constexpr-99287.C: New test.
+
+2021-03-06  Patrick Palka  <ppalka@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96330
+	* g++.dg/cpp1y/var-templ68.C: New test.
+	* g++.dg/cpp1y/var-templ68a.C: New test.
+
+2021-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99365
+	* g++.dg/cpp2a/concepts-partial-spec9.C: New test.
+	* g++.dg/cpp2a/concepts-placeholder4.C: New test.
+
+2021-03-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/pr93372-1.c: Adjust expected assembler result
+	to allow an eliminated stack-frame.
+
 2021-03-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/99374

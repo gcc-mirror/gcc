@@ -1,3 +1,12 @@
+2021-03-06  Julian Brown  <julian@codesourcery.com>
+
+	* tree-pretty-print.c (dump_generic_node): Emit non-generic
+	address space info for aggregates.
+
+2021-03-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (MAX_FIXED_MODE_SIZE): Don't define.
+
 2021-03-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/99322

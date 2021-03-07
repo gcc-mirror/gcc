@@ -1,3 +1,9 @@
+2021-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/99406
+	* libgcov.h (MAP_FAILED, MAP_ANONYMOUS): If HAVE_SYS_MMAN_H is
+	defined, define these macros if not defined already.
+
 2021-03-04  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/99105

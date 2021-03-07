@@ -1,3 +1,35 @@
+2021-03-06  Patrick Palka  <ppalka@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99287
+	* constexpr.c (cxx_eval_increment_expression): Pass lval when
+	evaluating the MODIFY_EXPR, and update 'mod' with the result of
+	this evaluation.  Check *non_constant_p afterwards.  For prefix
+	ops, just return 'mod'.
+
+2021-03-06  Patrick Palka  <ppalka@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96330
+	* pt.c (tsubst_copy) <case TEMPLATE_ID_EXPR>: Rename local
+	variable 'fn' to 'tmpl'.  Handle a variable template-id by
+	calling lookup_template_variable.
+
+2021-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99365
+	* pt.c (unify) <case TEMPLATE_TYPE_PARM>: Pass targs as
+	outer_targs to do_auto_deduction.
+	(placeholder_type_constraint_dependent_p): Define.
+	(do_auto_deduction): When processing_template_decl != 0
+	and context is adc_unify and we have constraints, pretend the
+	constraints are satisfied instead of punting.  Otherwise don't
+	punt unless placeholder_type_constraint_dependent_p holds.
+	Add some clarifying sanity checks.  Add a hack to add missing
+	outermost template levels to outer_args before checking
+	satisfaction.  Don't substitute outer_targs into type if it's
+	already been done.
+
 2021-03-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/99374
