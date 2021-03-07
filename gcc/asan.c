@@ -105,7 +105,7 @@ along with GCC; see the file COPYING3.  If not see
      int
      foo ()
      {
-       char a[23] = {0};
+       char a[24] = {0};
        int b[2] = {0};
 
        a[5] = 1;
