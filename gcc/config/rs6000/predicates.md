@@ -992,6 +992,26 @@
   return INTVAL (offset) % 4 == 0;
 })
 
+;; Return 1 if the operand is a memory operand that has a valid address for
+;; a DS-form instruction. I.e. the address has to be either just a register,
+;; or register + const where the two low order bits of const are zero.
+(define_predicate "ds_form_mem_operand"
+  (match_code "subreg,mem")
+{
+  rtx inner, addr, offset;
+
+  inner = op;
+  if (reload_completed && SUBREG_P (inner))
+    inner = SUBREG_REG (inner);
+
+  if (!any_memory_operand (inner, mode))
+    return false;
+
+  addr = XEXP (inner, 0);
+
+  return address_to_insn_form (addr, mode, NON_PREFIXED_DS) == INSN_FORM_DS;
+})
+
 ;; Return 1 if the operand, used inside a MEM, is a SYMBOL_REF.
 (define_predicate "symbol_ref_operand"
   (and (match_code "symbol_ref")
