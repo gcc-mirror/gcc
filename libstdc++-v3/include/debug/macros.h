@@ -94,6 +94,12 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__can_advance(_First, _Size),	\
 		      ._M_iterator(_First, #_First)			\
 		      ._M_integer(_Size, #_Size))
 
+#define __glibcxx_check_can_increment_dist(_First,_Dist,_Way)		\
+  _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__can_advance(_First, _Dist, _Way), \
+		      _M_message(__gnu_debug::__msg_iter_subscript_oob)	\
+		      ._M_iterator(_First, #_First)			\
+		      ._M_integer(_Way * _Dist.first, #_Dist))
+
 #define __glibcxx_check_can_increment_range(_First1,_Last1,_First2)	\
   do									\
   {									\
@@ -105,7 +111,7 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__can_advance(_First, _Size),	\
 			._M_iterator(_Last1, #_Last1),			\
 			__FILE__,__LINE__,__PRETTY_FUNCTION__);		\
     _GLIBCXX_DEBUG_VERIFY_AT_F(						\
-			__gnu_debug::__can_advance(_First2, __dist.first),\
+			__gnu_debug::__can_advance(_First2, __dist, 1), \
 			_M_message(__gnu_debug::__msg_iter_subscript_oob)\
 			._M_iterator(_First2, #_First2)			\
 			._M_integer(__dist.first),			\
@@ -123,7 +129,7 @@ _GLIBCXX_DEBUG_VERIFY(__gnu_debug::__can_advance(_First, _Size),	\
 			._M_iterator(_Last1, #_Last1),			\
 			__FILE__,__LINE__,__PRETTY_FUNCTION__);		\
     _GLIBCXX_DEBUG_VERIFY_AT_F(						\
-			__gnu_debug::__can_advance(_First2, -__dist.first),\
+			__gnu_debug::__can_advance(_First2, __dist, -1), \
 			_M_message(__gnu_debug::__msg_iter_subscript_oob)\
 			._M_iterator(_First2, #_First2)			\
 			._M_integer(-__dist.first),			\

@@ -407,6 +407,12 @@ namespace __gnu_debug
       bool
       _M_can_advance(difference_type __n, bool __strict = false) const;
 
+      // Can we advance the iterator using @p __dist in @p __way direction.
+      template<typename _Diff>
+	bool
+	_M_can_advance(const std::pair<_Diff, _Distance_precision>& __dist,
+		       int __way) const;
+
       // Is the iterator range [*this, __rhs) valid?
       bool
       _M_valid_range(const _Safe_iterator& __rhs,
@@ -957,6 +963,14 @@ namespace __gnu_debug
     __can_advance(const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
 		  _Size __n)
     { return __it._M_can_advance(__n); }
+
+  template<typename _Iterator, typename _Sequence, typename _Category,
+	   typename _Diff>
+    inline bool
+    __can_advance(const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
+		  const std::pair<_Diff, _Distance_precision>& __dist,
+		  int __way)
+    { return __it._M_can_advance(__dist, __way); }
 
   template<typename _Iterator, typename _Sequence>
     _Iterator
