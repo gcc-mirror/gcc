@@ -92,23 +92,31 @@ namespace __gnu_debug
       if (__n == 0)
 	return true;
 
+      std::pair<difference_type, _Distance_precision> __dist = __n < 0
+	? _M_get_distance_from_begin()
+	: _M_get_distance_to_end();
+
       if (__n < 0)
-	{
-	  std::pair<difference_type, _Distance_precision> __dist =
-	    _M_get_distance_from_begin();
-	  return __dist.second == __dp_exact
-	    ? __dist.first >= -__n
-	    : !__strict && __dist.first > 0;
-	}
-      else
-	{
-	  std::pair<difference_type, _Distance_precision> __dist =
-	    _M_get_distance_to_end();
-	  return __dist.second == __dp_exact
-	    ? __dist.first >= __n
-	    : !__strict && __dist.first > 0;
-	}
+	__n = -__n;
+
+      return __dist.second > __dp_sign
+	? __dist.first >= __n
+	: !__strict && __dist.first > 0;
     }
+
+  template<typename _Iterator, typename _Sequence, typename _Category>
+    template<typename _Diff>
+      bool
+      _Safe_iterator<_Iterator, _Sequence, _Category>::
+      _M_can_advance(const std::pair<_Diff, _Distance_precision>& __dist,
+		     int __way) const
+      {
+	return __dist.second == __dp_exact
+	  ? _M_can_advance(__way * __dist.first)
+	  : _M_can_advance(__way * (__dist.first == 0
+				    ? 0
+				    : __dist.first < 0 ? -1 : 1));
+      }
 
   template<typename _Iterator, typename _Sequence, typename _Category>
     typename _Distance_traits<_Iterator>::__type
@@ -191,19 +199,12 @@ namespace __gnu_debug
 
       /* Determine iterators order */
       __dist = _M_get_distance_to(__rhs);
-      switch (__dist.second)
+      if (__dist.second != __dp_equality)
 	{
-	case __dp_equality:
-	  if (__dist.first == 0)
-	    return true;
-	  break;
-
-	case __dp_sign:
-	case __dp_exact:
 	  // If range is not empty first iterator must be dereferenceable.
-	  if (__dist.first > 0)
-	    return !__check_dereferenceable || _M_dereferenceable();
-	  return __dist.first == 0;
+	  return __dist.first == 0
+	    || (__dist.first > 0
+		&& (!__check_dereferenceable || _M_dereferenceable()));
 	}
 
       // Assume that this is a valid range; we can't check anything else.
@@ -224,9 +225,8 @@ namespace __gnu_debug
       __dist = std::make_pair(__rhs.base() - this->base(), __dp_exact);
 
       // If range is not empty first iterator must be dereferenceable.
-      if (__dist.first > 0)
-	return this->_M_dereferenceable();
-      return __dist.first == 0;
+      return __dist.first == 0
+	|| (__dist.first > 0 && this->_M_dereferenceable());
     }
 } // namespace __gnu_debug
 
@@ -244,7 +244,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typename ::__gnu_debug::_Distance_traits<_Ite>::__type __dist;
       __glibcxx_check_valid_range2(__first, __last, __dist);
-      __glibcxx_check_can_increment(__result, __dist.first);
+      __glibcxx_check_can_increment_dist(__result, __dist, 1);
 
       if (__dist.second > ::__gnu_debug::__dp_equality)
 	return std::__copy_move_a<_IsMove>(__first.base(), __last.base(),
@@ -261,7 +261,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typename ::__gnu_debug::_Distance_traits<_II>::__type __dist;
       __glibcxx_check_valid_range2(__first, __last, __dist);
-      __glibcxx_check_can_increment(__result, __dist.first);
+      __glibcxx_check_can_increment_dist(__result, __dist, 1);
 
       if (__dist.second > ::__gnu_debug::__dp_sign
 	  && __result._M_can_advance(__dist.first, true))
@@ -283,7 +283,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typename ::__gnu_debug::_Distance_traits<_IIte>::__type __dist;
       __glibcxx_check_valid_range2(__first, __last, __dist);
-      __glibcxx_check_can_increment(__result, __dist.first);
+      __glibcxx_check_can_increment_dist(__result, __dist, 1);
 
       if (__dist.second > ::__gnu_debug::__dp_equality)
 	{
@@ -311,7 +311,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typename ::__gnu_debug::_Distance_traits<_Ite>::__type __dist;
       __glibcxx_check_valid_range2(__first, __last, __dist);
-      __glibcxx_check_can_increment(__result, -__dist.first);
+      __glibcxx_check_can_increment_dist(__result, __dist, -1);
 
       if (__dist.second > ::__gnu_debug::__dp_equality)
 	return std::__copy_move_backward_a<_IsMove>(
@@ -328,7 +328,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typename ::__gnu_debug::_Distance_traits<_II>::__type __dist;
       __glibcxx_check_valid_range2(__first, __last, __dist);
-      __glibcxx_check_can_increment(__result, -__dist.first);
+      __glibcxx_check_can_increment_dist(__result, __dist, -1);
 
       if (__dist.second > ::__gnu_debug::__dp_sign
 	  && __result._M_can_advance(-__dist.first, true))
@@ -351,7 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typename ::__gnu_debug::_Distance_traits<_IIte>::__type __dist;
       __glibcxx_check_valid_range2(__first, __last, __dist);
-      __glibcxx_check_can_increment(__result, -__dist.first);
+      __glibcxx_check_can_increment_dist(__result, __dist, -1);
 
       if (__dist.second > ::__gnu_debug::__dp_equality)
 	{
@@ -416,7 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typename ::__gnu_debug::_Distance_traits<_II1>::__type __dist;
       __glibcxx_check_valid_range2(__first1, __last1, __dist);
-      __glibcxx_check_can_increment(__first2, __dist.first);
+      __glibcxx_check_can_increment_dist(__first2, __dist, 1);
 
       if (__dist.second > ::__gnu_debug::__dp_equality)
 	return std::__equal_aux(__first1.base(), __last1.base(), __first2);
@@ -431,7 +431,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typename ::__gnu_debug::_Distance_traits<_II1>::__type __dist;
       __glibcxx_check_valid_range2(__first1, __last1, __dist);
-      __glibcxx_check_can_increment(__first2, __dist.first);
+      __glibcxx_check_can_increment_dist(__first2, __dist, 1);
 
       if (__dist.second > ::__gnu_debug::__dp_sign
 	  && __first2._M_can_advance(__dist.first, true))
@@ -450,7 +450,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typename ::__gnu_debug::_Distance_traits<_II1>::__type __dist;
       __glibcxx_check_valid_range2(__first1, __last1, __dist);
-      __glibcxx_check_can_increment(__first2, __dist.first);
+      __glibcxx_check_can_increment_dist(__first2, __dist, 1);
 
       if (__dist.second > ::__gnu_debug::__dp_equality)
 	{
