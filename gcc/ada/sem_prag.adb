@@ -20418,7 +20418,8 @@ package body Sem_Prag is
                elsif Chars (Argx) = Name_Eliminated then
                   if Ttypes.Standard_Long_Long_Integer_Size /= 64 then
                      Error_Pragma_Arg
-                       ("Eliminated not implemented on this target", Argx);
+                       ("Eliminated requires Long_Long_Integer'Size = 64",
+                        Argx);
                   else
                      return Eliminated;
                   end if;
