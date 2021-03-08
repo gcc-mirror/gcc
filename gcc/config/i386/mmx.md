@@ -2021,9 +2021,9 @@
 })
 
 (define_insn "mmx_pshufw_1"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,Yw")
         (vec_select:V4HI
-          (match_operand:V4HI 1 "register_mmxmem_operand" "ym,xYw")
+	  (match_operand:V4HI 1 "register_mmxmem_operand" "ym,Yw")
           (parallel [(match_operand 2 "const_0_to_3_operand")
                      (match_operand 3 "const_0_to_3_operand")
                      (match_operand 4 "const_0_to_3_operand")
@@ -2105,10 +2105,10 @@
    (set_attr "mode" "DI,TI")])
 
 (define_insn "*vec_dupv4hi"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,Yw")
 	(vec_duplicate:V4HI
 	  (truncate:HI
-	    (match_operand:SI 1 "register_operand" "0,xYw"))))]
+	    (match_operand:SI 1 "register_operand" "0,Yw"))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@

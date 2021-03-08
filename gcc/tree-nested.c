@@ -2526,6 +2526,7 @@ convert_local_reference_stmt (gimple_stmt_iterator *gsi, bool *handled_ops_p,
 	{
 	  tree lhs = gimple_assign_lhs (stmt);
 	  if (DECL_P (lhs)
+	      && decl_function_context (lhs) == info->context
 	      && !use_pointer_in_frame (lhs)
 	      && lookup_field_for_decl (info, lhs, NO_INSERT))
 	    {

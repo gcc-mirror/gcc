@@ -1,3 +1,11 @@
+2021-03-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99355
+	PR fortran/57871
+	* invoke.texi (-freal{4,8}-real-*): Extend description.
+	* primary.c (match_real_constant): Also promote real literals
+	with '_kind' number.
+
 2021-03-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/99355

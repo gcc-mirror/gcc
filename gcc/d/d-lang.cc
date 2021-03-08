@@ -342,9 +342,6 @@ d_init_options_struct (gcc_options *opts)
   /* GCC options.  */
   opts->x_flag_exceptions = 1;
 
-  /* Avoid range issues for complex multiply and divide.  */
-  opts->x_flag_complex_method = 2;
-
   /* Unlike C, there is no global `errno' variable.  */
   opts->x_flag_errno_math = 0;
   opts->frontend_set_flag_errno_math = true;

@@ -1,3 +1,8 @@
+2021-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_declaration) <TYPE_DECL>: Dump nested types
+	after entering the separate class package, if any.
+
 2021-03-04  Richard Biener  <rguenther@suse.de>
 
 	* c-pretty-print.c (c_pretty_printer::direct_abstract_declarator):

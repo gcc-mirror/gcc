@@ -352,13 +352,6 @@ extern int cris_cpu_version;
    with other GNU/Linux ports (i.e. elfos.h users).  */
 #undef PCC_BITFIELD_TYPE_MATTERS
 
-/* This is only used for non-scalars.  Strange stuff happens to structs
-   (FIXME: What?) if we use anything larger than largest actually used
-   datum size, so lets make it 32.  The type "long long" will still work
-   as usual.  We can still have DImode insns, but they will only be used
-   for scalar data (i.e. long long).  */
-#define MAX_FIXED_MODE_SIZE 32
-
 
 /* Node: Type Layout */
 
