@@ -3392,6 +3392,21 @@ equiv_address_substitution (struct address_info *ad)
   return change_p;
 }
 
+/* Skip all modifiers and whitespaces in constraint STR and return the
+   result.  */
+static const char *
+skip_contraint_modifiers (const char *str)
+{
+  for (;;str++)
+    switch (*str)
+      {
+      case '+' : case '&' : case '=': case '*': case ' ': case '\t':
+      case '$': case '^' : case '%': case '?': case '!':
+	break;
+      default: return str;
+      }
+}
+
 /* Major function to make reloads for an address in operand NOP or
    check its correctness (If CHECK_ONLY_P is true). The supported
    cases are:
@@ -3426,8 +3441,8 @@ process_address_1 (int nop, bool check_only_p,
   HOST_WIDE_INT scale;
   rtx op = *curr_id->operand_loc[nop];
   rtx mem = extract_mem_from_operand (op);
-  const char *constraint = curr_static_id->operand[nop].constraint;
-  enum constraint_num cn = lookup_constraint (constraint);
+  const char *constraint;
+  enum constraint_num cn;
   bool change_p = false;
 
   if (MEM_P (mem)
@@ -3435,6 +3450,9 @@ process_address_1 (int nop, bool check_only_p,
       && GET_CODE (XEXP (mem, 0)) == SCRATCH)
     return false;
 
+  constraint
+    = skip_contraint_modifiers (curr_static_id->operand[nop].constraint);
+  cn = lookup_constraint (constraint);
   if (insn_extra_address_constraint (cn)
       /* When we find an asm operand with an address constraint that
 	 doesn't satisfy address_operand to begin with, we clear
