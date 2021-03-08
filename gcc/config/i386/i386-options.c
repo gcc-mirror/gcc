@@ -1455,10 +1455,8 @@ ix86_valid_target_attribute_p (tree fndecl,
 }
 
 const char *stringop_alg_names[] = {
-#define DEF_ENUM
 #define DEF_ALG(alg, name) #name,
 #include "stringop.def"
-#undef DEF_ENUM
 #undef DEF_ALG
 };
 
