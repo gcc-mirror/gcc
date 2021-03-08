@@ -49,4 +49,6 @@ AARCH64_EXTRA_TUNING_OPTION ("rename_load_regs", RENAME_LOAD_REGS)
 /* Prefer Advanced SIMD over SVE for auto-vectorization.  */
 AARCH64_EXTRA_TUNING_OPTION ("prefer_advsimd_autovec", PREFER_ADVSIMD_AUTOVEC)
 
+AARCH64_EXTRA_TUNING_OPTION ("cse_sve_vl_constants", CSE_SVE_VL_CONSTANTS)
+
 #undef AARCH64_EXTRA_TUNING_OPTION
