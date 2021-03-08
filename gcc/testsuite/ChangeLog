@@ -1,3 +1,11 @@
+2021-03-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99321
+	* lib/target-supports.exp
+	(check_effective_target_assembler_march_noavx512bw): New effective
+	target.
+	* gcc.target/i386/avx512vl-pr99321-1.c: New test.
+
 2021-03-06  Patrick Palka  <ppalka@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
