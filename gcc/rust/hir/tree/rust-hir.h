@@ -981,7 +981,7 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
-  virtual Analysis::NodeMapping get_mappings () { return mappings; }
+  virtual Analysis::NodeMapping get_mappings () const { return mappings; }
 
 protected:
   Type (Analysis::NodeMapping mappings) : mappings (mappings) {}

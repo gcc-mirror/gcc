@@ -3242,7 +3242,7 @@ TypePath::to_trait_bound (bool in_parens) const
 std::string
 InferredType::as_string () const
 {
-  return "_ (inferred)";
+  return "_ (inferred) " + get_mappings ().as_string ();
 }
 
 std::string
