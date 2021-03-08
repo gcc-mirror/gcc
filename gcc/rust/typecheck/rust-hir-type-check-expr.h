@@ -143,7 +143,7 @@ public:
   {
     if (!expr.has_return_expr ())
       {
-	infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+	infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
 	return;
       }
 
@@ -253,7 +253,7 @@ public:
 
   void visit (HIR::AssignmentExpr &expr) override
   {
-    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
 
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
@@ -587,7 +587,7 @@ public:
     TypeCheckExpr::Resolve (expr.get_if_condition (), false);
     TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
 
-    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::IfExprConseqElse &expr) override
@@ -810,7 +810,7 @@ public:
     context->push_new_loop_context (expr.get_mappings ().get_hirid ());
     TyTy::BaseType *block_expr
       = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
-    if (block_expr->get_kind () != TyTy::TypeKind::UNIT)
+    if (!block_expr->is_unit ())
       {
 	rust_error_at (expr.get_loop_block ()->get_locus_slow (),
 		       "expected () got %s", block_expr->as_string ().c_str ());
@@ -827,7 +827,7 @@ public:
 
     infered = loop_context_type_infered
 		? loop_context_type
-		: new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+		: new TyTy::TupleType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::WhileLoopExpr &expr) override
@@ -838,7 +838,7 @@ public:
     TyTy::BaseType *block_expr
       = TypeCheckExpr::Resolve (expr.get_loop_block ().get (), true);
 
-    if (block_expr->get_kind () != TyTy::TypeKind::UNIT)
+    if (!block_expr->is_unit ())
       {
 	rust_error_at (expr.get_loop_block ()->get_locus_slow (),
 		       "expected () got %s", block_expr->as_string ().c_str ());
@@ -846,7 +846,7 @@ public:
       }
 
     context->pop_loop_context ();
-    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::BreakExpr &expr) override
@@ -874,7 +874,7 @@ public:
 	context->swap_head_loop_context (unified_ty);
       }
 
-    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::ContinueExpr &expr) override
@@ -886,7 +886,7 @@ public:
 	return;
       }
 
-    infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::BorrowExpr &expr) override

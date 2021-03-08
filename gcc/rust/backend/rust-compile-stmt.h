@@ -81,7 +81,7 @@ public:
       return;
 
     auto fnctx = ctx->peek_fn ();
-    if (ty->get_kind () == TyTy::TypeKind::UNIT)
+    if (ty->is_unit ())
       {
 	Bstatement *expr_stmt
 	  = ctx->get_backend ()->expression_statement (fnctx.fndecl, init);

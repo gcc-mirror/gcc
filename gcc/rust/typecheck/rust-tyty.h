@@ -43,7 +43,6 @@ enum TypeKind
   INT,
   UINT,
   FLOAT,
-  UNIT,
   USIZE,
   ISIZE,
   // there are more to add...
@@ -90,7 +89,7 @@ public:
     return get_kind () == other.get_kind ();
   }
 
-  virtual bool is_unit () const { return kind == TypeKind::UNIT; }
+  virtual bool is_unit () const { return false; }
 
   TypeKind get_kind () const { return kind; }
 
@@ -183,8 +182,6 @@ public:
 
   void accept_vis (TyVisitor &vis) override;
 
-  bool is_unit () const override { return false; }
-
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
@@ -210,30 +207,6 @@ public:
 
   ErrorType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ERROR, refs)
-  {}
-
-  void accept_vis (TyVisitor &vis) override;
-
-  bool is_unit () const override { return true; }
-
-  std::string as_string () const override;
-
-  BaseType *unify (BaseType *other) override;
-
-  BaseType *clone () final override;
-
-  std::string get_name () const override final { return as_string (); }
-};
-
-class UnitType : public BaseType
-{
-public:
-  UnitType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ref, TypeKind::UNIT, refs)
-  {}
-
-  UnitType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, TypeKind::UNIT, refs)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -321,19 +294,20 @@ private:
 class TupleType : public BaseType
 {
 public:
-  TupleType (HirId ref, std::vector<TyVar> fields,
+  TupleType (HirId ref, std::vector<TyVar> fields = std::vector<TyVar> (),
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::TUPLE, refs), fields (fields)
   {}
 
-  TupleType (HirId ref, HirId ty_ref, std::vector<TyVar> fields,
+  TupleType (HirId ref, HirId ty_ref,
+	     std::vector<TyVar> fields = std::vector<TyVar> (),
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::TUPLE, refs), fields (fields)
   {}
 
   void accept_vis (TyVisitor &vis) override;
 
-  bool is_unit () const override { return false; }
+  bool is_unit () const override { return this->fields.empty (); }
 
   std::string as_string () const override;
 
@@ -601,8 +575,6 @@ public:
   bool get_is_tuple () { return is_tuple; }
 
   void accept_vis (TyVisitor &vis) override;
-
-  bool is_unit () const override { return false; }
 
   std::string as_string () const override;
 
@@ -1132,9 +1104,6 @@ public:
 
       case TypeKind::FLOAT:
 	return "Float";
-
-      case TypeKind::UNIT:
-	return "Unit";
 
       case TypeKind::USIZE:
 	return "Usize";

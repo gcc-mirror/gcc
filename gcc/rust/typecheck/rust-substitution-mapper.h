@@ -79,7 +79,6 @@ public:
       resolved = concrete;
   }
 
-  void visit (TyTy::UnitType &) override { gcc_unreachable (); }
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
   void visit (TyTy::TupleType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
@@ -138,7 +137,6 @@ public:
       resolved = concrete;
   }
 
-  void visit (TyTy::UnitType &) override { gcc_unreachable (); }
   void visit (TyTy::InferType &) override { gcc_unreachable (); }
   void visit (TyTy::TupleType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }

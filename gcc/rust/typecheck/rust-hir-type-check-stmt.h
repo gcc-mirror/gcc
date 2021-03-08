@@ -51,7 +51,7 @@ public:
 
   void visit (HIR::LetStmt &stmt) override
   {
-    infered = new TyTy::UnitType (stmt.get_mappings ().get_hirid ());
+    infered = new TyTy::TupleType (stmt.get_mappings ().get_hirid ());
 
     TyTy::BaseType *init_expr_ty = nullptr;
     if (stmt.has_init_expr ())

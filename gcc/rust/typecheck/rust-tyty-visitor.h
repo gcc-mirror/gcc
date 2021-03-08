@@ -27,7 +27,6 @@ namespace TyTy {
 class TyVisitor
 {
 public:
-  virtual void visit (UnitType &type) = 0;
   virtual void visit (InferType &type) = 0;
   virtual void visit (ADTType &type) = 0;
   virtual void visit (TupleType &type) = 0;

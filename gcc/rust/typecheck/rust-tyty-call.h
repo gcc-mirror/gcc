@@ -39,7 +39,6 @@ public:
     return checker.resolved;
   }
 
-  void visit (UnitType &type) override { gcc_unreachable (); }
   void visit (InferType &type) override { gcc_unreachable (); }
   void visit (TupleType &type) override { gcc_unreachable (); }
   void visit (ArrayType &type) override { gcc_unreachable (); }
@@ -85,7 +84,6 @@ public:
     return checker.resolved;
   }
 
-  void visit (UnitType &type) override { gcc_unreachable (); }
   void visit (InferType &type) override { gcc_unreachable (); }
   void visit (TupleType &type) override { gcc_unreachable (); }
   void visit (ArrayType &type) override { gcc_unreachable (); }

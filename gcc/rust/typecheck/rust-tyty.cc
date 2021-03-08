@@ -64,31 +64,6 @@ TyVar::get_implict_infer_var ()
 }
 
 void
-UnitType::accept_vis (TyVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-std::string
-UnitType::as_string () const
-{
-  return "()";
-}
-
-BaseType *
-UnitType::unify (BaseType *other)
-{
-  UnitRules r (this);
-  return r.unify (other);
-}
-
-BaseType *
-UnitType::clone ()
-{
-  return new UnitType (get_ref (), get_ty_ref (), get_combined_refs ());
-}
-
-void
 InferType::accept_vis (TyVisitor &vis)
 {
   vis.visit (*this);

@@ -112,7 +112,7 @@ public:
     TyTy::BaseType *return_type
       = fntype.has_return_type ()
 	  ? TypeCheckType::Resolve (fntype.get_return_type ().get ())
-	  : new TyTy::UnitType (fntype.get_mappings ().get_hirid ());
+	  : new TyTy::TupleType (fntype.get_mappings ().get_hirid ());
 
     std::vector<TyTy::TyVar> params;
     for (auto &param : fntype.get_function_params ())

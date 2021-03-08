@@ -178,7 +178,9 @@ Resolver::generate_builtins ()
   MKBUILTIN_TYPE ("str", builtins, str);
 
   // unit type ()
-  TyTy::UnitType *unit_tyty = new TyTy::UnitType (mappings->get_next_hir_id ());
+
+  TyTy::TupleType *unit_tyty
+    = new TyTy::TupleType (mappings->get_next_hir_id ());
   std::vector<std::unique_ptr<AST::Type> > elems;
   AST::TupleType *unit_type
     = new AST::TupleType (std::move (elems), Linemap::predeclared_location ());

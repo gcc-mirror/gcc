@@ -368,7 +368,7 @@ public:
       }
 
     Bvariable *tmp = NULL;
-    bool needs_temp = if_type->get_kind () != TyTy::TypeKind::UNIT;
+    bool needs_temp = !if_type->is_unit ();
     if (needs_temp)
       {
 	fncontext fnctx = ctx->peek_fn ();
@@ -405,7 +405,7 @@ public:
       }
 
     Bvariable *tmp = NULL;
-    bool needs_temp = if_type->get_kind () != TyTy::TypeKind::UNIT;
+    bool needs_temp = !if_type->is_unit ();
     if (needs_temp)
       {
 	fncontext fnctx = ctx->peek_fn ();
@@ -441,7 +441,7 @@ public:
       }
 
     Bvariable *tmp = NULL;
-    bool needs_temp = block_tyty->get_kind () != TyTy::TypeKind::UNIT;
+    bool needs_temp = !block_tyty->is_unit ();
     if (needs_temp)
       {
 	fncontext fnctx = ctx->peek_fn ();
@@ -541,7 +541,7 @@ public:
 
     fncontext fnctx = ctx->peek_fn ();
     Bvariable *tmp = NULL;
-    bool needs_temp = block_tyty->get_kind () != TyTy::TypeKind::UNIT;
+    bool needs_temp = !block_tyty->is_unit ();
     if (needs_temp)
       {
 	Bblock *enclosing_scope = ctx->peek_enclosing_scope ();

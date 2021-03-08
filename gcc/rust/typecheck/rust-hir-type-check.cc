@@ -83,7 +83,7 @@ void
 TypeCheckExpr::visit (HIR::BlockExpr &expr)
 {
   TyTy::BaseType *block_tyty
-    = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
+    = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
 
   expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
     bool is_final_stmt = expr.is_final_stmt (s);
@@ -102,7 +102,7 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 	delete block_tyty;
 	block_tyty = resolved;
       }
-    else if (resolved->get_kind () != TyTy::TypeKind::UNIT)
+    else if (!resolved->is_unit ())
       {
 	rust_error_at (s->get_locus_slow (), "expected () got %s",
 		       resolved->as_string ().c_str ());

@@ -106,14 +106,6 @@ public:
     return resolved;
   }
 
-  virtual void visit (UnitType &type) override
-  {
-    Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
-		   get_base ()->as_string ().c_str (),
-		   type.as_string ().c_str ());
-  }
-
   virtual void visit (TupleType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
@@ -277,19 +269,6 @@ class InferRules : public BaseRules
 
 public:
   InferRules (InferType *base) : BaseRules (base), base (base) {}
-
-  void visit (UnitType &type) override
-  {
-    bool is_valid
-      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
-    if (is_valid)
-      {
-	resolved = type.clone ();
-	return;
-      }
-
-    BaseRules::visit (type);
-  }
 
   void visit (BoolType &type) override
   {
@@ -503,24 +482,6 @@ private:
   BaseType *get_base () override { return base; }
 
   InferType *base;
-};
-
-class UnitRules : public BaseRules
-{
-  using Rust::TyTy::BaseRules::visit;
-
-public:
-  UnitRules (UnitType *base) : BaseRules (base), base (base) {}
-
-  void visit (UnitType &type) override
-  {
-    resolved = new UnitType (type.get_ref (), type.get_ty_ref ());
-  }
-
-private:
-  BaseType *get_base () override { return base; }
-
-  UnitType *base;
 };
 
 class FnRules : public BaseRules

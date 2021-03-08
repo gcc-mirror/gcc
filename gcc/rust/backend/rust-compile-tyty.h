@@ -50,7 +50,13 @@ public:
 
   void visit (TyTy::ADTType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::TupleType &) override { gcc_unreachable (); }
+  void visit (TyTy::TupleType &type) override
+  {
+    if (type.num_fields () == 0)
+      translated = backend->void_type ();
+    else
+      gcc_unreachable ();
+  }
 
   void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
 
@@ -59,8 +65,6 @@ public:
   void visit (TyTy::ParamType &) override { gcc_unreachable (); }
 
   void visit (TyTy::FnPtr &type) override { gcc_unreachable (); }
-
-  void visit (TyTy::UnitType &) override { translated = backend->void_type (); }
 
   void visit (TyTy::FnType &type) override
   {

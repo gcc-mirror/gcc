@@ -351,11 +351,6 @@ public:
       ctx->get_mappings ()->lookup_location (type.get_ref ()));
   }
 
-  void visit (TyTy::UnitType &) override
-  {
-    translated = ctx->get_backend ()->void_type ();
-  }
-
   void visit (TyTy::ADTType &type) override
   {
     if (ctx->lookup_compiled_types (type.get_ty_ref (), &translated, &type))
@@ -389,6 +384,12 @@ public:
 
   void visit (TyTy::TupleType &type) override
   {
+    if (type.num_fields () == 0)
+      {
+	translated = ctx->get_backend ()->void_type ();
+	return;
+      }
+
     bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &translated);
     if (ok)
       return;
