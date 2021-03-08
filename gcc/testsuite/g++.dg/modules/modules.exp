@@ -35,7 +35,7 @@ if ![info exists DEFAULT_CXXFLAGS] then {
     set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
 }
 set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
-set MOD_STD_LIST { 17 2a }
+set MOD_STD_LIST { 17 2a 2b }
 
 dg-init
 
