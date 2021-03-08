@@ -29955,28 +29955,19 @@ walk_specializations (bool decls_p,
 }
 
 /* Lookup the specialization of *ELT, in the decl or type
-   specialization table.  Return the SPEC that's already there (NULL if
-   nothing).  If INSERT is true, and there was nothing, add the new
-   spec.  */
+   specialization table.  Return the SPEC that's already there, or
+   NULL if nothing.  */
 
 tree
-match_mergeable_specialization (bool decl_p, spec_entry *elt, bool insert)
+match_mergeable_specialization (bool decl_p, spec_entry *elt)
 {
   hash_table<spec_hasher> *specializations
     = decl_p ? decl_specializations : type_specializations;
   hashval_t hash = spec_hasher::hash (elt);
-  spec_entry **slot
-    = specializations->find_slot_with_hash (elt, hash,
-					    insert ? INSERT : NO_INSERT);
-  if (slot && *slot)
-    return (*slot)->spec;
+  auto *slot = specializations->find_slot_with_hash (elt, hash, NO_INSERT);
 
-  if (insert)
-    {
-      auto entry = ggc_alloc<spec_entry> ();
-      *entry = *elt;
-      *slot = entry;
-    }
+  if (slot)
+    return (*slot)->spec;
 
   return NULL_TREE;
 }
@@ -30012,23 +30003,43 @@ get_mergeable_specialization_flags (tree tmpl, tree decl)
   return flags;
 }
 
-/* Add a new specialization of TMPL.  FLAGS is as returned from
+/* Add a new specialization described by SPEC.  DECL is the
+   maybe-template decl and FLAGS is as returned from
    get_mergeable_specialization_flags.  */
 
 void
-add_mergeable_specialization (tree tmpl, tree args, tree decl, unsigned flags)
+add_mergeable_specialization (bool decl_p, spec_entry *elt,
+			      tree decl, unsigned flags)
 {
+  hash_table<spec_hasher> *specializations
+    = decl_p ? decl_specializations : type_specializations;
+
+  hashval_t hash = spec_hasher::hash (elt);
+  auto *slot = specializations->find_slot_with_hash (elt, hash, INSERT);
+
+  /* We don't distinguish different constrained partial type
+     specializations, so there could be duplicates.  Everything else
+     must be new.   */
+  if (!(flags & 2 && *slot))
+    {
+      gcc_checking_assert (!*slot);
+
+      auto entry = ggc_alloc<spec_entry> ();
+      *entry = *elt;
+      *slot = entry;
+    }
+
   if (flags & 1)
-    DECL_TEMPLATE_INSTANTIATIONS (tmpl)
-      = tree_cons (args, decl, DECL_TEMPLATE_INSTANTIATIONS (tmpl));
+    DECL_TEMPLATE_INSTANTIATIONS (elt->tmpl)
+      = tree_cons (elt->args, decl, DECL_TEMPLATE_INSTANTIATIONS (elt->tmpl));
 
   if (flags & 2)
     {
       /* A partial specialization.  */
-      DECL_TEMPLATE_SPECIALIZATIONS (tmpl)
-	= tree_cons (args, decl, DECL_TEMPLATE_SPECIALIZATIONS (tmpl));
-      TREE_TYPE (DECL_TEMPLATE_SPECIALIZATIONS (tmpl))
-	= TREE_TYPE (DECL_TEMPLATE_RESULT (decl));
+      tree cons = tree_cons (elt->args, decl,
+			     DECL_TEMPLATE_SPECIALIZATIONS (elt->tmpl));
+      TREE_TYPE (cons) = elt->spec;
+      DECL_TEMPLATE_SPECIALIZATIONS (elt->tmpl) = cons;
     }
 }
 

@@ -8059,9 +8059,14 @@ trees_in::decl_value ()
 	set_constraints (decl, spec.spec);
       if (mk & MK_template_mask
 	  || mk == MK_partial)
-	/* Add to specialization tables now that constraints etc are
-	   added.  */
-	add_mergeable_specialization (spec.tmpl, spec.args, decl, spec_flags);
+	{
+	  /* Add to specialization tables now that constraints etc are
+	     added.  */
+	  bool is_decl = (mk & MK_template_mask) && (mk & MK_tmpl_decl_mask);
+
+	  spec.spec = is_decl ? inner : type;
+	  add_mergeable_specialization (is_decl, &spec, decl, spec_flags);
+	}
 
       if (TREE_CODE (decl) == INTEGER_CST && !TREE_OVERFLOW (decl))
 	{
@@ -8154,7 +8159,10 @@ trees_in::decl_value ()
     {
       tree e = match_mergeable_specialization (true, &spec);
       if (!e)
-	add_mergeable_specialization (spec.tmpl, spec.args, decl, spec_flags);
+	{
+	  spec.spec = inner;
+	  add_mergeable_specialization (true, &spec, decl, spec_flags);
+	}
       else if (e != existing)
 	set_overrun ();
     }
@@ -10344,14 +10352,14 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	{
 	  /* Make sure we can locate the decl.  */
 	  tree existing = match_mergeable_specialization
-	    (bool (mk & MK_tmpl_decl_mask), entry, false);
+	    (bool (mk & MK_tmpl_decl_mask), entry);
 
 	  gcc_assert (existing);
 	  if (mk & MK_tmpl_decl_mask)
 	    {
 	      if (mk & MK_tmpl_alias_mask)
 		/* It should be in both tables.  */
-		gcc_assert (match_mergeable_specialization (false, entry, false)
+		gcc_assert (match_mergeable_specialization (false, entry)
 			    == TREE_TYPE (existing));
 	      else if (mk & MK_tmpl_tmpl_mask)
 		if (tree ti = DECL_TEMPLATE_INFO (existing))
@@ -10659,6 +10667,7 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
   if (mk & MK_template_mask)
     {
+      // FIXME: We could stream the specialization hash?
       spec_entry spec;
       spec.tmpl = tree_node ();
       spec.args = tree_node ();
@@ -12869,7 +12878,7 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
        /* Only alias templates can appear in both tables (and
 	  if they're in the type table they must also be in the decl table).  */
        gcc_checking_assert
-	 (!match_mergeable_specialization (true, entry, false)
+	 (!match_mergeable_specialization (true, entry)
 	  == (decl_p || !DECL_ALIAS_TEMPLATE_P (entry->tmpl)));
     }
   else if (VAR_OR_FUNCTION_DECL_P (entry->spec))
