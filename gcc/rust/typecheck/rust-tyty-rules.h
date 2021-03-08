@@ -566,7 +566,8 @@ public:
   void visit (ArrayType &type) override
   {
     // check base type
-    auto base_resolved = base->get_type ()->unify (type.get_type ());
+    auto base_resolved
+      = base->get_element_type ()->unify (type.get_element_type ());
     if (base_resolved == nullptr)
       {
 	BaseRules::visit (type);
@@ -582,8 +583,9 @@ public:
 	return;
       }
 
-    resolved = new ArrayType (type.get_ref (), type.get_ty_ref (),
-			      type.get_capacity (), base_resolved);
+    resolved
+      = new ArrayType (type.get_ref (), type.get_ty_ref (),
+		       type.get_capacity (), TyCtx (base_resolved->get_ref ()));
   }
 
 private:
@@ -758,7 +760,7 @@ class TupleRules : public BaseRules
 public:
   TupleRules (TupleType *base) : BaseRules (base), base (base) {}
 
-  void visit (TupleType &type)
+  void visit (TupleType &type) override
   {
     if (base->num_fields () != type.num_fields ())
       {
@@ -766,7 +768,7 @@ public:
 	return;
       }
 
-    std::vector<HirId> fields;
+    std::vector<TyCtx> fields;
     for (size_t i = 0; i < base->num_fields (); i++)
       {
 	BaseType *bo = base->get_field (i);
@@ -779,7 +781,7 @@ public:
 	    return;
 	  }
 
-	fields.push_back (unified_ty->get_ref ());
+	fields.push_back (TyCtx (unified_ty->get_ref ()));
       }
 
     resolved
@@ -888,7 +890,7 @@ public:
       }
 
     resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
-				  base_resolved->get_ref ());
+				  TyCtx (base_resolved->get_ref ()));
   }
 
 private:

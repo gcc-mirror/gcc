@@ -142,11 +142,11 @@ public:
 	return;
       }
 
-    std::vector<HirId> fields;
+    std::vector<TyTy::TyCtx> fields;
     for (auto &elem : tuple.get_elems ())
       {
 	auto field_ty = TypeCheckType::Resolve (elem.get ());
-	fields.push_back (field_ty->get_ref ());
+	fields.push_back (TyTy::TyCtx (field_ty->get_ref ()));
       }
 
     translated
@@ -247,8 +247,8 @@ public:
       }
 
     TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
-    translated
-      = new TyTy::ArrayType (type.get_mappings ().get_hirid (), capacity, base);
+    translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
+				      capacity, TyTy::TyCtx (base->get_ref ()));
   }
 
   void visit (HIR::ReferenceType &type)
@@ -256,7 +256,7 @@ public:
     TyTy::BaseType *base
       = TypeCheckType::Resolve (type.get_base_type ().get ());
     translated = new TyTy::ReferenceType (type.get_mappings ().get_hirid (),
-					  base->get_ref ());
+					  TyTy::TyCtx (base->get_ref ()));
   }
 
   void visit (HIR::InferredType &type)

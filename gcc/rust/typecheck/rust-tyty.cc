@@ -27,6 +27,25 @@
 namespace Rust {
 namespace TyTy {
 
+TyCtx::TyCtx (HirId ref) : ref (ref)
+{
+  // ensure this reference is defined within the context
+  auto context = Resolver::TypeCheckContext::get ();
+  BaseType *lookup = nullptr;
+  bool ok = context->lookup_type (ref, &lookup);
+  rust_assert (ok);
+}
+
+BaseType *
+TyCtx::get_tyty () const
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  BaseType *lookup = nullptr;
+  bool ok = context->lookup_type (ref, &lookup);
+  rust_assert (ok);
+  return lookup;
+}
+
 void
 UnitType::accept_vis (TyVisitor &vis)
 {
@@ -314,11 +333,7 @@ TupleType::as_string () const
 BaseType *
 TupleType::get_field (size_t index) const
 {
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (fields.at (index), &lookup);
-  rust_assert (ok);
-  return lookup;
+  return fields.at (index).get_tyty ();
 }
 
 BaseType *
@@ -435,8 +450,8 @@ ArrayType::accept_vis (TyVisitor &vis)
 std::string
 ArrayType::as_string () const
 {
-  return "[" + get_type ()->as_string () + ":" + std::to_string (capacity)
-	 + "]";
+  return "[" + get_element_type ()->as_string () + ":"
+	 + std::to_string (capacity) + "]";
 }
 
 BaseType *
@@ -450,32 +465,29 @@ bool
 ArrayType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
-    {
-      return false;
-    }
-  else
-    {
-      auto other2 = static_cast<const ArrayType &> (other);
-      return get_type () == other2.get_type ()
-	     && get_capacity () == other2.get_capacity ();
-    }
+    return false;
+
+  auto other2 = static_cast<const ArrayType &> (other);
+  if (get_capacity () != other2.get_capacity ())
+    return false;
+
+  auto this_element_type = get_element_type ();
+  auto other_element_type = other2.get_element_type ();
+
+  return this_element_type->is_equal (*other_element_type);
 }
 
 BaseType *
-ArrayType::get_type () const
+ArrayType::get_element_type () const
 {
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (element_type_id, &lookup);
-  rust_assert (ok);
-  return lookup;
+  return element_type.get_tyty ();
 }
 
 BaseType *
 ArrayType::clone ()
 {
   return new ArrayType (get_ref (), get_ty_ref (), get_capacity (),
-			get_type ()->clone (), get_combined_refs ());
+			element_type, get_combined_refs ());
 }
 
 void
@@ -721,24 +733,10 @@ ReferenceType::is_equal (const BaseType &other) const
   return get_base ()->is_equal (*other2.get_base ());
 }
 
-const BaseType *
+BaseType *
 ReferenceType::get_base () const
 {
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (base, &lookup);
-  rust_assert (ok);
-  return lookup;
-}
-
-BaseType *
-ReferenceType::get_base ()
-{
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (base, &lookup);
-  rust_assert (ok);
-  return lookup;
+  return base.get_tyty ();
 }
 
 BaseType *

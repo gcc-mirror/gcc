@@ -115,6 +115,20 @@ protected:
   Analysis::Mappings *mappings;
 };
 
+// this is a placeholder for types that can change like inference variables
+class TyCtx
+{
+public:
+  explicit TyCtx (HirId ref);
+
+  HirId get_ref () const { return ref; }
+
+  BaseType *get_tyty () const;
+
+private:
+  HirId ref;
+};
+
 class InferType : public BaseType
 {
 public:
@@ -229,13 +243,12 @@ private:
 class TupleType : public BaseType
 {
 public:
-  TupleType (HirId ref, std::vector<HirId> fields,
-
+  TupleType (HirId ref, std::vector<TyCtx> fields,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::TUPLE, refs), fields (fields)
   {}
 
-  TupleType (HirId ref, HirId ty_ref, std::vector<HirId> fields,
+  TupleType (HirId ref, HirId ty_ref, std::vector<TyCtx> fields,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::TUPLE, refs), fields (fields)
   {}
@@ -268,7 +281,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
 private:
-  std::vector<HirId> fields;
+  std::vector<TyCtx> fields;
 };
 
 class ParamType : public BaseType
@@ -551,16 +564,16 @@ private:
 class ArrayType : public BaseType
 {
 public:
-  ArrayType (HirId ref, size_t capacity, BaseType *type,
+  ArrayType (HirId ref, size_t capacity, TyCtx base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ARRAY, refs), capacity (capacity),
-      element_type_id (type->get_ref ())
+      element_type (base)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, size_t capacity, BaseType *type,
+  ArrayType (HirId ref, HirId ty_ref, size_t capacity, TyCtx base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ARRAY, refs), capacity (capacity),
-      element_type_id (type->get_ref ())
+      element_type (base)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -575,15 +588,13 @@ public:
 
   size_t get_capacity () const { return capacity; }
 
-  HirId element_type_ref () const { return element_type_id; }
-
-  BaseType *get_type () const;
+  BaseType *get_element_type () const;
 
   BaseType *clone () final override;
 
 private:
   size_t capacity;
-  HirId element_type_id;
+  TyCtx element_type;
 };
 
 class BoolType : public BaseType
@@ -787,19 +798,17 @@ public:
 class ReferenceType : public BaseType
 {
 public:
-  ReferenceType (HirId ref, HirId base,
+  ReferenceType (HirId ref, TyCtx base,
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::REF), base (base)
   {}
 
-  ReferenceType (HirId ref, HirId ty_ref, HirId base,
+  ReferenceType (HirId ref, HirId ty_ref, TyCtx base,
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::REF), base (base)
   {}
 
-  const TyTy::BaseType *get_base () const;
-
-  TyTy::BaseType *get_base ();
+  BaseType *get_base () const;
 
   void accept_vis (TyVisitor &vis) override;
 
@@ -814,7 +823,7 @@ public:
   BaseType *clone () final override;
 
 private:
-  HirId base;
+  TyCtx base;
 };
 
 class StrType : public BaseType

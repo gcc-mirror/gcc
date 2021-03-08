@@ -391,7 +391,8 @@ public:
     Bexpression *length
       = ctx->get_backend ()->integer_constant_expression (capacity_type, ival);
 
-    Btype *element_type = TyTyResolveCompile::compile (ctx, type.get_type ());
+    Btype *element_type
+      = TyTyResolveCompile::compile (ctx, type.get_element_type ());
     translated = ctx->get_backend ()->array_type (element_type, length);
   }
 
