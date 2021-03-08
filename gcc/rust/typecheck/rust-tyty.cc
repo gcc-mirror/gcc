@@ -347,25 +347,18 @@ bool
 TupleType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
+    return false;
+
+  auto other2 = static_cast<const TupleType &> (other);
+  if (num_fields () != other2.num_fields ())
+    return false;
+
+  for (size_t i = 0; i < num_fields (); i++)
     {
-      return false;
+      if (!get_field (i)->is_equal (*other2.get_field (i)))
+	return false;
     }
-  else
-    {
-      auto other2 = static_cast<const TupleType &> (other);
-      if (num_fields () != other2.num_fields ())
-	{
-	  return false;
-	}
-      for (size_t i = 0; i < num_fields (); i++)
-	{
-	  if (!get_field (i)->is_equal (*other2.get_field (i)))
-	    {
-	      return false;
-	    }
-	}
-      return true;
-    }
+  return true;
 }
 
 BaseType *
