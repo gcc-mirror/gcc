@@ -6569,6 +6569,7 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 
   if (GET_MODE_CLASS (GET_MODE (cmp_op1)) == MODE_VECTOR_FLOAT)
     {
+      cmp_op2 = force_reg (GET_MODE (cmp_op1), cmp_op2);
       switch (cond)
 	{
 	  /* NE a != b -> !(a == b) */
@@ -6607,6 +6608,19 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
     }
   else
     {
+      /* Turn x < 0 into x >> (bits per element - 1)  */
+      if (cond == LT && cmp_op2 == CONST0_RTX (mode))
+	{
+	  int shift = GET_MODE_BITSIZE (GET_MODE_INNER (mode)) - 1;
+	  rtx res = expand_simple_binop (mode, ASHIFTRT, cmp_op1,
+					 GEN_INT (shift), target,
+					 0, OPTAB_DIRECT);
+	  if (res != target)
+	    emit_move_insn (target, res);
+	  return;
+	}
+      cmp_op2 = force_reg (GET_MODE (cmp_op1), cmp_op2);
+
       switch (cond)
 	{
 	  /* NE: a != b -> !(a == b) */
@@ -6824,11 +6838,7 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
   if (!REG_P (cmp_op1))
     cmp_op1 = force_reg (GET_MODE (cmp_op1), cmp_op1);
 
-  if (!REG_P (cmp_op2))
-    cmp_op2 = force_reg (GET_MODE (cmp_op2), cmp_op2);
-
-  s390_expand_vec_compare (result_target, cond,
-			   cmp_op1, cmp_op2);
+  s390_expand_vec_compare (result_target, cond, cmp_op1, cmp_op2);
 
   /* If the results are supposed to be either -1 or 0 we are done
      since this is what our compare instructions generate anyway.  */
