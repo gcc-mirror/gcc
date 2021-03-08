@@ -11,7 +11,7 @@ msgstr ""
 "Project-Id-Version: gcc 11.1-b20210207\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-02-05 21:38+0000\n"
-"PO-Revision-Date: 2021-02-27 13:34+0100\n"
+"PO-Revision-Date: 2021-03-06 21:04+0100\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -1264,7 +1264,7 @@ msgstr "In Funktion %qs"
 
 #: langhooks.c:449 cp/error.c:3519
 msgid "    inlined from %qs at %r%s:%d:%d%R"
-msgstr "    eingefügt von %qs bei%r%s:%d:%d%R"
+msgstr "    eingefügt von %qs bei %r%s:%d:%d%R"
 
 #: langhooks.c:454 cp/error.c:3524
 msgid "    inlined from %qs at %r%s:%d%R"
