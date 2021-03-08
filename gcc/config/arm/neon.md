@@ -5066,13 +5066,6 @@ if (BYTES_BIG_ENDIAN)
                     (const_string "neon_load2_2reg<q>")))]
 )
 
-(define_expand "vec_load_lanesoi<mode>"
-  [(set (match_operand:OI 0 "s_register_operand")
-        (unspec:OI [(match_operand:OI 1 "neon_struct_operand")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-		   UNSPEC_VLD2))]
-  "TARGET_NEON")
-
 (define_insn "neon_vld2<mode>"
   [(set (match_operand:OI 0 "s_register_operand" "=w")
         (unspec:OI [(match_operand:OI 1 "neon_struct_operand" "Um")
@@ -5199,13 +5192,6 @@ if (BYTES_BIG_ENDIAN)
                     (const_string "neon_store1_2reg<q>")
                     (const_string "neon_store2_one_lane<q>")))]
 )
-
-(define_expand "vec_store_lanesoi<mode>"
-  [(set (match_operand:OI 0 "neon_struct_operand")
-	(unspec:OI [(match_operand:OI 1 "s_register_operand")
-                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-                   UNSPEC_VST2))]
-  "TARGET_NEON")
 
 (define_insn "neon_vst2<mode>"
   [(set (match_operand:OI 0 "neon_struct_operand" "=Um")

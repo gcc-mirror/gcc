@@ -483,6 +483,33 @@
     }
   else
     gcc_unreachable ();
+  DONE;
+})
 
+(define_expand "vec_load_lanesoi<mode>"
+  [(set (match_operand:OI 0 "s_register_operand")
+        (unspec:OI [(match_operand:OI 1 "neon_struct_operand")
+                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_VLD2))]
+  "TARGET_NEON || TARGET_HAVE_MVE"
+{
+  if (TARGET_NEON)
+    emit_insn (gen_neon_vld2<mode> (operands[0], operands[1]));
+  else
+    emit_insn (gen_mve_vld2q<mode> (operands[0], operands[1]));
+  DONE;
+})
+
+(define_expand "vec_store_lanesoi<mode>"
+  [(set (match_operand:OI 0 "neon_struct_operand")
+	(unspec:OI [(match_operand:OI 1 "s_register_operand")
+                    (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+                   UNSPEC_VST2))]
+  "TARGET_NEON || TARGET_HAVE_MVE"
+{
+  if (TARGET_NEON)
+    emit_insn (gen_neon_vst2<mode> (operands[0], operands[1]));
+  else
+    emit_insn (gen_mve_vst2q<mode> (operands[0], operands[1]));
   DONE;
 })
