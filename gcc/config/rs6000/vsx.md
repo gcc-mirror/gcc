@@ -951,11 +951,13 @@
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
   [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=wa,r")
         (match_operand:VSX_LE_128 1 "memory_operand" "Z,Q"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
+   && !altivec_indexed_or_indirect_operand (operands[1], <MODE>mode)"
   "@
    #
    #"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
+   && !altivec_indexed_or_indirect_operand (operands[1], <MODE>mode)"
   [(const_int 0)]
 {
   rtx tmp = (can_create_pseudo_p ()
@@ -972,7 +974,8 @@
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "=Z,Q")
         (match_operand:VSX_LE_128 1 "vsx_register_operand" "+wa,r"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
+   & !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   "@
    #
    #"
@@ -983,7 +986,8 @@
 (define_split
   [(set (match_operand:VSX_LE_128 0 "memory_operand")
         (match_operand:VSX_LE_128 1 "vsx_register_operand"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed && !TARGET_P9_VECTOR
+   && !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   [(const_int 0)]
 {
   rtx tmp = (can_create_pseudo_p ()
@@ -1039,7 +1043,8 @@
 (define_split
   [(set (match_operand:VSX_LE_128 0 "memory_operand")
         (match_operand:VSX_LE_128 1 "vsx_register_operand"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed && !TARGET_P9_VECTOR
+   && !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   [(const_int 0)]
 {
   rs6000_emit_le_vsx_permute (operands[1], operands[1], <MODE>mode);
@@ -1205,7 +1210,8 @@
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   /* Expand to swaps if needed, prior to swap optimization.  */
-  if (!BYTES_BIG_ENDIAN && !TARGET_P9_VECTOR)
+  if (!BYTES_BIG_ENDIAN && !TARGET_P9_VECTOR
+      && !altivec_indexed_or_indirect_operand(operands[1], <MODE>mode))
     {
       rs6000_emit_le_vsx_move (operands[0], operands[1], <MODE>mode);
       DONE;
@@ -1218,7 +1224,8 @@
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   /* Expand to swaps if needed, prior to swap optimization.  */
-  if (!BYTES_BIG_ENDIAN && !TARGET_P9_VECTOR)
+  if (!BYTES_BIG_ENDIAN && !TARGET_P9_VECTOR
+      && !altivec_indexed_or_indirect_operand(operands[0], <MODE>mode))
     {
       rs6000_emit_le_vsx_move (operands[0], operands[1], <MODE>mode);
       DONE;
