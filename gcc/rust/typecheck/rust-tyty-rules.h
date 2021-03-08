@@ -77,7 +77,13 @@ public:
 	  resolved->append_reference (ref);
 
 	bool result_resolved = resolved->get_kind () != TyTy::TypeKind::INFER;
-	if (result_resolved)
+	bool result_is_infer_var
+	  = resolved->get_kind () == TyTy::TypeKind::INFER;
+	bool results_is_non_general_infer_var
+	  = (result_is_infer_var
+	     && ((InferType *) resolved)->get_infer_kind ()
+		  != TyTy::InferType::GENERAL);
+	if (result_resolved || results_is_non_general_infer_var)
 	  {
 	    for (auto &ref : resolved->get_combined_refs ())
 	      {
@@ -563,7 +569,7 @@ public:
     auto base_resolved = base->get_type ()->unify (type.get_type ());
     if (base_resolved == nullptr)
       {
-	// fixme add error message
+	BaseRules::visit (type);
 	return;
       }
 
