@@ -2415,97 +2415,24 @@ extern const char *const processor_names[];
 
 #include "wide-int-bitmask.h"
 
-constexpr wide_int_bitmask PTA_3DNOW (HOST_WIDE_INT_1U << 0);
-constexpr wide_int_bitmask PTA_3DNOW_A (HOST_WIDE_INT_1U << 1);
-constexpr wide_int_bitmask PTA_64BIT (HOST_WIDE_INT_1U << 2);
-constexpr wide_int_bitmask PTA_ABM (HOST_WIDE_INT_1U << 3);
-constexpr wide_int_bitmask PTA_AES (HOST_WIDE_INT_1U << 4);
-constexpr wide_int_bitmask PTA_AVX (HOST_WIDE_INT_1U << 5);
-constexpr wide_int_bitmask PTA_BMI (HOST_WIDE_INT_1U << 6);
-constexpr wide_int_bitmask PTA_CX16 (HOST_WIDE_INT_1U << 7);
-constexpr wide_int_bitmask PTA_F16C (HOST_WIDE_INT_1U << 8);
-constexpr wide_int_bitmask PTA_FMA (HOST_WIDE_INT_1U << 9);
-constexpr wide_int_bitmask PTA_FMA4 (HOST_WIDE_INT_1U << 10);
-constexpr wide_int_bitmask PTA_FSGSBASE (HOST_WIDE_INT_1U << 11);
-constexpr wide_int_bitmask PTA_LWP (HOST_WIDE_INT_1U << 12);
-constexpr wide_int_bitmask PTA_LZCNT (HOST_WIDE_INT_1U << 13);
-constexpr wide_int_bitmask PTA_MMX (HOST_WIDE_INT_1U << 14);
-constexpr wide_int_bitmask PTA_MOVBE (HOST_WIDE_INT_1U << 15);
-constexpr wide_int_bitmask PTA_NO_SAHF (HOST_WIDE_INT_1U << 16);
-constexpr wide_int_bitmask PTA_PCLMUL (HOST_WIDE_INT_1U << 17);
-constexpr wide_int_bitmask PTA_POPCNT (HOST_WIDE_INT_1U << 18);
-constexpr wide_int_bitmask PTA_PREFETCH_SSE (HOST_WIDE_INT_1U << 19);
-constexpr wide_int_bitmask PTA_RDRND (HOST_WIDE_INT_1U << 20);
-constexpr wide_int_bitmask PTA_SSE (HOST_WIDE_INT_1U << 21);
-constexpr wide_int_bitmask PTA_SSE2 (HOST_WIDE_INT_1U << 22);
-constexpr wide_int_bitmask PTA_SSE3 (HOST_WIDE_INT_1U << 23);
-constexpr wide_int_bitmask PTA_SSE4_1 (HOST_WIDE_INT_1U << 24);
-constexpr wide_int_bitmask PTA_SSE4_2 (HOST_WIDE_INT_1U << 25);
-constexpr wide_int_bitmask PTA_SSE4A (HOST_WIDE_INT_1U << 26);
-constexpr wide_int_bitmask PTA_SSSE3 (HOST_WIDE_INT_1U << 27);
-constexpr wide_int_bitmask PTA_TBM (HOST_WIDE_INT_1U << 28);
-constexpr wide_int_bitmask PTA_XOP (HOST_WIDE_INT_1U << 29);
-constexpr wide_int_bitmask PTA_AVX2 (HOST_WIDE_INT_1U << 30);
-constexpr wide_int_bitmask PTA_BMI2 (HOST_WIDE_INT_1U << 31);
-constexpr wide_int_bitmask PTA_RTM (HOST_WIDE_INT_1U << 32);
-constexpr wide_int_bitmask PTA_HLE (HOST_WIDE_INT_1U << 33);
-constexpr wide_int_bitmask PTA_PRFCHW (HOST_WIDE_INT_1U << 34);
-constexpr wide_int_bitmask PTA_RDSEED (HOST_WIDE_INT_1U << 35);
-constexpr wide_int_bitmask PTA_ADX (HOST_WIDE_INT_1U << 36);
-constexpr wide_int_bitmask PTA_FXSR (HOST_WIDE_INT_1U << 37);
-constexpr wide_int_bitmask PTA_XSAVE (HOST_WIDE_INT_1U << 38);
-constexpr wide_int_bitmask PTA_XSAVEOPT (HOST_WIDE_INT_1U << 39);
-constexpr wide_int_bitmask PTA_AVX512F (HOST_WIDE_INT_1U << 40);
-constexpr wide_int_bitmask PTA_AVX512ER (HOST_WIDE_INT_1U << 41);
-constexpr wide_int_bitmask PTA_AVX512PF (HOST_WIDE_INT_1U << 42);
-constexpr wide_int_bitmask PTA_AVX512CD (HOST_WIDE_INT_1U << 43);
-constexpr wide_int_bitmask PTA_NO_TUNE (HOST_WIDE_INT_1U << 44);
-constexpr wide_int_bitmask PTA_SHA (HOST_WIDE_INT_1U << 45);
-constexpr wide_int_bitmask PTA_PREFETCHWT1 (HOST_WIDE_INT_1U << 46);
-constexpr wide_int_bitmask PTA_CLFLUSHOPT (HOST_WIDE_INT_1U << 47);
-constexpr wide_int_bitmask PTA_XSAVEC (HOST_WIDE_INT_1U << 48);
-constexpr wide_int_bitmask PTA_XSAVES (HOST_WIDE_INT_1U << 49);
-constexpr wide_int_bitmask PTA_AVX512DQ (HOST_WIDE_INT_1U << 50);
-constexpr wide_int_bitmask PTA_AVX512BW (HOST_WIDE_INT_1U << 51);
-constexpr wide_int_bitmask PTA_AVX512VL (HOST_WIDE_INT_1U << 52);
-constexpr wide_int_bitmask PTA_AVX512IFMA (HOST_WIDE_INT_1U << 53);
-constexpr wide_int_bitmask PTA_AVX512VBMI (HOST_WIDE_INT_1U << 54);
-constexpr wide_int_bitmask PTA_CLWB (HOST_WIDE_INT_1U << 55);
-constexpr wide_int_bitmask PTA_MWAITX (HOST_WIDE_INT_1U << 56);
-constexpr wide_int_bitmask PTA_CLZERO (HOST_WIDE_INT_1U << 57);
-constexpr wide_int_bitmask PTA_NO_80387 (HOST_WIDE_INT_1U << 58);
-constexpr wide_int_bitmask PTA_PKU (HOST_WIDE_INT_1U << 59);
-constexpr wide_int_bitmask PTA_AVX5124VNNIW (HOST_WIDE_INT_1U << 60);
-constexpr wide_int_bitmask PTA_AVX5124FMAPS (HOST_WIDE_INT_1U << 61);
-constexpr wide_int_bitmask PTA_AVX512VPOPCNTDQ (HOST_WIDE_INT_1U << 62);
-constexpr wide_int_bitmask PTA_SGX (HOST_WIDE_INT_1U << 63);
-constexpr wide_int_bitmask PTA_AVX512VNNI (0, HOST_WIDE_INT_1U);
-constexpr wide_int_bitmask PTA_GFNI (0, HOST_WIDE_INT_1U << 1);
-constexpr wide_int_bitmask PTA_VAES (0, HOST_WIDE_INT_1U << 2);
-constexpr wide_int_bitmask PTA_AVX512VBMI2 (0, HOST_WIDE_INT_1U << 3);
-constexpr wide_int_bitmask PTA_VPCLMULQDQ (0, HOST_WIDE_INT_1U << 4);
-constexpr wide_int_bitmask PTA_AVX512BITALG (0, HOST_WIDE_INT_1U << 5);
-constexpr wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
-constexpr wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
-constexpr wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
-constexpr wide_int_bitmask PTA_AVX512VP2INTERSECT (0, HOST_WIDE_INT_1U << 9);
-constexpr wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
-constexpr wide_int_bitmask PTA_AVX512BF16 (0, HOST_WIDE_INT_1U << 11);
-constexpr wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 12);
-constexpr wide_int_bitmask PTA_MOVDIRI (0, HOST_WIDE_INT_1U << 13);
-constexpr wide_int_bitmask PTA_MOVDIR64B (0, HOST_WIDE_INT_1U << 14);
-constexpr wide_int_bitmask PTA_ENQCMD (0, HOST_WIDE_INT_1U << 15);
-constexpr wide_int_bitmask PTA_CLDEMOTE (0, HOST_WIDE_INT_1U << 16);
-constexpr wide_int_bitmask PTA_SERIALIZE (0, HOST_WIDE_INT_1U << 17);
-constexpr wide_int_bitmask PTA_TSXLDTRK (0, HOST_WIDE_INT_1U << 18);
-constexpr wide_int_bitmask PTA_AMX_TILE (0, HOST_WIDE_INT_1U << 19);
-constexpr wide_int_bitmask PTA_AMX_INT8 (0, HOST_WIDE_INT_1U << 20);
-constexpr wide_int_bitmask PTA_AMX_BF16 (0, HOST_WIDE_INT_1U << 21);
-constexpr wide_int_bitmask PTA_UINTR (0, HOST_WIDE_INT_1U << 22);
-constexpr wide_int_bitmask PTA_HRESET (0, HOST_WIDE_INT_1U << 23);
-constexpr wide_int_bitmask PTA_KL (0, HOST_WIDE_INT_1U << 24);
-constexpr wide_int_bitmask PTA_WIDEKL (0, HOST_WIDE_INT_1U << 25);
-constexpr wide_int_bitmask PTA_AVXVNNI (0, HOST_WIDE_INT_1U << 26);
+enum pta_flag
+{
+#define DEF_PTA(NAME) _ ## NAME,
+#include "i386-isa.def"
+#undef DEF_PTA
+  END_PTA
+};
+
+/* wide_int_bitmask can handle only 128 flags.  */
+STATIC_ASSERT (END_PTA <= 128);
+
+#define WIDE_INT_BITMASK_FROM_NTH(N) (N < 64 ? wide_int_bitmask (0, 1ULL << N) \
+				      : wide_int_bitmask (1ULL << (N - 64), 0))
+
+#define DEF_PTA(NAME) constexpr wide_int_bitmask PTA_ ## NAME \
+  = WIDE_INT_BITMASK_FROM_NTH ((pta_flag) _ ## NAME);
+#include "i386-isa.def"
+#undef DEF_PTA
 
 constexpr wide_int_bitmask PTA_X86_64_BASELINE = PTA_64BIT | PTA_MMX | PTA_SSE
   | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR;
