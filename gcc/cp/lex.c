@@ -515,7 +515,7 @@ struct module_token_filter
 	  {
 	  module_end:;
 	    /* End of the directive, handle the name.  */
-	    if (import)
+	    if (import && (is_import || !flag_header_unit))
 	      if (module_state *m
 		  = preprocess_module (import, token_loc, module != NULL,
 				       is_import, got_export, reader))
