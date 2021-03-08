@@ -1,3 +1,11 @@
+2021-03-07  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-03-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR libfortran/99218
+	* gfortran.dg/matmul_21.f90: New test.
+
 2021-02-08  Matthias Klose  <doko@ubuntu.com>
 
 	Backported from master:
