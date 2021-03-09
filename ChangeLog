@@ -1,3 +1,10 @@
+2021-03-09  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/99458
+	* libgo/runtime/proc.c: cast SIGSTKSZ to uintptr
+	In newer versions of glibc it is long, which causes a signed
+	comparison warning.
+
 2020-10-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
