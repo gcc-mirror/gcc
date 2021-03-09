@@ -1094,7 +1094,7 @@ aarch64*-*-elf | aarch64*-*-fuchsia* | aarch64*-*-rtems*)
                 tm_file="${tm_file} fuchsia.h"
                 ;;
 	aarch64-*-rtems*)
-	  	tm_file="${tm_file} rtems.h aarch64/rtems.h"
+		tm_file="${tm_file} aarch64/rtems.h rtems.h"
 		;;
 	esac
 	case $target in
@@ -1368,7 +1368,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems* | arm*-*-fuchsia*)
 	  target_cpu_cname="generic-armv7-a"
 	  ;;
 	arm*-*-rtems*)
-	  tm_file="${tm_file} rtems.h arm/rtems.h newlib-stdint.h"
+	  tm_file="${tm_file} arm/rtems.h rtems.h newlib-stdint.h"
 	  tmake_file="${tmake_file} arm/t-bpabi arm/t-rtems"
 	  ;;
 	arm*-*-symbianelf*)
@@ -1630,7 +1630,7 @@ epiphany-*-elf | epiphany-*-rtems*)
 	tmake_file="${tmake_file} epiphany/t-epiphany"
 	case ${target} in
 	epiphany-*-rtems*)
-	  tm_file="${tm_file} rtems.h epiphany/rtems.h newlib-stdint.h"
+	  tm_file="${tm_file} epiphany/rtems.h rtems.h newlib-stdint.h"
 	  ;;
 	*)
 	  tm_file="${tm_file} newlib-stdint.h"
@@ -2476,7 +2476,7 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
 	case ${target} in
 	*-*-rtems*)
-	  tm_file="${tm_file} rtems.h riscv/rtems.h"
+	  tm_file="${tm_file} riscv/rtems.h rtems.h"
 	  tmake_file="${tmake_file} riscv/t-rtems"
 	  ;;
 	*)
@@ -3476,7 +3476,7 @@ tilepro*-*-linux*)
 v850-*-rtems*)
 	target_cpu_default="TARGET_CPU_generic"
 	tm_file="dbxelf.h elfos.h v850/v850.h"
-	tm_file="${tm_file} rtems.h v850/rtems.h newlib-stdint.h"
+	tm_file="${tm_file} v850/rtems.h rtems.h newlib-stdint.h"
 	tmake_file="${tmake_file} v850/t-v850"
 	tmake_file="${tmake_file} v850/t-rtems"
 	use_collect2=no
