@@ -337,7 +337,7 @@ const struct s390_processor processor_table[] =
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
   { "z15",    "arch13", PROCESSOR_8561_Z15,    &zEC12_cost,  13 },
-  { "arch14", "",       PROCESSOR_ARCH14,      &zEC12_cost,  14 },
+  { "arch14", "arch14", PROCESSOR_ARCH14,      &zEC12_cost,  14 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
