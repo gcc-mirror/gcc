@@ -3452,10 +3452,13 @@ process_address_1 (int nop, bool check_only_p,
 
   constraint
     = skip_contraint_modifiers (curr_static_id->operand[nop].constraint);
-  if ('0' <= constraint[0] && constraint[0] <= '9')
-    constraint
-      = skip_contraint_modifiers (curr_static_id->operand
-				  [constraint[0] - '0'].constraint);
+  if (IN_RANGE (constraint[0], '0', '9'))
+    {
+      char *end;
+      unsigned long dup = strtoul (constraint, &end, 10);
+      constraint
+	= skip_contraint_modifiers (curr_static_id->operand[dup].constraint);
+    }
   cn = lookup_constraint (constraint);
   if (insn_extra_address_constraint (cn)
       /* When we find an asm operand with an address constraint that
@@ -3472,7 +3475,7 @@ process_address_1 (int nop, bool check_only_p,
      i.e. bcst_mem_operand in i386 backend.  */
   else if (MEM_P (mem)
 	   && !(INSN_CODE (curr_insn) < 0
-		&& (cn == CONSTRAINT__UNKNOWN
+		&& ((cn == CONSTRAINT__UNKNOWN && *constraint != 'g')
 		    || (get_constraint_type (cn) == CT_FIXED_FORM
 			&& constraint_satisfied_p (op, cn)))))
     decompose_mem_address (&ad, mem);
