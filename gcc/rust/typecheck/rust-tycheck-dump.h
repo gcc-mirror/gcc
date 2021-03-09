@@ -72,11 +72,11 @@ public:
 
   void visit (HIR::Function &function) override
   {
-    dump += indent () + "fn " + function.function_name + " "
+    dump += indent () + "fn " + function.get_function_name () + " "
 	    + type_string (function.get_mappings ()) + "\n";
     dump += indent () + "{\n";
 
-    HIR::BlockExpr *function_body = function.function_body.get ();
+    HIR::BlockExpr *function_body = function.get_definition ().get ();
     function_body->accept_vis (*this);
 
     dump += indent () + "}\n";

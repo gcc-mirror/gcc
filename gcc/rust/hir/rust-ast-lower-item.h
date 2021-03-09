@@ -218,7 +218,6 @@ public:
   void visit (AST::Function &function)
   {
     // ignore for now and leave empty
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     std::vector<HIR::Attribute> outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
@@ -227,6 +226,12 @@ public:
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     // need
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (function.has_generics ())
+      {
+	generic_params = lower_generic_params (function.get_generic_params ());
+      }
+
     Identifier function_name = function.get_function_name ();
     Location locus = function.get_locus ();
 
@@ -284,7 +289,7 @@ public:
 			       function.get_locus ());
 
     // add the mappings for the function params at the end
-    for (auto &param : fn->function_params)
+    for (auto &param : fn->get_function_params ())
       {
 	mappings->insert_hir_param (mapping.get_crate_num (),
 				    param.get_mappings ().get_hirid (), &param);

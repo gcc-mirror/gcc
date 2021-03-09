@@ -1447,8 +1447,6 @@ class Function : public VisItem, public InherentImplItem, public TraitImplItem
   Location locus;
 
 public:
-  std::vector<LetStmt *> locals;
-
   std::string as_string () const override;
 
   // Returns whether function has generic parameters.
@@ -1550,7 +1548,6 @@ public:
     return function_body == nullptr;
   }
 
-  // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<FunctionParam> &get_function_params () { return function_params; }
   const std::vector<FunctionParam> &get_function_params () const
   {

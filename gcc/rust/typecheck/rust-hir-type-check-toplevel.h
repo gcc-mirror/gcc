@@ -134,12 +134,27 @@ public:
 
   void visit (HIR::Function &function)
   {
+    std::vector<TyTy::SubstitionMapping> substitions;
+    if (function.has_generics ())
+      {
+	for (auto &generic_param : function.get_generic_params ())
+	  {
+	    auto param_type
+	      = TypeResolveGenericParam::Resolve (generic_param.get ());
+	    context->insert_type (generic_param->get_mappings (), param_type);
+
+	    substitions.push_back (
+	      TyTy::SubstitionMapping (generic_param, param_type));
+	  }
+      }
+
     TyTy::BaseType *ret_type = nullptr;
     if (!function.has_function_return_type ())
       ret_type = new TyTy::UnitType (function.get_mappings ().get_hirid ());
     else
       {
-	auto resolved = TypeCheckType::Resolve (function.return_type.get ());
+	auto resolved
+	  = TypeCheckType::Resolve (function.get_return_type ().get ());
 	if (resolved == nullptr)
 	  {
 	    rust_error_at (function.get_locus (),
@@ -148,11 +163,12 @@ public:
 	  }
 
 	ret_type = resolved->clone ();
-	ret_type->set_ref (function.return_type->get_mappings ().get_hirid ());
+	ret_type->set_ref (
+	  function.get_return_type ()->get_mappings ().get_hirid ());
       }
 
     std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
-    for (auto &param : function.function_params)
+    for (auto &param : function.get_function_params ())
       {
 	// get the name as well required for later on
 	auto param_tyty = TypeCheckType::Resolve (param.get_type ());

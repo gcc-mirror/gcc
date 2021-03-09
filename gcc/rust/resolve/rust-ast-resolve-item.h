@@ -107,10 +107,6 @@ public:
 
   void visit (AST::Function &function)
   {
-    if (function.has_return_type ())
-      ResolveType::go (function.get_return_type ().get (),
-		       function.get_node_id ());
-
     NodeId scope_node_id = function.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
     resolver->get_type_scope ().push (scope_node_id);
@@ -118,6 +114,16 @@ public:
     resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
     resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
     resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+    if (function.has_generics ())
+      {
+	for (auto &generic : function.get_generic_params ())
+	  ResolveGenericParam::go (generic.get (), function.get_node_id ());
+      }
+
+    if (function.has_return_type ())
+      ResolveType::go (function.get_return_type ().get (),
+		       function.get_node_id ());
 
     // we make a new scope so the names of parameters are resolved and shadowed
     // correctly

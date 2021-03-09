@@ -95,7 +95,7 @@ public:
 
     unsigned int flags = 0;
     std::string fn_identifier
-      = self->get_name () + "_" + function.function_name;
+      = self->get_name () + "_" + function.get_function_name ();
 
     // if its the main fn or pub visibility mark its as DECL_PUBLIC
     // please see https://github.com/Rust-GCC/gccrs/pull/137
@@ -116,7 +116,8 @@ public:
     size_t i = 0;
     for (auto &it : fntype->get_params ())
       {
-	HIR::FunctionParam &referenced_param = function.function_params.at (i);
+	HIR::FunctionParam &referenced_param
+	  = function.get_function_params ().at (i);
 	auto param_tyty = it.second;
 	auto compiled_param_type
 	  = TyTyResolveCompile::compile (ctx, param_tyty);
@@ -147,7 +148,7 @@ public:
       }
 
     // lookup locals
-    auto block_expr = function.function_body.get ();
+    auto block_expr = function.get_definition ().get ();
     auto body_mappings = block_expr->get_mappings ();
 
     Resolver::Rib *rib = nullptr;
@@ -180,7 +181,7 @@ public:
     Bblock *enclosing_scope
       = toplevel_item ? NULL : ctx->peek_enclosing_scope ();
 
-    HIR::BlockExpr *function_body = function.function_body.get ();
+    HIR::BlockExpr *function_body = function.get_definition ().get ();
     Location start_location = function_body->get_locus ();
     Location end_location = function_body->get_closing_locus ();
 
@@ -206,7 +207,7 @@ public:
 
     ctx->push_fn (fndecl, return_address);
 
-    compile_function_body (fndecl, function.function_body,
+    compile_function_body (fndecl, function.get_definition (),
 			   function.has_function_return_type ());
 
     ctx->pop_block ();

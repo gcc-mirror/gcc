@@ -147,7 +147,7 @@ public:
 			       function.get_locus ());
 
     // add the mappings for the function params at the end
-    for (auto &param : fn->function_params)
+    for (auto &param : fn->get_function_params ())
       {
 	mappings->insert_hir_param (mapping.get_crate_num (),
 				    param.get_mappings ().get_hirid (), &param);

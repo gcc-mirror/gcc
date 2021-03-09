@@ -58,7 +58,7 @@ public:
     TyTy::BaseType *lookup;
     if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
       {
-	rust_error_at (function.locus, "failed to lookup function type");
+	rust_error_at (function.get_locus (), "failed to lookup function type");
 	return;
       }
 
@@ -75,7 +75,8 @@ public:
     auto expected_ret_tyty = resolve_fn_type->get_return_type ();
     context->push_return_type (expected_ret_tyty);
 
-    auto result = TypeCheckExpr::Resolve (function.function_body.get (), false);
+    auto result
+      = TypeCheckExpr::Resolve (function.get_definition ().get (), false);
     auto ret_resolved = expected_ret_tyty->unify (result);
     if (ret_resolved == nullptr)
       return;

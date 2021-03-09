@@ -1255,7 +1255,6 @@ class LetStmt;
 // Rust function declaration HIR node
 class Function : public VisItem, public InherentImplItem, public TraitImplItem
 {
-public:
   FunctionQualifiers qualifiers;
   Identifier function_name;
 
@@ -1277,6 +1276,7 @@ public:
 
   Location locus;
 
+public:
   std::string as_string () const override;
 
   // Returns whether function has generic parameters.
@@ -1360,6 +1360,48 @@ public:
   {
     return get_mappings ();
   };
+
+  std::vector<FunctionParam> &get_function_params () { return function_params; }
+  const std::vector<FunctionParam> &get_function_params () const
+  {
+    return function_params;
+  }
+
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<BlockExpr> &get_definition ()
+  {
+    rust_assert (function_body != nullptr);
+    return function_body;
+  }
+
+  FunctionQualifiers get_qualifiers () const { return qualifiers; }
+
+  Identifier get_function_name () const { return function_name; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause ()
+  {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
+  bool has_return_type () const { return return_type != nullptr; }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_return_type ()
+  {
+    rust_assert (has_return_type ());
+    return return_type;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object

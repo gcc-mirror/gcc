@@ -105,7 +105,8 @@ public:
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
 					 &fntype_tyty))
       {
-	rust_fatal_error (function.locus, "failed to lookup function type");
+	rust_fatal_error (function.get_locus (),
+			  "failed to lookup function type");
 	return;
       }
 
@@ -120,23 +121,24 @@ public:
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
-    bool is_main_fn = function.function_name.compare ("main") == 0;
+    bool is_main_fn = function.get_function_name ().compare ("main") == 0;
 
     // if its the main fn or pub visibility mark its as DECL_PUBLIC
     // please see https://github.com/Rust-GCC/gccrs/pull/137
     if (is_main_fn || function.has_visibility ())
       flags |= Backend::function_is_visible;
 
-    std::string asm_name = function.function_name;
+    std::string asm_name = function.get_function_name ();
     if (!is_main_fn)
       {
 	// FIXME need name mangling
-	asm_name = "__" + function.function_name;
+	asm_name = "__" + function.get_function_name ();
       }
 
     Bfunction *fndecl
-      = ctx->get_backend ()->function (compiled_fn_type, function.function_name,
-				       asm_name, flags, function.get_locus ());
+      = ctx->get_backend ()->function (compiled_fn_type,
+				       function.get_function_name (), asm_name,
+				       flags, function.get_locus ());
     ctx->insert_function_decl (function.get_mappings ().get_hirid (), fndecl);
 
     // setup the params
@@ -147,7 +149,8 @@ public:
     size_t i = 0;
     for (auto &it : fntype->get_params ())
       {
-	HIR::FunctionParam &referenced_param = function.function_params.at (i);
+	HIR::FunctionParam &referenced_param
+	  = function.get_function_params ().at (i);
 	auto param_tyty = it.second;
 	auto compiled_param_type
 	  = TyTyResolveCompile::compile (ctx, param_tyty);
@@ -178,7 +181,7 @@ public:
       }
 
     // lookup locals
-    auto block_expr = function.function_body.get ();
+    auto block_expr = function.get_definition ().get ();
     auto body_mappings = block_expr->get_mappings ();
 
     Resolver::Rib *rib = nullptr;
@@ -211,7 +214,7 @@ public:
     Bblock *enclosing_scope
       = toplevel_item ? NULL : ctx->peek_enclosing_scope ();
 
-    HIR::BlockExpr *function_body = function.function_body.get ();
+    HIR::BlockExpr *function_body = function.get_definition ().get ();
     Location start_location = function_body->get_locus ();
     Location end_location = function_body->get_closing_locus ();
 
@@ -237,7 +240,7 @@ public:
 
     ctx->push_fn (fndecl, return_address);
 
-    compile_function_body (fndecl, function.function_body,
+    compile_function_body (fndecl, function.get_definition (),
 			   function.has_function_return_type ());
 
     ctx->pop_block ();

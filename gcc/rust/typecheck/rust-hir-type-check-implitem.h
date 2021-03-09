@@ -53,7 +53,8 @@ public:
       ret_type = new TyTy::UnitType (function.get_mappings ().get_hirid ());
     else
       {
-	auto resolved = TypeCheckType::Resolve (function.return_type.get ());
+	auto resolved
+	  = TypeCheckType::Resolve (function.get_return_type ().get ());
 	if (resolved == nullptr)
 	  {
 	    rust_error_at (function.get_locus (),
@@ -62,11 +63,12 @@ public:
 	  }
 
 	ret_type = resolved->clone ();
-	ret_type->set_ref (function.return_type->get_mappings ().get_hirid ());
+	ret_type->set_ref (
+	  function.get_return_type ()->get_mappings ().get_hirid ());
       }
 
     std::vector<std::pair<HIR::Pattern *, TyTy::BaseType *> > params;
-    for (auto &param : function.function_params)
+    for (auto &param : function.get_function_params ())
       {
 	// get the name as well required for later on
 	auto param_tyty = TypeCheckType::Resolve (param.get_type ());
@@ -173,7 +175,8 @@ public:
     auto expected_ret_tyty = resolve_fn_type->get_return_type ();
     context->push_return_type (expected_ret_tyty);
 
-    auto result = TypeCheckExpr::Resolve (function.function_body.get (), false);
+    auto result
+      = TypeCheckExpr::Resolve (function.get_definition ().get (), false);
     auto ret_resolved = expected_ret_tyty->unify (result);
     if (ret_resolved == nullptr)
       return;
