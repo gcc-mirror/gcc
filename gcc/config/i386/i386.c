@@ -10179,7 +10179,7 @@ ix86_decompose_address (rtx addr, struct ix86_address *out)
      Avoid this by transforming to [%esi+0].
      Reload calls address legitimization without cfun defined, so we need
      to test cfun for being non-NULL. */
-  if (TARGET_K6 && cfun && optimize_function_for_speed_p (cfun)
+  if (TARGET_CPU_P (K6) && cfun && optimize_function_for_speed_p (cfun)
       && base_reg && !index_reg && !disp
       && REGNO (base_reg) == SI_REG)
     disp = const0_rtx;
@@ -10257,7 +10257,7 @@ ix86_address_cost (rtx x, machine_mode, addr_space_t, bool)
      memory address, but I don't have AMD-K6 machine handy to check this
      theory.  */
 
-  if (TARGET_K6
+  if (TARGET_CPU_P (K6)
       && ((!parts.disp && parts.base && parts.index && parts.scale != 1)
 	  || (parts.disp && !parts.base && parts.index && parts.scale != 1)
 	  || (!parts.disp && parts.base && parts.index && parts.scale == 1)))
@@ -14940,7 +14940,7 @@ ix86_lea_outperforms (rtx_insn *insn, unsigned int regno0, unsigned int regno1,
   /* For Atom processors newer than Bonnell, if using a 2-source or
      3-source LEA for non-destructive destination purposes, or due to
      wanting ability to use SCALE, the use of LEA is justified.  */
-  if (!TARGET_BONNELL)
+  if (!TARGET_CPU_P (BONNELL))
     {
       if (has_scale)
 	return true;
@@ -15082,7 +15082,7 @@ ix86_avoid_lea_for_addr (rtx_insn *insn, rtx operands[])
      than lea for most processors.  For the processors like BONNELL, if
      the destination register of LEA holds an actual address which will
      be used soon, LEA is better and otherwise ADD is better.  */
-  if (!TARGET_BONNELL
+  if (!TARGET_CPU_P (BONNELL)
       && parts.scale == 1
       && (!parts.disp || parts.disp == const0_rtx)
       && (regno0 == regno1 || regno0 == regno2))
@@ -22387,7 +22387,7 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
     stmt_cost = ix86_builtin_vectorization_cost (kind, vectype, misalign);
 
   /* Penalize DFmode vector operations for Bonnell.  */
-  if (TARGET_BONNELL && kind == vector_stmt
+  if (TARGET_CPU_P (BONNELL) && kind == vector_stmt
       && vectype && GET_MODE_INNER (TYPE_MODE (vectype)) == DFmode)
     stmt_cost *= 5;  /* FIXME: The value here is arbitrary.  */
 
@@ -22403,8 +22403,10 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
   /* We need to multiply all vector stmt cost by 1.7 (estimated cost)
      for Silvermont as it has out of order integer pipeline and can execute
      2 scalar instruction per tick, but has in order SIMD pipeline.  */
-  if ((TARGET_SILVERMONT || TARGET_GOLDMONT || TARGET_GOLDMONT_PLUS
-       || TARGET_TREMONT || TARGET_INTEL) && stmt_info && stmt_info->stmt)
+  if ((TARGET_CPU_P (SILVERMONT) || TARGET_CPU_P (GOLDMONT)
+       || TARGET_CPU_P (GOLDMONT_PLUS) || TARGET_CPU_P (TREMONT)
+       || TARGET_CPU_P (INTEL))
+      && stmt_info && stmt_info->stmt)
     {
       tree lhs_op = gimple_get_lhs (stmt_info->stmt);
       if (lhs_op && TREE_CODE (TREE_TYPE (lhs_op)) == INTEGER_TYPE)

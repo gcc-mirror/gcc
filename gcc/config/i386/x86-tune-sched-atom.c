@@ -51,7 +51,7 @@ do_reorder_for_imul (rtx_insn **ready, int n_ready)
   int index = -1;
   int i;
 
-  if (!TARGET_BONNELL)
+  if (!TARGET_CPU_P (BONNELL))
     return index;
 
   /* Check that IMUL instruction is on the top of ready list.  */
@@ -131,7 +131,7 @@ swap_top_of_ready_list (rtx_insn **ready, int n_ready)
   int clock2 = -1;
   #define INSN_TICK(INSN) (HID (INSN)->tick)
 
-  if (!TARGET_SILVERMONT && !TARGET_INTEL)
+  if (!TARGET_CPU_P (SILVERMONT) && !TARGET_CPU_P (INTEL))
     return false;
 
   if (!NONDEBUG_INSN_P (top))
@@ -204,7 +204,8 @@ ix86_atom_sched_reorder (FILE *dump, int sched_verbose, rtx_insn **ready,
   issue_rate = ix86_issue_rate ();
 
   /* Do reodering for BONNELL/SILVERMONT only.  */
-  if (!TARGET_BONNELL && !TARGET_SILVERMONT && !TARGET_INTEL)
+  if (!TARGET_CPU_P (BONNELL) && !TARGET_CPU_P (SILVERMONT)
+      && !TARGET_CPU_P (INTEL))
     return issue_rate;
 
   /* Nothing to do if ready list contains only 1 instruction.  */
