@@ -7482,8 +7482,8 @@ package body Sem_Util is
             Lo1, Lo2, Hi1, Hi2 : Node_Id;
 
          begin
-            Get_Index_Bounds (Etype (Obj1), Lo1, Hi1);
-            Get_Index_Bounds (Etype (Obj2), Lo2, Hi2);
+            Get_Index_Bounds (Discrete_Range (Obj1), Lo1, Hi1);
+            Get_Index_Bounds (Discrete_Range (Obj2), Lo2, Hi2);
 
             --  Check whether bounds are statically identical. There is no
             --  attempt to detect partial overlap of slices.
