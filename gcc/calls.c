@@ -2308,19 +2308,17 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       function_arg_info arg (type, argpos < n_named_args);
       if (pass_by_reference (args_so_far_pnt, arg))
 	{
-	  bool callee_copies;
-	  tree base = NULL_TREE;
+	  const bool callee_copies
+	    = reference_callee_copied (args_so_far_pnt, arg);
+	  tree base;
 
-	  callee_copies = reference_callee_copied (args_so_far_pnt, arg);
-
-	  /* If we're compiling a thunk, pass through invisible references
-	     instead of making a copy.  */
-	  if (call_from_thunk_p
-	      || (callee_copies
-		  && !TREE_ADDRESSABLE (type)
-		  && (base = get_base_address (args[i].tree_value))
-		  && TREE_CODE (base) != SSA_NAME
-		  && (!DECL_P (base) || MEM_P (DECL_RTL (base)))))
+	  /* If we're compiling a thunk, pass directly the address of an object
+	     already in memory, instead of making a copy.  Likewise if we want
+	     to make the copy in the callee instead of the caller.  */
+	  if ((call_from_thunk_p || callee_copies)
+	      && (base = get_base_address (args[i].tree_value))
+	      && TREE_CODE (base) != SSA_NAME
+	      && (!DECL_P (base) || MEM_P (DECL_RTL (base))))
 	    {
 	      /* We may have turned the parameter value into an SSA name.
 		 Go back to the original parameter so we can take the
