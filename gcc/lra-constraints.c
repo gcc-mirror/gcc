@@ -3452,6 +3452,10 @@ process_address_1 (int nop, bool check_only_p,
 
   constraint
     = skip_contraint_modifiers (curr_static_id->operand[nop].constraint);
+  if ('0' <= constraint[0] && constraint[0] <= '9')
+    constraint
+      = skip_contraint_modifiers (curr_static_id->operand
+				  [constraint[0] - '0'].constraint);
   cn = lookup_constraint (constraint);
   if (insn_extra_address_constraint (cn)
       /* When we find an asm operand with an address constraint that
