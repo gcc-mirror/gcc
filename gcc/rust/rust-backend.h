@@ -155,6 +155,11 @@ public:
 		 Btype *result_struct, Location location)
     = 0;
 
+  virtual Btype *function_ptr_type (Btype *result,
+				    const std::vector<Btype *> &praameters,
+				    Location location)
+    = 0;
+
   // Get a struct type.
   virtual Btype *struct_type (const std::vector<Btyped_identifier> &fields) = 0;
 

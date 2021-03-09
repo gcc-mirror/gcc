@@ -148,6 +148,14 @@ public:
 		   type.as_string ().c_str ());
   }
 
+  virtual void visit (FnPtr &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
   virtual void visit (ArrayType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
@@ -526,7 +534,6 @@ public:
 	return;
       }
 
-    // FIXME add an abstract method for is_equal on BaseType
     for (size_t i = 0; i < base->num_params (); i++)
       {
 	auto a = base->param_at (i).second;
@@ -556,6 +563,99 @@ private:
   BaseType *get_base () override { return base; }
 
   FnType *base;
+};
+
+class FnptrRules : public BaseRules
+{
+public:
+  FnptrRules (FnPtr *base) : BaseRules (base), base (base) {}
+
+  void visit (InferType &type) override
+  {
+    if (type.get_infer_kind () != InferType::InferTypeKind::GENERAL)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
+  void visit (FnPtr &type) override
+  {
+    auto this_ret_type = base->get_return_type ();
+    auto other_ret_type = type.get_return_type ();
+    auto unified_result = this_ret_type->unify (other_ret_type);
+    if (unified_result == nullptr
+	|| unified_result->get_kind () == TypeKind::ERROR)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    if (base->num_params () != type.num_params ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    for (size_t i = 0; i < base->num_params (); i++)
+      {
+	auto this_param = base->param_at (i);
+	auto other_param = type.param_at (i);
+	auto unified_param = this_param->unify (other_param);
+	if (unified_param == nullptr
+	    || unified_param->get_kind () == TypeKind::ERROR)
+	  {
+	    BaseRules::visit (type);
+	    return;
+	  }
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
+  void visit (FnType &type) override
+  {
+    auto this_ret_type = base->get_return_type ();
+    auto other_ret_type = type.get_return_type ();
+    auto unified_result = this_ret_type->unify (other_ret_type);
+    if (unified_result == nullptr
+	|| unified_result->get_kind () == TypeKind::ERROR)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    if (base->num_params () != type.num_params ())
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    for (size_t i = 0; i < base->num_params (); i++)
+      {
+	auto this_param = base->param_at (i);
+	auto other_param = type.param_at (i).second;
+	auto unified_param = this_param->unify (other_param);
+	if (unified_param == nullptr
+	    || unified_param->get_kind () == TypeKind::ERROR)
+	  {
+	    BaseRules::visit (type);
+	    return;
+	  }
+      }
+
+    resolved = base->clone ();
+    resolved->set_ref (type.get_ref ());
+  }
+
+private:
+  BaseType *get_base () override { return base; }
+
+  FnPtr *base;
 };
 
 class ArrayRules : public BaseRules

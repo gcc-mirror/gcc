@@ -35,6 +35,7 @@ enum TypeKind
   PARAM,
   ARRAY,
   FNDEF,
+  FNPTR,
   TUPLE,
   BOOL,
   CHAR,
@@ -261,7 +262,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool is_equal (const BaseType &other) const override;
+  bool is_equal (const BaseType &other) const override;
 
   size_t num_fields () const { return fields.size (); }
 
@@ -433,7 +434,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool is_equal (const BaseType &other) const override;
+  bool is_equal (const BaseType &other) const override;
 
   size_t num_fields () const { return fields.size (); }
 
@@ -524,11 +525,9 @@ public:
 
   std::string get_name () const override final { return as_string (); }
 
-  BaseType *return_type () { return type; }
-
   BaseType *unify (BaseType *other) override;
 
-  virtual bool is_equal (const BaseType &other) const override;
+  bool is_equal (const BaseType &other) const override;
 
   size_t num_params () const { return params.size (); }
 
@@ -561,6 +560,53 @@ private:
   BaseType *type;
 };
 
+class FnPtr : public BaseType
+{
+public:
+  FnPtr (HirId ref, std::vector<TyCtx> params, TyCtx result_type,
+	 std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ref, TypeKind::FNPTR, refs), params (std::move (params)),
+      result_type (result_type)
+  {}
+
+  FnPtr (HirId ref, HirId ty_ref, std::vector<TyCtx> params, TyCtx result_type,
+	 std::set<HirId> refs = std::set<HirId> ())
+    : BaseType (ref, ty_ref, TypeKind::FNPTR, refs), params (params),
+      result_type (result_type)
+  {}
+
+  std::string get_name () const override final { return as_string (); }
+
+  BaseType *get_return_type () const { return result_type.get_tyty (); }
+
+  size_t num_params () const { return params.size (); }
+
+  BaseType *param_at (size_t idx) const { return params.at (idx).get_tyty (); }
+
+  void accept_vis (TyVisitor &vis) override;
+
+  std::string as_string () const override;
+
+  BaseType *unify (BaseType *other) override;
+
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *clone () final override;
+
+  void iterate_params (std::function<bool (BaseType *)> cb) const
+  {
+    for (auto &p : params)
+      {
+	if (!cb (p.get_tyty ()))
+	  return;
+      }
+  }
+
+private:
+  std::vector<TyCtx> params;
+  TyCtx result_type;
+};
+
 class ArrayType : public BaseType
 {
 public:
@@ -584,7 +630,7 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
-  virtual bool is_equal (const BaseType &other) const override;
+  bool is_equal (const BaseType &other) const override;
 
   size_t get_capacity () const { return capacity; }
 

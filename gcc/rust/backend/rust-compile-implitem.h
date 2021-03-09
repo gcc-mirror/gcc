@@ -110,7 +110,7 @@ public:
 
     // setup the params
 
-    TyTy::BaseType *tyret = fntype->return_type ();
+    TyTy::BaseType *tyret = fntype->get_return_type ();
     std::vector<Bvariable *> param_vars;
 
     size_t i = 0;
@@ -273,7 +273,7 @@ public:
     ctx->insert_function_decl (method.get_mappings ().get_hirid (), fndecl);
 
     // setup the params
-    TyTy::BaseType *tyret = fntype->return_type ();
+    TyTy::BaseType *tyret = fntype->get_return_type ();
     std::vector<Bvariable *> param_vars;
 
     // insert self

@@ -32,6 +32,7 @@ public:
   virtual void visit (ADTType &type) = 0;
   virtual void visit (TupleType &type) = 0;
   virtual void visit (FnType &type) = 0;
+  virtual void visit (FnPtr &type) = 0;
   virtual void visit (ArrayType &type) = 0;
   virtual void visit (BoolType &type) = 0;
   virtual void visit (IntType &type) = 0;

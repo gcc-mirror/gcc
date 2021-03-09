@@ -60,6 +60,7 @@ public:
 
   // call fns
   void visit (FnType &type) override;
+  void visit (FnPtr &type) override;
 
 private:
   TypeCheckCallExpr (HIR::CallExpr &c, Resolver::TypeCheckContext *context)
@@ -100,6 +101,9 @@ public:
   void visit (ReferenceType &type) override { gcc_unreachable (); }
   void visit (ParamType &) override { gcc_unreachable (); }
   void visit (StrType &) override { gcc_unreachable (); }
+
+  // FIXME
+  void visit (FnPtr &type) override { gcc_unreachable (); }
 
   // call fns
   void visit (FnType &type) override;

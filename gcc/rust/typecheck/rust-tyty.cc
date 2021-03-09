@@ -401,25 +401,23 @@ bool
 FnType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
+    return false;
+
+  auto other2 = static_cast<const FnType &> (other);
+  if (!get_return_type ()->is_equal (*other2.get_return_type ()))
+    return false;
+
+  if (num_params () != other2.num_params ())
+    return false;
+
+  for (size_t i = 0; i < num_params (); i++)
     {
-      return false;
-    }
-  else
-    {
-      auto other2 = static_cast<const FnType &> (other);
-      if (!get_return_type ()->is_equal (*other2.get_return_type ()))
+      auto lhs = param_at (i).second;
+      auto rhs = other2.param_at (i).second;
+      if (!lhs->is_equal (*rhs))
 	return false;
-      if (num_params () != other2.num_params ())
-	return false;
-      for (size_t i = 0; i < num_params (); i++)
-	{
-	  auto lhs = param_at (i).second;
-	  auto rhs = other2.param_at (i).second;
-	  if (!lhs->is_equal (*rhs))
-	    return false;
-	}
-      return true;
     }
+  return true;
 }
 
 BaseType *
@@ -430,8 +428,66 @@ FnType::clone ()
     cloned_params.push_back (
       std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
 
-  return new FnType (get_ref (), get_ty_ref (), cloned_params,
+  return new FnType (get_ref (), get_ty_ref (), std::move (cloned_params),
 		     get_return_type ()->clone (), get_combined_refs ());
+}
+
+void
+FnPtr::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+FnPtr::as_string () const
+{
+  std::string params_str;
+  iterate_params ([&] (BaseType *p) mutable -> bool {
+    params_str += p->as_string () + " ,";
+    return true;
+  });
+  return "fnptr (" + params_str + ") -> " + get_return_type ()->as_string ();
+}
+
+BaseType *
+FnPtr::unify (BaseType *other)
+{
+  FnptrRules r (this);
+  return r.unify (other);
+}
+
+bool
+FnPtr::is_equal (const BaseType &other) const
+{
+  if (get_kind () != other.get_kind ())
+    return false;
+
+  auto other2 = static_cast<const FnPtr &> (other);
+  auto this_ret_type = get_return_type ();
+  auto other_ret_type = other2.get_return_type ();
+  if (this_ret_type->is_equal (*other_ret_type))
+    return false;
+
+  if (num_params () != other2.num_params ())
+    return false;
+
+  for (size_t i = 0; i < num_params (); i++)
+    {
+      if (!param_at (i)->is_equal (*other2.param_at (i)))
+	return false;
+    }
+  return true;
+}
+
+BaseType *
+FnPtr::clone ()
+{
+  std::vector<TyCtx> cloned_params;
+  for (auto &p : params)
+    cloned_params.push_back (TyCtx (p.get_ref ()));
+
+  return new FnPtr (get_ref (), get_ty_ref (), std::move (cloned_params),
+		    result_type, get_combined_refs ());
 }
 
 void
@@ -898,6 +954,53 @@ TypeCheckCallExpr::visit (FnType &type)
       }
 
     auto resolved_argument_type = fnparam.second->unify (argument_expr_tyty);
+    if (resolved_argument_type == nullptr)
+      {
+	rust_error_at (param->get_locus_slow (),
+		       "Type Resolution failure on parameter");
+	return false;
+      }
+
+    context->insert_type (param->get_mappings (), resolved_argument_type);
+
+    i++;
+    return true;
+  });
+
+  if (i != call.num_params ())
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu", i,
+		     call.num_params ());
+      return;
+    }
+
+  resolved = type.get_return_type ()->clone ();
+}
+
+void
+TypeCheckCallExpr::visit (FnPtr &type)
+{
+  if (call.num_params () != type.num_params ())
+    {
+      rust_error_at (call.get_locus (),
+		     "unexpected number of arguments %lu expected %lu",
+		     call.num_params (), type.num_params ());
+      return;
+    }
+
+  size_t i = 0;
+  call.iterate_params ([&] (HIR::Expr *param) mutable -> bool {
+    auto fnparam = type.param_at (i);
+    auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (param, false);
+    if (argument_expr_tyty == nullptr)
+      {
+	rust_error_at (param->get_locus_slow (),
+		       "failed to resolve type for argument expr in CallExpr");
+	return false;
+      }
+
+    auto resolved_argument_type = fnparam->unify (argument_expr_tyty);
     if (resolved_argument_type == nullptr)
       {
 	rust_error_at (param->get_locus_slow (),

@@ -315,6 +315,23 @@ public:
       ctx->get_mappings ()->lookup_location (type.get_ref ()));
   }
 
+  void visit (TyTy::FnPtr &type) override
+  {
+    Btype *result_type
+      = TyTyResolveCompile::compile (ctx, type.get_return_type ());
+
+    std::vector<Btype *> parameters;
+    type.iterate_params ([&] (TyTy::BaseType *p) mutable -> bool {
+      Btype *pty = TyTyResolveCompile::compile (ctx, p);
+      parameters.push_back (pty);
+      return true;
+    });
+
+    translated = ctx->get_backend ()->function_ptr_type (
+      result_type, parameters,
+      ctx->get_mappings ()->lookup_location (type.get_ref ()));
+  }
+
   void visit (TyTy::UnitType &) override
   {
     translated = ctx->get_backend ()->void_type ();

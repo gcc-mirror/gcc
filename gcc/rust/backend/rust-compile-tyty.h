@@ -58,6 +58,8 @@ public:
 
   void visit (TyTy::ParamType &) override { gcc_unreachable (); }
 
+  void visit (TyTy::FnPtr &type) override { gcc_unreachable (); }
+
   void visit (TyTy::UnitType &) override { translated = backend->void_type (); }
 
   void visit (TyTy::FnType &type) override

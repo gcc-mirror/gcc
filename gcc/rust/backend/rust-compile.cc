@@ -62,7 +62,9 @@ CompileExpr::visit (HIR::CallExpr &expr)
     }
 
   // must be a tuple constructor
-  if (tyty->get_kind () != TyTy::TypeKind::FNDEF)
+  bool is_fn = tyty->get_kind () == TyTy::TypeKind::FNDEF
+	       || tyty->get_kind () == TyTy::TypeKind::FNPTR;
+  if (!is_fn)
     {
       Btype *type = TyTyResolveCompile::compile (ctx, tyty);
 

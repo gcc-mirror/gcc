@@ -170,7 +170,7 @@ public:
 
     // need to get the return type from this
     TyTy::FnType *resolve_fn_type = (TyTy::FnType *) lookup;
-    auto expected_ret_tyty = resolve_fn_type->return_type ();
+    auto expected_ret_tyty = resolve_fn_type->get_return_type ();
     context->push_return_type (expected_ret_tyty);
 
     auto result = TypeCheckExpr::Resolve (function.function_body.get (), false);
@@ -202,7 +202,7 @@ public:
 
     // need to get the return type from this
     TyTy::FnType *resolve_fn_type = (TyTy::FnType *) lookup;
-    auto expected_ret_tyty = resolve_fn_type->return_type ();
+    auto expected_ret_tyty = resolve_fn_type->get_return_type ();
     context->push_return_type (expected_ret_tyty);
 
     auto result

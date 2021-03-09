@@ -206,6 +206,8 @@ public:
 			const std::vector<Btyped_identifier> &, Btype *,
 			const Location);
 
+  Btype *function_ptr_type (Btype *, const std::vector<Btype *> &, Location);
+
   Btype *struct_type (const std::vector<Btyped_identifier> &);
 
   Btype *array_type (Btype *, Bexpression *);
@@ -980,6 +982,37 @@ Gcc_backend::function_type (const Btyped_identifier &receiver,
   // returns a zero-sized value as returning void.  That should do no
   // harm since there is no actual value to be returned.  See
   // https://gcc.gnu.org/PR72814 for details.
+  if (result != void_type_node && int_size_in_bytes (result) == 0)
+    result = void_type_node;
+
+  tree fntype = build_function_type (result, args);
+  if (fntype == error_mark_node)
+    return this->error_type ();
+
+  return this->make_type (build_pointer_type (fntype));
+}
+
+Btype *
+Gcc_backend::function_ptr_type (Btype *result_type,
+				const std::vector<Btype *> &parameters,
+				Location locus)
+{
+  tree args = NULL_TREE;
+  tree *pp = &args;
+
+  for (auto &param : parameters)
+    {
+      tree t = param->get_tree ();
+      if (t == error_mark_node)
+	return this->error_type ();
+
+      *pp = tree_cons (NULL_TREE, t, NULL_TREE);
+      pp = &TREE_CHAIN (*pp);
+    }
+
+  *pp = void_list_node;
+
+  tree result = result_type->get_tree ();
   if (result != void_type_node && int_size_in_bytes (result) == 0)
     result = void_type_node;
 

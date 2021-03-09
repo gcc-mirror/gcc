@@ -169,7 +169,8 @@ public:
       return;
 
     bool valid_tyty = function_tyty->get_kind () == TyTy::TypeKind::ADT
-		      || function_tyty->get_kind () == TyTy::TypeKind::FNDEF;
+		      || function_tyty->get_kind () == TyTy::TypeKind::FNDEF
+		      || function_tyty->get_kind () == TyTy::TypeKind::FNPTR;
     if (!valid_tyty)
       {
 	rust_error_at (expr.get_locus (),
