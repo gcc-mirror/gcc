@@ -8723,9 +8723,12 @@ Parser<ManagedTokenSource>::parse_array_expr (
       // no array elements
       lexer.skip_token ();
 
-      return std::unique_ptr<AST::ArrayExpr> (
-	new AST::ArrayExpr (nullptr, std::move (inner_attrs),
-			    std::move (outer_attrs), locus));
+      std::vector<std::unique_ptr<AST::Expr>> exprs;
+      auto array_elems
+	= Rust::make_unique<AST::ArrayElemsValues> (std::move (exprs));
+      return Rust::make_unique<AST::ArrayExpr> (std::move (array_elems),
+						std::move (inner_attrs),
+						std::move (outer_attrs), locus);
     }
   else
     {
