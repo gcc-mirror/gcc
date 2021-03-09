@@ -79,6 +79,12 @@ typedef char bool;
    (SJLJ or DWARF). We need a consistently named interface to import from
    a-except, so wrappers are defined here.  */
 
+#ifdef __CYGWIN__
+/* Prevent compile error due to unwind-generic.h including <windows.h>,
+   see comment above #include <windows.h> in mingw32.h.  */
+#include "mingw32.h"
+#endif
+
 #ifndef IN_RTS
   /* For gnat1/gnatbind compilation: cannot use unwind.h, as it is for the
      target. So mimic configure...
