@@ -4924,7 +4924,7 @@ tree
 gimple_call_alloc_size (gimple *stmt, wide_int rng1[2] /* = NULL */,
 			range_query * /* = NULL */)
 {
-  if (!stmt)
+  if (!stmt || !is_gimple_call (stmt))
     return NULL_TREE;
 
   tree allocfntype;
