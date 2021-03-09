@@ -1,6 +1,6 @@
 -- { dg-do compile }
 -- { dg-options "-O2 -fno-inline -fdump-tree-optimized" }
--- { dg-additional-options "-cargs --param=sra-max-scalarization-size-Ospeed=32 -margs" { target powerpc*-*-* } }
+-- { dg-additional-options "-cargs --param=sra-max-scalarization-size-Ospeed=32 -margs" { target aarch64-*-* powerpc*-*-* } }
 
 procedure Opt39 (I : Integer) is
 
