@@ -1,3 +1,82 @@
+2021-03-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98266
+	* gimple-array-bounds.cc (inbounds_vbase_memaccess_p): New function.
+	(array_bounds_checker::check_array_bounds): Call it.
+
+2021-03-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97631
+	* tree-ssa-strlen.c (maybe_warn_overflow): Test rawmem.
+	(handle_builtin_stxncpy_strncat): Rename locals.  Determine
+	destination size from allocation calls.  Issue a more appropriate
+	kind of warning.
+	(handle_builtin_memcpy): Pass true as rawmem to maybe_warn_overflow.
+	(handle_builtin_memset): Same.
+
+2021-03-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/98959
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_permute): Add an assert
+	to ensure we do not have an Altivec style address.
+	* config/rs6000/vsx.md (*vsx_le_perm_load_<mode>): Disable if passed
+	an Altivec style address.
+	(*vsx_le_perm_store_<mode>): Likewise.
+	(splitters after *vsx_le_perm_store_<mode>): Likewise.
+	(vsx_load_<mode>): Disable special expander if passed an Altivec
+	style address.
+	(vsx_store_<mode>): Likewise.
+
+2021-03-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99437
+	* config/aarch64/predicates.md (aarch64_simd_shift_imm_vec_qi): Define.
+	(aarch64_simd_shift_imm_vec_hi): Likewise.
+	(aarch64_simd_shift_imm_vec_si): Likewise.
+	(aarch64_simd_shift_imm_vec_di): Likewise.
+	* config/aarch64/aarch64-simd.md (aarch64_shrn<mode>_insn_le): Use
+	predicate from above.
+	(aarch64_shrn<mode>_insn_be): Likewise.
+	(aarch64_rshrn<mode>_insn_le): Likewise.
+	(aarch64_rshrn<mode>_insn_be): Likewise.
+	(aarch64_shrn2<mode>_insn_le): Likewise.
+	(aarch64_shrn2<mode>_insn_be): Likewise.
+	(aarch64_rshrn2<mode>_insn_le): Likewise.
+	(aarch64_rshrn2<mode>_insn_be): Likewise.
+
+2021-03-08  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99422
+	* lra-constraints.c (skip_contraint_modifiers): New function.
+	(process_address_1): Use it before lookup_constraint call.
+
+2021-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR target/99463
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Enable UINTR and HRESET for -march that supports it.
+
+2021-03-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (f_constraint_p): New function.
+	(s390_md_asm_adjust): Implement TARGET_MD_ASM_ADJUST.
+	(TARGET_MD_ASM_ADJUST): Likewise.
+
+2021-03-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97927
+	* tree-nested.c (convert_local_reference_stmt): Avoid calling
+	lookup_field_for_decl for Fortran module (= namespace context).
+
+2021-03-08  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_expand_vec_compare): Implement <0
+	comparison with arithmetic right shift.
+	(s390_expand_vcond): No need for a force_reg anymore.
+	s390_vec_compare will do it.
+	* config/s390/vector.md ("vec_cmp<mode><tointvec>"): Accept also
+	immediate operands.
+
 2021-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/99321

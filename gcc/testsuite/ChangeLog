@@ -1,3 +1,86 @@
+2021-03-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/49278
+	* gfortran.dg/parameter_data.f90: New test.
+
+2021-03-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98266
+	* g++.dg/warn/Warray-bounds-15.C: New test.
+	* g++.dg/warn/Warray-bounds-18.C: New test.
+	* g++.dg/warn/Warray-bounds-19.C: New test.
+	* g++.dg/warn/Warray-bounds-20.C: New test.
+	* g++.dg/warn/Warray-bounds-21.C: New test.
+
+2021-03-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97631
+	* c-c++-common/Wstringop-overflow.c: Remove unexpected warnings.
+	Add an xfail.
+	* c-c++-common/Wstringop-truncation.c: Add expected warnings.
+	* gcc.dg/Wstringop-overflow-10.c: Also enable -Wstringop-truncation.
+	* gcc.dg/Wstringop-overflow-66.c: New test.
+	* gcc.dg/tree-ssa/strncpy-2.c: Adjust expected warning.
+
+2021-03-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96268
+	* g++.dg/cpp2a/nontype-class41.C: New test.
+
+2021-03-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99436
+	* g++.dg/modules/modules.exp (MOD_STD_LIST): Add 2b.
+
+2021-03-08  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/pr99468.H: New.
+
+2021-03-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/98959
+	* gcc.target/powerpc/pr98959.c: New test.
+
+2021-03-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99285
+	* g++.dg/modules/pr99285_a.H: New.
+	* g++.dg/modules/pr99285_b.H: New.
+
+2021-03-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99437
+	* gcc.target/aarch64/simd/pr99437.c: New test.
+
+2021-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/98920
+	* c-c++-common/asan/pr98920.c: New test.
+
+2021-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR target/99463
+	* gcc.target/i386/pr99463-2.c: New test.
+	* gcc.target/i386/pr99463.c: New test.
+
+2021-03-08  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/vector/long-double-asm-commutative.c: New
+	test.
+	* gcc.target/s390/vector/long-double-asm-earlyclobber.c: New
+	test.
+	* gcc.target/s390/vector/long-double-asm-in-out.c: New test.
+	* gcc.target/s390/vector/long-double-asm-inout.c: New test.
+	* gcc.target/s390/vector/long-double-asm-matching.c: New test.
+	* gcc.target/s390/vector/long-double-asm-regmem.c: New test.
+	* gcc.target/s390/vector/long-double-volatile-from-i64.c: New
+	test.
+
+2021-03-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97927
+	* gfortran.dg/module_variable_3.f90: New test.
+
 2021-03-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/99321

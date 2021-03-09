@@ -1,3 +1,27 @@
+2021-03-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99436
+	* name-lookup.c (get_cxx_dialect_name): Add cxx23.
+
+2021-03-08  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (module_token_filter::resume): Ignore module-decls inside
+	header-unit.
+	* parser.c (cp_parser_module_declaration): Reject in header-unit.
+
+2021-03-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99285
+	* cp-tree.h (match_mergeable_specialization)
+	(add_mergeable_specialization): Adjust parms.
+	* module.cc (trees_in::decl_value): Adjust
+	add_mergeable_specialization calls.
+	(trees_out::key_mergeable): Adjust match_mergeable_specialization
+	calls.
+	(specialization_add): Likewise.
+	* pt.c (match_mergeable_specialization): Do not insert.
+	(add_mergeable_specialization): Add to hash table here.
+
 2021-03-06  Patrick Palka  <ppalka@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
