@@ -2490,9 +2490,8 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   locus = gimple_location (assign);
   lhs = gimple_assign_lhs (assign);
   rhs = gimple_assign_rhs1 (assign);
-  if ((TREE_CODE (lhs) != MEM_REF
-       && TREE_CODE (lhs) != ARRAY_REF
-       && TREE_CODE (lhs) != COMPONENT_REF)
+  if ((!REFERENCE_CLASS_P (lhs)
+       && !DECL_P (lhs))
       || !is_gimple_reg_type (TREE_TYPE (lhs)))
     return false;
 
