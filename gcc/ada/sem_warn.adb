@@ -3745,171 +3745,150 @@ package body Sem_Warn is
             return;
          end if;
 
-         --  One of the formals must be either (in)-out or composite.
-         --  The other must be (in)-out.
+         Form2 := Next_Formal (Form1);
+         Act2  := Next_Actual (Act1);
+         while Present (Form2) and then Present (Act2) loop
+            if Refer_Same_Object (Act1, Act2) then
+               if Is_Generic_Type (Etype (Act2)) then
+                  return;
+               end if;
 
-         if Is_Elementary_Type (Etype (Act1))
-           and then Ekind (Form1) = E_In_Parameter
-         then
-            null;
+               --  Case 1: two writable elementary parameters that overlap
 
-         else
-            Form2 := Next_Formal (Form1);
-            Act2  := Next_Actual (Act1);
-            while Present (Form2) and then Present (Act2) loop
-               if Refer_Same_Object (Act1, Act2) then
-                  if Is_Generic_Type (Etype (Act2)) then
-                     return;
-                  end if;
+               if (Is_Elementary_Type (Etype (Form1))
+                 and then Is_Elementary_Type (Etype (Form2))
+                 and then Ekind (Form1) /= E_In_Parameter
+                 and then Ekind (Form2) /= E_In_Parameter)
 
-                  --  First case : two writable elementary parameters
-                  --  that overlap.
+               --  Case 2: two composite parameters that overlap, one of
+               --  which is writable.
 
-                  if (Is_Elementary_Type (Etype (Form1))
-                    and then Is_Elementary_Type (Etype (Form2))
-                    and then Ekind (Form1) /= E_In_Parameter
-                    and then Ekind (Form2) /= E_In_Parameter)
+                 or else (Is_Composite_Type (Etype (Form1))
+                  and then Is_Composite_Type (Etype (Form2))
+                  and then (Ekind (Form1) /= E_In_Parameter
+                    or else Ekind (Form2) /= E_In_Parameter))
 
-                  --  Second case : two composite parameters that overlap,
-                  --  one of which is writable.
+               --  Case 3: an elementary writable parameter that overlaps
+               --  a composite one.
 
-                    or else (Is_Composite_Type (Etype (Form1))
-                     and then Is_Composite_Type (Etype (Form2))
-                     and then (Ekind (Form1) /= E_In_Parameter
-                       or else Ekind (Form2) /= E_In_Parameter))
+                 or else (Is_Elementary_Type (Etype (Form1))
+                  and then Ekind (Form1) /= E_In_Parameter
+                  and then Is_Composite_Type (Etype (Form2)))
 
-                  --  Third case : an elementary writable parameter that
-                  --  overlaps a composite one.
+                or else (Is_Elementary_Type (Etype (Form2))
+                  and then Ekind (Form2) /= E_In_Parameter
+                  and then Is_Composite_Type (Etype (Form1)))
+               then
 
-                    or else (Is_Elementary_Type (Etype (Form1))
-                     and then Ekind (Form1) /= E_In_Parameter
-                     and then Is_Composite_Type (Etype (Form2)))
+               --  Guard against previous errors
 
-                   or else (Is_Elementary_Type (Etype (Form2))
-                     and then Ekind (Form2) /= E_In_Parameter
-                     and then Is_Composite_Type (Etype (Form1)))
+                  if Error_Posted (N)
+                    or else No (Etype (Act1))
+                    or else No (Etype (Act2))
                   then
+                     null;
 
-                  --  Guard against previous errors
+                  --  If the actual is a function call in prefix notation,
+                  --  there is no real overlap.
 
-                     if Error_Posted (N)
-                       or else No (Etype (Act1))
-                       or else No (Etype (Act2))
+                  elsif Nkind (Act2) = N_Function_Call then
+                     null;
+
+                  --  If type is explicitly not by-copy, assume that
+                  --  aliasing is intended.
+
+                  elsif
+                    Present (Underlying_Type (Etype (Form1)))
+                      and then
+                        (Is_By_Reference_Type
+                          (Underlying_Type (Etype (Form1)))
+                          or else
+                            Convention (Underlying_Type (Etype (Form1))) =
+                                         Convention_Ada_Pass_By_Reference)
+                  then
+                     null;
+
+                  --  Under Ada 2012 we only report warnings on overlapping
+                  --  arrays and record types if switch is set.
+
+                  elsif Ada_Version >= Ada_2012
+                    and then not Is_Elementary_Type (Etype (Form1))
+                    and then not Warn_On_Overlap
+                  then
+                     null;
+
+                  --  Here we may need to issue overlap message
+
+                  else
+                     Error_Msg_Warn :=
+
+                       --  Overlap checking is an error only in Ada 2012. For
+                       --  earlier versions of Ada, this is a warning.
+
+                       Ada_Version < Ada_2012
+
+                       --  Overlap is only illegal in Ada 2012 in the case of
+                       --  elementary types (passed by copy). For other types
+                       --  we always have a warning in all versions. This is
+                       --  clarified by AI12-0216.
+
+                       or else not
+                        (Is_Elementary_Type (Etype (Form1))
+                         and then Is_Elementary_Type (Etype (Form2)))
+
+                       --  debug flag -gnatd.E changes the error to a warning
+                       --  even in Ada 2012 mode.
+
+                       or else Error_To_Warning;
+
+                     --  If the call was written in prefix notation, and thus
+                     --  its prefix before rewriting was a selected component,
+                     --  count only visible actuals in call.
+
+                     if Is_Entity_Name (First_Actual (N))
+                       and then Nkind (Original_Node (N)) = Nkind (N)
+                       and then Nkind (Name (Original_Node (N))) =
+                                                     N_Selected_Component
+                       and then
+                         Is_Entity_Name (Prefix (Name (Original_Node (N))))
+                       and then
+                         Entity (Prefix (Name (Original_Node (N)))) =
+                           Entity (First_Actual (N))
                      then
-                        null;
-
-                     --  If the actual is a function call in prefix notation,
-                     --  there is no real overlap.
-
-                     elsif Nkind (Act2) = N_Function_Call then
-                        null;
-
-                     --  If type is explicitly not by-copy, assume that
-                     --  aliasing is intended.
-
-                     elsif
-                       Present (Underlying_Type (Etype (Form1)))
-                         and then
-                           (Is_By_Reference_Type
-                             (Underlying_Type (Etype (Form1)))
-                             or else
-                               Convention (Underlying_Type (Etype (Form1))) =
-                                            Convention_Ada_Pass_By_Reference)
-                     then
-                        null;
-
-                     --  Under Ada 2012 we only report warnings on overlapping
-                     --  arrays and record types if switch is set.
-
-                     elsif Ada_Version >= Ada_2012
-                       and then not Is_Elementary_Type (Etype (Form1))
-                       and then not Warn_On_Overlap
-                     then
-                        null;
-
-                     --  Here we may need to issue overlap message
-
-                     else
-                        Error_Msg_Warn :=
-
-                          --  Overlap checking is an error only in Ada 2012.
-                          --  For earlier versions of Ada, this is a warning.
-
-                          Ada_Version < Ada_2012
-
-                          --  Overlap is only illegal in Ada 2012 in the case
-                          --  of elementary types (passed by copy). For other
-                          --  types we always have a warning in all versions.
-                          --  This is clarified by AI12-0216.
-
-                          or else not
-                           (Is_Elementary_Type (Etype (Form1))
-                            and then Is_Elementary_Type (Etype (Form2)))
-
-                          --  debug flag -gnatd.E changes the error to a
-                          --  warning even in Ada 2012 mode.
-
-                          or else Error_To_Warning;
-
-                        if Is_Elementary_Type (Etype (Act1))
-                          and then Ekind (Form2) = E_In_Parameter
-                        then
-                           null;  --  No real aliasing
-
-                        elsif Is_Elementary_Type (Etype (Act2))
-                          and then Ekind (Form2) = E_In_Parameter
-                        then
-                           null;  --  Ditto
-
-                        --  If the call was written in prefix notation, and
-                        --  thus its prefix before rewriting was a selected
-                        --  component, count only visible actuals in call.
-
-                        elsif Is_Entity_Name (First_Actual (N))
-                          and then Nkind (Original_Node (N)) = Nkind (N)
-                          and then Nkind (Name (Original_Node (N))) =
-                                                        N_Selected_Component
-                          and then
-                            Is_Entity_Name (Prefix (Name (Original_Node (N))))
-                          and then
-                            Entity (Prefix (Name (Original_Node (N)))) =
-                              Entity (First_Actual (N))
-                        then
-                           if Act1 = First_Actual (N) then
-                              Error_Msg_FE
-                                ("<I<`IN OUT` prefix overlaps with "
-                                 & "actual for&", Act1, Form2);
-
-                           else
-                              --  For greater clarity, give name of formal
-
-                              Error_Msg_Node_2 := Form2;
-                              Error_Msg_FE
-                                ("<I<writable actual for & overlaps with "
-                                 & "actual for&", Act1, Form2);
-                           end if;
+                        if Act1 = First_Actual (N) then
+                           Error_Msg_FE
+                             ("<I<`IN OUT` prefix overlaps with "
+                              & "actual for&", Act1, Form2);
 
                         else
                            --  For greater clarity, give name of formal
 
                            Error_Msg_Node_2 := Form2;
-
-                           --  This is one of the messages
-
                            Error_Msg_FE
                              ("<I<writable actual for & overlaps with "
-                              & "actual for&", Act1, Form1);
+                              & "actual for&", Act1, Form2);
                         end if;
+
+                     else
+                        --  For greater clarity, give name of formal
+
+                        Error_Msg_Node_2 := Form2;
+
+                        --  This is one of the messages
+
+                        Error_Msg_FE
+                          ("<I<writable actual for & overlaps with "
+                           & "actual for&", Act1, Form1);
                      end if;
                   end if;
-
-                  return;
                end if;
 
-               Next_Formal (Form2);
-               Next_Actual (Act2);
-            end loop;
-         end if;
+               return;
+            end if;
+
+            Next_Formal (Form2);
+            Next_Actual (Act2);
+         end loop;
 
          Next_Formal (Form1);
          Next_Actual (Act1);
