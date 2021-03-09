@@ -863,16 +863,17 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
 	     final awaiter, so check for a non-throwing DTOR where needed.  */
 	  tree a_type = TREE_TYPE (a);
 	  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (a_type))
-	    {
-	      tree dummy
+	    if (tree dummy
 		= build_special_member_call (a, complete_dtor_identifier,
 					     NULL, a_type, LOOKUP_NORMAL,
-					     tf_none);
-	      dummy = dummy ? TREE_OPERAND (CALL_EXPR_FN (dummy), 0)
-			    : NULL_TREE;
-	      if (dummy && coro_diagnose_throwing_fn (dummy))
-		return error_mark_node;
-	    }
+					     tf_none))
+	      {
+		if (CONVERT_EXPR_P (dummy))
+		  dummy = TREE_OPERAND (dummy, 0);
+		dummy = TREE_OPERAND (CALL_EXPR_FN (dummy), 0);
+		if (coro_diagnose_throwing_fn (dummy))
+		  return error_mark_node;
+	      }
 	}
     }
   else
@@ -1026,16 +1027,17 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
       if (coro_diagnose_throwing_fn (awrs_func))
 	return error_mark_node;
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (o_type))
-	{
-	  tree dummy
+	if (tree dummy
 	    = build_special_member_call (e_proxy, complete_dtor_identifier,
 					 NULL, o_type, LOOKUP_NORMAL,
-					 tf_none);
-	  dummy = dummy ? TREE_OPERAND (CALL_EXPR_FN (dummy), 0)
-			: NULL_TREE;
-	  if (dummy && coro_diagnose_throwing_fn (dummy))
-	    return error_mark_node;
-	}
+					 tf_none))
+	  {
+	    if (CONVERT_EXPR_P (dummy))
+	      dummy = TREE_OPERAND (dummy, 0);
+	    dummy = TREE_OPERAND (CALL_EXPR_FN (dummy), 0);
+	    if (coro_diagnose_throwing_fn (dummy))
+	      return error_mark_node;
+	  }
     }
 
   /* We now have three call expressions, in terms of the promise, handle and
