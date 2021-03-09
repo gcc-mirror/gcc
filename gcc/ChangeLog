@@ -1,3 +1,13 @@
+2021-03-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (cse_sve_vl_constants):
+	Define.
+	* config/aarch64/aarch64.md (add<mode>3): Force CONST_POLY_INT immediates
+	into a register when the above is enabled.
+	* config/aarch64/aarch64.c (neoversev1_tunings):
+	AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS.
+	(aarch64_rtx_costs): Use AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS.
+
 2021-03-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96078

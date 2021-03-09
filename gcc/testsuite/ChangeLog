@@ -1,3 +1,7 @@
+2021-03-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/sve/cse_sve_vl_constants_1.c: New test.
+
 2021-03-06  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
