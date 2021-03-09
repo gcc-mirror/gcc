@@ -998,16 +998,10 @@
 (define_predicate "ds_form_mem_operand"
   (match_code "subreg,mem")
 {
-  rtx inner, addr, offset;
-
-  inner = op;
-  if (reload_completed && SUBREG_P (inner))
-    inner = SUBREG_REG (inner);
-
-  if (!any_memory_operand (inner, mode))
+  if (!any_memory_operand (op, mode))
     return false;
 
-  addr = XEXP (inner, 0);
+  rtx addr = XEXP (op, 0);
 
   return address_to_insn_form (addr, mode, NON_PREFIXED_DS) == INSN_FORM_DS;
 })
