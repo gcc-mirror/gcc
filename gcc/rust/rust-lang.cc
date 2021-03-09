@@ -31,7 +31,6 @@
 #include "convert.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
-#include "common/common-target.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
@@ -39,7 +38,7 @@
 // seems to mess it up
 /* Order: config, system, coretypes, target, tree, gimple-expr, diagnostic,
  * opts, fold-const, gimplify, stor-layout, debug, convert, langhooks,
- * langhooks-def, common-target */
+ * langhooks-def */
 
 // FIXME: test saving intellisense
 #include "options.h"
@@ -59,8 +58,6 @@
 
 #include "rust-system.h"
 #include "rust-session-manager.h"
-
-#include "rust-target.h"
 
 // Language-dependent contents of a type. GTY() mark used for garbage collector.
 struct GTY (()) lang_type
