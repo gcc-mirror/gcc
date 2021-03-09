@@ -3,10 +3,13 @@
 
 #include <stdio.h>
 #include <sys/types.h>
+#if __has_include(<regex.h>)
 #include <regex.h>
+#endif
 
 int main(void)
 {
+#ifdef REG_STARTEND
     regex_t r;
     const char s[] = "ban\0ana";
     regmatch_t pmatch[10];
@@ -20,5 +23,6 @@ int main(void)
         return 3;
     }
     regfree(&r);
+#endif
     return 0;
 }

@@ -808,14 +808,14 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
     nonzero_arg = arg0;
   else
     return false;
-  if (integer_all_onesp (nonzero_arg))
-    neg = true;
-  else if (integer_pow2p (nonzero_arg))
+  if (integer_pow2p (nonzero_arg))
     {
       shift = tree_log2 (nonzero_arg);
       if (shift && POINTER_TYPE_P (TREE_TYPE (nonzero_arg)))
 	return false;
     }
+  else if (integer_all_onesp (nonzero_arg))
+    neg = true;
   else
     return false;
 

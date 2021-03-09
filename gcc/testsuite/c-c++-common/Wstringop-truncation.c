@@ -226,19 +226,18 @@ void test_strncpy_ptr (char *d, const char* s, const char *t, int i)
   }
 
   {
-    /* The following is likely buggy but there's no apparent truncation
-       so it's not diagnosed by -Wstringop-truncation.  Instead, it is
-       diagnosed by -Wstringop-overflow (tested elsewhere).  */
+    /* The following truncates the terminating nul.  The warning should
+       say that but doesn't.  */
     int n;
     n = strlen (s) - 1;
-    CPY (d, s, n);
+    CPY (d, s, n);                  /* { dg-warning "\\\[-Wstringop-truncation" } */
   }
 
   {
     /* Same as above.  */
     size_t n;
     n = strlen (s) - 1;
-    CPY (d, s, n);
+    CPY (d, s, n);                  /* { dg-warning "\\\[-Wstringop-truncation" } */
   }
 
   {

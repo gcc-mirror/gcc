@@ -890,6 +890,50 @@ array_bounds_checker::check_addr_expr (location_t location, tree t)
     }
 }
 
+/* Return true if T is a reference to a member of a base class that's within
+   the bounds of the enclosing complete object.  The function "hacks" around
+   problems discussed in pr98266 and pr97595.  */
+
+static bool
+inbounds_vbase_memaccess_p (tree t)
+{
+  if (TREE_CODE (t) != COMPONENT_REF)
+    return false;
+
+  tree mref = TREE_OPERAND (t, 0);
+  if (TREE_CODE (mref) != MEM_REF)
+    return false;
+
+  /* Consider the access if its type is a derived class.  */
+  tree mreftype = TREE_TYPE (mref);
+  if (!RECORD_OR_UNION_TYPE_P (mreftype)
+      || !TYPE_BINFO (mreftype))
+    return false;
+
+  /* Compute the size of the referenced object (it could be dynamically
+     allocated).  */
+  access_ref aref;   // unused
+  tree refop = TREE_OPERAND (mref, 0);
+  tree refsize = compute_objsize (refop, 1, &aref);
+  if (!refsize || TREE_CODE (refsize) != INTEGER_CST)
+    return false;
+
+  /* Compute the byte offset of the member within its enclosing class.  */
+  tree fld = TREE_OPERAND (t, 1);
+  tree fldpos = byte_position (fld);
+  if (TREE_CODE (fldpos) != INTEGER_CST)
+    return false;
+
+  /* Compute the byte offset of the member with the outermost complete
+     object by adding its offset computed above to the MEM_REF offset.  */
+  tree refoff = TREE_OPERAND (mref, 1);
+  tree fldoff = int_const_binop (PLUS_EXPR, fldpos, refoff);
+
+  /* Return true if the member offset is less than the size of the complete
+     object.  */
+  return tree_int_cst_lt (fldoff, refsize);
+}
+
 /* Callback for walk_tree to check a tree for out of bounds array
    accesses.  The array_bounds_checker class is passed in DATA.  */
 
@@ -919,8 +963,14 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
   else if (TREE_CODE (t) == ADDR_EXPR)
     {
       checker->check_addr_expr (location, t);
-      *walk_subtree = FALSE;
+      *walk_subtree = false;
     }
+  else if (inbounds_vbase_memaccess_p (t))
+    /* Hack: Skip MEM_REF checks in accesses to a member of a base class
+       at an offset that's within the bounds of the enclosing object.
+       See pr98266 and pr97595.  */
+    *walk_subtree = false;
+
   /* Propagate the no-warning bit to the outer expression.  */
   if (warned)
     TREE_NO_WARNING (t) = true;

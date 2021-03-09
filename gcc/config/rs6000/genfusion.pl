@@ -56,7 +56,7 @@ sub mode_to_ldst_char
 sub gen_ld_cmpi_p10
 {
     my ($lmode, $ldst, $clobbermode, $result, $cmpl, $echr, $constpred,
-	$ccmode, $np, $extend, $resultmode);
+	$mempred, $ccmode, $np, $extend, $resultmode);
   LMODE: foreach $lmode ('DI','SI','HI','QI') {
       $ldst = mode_to_ldst_char($lmode);
       $clobbermode = $lmode;
@@ -70,11 +70,13 @@ sub gen_ld_cmpi_p10
 	$result = "GPR" if $result eq "EXTQI";
       CCMODE: foreach $ccmode ('CC','CCUNS') {
 	  $np = "NON_PREFIXED_D";
+	  $mempred = "non_update_memory_operand";
 	  if ( $ccmode eq 'CC' ) {
 	      next CCMODE if $lmode eq 'QI';
 	      if ( $lmode eq 'DI' || $lmode eq 'SI' ) {
 		  # ld and lwa are both DS-FORM.
 		  $np = "NON_PREFIXED_DS";
+		  $mempred = "ds_form_mem_operand";
 	      }
 	      $cmpl = "";
 	      $echr = "a";
@@ -83,6 +85,7 @@ sub gen_ld_cmpi_p10
 	      if ( $lmode eq 'DI' ) {
 		  # ld is DS-form, but lwz is not.
 		  $np = "NON_PREFIXED_DS";
+		  $mempred = "ds_form_mem_operand";
 	      }
 	      $cmpl = "l";
 	      $echr = "z";
@@ -105,7 +108,7 @@ sub gen_ld_cmpi_p10
 
 	  print "(define_insn_and_split \"*l${ldst}${echr}_cmp${cmpl}di_cr0_${lmode}_${result}_${ccmode}_${extend}\"\n";
 	  print "  [(set (match_operand:${ccmode} 2 \"cc_reg_operand\" \"=x\")\n";
-	  print "        (compare:${ccmode} (match_operand:${lmode} 1 \"non_update_memory_operand\" \"m\")\n";
+	  print "        (compare:${ccmode} (match_operand:${lmode} 1 \"${mempred}\" \"m\")\n";
 	  if ($ccmode eq 'CCUNS') { print "   "; }
 	  print "                    (match_operand:${lmode} 3 \"${constpred}\" \"n\")))\n";
 	  if ($result eq 'clobber') {

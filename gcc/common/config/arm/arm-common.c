@@ -248,7 +248,7 @@ check_isa_bits_for (const enum isa_feature* bits, enum isa_feature bit)
 static const char *
 arm_config_default (const char *name)
 {
-  int i;
+  unsigned i;
 
   if (configure_default_options[0].name == NULL)
     return NULL;
