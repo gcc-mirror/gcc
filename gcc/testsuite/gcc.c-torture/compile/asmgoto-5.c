@@ -1,7 +1,6 @@
 /* Test to generate output reload in asm goto on x86_64.  */
-/* { dg-do compile } */
+/* { dg-do compile { target lra } } */
 /* { dg-skip-if "no O0" { { i?86-*-* x86_64-*-* } && { ! ia32 } } { "-O0" } { "" } } */
-/* { dg-skip-if "Reload target" { hppa*-*-* } } */
 
 #if defined __x86_64__
 #define ASM(s) asm (s)

@@ -1,5 +1,5 @@
 /* PR rtl-optimization/97954 */
-/* { dg-do compile } */
+/* { dg-do compile { target lra } } */
 /* { dg-options "-O2" } */
 
 int
