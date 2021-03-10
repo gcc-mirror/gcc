@@ -7301,6 +7301,9 @@ package body Sem_Util is
             return False;
          end if;
 
+         --  Check if any expression within the renamed object_name contains no
+         --  references to variables nor calls on nonstatic functions.
+
          if Nkind (N) = N_Indexed_Component then
             declare
                Indx : Node_Id;
@@ -7314,6 +7317,33 @@ package body Sem_Util is
 
                   Next_Index (Indx);
                end loop;
+            end;
+
+         elsif Nkind (N) = N_Slice then
+            declare
+               Rng : constant Node_Id := Discrete_Range (N);
+            begin
+               --  Bounds specified as a range
+
+               if Nkind (Rng) = N_Range then
+                  if not Is_OK_Static_Range (Rng) then
+                     return False;
+                  end if;
+
+               --  Bounds specified as a constrained subtype indication
+
+               elsif Nkind (Rng) = N_Subtype_Indication then
+                  if not Is_OK_Static_Range
+                       (Range_Expression (Constraint (Rng)))
+                  then
+                     return False;
+                  end if;
+
+               --  Bounds specified as a subtype name
+
+               elsif not Is_OK_Static_Expression (Rng) then
+                  return False;
+               end if;
             end;
          end if;
 
