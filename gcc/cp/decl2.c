@@ -5529,7 +5529,8 @@ cp_warn_deprecated_use_scopes (tree scope)
 	 && scope != error_mark_node
 	 && scope != global_namespace)
     {
-      if (cp_warn_deprecated_use (scope))
+      if ((TREE_CODE (scope) == NAMESPACE_DECL || OVERLOAD_TYPE_P (scope))
+	  && cp_warn_deprecated_use (scope))
 	return;
       if (TYPE_P (scope))
 	scope = CP_TYPE_CONTEXT (scope);
