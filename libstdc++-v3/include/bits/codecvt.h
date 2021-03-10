@@ -38,6 +38,9 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+#include <bits/locale_classes.h> // locale::facet
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

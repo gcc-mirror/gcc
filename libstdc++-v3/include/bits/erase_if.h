@@ -34,6 +34,8 @@
 
 #if __cplusplus >= 201402L
 
+#include <bits/c++config.h>
+
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

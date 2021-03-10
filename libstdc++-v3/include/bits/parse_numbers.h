@@ -36,6 +36,7 @@
 
 #if __cplusplus >= 201402L
 
+#include <type_traits>
 #include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

@@ -36,6 +36,7 @@
 #if __cplusplus > 201703L
 # include <concepts>
 #endif
+#include <bits/concept_check.h> // __glibcxx_function_requires
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -34,6 +34,7 @@
 
 #include <iosfwd>
 #include <bits/cxxabi_forced.h>
+#include <bits/exception_defines.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -32,6 +32,7 @@
 
 #pragma GCC system_header
 
+#include <type_traits>
 #include <bits/hash_bytes.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
