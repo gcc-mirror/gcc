@@ -7294,70 +7294,56 @@ package body Sem_Util is
       -----------------------
 
       function Is_Valid_Renaming (N : Node_Id) return Boolean is
-         function Check_Renaming (N : Node_Id) return Boolean;
-         --  Recursive function used to traverse all the prefixes of N
+      begin
+         if Is_Renaming (N)
+           and then not Is_Valid_Renaming (Renamed_Entity (Entity (N)))
+         then
+            return False;
+         end if;
 
-         --------------------
-         -- Check_Renaming --
-         --------------------
+         if Nkind (N) = N_Indexed_Component then
+            declare
+               Indx : Node_Id;
 
-         function Check_Renaming (N : Node_Id) return Boolean is
-         begin
-            if Is_Renaming (N)
-              and then not Check_Renaming (Renamed_Entity (Entity (N)))
-            then
-               return False;
-            end if;
-
-            if Nkind (N) = N_Indexed_Component then
-               declare
-                  Indx : Node_Id;
-
-               begin
-                  Indx := First (Expressions (N));
-                  while Present (Indx) loop
-                     if not Is_OK_Static_Expression (Indx) then
-                        return False;
-                     end if;
-
-                     Next_Index (Indx);
-                  end loop;
-               end;
-            end if;
-
-            if Has_Prefix (N) then
-               declare
-                  P : constant Node_Id := Prefix (N);
-
-               begin
-                  if Nkind (N) = N_Explicit_Dereference
-                    and then Is_Variable (P)
-                  then
-                     return False;
-
-                  elsif Is_Entity_Name (P)
-                    and then Ekind (Entity (P)) = E_Function
-                  then
-                     return False;
-
-                  elsif Nkind (P) = N_Function_Call then
+            begin
+               Indx := First (Expressions (N));
+               while Present (Indx) loop
+                  if not Is_OK_Static_Expression (Indx) then
                      return False;
                   end if;
 
-                  --  Recursion to continue traversing the prefix of the
-                  --  renaming expression
+                  Next_Index (Indx);
+               end loop;
+            end;
+         end if;
 
-                  return Check_Renaming (P);
-               end;
-            end if;
+         if Has_Prefix (N) then
+            declare
+               P : constant Node_Id := Prefix (N);
 
-            return True;
-         end Check_Renaming;
+            begin
+               if Nkind (N) = N_Explicit_Dereference
+                 and then Is_Variable (P)
+               then
+                  return False;
 
-      --  Start of processing for Is_Valid_Renaming
+               elsif Is_Entity_Name (P)
+                 and then Ekind (Entity (P)) = E_Function
+               then
+                  return False;
 
-      begin
-         return Check_Renaming (N);
+               elsif Nkind (P) = N_Function_Call then
+                  return False;
+               end if;
+
+               --  Recursion to continue traversing the prefix of the
+               --  renaming expression
+
+               return Is_Valid_Renaming (P);
+            end;
+         end if;
+
+         return True;
       end Is_Valid_Renaming;
 
       --  Local variables
