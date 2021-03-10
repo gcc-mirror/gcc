@@ -918,6 +918,12 @@ handle_pragma_target(cpp_reader *ARG_UNUSED(dummy))
 
       if (targetm.target_option.pragma_parse (args, NULL_TREE))
 	current_target_pragma = chainon (current_target_pragma, args);
+
+      /* A target pragma can also influence optimization options. */
+      tree current_optimize
+	= build_optimization_node (&global_options, &global_options_set);
+      if (current_optimize != optimization_current_node)
+	optimization_current_node = current_optimize;
     }
 }
 
@@ -1078,12 +1084,14 @@ handle_pragma_pop_options (cpp_reader *ARG_UNUSED(dummy))
       target_option_current_node = p->target_binary;
     }
 
+  /* Always restore optimization options as optimization_current_node is
+   * overwritten by invoke_set_current_function_hook.  */
+  cl_optimization_restore (&global_options, &global_options_set,
+			   TREE_OPTIMIZATION (p->optimize_binary));
+
   if (p->optimize_binary != optimization_current_node)
     {
-      tree old_optimize = optimization_current_node;
-      cl_optimization_restore (&global_options, &global_options_set,
-			       TREE_OPTIMIZATION (p->optimize_binary));
-      c_cpp_builtins_optimize_pragma (parse_in, old_optimize,
+      c_cpp_builtins_optimize_pragma (parse_in, optimization_current_node,
 				      p->optimize_binary);
       optimization_current_node = p->optimize_binary;
     }

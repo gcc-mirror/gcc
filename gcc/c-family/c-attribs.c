@@ -5383,6 +5383,8 @@ handle_optimize_attribute (tree *node, tree name, tree args,
 
       /* Save current options.  */
       cl_optimization_save (&cur_opts, &global_options, &global_options_set);
+      tree prev_target_node = build_target_option_node (&global_options,
+							&global_options_set);
 
       /* If we previously had some optimization options, use them as the
 	 default.  */
@@ -5401,10 +5403,17 @@ handle_optimize_attribute (tree *node, tree name, tree args,
       parse_optimize_options (args, true);
       DECL_FUNCTION_SPECIFIC_OPTIMIZATION (*node)
 	= build_optimization_node (&global_options, &global_options_set);
+      tree target_node = build_target_option_node (&global_options,
+						   &global_options_set);
+      if (prev_target_node != target_node)
+	DECL_FUNCTION_SPECIFIC_TARGET (*node) = target_node;
 
       /* Restore current options.  */
       cl_optimization_restore (&global_options, &global_options_set,
 			       &cur_opts);
+      cl_target_option_restore (&global_options, &global_options_set,
+				TREE_TARGET_OPTION (prev_target_node));
+
       if (saved_global_options != NULL)
 	{
 	  cl_optimization_compare (saved_global_options, &global_options);

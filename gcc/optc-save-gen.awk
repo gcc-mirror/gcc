@@ -1438,19 +1438,10 @@ print "{"
 checked_options["flag_merge_constants"]++
 checked_options["param_max_fields_for_field_sensitive"]++
 checked_options["flag_omit_frame_pointer"]++
-checked_options["unroll_only_small_loops"]++
 # arc exceptions
 checked_options["TARGET_ALIGN_CALL"]++
 checked_options["TARGET_CASE_VECTOR_PC_RELATIVE"]++
 checked_options["arc_size_opt_level"]++
-# arm exceptions
-checked_options["arm_fp16_format"]++
-checked_options["flag_ipa_ra"]++
-# s390 exceptions
-checked_options["param_max_completely_peel_times"]++
-checked_options["param_max_completely_peeled_insns"]++
-checked_options["param_max_unroll_times"]++
-checked_options["param_max_unrolled_insns"]++
 
 
 for (i = 0; i < n_opts; i++) {
