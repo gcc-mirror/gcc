@@ -17276,7 +17276,7 @@ aarch64_composite_type_p (const_tree type,
    parameter passing registers are available).
 
    Upon successful return, *COUNT returns the number of needed registers,
-   *BASE_MODE returns the mode of the individual register and when IS_HAF
+   *BASE_MODE returns the mode of the individual register and when IS_HA
    is not NULL, *IS_HA indicates whether or not the argument is a homogeneous
    floating-point aggregate or a homogeneous short-vector aggregate.
 
