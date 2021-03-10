@@ -1,4 +1,6 @@
 /* PR target/98959 */
+/* { dg-require-effective-target int128 } */
+/* { dg-require-effective-target lp64 } */  /* for -mcmodel= */
 /* { dg-options "-fno-schedule-insns -O2 -mcmodel=small" } */
 
 /* Verify we do not ICE on the following.  */
