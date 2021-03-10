@@ -5121,6 +5121,8 @@ package body Sem_Ch3 is
          goto Leave;
       end if;
 
+      Check_Wide_Character_Restriction (Parent_Type, Indic);
+
       --  Perhaps the parent type should be changed to the class-wide type's
       --  specific type in this case to prevent cascading errors ???
 
@@ -17120,6 +17122,8 @@ package body Sem_Ch3 is
          Error_Msg_N ("null exclusion can only apply to an access type", N);
       end if;
 
+      Check_Wide_Character_Restriction (Parent_Type, Indic);
+
       --  Avoid deriving parent primitives of underlying record views
 
       Build_Derived_Type (N, Parent_Type, T, Is_Completion,
@@ -17978,10 +17982,6 @@ package body Sem_Ch3 is
          Find_Type (S);
          Typ := Entity (S);
       end if;
-
-      --  Check No_Wide_Characters restriction
-
-      Check_Wide_Character_Restriction (Typ, S);
 
       return Typ;
    end Find_Type_Of_Subtype_Indic;
