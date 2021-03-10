@@ -1,5 +1,5 @@
 /* { dg-options "-O2 -ftree-vectorize" } */
-/* { dg-additional-options "-msve-vector-bits=256" { target aarch64_sve } } */
+/* { dg-additional-options "-msve-vector-bits=256" { target aarch64_sve256_hw } } */
 long a[44];
 short d, e = -7;
 __attribute__((noipa)) void b(char f, short j, short k, unsigned l) {
@@ -17,4 +17,4 @@ int main() {
   if (!a[0])
     __builtin_abort();
 }
-/* { dg-final { scan-tree-dump "MASK_SCATTER_STORE" "vect"  { target aarch64_sve } } } */
+/* { dg-final { scan-tree-dump "MASK_SCATTER_STORE" "vect"  { target aarch64_sve256_hw } } } */
