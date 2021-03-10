@@ -3693,10 +3693,10 @@ package body Sem_Warn is
 
       --  Local variables
 
-      Act1      : Node_Id;
-      Act2      : Node_Id;
-      Form1     : Entity_Id;
-      Form2     : Entity_Id;
+      Act1  : Node_Id;
+      Act2  : Node_Id;
+      Form1 : Entity_Id;
+      Form2 : Entity_Id;
 
    --  Start of processing for Warn_On_Overlapping_Actuals
 
@@ -3708,9 +3708,7 @@ package body Sem_Warn is
 
       --  Exclude calls rewritten as enumeration literals
 
-      if Nkind (N) not in N_Subprogram_Call
-        and then Nkind (N) /= N_Entry_Call_Statement
-      then
+      if Nkind (N) not in N_Subprogram_Call | N_Entry_Call_Statement then
          return;
       end if;
 
@@ -3879,8 +3877,6 @@ package body Sem_Warn is
                      end if;
                   end if;
                end if;
-
-               return;
             end if;
 
             Next_Formal (Form2);
