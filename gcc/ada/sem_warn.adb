@@ -3788,12 +3788,6 @@ package body Sem_Warn is
                   then
                      null;
 
-                  --  If the actual is a function call in prefix notation,
-                  --  there is no real overlap.
-
-                  elsif Nkind (Act2) = N_Function_Call then
-                     null;
-
                   --  If type is explicitly not by-copy, assume that
                   --  aliasing is intended.
 
