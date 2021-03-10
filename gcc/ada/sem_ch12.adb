@@ -14022,9 +14022,12 @@ package body Sem_Ch12 is
                      and then Ekind (Root_Type (Act_T)) = E_Incomplete_Type)
          then
             --  If the formal is an incomplete type, the actual can be
-            --  incomplete as well.
+            --  incomplete as well, but if an actual incomplete type has
+            --  a full view, then we'll retrieve that.
 
-            if Ekind (A_Gen_T) = E_Incomplete_Type then
+            if Ekind (A_Gen_T) = E_Incomplete_Type
+              and then not Present (Full_View (Act_T))
+            then
                null;
 
             elsif Is_Class_Wide_Type (Act_T)
@@ -14032,6 +14035,7 @@ package body Sem_Ch12 is
             then
                Error_Msg_N ("premature use of incomplete type", Actual);
                Abandon_Instantiation (Actual);
+
             else
                Act_T := Full_View (Act_T);
                Set_Entity (Actual, Act_T);
