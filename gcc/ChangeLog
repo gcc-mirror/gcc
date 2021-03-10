@@ -1,3 +1,11 @@
+2021-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/90448
+	* calls.c (initialize_argument_information): When the argument
+	is passed by reference, do not make a copy in a thunk only if
+	the argument is already in memory.  Remove redundant test for
+	the case of callee copy.
+
 2021-03-08  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-tuning-flags.def (cse_sve_vl_constants):
