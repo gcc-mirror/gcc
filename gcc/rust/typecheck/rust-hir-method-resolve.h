@@ -28,6 +28,8 @@ namespace Resolver {
 
 class MethodResolution : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static std::vector<HIR::Method *> Probe (TyTy::BaseType *receiver,
 					   HIR::PathExprSegment method_name)
@@ -45,7 +47,7 @@ public:
     return probe.probed;
   }
 
-  void visit (HIR::Method &method)
+  void visit (HIR::Method &method) override
   {
     TyTy::BaseType *self_lookup = nullptr;
     if (!context->lookup_type (

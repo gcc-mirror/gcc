@@ -31,6 +31,8 @@ namespace Resolver {
 
 class TypeCheckTopLevel : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static void Resolve (HIR::Item *item)
   {
@@ -38,7 +40,7 @@ public:
     item->accept_vis (resolver);
   }
 
-  void visit (HIR::TupleStruct &struct_decl)
+  void visit (HIR::TupleStruct &struct_decl) override
   {
     std::vector<TyTy::SubstitionMapping> substitions;
     if (struct_decl.has_generics ())
@@ -78,7 +80,7 @@ public:
     context->insert_type (struct_decl.get_mappings (), type);
   }
 
-  void visit (HIR::StructStruct &struct_decl)
+  void visit (HIR::StructStruct &struct_decl) override
   {
     std::vector<TyTy::SubstitionMapping> substitions;
     if (struct_decl.has_generics ())
@@ -115,7 +117,7 @@ public:
     context->insert_type (struct_decl.get_mappings (), type);
   }
 
-  void visit (HIR::StaticItem &var)
+  void visit (HIR::StaticItem &var) override
   {
     TyTy::BaseType *type = TypeCheckType::Resolve (var.get_type ());
     TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (var.get_expr (), false);
@@ -123,7 +125,7 @@ public:
     context->insert_type (var.get_mappings (), type->unify (expr_type));
   }
 
-  void visit (HIR::ConstantItem &constant)
+  void visit (HIR::ConstantItem &constant) override
   {
     TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
     TyTy::BaseType *expr_type
@@ -132,7 +134,7 @@ public:
     context->insert_type (constant.get_mappings (), type->unify (expr_type));
   }
 
-  void visit (HIR::Function &function)
+  void visit (HIR::Function &function) override
   {
     std::vector<TyTy::SubstitionMapping> substitions;
     if (function.has_generics ())
@@ -184,7 +186,7 @@ public:
     context->insert_type (function.get_mappings (), fnType);
   }
 
-  void visit (HIR::InherentImpl &impl_block)
+  void visit (HIR::InherentImpl &impl_block) override
   {
     auto self = TypeCheckType::Resolve (impl_block.get_type ().get ());
     if (self == nullptr)

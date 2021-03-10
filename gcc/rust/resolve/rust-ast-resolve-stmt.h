@@ -30,6 +30,8 @@ namespace Resolver {
 
 class ResolveStmt : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static void go (AST::Stmt *stmt, NodeId parent)
   {
@@ -39,17 +41,17 @@ public:
 
   ~ResolveStmt () {}
 
-  void visit (AST::ExprStmtWithBlock &stmt)
+  void visit (AST::ExprStmtWithBlock &stmt) override
   {
     ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id ());
   }
 
-  void visit (AST::ExprStmtWithoutBlock &stmt)
+  void visit (AST::ExprStmtWithoutBlock &stmt) override
   {
     ResolveExpr::go (stmt.get_expr ().get (), stmt.get_node_id ());
   }
 
-  void visit (AST::LetStmt &stmt)
+  void visit (AST::LetStmt &stmt) override
   {
     if (stmt.has_init_expr ())
       {

@@ -32,6 +32,8 @@ namespace Compile {
 
 class CompileItem : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static void compile (HIR::Item *item, Context *ctx, bool compile_fns = true)
   {
@@ -39,7 +41,7 @@ public:
     item->accept_vis (compiler);
   }
 
-  void visit (HIR::StaticItem &var)
+  void visit (HIR::StaticItem &var) override
   {
     TyTy::BaseType *resolved_type = nullptr;
     bool ok = ctx->get_tyctx ()->lookup_type (var.get_mappings ().get_hirid (),
@@ -67,7 +69,7 @@ public:
     ctx->push_var (static_global);
   }
 
-  void visit (HIR::ConstantItem &constant)
+  void visit (HIR::ConstantItem &constant) override
   {
     TyTy::BaseType *resolved_type = nullptr;
     bool ok
@@ -85,7 +87,7 @@ public:
     ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
   }
 
-  void visit (HIR::Function &function)
+  void visit (HIR::Function &function) override
   {
     if (!compile_fns)
       return;
@@ -255,7 +257,7 @@ public:
     ctx->push_function (fndecl);
   }
 
-  void visit (HIR::InherentImpl &impl_block)
+  void visit (HIR::InherentImpl &impl_block) override
   {
     TyTy::BaseType *self_lookup = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (

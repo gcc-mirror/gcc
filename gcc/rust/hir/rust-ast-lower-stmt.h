@@ -32,6 +32,8 @@ namespace HIR {
 
 class ASTLoweringStmt : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::Stmt *translate (AST::Stmt *stmt, bool *terminated)
   {
@@ -44,7 +46,7 @@ public:
 
   virtual ~ASTLoweringStmt () {}
 
-  void visit (AST::ExprStmtWithBlock &stmt)
+  void visit (AST::ExprStmtWithBlock &stmt) override
   {
     HIR::ExprWithBlock *expr
       = ASTLoweringExprWithBlock::translate (stmt.get_expr ().get (),
@@ -63,7 +65,7 @@ public:
     mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
   }
 
-  void visit (AST::ExprStmtWithoutBlock &stmt)
+  void visit (AST::ExprStmtWithoutBlock &stmt) override
   {
     HIR::Expr *expr
       = ASTLoweringExpr::translate (stmt.get_expr ().get (), &terminated);
@@ -81,7 +83,7 @@ public:
     mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
   }
 
-  void visit (AST::LetStmt &stmt)
+  void visit (AST::LetStmt &stmt) override
   {
     std::vector<HIR::Attribute> outer_attrs;
     HIR::Pattern *variables

@@ -27,6 +27,8 @@ namespace Resolver {
 
 class VerifyAsignee : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static bool go (AST::Expr *assignee, NodeId parent)
   {
@@ -38,22 +40,22 @@ public:
     return checker.ok;
   }
 
-  void visit (AST::ArrayIndexExpr &expr)
+  void visit (AST::ArrayIndexExpr &expr) override
   {
     expr.get_array_expr ()->accept_vis (*this);
   }
 
-  void visit (AST::FieldAccessExpr &expr)
+  void visit (AST::FieldAccessExpr &expr) override
   {
     expr.get_receiver_expr ()->accept_vis (*this);
   }
 
-  void visit (AST::TupleIndexExpr &expr)
+  void visit (AST::TupleIndexExpr &expr) override
   {
     expr.get_tuple_expr ()->accept_vis (*this);
   }
 
-  void visit (AST::IdentifierExpr &expr)
+  void visit (AST::IdentifierExpr &expr) override
   {
     if (!resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
       return;

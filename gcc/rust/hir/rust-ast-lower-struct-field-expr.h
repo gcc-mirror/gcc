@@ -27,6 +27,8 @@ namespace HIR {
 
 class ASTLowerStructExprField : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::StructExprField *translate (AST::StructExprField *field)
   {
@@ -47,11 +49,11 @@ public:
 
   ~ASTLowerStructExprField () {}
 
-  void visit (AST::StructExprFieldIdentifierValue &field);
+  void visit (AST::StructExprFieldIdentifierValue &field) override;
 
-  void visit (AST::StructExprFieldIndexValue &field);
+  void visit (AST::StructExprFieldIndexValue &field) override;
 
-  void visit (AST::StructExprFieldIdentifier &field);
+  void visit (AST::StructExprFieldIdentifier &field) override;
 
 private:
   ASTLowerStructExprField () : translated (nullptr) {}

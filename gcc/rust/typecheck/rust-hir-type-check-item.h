@@ -31,6 +31,8 @@ namespace Resolver {
 
 class TypeCheckItem : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static void Resolve (HIR::Item *item)
   {

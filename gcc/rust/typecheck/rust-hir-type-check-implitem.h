@@ -30,6 +30,8 @@ namespace Resolver {
 
 class TypeCheckTopLevelImplItem : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static void Resolve (HIR::InherentImplItem *item, TyTy::BaseType *self)
   {
@@ -37,7 +39,7 @@ public:
     item->accept_vis (resolver);
   }
 
-  void visit (HIR::ConstantItem &constant)
+  void visit (HIR::ConstantItem &constant) override
   {
     TyTy::BaseType *type = TypeCheckType::Resolve (constant.get_type ());
     TyTy::BaseType *expr_type
@@ -46,7 +48,7 @@ public:
     context->insert_type (constant.get_mappings (), type->unify (expr_type));
   }
 
-  void visit (HIR::Function &function)
+  void visit (HIR::Function &function) override
   {
     TyTy::BaseType *ret_type = nullptr;
     if (!function.has_function_return_type ())
@@ -84,7 +86,7 @@ public:
     context->insert_type (function.get_mappings (), fnType);
   }
 
-  void visit (HIR::Method &method)
+  void visit (HIR::Method &method) override
   {
     TyTy::BaseType *ret_type = nullptr;
     if (!method.has_function_return_type ())
@@ -146,6 +148,8 @@ private:
 
 class TypeCheckImplItem : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static void Resolve (HIR::InherentImplItem *item, TyTy::BaseType *self)
   {
@@ -153,7 +157,7 @@ public:
     item->accept_vis (resolver);
   }
 
-  void visit (HIR::Function &function)
+  void visit (HIR::Function &function) override
   {
     TyTy::BaseType *lookup;
     if (!context->lookup_type (function.get_mappings ().get_hirid (), &lookup))
@@ -186,7 +190,7 @@ public:
     context->pop_return_type ();
   }
 
-  void visit (HIR::Method &method)
+  void visit (HIR::Method &method) override
   {
     TyTy::BaseType *lookup;
     if (!context->lookup_type (method.get_mappings ().get_hirid (), &lookup))

@@ -27,6 +27,8 @@ namespace Compile {
 
 class CompileStructExprField : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static Bexpression *Compile (HIR::StructExprField *field, Context *ctx)
   {
@@ -36,11 +38,11 @@ public:
     return compiler.translated;
   }
 
-  void visit (HIR::StructExprFieldIdentifierValue &field);
+  void visit (HIR::StructExprFieldIdentifierValue &field) override;
 
-  void visit (HIR::StructExprFieldIndexValue &field);
+  void visit (HIR::StructExprFieldIndexValue &field) override;
 
-  void visit (HIR::StructExprFieldIdentifier &field);
+  void visit (HIR::StructExprFieldIdentifier &field) override;
 
 private:
   CompileStructExprField (Context *ctx)

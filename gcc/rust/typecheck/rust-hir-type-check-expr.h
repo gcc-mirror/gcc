@@ -31,6 +31,8 @@ namespace Resolver {
 
 class TypeCheckExpr : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static TyTy::BaseType *Resolve (HIR::Expr *expr, bool inside_loop)
   {
@@ -51,7 +53,7 @@ public:
     return resolver.infered;
   }
 
-  void visit (HIR::TupleIndexExpr &expr)
+  void visit (HIR::TupleIndexExpr &expr) override
   {
     auto resolved
       = TypeCheckExpr::Resolve (expr.get_tuple_expr ().get (), inside_loop);
@@ -114,7 +116,7 @@ public:
     infered = field_tyty->get_field_type ();
   }
 
-  void visit (HIR::TupleExpr &expr)
+  void visit (HIR::TupleExpr &expr) override
   {
     if (expr.is_unit ())
       {
@@ -136,7 +138,7 @@ public:
     infered = new TyTy::TupleType (expr.get_mappings ().get_hirid (), fields);
   }
 
-  void visit (HIR::ReturnExpr &expr)
+  void visit (HIR::ReturnExpr &expr) override
   {
     if (!expr.has_return_expr ())
       {
@@ -161,7 +163,7 @@ public:
       fn_return_tyty->append_reference (ref);
   }
 
-  void visit (HIR::CallExpr &expr)
+  void visit (HIR::CallExpr &expr) override
   {
     TyTy::BaseType *function_tyty
       = TypeCheckExpr::Resolve (expr.get_fnexpr (), false);
@@ -188,7 +190,7 @@ public:
     infered->set_ref (expr.get_mappings ().get_hirid ());
   }
 
-  void visit (HIR::MethodCallExpr &expr)
+  void visit (HIR::MethodCallExpr &expr) override
   {
     auto receiver_tyty
       = TypeCheckExpr::Resolve (expr.get_receiver ().get (), false);
@@ -248,7 +250,7 @@ public:
       resolved_method->get_mappings ().get_nodeid ());
   }
 
-  void visit (HIR::AssignmentExpr &expr)
+  void visit (HIR::AssignmentExpr &expr) override
   {
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
 
@@ -301,7 +303,7 @@ public:
       result->clone ());
   }
 
-  void visit (HIR::IdentifierExpr &expr)
+  void visit (HIR::IdentifierExpr &expr) override
   {
     NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
 
@@ -359,7 +361,7 @@ public:
     infered->set_ref (expr.get_mappings ().get_hirid ());
   }
 
-  void visit (HIR::LiteralExpr &expr)
+  void visit (HIR::LiteralExpr &expr) override
   {
     switch (expr.get_lit_type ())
       {
@@ -473,7 +475,7 @@ public:
     infered = infered->clone ();
   }
 
-  void visit (HIR::ArithmeticOrLogicalExpr &expr)
+  void visit (HIR::ArithmeticOrLogicalExpr &expr) override
   {
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
@@ -494,7 +496,7 @@ public:
     infered->append_reference (rhs->get_ref ());
   }
 
-  void visit (HIR::ComparisonExpr &expr)
+  void visit (HIR::ComparisonExpr &expr) override
   {
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
@@ -509,7 +511,7 @@ public:
     infered->append_reference (rhs->get_ref ());
   }
 
-  void visit (HIR::LazyBooleanExpr &expr)
+  void visit (HIR::LazyBooleanExpr &expr) override
   {
     auto lhs = TypeCheckExpr::Resolve (expr.get_lhs (), false);
     auto rhs = TypeCheckExpr::Resolve (expr.get_rhs (), false);
@@ -530,7 +532,7 @@ public:
     infered->append_reference (rhs->get_ref ());
   }
 
-  void visit (HIR::NegationExpr &expr)
+  void visit (HIR::NegationExpr &expr) override
   {
     auto negated_expr_ty = TypeCheckExpr::Resolve (expr.get_expr (), false);
 
@@ -579,7 +581,7 @@ public:
     infered->append_reference (negated_expr_ty->get_ref ());
   }
 
-  void visit (HIR::IfExpr &expr)
+  void visit (HIR::IfExpr &expr) override
   {
     TypeCheckExpr::Resolve (expr.get_if_condition (), false);
     TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
@@ -587,7 +589,7 @@ public:
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
-  void visit (HIR::IfExprConseqElse &expr)
+  void visit (HIR::IfExprConseqElse &expr) override
   {
     TypeCheckExpr::Resolve (expr.get_if_condition (), false);
     auto if_blk_resolved
@@ -598,7 +600,7 @@ public:
     infered = if_blk_resolved->unify (else_blk_resolved);
   }
 
-  void visit (HIR::IfExprConseqIf &expr)
+  void visit (HIR::IfExprConseqIf &expr) override
   {
     TypeCheckExpr::Resolve (expr.get_if_condition (), false);
     auto if_blk = TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
@@ -608,9 +610,9 @@ public:
     infered = if_blk->unify (else_blk);
   }
 
-  void visit (HIR::BlockExpr &expr);
+  void visit (HIR::BlockExpr &expr) override;
 
-  void visit (HIR::ArrayIndexExpr &expr)
+  void visit (HIR::ArrayIndexExpr &expr) override
   {
     TyTy::BaseType *size_ty;
     if (!context->lookup_builtin ("usize", &size_ty))
@@ -653,7 +655,7 @@ public:
     infered = array_type->get_element_type ()->clone ();
   }
 
-  void visit (HIR::ArrayExpr &expr)
+  void visit (HIR::ArrayExpr &expr) override
   {
     HIR::ArrayElems *elements = expr.get_internal_elements ();
     size_t num_elems = elements->get_num_elements ();
@@ -666,7 +668,7 @@ public:
 			     TyTy::TyCtx (infered_array_elems->get_ref ()));
   }
 
-  void visit (HIR::ArrayElemsValues &elems)
+  void visit (HIR::ArrayElemsValues &elems) override
   {
     std::vector<TyTy::BaseType *> types;
     elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
@@ -684,23 +686,23 @@ public:
       infered_array_elems->append_reference (elem->get_ref ());
   }
 
-  void visit (HIR::ArrayElemsCopied &elems)
+  void visit (HIR::ArrayElemsCopied &elems) override
   {
     infered_array_elems
       = TypeCheckExpr::Resolve (elems.get_elem_to_copy (), false);
   }
 
-  void visit (HIR::StructExprStructFields &struct_expr)
+  void visit (HIR::StructExprStructFields &struct_expr) override
   {
     infered = TypeCheckStructExpr::Resolve (&struct_expr);
   }
 
-  void visit (HIR::GroupedExpr &expr)
+  void visit (HIR::GroupedExpr &expr) override
   {
     infered = TypeCheckExpr::Resolve (expr.get_expr_in_parens ().get (), false);
   }
 
-  void visit (HIR::FieldAccessExpr &expr)
+  void visit (HIR::FieldAccessExpr &expr) override
   {
     auto struct_base
       = TypeCheckExpr::Resolve (expr.get_receiver_expr ().get (), false);
@@ -727,7 +729,7 @@ public:
     infered = resolved->get_field_type ();
   }
 
-  void visit (HIR::PathInExpression &expr)
+  void visit (HIR::PathInExpression &expr) override
   {
     NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
 
@@ -801,7 +803,7 @@ public:
       }
   }
 
-  void visit (HIR::LoopExpr &expr)
+  void visit (HIR::LoopExpr &expr) override
   {
     context->push_new_loop_context (expr.get_mappings ().get_hirid ());
     TyTy::BaseType *block_expr
@@ -826,7 +828,7 @@ public:
 		: new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
-  void visit (HIR::WhileLoopExpr &expr)
+  void visit (HIR::WhileLoopExpr &expr) override
   {
     context->push_new_while_loop_context (expr.get_mappings ().get_hirid ());
 
@@ -845,7 +847,7 @@ public:
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
-  void visit (HIR::BreakExpr &expr)
+  void visit (HIR::BreakExpr &expr) override
   {
     if (!inside_loop)
       {
@@ -873,7 +875,7 @@ public:
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
-  void visit (HIR::ContinueExpr &expr)
+  void visit (HIR::ContinueExpr &expr) override
   {
     if (!inside_loop)
       {
@@ -885,7 +887,7 @@ public:
     infered = new TyTy::UnitType (expr.get_mappings ().get_hirid ());
   }
 
-  void visit (HIR::BorrowExpr &expr)
+  void visit (HIR::BorrowExpr &expr) override
   {
     TyTy::BaseType *resolved_base
       = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);
@@ -896,7 +898,7 @@ public:
 				       TyTy::TyCtx (resolved_base->get_ref ()));
   }
 
-  void visit (HIR::DereferenceExpr &expr)
+  void visit (HIR::DereferenceExpr &expr) override
   {
     TyTy::BaseType *resolved_base
       = TypeCheckExpr::Resolve (expr.get_expr ().get (), false);

@@ -27,6 +27,8 @@ namespace Resolver {
 
 class ResolveTypePath : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static NodeId go (AST::TypePath &path, NodeId parent)
   {
@@ -74,6 +76,8 @@ private:
 
 class ResolveType : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static NodeId go (AST::Type *type, NodeId parent)
   {
@@ -85,7 +89,7 @@ public:
     return resolver.resolved_node;
   };
 
-  void visit (AST::BareFunctionType &fntype)
+  void visit (AST::BareFunctionType &fntype) override
   {
     ok = true;
     for (auto &param : fntype.get_function_params ())
@@ -95,7 +99,7 @@ public:
       ResolveType::go (fntype.get_return_type ().get (), fntype.get_node_id ());
   }
 
-  void visit (AST::TupleType &tuple)
+  void visit (AST::TupleType &tuple) override
   {
     ok = true;
     if (tuple.is_unit_type ())
@@ -108,7 +112,7 @@ public:
       ResolveType::go (elem.get (), tuple.get_node_id ());
   }
 
-  void visit (AST::TypePath &path)
+  void visit (AST::TypePath &path) override
   {
     resolved_node = ResolveTypePath::go (path, parent);
     ok = resolved_node != UNKNOWN_NODEID;
@@ -121,18 +125,18 @@ public:
       }
   }
 
-  void visit (AST::ArrayType &type)
+  void visit (AST::ArrayType &type) override
   {
     type.get_elem_type ()->accept_vis (*this);
   }
 
-  void visit (AST::ReferenceType &type)
+  void visit (AST::ReferenceType &type) override
   {
     type.get_type_referenced ()->accept_vis (*this);
   }
 
   // nothing to do for inferred types
-  void visit (AST::InferredType &type) { ok = true; }
+  void visit (AST::InferredType &type) override { ok = true; }
 
 private:
   ResolveType (NodeId parent) : ResolverBase (parent), ok (false) {}
@@ -142,6 +146,8 @@ private:
 
 class ResolveGenericParam : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static NodeId go (AST::GenericParam *param, NodeId parent)
   {

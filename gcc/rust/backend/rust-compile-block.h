@@ -27,6 +27,8 @@ namespace Compile {
 
 class CompileBlock : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static Bblock *compile (HIR::BlockExpr *expr, Context *ctx, Bvariable *result)
   {
@@ -35,7 +37,7 @@ public:
     return compiler.translated;
   }
 
-  void visit (HIR::BlockExpr &expr);
+  void visit (HIR::BlockExpr &expr) override;
 
 private:
   CompileBlock (Context *ctx, Bvariable *result)
@@ -48,6 +50,8 @@ private:
 
 class CompileConditionalBlocks : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static Bstatement *compile (HIR::IfExpr *expr, Context *ctx,
 			      Bvariable *result)
@@ -57,11 +61,11 @@ public:
     return resolver.translated;
   }
 
-  void visit (HIR::IfExpr &expr);
+  void visit (HIR::IfExpr &expr) override;
 
-  void visit (HIR::IfExprConseqElse &expr);
+  void visit (HIR::IfExprConseqElse &expr) override;
 
-  void visit (HIR::IfExprConseqIf &expr);
+  void visit (HIR::IfExprConseqIf &expr) override;
 
 private:
   CompileConditionalBlocks (Context *ctx, Bvariable *result)
@@ -74,6 +78,8 @@ private:
 
 class CompileExprWithBlock : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static Bstatement *compile (HIR::ExprWithBlock *expr, Context *ctx,
 			      Bvariable *result)
@@ -83,17 +89,17 @@ public:
     return resolver.translated;
   }
 
-  void visit (HIR::IfExpr &expr)
+  void visit (HIR::IfExpr &expr) override
   {
     translated = CompileConditionalBlocks::compile (&expr, ctx, result);
   }
 
-  void visit (HIR::IfExprConseqElse &expr)
+  void visit (HIR::IfExprConseqElse &expr) override
   {
     translated = CompileConditionalBlocks::compile (&expr, ctx, result);
   }
 
-  void visit (HIR::IfExprConseqIf &expr)
+  void visit (HIR::IfExprConseqIf &expr) override
   {
     translated = CompileConditionalBlocks::compile (&expr, ctx, result);
   }

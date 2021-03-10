@@ -29,6 +29,8 @@ namespace Resolver {
 
 class TypeCheckStructExpr : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static TyTy::BaseType *Resolve (HIR::StructExprStructFields *expr)
   {
@@ -37,15 +39,15 @@ public:
     return resolver.resolved;
   }
 
-  void visit (HIR::StructExprStructFields &struct_expr);
+  void visit (HIR::StructExprStructFields &struct_expr) override;
 
-  void visit (HIR::PathInExpression &path);
+  void visit (HIR::PathInExpression &path) override;
 
-  void visit (HIR::StructExprFieldIdentifierValue &field);
+  void visit (HIR::StructExprFieldIdentifierValue &field) override;
 
-  void visit (HIR::StructExprFieldIndexValue &field);
+  void visit (HIR::StructExprFieldIndexValue &field) override;
 
-  void visit (HIR::StructExprFieldIdentifier &field);
+  void visit (HIR::StructExprFieldIdentifier &field) override;
 
 private:
   TypeCheckStructExpr (HIR::Expr *e)

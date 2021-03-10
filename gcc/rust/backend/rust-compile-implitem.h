@@ -31,6 +31,8 @@ namespace Compile {
 
 class CompileInherentImplItem : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static void Compile (TyTy::BaseType *self, HIR::InherentImplItem *item,
 		       Context *ctx, bool compile_fns)
@@ -39,7 +41,7 @@ public:
     item->accept_vis (compiler);
   }
 
-  void visit (HIR::ConstantItem &constant)
+  void visit (HIR::ConstantItem &constant) override
   {
     TyTy::BaseType *resolved_type = nullptr;
     bool ok
@@ -58,7 +60,7 @@ public:
     ctx->insert_const_decl (constant.get_mappings ().get_hirid (), const_expr);
   }
 
-  void visit (HIR::Function &function)
+  void visit (HIR::Function &function) override
   {
     if (!compile_fns)
       return;
@@ -223,7 +225,7 @@ public:
     ctx->push_function (fndecl);
   }
 
-  void visit (HIR::Method &method)
+  void visit (HIR::Method &method) override
   {
     if (!compile_fns)
       return;

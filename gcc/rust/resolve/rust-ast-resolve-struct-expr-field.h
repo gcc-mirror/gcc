@@ -29,6 +29,8 @@ namespace Resolver {
 
 class ResolveStructExprField : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static void go (AST::StructExprField *field, NodeId parent)
   {
@@ -36,13 +38,13 @@ public:
     field->accept_vis (resolver);
   }
 
-  virtual ~ResolveStructExprField () {}
+  virtual ~ResolveStructExprField () override {}
 
-  void visit (AST::StructExprFieldIdentifierValue &field);
+  void visit (AST::StructExprFieldIdentifierValue &field) override;
 
-  void visit (AST::StructExprFieldIndexValue &field);
+  void visit (AST::StructExprFieldIndexValue &field) override;
 
-  void visit (AST::StructExprFieldIdentifier &field);
+  void visit (AST::StructExprFieldIdentifier &field) override;
 
 private:
   ResolveStructExprField (NodeId parent) : ResolverBase (parent) {}

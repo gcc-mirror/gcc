@@ -30,6 +30,8 @@ namespace Resolver {
 
 class ResolveItem : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static void go (AST::Item *item)
   {
@@ -37,7 +39,7 @@ public:
     item->accept_vis (resolver);
   };
 
-  void visit (AST::TupleStruct &struct_decl)
+  void visit (AST::TupleStruct &struct_decl) override
   {
     NodeId scope_node_id = struct_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
@@ -60,7 +62,7 @@ public:
     resolver->get_type_scope ().pop ();
   }
 
-  void visit (AST::StructStruct &struct_decl)
+  void visit (AST::StructStruct &struct_decl) override
   {
     NodeId scope_node_id = struct_decl.get_node_id ();
     resolver->get_type_scope ().push (scope_node_id);
@@ -83,7 +85,7 @@ public:
     resolver->get_type_scope ().pop ();
   }
 
-  void visit (AST::StaticItem &var)
+  void visit (AST::StaticItem &var) override
   {
     ResolveType::go (var.get_type ().get (), var.get_node_id ());
     ResolveExpr::go (var.get_expr ().get (), var.get_node_id ());
@@ -93,7 +95,7 @@ public:
     resolver->mark_assignment_to_decl (var.get_node_id (), var.get_node_id ());
   }
 
-  void visit (AST::ConstantItem &constant)
+  void visit (AST::ConstantItem &constant) override
   {
     ResolveType::go (constant.get_type ().get (), constant.get_node_id ());
     ResolveExpr::go (constant.get_expr ().get (), constant.get_node_id ());
@@ -105,7 +107,7 @@ public:
 				       constant.get_node_id ());
   }
 
-  void visit (AST::Function &function)
+  void visit (AST::Function &function) override
   {
     NodeId scope_node_id = function.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
@@ -148,7 +150,7 @@ public:
     resolver->get_label_scope ().pop ();
   }
 
-  void visit (AST::InherentImpl &impl_block)
+  void visit (AST::InherentImpl &impl_block) override
   {
     NodeId resolved_node = ResolveType::go (impl_block.get_type ().get (),
 					    impl_block.get_node_id ());
@@ -164,7 +166,7 @@ public:
     resolver->get_type_scope ().peek ()->clear_name ("Self", resolved_node);
   }
 
-  void visit (AST::Method &method)
+  void visit (AST::Method &method) override
   {
     if (method.has_return_type ())
       ResolveType::go (method.get_return_type ().get (), method.get_node_id ());

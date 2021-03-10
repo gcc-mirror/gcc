@@ -28,6 +28,8 @@ namespace Resolver {
 
 class ResolveToplevelImplItem : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static void go (AST::InherentImplItem *item, AST::Type *base)
   {
@@ -35,7 +37,7 @@ public:
     item->accept_vis (resolver);
   };
 
-  void visit (AST::ConstantItem &constant)
+  void visit (AST::ConstantItem &constant) override
   {
     std::string identifier
       = base->as_string () + "::" + constant.get_identifier ();
@@ -50,7 +52,7 @@ public:
 						constant.get_node_id ()});
   }
 
-  void visit (AST::Function &function)
+  void visit (AST::Function &function) override
   {
     std::string identifier
       = base->as_string () + "::" + function.get_function_name ();
@@ -65,7 +67,7 @@ public:
 						function.get_node_id ()});
   }
 
-  void visit (AST::Method &method)
+  void visit (AST::Method &method) override
   {
     std::string identifier
       = base->as_string () + "::" + method.get_method_name ();

@@ -27,6 +27,8 @@ namespace HIR {
 
 class ASTLoweringPattern : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::Pattern *translate (AST::Pattern *pattern)
   {
@@ -35,7 +37,7 @@ public:
     return resolver.translated;
   }
 
-  virtual ~ASTLoweringPattern () {}
+  virtual ~ASTLoweringPattern () override {}
 
   void visit (AST::IdentifierPattern &pattern)
   {

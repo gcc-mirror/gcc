@@ -27,6 +27,8 @@ namespace Compile {
 
 class ResolvePathRef : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static Bexpression *Compile (HIR::Expr *expr, Context *ctx)
   {

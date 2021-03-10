@@ -26,6 +26,8 @@ namespace Compile {
 
 class CompileVarDecl : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static ::Bvariable *compile (::Bfunction *fndecl, HIR::Stmt *stmt,
 			       Context *ctx)
@@ -38,7 +40,7 @@ public:
     return compiler.translated;
   }
 
-  void visit (HIR::LetStmt &stmt)
+  void visit (HIR::LetStmt &stmt) override
   {
     locus = stmt.get_locus ();
     TyTy::BaseType *resolved_type = nullptr;
@@ -50,7 +52,7 @@ public:
     stmt.get_pattern ()->accept_vis (*this);
   }
 
-  void visit (HIR::IdentifierPattern &pattern)
+  void visit (HIR::IdentifierPattern &pattern) override
   {
     if (!pattern.is_mut)
       translated_type = ctx->get_backend ()->immutable_type (translated_type);

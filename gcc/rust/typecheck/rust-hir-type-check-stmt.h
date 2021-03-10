@@ -29,6 +29,8 @@ namespace Resolver {
 
 class TypeCheckStmt : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static TyTy::BaseType *Resolve (HIR::Stmt *stmt, bool inside_loop)
   {
@@ -37,17 +39,17 @@ public:
     return resolver.infered;
   }
 
-  void visit (HIR::ExprStmtWithBlock &stmt)
+  void visit (HIR::ExprStmtWithBlock &stmt) override
   {
     infered = TypeCheckExpr::Resolve (stmt.get_expr (), inside_loop);
   }
 
-  void visit (HIR::ExprStmtWithoutBlock &stmt)
+  void visit (HIR::ExprStmtWithoutBlock &stmt) override
   {
     infered = TypeCheckExpr::Resolve (stmt.get_expr (), inside_loop);
   }
 
-  void visit (HIR::LetStmt &stmt)
+  void visit (HIR::LetStmt &stmt) override
   {
     infered = new TyTy::UnitType (stmt.get_mappings ().get_hirid ());
 

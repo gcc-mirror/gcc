@@ -26,6 +26,8 @@ namespace Compile {
 
 class CompileFnParam : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static Bvariable *compile (Context *ctx, Bfunction *fndecl,
 			     HIR::FunctionParam *param, Btype *decl_type,
@@ -36,7 +38,7 @@ public:
     return compiler.translated;
   }
 
-  void visit (HIR::IdentifierPattern &pattern)
+  void visit (HIR::IdentifierPattern &pattern) override
   {
     if (!pattern.is_mut)
       decl_type = ctx->get_backend ()->immutable_type (decl_type);

@@ -30,6 +30,8 @@ namespace Compile {
 
 class CompileExpr : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static Bexpression *Compile (HIR::Expr *expr, Context *ctx)
   {
@@ -38,7 +40,7 @@ public:
     return compiler.translated;
   }
 
-  void visit (HIR::TupleIndexExpr &expr)
+  void visit (HIR::TupleIndexExpr &expr) override
   {
     HIR::Expr *tuple_expr = expr.get_tuple_expr ().get ();
     TupleIndex index = expr.get_tuple_index ();
@@ -49,7 +51,7 @@ public:
 						      expr.get_locus ());
   }
 
-  void visit (HIR::TupleExpr &expr)
+  void visit (HIR::TupleExpr &expr) override
   {
     if (expr.is_unit ())
       {
@@ -82,7 +84,7 @@ public:
 						     expr.get_locus ());
   }
 
-  void visit (HIR::ReturnExpr &expr)
+  void visit (HIR::ReturnExpr &expr) override
   {
     auto fncontext = ctx->peek_fn ();
 
@@ -101,11 +103,11 @@ public:
     ctx->add_statement (s);
   }
 
-  void visit (HIR::CallExpr &expr);
+  void visit (HIR::CallExpr &expr) override;
 
-  void visit (HIR::MethodCallExpr &expr);
+  void visit (HIR::MethodCallExpr &expr) override;
 
-  void visit (HIR::IdentifierExpr &expr)
+  void visit (HIR::IdentifierExpr &expr) override
   {
     // need to look up the reference for this identifier
     NodeId ref_node_id;
@@ -157,7 +159,7 @@ public:
       }
   }
 
-  void visit (HIR::LiteralExpr &expr)
+  void visit (HIR::LiteralExpr &expr) override
   {
     auto literal_value = expr.get_literal ();
     switch (expr.get_lit_type ())
@@ -241,7 +243,7 @@ public:
     gcc_unreachable ();
   }
 
-  void visit (HIR::AssignmentExpr &expr)
+  void visit (HIR::AssignmentExpr &expr) override
   {
     fncontext fn = ctx->peek_fn ();
     auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
@@ -253,7 +255,7 @@ public:
     ctx->add_statement (assignment);
   }
 
-  void visit (HIR::ArrayIndexExpr &expr)
+  void visit (HIR::ArrayIndexExpr &expr) override
   {
     Bexpression *array = CompileExpr::Compile (expr.get_array_expr (), ctx);
     Bexpression *index = CompileExpr::Compile (expr.get_index_expr (), ctx);
@@ -262,7 +264,7 @@ public:
 						     expr.get_locus ());
   }
 
-  void visit (HIR::ArrayExpr &expr)
+  void visit (HIR::ArrayExpr &expr) override
   {
     TyTy::BaseType *tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
@@ -286,7 +288,7 @@ public:
 							   expr.get_locus ());
   }
 
-  void visit (HIR::ArrayElemsValues &elems)
+  void visit (HIR::ArrayElemsValues &elems) override
   {
     elems.iterate ([&] (HIR::Expr *e) mutable -> bool {
       Bexpression *translated_expr = CompileExpr::Compile (e, ctx);
@@ -295,7 +297,7 @@ public:
     });
   }
 
-  void visit (HIR::ArrayElemsCopied &elems)
+  void visit (HIR::ArrayElemsCopied &elems) override
   {
     Bexpression *translated_expr
       = CompileExpr::Compile (elems.get_elem_to_copy (), ctx);
@@ -304,7 +306,7 @@ public:
       constructor.push_back (translated_expr);
   }
 
-  void visit (HIR::ArithmeticOrLogicalExpr &expr)
+  void visit (HIR::ArithmeticOrLogicalExpr &expr) override
   {
     auto op = expr.get_expr_type ();
     auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
@@ -316,7 +318,7 @@ public:
 							       location);
   }
 
-  void visit (HIR::ComparisonExpr &expr)
+  void visit (HIR::ComparisonExpr &expr) override
   {
     auto op = expr.get_expr_type ();
     auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
@@ -327,7 +329,7 @@ public:
       = ctx->get_backend ()->comparison_expression (op, lhs, rhs, location);
   }
 
-  void visit (HIR::LazyBooleanExpr &expr)
+  void visit (HIR::LazyBooleanExpr &expr) override
   {
     auto op = expr.get_expr_type ();
     auto lhs = CompileExpr::Compile (expr.get_lhs (), ctx);
@@ -338,7 +340,7 @@ public:
       = ctx->get_backend ()->lazy_boolean_expression (op, lhs, rhs, location);
   }
 
-  void visit (HIR::NegationExpr &expr)
+  void visit (HIR::NegationExpr &expr) override
   {
     auto op = expr.get_expr_type ();
     auto negated_expr = CompileExpr::Compile (expr.get_expr (), ctx);
@@ -348,13 +350,13 @@ public:
       = ctx->get_backend ()->negation_expression (op, negated_expr, location);
   }
 
-  void visit (HIR::IfExpr &expr)
+  void visit (HIR::IfExpr &expr) override
   {
     auto stmt = CompileConditionalBlocks::compile (&expr, ctx, nullptr);
     ctx->add_statement (stmt);
   }
 
-  void visit (HIR::IfExprConseqElse &expr)
+  void visit (HIR::IfExprConseqElse &expr) override
   {
     TyTy::BaseType *if_type = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
@@ -391,7 +393,7 @@ public:
       }
   }
 
-  void visit (HIR::IfExprConseqIf &expr)
+  void visit (HIR::IfExprConseqIf &expr) override
   {
     TyTy::BaseType *if_type = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
@@ -428,7 +430,7 @@ public:
       }
   }
 
-  void visit (HIR::BlockExpr &expr)
+  void visit (HIR::BlockExpr &expr) override
   {
     TyTy::BaseType *block_tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
@@ -465,7 +467,7 @@ public:
       }
   }
 
-  void visit (HIR::StructExprStructFields &struct_expr)
+  void visit (HIR::StructExprStructFields &struct_expr) override
   {
     TyTy::BaseType *tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (
@@ -492,12 +494,12 @@ public:
 						     struct_expr.get_locus ());
   }
 
-  void visit (HIR::GroupedExpr &expr)
+  void visit (HIR::GroupedExpr &expr) override
   {
     translated = CompileExpr::Compile (expr.get_expr_in_parens ().get (), ctx);
   }
 
-  void visit (HIR::FieldAccessExpr &expr)
+  void visit (HIR::FieldAccessExpr &expr) override
   {
     // resolve the receiver back to ADT type
     TyTy::BaseType *receiver = nullptr;
@@ -522,12 +524,12 @@ public:
 						      expr.get_locus ());
   }
 
-  void visit (HIR::PathInExpression &expr)
+  void visit (HIR::PathInExpression &expr) override
   {
     translated = ResolvePathRef::Compile (&expr, ctx);
   }
 
-  void visit (HIR::LoopExpr &expr)
+  void visit (HIR::LoopExpr &expr) override
   {
     TyTy::BaseType *block_tyty = nullptr;
     if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
@@ -592,7 +594,7 @@ public:
     ctx->pop_loop_begin_label ();
   }
 
-  void visit (HIR::WhileLoopExpr &expr)
+  void visit (HIR::WhileLoopExpr &expr) override
   {
     fncontext fnctx = ctx->peek_fn ();
     if (expr.has_loop_label ())
@@ -650,7 +652,7 @@ public:
     ctx->add_statement (loop_stmt);
   }
 
-  void visit (HIR::BreakExpr &expr)
+  void visit (HIR::BreakExpr &expr) override
   {
     fncontext fnctx = ctx->peek_fn ();
     if (expr.has_break_expr ())
@@ -713,7 +715,7 @@ public:
       }
   }
 
-  void visit (HIR::ContinueExpr &expr)
+  void visit (HIR::ContinueExpr &expr) override
   {
     Blabel *label = ctx->peek_loop_begin_label ();
     if (expr.has_label ())
@@ -752,7 +754,7 @@ public:
     ctx->add_statement (goto_label);
   }
 
-  void visit (HIR::BorrowExpr &expr)
+  void visit (HIR::BorrowExpr &expr) override
   {
     Bexpression *main_expr
       = CompileExpr::Compile (expr.get_expr ().get (), ctx);
@@ -761,7 +763,7 @@ public:
       = ctx->get_backend ()->address_expression (main_expr, expr.get_locus ());
   }
 
-  void visit (HIR::DereferenceExpr &expr)
+  void visit (HIR::DereferenceExpr &expr) override
   {
     Bexpression *main_expr
       = CompileExpr::Compile (expr.get_expr ().get (), ctx);

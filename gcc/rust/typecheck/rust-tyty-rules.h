@@ -276,6 +276,8 @@ private:
 
 class InferRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   InferRules (InferType *base) : BaseRules (base), base (base) {}
 
@@ -511,6 +513,8 @@ private:
 
 class FnRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   FnRules (FnType *base) : BaseRules (base), base (base) {}
 
@@ -567,6 +571,8 @@ private:
 
 class FnptrRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   FnptrRules (FnPtr *base) : BaseRules (base), base (base) {}
 
@@ -660,6 +666,8 @@ private:
 
 class ArrayRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   ArrayRules (ArrayType *base) : BaseRules (base), base (base) {}
 
@@ -696,6 +704,8 @@ private:
 
 class BoolRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   BoolRules (BoolType *base) : BaseRules (base), base (base) {}
 
@@ -712,6 +722,8 @@ private:
 
 class IntRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   IntRules (IntType *base) : BaseRules (base), base (base) {}
 
@@ -748,6 +760,8 @@ private:
 
 class UintRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   UintRules (UintType *base) : BaseRules (base), base (base) {}
 
@@ -784,6 +798,8 @@ private:
 
 class FloatRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   FloatRules (FloatType *base) : BaseRules (base), base (base) {}
 
@@ -819,6 +835,8 @@ private:
 
 class ADTRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   ADTRules (ADTType *base) : BaseRules (base), base (base) {}
 
@@ -857,6 +875,8 @@ private:
 
 class TupleRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   TupleRules (TupleType *base) : BaseRules (base), base (base) {}
 
@@ -896,6 +916,8 @@ private:
 
 class USizeRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   USizeRules (USizeType *base) : BaseRules (base), base (base) {}
 
@@ -922,6 +944,8 @@ private:
 
 class ISizeRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   ISizeRules (ISizeType *base) : BaseRules (base), base (base) {}
 
@@ -948,6 +972,8 @@ private:
 
 class CharRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   CharRules (CharType *base) : BaseRules (base), base (base) {}
 
@@ -973,6 +999,8 @@ private:
 
 class ReferenceRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   ReferenceRules (ReferenceType *base) : BaseRules (base), base (base) {}
 
@@ -1042,6 +1070,7 @@ private:
 class StrRules : public BaseRules
 {
   // FIXME we will need a enum for the StrType like ByteBuf etc..
+  using Rust::TyTy::BaseRules::visit;
 
 public:
   StrRules (StrType *base) : BaseRules (base), base (base) {}

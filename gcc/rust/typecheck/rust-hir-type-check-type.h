@@ -27,6 +27,8 @@ namespace Resolver {
 
 class ArrayCapacityConstant : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static bool fold (HIR::Expr *expr, size_t *folded_result)
   {
@@ -38,7 +40,7 @@ public:
 
   virtual ~ArrayCapacityConstant () {}
 
-  void visit (HIR::LiteralExpr &expr)
+  void visit (HIR::LiteralExpr &expr) override
   {
     auto literal_value = expr.get_literal ();
     switch (expr.get_lit_type ())
@@ -64,6 +66,8 @@ private:
 
 class TypeCheckResolveGenericArguments : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static HIR::GenericArgs resolve (HIR::TypePathSegment *segment)
   {
@@ -87,6 +91,8 @@ private:
 
 class TypeCheckType : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static TyTy::BaseType *Resolve (HIR::Type *type)
   {
@@ -100,7 +106,7 @@ public:
     return resolver.translated;
   }
 
-  void visit (HIR::BareFunctionType &fntype)
+  void visit (HIR::BareFunctionType &fntype) override
   {
     TyTy::BaseType *return_type
       = fntype.has_return_type ()
@@ -120,7 +126,7 @@ public:
 				  TyTy::TyCtx (return_type->get_ref ()));
   }
 
-  void visit (HIR::TupleType &tuple)
+  void visit (HIR::TupleType &tuple) override
   {
     if (tuple.is_unit_type ())
       {
@@ -144,7 +150,7 @@ public:
       = new TyTy::TupleType (tuple.get_mappings ().get_hirid (), fields);
   }
 
-  void visit (HIR::TypePath &path)
+  void visit (HIR::TypePath &path) override
   {
     // lookup the Node this resolves to
     NodeId ref;
@@ -227,7 +233,7 @@ public:
 		   path.as_string ().c_str ());
   }
 
-  void visit (HIR::ArrayType &type)
+  void visit (HIR::ArrayType &type) override
   {
     size_t capacity;
     if (!ArrayCapacityConstant::fold (type.get_size_expr (), &capacity))
@@ -242,7 +248,7 @@ public:
 				      capacity, TyTy::TyCtx (base->get_ref ()));
   }
 
-  void visit (HIR::ReferenceType &type)
+  void visit (HIR::ReferenceType &type) override
   {
     TyTy::BaseType *base
       = TypeCheckType::Resolve (type.get_base_type ().get ());
@@ -250,7 +256,7 @@ public:
 					  TyTy::TyCtx (base->get_ref ()));
   }
 
-  void visit (HIR::InferredType &type)
+  void visit (HIR::InferredType &type) override
   {
     translated = new TyTy::InferType (type.get_mappings ().get_hirid (),
 				      TyTy::InferType::InferTypeKind::GENERAL);
@@ -264,6 +270,8 @@ private:
 
 class TypeResolveGenericParam : public TypeCheckBase
 {
+  using Rust::Resolver::TypeCheckBase::visit;
+
 public:
   static TyTy::ParamType *Resolve (HIR::GenericParam *param)
   {

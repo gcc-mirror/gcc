@@ -27,6 +27,8 @@ namespace HIR {
 
 class ASTLoweringBlock : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::BlockExpr *translate (AST::BlockExpr *expr, bool *terminated)
   {
@@ -46,7 +48,7 @@ public:
 
   ~ASTLoweringBlock () {}
 
-  void visit (AST::BlockExpr &expr);
+  void visit (AST::BlockExpr &expr) override;
 
 private:
   ASTLoweringBlock ()
@@ -59,6 +61,8 @@ private:
 
 class ASTLoweringIfBlock : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::IfExpr *translate (AST::IfExpr *expr, bool *terminated)
   {
@@ -77,11 +81,11 @@ public:
 
   ~ASTLoweringIfBlock () {}
 
-  void visit (AST::IfExpr &expr);
+  void visit (AST::IfExpr &expr) override;
 
-  void visit (AST::IfExprConseqElse &expr);
+  void visit (AST::IfExprConseqElse &expr) override;
 
-  void visit (AST::IfExprConseqIf &expr);
+  void visit (AST::IfExprConseqIf &expr) override;
 
 private:
   ASTLoweringIfBlock ()
@@ -94,6 +98,8 @@ private:
 
 class ASTLoweringExprWithBlock : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::ExprWithBlock *translate (AST::ExprWithBlock *expr,
 					bool *terminated)
@@ -114,27 +120,27 @@ public:
 
   ~ASTLoweringExprWithBlock () {}
 
-  void visit (AST::IfExpr &expr)
+  void visit (AST::IfExpr &expr) override
   {
     translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::IfExprConseqElse &expr)
+  void visit (AST::IfExprConseqElse &expr) override
   {
     translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::IfExprConseqIf &expr)
+  void visit (AST::IfExprConseqIf &expr) override
   {
     translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::BlockExpr &expr)
+  void visit (AST::BlockExpr &expr) override
   {
     translated = ASTLoweringBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::LoopExpr &expr)
+  void visit (AST::LoopExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
     HIR::BlockExpr *loop_block
@@ -155,7 +161,7 @@ public:
 			   std::move (outer_attribs));
   }
 
-  void visit (AST::WhileLoopExpr &expr);
+  void visit (AST::WhileLoopExpr &expr) override;
 
 private:
   ASTLoweringExprWithBlock ()

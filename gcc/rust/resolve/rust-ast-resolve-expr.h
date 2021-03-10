@@ -29,6 +29,8 @@ namespace Resolver {
 
 class ResolvePath : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static void go (AST::PathInExpression *expr, NodeId parent)
   {
@@ -44,6 +46,8 @@ private:
 
 class ResolveExpr : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static void go (AST::Expr *expr, NodeId parent)
   {
@@ -51,12 +55,12 @@ public:
     expr->accept_vis (resolver);
   };
 
-  void visit (AST::TupleIndexExpr &expr)
+  void visit (AST::TupleIndexExpr &expr) override
   {
     ResolveExpr::go (expr.get_tuple_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::TupleExpr &expr)
+  void visit (AST::TupleExpr &expr) override
   {
     if (expr.is_unit ())
       return;
@@ -65,15 +69,18 @@ public:
       ResolveExpr::go (elem.get (), expr.get_node_id ());
   }
 
-  void visit (AST::PathInExpression &expr) { ResolvePath::go (&expr, parent); }
+  void visit (AST::PathInExpression &expr) override
+  {
+    ResolvePath::go (&expr, parent);
+  }
 
-  void visit (AST::ReturnExpr &expr)
+  void visit (AST::ReturnExpr &expr) override
   {
     if (expr.has_returned_expr ())
       ResolveExpr::go (expr.get_returned_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::CallExpr &expr)
+  void visit (AST::CallExpr &expr) override
   {
     ResolveExpr::go (expr.get_function_expr ().get (), expr.get_node_id ());
     expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
@@ -82,7 +89,7 @@ public:
     });
   }
 
-  void visit (AST::MethodCallExpr &expr)
+  void visit (AST::MethodCallExpr &expr) override
   {
     ResolveExpr::go (expr.get_receiver_expr ().get (), expr.get_node_id ());
     expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
@@ -91,7 +98,7 @@ public:
     });
   }
 
-  void visit (AST::AssignmentExpr &expr)
+  void visit (AST::AssignmentExpr &expr) override
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
@@ -100,7 +107,7 @@ public:
     VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::IdentifierExpr &expr)
+  void visit (AST::IdentifierExpr &expr) override
   {
     if (resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
       {
@@ -124,13 +131,13 @@ public:
       }
   }
 
-  void visit (AST::ArithmeticOrLogicalExpr &expr)
+  void visit (AST::ArithmeticOrLogicalExpr &expr) override
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::CompoundAssignmentExpr &expr)
+  void visit (AST::CompoundAssignmentExpr &expr) override
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
@@ -139,46 +146,46 @@ public:
     VerifyAsignee::go (expr.get_left_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::ComparisonExpr &expr)
+  void visit (AST::ComparisonExpr &expr) override
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::LazyBooleanExpr &expr)
+  void visit (AST::LazyBooleanExpr &expr) override
   {
     ResolveExpr::go (expr.get_left_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_right_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::NegationExpr &expr)
+  void visit (AST::NegationExpr &expr) override
   {
     ResolveExpr::go (expr.get_negated_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::IfExpr &expr)
+  void visit (AST::IfExpr &expr) override
   {
     ResolveExpr::go (expr.get_condition_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_if_block ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::IfExprConseqElse &expr)
+  void visit (AST::IfExprConseqElse &expr) override
   {
     ResolveExpr::go (expr.get_condition_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_if_block ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_else_block ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::IfExprConseqIf &expr)
+  void visit (AST::IfExprConseqIf &expr) override
   {
     ResolveExpr::go (expr.get_condition_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_if_block ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_conseq_if_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::BlockExpr &expr);
+  void visit (AST::BlockExpr &expr) override;
 
-  void visit (AST::ArrayElemsValues &elems)
+  void visit (AST::ArrayElemsValues &elems) override
   {
     elems.iterate ([&] (AST::Expr *elem) mutable -> bool {
       ResolveExpr::go (elem, elems.get_node_id ());
@@ -186,24 +193,24 @@ public:
     });
   }
 
-  void visit (AST::ArrayExpr &expr)
+  void visit (AST::ArrayExpr &expr) override
   {
     expr.get_array_elems ()->accept_vis (*this);
   }
 
-  void visit (AST::ArrayIndexExpr &expr)
+  void visit (AST::ArrayIndexExpr &expr) override
   {
     ResolveExpr::go (expr.get_array_expr ().get (), expr.get_node_id ());
     ResolveExpr::go (expr.get_index_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::ArrayElemsCopied &elems)
+  void visit (AST::ArrayElemsCopied &elems) override
   {
     ResolveExpr::go (elems.get_num_copies ().get (), elems.get_node_id ());
     ResolveExpr::go (elems.get_elem_to_copy ().get (), elems.get_node_id ());
   }
 
-  void visit (AST::StructExprStructFields &struct_expr)
+  void visit (AST::StructExprStructFields &struct_expr) override
   {
     ResolveExpr::go (&struct_expr.get_struct_name (),
 		     struct_expr.get_node_id ());
@@ -222,17 +229,17 @@ public:
       });
   }
 
-  void visit (AST::GroupedExpr &expr)
+  void visit (AST::GroupedExpr &expr) override
   {
     ResolveExpr::go (expr.get_expr_in_parens ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::FieldAccessExpr &expr)
+  void visit (AST::FieldAccessExpr &expr) override
   {
     ResolveExpr::go (expr.get_receiver_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::LoopExpr &expr)
+  void visit (AST::LoopExpr &expr) override
   {
     if (expr.has_loop_label ())
       {
@@ -261,7 +268,7 @@ public:
     ResolveExpr::go (expr.get_loop_block ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::BreakExpr &expr)
+  void visit (AST::BreakExpr &expr) override
   {
     if (expr.has_label ())
       {
@@ -288,7 +295,7 @@ public:
       ResolveExpr::go (expr.get_break_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::WhileLoopExpr &expr)
+  void visit (AST::WhileLoopExpr &expr) override
   {
     if (expr.has_loop_label ())
       {
@@ -318,7 +325,7 @@ public:
     ResolveExpr::go (expr.get_loop_block ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::ContinueExpr &expr)
+  void visit (AST::ContinueExpr &expr) override
   {
     if (expr.has_label ())
       {
@@ -342,12 +349,12 @@ public:
       }
   }
 
-  void visit (AST::BorrowExpr &expr)
+  void visit (AST::BorrowExpr &expr) override
   {
     ResolveExpr::go (expr.get_borrowed_expr ().get (), expr.get_node_id ());
   }
 
-  void visit (AST::DereferenceExpr &expr)
+  void visit (AST::DereferenceExpr &expr) override
   {
     ResolveExpr::go (expr.get_dereferenced_expr ().get (), expr.get_node_id ());
   }

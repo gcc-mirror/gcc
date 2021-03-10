@@ -29,6 +29,8 @@ namespace Resolver {
 
 class ResolveTopLevel : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static void go (AST::Item *item)
   {
@@ -36,7 +38,7 @@ public:
     item->accept_vis (resolver);
   };
 
-  void visit (AST::TupleStruct &struct_decl)
+  void visit (AST::TupleStruct &struct_decl) override
   {
     resolver->get_type_scope ().insert (
       struct_decl.get_identifier (), struct_decl.get_node_id (),
@@ -47,7 +49,7 @@ public:
       });
   }
 
-  void visit (AST::StructStruct &struct_decl)
+  void visit (AST::StructStruct &struct_decl) override
   {
     resolver->get_type_scope ().insert (
       struct_decl.get_identifier (), struct_decl.get_node_id (),
@@ -58,7 +60,7 @@ public:
       });
   }
 
-  void visit (AST::StaticItem &var)
+  void visit (AST::StaticItem &var) override
   {
     resolver->get_name_scope ().insert (
       var.get_identifier (), var.get_node_id (), var.get_locus (), false,
@@ -72,7 +74,7 @@ public:
     resolver->mark_decl_mutability (var.get_node_id (), var.is_mutable ());
   }
 
-  void visit (AST::ConstantItem &constant)
+  void visit (AST::ConstantItem &constant) override
   {
     resolver->get_name_scope ().insert (
       constant.get_identifier (), constant.get_node_id (),
@@ -86,7 +88,7 @@ public:
 						constant.get_node_id ()});
   }
 
-  void visit (AST::Function &function)
+  void visit (AST::Function &function) override
   {
     resolver->get_name_scope ().insert (
       function.get_function_name (), function.get_node_id (),
@@ -108,7 +110,7 @@ public:
       }
   }
 
-  void visit (AST::InherentImpl &impl_block)
+  void visit (AST::InherentImpl &impl_block) override
   {
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (),

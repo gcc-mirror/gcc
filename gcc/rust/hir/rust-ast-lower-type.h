@@ -28,6 +28,8 @@ namespace HIR {
 
 class ASTLoweringType : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::Type *translate (AST::Type *type)
   {
@@ -43,7 +45,7 @@ public:
     return resolver.translated;
   }
 
-  void visit (AST::BareFunctionType &fntype)
+  void visit (AST::BareFunctionType &fntype) override
   {
     bool is_variadic = false;
     std::vector<HIR::LifetimeParam> lifetime_params;
@@ -94,7 +96,7 @@ public:
       std::unique_ptr<HIR::Type> (return_type), fntype.get_locus ());
   }
 
-  void visit (AST::TupleType &tuple)
+  void visit (AST::TupleType &tuple) override
   {
     std::vector<std::unique_ptr<HIR::Type> > elems;
     for (auto &e : tuple.get_elems ())
@@ -112,7 +114,7 @@ public:
 				     tuple.get_locus ());
   }
 
-  void visit (AST::TypePathSegment &segment)
+  void visit (AST::TypePathSegment &segment) override
   {
     HIR::PathIdentSegment ident (segment.get_ident_segment ().as_string ());
     translated_segment
@@ -121,7 +123,7 @@ public:
 				  segment.get_locus ());
   }
 
-  void visit (AST::TypePathSegmentGeneric &segment)
+  void visit (AST::TypePathSegmentGeneric &segment) override
   {
     std::vector<HIR::GenericArgsBinding> binding_args; // TODO
 
@@ -148,7 +150,7 @@ public:
       std::move (type_args), std::move (binding_args), segment.get_locus ());
   }
 
-  void visit (AST::TypePath &path)
+  void visit (AST::TypePath &path) override
   {
     std::vector<std::unique_ptr<HIR::TypePathSegment> > translated_segments;
 
@@ -179,7 +181,7 @@ public:
 			       translated);
   }
 
-  void visit (AST::ArrayType &type)
+  void visit (AST::ArrayType &type) override
   {
     HIR::Type *translated_type
       = ASTLoweringType::translate (type.get_elem_type ().get ());
@@ -200,7 +202,7 @@ public:
 			       translated);
   }
 
-  void visit (AST::ReferenceType &type)
+  void visit (AST::ReferenceType &type) override
   {
     HIR::Lifetime lifetime = lower_lifetime (type.get_lifetime ());
 
@@ -220,7 +222,7 @@ public:
 			       translated);
   }
 
-  void visit (AST::InferredType &type)
+  void visit (AST::InferredType &type) override
   {
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
@@ -244,6 +246,8 @@ private:
 
 class ASTLowerGenericParam : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::GenericParam *translate (AST::GenericParam *param)
   {

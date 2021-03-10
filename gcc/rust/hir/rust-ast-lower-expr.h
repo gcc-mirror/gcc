@@ -29,6 +29,8 @@ namespace HIR {
 
 class ArrayCapacityConstant : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static bool fold (AST::Expr *expr, size_t *folded_result)
   {
@@ -40,7 +42,7 @@ public:
 
   virtual ~ArrayCapacityConstant () {}
 
-  void visit (AST::LiteralExpr &expr)
+  void visit (AST::LiteralExpr &expr) override
   {
     switch (expr.get_lit_type ())
       {
@@ -65,6 +67,8 @@ private:
 
 class ASTLowerPathInExpression : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::PathInExpression *translate (AST::PathInExpression *expr)
   {
@@ -84,6 +88,8 @@ private:
 
 class ASTLoweringExpr : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::Expr *translate (AST::Expr *expr, bool *terminated = nullptr)
   {
@@ -110,7 +116,7 @@ public:
     return resolver.translated;
   }
 
-  void visit (AST::TupleIndexExpr &expr)
+  void visit (AST::TupleIndexExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
 
@@ -129,7 +135,7 @@ public:
 				 std::move (outer_attribs), expr.get_locus ());
   }
 
-  void visit (AST::TupleExpr &expr)
+  void visit (AST::TupleExpr &expr) override
   {
     std::vector<HIR::Attribute> inner_attribs;
     std::vector<HIR::Attribute> outer_attribs;
@@ -151,32 +157,32 @@ public:
 			    std::move (outer_attribs), expr.get_locus ());
   }
 
-  void visit (AST::IfExpr &expr)
+  void visit (AST::IfExpr &expr) override
   {
     translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::IfExprConseqElse &expr)
+  void visit (AST::IfExprConseqElse &expr) override
   {
     translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::IfExprConseqIf &expr)
+  void visit (AST::IfExprConseqIf &expr) override
   {
     translated = ASTLoweringIfBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::BlockExpr &expr)
+  void visit (AST::BlockExpr &expr) override
   {
     translated = ASTLoweringBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::PathInExpression &expr)
+  void visit (AST::PathInExpression &expr) override
   {
     translated = ASTLowerPathInExpression::translate (&expr);
   }
 
-  void visit (AST::ReturnExpr &expr)
+  void visit (AST::ReturnExpr &expr) override
   {
     terminated = true;
     HIR::Expr *return_expr
@@ -193,7 +199,7 @@ public:
 				      std::unique_ptr<HIR::Expr> (return_expr));
   }
 
-  void visit (AST::CallExpr &expr)
+  void visit (AST::CallExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
     HIR::Expr *func
@@ -216,7 +222,7 @@ public:
 			   expr.get_locus ());
   }
 
-  void visit (AST::MethodCallExpr &expr)
+  void visit (AST::MethodCallExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
 
@@ -245,7 +251,7 @@ public:
 				 std::move (outer_attribs), expr.get_locus ());
   }
 
-  void visit (AST::AssignmentExpr &expr)
+  void visit (AST::AssignmentExpr &expr) override
   {
     HIR::Expr *lhs = ASTLoweringExpr::translate (expr.get_left_expr ().get ());
     HIR::Expr *rhs = ASTLoweringExpr::translate (expr.get_right_expr ().get ());
@@ -261,7 +267,7 @@ public:
 				 expr.get_locus ());
   }
 
-  void visit (AST::IdentifierExpr &expr)
+  void visit (AST::IdentifierExpr &expr) override
   {
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
@@ -271,7 +277,7 @@ public:
       = new HIR::IdentifierExpr (mapping, expr.as_string (), expr.get_locus ());
   }
 
-  void visit (AST::ArrayExpr &expr)
+  void visit (AST::ArrayExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
     std::vector<HIR::Attribute> inner_attribs;
@@ -290,7 +296,7 @@ public:
 			    inner_attribs, outer_attribs, expr.get_locus ());
   }
 
-  void visit (AST::ArrayIndexExpr &expr)
+  void visit (AST::ArrayIndexExpr &expr) override
   {
     std::vector<Attribute> outer_attribs;
     HIR::Expr *array_expr
@@ -310,7 +316,7 @@ public:
 				 outer_attribs, expr.get_locus ());
   }
 
-  void visit (AST::ArrayElemsValues &elems)
+  void visit (AST::ArrayElemsValues &elems) override
   {
     std::vector<std::unique_ptr<HIR::Expr> > elements;
     elems.iterate ([&] (AST::Expr *elem) mutable -> bool {
@@ -322,7 +328,7 @@ public:
     translated_array_elems = new HIR::ArrayElemsValues (std::move (elements));
   }
 
-  void visit (AST::ArrayElemsCopied &elems)
+  void visit (AST::ArrayElemsCopied &elems) override
   {
     HIR::Expr *element
       = ASTLoweringExpr::translate (elems.get_elem_to_copy ().get ());
@@ -343,7 +349,7 @@ public:
 				   folded);
   }
 
-  void visit (AST::LiteralExpr &expr)
+  void visit (AST::LiteralExpr &expr) override
   {
     HIR::Literal::LitType type = HIR::Literal::LitType::CHAR;
     switch (expr.get_lit_type ())
@@ -386,7 +392,7 @@ public:
 				       expr.get_locus ());
   }
 
-  void visit (AST::ArithmeticOrLogicalExpr &expr)
+  void visit (AST::ArithmeticOrLogicalExpr &expr) override
   {
     HIR::Expr *lhs = ASTLoweringExpr::translate (expr.get_left_expr ().get ());
     rust_assert (lhs != nullptr);
@@ -406,7 +412,7 @@ public:
 					  expr.get_locus ());
   }
 
-  void visit (AST::ComparisonExpr &expr)
+  void visit (AST::ComparisonExpr &expr) override
   {
     HIR::Expr *lhs = ASTLoweringExpr::translate (expr.get_left_expr ().get ());
     rust_assert (lhs != nullptr);
@@ -424,7 +430,7 @@ public:
 				 expr.get_expr_type (), expr.get_locus ());
   }
 
-  void visit (AST::LazyBooleanExpr &expr)
+  void visit (AST::LazyBooleanExpr &expr) override
   {
     HIR::Expr *lhs = ASTLoweringExpr::translate (expr.get_left_expr ().get ());
     rust_assert (lhs != nullptr);
@@ -442,7 +448,7 @@ public:
 				  expr.get_expr_type (), expr.get_locus ());
   }
 
-  void visit (AST::NegationExpr &expr)
+  void visit (AST::NegationExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
 
@@ -461,7 +467,7 @@ public:
   }
 
   /* Compound assignment expression is compiled away. */
-  void visit (AST::CompoundAssignmentExpr &expr)
+  void visit (AST::CompoundAssignmentExpr &expr) override
   {
     /* First we need to find the corresponding arithmetic or logical operator.
      */
@@ -520,7 +526,7 @@ public:
 				 expr.get_locus ());
   }
 
-  void visit (AST::StructExprStructFields &struct_expr)
+  void visit (AST::StructExprStructFields &struct_expr) override
   {
     std::vector<HIR::Attribute> inner_attribs;
     std::vector<HIR::Attribute> outer_attribs;
@@ -560,7 +566,7 @@ public:
 					 inner_attribs, outer_attribs);
   }
 
-  void visit (AST::GroupedExpr &expr)
+  void visit (AST::GroupedExpr &expr) override
   {
     std::vector<HIR::Attribute> inner_attribs;
     std::vector<HIR::Attribute> outer_attribs;
@@ -579,7 +585,7 @@ public:
 			      std::move (outer_attribs), expr.get_locus ());
   }
 
-  void visit (AST::FieldAccessExpr &expr)
+  void visit (AST::FieldAccessExpr &expr) override
   {
     std::vector<HIR::Attribute> inner_attribs;
     std::vector<HIR::Attribute> outer_attribs;
@@ -598,17 +604,17 @@ public:
 				  std::move (outer_attribs), expr.get_locus ());
   }
 
-  void visit (AST::LoopExpr &expr)
+  void visit (AST::LoopExpr &expr) override
   {
     translated = ASTLoweringExprWithBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::WhileLoopExpr &expr)
+  void visit (AST::WhileLoopExpr &expr) override
   {
     translated = ASTLoweringExprWithBlock::translate (&expr, &terminated);
   }
 
-  void visit (AST::BreakExpr &expr)
+  void visit (AST::BreakExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
     HIR::Lifetime break_label = lower_lifetime (expr.get_label ());
@@ -628,7 +634,7 @@ public:
 				     std::move (outer_attribs));
   }
 
-  void visit (AST::ContinueExpr &expr)
+  void visit (AST::ContinueExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
     HIR::Lifetime break_label = lower_lifetime (expr.get_label ());
@@ -643,7 +649,7 @@ public:
 					std::move (outer_attribs));
   }
 
-  void visit (AST::BorrowExpr &expr)
+  void visit (AST::BorrowExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
 
@@ -662,7 +668,7 @@ public:
 			     std::move (outer_attribs), expr.get_locus ());
   }
 
-  void visit (AST::DereferenceExpr &expr)
+  void visit (AST::DereferenceExpr &expr) override
   {
     std::vector<HIR::Attribute> outer_attribs;
 

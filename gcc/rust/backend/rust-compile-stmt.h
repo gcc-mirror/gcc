@@ -28,6 +28,8 @@ namespace Compile {
 
 class CompileStmt : public HIRCompileBase
 {
+  using Rust::Compile::HIRCompileBase::visit;
+
 public:
   static Bexpression *Compile (HIR::Stmt *stmt, Context *ctx)
   {
@@ -37,19 +39,19 @@ public:
     return compiler.translated;
   }
 
-  void visit (HIR::ExprStmtWithBlock &stmt)
+  void visit (HIR::ExprStmtWithBlock &stmt) override
   {
     ok = true;
     translated = CompileExpr::Compile (stmt.get_expr (), ctx);
   }
 
-  void visit (HIR::ExprStmtWithoutBlock &stmt)
+  void visit (HIR::ExprStmtWithoutBlock &stmt) override
   {
     ok = true;
     translated = CompileExpr::Compile (stmt.get_expr (), ctx);
   }
 
-  void visit (HIR::LetStmt &stmt)
+  void visit (HIR::LetStmt &stmt) override
   {
     // marks that the statement has been looked at
     ok = true;

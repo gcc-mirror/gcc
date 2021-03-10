@@ -27,6 +27,8 @@ namespace Resolver {
 
 class ResolvePattern : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static void go (AST::Pattern *pattern, NodeId parent)
   {
@@ -42,7 +44,7 @@ public:
 
   ~ResolvePattern () {}
 
-  void visit (AST::IdentifierPattern &pattern)
+  void visit (AST::IdentifierPattern &pattern) override
   {
     if (resolver->get_name_scope ().lookup (pattern.get_ident (),
 					    &resolved_node))
@@ -60,6 +62,8 @@ private:
 
 class PatternDeclaration : public ResolverBase
 {
+  using Rust::Resolver::ResolverBase::visit;
+
 public:
   static void go (AST::Pattern *pattern, NodeId parent)
   {
@@ -76,7 +80,7 @@ public:
 
   ~PatternDeclaration () {}
 
-  void visit (AST::IdentifierPattern &pattern)
+  void visit (AST::IdentifierPattern &pattern) override
   {
     // if we have a duplicate id this then allows for shadowing correctly
     // as new refs to this decl will match back here so it is ok to overwrite

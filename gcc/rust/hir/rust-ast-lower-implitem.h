@@ -31,6 +31,8 @@ namespace HIR {
 
 class ASTLowerImplItem : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::InherentImplItem *translate (AST::InherentImplItem *item)
   {
@@ -55,7 +57,7 @@ public:
 			   self.get_is_mut (), self.get_locus ());
   }
 
-  void visit (AST::ConstantItem &constant)
+  void visit (AST::ConstantItem &constant) override
   {
     std::vector<HIR::Attribute> outer_attrs;
     HIR::Visibility vis = HIR::Visibility::create_public ();
@@ -79,7 +81,7 @@ public:
 			       constant.get_locus ());
   }
 
-  void visit (AST::Function &function)
+  void visit (AST::Function &function) override
   {
     // ignore for now and leave empty
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
@@ -158,7 +160,7 @@ public:
     translated = fn;
   }
 
-  void visit (AST::Method &method)
+  void visit (AST::Method &method) override
   {
     // ignore for now and leave empty
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;

@@ -34,6 +34,8 @@ namespace HIR {
 
 class ASTLoweringItem : public ASTLoweringBase
 {
+  using Rust::HIR::ASTLoweringBase::visit;
+
 public:
   static HIR::Item *translate (AST::Item *item)
   {
@@ -51,7 +53,7 @@ public:
     return resolver.translated;
   }
 
-  void visit (AST::TupleStruct &struct_decl)
+  void visit (AST::TupleStruct &struct_decl) override
   {
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     if (struct_decl.has_generics ())
@@ -107,7 +109,7 @@ public:
 			       struct_decl.get_locus ());
   }
 
-  void visit (AST::StructStruct &struct_decl)
+  void visit (AST::StructStruct &struct_decl) override
   {
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     if (struct_decl.has_generics ())
@@ -164,7 +166,7 @@ public:
 			       struct_decl.get_locus ());
   }
 
-  void visit (AST::StaticItem &var)
+  void visit (AST::StaticItem &var) override
   {
     std::vector<HIR::Attribute> outer_attrs;
     HIR::Visibility vis = HIR::Visibility::create_public ();
@@ -190,7 +192,7 @@ public:
 			       var.get_locus ());
   }
 
-  void visit (AST::ConstantItem &constant)
+  void visit (AST::ConstantItem &constant) override
   {
     std::vector<HIR::Attribute> outer_attrs;
     HIR::Visibility vis = HIR::Visibility::create_public ();
@@ -215,7 +217,7 @@ public:
 			       constant.get_locus ());
   }
 
-  void visit (AST::Function &function)
+  void visit (AST::Function &function) override
   {
     // ignore for now and leave empty
     std::vector<HIR::Attribute> outer_attrs;
@@ -300,7 +302,7 @@ public:
     translated = fn;
   }
 
-  void visit (AST::InherentImpl &impl_block)
+  void visit (AST::InherentImpl &impl_block) override
   {
     std::vector<HIR::Attribute> inner_attrs;
     std::vector<HIR::Attribute> outer_attrs;
