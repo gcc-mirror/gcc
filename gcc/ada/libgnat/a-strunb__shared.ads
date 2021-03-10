@@ -725,10 +725,12 @@ private
    --  store string with specified length effectively.
 
    function Allocate
-     (Max_Length : Natural) return not null Shared_String_Access;
-   --  Allocates new Shared_String with at least specified maximum length.
-   --  Actual maximum length of the allocated Shared_String can be slightly
-   --  greater. Returns reference to Empty_Shared_String when requested length
+     (Required_Length : Natural;
+      Reserved_Length : Natural := 0) return not null Shared_String_Access;
+   --  Allocates new Shared_String. Actual maximum length of allocated object
+   --  is at least the specified required length. Additional storage is
+   --  allocated to allow to store up to the specified reserved length when
+   --  possible. Returns reference to Empty_Shared_String when requested length
    --  is zero.
 
    Empty_Shared_String : aliased Shared_String (0);

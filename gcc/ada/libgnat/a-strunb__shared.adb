@@ -50,11 +50,13 @@ package body Ada.Strings.Unbounded is
    --  align the returned memory on the maximum alignment as malloc does not
    --  know the target alignment.
 
-   function Aligned_Max_Length (Max_Length : Natural) return Natural;
+   function Aligned_Max_Length
+     (Required_Length : Natural;
+      Reserved_Length : Natural) return Natural;
    --  Returns recommended length of the shared string which is greater or
-   --  equal to specified length. Calculation take in sense alignment of the
-   --  allocated memory segments to use memory effectively by Append/Insert/etc
-   --  operations.
+   --  equal to specified required length and desired reserved length.
+   --  Calculation takes into account alignment of the allocated memory
+   --  segments to use memory effectively by Append/Insert/etc operations.
 
    function Sum (Left : Natural; Right : Integer) return Natural with Inline;
    --  Returns summary of Left and Right, raise Constraint_Error on overflow
@@ -62,11 +64,6 @@ package body Ada.Strings.Unbounded is
    function Mul (Left, Right : Natural) return Natural with Inline;
    --  Returns multiplication of Left and Right, raise Constraint_Error on
    --  overflow
-
-   function Allocate
-     (Length, Growth : Natural) return not null Shared_String_Access;
-   --  Allocates new Shared_String with at least specified Length plus optional
-   --  Growth.
 
    ---------
    -- "&" --
@@ -490,17 +487,24 @@ package body Ada.Strings.Unbounded is
    -- Aligned_Max_Length --
    ------------------------
 
-   function Aligned_Max_Length (Max_Length : Natural) return Natural is
+   function Aligned_Max_Length
+     (Required_Length : Natural;
+      Reserved_Length : Natural) return Natural
+   is
       Static_Size : constant Natural :=
                       Empty_Shared_String'Size / Standard'Storage_Unit;
       --  Total size of all Shared_String static components
    begin
-      if Max_Length > Natural'Last - Static_Size then
+      if Required_Length > Natural'Last - Static_Size - Reserved_Length then
+         --  Total requested length is larger than maximum possible length.
+         --  Use of Static_Size needed to avoid overflows in expression to
+         --  compute aligned length.
          return Natural'Last;
+
       else
          return
-           ((Static_Size + Max_Length - 1) / Min_Mul_Alloc + 2) * Min_Mul_Alloc
-             - Static_Size;
+           ((Static_Size + Required_Length + Reserved_Length - 1)
+              / Min_Mul_Alloc + 2) * Min_Mul_Alloc - Static_Size;
       end if;
    end Aligned_Max_Length;
 
@@ -509,35 +513,21 @@ package body Ada.Strings.Unbounded is
    --------------
 
    function Allocate
-     (Max_Length : Natural) return not null Shared_String_Access
+     (Required_Length : Natural;
+      Reserved_Length : Natural := 0) return not null Shared_String_Access
    is
    begin
       --  Empty string requested, return shared empty string
 
-      if Max_Length = 0 then
+      if Required_Length = 0 then
          return Empty_Shared_String'Access;
 
       --  Otherwise, allocate requested space (and probably some more room)
 
       else
-         return new Shared_String (Aligned_Max_Length (Max_Length));
-      end if;
-   end Allocate;
-
-   --------------
-   -- Allocate --
-   --------------
-
-   function Allocate
-     (Length, Growth : Natural) return not null Shared_String_Access is
-   begin
-      if Natural'Last - Growth < Length then
-         --  Then Length + Growth would be more than Natural'Last
-
-         return new Shared_String (Integer'Last);
-
-      else
-         return Allocate (Length + Growth);
+         return
+           new Shared_String
+                 (Aligned_Max_Length (Required_Length, Reserved_Length));
       end if;
    end Allocate;
 
@@ -657,7 +647,7 @@ package body Ada.Strings.Unbounded is
         System.Atomic_Counters.Is_One (Item.Counter)
           and then Item.Max_Length >= Length
           and then Item.Max_Length <=
-                     Aligned_Max_Length (Length + Length / Growth_Factor);
+                     Aligned_Max_Length (Length, Length / Growth_Factor);
    end Can_Be_Reused;
 
    -----------
