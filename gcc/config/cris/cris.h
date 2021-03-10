@@ -588,6 +588,9 @@ enum reg_class
 
 #define STATIC_CHAIN_REGNUM CRIS_STATIC_CHAIN_REGNUM
 
+/* No unwind context is needed for faked registers nor DCCR.  Currently not MOF
+   too, but let's keep that open.  */
+#define DWARF_FRAME_REGISTERS (CRIS_MOF_REGNUM + 1)
 
 /* Node: Elimination */
 
