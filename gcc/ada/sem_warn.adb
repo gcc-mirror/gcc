@@ -3741,17 +3741,20 @@ package body Sem_Warn is
       Form1 := First_Formal (Subp);
       Act1  := First_Actual (N);
       while Present (Form1) and then Present (Act1) loop
-         if Is_Generic_Type (Etype (Act1)) then
-            return;
-         end if;
 
          Form2 := Next_Formal (Form1);
          Act2  := Next_Actual (Act1);
          while Present (Form2) and then Present (Act2) loop
-            if Refer_Same_Object (Act1, Act2) then
-               if Is_Generic_Type (Etype (Act2)) then
-                  return;
-               end if;
+
+            --  Ignore formals of generic types; they will be examined when
+            --  instantiated.
+
+            if Is_Generic_Type (Etype (Form1))
+              or else Is_Generic_Type (Etype (Form2))
+            then
+               null;
+
+            elsif Refer_Same_Object (Act1, Act2) then
 
                --  Case 1: two writable elementary parameters that overlap
 
