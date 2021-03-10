@@ -1,3 +1,44 @@
+2021-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99305
+	* g++.dg/opt/pr99305.C: New test.
+
+2021-03-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* lib/target-supports.exp (check_effective_target_powerpc_sqrt): New.
+	(check_effective_target_sqrt_insn): Use it.
+
+2021-03-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99454
+	* gcc.target/i386/pr99454.c: New.
+
+2021-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/array-quals-1.c: Pass -fno-pie if supported.
+	* gcc.dg/loop-9.c: Likewise.
+	* gfortran.dg/pr95690.f90: Replace *-*-solaris* with sparc*-*-*.
+	* gnat.dg/opt39.adb: Pass --param option for Aarch64 too.
+
+2021-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/98920
+	* c-c++-common/asan/pr98920.c: Only include regex.h if the header
+	exists.  If REG_STARTEND macro isn't defined, just return 0 from main
+	instead of the actual test.
+
+2021-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/99464
+	* gcc.target/i386/pr99464.c: New test.
+
+2021-03-09  Joel Brobecker  <brobecker@adacore.com>
+
+	* gcc.target/powerpc/undef-bool-2.c: Add
+	dg-require-effective-target powerpc_vsx_ok directive.
+	* g++.dg/ext/undef-bool-1.C: Add dg-require-effective-target
+	powerpc_vsx_ok directive.
+
 2021-03-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/49278

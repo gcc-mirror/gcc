@@ -1,3 +1,84 @@
+2021-03-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	* ira.c (ira_setup_alts, ira_get_dup_out_num): Process digital
+	constraints > 9.
+	* ira-lives.c (single_reg_class): Ditto.
+
+2021-03-09  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (aarch64-*-rtems*): Include general rtems.h after
+	the architecture-specific rtems.h.
+	(aarch64-*-rtems*): Likewise.
+	(arm*-*-rtems*): Likewise.
+	(epiphany-*-rtems*): Likewise.
+	(riscv*-*-rtems*): Likewise.
+
+2021-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99305
+	* tree-ssa-phiopt.c (conditional_replacement): Test integer_pow2p
+	before integer_all_onesp instead of vice versa.
+
+2021-03-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* common/config/arm/arm-common.c (arm_config_default): Change type
+	of 'i' to unsigned.
+
+2021-03-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99454
+	* lra-constraints.c (process_address_1): Process constraint 'g'
+	separately and digital constraints containing more one digit.
+
+2021-03-09  Nick Clifton  <nickc@redhat.com>
+
+	* config/rx/rx.h (DBX_DEBUGGING_INFO): Define.
+	(DWARF"_DEBUGGING_INFO): Define.
+
+2021-03-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c++/90448
+	* calls.c (initialize_argument_information): When the argument
+	is passed by reference, do not make a copy in a thunk only if
+	the argument is already in memory.  Remove redundant test for
+	the case of callee copy.
+
+2021-03-09  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99454
+	* lra-constraints.c (process_address_1): Process 0..9 constraints
+	in process_address_1.
+
+2021-03-09  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (struct s390_processor processor_table):
+	Binutils name string must not be empty.
+
+2021-03-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_attr_type): Remove function.
+
+2021-03-09  Martin Liska  <mliska@suse.cz>
+
+	PR target/99464
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Set isa_flags for OPTS argument and not for the global
+	global_options.
+
+2021-03-09  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/predicates.md (ds_form_mem_operand): Check
+	in correct code.
+
+2021-03-09  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/99070
+	* config/rs6000/predicates.md (ds_form_mem_operand) New
+	predicate.
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10) Use
+	ds_form_mem_operand in ld/lwa patterns.
+	* config/rs6000/fusion.md: Regenerate file.
+
 2021-03-08  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/98266
