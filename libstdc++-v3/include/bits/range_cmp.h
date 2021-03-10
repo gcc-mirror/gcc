@@ -62,19 +62,9 @@ namespace ranges
 {
   namespace __detail
   {
-    // BUILTIN-PTR-CMP(T, ==, U)
-    template<typename _Tp, typename _Up>
-      concept __eq_builtin_ptr_cmp
-	= requires (_Tp&& __t, _Up&& __u) { { __t == __u } -> same_as<bool>; }
-	  && convertible_to<_Tp, const volatile void*>
-	  && convertible_to<_Up, const volatile void*>
-	  && (! requires(_Tp&& __t, _Up&& __u)
-	      { operator==(std::forward<_Tp>(__t), std::forward<_Up>(__u)); }
-	      &&
-	      ! requires(_Tp&& __t, _Up&& __u)
-	      { std::forward<_Tp>(__t).operator==(std::forward<_Up>(__u)); });
-
     // BUILTIN-PTR-CMP(T, <, U)
+    // This determines whether t < u results in a call to a built-in operator<
+    // comparing pointers. It doesn't work for function pointers (PR 93628).
     template<typename _Tp, typename _Up>
       concept __less_builtin_ptr_cmp
 	= requires (_Tp&& __t, _Up&& __u) { { __t < __u } -> same_as<bool>; }
@@ -88,12 +78,14 @@ namespace ranges
 
   // [range.cmp] Concept-constrained comparisons
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3530 BUILTIN-PTR-MEOW should not opt the type out of syntactic checks
+
   /// ranges::equal_to function object type.
   struct equal_to
   {
     template<typename _Tp, typename _Up>
       requires equality_comparable_with<_Tp, _Up>
-	|| __detail::__eq_builtin_ptr_cmp<_Tp, _Up>
       constexpr bool
       operator()(_Tp&& __t, _Up&& __u) const
       noexcept(noexcept(std::declval<_Tp>() == std::declval<_Up>()))
@@ -107,7 +99,6 @@ namespace ranges
   {
     template<typename _Tp, typename _Up>
       requires equality_comparable_with<_Tp, _Up>
-	|| __detail::__eq_builtin_ptr_cmp<_Tp, _Up>
       constexpr bool
       operator()(_Tp&& __t, _Up&& __u) const
       noexcept(noexcept(std::declval<_Up>() == std::declval<_Tp>()))
@@ -121,7 +112,6 @@ namespace ranges
   {
     template<typename _Tp, typename _Up>
       requires totally_ordered_with<_Tp, _Up>
-	|| __detail::__less_builtin_ptr_cmp<_Tp, _Up>
       constexpr bool
       operator()(_Tp&& __t, _Up&& __u) const
       noexcept(noexcept(std::declval<_Tp>() < std::declval<_Up>()))
@@ -150,7 +140,6 @@ namespace ranges
   {
     template<typename _Tp, typename _Up>
       requires totally_ordered_with<_Tp, _Up>
-	|| __detail::__less_builtin_ptr_cmp<_Up, _Tp>
       constexpr bool
       operator()(_Tp&& __t, _Up&& __u) const
       noexcept(noexcept(std::declval<_Up>() < std::declval<_Tp>()))
@@ -164,7 +153,6 @@ namespace ranges
   {
     template<typename _Tp, typename _Up>
       requires totally_ordered_with<_Tp, _Up>
-	|| __detail::__less_builtin_ptr_cmp<_Tp, _Up>
       constexpr bool
       operator()(_Tp&& __t, _Up&& __u) const
       noexcept(noexcept(std::declval<_Tp>() < std::declval<_Up>()))
@@ -178,7 +166,6 @@ namespace ranges
   {
     template<typename _Tp, typename _Up>
       requires totally_ordered_with<_Tp, _Up>
-	|| __detail::__less_builtin_ptr_cmp<_Up, _Tp>
       constexpr bool
       operator()(_Tp&& __t, _Up&& __u) const
       noexcept(noexcept(std::declval<_Up>() < std::declval<_Tp>()))
