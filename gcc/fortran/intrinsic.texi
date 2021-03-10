@@ -10628,7 +10628,7 @@ permitted.)
 @end multitable
 
 @item @emph{Return value}:
-The return value corresponds to the maximum value among the arguments,
+The return value corresponds to the minimum value among the arguments,
 and has the same type and kind as the first argument.
 
 @item @emph{Specific names}:
