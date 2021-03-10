@@ -575,6 +575,9 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
       /* An initializer has to be constant.  */
       if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
 	return false;
+      if (lvalue->ts.u.cl->length
+	  && lvalue->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+	return false;
       expr = create_character_initializer (init, last_ts, ref, rvalue);
     }
   else

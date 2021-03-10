@@ -6216,7 +6216,7 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
     case EXPR_ARRAY:
       /* Create a vector of all the elements.  */
       for (c = gfc_constructor_first (expr->value.constructor);
-	   c; c = gfc_constructor_next (c))
+	   c && c->expr; c = gfc_constructor_next (c))
         {
           if (c->iterator)
             {
