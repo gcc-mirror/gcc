@@ -371,6 +371,16 @@ class callgraph_superedge : public superedge
   void dump_label_to_pp (pretty_printer *pp, bool user_facing) const
     FINAL OVERRIDE;
 
+  callgraph_superedge *dyn_cast_callgraph_superedge () FINAL OVERRIDE
+  {
+    return this;
+  }
+  const callgraph_superedge *dyn_cast_callgraph_superedge () const
+    FINAL OVERRIDE
+  {
+    return this;
+  }
+
   function *get_callee_function () const;
   function *get_caller_function () const;
   tree get_callee_decl () const;
@@ -409,16 +419,6 @@ class call_superedge : public callgraph_superedge
   : callgraph_superedge (src, dst, SUPEREDGE_CALL, cedge)
   {}
 
-  callgraph_superedge *dyn_cast_callgraph_superedge () FINAL OVERRIDE
-  {
-    return this;
-  }
-  const callgraph_superedge *dyn_cast_callgraph_superedge () const
-    FINAL OVERRIDE
-  {
-    return this;
-  }
-
   call_superedge *dyn_cast_call_superedge () FINAL OVERRIDE
   {
     return this;
@@ -454,14 +454,6 @@ class return_superedge : public callgraph_superedge
   return_superedge (supernode *src, supernode *dst, cgraph_edge *cedge)
   : callgraph_superedge (src, dst, SUPEREDGE_RETURN, cedge)
   {}
-
-  callgraph_superedge *dyn_cast_callgraph_superedge () FINAL OVERRIDE
-  {
-    return this;
-  }
-  const callgraph_superedge *dyn_cast_callgraph_superedge () const
-    FINAL OVERRIDE
-  { return this; }
 
   return_superedge *dyn_cast_return_superedge () FINAL OVERRIDE { return this; }
   const return_superedge *dyn_cast_return_superedge () const FINAL OVERRIDE

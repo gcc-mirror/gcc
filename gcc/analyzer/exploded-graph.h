@@ -906,6 +906,28 @@ public:
   rejected_constraint *m_rc;
 };
 
+/* A class for capturing the state of a node when checking a path
+   through the exploded_graph for feasibility.  */
+
+class feasibility_state
+{
+public:
+  feasibility_state (region_model_manager *manager,
+		     const supergraph &sg);
+  feasibility_state (const feasibility_state &other);
+
+  bool maybe_update_for_edge (logger *logger,
+			      const exploded_edge *eedge,
+			      rejected_constraint **out_rc);
+
+  const region_model &get_model () const { return m_model; }
+  const auto_sbitmap &get_snodes_visited () const { return m_snodes_visited; }
+
+private:
+  region_model m_model;
+  auto_sbitmap m_snodes_visited;
+};
+
 /* Finding the shortest exploded_path within an exploded_graph.  */
 
 typedef shortest_paths<eg_traits, exploded_path> shortest_exploded_paths;

@@ -3404,11 +3404,10 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
 {
   LOG_SCOPE (logger);
 
-  auto_sbitmap snodes_visited (eg->get_supergraph ().m_nodes.length ());
-  bitmap_clear (snodes_visited);
+  feasibility_state state (eng->get_model_manager (),
+			   eg->get_supergraph ());
 
-  /* Traverse the path, updating this model.  */
-  region_model model (eng->get_model_manager ());
+  /* Traverse the path, updating this state.  */
   for (unsigned edge_idx = 0; edge_idx < m_edges.length (); edge_idx++)
     {
       const exploded_edge *eedge = m_edges[edge_idx];
@@ -3417,106 +3416,23 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
 		     edge_idx,
 		     eedge->m_src->m_index,
 		     eedge->m_dest->m_index);
-      const exploded_node &src_enode = *eedge->m_src;
-      const program_point &src_point = src_enode.get_point ();
-      if (logger)
+
+      rejected_constraint *rc = NULL;
+      if (!state.maybe_update_for_edge (logger, eedge, &rc))
 	{
-	  logger->start_log_line ();
-	  src_point.print (logger->get_printer (), format (false));
-	  logger->end_log_line ();
-	}
-
-      /* Update state for the stmts that were processed in each enode.  */
-      for (unsigned stmt_idx = 0; stmt_idx < src_enode.m_num_processed_stmts;
-	   stmt_idx++)
-	{
-	  const gimple *stmt = src_enode.get_processed_stmt (stmt_idx);
-
-	  /* Update cfun and input_location in case of ICE: make it easier to
-	     track down which source construct we're failing to handle.  */
-	  auto_cfun sentinel (src_point.get_function ());
-	  input_location = stmt->location;
-
-	  if (const gassign *assign = dyn_cast <const gassign *> (stmt))
-	    model.on_assignment (assign, NULL);
-	  else if (const greturn *return_ = dyn_cast <const greturn *> (stmt))
-	    model.on_return (return_, NULL);
-	}
-
-      const superedge *sedge = eedge->m_sedge;
-      if (sedge)
-	{
-	  if (logger)
-	    logger->log ("  sedge: SN:%i -> SN:%i %s",
-			 sedge->m_src->m_index,
-			 sedge->m_dest->m_index,
-			 sedge->get_description (false));
-
-	  const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
-	  rejected_constraint *rc = NULL;
-	  if (!model.maybe_update_for_edge (*sedge, last_stmt, NULL, &rc))
+	  gcc_assert (rc);
+	  if (out)
 	    {
-	      if (logger)
-		{
-		  logger->log ("rejecting due to region model");
-		  model.dump_to_pp (logger->get_printer (), true, false);
-		}
-	      if (out)
-		*out = new feasibility_problem (edge_idx, *eedge,
-						last_stmt, rc);
-	      else
-		delete rc;
-	      return false;
+	      const exploded_node &src_enode = *eedge->m_src;
+	      const program_point &src_point = src_enode.get_point ();
+	      const gimple *last_stmt
+		= src_point.get_supernode ()->get_last_stmt ();
+	      *out = new feasibility_problem (edge_idx, *eedge,
+					      last_stmt, rc);
 	    }
-	}
-      else
-	{
-	  /* Special-case the initial eedge from the origin node to the
-	     initial function by pushing a frame for it.  */
-	  if (edge_idx == 0)
-	    {
-	      gcc_assert (eedge->m_src->m_index == 0);
-	      gcc_assert (src_point.get_kind () == PK_ORIGIN);
-	      gcc_assert (eedge->m_dest->get_point ().get_kind ()
-			  == PK_BEFORE_SUPERNODE);
-	      function *fun = eedge->m_dest->get_function ();
-	      gcc_assert (fun);
-	      model.push_frame (fun, NULL, NULL);
-	      if (logger)
-		logger->log ("  pushing frame for %qD", fun->decl);
-	    }
-	  else if (eedge->m_custom_info)
-	    {
-	      eedge->m_custom_info->update_model (&model, *eedge);
-	    }
-	}
-
-      /* Handle phi nodes on an edge leaving a PK_BEFORE_SUPERNODE (to
-	 a PK_BEFORE_STMT, or a PK_AFTER_SUPERNODE if no stmts).
-	 This will typically not be associated with a superedge.  */
-      if (src_point.get_from_edge ())
-	{
-	  const cfg_superedge *last_cfg_superedge
-	    = src_point.get_from_edge ()->dyn_cast_cfg_superedge ();
-	  const exploded_node &dst_enode = *eedge->m_dest;
-	  const unsigned dst_snode_idx = dst_enode.get_supernode ()->m_index;
-	  if (last_cfg_superedge)
-	    {
-	      if (logger)
-		logger->log ("  update for phis");
-	      model.update_for_phis (src_enode.get_supernode (),
-				     last_cfg_superedge,
-				     NULL);
-	      /* If we've entering an snode that we've already visited on this
-		 epath, then we need do fix things up for loops; see the
-		 comment for store::loop_replay_fixup.
-		 Perhaps we should probably also verify the callstring,
-		 and track program_points,  but hopefully doing it by supernode
-		 is good enough.  */
-	      if (bitmap_bit_p (snodes_visited, dst_snode_idx))
-		model.loop_replay_fixup (dst_enode.get_state ().m_region_model);
-	    }
-	  bitmap_set_bit (snodes_visited, dst_snode_idx);
+	  else
+	    delete rc;
+	  return false;
 	}
 
       if (logger)
@@ -3526,7 +3442,7 @@ exploded_path::feasible_p (logger *logger, feasibility_problem **out,
 		       eedge->m_src->m_index,
 		       eedge->m_dest->m_index);
 	  logger->start_log_line ();
-	  model.dump_to_pp (logger->get_printer (), true, false);
+	  state.get_model ().dump_to_pp (logger->get_printer (), true, false);
 	  logger->end_log_line ();
 	}
     }
@@ -3585,6 +3501,139 @@ feasibility_problem::dump_to_pp (pretty_printer *pp) const
       pp_string (pp, "; rmodel: ");
       m_rc->m_model.dump_to_pp (pp, true, false);
     }
+}
+
+/* class feasibility_state.  */
+
+/* Ctor for feasibility_state, at the beginning of a path.  */
+
+feasibility_state::feasibility_state (region_model_manager *manager,
+				      const supergraph &sg)
+: m_model (manager),
+  m_snodes_visited (sg.m_nodes.length ())
+{
+  bitmap_clear (m_snodes_visited);
+}
+
+/* Copy ctor for feasibility_state, for extending a path.  */
+
+feasibility_state::feasibility_state (const feasibility_state &other)
+: m_model (other.m_model),
+  m_snodes_visited (const_sbitmap (other.m_snodes_visited)->n_bits)
+{
+  bitmap_copy (m_snodes_visited, other.m_snodes_visited);
+}
+
+/* The heart of feasibility-checking.
+
+   Attempt to update this state in-place based on traversing EEDGE
+   in a path.
+   Update the model for the stmts in the src enode.
+   Attempt to add constraints for EEDGE.
+
+   If feasible, return true.
+   Otherwise, return false and write to *OUT_RC.  */
+
+bool
+feasibility_state::maybe_update_for_edge (logger *logger,
+					  const exploded_edge *eedge,
+					  rejected_constraint **out_rc)
+{
+  const exploded_node &src_enode = *eedge->m_src;
+  const program_point &src_point = src_enode.get_point ();
+  if (logger)
+    {
+      logger->start_log_line ();
+      src_point.print (logger->get_printer (), format (false));
+      logger->end_log_line ();
+    }
+
+  /* Update state for the stmts that were processed in each enode.  */
+  for (unsigned stmt_idx = 0; stmt_idx < src_enode.m_num_processed_stmts;
+       stmt_idx++)
+    {
+      const gimple *stmt = src_enode.get_processed_stmt (stmt_idx);
+
+      /* Update cfun and input_location in case of ICE: make it easier to
+	 track down which source construct we're failing to handle.  */
+      auto_cfun sentinel (src_point.get_function ());
+      input_location = stmt->location;
+
+      if (const gassign *assign = dyn_cast <const gassign *> (stmt))
+	m_model.on_assignment (assign, NULL);
+      else if (const greturn *return_ = dyn_cast <const greturn *> (stmt))
+	m_model.on_return (return_, NULL);
+    }
+
+  const superedge *sedge = eedge->m_sedge;
+  if (sedge)
+    {
+      if (logger)
+	logger->log ("  sedge: SN:%i -> SN:%i %s",
+		     sedge->m_src->m_index,
+		     sedge->m_dest->m_index,
+		     sedge->get_description (false));
+
+      const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
+      if (!m_model.maybe_update_for_edge (*sedge, last_stmt, NULL, out_rc))
+	{
+	  if (logger)
+	    {
+	      logger->log ("rejecting due to region model");
+	      m_model.dump_to_pp (logger->get_printer (), true, false);
+	    }
+	  return false;
+	}
+    }
+  else
+    {
+      /* Special-case the initial eedge from the origin node to the
+	 initial function by pushing a frame for it.  */
+      if (src_point.get_kind () == PK_ORIGIN)
+	{
+	  gcc_assert (eedge->m_src->m_index == 0);
+	  gcc_assert (eedge->m_dest->get_point ().get_kind ()
+		      == PK_BEFORE_SUPERNODE);
+	  function *fun = eedge->m_dest->get_function ();
+	  gcc_assert (fun);
+	  m_model.push_frame (fun, NULL, NULL);
+	  if (logger)
+	    logger->log ("  pushing frame for %qD", fun->decl);
+	}
+      else if (eedge->m_custom_info)
+	{
+	  eedge->m_custom_info->update_model (&m_model, *eedge);
+	}
+    }
+
+  /* Handle phi nodes on an edge leaving a PK_BEFORE_SUPERNODE (to
+     a PK_BEFORE_STMT, or a PK_AFTER_SUPERNODE if no stmts).
+     This will typically not be associated with a superedge.  */
+  if (src_point.get_from_edge ())
+    {
+      const cfg_superedge *last_cfg_superedge
+	= src_point.get_from_edge ()->dyn_cast_cfg_superedge ();
+      const exploded_node &dst_enode = *eedge->m_dest;
+      const unsigned dst_snode_idx = dst_enode.get_supernode ()->m_index;
+      if (last_cfg_superedge)
+	{
+	  if (logger)
+	    logger->log ("  update for phis");
+	  m_model.update_for_phis (src_enode.get_supernode (),
+				  last_cfg_superedge,
+				  NULL);
+	  /* If we've entering an snode that we've already visited on this
+	     epath, then we need do fix things up for loops; see the
+	     comment for store::loop_replay_fixup.
+	     Perhaps we should probably also verify the callstring,
+	     and track program_points,  but hopefully doing it by supernode
+	     is good enough.  */
+	  if (bitmap_bit_p (m_snodes_visited, dst_snode_idx))
+	    m_model.loop_replay_fixup (dst_enode.get_state ().m_region_model);
+	}
+      bitmap_set_bit (m_snodes_visited, dst_snode_idx);
+    }
+  return true;
 }
 
 /* A family of cluster subclasses for use when generating .dot output for

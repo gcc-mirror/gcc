@@ -30,6 +30,8 @@
 #ifndef _GLIBCXX_PREDEFINED_OPS_H
 #define _GLIBCXX_PREDEFINED_OPS_H	1
 
+#include <bits/move.h>
+
 namespace __gnu_cxx
 {
 namespace __ops

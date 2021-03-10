@@ -29,6 +29,8 @@
 #ifndef _GLIBCXX_DEBUG_ASSERTIONS_H
 #define _GLIBCXX_DEBUG_ASSERTIONS_H 1
 
+#include <bits/c++config.h>
+
 #ifndef _GLIBCXX_DEBUG
 
 # define _GLIBCXX_DEBUG_ASSERT(_Condition)

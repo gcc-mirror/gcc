@@ -1829,7 +1829,10 @@ ira_setup_alts (rtx_insn *insn)
 		  case '0':  case '1':  case '2':  case '3':  case '4':
 		  case '5':  case '6':  case '7':  case '8':  case '9':
 		    {
-		      rtx other = recog_data.operand[c - '0'];
+		      char *end;
+		      unsigned long dup = strtoul (p, &end, 10);
+		      rtx other = recog_data.operand[dup];
+		      len = end - p;
 		      if (MEM_P (other)
 			  ? rtx_equal_p (other, op)
 			  : REG_P (op) || SUBREG_P (op))
@@ -1922,7 +1925,7 @@ ira_setup_alts (rtx_insn *insn)
 int
 ira_get_dup_out_num (int op_num, alternative_mask alts)
 {
-  int curr_alt, c, original, dup;
+  int curr_alt, c, original;
   bool ignore_p, use_commut_op_p;
   const char *str;
 
@@ -1969,18 +1972,22 @@ ira_get_dup_out_num (int op_num, alternative_mask alts)
 		
 	      case '0': case '1': case '2': case '3': case '4':
 	      case '5': case '6': case '7': case '8': case '9':
-		if (original != -1 && original != c)
-		  goto fail;
-		original = c;
-		break;
+		{
+		  char *end;
+		  int n = (int) strtoul (str, &end, 10);
+		  str = end;
+		  if (original != -1 && original != n)
+		    goto fail;
+		  original = n;
+		  continue;
+		}
 	      }
 	  str += CONSTRAINT_LEN (c, str);
 	}
       if (original == -1)
 	goto fail;
-      dup = original - '0';
-      if (recog_data.operand_type[dup] == OP_OUT)
-	return dup;
+      if (recog_data.operand_type[original] == OP_OUT)
+	return original;
     fail:
       if (use_commut_op_p)
 	break;

@@ -1,3 +1,16 @@
+2021-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99459
+	* coroutines.cc (build_co_await): Look through NOP_EXPRs in
+	build_special_member_call return value to find the CALL_EXPR.
+	Simplify.
+
+2021-03-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99472
+	* parser.c (cp_parser_diagnose_invalid_type_name): Clarify
+	that C++20 does not yet imply modules.
+
 2021-03-08  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99436

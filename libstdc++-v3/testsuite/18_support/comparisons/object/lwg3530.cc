@@ -20,6 +20,11 @@
 
 #include <compare>
 
+template<typename C, typename T, typename U>
+  concept comparable = requires (const C& cmp, const T& t, const U& u) {
+    cmp(t, u);
+  };
+
 void
 test01()
 {
@@ -39,7 +44,9 @@ test01()
 
   long l;
   // But <=> is valid and resolves to a builtin operator comparing pointers:
-  auto c = &l <=> x;
-  // So std::compare_three_way should be usable:
-  auto c2 = std::compare_three_way()(&l, x);
+  [[maybe_unused]] auto c = &l <=> x;
+
+  // But LWG 3530 says std::compare_three_way should not be usable:
+  static_assert( ! comparable<std::compare_three_way, long*, X> );
+  static_assert( ! comparable<std::compare_three_way, X, long*> );
 }

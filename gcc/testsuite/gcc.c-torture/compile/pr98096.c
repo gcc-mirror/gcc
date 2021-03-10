@@ -1,6 +1,6 @@
 /* Test for correct naming of label operands in asm goto in case of presence of
    input/output operands. */
-/* { dg-do compile } */
+/* { dg-do compile { target lra } } */
 int i, j;
 int f(void) {
   asm goto ("# %0 %2" : "+r" (i) ::: jmp);

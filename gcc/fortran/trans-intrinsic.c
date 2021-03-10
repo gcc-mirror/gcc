@@ -407,7 +407,7 @@ build_round_expr (tree arg, tree restype)
       if (kind < 0)
 	gfc_internal_error ("Could not find real kind with at least %d bits",
 			    resprec);
-      arg = fold_convert (gfc_float128_type_node, arg);
+      arg = fold_convert (gfc_get_real_type (kind), arg);
       fn = gfc_builtin_decl_for_float_kind (BUILT_IN_ROUND, kind);
     }
   else

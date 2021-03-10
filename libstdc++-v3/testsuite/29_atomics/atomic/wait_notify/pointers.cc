@@ -2,6 +2,7 @@
 // { dg-do run { target c++2a } }
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-gthreads "" }
+// { dg-add-options libatomic }
 
 // Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //

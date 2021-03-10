@@ -34,6 +34,7 @@
 
 #include <bit>          // std::has_single_bit
 #include <stdint.h>     // uintptr_t
+#include <debug/assertions.h> // _GLIBCXX_DEBUG_ASSERT
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
