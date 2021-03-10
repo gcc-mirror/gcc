@@ -17194,6 +17194,10 @@ module_state::write_inits (elf_out *to, depset::hash &table, unsigned *crc_ptr)
 static void
 post_load_processing ()
 {
+  /* We mustn't cause a GC, our caller should have arranged for that
+     not to happen.  */
+  gcc_checking_assert (function_depth);
+
   if (!post_load_decls)
     return;
 
@@ -18882,9 +18886,9 @@ lazy_load_pendings (tree decl)
 
       pending_table->remove (key);
       dump.pop (n);
-      function_depth--;
       lazy_snum = 0;
       post_load_processing ();
+      function_depth--;
     }
 
   timevar_stop (TV_MODULE_IMPORT);
