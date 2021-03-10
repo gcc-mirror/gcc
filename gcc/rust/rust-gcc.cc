@@ -1254,6 +1254,7 @@ Gcc_backend::named_type (const std::string &name, Btype *btype,
 
   tree decl = build_decl (location.gcc_location (), TYPE_DECL,
 			  get_identifier_from_string (name), type);
+
   TYPE_NAME (type) = decl;
   return this->make_type (type);
 }
@@ -3207,43 +3208,8 @@ Gcc_backend::function (Btype *fntype, const std::string &name,
       DECL_EXTERNAL (decl) = 1;
       DECL_DECLARED_INLINE_P (decl) = 1;
     }
-
-  // Optimize thunk functions for size.  A thunk created for a defer
-  // statement that may call recover looks like:
-  //     if runtime.setdeferretaddr(L1) {
-  //         goto L1
-  //     }
-  //     realfn()
-  // L1:
-  // The idea is that L1 should be the address to which realfn
-  // returns.  This only works if this little function is not over
-  // optimized.  At some point GCC started duplicating the epilogue in
-  // the basic-block reordering pass, breaking this assumption.
-  // Optimizing the function for size avoids duplicating the epilogue.
-  // This optimization shouldn't matter for any thunk since all thunks
-  // are small.
-  size_t pos = name.find ("..thunk");
-  if (pos != std::string::npos)
-    {
-      for (pos += 7; pos < name.length (); ++pos)
-	{
-	  if (name[pos] < '0' || name[pos] > '9')
-	    break;
-	}
-      if (pos == name.length ())
-	{
-	  struct cl_optimization cur_opts;
-	  cl_optimization_save (&cur_opts, &global_options,
-				&global_options_set);
-	  global_options.x_optimize_size = 1;
-	  global_options.x_optimize_fast = 0;
-	  global_options.x_optimize_debug = 0;
-	  DECL_FUNCTION_SPECIFIC_OPTIMIZATION (decl)
-	    = build_optimization_node (&global_options, &global_options_set);
-	  cl_optimization_restore (&global_options, &global_options_set,
-				   &cur_opts);
-	}
-    }
+  if ((flags & function_read_only) != 0)
+    TREE_READONLY (decl) = 1;
 
   rust_preserve_from_gc (decl);
   return new Bfunction (decl);

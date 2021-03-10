@@ -23,6 +23,7 @@
 #include "rust-hir-type-check-type.h"
 #include "rust-tyty-rules.h"
 #include "rust-hir-map.h"
+#include "rust-substitution-mapper.h"
 
 namespace Rust {
 namespace TyTy {
@@ -44,6 +45,22 @@ TyVar::get_tyty () const
   bool ok = context->lookup_type (ref, &lookup);
   rust_assert (ok);
   return lookup;
+}
+
+TyVar
+TyVar::get_implict_infer_var ()
+{
+  auto mappings = Analysis::Mappings::get ();
+  auto context = Resolver::TypeCheckContext::get ();
+
+  InferType *infer = new InferType (mappings->get_next_hir_id (),
+				    InferType::InferTypeKind::GENERAL);
+  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
+					       UNKNOWN_NODEID,
+					       infer->get_ref (),
+					       UNKNOWN_LOCAL_DEFID),
+			infer);
+  return TyVar (infer->get_ref ());
 }
 
 void
@@ -156,14 +173,24 @@ ErrorType::clone ()
 std::string
 StructFieldType::as_string () const
 {
-  return name + ":" + ty->as_string ();
+  return name + ":" + get_field_type ()->debug_str ();
 }
 
 bool
 StructFieldType::is_equal (const StructFieldType &other) const
 {
-  return get_name ().compare (other.get_name ()) == 0
-	 && get_field_type ()->is_equal (*other.get_field_type ());
+  bool names_eq = get_name ().compare (other.get_name ()) == 0;
+
+  TyTy::BaseType &o = *other.get_field_type ();
+  if (o.get_kind () == TypeKind::PARAM)
+    {
+      ParamType &op = static_cast<ParamType &> (o);
+      o = *op.resolve ();
+    }
+
+  bool types_eq = get_field_type ()->is_equal (o);
+
+  return names_eq && types_eq;
 }
 
 StructFieldType *
@@ -171,6 +198,87 @@ StructFieldType::clone () const
 {
   return new StructFieldType (get_ref (), get_name (),
 			      get_field_type ()->clone ());
+}
+
+void
+SubstitutionParamMapping::override_context ()
+{
+  rust_assert (param->can_resolve ());
+
+  auto mappings = Analysis::Mappings::get ();
+  auto context = Resolver::TypeCheckContext::get ();
+  context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
+					       UNKNOWN_NODEID,
+					       param->get_ref (),
+					       UNKNOWN_LOCAL_DEFID),
+			param->resolve ());
+}
+
+SubstitutionArgumentMappings
+SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
+{
+  if (args.get_type_args ().size () != substitutions.size ())
+    {
+      rust_error_at (args.get_locus (),
+		     "Invalid number of generic arguments to generic type");
+      return SubstitutionArgumentMappings::error ();
+    }
+
+  std::vector<SubstitutionArg> mappings;
+
+  // FIXME does not support binding yet
+  for (auto &arg : args.get_type_args ())
+    {
+      BaseType *resolved = Resolver::TypeCheckType::Resolve (arg.get ());
+      if (resolved == nullptr || resolved->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (args.get_locus (), "failed to resolve type arguments");
+	  return SubstitutionArgumentMappings::error ();
+	}
+
+      SubstitutionArg subst_arg (&substitutions.at (mappings.size ()),
+				 resolved);
+      mappings.push_back (std::move (subst_arg));
+    }
+
+  return SubstitutionArgumentMappings (mappings, args.get_locus ());
+}
+
+SubstitutionArgumentMappings
+SubstitutionRef::adjust_mappings_for_this (
+  SubstitutionArgumentMappings &mappings)
+{
+  if (substitutions.size () > mappings.size ())
+    {
+      rust_error_at (mappings.get_locus (),
+		     "not enough type arguments: subs %s vs mappings %s",
+		     subst_as_string ().c_str (),
+		     mappings.as_string ().c_str ());
+      return SubstitutionArgumentMappings::error ();
+    }
+
+  Analysis::Mappings *mappings_table = Analysis::Mappings::get ();
+
+  std::vector<SubstitutionArg> resolved_mappings;
+  for (auto &subst : substitutions)
+    {
+      SubstitutionArg arg = SubstitutionArg::error ();
+      bool ok = mappings.get_argument_for_symbol (subst.get_param_ty (), &arg);
+      if (!ok)
+	{
+	  rust_error_at (mappings_table->lookup_location (
+			   subst.get_param_ty ()->get_ref ()),
+			 "failed to find parameter type: %s",
+			 subst.get_param_ty ()->as_string ().c_str ());
+	  return SubstitutionArgumentMappings::error ();
+	}
+
+      SubstitutionArg adjusted (&subst, arg.get_tyty ());
+      resolved_mappings.push_back (std::move (adjusted));
+    }
+
+  return SubstitutionArgumentMappings (resolved_mappings,
+				       mappings.get_locus ());
 }
 
 void
@@ -230,10 +338,34 @@ ADTType::is_equal (const BaseType &other) const
   if (num_fields () != other2.num_fields ())
     return false;
 
-  for (size_t i = 0; i < num_fields (); i++)
+  if (has_subsititions_defined () != other2.has_subsititions_defined ())
+    return false;
+
+  if (has_subsititions_defined ())
     {
-      if (!get_field (i)->is_equal (*other2.get_field (i)))
+      if (get_num_substitutions () != other2.get_num_substitutions ())
 	return false;
+
+      for (size_t i = 0; i < get_num_substitutions (); i++)
+	{
+	  const SubstitutionParamMapping &a = substitutions.at (i);
+	  const SubstitutionParamMapping &b = other2.substitutions.at (i);
+
+	  const ParamType *aa = a.get_param_ty ();
+	  const ParamType *bb = b.get_param_ty ();
+	  BaseType *aaa = aa->resolve ();
+	  BaseType *bbb = bb->resolve ();
+	  if (!aaa->is_equal (*bbb))
+	    return false;
+	}
+    }
+  else
+    {
+      for (size_t i = 0; i < num_fields (); i++)
+	{
+	  if (!get_field (i)->is_equal (*other2.get_field (i)))
+	    return false;
+	}
     }
 
   return true;
@@ -251,88 +383,83 @@ ADTType::clone ()
 }
 
 ADTType *
-ADTType::infer_substitutions ()
+ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
-  auto context = Resolver::TypeCheckContext::get ();
-  ADTType *adt = static_cast<ADTType *> (clone ());
+  if (subst_mappings.size () != get_num_substitutions ())
 
-  for (auto &sub : adt->get_substs ())
     {
-      // generate an new inference variable
-      InferType *infer = new InferType (mappings->get_next_hir_id (),
-					InferType::InferTypeKind::GENERAL);
-      context->insert_type (
-	Analysis::NodeMapping (mappings->get_current_crate (), UNKNOWN_NODEID,
-			       infer->get_ref (), UNKNOWN_LOCAL_DEFID),
-	infer);
-
-      sub.fill_param_ty (infer);
-      adt->fill_in_params_for (sub, infer);
-    }
-
-  // generate new ty ref id since this is an instantiate of the generic
-  adt->set_ty_ref (mappings->get_next_hir_id ());
-
-  return adt;
-}
-
-ADTType *
-ADTType::handle_substitutions (HIR::GenericArgs &generic_args)
-{
-  if (generic_args.get_type_args ().size () != get_num_substitutions ())
-    {
-      rust_error_at (generic_args.get_locus (),
+      rust_error_at (subst_mappings.get_locus (),
 		     "invalid number of generic arguments to generic ADT type");
       return nullptr;
     }
 
   ADTType *adt = static_cast<ADTType *> (clone ());
-  size_t index = 0;
-  for (auto &arg : generic_args.get_type_args ())
-    {
-      BaseType *resolved = Resolver::TypeCheckType::Resolve (arg.get ());
-      if (resolved == nullptr)
-	{
-	  rust_error_at (generic_args.get_locus (),
-			 "failed to resolve type arguments");
-	  return nullptr;
-	}
-
-      adt->fill_in_at (index, resolved);
-      index++;
-    }
-
-  // generate new ty ref id since this is an instantiate of the generic
   adt->set_ty_ref (mappings->get_next_hir_id ());
 
-  return adt;
-}
+  for (auto &sub : adt->get_substs ())
+    {
+      SubstitutionArg arg = SubstitutionArg::error ();
+      bool ok
+	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
+      rust_assert (ok);
+      sub.fill_param_ty (arg.get_tyty ());
+    }
 
-void
-ADTType::fill_in_at (size_t index, BaseType *type)
-{
-  SubstitutionMapping sub = get_substitution_mapping_at (index);
-  SubstitutionRef<ADTType>::fill_in_at (index, type);
-  fill_in_params_for (sub, type);
-}
+  adt->iterate_fields ([&] (StructFieldType *field) mutable -> bool {
+    auto fty = field->get_field_type ();
+    bool is_param_ty = fty->get_kind () == TypeKind::PARAM;
+    if (is_param_ty)
+      {
+	ParamType *p = static_cast<ParamType *> (fty);
 
-void
-ADTType::fill_in_params_for (SubstitutionMapping sub, BaseType *type)
-{
-  iterate_fields ([&] (StructFieldType *field) mutable -> bool {
-    bool is_param_ty = field->get_field_type ()->get_kind () == TypeKind::PARAM;
-    if (!is_param_ty)
-      return true;
+	SubstitutionArg arg = SubstitutionArg::error ();
+	bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
+	if (!ok)
+	  {
+	    rust_error_at (subst_mappings.get_locus (),
+			   "Failed to resolve parameter type: %s",
+			   p->as_string ().c_str ());
+	    return false;
+	  }
 
-    const ParamType *pp = sub.get_param_ty ();
-    ParamType *p = static_cast<ParamType *> (field->get_field_type ());
+	auto argt = arg.get_tyty ();
+	bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
+	bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
 
-    // for now let just see what symbols match up for the substitution
-    if (p->get_symbol ().compare (pp->get_symbol ()) == 0)
-      p->set_ty_ref (type->get_ref ());
+	if (arg_is_param || arg_is_concrete)
+	  {
+	    auto new_field = argt->clone ();
+	    new_field->set_ref (fty->get_ref ());
+	    field->set_field_type (new_field);
+	  }
+	else
+	  {
+	    field->get_field_type ()->set_ty_ref (argt->get_ref ());
+	  }
+      }
+    else if (fty->has_subsititions_defined ())
+      {
+	BaseType *concrete
+	  = Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
+
+	if (concrete == nullptr
+	    || concrete->get_kind () == TyTy::TypeKind::ERROR)
+	  {
+	    rust_error_at (subst_mappings.get_locus (),
+			   "Failed to resolve field substitution type: %s",
+			   fty->as_string ().c_str ());
+	    return false;
+	  }
+
+	auto new_field = concrete->clone ();
+	new_field->set_ref (fty->get_ref ());
+	field->set_field_type (new_field);
+      }
 
     return true;
   });
+
+  return adt;
 }
 
 void
@@ -452,7 +579,135 @@ FnType::clone ()
       std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
 
   return new FnType (get_ref (), get_ty_ref (), std::move (cloned_params),
-		     get_return_type ()->clone (), get_combined_refs ());
+		     get_return_type ()->clone (), clone_substs (),
+		     get_combined_refs ());
+}
+
+FnType *
+FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
+{
+  if (subst_mappings.size () != get_num_substitutions ())
+    {
+      rust_error_at (subst_mappings.get_locus (),
+		     "invalid number of generic arguments to generic ADT type");
+      return nullptr;
+    }
+
+  FnType *fn = static_cast<FnType *> (clone ());
+  fn->set_ty_ref (mappings->get_next_hir_id ());
+
+  for (auto &sub : fn->get_substs ())
+    {
+      SubstitutionArg arg = SubstitutionArg::error ();
+      bool ok
+	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
+      rust_assert (ok);
+      sub.fill_param_ty (arg.get_tyty ());
+    }
+
+  auto fty = fn->get_return_type ();
+  bool is_param_ty = fty->get_kind () == TypeKind::PARAM;
+  if (is_param_ty)
+    {
+      ParamType *p = static_cast<ParamType *> (fty);
+
+      SubstitutionArg arg = SubstitutionArg::error ();
+      bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
+      if (!ok)
+	{
+	  rust_error_at (subst_mappings.get_locus (),
+			 "Failed to resolve parameter type: %s",
+			 p->as_string ().c_str ());
+	  return nullptr;
+	}
+
+      auto argt = arg.get_tyty ();
+      bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
+      bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
+
+      if (arg_is_param || arg_is_concrete)
+	{
+	  auto new_field = argt->clone ();
+	  new_field->set_ref (fty->get_ref ());
+	  fn->type = new_field;
+	}
+      else
+	{
+	  fty->set_ty_ref (argt->get_ref ());
+	}
+    }
+  else if (fty->has_subsititions_defined ())
+    {
+      BaseType *concrete
+	= Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
+
+      if (concrete == nullptr || concrete->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  rust_error_at (subst_mappings.get_locus (),
+			 "Failed to resolve field substitution type: %s",
+			 fty->as_string ().c_str ());
+	  return nullptr;
+	}
+
+      auto new_field = concrete->clone ();
+      new_field->set_ref (fty->get_ref ());
+      fn->type = new_field;
+    }
+
+  for (auto &param : fn->get_params ())
+    {
+      auto fty = param.second;
+      bool is_param_ty = fty->get_kind () == TypeKind::PARAM;
+      if (is_param_ty)
+	{
+	  ParamType *p = static_cast<ParamType *> (fty);
+
+	  SubstitutionArg arg = SubstitutionArg::error ();
+	  bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
+	  if (!ok)
+	    {
+	      rust_error_at (subst_mappings.get_locus (),
+			     "Failed to resolve parameter type: %s",
+			     p->as_string ().c_str ());
+	      return nullptr;
+	    }
+
+	  auto argt = arg.get_tyty ();
+	  bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
+	  bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
+
+	  if (arg_is_param || arg_is_concrete)
+	    {
+	      auto new_field = argt->clone ();
+	      new_field->set_ref (fty->get_ref ());
+	      param.second = new_field;
+	    }
+	  else
+	    {
+	      fty->set_ty_ref (argt->get_ref ());
+	    }
+	}
+      else if (fty->has_subsititions_defined ())
+	{
+	  BaseType *concrete
+	    = Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
+
+	  if (concrete == nullptr
+	      || concrete->get_kind () == TyTy::TypeKind::ERROR)
+	    {
+	      rust_error_at (subst_mappings.get_locus (),
+			     "Failed to resolve field substitution type: %s",
+			     fty->as_string ().c_str ());
+	      return nullptr;
+	    }
+
+	  auto new_field = concrete->clone ();
+	  new_field->set_ref (fty->get_ref ());
+	  param.second = new_field;
+	}
+    }
+
+  return fn;
 }
 
 void
@@ -623,8 +878,18 @@ IntType::unify (BaseType *other)
 BaseType *
 IntType::clone ()
 {
-  return new IntType (get_ref (), get_ty_ref (), get_kind (),
+  return new IntType (get_ref (), get_ty_ref (), get_int_kind (),
 		      get_combined_refs ());
+}
+
+bool
+IntType::is_equal (const BaseType &other) const
+{
+  if (!BaseType::is_equal (other))
+    return false;
+
+  const IntType &o = static_cast<const IntType &> (other);
+  return get_int_kind () == o.get_int_kind ();
 }
 
 void
@@ -663,8 +928,18 @@ UintType::unify (BaseType *other)
 BaseType *
 UintType::clone ()
 {
-  return new UintType (get_ref (), get_ty_ref (), get_kind (),
+  return new UintType (get_ref (), get_ty_ref (), get_uint_kind (),
 		       get_combined_refs ());
+}
+
+bool
+UintType::is_equal (const BaseType &other) const
+{
+  if (!BaseType::is_equal (other))
+    return false;
+
+  const UintType &o = static_cast<const UintType &> (other);
+  return get_uint_kind () == o.get_uint_kind ();
 }
 
 void
@@ -697,8 +972,18 @@ FloatType::unify (BaseType *other)
 BaseType *
 FloatType::clone ()
 {
-  return new FloatType (get_ref (), get_ty_ref (), get_kind (),
+  return new FloatType (get_ref (), get_ty_ref (), get_float_kind (),
 			get_combined_refs ());
+}
+
+bool
+FloatType::is_equal (const BaseType &other) const
+{
+  if (!BaseType::is_equal (other))
+    return false;
+
+  const FloatType &o = static_cast<const FloatType &> (other);
+  return get_float_kind () == o.get_float_kind ();
 }
 
 void
@@ -828,7 +1113,9 @@ std::string
 ParamType::as_string () const
 {
   if (get_ref () == get_ty_ref ())
-    return get_symbol ();
+    {
+      return get_symbol () + " REF: " + std::to_string (get_ref ());
+    }
 
   auto context = Resolver::TypeCheckContext::get ();
   BaseType *lookup = nullptr;
@@ -859,14 +1146,33 @@ ParamType::get_symbol () const
 }
 
 BaseType *
-ParamType::resolve ()
+ParamType::resolve () const
 {
-  auto context = Resolver::TypeCheckContext::get ();
-  BaseType *lookup = nullptr;
-  bool ok = context->lookup_type (get_ty_ref (), &lookup);
-  rust_assert (ok);
+  rust_assert (can_resolve ());
 
-  return lookup;
+  TyVar var (get_ty_ref ());
+  BaseType *r = var.get_tyty ();
+
+  while (r->get_kind () == TypeKind::PARAM)
+    {
+      ParamType *rr = static_cast<ParamType *> (r);
+      if (!rr->can_resolve ())
+	break;
+
+      TyVar v (rr->get_ty_ref ());
+      r = v.get_tyty ();
+    }
+
+  return TyVar (r->get_ty_ref ()).get_tyty ();
+}
+
+bool
+ParamType::is_equal (const BaseType &other) const
+{
+  if (!can_resolve ())
+    return BaseType::is_equal (other);
+
+  return resolve ()->is_equal (other);
 }
 
 BaseType *
@@ -936,7 +1242,9 @@ TypeCheckCallExpr::visit (ADTType &type)
 
     auto res = field_tyty->unify (arg);
     if (res == nullptr)
-      return false;
+      {
+	return false;
+      }
 
     delete res;
     i++;

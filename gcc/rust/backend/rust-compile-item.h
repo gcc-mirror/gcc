@@ -35,9 +35,10 @@ class CompileItem : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static void compile (HIR::Item *item, Context *ctx, bool compile_fns = true)
+  static void compile (HIR::Item *item, Context *ctx, bool compile_fns = true,
+		       TyTy::BaseType *concrete = nullptr)
   {
-    CompileItem compiler (ctx, compile_fns);
+    CompileItem compiler (ctx, compile_fns, concrete);
     item->accept_vis (compiler);
   }
 
@@ -118,8 +119,22 @@ public:
 	return;
       }
 
-    TyTy::FnType *fntype = (TyTy::FnType *) fntype_tyty;
-    // convert to the actual function type
+    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
+    if (fntype->has_subsititions_defined ())
+      {
+	// we cant do anything for this only when it is used
+	if (concrete == nullptr)
+	  return;
+	else
+	  {
+	    rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
+	    fntype = static_cast<TyTy::FnType *> (concrete);
+
+	    // override the Hir Lookups for the substituions in this context
+	    fntype->override_context ();
+	  }
+      }
+
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
@@ -130,21 +145,30 @@ public:
     if (is_main_fn || function.has_visibility ())
       flags |= Backend::function_is_visible;
 
+    std::string ir_symbol_name = function.get_function_name ();
     std::string asm_name = function.get_function_name ();
     if (!is_main_fn)
       {
 	// FIXME need name mangling
-	asm_name = "__" + function.get_function_name ();
+	if (concrete == nullptr)
+	  asm_name = "__" + function.get_function_name ();
+	else
+	  {
+	    ir_symbol_name
+	      = function.get_function_name () + fntype->subst_as_string ();
+
+	    asm_name = "__" + function.get_function_name ();
+	    for (auto &sub : fntype->get_substs ())
+	      asm_name += "G" + sub.as_string ();
+	  }
       }
 
     Bfunction *fndecl
-      = ctx->get_backend ()->function (compiled_fn_type,
-				       function.get_function_name (), asm_name,
-				       flags, function.get_locus ());
-    ctx->insert_function_decl (function.get_mappings ().get_hirid (), fndecl);
+      = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
+				       asm_name, flags, function.get_locus ());
+    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl);
 
     // setup the params
-
     TyTy::BaseType *tyret = fntype->get_return_type ();
     std::vector<Bvariable *> param_vars;
 
@@ -274,11 +298,12 @@ public:
   }
 
 private:
-  CompileItem (Context *ctx, bool compile_fns)
-    : HIRCompileBase (ctx), compile_fns (compile_fns)
+  CompileItem (Context *ctx, bool compile_fns, TyTy::BaseType *concrete)
+    : HIRCompileBase (ctx), compile_fns (compile_fns), concrete (concrete)
   {}
 
   bool compile_fns;
+  TyTy::BaseType *concrete;
 };
 
 } // namespace Compile

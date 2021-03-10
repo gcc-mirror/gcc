@@ -67,24 +67,35 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
       return;
     }
 
-  // must be a function call
+  // must be a function call but it might be a generic function which needs to
+  // be compiled first
+  TyTy::BaseType *lookup = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
+					    &lookup);
+  rust_assert (ok);
+  rust_assert (lookup->get_kind () == TyTy::TypeKind::FNDEF);
+
   Bfunction *fn = nullptr;
-  if (!ctx->lookup_function_decl (ref, &fn))
+  if (!ctx->lookup_function_decl (lookup->get_ty_ref (), &fn))
     {
-      // this might fail because its a forward decl so we can attempt to
-      // resolve it now
+      // it must resolve to some kind of HIR::Item
       HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (
 	expr.get_mappings ().get_crate_num (), ref);
       if (resolved_item == nullptr)
 	{
-	  rust_error_at (expr.get_locus (), "failed to lookup forward decl");
+	  rust_error_at (expr.get_locus (), "failed to lookup definition decl");
 	  return;
 	}
 
-      CompileItem::compile (resolved_item, ctx);
-      if (!ctx->lookup_function_decl (ref, &fn))
+      if (!lookup->has_subsititions_defined ())
+	CompileItem::compile (resolved_item, ctx);
+      else
+	CompileItem::compile (resolved_item, ctx, true, lookup);
+
+      if (!ctx->lookup_function_decl (lookup->get_ty_ref (), &fn))
 	{
-	  rust_error_at (expr.get_locus (), "forward decl was not compiled 1");
+	  rust_fatal_error (expr.get_locus (),
+			    "forward decl was not compiled 1");
 	  return;
 	}
     }

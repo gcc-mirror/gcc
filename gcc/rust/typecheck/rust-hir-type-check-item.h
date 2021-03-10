@@ -73,8 +73,8 @@ public:
       }
 
     // need to get the return type from this
-    TyTy::FnType *resolve_fn_type = (TyTy::FnType *) lookup;
-    auto expected_ret_tyty = resolve_fn_type->get_return_type ();
+    TyTy::FnType *resolved_fn_type = static_cast<TyTy::FnType *> (lookup);
+    auto expected_ret_tyty = resolved_fn_type->get_return_type ();
     context->push_return_type (expected_ret_tyty);
 
     auto block_expr_ty

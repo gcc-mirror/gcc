@@ -785,6 +785,9 @@ public:
   // is like a C99 function marked inline but not extern.
   static const unsigned int function_only_inline = 1 << 6;
 
+  // const function
+  static const unsigned int function_read_only = 1 << 7;
+
   // Declare or define a function of FNTYPE.
   // NAME is the Go name of the function.  ASM_NAME, if not the empty
   // string, is the name that should be used in the symbol table; this

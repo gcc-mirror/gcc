@@ -305,10 +305,19 @@ TypeCheckStructExpr::visit (HIR::PathInExpression &expr)
   if (struct_path_resolved->has_substitutions ())
     {
       HIR::PathExprSegment seg = expr.get_final_segment ();
-      struct_path_resolved = seg.has_generic_args ()
-			       ? struct_path_resolved->handle_substitutions (
-				 seg.get_generic_args ())
-			       : struct_path_resolved->infer_substitutions ();
+
+      TyTy::BaseType *subst
+	= SubstMapper::Resolve (struct_path_resolved, expr.get_locus (),
+				seg.has_generic_args ()
+				  ? &seg.get_generic_args ()
+				  : nullptr);
+      if (subst == nullptr || subst->get_kind () != TyTy::TypeKind::ADT)
+	{
+	  rust_fatal_error (mappings->lookup_location (ref),
+			    "expected a substituted ADT type");
+	  return;
+	}
+      struct_path_resolved = static_cast<TyTy::ADTType *> (subst);
     }
 }
 

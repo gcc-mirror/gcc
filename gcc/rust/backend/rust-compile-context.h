@@ -61,10 +61,26 @@ public:
       }
   }
 
-  ~Context () {}
-
-  bool lookup_compiled_types (HirId id, ::Btype **type)
+  bool lookup_compiled_types (HirId id, ::Btype **type,
+			      const TyTy::BaseType *ref = nullptr)
   {
+    if (ref != nullptr && ref->has_subsititions_defined ())
+      {
+	for (auto it = mono.begin (); it != mono.end (); it++)
+	  {
+	    std::pair<HirId, ::Btype *> &val = it->second;
+	    const TyTy::BaseType *r = it->first;
+
+	    if (ref->is_equal (*r))
+	      {
+		*type = val.second;
+
+		return true;
+	      }
+	  }
+	return false;
+      }
+
     auto it = compiled_type_map.find (id);
     if (it == compiled_type_map.end ())
       return false;
@@ -73,9 +89,15 @@ public:
     return true;
   }
 
-  void insert_compiled_type (HirId id, ::Btype *type)
+  void insert_compiled_type (HirId id, ::Btype *type,
+			     const TyTy::BaseType *ref = nullptr)
   {
     compiled_type_map[id] = type;
+    if (ref != nullptr)
+      {
+	std::pair<HirId, ::Btype *> elem (id, type);
+	mono[ref] = std::move (elem);
+      }
   }
 
   ::Backend *get_backend () { return backend; }
@@ -250,6 +272,7 @@ private:
   std::vector< ::Bblock *> scope_stack;
   std::vector< ::Bvariable *> loop_value_stack;
   std::vector< ::Blabel *> loop_begin_labels;
+  std::map<const TyTy::BaseType *, std::pair<HirId, ::Btype *> > mono;
 
   // To GCC middle-end
   std::vector< ::Btype *> type_decls;
@@ -274,12 +297,8 @@ public:
 
   void visit (TyTy::ParamType &param) override
   {
-    rust_assert (param.get_ref () != param.get_ty_ref ());
-
-    TyTy::BaseType *lookup = nullptr;
-    bool ok = ctx->get_tyctx ()->lookup_type (param.get_ty_ref (), &lookup);
-    rust_assert (ok);
-    lookup->accept_vis (*this);
+    TyTy::TyVar var (param.get_ty_ref ());
+    var.get_tyty ()->accept_vis (*this);
   }
 
   void visit (TyTy::FnType &type) override
@@ -339,8 +358,7 @@ public:
 
   void visit (TyTy::ADTType &type) override
   {
-    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &translated);
-    if (ok)
+    if (ctx->lookup_compiled_types (type.get_ty_ref (), &translated, &type))
       return;
 
     // create implicit struct
@@ -361,11 +379,12 @@ public:
     Btype *named_struct
       = ctx->get_backend ()->named_type (type.get_name (), struct_type_record,
 					 ctx->get_mappings ()->lookup_location (
-					   type.get_ref ()));
+					   type.get_ty_ref ()));
 
     ctx->push_type (named_struct);
-    ctx->insert_compiled_type (type.get_ty_ref (), named_struct);
     translated = named_struct;
+
+    ctx->insert_compiled_type (type.get_ty_ref (), named_struct, &type);
   }
 
   void visit (TyTy::TupleType &type) override
@@ -485,7 +504,7 @@ public:
   }
 
 private:
-  TyTyResolveCompile (Context *ctx) : ctx (ctx) {}
+  TyTyResolveCompile (Context *ctx) : ctx (ctx), translated (nullptr) {}
 
   Context *ctx;
   ::Btype *translated;

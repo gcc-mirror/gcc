@@ -42,7 +42,7 @@ public:
 
   void visit (HIR::TupleStruct &struct_decl) override
   {
-    std::vector<TyTy::SubstitutionMapping> substitutions;
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
     if (struct_decl.has_generics ())
       {
 	for (auto &generic_param : struct_decl.get_generic_params ())
@@ -52,7 +52,7 @@ public:
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
 	    substitutions.push_back (
-	      TyTy::SubstitutionMapping (generic_param, param_type));
+	      TyTy::SubstitutionParamMapping (generic_param, param_type));
 	  }
       }
 
@@ -82,7 +82,7 @@ public:
 
   void visit (HIR::StructStruct &struct_decl) override
   {
-    std::vector<TyTy::SubstitutionMapping> substitutions;
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
     if (struct_decl.has_generics ())
       {
 	for (auto &generic_param : struct_decl.get_generic_params ())
@@ -92,7 +92,7 @@ public:
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
 	    substitutions.push_back (
-	      TyTy::SubstitutionMapping (generic_param, param_type));
+	      TyTy::SubstitutionParamMapping (generic_param, param_type));
 	  }
       }
 
@@ -136,7 +136,7 @@ public:
 
   void visit (HIR::Function &function) override
   {
-    std::vector<TyTy::SubstitutionMapping> substitutions;
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
     if (function.has_generics ())
       {
 	for (auto &generic_param : function.get_generic_params ())
@@ -146,7 +146,7 @@ public:
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
 	    substitutions.push_back (
-	      TyTy::SubstitutionMapping (generic_param, param_type));
+	      TyTy::SubstitutionParamMapping (generic_param, param_type));
 	  }
       }
 
@@ -182,7 +182,8 @@ public:
       }
 
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
-				    params, ret_type);
+				    std::move (params), ret_type,
+				    std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
 

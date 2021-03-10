@@ -240,7 +240,6 @@ public:
     rust_error_at (ref_locus, "expected [%s] got [ParamTy <%s>]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
-    gcc_unreachable ();
   }
 
   virtual void visit (StrType &type) override
@@ -487,6 +486,19 @@ public:
     BaseRules::visit (type);
   }
 
+  void visit (ParamType &type) override
+  {
+    bool is_valid
+      = (base->get_infer_kind () == TyTy::InferType::InferTypeKind::GENERAL);
+    if (is_valid)
+      {
+	resolved = type.clone ();
+	return;
+      }
+
+    BaseRules::visit (type);
+  }
+
 private:
   BaseType *get_base () override { return base; }
 
@@ -714,6 +726,20 @@ public:
     resolved = new BoolType (type.get_ref (), type.get_ty_ref ());
   }
 
+  void visit (InferType &type) override
+  {
+    switch (type.get_infer_kind ())
+      {
+      case InferType::InferTypeKind::GENERAL:
+	resolved = base->clone ();
+	break;
+
+      default:
+	BaseRules::visit (type);
+	break;
+      }
+  }
+
 private:
   BaseType *get_base () override { return base; }
 
@@ -742,14 +768,14 @@ public:
 
   void visit (IntType &type) override
   {
-    if (type.get_kind () != base->get_kind ())
+    if (type.get_int_kind () != base->get_int_kind ())
       {
 	BaseRules::visit (type);
 	return;
       }
 
     resolved
-      = new IntType (type.get_ref (), type.get_ty_ref (), type.get_kind ());
+      = new IntType (type.get_ref (), type.get_ty_ref (), type.get_int_kind ());
   }
 
 private:
@@ -780,14 +806,14 @@ public:
 
   void visit (UintType &type) override
   {
-    if (type.get_kind () != base->get_kind ())
+    if (type.get_uint_kind () != base->get_uint_kind ())
       {
 	BaseRules::visit (type);
 	return;
       }
 
-    resolved
-      = new UintType (type.get_ref (), type.get_ty_ref (), type.get_kind ());
+    resolved = new UintType (type.get_ref (), type.get_ty_ref (),
+			     type.get_uint_kind ());
   }
 
 private:
@@ -817,14 +843,14 @@ public:
 
   void visit (FloatType &type) override
   {
-    if (type.get_kind () != base->get_kind ())
+    if (type.get_float_kind () != base->get_float_kind ())
       {
 	BaseRules::visit (type);
 	return;
       }
 
-    resolved
-      = new FloatType (type.get_ref (), type.get_ty_ref (), type.get_kind ());
+    resolved = new FloatType (type.get_ref (), type.get_ty_ref (),
+			      type.get_float_kind ());
   }
 
 private:
@@ -864,7 +890,7 @@ public:
 	  }
       }
 
-    resolved = base->clone ();
+    resolved = type.clone ();
   }
 
 private:
@@ -1029,6 +1055,8 @@ private:
 
 class ParamRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   ParamRules (ParamType *base) : BaseRules (base), base (base) {}
 
@@ -1044,21 +1072,24 @@ public:
   BaseType *unify (BaseType *other) override final
   {
     if (base->get_ref () == base->get_ty_ref ())
-      {
-	Location locus = mappings->lookup_location (base->get_ref ());
-	rust_fatal_error (locus,
-			  "invalid use of unify with ParamTy [%s] and [%s]",
-			  base->as_string ().c_str (),
-			  other->as_string ().c_str ());
-	return nullptr;
-      }
-
+      return BaseRules::unify (other);
     auto context = Resolver::TypeCheckContext::get ();
     BaseType *lookup = nullptr;
     bool ok = context->lookup_type (base->get_ty_ref (), &lookup);
     rust_assert (ok);
 
     return lookup->unify (other);
+  }
+
+  void visit (ParamType &type) override
+  {
+    if (base->get_symbol ().compare (type.get_symbol ()) != 0)
+      {
+	BaseRules::visit (type);
+	return;
+      }
+
+    resolved = type.clone ();
   }
 
 private:

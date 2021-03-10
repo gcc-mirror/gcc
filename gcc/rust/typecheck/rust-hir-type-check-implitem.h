@@ -50,6 +50,20 @@ public:
 
   void visit (HIR::Function &function) override
   {
+    std::vector<TyTy::SubstitutionParamMapping> substitions;
+    if (function.has_generics ())
+      {
+	for (auto &generic_param : function.get_generic_params ())
+	  {
+	    auto param_type
+	      = TypeResolveGenericParam::Resolve (generic_param.get ());
+	    context->insert_type (generic_param->get_mappings (), param_type);
+
+	    substitions.push_back (
+	      TyTy::SubstitutionParamMapping (generic_param, param_type));
+	  }
+      }
+
     TyTy::BaseType *ret_type = nullptr;
     if (!function.has_function_return_type ())
       ret_type = new TyTy::UnitType (function.get_mappings ().get_hirid ());
@@ -82,12 +96,27 @@ public:
       }
 
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
-				    params, ret_type);
+				    std::move (params), ret_type,
+				    std::move (substitions));
     context->insert_type (function.get_mappings (), fnType);
   }
 
   void visit (HIR::Method &method) override
   {
+    std::vector<TyTy::SubstitutionParamMapping> substitions;
+    if (method.has_generics ())
+      {
+	for (auto &generic_param : method.get_generic_params ())
+	  {
+	    auto param_type
+	      = TypeResolveGenericParam::Resolve (generic_param.get ());
+	    context->insert_type (generic_param->get_mappings (), param_type);
+
+	    substitions.push_back (
+	      TyTy::SubstitutionParamMapping (generic_param, param_type));
+	  }
+      }
+
     TyTy::BaseType *ret_type = nullptr;
     if (!method.has_function_return_type ())
       ret_type = new TyTy::UnitType (method.get_mappings ().get_hirid ());
@@ -133,8 +162,9 @@ public:
 	context->insert_type (param.get_mappings (), param_tyty);
       }
 
-    auto fnType = new TyTy::FnType (method.get_mappings ().get_hirid (), params,
-				    ret_type);
+    auto fnType = new TyTy::FnType (method.get_mappings ().get_hirid (),
+				    std::move (params), ret_type,
+				    std::move (substitions));
     context->insert_type (method.get_mappings (), fnType);
   }
 

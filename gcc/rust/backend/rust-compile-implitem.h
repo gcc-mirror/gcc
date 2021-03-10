@@ -91,7 +91,7 @@ public:
 	return;
       }
 
-    TyTy::FnType *fntype = (TyTy::FnType *) fntype_tyty;
+    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
     // convert to the actual function type
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
@@ -108,7 +108,7 @@ public:
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, function.get_locus ());
-    ctx->insert_function_decl (function.get_mappings ().get_hirid (), fndecl);
+    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl);
 
     // setup the params
 
@@ -256,7 +256,7 @@ public:
 	return;
       }
 
-    TyTy::FnType *fntype = (TyTy::FnType *) fntype_tyty;
+    TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
     // convert to the actual function type
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
@@ -273,7 +273,7 @@ public:
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, method.get_locus ());
-    ctx->insert_function_decl (method.get_mappings ().get_hirid (), fndecl);
+    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl);
 
     // setup the params
     TyTy::BaseType *tyret = fntype->get_return_type ();

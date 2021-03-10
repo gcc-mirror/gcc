@@ -102,7 +102,7 @@ public:
 
   void visit (TyTy::IntType &type) override
   {
-    switch (type.get_kind ())
+    switch (type.get_int_kind ())
       {
       case TyTy::IntType::I8:
 	translated
@@ -139,7 +139,7 @@ public:
 
   void visit (TyTy::UintType &type) override
   {
-    switch (type.get_kind ())
+    switch (type.get_uint_kind ())
       {
       case TyTy::UintType::U8:
 	translated = backend->named_type ("u8", backend->integer_type (true, 8),
@@ -175,7 +175,7 @@ public:
 
   void visit (TyTy::FloatType &type) override
   {
-    switch (type.get_kind ())
+    switch (type.get_float_kind ())
       {
       case TyTy::FloatType::F32:
 	translated = backend->named_type ("f32", backend->float_type (32),
