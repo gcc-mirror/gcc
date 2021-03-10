@@ -11387,7 +11387,7 @@ types of the actuals are not by-copy types. This warning is off by default.
 
 @emph{Disable warnings on overlapping actuals.}
 
-This switch disables warnings on overlapping actuals in a call..
+This switch disables warnings on overlapping actuals in a call.
 @end table
 
 @geindex -gnatwj (gcc)
