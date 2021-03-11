@@ -1,5 +1,8 @@
 /* { dg-do run } */
 
+/* { dg-additional-sources "../lib/on_device_arch.c" } */
+extern int on_device_arch_nvptx ();
+
 #include <omp.h>
 #include <assert.h>
 
@@ -9,6 +12,10 @@
 
 int main (void)
 {
+  //TODO See '../libgomp.c/pr99555-1.c'.
+  if (on_device_arch_nvptx ())
+    __builtin_abort (); //TODO Until resolved, skip, with error status.
+
   int x = 0, y = 0, z = 0;
   int thread_count;
   omp_event_handle_t detach_event1, detach_event2;
