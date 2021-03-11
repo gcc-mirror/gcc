@@ -5620,16 +5620,6 @@ if (BYTES_BIG_ENDIAN)
                     (const_string "neon_load4_4reg<q>")))]
 )
 
-(define_expand "vec_load_lanesxi<mode>"
-  [(match_operand:XI 0 "s_register_operand")
-   (match_operand:XI 1 "neon_struct_operand")
-   (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-  "TARGET_NEON"
-{
-  emit_insn (gen_neon_vld4<mode> (operands[0], operands[1]));
-  DONE;
-})
-
 (define_expand "neon_vld4<mode>"
   [(match_operand:XI 0 "s_register_operand")
    (match_operand:XI 1 "neon_struct_operand")
@@ -5820,16 +5810,6 @@ if (BYTES_BIG_ENDIAN)
                     (const_string "neon_store1_4reg<q>")
                     (const_string "neon_store4_4reg<q>")))]
 )
-
-(define_expand "vec_store_lanesxi<mode>"
-  [(match_operand:XI 0 "neon_struct_operand")
-   (match_operand:XI 1 "s_register_operand")
-   (unspec:VQ2 [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
-  "TARGET_NEON"
-{
-  emit_insn (gen_neon_vst4<mode> (operands[0], operands[1]));
-  DONE;
-})
 
 (define_expand "neon_vst4<mode>"
   [(match_operand:XI 0 "neon_struct_operand")
