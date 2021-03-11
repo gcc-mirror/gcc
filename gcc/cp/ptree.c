@@ -310,8 +310,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 		    {
 		      indent_to (file, indent + 4);
 		      unsigned lazy = slot.get_lazy ();
-		      fprintf (file, "%s snum:%u flags:%d",
-			       pfx, lazy >> 2, lazy & 3);
+		      fprintf (file, "%s snum:%u", pfx, lazy);
 		    }
 		  else if (slot)
 		    print_node (file, pfx, slot, indent + 4);

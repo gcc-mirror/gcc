@@ -7940,7 +7940,7 @@ lookup_elaborated_type_1 (tree name, TAG_how how)
 			  if (*slot == bind)
 			    *slot = decl;
 			  else
-			    BINDING_VECTOR_CLUSTER (bind, 0)
+			    BINDING_VECTOR_CLUSTER (*slot, 0)
 			      .slots[BINDING_SLOT_CURRENT] = decl;
 			}
 		    }
