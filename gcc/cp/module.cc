@@ -2783,11 +2783,7 @@ enum merge_kind
   MK_tmpl_tmpl_mask = 0x1, /* We want TEMPLATE_DECL.  */
 
   MK_type_spec = MK_template_mask,
-  MK_type_tmpl_spec = MK_type_spec | MK_tmpl_tmpl_mask,
-
   MK_decl_spec = MK_template_mask | MK_tmpl_decl_mask,
-  MK_decl_tmpl_spec = MK_decl_spec | MK_tmpl_tmpl_mask,
-
   MK_alias_spec = MK_decl_spec | MK_tmpl_alias_mask,
 
   MK_hwm = 0x20
@@ -8062,10 +8058,10 @@ trees_in::decl_value ()
 	{
 	  /* Add to specialization tables now that constraints etc are
 	     added.  */
-	  bool is_decl = (mk & MK_template_mask) && (mk & MK_tmpl_decl_mask);
+	  bool is_type = mk == MK_partial || !(mk & MK_tmpl_decl_mask);
 
-	  spec.spec = is_decl ? inner : type;
-	  add_mergeable_specialization (is_decl, &spec, decl, spec_flags);
+	  spec.spec = is_type ? type : mk & MK_tmpl_tmpl_mask ? inner : decl;
+	  add_mergeable_specialization (!is_type, &spec, decl, spec_flags);
 	}
 
       if (TREE_CODE (decl) == INTEGER_CST && !TREE_OVERFLOW (decl))
@@ -10229,7 +10225,6 @@ trees_out::get_merge_kind (tree decl, depset *dep)
     case depset::EK_SPECIALIZATION:
       {
 	gcc_checking_assert (dep->is_special ());
-	spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
 
 	if (TREE_CODE (DECL_CONTEXT (decl)) == FUNCTION_DECL)
 	  /* An block-scope classes of templates are themselves
@@ -10247,13 +10242,8 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 
 	if (TREE_CODE (decl) == TEMPLATE_DECL)
 	  {
-	    tree res = DECL_TEMPLATE_RESULT (decl);
-	    if (!(mk & MK_tmpl_decl_mask))
-	      res = TREE_TYPE (res);
-
-	    if (res == entry->spec)
-	      /* We check we can get back to the template during
-		 streaming.  */
+	    spec_entry *entry = reinterpret_cast <spec_entry *> (dep->deps[0]);
+	    if (TREE_CODE (entry->spec) != TEMPLATE_DECL)
 	      mk = merge_kind (mk | MK_tmpl_tmpl_mask);
 	  }
       }
@@ -10362,15 +10352,14 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 		gcc_assert (match_mergeable_specialization (false, entry)
 			    == TREE_TYPE (existing));
 	      else if (mk & MK_tmpl_tmpl_mask)
-		if (tree ti = DECL_TEMPLATE_INFO (existing))
-		  existing = TI_TEMPLATE (ti);
+		existing = DECL_TI_TEMPLATE (existing);
 	    }
 	  else
 	    {
-	      if (!(mk & MK_tmpl_tmpl_mask))
+	      if (mk & MK_tmpl_tmpl_mask)
+		existing = CLASSTYPE_TI_TEMPLATE (existing);
+	      else
 		existing = TYPE_NAME (existing);
-	      else if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
-		existing = TI_TEMPLATE (ti);
 	    }
 
 	  /* The walkabout should have found ourselves.  */
@@ -10677,13 +10666,6 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       DECL_NAME (inner) = DECL_NAME (decl);
       DECL_CONTEXT (inner) = DECL_CONTEXT (decl);
 
-      spec.spec = decl;
-      if (mk & MK_tmpl_tmpl_mask)
-	{
-	  if (inner == decl)
-	    return error_mark_node;
-	  spec.spec = inner;
-	}
       tree constr = NULL_TREE;
       bool is_decl = mk & MK_tmpl_decl_mask;
       if (is_decl)
@@ -10694,13 +10676,10 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	      if (constr)
 		set_constraints (inner, constr);
 	    }
+	  spec.spec = (mk & MK_tmpl_tmpl_mask) ? inner : decl;
 	}
       else
-	{
-	  if (mk == MK_type_spec && inner != decl)
-	    return error_mark_node;
-	  spec.spec = type;
-	}
+	spec.spec = type;
       existing = match_mergeable_specialization (is_decl, &spec);
       if (constr)
 	/* We'll add these back later, if this is the new decl.  */
@@ -10712,24 +10691,15 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	{
 	  /* A declaration specialization.  */
 	  if (mk & MK_tmpl_tmpl_mask)
-	    if (tree ti = DECL_TEMPLATE_INFO (existing))
-	      {
-		tree tmpl = TI_TEMPLATE (ti);
-		if (DECL_TEMPLATE_RESULT (tmpl) == existing)
-		  existing = tmpl;
-	      }
+	    existing = DECL_TI_TEMPLATE (existing);
 	}
       else
 	{
 	  /* A type specialization.  */
-	  if (!(mk & MK_tmpl_tmpl_mask))
+	  if (mk & MK_tmpl_tmpl_mask)
+	    existing = CLASSTYPE_TI_TEMPLATE (existing);
+	  else
 	    existing = TYPE_NAME (existing);
-	  else if (tree ti = CLASSTYPE_TEMPLATE_INFO (existing))
-	    {
-	      tree tmpl = TI_TEMPLATE (ti);
-	      if (DECL_TEMPLATE_RESULT (tmpl) == TYPE_NAME (existing))
-		existing = tmpl;
-	    }
 	}
     }
   else if (mk == MK_unique)
