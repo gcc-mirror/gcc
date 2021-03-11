@@ -2812,7 +2812,6 @@ target_libraries="target-libgcc \
 		target-newlib \
 		target-libgomp \
 		target-liboffloadmic \
-		target-libhsail-rt \
 		target-libatomic \
 		target-libitm \
 		target-libstdc++-v3 \
@@ -3331,29 +3330,6 @@ $as_echo "yes" >&6; }
 	fi
     fi
 fi
-
-
-# Disable libhsail-rt on unsupported systems.
-if test -d ${srcdir}/libhsail-rt; then
-    if test x$enable_libhsail_rt = x; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libhsail-rt support" >&5
-$as_echo_n "checking for libhsail-rt support... " >&6; }
-        if (srcdir=${srcdir}/libhsail-rt; \
-                . ${srcdir}/configure.tgt; \
-                test -n "$UNSUPPORTED")
-        then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
-$as_echo "no" >&6; }
-            unsupported_languages="$unsupported_languages brig"
-            # This implicitly disables also target-libhsail-rt as it won't
-            # get added to the build without BRIG FE.
-        else
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
-$as_echo "yes" >&6; }
-        fi
-    fi
-fi
-
 
 # Disable libquadmath for some systems.
 case "${target}" in

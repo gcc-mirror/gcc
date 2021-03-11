@@ -166,7 +166,6 @@ target_modules = { module= libquadmath; };
 target_modules = { module= libgfortran; };
 target_modules = { module= libobjc; };
 target_modules = { module= libgo; };
-target_modules = { module= libhsail-rt; };
 target_modules = { module= libphobos;
 		   lib_path=src/.libs; };
 target_modules = { module= libtermcap; no_check=true;
@@ -651,8 +650,6 @@ languages = { language=obj-c++;	gcc-check-target=check-obj-c++; };
 languages = { language=go;	gcc-check-target=check-go;
 				lib-check-target=check-target-libgo;
 				lib-check-target=check-gotools; };
-languages = { language=brig;	gcc-check-target=check-brig;
-				lib-check-target=check-target-libhsail-rt; };
 languages = { language=d;	gcc-check-target=check-d;
 				lib-check-target=check-target-libphobos; };
 
