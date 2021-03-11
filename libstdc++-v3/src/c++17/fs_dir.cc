@@ -207,7 +207,7 @@ recursive_directory_iterator(const path& p, directory_options options,
   else
     {
       const int err = errno;
-      if (err == EACCES
+      if (fs::is_permission_denied_error(err)
 	  && is_set(options, fs::directory_options::skip_permission_denied))
 	{
 	  if (ecptr)
