@@ -98,6 +98,10 @@ using F128_type = void;
 
 namespace
 {
+#if defined __SIZEOF_INT128__
+  using uint128_t = unsigned __int128;
+#endif
+
   namespace ryu
   {
 #include "ryu/common.h"
@@ -171,7 +175,7 @@ namespace
     static constexpr int mantissa_bits = 112;
     static constexpr int exponent_bits = 15;
     static constexpr bool has_implicit_leading_bit = true;
-    using mantissa_t = unsigned __int128;
+    using mantissa_t = uint128_t;
     using shortest_scientific_t = ryu::floating_decimal_128;
 
     static constexpr uint64_t pow10_adjustment_tab[]
@@ -367,7 +371,7 @@ namespace
       static constexpr int mantissa_bits = 105;
       static constexpr int exponent_bits = 11;
       static constexpr bool has_implicit_leading_bit = true;
-      using mantissa_t = unsigned __int128;
+      using mantissa_t = uint128_t;
       using shortest_scientific_t = ryu::floating_decimal_128;
 
       static constexpr uint64_t pow10_adjustment_tab[]
@@ -393,6 +397,7 @@ namespace
     ieee_t<T>
     get_ieee_repr(const T value)
     {
+      using mantissa_t = typename floating_type_traits<T>::mantissa_t;
       constexpr int mantissa_bits = floating_type_traits<T>::mantissa_bits;
       constexpr int exponent_bits = floating_type_traits<T>::exponent_bits;
       constexpr int total_bits = mantissa_bits + exponent_bits + 1;
@@ -404,7 +409,7 @@ namespace
 	  return uint64_t{};
 #ifdef __SIZEOF_INT128__
 	else if constexpr (total_bits <= 128)
-	  return (unsigned __int128){};
+	  return uint128_t{};
 #endif
       };
       using uint_t = decltype(get_uint_t());
@@ -412,10 +417,13 @@ namespace
       memcpy(&value_bits, &value, sizeof(value));
 
       ieee_t<T> ieee_repr;
-      ieee_repr.mantissa = value_bits & ((uint_t{1} << mantissa_bits) - 1u);
+      ieee_repr.mantissa
+	= static_cast<mantissa_t>(value_bits & ((uint_t{1} << mantissa_bits) - 1u));
+      value_bits >>= mantissa_bits;
       ieee_repr.biased_exponent
-	= (value_bits >> mantissa_bits) & ((uint_t{1} << exponent_bits) - 1u);
-      ieee_repr.sign = (value_bits >> (mantissa_bits + exponent_bits)) & 1;
+	= static_cast<uint32_t>(value_bits & ((uint_t{1} << exponent_bits) - 1u));
+      value_bits >>= exponent_bits;
+      ieee_repr.sign = (value_bits & 1) != 0;
       return ieee_repr;
     }
 
@@ -430,7 +438,6 @@ namespace
       // mantissa (plus an implicit leading bit).  We use the exponent and sign
       // of the high part, and we merge the mantissa of the high part with the
       // mantissa (and the implicit leading bit) of the low part.
-      using uint_t = unsigned __int128;
       uint64_t value_bits[2] = {};
       memcpy(value_bits, &value, sizeof(value_bits));
 
@@ -478,8 +485,8 @@ namespace
 	}
 
       ieee_t<long double> ieee_repr;
-      ieee_repr.mantissa = ((uint_t{mantissa_hi} << 64)
-			    | (uint_t{mantissa_lo} << 4)) >> 11;
+      ieee_repr.mantissa = ((uint128_t{mantissa_hi} << 64)
+			    | (uint128_t{mantissa_lo} << 4)) >> 11;
       ieee_repr.biased_exponent = exponent_hi;
       ieee_repr.sign = sign_hi;
       return ieee_repr;
