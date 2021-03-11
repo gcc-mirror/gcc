@@ -96,7 +96,8 @@ shortest_paths<GraphTraits, Path_t>::shortest_paths (const graph_t &graph,
 	      idx_in_queue_with_min_dist = i;
 	    }
 	}
-      gcc_assert (idx_with_min_dist != -1);
+      if (idx_with_min_dist == -1)
+	break;
       gcc_assert (idx_in_queue_with_min_dist != -1);
 
       // FIXME: this is confusing: there are two indices here
@@ -123,7 +124,8 @@ shortest_paths<GraphTraits, Path_t>::shortest_paths (const graph_t &graph,
 }
 
 /* Generate an Path_t instance giving the shortest path to the node
-   TO from the origin node.  */
+   TO from the origin node.
+   If no such path exists, return an empty path.  */
 
 template <typename GraphTraits, typename Path_t>
 inline Path_t
