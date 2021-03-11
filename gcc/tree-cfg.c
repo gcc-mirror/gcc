@@ -8155,7 +8155,12 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
       if (gimple_in_ssa_p (cfun))
 	FOR_EACH_SSA_NAME (ix, name, cfun)
 	  {
-	    if (!SSA_NAME_VAR (name))
+	    if (!SSA_NAME_VAR (name)
+		/* SSA name with decls without a name still get
+		   dumped as _N, list those explicitely as well even
+		   though we've dumped the decl declaration as D.xxx
+		   above.  */
+		|| !SSA_NAME_IDENTIFIER (name))
 	      {
 		fprintf (file, "  ");
 		print_generic_expr (file, TREE_TYPE (name), flags);
