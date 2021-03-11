@@ -1182,7 +1182,7 @@ package body Sem_Warn is
                --  First gather any Unset_Reference indication for E1. In the
                --  case of a parameter, it is the Spec_Entity that is relevant.
 
-               if Ekind (E1) = E_Out_Parameter
+               if Ekind (E1) in Formal_Kind
                  and then Present (Spec_Entity (E1))
                then
                   UR := Unset_Reference (Spec_Entity (E1));
@@ -1354,10 +1354,13 @@ package body Sem_Warn is
                      --  Suppress warning if composite type contains any access
                      --  component, since the logical effect of modifying a
                      --  parameter may be achieved by modifying a referenced
-                     --  object.
+                     --  object. This rationale does not apply to internal
+                     --  private types, so we warn even if a component is of
+                     --  something like Unbounded_String.
 
                      elsif Is_Composite_Type (E1T)
-                       and then Has_Access_Values (E1T)
+                       and then Has_Access_Values
+                         (E1T, Include_Internal => False)
                      then
                         null;
 
@@ -3090,7 +3093,7 @@ package body Sem_Warn is
             --  Here we generate the warning
 
             else
-               --  If -gnatwk is set then output message that we could be IN
+               --  If -gnatwk is set then output message that it could be IN
 
                if not Is_Trivial_Subprogram (Scope (E1)) then
                   if Warn_On_Constant then

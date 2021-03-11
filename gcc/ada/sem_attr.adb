@@ -8830,7 +8830,9 @@ package body Sem_Attr is
 
       when Attribute_Has_Access_Values =>
          Rewrite (N, New_Occurrence_Of
-           (Boolean_Literals (Has_Access_Values (P_Root_Type)), Loc));
+           (Boolean_Literals
+             (Has_Access_Values (P_Root_Type, Include_Internal => True)),
+              Loc));
          Analyze_And_Resolve (N, Standard_Boolean);
 
       -----------------------

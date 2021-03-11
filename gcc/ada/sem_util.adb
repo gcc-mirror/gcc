@@ -11539,7 +11539,9 @@ package body Sem_Util is
    -- Has_Access_Values --
    -----------------------
 
-   function Has_Access_Values (T : Entity_Id) return Boolean is
+   function Has_Access_Values
+     (T : Entity_Id; Include_Internal : Boolean) return Boolean
+   is
       Typ : constant Entity_Id := Underlying_Type (T);
 
    begin
@@ -11552,11 +11554,17 @@ package body Sem_Util is
       if No (Typ) then
          return False;
 
+      elsif not Include_Internal
+        and then T /= Typ
+        and then In_Internal_Unit (Typ)
+      then
+         return False;
+
       elsif Is_Access_Type (Typ) then
          return True;
 
       elsif Is_Array_Type (Typ) then
-         return Has_Access_Values (Component_Type (Typ));
+         return Has_Access_Values (Component_Type (Typ), Include_Internal);
 
       elsif Is_Record_Type (Typ) then
          declare
@@ -11571,7 +11579,7 @@ package body Sem_Util is
                --  Check for access component, tag field does not count, even
                --  though it is implemented internally using an access type.
 
-               if Has_Access_Values (Etype (Comp))
+               if Has_Access_Values (Etype (Comp), Include_Internal)
                  and then Chars (Comp) /= Name_uTag
                then
                   return True;
