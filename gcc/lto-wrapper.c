@@ -49,6 +49,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-section-names.h"
 #include "collect-utils.h"
 
+#include <thread>
+
 /* Environment variable, used for passing the names of offload targets from GCC
    driver to lto-wrapper.  */
 #define OFFLOAD_TARGET_NAMES_ENV	"OFFLOAD_TARGET_NAMES"
@@ -1199,113 +1201,6 @@ cmp_priority (const void *a, const void *b)
   return *((const int *)b)-*((const int *)a);
 }
 
-/* Number of CPUs that can be used for parallel LTRANS phase.  */
-
-static unsigned long nthreads_var = 0;
-
-#ifdef HAVE_PTHREAD_AFFINITY_NP
-unsigned long cpuset_size;
-static unsigned long get_cpuset_size;
-cpu_set_t *cpusetp;
-
-unsigned long
-static cpuset_popcount (unsigned long cpusetsize, cpu_set_t *cpusetp)
-{
-#ifdef CPU_COUNT_S
-  /* glibc 2.7 and above provide a macro for this.  */
-  return CPU_COUNT_S (cpusetsize, cpusetp);
-#else
-#ifdef CPU_COUNT
-  if (cpusetsize == sizeof (cpu_set_t))
-    /* glibc 2.6 and above provide a macro for this.  */
-    return CPU_COUNT (cpusetp);
-#endif
-  size_t i;
-  unsigned long ret = 0;
-  STATIC_ASSERT (sizeof (cpusetp->__bits[0]) == sizeof (unsigned long int));
-  for (i = 0; i < cpusetsize / sizeof (cpusetp->__bits[0]); i++)
-    {
-      unsigned long int mask = cpusetp->__bits[i];
-      if (mask == 0)
-	continue;
-      ret += __builtin_popcountl (mask);
-    }
-  return ret;
-#endif
-}
-#endif
-
-/* At startup, determine the default number of threads.  It would seem
-   this should be related to the number of cpus online.  */
-
-static void
-init_num_threads (void)
-{
-#ifdef HAVE_PTHREAD_AFFINITY_NP
-#if defined (_SC_NPROCESSORS_CONF) && defined (CPU_ALLOC_SIZE)
-  cpuset_size = sysconf (_SC_NPROCESSORS_CONF);
-  cpuset_size = CPU_ALLOC_SIZE (cpuset_size);
-#else
-  cpuset_size = sizeof (cpu_set_t);
-#endif
-
-  cpusetp = (cpu_set_t *) xmalloc (gomp_cpuset_size);
-  do
-    {
-      int ret = pthread_getaffinity_np (pthread_self (), gomp_cpuset_size,
-					cpusetp);
-      if (ret == 0)
-	{
-	  /* Count only the CPUs this process can use.  */
-	  nthreads_var = cpuset_popcount (cpuset_size, cpusetp);
-	  if (nthreads_var == 0)
-	    break;
-	  get_cpuset_size = cpuset_size;
-#ifdef CPU_ALLOC_SIZE
-	  unsigned long i;
-	  for (i = cpuset_size * 8; i; i--)
-	    if (CPU_ISSET_S (i - 1, cpuset_size, cpusetp))
-	      break;
-	  cpuset_size = CPU_ALLOC_SIZE (i);
-#endif
-	  return;
-	}
-      if (ret != EINVAL)
-	break;
-#ifdef CPU_ALLOC_SIZE
-      if (cpuset_size < sizeof (cpu_set_t))
-	cpuset_size = sizeof (cpu_set_t);
-      else
-	cpuset_size = cpuset_size * 2;
-      if (cpuset_size < 8 * sizeof (cpu_set_t))
-	cpusetp
-	  = (cpu_set_t *) realloc (cpusetp, cpuset_size);
-      else
-	{
-	  /* Avoid fatal if too large memory allocation would be
-	     requested, e.g. kernel returning EINVAL all the time.  */
-	  void *p = realloc (cpusetp, cpuset_size);
-	  if (p == NULL)
-	    break;
-	  cpusetp = (cpu_set_t *) p;
-	}
-#else
-      break;
-#endif
-    }
-  while (1);
-  cpuset_size = 0;
-  nthreads_var = 1;
-  free (cpusetp);
-  cpusetp = NULL;
-#endif
-#ifdef _SC_NPROCESSORS_ONLN
-  nthreads_var = sysconf (_SC_NPROCESSORS_ONLN);
-#endif
-}
-
-/* FIXME: once using -std=c++11, we can use std::thread::hardware_concurrency.  */
-
 /* Test and return reason why a jobserver cannot be detected.  */
 
 static const char *
@@ -1388,6 +1283,9 @@ run_gcc (unsigned argc, char *argv[])
   unsigned n_debugobj;
   const char *incoming_dumppfx = dumppfx = NULL;
   static char current_dir[] = { '.', DIR_SEPARATOR, '\0' };
+
+  /* Number of CPUs that can be used for parallel LTRANS phase.  */
+  unsigned long nthreads_var = std::thread::hardware_concurrency ();
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -1779,7 +1677,6 @@ cont1:
       else if (auto_parallel)
 	{
 	  char buf[256];
-	  init_num_threads ();
 	  if (nthreads_var == 0)
 	    nthreads_var = 1;
 	  if (verbose)
