@@ -1,3 +1,9 @@
+2021-03-10  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR bootstrap/94918
+	* raise-gcc.c: On Cygwin include mingw32.h to prevent
+	windows.h from including x86intrin.h or emmintrin.h.
+
 2020-12-10  Ed Schonberg  <schonberg@adacore.com>
 
 	PR ada/98230
