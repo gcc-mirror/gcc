@@ -2024,12 +2024,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit
       normal_distribution(result_type __mean,
 			  result_type __stddev = result_type(1))
-      : _M_param(__mean, __stddev), _M_saved_available(false)
+      : _M_param(__mean, __stddev)
       { }
 
       explicit
       normal_distribution(const param_type& __p)
-      : _M_param(__p), _M_saved_available(false)
+      : _M_param(__p)
       { }
 
       /**
@@ -2166,8 +2166,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			const param_type& __p);
 
       param_type  _M_param;
-      result_type _M_saved;
-      bool        _M_saved_available;
+      result_type _M_saved = 0;
+      bool        _M_saved_available = false;
     };
 
   /**
