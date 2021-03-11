@@ -1,3 +1,21 @@
+2021-03-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99205
+	* data.c (gfc_assign_data_value): Reject non-constant character
+	length for lvalue.
+	* trans-array.c (gfc_conv_array_initializer): Restrict loop to
+	elements which are defined to avoid NULL pointer dereference.
+
+2021-03-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* intrinsic.texi (MIN): Correct 'maximum' to 'minimum'.
+
+2021-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR fortran/96983
+	* trans-intrinsic.c (build_round_expr): Do not implicitly assume
+	that __float128 is the 128-bit floating-point type.
+
 2021-03-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/49278

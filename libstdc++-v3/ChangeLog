@@ -1,3 +1,58 @@
+2021-03-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/29_atomics/atomic/wait_notify/bool.cc: Add options to
+	link with libatomic.
+	* testsuite/29_atomics/atomic/wait_notify/generic.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/pointers.cc: Likewise.
+	* testsuite/29_atomics/atomic_flag/wait_notify/1.cc: Likewise.
+	* testsuite/30_threads/barrier/arrive.cc: Likewise.
+	* testsuite/30_threads/barrier/arrive_and_drop.cc: Likewise.
+	* testsuite/30_threads/barrier/arrive_and_wait.cc: Likewise.
+	* testsuite/30_threads/barrier/completion.cc: Likewise.
+	* testsuite/30_threads/latch/3.cc: Likewise.
+	* testsuite/30_threads/semaphore/try_acquire.cc: Likewise.
+	* testsuite/30_threads/semaphore/try_acquire_for.cc: Likewise.
+	* testsuite/30_threads/semaphore/try_acquire_until.cc: Likewise.
+
+2021-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99413
+	* include/bits/align.h: Include debug/assertions.h.
+	* include/bits/codecvt.h: Include bits/c++config.h.
+	* include/bits/enable_special_members.h: Likewise.
+	* include/bits/erase_if.h: Likewise.
+	* include/bits/functional_hash.h: Include <type_traits>.
+	* include/bits/invoke.h: Include bits/move.h.
+	* include/bits/ostream_insert.h: Include bits/exception_defines.h.
+	* include/bits/parse_numbers.h: Include <type_traits>.
+	* include/bits/predefined_ops.h: Include bits/c++config.h.
+	* include/bits/range_access.h: Include bits/stl_iterator.h.
+	* include/bits/stl_bvector.h: Do not include bits/stl_vector.h.
+	* include/bits/stl_iterator.h: Include bits/stl_iterator_base_types.h.
+	* include/bits/stl_uninitialized.h: Include bits/stl_algobase.h.
+	* include/bits/uniform_int_dist.h: Include bits/concept_check.h.
+	* include/bits/unique_lock.h: Include bits/std_mutex.h.
+	* include/debug/assertions.h: Include bits/c++config.h.
+
+2021-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_cmp.h (__eq_builtin_ptr_cmp): Remove.
+	(ranges::equal_to, ranges::not_equal_to): Do not constrain
+	with __eq_builtin_ptr_cmp.
+	(ranges::less, ranges::greater, ranges::less_equal)
+	(ranges::greater_equal): Do not constrain with
+	__less_builtin_ptr_cmp.
+	* libsupc++/compare (compare_three_way): Do not constrain with
+	__3way_builtin_ptr_cmp.
+	* testsuite/18_support/comparisons/object/builtin-ptr-three-way.cc: Moved to...
+	* testsuite/18_support/comparisons/object/lwg3530.cc: ...here.
+	* testsuite/20_util/function_objects/range.cmp/lwg3530.cc: New test.
+
+2021-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/syn_c++20.cc: Enable synopsis checks for
+	C++20 calendar types.
+
 2021-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/99396

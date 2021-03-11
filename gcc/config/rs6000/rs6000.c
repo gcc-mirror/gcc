@@ -7855,7 +7855,8 @@ rs6000_special_round_type_align (tree type, unsigned int computed,
       while (TREE_CODE (type) == ARRAY_TYPE)
 	type = TREE_TYPE (type);
 
-      if (type != error_mark_node && TYPE_MODE (type) == DFmode)
+      if (type != error_mark_node
+	  && (TYPE_MODE (type) == DFmode || TYPE_MODE (type) == DCmode))
 	align = MAX (align, 64);
     }
 

@@ -58,13 +58,14 @@
 ;; Register numbers.
 (define_constants
   [(CRIS_STATIC_CHAIN_REGNUM 7)
-   (CRIS_FP_REGNUM 8)
+   (CRIS_REAL_FP_REGNUM 8)
    (CRIS_SP_REGNUM 14)
    (CRIS_ACR_REGNUM 15)
    (CRIS_SRP_REGNUM 16)
    (CRIS_MOF_REGNUM 17)
    (CRIS_AP_REGNUM 18)
-   (CRIS_CC0_REGNUM 19)]
+   (CRIS_CC0_REGNUM 19)
+   (CRIS_FP_REGNUM 20)]
 )
 
 ;; We need an attribute to define whether an instruction can be put in

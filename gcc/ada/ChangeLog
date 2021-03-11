@@ -1,3 +1,8 @@
+2021-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Build a TYPE_STUB_DECL
+	for the main variant of an enumeration type declared as volatile.
+
 2021-03-09  Mikael Pettersson  <mikpelinux@gmail.com>
 
 	* raise-gcc.c: On Cygwin include mingw32.h to prevent

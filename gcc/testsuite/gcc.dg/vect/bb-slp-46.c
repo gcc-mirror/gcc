@@ -24,5 +24,5 @@ int foo ()
 /* { dg-final { scan-tree-dump "optimized: basic block" "slp2" } } */
 /* { dg-final { scan-tree-dump "extracting lane for live stmt" "slp2" } } */
 /* { dg-final { scan-tree-dump-times "extracting lane for live stmt" 2 "slp2" { xfail *-*-* } } } */
-/* { dg-final { scan-tree-dump-times " \\+ " 3 "optimized" } } */
-/* { dg-final { scan-tree-dump-times " \\+ " 2 "optimized" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-not "tem3_\[0-9\]\+ = " "optimized" } } */
+/* { dg-final { scan-tree-dump-not "tem0_\[0-9\]\+ = " "optimized" { xfail *-*-* } } } */
