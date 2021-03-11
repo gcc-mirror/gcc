@@ -88,6 +88,7 @@ end do
 !$acc data copyin(var3%t2(5)%t1%arr1)
 
 !$acc serial present(var3%t2(5)%t1%arr1)
+! { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } .-1 }
 var3%t2(5)%t1%arr1(:,:) = 6
 !$acc end serial
 
