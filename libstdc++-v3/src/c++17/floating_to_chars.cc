@@ -64,25 +64,19 @@ extern "C" int __sprintfieee128(char*, const char*, ...);
 
 #if __LDBL_MANT_DIG__ == __DBL_MANT_DIG__
 # define LONG_DOUBLE_KIND LDK_BINARY64
-#elif defined(__SIZEOF_INT128__)
-// The Ryu routines need a 128-bit integer type in order to do shortest
-// formatting of types larger than 64-bit double, so without __int128 we can't
-// support any large long double format.  This is the case for e.g. i386.
-# if __LDBL_MANT_DIG__ == 64
+#elif __LDBL_MANT_DIG__ == 64
 #  define LONG_DOUBLE_KIND LDK_FLOAT80
-# elif __LDBL_MANT_DIG__ == 113
-#  define LONG_DOUBLE_KIND LDK_BINARY128
-# elif __LDBL_MANT_DIG__ == 106
-#  define LONG_DOUBLE_KIND LDK_IBM128
-# endif
-# if defined _GLIBCXX_USE_FLOAT128 && __FLT128_MANT_DIG__ == 113
-// Define overloads of std::to_chars for __float128.
-#  define FLOAT128_TO_CHARS 1
-# endif
+#elif __LDBL_MANT_DIG__ == 113
+# define LONG_DOUBLE_KIND LDK_BINARY128
+#elif __LDBL_MANT_DIG__ == 106
+# define LONG_DOUBLE_KIND LDK_IBM128
+#else
+# define LONG_DOUBLE_KIND LDK_UNSUPPORTED
 #endif
 
-#if !defined(LONG_DOUBLE_KIND)
-# define LONG_DOUBLE_KIND LDK_UNSUPPORTED
+#if defined _GLIBCXX_USE_FLOAT128 && __FLT128_MANT_DIG__ == 113
+// Define overloads of std::to_chars for __float128.
+# define FLOAT128_TO_CHARS 1
 #endif
 
 // For now we only support __float128 when it's the powerpc64 __ieee128 type.
@@ -100,6 +94,8 @@ namespace
 {
 #if defined __SIZEOF_INT128__
   using uint128_t = unsigned __int128;
+#else
+# include "uint128_t.h"
 #endif
 
   namespace ryu
@@ -114,7 +110,6 @@ namespace
 #include "ryu/d2fixed.c"
 #include "ryu/f2s.c"
 
-#ifdef __SIZEOF_INT128__
     namespace generic128
     {
       // Put the generic Ryu bits in their own namespace to avoid name conflicts.
@@ -129,7 +124,6 @@ namespace
     int
     to_chars(const floating_decimal_128 v, char* const result)
     { return generic128::generic_to_chars(v, result); }
-#endif
   } // namespace ryu
 
   // A traits class that contains pertinent information about the binary
@@ -407,10 +401,8 @@ namespace
 	  return uint32_t{};
 	else if constexpr (total_bits <= 64)
 	  return uint64_t{};
-#ifdef __SIZEOF_INT128__
 	else if constexpr (total_bits <= 128)
 	  return uint128_t{};
-#endif
       };
       using uint_t = decltype(get_uint_t());
       uint_t value_bits = 0;
@@ -503,7 +495,6 @@ namespace
 	return ryu::floating_to_fd32(value);
       else if constexpr (std::is_same_v<T, double>)
 	return ryu::floating_to_fd64(value);
-#ifdef __SIZEOF_INT128__
       else if constexpr (std::is_same_v<T, long double>
 			 || std::is_same_v<T, F128_type>)
 	{
@@ -519,7 +510,6 @@ namespace
 						mantissa_bits, exponent_bits,
 						!has_implicit_leading_bit);
 	}
-#endif
     }
 
   // This subroutine returns true if the shortest scientific form fd is a
@@ -558,10 +548,32 @@ namespace
   get_mantissa_length(const ryu::floating_decimal_64 fd)
   { return ryu::decimalLength17(fd.mantissa); }
 
-#ifdef __SIZEOF_INT128__
   int
   get_mantissa_length(const ryu::floating_decimal_128 fd)
   { return ryu::generic128::decimalLength(fd.mantissa); }
+
+#if !defined __SIZEOF_INT128__
+  // An implementation of base-10 std::to_chars for the uint128_t class type,
+  // used by targets that lack __int128.
+  std::to_chars_result
+  to_chars(char* first, char* const last, uint128_t x)
+  {
+    const int len = ryu::generic128::decimalLength(x);
+    if (last - first < len)
+      return {last, std::errc::value_too_large};
+    if (x == 0)
+      {
+	*first++ = '0';
+	return {first, std::errc{}};
+      }
+    for (int i = 0; i < len; ++i)
+      {
+	first[len - 1 - i] = '0' + static_cast<char>(x % 10);
+	x /= 10;
+      }
+    __glibcxx_assert(x == 0);
+    return {first + len, std::errc{}};
+  }
 #endif
 } // anon namespace
 
