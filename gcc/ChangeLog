@@ -1,3 +1,52 @@
+2021-03-10  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/99492
+	* config/rs6000/aix.h (ADJUST_FIELD_ALIGN): Add check for DCmode.
+	* config/rs6000/rs6000.c (rs6000_special_round_type_align): Same.
+
+2021-03-10  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99422
+	* lra-constraints.c (process_address_1): Don't check unknown
+	constraint, use X for empty constraint.
+
+2021-03-10  Alex Coplan  <alex.coplan@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_vfp_is_call_or_return_candidate):
+	Fix typo in comment describing "is_ha" argument.
+
+2021-03-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	* doc/sourcebuild.texi: Document LRA target selector.
+
+2021-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/ux.texi: Add subsection contrasting interactive versus
+	batch usage of GCC.
+
+2021-03-10  Joel Hutton  <joel.hutton@arm.com>
+
+	PR target/99102
+	* tree-vect-stmts.c (vectorizable_store): Fix scatter store mask
+	check condition.
+	(vectorizable_load): Fix gather load mask check condition.
+
+2021-03-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99510
+	* tree.c (check_aligned_type): Check that the candidate
+	has TYPE_USER_ALIGN set instead of matching with the
+	original type.
+
+2021-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (sparc_regmode_natural_size): Return 4 for
+	float and vector integer modes only if the mode is not larger.
+
+2021-03-10  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (DWARF_FRAME_REGISTERS): Define.
+
 2021-03-09  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	* ira.c (ira_setup_alts, ira_get_dup_out_num): Process digital

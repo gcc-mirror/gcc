@@ -1,3 +1,22 @@
+2021-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96374
+	* engine.cc (exploded_path::feasible_p): Move "snodes_visited" and
+	"model" locals into a new class feasibility_state.  Move heart
+	of per-edge processing into
+	feasibility_state::maybe_update_for_edge.
+	(feasibility_state::feasibility_state): New.
+	(feasibility_state::maybe_update_for_edge): New, based on loop
+	body in exploded_path::feasible_p.
+	* exploded-graph.h (class feasibility_state): New.
+
+2021-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* supergraph.h
+	(callgraph_superedge::dyn_cast_callgraph_superedge): New.
+	(call_superedge::dyn_cast_callgraph_superedge): Delete.
+	(return_superedge::dyn_cast_callgraph_superedge): Delete.
+
 2021-03-02  Martin Liska  <mliska@suse.cz>
 
 	* diagnostic-manager.cc (diagnostic_manager::emit_saved_diagnostics):

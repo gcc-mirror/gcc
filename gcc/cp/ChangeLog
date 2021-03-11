@@ -1,3 +1,16 @@
+2021-03-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99423
+	* module.cc (post_load_processing): Assert not gcable.
+	(laxy_load_pendings): Extend no-gc region around
+	post_load_processing.
+
+2021-03-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99508
+	* decl.c (make_rtl_for_nonlocal_decl): Propagate local-extern's
+	assembler name to the ns alias.
+
 2021-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/99459

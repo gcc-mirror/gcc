@@ -1,3 +1,63 @@
+2021-03-10  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/99492
+	* gcc.target/powerpc/pr99492.c: New testcase.
+
+2021-03-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99205
+	* gfortran.dg/data_char_4.f90: New test.
+	* gfortran.dg/data_char_5.f90: New test.
+
+2021-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/pr98959.c: Add int128 and lp64 selectors.
+
+2021-03-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99423
+	* g++.dg/modules/pr99423_a.H: New.
+	* g++.dg/modules/pr99423_b.H: New.
+
+2021-03-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99305
+	PR testsuite/99498
+	* g++.dg/opt/pr99305.C: Don't expect cast to unsigned char on
+	unsigned_char effective targets.
+
+2021-03-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99508
+	* g++.dg/ext/pr99508.C: New.
+
+2021-03-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/99292
+	* lib/target-supports.exp (check_effective_target_lra): New.
+	* gcc.c-torture/compile/asmgoto-2.c: Use LRA target selector.
+	* gcc.c-torture/compile/asmgoto-5.c: Likewise.
+	* gcc.c-torture/compile/pr98096.c: Likewise.
+	* gcc.dg/pr97954.c: Likewise.
+
+2021-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/pr94047.c: Remove "-Wno-analyzer-too-complex".
+	* gcc.dg/analyzer/zlib-2.c: Likewise.
+
+2021-03-10  Joel Hutton  <joel.hutton@arm.com>
+
+	* gcc.dg/vect/pr99102.c: Fix target selector.
+
+2021-03-10  Joel Hutton  <joel.hutton@arm.com>
+
+	PR target/99102
+	* gcc.dg/vect/pr99102.c: New test.
+
+2021-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/lto25.ads: New test.
+
 2021-03-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/99305
