@@ -4963,16 +4963,6 @@ push_cp_library_fn (enum tree_code operator_code, tree type,
   return fn;
 }
 
-/* Like push_library_fn, but takes a TREE_LIST of parm types rather than
-   a FUNCTION_TYPE.  */
-
-tree
-push_void_library_fn (tree name, tree parmtypes, int ecf_flags)
-{
-  tree type = build_function_type (void_type_node, parmtypes);
-  return push_library_fn (name, type, NULL_TREE, ecf_flags);
-}
-
 /* Like push_library_fn, but also note that this function throws
    and does not return.  Used for __throw_foo and the like.  */
 

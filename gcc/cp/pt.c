@@ -3693,25 +3693,6 @@ get_primary_template_innermost_parameters (const_tree t)
   return parms;
 }
 
-/* Return the template parameters of the LEVELth level from the full list
-   of template parameters PARMS.  */
-
-tree
-get_template_parms_at_level (tree parms, int level)
-{
-  tree p;
-  if (!parms
-      || TREE_CODE (parms) != TREE_LIST
-      || level > TMPL_PARMS_DEPTH (parms))
-    return NULL_TREE;
-
-  for (p = parms; p; p = TREE_CHAIN (p))
-    if (TMPL_PARMS_DEPTH (p) == level)
-      return p;
-
-  return NULL_TREE;
-}
-
 /* Returns the template arguments of T if T is a template instantiation,
    NULL otherwise.  */
 
@@ -13274,36 +13255,6 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
     return TREE_VEC_ELT (result, 0);
 
   return result;
-}
-
-/* Given PARM_DECL PARM, find the corresponding PARM_DECL in the template
-   TMPL.  We do this using DECL_PARM_INDEX, which should work even with
-   parameter packs; all parms generated from a function parameter pack will
-   have the same DECL_PARM_INDEX.  */
-
-tree
-get_pattern_parm (tree parm, tree tmpl)
-{
-  tree pattern = DECL_TEMPLATE_RESULT (tmpl);
-  tree patparm;
-
-  if (DECL_ARTIFICIAL (parm))
-    {
-      for (patparm = DECL_ARGUMENTS (pattern);
-	   patparm; patparm = DECL_CHAIN (patparm))
-	if (DECL_ARTIFICIAL (patparm)
-	    && DECL_NAME (parm) == DECL_NAME (patparm))
-	  break;
-    }
-  else
-    {
-      patparm = FUNCTION_FIRST_USER_PARM (DECL_TEMPLATE_RESULT (tmpl));
-      patparm = chain_index (DECL_PARM_INDEX (parm)-1, patparm);
-      gcc_assert (DECL_PARM_INDEX (patparm)
-		  == DECL_PARM_INDEX (parm));
-    }
-
-  return patparm;
 }
 
 /* Make an argument pack out of the TREE_VEC VEC.  */
