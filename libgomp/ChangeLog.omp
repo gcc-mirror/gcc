@@ -1,5 +1,8 @@
 2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* testsuite/libgomp.oacc-fortran/derivedtypes-arrays-1.f90:
+	OpenACC 'serial' construct diagnostic for nvptx offloading.
+
 	* plugin/plugin-hsa.c (GOMP_OFFLOAD_supported_features): New
 	function.
 
