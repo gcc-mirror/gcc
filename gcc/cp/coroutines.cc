@@ -3449,6 +3449,50 @@ coro_build_add_if_not_cond_break (tree cond)
   finish_if_stmt (if_stmt);
 }
 
+/* Tree walk callback to replace continue statements with goto label.  */
+static tree
+replace_continue (tree *stmt, int *do_subtree, void *d)
+{
+  tree expr = *stmt;
+  if (TREE_CODE (expr) == CLEANUP_POINT_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+  if (CONVERT_EXPR_P (expr) && VOID_TYPE_P (expr))
+    expr = TREE_OPERAND (expr, 0);
+  STRIP_NOPS (expr);
+  if (!STATEMENT_CLASS_P (expr))
+    return NULL_TREE;
+
+  switch (TREE_CODE (expr))
+    {
+      /* Unless it's a special case, just walk the subtrees as usual.  */
+      default: return NULL_TREE;
+
+      case CONTINUE_STMT:
+	{
+	  tree *label = (tree *)d;
+	  location_t loc = EXPR_LOCATION (expr);
+	  /* re-write a continue to goto label.  */
+	  *stmt = build_stmt (loc, GOTO_EXPR, *label);
+	  *do_subtree = 0;
+	  return NULL_TREE;
+	}
+
+      /* Statements that do not require recursion.  */
+      case DECL_EXPR:
+      case BREAK_STMT:
+      case GOTO_EXPR:
+      case LABEL_EXPR:
+      case CASE_LABEL_EXPR:
+      case ASM_EXPR:
+      /* These must break recursion.  */
+      case FOR_STMT:
+      case WHILE_STMT:
+      case DO_STMT:
+	*do_subtree = 0;
+	return NULL_TREE;
+    }
+}
+
 /* Tree walk callback to analyze, register and pre-process statements that
    contain await expressions.  */
 
@@ -3548,6 +3592,88 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
 	    *stmt = pop_stmt_list (insert_list);
 	    /* So now walk the new statement list.  */
 	    res = cp_walk_tree (stmt, await_statement_walker, d, NULL);
+	    *do_subtree = 0; /* Done subtrees.  */
+	    return res;
+	  }
+	  break;
+	case FOR_STMT:
+	  {
+	    /* for loops only need special treatment if the condition or the
+	       iteration expression contain a co_await.  */
+	    tree for_stmt = *stmt;
+	    /* Sanity check.  */
+	    if ((res = cp_walk_tree (&FOR_INIT_STMT (for_stmt),
+		analyze_expression_awaits, d, &visited)))
+	      return res;
+	    gcc_checking_assert (!awpts->saw_awaits);
+
+	    if ((res = cp_walk_tree (&FOR_COND (for_stmt),
+		analyze_expression_awaits, d, &visited)))
+	      return res;
+	    bool for_cond_await = awpts->saw_awaits != 0;
+	    unsigned save_awaits = awpts->saw_awaits;
+
+	    if ((res = cp_walk_tree (&FOR_EXPR (for_stmt),
+		analyze_expression_awaits, d, &visited)))
+	      return res;
+	    bool for_expr_await = awpts->saw_awaits > save_awaits;
+
+	    /* If the condition has an await, then we will need to rewrite the
+	       loop as
+	       for (init expression;true;iteration expression) {
+		  condition = await expression;
+		  if (condition)
+		    break;
+		  ...
+		}
+	    */
+	    if (for_cond_await)
+	      {
+		tree insert_list = push_stmt_list ();
+		/* This will be expanded when the revised body is handled.  */
+		coro_build_add_if_not_cond_break (FOR_COND (for_stmt));
+		/* .. add the original for body.  */
+		add_stmt (FOR_BODY (for_stmt));
+		/* To make the new for body.  */
+		FOR_BODY (for_stmt) = pop_stmt_list (insert_list);
+		FOR_COND (for_stmt) = boolean_true_node;
+	      }
+	    /* If the iteration expression has an await, it's a bit more
+	       tricky.
+	       for (init expression;condition;) {
+		 ...
+		 iteration_expr_label:
+		   iteration expression with await;
+	       }
+	       but, then we will need to re-write any continue statements into
+	       'goto iteration_expr_label:'.
+	    */
+	    if (for_expr_await)
+	      {
+		location_t sloc = EXPR_LOCATION (FOR_EXPR (for_stmt));
+		tree insert_list = push_stmt_list ();
+		/* The original for body.  */
+		add_stmt (FOR_BODY (for_stmt));
+		char *buf = xasprintf ("for.iter.expr.%u", awpts->cond_number++);
+		tree it_expr_label
+		  = create_named_label_with_ctx (sloc, buf, NULL_TREE);
+		free (buf);
+		add_stmt (build_stmt (sloc, LABEL_EXPR, it_expr_label));
+		add_stmt (FOR_EXPR (for_stmt));
+		FOR_EXPR (for_stmt) = NULL_TREE;
+		FOR_BODY (for_stmt) = pop_stmt_list (insert_list);
+		/* rewrite continue statements to goto label.  */
+		hash_set<tree> visited_continue;
+		if ((res = cp_walk_tree (&FOR_BODY (for_stmt),
+		     replace_continue, &it_expr_label, &visited_continue)))
+		  return res;
+	      }
+
+	    /* So now walk the body statement (list), if there were no await
+	       expressions, then this handles the original body - and either
+	       way we will have finished with this statement.  */
+	    res = cp_walk_tree (&FOR_BODY (for_stmt),
+				await_statement_walker, d, NULL);
 	    *do_subtree = 0; /* Done subtrees.  */
 	    return res;
 	  }
