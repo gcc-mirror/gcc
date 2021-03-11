@@ -916,6 +916,11 @@ class Expression
   bool
   is_local_variable() const;
 
+  // Return true if multiple evaluations of this expression are OK.
+  // This is true for simple variable references and constants.
+  bool
+  is_multi_eval_safe();
+
   // Return true if two expressions refer to the same variable or
   // struct field.
   static bool

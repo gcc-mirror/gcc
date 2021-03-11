@@ -588,7 +588,7 @@ Temporary_statement::do_flatten(Gogo*, Named_object*, Block*,
 			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 			      NULL)
       && this->init_->type()->interface_type() != NULL
-      && !this->init_->is_variable())
+      && !this->init_->is_multi_eval_safe())
     {
       Temporary_statement *temp =
 	Statement::make_temporary(NULL, this->init_, this->location());
@@ -1125,7 +1125,7 @@ Assignment_statement::do_flatten(Gogo*, Named_object*, Block*,
 			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 			      NULL)
       && this->rhs_->type()->interface_type() != NULL
-      && !this->rhs_->is_variable())
+      && !this->rhs_->is_multi_eval_safe())
     {
       Temporary_statement* temp =
 	Statement::make_temporary(NULL, this->rhs_, this->location());
@@ -5116,7 +5116,7 @@ Send_statement::do_flatten(Gogo*, Named_object*, Block*,
 			   Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 			   NULL)
       && this->val_->type()->interface_type() != NULL
-      && !this->val_->is_variable())
+      && !this->val_->is_multi_eval_safe())
     {
       Temporary_statement* temp =
 	Statement::make_temporary(NULL, this->val_, this->location());

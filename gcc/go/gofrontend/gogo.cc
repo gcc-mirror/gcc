@@ -7579,7 +7579,7 @@ Variable::flatten_init_expression(Gogo* gogo, Named_object* function,
 				  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 				  NULL)
 	  && this->init_->type()->interface_type() != NULL
-	  && !this->init_->is_variable())
+	  && !this->init_->is_multi_eval_safe())
 	{
 	  Temporary_statement* temp =
 	    Statement::make_temporary(NULL, this->init_, this->location_);

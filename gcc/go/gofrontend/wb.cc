@@ -883,7 +883,7 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
 			   Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 			   NULL)
       && rhs->type()->interface_type() != NULL
-      && !rhs->is_variable())
+      && !rhs->is_multi_eval_safe())
     {
       // May need a temporary for interface conversion.
       Temporary_statement* temp = Statement::make_temporary(NULL, rhs, loc);
@@ -892,7 +892,7 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
     }
   rhs = Expression::convert_for_assignment(this, type, rhs, loc);
   Temporary_statement* rhs_temp = NULL;
-  if (!rhs->is_variable() && !rhs->is_constant())
+  if (!rhs->is_multi_eval_safe())
     {
       rhs_temp = Statement::make_temporary(NULL, rhs, loc);
       inserter->insert(rhs_temp);
