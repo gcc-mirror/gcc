@@ -320,14 +320,6 @@ available online, see @uref{http://gcc.gnu.org/readings.html}
 As of the GCC 4.7.1 release, GCC supports the Go 1 language standard,
 described at @uref{https://golang.org/doc/go1}.
 
-@section HSA Intermediate Language (HSAIL)
-
-GCC can compile the binary representation (BRIG) of the HSAIL text format as
-described in HSA Programmer's Reference Manual version 1.0.1. This
-capability is typically utilized to implement the HSA runtime API's HSAIL 
-finalization extension for a gcc supported processor. HSA standards are
-freely available at @uref{http://www.hsafoundation.com/standards/}.
-
 @section D language
 
 GCC supports the D 2.0 programming language.  The D language itself is
