@@ -667,7 +667,7 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
   tree fntype1 = gimple_call_fntype (s1);
   tree fntype2 = gimple_call_fntype (s2);
 
-  /* For direct calls we verify that types are comopatible so if we matced
+  /* For direct calls we verify that types are compatible so if we matched
      callees, callers must match, too.  For indirect calls however verify
      function type.  */
   if (!gimple_call_fndecl (s1))
@@ -702,6 +702,14 @@ func_checker::compare_gimple_call (gcall *s1, gcall *s2)
   /* Return value checking.  */
   t1 = gimple_get_lhs (s1);
   t2 = gimple_get_lhs (s2);
+
+  /* For internal calls, lhs types need to be verified, as neither fntype nor
+     callee comparisons can catch that.  */
+  if (gimple_call_internal_p (s1)
+      && t1
+      && t2
+      && !compatible_types_p (TREE_TYPE (t1), TREE_TYPE (t2)))
+    return return_false_with_msg ("GIMPLE internal call LHS type mismatch");
 
   return compare_operand (t1, t2, get_operand_access_type (&map, t1));
 }
