@@ -73,7 +73,7 @@ class epath_finder
 public:
   epath_finder (const exploded_graph &eg)
   : m_eg (eg),
-    m_sep (eg, eg.get_origin ())
+    m_sep (eg, eg.get_origin (), SPS_FROM_GIVEN_ORIGIN)
   {
   }
 
