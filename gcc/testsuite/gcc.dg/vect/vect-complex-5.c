@@ -40,4 +40,4 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 2 "vect" { xfail { ! vect_hw_misalign } } } } */
