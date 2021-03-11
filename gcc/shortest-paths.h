@@ -57,6 +57,7 @@ public:
 		  enum shortest_path_sense sense);
 
   path_t get_shortest_path (const node_t *other_node) const;
+  int get_shortest_distance (const node_t *other_node) const;
 
 private:
   const graph_t &m_graph;
@@ -197,6 +198,18 @@ get_shortest_path (const node_t *other_node) const
     result.m_edges.reverse ();
 
   return result;
+}
+
+/* Get the shortest distance...
+   SPS_FROM_GIVEN_ORIGIN: ...from given origin node to OTHER_NODE
+   SPS_TO_GIVEN_TARGET: ...from OTHER_NODE to given target node.  */
+
+template <typename GraphTraits, typename Path_t>
+inline int
+shortest_paths<GraphTraits, Path_t>::
+get_shortest_distance (const node_t *other_node) const
+{
+  return m_dist[other_node->m_index];
 }
 
 #endif /* GCC_SHORTEST_PATHS_H */

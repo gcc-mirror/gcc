@@ -1254,6 +1254,7 @@ ANALYZER_OBJS = \
 	analyzer/constraint-manager.o \
 	analyzer/diagnostic-manager.o \
 	analyzer/engine.o \
+	analyzer/feasible-graph.o \
 	analyzer/function-set.o \
 	analyzer/pending-diagnostic.o \
 	analyzer/program-point.o \
@@ -1273,7 +1274,8 @@ ANALYZER_OBJS = \
 	analyzer/state-purge.o \
 	analyzer/store.o \
 	analyzer/supergraph.o \
-	analyzer/svalue.o
+	analyzer/svalue.o \
+	analyzer/trimmed-graph.o
 
 # Language-independent object files.
 # We put the *-match.o and insn-*.o files first so that a parallel make

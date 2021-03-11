@@ -55,8 +55,7 @@ int test_6 (int a, int b)
     {
       if (!problem)
 	problem = 2;
-      __analyzer_dump_path (); /* { dg-message "path" "" { xfail *-*-* } } */
-      /* XFAIL is PR analyzer/96374.  */
+      __analyzer_dump_path (); /* { dg-message "path" } */
     }
   return problem;
 }
@@ -85,4 +84,17 @@ int test_6a (int a, int b, void *ptr)
       called_by_test_6a (ptr);
     }
   return problem;
+}
+
+/* After state-merging, the shortest path skips the loop,
+   but the shortest feasible path enters it.  */
+
+void test_7 (int n)
+{
+  int entered_loop = 0;
+  int i;
+  for (i = 0; i < n; i++)
+    entered_loop = 1;
+  if (entered_loop)
+    __analyzer_dump_path (); /* { dg-message "path" } */
 }

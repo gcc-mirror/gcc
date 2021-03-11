@@ -34,6 +34,10 @@ The maximum number of exploded nodes per program point within the analyzer, befo
 Common Joined UInteger Var(param_analyzer_max_constraints) Init(20) Param
 The maximum number of constraints per state.
 
+-param=analyzer-max-infeasible-edges=
+Common Joined UInteger Var(param_analyzer_max_infeasible_edges) Init(10) Param
+The maximum number of infeasible edges to reject before declaring a diagnostic as infeasible.
+
 -param=analyzer-max-recursion-depth=
 Common Joined UInteger Var(param_analyzer_max_recursion_depth) Init(2) Param
 The maximum number of times a callsite can appear in a call stack within the analyzer, before terminating analysis of a call that would recurse deeper.
@@ -205,6 +209,10 @@ Dump a textual representation of the exploded graph to SRCFILE.eg.txt.
 fdump-analyzer-exploded-nodes-3
 Common RejectNegative Var(flag_dump_analyzer_exploded_nodes_3)
 Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
+
+fdump-analyzer-feasibility
+Common RejectNegative Var(flag_dump_analyzer_feasibility)
+Dump various analyzer internals to SRCFILE.*.fg.dot and SRCFILE.*.tg.dot.
 
 fdump-analyzer-json
 Common RejectNegative Var(flag_dump_analyzer_json)

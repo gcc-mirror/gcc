@@ -135,6 +135,9 @@ struct eg_traits
 
     bool show_enode_details_p (const exploded_node &enode) const;
 
+    virtual void
+    dump_extra_info (const exploded_node *, pretty_printer *) const {}
+
     const exploded_graph &m_eg;
   };
   typedef exploded_cluster cluster_t;
@@ -181,6 +184,10 @@ class exploded_node : public dnode<eg_traits>
   void dump_to_pp (pretty_printer *pp, const extrinsic_state &ext_state) const;
   void dump (FILE *fp, const extrinsic_state &ext_state) const;
   void dump (const extrinsic_state &ext_state) const;
+
+  void dump_processed_stmts (pretty_printer *pp) const;
+  void dump_saved_diagnostics (pretty_printer *pp,
+			       const diagnostic_manager &dm) const;
 
   json::object *to_json (const extrinsic_state &ext_state) const;
 
@@ -311,6 +318,7 @@ class exploded_edge : public dedge<eg_traits>
   ~exploded_edge ();
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const FINAL OVERRIDE;
+  void dump_dot_label (pretty_printer *pp) const;
 
   json::object *to_json () const;
 
