@@ -37,7 +37,7 @@ extern "C" {
 
 // A floating decimal representing (-1)^s * m * 10^e.
 struct floating_decimal_128 {
-  __uint128_t mantissa;
+  uint128_t mantissa;
   int32_t exponent;
   bool sign;
 };
@@ -52,7 +52,7 @@ struct floating_decimal_128 long_double_to_fd128(long double d);
 // Converts the given binary floating point number to the shortest decimal floating point number
 // that still accurately represents it.
 struct floating_decimal_128 generic_binary_to_decimal(
-    const __uint128_t bits, const uint32_t mantissaBits, const uint32_t exponentBits, const bool explicitLeadingBit);
+    const uint128_t bits, const uint32_t mantissaBits, const uint32_t exponentBits, const bool explicitLeadingBit);
 
 // Converts the given decimal floating point number to a string, writing to result, and returning
 // the number characters written. Does not terminate the buffer with a 0. In the worst case, this
