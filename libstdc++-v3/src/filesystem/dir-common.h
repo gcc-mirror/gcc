@@ -141,6 +141,18 @@ struct _Dir_base
   posix::DIR*	dirp;
 };
 
+inline bool
+is_permission_denied_error(int e)
+{
+  if (e == EACCES)
+    return true;
+#ifdef __APPLE__
+  if (e == EPERM) // See PR 99533
+    return true;
+#endif
+  return false;
+}
+
 } // namespace filesystem
 
 // BEGIN/END macros must be defined before including this file.
