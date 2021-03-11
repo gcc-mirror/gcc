@@ -1,3 +1,64 @@
+2021-03-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-03-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/98959
+	* config/rs6000/rs6000.c (rs6000_emit_le_vsx_permute): Add an assert
+	to ensure we do not have an Altivec style address.
+	* config/rs6000/vsx.md (*vsx_le_perm_load_<mode>): Disable if passed
+	an Altivec style address.
+	(*vsx_le_perm_store_<mode>): Likewise.
+	(splitters after *vsx_le_perm_store_<mode>): Likewise.
+	(vsx_load_<mode>): Disable special expander if passed an Altivec
+	style address.
+	(vsx_store_<mode>): Likewise.
+
+2021-03-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-02-26  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99279
+	* config/rs6000/rs6000-call.c (rs6000_init_builtins): Replace assert
+	with an "if" test.
+
+2021-03-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-02-23  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/mma.md (mma_assemble_pair): Rename from this...
+	(vsx_assemble_pair): ...to this.
+	* config/rs6000/rs6000-builtin.def (BU_MMA_V2, BU_MMA_V3,
+	BU_COMPAT): New macros.
+	(mma_assemble_pair): Rename from this...
+	(vsx_assemble_pair): ...to this.
+	(mma_disassemble_pair): Rename from this...
+	(vsx_disassemble_pair): ...to this.
+	(mma_assemble_pair): New compatibility built-in.
+	(mma_disassemble_pair): Likewise.
+	* config/rs6000/rs6000-call.c (struct builtin_compatibility): New.
+	(RS6000_BUILTIN_COMPAT): Define.
+	(bdesc_compat): New.
+	(rs6000_gimple_fold_mma_builtin): Use VSX_BUILTIN_ASSEMBLE_PAIR.
+	(rs6000_init_builtins): Register compatibility built-ins.
+	(mma_init_builtins): Use VSX_BUILTIN_ASSEMBLE_PAIR,
+	and VSX_BUILTIN_DISASSEMBLE_PAIR.
+	* doc/extend.texi (__builtin_mma_assemble_pair): Rename from this...
+	(__builtin_vsx_assemble_pair): ...to this.
+	(__builtin_mma_disassemble_pair): Rename from this...
+	(__builtin_vsx_disassemble_pair): ...to this.
+
+2021-03-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backported from master:
+	2021-02-11  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99041
+	* config/rs6000/predicates.md (mma_assemble_input_operand): Restrict
+	memory addresses that are legal for quad word accesses.
+
 2021-03-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c++/90448
