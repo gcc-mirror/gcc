@@ -139,12 +139,12 @@ maybe_unlink (const char *file)
 /* Create decoded options from the COLLECT_GCC and COLLECT_GCC_OPTIONS
    environment.  */
 
-static void
+static vec<cl_decoded_option>
 get_options_from_collect_gcc_options (const char *collect_gcc,
-				      const char *collect_gcc_options,
-				      struct cl_decoded_option **decoded_options,
-				      unsigned int *decoded_options_count)
+				      const char *collect_gcc_options)
 {
+  cl_decoded_option *decoded_options;
+  unsigned int decoded_options_count;
   struct obstack argv_obstack;
   const char **argv;
   int argc;
@@ -157,57 +157,49 @@ get_options_from_collect_gcc_options (const char *collect_gcc,
   argv = XOBFINISH (&argv_obstack, const char **);
 
   decode_cmdline_options_to_array (argc, (const char **)argv, CL_DRIVER,
-				   decoded_options, decoded_options_count);
+				   &decoded_options, &decoded_options_count);
+  vec<cl_decoded_option> decoded;
+  decoded.create (decoded_options_count);
+  for (unsigned i = 0; i < decoded_options_count; ++i)
+    decoded.quick_push (decoded_options[i]);
+  free (decoded_options);
+
   obstack_free (&argv_obstack, NULL);
+
+  return decoded;
 }
 
-/* Append OPTION to the options array DECODED_OPTIONS with size
-   DECODED_OPTIONS_COUNT.  */
+/* Find option in OPTIONS based on OPT_INDEX.  -1 value is returned
+   if the option is not present.  */
 
-static void
-append_option (struct cl_decoded_option **decoded_options,
-	       unsigned int *decoded_options_count,
-	       struct cl_decoded_option *option)
+static int
+find_option (vec<cl_decoded_option> &options, size_t opt_index)
 {
-  ++*decoded_options_count;
-  *decoded_options
-    = (struct cl_decoded_option *)
-	xrealloc (*decoded_options,
-		  (*decoded_options_count
-		   * sizeof (struct cl_decoded_option)));
-  memcpy (&(*decoded_options)[*decoded_options_count - 1], option,
-	  sizeof (struct cl_decoded_option));
+  for (unsigned i = 0; i < options.length (); ++i)
+    if (options[i].opt_index == opt_index)
+      return i;
+
+  return -1;
 }
 
-/* Remove option number INDEX from DECODED_OPTIONS, update
-   DECODED_OPTIONS_COUNT.  */
-
-static void
-remove_option (struct cl_decoded_option **decoded_options,
-	       int index, unsigned int *decoded_options_count)
+static int
+find_option (vec<cl_decoded_option> &options, cl_decoded_option *option)
 {
-  --*decoded_options_count;
-  memmove (&(*decoded_options)[index + 1],
-	   &(*decoded_options)[index],
-	   sizeof (struct cl_decoded_option)
-	   * (*decoded_options_count - index));
+  return find_option (options, option->opt_index);
 }
 
 /* Try to merge and complain about options FDECODED_OPTIONS when applied
    ontop of DECODED_OPTIONS.  */
 
 static void
-merge_and_complain (struct cl_decoded_option **decoded_options,
-		    unsigned int *decoded_options_count,
-		    struct cl_decoded_option *fdecoded_options,
-		    unsigned int fdecoded_options_count,
-		    struct cl_decoded_option *decoded_cl_options,
-		    unsigned int decoded_cl_options_count)
+merge_and_complain (vec<cl_decoded_option> decoded_options,
+		    vec<cl_decoded_option> fdecoded_options,
+		    vec<cl_decoded_option> decoded_cl_options)
 {
   unsigned int i, j;
-  struct cl_decoded_option *pic_option = NULL;
-  struct cl_decoded_option *pie_option = NULL;
-  struct cl_decoded_option *cf_protection_option = NULL;
+  cl_decoded_option *pic_option = NULL;
+  cl_decoded_option *pie_option = NULL;
+  cl_decoded_option *cf_protection_option = NULL;
 
   /* ???  Merge options from files.  Most cases can be
      handled by either unioning or intersecting
@@ -224,9 +216,9 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
   /* Look for a -fcf-protection option in the link-time options
      which overrides any -fcf-protection from the lto sections.  */
-  for (i = 0; i < decoded_cl_options_count; ++i)
+  for (i = 0; i < decoded_cl_options.length (); ++i)
     {
-      struct cl_decoded_option *foption = &decoded_cl_options[i];
+      cl_decoded_option *foption = &decoded_cl_options[i];
       if (foption->opt_index == OPT_fcf_protection_)
 	{
 	  cf_protection_option = foption;
@@ -235,9 +227,10 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
   
   /* The following does what the old LTO option code did,
      union all target and a selected set of common options.  */
-  for (i = 0; i < fdecoded_options_count; ++i)
+  for (i = 0; i < fdecoded_options.length (); ++i)
     {
-      struct cl_decoded_option *foption = &fdecoded_options[i];
+      cl_decoded_option *foption = &fdecoded_options[i];
+      int existing_opt = find_option (decoded_options, foption);
       switch (foption->opt_index)
 	{
 	case OPT_SPECIAL_unknown:
@@ -265,11 +258,8 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	     setting per OPT code, we pick the first we encounter.
 	     ???  This doesn't make too much sense, but when it doesn't
 	     then we should complain.  */
-	  for (j = 0; j < *decoded_options_count; ++j)
-	    if ((*decoded_options)[j].opt_index == foption->opt_index)
-	      break;
-	  if (j == *decoded_options_count)
-	    append_option (decoded_options, decoded_options_count, foption);
+	  if (existing_opt == -1)
+	    decoded_options.safe_push (*foption);
 	  break;
 
 	/* Figure out what PIC/PIE level wins and merge the results.  */
@@ -285,25 +275,19 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_fopenmp:
 	case OPT_fopenacc:
 	  /* For selected options we can merge conservatively.  */
-	  for (j = 0; j < *decoded_options_count; ++j)
-	    if ((*decoded_options)[j].opt_index == foption->opt_index)
-	      break;
-	  if (j == *decoded_options_count)
-	    append_option (decoded_options, decoded_options_count, foption);
+	  if (existing_opt == -1)
+	    decoded_options.safe_push (*foption);
 	  /* -fopenmp > -fno-openmp,
 	     -fopenacc > -fno-openacc  */
-	  else if (foption->value > (*decoded_options)[j].value)
-	    (*decoded_options)[j] = *foption;
+	  else if (foption->value > decoded_options[existing_opt].value)
+	    decoded_options[existing_opt] = *foption;
 	  break;
 
 	case OPT_fopenacc_dim_:
 	  /* Append or check identical.  */
-	  for (j = 0; j < *decoded_options_count; ++j)
-	    if ((*decoded_options)[j].opt_index == foption->opt_index)
-	      break;
-	  if (j == *decoded_options_count)
-	    append_option (decoded_options, decoded_options_count, foption);
-	  else if (strcmp ((*decoded_options)[j].arg, foption->arg))
+	  if (existing_opt == -1)
+	    decoded_options.safe_push (*foption);
+	  else if (strcmp (decoded_options[existing_opt].arg, foption->arg))
 	    fatal_error (input_location,
 			 "option %s with different values",
 			 foption->orig_option_with_args_text);
@@ -314,12 +298,9 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	  if (!cf_protection_option
 	      || cf_protection_option->value == CF_CHECK)
 	    {
-	      for (j = 0; j < *decoded_options_count; ++j)
-		if ((*decoded_options)[j].opt_index == foption->opt_index)
-		  break;
-	      if (j == *decoded_options_count)
-		append_option (decoded_options, decoded_options_count, foption);
-	      else if ((*decoded_options)[j].value != foption->value)
+	      if (existing_opt == -1)
+		decoded_options.safe_push (*foption);
+	      else if (decoded_options[existing_opt].value != foption->value)
 		{
 		  if (cf_protection_option
 		      && cf_protection_option->value == CF_CHECK)
@@ -327,22 +308,23 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 				 "option %qs with mismatching values"
 				 " (%s, %s)",
 				 "-fcf-protection",
-				 (*decoded_options)[j].arg, foption->arg);
+				 decoded_options[existing_opt].arg,
+				 foption->arg);
 		  else
 		    {
 		      /* Merge and update the -fcf-protection option.  */
-		      (*decoded_options)[j].value &= (foption->value
-						      & CF_FULL);
-		      switch ((*decoded_options)[j].value)
+		      decoded_options[existing_opt].value
+			&= (foption->value & CF_FULL);
+		      switch (decoded_options[existing_opt].value)
 			{
 			case CF_NONE:
-			  (*decoded_options)[j].arg = "none";
+			  decoded_options[existing_opt].arg = "none";
 			  break;
 			case CF_BRANCH:
-			  (*decoded_options)[j].arg = "branch";
+			  decoded_options[existing_opt].arg = "branch";
 			  break;
 			case CF_RETURN:
-			  (*decoded_options)[j].arg = "return";
+			  decoded_options[existing_opt].arg = "return";
 			  break;
 			default:
 			  gcc_unreachable ();
@@ -356,15 +338,19 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	case OPT_Ofast:
 	case OPT_Og:
 	case OPT_Os:
-	  for (j = 0; j < *decoded_options_count; ++j)
-	    if ((*decoded_options)[j].opt_index == OPT_O
-		|| (*decoded_options)[j].opt_index == OPT_Ofast
-		|| (*decoded_options)[j].opt_index == OPT_Og
-		|| (*decoded_options)[j].opt_index == OPT_Os)
-	      break;
-	  if (j == *decoded_options_count)
-	    append_option (decoded_options, decoded_options_count, foption);
-	  else if ((*decoded_options)[j].opt_index == foption->opt_index
+	  existing_opt = -1;
+	  for (j = 0; j < decoded_options.length (); ++j)
+	    if (decoded_options[j].opt_index == OPT_O
+		|| decoded_options[j].opt_index == OPT_Ofast
+		|| decoded_options[j].opt_index == OPT_Og
+		|| decoded_options[j].opt_index == OPT_Os)
+	      {
+		existing_opt = j;
+		break;
+	      }
+	  if (existing_opt == -1)
+	    decoded_options.safe_push (*foption);
+	  else if (decoded_options[existing_opt].opt_index == foption->opt_index
 		   && foption->opt_index != OPT_O)
 	    /* Exact same options get merged.  */
 	    ;
@@ -394,13 +380,14 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 		default:
 		  gcc_unreachable ();
 		}
-	      switch ((*decoded_options)[j].opt_index)
+	      switch (decoded_options[existing_opt].opt_index)
 		{
 		case OPT_O:
-		  if ((*decoded_options)[j].arg[0] == '\0')
+		  if (decoded_options[existing_opt].arg[0] == '\0')
 		    level = MAX (level, 1);
 		  else
-		    level = MAX (level, atoi ((*decoded_options)[j].arg));
+		    level = MAX (level,
+				 atoi (decoded_options[existing_opt].arg));
 		  break;
 		case OPT_Ofast:
 		  level = MAX (level, 3);
@@ -414,23 +401,20 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 		default:
 		  gcc_unreachable ();
 		}
-	      (*decoded_options)[j].opt_index = OPT_O;
+	      decoded_options[existing_opt].opt_index = OPT_O;
 	      char *tem;
 	      tem = xasprintf ("-O%d", level);
-	      (*decoded_options)[j].arg = &tem[2];
-	      (*decoded_options)[j].canonical_option[0] = tem;
-	      (*decoded_options)[j].value = 1;
+	      decoded_options[existing_opt].arg = &tem[2];
+	      decoded_options[existing_opt].canonical_option[0] = tem;
+	      decoded_options[existing_opt].value = 1;
 	    }
 	  break;
  
 
 	case OPT_foffload_abi_:
-	  for (j = 0; j < *decoded_options_count; ++j)
-	    if ((*decoded_options)[j].opt_index == foption->opt_index)
-	      break;
-	  if (j == *decoded_options_count)
-	    append_option (decoded_options, decoded_options_count, foption);
-	  else if (foption->value != (*decoded_options)[j].value)
+	  if (existing_opt == -1)
+	    decoded_options.safe_push (*foption);
+	  else if (foption->value != decoded_options[existing_opt].value)
 	    fatal_error (input_location,
 			 "option %s not used consistently in all LTO input"
 			 " files", foption->orig_option_with_args_text);
@@ -438,7 +422,7 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 
 
 	case OPT_foffload_:
-	  append_option (decoded_options, decoded_options_count, foption);
+	  decoded_options.safe_push (*foption);
 	  break;
 	}
     }
@@ -458,12 +442,12 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
      It would be good to warn on mismatches, but it is bit hard to do as
      we do not know what nothing translates to.  */
     
-  for (unsigned int j = 0; j < *decoded_options_count;)
-    if ((*decoded_options)[j].opt_index == OPT_fPIC
-        || (*decoded_options)[j].opt_index == OPT_fpic)
+  for (unsigned int j = 0; j < decoded_options.length ();)
+    if (decoded_options[j].opt_index == OPT_fPIC
+	|| decoded_options[j].opt_index == OPT_fpic)
       {
 	/* -fno-pic in one unit implies -fno-pic everywhere.  */
-	if ((*decoded_options)[j].value == 0)
+	if (decoded_options[j].value == 0)
 	  j++;
 	/* If we have no pic option or merge in -fno-pic, we still may turn
 	   existing pic/PIC mode into pie/PIE if -fpie/-fPIE is present.  */
@@ -472,41 +456,41 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	  {
 	    if (pie_option)
 	      {
-		bool big = (*decoded_options)[j].opt_index == OPT_fPIC
+		bool big = decoded_options[j].opt_index == OPT_fPIC
 			   && pie_option->opt_index == OPT_fPIE;
-	        (*decoded_options)[j].opt_index = big ? OPT_fPIE : OPT_fpie;
+		decoded_options[j].opt_index = big ? OPT_fPIE : OPT_fpie;
 		if (pie_option->value)
-	          (*decoded_options)[j].canonical_option[0]
+		  decoded_options[j].canonical_option[0]
 		    = big ? "-fPIE" : "-fpie";
 		else
-	          (*decoded_options)[j].canonical_option[0] = "-fno-pie";
-		(*decoded_options)[j].value = pie_option->value;
-	        j++;
+		  decoded_options[j].canonical_option[0] = "-fno-pie";
+		decoded_options[j].value = pie_option->value;
+		j++;
 	      }
 	    else if (pic_option)
 	      {
-	        (*decoded_options)[j] = *pic_option;
-	        j++;
+		decoded_options[j] = *pic_option;
+		j++;
 	      }
 	    /* We do not know if target defaults to pic or not, so just remove
 	       option if it is missing in one unit but enabled in other.  */
 	    else
-	      remove_option (decoded_options, j, decoded_options_count);
+	      decoded_options.ordered_remove (j);
 	  }
 	else if (pic_option->opt_index == OPT_fpic
-		 && (*decoded_options)[j].opt_index == OPT_fPIC)
+		 && decoded_options[j].opt_index == OPT_fPIC)
 	  {
-	    (*decoded_options)[j] = *pic_option;
+	    decoded_options[j] = *pic_option;
 	    j++;
 	  }
 	else
 	  j++;
       }
-   else if ((*decoded_options)[j].opt_index == OPT_fPIE
-            || (*decoded_options)[j].opt_index == OPT_fpie)
+   else if (decoded_options[j].opt_index == OPT_fPIE
+	    || decoded_options[j].opt_index == OPT_fpie)
       {
 	/* -fno-pie in one unit implies -fno-pie everywhere.  */
-	if ((*decoded_options)[j].value == 0)
+	if (decoded_options[j].value == 0)
 	  j++;
 	/* If we have no pie option or merge in -fno-pie, we still preserve
 	   PIE/pie if pic/PIC is present.  */
@@ -517,32 +501,32 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
 	    if (pic_option)
 	      {
 		if (pic_option->opt_index == OPT_fpic
-		    && (*decoded_options)[j].opt_index == OPT_fPIE)
+		    && decoded_options[j].opt_index == OPT_fPIE)
 		  {
-	            (*decoded_options)[j].opt_index = OPT_fpie;
-	            (*decoded_options)[j].canonical_option[0]
+		    decoded_options[j].opt_index = OPT_fpie;
+		    decoded_options[j].canonical_option[0]
 		      = pic_option->value ? "-fpie" : "-fno-pie";
 		  }
 		else if (!pic_option->value)
-		  (*decoded_options)[j].canonical_option[0] = "-fno-pie";
-		(*decoded_options)[j].value = pic_option->value;
+		  decoded_options[j].canonical_option[0] = "-fno-pie";
+		decoded_options[j].value = pic_option->value;
 		j++;
 	      }
 	    else if (pie_option)
 	      {
-	        (*decoded_options)[j] = *pie_option;
+		decoded_options[j] = *pie_option;
 		j++;
 	      }
 	    /* Because we always append pic/PIE options this code path should
 	       not happen unless the LTO object was built by old lto1 which
 	       did not contain that logic yet.  */
 	    else
-	      remove_option (decoded_options, j, decoded_options_count);
+	      decoded_options.ordered_remove (j);
 	  }
 	else if (pie_option->opt_index == OPT_fpie
-		 && (*decoded_options)[j].opt_index == OPT_fPIE)
+		 && decoded_options[j].opt_index == OPT_fPIE)
 	  {
-	    (*decoded_options)[j] = *pie_option;
+	    decoded_options[j] = *pie_option;
 	    j++;
 	  }
 	else
@@ -554,37 +538,41 @@ merge_and_complain (struct cl_decoded_option **decoded_options,
   if (!xassembler_options_error)
     for (i = j = 0; ; i++, j++)
       {
-	for (; i < *decoded_options_count; i++)
-	  if ((*decoded_options)[i].opt_index == OPT_Xassembler)
-	    break;
+	int existing_opt_index
+	  = find_option (decoded_options, OPT_Xassembler);
+	int existing_opt2_index
+	  = find_option (fdecoded_options, OPT_Xassembler);
 
-	for (; j < fdecoded_options_count; j++)
-	  if (fdecoded_options[j].opt_index == OPT_Xassembler)
-	    break;
+	cl_decoded_option *existing_opt = NULL;
+	cl_decoded_option *existing_opt2 = NULL;
+	if (existing_opt_index != -1)
+	  existing_opt = &decoded_options[existing_opt_index];
+	if (existing_opt2_index != -1)
+	  existing_opt2 = &fdecoded_options[existing_opt2_index];
 
-	if (i == *decoded_options_count && j == fdecoded_options_count)
+	if (existing_opt == NULL && existing_opt2 == NULL)
 	  break;
-	else if (i < *decoded_options_count && j == fdecoded_options_count)
+	else if (existing_opt != NULL && existing_opt2 == NULL)
 	  {
 	    warning (0, "Extra option to %<-Xassembler%>: %s,"
 		     " dropping all %<-Xassembler%> and %<-Wa%> options.",
-		     (*decoded_options)[i].arg);
+		     existing_opt->arg);
 	    xassembler_options_error = true;
 	    break;
 	  }
-	else if (i == *decoded_options_count && j < fdecoded_options_count)
+	else if (existing_opt == NULL && existing_opt2 != NULL)
 	  {
 	    warning (0, "Extra option to %<-Xassembler%>: %s,"
 		     " dropping all %<-Xassembler%> and %<-Wa%> options.",
-		     fdecoded_options[j].arg);
+		     existing_opt2->arg);
 	    xassembler_options_error = true;
 	    break;
 	  }
-	else if (strcmp ((*decoded_options)[i].arg, fdecoded_options[j].arg))
+	else if (strcmp (existing_opt->arg, existing_opt2->arg) != 0)
 	  {
 	    warning (0, "Options to %<-Xassembler%> do not match: %s, %s,"
 		     " dropping all %<-Xassembler%> and %<-Wa%> options.",
-		     (*decoded_options)[i].arg, fdecoded_options[j].arg);
+		     existing_opt->arg, existing_opt2->arg);
 	    xassembler_options_error = true;
 	    break;
 	  }
@@ -655,13 +643,12 @@ parse_env_var (const char *str, char ***pvalues, const char *append)
 /* Append options OPTS from lto or offload_lto sections to ARGV_OBSTACK.  */
 
 static void
-append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
-			 unsigned int count)
+append_compiler_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 {
   /* Append compiler driver arguments as far as they were merged.  */
-  for (unsigned int j = 1; j < count; ++j)
+  for (unsigned int j = 1; j < opts.length (); ++j)
     {
-      struct cl_decoded_option *option = &opts[j];
+      cl_decoded_option *option = &opts[j];
 
       /* File options have been properly filtered by lto-opts.c.  */
       switch (option->opt_index)
@@ -722,16 +709,15 @@ append_compiler_options (obstack *argv_obstack, struct cl_decoded_option *opts,
     }
 }
 
-/* Append diag options in OPTS with length COUNT to ARGV_OBSTACK.  */
+/* Append diag options in OPTS to ARGV_OBSTACK.  */
 
 static void
-append_diag_options (obstack *argv_obstack, struct cl_decoded_option *opts,
-		     unsigned int count)
+append_diag_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 {
   /* Append compiler driver arguments as far as they were merged.  */
-  for (unsigned int j = 1; j < count; ++j)
+  for (unsigned int j = 1; j < opts.length (); ++j)
     {
-      struct cl_decoded_option *option = &opts[j];
+      cl_decoded_option *option = &opts[j];
 
       switch (option->opt_index)
 	{
@@ -758,14 +744,13 @@ append_diag_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 /* Append linker options OPTS to ARGV_OBSTACK.  */
 
 static void
-append_linker_options (obstack *argv_obstack, struct cl_decoded_option *opts,
-		       unsigned int count)
+append_linker_options (obstack *argv_obstack, vec<cl_decoded_option> opts)
 {
   /* Append linker driver arguments.  Compiler options from the linker
      driver arguments will override / merge with those from the compiler.  */
-  for (unsigned int j = 1; j < count; ++j)
+  for (unsigned int j = 1; j < opts.length (); ++j)
     {
-      struct cl_decoded_option *option = &opts[j];
+      cl_decoded_option *option = &opts[j];
 
       /* Do not pass on frontend specific flags not suitable for lto.  */
       if (!(cl_options[option->opt_index].flags
@@ -803,15 +788,14 @@ append_linker_options (obstack *argv_obstack, struct cl_decoded_option *opts,
 
 static void
 append_offload_options (obstack *argv_obstack, const char *target,
-			struct cl_decoded_option *options,
-			unsigned int options_count)
+			vec<cl_decoded_option> options)
 {
-  for (unsigned i = 0; i < options_count; i++)
+  for (unsigned i = 0; i < options.length (); i++)
     {
       const char *cur, *next, *opts;
       char **argv;
       unsigned argc;
-      struct cl_decoded_option *option = &options[i];
+      cl_decoded_option *option = &options[i];
 
       if (option->opt_index != OPT_foffload_)
 	continue;
@@ -883,10 +867,8 @@ access_check (const char *name, int mode)
 static char *
 compile_offload_image (const char *target, const char *compiler_path,
 		       unsigned in_argc, char *in_argv[],
-		       struct cl_decoded_option *compiler_opts,
-		       unsigned int compiler_opt_count,
-		       struct cl_decoded_option *linker_opts,
-		       unsigned int linker_opt_count)
+		       vec<cl_decoded_option> compiler_opts,
+		       vec<cl_decoded_option> linker_opts)
 {
   char *filename = NULL;
   char *dumpbase;
@@ -943,19 +925,16 @@ compile_offload_image (const char *target, const char *compiler_path,
     obstack_ptr_grow (&argv_obstack, in_argv[i]);
 
   /* Append options from offload_lto sections.  */
-  append_compiler_options (&argv_obstack, compiler_opts,
-			   compiler_opt_count);
-  append_diag_options (&argv_obstack, linker_opts, linker_opt_count);
+  append_compiler_options (&argv_obstack, compiler_opts);
+  append_diag_options (&argv_obstack, linker_opts);
 
   obstack_ptr_grow (&argv_obstack, "-dumpbase");
   obstack_ptr_grow (&argv_obstack, dumpbase);
 
   /* Append options specified by -foffload last.  In case of conflicting
      options we expect offload compiler to choose the latest.  */
-  append_offload_options (&argv_obstack, target, compiler_opts,
-			  compiler_opt_count);
-  append_offload_options (&argv_obstack, target, linker_opts,
-			  linker_opt_count);
+  append_offload_options (&argv_obstack, target, compiler_opts);
+  append_offload_options (&argv_obstack, target, linker_opts);
 
   obstack_ptr_grow (&argv_obstack, NULL);
   argv = XOBFINISH (&argv_obstack, char **);
@@ -974,10 +953,8 @@ compile_offload_image (const char *target, const char *compiler_path,
 
 static void
 compile_images_for_offload_targets (unsigned in_argc, char *in_argv[],
-				    struct cl_decoded_option *compiler_opts,
-				    unsigned int compiler_opt_count,
-				    struct cl_decoded_option *linker_opts,
-				    unsigned int linker_opt_count)
+				    vec<cl_decoded_option> compiler_opts,
+				    vec<cl_decoded_option> linker_opts)
 {
   char **names = NULL;
   const char *target_names = getenv (OFFLOAD_TARGET_NAMES_ENV);
@@ -997,8 +974,7 @@ compile_images_for_offload_targets (unsigned in_argc, char *in_argv[],
     {
       offload_names[next_name_entry]
 	= compile_offload_image (names[i], compiler_path, in_argc, in_argv,
-				 compiler_opts, compiler_opt_count,
-				 linker_opts, linker_opt_count);
+				 compiler_opts, linker_opts);
       if (!offload_names[next_name_entry])
 #if OFFLOAD_DEFAULTED
 	continue;
@@ -1080,25 +1056,22 @@ find_crtoffloadtable (int save_temps, const char *dumppfx)
 }
 
 /* A subroutine of run_gcc.  Examine the open file FD for lto sections with
-   name prefix PREFIX, at FILE_OFFSET, and store any options we find in OPTS
-   and OPT_COUNT.  Return true if we found a matching section, false
+   name prefix PREFIX, at FILE_OFFSET, and store any options we find in OPTS.
+   Return true if we found a matching section, false
    otherwise.  COLLECT_GCC holds the value of the environment variable with
    the same name.  */
 
 static bool
 find_and_merge_options (int fd, off_t file_offset, const char *prefix,
-			struct cl_decoded_option *decoded_cl_options,
-			unsigned int decoded_cl_options_count,
-			struct cl_decoded_option **opts,
-			unsigned int *opt_count, const char *collect_gcc)
+			vec<cl_decoded_option> decoded_cl_options,
+			vec<cl_decoded_option> *opts, const char *collect_gcc)
 {
   off_t offset, length;
   char *data;
   char *fopts;
   const char *errmsg;
   int err;
-  struct cl_decoded_option *fdecoded_options = *opts;
-  unsigned int fdecoded_options_count = *opt_count;
+  vec<cl_decoded_option> fdecoded_options;
 
   simple_object_read *sobj;
   sobj = simple_object_start_read (fd, file_offset, "__GNU_LTO",
@@ -1120,24 +1093,19 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
   data = (char *)xmalloc (length);
   read (fd, data, length);
   fopts = data;
+  bool first = true;
   do
     {
-      struct cl_decoded_option *f2decoded_options;
-      unsigned int f2decoded_options_count;
-      get_options_from_collect_gcc_options (collect_gcc, fopts,
-					    &f2decoded_options,
-					    &f2decoded_options_count);
-      if (!fdecoded_options)
-       {
-	 fdecoded_options = f2decoded_options;
-	 fdecoded_options_count = f2decoded_options_count;
-       }
+      vec<cl_decoded_option> f2decoded_options
+	= get_options_from_collect_gcc_options (collect_gcc, fopts);
+      if (first)
+	{
+	  fdecoded_options = f2decoded_options;
+	  first = false;
+	}
       else
-	merge_and_complain (&fdecoded_options,
-			    &fdecoded_options_count,
-			    f2decoded_options, f2decoded_options_count,
-			    decoded_cl_options,
-			    decoded_cl_options_count);
+	merge_and_complain (fdecoded_options, f2decoded_options,
+			    decoded_cl_options);
 
       fopts += strlen (fopts) + 1;
     }
@@ -1146,7 +1114,6 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
   free (data);
   simple_object_release_read (sobj);
   *opts = fdecoded_options;
-  *opt_count = fdecoded_options_count;
   return true;
 }
 
@@ -1391,12 +1358,9 @@ run_gcc (unsigned argc, char *argv[])
   int jobserver = 0;
   int auto_parallel = 0;
   bool no_partition = false;
-  struct cl_decoded_option *fdecoded_options = NULL;
-  struct cl_decoded_option *offload_fdecoded_options = NULL;
-  unsigned int fdecoded_options_count = 0;
-  unsigned int offload_fdecoded_options_count = 0;
-  struct cl_decoded_option *decoded_options;
-  unsigned int decoded_options_count;
+  vec<cl_decoded_option> fdecoded_options;
+  fdecoded_options.create (16);
+  vec<cl_decoded_option> offload_fdecoded_options = vNULL;
   struct obstack argv_obstack;
   int new_head_argc;
   bool have_lto = false;
@@ -1438,9 +1402,8 @@ run_gcc (unsigned argc, char *argv[])
 				    NULL);
     }
 
-  get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options,
-					&decoded_options,
-					&decoded_options_count);
+  vec<cl_decoded_option> decoded_options
+    = get_options_from_collect_gcc_options (collect_gcc, collect_gcc_options);
 
   /* Allocate array for input object files with LTO IL,
      and for possible preceding arguments.  */
@@ -1489,8 +1452,7 @@ run_gcc (unsigned argc, char *argv[])
 	}
 
       if (find_and_merge_options (fd, file_offset, LTO_SECTION_NAME_PREFIX,
-				  decoded_options, decoded_options_count,
-				  &fdecoded_options, &fdecoded_options_count,
+				  decoded_options, &fdecoded_options,
 				  collect_gcc))
 	{
 	  have_lto = true;
@@ -1505,14 +1467,13 @@ run_gcc (unsigned argc, char *argv[])
   obstack_ptr_grow (&argv_obstack, "-xlto");
   obstack_ptr_grow (&argv_obstack, "-c");
 
-  append_compiler_options (&argv_obstack, fdecoded_options,
-			   fdecoded_options_count);
-  append_linker_options (&argv_obstack, decoded_options, decoded_options_count);
+  append_compiler_options (&argv_obstack, fdecoded_options);
+  append_linker_options (&argv_obstack, decoded_options);
 
   /* Scan linker driver arguments for things that are of relevance to us.  */
-  for (j = 1; j < decoded_options_count; ++j)
+  for (j = 1; j < decoded_options.length (); ++j)
     {
-      struct cl_decoded_option *option = &decoded_options[j];
+      cl_decoded_option *option = &decoded_options[j];
       switch (option->opt_index)
 	{
 	case OPT_o:
@@ -1731,9 +1692,7 @@ cont1:
 	    fatal_error (input_location, "cannot open %s: %m", filename);
 	  if (!find_and_merge_options (fd, file_offset,
 				       OFFLOAD_SECTION_NAME_PREFIX,
-				       decoded_options, decoded_options_count,
-				       &offload_fdecoded_options,
-				       &offload_fdecoded_options_count,
+				       decoded_options, &offload_fdecoded_options,
 				       collect_gcc))
 	    fatal_error (input_location, "cannot read %s: %m", filename);
 	  close (fd);
@@ -1742,10 +1701,7 @@ cont1:
 	}
 
       compile_images_for_offload_targets (num_offload_files, offload_argv,
-					  offload_fdecoded_options,
-					  offload_fdecoded_options_count,
-					  decoded_options,
-					  decoded_options_count);
+					  offload_fdecoded_options, decoded_options);
 
       free_array_of_ptrs ((void **) offload_argv, num_offload_files);
 
