@@ -669,6 +669,123 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #endif // C++17
 
+#ifdef _GLIBCXX_HAS_GTHREADS
+  /// Flag type used by std::call_once
+  struct once_flag
+  {
+    constexpr once_flag() noexcept = default;
+
+    /// Deleted copy constructor
+    once_flag(const once_flag&) = delete;
+    /// Deleted assignment operator
+    once_flag& operator=(const once_flag&) = delete;
+
+  private:
+    // For gthreads targets a pthread_once_t is used with pthread_once, but
+    // for most targets this doesn't work correctly for exceptional executions.
+    __gthread_once_t _M_once = __GTHREAD_ONCE_INIT;
+
+    struct _Prepare_execution;
+
+    template<typename _Callable, typename... _Args>
+      friend void
+      call_once(once_flag& __once, _Callable&& __f, _Args&&... __args);
+  };
+
+  /// @cond undocumented
+# ifdef _GLIBCXX_HAVE_TLS
+  // If TLS is available use thread-local state for the type-erased callable
+  // that is being run by std::call_once in the current thread.
+  extern __thread void* __once_callable;
+  extern __thread void (*__once_call)();
+
+  // RAII type to set up state for pthread_once call.
+  struct once_flag::_Prepare_execution
+  {
+    template<typename _Callable>
+      explicit
+      _Prepare_execution(_Callable& __c)
+      {
+	// Store address in thread-local pointer:
+	__once_callable = std::__addressof(__c);
+	// Trampoline function to invoke the closure via thread-local pointer:
+	__once_call = [] { (*static_cast<_Callable*>(__once_callable))(); };
+      }
+
+    ~_Prepare_execution()
+    {
+      // PR libstdc++/82481
+      __once_callable = nullptr;
+      __once_call = nullptr;
+    }
+
+    _Prepare_execution(const _Prepare_execution&) = delete;
+    _Prepare_execution& operator=(const _Prepare_execution&) = delete;
+  };
+
+# else
+  // Without TLS use a global std::mutex and store the callable in a
+  // global std::function.
+  extern function<void()> __once_functor;
+
+  extern void
+  __set_once_functor_lock_ptr(unique_lock<mutex>*);
+
+  extern mutex&
+  __get_once_mutex();
+
+  // RAII type to set up state for pthread_once call.
+  struct once_flag::_Prepare_execution
+  {
+    template<typename _Callable>
+      explicit
+      _Prepare_execution(_Callable& __c)
+      {
+	// Store the callable in the global std::function
+	__once_functor = __c;
+	__set_once_functor_lock_ptr(&_M_functor_lock);
+      }
+
+    ~_Prepare_execution()
+    {
+      if (_M_functor_lock)
+	__set_once_functor_lock_ptr(nullptr);
+    }
+
+  private:
+    // XXX This deadlocks if used recursively (PR 97949)
+    unique_lock<mutex> _M_functor_lock{__get_once_mutex()};
+
+    _Prepare_execution(const _Prepare_execution&) = delete;
+    _Prepare_execution& operator=(const _Prepare_execution&) = delete;
+  };
+# endif
+  /// @endcond
+
+  // This function is passed to pthread_once by std::call_once.
+  // It runs __once_call() or __once_functor().
+  extern "C" void __once_proxy(void);
+
+  /// Invoke a callable and synchronize with other calls using the same flag
+  template<typename _Callable, typename... _Args>
+    void
+    call_once(once_flag& __once, _Callable&& __f, _Args&&... __args)
+    {
+      // Closure type that runs the function
+      auto __callable = [&] {
+	  std::__invoke(std::forward<_Callable>(__f),
+			std::forward<_Args>(__args)...);
+      };
+
+      once_flag::_Prepare_execution __exec(__callable);
+
+      // XXX pthread_once does not reset the flag if an exception is thrown.
+      if (int __e = __gthread_once(&__once._M_once, &__once_proxy))
+	__throw_system_error(__e);
+    }
+
+#else // _GLIBCXX_HAS_GTHREADS
+
   /// Flag type used by std::call_once
   struct once_flag
   {
@@ -682,27 +799,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   private:
     // There are two different std::once_flag interfaces, abstracting four
     // different implementations.
-    // The preferred interface uses the _M_activate() and _M_finish(bool)
-    // member functions (introduced in GCC 11), which start and finish an
-    // active execution respectively. See [thread.once.callonce] in C++11
-    // for the definition of active/passive/returning/exceptional executions.
-    // This interface is supported for Linux (using atomics and futexes) and
-    // for single-threaded targets with no gthreads support.
-    // For other targets a pthread_once_t is used with pthread_once, but that
-    // doesn't work correctly for exceptional executions. That interface
-    // uses an object of type _Prepare_execution and a lambda expression.
-#if defined _GLIBCXX_HAVE_LINUX_FUTEX || ! defined _GLIBCXX_HAS_GTHREADS
+    // The single-threaded interface uses the _M_activate() and _M_finish(bool)
+    // functions, which start and finish an active execution respectively.
+    // See [thread.once.callonce] in C++11 for the definition of
+    // active/passive/returning/exceptional executions.
     enum _Bits : int { _Init = 0, _Active = 1, _Done = 2 };
 
     int _M_once = _Bits::_Init;
 
-    // Non-blocking check to see if all executions will be passive now.
+    // Check to see if all executions will be passive now.
     bool
     _M_passive() const noexcept;
 
-    // Attempts to begin an active execution. Blocks until it either:
-    // - returns true if an active execution has started on this thread, or
-    // - returns false if a returning execution happens on another thread.
+    // Attempts to begin an active execution.
     bool _M_activate();
 
     // Must be called to complete an active execution.
@@ -723,18 +832,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       once_flag& _M_flag;
       bool _M_returning = false;
     };
-#else
-    __gthread_once_t _M_once = __GTHREAD_ONCE_INIT;
-
-    struct _Prepare_execution;
-#endif // ! GTHREADS
 
     template<typename _Callable, typename... _Args>
       friend void
       call_once(once_flag& __once, _Callable&& __f, _Args&&... __args);
   };
 
-#if ! defined _GLIBCXX_HAS_GTHREADS
   // Inline definitions of std::once_flag members for single-threaded targets.
 
   inline bool
@@ -759,94 +862,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   once_flag::_M_finish(bool __returning) noexcept
   { _M_once = __returning ? _Bits::_Done : _Bits::_Init; }
 
-#elif defined _GLIBCXX_HAVE_LINUX_FUTEX
-
-  // Define this inline to make passive executions fast.
-  inline bool
-  once_flag::_M_passive() const noexcept
-  {
-    if (__gnu_cxx::__is_single_threaded())
-      return _M_once == _Bits::_Done;
-    else
-      return __atomic_load_n(&_M_once, __ATOMIC_ACQUIRE) == _Bits::_Done;
-  }
-
-#else // GTHREADS && ! FUTEX
-
-  /// @cond undocumented
-# ifdef _GLIBCXX_HAVE_TLS
-  // If TLS is available use thread-local state for the type-erased callable
-  // that is being run by std::call_once in the current thread.
-  extern __thread void* __once_callable;
-  extern __thread void (*__once_call)();
-# else
-  // Without TLS use a global std::mutex and store the callable in a
-  // global std::function.
-  extern function<void()> __once_functor;
-
-  extern void
-  __set_once_functor_lock_ptr(unique_lock<mutex>*);
-
-  extern mutex&
-  __get_once_mutex();
-# endif
-
-  // This function is passed to pthread_once by std::call_once.
-  // It runs __once_call() or __once_functor().
-  extern "C" void __once_proxy(void);
-
-  // RAII type to set up state for pthread_once call.
-  struct once_flag::_Prepare_execution
-  {
-#ifdef _GLIBCXX_HAVE_TLS
-    template<typename _Callable>
-      explicit
-      _Prepare_execution(_Callable& __c)
-      {
-	// Store address in thread-local pointer:
-	__once_callable = std::__addressof(__c);
-	// Trampoline function to invoke the closure via thread-local pointer:
-	__once_call = [] { (*static_cast<_Callable*>(__once_callable))(); };
-      }
-
-    ~_Prepare_execution()
-    {
-      // PR libstdc++/82481
-      __once_callable = nullptr;
-      __once_call = nullptr;
-    }
-#else // ! TLS
-    template<typename _Callable>
-      explicit
-      _Prepare_execution(_Callable& __c)
-      {
-	// Store the callable in the global std::function
-	__once_functor = __c;
-	__set_once_functor_lock_ptr(&_M_functor_lock);
-      }
-
-    ~_Prepare_execution()
-    {
-      if (_M_functor_lock)
-	__set_once_functor_lock_ptr(nullptr);
-    }
-
-  private:
-    unique_lock<mutex> _M_functor_lock{__get_once_mutex()};
-#endif // ! TLS
-
-    _Prepare_execution(const _Prepare_execution&) = delete;
-    _Prepare_execution& operator=(const _Prepare_execution&) = delete;
-  };
-  /// @endcond
-#endif
-
   /// Invoke a callable and synchronize with other calls using the same flag
   template<typename _Callable, typename... _Args>
-    void
+    inline void
     call_once(once_flag& __once, _Callable&& __f, _Args&&... __args)
     {
-#if defined _GLIBCXX_HAVE_LINUX_FUTEX || ! defined _GLIBCXX_HAS_GTHREADS
       if (__once._M_passive())
 	return;
       else if (__once._M_activate())
@@ -861,20 +881,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // __f(__args...) did not throw
 	  __exec._M_returning = true;
 	}
-#else
-      // Closure type that runs the function
-      auto __callable = [&] {
-	  std::__invoke(std::forward<_Callable>(__f),
-			std::forward<_Args>(__args)...);
-      };
-
-      once_flag::_Prepare_execution __exec(__callable);
-
-      // XXX pthread_once does not reset the flag if an exception is thrown.
-      if (int __e = __gthread_once(&__once._M_once, &__once_proxy))
-	__throw_system_error(__e);
-#endif
     }
+#endif // _GLIBCXX_HAS_GTHREADS
 
   // @} group mutexes
 _GLIBCXX_END_NAMESPACE_VERSION

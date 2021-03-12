@@ -26,13 +26,27 @@
 
 #ifdef _GLIBCXX_HAS_GTHREADS
 
+#if defined _GLIBCXX_SHARED && ! _GLIBCXX_INLINE_VERSION
+
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
-#include <syscall.h>
-#include <unistd.h>
-#include <limits.h>
+# include <syscall.h>
+# include <unistd.h>
+# include <limits.h>
+
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+struct __once_flag_compat
+{
+  enum _Bits : int { _Init = 0, _Active = 1, _Done = 2 };
+  int _M_once = 0;
+  bool _M_activate();
+  void _M_finish(bool returning) noexcept;
+};
 
 bool
-std::once_flag::_M_activate()
+__once_flag_compat::_M_activate()
 {
   if (__gnu_cxx::__is_single_threaded())
     {
@@ -64,7 +78,7 @@ std::once_flag::_M_activate()
 }
 
 void
-std::once_flag::_M_finish(bool returning) noexcept
+std::__once_flag_compat::_M_finish(bool returning) noexcept
 {
   const int newval = returning ? _Bits::_Done : _Bits::_Init;
   if (__gnu_cxx::__is_single_threaded())
@@ -83,7 +97,18 @@ std::once_flag::_M_finish(bool returning) noexcept
     }
 }
 
-#endif // ! FUTEX
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wattribute-alias"
+extern "C" bool _ZNSt9once_flag11_M_activateEv()
+  __attribute__((alias ("_ZNSt18__once_flag_compat11_M_activateEv")));
+extern "C" void _ZNSt9once_flag9_M_finishEb() noexcept
+  __attribute__((alias ("_ZNSt18__once_flag_compat9_M_finishEb")));
+#pragma GCC diagnostic pop
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // FUTEX
+#endif // ONCE_FLAG_COMPAT && SHARED && ! INLINE_VERSION
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
