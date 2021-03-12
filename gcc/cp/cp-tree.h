@@ -5922,6 +5922,9 @@ enum ovl_op_code {
   OVL_OP_MAX
 };
 
+/* Make sure it fits in lang_decl_fn::ovl_op_code. */
+STATIC_ASSERT (OVL_OP_MAX < (1 << 6));
+
 struct GTY(()) ovl_op_info_t {
   /* The IDENTIFIER_NODE for the operator.  */
   tree identifier;
