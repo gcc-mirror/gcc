@@ -1,3 +1,11 @@
+2021-03-11  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-03-04  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99381
+	* gcc.target/aarch64/pr99381.c: New test.
+
 2021-03-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backported from master:
