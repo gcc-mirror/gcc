@@ -1822,17 +1822,24 @@ struct processor_costs znver3_cost = {
 
 /* skylake_cost should produce code tuned for Skylake familly of CPUs.  */
 static stringop_algs skylake_memcpy[2] =   {
-  {libcall, {{1024, rep_prefix_4_byte, true}, {-1, libcall, false}}},
-  {libcall, {{16, loop, false}, {512, unrolled_loop, false},
-             {-1, libcall, false}}}};
+  {libcall,
+   {{256, rep_prefix_1_byte, true},
+    {256, loop, false},
+    {-1, libcall, false}}},
+  {libcall,
+   {{256, rep_prefix_1_byte, true},
+    {256, loop, false},
+    {-1, libcall, false}}}};
 
 static stringop_algs skylake_memset[2] = {
-  {libcall, {{6, loop_1_byte, true},
-             {24, loop, true},
-             {8192, rep_prefix_4_byte, true},
-             {-1, libcall, false}}},
-  {libcall, {{24, loop, true}, {512, unrolled_loop, false},
-             {-1, libcall, false}}}};
+  {libcall,
+   {{256, rep_prefix_1_byte, true},
+    {256, loop, false},
+    {-1, libcall, false}}},
+  {libcall,
+   {{256, rep_prefix_1_byte, true},
+    {256, loop, false},
+    {-1, libcall, false}}}};
 
 static const
 struct processor_costs skylake_cost = {
@@ -1889,7 +1896,7 @@ struct processor_costs skylake_cost = {
   COSTS_N_INSNS (0),			/* cost of movzx */
   8,					/* "large" insn */
   17,					/* MOVE_RATIO */
-  6,					/* CLEAR_RATIO */
+  17,					/* CLEAR_RATIO */
   {4, 4, 4},				/* cost of loading integer registers
 					   in QImode, HImode and SImode.
 					   Relative to reg-reg move (2).  */
