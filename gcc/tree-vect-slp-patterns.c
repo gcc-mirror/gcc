@@ -407,9 +407,8 @@ vect_detect_pair_op (slp_tree node1, slp_tree node2, lane_permutation_t &lanes,
 
   if (result != CMPLX_NONE && ops != NULL)
     {
-      ops->create (2);
-      ops->quick_push (node1);
-      ops->quick_push (node2);
+      ops->safe_push (node1);
+      ops->safe_push (node2);
     }
   return result;
 }
@@ -1090,15 +1089,17 @@ complex_mul_pattern::build (vec_info *vinfo)
 {
   slp_tree node;
   unsigned i;
+  slp_tree newnode
+    = vect_build_combine_node (this->m_ops[0], this->m_ops[1], *this->m_node);
+  SLP_TREE_REF_COUNT (this->m_ops[2])++;
+
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (*this->m_node), i, node)
     vect_free_slp_tree (node);
 
   /* First re-arrange the children.  */
   SLP_TREE_CHILDREN (*this->m_node).reserve_exact (2);
   SLP_TREE_CHILDREN (*this->m_node)[0] = this->m_ops[2];
-  SLP_TREE_CHILDREN (*this->m_node)[1] =
-    vect_build_combine_node (this->m_ops[0], this->m_ops[1], *this->m_node);
-  SLP_TREE_REF_COUNT (this->m_ops[2])++;
+  SLP_TREE_CHILDREN (*this->m_node)[1] = newnode;
 
   /* And then rewrite the node itself.  */
   complex_pattern::build (vinfo);
@@ -1132,18 +1133,6 @@ class complex_fma_pattern : public complex_pattern
       return new complex_fma_pattern (node, m_ops, ifn);
     }
 };
-
-/* Helper function to "reset" a previously matched node and undo the changes
-   made enough so that the node is treated as an irrelevant node.  */
-
-static inline void
-vect_slp_reset_pattern (slp_tree node)
-{
-  stmt_vec_info stmt_info = vect_orig_stmt (SLP_TREE_REPRESENTATIVE (node));
-  STMT_VINFO_IN_PATTERN_P (stmt_info) = false;
-  STMT_SLP_TYPE (stmt_info) = pure_slp;
-  SLP_TREE_REPRESENTATIVE (node) = stmt_info;
-}
 
 /* Pattern matcher for trying to match complex multiply and accumulate
    and multiply and subtract patterns in SLP tree.
@@ -1208,15 +1197,6 @@ complex_fma_pattern::matches (complex_operation_t op,
   if (!vect_pattern_validate_optab (ifn, vnode))
     return IFN_LAST;
 
-  /* FMA matched ADD + CMUL.  During the matching of CMUL the
-     stmt that starts the pattern is marked as being in a pattern,
-     namely the CMUL.  When replacing this with a CFMA we have to
-     unmark this statement as being in a pattern.  This is because
-     vect_mark_pattern_stmts will only mark the current stmt as being
-     in a pattern.  Later on when the scalar stmts are examined the
-     old statement which is supposed to be irrelevant will point to
-     CMUL unless we undo the pattern relationship here.  */
-  vect_slp_reset_pattern (node);
   ops->truncate (0);
   ops->create (3);
 
@@ -1259,9 +1239,16 @@ complex_fma_pattern::recognize (slp_tree_to_load_perm_map_t *perm_cache,
 void
 complex_fma_pattern::build (vec_info *vinfo)
 {
+  slp_tree node = SLP_TREE_CHILDREN (*this->m_node)[1];
+
   SLP_TREE_CHILDREN (*this->m_node).release ();
   SLP_TREE_CHILDREN (*this->m_node).create (3);
   SLP_TREE_CHILDREN (*this->m_node).safe_splice (this->m_ops);
+
+  SLP_TREE_REF_COUNT (this->m_ops[1])++;
+  SLP_TREE_REF_COUNT (this->m_ops[2])++;
+
+  vect_free_slp_tree (node);
 
   complex_pattern::build (vinfo);
 }
@@ -1427,6 +1414,11 @@ complex_fms_pattern::build (vec_info *vinfo)
 {
   slp_tree node;
   unsigned i;
+  slp_tree newnode =
+    vect_build_combine_node (this->m_ops[2], this->m_ops[3], *this->m_node);
+  SLP_TREE_REF_COUNT (this->m_ops[0])++;
+  SLP_TREE_REF_COUNT (this->m_ops[1])++;
+
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (*this->m_node), i, node)
     vect_free_slp_tree (node);
 
@@ -1436,10 +1428,7 @@ complex_fms_pattern::build (vec_info *vinfo)
   /* First re-arrange the children.  */
   SLP_TREE_CHILDREN (*this->m_node).quick_push (this->m_ops[0]);
   SLP_TREE_CHILDREN (*this->m_node).quick_push (this->m_ops[1]);
-  SLP_TREE_CHILDREN (*this->m_node).quick_push (
-    vect_build_combine_node (this->m_ops[2], this->m_ops[3], *this->m_node));
-  SLP_TREE_REF_COUNT (this->m_ops[0])++;
-  SLP_TREE_REF_COUNT (this->m_ops[1])++;
+  SLP_TREE_CHILDREN (*this->m_node).quick_push (newnode);
 
   /* And then rewrite the node itself.  */
   complex_pattern::build (vinfo);

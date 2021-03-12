@@ -4549,10 +4549,8 @@
       }
     else
       {
-	amount = gen_reg_rtx (<MODE>mode);
-	emit_insn (gen_vec_duplicate<mode> (amount,
-					    convert_to_mode (<VEL>mode,
-							     operands[2], 0)));
+	amount = convert_to_mode (<VEL>mode, operands[2], 0);
+	amount = expand_vector_broadcast (<MODE>mode, amount);
       }
     emit_insn (gen_v<optab><mode>3 (operands[0], operands[1], amount));
     DONE;

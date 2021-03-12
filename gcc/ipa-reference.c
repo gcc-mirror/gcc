@@ -458,8 +458,8 @@ ipa_init (void)
 
   ipa_init_p = true;
 
-  vec_alloc (reference_vars_to_consider, 10);
-
+  if (dump_file)
+    vec_alloc (reference_vars_to_consider, 10);
 
   if (ipa_ref_opt_sum_summaries != NULL)
     {
@@ -967,8 +967,12 @@ propagate (void)
     }
 
   if (dump_file)
-    vec_free (reference_vars_to_consider);
-  reference_vars_to_consider = NULL;
+    {
+      vec_free (reference_vars_to_consider);
+      reference_vars_to_consider = NULL;
+    }
+  else
+    gcc_checking_assert (!reference_vars_to_consider);
   return remove_p ? TODO_remove_functions : 0;
 }
 
@@ -1059,6 +1063,7 @@ ipa_reference_write_optimization_summary (void)
   auto_bitmap ltrans_statics;
   int i;
 
+  gcc_checking_assert (!reference_vars_to_consider);
   vec_alloc (reference_vars_to_consider, ipa_reference_vars_uids);
   reference_vars_to_consider->safe_grow (ipa_reference_vars_uids, true);
 
@@ -1117,7 +1122,8 @@ ipa_reference_write_optimization_summary (void)
 	  }
       }
   lto_destroy_simple_output_block (ob);
-  delete reference_vars_to_consider;
+  vec_free (reference_vars_to_consider);
+  reference_vars_to_consider = NULL;
 }
 
 /* Deserialize the ipa info for lto.  */

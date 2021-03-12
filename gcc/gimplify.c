@@ -9413,6 +9413,18 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			}
 		    }
 		}
+	      else if ((code == OACC_ENTER_DATA
+			|| code == OACC_EXIT_DATA
+			|| code == OACC_DATA
+			|| code == OACC_PARALLEL
+			|| code == OACC_KERNELS
+			|| code == OACC_SERIAL)
+		       && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
+		{
+		  gomp_map_kind k = (code == OACC_EXIT_DATA
+				     ? GOMP_MAP_DETACH : GOMP_MAP_ATTACH);
+		  OMP_CLAUSE_SET_MAP_KIND (c, k);
+		}
 
 	      if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue, fb_lvalue)
 		  == GS_ERROR)

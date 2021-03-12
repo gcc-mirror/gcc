@@ -240,8 +240,9 @@ in the following sections.
 -fvisibility-inlines-hidden @gol
 -fvisibility-ms-compat @gol
 -fext-numeric-literals @gol
--flang-info-include-translate@r{[}=@var{name}@r{]} @gol
+-flang-info-include-translate@r{[}=@var{header}@r{]} @gol
 -flang-info-include-translate-not @gol
+-flang-info-module-cmi@r{[}=@var{module}@r{]} @gol
 -stdlib=@var{libstdc++,libc++} @gol
 -Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wno-class-conversion  -Wclass-memaccess @gol
@@ -423,6 +424,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-exploded-nodes @gol
 -fdump-analyzer-exploded-nodes-2 @gol
 -fdump-analyzer-exploded-nodes-3 @gol
+-fdump-analyzer-feasibility @gol
 -fdump-analyzer-json @gol
 -fdump-analyzer-state-purge @gol
 -fdump-analyzer-supergraph @gol
@@ -3382,7 +3384,21 @@ is used when building the C++ library.)
 @itemx -flang-info-include-translate=@var{header}
 @opindex flang-info-include-translate
 @opindex flang-info-include-translate-not
-Diagnose include translation events.
+Inform of include translation events.  The first will note accepted
+include translations, the second will note declined include
+translations.  The @var{header} form will inform of include
+translations relating to that specific header.  If @var{header} is of
+the form @code{"user"} or @code{<system>} it will be resolved to a
+specific user or system header using the include path.
+
+@item -flang-info-module-cmi
+@itemx -flang-info-module-cmi=@var{module}
+@opindex flang-info-module-cmi
+Inform of Compiled Module Interface pathnames.  The first will note
+all read CMI pathnames.  The @var{module} form will not reading a
+specific module's CMI.  @var{module} may be a named module or a
+header-unit (the latter indicated by either being a pathname containing
+directory separators or enclosed in @code{<>} or @code{""}).
 
 @item -stdlib=@var{libstdc++,libc++}
 @opindex stdlib
@@ -9551,6 +9567,13 @@ Dump a textual representation of the ``exploded graph'' to
 one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
 This is typically a large number of dump files.
 
+@item -fdump-analyzer-feasibility
+@opindex dump-analyzer-feasibility
+Dump internal details about the analyzer's search for feasible paths.
+The details are written in a form suitable for viewing with GraphViz
+to filenames of the form @file{@var{file}.*.fg.dot} and
+@file{@var{file}.*.tg.dot}.
+
 @item -fdump-analyzer-json
 @opindex fdump-analyzer-json
 Dump a compressed JSON representation of analyzer internals to
@@ -13242,7 +13265,7 @@ are shared across multiple compilation units.
 @item modref-max-bases
 @item modref-max-refs
 @item modref-max-accesses
-Specifies the maximal number of base pointers, referneces and accesses stored
+Specifies the maximal number of base pointers, references and accesses stored
 for a single function by mod/ref analysis.
 
 @item modref-max-tests
@@ -33045,8 +33068,14 @@ textual.  With an argument, queries about include translation of a
 header files with that particular trailing pathname are noted.  You
 may repeat this form to cover several different header files.  This
 option may be helpful in determining whether include translation is
-happening---if it is working correctly, it'll behave as if it wasn't
+happening---if it is working correctly, it behaves as if it isn't
 there at all.
+
+The @option{-flang-info-module-cmi} option can be used to determine
+where the compiler is reading a CMI from.  Without the option, the
+compiler is silent when such a read is successful.  This option has an
+optional argument, which will restrict the notification to just the
+set of named modules or header units specified.
 
 The @option{-Winvalid-imported-macros} option causes all imported macros
 to be resolved at the end of compilation.  Without this, imported
@@ -33121,7 +33150,8 @@ pairs, one per line.  Only the mappings for the direct imports and any
 module export name need be provided.  If other mappings are provided,
 they override those stored in any imported CMI files.  A repository
 root may be specified in the mapping file by using @samp{$root} as the
-module name in the first active line.
+module name in the first active line.  Use of this option will disable
+any default module->CMI name mapping.
 
 @end table
 

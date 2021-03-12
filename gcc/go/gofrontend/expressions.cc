@@ -526,7 +526,7 @@ Expression::convert_interface_to_interface(Type *lhs_type, Expression* rhs,
   // method table.
 
   // We are going to evaluate RHS multiple times.
-  go_assert(rhs->is_variable());
+  go_assert(rhs->is_multi_eval_safe());
 
   // Get the type descriptor for the right hand side.  This will be
   // NULL for a nil interface.
@@ -569,7 +569,7 @@ Expression::convert_interface_to_type(Gogo* gogo, Type *lhs_type, Expression* rh
                                       Location location)
 {
   // We are going to evaluate RHS multiple times.
-  go_assert(rhs->is_variable());
+  go_assert(rhs->is_multi_eval_safe());
 
   // Build an expression to check that the type is valid.  It will
   // panic with an appropriate runtime type error if the type is not
@@ -707,8 +707,8 @@ Expression::check_bounds(Expression* val, Operator op, Expression* bound,
 			 Statement_inserter* inserter,
 			 Location loc)
 {
-  go_assert(val->is_variable() || val->is_constant());
-  go_assert(bound->is_variable() || bound->is_constant());
+  go_assert(val->is_multi_eval_safe());
+  go_assert(bound->is_multi_eval_safe());
 
   Type* int_type = Type::lookup_integer_type("int");
   int int_type_size = int_type->integer_type()->bits();
@@ -3976,7 +3976,7 @@ Type_conversion_expression::do_flatten(Gogo*, Named_object*,
   if (((this->type()->is_string_type()
         && this->expr_->type()->is_slice_type())
        || this->expr_->type()->interface_type() != NULL)
-      && !this->expr_->is_variable())
+      && !this->expr_->is_multi_eval_safe())
     {
       Temporary_statement* temp =
           Statement::make_temporary(NULL, this->expr_, this->location());
@@ -4264,7 +4264,7 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
       Array_type* a = expr_type->array_type();
       Type* e = a->element_type()->forwarded();
       go_assert(e->integer_type() != NULL);
-      go_assert(this->expr_->is_variable());
+      go_assert(this->expr_->is_multi_eval_safe());
 
       Expression* buf;
       if (this->no_escape_ && !this->no_copy_)
@@ -4711,7 +4711,7 @@ Unary_expression::do_flatten(Gogo* gogo, Named_object*,
 
   Location location = this->location();
   if (this->op_ == OPERATOR_MULT
-      && !this->expr_->is_variable())
+      && !this->expr_->is_multi_eval_safe())
     {
       go_assert(this->expr_->type()->points_to() != NULL);
       switch (this->requires_nil_check(gogo))
@@ -4731,7 +4731,7 @@ Unary_expression::do_flatten(Gogo* gogo, Named_object*,
         }
     }
 
-  if (this->create_temp_ && !this->expr_->is_variable())
+  if (this->create_temp_ && !this->expr_->is_multi_eval_safe())
     {
       Temporary_statement* temp =
           Statement::make_temporary(NULL, this->expr_, location);
@@ -5326,7 +5326,7 @@ Unary_expression::do_get_backend(Translate_context* context)
           bexpr = gogo->backend()->var_expression(decl, loc);
         }
 
-      go_assert(!this->create_temp_ || this->expr_->is_variable());
+      go_assert(!this->create_temp_ || this->expr_->is_multi_eval_safe());
       ret = gogo->backend()->address_expression(bexpr, loc);
       break;
 
@@ -5347,7 +5347,7 @@ Unary_expression::do_get_backend(Translate_context* context)
               }
             case NIL_CHECK_NEEDED:
               {
-                go_assert(this->expr_->is_variable());
+                go_assert(this->expr_->is_multi_eval_safe());
 
                 // If we're nil-checking the result of a set-and-use-temporary
                 // expression, then pick out the target temp and use that
@@ -6496,13 +6496,13 @@ Binary_expression::do_flatten(Gogo* gogo, Named_object*,
 	  && (gogo->check_divide_by_zero() || gogo->check_divide_overflow()))
       || is_string_op)
     {
-      if (!this->left_->is_variable() && !this->left_->is_constant())
+      if (!this->left_->is_multi_eval_safe())
         {
           temp = Statement::make_temporary(NULL, this->left_, loc);
           inserter->insert(temp);
           this->left_ = Expression::make_temporary_reference(temp, loc);
         }
-      if (!this->right_->is_variable() && !this->right_->is_constant())
+      if (!this->right_->is_multi_eval_safe())
         {
           temp =
               Statement::make_temporary(NULL, this->right_, loc);
@@ -7478,8 +7478,8 @@ Expression::comparison(Translate_context* context, Type* result_type,
 
   if (left_type->is_string_type() && right_type->is_string_type())
     {
-      go_assert(left->is_variable() || left->is_constant());
-      go_assert(right->is_variable() || right->is_constant());
+      go_assert(left->is_multi_eval_safe());
+      go_assert(right->is_multi_eval_safe());
 
       if (op == OPERATOR_EQEQ || op == OPERATOR_NOTEQ)
 	{
@@ -8078,7 +8078,7 @@ Bound_method_expression::do_flatten(Gogo* gogo, Named_object*,
   // we are going to do nil checks below, but it's easy enough to
   // always do it.
   Expression* expr = this->expr_;
-  if (!expr->is_variable())
+  if (!expr->is_multi_eval_safe())
     {
       Temporary_statement* etemp = Statement::make_temporary(NULL, expr, loc);
       inserter->insert(etemp);
@@ -8419,7 +8419,7 @@ Builtin_call_expression::do_lower(Gogo*, Named_object* function,
 	   pa != this->args()->end();
 	   ++pa)
 	{
-	  if (!(*pa)->is_variable() && !(*pa)->is_constant())
+	  if (!(*pa)->is_multi_eval_safe())
 	    {
 	      Temporary_statement* temp =
 		Statement::make_temporary(NULL, *pa, loc);
@@ -8470,7 +8470,7 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
 		Expression* zero = Expression::make_integer_ul(0, NULL, loc);
 		*pa = Expression::make_slice_value(at, nil, zero, zero, loc);
 	      }
-	    if (!(*pa)->is_variable())
+	    if (!(*pa)->is_multi_eval_safe())
 	      {
 		Temporary_statement* temp =
                   Statement::make_temporary(NULL, *pa, loc);
@@ -8484,8 +8484,8 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
         go_assert(args != NULL && args->size() == 2);
         Expression* arg1 = args->front();
         Expression* arg2 = args->back();
-        go_assert(arg1->is_variable());
-        go_assert(arg2->is_variable());
+	go_assert(arg1->is_multi_eval_safe());
+	go_assert(arg2->is_multi_eval_safe());
         bool arg2_is_string = arg2->type()->is_string_type();
 
         Expression* ret;
@@ -8573,7 +8573,8 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
 	   pa != this->args()->end();
 	   ++pa)
 	{
-	  if (!(*pa)->is_variable() && (*pa)->type()->interface_type() != NULL)
+	  if (!(*pa)->is_multi_eval_safe()
+	      && (*pa)->type()->interface_type() != NULL)
 	    {
 	      Temporary_statement* temp =
 		Statement::make_temporary(NULL, *pa, loc);
@@ -8587,7 +8588,7 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
     case BUILTIN_CAP:
       {
 	Expression_list::iterator pa = this->args()->begin();
-	if (!(*pa)->is_variable()
+	if (!(*pa)->is_multi_eval_safe()
 	    && ((*pa)->type()->map_type() != NULL
 		|| (*pa)->type()->channel_type() != NULL))
 	  {
@@ -9024,7 +9025,7 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
       Expression_list::const_iterator pa = args->begin();
       for (++pa; pa != args->end(); ++pa)
 	{
-	  if ((*pa)->is_variable())
+	  if ((*pa)->is_multi_eval_safe())
 	    add->push_back(*pa);
 	  else
 	    {
@@ -11235,7 +11236,7 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
 	    {
 	      Location loc = (*pa)->location();
 	      Expression* arg = *pa;
-	      if (!arg->is_variable())
+	      if (!arg->is_multi_eval_safe())
 		{
 		  Temporary_statement *temp =
 		    Statement::make_temporary(NULL, arg, loc);
@@ -11457,7 +11458,7 @@ Call_expression::intrinsify(Gogo* gogo,
                && this->args_ != NULL && this->args_->size() == 1)
         {
           Expression* arg = this->args_->front();
-          if (!arg->is_variable())
+          if (!arg->is_multi_eval_safe())
             {
               Temporary_statement* ts = Statement::make_temporary(uint32_type, arg, loc);
               inserter->insert(ts);
@@ -11476,7 +11477,7 @@ Call_expression::intrinsify(Gogo* gogo,
                && this->args_ != NULL && this->args_->size() == 1)
         {
           Expression* arg = this->args_->front();
-          if (!arg->is_variable())
+          if (!arg->is_multi_eval_safe())
             {
               Temporary_statement* ts = Statement::make_temporary(uint64_type, arg, loc);
               inserter->insert(ts);
@@ -11526,7 +11527,7 @@ Call_expression::intrinsify(Gogo* gogo,
                && this->args_ != NULL && this->args_->size() == 1)
         {
           Expression* arg = this->args_->front();
-          if (!arg->is_variable())
+          if (!arg->is_multi_eval_safe())
             {
               Temporary_statement* ts = Statement::make_temporary(uint32_type, arg, loc);
               inserter->insert(ts);
@@ -11549,7 +11550,7 @@ Call_expression::intrinsify(Gogo* gogo,
                && this->args_ != NULL && this->args_->size() == 1)
         {
           Expression* arg = this->args_->front();
-          if (!arg->is_variable())
+          if (!arg->is_multi_eval_safe())
             {
               Temporary_statement* ts = Statement::make_temporary(uint64_type, arg, loc);
               inserter->insert(ts);
@@ -13087,14 +13088,14 @@ Array_index_expression::do_flatten(Gogo* gogo, Named_object*,
     }
 
   Temporary_statement* temp;
-  if (array_type->is_slice_type() && !array->is_variable())
+  if (array_type->is_slice_type() && !array->is_multi_eval_safe())
     {
       temp = Statement::make_temporary(NULL, array, loc);
       inserter->insert(temp);
       this->array_ = Expression::make_temporary_reference(temp, loc);
       array = this->array_;
     }
-  if (!start->is_variable() && !start->is_constant())
+  if (!start->is_multi_eval_safe())
     {
       temp = Statement::make_temporary(NULL, start, loc);
       inserter->insert(temp);
@@ -13103,15 +13104,14 @@ Array_index_expression::do_flatten(Gogo* gogo, Named_object*,
     }
   if (end != NULL
       && !end->is_nil_expression()
-      && !end->is_variable()
-      && !end->is_constant())
+      && !end->is_multi_eval_safe())
     {
       temp = Statement::make_temporary(NULL, end, loc);
       inserter->insert(temp);
       this->end_ = Expression::make_temporary_reference(temp, loc);
       end = this->end_;
     }
-  if (cap != NULL && !cap->is_variable() && !cap->is_constant())
+  if (cap != NULL && !cap->is_multi_eval_safe())
     {
       temp = Statement::make_temporary(NULL, cap, loc);
       inserter->insert(temp);
@@ -13270,7 +13270,8 @@ Array_index_expression::do_get_backend(Translate_context* context)
       go_assert(this->array_->type()->is_error());
       return context->backend()->error_expression();
     }
-  go_assert(!array_type->is_slice_type() || this->array_->is_variable());
+  go_assert(!array_type->is_slice_type()
+	    || this->array_->is_multi_eval_safe());
 
   Location loc = this->location();
   Gogo* gogo = context->gogo();
@@ -13484,14 +13485,14 @@ String_index_expression::do_flatten(Gogo*, Named_object*,
     }
 
   Temporary_statement* temp;
-  if (!string->is_variable())
+  if (!string->is_multi_eval_safe())
     {
       temp = Statement::make_temporary(NULL, string, loc);
       inserter->insert(temp);
       this->string_ = Expression::make_temporary_reference(temp, loc);
       string = this->string_;
     }
-  if (!start->is_variable())
+  if (!start->is_multi_eval_safe())
     {
       temp = Statement::make_temporary(NULL, start, loc);
       inserter->insert(temp);
@@ -13500,7 +13501,7 @@ String_index_expression::do_flatten(Gogo*, Named_object*,
     }
   if (end != NULL
       && !end->is_nil_expression()
-      && !end->is_variable())
+      && !end->is_multi_eval_safe())
     {
       temp = Statement::make_temporary(NULL, end, loc);
       inserter->insert(temp);
@@ -13659,8 +13660,8 @@ String_index_expression::do_get_backend(Translate_context* context)
       return context->backend()->error_expression();
     }
 
-  go_assert(this->string_->is_variable());
-  go_assert(this->start_->is_variable());
+  go_assert(this->string_->is_multi_eval_safe());
+  go_assert(this->start_->is_multi_eval_safe());
 
   Expression* start = Expression::make_cast(int_type, this->start_, loc);
   Bfunction* bfn = context->function()->func_value()->get_decl();
@@ -13685,7 +13686,7 @@ String_index_expression::do_get_backend(Translate_context* context)
     end = length;
   else
     {
-      go_assert(this->end_->is_variable());
+      go_assert(this->end_->is_multi_eval_safe());
       end = Expression::make_cast(int_type, this->end_, loc);
     }
 
@@ -13815,7 +13816,7 @@ Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
 			   NULL))
     {
       if (this->index_->type()->interface_type() != NULL
-	  && !this->index_->is_variable())
+	  && !this->index_->is_multi_eval_safe())
 	{
 	  Temporary_statement* temp =
 	    Statement::make_temporary(NULL, this->index_, loc);
@@ -13826,7 +13827,7 @@ Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
 							this->index_, loc);
     }
 
-  if (!this->index_->is_variable())
+  if (!this->index_->is_multi_eval_safe())
     {
       Temporary_statement* temp = Statement::make_temporary(NULL, this->index_,
                                                             loc);
@@ -13839,7 +13840,7 @@ Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
   if (this->value_pointer_->is_error_expression()
       || this->value_pointer_->type()->is_error_type())
     return Expression::make_error(loc);
-  if (!this->value_pointer_->is_variable())
+  if (!this->value_pointer_->is_multi_eval_safe())
     {
       Temporary_statement* temp =
 	Statement::make_temporary(NULL, this->value_pointer_, loc);
@@ -13923,7 +13924,7 @@ Map_index_expression::do_get_backend(Translate_context* context)
     }
 
   go_assert(this->value_pointer_ != NULL
-            && this->value_pointer_->is_variable());
+            && this->value_pointer_->is_multi_eval_safe());
 
   Expression* val = Expression::make_dereference(this->value_pointer_,
                                                  NIL_CHECK_NOT_NEEDED,
@@ -14268,7 +14269,7 @@ Interface_field_reference_expression::do_flatten(Gogo*, Named_object*,
       return Expression::make_error(this->location());
     }
 
-  if (!this->expr_->is_variable())
+  if (!this->expr_->is_multi_eval_safe())
     {
       Temporary_statement* temp =
 	Statement::make_temporary(NULL, this->expr_, this->location());
@@ -15165,7 +15166,7 @@ Struct_construction_expression::do_flatten(Gogo*, Named_object*,
               go_assert(saw_errors());
               return Expression::make_error(loc);
             }
-	  if (!(*pv)->is_variable())
+	  if (!(*pv)->is_multi_eval_safe())
 	    {
 	      Temporary_statement* temp =
 		Statement::make_temporary(NULL, *pv, loc);
@@ -15471,7 +15472,7 @@ Array_construction_expression::do_flatten(Gogo*, Named_object*,
               go_assert(saw_errors());
               return Expression::make_error(loc);
             }
-	  if (!(*pv)->is_variable())
+	  if (!(*pv)->is_multi_eval_safe())
 	    {
 	      Temporary_statement* temp =
 		Statement::make_temporary(NULL, *pv, loc);
@@ -15914,7 +15915,8 @@ Map_construction_expression::do_flatten(Gogo* gogo, Named_object*,
               go_assert(saw_errors());
               return Expression::make_error(loc);
             }
-	  if (key->type()->interface_type() != NULL && !key->is_variable())
+	  if (key->type()->interface_type() != NULL
+	      && !key->is_multi_eval_safe())
 	    {
 	      Temporary_statement* temp =
 		Statement::make_temporary(NULL, key, loc);
@@ -15930,7 +15932,8 @@ Map_construction_expression::do_flatten(Gogo* gogo, Named_object*,
               go_assert(saw_errors());
               return Expression::make_error(loc);
             }
-	  if (val->type()->interface_type() != NULL && !val->is_variable())
+	  if (val->type()->interface_type() != NULL
+	      && !val->is_multi_eval_safe())
 	    {
 	      Temporary_statement* temp =
 		Statement::make_temporary(NULL, val, loc);
@@ -17037,6 +17040,41 @@ Expression::is_local_variable() const
 	  || (no->is_variable() && !no->var_value()->is_global()));
 }
 
+// Return true if multiple evaluations are OK.
+
+bool
+Expression::is_multi_eval_safe()
+{
+  switch (this->classification_)
+    {
+    case EXPRESSION_VAR_REFERENCE:
+      {
+	// A variable is a simple reference if not stored in the heap.
+	const Named_object* no = this->var_expression()->named_object();
+	if (no->is_variable())
+	  return !no->var_value()->is_in_heap();
+	else if (no->is_result_variable())
+	  return !no->result_var_value()->is_in_heap();
+	else
+	  go_unreachable();
+      }
+
+    case EXPRESSION_TEMPORARY_REFERENCE:
+      return true;
+
+    default:
+      break;
+    }
+
+  if (!this->is_constant())
+    return false;
+
+  // Only numeric and boolean constants are really multi-evaluation
+  // safe.  We don't want multiple copies of string constants.
+  Type* type = this->type();
+  return type->is_numeric_type() || type->is_boolean_type();
+}
+
 const Named_object*
 Expression::named_constant() const
 {
@@ -17070,7 +17108,7 @@ Type_guard_expression::do_flatten(Gogo*, Named_object*,
       return Expression::make_error(this->location());
     }
 
-  if (!this->expr_->is_variable())
+  if (!this->expr_->is_multi_eval_safe())
     {
       Temporary_statement* temp = Statement::make_temporary(NULL, this->expr_,
                                                             this->location());

@@ -4532,8 +4532,13 @@ pass_split_before_regstack::gate (function *)
   /* If flow2 creates new instructions which need splitting
      and scheduling after reload is not done, they might not be
      split until final which doesn't allow splitting
-     if HAVE_ATTR_length.  */
+     if HAVE_ATTR_length.  Selective scheduling can result in
+     further instructions that need splitting.  */
+#ifdef INSN_SCHEDULING
+  return !enable_split_before_sched2 () || flag_selective_scheduling2;
+#else
   return !enable_split_before_sched2 ();
+#endif
 #else
   return false;
 #endif

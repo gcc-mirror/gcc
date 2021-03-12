@@ -987,11 +987,13 @@
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
   [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=wa,r")
         (match_operand:VSX_LE_128 1 "memory_operand" "Z,Q"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
+   && !altivec_indexed_or_indirect_operand (operands[1], <MODE>mode)"
   "@
    #
    #"
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
+   && !altivec_indexed_or_indirect_operand (operands[1], <MODE>mode)"
   [(const_int 0)]
 {
   rtx tmp = (can_create_pseudo_p ()
@@ -1008,7 +1010,8 @@
 (define_insn "*vsx_le_perm_store_<mode>"
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "=Z,Q")
         (match_operand:VSX_LE_128 1 "vsx_register_operand" "+wa,r"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
+   & !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   "@
    #
    #"
@@ -1019,7 +1022,8 @@
 (define_split
   [(set (match_operand:VSX_LE_128 0 "memory_operand")
         (match_operand:VSX_LE_128 1 "vsx_register_operand"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !reload_completed && !TARGET_P9_VECTOR
+   && !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   [(const_int 0)]
 {
   rtx tmp = (can_create_pseudo_p ()
@@ -1075,7 +1079,8 @@
 (define_split
   [(set (match_operand:VSX_LE_128 0 "memory_operand")
         (match_operand:VSX_LE_128 1 "vsx_register_operand"))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed && !TARGET_P9_VECTOR"
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && reload_completed && !TARGET_P9_VECTOR
+   && !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   [(const_int 0)]
 {
   rs6000_emit_le_vsx_permute (operands[1], operands[1], <MODE>mode);
@@ -1241,7 +1246,8 @@
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   /* Expand to swaps if needed, prior to swap optimization.  */
-  if (!BYTES_BIG_ENDIAN && !TARGET_P9_VECTOR)
+  if (!BYTES_BIG_ENDIAN && !TARGET_P9_VECTOR
+      && !altivec_indexed_or_indirect_operand(operands[1], <MODE>mode))
     {
       rs6000_emit_le_vsx_move (operands[0], operands[1], <MODE>mode);
       DONE;
@@ -1254,7 +1260,8 @@
   "VECTOR_MEM_VSX_P (<MODE>mode)"
 {
   /* Expand to swaps if needed, prior to swap optimization.  */
-  if (!BYTES_BIG_ENDIAN && !TARGET_P9_VECTOR)
+  if (!BYTES_BIG_ENDIAN && !TARGET_P9_VECTOR
+      && !altivec_indexed_or_indirect_operand(operands[0], <MODE>mode))
     {
       rs6000_emit_le_vsx_move (operands[0], operands[1], <MODE>mode);
       DONE;
@@ -3030,28 +3037,22 @@
    (use (match_operand:SI 4 "gpc_reg_operand"))]
    "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT"
 {
-  rtx a = gen_reg_rtx (DImode);
-  rtx b = gen_reg_rtx (DImode);
-  rtx c = gen_reg_rtx (DImode);
-  rtx d = gen_reg_rtx (DImode);
-  emit_insn (gen_zero_extendsidi2 (a, operands[1]));
-  emit_insn (gen_zero_extendsidi2 (b, operands[2]));
-  emit_insn (gen_zero_extendsidi2 (c, operands[3]));
-  emit_insn (gen_zero_extendsidi2 (d, operands[4]));
+  rtx a = gen_lowpart_SUBREG (DImode, operands[1]);
+  rtx b = gen_lowpart_SUBREG (DImode, operands[2]);
+  rtx c = gen_lowpart_SUBREG (DImode, operands[3]);
+  rtx d = gen_lowpart_SUBREG (DImode, operands[4]);
   if (!BYTES_BIG_ENDIAN)
     {
       std::swap (a, b);
       std::swap (c, d);
     }
 
-  rtx aa = gen_reg_rtx (DImode);
   rtx ab = gen_reg_rtx (DImode);
-  rtx cc = gen_reg_rtx (DImode);
   rtx cd = gen_reg_rtx (DImode);
-  emit_insn (gen_ashldi3 (aa, a, GEN_INT (32)));
-  emit_insn (gen_ashldi3 (cc, c, GEN_INT (32)));
-  emit_insn (gen_iordi3 (ab, aa, b));
-  emit_insn (gen_iordi3 (cd, cc, d));
+  emit_insn (gen_rotldi3_insert_3 (ab, a, GEN_INT (32), b,
+				   GEN_INT (0xffffffff)));
+  emit_insn (gen_rotldi3_insert_3 (cd, c, GEN_INT (32), d,
+				   GEN_INT (0xffffffff)));
 
   rtx abcd = gen_reg_rtx (V2DImode);
   emit_insn (gen_vsx_concat_v2di (abcd, ab, cd));

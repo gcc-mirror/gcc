@@ -397,10 +397,6 @@ class Gogo
   void
   read_embedcfg(const char* filename);
 
-  // Return whether the current file imports "embed".
-  bool
-  is_embed_imported() const;
-
   // Build an initializer for a variable with a go:embed directive.
   Expression*
   initializer_for_embeds(Type*, const std::vector<std::string>*, Location);
@@ -708,6 +704,11 @@ class Gogo
   bool
   current_file_imported_unsafe() const
   { return this->current_file_imported_unsafe_; }
+
+  // Return whether the current file imported the embed package.
+  bool
+  current_file_imported_embed() const
+  { return this->current_file_imported_embed_; }
 
   // Clear out all names in file scope.  This is called when we start
   // parsing a new file.
@@ -1251,6 +1252,8 @@ class Gogo
   bool imported_unsafe_;
   // Whether the magic unsafe package was imported by the current file.
   bool current_file_imported_unsafe_;
+  // Whether the embed package was imported by the current file.
+  bool current_file_imported_embed_;
   // Mapping from package names we have seen to packages.  This does
   // not include the package we are compiling.
   Packages packages_;

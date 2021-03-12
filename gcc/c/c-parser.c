@@ -14332,7 +14332,7 @@ c_parser_oacc_clause_async (c_parser *parser, tree list)
     {
       c_parser_consume_token (parser);
 
-      t = c_parser_expression (parser).value;
+      t = c_parser_expr_no_commas (parser, NULL).value;
       if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	c_parser_error (parser, "expected integer expression");
       else if (t == error_mark_node

@@ -209,15 +209,27 @@ It looks different from literature pseudocode for two main reasons:
       __algorithm_t _M_b;
 
     public:
-      using arrival_token = typename __tree_barrier<_CompletionF>::arrival_token;
+      class arrival_token final
+      {
+      public:
+	arrival_token(arrival_token&&) = default;
+	arrival_token& operator=(arrival_token&&) = default;
+	~arrival_token() = default;
+
+      private:
+	friend class barrier;
+	using __token = typename __algorithm_t::arrival_token;
+	explicit arrival_token(__token __tok) noexcept : _M_tok(__tok) { }
+	__token _M_tok;
+      };
 
       static constexpr ptrdiff_t
       max() noexcept
       { return __algorithm_t::max(); }
 
-      explicit barrier(ptrdiff_t __count,
-		       _CompletionF __completion = _CompletionF())
-	  : _M_b(__count, std::move(__completion))
+      explicit
+      barrier(ptrdiff_t __count, _CompletionF __completion = _CompletionF())
+      : _M_b(__count, std::move(__completion))
       { }
 
       barrier(barrier const&) = delete;
@@ -225,11 +237,11 @@ It looks different from literature pseudocode for two main reasons:
 
       [[nodiscard]] arrival_token
       arrive(ptrdiff_t __update = 1)
-      { return _M_b.arrive(__update); }
+      { return arrival_token{_M_b.arrive(__update)}; }
 
       void
       wait(arrival_token&& __phase) const
-      { _M_b.wait(std::move(__phase)); }
+      { _M_b.wait(std::move(__phase._M_tok)); }
 
       void
       arrive_and_wait()

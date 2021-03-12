@@ -196,7 +196,7 @@ gfc_itoa (GFC_INTEGER_LARGEST n, char *buffer, size_t len)
   if (n < 0)
     {
       negative = 1;
-      t = -n; /*must use unsigned to protect from overflow*/
+      t = -(GFC_UINTEGER_LARGEST) n;  /* Must use unsigned to protect from overflow. */
     }
 
   p = buffer + GFC_ITOA_BUF_SIZE - 1;

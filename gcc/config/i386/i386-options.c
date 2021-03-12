@@ -2159,11 +2159,11 @@ ix86_option_override_internal (bool main_args_p,
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_MOVBE))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_MOVBE;
 	if (((processor_alias_table[i].flags & PTA_AES) != 0)
-	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
-	  ix86_isa_flags |= OPTION_MASK_ISA_AES;
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_AES))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AES;
 	if (((processor_alias_table[i].flags & PTA_SHA) != 0)
-	    && !(ix86_isa_flags_explicit & OPTION_MASK_ISA_SHA))
-	  ix86_isa_flags |= OPTION_MASK_ISA_SHA;
+	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_SHA))
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_SHA;
 	if (((processor_alias_table[i].flags & PTA_PCLMUL) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PCLMUL))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PCLMUL;
@@ -2354,6 +2354,13 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_PKU) != 0)
 	    && !(opts->x_ix86_isa_flags_explicit & OPTION_MASK_ISA_PKU))
 	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_PKU;
+	if (((processor_alias_table[i].flags & PTA_UINTR) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_UINTR))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_UINTR;
+	if (((processor_alias_table[i].flags & PTA_HRESET) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA2_HRESET))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_HRESET;
+
 
 	/* Don't enable x87 instructions if only general registers are
 	   allowed by target("general-regs-only") function attribute or

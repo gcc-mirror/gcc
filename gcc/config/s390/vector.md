@@ -616,12 +616,23 @@
    vlvgp\t%v0,%1,%N1"
   [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRR")])
 
-(define_insn "*fprx2_to_tf"
-  [(set (match_operand:TF               0 "nonimmediate_operand" "=v")
-	(subreg:TF (match_operand:FPRX2 1 "general_operand"       "f") 0))]
+(define_insn_and_split "fprx2_to_tf"
+  [(set (match_operand:TF               0 "nonimmediate_operand" "=v,AR")
+	(subreg:TF (match_operand:FPRX2 1 "general_operand"       "f,f") 0))]
   "TARGET_VXE"
-  "vmrhg\t%v0,%1,%N1"
-  [(set_attr "op_type" "VRR")])
+  "@
+   vmrhg\t%v0,%1,%N1
+   #"
+  "!(MEM_P (operands[0]) && MEM_VOLATILE_P (operands[0]))"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+{
+  operands[2] = simplify_gen_subreg (DFmode, operands[0], TFmode, 0);
+  operands[3] = simplify_gen_subreg (DFmode, operands[1], FPRX2mode, 0);
+  operands[4] = simplify_gen_subreg (DFmode, operands[0], TFmode, 8);
+  operands[5] = simplify_gen_subreg (DFmode, operands[1], FPRX2mode, 8);
+}
+  [(set_attr "op_type" "VRR,*")])
 
 (define_insn "*vec_ti_to_v1ti"
   [(set (match_operand:V1TI                   0 "nonimmediate_operand" "=v,v,R,  v,  v,v")
@@ -752,6 +763,21 @@
   ; M4 == 5 corresponds to %V0[0] = %v1[1]; %V0[1] = %V0[1];
   "vpdi\t%V0,%v1,%V0,5"
   [(set_attr "op_type" "VRR")])
+
+(define_insn_and_split "tf_to_fprx2"
+  [(set (match_operand:FPRX2            0 "nonimmediate_operand" "=f,f")
+	(subreg:FPRX2 (match_operand:TF 1 "general_operand"       "v,AR") 0))]
+  "TARGET_VXE"
+  "#"
+  "!(MEM_P (operands[1]) && MEM_VOLATILE_P (operands[1]))"
+  [(set (match_dup 2) (match_dup 3))
+   (set (match_dup 4) (match_dup 5))]
+{
+  operands[2] = simplify_gen_subreg (DFmode, operands[0], FPRX2mode, 0);
+  operands[3] = simplify_gen_subreg (DFmode, operands[1], TFmode, 0);
+  operands[4] = simplify_gen_subreg (DFmode, operands[0], FPRX2mode, 8);
+  operands[5] = simplify_gen_subreg (DFmode, operands[1], TFmode, 8);
+})
 
 ; vec_perm_const for V2DI using vpdi?
 
@@ -1563,7 +1589,7 @@
   [(set (match_operand:<TOINTVEC>  0 "register_operand" "")
 	(match_operator:<TOINTVEC> 1 "vcond_comparison_operator"
 	  [(match_operand:V_HW     2 "register_operand" "")
-	   (match_operand:V_HW     3 "register_operand" "")]))]
+	   (match_operand:V_HW     3 "nonmemory_operand" "")]))]
   "TARGET_VX"
 {
   s390_expand_vec_compare (operands[0], GET_CODE(operands[1]), operands[2], operands[3]);
@@ -2454,6 +2480,42 @@
   "HAVE_TF (trunctfsf2)"
   { EXPAND_TF (trunctfsf2, 2); })
 
+(define_expand "trunctf<DFP_ALL:mode>2_vr"
+  [(match_operand:DFP_ALL 0 "nonimmediate_operand" "")
+   (match_operand:TF 1 "nonimmediate_operand" "")]
+  "TARGET_HARD_DFP
+   && GET_MODE_SIZE (TFmode) > GET_MODE_SIZE (<DFP_ALL:MODE>mode)
+   && TARGET_VXE"
+{
+  rtx fprx2 = gen_reg_rtx (FPRX2mode);
+  emit_insn (gen_tf_to_fprx2 (fprx2, operands[1]));
+  emit_insn (gen_truncfprx2<DFP_ALL:mode>2 (operands[0], fprx2));
+  DONE;
+})
+
+(define_expand "trunctf<DFP_ALL:mode>2"
+  [(match_operand:DFP_ALL 0 "nonimmediate_operand" "")
+   (match_operand:TF 1 "nonimmediate_operand" "")]
+  "HAVE_TF (trunctf<DFP_ALL:mode>2)"
+  { EXPAND_TF (trunctf<DFP_ALL:mode>2, 2); })
+
+(define_expand "trunctdtf2_vr"
+  [(match_operand:TF 0 "nonimmediate_operand" "")
+   (match_operand:TD 1 "nonimmediate_operand" "")]
+  "TARGET_HARD_DFP && TARGET_VXE"
+{
+  rtx fprx2 = gen_reg_rtx (FPRX2mode);
+  emit_insn (gen_trunctdfprx22 (fprx2, operands[1]));
+  emit_insn (gen_fprx2_to_tf (operands[0], fprx2));
+  DONE;
+})
+
+(define_expand "trunctdtf2"
+  [(match_operand:TF 0 "nonimmediate_operand" "")
+   (match_operand:TD 1 "nonimmediate_operand" "")]
+  "HAVE_TF (trunctdtf2)"
+  { EXPAND_TF (trunctdtf2, 2); })
+
 ; load lengthened
 
 (define_insn "extenddftf2_vr"
@@ -2484,6 +2546,42 @@
    (match_operand:SF 1 "nonimmediate_operand" "")]
   "HAVE_TF (extendsftf2)"
   { EXPAND_TF (extendsftf2, 2); })
+
+(define_expand "extend<DFP_ALL:mode>tf2_vr"
+  [(match_operand:TF 0 "nonimmediate_operand" "")
+   (match_operand:DFP_ALL 1 "nonimmediate_operand" "")]
+  "TARGET_HARD_DFP
+   && GET_MODE_SIZE (<DFP_ALL:MODE>mode) < GET_MODE_SIZE (TFmode)
+   && TARGET_VXE"
+{
+  rtx fprx2 = gen_reg_rtx (FPRX2mode);
+  emit_insn (gen_extend<DFP_ALL:mode>fprx22 (fprx2, operands[1]));
+  emit_insn (gen_fprx2_to_tf (operands[0], fprx2));
+  DONE;
+})
+
+(define_expand "extend<DFP_ALL:mode>tf2"
+  [(match_operand:TF 0 "nonimmediate_operand" "")
+   (match_operand:DFP_ALL 1 "nonimmediate_operand" "")]
+  "HAVE_TF (extend<DFP_ALL:mode>tf2)"
+  { EXPAND_TF (extend<DFP_ALL:mode>tf2, 2); })
+
+(define_expand "extendtftd2_vr"
+  [(match_operand:TD 0 "nonimmediate_operand" "")
+   (match_operand:TF 1 "nonimmediate_operand" "")]
+  "TARGET_HARD_DFP && TARGET_VXE"
+{
+  rtx fprx2 = gen_reg_rtx (FPRX2mode);
+  emit_insn (gen_tf_to_fprx2 (fprx2, operands[1]));
+  emit_insn (gen_extendfprx2td2 (operands[0], fprx2));
+  DONE;
+})
+
+(define_expand "extendtftd2"
+  [(match_operand:TD 0 "nonimmediate_operand" "")
+   (match_operand:TF 1 "nonimmediate_operand" "")]
+  "HAVE_TF (extendtftd2)"
+  { EXPAND_TF (extendtftd2, 2); })
 
 ; test data class
 

@@ -202,6 +202,11 @@
 #undef r
 #endif
 
+#if defined (__linux__) && defined (__powerpc__)
+// <asm/types.h> defines __vector128::u
+#undef u
+#endif
+
 #if defined (__linux__) && defined (__sparc__)
 #undef y
 #endif

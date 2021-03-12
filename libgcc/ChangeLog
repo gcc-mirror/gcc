@@ -1,3 +1,91 @@
+2021-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/99406
+	* libgcov.h (MAP_FAILED, MAP_ANONYMOUS): If HAVE_SYS_MMAN_H is
+	defined, define these macros if not defined already.
+
+2021-03-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/99105
+	* libgcov-driver.c (write_top_counters): Rename to ...
+	(write_topn_counters): ... this.
+	(write_one_data): Pre-allocate buffer for number of items
+	in the corresponding linked lists.
+	* libgcov.h (malloc_mmap): New function.
+	(allocate_gcov_kvp): Use it.
+
+2021-03-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/99385
+	* libgcov.h (allocate_gcov_kvp): Call mmap with fd equal to -1.
+
+2021-03-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97461
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Check sys/mman.h header file
+	* libgcov-driver.c (struct gcov_kvp): Remove static
+	pre-allocated pool and use a dynamic one.
+	* libgcov.h (MMAP_CHUNK_SIZE): New.
+	(gcov_counter_add): Use mmap to allocate pool for struct
+	gcov_kvp.
+
+2021-03-02  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/_sprintfkf.h (__sprintfkf): Fix prototype to match
+	the function.
+	* config/rs6000/_sprintfkf.c: Include _sprintfkf.h.
+
+2021-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/99236
+	* libgcc2.c (__powisf2, __powidf2, __powitf2, __powixf2): Perform
+	negation of m in unsigned type.
+
+2021-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Hau Hsu  <hsuhau617@gmail.com>
+
+	PR target/99157
+	* config/arm/t-arm: Fix cmse support detection.
+
+2021-02-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	* dfp-bit.c (BFP_TO_DFP): Fix a comment line that was too long.
+
+2021-02-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/_dd_to_kf.c: New file.
+	* config/rs6000/_kf_to_dd.c: New file.
+	* config/rs6000/_kf_to_sd.c: New file.
+	* config/rs6000/_kf_to_td.c: New file.
+	* config/rs6000/_sd_to_kf.c: New file.
+	* config/rs6000/_sprintfkf.c: New file.
+	* config/rs6000/_sprintfkf.h: New file.
+	* config/rs6000/_strtokf.h: New file.
+	* config/rs6000/_strtokf.c: New file.
+	* config/rs6000/_td_to_kf.c: New file.
+	* config/rs6000/quad-float128.h: Add new declarations.
+	* config/rs6000/t-float128 (fp128_dec_funcs): New macro.
+	(fp128_decstr_funcs): New macro.
+	(ibm128_dec_funcs): New macro.
+	(fp128_ppc_funcs): Add the new conversions.
+	(fp128_dec_objs): Force Decimal <-> __float128 conversions to be
+	compiled with -mabi=ieeelongdouble.
+	(fp128_decstr_objs): Force __float128 <-> string conversions to be
+	compiled with -mabi=ibmlongdouble.
+	(ibm128_dec_objs): Force Decimal <-> __float128 conversions to be
+	compiled with -mabi=ieeelongdouble.
+	(FP128_CFLAGS_DECIMAL): New macro.
+	(IBM128_CFLAGS_DECIMAL): New macro.
+	* dfp-bit.c (DFP_TO_BFP): Add PowerPC _Float128 support.
+	(BFP_TO_DFP): Add PowerPC _Float128 support.
+	* dfp-bit.h (BFP_KIND): Add new binary floating point kind for
+	IEEE 128-bit floating point.
+	(DFP_TO_BFP): Add PowerPC _Float128 support.
+	(BFP_TO_DFP): Add PowerPC _Float128 support.
+	(BFP_SPRINTF): New macro.
+
 2021-01-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/savms64.h: Add .note.GNU-stack section on Linux.

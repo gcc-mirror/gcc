@@ -206,7 +206,6 @@ gomp_new_team (unsigned nthreads)
   team->work_share_cancelled = 0;
   team->team_cancelled = 0;
 
-  priority_queue_init (&team->task_detach_queue);
   team->task_detach_count = 0;
 
   return team;
@@ -224,7 +223,6 @@ free_team (struct gomp_team *team)
   gomp_barrier_destroy (&team->barrier);
   gomp_mutex_destroy (&team->task_lock);
   priority_queue_free (&team->task_queue);
-  priority_queue_free (&team->task_detach_queue);
   team_free (team);
 }
 

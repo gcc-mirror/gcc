@@ -1,3 +1,19 @@
+2021-03-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/99137
+	* c-parser.c (c_parser_oacc_clause_async): Reject comma expressions.
+
+2021-02-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/97172
+	* c-decl.c (free_attr_access_data): Clear attribute arg spec.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99136
+	* c-typeck.c (c_finish_return): Don't wrap retval into
+	EXCESS_PRECISION_EXPR in functions that return void.
+
 2021-02-11  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_if_statement): Use vec_free.

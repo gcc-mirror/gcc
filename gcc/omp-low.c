@@ -171,6 +171,14 @@ struct omp_context
 
   /* True if there is bind clause on the construct (i.e. a loop construct).  */
   bool loop_p;
+
+  /* Only used for omp target contexts.  True if a teams construct is
+     strictly nested in it.  */
+  bool teams_nested_p;
+
+  /* Only used for omp target contexts.  True if an OpenMP construct other
+     than teams is strictly nested in it.  */
+  bool nonteams_nested_p;
 };
 
 static splay_tree all_contexts;
@@ -2956,6 +2964,14 @@ scan_omp_target (gomp_target *stmt, omp_context *outer_ctx)
       if (offloaded)
 	fixup_child_record_type (ctx);
     }
+
+  if (ctx->teams_nested_p && ctx->nonteams_nested_p)
+    {
+      error_at (gimple_location (stmt),
+		"%<target%> construct with nested %<teams%> construct "
+		"contains directives outside of the %<teams%> construct");
+      gimple_omp_set_body (stmt, gimple_build_bind (NULL, NULL, NULL));
+    }
 }
 
 /* Scan an OpenMP teams directive.  */
@@ -3025,6 +3041,14 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 
   if (ctx != NULL)
     {
+      if (gimple_code (ctx->stmt) == GIMPLE_OMP_TARGET
+	  && gimple_omp_target_kind (ctx->stmt) == GF_OMP_TARGET_KIND_REGION)
+	{
+	  if (gimple_code (stmt) == GIMPLE_OMP_TEAMS && !ctx->teams_nested_p)
+	    ctx->teams_nested_p = true;
+	  else
+	    ctx->nonteams_nested_p = true;
+	}
       if (gimple_code (ctx->stmt) == GIMPLE_OMP_SCAN
 	  && ctx->outer
 	  && gimple_code (ctx->outer->stmt) == GIMPLE_OMP_FOR)

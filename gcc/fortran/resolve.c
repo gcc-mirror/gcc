@@ -13051,6 +13051,7 @@ static bool
 resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
 {
   gfc_formal_arglist *arg;
+  bool allocatable_or_pointer;
 
   if (sym->attr.function
       && !resolve_fl_var_and_proc (sym, mp_flag))
@@ -13235,8 +13236,16 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
   /* F2018, C15100: "The result of an elemental function shall be scalar,
      and shall not have the POINTER or ALLOCATABLE attribute."  The scalar
      pointer is tested and caught elsewhere.  */
+  if (sym->result)
+    allocatable_or_pointer = sym->result->ts.type == BT_CLASS
+			     && CLASS_DATA (sym->result) ?
+			     (CLASS_DATA (sym->result)->attr.allocatable
+			      || CLASS_DATA (sym->result)->attr.pointer) :
+			     (sym->result->attr.allocatable
+			      || sym->result->attr.pointer);
+
   if (sym->attr.elemental && sym->result
-      && (sym->result->attr.allocatable || sym->result->attr.pointer))
+      && allocatable_or_pointer)
     {
       gfc_error ("Function result variable %qs at %L of elemental "
 		 "function %qs shall not have an ALLOCATABLE or POINTER "

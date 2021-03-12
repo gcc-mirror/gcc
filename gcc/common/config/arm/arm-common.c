@@ -33,6 +33,8 @@
 #include "sbitmap.h"
 #include "diagnostic.h"
 
+#include "configargs.h"
+
 /* Set default optimization options.  */
 static const struct default_options arm_option_optimization_table[] =
   {
@@ -240,16 +242,34 @@ check_isa_bits_for (const enum isa_feature* bits, enum isa_feature bit)
   return false;
 }
 
+/* Look up NAME in the configuration defaults for this build of the
+   the compiler.  Return the value associated with that name, or NULL
+   if no value is found.  */
+static const char *
+arm_config_default (const char *name)
+{
+  unsigned i;
+
+  if (configure_default_options[0].name == NULL)
+    return NULL;
+
+  for (i = 0; i < ARRAY_SIZE (configure_default_options); i++)
+    if (strcmp (configure_default_options[i].name, name) == 0)
+      return configure_default_options[i].value;
+
+  return NULL;
+}
+
 /* Called by the driver to check whether the target denoted by current
-   command line options is a Thumb-only target.  ARGV is an array of
-   tupples (normally only one) where the first element of the tupple
-   is 'cpu' or 'arch' and the second is the option passed to the
-   compiler for that.  An architecture tupple is always taken in
-   preference to a cpu tupple and the last of each type always
+   command line options is a Thumb-only, or ARM-only, target.  ARGV is
+   an array of tupples (normally only one) where the first element of
+   the tupple is 'cpu' or 'arch' and the second is the option passed
+   to the compiler for that.  An architecture tupple is always taken
+   in preference to a cpu tupple and the last of each type always
    overrides any earlier setting.  */
 
 const char *
-arm_target_thumb_only (int argc, const char **argv)
+arm_target_mode (int argc, const char **argv)
 {
   const char *arch = NULL;
   const char *cpu = NULL;
@@ -285,6 +305,9 @@ arm_target_thumb_only (int argc, const char **argv)
       if (arch_opt && !check_isa_bits_for (arch_opt->common.isa_bits,
 					   isa_bit_notm))
 	return "-mthumb";
+      if (arch_opt && !check_isa_bits_for (arch_opt->common.isa_bits,
+					   isa_bit_thumb))
+	return "-marm";
     }
   else if (cpu)
     {
@@ -294,6 +317,20 @@ arm_target_thumb_only (int argc, const char **argv)
       if (cpu_opt && !check_isa_bits_for (cpu_opt->common.isa_bits,
 					  isa_bit_notm))
 	return "-mthumb";
+      if (cpu_opt && !check_isa_bits_for (cpu_opt->common.isa_bits,
+					   isa_bit_thumb))
+	return "-marm";
+    }
+
+  const char *default_mode = arm_config_default ("mode");
+  if (default_mode)
+    {
+      if (strcmp (default_mode, "thumb") == 0)
+	return "-mthumb";
+      else if (strcmp (default_mode, "arm") == 0)
+	return "-marm";
+      else
+	gcc_unreachable ();
     }
 
   /* Compiler hasn't been configured with a default, and the CPU

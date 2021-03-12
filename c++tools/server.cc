@@ -63,7 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <getopt.h>
 
 // Select or epoll
-#ifdef NETWORKING
+#if NETWORKING
 #ifdef HAVE_EPOLL
 /* epoll_create, epoll_ctl, epoll_pwait  */
 #include <sys/epoll.h>
@@ -91,7 +91,7 @@ along with GCC; see the file COPYING3.  If not see
 #define DIR_SEPARATOR '/'
 #endif
 
-#ifdef NETWORKING
+#if NETWORKING
 struct netmask {
   in6_addr addr;
   unsigned bits;
@@ -161,7 +161,7 @@ static bool flag_xlate = false;
 /* Root binary directory.  */
 static const char *flag_root = "gcm.cache";
 
-#ifdef NETWORKING
+#if NETWORKING
 static netmask_set_t netmask_set;
 
 static netmask_vec_t accept_addrs;
@@ -233,7 +233,7 @@ error (const char *msg, ...)
   exit (1);
 }
 
-#ifdef NETWORKING
+#if NETWORKING
 /* Progress messages to the user.  */
 static bool ATTRIBUTE_PRINTF_1 ATTRIBUTE_COLD
 noisy (const char *fmt, ...)
@@ -414,7 +414,7 @@ process_args (int argc, char **argv)
   return optind;
 }
 
-#ifdef NETWORKING
+#if NETWORKING
 
 /* Manipulate the EPOLL state, or do nothing, if there is epoll.  */
 
@@ -871,7 +871,7 @@ main (int argc, char *argv[])
   /* Ignore sigpipe, so read/write get an error.  */
   signal (SIGPIPE, SIG_IGN);
 #endif
-#ifdef NETWORKING
+#if NETWORKING
 #ifdef SIGINT
   signal (SIGINT, kill_signal);
 #endif
@@ -935,7 +935,7 @@ main (int argc, char *argv[])
     }
 #endif
 
-#ifdef NETWORKING
+#if NETWORKING
   if (sock_fd >= 0)
     {
       server (name[0] != '=', sock_fd, &r);

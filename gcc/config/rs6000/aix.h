@@ -224,7 +224,8 @@
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
 #define ADJUST_FIELD_ALIGN(FIELD, TYPE, COMPUTED) \
   ((TARGET_ALIGN_NATURAL == 0						\
-    && TYPE_MODE (strip_array_types (TYPE)) == DFmode)			\
+    && (TYPE_MODE (strip_array_types (TYPE)) == DFmode			\
+	|| TYPE_MODE (strip_array_types (TYPE)) == DCmode))		\
    ? MIN ((COMPUTED), 32)						\
    : (COMPUTED))
 

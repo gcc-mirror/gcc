@@ -23,6 +23,10 @@ TM_H += $(srcdir)/config/rs6000/rs6000-cpus.def
 TM_H += $(srcdir)/config/rs6000/rs6000-modes.h
 PASSES_EXTRA += $(srcdir)/config/rs6000/rs6000-passes.def
 
+rs6000-pcrel-opt.o: $(srcdir)/config/rs6000/rs6000-pcrel-opt.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
@@ -90,4 +94,5 @@ MD_INCLUDES = $(srcdir)/config/rs6000/rs64.md \
 	$(srcdir)/config/rs6000/crypto.md \
 	$(srcdir)/config/rs6000/htm.md \
 	$(srcdir)/config/rs6000/dfp.md \
-	$(srcdir)/config/rs6000/fusion.md
+	$(srcdir)/config/rs6000/fusion.md \
+	$(srcdir)/config/rs6000/pcrel-opt.md

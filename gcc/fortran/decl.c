@@ -3066,8 +3066,7 @@ gfc_match_old_kind_spec (gfc_typespec *ts)
 	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
-
-      if (ts->kind == 8)
+      else if (ts->kind == 8)
 	{
 	  if (flag_real8_kind == 4)
 	    ts->kind = 4;
@@ -3246,8 +3245,7 @@ close_brackets:
 	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
-
-      if (ts->kind == 8)
+      else if (ts->kind == 8)
 	{
 	  if (flag_real8_kind == 4)
 	    ts->kind = 4;

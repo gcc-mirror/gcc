@@ -1,3 +1,4 @@
+/* { dg-do compile { target aarch64-*-* } } */
 /* { dg-additional-options "-O -fdump-rtl-cse1-all" } */
 
 __int128 __RTL (startwith ("vregs")) foo (void)

@@ -142,36 +142,126 @@ test_shortest_paths ()
   test_edge *ac = g.add_test_edge (a, c);
   test_edge *cd = g.add_test_edge (c, d);
   test_edge *be = g.add_test_edge (b, e);
-  g.add_test_edge (e, f);
+  test_edge *ef = g.add_test_edge (e, f);
   test_edge *cf = g.add_test_edge (c, f);
 
-  shortest_paths<test_graph_traits, test_path> sp (g, a);
+  /* Use "A" as the origin; all nodes should be reachable.  */
+  {
+    shortest_paths<test_graph_traits, test_path> sp (g, a,
+						     SPS_FROM_GIVEN_ORIGIN);
 
-  test_path path_to_a = sp.get_shortest_path (a);
-  ASSERT_EQ (path_to_a.m_edges.length (), 0);
+    test_path path_to_a = sp.get_shortest_path (a);
+    ASSERT_EQ (path_to_a.m_edges.length (), 0); /* Trivial path.  */
 
-  test_path path_to_b = sp.get_shortest_path (b);
-  ASSERT_EQ (path_to_b.m_edges.length (), 1);
-  ASSERT_EQ (path_to_b.m_edges[0], ab);
+    test_path path_to_b = sp.get_shortest_path (b);
+    ASSERT_EQ (path_to_b.m_edges.length (), 1);
+    ASSERT_EQ (path_to_b.m_edges[0], ab);
 
-  test_path path_to_c = sp.get_shortest_path (c);
-  ASSERT_EQ (path_to_c.m_edges.length (), 1);
-  ASSERT_EQ (path_to_c.m_edges[0], ac);
+    test_path path_to_c = sp.get_shortest_path (c);
+    ASSERT_EQ (path_to_c.m_edges.length (), 1);
+    ASSERT_EQ (path_to_c.m_edges[0], ac);
 
-  test_path path_to_d = sp.get_shortest_path (d);
-  ASSERT_EQ (path_to_d.m_edges.length (), 2);
-  ASSERT_EQ (path_to_d.m_edges[0], ac);
-  ASSERT_EQ (path_to_d.m_edges[1], cd);
+    test_path path_to_d = sp.get_shortest_path (d);
+    ASSERT_EQ (path_to_d.m_edges.length (), 2);
+    ASSERT_EQ (path_to_d.m_edges[0], ac);
+    ASSERT_EQ (path_to_d.m_edges[1], cd);
 
-  test_path path_to_e = sp.get_shortest_path (e);
-  ASSERT_EQ (path_to_e.m_edges.length (), 2);
-  ASSERT_EQ (path_to_e.m_edges[0], ab);
-  ASSERT_EQ (path_to_e.m_edges[1], be);
+    test_path path_to_e = sp.get_shortest_path (e);
+    ASSERT_EQ (path_to_e.m_edges.length (), 2);
+    ASSERT_EQ (path_to_e.m_edges[0], ab);
+    ASSERT_EQ (path_to_e.m_edges[1], be);
 
-  test_path path_to_f = sp.get_shortest_path (f);
-  ASSERT_EQ (path_to_f.m_edges.length (), 2);
-  ASSERT_EQ (path_to_f.m_edges[0], ac);
-  ASSERT_EQ (path_to_f.m_edges[1], cf);
+    test_path path_to_f = sp.get_shortest_path (f);
+    ASSERT_EQ (path_to_f.m_edges.length (), 2);
+    ASSERT_EQ (path_to_f.m_edges[0], ac);
+    ASSERT_EQ (path_to_f.m_edges[1], cf);
+  }
+
+  /* Verify that we gracefully handle an origin from which some nodes
+     aren't reachable.  */
+
+  /* Use "B" as the origin, so only E and F are reachable.  */
+  {
+    shortest_paths<test_graph_traits, test_path> sp (g, b,
+						     SPS_FROM_GIVEN_ORIGIN);
+
+    test_path path_to_a = sp.get_shortest_path (a);
+    ASSERT_EQ (path_to_a.m_edges.length (), 0); /* No path.  */
+
+    test_path path_to_b = sp.get_shortest_path (b);
+    ASSERT_EQ (path_to_b.m_edges.length (), 0); /* Trivial path.  */
+
+    test_path path_to_c = sp.get_shortest_path (c);
+    ASSERT_EQ (path_to_c.m_edges.length (), 0); /* No path.  */
+
+    test_path path_to_d = sp.get_shortest_path (d);
+    ASSERT_EQ (path_to_d.m_edges.length (), 0); /* No path.  */
+
+    test_path path_to_e = sp.get_shortest_path (e);
+    ASSERT_EQ (path_to_e.m_edges.length (), 1);
+    ASSERT_EQ (path_to_e.m_edges[0], be);
+
+    test_path path_to_f = sp.get_shortest_path (f);
+    ASSERT_EQ (path_to_f.m_edges.length (), 2);
+    ASSERT_EQ (path_to_f.m_edges[0], be);
+    ASSERT_EQ (path_to_f.m_edges[1], ef);
+  }
+
+  /* Use "C" as the origin, so only D and F are reachable.  */
+  {
+    shortest_paths<test_graph_traits, test_path> sp (g, c,
+						     SPS_FROM_GIVEN_ORIGIN);
+
+    test_path path_to_a = sp.get_shortest_path (a);
+    ASSERT_EQ (path_to_a.m_edges.length (), 0); /* No path.  */
+
+    test_path path_to_b = sp.get_shortest_path (b);
+    ASSERT_EQ (path_to_b.m_edges.length (), 0); /* No path.  */
+
+    test_path path_to_c = sp.get_shortest_path (c);
+    ASSERT_EQ (path_to_c.m_edges.length (), 0); /* Trivial path.  */
+
+    test_path path_to_d = sp.get_shortest_path (d);
+    ASSERT_EQ (path_to_d.m_edges.length (), 1);
+    ASSERT_EQ (path_to_d.m_edges[0], cd);
+
+    test_path path_to_e = sp.get_shortest_path (e);
+    ASSERT_EQ (path_to_e.m_edges.length (), 0); /* No path.  */
+
+    test_path path_to_f = sp.get_shortest_path (f);
+    ASSERT_EQ (path_to_f.m_edges.length (), 1);
+    ASSERT_EQ (path_to_f.m_edges[0], cf);
+  }
+
+  /* Test of SPS_TO_GIVEN_TARGET.  Use "F" as the target.  */
+  {
+    shortest_paths<test_graph_traits, test_path> sp (g, f,
+						     SPS_TO_GIVEN_TARGET);
+
+    test_path path_to_a = sp.get_shortest_path (a);
+    ASSERT_EQ (path_to_a.m_edges.length (), 2);
+    ASSERT_EQ (path_to_a.m_edges[0], ac);
+    ASSERT_EQ (path_to_a.m_edges[1], cf);
+
+    test_path path_to_b = sp.get_shortest_path (b);
+    ASSERT_EQ (path_to_b.m_edges.length (), 2);
+    ASSERT_EQ (path_to_b.m_edges[0], be);
+    ASSERT_EQ (path_to_b.m_edges[1], ef);
+
+    test_path path_to_c = sp.get_shortest_path (c);
+    ASSERT_EQ (path_to_c.m_edges.length (), 1);
+    ASSERT_EQ (path_to_c.m_edges[0], cf);
+
+    test_path path_to_d = sp.get_shortest_path (d);
+    ASSERT_EQ (path_to_d.m_edges.length (), 0); /* No path.  */
+
+    test_path path_to_e = sp.get_shortest_path (e);
+    ASSERT_EQ (path_to_e.m_edges.length (), 1);
+    ASSERT_EQ (path_to_e.m_edges[0], ef);
+
+    test_path path_to_f = sp.get_shortest_path (f);
+    ASSERT_EQ (path_to_f.m_edges.length (), 0);
+  }
 }
 
 /* Run all of the selftests within this file.  */

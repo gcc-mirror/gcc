@@ -128,6 +128,9 @@ public:
   get_attrs_tree (enum built_in_attribute attr);
 
   void
+  ensure_optimization_builtins_exist ();
+
+  void
   finish_playback (void);
 
 private:

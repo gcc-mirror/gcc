@@ -342,9 +342,6 @@ d_init_options_struct (gcc_options *opts)
   /* GCC options.  */
   opts->x_flag_exceptions = 1;
 
-  /* Avoid range issues for complex multiply and divide.  */
-  opts->x_flag_complex_method = 2;
-
   /* Unlike C, there is no global `errno' variable.  */
   opts->x_flag_errno_math = 0;
   opts->frontend_set_flag_errno_math = true;
@@ -1051,7 +1048,7 @@ d_parse_file (void)
       if (global.params.verbose)
 	message ("semantic  %s", m->toChars ());
 
-      m->semantic (NULL);
+      dsymbolSemantic (m, NULL);
     }
 
   /* Do deferred semantic analysis.  */
@@ -1083,7 +1080,7 @@ d_parse_file (void)
       if (global.params.verbose)
 	message ("semantic2 %s", m->toChars ());
 
-      m->semantic2 (NULL);
+      semantic2 (m, NULL);
     }
 
   Module::runDeferredSemantic2 ();
@@ -1099,7 +1096,7 @@ d_parse_file (void)
       if (global.params.verbose)
 	message ("semantic3 %s", m->toChars ());
 
-      m->semantic3 (NULL);
+      semantic3 (m, NULL);
     }
 
   Module::runDeferredSemantic3 ();

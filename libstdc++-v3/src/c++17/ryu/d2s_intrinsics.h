@@ -28,10 +28,6 @@
 #define HAS_64_BIT_INTRINSICS
 #endif
 
-#if defined(HAS_UINT128)
-typedef __uint128_t uint128_t;
-#endif
-
 #if defined(HAS_64_BIT_INTRINSICS)
 
 

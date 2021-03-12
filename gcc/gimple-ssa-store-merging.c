@@ -5230,7 +5230,7 @@ pass_store_merging::process_store (gimple *stmt)
 	  if (idx >= (unsigned)param_max_store_chains_to_track
 	      || (n_stores + (*e)->m_store_info.length ()
 		  > (unsigned)param_max_stores_to_track))
-	    terminate_and_process_chain (*e);
+	    ret |= terminate_and_process_chain (*e);
 	  else
 	    {
 	      n_stores += (*e)->m_store_info.length ();

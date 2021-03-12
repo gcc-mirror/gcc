@@ -121,7 +121,6 @@ vec<tree, va_gc> *unemitted_tinfo_decls;
    and are generated as needed. */
 static GTY (()) vec<tinfo_s, va_gc> *tinfo_descs;
 
-static tree ifnonnull (tree, tree, tsubst_flags_t);
 static tree tinfo_name (tree, bool);
 static tree build_dynamic_cast_1 (location_t, tree, tree, tsubst_flags_t);
 static tree throw_bad_cast (void);
@@ -529,16 +528,23 @@ get_typeid (tree type, tsubst_flags_t complain)
 /* Check whether TEST is null before returning RESULT.  If TEST is used in
    RESULT, it must have previously had a save_expr applied to it.  */
 
-static tree
-ifnonnull (tree test, tree result, tsubst_flags_t complain)
+tree
+build_if_nonnull (tree test, tree result, tsubst_flags_t complain)
 {
-  tree cond = build2 (NE_EXPR, boolean_type_node, test,
-		      cp_convert (TREE_TYPE (test), nullptr_node, complain));
+  tree null_ptr = cp_convert (TREE_TYPE (test), nullptr_node, complain);
+  tree cond = build2 (NE_EXPR, boolean_type_node, test, null_ptr);
+
   /* This is a compiler generated comparison, don't emit
      e.g. -Wnonnull-compare warning for it.  */
   TREE_NO_WARNING (cond) = 1;
-  return build3 (COND_EXPR, TREE_TYPE (result), cond, result,
-		 cp_convert (TREE_TYPE (result), nullptr_node, complain));
+
+  null_ptr = cp_convert (TREE_TYPE (result), nullptr_node, complain);
+  cond = build3 (COND_EXPR, TREE_TYPE (result), cond, result, null_ptr);
+
+  /* Likewise, don't emit -Wnonnull for using the result to call
+     a member function.  */
+  TREE_NO_WARNING (cond) = 1;
+  return cond;
 }
 
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
@@ -671,7 +677,7 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 	  expr1 = build_headof (expr);
 	  if (TREE_TYPE (expr1) != type)
 	    expr1 = build1 (NOP_EXPR, type, expr1);
-	  return ifnonnull (expr, expr1, complain);
+	  return build_if_nonnull (expr, expr1, complain);
 	}
       else
 	{
@@ -786,7 +792,7 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 
 	  /* Now back to the type we want from a void*.  */
 	  result = cp_convert (type, result, complain);
-	  return ifnonnull (expr, result, complain);
+	  return build_if_nonnull (expr, result, complain);
 	}
     }
   else

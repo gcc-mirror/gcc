@@ -1,3 +1,189 @@
+2021-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96374
+	* engine.cc (exploded_path::feasible_p): Move "snodes_visited" and
+	"model" locals into a new class feasibility_state.  Move heart
+	of per-edge processing into
+	feasibility_state::maybe_update_for_edge.
+	(feasibility_state::feasibility_state): New.
+	(feasibility_state::maybe_update_for_edge): New, based on loop
+	body in exploded_path::feasible_p.
+	* exploded-graph.h (class feasibility_state): New.
+
+2021-03-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* supergraph.h
+	(callgraph_superedge::dyn_cast_callgraph_superedge): New.
+	(call_superedge::dyn_cast_callgraph_superedge): Delete.
+	(return_superedge::dyn_cast_callgraph_superedge): Delete.
+
+2021-03-02  Martin Liska  <mliska@suse.cz>
+
+	* diagnostic-manager.cc (diagnostic_manager::emit_saved_diagnostics):
+	Do not pass engine.
+
+2021-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* engine.cc (exploded_path::exploded_path): New copy-ctor.
+	* exploded-graph.h (exploded_path::operator=): Drop decl.
+
+2021-02-26  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96374
+	* diagnostic-manager.cc (class epath_finder): New.
+	(epath_finder::get_best_epath): New.
+	(saved_diagnostic::saved_diagnostic): Update for replacement of
+	m_state and m_epath_length with m_best_epath.
+	(saved_diagnostic::~saved_diagnostic): Delete m_best_epath.
+	(saved_diagnostic::to_json): Update "path_length" to be optional.
+	(saved_diagnostic::calc_best_epath): New, based on
+	dedupe_winners::add and parts of dedupe_key::dedupe_key.
+	(saved_diagnostic::get_epath_length): New.
+	(saved_diagnostic::add_duplicate): New.
+	(dedupe_key::dedupe_key): Drop epath param.  Move invocation of
+	stmt_finder to saved_diagnostic::calc_best_epath.
+	(class dedupe_candidate): Delete.
+	(class dedupe_hash_map_traits): Update to use saved_diagnotic *
+	rather than dedupe_candidate * as the value_type/compare_type.
+	(dedupe_winners::~dedupe_winners): Don't delete the values.
+	(dedupe_winners::add): Convert param from shortest_exploded_paths to
+	epath_finder.  Drop "eg" param.  Drop dedupe_candidate, moving
+	path generation and feasiblity checking to
+	epath_finder::get_best_epath.  Update winner-selection for move
+	of epaths from dedupe_candidate to saved_diagnostic.
+	(dedupe_winners::emit_best):  Update for removal of class
+	dedupe_candidate.
+	(dedupe_winners::map_t): Update to use saved_diagnotic * rather
+	than dedupe_candidate * as the value_type/compare_type.
+	(diagnostic_manager::emit_saved_diagnostics): Move
+	shortest_exploded_paths instance into epath_finder and pass that
+	around instead.
+	(diagnostic_manager::emit_saved_diagnostic): Drop epath, stmt
+	and num_dupes params, instead getting these from the
+	saved_diagnostic.  Use correct location in inform_n call.
+	* diagnostic-manager.h (class epath_finder): New forward decl.
+	(saved_diagnostic::status): Drop enum.
+	(saved_diagnostic::set_feasible): Drop.
+	(saved_diagnostic::set_infeasible): Drop.
+	(saved_diagnostic::get_status): Drop.
+	(saved_diagnostic::calc_best_epath): New decl.
+	(saved_diagnostic::get_best_epath): New decl.
+	(saved_diagnostic::get_epath_length): New decl.
+	(saved_diagnostic::set_epath_length): Drop.
+	(saved_diagnostic::get_epath_length): Drop inline implementation.
+	(saved_diagnostic::add_duplicate): New.
+	(saved_diagnostic::get_num_dupes): New.
+	(saved_diagnostic::m_d): Document ownership.
+	(saved_diagnostic::m_trailing_eedge): Make const.
+	(saved_diagnostic::m_status): Drop field.
+	(saved_diagnostic::m_epath_length): Drop field.
+	(saved_diagnostic::m_best_epath): New field.
+	(saved_diagnostic::m_problem): Document ownership.
+	(saved_diagnostic::m_duplicates): New field.
+	(diagnostic_manager::emit_saved_diagnostic): Drop params epath,
+	stmt, and num_dupes.
+	* engine.cc (exploded_graph_annotator::print_saved_diagnostic):
+	Update for changes to saved_diagnostic class.
+	* exploded-graph.h (exploded_path::feasible_p): Drop unused
+	overloaded decl.
+
+2021-02-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99193
+	* region-model-impl-calls.cc (region_model::impl_call_realloc): New.
+	* region-model.cc (region_model::on_call_pre): Call it.
+	* region-model.h (region_model::impl_call_realloc): New decl.
+	* sm-malloc.cc (enum wording): Add WORDING_REALLOCATED.
+	(malloc_state_machine::m_realloc): New field.
+	(use_after_free::describe_state_change): Add case for
+	WORDING_REALLOCATED.
+	(use_after_free::describe_final_event): Likewise.
+	(malloc_state_machine::malloc_state_machine): Initialize
+	m_realloc.
+	(malloc_state_machine::on_stmt): Handle realloc by calling...
+	(malloc_state_machine::on_realloc_call): New.
+
+2021-02-22  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99196
+	* engine.cc (exploded_node::on_stmt): Provide terminate_path
+	flag as a way for on_call_pre to terminate the current analysis
+	path.
+	* region-model-impl-calls.cc (call_details::num_args): New.
+	(region_model::impl_call_error): New.
+	* region-model.cc (region_model::on_call_pre): Add param
+	"out_terminate_path".  Handle "error" and "error_at_line".
+	* region-model.h (call_details::num_args): New decl.
+	(region_model::on_call_pre): Add param "out_terminate_path".
+	(region_model::impl_call_error): New decl.
+
+2021-02-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98969
+	* constraint-manager.cc (dead_svalue_purger::should_purge_p):
+	Update for change to svalue::live_p.
+	* program-state.cc (sm_state_map::on_liveness_change): Likewise.
+	(program_state::detect_leaks): Likewise.
+	* region-model-reachability.cc (reachable_regions::init_cluster):
+	When dealing with a symbolic region, if the underlying pointer is
+	implicitly live, add the region to the reachable regions.
+	* region-model.cc (region_model::compare_initial_and_pointer):
+	Move logic for detecting initial values of params to
+	initial_svalue::initial_value_of_param_p.
+	* svalue.cc (svalue::live_p): Convert "live_svalues" from a
+	reference to a pointer; support it being NULL.
+	(svalue::implicitly_live_p): Convert first param from a
+	refererence to a pointer.
+	(region_svalue::implicitly_live_p): Likewise.
+	(constant_svalue::implicitly_live_p): Likewise.
+	(initial_svalue::implicitly_live_p): Likewise.  Treat the initial
+	values of params for the top level frame as still live.
+	(initial_svalue::initial_value_of_param_p): New function, taken
+	from a test in region_model::compare_initial_and_pointer.
+	(unaryop_svalue::implicitly_live_p): Convert first param from a
+	refererence to a pointer.
+	(binop_svalue::implicitly_live_p): Likewise.
+	(sub_svalue::implicitly_live_p): Likewise.
+	(unmergeable_svalue::implicitly_live_p): Likewise.
+	* svalue.h (svalue::live_p): Likewise.
+	(svalue::implicitly_live_p): Likewise.
+	(region_svalue::implicitly_live_p): Likewise.
+	(constant_svalue::implicitly_live_p): Likewise.
+	(initial_svalue::implicitly_live_p): Likewise.
+	(initial_svalue::initial_value_of_param_p): New decl.
+	(unaryop_svalue::implicitly_live_p): Convert first param from a
+	refererence to a pointer.
+	(binop_svalue::implicitly_live_p): Likewise.
+	(sub_svalue::implicitly_live_p): Likewise.
+	(unmergeable_svalue::implicitly_live_p): Likewise.
+
+2021-02-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98969
+	* engine.cc (readability): Add names for the various arbitrary
+	values.  Handle NOP_EXPR and INTEGER_CST.
+	(readability_comparator): Combine the readability tests for
+	tree and stack depth, rather than performing them sequentially.
+	(impl_region_model_context::on_state_leak): Strip off top-level
+	casts.
+	* region-model.cc (region_model::get_representative_path_var): Add
+	type-checking, moving the bulk of the implementation to...
+	(region_model::get_representative_path_var_1): ...here.  Respect
+	types in casts by recursing and re-adding the cast, rather than
+	merely stripping them off.  Use the correct type when handling
+	region_svalue.
+	(region_model::get_representative_tree): Strip off any top-level
+	cast.
+	(region_model::get_representative_path_var): Add type-checking,
+	moving the bulk of the implementation to...
+	(region_model::get_representative_path_var_1): ...here.
+	* region-model.h (region_model::get_representative_path_var_1):
+	New decl
+	(region_model::get_representative_path_var_1): New decl.
+	* store.cc (append_pathvar_with_type): New.
+	(binding_cluster::get_representative_path_vars): Cast path_vars
+	to the correct type when adding them to *OUT_PVS.
+
 2021-02-09  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98575

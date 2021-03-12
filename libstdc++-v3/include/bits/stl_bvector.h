@@ -573,18 +573,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return (__n + int(_S_word_bit) - 1) / int(_S_word_bit); }
     };
 
-_GLIBCXX_END_NAMESPACE_CONTAINER
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
-
-// Declare a partial specialization of vector<T, Alloc>.
-#include <bits/stl_vector.h>
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
-
   /**
    *  @brief  A specialization of vector for booleans which offers fixed time
    *  access to individual elements in any order.

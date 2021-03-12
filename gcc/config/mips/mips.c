@@ -2381,7 +2381,7 @@ mips_symbol_insns (enum mips_symbol_type type, machine_mode mode)
 {
   /* MSA LD.* and ST.* cannot support loading symbols via an immediate
      operand.  */
-  if (MSA_SUPPORTED_MODE_P (mode))
+  if (mode != MAX_MACHINE_MODE && MSA_SUPPORTED_MODE_P (mode))
     return 0;
 
   return mips_symbol_insns_1 (type, mode) * (TARGET_MIPS16 ? 2 : 1);
@@ -8400,7 +8400,7 @@ mips_expand_ext_as_unaligned_load (rtx dest, rtx src, HOST_WIDE_INT width,
   /* If TARGET_64BIT, the destination of a 32-bit "extz" or "extzv" will
      be a DImode, create a new temp and emit a zero extend at the end.  */
   if (GET_MODE (dest) == DImode
-      && REG_P (dest)
+      && (REG_P (dest) || (SUBREG_P (dest) && !MEM_P (SUBREG_REG (dest))))
       && GET_MODE_BITSIZE (SImode) == width)
     {
       dest1 = dest;

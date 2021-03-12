@@ -4011,8 +4011,7 @@ gcse_or_cprop_is_too_expensive (const char *pass)
     {
       warning (OPT_Wdisabled_optimization,
 	       "%s: %d basic blocks and %d registers; "
-	       "increase %<--param max-gcse-memory%> above "
-	       HOST_WIDE_INT_PRINT_UNSIGNED,
+	       "increase %<--param max-gcse-memory%> above %wu",
 	       pass, n_basic_blocks_for_fn (cfun), max_reg_num (),
 	       memory_request / 1024);
 

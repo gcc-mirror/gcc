@@ -37,6 +37,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     imports_(),
     imported_unsafe_(false),
     current_file_imported_unsafe_(false),
+    current_file_imported_embed_(false),
     packages_(),
     init_functions_(),
     var_deps_(),
@@ -468,6 +469,9 @@ Gogo::import_package(const std::string& filename,
       this->current_file_imported_unsafe_ = true;
       return;
     }
+
+  if (filename == "embed")
+    this->current_file_imported_embed_ = true;
 
   Imports::const_iterator p = this->imports_.find(filename);
   if (p != this->imports_.end())
@@ -2717,6 +2721,7 @@ Gogo::clear_file_scope()
     }
 
   this->current_file_imported_unsafe_ = false;
+  this->current_file_imported_embed_ = false;
 }
 
 // Queue up a type-specific hash function for later writing.  These
@@ -5898,7 +5903,7 @@ Function::export_func_with_type(Export* exp, const Named_object* no,
       exp->write_name(receiver->name());
       exp->write_escape(receiver->note());
       exp->write_c_string(" ");
-      exp->write_type(receiver->type());
+      exp->write_type(receiver->type()->unalias());
       exp->write_c_string(") ");
     }
 
@@ -7574,7 +7579,7 @@ Variable::flatten_init_expression(Gogo* gogo, Named_object* function,
 				  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 				  NULL)
 	  && this->init_->type()->interface_type() != NULL
-	  && !this->init_->is_variable())
+	  && !this->init_->is_multi_eval_safe())
 	{
 	  Temporary_statement* temp =
 	    Statement::make_temporary(NULL, this->init_, this->location_);

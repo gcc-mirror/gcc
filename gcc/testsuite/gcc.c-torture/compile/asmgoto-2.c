@@ -1,6 +1,5 @@
 /* This test should be switched off for a new target with less than 4 allocatable registers */
-/* { dg-do compile } */
-/* { dg-skip-if "Reload target" { hppa*-*-* } } */
+/* { dg-do compile { target lra } } */
 int
 foo (void)
 {

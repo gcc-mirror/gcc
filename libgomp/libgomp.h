@@ -481,7 +481,10 @@ enum gomp_task_kind
      but not yet completed.  Once that completes, they will be readded
      into the queues as GOMP_TASK_WAITING in order to perform the var
      unmapping.  */
-  GOMP_TASK_ASYNC_RUNNING
+  GOMP_TASK_ASYNC_RUNNING,
+  /* Task that has finished executing but is waiting for its
+     completion event to be fulfilled.  */
+  GOMP_TASK_DETACHED
 };
 
 struct gomp_task_depend_entry
@@ -537,6 +540,16 @@ struct gomp_task
      into the various queues to be scheduled.  */
   size_t num_dependees;
 
+  union {
+      /* Valid only if deferred_p is false.  */
+      gomp_sem_t *completion_sem;
+      /* Valid only if deferred_p is true.  Set to the team that executes the
+	 task if the task is detached and the completion event has yet to be
+	 fulfilled.  */
+      struct gomp_team *detach_team;
+    };
+  bool deferred_p;
+
   /* Priority of this task.  */
   int priority;
   /* The priority node for this task in each of the different queues.
@@ -544,9 +557,6 @@ struct gomp_task
      node.  Then we play offsetof() games to convert between pnode[]
      entries and the gomp_task in which they reside.  */
   struct priority_node pnode[3];
-
-  bool detach;
-  gomp_sem_t completion_sem;
 
   struct gomp_task_icv icv;
   void (*fn) (void *);
@@ -688,8 +698,7 @@ struct gomp_team
   int work_share_cancelled;
   int team_cancelled;
 
-  /* Tasks waiting for their completion event to be fulfilled.  */
-  struct priority_queue task_detach_queue;
+  /* Number of tasks waiting for their completion event to be fulfilled.  */
   unsigned int task_detach_count;
 
   /* This array contains structures for implicit tasks.  */

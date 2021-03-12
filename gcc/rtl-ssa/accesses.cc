@@ -26,6 +26,7 @@
 #include "rtl.h"
 #include "df.h"
 #include "rtl-ssa.h"
+#include "rtl-ssa/internals.h"
 #include "rtl-ssa/internals.inl"
 
 using namespace rtl_ssa;

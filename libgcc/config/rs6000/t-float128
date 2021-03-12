@@ -22,10 +22,23 @@ fp128_softfp_static_obj	= $(addsuffix -sw$(objext),$(fp128_softfp_funcs))
 fp128_softfp_shared_obj	= $(addsuffix -sw_s$(objext),$(fp128_softfp_funcs))
 fp128_softfp_obj	= $(fp128_softfp_static_obj) $(fp128_softfp_shared_obj)
 
+# Decimal <-> _Float128 conversions
+fp128_dec_funcs		= _kf_to_sd _kf_to_dd _kf_to_td \
+			  _sd_to_kf _dd_to_kf _td_to_kf
+
+# _Float128 to/from string conversions that must be compiled with IBM 128-bit
+# long double.
+fp128_decstr_funcs	= _strtokf _sprintfkf
+
+# Decimal <-> __ibm128 conversions
+ibm128_dec_funcs	= _tf_to_sd _tf_to_dd _tf_to_td \
+			  _sd_to_tf _dd_to_tf _td_to_tf
+
 # New functions for software emulation
 fp128_ppc_funcs		= floattikf floatuntikf fixkfti fixunskfti \
 			  extendkftf2-sw trunctfkf2-sw \
-			  sfp-exceptions _mulkc3 _divkc3 _powikf2
+			  sfp-exceptions _mulkc3 _divkc3 _powikf2 \
+			  $(fp128_dec_funcs) $(fp128_decstr_funcs)
 
 fp128_ppc_src		= $(addprefix $(srcdir)/config/rs6000/,$(addsuffix \
 				.c,$(fp128_ppc_funcs)))
@@ -68,6 +81,28 @@ $(fp128_softfp_obj)	 : INTERNAL_CFLAGS += $(FP128_CFLAGS_SW)
 $(fp128_ppc_obj)	 : INTERNAL_CFLAGS += $(FP128_CFLAGS_SW)
 $(fp128_obj)		 : $(fp128_includes)
 $(fp128_obj)		 : $(srcdir)/config/rs6000/quad-float128.h
+
+# Force the TF mode to/from decimal functions to be compiled with IBM long
+# double.  Add building the KF mode to/from decimal conversions with explict
+# IEEE long double.
+fp128_dec_objs		= $(addsuffix $(objext),$(fp128_dec_funcs)) \
+			  $(addsuffix _s$(objext),$(fp128_dec_funcs))
+
+fp128_decstr_objs	= $(addsuffix $(objext),$(fp128_decstr_funcs)) \
+			  $(addsuffix _s$(objext),$(fp128_decstr_funcs))
+
+ibm128_dec_objs		= $(addsuffix $(objext),$(ibm128_dec_funcs)) \
+			  $(addsuffix _s$(objext),$(ibm128_dec_funcs))
+
+FP128_CFLAGS_DECIMAL	= -mno-gnu-attribute -Wno-psabi -mabi=ieeelongdouble
+IBM128_CFLAGS_DECIMAL	= -mno-gnu-attribute -Wno-psabi -mabi=ibmlongdouble
+
+$(fp128_dec_objs)	: INTERNAL_CFLAGS += $(FP128_CFLAGS_DECIMAL)
+$(fp128_decstr_objs)	: INTERNAL_CFLAGS += $(IBM128_CFLAGS_DECIMAL)
+$(ibm128_dec_objs)	: INTERNAL_CFLAGS += $(IBM128_CFLAGS_DECIMAL)
+
+$(fp128_decstr_objs)	: $(srcdir)/config/rs6000/_strtokf.h \
+			  $(srcdir)/config/rs6000/_sprintfkf.h \
 
 $(fp128_softfp_src) : $(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@)) $(fp128_dep)
 	@src="$(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@))"; \

@@ -1492,7 +1492,7 @@ static const struct tune_params neoversev1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -12589,8 +12589,18 @@ cost_plus:
 	    *cost += rtx_cost (op0, mode, PLUS, 0, speed);
 
 	    if (speed)
-	      /* ADD (immediate).  */
-	      *cost += extra_cost->alu.arith;
+	      {
+		/* ADD (immediate).  */
+		*cost += extra_cost->alu.arith;
+
+		/* Some tunings prefer to not use the VL-based scalar ops.
+		   Increase the cost of the poly immediate to prevent their
+		   formation.  */
+		if (GET_CODE (op1) == CONST_POLY_INT
+		    && (aarch64_tune_params.extra_tuning_flags
+			& AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS))
+		  *cost += COSTS_N_INSNS (1);
+	      }
 	    return true;
 	  }
 
@@ -13492,6 +13502,9 @@ aarch64_init_builtins ()
 {
   aarch64_general_init_builtins ();
   aarch64_sve::init_builtins ();
+#ifdef SUBTARGET_INIT_BUILTINS
+  SUBTARGET_INIT_BUILTINS;
+#endif
 }
 
 /* Implement TARGET_FOLD_BUILTIN.  */
@@ -17263,7 +17276,7 @@ aarch64_composite_type_p (const_tree type,
    parameter passing registers are available).
 
    Upon successful return, *COUNT returns the number of needed registers,
-   *BASE_MODE returns the mode of the individual register and when IS_HAF
+   *BASE_MODE returns the mode of the individual register and when IS_HA
    is not NULL, *IS_HA indicates whether or not the argument is a homogeneous
    floating-point aggregate or a homogeneous short-vector aggregate.
 

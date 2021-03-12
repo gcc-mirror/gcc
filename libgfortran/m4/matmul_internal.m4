@@ -192,7 +192,8 @@ sinclude(`matmul_asm_'rtype_code`.m4')dnl
 	}
     }
 
-  if (rxstride == 1 && axstride == 1 && bxstride == 1)
+  if (rxstride == 1 && axstride == 1 && bxstride == 1
+      && GFC_DESCRIPTOR_RANK (b) != 1)
     {
       /* This block of code implements a tuned matmul, derived from
          Superscalar GEMM-based level 3 BLAS,  Beta version 0.1

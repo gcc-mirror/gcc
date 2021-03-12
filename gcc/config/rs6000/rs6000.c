@@ -1173,7 +1173,6 @@ static bool rs6000_secondary_reload_move (enum rs6000_reg_type,
 					  machine_mode,
 					  secondary_reload_info *,
 					  bool);
-static enum non_prefixed_form reg_to_non_prefixed (rtx reg, machine_mode mode);
 rtl_opt_pass *make_pass_analyze_swaps (gcc::context*);
 
 /* Hash table stuff for keeping track of TOC entries.  */
@@ -3413,9 +3412,10 @@ rs6000_builtin_mask_calculate (void)
    not such a great idea.  */
 
 static rtx_insn *
-rs6000_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
-		      vec<const char *> &/*constraints*/,
-		      vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+rs6000_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
+		      vec<machine_mode> & /*input_modes*/,
+		      vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
+		      HARD_REG_SET &clobbered_regs)
 {
   clobbers.safe_push (gen_rtx_REG (SImode, CA_REGNO));
   SET_HARD_REG_BIT (clobbered_regs, CA_REGNO);
@@ -4451,6 +4451,9 @@ rs6000_option_override_internal (bool global_init_p)
 
       rs6000_isa_flags &= ~OPTION_MASK_MMA;
     }
+
+  if (!TARGET_PCREL && TARGET_PCREL_OPT)
+    rs6000_isa_flags &= ~OPTION_MASK_PCREL_OPT;
 
   if (TARGET_DEBUG_REG || TARGET_DEBUG_TARGET)
     rs6000_print_isa_options (stderr, 0, "after subtarget", rs6000_isa_flags);
@@ -7852,7 +7855,8 @@ rs6000_special_round_type_align (tree type, unsigned int computed,
       while (TREE_CODE (type) == ARRAY_TYPE)
 	type = TREE_TYPE (type);
 
-      if (type != error_mark_node && TYPE_MODE (type) == DFmode)
+      if (type != error_mark_node
+	  && (TYPE_MODE (type) == DFmode || TYPE_MODE (type) == DCmode))
 	align = MAX (align, 64);
     }
 
@@ -8985,8 +8989,57 @@ rs6000_delegitimize_address (rtx orig_x)
 {
   rtx x, y, offset;
 
-  if (GET_CODE (orig_x) == UNSPEC && XINT (orig_x, 1) == UNSPEC_FUSION_GPR)
-    orig_x = XVECEXP (orig_x, 0, 0);
+  /* UNSPEC_FUSION_GPR is created by the peephole2 for power8 fusion.  It
+     encodes loading up the high part of the address of a TOC reference along
+     with a load of a GPR using the same base register used for the load.  We
+     return the original SYMBOL_REF.
+
+	(set (reg:INT1 <reg>
+	     (unspec:INT1 [<combined-address>] UNSPEC_FUSION_GPR)))
+
+     UNSPEC_PCREL_OPT_LD_ADDR is used by the power10 PCREL_OPT pass.  These
+     UNSPECs include the external SYMBOL_REF along with the value being loaded.
+     We return the original SYMBOL_REF.
+
+	(parallel [(set (reg:DI <base-reg>)
+			(unspec:DI [(symbol_ref <symbol>)
+				    (const_int <marker>)]
+				   UNSPEC_PCREL_OPT_LD_ADDR))
+		   (set (reg:DI <load-reg>)
+			(unspec:DI [(const_int 0)]
+				   UNSPEC_PCREL_OPT_LD_DATA))])
+
+     UNSPEC_PCREL_OPT_LD_SAME_REG is an alternative that is used if the
+     GPR being loaded is the same as the GPR used to hold the external address.
+
+	(set (reg:DI <base-reg>)
+	     (unspec:DI [(symbol_ref <symbol>)
+			 (const_int <marker>)]
+			UNSPEC_PCREL_OPT_LD_SAME_REG))
+
+     UNSPEC_PCREL_OPT_ST_ADDR is used by the power10 PCREL_OPT pass.  This
+     UNSPEC include the external SYMBOL_REF along with the value being loaded.
+     We return the original SYMBOL_REF.
+
+	(parallel [(set (reg:DI <base-reg>)
+			(unspec:DI [(symbol_ref <symbol>)
+				    (const_int <marker>)]
+				   UNSPEC_PCREL_OPT_ST_ADDR))
+		   (use (reg <store-reg>))])  */
+
+  if (GET_CODE (orig_x) == UNSPEC)
+    switch (XINT (orig_x, 1))
+      {
+      case UNSPEC_FUSION_GPR:
+      case UNSPEC_PCREL_OPT_LD_ADDR:
+      case UNSPEC_PCREL_OPT_LD_SAME_REG:
+      case UNSPEC_PCREL_OPT_ST_ADDR:
+	orig_x = XVECEXP (orig_x, 0, 0);
+	break;
+
+      default:
+	break;
+      }
 
   orig_x = delegitimize_mem_from_attrs (orig_x);
 
@@ -10059,6 +10112,9 @@ rs6000_const_vec (machine_mode mode)
 void
 rs6000_emit_le_vsx_permute (rtx dest, rtx source, machine_mode mode)
 {
+  gcc_assert (!altivec_indexed_or_indirect_operand (dest, mode));
+  gcc_assert (!altivec_indexed_or_indirect_operand (source, mode));
+
   /* Scalar permutations are easier to express in integer modes rather than
      floating-point modes, so cast them here.  We use V1TImode instead
      of TImode to ensure that the values don't go through GPRs.  */
@@ -21205,8 +21261,6 @@ rs6000_xcoff_file_start (void)
 			   main_input_filename, ".ro_");
   rs6000_gen_section_name (&xcoff_tls_data_section_name,
 			   main_input_filename, ".tls_");
-  rs6000_gen_section_name (&xcoff_tbss_section_name,
-			   main_input_filename, ".tbss_[UL]");
 
   fputs ("\t.file\t", asm_out_file);
   output_quoted_string (asm_out_file, main_input_filename);
@@ -23788,6 +23842,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "mulhw",			OPTION_MASK_MULHW,		false, true  },
   { "multiple",			OPTION_MASK_MULTIPLE,		false, true  },
   { "pcrel",			OPTION_MASK_PCREL,		false, true  },
+  { "pcrel-opt",		OPTION_MASK_PCREL_OPT,		false, true  },
   { "popcntb",			OPTION_MASK_POPCNTB,		false, true  },
   { "popcntd",			OPTION_MASK_POPCNTD,		false, true  },
   { "power8-fusion",		OPTION_MASK_P8_FUSION,		false, true  },
@@ -25932,6 +25987,32 @@ address_is_non_pfx_d_or_x (rtx addr, machine_mode mode,
   return false;
 }
 
+/* Return true if an REG with a given MODE is loaded from or stored into a MEM
+   location uses a non-prefixed D/DS/DQ-form address.  This is used to validate
+   the load or store with the PCREL_OPT optimization to make sure it is an
+   instruction that can be optimized.
+
+   We need to specify the MODE separately from the REG to allow for loads that
+   include zero/sign/float extension.  */
+
+bool
+pcrel_opt_valid_mem_p (rtx reg, machine_mode mode, rtx mem)
+{
+  /* If the instruction is indexed only like LFIWAX/LXSIWAX we cannot do the
+     PCREL_OPT optimization.  */
+  enum non_prefixed_form non_prefixed = reg_to_non_prefixed (reg, mode);
+  if (non_prefixed == NON_PREFIXED_X)
+    return false;
+
+  /* Check if this is a non-prefixed D/DS/DQ-form instruction.  */
+  rtx addr = XEXP (mem, 0);
+  enum insn_form iform = address_to_insn_form (addr, mode, non_prefixed);
+  return (iform == INSN_FORM_BASE_REG
+	  || iform == INSN_FORM_D
+	  || iform == INSN_FORM_DS
+	  || iform == INSN_FORM_DQ);
+}
+
 /* Helper function to see if we're potentially looking at lfs/stfs.
    - PARALLEL containing a SET and a CLOBBER
    - stfs:
@@ -25990,7 +26071,7 @@ is_lfs_stfs_insn (rtx_insn *insn)
 /* Helper function to take a REG and a MODE and turn it into the non-prefixed
    instruction format (D/DS/DQ) used for offset memory.  */
 
-static enum non_prefixed_form
+enum non_prefixed_form
 reg_to_non_prefixed (rtx reg, machine_mode mode)
 {
   /* If it isn't a register, use the defaults.  */
@@ -26191,7 +26272,7 @@ prefixed_paddi_p (rtx_insn *insn)
 
 /* Whether the next instruction needs a 'p' prefix issued before the
    instruction is printed out.  */
-static bool next_insn_prefixed_p;
+static bool prepend_p_to_next_insn;
 
 /* Define FINAL_PRESCAN_INSN if some processing needs to be done before
    outputting the assembler code.  On the PowerPC, we remember if the current
@@ -26202,7 +26283,7 @@ static bool next_insn_prefixed_p;
 void
 rs6000_final_prescan_insn (rtx_insn *insn, rtx [], int)
 {
-  next_insn_prefixed_p = (get_attr_prefixed (insn) != PREFIXED_NO);
+  prepend_p_to_next_insn = (get_attr_prefixed (insn) != PREFIXED_NO);
   return;
 }
 
@@ -26212,10 +26293,33 @@ rs6000_final_prescan_insn (rtx_insn *insn, rtx [], int)
 void
 rs6000_asm_output_opcode (FILE *stream)
 {
-  if (next_insn_prefixed_p)
-    fprintf (stream, "p");
+  if (prepend_p_to_next_insn)
+    {
+      fprintf (stream, "p");
+
+      /* Reset the flag in the case where there are separate insn lines in the
+	 sequence, so the 'p' is only emitted for the first line.  This shows up
+	 when we are doing the PCREL_OPT optimization, in that the label created
+	 with %r<n> would have a leading 'p' printed.  */
+      prepend_p_to_next_insn = false;
+    }
 
   return;
+}
+
+/* Emit the relocation to tie the next instruction to a previous instruction
+   that loads up an external address.  This is used to do the PCREL_OPT
+   optimization.  Note, the label is generated after the PLD of the got
+   pc-relative address to allow for the assembler to insert NOPs before the PLD
+   instruction.  The operand is a constant integer that is the label
+   number.  */
+
+void
+output_pcrel_opt_reloc (rtx label_num)
+{
+  rtx operands[1] = { label_num };
+  output_asm_insn (".reloc .Lpcrel%0-8,R_PPC64_PCREL_OPT,.-(.Lpcrel%0-8)",
+		   operands);
 }
 
 /* Adjust the length of an INSN.  LENGTH is the currently-computed length and

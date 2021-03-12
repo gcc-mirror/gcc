@@ -249,7 +249,7 @@ module_client::open_module_client (location_t loc, const char *o,
 		    if (port && endp != cptr + 1 && !*endp)
 		      {
 			name[colon] = 0;
-			int fd = 01;
+			int fd = -1;
 #if CODY_NETWORKING
 			fd = Cody::OpenInet6 (&errmsg, name.c_str (), port);
 #endif

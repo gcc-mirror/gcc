@@ -2525,6 +2525,9 @@ Target keeps null pointer checks, either due to the use of
 @item llvm_binutils
 Target is using an LLVM assembler and/or linker, instead of GNU Binutils.
 
+@item lra
+Target supports local register allocator (LRA).
+
 @item lto
 Compiler has been configured to support link-time optimization (LTO).
 

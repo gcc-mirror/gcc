@@ -84,6 +84,9 @@ proc prune_gcc_output { text } {
     # Ignore harmless warnings from Xcode 4.0.
     regsub -all "(^|\n)\[^\n\]*ld: warning: could not create compact unwind for\[^\n\]*" $text "" text
 
+    # Ignore dsymutil warning (tool bug is actually linker)
+    regsub -all "(^|\n)\[^\n\]*could not find object file symbol for symbol\[^\n\]*" $text "" text
+
     # If dg-enable-nn-line-numbers was provided, then obscure source-margin
     # line numbers by converting them to "NN" form.
     set text [maybe-handle-nn-line-numbers $text]

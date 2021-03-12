@@ -706,6 +706,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool _M_activate();
 
     // Must be called to complete an active execution.
+    // The argument is true if the active execution was a returning execution,
+    // false if it was an exceptional execution.
     void _M_finish(bool __returning) noexcept;
 
     // RAII helper to call _M_finish.
@@ -742,18 +744,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline bool
   once_flag::_M_activate()
   {
-    if (_M_once == _Bits::_Init)
+    if (_M_once == _Bits::_Init) [[__likely__]]
       {
 	_M_once = _Bits::_Active;
 	return true;
       }
-    else if (!_M_passive())
+    else if (_M_passive()) // Caller should have checked this already.
+      return false;
+    else
       __throw_system_error(EDEADLK);
   }
 
   inline void
-  once_flag::_M_finish(bool returning) noexcept
-  { _M_once = returning ? _Bits::_Done : _Bits::_Init; }
+  once_flag::_M_finish(bool __returning) noexcept
+  { _M_once = __returning ? _Bits::_Done : _Bits::_Init; }
 
 #elif defined _GLIBCXX_HAVE_LINUX_FUTEX
 

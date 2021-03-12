@@ -221,6 +221,8 @@ if test x$libgomp_offloaded_only = xyes; then
             [Define to 1 if building libgomp for an accelerator-only target.])
 fi
 
+AC_CHECK_SIZEOF([void *])
+
 m4_include([plugin/configfrag.ac])
 
 # Check for functions needed.

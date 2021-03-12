@@ -992,6 +992,20 @@
   return INTVAL (offset) % 4 == 0;
 })
 
+;; Return 1 if the operand is a memory operand that has a valid address for
+;; a DS-form instruction. I.e. the address has to be either just a register,
+;; or register + const where the two low order bits of const are zero.
+(define_predicate "ds_form_mem_operand"
+  (match_code "subreg,mem")
+{
+  if (!any_memory_operand (op, mode))
+    return false;
+
+  rtx addr = XEXP (op, 0);
+
+  return address_to_insn_form (addr, mode, NON_PREFIXED_DS) == INSN_FORM_DS;
+})
+
 ;; Return 1 if the operand, used inside a MEM, is a SYMBOL_REF.
 (define_predicate "symbol_ref_operand"
   (and (match_code "symbol_ref")
@@ -1903,4 +1917,25 @@
   (match_code "mem")
 {
   return address_is_prefixed (XEXP (op, 0), mode, NON_PREFIXED_DEFAULT);
+})
+
+;; Return true if the operand is a valid memory operand with a D-form
+;; address that could be merged with the load of a PC-relative external address
+;; with the PCREL_OPT optimization.  We don't check here whether or not the
+;; offset needs to be used in a DS-FORM (bottom 2 bits 0) or DQ-FORM (bottom 4
+;; bits 0) instruction.
+(define_predicate "d_form_memory"
+  (match_code "mem")
+{
+  if (!memory_operand (op, mode))
+    return false;
+
+  rtx addr = XEXP (op, 0);
+
+  if (REG_P (addr))
+    return true;
+  if (SUBREG_P (addr) && REG_P (SUBREG_REG (addr)))
+    return true;
+
+  return !indexed_address (addr, mode);
 })

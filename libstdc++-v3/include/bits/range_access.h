@@ -35,6 +35,7 @@
 #if __cplusplus >= 201103L
 #include <initializer_list>
 #include <type_traits>	    // common_type_t, make_signed_t
+#include <bits/stl_iterator.h> // reverse_iterator
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

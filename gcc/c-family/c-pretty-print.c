@@ -676,6 +676,7 @@ c_pretty_printer::direct_abstract_declarator (tree t)
     case VECTOR_TYPE:
     case COMPLEX_TYPE:
     case TYPE_DECL:
+    case ERROR_MARK:
       break;
 
     default:

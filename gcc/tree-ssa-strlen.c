@@ -1992,17 +1992,12 @@ maybe_warn_overflow (gimple *stmt, tree len, pointer_query &ptr_qry,
       && wi::leu_p (lenrng[1], spcrng[1]))
     return;
 
-  if (lenrng[0] == spcrng[1]
-      && (len != destsize
-	  || !si || !is_strlen_related_p (si->ptr, len)))
-    return;
-
   location_t loc = gimple_or_expr_nonartificial_location (stmt, dest);
   bool warned = false;
   if (wi::leu_p (lenrng[0], spcrng[1]))
     {
       if (len != destsize
-	  && (!si || !is_strlen_related_p (si->ptr, len)))
+	  && (!si || rawmem || !is_strlen_related_p (si->ptr, len)))
 	return;
 
       warned = (writefn
@@ -3083,7 +3078,12 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
   tree dst = gimple_call_arg (stmt, 0);
   tree src = gimple_call_arg (stmt, 1);
   tree len = gimple_call_arg (stmt, 2);
-  tree dstsize = NULL_TREE, srcsize = NULL_TREE;
+  /* An upper bound of the size of the destination.  */
+  tree dstsize = NULL_TREE;
+  /* The length of the destination and source strings (plus 1 for those
+     whose FULL_STRING_P is set, i.e., whose length is exact rather than
+     a lower bound).  */
+  tree dstlenp1 = NULL_TREE, srclenp1 = NULL_TREE;;
 
   int didx = get_stridx (dst);
   if (strinfo *sidst = didx > 0 ? get_strinfo (didx) : NULL)
@@ -3096,11 +3096,16 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
 	    {
 	      /* String is known to be nul-terminated.  */
 	      tree type = TREE_TYPE (sidst->nonzero_chars);
-	      dstsize = fold_build2 (PLUS_EXPR, type, sidst->nonzero_chars,
+	      dstlenp1 = fold_build2 (PLUS_EXPR, type, sidst->nonzero_chars,
 				     build_int_cst (type, 1));
 	    }
 	  else
-	    dstsize = sidst->nonzero_chars;
+	    dstlenp1 = sidst->nonzero_chars;
+	}
+      else if (TREE_CODE (sidst->ptr) == SSA_NAME)
+	{
+	  gimple *def_stmt = SSA_NAME_DEF_STMT (sidst->ptr);
+	  dstsize = gimple_call_alloc_size (def_stmt);
 	}
 
       dst = sidst->ptr;
@@ -3121,19 +3126,19 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
 	  if (sisrc->full_string_p)
 	    {
 	      tree type = TREE_TYPE (sisrc->nonzero_chars);
-	      srcsize = fold_build2 (PLUS_EXPR, type, sisrc->nonzero_chars,
+	      srclenp1 = fold_build2 (PLUS_EXPR, type, sisrc->nonzero_chars,
 				     build_int_cst (type, 1));
 	    }
 	  else
-	    srcsize = sisrc->nonzero_chars;
+	    srclenp1 = sisrc->nonzero_chars;
 	}
 
 	src = sisrc->ptr;
     }
   else
-    srcsize = NULL_TREE;
+    srclenp1 = NULL_TREE;
 
-  if (check_bounds_or_overlap (stmt, dst, src, dstsize, srcsize))
+  if (check_bounds_or_overlap (stmt, dst, src, dstlenp1, srclenp1))
     {
       gimple_set_no_warning (stmt, true);
       return;
@@ -3165,9 +3170,10 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
   /* When -Wstringop-truncation is set, try to determine truncation
      before diagnosing possible overflow.  Truncation is implied by
      the LEN argument being equal to strlen(SRC), regardless of
-     whether its value is known.  Otherwise, issue the more generic
-     -Wstringop-overflow which triggers for LEN arguments that in
-     any meaningful way depend on strlen(SRC).  */
+     whether its value is known.  Otherwise, when appending, or
+     when copying into a destination of known size, issue the more
+     generic -Wstringop-overflow which triggers for LEN arguments
+     that in any meaningful way depend on strlen(SRC).  */
   if (!append_p
       && sisrc == silen
       && is_strlen_related_p (src, len)
@@ -3176,11 +3182,19 @@ handle_builtin_stxncpy_strncat (bool append_p, gimple_stmt_iterator *gsi)
 		     "copying as many bytes from a string as its length",
 		     stmt, func))
     warned = true;
-  else if (silen && is_strlen_related_p (src, silen->ptr))
-    warned = warning_at (callloc, OPT_Wstringop_overflow_,
-			 "%G%qD specified bound depends on the length "
-			 "of the source argument",
-			 stmt, func);
+  else if ((append_p || !dstsize || len == dstlenp1)
+	   && silen && is_strlen_related_p (src, silen->ptr))
+    {
+      /* Issue -Wstringop-overflow when appending or when writing into
+	 a destination of a known size.  Otherwise, when copying into
+	 a destination of an unknown size, it's truncation.  */
+      int opt = (append_p || dstsize
+		 ? OPT_Wstringop_overflow_ : OPT_Wstringop_truncation);
+      warned = warning_at (callloc, opt,
+			   "%G%qD specified bound depends on the length "
+			   "of the source argument",
+			   stmt, func);
+    }
   if (warned)
     {
       location_t strlenloc = pss->second;
@@ -3216,7 +3230,7 @@ handle_builtin_memcpy (enum built_in_function bcode, gimple_stmt_iterator *gsi,
   if (olddsi != NULL
       && !integer_zerop (len))
     {
-      maybe_warn_overflow (stmt, len, ptr_qry, olddsi, false, false);
+      maybe_warn_overflow (stmt, len, ptr_qry, olddsi, false, true);
       adjust_last_stmt (olddsi, stmt, false, ptr_qry);
     }
 
@@ -3684,7 +3698,7 @@ handle_builtin_memset (gimple_stmt_iterator *gsi, bool *zero_write,
   tree memset_size = gimple_call_arg (memset_stmt, 2);
 
   /* Check for overflow.  */
-  maybe_warn_overflow (memset_stmt, memset_size, ptr_qry, NULL, false, false);
+  maybe_warn_overflow (memset_stmt, memset_size, ptr_qry, NULL, false, true);
 
   /* Bail when there is no statement associated with the destination
      (the statement may be null even when SI1->ALLOC is not).  */

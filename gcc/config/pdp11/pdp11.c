@@ -155,7 +155,7 @@ static bool pdp11_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int pdp11_addr_cost (rtx, machine_mode, addr_space_t, bool);
 static int pdp11_insn_cost (rtx_insn *insn, bool speed);
 static rtx_insn *pdp11_md_asm_adjust (vec<rtx> &, vec<rtx> &,
-				      vec<const char *> &,
+				      vec<machine_mode> &, vec<const char *> &,
 				      vec<rtx> &, HARD_REG_SET &);
 static bool pdp11_return_in_memory (const_tree, const_tree);
 static rtx pdp11_function_value (const_tree, const_tree, bool);
@@ -2139,9 +2139,10 @@ pdp11_cmp_length (rtx *operands, int words)
    compiler.  */
 
 static rtx_insn *
-pdp11_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
-		     vec<const char *> &/*constraints*/,
-		     vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+pdp11_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
+		     vec<machine_mode> & /*input_modes*/,
+		     vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
+		     HARD_REG_SET &clobbered_regs)
 {
   clobbers.safe_push (gen_rtx_REG (CCmode, CC_REGNUM));
   SET_HARD_REG_BIT (clobbered_regs, CC_REGNUM);

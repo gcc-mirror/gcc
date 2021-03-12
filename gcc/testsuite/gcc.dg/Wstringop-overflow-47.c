@@ -24,17 +24,22 @@ void nowarn_c32 (char c)
   sink (p);
 }
 
+/* The tests below fail as a result of the hack for PR 96963.  However,
+   with -Wall, the invalid stores are diagnosed by -Warray-bounds which
+   runs before vectorization and so doesn't need the hack.  If/when
+   -Warray changes to use compute_objsize() this will need adjusting.  */
+
 void warn_c32 (char c)
 {
-  extern char warn_a32[32];   // { dg-message "at offset 32 into destination object 'warn_a32' of size 32" "note" }
+  extern char warn_a32[32];   // { dg-message "at offset 32 into destination object 'warn_a32' of size 32" "pr97027" { xfail *-*-* } }
 
   void *p = warn_a32 + 1;
-  *(C32*)p = (C32){ c };      // { dg-warning "writing 1 byte into a region of size 0" }
+  *(C32*)p = (C32){ c };      // { dg-warning "writing 1 byte into a region of size 0" "pr97027" { xfail *-*-* } }
 
   /* Verify a local variable too. */
   char a32[32];
   p = a32 + 1;
-  *(C32*)p = (C32){ c };      // { dg-warning "writing 1 byte into a region of size 0" }
+  *(C32*)p = (C32){ c };      // { dg-warning "writing 1 byte into a region of size 0" "pr97027" { xfail *-*-* } }
   sink (p);
 }
 

@@ -38,6 +38,7 @@
 
 #include <chrono>
 #include <bits/move.h> // for std::swap
+#include <bits/std_mutex.h> // for std::defer_lock_t
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

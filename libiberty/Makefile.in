@@ -481,17 +481,23 @@ config.status: $(srcdir)/configure
 	$(SHELL) ./config.status --recheck
 
 AUTOCONF = autoconf
-configure_deps = $(srcdir)/aclocal.m4 \
+ACLOCAL = aclocal
+ACLOCAL_AMFLAGS = -I ../config -I ..
+aclocal_deps = \
 	$(srcdir)/../config/acx.m4 \
 	$(srcdir)/../config/cet.m4 \
 	$(srcdir)/../config/enable.m4 \
 	$(srcdir)/../config/no-executables.m4 \
 	$(srcdir)/../config/override.m4 \
 	$(srcdir)/../config/picflag.m4 \
-	$(srcdir)/../config/warnings.m4
+	$(srcdir)/../config/warnings.m4 \
+	$(srcdir)/acinclude.m4
 
-$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(configure_deps)
+$(srcdir)/configure: @MAINT@ $(srcdir)/configure.ac $(srcdir)/aclocal.m4
 	cd $(srcdir) && $(AUTOCONF)
+
+$(srcdir)/aclocal.m4: @MAINT@ $(aclocal_deps)
+	cd $(srcdir) && $(ACLOCAL) $(ACLOCAL_AMFLAGS)
 
 # Depending on config.h makes sure that config.status has been re-run
 # if needed.  This prevents problems with parallel builds, in case

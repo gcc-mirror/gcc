@@ -32,6 +32,8 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

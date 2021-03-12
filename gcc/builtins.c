@@ -1178,7 +1178,7 @@ warn_string_no_nul (location_t loc, tree expr, const char *fname,
 	}
       else
 	warned = warning_at (loc, OPT_Wstringop_overread,
-			     "%qsargument missing terminating nul",
+			     "%qs argument missing terminating nul",
 			     fname);
     }
 
@@ -4237,8 +4237,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 		    ? warning_at (loc, opt,
 				  (maybe
 				   ? G_("%K%qD may write %E or more bytes "
-					"into a region of size %E "
-					"the destination")
+					"into a region of size %E")
 				   : G_("%K%qD writing %E or more bytes "
 					"into a region of size %E overflows "
 					"the destination")),
@@ -4282,7 +4281,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 		  ? warning_n (loc, OPT_Wstringop_overread,
 			       tree_to_uhwi (range[0]),
 			       (maybe
-				? G_("%K%qD may reade %E byte from a region "
+				? G_("%K%qD may read %E byte from a region "
 				     "of size %E")
 				: G_("%K%qD reading %E byte from a region "
 				     "of size %E")),
@@ -4352,7 +4351,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
     warned = (func
 	      ? warning_n (loc, OPT_Wstringop_overread,
 			   tree_to_uhwi (range[0]),
-			   "%K%qD epecting %E byte in a region of size %E",
+			   "%K%qD expecting %E byte in a region of size %E",
 			   "%K%qD expecting %E bytes in a region of size %E",
 			   exp, func, range[0], size)
 	      : warning_n (loc, OPT_Wstringop_overread,
@@ -4380,7 +4379,7 @@ warn_for_access (location_t loc, tree func, tree exp, int opt, tree range[2],
 			    "a region of size %E",
 			    exp, func, range[0], range[1], size)
 	      : warning_at (loc, OPT_Wstringop_overread,
-			    "%Kexpectting between %E and %E bytes in "
+			    "%Kexpecting between %E and %E bytes in "
 			    "a region of size %E",
 			    exp, range[0], range[1], size));
 
@@ -5210,7 +5209,7 @@ gimple_call_return_array (gimple *stmt, offset_int offrng[2],
   return NULL_TREE;
 }
 
-/* A helper of compute_objsize() to determine the size from an assignment
+/* A helper of compute_objsize_r() to determine the size from an assignment
    statement STMT with the RHS of either MIN_EXPR or MAX_EXPR.  */
 
 static bool
@@ -5285,6 +5284,129 @@ handle_min_max_size (gimple *stmt, int ostype, access_ref *pref,
       pref->offrng[0] = aref[i0].offrng[0];
       pref->offrng[1] = aref[i0].offrng[1];
     }
+  return true;
+}
+
+/* A helper of compute_objsize_r() to determine the size from ARRAY_REF
+   AREF.  ADDR is true if PTR is the operand of ADDR_EXPR.  Return true
+   on success and false on failure.  */
+
+static bool
+handle_array_ref (tree aref, bool addr, int ostype, access_ref *pref,
+		  ssa_name_limit_t &snlim, pointer_query *qry)
+{
+  gcc_assert (TREE_CODE (aref) == ARRAY_REF);
+
+  ++pref->deref;
+
+  tree arefop = TREE_OPERAND (aref, 0);
+  tree reftype = TREE_TYPE (arefop);
+  if (!addr && TREE_CODE (TREE_TYPE (reftype)) == POINTER_TYPE)
+    /* Avoid arrays of pointers.  FIXME: Hande pointers to arrays
+       of known bound.  */
+    return false;
+
+  if (!compute_objsize_r (arefop, ostype, pref, snlim, qry))
+    return false;
+
+  offset_int orng[2];
+  tree off = pref->eval (TREE_OPERAND (aref, 1));
+  range_query *const rvals = qry ? qry->rvals : NULL;
+  if (!get_offset_range (off, NULL, orng, rvals))
+    {
+      /* Set ORNG to the maximum offset representable in ptrdiff_t.  */
+      orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+      orng[0] = -orng[1] - 1;
+    }
+
+  /* Convert the array index range determined above to a byte
+     offset.  */
+  tree lowbnd = array_ref_low_bound (aref);
+  if (!integer_zerop (lowbnd) && tree_fits_uhwi_p (lowbnd))
+    {
+      /* Adjust the index by the low bound of the array domain
+	 (normally zero but 1 in Fortran).  */
+      unsigned HOST_WIDE_INT lb = tree_to_uhwi (lowbnd);
+      orng[0] -= lb;
+      orng[1] -= lb;
+    }
+
+  tree eltype = TREE_TYPE (aref);
+  tree tpsize = TYPE_SIZE_UNIT (eltype);
+  if (!tpsize || TREE_CODE (tpsize) != INTEGER_CST)
+    {
+      pref->add_max_offset ();
+      return true;
+    }
+
+  offset_int sz = wi::to_offset (tpsize);
+  orng[0] *= sz;
+  orng[1] *= sz;
+
+  if (ostype && TREE_CODE (eltype) == ARRAY_TYPE)
+    {
+      /* Except for the permissive raw memory functions which use
+	 the size of the whole object determined above, use the size
+	 of the referenced array.  Because the overall offset is from
+	 the beginning of the complete array object add this overall
+	 offset to the size of array.  */
+      offset_int sizrng[2] =
+	{
+	 pref->offrng[0] + orng[0] + sz,
+	 pref->offrng[1] + orng[1] + sz
+	};
+      if (sizrng[1] < sizrng[0])
+	std::swap (sizrng[0], sizrng[1]);
+      if (sizrng[0] >= 0 && sizrng[0] <= pref->sizrng[0])
+	pref->sizrng[0] = sizrng[0];
+      if (sizrng[1] >= 0 && sizrng[1] <= pref->sizrng[1])
+	pref->sizrng[1] = sizrng[1];
+    }
+
+  pref->add_offset (orng[0], orng[1]);
+  return true;
+}
+
+/* A helper of compute_objsize_r() to determine the size from MEM_REF
+   MREF.  Return true on success and false on failure.  */
+
+static bool
+handle_mem_ref (tree mref, int ostype, access_ref *pref,
+		ssa_name_limit_t &snlim, pointer_query *qry)
+{
+  gcc_assert (TREE_CODE (mref) == MEM_REF);
+
+  ++pref->deref;
+
+  if (VECTOR_TYPE_P (TREE_TYPE (mref)))
+    {
+      /* Hack: Give up for MEM_REFs of vector types; those may be
+	 synthesized from multiple assignments to consecutive data
+	 members (see PR 93200 and 96963).
+	 FIXME: Vectorized assignments should only be present after
+	 vectorization so this hack is only necessary after it has
+	 run and could be avoided in calls from prior passes (e.g.,
+	 tree-ssa-strlen.c).
+	 FIXME: Deal with this more generally, e.g., by marking up
+	 such MEM_REFs at the time they're created.  */
+      return false;
+    }
+
+  tree mrefop = TREE_OPERAND (mref, 0);
+  if (!compute_objsize_r (mrefop, ostype, pref, snlim, qry))
+    return false;
+
+  offset_int orng[2];
+  tree off = pref->eval (TREE_OPERAND (mref, 1));
+  range_query *const rvals = qry ? qry->rvals : NULL;
+  if (!get_offset_range (off, NULL, orng, rvals))
+    {
+      /* Set ORNG to the maximum offset representable in ptrdiff_t.  */
+      orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
+      orng[0] = -orng[1] - 1;
+    }
+
+  pref->add_offset (orng[0], orng[1]);
   return true;
 }
 
@@ -5420,92 +5542,11 @@ compute_objsize_r (tree ptr, int ostype, access_ref *pref,
       return true;
     }
 
-  if (code == ARRAY_REF || code == MEM_REF)
-    {
-      ++pref->deref;
+  if (code == ARRAY_REF)
+    return handle_array_ref (ptr, addr, ostype, pref, snlim, qry);
 
-      tree ref = TREE_OPERAND (ptr, 0);
-      tree reftype = TREE_TYPE (ref);
-      if (!addr && code == ARRAY_REF
-	  && TREE_CODE (TREE_TYPE (reftype)) == POINTER_TYPE)
-	/* Avoid arrays of pointers.  FIXME: Hande pointers to arrays
-	   of known bound.  */
-	return false;
-
-      if (code == MEM_REF && TREE_CODE (reftype) == POINTER_TYPE)
-	{
-	  /* Give up for MEM_REFs of vector types; those may be synthesized
-	     from multiple assignments to consecutive data members.  See PR
-	     93200.
-	     FIXME: Deal with this more generally, e.g., by marking up such
-	     MEM_REFs at the time they're created.  */
-	  reftype = TREE_TYPE (reftype);
-	  if (TREE_CODE (reftype) == VECTOR_TYPE)
-	    return false;
-	}
-
-      if (!compute_objsize_r (ref, ostype, pref, snlim, qry))
-	return false;
-
-      offset_int orng[2];
-      tree off = pref->eval (TREE_OPERAND (ptr, 1));
-      if (!get_offset_range (off, NULL, orng, rvals))
-	{
-	  /* Set ORNG to the maximum offset representable in ptrdiff_t.  */
-	  orng[1] = wi::to_offset (TYPE_MAX_VALUE (ptrdiff_type_node));
-	  orng[0] = -orng[1] - 1;
-	}
-
-      if (TREE_CODE (ptr) == ARRAY_REF)
-	{
-	  /* Convert the array index range determined above to a byte
-	     offset.  */
-	  tree lowbnd = array_ref_low_bound (ptr);
-	  if (!integer_zerop (lowbnd) && tree_fits_uhwi_p (lowbnd))
-	    {
-	      /* Adjust the index by the low bound of the array domain
-		 (normally zero but 1 in Fortran).  */
-	      unsigned HOST_WIDE_INT lb = tree_to_uhwi (lowbnd);
-	      orng[0] -= lb;
-	      orng[1] -= lb;
-	    }
-
-	  tree eltype = TREE_TYPE (ptr);
-	  tree tpsize = TYPE_SIZE_UNIT (eltype);
-	  if (!tpsize || TREE_CODE (tpsize) != INTEGER_CST)
-	    {
-	      pref->add_max_offset ();
-	      return true;
-	    }
-
-	  offset_int sz = wi::to_offset (tpsize);
-	  orng[0] *= sz;
-	  orng[1] *= sz;
-
-	  if (ostype && TREE_CODE (eltype) == ARRAY_TYPE)
-	    {
-	      /* Except for the permissive raw memory functions which use
-		 the size of the whole object determined above, use the size
-		 of the referenced array.  Because the overall offset is from
-		 the beginning of the complete array object add this overall
-		 offset to the size of array.  */
-	      offset_int sizrng[2] =
-		{
-		 pref->offrng[0] + orng[0] + sz,
-		 pref->offrng[1] + orng[1] + sz
-		};
-	      if (sizrng[1] < sizrng[0])
-		std::swap (sizrng[0], sizrng[1]);
-	      if (sizrng[0] >= 0 && sizrng[0] <= pref->sizrng[0])
-		pref->sizrng[0] = sizrng[0];
-	      if (sizrng[1] >= 0 && sizrng[1] <= pref->sizrng[1])
-		pref->sizrng[1] = sizrng[1];
-	    }
-	}
-
-      pref->add_offset (orng[0], orng[1]);
-      return true;
-    }
+  if (code == MEM_REF)
+    return handle_mem_ref (ptr, ostype, pref, snlim, qry);
 
   if (code == TARGET_MEM_REF)
     {
@@ -12597,7 +12638,8 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
       arg = CALL_EXPR_ARG (exp, 0);
     }
 
-  if (TREE_CODE (arg) == SSA_NAME)
+  if (TREE_CODE (arg) == SSA_NAME
+      && SSA_NAME_VAR (arg))
     arg = SSA_NAME_VAR (arg);
 
   /* We destructively modify the call to be __builtin_va_start (ap, 0)

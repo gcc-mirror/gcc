@@ -244,8 +244,9 @@ am__objects_4 = runtime/aeshash.lo runtime/go-assert.lo \
 	runtime/go-caller.lo runtime/go-callers.lo runtime/go-cgo.lo \
 	runtime/go-construct-map.lo runtime/go-ffi.lo \
 	runtime/go-fieldtrack.lo runtime/go-matherr.lo \
-	runtime/go-memclr.lo runtime/go-memequal.lo \
-	runtime/go-nanotime.lo runtime/go-now.lo runtime/go-nosys.lo \
+	runtime/go-memclr.lo runtime/go-memmove.lo \
+	runtime/go-memequal.lo runtime/go-nanotime.lo \
+	runtime/go-now.lo runtime/go-nosys.lo \
 	runtime/go-reflect-call.lo runtime/go-setenv.lo \
 	runtime/go-signal.lo runtime/go-unsafe-pointer.lo \
 	runtime/go-unsetenv.lo runtime/go-unwind.lo \
@@ -906,6 +907,7 @@ runtime_files = \
 	runtime/go-fieldtrack.c \
 	runtime/go-matherr.c \
 	runtime/go-memclr.c \
+	runtime/go-memmove.c \
 	runtime/go-memequal.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
@@ -1367,6 +1369,8 @@ runtime/go-matherr.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-memclr.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/go-memmove.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-memequal.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-nanotime.lo: runtime/$(am__dirstamp) \
@@ -1435,6 +1439,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-matherr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memclr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memequal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memmove.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nanotime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nosys.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-now.Plo@am__quote@

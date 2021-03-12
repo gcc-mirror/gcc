@@ -402,16 +402,9 @@ build_base_path (enum tree_code code,
   if (TREE_SIDE_EFFECTS (expr) && (null_test || virtual_access))
     expr = save_expr (expr);
 
-  /* Now that we've saved expr, build the real null test.  */
+  /* Store EXPR and build the real null test just before returning.  */
   if (null_test)
-    {
-      tree zero = cp_convert (TREE_TYPE (expr), nullptr_node, complain);
-      null_test = build2_loc (input_location, NE_EXPR, boolean_type_node,
-			      expr, zero);
-      /* This is a compiler generated comparison, don't emit
-	 e.g. -Wnonnull-compare warning for it.  */
-      TREE_NO_WARNING (null_test) = 1;
-    }
+    null_test = expr;
 
   /* If this is a simple base reference, express it as a COMPONENT_REF.  */
   if (code == PLUS_EXPR && !virtual_access
@@ -516,14 +509,8 @@ build_base_path (enum tree_code code,
 
  out:
   if (null_test)
-    {
-      expr = fold_build3_loc (input_location, COND_EXPR, target_type, null_test,
-			      expr, build_zero_cst (target_type));
-      /* Avoid warning for the whole conditional expression (in addition
-	 to NULL_TEST itself -- see above) in case the result is used in
-	 a nonnull context that the front end -Wnonnull checks.  */
-      TREE_NO_WARNING (expr) = 1;
-    }
+    /* Wrap EXPR in a null test.  */
+    expr = build_if_nonnull (null_test, expr, complain);
 
   return expr;
 }
@@ -2005,35 +1992,45 @@ determine_primary_bases (tree t)
 /* Update the variant types of T.  */
 
 void
-fixup_type_variants (tree t)
+fixup_type_variants (tree type)
 {
-  tree variants;
-
-  if (!t)
+  if (!type)
     return;
 
-  for (variants = TYPE_NEXT_VARIANT (t);
-       variants;
-       variants = TYPE_NEXT_VARIANT (variants))
+  for (tree variant = TYPE_NEXT_VARIANT (type);
+       variant;
+       variant = TYPE_NEXT_VARIANT (variant))
     {
       /* These fields are in the _TYPE part of the node, not in
 	 the TYPE_LANG_SPECIFIC component, so they are not shared.  */
-      TYPE_HAS_USER_CONSTRUCTOR (variants) = TYPE_HAS_USER_CONSTRUCTOR (t);
-      TYPE_NEEDS_CONSTRUCTING (variants) = TYPE_NEEDS_CONSTRUCTING (t);
-      TYPE_HAS_NONTRIVIAL_DESTRUCTOR (variants)
-	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t);
+      TYPE_HAS_USER_CONSTRUCTOR (variant) = TYPE_HAS_USER_CONSTRUCTOR (type);
+      TYPE_NEEDS_CONSTRUCTING (variant) = TYPE_NEEDS_CONSTRUCTING (type);
+      TYPE_HAS_NONTRIVIAL_DESTRUCTOR (variant)
+	= TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type);
 
-      TYPE_POLYMORPHIC_P (variants) = TYPE_POLYMORPHIC_P (t);
-      CLASSTYPE_FINAL (variants) = CLASSTYPE_FINAL (t);
+      TYPE_POLYMORPHIC_P (variant) = TYPE_POLYMORPHIC_P (type);
+      CLASSTYPE_FINAL (variant) = CLASSTYPE_FINAL (type);
 
-      TYPE_BINFO (variants) = TYPE_BINFO (t);
+      TYPE_BINFO (variant) = TYPE_BINFO (type);
 
       /* Copy whatever these are holding today.  */
-      TYPE_VFIELD (variants) = TYPE_VFIELD (t);
-      TYPE_FIELDS (variants) = TYPE_FIELDS (t);
+      TYPE_VFIELD (variant) = TYPE_VFIELD (type);
+      TYPE_FIELDS (variant) = TYPE_FIELDS (type);
 
-      TYPE_SIZE (variants) = TYPE_SIZE (t);
-      TYPE_SIZE_UNIT (variants) = TYPE_SIZE_UNIT (t);
+      TYPE_SIZE (variant) = TYPE_SIZE (type);
+      TYPE_SIZE_UNIT (variant) = TYPE_SIZE_UNIT (type);
+
+      if (!TYPE_USER_ALIGN (variant)
+	  || TYPE_NAME (variant) == TYPE_NAME (type)
+	  || TYPE_ALIGN_RAW (variant) < TYPE_ALIGN_RAW (type))
+	{
+	  TYPE_ALIGN_RAW (variant) =  TYPE_ALIGN_RAW (type);
+	  TYPE_USER_ALIGN (variant) = TYPE_USER_ALIGN (type);
+	}
+
+      TYPE_PRECISION (variant) = TYPE_PRECISION (type);
+      TYPE_MODE_RAW (variant) = TYPE_MODE_RAW (type);
+      TYPE_EMPTY_P (variant) = TYPE_EMPTY_P (type);
     }
 }
 

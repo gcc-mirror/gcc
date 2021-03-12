@@ -252,7 +252,7 @@ build_zero_init_1 (tree type, tree nelts, bool static_storage_p,
 				     build_one_cst (TREE_TYPE (nelts)));
       /* Treat flexible array members like [0] arrays.  */
       else if (TYPE_DOMAIN (type) == NULL_TREE)
-	max_index = build_minus_one_cst (sizetype);
+	return NULL_TREE;
       else
 	max_index = array_type_nelts (type);
 
@@ -2116,18 +2116,6 @@ is_class_type (tree type, int or_else)
       return 0;
     }
   return 1;
-}
-
-tree
-get_type_value (tree name)
-{
-  if (name == error_mark_node)
-    return NULL_TREE;
-
-  if (IDENTIFIER_HAS_TYPE_VALUE (name))
-    return IDENTIFIER_TYPE_VALUE (name);
-  else
-    return NULL_TREE;
 }
 
 /* Build a reference to a member of an aggregate.  This is not a C++

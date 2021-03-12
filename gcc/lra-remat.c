@@ -651,7 +651,11 @@ calculate_local_reg_remat_bb_data (void)
 
 
 
-/* Return true if REG overlaps an input operand of INSN.  */
+/* Return true if REG overlaps an input operand or non-input hard register of
+   INSN.  Basically the function returns false if we can move rematerialization
+   candidate INSN through another insn with output REG or dead input REG (we
+   consider it to avoid extending reg live range) with possible output pseudo
+   renaming in INSN.  */
 static bool
 reg_overlap_for_remat_p (lra_insn_reg *reg, rtx_insn *insn)
 {
@@ -675,10 +679,11 @@ reg_overlap_for_remat_p (lra_insn_reg *reg, rtx_insn *insn)
 	 reg2 != NULL;
 	 reg2 = reg2->next)
       {
-	if (reg2->type != OP_IN)
-	  continue;
-	unsigned regno2 = reg2->regno;
 	int nregs2;
+	unsigned regno2 = reg2->regno;
+
+	if (reg2->type != OP_IN && regno2 >= FIRST_PSEUDO_REGISTER)
+	  continue;
 
 	if (regno2 >= FIRST_PSEUDO_REGISTER && reg_renumber[regno2] >= 0)
 	  regno2 = reg_renumber[regno2];

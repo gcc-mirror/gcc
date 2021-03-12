@@ -246,15 +246,18 @@ svalue::can_merge_p (const svalue *other,
 }
 
 /* Determine if this svalue is either within LIVE_SVALUES, or is implicitly
-   live with respect to LIVE_SVALUES and MODEL.  */
+   live with respect to LIVE_SVALUES and MODEL.
+   LIVE_SVALUES can be NULL, in which case determine if this svalue is
+   intrinsically live.  */
 
 bool
-svalue::live_p (const svalue_set &live_svalues,
+svalue::live_p (const svalue_set *live_svalues,
 		const region_model *model) const
 {
   /* Determine if SVAL is explicitly live.  */
-  if (const_cast<svalue_set &> (live_svalues).contains (this))
-    return true;
+  if (live_svalues)
+    if (const_cast<svalue_set *> (live_svalues)->contains (this))
+      return true;
 
   /* Otherwise, determine if SVAL is implicitly live due to being made of
      other live svalues.  */
@@ -264,7 +267,7 @@ svalue::live_p (const svalue_set &live_svalues,
 /* Base implementation of svalue::implicitly_live_p.  */
 
 bool
-svalue::implicitly_live_p (const svalue_set &, const region_model *) const
+svalue::implicitly_live_p (const svalue_set *, const region_model *) const
 {
   return false;
 }
@@ -512,7 +515,7 @@ region_svalue::accept (visitor *v) const
 /* Implementation of svalue::implicitly_live_p vfunc for region_svalue.  */
 
 bool
-region_svalue::implicitly_live_p (const svalue_set &,
+region_svalue::implicitly_live_p (const svalue_set *,
 				  const region_model *model) const
 {
   /* Pointers into clusters that have escaped should be treated as live.  */
@@ -609,7 +612,7 @@ constant_svalue::accept (visitor *v) const
    Constants are implicitly live.  */
 
 bool
-constant_svalue::implicitly_live_p (const svalue_set &,
+constant_svalue::implicitly_live_p (const svalue_set *,
 				    const region_model *) const
 {
   return true;
@@ -749,7 +752,7 @@ initial_svalue::accept (visitor *v) const
 /* Implementation of svalue::implicitly_live_p vfunc for initial_svalue.  */
 
 bool
-initial_svalue::implicitly_live_p (const svalue_set &,
+initial_svalue::implicitly_live_p (const svalue_set *,
 				   const region_model *model) const
 {
   /* This svalue may be implicitly live if the region still implicitly
@@ -765,6 +768,31 @@ initial_svalue::implicitly_live_p (const svalue_set &,
 	return true;
     }
 
+  /* Assume that the initial values of params for the top level frame
+     are still live, because (presumably) they're still
+     live in the external caller.  */
+  if (initial_value_of_param_p ())
+    if (const frame_region *frame_reg = m_reg->maybe_get_frame_region ())
+      if (frame_reg->get_calling_frame () == NULL)
+	return true;
+
+  return false;
+}
+
+/* Return true if this is the initial value of a function parameter.  */
+
+bool
+initial_svalue::initial_value_of_param_p () const
+{
+  if (tree reg_decl = m_reg->maybe_get_decl ())
+    if (TREE_CODE (reg_decl) == SSA_NAME)
+      {
+	tree ssa_name = reg_decl;
+	if (SSA_NAME_IS_DEFAULT_DEF (ssa_name)
+	    && SSA_NAME_VAR (ssa_name)
+	    && TREE_CODE (SSA_NAME_VAR (ssa_name)) == PARM_DECL)
+	  return true;
+      }
   return false;
 }
 
@@ -816,7 +844,7 @@ unaryop_svalue::accept (visitor *v) const
 /* Implementation of svalue::implicitly_live_p vfunc for unaryop_svalue.  */
 
 bool
-unaryop_svalue::implicitly_live_p (const svalue_set &live_svalues,
+unaryop_svalue::implicitly_live_p (const svalue_set *live_svalues,
 				   const region_model *model) const
 {
   return get_arg ()->live_p (live_svalues, model);
@@ -862,7 +890,7 @@ binop_svalue::accept (visitor *v) const
 /* Implementation of svalue::implicitly_live_p vfunc for binop_svalue.  */
 
 bool
-binop_svalue::implicitly_live_p (const svalue_set &live_svalues,
+binop_svalue::implicitly_live_p (const svalue_set *live_svalues,
 				 const region_model *model) const
 {
   return (get_arg0 ()->live_p (live_svalues, model)
@@ -919,7 +947,7 @@ sub_svalue::accept (visitor *v) const
 /* Implementation of svalue::implicitly_live_p vfunc for sub_svalue.  */
 
 bool
-sub_svalue::implicitly_live_p (const svalue_set &live_svalues,
+sub_svalue::implicitly_live_p (const svalue_set *live_svalues,
 			       const region_model *model) const
 {
   return get_parent ()->live_p (live_svalues, model);
@@ -1136,7 +1164,7 @@ unmergeable_svalue::accept (visitor *v) const
 /* Implementation of svalue::implicitly_live_p vfunc for unmergeable_svalue.  */
 
 bool
-unmergeable_svalue::implicitly_live_p (const svalue_set &live_svalues,
+unmergeable_svalue::implicitly_live_p (const svalue_set *live_svalues,
 				       const region_model *model) const
 {
   return get_arg ()->live_p (live_svalues, model);

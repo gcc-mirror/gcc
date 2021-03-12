@@ -390,7 +390,10 @@ emission of floating point pcs attributes.  */
    --with-float is ignored if -mfloat-abi is specified.
    --with-fpu is ignored if -mfpu is specified.
    --with-abi is ignored if -mabi is specified.
-   --with-tls is ignored if -mtls-dialect is specified. */
+   --with-tls is ignored if -mtls-dialect is specified.
+   Note: --with-mode is not handled here, that has a special rule
+   TARGET_MODE_CHECK that also takes into account the selected CPU and
+   architecture.  */
 #define OPTION_DEFAULT_SPECS \
   {"arch", "%{!march=*:%{!mcpu=*:-march=%(VALUE)}}" }, \
   {"cpu", "%{!march=*:%{!mcpu=*:-mcpu=%(VALUE)}}" }, \
@@ -398,7 +401,6 @@ emission of floating point pcs attributes.  */
   {"float", "%{!mfloat-abi=*:-mfloat-abi=%(VALUE)}" }, \
   {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"}, \
   {"abi", "%{!mabi=*:-mabi=%(VALUE)}"}, \
-  {"mode", "%{!marm:%{!mthumb:-m%(VALUE)}}"}, \
   {"tls", "%{!mtls-dialect=*:-mtls-dialect=%(VALUE)}"},
 
 extern const struct arm_fpu_desc
@@ -2424,9 +2426,9 @@ extern const char *arm_asm_auto_mfpu (int argc, const char **argv);
   "   mcpu=*:-mcpu=%:rewrite_mcpu(%{mcpu=*:%*})"			\
   " }"
 
-extern const char *arm_target_thumb_only (int argc, const char **argv);
+extern const char *arm_target_mode (int argc, const char **argv);
 #define TARGET_MODE_SPEC_FUNCTIONS			\
-  { "target_mode_check", arm_target_thumb_only },
+  { "target_mode_check", arm_target_mode },
 
 /* -mcpu=native handling only makes sense with compiler running on
    an ARM chip.  */

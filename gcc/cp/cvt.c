@@ -1170,7 +1170,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
   /* Explicitly evaluate void-converted concept checks since their
      satisfaction may produce ill-formed programs.  */
    if (concept_check_p (expr))
-     expr = evaluate_concept_check (expr, tf_warning_or_error);
+     expr = evaluate_concept_check (expr);
 
   if (VOID_TYPE_P (TREE_TYPE (expr)))
     return expr;
@@ -1231,12 +1231,14 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
     case CALL_EXPR:   /* We have a special meaning for volatile void fn().  */
       /* cdtors may return this or void, depending on
 	 targetm.cxx.cdtor_returns_this, but this shouldn't affect our
-	 decisions here: neither nodiscard warnings (nodiscard cdtors
-	 are nonsensical), nor should any constexpr or template
-	 instantiations be affected by an ABI property that is, or at
-	 least ought to be transparent to the language.  */
+	 decisions here: neither nodiscard warnings (nodiscard dtors
+	 are nonsensical and ctors have a different behavior with that
+	 attribute that is handled in the TARGET_EXPR case), nor should
+	 any constexpr or template instantiations be affected by an ABI
+	 property that is, or at least ought to be transparent to the
+	 language.  */
       if (tree fn = cp_get_callee_fndecl_nofold (expr))
-	if (DECL_DESTRUCTOR_P (fn))
+	if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
 	  return expr;
 
       if (complain & tf_warning)

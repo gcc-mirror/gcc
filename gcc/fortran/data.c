@@ -244,6 +244,13 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 		    "array-element nor a scalar-structure-component";
 
   symbol = lvalue->symtree->n.sym;
+  if (symbol->attr.flavor == FL_PARAMETER)
+    {
+      gfc_error ("PARAMETER %qs shall not appear in a DATA statement at %L",
+		 symbol->name, &lvalue->where);
+      return false;
+    }
+
   init = symbol->value;
   last_ts = &symbol->ts;
   last_con = NULL;
@@ -587,6 +594,9 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
     {
       /* An initializer has to be constant.  */
       if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
+	return false;
+      if (lvalue->ts.u.cl->length
+	  && lvalue->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 	return false;
       expr = create_character_initializer (init, last_ts, ref, rvalue);
       if (!expr)

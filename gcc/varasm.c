@@ -297,10 +297,9 @@ get_section (const char *name, unsigned int flags, tree decl,
   slot = section_htab->find_slot_with_hash (name, htab_hash_string (name),
 					    INSERT);
   flags |= SECTION_NAMED;
-  if (SUPPORTS_SHF_GNU_RETAIN
-      && decl != nullptr
+  if (decl != nullptr
       && DECL_P (decl)
-      && DECL_PRESERVE_P (decl))
+      && lookup_attribute ("retain", DECL_ATTRIBUTES (decl)))
     flags |= SECTION_RETAIN;
   if (*slot == NULL)
     {
@@ -487,7 +486,7 @@ resolve_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED,
   if (DECL_SECTION_NAME (decl) == NULL
       && targetm_common.have_named_sections
       && (flag_function_or_data_sections
-	  || (SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl))
+	  || lookup_attribute ("retain", DECL_ATTRIBUTES (decl))
 	  || DECL_COMDAT_GROUP (decl)))
     {
       targetm.asm_out.unique_section (decl, reloc);
@@ -1227,7 +1226,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
     vnode->get_constructor ();
 
   if (DECL_COMMON (decl)
-      && !(SUPPORTS_SHF_GNU_RETAIN && DECL_PRESERVE_P (decl)))
+      && !lookup_attribute ("retain", DECL_ATTRIBUTES (decl)))
     {
       /* If the decl has been given an explicit section name, or it resides
 	 in a non-generic address space, then it isn't common, and shouldn't
@@ -7761,18 +7760,19 @@ switch_to_section (section *new_section, tree decl)
 {
   if (in_section == new_section)
     {
-      if (SUPPORTS_SHF_GNU_RETAIN
-	  && (new_section->common.flags & SECTION_NAMED)
+      bool retain_p;
+      if ((new_section->common.flags & SECTION_NAMED)
 	  && decl != nullptr
 	  && DECL_P (decl)
-	  && (!!DECL_PRESERVE_P (decl)
+	  && ((retain_p = !!lookup_attribute ("retain",
+					      DECL_ATTRIBUTES (decl)))
 	      != !!(new_section->common.flags & SECTION_RETAIN)))
 	{
 	  /* If the SECTION_RETAIN bit doesn't match, switch to a new
 	     section.  */
 	  tree used_decl, no_used_decl;
 
-	  if (DECL_PRESERVE_P (decl))
+	  if (retain_p)
 	    {
 	      new_section->common.flags |= SECTION_RETAIN;
 	      used_decl = decl;
@@ -7786,8 +7786,8 @@ switch_to_section (section *new_section, tree decl)
 	      no_used_decl = decl;
 	    }
 	  warning (OPT_Wattributes,
-		   "%+qD without %<used%> attribute and %qD with "
-		   "%<used%> attribute are placed in a section with "
+		   "%+qD without %<retain%> attribute and %qD with "
+		   "%<retain%> attribute are placed in a section with "
 		   "the same name", no_used_decl, used_decl);
 	  inform (DECL_SOURCE_LOCATION (used_decl),
 		  "%qD was declared here", used_decl);

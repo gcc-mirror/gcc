@@ -12,16 +12,16 @@ int main (void)
   int thread_count;
   omp_event_handle_t detach_event1, detach_event2;
 
-  #pragma omp parallel firstprivate(detach_event1, detach_event2)
+  #pragma omp parallel private (detach_event1, detach_event2)
   {
     #pragma omp single
-      thread_count = omp_get_num_threads();
+      thread_count = omp_get_num_threads ();
 
-    #pragma omp task detach(detach_event1) untied
+    #pragma omp task detach (detach_event1) untied
       #pragma omp atomic update
 	x++;
 
-    #pragma omp task detach(detach_event2) untied
+    #pragma omp task detach (detach_event2) untied
     {
       #pragma omp atomic update
 	y++;

@@ -515,7 +515,7 @@ struct module_token_filter
 	  {
 	  module_end:;
 	    /* End of the directive, handle the name.  */
-	    if (import)
+	    if (import && (is_import || !flag_header_unit))
 	      if (module_state *m
 		  = preprocess_module (import, token_loc, module != NULL,
 				       is_import, got_export, reader))
@@ -1010,7 +1010,7 @@ cxx_dup_lang_specific_decl (tree node)
      (module_purview_p still does).  */
   ld->u.base.module_entity_p = false;
   ld->u.base.module_import_p = false;
-  ld->u.base.module_pending_p = false;
+  ld->u.base.module_attached_p = false;
   
   if (GATHER_STATISTICS)
     {

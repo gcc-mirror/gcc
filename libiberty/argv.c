@@ -442,7 +442,10 @@ expandargv (int *argcp, char ***argvp)
 	     due to CR/LF->CR translation when reading text files.
 	     That does not in-and-of itself indicate failure.  */
 	  && ferror (f))
-	goto error;
+	{
+	  free (buffer);
+	  goto error;
+	}
       /* Add a NUL terminator.  */
       buffer[len] = '\0';
       /* If the file is empty or contains only whitespace, buildargv would

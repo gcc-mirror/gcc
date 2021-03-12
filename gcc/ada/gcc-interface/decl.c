@@ -4713,6 +4713,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  const int quals
 	    = TYPE_QUAL_VOLATILE
 	      | (Is_Full_Access (gnat_entity) ? TYPE_QUAL_ATOMIC : 0);
+	  /* This is required by free_lang_data_in_type to disable the ODR.  */
+	  if (TREE_CODE (gnu_type) == ENUMERAL_TYPE)
+	    TYPE_STUB_DECL (gnu_type)
+	      = create_type_stub_decl (TYPE_NAME (gnu_type), gnu_type);
 	  gnu_type = change_qualified_type (gnu_type, quals);
 	}
 

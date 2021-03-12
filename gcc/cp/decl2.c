@@ -1596,9 +1596,6 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
       decl_attributes (decl, attributes, flags, last_decl);
     }
 
-  if (TREE_CODE (*decl) == TYPE_DECL)
-    SET_IDENTIFIER_TYPE_VALUE (DECL_NAME (*decl), TREE_TYPE (*decl));
-
   /* Propagate deprecation out to the template.  */
   if (TREE_DEPRECATED (*decl))
     if (tree ti = get_template_info (*decl))

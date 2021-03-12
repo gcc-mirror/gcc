@@ -40,6 +40,14 @@
 #include <string_view>
 #include <type_traits>
 
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+#ifndef __LONG_DOUBLE_IBM128__
+#error "floating_to_chars.cc must be compiled with -mabi=ibmlongdouble"
+#endif
+// sprintf for __ieee128
+extern "C" int __sprintfieee128(char*, const char*, ...);
+#endif
+
 // This implementation crucially assumes float/double have the
 // IEEE binary32/binary64 formats.
 #if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
@@ -56,24 +64,40 @@
 
 #if __LDBL_MANT_DIG__ == __DBL_MANT_DIG__
 # define LONG_DOUBLE_KIND LDK_BINARY64
-#elif defined(__SIZEOF_INT128__)
-// The Ryu routines need a 128-bit integer type in order to do shortest
-// formatting of types larger than 64-bit double, so without __int128 we can't
-// support any large long double format.  This is the case for e.g. i386.
-# if __LDBL_MANT_DIG__ == 64
+#elif __LDBL_MANT_DIG__ == 64
 #  define LONG_DOUBLE_KIND LDK_FLOAT80
-# elif __LDBL_MANT_DIG__ == 113
-#  define LONG_DOUBLE_KIND LDK_BINARY128
-# elif __LDBL_MANT_DIG__ == 106
-#  define LONG_DOUBLE_KIND LDK_IBM128
-# endif
-#endif
-#if !defined(LONG_DOUBLE_KIND)
+#elif __LDBL_MANT_DIG__ == 113
+# define LONG_DOUBLE_KIND LDK_BINARY128
+#elif __LDBL_MANT_DIG__ == 106
+# define LONG_DOUBLE_KIND LDK_IBM128
+#else
 # define LONG_DOUBLE_KIND LDK_UNSUPPORTED
+#endif
+
+#if defined _GLIBCXX_USE_FLOAT128 && __FLT128_MANT_DIG__ == 113
+// Define overloads of std::to_chars for __float128.
+# define FLOAT128_TO_CHARS 1
+#endif
+
+// For now we only support __float128 when it's the powerpc64 __ieee128 type.
+#ifndef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+# undef FLOAT128_TO_CHARS
+#endif
+
+#ifdef FLOAT128_TO_CHARS
+using F128_type = __float128;
+#else
+using F128_type = void;
 #endif
 
 namespace
 {
+#if defined __SIZEOF_INT128__
+  using uint128_t = unsigned __int128;
+#else
+# include "uint128_t.h"
+#endif
+
   namespace ryu
   {
 #include "ryu/common.h"
@@ -86,7 +110,6 @@ namespace
 #include "ryu/d2fixed.c"
 #include "ryu/f2s.c"
 
-#ifdef __SIZEOF_INT128__
     namespace generic128
     {
       // Put the generic Ryu bits in their own namespace to avoid name conflicts.
@@ -101,7 +124,6 @@ namespace
     int
     to_chars(const floating_decimal_128 v, char* const result)
     { return generic128::generic_to_chars(v, result); }
-#endif
   } // namespace ryu
 
   // A traits class that contains pertinent information about the binary
@@ -140,9 +162,107 @@ namespace
 	    0b0001010000011001011100100001010000010101101000001101000000000000 };
     };
 
+#if LONG_DOUBLE_KIND == LDK_BINARY128 || defined FLOAT128_TO_CHARS
+  // Traits for the IEEE binary128 format.
+  struct floating_type_traits_binary128
+  {
+    static constexpr int mantissa_bits = 112;
+    static constexpr int exponent_bits = 15;
+    static constexpr bool has_implicit_leading_bit = true;
+    using mantissa_t = uint128_t;
+    using shortest_scientific_t = ryu::floating_decimal_128;
+
+    static constexpr uint64_t pow10_adjustment_tab[]
+      = { 0b0000000000000000000000000000000000000000000000000100000010000000,
+	  0b1011001111110100000100010101101110011100100110000110010110011000,
+	  0b1010100010001101111111000000001101010010100010010000111011110111,
+	  0b1011111001110001111000011111000010110111000111110100101010100101,
+	  0b0110100110011110011011000011000010011001110001001001010011100011,
+	  0b0000011111110010101111101011101010000110011111100111001110100111,
+	  0b0100010101010110000010111011110100000010011001001010001110111101,
+	  0b1101110111000010001101100000110100000111001001101011000101011011,
+	  0b0100111011101101010000001101011000101100101110010010110000101011,
+	  0b0100000110111000000110101000010011101000110100010110000011101101,
+	  0b1011001101001000100001010001100100001111011101010101110001010110,
+	  0b1000000001000000101001110010110010001111101101010101001100000110,
+	  0b0101110110100110000110000001001010111110001110010000111111010011,
+	  0b1010001111100111000100011100100100111100100101000001011001000111,
+	  0b1010011000011100110101100111001011100101111111100001110100000100,
+	  0b1100011100100010100000110001001010000000100000001001010111011101,
+	  0b0101110000100011001111101101000000100110000010010111010001111010,
+	  0b0100111100011010110111101000100110000111001001101100000001111100,
+	  0b1100100100111110101011000100000101011010110111000111110100110101,
+	  0b0110010000010111010100110011000000111010000010111011010110000100,
+	  0b0101001001010010110111010111000101011100000111100111000001110010,
+	  0b1101111111001011101010110001000111011010111101001011010110100100,
+	  0b0001000100110000011111101011001101110010110110010000000011100100,
+	  0b0001000000000101001001001000000000011000100011001110101001001110,
+	  0b0010010010001000111010011011100001000110011011011110110100111000,
+	  0b0000100110101100000111100010100100011100110111011100001111001100,
+	  0b1011111010001110001100000011110111111111100000001011111111101100,
+	  0b0000011100001111010101110000100110111100101101110111101001000001,
+	  0b1100010001110110111100001001001101101000011100000010110101001011,
+	  0b0100101001101011111001011110101101100011011111011100101010101111,
+	  0b0001101001111001110000101101101100001011010001011110011101000010,
+	  0b1111000000101001101111011010110011101110100001011011001011100010,
+	  0b0101001010111101101100001111100010010110001101001000001101100100,
+	  0b0101100101011110001100101011111000111001111001001001101101100001,
+	  0b1111001101010010100100011011000110110010001111000111010001001101,
+	  0b0001110010011000000001000110110111011000011100001000011001110111,
+	  0b0100001011011011011011110011101100100101111111101100101000001110,
+	  0b0101011110111101010111100111101111000101111111111110100011011010,
+	  0b1110101010001001110100000010110111010111111010111110100110010110,
+	  0b1010001111100001001100101000110100001100011100110010000011010111,
+	  0b1111111101101111000100111100000101011000001110011011101010111001,
+	  0b1111101100001110100101111101011001000100000101110000110010100011,
+	  0b1001010110110101101101000101010001010000101011011111010011010000,
+	  0b0111001110110011101001100111000001000100001010110000010000001101,
+	  0b0101111100111110100111011001111001111011011110010111010011101010,
+	  0b1110111000000001100100111001100100110001011011001110101111110111,
+	  0b0001010001001101010111101010011111000011110001101101011001111111,
+	  0b0101000011100011010010001101100001011101011010100110101100100010,
+	  0b0001000101011000100101111100110110000101101101111000110001001011,
+	  0b0101100101001011011000010101000000010100011100101101000010011111,
+	  0b1000010010001011101001011010100010111011110100110011011000100111,
+	  0b1000011011100001010111010111010011101100100010010010100100101001,
+	  0b1001001001010111110101000010111010000000101111010100001010010010,
+	  0b0011011110110010010101111011000001000000000011011111000011111011,
+	  0b1011000110100011001110000001000100000001011100010111010010011110,
+	  0b0111101110110101110111110000011000000100011100011000101101101110,
+	  0b1001100101111011011100011110101011001111100111101010101010110111,
+	  0b1100110010010001100011001111010000000100011101001111011101001111,
+	  0b1000111001111010100101000010000100000001001100101010001011001101,
+	  0b0011101011110000110010100101010100110010100001000010101011111101,
+	  0b1100000000000110000010101011000000011101000110011111100010111111,
+	  0b0010100110000011011100010110111100010110101100110011101110001101,
+	  0b0010111101010011111000111001111100110111111100100011110001101110,
+	  0b1001110111001001101001001001011000010100110001000000100011010110,
+	  0b0011110101100111011011111100001000011001010100111100100101111010,
+	  0b0010001101000011000010100101110000010101101000100110000100001010,
+	  0b0010000010100110010101100101110011101111000111111111001001100001,
+	  0b0100111111011011011011100111111011000010011101101111011111110110,
+	  0b1111111111010110101011101000100101110100001110001001101011100111,
+	  0b1011111101000101110000111100100010111010100001010000010010110010,
+	  0b1111010101001011101011101010000100110110001110111100100110111111,
+	  0b1011001101000001001101000010101010010110010001100001011100011010,
+	  0b0101001011011101010001110100010000010001111100100100100001001101,
+	  0b0010100000111001100011000101100101000001111100111001101000000010,
+	  0b1011001111010101011001000100100110100100110111110100000110111000,
+	  0b0101011111010011100011010010111101110010100001111111100010001001,
+	  0b0010111011101100100000000000001111111010011101100111100001001101,
+	  0b1101000000000000000000000000000000000000000000000000000000000000 };
+  };
+
+# ifdef FLOAT128_TO_CHARS
+  template<>
+    struct floating_type_traits<__float128> : floating_type_traits_binary128
+    { };
+# endif
+#endif
+
 #if LONG_DOUBLE_KIND == LDK_BINARY64
   // When long double is equivalent to double, we just forward the long double
-  // overloads to the double overloads, so we don't need to define a a
+  // overloads to the double overloads, so we don't need to define a
   // floating_type_traits<long double> specialization in this case.
 #elif LONG_DOUBLE_KIND == LDK_FLOAT80
   template<>
@@ -236,94 +356,8 @@ namespace
     };
 #elif LONG_DOUBLE_KIND == LDK_BINARY128
   template<>
-    struct floating_type_traits<long double>
-    {
-      static constexpr int mantissa_bits = 112;
-      static constexpr int exponent_bits = 15;
-      static constexpr bool has_implicit_leading_bit = true;
-      using mantissa_t = unsigned __int128;
-      using shortest_scientific_t = ryu::floating_decimal_128;
-
-      static constexpr uint64_t pow10_adjustment_tab[]
-	= { 0b0000000000000000000000000000000000000000000000000100000010000000,
-	    0b1011001111110100000100010101101110011100100110000110010110011000,
-	    0b1010100010001101111111000000001101010010100010010000111011110111,
-	    0b1011111001110001111000011111000010110111000111110100101010100101,
-	    0b0110100110011110011011000011000010011001110001001001010011100011,
-	    0b0000011111110010101111101011101010000110011111100111001110100111,
-	    0b0100010101010110000010111011110100000010011001001010001110111101,
-	    0b1101110111000010001101100000110100000111001001101011000101011011,
-	    0b0100111011101101010000001101011000101100101110010010110000101011,
-	    0b0100000110111000000110101000010011101000110100010110000011101101,
-	    0b1011001101001000100001010001100100001111011101010101110001010110,
-	    0b1000000001000000101001110010110010001111101101010101001100000110,
-	    0b0101110110100110000110000001001010111110001110010000111111010011,
-	    0b1010001111100111000100011100100100111100100101000001011001000111,
-	    0b1010011000011100110101100111001011100101111111100001110100000100,
-	    0b1100011100100010100000110001001010000000100000001001010111011101,
-	    0b0101110000100011001111101101000000100110000010010111010001111010,
-	    0b0100111100011010110111101000100110000111001001101100000001111100,
-	    0b1100100100111110101011000100000101011010110111000111110100110101,
-	    0b0110010000010111010100110011000000111010000010111011010110000100,
-	    0b0101001001010010110111010111000101011100000111100111000001110010,
-	    0b1101111111001011101010110001000111011010111101001011010110100100,
-	    0b0001000100110000011111101011001101110010110110010000000011100100,
-	    0b0001000000000101001001001000000000011000100011001110101001001110,
-	    0b0010010010001000111010011011100001000110011011011110110100111000,
-	    0b0000100110101100000111100010100100011100110111011100001111001100,
-	    0b1011111010001110001100000011110111111111100000001011111111101100,
-	    0b0000011100001111010101110000100110111100101101110111101001000001,
-	    0b1100010001110110111100001001001101101000011100000010110101001011,
-	    0b0100101001101011111001011110101101100011011111011100101010101111,
-	    0b0001101001111001110000101101101100001011010001011110011101000010,
-	    0b1111000000101001101111011010110011101110100001011011001011100010,
-	    0b0101001010111101101100001111100010010110001101001000001101100100,
-	    0b0101100101011110001100101011111000111001111001001001101101100001,
-	    0b1111001101010010100100011011000110110010001111000111010001001101,
-	    0b0001110010011000000001000110110111011000011100001000011001110111,
-	    0b0100001011011011011011110011101100100101111111101100101000001110,
-	    0b0101011110111101010111100111101111000101111111111110100011011010,
-	    0b1110101010001001110100000010110111010111111010111110100110010110,
-	    0b1010001111100001001100101000110100001100011100110010000011010111,
-	    0b1111111101101111000100111100000101011000001110011011101010111001,
-	    0b1111101100001110100101111101011001000100000101110000110010100011,
-	    0b1001010110110101101101000101010001010000101011011111010011010000,
-	    0b0111001110110011101001100111000001000100001010110000010000001101,
-	    0b0101111100111110100111011001111001111011011110010111010011101010,
-	    0b1110111000000001100100111001100100110001011011001110101111110111,
-	    0b0001010001001101010111101010011111000011110001101101011001111111,
-	    0b0101000011100011010010001101100001011101011010100110101100100010,
-	    0b0001000101011000100101111100110110000101101101111000110001001011,
-	    0b0101100101001011011000010101000000010100011100101101000010011111,
-	    0b1000010010001011101001011010100010111011110100110011011000100111,
-	    0b1000011011100001010111010111010011101100100010010010100100101001,
-	    0b1001001001010111110101000010111010000000101111010100001010010010,
-	    0b0011011110110010010101111011000001000000000011011111000011111011,
-	    0b1011000110100011001110000001000100000001011100010111010010011110,
-	    0b0111101110110101110111110000011000000100011100011000101101101110,
-	    0b1001100101111011011100011110101011001111100111101010101010110111,
-	    0b1100110010010001100011001111010000000100011101001111011101001111,
-	    0b1000111001111010100101000010000100000001001100101010001011001101,
-	    0b0011101011110000110010100101010100110010100001000010101011111101,
-	    0b1100000000000110000010101011000000011101000110011111100010111111,
-	    0b0010100110000011011100010110111100010110101100110011101110001101,
-	    0b0010111101010011111000111001111100110111111100100011110001101110,
-	    0b1001110111001001101001001001011000010100110001000000100011010110,
-	    0b0011110101100111011011111100001000011001010100111100100101111010,
-	    0b0010001101000011000010100101110000010101101000100110000100001010,
-	    0b0010000010100110010101100101110011101111000111111111001001100001,
-	    0b0100111111011011011011100111111011000010011101101111011111110110,
-	    0b1111111111010110101011101000100101110100001110001001101011100111,
-	    0b1011111101000101110000111100100010111010100001010000010010110010,
-	    0b1111010101001011101011101010000100110110001110111100100110111111,
-	    0b1011001101000001001101000010101010010110010001100001011100011010,
-	    0b0101001011011101010001110100010000010001111100100100100001001101,
-	    0b0010100000111001100011000101100101000001111100111001101000000010,
-	    0b1011001111010101011001000100100110100100110111110100000110111000,
-	    0b0101011111010011100011010010111101110010100001111111100010001001,
-	    0b0010111011101100100000000000001111111010011101100111100001001101,
-	    0b1101000000000000000000000000000000000000000000000000000000000000 };
-    };
+    struct floating_type_traits<long double> : floating_type_traits_binary128
+    { };
 #elif LONG_DOUBLE_KIND == LDK_IBM128
   template<>
     struct floating_type_traits<long double>
@@ -331,7 +365,7 @@ namespace
       static constexpr int mantissa_bits = 105;
       static constexpr int exponent_bits = 11;
       static constexpr bool has_implicit_leading_bit = true;
-      using mantissa_t = unsigned __int128;
+      using mantissa_t = uint128_t;
       using shortest_scientific_t = ryu::floating_decimal_128;
 
       static constexpr uint64_t pow10_adjustment_tab[]
@@ -357,6 +391,7 @@ namespace
     ieee_t<T>
     get_ieee_repr(const T value)
     {
+      using mantissa_t = typename floating_type_traits<T>::mantissa_t;
       constexpr int mantissa_bits = floating_type_traits<T>::mantissa_bits;
       constexpr int exponent_bits = floating_type_traits<T>::exponent_bits;
       constexpr int total_bits = mantissa_bits + exponent_bits + 1;
@@ -366,20 +401,21 @@ namespace
 	  return uint32_t{};
 	else if constexpr (total_bits <= 64)
 	  return uint64_t{};
-#ifdef __SIZEOF_INT128__
 	else if constexpr (total_bits <= 128)
-	  return (unsigned __int128){};
-#endif
+	  return uint128_t{};
       };
       using uint_t = decltype(get_uint_t());
       uint_t value_bits = 0;
       memcpy(&value_bits, &value, sizeof(value));
 
       ieee_t<T> ieee_repr;
-      ieee_repr.mantissa = value_bits & ((uint_t{1} << mantissa_bits) - 1u);
+      ieee_repr.mantissa
+	= static_cast<mantissa_t>(value_bits & ((uint_t{1} << mantissa_bits) - 1u));
+      value_bits >>= mantissa_bits;
       ieee_repr.biased_exponent
-	= (value_bits >> mantissa_bits) & ((uint_t{1} << exponent_bits) - 1u);
-      ieee_repr.sign = (value_bits >> (mantissa_bits + exponent_bits)) & 1;
+	= static_cast<uint32_t>(value_bits & ((uint_t{1} << exponent_bits) - 1u));
+      value_bits >>= exponent_bits;
+      ieee_repr.sign = (value_bits & 1) != 0;
       return ieee_repr;
     }
 
@@ -394,12 +430,11 @@ namespace
       // mantissa (plus an implicit leading bit).  We use the exponent and sign
       // of the high part, and we merge the mantissa of the high part with the
       // mantissa (and the implicit leading bit) of the low part.
-      using uint_t = unsigned __int128;
-      uint_t value_bits = 0;
-      memcpy(&value_bits, &value, sizeof(value_bits));
+      uint64_t value_bits[2] = {};
+      memcpy(value_bits, &value, sizeof(value_bits));
 
-      const uint64_t value_hi = value_bits;
-      const uint64_t value_lo = value_bits >> 64;
+      const uint64_t value_hi = value_bits[0];
+      const uint64_t value_lo = value_bits[1];
 
       uint64_t mantissa_hi = value_hi & ((1ull << 52) - 1);
       unsigned exponent_hi = (value_hi >> 52) & ((1ull << 11) - 1);
@@ -442,8 +477,8 @@ namespace
 	}
 
       ieee_t<long double> ieee_repr;
-      ieee_repr.mantissa = ((uint_t{mantissa_hi} << 64)
-			    | (uint_t{mantissa_lo} << 4)) >> 11;
+      ieee_repr.mantissa = ((uint128_t{mantissa_hi} << 64)
+			    | (uint128_t{mantissa_lo} << 4)) >> 11;
       ieee_repr.biased_exponent = exponent_hi;
       ieee_repr.sign = sign_hi;
       return ieee_repr;
@@ -460,8 +495,8 @@ namespace
 	return ryu::floating_to_fd32(value);
       else if constexpr (std::is_same_v<T, double>)
 	return ryu::floating_to_fd64(value);
-#ifdef __SIZEOF_INT128__
-      else if constexpr (std::is_same_v<T, long double>)
+      else if constexpr (std::is_same_v<T, long double>
+			 || std::is_same_v<T, F128_type>)
 	{
 	  constexpr int mantissa_bits
 	    = floating_type_traits<T>::mantissa_bits;
@@ -475,7 +510,6 @@ namespace
 						mantissa_bits, exponent_bits,
 						!has_implicit_leading_bit);
 	}
-#endif
     }
 
   // This subroutine returns true if the shortest scientific form fd is a
@@ -514,10 +548,32 @@ namespace
   get_mantissa_length(const ryu::floating_decimal_64 fd)
   { return ryu::decimalLength17(fd.mantissa); }
 
-#ifdef __SIZEOF_INT128__
   int
   get_mantissa_length(const ryu::floating_decimal_128 fd)
   { return ryu::generic128::decimalLength(fd.mantissa); }
+
+#if !defined __SIZEOF_INT128__
+  // An implementation of base-10 std::to_chars for the uint128_t class type,
+  // used by targets that lack __int128.
+  std::to_chars_result
+  to_chars(char* first, char* const last, uint128_t x)
+  {
+    const int len = ryu::generic128::decimalLength(x);
+    if (last - first < len)
+      return {last, std::errc::value_too_large};
+    if (x == 0)
+      {
+	*first++ = '0';
+	return {first, std::errc{}};
+      }
+    for (int i = 0; i < len; ++i)
+      {
+	first[len - 1 - i] = '0' + static_cast<char>(x % 10);
+	x /= 10;
+      }
+    __glibcxx_assert(x == 0);
+    return {first + len, std::errc{}};
+  }
 #endif
 } // anon namespace
 
@@ -815,6 +871,39 @@ template<typename T>
     return result;
   }
 
+namespace
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wabi"
+  template<typename T, typename... Extra>
+  inline int
+  sprintf_ld(char* buffer, const char* format_string, T value, Extra... args)
+  {
+    int len;
+
+#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
+    const int saved_rounding_mode = fegetround();
+    if (saved_rounding_mode != FE_TONEAREST)
+      fesetround(FE_TONEAREST); // We want round-to-nearest behavior.
+#endif
+
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+    if constexpr (is_same_v<T, __ieee128>)
+      len = __sprintfieee128(buffer, format_string, args..., value);
+    else
+#endif
+    len = sprintf(buffer, format_string, args..., value);
+
+#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
+    if (saved_rounding_mode != FE_TONEAREST)
+      fesetround(saved_rounding_mode);
+#endif
+
+    return len;
+  }
+#pragma GCC diagnostic pop
+}
+
 template<typename T>
   static to_chars_result
   __floating_to_chars_shortest(char* first, char* const last, const T value,
@@ -926,7 +1015,7 @@ template<typename T>
 	     < floating_type_traits<T>::mantissa_bits - 2);
 	if (value_fits_inside_mantissa_p)
 	  {
-	    // Print the small exactly-represantable number in fixed form by
+	    // Print the small exactly-representable number in fixed form by
 	    // writing out fd.mantissa followed by fd.exponent many 0s.
 	    if (fd.sign)
 	      *first++ = '-';
@@ -938,26 +1027,18 @@ template<typename T>
 	    __glibcxx_assert(output_length == expected_output_length);
 	    return result;
 	  }
-	else if constexpr (is_same_v<T, long double>)
+	else if constexpr (is_same_v<T, long double>
+			   || is_same_v<T, F128_type>)
 	  {
 	    // We can't use d2fixed_buffered_n for types larger than double,
 	    // so we instead format larger types through sprintf.
 	    // TODO: We currently go through an intermediate buffer in order
-	    // to accomodate the mandatory null terminator of sprintf, but we
+	    // to accommodate the mandatory null terminator of sprintf, but we
 	    // can avoid this if we use sprintf to write all but the last
 	    // digit, and carefully compute and write the last digit
 	    // ourselves.
 	    char buffer[expected_output_length+1];
-#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
-	    const int saved_rounding_mode = fegetround();
-	    if (saved_rounding_mode != FE_TONEAREST)
-	      fesetround(FE_TONEAREST); // We want round-to-nearest behavior.
-#endif
-	    const int output_length = sprintf(buffer, "%.0Lf", value);
-#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
-	    if (saved_rounding_mode != FE_TONEAREST)
-	      fesetround(saved_rounding_mode);
-#endif
+	    const int output_length = sprintf_ld(buffer, "%.0Lf", value);
 	    __glibcxx_assert(output_length == expected_output_length);
 	    memcpy(first, buffer, output_length);
 	    return {first + output_length, errc{}};
@@ -1089,7 +1170,7 @@ template<typename T>
 
     // Ryu doesn't support formatting floating-point types larger than double
     // with an explicit precision, so instead we just go through printf.
-    if constexpr (is_same_v<T, long double>)
+    if constexpr (is_same_v<T, long double> || is_same_v<T, F128_type>)
       {
 	int effective_precision;
 	const char* output_specifier;
@@ -1143,17 +1224,8 @@ template<typename T>
 
 	// Do the sprintf into the local buffer.
 	char buffer[output_length_upper_bound+1];
-#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
-	const int saved_rounding_mode = fegetround();
-	if (saved_rounding_mode != FE_TONEAREST)
-	  fesetround(FE_TONEAREST); // We want round-to-nearest behavior.
-#endif
 	int output_length
-	  = sprintf(buffer, output_specifier, effective_precision, value);
-#if _GLIBCXX_USE_C99_FENV_TR1 && defined(FE_TONEAREST)
-	if (saved_rounding_mode != FE_TONEAREST)
-	  fesetround(saved_rounding_mode);
-#endif
+	  = sprintf_ld(buffer, output_specifier, value, effective_precision);
 	__glibcxx_assert(output_length <= output_length_upper_bound);
 
 	if (effective_precision > 0)
@@ -1545,6 +1617,27 @@ to_chars(char* first, char* last, long double value, chars_format fmt,
   else
     return __floating_to_chars_precision(first, last, value, fmt, precision);
 }
+
+#ifdef FLOAT128_TO_CHARS
+to_chars_result
+to_chars(char* first, char* last, __float128 value) noexcept
+{
+  return __floating_to_chars_shortest(first, last, value, chars_format{});
+}
+
+to_chars_result
+to_chars(char* first, char* last, __float128 value, chars_format fmt) noexcept
+{
+  return __floating_to_chars_shortest(first, last, value, fmt);
+}
+
+to_chars_result
+to_chars(char* first, char* last, __float128 value, chars_format fmt,
+	 int precision) noexcept
+{
+  return __floating_to_chars_precision(first, last, value, fmt, precision);
+}
+#endif
 
 #ifdef _GLIBCXX_LONG_DOUBLE_COMPAT
 // Map the -mlong-double-64 long double overloads to the double overloads.

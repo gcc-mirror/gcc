@@ -18,20 +18,20 @@ class i {
 namespace ac {
 template <typename> class ad {
 public:
-  bool await_ready();
-  void await_resume();
-  void await_suspend(std::coroutine_handle<>);
+  bool await_ready() noexcept;
+  void await_resume() noexcept;
+  void await_suspend(std::coroutine_handle<>) noexcept;
   i ae;
 };
 } // namespace ac
 
-template <typename ab> ac::ad<ab> operator co_await(ab);
+template <typename ab> ac::ad<ab> operator co_await(ab) noexcept;
 class j {
   class l {};
 
 public:
   std::g initial_suspend();
-  l final_suspend();
+  l final_suspend() noexcept;
 };
 class m : public j {
 public:

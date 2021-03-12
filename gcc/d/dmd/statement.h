@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -23,6 +23,7 @@ struct Scope;
 class Expression;
 class LabelDsymbol;
 class Identifier;
+class Statement;
 class IfStatement;
 class ExpStatement;
 class DefaultStatement;
@@ -38,6 +39,7 @@ class StaticAssert;
 class AsmStatement;
 class GotoStatement;
 class ScopeStatement;
+class Catch;
 class TryCatchStatement;
 class TryFinallyStatement;
 class CaseStatement;
@@ -47,6 +49,11 @@ class StaticForeach;
 
 // Back end
 struct code;
+
+Statement *statementSemantic(Statement *s, Scope *sc);
+Statement *semanticNoScope(Statement *s, Scope *sc);
+Statement *semanticScope(Statement *s, Scope *sc, Statement *sbreak, Statement *scontinue);
+void catchSemantic(Catch *c, Scope *sc);
 
 bool inferAggregate(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply);
 bool inferApplyArgTypes(ForeachStatement *fes, Scope *sc, Dsymbol *&sapply);

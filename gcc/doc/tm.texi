@@ -9551,6 +9551,10 @@ If necessary, modify personality and LSDA references to handle indirection.  The
 True if the @code{TARGET_ASM_UNWIND_EMIT} hook should be called before the assembly for @var{insn} has been emitted, false if the hook should be called afterward.
 @end deftypevr
 
+@deftypefn {Target Hook} bool TARGET_ASM_SHOULD_RESTORE_CFA_STATE (void)
+For DWARF-based unwind frames, two CFI instructions provide for save and restore of register state.  GCC maintains the current frame address (CFA) separately from the register bank but the unwinder in libgcc preserves this state along with the registers (and this is expected by the code that writes the unwind frames).  This hook allows the target to specify that the CFA data is not saved/restored along with the registers by the target unwinder so that suitable additional instructions should be emitted to restore it.
+@end deftypefn
+
 @node Exception Region Output
 @subsection Assembler Commands for Exception Regions
 
@@ -11487,15 +11491,17 @@ from shared libraries (DLLs).
 You need not define this macro if it would always evaluate to zero.
 @end defmac
 
-@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs})
+@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs})
 This target hook may add @dfn{clobbers} to @var{clobbers} and
 @var{clobbered_regs} for any hard regs the port wishes to automatically
 clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected
 to avoid clobbering a register that is already used by the asm.
 
-It may modify the @var{outputs}, @var{inputs}, and @var{constraints}
-as necessary for other pre-processing.  In this case the return value is
-a sequence of insns to emit after the asm.
+It may modify the @var{outputs}, @var{inputs}, @var{input_modes}, and
+@var{constraints} as necessary for other pre-processing.  In this case the
+return value is a sequence of insns to emit after the asm.  Note that
+changes to @var{inputs} must be accompanied by the corresponding changes
+to @var{input_modes}.
 @end deftypefn
 
 @defmac MATH_LIBRARY

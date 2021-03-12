@@ -185,7 +185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       _M_release_ownership() noexcept
       {
-	if (_M_owners.fetch_sub(1, memory_order::release) == 1)
+	if (_M_owners.fetch_sub(1, memory_order::acq_rel) == 1)
 	  delete this;
       }
 

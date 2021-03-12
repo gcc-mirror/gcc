@@ -13585,23 +13585,18 @@ sparc_expand_vcond (machine_mode mode, rtx *operands, int ccode, int fcode)
   emit_insn (gen_rtx_SET (operands[0], bshuf));
 }
 
-/* On sparc, any mode which naturally allocates into the float
+/* On the SPARC, any mode which naturally allocates into the single float
    registers should return 4 here.  */
 
 unsigned int
 sparc_regmode_natural_size (machine_mode mode)
 {
-  int size = UNITS_PER_WORD;
+  const enum mode_class cl = GET_MODE_CLASS (mode);
 
-  if (TARGET_ARCH64)
-    {
-      enum mode_class mclass = GET_MODE_CLASS (mode);
+  if ((cl == MODE_FLOAT || cl == MODE_VECTOR_INT) && GET_MODE_SIZE (mode) <= 4)
+    return 4;
 
-      if (mclass == MODE_FLOAT || mclass == MODE_VECTOR_INT)
-	size = 4;
-    }
-
-  return size;
+  return UNITS_PER_WORD;
 }
 
 /* Implement TARGET_HARD_REGNO_NREGS.

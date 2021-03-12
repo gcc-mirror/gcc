@@ -663,21 +663,6 @@ Embedcfg_reader::error(const char* msg)
 		this->filename_, msg);
 }
 
-// Return whether the current file imports "embed".
-
-bool
-Gogo::is_embed_imported() const
-{
-  Packages::const_iterator p = this->packages_.find("embed");
-  if (p == this->packages_.end())
-    return false;
-
-  // We track current file imports in the package aliases, where a
-  // typical import will just list the package name in aliases.  So
-  // the package has been imported if there is at least one alias.
-  return !p->second->aliases().empty();
-}
-
 // Implement the sort order for a list of embedded files, as discussed
 // at the docs for embed.FS.
 

@@ -88,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vector-builder.h"
 #include "symtab-thunks.h"
 #include "alias.h"
+#include "asan.h"
 
 using namespace ipa_icf_gimple;
 
@@ -2019,6 +2020,18 @@ sem_variable::merge (sem_item *alias_item)
       if (dump_enabled_p ())
 	dump_printf (MSG_MISSED_OPTIMIZATION,
 		     "Not unifying; address of original may be compared.\n");
+      return false;
+    }
+
+  if (DECL_ALIGN (original->decl) != DECL_ALIGN (alias->decl)
+      && (sanitize_flags_p (SANITIZE_ADDRESS, original->decl)
+	  || sanitize_flags_p (SANITIZE_ADDRESS, alias->decl)))
+    {
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; "
+		     "ASAN requires equal alignments for original and alias\n");
+
       return false;
     }
 

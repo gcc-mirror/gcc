@@ -3010,7 +3010,7 @@ cpp_get_token_1 (cpp_reader *pfile, location_t *location)
 
 	  if (need_search)
 	    {
-	      found = cpp_find_header_unit (pfile, fname, angle, tmp->src_loc);
+	      found = _cpp_find_header_unit (pfile, fname, angle, tmp->src_loc);
 	      if (!found)
 		found = "";
 	      len = strlen (found);

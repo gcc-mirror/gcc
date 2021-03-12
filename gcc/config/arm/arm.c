@@ -328,9 +328,10 @@ static unsigned int arm_hard_regno_nregs (unsigned int, machine_mode);
 static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool arm_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
-static rtx_insn * thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
-					vec<const char *> &, vec<rtx> &,
-					HARD_REG_SET &);
+static rtx_insn *thumb1_md_asm_adjust (vec<rtx> &, vec<rtx> &,
+				       vec<machine_mode> &,
+				       vec<const char *> &, vec<rtx> &,
+				       HARD_REG_SET &);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -33915,9 +33916,10 @@ arm_run_selftests (void)
    Unlike the arm version, we do NOT implement asm flag outputs.  */
 
 rtx_insn *
-thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
-		      vec<const char *> &constraints,
-		      vec<rtx> &/*clobbers*/, HARD_REG_SET &/*clobbered_regs*/)
+thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
+		      vec<machine_mode> & /*input_modes*/,
+		      vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
+		      HARD_REG_SET & /*clobbered_regs*/)
 {
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)
     if (strncmp (constraints[i], "=@cc", 4) == 0)

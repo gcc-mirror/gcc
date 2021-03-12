@@ -2021,9 +2021,9 @@
 })
 
 (define_insn "mmx_pshufw_1"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,Yw")
         (vec_select:V4HI
-          (match_operand:V4HI 1 "register_mmxmem_operand" "ym,xYw")
+	  (match_operand:V4HI 1 "register_mmxmem_operand" "ym,Yw")
           (parallel [(match_operand 2 "const_0_to_3_operand")
                      (match_operand 3 "const_0_to_3_operand")
                      (match_operand 4 "const_0_to_3_operand")
@@ -2076,6 +2076,17 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
 
+;; Optimize V2SImode load from memory, swapping the elements and
+;; storing back into the memory into DImode rotate of the memory by 32.
+(define_split
+  [(set (match_operand:V2SI 0 "memory_operand")
+	(vec_select:V2SI (match_dup 0)
+	  (parallel [(const_int 1) (const_int 0)])))]
+  "TARGET_64BIT && (TARGET_READ_MODIFY_WRITE || optimize_insn_for_size_p ())"
+  [(set (match_dup 0)
+	(rotate:DI (match_dup 0) (const_int 32)))]
+  "operands[0] = adjust_address (operands[0], DImode, 0);")
+
 (define_insn "mmx_pswapdv2si2"
   [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
 	(vec_select:V2SI
@@ -2094,10 +2105,10 @@
    (set_attr "mode" "DI,TI")])
 
 (define_insn "*vec_dupv4hi"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,Yw")
 	(vec_duplicate:V4HI
 	  (truncate:HI
-	    (match_operand:SI 1 "register_operand" "0,xYw"))))]
+	    (match_operand:SI 1 "register_operand" "0,Yw"))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@

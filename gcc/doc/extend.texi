@@ -3240,7 +3240,9 @@ calls.
 Attribute @code{malloc} indicates that a function is @code{malloc}-like,
 i.e., that the pointer @var{P} returned by the function cannot alias any
 other pointer valid when the function returns, and moreover no
-pointers to valid objects occur in any storage addressed by @var{P}.
+pointers to valid objects occur in any storage addressed by @var{P}. In
+addition, the GCC predicts that a function with the attribute returns
+non-null in most cases.
 
 Independently, the form of the attribute with one or two arguments
 associates @code{deallocator} as a suitable deallocation function for
@@ -3248,13 +3250,14 @@ pointers returned from the @code{malloc}-like function.  @var{ptr-index}
 denotes the positional argument to which when the pointer is passed in
 calls to @code{deallocator} has the effect of deallocating it.
 
-Using the attribute with no arguments is designed to improve optimization.
-The compiler predicts that a function with the attribute returns non-null
-in most cases.  Functions like @code{malloc} and @code{calloc} have this
-property because they return a pointer to uninitialized or zeroed-out
-storage.  However, functions like @code{realloc} do not have this property,
-as they may return pointers to storage containing pointers to existing
-objects.
+Using the attribute with no arguments is designed to improve optimization
+by relying on the aliasing property it implies.  Functions like @code{malloc}
+and @code{calloc} have this property because they return a pointer to
+uninitialized or zeroed-out, newly obtained storage.  However, functions
+like @code{realloc} do not have this property, as they may return pointers
+to storage containing pointers to existing objects.  Additionally, since
+all such functions are assumed to return null only infrequently, callers
+can be optimized based on that assumption.
 
 Associating a function with a @var{deallocator} helps detect calls to
 mismatched allocation and deallocation functions and diagnose them under
@@ -3913,8 +3916,10 @@ When applied to a member function of a C++ class template, the
 attribute also means that the function is instantiated if the
 class itself is instantiated.
 
+@item retain
+@cindex @code{retain} function attribute
 For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
-will also save the function from linker garbage collection.  To support
+will save the function from linker garbage collection.  To support
 this behavior, functions that have not been placed in specific sections
 (e.g. by the @code{section} attribute, or the @code{-ffunction-sections}
 option), will be placed in new, unique sections.
@@ -7504,8 +7509,10 @@ When applied to a static data member of a C++ class template, the
 attribute also means that the member is instantiated if the
 class itself is instantiated.
 
+@item retain
+@cindex @code{retain} variable attribute
 For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
-will also save the variable from linker garbage collection.  To support
+will save the variable from linker garbage collection.  To support
 this behavior, variables that have not been placed in specific sections
 (e.g. by the @code{section} attribute, or the @code{-fdata-sections} option),
 will be placed in new, unique sections.
@@ -10680,16 +10687,23 @@ should use @samp{+} constraint modifier meaning that the operand is
 input and output one.  With this modifier you will have the correct
 values on all possible paths from the @code{asm goto}.
 
-To reference a label in the assembler template,
-prefix it with @samp{%l} (lowercase @samp{L}) followed 
-by its (zero-based) position in @var{GotoLabels} plus the number of input 
-operands.  For example, if the @code{asm} has three inputs and references two 
-labels, refer to the first label as @samp{%l3} and the second as @samp{%l4}).
+To reference a label in the assembler template, prefix it with
+@samp{%l} (lowercase @samp{L}) followed by its (zero-based) position
+in @var{GotoLabels} plus the number of input and output operands.
+Output operand with constraint modifier @samp{+} is counted as two
+operands because it is considered as one output and one input operand.
+For example, if the @code{asm} has three inputs, one output operand
+with constraint modifier @samp{+} and one output operand with
+constraint modifier @samp{=} and references two labels, refer to the
+first label as @samp{%l6} and the second as @samp{%l7}).
 
-Alternately, you can reference labels using the actual C label name enclosed
-in brackets.  For example, to reference a label named @code{carry}, you can
-use @samp{%l[carry]}.  The label must still be listed in the @var{GotoLabels}
-section when using this approach.
+Alternately, you can reference labels using the actual C label name
+enclosed in brackets.  For example, to reference a label named
+@code{carry}, you can use @samp{%l[carry]}.  The label must still be
+listed in the @var{GotoLabels} section when using this approach.  It
+is better to use the named references for labels as in this case you
+can avoid counting input and output operands and special treatment of
+output operands with constraint modifier @samp{+}.
 
 Here is an example of @code{asm goto} for i386:
 
@@ -22208,8 +22222,8 @@ void __builtin_mma_xxsetaccz (__vector_quad *);
 void __builtin_mma_assemble_acc (__vector_quad *, vec_t, vec_t, vec_t, vec_t);
 void __builtin_mma_disassemble_acc (void *, __vector_quad *);
 
-void __builtin_mma_assemble_pair (__vector_pair *, vec_t, vec_t);
-void __builtin_mma_disassemble_pair (void *, __vector_pair *);
+void __builtin_vsx_assemble_pair (__vector_pair *, vec_t, vec_t);
+void __builtin_vsx_disassemble_pair (void *, __vector_pair *);
 
 vec_t __builtin_vsx_xvcvspbf16 (vec_t);
 vec_t __builtin_vsx_xvcvbf16spn (vec_t);

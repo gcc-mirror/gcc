@@ -110,7 +110,7 @@
 ;;  v	any EVEX encodable SSE register for AVX512VL target,
 ;;	otherwise any SSE register
 ;;  w	any EVEX encodable SSE register for AVX512BW with TARGET_AVX512VL
-;;	target.
+;;	target, otherwise any SSE register.
 
 (define_register_constraint "Yz" "TARGET_SSE ? SSE_FIRST_REG : NO_REGS"
  "First SSE register (@code{%xmm0}).")
@@ -148,8 +148,8 @@
  "@internal For AVX512VL, any EVEX encodable SSE register (@code{%xmm0-%xmm31}), otherwise any SSE register.")
 
 (define_register_constraint "Yw"
- "TARGET_AVX512BW && TARGET_AVX512VL ? ALL_SSE_REGS : NO_REGS"
- "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512BW with TARGET_AVX512VL target.")
+ "TARGET_AVX512BW && TARGET_AVX512VL ? ALL_SSE_REGS : TARGET_SSE ? SSE_REGS : NO_REGS"
+ "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512BW with TARGET_AVX512VL target, otherwise any SSE register.")
 
 ;; We use the B prefix to denote any number of internal operands:
 ;;  f  FLAGS_REG

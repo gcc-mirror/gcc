@@ -1012,8 +1012,8 @@ extern cpp_callbacks *cpp_get_callbacks (cpp_reader *) ATTRIBUTE_PURE;
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
 
-extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
-					 bool angle_p,  location_t);
+extern const char *cpp_probe_header_unit (cpp_reader *, const char *file,
+					  bool angle_p,  location_t);
 
 /* Call these to get name data about the various compile-time
    charsets.  */

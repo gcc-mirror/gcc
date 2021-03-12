@@ -1,3 +1,750 @@
+2021-03-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99423
+	* module.cc (post_load_processing): Assert not gcable.
+	(laxy_load_pendings): Extend no-gc region around
+	post_load_processing.
+
+2021-03-10  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99508
+	* decl.c (make_rtl_for_nonlocal_decl): Propagate local-extern's
+	assembler name to the ns alias.
+
+2021-03-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99459
+	* coroutines.cc (build_co_await): Look through NOP_EXPRs in
+	build_special_member_call return value to find the CALL_EXPR.
+	Simplify.
+
+2021-03-09  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99472
+	* parser.c (cp_parser_diagnose_invalid_type_name): Clarify
+	that C++20 does not yet imply modules.
+
+2021-03-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99436
+	* name-lookup.c (get_cxx_dialect_name): Add cxx23.
+
+2021-03-08  Nathan Sidwell  <nathan@acm.org>
+
+	* lex.c (module_token_filter::resume): Ignore module-decls inside
+	header-unit.
+	* parser.c (cp_parser_module_declaration): Reject in header-unit.
+
+2021-03-08  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99285
+	* cp-tree.h (match_mergeable_specialization)
+	(add_mergeable_specialization): Adjust parms.
+	* module.cc (trees_in::decl_value): Adjust
+	add_mergeable_specialization calls.
+	(trees_out::key_mergeable): Adjust match_mergeable_specialization
+	calls.
+	(specialization_add): Likewise.
+	* pt.c (match_mergeable_specialization): Do not insert.
+	(add_mergeable_specialization): Add to hash table here.
+
+2021-03-06  Patrick Palka  <ppalka@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99287
+	* constexpr.c (cxx_eval_increment_expression): Pass lval when
+	evaluating the MODIFY_EXPR, and update 'mod' with the result of
+	this evaluation.  Check *non_constant_p afterwards.  For prefix
+	ops, just return 'mod'.
+
+2021-03-06  Patrick Palka  <ppalka@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/96330
+	* pt.c (tsubst_copy) <case TEMPLATE_ID_EXPR>: Rename local
+	variable 'fn' to 'tmpl'.  Handle a variable template-id by
+	calling lookup_template_variable.
+
+2021-03-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99365
+	* pt.c (unify) <case TEMPLATE_TYPE_PARM>: Pass targs as
+	outer_targs to do_auto_deduction.
+	(placeholder_type_constraint_dependent_p): Define.
+	(do_auto_deduction): When processing_template_decl != 0
+	and context is adc_unify and we have constraints, pretend the
+	constraints are satisfied instead of punting.  Otherwise don't
+	punt unless placeholder_type_constraint_dependent_p holds.
+	Add some clarifying sanity checks.  Add a hack to add missing
+	outermost template levels to outer_args before checking
+	satisfaction.  Don't substitute outer_targs into type if it's
+	already been done.
+
+2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99374
+	* call.c (standard_conversion): When converting pointers to
+	member, don't return NULL when the bases are equivalent but
+	incomplete.
+
+2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99120
+	* name-lookup.c (check_local_shadow): Check if the type of decl
+	is non-null before checking TYPE_PTR*.
+
+2021-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99245
+	* module.cc (module_state::write_cluster): Relax binding assert.
+
+2021-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99377
+	* pt.c (instantiate_decl): Call set_instantiating_module.
+
+2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98118
+	* coroutines.cc (build_co_await): Use type_build_ctor_call()
+	to determine cases when a CTOR needs to be built.
+	(flatten_await_stmt): Likewise.
+	(morph_fn_to_coro): Likewise.
+
+2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95616
+	* coroutines.cc (coro_diagnose_throwing_fn): New helper.
+	(coro_diagnose_throwing_final_aw_expr): New helper.
+	(build_co_await): Diagnose throwing final await expression
+	components.
+	(build_init_or_final_await): Diagnose a throwing promise
+	final_suspend() call.
+
+2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95615
+	* coroutines.cc (struct param_info): Track parameter copies that need
+	a DTOR.
+	(coro_get_frame_dtor): New helper function factored from build_actor().
+	(build_actor_fn): Use coro_get_frame_dtor().
+	(morph_fn_to_coro): Track parameters that need DTORs on exception,
+	likewise the frame promise and the return object.  On exception, run the
+	DTORs for these, destroy the frame and then rethrow the exception.
+
+2021-03-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99389
+	* pt.c (instantiate_class_template_1): Set instantiating module
+	here.
+
+2021-03-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/99137
+	* parser.c (cp_parser_oacc_clause_async): Reject comma expressions.
+
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88146
+	PR c++/99362
+	* cvt.c (convert_to_void): Revert 2019-10-17 changes.  Clarify
+	comment.
+
+2021-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99170
+	* module.cc (class uintset): Delete.
+	(typedef attached_map_t): A hash map.
+	(attached_table): Use attached_map_t.  Adjust uses ...
+	(trees_out::decl_value, trees_in::decl_value): ... here ...
+	(trees_out::key_mergeable): ... here ...
+	(trees_in::key_mergeable): ... here ...
+	(maybe_attach_decl): ... here ...
+	(direct_import): ... and here.
+
+2021-03-04  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99170
+	* cp-tree.h
+	* lex.c (cxx_dup_lang_specific_decl): Adjust for module_attached_p
+	rename.
+	* module.cc (class pending_key): New.
+	(default_hash_traits<pending_key>): New specialization.
+	(pending_map_t): New typedef.
+	(pending_table): Replace old table.
+	(trees_out::lang_decl_bools): Adjust.
+	(trees_in::lang_decl_bools): Adjust.
+	(trees_in::install_entity): Drop pending member and specialization
+	handling.
+	(find_pending_key): New.
+	(depset::hash::fiund_dependencies): Use it.
+	(pendset_lazy_load): Delete.
+	(module_state::write_cluster): Don't count pendings here.  Bye
+	Duff's device-like thing.
+	(module_state::write_pendings): Reimplement.
+	(module_state::read_pendings): Reimplement.
+	(lazy_specializations_p): Delete.
+	(module_state::write): Adjust write_pendings call.
+	(lazy_load_pendings): New.
+	(lazy_load_specializations): Delete.
+	(lazy_load_members): Delete.
+	(init_modules):	Adjust.
+	* name-lookup.c (maybe_lazily_declare):	Call lazy_load_pendings
+	not lazy_load_members.
+	(note_pending_specializations): Delete.
+	(load_pending_specializations): Delete.
+	* name-lookup.h	(BINDING_VECTR_PENDING_SPECIALIZATIONS_P): Delete.
+	(BINDING_VECTOR_PENDING_MEMBERS_P): Delete.
+	(BINDING_VECTR_PENDING_MEMBERS_P): Delete.
+	(note_pending_specializations): Delete.
+	(load_pending_specializations): Delete.
+	* pt.c (lookup_template_class_1): Call lazy_load_pendings not
+	lazy_load_specializations.
+	(instantiate_template_class_1): Likewise.
+	(instantiate_decl): Call lazy_load_pendings.
+	* typeck.c (complete_type): Likewise.
+
+2021-03-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99170
+	* module.cc (post_load_decls): New.
+	(lazy_snum, recursive_lazy): Move earlier.
+	(module_state::read_cluster): Push cloning onto post_load_decls.
+	(post_load_processing): New.  Do the cloning here.
+	(module_state::read_inits): Call post_load_processing.
+	(module_state::read_language): Likewise.
+	(lazy_load_binding, lazy_load_specializations): Likewise
+	(lazy_load_members): Likewise
+
+2021-03-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99170
+	* module.cc (trees_out::decl_value): Stream specialization keys
+	after decl.
+	(trees_in::decl_value): Stream them back and insert after
+	completing the decl.
+	(trees_out::key_mergeable): Drop some streaming here ...
+	(trees_in::key_mergeable): ... and here.  Don't insert into
+	specialization tables.
+
+2021-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (struct sat_info): Document the different
+	meanings of noisy() and diagnose_unsatisfaction_p() during
+	satisfaction and requires-expression evaluation.
+	(tsubst_valid_expression_requirement): Take a sat_info instead
+	of a subst_info.  Perform the substitution quietly first.  Fold
+	in error-replaying code from diagnose_valid_expression.
+	(tsubst_simple_requirement): Take a sat_info instead of a
+	subst_info.
+	(tsubst_type_requirement_1): New.  Fold in error-replaying code
+	from diagnose_valid_type.
+	(tsubst_type_requirement): Use the above.  Take a sat_info
+	instead of a subst_info.
+	(tsubst_compound_requirement): Likewise.  Fold in
+	error-replaying code from diagnose_compound_requirement.
+	(tsubst_nested_requirement): Take a sat_info instead of a
+	subst_info.  Fold in error-replaying code from
+	diagnose_nested_requirement.
+	(tsubst_requirement): Take a sat_info instead of a subst_info.
+	(tsubst_requires_expr): Split into two versions, one that takes
+	a sat_info argument and another that takes a complain and
+	in_decl argument.  Remove outdated documentation.  Document the
+	effects of the sat_info argument.  Don't short-circuit
+	processing of requirements when diagnosing unsatisfaction,
+	mirroring diagnose_requires_expr.
+	(satisfy_nondeclaration_constraint) <case REQUIRES_EXPR>: Remove
+	assert, and se the three-parameter version of tsubst_requires_expr.
+	(diagnose_trait_expr): Make static.  Take a template argument
+	vector instead of a parameter mapping.
+	(diagnose_valid_expression): Remove.
+	(diagnose_valid_type): Remove.
+	(diagnose_simple_requirement): Remove.
+	(diagnose_compound_requirement): Remove.
+	(diagnose_type_requirement): Remove.
+	(diagnose_nested_requirement): Remove.
+	(diagnose_requirement): Remove.
+	(diagnose_requires_expr): Remove.
+	(diagnose_atomic_constraint): Take a sat_info instead of a
+	subst_info.  Adjust call to diagnose_trait_expr.  Call
+	tsubst_requires_expr instead of diagnose_requires_expr.
+	(diagnose_constraints): Remove special casing of REQUIRES_EXPR
+	and just always call constraint_satisfaction_value.
+
+2021-03-03  Patrick Palka  <ppalka@redhat.com>
+
+	* constexpr.c (cxx_eval_call_expression): Adjust call to
+	evaluate_concept_check.
+	(cxx_eval_constant_expression) <case REQUIRES_EXPR>: Use
+	evaluate_requires_expression instead of
+	satisfy_constraint_expression.
+	<case TEMPLATE_ID_EXPR>: Adjust call to evaluate_concept_check.
+	* constraint.cc (struct sat_info): Adjust comment about which
+	satisfaction entrypoints use noisy-unsat.
+	(normalize_template_requirements): Remove (and adjust callers
+	appropriately).
+	(normalize_nontemplate_requirements): Likewise.
+	(tsubst_nested_requirement): Use constraint_satisfaction_value
+	instead of satisfy_constraint_expression, which'll do the
+	noisy replaying of ill-formed quiet satisfaction for us.
+	(decl_satisfied_cache): Adjust comment.
+	(satisfy_constraint): Rename to ...
+	(satisfy_normalized_constraints): ... this.
+	(satisfy_associated_constraints): Remove (and make its
+	callers check for dependent arguments).
+	(satisfy_constraint_expression): Rename to ...
+	(satisfy_nondeclaration_constraints): ... this.  Assert that
+	'args' is empty when 't' is a concept-id.  Removing handling
+	bare constraint-expressions, and handle REQUIRES_EXPRs
+	specially.  Adjust comment accordingly.
+	(satisfy_declaration_constraints): Assert in the two-parameter
+	version that 't' is not a TEMPLATE_DECL.  Adjust following
+	removal of normalize_(non)?template_requirements and
+	satisfy_asociated_constraints.
+	(constraint_satisfaction_value): Combine the two- and
+	three-parameter versions in the natural way.
+	(constraints_satisfied_p): Combine the one- and two-parameter
+	versions in the natural way.  Improve documentation.
+	(evaluate_requires_expr): Define.
+	(evaluate_concept_check): Remove 'complain' parameter.  Use
+	constraint_satisfaction_value instead of
+	satisfy_constraint_expression.
+	(diagnose_nested_requirement): Adjust following renaming of
+	satisfy_constraint_expression.
+	(diagnose_constraints): Handle REQUIRES_EXPR by going through
+	diagnose_requires_expr directly instead of treating it as a
+	constraint-expression.  Improve documentation.
+	* cp-gimplify.c (cp_genericize_r) <case CALL_EXPR>: Adjust call
+	to evaluate_concept_check.
+	<case REQUIRES_EXPR>: Use evaluate_requires_expr instead of
+	constraints_satisfied_p.
+	<case TEMPLATE_ID_EXPR>: Adjust call to evaluate_concept_check.
+	* cp-tree.h (evaluate_requires_expr): Declare.
+	(evaluate_concept_check): Remove tsubst_flag_t parameter.
+	(satisfy_constraint_expression): Remove declaration.
+	(constraints_satisfied_p): Remove one-parameter declaration.
+	Add a default argument to the two-parameter declaration.
+	* cvt.c (convert_to_void): Adjust call to
+	evaluate_concept_check.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82959
+	* call.c (op_is_ordered): Handle TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR
+	and COMPOUND_EXPR.
+
+2021-03-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97034
+	PR c++/99009
+	* pt.c (build_deduction_guide): Use INNERMOST_TEMPLATE_ARGS.
+	(maybe_aggr_guide): Use the original template type where needed.  In
+	a class member template, partially instantiate the result of
+	collect_ctor_idx_types.
+	(do_class_deduction): Defer the deduction until the enclosing
+	scope is non-dependent.
+
+2021-03-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95675
+	* call.c (build_temp): Wrap a CALL_EXPR in a TARGET_EXPR
+	if it didn't get one before.
+
+2021-03-03  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99344
+	* module.cc (trees_out::decl_node): Small refactor.
+	(depset::hash::add_binding_entity): Return true on meeting an
+	import.  Set namespace's import here.
+	(module_state:write_namespaces): Inform of purview too.
+	(module_state:read_namespaces): Adjust.
+	* name-lookup.c (implicitly_export_namespace): Delete.
+	(do_pushdecl): Don't call it.
+	(push_namespace): Likewise, set purview.
+	(add_imported_namespace): Reorder parms.
+	* name-lookup.h (add_imported_namespace): Alter param ordering.
+
+2021-03-02  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/99251
+	* class.c (build_base_path): Call build_if_nonnull.
+	* cp-tree.h (build_if_nonnull): Declare.
+	* rtti.c (ifnonnull): Rename...
+	(build_if_nonnull): ...to this.  Set no-warning bit on COND_EXPR.
+	(build_dynamic_cast_1): Adjust to name change.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96443
+	PR c++/96960
+	* constraint.cc (type_deducible_p): Don't substitute into the
+	constraints, and instead just pass 'args' to do_auto_deduction
+	as the outer template arguments.
+	(tsubst_parameter_mapping): Remove confused code for handling
+	placeholder type arguments.
+	(normalize_placeholder_type_constraint): Define.
+	(satisfy_constraint_expression): Use it to handle placeholder
+	'auto' types.
+	* cp-tree.h (PLACEHOLDER_TYPE_CONSTRAINTS_INFO): Define.
+	(PLACEHOLDER_TYPE_CONSTRAINTS): Redefine in terms of the above.
+	* pt.c (tsubst) <case TEMPLATE_TYPE_PARM>: Use
+	PLACEHOLDER_TYPE_CONSTRAINTS_INFO instead.
+	(make_constrained_placeholder_type): Set
+	PLACEHOLDER_TYPE_CONSTRAINTS_INFO instead.
+	(do_auto_deduction): Clarify comments about the outer_targs
+	parameter.  Rework satisfaction of a placeholder type constraint
+	to pass in the complete set of template arguments directly to
+	constraints_satisfied_p.
+	(splice_late_return_type): Use PLACEHOLDER_TYPE_CONSTRAINTS_INFO
+	instead.  Also rebuild the the constraint info on the new auto.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (build_parameter_mapping): Rely on the caller to
+	determine the in-scope template parameters.
+	(norm_info::norm_info): Delegate the tsubst_flags_t constructor
+	to the two-parameter constructor.  In the two-parameter
+	constructor, fold in the definition of make_context, set
+	initial_parms appropriately, and don't set the now-removed
+	orig_decl member.
+	(norm_info::make_context): Remove, now that its only use is
+	inlined into the caller.
+	(norm_info::update_context): Adjust call to
+	build_parameter_mapping to pass in the relevant set of in-scope
+	template parameters.
+	(norm_info::ctx_parms): Define this member function.
+	(norm_info::context): Initialize to NULL_TREE.
+	(norm_info::orig_decl): Remove this data member.
+	(norm_info::initial_parms): Define this data member.
+	(normalize_atom): Adjust call to build_parameter_mapping to pass
+	in the relevant set of in-scope template parameters.  Use
+	info.initial_parms instead of info.orig_decl.
+	(normalize_constraint_expression): Take a norm_info object
+	instead of a bool.  Cache the result of normalization.
+	(tsubst_nested_requirement): Call satisfy_constraint_expression
+	instead of satisfy_constraint, so that we normalize on demand.
+	(satisfy_constraint_expression): Handle a NESTED_REQ argument.
+	Adjust call to normalize_constraint_expression.
+	(finish_nested_requirement): Set the TREE_TYPE of the NESTED_REQ
+	to current_template_parms.
+	(diagnose_nested_requirements): Go through
+	satisfy_constraint_expression, as with tsubst_nested_requirement.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (tsubst_parameter_mapping): Canonicalize the
+	arguments of a substituted TYPE_ARGUMENT_PACK even if we've
+	started with a TYPE_ARGUMENT_PACK.
+	(finish_requires_expr): Don't set DECL_CONTEXT and
+	CONSTRAINT_VAR_P on each of the introduced parameters here.
+	* parser.c (cp_parser_requirement_parameter_list): Instead set
+	these fields earlier, here.
+	* pt.c (do_auto_deduction): Canonicalize the result of
+	do_auto_deduction.  Pass 'complain' to finish_decltype_type.
+
+2021-03-02  Patrick Palka  <ppalka@redhat.com>
+
+	* constraint.cc (tsubst_simple_requirement): Just return
+	boolean_true_node on success.
+	(tsubst_type_requirement): Likewise.
+	(tsubst_compound_requirement): Likewise.
+	(tsubst_nested_requirement): Likewise.
+	(tsubst_requirement_body): Remove.
+	(check_constaint_variables): Rename to ...
+	(check_constraint_variables): ... this.
+	(tsubst_constraint_variables): Adjust.
+	(tsubst_requires_expr): Fold tsubst_requirement_body into here.
+
+2021-03-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99294
+	* class.c (fixup_type_variants): Propagate mode, precision,
+	alignment & emptiness.
+	* module.cc (trees_out::type_node): Use TYPE_ALIGN_RAW.
+	(trees_in::tree_node): Rematerialize alignment here.
+
+2021-02-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90333
+	* parser.c (cp_parser_lambda_declarator_opt): Accept GNU attributes
+	between () and ->.
+
+2021-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_lambda_declarator_opt): Implement
+	P1102R2 - Down with ()! Make ()s optional before lambda specifiers
+	for -std={c,gnu}++2b or with pedwarn in earlier versions.
+
+2021-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95451
+	* lambda.c (is_lambda_ignored_entity): Before checking for
+	LAMBDA_FUNCTION_P, use OVL_FIRST.  Drop FUNCTION_DECL check.
+
+2021-02-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98810
+	* pt.c (tsubst_copy) [VIEW_CONVERT_EXPR]: Add const
+	to a class non-type template argument that needs it.
+
+2021-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98990
+	* pt.c (splice_late_return_type): Rebuild the entire return type
+	if we have to adjust the level of an auto within.
+	(type_uses_auto): Adjust call to find_type_usage.
+	* type-utils.h (find_type_usage): Revert r10-6571 change that
+	made this function return a pointer to the auto node.
+
+2021-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99213
+	PR c++/94521
+	* error.c (dump_scope): Pass TFF_NO_TEMPLATE_BINDINGS instead of
+	TFF_NO_FUNCTION_ARGUMENTS when dumping a function scope.
+
+2021-02-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99103
+	* pt.c (is_spec_or_derived): Drop cv-qualifiers from 'etype'.
+	(maybe_aggr_guide): Fix order of arguments to is_spec_or_derived.
+
+2021-02-25  Marek Polacek  <polacek@redhat.com>
+
+	DR 1312
+	PR c++/99176
+	* constexpr.c (is_std_construct_at): New overload.
+	(is_std_allocator_allocate): New overload.
+	(cxx_eval_call_expression): Use the new overloads.
+	(cxx_eval_constant_expression): Reject casting
+	from void * as per DR 1312.  Don't check can_convert.
+
+2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97587
+	* coroutines.cc (struct param_info): Track rvalue refs.
+	(morph_fn_to_coro): Track rvalue refs, and call the promise
+	CTOR with the frame copy of passed parms.
+
+2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95822
+	* coroutines.cc (morph_fn_to_coro): Unconditionally remove any
+	set throwing_cleanup marker.
+
+2021-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99166
+	* module.cc (module_state::inform_cmi_p): Renamed field.
+	(module_state::do_import): Adjust.
+	(init_modules, finish_module_processing): Likewise.
+	(handle_module_option): Likewise.
+
+2021-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98318
+	* mapper-client.cc (module_client::open_module_client): Fix typo
+	of fd init.
+
+2021-02-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98718
+	* module.cc (ool): New indirection vector.
+	(loc_spans::maybe_propagate): Location is not optional.
+	(loc_spans::open): Likewise.  Assert monotonically advancing.
+	(module_for_ordinary_loc): Use ool indirection vector.
+	(module_state::write_prepare_maps): Do not count empty macro
+	expansions.  Elide empty spans.
+	(module_state::write_macro_maps): Skip empty expansions.
+	(ool_cmp): New qsort comparator.
+	(module_state::write): Create and destroy ool vector.
+	(name_pending_imports): Fix dump push/pop.
+	(preprocess_module): Likewise.  Add more dumping.
+	(preprocessed_module): Likewise.
+
+2021-02-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96251
+	* coroutines.cc (coro_common_keyword_context_valid_p): Suppress
+	error reporting when instantiating for a constexpr.
+
+2021-02-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99208
+	* decl.c (name_unnamed_type): Check DECL identity, not IDENTIFIER
+	identity.
+
+2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95468
+	* pt.c (tsubst_copy_and_build) <case BASELINK>: New case, copied
+	over from tsubst_copy.
+
+2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	* pt.c (instantiation_dependent_expression_p): Check
+	processing_template_decl before calling
+	potential_constant_expression.
+
+2021-02-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99174
+	* module.cc (struct module_state): Add visited_p flag.
+	(name_pending_imports): Use it to avoid duplicate requests.
+	(preprocess_module): Don't read preprocessor state if we failed to
+	load a module's config.
+
+2021-02-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99153
+	* decl.c (duplicate_decls): Move DECL_MODULE_IMPORT_P propagation
+	to common-path.
+	* module.cc (set_defining_module): Add assert.
+
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98741
+	* module.cc (pending_imports): New.
+	(declare_module): Adjust test condition.
+	(name_pending_imports): New.
+	(preprocess_module): Reimplement using pending_imports.
+	(preprocessed_module): Move name-getting to name_pending_imports.
+	* name-lookup.c (append_imported_binding_slot): Assert module
+	ordering is increasing.
+
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (note_cmis): New.
+	(struct module_state): Add inform_read_p bit.
+	(module_state::do_import): Inform of CMI location, if enabled.
+	(init_modules): Canonicalize note_cmis entries.
+	(handle_module_option): Handle -flang-info-module-read=FOO.
+
+2021-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96926
+	* call.c (perfect_conversion_p): Limit rvalueness
+	test to reference bindings.
+
+2021-02-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96926
+	* call.c (perfect_conversion_p): New.
+	(perfect_candidate_p): New.
+	(add_candidates): Ignore templates after a perfect non-template.
+
+2021-02-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* module.cc (canonicalize_header_name): Use
+	cpp_probe_header_unit.
+	(maybe_translate_include): Fix note_includes comparison.
+	(init_modules): Fix note_includes string termination.
+
+2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99132
+	* cp-gimplify.c (cp_genericize_r) <case CALL_EXPR>: Use
+	cp_get_callee_fndecl_nofold instead of cp_get_callee_fndecl to check
+	for immediate function calls.
+
+2021-02-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* module.cc (struct macro_export): Add GTY markers.
+	(macro_exports): Likewise, us a va_gc Vector.
+
+2021-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/99106
+	* init.c (build_zero_init_1): For flexible array members just return
+	NULL_TREE instead of returning empty CONSTRUCTOR with non-complete
+	ARRAY_TYPE.
+
+2021-02-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99116
+	* name-lookup.c (do_pushdecl): Don't peek under template_parm
+	bindings here ...
+	(set_identifier_type_value_with_scope): ... or here.
+	(do_pushtag): Only set_identifier_type_value_with_scope at
+	non-class template parm scope, and use parent scope.
+
+2021-02-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99071
+	* name-lookup.c (maybe_record_mergeable_decl): Deref the correct
+	pointer.
+
+2021-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR debug/96997
+	PR c++/94034
+	* tree.c (build_aggr_init_expr): Revert r10-7718 change.
+
+2021-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	* module.cc (module_state::write_cluster): Check bindings for
+	imported using-decls.
+
+2021-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99040
+	* module.cc (trees_in::decl_value): Call add_module_namespace_decl
+	for new namespace-scope entities.
+	(module_state::read_cluster): Don't call add_module_decl here.
+	* name-lookup.h (add_module_decl): Rename to ...
+	(add_module_namespace_decl): ... this.
+	* name-lookup.c (newbinding_bookkeeping): Move into ...
+	(do_pushdecl): ... here.  Its only remaining caller.
+	(add_module_decl): Rename to ...
+	(add_module_namespace_decl): ... here.  Add checking-assert for
+	circularity. Don't call newbinding_bookkeeping, just extern_c
+	checking and incomplete var checking.
+
+2021-02-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99039
+	PR c++/99040
+	* cp-tree.h (CPTI_GLOBAL_TYPE): Delete.
+	(global_type_node): Delete.
+	(IDENTIFIER_TYPE_VALUE): Delete.
+	(IDENTIFIER_HAS_TYPE_VALUE): Delete.
+	(get_type_value): Delete.
+	* name-lookup.h (identifier_type_value): Delete.
+	* name-lookup.c (check_module_override): Don't
+	SET_IDENTIFIER_TYPE_VALUE here.
+	(do_pushdecl): Nor here.
+	(identifier_type_value_1, identifier_type_value): Delete.
+	(set_identifier_type_value_with_scope): Only
+	SET_IDENTIFIER_TYPE_VALUE for local and class scopes.
+	(pushdecl_nanmespace_level): Remove shadow stack nadgering.
+	(do_pushtag): Use REAL_IDENTIFIER_TYPE_VALUE.
+	* call.c (check_dtor_name): Use lookup_name.
+	* decl.c (cxx_init_decl_processing): Drop global_type_node.
+	* decl2.c (cplus_decl_attributes): Don't SET_IDENTIFIER_TYPE_VALUE
+	here.
+	* init.c (get_type_value): Delete.
+	* pt.c (instantiate_class_template_1): Don't call pushtag or
+	SET_IDENTIFIER_TYPE_VALUE here.
+	(tsubst): Assert never an identifier.
+	(dependent_type_p): Drop global_type_node assert.
+	* typeck.c (error_args_num): Don't use IDENTIFIER_HAS_TYPE_VALUE
+	to determine ctorness.
+
+2021-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97742
+	* parser.c (cp_parser_requirement_seq): Stop iterating after reaching
+	CPP_EOF.
+
+2021-02-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97246
+	PR c++/94546
+	* pt.c (extract_fnparm_pack): Check DECL_PACK_P here.
+	(register_parameter_specializations): Not here.
+
 2021-02-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/95888

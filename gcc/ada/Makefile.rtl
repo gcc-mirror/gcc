@@ -2311,6 +2311,18 @@ ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
   s-tpopsp.adb<libgnarl/s-tpopsp__posix-foreign.adb \
   system.ads<libgnat/system-linux-mips.ads
 
+  ifeq ($(strip $(filter-out mips64% mipsisa64%,$(target_cpu))),)
+    ifneq ($(strip $(MULTISUBDIR)),/32)
+      LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+      EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+    endif
+  else
+    ifneq ($(strip $(filter /64 /n32,$(MULTISUBDIR))),)
+      LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS)
+      EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
+    endif
+  endif
+
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o

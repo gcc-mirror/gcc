@@ -328,7 +328,7 @@ package System.OS_Interface is
       oss : access stack_t) return int;
    pragma Import (C, sigaltstack, "sigaltstack");
 
-   Alternate_Stack_Size : constant := 16 * 1024;
+   Alternate_Stack_Size : constant := 32 * 1024;
    --  This must be in keeping with init.c:__gnat_alternate_stack
 
    Alternate_Stack : aliased char_array (1 .. Alternate_Stack_Size);

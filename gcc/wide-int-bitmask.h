@@ -23,14 +23,14 @@ along with GCC; see the file COPYING3.  If not see
 class wide_int_bitmask
 {
 public:
-  inline wide_int_bitmask ();
-  inline wide_int_bitmask (uint64_t l);
-  inline wide_int_bitmask (uint64_t l, uint64_t h);
+  constexpr wide_int_bitmask ();
+  constexpr wide_int_bitmask (uint64_t l);
+  constexpr wide_int_bitmask (uint64_t l, uint64_t h);
   inline wide_int_bitmask &operator &= (wide_int_bitmask);
   inline wide_int_bitmask &operator |= (wide_int_bitmask);
-  inline wide_int_bitmask operator ~ () const;
-  inline wide_int_bitmask operator & (wide_int_bitmask) const;
-  inline wide_int_bitmask operator | (wide_int_bitmask) const;
+  constexpr wide_int_bitmask operator ~ () const;
+  constexpr wide_int_bitmask operator & (wide_int_bitmask) const;
+  constexpr wide_int_bitmask operator | (wide_int_bitmask) const;
   inline wide_int_bitmask operator >> (int);
   inline wide_int_bitmask operator << (int);
   inline bool operator == (wide_int_bitmask) const;
@@ -38,19 +38,19 @@ public:
   uint64_t low, high;
 };
 
-inline
+constexpr
 wide_int_bitmask::wide_int_bitmask ()
 : low (0), high (0)
 {
 }
 
-inline
+constexpr
 wide_int_bitmask::wide_int_bitmask (uint64_t l)
 : low (l), high (0)
 {
 }
 
-inline
+constexpr
 wide_int_bitmask::wide_int_bitmask (uint64_t l, uint64_t h)
 : low (l), high (h)
 {
@@ -72,25 +72,22 @@ wide_int_bitmask::operator |= (wide_int_bitmask b)
   return *this;
 }
 
-inline wide_int_bitmask
+constexpr wide_int_bitmask
 wide_int_bitmask::operator ~ () const
 {
-  wide_int_bitmask ret (~low, ~high);
-  return ret;
+  return wide_int_bitmask (~low, ~high);
 }
 
-inline wide_int_bitmask
+constexpr wide_int_bitmask
 wide_int_bitmask::operator | (wide_int_bitmask b) const
 {
-  wide_int_bitmask ret (low | b.low, high | b.high);
-  return ret;
+  return wide_int_bitmask (low | b.low, high | b.high);
 }
 
-inline wide_int_bitmask
+constexpr wide_int_bitmask
 wide_int_bitmask::operator & (wide_int_bitmask b) const
 {
-  wide_int_bitmask ret (low & b.low, high & b.high);
-  return ret;
+  return wide_int_bitmask (low & b.low, high & b.high);
 }
 
 inline wide_int_bitmask

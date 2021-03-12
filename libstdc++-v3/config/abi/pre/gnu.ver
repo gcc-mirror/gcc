@@ -2394,11 +2394,11 @@ GLIBCXX_3.4.29 {
     _ZNSt9once_flag9_M_finishEb;
 
     # std::to_chars(char*, char*, [float|double|long double])
-    _ZSt8to_charsPcS_[defg];
+    _ZSt8to_charsPcS_[def];
     # std::to_chars(char*, char*, [float|double|long double], chars_format)
-    _ZSt8to_charsPcS_[defg]St12chars_format;
+    _ZSt8to_charsPcS_[def]St12chars_format;
     # std::to_chars(char*, char*, [float|double|long double], chars_format, int)
-    _ZSt8to_charsPcS_[defg]St12chars_formati;
+    _ZSt8to_charsPcS_[def]St12chars_formati;
 
 } GLIBCXX_3.4.28;
 

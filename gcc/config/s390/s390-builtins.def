@@ -273,6 +273,7 @@
 #undef B_VXE
 #undef B_VXE2
 #undef B_DEP
+#undef B_NNPA
 
 #undef BFLAGS_MASK_INIT
 #define BFLAGS_MASK_INIT (B_INT)
@@ -283,6 +284,7 @@
 #define B_VXE   (1 << 3)  /* Builtins requiring the z14 vector extensions.  */
 #define B_VXE2  (1 << 4)  /* Builtins requiring the z15 vector extensions.  */
 #define B_DEP   (1 << 5)  /* Builtin has been deprecated and a warning should be issued.  */
+#define B_NNPA  (1 << 6)  /* Builtins requiring the NNPA Facility.  */
 
 /* B_DEF defines a standard (not overloaded) builtin
    B_DEF (<builtin name>, <RTL expander name>, <function attributes>, <builtin flags>, <operand flags, see above>, <fntype>)
@@ -3005,3 +3007,13 @@ OB_DEF_VAR (s390_vstrsz_u32,             s390_vstrszf,      0,                  
 B_DEF      (s390_vstrszb,                vstrszv16qi,       0,                  B_VXE2,             0,                  BT_FN_UV16QI_UV16QI_UV16QI_UV16QI_INTPTR)
 B_DEF      (s390_vstrszh,                vstrszv8hi,        0,                  B_VXE2,             0,                  BT_FN_UV8HI_UV8HI_UV8HI_UV8HI_INTPTR)
 B_DEF      (s390_vstrszf,                vstrszv4si,        0,                  B_VXE2,             0,                  BT_FN_UV4SI_UV4SI_UV4SI_UV8HI_INTPTR)
+
+/* arch 14 builtins */
+
+B_DEF      (s390_vclfnhs,                vclfnhs_v8hi,      0,                  B_NNPA,             O3_U4,              BT_FN_V4SF_V8HI_UINT)
+B_DEF      (s390_vclfnls,                vclfnls_v8hi,      0,                  B_NNPA,             O3_U4,              BT_FN_V4SF_V8HI_UINT)
+
+B_DEF      (s390_vcrnfs,                 vcrnfs_v8hi,       0,                  B_NNPA,             O4_U4,              BT_FN_V8HI_V4SF_V4SF_UINT)
+
+B_DEF      (s390_vcfn,                   vcfn_v8hi,         0,                  B_NNPA,             O3_U4,              BT_FN_V8HI_V8HI_UINT)
+B_DEF      (s390_vcnf,                   vcnf_v8hi,         0,                  B_NNPA,             O3_U4,              BT_FN_V8HI_V8HI_UINT)

@@ -2124,7 +2124,7 @@ init_attr_rdwr_indices (rdwr_map *rwm, tree attrs)
 		  if (*m == '$')
 		    {
 		      ++m;
-		      if (!acc.size)
+		      if (!acc.size && vblist)
 			{
 			  /* Extract the list of VLA bounds for the current
 			     parameter, store it in ACC.SIZE, and advance
@@ -2252,10 +2252,6 @@ attr_access::free_lang_data (tree attrs)
       if (!vblist)
 	continue;
 
-      vblist = TREE_VALUE (vblist);
-      if (!vblist)
-	continue;
-
       for (vblist = TREE_VALUE (vblist); vblist; vblist = TREE_CHAIN (vblist))
 	{
 	  tree *pvbnd = &TREE_VALUE (vblist);
@@ -2268,6 +2264,14 @@ attr_access::free_lang_data (tree attrs)
 	     free up memory.  */
 	  *pvbnd = NULL_TREE;
 	}
+    }
+
+  for (tree argspec = attrs; (argspec = lookup_attribute ("arg spec", argspec));
+       argspec = TREE_CHAIN (argspec))
+    {
+      /* Same as above.  */
+      tree *pvblist = &TREE_VALUE (argspec);
+      *pvblist = NULL_TREE;
     }
 }
 

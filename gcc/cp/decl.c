@@ -2879,19 +2879,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	      (char *) newdecl + sizeof (struct tree_common),
 	      sizeof (struct tree_decl_common) - sizeof (struct tree_common));
 
-      if (DECL_LANG_SPECIFIC (olddecl) && DECL_TEMPLATE_INFO (olddecl))
-	{
-	  /* Repropagate the module information to the template.  */
-	  tree tmpl = DECL_TI_TEMPLATE (olddecl);
-
-	  if (DECL_TEMPLATE_RESULT (tmpl) == olddecl)
-	    {
-	      DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (olddecl);
-	      gcc_checking_assert (!DECL_MODULE_IMPORT_P (olddecl));
-	      DECL_MODULE_IMPORT_P (tmpl) = false;
-	    }
-	}
-
       switch (TREE_CODE (newdecl))
 	{
 	case LABEL_DECL:
@@ -2922,6 +2909,19 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		  sizeof (struct tree_decl_non_common) - sizeof (struct tree_decl_common)
 		  + TREE_CODE_LENGTH (TREE_CODE (newdecl)) * sizeof (char *));
 	  break;
+	}
+    }
+
+  if (DECL_LANG_SPECIFIC (olddecl) && DECL_TEMPLATE_INFO (olddecl))
+    {
+      /* Repropagate the module information to the template.  */
+      tree tmpl = DECL_TI_TEMPLATE (olddecl);
+
+      if (DECL_TEMPLATE_RESULT (tmpl) == olddecl)
+	{
+	  DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (olddecl);
+	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (olddecl));
+	  DECL_MODULE_IMPORT_P (tmpl) = false;
 	}
     }
 
@@ -4509,9 +4509,6 @@ cxx_init_decl_processing (void)
   push_namespace (get_identifier ("__cxxabiv1"));
   abi_node = current_namespace;
   pop_namespace ();
-
-  global_type_node = make_node (LANG_TYPE);
-  record_unknown_type (global_type_node, "global type");
 
   any_targ_node = make_node (LANG_TYPE);
   record_unknown_type (any_targ_node, "any type");
@@ -7160,6 +7157,13 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 	      && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
 	    set_builtin_user_assembler_name (decl, asmspec);
 	  set_user_assembler_name (decl, asmspec);
+	  if (DECL_LOCAL_DECL_P (decl))
+	    if (auto ns_decl = DECL_LOCAL_DECL_ALIAS (decl))
+	      /* We have to propagate the name to the ns-alias.
+		 This is horrible, as we're affecting a
+		 possibly-shared decl.  Again, a one-true-decl
+		 model breaks down.  */
+	      set_user_assembler_name (ns_decl, asmspec);
 	}
     }
 
@@ -11084,21 +11088,18 @@ name_unnamed_type (tree type, tree decl)
 {
   gcc_assert (TYPE_UNNAMED_P (type));
 
-  /* Replace the anonymous name with the real name everywhere.  */
+  /* Replace the anonymous decl with the real decl.  Be careful not to
+     rename other typedefs (such as the self-reference) of type.  */
+  tree orig = TYPE_NAME (type);
   for (tree t = TYPE_MAIN_VARIANT (type); t; t = TYPE_NEXT_VARIANT (t))
-    if (IDENTIFIER_ANON_P (TYPE_IDENTIFIER (t)))
-      /* We do not rename the debug info representing the unnamed
-	 tagged type because the standard says in [dcl.typedef] that
-	 the naming applies only for linkage purposes.  */
-      /*debug_hooks->set_name (t, decl);*/
+    if (TYPE_NAME (t) == orig)
       TYPE_NAME (t) = decl;
 
   /* If this is a typedef within a template class, the nested
      type is a (non-primary) template.  The name for the
      template needs updating as well.  */
   if (TYPE_LANG_SPECIFIC (type) && CLASSTYPE_TEMPLATE_INFO (type))
-    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type))
-      = TYPE_IDENTIFIER (type);
+    DECL_NAME (CLASSTYPE_TI_TEMPLATE (type)) = DECL_NAME (decl);
 
   /* Adjust linkage now that we aren't unnamed anymore.  */
   reset_type_linkage (type);

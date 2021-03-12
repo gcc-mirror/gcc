@@ -35,13 +35,17 @@ if ![info exists DEFAULT_CXXFLAGS] then {
     set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
 }
 set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
-set MOD_STD_LIST { 17 2a }
+set MOD_STD_LIST { 17 2a 2b }
 
 dg-init
 
+if {[is_remote host]} {
+    # remote testing not functional here :(
+    return
+}
+
 global module_do
 global module_cmis
-global module_headers
 
 set DEFAULT_REPO "gcm.cache"
 
@@ -130,39 +134,6 @@ proc module_cmi_p { src ifs } {
 	}
     }
     return $res
-}
-
-# Append required header unit names to module_headers var
-proc dg-module-headers { args } {
-    if { [llength $args] != 3 } {
-	error "[lindex $args 0]: wrong number of arguments"
-	return
-    }
-}
-
-proc do_module_headers { srcdir subdir std flags} {
-    global module_headers
-    foreach header $module_headers {
-	set kind [lindex $header 0]
-	set hdr [lindex $header 1]
-	verbose "Header $hdr $std" 1
-	switch $kind {
-	    test {
-		global module_cmis
-		set module_cmis {}
-		dg-test -keep-output $srcdir/$subdir/$hdr "$std" $flags
-		global mod_files
-		lappend mod_files [module_cmi_p $subdir/$hdr $module_cmis]
-	    }
-	    system -
-	    user {
-		# FIXME
-	    }
-	    default {
-		error "$kind unknown header"
-	    }
-	}
-    }
 }
 
 # link and maybe run a set of object files
@@ -277,8 +248,6 @@ proc srcdir {} {
 proc module-init { src } {
     set tmp [dg-get-options $src]
     set option_list {}
-    global module_headers
-    set module_headers {}
     set have_std 0
     set std_prefix "-std=c++"
 
@@ -293,12 +262,6 @@ proc module-init { src } {
 	    "dg-additional-options" {
 		if { [string match "*-std=*" [lindex $op 2]] } {
 		    set have_std 1
-		}
-	    }
-	    "dg-module-headers" {
-		set kind [lindex $op 2]
-		foreach header [lindex $op 3] {
-		    lappend module_headers [list $kind $header]
 		}
 	    }
 	}
@@ -316,6 +279,9 @@ proc module-init { src } {
     return $option_list
 }
 
+# cleanup any detritus from previous run
+cleanup_module_files [find $DEFAULT_REPO *.gcm]
+
 # not grouped tests, sadly tcl doesn't have negated glob
 foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 		  "$srcdir/$subdir/*_?.\[CH\]"] {
@@ -324,7 +290,7 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 
 	set std_list [module-init $test]
 	foreach std $std_list {
-	    do_module_headers $srcdir $subdir $std $DEFAULT_MODFLAGS
+	    global module_cmis
 	    set module_cmis {}
 	    verbose "Testing $nshort $std" 1
 	    dg-test $test "$std" $DEFAULT_MODFLAGS
@@ -335,11 +301,11 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 }
 
 # grouped tests
-foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
+foreach src [lsort [find $srcdir/$subdir {*_a.[CHX}]] {
     # use the FOO_a.C name as the parallelization key
     if [runtest_file_p $runtests $src] {
 	set tests [lsort [find [file dirname $src] \
-			      [regsub {_a.[CH]$} [file tail $src] {_[a-z].[CH]}]]]
+			      [regsub {_a.[CHX]$} [file tail $src] {_[a-z].[CHX]}]]]
 
 	set std_list [module-init $src]
 	foreach std $std_list {
@@ -347,31 +313,39 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 	    global module_do
 	    set module_do {"compile" "P"}
 	    set asm_list {}
-	    do_module_headers $srcdir $subdir $std $DEFAULT_MODFLAGS
+	    set any_hdrs 0
+	    global DEFAULT_REPO
+	    file_on_host delete $DEFAULT_REPO
 	    foreach test $tests {
 		if { [lindex $module_do 1] != "N" } {
+		    global module_cmis
 		    set module_cmis {}
 		    set nshort [file tail [file dirname $test]]/[file tail $test]
 		    verbose "Testing $nshort $std" 1
-		    if { [file extension $test] == ".C" } {
-			lappend asm_list [file rootname [file tail $test]].s
+		    switch [file extension $test] {
+			".C" {		
+			    lappend asm_list [file rootname [file tail $test]].s
+			}
+			".X" {
+			    set any_hdrs 1
+			}
 		    }
 		    dg-test -keep-output $test "$std" $DEFAULT_MODFLAGS
 		    set testcase [string range $test [string length "$srcdir/"] end]
 		    lappend mod_files [module_cmi_p $testcase $module_cmis]
 		}
 	    }
-	    set ok 1
 	    set testcase [regsub {_a.[CH]} $src {}]
 	    set testcase \
 		[string range $testcase [string length "$srcdir/"] end]
-	    set ok [module_do_it $module_do $testcase $std $asm_list]
-	    if { $ok } {
-		foreach asm $asm_list {
-		    file_on_host delete $asm
-		}
-		cleanup_module_files $mod_files
+	    module_do_it $module_do $testcase $std $asm_list
+	    foreach asm $asm_list {
+		file_on_host delete $asm
 	    }
+	    if { $any_hdrs } {
+		set mod_files [find $DEFAULT_REPO *.gcm]
+	    }
+	    cleanup_module_files $mod_files
 	}
     }
 }

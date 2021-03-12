@@ -479,6 +479,9 @@ namespace std
   namespace __detail
   {
     // BUILTIN-PTR-THREE-WAY(T, U)
+    // This determines whether t <=> u results in a call to a built-in
+    // operator<=> comparing pointers. It doesn't work for function pointers
+    // (PR 93628).
     template<typename _Tp, typename _Up>
       concept __3way_builtin_ptr_cmp
 	= requires(_Tp&& __t, _Up&& __u)
@@ -491,12 +494,14 @@ namespace std
 	  { static_cast<_Tp&&>(__t).operator<=>(static_cast<_Up&&>(__u)); };
   } // namespace __detail
 
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3530 BUILTIN-PTR-MEOW should not opt the type out of syntactic checks
+
   // [cmp.object], typename compare_three_way
   struct compare_three_way
   {
     template<typename _Tp, typename _Up>
       requires three_way_comparable_with<_Tp, _Up>
-      || __detail::__3way_builtin_ptr_cmp<_Tp, _Up>
       constexpr auto
       operator()(_Tp&& __t, _Up&& __u) const
       noexcept(noexcept(std::declval<_Tp>() <=> std::declval<_Up>()))

@@ -201,8 +201,8 @@ template <size_t _Np>
   inline constexpr overaligned_tag<_Np> overaligned = {};
 
 // }}}
-template <size_t _X>
-  using _SizeConstant = integral_constant<size_t, _X>;
+template <size_t _Xp>
+  using _SizeConstant = integral_constant<size_t, _Xp>;
 
 namespace __detail
 {
@@ -4208,11 +4208,11 @@ template <template <int> class _A0, template <int> class... _Rest>
 	      return typename __decay_abi<_A0<_Bytes>>::type{};
 	    else
 	      {
-		using _B =
+		using _Bp =
 		  typename __find_next_valid_abi<_A0, _Bytes, _Tp>::type;
-		if constexpr (_B::template _S_is_valid_v<
-				_Tp> && _B::template _S_size<_Tp> <= _Np)
-		  return _B{};
+		if constexpr (_Bp::template _S_is_valid_v<
+				_Tp> && _Bp::template _S_size<_Tp> <= _Np)
+		  return _Bp{};
 		else
 		  return
 		    typename _AbiList<_Rest...>::template _BestAbi<_Tp, _Np>{};

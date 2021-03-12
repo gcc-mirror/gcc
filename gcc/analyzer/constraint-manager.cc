@@ -1643,7 +1643,7 @@ public:
 
   bool should_purge_p (const svalue *sval) const
   {
-    return !sval->live_p (m_live_svalues, m_model);
+    return !sval->live_p (&m_live_svalues, m_model);
   }
 
 private:

@@ -10493,7 +10493,7 @@ package body Sem_Ch3 is
          then
             Create_Constrained_Components (Def_Id, Related_Nod, T, Elist);
 
-         else
+         elsif not Is_Private_Type (T) then
             Set_Cloned_Subtype (Def_Id, T);
          end if;
       end if;

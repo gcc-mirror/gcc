@@ -133,8 +133,15 @@ complete_type (tree type)
 	  TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = has_nontrivial_dtor;
 	}
     }
-  else if (CLASS_TYPE_P (type) && CLASSTYPE_TEMPLATE_INSTANTIATION (type))
-    instantiate_class_template (TYPE_MAIN_VARIANT (type));
+  else if (CLASS_TYPE_P (type))
+    {
+      if (modules_p ())
+	/* TYPE could be a class member we've not loaded the definition of.  */ 
+	lazy_load_pendings (TYPE_NAME (TYPE_MAIN_VARIANT (type)));
+
+      if (CLASSTYPE_TEMPLATE_INSTANTIATION (type))
+	instantiate_class_template (TYPE_MAIN_VARIANT (type));
+    }
 
   return type;
 }
@@ -4060,7 +4067,8 @@ error_args_num (location_t loc, tree fndecl, bool too_many_p)
       if (TREE_CODE (TREE_TYPE (fndecl)) == METHOD_TYPE)
 	{
 	  if (DECL_NAME (fndecl) == NULL_TREE
-	      || IDENTIFIER_HAS_TYPE_VALUE (DECL_NAME (fndecl)))
+	      || (DECL_NAME (fndecl)
+		  == DECL_NAME (TYPE_NAME (DECL_CONTEXT (fndecl)))))
 	    error_at (loc,
 		      too_many_p
 		      ? G_("too many arguments to constructor %q#D")

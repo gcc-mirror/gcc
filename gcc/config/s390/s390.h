@@ -41,7 +41,9 @@ enum processor_flags
   PF_Z14 = 2048,
   PF_VXE = 4096,
   PF_VXE2 = 8192,
-  PF_Z15 = 16384
+  PF_Z15 = 16384,
+  PF_NNPA = 32768,
+  PF_ARCH14 = 65536
 };
 
 /* This is necessary to avoid a warning about comparing different enum
@@ -108,6 +110,14 @@ enum processor_flags
 	(s390_arch_flags & PF_VXE2)
 #define TARGET_CPU_VXE2_P(opts) \
 	(opts->x_s390_arch_flags & PF_VXE2)
+#define TARGET_CPU_ARCH14 \
+	(s390_arch_flags & PF_ARCH14)
+#define TARGET_CPU_ARCH14_P(opts) \
+	(opts->x_s390_arch_flags & PF_ARCH14)
+#define TARGET_CPU_NNPA \
+	(s390_arch_flags & PF_NNPA)
+#define TARGET_CPU_NNPA_P(opts) \
+	(opts->x_s390_arch_flags & PF_NNPA)
 
 #define TARGET_HARD_FLOAT_P(opts) (!TARGET_SOFT_FLOAT_P(opts))
 
@@ -167,6 +177,14 @@ enum processor_flags
 	(TARGET_VX && TARGET_CPU_VXE2)
 #define TARGET_VXE2_P(opts)						\
 	(TARGET_VX_P (opts) && TARGET_CPU_VXE2_P (opts))
+#define TARGET_ARCH14 (TARGET_ZARCH && TARGET_CPU_ARCH14)
+#define TARGET_ARCH14_P(opts)						\
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_ARCH14_P (opts))
+#define TARGET_NNPA					\
+	(TARGET_ZARCH && TARGET_CPU_NNPA)
+#define TARGET_NNPA_P(opts)						\
+	(TARGET_ZARCH_P (opts) && TARGET_CPU_NNPA_P (opts))
+
 #if defined(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS_ON_Z13)
 #define TARGET_VECTOR_LOADSTORE_ALIGNMENT_HINTS TARGET_Z13
 #elif defined(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS)

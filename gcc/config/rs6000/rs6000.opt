@@ -609,6 +609,10 @@ mpcrel
 Target Mask(PCREL) Var(rs6000_isa_flags)
 Generate (do not generate) pc-relative memory addressing.
 
+mpcrel-opt
+Target Undocumented Mask(PCREL_OPT) Var(rs6000_isa_flags)
+Generate (do not generate) pc-relative memory optimizations for externals.
+
 mmma
 Target Mask(MMA) Var(rs6000_isa_flags)
 Generate (do not generate) MMA instructions.

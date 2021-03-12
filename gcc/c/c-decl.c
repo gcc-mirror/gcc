@@ -12166,6 +12166,10 @@ free_attr_access_data ()
   /* Iterate over all functions declared in the translation unit.  */
   FOR_EACH_FUNCTION (n)
     {
+      for (tree parm = DECL_ARGUMENTS (n->decl); parm; parm = TREE_CHAIN (parm))
+	if (tree attrs = DECL_ATTRIBUTES (parm))
+	  attr_access::free_lang_data (attrs);
+
       tree fntype = TREE_TYPE (n->decl);
       if (!fntype)
 	continue;

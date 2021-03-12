@@ -1,3 +1,63 @@
+2021-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_declaration) <TYPE_DECL>: Dump nested types
+	after entering the separate class package, if any.
+
+2021-03-04  Richard Biener  <rguenther@suse.de>
+
+	* c-pretty-print.c (c_pretty_printer::direct_abstract_declarator):
+	Handle ERROR_MARK.
+
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99325
+	* c-ppoutput.c (print): Change src_line type from int to unsigned.
+	(token_streamer::stream) Likewise.
+	(maybe_print_line_1): Likewise.  Don't strcmp src_file if src_loc is
+	UNKNOWN_LOCATION.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99324
+	* c-common.c (build_va_arg): Call c_common_mark_addressable_vec
+	instead of mark_addressable.  Fix a comment typo -
+	neutrallly -> neutrally.
+
+2021-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99304
+	* c-attribs.c (handle_malloc_attribute): Fix a typo in inform
+	message - refernced -> referenced.  Remove superfluous space before
+	closing paren of function calls.
+
+2021-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99166
+	* c.opt (-flang-info-module-cmi): Renamed option.
+
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c.opt (flang-info-module-read, flang-info-module-read=): New.
+
+2021-02-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99113
+	* c-attribs.c (c_common_attribute_table): Add the "retain"
+	attribute.
+	(handle_retain_attribute): New function.
+
+2021-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99062
+	* c-attribs.c (handle_assume_aligned_attribute): Check that the
+	alignment argument is non-negative.  Tweak a warning message.
+
+2021-02-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/99055
+	* c-warn.c (warn_parm_array_mismatch): Free strings returned from
+	print_generic_expr_to_str.
+
 2021-02-10  Richard Biener  <rguenther@suse.de>
 
 	* c-common.c (parse_optimize_options): Free decoded_options.

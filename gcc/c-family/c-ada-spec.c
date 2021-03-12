@@ -2847,8 +2847,6 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	      pp_string (buffer, "subtype ");
 	    else
 	      {
-		dump_nested_types (buffer, t, spc);
-
                 if (separate_class_package (t))
 		  {
 		    is_class = true;
@@ -2858,6 +2856,8 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		    spc += INDENT_INCR;
 		    newline_and_indent (buffer, spc);
 		  }
+
+		dump_nested_types (buffer, t, spc);
 
 		pp_string (buffer, "type ");
 	      }

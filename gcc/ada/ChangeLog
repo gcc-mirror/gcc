@@ -1,3 +1,49 @@
+2021-03-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Build a TYPE_STUB_DECL
+	for the main variant of an enumeration type declared as volatile.
+
+2021-03-09  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	* raise-gcc.c: On Cygwin include mingw32.h to prevent
+	windows.h from including x86intrin.h or emmintrin.h.
+
+2021-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/99264
+	* init.c (__gnat_alternate_sta) [Linux]: Remove preprocessor test on
+	MINSIGSTKSZ and bump size to 32KB.
+	* libgnarl/s-osinte__linux.ads (Alternate_Stack_Size): Bump to 32KB.
+
+2021-03-02  Mikael Pettersson  <mikpelinux@gmail.com>
+
+	PR bootstrap/98590
+	* cstreams.c: Ensure fileno_unlocked() is visible on Cygwin.
+
+2021-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/99095
+	* sem_ch8.adb (Check_Constrained_Object): Restrict again the special
+	optimization for limited types to non-array types except in the case
+	of an extended return statement.
+
+2021-03-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/99020
+	* sem_ch3.adb (Build_Discriminated_Subtype): Set the Cloned_Subtype
+	only if the type is not private.
+
+2021-02-26  YunQiang Su  <yunqiang.su@cipunited.com>
+
+	PR ada/98996
+	* Makefile.rtl: <mips*-*-linux*>
+	add 128Bit operation file for MIPS N64 and N32 to
+	LIBGNAT_TARGET_PAIRS and EXTRA_GNATRTL_NONTASKING_OBJS
+
+2021-02-12  Arnaud Charlet  <charlet@adacore.com>
+
+	* repinfo.ads, repinfo.adb (*SO_Ref*): Restore.
+
 2021-02-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (components_to_record): If the first component
