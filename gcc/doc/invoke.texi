@@ -14362,6 +14362,10 @@ recurse deeper.
 The maximum depth of a symbolic value, before approximating
 the value as unknown.
 
+@item analyzer-max-infeasible-edges
+The maximum number of infeasible edges to reject before declaring
+a diagnostic as infeasible.
+
 @item gimple-fe-computed-hot-bb-threshold
 The number of executions of a basic block which is considered hot.
 The parameter is used only in GIMPLE FE.
