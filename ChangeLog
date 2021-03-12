@@ -1,3 +1,12 @@
+2021-03-11  Jeff Law  <law@redhat.com>
+
+	* MAINTAINERS: Update entries for a few ex-ImgTec employees
+
+2021-03-11  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.tpl: The change was done Makefile.in which
+	is generated file.
+
 2021-03-08  Jeff Law  <law@redhat.com>
 
 	* MAINTAINERS: Update my email address

@@ -1,3 +1,59 @@
+2021-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96374
+	* gcc.dg/analyzer/dot-output.c: Add -fdump-analyzer-feasibility
+	to options.
+	* gcc.dg/analyzer/feasibility-1.c (test_6): Remove xfail.
+	(test_7): New.
+	* gcc.dg/analyzer/pr93355-localealias-feasibility-2.c: Remove xfail.
+	* gcc.dg/analyzer/pr93355-localealias-feasibility-3.c: Remove xfails.
+	* gcc.dg/analyzer/pr93355-localealias-feasibility.c: Remove
+	-fno-analyzer-feasibility from options.
+	* gcc.dg/analyzer/pr93355-localealias.c: Likewise.
+	* gcc.dg/analyzer/unknown-fns-4.c: Remove xfail.
+
+2021-03-11  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99248
+	* g++.dg/modules/pr99248.h: New.
+	* g++.dg/modules/pr99248_a.H: New.
+	* g++.dg/modules/pr99248_b.H: New.
+
+2021-03-11  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99528
+	* g++.dg/modules/pr99528.h: New.
+	* g++.dg/modules/pr99528_a.H: New.
+	* g++.dg/modules/pr99528_b.H: New.
+	* g++.dg/modules/pr99528_c.C: New.
+
+2021-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98245
+	* gcc.dg/vect/bb-slp-46.c: Scan for the scalar compute
+	instead of verifying the total number of adds.
+
+2021-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97494
+	* gcc.dg/vect/pr97428.c: XFAIL on !vect_hw_misalign.
+
+2021-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97494
+	* gcc.dg/vect/vect-complex-5.c: XFAIL on !vect_hw_misalign.
+
+2021-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97494
+	* gcc.dg/vect/slp-21.c: Adjust for powerpc64*-*-*.
+
+2021-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/99517
+	* gcc.target/i386/avx2-pr99517-1.c: New test.
+	* gcc.target/i386/avx2-pr99517-2.c: New test.
+
 2021-03-10  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/99492

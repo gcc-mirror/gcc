@@ -1,3 +1,79 @@
+2021-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96374
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/feasible-graph.o and
+	analyzer/trimmed-graph.o.
+	* doc/analyzer.texi (Analyzer Paths): Rewrite description of
+	feasibility checking to reflect new implementation.
+	* doc/invoke.texi (-fdump-analyzer-feasibility): Document new
+	option.
+	* shortest-paths.h (shortest_paths::get_shortest_distance): New.
+
+2021-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* digraph.cc (selftest::test_shortest_paths): Update
+	shortest_paths init for new param.  Add test of
+	SPS_TO_GIVEN_TARGET.
+	* shortest-paths.h (enum shortest_path_sense): New.
+	(shortest_paths::shortest_paths): Add "sense" param.
+	Update for renamings.  Generalize to use "sense" param.
+	(shortest_paths::get_shortest_path): Rename param.
+	(shortest_paths::m_sense): New field.
+	(shortest_paths::m_prev): Rename...
+	(shortest_paths::m_best_edge): ...to this.
+	(shortest_paths::get_shortest_path): Update for renamings.
+	Conditionalize flipping of path on sense of traversal.
+
+2021-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* digraph.cc (selftest::test_shortest_paths): Add test coverage
+	for paths from B and C.
+	* shortest-paths.h (shortest_paths::shortest_paths): Handle
+	unreachable nodes, rather than asserting.
+
+2021-03-11  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/99094
+	* config/rs6000/rs6000.c (rs6000_xcoff_file_start): Don't create
+	xcoff_tbss_section_name.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_TLS_COMMON): Use .lcomm.
+	* xcoffout.c (xcoff_tbss_section_name): Delete.
+	* xcoffout.h (xcoff_tbss_section_name): Delete.
+
+2021-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99523
+	* tree-cfg.c (dump_function_to_file): Dump SSA names
+	w/o identifier to the decls section as well, not only those
+	without a VAR_DECL.
+
+2021-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/99517
+	* ipa-icf-gimple.c (func_checker::compare_gimple_call): For internal
+	function calls with lhs fail if the lhs don't have compatible types.
+
+2021-03-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.h (HARD_FRAME_POINTER_REGNUM): Define.
+	Change FRAME_POINTER_REGNUM to correspond to a new faked
+	register faked_fp, part of GENNONACR_REGS like faked_ap.
+	(CRIS_FAKED_REGS_CONTENTS): New helper macro.
+	(FIRST_PSEUDO_REGISTER, FIXED_REGISTERS, CALL_USED_REGISTERS):
+	(REG_ALLOC_ORDER, REG_CLASS_CONTENTS, REGNO_OK_FOR_BASE_P)
+	(ELIMINABLE_REGS, REGISTER_NAMES): Adjust accordingly.
+	* config/cris/cris.md (CRIS_FP_REGNUM): Renumber to new faked
+	register.
+	(CRIS_REAL_FP_REGNUM): New constant.
+	* config/cris/cris.c (cris_reg_saved_in_regsave_area): Check
+	for HARD_FRAME_POINTER_REGNUM instead of FRAME_POINTER_REGNUM.
+	(cris_initial_elimination_offset): Handle elimination changes
+	to HARD_FRAME_POINTER_REGNUM instead of FRAME_POINTER_REGNUM
+	and add one from FRAME_POINTER_REGNUM to
+	HARD_FRAME_POINTER_REGNUM.
+	(cris_expand_prologue, cris_expand_epilogue): Emit code for
+	hard_frame_pointer_rtx instead of frame_pointer_rtx.
+
 2021-03-10  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/99492

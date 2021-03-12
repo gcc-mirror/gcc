@@ -1,3 +1,71 @@
+2021-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_to_chars.cc: Simplify the file as if
+	__SIZEOF_INT128__ is always defined.
+	[!defined __SIZEOF_INT128__]: Include "uint128_t.h".  Define
+	a base-10 to_chars overload for the uint128_t class type.
+	* src/c++17/uint128_t.h: New file.
+	* testsuite/20_util/to_chars/long_double.cc: No longer expect an
+	execution FAIL on targets that have a large long double type
+	but lack __int128.
+
+2021-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/LOCAL_PATCHES: Update.
+	* src/c++17/ryu/d2s_intrinsics.h: Don't define uint128_t.
+	* src/c++17/ryu/generic_128.h: Likewise.
+	* src/c++17/ryu/ryu_generic_128.h (struct floating_decimal_128):
+	Use uint128_t instead of __uint128_t.
+	(generic_binary_to_decimal): Likewise.
+
+2021-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/LOCAL_PATCHES: New file.
+
+2021-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_to_chars.cc (uint128_t): New conditionally
+	defined alias of unsigned __int128.
+	(floating_type_traits_binary128::mantissa_t): Use uint128_t
+	instead of unsigned __int128.
+	(floating_type_traits<long double>::mantissa_t)
+	[LONG_DOUBLE_KIND == LDK_IBM128]: Likewise.
+	(get_ieee_repr): Likewise.  Make casts from uint_t to mantissa_t
+	and uint32_t explicit.  Simplify the extraction of mantissa,
+	exponent and sign bit.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/barrier (barrier::arrival_token): New move-only
+	class that encapsulates the underlying token value.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (find_type): Use tag attribute
+	instead of unqualified() method.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99537
+	* include/std/stop_token (_Stop_state_t::_M_release_ownership):
+	Use acq_rel memory ordering.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99537
+	* src/c++17/fs_dir.cc (recursive_directory_iterator): Use new
+	helper function to check for permission denied errors.
+	* src/filesystem/dir.cc (recursive_directory_iterator):
+	Likewise.
+	* src/filesystem/dir-common.h (is_permission_denied_error): New
+	helper function.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99536
+	* include/bits/random.h (normal_distribution): Use
+	default-initializer for _M_saved and _M_saved_available.
+
 2021-03-10  John David Anglin  <danglin@gcc.gnu.org>
 
 	* testsuite/29_atomics/atomic/wait_notify/bool.cc: Add options to
