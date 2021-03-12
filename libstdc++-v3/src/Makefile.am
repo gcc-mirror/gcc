@@ -214,11 +214,13 @@ compatibility-condvar.o: compatibility-condvar.cc
 # set this option because CONFIG_CXXFLAGS has to be after
 # OPTIMIZE_CXXFLAGS on the compile line so that -O2 can be overridden
 # as the occasion calls for it.
-AM_CXXFLAGS = \
+AM_CXXFLAGS_PRE = \
 	-std=gnu++98 \
 	$(glibcxx_compiler_pic_flag) \
 	$(XTEMPLATE_FLAGS) $(VTV_CXXFLAGS) \
 	$(WARN_CXXFLAGS) $(OPTIMIZE_CXXFLAGS) $(CONFIG_CXXFLAGS)
+
+AM_CXXFLAGS = $(filter-out -fvtable-verify=std,$(AM_CXXFLAGS_PRE))
 
 # Libtool notes
 
