@@ -456,7 +456,6 @@ set_internal_unit (st_parameter_dt *dtp, gfc_unit *iunit, int kind)
 {
   gfc_offset start_record = 0;
 
-  iunit->unit_number = dtp->common.unit;
   iunit->recl = dtp->internal_unit_len;
   iunit->internal_unit = dtp->internal_unit;
   iunit->internal_unit_len = dtp->internal_unit_len;

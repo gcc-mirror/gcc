@@ -320,22 +320,56 @@ feasible
 @end itemize
 
 Without state-merging, all paths in the exploded graph are feasible
-(in terms of constraints being satisified).
+(in terms of constraints being satisfied).
 With state-merging, paths in the exploded graph can be infeasible.
 
 We collate warnings and only emit them for the simplest path
 e.g. for a bug in a utility function, with lots of routes to calling it,
 we only emit the simplest path (which could be intraprocedural, if
-it can be reproduced without a caller).  We apply a check that
-each duplicate warning's shortest path is feasible, rejecting any
-warnings for which the shortest path is infeasible (which could lead to
-false negatives).  This check can be suppressed (for debugging purposes)
-using @option{-fno-analyzer-feasibility}.
+it can be reproduced without a caller).
 
-We use the shortest feasible @code{exploded_path} through the
-@code{exploded_graph} (a list of @code{exploded_edge *}) to build a
-@code{diagnostic_path} (a list of events for the diagnostic subsystem) -
-specifically a @code{checker_path}.
+We thus want to find the shortest feasible path through the exploded
+graph from the origin to the exploded node at which the diagnostic was
+saved.  Unfortunately, if we simply find the shortest such path and
+check if it's feasible we might falsely reject the diagnostic, as there
+might be a longer path that is feasible.  Examples include the cases
+where the diagnostic requires us to go at least once around a loop for a
+later condition to be satisfied, or where for a later condition to be
+satisfied we need to enter a suite of code that the simpler path skips.
+
+We attempt to find the shortest feasible path to each diagnostic by
+first constructing a ``trimmed graph'' from the exploded graph,
+containing only those nodes and edges from which there are paths to
+the target node, and using Dijkstra's algorithm to order the trimmed
+nodes by minimal distance to the target.
+
+We then use a worklist to iteratively build a ``feasible graph''
+(actually a tree), capturing the pertinent state along each path, in
+which every path to a ``feasible node'' is feasible by construction,
+restricting ourselves to the trimmed graph to ensure we stay on target,
+and ordering the worklist so that the first feasible path we find to the
+target node is the shortest possible path.  Hence we start by trying the
+shortest possible path, but if that fails, we explore progressively
+longer paths, eventually trying iterations through loops.  The
+exploration is captured in the feasible_graph, which can be dumped as a
+.dot file via @option{-fdump-analyzer-feasibility} to visualize the
+exploration.  The indices of the feasible nodes show the order in which
+they were created.  We effectively explore the tree of feasible paths in
+order of shortest path until we either find a feasible path to the
+target node, or hit a limit and give up.
+
+This is something of a brute-force approach, but the trimmed graph
+hopefully keeps the complexity manageable.
+
+This algorithm can be disabled (for debugging purposes) via
+@option{-fno-analyzer-feasibility}, which simply uses the shortest path,
+and notes if it is infeasible.
+
+The above gives us a shortest feasible @code{exploded_path} through the
+@code{exploded_graph} (a list of @code{exploded_edge *}).  We use this
+@code{exploded_path} to build a @code{diagnostic_path} (a list of
+@strong{events} for the diagnostic subsystem) - specifically a
+@code{checker_path}.
 
 Having built the @code{checker_path}, we prune it to try to eliminate
 events that aren't relevant, to minimize how much the user has to read.

@@ -1,3 +1,21 @@
+2021-03-11  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99248
+	* name-lookup.c (lookup_elaborated_type_1): Access slot not bind
+	when there's a binding vector.
+	* ptree.c (cxx_print_xnode): Lazy flags are no longer a thing.
+
+2021-03-11  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99528
+	* module.cc (enum merge_kind): Delete MK_type_tmpl_spec,
+	MK_decl_tmpl_spec.
+	(trees_in::decl_value): Adjust add_mergeable_specialization call.
+	(trees_out::get_merge_kind): Adjust detecting a partial template
+	instantiation.
+	(trees_out::key_mergeable): Adjust handling same.
+	(trees_in::key_mergeabvle): Likewise.
+
 2021-03-10  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99423

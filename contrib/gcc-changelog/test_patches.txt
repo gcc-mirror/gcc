@@ -3481,3 +3481,33 @@ index ac63591b33f..ff4d61764e7 100644
 +
 -- 
 2.29.2
+
+=== 0001-ChangeLog-removal.patch ===
+From b39fadf9df1a9510afcab0a391182da7dc68de24 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Fri, 12 Mar 2021 09:10:55 +0100
+Subject: [PATCH] Test ChangeLog removal.
+
+gcc/ChangeLog:
+
+	* ipa-icf.c (make_pass_ipa_icf): Add line.
+---
+diff --git a/gcc/analyzer/ChangeLog b/gcc/analyzer/ChangeLog
+deleted file mode 100644
+index 94e87f6bcde..00000000000
+--- a/gcc/analyzer/ChangeLog
++++ /dev/null
+@@ -1,1 +0,0 @@
+- foo
+diff --git a/gcc/ipa-icf.c b/gcc/ipa-icf.c
+index 5dd33a75c3a..c4ce432cb98 100644
+--- a/gcc/ipa-icf.c
++++ b/gcc/ipa-icf.c
+@@ -3655,3 +3655,4 @@ make_pass_ipa_icf (gcc::context *ctxt)
+ {
+   return new ipa_icf::pass_ipa_icf (ctxt);
+ }
++
+-- 
+2.30.1
+

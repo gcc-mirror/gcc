@@ -36,7 +36,8 @@ public:
 		    stmt_finder *stmt_finder,
 		    tree var, const svalue *sval,
 		    state_machine::state_t state,
-		    pending_diagnostic *d);
+		    pending_diagnostic *d,
+		    unsigned idx);
   ~saved_diagnostic ();
 
   bool operator== (const saved_diagnostic &other) const;
@@ -55,6 +56,8 @@ public:
   void add_duplicate (saved_diagnostic *other);
   unsigned get_num_dupes () const { return m_duplicates.length (); }
 
+  unsigned get_index () const { return m_idx; }
+
   //private:
   const state_machine *m_sm;
   const exploded_node *m_enode;
@@ -70,6 +73,7 @@ public:
 private:
   DISABLE_COPY_AND_ASSIGN (saved_diagnostic);
 
+  unsigned m_idx;
   exploded_path *m_best_epath; // owned
   feasibility_problem *m_problem; // owned
 

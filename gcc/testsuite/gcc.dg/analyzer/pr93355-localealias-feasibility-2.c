@@ -25,7 +25,5 @@ _nl_expand_alias (void)
     ++locale_alias_path;
 
   if (start < locale_alias_path)
-    __analyzer_dump_path (); /* { dg-message "path" "" { xfail *-*-* } } */
-  /* XFAIL: PR analyzer/96374
-     Use -fno-analyzer-feasibility to see the path.  */
+    __analyzer_dump_path (); /* { dg-message "path" } */
 }

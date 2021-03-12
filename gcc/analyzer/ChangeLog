@@ -1,3 +1,59 @@
+2021-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96374
+	* analyzer.opt (-param=analyzer-max-infeasible-edges=): New param.
+	(fdump-analyzer-feasibility): New flag.
+	* diagnostic-manager.cc: Include "analyzer/trimmed-graph.h" and
+	"analyzer/feasible-graph.h".
+	(epath_finder::epath_finder): Convert m_sep to a pointer and
+	only create it if !flag_analyzer_feasibility.
+	(epath_finder::~epath_finder): New.
+	(epath_finder::m_sep): Convert to a pointer.
+	(epath_finder::get_best_epath): Add param "diag_idx" and use it
+	when logging.  Rather than finding the shortest path and then
+	checking feasibility, instead use explore_feasible_paths unless
+	!flag_analyzer_feasibility, in which case simply use the shortest
+	path, and note if it is infeasible.  Update for m_sep becoming a
+	pointer.
+	(class feasible_worklist): New.
+	(epath_finder::explore_feasible_paths): New.
+	(epath_finder::process_worklist_item): New.
+	(class dump_eg_with_shortest_path): New.
+	(epath_finder::dump_trimmed_graph): New.
+	(epath_finder::dump_feasible_graph): New.
+	(saved_diagnostic::saved_diagnostic): Add "idx" param, using it
+	on new field m_idx.
+	(saved_diagnostic::to_json): Dump m_idx.
+	(saved_diagnostic::calc_best_epath): Pass m_idx to get_best_epath.
+	Remove assertion that m_problem was set when m_best_epath is NULL.
+	(diagnostic_manager::add_diagnostic): Pass an index when created
+	saved_diagnostic instances.
+	* diagnostic-manager.h (saved_diagnostic::saved_diagnostic): Add
+	"idx" param.
+	(saved_diagnostic::get_index): New accessor.
+	(saved_diagnostic::m_idx): New field.
+	* engine.cc (exploded_node::dump_dot): Call args.dump_extra_info.
+	Move code to...
+	(exploded_node::dump_processed_stmts): ...this new function and...
+	(exploded_node::dump_saved_diagnostics): ...this new function.
+	Add index of each diagnostic.
+	(exploded_edge::dump_dot):  Move bulk of code to...
+	(exploded_edge::dump_dot_label): ...this new function.
+	* exploded-graph.h (eg_traits::dump_args_t::dump_extra_info): New
+	vfunc.
+	(exploded_node::dump_processed_stmts): New decl.
+	(exploded_node::dump_saved_diagnostics): New decl.
+	(exploded_edge::dump_dot_label): New decl.
+	* feasible-graph.cc: New file.
+	* feasible-graph.h: New file.
+	* trimmed-graph.cc: New file.
+	* trimmed-graph.h: New file.
+
+2021-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (epath_finder::epath_finder):
+	Update shortest_paths init for new param.
+
 2021-03-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96374

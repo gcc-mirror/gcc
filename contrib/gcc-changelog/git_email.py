@@ -66,7 +66,7 @@ class GitEmail(GitCommit):
                 t = 'A'
             else:
                 t = 'M'
-            modified_files.append((target, t))
+            modified_files.append((target if t != 'D' else source, t))
         git_info = GitInfo(None, date, author, body, modified_files)
         super().__init__(git_info, strict=strict,
                          commit_to_info_hook=lambda x: None)

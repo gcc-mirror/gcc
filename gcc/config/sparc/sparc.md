@@ -1869,8 +1869,8 @@ visl")
    (set_attr "lra" "*,*,disabled,disabled,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 (define_insn "*movdi_insn_sp64"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,  W,b,b")
-        (match_operand:DI 1 "input_operand"        "rI,N,m,rJ,*e, r, *e,  W,?*e,J,P"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m, r,*e,?*e,?*e,  m,b,b")
+        (match_operand:DI 1 "input_operand"        "rI,N,m,rJ,*e, r, *e,  m,?*e,J,P"))]
   "TARGET_ARCH64
    && (register_operand (operands[0], DImode)
        || register_or_zero_or_all_ones_operand (operands[1], DImode))"
@@ -2498,8 +2498,8 @@ visl")
    (set_attr "lra" "*,*,*,*,*,*,*,*,*,*,disabled,disabled,*,*,*,*,*")])
 
 (define_insn "*movdf_insn_sp64"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,W, *r,*r,  m,*r")
-	(match_operand:DF 1 "input_operand"         "G,C,e, e,*r,W#F,e,*rG, m,*rG, F"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=b,b,e,*r, e,  e,m, *r,*r,  m,*r")
+	(match_operand:DF 1 "input_operand"         "G,C,e, e,*r,m#F,e,*rG, m,*rG, F"))]
   "TARGET_ARCH64
    && (register_operand (operands[0], DFmode)
        || register_or_zero_or_all_ones_operand (operands[1], DFmode))"
@@ -8467,8 +8467,8 @@ visl")
    (set_attr "cpu_feature" "vis,vis,vis,*,*,*,*,*,*,vis3,vis3")])
 
 (define_insn "*mov<VM64:mode>_insn_sp64"
-  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,e,W,m,*r, m,*r, e,*r")
-	(match_operand:VM64 1 "input_operand"         "Y,Z,e,W,e,Y, m,*r, e,*r,*r"))]
+  [(set (match_operand:VM64 0 "nonimmediate_operand" "=e,e,e,e,m,m,*r, m,*r, e,*r")
+	(match_operand:VM64 1 "input_operand"         "Y,Z,e,m,e,Y, m,*r, e,*r,*r"))]
   "TARGET_VIS
    && TARGET_ARCH64
    && (register_operand (operands[0], <VM64:MODE>mode)

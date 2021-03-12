@@ -424,6 +424,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-analyzer-exploded-nodes @gol
 -fdump-analyzer-exploded-nodes-2 @gol
 -fdump-analyzer-exploded-nodes-3 @gol
+-fdump-analyzer-feasibility @gol
 -fdump-analyzer-json @gol
 -fdump-analyzer-state-purge @gol
 -fdump-analyzer-supergraph @gol
@@ -9566,6 +9567,13 @@ Dump a textual representation of the ``exploded graph'' to
 one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
 This is typically a large number of dump files.
 
+@item -fdump-analyzer-feasibility
+@opindex dump-analyzer-feasibility
+Dump internal details about the analyzer's search for feasible paths.
+The details are written in a form suitable for viewing with GraphViz
+to filenames of the form @file{@var{file}.*.fg.dot} and
+@file{@var{file}.*.tg.dot}.
+
 @item -fdump-analyzer-json
 @opindex fdump-analyzer-json
 Dump a compressed JSON representation of analyzer internals to
@@ -14353,6 +14361,10 @@ recurse deeper.
 @item analyzer-max-svalue-depth
 The maximum depth of a symbolic value, before approximating
 the value as unknown.
+
+@item analyzer-max-infeasible-edges
+The maximum number of infeasible edges to reject before declaring
+a diagnostic as infeasible.
 
 @item gimple-fe-computed-hot-bb-threshold
 The number of executions of a basic block which is considered hot.

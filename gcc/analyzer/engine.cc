@@ -946,46 +946,60 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
       state.dump_to_pp (ext_state, false, true, pp);
       pp_newline (pp);
 
-      /* Show any stmts that were processed within this enode,
-	 and their index within the supernode.  */
-      if (m_num_processed_stmts > 0)
-	{
-	  const program_point &point = get_point ();
-	  gcc_assert (point.get_kind () == PK_BEFORE_STMT);
-	  const supernode *snode = get_supernode ();
-	  const unsigned int point_stmt_idx = point.get_stmt_idx ();
-
-	  pp_printf (pp, "stmts: %i", m_num_processed_stmts);
-	  pp_newline (pp);
-	  for (unsigned i = 0; i < m_num_processed_stmts; i++)
-	    {
-	      const unsigned int idx_within_snode = point_stmt_idx + i;
-	      const gimple *stmt = snode->m_stmts[idx_within_snode];
-	      pp_printf (pp, "  %i: ", idx_within_snode);
-	      pp_gimple_stmt_1 (pp, stmt, 0, (dump_flags_t)0);
-	      pp_newline (pp);
-	    }
-	}
+      dump_processed_stmts (pp);
     }
 
-  /* Dump any saved_diagnostics at this enode.  */
-  {
-    const diagnostic_manager &dm = args.m_eg.get_diagnostic_manager ();
-    for (unsigned i = 0; i < dm.get_num_diagnostics (); i++)
-      {
-	const saved_diagnostic *sd = dm.get_saved_diagnostic (i);
-	if (sd->m_enode == this)
-	  {
-	    pp_printf (pp, "DIAGNOSTIC: %s", sd->m_d->get_kind ());
-	    pp_newline (pp);
-	  }
-      }
-  }
+  dump_saved_diagnostics (pp, args.m_eg.get_diagnostic_manager ());
+
+  args.dump_extra_info (this, pp);
 
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
 
   pp_string (pp, "\"];\n\n");
   pp_flush (pp);
+}
+
+/* Show any stmts that were processed within this enode,
+   and their index within the supernode.  */
+void
+exploded_node::dump_processed_stmts (pretty_printer *pp) const
+{
+  if (m_num_processed_stmts > 0)
+    {
+      const program_point &point = get_point ();
+      gcc_assert (point.get_kind () == PK_BEFORE_STMT);
+      const supernode *snode = get_supernode ();
+      const unsigned int point_stmt_idx = point.get_stmt_idx ();
+
+      pp_printf (pp, "stmts: %i", m_num_processed_stmts);
+      pp_newline (pp);
+      for (unsigned i = 0; i < m_num_processed_stmts; i++)
+	{
+	  const unsigned int idx_within_snode = point_stmt_idx + i;
+	  const gimple *stmt = snode->m_stmts[idx_within_snode];
+	  pp_printf (pp, "  %i: ", idx_within_snode);
+	  pp_gimple_stmt_1 (pp, stmt, 0, (dump_flags_t)0);
+	  pp_newline (pp);
+	}
+    }
+}
+
+/* Dump any saved_diagnostics at this enode to PP.  */
+
+void
+exploded_node::dump_saved_diagnostics (pretty_printer *pp,
+				       const diagnostic_manager &dm) const
+{
+  for (unsigned i = 0; i < dm.get_num_diagnostics (); i++)
+    {
+      const saved_diagnostic *sd = dm.get_saved_diagnostic (i);
+      if (sd->m_enode == this)
+	{
+	  pp_printf (pp, "DIAGNOSTIC: %s (sd: %i)",
+		     sd->m_d->get_kind (), sd->get_index ());
+	  pp_newline (pp);
+	}
+    }
 }
 
 /* Dump this to PP in a form suitable for use as an id in .dot output.  */
@@ -1639,6 +1653,18 @@ exploded_edge::dump_dot (graphviz_out *gv, const dump_args_t &) const
 {
   pretty_printer *pp = gv->get_pp ();
 
+  m_src->dump_dot_id (pp);
+  pp_string (pp, " -> ");
+  m_dest->dump_dot_id (pp);
+  dump_dot_label (pp);
+}
+
+/* Second half of exploded_edge::dump_dot.  This is split out
+   for use by trimmed_graph::dump_dot and base_feasible_edge::dump_dot.  */
+
+void
+exploded_edge::dump_dot_label (pretty_printer *pp) const
+{
   const char *style = "\"solid,bold\"";
   const char *color = "black";
   int weight = 10;
@@ -1669,9 +1695,6 @@ exploded_edge::dump_dot (graphviz_out *gv, const dump_args_t &) const
       style = "\"dotted\"";
     }
 
-  m_src->dump_dot_id (pp);
-  pp_string (pp, " -> ");
-  m_dest->dump_dot_id (pp);
   pp_printf (pp,
 	     (" [style=%s, color=%s, weight=%d, constraint=%s,"
 	      " headlabel=\""),
@@ -3351,6 +3374,10 @@ exploded_graph::to_json () const
 
   return egraph_obj;
 }
+
+/* class exploded_path.  */
+
+/* Copy ctor.  */
 
 exploded_path::exploded_path (const exploded_path &other)
 : m_edges (other.m_edges.length ())

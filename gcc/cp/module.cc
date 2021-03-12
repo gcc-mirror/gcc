@@ -12706,6 +12706,9 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	  *slot = data->binding;
 	}
 
+      /* Make sure nobody left a tree visited lying about.  */
+      gcc_checking_assert (!TREE_VISITED (decl));
+
       if (flags & WMB_Using)
 	{
 	  decl = ovl_make (decl, NULL_TREE);
@@ -13000,6 +13003,8 @@ depset::hash::add_specializations (bool decl_p)
     have_spec:;
 #endif
 
+      /* Make sure nobody left a tree visited lying about.  */
+      gcc_checking_assert (!TREE_VISITED (spec));
       depset *dep = make_dependency (spec, depset::EK_SPECIALIZATION);
       if (dep->is_special ())
 	{

@@ -21261,8 +21261,6 @@ rs6000_xcoff_file_start (void)
 			   main_input_filename, ".ro_");
   rs6000_gen_section_name (&xcoff_tls_data_section_name,
 			   main_input_filename, ".tls_");
-  rs6000_gen_section_name (&xcoff_tbss_section_name,
-			   main_input_filename, ".tbss_[UL]");
 
   fputs ("\t.file\t", asm_out_file);
   output_quoted_string (asm_out_file, main_input_filename);

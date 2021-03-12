@@ -7078,7 +7078,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
       if ((flags & GOVD_SHARED) == 0)
 	{
 	  t = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl)));
-	  if (DECL_P (t))
+	  if (t && DECL_P (t))
 	    omp_notice_variable (ctx, t, true);
 	}
     }

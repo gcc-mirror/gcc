@@ -41,9 +41,7 @@ read_alias_file (const char *fname, char *cp)
 {
   FILE *fp;
 
-  fp = fopen (fname, "r"); /* { dg-message "opened here" "" { xfail *-*-* } } */
-  /* XFAIL: PR analyzer/96374
-     Use -fno-analyzer-feasibility to see the path.  */
+  fp = fopen (fname, "r"); /* { dg-message "opened here" } */
   if (fp == NULL)
     return 0;
 
@@ -54,9 +52,7 @@ read_alias_file (const char *fname, char *cp)
     ++cp;
 
   if (cp[0] != '\0')
-    return 42; /* { dg-warning "leak of FILE 'fp'" "" { xfail *-*-* } } */
-  /* XFAIL: PR analyzer/96374
-     Use -fno-analyzer-feasibility to see the path.  */
+    return 42; /* { dg-warning "leak of FILE 'fp'" } */
 
   fclose(fp);
 
