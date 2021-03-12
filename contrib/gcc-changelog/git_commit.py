@@ -314,8 +314,9 @@ class GitCommit:
         if self.revert_commit:
             self.info = self.commit_to_info_hook(self.revert_commit)
 
+        # Allow complete deletion of ChangeLog files in a commit
         project_files = [f for f in self.info.modified_files
-                         if self.is_changelog_filename(f[0], allow_suffix=True)
+                         if (self.is_changelog_filename(f[0], allow_suffix=True) and f[1] != 'D')
                          or f[0] in misc_files]
         ignored_files = [f for f in self.info.modified_files
                          if self.in_ignored_location(f[0])]
