@@ -464,12 +464,24 @@ public:
   }
   ~name_lookup ()
   {
+    gcc_checking_assert (!deduping);
     restore_state ();
   }
 
 private: /* Uncopyable, unmovable, unassignable. I am a rock. */
   name_lookup (const name_lookup &);
   name_lookup &operator= (const name_lookup &);
+
+ public:
+  /* Turn on or off deduping mode.  */
+  void dedup (bool state)
+  {
+    if (deduping != state)
+      {
+	deduping = state;
+	lookup_mark (value, state);
+      }
+  }
 
 protected:
   static bool seen_p (tree scope)
@@ -605,8 +617,7 @@ name_lookup::preserve_state ()
 void
 name_lookup::restore_state ()
 {
-  if (deduping)
-    lookup_mark (value, false);
+  gcc_checking_assert (!deduping);
 
   /* Unmark and empty this lookup's scope stack.  */
   for (unsigned ix = vec_safe_length (scopes); ix--;)
@@ -703,12 +714,9 @@ name_lookup::add_overload (tree fns)
 	probe = ovl_skip_hidden (probe);
       if (probe && TREE_CODE (probe) == OVERLOAD
 	  && OVL_DEDUP_P (probe))
-	{
-	  /* We're about to add something found by multiple paths, so
-	     need to engage deduping mode.  */
-	  lookup_mark (value, true);
-	  deduping = true;
-	}
+	/* We're about to add something found by multiple paths, so need to
+	   engage deduping mode.  */
+	dedup (true);
     }
 
   value = lookup_maybe_add (fns, value, deduping);
@@ -737,12 +745,8 @@ name_lookup::add_value (tree new_val)
     value = ORIGINAL_NAMESPACE (value);
   else
     {
-      if (deduping)
-	{
-	  /* Disengage deduping mode.  */
-	  lookup_mark (value, false);
-	  deduping = false;
-	}
+      /* Disengage deduping mode.  */
+      dedup (false);
       value = ambiguous (new_val, value);
     }
 }
@@ -951,10 +955,7 @@ name_lookup::search_namespace_only (tree scope)
 			    if ((hit & 1 && BINDING_VECTOR_GLOBAL_DUPS_P (val))
 				|| (hit & 2
 				    && BINDING_VECTOR_PARTITION_DUPS_P (val)))
-			      {
-				lookup_mark (value, true);
-				deduping = true;
-			      }
+			      dedup (true);
 			  }
 			dup_detect |= dup;
 		      }
@@ -1076,6 +1077,8 @@ name_lookup::search_qualified (tree scope, bool usings)
 	found = search_usings (scope);
     }
 
+  dedup (false);
+
   return found;
 }
 
@@ -1176,6 +1179,8 @@ name_lookup::search_unqualified (tree scope, cp_binding_level *level)
       if (bool (want & LOOK_want::HIDDEN_FRIEND))
 	break;
     }
+
+  dedup (false);
 
   /* Restore to incoming length.  */
   vec_safe_truncate (queue, length);
@@ -1284,15 +1289,10 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports)
 			else if (MODULE_BINDING_PARTITION_P (bind))
 			  dup = 2;
 			if (unsigned hit = dup_detect & dup)
-			  {
-			    if ((hit & 1 && BINDING_VECTOR_GLOBAL_DUPS_P (val))
-				|| (hit & 2
-				    && BINDING_VECTOR_PARTITION_DUPS_P (val)))
-			      {
-				lookup_mark (value, true);
-				deduping = true;
-			      }
-			  }
+			  if ((hit & 1 && BINDING_VECTOR_GLOBAL_DUPS_P (val))
+			      || (hit & 2
+				  && BINDING_VECTOR_PARTITION_DUPS_P (val)))
+			    dedup (true);
 			dup_detect |= dup;
 		      }
 
@@ -1328,11 +1328,7 @@ name_lookup::adl_class_fns (tree type)
 	    if (CP_DECL_CONTEXT (fn) != context)
 	      continue;
 
-	    if (!deduping)
-	      {
-		lookup_mark (value, true);
-		deduping = true;
-	      }
+	    dedup (true);
 
 	    /* Template specializations are never found by name lookup.
 	       (Templates themselves can be found, but not template
@@ -1634,12 +1630,9 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
   if (vec_safe_length (scopes))
     {
       /* Now do the lookups.  */
-      if (fns)
-	{
-	  deduping = true;
-	  lookup_mark (fns, true);
-	}
       value = fns;
+      if (fns)
+	dedup (true);
 
       /* INST_PATH will be NULL, if this is /not/ 2nd-phase ADL.  */
       bitmap inst_path = NULL;
@@ -1697,14 +1690,9 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 
 		    if (tree bind = *mslot)
 		      {
-			if (!deduping)
-			  {
-			    /* We must turn on deduping, because some
-			       other class from this module might also
-			       be in this namespace.  */
-			    deduping = true;
-			    lookup_mark (value, true);
-			  }
+			/* We must turn on deduping, because some other class
+			   from this module might also be in this namespace.  */
+			dedup (true);
 
 			/* Add the exported fns  */
 			if (STAT_HACK_P (bind))
@@ -1715,6 +1703,7 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 	}
 
       fns = value;
+      dedup (false);
     }
 
   return fns;
