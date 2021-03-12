@@ -33,6 +33,8 @@
 --  GNAT compiler used to compile the program. It relies on the generated
 --  constant in the binder generated package that records this information.
 
+with System;
+
 package body GNAT.Compiler_Version is
 
    Ver_Len_Max : constant := 256;
@@ -43,8 +45,15 @@ package body GNAT.Compiler_Version is
    --  This is logically a reference to Gnatvsn.Ver_Prefix but we cannot
    --  import this directly since run-time units cannot WITH compiler units.
 
+   GNAT_Version_Address : constant System.Address;
+   pragma Import (C, GNAT_Version_Address, "__gnat_version_address");
+
    GNAT_Version : constant String (1 .. Ver_Len_Max + Ver_Prefix'Length);
-   pragma Import (C, GNAT_Version, "__gnat_version");
+   pragma Import (Ada, GNAT_Version);
+   for GNAT_Version'Address use GNAT_Version_Address;
+   --  Use a level of indirection via __gnat_version_address to avoid LTO
+   --  type mismtch warnings between two string objects of potentially
+   --  different size.
 
    -------------
    -- Version --
