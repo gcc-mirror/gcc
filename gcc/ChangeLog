@@ -1,3 +1,8 @@
+2021-03-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (neoversen2_tunings): Set
+	AARCH64_EXTRA_TUNE_PREFER_ADVSIMD_AUTOVEC tune_flags.
+
 2021-03-11  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
