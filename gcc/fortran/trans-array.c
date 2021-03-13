@@ -7712,15 +7712,21 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       /* Set the string_length for a character array.  */
       if (expr->ts.type == BT_CHARACTER)
 	{
-	  se->string_length =  gfc_get_expr_charlen (expr);
+	  if (deferred_array_component)
+	    se->string_length = ss_info->string_length;
+	  else
+	    se->string_length =  gfc_get_expr_charlen (expr);
+
 	  if (VAR_P (se->string_length)
 	      && expr->ts.u.cl->backend_decl == se->string_length)
 	    tmp = ss_info->string_length;
 	  else
 	    tmp = se->string_length;
 
-	  if (expr->ts.deferred)
+	  if (expr->ts.deferred && VAR_P (expr->ts.u.cl->backend_decl))
 	    gfc_add_modify (&se->pre, expr->ts.u.cl->backend_decl, tmp);
+	  else
+	    expr->ts.u.cl->backend_decl = tmp;
 	}
 
       /* If we have an array section or are assigning make sure that
