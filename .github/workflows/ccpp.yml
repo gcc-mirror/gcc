@@ -44,7 +44,7 @@ jobs:
     - name: Build
       run: |
            cd gccrs-build; \
-           make
+           make -j $(nproc)
 
     - name: Test
       run: |
