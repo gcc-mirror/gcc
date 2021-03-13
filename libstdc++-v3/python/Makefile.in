@@ -607,18 +607,8 @@ gdb.py: hook.in Makefile
 
 install-data-local: gdb.py
 	@$(mkdir_p) $(DESTDIR)$(toolexeclibdir)
-	@here=`pwd`; cd $(DESTDIR)$(toolexeclibdir); \
-	  for file in libstdc++.*; do \
-	    case $$file in \
-	      *-gdb.py) ;; \
-	      *.la) ;; \
-	      *) if test -h $$file; then \
-	           continue; \
-	         fi; \
-	         libname=$$file;; \
-	    esac; \
-	  done; \
-	cd $$here; \
+	@libname=`sed -ne "/^library_names=/{s/.*='//;s/'$$//;s/ .*//;p;}" \
+	          $(DESTDIR)$(toolexeclibdir)/libstdc++.la`; \
 	echo " $(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py"; \
 	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py
 
