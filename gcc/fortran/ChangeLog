@@ -1,3 +1,9 @@
+2021-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99514
+	* resolve.c (resolve_symbol): Accept vars which are in DATA
+	and hence (either) implicit SAVE (or in common).
+
 2021-03-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/99205

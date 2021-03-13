@@ -1,3 +1,12 @@
+2021-03-12  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow deletion of ChangeLog
+	files.
+	* gcc-changelog/setup.cfg: Set line limit to 120 characters.
+	* gcc-changelog/test_email.py: Add test.
+	* gcc-changelog/test_patches.txt: Likewise.
+	* gcc-changelog/git_email.py: Fix parsing of deleted files.
+
 2021-02-08  Mike Frysinger  <vapier@gentoo.org>
 
 	* mklog.py (generated_files): New set.

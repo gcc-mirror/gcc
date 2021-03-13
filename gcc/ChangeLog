@@ -1,3 +1,76 @@
+2021-03-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/99422
+	* config/sparc/constraints.md (w): Rename to...
+	(W): ... this and ditch previous implementation.
+	* config/sparc/sparc.md (*movdi_insn_sp64): Replace W with m.
+	(*movdf_insn_sp64): Likewise.
+	(*mov<VM64:mode>_insn_sp64): Likewise.
+	* config/sparc/sync.md (*atomic_compare_and_swap<mode>_1): Replace
+	w with W.
+	(atomic_compare_and_swap_leon3_1): Likewise.
+	(*atomic_compare_and_swapdi_v8plus): Likewise.
+	* config/sparc/sparc.c (memory_ok_for_ldd): Remove useless test on
+	architecture and add missing address validity check during LRA.
+
+2021-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/98858
+	* gimplify.c (omp_add_variable): Handle NULL_TREE as size
+	occuring for assumed-size arrays in use_device_{ptr,addr}.
+
+2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99321
+	* config/i386/constraints.md (YW): New internal constraint.
+	* config/i386/sse.md (v_Yw): Add V4TI, V2TI, V1TI and TI cases.
+	(*<sse2_avx2>_<insn><mode>3<mask_name>,
+	*<sse2_avx2>_uavg<mode>3<mask_name>, *abs<mode>2,
+	*<s>mul<mode>3_highpart<mask_name>): Use <v_Yw> instead of v in
+	constraints.
+	(<sse2_avx2>_psadbw): Use YW instead of v in constraints.
+	(*avx2_pmaddwd, *sse2_pmaddwd, *<code>v8hi3, *<code>v16qi3,
+	avx2_pmaddubsw256, ssse3_pmaddubsw128): Merge last two alternatives
+	into one, use Yw instead of former x,v.
+	(ashr<mode>3, <insn><mode>3): Use <v_Yw> instead of x in constraints of
+	the last alternative.
+	(<sse2_avx2>_packsswb<mask_name>, <sse2_avx2>_packssdw<mask_name>,
+	<sse2_avx2>_packuswb<mask_name>, <sse4_1_avx2>_packusdw<mask_name>,
+	*<ssse3_avx2>_pmulhrsw<mode>3<mask_name>, <ssse3_avx2>_palignr<mode>,
+	<ssse3_avx2>_pshufb<mode>3<mask_name>): Merge last two alternatives
+	into one, use <v_Yw> instead of former x,v.
+	(avx2_interleave_highv32qi<mask_name>,
+	vec_interleave_highv16qi<mask_name>): Use Yw instead of v in
+	constraints.  Add && <mask_avx512bw_condition> to condition.
+	(avx2_interleave_lowv32qi<mask_name>,
+	vec_interleave_lowv16qi<mask_name>,
+	avx2_interleave_highv16hi<mask_name>,
+	vec_interleave_highv8hi<mask_name>,
+	avx2_interleave_lowv16hi<mask_name>, vec_interleave_lowv8hi<mask_name>,
+	avx2_pshuflw_1<mask_name>, sse2_pshuflw_1<mask_name>,
+	avx2_pshufhw_1<mask_name>, sse2_pshufhw_1<mask_name>,
+	avx2_<code>v16qiv16hi2<mask_name>, sse4_1_<code>v8qiv8hi2<mask_name>,
+	*sse4_1_<code>v8qiv8hi2<mask_name>_1, <sse2_avx2>_<insn><mode>3): Use
+	Yw instead of v in constraints.
+	* config/i386/mmx.md (Yv_Yw): New define_mode_attr.
+	(*mmx_<insn><mode>3, mmx_ashr<mode>3, mmx_<insn><mode>3): Use <Yv_Yw>
+	instead of Yv in constraints.
+	(*mmx_<insn><mode>3, *mmx_mulv4hi3, *mmx_smulv4hi3_highpart,
+	*mmx_umulv4hi3_highpart, *mmx_pmaddwd, *mmx_<code>v4hi3,
+	*mmx_<code>v8qi3, mmx_pack<s_trunsuffix>swb, mmx_packssdw,
+	mmx_punpckhbw, mmx_punpcklbw, mmx_punpckhwd, mmx_punpcklwd,
+	*mmx_uavgv8qi3, *mmx_uavgv4hi3, mmx_psadbw): Use Yw instead of Yv in
+	constraints.
+	(*mmx_pinsrw, *mmx_pinsrb, *mmx_pextrw, *mmx_pextrw_zext, *mmx_pextrb,
+	*mmx_pextrb_zext): Use YW instead of Yv in constraints.
+	(*mmx_eq<mode>3, mmx_gt<mode>3): Use x instead of Yv in constraints.
+	(mmx_andnot<mode>3, *mmx_<code><mode>3): Split last alternative into
+	two, one with just x, another isa avx512vl with v.
+
+2021-03-12  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add missing param documentation.
+
 2021-03-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96374

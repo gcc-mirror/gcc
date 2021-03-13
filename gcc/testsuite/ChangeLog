@@ -1,3 +1,25 @@
+2021-03-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99238
+	* g++.dg/modules/pr99238.h: New.
+	* g++.dg/modules/pr99238_a.H: New.
+	* g++.dg/modules/pr99238_b.H: New.
+
+2021-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99514
+	* gfortran.dg/gomp/threadprivate-1.f90: New test.
+
+2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99321
+	* gcc.target/i386/avx512vl-pr99321-2.c: New test.
+
+2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99507
+	* g++.dg/cpp2a/consteval19.C: New test.
+
 2021-03-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96374
