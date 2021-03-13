@@ -2471,7 +2471,7 @@ gfc_conv_string_length (gfc_charlen * cl, gfc_expr * expr, stmtblock_t * pblock)
 			     se.expr, build_zero_cst (TREE_TYPE (se.expr)));
   gfc_add_block_to_block (pblock, &se.pre);
 
-  if (cl->backend_decl)
+  if (cl->backend_decl && VAR_P (cl->backend_decl))
     gfc_add_modify (pblock, cl->backend_decl, se.expr);
   else
     cl->backend_decl = gfc_evaluate_now (se.expr, pblock);
