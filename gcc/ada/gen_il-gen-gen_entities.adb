@@ -119,6 +119,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (In_Use, Flag),
         Sm (Is_Ada_2005_Only, Flag),
         Sm (Is_Ada_2012_Only, Flag),
+        Sm (Is_Ada_2022_Only, Flag),
         Sm (Is_Aliased, Flag),
         Sm (Is_Atomic, Flag),
         Sm (Is_Bit_Packed_Array, Flag, Impl_Base_Type_Only),

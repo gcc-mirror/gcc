@@ -2199,6 +2199,8 @@ package body Sem_Disp is
                      while Present (Elmt) loop
                         if Node (Elmt) = Orig_Prim then
                            Set_Overridden_Operation (S, Prim);
+                           Set_Is_Ada_2022_Only     (S,
+                             Is_Ada_2022_Only (Prim));
                            Set_Alias (Prim, Orig_Prim);
                            return Prim;
                         end if;
@@ -2761,6 +2763,7 @@ package body Sem_Disp is
          Set_Alias (Prev_Op, New_Op);
          Set_DTC_Entity (Prev_Op, Empty);
          Set_Has_Controlling_Result (New_Op, Has_Controlling_Result (Prev_Op));
+         Set_Is_Ada_2022_Only (New_Op, Is_Ada_2022_Only (Prev_Op));
       end if;
    end Override_Dispatching_Operation;
 

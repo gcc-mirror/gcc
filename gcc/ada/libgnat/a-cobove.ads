@@ -80,12 +80,14 @@ package Ada.Containers.Bounded_Vectors is
       Ada.Iterator_Interfaces (Cursor, Has_Element);
 
    function Empty (Capacity : Count_Type := 10) return Vector;
+   pragma Ada_2022 (Empty);
 
    overriding function "=" (Left, Right : Vector) return Boolean;
 
    function New_Vector (First, Last : Index_Type) return Vector
      with Pre => First = Index_Type'First;
    --  Ada 2022 aggregate operation.
+   pragma Ada_2022 (New_Vector);
 
    function To_Vector (Length : Count_Type) return Vector;
 
@@ -194,6 +196,7 @@ package Ada.Containers.Bounded_Vectors is
      (Container : in out Vector;
       Before    : Extended_Index;
       New_Item  : Vector);
+   pragma Ada_2022 (Insert_Vector);
 
    procedure Insert
      (Container : in out Vector;
@@ -205,6 +208,7 @@ package Ada.Containers.Bounded_Vectors is
      (Container : in out Vector;
       Before    : Cursor;
       New_Item  : Vector);
+   pragma Ada_2022 (Insert_Vector);
 
    procedure Insert
      (Container : in out Vector;
@@ -217,6 +221,7 @@ package Ada.Containers.Bounded_Vectors is
       Before    : Cursor;
       New_Item  : Vector;
       Position  : out Cursor);
+   pragma Ada_2022 (Insert_Vector);
 
    procedure Insert
      (Container : in out Vector;
@@ -258,6 +263,7 @@ package Ada.Containers.Bounded_Vectors is
    procedure Prepend_Vector
      (Container : in out Vector;
       New_Item  : Vector);
+   pragma Ada_2022 (Prepend_Vector);
 
    procedure Prepend
      (Container : in out Vector;
@@ -272,6 +278,7 @@ package Ada.Containers.Bounded_Vectors is
    procedure Append_Vector
      (Container : in out Vector;
       New_Item  : Vector);
+   pragma Ada_2022 (Append_Vector);
 
    procedure Append
      (Container : in out Vector;

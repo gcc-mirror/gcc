@@ -669,6 +669,7 @@ package Gen_IL.Fields is
       Is_Actual_Subtype,
       Is_Ada_2005_Only,
       Is_Ada_2012_Only,
+      Is_Ada_2022_Only,
       Is_Aliased,
       Is_Asynchronous,
       Is_Atomic,

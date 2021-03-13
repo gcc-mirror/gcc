@@ -7271,10 +7271,14 @@ package body Sem_Ch6 is
                then
                   Set_Overridden_Operation    (Subp, Alias (Overridden_Subp));
                   Inherit_Subprogram_Contract (Subp, Alias (Overridden_Subp));
+                  Set_Is_Ada_2022_Only        (Subp,
+                    Is_Ada_2022_Only (Alias (Overridden_Subp)));
 
                else
                   Set_Overridden_Operation    (Subp, Overridden_Subp);
                   Inherit_Subprogram_Contract (Subp, Overridden_Subp);
+                  Set_Is_Ada_2022_Only        (Subp,
+                    Is_Ada_2022_Only (Overridden_Subp));
                end if;
             end if;
          end if;
@@ -11888,10 +11892,13 @@ package body Sem_Ch6 is
                   if Present (Alias (S)) then
                      Set_Overridden_Operation    (E, Alias (S));
                      Inherit_Subprogram_Contract (E, Alias (S));
+                     Set_Is_Ada_2022_Only        (E,
+                       Is_Ada_2022_Only (Alias (S)));
 
                   else
                      Set_Overridden_Operation    (E, S);
                      Inherit_Subprogram_Contract (E, S);
+                     Set_Is_Ada_2022_Only        (E, Is_Ada_2022_Only (S));
                   end if;
 
                   --  When a dispatching operation overrides an inherited
@@ -12058,6 +12065,8 @@ package body Sem_Ch6 is
                   then
                      Set_Overridden_Operation    (S, Alias (E));
                      Inherit_Subprogram_Contract (S, Alias (E));
+                     Set_Is_Ada_2022_Only        (S,
+                       Is_Ada_2022_Only (Alias (E)));
 
                   --  Normal case of setting entity as overridden
 
@@ -12071,6 +12080,7 @@ package body Sem_Ch6 is
                   elsif not Is_Init_Proc (S) then
                      Set_Overridden_Operation    (S, E);
                      Inherit_Subprogram_Contract (S, E);
+                     Set_Is_Ada_2022_Only        (S, Is_Ada_2022_Only (E));
                   end if;
 
                   Check_Overriding_Indicator (S, E, Is_Primitive => True);
@@ -12099,6 +12109,8 @@ package body Sem_Ch6 is
                      if Present (Alias (E)) then
                         Set_Overridden_Operation    (S, Alias (E));
                         Inherit_Subprogram_Contract (S, Alias (E));
+                        Set_Is_Ada_2022_Only        (S,
+                          Is_Ada_2022_Only (Alias (E)));
                      end if;
                   end if;
 

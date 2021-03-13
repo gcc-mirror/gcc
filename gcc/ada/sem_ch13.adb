@@ -13399,6 +13399,16 @@ package body Sem_Ch13 is
          Set_Is_Ada_2012_Only (Typ);
       end if;
 
+      --  Ada_2022
+
+      if not Has_Rep_Item (Typ, Name_Ada_2022, False)
+        and then Has_Rep_Item (Typ, Name_Ada_2022)
+        and then Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item
+                   (Get_Rep_Item (Typ, Name_Ada_2022))
+      then
+         Set_Is_Ada_2022_Only (Typ);
+      end if;
+
       --  Atomic/Shared
 
       if not Has_Rep_Item (Typ, Name_Atomic, Name_Shared, False)

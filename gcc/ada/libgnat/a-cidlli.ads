@@ -65,7 +65,9 @@ is
    pragma Preelaborable_Initialization (Cursor);
 
    Empty_List : constant List;
+
    function Empty return List;
+   pragma Ada_2022 (Empty);
 
    No_Element : constant Cursor;
 

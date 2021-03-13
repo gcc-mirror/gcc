@@ -12542,22 +12542,61 @@ package body Sem_Prag is
          --------------
 
          --  pragma Ada_2022;
+         --  pragma Ada_2022 (LOCAL_NAME):
 
          --  Note: this pragma also has some specific processing in Par.Prag
          --  because we want to set the Ada 2022 version mode during parsing.
 
+         --  The one argument form is used for managing the transition from Ada
+         --  2012 to Ada 2022 in the run-time library. If an entity is marked
+         --  as Ada_2022 only, then referencing the entity in any pre-Ada_2022
+         --  mode will generate a warning;for calls to Ada_2022 only primitives
+         --  that require overriding an error will be reported. In addition, in
+         --  any pre-Ada_2022 mode, a preference rule is established which does
+         --  not choose such an entity unless it is unambiguously specified.
+         --  This avoids extra subprograms marked this way from generating
+         --  ambiguities in otherwise legal pre-Ada 2022 programs. The one
+         --  argument form is intended for exclusive use in the GNAT run-time
+         --  library.
+
          when Pragma_Ada_2022 =>
+         declare
+            E_Id : Node_Id;
+
+         begin
             GNAT_Pragma;
 
-            Check_Arg_Count (0);
+            if Arg_Count = 1 then
+               Check_Arg_Is_Local_Name (Arg1);
+               E_Id := Get_Pragma_Arg (Arg1);
 
-            Check_Valid_Configuration_Pragma;
+               if Etype (E_Id) = Any_Type then
+                  return;
+               end if;
 
-            --  Now set appropriate Ada mode
+               Set_Is_Ada_2022_Only (Entity (E_Id));
+               Record_Rep_Item (Entity (E_Id), N);
 
-            Ada_Version          := Ada_2022;
-            Ada_Version_Explicit := Ada_2022;
-            Ada_Version_Pragma   := N;
+            else
+               Check_Arg_Count (0);
+
+               --  For Ada_2022 we unconditionally enforce the documented
+               --  configuration pragma placement, since we do not want to
+               --  tolerate mixed modes in a unit involving Ada 2022. That
+               --  would cause real difficulties for those cases where there
+               --  are incompatibilities between Ada 2012 and Ada 2022. We
+               --  could allow mixing of Ada 2012 and Ada 2022 but it's not
+               --  worth it.
+
+               Check_Valid_Configuration_Pragma;
+
+               --  Now set appropriate Ada mode
+
+               Ada_Version          := Ada_2022;
+               Ada_Version_Explicit := Ada_2022;
+               Ada_Version_Pragma   := N;
+            end if;
+         end;
 
          -------------------------------------
          -- Aggregate_Individually_Assign --

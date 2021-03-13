@@ -2317,6 +2317,13 @@ package Einfo is
 --       the entity is part of a unit compiled with the normal no-argument form
 --       of pragma Ada_12 or Ada_2012.
 
+--    Is_Ada_2022_Only
+--       Defined in all entities, true if a valid pragma Ada_2022 applies to
+--       the entity which specifically names the entity, indicating that the
+--       entity is Ada 2022 only. Note that this flag is not set if the entity
+--       is part of a unit compiled with the normal no-argument form of pragma
+--       Ada_2022.
+
 --    Is_Aliased
 --       Defined in all entities. Set for objects and types whose declarations
 --       carry the keyword aliased, and on record components that have the
@@ -4871,6 +4878,7 @@ package Einfo is
    --    In_Private_Part
    --    Is_Ada_2005_Only
    --    Is_Ada_2012_Only
+   --    Is_Ada_2022_Only
    --    Is_Bit_Packed_Array                  (base type only)
    --    Is_Aliased
    --    Is_Character_Type
