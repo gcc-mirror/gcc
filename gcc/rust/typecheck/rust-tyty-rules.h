@@ -693,7 +693,7 @@ public:
 
     resolved
       = new ArrayType (type.get_ref (), type.get_ty_ref (),
-		       type.get_capacity (), TyCtx (base_resolved->get_ref ()));
+		       type.get_capacity (), TyVar (base_resolved->get_ref ()));
   }
 
 private:
@@ -888,7 +888,7 @@ public:
 	return;
       }
 
-    std::vector<TyCtx> fields;
+    std::vector<TyVar> fields;
     for (size_t i = 0; i < base->num_fields (); i++)
       {
 	BaseType *bo = base->get_field (i);
@@ -901,7 +901,7 @@ public:
 	    return;
 	  }
 
-	fields.push_back (TyCtx (unified_ty->get_ref ()));
+	fields.push_back (TyVar (unified_ty->get_ref ()));
       }
 
     resolved
@@ -1018,7 +1018,7 @@ public:
       }
 
     resolved = new ReferenceType (base->get_ref (), base->get_ty_ref (),
-				  TyCtx (base_resolved->get_ref ()));
+				  TyVar (base_resolved->get_ref ()));
   }
 
 private:

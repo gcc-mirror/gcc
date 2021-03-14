@@ -113,17 +113,17 @@ public:
 	  ? TypeCheckType::Resolve (fntype.get_return_type ().get ())
 	  : new TyTy::UnitType (fntype.get_mappings ().get_hirid ());
 
-    std::vector<TyTy::TyCtx> params;
+    std::vector<TyTy::TyVar> params;
     for (auto &param : fntype.get_function_params ())
       {
 	TyTy::BaseType *ptype
 	  = TypeCheckType::Resolve (param.get_type ().get ());
-	params.push_back (TyTy::TyCtx (ptype->get_ref ()));
+	params.push_back (TyTy::TyVar (ptype->get_ref ()));
       }
 
     translated = new TyTy::FnPtr (fntype.get_mappings ().get_hirid (),
 				  std::move (params),
-				  TyTy::TyCtx (return_type->get_ref ()));
+				  TyTy::TyVar (return_type->get_ref ()));
   }
 
   void visit (HIR::TupleType &tuple) override
@@ -139,11 +139,11 @@ public:
 	return;
       }
 
-    std::vector<TyTy::TyCtx> fields;
+    std::vector<TyTy::TyVar> fields;
     for (auto &elem : tuple.get_elems ())
       {
 	auto field_ty = TypeCheckType::Resolve (elem.get ());
-	fields.push_back (TyTy::TyCtx (field_ty->get_ref ()));
+	fields.push_back (TyTy::TyVar (field_ty->get_ref ()));
       }
 
     translated
@@ -245,7 +245,7 @@ public:
 
     TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
     translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
-				      capacity, TyTy::TyCtx (base->get_ref ()));
+				      capacity, TyTy::TyVar (base->get_ref ()));
   }
 
   void visit (HIR::ReferenceType &type) override
@@ -253,7 +253,7 @@ public:
     TyTy::BaseType *base
       = TypeCheckType::Resolve (type.get_base_type ().get ());
     translated = new TyTy::ReferenceType (type.get_mappings ().get_hirid (),
-					  TyTy::TyCtx (base->get_ref ()));
+					  TyTy::TyVar (base->get_ref ()));
   }
 
   void visit (HIR::InferredType &type) override

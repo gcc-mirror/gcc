@@ -117,10 +117,10 @@ protected:
 };
 
 // this is a placeholder for types that can change like inference variables
-class TyCtx
+class TyVar
 {
 public:
-  explicit TyCtx (HirId ref);
+  explicit TyVar (HirId ref);
 
   HirId get_ref () const { return ref; }
 
@@ -244,12 +244,12 @@ private:
 class TupleType : public BaseType
 {
 public:
-  TupleType (HirId ref, std::vector<TyCtx> fields,
+  TupleType (HirId ref, std::vector<TyVar> fields,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::TUPLE, refs), fields (fields)
   {}
 
-  TupleType (HirId ref, HirId ty_ref, std::vector<TyCtx> fields,
+  TupleType (HirId ref, HirId ty_ref, std::vector<TyVar> fields,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::TUPLE, refs), fields (fields)
   {}
@@ -282,7 +282,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
 private:
-  std::vector<TyCtx> fields;
+  std::vector<TyVar> fields;
 };
 
 class ParamType : public BaseType
@@ -563,13 +563,13 @@ private:
 class FnPtr : public BaseType
 {
 public:
-  FnPtr (HirId ref, std::vector<TyCtx> params, TyCtx result_type,
+  FnPtr (HirId ref, std::vector<TyVar> params, TyVar result_type,
 	 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::FNPTR, refs), params (std::move (params)),
       result_type (result_type)
   {}
 
-  FnPtr (HirId ref, HirId ty_ref, std::vector<TyCtx> params, TyCtx result_type,
+  FnPtr (HirId ref, HirId ty_ref, std::vector<TyVar> params, TyVar result_type,
 	 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::FNPTR, refs), params (params),
       result_type (result_type)
@@ -603,20 +603,20 @@ public:
   }
 
 private:
-  std::vector<TyCtx> params;
-  TyCtx result_type;
+  std::vector<TyVar> params;
+  TyVar result_type;
 };
 
 class ArrayType : public BaseType
 {
 public:
-  ArrayType (HirId ref, size_t capacity, TyCtx base,
+  ArrayType (HirId ref, size_t capacity, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ARRAY, refs), capacity (capacity),
       element_type (base)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, size_t capacity, TyCtx base,
+  ArrayType (HirId ref, HirId ty_ref, size_t capacity, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ARRAY, refs), capacity (capacity),
       element_type (base)
@@ -640,7 +640,7 @@ public:
 
 private:
   size_t capacity;
-  TyCtx element_type;
+  TyVar element_type;
 };
 
 class BoolType : public BaseType
@@ -844,12 +844,12 @@ public:
 class ReferenceType : public BaseType
 {
 public:
-  ReferenceType (HirId ref, TyCtx base,
+  ReferenceType (HirId ref, TyVar base,
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::REF), base (base)
   {}
 
-  ReferenceType (HirId ref, HirId ty_ref, TyCtx base,
+  ReferenceType (HirId ref, HirId ty_ref, TyVar base,
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::REF), base (base)
   {}
@@ -869,7 +869,7 @@ public:
   BaseType *clone () final override;
 
 private:
-  TyCtx base;
+  TyVar base;
 };
 
 class StrType : public BaseType

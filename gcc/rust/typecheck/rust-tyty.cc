@@ -27,7 +27,7 @@
 namespace Rust {
 namespace TyTy {
 
-TyCtx::TyCtx (HirId ref) : ref (ref)
+TyVar::TyVar (HirId ref) : ref (ref)
 {
   // ensure this reference is defined within the context
   auto context = Resolver::TypeCheckContext::get ();
@@ -37,7 +37,7 @@ TyCtx::TyCtx (HirId ref) : ref (ref)
 }
 
 BaseType *
-TyCtx::get_tyty () const
+TyVar::get_tyty () const
 {
   auto context = Resolver::TypeCheckContext::get ();
   BaseType *lookup = nullptr;
@@ -482,9 +482,9 @@ FnPtr::is_equal (const BaseType &other) const
 BaseType *
 FnPtr::clone ()
 {
-  std::vector<TyCtx> cloned_params;
+  std::vector<TyVar> cloned_params;
   for (auto &p : params)
-    cloned_params.push_back (TyCtx (p.get_ref ()));
+    cloned_params.push_back (TyVar (p.get_ref ()));
 
   return new FnPtr (get_ref (), get_ty_ref (), std::move (cloned_params),
 		    result_type, get_combined_refs ());
