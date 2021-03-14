@@ -358,7 +358,7 @@ class TypeInfoVisitor : public Visitor
     DECL_EXTERNAL (decl) = 0;
     TREE_PUBLIC (decl) = 1;
     DECL_VISIBILITY (decl) = VISIBILITY_INTERNAL;
-    d_comdat_linkage (decl);
+    set_linkage_for_decl (decl);
     d_pushdecl (decl);
 
     return decl;
@@ -1320,14 +1320,6 @@ public:
 
     DECL_CONTEXT (tid->csym) = d_decl_context (tid);
     TREE_READONLY (tid->csym) = 1;
-
-    /* Built-in typeinfo will be referenced as one-only.  */
-    gcc_assert (!tid->isInstantiated ());
-
-    if (builtin_typeinfo_p (tid->tinfo))
-      d_linkonce_linkage (tid->csym);
-    else
-      d_comdat_linkage (tid->csym);
   }
 
   void visit (TypeInfoClassDeclaration *tid)
@@ -1466,8 +1458,6 @@ get_cpp_typeinfo_decl (ClassDeclaration *decl)
   DECL_CONTEXT (decl->cpp_type_info_ptr_sym)
     = TREE_TYPE (build_ctype (decl->type));
   TREE_READONLY (decl->cpp_type_info_ptr_sym) = 1;
-
-  d_comdat_linkage (decl->cpp_type_info_ptr_sym);
 
   /* Layout the initializer and emit the symbol.  */
   layout_cpp_typeinfo (decl);

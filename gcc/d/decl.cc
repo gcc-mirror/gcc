@@ -387,10 +387,7 @@ public:
     /* Generate static initializer.  */
     d->sinit = aggregate_initializer_decl (d);
     DECL_INITIAL (d->sinit) = layout_struct_initializer (d);
-
-    if (d->isInstantiated ())
-      d_linkonce_linkage (d->sinit);
-
+    DECL_INSTANTIATED (d->sinit) = (d->isInstantiated () != NULL);
     d_finish_decl (d->sinit);
 
     /* Put out the members.  There might be static constructors in the members
@@ -503,7 +500,7 @@ public:
 
     /* Generate static initializer.  */
     DECL_INITIAL (d->sinit) = layout_class_initializer (d);
-    d_linkonce_linkage (d->sinit);
+    DECL_INSTANTIATED (d->sinit) = (d->isInstantiated () != NULL);
     d_finish_decl (d->sinit);
 
     /* Put out the TypeInfo.  */
@@ -511,7 +508,6 @@ public:
       create_typeinfo (d->type, NULL);
 
     DECL_INITIAL (d->csym) = layout_classinfo (d);
-    d_linkonce_linkage (d->csym);
     d_finish_decl (d->csym);
 
     /* Put out the vtbl[].  */
@@ -534,7 +530,6 @@ public:
 
     DECL_INITIAL (d->vtblsym)
       = build_constructor (TREE_TYPE (d->vtblsym), elms);
-    d_comdat_linkage (d->vtblsym);
     d_finish_decl (d->vtblsym);
 
     /* Add this decl to the current binding level.  */
@@ -578,7 +573,6 @@ public:
       }
 
     DECL_INITIAL (d->csym) = layout_classinfo (d);
-    d_linkonce_linkage (d->csym);
     d_finish_decl (d->csym);
 
     /* Add this decl to the current binding level.  */
@@ -617,10 +611,7 @@ public:
 	/* Generate static initializer.  */
 	d->sinit = enum_initializer_decl (d);
 	DECL_INITIAL (d->sinit) = build_expr (tc->sym->defaultval, true);
-
-	if (d->isInstantiated ())
-	  d_linkonce_linkage (d->sinit);
-
+	DECL_INSTANTIATED (d->sinit) = (d->isInstantiated () != NULL);
 	d_finish_decl (d->sinit);
       }
 
@@ -1257,22 +1248,22 @@ get_symbol_decl (Declaration *decl)
 	  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (decl->csym) = 1;
 	}
 
+      /* Mark compiler generated functions as artificial.  */
+      if (fd->generated)
+	DECL_ARTIFICIAL (decl->csym) = 1;
+
       /* Vector array operations are always compiler generated.  */
       if (fd->isArrayOp)
 	{
-	  TREE_PUBLIC (decl->csym) = 1;
 	  DECL_ARTIFICIAL (decl->csym) = 1;
 	  DECL_DECLARED_INLINE_P (decl->csym) = 1;
-	  d_comdat_linkage (decl->csym);
 	}
 
-      /* And so are ensure and require contracts.  */
+      /* Ensure and require contracts are lexically nested in the function they
+	 part of, but are always publicly callable.  */
       if (fd->ident == Identifier::idPool ("ensure")
 	  || fd->ident == Identifier::idPool ("require"))
-	{
-	  DECL_ARTIFICIAL (decl->csym) = 1;
-	  TREE_PUBLIC (decl->csym) = 1;
-	}
+	TREE_PUBLIC (decl->csym) = 1;
 
       if (decl->storage_class & STCfinal)
 	DECL_FINAL_P (decl->csym) = 1;
@@ -1336,8 +1327,8 @@ get_symbol_decl (Declaration *decl)
       /* The decl has not been defined -- yet.  */
       DECL_EXTERNAL (decl->csym) = 1;
 
-      if (decl->isInstantiated ())
-	d_linkonce_linkage (decl->csym);
+      DECL_INSTANTIATED (decl->csym) = (decl->isInstantiated () != NULL);
+      set_linkage_for_decl (decl->csym);
     }
 
   /* Symbol is going in thread local storage.  */
@@ -1545,6 +1536,7 @@ d_finish_decl (tree decl)
     set_decl_tls_model (decl, decl_default_tls_model (decl));
 
   relayout_decl (decl);
+  set_linkage_for_decl (decl);
 
   if (flag_checking && DECL_INITIAL (decl))
     {
@@ -2327,12 +2319,15 @@ d_comdat_group (tree decl)
 /* Set DECL up to have the closest approximation of "initialized common"
    linkage available.  */
 
-void
+static void
 d_comdat_linkage (tree decl)
 {
-  if (flag_weak)
+  /* COMDAT definitions have to be public.  */
+  gcc_assert (TREE_PUBLIC (decl));
+
+  if (supports_one_only ())
     make_decl_one_only (decl, d_comdat_group (decl));
-  else if (TREE_CODE (decl) == FUNCTION_DECL
+  else if ((TREE_CODE (decl) == FUNCTION_DECL && DECL_INSTANTIATED (decl))
 	   || (VAR_P (decl) && DECL_ARTIFICIAL (decl)))
     /* We can just emit function and compiler-generated variables statically;
        having multiple copies is (for the most part) only a waste of space.  */
@@ -2342,26 +2337,53 @@ d_comdat_linkage (tree decl)
     /* Fallback, cannot have multiple copies.  */
     DECL_COMMON (decl) = 1;
 
-  if (TREE_PUBLIC (decl))
+  if (TREE_PUBLIC (decl) && DECL_INSTANTIATED (decl))
     DECL_COMDAT (decl) = 1;
 }
 
-/* Set DECL up to have the closest approximation of "linkonce" linkage.  */
+/* Set DECL up to have the closest approximation of "weak" linkage.  */
 
-void
-d_linkonce_linkage (tree decl)
+static void
+d_weak_linkage (tree decl)
 {
   /* Weak definitions have to be public.  */
+  gcc_assert (TREE_PUBLIC (decl));
+
+  /* Allow comdat linkage to be forced with the flag `-fno-weak-templates'.  */
+  if (!flag_weak_templates || !TARGET_SUPPORTS_WEAK)
+    return d_comdat_linkage (decl);
+
+  declare_weak (decl);
+}
+
+/* DECL is a FUNCTION_DECL or a VAR_DECL with static storage.  Set flags to
+   reflect the linkage that DECL will receive in the object file.  */
+
+void
+set_linkage_for_decl (tree decl)
+{
+  gcc_assert (VAR_OR_FUNCTION_DECL_P (decl) && TREE_STATIC (decl));
+
+  /* Non-public decls keep their internal linkage. */
   if (!TREE_PUBLIC (decl))
     return;
 
-  /* Necessary to allow DECL_ONE_ONLY or DECL_WEAK functions to be inlined.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    DECL_DECLARED_INLINE_P (decl) = 1;
+  /* Don't need to give private or protected symbols a special linkage.  */
+  if ((TREE_PRIVATE (decl) || TREE_PROTECTED (decl))
+      && !DECL_INSTANTIATED (decl))
+    return;
 
-  /* No weak support, fallback to COMDAT linkage.  */
-  if (!flag_weak)
-   return d_comdat_linkage (decl);
+  /* Functions declared as `pragma(inline, true)' can appear in multiple
+     translation units.  */
+  if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
+    return d_comdat_linkage (decl);
 
-  make_decl_one_only (decl, d_comdat_group (decl));
+  /* Instantiated variables and functions need to be overridable by any other
+     symbol with the same name, so give them weak linkage.  */
+  if (DECL_INSTANTIATED (decl))
+    return d_weak_linkage (decl);
+
+  /* Compiler generated public symbols can appear in multiple contexts.  */
+  if (DECL_ARTIFICIAL (decl))
+    return d_weak_linkage (decl);
 }

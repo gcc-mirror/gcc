@@ -386,7 +386,7 @@ d_init (void)
     using_eh_for_cleanups ();
 
   if (!supports_one_only ())
-    flag_weak = 0;
+    flag_weak_templates = 0;
 
   /* This is the C main, not the D main.  */
   main_identifier_node = get_identifier ("main");
