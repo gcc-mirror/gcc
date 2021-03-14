@@ -1602,7 +1602,13 @@ expand_one_await_expression (tree *stmt, tree *await_expr, void *d)
 
   /* Use the await_ready() call to test if we need to suspend.  */
   tree ready_cond = TREE_VEC_ELT (awaiter_calls, 0); /* await_ready().  */
-  ready_cond = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, ready_cond);
+  /* Convert to bool, if necessary.  */
+  if (TREE_CODE (TREE_TYPE (ready_cond)) != BOOLEAN_TYPE)
+    ready_cond = cp_convert (boolean_type_node, ready_cond,
+			     tf_warning_or_error);
+  /* Be aggressive in folding here, since there are a significant number of
+     cases where the ready condition is constant.  */
+  ready_cond = invert_truthvalue_loc (loc, ready_cond);
   ready_cond
     = build1_loc (loc, CLEANUP_POINT_EXPR, boolean_type_node, ready_cond);
 
