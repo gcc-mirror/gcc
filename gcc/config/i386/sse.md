@@ -15483,18 +15483,16 @@
   [(V16QI "TARGET_SSE4_1") V8HI])
 
 (define_insn "*vec_extract<mode>"
-  [(set (match_operand:<ssescalarmode> 0 "register_sse4nonimm_operand" "=r,m,r,m")
+  [(set (match_operand:<ssescalarmode> 0 "register_sse4nonimm_operand" "=r,m")
 	(vec_select:<ssescalarmode>
-	  (match_operand:PEXTR_MODE12 1 "register_operand" "x,x,v,v")
+	  (match_operand:PEXTR_MODE12 1 "register_operand" "YW,YW")
 	  (parallel
 	    [(match_operand:SI 2 "const_0_to_<ssescalarnummask>_operand")])))]
   "TARGET_SSE2"
   "@
    %vpextr<ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}
-   %vpextr<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}
-   vpextr<ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}
-   vpextr<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "*,sse4,avx512bw,avx512bw")
+   %vpextr<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "*,sse4")
    (set_attr "type" "sselog1")
    (set_attr "prefix_data16" "1")
    (set (attr "prefix_extra")
@@ -15504,23 +15502,20 @@
        (const_string "*")
        (const_string "1")))
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "maybe_vex,maybe_vex,evex,evex")
+   (set_attr "prefix" "maybe_vex,maybe_vex")
    (set_attr "mode" "TI")])
 
 (define_insn "*vec_extract<PEXTR_MODE12:mode>_zext"
-  [(set (match_operand:SWI48 0 "register_operand" "=r,r")
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
 	(zero_extend:SWI48
 	  (vec_select:<PEXTR_MODE12:ssescalarmode>
-	    (match_operand:PEXTR_MODE12 1 "register_operand" "x,v")
+	    (match_operand:PEXTR_MODE12 1 "register_operand" "YW")
 	    (parallel
 	      [(match_operand:SI 2
 		"const_0_to_<PEXTR_MODE12:ssescalarnummask>_operand")]))))]
   "TARGET_SSE2"
-  "@
-   %vpextr<PEXTR_MODE12:ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}
-   vpextr<PEXTR_MODE12:ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}"
-  [(set_attr "isa" "*,avx512bw")
-   (set_attr "type" "sselog1")
+  "%vpextr<PEXTR_MODE12:ssemodesuffix>\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "type" "sselog1")
    (set_attr "prefix_data16" "1")
    (set (attr "prefix_extra")
      (if_then_else
@@ -15532,18 +15527,15 @@
    (set_attr "mode" "TI")])
 
 (define_insn "*vec_extractv16qi_zext"
-  [(set (match_operand:HI 0 "register_operand" "=r,r")
+  [(set (match_operand:HI 0 "register_operand" "=r")
 	(zero_extend:HI
 	  (vec_select:QI
-	    (match_operand:V16QI 1 "register_operand" "x,v")
+	    (match_operand:V16QI 1 "register_operand" "YW")
 	    (parallel
 	      [(match_operand:SI 2 "const_0_to_15_operand")]))))]
   "TARGET_SSE4_1"
-  "@
-   %vpextrb\t{%2, %1, %k0|%k0, %1, %2}
-   vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
-  [(set_attr "isa" "*,avx512bw")
-   (set_attr "type" "sselog1")
+  "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "type" "sselog1")
    (set_attr "prefix_data16" "1")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
@@ -15650,9 +15642,9 @@
   "operands[1] = gen_lowpart (SImode, operands[1]);")
 
 (define_insn "*vec_extractv4si"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm,rm,Yr,*x,x,Yv")
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=rm,rm,Yr,*x,Yw")
 	(vec_select:SI
-	  (match_operand:V4SI 1 "register_operand" "x,v,0,0,x,v")
+	  (match_operand:V4SI 1 "register_operand" "  x, v, 0, 0,Yw")
 	  (parallel [(match_operand:SI 2 "const_0_to_3_operand")])))]
   "TARGET_SSE4_1"
 {
@@ -15668,7 +15660,6 @@
       return "psrldq\t{%2, %0|%0, %2}";
 
     case 4:
-    case 5:
       operands[2] = GEN_INT (INTVAL (operands[2]) * 4);
       return "vpsrldq\t{%2, %1, %0|%0, %1, %2}";
 
@@ -15676,14 +15667,14 @@
       gcc_unreachable ();
     }
 }
-  [(set_attr "isa" "*,avx512dq,noavx,noavx,avx,avx512bw")
-   (set_attr "type" "sselog1,sselog1,sseishft1,sseishft1,sseishft1,sseishft1")
+  [(set_attr "isa" "*,avx512dq,noavx,noavx,avx")
+   (set_attr "type" "sselog1,sselog1,sseishft1,sseishft1,sseishft1")
    (set (attr "prefix_extra")
      (if_then_else (eq_attr "alternative" "0,1")
 		   (const_string "1")
 		   (const_string "*")))
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "maybe_vex,evex,orig,orig,vex,evex")
+   (set_attr "prefix" "maybe_vex,evex,orig,orig,maybe_vex")
    (set_attr "mode" "TI")])
 
 (define_insn "*vec_extractv4si_zext"
@@ -21599,11 +21590,11 @@
    (set_attr "mode" "<sseinsnmode>")])
 
 (define_insn "*ssse3_palignr<mode>_perm"
-  [(set (match_operand:V_128 0 "register_operand" "=x,x,v")
+  [(set (match_operand:V_128 0 "register_operand" "=x,Yw")
       (vec_select:V_128
-	(match_operand:V_128 1 "register_operand" "0,x,v")
+	(match_operand:V_128 1 "register_operand" "0,Yw")
 	(match_parallel 2 "palignr_operand"
-	  [(match_operand 3 "const_int_operand" "n,n,n")])))]
+	  [(match_operand 3 "const_int_operand" "n,n")])))]
   "TARGET_SSSE3"
 {
   operands[2] = (GEN_INT (INTVAL (operands[3])
@@ -21614,19 +21605,18 @@
     case 0:
       return "palignr\t{%2, %1, %0|%0, %1, %2}";
     case 1:
-    case 2:
       return "vpalignr\t{%2, %1, %1, %0|%0, %1, %1, %2}";
     default:
       gcc_unreachable ();
     }
 }
-  [(set_attr "isa" "noavx,avx,avx512bw")
+  [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sseishft")
    (set_attr "atom_unit" "sishuf")
-   (set_attr "prefix_data16" "1,*,*")
+   (set_attr "prefix_data16" "1,*")
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
-   (set_attr "prefix" "orig,vex,evex")])
+   (set_attr "prefix" "orig,maybe_evex")])
 
 (define_expand "avx512vl_vinsert<mode>"
   [(match_operand:VI48F_256 0 "register_operand")
