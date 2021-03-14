@@ -1,3 +1,15 @@
+2021-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/99489
+	* builtins.c (gimple_call_alloc_size): Fail gracefully when argument
+	is not a call statement.
+
+2021-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99544
+	* match.pd (X + (X << C) -> X * (1 + (1 << C))): Don't simplify
+	if for vector types multiplication can't be done in type's mode.
+
 2021-03-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/99422

@@ -1,3 +1,12 @@
+2021-03-13  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2021-03-13  Mike Frysinger  <vapier@gentoo.org>
+
+	* Makefile.def: Remove all-sim dependency on configure-gdb.
+	* Makefile.in: Regenerated.
+
 2021-03-11  Jeff Law  <law@redhat.com>
 
 	* MAINTAINERS: Update entries for a few ex-ImgTec employees

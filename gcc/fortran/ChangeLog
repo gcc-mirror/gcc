@@ -1,3 +1,13 @@
+2021-03-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99125
+	* trans-array.c (gfc_conv_expr_descriptor): For deferred length
+	length components use the ss_info string length instead of
+	gfc_get_expr_charlen. Make sure that the deferred string length
+	is a variable before assigning to it. Otherwise use the expr.
+	* trans-expr.c (gfc_conv_string_length): Make sure that the
+	deferred string length is a variable before assigning to it.
+
 2021-03-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/99514

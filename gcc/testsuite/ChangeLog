@@ -1,3 +1,18 @@
+2021-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/99489
+	* gcc.dg/Wstringop-truncation-9.c: New test.
+
+2021-03-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99125
+	* gfortran.dg/alloc_deferred_comp_1.f90: New test.
+
+2021-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99544
+	* gcc.dg/gomp/pr99544.c: New test.
+
 2021-03-12  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99238
