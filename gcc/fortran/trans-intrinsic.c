@@ -8006,8 +8006,10 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
     {
       symbol_attribute attr;
       char *msg;
+      tree temp;
+      tree cond;
 
-      attr = gfc_expr_attr (e);
+      attr = sym ? sym->attr : gfc_expr_attr (e);
       if (attr.allocatable)
 	msg = xasprintf ("Allocatable argument '%s' is not allocated",
 			 e->symtree->n.sym->name);
@@ -8017,14 +8019,24 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
       else
 	goto end_arg_check;
 
-      argse.descriptor_only = 1;
-      gfc_conv_expr_descriptor (&argse, actual->expr);
-      tree temp = gfc_conv_descriptor_data_get (argse.expr);
-      tree cond = fold_build2_loc (input_location, EQ_EXPR,
-				   logical_type_node, temp,
-				   fold_convert (TREE_TYPE (temp),
-						 null_pointer_node));
+      if (sym)
+	{
+	  temp = gfc_class_data_get (sym->backend_decl);
+	  temp = gfc_conv_descriptor_data_get (temp);
+	}
+      else
+	{
+	  argse.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&argse, actual->expr);
+	  temp = gfc_conv_descriptor_data_get (argse.expr);
+	}
+
+      cond = fold_build2_loc (input_location, EQ_EXPR,
+			      logical_type_node, temp,
+			      fold_convert (TREE_TYPE (temp),
+					    null_pointer_node));
       gfc_trans_runtime_check (true, false, cond, &argse.pre, &e->where, msg);
+
       free (msg);
     }
  end_arg_check:
