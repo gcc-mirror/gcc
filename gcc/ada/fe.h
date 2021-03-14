@@ -203,7 +203,7 @@ extern Boolean In_Extended_Main_Code_Unit	(Entity_Id);
 #define Suppress_Checks			opt__suppress_checks
 
 typedef enum {
-  Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022
+  Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022, Ada_With_Extensions
 } Ada_Version_Type;
 
 typedef enum {

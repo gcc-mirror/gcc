@@ -16456,11 +16456,8 @@ package body Sem_Prag is
             Check_Arg_Is_One_Of (Arg1, Name_On, Name_Off);
 
             if Chars (Get_Pragma_Arg (Arg1)) = Name_On then
-               Extensions_Allowed := True;
-               Ada_Version := Ada_Version_Type'Last;
-
+               Ada_Version := Ada_With_Extensions;
             else
-               Extensions_Allowed := False;
                Ada_Version := Ada_Version_Explicit;
                Ada_Version_Pragma := Empty;
             end if;
