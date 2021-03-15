@@ -465,7 +465,15 @@ private
 
       Position  : Hash_Type := Hash_Type'Last;
       --  Position of the node in the buckets of the container. If this is
-      --  equal to Hash_Type'Last, then it will not be used.
+      --  equal to Hash_Type'Last, then it will not be used. Position is
+      --  not requried by the implementation, but improves the efficiency
+      --  of various operations.
+      --
+      --  However, this value must be maintained so that the predefined
+      --  equality operation acts as required by RM A.18.4-18/2, which
+      --  states: "The predefined "=" operator for type Cursor returns True
+      --  if both cursors are No_Element, or designate the same element
+      --  in the same container."
    end record;
 
    procedure Read

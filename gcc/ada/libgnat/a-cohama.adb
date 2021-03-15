@@ -478,7 +478,8 @@ is
          return No_Element;
       end if;
 
-      return Cursor'(Container'Unrestricted_Access, Node, Hash_Type'Last);
+      return Cursor'
+        (Container'Unrestricted_Access, Node, HT_Ops.Index (HT, Node));
    end Find;
 
    --------------------
@@ -635,6 +636,7 @@ is
       end if;
 
       Position.Container := Container'Unrestricted_Access;
+      Position.Position := HT_Ops.Index (HT, Position.Node);
    end Insert;
 
    procedure Insert
@@ -677,6 +679,7 @@ is
       end if;
 
       Position.Container := Container'Unrestricted_Access;
+      Position.Position := HT_Ops.Index (HT, Position.Node);
    end Insert;
 
    procedure Insert
