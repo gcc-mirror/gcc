@@ -88,10 +88,36 @@ Or you can build your own image:
 
 ```bash
 $ docker build . -t gccrs-dev
+```
+If you want to build an object file: 
+
+```bash
 $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
     gccrs-dev:latest gccrs -g -O2 -c \
     gcc/testsuite/rust.test/compilable/type_infer1.rs -o type_infer1.o
 ```
+
+If you want to build an executable file:
+```bash
+$ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
+    gccrs-dev:latest gccrs -g -O2 \
+    gcc/testsuite/rust.test/compilable/type_infer1.rs -o type_infer1
+```
+
+To emit assembly :
+```bash
+$ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
+    gccrs-dev:latest gccrs -g -O2 \
+    gcc/testsuite/rust.test/compilable/type_infer1.rs -S -o type_infer1.s 
+```
+
+To emit the debug outputs you can add the option -frust-dump-all :
+```bash
+$ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
+    gccrs-dev:latest gccrs -g -O2 \
+    gcc/testsuite/rust.test/compilable/type_infer1.rs -o type_infer1 -frust-dump-all
+```
+
 
 ## Contributing
 
