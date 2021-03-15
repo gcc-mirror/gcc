@@ -1,3 +1,10 @@
+2021-03-14  Harald Anlauf  <anlauf@gmx.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	* trans-expr.c (gfc_conv_procedure_call): Fix runtime checks for
+	CLASS arguments.
+	* trans-intrinsic.c (gfc_conv_intrinsic_size): Likewise.
+
 2021-03-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/99125

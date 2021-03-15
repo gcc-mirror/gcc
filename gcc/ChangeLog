@@ -1,3 +1,15 @@
+2021-03-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_extract<mode>): Merge alternative 0 with
+	alternative 2 and alternative 1 with alternative 3 using
+	YW register constraint.
+	(*vec_extract<PEXTR_MODE12:mode>_zext): Merge alternatives
+	using YW register constraint.
+	(*vec_extractv16qi_zext): Ditto.
+	(*vec_extractv4si): Merge alternatives 4 and 5
+	using Yw register constraint.
+	(*ssse3_palignr<mode>_perm): Use Yw instead of v for alternative 3.
+
 2021-03-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/99489
