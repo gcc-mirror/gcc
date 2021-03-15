@@ -2405,6 +2405,7 @@ doloop_contained_procedure_code (gfc_code **c,
     case EXEC_READ:
     case EXEC_WRITE:
     case EXEC_INQUIRE:
+    case EXEC_IOLENGTH:
       saved_io_op = last_io_op;
       last_io_op = co->op;
       break;
@@ -2457,6 +2458,12 @@ doloop_contained_procedure_code (gfc_code **c,
 	  if (co->ext.dt->iostat
 	      && co->ext.dt->iostat->symtree->n.sym == do_var)
 	    gfc_error_now (errmsg, do_var->name, &co->ext.dt->iostat->where,
+			   info->procedure->name, &info->where_do);
+	  break;
+
+	case EXEC_IOLENGTH:
+	  if (co->expr1 && co->expr1->symtree->n.sym == do_var)
+	    gfc_error_now (errmsg, do_var->name, &co->expr1->where,
 			   info->procedure->name, &info->where_do);
 	  break;
 
