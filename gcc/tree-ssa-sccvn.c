@@ -3215,7 +3215,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	return (void *)-1;
       /* This can happen with bitfields.  */
       if (maybe_ne (ref->size, r.size))
-	return (void *)-1;
+	{
+	  /* If the access lacks some subsetting simply apply that by
+	     shortening it.  That in the end can only be successful
+	     if we can pun the lookup result which in turn requires
+	     exact offsets.  */
+	  if (known_eq (r.size, r.max_size)
+	      && known_lt (ref->size, r.size))
+	    r.size = r.max_size = ref->size;
+	  else
+	    return (void *)-1;
+	}
       *ref = r;
 
       /* Do not update last seen VUSE after translating.  */
