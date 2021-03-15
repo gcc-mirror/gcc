@@ -3839,45 +3839,15 @@ package body Sem_Warn is
 
                        or else Error_To_Warning;
 
-                     --  If the call was written in prefix notation, and thus
-                     --  its prefix before rewriting was a selected component,
-                     --  count only visible actuals in call.
+                     --  For greater clarity, give name of formal
 
-                     if Is_Entity_Name (First_Actual (N))
-                       and then Nkind (Original_Node (N)) = Nkind (N)
-                       and then Nkind (Name (Original_Node (N))) =
-                                                     N_Selected_Component
-                       and then
-                         Is_Entity_Name (Prefix (Name (Original_Node (N))))
-                       and then
-                         Entity (Prefix (Name (Original_Node (N)))) =
-                           Entity (First_Actual (N))
-                     then
-                        if Act1 = First_Actual (N) then
-                           Error_Msg_FE
-                             ("<I<`IN OUT` prefix overlaps with "
-                              & "actual for&", Act1, Form2);
+                     Error_Msg_Node_2 := Form2;
 
-                        else
-                           --  For greater clarity, give name of formal
+                     --  This is one of the messages
 
-                           Error_Msg_Node_2 := Form2;
-                           Error_Msg_FE
-                             ("<I<writable actual for & overlaps with "
-                              & "actual for&", Act1, Form2);
-                        end if;
-
-                     else
-                        --  For greater clarity, give name of formal
-
-                        Error_Msg_Node_2 := Form2;
-
-                        --  This is one of the messages
-
-                        Error_Msg_FE
-                          ("<I<writable actual for & overlaps with "
-                           & "actual for&", Act1, Form1);
-                     end if;
+                     Error_Msg_FE
+                       ("<I<writable actual for & overlaps with actual for &",
+                        Act1, Form1);
                   end if;
                end if;
             end if;
