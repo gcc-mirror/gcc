@@ -7719,18 +7719,35 @@ trees_out::decl_value (tree decl, depset *dep)
 	}
     }
 
-  bool is_typedef = (!type && inner
-		     && TREE_CODE (inner) == TYPE_DECL
-		     && DECL_ORIGINAL_TYPE (inner)
-		     && TYPE_NAME (TREE_TYPE (inner)) == inner);
-  if (is_typedef)
+  bool is_typedef = false;
+  if (!type && inner && TREE_CODE (inner) == TYPE_DECL)
     {
-      /* A typedef type.  */
-      int type_tag = insert (TREE_TYPE (inner));
+      tree t = TREE_TYPE (inner);
+      unsigned tdef_flags = 0;
+      if (DECL_ORIGINAL_TYPE (inner)
+	  && TYPE_NAME (TREE_TYPE (inner)) == inner)
+	{
+	  tdef_flags |= 1;
+	  if (TYPE_STRUCTURAL_EQUALITY_P (t)
+	      && TYPE_DEPENDENT_P_VALID (t)
+	      && TYPE_DEPENDENT_P (t))
+	    tdef_flags |= 2;
+	}
       if (streaming_p ())
-	dump (dumper::TREE)
-	  && dump ("Cloned:%d typedef %C:%N", type_tag,
-		   TREE_CODE (TREE_TYPE (inner)), TREE_TYPE (inner));
+	u (tdef_flags);
+
+      if (tdef_flags & 1)
+	{
+	  /* A typedef type.  */
+	  int type_tag = insert (t);
+	  if (streaming_p ())
+	    dump (dumper::TREE)
+	      && dump ("Cloned:%d %s %C:%N", type_tag,
+		       tdef_flags & 2 ? "depalias" : "typedef",
+		       TREE_CODE (t), t);
+
+	  is_typedef = true;
+	}
     }
 
   if (streaming_p () && DECL_MAYBE_IN_CHARGE_CDTOR_P (decl))
@@ -7993,12 +8010,6 @@ trees_in::decl_value ()
 
   dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (decl), decl);
 
-  /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
-  bool is_typedef = (!type && inner
-		     && TREE_CODE (inner) == TYPE_DECL
-		     && DECL_ORIGINAL_TYPE (inner)
-		     && !TREE_TYPE (inner));
-
   existing = back_refs[~tag];
   bool installed = install_entity (existing);
   bool is_new = existing == decl;
@@ -8028,6 +8039,16 @@ trees_in::decl_value ()
 	  else if (set[ix] != attached)
 	    set_overrun ();
 	}
+    }
+
+  /* Regular typedefs will have a NULL TREE_TYPE at this point.  */
+  unsigned tdef_flags = 0;
+  bool is_typedef = false;
+  if (!type && inner && TREE_CODE (inner) == TYPE_DECL)
+    {
+      tdef_flags = u ();
+      if (tdef_flags & 1)
+	is_typedef = true;
     }
 
   if (is_new)
@@ -8076,6 +8097,14 @@ trees_in::decl_value ()
 	  TREE_TYPE (inner) = DECL_ORIGINAL_TYPE (inner);
 	  DECL_ORIGINAL_TYPE (inner) = NULL_TREE;
 	  set_underlying_type (inner);
+	  if (tdef_flags & 2)
+	    {
+	      /* Match instantiate_alias_template's handling.  */
+	      tree type = TREE_TYPE (inner);
+	      TYPE_DEPENDENT_P (type) = true;
+	      TYPE_DEPENDENT_P_VALID (type) = true;
+	      SET_TYPE_STRUCTURAL_EQUALITY (type);
+	    }
 	}
 
       if (inner_tag)
@@ -10660,6 +10689,9 @@ trees_in::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
       spec_entry spec;
       spec.tmpl = tree_node ();
       spec.args = tree_node ();
+
+      if (get_overrun ())
+	return error_mark_node;
 
       DECL_NAME (decl) = DECL_NAME (spec.tmpl);
       DECL_CONTEXT (decl) = DECL_CONTEXT (spec.tmpl);
