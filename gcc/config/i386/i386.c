@@ -10817,12 +10817,11 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
 
       else if (SYMBOLIC_CONST (disp)
 	       && (flag_pic
-		   || (TARGET_MACHO
 #if TARGET_MACHO
-		       && MACHOPIC_INDIRECT
-		       && !machopic_operand_p (disp)
+		   || (MACHOPIC_INDIRECT
+		       && !machopic_operand_p (disp))
 #endif
-	       )))
+		  ))
 	{
 
 	is_legitimate_pic:

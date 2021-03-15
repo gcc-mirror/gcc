@@ -3929,8 +3929,10 @@ static void prune_unused_types (void);
 static int maybe_emit_file (struct dwarf_file_data *fd);
 static inline const char *AT_vms_delta1 (dw_attr_node *);
 static inline const char *AT_vms_delta2 (dw_attr_node *);
+#if VMS_DEBUGGING_INFO
 static inline void add_AT_vms_delta (dw_die_ref, enum dwarf_attribute,
 				     const char *, const char *);
+#endif
 static void append_entry_to_tmpl_value_parm_die_table (dw_die_ref, tree);
 static void gen_remaining_tmpl_value_param_die_attribute (void);
 static bool generic_type_p (tree);
@@ -5200,6 +5202,7 @@ AT_file (dw_attr_node *a)
   return a->dw_attr_val.v.val_file;
 }
 
+#if VMS_DEBUGGING_INFO
 /* Add a vms delta attribute value to a DIE.  */
 
 static inline void
@@ -5215,6 +5218,7 @@ add_AT_vms_delta (dw_die_ref die, enum dwarf_attribute attr_kind,
   attr.dw_attr_val.v.val_vms_delta.lbl2 = xstrdup (lbl2);
   add_dwarf_attr (die, &attr);
 }
+#endif
 
 /* Add a symbolic view identifier attribute value to a DIE.  */
 
