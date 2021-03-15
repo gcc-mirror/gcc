@@ -197,6 +197,11 @@
 #undef v
 #endif
 
+#ifdef __APPLE__
+// inttypes.h:  extern intmax_t imaxabs(intmax_t j);
+#undef j
+#endif
+
 #ifdef __hpux__
 #undef d
 #undef r
