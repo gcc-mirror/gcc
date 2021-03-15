@@ -1566,7 +1566,7 @@ package body Exp_Unst is
 
                   --  A subprogram instantiation does not have an explicit
                   --  body. If unused, we could remove the corresponding
-                  --  wrapper package and its body (TBD).
+                  --  wrapper package and its body.
 
                   if Present (STJ.Bod) then
                      Spec := Corresponding_Spec (STJ.Bod);

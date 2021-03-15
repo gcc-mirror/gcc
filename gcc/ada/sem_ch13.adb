@@ -2623,7 +2623,7 @@ package body Sem_Ch13 is
                      end if;
                   end loop;
 
-                  --  ??? TBD: Must check that "for result type R, if the
+                  --  ??? Must check that "for result type R, if the
                   --  function is a boundary entity for type R (see 7.3.2),
                   --  no type invariant applies to type R; if R has a
                   --  component type C, a similar rule applies to C."
@@ -15068,7 +15068,7 @@ package body Sem_Ch13 is
 
                   --  For now we only deal with aspects that do not generate
                   --  subprograms, or that may mention current instances of
-                  --  types. These will require special handling (???TBD).
+                  --  types. These will require special handling???.
 
                   when Aspect_Invariant
                      | Aspect_Predicate

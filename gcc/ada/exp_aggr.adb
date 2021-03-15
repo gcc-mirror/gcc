@@ -7167,7 +7167,7 @@ package body Exp_Aggr is
             return Build_Siz_Exp (First (Discrete_Choices (Comp)));
 
          elsif Nkind (Comp) = N_Iterated_Element_Association then
-            return -1;    --  TBD, build expression for size of the domain
+            return -1;    --  ??? build expression for size of the domain
 
          else
             return -1;

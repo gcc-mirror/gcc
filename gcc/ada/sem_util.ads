@@ -3353,7 +3353,7 @@ package Sem_Util is
       --  Returns True iff every value belonging to some interval of
       --  Subset also belongs to some interval of Of_Set.
 
-      --  TBD: When we get around to implementing "is statically compatible"
+      --  When we get around to implementing "is statically compatible"
       --  correctly for real types with static predicates, we may need
       --  an analogous Real_Interval_List type. Most of the language
       --  rules that reference "is statically compatible" pertain to

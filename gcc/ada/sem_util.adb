@@ -25239,7 +25239,7 @@ package body Sem_Util is
                         Domain : constant Node_Id := Name (Parent (Ent));
 
                      begin
-                        --  TBD : in the full version of the construct, the
+                        --  ??? In the full version of the construct, the
                         --  domain of iteration can be given by an expression.
 
                         if Is_Entity_Name (Domain) then

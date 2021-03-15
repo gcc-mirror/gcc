@@ -2827,7 +2827,7 @@ package body Sem_Ch3 is
             --  to the first encountered body.
 
             --  ??? A cleaner approach may be possible and/or this solution
-            --  could be extended to general-purpose late primitives, TBD.
+            --  could be extended to general-purpose late primitives.
 
             if Present (Ctrl_Typ) then
 
@@ -3055,7 +3055,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  TBD : other nonoverridable aspects.
+         --  What about other nonoverridable aspects???
       end Check_Nonoverridable_Aspects;
 
       ------------------------------------
