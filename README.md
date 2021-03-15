@@ -5,7 +5,7 @@
 # GCC Rust
 ![GCC Rust](logo.png?raw=true "GCC rust Logo")
 
-Please note, the compiler is in a very early stage and not usable yet for compiling real rust programs.
+Please note, the compiler is in a very early stage and not usable yet for compiling real Rust programs.
 
 gccrs is a full alternative implementation of the Rust language ontop of GCC with the goal
 to become fully upstream with the GNU toolchain.
