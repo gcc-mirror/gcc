@@ -2210,7 +2210,7 @@ extension mode (the use of Off as a parameter cancels the effect
 of the *-gnatX* command switch).
 
 In extension mode, the latest version of the Ada language is
-implemented (currently Ada 202x), and in addition a small number
+implemented (currently Ada 2022), and in addition a number
 of GNAT specific extensions are recognized as follows:
 
 * Constrained attribute for generic objects
@@ -2235,7 +2235,7 @@ of GNAT specific extensions are recognized as follows:
   This new aggregate syntax for arrays and containers is provided under -gnatX
   to experiment and confirm this new language syntax.
 
-* Casing on composite values
+* Casing on composite values (aka pattern matching)
 
   The selector for a case statement may be of a composite type, subject to
   some restrictions (described below). Aggregate syntax is used for choices
@@ -2246,7 +2246,7 @@ of GNAT specific extensions are recognized as follows:
 
   Consider this example:
 
-   .. code-block:: ada
+  .. code-block:: ada
 
       type Rec is record
          F1, F2 : Integer;
@@ -2321,6 +2321,50 @@ of GNAT specific extensions are recognized as follows:
   define the same set of bindings and the component subtypes for
   for a given identifer must all statically match. Currently, the case
   of a binding for a nondiscrete component is not implemented.
+
+* Fixed lower bounds for array types and subtypes
+
+  Unconstrained array types and subtypes can be specified with a lower bound
+  that is fixed to a certain value, by writing an index range that uses the
+  syntax "<lower-bound-expression> .. <>". This guarantees that all objects
+  of the type or subtype will have the specified lower bound.
+
+  For example, a matrix type with fixed lower bounds of zero for each
+  dimension can be declared by the following:
+
+  .. code-block:: ada
+
+      type Matrix is
+        array (Natural range 0 .. <>, Natural range 0 .. <>) of Integer;
+
+  Objects of type Matrix declared with an index constraint must have index
+  ranges starting at zero:
+
+  .. code-block:: ada
+
+      M1 : Matrix (0 .. 9, 0 .. 19);
+      M2 : Matrix (2 .. 11, 3 .. 22);  -- Warning about bounds; will raise CE
+
+  Similarly, a subtype of String can be declared that specifies the lower
+  bound of objects of that subtype to be 1:
+
+   .. code-block:: ada
+
+      subtype String_1 is String (1 .. <>);
+
+  If a string slice is passed to a formal of subtype String_1 in a call to
+  a subprogram S, the slice's bounds will "slide" so that the lower bound
+  is 1. Within S, the lower bound of the formal is known to be 1, so, unlike
+  a normal unconstrained String formal, there is no need to worry about
+  accounting for other possible lower-bound values. Sliding of bounds also
+  occurs in other contexts, such as for object declarations with an
+  unconstrained subtype with fixed lower bound, as well as in subtype
+  conversions.
+
+  Use of this feature increases safety by simplifying code, and can also
+  improve the efficiency of indexing operations, since the compiler statically
+  knows the lower bound of unconstrained array formals when the formal's
+  subtype has index ranges with static fixed lower bounds.
 
 .. _Pragma-Extensions_Visible:
 
