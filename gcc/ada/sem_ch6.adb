@@ -6265,7 +6265,9 @@ package body Sem_Ch6 is
 
             --  Null exclusion must match
 
-            if not Null_Exclusions_Match (Old_Formal, New_Formal) then
+            if not Relaxed_RM_Semantics
+              and then not Null_Exclusions_Match (Old_Formal, New_Formal)
+            then
                Conformance_Error
                  ("\null exclusion for& does not match", New_Formal);
 
