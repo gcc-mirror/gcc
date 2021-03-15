@@ -53,7 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "gcc-rich-location.h"
 #include "langhooks.h"
+#include "context.h"  /* For 'g'.  */
 #include "omp-general.h"
+#include "omp-offload.h"  /* For offload_vars.  */
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -8176,9 +8178,22 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 				  DECL_ATTRIBUTES (decl))
 	       && !lookup_attribute ("omp declare target link",
 				     DECL_ATTRIBUTES (decl)))
-	DECL_ATTRIBUTES (decl)
-	  = tree_cons (get_identifier ("omp declare target"),
-		       NULL_TREE, DECL_ATTRIBUTES (decl));
+	{
+	  DECL_ATTRIBUTES (decl)
+	    = tree_cons (get_identifier ("omp declare target"),
+			 NULL_TREE, DECL_ATTRIBUTES (decl));
+	  symtab_node *node = symtab_node::get (decl);
+	  if (node != NULL)
+	    {
+	      node->offloadable = 1;
+	      if (ENABLE_OFFLOADING)
+		{
+		  g->have_offload = true;
+		  if (is_a <varpool_node *> (node))
+		    vec_safe_push (offload_vars, decl);
+		}
+	    }
+	}
     }
 
   /* This is the last point we can lower alignment so give the target the

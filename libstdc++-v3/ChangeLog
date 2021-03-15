@@ -1,3 +1,12 @@
+2021-03-15  Caroline Tice  <cmtice@google.com>
+
+	PR libstdc++/99172
+	* src/Makefile.am (AM_CXXFLAGS_PRE, AM_CXXFLAGS): Add
+	AM_CXXFLAGS_PRE with the old definition of AM_CXXFLAGS; make
+	AM_CXXFLAGS to be AM_CXXFLAGS_PRE with '-fvtable-verify=std'
+	filtered out.
+	* src/Makefile.in: Regenerate.
+
 2021-03-11  Patrick Palka  <ppalka@redhat.com>
 
 	* src/c++17/floating_to_chars.cc: Simplify the file as if

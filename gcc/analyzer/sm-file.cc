@@ -246,7 +246,7 @@ get_file_using_fns ()
     "__fbufsize",
     "__flbf",
     "__fpending",
-    "__fpurge"
+    "__fpurge",
     "__freadable",
     "__freading",
     "__fsetlocking",

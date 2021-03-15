@@ -1,3 +1,45 @@
+2021-03-14  Harald Anlauf  <anlauf@gmx.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/pr99112.f90: New test.
+
+2021-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/99489
+	* gcc.dg/Wstringop-truncation-9.c: New test.
+
+2021-03-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99125
+	* gfortran.dg/alloc_deferred_comp_1.f90: New test.
+
+2021-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99544
+	* gcc.dg/gomp/pr99544.c: New test.
+
+2021-03-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99238
+	* g++.dg/modules/pr99238.h: New.
+	* g++.dg/modules/pr99238_a.H: New.
+	* g++.dg/modules/pr99238_b.H: New.
+
+2021-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99514
+	* gfortran.dg/gomp/threadprivate-1.f90: New test.
+
+2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99321
+	* gcc.target/i386/avx512vl-pr99321-2.c: New test.
+
+2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99507
+	* g++.dg/cpp2a/consteval19.C: New test.
+
 2021-03-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96374

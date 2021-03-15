@@ -1,7 +1,7 @@
 /* { dg-do run { target { powerpc*-ibm-aix* } } } */
 /* { dg-options "" } */
 
-void abort (void);
+extern void abort (void);
 
 struct A {
     double _Complex a[64];
@@ -26,10 +26,10 @@ int main() {
     abort();
 
   if (__alignof(struct A) != 8)
-    abort;
+    abort();
 
   if (__alignof(struct C) != 4)
-    abort;
+    abort();
 
   if (__builtin_offsetof(struct C, c2) != 4)
     abort();

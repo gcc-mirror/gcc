@@ -1,3 +1,12 @@
+2021-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* io/transfer.c (st_read_done_worker, st_write_done_worker):
+	Call unlock_unit here, add unit_lock lock around newunit_free call.
+	(st_read_done, st_write_done): Only call unlock_unit when not
+	calling the worker function.
+	* io/unit.c (set_internal_unit): Don't reset the unit_number
+	to the same number as this cause race warnings.
+
 2021-03-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR libfortran/99218

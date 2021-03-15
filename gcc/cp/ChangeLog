@@ -1,3 +1,30 @@
+2021-03-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99238
+	* module.cc (depset::hash::add_binding_entity): Assert not
+	visited.
+	(depset::add::add_specializations): Likewise.
+	* name-lookup.c (name_lookup::dedup): New.
+	(name_lookup::~name_lookup): Assert not deduping.
+	(name_lookup::restore_state): Likewise.
+	(name_lookup::add_overload): Replace outlined code with dedup
+	call.
+	(name_lookup::add_value): Likewise.
+	(name_lookup::search_namespace_only): Likewise.
+	(name_lookup::adl_namespace_fns): Likewise.
+	(name_lookup::adl_class_fns): Likewise.
+	(name_lookup::search_adl): Likewise.  Add clearing dedup call.
+	(name_lookup::search_qualified): Likewise.
+	(name_lookup::search_unqualified): Likewise.
+
+2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99507
+	* call.c (build_over_call): For immediate evaluation of functions
+	that return references, undo convert_from_reference effects before
+	calling cxx_constant_value and call convert_from_reference
+	afterwards.
+
 2021-03-11  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99248

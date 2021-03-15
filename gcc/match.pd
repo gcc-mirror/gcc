@@ -2788,7 +2788,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (plus:c @0 (lshift:s @0 INTEGER_CST@1))
   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
        && tree_fits_uhwi_p (@1)
-       && tree_to_uhwi (@1) < element_precision (type))
+       && tree_to_uhwi (@1) < element_precision (type)
+       && (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	   || optab_handler (smul_optab,
+			     TYPE_MODE (type)) != CODE_FOR_nothing))
    (with { tree t = type;
 	   if (!TYPE_OVERFLOW_WRAPS (t)) t = unsigned_type_for (t);
 	   wide_int w = wi::set_bit_in_zero (tree_to_uhwi (@1),
@@ -2804,7 +2807,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && tree_fits_uhwi_p (@1)
        && tree_to_uhwi (@1) < element_precision (type)
        && tree_fits_uhwi_p (@2)
-       && tree_to_uhwi (@2) < element_precision (type))
+       && tree_to_uhwi (@2) < element_precision (type)
+       && (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	   || optab_handler (smul_optab,
+			     TYPE_MODE (type)) != CODE_FOR_nothing))
    (with { tree t = type;
 	   if (!TYPE_OVERFLOW_WRAPS (t)) t = unsigned_type_for (t);
 	   unsigned int prec = element_precision (type);

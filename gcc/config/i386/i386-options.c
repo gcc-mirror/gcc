@@ -743,7 +743,7 @@ static const struct processor_costs *processor_cost_table[] =
   &btver2_cost,
   &znver1_cost,
   &znver2_cost,
-  &znver2_cost
+  &znver3_cost
 };
 
 /* Guarantee that the array is aligned with enum processor_type.  */
