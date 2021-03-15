@@ -6973,7 +6973,7 @@ gfc_trans_allocate (gfc_code * code)
 	  gfc_expr *init_expr = gfc_expr_to_initialize (expr);
 	  gfc_expr *rhs = e3rhs ? e3rhs : gfc_copy_expr (code->expr3);
 	  flag_realloc_lhs = 0;
-	  tmp = gfc_trans_assignment (init_expr, rhs, false, false, true,
+	  tmp = gfc_trans_assignment (init_expr, rhs, true, false, true,
 				      false);
 	  flag_realloc_lhs = realloc_lhs;
 	  /* Free the expression allocated for init_expr.  */
