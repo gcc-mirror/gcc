@@ -3669,6 +3669,9 @@ package body Sem_Warn is
    ---------------------------------
 
    procedure Warn_On_Overlapping_Actuals (Subp : Entity_Id; N : Node_Id) is
+      function Explicitly_By_Reference (Formal_Id : Entity_Id) return Boolean;
+      --  Returns True iff the type of Formal_Id is explicitly by-reference
+
       function Refer_Same_Object
         (Act1 : Node_Id;
          Act2 : Node_Id) return Boolean;
@@ -3679,6 +3682,24 @@ package body Sem_Warn is
       --  two names statically denotes a renaming declaration whose renamed
       --  object_name is known to refer to the same object as the other name
       --  (RM 6.4.1(6.11/3))
+
+      -----------------------------
+      -- Explicitly_By_Reference --
+      -----------------------------
+
+      function Explicitly_By_Reference
+        (Formal_Id : Entity_Id)
+         return Boolean
+      is
+         Typ : constant Entity_Id := Underlying_Type (Etype (Formal_Id));
+      begin
+         if Present (Typ) then
+            return Is_By_Reference_Type (Typ)
+              or else Convention (Typ) = Convention_Ada_Pass_By_Reference;
+         else
+            return False;
+         end if;
+      end Explicitly_By_Reference;
 
       -----------------------
       -- Refer_Same_Object --
@@ -3792,17 +3813,13 @@ package body Sem_Warn is
                   then
                      null;
 
-                  --  If type is explicitly not by-copy, assume that
-                  --  aliasing is intended.
+                  --  If type is explicitly by-reference, then it is not
+                  --  covered by the legality rule, which only applies to
+                  --  elementary types. Actually, the aliasing is most
+                  --  likely intended, so don't emit a warning either.
 
-                  elsif
-                    Present (Underlying_Type (Etype (Form1)))
-                      and then
-                        (Is_By_Reference_Type
-                          (Underlying_Type (Etype (Form1)))
-                          or else
-                            Convention (Underlying_Type (Etype (Form1))) =
-                                         Convention_Ada_Pass_By_Reference)
+                  elsif Explicitly_By_Reference (Form1)
+                    or else Explicitly_By_Reference (Form2)
                   then
                      null;
 
@@ -3810,7 +3827,9 @@ package body Sem_Warn is
                   --  arrays and record types if switch is set.
 
                   elsif Ada_Version >= Ada_2012
-                    and then not Is_Elementary_Type (Etype (Form1))
+                    and then not (Is_Elementary_Type (Etype (Form1))
+                                    and then
+                                  Is_Elementary_Type (Etype (Form2)))
                     and then not Warn_On_Overlap
                   then
                      null;
