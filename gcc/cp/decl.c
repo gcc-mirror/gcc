@@ -12310,7 +12310,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  int attr_flags;
 
 	  attr_flags = 0;
-	  if (declarator == NULL || declarator->kind == cdk_id)
+	  if (declarator->kind == cdk_id)
 	    attr_flags |= (int) ATTR_FLAG_DECL_NEXT;
 	  if (declarator->kind == cdk_function)
 	    attr_flags |= (int) ATTR_FLAG_FUNCTION_NEXT;
