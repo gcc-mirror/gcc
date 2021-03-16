@@ -1,3 +1,7 @@
+2021-03-15  Martin Liska  <mliska@suse.cz>
+
+	* sm-file.cc (get_file_using_fns): Add missing comma in initializer.
+
 2021-03-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/96374

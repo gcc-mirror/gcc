@@ -1,3 +1,75 @@
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99563
+	* gcc.target/i386/avx-pr99563.c: New test.
+
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99542
+	* gcc.dg/gomp/pr99542.c: New test.
+	* gcc.dg/gomp/pr59669-2.c (bar): Don't expect a warning on aarch64.
+	* gcc.dg/gomp/simd-clones-2.c (setArray): Likewise.
+	* g++.dg/vect/simd-clone-7.cc (bar): Likewise.
+	* g++.dg/gomp/declare-simd-1.C (f37): Expect a different warning
+	on aarch64.
+	* gcc.dg/declare-simd.c (fn2): Expect a new warning on aarch64.
+
+2021-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99601
+	* g++.dg/modules/builtin-3_a.C: Fix target selector syntax errors.
+	* g++.dg/modules/builtin-3_b.C: Likewise.
+
+2021-03-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99601
+	* g++.dg/modules/builtin-3_a.C: Fix lp64 x86 detection.
+	* g++.dg/modules/builtin-3_b.C: Fix lp64 x86 detection.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99047
+	* g++.dg/coroutines/pr99047.C: New test.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98704
+	* g++.dg/coroutines/torture/pr98704.C: New test.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98480
+	* g++.dg/coroutines/pr98480.C: New test.
+	* g++.dg/coroutines/torture/co-await-24-for-init.C: New test.
+	* g++.dg/coroutines/torture/co-await-25-for-condition.C: New test.
+	* g++.dg/coroutines/torture/co-await-26-for-iteration-expr.C: New test.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96749
+	* g++.dg/coroutines/pr96749-1.C: New test.
+	* g++.dg/coroutines/pr96749-2.C: New test.
+
+2021-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98834
+	* g++.dg/opt/pr98834.C: New testcase.
+
+2021-03-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/99345
+	* gfortran.dg/do_check_16.f90: New test.
+	* gfortran.dg/do_check_17.f90: New test.
+
+2021-03-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99545
+	* gfortran.dg/pr99545.f90: New test.
+
+2021-03-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr99492.c: Fix typo.
+
 2021-03-14  Harald Anlauf  <anlauf@gmx.de>
 	    Paul Thomas  <pault@gcc.gnu.org>
 
