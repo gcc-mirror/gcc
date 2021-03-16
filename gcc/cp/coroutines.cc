@@ -2805,7 +2805,7 @@ struct var_nest_node
 {
   var_nest_node () = default;
   var_nest_node (tree v, tree i, var_nest_node *p, var_nest_node *n)
-    : var(v), init(i), prev(p), next(n)
+    : var(v), init(i), prev(p), next(n), then_cl (NULL), else_cl (NULL)
     {
       if (p)
 	p->next = this;
