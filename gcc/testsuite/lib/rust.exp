@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2020 Free Software Foundation, Inc.
+# Copyright (C) 2012-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,39 +29,6 @@ load_lib target-libpath.exp
 
 set rust_compile_options ""
 
-
-#
-# rust_version -- extract and print the version number of the compiler
-#
-
-proc rust_version { } {
-    global RUST_UNDER_TEST
-
-    rust_init
-
-    # ignore any arguments after the command
-    set compiler [lindex $RUST_UNDER_TEST 0]
-
-    # verify that the compiler exists
-    if { [is_remote host] || [which $compiler] != 0 } then {
-	set tmp [remote_exec host "$compiler -v"]
-	set status [lindex $tmp 0]
-	set output [lindex $tmp 1]
-	regexp " version \[^\n\r\]*" $output version
-	if { $status == 0 && [info exists version] } then {
-	    if [is_remote host] {
-		clone_output "$compiler $version\n"
-	    } else {
-		clone_output "[which $compiler] $version\n"
-	    }
-	} else {
-	    clone_output "Couldn't determine version of $output [which $compiler]\n"
-	}
-    } else {
-	# compiler does not exist (this should have already been detected)
-	warning "$compiler does not exist"
-    }
-}
 
 #
 # rust_include_flags -- include flags for the gcc tree structure
@@ -118,7 +85,7 @@ proc rust_init { args } {
     global libdir
     global gluefile wrap_flags
     global objdir srcdir
-    global ALWAYS_DFLAGS
+    global ALWAYS_RUSTFLAGS
     global TOOL_EXECUTABLE TOOL_OPTIONS
     global RUST_UNDER_TEST
     global TESTING_IN_BUILD_TREE
@@ -148,6 +115,7 @@ proc rust_init { args } {
 	    exit 1
 	}
     }
+
     if ![info exists tmpdir] {
 	set tmpdir "/tmp"
     }
@@ -164,24 +132,24 @@ proc rust_init { args } {
     # compilation.  They are passed first to allow individual
     # tests to override them.
     if [info exists TEST_ALWAYS_FLAGS] {
-	lappend ALWAYS_DFLAGS "additional_flags=$TEST_ALWAYS_FLAGS"
+	lappend ALWAYS_RUSTFLAGS "additional_flags=$TEST_ALWAYS_FLAGS"
     }
 
     if ![is_remote host] {
 	if [info exists TOOL_OPTIONS] {
-	    lappend ALWAYS_DFLAGS "additional_flags=[rust_include_flags [get_multilibs ${TOOL_OPTIONS}] ]"
-	    lappend ALWAYS_DFLAGS "ldflags=[rust_link_flags [get_multilibs ${TOOL_OPTIONS}] ]"
+	    lappend ALWAYS_RUSTFLAGS "additional_flags=[rust_include_flags [get_multilibs ${TOOL_OPTIONS}] ]"
+	    lappend ALWAYS_RUSTFLAGS "ldflags=[rust_link_flags [get_multilibs ${TOOL_OPTIONS}] ]"
 	} else {
-	    lappend ALWAYS_DFLAGS "additional_flags=[rust_include_flags [get_multilibs] ]"
-	    lappend ALWAYS_DFLAGS "ldflags=[rust_link_flags [get_multilibs] ]"
+	    lappend ALWAYS_RUSTFLAGS "additional_flags=[rust_include_flags [get_multilibs] ]"
+	    lappend ALWAYS_RUSTFLAGS "ldflags=[rust_link_flags [get_multilibs] ]"
 	}
     }
 
     if [info exists TOOL_OPTIONS] {
-	lappend ALWAYS_DFLAGS "additional_flags=$TOOL_OPTIONS"
+	lappend ALWAYS_RUSTFLAGS "additional_flags=$TOOL_OPTIONS"
     }
 
-    verbose -log "ALWAYS_DFLAGS set to $ALWAYS_DFLAGS"
+    verbose -log "ALWAYS_RUSTFLAGS set to $ALWAYS_RUSTFLAGS"
 
     set gcc_warning_prefix "warning:"
     set gcc_error_prefix "(fatal )?error:"
@@ -196,7 +164,7 @@ proc rust_init { args } {
 proc rust_target_compile { source dest type options } {
     global tmpdir
     global gluefile wrap_flags
-    global ALWAYS_DFLAGS
+    global ALWAYS_RUSTFLAGS
     global RUST_UNDER_TEST
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
@@ -207,7 +175,14 @@ proc rust_target_compile { source dest type options } {
     lappend options "timeout=[timeout_value]"
     lappend options "compiler=$RUST_UNDER_TEST"
 
-    set options [concat "$ALWAYS_DFLAGS" $options]
+    set options [concat "$ALWAYS_RUSTFLAGS" $options]
     set options [dg-additional-files-options $options $source]
+
+    ## FIXME: until the compiler is made less verbose, we need to prune its output completely.
+    # Only keep line containing error so that the test will correctly report the error and the test
+    # can FAIL or XFAIL
+    global additional_prunes
+    set additional_prunes "^((?!error).)*$"
+
     return [target_compile $source $dest $type $options]
 }

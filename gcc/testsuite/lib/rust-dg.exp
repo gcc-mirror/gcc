@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2019 Free Software Foundation, Inc.
+# Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,30 +19,7 @@ load_lib gcc-dg.exp
 # Define rust callbacks for dg.exp.
 
 proc rust-dg-test { prog do_what extra_tool_flags } {
-    upvar dg-do-what dg-do-what
-
-    # Demote link and run tests to compile-only if D runtime is missing.
-    if ![check_effective_target_d_runtime] {
-	switch $do_what {
-	    link -
-	    run {
-		set do_what compile
-		set dg-do-what compile
-	    }
-	}
-    }
-
-    # Strip rust.test prefix off test names to avoid pathname failures in
-    # some tests.
-    set prog [dg-trim-dirname rust.test $prog]
-
-    set result \
-	[gcc-dg-test-1 rust_target_compile $prog $do_what $extra_tool_flags]
-
-    set comp_output [lindex $result 0]
-    set output_file [lindex $result 1]
-
-    return [list $comp_output $output_file]
+    return [gcc-dg-test-1 rust_target_compile $prog $do_what $extra_tool_flags]
 }
 
 proc rust-dg-prune { system text } {
@@ -50,39 +27,6 @@ proc rust-dg-prune { system text } {
 }
 
 # Utility routines.
-
-#
-# Modified dg-runtest that can cycle through a list of optimization options
-# as c-torture does.
-#
-
-proc rust-dg-runtest { testcases flags default-extra-flags } {
-    global runtests
-
-    foreach test $testcases {
-	# If we're only testing specific files and this isn't one of
-	# them, skip it.
-	
-	if ![runtest_file_p $runtests $test] {
-	    continue
-	}
-
-	# Use TORTURE_OPTIONS to cycle through an option list.
-	if [torture-options-exist] then {
-	    global torture_with_loops
-	    set option_list $torture_with_loops
-	} else {
-	    set option_list { "" }
-	}
-
-	set nshort [file tail [file dirname $test]]/[file tail $test]
-
-	foreach flags_t $option_list {
-	    verbose "Testing $nshort, $flags $flags_t" 1
-	    dg-test $test "$flags $flags_t" ${default-extra-flags}
-	}
-    }
-}
 
 #
 # rust_load -- wrapper around default rust_load to handle tests that
@@ -98,7 +42,6 @@ if { [info procs rust_load] != [list] \
 	if [info exists RUST_EXECUTE_ARGS] then {
 	    set args [concat "{$RUST_EXECUTE_ARGS}"]
 	}
-	#print "Running: $program [lindex $args 0]"
 	set result [eval [list prev_rust_load $program] $args ]
 	return $result
     }
