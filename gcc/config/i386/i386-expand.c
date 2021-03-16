@@ -13210,6 +13210,10 @@ rdseed_step:
 
       return 0;
 
+    case IX86_BUILTIN_VZEROUPPER:
+      cfun->machine->has_explicit_vzeroupper = true;
+      break;
+
     default:
       break;
     }

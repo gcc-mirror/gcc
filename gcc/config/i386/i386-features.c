@@ -1837,19 +1837,22 @@ ix86_add_reg_usage_to_vzerouppers (void)
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
-  int i;
+  if (TARGET_VZEROUPPER
+      && flag_expensive_optimizations
+      && !optimize_size)
+    {
+      /* vzeroupper instructions are inserted immediately after reload to
+	 account for possible spills from 256bit or 512bit registers.  The pass
+	 reuses mode switching infrastructure by re-running mode insertion
+	 pass, so disable entities that have already been processed.  */
+      for (int i = 0; i < MAX_386_ENTITIES; i++)
+	ix86_optimize_mode_switching[i] = 0;
 
-  /* vzeroupper instructions are inserted immediately after reload to
-     account for possible spills from 256bit or 512bit registers.  The pass
-     reuses mode switching infrastructure by re-running mode insertion
-     pass, so disable entities that have already been processed.  */
-  for (i = 0; i < MAX_386_ENTITIES; i++)
-    ix86_optimize_mode_switching[i] = 0;
+      ix86_optimize_mode_switching[AVX_U128] = 1;
 
-  ix86_optimize_mode_switching[AVX_U128] = 1;
-
-  /* Call optimize_mode_switching.  */
-  g->get_passes ()->execute_pass_mode_switching ();
+      /* Call optimize_mode_switching.  */
+      g->get_passes ()->execute_pass_mode_switching ();
+    }
   ix86_add_reg_usage_to_vzerouppers ();
   return 0;
 }
@@ -1880,8 +1883,10 @@ public:
   virtual bool gate (function *)
     {
       return TARGET_AVX
-	     && TARGET_VZEROUPPER && flag_expensive_optimizations
-	     && !optimize_size;
+	     && ((TARGET_VZEROUPPER
+		  && flag_expensive_optimizations
+		  && !optimize_size)
+		 || cfun->machine->has_explicit_vzeroupper);
     }
 
   virtual unsigned int execute (function *)
