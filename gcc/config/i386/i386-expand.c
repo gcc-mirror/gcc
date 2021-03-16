@@ -1348,9 +1348,10 @@ ix86_split_lea_for_addr (rtx_insn *insn, rtx operands[], machine_mode mode)
 	  if (regno0 != regno2)
 	    emit_insn (gen_rtx_SET (target, parts.index));
 
-	  /* Use shift for scaling.  */
-	  ix86_emit_binop (ASHIFT, mode, target,
-			   GEN_INT (exact_log2 (parts.scale)));
+	  /* Use shift for scaling, but emit it as MULT instead
+	     to avoid it being immediately peephole2 optimized back
+	     into lea.  */
+	  ix86_emit_binop (MULT, mode, target, GEN_INT (parts.scale));
 
 	  if (parts.base)
 	    ix86_emit_binop (PLUS, mode, target, parts.base);
