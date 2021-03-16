@@ -1445,6 +1445,7 @@ checked_options["TARGET_CASE_VECTOR_PC_RELATIVE"]++
 checked_options["arc_size_opt_level"]++
 # arm exceptions
 checked_options["arm_fp16_format"]++
+checked_options["flag_ipa_ra"]++
 # s390 exceptions
 checked_options["param_max_completely_peel_times"]++
 checked_options["param_max_completely_peeled_insns"]++

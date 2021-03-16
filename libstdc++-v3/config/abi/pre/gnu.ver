@@ -2388,11 +2388,6 @@ GLIBCXX_3.4.29 {
     _ZNKRSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEv;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EE3strEONS_12basic_stringI[cw]S2_S3_EE;
 
-    # std::once_flag::_M_activate()
-    _ZNSt9once_flag11_M_activateEv;
-    # std::once_flag::_M_finish(bool)
-    _ZNSt9once_flag9_M_finishEb;
-
     # std::to_chars(char*, char*, [float|double|long double])
     _ZSt8to_charsPcS_[def];
     # std::to_chars(char*, char*, [float|double|long double], chars_format)

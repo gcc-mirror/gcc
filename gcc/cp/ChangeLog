@@ -1,3 +1,45 @@
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99047
+	* coroutines.cc (expand_one_await_expression): If the
+	await_ready() expression is not a boolean then convert it
+	as required.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98704
+	* coroutines.cc (build_actor_fn): Make destroy index 1
+	correspond to the abnormal unhandled_exception() exit.
+	Substitute the proxy for the resume index.
+	(coro_rewrite_function_body): Arrange to reset the resume
+	index and make done = true for a rethrown exception from
+	unhandled_exception ().
+	(morph_fn_to_coro): Adjust calls to build_actor_fn and
+	coro_rewrite_function_body.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98480
+	* coroutines.cc (replace_continue): Rewrite continue into
+	'goto label'.
+	(await_statement_walker): Handle await expressions in the
+	initializer, condition and iteration expressions of for
+	loops.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96749
+	* coroutines.cc (flatten_await_stmt): Allow for the case
+	where a target expression variable only has uses in the
+	second part of a compound expression.
+	(maybe_promote_temps): Avoid emiting empty statements.
+
+2021-03-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/99509
+	* decl.c (cp_finish_decl): For 'omp declare target implicit' vars,
+	ensure that the varpool node is marked as offloadable.
+
 2021-03-12  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99238

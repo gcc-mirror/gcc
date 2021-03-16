@@ -1110,6 +1110,21 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
   return types_match;
 }
 
+/* Mark DECL as versioned if it isn't already.  */
+
+static void
+maybe_mark_function_versioned (tree decl)
+{
+  if (!DECL_FUNCTION_VERSIONED (decl))
+    {
+      DECL_FUNCTION_VERSIONED (decl) = 1;
+      /* If DECL_ASSEMBLER_NAME has already been set, re-mangle
+	 to include the version marker.  */
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	mangle_decl (decl);
+    }
+}
+
 /* NEWDECL and OLDDECL have identical signatures.  If they are
    different versions adjust them and return true.
    If RECORD is set to true, record function versions.  */
@@ -1120,18 +1135,22 @@ maybe_version_functions (tree newdecl, tree olddecl, bool record)
   if (!targetm.target_option.function_versions (newdecl, olddecl))
     return false;
 
-  if (!DECL_FUNCTION_VERSIONED (olddecl))
+  maybe_mark_function_versioned (olddecl);
+  if (DECL_LOCAL_DECL_P (olddecl))
     {
-      DECL_FUNCTION_VERSIONED (olddecl) = 1;
-      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
-	mangle_decl (olddecl);
+      olddecl = DECL_LOCAL_DECL_ALIAS (olddecl);
+      maybe_mark_function_versioned (olddecl);
     }
 
-  if (!DECL_FUNCTION_VERSIONED (newdecl))
+  maybe_mark_function_versioned (newdecl);
+  if (DECL_LOCAL_DECL_P (newdecl))
     {
-      DECL_FUNCTION_VERSIONED (newdecl) = 1;
-      if (DECL_ASSEMBLER_NAME_SET_P (newdecl))
-	mangle_decl (newdecl);
+      /* Unfortunately, we can get here before pushdecl naturally calls
+	 push_local_extern_decl_alias, so we need to call it directly.  */
+      if (!DECL_LOCAL_DECL_ALIAS (newdecl))
+	push_local_extern_decl_alias (newdecl);
+      newdecl = DECL_LOCAL_DECL_ALIAS (newdecl);
+      maybe_mark_function_versioned (newdecl);
     }
 
   if (record)

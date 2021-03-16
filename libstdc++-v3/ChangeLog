@@ -1,3 +1,29 @@
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/17_intro/names.cc: Exclude j from the list
+	of test symbols for Darwin.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/os/bsd/darwin/ppc-extra.ver: Add matching for
+	to_chars and from_chars for long double.
+
+2021-03-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/max_size_type.h (__max_size_type::operator _Tp):
+	Fix formatting.
+	(__max_size_type::operator++): Define.
+	(__max_size_type::operator--): Likewise.
+	(__max_size_type::operator<=>): Conditionally define (in place
+	of the other comparison operators).
+	(__max_diff_type::operator _Tp): Fix formatting.
+	(__max_diff_type::operator++): Define.
+	(__max_diff_type::operator--): Likewise.
+	(__max_diff_type::operator<=>): Conditionally define (in place
+	of the other comparison operators).
+	* testsuite/std/ranges/iota/max_size_type.cc (test01): Test
+	these operator overloads.
+
 2021-03-15  Caroline Tice  <cmtice@google.com>
 
 	PR libstdc++/99172

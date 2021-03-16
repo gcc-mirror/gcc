@@ -1,3 +1,8 @@
+2021-03-16  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Skip one problematic
+	commit.
+
 2021-03-12  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Allow deletion of ChangeLog

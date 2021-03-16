@@ -26,65 +26,6 @@
 
 #ifdef _GLIBCXX_HAS_GTHREADS
 
-#ifdef _GLIBCXX_HAVE_LINUX_FUTEX
-#include <syscall.h>
-#include <unistd.h>
-#include <limits.h>
-
-bool
-std::once_flag::_M_activate()
-{
-  if (__gnu_cxx::__is_single_threaded())
-    {
-      if (_M_once == _Bits::_Done)
-	return false;
-      _M_once = _Bits::_Active;
-      return true;
-    }
-
-  while (true)
-    {
-      int expected = _Bits::_Init;
-      constexpr int active = _Bits::_Active;
-      if (__atomic_compare_exchange_n(&_M_once, &expected, active, false,
-					    __ATOMIC_ACQ_REL,
-					    __ATOMIC_ACQUIRE))
-	{
-	  // This thread is now doing an active execution.
-	  return true;
-	}
-
-      if (expected == _Bits::_Done)
-	return false; // A returning execution happened, this is passive.
-
-      // Otherwise, an active execution is happening. Wait for it to finish.
-      constexpr int futex_wait = 128; // FUTEX_WAIT_PRIVATE
-      syscall (SYS_futex, &_M_once, futex_wait, expected, 0);
-    }
-}
-
-void
-std::once_flag::_M_finish(bool returning) noexcept
-{
-  const int newval = returning ? _Bits::_Done : _Bits::_Init;
-  if (__gnu_cxx::__is_single_threaded())
-    {
-      __glibcxx_assert(_M_once == _Bits::_Active);
-      _M_once = newval;
-    }
-  else
-    {
-      int prev [[maybe_unused]]
-	= __atomic_exchange_n(&_M_once, newval, __ATOMIC_RELEASE);
-      __glibcxx_assert(prev & _Bits::_Active);
-      // Wake any other threads waiting for this execution to finish.
-      constexpr int futex_wake = 129; // FUTEX_WAKE_PRIVATE
-      syscall (SYS_futex, &_M_once, futex_wake, INT_MAX);
-    }
-}
-
-#endif // ! FUTEX
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION

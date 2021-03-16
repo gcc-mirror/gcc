@@ -1,3 +1,9 @@
+2021-03-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c++/99509
+	* c-decl.c (finish_decl): For 'omp declare target implicit' vars,
+	ensure that the varpool node is marked as offloadable.
+
 2021-03-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR c/99137

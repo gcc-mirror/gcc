@@ -1,3 +1,41 @@
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99563
+	* config/i386/i386.h (struct machine_function): Add
+	has_explicit_vzeroupper bitfield.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Set
+	cfun->machine->has_explicit_vzeroupper when expanding
+	IX86_BUILTIN_VZEROUPPER.
+	* config/i386/i386-features.c (rest_of_handle_insert_vzeroupper):
+	Do the mode switching only when TARGET_VZEROUPPER, expensive
+	optimizations turned on and not optimizing for size.
+	(pass_insert_vzeroupper::gate): Enable even when
+	cfun->machine->has_explicit_vzeroupper is set.
+
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99542
+	* config/aarch64/aarch64.c
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): If not a function
+	definition, walk TYPE_ARG_TYPES list if non-NULL for argument types
+	instead of DECL_ARGUMENTS.  Ignore types for uniform arguments.
+
+2021-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98834
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle missing
+	subsetting by truncating the access size.
+
+2021-03-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-options.c (processor_cost_table): Add znver3_cost.
+	* config/i386/x86-tune-costs.h (znver3_cost): New gobal variable; copy
+	of znver2_cost.
+
+2021-03-15  Martin Liska  <mliska@suse.cz>
+
+	* spellcheck.c: Add missing comma in initialization.
+
 2021-03-14  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (*vec_extract<mode>): Merge alternative 0 with

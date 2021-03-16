@@ -1208,10 +1208,11 @@
 (define_predicate "branch_comparison_operator"
    (and (match_operand 0 "comparison_operator")
 	(match_test "GET_MODE_CLASS (GET_MODE (XEXP (op, 0))) == MODE_CC")
-	(if_then_else (match_test "GET_MODE (XEXP (op, 0)) == CCFPmode
-				   && !flag_finite_math_only")
-		      (match_code "lt,gt,eq,unordered,unge,unle,ne,ordered")
-		      (match_code "lt,ltu,le,leu,gt,gtu,ge,geu,eq,ne"))
+	(if_then_else (match_test "GET_MODE (XEXP (op, 0)) == CCFPmode")
+	  (if_then_else (match_test "flag_finite_math_only")
+	    (match_code "lt,le,gt,ge,eq,ne,unordered,ordered")
+	    (match_code "lt,gt,eq,unordered,unge,unle,ne,ordered"))
+	  (match_code "lt,ltu,le,leu,gt,gtu,ge,geu,eq,ne"))
 	(match_test "validate_condition_mode (GET_CODE (op),
 					      GET_MODE (XEXP (op, 0))),
 		     1")))
