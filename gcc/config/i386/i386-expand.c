@@ -12814,6 +12814,10 @@ rdseed_step:
       emit_insn (GEN_FCN (icode) (op0, gen_rtx_MEM (mode, op1)));
       return 0;
 
+    case IX86_BUILTIN_VZEROUPPER:
+      cfun->machine->has_explicit_vzeroupper = true;
+      break;
+
     default:
       break;
     }
