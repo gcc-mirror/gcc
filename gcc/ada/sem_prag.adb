@@ -9136,7 +9136,10 @@ package body Sem_Prag is
 
             Def_Id := Entity (Def_Id);
             Kill_Size_Check_Code (Def_Id);
-            Note_Possible_Modification (Get_Pragma_Arg (Arg1), Sure => False);
+            if Ekind (Def_Id) /= E_Constant then
+               Note_Possible_Modification
+                 (Get_Pragma_Arg (Arg1), Sure => False);
+            end if;
 
          else
             Process_Convention (C, Def_Id);
@@ -9146,7 +9149,10 @@ package body Sem_Prag is
 
             Mark_Ghost_Pragma (N, Def_Id);
             Kill_Size_Check_Code (Def_Id);
-            Note_Possible_Modification (Get_Pragma_Arg (Arg2), Sure => False);
+            if Ekind (Def_Id) /= E_Constant then
+               Note_Possible_Modification
+                 (Get_Pragma_Arg (Arg2), Sure => False);
+            end if;
          end if;
 
          --  Various error checks
