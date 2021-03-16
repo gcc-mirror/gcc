@@ -1180,9 +1180,10 @@ package body Sem_Warn is
                --  Case of an unassigned variable
 
                --  First gather any Unset_Reference indication for E1. In the
-               --  case of a parameter, it is the Spec_Entity that is relevant.
+               --  case of an 'out' parameter, it is the Spec_Entity that is
+               --  relevant.
 
-               if Ekind (E1) in Formal_Kind
+               if Ekind (E1) = E_Out_Parameter
                  and then Present (Spec_Entity (E1))
                then
                   UR := Unset_Reference (Spec_Entity (E1));
@@ -1219,8 +1220,8 @@ package body Sem_Warn is
                --  the wanted effect is included in Never_Set_In_Source.
 
                elsif Warn_On_Constant
-                 and then (Ekind (E1) = E_Variable
-                            and then Has_Initial_Value (E1))
+                 and then Ekind (E1) = E_Variable
+                 and then Has_Initial_Value (E1)
                  and then Never_Set_In_Source_Check_Spec (E1)
                  and then not Generic_Package_Spec_Entity (E1)
                then
@@ -1298,9 +1299,9 @@ package body Sem_Warn is
                  --  never referenced, since again it seems odd to rely on
                  --  default initialization to set an out parameter value.
 
-                and then (Is_Access_Type (E1T)
-                           or else Ekind (E1) = E_Out_Parameter
-                           or else not Is_Fully_Initialized_Type (E1T))
+                 and then (Is_Access_Type (E1T)
+                             or else Ekind (E1) = E_Out_Parameter
+                             or else not Is_Fully_Initialized_Type (E1T))
                then
                   --  Do not output complaint about never being assigned a
                   --  value if a pragma Unmodified applies to the variable
@@ -1354,13 +1355,12 @@ package body Sem_Warn is
                      --  Suppress warning if composite type contains any access
                      --  component, since the logical effect of modifying a
                      --  parameter may be achieved by modifying a referenced
-                     --  object. This rationale does not apply to internal
-                     --  private types, so we warn even if a component is of
-                     --  something like Unbounded_String.
+                     --  object. This rationale does not apply to private
+                     --  types, so we warn in that case.
 
                      elsif Is_Composite_Type (E1T)
-                       and then Has_Access_Values
-                         (E1T, Include_Internal => False)
+                       and then not Is_Private_Type (E1T)
+                       and then Has_Access_Values (E1T)
                      then
                         null;
 

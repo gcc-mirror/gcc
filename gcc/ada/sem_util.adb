@@ -11555,14 +11555,13 @@ package body Sem_Util is
    -- Has_Access_Values --
    -----------------------
 
-   function Has_Access_Values
-     (T : Entity_Id; Include_Internal : Boolean) return Boolean
+   function Has_Access_Values (T : Entity_Id) return Boolean
    is
       Typ : constant Entity_Id := Underlying_Type (T);
 
    begin
       --  Case of a private type which is not completed yet. This can only
-      --  happen in the case of a generic format type appearing directly, or
+      --  happen in the case of a generic formal type appearing directly, or
       --  as a component of the type to which this function is being applied
       --  at the top level. Return False in this case, since we certainly do
       --  not know that the type contains access types.
@@ -11570,17 +11569,11 @@ package body Sem_Util is
       if No (Typ) then
          return False;
 
-      elsif not Include_Internal
-        and then T /= Typ
-        and then In_Internal_Unit (Typ)
-      then
-         return False;
-
       elsif Is_Access_Type (Typ) then
          return True;
 
       elsif Is_Array_Type (Typ) then
-         return Has_Access_Values (Component_Type (Typ), Include_Internal);
+         return Has_Access_Values (Component_Type (Typ));
 
       elsif Is_Record_Type (Typ) then
          declare
@@ -11595,7 +11588,7 @@ package body Sem_Util is
                --  Check for access component, tag field does not count, even
                --  though it is implemented internally using an access type.
 
-               if Has_Access_Values (Etype (Comp), Include_Internal)
+               if Has_Access_Values (Etype (Comp))
                  and then Chars (Comp) /= Name_uTag
                then
                   return True;
