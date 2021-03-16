@@ -287,7 +287,7 @@ struct D
   int f37 (int a);
   int e;
 };
-// { dg-warning "GCC does not currently support simdlen 16 for type 'int'" "" { target aarch64*-*-* } .-3 }
+// { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-3 }
 
 void
 f38 (D &d)
