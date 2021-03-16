@@ -1,3 +1,8 @@
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* coroutines.cc (struct var_nest_node): Provide a default
+	CTOR.
+
 2021-03-06  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

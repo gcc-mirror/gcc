@@ -1,3 +1,21 @@
+2021-03-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-03-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/97927
+	* tree-nested.c (convert_local_reference_stmt): Avoid calling
+	lookup_field_for_decl for Fortran module (= namespace context).
+
+2021-03-15  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2021-02-22  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR rtl-optimization/98791
+	* ira-conflicts.c (process_regs_for_copy): Don't create allocno copies
+	for unordered modes.
+
 2021-03-12  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (neoversen2_tunings): Set
