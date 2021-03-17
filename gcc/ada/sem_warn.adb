@@ -3725,11 +3725,6 @@ package body Sem_Warn is
    --  Start of processing for Warn_On_Overlapping_Actuals
 
    begin
-
-      if Ada_Version < Ada_2012 and then not Warn_On_Overlap then
-         return;
-      end if;
-
       --  Exclude calls rewritten as enumeration literals
 
       if Nkind (N) not in N_Subprogram_Call | N_Entry_Call_Statement then
@@ -3823,14 +3818,13 @@ package body Sem_Warn is
                   then
                      null;
 
-                  --  Under Ada 2012 we only report warnings on overlapping
-                  --  arrays and record types if switch is set.
+                  --  We only report warnings on overlapping arrays and record
+                  --  types if switch is set.
 
-                  elsif Ada_Version >= Ada_2012
+                  elsif not Warn_On_Overlap
                     and then not (Is_Elementary_Type (Etype (Form1))
                                     and then
                                   Is_Elementary_Type (Etype (Form2)))
-                    and then not Warn_On_Overlap
                   then
                      null;
 
@@ -3844,7 +3838,7 @@ package body Sem_Warn is
 
                        Ada_Version < Ada_2012
 
-                       --  Overlap is only illegal in Ada 2012 in the case of
+                       --  Overlap is only illegal since Ada 2012 and only for
                        --  elementary types (passed by copy). For other types
                        --  we always have a warning in all versions. This is
                        --  clarified by AI12-0216.
