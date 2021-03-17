@@ -187,6 +187,8 @@ public:
 
   std::string get_name () const override final { return as_string (); }
 
+  bool default_type (BaseType **type) const;
+
 private:
   InferTypeKind infer_kind;
 };

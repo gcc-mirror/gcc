@@ -106,6 +106,29 @@ InferType::clone ()
 			get_combined_refs ());
 }
 
+bool
+InferType::default_type (BaseType **type) const
+{
+  auto context = Resolver::TypeCheckContext::get ();
+  bool ok = false;
+  switch (infer_kind)
+    {
+    case GENERAL:
+      return false;
+      case INTEGRAL: {
+	ok = context->lookup_builtin ("i32", type);
+	rust_assert (ok);
+	return ok;
+      }
+      case FLOAT: {
+	ok = context->lookup_builtin ("f64", type);
+	rust_assert (ok);
+	return ok;
+      }
+    }
+  return false;
+}
+
 void
 ErrorType::accept_vis (TyVisitor &vis)
 {

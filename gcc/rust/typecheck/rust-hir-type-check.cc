@@ -58,44 +58,21 @@ TypeResolution::Resolve (HIR::Crate &crate)
     // nothing to do
     if (ty->get_kind () != TyTy::TypeKind::INFER)
       return true;
-
     TyTy::InferType *infer_var = (TyTy::InferType *) ty;
-    switch (infer_var->get_infer_kind ())
+    TyTy::BaseType *default_type;
+    bool ok = infer_var->default_type (&default_type);
+    if (!ok)
       {
-      case TyTy::InferType::GENERAL:
 	rust_error_at (mappings->lookup_location (id),
 		       "unable to determine type: please give this a type: %u",
 		       id);
-	break;
-
-	case TyTy::InferType::INTEGRAL: {
-	  TyTy::BaseType *default_integer;
-	  bool ok = context->lookup_builtin ("i32", &default_integer);
-	  rust_assert (ok);
-
-	  auto result = ty->unify (default_integer);
-	  result->set_ref (id);
-	  context->insert_type (
-	    Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
-				   UNKNOWN_LOCAL_DEFID),
-	    result);
-	}
-	break;
-
-	case TyTy::InferType::FLOAT: {
-	  TyTy::BaseType *default_float;
-	  bool ok = context->lookup_builtin ("f32", &default_float);
-	  rust_assert (ok);
-
-	  auto result = ty->unify (default_float);
-	  result->set_ref (id);
-	  context->insert_type (
-	    Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
-				   UNKNOWN_LOCAL_DEFID),
-	    result);
-	}
-	break;
+	return true;
       }
+    auto result = ty->unify (default_type);
+    result->set_ref (id);
+    context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
+						 0, id, UNKNOWN_LOCAL_DEFID),
+			  result);
 
     return true;
   });
