@@ -497,6 +497,8 @@ private:
 
 class UnitRules : public BaseRules
 {
+  using Rust::TyTy::BaseRules::visit;
+
 public:
   UnitRules (UnitType *base) : BaseRules (base), base (base) {}
 
