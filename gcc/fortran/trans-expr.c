@@ -2485,7 +2485,7 @@ gfc_conv_string_length (gfc_charlen * cl, gfc_expr * expr, stmtblock_t * pblock)
 			     se.expr, build_zero_cst (TREE_TYPE (se.expr)));
   gfc_add_block_to_block (pblock, &se.pre);
 
-  if (cl->backend_decl)
+  if (cl->backend_decl && VAR_P (cl->backend_decl))
     gfc_add_modify (pblock, cl->backend_decl, se.expr);
   else
     cl->backend_decl = gfc_evaluate_now (se.expr, pblock);
@@ -6662,6 +6662,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  symbol_attribute attr;
 	  char *msg;
 	  tree cond;
+	  tree tmp;
 
 	  if (e->expr_type == EXPR_VARIABLE || e->expr_type == EXPR_FUNCTION)
 	    attr = gfc_expr_attr (e);
@@ -6732,11 +6733,20 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      else
 		goto end_pointer_check;
 
-	      tmp = parmse.expr;
+	      if (fsym && fsym->ts.type == BT_CLASS)
+		{
+		  tmp = build_fold_indirect_ref_loc (input_location,
+						      parmse.expr);
+		  tmp = gfc_class_data_get (tmp);
+		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
+		    tmp = gfc_conv_descriptor_data_get (tmp);
+		}
+	      else
+		tmp = parmse.expr;
 
 	      /* If the argument is passed by value, we need to strip the
 		 INDIRECT_REF.  */
-	      if (!POINTER_TYPE_P (TREE_TYPE (parmse.expr)))
+	      if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
 		tmp = gfc_build_addr_expr (NULL_TREE, tmp);
 
 	      cond = fold_build2_loc (input_location, EQ_EXPR,

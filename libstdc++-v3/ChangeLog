@@ -1,3 +1,136 @@
+2021-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99341
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Remove
+	std::once_flag symbols.
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt:
+	Likewise.
+	* config/abi/pre/gnu.ver: Likewise.
+	* src/c++11/mutex.cc [_GLIBCXX_HAVE_LINUX_FUTEX]
+	(struct __once_flag_compat): Remove.
+	(_ZNSt9once_flag11_M_activateEv): Remove.
+	(_ZNSt9once_flag9_M_finishEb): Remove.
+
+2021-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99341
+	* include/std/mutex [_GLIBCXX_HAVE_LINUX_FUTEX] (once_flag):
+	Revert to pthread_once_t implementation.
+	[_GLIBCXX_HAVE_LINUX_FUTEX] (call_once): Likewise.
+	* src/c++11/mutex.cc [_GLIBCXX_HAVE_LINUX_FUTEX]
+	(struct __once_flag_compat): New type matching the reverted
+	implementation of once_flag using futexes.
+	(once_flag::_M_activate): Remove, replace with ...
+	(_ZNSt9once_flag11_M_activateEv): ... alias symbol.
+	(once_flag::_M_finish): Remove, replace with ...
+	(_ZNSt9once_flag9_M_finishEb): ... alias symbol.
+	* testsuite/30_threads/call_once/66146.cc: Removed.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* testsuite/17_intro/names.cc: Exclude j from the list
+	of test symbols for Darwin.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/os/bsd/darwin/ppc-extra.ver: Add matching for
+	to_chars and from_chars for long double.
+
+2021-03-15  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/max_size_type.h (__max_size_type::operator _Tp):
+	Fix formatting.
+	(__max_size_type::operator++): Define.
+	(__max_size_type::operator--): Likewise.
+	(__max_size_type::operator<=>): Conditionally define (in place
+	of the other comparison operators).
+	(__max_diff_type::operator _Tp): Fix formatting.
+	(__max_diff_type::operator++): Define.
+	(__max_diff_type::operator--): Likewise.
+	(__max_diff_type::operator<=>): Conditionally define (in place
+	of the other comparison operators).
+	* testsuite/std/ranges/iota/max_size_type.cc (test01): Test
+	these operator overloads.
+
+2021-03-15  Caroline Tice  <cmtice@google.com>
+
+	PR libstdc++/99172
+	* src/Makefile.am (AM_CXXFLAGS_PRE, AM_CXXFLAGS): Add
+	AM_CXXFLAGS_PRE with the old definition of AM_CXXFLAGS; make
+	AM_CXXFLAGS to be AM_CXXFLAGS_PRE with '-fvtable-verify=std'
+	filtered out.
+	* src/Makefile.in: Regenerate.
+
+2021-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_to_chars.cc: Simplify the file as if
+	__SIZEOF_INT128__ is always defined.
+	[!defined __SIZEOF_INT128__]: Include "uint128_t.h".  Define
+	a base-10 to_chars overload for the uint128_t class type.
+	* src/c++17/uint128_t.h: New file.
+	* testsuite/20_util/to_chars/long_double.cc: No longer expect an
+	execution FAIL on targets that have a large long double type
+	but lack __int128.
+
+2021-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/LOCAL_PATCHES: Update.
+	* src/c++17/ryu/d2s_intrinsics.h: Don't define uint128_t.
+	* src/c++17/ryu/generic_128.h: Likewise.
+	* src/c++17/ryu/ryu_generic_128.h (struct floating_decimal_128):
+	Use uint128_t instead of __uint128_t.
+	(generic_binary_to_decimal): Likewise.
+
+2021-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/LOCAL_PATCHES: New file.
+
+2021-03-11  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/floating_to_chars.cc (uint128_t): New conditionally
+	defined alias of unsigned __int128.
+	(floating_type_traits_binary128::mantissa_t): Use uint128_t
+	instead of unsigned __int128.
+	(floating_type_traits<long double>::mantissa_t)
+	[LONG_DOUBLE_KIND == LDK_IBM128]: Likewise.
+	(get_ieee_repr): Likewise.  Make casts from uint_t to mantissa_t
+	and uint32_t explicit.  Simplify the extraction of mantissa,
+	exponent and sign bit.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/barrier (barrier::arrival_token): New move-only
+	class that encapsulates the underlying token value.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (find_type): Use tag attribute
+	instead of unqualified() method.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99537
+	* include/std/stop_token (_Stop_state_t::_M_release_ownership):
+	Use acq_rel memory ordering.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99537
+	* src/c++17/fs_dir.cc (recursive_directory_iterator): Use new
+	helper function to check for permission denied errors.
+	* src/filesystem/dir.cc (recursive_directory_iterator):
+	Likewise.
+	* src/filesystem/dir-common.h (is_permission_denied_error): New
+	helper function.
+
+2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99536
+	* include/bits/random.h (normal_distribution): Use
+	default-initializer for _M_saved and _M_saved_available.
+
 2021-03-10  John David Anglin  <danglin@gcc.gnu.org>
 
 	* testsuite/29_atomics/atomic/wait_notify/bool.cc: Add options to

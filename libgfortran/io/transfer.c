@@ -4339,6 +4339,7 @@ export_proto(st_read_done);
 void
 st_read_done_worker (st_parameter_dt *dtp)
 {
+  bool free_newunit = false;
   finalize_transfer (dtp);
 
   free_ionml (dtp);
@@ -4358,7 +4359,7 @@ st_read_done_worker (st_parameter_dt *dtp)
 		free (dtp->u.p.current_unit->ls);
 	      dtp->u.p.current_unit->ls = NULL;
 	    }
-	  newunit_free (dtp->common.unit);
+	  free_newunit = true;
 	}
       if (dtp->u.p.unit_is_internal || dtp->u.p.format_not_saved)
 	{
@@ -4366,6 +4367,14 @@ st_read_done_worker (st_parameter_dt *dtp)
 	  free_format (dtp);
 	}
     }
+   unlock_unit (dtp->u.p.current_unit);
+   if (free_newunit)
+     {
+       /* Avoid inverse lock issues by placing after unlock_unit.  */
+       LOCK (&unit_lock);
+       newunit_free (dtp->common.unit);
+       UNLOCK (&unit_lock);
+     }
 }
 
 void
@@ -4382,11 +4391,10 @@ st_read_done (st_parameter_dt *dtp)
 	      if (dtp->u.p.async)
 		enqueue_done (dtp->u.p.current_unit->au, AIO_READ_DONE);
 	    }
+	  unlock_unit (dtp->u.p.current_unit);
 	}
       else
-	st_read_done_worker (dtp);
-
-      unlock_unit (dtp->u.p.current_unit);
+	st_read_done_worker (dtp);  /* Calls unlock_unit.  */
     }
 
   library_end ();
@@ -4406,6 +4414,7 @@ st_write (st_parameter_dt *dtp)
 void
 st_write_done_worker (st_parameter_dt *dtp)
 {
+  bool free_newunit = false;
   finalize_transfer (dtp);
 
   if (dtp->u.p.current_unit != NULL
@@ -4446,7 +4455,7 @@ st_write_done_worker (st_parameter_dt *dtp)
 		free (dtp->u.p.current_unit->ls);
 	      dtp->u.p.current_unit->ls = NULL;
 	    }
-	  newunit_free (dtp->common.unit);
+	  free_newunit = true;
 	}
       if (dtp->u.p.unit_is_internal || dtp->u.p.format_not_saved)
 	{
@@ -4454,6 +4463,14 @@ st_write_done_worker (st_parameter_dt *dtp)
 	  free_format (dtp);
 	}
     }
+   unlock_unit (dtp->u.p.current_unit);
+   if (free_newunit)
+     {
+       /* Avoid inverse lock issues by placing after unlock_unit.  */
+       LOCK (&unit_lock);
+       newunit_free (dtp->common.unit);
+       UNLOCK (&unit_lock);
+     }
 }
 
 extern void st_write_done (st_parameter_dt *);
@@ -4476,11 +4493,10 @@ st_write_done (st_parameter_dt *dtp)
 	      if (dtp->u.p.async)
 		enqueue_done (dtp->u.p.current_unit->au, AIO_WRITE_DONE);
 	    }
+	  unlock_unit (dtp->u.p.current_unit);
 	}
       else
-	st_write_done_worker (dtp);
-
-      unlock_unit (dtp->u.p.current_unit);
+	st_write_done_worker (dtp);  /* Calls unlock_unit.  */
     }
 
   library_end ();

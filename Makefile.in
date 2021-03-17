@@ -61522,7 +61522,6 @@ install-strip-sid: maybe-install-strip-tcl
 install-sid: maybe-install-tk
 install-strip-sid: maybe-install-strip-tk
 all-sim: maybe-all-readline
-all-sim: maybe-configure-gdb
 all-fastjar: maybe-all-build-texinfo
 all-libctf: all-libiberty
 all-stage1-libctf: all-stage1-libiberty

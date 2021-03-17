@@ -1,3 +1,214 @@
+2021-03-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99542
+	* gcc.dg/declare-simd.c (fn2): Expect a warning only under lp64.
+
+2021-03-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/nontype-float1.C: New test.
+
+2021-03-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/98092
+	PR target/98092
+	* gcc.target/powerpc/pr98092.c: New.
+
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99600
+	* gcc.target/i386/pr99600.c: New test.
+
+2021-03-16  Martin Liska  <mliska@suse.cz>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/99108
+	* g++.target/i386/pr99108.C: New test.
+
+2021-03-16  Martin Liska  <mliska@suse.cz>
+
+	PR target/99592
+	* gcc.target/arm/pr99592.c: New test.
+
+2021-03-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/vector/long-double-asm-fprvrmem.c: New test.
+
+2021-03-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99496
+	* g++.dg/modules/pr99496_a.H: New.
+	* g++.dg/modules/pr99496_b.C: New.
+
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99563
+	* gcc.target/i386/avx-pr99563.c: New test.
+
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99542
+	* gcc.dg/gomp/pr99542.c: New test.
+	* gcc.dg/gomp/pr59669-2.c (bar): Don't expect a warning on aarch64.
+	* gcc.dg/gomp/simd-clones-2.c (setArray): Likewise.
+	* g++.dg/vect/simd-clone-7.cc (bar): Likewise.
+	* g++.dg/gomp/declare-simd-1.C (f37): Expect a different warning
+	on aarch64.
+	* gcc.dg/declare-simd.c (fn2): Expect a new warning on aarch64.
+
+2021-03-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99601
+	* g++.dg/modules/builtin-3_a.C: Fix target selector syntax errors.
+	* g++.dg/modules/builtin-3_b.C: Likewise.
+
+2021-03-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99601
+	* g++.dg/modules/builtin-3_a.C: Fix lp64 x86 detection.
+	* g++.dg/modules/builtin-3_b.C: Fix lp64 x86 detection.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99047
+	* g++.dg/coroutines/pr99047.C: New test.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98704
+	* g++.dg/coroutines/torture/pr98704.C: New test.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98480
+	* g++.dg/coroutines/pr98480.C: New test.
+	* g++.dg/coroutines/torture/co-await-24-for-init.C: New test.
+	* g++.dg/coroutines/torture/co-await-25-for-condition.C: New test.
+	* g++.dg/coroutines/torture/co-await-26-for-iteration-expr.C: New test.
+
+2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96749
+	* g++.dg/coroutines/pr96749-1.C: New test.
+	* g++.dg/coroutines/pr96749-2.C: New test.
+
+2021-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98834
+	* g++.dg/opt/pr98834.C: New testcase.
+
+2021-03-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/99345
+	* gfortran.dg/do_check_16.f90: New test.
+	* gfortran.dg/do_check_17.f90: New test.
+
+2021-03-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99545
+	* gfortran.dg/pr99545.f90: New test.
+
+2021-03-15  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.target/powerpc/pr99492.c: Fix typo.
+
+2021-03-14  Harald Anlauf  <anlauf@gmx.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/pr99112.f90: New test.
+
+2021-03-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/99489
+	* gcc.dg/Wstringop-truncation-9.c: New test.
+
+2021-03-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99125
+	* gfortran.dg/alloc_deferred_comp_1.f90: New test.
+
+2021-03-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99544
+	* gcc.dg/gomp/pr99544.c: New test.
+
+2021-03-12  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99238
+	* g++.dg/modules/pr99238.h: New.
+	* g++.dg/modules/pr99238_a.H: New.
+	* g++.dg/modules/pr99238_b.H: New.
+
+2021-03-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99514
+	* gfortran.dg/gomp/threadprivate-1.f90: New test.
+
+2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99321
+	* gcc.target/i386/avx512vl-pr99321-2.c: New test.
+
+2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99507
+	* g++.dg/cpp2a/consteval19.C: New test.
+
+2021-03-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/96374
+	* gcc.dg/analyzer/dot-output.c: Add -fdump-analyzer-feasibility
+	to options.
+	* gcc.dg/analyzer/feasibility-1.c (test_6): Remove xfail.
+	(test_7): New.
+	* gcc.dg/analyzer/pr93355-localealias-feasibility-2.c: Remove xfail.
+	* gcc.dg/analyzer/pr93355-localealias-feasibility-3.c: Remove xfails.
+	* gcc.dg/analyzer/pr93355-localealias-feasibility.c: Remove
+	-fno-analyzer-feasibility from options.
+	* gcc.dg/analyzer/pr93355-localealias.c: Likewise.
+	* gcc.dg/analyzer/unknown-fns-4.c: Remove xfail.
+
+2021-03-11  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99248
+	* g++.dg/modules/pr99248.h: New.
+	* g++.dg/modules/pr99248_a.H: New.
+	* g++.dg/modules/pr99248_b.H: New.
+
+2021-03-11  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99528
+	* g++.dg/modules/pr99528.h: New.
+	* g++.dg/modules/pr99528_a.H: New.
+	* g++.dg/modules/pr99528_b.H: New.
+	* g++.dg/modules/pr99528_c.C: New.
+
+2021-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/98245
+	* gcc.dg/vect/bb-slp-46.c: Scan for the scalar compute
+	instead of verifying the total number of adds.
+
+2021-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97494
+	* gcc.dg/vect/pr97428.c: XFAIL on !vect_hw_misalign.
+
+2021-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97494
+	* gcc.dg/vect/vect-complex-5.c: XFAIL on !vect_hw_misalign.
+
+2021-03-11  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/97494
+	* gcc.dg/vect/slp-21.c: Adjust for powerpc64*-*-*.
+
+2021-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/99517
+	* gcc.target/i386/avx2-pr99517-1.c: New test.
+	* gcc.target/i386/avx2-pr99517-2.c: New test.
+
 2021-03-10  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/99492

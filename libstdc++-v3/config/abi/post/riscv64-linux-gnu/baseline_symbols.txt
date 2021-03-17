@@ -4086,8 +4086,6 @@ FUNC:_ZNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEEC2Em@@GLIBCXX
 FUNC:_ZNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEED0Ev@@GLIBCXX_3.4
 FUNC:_ZNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEED1Ev@@GLIBCXX_3.4
 FUNC:_ZNSt9money_putIwSt19ostreambuf_iteratorIwSt11char_traitsIwEEED2Ev@@GLIBCXX_3.4
-FUNC:_ZNSt9once_flag11_M_activateEv@@GLIBCXX_3.4.29
-FUNC:_ZNSt9once_flag9_M_finishEb@@GLIBCXX_3.4.29
 FUNC:_ZNSt9strstream3strEv@@GLIBCXX_3.4
 FUNC:_ZNSt9strstream6freezeEb@@GLIBCXX_3.4
 FUNC:_ZNSt9strstreamC1EPciSt13_Ios_Openmode@@GLIBCXX_3.4

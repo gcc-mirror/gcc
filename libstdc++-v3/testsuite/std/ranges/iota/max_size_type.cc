@@ -145,6 +145,42 @@ test01()
   auto h = [] (auto a) { a <<= a; return a; };
   static_assert(h(max_size_t(3)) == 24);
   static_assert(h(max_diff_t(3)) == 24);
+
+  auto w = [] (auto a) {
+    const auto b = a;
+    VERIFY( a++ == b   && a == b+1 );
+    VERIFY( a-- == b+1 && a == b );
+
+    VERIFY( ++(++a) == b+2 );
+    VERIFY( --(--a) == b );
+    return true;
+  };
+  static_assert(w(max_size_t(10)));
+  static_assert(w(-max_diff_t(10)));
+
+#if __cpp_lib_three_way_comparison
+  static_assert(max_size_t{1} <=> max_size_t{9} == std::strong_ordering::less);
+  static_assert(max_size_t{3} <=> max_size_t{2} == std::strong_ordering::greater);
+  static_assert(max_size_t{5} <=> max_size_t{5} == std::strong_ordering::equal);
+  static_assert(~max_size_t{1} <=> ~max_size_t{9} == std::strong_ordering::greater);
+  static_assert(~max_size_t{3} <=> ~max_size_t{2} == std::strong_ordering::less);
+  static_assert(~max_size_t{5} <=> ~max_size_t{5} == std::strong_ordering::equal);
+  static_assert(~max_size_t{5} <=> max_size_t{9} == std::strong_ordering::greater);
+  static_assert(~max_size_t{9} <=> max_size_t{5} == std::strong_ordering::greater);
+  static_assert(max_size_t{5} <=> ~max_size_t{9} == std::strong_ordering::less);
+  static_assert(max_size_t{9} <=> ~max_size_t{5} == std::strong_ordering::less);
+
+  static_assert(max_diff_t{1} <=> max_diff_t{9} == std::strong_ordering::less);
+  static_assert(max_diff_t{3} <=> max_diff_t{2} == std::strong_ordering::greater);
+  static_assert(max_diff_t{5} <=> max_diff_t{5} == std::strong_ordering::equal);
+  static_assert(max_diff_t{-1} <=> max_diff_t{-9} == std::strong_ordering::greater);
+  static_assert(max_diff_t{-3} <=> max_diff_t{-2} == std::strong_ordering::less);
+  static_assert(max_diff_t{-5} <=> max_diff_t{-5} == std::strong_ordering::equal);
+  static_assert(max_diff_t{-5} <=> max_diff_t{9} == std::strong_ordering::less);
+  static_assert(max_diff_t{-9} <=> max_diff_t{5} == std::strong_ordering::less);
+  static_assert(max_diff_t{5} <=> max_diff_t{-9} == std::strong_ordering::greater);
+  static_assert(max_diff_t{9} <=> max_diff_t{-5} == std::strong_ordering::greater);
+#endif
 }
 
 template<bool signed_p, bool shorten_p>

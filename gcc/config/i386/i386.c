@@ -10265,15 +10265,20 @@ darwin_local_data_pic (rtx disp)
 	  && XINT (disp, 1) == UNSPEC_MACHOPIC_OFFSET);
 }
 
-/* True if operand X should be loaded from GOT.  */
+/* True if the function symbol operand X should be loaded from GOT.
+
+   NB: In 32-bit mode, only non-PIC is allowed in inline assembly
+   statements, since a PIC register could not be available at the
+   call site.  */
 
 bool
 ix86_force_load_from_GOT_p (rtx x)
 {
-  return ((TARGET_64BIT || HAVE_AS_IX86_GOT32X)
+  return ((TARGET_64BIT || (!flag_pic && HAVE_AS_IX86_GOT32X))
 	  && !TARGET_PECOFF && !TARGET_MACHO
-	  && !flag_pic
+	  && (!flag_pic || this_is_asm_operands)
 	  && ix86_cmodel != CM_LARGE
+	  && ix86_cmodel != CM_LARGE_PIC
 	  && GET_CODE (x) == SYMBOL_REF
 	  && SYMBOL_REF_FUNCTION_P (x)
 	  && (!flag_plt
@@ -12701,7 +12706,8 @@ print_reg (rtx x, int code, FILE *file)
    y -- print "st(0)" instead of "st" as a register.
    d -- print duplicated register operand for AVX instruction.
    D -- print condition for SSE cmp instruction.
-   P -- if PIC, print an @PLT suffix.
+   P -- if PIC, print an @PLT suffix.  For -fno-plt, load function
+	address from GOT.
    p -- print raw symbol name.
    X -- don't print any sort of PIC '@' suffix for a symbol.
    & -- print some in-use local-dynamic symbol name.
@@ -13445,7 +13451,23 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	  x = const0_rtx;
 	}
 
-      if (code != 'P' && code != 'p')
+      if (code == 'P')
+	{
+	  if (ix86_force_load_from_GOT_p (x))
+	    {
+	      /* For inline assembly statement, load function address
+		 from GOT with 'P' operand modifier to avoid PLT.  */
+	      x = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, x),
+				  (TARGET_64BIT
+				   ? UNSPEC_GOTPCREL
+				   : UNSPEC_GOT));
+	      x = gen_rtx_CONST (Pmode, x);
+	      x = gen_const_mem (Pmode, x);
+	      ix86_print_operand (file, x, 'A');
+	      return;
+	    }
+	}
+      else if (code != 'p')
 	{
 	  if (CONST_INT_P (x))
 	    {

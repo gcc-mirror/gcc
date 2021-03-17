@@ -9223,12 +9223,15 @@ register_ok_for_ldd (rtx reg)
 int
 memory_ok_for_ldd (rtx op)
 {
-  /* In 64-bit mode, we assume that the address is word-aligned.  */
-  if (TARGET_ARCH32 && !mem_min_alignment (op, 8))
+  if (!mem_min_alignment (op, 8))
     return 0;
 
-  if (! can_create_pseudo_p ()
+  /* We need to perform the job of a memory constraint.  */
+  if ((reload_in_progress || reload_completed)
       && !strict_memory_address_p (Pmode, XEXP (op, 0)))
+    return 0;
+
+  if (lra_in_progress && !memory_address_p (Pmode, XEXP (op, 0)))
     return 0;
 
   return 1;

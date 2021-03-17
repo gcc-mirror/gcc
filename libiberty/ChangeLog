@@ -1,3 +1,7 @@
+2021-03-16  Nick Clifton  <nickc@redhat.com>
+
+	* sha1.c (sha1_process_bytes): Use memmove in place of memcpy.
+
 2021-02-20  Mike Frysinger  <vapier@gentoo.org>
 
 	* Makefile.in (ACLOCAL, ACLOCAL_AMFLAGS, $(srcdir)/aclocal.m4): Define.

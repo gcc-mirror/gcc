@@ -16,6 +16,9 @@
 # 3.4.10
   _ZNKSt3tr14hashIgEclEg;
   _ZNKSt4hashIgEclEg;
+# LDBL_3.4.29
+  _ZSt10from_charsPKcS0_RgSt12chars_format;
+  _ZSt8to_charsPcS_g*;
 # ldbl 1.3
   _ZT[IS]g;
   _ZT[IS]Pg;

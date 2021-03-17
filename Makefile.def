@@ -547,7 +547,6 @@ dependencies = { module=all-sim; on=all-libiberty; };
 dependencies = { module=all-sim; on=all-bfd; };
 dependencies = { module=all-sim; on=all-opcodes; };
 dependencies = { module=all-sim; on=all-readline; };
-dependencies = { module=all-sim; on=configure-gdb; };
 
 // Other host modules.
 dependencies = { module=all-fastjar; on=all-zlib; };

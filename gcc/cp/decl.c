@@ -53,7 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "gcc-rich-location.h"
 #include "langhooks.h"
+#include "context.h"  /* For 'g'.  */
 #include "omp-general.h"
+#include "omp-offload.h"  /* For offload_vars.  */
 
 /* Possible cases of bad specifiers type used by bad_specifiers. */
 enum bad_spec_place {
@@ -1108,6 +1110,21 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
   return types_match;
 }
 
+/* Mark DECL as versioned if it isn't already.  */
+
+static void
+maybe_mark_function_versioned (tree decl)
+{
+  if (!DECL_FUNCTION_VERSIONED (decl))
+    {
+      DECL_FUNCTION_VERSIONED (decl) = 1;
+      /* If DECL_ASSEMBLER_NAME has already been set, re-mangle
+	 to include the version marker.  */
+      if (DECL_ASSEMBLER_NAME_SET_P (decl))
+	mangle_decl (decl);
+    }
+}
+
 /* NEWDECL and OLDDECL have identical signatures.  If they are
    different versions adjust them and return true.
    If RECORD is set to true, record function versions.  */
@@ -1118,18 +1135,22 @@ maybe_version_functions (tree newdecl, tree olddecl, bool record)
   if (!targetm.target_option.function_versions (newdecl, olddecl))
     return false;
 
-  if (!DECL_FUNCTION_VERSIONED (olddecl))
+  maybe_mark_function_versioned (olddecl);
+  if (DECL_LOCAL_DECL_P (olddecl))
     {
-      DECL_FUNCTION_VERSIONED (olddecl) = 1;
-      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
-	mangle_decl (olddecl);
+      olddecl = DECL_LOCAL_DECL_ALIAS (olddecl);
+      maybe_mark_function_versioned (olddecl);
     }
 
-  if (!DECL_FUNCTION_VERSIONED (newdecl))
+  maybe_mark_function_versioned (newdecl);
+  if (DECL_LOCAL_DECL_P (newdecl))
     {
-      DECL_FUNCTION_VERSIONED (newdecl) = 1;
-      if (DECL_ASSEMBLER_NAME_SET_P (newdecl))
-	mangle_decl (newdecl);
+      /* Unfortunately, we can get here before pushdecl naturally calls
+	 push_local_extern_decl_alias, so we need to call it directly.  */
+      if (!DECL_LOCAL_DECL_ALIAS (newdecl))
+	push_local_extern_decl_alias (newdecl);
+      newdecl = DECL_LOCAL_DECL_ALIAS (newdecl);
+      maybe_mark_function_versioned (newdecl);
     }
 
   if (record)
@@ -8176,9 +8197,22 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 				  DECL_ATTRIBUTES (decl))
 	       && !lookup_attribute ("omp declare target link",
 				     DECL_ATTRIBUTES (decl)))
-	DECL_ATTRIBUTES (decl)
-	  = tree_cons (get_identifier ("omp declare target"),
-		       NULL_TREE, DECL_ATTRIBUTES (decl));
+	{
+	  DECL_ATTRIBUTES (decl)
+	    = tree_cons (get_identifier ("omp declare target"),
+			 NULL_TREE, DECL_ATTRIBUTES (decl));
+	  symtab_node *node = symtab_node::get (decl);
+	  if (node != NULL)
+	    {
+	      node->offloadable = 1;
+	      if (ENABLE_OFFLOADING)
+		{
+		  g->have_offload = true;
+		  if (is_a <varpool_node *> (node))
+		    vec_safe_push (offload_vars, decl);
+		}
+	    }
+	}
     }
 
   /* This is the last point we can lower alignment so give the target the
@@ -9231,17 +9265,25 @@ expand_static_init (tree decl, tree init)
 
 	  /* Do the initialization itself.  */
 	  init = add_stmt_to_compound (begin, init);
-	  init = add_stmt_to_compound
-	    (init, build2 (MODIFY_EXPR, void_type_node, flag, boolean_true_node));
-	  init = add_stmt_to_compound
-	    (init, build_call_n (release_fn, 1, guard_addr));
+	  init = add_stmt_to_compound (init,
+				       build2 (MODIFY_EXPR, void_type_node,
+					       flag, boolean_true_node));
+
+	  /* Use atexit to register a function for destroying this static
+	     variable.  Do this before calling __cxa_guard_release.  */
+	  init = add_stmt_to_compound (init, register_dtor_fn (decl));
+
+	  init = add_stmt_to_compound (init, build_call_n (release_fn, 1,
+							   guard_addr));
 	}
       else
-	init = add_stmt_to_compound (init, set_guard (guard));
+	{
+	  init = add_stmt_to_compound (init, set_guard (guard));
 
-      /* Use atexit to register a function for destroying this static
-	 variable.  */
-      init = add_stmt_to_compound (init, register_dtor_fn (decl));
+	  /* Use atexit to register a function for destroying this static
+	     variable.  */
+	  init = add_stmt_to_compound (init, register_dtor_fn (decl));
+	}
 
       finish_expr_stmt (init);
 
