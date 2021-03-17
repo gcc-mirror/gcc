@@ -1,3 +1,33 @@
+2021-03-16  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-03-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98078
+	* cgraph.c (cgraph_edge::set_call_stmt): Do not update all
+	corresponding speculative edges if we are about to resolve
+	sepculation.  Make edge direct (and so resolve speculations) before
+	removing it from call_site_hash.
+	(cgraph_edge::make_direct): Relax the initial assert to allow calling
+	the function on speculative direct edges.
+
+2021-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-02-24  Richard Biener  <rguenther@suse.de>
+
+	PR c/99224
+	* builtins.c (fold_builtin_next_arg): Avoid NULL arg.
+
+2021-03-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-02-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99253
+	* tree-vect-loop.c (check_reduction_path): First compute
+	code, then verify out-of-loop uses.
+
 2021-03-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
