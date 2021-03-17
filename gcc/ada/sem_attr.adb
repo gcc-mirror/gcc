@@ -1603,7 +1603,6 @@ package body Sem_Attr is
 
          --  Local variables
 
-         Dims  : Int;
          Index : Entity_Id;
 
       --  Start of processing for Check_Array_Or_Scalar_Type
@@ -1667,14 +1666,16 @@ package body Sem_Attr is
                Set_Etype (N, Base_Type (Etype (Index)));
 
             else
-               Dims := UI_To_Int (Intval (E1));
-
-               for J in 1 .. Dims - 1 loop
-                  Next_Index (Index);
-               end loop;
+               declare
+                  Udims : constant Uint := Expr_Value (E1);
+                  Dims  : constant Int  := UI_To_Int (Udims);
+               begin
+                  for J in 1 .. Dims - 1 loop
+                     Next_Index (Index);
+                  end loop;
+               end;
 
                Set_Etype (N, Base_Type (Etype (Index)));
-               Set_Etype (E1, Standard_Integer);
             end if;
          end if;
       end Check_Array_Or_Scalar_Type;
