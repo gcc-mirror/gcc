@@ -228,7 +228,7 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
       const char *str;
       if (TREE_CODE (TREE_VALUE (list)) != STRING_CST)
 	{
-	  error ("amdgpu_hsa_kernel attribute requires string constant "
+	  error ("%<amdgpu_hsa_kernel%> attribute requires string constant "
 		 "arguments");
 	  break;
 	}
@@ -241,13 +241,14 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
 	}
       if (a == GCN_KERNEL_ARG_TYPES)
 	{
-	  error ("unknown specifier %s in amdgpu_hsa_kernel attribute", str);
+	  error ("unknown specifier %qs in %<amdgpu_hsa_kernel attribute%>",
+		 str);
 	  err = true;
 	  break;
 	}
       if (args->requested & (1 << a))
 	{
-	  error ("duplicated parameter specifier %s in amdgpu_hsa_kernel "
+	  error ("duplicated parameter specifier %qs in %<amdgpu_hsa_kernel%> "
 		 "attribute", str);
 	  err = true;
 	  break;
@@ -2102,7 +2103,7 @@ gcn_conditional_register_usage (void)
   /* Requesting a set of args different from the default violates the ABI.  */
   if (!leaf_function_p ())
     warning (0, "A non-default set of initial values has been requested, "
-		"which violates the ABI!");
+		"which violates the ABI");
 
   for (int i = SGPR_REGNO (0); i < SGPR_REGNO (14); i++)
     fixed_regs[i] = 0;
@@ -3983,6 +3984,8 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, rtx dst,
   unsigned int perm[64];
   for (unsigned int i = 0; i < nelt; ++i)
     perm[i] = sel[i] & (2 * nelt - 1);
+  for (unsigned int i = nelt; i < 64; ++i)
+    perm[i] = 0;
 
   src0 = force_reg (vmode, src0);
   src1 = force_reg (vmode, src1);
@@ -4882,8 +4885,8 @@ gcn_goacc_validate_dims (tree decl, int dims[], int fn_level,
 	warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION,
 		    OPT_Wopenacc_dims,
 		    (dims[GOMP_DIM_VECTOR]
-		     ? G_("using vector_length (64), ignoring %d")
-		     : G_("using vector_length (64), "
+		     ? G_("using %<vector_length (64)%>, ignoring %d")
+		     : G_("using %<vector_length (64)%>, "
 			  "ignoring runtime setting")),
 		    dims[GOMP_DIM_VECTOR]);
       dims[GOMP_DIM_VECTOR] = 1;
@@ -4895,7 +4898,7 @@ gcn_goacc_validate_dims (tree decl, int dims[], int fn_level,
     {
       warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION,
 		  OPT_Wopenacc_dims,
-		  "using num_workers (%d), ignoring %d",
+		  "using %<num_workers (%d)%>, ignoring %d",
 		  max_workers, dims[GOMP_DIM_WORKER]);
       dims[GOMP_DIM_WORKER] = max_workers;
       changed = true;
