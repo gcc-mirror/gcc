@@ -1,3 +1,27 @@
+2021-03-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/98092
+	* config/rs6000/predicates.md (branch_comparison_operator): Allow
+	ordered and unordered for CCFPmode, if flag_finite_math_only.
+
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99600
+	* config/i386/i386-expand.c (ix86_split_lea_for_addr): Emit a MULT
+	rather than ASHIFT.
+	* config/i386/i386.md (mult by 1248 into ashift): New splitter.
+
+2021-03-16  Martin Liska  <mliska@suse.cz>
+
+	PR target/99592
+	* optc-save-gen.awk: Add flag_ipa_ra to exceptions for
+	cl_optimization_compare function.
+
+2021-03-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (f_constraint_p): Treat "fv" constraints
+	as "v".
+
 2021-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/99563
