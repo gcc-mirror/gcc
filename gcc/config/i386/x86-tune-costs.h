@@ -1767,11 +1767,11 @@ struct processor_costs znver3_cost = {
   2, 2, 3,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
-  /* VGATHERDPD is 23 uops and throughput is 9, VGATHERDPD is 35 uops,
-     throughput 12.  Approx 9 uops do not depend on vector size and every load
-     is 7 uops.  */
-  18, 8,				/* Gather load static, per_elt.  */
-  18, 10,				/* Gather store static, per_elt.  */
+  /* VGATHERDPD is 15 uops and throughput is 4, VGATHERDPS is 23 uops,
+     throughput 9.  Approx 7 uops do not depend on vector size and every load
+     is 4 uops.  */
+  14, 8,				/* Gather load static, per_elt.  */
+  14, 10,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block.  */
