@@ -1,3 +1,33 @@
+2021-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99341
+	* config/abi/post/aarch64-linux-gnu/baseline_symbols.txt: Remove
+	std::once_flag symbols.
+	* config/abi/post/ia64-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/m68k-linux-gnu/baseline_symbols.txt: Likewise.
+	* config/abi/post/riscv64-linux-gnu/baseline_symbols.txt:
+	Likewise.
+	* config/abi/pre/gnu.ver: Likewise.
+	* src/c++11/mutex.cc [_GLIBCXX_HAVE_LINUX_FUTEX]
+	(struct __once_flag_compat): Remove.
+	(_ZNSt9once_flag11_M_activateEv): Remove.
+	(_ZNSt9once_flag9_M_finishEb): Remove.
+
+2021-03-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99341
+	* include/std/mutex [_GLIBCXX_HAVE_LINUX_FUTEX] (once_flag):
+	Revert to pthread_once_t implementation.
+	[_GLIBCXX_HAVE_LINUX_FUTEX] (call_once): Likewise.
+	* src/c++11/mutex.cc [_GLIBCXX_HAVE_LINUX_FUTEX]
+	(struct __once_flag_compat): New type matching the reverted
+	implementation of once_flag using futexes.
+	(once_flag::_M_activate): Remove, replace with ...
+	(_ZNSt9once_flag11_M_activateEv): ... alias symbol.
+	(once_flag::_M_finish): Remove, replace with ...
+	(_ZNSt9once_flag9_M_finishEb): ... alias symbol.
+	* testsuite/30_threads/call_once/66146.cc: Removed.
+
 2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* testsuite/17_intro/names.cc: Exclude j from the list

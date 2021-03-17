@@ -1954,7 +1954,7 @@ aarch64_expand_rng_builtin (tree exp, rtx target, int fcode, int ignore)
     return target;
 
   rtx cc_reg = gen_rtx_REG (CC_Zmode, CC_REGNUM);
-  rtx cmp_rtx = gen_rtx_fmt_ee (NE, SImode, cc_reg, const0_rtx);
+  rtx cmp_rtx = gen_rtx_fmt_ee (EQ, SImode, cc_reg, const0_rtx);
   emit_insn (gen_aarch64_cstoresi (target, cmp_rtx, cc_reg));
   return target;
 }

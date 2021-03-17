@@ -2524,6 +2524,8 @@ Thunk_statement::is_constant_function() const
     return fn->func_expression()->closure() == NULL;
   if (fn->interface_field_reference_expression() != NULL)
     return true;
+  if (fn->bound_method_expression() != NULL)
+    return true;
   return false;
 }
 
@@ -2566,6 +2568,7 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
   Expression* fn = ce->fn();
   Interface_field_reference_expression* interface_method =
     fn->interface_field_reference_expression();
+  Bound_method_expression* bme = fn->bound_method_expression();
 
   Location location = this->location();
 
@@ -2594,6 +2597,8 @@ Thunk_statement::simplify_statement(Gogo* gogo, Named_object* function,
 
   if (interface_method != NULL)
     vals->push_back(interface_method->expr());
+  if (bme != NULL)
+    vals->push_back(bme->first_argument());
 
   if (ce->args() != NULL)
     {
@@ -2711,6 +2716,16 @@ Thunk_statement::build_struct(Function_type* fntype)
     {
       Typed_identifier tid("object", interface_method->expr()->type(),
 			   location);
+      fields->push_back(Struct_field(tid));
+    }
+
+  // If this thunk statement calls a bound method expression, as in
+  // "go s.m()", we pass the bound method argument to the thunk,
+  // to ensure that we make a copy of it if needed.
+  Bound_method_expression* bme = fn->bound_method_expression();
+  if (bme != NULL)
+    {
+      Typed_identifier tid("object", bme->first_argument()->type(), location);
       fields->push_back(Struct_field(tid));
     }
 
@@ -2843,6 +2858,7 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
 
   Interface_field_reference_expression* interface_method =
     ce->fn()->interface_field_reference_expression();
+  Bound_method_expression* bme = ce->fn()->bound_method_expression();
 
   Expression* func_to_call;
   unsigned int next_index;
@@ -2867,6 +2883,17 @@ Thunk_statement::build_thunk(Gogo* gogo, const std::string& thunk_name)
       const std::string& name(interface_method->name());
       func_to_call = Expression::make_interface_field_reference(r, name,
 								location);
+      next_index = 1;
+    }
+
+  if (bme != NULL)
+    {
+      // This is a call to a method.
+      go_assert(next_index == 0);
+      Expression* r = Expression::make_field_reference(thunk_parameter, 0,
+						       location);
+      func_to_call = Expression::make_bound_method(r, bme->method(),
+						   bme->function(), location);
       next_index = 1;
     }
 

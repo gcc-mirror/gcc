@@ -11017,7 +11017,7 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
   // If this is call to a method, call the method directly passing the
   // object as the first parameter.
   Bound_method_expression* bme = this->fn_->bound_method_expression();
-  if (bme != NULL)
+  if (bme != NULL && !this->is_deferred_ && !this->is_concurrent_)
     {
       Named_object* methodfn = bme->function();
       Function_type* mft = (methodfn->is_function()

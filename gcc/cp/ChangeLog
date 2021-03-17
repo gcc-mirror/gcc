@@ -1,3 +1,33 @@
+2021-03-16  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (cp_tree_equal): Use real_identical.
+
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99613
+	* decl.c (expand_static_init): For thread guards, call __cxa_atexit
+	before calling __cxa_guard_release rather than after it.  Formatting
+	fixes.
+
+2021-03-16  Martin Liska  <mliska@suse.cz>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/99108
+	* call.c (get_function_version_dispatcher): Handle
+	DECL_LOCAL_DECL_P.
+	* decl.c (maybe_version_functions): Likewise.
+	(maybe_mark_function_versioned): New.
+	* name-lookup.c (push_local_extern_decl_alias): No longer static.
+	* name-lookup.h (push_local_extern_decl_alias): Adjust.
+
+2021-03-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99496
+	* module.cc (trees_out::decl_value): Adjust typedef streaming,
+	indicate whether it is a dependent alias.
+	(trees_in::decl_value): Likewise.  Set as dependent alias, if it
+	is one.
+
 2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/99047

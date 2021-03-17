@@ -1,3 +1,44 @@
+2021-03-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99542
+	* gcc.dg/declare-simd.c (fn2): Expect a warning only under lp64.
+
+2021-03-16  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/nontype-float1.C: New test.
+
+2021-03-16  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/98092
+	PR target/98092
+	* gcc.target/powerpc/pr98092.c: New.
+
+2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99600
+	* gcc.target/i386/pr99600.c: New test.
+
+2021-03-16  Martin Liska  <mliska@suse.cz>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/99108
+	* g++.target/i386/pr99108.C: New test.
+
+2021-03-16  Martin Liska  <mliska@suse.cz>
+
+	PR target/99592
+	* gcc.target/arm/pr99592.c: New test.
+
+2021-03-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/vector/long-double-asm-fprvrmem.c: New test.
+
+2021-03-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99496
+	* g++.dg/modules/pr99496_a.H: New.
+	* g++.dg/modules/pr99496_b.C: New.
+
 2021-03-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/99563
