@@ -12688,7 +12688,7 @@ package body Sem_Prag is
          --  external tool and a tool-specific function. These arguments are
          --  not analyzed.
 
-         when Pragma_Annotate => Annotate : declare
+         when Pragma_Annotate | Pragma_GNAT_Annotate => Annotate : declare
             Arg     : Node_Id;
             Expr    : Node_Id;
             Nam_Arg : Node_Id;
@@ -31246,6 +31246,7 @@ package body Sem_Prag is
       Pragma_Finalize_Storage_Only          =>  0,
       Pragma_Ghost                          =>  0,
       Pragma_Global                         => -1,
+      Pragma_GNAT_Annotate                  => 93,
       Pragma_Ident                          => -1,
       Pragma_Ignore_Pragma                  =>  0,
       Pragma_Implementation_Defined         => -1,

@@ -4199,7 +4199,7 @@ package body Sem_Ch13 is
 
                --  Case 2e: Annotate aspect
 
-               when Aspect_Annotate =>
+               when Aspect_Annotate | Aspect_GNAT_Annotate =>
                   declare
                      Args  : List_Id;
                      Pargs : List_Id;
@@ -11117,6 +11117,7 @@ package body Sem_Ch13 is
             | Aspect_Extensions_Visible
             | Aspect_Ghost
             | Aspect_Global
+            | Aspect_GNAT_Annotate
             | Aspect_Implicit_Dereference
             | Aspect_Initial_Condition
             | Aspect_Initializes
