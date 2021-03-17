@@ -1007,11 +1007,7 @@ package body Sem_Util is
            and then Is_Entity_Name (Name (Expr))
            and then Is_RTE (Entity (Name (Expr)), RE_To_Address)
          then
-            Expr := First (Parameter_Associations (Expr));
-
-            if Nkind (Expr) = N_Parameter_Association then
-               Expr := Explicit_Actual_Parameter (Expr);
-            end if;
+            Expr := First_Actual (Expr);
 
          --  We finally have the real expression
 
