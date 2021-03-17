@@ -1116,7 +1116,7 @@ public:
       inner_attrs (other.inner_attrs), locus (other.locus),
       marked_for_strip (other.marked_for_strip)
   {
-      internal_elements = other.internal_elements->clone_array_elems ();
+    internal_elements = other.internal_elements->clone_array_elems ();
     rust_assert (internal_elements != nullptr);
   }
 
