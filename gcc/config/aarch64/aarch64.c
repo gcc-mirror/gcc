@@ -23372,7 +23372,7 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					struct cgraph_simd_clone *clonei,
 					tree base_type, int num)
 {
-  tree t, ret_type, arg_type;
+  tree t, ret_type;
   unsigned int elt_bits, count;
   unsigned HOST_WIDE_INT const_simdlen;
   poly_uint64 vec_bits;
