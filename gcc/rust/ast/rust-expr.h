@@ -1099,9 +1099,6 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  // Returns whether array expr has array elems or if it is just empty.
-  bool has_array_elems () const { return internal_elements != nullptr; }
-
   // Constructor requires ArrayElems pointer
   ArrayExpr (std::unique_ptr<ArrayElems> array_elems,
 	     std::vector<Attribute> inner_attribs,
@@ -1119,7 +1116,6 @@ public:
       inner_attrs (other.inner_attrs), locus (other.locus),
       marked_for_strip (other.marked_for_strip)
   {
-    if (other.has_array_elems ())
       internal_elements = other.internal_elements->clone_array_elems ();
     rust_assert (internal_elements != nullptr);
   }
@@ -1133,10 +1129,7 @@ public:
     marked_for_strip = other.marked_for_strip;
     outer_attrs = other.outer_attrs;
 
-    if (other.has_array_elems ())
-      internal_elements = other.internal_elements->clone_array_elems ();
-    else
-      internal_elements = nullptr;
+    internal_elements = other.internal_elements->clone_array_elems ();
 
     rust_assert (internal_elements != nullptr);
     return *this;
