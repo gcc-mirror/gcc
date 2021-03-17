@@ -97,7 +97,7 @@ public:
 
   void append_reference (HirId id) { combined.insert (id); }
 
-  virtual bool supports_substitions () const { return false; }
+  virtual bool supports_substitutions () const { return false; }
 
   virtual bool has_subsititions_defined () const { return false; }
 
@@ -322,11 +322,11 @@ private:
   HIR::GenericParam &param;
 };
 
-class SubstitionMapping
+class SubstitutionMapping
 {
 public:
-  SubstitionMapping (std::unique_ptr<HIR::GenericParam> &generic,
-		     ParamType *param)
+  SubstitutionMapping (std::unique_ptr<HIR::GenericParam> &generic,
+		       ParamType *param)
     : generic (generic), param (param)
   {}
 
@@ -334,10 +334,10 @@ public:
 
   void fill_param_ty (BaseType *type) { param->set_ty_ref (type->get_ref ()); }
 
-  SubstitionMapping clone ()
+  SubstitutionMapping clone ()
   {
-    return SubstitionMapping (generic,
-			      static_cast<ParamType *> (param->clone ()));
+    return SubstitutionMapping (generic,
+				static_cast<ParamType *> (param->clone ()));
   }
 
   const ParamType *get_param_ty () const { return param; }
@@ -347,80 +347,80 @@ private:
   ParamType *param;
 };
 
-template <class T> class SubstitionRef
+template <class T> class SubstitutionRef
 {
 public:
-  SubstitionRef (std::vector<SubstitionMapping> substitions)
-    : substitions (substitions)
+  SubstitutionRef (std::vector<SubstitutionMapping> substitutions)
+    : substitutions (substitutions)
   {}
 
-  bool has_substitions () const { return substitions.size () > 0; }
+  bool has_substitutions () const { return substitutions.size () > 0; }
 
   std::string subst_as_string () const
   {
     std::string buffer;
-    for (size_t i = 0; i < substitions.size (); i++)
+    for (size_t i = 0; i < substitutions.size (); i++)
       {
-	const SubstitionMapping &sub = substitions.at (i);
+	const SubstitutionMapping &sub = substitutions.at (i);
 	buffer += sub.as_string ();
 
-	if ((i + 1) < substitions.size ())
+	if ((i + 1) < substitutions.size ())
 	  buffer += ", ";
       }
 
     return buffer.empty () ? "" : "<" + buffer + ">";
   }
 
-  size_t get_num_substitions () const { return substitions.size (); }
+  size_t get_num_substitutions () const { return substitutions.size (); }
 
-  std::vector<SubstitionMapping> &get_substs () { return substitions; }
+  std::vector<SubstitutionMapping> &get_substs () { return substitutions; }
 
-  std::vector<SubstitionMapping> clone_substs ()
+  std::vector<SubstitutionMapping> clone_substs ()
   {
-    std::vector<SubstitionMapping> clone;
-    for (auto &sub : substitions)
+    std::vector<SubstitutionMapping> clone;
+    for (auto &sub : substitutions)
       clone.push_back (sub.clone ());
 
     return clone;
   }
 
-  virtual T *infer_substitions () = 0;
+  virtual T *infer_substitutions () = 0;
 
-  virtual T *handle_substitions (HIR::GenericArgs &generic_args) = 0;
+  virtual T *handle_substitutions (HIR::GenericArgs &generic_args) = 0;
 
 protected:
   virtual void fill_in_at (size_t index, BaseType *type)
   {
-    substitions.at (index).fill_param_ty (type);
+    substitutions.at (index).fill_param_ty (type);
   }
 
-  SubstitionMapping get_substition_mapping_at (size_t index)
+  SubstitutionMapping get_substitution_mapping_at (size_t index)
   {
-    return substitions.at (index);
+    return substitutions.at (index);
   }
 
 private:
-  std::vector<SubstitionMapping> substitions;
+  std::vector<SubstitutionMapping> substitutions;
 };
 
-class ADTType : public BaseType, public SubstitionRef<ADTType>
+class ADTType : public BaseType, public SubstitutionRef<ADTType>
 {
 public:
   ADTType (HirId ref, std::string identifier, bool is_tuple,
 	   std::vector<StructFieldType *> fields,
-	   std::vector<SubstitionMapping> subst_refs,
+	   std::vector<SubstitutionMapping> subst_refs,
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ADT, refs),
-      SubstitionRef (std::move (subst_refs)), identifier (identifier),
+      SubstitutionRef (std::move (subst_refs)), identifier (identifier),
       fields (fields), is_tuple (is_tuple)
   {}
 
   ADTType (HirId ref, HirId ty_ref, std::string identifier, bool is_tuple,
 	   std::vector<StructFieldType *> fields,
-	   std::vector<SubstitionMapping> subst_refs,
+	   std::vector<SubstitutionMapping> subst_refs,
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ADT, refs),
-      SubstitionRef (std::move (subst_refs)), identifier (identifier),
+      SubstitutionRef (std::move (subst_refs)), identifier (identifier),
       fields (fields), is_tuple (is_tuple)
   {}
 
@@ -482,20 +482,20 @@ public:
       }
   }
 
-  bool supports_substitions () const override final { return true; }
+  bool supports_substitutions () const override final { return true; }
 
   bool has_subsititions_defined () const override final
   {
-    return has_substitions ();
+    return has_substitutions ();
   }
 
-  ADTType *infer_substitions () override final;
+  ADTType *infer_substitutions () override final;
 
-  ADTType *handle_substitions (HIR::GenericArgs &generic_args) override final;
+  ADTType *handle_substitutions (HIR::GenericArgs &generic_args) override final;
 
   void fill_in_at (size_t index, BaseType *type) override final;
 
-  void fill_in_params_for (SubstitionMapping sub, BaseType *type);
+  void fill_in_params_for (SubstitutionMapping sub, BaseType *type);
 
 private:
   std::string identifier;

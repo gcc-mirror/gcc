@@ -195,7 +195,7 @@ public:
 
 		    TyTy::ADTType *adt
 		      = static_cast<TyTy::ADTType *> (translated);
-		    translated = adt->handle_substitions (args);
+		    translated = adt->handle_substitutions (args);
 		  }
 		else
 		  {
@@ -208,7 +208,7 @@ public:
 		    return;
 		  }
 	      }
-	    else if (translated->supports_substitions ())
+	    else if (translated->supports_substitutions ())
 	      {
 		// so far we only support ADT so lets just handle it here
 		// for now
@@ -222,7 +222,7 @@ public:
 		  }
 
 		TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (translated);
-		translated = adt->infer_substitions ();
+		translated = adt->infer_substitutions ();
 	      }
 
 	    return;

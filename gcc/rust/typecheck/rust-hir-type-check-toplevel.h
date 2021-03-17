@@ -42,7 +42,7 @@ public:
 
   void visit (HIR::TupleStruct &struct_decl) override
   {
-    std::vector<TyTy::SubstitionMapping> substitions;
+    std::vector<TyTy::SubstitutionMapping> substitutions;
     if (struct_decl.has_generics ())
       {
 	for (auto &generic_param : struct_decl.get_generic_params ())
@@ -51,8 +51,8 @@ public:
 	      = TypeResolveGenericParam::Resolve (generic_param.get ());
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    substitions.push_back (
-	      TyTy::SubstitionMapping (generic_param, param_type));
+	    substitutions.push_back (
+	      TyTy::SubstitutionMapping (generic_param, param_type));
 	  }
       }
 
@@ -75,14 +75,14 @@ public:
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
 			   struct_decl.get_identifier (), true,
-			   std::move (fields), std::move (substitions));
+			   std::move (fields), std::move (substitutions));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
 
   void visit (HIR::StructStruct &struct_decl) override
   {
-    std::vector<TyTy::SubstitionMapping> substitions;
+    std::vector<TyTy::SubstitutionMapping> substitutions;
     if (struct_decl.has_generics ())
       {
 	for (auto &generic_param : struct_decl.get_generic_params ())
@@ -91,8 +91,8 @@ public:
 	      = TypeResolveGenericParam::Resolve (generic_param.get ());
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    substitions.push_back (
-	      TyTy::SubstitionMapping (generic_param, param_type));
+	    substitutions.push_back (
+	      TyTy::SubstitutionMapping (generic_param, param_type));
 	  }
       }
 
@@ -112,7 +112,7 @@ public:
       = new TyTy::ADTType (struct_decl.get_mappings ().get_hirid (),
 			   mappings->get_next_hir_id (),
 			   struct_decl.get_identifier (), false,
-			   std::move (fields), std::move (substitions));
+			   std::move (fields), std::move (substitutions));
 
     context->insert_type (struct_decl.get_mappings (), type);
   }
@@ -136,7 +136,7 @@ public:
 
   void visit (HIR::Function &function) override
   {
-    std::vector<TyTy::SubstitionMapping> substitions;
+    std::vector<TyTy::SubstitutionMapping> substitutions;
     if (function.has_generics ())
       {
 	for (auto &generic_param : function.get_generic_params ())
@@ -145,8 +145,8 @@ public:
 	      = TypeResolveGenericParam::Resolve (generic_param.get ());
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    substitions.push_back (
-	      TyTy::SubstitionMapping (generic_param, param_type));
+	    substitutions.push_back (
+	      TyTy::SubstitutionMapping (generic_param, param_type));
 	  }
       }
 

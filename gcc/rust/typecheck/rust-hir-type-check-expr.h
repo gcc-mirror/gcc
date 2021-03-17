@@ -780,7 +780,7 @@ public:
       }
 
     HIR::PathExprSegment seg = expr.get_final_segment ();
-    if (!infered->supports_substitions () && seg.has_generic_args ())
+    if (!infered->supports_substitutions () && seg.has_generic_args ())
       {
 	rust_error_at (expr.get_locus (),
 		       "path does not support substitutions");
@@ -798,8 +798,8 @@ public:
 
 	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
 	infered = seg.has_generic_args ()
-		    ? adt->handle_substitions (seg.get_generic_args ())
-		    : adt->infer_substitions ();
+		    ? adt->handle_substitutions (seg.get_generic_args ())
+		    : adt->infer_substitutions ();
       }
   }
 

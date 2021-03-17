@@ -325,13 +325,13 @@ TypeCheckStructExpr::visit (HIR::PathInExpression &expr)
     }
 
   struct_path_resolved = static_cast<TyTy::ADTType *> (lookup);
-  if (struct_path_resolved->has_substitions ())
+  if (struct_path_resolved->has_substitutions ())
     {
       HIR::PathExprSegment seg = expr.get_final_segment ();
-      struct_path_resolved
-	= seg.has_generic_args ()
-	    ? struct_path_resolved->handle_substitions (seg.get_generic_args ())
-	    : struct_path_resolved->infer_substitions ();
+      struct_path_resolved = seg.has_generic_args ()
+			       ? struct_path_resolved->handle_substitutions (
+				 seg.get_generic_args ())
+			       : struct_path_resolved->infer_substitutions ();
     }
 }
 

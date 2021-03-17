@@ -228,7 +228,7 @@ ADTType::clone ()
 }
 
 ADTType *
-ADTType::infer_substitions ()
+ADTType::infer_substitutions ()
 {
   auto context = Resolver::TypeCheckContext::get ();
   ADTType *adt = static_cast<ADTType *> (clone ());
@@ -254,9 +254,9 @@ ADTType::infer_substitions ()
 }
 
 ADTType *
-ADTType::handle_substitions (HIR::GenericArgs &generic_args)
+ADTType::handle_substitutions (HIR::GenericArgs &generic_args)
 {
-  if (generic_args.get_type_args ().size () != get_num_substitions ())
+  if (generic_args.get_type_args ().size () != get_num_substitutions ())
     {
       rust_error_at (generic_args.get_locus (),
 		     "invalid number of generic arguments to generic ADT type");
@@ -288,13 +288,13 @@ ADTType::handle_substitions (HIR::GenericArgs &generic_args)
 void
 ADTType::fill_in_at (size_t index, BaseType *type)
 {
-  SubstitionMapping sub = get_substition_mapping_at (index);
-  SubstitionRef<ADTType>::fill_in_at (index, type);
+  SubstitutionMapping sub = get_substitution_mapping_at (index);
+  SubstitutionRef<ADTType>::fill_in_at (index, type);
   fill_in_params_for (sub, type);
 }
 
 void
-ADTType::fill_in_params_for (SubstitionMapping sub, BaseType *type)
+ADTType::fill_in_params_for (SubstitutionMapping sub, BaseType *type)
 {
   iterate_fields ([&] (StructFieldType *field) mutable -> bool {
     bool is_param_ty = field->get_field_type ()->get_kind () == TypeKind::PARAM;
