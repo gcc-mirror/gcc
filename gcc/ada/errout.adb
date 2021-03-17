@@ -1032,7 +1032,7 @@ package body Errout is
          if In_Extended_Main_Source_Unit (Sptr) then
             null;
 
-         --  If the main unit has not been read yet. the warning must be on
+         --  If the main unit has not been read yet. The warning must be on
          --  a configuration file: gnat.adc or user-defined. This means we
          --  are not parsing the main unit yet, so skip following checks.
 

@@ -1557,7 +1557,7 @@ package body Exp_Dbug is
       then
          Set_BNPE_Suffix (Ent);
 
-         --  Strip trailing n's and last trailing b as required. note that
+         --  Strip trailing n's and last trailing b as required. Note that
          --  we know there is at least one b, or no suffix would be generated.
 
          while Name_Buffer (Name_Len) = 'n' loop
