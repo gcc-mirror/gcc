@@ -468,10 +468,10 @@ public:
     = 0;
 
   // infinite loop expressions
-  virtual Bexpression *loop_expression (Bblock *body, Location);
+  virtual Bexpression *loop_expression (Bblock *body, Location) = 0;
 
   // exit expressions
-  virtual Bexpression *exit_expression (Bexpression *condition, Location);
+  virtual Bexpression *exit_expression (Bexpression *condition, Location) = 0;
 
   // Create a switch statement where the case values are constants.
   // CASES and STATEMENTS must have the same number of entries.  If
