@@ -10850,10 +10850,12 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
       tree src = make_ssa_name (TREE_TYPE (src_type));
       gimplify_assign (src, build_simple_mem_ref (src_ptr), &new_seq);
 
-      /* If we are not disassembling an accumulator or our destination is
-	 another accumulator, then just copy the entire thing as is.  */
-      if (fncode != MMA_BUILTIN_DISASSEMBLE_ACC
-	  || TREE_TYPE (TREE_TYPE (dst_ptr)) == vector_quad_type_node)
+      /* If we are disassembling an accumulator/pair and our destination is
+	 another accumulator/pair, then just copy the entire thing as is.  */
+      if ((fncode == MMA_BUILTIN_DISASSEMBLE_ACC
+	   && TREE_TYPE (TREE_TYPE (dst_ptr)) == vector_quad_type_node)
+	  || (fncode == VSX_BUILTIN_DISASSEMBLE_PAIR
+	      && TREE_TYPE (TREE_TYPE (dst_ptr)) == vector_pair_type_node))
 	{
 	  tree dst = build_simple_mem_ref (build1 (VIEW_CONVERT_EXPR,
 						   src_type, dst_ptr));
@@ -10865,21 +10867,25 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi)
 
       /* We're disassembling an accumulator into a different type, so we need
 	 to emit a xxmfacc instruction now, since we cannot do it later.  */
-      new_decl = rs6000_builtin_decls[MMA_BUILTIN_XXMFACC_INTERNAL];
-      new_call = gimple_build_call (new_decl, 1, src);
-      src = make_ssa_name (vector_quad_type_node);
-      gimple_call_set_lhs (new_call, src);
-      gimple_seq_add_stmt (&new_seq, new_call);
+      if (fncode == MMA_BUILTIN_DISASSEMBLE_ACC)
+	{
+	  new_decl = rs6000_builtin_decls[MMA_BUILTIN_XXMFACC_INTERNAL];
+	  new_call = gimple_build_call (new_decl, 1, src);
+	  src = make_ssa_name (vector_quad_type_node);
+	  gimple_call_set_lhs (new_call, src);
+	  gimple_seq_add_stmt (&new_seq, new_call);
+	}
 
-      /* Copy the accumulator vector by vector.  */
+      /* Copy the accumulator/pair vector by vector.  */
+      unsigned nvecs = (fncode == MMA_BUILTIN_DISASSEMBLE_ACC) ? 4 : 2;
       tree dst_type = build_pointer_type_for_mode (unsigned_V16QI_type_node,
 						   ptr_mode, true);
       tree dst_base = build1 (VIEW_CONVERT_EXPR, dst_type, dst_ptr);
-      tree array_type = build_array_type_nelts (unsigned_V16QI_type_node, 4);
+      tree array_type = build_array_type_nelts (unsigned_V16QI_type_node, nvecs);
       tree src_array = build1 (VIEW_CONVERT_EXPR, array_type, src);
-      for (unsigned i = 0; i < 4; i++)
+      for (unsigned i = 0; i < nvecs; i++)
 	{
-	  unsigned index = WORDS_BIG_ENDIAN ? i : 3 - i;
+	  unsigned index = WORDS_BIG_ENDIAN ? i : nvecs - 1 - i;
 	  tree ref = build4 (ARRAY_REF, unsigned_V16QI_type_node, src_array,
 			     build_int_cst (size_type_node, i),
 			     NULL_TREE, NULL_TREE);
