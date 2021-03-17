@@ -20,6 +20,9 @@ along with GCC; see the file COPYING3.  If not see
 /* DO NOT INCLUDE ANYWHERE - this is automatically included with rust-parse.h
  * This is also the reason why there are no include guards. */
 
+#include "rust-diagnostics.h"
+#include "util/rust-make-unique.h"
+
 namespace Rust {
 // Left binding powers of operations.
 enum binding_powers
@@ -402,7 +405,7 @@ Parser<ManagedTokenSource>::parse_crate ()
   std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
 
   // parse items
-  std::vector<std::unique_ptr<AST::Item> > items;
+  std::vector<std::unique_ptr<AST::Item>> items;
 
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () != END_OF_FILE)
@@ -415,7 +418,7 @@ Parser<ManagedTokenSource>::parse_crate ()
 	  add_error (std::move (error));
 
 	  // TODO: should all items be cleared?
-	  items = std::vector<std::unique_ptr<AST::Item> > ();
+	  items = std::vector<std::unique_ptr<AST::Item>> ();
 	  break;
 	}
 
@@ -874,7 +877,7 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
     }
 
   // parse actual token tree vector - 0 or more
-  std::vector<std::unique_ptr<AST::TokenTree> > token_trees_in_tree;
+  std::vector<std::unique_ptr<AST::TokenTree>> token_trees_in_tree;
 
   // repeat loop until finding the matching delimiter
   t = lexer.peek_token ();
@@ -979,10 +982,10 @@ Parser<ManagedTokenSource>::parse_token_tree ()
  * individually is pretty simple and allows for better error diagnostics and
  * detection. */
 template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::Item> >
+std::vector<std::unique_ptr<AST::Item>>
 Parser<ManagedTokenSource>::parse_items ()
 {
-  std::vector<std::unique_ptr<AST::Item> > items;
+  std::vector<std::unique_ptr<AST::Item>> items;
 
   // TODO: replace with do-while loop?
   // infinite loop to save on comparisons (may be a tight loop) - breaks when
@@ -1544,7 +1547,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
   lexer.skip_token ();
 
   // parse actual token trees
-  std::vector<std::unique_ptr<AST::TokenTree> > token_trees;
+  std::vector<std::unique_ptr<AST::TokenTree>> token_trees;
 
   t = lexer.peek_token ();
   // parse token trees until the initial delimiter token is found again
@@ -1713,7 +1716,7 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
   lexer.skip_token ();
 
   // parse actual macro matches
-  std::vector<std::unique_ptr<AST::MacroMatch> > matches;
+  std::vector<std::unique_ptr<AST::MacroMatch>> matches;
 
   t = lexer.peek_token ();
   // parse token trees until the initial delimiter token is found again
@@ -1883,7 +1886,7 @@ Parser<ManagedTokenSource>::parse_macro_match_repetition ()
   skip_token (DOLLAR_SIGN);
   skip_token (LEFT_PAREN);
 
-  std::vector<std::unique_ptr<AST::MacroMatch> > matches;
+  std::vector<std::unique_ptr<AST::MacroMatch>> matches;
 
   // parse required first macro match
   std::unique_ptr<AST::MacroMatch> initial_match = parse_macro_match ();
@@ -2091,7 +2094,7 @@ Parser<ManagedTokenSource>::parse_module (
 	std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
 
 	// parse items
-	std::vector<std::unique_ptr<AST::Item> > items;
+	std::vector<std::unique_ptr<AST::Item>> items;
 	const_TokenPtr tok = lexer.peek_token ();
 	while (tok->get_id () != RIGHT_CURLY)
 	  {
@@ -2331,7 +2334,7 @@ Parser<ManagedTokenSource>::parse_use_tree ()
 	    // nested tree UseTree type
 	    lexer.skip_token ();
 
-	    std::vector<std::unique_ptr<AST::UseTree> > use_trees;
+	    std::vector<std::unique_ptr<AST::UseTree>> use_trees;
 
 	    const_TokenPtr t = lexer.peek_token ();
 	    while (t->get_id () != RIGHT_CURLY)
@@ -2409,7 +2412,7 @@ Parser<ManagedTokenSource>::parse_use_tree ()
 	    // nested tree UseTree type
 	    lexer.skip_token ();
 
-	    std::vector<std::unique_ptr<AST::UseTree> > use_trees;
+	    std::vector<std::unique_ptr<AST::UseTree>> use_trees;
 
 	    // TODO: think of better control structure
 	    const_TokenPtr t = lexer.peek_token ();
@@ -2523,7 +2526,7 @@ Parser<ManagedTokenSource>::parse_function (
   Identifier function_name = function_name_tok->get_str ();
 
   // parse generic params - if exist
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   if (!skip_token (LEFT_PAREN))
@@ -2626,20 +2629,20 @@ Parser<ManagedTokenSource>::parse_function_qualifiers ()
 
 // Parses generic (lifetime or type) params inside angle brackets (optional).
 template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::GenericParam> >
+std::vector<std::unique_ptr<AST::GenericParam>>
 Parser<ManagedTokenSource>::parse_generic_params_in_angles ()
 {
   if (lexer.peek_token ()->get_id () != LEFT_ANGLE)
     {
       // seems to be no generic params, so exit with empty vector
-      return std::vector<std::unique_ptr<AST::GenericParam> > ();
+      return std::vector<std::unique_ptr<AST::GenericParam>> ();
     }
   lexer.skip_token ();
 
   // DEBUG:
   fprintf (stderr, "skipped left angle in generic param\n");
 
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params (is_right_angle_tok);
 
   // DEBUG:
@@ -2652,7 +2655,7 @@ Parser<ManagedTokenSource>::parse_generic_params_in_angles ()
       fprintf (stderr, "failed to skip generics right angle - returning empty "
 		       "generic params\n");
 
-      return std::vector<std::unique_ptr<AST::GenericParam> > ();
+      return std::vector<std::unique_ptr<AST::GenericParam>> ();
     }
 
   return generic_params;
@@ -2661,10 +2664,10 @@ Parser<ManagedTokenSource>::parse_generic_params_in_angles ()
 /* Parse generic (lifetime or type) params NOT INSIDE ANGLE BRACKETS!!! Almost
  * always parse_generic_params_in_angles is what is wanted. */
 template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::GenericParam> >
+std::vector<std::unique_ptr<AST::GenericParam>>
 Parser<ManagedTokenSource>::parse_generic_params ()
 {
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params;
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params;
 
   // can't parse lifetime and type params separately due to lookahead issues
   // thus, parse them all here
@@ -2748,12 +2751,12 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 	    "failed to parse identifier in type param in generic params");
 	  add_error (std::move (error));
 
-	  return std::vector<std::unique_ptr<AST::GenericParam> > ();
+	  return std::vector<std::unique_ptr<AST::GenericParam>> ();
 	}
       Identifier ident = ident_tok->get_str ();
 
       // parse optional bounds
-      std::vector<std::unique_ptr<AST::TypeParamBound> > type_param_bounds;
+      std::vector<std::unique_ptr<AST::TypeParamBound>> type_param_bounds;
       if (lexer.peek_token ()->get_id () == COLON)
 	{
 	  lexer.skip_token ();
@@ -2777,7 +2780,7 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 		"failed to parse type in type param in generic params");
 	      add_error (std::move (error));
 
-	      return std::vector<std::unique_ptr<AST::GenericParam> > ();
+	      return std::vector<std::unique_ptr<AST::GenericParam>> ();
 	    }
 	}
 
@@ -2811,7 +2814,7 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 		       "failed to parse type param in generic params");
 	  add_error (std::move (error));
 
-	  return std::vector<std::unique_ptr<AST::GenericParam> > ();
+	  return std::vector<std::unique_ptr<AST::GenericParam>> ();
 	}
 
       // DEBUG
@@ -2858,10 +2861,10 @@ Parser<ManagedTokenSource>::parse_generic_params ()
  * always parse_generic_params_in_angles is what is wanted. */
 template <typename ManagedTokenSource>
 template <typename EndTokenPred>
-std::vector<std::unique_ptr<AST::GenericParam> >
+std::vector<std::unique_ptr<AST::GenericParam>>
 Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
 {
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params;
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params;
 
   /* can't parse lifetime and type params separately due to lookahead issues
    * thus, parse them all here */
@@ -2929,7 +2932,7 @@ Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
       Identifier ident = ident_tok->get_str ();
 
       // parse optional bounds
-      std::vector<std::unique_ptr<AST::TypeParamBound> > type_param_bounds;
+      std::vector<std::unique_ptr<AST::TypeParamBound>> type_param_bounds;
       if (lexer.peek_token ()->get_id () == COLON)
 	{
 	  lexer.skip_token ();
@@ -3021,10 +3024,10 @@ Parser<ManagedTokenSource>::parse_generic_params (EndTokenPred is_end_token)
 /* Parses lifetime generic parameters (pointers). Will also consume any trailing
  * comma. No extra checks for end token. */
 template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::LifetimeParam> >
+std::vector<std::unique_ptr<AST::LifetimeParam>>
 Parser<ManagedTokenSource>::parse_lifetime_params ()
 {
-  std::vector<std::unique_ptr<AST::LifetimeParam> > lifetime_params;
+  std::vector<std::unique_ptr<AST::LifetimeParam>> lifetime_params;
 
   while (lexer.peek_token ()->get_id () != END_OF_FILE)
     {
@@ -3055,10 +3058,10 @@ Parser<ManagedTokenSource>::parse_lifetime_params ()
  * comma. Has extra is_end_token predicate checking. */
 template <typename ManagedTokenSource>
 template <typename EndTokenPred>
-std::vector<std::unique_ptr<AST::LifetimeParam> >
+std::vector<std::unique_ptr<AST::LifetimeParam>>
 Parser<ManagedTokenSource>::parse_lifetime_params (EndTokenPred is_end_token)
 {
-  std::vector<std::unique_ptr<AST::LifetimeParam> > lifetime_params;
+  std::vector<std::unique_ptr<AST::LifetimeParam>> lifetime_params;
 
   // if end_token is not specified, it defaults to EOF, so should work fine
   while (!is_end_token (lexer.peek_token ()->get_id ()))
@@ -3244,10 +3247,10 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
 
 // Parses type generic parameters. Will also consume any trailing comma.
 template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::TypeParam> >
+std::vector<std::unique_ptr<AST::TypeParam>>
 Parser<ManagedTokenSource>::parse_type_params ()
 {
-  std::vector<std::unique_ptr<AST::TypeParam> > type_params;
+  std::vector<std::unique_ptr<AST::TypeParam>> type_params;
 
   // infinite loop with break on failure as no info on ending token
   while (true)
@@ -3276,10 +3279,10 @@ Parser<ManagedTokenSource>::parse_type_params ()
 // Parses type generic parameters. Will also consume any trailing comma.
 template <typename ManagedTokenSource>
 template <typename EndTokenPred>
-std::vector<std::unique_ptr<AST::TypeParam> >
+std::vector<std::unique_ptr<AST::TypeParam>>
 Parser<ManagedTokenSource>::parse_type_params (EndTokenPred is_end_token)
 {
-  std::vector<std::unique_ptr<AST::TypeParam> > type_params;
+  std::vector<std::unique_ptr<AST::TypeParam>> type_params;
 
   while (!is_end_token (lexer.peek_token ()->get_id ()))
     {
@@ -3329,7 +3332,7 @@ Parser<ManagedTokenSource>::parse_type_param ()
   lexer.skip_token ();
 
   // parse type param bounds (if they exist)
-  std::vector<std::unique_ptr<AST::TypeParamBound> > type_param_bounds;
+  std::vector<std::unique_ptr<AST::TypeParamBound>> type_param_bounds;
   if (lexer.peek_token ()->get_id () == COLON)
     {
       lexer.skip_token ();
@@ -3492,7 +3495,7 @@ Parser<ManagedTokenSource>::parse_where_clause ()
 
   /* parse where clause items - this is not a separate rule in the reference so
    * won't be here */
-  std::vector<std::unique_ptr<AST::WhereClauseItem> > where_clause_items;
+  std::vector<std::unique_ptr<AST::WhereClauseItem>> where_clause_items;
 
   /* HACK: where clauses end with a right curly or semicolon or equals in all
    * uses currently */
@@ -3589,7 +3592,7 @@ Parser<ManagedTokenSource>::parse_type_bound_where_clause_item ()
     }
 
   // parse type param bounds if they exist
-  std::vector<std::unique_ptr<AST::TypeParamBound> > type_param_bounds
+  std::vector<std::unique_ptr<AST::TypeParamBound>> type_param_bounds
     = parse_type_param_bounds ();
 
   return std::unique_ptr<AST::TypeBoundWhereClauseItem> (
@@ -3637,10 +3640,10 @@ Parser<ManagedTokenSource>::parse_for_lifetimes ()
 
 // Parses type parameter bounds in where clause or generic arguments.
 template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::TypeParamBound> >
+std::vector<std::unique_ptr<AST::TypeParamBound>>
 Parser<ManagedTokenSource>::parse_type_param_bounds ()
 {
-  std::vector<std::unique_ptr<AST::TypeParamBound> > type_param_bounds;
+  std::vector<std::unique_ptr<AST::TypeParamBound>> type_param_bounds;
 
   std::unique_ptr<AST::TypeParamBound> initial_bound
     = parse_type_param_bound ();
@@ -3677,10 +3680,10 @@ Parser<ManagedTokenSource>::parse_type_param_bounds ()
  * token handling. */
 template <typename ManagedTokenSource>
 template <typename EndTokenPred>
-std::vector<std::unique_ptr<AST::TypeParamBound> >
+std::vector<std::unique_ptr<AST::TypeParamBound>>
 Parser<ManagedTokenSource>::parse_type_param_bounds (EndTokenPred is_end_token)
 {
-  std::vector<std::unique_ptr<AST::TypeParamBound> > type_param_bounds;
+  std::vector<std::unique_ptr<AST::TypeParamBound>> type_param_bounds;
 
   std::unique_ptr<AST::TypeParamBound> initial_bound
     = parse_type_param_bound ();
@@ -3917,7 +3920,7 @@ Parser<ManagedTokenSource>::parse_type_alias (
   Identifier alias_name = alias_name_tok->get_str ();
 
   // parse generic params, which may not exist
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   // parse where clause, which may not exist
@@ -3977,7 +3980,7 @@ Parser<ManagedTokenSource>::parse_struct (
   Identifier struct_name = name_tok->get_str ();
 
   // parse generic params, which may or may not exist
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   // branch on next token - determines whether proper struct or tuple struct
@@ -4285,7 +4288,7 @@ Parser<ManagedTokenSource>::parse_enum (AST::Visibility vis,
   Identifier enum_name = enum_name_tok->get_str ();
 
   // parse generic params (of enum container, not enum variants) if they exist
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   // parse where clause if it exists
@@ -4298,7 +4301,7 @@ Parser<ManagedTokenSource>::parse_enum (AST::Visibility vis,
     }
 
   // parse actual enum variant definitions
-  std::vector<std::unique_ptr<AST::EnumItem> > enum_items
+  std::vector<std::unique_ptr<AST::EnumItem>> enum_items
     = parse_enum_items ([] (TokenId id) { return id == RIGHT_CURLY; });
 
   if (!skip_token (RIGHT_CURLY))
@@ -4315,10 +4318,10 @@ Parser<ManagedTokenSource>::parse_enum (AST::Visibility vis,
 
 // Parses the enum variants inside an enum definiton.
 template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::EnumItem> >
+std::vector<std::unique_ptr<AST::EnumItem>>
 Parser<ManagedTokenSource>::parse_enum_items ()
 {
-  std::vector<std::unique_ptr<AST::EnumItem> > items;
+  std::vector<std::unique_ptr<AST::EnumItem>> items;
 
   std::unique_ptr<AST::EnumItem> initial_item = parse_enum_item ();
 
@@ -4351,10 +4354,10 @@ Parser<ManagedTokenSource>::parse_enum_items ()
 // Parses the enum variants inside an enum definiton.
 template <typename ManagedTokenSource>
 template <typename EndTokenPred>
-std::vector<std::unique_ptr<AST::EnumItem> >
+std::vector<std::unique_ptr<AST::EnumItem>>
 Parser<ManagedTokenSource>::parse_enum_items (EndTokenPred is_end_tok)
 {
-  std::vector<std::unique_ptr<AST::EnumItem> > items;
+  std::vector<std::unique_ptr<AST::EnumItem>> items;
 
   std::unique_ptr<AST::EnumItem> initial_item = parse_enum_item ();
 
@@ -4491,7 +4494,7 @@ Parser<ManagedTokenSource>::parse_union (
   Identifier union_name = union_name_tok->get_str ();
 
   // parse optional generic parameters
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   // parse optional where clause
@@ -4656,11 +4659,11 @@ Parser<ManagedTokenSource>::parse_trait (
   Identifier ident = ident_tok->get_str ();
 
   // parse generic parameters (if they exist)
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   // create placeholder type param bounds in case they don't exist
-  std::vector<std::unique_ptr<AST::TypeParamBound> > type_param_bounds;
+  std::vector<std::unique_ptr<AST::TypeParamBound>> type_param_bounds;
 
   // parse type param bounds (if they exist)
   if (lexer.peek_token ()->get_id () == COLON)
@@ -4685,7 +4688,7 @@ Parser<ManagedTokenSource>::parse_trait (
   std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
 
   // parse trait items
-  std::vector<std::unique_ptr<AST::TraitItem> > trait_items;
+  std::vector<std::unique_ptr<AST::TraitItem>> trait_items;
 
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () != RIGHT_CURLY)
@@ -4761,7 +4764,7 @@ Parser<ManagedTokenSource>::parse_trait_item ()
 	Identifier ident = ident_tok->get_str ();
 
 	// parse generic params
-	std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+	std::vector<std::unique_ptr<AST::GenericParam>> generic_params
 	  = parse_generic_params_in_angles ();
 
 	if (!skip_token (LEFT_PAREN))
@@ -4894,7 +4897,7 @@ Parser<ManagedTokenSource>::parse_trait_type (
   Identifier ident = ident_tok->get_str ();
 
   bool has_colon = false;
-  std::vector<std::unique_ptr<AST::TypeParamBound> > bounds;
+  std::vector<std::unique_ptr<AST::TypeParamBound>> bounds;
 
   // parse optional colon
   if (lexer.peek_token ()->get_id () == COLON)
@@ -4988,7 +4991,7 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
     }
 
   // parse generic params (shared by trait and inherent impls)
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   // Again, trait impl-only feature, but optional one, so can be used for
@@ -5041,7 +5044,7 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
       std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
 
       // parse inherent impl items
-      std::vector<std::unique_ptr<AST::InherentImplItem> > impl_items;
+      std::vector<std::unique_ptr<AST::InherentImplItem>> impl_items;
 
       const_TokenPtr t = lexer.peek_token ();
       while (t->get_id () != RIGHT_CURLY)
@@ -5116,7 +5119,7 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
       std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
 
       // parse trait impl items
-      std::vector<std::unique_ptr<AST::TraitImplItem> > impl_items;
+      std::vector<std::unique_ptr<AST::TraitImplItem>> impl_items;
 
       const_TokenPtr t = lexer.peek_token ();
       while (t->get_id () != RIGHT_CURLY)
@@ -5298,7 +5301,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
   Identifier ident = ident_tok->get_str ();
 
   // parse generic params
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   if (!skip_token (LEFT_PAREN))
@@ -5533,7 +5536,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
     "about to start parsing generic params in trait impl function or method\n");
 
   // parse generic params
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   // DEBUG:
@@ -5691,7 +5694,7 @@ Parser<ManagedTokenSource>::parse_extern_block (
   std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
 
   // parse declarations inside extern block
-  std::vector<std::unique_ptr<AST::ExternalItem> > extern_items;
+  std::vector<std::unique_ptr<AST::ExternalItem>> extern_items;
 
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () != RIGHT_CURLY)
@@ -5808,7 +5811,7 @@ Parser<ManagedTokenSource>::parse_external_item ()
 	Identifier ident = ident_tok->get_str ();
 
 	// parse (optional) generic params
-	std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+	std::vector<std::unique_ptr<AST::GenericParam>> generic_params
 	  = parse_generic_params_in_angles ();
 
 	if (!skip_token (LEFT_PAREN))
@@ -6134,7 +6137,7 @@ Parser<ManagedTokenSource>::parse_type_path ()
     }
 
   // create segment vector
-  std::vector<std::unique_ptr<AST::TypePathSegment> > segments;
+  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
 
   // parse required initial segment
   std::unique_ptr<AST::TypePathSegment> initial_segment
@@ -6219,7 +6222,7 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
     }
 
   // try to parse types second
-  std::vector<std::unique_ptr<AST::Type> > type_args;
+  std::vector<std::unique_ptr<AST::Type>> type_args;
 
   // TODO: think of better control structure
   t = lexer.peek_token ();
@@ -6404,7 +6407,7 @@ Parser<ManagedTokenSource>::parse_type_path_function ()
     }
 
   // parse function inputs
-  std::vector<std::unique_ptr<AST::Type> > inputs;
+  std::vector<std::unique_ptr<AST::Type>> inputs;
 
   while (lexer.peek_token ()->get_id () != RIGHT_PAREN)
     {
@@ -6707,7 +6710,7 @@ Parser<ManagedTokenSource>::parse_qualified_path_in_type ()
     }
 
   // parse path segments
-  std::vector<std::unique_ptr<AST::TypePathSegment> > segments;
+  std::vector<std::unique_ptr<AST::TypePathSegment>> segments;
   segments.reserve (1);
 
   // parse initial required segment
@@ -6881,7 +6884,7 @@ Parser<ManagedTokenSource>::parse_method ()
   Identifier method_name = ident_tok->get_str ();
 
   // parse generic params - if exist
-  std::vector<std::unique_ptr<AST::GenericParam> > generic_params
+  std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   if (!skip_token (LEFT_PAREN))
@@ -7284,7 +7287,7 @@ Parser<ManagedTokenSource>::parse_block_expr (
   std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
 
   // parse statements and expression
-  std::vector<std::unique_ptr<AST::Stmt> > stmts;
+  std::vector<std::unique_ptr<AST::Stmt>> stmts;
   std::unique_ptr<AST::ExprWithoutBlock> expr = nullptr;
 
   const_TokenPtr t = lexer.peek_token ();
@@ -7896,7 +7899,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (
   lexer.skip_token ();
 
   // parse match arm patterns (which are required)
-  std::vector<std::unique_ptr<AST::Pattern> > match_arm_patterns
+  std::vector<std::unique_ptr<AST::Pattern>> match_arm_patterns
     = parse_match_arm_patterns (EQUAL);
   if (match_arm_patterns.empty ())
     {
@@ -8201,7 +8204,7 @@ Parser<ManagedTokenSource>::parse_while_let_loop_expr (
   lexer.skip_token ();
 
   // parse predicate patterns
-  std::vector<std::unique_ptr<AST::Pattern> > predicate_patterns
+  std::vector<std::unique_ptr<AST::Pattern>> predicate_patterns
     = parse_match_arm_patterns (EQUAL);
   // TODO: have to ensure that there is at least 1 pattern?
 
@@ -8524,7 +8527,7 @@ Parser<ManagedTokenSource>::parse_match_arm ()
     }
 
   // parse match arm patterns - at least 1 is required
-  std::vector<std::unique_ptr<AST::Pattern> > match_arm_patterns
+  std::vector<std::unique_ptr<AST::Pattern>> match_arm_patterns
     = parse_match_arm_patterns (RIGHT_CURLY);
   if (match_arm_patterns.empty ())
     {
@@ -8568,7 +8571,7 @@ Parser<ManagedTokenSource>::parse_match_arm ()
  * that would exist after the patterns are done (e.g. '}' for match expr, '='
  * for if let and while let). */
 template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::Pattern> >
+std::vector<std::unique_ptr<AST::Pattern>>
 Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
 {
   // skip optional leading '|'
@@ -8582,7 +8585,7 @@ Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
    * If semantically different, I need a wrapped "match arm patterns" object for
    * this. */
 
-  std::vector<std::unique_ptr<AST::Pattern> > patterns;
+  std::vector<std::unique_ptr<AST::Pattern>> patterns;
 
   // quick break out if end_token_id
   if (lexer.peek_token ()->get_id () == end_token_id)
@@ -8777,7 +8780,7 @@ Parser<ManagedTokenSource>::parse_array_expr (
       else if (lexer.peek_token ()->get_id () == RIGHT_SQUARE)
 	{
 	  // single-element array expression
-	  std::vector<std::unique_ptr<AST::Expr> > exprs;
+	  std::vector<std::unique_ptr<AST::Expr>> exprs;
 	  exprs.reserve (1);
 	  exprs.push_back (std::move (initial_expr));
 	  exprs.shrink_to_fit ();
@@ -8794,7 +8797,7 @@ Parser<ManagedTokenSource>::parse_array_expr (
       else if (lexer.peek_token ()->get_id () == COMMA)
 	{
 	  // multi-element array expression (or trailing comma)
-	  std::vector<std::unique_ptr<AST::Expr> > exprs;
+	  std::vector<std::unique_ptr<AST::Expr>> exprs;
 	  exprs.push_back (std::move (initial_expr));
 
 	  const_TokenPtr t = lexer.peek_token ();
@@ -8914,7 +8917,7 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_expr (
 
       // create tuple with empty tuple elems
       return std::unique_ptr<AST::TupleExpr> (
-	new AST::TupleExpr (std::vector<std::unique_ptr<AST::Expr> > (),
+	new AST::TupleExpr (std::vector<std::unique_ptr<AST::Expr>> (),
 			    std::move (inner_attrs), std::move (outer_attrs),
 			    locus));
     }
@@ -8945,7 +8948,7 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_expr (
   else if (lexer.peek_token ()->get_id () == COMMA)
     {
       // tuple expr
-      std::vector<std::unique_ptr<AST::Expr> > exprs;
+      std::vector<std::unique_ptr<AST::Expr>> exprs;
       exprs.push_back (std::move (first_expr));
 
       // parse potential other tuple exprs
@@ -9073,7 +9076,7 @@ Parser<ManagedTokenSource>::parse_type ()
       case LIFETIME: {
 	/* probably a lifetime bound, so probably type param bounds in
 	 * TraitObjectType */
-	std::vector<std::unique_ptr<AST::TypeParamBound> > bounds
+	std::vector<std::unique_ptr<AST::TypeParamBound>> bounds
 	  = parse_type_param_bounds ();
 
 	return std::unique_ptr<AST::TraitObjectType> (
@@ -9138,7 +9141,7 @@ Parser<ManagedTokenSource>::parse_type ()
 	    }
 	    case PLUS: {
 	      // type param bounds
-	      std::vector<std::unique_ptr<AST::TypeParamBound> > bounds;
+	      std::vector<std::unique_ptr<AST::TypeParamBound>> bounds;
 
 	      // convert type path to trait bound
 	      std::unique_ptr<AST::TraitBound> path_bound (
@@ -9193,7 +9196,7 @@ Parser<ManagedTokenSource>::parse_type ()
 	{
 	  /* cannot be one bound because lifetime prevents it from being
 	   * traitbound */
-	  std::vector<std::unique_ptr<AST::TypeParamBound> > bounds
+	  std::vector<std::unique_ptr<AST::TypeParamBound>> bounds
 	    = parse_type_param_bounds ();
 
 	  return std::unique_ptr<AST::ImplTraitType> (
@@ -9230,7 +9233,7 @@ Parser<ManagedTokenSource>::parse_type ()
 	    }
 
 	  // parse additional type param bounds
-	  std::vector<std::unique_ptr<AST::TypeParamBound> > bounds;
+	  std::vector<std::unique_ptr<AST::TypeParamBound>> bounds;
 	  bounds.push_back (std::move (initial_bound));
 	  while (t->get_id () == PLUS)
 	    {
@@ -9266,7 +9269,7 @@ Parser<ManagedTokenSource>::parse_type ()
 	  {
 	    /* cannot be one bound because lifetime prevents it from being
 	     * traitbound */
-	    std::vector<std::unique_ptr<AST::TypeParamBound> > bounds
+	    std::vector<std::unique_ptr<AST::TypeParamBound>> bounds
 	      = parse_type_param_bounds ();
 
 	    return std::unique_ptr<AST::TraitObjectType> (
@@ -9303,7 +9306,7 @@ Parser<ManagedTokenSource>::parse_type ()
 	      }
 
 	    // parse additional type param bounds
-	    std::vector<std::unique_ptr<AST::TypeParamBound> > bounds;
+	    std::vector<std::unique_ptr<AST::TypeParamBound>> bounds;
 	    bounds.push_back (std::move (initial_bound));
 	    while (t->get_id () == PLUS)
 	      {
@@ -9359,7 +9362,7 @@ Parser<ManagedTokenSource>::parse_paren_prefixed_type ()
    * whether trailing comma happens */
   const_TokenPtr t = lexer.peek_token ();
   bool trailing_comma = true;
-  std::vector<std::unique_ptr<AST::Type> > types;
+  std::vector<std::unique_ptr<AST::Type>> types;
 
   while (t->get_id () != RIGHT_PAREN)
     {
@@ -9398,7 +9401,7 @@ Parser<ManagedTokenSource>::parse_paren_prefixed_type ()
       if (lexer.peek_token ()->get_id () == PLUS)
 	{
 	  // create type param bounds vector
-	  std::vector<std::unique_ptr<AST::TypeParamBound> > bounds;
+	  std::vector<std::unique_ptr<AST::TypeParamBound>> bounds;
 
 	  // HACK: convert type to traitbound and add to bounds
 	  std::unique_ptr<AST::Type> released_ptr = std::move (types[0]);
@@ -9523,7 +9526,7 @@ Parser<ManagedTokenSource>::parse_for_prefixed_type ()
 	std::unique_ptr<AST::TraitBound> initial_bound (
 	  new AST::TraitBound (std::move (path), for_locus, false, false,
 			       std::move (for_lifetimes)));
-	std::vector<std::unique_ptr<AST::TypeParamBound> > bounds;
+	std::vector<std::unique_ptr<AST::TypeParamBound>> bounds;
 	bounds.push_back (std::move (initial_bound));
 
 	while (t->get_id () == PLUS)
@@ -10124,7 +10127,7 @@ Parser<ManagedTokenSource>::parse_paren_prefixed_type_no_bounds ()
    * whether trailing comma happens */
   const_TokenPtr t = lexer.peek_token ();
   bool trailing_comma = true;
-  std::vector<std::unique_ptr<AST::Type> > types;
+  std::vector<std::unique_ptr<AST::Type>> types;
 
   while (t->get_id () != RIGHT_PAREN)
     {
@@ -10681,7 +10684,7 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_pattern ()
       lexer.skip_token ();
 
       // parse new patterns while next token is a comma
-      std::vector<std::unique_ptr<AST::Pattern> > patterns;
+      std::vector<std::unique_ptr<AST::Pattern>> patterns;
 
       const_TokenPtr t = lexer.peek_token ();
       while (t->get_id () == COMMA)
@@ -10720,8 +10723,7 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_pattern ()
       // create ranged tuple pattern items with only upper items
       std::unique_ptr<AST::TuplePatternItemsRanged> items (
 	new AST::TuplePatternItemsRanged (
-	  std::vector<std::unique_ptr<AST::Pattern> > (),
-	  std::move (patterns)));
+	  std::vector<std::unique_ptr<AST::Pattern>> (), std::move (patterns)));
       return std::unique_ptr<AST::TuplePattern> (
 	new AST::TuplePattern (std::move (items), paren_locus));
     }
@@ -10752,7 +10754,7 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_pattern ()
 	lexer.skip_token ();
 
 	// create vector of patterns
-	std::vector<std::unique_ptr<AST::Pattern> > patterns;
+	std::vector<std::unique_ptr<AST::Pattern>> patterns;
 	patterns.push_back (std::move (initial_pattern));
 
 	t = lexer.peek_token ();
@@ -10794,7 +10796,7 @@ Parser<ManagedTokenSource>::parse_grouped_or_tuple_pattern ()
 	    lexer.skip_token ();
 
 	    // parse upper patterns
-	    std::vector<std::unique_ptr<AST::Pattern> > upper_patterns;
+	    std::vector<std::unique_ptr<AST::Pattern>> upper_patterns;
 	    t = lexer.peek_token ();
 	    while (t->get_id () == COMMA)
 	      {
@@ -10872,7 +10874,7 @@ Parser<ManagedTokenSource>::parse_slice_pattern ()
       return nullptr;
     }
 
-  std::vector<std::unique_ptr<AST::Pattern> > patterns;
+  std::vector<std::unique_ptr<AST::Pattern>> patterns;
   patterns.push_back (std::move (initial_pattern));
 
   const_TokenPtr t = lexer.peek_token ();
@@ -11121,7 +11123,7 @@ template <typename ManagedTokenSource>
 std::unique_ptr<AST::TupleStructItems>
 Parser<ManagedTokenSource>::parse_tuple_struct_items ()
 {
-  std::vector<std::unique_ptr<AST::Pattern> > lower_patterns;
+  std::vector<std::unique_ptr<AST::Pattern>> lower_patterns;
 
   // DEBUG
   fprintf (stderr, "started parsing tuple struct items\n");
@@ -11135,7 +11137,7 @@ Parser<ManagedTokenSource>::parse_tuple_struct_items ()
       // DEBUG
       fprintf (stderr, "'..' at front in tuple struct items detected\n");
 
-      std::vector<std::unique_ptr<AST::Pattern> > upper_patterns;
+      std::vector<std::unique_ptr<AST::Pattern>> upper_patterns;
 
       const_TokenPtr t = lexer.peek_token ();
       while (t->get_id () == COMMA)
@@ -11216,7 +11218,7 @@ Parser<ManagedTokenSource>::parse_tuple_struct_items ()
 	// has an upper range that must be parsed separately
 	lexer.skip_token ();
 
-	std::vector<std::unique_ptr<AST::Pattern> > upper_patterns;
+	std::vector<std::unique_ptr<AST::Pattern>> upper_patterns;
 
 	t = lexer.peek_token ();
 	while (t->get_id () == COMMA)
@@ -11261,7 +11263,7 @@ template <typename ManagedTokenSource>
 AST::StructPatternElements
 Parser<ManagedTokenSource>::parse_struct_pattern_elems ()
 {
-  std::vector<std::unique_ptr<AST::StructPatternField> > fields;
+  std::vector<std::unique_ptr<AST::StructPatternField>> fields;
 
   std::vector<AST::Attribute> etc_attrs;
   bool has_etc = false;
@@ -11751,7 +11753,7 @@ Parser<ManagedTokenSource>::parse_path_based_stmt_or_expr (
 	lexer.skip_token ();
 
 	// parse actual token trees
-	std::vector<std::unique_ptr<AST::TokenTree> > token_trees;
+	std::vector<std::unique_ptr<AST::TokenTree>> token_trees;
 
 	t3 = lexer.peek_token ();
 	// parse token trees until the initial delimiter token is found again
@@ -12066,7 +12068,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_maybe_semi (
   lexer.skip_token ();
 
   // parse actual token trees
-  std::vector<std::unique_ptr<AST::TokenTree> > token_trees;
+  std::vector<std::unique_ptr<AST::TokenTree>> token_trees;
 
   t3 = lexer.peek_token ();
   // parse token trees until the initial delimiter token is found again
@@ -14218,7 +14220,7 @@ Parser<ManagedTokenSource>::parse_method_call_expr (
     }
 
   // parse method params (if they exist)
-  std::vector<std::unique_ptr<AST::Expr> > params;
+  std::vector<std::unique_ptr<AST::Expr>> params;
 
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () != RIGHT_PAREN)
@@ -14264,7 +14266,7 @@ Parser<ManagedTokenSource>::parse_function_call_expr (
   std::vector<AST::Attribute> outer_attrs, ParseRestrictions)
 {
   // parse function params (if they exist)
-  std::vector<std::unique_ptr<AST::Expr> > params;
+  std::vector<std::unique_ptr<AST::Expr>> params;
 
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () != RIGHT_PAREN)
@@ -14375,7 +14377,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
 	// struct with struct expr fields
 
 	// parse struct expr fields
-	std::vector<std::unique_ptr<AST::StructExprField> > fields;
+	std::vector<std::unique_ptr<AST::StructExprField>> fields;
 
 	while (t->get_id () != RIGHT_CURLY && t->get_id () != DOT_DOT)
 	  {
@@ -14489,7 +14491,7 @@ Parser<ManagedTokenSource>::parse_struct_expr_tuple_partial (
 
   std::vector<AST::Attribute> inner_attrs = parse_inner_attributes ();
 
-  std::vector<std::unique_ptr<AST::Expr> > exprs;
+  std::vector<std::unique_ptr<AST::Expr>> exprs;
 
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () != RIGHT_PAREN)
