@@ -1109,7 +1109,9 @@ public:
     : outer_attrs (std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       internal_elements (std::move (array_elems)), locus (locus)
-  {}
+  {
+    rust_assert (internal_elements != nullptr);
+  }
 
   // Copy constructor requires cloning ArrayElems for polymorphism to hold
   ArrayExpr (ArrayExpr const &other)
@@ -1119,6 +1121,7 @@ public:
   {
     if (other.has_array_elems ())
       internal_elements = other.internal_elements->clone_array_elems ();
+    rust_assert (internal_elements != nullptr);
   }
 
   // Overload assignment operator to clone internal_elements
@@ -1135,6 +1138,7 @@ public:
     else
       internal_elements = nullptr;
 
+    rust_assert (internal_elements != nullptr);
     return *this;
   }
 
