@@ -3113,7 +3113,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 	orig_fundecl = fundecl;
       /* Atomic functions have type checking/casting already done.  They are 
 	 often rewritten and don't match the original parameter list.  */
-      if (name && !strncmp (IDENTIFIER_POINTER (name), "__atomic_", 9))
+      if (name && startswith (IDENTIFIER_POINTER (name), "__atomic_"))
         origtypes = NULL;
     }
   if (TREE_CODE (TREE_TYPE (function)) == FUNCTION_TYPE)
@@ -3199,7 +3199,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 					    nargs, argarray, &arg_loc);
 
   if (name != NULL_TREE
-      && !strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10))
+      && startswith (IDENTIFIER_POINTER (name), "__builtin_"))
     {
       if (require_constant_value)
 	result

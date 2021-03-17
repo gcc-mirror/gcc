@@ -5532,7 +5532,7 @@ is_cxx (const_tree decl)
     {
       const_tree context = get_ultimate_context (decl);
       if (context && TRANSLATION_UNIT_LANGUAGE (context))
-	return strncmp (TRANSLATION_UNIT_LANGUAGE (context), "GNU C++", 7) == 0;
+	return startswith (TRANSLATION_UNIT_LANGUAGE (context), "GNU C++");
     }
   return is_cxx ();
 }
@@ -24846,8 +24846,8 @@ gen_compile_unit_die (const char *filename)
 	    common_lang = TRANSLATION_UNIT_LANGUAGE (t);
 	  else if (strcmp (common_lang, TRANSLATION_UNIT_LANGUAGE (t)) == 0)
 	    ;
-	  else if (strncmp (common_lang, "GNU C", 5) == 0
-		    && strncmp (TRANSLATION_UNIT_LANGUAGE (t), "GNU C", 5) == 0)
+	  else if (startswith (common_lang, "GNU C")
+		    && startswith (TRANSLATION_UNIT_LANGUAGE (t), "GNU C"))
 	    /* Mixing C and C++ is ok, use C++ in that case.  */
 	    common_lang = highest_c_language (common_lang,
 					      TRANSLATION_UNIT_LANGUAGE (t));
@@ -24864,7 +24864,7 @@ gen_compile_unit_die (const char *filename)
     }
 
   language = DW_LANG_C;
-  if (strncmp (language_string, "GNU C", 5) == 0
+  if (startswith (language_string, "GNU C")
       && ISDIGIT (language_string[5]))
     {
       language = DW_LANG_C89;
@@ -24880,7 +24880,7 @@ gen_compile_unit_die (const char *filename)
 	      language = DW_LANG_C11;
 	}
     }
-  else if (strncmp (language_string, "GNU C++", 7) == 0)
+  else if (startswith (language_string, "GNU C++"))
     {
       language = DW_LANG_C_plus_plus;
       if (dwarf_version >= 5 /* || !dwarf_strict */)
@@ -24902,7 +24902,7 @@ gen_compile_unit_die (const char *filename)
     {
       if (strcmp (language_string, "GNU Ada") == 0)
 	language = DW_LANG_Ada95;
-      else if (strncmp (language_string, "GNU Fortran", 11) == 0)
+      else if (startswith (language_string, "GNU Fortran"))
 	{
 	  language = DW_LANG_Fortran95;
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
@@ -24926,7 +24926,7 @@ gen_compile_unit_die (const char *filename)
 	}
     }
   /* Use a degraded Fortran setting in strict DWARF2 so is_fortran works.  */
-  else if (strncmp (language_string, "GNU Fortran", 11) == 0)
+  else if (startswith (language_string, "GNU Fortran"))
     language = DW_LANG_Fortran90;
   /* Likewise for Ada.  */
   else if (strcmp (language_string, "GNU Ada") == 0)

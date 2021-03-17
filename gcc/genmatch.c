@@ -605,10 +605,10 @@ get_operator (const char *id, bool allow_null = false)
       for (unsigned int i = 0; id2[i]; ++i)
 	id2[i] = TOUPPER (id2[i]);
     }
-  else if (all_upper && strncmp (id, "IFN_", 4) == 0)
+  else if (all_upper && startswith (id, "IFN_"))
     /* Try CFN_ instead of IFN_.  */
     id2 = ACONCAT (("CFN_", id + 4, NULL));
-  else if (all_upper && strncmp (id, "BUILT_IN_", 9) == 0)
+  else if (all_upper && startswith (id, "BUILT_IN_"))
     /* Try prepending CFN_.  */
     id2 = ACONCAT (("CFN_", id, NULL));
   else
@@ -2387,7 +2387,7 @@ get_operand_type (id_base *op, unsigned pos,
   else if (*op == COND_EXPR
 	   && pos == 0)
     return "boolean_type_node";
-  else if (strncmp (op->id, "CFN_COND_", 9) == 0)
+  else if (startswith (op->id, "CFN_COND_"))
     {
       /* IFN_COND_* operands 1 and later by default have the same type
 	 as the result.  The type of operand 0 needs to be specified
@@ -2460,7 +2460,7 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
     }
   else if (*opr == COND_EXPR
 	   || *opr == VEC_COND_EXPR
-	   || strncmp (opr->id, "CFN_COND_", 9) == 0)
+	   || startswith (opr->id, "CFN_COND_"))
     {
       /* Conditions are of the same type as their first alternative.  */
       snprintf (optype, sizeof (optype), "TREE_TYPE (_o%d[1])", depth);

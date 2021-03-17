@@ -738,13 +738,9 @@ pointer_query::flush_cache ()
 static bool
 is_builtin_name (const char *name)
 {
-  if (strncmp (name, "__builtin_", 10) == 0)
-    return true;
-  if (strncmp (name, "__sync_", 7) == 0)
-    return true;
-  if (strncmp (name, "__atomic_", 9) == 0)
-    return true;
-  return false;
+  return (startswith (name, "__builtin_")
+	  || startswith (name, "__sync_")
+	  || startswith (name, "__atomic_"));
 }
 
 /* Return true if NODE should be considered for inline expansion regardless

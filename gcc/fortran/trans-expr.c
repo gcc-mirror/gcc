@@ -6847,7 +6847,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       /* When calling __copy for character expressions to unlimited
 	 polymorphic entities, the dst argument needs a string length.  */
       if (sym->name[0] == '_' && e && e->ts.type == BT_CHARACTER
-	  && gfc_str_startswith (sym->name, "__vtab_CHARACTER")
+	  && startswith (sym->name, "__vtab_CHARACTER")
 	  && arg->next && arg->next->expr
 	  && (arg->next->expr->ts.type == BT_DERIVED
 	      || arg->next->expr->ts.type == BT_CLASS)

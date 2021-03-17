@@ -2209,7 +2209,7 @@ has_load_impl (tree clsmeth)
     {
       tree id = METHOD_SEL_NAME (clsmeth);
       if (IDENTIFIER_LENGTH (id) == 4
-	  && strncmp (IDENTIFIER_POINTER (id), "load", 4) == 0)
+	  && startswith (IDENTIFIER_POINTER (id), "load"))
         return true;
       clsmeth = DECL_CHAIN (clsmeth);
     }

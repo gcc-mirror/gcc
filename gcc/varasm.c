@@ -792,7 +792,7 @@ default_function_rodata_section (tree decl, bool relocatable)
       /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo or
 	 .gnu.linkonce.d.rel.ro.local.foo if the jump table is relocatable.  */
       else if (DECL_COMDAT_GROUP (decl)
-	       && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
+	       && startswith (name, ".gnu.linkonce.t."))
 	{
 	  size_t len;
 	  char *rname;
@@ -817,7 +817,7 @@ default_function_rodata_section (tree decl, bool relocatable)
 	}
       /* For .text.foo we want to use .rodata.foo.  */
       else if (flag_function_sections && flag_data_sections
-	       && strncmp (name, ".text.", 6) == 0)
+	       && startswith (name, ".text."))
 	{
 	  size_t len = strlen (name) + 1;
 	  char *rname = (char *) alloca (len + strlen (sname) - 5);
@@ -2509,7 +2509,7 @@ incorporeal_function_p (tree decl)
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
       /* Atomic or sync builtins which have survived this far will be
 	 resolved externally and therefore are not incorporeal.  */
-      if (strncmp (name, "__builtin_", 10) == 0)
+      if (startswith (name, "__builtin_"))
 	return true;
     }
   return false;
@@ -6737,22 +6737,22 @@ default_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_TLS | SECTION_WRITE;
 
   if (strcmp (name, ".bss") == 0
-      || strncmp (name, ".bss.", 5) == 0
-      || strncmp (name, ".gnu.linkonce.b.", 16) == 0
+      || startswith (name, ".bss.")
+      || startswith (name, ".gnu.linkonce.b.")
       || strcmp (name, ".persistent.bss") == 0
       || strcmp (name, ".sbss") == 0
-      || strncmp (name, ".sbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
+      || startswith (name, ".sbss.")
+      || startswith (name, ".gnu.linkonce.sb."))
     flags |= SECTION_BSS;
 
   if (strcmp (name, ".tdata") == 0
-      || strncmp (name, ".tdata.", 7) == 0
-      || strncmp (name, ".gnu.linkonce.td.", 17) == 0)
+      || startswith (name, ".tdata.")
+      || startswith (name, ".gnu.linkonce.td."))
     flags |= SECTION_TLS;
 
   if (strcmp (name, ".tbss") == 0
-      || strncmp (name, ".tbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.tb.", 17) == 0)
+      || startswith (name, ".tbss.")
+      || startswith (name, ".gnu.linkonce.tb."))
     flags |= SECTION_TLS | SECTION_BSS;
 
   if (strcmp (name, ".noinit") == 0)

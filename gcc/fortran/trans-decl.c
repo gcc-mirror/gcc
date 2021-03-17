@@ -1941,7 +1941,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
      Marking this as artificial means that OpenMP will treat this as
      predetermined shared.  */
 
-  bool def_init = gfc_str_startswith (sym->name, "__def_init");
+  bool def_init = startswith (sym->name, "__def_init");
 
   if (sym->attr.vtab || def_init)
     {

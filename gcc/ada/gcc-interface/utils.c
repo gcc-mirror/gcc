@@ -7016,8 +7016,7 @@ def_builtin_1 (enum built_in_function fncode,
     return;
 
   gcc_assert ((!both_p && !fallback_p)
-	      || !strncmp (name, "__builtin_",
-			   strlen ("__builtin_")));
+	      || startswith (name, "__builtin_"));
 
   libname = name + strlen ("__builtin_");
   decl = add_builtin_function (name, fntype, fncode, fnclass,

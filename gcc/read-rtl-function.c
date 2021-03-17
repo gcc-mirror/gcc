@@ -1082,7 +1082,7 @@ function_reader::read_rtx_operand_r (rtx x)
 	 "orig:%i", ORIGINAL_REGNO (rtx).
 	 Consume it, we don't set ORIGINAL_REGNO, since we can
 	 get that from the 2nd copy later.  */
-      if (strncmp (desc, "orig:", 5) == 0)
+      if (startswith (desc, "orig:"))
 	{
 	  expect_original_regno = true;
 	  desc_start += 5;

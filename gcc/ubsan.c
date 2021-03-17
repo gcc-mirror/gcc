@@ -1783,7 +1783,7 @@ ubsan_use_new_style_p (location_t loc)
     return false;
 
   expanded_location xloc = expand_location (loc);
-  if (xloc.file == NULL || strncmp (xloc.file, "\1", 2) == 0
+  if (xloc.file == NULL || startswith (xloc.file, "\1")
       || xloc.file[0] == '\0' || xloc.file[0] == '\xff'
       || xloc.file[1] == '\xff')
     return false;

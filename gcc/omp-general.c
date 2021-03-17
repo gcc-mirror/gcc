@@ -968,7 +968,7 @@ omp_max_simt_vf (void)
   if (ENABLE_OFFLOADING)
     for (const char *c = getenv ("OFFLOAD_TARGET_NAMES"); c;)
       {
-	if (!strncmp (c, "nvptx", strlen ("nvptx")))
+	if (startswith (c, "nvptx"))
 	  return 32;
 	else if ((c = strchr (c, ':')))
 	  c++;

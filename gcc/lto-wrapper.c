@@ -1457,8 +1457,7 @@ run_gcc (unsigned argc, char *argv[])
       int consumed;
       char *filename = argv[i];
 
-      if (strncmp (argv[i], "-foffload-objects=",
-		   sizeof ("-foffload-objects=") - 1) == 0)
+      if (startswith (argv[i], "-foffload-objects="))
 	{
 	  have_offload = true;
 	  offload_objects_file_name
