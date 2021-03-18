@@ -3459,7 +3459,12 @@ process_address_1 (int nop, bool check_only_p,
       constraint
 	= skip_contraint_modifiers (curr_static_id->operand[dup].constraint);
     }
-  cn = lookup_constraint (*constraint == '\0' ? "X" : constraint);
+  if (*skip_contraint_modifiers (constraint
+				 + CONSTRAINT_LEN (constraint[0],
+						   constraint)) != '\0')
+    cn = CONSTRAINT__UNKNOWN;
+  else
+    cn = lookup_constraint (*constraint == '\0' ? "X" : constraint);
   if (insn_extra_address_constraint (cn)
       /* When we find an asm operand with an address constraint that
 	 doesn't satisfy address_operand to begin with, we clear
