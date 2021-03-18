@@ -19770,7 +19770,6 @@ tsubst_copy_and_build (tree t,
 				complain|decltype_flag));
 
     case FIX_TRUNC_EXPR:
-    case FLOAT_EXPR:
       /* convert_like should have created an IMPLICIT_CONV_EXPR.  */
       gcc_unreachable ();
 
