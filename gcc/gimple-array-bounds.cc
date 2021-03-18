@@ -895,7 +895,7 @@ array_bounds_checker::check_addr_expr (location_t location, tree t)
    problems discussed in pr98266 and pr97595.  */
 
 static bool
-inbounds_vbase_memaccess_p (tree t)
+inbounds_memaccess_p (tree t)
 {
   if (TREE_CODE (t) != COMPONENT_REF)
     return false;
@@ -928,10 +928,19 @@ inbounds_vbase_memaccess_p (tree t)
      object by adding its offset computed above to the MEM_REF offset.  */
   tree refoff = TREE_OPERAND (mref, 1);
   tree fldoff = int_const_binop (PLUS_EXPR, fldpos, refoff);
+  /* Return false if the member offset is greater or equal to the size
+     of the complete object.  */
+  if (!tree_int_cst_lt (fldoff, refsize))
+    return false;
 
-  /* Return true if the member offset is less than the size of the complete
-     object.  */
-  return tree_int_cst_lt (fldoff, refsize);
+  tree fldsiz = DECL_SIZE_UNIT (fld);
+  if (!fldsiz || TREE_CODE (fldsiz) != INTEGER_CST)
+    return false;
+
+  /* Return true if the offset just past the end of the member is less
+     than or equal to the size of the complete object.  */
+  tree fldend = int_const_binop (PLUS_EXPR, fldoff, fldsiz);
+  return tree_int_cst_le (fldend, refsize);
 }
 
 /* Callback for walk_tree to check a tree for out of bounds array
@@ -965,7 +974,7 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
       checker->check_addr_expr (location, t);
       *walk_subtree = false;
     }
-  else if (inbounds_vbase_memaccess_p (t))
+  else if (inbounds_memaccess_p (t))
     /* Hack: Skip MEM_REF checks in accesses to a member of a base class
        at an offset that's within the bounds of the enclosing object.
        See pr98266 and pr97595.  */
