@@ -2181,7 +2181,7 @@ construct_restore_jr (rtx op)
   unsigned long int first;
   unsigned long int last;
   int i;
-  static char buff [100]; /* XXX */
+  static char buff [256]; /* XXX */
   
   if (count <= 2)
     {
@@ -2286,7 +2286,7 @@ construct_save_jarl (rtx op)
   unsigned long int first;
   unsigned long int last;
   int i;
-  static char buff [100]; /* XXX */
+  static char buff [255]; /* XXX */
   
   if (count <= (TARGET_LONG_CALLS ? 3 : 2)) 
     {

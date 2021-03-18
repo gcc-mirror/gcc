@@ -1,3 +1,39 @@
+2021-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97973
+	* g++.dg/conversion/real-to-int1.C: New test.
+
+2021-03-17  Anthony Sharp  <anthonysharp15@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1z/using9.C: New using decl test.
+
+2021-03-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-c++-common/asan/strncpy-overflow-1.c: Add _FORTIFY_SOURCE=0 and
+	-gdwarf-3 to the command line options. Adjust the expected line
+	numbers for the revised options header.
+
+2021-03-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-c++-common/asan/memcmp-1.c: Add _FORTIFY_SOURCE=0 and
+	-gdwarf-3 to the command line options.  Provide Darwin-
+	specific match lines for the expected output.
+
+2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/acle/rng_2.c: New test.
+
+2021-03-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99504
+	* gcc.target/i386/pr99530-1.c: New test.
+	* gcc.target/i386/pr99530-2.c: Likewise.
+	* gcc.target/i386/pr99530-3.c: Likewise.
+	* gcc.target/i386/pr99530-4.c: Likewise.
+	* gcc.target/i386/pr99530-5.c: Likewise.
+	* gcc.target/i386/pr99530-6.c: Likewise.
+
 2021-03-16  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/99542

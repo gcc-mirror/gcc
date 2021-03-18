@@ -1,3 +1,44 @@
+2021-03-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* config/nios2/nios2.c (nios2_custom_check_insns): Clean up
+	error message format issues.
+	(nios2_option_override): Likewise.
+	(nios2_expand_fpu_builtin): Likewise.
+	(nios2_init_custom_builtins): Adjust to avoid bogus strncpy
+	truncation warning.
+	(nios2_expand_custom_builtin): More error message format fixes.
+	(nios2_expand_rdwrctl_builtin): Likewise.
+	(nios2_expand_rdprs_builtin): Likewise.
+	(nios2_expand_eni_builtin): Likewise.
+	(nios2_expand_builtin): Likewise.
+	(nios2_register_custom_code): Likewise.
+	(nios2_valid_target_attribute_rec): Likewise.
+	(nios2_add_insn_asm): Fix uninitialized variable warning.
+
+2021-03-17  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/x86-tune-costs.h (struct processor_costs): Update costs
+	of gather to match reality.
+	* config/i386/x86-tune.def (X86_TUNE_USE_GATHER): Enable for znver3.
+
+2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_expand_rng_builtin): Use EQ
+	to compare against CC_REG rather than NE.
+
+2021-03-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99504
+	* config/i386/i386.c (ix86_force_load_from_GOT_p): Support
+	inline assembly statements.
+	(ix86_print_operand): Update 'P' handling for -fno-plt.
+
+2021-03-17  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/99542
+	* config/aarch64/aarch64.c
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): Remove unused var.
+
 2021-03-16  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/98092

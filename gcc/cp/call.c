@@ -8048,6 +8048,27 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
   return expr;
 }
 
+/* Return true if converting FROM to TO is unsafe in a template.  */
+
+static bool
+conv_unsafe_in_template_p (tree to, tree from)
+{
+  /* Converting classes involves TARGET_EXPR.  */
+  if (CLASS_TYPE_P (to) || CLASS_TYPE_P (from))
+    return true;
+
+  /* Converting real to integer produces FIX_TRUNC_EXPR which tsubst
+     doesn't handle.  */
+  if (SCALAR_FLOAT_TYPE_P (from) && INTEGRAL_OR_ENUMERATION_TYPE_P (to))
+    return true;
+
+  /* Converting integer to real isn't a trivial conversion, either.  */
+  if (INTEGRAL_OR_ENUMERATION_TYPE_P (from) && SCALAR_FLOAT_TYPE_P (to))
+    return true;
+
+  return false;
+}
+
 /* Wrapper for convert_like_internal that handles creating
    IMPLICIT_CONV_EXPR.  */
 
@@ -8064,7 +8085,7 @@ convert_like (conversion *convs, tree expr, tree fn, int argnum,
   tree conv_expr = NULL_TREE;
   if (processing_template_decl
       && convs->kind != ck_identity
-      && (CLASS_TYPE_P (convs->type) || CLASS_TYPE_P (TREE_TYPE (expr))))
+      && conv_unsafe_in_template_p (convs->type, TREE_TYPE (expr)))
     {
       conv_expr = build1 (IMPLICIT_CONV_EXPR, convs->type, expr);
       if (convs->kind != ck_ref_bind)

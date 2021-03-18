@@ -1035,7 +1035,10 @@ static const struct tune_params generic_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  /* Enabling AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS significantly benefits
+     Neoverse V1.  It does not have a noticeable effect on A64FX and should
+     have at most a very minor effect on SVE2 cores.  */
+  (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -14485,6 +14488,19 @@ aarch64_parse_override_string (const char* input_string,
   free (string_root);
 }
 
+/* Adjust CURRENT_TUNE (a generic tuning struct) with settings that
+   are best for a generic target with the currently-enabled architecture
+   extensions.  */
+static void
+aarch64_adjust_generic_arch_tuning (struct tune_params &current_tune)
+{
+  /* Neoverse V1 is the only core that is known to benefit from
+     AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS.  There is therefore no
+     point enabling it for SVE2 and above.  */
+  if (TARGET_SVE2)
+    current_tune.extra_tuning_flags
+      &= ~AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS;
+}
 
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
@@ -14555,6 +14571,8 @@ aarch64_override_options_internal (struct gcc_options *opts)
      we may later overwrite.  */
   aarch64_tune_params = *(selected_tune->tune);
   aarch64_architecture_version = selected_arch->architecture_version;
+  if (selected_tune->tune == &generic_tunings)
+    aarch64_adjust_generic_arch_tuning (aarch64_tune_params);
 
   if (opts->x_aarch64_override_tune_string)
     aarch64_parse_override_string (opts->x_aarch64_override_tune_string,

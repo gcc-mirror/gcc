@@ -1741,13 +1741,11 @@ struct processor_costs znver3_cost = {
    COSTS_N_INSNS (3)},			/*			other.  */
   0,					/* cost of multiply per each bit
 					   set.  */
-   /* Depending on parameters, idiv can get faster on ryzen.  This is upper
-      bound.  */
-  {COSTS_N_INSNS (16),			/* cost of a divide/mod for QI.  */
-   COSTS_N_INSNS (22),			/* 			    HI.  */
-   COSTS_N_INSNS (30),			/*			    SI.  */
-   COSTS_N_INSNS (45),			/*			    DI.  */
-   COSTS_N_INSNS (45)},			/*			    other.  */
+  {COSTS_N_INSNS (9),			/* cost of a divide/mod for QI.  */
+   COSTS_N_INSNS (10),			/* 			    HI.  */
+   COSTS_N_INSNS (12),			/*			    SI.  */
+   COSTS_N_INSNS (17),			/*			    DI.  */
+   COSTS_N_INSNS (17)},			/*			    other.  */
   COSTS_N_INSNS (1),			/* cost of movsx.  */
   COSTS_N_INSNS (1),			/* cost of movzx.  */
   8,					/* "large" insn.  */
@@ -1767,11 +1765,11 @@ struct processor_costs znver3_cost = {
   2, 2, 3,				/* cost of moving XMM,YMM,ZMM
 					   register.  */
   6,					/* cost of moving SSE register to integer.  */
-  /* VGATHERDPD is 23 uops and throughput is 9, VGATHERDPD is 35 uops,
-     throughput 12.  Approx 9 uops do not depend on vector size and every load
-     is 7 uops.  */
-  18, 8,				/* Gather load static, per_elt.  */
-  18, 10,				/* Gather store static, per_elt.  */
+  /* VGATHERDPD is 15 uops and throughput is 4, VGATHERDPS is 23 uops,
+     throughput 9.  Approx 7 uops do not depend on vector size and every load
+     is 4 uops.  */
+  14, 8,				/* Gather load static, per_elt.  */
+  14, 10,				/* Gather store static, per_elt.  */
   32,					/* size of l1 cache.  */
   512,					/* size of l2 cache.  */
   64,					/* size of prefetch block.  */

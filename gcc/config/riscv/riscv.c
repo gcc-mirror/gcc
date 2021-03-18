@@ -3146,9 +3146,9 @@ riscv_legitimize_call_address (rtx addr)
    Assume that the areas do not overlap.  */
 
 static void
-riscv_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
+riscv_block_move_straight (rtx dest, rtx src, unsigned HOST_WIDE_INT length)
 {
-  HOST_WIDE_INT offset, delta;
+  unsigned HOST_WIDE_INT offset, delta;
   unsigned HOST_WIDE_INT bits;
   int i;
   enum machine_mode mode;
@@ -3194,8 +3194,8 @@ riscv_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
    register.  Store them in *LOOP_REG and *LOOP_MEM respectively.  */
 
 static void
-riscv_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
-		       rtx *loop_reg, rtx *loop_mem)
+riscv_adjust_block_mem (rtx mem, unsigned HOST_WIDE_INT length,
+			rtx *loop_reg, rtx *loop_mem)
 {
   *loop_reg = copy_addr_to_reg (XEXP (mem, 0));
 
@@ -3210,11 +3210,11 @@ riscv_adjust_block_mem (rtx mem, HOST_WIDE_INT length,
    the memory regions do not overlap.  */
 
 static void
-riscv_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
-		      HOST_WIDE_INT bytes_per_iter)
+riscv_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
+		       unsigned HOST_WIDE_INT bytes_per_iter)
 {
   rtx label, src_reg, dest_reg, final_src, test;
-  HOST_WIDE_INT leftover;
+  unsigned HOST_WIDE_INT leftover;
 
   leftover = length % bytes_per_iter;
   length -= leftover;
@@ -3259,18 +3259,19 @@ riscv_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
 bool
 riscv_expand_block_move (rtx dest, rtx src, rtx length)
 {
+  unsigned HOST_WIDE_INT hwi_length = UINTVAL (length);
   if (CONST_INT_P (length))
     {
-      HOST_WIDE_INT factor, align;
+      unsigned HOST_WIDE_INT factor, align;
 
       align = MIN (MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), BITS_PER_WORD);
       factor = BITS_PER_WORD / align;
 
       if (optimize_function_for_size_p (cfun)
-	  && INTVAL (length) * factor * UNITS_PER_WORD > MOVE_RATIO (false))
+	  && hwi_length * factor * UNITS_PER_WORD > MOVE_RATIO (false))
 	return false;
 
-      if (INTVAL (length) <= RISCV_MAX_MOVE_BYTES_STRAIGHT / factor)
+      if (hwi_length <= (RISCV_MAX_MOVE_BYTES_STRAIGHT / factor))
 	{
 	  riscv_block_move_straight (dest, src, INTVAL (length));
 	  return true;
@@ -3280,7 +3281,8 @@ riscv_expand_block_move (rtx dest, rtx src, rtx length)
 	  unsigned min_iter_words
 	    = RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD;
 	  unsigned iter_words = min_iter_words;
-	  HOST_WIDE_INT bytes = INTVAL (length), words = bytes / UNITS_PER_WORD;
+	  unsigned HOST_WIDE_INT bytes = hwi_length;
+	  unsigned HOST_WIDE_INT words = bytes / UNITS_PER_WORD;
 
 	  /* Lengthen the loop body if it shortens the tail.  */
 	  for (unsigned i = min_iter_words; i < min_iter_words * 2 - 1; i++)

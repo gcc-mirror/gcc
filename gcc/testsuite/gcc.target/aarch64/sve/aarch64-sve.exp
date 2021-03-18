@@ -44,6 +44,10 @@ if { [check_effective_target_aarch64_sve] } {
     set sve_flags "-march=armv8.2-a+sve"
 }
 
+# Turn off any codegen tweaks by default that may affect expected assembly.
+# Tests relying on those should turn them on explicitly.
+set sve_flags "$sve_flags -moverride=tune=none"
+
 # Most of the code-quality tests are written for LP64.  Just do the
 # correctness tests for ILP32.
 if { [check_effective_target_ilp32] } {

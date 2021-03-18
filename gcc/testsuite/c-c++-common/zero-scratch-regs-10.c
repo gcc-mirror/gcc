@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-skip-if "not implemented" { powerpc*-*-* } } */
+/* { dg-skip-if "not implemented" { arm*-*-* } } */
 /* { dg-options "-O2" } */
 
 #include <assert.h>

@@ -700,6 +700,7 @@ typedef enum
 /* Use dwarf2 debugging info by default.  */
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE   DWARF2_DEBUG
+#define DWARF2_DEBUGGING_INFO	   1
 
 #define DWARF2_FRAME_INFO          1
 #define DWARF2_UNWIND_INFO         0
