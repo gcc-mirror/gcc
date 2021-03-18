@@ -77,15 +77,12 @@ public:
     auto expected_ret_tyty = resolve_fn_type->get_return_type ();
     context->push_return_type (expected_ret_tyty);
 
-    auto result
+    auto block_expr_ty
       = TypeCheckExpr::Resolve (function.get_definition ().get (), false);
-    auto ret_resolved = expected_ret_tyty->unify (result);
-    if (ret_resolved == nullptr)
-      return;
-
-    context->peek_return_type ()->append_reference (ret_resolved->get_ref ());
 
     context->pop_return_type ();
+
+    expected_ret_tyty->unify (block_expr_ty);
   }
 
 private:
