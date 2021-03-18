@@ -207,3 +207,16 @@ rust_debug (const Location location, const char *fmt, ...)
   free (mbuf);
   rust_be_inform (location, rval);
 }
+
+namespace Rust {
+Error::Error (const Location location, const char *fmt, ...) : locus (location)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  message = expand_message (fmt, ap);
+  va_end (ap);
+
+  message.shrink_to_fit ();
+}
+} // namespace Rust

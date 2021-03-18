@@ -19,6 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "rust-lex.h"
 #include "rust-ast-full.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 /* HACK: used to resolve the expression-or-statement problem at the end of a
@@ -616,6 +617,8 @@ private:
   bool done_end_or_else ();
   bool done_end_of_file ();
 
+  void add_error (Error error) { error_table.push_back (std::move (error)); }
+
 public:
   // Construct parser with specified "managed" token source.
   Parser (ManagedTokenSource tokenSource) : lexer (std::move (tokenSource)) {}
@@ -627,9 +630,14 @@ public:
   void debug_dump_lex_output (std::ostream &out);
   void debug_dump_ast_output (AST::Crate &crate, std::ostream &out);
 
+  // Returns whether any parsing errors have occurred.
+  bool has_errors () const { return !error_table.empty (); }
+
 private:
   // The token source (usually lexer) associated with the parser.
   ManagedTokenSource lexer;
+  // The error list.
+  std::vector<Error> error_table;
 };
 } // namespace Rust
 
