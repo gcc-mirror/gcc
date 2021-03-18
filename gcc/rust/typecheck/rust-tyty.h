@@ -57,7 +57,12 @@ public:
 
   HirId get_ref () const { return ref; }
 
-  void set_ref (HirId id) { ref = id; }
+  void set_ref (HirId id)
+  {
+    if (id != ref)
+      append_reference (ref);
+    ref = id;
+  }
 
   HirId get_ty_ref () const { return ty_ref; }
 
