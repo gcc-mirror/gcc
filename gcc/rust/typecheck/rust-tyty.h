@@ -101,6 +101,24 @@ public:
 
   virtual bool has_subsititions_defined () const { return false; }
 
+  std::string mappings_str () const
+  {
+    std::string buffer = "Ref: " + std::to_string (get_ref ())
+			 + " TyRef: " + std::to_string (get_ty_ref ());
+    buffer += "[";
+    for (auto &ref : combined)
+      buffer += std::to_string (ref) + ",";
+    buffer += "]";
+    return "(" + buffer + ")";
+  }
+
+  std::string debug_str () const
+  {
+    return as_string () + ":" + mappings_str ();
+  }
+
+  void debug () const { printf ("%s\n", debug_str ().c_str ()); }
+
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind,
 	    std::set<HirId> refs = std::set<HirId> ())
