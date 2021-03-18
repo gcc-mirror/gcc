@@ -1,3 +1,66 @@
+2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_expand_rng_builtin): Use EQ
+	to compare against CC_REG rather than NE.
+
+2021-03-17  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-03-05  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/98078
+	* cgraph.c (cgraph_edge::set_call_stmt): Do not update all
+	corresponding speculative edges if we are about to resolve
+	speculation.  Make edge direct (and so resolve speculations) before
+	removing it from call_site_hash.
+	(cgraph_edge::make_direct): Relax the initial assert to allow calling
+	the function on speculative direct edges.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98758
+	* tree-data-ref.c (int_divides_p): Use lambda_int arguments.
+	(lambda_matrix_right_hermite): Avoid undefinedness with
+	signed integer abs and multiplication.
+	(analyze_subscript_affine_affine): Use lambda_int.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98282
+	* tree-ssa-sccvn.c (vn_get_stmt_kind): Classify tcc_reference on
+	invariants as VN_NARY.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98117
+	* tree-vect-loop-manip.c (vect_gen_vector_loop_niters):
+	Properly handle degenerate niter when setting the vector
+	loop IV range.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93964
+	* graphite-isl-ast-to-gimple.c
+	(gcc_expression_from_isl_ast_expr_id): Add intermediate
+	conversion for pointer to integer converts.
+	* graphite-scop-detection.c (assign_parameter_index_in_region):
+	Relax assert.
+
 2021-03-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/85074

@@ -1,3 +1,42 @@
+2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/acle/rng_2.c: New test.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-03-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98758
+	* gcc.dg/torture/pr98758.c: New testcase.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98282
+	* g++.dg/opt/pr98282.C: New testcase.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98117
+	* gcc.dg/torture/pr98117.c: New testcase.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-03-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93964
+	* gcc.dg/graphite/pr93964.c: New testcase.
+
 2021-03-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
