@@ -1,3 +1,10 @@
+2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/acle/rng_2.c: New test.
+
 2021-03-16  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

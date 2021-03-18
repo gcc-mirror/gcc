@@ -1,3 +1,16 @@
+2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_expand_rng_builtin): Use EQ
+	to compare against CC_REG rather than NE.
+
+2021-03-17  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_mma_builtin): Handle
+	disassembling a vector pair vector by vector in little-endian mode.
+
 2021-03-16  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
