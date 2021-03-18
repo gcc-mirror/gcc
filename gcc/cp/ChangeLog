@@ -1,3 +1,18 @@
+2021-03-17  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97973
+	* call.c (conv_unsafe_in_template_p): New.
+	(convert_like): Use it.
+
+2021-03-17  Anthony Sharp  <anthonysharp15@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	* semantics.c (get_class_access_diagnostic_decl): New
+	function that examines special cases when a parent
+	class causes a private access failure.
+	(enforce_access): Slightly modified to call function
+	above.
+
 2021-03-16  Jason Merrill  <jason@redhat.com>
 
 	* tree.c (cp_tree_equal): Use real_identical.
