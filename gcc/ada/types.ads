@@ -837,9 +837,10 @@ package Types is
    -- Floating Point Representation --
    -----------------------------------
 
-   type Float_Rep_Kind is (
-      IEEE_Binary,  -- IEEE 754p conforming binary format
-      AAMP);        -- AAMP format
+   type Float_Rep_Kind is (IEEE_Binary);
+   --  The only one supported now is IEEE 754p conforming binary format, but
+   --  other formats were supported in the past, and could conceivably be
+   --  supported in the future, so we keep this singleton enumeration type.
 
    ----------------------------
    -- Small_Paren_Count_Type --

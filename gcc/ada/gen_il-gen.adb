@@ -831,7 +831,7 @@ package body Gen_IL.Gen is
 
       function Field_Size (T : Type_Enum) return Bit_Offset is
         (case T is
-          when Flag | Float_Rep_Kind => 1,
+          when Flag => 1,
 
           when Small_Paren_Count_Type | Component_Alignment_Kind => 2,
 

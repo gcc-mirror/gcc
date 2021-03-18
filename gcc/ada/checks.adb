@@ -5615,6 +5615,10 @@ package body Checks is
 
       --  If type is not defined, we can't determine its range
 
+      pragma Warnings (Off, "condition can only be True if invalid");
+      --  Otherwise the compiler warns on the check of Float_Rep below, because
+      --  there is only one value (see types.ads).
+
       if No (Typ)
 
         --  We don't deal with anything except IEEE floating-point types
@@ -5628,6 +5632,7 @@ package body Checks is
 
         or else Error_Posted (N) or else Error_Posted (Typ)
       then
+         pragma Warnings (On, "condition can only be True if invalid");
          OK := False;
          return;
       end if;

@@ -1379,7 +1379,6 @@ begin
          | Pragma_Export_Function
          | Pragma_Export_Object
          | Pragma_Export_Procedure
-         | Pragma_Export_Value
          | Pragma_Export_Valued_Procedure
          | Pragma_Extend_System
          | Pragma_Extensions_Visible
@@ -1523,7 +1522,6 @@ begin
          | Pragma_Unevaluated_Use_Of_Old
          | Pragma_Unimplemented_Unit
          | Pragma_Universal_Aliasing
-         | Pragma_Universal_Data
          | Pragma_Unmodified
          | Pragma_Unreferenced
          | Pragma_Unreferenced_Objects

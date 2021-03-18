@@ -2799,8 +2799,8 @@ package Einfo is
 
 --    Is_Interrupt_Handler
 --       Defined in procedures. Set if a pragma Interrupt_Handler applies
---       to the procedure. The procedure must be parameterless, and on all
---       targets except AAMP it must be a protected procedure.
+--       to the procedure. The procedure must be a parameterless protected
+--       procedure.
 
 --    Is_Intrinsic_Subprogram
 --       Defined in functions and procedures. It is set if a valid pragma

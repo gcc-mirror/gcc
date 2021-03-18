@@ -547,7 +547,6 @@ package Gen_IL.Fields is
       First_Literal,
       First_Private_Entity,
       First_Rep_Item,
-      Float_Rep,
       Freeze_Node,
       From_Limited_With,
       Full_View,

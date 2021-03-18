@@ -13591,7 +13591,8 @@ package body Sem_Ch13 is
       Address_Clause_Checks.Init;
       Unchecked_Conversions.Init;
 
-      --  ??? Might be needed in the future for some non GCC back-ends
+      --  The following might be needed in the future for some non-GCC back
+      --  ends:
       --  if AAMP_On_Target then
       --     Independence_Checks.Init;
       --  end if;

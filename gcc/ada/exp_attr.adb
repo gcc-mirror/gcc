@@ -7092,9 +7092,9 @@ package body Exp_Attr is
             --  Start of processing for Float_Valid
 
             begin
-               --  The C and AAMP back-ends handle Valid for fpt types
+               --  The C back end handles Valid for floating-point types
 
-               if Modify_Tree_For_C or else Float_Rep (PBtyp) = AAMP then
+               if Modify_Tree_For_C then
                   Analyze_And_Resolve (Pref, Ptyp);
                   Set_Etype (N, Standard_Boolean);
                   Set_Analyzed (N);

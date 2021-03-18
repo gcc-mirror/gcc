@@ -280,7 +280,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (RM_Size, Uint),
         Sm (Extra_Formal, Node_Id),
         Sm (First_Entity, Node_Id),
-        Sm (Float_Rep, Float_Rep_Kind, Base_Type_Only),
         Sm (Generic_Homonym, Node_Id),
         Sm (Generic_Renamings, Elist_Id),
         Sm (Handler_Records, List_Id),
@@ -659,8 +658,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  first named subtype).
 
    Ab (Float_Kind, Real_Kind,
-       (Sm (Digits_Value, Uint),
-        Sm (Float_Rep, Float_Rep_Kind, Base_Type_Only)));
+       (Sm (Digits_Value, Uint)));
 
    Cc (E_Floating_Point_Type, Float_Kind);
        --  Floating point type, used for the anonymous base type of the

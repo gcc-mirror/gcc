@@ -10884,8 +10884,8 @@ package body Sem_Prag is
       procedure Record_Independence_Check (N : Node_Id; E : Entity_Id) is
          pragma Unreferenced (N, E);
       begin
-         --  For GCC back ends the validation is done a priori
-         --  ??? This code is dead, might be useful in the future
+         --  For GCC back ends the validation is done a priori. This code is
+         --  dead, but might be useful in the future.
 
          --  if not AAMP_On_Target then
          --     return;
@@ -16333,25 +16333,6 @@ package body Sem_Prag is
               Arg_Parameter_Types => Parameter_Types,
               Arg_Mechanism       => Mechanism);
          end Export_Procedure;
-
-         ------------------
-         -- Export_Value --
-         ------------------
-
-         --  pragma Export_Value (
-         --     [Value     =>] static_integer_EXPRESSION,
-         --     [Link_Name =>] static_string_EXPRESSION);
-
-         when Pragma_Export_Value =>
-            GNAT_Pragma;
-            Check_Arg_Order ((Name_Value, Name_Link_Name));
-            Check_Arg_Count (2);
-
-            Check_Optional_Identifier (Arg1, Name_Value);
-            Check_Arg_Is_OK_Static_Expression (Arg1, Any_Integer);
-
-            Check_Optional_Identifier (Arg2, Name_Link_Name);
-            Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);
 
          -----------------------------
          -- Export_Valued_Procedure --
@@ -24977,16 +24958,6 @@ package body Sem_Prag is
             Record_Rep_Item (E, N);
          end Universal_Alias;
 
-         --------------------
-         -- Universal_Data --
-         --------------------
-
-         --  pragma Universal_Data [(library_unit_NAME)];
-
-         when Pragma_Universal_Data =>
-            GNAT_Pragma;
-            Error_Pragma ("??pragma% ignored (applies only to AAMP)");
-
          ----------------
          -- Unmodified --
          ----------------
@@ -31258,7 +31229,6 @@ package body Sem_Prag is
       Pragma_Export_Function                => -1,
       Pragma_Export_Object                  => -1,
       Pragma_Export_Procedure               => -1,
-      Pragma_Export_Value                   => -1,
       Pragma_Export_Valued_Procedure        => -1,
       Pragma_Extend_System                  => -1,
       Pragma_Extensions_Allowed             =>  0,
@@ -31413,7 +31383,6 @@ package body Sem_Prag is
       Pragma_Unevaluated_Use_Of_Old         =>  0,
       Pragma_Unimplemented_Unit             =>  0,
       Pragma_Universal_Aliasing             =>  0,
-      Pragma_Universal_Data                 =>  0,
       Pragma_Unmodified                     =>  0,
       Pragma_Unreferenced                   =>  0,
       Pragma_Unreferenced_Objects           =>  0,

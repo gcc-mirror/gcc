@@ -60,26 +60,12 @@ package body System.Scalar_Values is
       EFloat : constant Boolean := Long_Long_Float'Size > Long_Float'Size;
       --  Set True if we are on an x86 with 96-bit floats for extended
 
-      AFloat : constant Boolean :=
-                 Long_Float'Size = 48 and then Long_Long_Float'Size = 48;
-      --  Set True if we are on an AAMP with 48-bit extended floating point
-
-      type ByteLF is array (0 .. 7 - 2 * Boolean'Pos (AFloat)) of Byte1;
+      type ByteLF is array (0 .. 7) of Byte1;
 
       for ByteLF'Component_Size use 8;
-
-      --  Type used to hold Long_Float values on all targets and to initialize
-      --  48-bit Long_Float values used on AAMP. On AAMP, this type is 6 bytes.
-      --  On other targets the type is 8 bytes, and type Byte8 is used for
-      --  values that are then converted to ByteLF.
-
-      pragma Warnings (Off); --  why ???
       function To_ByteLF is new Ada.Unchecked_Conversion (Byte8, ByteLF);
-      pragma Warnings (On);
 
-      type ByteLLF is
-        array (0 .. 7 + 4 * Boolean'Pos (EFloat) - 2 * Boolean'Pos (AFloat))
-          of Byte1;
+      type ByteLLF is array (0 .. 7 + 4 * Boolean'Pos (EFloat)) of Byte1;
 
       for ByteLLF'Component_Size use 8;
 
@@ -189,16 +175,9 @@ package body System.Scalar_Values is
          IS_Iz8  := 16#0000_0000_0000_0000#;
          IS_Iz16 := 16#0000_0000_0000_0000_0000_0000_0000_0000#;
 
-         if AFloat then
-            IV_Isf := 16#FFFF_FF00#;
-            IV_Ifl := 16#FFFF_FF00#;
-            IV_Ilf := (0, 16#FF#, 16#FF#, 16#FF#, 16#FF#, 16#FF#);
-
-         else
-            IV_Isf := IS_Iu4;
-            IV_Ifl := IS_Iu4;
-            IV_Ilf := To_ByteLF (IS_Iu8);
-         end if;
+         IV_Isf := IS_Iu4;
+         IV_Ifl := IS_Iu4;
+         IV_Ilf := To_ByteLF (IS_Iu8);
 
          if EFloat then
             IV_Ill := (0, 0, 0, 0, 0, 0, 0, 16#C0#, 16#FF#, 16#FF#, 0, 0);
@@ -225,16 +204,9 @@ package body System.Scalar_Values is
          IS_Iz8  := 16#0000_0000_0000_0000#;
          IS_Iz16 := 16#0000_0000_0000_0000_0000_0000_0000_0000#;
 
-         if AFloat then
-            IV_Isf := 16#0000_0001#;
-            IV_Ifl := 16#0000_0001#;
-            IV_Ilf := (1, 0, 0, 0, 0, 0);
-
-         else
-            IV_Isf := 16#FF80_0000#;
-            IV_Ifl := 16#FF80_0000#;
-            IV_Ilf := To_ByteLF (16#FFF0_0000_0000_0000#);
-         end if;
+         IV_Isf := 16#FF80_0000#;
+         IV_Ifl := 16#FF80_0000#;
+         IV_Ilf := To_ByteLF (16#FFF0_0000_0000_0000#);
 
          if EFloat then
             IV_Ill := (0, 0, 0, 0, 0, 0, 0, 16#80#, 16#FF#, 16#FF#, 0, 0);
@@ -261,16 +233,9 @@ package body System.Scalar_Values is
          IS_Iz8  := 16#FFFF_FFFF_FFFF_FFFF#;
          IS_Iz16 := 16#FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF#;
 
-         if AFloat then
-            IV_Isf := 16#7FFF_FFFF#;
-            IV_Ifl := 16#7FFF_FFFF#;
-            IV_Ilf := (16#FF#, 16#FF#, 16#FF#, 16#FF#, 16#FF#, 16#7F#);
-
-         else
-            IV_Isf := 16#7F80_0000#;
-            IV_Ifl := 16#7F80_0000#;
-            IV_Ilf := To_ByteLF (16#7FF0_0000_0000_0000#);
-         end if;
+         IV_Isf := 16#7F80_0000#;
+         IV_Ifl := 16#7F80_0000#;
+         IV_Ilf := To_ByteLF (16#7FF0_0000_0000_0000#);
 
          if EFloat then
             IV_Ill := (0, 0, 0, 0, 0, 0, 0, 16#80#, 16#FF#, 16#7F#, 0, 0);
@@ -313,11 +278,7 @@ package body System.Scalar_Values is
          IV_Isf := IS_Is4;
          IV_Ifl := IS_Is4;
 
-         if AFloat then
-            IV_Ill := (B, B, B, B, B, B);
-         else
-            IV_Ilf := To_ByteLF (IS_Is8);
-         end if;
+         IV_Ilf := To_ByteLF (IS_Is8);
 
          if EFloat then
             IV_Ill := (B, B, B, B, B, B, B, B, B, B, B, B);
@@ -329,7 +290,7 @@ package body System.Scalar_Values is
 
       if not EFloat then
          declare
-            pragma Warnings (Off);  -- why???
+            pragma Warnings (Off); -- because sizes don't match
             function To_ByteLLF is
               new Ada.Unchecked_Conversion (ByteLF, ByteLLF);
             pragma Warnings (On);

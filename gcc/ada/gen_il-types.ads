@@ -65,7 +65,6 @@ package Gen_IL.Types is
       Convention_Id,
 
       Component_Alignment_Kind,
-      Float_Rep_Kind,
       Mechanism_Type,
 
       Between_Special_And_Abstract_Node_Types,
