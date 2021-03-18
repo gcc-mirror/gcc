@@ -44,6 +44,10 @@ if { [check_effective_target_aarch64_sve] } {
     set sve_flags "-march=armv8.2-a+sve"
 }
 
+# Turn off any codegen tweaks by default that may affect expected assembly.
+# Tests relying on those should turn them on explicitly.
+set sve_flags "$sve_flags -moverride=tune=none"
+
 # Main loop.
 set files [glob -nocomplain \
 	       "$srcdir/$subdir/general/*.c" \
