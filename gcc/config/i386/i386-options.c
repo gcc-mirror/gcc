@@ -1768,6 +1768,7 @@ ix86_init_machine_status (void)
   f = ggc_cleared_alloc<machine_function> ();
   f->call_abi = ix86_abi;
   f->stack_frame_required = true;
+  f->silent_p = true;
 
   return f;
 }

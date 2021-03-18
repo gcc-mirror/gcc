@@ -2945,6 +2945,10 @@ struct GTY(()) machine_function {
      function.  */
   BOOL_BITFIELD has_explicit_vzeroupper : 1;
 
+  /* True if we should act silently, rather than raise an error for
+     invalid calls.  */
+  BOOL_BITFIELD silent_p : 1;
+
   /* The largest alignment, in bytes, of stack slot actually used.  */
   unsigned int max_used_stack_alignment;
 

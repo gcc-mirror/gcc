@@ -1705,6 +1705,10 @@ init_cumulative_args (CUMULATIVE_ARGS *cum,  /* Argument info to initialize */
   struct cgraph_node *local_info_node = NULL;
   struct cgraph_node *target = NULL;
 
+  /* Set silent_p to false to raise an error for invalid calls when
+     expanding function body.  */
+  cfun->machine->silent_p = false;
+
   memset (cum, 0, sizeof (*cum));
 
   if (fndecl)
@@ -2534,6 +2538,10 @@ construct_container (machine_mode mode, machine_mode orig_mode,
      some less clueful developer tries to use floating-point anyway.  */
   if (needed_sseregs && !TARGET_SSE)
     {
+      /* Return early if we shouldn't raise an error for invalid
+	 calls.  */
+      if (cfun->machine->silent_p)
+	return NULL;
       if (in_return)
 	{
 	  if (!issued_sse_ret_error)
@@ -2558,6 +2566,10 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	  || regclass[i] == X86_64_X87UP_CLASS
 	  || regclass[i] == X86_64_COMPLEX_X87_CLASS)
 	{
+	  /* Return early if we shouldn't raise an error for invalid
+	     calls.  */
+	  if (cfun->machine->silent_p)
+	    return NULL;
 	  if (!issued_x87_ret_error)
 	    {
 	      error ("x87 register return with x87 disabled");
