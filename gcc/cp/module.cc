@@ -279,11 +279,6 @@ static inline tree identifier (const cpp_hashnode *node)
   return HT_IDENT_TO_GCC_IDENT (HT_NODE (const_cast<cpp_hashnode *> (node)));
 }
 
-/* During duplicate detection we need to tell some comparators that
-   these are equivalent.  */
-tree map_context_from;
-tree map_context_to;
-
 /* Id for dumping module information.  */
 int module_dump_id;
 
@@ -8074,16 +8069,6 @@ trees_in::decl_value ()
 
       if (spec.spec)
 	set_constraints (decl, spec.spec);
-      if (mk & MK_template_mask
-	  || mk == MK_partial)
-	{
-	  /* Add to specialization tables now that constraints etc are
-	     added.  */
-	  bool is_type = mk == MK_partial || !(mk & MK_tmpl_decl_mask);
-
-	  spec.spec = is_type ? type : mk & MK_tmpl_tmpl_mask ? inner : decl;
-	  add_mergeable_specialization (!is_type, &spec, decl, spec_flags);
-	}
 
       if (TREE_CODE (decl) == INTEGER_CST && !TREE_OVERFLOW (decl))
 	{
@@ -8111,27 +8096,24 @@ trees_in::decl_value ()
 	/* Set the TEMPLATE_DECL's type.  */
 	TREE_TYPE (decl) = TREE_TYPE (inner);
 
+      if (mk & MK_template_mask
+	  || mk == MK_partial)
+	{
+	  /* Add to specialization tables now that constraints etc are
+	     added.  */
+	  bool is_type = mk == MK_partial || !(mk & MK_tmpl_decl_mask);
+
+	  spec.spec = is_type ? type : mk & MK_tmpl_tmpl_mask ? inner : decl;
+	  add_mergeable_specialization (!is_type,
+					!is_type && mk & MK_tmpl_alias_mask,
+					&spec, decl, spec_flags);
+	}
+
       if (NAMESPACE_SCOPE_P (decl)
 	  && (mk == MK_named || mk == MK_unique
 	      || mk == MK_enum || mk == MK_friend_spec)
 	  && !(VAR_OR_FUNCTION_DECL_P (decl) && DECL_LOCAL_DECL_P (decl)))
 	add_module_namespace_decl (CP_DECL_CONTEXT (decl), decl);
-
-      /* The late insertion of an alias here or an implicit member
-         (next block), is ok, because we ensured that all imports were
-         loaded up before we started this cluster.  Thus an insertion
-         from some other import cannot have happened between the
-         merged insertion above and these insertions down here.  */
-      if (mk == MK_alias_spec)
-	{
-	  /* Insert into type table.  */
-	  tree ti = DECL_TEMPLATE_INFO (inner);
-	  spec_entry elt = 
-	    {TI_TEMPLATE (ti), TI_ARGS (ti), TREE_TYPE (inner)};
-	  tree texist = match_mergeable_specialization (false, &elt);
-	  if (texist)
-	    set_overrun ();
-	}
 
       if (DECL_ARTIFICIAL (decl)
 	  && TREE_CODE (decl) == FUNCTION_DECL
@@ -8176,6 +8158,14 @@ trees_in::decl_value ()
       if (!is_matching_decl (existing, decl, is_typedef))
 	unmatched_duplicate (existing);
 
+      if (inner && TREE_CODE (inner) == FUNCTION_DECL)
+	{
+	  tree e_inner = STRIP_TEMPLATE (existing);
+	  for (auto parm = DECL_ARGUMENTS (inner);
+	       parm; parm = DECL_CHAIN (parm))
+	    DECL_CONTEXT (parm) = e_inner;
+	}
+
       /* And our result is the existing node.  */
       decl = existing;
     }
@@ -8186,7 +8176,7 @@ trees_in::decl_value ()
       if (!e)
 	{
 	  spec.spec = inner;
-	  add_mergeable_specialization (true, &spec, decl, spec_flags);
+	  add_mergeable_specialization (true, false, &spec, decl, spec_flags);
 	}
       else if (e != existing)
 	set_overrun ();
@@ -10378,8 +10368,9 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    {
 	      if (mk & MK_tmpl_alias_mask)
 		/* It should be in both tables.  */
-		gcc_assert (match_mergeable_specialization (false, entry)
-			    == TREE_TYPE (existing));
+		gcc_checking_assert
+		  (match_mergeable_specialization (false, entry)
+		   == TREE_TYPE (existing));
 	      else if (mk & MK_tmpl_tmpl_mask)
 		existing = DECL_TI_TEMPLATE (existing);
 	    }
@@ -10392,7 +10383,7 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    }
 
 	  /* The walkabout should have found ourselves.  */
-	  gcc_assert (existing == decl);
+	  gcc_checking_assert (existing == decl);
 	}
     }
   else if (mk != MK_unique)
@@ -10622,8 +10613,6 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 	  break;
 
 	case FUNCTION_DECL:
-	  map_context_from = d_inner;
-	  map_context_to = m_inner;
 	  if (tree m_type = TREE_TYPE (m_inner))
 	    if ((!key.ret
 		 || same_type_p (key.ret, fndecl_declared_return_type (m_inner)))
@@ -10647,7 +10636,6 @@ check_mergeable_decl (merge_kind mk, tree decl, tree ovl, merge_key const &key)
 		if (cp_tree_equal (key.constraints, m_reqs))
 		  found = match;
 	      }
-	  map_context_from = map_context_to = NULL_TREE;
 	  break;
 
 	case TYPE_DECL:
@@ -11022,12 +11010,6 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
       gcc_checking_assert (TREE_CODE (e_inner) == TREE_CODE (d_inner));
     }
 
-  gcc_checking_assert (!map_context_from);
-  /* This mapping requres the new decl on the lhs and the existing
-     entity on the rhs of the comparitors below.  */
-  map_context_from = d_inner;
-  map_context_to = e_inner;
-
   if (TREE_CODE (d_inner) == FUNCTION_DECL)
     {
       tree e_ret = fndecl_declared_return_type (existing);
@@ -11104,7 +11086,6 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
   else if (!cp_tree_equal (TREE_TYPE (decl), TREE_TYPE (existing)))
     {
     mismatch:
-      map_context_from = map_context_to = NULL_TREE;
       if (DECL_IS_UNDECLARED_BUILTIN (existing))
 	/* Just like duplicate_decls, presum the user knows what
 	   they're doing in overriding a builtin.   */
@@ -11120,8 +11101,6 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 	  return false;
 	}
     }
-
-  map_context_from = map_context_to = NULL_TREE;
 
   if (DECL_IS_UNDECLARED_BUILTIN (existing)
       && !DECL_IS_UNDECLARED_BUILTIN (decl))
@@ -11462,10 +11441,6 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 
   tree maybe_dup = odr_duplicate (maybe_template, DECL_SAVED_TREE (decl));
   bool installing = maybe_dup && !DECL_SAVED_TREE (decl);
-
-  if (maybe_dup)
-    for (auto parm = DECL_ARGUMENTS (maybe_dup); parm; parm = DECL_CHAIN (parm))
-      DECL_CONTEXT (parm) = decl;
 
   if (int wtag = i ())
     {
@@ -12881,10 +12856,11 @@ specialization_add (bool decl_p, spec_entry *entry, void *data_)
 			   || DECL_CLASS_TEMPLATE_P (entry->tmpl));
 
        /* Only alias templates can appear in both tables (and
-	  if they're in the type table they must also be in the decl table).  */
+	  if they're in the type table they must also be in the decl
+	  table).  */
        gcc_checking_assert
 	 (!match_mergeable_specialization (true, entry)
-	  == (decl_p || !DECL_ALIAS_TEMPLATE_P (entry->tmpl)));
+	  == !DECL_ALIAS_TEMPLATE_P (entry->tmpl));
     }
   else if (VAR_OR_FUNCTION_DECL_P (entry->spec))
     gcc_checking_assert (!DECL_LOCAL_DECL_P (entry->spec));
