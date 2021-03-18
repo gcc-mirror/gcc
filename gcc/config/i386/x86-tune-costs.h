@@ -1741,13 +1741,11 @@ struct processor_costs znver3_cost = {
    COSTS_N_INSNS (3)},			/*			other.  */
   0,					/* cost of multiply per each bit
 					   set.  */
-   /* Depending on parameters, idiv can get faster on ryzen.  This is upper
-      bound.  */
-  {COSTS_N_INSNS (16),			/* cost of a divide/mod for QI.  */
-   COSTS_N_INSNS (22),			/* 			    HI.  */
-   COSTS_N_INSNS (30),			/*			    SI.  */
-   COSTS_N_INSNS (45),			/*			    DI.  */
-   COSTS_N_INSNS (45)},			/*			    other.  */
+  {COSTS_N_INSNS (9),			/* cost of a divide/mod for QI.  */
+   COSTS_N_INSNS (10),			/* 			    HI.  */
+   COSTS_N_INSNS (12),			/*			    SI.  */
+   COSTS_N_INSNS (17),			/*			    DI.  */
+   COSTS_N_INSNS (17)},			/*			    other.  */
   COSTS_N_INSNS (1),			/* cost of movsx.  */
   COSTS_N_INSNS (1),			/* cost of movzx.  */
   8,					/* "large" insn.  */
