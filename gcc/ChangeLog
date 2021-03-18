@@ -1,3 +1,85 @@
+2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_expand_rng_builtin): Use EQ
+	to compare against CC_REG rather than NE.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/93964
+	* graphite-isl-ast-to-gimple.c
+	(gcc_expression_from_isl_ast_expr_id): Add intermediate
+	conversion for pointer to integer converts.
+	* graphite-scop-detection.c (assign_parameter_index_in_region):
+	Relax assert.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97255
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Also handle
+	VIEW_CONVERT_EXPR.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96579
+	* tree-ssa-reassoc.c (linearize_expr_tree): If we expand
+	rhs via special ops make sure to swap operands.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96370
+	* tree-ssa-reassoc.c (rewrite_expr_tree): Add operation
+	code parameter and use it instead of picking it up from
+	the stmt that is being rewritten.
+	(reassociate_bb): Pass down the operation code.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/96369
+	* fold-const.c (fold_range_test): Special-case constant
+	LHS for short-circuiting operations.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-12-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97081
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): Use the
+	precision of the shifted operand to determine the mask.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98282
+	* tree-ssa-sccvn.c (vn_get_stmt_kind): Classify tcc_reference on
+	invariants as VN_NARY.
+
+2021-03-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-04-16  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/94479
+	* gimplify.c (gimplify_addr_expr): Also consider generated
+	MEM_REFs.
+
 2021-03-07  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/85074
