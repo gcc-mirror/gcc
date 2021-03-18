@@ -67,41 +67,39 @@ public:
       }
 
     other->accept_vis (*this);
-    if (resolved != nullptr)
+    if (resolved == nullptr)
+      return nullptr;
+
+    resolved->append_reference (get_base ()->get_ref ());
+    resolved->append_reference (other->get_ref ());
+    for (auto ref : get_base ()->get_combined_refs ())
+      resolved->append_reference (ref);
+    for (auto ref : other->get_combined_refs ())
+      resolved->append_reference (ref);
+
+    bool result_resolved = resolved->get_kind () != TyTy::TypeKind::INFER;
+    bool result_is_infer_var = resolved->get_kind () == TyTy::TypeKind::INFER;
+    bool results_is_non_general_infer_var
+      = (result_is_infer_var
+	 && ((InferType *) resolved)->get_infer_kind ()
+	      != TyTy::InferType::GENERAL);
+    if (result_resolved || results_is_non_general_infer_var)
       {
-	resolved->append_reference (get_base ()->get_ref ());
-	resolved->append_reference (other->get_ref ());
-	for (auto ref : get_base ()->get_combined_refs ())
-	  resolved->append_reference (ref);
-	for (auto ref : other->get_combined_refs ())
-	  resolved->append_reference (ref);
-
-	bool result_resolved = resolved->get_kind () != TyTy::TypeKind::INFER;
-	bool result_is_infer_var
-	  = resolved->get_kind () == TyTy::TypeKind::INFER;
-	bool results_is_non_general_infer_var
-	  = (result_is_infer_var
-	     && ((InferType *) resolved)->get_infer_kind ()
-		  != TyTy::InferType::GENERAL);
-	if (result_resolved || results_is_non_general_infer_var)
+	for (auto &ref : resolved->get_combined_refs ())
 	  {
-	    for (auto &ref : resolved->get_combined_refs ())
-	      {
-		TyTy::BaseType *ref_tyty = nullptr;
-		bool ok = context->lookup_type (ref, &ref_tyty);
-		if (!ok)
-		  continue;
+	    TyTy::BaseType *ref_tyty = nullptr;
+	    bool ok = context->lookup_type (ref, &ref_tyty);
+	    if (!ok)
+	      continue;
 
-		// if any of the types are inference variables lets fix them
-		if (ref_tyty->get_kind () == TyTy::TypeKind::INFER)
-		  {
-		    NodeId ref_node_id = UNKNOWN_NODEID;
-		    context->insert_type (
-		      Analysis::NodeMapping (mappings->get_current_crate (),
-					     ref_node_id, ref,
-					     UNKNOWN_LOCAL_DEFID),
-		      resolved->clone ());
-		  }
+	    // if any of the types are inference variables lets fix them
+	    if (ref_tyty->get_kind () == TyTy::TypeKind::INFER)
+	      {
+		context->insert_type (
+		  Analysis::NodeMapping (mappings->get_current_crate (),
+					 UNKNOWN_NODEID, ref,
+					 UNKNOWN_LOCAL_DEFID),
+		  resolved->clone ());
 	      }
 	  }
       }
