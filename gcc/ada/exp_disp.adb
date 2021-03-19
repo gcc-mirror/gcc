@@ -4052,6 +4052,7 @@ package body Exp_Disp is
          if Present (N)
            and then Is_Private_Type (Typ)
            and then No (Full_View (Typ))
+           and then not Has_Private_Declaration (Typ)
            and then not Is_Generic_Type (Typ)
            and then not Is_Tagged_Type (Typ)
            and then not Is_Frozen (Typ)
@@ -4070,6 +4071,7 @@ package body Exp_Disp is
             if not Is_Tagged_Type (Typ)
               and then Present (Comp)
               and then not Is_Frozen (Comp)
+              and then not Has_Private_Declaration (Comp)
               and then not Is_Actual_For_Formal_Incomplete_Type (Comp)
             then
                Error_Msg_Sloc := Sloc (Subp);

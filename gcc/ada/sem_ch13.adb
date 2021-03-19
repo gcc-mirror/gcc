@@ -15106,7 +15106,11 @@ package body Sem_Ch13 is
                         begin
                            Assoc := First (Component_Associations (Expr));
                            while Present (Assoc) loop
-                              Find_Direct_Name (Expression (Assoc));
+                              if Nkind (Expression (Assoc)) in N_Has_Entity
+                              then
+                                 Find_Direct_Name (Expression (Assoc));
+                              end if;
+
                               Next (Assoc);
                            end loop;
                         end;

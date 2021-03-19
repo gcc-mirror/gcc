@@ -26744,6 +26744,7 @@ package body Sem_Util is
 
          if Present (Typ)
            and then not Is_Frozen (Typ)
+           and then Is_Base_Type (Typ)
            and then (Is_Record_Type (Typ)
                        or else Is_Concurrent_Type (Typ)
                        or else Is_Incomplete_Or_Private_Type (Typ))
