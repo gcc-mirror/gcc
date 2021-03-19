@@ -5526,6 +5526,11 @@ riscv_asan_shadow_offset (void)
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET riscv_asan_shadow_offset
 
+#ifdef TARGET_BIG_ENDIAN_DEFAULT
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (MASK_BIG_ENDIAN)
+#endif
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-riscv.h"

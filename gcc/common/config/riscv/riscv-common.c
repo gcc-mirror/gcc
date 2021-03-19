@@ -32,6 +32,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "config/riscv/riscv-protos.h"
 #include "config/riscv/riscv-subset.h"
 
+#ifdef  TARGET_BIG_ENDIAN_DEFAULT
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (MASK_BIG_ENDIAN)
+#endif
+
 /* Type for implied ISA info.  */
 struct riscv_implied_info_t
 {

@@ -30,6 +30,12 @@ along with GCC; see the file COPYING3.  If not see
 /* Target CPU versions for D.  */
 #define TARGET_D_CPU_VERSIONS riscv_d_target_versions
 
+#ifdef TARGET_BIG_ENDIAN_DEFAULT
+#define DEFAULT_ENDIAN_SPEC    "b"
+#else
+#define DEFAULT_ENDIAN_SPEC    "l"
+#endif
+
 /* Default target_flags if no switches are specified  */
 
 #ifndef TARGET_DEFAULT
