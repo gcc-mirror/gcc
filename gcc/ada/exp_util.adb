@@ -5323,7 +5323,8 @@ package body Exp_Util is
    procedure Expand_Sliding_Conversion (N : Node_Id; Arr_Typ : Entity_Id) is
 
       pragma Assert (Is_Array_Type (Arr_Typ)
-                      and then not Is_Constrained (Arr_Typ));
+                      and then not Is_Constrained (Arr_Typ)
+                      and then Is_Fixed_Lower_Bound_Array_Subtype (Arr_Typ));
 
       Constraints : List_Id;
       Index       : Node_Id := First_Index (Arr_Typ);
@@ -5342,7 +5343,10 @@ package body Exp_Util is
       All_FLBs_Match : Boolean := True;
 
    begin
-      if Is_Fixed_Lower_Bound_Array_Subtype (Arr_Typ) then
+      --  Sliding should never be needed for string literals, because they have
+      --  their bounds set according to the applicable index constraint.
+
+      if Nkind (N) /= N_String_Literal then
          Constraints := New_List;
 
          Act_Subt  := Get_Actual_Subtype (N);
