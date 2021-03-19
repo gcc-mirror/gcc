@@ -89,16 +89,13 @@ along with this program; see the file COPYING3.  If not see
 
 #define LTO_SEGMENT_NAME "__GNU_LTO"
 
-/* LTO magic section name.  */
+/* Return true if STR string starts with PREFIX.  */
 
-#define LTO_SYMTAB_PREFIX	    ".gnu.lto_.symtab"
-#define LTO_SYMTAB_PREFIX_LEN	    (sizeof (LTO_SYMTAB_PREFIX) - 1)
-#define LTO_SYMTAB_EXT_PREFIX	    ".gnu.lto_.ext_symtab"
-#define LTO_SYMTAB_EXT_PREFIX_LEN   (sizeof (LTO_SYMTAB_EXT_PREFIX) - 1)
-#define LTO_LTO_PREFIX		    ".gnu.lto_.lto"
-#define LTO_LTO_PREFIX_LEN	    (sizeof (LTO_LTO_PREFIX) - 1)
-#define OFFLOAD_SECTION		    ".gnu.offload_lto_.opts"
-#define OFFLOAD_SECTION_LEN	    (sizeof (OFFLOAD_SECTION) - 1)
+static inline bool
+startswith (const char *str, const char *prefix)
+{
+  return strncmp (str, prefix, strlen (prefix)) == 0;
+}
 
 /* The part of the symbol table the plugin has to keep track of. Note that we
    must keep SYMS until all_symbols_read is called to give the linker time to
@@ -832,7 +829,7 @@ all_symbols_read_handler (void)
       unsigned int i;
       for (i = 0; i < num_pass_through_items; i++)
         {
-          if (strncmp (pass_through_items[i], "-l", 2) == 0)
+	  if (startswith (pass_through_items[i], "-l"))
             add_input_library (pass_through_items[i] + 2);
           else
             add_input_file (pass_through_items[i]);
@@ -1022,7 +1019,7 @@ process_symtab (void *data, const char *name, off_t offset, off_t length)
   char *s;
   char *secdatastart, *secdata;
 
-  if (strncmp (name, LTO_SYMTAB_PREFIX, LTO_SYMTAB_PREFIX_LEN) != 0)
+  if (!startswith (name, ".gnu.lto_.symtab"))
     return 1;
 
   s = strrchr (name, '.');
@@ -1074,7 +1071,7 @@ process_symtab_extension (void *data, const char *name, off_t offset,
   char *s;
   char *secdatastart, *secdata;
 
-  if (strncmp (name, LTO_SYMTAB_EXT_PREFIX, LTO_SYMTAB_EXT_PREFIX_LEN) != 0)
+  if (!startswith (name, ".gnu.lto_.ext_symtab"))
     return 1;
 
   s = strrchr (name, '.');
@@ -1122,7 +1119,7 @@ err:
 static int
 process_offload_section (void *data, const char *name, off_t offset, off_t len)
 {
-  if (!strncmp (name, OFFLOAD_SECTION, OFFLOAD_SECTION_LEN))
+  if (startswith (name, ".gnu.offload_lto_.opts"))
     {
       struct plugin_objfile *obj = (struct plugin_objfile *) data;
       obj->offload = 1;
@@ -1325,7 +1322,7 @@ process_option (const char *option)
     save_temps = true;
   else if (strcmp (option, "-nop") == 0)
     nop = 1;
-  else if (!strncmp (option, "-pass-through=", strlen("-pass-through=")))
+  else if (startswith (option, "-pass-through="))
     {
       num_pass_through_items++;
       pass_through_items = xrealloc (pass_through_items,
@@ -1333,7 +1330,7 @@ process_option (const char *option)
       pass_through_items[num_pass_through_items - 1] =
           xstrdup (option + strlen ("-pass-through="));
     }
-  else if (!strncmp (option, "-sym-style=", sizeof ("-sym-style=") - 1))
+  else if (startswith (option, "-sym-style="))
     {
       switch (option[sizeof ("-sym-style=") - 1])
 	{
@@ -1356,7 +1353,7 @@ process_option (const char *option)
       size = lto_wrapper_num_args * sizeof (char *);
       lto_wrapper_argv = (char **) xrealloc (lto_wrapper_argv, size);
       lto_wrapper_argv[lto_wrapper_num_args - 1] = opt;
-      if (strncmp (option, "-fresolution=", sizeof ("-fresolution=") - 1) == 0)
+      if (startswith (option, "-fresolution="))
 	resolution_file = opt + sizeof ("-fresolution=") - 1;
     }
   save_temps = save_temps || debug;
