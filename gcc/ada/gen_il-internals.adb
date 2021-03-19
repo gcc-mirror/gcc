@@ -317,6 +317,8 @@ package body Gen_IL.Internals is
             return "Is_SPARK_Mode_On_Node";
          when Local_Raise_Not_OK =>
             return "Local_Raise_Not_OK";
+         when LSP_Subprogram =>
+            return "LSP_Subprogram";
          when OK_To_Rename =>
             return "OK_To_Rename";
          when Referenced_As_LHS =>

@@ -1239,7 +1239,9 @@ package body Sem_Disp is
               or else Get_TSS_Name (Subp) = TSS_Stream_Read
               or else Get_TSS_Name (Subp) = TSS_Stream_Write
 
-              or else Present (Contract (Overridden_Operation (Subp)))
+              or else
+               (Is_Wrapper (Subp)
+                 and then Present (LSP_Subprogram (Subp)))
 
               or else GNATprove_Mode);
 
@@ -2646,8 +2648,7 @@ package body Sem_Disp is
    procedure Override_Dispatching_Operation
      (Tagged_Type : Entity_Id;
       Prev_Op     : Entity_Id;
-      New_Op      : Entity_Id;
-      Is_Wrapper  : Boolean := False)
+      New_Op      : Entity_Id)
    is
       Elmt : Elmt_Id;
       Prim : Node_Id;
@@ -2724,7 +2725,7 @@ package body Sem_Disp is
                --  wrappers of controlling functions since (at this stage)
                --  they are not yet decorated.
 
-               if not Is_Wrapper then
+               if not Is_Wrapper (New_Op) then
                   Check_Subtype_Conformant (New_Op, Prim);
 
                   Set_Is_Abstract_Subprogram (Prim,

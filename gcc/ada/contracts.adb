@@ -2610,7 +2610,21 @@ package body Contracts is
 
             for Index in Subps'Range loop
                Subp_Id := Subps (Index);
-               Items   := Contract (Subp_Id);
+
+               if Present (Alias (Subp_Id)) then
+                  Subp_Id := Ultimate_Alias (Subp_Id);
+               end if;
+
+               --  Wrappers of class-wide pre/post conditions reference the
+               --  parent primitive that has the inherited contract.
+
+               if Is_Wrapper (Subp_Id)
+                 and then Present (LSP_Subprogram (Subp_Id))
+               then
+                  Subp_Id := LSP_Subprogram (Subp_Id);
+               end if;
+
+               Items := Contract (Subp_Id);
 
                if Present (Items) then
                   Prag := Pre_Post_Conditions (Items);
@@ -2892,7 +2906,21 @@ package body Contracts is
 
             for Index in Subps'Range loop
                Subp_Id := Subps (Index);
-               Items   := Contract (Subp_Id);
+
+               if Present (Alias (Subp_Id)) then
+                  Subp_Id := Ultimate_Alias (Subp_Id);
+               end if;
+
+               --  Wrappers of class-wide pre/post conditions reference the
+               --  parent primitive that has the inherited contract.
+
+               if Is_Wrapper (Subp_Id)
+                 and then Present (LSP_Subprogram (Subp_Id))
+               then
+                  Subp_Id := LSP_Subprogram (Subp_Id);
+               end if;
+
+               Items := Contract (Subp_Id);
 
                if Present (Items) then
                   Prag := Pre_Post_Conditions (Items);

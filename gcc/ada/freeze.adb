@@ -1474,7 +1474,7 @@ package body Freeze is
       --  pragmas force the creation of a wrapper for the inherited operation.
       --  If the ancestor is being overridden, the pragmas are constructed only
       --  to verify their legality, in case they contain calls to other
-      --  primitives that may haven been overridden.
+      --  primitives that may have been overridden.
 
       ---------------------------------------
       -- Build_Inherited_Condition_Pragmas --
@@ -1558,6 +1558,15 @@ package body Freeze is
          then
             Par_Prim := Overridden_Operation (Prim);
 
+            --  When the primitive is an LSP wrapper we climb to the parent
+            --  primitive that has the inherited contract.
+
+            if Is_Wrapper (Par_Prim)
+              and then Present (LSP_Subprogram (Par_Prim))
+            then
+               Par_Prim := LSP_Subprogram (Par_Prim);
+            end if;
+
             --  Analyze the contract items of the overridden operation, before
             --  they are rewritten as pragmas.
 
@@ -1596,6 +1605,15 @@ package body Freeze is
          if not Comes_From_Source (Prim) and then Present (Alias (Prim)) then
             Par_Prim := Alias (Prim);
 
+            --  When the primitive is an LSP wrapper we climb to the parent
+            --  primitive that has the inherited contract.
+
+            if Is_Wrapper (Par_Prim)
+              and then Present (LSP_Subprogram (Par_Prim))
+            then
+               Par_Prim := LSP_Subprogram (Par_Prim);
+            end if;
+
             --  Analyze the contract items of the parent operation, and
             --  determine whether a wrapper is needed. This is determined
             --  when the condition is rewritten in sem_prag, using the
@@ -1629,14 +1647,22 @@ package body Freeze is
             --  statement with a call.
 
             declare
+               Alias_Id : constant Entity_Id  := Ultimate_Alias (Prim);
                Loc      : constant Source_Ptr := Sloc (R);
                Par_R    : constant Node_Id    := Parent (R);
                New_Body : Node_Id;
                New_Decl : Node_Id;
+               New_Id   : Entity_Id;
                New_Spec : Node_Id;
 
             begin
+               --  The wrapper must be analyzed in the scope of its wrapped
+               --  primitive (to ensure its correct decoration).
+
+               Push_Scope (Scope (Prim));
+
                New_Spec := Build_Overriding_Spec (Par_Prim, R);
+               New_Id   := Defining_Entity (New_Spec);
                New_Decl :=
                  Make_Subprogram_Declaration (Loc,
                    Specification => New_Spec);
@@ -1658,9 +1684,26 @@ package body Freeze is
                     Build_Class_Wide_Clone_Call
                       (Loc, Decls, Par_Prim, New_Spec);
 
+                  --  Adding minimum decoration
+
+                  Mutate_Ekind (New_Id, Ekind (Par_Prim));
+                  Set_LSP_Subprogram (New_Id, Par_Prim);
+                  Set_Is_Wrapper (New_Id);
+
                   Insert_List_After_And_Analyze
                     (Par_R, New_List (New_Decl, New_Body));
+
+                  --  Ensure correct decoration
+
+                  pragma Assert (Present (Alias (Prim)));
+                  pragma Assert (Present (Overridden_Operation (New_Id)));
+                  pragma Assert (Overridden_Operation (New_Id) = Alias_Id);
                end if;
+
+               pragma Assert (Is_Dispatching_Operation (Prim));
+               pragma Assert (Is_Dispatching_Operation (New_Id));
+
+               Pop_Scope;
             end;
          end if;
 

@@ -612,7 +612,7 @@ package Einfo is
 
 --    Class_Wide_Clone
 --       Defined on subprogram entities. Set if the subprogram has a class-wide
---       ore- or postcondition, and the expression contains calls to other
+--       pre- or postcondition, and the expression contains calls to other
 --       primitive funtions of the type. Used to implement properly the
 --       semantics of inherited operations whose class-wide condition may
 --       be different from that of the ancestor (See AI012-0195).
@@ -2385,12 +2385,6 @@ package Einfo is
 --       Defined in all entities. Set only for defining entities of program
 --       units that are child units (but False for subunits).
 
---    Is_Class_Wide_Clone
---       Defined on subprogram entities. Set for subprograms built in order
---       to implement properly the inheritance of class-wide pre- or post-
---       conditions when the condition contains calls to other primitives
---       of the ancestor type. Used to implement AI12-0195.
-
 --    Is_Class_Wide_Equivalent_Type
 --       Defined in record types and subtypes. Set to True, if the type acts
 --       as a class-wide equivalent type, i.e. the Equivalent_Type field of
@@ -3407,6 +3401,11 @@ package Einfo is
 --    Is_Wrapper_Package (synthesized)
 --       Defined in package entities. Indicates that the package has been
 --       created as a wrapper for a subprogram instantiation.
+
+--    Is_Wrapper
+--       Defined in subprogram entities. Indicates that it has been created as
+--       a wrapper to handle inherited class-wide pre/post conditions that call
+--       overridden primitives or as a wrapper of a controlling function.
 
 --    Itype_Printed
 --       Defined in all type and subtype entities. Set in Itypes if the Itype
@@ -4715,6 +4714,12 @@ package Einfo is
 --       Defined in functions and procedures which have been classified as
 --       Is_Primitive_Wrapper. Set to the entity being wrapper.
 
+--    LSP_Subprogram
+--       Defined in subprogram entities. Set on wrappers created to handle
+--       inherited class-wide pre/post conditions that call overridden
+--       primitives. It references the parent primitive that has the
+--       class-wide pre/post conditions.
+
 ---------------------------
 -- Renaming and Aliasing --
 ---------------------------
@@ -5487,6 +5492,7 @@ package Einfo is
    --    Protection_Object                    (for concurrent kind)
    --    Subps_Index                          (non-generic case only)
    --    Interface_Alias
+   --    LSP_Subprogram                       (non-generic case only)
    --    Overridden_Operation
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
@@ -5546,6 +5552,7 @@ package Einfo is
    --    Is_Private_Primitive                 (non-generic case only)
    --    Is_Pure
    --    Is_Visible_Lib_Unit
+   --    Is_Wrapper
    --    Needs_No_Actuals
    --    Requires_Overriding                  (non-generic case only)
    --    Return_Present
@@ -5687,6 +5694,7 @@ package Einfo is
    --    Linker_Section_Pragma
    --    Contract
    --    Import_Pragma
+   --    LSP_Subprogram
    --    SPARK_Pragma
    --    Default_Expressions_Processed
    --    Has_Nested_Subprogram
@@ -5697,6 +5705,7 @@ package Einfo is
    --    Is_Machine_Code_Subprogram
    --    Is_Primitive
    --    Is_Pure
+   --    Is_Wrapper
    --    SPARK_Pragma_Inherited
    --    Interface_Name $$$
    --    Renamed_Entity $$$
@@ -5841,6 +5850,7 @@ package Einfo is
    --    Protection_Object                    (for concurrent kind)
    --    Subps_Index                          (non-generic case only)
    --    Interface_Alias
+   --    LSP_Subprogram                       (non-generic case only)
    --    Overridden_Operation                 (never for init proc)
    --    Wrapped_Entity                       (non-generic case only)
    --    Extra_Formals
@@ -5899,6 +5909,7 @@ package Einfo is
    --    Is_Private_Descendant
    --    Is_Private_Primitive                 (non-generic case only)
    --    Is_Pure
+   --    Is_Wrapper
    --    Is_Valued_Procedure
    --    Is_Visible_Lib_Unit
    --    Needs_No_Actuals
