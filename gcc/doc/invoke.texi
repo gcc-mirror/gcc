@@ -1171,6 +1171,7 @@ See RS/6000 and PowerPC Options.
 -mrelax  -mno-relax @gol
 -mriscv-attribute  -mmo-riscv-attribute @gol
 -malign-data=@var{type} @gol
+-mbig-endian  -mlittle-endian @gol
 +-mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
 +-mstack-protector-guard-offset=@var{offset}}
 
@@ -26747,6 +26748,17 @@ Control how GCC aligns variables and constants of array, structure, or union
 types.  Supported values for @var{type} are @samp{xlen} which uses x register
 width as the alignment value, and @samp{natural} which uses natural alignment.
 @samp{xlen} is the default.
+
+@item -mbig-endian
+@opindex mbig-endian
+Generate big-endian code.  This is the default when GCC is configured for a
+@samp{riscv64be-*-*} or @samp{riscv32be-*-*} target.
+
+@item -mlittle-endian
+@opindex mlittle-endian
+Generate little-endian code.  This is the default when GCC is configured for a
+@samp{riscv64-*-*} or @samp{riscv32-*-*} but not a @samp{riscv64be-*-*} or
+@samp{riscv32be-*-*} target.
 
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-reg=@var{reg}
