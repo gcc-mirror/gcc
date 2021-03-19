@@ -862,14 +862,14 @@ c6x_in_small_data_p (const_tree exp)
       const char *section = DECL_SECTION_NAME (exp);
 
       if (strcmp (section, ".neardata") == 0
-	  || strncmp (section, ".neardata.", 10) == 0
-	  || strncmp (section, ".gnu.linkonce.s.", 16) == 0
+	  || startswith (section, ".neardata.")
+	  || startswith (section, ".gnu.linkonce.s.")
 	  || strcmp (section, ".bss") == 0
-	  || strncmp (section, ".bss.", 5) == 0
-	  || strncmp (section, ".gnu.linkonce.sb.", 17) == 0
+	  || startswith (section, ".bss.")
+	  || startswith (section, ".gnu.linkonce.sb.")
 	  || strcmp (section, ".rodata") == 0
-	  || strncmp (section, ".rodata.", 8) == 0
-	  || strncmp (section, ".gnu.linkonce.s2.", 17) == 0)
+	  || startswith (section, ".rodata.")
+	  || startswith (section, ".gnu.linkonce.s2."))
 	return true;
     }
   else
@@ -1063,7 +1063,7 @@ c6x_section_type_flags (tree decl, const char *name, int reloc)
   unsigned int flags = 0;
 
   if (strcmp (name, ".far") == 0
-      || strncmp (name, ".far.", 5) == 0)
+      || startswith (name, ".far."))
     flags |= SECTION_BSS;
 
   flags |= default_section_type_flags (decl, name, reloc);

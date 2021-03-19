@@ -804,12 +804,12 @@ riscv_subset_list::parse (const char *arch, location_t loc)
   riscv_subset_list *subset_list = new riscv_subset_list (arch, loc);
   riscv_subset_t *itr;
   const char *p = arch;
-  if (strncmp (p, "rv32", 4) == 0)
+  if (startswith (p, "rv32"))
     {
       subset_list->m_xlen = 32;
       p += 4;
     }
-  else if (strncmp (p, "rv64", 4) == 0)
+  else if (startswith (p, "rv64"))
     {
       subset_list->m_xlen = 64;
       p += 4;

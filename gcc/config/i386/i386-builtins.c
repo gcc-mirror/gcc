@@ -1992,7 +1992,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
   while (token != NULL)
     {
       /* Do not process "arch="  */
-      if (strncmp (token, "arch=", 5) == 0)
+      if (startswith (token, "arch="))
 	{
 	  token = strtok (NULL, ",");
 	  continue;

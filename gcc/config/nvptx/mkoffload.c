@@ -256,13 +256,13 @@ process (FILE *in, FILE *out)
 	    case '\n':
 	      fprintf (out, "\\n\"\n\t\"");
 	      /* Look for mappings on subsequent lines.  */
-	      while (strncmp (input + i, "//:", 3) == 0)
+	      while (startswith (input + i, "//:"))
 		{
 		  i += 3;
 
-		  if (strncmp (input + i, "VAR_MAP ", 8) == 0)
+		  if (startswith (input + i, "VAR_MAP "))
 		    record_id (input + i + 8, &vars_tail);
-		  else if (strncmp (input + i, "FUNC_MAP ", 9) == 0)
+		  else if (startswith (input + i, "FUNC_MAP "))
 		    record_id (input + i + 9, &funcs_tail);
 		  else
 		    abort ();
@@ -481,8 +481,7 @@ main (int argc, char **argv)
   bool fpic = false;
   for (int i = 1; i < argc; i++)
     {
-#define STR "-foffload-abi="
-      if (strncmp (argv[i], STR, strlen (STR)) == 0)
+      if (startswith (argv[i], "-foffload-abi="))
 	{
 	  if (strcmp (argv[i] + strlen (STR), "lp64") == 0)
 	    offload_abi = OFFLOAD_ABI_LP64;
@@ -492,7 +491,6 @@ main (int argc, char **argv)
 	    fatal_error (input_location,
 			 "unrecognizable argument of option " STR);
 	}
-#undef STR
       else if (strcmp (argv[i], "-fopenmp") == 0)
 	fopenmp = true;
       else if (strcmp (argv[i], "-fopenacc") == 0)

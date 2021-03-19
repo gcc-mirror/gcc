@@ -329,7 +329,7 @@ indirect_data (rtx sym_ref)
 
   lprefix = (((name[0] == '*' || name[0] == '&')
               && (name[1] == 'L' || (name[1] == '"' && name[2] == 'L')))
-             || (strncmp (name, "_OBJC_", 6) == 0));
+	     || (startswith (name, "_OBJC_")));
 
   return ! lprefix;
 }
@@ -1284,7 +1284,7 @@ darwin_encode_section_info (tree decl, rtx rtl, int first)
   tree o2meta = lookup_attribute ("OBJC2META", DECL_ATTRIBUTES (decl));
   o2meta = o2meta ? TREE_VALUE (o2meta) : NULL_TREE;
 
-  if (o2meta && strncmp (IDENTIFIER_POINTER (o2meta), "V2_IVRF",7) == 0)
+  if (o2meta && startswith (IDENTIFIER_POINTER (o2meta), "V2_IVRF"))
     SYMBOL_REF_FLAGS (sym_ref) |= MACHO_SYMBOL_FLAG_MUST_INDIRECT;
 #endif
 }
@@ -1443,58 +1443,58 @@ darwin_objc2_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
 
   /* Most of the OBJC2 META-data end up in the base section, so check it
      first.  */
-  if      (!strncmp (p, "V2_BASE", 7))
+  if      (startswith (p, "V2_BASE"))
     return base;
-  else if (!strncmp (p, "V2_CNAM", 7))
+  else if (startswith (p, "V2_CNAM"))
     return darwin_sections[objc2_class_names_section];
-  else if (!strncmp (p, "V2_MNAM", 7))
+  else if (startswith (p, "V2_MNAM"))
     return darwin_sections[objc2_method_names_section];
-  else if (!strncmp (p, "V2_MTYP", 7))
+  else if (startswith (p, "V2_MTYP"))
     return darwin_sections[objc2_method_types_section];
-  else if (!strncmp (p, "V2_STRG", 7))
+  else if (startswith (p, "V2_STRG"))
     return darwin_sections[cstring_section];
 
-  else if (!strncmp (p, "G2_META", 7) || !strncmp (p, "G2_CLAS", 7))
+  else if (startswith (p, "G2_META") || startswith (p, "G2_CLAS"))
     return darwin_sections[objc2_classdefs_section];
-  else if (!strncmp (p, "V2_PCOL", 7))
+  else if (startswith (p, "V2_PCOL"))
     return ld_uses_coal_sects ? darwin_sections[data_coal_section]
 			      : darwin_sections[objc2_data_section];
-  else if (!strncmp (p, "V2_MREF", 7))
+  else if (startswith (p, "V2_MREF"))
     return darwin_sections[objc2_message_refs_section];
-  else if (!strncmp (p, "V2_CLRF", 7))
+  else if (startswith (p, "V2_CLRF"))
     return darwin_sections[objc2_classrefs_section];
-  else if (!strncmp (p, "V2_SURF", 7))
+  else if (startswith (p, "V2_SURF"))
     return darwin_sections[objc2_super_classrefs_section];
-  else if (!strncmp (p, "V2_NLCL", 7))
+  else if (startswith (p, "V2_NLCL"))
     return darwin_sections[objc2_nonlazy_class_section];
-  else if (!strncmp (p, "V2_CLAB", 7))
+  else if (startswith (p, "V2_CLAB"))
     {
       classes_seen = 1;
       return darwin_sections[objc2_classlist_section];
     }
-  else if (!strncmp (p, "V2_SRFS", 7))
+  else if (startswith (p, "V2_SRFS"))
     return darwin_sections[objc2_selector_refs_section];
-  else if (!strncmp (p, "V2_NLCA", 7))
+  else if (startswith (p, "V2_NLCA"))
     return darwin_sections[objc2_nonlazy_category_section];
-  else if (!strncmp (p, "V2_CALA", 7))
+  else if (startswith (p, "V2_CALA"))
     return darwin_sections[objc2_categorylist_section];
 
-  else if (!strncmp (p, "V2_PLST", 7))
+  else if (startswith (p, "V2_PLST"))
     return darwin_sections[objc2_protocollist_section];
-  else if (!strncmp (p, "V2_PRFS", 7))
+  else if (startswith (p, "V2_PRFS"))
     return darwin_sections[objc2_protocolrefs_section];
 
-  else if (!strncmp (p, "V2_INFO", 7))
+  else if (startswith (p, "V2_INFO"))
     return darwin_sections[objc2_image_info_section];
 
-  else if (!strncmp (p, "V2_EHTY", 7))
+  else if (startswith (p, "V2_EHTY"))
     return ld_uses_coal_sects ? darwin_sections[data_coal_section]
                               : data_section;
 
-  else if (!strncmp (p, "V2_CSTR", 7))
+  else if (startswith (p, "V2_CSTR"))
     return darwin_sections[objc2_constant_string_object_section];
 
-  else if (!strncmp (p, "V2_IVRF", 7))
+  else if (startswith (p, "V2_IVRF"))
     return darwin_sections[objc2_ivar_section];
 
   /* Not recognized, default.  */
@@ -1515,72 +1515,72 @@ darwin_objc1_section (tree decl ATTRIBUTE_UNUSED, tree meta, section * base)
   objc_metadata_seen = 1;
 
   /* String sections first, cos there are lots of strings.  */
-  if      (!strncmp (p, "V1_STRG", 7))
+  if      (startswith (p, "V1_STRG"))
     return darwin_sections[cstring_section];
-  else if (!strncmp (p, "V1_CLSN", 7))
+  else if (startswith (p, "V1_CLSN"))
     return darwin_sections[objc_class_names_section];
-  else if (!strncmp (p, "V1_METN", 7))
+  else if (startswith (p, "V1_METN"))
     return darwin_sections[objc_meth_var_names_section];
-  else if (!strncmp (p, "V1_METT", 7))
+  else if (startswith (p, "V1_METT"))
     return darwin_sections[objc_meth_var_types_section];
 
-  else if (!strncmp (p, "V1_CLAS", 7))
+  else if (startswith (p, "V1_CLAS"))
     {
       classes_seen = 1;
       return darwin_sections[objc_class_section];
     }
-  else if (!strncmp (p, "V1_META", 7))
+  else if (startswith (p, "V1_META"))
     return darwin_sections[objc_meta_class_section];
-  else if (!strncmp (p, "V1_CATG", 7))
+  else if (startswith (p, "V1_CATG"))
     return darwin_sections[objc_category_section];
-  else if (!strncmp (p, "V1_PROT", 7))
+  else if (startswith (p, "V1_PROT"))
     return darwin_sections[objc_protocol_section];
 
-  else if (!strncmp (p, "V1_CLCV", 7))
+  else if (startswith (p, "V1_CLCV"))
     return darwin_sections[objc_class_vars_section];
-  else if (!strncmp (p, "V1_CLIV", 7))
+  else if (startswith (p, "V1_CLIV"))
     return darwin_sections[objc_instance_vars_section];
 
-  else if (!strncmp (p, "V1_CLCM", 7))
+  else if (startswith (p, "V1_CLCM"))
     return darwin_sections[objc_cls_meth_section];
-  else if (!strncmp (p, "V1_CLIM", 7))
+  else if (startswith (p, "V1_CLIM"))
     return darwin_sections[objc_inst_meth_section];
-  else if (!strncmp (p, "V1_CACM", 7))
+  else if (startswith (p, "V1_CACM"))
     return darwin_sections[objc_cat_cls_meth_section];
-  else if (!strncmp (p, "V1_CAIM", 7))
+  else if (startswith (p, "V1_CAIM"))
     return darwin_sections[objc_cat_inst_meth_section];
-  else if (!strncmp (p, "V1_PNSM", 7))
+  else if (startswith (p, "V1_PNSM"))
     return darwin_sections[objc_cat_inst_meth_section];
-  else if (!strncmp (p, "V1_PCLM", 7))
+  else if (startswith (p, "V1_PCLM"))
     return darwin_sections[objc_cat_cls_meth_section];
 
-  else if (!strncmp (p, "V1_CLPR", 7))
+  else if (startswith (p, "V1_CLPR"))
     return darwin_sections[objc_cat_cls_meth_section];
-  else if (!strncmp (p, "V1_CAPR", 7))
+  else if (startswith (p, "V1_CAPR"))
     return darwin_sections[objc_category_section]; /* ??? CHECK me.  */
 
-  else if (!strncmp (p, "V1_PRFS", 7))
+  else if (startswith (p, "V1_PRFS"))
     return darwin_sections[objc_cat_cls_meth_section];
-  else if (!strncmp (p, "V1_CLRF", 7))
+  else if (startswith (p, "V1_CLRF"))
     return darwin_sections[objc_cls_refs_section];
-  else if (!strncmp (p, "V1_SRFS", 7))
+  else if (startswith (p, "V1_SRFS"))
     return darwin_sections[objc_selector_refs_section];
 
-  else if (!strncmp (p, "V1_MODU", 7))
+  else if (startswith (p, "V1_MODU"))
     return darwin_sections[objc_module_info_section];
-  else if (!strncmp (p, "V1_SYMT", 7))
+  else if (startswith (p, "V1_SYMT"))
     return darwin_sections[objc_symbols_section];
-  else if (!strncmp (p, "V1_INFO", 7))
+  else if (startswith (p, "V1_INFO"))
     return darwin_sections[objc_image_info_section];
 
-  else if (!strncmp (p, "V1_PLST", 7))
+  else if (startswith (p, "V1_PLST"))
     return darwin_sections[objc1_prop_list_section];
-  else if (!strncmp (p, "V1_PEXT", 7))
+  else if (startswith (p, "V1_PEXT"))
     return darwin_sections[objc1_protocol_ext_section];
-  else if (!strncmp (p, "V1_CEXT", 7))
+  else if (startswith (p, "V1_CEXT"))
     return darwin_sections[objc1_class_ext_section];
 
-  else if (!strncmp (p, "V2_CSTR", 7))
+  else if (startswith (p, "V2_CSTR"))
     return darwin_sections[objc_constant_string_object_section];
 
   return base;
@@ -1747,7 +1747,7 @@ machopic_select_section (tree decl,
 	   && DECL_NAME (decl)
 	   && TREE_CODE (DECL_NAME (decl)) == IDENTIFIER_NODE
 	   && IDENTIFIER_POINTER (DECL_NAME (decl))
-	   && !strncmp (IDENTIFIER_POINTER (DECL_NAME (decl)), "_OBJC_", 6))
+	   && startswith (IDENTIFIER_POINTER (DECL_NAME (decl)), "_OBJC_"))
     /* c) legacy meta-data selection was deprecated at 4.6, removed now.  */
     gcc_unreachable ();
 
@@ -1869,15 +1869,15 @@ finalize_dtors ()
 void
 darwin_globalize_label (FILE *stream, const char *name)
 {
-  if (!!strncmp (name, "_OBJC_", 6))
+  if (!startswith (name, "_OBJC_"))
     default_globalize_label (stream, name);
   /* We have some Objective C cases that need to be global, but only on newer
      OS versions.  */
   if (flag_objc_abi < 2 || flag_next_runtime < 100700)
     return;
-  if (!strncmp (name+6, "LabelPro", 8))
+  if (startswith (name+6, "LabelPro"))
     default_globalize_label (stream, name);
-  if (!strncmp (name+6, "Protocol_", 9))
+  if (startswith (name+6, "Protocol_"))
     default_globalize_label (stream, name);
 }
 
@@ -1897,7 +1897,7 @@ darwin_label_is_anonymous_local_objc_name (const char *name)
     while (*p >= '0' && *p <= '9')
       p++;
   }
-  if (strncmp ((const char *)p, "_OBJC_", 6) != 0)
+  if (!startswith ((const char *)p, "_OBJC_"))
     return false;
 
   /* We need some of the objective c meta-data symbols to be visible to the
@@ -1908,36 +1908,36 @@ darwin_label_is_anonymous_local_objc_name (const char *name)
     return true;
 
   p += 6;
-  if (!strncmp ((const char *)p, "ClassRef", 8))
+  if (startswith ((const char *)p, "ClassRef"))
     return false;
-  else if (!strncmp ((const char *)p, "SelRef", 6))
+  else if (startswith ((const char *)p, "SelRef"))
     return false;
-  else if (!strncmp ((const char *)p, "Category", 8))
+  else if (startswith ((const char *)p, "Category"))
     {
       if (p[8] == '_' || p[8] == 'I' || p[8] == 'P' || p[8] == 'C' )
 	return false;
       return true;
     }
-  else if (!strncmp ((const char *)p, "ClassMethods", 12))
+  else if (startswith ((const char *)p, "ClassMethods"))
     return false;
-  else if (!strncmp ((const char *)p, "Instance", 8))
+  else if (startswith ((const char *)p, "Instance"))
     {
       if (p[8] == 'I' || p[8] == 'M')
 	return false;
       return true;
     }
-  else if (!strncmp ((const char *)p, "CLASS_RO", 8))
+  else if (startswith ((const char *)p, "CLASS_RO"))
     return false;
-  else if (!strncmp ((const char *)p, "METACLASS_RO", 12))
+  else if (startswith ((const char *)p, "METACLASS_RO"))
     return false;
-  else if (!strncmp ((const char *)p, "Protocol", 8))
+  else if (startswith ((const char *)p, "Protocol"))
     {
       if (p[8] == '_' || p[8] == 'I' || p[8] == 'P'
 	  || p[8] == 'M' || p[8] == 'C' || p[8] == 'O')
 	return false;
       return true;
     }
-  else if (!strncmp ((const char *)p, "LabelPro", 8))
+  else if (startswith ((const char *)p, "LabelPro"))
     return false;
   return true;
 }
@@ -2032,8 +2032,7 @@ darwin_asm_named_section (const char *name,
 {
   /* LTO sections go in a special section that encapsulates the (unlimited)
      number of GNU LTO sections within a single mach-o one.  */
-  if (strncmp (name, LTO_SECTION_NAME_PREFIX,
-	       strlen (LTO_SECTION_NAME_PREFIX)) == 0)
+  if (startswith (name, LTO_SECTION_NAME_PREFIX))
     {
       darwin_lto_section_e e;
       /* We expect certain flags to be set...  */
@@ -2062,9 +2061,9 @@ darwin_asm_named_section (const char *name,
         vec_alloc (lto_section_names, 16);
       vec_safe_push (lto_section_names, e);
    }
-  else if (strncmp (name, "__DWARF,", 8) == 0)
+  else if (startswith (name, "__DWARF,"))
     darwin_asm_dwarf_section (name, flags, decl, false);
-  else if (strncmp (name, "__GNU_DWARF_LTO,", 16) == 0)
+  else if (startswith (name, "__GNU_DWARF_LTO,"))
     darwin_asm_dwarf_section (name, flags, decl, true);
   else
     fprintf (asm_out_file, "\t.section %s\n", name);
@@ -2973,9 +2972,9 @@ darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
   const char *lto_add = "";
 
   gcc_checking_assert (base->common.flags & SECTION_NAMED);
-  is_for_lto = strncmp (base->named.name, "__GNU_DWARF_LTO,", 16) == 0;
+  is_for_lto = startswith (base->named.name, "__GNU_DWARF_LTO,");
   gcc_checking_assert (is_for_lto
-		       || strncmp (base->named.name, "__DWARF,", 8) == 0);
+		       || startswith (base->named.name, "__DWARF,"));
   const char *name = strchr (base->named.name, ',') + 1;
   gcc_checking_assert (name);
 

@@ -825,8 +825,7 @@ main (int argc, char **argv)
   bool fpic = false;
   for (int i = 1; i < argc; i++)
     {
-#define STR "-foffload-abi="
-      if (strncmp (argv[i], STR, strlen (STR)) == 0)
+      if (startswith (argv[i], "-foffload-abi="))
 	{
 	  if (strcmp (argv[i] + strlen (STR), "lp64") == 0)
 	    offload_abi = OFFLOAD_ABI_LP64;
@@ -836,7 +835,6 @@ main (int argc, char **argv)
 	    fatal_error (input_location,
 			 "unrecognizable argument of option " STR);
 	}
-#undef STR
       else if (strcmp (argv[i], "-fopenmp") == 0)
 	fopenmp = true;
       else if (strcmp (argv[i], "-fopenacc") == 0)
@@ -995,9 +993,9 @@ main (int argc, char **argv)
       obstack_ptr_grow (&ld_argv_obstack, "-lgomp");
 
       for (int i = 1; i < argc; i++)
-	if (strncmp (argv[i], "-l", 2) == 0
-	    || strncmp (argv[i], "-Wl", 3) == 0
-	    || strncmp (argv[i], "-march", 6) == 0)
+	if (startswith (argv[i], "-l")
+	    || startswith (argv[i], "-Wl")
+	    || startswith (argv[i], "-march"))
 	  obstack_ptr_grow (&ld_argv_obstack, argv[i]);
 
       obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");

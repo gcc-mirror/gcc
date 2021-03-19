@@ -752,9 +752,8 @@ x86_64_elf_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_RELRO;
 
   if (strcmp (name, ".lbss") == 0
-      || strncmp (name, ".lbss.", sizeof (".lbss.") - 1) == 0
-      || strncmp (name, ".gnu.linkonce.lb.",
-		  sizeof (".gnu.linkonce.lb.") - 1) == 0)
+      || startswith (name, ".lbss.")
+      || startswith (name, ".gnu.linkonce.lb."))
     flags |= SECTION_BSS;
 
   return flags;
@@ -21500,7 +21499,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)
     {
       const char *con = constraints[i];
-      if (strncmp (con, "=@cc", 4) != 0)
+      if (!startswith (con, "=@cc"))
 	continue;
       con += 4;
       if (strchr (con, ',') != NULL)
