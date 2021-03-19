@@ -8051,21 +8051,21 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
       int o = off == -1 ? 0 : off;
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  HOST_WIDE_INT min_index;
+	  tree min_index;
 	  unsigned HOST_WIDE_INT cnt;
 	  HOST_WIDE_INT curpos = 0, fieldsize, valueinit = -1;
 	  constructor_elt *ce;
 
-	  if (TYPE_DOMAIN (type) == NULL_TREE
-	      || !tree_fits_shwi_p (TYPE_MIN_VALUE (TYPE_DOMAIN (type))))
+	  if (!TYPE_DOMAIN (type)
+	      || TREE_CODE (TYPE_MIN_VALUE (TYPE_DOMAIN (type))) != INTEGER_CST)
 	    return 0;
 
 	  fieldsize = int_size_in_bytes (TREE_TYPE (type));
 	  if (fieldsize <= 0)
 	    return 0;
 
-	  min_index = tree_to_shwi (TYPE_MIN_VALUE (TYPE_DOMAIN (type)));
-	  if (ptr != NULL)
+	  min_index = TYPE_MIN_VALUE (TYPE_DOMAIN (type));
+	  if (ptr)
 	    memset (ptr, '\0', MIN (total_bytes - off, len));
 
 	  for (cnt = 0; ; cnt++)
@@ -8084,21 +8084,40 @@ native_encode_initializer (tree init, unsigned char *ptr, int len,
 		break;
 	      else
 		pos = total_bytes;
+
 	      if (index && TREE_CODE (index) == RANGE_EXPR)
 		{
-		  if (!tree_fits_shwi_p (TREE_OPERAND (index, 0))
-		      || !tree_fits_shwi_p (TREE_OPERAND (index, 1)))
+		  if (TREE_CODE (TREE_OPERAND (index, 0)) != INTEGER_CST
+		      || TREE_CODE (TREE_OPERAND (index, 1)) != INTEGER_CST)
 		    return 0;
-		  pos = (tree_to_shwi (TREE_OPERAND (index, 0)) - min_index)
-			* fieldsize;
-		  count = (tree_to_shwi (TREE_OPERAND (index, 1))
-			   - tree_to_shwi (TREE_OPERAND (index, 0)));
+		  offset_int wpos
+		    = wi::sext (wi::to_offset (TREE_OPERAND (index, 0))
+				- wi::to_offset (min_index),
+				TYPE_PRECISION (sizetype));
+		  wpos *= fieldsize;
+		  if (!wi::fits_shwi_p (pos))
+		    return 0;
+		  pos = wpos.to_shwi ();
+		  offset_int wcount
+		    = wi::sext (wi::to_offset (TREE_OPERAND (index, 1))
+				- wi::to_offset (TREE_OPERAND (index, 0)),
+				TYPE_PRECISION (sizetype));
+		  if (!wi::fits_shwi_p (wcount))
+		    return 0;
+		  count = wcount.to_shwi ();
 		}
 	      else if (index)
 		{
-		  if (!tree_fits_shwi_p (index))
+		  if (TREE_CODE (index) != INTEGER_CST)
 		    return 0;
-		  pos = (tree_to_shwi (index) - min_index) * fieldsize;
+		  offset_int wpos
+		    = wi::sext (wi::to_offset (index)
+				- wi::to_offset (min_index),
+				TYPE_PRECISION (sizetype));
+		  wpos *= fieldsize;
+		  if (!wi::fits_shwi_p (wpos))
+		    return 0;
+		  pos = wpos.to_shwi ();
 		}
 
 	      if (mask && !CONSTRUCTOR_NO_CLEARING (init) && curpos != pos)
