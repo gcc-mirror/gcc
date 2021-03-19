@@ -480,9 +480,9 @@
 (define_insn "*addsi3_extended2"
   [(set (match_operand:DI                       0 "register_operand" "=r,r")
 	(sign_extend:DI
-	  (subreg:SI (plus:DI (match_operand:DI 1 "register_operand" " r,r")
-			      (match_operand:DI 2 "arith_operand"    " r,I"))
-		     0)))]
+	  (match_operator:SI 3 "subreg_lowpart_operator"
+	     [(plus:DI (match_operand:DI 1 "register_operand" " r,r")
+		       (match_operand:DI 2 "arith_operand"    " r,I"))])))]
   "TARGET_64BIT"
   "add%i2w\t%0,%1,%2"
   [(set_attr "type" "arith")
@@ -536,9 +536,9 @@
 (define_insn "*subsi3_extended2"
   [(set (match_operand:DI                        0 "register_operand" "= r")
 	(sign_extend:DI
-	  (subreg:SI (minus:DI (match_operand:DI 1 "reg_or_0_operand" " rJ")
-			       (match_operand:DI 2 "register_operand" "  r"))
-		     0)))]
+	  (match_operator:SI 3 "subreg_lowpart_operator"
+	    [(minus:DI (match_operand:DI 1 "reg_or_0_operand" " rJ")
+		       (match_operand:DI 2 "register_operand" "  r"))])))]
   "TARGET_64BIT"
   "subw\t%0,%z1,%2"
   [(set_attr "type" "arith")
@@ -572,8 +572,8 @@
 (define_insn "*negsi2_extended2"
   [(set (match_operand:DI                     0 "register_operand" "=r")
 	(sign_extend:DI
-	 (subreg:SI (neg:DI (match_operand:DI 1 "register_operand" " r"))
-	 	    0)))]
+	 (match_operator:SI 2 "subreg_lowpart_operator"
+	   [(neg:DI (match_operand:DI 1 "register_operand" " r"))])))]
   "TARGET_64BIT"
   "negw\t%0,%1"
   [(set_attr "type" "arith")
@@ -627,9 +627,9 @@
 (define_insn "*mulsi3_extended2"
   [(set (match_operand:DI                       0 "register_operand" "=r")
 	(sign_extend:DI
-	  (subreg:SI (mult:DI (match_operand:DI 1 "register_operand" " r")
-			      (match_operand:DI 2 "register_operand" " r"))
-		     0)))]
+	  (match_operator:SI 3 "subreg_lowpart_operator"
+	    [(mult:DI (match_operand:DI 1 "register_operand" " r")
+		      (match_operand:DI 2 "register_operand" " r"))])))]
   "TARGET_MUL && TARGET_64BIT"
   "mulw\t%0,%1,%2"
   [(set_attr "type" "imul")
@@ -1591,10 +1591,10 @@
   [(set (match_operand:SI     0 "register_operand" "= r")
 	(any_shift:SI
 	    (match_operand:SI 1 "register_operand" "  r")
-	    (subreg:QI
-	     (and:SI
-	      (match_operand:SI 2 "register_operand"  "r")
-	      (match_operand 3 "const_int_operand")) 0)))]
+	    (match_operator 4 "subreg_lowpart_operator"
+	     [(and:SI
+	       (match_operand:SI 2 "register_operand"  "r")
+	       (match_operand 3 "const_int_operand"))])))]
   "(INTVAL (operands[3]) & (GET_MODE_BITSIZE (SImode)-1))
    == GET_MODE_BITSIZE (SImode)-1"
   "#"
@@ -1610,10 +1610,10 @@
   [(set (match_operand:SI     0 "register_operand" "= r")
 	(any_shift:SI
 	    (match_operand:SI 1 "register_operand" "  r")
-	    (subreg:QI
-	     (and:DI
-	      (match_operand:DI 2 "register_operand"  "r")
-	      (match_operand 3 "const_int_operand")) 0)))]
+	    (match_operator 4 "subreg_lowpart_operator"
+	     [(and:DI
+	       (match_operand:DI 2 "register_operand"  "r")
+	       (match_operand 3 "const_int_operand"))])))]
   "TARGET_64BIT
    && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (SImode)-1))
        == GET_MODE_BITSIZE (SImode)-1"
@@ -1646,10 +1646,10 @@
   [(set (match_operand:DI     0 "register_operand" "= r")
 	(any_shift:DI
 	    (match_operand:DI 1 "register_operand" "  r")
-	    (subreg:QI
-	     (and:SI
-	      (match_operand:SI 2 "register_operand"  "r")
-	      (match_operand 3 "const_int_operand")) 0)))]
+	    (match_operator 4 "subreg_lowpart_operator"
+	     [(and:SI
+	       (match_operand:SI 2 "register_operand"  "r")
+	       (match_operand 3 "const_int_operand"))])))]
   "TARGET_64BIT
    && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (DImode)-1))
        == GET_MODE_BITSIZE (DImode)-1"
@@ -1666,10 +1666,10 @@
   [(set (match_operand:DI     0 "register_operand" "= r")
 	(any_shift:DI
 	    (match_operand:DI 1 "register_operand" "  r")
-	    (subreg:QI
-	     (and:DI
-	      (match_operand:DI 2 "register_operand"  "r")
-	      (match_operand 3 "const_int_operand")) 0)))]
+	    (match_operator 4 "subreg_lowpart_operator"
+	     [(and:DI
+	       (match_operand:DI 2 "register_operand"  "r")
+	       (match_operand 3 "const_int_operand"))])))]
   "TARGET_64BIT
    && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (DImode)-1))
        == GET_MODE_BITSIZE (DImode)-1"
@@ -1702,10 +1702,10 @@
 	(sign_extend:DI
 	    (any_shift:SI
 	     (match_operand:SI 1 "register_operand" "  r")
-	     (subreg:QI
-	      (and:SI
-	       (match_operand:SI 2 "register_operand" " r")
-	       (match_operand 3 "const_int_operand")) 0))))]
+	     (match_operator 4 "subreg_lowpart_operator"
+	      [(and:SI
+	        (match_operand:SI 2 "register_operand" " r")
+	        (match_operand 3 "const_int_operand"))]))))]
   "TARGET_64BIT
    && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (SImode)-1))
        == GET_MODE_BITSIZE (SImode)-1"
@@ -1724,10 +1724,10 @@
 	(sign_extend:DI
 	    (any_shift:SI
 	     (match_operand:SI 1 "register_operand" "  r")
-	     (subreg:QI
-	      (and:DI
-	       (match_operand:DI 2 "register_operand" " r")
-	       (match_operand 3 "const_int_operand")) 0))))]
+	     (match_operator 4 "subreg_lowpart_operator"
+	      [(and:DI
+	        (match_operand:DI 2 "register_operand" " r")
+	        (match_operand 3 "const_int_operand"))]))))]
   "TARGET_64BIT
    && (INTVAL (operands[3]) & (GET_MODE_BITSIZE (SImode)-1))
        == GET_MODE_BITSIZE (SImode)-1"
