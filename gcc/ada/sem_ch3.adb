@@ -14397,7 +14397,7 @@ package body Sem_Ch3 is
 
       --  If this is a range for a fixed-lower-bound subtype, then set the
       --  index itype's lower bound to the FLB and the index type's upper bound
-      --  to the high bound of the index base type's high bound, mark the itype
+      --  to the high bound of the index subtype's high bound, mark the itype
       --  as an FLB index subtype, and set the range's Etype to the itype.
 
       if Nkind (S) = N_Range and then Is_FLB_Index then
@@ -14405,7 +14405,7 @@ package body Sem_Ch3 is
            (Def_Id,
             Make_Range (Sloc (S),
               Low_Bound  => Low_Bound (S),
-              High_Bound => Type_High_Bound (Base_Type (T))));
+              High_Bound => Type_High_Bound (T)));
          Set_Is_Fixed_Lower_Bound_Index_Subtype (Def_Id);
 
       else
