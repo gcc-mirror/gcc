@@ -3307,7 +3307,7 @@ get_operand (gfc_intrinsic_op op, gfc_expr *e1, gfc_expr *e2)
    removed by DCE. Only called for rank-two matrices A and B.  */
 
 static gfc_code *
-inline_limit_check (gfc_expr *a, gfc_expr *b, int limit)
+inline_limit_check (gfc_expr *a, gfc_expr *b, int limit, int rank_a)
 {
   gfc_expr *inline_limit;
   gfc_code *if_1, *if_2, *else_2;
@@ -3315,16 +3315,28 @@ inline_limit_check (gfc_expr *a, gfc_expr *b, int limit)
   gfc_typespec ts;
   gfc_expr *cond;
 
+  gcc_assert (rank_a == 1 || rank_a == 2);
+
   /* Calculation is done in real to avoid integer overflow.  */
 
   inline_limit = gfc_get_constant_expr (BT_REAL, gfc_default_real_kind,
 					&a->where);
   mpfr_set_si (inline_limit->value.real, limit, GFC_RND_MODE);
-  mpfr_pow_ui (inline_limit->value.real, inline_limit->value.real, 3,
+
+  /* Set the limit according to the rank.  */
+  mpfr_pow_ui (inline_limit->value.real, inline_limit->value.real, rank_a + 1,
 	       GFC_RND_MODE);
 
   a1 = get_array_inq_function (GFC_ISYM_SIZE, a, 1);
-  a2 = get_array_inq_function (GFC_ISYM_SIZE, a, 2);
+
+  /* For a_rank = 1, must use one as the size of a along the second
+     dimension as to avoid too much code duplication.  */
+
+  if (rank_a == 2)
+    a2 = get_array_inq_function (GFC_ISYM_SIZE, a, 2);
+  else
+    a2 = gfc_get_int_expr (gfc_index_integer_kind, &a->where, 1);
+
   b2 = get_array_inq_function (GFC_ISYM_SIZE, b, 2);
 
   gfc_clear_ts (&ts);
@@ -4243,11 +4255,13 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   /* Take care of the inline flag.  If the limit check evaluates to a
      constant, dead code elimination will eliminate the unneeded branch.  */
 
-  if (flag_inline_matmul_limit > 0 && matrix_a->rank == 2
+  if (flag_inline_matmul_limit > 0
+      && (matrix_a->rank == 1 || matrix_a->rank == 2)
       && matrix_b->rank == 2)
     {
       if_limit = inline_limit_check (matrix_a, matrix_b,
-				     flag_inline_matmul_limit);
+				     flag_inline_matmul_limit,
+				     matrix_a->rank);
 
       /* Insert the original statement into the else branch.  */
       if_limit->block->block->next = co;
@@ -4757,7 +4771,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   /* Generate the if statement and hang it into the tree.  */
-  if_limit = inline_limit_check (matrix_a, matrix_b, flag_blas_matmul_limit);
+  if_limit = inline_limit_check (matrix_a, matrix_b, flag_blas_matmul_limit, 2);
   co_next = co->next;
   (*current_code) = if_limit;
   co->next = NULL;
