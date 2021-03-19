@@ -1,3 +1,21 @@
+2021-03-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2021-03-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* g++.target/aarch64/sve/aarch64-sve.exp: Add -moverride=tune=none to
+	sve_flags.
+	* g++.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: Likewise.
+	* g++.target/aarch64/sve/acle/aarch64-sve-acle.exp: Likewise.
+	* gcc.target/aarch64/sve/aarch64-sve.exp: Likewise.
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle.exp: Likewise.
+
+2021-03-18  Jason Merrill  <jason@redhat.com>
+
+	PR c/99363
+	* gcc.dg/attr-flatten-1.c: Adjust.
+
 2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:

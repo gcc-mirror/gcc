@@ -1,3 +1,26 @@
+2021-03-18  Sinan Lin  <sinan@isrc.iscas.ac.cn>
+
+	Backported from master:
+	2021-03-18  Sinan Lin  <sinan@isrc.iscas.ac.cn>
+		    Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_block_move_straight): Change type
+	to unsigned HOST_WIDE_INT for parameter and local variable with
+	HOST_WIDE_INT type.
+	(riscv_adjust_block_mem): Ditto.
+	(riscv_block_move_loop): Ditto.
+	(riscv_expand_block_move): Ditto.
+
+2021-03-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2021-03-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_adjust_generic_arch_tuning): Define.
+	(aarch64_override_options_internal): Use it.
+	(generic_tunings): Add AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS to
+	tune_flags.
+
 2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
