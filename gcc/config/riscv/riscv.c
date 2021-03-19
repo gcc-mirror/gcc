@@ -1966,7 +1966,7 @@ riscv_address_cost (rtx addr, machine_mode mode,
 rtx
 riscv_subword (rtx op, bool high_p)
 {
-  unsigned int byte = high_p ? UNITS_PER_WORD : 0;
+  unsigned int byte = (high_p != BYTES_BIG_ENDIAN) ? UNITS_PER_WORD : 0;
   machine_mode mode = GET_MODE (op);
 
   if (mode == VOIDmode)
