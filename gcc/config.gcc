@@ -2878,7 +2878,6 @@ powerpc-*-darwin*)
 	  *-darwin8*)
 	    tmake_file="${tmake_file} ${cpu_type}/t-darwin32-biarch"
 	    tm_file="${tm_file} ${cpu_type}/darwin32-biarch.h"
-	    tm_file="${tm_file} ${cpu_type}/darwin8.h"
 	    ;;
 	  *-darwin7*)
 	    tm_file="${tm_file} ${cpu_type}/darwin7.h"

@@ -95,6 +95,8 @@ public:
 				 feasibility_problem **out_problem);
 
 private:
+  DISABLE_COPY_AND_ASSIGN(epath_finder);
+
   exploded_path *explore_feasible_paths (const exploded_node *target_enode,
 					 const char *desc, unsigned diag_idx);
   bool process_worklist_item (feasible_worklist *worklist,

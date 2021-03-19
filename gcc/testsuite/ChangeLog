@@ -1,3 +1,55 @@
+2021-03-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99500
+	* g++.dg/cpp2a/concepts-err3.C: New test.
+
+2021-03-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99502
+	* g++.dg/warn/Warray-bounds-22.C: New test.
+	* g++.dg/warn/Warray-bounds-23.C: New test.
+	* g++.dg/warn/Warray-bounds-24.C: New test.
+
+2021-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/99636
+	* gcc.dg/strlenopt-80.c: For powerpc*-*-*, only enable for lp64.
+
+2021-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/99626
+	* gcc.dg/strlenopt-73.c: Ifdef out test_copy_cond_unequal_length_i64
+	on targets other than x86, aarch64, s390 and 64-bit powerpc.  Use
+	test_copy_cond_unequal_length_i128 for __x86_64__ with int128 support
+	rather than __i386__.
+
+2021-03-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR testsuite/97680
+	* c-c++-common/zero-scratch-regs-10.c: Skip on arm
+
+2021-03-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc++/49070
+	* obj-c++.dg/pr49070.mm: New test.
+	* objc.dg/unnamed-parms.m: New test.
+
+2021-03-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* g++.target/aarch64/sve/aarch64-sve.exp: Add -moverride=tune=none to
+	sve_flags.
+	* g++.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: Likewise.
+	* g++.target/aarch64/sve/acle/aarch64-sve-acle.exp: Likewise.
+	* gcc.target/aarch64/sve/aarch64-sve.exp: Likewise.
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle.exp: Likewise.
+
+2021-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/98099
+	* gcc.dg/pr98099.c: Don't compile the test on pdp endian.
+	For big endian use -fsso-struct=little-endian dg-options.
+
 2021-03-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97973

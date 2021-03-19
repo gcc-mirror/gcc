@@ -203,68 +203,49 @@ vect_merge_perms (complex_perm_kinds_t a, complex_perm_kinds_t b)
 /* Check to see if all loads rooted in ROOT are linear.  Linearity is
    defined as having no gaps between values loaded.  */
 
-static complex_load_perm_t
+static complex_perm_kinds_t
 linear_loads_p (slp_tree_to_load_perm_map_t *perm_cache, slp_tree root)
 {
   if (!root)
-    return std::make_pair (PERM_UNKNOWN, vNULL);
+    return PERM_UNKNOWN;
 
   unsigned i;
-  complex_load_perm_t *tmp;
+  complex_perm_kinds_t *tmp;
 
   if ((tmp = perm_cache->get (root)) != NULL)
     return *tmp;
 
-  complex_load_perm_t retval = std::make_pair (PERM_UNKNOWN, vNULL);
+  complex_perm_kinds_t retval = PERM_UNKNOWN;
   perm_cache->put (root, retval);
 
   /* If it's a load node, then just read the load permute.  */
   if (SLP_TREE_LOAD_PERMUTATION (root).exists ())
     {
-      retval.first = is_linear_load_p (SLP_TREE_LOAD_PERMUTATION (root));
-      retval.second = SLP_TREE_LOAD_PERMUTATION (root);
+      retval = is_linear_load_p (SLP_TREE_LOAD_PERMUTATION (root));
       perm_cache->put (root, retval);
       return retval;
     }
   else if (SLP_TREE_DEF_TYPE (root) != vect_internal_def)
     {
-      retval.first = PERM_TOP;
+      retval = PERM_TOP;
       perm_cache->put (root, retval);
       return retval;
     }
 
-  auto_vec<load_permutation_t> all_loads;
   complex_perm_kinds_t kind = PERM_TOP;
 
   slp_tree child;
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (root), i, child)
     {
-      complex_load_perm_t res = linear_loads_p (perm_cache, child);
-      kind = vect_merge_perms (kind, res.first);
+      complex_perm_kinds_t res = linear_loads_p (perm_cache, child);
+      kind = vect_merge_perms (kind, res);
       /* Unknown and Top are not valid on blends as they produce no permute.  */
-      retval.first = kind;
+      retval = kind;
       if (kind == PERM_UNKNOWN || kind == PERM_TOP)
 	return retval;
-      all_loads.safe_push (res.second);
     }
 
-  if (SLP_TREE_LANE_PERMUTATION (root).exists ())
-    {
-      lane_permutation_t perm = SLP_TREE_LANE_PERMUTATION (root);
-      load_permutation_t nloads;
-      nloads.create (SLP_TREE_LANES (root));
-      nloads.quick_grow (SLP_TREE_LANES (root));
-      for (i = 0; i < SLP_TREE_LANES (root); i++)
-	nloads[i] = all_loads[perm[i].first][perm[i].second];
-
-      retval.first = kind;
-      retval.second = nloads;
-    }
-  else
-    {
-      retval.first = kind;
-      retval.second = all_loads[0];
-    }
+  retval = kind;
 
   perm_cache->put (root, retval);
   return retval;
@@ -704,11 +685,11 @@ complex_add_pattern::matches (complex_operation_t op,
   vec<slp_tree> children = SLP_TREE_CHILDREN ((*ops)[0]);
 
   /* First node must be unpermuted.  */
-  if (linear_loads_p (perm_cache, children[0]).first != PERM_EVENODD)
+  if (linear_loads_p (perm_cache, children[0]) != PERM_EVENODD)
     return IFN_LAST;
 
   /* Second node must be permuted.  */
-  if (linear_loads_p (perm_cache, children[1]).first != PERM_ODDEVEN)
+  if (linear_loads_p (perm_cache, children[1]) != PERM_ODDEVEN)
     return IFN_LAST;
 
   if (!vect_pattern_validate_optab (ifn, *node))
@@ -795,9 +776,9 @@ vect_normalize_conj_loc (vec<slp_tree> args, bool *neg_first_p = NULL)
 /* Helper function to check if PERM is KIND or PERM_TOP.  */
 
 static inline bool
-is_eq_or_top (complex_load_perm_t perm, complex_perm_kinds_t kind)
+is_eq_or_top (complex_perm_kinds_t perm, complex_perm_kinds_t kind)
 {
-  return perm.first == kind || perm.first == PERM_TOP;
+  return perm == kind || perm == PERM_TOP;
 }
 
 /* Helper function that checks to see if LEFT_OP and RIGHT_OP are both MULT_EXPR
@@ -828,7 +809,7 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
       /* Canonicalization for fms is not consistent. So have to test both
 	 variants to be sure.  This needs to be fixed in the mid-end so
 	 this part can be simpler.  */
-      kind = linear_loads_p (perm_cache, right_op[0]).first;
+      kind = linear_loads_p (perm_cache, right_op[0]);
       if (!((is_eq_or_top (linear_loads_p (perm_cache, right_op[0]), PERM_ODDODD)
 	   && is_eq_or_top (linear_loads_p (perm_cache, right_op[1]),
 			     PERM_ODDEVEN))
@@ -839,7 +820,7 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
     }
   else
     {
-      if (linear_loads_p (perm_cache, right_op[1]).first != PERM_ODDODD
+      if (linear_loads_p (perm_cache, right_op[1]) != PERM_ODDODD
 	  && !is_eq_or_top (linear_loads_p (perm_cache, right_op[0]),
 			    PERM_ODDEVEN))
 	return false;
@@ -852,15 +833,15 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
   /* Check if the conjugate is on the second first or second operand.  The
      order of the node with the conjugate value determines this, and the dup
      node must be one of lane 0 of the same DR as the neg node.  */
-  kind = linear_loads_p (perm_cache, left_op[index1]).first;
+  kind = linear_loads_p (perm_cache, left_op[index1]);
   if (kind == PERM_TOP)
     {
-      if (linear_loads_p (perm_cache, left_op[index2]).first == PERM_EVENODD)
+      if (linear_loads_p (perm_cache, left_op[index2]) == PERM_EVENODD)
 	return true;
     }
   else if (kind == PERM_EVENODD)
     {
-      if ((kind = linear_loads_p (perm_cache, left_op[index2]).first) == PERM_EVENODD)
+      if ((kind = linear_loads_p (perm_cache, left_op[index2])) == PERM_EVENODD)
 	return false;
       return true;
     }
@@ -1003,7 +984,7 @@ complex_mul_pattern::matches (complex_operation_t op,
   left_op.safe_splice (SLP_TREE_CHILDREN (muls[0]));
   right_op.safe_splice (SLP_TREE_CHILDREN (muls[1]));
 
-  if (linear_loads_p (perm_cache, left_op[1]).first == PERM_ODDEVEN)
+  if (linear_loads_p (perm_cache, left_op[1]) == PERM_ODDEVEN)
     return IFN_LAST;
 
   bool neg_first = false;
@@ -1035,7 +1016,7 @@ complex_mul_pattern::matches (complex_operation_t op,
   ops->truncate (0);
   ops->create (3);
 
-  complex_perm_kinds_t kind = linear_loads_p (perm_cache, left_op[0]).first;
+  complex_perm_kinds_t kind = linear_loads_p (perm_cache, left_op[0]);
   if (kind == PERM_EVENODD)
     {
       ops->quick_push (left_op[1]);
@@ -1356,7 +1337,7 @@ complex_fms_pattern::matches (complex_operation_t op,
   ops->truncate (0);
   ops->create (4);
 
-  complex_perm_kinds_t kind = linear_loads_p (perm_cache, right_op[0]).first;
+  complex_perm_kinds_t kind = linear_loads_p (perm_cache, right_op[0]);
   if (kind == PERM_EVENODD)
     {
       ops->quick_push (child);

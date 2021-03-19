@@ -299,7 +299,7 @@
 (define_insn "mve_vshlq_<supf><mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w,w")
 	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w,w")
-		       (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "w,Dm")]
+		       (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "w,Ds")]
 	 VSHLQ))]
   "ARM_HAVE_<MODE>_ARITH && !TARGET_REALLY_IWMMXT"
   "@

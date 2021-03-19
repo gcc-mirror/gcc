@@ -1,3 +1,54 @@
+2021-03-18  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99422
+	* lra-constraints.c (process_address_1): Use lookup_constraint
+	only for a single constraint.
+
+2021-03-18  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99502
+	* gimple-array-bounds.cc (inbounds_vbase_memaccess_p): Rename...
+	(inbounds_memaccess_p): ...to this.  Check the ending offset of
+	the accessed member.
+
+2021-03-18  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_parse_amdgpu_hsa_kernel_attribute): Add %< and
+	  %> quote markers to error messages.
+	(gcn_goacc_validate_dims): Likewise.
+	(gcn_conditional_register_usage): Remove exclaimation mark from error
+	message.
+	(gcn_vectorize_vec_perm_const): Ensure perm is fully uninitialized.
+
+2021-03-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (struct processor_costs): Fix costs of
+	integer divides1.
+
+2021-03-18  Sinan Lin  <sinan@isrc.iscas.ac.cn>
+	    Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.c (riscv_block_move_straight): Change type
+	to unsigned HOST_WIDE_INT for parameter and local variable with
+	HOST_WIDE_INT type.
+	(riscv_adjust_block_mem): Ditto.
+	(riscv_block_move_loop): Ditto.
+	(riscv_expand_block_move): Ditto.
+
+2021-03-18  Nick Clifton  <nickc@redhat.com>
+
+	* config/v850/v850.c (construct_restore_jr): Increase static
+	 buffer size.
+	(construct_save_jarl): Likewise.
+	* config/v850/v850.h (DWARF2_DEBUGGING_INFO): Define.
+
+2021-03-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_adjust_generic_arch_tuning): Define.
+	(aarch64_override_options_internal): Use it.
+	(generic_tunings): Add AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS to
+	tune_flags.
+
 2021-03-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* config/nios2/nios2.c (nios2_custom_check_insns): Clean up

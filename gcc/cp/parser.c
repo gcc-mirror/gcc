@@ -28839,8 +28839,11 @@ cp_parser_requirement_parameter_list (cp_parser *parser)
       if (parm == void_list_node || parm == explicit_void_list_node)
 	break;
       tree decl = TREE_VALUE (parm);
-      DECL_CONTEXT (decl) = NULL_TREE;
-      CONSTRAINT_VAR_P (decl) = true;
+      if (decl != error_mark_node)
+	{
+	  DECL_CONTEXT (decl) = NULL_TREE;
+	  CONSTRAINT_VAR_P (decl) = true;
+	}
     }
 
   return parms;

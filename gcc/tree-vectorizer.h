@@ -2059,13 +2059,8 @@ typedef enum _complex_perm_kinds {
    PERM_TOP
 } complex_perm_kinds_t;
 
-/* A pair with a load permute and a corresponding complex_perm_kind which gives
-   information about the load it represents.  */
-typedef std::pair<complex_perm_kinds_t, load_permutation_t>
-  complex_load_perm_t;
-
 /* Cache from nodes to the load permutation they represent.  */
-typedef hash_map <slp_tree, complex_load_perm_t>
+typedef hash_map <slp_tree, complex_perm_kinds_t>
   slp_tree_to_load_perm_map_t;
 
 /* Vector pattern matcher base class.  All SLP pattern matchers must inherit

@@ -64,6 +64,10 @@ along with GCC; see the file COPYING3.  If not see
 /* Both kernels and RTPs have the facilities required by this macro.  */
 #define TARGET_POSIX_IO
 
+/* The AE/653 system headers all predate the introduction of _VX_ prefixes
+   ahead of CPU families of macros.  */
+#define VX_CPU_PREFIX ""
+
 /* A VxWorks 653 implementation of TARGET_OS_CPP_BUILTINS.  */
 #define VXWORKS_OS_CPP_BUILTINS()                                       \
   do                                                                    \

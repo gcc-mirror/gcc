@@ -1,3 +1,36 @@
+2021-03-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99500
+	* parser.c (cp_parser_requirement_parameter_list): Handle
+	error_mark_node.
+
+2021-03-18  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (tsubst_copy_and_build) <case FLOAT_EXPR>: Remove.
+
+2021-03-18  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (tsubst_copy_and_build): Add assert.
+
+2021-03-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc++/49070
+	* parser.c (cp_debug_parser): Add Objective-C++ message
+	state flag.
+	(cp_parser_nested_name_specifier_opt): Allow colon to
+	terminate an assignment-expression when parsing Objective-
+	C++ messages.
+	(cp_parser_objc_message_expression): Set and clear message
+	parsing state on entry and exit.
+	* parser.h (struct cp_parser): Add a context flag for
+	Objective-C++ message state.
+
+2021-03-18  Martin Liska  <mliska@suse.cz>
+
+	PR c++/99617
+	* coroutines.cc (struct var_nest_node): Init then_cl and else_cl
+	to NULL.
+
 2021-03-17  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97973

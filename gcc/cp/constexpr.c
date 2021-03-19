@@ -6656,7 +6656,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
 	if (TREE_CODE (t) == CONVERT_EXPR
 	    && ARITHMETIC_TYPE_P (type)
-	    && INDIRECT_TYPE_P (TREE_TYPE (op)))
+	    && INDIRECT_TYPE_P (TREE_TYPE (op))
+	    && ctx->manifestly_const_eval)
 	  {
 	    if (!ctx->quiet)
 	      error_at (loc,
