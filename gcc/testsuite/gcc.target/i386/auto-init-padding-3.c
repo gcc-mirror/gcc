@@ -23,8 +23,5 @@ int foo ()
   return var.four.internal1;
 }
 
-/* { dg-final { scan-assembler "movl\t\\\$0," } } */
-/* { dg-final { scan-assembler "movl\t\\\$16," { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "rep stosq" { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler "movl\t\\\$32," { target ia32 } } } */
-/* { dg-final { scan-assembler "rep stosl" { target ia32 } } } */
+/* { dg-final { scan-assembler-times "pxor\t%xmm0, %xmm0" 1 } } */
+/* { dg-final { scan-assembler-times "movaps\t%xmm0, " 8 } } */
