@@ -241,7 +241,7 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
 	}
       if (a == GCN_KERNEL_ARG_TYPES)
 	{
-	  error ("unknown specifier %qs in %<amdgpu_hsa_kernel attribute%>",
+	  error ("unknown specifier %qs in %<amdgpu_hsa_kernel%> attribute",
 		 str);
 	  err = true;
 	  break;
