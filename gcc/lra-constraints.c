@@ -3395,12 +3395,12 @@ equiv_address_substitution (struct address_info *ad)
 /* Skip all modifiers and whitespaces in constraint STR and return the
    result.  */
 static const char *
-skip_contraint_modifiers (const char *str)
+skip_constraint_modifiers (const char *str)
 {
   for (;;str++)
     switch (*str)
       {
-      case '+' : case '&' : case '=': case '*': case ' ': case '\t':
+      case '+': case '&' : case '=': case '*': case ' ': case '\t':
       case '$': case '^' : case '%': case '?': case '!':
 	break;
       default: return str;
@@ -3451,13 +3451,13 @@ process_address_1 (int nop, bool check_only_p,
     return false;
 
   constraint
-    = skip_contraint_modifiers (curr_static_id->operand[nop].constraint);
+    = skip_constraint_modifiers (curr_static_id->operand[nop].constraint);
   if (IN_RANGE (constraint[0], '0', '9'))
     {
       char *end;
       unsigned long dup = strtoul (constraint, &end, 10);
       constraint
-	= skip_contraint_modifiers (curr_static_id->operand[dup].constraint);
+	= skip_constraint_modifiers (curr_static_id->operand[dup].constraint);
     }
   cn = lookup_constraint (*constraint == '\0' ? "X" : constraint);
   /* If we have several alternatives or/and several constraints in an
@@ -3465,10 +3465,10 @@ process_address_1 (int nop, bool check_only_p,
      use unknown constraint.  The exception is an address constraint.  If
      operand has one address constraint, probably all others constraints are
      address ones.  */
-  if (get_constraint_type (cn) != CT_ADDRESS
-      && *skip_contraint_modifiers (constraint
-				    + CONSTRAINT_LEN (constraint[0],
-						      constraint)) != '\0')
+  if (constraint[0] != '\0' && get_constraint_type (cn) != CT_ADDRESS
+      && *skip_constraint_modifiers (constraint
+				     + CONSTRAINT_LEN (constraint[0],
+						       constraint)) != '\0')
     cn = CONSTRAINT__UNKNOWN;
   if (insn_extra_address_constraint (cn)
       /* When we find an asm operand with an address constraint that
