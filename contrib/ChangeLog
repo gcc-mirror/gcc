@@ -1,3 +1,10 @@
+2021-03-19  Matthias Klose  <doko@ubuntu.com>
+
+	Backported from master:
+	2021-03-19  Matthias Klose  <doko@ubuntu.com>
+
+	* texi2pod.pl: Substitute @tie{} with a space for the man pages.
+
 2021-01-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR lto/85574

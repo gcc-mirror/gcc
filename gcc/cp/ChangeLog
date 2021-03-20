@@ -1,3 +1,105 @@
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99613
+	* decl.c (expand_static_init): For thread guards, call __cxa_atexit
+	before calling __cxa_guard_release rather than after it.  Formatting
+	fixes.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99507
+	* call.c (build_over_call): For immediate evaluation of functions
+	that return references, undo convert_from_reference effects before
+	calling cxx_constant_value and call convert_from_reference
+	afterwards.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88146
+	PR c++/99362
+	* cvt.c (convert_to_void): Revert 2019-10-17 changes.  Clarify
+	comment.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82959
+	* call.c (op_is_ordered): Handle TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR
+	and COMPOUND_EXPR.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95451
+	* lambda.c (is_lambda_ignored_entity): Before checking for
+	LAMBDA_FUNCTION_P, use OVL_FIRST.  Drop FUNCTION_DECL check.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/99106
+	* init.c (build_zero_init_1): For flexible array members just return
+	NULL_TREE instead of returning empty CONSTRUCTOR with non-complete
+	ARRAY_TYPE.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97742
+	* parser.c (cp_parser_requirement_seq): Stop iterating after reaching
+	CPP_EOF.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99033
+	* init.c (build_zero_init_1): Handle zero initialiation of
+	flexible array members like initialization of [0] arrays.
+	Use integer_minus_onep instead of comparison to integer_minus_one_node
+	and integer_zerop instead of comparison against size_zero_node.
+	Formatting fixes.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98988
+	PR c++/99031
+	* constexpr.c: Include cgraph.h.
+	(cxx_eval_call_expression): Call varpool_node::finalize_decl on
+	heap artificial vars.
+	(cxx_eval_outermost_constant_expr): Remove varpool nodes for
+	heap artificial vars.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97878
+	* decl.c (check_array_initializer): For structured bindings, require
+	the array type to be complete.
+
 2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* coroutines.cc (struct var_nest_node): Provide a default

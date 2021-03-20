@@ -1,3 +1,155 @@
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99563
+	* config/i386/i386.h (struct machine_function): Add
+	has_explicit_vzeroupper bitfield.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Set
+	cfun->machine->has_explicit_vzeroupper when expanding
+	IX86_BUILTIN_VZEROUPPER.
+	* config/i386/i386-features.c (rest_of_handle_insert_vzeroupper):
+	Do the mode switching only when TARGET_VZEROUPPER, expensive
+	optimizations turned on and not optimizing for size.
+	(pass_insert_vzeroupper::gate): Enable even when
+	cfun->machine->has_explicit_vzeroupper is set.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99542
+	* config/aarch64/aarch64.c
+	(aarch64_simd_clone_compute_vecsize_and_simdlen): If not a function
+	definition, walk TYPE_ARG_TYPES list if non-NULL for argument types
+	instead of DECL_ARGUMENTS.  Ignore types for uniform arguments.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/99517
+	* ipa-icf-gimple.c (func_checker::compare_gimple_call): For internal
+	function calls with lhs fail if the lhs don't have compatible types.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93235
+	* expmed.c (store_bit_field_using_insv): Return false of xop0 is a
+	SUBREG and a SUBREG to op_mode can't be created.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99085
+	* cfgrtl.c (fixup_partitions): When changing some bbs from hot to cold
+	partitions, if in non-layout mode after reorder_blocks also move
+	affected blocks to ensure a single partition transition.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99225
+	* fold-const.c (fold_binary_loc) <case NE_EXPR>: In (x & (1 << y)) != 0
+	to ((x >> y) & 1) != 0 simplifications use build_one_cst instead of
+	build_int_cst (..., 1).  Formatting fixes.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99204
+	* fold-const.c (fold_read_from_constant_string): Check that
+	tree_fits_uhwi_p (index) rather than just that index is INTEGER_CST.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/99034
+	* tree-cfg.c (gimple_merge_blocks): If bb a starts with eh landing
+	pad or non-local label, put FORCED_LABELs from bb b after that label
+	rather than before it.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99079
+	* match.pd (A % (pow2pcst << N) -> A & ((pow2pcst << N) - 1)): Remove
+	useless tree_nop_conversion_p (type, TREE_TYPE (@3)) check.  Instead
+	require both type and TREE_TYPE (@1) to be integral types and either
+	type having smaller or equal precision, or TREE_TYPE (@1) being
+	unsigned type, or type being signed type.  If TREE_TYPE (@1)
+	doesn't have wrapping overflow, perform the subtraction of one in
+	unsigned type.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99035
+	* varasm.c (declare_weak): For -fsyntax-only, allow even
+	TREE_ASM_WRITTEN function decls.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99007
+	* gimplify.c (gimplify_scan_omp_clauses): For MEM_REF on reductions,
+	temporarily disable gimplify_ctxp->into_ssa around gimplify_expr
+	calls.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97487
+	* ifcvt.c (noce_can_force_operand): New function.
+	(noce_emit_move_insn): Use it.
+	(noce_try_sign_mask): Likewise.  Formatting fix.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97971
+	* lra-constraints.c (process_alt_operands): For inline asm, don't call
+	fatal_insn, but instead return false.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98287
+	* config/i386/mmx.md (<insn><mode>3): For shifts don't enable expander
+	for V1DImode.
+
+2021-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/99641
+	* fold-const.c (native_encode_initializer) <CONSTRUCTOR>: For an
+	array type, do the computation of the current position in sizetype.
+
 2021-03-18  Sinan Lin  <sinan@isrc.iscas.ac.cn>
 
 	Backported from master:

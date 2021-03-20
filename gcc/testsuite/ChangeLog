@@ -1,3 +1,262 @@
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/99636
+	* gcc.dg/strlenopt-80.c: For powerpc*-*-*, only enable for lp64.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/99626
+	* gcc.dg/strlenopt-73.c: Ifdef out test_copy_cond_unequal_length_i64
+	on targets other than x86, aarch64, s390 and 64-bit powerpc.  Use
+	test_copy_cond_unequal_length_i128 for __x86_64__ with int128 support
+	rather than __i386__.
+
+2021-03-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2021-03-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99542
+	* gcc.dg/declare-simd.c (fn2): Expect a warning only under lp64.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99563
+	* gcc.target/i386/avx-pr99563.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99542
+	* gcc.dg/gomp/pr99542.c: New test.
+	* gcc.dg/gomp/pr59669-2.c (bar): Don't expect a warning on aarch64.
+	* gcc.dg/gomp/simd-clones-2.c (setArray): Likewise.
+	* g++.dg/vect/simd-clone-7.cc (bar): Likewise.
+	* g++.dg/gomp/declare-simd-1.C (f37): Expect a different warning
+	on aarch64.
+	* gcc.dg/declare-simd.c (fn2): Expect a new warning on aarch64.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99507
+	* g++.dg/cpp2a/consteval19.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/99517
+	* gcc.target/i386/avx2-pr99517-1.c: New test.
+	* gcc.target/i386/avx2-pr99517-2.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/93235
+	* gcc.target/aarch64/pr93235.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88146
+	PR c++/99362
+	* g++.dg/cpp2a/nodiscard-constructor.c: Renamed to ...
+	* g++.dg/cpp2a/nodiscard-constructor1.C: ... this.  Remove
+	-ftrack-macro-expansion=0 from dg-options.  Don't use (?n) in
+	dg-warning regexps, instead replace .* with \[^\n\r]*.
+	* g++.dg/cpp2a/nodiscard-constructor2.C: New test.
+	* g++.dg/cpp2a/nodiscard-reason-only-one.C: Remove
+	-ftrack-macro-expansion=0 from dg-options.
+	* g++.dg/cpp2a/nodiscard-reason-nonstring.C: Likewise.
+	* g++.dg/cpp2a/nodiscard-once.C: Likewise.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82959
+	* g++.dg/cpp1z/eval-order10.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99324
+	* gcc.c-torture/compile/pr99324.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99085
+	* gcc.dg/graphite/pr99085.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95451
+	* g++.dg/cpp1y/lambda-generic-95451.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99225
+	* gcc.c-torture/compile/pr99225.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99204
+	* gfortran.dg/pr99204.f90: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR ipa/99034
+	* g++.dg/opt/pr99034.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99136
+	* gcc.dg/pr99136.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/99106
+	* g++.dg/ubsan/pr99106.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99079
+	* gcc.dg/fold-modpow2-2.c: New test.
+	* gcc.c-torture/execute/pr99079.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97742
+	* g++.dg/cpp2a/concepts-requires24.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99033
+	* g++.dg/ext/flexary38.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99035
+	* g++.dg/ext/weak6.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98988
+	PR c++/99031
+	* g++.dg/cpp2a/constexpr-new16.C: New test.
+	* g++.dg/cpp2a/constexpr-new17.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99007
+	* g++.dg/gomp/pr99007.C: New test.
+	* gcc.dg/gomp/pr99007-1.c: New test.
+	* gcc.dg/gomp/pr99007-2.c: New test.
+	* gcc.dg/gomp/pr99007-3.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97878
+	* g++.dg/cpp1z/decomp54.C: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97487
+	* gcc.dg/pr97487-1.c: New test.
+	* gcc.dg/pr97487-2.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/97971
+	* gcc.target/i386/pr97971.c: New test.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98287
+	* gcc.dg/pr98287.c: New test.
+
+2021-03-19  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-03-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99205
+	* gfortran.dg/data_char_4.f90: New test.
+	* gfortran.dg/data_char_5.f90: New test.
+
 2021-03-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backported from master:
