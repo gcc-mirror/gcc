@@ -20009,7 +20009,7 @@ fini_modules ()
   modules_hash = NULL;
 
   /* Or entity array.  We still need the entity map to find import numbers.  */
-  delete entity_ary;
+  vec_free (entity_ary);
   entity_ary = NULL;
 
   /* Or remember any pending entities.  */
