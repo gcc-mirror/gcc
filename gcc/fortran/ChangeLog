@@ -1,3 +1,10 @@
+2021-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (inline_limit_check): Add rank_a
+	argument. If a is rank 1, set the second dimension to 1.
+	(inline_matmul_assign): Pass rank_a argument to inline_limit_check.
+	(call_external_blas): Likewise.
+
 2021-03-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/99345

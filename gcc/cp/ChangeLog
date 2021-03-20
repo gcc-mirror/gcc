@@ -1,3 +1,10 @@
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99456
+	* constexpr.c (cxx_eval_constant_expression): For CONVERT_EXPR from
+	INDIRECT_TYPE_P to ARITHMETIC_TYPE_P, when !ctx->manifestly_const_eval
+	don't diagnose it, set *non_constant_p nor return t.
+
 2021-03-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/99500

@@ -1,3 +1,71 @@
+2021-03-19  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (power10_cost): New.
+	(rs6000_option_override_internal): Set Power10 costs.
+	(rs6000_issue_rate): Set Power10 issue rate.
+	* config/rs6000/power10.md: Rewrite for Power10.
+
+2021-03-19  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99663
+	* lra-constraints.c (process_address_1): Don't use unknown
+	constraint for address constraint.
+
+2021-03-19  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/99661
+	* config.gcc (powerpc-*-darwin8): Delete the reference to
+	the now removed darwin8.h.
+
+2021-03-19  Olivier Hainque  <hainque@adacore.com>
+
+	PR target/99660
+	* config/vxworksae.h (VX_CPU_PREFIX): Define.
+
+2021-03-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (import_milli): Use memcpy instead of strncpy.
+
+2021-03-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/99656
+	* tree-vect-slp-patterns.c (linear_loads_p,
+	complex_add_pattern::matches, is_eq_or_top,
+	vect_validate_multiplication, complex_mul_pattern::matches,
+	complex_fms_pattern::matches): Remove complex_perm_kinds_t.
+	* tree-vectorizer.h: (complex_load_perm_t): Removed.
+	(slp_tree_to_load_perm_map_t): Use complex_perm_kinds_t instead of
+	complex_load_perm_t.
+
+2021-03-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99652
+	* config/i386/i386-options.c (ix86_init_machine_status): Set
+	silent_p to true.
+	* config/i386/i386.c (init_cumulative_args): Set silent_p to
+	false.
+	(construct_container): Return early for return and argument
+	errors if silent_p is true.
+	* config/i386/i386.h (machine_function): Add silent_p.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99593
+	* config/arm/constraints.md (Ds): New constraint.
+	* config/arm/vec-common.md (mve_vshlq_<supf><mode>): Use w,Ds
+	constraint instead of w,Dm.
+
+2021-03-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_parse_amdgpu_hsa_kernel_attribute): Fix quotes
+	in error message.
+
+2021-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/99641
+	* fold-const.c (native_encode_initializer) <CONSTRUCTOR>: For an
+	array type, do the computation of the current position in sizetype.
+
 2021-03-18  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/99422

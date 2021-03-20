@@ -1,3 +1,50 @@
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99588
+	* gcc.dg/Wunused-var-5.c: New test.
+	* gcc.dg/Wunused-var-6.c: New test.
+
+2021-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/inline_matmul_6.f90: Adjust count for
+	  _gfortran_matmul.
+
+2021-03-19  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99663
+	* gcc.target/s390/pr99663.c: New.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99456
+	* g++.dg/opt/pr99456.C: New test.
+	* g++.dg/ext/vla22.C: Expect a -Wnarrowing warning for c++11 and
+	later.
+
+2021-03-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/99656
+	* gfortran.dg/vect/pr99656.f90: New test.
+
+2021-03-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99652
+	* gcc.dg/torture/pr99652-1.c: New test.
+	* gcc.dg/torture/pr99652-2.c: Likewise.
+	* gcc.target/i386/pr57655.c: Adjusted.
+	* gcc.target/i386/pr59794-6.c: Likewise.
+	* gcc.target/i386/pr70738-1.c: Likewise.
+	* gcc.target/i386/pr96744-1.c: Likewise.
+
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99593
+	* g++.target/arm/pr99593.C: New test.
+
+2021-03-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/lto/pr89335_0.C: Require the linker plugin.
+
 2021-03-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/99500

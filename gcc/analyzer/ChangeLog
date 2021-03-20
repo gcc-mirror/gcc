@@ -1,3 +1,9 @@
+2021-03-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99614
+	* diagnostic-manager.cc (class epath_finder): Add
+	DISABLE_COPY_AND_ASSIGN.
+
 2021-03-15  Martin Liska  <mliska@suse.cz>
 
 	* sm-file.cc (get_file_using_fns): Add missing comma in initializer.
