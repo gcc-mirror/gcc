@@ -5929,7 +5929,7 @@ import_milli (enum millicodes code)
     {
       imported[(int) code] = 1;
       strcpy (str, import_string);
-      strncpy (str + MILLI_START, milli_names[(int) code], 4);
+      memcpy (str + MILLI_START, milli_names[(int) code], 4);
       output_asm_insn (str, 0);
     }
 }
