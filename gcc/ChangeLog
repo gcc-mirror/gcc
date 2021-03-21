@@ -1,3 +1,7 @@
+2021-03-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.c (import_milli): Use memcpy instead of strncpy.
+
 2021-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
