@@ -1,3 +1,20 @@
+2021-03-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99679
+	* config/i386/i386.c (construct_container): Check cfun != NULL
+	before accessing silent_p.
+
+2021-03-20  Ahamed Husni  <ahamedhusni73@gmail.com>
+
+	* asan.c: Fix typos in comments.
+
+2021-03-20  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/99680
+	* lra-constraints.c (skip_contraint_modifiers): Rename to skip_constraint_modifiers.
+	(process_address_1): Check empty constraint before using
+	CONSTRAINT_LEN.
+
 2021-03-19  Pat Haugen  <pthaugen@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (power10_cost): New.

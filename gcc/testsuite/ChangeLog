@@ -1,3 +1,14 @@
+2021-03-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99679
+	* g++.target/i386/pr99679-1.C: New test.
+	* g++.target/i386/pr99679-2.C: Likewise.
+
+2021-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99230
+	* gcc.dg/pr99230.c: New test.
+
 2021-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/99588

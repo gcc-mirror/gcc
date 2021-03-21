@@ -1,3 +1,9 @@
+2021-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99230
+	* cp-gimplify.c (cp_genericize_r) <case STATEMENT_LIST>: Remove
+	special code, instead call c_genericize_control_stmt.
+
 2021-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/99456
