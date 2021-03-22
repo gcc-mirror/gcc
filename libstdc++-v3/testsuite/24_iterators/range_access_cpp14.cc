@@ -39,10 +39,21 @@ void
 test02()
 {
   static int i[1];
+  // LWG 2280
   constexpr auto b  __attribute__((unused)) = std::begin(i);
   constexpr auto e  __attribute__((unused)) = std::end(i);
   constexpr auto cb __attribute__((unused)) = std::cbegin(i);
   constexpr auto ce __attribute__((unused)) = std::cend(i);
+
+  // LWG 2280
+  static_assert( noexcept(std::begin(i)),  "LWG 2280" );
+  static_assert( noexcept(std::end(i)),    "LWG 2280" );
+  static_assert( noexcept(std::cbegin(i)), "LWG 2280" );
+  static_assert( noexcept(std::cend(i)),   "LWG 2280" );
+
+  // LWG 3537
+  static_assert( noexcept(std::rbegin(i)),  "LWG 3537" );
+  static_assert( noexcept(std::rend(i)),    "LWG 3537" );
 }
 
 void
@@ -55,6 +66,10 @@ test03()
   VERIFY(std::rend(il) == std::reverse_iterator<const int*>(il.begin()));
   VERIFY(std::crbegin(il) == std::reverse_iterator<const int*>(il.end()));
   VERIFY(std::crend(il) == std::reverse_iterator<const int*>(il.begin()));
+
+  // LWG 3537
+  static_assert( noexcept(std::rbegin(il)),  "LWG 3537" );
+  static_assert( noexcept(std::rend(il)),    "LWG 3537" );
 }
 
 void
