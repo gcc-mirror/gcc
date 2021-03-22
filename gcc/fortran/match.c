@@ -6168,7 +6168,7 @@ select_intrinsic_set_tmp (gfc_typespec *ts)
 static void
 select_type_set_tmp (gfc_typespec *ts)
 {
-  char name[GFC_MAX_SYMBOL_LEN];
+  char name[GFC_MAX_SYMBOL_LEN + 12 + 1];
   gfc_symtree *tmp = NULL;
   gfc_symbol *selector = select_type_stack->selector;
 
@@ -6242,7 +6242,7 @@ gfc_match_select_type (void)
 {
   gfc_expr *expr1, *expr2 = NULL;
   match m;
-  char name[GFC_MAX_SYMBOL_LEN];
+  char name[GFC_MAX_SYMBOL_LEN + 1];
   bool class_array;
   gfc_symbol *sym;
   gfc_namespace *ns = gfc_current_ns;
