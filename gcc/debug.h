@@ -21,6 +21,10 @@
 /* This structure contains hooks for the debug information output
    functions, accessed through the global instance debug_hooks set in
    toplev.c according to command line options.  */
+/* WARNING: Do not add new debug hook targets - DWARF will be the only
+   way to speak debug to the middle-end once we are able to get rid of
+   the remaining targets.  If you need alternate output formats instead
+   generate them off the DWARF representation.  */
 struct gcc_debug_hooks
 {
   /* Initialize debug output.  MAIN_FILENAME is the name of the main
