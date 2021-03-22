@@ -1,3 +1,99 @@
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/44107
+	PR target/48097
+	* config/darwin-protos.h (darwin_should_restore_cfa_state): New.
+	* config/darwin.c (darwin_should_restore_cfa_state): New.
+	* config/darwin.h (TARGET_ASM_SHOULD_RESTORE_CFA_STATE): New.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in: Document TARGET_ASM_SHOULD_RESTORE_CFA_STATE.
+	* dwarf2cfi.c (connect_traces): If the target requests, restore
+	the CFA expression after a DW_CFA_restore.
+	* target.def (TARGET_ASM_SHOULD_RESTORE_CFA_STATE): New hook.
+
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Move the spec
+	for the Darwin10 unwinder stub from here ..
+	* config/darwin.h (LINK_COMMAND_SPEC_A): ... to here.
+	here...
+	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Move from here..
+	* config/darwin.h (LINK_GCC_C_SEQUENCE_SPEC): ... to here.
+	* config/darwin9.h (STACK_CHECK_STATIC_BUILTIN): Move from here..
+	* config/darwin.h (STACK_CHECK_STATIC_BUILTIN): .. to here.
+	* config.gcc: Compute default version information
+	from the configured target.  Likewise defaults for
+	ld64. Delete reference to the now removed darwin8.h
+	* config/darwin10.h: Removed.
+	* config/darwin12.h: Removed.
+	* config/darwin9.h: Removed.
+	* config/rs6000/darwin8.h: Removed.
+
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-01-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (DSYMUTIL_SPEC): Default to DWARF
+	(ASM_DEBUG_SPEC):Only define if the assembler supports
+	stabs.
+	(PREFERRED_DEBUGGING_TYPE): Default to DWARF.
+	(DARWIN_PREFER_DWARF): Define.
+	* config/darwin9.h (PREFERRED_DEBUGGING_TYPE): Remove.
+	(DARWIN_PREFER_DWARF): Likewise
+	(DSYMUTIL_SPEC): Likewise.
+	(COLLECT_RUN_DSYMUTIL): Likewise.
+	(ASM_DEBUG_SPEC): Likewise.
+	(ASM_DEBUG_OPTION_SPEC): Likewise.
+
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_DECLARE_FUNCTION_NAME): UNDEF before
+	use.
+	(DEF_MIN_OSX_VERSION): Only define if there's no existing
+	def.
+
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-c.c (struct f_align_stack): Rename
+	to type from align_stack to f_align_stack.
+	(push_field_alignment): Likewise.
+	(pop_field_alignment): Likewise.
+
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_emit_local_bss): Amend section names to
+	match system tools. (darwin_output_aligned_bss): Likewise.
+
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-09-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_libc_has_function): Report sincos
+	available from 10.9.
+
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-08-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (IN_TARGET_CODE): Remove.
+	(darwin_mergeable_constant_section): Handle poly-int machine modes.
+	(machopic_select_rtx_section): Likewise.
+
 2021-03-20  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (import_milli): Use memcpy instead of strncpy.

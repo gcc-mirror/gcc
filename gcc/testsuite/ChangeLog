@@ -1,3 +1,27 @@
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-02-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96251
+	* g++.dg/coroutines/pr96251.C: New test.
+
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-sections.c: Adjust test for renamed BSS and common
+	sections.  Cater for 64 and 128 bit long doubles.
+
+2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-08-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/torture/fp-int-convert-timode-3.c: XFAIL run.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Likewise.
+
 2021-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
