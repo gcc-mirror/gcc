@@ -7983,14 +7983,27 @@ package body Sem_Attr is
                end if;
             end;
 
-         --  For Size, give size of object if available, otherwise we
-         --  cannot fold Size.
-
          elsif Id = Attribute_Size then
+            --  For Enum_Lit'Size, use Enum_Type'Object_Size. Taking the 'Size
+            --  of a literal is kind of a strange thing to do, so we don't want
+            --  to pass this oddity on to the back end. Note that Etype of an
+            --  enumeration literal is always a (base) type, never a
+            --  constrained subtype, so the Esize is always known.
+
             if Is_Entity_Name (P)
-              and then Known_Static_Esize (Entity (P))
+              and then Ekind (Entity (P)) = E_Enumeration_Literal
+            then
+               pragma Assert (Known_Static_Esize (Etype (P)));
+               Compile_Time_Known_Attribute (N, Esize (Etype (P)));
+
+            --  Otherwise, if Size is available, use that
+
+            elsif Is_Entity_Name (P) and then Known_Static_Esize (Entity (P))
             then
                Compile_Time_Known_Attribute (N, Esize (Entity (P)));
+
+            --  Otherwise, we cannot fold
+
             else
                Check_Expressions;
             end if;
