@@ -3259,9 +3259,9 @@ riscv_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
 bool
 riscv_expand_block_move (rtx dest, rtx src, rtx length)
 {
-  unsigned HOST_WIDE_INT hwi_length = UINTVAL (length);
   if (CONST_INT_P (length))
     {
+      unsigned HOST_WIDE_INT hwi_length = UINTVAL (length);
       unsigned HOST_WIDE_INT factor, align;
 
       align = MIN (MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), BITS_PER_WORD);
