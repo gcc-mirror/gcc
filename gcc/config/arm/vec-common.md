@@ -74,6 +74,11 @@
      {
        if (!REG_P (operands[0]))
 	 operands[1] = force_reg (E_V8HFmode, operands[1]);
+	else if (TARGET_HAVE_MVE_FLOAT && CONSTANT_P (operands[1]))
+	  {
+	    operands[1] = neon_make_constant (operands[1]);
+	    gcc_assert (operands[1] != NULL_RTX);
+	  }
      }
 })
 
