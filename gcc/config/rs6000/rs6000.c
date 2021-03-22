@@ -7026,21 +7026,21 @@ rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
 
   gcc_assert (VECTOR_MEM_VSX_P (mode) && !CONST_INT_P (idx));
 
-  gcc_assert (GET_MODE (idx) == E_SImode);
-
   machine_mode inner_mode = GET_MODE (val);
 
-  rtx tmp = gen_reg_rtx (GET_MODE (idx));
   int width = GET_MODE_SIZE (inner_mode);
 
   gcc_assert (width >= 1 && width <= 8);
 
   int shift = exact_log2 (width);
+
+  machine_mode idx_mode = GET_MODE (idx);
+  idx = convert_modes (DImode, idx_mode, idx, 1);
+
   /* Generate the IDX for permute shift, width is the vector element size.
      idx = idx * width.  */
-  emit_insn (gen_ashlsi3 (tmp, idx, GEN_INT (shift)));
-
-  tmp = convert_modes (DImode, SImode, tmp, 1);
+  rtx tmp = gen_reg_rtx (DImode);
+  emit_insn (gen_ashldi3 (tmp, idx, GEN_INT (shift)));
 
   /*  lvsr    v1,0,idx.  */
   rtx pcvr = gen_reg_rtx (V16QImode);
@@ -7073,28 +7073,26 @@ rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
 
   gcc_assert (VECTOR_MEM_VSX_P (mode) && !CONST_INT_P (idx));
 
-  gcc_assert (GET_MODE (idx) == E_SImode);
-
   machine_mode inner_mode = GET_MODE (val);
   HOST_WIDE_INT mode_mask = GET_MODE_MASK (inner_mode);
 
-  rtx tmp = gen_reg_rtx (GET_MODE (idx));
   int width = GET_MODE_SIZE (inner_mode);
-
   gcc_assert (width >= 1 && width <= 4);
 
+  int shift = exact_log2 (width);
+
+  machine_mode idx_mode = GET_MODE (idx);
+  idx = convert_modes (DImode, idx_mode, idx, 1);
+
+  /*  idx = idx * width.  */
+  rtx tmp = gen_reg_rtx (DImode);
+  emit_insn (gen_ashldi3 (tmp, idx, GEN_INT (shift)));
+
+  /*  For LE:  idx = idx + 8.  */
   if (!BYTES_BIG_ENDIAN)
-    {
-      /*  idx = idx * width.  */
-      emit_insn (gen_mulsi3 (tmp, idx, GEN_INT (width)));
-      /*  idx = idx + 8.  */
-      emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (8)));
-    }
+    emit_insn (gen_adddi3 (tmp, tmp, GEN_INT (8)));
   else
-    {
-      emit_insn (gen_mulsi3 (tmp, idx, GEN_INT (width)));
-      emit_insn (gen_subsi3 (tmp, GEN_INT (24 - width), tmp));
-    }
+    emit_insn (gen_subdi3 (tmp, GEN_INT (24 - width), tmp));
 
   /*  lxv vs33, mask.
       DImode: 0xffffffffffffffff0000000000000000
@@ -7144,7 +7142,6 @@ rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
   emit_insn (gen_rtx_SET (val_v16qi, sub_val));
 
   /*  lvsl    13,0,idx.  */
-  tmp = convert_modes (DImode, SImode, tmp, 1);
   rtx pcv = gen_reg_rtx (V16QImode);
   emit_insn (gen_altivec_lvsl_reg (pcv, tmp));
 
