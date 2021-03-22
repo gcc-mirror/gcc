@@ -4847,7 +4847,10 @@ package body Sprint is
          Write_Int (Int (L));
          Write_Str (": ");
 
-         while Src (Loc) not in Line_Terminator loop
+         --  We need to check for EOF here, in case the last line of the source
+         --  file does not have a Line_Terminator.
+
+         while Src (Loc) not in Line_Terminator | EOF loop
             Write_Char (Src (Loc));
             Loc := Loc + 1;
          end loop;
