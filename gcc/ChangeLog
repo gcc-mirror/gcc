@@ -1,3 +1,11 @@
+2021-03-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99388
+	* dwarf2out.c (insert_float): Change return type from void to
+	unsigned, handle GET_MODE_SIZE (mode) == 2 and return element size.
+	(mem_loc_descriptor, loc_descriptor, add_const_value_attribute):
+	Adjust callers.
+
 2021-03-20  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/99679
