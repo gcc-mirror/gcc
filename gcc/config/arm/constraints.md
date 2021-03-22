@@ -498,6 +498,13 @@
 		   && mve_vector_mem_operand (GET_MODE (op),
 					      XEXP (op, 0), true)")))
 
+(define_constraint "Ui"
+  "@internal
+   Match a constant (as per the 'i' constraint) provided that we have the
+   literal pool available.  This is useful for load insns that would need
+   to move such constants to the literal pool after RA."
+ (match_test "!arm_disable_literal_pool && satisfies_constraint_i (op)"))
+
 (define_memory_constraint "Uq"
  "@internal
   In ARM state an address valid in ldrsb instructions."
