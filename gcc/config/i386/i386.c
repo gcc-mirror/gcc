@@ -2540,7 +2540,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
     {
       /* Return early if we shouldn't raise an error for invalid
 	 calls.  */
-      if (cfun->machine->silent_p)
+      if (cfun != NULL && cfun->machine->silent_p)
 	return NULL;
       if (in_return)
 	{
@@ -2568,7 +2568,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	{
 	  /* Return early if we shouldn't raise an error for invalid
 	     calls.  */
-	  if (cfun->machine->silent_p)
+	  if (cfun != NULL && cfun->machine->silent_p)
 	    return NULL;
 	  if (!issued_x87_ret_error)
 	    {

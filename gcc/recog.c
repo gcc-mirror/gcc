@@ -2270,6 +2270,7 @@ asm_operand_ok (rtx op, const char *constraint, const char **constraints)
 	      mem = op;
 	      /* Fall through.  */
 	    case CT_SPECIAL_MEMORY:
+	    case CT_RELAXED_MEMORY:
 	      /* Every memory operand can be reloaded to fit.  */
 	      if (!mem)
 		mem = extract_mem_from_operand (op);
@@ -2892,6 +2893,7 @@ preprocess_constraints (int n_operands, int n_alternatives,
 
 		    case CT_MEMORY:
 		    case CT_SPECIAL_MEMORY:
+		    case CT_RELAXED_MEMORY:
 		      op_alt[i].memory_ok = 1;
 		      break;
 

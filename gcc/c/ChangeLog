@@ -1,3 +1,13 @@
+2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99588
+	* c-typeck.c (mark_exp_read): Recognize what build_atomic_assign
+	with modifycode NOP_EXPR produces and mark the _Atomic var as read
+	if found.
+	(build_atomic_assign): For modifycode of NOP_EXPR, use COMPOUND_EXPRs
+	rather than STATEMENT_LIST.  Otherwise call mark_exp_read on lhs.
+	Set TREE_SIDE_EFFECTS on the TARGET_EXPR.
+
 2021-03-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR c++/99509

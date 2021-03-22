@@ -660,9 +660,9 @@ write_one_predicate_function (struct pred_data *p)
 /* Constraints fall into two categories: register constraints
    (define_register_constraint), and others (define_constraint,
    define_memory_constraint, define_special_memory_constraint,
-   define_address_constraint).  We work out automatically which of the
-   various old-style macros they correspond to, and produce
-   appropriate code.  They all go in the same hash table so we can
+   define_relaxed_memory_constraint, define_address_constraint).  We work out
+   automatically which of the various old-style macros they correspond to, and
+   produce appropriate code.  They all go in the same hash table so we can
    verify that there are no duplicate names.  */
 
 /* All data from one constraint definition.  */
@@ -683,6 +683,7 @@ public:
   unsigned int is_extra		: 1;
   unsigned int is_memory	: 1;
   unsigned int is_special_memory: 1;
+  unsigned int is_relaxed_memory: 1;
   unsigned int is_address	: 1;
   unsigned int maybe_allows_reg : 1;
   unsigned int maybe_allows_mem : 1;
@@ -721,6 +722,7 @@ static unsigned int constraint_max_namelen;
 static bool have_register_constraints;
 static bool have_memory_constraints;
 static bool have_special_memory_constraints;
+static bool have_relaxed_memory_constraints;
 static bool have_address_constraints;
 static bool have_extra_constraints;
 static bool have_const_int_constraints;
@@ -732,6 +734,7 @@ static unsigned int satisfied_start;
 static unsigned int const_int_start, const_int_end;
 static unsigned int memory_start, memory_end;
 static unsigned int special_memory_start, special_memory_end;
+static unsigned int relaxed_memory_start, relaxed_memory_end;
 static unsigned int address_start, address_end;
 static unsigned int maybe_allows_none_start, maybe_allows_none_end;
 static unsigned int maybe_allows_reg_start, maybe_allows_reg_end;
@@ -756,16 +759,16 @@ mangle (const char *name)
   return XOBFINISH (rtl_obstack, const char *);
 }
 
-/* Add one constraint, of any sort, to the tables.  NAME is its name;
-   REGCLASS is the register class, if any; EXP is the expression to
-   test, if any; IS_MEMORY, IS_SPECIAL_MEMORY and IS_ADDRESS indicate
-   memory, special memory, and address constraints, respectively; LOC
-   is the .md file location.
+/* Add one constraint, of any sort, to the tables.  NAME is its name; REGCLASS
+   is the register class, if any; EXP is the expression to test, if any;
+   IS_MEMORY, IS_SPECIAL_MEMORY, IS_RELAXED_MEMORY and IS_ADDRESS indicate
+   memory, special memory, and address constraints, respectively; LOC is the .md
+   file location.
 
-   Not all combinations of arguments are valid; most importantly,
-   REGCLASS is mutually exclusive with EXP, and
-   IS_MEMORY/IS_SPECIAL_MEMORY/IS_ADDRESS are only meaningful for
-   constraints with EXP.
+   Not all combinations of arguments are valid; most importantly, REGCLASS is
+   mutually exclusive with EXP, and
+   IS_MEMORY/IS_SPECIAL_MEMORY/IS_RELAXED_MEMORY/IS_ADDRESS are only meaningful
+   for constraints with EXP.
 
    This function enforces all syntactic and semantic rules about what
    constraints can be defined.  */
@@ -773,7 +776,7 @@ mangle (const char *name)
 static void
 add_constraint (const char *name, const char *regclass,
 		rtx exp, bool is_memory, bool is_special_memory,
-		bool is_address, file_location loc)
+		bool is_relaxed_memory, bool is_address, file_location loc)
 {
   class constraint_data *c, **iter, **slot;
   const char *p;
@@ -873,7 +876,7 @@ add_constraint (const char *name, const char *regclass,
 	  return;
 	}
 
-      if (is_memory)
+      if (is_memory || is_special_memory || is_relaxed_memory)
 	{
 	  if (name[1] == '\0')
 	    error_at (loc, "constraint letter '%c' cannot be a "
@@ -881,17 +884,6 @@ add_constraint (const char *name, const char *regclass,
 	  else
 	    error_at (loc, "constraint name '%s' begins with '%c', "
 		      "and therefore cannot be a memory constraint",
-		      name, name[0]);
-	  return;
-	}
-      else if (is_special_memory)
-	{
-	  if (name[1] == '\0')
-	    error_at (loc, "constraint letter '%c' cannot be a "
-		      "special memory constraint", name[0]);
-	  else
-	    error_at (loc, "constraint name '%s' begins with '%c', "
-		      "and therefore cannot be a special memory constraint",
 		      name, name[0]);
 	  return;
 	}
@@ -922,6 +914,7 @@ add_constraint (const char *name, const char *regclass,
   c->is_extra = !(regclass || is_const_int || is_const_dbl);
   c->is_memory = is_memory;
   c->is_special_memory = is_special_memory;
+  c->is_relaxed_memory = is_relaxed_memory;
   c->is_address = is_address;
   c->maybe_allows_reg = true;
   c->maybe_allows_mem = true;
@@ -949,19 +942,21 @@ add_constraint (const char *name, const char *regclass,
   have_extra_constraints |= c->is_extra;
   have_memory_constraints |= c->is_memory;
   have_special_memory_constraints |= c->is_special_memory;
+  have_relaxed_memory_constraints |= c->is_relaxed_memory;
   have_address_constraints |= c->is_address;
   num_constraints += 1;
 }
 
 /* Process a DEFINE_CONSTRAINT, DEFINE_MEMORY_CONSTRAINT,
-   DEFINE_SPECIAL_MEMORY_CONSTRAINT, or DEFINE_ADDRESS_CONSTRAINT
-   expression, C.  */
+   DEFINE_SPECIAL_MEMORY_CONSTRAINT, DEFINE_RELAXED_MEMORY_CONSTRAINT, or
+   DEFINE_ADDRESS_CONSTRAINT expression, C.  */
 static void
 process_define_constraint (md_rtx_info *info)
 {
   add_constraint (XSTR (info->def, 0), 0, XEXP (info->def, 2),
 		  GET_CODE (info->def) == DEFINE_MEMORY_CONSTRAINT,
 		  GET_CODE (info->def) == DEFINE_SPECIAL_MEMORY_CONSTRAINT,
+		  GET_CODE (info->def) == DEFINE_RELAXED_MEMORY_CONSTRAINT,
 		  GET_CODE (info->def) == DEFINE_ADDRESS_CONSTRAINT,
 		  info->loc);
 }
@@ -971,7 +966,7 @@ static void
 process_define_register_constraint (md_rtx_info *info)
 {
   add_constraint (XSTR (info->def, 0), XSTR (info->def, 1),
-		  0, false, false, false, info->loc);
+		  0, false, false, false, false, info->loc);
 }
 
 /* Put the constraints into enum order.  We want to keep constraints
@@ -1011,6 +1006,12 @@ choose_enum_order (void)
       enum_order[next++] = c;
   special_memory_end = next;
 
+  relaxed_memory_start = next;
+  FOR_ALL_CONSTRAINTS (c)
+    if (c->is_relaxed_memory)
+      enum_order[next++] = c;
+  relaxed_memory_end = next;
+
   address_start = next;
   FOR_ALL_CONSTRAINTS (c)
     if (c->is_address)
@@ -1020,7 +1021,7 @@ choose_enum_order (void)
   maybe_allows_none_start = next;
   FOR_ALL_CONSTRAINTS (c)
     if (!c->is_register && !c->is_const_int && !c->is_memory
-	&& !c->is_special_memory && !c->is_address
+	&& !c->is_special_memory && !c->is_relaxed_memory && !c->is_address
 	&& !c->maybe_allows_reg && !c->maybe_allows_mem)
       enum_order[next++] = c;
   maybe_allows_none_end = next;
@@ -1028,7 +1029,7 @@ choose_enum_order (void)
   maybe_allows_reg_start = next;
   FOR_ALL_CONSTRAINTS (c)
     if (!c->is_register && !c->is_const_int && !c->is_memory
-	&& !c->is_special_memory && !c->is_address
+	&& !c->is_special_memory && !c->is_relaxed_memory && !c->is_address
 	&& c->maybe_allows_reg && !c->maybe_allows_mem)
       enum_order[next++] = c;
   maybe_allows_reg_end = next;
@@ -1036,14 +1037,14 @@ choose_enum_order (void)
   maybe_allows_mem_start = next;
   FOR_ALL_CONSTRAINTS (c)
     if (!c->is_register && !c->is_const_int && !c->is_memory
-	&& !c->is_special_memory && !c->is_address
+	&& !c->is_special_memory && !c->is_relaxed_memory && !c->is_address
 	&& !c->maybe_allows_reg && c->maybe_allows_mem)
       enum_order[next++] = c;
   maybe_allows_mem_end = next;
 
   FOR_ALL_CONSTRAINTS (c)
     if (!c->is_register && !c->is_const_int && !c->is_memory
-	&& !c->is_special_memory && !c->is_address
+	&& !c->is_special_memory && !c->is_relaxed_memory && !c->is_address
 	&& c->maybe_allows_reg && c->maybe_allows_mem)
       enum_order[next++] = c;
   gcc_assert (next == num_constraints);
@@ -1466,6 +1467,8 @@ write_tm_preds_h (void)
 			    memory_start, memory_end);
       write_range_function ("insn_extra_special_memory_constraint",
 			    special_memory_start, special_memory_end);
+      write_range_function ("insn_extra_relaxed_memory_constraint",
+			    relaxed_memory_start, relaxed_memory_end);
       write_range_function ("insn_extra_address_constraint",
 			    address_start, address_end);
       write_allows_reg_mem_function ();
@@ -1515,6 +1518,7 @@ write_tm_preds_h (void)
 	    "  CT_CONST_INT,\n"
 	    "  CT_MEMORY,\n"
 	    "  CT_SPECIAL_MEMORY,\n"
+	    "  CT_RELAXED_MEMORY,\n"
 	    "  CT_ADDRESS,\n"
 	    "  CT_FIXED_FORM\n"
 	    "};\n"
@@ -1528,7 +1532,11 @@ write_tm_preds_h (void)
       if (memory_start != memory_end)
 	values.safe_push (std::make_pair (memory_start, "CT_MEMORY"));
       if (special_memory_start != special_memory_end)
-	values.safe_push (std::make_pair (special_memory_start, "CT_SPECIAL_MEMORY"));
+	values.safe_push (std::make_pair (special_memory_start,
+					  "CT_SPECIAL_MEMORY"));
+      if (relaxed_memory_start != relaxed_memory_end)
+	values.safe_push (std::make_pair (relaxed_memory_start,
+					  "CT_RELAXED_MEMORY"));
       if (address_start != address_end)
 	values.safe_push (std::make_pair (address_start, "CT_ADDRESS"));
       if (address_end != num_constraints)
@@ -1645,6 +1653,7 @@ main (int argc, const char **argv)
       case DEFINE_CONSTRAINT:
       case DEFINE_MEMORY_CONSTRAINT:
       case DEFINE_SPECIAL_MEMORY_CONSTRAINT:
+      case DEFINE_RELAXED_MEMORY_CONSTRAINT:
       case DEFINE_ADDRESS_CONSTRAINT:
 	process_define_constraint (&info);
 	break;

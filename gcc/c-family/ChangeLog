@@ -1,3 +1,8 @@
+2021-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99230
+	* c-gimplify.c (c_genericize_control_stmt): Handle STATEMENT_LIST.
+
 2021-03-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ada_declaration) <TYPE_DECL>: Dump nested types

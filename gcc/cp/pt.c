@@ -30009,25 +30009,41 @@ get_mergeable_specialization_flags (tree tmpl, tree decl)
    get_mergeable_specialization_flags.  */
 
 void
-add_mergeable_specialization (bool decl_p, spec_entry *elt,
+add_mergeable_specialization (bool decl_p, bool alias_p, spec_entry *elt,
 			      tree decl, unsigned flags)
 {
-  hash_table<spec_hasher> *specializations
-    = decl_p ? decl_specializations : type_specializations;
-
   hashval_t hash = spec_hasher::hash (elt);
-  auto *slot = specializations->find_slot_with_hash (elt, hash, INSERT);
-
-  /* We don't distinguish different constrained partial type
-     specializations, so there could be duplicates.  Everything else
-     must be new.   */
-  if (!(flags & 2 && *slot))
+  if (decl_p)
     {
-      gcc_checking_assert (!*slot);
+      auto *slot = decl_specializations->find_slot_with_hash (elt, hash, INSERT);
 
+      gcc_checking_assert (!*slot);
       auto entry = ggc_alloc<spec_entry> ();
       *entry = *elt;
       *slot = entry;
+
+      if (alias_p)
+	{
+	  elt->spec = TREE_TYPE (elt->spec);
+	  gcc_checking_assert (elt->spec);
+	}
+    }
+
+  if (!decl_p || alias_p)
+    {
+      auto *slot = type_specializations->find_slot_with_hash (elt, hash, INSERT);
+
+      /* We don't distinguish different constrained partial type
+	 specializations, so there could be duplicates.  Everything else
+	 must be new.   */
+      if (!(flags & 2 && *slot))
+	{
+	  gcc_checking_assert (!*slot);
+
+	  auto entry = ggc_alloc<spec_entry> ();
+	  *entry = *elt;
+	  *slot = entry;
+	}
     }
 
   if (flags & 1)

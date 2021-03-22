@@ -497,6 +497,35 @@ c_genericize_control_stmt (tree *stmt_p, int *walk_subtrees, void *data,
       genericize_omp_for_stmt (stmt_p, walk_subtrees, data, func, lh);
       break;
 
+    case STATEMENT_LIST:
+      if (TREE_SIDE_EFFECTS (stmt))
+	{
+	  tree_stmt_iterator i;
+	  int nondebug_stmts = 0;
+	  bool clear_side_effects = true;
+	  /* Genericization can clear TREE_SIDE_EFFECTS, e.g. when
+	     transforming an IF_STMT into COND_EXPR.  If such stmt
+	     appears in a STATEMENT_LIST that contains only that
+	     stmt and some DEBUG_BEGIN_STMTs, without -g where the
+	     STATEMENT_LIST wouldn't be present at all the resulting
+	     expression wouldn't have TREE_SIDE_EFFECTS set, so make sure
+	     to clear it even on the STATEMENT_LIST in such cases.  */
+	  for (i = tsi_start (stmt); !tsi_end_p (i); tsi_next (&i))
+	    {
+	      tree t = tsi_stmt (i);
+	      if (TREE_CODE (t) != DEBUG_BEGIN_STMT && nondebug_stmts < 2)
+		nondebug_stmts++;
+	      walk_tree_1 (tsi_stmt_ptr (i), func, data, NULL, lh);
+	      if (TREE_CODE (t) != DEBUG_BEGIN_STMT
+		  && (nondebug_stmts > 1 || TREE_SIDE_EFFECTS (tsi_stmt (i))))
+		clear_side_effects = false;
+	    }
+	  if (clear_side_effects)
+	    TREE_SIDE_EFFECTS (stmt) = 0;
+	  *walk_subtrees = 0;
+	}
+      break;
+
     default:
       break;
     }

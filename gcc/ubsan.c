@@ -1890,8 +1890,16 @@ ubsan_instrument_float_cast (location_t loc, tree type, tree expr)
   else
     return NULL_TREE;
 
-  t = fold_build2 (UNLE_EXPR, boolean_type_node, expr, min);
-  tt = fold_build2 (UNGE_EXPR, boolean_type_node, expr, max);
+  if (HONOR_NANS (mode))
+    {
+      t = fold_build2 (UNLE_EXPR, boolean_type_node, expr, min);
+      tt = fold_build2 (UNGE_EXPR, boolean_type_node, expr, max);
+    }
+  else
+    {
+      t = fold_build2 (LE_EXPR, boolean_type_node, expr, min);
+      tt = fold_build2 (GE_EXPR, boolean_type_node, expr, max);
+    }
   t = fold_build2 (TRUTH_OR_EXPR, boolean_type_node, t, tt);
   if (integer_zerop (t))
     return NULL_TREE;

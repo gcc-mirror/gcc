@@ -780,6 +780,7 @@ record_reg_classes (int n_alts, int n_ops, rtx *ops,
 		      break;
 
 		    case CT_SPECIAL_MEMORY:
+		    case CT_RELAXED_MEMORY:
 		      insn_allows_mem[i] = allows_mem[i] = 1;
 		      if (MEM_P (extract_mem_from_operand (op))
 			  && constraint_satisfied_p (op, cn))

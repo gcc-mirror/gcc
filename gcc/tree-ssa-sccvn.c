@@ -5199,6 +5199,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
       {
 	tree def = PHI_ARG_DEF_FROM_EDGE (phi, e);
 
+	if (def == PHI_RESULT (phi))
+	  continue;
 	++n_executable;
 	if (TREE_CODE (def) == SSA_NAME)
 	  {

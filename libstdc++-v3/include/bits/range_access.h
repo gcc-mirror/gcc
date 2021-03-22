@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp, size_t _Nm>
     inline _GLIBCXX14_CONSTEXPR _Tp*
-    begin(_Tp (&__arr)[_Nm])
+    begin(_Tp (&__arr)[_Nm]) noexcept
     { return __arr; }
 
   /**
@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp, size_t _Nm>
     inline _GLIBCXX14_CONSTEXPR _Tp*
-    end(_Tp (&__arr)[_Nm])
+    end(_Tp (&__arr)[_Nm]) noexcept
     { return __arr + _Nm; }
 
 #if __cplusplus >= 201402L
@@ -178,7 +178,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp, size_t _Nm>
     inline _GLIBCXX17_CONSTEXPR reverse_iterator<_Tp*>
-    rbegin(_Tp (&__arr)[_Nm])
+    rbegin(_Tp (&__arr)[_Nm]) noexcept
     { return reverse_iterator<_Tp*>(__arr + _Nm); }
 
   /**
@@ -188,7 +188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp, size_t _Nm>
     inline _GLIBCXX17_CONSTEXPR reverse_iterator<_Tp*>
-    rend(_Tp (&__arr)[_Nm])
+    rend(_Tp (&__arr)[_Nm]) noexcept
     { return reverse_iterator<_Tp*>(__arr); }
 
   /**
@@ -198,7 +198,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp>
     inline _GLIBCXX17_CONSTEXPR reverse_iterator<const _Tp*>
-    rbegin(initializer_list<_Tp> __il)
+    rbegin(initializer_list<_Tp> __il) noexcept
     { return reverse_iterator<const _Tp*>(__il.end()); }
 
   /**
@@ -208,7 +208,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp>
     inline _GLIBCXX17_CONSTEXPR reverse_iterator<const _Tp*>
-    rend(initializer_list<_Tp> __il)
+    rend(initializer_list<_Tp> __il) noexcept
     { return reverse_iterator<const _Tp*>(__il.begin()); }
 
   /**

@@ -410,8 +410,7 @@ valid_address_p (rtx op, struct address_info *ad,
      Need to extract memory from op for special memory constraint,
      i.e. bcst_mem_operand in i386 backend.  */
   if (MEM_P (extract_mem_from_operand (op))
-      && (insn_extra_memory_constraint (constraint)
-	  || insn_extra_special_memory_constraint (constraint))
+      && insn_extra_relaxed_memory_constraint (constraint)
       && constraint_satisfied_p (op, constraint))
     return true;
 
@@ -2460,6 +2459,7 @@ process_alt_operands (int only_alternative)
 		      break;
 
 		    case CT_SPECIAL_MEMORY:
+		    case CT_RELAXED_MEMORY:
 		      if (satisfies_memory_constraint_p (op, cn))
 			win = true;
 		      else if (spilled_pseudo_p (op))
@@ -3395,12 +3395,12 @@ equiv_address_substitution (struct address_info *ad)
 /* Skip all modifiers and whitespaces in constraint STR and return the
    result.  */
 static const char *
-skip_contraint_modifiers (const char *str)
+skip_constraint_modifiers (const char *str)
 {
   for (;;str++)
     switch (*str)
       {
-      case '+' : case '&' : case '=': case '*': case ' ': case '\t':
+      case '+': case '&' : case '=': case '*': case ' ': case '\t':
       case '$': case '^' : case '%': case '?': case '!':
 	break;
       default: return str;
@@ -3451,20 +3451,25 @@ process_address_1 (int nop, bool check_only_p,
     return false;
 
   constraint
-    = skip_contraint_modifiers (curr_static_id->operand[nop].constraint);
+    = skip_constraint_modifiers (curr_static_id->operand[nop].constraint);
   if (IN_RANGE (constraint[0], '0', '9'))
     {
       char *end;
       unsigned long dup = strtoul (constraint, &end, 10);
       constraint
-	= skip_contraint_modifiers (curr_static_id->operand[dup].constraint);
+	= skip_constraint_modifiers (curr_static_id->operand[dup].constraint);
     }
-  if (*skip_contraint_modifiers (constraint
-				 + CONSTRAINT_LEN (constraint[0],
-						   constraint)) != '\0')
+  cn = lookup_constraint (*constraint == '\0' ? "X" : constraint);
+  /* If we have several alternatives or/and several constraints in an
+     alternative and we can not say at this stage what constraint will be used,
+     use unknown constraint.  The exception is an address constraint.  If
+     operand has one address constraint, probably all others constraints are
+     address ones.  */
+  if (constraint[0] != '\0' && get_constraint_type (cn) != CT_ADDRESS
+      && *skip_constraint_modifiers (constraint
+				     + CONSTRAINT_LEN (constraint[0],
+						       constraint)) != '\0')
     cn = CONSTRAINT__UNKNOWN;
-  else
-    cn = lookup_constraint (*constraint == '\0' ? "X" : constraint);
   if (insn_extra_address_constraint (cn)
       /* When we find an asm operand with an address constraint that
 	 doesn't satisfy address_operand to begin with, we clear
@@ -4365,7 +4370,8 @@ curr_insn_transform (bool check_only_p)
 	      {
 		enum constraint_num cn = lookup_constraint (constraint);
 		if ((insn_extra_memory_constraint (cn)
-		     || insn_extra_special_memory_constraint (cn))
+		     || insn_extra_special_memory_constraint (cn)
+		     || insn_extra_relaxed_memory_constraint (cn))
 		    && satisfies_memory_constraint_p (tem, cn))
 		  break;
 	      }

@@ -1024,6 +1024,7 @@ main (int argc, const char **argv)
       case DEFINE_ADDRESS_CONSTRAINT:
       case DEFINE_MEMORY_CONSTRAINT:
       case DEFINE_SPECIAL_MEMORY_CONSTRAINT:
+      case DEFINE_RELAXED_MEMORY_CONSTRAINT:
 	note_constraint (&info);
 	break;
 

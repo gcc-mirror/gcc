@@ -5444,10 +5444,6 @@ extern int comparing_specializations;
    FIXME we should always do this except during deduction/ordering.  */
 extern int comparing_dependent_aliases;
 
-/* When comparing specializations permit context _FROM to match _TO.  */
-extern tree map_context_from;
-extern tree map_context_to;
-
 /* In parser.c.  */
 
 /* Nonzero if we are parsing an unevaluated operand: an operand to
@@ -7241,7 +7237,8 @@ extern void walk_specializations		(bool,
 						 void *);
 extern tree match_mergeable_specialization	(bool is_decl, spec_entry *);
 extern unsigned get_mergeable_specialization_flags (tree tmpl, tree spec);
-extern void add_mergeable_specialization        (bool is_decl, spec_entry *,
+extern void add_mergeable_specialization        (bool is_decl, bool is_alias,
+						 spec_entry *,
 						 tree outer, unsigned);
 extern tree add_outermost_template_args		(tree, tree);
 extern tree add_extra_args			(tree, tree);
