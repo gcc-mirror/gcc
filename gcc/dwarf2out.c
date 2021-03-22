@@ -385,13 +385,12 @@ dump_struct_debug (tree type, enum debug_info_usage usage,
 #endif
 
 /* Get the number of HOST_WIDE_INTs needed to represent the precision
-   of the number.  Some constants have a large uniform precision, so
-   we get the precision needed for the actual value of the number.  */
+   of the number.  */
 
 static unsigned int
 get_full_len (const wide_int &op)
 {
-  int prec = wi::min_precision (op, UNSIGNED);
+  int prec = wi::get_precision (op);
   return ((prec + HOST_BITS_PER_WIDE_INT - 1)
 	  / HOST_BITS_PER_WIDE_INT);
 }
@@ -19741,8 +19740,9 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
       {
 	wide_int w1 = rtx_mode_t (rtl, MAX_MODE_INT);
 	unsigned int prec = MIN (wi::min_precision (w1, UNSIGNED),
-				 (unsigned int)CONST_WIDE_INT_NUNITS (rtl) * HOST_BITS_PER_WIDE_INT);
-	wide_int w = wi::zext (w1, prec);
+				 (unsigned int) CONST_WIDE_INT_NUNITS (rtl)
+				 * HOST_BITS_PER_WIDE_INT);
+	wide_int w = wide_int::from (w1, prec, UNSIGNED);
 	add_AT_wide (die, DW_AT_const_value, w);
       }
       return true;
