@@ -4564,7 +4564,33 @@ specifically aligned memory is necessary or desirable for some insn
 operand.
 
 The syntax and semantics are otherwise identical to
-@code{define_constraint}.
+@code{define_memory_constraint}.
+@end deffn
+
+@deffn {MD Expression} define_relaxed_memory_constraint name docstring exp
+The test expression in a @code{define_memory_constraint} can assume
+that @code{TARGET_LEGITIMATE_ADDRESS_P} holds for the address inside
+a @code{mem} rtx and so it does not need to test this condition itself.
+In other words, a @code{define_memory_constraint} test of the form:
+
+@smallexample
+(match_test "mem")
+@end smallexample
+
+is enough to test whether an rtx is a @code{mem} @emph{and} whether
+its address satisfies @code{TARGET_MEM_CONSTRAINT} (which is usually
+@samp{'m'}).  Thus the conditions imposed by a @code{define_memory_constraint}
+always apply on top of the conditions imposed by @code{TARGET_MEM_CONSTRAINT}.
+
+However, it is sometimes useful to define memory constraints that allow
+addresses beyond those accepted by @code{TARGET_LEGITIMATE_ADDRESS_P}.
+@code{define_relaxed_memory_constraint} exists for this case.
+The test expression in a @code{define_relaxed_memory_constraint} is
+applied with no preconditions, so that the expression can determine
+``from scratch'' exactly which addresses are valid and which are not.
+
+The syntax and semantics are otherwise identical to
+@code{define_memory_constraint}.
 @end deffn
 
 @deffn {MD Expression} define_address_constraint name docstring exp
