@@ -1421,11 +1421,15 @@ package body Sem_Aux is
       N : Node_Id;
 
    begin
+      pragma Assert (Is_Package_Or_Generic_Package (E));
+
       N := Parent (E);
 
       if Nkind (N) = N_Defining_Program_Unit_Name then
          N := Parent (N);
       end if;
+
+      pragma Assert (Nkind (N) = N_Package_Specification);
 
       return N;
    end Package_Specification;

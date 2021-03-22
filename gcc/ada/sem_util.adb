@@ -14751,17 +14751,11 @@ package body Sem_Util is
 
       --  Private or Taft amendment type case
 
-      declare
-         Pkg_Decl : Node_Id;
+      if Present (S) and then Is_Package_Or_Generic_Package (S) then
+         declare
+            Pkg_Decl : constant Node_Id := Package_Specification (S);
 
-      begin
-         if Present (S) and then Is_Package_Or_Generic_Package (S) then
-            Pkg_Decl := S;
-
-            while Nkind (Pkg_Decl) /= N_Package_Specification loop
-               Pkg_Decl := Parent (Pkg_Decl);
-            end loop;
-
+         begin
             --  It is knows that Typ has a private view, look for it in the
             --  visible declarations of the enclosing scope. A special case
             --  of this is when the two views have been exchanged - the full
@@ -14785,8 +14779,8 @@ package body Sem_Util is
             elsif In_Package_Body (S) then
                return Inspect_Decls (Private_Declarations (Pkg_Decl), True);
             end if;
-         end if;
-      end;
+         end;
+      end if;
 
       --  The type has no incomplete or private view
 
