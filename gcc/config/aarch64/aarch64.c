@@ -4639,7 +4639,7 @@ aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
 	  if (can_create_pseudo_p ())
 	    {
 	      rtx coeff1 = gen_int_mode (factor, mode);
-	      val = expand_mult (mode, val, coeff1, NULL_RTX, false, true);
+	      val = expand_mult (mode, val, coeff1, NULL_RTX, true, true);
 	    }
 	  else
 	    {
