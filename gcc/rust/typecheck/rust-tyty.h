@@ -1084,6 +1084,74 @@ public:
   BaseType *clone () final override;
 };
 
+class TypeKindFormat
+{
+public:
+  static std::string to_string (TypeKind kind)
+  {
+    switch (kind)
+      {
+      case TypeKind::INFER:
+	return "Infer";
+	break;
+      case TypeKind::ADT:
+	return "ADT";
+	break;
+      case TypeKind::STR:
+	return "STR";
+	break;
+      case TypeKind::REF:
+	return "REF";
+	break;
+      case TypeKind::PARAM:
+	return "PARAM";
+	break;
+      case TypeKind::ARRAY:
+	return "ARRAY";
+	break;
+      case TypeKind::FNDEF:
+	return "FnDef";
+	break;
+      case TypeKind::FNPTR:
+	return "FnPtr";
+	break;
+      case TypeKind::TUPLE:
+	return "Tuple";
+	break;
+      case TypeKind::BOOL:
+	return "Boolean";
+	break;
+      case TypeKind::CHAR:
+	return "Character";
+	break;
+      case TypeKind::INT:
+	return "Integer";
+	break;
+      case TypeKind::UINT:
+	return "Unsigned Integer";
+	break;
+      case TypeKind::FLOAT:
+	return "Float";
+	break;
+      case TypeKind::UNIT:
+	return "Unit";
+	break;
+      case TypeKind::USIZE:
+	return "Usize";
+	break;
+      case TypeKind::ISIZE:
+	return "Isize";
+	break;
+      case TypeKind::ERROR:
+	return "ERROR";
+	break;
+      default:
+	return "None";
+	break;
+      }
+  }
+};
+
 } // namespace TyTy
 } // namespace Rust
 
