@@ -85,6 +85,7 @@
 	* gcc.target/i386/pr96744-1.c: Likewise.
 
 2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+	    Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/99593
 	* g++.target/arm/pr99593.C: New test.
