@@ -7388,84 +7388,46 @@ package body Sem_Util is
          return True;
       end Is_Valid_Renaming;
 
-      --  Local variables
-
-      Obj1 : Node_Id := A1;
-      Obj2 : Node_Id := A2;
-
    --  Start of processing for Denotes_Same_Object
 
    begin
-      --  Both names statically denote the same stand-alone object or parameter
-      --  (RM 6.4.1(6.5/3))
+      --  Both names statically denote the same stand-alone object or
+      --  parameter (RM 6.4.1(6.6/3)).
 
-      if Is_Entity_Name (Obj1)
-        and then Is_Entity_Name (Obj2)
-        and then Entity (Obj1) = Entity (Obj2)
+      if Is_Entity_Name (A1)
+        and then Is_Entity_Name (A2)
+        and then Entity (A1) = Entity (A2)
       then
          return True;
-      end if;
-
-      --  For renamings, the prefix of any dereference within the renamed
-      --  object_name is not a variable, and any expression within the
-      --  renamed object_name contains no references to variables nor
-      --  calls on nonstatic functions (RM 6.4.1(6.10/3)).
-
-      if Is_Renaming (Obj1) then
-         if Is_Valid_Renaming (Obj1) then
-            Obj1 := Renamed_Entity (Entity (Obj1));
-         else
-            return False;
-         end if;
-      end if;
-
-      if Is_Renaming (Obj2) then
-         if Is_Valid_Renaming (Obj2) then
-            Obj2 := Renamed_Entity (Entity (Obj2));
-         else
-            return False;
-         end if;
-      end if;
-
-      --  No match if not same node kind (such cases are handled by
-      --  Denotes_Same_Prefix)
-
-      if Nkind (Obj1) /= Nkind (Obj2) then
-         return False;
-
-      --  After handling valid renamings, one of the two names statically
-      --  denoted a renaming declaration whose renamed object_name is known
-      --  to denote the same object as the other (RM 6.4.1(6.10/3))
-
-      elsif Is_Entity_Name (Obj1) then
-         if Is_Entity_Name (Obj2) then
-            return Entity (Obj1) = Entity (Obj2);
-         else
-            return False;
-         end if;
 
       --  Both names are selected_components, their prefixes are known to
       --  denote the same object, and their selector_names denote the same
-      --  component (RM 6.4.1(6.6/3)).
+      --  component (RM 6.4.1(6.7/3)).
 
-      elsif Nkind (Obj1) = N_Selected_Component then
-         return Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2))
+      elsif Nkind (A1) = N_Selected_Component
+        and then Nkind (A2) = N_Selected_Component
+      then
+         return Denotes_Same_Object (Prefix (A1), Prefix (A2))
            and then
-             Entity (Selector_Name (Obj1)) = Entity (Selector_Name (Obj2));
+             Entity (Selector_Name (A1)) = Entity (Selector_Name (A2));
 
       --  Both names are dereferences and the dereferenced names are known to
-      --  denote the same object (RM 6.4.1(6.7/3))
+      --  denote the same object (RM 6.4.1(6.8/3)).
 
-      elsif Nkind (Obj1) = N_Explicit_Dereference then
-         return Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2));
+      elsif Nkind (A1) = N_Explicit_Dereference
+        and then Nkind (A2) = N_Explicit_Dereference
+      then
+         return Denotes_Same_Object (Prefix (A1), Prefix (A2));
 
       --  Both names are indexed_components, their prefixes are known to denote
       --  the same object, and each of the pairs of corresponding index values
       --  are either both static expressions with the same static value or both
-      --  names that are known to denote the same object (RM 6.4.1(6.8/3))
+      --  names that are known to denote the same object (RM 6.4.1(6.9/3)).
 
-      elsif Nkind (Obj1) = N_Indexed_Component then
-         if not Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2)) then
+      elsif Nkind (A1) = N_Indexed_Component
+        and then Nkind (A2) = N_Indexed_Component
+      then
+         if not Denotes_Same_Object (Prefix (A1), Prefix (A2)) then
             return False;
          else
             declare
@@ -7473,8 +7435,8 @@ package body Sem_Util is
                Indx2 : Node_Id;
 
             begin
-               Indx1 := First (Expressions (Obj1));
-               Indx2 := First (Expressions (Obj2));
+               Indx1 := First (Expressions (A1));
+               Indx2 := First (Expressions (A2));
                while Present (Indx1) loop
 
                   --  Indexes must denote the same static value or same object
@@ -7501,33 +7463,53 @@ package body Sem_Util is
 
       --  Both names are slices, their prefixes are known to denote the same
       --  object, and the two slices have statically matching index constraints
-      --  (RM 6.4.1(6.9/3))
+      --  (RM 6.4.1(6.10/3)).
 
-      elsif Nkind (Obj1) = N_Slice
-        and then Denotes_Same_Object (Prefix (Obj1), Prefix (Obj2))
+      elsif Nkind (A1) = N_Slice
+        and then Nkind (A2) = N_Slice
       then
-         declare
-            Lo1, Lo2, Hi1, Hi2 : Node_Id;
+         if not Denotes_Same_Object (Prefix (A1), Prefix (A2)) then
+            return False;
+         else
+            declare
+               Lo1, Lo2, Hi1, Hi2 : Node_Id;
 
-         begin
-            Get_Index_Bounds (Discrete_Range (Obj1), Lo1, Hi1);
-            Get_Index_Bounds (Discrete_Range (Obj2), Lo2, Hi2);
+            begin
+               Get_Index_Bounds (Discrete_Range (A1), Lo1, Hi1);
+               Get_Index_Bounds (Discrete_Range (A2), Lo2, Hi2);
 
-            --  Check whether bounds are statically identical. There is no
-            --  attempt to detect partial overlap of slices.
+               --  Check whether bounds are statically identical. There is no
+               --  attempt to detect partial overlap of slices.
 
-            return Denotes_Same_Object (Lo1, Lo2)
-                     and then
-                   Denotes_Same_Object (Hi1, Hi2);
-         end;
+               return Denotes_Same_Object (Lo1, Lo2)
+                        and then
+                      Denotes_Same_Object (Hi1, Hi2);
+            end;
+         end if;
 
-      --  In the recursion, literals appear as indexes
+      --  One of the two names statically denotes a renaming declaration whose
+      --  renamed object_name is known to denote the same object as the other;
+      --  the prefix of any dereference within the renamed object_name is not a
+      --  variable, and any expression within the renamed object_name contains
+      --  no references to variables nor calls on nonstatic functions (RM
+      --  6.4.1(6.11/3)).
 
-      elsif Nkind (Obj1) = N_Integer_Literal
-              and then
-            Nkind (Obj2) = N_Integer_Literal
+      elsif Is_Renaming (A1)
+        and then Is_Valid_Renaming (A1)
       then
-         return Intval (Obj1) = Intval (Obj2);
+         return Denotes_Same_Object (Renamed_Entity (Entity (A1)), A2);
+
+      elsif Is_Renaming (A2)
+        and then Is_Valid_Renaming (A2)
+      then
+         return Denotes_Same_Object (A1, Renamed_Entity (Entity (A2)));
+
+      --  In the recursion, literals appear as slice bounds
+
+      elsif Nkind (A1) = N_Integer_Literal
+        and then Nkind (A2) = N_Integer_Literal
+      then
+         return Intval (A1) = Intval (A2);
 
       else
          return False;
