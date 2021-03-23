@@ -1700,7 +1700,6 @@ package Snames is
       --  in Sem_Prag.
 
    for Convention_Id'Size use 8;
-   --  Plenty of space for expansion
 
    subtype Convention_C_Family is Convention_Id
      range Convention_C .. Convention_CPP;
