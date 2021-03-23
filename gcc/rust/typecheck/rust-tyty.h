@@ -1093,62 +1093,59 @@ public:
       {
       case TypeKind::INFER:
 	return "Infer";
-	break;
+
       case TypeKind::ADT:
 	return "ADT";
-	break;
+
       case TypeKind::STR:
 	return "STR";
-	break;
+
       case TypeKind::REF:
 	return "REF";
-	break;
+
       case TypeKind::PARAM:
 	return "PARAM";
-	break;
+
       case TypeKind::ARRAY:
 	return "ARRAY";
-	break;
+
       case TypeKind::FNDEF:
 	return "FnDef";
-	break;
+
       case TypeKind::FNPTR:
 	return "FnPtr";
-	break;
+
       case TypeKind::TUPLE:
 	return "Tuple";
-	break;
+
       case TypeKind::BOOL:
-	return "Boolean";
-	break;
+	return "Bool";
+
       case TypeKind::CHAR:
-	return "Character";
-	break;
+	return "Char";
+
       case TypeKind::INT:
-	return "Integer";
-	break;
+	return "Int";
+
       case TypeKind::UINT:
-	return "Unsigned Integer";
-	break;
+	return "Uint";
+
       case TypeKind::FLOAT:
 	return "Float";
-	break;
+
       case TypeKind::UNIT:
 	return "Unit";
-	break;
+
       case TypeKind::USIZE:
 	return "Usize";
-	break;
+
       case TypeKind::ISIZE:
 	return "Isize";
-	break;
+
       case TypeKind::ERROR:
 	return "ERROR";
-	break;
-      default:
-	return "None";
-	break;
       }
+    gcc_unreachable ();
   }
 };
 
