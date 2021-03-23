@@ -427,6 +427,14 @@ Lexer::build_token ()
 		  current_column++; // for error-handling
 		  current_char = peek_input ();
 
+		  if (current_char == EOF)
+		    {
+		      rust_error_at (
+			loc, "unexpected EOF while looking for end of comment",
+			current_char);
+		      break;
+		    }
+
 		  // if /* found
 		  if (current_char == '/' && peek_input (1) == '*')
 		    {
