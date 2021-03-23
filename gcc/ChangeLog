@@ -1,3 +1,12 @@
+2021-03-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-03-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/99702
+	* config/riscv/riscv.c (riscv_expand_block_move): Get RTL value
+	after type checking.
+
 2021-03-18  Sinan Lin  <sinan@isrc.iscas.ac.cn>
 
 	Backported from master:

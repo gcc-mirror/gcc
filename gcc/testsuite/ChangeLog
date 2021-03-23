@@ -1,3 +1,11 @@
+2021-03-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-03-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/99702
+	* gcc.target/riscv/pr99702.c: New.
+
 2021-03-20  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
