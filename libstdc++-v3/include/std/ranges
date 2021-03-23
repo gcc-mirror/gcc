@@ -2958,29 +2958,29 @@ namespace views
       {
 	if constexpr (_S_needs_cached_begin)
 	  if (_M_cached_begin._M_has_value())
-	    return make_reverse_iterator(_M_cached_begin._M_get(_M_base));
+	    return std::make_reverse_iterator(_M_cached_begin._M_get(_M_base));
 
 	auto __it = ranges::next(ranges::begin(_M_base), ranges::end(_M_base));
 	if constexpr (_S_needs_cached_begin)
 	  _M_cached_begin._M_set(_M_base, __it);
-	return make_reverse_iterator(std::move(__it));
+	return std::make_reverse_iterator(std::move(__it));
       }
 
       constexpr auto
       begin() requires common_range<_Vp>
-      { return make_reverse_iterator(ranges::end(_M_base)); }
+      { return std::make_reverse_iterator(ranges::end(_M_base)); }
 
       constexpr auto
       begin() const requires common_range<const _Vp>
-      { return make_reverse_iterator(ranges::end(_M_base)); }
+      { return std::make_reverse_iterator(ranges::end(_M_base)); }
 
       constexpr reverse_iterator<iterator_t<_Vp>>
       end()
-      { return make_reverse_iterator(ranges::begin(_M_base)); }
+      { return std::make_reverse_iterator(ranges::begin(_M_base)); }
 
       constexpr auto
       end() const requires common_range<const _Vp>
-      { return make_reverse_iterator(ranges::begin(_M_base)); }
+      { return std::make_reverse_iterator(ranges::begin(_M_base)); }
 
       constexpr auto
       size() requires sized_range<_Vp>
