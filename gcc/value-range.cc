@@ -185,10 +185,41 @@ irange::irange_set (tree min, tree max)
 }
 
 void
+irange::irange_set_1bit_anti_range (tree min, tree max)
+{
+  tree type = TREE_TYPE (min);
+  gcc_checking_assert (TYPE_PRECISION (type) == 1);
+
+  if (operand_equal_p (min, max))
+    {
+      // Since these are 1-bit quantities, they can only be [MIN,MIN]
+      // or [MAX,MAX].
+      if (vrp_val_is_min (min))
+	min = max = vrp_val_max (type);
+      else
+	min = max = vrp_val_min (type);
+      set (min, max);
+    }
+  else
+    {
+      // The only alternative is [MIN,MAX], which is the empty range.
+      set_undefined ();
+    }
+  if (flag_checking)
+    verify_range ();
+}
+
+void
 irange::irange_set_anti_range (tree min, tree max)
 {
   gcc_checking_assert (!POLY_INT_CST_P (min));
   gcc_checking_assert (!POLY_INT_CST_P (max));
+
+  if (TYPE_PRECISION (TREE_TYPE (min)) == 1)
+    {
+      irange_set_1bit_anti_range (min, max);
+      return;
+    }
 
   // set an anti-range
   tree type = TREE_TYPE (min);

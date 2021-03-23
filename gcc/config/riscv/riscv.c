@@ -1073,6 +1073,15 @@ riscv_force_binary (machine_mode mode, enum rtx_code code, rtx x, rtx y)
   return riscv_emit_binary (code, gen_reg_rtx (mode), x, y);
 }
 
+static rtx
+riscv_swap_instruction (rtx inst)
+{
+  gcc_assert (GET_MODE (inst) == SImode);
+  if (BYTES_BIG_ENDIAN)
+    inst = expand_unop (SImode, bswap_optab, inst, gen_reg_rtx (SImode), 1);
+  return inst;
+}
+
 /* Copy VALUE to a register and return that register.  If new pseudos
    are allowed, copy it into a new register, otherwise use DEST.  */
 
@@ -1957,7 +1966,7 @@ riscv_address_cost (rtx addr, machine_mode mode,
 rtx
 riscv_subword (rtx op, bool high_p)
 {
-  unsigned int byte = high_p ? UNITS_PER_WORD : 0;
+  unsigned int byte = (high_p != BYTES_BIG_ENDIAN) ? UNITS_PER_WORD : 0;
   machine_mode mode = GET_MODE (op);
 
   if (mode == VOIDmode)
@@ -4955,7 +4964,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					     gen_int_mode (lui_hi_chain_code, SImode));
 
       mem = adjust_address (m_tramp, SImode, 0);
-      riscv_emit_move (mem, lui_hi_chain);
+      riscv_emit_move (mem, riscv_swap_instruction (lui_hi_chain));
 
       /* Gen lui t0, hi(func).  */
       rtx hi_func = riscv_force_binary (SImode, PLUS, target_function,
@@ -4967,7 +4976,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					    gen_int_mode (lui_hi_func_code, SImode));
 
       mem = adjust_address (m_tramp, SImode, 1 * GET_MODE_SIZE (SImode));
-      riscv_emit_move (mem, lui_hi_func);
+      riscv_emit_move (mem, riscv_swap_instruction (lui_hi_func));
 
       /* Gen addi t2, t2, lo(chain).  */
       rtx lo_chain = riscv_force_binary (SImode, AND, chain_value,
@@ -4982,7 +4991,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					      force_reg (SImode, GEN_INT (lo_chain_code)));
 
       mem = adjust_address (m_tramp, SImode, 2 * GET_MODE_SIZE (SImode));
-      riscv_emit_move (mem, addi_lo_chain);
+      riscv_emit_move (mem, riscv_swap_instruction (addi_lo_chain));
 
       /* Gen jr t0, lo(func).  */
       rtx lo_func = riscv_force_binary (SImode, AND, target_function,
@@ -4995,7 +5004,7 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 					   force_reg (SImode, GEN_INT (lo_func_code)));
 
       mem = adjust_address (m_tramp, SImode, 3 * GET_MODE_SIZE (SImode));
-      riscv_emit_move (mem, jr_lo_func);
+      riscv_emit_move (mem, riscv_swap_instruction (jr_lo_func));
     }
   else
     {
@@ -5021,6 +5030,8 @@ riscv_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       /* Copy the trampoline code.  */
       for (i = 0; i < ARRAY_SIZE (trampoline); i++)
 	{
+	  if (BYTES_BIG_ENDIAN)
+	    trampoline[i] = __builtin_bswap32(trampoline[i]);
 	  mem = adjust_address (m_tramp, SImode, i * GET_MODE_SIZE (SImode));
 	  riscv_emit_move (mem, gen_int_mode (trampoline[i], SImode));
 	}
@@ -5525,6 +5536,11 @@ riscv_asan_shadow_offset (void)
 
 #undef TARGET_ASAN_SHADOW_OFFSET
 #define TARGET_ASAN_SHADOW_OFFSET riscv_asan_shadow_offset
+
+#ifdef TARGET_BIG_ENDIAN_DEFAULT
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (MASK_BIG_ENDIAN)
+#endif
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

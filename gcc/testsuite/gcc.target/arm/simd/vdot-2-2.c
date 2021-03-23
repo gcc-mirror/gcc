@@ -1,7 +1,8 @@
 /* { dg-do assemble { target { arm*-*-* } } } */
+/* { dg-require-effective-target arm_hard_ok } */
 /* { dg-require-effective-target arm_v8_2a_i8mm_ok } */
 /* { dg-add-options arm_v8_2a_i8mm }  */
-/* { dg-additional-options "-O -save-temps -mbig-endian" } */
+/* { dg-additional-options "-O -save-temps -mbig-endian -mfloat-abi=hard" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include <arm_neon.h>

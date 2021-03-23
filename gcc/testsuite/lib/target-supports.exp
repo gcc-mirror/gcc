@@ -4200,6 +4200,46 @@ proc add_options_for_arm_qbit { flags } {
     return "$flags $et_arm_qbit_flags"
 }
 
+# Return 1 if this is an ARM target supporting the DSP intrinsics from
+# arm_acle.h.  Some multilibs may be incompatible with these options.
+# Also set et_arm_dsp_flags to the best options to add.
+# arm_acle.h includes stdint.h which can cause trouble with incompatible
+# -mfloat-abi= options.
+# check_effective_target_arm_dsp also exists, which checks the current
+# multilib, without trying other options.
+
+proc check_effective_target_arm_dsp_ok_nocache { } {
+    global et_arm_dsp_flags
+    set et_arm_dsp_flags ""
+    foreach flags {"" "-march=armv5te" "-march=armv5te -mfloat-abi=softfp" "-march=armv5te -mfloat-abi=hard"} {
+      if { [check_no_compiler_messages_nocache et_arm_dsp_ok object {
+	#include <arm_acle.h>
+	int dummy;
+	#ifndef __ARM_FEATURE_DSP
+	#error not DSP
+	#endif
+      } "$flags"] } {
+	set et_arm_dsp_flags $flags
+	return 1
+      }
+    }
+
+  return 0
+}
+
+proc check_effective_target_arm_dsp_ok { } {
+    return [check_cached_effective_target et_arm_dsp_flags \
+		check_effective_target_arm_dsp_ok_nocache]
+}
+
+proc add_options_for_arm_dsp { flags } {
+    if { ! [check_effective_target_arm_dsp_ok] } {
+	return "$flags"
+    }
+    global et_arm_dsp_flags
+    return "$flags $et_arm_dsp_flags"
+}
+
 # Return 1 if this is an ARM target supporting -mfpu=neon without any
 # -mfloat-abi= option.  Useful in tests where add_options is not
 # supported (such as lto tests).
@@ -5025,7 +5065,7 @@ proc check_effective_target_arm_v8_1m_mve_fp_ok_nocache { } {
 
     # Iterate through sets of options to find the compiler flags that
     # need to be added to the -march option.
-    foreach flags {"" "-mfloat-abi=hard -mfpu=auto -march=armv8.1-m.main+mve.fp" "-mfloat-abi=softfp -mfpu=auto -march=armv8.1-m.main+mve.fp"} {
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=auto -march=armv8.1-m.main+mve.fp" "-mfloat-abi=hard -mfpu=auto -march=armv8.1-m.main+mve.fp"} {
 	if { [check_no_compiler_messages_nocache \
 		  arm_v8_1m_mve_fp_ok object {
 	    #include <arm_mve.h>
@@ -5208,7 +5248,7 @@ proc check_effective_target_arm_v8_1m_mve_ok_nocache { } {
 
     # Iterate through sets of options to find the compiler flags that
     # need to be added to the -march option.
-    foreach flags {"" "-mfloat-abi=hard -mfpu=auto -march=armv8.1-m.main+mve" "-mfloat-abi=softfp -mfpu=auto -march=armv8.1-m.main+mve"} {
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=auto -march=armv8.1-m.main+mve" "-mfloat-abi=hard -mfpu=auto -march=armv8.1-m.main+mve"} {
         if { [check_no_compiler_messages_nocache \
                   arm_v8_1m_mve_ok object {
             #if !defined (__ARM_FEATURE_MVE)
@@ -5267,7 +5307,7 @@ proc check_effective_target_arm_v8_2a_i8mm_ok_nocache { } {
 
     # Iterate through sets of options to find the compiler flags that
     # need to be added to the -march option.
-    foreach flags {"" "-mfloat-abi=hard -mfpu=neon-fp-armv8" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" } {
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8" } {
         if { [check_no_compiler_messages_nocache \
                   arm_v8_2a_i8mm_ok object {
             #include <arm_neon.h>
@@ -5352,7 +5392,7 @@ proc check_effective_target_arm_v8_2a_bf16_neon_ok_nocache { } {
         return 0;
     }
 
-    foreach flags {"" "-mfloat-abi=hard -mfpu=neon-fp-armv8" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" } {
+    foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8" } {
         if { [check_no_compiler_messages_nocache arm_v8_2a_bf16_neon_ok object {
             #include <arm_neon.h>
             #if !defined (__ARM_FEATURE_BF16_VECTOR_ARITHMETIC)

@@ -1,3 +1,29 @@
+2021-03-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99480
+	* module.cc (depset::hash::make_dependency): Propagate flags for
+	partial specialization.
+	(module_may_redeclare): Handle partial specialization.
+
+2021-03-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99425
+	* cp-tree.h (map_context_from, map_context_to): Delete.
+	(add_mergeable_specialization): Add is_alias parm.
+	* pt.c (add_mergeable_specialization): Add is_alias parm, add them.
+	* module.cc (map_context_from, map_context_to): Delete.
+	(trees_in::decl_value): Add specializations later, adjust call.
+	Drop useless alias lookup. Set duplicate fn parm context.
+	(check_mergeable_decl): Drop context mapping.
+	(trees_in::is_matching_decl): Likewise.
+	(trees_in::read_function_def): Drop parameter context adjustment
+	here.
+
+2021-03-22  Martin Liska  <mliska@suse.cz>
+
+	PR c++/99687
+	* module.cc (fini_modules): Call vec_free instead of delete.
+
 2021-03-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/99230

@@ -1,3 +1,24 @@
+2021-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view (basic_string_view(Range&&)): Define new
+	constructor and deduction guide.
+	* testsuite/21_strings/basic_string_view/cons/char/range_c++20.cc: New test.
+	* testsuite/21_strings/basic_string_view/cons/wchar_t/range_c++20.cc: New test.
+
+2021-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin(T (&)[N]), end(T (&)[N])):
+	Add missing 'noexcept' as per LWG 2280.
+	(rbegin(T (&)[N]), rend(T (&)[N]), rbegin(initializer_list<T>))
+	(rend(initializer_list<T>)): Add 'noexcept' as per LWG 3537.
+	* testsuite/24_iterators/range_access/range_access.cc: Check for
+	expected noexcept specifiers. Check result types of generic
+	std::begin and std::end overloads.
+	* testsuite/24_iterators/range_access/range_access_cpp14.cc:
+	Check for expected noexcept specifiers.
+	* testsuite/24_iterators/range_access/range_access_cpp17.cc:
+	Likewise.
+
 2021-03-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (is_scoped_enum): Define.

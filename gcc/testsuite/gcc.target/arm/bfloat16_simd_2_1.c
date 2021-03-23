@@ -1,4 +1,5 @@
 /* { dg-do assemble { target { arm*-*-* } } } */
+/* { dg-require-effective-target arm_hard_ok } */
 /* { dg-require-effective-target arm_v8_neon_ok } */
 /* { dg-require-effective-target arm_v8_2a_bf16_neon_ok } */
 /* { dg-additional-options "-march=armv8.2-a -mfloat-abi=hard -mfpu=neon-fp-armv8" } */

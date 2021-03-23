@@ -12444,6 +12444,11 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 
 	      *slot = redirect;
 
+	      if (DECL_LANG_SPECIFIC (decl))
+		{
+		  DECL_MODULE_IMPORT_P (partial) = DECL_MODULE_IMPORT_P (decl);
+		  DECL_MODULE_PURVIEW_P (partial) = DECL_MODULE_PURVIEW_P (decl);
+		}
 	      depset *tmpl_dep = make_dependency (partial, EK_PARTIAL);
 	      gcc_checking_assert (tmpl_dep->get_entity_kind () == EK_PARTIAL);
 
@@ -18429,13 +18434,20 @@ module_may_redeclare (tree decl)
       if (tree ti = node_template_info (decl, use_tpl))
 	{
 	  tree tmpl = TI_TEMPLATE (ti);
-	  if (DECL_TEMPLATE_RESULT (tmpl) == decl)
+	  if (use_tpl == 2)
+	    {
+	      /* A partial specialization.  Find that specialization's
+		 template_decl.  */
+	      for (tree list = DECL_TEMPLATE_SPECIALIZATIONS (tmpl);
+		   list; list = TREE_CHAIN (list))
+		if (DECL_TEMPLATE_RESULT (TREE_VALUE (list)) == decl)
+		  {
+		    decl = TREE_VALUE (list);
+		    break;
+		}
+	    }
+	  else if (DECL_TEMPLATE_RESULT (tmpl) == decl)
 	    decl = tmpl;
-	  // FIXME: What about partial specializations?  We need to
-	  // look at the specialization list in that case.  Unless our
-	  // caller's given us the right thing.  An alternative would
-	  // be to put both the template and the result into the
-	  // entity hash, but that seems expensive?
 	}
       unsigned index = import_entity_index (decl);
       them = import_entity_module (index);

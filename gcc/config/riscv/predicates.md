@@ -198,6 +198,11 @@
 (define_predicate "signed_order_operator"
   (match_code "eq,ne,lt,le,ge,gt"))
 
+(define_predicate "subreg_lowpart_operator"
+  (ior (match_code "truncate")
+       (and (match_code "subreg")
+            (match_test "subreg_lowpart_p (op)"))))
+
 (define_predicate "fp_native_comparison"
   (match_code "eq,lt,le,gt,ge"))
 

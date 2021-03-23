@@ -127,6 +127,8 @@ protected:
   void copy_legacy_to_multi_range (const irange &);
 
 private:
+  void irange_set_1bit_anti_range (tree, tree);
+
   unsigned char m_num_ranges;
   unsigned char m_max_ranges;
   ENUM_BITFIELD(value_range_kind) m_kind : 8;

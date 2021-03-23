@@ -474,7 +474,8 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
 	(set (...) (reg:DI r9))
      Replacing r9 with r11 is invalid.  */
   if (mode != vd->e[regno].mode
-      && REG_NREGS (reg) > hard_regno_nregs (regno, vd->e[regno].mode))
+      && (REG_NREGS (reg) > hard_regno_nregs (regno, vd->e[regno].mode)
+	  || !REG_CAN_CHANGE_MODE_P (regno, mode, vd->e[regno].mode)))
     return NULL_RTX;
 
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)

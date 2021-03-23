@@ -2041,8 +2041,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
     {
       if (DECL_ARTIFICIAL (olddecl))
 	{
-	  gcc_checking_assert (!(DECL_LANG_SPECIFIC (olddecl)
-				 && DECL_MODULE_IMPORT_P (olddecl)));
 	  if (!(global_purview_p () || not_module_p ()))
 	    error ("declaration %qD conflicts with builtin", newdecl);
 	  else
@@ -8629,6 +8627,12 @@ cp_finish_decomp (tree decl, tree first, unsigned int count)
 			 : get_tuple_element_type (type, i));
 	  input_location = sloc;
 
+	  if (VOID_TYPE_P (eltype))
+	    {
+	      error ("%<std::tuple_element<%u, %T>::type%> is %<void%>",
+		     i, type);
+	      eltype = error_mark_node;
+	    }
 	  if (init == error_mark_node || eltype == error_mark_node)
 	    {
 	      inform (dloc, "in initialization of structured binding "
