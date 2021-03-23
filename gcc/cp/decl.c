@@ -2041,8 +2041,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
     {
       if (DECL_ARTIFICIAL (olddecl))
 	{
-	  gcc_checking_assert (!(DECL_LANG_SPECIFIC (olddecl)
-				 && DECL_MODULE_IMPORT_P (olddecl)));
 	  if (!(global_purview_p () || not_module_p ()))
 	    error ("declaration %qD conflicts with builtin", newdecl);
 	  else
