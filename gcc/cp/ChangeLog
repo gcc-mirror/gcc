@@ -1,3 +1,107 @@
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/99047
+	* coroutines.cc (expand_one_await_expression): If the
+	await_ready() expression is not a boolean then convert it
+	as required.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98704
+	* coroutines.cc (build_actor_fn): Make destroy index 1
+	correspond to the abnormal unhandled_exception() exit.
+	Substitute the proxy for the resume index.
+	(coro_rewrite_function_body): Arrange to reset the resume
+	index and make done = true for a rethrown exception from
+	unhandled_exception ().
+	(morph_fn_to_coro): Adjust calls to build_actor_fn and
+	coro_rewrite_function_body.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98480
+	* coroutines.cc (replace_continue): Rewrite continue into
+	'goto label'.
+	(await_statement_walker): Handle await expressions in the
+	initializer, condition and iteration expressions of for
+	loops.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/96749
+	* coroutines.cc (flatten_await_stmt): Allow for the case
+	where a target expression variable only has uses in the
+	second part of a compound expression.
+	(maybe_promote_temps): Avoid emiting empty statements.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/98118
+	* coroutines.cc (build_co_await): Use type_build_ctor_call()
+	to determine cases when a CTOR needs to be built.
+	(flatten_await_stmt): Likewise.
+	(morph_fn_to_coro): Likewise.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR c++/95616
+	* coroutines.cc (coro_diagnose_throwing_fn): New helper.
+	(coro_diagnose_throwing_final_aw_expr): New helper.
+	(build_co_await): Diagnose throwing final await expression
+	components. Look through NOP_EXPRs inbuild_special_member_call
+	return value to find the CALL_EXPR. Simplify.
+	(build_init_or_final_await): Diagnose a throwing promise
+	final_suspend() call.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95615
+	* coroutines.cc (struct param_info): Track parameter copies that need
+	a DTOR.
+	(coro_get_frame_dtor): New helper function factored from build_actor().
+	(build_actor_fn): Use coro_get_frame_dtor().
+	(morph_fn_to_coro): Track parameters that need DTORs on exception,
+	likewise the frame promise and the return object.  On exception, run the
+	DTORs for these, destroy the frame and then rethrow the exception.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/97587
+	* coroutines.cc (struct param_info): Track rvalue refs.
+	(morph_fn_to_coro): Track rvalue refs, and call the promise
+	CTOR with the frame copy of passed parms.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-02-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/95822
+	* coroutines.cc (morph_fn_to_coro): Unconditionally remove any
+	set throwing_cleanup marker.
+
 2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

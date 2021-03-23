@@ -1,3 +1,48 @@
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (objc2_data_section): New.
+	(objc2_ivar_section): New.
+	* config/darwin.c (darwin_objc2_section): Act on Protocol and
+	ivar refs.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-sections.def (objc2_class_names_section,
+	objc2_method_names_section, objc2_method_types_section): New
+	* config/darwin.c (output_objc_section_asm_op): Output new
+	sections.  (darwin_objc2_section): Select new sections where
+	used.
+
+2021-03-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from master:
+	2021-01-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.opt (mabi=vec-extabi): New.
+	(mabi=vec-default): New.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__EXTABI__ for AIX Vector extended ABI.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Print AIX Vector
+	extabi info.
+	(conditional_register_usage): If AIX vec_extabi enabled, vs20-vs31
+	are non-volatile.
+	* doc/invoke.texi (PowerPC mabi): Add AIX vec-extabi and vec-default.
+
+2021-03-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	Backported from master:
+	2021-03-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/99702
+	* config/riscv/riscv.c (riscv_expand_block_move): Get RTL value
+	after type checking.
+
 2021-03-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

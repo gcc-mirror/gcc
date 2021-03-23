@@ -1,3 +1,22 @@
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c
+	(next_runtime_abi_02_init_metadata_attributes): Make protocol
+	refs a distinct section.
+
+2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-next-runtime-abi-02.c
+	(next_runtime_abi_02_init_metadata_attributes): Attach metadata
+	for the special string sections to class, method and method type
+	string sections.
+
 2021-01-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
