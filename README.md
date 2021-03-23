@@ -62,6 +62,10 @@ Then invoke the compiler as expected:
 $ gccrs -g -O2 -c test.rs -o test.o
 $ gccrs -o test test.o
 ```
+If the driver of gccrs is not found , try run this export :
+```bash
+$ export PATH=$HOME/gccrs-install/bin:$PATH
+```
 
 ## Testsuite
 
