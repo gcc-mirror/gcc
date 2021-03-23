@@ -13373,8 +13373,40 @@ package body Sem_Ch3 is
                --  entity will need to be marked as being a fixed-lower-bound
                --  array subtype.
 
-               if Is_Fixed_Lower_Bound_Index_Subtype (Etype (S)) then
-                  Is_FLB_Array_Subtype := True;
+               if S = First (Constraints (C)) then
+                  Is_FLB_Array_Subtype :=
+                    Is_Fixed_Lower_Bound_Index_Subtype (Etype (S));
+
+                  --  If the parent subtype (or should this be Etype of that?)
+                  --  is an FLB array subtype, we flag an error, because we
+                  --  don't currently allow subtypes of such subtypes to
+                  --  specify a fixed lower bound for any of their indexes,
+                  --  even if the index of the parent subtype is a "range <>"
+                  --  index.
+
+                  if Is_FLB_Array_Subtype
+                    and then Is_Fixed_Lower_Bound_Array_Subtype (T)
+                  then
+                     Error_Msg_NE
+                       ("index with fixed lower bound not allowed for subtype "
+                          & "of fixed-lower-bound }", S, T);
+
+                     Is_FLB_Array_Subtype := False;
+                  end if;
+
+               elsif Is_FLB_Array_Subtype
+                 and then not Is_Fixed_Lower_Bound_Index_Subtype (Etype (S))
+               then
+                  Error_Msg_NE
+                    ("constrained index not allowed for fixed-lower-bound "
+                       & "subtype of}", S, T);
+
+               elsif not Is_FLB_Array_Subtype
+                 and then Is_Fixed_Lower_Bound_Index_Subtype (Etype (S))
+               then
+                  Error_Msg_NE
+                    ("index with fixed lower bound not allowed for "
+                       & "constrained subtype of}", S, T);
                end if;
 
                Next (Index);
@@ -14396,9 +14428,9 @@ package body Sem_Ch3 is
       Set_First_Rep_Item (Def_Id, First_Rep_Item (T));
 
       --  If this is a range for a fixed-lower-bound subtype, then set the
-      --  index itype's lower bound to the FLB and the index type's upper bound
-      --  to the high bound of the index subtype's high bound, mark the itype
-      --  as an FLB index subtype, and set the range's Etype to the itype.
+      --  index itype's low bound to the FLB and the index itype's upper bound
+      --  to the high bound of the parent array type's index subtype. Also,
+      --  mark the itype as an FLB index subtype.
 
       if Nkind (S) = N_Range and then Is_FLB_Index then
          Set_Scalar_Range
