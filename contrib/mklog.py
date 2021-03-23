@@ -65,13 +65,13 @@ PATCH must be generated using diff(1)'s -up or -cp options
 """
 
 script_folder = os.path.realpath(__file__)
-gcc_root = os.path.dirname(os.path.dirname(script_folder))
+root = os.path.dirname(os.path.dirname(script_folder))
 
 
 def find_changelog(path):
     folder = os.path.split(path)[0]
     while True:
-        if os.path.exists(os.path.join(args.directory, folder, 'ChangeLog')):
+        if os.path.exists(os.path.join(root, folder, 'ChangeLog')):
             return folder
         folder = os.path.dirname(folder)
         if folder == '':
@@ -277,7 +277,7 @@ if __name__ == '__main__':
                         help='Do not generate function names in ChangeLogs')
     parser.add_argument('-p', '--fill-up-bug-titles', action='store_true',
                         help='Download title of mentioned PRs')
-    parser.add_argument('-d', '--directory', default=gcc_root,
+    parser.add_argument('-d', '--directory',
                         help='Root directory where to search for ChangeLog '
                         'files')
     parser.add_argument('-c', '--changelog',
@@ -288,6 +288,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.input == '-':
         args.input = None
+    if args.directory:
+        root = args.directory
 
     data = open(args.input) if args.input else sys.stdin
     if args.update_copyright:
