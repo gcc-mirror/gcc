@@ -1,3 +1,7 @@
+2021-03-22  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Add --directory argument.
+
 2021-03-19  Matthias Klose  <doko@ubuntu.com>
 
 	* texi2pod.pl: Substitute @tie{} with a space for the man pages.

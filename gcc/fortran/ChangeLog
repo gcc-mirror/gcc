@@ -1,3 +1,10 @@
+2021-03-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99688
+	* match.c (select_type_set_tmp, gfc_match_select_type,
+	gfc_match_select_rank): Fix 'name' buffersize to avoid out of bounds.
+	* resolve.c (resolve_select_type): Likewise.
+
 2021-03-19  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (inline_limit_check): Add rank_a

@@ -1,3 +1,40 @@
+2021-03-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99480
+	* g++.dg/modules/pr99480_a.H: New.
+	* g++.dg/modules/pr99480_b.H: New.
+
+2021-03-22  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99581
+	* gcc.target/powerpc/pr99581.c: New.
+
+2021-03-22  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99425
+	* g++.dg/modules/pr99425-1.h: New.
+	* g++.dg/modules/pr99425-1_a.H: New.
+	* g++.dg/modules/pr99425-1_b.H: New.
+	* g++.dg/modules/pr99425-1_c.C: New.
+	* g++.dg/modules/pr99425-2_a.X: New.
+	* g++.dg/modules/pr99425-2_b.X: New.
+	* g++.dg/template/pr99425.C: New.
+
+2021-03-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99694
+	* gcc.dg/torture/pr99694.c: New testcase.
+
+2021-03-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/99702
+	* gcc.target/riscv/pr99702.c: New.
+
+2021-03-22  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/98914
+	* gcc.target/powerpc/pr98914.c: New test.
+
 2021-03-20  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/99679

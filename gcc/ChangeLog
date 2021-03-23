@@ -1,3 +1,104 @@
+2021-03-22  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99581
+	* config/aarch64/constraints.md (UtQ): Use
+	define_relaxed_memory_constraint for it.
+	* doc/md.texi (define_relaxed_memory_constraint): Describe it.
+	* genoutput.c (main): Process DEFINE_RELAXED_MEMORY_CONSTRAINT.
+	* genpreds.c (constraint_data): Add bitfield is_relaxed_memory.
+	(have_relaxed_memory_constraints): New static var.
+	(relaxed_memory_start, relaxed_memory_end): Ditto.
+	(add_constraint): Add arg is_relaxed_memory.  Check name for
+	relaxed memory.  Set up is_relaxed_memory in constraint_data and
+	have_relaxed_memory_constraints.  Adjust calls.
+	(choose_enum_order): Process relaxed memory.
+	(write_tm_preds_h): Ditto.
+	(main): Process DEFINE_RELAXED_MEMORY_CONSTRAINT.
+	* gensupport.c (process_rtx): Process DEFINE_RELAXED_MEMORY_CONSTRAINT.
+	* ira-costs.c (record_reg_classes): Process CT_RELAXED_MEMORY.
+	* ira-lives.c (single_reg_class): Use
+	insn_extra_relaxed_memory_constraint.
+	* ira.c (ira_setup_alts): CT_RELAXED_MEMORY.
+	* lra-constraints.c (valid_address_p): Use
+	insn_extra_relaxed_memory_constraint instead of other memory
+	constraints.
+	(process_alt_operands): Process CT_RELAXED_MEMORY.
+	(curr_insn_transform): Use insn_extra_relaxed_memory_constraint.
+	* recog.c (asm_operand_ok, preprocess_constraints): Process
+	CT_RELAXED_MEMORY.
+	* reload.c (find_reloads): Ditto.
+	* rtl.def (DEFINE_RELAXED_MEMORY_CONSTRAINT): New.
+	* stmt.c (parse_input_constraint): Use
+	insn_extra_relaxed_memory_constraint.
+
+2021-03-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/97926
+	* ubsan.c (ubsan_instrument_float_cast): Don't test for unordered if
+	there are no NaNs.
+
+2021-03-22  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/97252
+	* config/arm/arm-protos.h (neon_make_constant): Add generate
+	argument to guard emitting insns, default to true.
+	* config/arm/arm.c (arm_legitimate_constant_p_1): Reject
+	CONST_VECTORs which neon_make_constant can't handle.
+	(neon_vdup_constant): Add generate argument, avoid emitting
+	insns if it's not set.
+	(neon_make_constant): Plumb new generate argument through.
+	* config/arm/constraints.md (Ui): New. Use it...
+	* config/arm/mve.md (*mve_mov<mode>): ... here.
+	* config/arm/vec-common.md (movv8hf): Use neon_make_constant to
+	synthesize constants.
+
+2021-03-22  Richard Biener  <rguenther@suse.de>
+
+	* debug.h: Add deprecation warning.
+
+2021-03-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99694
+	* tree-ssa-sccvn.c (visit_phi): Ignore edges with the
+	PHI result.
+
+2021-03-22  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/99702
+	* config/riscv/riscv.c (riscv_expand_block_move): Get RTL value
+	after type checking.
+
+2021-03-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99562
+	PR debug/66728
+	* dwarf2out.c (get_full_len): Use get_precision rather than
+	min_precision.
+	(add_const_value_attribute): Make sure add_AT_wide argument has
+	precision prec rather than some very wide one.
+
+2021-03-22  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (*rotldi3_insert_sf,
+	*mov<SFDF:mode><SFDF2:mode>cc_p9, floatsi<mode>2_lfiwax,
+	floatsi<mode>2_lfiwax_mem, floatunssi<mode>2_lfiwzx,
+	floatunssi<mode>2_lfiwzx_mem, *floatsidf2_internal,
+	*floatunssidf2_internal, fix_trunc<mode>si2_stfiwx,
+	fix_trunc<mode>si2_internal, fixuns_trunc<mode>si2_stfiwx,
+	*round32<mode>2_fprs, *roundu32<mode>2_fprs,
+	*fix_trunc<mode>si2_internal): Fix empty split condition.
+	* config/rs6000/vsx.md (*vsx_le_undo_permute_<mode>,
+	vsx_reduc_<VEC_reduc_name>_v2df, vsx_reduc_<VEC_reduc_name>_v4sf,
+	*vsx_reduc_<VEC_reduc_name>_v2df_scalar,
+	*vsx_reduc_<VEC_reduc_name>_v4sf_scalar): Likewise.
+
+2021-03-22  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/98914
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set_var_p9):
+	Convert idx to DImode.
+	(rs6000_expand_vector_set_var_p8): Likewise.
+
 2021-03-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/99388
