@@ -141,11 +141,12 @@ namespace test_ns
 void test06()
 {
   // Check that views::reverse works and does not use ADL which could lead
-  // to accidentally finding test_ns::make_reverse_iterator(const A&).
+  // to accidentally finding test_ns::make_reverse_iterator(A*).
   test_ns::A as[] = {{}, {}};
   auto v = as | std::views::reverse;
-  static_assert(std::ranges::view<decltype(v)>);
-  static_assert(std::ranges::view<decltype(v)>);
+  using V = decltype(v);
+  static_assert( std::ranges::view<V> );
+  static_assert( std::ranges::range<const V> );
 }
 
 int
