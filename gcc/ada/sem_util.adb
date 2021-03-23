@@ -7504,12 +7504,19 @@ package body Sem_Util is
       then
          return Denotes_Same_Object (A1, Renamed_Entity (Entity (A2)));
 
-      --  In the recursion, literals appear as slice bounds
+      --  In the recursion, integer literals appear as slice bounds
 
       elsif Nkind (A1) = N_Integer_Literal
         and then Nkind (A2) = N_Integer_Literal
       then
          return Intval (A1) = Intval (A2);
+
+      --  Likewise for character literals
+
+      elsif Nkind (A1) = N_Character_Literal
+        and then Nkind (A2) = N_Character_Literal
+      then
+         return Char_Literal_Value (A1) = Char_Literal_Value (A2);
 
       else
          return False;
