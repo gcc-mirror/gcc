@@ -578,21 +578,29 @@ ix86_can_inline_p (tree caller, tree callee)
        && lookup_attribute ("always_inline",
 			    DECL_ATTRIBUTES (callee)));
 
+  /* NB: Skip ISA check for always_inline in system headers if caller
+     has target attribute.  */
+  bool skip_isa_check = (always_inline
+			 && caller_tree != target_option_default_node
+			 && DECL_IN_SYSTEM_HEADER (callee));
+
   cgraph_node *callee_node = cgraph_node::get (callee);
   /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
      function can inline a SSE2 function but a SSE2 function can't inline
      a SSE4 function.  */
-  if (((caller_opts->x_ix86_isa_flags & callee_opts->x_ix86_isa_flags)
-       != callee_opts->x_ix86_isa_flags)
-      || ((caller_opts->x_ix86_isa_flags2 & callee_opts->x_ix86_isa_flags2)
-	  != callee_opts->x_ix86_isa_flags2))
+  if (!skip_isa_check
+      && (((caller_opts->x_ix86_isa_flags & callee_opts->x_ix86_isa_flags)
+	   != callee_opts->x_ix86_isa_flags)
+	  || ((caller_opts->x_ix86_isa_flags2 & callee_opts->x_ix86_isa_flags2)
+	      != callee_opts->x_ix86_isa_flags2)))
     ret = false;
 
   /* See if we have the same non-isa options.  */
-  else if ((!always_inline
-	    && caller_opts->x_target_flags != callee_opts->x_target_flags)
-	   || (caller_opts->x_target_flags & ~always_inline_safe_mask)
-	       != (callee_opts->x_target_flags & ~always_inline_safe_mask))
+  else if (!skip_isa_check
+	   && ((!always_inline
+		&& caller_opts->x_target_flags != callee_opts->x_target_flags)
+	       || ((caller_opts->x_target_flags & ~always_inline_safe_mask)
+		   != (callee_opts->x_target_flags & ~always_inline_safe_mask))))
     ret = false;
 
   /* See if arch, tune, etc. are the same.  */
