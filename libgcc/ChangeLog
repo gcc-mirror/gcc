@@ -1,3 +1,8 @@
+2021-03-23  Marcus Comstedt  <marcus@mc.pp.se>
+
+	* config/riscv/sfp-machine.h (__BYTE_ORDER): Set according
+	to __BYTE_ORDER__.
+
 2021-03-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR gcov-profile/99406

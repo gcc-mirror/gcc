@@ -3994,7 +3994,8 @@ static bool
 resolve_operator (gfc_expr *e)
 {
   gfc_expr *op1, *op2;
-  char msg[200];
+  /* One error uses 3 names; additional space for wording (also via gettext). */
+  char msg[3*GFC_MAX_SYMBOL_LEN + 1 + 50];
   bool dual_locus_error;
   bool t = true;
 
@@ -4047,7 +4048,8 @@ resolve_operator (gfc_expr *e)
   if ((op1 && op1->expr_type == EXPR_NULL)
       || (op2 && op2->expr_type == EXPR_NULL))
     {
-      sprintf (msg, _("Invalid context for NULL() pointer at %%L"));
+      snprintf (msg, sizeof (msg),
+		_("Invalid context for NULL() pointer at %%L"));
       goto bad_op;
     }
 
@@ -4063,8 +4065,9 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg, _("Operand of unary numeric operator %%<%s%%> at %%L is %s"),
-	       gfc_op2string (e->value.op.op), gfc_typename (e));
+      snprintf (msg, sizeof (msg),
+		_("Operand of unary numeric operator %%<%s%%> at %%L is %s"),
+		gfc_op2string (e->value.op.op), gfc_typename (e));
       goto bad_op;
 
     case INTRINSIC_PLUS:
@@ -4079,14 +4082,14 @@ resolve_operator (gfc_expr *e)
 	}
 
       if (op1->ts.type == BT_DERIVED || op2->ts.type == BT_DERIVED)
-	sprintf (msg,
-	       _("Unexpected derived-type entities in binary intrinsic "
-		 "numeric operator %%<%s%%> at %%L"),
+	snprintf (msg, sizeof (msg),
+		  _("Unexpected derived-type entities in binary intrinsic "
+		  "numeric operator %%<%s%%> at %%L"),
 	       gfc_op2string (e->value.op.op));
       else
-      	sprintf (msg,
-	       _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
-	       gfc_op2string (e->value.op.op), gfc_typename (op1),
+	snprintf (msg, sizeof(msg),
+		  _("Operands of binary numeric operator %%<%s%%> at %%L are %s/%s"),
+		  gfc_op2string (e->value.op.op), gfc_typename (op1),
 	       gfc_typename (op2));
       goto bad_op;
 
@@ -4099,9 +4102,9 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg,
-	       _("Operands of string concatenation operator at %%L are %s/%s"),
-	       gfc_typename (op1), gfc_typename (op2));
+      snprintf (msg, sizeof (msg),
+		_("Operands of string concatenation operator at %%L are %s/%s"),
+		gfc_typename (op1), gfc_typename (op2));
       goto bad_op;
 
     case INTRINSIC_AND:
@@ -4142,9 +4145,10 @@ resolve_operator (gfc_expr *e)
 	  goto simplify_op;
 	}
 
-      sprintf (msg, _("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
-	       gfc_op2string (e->value.op.op), gfc_typename (op1),
-	       gfc_typename (op2));
+      snprintf (msg, sizeof (msg),
+		_("Operands of logical operator %%<%s%%> at %%L are %s/%s"),
+		gfc_op2string (e->value.op.op), gfc_typename (op1),
+		gfc_typename (op2));
 
       goto bad_op;
 
@@ -4165,8 +4169,8 @@ resolve_operator (gfc_expr *e)
 	  break;
 	}
 
-      sprintf (msg, _("Operand of .not. operator at %%L is %s"),
-		      gfc_typename (op1));
+      snprintf (msg, sizeof (msg), _("Operand of .not. operator at %%L is %s"),
+		gfc_typename (op1));
       goto bad_op;
 
     case INTRINSIC_GT:
@@ -4276,16 +4280,16 @@ resolve_operator (gfc_expr *e)
 	}
 
       if (op1->ts.type == BT_LOGICAL && op2->ts.type == BT_LOGICAL)
-	sprintf (msg,
-		 _("Logicals at %%L must be compared with %s instead of %s"),
-		 (e->value.op.op == INTRINSIC_EQ
-		  || e->value.op.op == INTRINSIC_EQ_OS)
-		 ? ".eqv." : ".neqv.", gfc_op2string (e->value.op.op));
+	snprintf (msg, sizeof (msg),
+		  _("Logicals at %%L must be compared with %s instead of %s"),
+		  (e->value.op.op == INTRINSIC_EQ
+		   || e->value.op.op == INTRINSIC_EQ_OS)
+		  ? ".eqv." : ".neqv.", gfc_op2string (e->value.op.op));
       else
-	sprintf (msg,
-		 _("Operands of comparison operator %%<%s%%> at %%L are %s/%s"),
-		 gfc_op2string (e->value.op.op), gfc_typename (op1),
-		 gfc_typename (op2));
+	snprintf (msg, sizeof (msg),
+		  _("Operands of comparison operator %%<%s%%> at %%L are %s/%s"),
+		  gfc_op2string (e->value.op.op), gfc_typename (op1),
+		  gfc_typename (op2));
 
       goto bad_op;
 
@@ -4296,19 +4300,23 @@ resolve_operator (gfc_expr *e)
 	  const char *guessed;
 	  guessed = lookup_uop_fuzzy (name, e->value.op.uop->ns->uop_root);
 	  if (guessed)
-	    sprintf (msg, _("Unknown operator %%<%s%%> at %%L; did you mean '%s'?"),
-		name, guessed);
+	    snprintf (msg, sizeof (msg),
+		      _("Unknown operator %%<%s%%> at %%L; did you mean '%s'?"),
+		      name, guessed);
 	  else
-	    sprintf (msg, _("Unknown operator %%<%s%%> at %%L"), name);
+	    snprintf (msg, sizeof (msg), _("Unknown operator %%<%s%%> at %%L"),
+		      name);
 	}
       else if (op2 == NULL)
-	sprintf (msg, _("Operand of user operator %%<%s%%> at %%L is %s"),
-		 e->value.op.uop->name, gfc_typename (op1));
+	snprintf (msg, sizeof (msg),
+		  _("Operand of user operator %%<%s%%> at %%L is %s"),
+		  e->value.op.uop->name, gfc_typename (op1));
       else
 	{
-	  sprintf (msg, _("Operands of user operator %%<%s%%> at %%L are %s/%s"),
-		   e->value.op.uop->name, gfc_typename (op1),
-		   gfc_typename (op2));
+	  snprintf (msg, sizeof (msg),
+		    _("Operands of user operator %%<%s%%> at %%L are %s/%s"),
+		    e->value.op.uop->name, gfc_typename (op1),
+		    gfc_typename (op2));
 	  e->value.op.uop->op->sym->attr.referenced = 1;
 	}
 
@@ -4391,8 +4399,8 @@ resolve_operator (gfc_expr *e)
 
 	      /* Try user-defined operators, and otherwise throw an error.  */
 	      dual_locus_error = true;
-	      sprintf (msg,
-		       _("Inconsistent ranks for operator at %%L and %%L"));
+	      snprintf (msg, sizeof (msg),
+			_("Inconsistent ranks for operator at %%L and %%L"));
 	      goto bad_op;
 	    }
 	}

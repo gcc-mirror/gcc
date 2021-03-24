@@ -17159,10 +17159,25 @@
    (set_attr "btver2_decode" "vector")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn_and_split "ssse3_pshufbv8qi3"
+(define_expand "ssse3_pshufbv8qi3"
+  [(parallel
+    [(set (match_operand:V8QI 0 "register_operand")
+	  (unspec:V8QI [(match_operand:V8QI 1 "register_operand")
+		        (match_operand:V8QI 2 "register_mmxmem_operand")
+			(match_dup 3)] UNSPEC_PSHUFB))
+     (clobber (match_scratch:V4SI 4))])]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
+{
+  operands[3] = ix86_build_const_vector (V4SImode, true,
+                                         gen_int_mode (0xf7f7f7f7, SImode));
+})
+
+(define_insn_and_split "*ssse3_pshufbv8qi3"
   [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
 	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "0,0,Yv")
-		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")]
+		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")
+		      (match_operand:V4SI 4 "reg_or_const_vector_operand"
+					  "i,3,3")]
 		     UNSPEC_PSHUFB))
    (clobber (match_scratch:V4SI 3 "=X,&x,&Yv"))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
@@ -17172,8 +17187,7 @@
    #"
   "TARGET_SSSE3 && reload_completed
    && SSE_REGNO_P (REGNO (operands[0]))"
-  [(set (match_dup 3) (match_dup 5))
-   (set (match_dup 3)
+  [(set (match_dup 3)
 	(and:V4SI (match_dup 3) (match_dup 2)))
    (set (match_dup 0)
 	(unspec:V16QI [(match_dup 1) (match_dup 4)] UNSPEC_PSHUFB))]
@@ -17188,9 +17202,6 @@
 				GET_MODE (operands[2]));
   operands[4] = lowpart_subreg (V16QImode, operands[3],
 				GET_MODE (operands[3]));
-  rtx vec_const = ix86_build_const_vector (V4SImode, true,
-					   gen_int_mode (0xf7f7f7f7, SImode));
-  operands[5] = force_const_mem (V4SImode, vec_const);
 }
   [(set_attr "mmx_isa" "native,sse_noavx,avx")
    (set_attr "prefix_extra" "1")

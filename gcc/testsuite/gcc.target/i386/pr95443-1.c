@@ -1,4 +1,4 @@
-/* { dg-do run { target mmap } } */
+/* { dg-do run { target { sysconf && mmap } } } */
 /* { dg-options "-O2 -minline-all-stringops" } */
 
 #include <stdint.h>

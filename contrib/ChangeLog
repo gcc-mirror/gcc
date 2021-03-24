@@ -1,3 +1,7 @@
+2021-03-23  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Fix broken tests.
+
 2021-03-22  Martin Liska  <mliska@suse.cz>
 
 	* mklog.py: Add --directory argument.

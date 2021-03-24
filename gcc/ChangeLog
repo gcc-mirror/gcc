@@ -1,3 +1,118 @@
+2021-03-23  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99581
+	* config/aarch64/constraints.md (Utq, UOb, UOh, UOw, UOd, UOty):
+	Use define_relaxed_memory_constraint for them.
+
+2021-03-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/99733
+	* config/host-darwin.c (darwin_gt_pch_use_address): Add a
+	colon to the diagnostic message.
+
+2021-03-23  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* fwprop.c (fwprop_propagation::fwprop_propagation): Look at
+	set_info's uses.
+	(try_fwprop_subst_note): Use set_info instead of insn_info.
+	(try_fwprop_subst_pattern): Likewise.
+	(try_fwprop_subst_notes): Likewise.
+	(try_fwprop_subst): Likewise.
+	(forward_propagate_subreg): Likewise.
+	(forward_propagate_and_simplify): Likewise.
+	(forward_propagate_into): Likewise.
+	* rtl-ssa/accesses.h (set_info::single_nondebug_use) New
+	method.
+	(set_info::single_nondebug_insn_use): Likewise.
+	(set_info::single_phi_use): Likewise.
+	* rtl-ssa/member-fns.inl (set_info::single_nondebug_use) New
+	method.
+	(set_info::single_nondebug_insn_use): Likewise.
+	(set_info::single_phi_use): Likewise.
+
+2021-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (arm_dsp_ok, arm_dsp): Document.
+
+2021-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99540
+	* config/aarch64/aarch64.c (aarch64_add_offset): Tell
+	expand_mult to perform an unsigned rather than a signed
+	multiplication.
+
+2021-03-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99704
+	* config/i386/cpuid.h (__cpuid): Add __volatile__.
+	(__cpuid_count): Likewise.
+
+2021-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99721
+	* tree-vect-slp.c (vect_slp_analyze_node_operations):
+	Make sure we can schedule the node.
+
+2021-03-23  Marcus Comstedt  <marcus@mc.pp.se>
+
+	* config/riscv/riscv.c (riscv_subword): Take endianness into
+	account when calculating the byte offset.
+
+2021-03-23  Marcus Comstedt  <marcus@mc.pp.se>
+
+	* config/riscv/predicates.md (subreg_lowpart_operator): New predicate
+	* config/riscv/riscv.md (*addsi3_extended2, *subsi3_extended2)
+	(*negsi2_extended2, *mulsi3_extended2, *<optab>si3_mask)
+	(*<optab>si3_mask_1, *<optab>di3_mask, *<optab>di3_mask_1)
+	(*<optab>si3_extend_mask, *<optab>si3_extend_mask_1): Use
+	new predicate "subreg_lowpart_operator"
+
+2021-03-23  Marcus Comstedt  <marcus@mc.pp.se>
+
+	* config/riscv/riscv.c (riscv_swap_instruction): New function
+	to byteswap an SImode rtx containing an instruction.
+	(riscv_trampoline_init): Byteswap the generated instructions
+	when needed.
+
+2021-03-23  Marcus Comstedt  <marcus@mc.pp.se>
+
+	* common/config/riscv/riscv-common.c
+	(TARGET_DEFAULT_TARGET_FLAGS): Set default endianness.
+	* config.gcc (riscv32be-*, riscv64be-*): Set
+	TARGET_BIG_ENDIAN_DEFAULT to 1.
+	* config/riscv/elf.h (LINK_SPEC): Change -melf* value
+	depending on default endianness.
+	* config/riscv/freebsd.h (LINK_SPEC): Likewise.
+	* config/riscv/linux.h (LINK_SPEC): Likewise.
+	* config/riscv/riscv.c (TARGET_DEFAULT_TARGET_FLAGS): Set
+	default endianness.
+	* config/riscv/riscv.h (DEFAULT_ENDIAN_SPEC): New macro.
+
+2021-03-23  Marcus Comstedt  <marcus@mc.pp.se>
+
+	* config/riscv/elf.h (LINK_SPEC): Pass linker endianness flag.
+	* config/riscv/freebsd.h (LINK_SPEC): Likewise.
+	* config/riscv/linux.h (LINK_SPEC): Likewise.
+	* config/riscv/riscv.h (ASM_SPEC): Pass -mbig-endian and
+	-mlittle-endian.
+	(BYTES_BIG_ENDIAN): Handle big endian.
+	(WORDS_BIG_ENDIAN): Define to BYTES_BIG_ENDIAN.
+	* config/riscv/riscv.opt (-mbig-endian, -mlittle-endian): New
+	options.
+	* doc/invoke.texi (-mbig-endian, -mlittle-endian): Document.
+
+2021-03-23  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* regcprop.c (find_oldest_value_reg): Ask target whether
+	  different mode is fine for replacement register.
+
+2021-03-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/99296
+	* value-range.cc (irange::irange_set_1bit_anti_range): New.
+	(irange::irange_set_anti_range): Call irange_set_1bit_anti_range
+	* value-range.h (irange::irange_set_1bit_anti_range): New.
+
 2021-03-22  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/99581

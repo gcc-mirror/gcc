@@ -1,3 +1,11 @@
+2021-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93660
+	* trans-decl.c (build_function_decl): Add comment;
+	increment hidden_typelist for caf_token/caf_offset.
+	* trans-types.c (gfc_get_function_type): Add comment;
+	add missing caf_token/caf_offset args.
+
 2021-03-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/99688
