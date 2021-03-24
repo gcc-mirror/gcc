@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -g -fno-ipa-cp -w" } */
+/* { dg-options "-O2 -g -w" } */
 
 static int foo ();
 
