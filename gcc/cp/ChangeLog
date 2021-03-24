@@ -1,3 +1,27 @@
+2021-03-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99283
+	* name-lookup.c (check_module_override): Set global or partition
+	DUP on the binding vector.
+
+2021-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99318
+	* decl2.c (cp_warn_deprecated_use_scopes): Only call
+	cp_warn_deprecated_use when decl is a namespace, class, or enum.
+
+2021-03-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99239
+	* decl.c (duplicate_decls): Remove assert about maybe-imported
+	artificial decls.
+
+2021-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99650
+	* decl.c (cp_finish_decomp): Diagnose void initializers when
+	using tuple_element and get.
+
 2021-03-22  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99480

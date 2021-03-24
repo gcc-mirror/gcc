@@ -1,3 +1,21 @@
+2021-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/ranges/adaptors/reverse.cc: Replace duplicated
+	line with a check that uses the const being/end overloads.
+
+2021-03-23  Moritz Sichert  <sichert@in.tum.de>
+
+	* include/std/ranges (reverse_view::begin, reverse_view::end):
+	Qualify make_reverse_iterator calls to avoid ADL.
+	* testsuite/std/ranges/adaptors/reverse.cc: Test that
+	views::reverse works when make_reverse_iterator is defined
+	in an associated namespace.
+
+2021-03-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_LONG_DOUBLE_ALT128_COMPAT):
+	Do not define when compiling with Clang.
+
 2021-03-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/string_view (basic_string_view(Range&&)): Define new

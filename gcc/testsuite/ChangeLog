@@ -1,3 +1,133 @@
+2021-03-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99283
+	* g++.dg/modules/pr99283-1_a.H: New.
+	* g++.dg/modules/pr99283-1_b.H: New.
+
+2021-03-23  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/vector/long-double-asm-abi.c: New test.
+
+2021-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_dsp_ok_nocache)
+	(check_effective_target_arm_dsp_ok, add_options_for_arm_dsp): New.
+	* gcc.target/arm/acle/dsp_arith.c: Use arm_dsp_ok effective target
+	and add arm_dsp options.
+
+2021-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_1m_mve_fp_ok_nocache): Fix
+	-mfloat-abi= options order.
+	(check_effective_target_arm_v8_1m_mve_ok_nocache): Likewise
+	* gcc.target/arm/mve/intrinsics/mve_vector_float2.c: Add
+	arm_hard_ok effective target and -mfloat-abi=hard additional
+	option.
+	* gcc.target/arm/mve/intrinsics/mve_vector_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint1.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/mve_vector_uint2.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_u64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_s64.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_u64.c: Likewise.
+	* gcc.target/arm/armv8_1m-fp16-move-1.c: Add -mfloat-abi=hard
+	additional option.
+	* gcc.target/arm/armv8_1m-fp32-move-1.c: Likewise.
+	* gcc.target/arm/armv8_1m-fp64-move-1.c: Likewise.
+
+2021-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_2a_i8mm_ok_nocache): Fix
+	-mfloat-abi= options order.
+	(check_effective_target_arm_v8_2a_bf16_neon_ok_nocache): Likewise.
+	* gcc.target/arm/bfloat16_scalar_1_1.c: Add arm_hard_ok effective
+	target and -mfloat-abi=hard additional option.
+	* gcc.target/arm/bfloat16_simd_1_1.c: Likewise.
+	* gcc.target/arm/simd/bf16_ma_1.c: Likewise.
+	* gcc.target/arm/simd/bf16_mmla_1.c: Likewise.
+	* gcc.target/arm/simd/vdot-2-1.c: Likewise.
+	* gcc.target/arm/simd/vdot-2-2.c: Likewise.
+
+2021-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/armv8_2-fp16-scalar-2.c: Add arm_hard_ok.
+
+2021-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/bfloat16_simd_1_2.c: Add arm_softfp_ok.
+	* gcc.target/arm/bfloat16_simd_2_2.c: Likewise.
+	* gcc.target/arm/bfloat16_simd_3_2.c: Likewise.
+	* gcc.target/arm/pr51968.c: Likewise.
+	* gcc.target/arm/bfloat16_simd_2_1.c: arm_hard_ok.
+	* gcc.target/arm/bfloat16_simd_3_1.c: Likewise.
+	* gcc.target/arm/simd/bf16_vldn_1.c: Likewise.
+	* gcc.target/arm/simd/bf16_vstn_1.c: Likewise.
+
+2021-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/armv8_1m-shift-imm-1.c: Remove -mfloat=abi option.
+	* gcc.target/arm/armv8_1m-shift-reg-1.c: Likewise.
+	* gcc.target/arm/bf16_dup.c: Likewise.
+	* gcc.target/arm/bf16_reinterpret.c: Likewise.
+	* gcc.target/arm/pr51534.c: Remove -mfloat=abi option.
+
+2021-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/vmmla_1.c: Add arm_v8_2a_i8mm options.
+
+2021-03-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/bfloat16_scalar_typecheck.c: Add
+	arm_v8_2a_fp16_neon and arm_v8_2a_bf16_neon.
+	* gcc.target/arm/bfloat16_vector_typecheck_1.c: Likewise.
+	* gcc.target/arm/bfloat16_vector_typecheck_2.c: Likewise.
+
+2021-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99318
+	* g++.dg/cpp0x/attributes-namespace6.C: New test.
+	* g++.dg/cpp0x/gen-attrs-73.C: New test.
+
+2021-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93660
+	* gfortran.dg/gomp/declare-simd-coarray-lib.f90: New test.
+
+2021-03-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99540
+	* gcc.dg/vect/pr99540.c: New test.
+
+2021-03-23  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99239
+	* g++.dg/modules/pr99239_a.H: New.
+	* g++.dg/modules/pr99239_b.H: New.
+
+2021-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99721
+	* gfortran.dg/vect/pr99721.f90: New testcase.
+
+2021-03-23  Marcus Comstedt  <marcus@mc.pp.se>
+
+	* gcc.target/riscv/shift-shift-5.c (sub): Change
+	order of struct fields depending on byteorder.
+
+2021-03-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99650
+	* g++.dg/cpp1z/decomp55.C: New test.
+
+2021-03-23  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/99296
+	* gcc.dg/pr99296.c: New file.
+
 2021-03-22  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99480
