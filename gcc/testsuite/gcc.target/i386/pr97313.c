@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fPIE" } */
+/* { dg-require-effective-target pie } */
 
 typedef struct {
   int unspecified : 1;
