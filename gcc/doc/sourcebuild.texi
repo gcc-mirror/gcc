@@ -2450,6 +2450,9 @@ all targets.
 @item stpcpy
 Target provides @code{stpcpy} function.
 
+@item sysconf
+Target supports @code{sysconf}.
+
 @item trampolines
 Target supports trampolines.
 

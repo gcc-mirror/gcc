@@ -1067,6 +1067,12 @@ proc check_effective_target_mmap {} {
     return [check_function_available "mmap"]
 }
 
+# Return 1 if the target supports sysconf, 0 otherwise.
+
+proc check_effective_target_sysconf {} {
+    return [check_function_available "sysconf"]
+}
+
 # Return 1 if the target supports dlopen, 0 otherwise.
 proc check_effective_target_dlopen {} {
     return [check_no_compiler_messages dlopen executable {
