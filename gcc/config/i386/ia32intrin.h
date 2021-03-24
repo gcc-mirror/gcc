@@ -107,22 +107,12 @@ __rdpmc (int __S)
 #endif /* __iamcu__ */
 
 /* rdtsc */
-extern __inline unsigned long long
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__rdtsc (void)
-{
-  return __builtin_ia32_rdtsc ();
-}
+#define __rdtsc()		__builtin_ia32_rdtsc ()
 
 #ifndef __iamcu__
 
 /* rdtscp */
-extern __inline unsigned long long
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-__rdtscp (unsigned int *__A)
-{
-  return __builtin_ia32_rdtscp (__A);
-}
+#define __rdtscp(a)		__builtin_ia32_rdtscp (a)
 
 #endif /* __iamcu__ */
 
