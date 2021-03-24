@@ -249,7 +249,7 @@ jit.texinfo.install-pdf: doc/libgccjit.pdf
 SPHINX_BUILD_DIR=jit/sphinx-build
 
 jit.sphinx.html:
-	mkdir -p $(SPHINX_BUILD_DIR)
+	$(mkinstalldirs) $(SPHINX_BUILD_DIR)
 	(cd $(srcdir)/jit/docs && \
 	  make html BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) )
 
@@ -270,7 +270,7 @@ jit.sphinx.install-html: jit.sphinx.html
 # see https://bugzilla.redhat.com/show_bug.cgi?id=1148845 )
 jit.sphinx.pdf: $(SPHINX_BUILD_DIR)/latex/libgccjit.pdf
 $(SPHINX_BUILD_DIR)/latex/libgccjit.pdf:
-	mkdir -p $(SPHINX_BUILD_DIR)
+	$(mkinstalldirs) $(SPHINX_BUILD_DIR)
 	(cd $(srcdir)/jit/docs && \
 	  make latexpdf BUILDDIR=$(PWD)/$(SPHINX_BUILD_DIR) )
 
@@ -305,7 +305,7 @@ selftest-jit:
 
 #
 # Install hooks:
-jit.install-headers:
+jit.install-headers: installdirs
 	$(INSTALL_DATA) $(srcdir)/jit/libgccjit.h \
 	  $(DESTDIR)$(includedir)/libgccjit.h
 	$(INSTALL_DATA) $(srcdir)/jit/libgccjit++.h \
