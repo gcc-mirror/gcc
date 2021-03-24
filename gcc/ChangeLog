@@ -1,3 +1,12 @@
+2021-03-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-03-23  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99704
+	* config/i386/cpuid.h (__cpuid): Add __volatile__.
+	(__cpuid_count): Likewise.
+
 2021-03-17  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_expand_rng_builtin): Use EQ
