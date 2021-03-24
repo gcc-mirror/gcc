@@ -2051,7 +2051,7 @@ const pta processor_alias_table[] =
 };
 
 /* NB: processor_alias_table stops at the "generic" entry.  */
-unsigned int const pta_size = ARRAY_SIZE (processor_alias_table) - 6;
+unsigned int const pta_size = ARRAY_SIZE (processor_alias_table) - 7;
 unsigned int const num_arch_names = ARRAY_SIZE (processor_alias_table);
 
 /* Provide valid option values for -march and -mtune options.  */
