@@ -1,3 +1,54 @@
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (output_objc_section_asm_op): Avoid extra
+	objective-c section switches unless the linker needs them.
+	* config/darwin.c (darwin_objc2_section): Allow for
+	values > 1 to represent the next runtime.
+	(darwin_objc1_section): Likewise.
+	* config/darwin.c (darwin_globalize_label): Add protocol
+	meta-data labels to the set that are global. Make a subset of
+	metadate symbols global.
+	(darwin_label_is_anonymous_local_objc_name): Make a subset of
+	metadata symbols linker-visible.
+	(darwin_override_options): Track more target OS versions, make
+	the next_runtime version track this (unless it's set to 0 for
+	GNU runtime).
+	* config/darwin.h (NEXT_OBJC_RUNTIME): Set the default
+	next runtime value to be 10.5.8.
+
+2021-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99540
+	* config/aarch64/aarch64.c (aarch64_add_offset): Tell
+	expand_mult to perform an unsigned rather than a signed
+	multiplication.
+
+2021-03-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98834
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Handle missing
+	subsetting by truncating the access size.
+
+2021-03-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/96591
+	* tree.c (walk_tree_1): Walk VECTOR_CST elements.
+
+2021-03-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-03-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99694
+	* tree-ssa-sccvn.c (visit_phi): Ignore edges with the
+	PHI result.
+
 2021-03-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:

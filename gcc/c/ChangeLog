@@ -1,3 +1,10 @@
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-parser.c (c_parser_objc_at_property_declaration):
+	Improve parsing fidelity. Associate better location info
+	with @property attributes.  Clean up the interface to
+	objc_add_property_declaration ().
+
 2021-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

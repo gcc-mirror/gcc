@@ -1,3 +1,145 @@
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR sanitizer/96318
+	* c-c++-common/asan/strncpy-overflow-1.c: Add _FORTIFY_SOURCE=0 and
+	-gdwarf-3 to the command line options. Adjust the expected line
+	numbers for the revised options header.
+
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-17  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-c++-common/asan/memcmp-1.c: Add _FORTIFY_SOURCE=0 and
+	-gdwarf-3 to the command line options.  Provide Darwin-
+	specific match lines for the expected output.
+
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/SEL-typedef.mm: New test.
+	* objc.dg/SEL-typedef.m: New test.
+
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR objc++/49070
+	* obj-c++.dg/pr49070.mm: New test.
+	* objc.dg/unnamed-parms.m: New test.
+
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/gnu-api-2-class-meta.mm: Add a flag to cause NeXT
+	headers to expose prototypes for messaging.
+	* obj-c++.dg/gnu-api-2-class.mm: Likewise.
+	* obj-c++.dg/gnu-api-2-objc.mm: Skip this because of the extra
+	protocols pulled in by system headers.
+	* obj-c++.dg/cxx-ivars-3.mm: Skip for macOS >= 10.7.
+	* obj-c++.dg/objc-gc-3.mm:i Skip for Darwin >= 16.
+	* objc-obj-c++-shared/TestsuiteObject.h: Add dummy retain and
+	release method declarations.
+	* objc-obj-c++-shared/TestsuiteObject.m: Add dummy retain and
+	release implementations.
+	* obj-c++.dg/plugin/diagnostic-test-expressions-1.mm:
+	Adjust testcase to include expressions for @selector and
+	@protocol. XFAIL where this is still not sufficient to obtain
+	a disgnostic range.
+
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc.dg/objc-gc-4.m: Disable for macOS 10.15 and 11.x.
+	* objc.dg/gnu-api-2-class-meta.m: Add a flag to cause NeXT
+	headers to expose prototypes for messaging. Mark the root
+	class if the objc_root_class attribute is available. Use
+	char ** as the second arg to main.
+	* objc.dg/gnu-api-2-class.m: Use dispatch prototype.
+	* objc.dg/gnu-api-2-objc.m: Skip on NeXT because of extra
+	prototypes pulled in by headers.
+	* objc.dg/ivar-scope-4.m: Add inititialize method to the
+	root class.
+	* objc.dg/torture/forward-1.m: Implement forwarding using the
+	native NeXT (NSInvocation) method for Darwin.
+	* objc.dg/call-super-2.m: Remove inclusion of runtime.h.
+	Add a FIXME about the test portability.
+	* objc.dg/plugin/diagnostic-test-expressions-1.m: Use assignment
+	expressions for @selector and @protocol to obtain a useful
+	diagnostic range.
+	* objc.dg/pr23214.m: Use Object as the root object before
+	Darwin12 (and NSObject after).
+
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* objc-obj-c++-shared/TestsuiteObject.h: If the compiler
+	supports objc_root_object attributes, then mark the testsuite
+	object accordingly.
+	* objc-obj-c++-shared/TestsuiteObject.m: Avoid direct access
+	to isa, which is an error for modern Objective-C.
+	* objc/execute/class-tests-1.h: Declare a string function we
+	use locally (avoid pulling in the whole of string.h).
+
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/property/at-property-4.mm: Test atomic property
+	attribute.
+	* objc.dg/property/at-property-4.m: Likewise.
+
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/property/at-property-1.mm: Adjust expected
+	diagnostics.
+	* obj-c++.dg/property/at-property-29.mm: Likewise.
+	* obj-c++.dg/property/at-property-4.mm: Likewise.
+	* obj-c++.dg/property/property-neg-2.mm: Likewise.
+	* objc.dg/property/at-property-1.m: Likewise.
+	* objc.dg/property/at-property-29.m: Likewise.
+	* objc.dg/property/at-property-4.m: Likewise.
+	* objc.dg/property/at-property-5.m: Likewise.
+	* objc.dg/property/property-neg-2.m: Likewise.
+
+2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* obj-c++.dg/property/at-property-1.mm: Adjust test after
+	fixing spurious error output.
+
+2021-03-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99540
+	* gcc.dg/vect/pr99540.c: New test.
+
+2021-03-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-03-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98834
+	* g++.dg/opt/pr98834.C: New testcase.
+
+2021-03-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-02-08  Richard Biener  <rguenther@suse.de>
+
+	PR lto/96591
+	* g++.dg/lto/pr96591_0.C: New testcase.
+
+2021-03-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-03-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99694
+	* gcc.dg/torture/pr99694.c: New testcase.
+
 2021-03-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
