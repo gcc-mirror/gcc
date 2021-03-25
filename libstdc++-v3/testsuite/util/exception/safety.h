@@ -22,6 +22,8 @@
 
 #include <testsuite_container_traits.h>
 #include <ext/throw_allocator.h>
+#include <cstdlib> // getenv, atoi
+#include <cstdio>  // printf, fflush
 
 // Container requirement testing.
 namespace __gnu_test
@@ -33,27 +35,34 @@ namespace __gnu_test
     typedef std::uniform_int_distribution<size_type> 	distribution_type;
     typedef std::mt19937 				engine_type;
 
+    static engine_type
+    get_engine()
+    {
+      engine_type engine;
+      if (const char* v = std::getenv("GLIBCXX_SEED_TEST_RNG"))
+	{
+	  // A single seed value is much smaller than the mt19937 state size,
+	  // but we're not trying to be cryptographically secure here.
+	  int s = std::atoi(v);
+	  if (s == 0)
+	    s = (int)std::random_device{}();
+	  std::printf("Using random seed %d\n", s);
+	  std::fflush(stdout);
+	  engine.seed((unsigned)s);
+	}
+      return engine;
+    }
+
     // Return randomly generated integer on range [0, __max_size].
     static size_type
     generate(size_type __max_size)
     {
-      // Make the generator static...
-      const engine_type engine;
-      const distribution_type distribution;
-      static auto generator = std::bind(distribution, engine,
-					std::placeholders::_1);
+      using param_type = typename distribution_type::param_type;
 
-      // ... but set the range for this particular invocation here.
-      const typename distribution_type::param_type p(0, __max_size);
-      size_type random = generator(p);
-      if (random < distribution.min() || random > distribution.max())
-	std::__throw_out_of_range_fmt(__N("setup_base::generate\n"
-					  "random number generated is: %zu "
-					  "out of range [%zu, %zu]\n"),
-				      (size_t)random,
-				      (size_t)distribution.min(),
-				      (size_t)distribution.max());
-      return random;
+      // Make the engine and distribution static...
+      static engine_type engine = get_engine();
+      static distribution_type distribution;
+      return distribution(engine, param_type{0, __max_size});
     }
 
     // Given an instantiating type, return a unique value.
@@ -309,10 +318,13 @@ namespace __gnu_test
 	      // computed with begin() and end().
 	      const size_type sz = std::distance(__container.begin(),
 						 __container.end());
+	      // Container::erase(pos) requires dereferenceable pos.
+	      if (sz == 0)
+		throw std::logic_error("erase_point: empty container");
 
 	      // NB: Lowest common denominator: use forward iterator operations.
 	      auto i = __container.begin();
-	      std::advance(i, generate(sz));
+	      std::advance(i, generate(sz - 1));
 
 	      // Makes it easier to think of this as __container.erase(i)
 	      (__container.*_F_erase_point)(i);
@@ -337,12 +349,15 @@ namespace __gnu_test
 	      // computed with begin() and end().
 	      const size_type sz = std::distance(__container.begin(),
 						 __container.end());
+	      // forward_list::erase_after(pos) requires dereferenceable pos.
+	      if (sz == 0)
+		throw std::logic_error("erase_point: empty container");
 
 	      // NB: Lowest common denominator: use forward iterator operations.
 	      auto i = __container.before_begin();
-	      std::advance(i, generate(sz));
+	      std::advance(i, generate(sz - 1));
 
-	      // Makes it easier to think of this as __container.erase(i)
+	      // Makes it easier to think of this as __container.erase_after(i)
 	      (__container.*_F_erase_point)(i);
 	    }
 	  catch(const __gnu_cxx::forced_error&)
@@ -405,14 +420,19 @@ namespace __gnu_test
 	    {
 	      const size_type sz = std::distance(__container.begin(),
 						 __container.end());
-	      size_type s1 = generate(sz);
-	      size_type s2 = generate(sz);
+	      // forward_list::erase_after(pos, last) requires a pos != last
+	      if (sz == 0)
+		return; // Caller doesn't check for this, not a logic error.
+
+	      size_type s1 = generate(sz - 1);
+	      size_type s2 = generate(sz - 1);
 	      auto i1 = __container.before_begin();
 	      auto i2 = __container.before_begin();
 	      std::advance(i1, std::min(s1, s2));
-	      std::advance(i2, std::max(s1, s2));
+	      std::advance(i2, std::max(s1, s2) + 1);
 
-	      // Makes it easier to think of this as __container.erase(i1, i2).
+	      // Makes it easier to think of this as
+	      // __container.erase_after(i1, i2).
 	      (__container.*_F_erase_range)(i1, i2);
 	    }
 	  catch(const __gnu_cxx::forced_error&)
@@ -1454,16 +1474,25 @@ namespace __gnu_test
 	  // constructor or assignment operator of value_type throws.
 	  if (!traits<container_type>::has_throwing_erase::value)
 	    {
-	      typename base_type::erase_point erasep;
-	      erasep(container);
+	      if (!container.empty())
+		{
+		  typename base_type::erase_point erasep;
+		  erasep(container);
+		}
 	      typename base_type::erase_range eraser;
 	      eraser(container);
 	    }
 
-	  typename base_type::pop_front popf;
-	  popf(container);
-	  typename base_type::pop_back popb;
-	  popb(container);
+	  if (!container.empty())
+	    {
+	      typename base_type::pop_front popf;
+	      popf(container);
+	    }
+	  if (!container.empty())
+	    {
+	      typename base_type::pop_back popb;
+	      popb(container);
+	    }
 
 	  typename base_type::iterator_ops iops;
 	  iops(container);
