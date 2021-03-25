@@ -1244,6 +1244,31 @@ exploded_node::on_stmt (exploded_graph &eg,
       sm_state_map *new_smap = state->m_checker_states[sm_idx];
       impl_sm_context sm_ctxt (eg, sm_idx, sm, this, &old_state, state,
 			       old_smap, new_smap);
+
+      /* If we're at the def-stmt of an SSA name, then potentially purge
+	 any sm-state for svalues that involve that SSA name.  This avoids
+	 false positives in loops, since a symbolic value referring to the
+	 SSA name will be referring to the previous value of that SSA name.
+	 For example, in:
+	   while ((e = hashmap_iter_next(&iter))) {
+	     struct oid2strbuf *e_strbuf = (struct oid2strbuf *)e;
+	     free (e_strbuf->value);
+	   }
+	 at the def-stmt of e_8:
+	   e_8 = hashmap_iter_next (&iter);
+	 we should purge the "freed" state of:
+	   INIT_VAL(CAST_REG(‘struct oid2strbuf’, (*INIT_VAL(e_8))).value)
+	 which is the "e_strbuf->value" value from the previous iteration,
+	 or we will erroneously report a double-free - the "e_8" within it
+	 refers to the previous value.  */
+      if (tree lhs = gimple_get_lhs (stmt))
+	if (TREE_CODE (lhs) == SSA_NAME)
+	  {
+	    const svalue *sval
+	      = old_state.m_region_model->get_rvalue (lhs, &ctxt);
+	    new_smap->purge_state_involving (sval, eg.get_ext_state ());
+	  }
+
       /* Allow the state_machine to handle the stmt.  */
       if (sm.on_stmt (&sm_ctxt, snode, stmt))
 	unknown_side_effects = false;

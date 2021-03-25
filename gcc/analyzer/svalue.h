@@ -136,6 +136,8 @@ public:
   static int cmp_ptr (const svalue *, const svalue *);
   static int cmp_ptr_ptr (const void *, const void *);
 
+  bool involves_p (const svalue *other) const;
+
  protected:
   svalue (complexity c, tree type)
   : m_complexity (c), m_type (type)

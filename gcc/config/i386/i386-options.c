@@ -2042,6 +2042,9 @@ ix86_option_override_internal (bool main_args_p,
     sorry ("%i-bit mode not compiled in",
 	   (opts->x_ix86_isa_flags & OPTION_MASK_ISA_64BIT) ? 64 : 32);
 
+  /* Last processor_alias_table must point to "generic" entry.  */
+  gcc_checking_assert (strcmp (processor_alias_table[pta_size - 1].name,
+			       "generic") == 0);
   for (i = 0; i < pta_size; i++)
     if (! strcmp (opts->x_ix86_arch_string, processor_alias_table[i].name))
       {

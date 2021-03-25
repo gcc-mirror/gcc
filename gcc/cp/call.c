@@ -4484,6 +4484,9 @@ build_converted_constant_expr_internal (tree type, tree expr,
 	  && processing_template_decl)
 	conv = next_conversion (conv);
 
+      /* Issuing conversion warnings for value-dependent expressions is
+	 likely too noisy.  */
+      warning_sentinel w (warn_conversion);
       conv->check_narrowing = true;
       conv->check_narrowing_const_only = true;
       expr = convert_like (conv, expr, complain);
@@ -5798,7 +5801,8 @@ build_conditional_expr_1 (const op_location_t &loc,
      warn here, because the COND_EXPR will be turned into ARG2.  */
   if (warn_duplicated_branches
       && (complain & tf_warning)
-      && (arg2 == arg3 || operand_equal_p (arg2, arg3, 0)))
+      && (arg2 == arg3 || operand_equal_p (arg2, arg3,
+					   OEP_ADDRESS_OF_SAME_FIELD)))
     warning_at (EXPR_LOCATION (result), OPT_Wduplicated_branches,
 		"this condition has identical branches");
 

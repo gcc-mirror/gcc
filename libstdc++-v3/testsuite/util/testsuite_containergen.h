@@ -20,6 +20,8 @@
 
 #include <testsuite_container_traits.h>
 #include <random>
+#include <cstdlib> // getenv, atoi
+#include <cstdio>  // printf, fflush
 
 namespace __gnu_test
 {
@@ -62,6 +64,18 @@ namespace __gnu_test
     test_containers(Tester test)
     {
       std::mt19937_64 random_gen;
+
+      if (const char* v = std::getenv("GLIBCXX_SEED_TEST_RNG"))
+	{
+	  // A single seed value is much smaller than the mt19937 state size,
+	  // but we're not trying to be cryptographically secure here.
+	  int s = std::atoi(v);
+	  if (s == 0)
+	    s = (int)std::random_device{}();
+	  std::printf("Using random seed %d\n", s);
+	  std::fflush(stdout);
+	  random_gen.seed((unsigned)s);
+	}
 
 #ifdef SIMULATOR_TEST
       int loops = 10;

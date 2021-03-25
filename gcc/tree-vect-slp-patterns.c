@@ -571,14 +571,8 @@ complex_pattern::build (vec_info *vinfo)
       STMT_VINFO_RELEVANT (call_stmt_info) = vect_used_in_scope;
       STMT_SLP_TYPE (call_stmt_info) = pure_slp;
 
-      /* add_pattern_stmt can't be done in vect_mark_pattern_stmts because
-	 the non-SLP pattern matchers already have added the statement to VINFO
-	 by the time it is called.  Some of them need to modify the returned
-	 stmt_info.  vect_mark_pattern_stmts is called by recog_pattern and it
-	 would increase the size of each pattern with boilerplate code to make
-	 the call there.  */
-      vect_mark_pattern_stmts (vinfo, stmt_info, call_stmt,
-			       SLP_TREE_VECTYPE (node));
+      gimple_set_bb (call_stmt, gimple_bb (stmt_info->stmt));
+      STMT_VINFO_VECTYPE (call_stmt_info) = SLP_TREE_VECTYPE (node);
       STMT_VINFO_SLP_VECT_ONLY_PATTERN (call_stmt_info) = true;
 
       /* Since we are replacing all the statements in the group with the same

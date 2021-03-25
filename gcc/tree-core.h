@@ -896,7 +896,10 @@ enum operand_equal_flag {
   OEP_HASH_CHECK = 32,
   /* Makes operand_equal_p handle more expressions:  */
   OEP_LEXICOGRAPHIC = 64,
-  OEP_BITWISE = 128
+  OEP_BITWISE = 128,
+  /* For OEP_ADDRESS_OF of COMPONENT_REFs, only consider same fields as
+     equivalent rather than also different fields with the same offset.  */
+  OEP_ADDRESS_OF_SAME_FIELD = 256
 };
 
 /* Enum and arrays used for tree allocation stats.

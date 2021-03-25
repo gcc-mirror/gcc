@@ -1,3 +1,51 @@
+2021-03-24  Martin Liska  <mliska@suse.cz>
+
+	PR target/99753
+	* gcc.target/i386/pr99753.c: New test.
+
+2021-03-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/99122
+	* gcc.dg/pr99122-3.c: Remove -fno-ipa-cp from options.
+
+2021-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99727
+	* gcc.target/arm/pr99727.c: New test.
+
+2021-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99724
+	* gcc.target/arm/pr99724.c: New test.
+
+2021-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/target-supports.exp (check_effective_target_sysconf): New.
+	* gcc.target/i386/pr95443-1.c: Require it.
+	* gcc.target/i386/pr95443-2.c: Likewise.
+	* gcc.target/i386/sse2-mmx-maskmovq.c: Likewise.
+	* gcc.target/i386/strncmp-1.c: Likewise.
+
+2021-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr97313.c: Require effective target feature pie.
+	* g++.target/i386/pr94185.C: Likewise.
+
+2021-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/funcspec-2.c: Tighten regexps to avoid false
+	positives with -mcmodel=large.
+	* gcc.target/i386/funcspec-3.c: Likewise.
+
+2021-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr94467-3.c: New.
+
+2021-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99369
+	* gfortran.dg/longnames.f90: New test.
+
 2021-03-23  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99283

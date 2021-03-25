@@ -1,3 +1,49 @@
+2021-03-24  Martin Liska  <mliska@suse.cz>
+
+	PR target/99753
+	* common/config/i386/i386-common.c (ARRAY_SIZE): Fix off-by-one
+	error.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Add run-time assert.
+
+2021-03-24  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/99122
+	* ipa-cp.c (initialize_node_lattices): Mark as bottom all
+	parameters with unknown type.
+	(ipacp_value_safe_for_type): New function.
+	(propagate_vals_across_arith_jfunc): Verify that the constant type
+	can be used for a type of the formal parameter.
+	(propagate_vals_across_ancestor): Likewise.
+	(propagate_scalar_across_jump_function): Likewise.  Pass the type
+	also to propagate_vals_across_ancestor.
+
+2021-03-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99727
+	* config/arm/mve.md (movmisalign<mode>_mve_store): Use Ux
+	constraint.
+	(movmisalign<mode>_mve_load): Likewise.
+
+2021-03-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99724
+	* config/arm/vec-common.md (one_cmpl<mode>2, neg<mode>2,
+	movmisalign<mode>): Disable expanders for TARGET_REALLY_IWMMXT.
+
+2021-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* doc/sourcebuild.texi (sysconf): New effective target.
+
+2021-03-24  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/i386/predicates.md (reg_or_const_vec_operand): New.
+	* config/i386/sse.md (ssse3_pshufbv8qi3): Add an expander for
+	the now *-prefixed insn_and_split, turn the splitter const vec
+	into an input for the insn, making it an ignored immediate for
+	non-split cases, and loaded into the scratch register
+	otherwise.
+
 2021-03-23  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/99581

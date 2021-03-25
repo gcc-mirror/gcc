@@ -4465,7 +4465,7 @@ vect_model_reduction_cost (loop_vec_info loop_vinfo,
 			   vect_reduction_type reduction_type,
 			   int ncopies, stmt_vector_for_cost *cost_vec)
 {
-  int prologue_cost = 0, epilogue_cost = 0, inside_cost;
+  int prologue_cost = 0, epilogue_cost = 0, inside_cost = 0;
   enum tree_code code;
   optab optab;
   tree vectype;
