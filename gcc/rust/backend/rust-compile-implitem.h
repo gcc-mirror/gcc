@@ -35,9 +35,10 @@ class CompileInherentImplItem : public HIRCompileBase
 
 public:
   static void Compile (TyTy::BaseType *self, HIR::InherentImplItem *item,
-		       Context *ctx, bool compile_fns)
+		       Context *ctx, bool compile_fns,
+		       TyTy::BaseType *concrete = nullptr)
   {
-    CompileInherentImplItem compiler (self, ctx, compile_fns);
+    CompileInherentImplItem compiler (self, ctx, compile_fns, concrete);
     item->accept_vis (compiler);
   }
 
@@ -92,6 +93,21 @@ public:
       }
 
     TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
+    if (fntype->has_subsititions_defined ())
+      {
+	// we cant do anything for this only when it is used
+	if (concrete == nullptr)
+	  return;
+	else
+	  {
+	    rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
+	    fntype = static_cast<TyTy::FnType *> (concrete);
+
+	    // override the Hir Lookups for the substituions in this context
+	    fntype->override_context ();
+	  }
+      }
+
     // convert to the actual function type
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
@@ -111,7 +127,6 @@ public:
     ctx->insert_function_decl (fntype->get_ty_ref (), fndecl);
 
     // setup the params
-
     TyTy::BaseType *tyret = fntype->get_return_type ();
     std::vector<Bvariable *> param_vars;
 
@@ -431,12 +446,15 @@ public:
   }
 
 private:
-  CompileInherentImplItem (TyTy::BaseType *self, Context *ctx, bool compile_fns)
-    : HIRCompileBase (ctx), self (self), compile_fns (compile_fns)
+  CompileInherentImplItem (TyTy::BaseType *self, Context *ctx, bool compile_fns,
+			   TyTy::BaseType *concrete)
+    : HIRCompileBase (ctx), self (self), compile_fns (compile_fns),
+      concrete (concrete)
   {}
 
   TyTy::BaseType *self;
   bool compile_fns;
+  TyTy::BaseType *concrete;
 };
 
 } // namespace Compile

@@ -2915,6 +2915,11 @@ public:
 
   std::unique_ptr<Type> &get_type () { return trait_type; };
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+
 protected:
   // Mega-constructor
   Impl (Analysis::NodeMapping mappings,

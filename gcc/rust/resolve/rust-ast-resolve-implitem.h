@@ -34,13 +34,19 @@ public:
   static void go (AST::InherentImplItem *item, AST::Type *base)
   {
     ResolveToplevelImplItem resolver (base);
+    if (resolver.base_path.is_empty ())
+      {
+	rust_error_at (base->get_locus_slow (),
+		       "failed to resolve simple path");
+	return;
+      }
     item->accept_vis (resolver);
-  };
+  }
 
   void visit (AST::ConstantItem &constant) override
   {
     std::string identifier
-      = base->as_string () + "::" + constant.get_identifier ();
+      = base_path.as_string () + "::" + constant.get_identifier ();
     resolver->get_name_scope ().insert (
       identifier, constant.get_node_id (), constant.get_locus (), false,
       [&] (std::string, NodeId, Location locus) -> void {
@@ -55,7 +61,7 @@ public:
   void visit (AST::Function &function) override
   {
     std::string identifier
-      = base->as_string () + "::" + function.get_function_name ();
+      = base_path.as_string () + "::" + function.get_function_name ();
     resolver->get_name_scope ().insert (
       identifier, function.get_node_id (), function.get_locus (), false,
       [&] (std::string, NodeId, Location locus) -> void {
@@ -70,7 +76,7 @@ public:
   void visit (AST::Method &method) override
   {
     std::string identifier
-      = base->as_string () + "::" + method.get_method_name ();
+      = base_path.as_string () + "::" + method.get_method_name ();
     resolver->get_name_scope ().insert (
       identifier, method.get_node_id (), method.get_locus (), false,
       [&] (std::string, NodeId, Location locus) -> void {
@@ -84,10 +90,14 @@ public:
 
 private:
   ResolveToplevelImplItem (AST::Type *base)
-    : ResolverBase (UNKNOWN_NODEID), base (base)
-  {}
+    : ResolverBase (UNKNOWN_NODEID), base (base),
+      base_path (AST::SimplePath::create_empty ())
+  {
+    ResolveTypeToSimplePath::go (base, base_path, true);
+  }
 
   AST::Type *base;
+  AST::SimplePath base_path;
 };
 
 } // namespace Resolver

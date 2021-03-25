@@ -34,9 +34,10 @@ class ASTLowerImplItem : public ASTLoweringBase
   using Rust::HIR::ASTLoweringBase::visit;
 
 public:
-  static HIR::InherentImplItem *translate (AST::InherentImplItem *item)
+  static HIR::InherentImplItem *translate (AST::InherentImplItem *item,
+					   HirId parent_impl_id)
   {
-    ASTLowerImplItem resolver;
+    ASTLowerImplItem resolver (parent_impl_id);
     item->accept_vis (resolver);
     rust_assert (resolver.translated != nullptr);
     return resolver.translated;
@@ -76,7 +77,8 @@ public:
 					outer_attrs, constant.get_locus ());
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
-				   mapping.get_hirid (), translated);
+				   mapping.get_hirid (), parent_impl_id,
+				   translated);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       constant.get_locus ());
   }
@@ -144,7 +146,7 @@ public:
 			   std::move (vis), std::move (outer_attrs), locus);
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
-				   mapping.get_hirid (), fn);
+				   mapping.get_hirid (), parent_impl_id, fn);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       function.get_locus ());
 
@@ -221,7 +223,7 @@ public:
 			 std::move (outer_attrs), locus);
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
-				   mapping.get_hirid (), mth);
+				   mapping.get_hirid (), parent_impl_id, mth);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       method.get_locus ());
 
@@ -246,13 +248,15 @@ public:
   }
 
 private:
-  ASTLowerImplItem () : translated (nullptr) {}
+  ASTLowerImplItem (HirId parent_impl_id)
+    : translated (nullptr), parent_impl_id (parent_impl_id)
+  {}
 
   HIR::InherentImplItem *translated;
+  HirId parent_impl_id;
 };
 
 } // namespace HIR
-
 } // namespace Rust
 
 #endif // RUST_AST_LOWER_IMPLITEM_H

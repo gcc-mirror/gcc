@@ -33,9 +33,11 @@ class TypeCheckTopLevelImplItem : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static void Resolve (HIR::InherentImplItem *item, TyTy::BaseType *self)
+  static void
+  Resolve (HIR::InherentImplItem *item, TyTy::BaseType *self,
+	   std::vector<TyTy::SubstitutionParamMapping> substitutions)
   {
-    TypeCheckTopLevelImplItem resolver (self);
+    TypeCheckTopLevelImplItem resolver (self, substitutions);
     item->accept_vis (resolver);
   }
 
@@ -50,7 +52,6 @@ public:
 
   void visit (HIR::Function &function) override
   {
-    std::vector<TyTy::SubstitutionParamMapping> substitions;
     if (function.has_generics ())
       {
 	for (auto &generic_param : function.get_generic_params ())
@@ -59,7 +60,7 @@ public:
 	      = TypeResolveGenericParam::Resolve (generic_param.get ());
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    substitions.push_back (
+	    substitutions.push_back (
 	      TyTy::SubstitutionParamMapping (generic_param, param_type));
 	  }
       }
@@ -97,13 +98,12 @@ public:
 
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
 				    std::move (params), ret_type,
-				    std::move (substitions));
+				    std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
 
   void visit (HIR::Method &method) override
   {
-    std::vector<TyTy::SubstitutionParamMapping> substitions;
     if (method.has_generics ())
       {
 	for (auto &generic_param : method.get_generic_params ())
@@ -112,7 +112,7 @@ public:
 	      = TypeResolveGenericParam::Resolve (generic_param.get ());
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    substitions.push_back (
+	    substitutions.push_back (
 	      TyTy::SubstitutionParamMapping (generic_param, param_type));
 	  }
       }
@@ -164,16 +164,19 @@ public:
 
     auto fnType = new TyTy::FnType (method.get_mappings ().get_hirid (),
 				    std::move (params), ret_type,
-				    std::move (substitions));
+				    std::move (substitutions));
     context->insert_type (method.get_mappings (), fnType);
   }
 
 private:
-  TypeCheckTopLevelImplItem (TyTy::BaseType *self)
-    : TypeCheckBase (), self (self)
+  TypeCheckTopLevelImplItem (
+    TyTy::BaseType *self,
+    std::vector<TyTy::SubstitutionParamMapping> substitutions)
+    : TypeCheckBase (), self (self), substitutions (substitutions)
   {}
 
   TyTy::BaseType *self;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
 };
 
 class TypeCheckImplItem : public TypeCheckBase

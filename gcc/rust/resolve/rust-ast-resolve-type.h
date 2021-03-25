@@ -25,25 +25,22 @@
 namespace Rust {
 namespace Resolver {
 
-class ResolveTypePath : public ResolverBase
+class ResolveTypeToSimplePath : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::TypePath &path, NodeId parent)
+  static bool go (AST::Type *type, AST::SimplePath &simple_path_result,
+		  bool path_only = false)
   {
-    ResolveTypePath resolver (parent);
-    resolver.resolve (path);
-    return resolver.resolved_node;
+    ResolveTypeToSimplePath resolver (simple_path_result, path_only);
+    type->accept_vis (resolver);
+    return !resolver.type_seg_failed_flag;
   }
 
-  void visit (AST::TypePathSegmentGeneric &seg) override;
-
-  void visit (AST::TypePathSegment &seg) override;
-
-private:
-  void resolve (AST::TypePath &path)
+  void visit (AST::TypePath &path) override
   {
+    segs.reserve (path.get_num_segments ());
     for (auto &seg : path.get_segments ())
       {
 	seg->accept_vis (*this);
@@ -51,27 +48,55 @@ private:
 	  return;
       }
 
-    if (path_buffer.empty ())
+    if (segs.empty ())
       {
 	rust_error_at (path.get_locus (), "failed to resolve path: %s",
 		       path.as_string ().c_str ());
 	return;
       }
 
-    if (!resolver->get_type_scope ().lookup (path_buffer, &resolved_node))
-      {
-	rust_error_at (path.get_locus (), "failed to resolve TypePath: %s",
-		       path_buffer.c_str ());
-	return;
-      }
+    bool has_opening_scope_res = false;
+    result = AST::SimplePath (std::move (segs), has_opening_scope_res,
+			      path.get_locus ());
   }
 
-  ResolveTypePath (NodeId parent)
-    : ResolverBase (parent), type_seg_failed_flag (false)
+  void visit (AST::TypePathSegmentGeneric &seg) override;
+
+  void visit (AST::TypePathSegment &seg) override;
+
+private:
+  ResolveTypeToSimplePath (AST::SimplePath &simple_path_result, bool path_only)
+    : ResolverBase (UNKNOWN_NODEID), type_seg_failed_flag (false),
+      result (simple_path_result), path_only_flag (path_only)
   {}
 
-  std::string path_buffer;
   bool type_seg_failed_flag;
+  std::vector<AST::SimplePathSegment> segs;
+  AST::SimplePath &result;
+  bool path_only_flag;
+};
+
+class ResolveTypePath
+{
+public:
+  static NodeId go (AST::TypePath &path, NodeId parent)
+  {
+    AST::SimplePath path_buffer = AST::SimplePath::create_empty ();
+    if (!ResolveTypeToSimplePath::go (&path, path_buffer))
+      return UNKNOWN_NODEID;
+
+    auto resolver = Resolver::get ();
+    NodeId resolved_node = UNKNOWN_NODEID;
+    if (!resolver->get_type_scope ().lookup (path_buffer.as_string (),
+					     &resolved_node))
+      {
+	rust_error_at (path.get_locus_slow (), "failed to resolve TypePath: %s",
+		       path_buffer.as_string ().c_str ());
+	return UNKNOWN_NODEID;
+      }
+
+    return resolved_node;
+  }
 };
 
 class ResolveType : public ResolverBase

@@ -78,19 +78,50 @@ ResolvePathRef::visit (HIR::PathInExpression &expr)
   Bfunction *fn = nullptr;
   if (!ctx->lookup_function_decl (lookup->get_ty_ref (), &fn))
     {
-      // it must resolve to some kind of HIR::Item
+      // it must resolve to some kind of HIR::Item or HIR::InheritImplItem
       HIR::Item *resolved_item = ctx->get_mappings ()->lookup_hir_item (
 	expr.get_mappings ().get_crate_num (), ref);
-      if (resolved_item == nullptr)
+      if (resolved_item != nullptr)
 	{
-	  rust_error_at (expr.get_locus (), "failed to lookup definition decl");
-	  return;
+	  if (!lookup->has_subsititions_defined ())
+	    CompileItem::compile (resolved_item, ctx);
+	  else
+	    CompileItem::compile (resolved_item, ctx, true, lookup);
 	}
-
-      if (!lookup->has_subsititions_defined ())
-	CompileItem::compile (resolved_item, ctx);
       else
-	CompileItem::compile (resolved_item, ctx, true, lookup);
+	{
+	  HirId parent_impl_id = UNKNOWN_HIRID;
+	  HIR::InherentImplItem *resolved_item
+	    = ctx->get_mappings ()->lookup_hir_implitem (
+	      expr.get_mappings ().get_crate_num (), ref, &parent_impl_id);
+	  if (resolved_item != nullptr)
+	    {
+	      rust_assert (parent_impl_id != UNKNOWN_HIRID);
+	      HIR::Item *impl_ref = ctx->get_mappings ()->lookup_hir_item (
+		expr.get_mappings ().get_crate_num (), parent_impl_id);
+	      rust_assert (impl_ref != nullptr);
+	      HIR::InherentImpl *impl
+		= static_cast<HIR::InherentImpl *> (impl_ref);
+
+	      TyTy::BaseType *self = nullptr;
+	      bool ok = ctx->get_tyctx ()->lookup_type (
+		impl->get_type ()->get_mappings ().get_hirid (), &self);
+	      rust_assert (ok);
+
+	      if (!lookup->has_subsititions_defined ())
+		CompileInherentImplItem::Compile (self, resolved_item, ctx,
+						  true);
+	      else
+		CompileInherentImplItem::Compile (self, resolved_item, ctx,
+						  true, lookup);
+	    }
+	  else
+	    {
+	      rust_error_at (expr.get_locus (),
+			     "failed to lookup definition decl");
+	      return;
+	    }
+	}
 
       if (!ctx->lookup_function_decl (lookup->get_ty_ref (), &fn))
 	{

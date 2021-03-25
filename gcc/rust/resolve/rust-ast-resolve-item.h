@@ -152,6 +152,17 @@ public:
 
   void visit (AST::InherentImpl &impl_block) override
   {
+    NodeId scope_node_id = impl_block.get_node_id ();
+    resolver->get_type_scope ().push (scope_node_id);
+
+    if (impl_block.has_generics ())
+      {
+	for (auto &generic : impl_block.get_generic_params ())
+	  {
+	    ResolveGenericParam::go (generic.get (), impl_block.get_node_id ());
+	  }
+      }
+
     NodeId resolved_node = ResolveType::go (impl_block.get_type ().get (),
 					    impl_block.get_node_id ());
     if (resolved_node == UNKNOWN_NODEID)
@@ -164,6 +175,7 @@ public:
       impl_item->accept_vis (*this);
 
     resolver->get_type_scope ().peek ()->clear_name ("Self", resolved_node);
+    resolver->get_type_scope ().pop ();
   }
 
   void visit (AST::Method &method) override

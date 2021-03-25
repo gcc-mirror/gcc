@@ -189,15 +189,30 @@ public:
 
   void visit (HIR::InherentImpl &impl_block) override
   {
+    std::vector<TyTy::SubstitutionParamMapping> substitutions;
+    if (impl_block.has_generics ())
+      {
+	for (auto &generic_param : impl_block.get_generic_params ())
+	  {
+	    auto param_type
+	      = TypeResolveGenericParam::Resolve (generic_param.get ());
+	    context->insert_type (generic_param->get_mappings (), param_type);
+
+	    substitutions.push_back (
+	      TyTy::SubstitutionParamMapping (generic_param, param_type));
+	  }
+      }
+
     auto self = TypeCheckType::Resolve (impl_block.get_type ().get ());
-    if (self == nullptr)
+    if (self == nullptr || self->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (impl_block.get_locus (), "failed to resolve impl type");
 	return;
       }
 
     for (auto &impl_item : impl_block.get_impl_items ())
-      TypeCheckTopLevelImplItem::Resolve (impl_item.get (), self);
+      TypeCheckTopLevelImplItem::Resolve (impl_item.get (), self,
+					  substitutions);
   }
 
 private:

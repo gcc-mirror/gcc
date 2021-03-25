@@ -306,26 +306,34 @@ public:
   {
     std::vector<HIR::Attribute> inner_attrs;
     std::vector<HIR::Attribute> outer_attrs;
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (impl_block.has_generics ())
+      {
+	generic_params
+	  = lower_generic_params (impl_block.get_generic_params ());
+      }
+
     HIR::Type *trait_type
       = ASTLoweringType::translate (impl_block.get_type ().get ());
-
-    std::vector<std::unique_ptr<HIR::InherentImplItem> > impl_items;
-    for (auto &impl_item : impl_block.get_impl_items ())
-      {
-	HIR::InherentImplItem *lowered
-	  = ASTLowerImplItem::translate (impl_item.get ());
-	impl_items.push_back (std::unique_ptr<HIR::InherentImplItem> (lowered));
-      }
 
     auto crate_num = mappings->get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, impl_block.get_node_id (),
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
+
+    std::vector<std::unique_ptr<HIR::InherentImplItem> > impl_items;
+    for (auto &impl_item : impl_block.get_impl_items ())
+      {
+	HIR::InherentImplItem *lowered
+	  = ASTLowerImplItem::translate (impl_item.get (),
+					 mapping.get_hirid ());
+	impl_items.push_back (std::unique_ptr<HIR::InherentImplItem> (lowered));
+      }
 
     translated
       = new HIR::InherentImpl (mapping, std::move (impl_items),

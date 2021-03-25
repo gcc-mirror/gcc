@@ -109,9 +109,10 @@ public:
   void insert_hir_item (CrateNum crateNum, HirId id, HIR::Item *item);
   HIR::Item *lookup_hir_item (CrateNum crateNum, HirId id);
 
-  void insert_hir_implitem (CrateNum crateNum, HirId id,
+  void insert_hir_implitem (CrateNum crateNum, HirId id, HirId parent_impl_id,
 			    HIR::InherentImplItem *item);
-  HIR::InherentImplItem *lookup_hir_implitem (CrateNum crateNum, HirId id);
+  HIR::InherentImplItem *lookup_hir_implitem (CrateNum crateNum, HirId id,
+					      HirId *parent_impl_id);
 
   void insert_hir_expr (CrateNum crateNum, HirId id, HIR::Expr *expr);
   HIR::Expr *lookup_hir_expr (CrateNum crateNum, HirId id);
@@ -165,7 +166,7 @@ public:
       {
 	for (auto iy = it->second.begin (); iy != it->second.end (); iy++)
 	  {
-	    if (!cb (iy->first, iy->second))
+	    if (!cb (iy->first, iy->second.second))
 	      return;
 	  }
       }
@@ -193,7 +194,8 @@ private:
   std::map<CrateNum, std::map<HirId, HIR::FunctionParam *> > hirParamMappings;
   std::map<CrateNum, std::map<HirId, HIR::StructExprField *> >
     hirStructFieldMappings;
-  std::map<CrateNum, std::map<HirId, HIR::InherentImplItem *> >
+  std::map<CrateNum,
+	   std::map<HirId, std::pair<HirId, HIR::InherentImplItem *> > >
     hirImplItemMappings;
   std::map<CrateNum, std::map<HirId, HIR::SelfParam *> > hirSelfParamMappings;
 

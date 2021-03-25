@@ -260,16 +260,18 @@ Mappings::lookup_hir_item (CrateNum crateNum, HirId id)
 
 void
 Mappings::insert_hir_implitem (CrateNum crateNum, HirId id,
+			       HirId parent_impl_id,
 			       HIR::InherentImplItem *item)
 {
-  rust_assert (lookup_hir_implitem (crateNum, id) == nullptr);
-
-  hirImplItemMappings[crateNum][id] = item;
+  rust_assert (lookup_hir_implitem (crateNum, id, nullptr) == nullptr);
+  hirImplItemMappings[crateNum][id]
+    = std::pair<HirId, HIR::InherentImplItem *> (parent_impl_id, item);
   nodeIdToHirMappings[crateNum][item->get_impl_mappings ().get_nodeid ()] = id;
 }
 
 HIR::InherentImplItem *
-Mappings::lookup_hir_implitem (CrateNum crateNum, HirId id)
+Mappings::lookup_hir_implitem (CrateNum crateNum, HirId id,
+			       HirId *parent_impl_id)
 {
   auto it = hirImplItemMappings.find (crateNum);
   if (it == hirImplItemMappings.end ())
@@ -279,7 +281,11 @@ Mappings::lookup_hir_implitem (CrateNum crateNum, HirId id)
   if (iy == it->second.end ())
     return nullptr;
 
-  return iy->second;
+  std::pair<HirId, HIR::InherentImplItem *> &ref = iy->second;
+  if (parent_impl_id != nullptr)
+    *parent_impl_id = ref.first;
+
+  return ref.second;
 }
 
 void

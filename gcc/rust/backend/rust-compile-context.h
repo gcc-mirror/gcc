@@ -297,8 +297,7 @@ public:
 
   void visit (TyTy::ParamType &param) override
   {
-    TyTy::TyVar var (param.get_ty_ref ());
-    var.get_tyty ()->accept_vis (*this);
+    param.resolve ()->accept_vis (*this);
   }
 
   void visit (TyTy::FnType &type) override
