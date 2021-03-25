@@ -7462,9 +7462,12 @@ package body Sem_Util is
                --  Check whether bounds are statically identical. There is no
                --  attempt to detect partial overlap of slices.
 
-               return Denotes_Same_Object (Lo1, Lo2)
-                        and then
-                      Denotes_Same_Object (Hi1, Hi2);
+               return Is_OK_Static_Expression (Lo1)
+                 and then Is_OK_Static_Expression (Lo2)
+                 and then Is_OK_Static_Expression (Hi1)
+                 and then Is_OK_Static_Expression (Hi2)
+                 and then Expr_Value (Lo1) = Expr_Value (Lo2)
+                 and then Expr_Value (Hi1) = Expr_Value (Hi2);
             end;
          end if;
 
@@ -7484,20 +7487,6 @@ package body Sem_Util is
         and then Is_Valid_Renaming (A2)
       then
          return Denotes_Same_Object (A1, Renamed_Entity (Entity (A2)));
-
-      --  In the recursion, integer literals appear as slice bounds
-
-      elsif Nkind (A1) = N_Integer_Literal
-        and then Nkind (A2) = N_Integer_Literal
-      then
-         return Intval (A1) = Intval (A2);
-
-      --  Likewise for character literals
-
-      elsif Nkind (A1) = N_Character_Literal
-        and then Nkind (A2) = N_Character_Literal
-      then
-         return Char_Literal_Value (A1) = Char_Literal_Value (A2);
 
       else
          return False;
