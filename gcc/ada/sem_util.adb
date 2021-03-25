@@ -7262,8 +7262,8 @@ package body Sem_Util is
    -------------------------
 
    function Denotes_Same_Object (A1, A2 : Node_Id) return Boolean is
-      function Is_Renaming (N : Node_Id) return Boolean;
-      --  Return true if N names a renaming entity
+      function Is_Object_Renaming (N : Node_Id) return Boolean;
+      --  Return true if N names an object renaming entity
 
       function Is_Valid_Renaming (N : Node_Id) return Boolean;
       --  For renamings, return False if the prefix of any dereference within
@@ -7271,35 +7271,16 @@ package body Sem_Util is
       --  renamed object_name contains references to variables or calls on
       --  nonstatic functions; otherwise return True (RM 6.4.1(6.10/3))
 
-      -----------------
-      -- Is_Renaming --
-      -----------------
+      ------------------------
+      -- Is_Object_Renaming --
+      ------------------------
 
-      function Is_Renaming (N : Node_Id) return Boolean is
+      function Is_Object_Renaming (N : Node_Id) return Boolean is
       begin
-         if not Is_Entity_Name (N) then
-            return False;
-         end if;
-
-         case Ekind (Entity (N)) is
-            when E_Variable | E_Constant =>
-               return Present (Renamed_Object (Entity (N)));
-
-            when E_Exception
-               | E_Function
-               | E_Generic_Function
-               | E_Generic_Package
-               | E_Generic_Procedure
-               | E_Operator
-               | E_Package
-               | E_Procedure
-            =>
-               return Present (Renamed_Entity (Entity (N)));
-
-            when others =>
-               return False;
-         end case;
-      end Is_Renaming;
+         return Is_Entity_Name (N)
+           and then Ekind (Entity (N)) in E_Variable | E_Constant
+           and then Present (Renamed_Object (Entity (N)));
+      end Is_Object_Renaming;
 
       -----------------------
       -- Is_Valid_Renaming --
@@ -7307,7 +7288,7 @@ package body Sem_Util is
 
       function Is_Valid_Renaming (N : Node_Id) return Boolean is
       begin
-         if Is_Renaming (N)
+         if Is_Object_Renaming (N)
            and then not Is_Valid_Renaming (Renamed_Entity (Entity (N)))
          then
             return False;
@@ -7494,12 +7475,12 @@ package body Sem_Util is
       --  no references to variables nor calls on nonstatic functions (RM
       --  6.4.1(6.11/3)).
 
-      elsif Is_Renaming (A1)
+      elsif Is_Object_Renaming (A1)
         and then Is_Valid_Renaming (A1)
       then
          return Denotes_Same_Object (Renamed_Entity (Entity (A1)), A2);
 
-      elsif Is_Renaming (A2)
+      elsif Is_Object_Renaming (A2)
         and then Is_Valid_Renaming (A2)
       then
          return Denotes_Same_Object (A1, Renamed_Entity (Entity (A2)));
