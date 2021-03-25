@@ -900,7 +900,7 @@ void test_methods ()
   ((base *)1)->priv (); // { dg-error " is private " }
 /* { dg-begin-multiline-output "" }
    ((base *)1)->priv ();
-                      ^
+   ~~~~~~~~~~~~~~~~~~^~
    { dg-end-multiline-output "" }
    { dg-begin-multiline-output "" }
    int priv ();

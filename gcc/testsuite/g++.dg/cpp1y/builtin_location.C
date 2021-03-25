@@ -103,10 +103,10 @@ A (0 == __builtin_strcmp (f3, FILE_3));
 #define FILE_4 "next_file_name.another_suffix"
 #line 1 "foobar"
 constexpr const char* f4 = this_file
-  (
 #line 1 FILE_4
-   )
+  (
 #line 1 "foobar"
+   )
   ;
 A (0 == __builtin_strcmp (f4, FILE_4));
 
@@ -167,9 +167,9 @@ A (n5 == 9);
 // of the function call.
 #line 1
 constexpr int n6 = this_line
-  (
 #line 99
-   )
+  (
 #line 1
+   )
   ;
 A (n6 == 99);
