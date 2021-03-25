@@ -6126,6 +6126,7 @@ AST::TypePath
 Parser<ManagedTokenSource>::parse_type_path ()
 {
   bool has_opening_scope_resolution = false;
+  Location locus = lexer.peek_token ()->get_locus ();
   if (lexer.peek_token ()->get_id () == SCOPE_RESOLUTION)
     {
       has_opening_scope_resolution = true;
@@ -6172,7 +6173,7 @@ Parser<ManagedTokenSource>::parse_type_path ()
 
   segments.shrink_to_fit ();
 
-  return AST::TypePath (std::move (segments), Linemap::unknown_location (),
+  return AST::TypePath (std::move (segments), locus,
 			has_opening_scope_resolution);
 }
 
