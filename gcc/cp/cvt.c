@@ -1198,8 +1198,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	    new_op2 = convert_to_void (op2, ICV_CAST, complain);
 	  }
 
-	expr = build3 (COND_EXPR, TREE_TYPE (new_op2),
-		       TREE_OPERAND (expr, 0), new_op1, new_op2);
+	expr = build3_loc (loc, COND_EXPR, TREE_TYPE (new_op2),
+			   TREE_OPERAND (expr, 0), new_op1, new_op2);
 	break;
       }
 
@@ -1215,8 +1215,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 
 	if (new_op1 != op1)
 	  {
-	    tree t = build2 (COMPOUND_EXPR, TREE_TYPE (new_op1),
-			     TREE_OPERAND (expr, 0), new_op1);
+	    tree t = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (new_op1),
+				 TREE_OPERAND (expr, 0), new_op1);
 	    expr = t;
 	  }
 

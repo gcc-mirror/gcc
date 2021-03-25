@@ -3317,7 +3317,8 @@ operand_compare::operand_equal_p (const_tree arg0, const_tree arg1,
 	    flags &= ~OEP_ADDRESS_OF;
 	    if (!OP_SAME (1))
 	      {
-		if (compare_address)
+		if (compare_address
+		    && (flags & OEP_ADDRESS_OF_SAME_FIELD) == 0)
 		  {
 		    if (TREE_OPERAND (arg0, 2)
 			|| TREE_OPERAND (arg1, 2))
