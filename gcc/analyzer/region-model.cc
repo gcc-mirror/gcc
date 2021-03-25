@@ -5114,6 +5114,37 @@ test_alloca ()
   ASSERT_EQ (model.get_rvalue (p, &ctxt)->get_kind (), SK_POISONED);
 }
 
+/* Verify that svalue::involves_p works.  */
+
+static void
+test_involves_p ()
+{
+  region_model_manager mgr;
+  tree int_star = build_pointer_type (integer_type_node);
+  tree p = build_global_decl ("p", int_star);
+  tree q = build_global_decl ("q", int_star);
+
+  test_region_model_context ctxt;
+  region_model model (&mgr);
+  const svalue *p_init = model.get_rvalue (p, &ctxt);
+  const svalue *q_init = model.get_rvalue (q, &ctxt);
+
+  ASSERT_TRUE (p_init->involves_p (p_init));
+  ASSERT_FALSE (p_init->involves_p (q_init));
+
+  const region *star_p_reg = mgr.get_symbolic_region (p_init);
+  const region *star_q_reg = mgr.get_symbolic_region (q_init);
+
+  const svalue *init_star_p = mgr.get_or_create_initial_value (star_p_reg);
+  const svalue *init_star_q = mgr.get_or_create_initial_value (star_q_reg);
+
+  ASSERT_TRUE (init_star_p->involves_p (p_init));
+  ASSERT_FALSE (p_init->involves_p (init_star_p));
+  ASSERT_FALSE (init_star_p->involves_p (q_init));
+  ASSERT_TRUE (init_star_q->involves_p (q_init));
+  ASSERT_FALSE (init_star_q->involves_p (p_init));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -5150,6 +5181,7 @@ analyzer_region_model_cc_tests ()
   test_POINTER_PLUS_EXPR_then_MEM_REF ();
   test_malloc ();
   test_alloca ();
+  test_involves_p ();
 }
 
 } // namespace selftest

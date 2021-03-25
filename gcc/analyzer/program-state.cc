@@ -586,6 +586,36 @@ sm_state_map::on_unknown_change (const svalue *sval,
     impl_set_state (*iter, (state_machine::state_t)0, NULL, ext_state);
 }
 
+/* Purge state for things involving SVAL.
+   For use when SVAL changes meaning, at the def_stmt on an SSA_NAME.   */
+
+void
+sm_state_map::purge_state_involving (const svalue *sval,
+				     const extrinsic_state &ext_state)
+{
+  /* Currently svalue::involves_p requires this.  */
+  if (sval->get_kind () != SK_INITIAL)
+    return;
+
+  svalue_set svals_to_unset;
+
+  for (map_t::iterator iter = m_map.begin ();
+       iter != m_map.end ();
+       ++iter)
+    {
+      const svalue *key = (*iter).first;
+      entry_t e = (*iter).second;
+      if (!m_sm.can_purge_p (e.m_state))
+	continue;
+      if (key->involves_p (sval))
+	svals_to_unset.add (key);
+    }
+
+  for (svalue_set::iterator iter = svals_to_unset.begin ();
+       iter != svals_to_unset.end (); ++iter)
+    impl_set_state (*iter, (state_machine::state_t)0, NULL, ext_state);
+}
+
 /* Comparator for imposing an order on sm_state_map instances.  */
 
 int

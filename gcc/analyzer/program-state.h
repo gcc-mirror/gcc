@@ -157,6 +157,9 @@ public:
 			  bool is_mutable,
 			  const extrinsic_state &ext_state);
 
+  void purge_state_involving (const svalue *sval,
+			      const extrinsic_state &ext_state);
+
   iterator_t begin () const { return m_map.begin (); }
   iterator_t end () const { return m_map.end (); }
   size_t elements () const { return m_map.elements (); }

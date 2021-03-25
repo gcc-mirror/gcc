@@ -481,6 +481,40 @@ svalue::cmp_ptr_ptr (const void *p1, const void *p2)
   return cmp_ptr (sval1, sval2);
 }
 
+/* Subclass of visitor for use in implementing svalue::involves_p.  */
+
+class involvement_visitor : public visitor
+{
+public:
+  involvement_visitor (const svalue *needle)
+  : m_needle (needle), m_found (false) {}
+
+  void visit_initial_svalue (const initial_svalue *candidate)
+  {
+    if (candidate == m_needle)
+      m_found = true;
+  }
+
+  bool found_p () const { return m_found; }
+
+private:
+  const svalue *m_needle;
+  bool m_found;
+};
+
+/* Return true iff this svalue is defined in terms of OTHER.  */
+
+bool
+svalue::involves_p (const svalue *other) const
+{
+  /* Currently only implemented for initial_svalue.  */
+  gcc_assert (other->get_kind () == SK_INITIAL);
+
+  involvement_visitor v (other);
+  accept (&v);
+  return v.found_p ();
+}
+
 /* class region_svalue : public svalue.  */
 
 /* Implementation of svalue::dump_to_pp vfunc for region_svalue.  */
