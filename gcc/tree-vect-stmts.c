@@ -12249,8 +12249,12 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 	}
     }
 
-  gcc_assert (multiple_p (TYPE_VECTOR_SUBPARTS (nunits_vectype),
-			  TYPE_VECTOR_SUBPARTS (*stmt_vectype_out)));
+  if (!multiple_p (TYPE_VECTOR_SUBPARTS (nunits_vectype),
+		   TYPE_VECTOR_SUBPARTS (*stmt_vectype_out)))
+    return opt_result::failure_at (stmt,
+				   "Not vectorized: Incompatible number "
+				   "of vector subparts between %T and %T\n",
+				   nunits_vectype, *stmt_vectype_out);
 
   if (dump_enabled_p ())
     {
