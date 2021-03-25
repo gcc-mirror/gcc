@@ -145,36 +145,32 @@ proc gdc-convert-args { args } {
     return $out
 }
 
-proc gdc-copy-extra { base extra } {
-    # Split base, folder/file.
-    set type [file dirname $extra]
+proc gdc-copy-file { srcdir filename } {
+    # Split folder/file from the filename.
+    set targetdir [file dirname $filename]
 
-    # print "Filename: $base - $extra"
+    # print "Filename: $srcdir - $filename"
 
-    set fdin [open $base/$extra r]
-    fconfigure $fdin -encoding binary
-
-    file mkdir $type
-    set fdout [open $extra w]
-    fconfigure $fdout -encoding binary
-
-    while { [gets $fdin copy_line] >= 0 } {
-	set out_line $copy_line
-	puts $fdout $out_line
-    }
-
-    close $fdin
-    close $fdout
+    file mkdir $targetdir
+    file copy -force $srcdir/$filename $filename
 
     # Remove file once test is finished.
     upvar 2 cleanup_extra_files cleanups
-    lappend cleanups $extra
-
-    return $extra
+    lappend cleanups $filename
 }
 
 #
 # Translate DMD test directives to dejagnu equivalent.
+#
+# This procedure copies the test and all its dependencies from its source
+# location in `$srcdir/$type' to `$base_dir/$type'.  A stub dejagnu test file
+# is then created in `$base_dir/gdc.test/$type' containing all translated test
+# directives.  This stub is then the test that is handed over to `dg-test'.
+# Before invoking the compiler, the `gdc.test' prefix is trimmed from the test
+# `$prog' name in `gdc-dg-test' so that all copied tests then get picked up
+# with the correct path names.
+#
+# The following directives are recognized:
 #
 #   COMPILE_SEPARATELY: Not handled.
 #   EXECUTE_ARGS:	Parameters to add to the execution of the test.
@@ -215,29 +211,31 @@ proc gdc-convert-test { base test } {
     upvar 1 compilable_do_what compilable_do_what
     set compilable_output_file_ext ""
 
-    # Split base, folder/file.
+    # Split folder/file from the test.
     set type [file dirname $test]
     set name [file tail $test]
 
     # print "Filename: $base - $test"
+    gdc-copy-file $base $test
 
+    # Read in all test directives, and save the dejagnu equivalents to a new
+    # file that will be returned as the test to run. 
     set fdin [open $base/$test r]
     #fconfigure $fdin -encoding binary
 
-    file mkdir $type
-    set fdout [open $test w]
+    # Include gdc.test prefix so test names follow DejaGnu conventions.
+    set testdir [file tail $base]
+    file mkdir $testdir/$type
+    set fdout [open $testdir/$test w]
     #fconfigure $fdout -encoding binary
 
     while { [gets $fdin copy_line] >= 0 } {
-	set out_line $copy_line
 
 	if [regexp -- {COMPILE_SEPARATELY} $copy_line] {
 	    # COMPILE_SEPARATELY is not handled.
-	    regsub -- {COMPILE_SEPARATELY.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {DISABLED} $copy_line] {
 	    # DISABLED is not handled.
-	    regsub -- {DISABLED.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {LINK:} $copy_line] {
 	    # LINK sets dg-do-what-default "link"
@@ -245,7 +243,6 @@ proc gdc-convert-test { base test } {
 
 	} elseif [regexp -- {POST_SCRIPT} $copy_line] {
 	    # POST_SCRIPT is not handled
-	    regsub -- {POST_SCRIPT.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {DFLAGS\s*:\s*(.*)} $copy_line match args] {
 	    # DFLAGS overrides the default value of PERMUTE_ARGS.
@@ -253,32 +250,27 @@ proc gdc-convert-test { base test } {
 		error "gdc-convert-test: DFLAGS is not empty as expected"
 	    }
 	    set saw_test_flags 1
-	    regsub -- {DFLAGS.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {PERMUTE_ARGS\s*:\s*(.*)} $copy_line match args] {
 	    # PERMUTE_ARGS is handled by gdc-do-test.
 	    set PERMUTE_ARGS [gdc-convert-args $args]
 	    set saw_test_flags 1
-	    regsub -- {PERMUTE_ARGS.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {EXECUTE_ARGS\s*:\s*(.*)} $copy_line match args] {
 	    # EXECUTE_ARGS is handled by gdc_load.
 	    foreach arg $args {
 		lappend GDC_EXECUTE_ARGS $arg
 	    }
-	    regsub -- {EXECUTE_ARGS.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {REQUIRED_ARGS\s*:\s*(.*)} $copy_line match args] {
 	    # Convert all listed arguments to from dmd to gdc-style.
-	    set new_option "{ dg-additional-options \"[gdc-convert-args $args]\" }"
-	    regsub -- {REQUIRED_ARGS.*$} $copy_line $new_option out_line
+	    puts $fdout "// { dg-additional-options \"[gdc-convert-args $args]\" }"
 
 	} elseif [regexp -- {EXTRA_SOURCES\s*:\s*(.*)} $copy_line match sources] {
 	    # EXTRA_SOURCES are appended to extra_sources list
 	    foreach srcfile $sources {
 		lappend extra_sources $srcfile
 	    }
-	    regsub -- {EXTRA_SOURCES.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {EXTRA_CPP_SOURCES\s*:\s*(.*)} $copy_line match sources] {
 	    # EXTRA_CPP_SOURCES are appended to extra_sources list
@@ -286,50 +278,43 @@ proc gdc-convert-test { base test } {
 		# C++ sources are found in the extra-files directory.
 		lappend extra_sources "extra-files/$srcfile"
 	    }
-	    regsub -- {EXTRA_CPP_SOURCES.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {EXTRA_FILES\s*:\s*(.*)} $copy_line match files] {
 	    # EXTRA_FILES are appended to extra_files list
 	    foreach file $files {
 		lappend extra_files $file
 	    }
-	    regsub -- {EXTRA_FILES.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {COMPILED_IMPORTS\s*:\s*(.*)} $copy_line match sources] {
 	    # COMPILED_IMPORTS are appended to extra_sources list
 	    foreach import $sources {
 		lappend extra_sources $import
 	    }
-	    regsub -- {COMPILED_IMPORTS.*$} $copy_line "" out_line
 
 	} elseif [regexp -- {RUNNABLE_PHOBOS_TEST} $copy_line match sources] {
 	    # RUNNABLE_PHOBOS_TEST annotates tests that import the std module.
 	    # It will need skipping if phobos is not available on the target.
-	    regsub -- {RUNNABLE_PHOBOS_TEST.*$} $copy_line "" out_line
 	    set needs_phobos 1
 
 	} elseif [regexp -- {COMPILABLE_MATH_TEST} $copy_line match sources] {
 	    # COMPILABLE_MATH_TEST annotates tests that import the std.math
 	    # module.  Which will need skipping if not available on the target.
-	    regsub -- {RUNNABLE_PHOBOS_TEST.*$} $copy_line "" out_line
 	    set needs_phobos 1
 	}
-
-	puts $fdout $out_line
     }
 
     # Now that all extra sources and files have been collected, copy them all
     # to the testsuite build directory.
     if { [llength $extra_sources] > 0 } {
 	foreach srcfile $extra_sources {
-	    gdc-copy-extra $base "$type/$srcfile"
+	    gdc-copy-file $base "$type/$srcfile"
 	}
 	puts $fdout "// { dg-additional-sources \"$extra_sources\" }"
     }
 
     if { [llength $extra_files] > 0 } {
 	foreach file $extra_files {
-	    gdc-copy-extra $base "$type/$file"
+	    gdc-copy-file $base "$type/$file"
 	}
 	puts $fdout "// { dg-additional-files \"$extra_files\" }"
     }
@@ -367,9 +352,9 @@ proc gdc-convert-test { base test } {
 		# Check that file generation tests output the expected file.
 		set genfile "[file rootname $name].$compilable_output_file_ext"
 		puts $fdout "// { dg-final { if \[file exists $genfile\] \\{           } }"
-		puts $fdout "// { dg-final {     pass \"$test (file exists $genfile)\" } }"
+		puts $fdout "// { dg-final {     pass \"$testdir/$test (file exists $genfile)\" } }"
 		puts $fdout "// { dg-final { \\} else \\{                              } }"
-		puts $fdout "// { dg-final {     fail \"$test (file exists $genfile)\" } }"
+		puts $fdout "// { dg-final {     fail \"$testdir/$test (file exists $genfile)\" } }"
 		puts $fdout "// { dg-final { \\}                                       } }"
 		# Cleanup extra generated files.
 		puts $fdout "// { dg-final { file delete $genfile } }"
@@ -387,7 +372,7 @@ proc gdc-convert-test { base test } {
     close $fdin
     close $fdout
 
-    return $test
+    return $testdir/$test
 }
 
 proc gdc-permute-options { options } {
@@ -413,7 +398,6 @@ proc gdc-permute-options { options } {
 
 proc gdc-do-test { testcases } {
     global dg-do-what-default
-    global subdir
     global verbose
 
     # If a testcase doesn't have special options, use these.
@@ -441,10 +425,6 @@ proc gdc-do-test { testcases } {
 
     set saved-dg-do-what-default ${dg-do-what-default}
 
-    # Create gdc.test link so test names include that subdir.
-    set testdir [file dirname $subdir]
-    catch { file link $testdir . }
-
     # Main loop.
 
     # set verbose 1
@@ -457,8 +437,7 @@ proc gdc-do-test { testcases } {
 	set imports [format "-I%s/%s" $base $type]
 	set cleanup_extra_files ""
 	set compilable_do_what "compile"
-	# Include $testdir prefix so test names follow DejaGnu conventions.
-	set filename "$testdir/[gdc-convert-test $base $type/$name.$ext]"
+	set filename "[gdc-convert-test $base $type/$name.$ext]"
 
 	if { $type == "runnable" || $type == "runnable_cxx" } {
 	    append PERMUTE_ARGS " $SHARED_OPTION"
