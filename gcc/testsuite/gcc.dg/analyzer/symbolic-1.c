@@ -1,6 +1,6 @@
 #include "analyzer-decls.h"
 
-/* The example from store2.h  */
+/* The example from store.h  */
 
 void test_1 (char a, char b, char c, char d, char e, char f,
 	     int i, int j)
