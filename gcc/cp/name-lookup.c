@@ -1666,8 +1666,9 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 		continue;
 
 	      tree origin = get_originating_module_decl (TYPE_NAME (scope));
-	      if (!DECL_LANG_SPECIFIC (origin)
-		  || !DECL_MODULE_IMPORT_P (origin))
+	      tree not_tmpl = STRIP_TEMPLATE (origin);
+	      if (!DECL_LANG_SPECIFIC (not_tmpl)
+		  || !DECL_MODULE_IMPORT_P (not_tmpl))
 		/* Not imported.  */
 		continue;
 
@@ -3680,6 +3681,7 @@ do_pushdecl (tree decl, bool hiding)
 	if (iter.using_p ())
 	  ; /* Ignore using decls here.  */
 	else if (iter.hidden_p ()
+		 && TREE_CODE (*iter) == FUNCTION_DECL
 		 && DECL_LANG_SPECIFIC (*iter)
 		 && DECL_MODULE_IMPORT_P (*iter))
 	  ; /* An undeclared builtin imported from elsewhere.  */
