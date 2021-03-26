@@ -1619,12 +1619,102 @@ static const struct tune_params neoversen1_tunings =
   &generic_prefetch_tune
 };
 
+static const advsimd_vec_cost neoversev1_advsimd_vector_cost =
+{
+  2, /* int_stmt_cost  */
+  2, /* fp_stmt_cost  */
+  4, /* ld2_st2_permute_cost */
+  4, /* ld3_st3_permute_cost  */
+  5, /* ld4_st4_permute_cost  */
+  3, /* permute_cost  */
+  4, /* reduc_i8_cost  */
+  4, /* reduc_i16_cost  */
+  2, /* reduc_i32_cost  */
+  2, /* reduc_i64_cost  */
+  6, /* reduc_f16_cost  */
+  3, /* reduc_f32_cost  */
+  2, /* reduc_f64_cost  */
+  2, /* store_elt_extra_cost  */
+  /* This value is just inherited from the Cortex-A57 table.  */
+  8, /* vec_to_scalar_cost  */
+  /* This depends very much on what the scalar value is and
+     where it comes from.  E.g. some constants take two dependent
+     instructions or a load, while others might be moved from a GPR.
+     4 seems to be a reasonable compromise in practice.  */
+  4, /* scalar_to_vec_cost  */
+  4, /* align_load_cost  */
+  4, /* unalign_load_cost  */
+  /* Although stores have a latency of 2 and compete for the
+     vector pipes, in practice it's better not to model that.  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
+};
+
+static const sve_vec_cost neoversev1_sve_vector_cost =
+{
+  {
+    2, /* int_stmt_cost  */
+    2, /* fp_stmt_cost  */
+    4, /* ld2_st2_permute_cost  */
+    7, /* ld3_st3_permute_cost  */
+    8, /* ld4_st4_permute_cost  */
+    3, /* permute_cost  */
+    /* Theoretically, a reduction involving 31 scalar ADDs could
+       complete in ~9 cycles and would have a cost of 31.  [SU]ADDV
+       completes in 14 cycles, so give it a cost of 31 + 5.  */
+    36, /* reduc_i8_cost  */
+    /* Likewise for 15 scalar ADDs (~5 cycles) vs. 12: 15 + 7.  */
+    22, /* reduc_i16_cost  */
+    /* Likewise for 7 scalar ADDs (~3 cycles) vs. 10: 7 + 7.  */
+    14, /* reduc_i32_cost  */
+    /* Likewise for 3 scalar ADDs (~2 cycles) vs. 10: 3 + 8.  */
+    11, /* reduc_i64_cost  */
+    /* Theoretically, a reduction involving 15 scalar FADDs could
+       complete in ~9 cycles and would have a cost of 30.  FADDV
+       completes in 13 cycles, so give it a cost of 30 + 4.  */
+    34, /* reduc_f16_cost  */
+    /* Likewise for 7 scalar FADDs (~6 cycles) vs. 11: 14 + 5.  */
+    19, /* reduc_f32_cost  */
+    /* Likewise for 3 scalar FADDs (~4 cycles) vs. 9: 6 + 5.  */
+    11, /* reduc_f64_cost  */
+    2, /* store_elt_extra_cost  */
+    /* This value is just inherited from the Cortex-A57 table.  */
+    8, /* vec_to_scalar_cost  */
+    /* See the comment above the Advanced SIMD versions.  */
+    4, /* scalar_to_vec_cost  */
+    4, /* align_load_cost  */
+    4, /* unalign_load_cost  */
+    /* Although stores have a latency of 2 and compete for the
+       vector pipes, in practice it's better not to model that.  */
+    1, /* unalign_store_cost  */
+    1  /* store_cost  */
+  },
+  3, /* clast_cost  */
+  19, /* fadda_f16_cost  */
+  11, /* fadda_f32_cost  */
+  8, /* fadda_f64_cost  */
+  3 /* scatter_store_elt_cost  */
+};
+
+/* Neoverse V1 costs for vector insn classes.  */
+static const struct cpu_vector_cost neoversev1_vector_cost =
+{
+  1, /* scalar_int_stmt_cost  */
+  2, /* scalar_fp_stmt_cost  */
+  4, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  1, /* cond_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &neoversev1_advsimd_vector_cost, /* advsimd  */
+  &neoversev1_sve_vector_cost /* sve  */
+};
+
 static const struct tune_params neoversev1_tunings =
 {
   &cortexa76_extra_costs,
   &generic_addrcost_table,
   &generic_regmove_cost,
-  &cortexa57_vector_cost,
+  &neoversev1_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_256, /* sve_width  */
@@ -1641,7 +1731,8 @@ static const struct tune_params neoversev1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
+   | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
