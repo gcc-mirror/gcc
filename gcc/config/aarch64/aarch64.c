@@ -14111,6 +14111,21 @@ aarch64_first_cycle_multipass_dfa_lookahead_guard (rtx_insn *insn,
 
 /* Vectorizer cost model target hooks.  */
 
+/* Information about vector code that we're in the process of costing.  */
+struct aarch64_vector_costs
+{
+  /* The normal latency-based costs for each region (prologue, body and
+     epilogue), indexed by vect_cost_model_location.  */
+  unsigned int region[3] = {};
+};
+
+/* Implement TARGET_VECTORIZE_INIT_COST.  */
+void *
+aarch64_init_cost (class loop *)
+{
+  return new aarch64_vector_costs;
+}
+
 /* Return true if the current CPU should use the new costs defined
    in GCC 11.  This should be removed for GCC 12 and above, with the
    costs applying to all CPUs instead.  */
@@ -14535,7 +14550,7 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 		       struct _stmt_vec_info *stmt_info, tree vectype,
 		       int misalign, enum vect_cost_model_location where)
 {
-  unsigned *cost = (unsigned *) data;
+  auto *costs = static_cast<aarch64_vector_costs *> (data);
   unsigned retval = 0;
 
   if (flag_vect_cost_model)
@@ -14569,10 +14584,28 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	count *= 50; /*  FIXME  */
 
       retval = (unsigned) (count * stmt_cost);
-      cost[where] += retval;
+      costs->region[where] += retval;
     }
 
   return retval;
+}
+
+/* Implement TARGET_VECTORIZE_FINISH_COST.  */
+static void
+aarch64_finish_cost (void *data, unsigned *prologue_cost,
+		     unsigned *body_cost, unsigned *epilogue_cost)
+{
+  auto *costs = static_cast<aarch64_vector_costs *> (data);
+  *prologue_cost = costs->region[vect_prologue];
+  *body_cost     = costs->region[vect_body];
+  *epilogue_cost = costs->region[vect_epilogue];
+}
+
+/* Implement TARGET_VECTORIZE_DESTROY_COST_DATA.  */
+static void
+aarch64_destroy_cost_data (void *data)
+{
+  delete static_cast<aarch64_vector_costs *> (data);
 }
 
 static void initialize_aarch64_code_model (struct gcc_options *);
@@ -24713,8 +24746,17 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_ARRAY_MODE_SUPPORTED_P
 #define TARGET_ARRAY_MODE_SUPPORTED_P aarch64_array_mode_supported_p
 
+#undef TARGET_VECTORIZE_INIT_COST
+#define TARGET_VECTORIZE_INIT_COST aarch64_init_cost
+
 #undef TARGET_VECTORIZE_ADD_STMT_COST
 #define TARGET_VECTORIZE_ADD_STMT_COST aarch64_add_stmt_cost
+
+#undef TARGET_VECTORIZE_FINISH_COST
+#define TARGET_VECTORIZE_FINISH_COST aarch64_finish_cost
+
+#undef TARGET_VECTORIZE_DESTROY_COST_DATA
+#define TARGET_VECTORIZE_DESTROY_COST_DATA aarch64_destroy_cost_data
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
