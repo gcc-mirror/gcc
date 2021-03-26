@@ -1732,7 +1732,8 @@ static const struct tune_params neoversev1_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS
-   | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS),	/* tune_flags.  */
+   | AARCH64_EXTRA_TUNE_USE_NEW_VECTOR_COSTS
+   | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -2537,6 +2538,14 @@ aarch64_bit_representation (rtx x)
   if (CONST_DOUBLE_P (x))
     x = gen_lowpart (int_mode_for_mode (GET_MODE (x)).require (), x);
   return x;
+}
+
+/* Return an estimate for the number of quadwords in an SVE vector.  This is
+   equivalent to the number of Advanced SIMD vectors in an SVE vector.  */
+static unsigned int
+aarch64_estimated_sve_vq ()
+{
+  return estimated_poly_value (BITS_PER_SVE_VECTOR) / 128;
 }
 
 /* Return true if MODE is any of the Advanced SIMD structure modes.  */
@@ -14117,6 +14126,39 @@ struct aarch64_vector_costs
   /* The normal latency-based costs for each region (prologue, body and
      epilogue), indexed by vect_cost_model_location.  */
   unsigned int region[3] = {};
+
+  /* True if we have performed one-time initialization based on the vec_info.
+
+     This variable exists because the vec_info is not passed to the
+     init_cost hook.  We therefore have to defer initialization based on
+     it till later.  */
+  bool analyzed_vinfo = false;
+
+  /* True if we're costing a vector loop, false if we're costing block-level
+     vectorization.  */
+  bool is_loop = false;
+
+  /* - If VEC_FLAGS is zero then we're costing the original scalar code.
+     - If VEC_FLAGS & VEC_ADVSIMD is nonzero then we're costing Advanced
+       SIMD code.
+     - If VEC_FLAGS & VEC_ANY_SVE is nonzero then we're costing SVE code.  */
+  unsigned int vec_flags = 0;
+
+  /* On some CPUs, SVE and Advanced SIMD provide the same theoretical vector
+     throughput, such as 4x128 Advanced SIMD vs. 2x256 SVE.  In those
+     situations, we try to predict whether an Advanced SIMD implementation
+     of the loop could be completely unrolled and become straight-line code.
+     If so, it is generally better to use the Advanced SIMD version rather
+     than length-agnostic SVE, since the SVE loop would execute an unknown
+     number of times and so could not be completely unrolled in the same way.
+
+     If we're applying this heuristic, UNROLLED_ADVSIMD_NITERS is the
+     number of Advanced SIMD loop iterations that would be unrolled and
+     UNROLLED_ADVSIMD_STMTS estimates the total number of statements
+     in the unrolled loop.  Both values are zero if we're not applying
+     the heuristic.  */
+  unsigned HOST_WIDE_INT unrolled_advsimd_niters = 0;
+  unsigned HOST_WIDE_INT unrolled_advsimd_stmts = 0;
 };
 
 /* Implement TARGET_VECTORIZE_INIT_COST.  */
@@ -14146,6 +14188,94 @@ aarch64_simd_vec_costs (tree vectype)
       && costs->sve != NULL)
     return costs->sve;
   return costs->advsimd;
+}
+
+/* Decide whether to use the unrolling heuristic described above
+   aarch64_vector_costs::unrolled_advsimd_niters, updating that
+   field if so.  LOOP_VINFO describes the loop that we're vectorizing
+   and COSTS are the costs that we're calculating for it.  */
+static void
+aarch64_record_potential_advsimd_unrolling (loop_vec_info loop_vinfo,
+					    aarch64_vector_costs *costs)
+{
+  /* The heuristic only makes sense on targets that have the same
+     vector throughput for SVE and Advanced SIMD.  */
+  if (!(aarch64_tune_params.extra_tuning_flags
+	& AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT))
+    return;
+
+  /* We only want to apply the heuristic if LOOP_VINFO is being
+     vectorized for SVE.  */
+  if (!(costs->vec_flags & VEC_ANY_SVE))
+    return;
+
+  /* Check whether it is possible in principle to use Advanced SIMD
+     instead.  */
+  if (aarch64_autovec_preference == 2)
+    return;
+
+  /* We don't want to apply the heuristic to outer loops, since it's
+     harder to track two levels of unrolling.  */
+  if (LOOP_VINFO_LOOP (loop_vinfo)->inner)
+    return;
+
+  /* Only handle cases in which the number of Advanced SIMD iterations
+     would be known at compile time but the number of SVE iterations
+     would not.  */
+  if (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
+      || aarch64_sve_vg.is_constant ())
+    return;
+
+  /* Guess how many times the Advanced SIMD loop would iterate and make
+     sure that it is within the complete unrolling limit.  Even if the
+     number of iterations is small enough, the number of statements might
+     not be, which is why we need to estimate the number of statements too.  */
+  unsigned int estimated_vq = aarch64_estimated_sve_vq ();
+  unsigned int advsimd_vf = CEIL (vect_vf_for_cost (loop_vinfo), estimated_vq);
+  unsigned HOST_WIDE_INT unrolled_advsimd_niters
+    = LOOP_VINFO_INT_NITERS (loop_vinfo) / advsimd_vf;
+  if (unrolled_advsimd_niters > (unsigned int) param_max_completely_peel_times)
+    return;
+
+  /* Record that we're applying the heuristic and should try to estimate
+     the number of statements in the Advanced SIMD loop.  */
+  costs->unrolled_advsimd_niters = unrolled_advsimd_niters;
+}
+
+/* Do one-time initialization of COSTS given that we're costing the loop
+   vectorization described by LOOP_VINFO.  */
+static void
+aarch64_analyze_loop_vinfo (loop_vec_info loop_vinfo,
+			    aarch64_vector_costs *costs)
+{
+  costs->is_loop = true;
+
+  /* Detect whether we're costing the scalar code or the vector code.
+     This is a bit hacky: it would be better if the vectorizer told
+     us directly.
+
+     If we're costing the vector code, record whether we're vectorizing
+     for Advanced SIMD or SVE.  */
+  if (costs == LOOP_VINFO_TARGET_COST_DATA (loop_vinfo))
+    costs->vec_flags = aarch64_classify_vector_mode (loop_vinfo->vector_mode);
+  else
+    costs->vec_flags = 0;
+
+  /* Detect whether we're vectorizing for SVE and should
+     apply the unrolling heuristic described above
+     aarch64_vector_costs::unrolled_advsimd_niters.  */
+  aarch64_record_potential_advsimd_unrolling (loop_vinfo, costs);
+}
+
+/* Do one-time initialization of COSTS given that we're costing the block
+   vectorization described by BB_VINFO.  */
+static void
+aarch64_analyze_bb_vinfo (bb_vec_info bb_vinfo, aarch64_vector_costs *costs)
+{
+  /* Unfortunately, there's no easy way of telling whether we're costing
+     the vector code or the scalar code, so just assume that we're costing
+     the vector code.  */
+  costs->vec_flags = aarch64_classify_vector_mode (bb_vinfo->vector_mode);
 }
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
@@ -14555,8 +14685,20 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 
   if (flag_vect_cost_model)
     {
-      int stmt_cost =
-	    aarch64_builtin_vectorization_cost (kind, vectype, misalign);
+      int stmt_cost
+	= aarch64_builtin_vectorization_cost (kind, vectype, misalign);
+
+      /* Do one-time initialization based on the vinfo.  */
+      loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
+      bb_vec_info bb_vinfo = dyn_cast<bb_vec_info> (vinfo);
+      if (!costs->analyzed_vinfo && aarch64_use_new_vector_costs_p ())
+	{
+	  if (loop_vinfo)
+	    aarch64_analyze_loop_vinfo (loop_vinfo, costs);
+	  else
+	    aarch64_analyze_bb_vinfo (bb_vinfo, costs);
+	  costs->analyzed_vinfo = true;
+	}
 
       /* Try to get a more accurate cost by looking at STMT_INFO instead
 	 of just looking at KIND.  */
@@ -14571,10 +14713,21 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 						  vectype, stmt_cost);
 
       if (stmt_info && aarch64_use_new_vector_costs_p ())
-	/* Account for any extra "embedded" costs that apply additively
-	   to the base cost calculated above.  */
-	stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
-					      stmt_cost);
+	{
+	  /* Account for any extra "embedded" costs that apply additively
+	     to the base cost calculated above.  */
+	  stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
+						stmt_cost);
+
+	  /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
+	     estimate the number of statements in the unrolled Advanced SIMD
+	     loop.  For simplicitly, we assume that one iteration of the
+	     Advanced SIMD loop would need the same number of statements
+	     as one iteration of the SVE loop.  */
+	  if (where == vect_body && costs->unrolled_advsimd_niters)
+	    costs->unrolled_advsimd_stmts
+	      += count * costs->unrolled_advsimd_niters;
+	}
 
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is
@@ -14590,6 +14743,49 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
   return retval;
 }
 
+/* BODY_COST is the cost of a vector loop body recorded in COSTS.
+   Adjust the cost as necessary and return the new cost.  */
+static unsigned int
+aarch64_adjust_body_cost (aarch64_vector_costs *costs, unsigned int body_cost)
+{
+  unsigned int orig_body_cost = body_cost;
+
+  if (costs->unrolled_advsimd_stmts)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "Number of insns in"
+			 " unrolled Advanced SIMD loop = %d\n",
+			 costs->unrolled_advsimd_stmts);
+
+      /* Apply the Advanced SIMD vs. SVE unrolling heuristic described above
+	 aarch64_vector_costs::unrolled_advsimd_niters.
+
+	 The balance here is tricky.  On the one hand, we can't be sure whether
+	 the code is vectorizable with Advanced SIMD or not.  However, even if
+	 it isn't vectorizable with Advanced SIMD, there's a possibility that
+	 the scalar code could also be unrolled.  Some of the code might then
+	 benefit from SLP, or from using LDP and STP.  We therefore apply
+	 the heuristic regardless of can_use_advsimd_p.  */
+      if (costs->unrolled_advsimd_stmts
+	  && (costs->unrolled_advsimd_stmts
+	      <= (unsigned int) param_max_completely_peeled_insns))
+	{
+	  unsigned int estimated_vq = aarch64_estimated_sve_vq ();
+	  unsigned int min_cost = (orig_body_cost * estimated_vq) + 1;
+	  if (body_cost < min_cost)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Increasing body cost to %d to account for"
+				 " unrolling\n", min_cost);
+	      body_cost = min_cost;
+	    }
+	}
+    }
+
+  return body_cost;
+}
+
 /* Implement TARGET_VECTORIZE_FINISH_COST.  */
 static void
 aarch64_finish_cost (void *data, unsigned *prologue_cost,
@@ -14599,6 +14795,11 @@ aarch64_finish_cost (void *data, unsigned *prologue_cost,
   *prologue_cost = costs->region[vect_prologue];
   *body_cost     = costs->region[vect_body];
   *epilogue_cost = costs->region[vect_epilogue];
+
+  if (costs->is_loop
+      && costs->vec_flags
+      && aarch64_use_new_vector_costs_p ())
+    *body_cost = aarch64_adjust_body_cost (costs, *body_cost);
 }
 
 /* Implement TARGET_VECTORIZE_DESTROY_COST_DATA.  */
