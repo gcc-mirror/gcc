@@ -9437,6 +9437,18 @@ package body Sem_Util is
 
          if Is_Entity_Name (Expr) then
             Ent := Entity (Expr);
+
+            --  If expansion is disabled, then we might see an entity of a
+            --  protected component or of a discriminant of a concurrent unit.
+            --  Ignore such entities, because further warnings for overlays
+            --  expect this routine to only collect entities of entire objects.
+
+            if Ekind (Ent) in E_Component | E_Discriminant then
+               pragma Assert
+                 (not Expander_Active
+                  and then Is_Concurrent_Type (Scope (Ent)));
+               Ent := Empty;
+            end if;
             return;
 
          --  Check for components
