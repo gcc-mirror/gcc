@@ -1,3 +1,12 @@
+2021-03-25  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	Backported from master:
+	2021-03-25  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/97329
+	* config/rs6000/rs6000.c (power8_costs): Change l2 cache
+	from 256 to 512.
+
 2021-03-23  H.J. Lu  <hjl.tools@gmail.com>
 
 	Backported from master:
