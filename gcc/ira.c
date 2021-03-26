@@ -1871,10 +1871,10 @@ ira_setup_alts (rtx_insn *insn)
 			  goto op_success;
 
 			case CT_MEMORY:
+			case CT_RELAXED_MEMORY:
 			  mem = op;
 			  /* Fall through.  */
 			case CT_SPECIAL_MEMORY:
-			case CT_RELAXED_MEMORY:
 			  if (!mem)
 			    mem = extract_mem_from_operand (op);
 			  if (MEM_P (mem))
