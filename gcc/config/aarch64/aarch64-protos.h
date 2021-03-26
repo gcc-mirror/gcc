@@ -256,12 +256,14 @@ struct sve_vec_cost : simd_vec_cost
 			  unsigned int clast_cost,
 			  unsigned int fadda_f16_cost,
 			  unsigned int fadda_f32_cost,
-			  unsigned int fadda_f64_cost)
+			  unsigned int fadda_f64_cost,
+			  unsigned int scatter_store_elt_cost)
     : simd_vec_cost (base),
       clast_cost (clast_cost),
       fadda_f16_cost (fadda_f16_cost),
       fadda_f32_cost (fadda_f32_cost),
-      fadda_f64_cost (fadda_f64_cost)
+      fadda_f64_cost (fadda_f64_cost),
+      scatter_store_elt_cost (scatter_store_elt_cost)
   {}
 
   /* The cost of a vector-to-scalar CLASTA or CLASTB instruction,
@@ -274,6 +276,9 @@ struct sve_vec_cost : simd_vec_cost
   const int fadda_f16_cost;
   const int fadda_f32_cost;
   const int fadda_f64_cost;
+
+  /* The per-element cost of a scatter store.  */
+  const int scatter_store_elt_cost;
 };
 
 /* Cost for vector insn classes.  */
