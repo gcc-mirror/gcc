@@ -14827,6 +14827,12 @@ package body Sem_Util is
          return No_Uint;
       end if;
 
+      --  Do not attempt to compute offsets within multi-dimensional arrays
+
+      if Present (Next_Index (Ind)) then
+         return No_Uint;
+      end if;
+
       if Nkind (Ind) = N_Subtype_Indication then
          Ind := Constraint (Ind);
 
@@ -14843,7 +14849,7 @@ package body Sem_Util is
 
       --  Return the scaled offset
 
-      return Off * (Expr_Value (Exp) - Expr_Value (Low_Bound ((Ind))));
+      return Off * (Expr_Value (Exp) - Expr_Value (Low_Bound (Ind)));
    end Indexed_Component_Bit_Offset;
 
    -----------------------------
