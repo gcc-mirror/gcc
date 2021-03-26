@@ -14493,6 +14493,23 @@ aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
 }
 
 /* STMT_COST is the cost calculated by aarch64_builtin_vectorization_cost
+   for STMT_INFO, which has cost kind KIND.  If this is a scalar operation,
+   try to subdivide the target-independent categorization provided by KIND
+   to get a more accurate cost.  */
+static unsigned int
+aarch64_detect_scalar_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
+				    stmt_vec_info stmt_info,
+				    unsigned int stmt_cost)
+{
+  /* Detect an extension of a loaded value.  In general, we'll be able to fuse
+     the extension with the load.  */
+  if (kind == scalar_stmt && aarch64_extending_load_p (vinfo, stmt_info))
+    return 0;
+
+  return stmt_cost;
+}
+
+/* STMT_COST is the cost calculated by aarch64_builtin_vectorization_cost
    for the vectorized form of STMT_INFO, which has cost kind KIND and which
    when vectorized would operate on vector type VECTYPE.  Try to subdivide
    the target-independent categorization provided by KIND to get a more
@@ -14702,10 +14719,16 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 
       /* Try to get a more accurate cost by looking at STMT_INFO instead
 	 of just looking at KIND.  */
-      if (stmt_info && vectype && aarch64_use_new_vector_costs_p ())
-	stmt_cost = aarch64_detect_vector_stmt_subtype (vinfo, kind,
-							stmt_info, vectype,
-							where, stmt_cost);
+      if (stmt_info && aarch64_use_new_vector_costs_p ())
+	{
+	  stmt_cost = aarch64_detect_scalar_stmt_subtype
+	    (vinfo, kind, stmt_info, stmt_cost);
+
+	  if (vectype && costs->vec_flags)
+	    stmt_cost = aarch64_detect_vector_stmt_subtype (vinfo, kind,
+							    stmt_info, vectype,
+							    where, stmt_cost);
+	}
 
       /* Do any SVE-specific adjustments to the cost.  */
       if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
