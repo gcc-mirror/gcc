@@ -5034,6 +5034,11 @@ got_specific:
       sym->attr.intrinsic = 1;
       sym->attr.flavor = FL_PROCEDURE;
     }
+  if (sym->attr.flavor == FL_PROCEDURE)
+    {
+      sym->attr.function = 1;
+      sym->attr.proc = PROC_INTRINSIC;
+    }
 
   if (!sym->module)
     gfc_intrinsic_symbol (sym);
