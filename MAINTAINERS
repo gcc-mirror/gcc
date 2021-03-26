@@ -96,6 +96,7 @@ nvptx port		Tom de Vries		<tdevries@suse.de>
 or1k port		Stafford Horne		<shorne@gmail.com>
 pdp11 port		Paul Koning		<ni1d@arrl.net>
 powerpcspe port		Andrew Jenner		<andrew@codesourcery.com>
+pru port		Dimitar Dimitrov	<dimitar@dinux.eu>
 riscv port		Kito Cheng		<kito.cheng@gmail.com>
 riscv port		Palmer Dabbelt		<palmer@dabbelt.com>
 riscv port		Andrew Waterman		<andrew@sifive.com>
@@ -372,7 +373,6 @@ Bud Davis					<jmdavis@link.com>
 Chris Demetriou					<cgd@google.com>
 Sameera Deshpande				<sameera.deshpande@linaro.org>
 Wilco Dijkstra					<wdijkstr@arm.com>
-Dimitar Dimitrov				<dimitar@dinux.eu>
 Benoit Dupont de Dinechin			<benoit.dupont-de-dinechin@st.com>
 Jason Eckhardt					<jle@rice.edu>
 Bernd Edlinger					<bernd.edlinger@hotmail.de>
