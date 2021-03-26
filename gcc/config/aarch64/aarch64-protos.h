@@ -177,6 +177,8 @@ struct cpu_addrcost_table
   const struct scale_addr_mode_cost addr_scale_costs;
   const int pre_modify;
   const int post_modify;
+  const int post_modify_ld3_st3;
+  const int post_modify_ld4_st4;
   const int register_offset;
   const int register_sextend;
   const int register_zextend;

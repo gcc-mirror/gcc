@@ -364,6 +364,8 @@ static const struct cpu_addrcost_table generic_addrcost_table =
     },
   0, /* pre_modify  */
   0, /* post_modify  */
+  0, /* post_modify_ld3_st3  */
+  0, /* post_modify_ld4_st4  */
   0, /* register_offset  */
   0, /* register_sextend  */
   0, /* register_zextend  */
@@ -380,6 +382,8 @@ static const struct cpu_addrcost_table exynosm1_addrcost_table =
     },
   0, /* pre_modify  */
   0, /* post_modify  */
+  0, /* post_modify_ld3_st3  */
+  0, /* post_modify_ld4_st4  */
   1, /* register_offset  */
   1, /* register_sextend  */
   2, /* register_zextend  */
@@ -396,6 +400,8 @@ static const struct cpu_addrcost_table xgene1_addrcost_table =
     },
   1, /* pre_modify  */
   1, /* post_modify  */
+  1, /* post_modify_ld3_st3  */
+  1, /* post_modify_ld4_st4  */
   0, /* register_offset  */
   1, /* register_sextend  */
   1, /* register_zextend  */
@@ -412,6 +418,8 @@ static const struct cpu_addrcost_table thunderx2t99_addrcost_table =
     },
   0, /* pre_modify  */
   0, /* post_modify  */
+  0, /* post_modify_ld3_st3  */
+  0, /* post_modify_ld4_st4  */
   2, /* register_offset  */
   3, /* register_sextend  */
   3, /* register_zextend  */
@@ -428,6 +436,8 @@ static const struct cpu_addrcost_table thunderx3t110_addrcost_table =
     },
   0, /* pre_modify  */
   0, /* post_modify  */
+  0, /* post_modify_ld3_st3  */
+  0, /* post_modify_ld4_st4  */
   2, /* register_offset  */
   3, /* register_sextend  */
   3, /* register_zextend  */
@@ -444,6 +454,8 @@ static const struct cpu_addrcost_table tsv110_addrcost_table =
     },
   0, /* pre_modify  */
   0, /* post_modify  */
+  0, /* post_modify_ld3_st3  */
+  0, /* post_modify_ld4_st4  */
   0, /* register_offset  */
   1, /* register_sextend  */
   1, /* register_zextend  */
@@ -460,6 +472,8 @@ static const struct cpu_addrcost_table qdf24xx_addrcost_table =
     },
   1, /* pre_modify  */
   1, /* post_modify  */
+  1, /* post_modify_ld3_st3  */
+  1, /* post_modify_ld4_st4  */
   3, /* register_offset  */
   3, /* register_sextend  */
   3, /* register_zextend  */
@@ -476,10 +490,30 @@ static const struct cpu_addrcost_table a64fx_addrcost_table =
     },
   0, /* pre_modify  */
   0, /* post_modify  */
+  0, /* post_modify_ld3_st3  */
+  0, /* post_modify_ld4_st4  */
   2, /* register_offset  */
   3, /* register_sextend  */
   3, /* register_zextend  */
   0, /* imm_offset  */
+};
+
+static const struct cpu_addrcost_table neoversev1_addrcost_table =
+{
+    {
+      1, /* hi  */
+      0, /* si  */
+      0, /* di  */
+      1, /* ti  */
+    },
+  0, /* pre_modify  */
+  0, /* post_modify  */
+  3, /* post_modify_ld3_st3  */
+  3, /* post_modify_ld4_st4  */
+  0, /* register_offset  */
+  0, /* register_sextend  */
+  0, /* register_zextend  */
+  0 /* imm_offset  */
 };
 
 static const struct cpu_regmove_cost generic_regmove_cost =
@@ -1777,7 +1811,7 @@ static const struct cpu_vector_cost neoversev1_vector_cost =
 static const struct tune_params neoversev1_tunings =
 {
   &cortexa76_extra_costs,
-  &generic_addrcost_table,
+  &neoversev1_addrcost_table,
   &generic_regmove_cost,
   &neoversev1_vector_cost,
   &generic_branch_cost,
@@ -12077,7 +12111,14 @@ aarch64_address_cost (rtx x,
 	if (c == PRE_INC || c == PRE_DEC || c == PRE_MODIFY)
 	  cost += addr_cost->pre_modify;
 	else if (c == POST_INC || c == POST_DEC || c == POST_MODIFY)
-	  cost += addr_cost->post_modify;
+	  {
+	    if (mode == CImode)
+	      cost += addr_cost->post_modify_ld3_st3;
+	    else if (mode == XImode)
+	      cost += addr_cost->post_modify_ld4_st4;
+	    else
+	      cost += addr_cost->post_modify;
+	  }
 	else
 	  gcc_unreachable ();
 
