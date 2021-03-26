@@ -177,6 +177,8 @@ struct cpu_addrcost_table
   const struct scale_addr_mode_cost addr_scale_costs;
   const int pre_modify;
   const int post_modify;
+  const int post_modify_ld3_st3;
+  const int post_modify_ld4_st4;
   const int register_offset;
   const int register_sextend;
   const int register_zextend;
@@ -194,40 +196,264 @@ struct cpu_regmove_cost
 
 struct simd_vec_cost
 {
-  const int int_stmt_cost;		/* Cost of any int vector operation,
-					   excluding load, store, permute,
-					   vector-to-scalar and
-					   scalar-to-vector operation.  */
-  const int fp_stmt_cost;		 /* Cost of any fp vector operation,
-					    excluding load, store, permute,
-					    vector-to-scalar and
-					    scalar-to-vector operation.  */
-  const int permute_cost;		 /* Cost of permute operation.  */
-  const int vec_to_scalar_cost;		 /* Cost of vec-to-scalar operation.  */
-  const int scalar_to_vec_cost;		 /* Cost of scalar-to-vector
-					    operation.  */
-  const int align_load_cost;	 /* Cost of aligned vector load.  */
-  const int unalign_load_cost;	 /* Cost of unaligned vector load.  */
-  const int unalign_store_cost;	 /* Cost of unaligned vector store.  */
-  const int store_cost;		 /* Cost of vector store.  */
+  /* Cost of any integer vector operation, excluding the ones handled
+     specially below.  */
+  const int int_stmt_cost;
+
+  /* Cost of any fp vector operation, excluding the ones handled
+     specially below.  */
+  const int fp_stmt_cost;
+
+  /* Per-vector cost of permuting vectors after an LD2, LD3 or LD4,
+     as well as the per-vector cost of permuting vectors before
+     an ST2, ST3 or ST4.  */
+  const int ld2_st2_permute_cost;
+  const int ld3_st3_permute_cost;
+  const int ld4_st4_permute_cost;
+
+  /* Cost of a permute operation.  */
+  const int permute_cost;
+
+  /* Cost of reductions for various vector types: iN is for N-bit
+     integer elements and fN is for N-bit floating-point elements.
+     We need to single out the element type because it affects the
+     depth of the reduction.  */
+  const int reduc_i8_cost;
+  const int reduc_i16_cost;
+  const int reduc_i32_cost;
+  const int reduc_i64_cost;
+  const int reduc_f16_cost;
+  const int reduc_f32_cost;
+  const int reduc_f64_cost;
+
+  /* Additional cost of storing a single vector element, on top of the
+     normal cost of a scalar store.  */
+  const int store_elt_extra_cost;
+
+  /* Cost of a vector-to-scalar operation.  */
+  const int vec_to_scalar_cost;
+
+  /* Cost of a scalar-to-vector operation.  */
+  const int scalar_to_vec_cost;
+
+  /* Cost of an aligned vector load.  */
+  const int align_load_cost;
+
+  /* Cost of an unaligned vector load.  */
+  const int unalign_load_cost;
+
+  /* Cost of an unaligned vector store.  */
+  const int unalign_store_cost;
+
+  /* Cost of a vector store.  */
+  const int store_cost;
 };
 
 typedef struct simd_vec_cost advsimd_vec_cost;
-typedef struct simd_vec_cost sve_vec_cost;
+
+/* SVE-specific extensions to the information provided by simd_vec_cost.  */
+struct sve_vec_cost : simd_vec_cost
+{
+  constexpr sve_vec_cost (const simd_vec_cost &base,
+			  unsigned int clast_cost,
+			  unsigned int fadda_f16_cost,
+			  unsigned int fadda_f32_cost,
+			  unsigned int fadda_f64_cost,
+			  unsigned int scatter_store_elt_cost)
+    : simd_vec_cost (base),
+      clast_cost (clast_cost),
+      fadda_f16_cost (fadda_f16_cost),
+      fadda_f32_cost (fadda_f32_cost),
+      fadda_f64_cost (fadda_f64_cost),
+      scatter_store_elt_cost (scatter_store_elt_cost)
+  {}
+
+  /* The cost of a vector-to-scalar CLASTA or CLASTB instruction,
+     with the scalar being stored in FP registers.  This cost is
+     assumed to be a cycle latency.  */
+  const int clast_cost;
+
+  /* The costs of FADDA for the three data types that it supports.
+     These costs are assumed to be cycle latencies.  */
+  const int fadda_f16_cost;
+  const int fadda_f32_cost;
+  const int fadda_f64_cost;
+
+  /* The per-element cost of a scatter store.  */
+  const int scatter_store_elt_cost;
+};
+
+/* Base information about how the CPU issues code, containing
+   information that is relevant to scalar, Advanced SIMD and SVE
+   operations.
+
+   The structure uses the general term "operation" to refer to
+   whichever subdivision of an instruction makes sense for the CPU.
+   These operations would typically be micro operations or macro
+   operations.
+
+   Note that this structure and the ones derived from it are only
+   as general as they need to be for the CPUs that currently use them.
+   They will probably need to be extended or refined as more CPUs are
+   added.  */
+struct aarch64_base_vec_issue_info
+{
+  /* How many loads and stores can be issued per cycle.  */
+  const unsigned int loads_stores_per_cycle;
+
+  /* How many stores can be issued per cycle.  */
+  const unsigned int stores_per_cycle;
+
+  /* How many integer or FP/SIMD operations can be issued per cycle.
+
+     Currently we don't try to distinguish the two.  For vector code,
+     we only really track FP/SIMD operations during vector costing;
+     we don't for example try to cost arithmetic operations like
+     address calculations, which are only decided later during ivopts.
+
+     For scalar code, we effectively assume that code operates entirely
+     on integers or entirely on floating-point values.  Again, we don't
+     try to take address calculations into account.
+
+     This is not very precise, but it's only meant to be a heuristic.
+     We could certainly try to do better in future if there's an example
+     of something that would benefit.  */
+  const unsigned int general_ops_per_cycle;
+
+  /* How many FP/SIMD operations to count for a floating-point or
+     vector load operation.
+
+     When constructing an Advanced SIMD vector from elements that have
+     been loaded from memory, these values apply to each individual load.
+     When using an SVE gather load, the values apply to each element of
+     the gather.  */
+  const unsigned int fp_simd_load_general_ops;
+
+  /* How many FP/SIMD operations to count for a floating-point or
+     vector store operation.
+
+     When storing individual elements of an Advanced SIMD vector out to
+     memory, these values apply to each individual store.  When using an
+     SVE scatter store, these values apply to each element of the scatter.  */
+  const unsigned int fp_simd_store_general_ops;
+};
+
+using aarch64_scalar_vec_issue_info = aarch64_base_vec_issue_info;
+
+/* Base information about the issue stage for vector operations.
+   This structure contains information that is relevant to both
+   Advanced SIMD and SVE.  */
+struct aarch64_simd_vec_issue_info : aarch64_base_vec_issue_info
+{
+  constexpr aarch64_simd_vec_issue_info (aarch64_base_vec_issue_info base,
+					 unsigned int ld2_st2_general_ops,
+					 unsigned int ld3_st3_general_ops,
+					 unsigned int ld4_st4_general_ops)
+    : aarch64_base_vec_issue_info (base),
+      ld2_st2_general_ops (ld2_st2_general_ops),
+      ld3_st3_general_ops (ld3_st3_general_ops),
+      ld4_st4_general_ops (ld4_st4_general_ops)
+  {}
+
+  /* How many FP/SIMD operations to count for each vector loaded or
+     stored by an LD[234] or ST[234] operation, in addition to the
+     base costs given in the parent class.  For example, the full
+     number of operations for an LD3 would be:
+
+       load ops:    3
+       general ops: 3 * (fp_simd_load_general_ops + ld3_st3_general_ops).  */
+  const unsigned int ld2_st2_general_ops;
+  const unsigned int ld3_st3_general_ops;
+  const unsigned int ld4_st4_general_ops;
+};
+
+using aarch64_advsimd_vec_issue_info = aarch64_simd_vec_issue_info;
+
+/* Information about the issue stage for SVE.  The main thing this adds
+   is a concept of "predicate operations".  */
+struct aarch64_sve_vec_issue_info : aarch64_simd_vec_issue_info
+{
+  constexpr aarch64_sve_vec_issue_info
+    (aarch64_simd_vec_issue_info base,
+     unsigned int pred_ops_per_cycle,
+     unsigned int while_pred_ops,
+     unsigned int int_cmp_pred_ops,
+     unsigned int fp_cmp_pred_ops,
+     unsigned int gather_scatter_pair_general_ops,
+     unsigned int gather_scatter_pair_pred_ops)
+    : aarch64_simd_vec_issue_info (base),
+      pred_ops_per_cycle (pred_ops_per_cycle),
+      while_pred_ops (while_pred_ops),
+      int_cmp_pred_ops (int_cmp_pred_ops),
+      fp_cmp_pred_ops (fp_cmp_pred_ops),
+      gather_scatter_pair_general_ops (gather_scatter_pair_general_ops),
+      gather_scatter_pair_pred_ops (gather_scatter_pair_pred_ops)
+  {}
+
+  /* How many predicate operations can be issued per cycle.  */
+  const unsigned int pred_ops_per_cycle;
+
+  /* How many predicate operations are generated by a WHILExx
+     instruction.  */
+  const unsigned int while_pred_ops;
+
+  /* How many predicate operations are generated by an integer
+     comparison instruction.  */
+  const unsigned int int_cmp_pred_ops;
+
+  /* How many predicate operations are generated by a floating-point
+     comparison instruction.  */
+  const unsigned int fp_cmp_pred_ops;
+
+  /* How many general and predicate operations are generated by each pair
+     of elements in a gather load or scatter store.  These values apply
+     on top of the per-element counts recorded in fp_simd_load_general_ops
+     and fp_simd_store_general_ops.
+
+     The reason for using pairs is that that is the largest possible
+     granule size for 128-bit SVE, which can load and store 2 64-bit
+     elements or 4 32-bit elements.  */
+  const unsigned int gather_scatter_pair_general_ops;
+  const unsigned int gather_scatter_pair_pred_ops;
+};
+
+/* Information related to instruction issue for a particular CPU.  */
+struct aarch64_vec_issue_info
+{
+  const aarch64_base_vec_issue_info *const scalar;
+  const aarch64_simd_vec_issue_info *const advsimd;
+  const aarch64_sve_vec_issue_info *const sve;
+};
 
 /* Cost for vector insn classes.  */
 struct cpu_vector_cost
 {
-  const int scalar_int_stmt_cost;	 /* Cost of any int scalar operation,
-					    excluding load and store.  */
-  const int scalar_fp_stmt_cost;	 /* Cost of any fp scalar operation,
-					    excluding load and store.  */
-  const int scalar_load_cost;		 /* Cost of scalar load.  */
-  const int scalar_store_cost;		 /* Cost of scalar store.  */
-  const int cond_taken_branch_cost;	 /* Cost of taken branch.  */
-  const int cond_not_taken_branch_cost;  /* Cost of not taken branch.  */
-  const advsimd_vec_cost *advsimd;	 /* Cost of Advanced SIMD operations.  */
-  const sve_vec_cost *sve;		 /* Cost of SVE operations.  */
+  /* Cost of any integer scalar operation, excluding load and store.  */
+  const int scalar_int_stmt_cost;
+
+  /* Cost of any fp scalar operation, excluding load and store.  */
+  const int scalar_fp_stmt_cost;
+
+  /* Cost of a scalar load.  */
+  const int scalar_load_cost;
+
+  /* Cost of a scalar store.  */
+  const int scalar_store_cost;
+
+  /* Cost of a taken branch.  */
+  const int cond_taken_branch_cost;
+
+  /* Cost of a not-taken branch.  */
+  const int cond_not_taken_branch_cost;
+
+  /* Cost of an Advanced SIMD operations.  */
+  const advsimd_vec_cost *advsimd;
+
+  /* Cost of an SVE operations, or null if SVE is not implemented.  */
+  const sve_vec_cost *sve;
+
+  /* Issue information, or null if none is provided.  */
+  const aarch64_vec_issue_info *const issue_info;
 };
 
 /* Branch costs.  */

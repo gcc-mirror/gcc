@@ -25,18 +25,9 @@
 #include <memory>
 #include <thread>
 #include <cstdio>
+#include <testsuite_random.h>
 
-bool
-random_device_available(const char* token) noexcept
-{
-  try {
-    std::random_device dev(token);
-    return true;
-  } catch (...) {
-    std::printf("random_device(\"%s\") not available\n", token);
-    return false;
-  }
-}
+using __gnu_test::random_device_available;
 
 void read_random_device(const char* token, int iterations)
 {
@@ -59,5 +50,7 @@ int main() {
       for (auto& w : workers)
 	w.join();
     }
+    else
+      std::printf("random_device(\"%s\") not available\n", dev);
   }
 }

@@ -1,5 +1,4 @@
 // { dg-do run { target c++11 } }
-// { dg-require-effective-target random_device }
 // { dg-require-cstdint "" }
 //
 // 2008-11-24  Edward M. Smith-Rowland <3dw4rd@verizon.net>

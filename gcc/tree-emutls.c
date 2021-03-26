@@ -242,15 +242,17 @@ get_emutls_init_templ_addr (tree decl)
   DECL_PRESERVE_P (to) = DECL_PRESERVE_P (decl);
 
   DECL_WEAK (to) = DECL_WEAK (decl);
-  if (DECL_ONE_ONLY (decl))
+  if (DECL_ONE_ONLY (decl) || DECL_WEAK (decl))
     {
       TREE_STATIC (to) = TREE_STATIC (decl);
       TREE_PUBLIC (to) = TREE_PUBLIC (decl);
       DECL_VISIBILITY (to) = DECL_VISIBILITY (decl);
-      make_decl_one_only (to, DECL_ASSEMBLER_NAME (to));
     }
   else
     TREE_STATIC (to) = 1;
+
+  if (DECL_ONE_ONLY (decl))
+    make_decl_one_only (to, DECL_ASSEMBLER_NAME (to));
 
   DECL_VISIBILITY_SPECIFIED (to) = DECL_VISIBILITY_SPECIFIED (decl);
   DECL_INITIAL (to) = DECL_INITIAL (decl);

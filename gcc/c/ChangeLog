@@ -1,3 +1,9 @@
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99565
+	* c-typeck.c (build_conditional_expr): Pass OEP_ADDRESS_OF_SAME_FIELD
+	to operand_equal_p.
+
 2021-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/99588

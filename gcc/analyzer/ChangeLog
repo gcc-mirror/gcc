@@ -1,3 +1,18 @@
+2021-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93695
+	PR analyzer/99044
+	PR analyzer/99716
+	* engine.cc (exploded_node::on_stmt): Clear sm-state involving
+	an SSA name at the def-stmt of that SSA name.
+	* program-state.cc (sm_state_map::purge_state_involving): New.
+	* program-state.h (sm_state_map::purge_state_involving): New decl.
+	* region-model.cc (selftest::test_involves_p): New.
+	(selftest::analyzer_region_model_cc_tests): Call it.
+	* svalue.cc (class involvement_visitor): New class
+	(svalue::involves_p): New.
+	* svalue.h (svalue::involves_p): New decl.
+
 2021-03-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99614

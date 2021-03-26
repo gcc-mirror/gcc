@@ -7564,6 +7564,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    tsubst_flags_t complain = complain_flags (decltype_p);
 	    vec<tree, va_gc> *args;
 	    location_t close_paren_loc = UNKNOWN_LOCATION;
+	    location_t combined_loc = UNKNOWN_LOCATION;
 
             is_member_access = false;
 
@@ -7669,6 +7670,17 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		  }
 	      }
 
+	    /* Temporarily set input_location to the combined location
+	       with call expression range, as e.g. build_out_target_exprs
+	       called from convert_default_arg relies on input_location,
+	       so updating it only when the call is fully built results
+	       in inconsistencies between location handling in templates
+	       and outside of templates.  */
+	    if (close_paren_loc != UNKNOWN_LOCATION)
+	      combined_loc = make_location (token->location, start_loc,
+					    close_paren_loc);
+	    iloc_sentinel ils (combined_loc);
+
 	    if (TREE_CODE (postfix_expression) == COMPONENT_REF)
 	      {
 		tree instance = TREE_OPERAND (postfix_expression, 0);
@@ -7726,12 +7738,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 				    complain);
 
 	    if (close_paren_loc != UNKNOWN_LOCATION)
-	      {
-		location_t combined_loc = make_location (token->location,
-							 start_loc,
-							 close_paren_loc);
-		postfix_expression.set_location (combined_loc);
-	      }
+	      postfix_expression.set_location (combined_loc);
 
 	    /* The POSTFIX_EXPRESSION is certainly no longer an id.  */
 	    idk = CP_ID_KIND_NONE;

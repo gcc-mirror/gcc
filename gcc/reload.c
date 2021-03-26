@@ -3471,6 +3471,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 			break;
 
 		      case CT_MEMORY:
+		      case CT_RELAXED_MEMORY:
 			if (force_reload)
 			  break;
 			if (constraint_satisfied_p (operand, cn))
@@ -3504,7 +3505,6 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 			break;
 
 		      case CT_SPECIAL_MEMORY:
-		      case CT_RELAXED_MEMORY:
 			if (force_reload)
 			  break;
 			if (constraint_satisfied_p (operand, cn))

@@ -1,3 +1,41 @@
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99672
+	* parser.c (cp_parser_postfix_expression): For calls, create
+	combined_loc and temporarily set input_location to it before
+	calling finish_call_expr.
+
+2021-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94751
+	* call.c (build_over_call): Maybe call mark_used in case
+	deduce_inheriting_ctor fails and return error_mark_node.
+	* cp-tree.h (deduce_inheriting_ctor): Adjust declaration.
+	* method.c (deduce_inheriting_ctor): Return bool if the deduction
+	fails.
+	(implicitly_declare_fn): If raises is error_mark_node, call
+	synthesized_method_walk with diag being true.
+
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99745
+	* decl2.c (grokbitfield): Diagnose bitfields containing bare parameter
+	packs and don't set DECL_BIT_FIELD_REPRESENTATIVE in that case.
+
+2021-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99331
+	* call.c (build_converted_constant_expr_internal): Don't emit
+	-Wconversion warnings.
+
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99565
+	* call.c (build_conditional_expr_1): Pass OEP_ADDRESS_OF_SAME_FIELD
+	to operand_equal_p.
+	* cvt.c (convert_to_void): Preserve location_t on COND_EXPR or
+	or COMPOUND_EXPR.
+
 2021-03-23  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99283

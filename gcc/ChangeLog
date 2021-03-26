@@ -1,3 +1,49 @@
+2021-03-25  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR tree-optimization/96974
+	* tree-vect-stmts.c (vect_get_vector_types_for_stmt): Replace assert
+	with graceful exit.
+
+2021-03-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2021-03-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98209
+	PR target/99744
+	* config/i386/i386.c (ix86_can_inline_p): Don't check ISA for
+	always_inline in system headers.
+
+2021-03-25  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-vect-loop.c (vect_model_reduction_cost): Init inside_cost.
+
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99565
+	* tree-core.h (enum operand_equal_flag): Add OEP_ADDRESS_OF_SAME_FIELD.
+	* fold-const.c (operand_compare::operand_equal_p): Don't compare
+	field offsets if OEP_ADDRESS_OF_SAME_FIELD.
+
+2021-03-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98209
+	PR target/99744
+	* config/i386/i386.c (ix86_can_inline_p): Don't check ISA for
+	always_inline in system headers.
+
+2021-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99746
+	* tree-vect-slp-patterns.c (complex_pattern::build): Do not mark
+	the scalar stmt as patterned.  Instead set up required things
+	manually.
+
+2021-03-25  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (power8_costs): Change l2 cache
+	from 256 to 512.
+
 2021-03-24  Martin Liska  <mliska@suse.cz>
 
 	PR target/99753

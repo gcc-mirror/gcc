@@ -14417,6 +14417,14 @@ Use both Advanced SIMD and SVE.  Prefer SVE when the costs are deemed equal.
 @end table
 The default value is 0.
 
+@item aarch64-loop-vect-issue-rate-niters
+The tuning for some AArch64 CPUs tries to take both latencies and issue
+rates into account when deciding whether a loop should be vectorized
+using SVE, vectorized using Advanced SIMD, or not vectorized at all.
+If this parameter is set to @var{n}, GCC will not use this heuristic
+for loops that are known to execute in fewer than @var{n} Advanced
+SIMD iterations.
+
 @end table
 
 @end table

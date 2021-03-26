@@ -53,6 +53,18 @@ along with GCC; see the file COPYING3.  If not see
     }								\
   while (0)
 
+#define EXTRA_TARGET_D_OS_VERSIONS()				\
+  do								\
+    {								\
+      builtin_version ("MinGW");				\
+      if (TARGET_64BIT && ix86_abi == MS_ABI)			\
+	builtin_version ("Win64");				\
+      else if (!TARGET_64BIT)					\
+	builtin_version ("Win32");				\
+      builtin_version ("CRuntime_Microsoft");			\
+    }								\
+  while (0)
+
 #ifndef TARGET_USE_PTHREAD_BY_DEFAULT
 #define SPEC_PTHREAD1 "pthread"
 #define SPEC_PTHREAD2 "!no-pthread"

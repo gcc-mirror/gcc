@@ -1661,9 +1661,11 @@ check_constraint_info (tree t)
 #define CONSTRAINED_PARM_PROTOTYPE(NODE) \
   DECL_INITIAL (TYPE_DECL_CHECK (NODE))
 
-/* Module defines.  */
-// Too many _DECLS: FUNCTION,VAR,TYPE,TEMPLATE,CONCEPT or NAMESPACE
-#define DECL_MODULE_CHECK(NODE) (NODE)
+/* Module flags on FUNCTION,VAR,TYPE,CONCEPT or NAMESPACE
+   A TEMPLATE_DECL holds them on the DECL_TEMPLATE_RESULT object --
+   it's just not practical to keep them consistent.  */
+#define DECL_MODULE_CHECK(NODE)						\
+  TREE_NOT_CHECK (NODE, TEMPLATE_DECL)
 
 /* In the purview of a module (including header unit).  */
 #define DECL_MODULE_PURVIEW_P(N) \
@@ -3626,9 +3628,10 @@ struct GTY(()) lang_decl {
 /* Set the template information for a non-alias n ENUMERAL_, RECORD_,
    or UNION_TYPE to VAL.  ALIAS's are dealt with separately.  */
 #define SET_TYPE_TEMPLATE_INFO(NODE, VAL)				\
-  (gcc_checking_assert (TREE_CODE (NODE) == ENUMERAL_TYPE		\
-			|| (CLASS_TYPE_P (NODE) && !TYPE_ALIAS_P (NODE))), \
-   (TYPE_LANG_SLOT_1 (NODE) = (VAL)))					\
+  (TREE_CODE (NODE) == ENUMERAL_TYPE		\
+   || (CLASS_TYPE_P (NODE) && !TYPE_ALIAS_P (NODE))			\
+   ? (TYPE_LANG_SLOT_1 (NODE) = (VAL))					\
+   : (DECL_TEMPLATE_INFO (TYPE_NAME (NODE)) = (VAL)))			\
 
 #define TI_TEMPLATE(NODE) \
   ((struct tree_template_info*)TEMPLATE_INFO_CHECK (NODE))->tmpl
@@ -6915,7 +6918,7 @@ extern bool is_xible				(enum tree_code, tree, tree);
 extern tree get_defaulted_eh_spec		(tree, tsubst_flags_t = tf_warning_or_error);
 extern bool maybe_explain_implicit_delete	(tree);
 extern void explain_implicit_non_constexpr	(tree);
-extern void deduce_inheriting_ctor		(tree);
+extern bool deduce_inheriting_ctor		(tree);
 extern bool decl_remember_implicit_trigger_p	(tree);
 extern void synthesize_method			(tree);
 extern tree lazily_declare_fn			(special_function_kind,

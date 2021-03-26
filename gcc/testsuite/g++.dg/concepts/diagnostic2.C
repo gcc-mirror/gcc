@@ -25,6 +25,6 @@ baz()
   bar<int>(); // { dg-error "no match" }
 /* { dg-begin-multiline-output "" }
    bar<int>();
-            ^
+   ~~~~~~~~^~
    { dg-end-multiline-output "" } */
 }

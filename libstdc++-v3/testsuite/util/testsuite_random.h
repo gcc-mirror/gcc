@@ -197,6 +197,18 @@ namespace __gnu_test
   }
 #endif
 
+  // Check whether TOKEN can construct a std::random_device successfully.
+  inline bool
+  random_device_available(const std::string& token) noexcept
+  {
+    try {
+      std::random_device dev(token);
+      return true;
+    } catch (...) {
+      return false;
+    }
+  }
+
 } // namespace __gnu_test
 
 #endif // #ifndef _GLIBCXX_TESTSUITE_RANDOM_H

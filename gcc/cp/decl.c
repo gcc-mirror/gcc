@@ -2275,10 +2275,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	    }
 	}
 
-      DECL_MODULE_IMPORT_P (olddecl)
-	= DECL_MODULE_IMPORT_P (old_result)
-	= DECL_MODULE_IMPORT_P (newdecl);
-
       return olddecl;
     }
 
@@ -2928,19 +2924,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		  sizeof (struct tree_decl_non_common) - sizeof (struct tree_decl_common)
 		  + TREE_CODE_LENGTH (TREE_CODE (newdecl)) * sizeof (char *));
 	  break;
-	}
-    }
-
-  if (DECL_LANG_SPECIFIC (olddecl) && DECL_TEMPLATE_INFO (olddecl))
-    {
-      /* Repropagate the module information to the template.  */
-      tree tmpl = DECL_TI_TEMPLATE (olddecl);
-
-      if (DECL_TEMPLATE_RESULT (tmpl) == olddecl)
-	{
-	  DECL_MODULE_PURVIEW_P (tmpl) = DECL_MODULE_PURVIEW_P (olddecl);
-	  gcc_checking_assert (!DECL_MODULE_IMPORT_P (olddecl));
-	  DECL_MODULE_IMPORT_P (tmpl) = false;
 	}
     }
 
