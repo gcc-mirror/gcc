@@ -402,11 +402,22 @@ package body System.Bitfield_Utils is
          pragma Assert (Al_Src_Address mod Val'Alignment = 0);
          pragma Assert (Al_Dest_Address mod Val'Alignment = 0);
       begin
+         --  Optimized small case
+
          if Size in Small_Size then
             Copy_Small_Bitfield
               (Al_Src_Address, Al_Src_Offset,
                Al_Dest_Address, Al_Dest_Offset,
                Size);
+
+         --  Do nothing for zero size. This is necessary to avoid doing invalid
+         --  reads, which are detected by valgrind.
+
+         elsif Size = 0 then
+            null;
+
+         --  Large case
+
          else
             Copy_Large_Bitfield
               (Al_Src_Address, Al_Src_Offset,

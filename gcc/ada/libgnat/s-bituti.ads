@@ -98,9 +98,9 @@ package System.Bitfield_Utils is
       pragma Assert (Val_Array'Component_Size = Val'Size);
 
       subtype Bit_Size is Natural; -- Size in bits of a bit field
-      subtype Small_Size is Bit_Size range 0 .. Val'Size;
+      subtype Small_Size is Bit_Size range 1 .. Val'Size;
       --  Size of a small one
-      subtype Bit_Offset is Small_Size range 0 .. Val'Size - 1;
+      subtype Bit_Offset is Small_Size'Base range 0 .. Val'Size - 1;
       --  Starting offset
       subtype Bit_Offset_In_Byte is Bit_Offset range 0 .. Storage_Unit - 1;
 
