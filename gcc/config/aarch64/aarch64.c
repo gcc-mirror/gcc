@@ -590,6 +590,9 @@ static const advsimd_vec_cost generic_advsimd_vector_cost =
 {
   1, /* int_stmt_cost  */
   1, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   2, /* permute_cost  */
   2, /* reduc_i8_cost  */
   2, /* reduc_i16_cost  */
@@ -612,6 +615,9 @@ static const sve_vec_cost generic_sve_vector_cost =
   {
     1, /* int_stmt_cost  */
     1, /* fp_stmt_cost  */
+    0, /* ld2_st2_permute_cost  */
+    0, /* ld3_st3_permute_cost  */
+    0, /* ld4_st4_permute_cost  */
     2, /* permute_cost  */
     2, /* reduc_i8_cost  */
     2, /* reduc_i16_cost  */
@@ -650,6 +656,9 @@ static const advsimd_vec_cost a64fx_advsimd_vector_cost =
 {
   2, /* int_stmt_cost  */
   5, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   3, /* permute_cost  */
   13, /* reduc_i8_cost  */
   13, /* reduc_i16_cost  */
@@ -671,6 +680,9 @@ static const sve_vec_cost a64fx_sve_vector_cost =
   {
     2, /* int_stmt_cost  */
     5, /* fp_stmt_cost  */
+    0, /* ld2_st2_permute_cost  */
+    0, /* ld3_st3_permute_cost  */
+    0, /* ld4_st4_permute_cost  */
     3, /* permute_cost  */
     13, /* reduc_i8_cost  */
     13, /* reduc_i16_cost  */
@@ -708,6 +720,9 @@ static const advsimd_vec_cost qdf24xx_advsimd_vector_cost =
 {
   1, /* int_stmt_cost  */
   3, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   2, /* permute_cost  */
   1, /* reduc_i8_cost  */
   1, /* reduc_i16_cost  */
@@ -742,6 +757,9 @@ static const advsimd_vec_cost thunderx_advsimd_vector_cost =
 {
   4, /* int_stmt_cost  */
   1, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   4, /* permute_cost  */
   2, /* reduc_i8_cost  */
   2, /* reduc_i16_cost  */
@@ -775,6 +793,9 @@ static const advsimd_vec_cost tsv110_advsimd_vector_cost =
 {
   2, /* int_stmt_cost  */
   2, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   2, /* permute_cost  */
   3, /* reduc_i8_cost  */
   3, /* reduc_i16_cost  */
@@ -807,6 +828,9 @@ static const advsimd_vec_cost cortexa57_advsimd_vector_cost =
 {
   2, /* int_stmt_cost  */
   2, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   3, /* permute_cost  */
   8, /* reduc_i8_cost  */
   8, /* reduc_i16_cost  */
@@ -840,6 +864,9 @@ static const advsimd_vec_cost exynosm1_advsimd_vector_cost =
 {
   3, /* int_stmt_cost  */
   3, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   3, /* permute_cost  */
   3, /* reduc_i8_cost  */
   3, /* reduc_i16_cost  */
@@ -872,6 +899,9 @@ static const advsimd_vec_cost xgene1_advsimd_vector_cost =
 {
   2, /* int_stmt_cost  */
   2, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   2, /* permute_cost  */
   4, /* reduc_i8_cost  */
   4, /* reduc_i16_cost  */
@@ -905,6 +935,9 @@ static const advsimd_vec_cost thunderx2t99_advsimd_vector_cost =
 {
   4, /* int_stmt_cost  */
   5, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   10, /* permute_cost  */
   6, /* reduc_i8_cost  */
   6, /* reduc_i16_cost  */
@@ -938,6 +971,9 @@ static const advsimd_vec_cost thunderx3t110_advsimd_vector_cost =
 {
   5, /* int_stmt_cost  */
   5, /* fp_stmt_cost  */
+  0, /* ld2_st2_permute_cost  */
+  0, /* ld3_st3_permute_cost  */
+  0, /* ld4_st4_permute_cost  */
   10, /* permute_cost  */
   5, /* reduc_i8_cost  */
   5, /* reduc_i16_cost  */
@@ -14086,6 +14122,26 @@ aarch64_reduc_type (vec_info *vinfo, stmt_vec_info stmt_info)
   return -1;
 }
 
+/* Return true if an access of kind KIND for STMT_INFO represents one
+   vector of an LD[234] or ST[234] operation.  Return the total number of
+   vectors (2, 3 or 4) if so, otherwise return a value outside that range.  */
+static int
+aarch64_ld234_st234_vectors (vect_cost_for_stmt kind, stmt_vec_info stmt_info)
+{
+  if ((kind == vector_load
+       || kind == unaligned_load
+       || kind == vector_store
+       || kind == unaligned_store)
+      && STMT_VINFO_DATA_REF (stmt_info))
+    {
+      stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+      if (stmt_info
+	  && STMT_VINFO_MEMORY_ACCESS_TYPE (stmt_info) == VMAT_LOAD_STORE_LANES)
+	return DR_GROUP_SIZE (stmt_info);
+    }
+  return 0;
+}
+
 /* Return true if creating multiple copies of STMT_INFO for Advanced SIMD
    vectors would produce a series of LDP or STP operations.  KIND is the
    kind of statement that STMT_INFO represents.  */
@@ -14320,6 +14376,38 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
   return stmt_cost;
 }
 
+/* STMT_COST is the cost calculated for STMT_INFO, which has cost kind KIND
+   and which when vectorized would operate on vector type VECTYPE.  Add the
+   cost of any embedded operations.  */
+static unsigned int
+aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+			  tree vectype, unsigned int stmt_cost)
+{
+  if (vectype)
+    {
+      const simd_vec_cost *simd_costs = aarch64_simd_vec_costs (vectype);
+
+      /* Detect cases in which a vector load or store represents an
+	 LD[234] or ST[234] instruction.  */
+      switch (aarch64_ld234_st234_vectors (kind, stmt_info))
+	{
+	case 2:
+	  stmt_cost += simd_costs->ld2_st2_permute_cost;
+	  break;
+
+	case 3:
+	  stmt_cost += simd_costs->ld3_st3_permute_cost;
+	  break;
+
+	case 4:
+	  stmt_cost += simd_costs->ld4_st4_permute_cost;
+	  break;
+	}
+    }
+
+  return stmt_cost;
+}
+
 /* Implement targetm.vectorize.add_stmt_cost.  */
 static unsigned
 aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
@@ -14346,6 +14434,12 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
 	stmt_cost = aarch64_sve_adjust_stmt_cost (vinfo, kind, stmt_info,
 						  vectype, stmt_cost);
+
+      if (stmt_info && aarch64_use_new_vector_costs_p ())
+	/* Account for any extra "embedded" costs that apply additively
+	   to the base cost calculated above.  */
+	stmt_cost = aarch64_adjust_stmt_cost (kind, stmt_info, vectype,
+					      stmt_cost);
 
       /* Statements in an inner loop relative to the loop being
 	 vectorized are weighted more heavily.  The value here is

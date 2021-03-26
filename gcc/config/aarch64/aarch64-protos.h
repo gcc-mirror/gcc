@@ -202,6 +202,13 @@ struct simd_vec_cost
      specially below.  */
   const int fp_stmt_cost;
 
+  /* Per-vector cost of permuting vectors after an LD2, LD3 or LD4,
+     as well as the per-vector cost of permuting vectors before
+     an ST2, ST3 or ST4.  */
+  const int ld2_st2_permute_cost;
+  const int ld3_st3_permute_cost;
+  const int ld4_st4_permute_cost;
+
   /* Cost of a permute operation.  */
   const int permute_cost;
 
