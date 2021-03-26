@@ -194,22 +194,46 @@ struct cpu_regmove_cost
 
 struct simd_vec_cost
 {
-  const int int_stmt_cost;		/* Cost of any int vector operation,
-					   excluding load, store, permute,
-					   vector-to-scalar and
-					   scalar-to-vector operation.  */
-  const int fp_stmt_cost;		 /* Cost of any fp vector operation,
-					    excluding load, store, permute,
-					    vector-to-scalar and
-					    scalar-to-vector operation.  */
-  const int permute_cost;		 /* Cost of permute operation.  */
-  const int vec_to_scalar_cost;		 /* Cost of vec-to-scalar operation.  */
-  const int scalar_to_vec_cost;		 /* Cost of scalar-to-vector
-					    operation.  */
-  const int align_load_cost;	 /* Cost of aligned vector load.  */
-  const int unalign_load_cost;	 /* Cost of unaligned vector load.  */
-  const int unalign_store_cost;	 /* Cost of unaligned vector store.  */
-  const int store_cost;		 /* Cost of vector store.  */
+  /* Cost of any integer vector operation, excluding the ones handled
+     specially below.  */
+  const int int_stmt_cost;
+
+  /* Cost of any fp vector operation, excluding the ones handled
+     specially below.  */
+  const int fp_stmt_cost;
+
+  /* Cost of a permute operation.  */
+  const int permute_cost;
+
+  /* Cost of reductions for various vector types: iN is for N-bit
+     integer elements and fN is for N-bit floating-point elements.
+     We need to single out the element type because it affects the
+     depth of the reduction.  */
+  const int reduc_i8_cost;
+  const int reduc_i16_cost;
+  const int reduc_i32_cost;
+  const int reduc_i64_cost;
+  const int reduc_f16_cost;
+  const int reduc_f32_cost;
+  const int reduc_f64_cost;
+
+  /* Cost of a vector-to-scalar operation.  */
+  const int vec_to_scalar_cost;
+
+  /* Cost of a scalar-to-vector operation.  */
+  const int scalar_to_vec_cost;
+
+  /* Cost of an aligned vector load.  */
+  const int align_load_cost;
+
+  /* Cost of an unaligned vector load.  */
+  const int unalign_load_cost;
+
+  /* Cost of an unaligned vector store.  */
+  const int unalign_store_cost;
+
+  /* Cost of a vector store.  */
+  const int store_cost;
 };
 
 typedef struct simd_vec_cost advsimd_vec_cost;
