@@ -1674,11 +1674,11 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
       if (TREE_CODE (op) == MEM_REF)
 	{
 	  tree arg = TREE_OPERAND (op, 0);
-	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
 	  state_t state = sm_ctxt->get_state (stmt, arg);
 	  if (unchecked_p (state))
 	    {
+	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
 			     new possible_null_deref (*this, diag_arg));
 	      const allocation_state *astate = as_a_allocation_state (state);
@@ -1686,12 +1686,14 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 	    }
 	  else if (state == m_null)
 	    {
+	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
 			     new null_deref (*this, diag_arg));
 	      sm_ctxt->set_next_state (stmt, arg, m_stop);
 	    }
 	  else if (freed_p (state))
 	    {
+	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      const allocation_state *astate = as_a_allocation_state (state);
 	      sm_ctxt->warn (node, stmt, arg,
 			     new use_after_free (*this, diag_arg,
@@ -1738,7 +1740,6 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
   if (argno >= gimple_call_num_args (call))
     return;
   tree arg = gimple_call_arg (call, argno);
-  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
   state_t state = sm_ctxt->get_state (call, arg);
 
@@ -1752,6 +1753,7 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
       if (!astate->m_deallocators->contains_p (d))
 	{
 	  /* Wrong allocator.  */
+	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	  pending_diagnostic *pd
 	    = new mismatching_deallocation (*this, diag_arg,
 					    astate->m_deallocators,
@@ -1766,6 +1768,7 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
   else if (state == d->m_freed)
     {
       /* freed -> stop, with warning.  */
+      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
       sm_ctxt->warn (node, call, arg,
 		     new double_free (*this, diag_arg, d->m_name));
       sm_ctxt->set_next_state (call, arg, m_stop);
@@ -1773,6 +1776,7 @@ malloc_state_machine::on_deallocator_call (sm_context *sm_ctxt,
   else if (state == m_non_heap)
     {
       /* non-heap -> stop, with warning.  */
+      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
       sm_ctxt->warn (node, call, arg,
 		     new free_of_non_heap (*this, diag_arg,
 					   d->m_name));
@@ -1806,7 +1810,6 @@ malloc_state_machine::on_realloc_call (sm_context *sm_ctxt,
 				       const gcall *call) const
 {
   tree ptr = gimple_call_arg (call, 0);
-  tree diag_ptr = sm_ctxt->get_diagnostic_tree (ptr);
 
   state_t state = sm_ctxt->get_state (call, ptr);
 
@@ -1818,6 +1821,7 @@ malloc_state_machine::on_realloc_call (sm_context *sm_ctxt,
       if (astate->m_deallocators != &m_free)
 	{
 	  /* Wrong allocator.  */
+	  tree diag_ptr = sm_ctxt->get_diagnostic_tree (ptr);
 	  pending_diagnostic *pd
 	    = new mismatching_deallocation (*this, diag_ptr,
 					    astate->m_deallocators,

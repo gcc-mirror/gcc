@@ -227,7 +227,6 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
       if (op == ARRAY_REF)
 	{
 	  tree arg = TREE_OPERAND (rhs1, 1);
-	  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 
 	  /* Unsigned types have an implicit lower bound.  */
 	  bool is_unsigned = false;
@@ -239,6 +238,7 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	  if (state == m_tainted)
 	    {
 	      /* Complain about missing bounds.  */
+	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      pending_diagnostic *d
 		= new tainted_array_index (*this, diag_arg,
 					   is_unsigned
@@ -249,6 +249,7 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	  else if (state == m_has_lb)
 	    {
 	      /* Complain about missing upper bound.  */
+	      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 	      sm_ctxt->warn (node, stmt, arg,
 			      new tainted_array_index (*this, diag_arg,
 						       BOUNDS_LOWER));
@@ -259,6 +260,7 @@ taint_state_machine::on_stmt (sm_context *sm_ctxt,
 	      /* Complain about missing lower bound.  */
 	      if (!is_unsigned)
 		{
+		  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 		  sm_ctxt->warn  (node, stmt, arg,
 				  new tainted_array_index (*this, diag_arg,
 							   BOUNDS_UPPER));
