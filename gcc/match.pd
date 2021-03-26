@@ -6168,9 +6168,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (BIT_FIELD_REF CONSTRUCTOR@0 @1 @2)
  (if (VECTOR_TYPE_P (TREE_TYPE (@0))
-      && (types_match (type, TREE_TYPE (TREE_TYPE (@0)))
+      && tree_fits_uhwi_p (TYPE_SIZE (type))
+      && ((tree_to_uhwi (TYPE_SIZE (type))
+	   == tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (@0)))))
           || (VECTOR_TYPE_P (type)
-	      && types_match (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
+	      && (tree_to_uhwi (TYPE_SIZE (TREE_TYPE (type)))
+		  == tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (@0))))))))
   (with
    {
      tree ctor = (TREE_CODE (@0) == SSA_NAME
@@ -6226,10 +6229,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		  if (!CONSTANT_CLASS_P (e))
 		    constant_p = false;
 		}
-	      res = (constant_p ? build_vector_from_ctor (type, vals)
-		     : build_constructor (type, vals));
+	      tree evtype = (types_match (TREE_TYPE (type),
+					  TREE_TYPE (TREE_TYPE (ctor)))
+			     ? type
+			     : build_vector_type (TREE_TYPE (TREE_TYPE (ctor)),
+						  count));
+	      res = (constant_p ? build_vector_from_ctor (evtype, vals)
+		     : build_constructor (evtype, vals));
 	    }
-	    { res; })))))
+	    (view_convert { res; }))))))
       /* The bitfield references a single constructor element.  */
       (if (k.is_constant (&const_k)
 	   && idx + n <= (idx / const_k + 1) * const_k)
