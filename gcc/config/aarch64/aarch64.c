@@ -14392,6 +14392,21 @@ aarch64_ld234_st234_vectors (vect_cost_for_stmt kind, stmt_vec_info stmt_info)
   return 0;
 }
 
+/* If STMT_INFO is a COND_EXPR that includes an embedded comparison, return the
+   scalar type of the values being compared.  Return null otherwise.  */
+static tree
+aarch64_embedded_comparison_type (stmt_vec_info stmt_info)
+{
+  if (auto *assign = dyn_cast<gassign *> (stmt_info->stmt))
+    if (gimple_assign_rhs_code (assign) == COND_EXPR)
+      {
+	tree cond = gimple_assign_rhs1 (assign);
+	if (COMPARISON_CLASS_P (cond))
+	  return TREE_TYPE (TREE_OPERAND (cond, 0));
+      }
+  return NULL_TREE;
+}
+
 /* Return true if creating multiple copies of STMT_INFO for Advanced SIMD
    vectors would produce a series of LDP or STP operations.  KIND is the
    kind of statement that STMT_INFO represents.  */
@@ -14685,7 +14700,25 @@ aarch64_adjust_stmt_cost (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
 	  stmt_cost += simd_costs->ld4_st4_permute_cost;
 	  break;
 	}
+
+      if (kind == vector_stmt || kind == vec_to_scalar)
+	if (tree cmp_type = aarch64_embedded_comparison_type (stmt_info))
+	  {
+	    if (FLOAT_TYPE_P (cmp_type))
+	      stmt_cost += simd_costs->fp_stmt_cost;
+	    else
+	      stmt_cost += simd_costs->int_stmt_cost;
+	  }
     }
+
+  if (kind == scalar_stmt)
+    if (tree cmp_type = aarch64_embedded_comparison_type (stmt_info))
+      {
+	if (FLOAT_TYPE_P (cmp_type))
+	  stmt_cost += aarch64_tune_params.vec_costs->scalar_fp_stmt_cost;
+	else
+	  stmt_cost += aarch64_tune_params.vec_costs->scalar_int_stmt_cost;
+      }
 
   return stmt_cost;
 }
