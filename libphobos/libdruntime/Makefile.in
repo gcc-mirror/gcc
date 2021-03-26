@@ -659,6 +659,8 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
+enable_shared = @enable_shared@
+enable_static = @enable_static@
 exec_prefix = @exec_prefix@
 gcc_version = @gcc_version@
 gdc_include_dir = @gdc_include_dir@
@@ -688,6 +690,7 @@ oldincludedir = @oldincludedir@
 pdfdir = @pdfdir@
 phobos_compiler_pic_flag = @phobos_compiler_pic_flag@
 phobos_compiler_shared_flag = @phobos_compiler_shared_flag@
+phobos_lt_pic_flag = @phobos_lt_pic_flag@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
@@ -720,7 +723,7 @@ D_EXTRA_DFLAGS = -nostdinc -I $(srcdir) -I .
 
 # D flags for compilation
 AM_DFLAGS = \
-	$(phobos_compiler_pic_flag) \
+	$(phobos_lt_pic_flag) $(phobos_compiler_shared_flag) \
 	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(CET_DFLAGS)
 
 
