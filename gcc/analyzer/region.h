@@ -128,11 +128,6 @@ public:
 	      pretty_printer *pp) const;
   label_text get_desc (bool simple=true) const;
 
-  void dump_to_pp (const region_model &model,
-		   pretty_printer *pp,
-		   const char *prefix,
-		   bool is_last_child) const;
-
   virtual void dump_to_pp (pretty_printer *pp, bool simple) const = 0;
   void dump (bool simple) const;
 
