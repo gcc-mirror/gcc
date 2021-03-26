@@ -119,7 +119,11 @@ namespace __debug
       : _Base(__x, __a) { }
 
       list(list&& __x, const allocator_type& __a)
-      : _Base(std::move(__x), __a) { }
+	noexcept(
+	  std::is_nothrow_constructible<_Base,
+	    _Base, const allocator_type&>::value )
+      : _Safe(std::move(__x._M_safe()), __a),
+	_Base(std::move(__x._M_base()), __a) { }
 #endif
 
       explicit

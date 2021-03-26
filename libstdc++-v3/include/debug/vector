@@ -217,8 +217,9 @@ namespace __debug
       : _Base(__x, __a) { }
 
       vector(vector&& __x, const allocator_type& __a)
-      noexcept(noexcept(
-	_Base(std::declval<_Base&&>()), std::declval<const allocator_type&>()))
+      noexcept(
+	std::is_nothrow_constructible<_Base,
+	  _Base, const allocator_type&>::value )
       : _Safe(std::move(__x._M_safe()), __a),
 	_Base(std::move(__x._M_base()), __a),
 	_Safe_vector(std::move(__x)) { }
