@@ -165,6 +165,7 @@ struct processor_costs {
   const int xmm_move, ymm_move, /* cost of moving XMM and YMM register.  */
 	    zmm_move;
   const int sse_to_integer;	/* cost of moving SSE register to integer.  */
+  const int integer_to_sse;	/* cost of moving integer to SSE register.  */
   const int gather_static, gather_per_elt; /* Cost of gather load is computed
 				   as static + per_item * nelts. */
   const int scatter_static, scatter_per_elt; /* Cost of gather store is
