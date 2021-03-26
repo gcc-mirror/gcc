@@ -1,3 +1,18 @@
+2021-03-25  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR tree-optimization/96974
+	* tree-vect-stmts.c (vect_get_vector_types_for_stmt): Replace assert
+	with graceful exit.
+
+2021-03-25  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	Backported from master:
+	2021-03-25  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/97329
+	* config/rs6000/rs6000.c (power8_costs): Change l2 cache
+	from 256 to 512.
+
 2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (output_objc_section_asm_op): Avoid extra

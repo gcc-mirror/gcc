@@ -1,3 +1,24 @@
+2021-03-25  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR tree-optimization/96974
+	* g++.target/aarch64/sve/pr96974.C: New test.
+
+2021-03-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-03-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/93660
+	* gfortran.dg/gomp/declare-simd-coarray-lib.f90: New test.
+
+2021-03-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-03-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99369
+	* gfortran.dg/longnames.f90: New test.
+
 2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

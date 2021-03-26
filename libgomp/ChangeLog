@@ -1,3 +1,15 @@
+2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-hsa.c (init_enviroment_variables): Don't prepend
+	the 'HSA_RUNTIME_LIB' path to 'libhsa-runtime64.so'.
+	* plugin/plugin-gcn.c (init_environment_variables): Likewise.
+	* plugin/configfrag.ac (HSA_RUNTIME_LIB): Clean up.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+
 2021-02-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
