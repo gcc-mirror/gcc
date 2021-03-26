@@ -237,7 +237,33 @@ struct simd_vec_cost
 };
 
 typedef struct simd_vec_cost advsimd_vec_cost;
-typedef struct simd_vec_cost sve_vec_cost;
+
+/* SVE-specific extensions to the information provided by simd_vec_cost.  */
+struct sve_vec_cost : simd_vec_cost
+{
+  constexpr sve_vec_cost (const simd_vec_cost &base,
+			  unsigned int clast_cost,
+			  unsigned int fadda_f16_cost,
+			  unsigned int fadda_f32_cost,
+			  unsigned int fadda_f64_cost)
+    : simd_vec_cost (base),
+      clast_cost (clast_cost),
+      fadda_f16_cost (fadda_f16_cost),
+      fadda_f32_cost (fadda_f32_cost),
+      fadda_f64_cost (fadda_f64_cost)
+  {}
+
+  /* The cost of a vector-to-scalar CLASTA or CLASTB instruction,
+     with the scalar being stored in FP registers.  This cost is
+     assumed to be a cycle latency.  */
+  const int clast_cost;
+
+  /* The costs of FADDA for the three data types that it supports.
+     These costs are assumed to be cycle latencies.  */
+  const int fadda_f16_cost;
+  const int fadda_f32_cost;
+  const int fadda_f64_cost;
+};
 
 /* Cost for vector insn classes.  */
 struct cpu_vector_cost

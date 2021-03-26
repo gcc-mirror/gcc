@@ -609,22 +609,28 @@ static const advsimd_vec_cost generic_advsimd_vector_cost =
 /* Generic costs for SVE vector operations.  */
 static const sve_vec_cost generic_sve_vector_cost =
 {
-  1, /* int_stmt_cost  */
-  1, /* fp_stmt_cost  */
-  2, /* permute_cost  */
-  2, /* reduc_i8_cost  */
-  2, /* reduc_i16_cost  */
-  2, /* reduc_i32_cost  */
-  2, /* reduc_i64_cost  */
-  2, /* reduc_f16_cost  */
-  2, /* reduc_f32_cost  */
-  2, /* reduc_f64_cost  */
-  2, /* vec_to_scalar_cost  */
-  1, /* scalar_to_vec_cost  */
-  1, /* align_load_cost  */
-  1, /* unalign_load_cost  */
-  1, /* unalign_store_cost  */
-  1  /* store_cost  */
+  {
+    1, /* int_stmt_cost  */
+    1, /* fp_stmt_cost  */
+    2, /* permute_cost  */
+    2, /* reduc_i8_cost  */
+    2, /* reduc_i16_cost  */
+    2, /* reduc_i32_cost  */
+    2, /* reduc_i64_cost  */
+    2, /* reduc_f16_cost  */
+    2, /* reduc_f32_cost  */
+    2, /* reduc_f64_cost  */
+    2, /* vec_to_scalar_cost  */
+    1, /* scalar_to_vec_cost  */
+    1, /* align_load_cost  */
+    1, /* unalign_load_cost  */
+    1, /* unalign_store_cost  */
+    1  /* store_cost  */
+  },
+  2, /* clast_cost  */
+  2, /* fadda_f16_cost  */
+  2, /* fadda_f32_cost  */
+  2 /* fadda_f64_cost  */
 };
 
 /* Generic costs for vector insn classes.  */
@@ -662,22 +668,28 @@ static const advsimd_vec_cost a64fx_advsimd_vector_cost =
 
 static const sve_vec_cost a64fx_sve_vector_cost =
 {
-  2, /* int_stmt_cost  */
-  5, /* fp_stmt_cost  */
-  3, /* permute_cost  */
-  13, /* reduc_i8_cost  */
-  13, /* reduc_i16_cost  */
-  13, /* reduc_i32_cost  */
-  13, /* reduc_i64_cost  */
-  13, /* reduc_f16_cost  */
-  13, /* reduc_f32_cost  */
-  13, /* reduc_f64_cost  */
-  13, /* vec_to_scalar_cost  */
-  4, /* scalar_to_vec_cost  */
-  6, /* align_load_cost  */
-  6, /* unalign_load_cost  */
-  1, /* unalign_store_cost  */
-  1  /* store_cost  */
+  {
+    2, /* int_stmt_cost  */
+    5, /* fp_stmt_cost  */
+    3, /* permute_cost  */
+    13, /* reduc_i8_cost  */
+    13, /* reduc_i16_cost  */
+    13, /* reduc_i32_cost  */
+    13, /* reduc_i64_cost  */
+    13, /* reduc_f16_cost  */
+    13, /* reduc_f32_cost  */
+    13, /* reduc_f64_cost  */
+    13, /* vec_to_scalar_cost  */
+    4, /* scalar_to_vec_cost  */
+    6, /* align_load_cost  */
+    6, /* unalign_load_cost  */
+    1, /* unalign_store_cost  */
+    1  /* store_cost  */
+  },
+  13, /* clast_cost  */
+  13, /* fadda_f16_cost  */
+  13, /* fadda_f32_cost  */
+  13 /* fadda_f64_cost  */
 };
 
 static const struct cpu_vector_cost a64fx_vector_cost =
@@ -14060,6 +14072,20 @@ aarch64_is_reduction (stmt_vec_info stmt_info)
 	  || VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info)));
 }
 
+/* If STMT_INFO describes a reduction, return the type of reduction
+   it describes, otherwise return -1.  */
+static int
+aarch64_reduc_type (vec_info *vinfo, stmt_vec_info stmt_info)
+{
+  if (loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo))
+    if (STMT_VINFO_REDUC_DEF (stmt_info))
+      {
+	stmt_vec_info reduc_info = info_for_reduction (loop_vinfo, stmt_info);
+	return int (STMT_VINFO_REDUC_TYPE (reduc_info));
+      }
+  return -1;
+}
+
 /* Return true if creating multiple copies of STMT_INFO for Advanced SIMD
    vectors would produce a series of LDP or STP operations.  KIND is the
    kind of statement that STMT_INFO represents.  */
@@ -14123,6 +14149,43 @@ aarch64_integer_truncation_p (stmt_vec_info stmt_info)
 	  && TYPE_PRECISION (lhs_type) < TYPE_PRECISION (rhs_type));
 }
 
+/* We are considering implementing STMT_INFO using SVE vector type VECTYPE.
+   If STMT_INFO is an in-loop reduction that SVE supports directly, return
+   its latency in cycles, otherwise return zero.  SVE_COSTS specifies the
+   latencies of the relevant instructions.  */
+static unsigned int
+aarch64_sve_in_loop_reduction_latency (vec_info *vinfo,
+				       stmt_vec_info stmt_info,
+				       tree vectype,
+				       const sve_vec_cost *sve_costs)
+{
+  switch (aarch64_reduc_type (vinfo, stmt_info))
+    {
+    case EXTRACT_LAST_REDUCTION:
+      return sve_costs->clast_cost;
+
+    case FOLD_LEFT_REDUCTION:
+      switch (GET_MODE_INNER (TYPE_MODE (vectype)))
+	{
+	case E_HFmode:
+	case E_BFmode:
+	  return sve_costs->fadda_f16_cost;
+
+	case E_SFmode:
+	  return sve_costs->fadda_f32_cost;
+
+	case E_DFmode:
+	  return sve_costs->fadda_f64_cost;
+
+	default:
+	  break;
+	}
+      break;
+    }
+
+  return 0;
+}
+
 /* STMT_COST is the cost calculated by aarch64_builtin_vectorization_cost
    for the vectorized form of STMT_INFO, which has cost kind KIND and which
    when vectorized would operate on vector type VECTYPE.  Try to subdivide
@@ -14130,12 +14193,27 @@ aarch64_integer_truncation_p (stmt_vec_info stmt_info)
    accurate cost.  WHERE specifies where the cost associated with KIND
    occurs.  */
 static unsigned int
-aarch64_detect_vector_stmt_subtype (vect_cost_for_stmt kind,
+aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
 				    stmt_vec_info stmt_info, tree vectype,
 				    enum vect_cost_model_location where,
 				    unsigned int stmt_cost)
 {
   const simd_vec_cost *simd_costs = aarch64_simd_vec_costs (vectype);
+  const sve_vec_cost *sve_costs = nullptr;
+  if (aarch64_sve_mode_p (TYPE_MODE (vectype)))
+    sve_costs = aarch64_tune_params.vec_costs->sve;
+
+  /* Detect cases in which vec_to_scalar represents an in-loop reduction.  */
+  if (kind == vec_to_scalar
+      && where == vect_body
+      && sve_costs)
+    {
+      unsigned int latency
+	= aarch64_sve_in_loop_reduction_latency (vinfo, stmt_info, vectype,
+						 sve_costs);
+      if (latency)
+	return latency;
+    }
 
   /* Detect cases in which vec_to_scalar represents a single reduction
      instruction like FADDP or MAXV.  */
@@ -14260,9 +14338,9 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       /* Try to get a more accurate cost by looking at STMT_INFO instead
 	 of just looking at KIND.  */
       if (stmt_info && vectype && aarch64_use_new_vector_costs_p ())
-	stmt_cost = aarch64_detect_vector_stmt_subtype (kind, stmt_info,
-							vectype, where,
-							stmt_cost);
+	stmt_cost = aarch64_detect_vector_stmt_subtype (vinfo, kind,
+							stmt_info, vectype,
+							where, stmt_cost);
 
       /* Do any SVE-specific adjustments to the cost.  */
       if (stmt_info && vectype && aarch64_sve_mode_p (TYPE_MODE (vectype)))
