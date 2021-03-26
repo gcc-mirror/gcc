@@ -14541,6 +14541,12 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
   if (aarch64_sve_mode_p (TYPE_MODE (vectype)))
     sve_costs = aarch64_tune_params.vec_costs->sve;
 
+  /* It's generally better to avoid costing inductions, since the induction
+     will usually be hidden by other operations.  This is particularly true
+     for things like COND_REDUCTIONS.  */
+  if (is_a<gphi *> (stmt_info->stmt))
+    return 0;
+
   /* Detect cases in which vec_to_scalar is describing the extraction of a
      vector element in preparation for a scalar store.  The store itself is
      costed separately.  */
