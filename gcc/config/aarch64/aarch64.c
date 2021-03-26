@@ -601,6 +601,7 @@ static const advsimd_vec_cost generic_advsimd_vector_cost =
   2, /* reduc_f16_cost  */
   2, /* reduc_f32_cost  */
   2, /* reduc_f64_cost  */
+  2, /* store_elt_extra_cost  */
   2, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
   1, /* align_load_cost  */
@@ -626,6 +627,7 @@ static const sve_vec_cost generic_sve_vector_cost =
     2, /* reduc_f16_cost  */
     2, /* reduc_f32_cost  */
     2, /* reduc_f64_cost  */
+    2, /* store_elt_extra_cost  */
     2, /* vec_to_scalar_cost  */
     1, /* scalar_to_vec_cost  */
     1, /* align_load_cost  */
@@ -667,6 +669,7 @@ static const advsimd_vec_cost a64fx_advsimd_vector_cost =
   13, /* reduc_f16_cost  */
   13, /* reduc_f32_cost  */
   13, /* reduc_f64_cost  */
+  13, /* store_elt_extra_cost  */
   13, /* vec_to_scalar_cost  */
   4, /* scalar_to_vec_cost  */
   6, /* align_load_cost  */
@@ -691,6 +694,7 @@ static const sve_vec_cost a64fx_sve_vector_cost =
     13, /* reduc_f16_cost  */
     13, /* reduc_f32_cost  */
     13, /* reduc_f64_cost  */
+    13, /* store_elt_extra_cost  */
     13, /* vec_to_scalar_cost  */
     4, /* scalar_to_vec_cost  */
     6, /* align_load_cost  */
@@ -731,6 +735,7 @@ static const advsimd_vec_cost qdf24xx_advsimd_vector_cost =
   1, /* reduc_f16_cost  */
   1, /* reduc_f32_cost  */
   1, /* reduc_f64_cost  */
+  1, /* store_elt_extra_cost  */
   1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
   1, /* align_load_cost  */
@@ -768,6 +773,7 @@ static const advsimd_vec_cost thunderx_advsimd_vector_cost =
   2, /* reduc_f16_cost  */
   2, /* reduc_f32_cost  */
   2, /* reduc_f64_cost  */
+  2, /* store_elt_extra_cost  */
   2, /* vec_to_scalar_cost  */
   2, /* scalar_to_vec_cost  */
   3, /* align_load_cost  */
@@ -804,6 +810,7 @@ static const advsimd_vec_cost tsv110_advsimd_vector_cost =
   3, /* reduc_f16_cost  */
   3, /* reduc_f32_cost  */
   3, /* reduc_f64_cost  */
+  3, /* store_elt_extra_cost  */
   3, /* vec_to_scalar_cost  */
   2, /* scalar_to_vec_cost  */
   5, /* align_load_cost  */
@@ -839,6 +846,7 @@ static const advsimd_vec_cost cortexa57_advsimd_vector_cost =
   8, /* reduc_f16_cost  */
   8, /* reduc_f32_cost  */
   8, /* reduc_f64_cost  */
+  8, /* store_elt_extra_cost  */
   8, /* vec_to_scalar_cost  */
   8, /* scalar_to_vec_cost  */
   4, /* align_load_cost  */
@@ -875,6 +883,7 @@ static const advsimd_vec_cost exynosm1_advsimd_vector_cost =
   3, /* reduc_f16_cost  */
   3, /* reduc_f32_cost  */
   3, /* reduc_f64_cost  */
+  3, /* store_elt_extra_cost  */
   3, /* vec_to_scalar_cost  */
   3, /* scalar_to_vec_cost  */
   5, /* align_load_cost  */
@@ -910,6 +919,7 @@ static const advsimd_vec_cost xgene1_advsimd_vector_cost =
   4, /* reduc_f16_cost  */
   4, /* reduc_f32_cost  */
   4, /* reduc_f64_cost  */
+  4, /* store_elt_extra_cost  */
   4, /* vec_to_scalar_cost  */
   4, /* scalar_to_vec_cost  */
   10, /* align_load_cost  */
@@ -946,6 +956,7 @@ static const advsimd_vec_cost thunderx2t99_advsimd_vector_cost =
   6, /* reduc_f16_cost  */
   6, /* reduc_f32_cost  */
   6, /* reduc_f64_cost  */
+  6, /* store_elt_extra_cost  */
   6, /* vec_to_scalar_cost  */
   5, /* scalar_to_vec_cost  */
   4, /* align_load_cost  */
@@ -982,6 +993,7 @@ static const advsimd_vec_cost thunderx3t110_advsimd_vector_cost =
   5, /* reduc_f16_cost  */
   5, /* reduc_f32_cost  */
   5, /* reduc_f64_cost  */
+  5, /* store_elt_extra_cost  */
   5, /* vec_to_scalar_cost  */
   5, /* scalar_to_vec_cost  */
   4, /* align_load_cost  */
@@ -14258,6 +14270,14 @@ aarch64_detect_vector_stmt_subtype (vec_info *vinfo, vect_cost_for_stmt kind,
   const sve_vec_cost *sve_costs = nullptr;
   if (aarch64_sve_mode_p (TYPE_MODE (vectype)))
     sve_costs = aarch64_tune_params.vec_costs->sve;
+
+  /* Detect cases in which vec_to_scalar is describing the extraction of a
+     vector element in preparation for a scalar store.  The store itself is
+     costed separately.  */
+  if (kind == vec_to_scalar
+      && STMT_VINFO_DATA_REF (stmt_info)
+      && DR_IS_WRITE (STMT_VINFO_DATA_REF (stmt_info)))
+    return simd_costs->store_elt_extra_cost;
 
   /* Detect cases in which vec_to_scalar represents an in-loop reduction.  */
   if (kind == vec_to_scalar

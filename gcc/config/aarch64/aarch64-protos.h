@@ -224,6 +224,10 @@ struct simd_vec_cost
   const int reduc_f32_cost;
   const int reduc_f64_cost;
 
+  /* Additional cost of storing a single vector element, on top of the
+     normal cost of a scalar store.  */
+  const int store_elt_extra_cost;
+
   /* Cost of a vector-to-scalar operation.  */
   const int vec_to_scalar_cost;
 
