@@ -22,6 +22,7 @@
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-full.h"
 #include "rust-tyty.h"
+#include "rust-substitution-mapper.h"
 
 namespace Rust {
 namespace Resolver {
@@ -66,16 +67,25 @@ public:
 	return;
       }
 
-    // FIXME this can be simplified with
-    // https://github.com/Rust-GCC/gccrs/issues/187
-    auto unified_ty = receiver->unify (self_lookup);
-    if (unified_ty == nullptr)
+    if (self_lookup->get_kind () != receiver->get_kind ())
+      return;
+
+    if (receiver->has_subsititions_defined ()
+	!= self_lookup->has_subsititions_defined ())
+      return;
+
+    if (self_lookup->has_subsititions_defined ())
+      {
+	// we assume the receiver should be fully substituted at this stage
+	self_lookup = SubstMapperFromExisting::Resolve (receiver, self_lookup);
+      }
+
+    if (!receiver->is_equal (*self_lookup))
       {
 	// incompatible self argument then this is not a valid method for this
 	// receiver
 	return;
       }
-    delete unified_ty;
 
     probed.push_back (&method);
   }

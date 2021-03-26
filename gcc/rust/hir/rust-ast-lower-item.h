@@ -351,19 +351,6 @@ public:
   }
 
 private:
-  std::vector<std::unique_ptr<HIR::GenericParam> > lower_generic_params (
-    std::vector<std::unique_ptr<AST::GenericParam> > &params)
-  {
-    std::vector<std::unique_ptr<HIR::GenericParam> > lowered;
-    for (auto &ast_param : params)
-      {
-	auto hir_param = ASTLowerGenericParam::translate (ast_param.get ());
-	lowered.push_back (std::unique_ptr<HIR::GenericParam> (hir_param));
-      }
-
-    return lowered;
-  }
-
   ASTLoweringItem () : translated (nullptr) {}
 
   HIR::Item *translated;

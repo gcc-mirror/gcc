@@ -77,7 +77,7 @@ public:
 
     if (resolved->get_kind () == TyTy::TypeKind::TUPLE)
       {
-	TyTy::TupleType *tuple = (TyTy::TupleType *) resolved;
+	TyTy::TupleType *tuple = static_cast<TyTy::TupleType *> (resolved);
 	TupleIndex index = expr.get_tuple_index ();
 	if ((size_t) index >= tuple->num_fields ())
 	  {
@@ -98,7 +98,7 @@ public:
 	return;
       }
 
-    TyTy::ADTType *adt = (TyTy::ADTType *) resolved;
+    TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (resolved);
     TupleIndex index = expr.get_tuple_index ();
     if ((size_t) index >= adt->num_fields ())
       {
@@ -115,6 +115,10 @@ public:
       }
 
     infered = field_tyty->get_field_type ();
+    printf ("ZXZX resolved: %s to: \n", expr.as_string ().c_str ());
+    adt->debug ();
+    infered->debug ();
+    printf ("ZXZX done\n");
   }
 
   void visit (HIR::TupleExpr &expr) override
@@ -220,14 +224,15 @@ public:
       {
 	rust_error_at (
 	  expr.get_locus (),
-	  "Generics and Traits are not implemented yet for MethodCall");
+	  "multiple candidates in MethodCallExpr have been probed is "
+	  "not currently supported");
 	return;
       }
 
     auto resolved_method = probes.at (0);
-    TyTy::BaseType *lookup;
+    TyTy::BaseType *lookup_tyty;
     if (!context->lookup_type (resolved_method->get_mappings ().get_hirid (),
-			       &lookup))
+			       &lookup_tyty))
       {
 	rust_error_at (resolved_method->get_locus (),
 		       "failed to lookup type for CallExpr: %s",
@@ -235,20 +240,42 @@ public:
 	return;
       }
 
-    infered = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, context);
-    if (infered == nullptr)
+    TyTy::BaseType *lookup = lookup_tyty;
+    if (lookup_tyty->get_kind () == TyTy::TypeKind::FNDEF)
+      {
+	TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
+	if (receiver_tyty->get_kind () == TyTy::TypeKind::ADT)
+	  {
+	    TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver_tyty);
+	    if (adt->has_substitutions ())
+	      {
+		rust_assert (adt->was_substituted ());
+		lookup
+		  = fn->handle_substitions (adt->get_substitution_arguments ());
+	      }
+	  }
+      }
+
+    TyTy::BaseType *function_ret_tyty
+      = TyTy::TypeCheckMethodCallExpr::go (lookup, expr, context);
+    if (function_ret_tyty == nullptr
+	|| function_ret_tyty->get_kind () == TyTy::TypeKind::ERROR)
       {
 	rust_error_at (expr.get_locus (),
 		       "failed to lookup type to MethodCallExpr");
 	return;
       }
 
-    infered->set_ref (expr.get_mappings ().get_hirid ());
+    // store the expected fntype
+    context->insert_type (expr.get_method_name ().get_mappings (), lookup);
 
     // set up the resolved name on the path
     resolver->insert_resolved_name (
       expr.get_mappings ().get_nodeid (),
       resolved_method->get_mappings ().get_nodeid ());
+
+    // return the result of the function back
+    infered = function_ret_tyty;
   }
 
   void visit (HIR::AssignmentExpr &expr) override
@@ -357,9 +384,7 @@ public:
 	return;
       }
 
-    lookup->append_reference (lookup->get_ref ());
     infered = lookup->clone ();
-    infered->set_ref (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::LiteralExpr &expr) override
@@ -787,6 +812,9 @@ public:
 		       "path does not support substitutions");
 	return;
       }
+
+    if (expr.is_self ())
+      return;
 
     if (infered->has_subsititions_defined ())
       {

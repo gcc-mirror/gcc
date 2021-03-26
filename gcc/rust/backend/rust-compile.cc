@@ -122,9 +122,17 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
       return;
     }
 
+  // lookup the expected function type
+  TyTy::BaseType *lookup_fntype = nullptr;
+  bool ok = ctx->get_tyctx ()->lookup_type (
+    expr.get_method_name ().get_mappings ().get_hirid (), &lookup_fntype);
+  rust_assert (ok);
+  rust_assert (lookup_fntype->get_kind () == TyTy::TypeKind::FNDEF);
+  TyTy::FnType *fntype = static_cast<TyTy::FnType *> (lookup_fntype);
+
   // lookup compiled functions
   Bfunction *fn = nullptr;
-  if (!ctx->lookup_function_decl (ref, &fn))
+  if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
     {
       // this might fail because its a forward decl so we can attempt to
       // resolve it now
@@ -146,8 +154,13 @@ CompileExpr::visit (HIR::MethodCallExpr &expr)
 	  return;
 	}
 
-      CompileInherentImplItem::Compile (self_type, resolved_item, ctx, true);
-      if (!ctx->lookup_function_decl (ref, &fn))
+      if (!fntype->has_subsititions_defined ())
+	CompileInherentImplItem::Compile (self_type, resolved_item, ctx, true);
+      else
+	CompileInherentImplItem::Compile (self_type, resolved_item, ctx, true,
+					  fntype);
+
+      if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &fn))
 	{
 	  rust_error_at (expr.get_locus (), "forward decl was not compiled");
 	  return;

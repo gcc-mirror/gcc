@@ -76,6 +76,7 @@ private:
 class TypeCheckMethodCallExpr : private TyVisitor
 {
 public:
+  // Resolve the Method parameters and return back the return type
   static BaseType *go (BaseType *ref, HIR::MethodCallExpr &call,
 		       Resolver::TypeCheckContext *context)
   {

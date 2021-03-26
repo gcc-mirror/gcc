@@ -354,7 +354,8 @@ ADTType::clone ()
     cloned_fields.push_back ((StructFieldType *) f->clone ());
 
   return new ADTType (get_ref (), get_ty_ref (), identifier, get_is_tuple (),
-		      cloned_fields, clone_substs (), get_combined_refs ());
+		      cloned_fields, clone_substs (), used_arguments,
+		      get_combined_refs ());
 }
 
 ADTType *
@@ -367,6 +368,8 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 		     "invalid number of generic arguments to generic ADT type");
       return nullptr;
     }
+
+  used_arguments = subst_mappings;
 
   ADTType *adt = static_cast<ADTType *> (clone ());
   adt->set_ty_ref (mappings->get_next_hir_id ());
@@ -567,6 +570,8 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 		     "invalid number of generic arguments to generic ADT type");
       return nullptr;
     }
+
+  used_arguments = subst_mappings;
 
   FnType *fn = static_cast<FnType *> (clone ());
   fn->set_ty_ref (mappings->get_next_hir_id ());

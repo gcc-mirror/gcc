@@ -40,8 +40,6 @@ public:
     return folder.ok;
   }
 
-  virtual ~ArrayCapacityConstant () {}
-
   void visit (AST::LiteralExpr &expr) override
   {
     switch (expr.get_lit_type ())
@@ -226,9 +224,8 @@ public:
   {
     std::vector<HIR::Attribute> outer_attribs;
 
-    HIR::PathExprSegment method_path (
-      expr.get_method_name ().get_ident_segment ().as_string (),
-      expr.get_method_name ().get_locus ());
+    HIR::PathExprSegment method_path
+      = lower_path_expr_seg (expr.get_method_name ());
 
     HIR::Expr *receiver
       = ASTLoweringExpr::translate (expr.get_receiver_expr ().get ());

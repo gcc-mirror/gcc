@@ -284,6 +284,13 @@ protected:
 
     return HIR::LoopLabel (mapping, std::move (life), loop_label.get_locus ());
   }
+
+  std::vector<std::unique_ptr<HIR::GenericParam> > lower_generic_params (
+    std::vector<std::unique_ptr<AST::GenericParam> > &params);
+
+  HIR::PathExprSegment lower_path_expr_seg (AST::PathExprSegment &s);
+
+  HIR::GenericArgs lower_generic_args (AST::GenericArgs &args);
 };
 
 } // namespace HIR

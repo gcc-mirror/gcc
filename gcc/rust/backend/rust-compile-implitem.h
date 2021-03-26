@@ -272,6 +272,21 @@ public:
       }
 
     TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
+    if (fntype->has_subsititions_defined ())
+      {
+	// we cant do anything for this only when it is used
+	if (concrete == nullptr)
+	  return;
+	else
+	  {
+	    rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
+	    fntype = static_cast<TyTy::FnType *> (concrete);
+
+	    // override the Hir Lookups for the substituions in this context
+	    fntype->override_context ();
+	  }
+      }
+
     // convert to the actual function type
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 

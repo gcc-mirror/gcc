@@ -162,6 +162,62 @@ private:
   TyTy::SubstitutionArgumentMappings &mappings;
 };
 
+class SubstMapperFromExisting : public TyTy::TyVisitor
+{
+public:
+  static TyTy::BaseType *Resolve (TyTy::BaseType *concrete,
+				  TyTy::BaseType *receiver)
+  {
+    rust_assert (concrete->get_kind () == receiver->get_kind ());
+
+    SubstMapperFromExisting mapper (concrete, receiver);
+    concrete->accept_vis (mapper);
+    return mapper.resolved;
+  }
+
+  void visit (TyTy::FnType &type) override
+  {
+    rust_assert (type.was_substituted ());
+
+    TyTy::FnType *to_sub = static_cast<TyTy::FnType *> (receiver);
+    resolved = to_sub->handle_substitions (type.get_substitution_arguments ());
+  }
+
+  void visit (TyTy::ADTType &type) override
+  {
+    rust_assert (type.was_substituted ());
+
+    TyTy::ADTType *to_sub = static_cast<TyTy::ADTType *> (receiver);
+    resolved = to_sub->handle_substitions (type.get_substitution_arguments ());
+  }
+
+  void visit (TyTy::InferType &) override { gcc_unreachable (); }
+  void visit (TyTy::TupleType &) override { gcc_unreachable (); }
+  void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
+  void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
+  void visit (TyTy::BoolType &) override { gcc_unreachable (); }
+  void visit (TyTy::IntType &) override { gcc_unreachable (); }
+  void visit (TyTy::UintType &) override { gcc_unreachable (); }
+  void visit (TyTy::FloatType &) override { gcc_unreachable (); }
+  void visit (TyTy::USizeType &) override { gcc_unreachable (); }
+  void visit (TyTy::ISizeType &) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
+  void visit (TyTy::CharType &) override { gcc_unreachable (); }
+  void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
+  void visit (TyTy::ParamType &) override { gcc_unreachable (); }
+  void visit (TyTy::StrType &) override { gcc_unreachable (); }
+
+private:
+  SubstMapperFromExisting (TyTy::BaseType *concrete, TyTy::BaseType *receiver)
+    : concrete (concrete), receiver (receiver), resolved (nullptr)
+  {}
+
+  TyTy::BaseType *concrete;
+  TyTy::BaseType *receiver;
+
+  TyTy::BaseType *resolved;
+};
+
 } // namespace Resolver
 } // namespace Rust
 

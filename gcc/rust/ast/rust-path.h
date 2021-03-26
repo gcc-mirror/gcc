@@ -198,6 +198,8 @@ public:
   std::vector<GenericArgsBinding> &get_binding_args () { return binding_args; }
 
   std::vector<Lifetime> &get_lifetime_args () { return lifetime_args; };
+
+  Location get_locus () { return locus; }
 };
 
 /* A segment of a path in expression, including an identifier aspect and maybe
@@ -206,13 +208,9 @@ class PathExprSegment
 { // or should this extend PathIdentSegment?
 private:
   PathIdentSegment segment_name;
-
-  // bool has_generic_args;
   GenericArgs generic_args;
-
   Location locus;
-
-  // TODO: does this require visitor? pretty sure not polymorphic
+  NodeId node_id;
 
 public:
   // Returns true if there are any generic arguments
@@ -222,7 +220,8 @@ public:
   PathExprSegment (PathIdentSegment segment_name, Location locus = Location (),
 		   GenericArgs generic_args = GenericArgs::create_empty ())
     : segment_name (std::move (segment_name)),
-      generic_args (std::move (generic_args)), locus (locus)
+      generic_args (std::move (generic_args)), locus (locus),
+      node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   /* Constructor for segment with generic arguments (from segment name and all
@@ -238,7 +237,7 @@ public:
       generic_args (GenericArgs (std::move (lifetime_args),
 				 std::move (type_args),
 				 std::move (binding_args))),
-      locus (locus)
+      locus (locus), node_id (Analysis::Mappings::get ()->get_next_node_id ())
   {}
 
   // Returns whether path expression segment is in an error state.
@@ -262,6 +261,8 @@ public:
   }
 
   PathIdentSegment &get_ident_segment () { return segment_name; }
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 // AST node representing a pattern that involves a "path" - abstract base class

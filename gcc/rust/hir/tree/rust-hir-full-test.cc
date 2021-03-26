@@ -2692,8 +2692,7 @@ PathPattern::convert_to_simple_path (bool with_opening_scope_resolution) const
   for (const auto &segment : segments)
     {
       // return empty path if doesn't meet simple path segment requirements
-      if (segment.is_error () || segment.has_generic_args ()
-	  || segment.as_string () == "Self")
+      if (segment.has_generic_args () || segment.as_string () == "Self")
 	{
 	  return SimplePath::create_empty ();
 	}

@@ -192,52 +192,24 @@ public:
 /* A segment of a path in expression, including an identifier aspect and maybe
  * generic args */
 class PathExprSegment
-{ // or should this extend PathIdentSegment?
+{
 private:
+  Analysis::NodeMapping mappings;
   PathIdentSegment segment_name;
-
-  // bool has_generic_args;
   GenericArgs generic_args;
-
   Location locus;
-
-  // TODO: does this require visitor? pretty sure not polymorphic
 
 public:
   // Returns true if there are any generic arguments
   bool has_generic_args () const { return generic_args.has_generic_args (); }
 
   // Constructor for segment (from IdentSegment and GenericArgs)
-  PathExprSegment (PathIdentSegment segment_name, Location locus = Location (),
+  PathExprSegment (Analysis::NodeMapping mappings,
+		   PathIdentSegment segment_name, Location locus = Location (),
 		   GenericArgs generic_args = GenericArgs::create_empty ())
-    : segment_name (std::move (segment_name)),
+    : mappings (std::move (mappings)), segment_name (std::move (segment_name)),
       generic_args (std::move (generic_args)), locus (locus)
   {}
-
-  /* Constructor for segment with generic arguments (from segment name and all
-   * args) */
-  PathExprSegment (std::string segment_name, Location locus,
-		   std::vector<Lifetime> lifetime_args
-		   = std::vector<Lifetime> (),
-		   std::vector<std::unique_ptr<Type> > type_args
-		   = std::vector<std::unique_ptr<Type> > (),
-		   std::vector<GenericArgsBinding> binding_args
-		   = std::vector<GenericArgsBinding> ())
-    : segment_name (PathIdentSegment (std::move (segment_name))),
-      generic_args (GenericArgs (std::move (lifetime_args),
-				 std::move (type_args),
-				 std::move (binding_args))),
-      locus (locus)
-  {}
-
-  // Returns whether path expression segment is in an error state.
-  bool is_error () const { return segment_name.is_error (); }
-
-  // Creates an error-state path expression segment.
-  static PathExprSegment create_error ()
-  {
-    return PathExprSegment (PathIdentSegment::create_error ());
-  }
 
   std::string as_string () const;
 
@@ -246,6 +218,8 @@ public:
   PathIdentSegment get_segment () const { return segment_name; }
 
   GenericArgs &get_generic_args () { return generic_args; }
+
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
 
 // HIR node representing a pattern that involves a "path" - abstract base class
@@ -334,6 +308,15 @@ public:
   void accept_vis (HIRVisitor &vis) override;
 
   bool opening_scope_resolution () { return has_opening_scope_resolution; }
+
+  bool is_self () const
+  {
+    if (!is_single_segment ())
+      return false;
+
+    return get_final_segment ().get_segment ().as_string ().compare ("self")
+	   == 0;
+  }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -423,6 +423,18 @@ public:
     : mappings (mappings), locus (locus)
   {}
 
+  SubstitutionArgumentMappings (const SubstitutionArgumentMappings &other)
+    : mappings (other.mappings), locus (other.locus)
+  {}
+
+  SubstitutionArgumentMappings &
+  operator= (const SubstitutionArgumentMappings &other)
+  {
+    mappings = other.mappings;
+    locus = other.locus;
+    return *this;
+  }
+
   static SubstitutionArgumentMappings error ()
   {
     return SubstitutionArgumentMappings ({}, Location ());
@@ -471,8 +483,9 @@ private:
 class SubstitutionRef
 {
 public:
-  SubstitutionRef (std::vector<SubstitutionParamMapping> substitutions)
-    : substitutions (substitutions)
+  SubstitutionRef (std::vector<SubstitutionParamMapping> substitutions,
+		   SubstitutionArgumentMappings arguments)
+    : substitutions (substitutions), used_arguments (arguments)
   {}
 
   bool has_substitutions () const { return substitutions.size () > 0; }
@@ -514,6 +527,13 @@ public:
       }
   }
 
+  bool was_substituted () const { return !used_arguments.is_error (); }
+
+  SubstitutionArgumentMappings get_substitution_arguments ()
+  {
+    return used_arguments;
+  }
+
   // We are trying to subst <i32, f32> into Struct Foo<X,Y> {}
   // in the case of Foo<i32,f32>{...}
   //
@@ -548,28 +568,32 @@ public:
 
 protected:
   std::vector<SubstitutionParamMapping> substitutions;
+  SubstitutionArgumentMappings used_arguments;
 };
 
 class ADTType : public BaseType, public SubstitutionRef
-
 {
 public:
   ADTType (HirId ref, std::string identifier, bool is_tuple,
 	   std::vector<StructFieldType *> fields,
 	   std::vector<SubstitutionParamMapping> subst_refs,
+	   SubstitutionArgumentMappings generic_arguments
+	   = SubstitutionArgumentMappings::error (),
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ADT, refs),
-      SubstitutionRef (std::move (subst_refs)), identifier (identifier),
-      fields (fields), is_tuple (is_tuple)
+      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
+      identifier (identifier), fields (fields), is_tuple (is_tuple)
   {}
 
   ADTType (HirId ref, HirId ty_ref, std::string identifier, bool is_tuple,
 	   std::vector<StructFieldType *> fields,
 	   std::vector<SubstitutionParamMapping> subst_refs,
+	   SubstitutionArgumentMappings generic_arguments
+	   = SubstitutionArgumentMappings::error (),
 	   std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ADT, refs),
-      SubstitutionRef (std::move (subst_refs)), identifier (identifier),
-      fields (fields), is_tuple (is_tuple)
+      SubstitutionRef (std::move (subst_refs), std::move (generic_arguments)),
+      identifier (identifier), fields (fields), is_tuple (is_tuple)
   {}
 
   bool get_is_tuple () { return is_tuple; }
@@ -651,8 +675,9 @@ public:
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::FNDEF, refs),
-      SubstitutionRef (std::move (subst_refs)), params (std::move (params)),
-      type (type)
+      SubstitutionRef (std::move (subst_refs),
+		       SubstitutionArgumentMappings::error ()),
+      params (std::move (params)), type (type)
   {}
 
   FnType (HirId ref, HirId ty_ref,
@@ -660,7 +685,9 @@ public:
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::FNDEF, refs),
-      SubstitutionRef (std::move (subst_refs)), params (params), type (type)
+      SubstitutionRef (std::move (subst_refs),
+		       SubstitutionArgumentMappings::error ()),
+      params (params), type (type)
   {}
 
   void accept_vis (TyVisitor &vis) override;
