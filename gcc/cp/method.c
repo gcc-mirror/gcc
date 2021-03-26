@@ -3002,7 +3002,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
 	     member initializer (c++/89914).  Also, in C++98, we might have
 	     failed to deduce RAISES, so try again but complain this time.  */
 	  if (cxx_dialect < cxx11)
-	    synthesized_method_walk (type, kind, const_p, nullptr, nullptr,
+	    synthesized_method_walk (type, kind, const_p, &raises, nullptr,
 				     nullptr, nullptr, /*diag=*/true,
 				     &inherited_ctor, inherited_parms);
 	  /* We should have seen an error at this point.  */
