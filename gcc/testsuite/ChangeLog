@@ -1,3 +1,99 @@
+2021-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/55060
+	* gcc.dg/uninit-pr55060.c: New.
+
+2021-03-25  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/48483
+	* g++.dg/warn/uninit-pr48483.C: New test.
+
+2021-03-25  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/uninit-pr44547.c: New.
+
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99672
+	* g++.dg/concepts/diagnostic2.C: Adjust expected caret line.
+	* g++.dg/cpp1y/builtin_location.C (f4, n6): Move #line directives
+	to match locus changes.
+	* g++.dg/cpp2a/srcloc1.C: Adjust expected column numbers.
+	* g++.dg/cpp2a/srcloc2.C: Likewise.
+	* g++.dg/cpp2a/srcloc15.C: Likewise.
+	* g++.dg/cpp2a/srcloc16.C: Likewise.
+	* g++.dg/cpp2a/srcloc19.C: New test.
+	* g++.dg/modules/adhoc-1_b.C: Adjust expected column numbers
+	and caret line.
+	* g++.dg/modules/macloc-1_c.C: Adjust expected column numbers.
+	* g++.dg/modules/macloc-1_d.C: Likewise.
+	* g++.dg/plugin/diagnostic-test-expressions-1.C: Adjust expected
+	caret line.
+
+2021-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94751
+	* g++.dg/cpp0x/inh-ctor37.C: New test.
+
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99745
+	* g++.dg/cpp0x/variadic181.C: New test.
+
+2021-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99331
+	* g++.dg/warn/Wconversion5.C: New test.
+
+2021-03-25  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
+
+	PR tree-optimization/96974
+	* g++.target/aarch64/sve/pr96974.C: New test.
+
+2021-03-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	Revert:
+	2021-03-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98209
+	PR target/99744
+	* gcc.target/i386/pr98209.c: New test.
+	* gcc.target/i386/pr99744-1.c: Likewise.
+	* gcc.target/i386/pr99744-2.c: Likewise.
+
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99565
+	* g++.dg/warn/Wduplicated-branches6.C: New test.
+	* g++.dg/warn/Wduplicated-branches7.C: New test.
+
+2021-03-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/98209
+	PR target/99744
+	* gcc.target/i386/pr98209.c: New test.
+	* gcc.target/i386/pr99744-1.c: Likewise.
+	* gcc.target/i386/pr99744-2.c: Likewise.
+
+2021-03-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99746
+	* gfortran.dg/vect/pr99746.f90: New testcase.
+
+2021-03-25  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/93695
+	PR analyzer/99044
+	PR analyzer/99716
+	* gcc.dg/analyzer/attr-malloc-CVE-2019-19078-usb-leak.c: Remove
+	xfail.
+	* gcc.dg/analyzer/pr93695-1.c: New test.
+	* gcc.dg/analyzer/pr99044-1.c: New test.
+	* gcc.dg/analyzer/pr99044-2.c: New test.
+	* gcc.dg/analyzer/pr99716-1.c: New test.
+	* gcc.dg/analyzer/pr99716-2.c: New test.
+	* gcc.dg/analyzer/pr99716-3.c: New test.
+
 2021-03-24  Martin Liska  <mliska@suse.cz>
 
 	PR target/99753

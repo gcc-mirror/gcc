@@ -1,3 +1,25 @@
+2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-gcn.c (init_environment_variables): Don't prepend
+	the 'HSA_RUNTIME_LIB' path to 'libhsa-runtime64.so'.
+	* plugin/configfrag.ac (HSA_RUNTIME_LIB): Clean up.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+
+2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/99555
+	* testsuite/lib/on_device_arch.c: New file.
+	* testsuite/libgomp.c/pr99555-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c: Until resolved,
+	skip for nvptx offloading, with error status.
+	* testsuite/libgomp.fortran/task-detach-6.f90: Likewise.
+
+2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/derivedtypes-arrays-1.f90:
+	OpenACC 'serial' construct diagnostic for nvptx offloading.
+
 2021-03-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR c++/99509

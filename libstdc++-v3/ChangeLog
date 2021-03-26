@@ -1,3 +1,64 @@
+2021-03-25  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/string
+	(basic_string(const basic_string&, const _Alloc&)): Define even if !_GLIBCXX_USE_CXX11_ABI.
+	(basic_string(basic_string&&, const _Alloc&)): Likewise and add noexcept qualification.
+	(basic_string<>::erase): Adapt to take __const_iterator.
+	(basic_string(const _CharT*, const _Allocator&)): Remove assign call.
+	(basic_string<>::insert(const_iterator, _InputIte, _InputIte)): Try to
+	remove iterator debug layer even if !_GLIBCXX_USE_CXX11_ABI.
+	[_GLIBCXX_USE_CHAR8_T] (__gnu_debug::u8string): New.
+	(__gnu_debug::u16string, __gnu_debug::u32string): New.
+	(std::hash<__gnu_debug::basic_string<>>): New partial specialization.
+	(std::__is_fast_hash<__gnu_debug::basic_string<>>): Likewise.
+	* testsuite/util/exception/safety.h
+	(erase_base<__gnu_debug::basic_string<>>): New partial specialization.
+	(insert_base<__gnu_debug::basic_string<>>): Likewise.
+	* testsuite/util/testsuite_container_traits.h (traits<__gnu_debug::basic_string<>>):
+	New partial specialization.
+	* testsuite/21_strings/basic_string/hash/debug.cc: New test.
+	* testsuite/21_strings/basic_string/requirements/citerators.cc:
+	Add test on __gnu_debug::string.
+	* testsuite/21_strings/basic_string/requirements/dr438/constructor.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/exception/basic.cc: Likewise.
+	* testsuite/21_strings/basic_string/requirements/exception/generation_prohibited.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/exception/propagation_consistent.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char16_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char32_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/char8_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/explicit_instantiation/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/requirements/typedefs.cc: Likewise.
+
+2021-03-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99672
+	* testsuite/18_support/source_location/consteval.cc (main): Adjust
+	expected column numbers.
+	* testsuite/18_support/source_location/1.cc (main): Likewise.
+
+2021-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/new_opa.cc [!_GLIBCXX_HOSTED]: Declare malloc.
+
+2021-03-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/exception/safety.h (setup_base::generate):
+	Support seeding random engine.
+	(erase_point, erase_range): Adjust range of random numbers to
+	ensure dereferenceable iterators are used where required.
+	(generation_prohibited::run): Do not try to erase from empty
+	containers.
+	* testsuite/util/testsuite_containergen.h (test_containers):
+	Support seeding random engine.
+
 2021-03-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/std/ranges/adaptors/reverse.cc: Replace duplicated
