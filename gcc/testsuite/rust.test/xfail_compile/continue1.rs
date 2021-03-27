@@ -1,4 +1,3 @@
-// { dg-excess-errors "Noisy error and debug" }
 fn main() {
     let mut a = 1;
     let mut b = 1;
