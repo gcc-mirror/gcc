@@ -1940,3 +1940,9 @@
 
   return !indexed_address (addr, mode);
 })
+
+;; Return 1 if this operand is valid as the index for vec_set.
+(define_predicate "vec_set_index_operand"
+ (if_then_else (match_test "TARGET_VSX")
+  (match_operand 0 "reg_or_cint_operand")
+  (match_operand 0 "const_int_operand")))

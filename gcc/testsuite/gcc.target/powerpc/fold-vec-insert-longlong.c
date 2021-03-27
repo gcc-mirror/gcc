@@ -65,6 +65,6 @@ testul2_cst(unsigned long long x, vector unsigned long long v)
 
 /* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 0 { target lp64 } } } */
 
-/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstvx\M|\mstxv\M} 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mvperm\M} 0 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M|\mstvx\M|\mstxv\M} 0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M|\mlxv\M|\mlvx\M} 0 { target ilp32 } } } */

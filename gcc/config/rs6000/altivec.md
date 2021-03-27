@@ -2771,10 +2771,10 @@
   DONE;
 })
 
-(define_insn "altivec_lvsl_reg"
+(define_insn "altivec_lvsl_reg_<mode>"
   [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
 	(unspec:V16QI
-	[(match_operand:DI 1 "gpc_reg_operand" "b")]
+	[(match_operand:GPR 1 "gpc_reg_operand" "b")]
 	UNSPEC_LVSL_REG))]
   "TARGET_ALTIVEC"
   "lvsl %0,0,%1"
@@ -2809,10 +2809,10 @@
   DONE;
 })
 
-(define_insn "altivec_lvsr_reg"
+(define_insn "altivec_lvsr_reg_<mode>"
   [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
        (unspec:V16QI
-       [(match_operand:DI 1 "gpc_reg_operand" "b")]
+       [(match_operand:GPR 1 "gpc_reg_operand" "b")]
        UNSPEC_LVSR_REG))]
   "TARGET_ALTIVEC"
   "lvsr %0,0,%1"

@@ -7035,20 +7035,40 @@ rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
   int shift = exact_log2 (width);
 
   machine_mode idx_mode = GET_MODE (idx);
-  idx = convert_modes (DImode, idx_mode, idx, 1);
 
+  machine_mode shift_mode;
+  rtx (*gen_ashl)(rtx, rtx, rtx);
+  rtx (*gen_lvsl)(rtx, rtx);
+  rtx (*gen_lvsr)(rtx, rtx);
+
+  if (TARGET_POWERPC64)
+    {
+      shift_mode = DImode;
+      gen_ashl = gen_ashldi3;
+      gen_lvsl = gen_altivec_lvsl_reg_di;
+      gen_lvsr = gen_altivec_lvsr_reg_di;
+    }
+  else
+    {
+      shift_mode = SImode;
+      gen_ashl = gen_ashlsi3;
+      gen_lvsl = gen_altivec_lvsl_reg_si;
+      gen_lvsr = gen_altivec_lvsr_reg_si;
+    }
   /* Generate the IDX for permute shift, width is the vector element size.
      idx = idx * width.  */
-  rtx tmp = gen_reg_rtx (DImode);
-  emit_insn (gen_ashldi3 (tmp, idx, GEN_INT (shift)));
+  rtx tmp = gen_reg_rtx (shift_mode);
+  idx = convert_modes (shift_mode, idx_mode, idx, 1);
+
+  emit_insn (gen_ashl (tmp, idx, GEN_INT (shift)));
 
   /*  lvsr    v1,0,idx.  */
   rtx pcvr = gen_reg_rtx (V16QImode);
-  emit_insn (gen_altivec_lvsr_reg (pcvr, tmp));
+  emit_insn (gen_lvsr (pcvr, tmp));
 
   /*  lvsl    v2,0,idx.  */
   rtx pcvl = gen_reg_rtx (V16QImode);
-  emit_insn (gen_altivec_lvsl_reg (pcvl, tmp));
+  emit_insn (gen_lvsl (pcvl, tmp));
 
   rtx sub_target = simplify_gen_subreg (V16QImode, target, mode, 0);
 
@@ -7064,10 +7084,10 @@ rs6000_expand_vector_set_var_p9 (rtx target, rtx val, rtx idx)
 }
 
 /* Insert VAL into IDX of TARGET, VAL size is same of the vector element, IDX
-   is variable and also counts by vector element size for p8.  */
+   is variable and also counts by vector element size for p7 & p8.  */
 
 static void
-rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
+rs6000_expand_vector_set_var_p7 (rtx target, rtx val, rtx idx)
 {
   machine_mode mode = GET_MODE (target);
 
@@ -7082,17 +7102,41 @@ rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
   int shift = exact_log2 (width);
 
   machine_mode idx_mode = GET_MODE (idx);
-  idx = convert_modes (DImode, idx_mode, idx, 1);
+
+  machine_mode shift_mode;
+  rtx (*gen_ashl)(rtx, rtx, rtx);
+  rtx (*gen_add)(rtx, rtx, rtx);
+  rtx (*gen_sub)(rtx, rtx, rtx);
+  rtx (*gen_lvsl)(rtx, rtx);
+
+  if (TARGET_POWERPC64)
+    {
+      shift_mode = DImode;
+      gen_ashl = gen_ashldi3;
+      gen_add = gen_adddi3;
+      gen_sub = gen_subdi3;
+      gen_lvsl = gen_altivec_lvsl_reg_di;
+    }
+  else
+    {
+      shift_mode = SImode;
+      gen_ashl = gen_ashlsi3;
+      gen_add = gen_addsi3;
+      gen_sub = gen_subsi3;
+      gen_lvsl = gen_altivec_lvsl_reg_si;
+    }
 
   /*  idx = idx * width.  */
-  rtx tmp = gen_reg_rtx (DImode);
-  emit_insn (gen_ashldi3 (tmp, idx, GEN_INT (shift)));
+  rtx tmp = gen_reg_rtx (shift_mode);
+  idx = convert_modes (shift_mode, idx_mode, idx, 1);
+
+  emit_insn (gen_ashl (tmp, idx, GEN_INT (shift)));
 
   /*  For LE:  idx = idx + 8.  */
   if (!BYTES_BIG_ENDIAN)
-    emit_insn (gen_adddi3 (tmp, tmp, GEN_INT (8)));
+    emit_insn (gen_add (tmp, tmp, GEN_INT (8)));
   else
-    emit_insn (gen_subdi3 (tmp, GEN_INT (24 - width), tmp));
+    emit_insn (gen_sub (tmp, GEN_INT (24 - width), tmp));
 
   /*  lxv vs33, mask.
       DImode: 0xffffffffffffffff0000000000000000
@@ -7119,7 +7163,16 @@ rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
   /*  mtvsrd[wz] f0,tmp_val.  */
   rtx tmp_val = gen_reg_rtx (SImode);
   if (inner_mode == E_SFmode)
-    emit_insn (gen_movsi_from_sf (tmp_val, val));
+    if (TARGET_DIRECT_MOVE_64BIT)
+      emit_insn (gen_movsi_from_sf (tmp_val, val));
+    else
+      {
+	rtx stack = rs6000_allocate_stack_temp (SFmode, false, true);
+	emit_insn (gen_movsf_hardfloat (stack, val));
+	rtx stack2 = copy_rtx (stack);
+	PUT_MODE (stack2, SImode);
+	emit_move_insn (tmp_val, stack2);
+      }
   else
     tmp_val = force_reg (SImode, val);
 
@@ -7143,7 +7196,7 @@ rs6000_expand_vector_set_var_p8 (rtx target, rtx val, rtx idx)
 
   /*  lvsl    13,0,idx.  */
   rtx pcv = gen_reg_rtx (V16QImode);
-  emit_insn (gen_altivec_lvsl_reg (pcv, tmp));
+  emit_insn (gen_lvsl (pcv, tmp));
 
   /*  vperm 1,1,1,13.  */
   /*  vperm 0,0,0,13.  */
@@ -7184,11 +7237,13 @@ rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
 	      rs6000_expand_vector_set_var_p9 (target, val, elt_rtx);
 	      return;
 	    }
-	  else if (TARGET_P8_VECTOR && TARGET_DIRECT_MOVE_64BIT)
+	  else if (TARGET_VSX)
 	    {
-	      rs6000_expand_vector_set_var_p8 (target, val, elt_rtx);
+	      rs6000_expand_vector_set_var_p7 (target, val, elt_rtx);
 	      return;
 	    }
+	  else
+	    gcc_assert (CONST_INT_P (elt_rtx));
 	}
 
       rtx insn = NULL_RTX;
@@ -7217,8 +7272,6 @@ rs6000_expand_vector_set (rtx target, rtx val, rtx elt_rtx)
 	  return;
 	}
     }
-
-  gcc_assert (CONST_INT_P (elt_rtx));
 
   /* Simplify setting single element vectors like V1TImode.  */
   if (GET_MODE_SIZE (mode) == GET_MODE_SIZE (inner_mode)
