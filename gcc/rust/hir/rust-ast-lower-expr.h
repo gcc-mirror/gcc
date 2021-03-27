@@ -241,9 +241,9 @@ public:
     });
 
     auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (
-      crate_num, UNKNOWN_NODEID /* this can map back to the AST*/,
-      mappings->get_next_hir_id (crate_num), UNKNOWN_LOCAL_DEFID);
+    Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
 
     translated
       = new HIR::MethodCallExpr (mapping, std::unique_ptr<HIR::Expr> (receiver),
