@@ -22,6 +22,8 @@ Please find the answers to frequently asked questions over on: https://github.co
 
 ## Development Environment
 
+### Building
+
 Fetch dependencies for Ubuntu:
 
 ```bash
@@ -34,7 +36,7 @@ Clone the repository
 $ git clone git@github.com:Rust-GCC/gccrs.git
 ```
 
-Compilation script. It is important to remember that GNU toolchain projects are designed to be built outside of their source directory
+It is important to remember that GNU toolchain projects are designed to be built outside of their source directory
 which is why a build directory is created.
 
 ```bash
@@ -47,7 +49,7 @@ $ make
 Running the compiler itself without make install we can simply invoke the compiler proper:
 
 ```bash
-$ gdb --args ./gcc/rust1 test.rs -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
+$ ./gcc/rust1 test.rs -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
 ```
 
 To invoke the compiler driver (gccrs) we need to:
@@ -56,27 +58,79 @@ To invoke the compiler driver (gccrs) we need to:
 $ make install
 ```
 
-Then invoke the compiler as expected:
+Then invoke the compiler from the installation directory:
 
 ```bash
-$ gccrs -g -O2 -c test.rs -o test.o
-$ gccrs -o test test.o
+$ $HOME/gccrs-install/gccrs -g -O2 -c test.rs -o test.o
+$ $HOME/gccrs-install/gccrs -o test test.o
 ```
-If the driver of gccrs is not found , try run this export :
+
+You can also setup your shell to automatically find the installed compiler. For example for `bash`, add the following in your `$HOME/.bashrc`:
+
 ```bash
-$ export PATH=$HOME/gccrs-install/bin:$PATH
+export PATH=$HOME/gccrs-install/bin:$PATH
+
 ```
 
 ## Testsuite
 
-Invoke the test suite via:
+Invoke the full testsuite from the build directory (`gcc/gccrs-build` in the previous commands):
 
 ```bash
 $ make check-rust
 ```
 
+Invoke a subset of the testsuite. For example, to only execute the tests that are expected to fail:
+
+```bash
+$ make check-rust  RUNTESTFLAGS="xfail_compile.exp"
+```
+The project currently has 3 sets of tests:
+- `execute.exp` : execution tests
+- `compile.exp` : compilation only tests, using combination of options
+- `xfail_compile.exp` : compilation only tests expected to fail
+
+Or execute a specific test :
+
+```bash
+$ make check-rust  RUNTESTFLAGS="xfail_compile.exp=continue1.rs"
+```
+
+Logs (with corresponding commands) can be found in : `gccrs-build/gcc/testsuite/rust/rust.log`.
+
+See [GCC Testing documentation](https://gcc.gnu.org/install/test.html) for more details.
+
 Test cases are located within [gcc/testsuite/rust.test](gcc/testsuite/rust.test) please feel free to contribute your specific
 test cases referencing any issues on Github.
+
+## Debugging
+
+### Enabling internal checks
+
+GCC has several internal checks that can be enabled during configuration. In the case of `gccrs`, you can enable the following:
+```bash
+$ ../gccrs/configure --prefix=$HOME/gccrs-install --disable-bootstrap --enable-multilib --enable-languages=rust --enable-checking=gimple,tree,types
+```
+
+### GDB
+You can directly invoke `gdb` on the `rust1` compiler process (you can find the
+exact command adding `--verbose` to your `gccrs` invocation):
+```bash
+$ gccrs test.rs -O0 -S -o arithmetic_expressions1.s --verbose
+...
+ /some/path/../../rust1 test.rs -quiet -dumpbase arithmetic_expressions1.rs -dumpbase-ext .rs
+ -mtune=generic -march=x86-64 -O0 -w -version -fdiagnostics-color=never -fno-diagnostics-show-caret -fno-diagnostics-show-line-numbers -fdiagnostics-urls=never -fdiagnostics-path-format=separate-events -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu
+...
+$ gdb --args  /some/path/../../rust1 test.rs -quiet -dumpbase arithmetic_expressions1.rs -dumpbase-ext .rs
+ -mtune=generic -march=x86-64 -O0 -w -version -fdiagnostics-color=never -fno-diagnostics-show-caret -fno-diagnostics-show-line-numbers -fdiagnostics-urls=never -fdiagnostics-path-format=separate-events -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu
+```
+
+Or simply add the `-wrapper gdb,--args` option. This will call each subcommand in `gdb` and you simply have to break/debug in `rust1`:
+```bash
+```bash
+$ gccrs test.rs -O0 -S -o arithmetic_expressions1.s -wrapper gdb,--args
+
+```
 
 ## Docker image
 
