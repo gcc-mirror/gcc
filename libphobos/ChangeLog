@@ -1,3 +1,23 @@
+2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Substitute enable_shared, enable_static, and
+	phobos_lt_pic_flag.
+	* libdruntime/Makefile.am (AM_DFLAGS): Replace
+	  phobos_compiler_pic_flag with phobos_lt_pic_flags, and
+	  phobos_compiler_shared_flag.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.am (AM_DFLAGS): Replace phobos_compiler_pic_flag
+	  with phobos_lt_pic_flag, and phobos_compiler_shared_flag.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/libphobos.druntime_shared/druntime_shared.exp: Remove
+	-fversion=Shared and -fno-moduleinfo from default extra test flags.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
+	* testsuite/testsuite_flags.in: Add phobos_compiler_shared_flag to
+	--gdcflags.
+
 2021-02-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/98910

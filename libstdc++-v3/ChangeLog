@@ -1,3 +1,29 @@
+2021-03-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/random.cc (USE_LCG): Define when a pseudo-random
+	fallback is needed.
+	[USE_LCG] (bad_seed, construct_lcg_at, destroy_lcg_at, __lcg):
+	New helper functions and callback.
+	(random_device::_M_init): Add 'prng' and 'all' enumerators.
+	Replace switch with fallthrough with a series of 'if' statements.
+	[USE_LCG]: Construct an lcg_type engine and use __lcg when cpuid
+	checks fail.
+	(random_device::_M_init_pretr1) [USE_MT19937]: Accept "prng"
+	token.
+	(random_device::_M_getval): Check for callback unconditionally
+	and always pass _M_file pointer.
+	* testsuite/26_numerics/random/random_device/85494.cc: Remove
+	effective-target check. Use new random_device_available helper.
+	* testsuite/26_numerics/random/random_device/94087.cc: Likewise.
+	* testsuite/26_numerics/random/random_device/cons/default-cow.cc:
+	Remove effective-target check.
+	* testsuite/26_numerics/random/random_device/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/random_device/cons/token.cc: Use
+	new random_device_available helper. Test "prng" token.
+	* testsuite/util/testsuite_random.h (random_device_available):
+	New helper function.
+
 2021-03-25  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/string

@@ -1,3 +1,273 @@
+2021-03-26  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix.h (ADJUST_FIELD_ALIGN): Call function.
+	* config/rs6000/rs6000-protos.h (rs6000_special_adjust_field_align):
+	Declare.
+	* config/rs6000/rs6000.c (rs6000_special_adjust_field_align): New.
+	(rs6000_special_round_type_align): Recursively check innermost first
+	field.
+
+2021-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99334
+	* dwarf2out.h (struct dw_fde_node): Add rule18 member.
+	* dwarf2cfi.c (dwarf2out_frame_debug_expr): When handling (set hfp sp)
+	assignment with drap_reg active, queue reg save for hfp with offset 0
+	and flush queued reg saves.  When handling a push with rule18,
+	defer queueing reg save for hfp and just assert the offset is 0.
+	(scan_trace): Assert that fde->rule18 is false.
+
+2021-03-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/99766
+	* ira-costs.c (record_reg_classes): Put case with
+	CT_RELAXED_MEMORY adjacent to one with CT_MEMORY.
+	* ira.c (ira_setup_alts): Ditto.
+	* lra-constraints.c (process_alt_operands): Ditto.
+	* recog.c (asm_operand_ok): Ditto.
+	* reload.c (find_reloads): Ditto.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(cpu_addrcost_table::post_modify_ld3_st3): New member variable.
+	(cpu_addrcost_table::post_modify_ld4_st4): Likewise.
+	* config/aarch64/aarch64.c (generic_addrcost_table): Update
+	accordingly, using the same costs as for post_modify.
+	(exynosm1_addrcost_table, xgene1_addrcost_table): Likewise.
+	(thunderx2t99_addrcost_table, thunderx3t110_addrcost_table):
+	(tsv110_addrcost_table, qdf24xx_addrcost_table): Likewise.
+	(a64fx_addrcost_table): Likewise.
+	(neoversev1_addrcost_table): New.
+	(neoversev1_tunings): Use neoversev1_addrcost_table.
+	(aarch64_address_cost): Use the new post_modify costs for CImode
+	and XImode.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.opt
+	(-param=aarch64-loop-vect-issue-rate-niters=): New parameter.
+	* doc/invoke.texi: Document it.
+	* config/aarch64/aarch64-protos.h (aarch64_base_vec_issue_info)
+	(aarch64_scalar_vec_issue_info, aarch64_simd_vec_issue_info)
+	(aarch64_advsimd_vec_issue_info, aarch64_sve_vec_issue_info)
+	(aarch64_vec_issue_info): New structures.
+	(cpu_vector_cost): Write comments above the variables rather
+	than to the side.
+	(cpu_vector_cost::issue_info): New member variable.
+	* config/aarch64/aarch64.c: Include gimple-pretty-print.h
+	and tree-ssa-loop-niter.h.
+	(generic_vector_cost, a64fx_vector_cost, qdf24xx_vector_cost)
+	(thunderx_vector_cost, tsv110_vector_cost, cortexa57_vector_cost)
+	(exynosm1_vector_cost, xgene1_vector_cost, thunderx2t99_vector_cost)
+	(thunderx3t110_vector_cost): Initialize issue_info to null.
+	(neoversev1_scalar_issue_info, neoversev1_advsimd_issue_info)
+	(neoversev1_sve_issue_info, neoversev1_vec_issue_info): New structures.
+	(neoversev1_vector_cost): Use them.
+	(aarch64_vec_op_count, aarch64_sve_op_count): New structures.
+	(aarch64_vector_costs::saw_sve_only_op): New member variable.
+	(aarch64_vector_costs::num_vector_iterations): Likewise.
+	(aarch64_vector_costs::scalar_ops): Likewise.
+	(aarch64_vector_costs::advsimd_ops): Likewise.
+	(aarch64_vector_costs::sve_ops): Likewise.
+	(aarch64_vector_costs::seen_loads): Likewise.
+	(aarch64_simd_vec_costs_for_flags): New function.
+	(aarch64_analyze_loop_vinfo): Initialize num_vector_iterations.
+	Count the number of predicate operations required by SVE WHILE
+	instructions.
+	(aarch64_comparison_type, aarch64_multiply_add_p): New functions.
+	(aarch64_sve_only_stmt_p, aarch64_in_loop_reduction_latency): Likewise.
+	(aarch64_count_ops): Likewise.
+	(aarch64_add_stmt_cost): Record whether see an SVE operation
+	that cannot currently be implementing using Advanced SIMD.
+	Record issue information about the scalar, Advanced SIMD
+	and (where relevant) SVE versions of a loop.
+	(aarch64_vec_op_count::dump): New function.
+	(aarch64_sve_op_count::dump): Likewise.
+	(aarch64_estimate_min_cycles_per_iter): Likewise.
+	(aarch64_adjust_body_cost): If issue information is available,
+	try to compare the issue rates of the various loop implementations
+	and increase or decrease the vector body cost accordingly.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_detect_vector_stmt_subtype):
+	Assume a zero cost for induction phis.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_embedded_comparison_type): New
+	function.
+	(aarch64_adjust_stmt_cost): Add the costs of embedded scalar and
+	vector comparisons.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_detect_scalar_stmt_subtype):
+	New function.
+	(aarch64_add_stmt_cost): Call it.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (matched_vector_throughput):
+	New tuning parameter.
+	* config/aarch64/aarch64.c (neoversev1_tunings): Use it.
+	(aarch64_estimated_sve_vq): New function.
+	(aarch64_vector_costs::analyzed_vinfo): New member variable.
+	(aarch64_vector_costs::is_loop): Likewise.
+	(aarch64_vector_costs::unrolled_advsimd_niters): Likewise.
+	(aarch64_vector_costs::unrolled_advsimd_stmts): Likewise.
+	(aarch64_record_potential_advsimd_unrolling): New function.
+	(aarch64_analyze_loop_vinfo, aarch64_analyze_bb_vinfo): Likewise.
+	(aarch64_add_stmt_cost): Call aarch64_analyze_loop_vinfo or
+	aarch64_analyze_bb_vinfo on the first use of a costs structure.
+	Detect whether we're vectorizing a loop for SVE that might be
+	completely unrolled if it used Advanced SIMD instead.
+	(aarch64_adjust_body_cost_for_latency): New function.
+	(aarch64_finish_cost): Call it.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_vector_costs): New structure.
+	(aarch64_init_cost): New function.
+	(aarch64_add_stmt_cost): Use aarch64_vector_costs instead of
+	the default unsigned[3].
+	(aarch64_finish_cost, aarch64_destroy_cost_data): New functions.
+	(TARGET_VECTORIZE_INIT_COST): Override.
+	(TARGET_VECTORIZE_FINISH_COST): Likewise.
+	(TARGET_VECTORIZE_DESTROY_COST_DATA): Likewise.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (neoversev1_advsimd_vector_cost)
+	(neoversev1_sve_vector_cost): New cost structures.
+	(neoversev1_vector_cost): Likewise.
+	(neoversev1_tunings): Use them.  Enable use_new_vector_costs.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(sve_vec_cost::scatter_store_elt_cost): New member variable.
+	* config/aarch64/aarch64.c (generic_sve_vector_cost): Update
+	accordingly, taking the cost from the cost of a scalar_store.
+	(a64fx_sve_vector_cost): Likewise.
+	(aarch64_detect_vector_stmt_subtype): Detect scatter stores.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(simd_vec_cost::store_elt_extra_cost): New member variable.
+	* config/aarch64/aarch64.c (generic_advsimd_vector_cost): Update
+	accordingly, using the vec_to_scalar cost for the new field.
+	(generic_sve_vector_cost, a64fx_advsimd_vector_cost): Likewise.
+	(a64fx_sve_vector_cost, qdf24xx_advsimd_vector_cost): Likewise.
+	(thunderx_advsimd_vector_cost, tsv110_advsimd_vector_cost): Likewise.
+	(cortexa57_advsimd_vector_cost, exynosm1_advsimd_vector_cost)
+	(xgene1_advsimd_vector_cost, thunderx2t99_advsimd_vector_cost)
+	(thunderx3t110_advsimd_vector_cost): Likewise.
+	(aarch64_detect_vector_stmt_subtype): Detect single-element stores.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (simd_vec_cost::ld2_st2_permute_cost)
+	(simd_vec_cost::ld3_st3_permute_cost): New member variables.
+	(simd_vec_cost::ld4_st4_permute_cost): Likewise.
+	* config/aarch64/aarch64.c (generic_advsimd_vector_cost): Update
+	accordingly, using zero for the new costs.
+	(generic_sve_vector_cost, a64fx_advsimd_vector_cost): Likewise.
+	(a64fx_sve_vector_cost, qdf24xx_advsimd_vector_cost): Likewise.
+	(thunderx_advsimd_vector_cost, tsv110_advsimd_vector_cost): Likewise.
+	(cortexa57_advsimd_vector_cost, exynosm1_advsimd_vector_cost)
+	(xgene1_advsimd_vector_cost, thunderx2t99_advsimd_vector_cost)
+	(thunderx3t110_advsimd_vector_cost): Likewise.
+	(aarch64_ld234_st234_vectors): New function.
+	(aarch64_adjust_stmt_cost): Likewise.
+	(aarch64_add_stmt_cost): Call aarch64_adjust_stmt_cost if using
+	the new vector costs.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-protos.h (sve_vec_cost): Turn into a
+	derived class of simd_vec_cost.  Add information about CLAST[AB]
+	and FADDA instructions.
+	* config/aarch64/aarch64.c (generic_sve_vector_cost): Update
+	accordingly, using the vec_to_scalar costs for the new fields.
+	(a64fx_sve_vector_cost): Likewise.
+	(aarch64_reduc_type): New function.
+	(aarch64_sve_in_loop_reduction_latency): Likewise.
+	(aarch64_detect_vector_stmt_subtype): Take a vinfo parameter.
+	Use aarch64_sve_in_loop_reduction_latency to handle SVE reductions
+	that occur in the loop body.
+	(aarch64_add_stmt_cost): Update call accordingly.
+
+2021-03-26  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (use_new_vector_costs):
+	New tuning flag.
+	* config/aarch64/aarch64-protos.h (simd_vec_cost): Put comments
+	above the fields rather than to the right.
+	(simd_vec_cost::reduc_i8_cost): New member variable.
+	(simd_vec_cost::reduc_i16_cost): Likewise.
+	(simd_vec_cost::reduc_i32_cost): Likewise.
+	(simd_vec_cost::reduc_i64_cost): Likewise.
+	(simd_vec_cost::reduc_f16_cost): Likewise.
+	(simd_vec_cost::reduc_f32_cost): Likewise.
+	(simd_vec_cost::reduc_f64_cost): Likewise.
+	* config/aarch64/aarch64.c (generic_advsimd_vector_cost): Update
+	accordingly, using the vec_to_scalar_cost for the new fields.
+	(generic_sve_vector_cost, a64fx_advsimd_vector_cost): Likewise.
+	(a64fx_sve_vector_cost, qdf24xx_advsimd_vector_cost): Likewise.
+	(thunderx_advsimd_vector_cost, tsv110_advsimd_vector_cost): Likewise.
+	(cortexa57_advsimd_vector_cost, exynosm1_advsimd_vector_cost)
+	(xgene1_advsimd_vector_cost, thunderx2t99_advsimd_vector_cost)
+	(thunderx3t110_advsimd_vector_cost): Likewise.
+	(aarch64_use_new_vector_costs_p): New function.
+	(aarch64_simd_vec_costs): New function, split out from...
+	(aarch64_builtin_vectorization_cost): ...here.
+	(aarch64_is_reduction): New function.
+	(aarch64_detect_vector_stmt_subtype): Likewise.
+	(aarch64_add_stmt_cost): Call aarch64_detect_vector_stmt_subtype if
+	using the new vector costs.
+
+2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR ipa/99466
+	* tree-emutls.c (get_emutls_init_templ_addr): Mark initializer of weak
+	TLS declarations as public.
+
+2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/aarch64/aarch64-d.c (IN_TARGET_CODE): Define.
+	* config/arm/arm-d.c (IN_TARGET_CODE): Likewise.
+	* config/i386/i386-d.c (IN_TARGET_CODE): Likewise.
+	* config/mips/mips-d.c (IN_TARGET_CODE): Likewise.
+	* config/pa/pa-d.c (IN_TARGET_CODE): Likewise.
+	* config/riscv/riscv-d.c (IN_TARGET_CODE): Likewise.
+	* config/rs6000/rs6000-d.c (IN_TARGET_CODE): Likewise.
+	* config/s390/s390-d.c (IN_TARGET_CODE): Likewise.
+	* config/sparc/sparc-d.c (IN_TARGET_CODE): Likewise.
+
+2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/91595
+	* config.gcc (*-*-cygwin*): Add winnt-d.o
+	(*-*-mingw*): Likewise.
+	* config/i386/cygwin.h (EXTRA_TARGET_D_OS_VERSIONS): New macro.
+	* config/i386/mingw32.h (EXTRA_TARGET_D_OS_VERSIONS): Likewise.
+	* config/i386/t-cygming: Add winnt-d.o.
+	* config/i386/winnt-d.c: New file.
+
+2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/freebsd-d.c: Include memmodel.h.
+
+2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99691
+	* config.gcc (*-*-openbsd*): Add openbsd-d.o.
+	* config/t-openbsd: Add openbsd-d.o.
+	* config/openbsd-d.c: New file.
+
 2021-03-25  Stam Markianos-Wright  <stam.markianos-wright@arm.com>
 
 	PR tree-optimization/96974
