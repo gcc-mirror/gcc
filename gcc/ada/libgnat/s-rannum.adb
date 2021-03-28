@@ -178,7 +178,10 @@ is
    function Random (Gen : Generator) return Unsigned_32 is
       G : Generator renames Gen.Writable.Self.all;
       Y : State_Val;
-      I : Integer;      --  should avoid use of identifier I ???
+      I : Integer;
+      --  Naming exception: I is fine to use here as it is the name used in
+      --  the original paper describing the Mersenne Twister and in common
+      --  descriptions of the algorithm.
 
    begin
       I := G.I;

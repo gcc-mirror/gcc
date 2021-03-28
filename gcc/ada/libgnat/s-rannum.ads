@@ -162,7 +162,9 @@ private
 
       I : Integer := N;
       --  Current starting position in shift register S (N means uninitialized)
-      --  We should avoid using the identifier I here ???
+      --  Naming exception: I is fine to use here as it is the name used in the
+      --  original paper describing the Mersenne Twister and in common
+      --  descriptions of the algorithm.
    end record;
 
 end System.Random_Numbers;
