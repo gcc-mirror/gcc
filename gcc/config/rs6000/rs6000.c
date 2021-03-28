@@ -9027,26 +9027,6 @@ rs6000_output_dwarf_dtprel (FILE *file, int size, rtx x)
   output_addr_const (file, x);
   if (TARGET_ELF)
     fputs ("@dtprel+0x8000", file);
-  else if (TARGET_XCOFF && SYMBOL_REF_P (x))
-    {
-      switch (SYMBOL_REF_TLS_MODEL (x))
-	{
-	case 0:
-	  break;
-	case TLS_MODEL_LOCAL_EXEC:
-	  fputs ("@le", file);
-	  break;
-	case TLS_MODEL_INITIAL_EXEC:
-	  fputs ("@ie", file);
-	  break;
-	case TLS_MODEL_GLOBAL_DYNAMIC:
-	case TLS_MODEL_LOCAL_DYNAMIC:
-	  fputs ("@m", file);
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
 }
 
 /* Return true if X is a symbol that refers to real (rather than emulated)
