@@ -610,7 +610,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Defining_Identifier, Node_Id),
         Sy (Formal_Type_Definition, Node_Id),
         Sy (Discriminant_Specifications, List_Id, Default_No_List),
-        Sy (Unknown_Discriminants_Present, Flag)));
+        Sy (Unknown_Discriminants_Present, Flag),
+        Sy (Default_Subtype_Mark, Node_Id)));
 
    Cc (N_Full_Type_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),

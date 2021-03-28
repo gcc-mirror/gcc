@@ -7195,6 +7195,7 @@ package Sinfo is
       --  Discriminant_Specifications (set to No_List if no
       --   discriminant part)
       --  Unknown_Discriminants_Present set if (<>) discriminant
+      --  Default_Subtype_Mark
 
       ----------------------------------
       -- 12.5  Formal type definition --

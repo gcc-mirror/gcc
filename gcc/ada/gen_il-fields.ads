@@ -136,6 +136,7 @@ package Gen_IL.Fields is
       Default_Expression,
       Default_Storage_Pool,
       Default_Name,
+      Default_Subtype_Mark,
       Defining_Identifier,
       Defining_Unit_Name,
       Delay_Alternative,
