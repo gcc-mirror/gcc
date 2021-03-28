@@ -128,8 +128,11 @@ ALL_DRUNTIME_SOURCES = $(DRUNTIME_DSOURCES) $(DRUNTIME_CSOURCES) \
 toolexeclib_LTLIBRARIES = libgdruntime.la
 libgdruntime_la_SOURCES = $(ALL_DRUNTIME_SOURCES)
 libgdruntime_la_LIBTOOLFLAGS =
+if ENABLE_DARWIN_AT_RPATH
+libgdruntime_darwin_rpath = -Wl,-rpath,@loader_path
+endif
 libgdruntime_la_LDFLAGS = -Wc,-nophoboslib,-dstartfiles,-B../src,-Bgcc \
-    -version-info $(libtool_VERSION)
+    -version-info $(libtool_VERSION) $(libgdruntime_darwin_rpath)
 libgdruntime_la_LIBADD = $(LIBATOMIC) $(LIBBACKTRACE)
 libgdruntime_la_DEPENDENCIES = $(DRTSTUFF)
 # Also override library link commands: This is not strictly

@@ -562,8 +562,11 @@ libstdc___la_DEPENDENCIES = \
 	$(top_builddir)/src/c++17/libc++17convenience.la \
 	$(top_builddir)/src/c++20/libc++20convenience.la
 
+@ENABLE_DARWIN_AT_RPATH_TRUE@libstdc___darwin_rpath =  \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wc,-nodefaultrpaths \
+@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
 libstdc___la_LDFLAGS = \
-	-version-info $(libtool_VERSION) ${version_arg} -lm
+	-version-info $(libtool_VERSION) ${version_arg} -lm $(libstdc___darwin_rpath)
 
 libstdc___la_LINK = $(CXXLINK) $(libstdc___la_LDFLAGS) $(lt_host_flags)
 @GLIBCXX_LDBL_ALT128_COMPAT_FALSE@@GLIBCXX_LDBL_COMPAT_TRUE@LTCXXCOMPILE64 = $(LTCXXCOMPILE)

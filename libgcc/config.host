@@ -233,7 +233,6 @@ case ${host} in
       ;;
   esac
   tmake_file="$tmake_file t-slibgcc-darwin"
-  # newer toolsets produce warnings when building for unsupported versions.
   case ${host} in
     *-*-darwin1[89]* | *-*-darwin2* )
       tmake_file="t-darwin-min-8 $tmake_file"
@@ -251,6 +250,28 @@ case ${host} in
       echo "Warning: libgcc configured to support macOS 10.5" 1>&2
       ;;
   esac
+  # We are not using libtool to build the libs here, so we need to replicate
+  # a little of the logic around setting Darwin rpaths.  Setting an explicit
+  # yes or no is honoured, otherwise we choose a suitable default.
+  # Sadly, this has to be kept in line with the rules in libtool.m4.
+  # This make fragment will override the setting in t-slibgcc-darwin so it
+  # must appear after it.
+  if test "x$enable_darwin_at_rpath" = "x"; then
+    echo "enable_darwin_at_rpath is unset" 1>&2
+    case ${host} in
+      *-darwin[45678]*) ;;
+      *-darwin9* | *-darwin1[01234]*) ;; # We might default these on later.
+      *-darwin*)
+        echo "but is needed after macOS 10.11 (setting it on)" 1>&2
+        enable_darwin_at_rpath=yes
+        ;;
+    esac
+  else
+    echo "enable_darwin_at_rpath is '$enable_darwin_at_rpath'" 1>&2
+  fi
+  if test "x$enable_darwin_at_rpath" = "xyes"; then
+    tmake_file="$tmake_file t-darwin-rpath "
+  fi
   extra_parts="crt3.o libd10-uwfef.a crttms.o crttme.o libemutls_w.a"
   ;;
 *-*-dragonfly*)

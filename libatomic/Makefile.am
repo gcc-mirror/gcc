@@ -65,8 +65,13 @@ libatomic_version_script =
 libatomic_version_dep =
 endif
 libatomic_version_info = -version-info $(libtool_VERSION)
+if ENABLE_DARWIN_AT_RPATH
+libatomic_darwin_rpath = -Wc,-nodefaultrpaths
+libatomic_darwin_rpath += -Wl,-rpath,@loader_path
+endif
 
-libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) $(lt_host_flags)
+libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
+	$(lt_host_flags) $(libatomic_darwin_rpath)
 libatomic_la_SOURCES = gload.c gstore.c gcas.c gexch.c glfree.c lock.c init.c \
 	fenv.c fence.c flag.c
 

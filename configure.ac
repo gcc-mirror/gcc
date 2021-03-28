@@ -1855,6 +1855,20 @@ AC_ARG_WITH(boot-ldflags,
  if test "$poststage1_libs" = ""; then
    poststage1_ldflags="-static-libstdc++ -static-libgcc"
  fi])
+case $target in
+  *-darwin2* | *-darwin1[[56789]]*)
+    # For these versions, we default to using embedded rpaths.
+    if test "x$enable_darwin_at_rpath" != "xno"; then
+      poststage1_ldflags="$poststage1_ldflags -nodefaultrpaths"
+    fi
+  ;;
+  *-darwin*)
+    # For these versions, we only use embedded rpaths on demand.
+    if test "x$enable_darwin_at_rpath" = "xyes"; then
+      poststage1_ldflags="$poststage1_ldflags -nodefaultrpaths"
+    fi
+  ;;
+esac
 AC_SUBST(poststage1_ldflags)
 
 # GCC GRAPHITE dependency isl.

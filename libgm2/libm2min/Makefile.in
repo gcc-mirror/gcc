@@ -105,17 +105,18 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -nodefaultrpaths -Wl,-rpath,@loader_path/
 subdir = libm2min
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../libtool.m4 \
-	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
-	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
-	$(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
-	$(top_srcdir)/../config/override.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
+	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
+	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am
@@ -443,8 +444,10 @@ libm2min_la_M2FLAGS = \
    -fno-m2-plugin -fno-scaffold-dynamic -fno-scaffold-main -fm2-prefix=m2min \
    $(TARGET_LONGDOUBLE_ABI)
 
-@TARGET_DARWIN_FALSE@libm2min_la_link_flags = 
-@TARGET_DARWIN_TRUE@libm2min_la_link_flags = -Wl,-undefined,dynamic_lookup
+@TARGET_DARWIN_FALSE@libm2min_la_link_flags = $(am__append_1)
+@TARGET_DARWIN_TRUE@libm2min_la_link_flags =  \
+@TARGET_DARWIN_TRUE@	-Wl,-undefined,dynamic_lookup \
+@TARGET_DARWIN_TRUE@	$(am__append_1)
 libm2min_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2min_la_link_flags)
 BUILT_SOURCES = SYSTEM.def
 CLEANFILES = SYSTEM.def

@@ -54,7 +54,12 @@ libitm_version_info = -version-info $(libtool_VERSION)
 # want or need libstdc++.
 libitm_la_DEPENDENCIES = $(libitm_version_dep)
 libitm_la_LINK = $(LINK) $(libitm_la_LDFLAGS)
-libitm_la_LDFLAGS = $(libitm_version_info) $(libitm_version_script)
+if ENABLE_DARWIN_AT_RPATH
+libitm_darwin_rpath = -Wc,-nodefaultrpaths
+libitm_darwin_rpath += -Wl,-rpath,@loader_path
+endif
+libitm_la_LDFLAGS = $(libitm_version_info) $(libitm_version_script) \
+  $(libitm_darwin_rpath)
 
 libitm_la_SOURCES = \
 	aatree.cc alloc.cc alloc_c.cc alloc_cpp.cc barrier.cc beginend.cc \

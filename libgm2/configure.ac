@@ -212,8 +212,12 @@ AC_CHECK_TOOL(RANLIB, ranlib, ranlib-not-found-in-path-error)
 AC_PROG_MAKE_SET
 AC_PROG_INSTALL
 
-AC_LIBTOOL_DLOPEN
 AM_PROG_LIBTOOL
+LT_INIT
+AC_LIBTOOL_DLOPEN
+
+AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
+
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 

@@ -41,8 +41,12 @@ if LIBBACKTRACE_SUPPORTED
 liblsan_la_LIBADD += $(top_builddir)/libbacktrace/libsanitizer_libbacktrace.la
 endif
 liblsan_la_LIBADD += $(LIBSTDCXX_RAW_CXX_LDFLAGS)
-liblsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` $(link_liblsan)
-
+if ENABLE_DARWIN_AT_RPATH
+liblsan_darwin_rpath = -Wc,-nodefaultrpaths
+liblsan_darwin_rpath += -Wl,-rpath,@loader_path
+endif
+liblsan_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
+	$(link_liblsan) $(liblsan_darwin_rpath)
 liblsan_preinit.o: lsan_preinit.o
 	cp $< $@
 

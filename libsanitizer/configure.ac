@@ -85,6 +85,8 @@ esac
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
+AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
+
 AC_CHECK_SIZEOF([void *])
 
 if test "${multilib}" = "yes"; then

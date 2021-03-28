@@ -37,6 +37,11 @@ else
 version_arg =
 version_dep =
 endif
+extra_darwin_ldflags_libgfortran = @extra_ldflags_libgfortran@
+if ENABLE_DARWIN_AT_RPATH
+extra_darwin_ldflags_libgfortran += -Wc,-nodefaultrpaths
+extra_darwin_ldflags_libgfortran += -Wl,-rpath,@loader_path
+endif
 
 gfor_c_HEADERS = ISO_Fortran_binding.h
 gfor_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
@@ -50,7 +55,7 @@ libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LTLDFLAGS) $(LIBQUADLIB) ../libbacktrace/libbacktrace.la \
 	$(HWCAP_LDFLAGS) \
-	$(LIBM) $(extra_ldflags_libgfortran) \
+	$(LIBM) $(extra_darwin_ldflags_libgfortran) \
 	$(version_arg) -Wc,-shared-libgcc
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
 

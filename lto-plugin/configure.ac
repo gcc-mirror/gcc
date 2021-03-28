@@ -121,6 +121,7 @@ fi
 AC_SUBST(ac_lto_plugin_extra_ldflags)
 
 AM_PROG_LIBTOOL
+AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
 ACX_LT_HOST_FLAGS
 AC_SUBST(target_noncanonical)
 AC_TYPE_INT64_T

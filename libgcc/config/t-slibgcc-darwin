@@ -1,4 +1,4 @@
-# Build a shared libgcc library with the darwin linker.
+# Build a shared libgcc library able to use embedded runpaths.
 
 SHLIB_SOVERSION = 1.1
 SHLIB_SO_MINVERSION = 1
@@ -6,7 +6,6 @@ SHLIB_VERSTRING = -compatibility_version $(SHLIB_SO_MINVERSION) \
 		  -current_version $(SHLIB_SOVERSION)
 SHLIB_EXT = .dylib
 SHLIB_LC = -lSystem
-SHLIB_INSTALL_DIR = $(slibdir)
 
 SHLIB_MKMAP = $(srcdir)/mkmap-flat.awk
 SHLIB_MKMAP_OPTS = -v leading_underscore=1
@@ -23,11 +22,16 @@ SHLIB_SONAME = @shlib_base_name@$(SHLIB_EXT)
 # subdir.  The code under MULTIBUILDTOP combines these into a single FAT
 # library, that is what we eventually install.
 
+# When enable_darwin_at_rpath is true, use @rpath instead of $(slibdir) for
+# this and dylibs that depend on this.  So this def must come first and be
+# overridden in a make fragment that depends on the rpath setting.
+SHLIB_RPATH = $(slibdir)
+
 SHLIB_LINK = $(CC) $(LIBGCC2_CFLAGS) $(LDFLAGS) -dynamiclib -nodefaultlibs \
-	-install_name $(SHLIB_INSTALL_DIR)/$(SHLIB_INSTALL_NAME) \
+	-install_name $(SHLIB_RPATH)/$(SHLIB_INSTALL_NAME) \
 	-single_module -o $(SHLIB_DIR)/$(SHLIB_SONAME) \
 	-Wl,-exported_symbols_list,$(SHLIB_MAP) \
-	$(SHLIB_VERSTRING) \
+	$(SHLIB_VERSTRING) -nodefaultrpaths \
 	@multilib_flags@ @shlib_objs@ $(SHLIB_LC)
 
 # we do our own thing
@@ -63,9 +67,9 @@ EHS_INSTNAME = libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)
 libgcc_ehs$(SHLIB_EXT): $(LIBEHSOBJS) $(extra-parts)
 	mkdir -p $(MULTIDIR)
 	$(CC) $(LIBGCC2_CFLAGS) $(LDFLAGS) -dynamiclib -nodefaultlibs \
-	-install_name $(SHLIB_INSTALL_DIR)/$(EHS_INSTNAME) \
+	-install_name $(SHLIB_RPATH)/$(EHS_INSTNAME) \
 	-o $(MULTIDIR)/libgcc_ehs$(SHLIB_EXT) $(SHLIB_VERSTRING) \
-	$(LIBEHSOBJS) $(SHLIB_LC)
+	-nodefaultrpaths $(LIBEHSOBJS) $(SHLIB_LC)
 
 all: libgcc_ehs$(SHLIB_EXT)
 
@@ -122,12 +126,12 @@ libgcc_s.1.dylib: all-multi libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT) \
 	  cp ../$${mlib}/libgcc/$${mlib}/libgcc_ehs$(SHLIB_EXT)  \
 	    ./libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} || exit 1 ; \
 	  arch=`$(LIPO) -info libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} | sed -e 's/.*:\ //'` ; \
-	  $(CC) -arch $${arch} -nodefaultlibs -dynamiclib \
+	  $(CC) -arch $${arch} -nodefaultlibs -dynamiclib -nodefaultrpaths \
 	    -o libgcc_s.1$(SHLIB_EXT)_T_$${mlib} \
 	    -Wl,-reexport_library,libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} \
 	    -Wl,-reexport_library,libgcc_ehs.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} \
-	    -install_name $(SHLIB_INSTALL_DIR)/libgcc_s.1.dylib \
-	    -compatibility_version 1 -current_version 1 ; \
+	    -install_name $(SHLIB_RPATH)/libgcc_s.1.dylib \
+	    -compatibility_version 1 -current_version 1.1 ; \
 	done
 	$(LIPO) -output libgcc_s.1$(SHLIB_EXT) -create libgcc_s.1$(SHLIB_EXT)_T*
 	rm libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T*
@@ -141,13 +145,13 @@ libgcc_s.1.dylib: all-multi libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)
 	  cp ../$${mlib}/libgcc/$${mlib}/libgcc_s$(SHLIB_EXT)  \
 	    ./libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} || exit 1 ; \
 	  arch=`$(LIPO) -info libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} | sed -e 's/.*:\ //'` ; \
-	  $(CC) -arch $${arch} -nodefaultlibs -dynamiclib \
+	  $(CC) -arch $${arch} -nodefaultlibs -dynamiclib -nodefaultrpaths \
 	    -o libgcc_s.1$(SHLIB_EXT)_T_$${mlib} \
 	    -Wl,-reexport_library,libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T_$${mlib} \
 	    -lSystem \
 	    -Wl,-reexported_symbols_list,$(srcdir)/config/darwin-unwind.ver \
-	    -install_name $(SHLIB_INSTALL_DIR)/libgcc_s.1.dylib \
-	    -compatibility_version 1 -current_version 1 ; \
+	    -install_name $(SHLIB_RPATH)/libgcc_s.1.dylib \
+	    -compatibility_version 1 -current_version 1.1 ; \
 	done
 	$(LIPO) -output libgcc_s.1$(SHLIB_EXT) -create libgcc_s.1$(SHLIB_EXT)_T*
 	rm libgcc_s.$(SHLIB_SOVERSION)$(SHLIB_EXT)_T*

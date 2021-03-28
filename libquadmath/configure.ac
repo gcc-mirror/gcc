@@ -59,6 +59,7 @@ AM_PROG_LIBTOOL
 ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
+AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
 
 AM_MAINTAINER_MODE
 
@@ -120,6 +121,8 @@ case ${version_specific_libs} in
 esac
 AC_SUBST(toolexecdir)
 AC_SUBST(toolexeclibdir)
+
+AC_CHECK_LIBM
 
 AC_CHECK_HEADERS(fenv.h langinfo.h locale.h wchar.h wctype.h limits.h ctype.h printf.h errno.h)
 LIBQUAD_CHECK_MATH_H_SIGNGAM

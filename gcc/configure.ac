@@ -2632,6 +2632,8 @@ AC_PROG_LIBTOOL
 AC_SUBST(objdir)
 AC_SUBST(enable_fast_install)
 
+AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
+
 # Identify the assembler which will work hand-in-glove with the newly
 # built GCC, so that we can examine its features.  This is the assembler
 # which will be driven by the driver program.

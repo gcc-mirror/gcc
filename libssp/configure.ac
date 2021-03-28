@@ -165,6 +165,8 @@ AC_SUBST(enable_static)
 
 GCC_WITH_TOOLEXECLIBDIR
 
+AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
+
 # Calculate toolexeclibdir
 # Also toolexecdir, though it's only used in toolexeclibdir
 case ${version_specific_libs} in

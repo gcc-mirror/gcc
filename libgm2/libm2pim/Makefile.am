@@ -180,6 +180,9 @@ libm2pim_la_link_flags = -Wl,-undefined,dynamic_lookup
 else
 libm2pim_la_link_flags =
 endif
+if ENABLE_DARWIN_AT_RPATH
+libm2pim_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
+endif
 libm2pim_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2pim_la_link_flags)
 BUILT_SOURCES = SYSTEM.def
 CLEANFILES = SYSTEM.def

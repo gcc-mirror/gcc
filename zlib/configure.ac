@@ -64,6 +64,7 @@ GCC_CET_FLAGS(CET_FLAGS)
 AC_SUBST(CET_FLAGS)
 
 AC_PROG_LIBTOOL
+AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
 
 # Find CPP now so that any conditional tests below won't do it and
 # thereby make the resulting definitions conditional.
