@@ -245,7 +245,7 @@ Merging can be disabled via @option{-fno-analyzer-state-merge}.
 
 Part of the state stored at a @code{exploded_node} is a @code{region_model}.
 This is an implementation of the region-based ternary model described in
-@url{http://lcs.ios.ac.cn/~xzx/memmodel.pdf,
+@url{https://www.researchgate.net/publication/221430855_A_Memory_Model_for_Static_Analysis_of_C_Programs,
 "A Memory Model for Static Analysis of C Programs"}
 (Zhongxing Xu, Ted Kremenek, and Jian Zhang).
 
