@@ -42,7 +42,7 @@ libgfortran_la_LINK = $(LINK) $(libgfortran_la_LDFLAGS)
 libgfortran_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 	$(LTLDFLAGS) $(LIBQUADLIB) ../libbacktrace/libbacktrace.la \
 	$(HWCAP_LDFLAGS) \
-	-lm $(extra_ldflags_libgfortran) \
+	$(LIBM) $(extra_ldflags_libgfortran) \
 	$(version_arg) -Wc,-shared-libgcc
 libgfortran_la_DEPENDENCIES = $(version_dep) libgfortran.spec $(LIBQUADLIB_DEP)
 
