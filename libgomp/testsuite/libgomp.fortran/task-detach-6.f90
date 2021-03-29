@@ -1,6 +1,6 @@
 ! { dg-do run }
 
-! { dg-additional-sources ../lib/on_device_arch.c }
+! { dg-additional-sources on_device_arch.c }
   ! { dg-prune-output "command-line option '-fintrinsic-modules-path=.*' is valid for Fortran but not for C" }
 
 ! Test tasks with detach clause on an offload device.  Each device
