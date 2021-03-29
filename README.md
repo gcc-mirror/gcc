@@ -90,7 +90,7 @@ The project currently has 3 sets of tests:
 - `compile.exp` : compilation only tests, using combination of options
 - `xfail_compile.exp` : compilation only tests expected to fail
 
-Or execute a specific test :
+Invoke only a specific test :
 
 ```bash
 $ make check-rust  RUNTESTFLAGS="xfail_compile.exp=continue1.rs"
@@ -127,9 +127,7 @@ $ gdb --args  /some/path/../../rust1 test.rs -quiet -dumpbase arithmetic_express
 
 Or simply add the `-wrapper gdb,--args` option. This will call each subcommand in `gdb` and you simply have to break/debug in `rust1`:
 ```bash
-```bash
 $ gccrs test.rs -O0 -S -o arithmetic_expressions1.s -wrapper gdb,--args
-
 ```
 
 ## Docker image
