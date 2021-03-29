@@ -2325,9 +2325,9 @@ region_model::get_representative_tree (const svalue *sval) const
 
   /* Strip off any top-level cast.  */
   if (expr && TREE_CODE (expr) == NOP_EXPR)
-    return TREE_OPERAND (expr, 0);
+    expr = TREE_OPERAND (expr, 0);
 
-  return expr;
+  return fixup_tree_for_diagnostic (expr);
 }
 
 /* Implementation of region_model::get_representative_path_var.
