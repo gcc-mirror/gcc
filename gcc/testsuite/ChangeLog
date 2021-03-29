@@ -1,3 +1,30 @@
+2021-03-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96770
+	* gcc.target/arm/pure-code/pr96770.c: Improve scan-assembler-times.
+
+2021-03-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99602
+	* gfortran.dg/pr99602.f90: New test.
+	* gfortran.dg/pr99602a.f90: New test.
+	* gfortran.dg/pr99602b.f90: New test.
+	* gfortran.dg/pr99602c.f90: New test.
+	* gfortran.dg/pr99602d.f90: New test.
+
+2021-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* lib/gdc-utils.exp (gdc-copy-extra): Rename to...
+	(gdc-copy-file): ... this.  Use file copy instead of open/close.
+	(gdc-convert-test): Save translated dejagnu test to gdc.test
+	directory, only write dejagnu directives to the test file.
+	(gdc-do-test): Don't create gdc.test symlink.
+
+2021-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/gdc270a.d: Removed.
+	* gdc.dg/gdc270b.d: Removed.
+
 2021-03-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gcc.target/powerpc/pr99557.c: New.

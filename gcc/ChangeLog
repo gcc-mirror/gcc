@@ -1,3 +1,13 @@
+2021-03-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_dwarf_dtprel): Do not add
+	XCOFF TLS reloc decorations.
+
+2021-03-28  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/analyzer.texi (Analyzer Internals): Update link to
+	"A Memory Model for Static Analysis of C Programs".
+
 2021-03-26  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix.h (ADJUST_FIELD_ALIGN): Call function.

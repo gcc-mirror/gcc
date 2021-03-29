@@ -1,3 +1,15 @@
+2021-03-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/forward_list
+	(forward_list(forward_list&&, const allocator_type&)): Add noexcept qualification.
+	* include/debug/list (list(list&&, const allocator_type&)): Likewise and add
+	call to safe container allocator aware move constructor.
+	* include/debug/vector (vector(vector&&, const allocator_type&)):
+	Fix noexcept qualification.
+	* testsuite/23_containers/forward_list/cons/noexcept_move_construct.cc:
+	Add allocator-extended move constructor noexceot qualification check.
+	* testsuite/23_containers/list/cons/noexcept_move_construct.cc: Likewise.
+
 2021-03-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++11/random.cc (USE_LCG): Define when a pseudo-random

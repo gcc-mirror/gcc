@@ -1,3 +1,10 @@
+2021-03-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99602
+	* trans-expr.c (gfc_conv_procedure_call): Use the _data attrs
+	for class expressions and detect proc pointer evaluations by
+	the non-null actual argument list.
+
 2021-03-27  Steve Kargl  <kargl@gcc.gnu.org>
 
 	* misc.c (gfc_typename): Fix off-by-one in buffer sizes.

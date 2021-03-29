@@ -1,3 +1,33 @@
+2021-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_init_versions): Predefine D_PIE if flag_pie is set.
+
+2021-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-lang.cc (d_enum_underlying_base_type): New function.
+	(LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE): Set as
+	d_enum_underlying_base_type.
+
+2021-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Make-lang.in (DMDGEN_COMPILE): Remove.
+	(d/%.dmdgen.o): Use COMPILER_FOR_BUILD and BUILD_COMPILERFLAGS to
+	build all D generator programs.
+	(D_SYSTEM_H): New macro.
+	(d/idgen.dmdgen.o): Add dependencies to build.
+	(d/impcnvgen.dmdgen.o): Likewise.
+	* d-system.h: Include bconfig.h if GENERATOR_FILE is defined.
+
+2021-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config-lang.in (gtfiles): Remove modules.cc.
+	* modules.cc (struct module_info): Remove GTY marker.
+	(static_ctor_list): Remove variable.
+	(static_dtor_list): Remove variable.
+	(register_moduleinfo): Directly set DECL_STATIC_CONSTRUCTOR on
+	dso_ctor, and DECL_STATIC_DESTRUCTOR on dso_dtor.
+	(d_finish_compilation): Remove static ctor/dtor handling.
+
 2021-03-06  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-lang.cc (d_init_options_struct): Don't set default
