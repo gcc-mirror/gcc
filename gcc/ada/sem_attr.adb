@@ -11290,7 +11290,11 @@ package body Sem_Attr is
                   --  this kind of warning is an error in SPARK mode.
 
                   if In_Instance_Body then
-                     Error_Msg_Warn := SPARK_Mode /= On;
+                     Error_Msg_Warn :=
+                       SPARK_Mode /= On
+                         and then
+                           not No_Dynamic_Accessibility_Checks_Enabled (P);
+
                      Error_Msg_F
                        ("non-local pointer cannot point to local object<<", P);
                      Error_Msg_F ("\Program_Error [<<", P);
@@ -11422,10 +11426,13 @@ package body Sem_Attr is
                --  Check the static accessibility rule of 3.10.2(28). Note that
                --  this check is not performed for the case of an anonymous
                --  access type, since the access attribute is always legal
-               --  in such a context.
+               --  in such a context - unless the restriction
+               --  No_Dynamic_Accessibility_Checks is active.
 
                if Attr_Id /= Attribute_Unchecked_Access
-                 and then Ekind (Btyp) = E_General_Access_Type
+                 and then
+                   (Ekind (Btyp) = E_General_Access_Type
+                      or else No_Dynamic_Accessibility_Checks_Enabled (Btyp))
 
                  --  Call Accessibility_Level directly to avoid returning zero
                  --  on cases where the prefix is an explicitly aliased

@@ -2771,7 +2771,9 @@ package body Exp_Ch5 is
                                             (Entity (Lhs)), Loc),
                                      Expression =>
                                        Accessibility_Level
-                                         (Rhs, Dynamic_Level));
+                                         (Expr            => Rhs,
+                                          Level           => Dynamic_Level,
+                                          Allow_Alt_Model => False));
 
          begin
             if not Accessibility_Checks_Suppressed (Entity (Lhs)) then

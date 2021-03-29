@@ -827,6 +827,7 @@ package Snames is
    Name_No_Access_Parameter_Allocators : constant Name_Id := N + $;
    Name_No_Coextensions                : constant Name_Id := N + $;
    Name_No_Dependence                  : constant Name_Id := N + $;
+   Name_No_Dynamic_Accessibility_Checks : constant Name_Id := N + $;
    Name_No_Dynamic_Attachment          : constant Name_Id := N + $;
    Name_No_Dynamic_Interrupts          : constant Name_Id := N + $;
    Name_No_Elaboration_Code            : constant Name_Id := N + $;

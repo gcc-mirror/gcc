@@ -140,7 +140,7 @@ package body Debug is
    --  d.Z  Do not enable expansion in configurable run-time mode
 
    --  d_a  Stop elaboration checks on accept or select statement
-   --  d_b
+   --  d_b  Use compatibility model under No_Dynamic_Accessibility_Checks
    --  d_c  CUDA compilation : compile for the host
    --  d_d
    --  d_e  Ignore entry calls and requeue statements for elaboration

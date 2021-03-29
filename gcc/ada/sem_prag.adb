@@ -10483,6 +10483,41 @@ package body Sem_Prag is
                      Add_To_Config_Boolean_Restrictions (No_Elaboration_Code);
                   end if;
 
+               --  Special processing for No_Dynamic_Accessibility_Checks to
+               --  disallow exclusive specification in a body or subunit.
+
+               elsif R_Id = No_Dynamic_Accessibility_Checks
+                 --  Check if the restriction is within configuration pragma
+                 --  in a similar way to No_Elaboration_Code.
+
+                 and then not (Current_Sem_Unit = Main_Unit
+                                or else In_Extended_Main_Source_Unit (N))
+
+                 and then Nkind (Unit (Parent (N))) = N_Compilation_Unit
+
+                 and then (Nkind (Unit (Parent (N))) = N_Package_Body
+                            or else Nkind (Unit (Parent (N))) = N_Subunit)
+
+                 and then not Restriction_Active
+                                (No_Dynamic_Accessibility_Checks)
+               then
+                  Error_Msg_N
+                    ("invalid specification of " &
+                     """No_Dynamic_Accessibility_Checks""", N);
+
+                  if Nkind (Unit (Parent (N))) = N_Package_Body then
+                     Error_Msg_N
+                       ("\restriction cannot be specified in a package " &
+                         "body", N);
+
+                  elsif Nkind (Unit (Parent (N))) = N_Subunit then
+                     Error_Msg_N
+                       ("\restriction cannot be specified in a subunit", N);
+                  end if;
+
+                  Error_Msg_N
+                    ("\unless also specified in spec", N);
+
                --  Special processing for No_Tasking restriction (not just a
                --  warning) when it appears as a configuration pragma.
 

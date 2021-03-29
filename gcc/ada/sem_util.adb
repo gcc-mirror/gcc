@@ -177,9 +177,9 @@ package body Sem_Util is
    --  "subp:file:line:col", corresponding to the source location of the
    --  body of the subprogram.
 
-   ------------------------------
-   --  Abstract_Interface_List --
-   ------------------------------
+   -----------------------------
+   -- Abstract_Interface_List --
+   -----------------------------
 
    function Abstract_Interface_List (Typ : Entity_Id) return List_Id is
       Nod : Node_Id;
@@ -260,7 +260,8 @@ package body Sem_Util is
    function Accessibility_Level
      (Expr              : Node_Id;
       Level             : Accessibility_Level_Kind;
-      In_Return_Context : Boolean := False) return Node_Id
+      In_Return_Context : Boolean := False;
+      Allow_Alt_Model   : Boolean := True) return Node_Id
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
@@ -280,6 +281,11 @@ package body Sem_Util is
       function Function_Call_Or_Allocator_Level (N : Node_Id) return Node_Id;
       --  Centralized processing of subprogram calls which may appear in
       --  prefix notation.
+
+      function Typ_Access_Level (Typ : Entity_Id) return Uint
+        is (Type_Access_Level (Typ, Allow_Alt_Model));
+      --  Renaming of Type_Access_Level with Allow_Alt_Model specified to avoid
+      --  passing the parameter specifically in every call.
 
       ----------------------------------
       -- Innermost_Master_Scope_Depth --
@@ -375,7 +381,7 @@ package body Sem_Util is
                         (Subprogram_Access_Level (Entity (Name (N))));
             else
                return Make_Level_Literal
-                        (Type_Access_Level (Etype (Prefix (Name (N)))));
+                        (Typ_Access_Level (Etype (Prefix (Name (N)))));
             end if;
 
          --  We ignore coextensions as they cannot be implemented under the
@@ -392,19 +398,39 @@ package body Sem_Util is
          --  Named access types have a designated level
 
          if Is_Named_Access_Type (Etype (N)) then
-            return Make_Level_Literal (Type_Access_Level (Etype (N)));
+            return Make_Level_Literal (Typ_Access_Level (Etype (N)));
 
          --  Otherwise, the level is dictated by RM 3.10.2 (10.7/3)
 
          else
+            --  Check No_Dynamic_Accessibility_Checks restriction override for
+            --  alternative accessibility model.
+
+            if Allow_Alt_Model
+              and then No_Dynamic_Accessibility_Checks_Enabled (N)
+              and then Is_Anonymous_Access_Type (Etype (N))
+            then
+               --  In the alternative model the level is that of the subprogram
+
+               if Debug_Flag_Underscore_B then
+                  return Make_Level_Literal
+                           (Subprogram_Access_Level (Current_Subprogram));
+               end if;
+
+               --  Otherwise the level is that of the designated type
+
+               return Make_Level_Literal
+                        (Typ_Access_Level (Etype (N)));
+            end if;
+
             if Nkind (N) = N_Function_Call then
                --  Dynamic checks are generated when we are within a return
                --  value or we are in a function call within an anonymous
                --  access discriminant constraint of a return object (signified
                --  by In_Return_Context) on the side of the callee.
 
-               --  So, in this case, return library accessibility level to null
-               --  out the check on the side of the caller.
+               --  So, in this case, return accessibility level of the
+               --  enclosing subprogram.
 
                if In_Return_Value (N)
                  or else In_Return_Context
@@ -412,6 +438,17 @@ package body Sem_Util is
                   return Make_Level_Literal
                            (Subprogram_Access_Level (Current_Subprogram));
                end if;
+            end if;
+
+            --  When the call is being dereferenced the level is that of the
+            --  enclosing master of the dereferenced call.
+
+            if Nkind (Parent (N)) in N_Explicit_Dereference
+                                   | N_Indexed_Component
+                                   | N_Selected_Component
+            then
+               return Make_Level_Literal
+                        (Innermost_Master_Scope_Depth (Expr));
             end if;
 
             --  Find any relevant enclosing parent nodes that designate an
@@ -434,7 +471,7 @@ package body Sem_Util is
                  and then Is_Named_Access_Type (Etype (Par))
                then
                   return Make_Level_Literal
-                           (Type_Access_Level (Etype (Par)));
+                           (Typ_Access_Level (Etype (Par)));
                end if;
 
                --  Jump out when we hit an object declaration or the right-hand
@@ -551,7 +588,7 @@ package body Sem_Util is
 
                if Is_Named_Access_Type (Etype (Pre)) then
                   return Make_Level_Literal
-                           (Type_Access_Level (Etype (Pre)));
+                           (Typ_Access_Level (Etype (Pre)));
 
                --  Anonymous access types
 
@@ -616,8 +653,36 @@ package body Sem_Util is
                            (Scope_Depth (Standard_Standard));
                end if;
 
-               return
-                 New_Occurrence_Of (Get_Dynamic_Accessibility (E), Loc);
+               --  No_Dynamic_Accessibility_Checks restriction override for
+               --  alternative accessibility model.
+
+               if Allow_Alt_Model
+                 and then No_Dynamic_Accessibility_Checks_Enabled (E)
+               then
+                  --  In the alternative model the level depends on the
+                  --  entity's context.
+
+                  if Debug_Flag_Underscore_B then
+                     if Is_Formal (E) then
+                        return Make_Level_Literal
+                                 (Subprogram_Access_Level
+                                   (Enclosing_Subprogram (E)));
+                     end if;
+
+                     return Make_Level_Literal
+                              (Scope_Depth (Enclosing_Dynamic_Scope (E)));
+                  end if;
+
+                  --  Otherwise the level is that of the designated type
+
+                  return Make_Level_Literal
+                           (Typ_Access_Level (Etype (E)));
+               end if;
+
+               --  Return the dynamic level in the normal case
+
+               return New_Occurrence_Of
+                        (Get_Dynamic_Accessibility (E), Loc);
 
             --  Initialization procedures have a special extra accessitility
             --  parameter associated with the level at which the object
@@ -635,8 +700,18 @@ package body Sem_Util is
             --  according to RM 3.10.2 (21).
 
             elsif Is_Type (E) then
-               return Make_Level_Literal
-                        (Type_Access_Level (E) + 1);
+               --  When restriction No_Dynamic_Accessibility_Checks is active
+
+               if Allow_Alt_Model
+                 and then No_Dynamic_Accessibility_Checks_Enabled (E)
+                 and then not Debug_Flag_Underscore_B
+               then
+                  return Make_Level_Literal (Typ_Access_Level (E));
+               end if;
+
+               --  Normal path
+
+               return Make_Level_Literal (Typ_Access_Level (E) + 1);
 
             --  Move up the renamed entity if it came from source since
             --  expansion may have created a dummy renaming under certain
@@ -651,7 +726,7 @@ package body Sem_Util is
 
             elsif Is_Named_Access_Type (Etype (E)) then
                return Make_Level_Literal
-                        (Type_Access_Level (Etype (E)));
+                        (Typ_Access_Level (Etype (E)));
 
             --  When E is a component of the current instance of a
             --  protected type, we assume the level to be deeper than that of
@@ -702,7 +777,7 @@ package body Sem_Util is
 
             elsif Is_Named_Access_Type (Etype (Pre)) then
                return Make_Level_Literal
-                        (Type_Access_Level (Etype (Pre)));
+                        (Typ_Access_Level (Etype (Pre)));
 
             --  The current expression is a named access type, so there is no
             --  reason to look at the prefix. Instead obtain the level of E's
@@ -710,7 +785,7 @@ package body Sem_Util is
 
             elsif Is_Named_Access_Type (Etype (E)) then
                return Make_Level_Literal
-                        (Type_Access_Level (Etype (E)));
+                        (Typ_Access_Level (Etype (E)));
 
             --  A nondiscriminant selected component where the component
             --  is an anonymous access type means that its associated
@@ -723,8 +798,21 @@ package body Sem_Util is
                              and then Ekind (Entity (Selector_Name (E)))
                                         = E_Discriminant)
             then
+               --  When restriction No_Dynamic_Accessibility_Checks is active
+               --  the level is that of the designated type.
+
+               if Allow_Alt_Model
+                 and then No_Dynamic_Accessibility_Checks_Enabled (E)
+                 and then not Debug_Flag_Underscore_B
+               then
+                  return Make_Level_Literal
+                           (Typ_Access_Level (Etype (E)));
+               end if;
+
+               --  Otherwise proceed normally
+
                return Make_Level_Literal
-                        (Type_Access_Level (Etype (Prefix (E))));
+                        (Typ_Access_Level (Etype (Prefix (E))));
 
             --  Similar to the previous case - arrays featuring components of
             --  anonymous access components get their corresponding level from
@@ -736,8 +824,21 @@ package body Sem_Util is
               and then Ekind (Component_Type (Base_Type (Etype (Pre))))
                          = E_Anonymous_Access_Type
             then
+               --  When restriction No_Dynamic_Accessibility_Checks is active
+               --  the level is that of the designated type.
+
+               if Allow_Alt_Model
+                 and then No_Dynamic_Accessibility_Checks_Enabled (E)
+                 and then not Debug_Flag_Underscore_B
+               then
+                  return Make_Level_Literal
+                           (Typ_Access_Level (Etype (E)));
+               end if;
+
+               --  Otherwise proceed normally
+
                return Make_Level_Literal
-                        (Type_Access_Level (Etype (Prefix (E))));
+                        (Typ_Access_Level (Etype (Prefix (E))));
 
             --  The accessibility calculation routine that handles function
             --  calls (Function_Call_Level) assumes, in the case the
@@ -785,7 +886,7 @@ package body Sem_Util is
          when N_Qualified_Expression =>
             if Is_Named_Access_Type (Etype (E)) then
                return Make_Level_Literal
-                        (Type_Access_Level (Etype (E)));
+                        (Typ_Access_Level (Etype (E)));
             else
                return Accessibility_Level (Expression (E));
             end if;
@@ -804,7 +905,7 @@ package body Sem_Util is
             --  its type.
 
             if Is_Named_Access_Type (Etype (Pre)) then
-               return Make_Level_Literal (Type_Access_Level (Etype (Pre)));
+               return Make_Level_Literal (Typ_Access_Level (Etype (Pre)));
 
             --  Otherwise, recurse deeper
 
@@ -831,7 +932,7 @@ package body Sem_Util is
 
             elsif Is_Named_Access_Type (Etype (E)) then
                return Make_Level_Literal
-                        (Type_Access_Level (Etype (E)));
+                        (Typ_Access_Level (Etype (E)));
 
             --  In section RM 3.10.2 (10/4) the accessibility rules for
             --  aggregates and value conversions are outlined. Are these
@@ -847,7 +948,7 @@ package body Sem_Util is
          --  expression's entity.
 
          when others =>
-            return Make_Level_Literal (Type_Access_Level (Etype (E)));
+            return Make_Level_Literal (Typ_Access_Level (Etype (E)));
       end case;
    end Accessibility_Level;
 
@@ -7102,12 +7203,25 @@ package body Sem_Util is
    -- Deepest_Type_Access_Level --
    -------------------------------
 
-   function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint is
+   function Deepest_Type_Access_Level
+     (Typ             : Entity_Id;
+      Allow_Alt_Model : Boolean := True) return Uint
+   is
    begin
       if Ekind (Typ) = E_Anonymous_Access_Type
         and then not Is_Local_Anonymous_Access (Typ)
         and then Nkind (Associated_Node_For_Itype (Typ)) = N_Object_Declaration
       then
+         --  No_Dynamic_Accessibility_Checks override for alternative
+         --  accessibility model.
+
+         if Allow_Alt_Model
+           and then No_Dynamic_Accessibility_Checks_Enabled (Typ)
+           and then Debug_Flag_Underscore_B
+         then
+            return Type_Access_Level (Typ, Allow_Alt_Model);
+         end if;
+
          --  Typ is the type of an Ada 2012 stand-alone object of an anonymous
          --  access type.
 
@@ -7123,7 +7237,7 @@ package body Sem_Util is
          return UI_From_Int (Int'Last);
 
       else
-         return Type_Access_Level (Typ);
+         return Type_Access_Level (Typ, Allow_Alt_Model);
       end if;
    end Deepest_Type_Access_Level;
 
@@ -28982,12 +29096,14 @@ package body Sem_Util is
    -- Type_Access_Level --
    -----------------------
 
-   function Type_Access_Level (Typ : Entity_Id) return Uint is
-      Btyp : Entity_Id;
+   function Type_Access_Level
+     (Typ             : Entity_Id;
+      Allow_Alt_Model : Boolean := True) return Uint
+   is
+      Btyp    : Entity_Id := Base_Type (Typ);
+      Def_Ent : Entity_Id;
 
    begin
-      Btyp := Base_Type (Typ);
-
       --  Ada 2005 (AI-230): For most cases of anonymous access types, we
       --  simply use the level where the type is declared. This is true for
       --  stand-alone object declarations, and for anonymous access types
@@ -28998,13 +29114,50 @@ package body Sem_Util is
 
       if Is_Access_Type (Btyp) then
          if Ekind (Btyp) = E_Anonymous_Access_Type then
+            --  No_Dynamic_Accessibility_Checks restriction override for
+            --  alternative accessibility model.
+
+            if Allow_Alt_Model
+              and then No_Dynamic_Accessibility_Checks_Enabled (Btyp)
+            then
+               --  In the normal model, the level of an anonymous access
+               --  type is always that of the designated type.
+
+               if not Debug_Flag_Underscore_B then
+                  return Type_Access_Level
+                           (Designated_Type (Btyp), Allow_Alt_Model);
+               end if;
+
+               --  Otherwise the secondary model dictates special handling
+               --  depending on the context of the anonymous access type.
+
+               --  Obtain the defining entity for the internally generated
+               --  anonymous access type.
+
+               Def_Ent := Defining_Entity_Or_Empty
+                            (Associated_Node_For_Itype (Typ));
+
+               if Present (Def_Ent) then
+                  --  When the type comes from an anonymous access parameter,
+                  --  the level is that of the subprogram declaration.
+
+                  if Ekind (Def_Ent) in Subprogram_Kind then
+                     return Scope_Depth (Def_Ent);
+
+                  --  When the type is an access discriminant, the level is
+                  --  that of the type.
+
+                  elsif Ekind (Def_Ent) = E_Discriminant then
+                     return Scope_Depth (Scope (Def_Ent));
+                  end if;
+               end if;
 
             --  If the type is a nonlocal anonymous access type (such as for
             --  an access parameter) we treat it as being declared at the
             --  library level to ensure that names such as X.all'access don't
             --  fail static accessibility checks.
 
-            if not Is_Local_Anonymous_Access (Typ) then
+            elsif not Is_Local_Anonymous_Access (Typ) then
                return Scope_Depth (Standard_Standard);
 
             --  If this is a return object, the accessibility level is that of
@@ -29038,7 +29191,7 @@ package body Sem_Util is
                   --  Treat the return object's type as having the level of the
                   --  function's result subtype (as per RM05-6.5(5.3/2)).
 
-                  return Type_Access_Level (Etype (Scop));
+                  return Type_Access_Level (Etype (Scop), Allow_Alt_Model);
                end;
             end if;
          end if;

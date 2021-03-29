@@ -654,9 +654,9 @@ package body Sem_Res is
       end if;
    end Check_For_Visible_Operator;
 
-   ----------------------------------
-   --  Check_Fully_Declared_Prefix --
-   ----------------------------------
+   ---------------------------------
+   -- Check_Fully_Declared_Prefix --
+   ---------------------------------
 
    procedure Check_Fully_Declared_Prefix
      (Typ  : Entity_Id;
@@ -13676,12 +13676,24 @@ package body Sem_Res is
             then
                if Is_Itype (Opnd_Type) then
 
+                  --  When applying restriction No_Dynamic_Accessibility_Check,
+                  --  implicit conversions are allowed when the operand type is
+                  --  not deeper than the target type.
+
+                  if No_Dynamic_Accessibility_Checks_Enabled (N) then
+                     if Type_Access_Level (Opnd_Type)
+                          > Deepest_Type_Access_Level (Target_Type)
+                     then
+                        Conversion_Error_N
+                          ("operand has deeper level than target", Operand);
+                     end if;
+
                   --  Implicit conversions aren't allowed for objects of an
                   --  anonymous access type, since such objects have nonstatic
                   --  levels in Ada 2012.
 
-                  if Nkind (Associated_Node_For_Itype (Opnd_Type)) =
-                       N_Object_Declaration
+                  elsif Nkind (Associated_Node_For_Itype (Opnd_Type))
+                          = N_Object_Declaration
                   then
                      Conversion_Error_N
                        ("implicit conversion of stand-alone anonymous "

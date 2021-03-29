@@ -2366,6 +2366,7 @@ package body Exp_Attr is
                          = E_Anonymous_Access_Type
               and then Present (Extra_Accessibility
                                 (Entity (Prefix (Enc_Object))))
+              and then not No_Dynamic_Accessibility_Checks_Enabled (Enc_Object)
             then
                Apply_Accessibility_Check (Prefix (Enc_Object), Typ, N);
 

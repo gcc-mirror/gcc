@@ -379,8 +379,12 @@ package body Checks is
 
    function Accessibility_Checks_Suppressed (E : Entity_Id) return Boolean is
    begin
-      if Present (E) and then Checks_May_Be_Suppressed (E) then
+      if No_Dynamic_Accessibility_Checks_Enabled (E) then
+         return True;
+
+      elsif Present (E) and then Checks_May_Be_Suppressed (E) then
          return Is_Check_Suppressed (E, Accessibility_Check);
+
       else
          return Scope_Suppress.Suppress (Accessibility_Check);
       end if;
@@ -582,6 +586,11 @@ package body Checks is
       Type_Level  : Node_Id;
 
    begin
+      --  Verify we haven't tried to add a dynamic accessibility check when we
+      --  shouldn't.
+
+      pragma Assert (not No_Dynamic_Accessibility_Checks_Enabled (N));
+
       if Ada_Version >= Ada_2012
          and then not Present (Param_Ent)
          and then Is_Entity_Name (N)

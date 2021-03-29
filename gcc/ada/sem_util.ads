@@ -65,14 +65,18 @@ package Sem_Util is
    function Accessibility_Level
      (Expr              : Node_Id;
       Level             : Accessibility_Level_Kind;
-      In_Return_Context : Boolean := False) return Node_Id;
+      In_Return_Context : Boolean := False;
+      Allow_Alt_Model   : Boolean := True) return Node_Id;
    --  Centralized accessibility level calculation routine for finding the
    --  accessibility level of a given expression Expr.
 
-   --  In_Return_Context forcing the Accessibility_Level calculations to be
+   --  In_Return_Context forces the Accessibility_Level calculations to be
    --  carried out "as if" Expr existed in a return value. This is useful for
    --  calculating the accessibility levels for discriminant associations
    --  and return aggregates.
+
+   --  The Allow_Alt_Model parameter allows the alternative level calculation
+   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
 
    function Acquire_Warning_Match_String (Str_Lit : Node_Id) return String;
    --  Used by pragma Warnings (Off, string), and Warn_As_Error (string) to get
@@ -662,7 +666,10 @@ package Sem_Util is
    --  when pragma Restrictions (No_Finalization) applies, in which case we
    --  know that class-wide objects do not contain controlled parts.
 
-   function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint;
+   function Deepest_Type_Access_Level
+     (Typ             : Entity_Id;
+      Allow_Alt_Model : Boolean := True) return Uint;
+
    --  Same as Type_Access_Level, except that if the type is the type of an Ada
    --  2012 stand-alone object of an anonymous access type, then return the
    --  static accessibility level of the object. In that case, the dynamic
@@ -671,6 +678,9 @@ package Sem_Util is
    --  yields the high bound of that range. Also differs from Type_Access_Level
    --  in the case of a descendant of a generic formal type (returns Int'Last
    --  instead of 0).
+
+   --  The Allow_Alt_Model parameter allows the alternative level calculation
+   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
 
    function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
@@ -3246,8 +3256,13 @@ package Sem_Util is
    --  returned, i.e. Traverse_More_Func is called and the result is simply
    --  discarded.
 
-   function Type_Access_Level (Typ : Entity_Id) return Uint;
+   function Type_Access_Level
+     (Typ             : Entity_Id;
+      Allow_Alt_Model : Boolean := True) return Uint;
    --  Return the accessibility level of Typ
+
+   --  The Allow_Alt_Model parameter allows the alternative level calculation
+   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
 
    function Type_Without_Stream_Operation
      (T  : Entity_Id;
