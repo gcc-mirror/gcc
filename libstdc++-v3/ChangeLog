@@ -262,7 +262,7 @@
 
 2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
 
-	PR libstdc++/99537
+	PR libstdc++/99533
 	* src/c++17/fs_dir.cc (recursive_directory_iterator): Use new
 	helper function to check for permission denied errors.
 	* src/filesystem/dir.cc (recursive_directory_iterator):
