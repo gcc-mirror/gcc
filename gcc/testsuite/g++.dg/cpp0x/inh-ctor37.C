@@ -22,5 +22,5 @@ struct S { S(B<A> *); };
 S
 fn ()
 {
-  return S(new B<A>(10.5)); // { dg-error "no matching function" "" { target c++98_only } }
+  return S(new B<A>(10.5));
 }

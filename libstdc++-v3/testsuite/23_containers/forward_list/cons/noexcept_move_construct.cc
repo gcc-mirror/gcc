@@ -23,4 +23,8 @@
 
 typedef std::forward_list<int> fltype;
 
-static_assert(std::is_nothrow_move_constructible<fltype>::value, "Error");
+static_assert( std::is_nothrow_move_constructible<fltype>::value,
+	       "noexcept move constructor" );
+static_assert( std::is_nothrow_constructible<fltype,
+	       fltype, const typename fltype::allocator_type&>::value,
+	       "noexcept move constructor with allocator" );

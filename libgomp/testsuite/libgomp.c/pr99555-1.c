@@ -2,8 +2,7 @@
 
 // { dg-additional-options "-O0" }
 
-// { dg-additional-sources "../lib/on_device_arch.c" }
-extern int on_device_arch_nvptx ();
+#include "../libgomp.c-c++-common/on_device_arch.h"
 
 int main (void)
 {

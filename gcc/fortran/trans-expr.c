@@ -6663,6 +6663,18 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  char *msg;
 	  tree cond;
 	  tree tmp;
+	  symbol_attribute fsym_attr;
+
+	  if (fsym)
+	    {
+	      if (fsym->ts.type == BT_CLASS)
+		{
+		  fsym_attr = CLASS_DATA (fsym)->attr;
+		  fsym_attr.pointer = fsym_attr.class_pointer;
+		}
+	      else
+		fsym_attr = fsym->attr;
+	    }
 
 	  if (e->expr_type == EXPR_VARIABLE || e->expr_type == EXPR_FUNCTION)
 	    attr = gfc_expr_attr (e);
@@ -6685,17 +6697,17 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      tree present, null_ptr, type;
 
 	      if (attr.allocatable
-		  && (fsym == NULL || !fsym->attr.allocatable))
+		  && (fsym == NULL || !fsym_attr.allocatable))
 		msg = xasprintf ("Allocatable actual argument '%s' is not "
 				 "allocated or not present",
 				 e->symtree->n.sym->name);
 	      else if (attr.pointer
-		       && (fsym == NULL || !fsym->attr.pointer))
+		       && (fsym == NULL || !fsym_attr.pointer))
 		msg = xasprintf ("Pointer actual argument '%s' is not "
 				 "associated or not present",
 				 e->symtree->n.sym->name);
-	      else if (attr.proc_pointer
-		       && (fsym == NULL || !fsym->attr.proc_pointer))
+	      else if (attr.proc_pointer && !e->value.function.actual
+		       && (fsym == NULL || !fsym_attr.proc_pointer))
 		msg = xasprintf ("Proc-pointer actual argument '%s' is not "
 				 "associated or not present",
 				 e->symtree->n.sym->name);
@@ -6719,15 +6731,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
           else
 	    {
 	      if (attr.allocatable
-		  && (fsym == NULL || !fsym->attr.allocatable))
+		  && (fsym == NULL || !fsym_attr.allocatable))
 		msg = xasprintf ("Allocatable actual argument '%s' is not "
 				 "allocated", e->symtree->n.sym->name);
 	      else if (attr.pointer
-		       && (fsym == NULL || !fsym->attr.pointer))
+		       && (fsym == NULL || !fsym_attr.pointer))
 		msg = xasprintf ("Pointer actual argument '%s' is not "
 				 "associated", e->symtree->n.sym->name);
-	      else if (attr.proc_pointer
-		       && (fsym == NULL || !fsym->attr.proc_pointer))
+	      else if (attr.proc_pointer && !e->value.function.actual
+		       && (fsym == NULL || !fsym_attr.proc_pointer))
 		msg = xasprintf ("Proc-pointer actual argument '%s' is not "
 				 "associated", e->symtree->n.sym->name);
 	      else

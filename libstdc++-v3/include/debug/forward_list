@@ -239,8 +239,11 @@ namespace __debug
       { }
 
       forward_list(forward_list&& __list, const allocator_type& __al)
-	: _Safe(std::move(__list._M_safe()), __al),
-	  _Base(std::move(__list._M_base()), __al)
+	noexcept(
+	  std::is_nothrow_constructible<_Base,
+	    _Base, const allocator_type&>::value )
+      : _Safe(std::move(__list._M_safe()), __al),
+	_Base(std::move(__list._M_base()), __al)
       { }
 
       explicit

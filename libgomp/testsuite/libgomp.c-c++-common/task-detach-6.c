@@ -1,10 +1,8 @@
 /* { dg-do run } */
 
-/* { dg-additional-sources "../lib/on_device_arch.c" } */
-extern int on_device_arch_nvptx ();
-
 #include <omp.h>
 #include <assert.h>
+#include "on_device_arch.h"
 
 /* Test tasks with detach clause on an offload device.  Each device
    thread spawns off a chain of tasks, that can then be executed by

@@ -3724,7 +3724,6 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 				    stmt_vector_for_cost *cost_vec)
 {
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
-  gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
 
   /* Calculate the number of vector statements to be created for the
      scalar stmts in this node.  For SLP reductions it is equal to the
@@ -3760,6 +3759,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
   if (SLP_TREE_CODE (node) == VEC_PERM_EXPR)
     return vectorizable_slp_permutation (vinfo, NULL, node, cost_vec);
 
+  gcc_assert (STMT_SLP_TYPE (stmt_info) != loop_vect);
   if (is_a <bb_vec_info> (vinfo)
       && !vect_update_shared_vectype (stmt_info, SLP_TREE_VECTYPE (node)))
     {

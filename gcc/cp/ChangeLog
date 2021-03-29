@@ -1,3 +1,44 @@
+2021-03-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98352
+	* method.c (implicitly_declare_fn): Pass &raises to
+	synthesized_method_walk.
+
+2021-03-26  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99283
+	* cp-tree.h (DECL_MODULE_CHECK): Ban TEMPLATE_DECL.
+	(SET_TYPE_TEMPLATE_INFO): Restore Alias template setting.
+	* decl.c (duplicate_decls): Remove template_decl module flag
+	propagation.
+	* module.cc (merge_kind_name): Add alias tmpl spec as a thing.
+	(dumper::impl::nested_name): Adjust for template-decl module flag
+	change.
+	(trees_in::assert_definition): Likewise.
+	(trees_in::install_entity): Likewise.
+	(trees_out::decl_value): Likewise.  Remove alias template
+	separation of template and type_decl.
+	(trees_in::decl_value): Likewise.
+	(trees_out::key_mergeable): Likewise,
+	(trees_in::key_mergeable): Likewise.
+	(trees_out::decl_node): Adjust for template-decl module flag
+	change.
+	(depset::hash::make_dependency): Likewise.
+	(get_originating_module, module_may_redeclare): Likewise.
+	(set_instantiating_module, set_defining_module): Likewise.
+	* name-lookup.c (name_lookup::search_adl): Likewise.
+	(do_pushdecl): Likewise.
+	* pt.c (build_template_decl): Likewise.
+	(lookup_template_class_1): Remove special alias_template handling
+	of DECL_TI_TEMPLATE.
+	(tsubst_template_decl): Likewise.
+
+2021-03-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99705
+	* tree.c (bot_manip): Remap artificial automatic temporaries mentioned
+	in DECL_EXPR or in BIND_EXPR_VARS.
+
 2021-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/99672
