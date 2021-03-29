@@ -233,6 +233,24 @@ package body Ch11 is
          Set_Expression (Raise_Node, P_Expression);
       end if;
 
+      if Token = Tok_When then
+         Error_Msg_GNAT_Extension ("raise when statement");
+
+         Mutate_Nkind (Raise_Node, N_Raise_When_Statement);
+
+         if Token = Tok_When and then not Missing_Semicolon_On_When then
+            Scan; -- past WHEN
+            Set_Condition (Raise_Node, P_Expression_No_Right_Paren);
+
+         --  Allow IF instead of WHEN, giving error message
+
+         elsif Token = Tok_If then
+            T_When;
+            Scan; -- past IF used in place of WHEN
+            Set_Condition (Raise_Node, P_Expression_No_Right_Paren);
+         end if;
+      end if;
+
       TF_Semicolon;
       return Raise_Node;
    end P_Raise_Statement;

@@ -1874,18 +1874,20 @@ package body Ch6 is
    function P_Return_Statement return Node_Id is
       --  The caller has checked that the initial token is RETURN
 
-      function Is_Simple return Boolean;
+      type Return_Kind is (Simple_Return, Extended_Return, Return_When);
+
+      function Get_Return_Kind return Return_Kind;
       --  Scan state is just after RETURN (and is left that way). Determine
       --  whether this is a simple or extended return statement by looking
       --  ahead for "identifier :", which implies extended.
 
-      ---------------
-      -- Is_Simple --
-      ---------------
+      ---------------------
+      -- Get_Return_Kind --
+      ---------------------
 
-      function Is_Simple return Boolean is
+      function Get_Return_Kind return Return_Kind is
          Scan_State : Saved_Scan_State;
-         Result     : Boolean := True;
+         Result     : Return_Kind := Simple_Return;
 
       begin
          if Token = Tok_Identifier then
@@ -1893,18 +1895,22 @@ package body Ch6 is
             Scan; -- past identifier
 
             if Token = Tok_Colon then
-               Result := False; -- It's an extended_return_statement.
+               Result := Extended_Return; -- It's an extended_return_statement
+            elsif Token = Tok_When then
+               Error_Msg_GNAT_Extension ("return when statement");
+
+               Result := Return_When;
             end if;
 
             Restore_Scan_State (Scan_State); -- to identifier
          end if;
 
          return Result;
-      end Is_Simple;
+      end Get_Return_Kind;
 
       Ret_Sloc : constant Source_Ptr := Token_Ptr;
       Ret_Strt : constant Column_Number := Start_Column;
-      Ret_Node : Node_Id;
+      Ret_Node : Node_Id := New_Node (N_Simple_Return_Statement, Ret_Sloc);
       Decl     : Node_Id;
 
    --  Start of processing for P_Return_Statement
@@ -1917,7 +1923,6 @@ package body Ch6 is
 
       if Token = Tok_Semicolon then
          Scan; -- past ;
-         Ret_Node := New_Node (N_Simple_Return_Statement, Ret_Sloc);
 
       --  Nontrivial case
 
@@ -1928,41 +1933,65 @@ package body Ch6 is
          --  expression terminator since in that case the best error
          --  message is probably that we have a missing semicolon.
 
-         if Is_Simple then
-            Ret_Node := New_Node (N_Simple_Return_Statement, Ret_Sloc);
+         case Get_Return_Kind is
+            --  Return_when_statement (Experimental only)
 
-            if Token not in Token_Class_Eterm then
-               Set_Expression (Ret_Node, P_Expression_No_Right_Paren);
-            end if;
+            when Return_When =>
+               Ret_Node := New_Node (N_Return_When_Statement, Ret_Sloc);
 
-         --  Extended_return_statement (Ada 2005 only -- AI-318):
+               if Token not in Token_Class_Eterm then
+                  Set_Expression (Ret_Node, P_Expression_No_Right_Paren);
+               end if;
 
-         else
-            Error_Msg_Ada_2005_Extension ("extended return statement");
+               if Token = Tok_When and then not Missing_Semicolon_On_When then
+                  Scan; -- past WHEN
+                  Set_Condition (Ret_Node, P_Condition);
 
-            Ret_Node := New_Node (N_Extended_Return_Statement, Ret_Sloc);
-            Decl := P_Return_Object_Declaration;
-            Set_Return_Object_Declarations (Ret_Node, New_List (Decl));
+               --  Allow IF instead of WHEN, giving error message
 
-            if Token = Tok_With then
-               P_Aspect_Specifications (Decl, False);
-            end if;
+               elsif Token = Tok_If then
+                  T_When;
+                  Scan; -- past IF used in place of WHEN
+                  Set_Condition (Ret_Node, P_Expression_No_Right_Paren);
+               end if;
 
-            if Token = Tok_Do then
-               Push_Scope_Stack;
-               Scopes (Scope.Last).Ecol := Ret_Strt;
-               Scopes (Scope.Last).Etyp := E_Return;
-               Scopes (Scope.Last).Labl := Error;
-               Scopes (Scope.Last).Sloc := Ret_Sloc;
+            --  Simple_return_statement
 
-               Scan; -- past DO
-               Set_Handled_Statement_Sequence
-                 (Ret_Node, P_Handled_Sequence_Of_Statements);
-               End_Statements;
+            when Simple_Return =>
+               Ret_Node := New_Node (N_Simple_Return_Statement, Ret_Sloc);
 
-               --  Do we need to handle Error_Resync here???
-            end if;
-         end if;
+               if Token not in Token_Class_Eterm then
+                  Set_Expression (Ret_Node, P_Expression_No_Right_Paren);
+               end if;
+
+            --  Extended_return_statement (Ada 2005 only -- AI-318):
+
+            when Extended_Return =>
+               Error_Msg_Ada_2005_Extension ("extended return statement");
+
+               Ret_Node := New_Node (N_Extended_Return_Statement, Ret_Sloc);
+               Decl := P_Return_Object_Declaration;
+               Set_Return_Object_Declarations (Ret_Node, New_List (Decl));
+
+               if Token = Tok_With then
+                  P_Aspect_Specifications (Decl, False);
+               end if;
+
+               if Token = Tok_Do then
+                  Push_Scope_Stack;
+                  Scopes (Scope.Last).Ecol := Ret_Strt;
+                  Scopes (Scope.Last).Etyp := E_Return;
+                  Scopes (Scope.Last).Labl := Error;
+                  Scopes (Scope.Last).Sloc := Ret_Sloc;
+
+                  Scan; -- past DO
+                  Set_Handled_Statement_Sequence
+                    (Ret_Node, P_Handled_Sequence_Of_Statements);
+                  End_Statements;
+
+                  --  Do we need to handle Error_Resync here???
+               end if;
+         end case;
 
          TF_Semicolon;
       end if;

@@ -3640,6 +3640,24 @@ This new aggregate syntax for arrays and containers is provided under -gnatX
 to experiment and confirm this new language syntax.
 
 @item 
+Additional @code{when} constructs
+
+In addition to the @code{exit when CONDITION} control structure, several
+additional constructs are allowed following this format. Including
+@code{return when CONDITION}, @code{goto when CONDITION}, and
+@code{raise [with EXCEPTION_MESSAGE] when CONDITION.}
+
+Some examples:
+
+@example
+return Result when Variable > 10;
+
+raise Program_Error with "Element is null" when Element = null;
+
+goto End_Of_Subprogram when Variable = -1;
+@end example
+
+@item 
 Casing on composite values (aka pattern matching)
 
 The selector for a case statement may be of a composite type, subject to

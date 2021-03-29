@@ -2118,6 +2118,13 @@ package body Sprint is
                Write_Indent;
             end if;
 
+         when N_Goto_When_Statement =>
+            Write_Indent_Str_Sloc ("goto ");
+            Sprint_Node (Name (Node));
+            Write_Str (" when ");
+            Sprint_Node (Condition (Node));
+            Write_Char (';');
+
          when N_Handled_Sequence_Of_Statements =>
             Set_Debug_Sloc;
             Sprint_Indented_List (Statements (Node));
@@ -3069,6 +3076,19 @@ package body Sprint is
 
             Write_Char (';');
 
+         when N_Raise_When_Statement =>
+            Write_Indent_Str_Sloc ("raise ");
+            Sprint_Node (Name (Node));
+            Write_Str (" when ");
+            Sprint_Node (Condition (Node));
+
+            if Present (Expression (Node)) then
+               Write_Str_With_Col_Check_Sloc (" with ");
+               Sprint_Node (Expression (Node));
+            end if;
+
+            Write_Char (';');
+
          when N_Range =>
             Sprint_Node (Low_Bound (Node));
             Write_Str_Sloc (" .. ");
@@ -3140,6 +3160,13 @@ package body Sprint is
                Write_Str_With_Col_Check (" with abort");
             end if;
 
+            Write_Char (';');
+
+         when N_Return_When_Statement =>
+            Write_Indent_Str_Sloc ("return ");
+            Sprint_Node (Expression (Node));
+            Write_Str (" when ");
+            Sprint_Node (Condition (Node));
             Write_Char (';');
 
          when N_SCIL_Dispatch_Table_Tag_Init =>

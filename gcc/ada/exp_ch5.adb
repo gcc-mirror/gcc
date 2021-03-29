@@ -4176,6 +4176,23 @@ package body Exp_Ch5 is
       Analyze (N);
    end Expand_Formal_Container_Element_Loop;
 
+   ----------------------------------
+   -- Expand_N_Goto_When_Statement --
+   ----------------------------------
+
+   procedure Expand_N_Goto_When_Statement (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+   begin
+      Rewrite (N,
+        Make_If_Statement (Loc,
+          Condition       => Condition (N),
+          Then_Statements => New_List (
+            Make_Goto_Statement (Loc,
+              Name => Name (N)))));
+
+      Analyze (N);
+   end Expand_N_Goto_When_Statement;
+
    ---------------------------
    -- Expand_N_If_Statement --
    ---------------------------

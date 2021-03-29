@@ -886,6 +886,19 @@ package body Errout is
                               Last  => Last_Sloc (Lst)));
    end Error_Msg_FE;
 
+   ------------------------------
+   -- Error_Msg_GNAT_Extension --
+   ------------------------------
+
+   procedure Error_Msg_GNAT_Extension (Extension : String) is
+      Loc : constant Source_Ptr := Token_Ptr;
+   begin
+      if not Extensions_Allowed then
+         Error_Msg (Extension & " is a 'G'N'A'T specific extension", Loc);
+         Error_Msg ("\unit must be compiled with -gnatX switch", Loc);
+      end if;
+   end Error_Msg_GNAT_Extension;
+
    ------------------------
    -- Error_Msg_Internal --
    ------------------------

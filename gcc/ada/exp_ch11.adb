@@ -1736,6 +1736,24 @@ package body Exp_Ch11 is
       Analyze (N);
    end Expand_N_Raise_Statement;
 
+   -----------------------------------
+   -- Expand_N_Raise_When_Statement --
+   -----------------------------------
+
+   procedure Expand_N_Raise_When_Statement (N : Node_Id) is
+      Loc : constant Source_Ptr := Sloc (N);
+   begin
+      Rewrite (N,
+        Make_If_Statement (Loc,
+          Condition       => Condition (N),
+          Then_Statements => New_List (
+            Make_Raise_Statement (Loc,
+              Name       => Name (N),
+              Expression => Expression (N)))));
+
+      Analyze (N);
+   end Expand_N_Raise_When_Statement;
+
    ----------------------------------
    -- Expand_N_Raise_Storage_Error --
    ----------------------------------
