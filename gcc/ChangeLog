@@ -1,3 +1,11 @@
+2021-03-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from master:
+	2021-03-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_output_dwarf_dtprel): Do not add
+	XCOFF TLS reloc decorations.
+
 2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
