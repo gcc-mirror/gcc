@@ -3330,7 +3330,7 @@ MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
 void
 MacroExpander::expand_cfg_attrs (std::vector<AST::Attribute> &attrs)
 {
-  for (std::size_t i = 0; i < attrs.size ();)
+  for (std::size_t i = 0; i < attrs.size (); i++)
     {
       auto &attr = attrs[i];
       if (attr.get_path () == "cfg_attr")
