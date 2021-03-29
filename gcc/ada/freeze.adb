@@ -1754,8 +1754,7 @@ package body Freeze is
             Typ := Etype (Name (Par));
 
             if not Is_Full_Access (Typ)
-              and then not (Is_Entity_Name (Name (Par))
-                             and then Is_Full_Access (Entity (Name (Par))))
+              and then not Is_Full_Access_Object (Name (Par))
             then
                return False;
             end if;
