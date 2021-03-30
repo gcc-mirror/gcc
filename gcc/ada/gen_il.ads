@@ -24,11 +24,8 @@
 ------------------------------------------------------------------------------
 
 pragma Warnings (Off); -- with clauses for children
-with Ada.Strings.Text_Output.Formatting;
-use Ada.Strings.Text_Output, Ada.Strings.Text_Output.Formatting;
-with Ada.Strings.Text_Output.Files; use Ada.Strings.Text_Output.Files;
-with Ada.Strings.Text_Output.Utils; use Ada.Strings.Text_Output.Utils;
-with Ada.Characters.Handling;       use Ada.Characters.Handling;
+with Ada.Characters.Handling; use Ada.Characters.Handling;
+with Ada.Streams.Stream_IO;
 pragma Warnings (On);
 
 package Gen_IL is -- generate intermediate language
@@ -75,5 +72,25 @@ package Gen_IL is -- generate intermediate language
    function Capitalize (S : String) return String;
    procedure Capitalize (S : in out String);
    --  Turns an identifier into Mixed_Case
+
+   --  The following declares a minimal implementation of formatted output
+   --  that is piggybacked on Ada.Streams.Stream_IO for bootstrap reasons.
+   --  It uses LF as universal line terminator to make it host independent.
+
+   type Sink is record
+      File     : Ada.Streams.Stream_IO.File_Type;
+      Indent   : Natural;
+      New_Line : Boolean;
+   end record;
+
+   procedure Create_File (Buffer : in out Sink; Name : String);
+
+   procedure Increase_Indent (Buffer : in out Sink; Amount : Natural);
+
+   procedure Decrease_Indent (Buffer : in out Sink; Amount : Natural);
+
+   procedure Put (Buffer : in out Sink; Item : String);
+
+   LF : constant String := "" & ASCII.LF;
 
 end Gen_IL;

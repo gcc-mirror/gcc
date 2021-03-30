@@ -1297,7 +1297,7 @@ is
    ---------------
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Map)
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Map)
    is
       First_Time : Boolean := True;
       use System.Put_Images;

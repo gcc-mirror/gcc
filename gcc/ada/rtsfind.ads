@@ -126,12 +126,11 @@ package Rtsfind is
       Ada_Strings_Wide_Superbounded,
       Ada_Strings_Wide_Wide_Superbounded,
       Ada_Strings_Unbounded,
-      Ada_Strings_Text_Output,
+      Ada_Strings_Text_Buffers,
 
-      --  Children of Ada.Strings.Text_Output
+      --  Children of Ada.Strings.Text_Buffers
 
-      Ada_Strings_Text_Output_Utils,
-      Ada_Strings_Text_Output_Buffers,
+      Ada_Strings_Text_Buffers_Unbounded,
 
       --  Children of Ada.Text_IO (for Check_Text_IO_Special_Unit)
 
@@ -604,15 +603,14 @@ package Rtsfind is
 
      RE_Unbounded_String,                -- Ada.Strings.Unbounded
 
-     RE_Sink,                            -- Ada.Strings.Text_Output
+     RE_Root_Buffer_Type,                -- Ada.Strings.Text_Buffers
+     RE_Put_UTF_8,                       -- Ada.Strings.Text_Buffers
+     RE_Wide_Wide_Put,                   -- Ada.Strings.Text_Buffers
 
-     RE_Put_UTF_8,                       -- Ada.Strings.Text_Output.Utils
-     RE_Put_Wide_Wide_String,            -- Ada.Strings.Text_Output.Utils
-
-     RE_Buffer,                          -- Ada.Strings.Text_Output.Buffers
-     RE_New_Buffer,                      -- Ada.Strings.Text_Output.Buffers
-     RE_Destroy,                         -- Ada.Strings.Text_Output.Buffers
-     RE_Get,                             -- Ada.Strings.Text_Output.Buffers
+     RE_Buffer_Type,                     -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Get,                             -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Wide_Get,                        -- Ada.Strings.Text_Buffers.Unbounded
+     RE_Wide_Wide_Get,                   -- Ada.Strings.Text_Buffers.Unbounded
 
      RE_Wait_For_Release,                -- Ada.Synchronous_Barriers
 
@@ -2286,15 +2284,14 @@ package Rtsfind is
 
      RE_Unbounded_String                 => Ada_Strings_Unbounded,
 
-     RE_Sink                             => Ada_Strings_Text_Output,
+     RE_Root_Buffer_Type                 => Ada_Strings_Text_Buffers,
+     RE_Put_UTF_8                        => Ada_Strings_Text_Buffers,
+     RE_Wide_Wide_Put                    => Ada_Strings_Text_Buffers,
 
-     RE_Put_UTF_8                        => Ada_Strings_Text_Output_Utils,
-     RE_Put_Wide_Wide_String             => Ada_Strings_Text_Output_Utils,
-
-     RE_Buffer                           => Ada_Strings_Text_Output_Buffers,
-     RE_New_Buffer                       => Ada_Strings_Text_Output_Buffers,
-     RE_Destroy                          => Ada_Strings_Text_Output_Buffers,
-     RE_Get                              => Ada_Strings_Text_Output_Buffers,
+     RE_Buffer_Type                      => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Get                              => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Wide_Get                         => Ada_Strings_Text_Buffers_Unbounded,
+     RE_Wide_Wide_Get                    => Ada_Strings_Text_Buffers_Unbounded,
 
      RE_Wait_For_Release                 => Ada_Synchronous_Barriers,
 

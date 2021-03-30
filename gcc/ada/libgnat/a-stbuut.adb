@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                          SYSTEM.PUT_TASK_IMAGES                          --
+--                      ADA.STRINGS.TEXT_BUFFERS.UTILS                      --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,20 +29,53 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Put_Task_Images is
+package body Ada.Strings.Text_Buffers.Utils is
 
-   use Ada.Strings.Text_Buffers;
-
-   procedure Put_Image_Protected (S : in out Sink'Class) is
-   begin
-      Put_UTF_8 (S, "(protected object)");
-   end Put_Image_Protected;
-
-   procedure Put_Image_Task
-     (S : in out Sink'Class; Id : Ada.Task_Identification.Task_Id)
+   procedure Put_7bit
+     (Buffer : in out Root_Buffer_Type'Class; Item : Character_7)
    is
    begin
-      Put_UTF_8 (S, "(task " & Ada.Task_Identification.Image (Id) & ")");
-   end Put_Image_Task;
+      Put (Buffer, (1 => Item));
+   end Put_7bit;
 
-end System.Put_Task_Images;
+   procedure Put_Character
+     (Buffer : in out Root_Buffer_Type'Class; Item : Character)
+   is
+   begin
+      Put (Buffer, (1 => Item));
+   end Put_Character;
+
+   procedure Put_Wide_Character
+     (Buffer : in out Root_Buffer_Type'Class; Item : Wide_Character)
+   is
+   begin
+      Wide_Put (Buffer, (1 => Item));
+   end Put_Wide_Character;
+
+   procedure Put_Wide_Wide_Character
+     (Buffer : in out Root_Buffer_Type'Class; Item : Wide_Wide_Character)
+   is
+   begin
+      Wide_Wide_Put (Buffer, (1 => Item));
+   end Put_Wide_Wide_Character;
+
+   procedure Put_UTF_8_Lines
+     (Buffer : in out Root_Buffer_Type'Class; Item : UTF_8_Lines)
+   is
+   begin
+      Put (Buffer, Item);
+   end Put_UTF_8_Lines;
+
+   function Column (Buffer : Root_Buffer_Type'Class) return Positive is
+   begin
+      return Buffer.UTF_8_Column;
+   end Column;
+
+   procedure Tab_To_Column
+     (Buffer : in out Root_Buffer_Type'Class; Column : Positive)
+   is
+   begin
+      Put (Buffer, String'(1 .. Column - Utils.Column (Buffer) => ' '));
+   end Tab_To_Column;
+
+end Ada.Strings.Text_Buffers.Utils;

@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                          SYSTEM.PUT_TASK_IMAGES                          --
+--                      ADA.STRINGS.TEXT_BUFFERS.FILES                      --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
@@ -29,20 +29,54 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Put_Task_Images is
+package body Ada.Strings.Text_Buffers.Files is
 
-   use Ada.Strings.Text_Buffers;
-
-   procedure Put_Image_Protected (S : in out Sink'Class) is
+   procedure Put_UTF_8_Implementation
+     (Buffer : in out Root_Buffer_Type'Class;
+      Item : UTF_Encoding.UTF_8_String) is
+      Result : Integer;
    begin
-      Put_UTF_8 (S, "(protected object)");
-   end Put_Image_Protected;
+      Result := OS.Write (File_Buffer (Buffer).FD,
+                          Item (Item'First)'Address,
+                          Item'Length);
+      if Result /= Item'Length then
+         raise Program_Error with OS.Errno_Message;
+      end if;
+   end Put_UTF_8_Implementation;
 
-   procedure Put_Image_Task
-     (S : in out Sink'Class; Id : Ada.Task_Identification.Task_Id)
+   function Create_From_FD
+     (FD                      : GNAT.OS_Lib.File_Descriptor;
+      Close_Upon_Finalization : Boolean := True) return File_Buffer
    is
+      use OS;
    begin
-      Put_UTF_8 (S, "(task " & Ada.Task_Identification.Image (Id) & ")");
-   end Put_Image_Task;
+      if FD = Invalid_FD then
+         raise Program_Error with OS.Errno_Message;
+      end if;
+      return Result : File_Buffer do
+         Result.FD := FD;
+         Result.Close_Upon_Finalization := Close_Upon_Finalization;
+      end return;
+   end Create_From_FD;
 
-end System.Put_Task_Images;
+   function Create_File (Name : String) return File_Buffer is
+   begin
+      return Create_From_FD (OS.Create_File (Name, Fmode => OS.Binary));
+   end Create_File;
+
+   procedure Finalize (Ref : in out Self_Ref) is
+      Success : Boolean;
+      use OS;
+   begin
+      if Ref.Self.FD /= OS.Invalid_FD
+        and then Ref.Self.Close_Upon_Finalization
+      then
+         Close (Ref.Self.FD, Success);
+         if not Success then
+            raise Program_Error with OS.Errno_Message;
+         end if;
+      end if;
+      Ref.Self.FD := OS.Invalid_FD;
+   end Finalize;
+
+end Ada.Strings.Text_Buffers.Files;

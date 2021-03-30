@@ -2,9 +2,9 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                          SYSTEM.PUT_TASK_IMAGES                          --
+--                      ADA.STRINGS.TEXT_BUFFERS.FILES                      --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
 --            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
@@ -29,20 +29,47 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Put_Task_Images is
+with Ada.Finalization;
+with GNAT.OS_Lib;
 
-   use Ada.Strings.Text_Buffers;
+package Ada.Strings.Text_Buffers.Files is
 
-   procedure Put_Image_Protected (S : in out Sink'Class) is
-   begin
-      Put_UTF_8 (S, "(protected object)");
-   end Put_Image_Protected;
+   type File_Buffer is new Root_Buffer_Type with private;
+   --  Output written to a File_Buffer is written to the associated file.
 
-   procedure Put_Image_Task
-     (S : in out Sink'Class; Id : Ada.Task_Identification.Task_Id)
-   is
-   begin
-      Put_UTF_8 (S, "(task " & Ada.Task_Identification.Image (Id) & ")");
-   end Put_Image_Task;
+   function Create_From_FD
+     (FD                      : GNAT.OS_Lib.File_Descriptor;
+      Close_Upon_Finalization : Boolean := True)
+     return File_Buffer;
+   --  file closed upon finalization if specified
 
-end System.Put_Task_Images;
+   function Create_File (Name : String) return File_Buffer;
+   --  file closed upon finalization
+
+   function Create_Standard_Output_Buffer return File_Buffer is
+     (Create_From_FD (GNAT.OS_Lib.Standout, Close_Upon_Finalization => False));
+   function Create_Standard_Error_Buffer return File_Buffer is
+     (Create_From_FD (GNAT.OS_Lib.Standerr, Close_Upon_Finalization => False));
+
+private
+
+   procedure Put_UTF_8_Implementation
+     (Buffer : in out Root_Buffer_Type'Class;
+      Item : UTF_Encoding.UTF_8_String)
+     with Pre => Buffer in File_Buffer'Class;
+
+   package Mapping is new Output_Mapping (Put_UTF_8_Implementation);
+
+   package OS renames GNAT.OS_Lib;
+
+   type Self_Ref (Self : not null access File_Buffer)
+     is new Finalization.Limited_Controlled with null record;
+   overriding procedure Finalize (Ref : in out Self_Ref);
+
+   type File_Buffer is new Mapping.Buffer_Type with record
+      FD  : OS.File_Descriptor := OS.Invalid_FD;
+      Ref : Self_Ref (File_Buffer'Access);
+      Close_Upon_Finalization : Boolean := False;
+   end record;
+
+end Ada.Strings.Text_Buffers.Files;

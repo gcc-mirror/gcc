@@ -339,7 +339,7 @@ package body Exp_Put_Image is
 
          --  For other elementary types, generate:
          --
-         --     Put_Wide_Wide_String (Sink, U_Type'Wide_Wide_Image (Item));
+         --     Wide_Wide_Put (Sink, U_Type'Wide_Wide_Image (Item));
          --
          --  It would be more elegant to do it the other way around (define
          --  '[[Wide_]Wide_]Image in terms of 'Put_Image). But this is easier
@@ -366,7 +366,7 @@ package body Exp_Put_Image is
             Put_Call : constant Node_Id :=
               Make_Procedure_Call_Statement (Loc,
                 Name =>
-                  New_Occurrence_Of (RTE (RE_Put_Wide_Wide_String), Loc),
+                  New_Occurrence_Of (RTE (RE_Wide_Wide_Put), Loc),
                 Parameter_Associations => New_List
                   (Relocate_Node (Sink), Image));
          begin
@@ -758,7 +758,8 @@ package body Exp_Put_Image is
           In_Present          => True,
           Out_Present         => True,
           Parameter_Type      =>
-            New_Occurrence_Of (Class_Wide_Type (RTE (RE_Sink)), Loc)),
+            New_Occurrence_Of
+              (Class_Wide_Type (RTE (RE_Root_Buffer_Type)), Loc)),
 
         Make_Parameter_Specification (Loc,
           Defining_Identifier => Make_Defining_Identifier (Loc, Name_V),
@@ -816,13 +817,16 @@ package body Exp_Put_Image is
 
    function Enable_Put_Image (Typ : Entity_Id) return Boolean is
    begin
+      --  The name "Sink" here is a short nickname for
+      --  "Ada.Strings.Text_Buffers.Root_Buffer_Type".
+
       --  There's a bit of a chicken&egg problem. The compiler is likely to
       --  have trouble if we refer to the Put_Image of Sink itself, because
       --  Sink is part of the parameter profile:
       --
       --     function Sink'Put_Image (S : in out Sink'Class; V : T);
       --
-      --  Likewise, the Ada.Strings.Text_Output package, where Sink is
+      --  Likewise, the Ada.Strings.Buffer package, where Sink is
       --  declared, depends on various other packages, so if we refer to
       --  Put_Image of types declared in those other packages, we could create
       --  cyclic dependencies. Therefore, we disable Put_Image for some
@@ -858,13 +862,13 @@ package body Exp_Put_Image is
       --  If type Sink is unavailable in this runtime, disable Put_Image
       --  altogether.
 
-      if No_Run_Time_Mode or else not RTE_Available (RE_Sink) then
+      if No_Run_Time_Mode or else not RTE_Available (RE_Root_Buffer_Type) then
          return False;
       end if;
 
-      --  ???Disable Put_Image on type Sink declared in
-      --  Ada.Strings.Text_Output. Note that we can't call Is_RTU on
-      --  Ada_Strings_Text_Output, because it's not known yet (we might be
+      --  ???Disable Put_Image on type Root_Buffer_Type declared in
+      --  Ada.Strings.Text_Buffers. Note that we can't call Is_RTU on
+      --  Ada_Strings_Text_Buffers, because it's not known yet (we might be
       --  compiling it). But this is insufficient to allow support for tagged
       --  predefined types.
 
@@ -873,7 +877,7 @@ package body Exp_Put_Image is
       begin
          if Present (Parent_Scope)
            and then Is_RTU (Parent_Scope, Ada_Strings)
-           and then Chars (Scope (Typ)) = Name_Find ("text_output")
+           and then Chars (Scope (Typ)) = Name_Find ("text_buffers")
          then
             return False;
          end if;
@@ -964,11 +968,8 @@ package body Exp_Put_Image is
         Make_Object_Declaration (Loc,
           Defining_Identifier => Sink_Entity,
           Object_Definition =>
-            New_Occurrence_Of (RTE (RE_Buffer), Loc),
-          Expression =>
-            Make_Function_Call (Loc,
-              Name => New_Occurrence_Of (RTE (RE_New_Buffer), Loc),
-              Parameter_Associations => Empty_List));
+            New_Occurrence_Of (RTE (RE_Buffer_Type), Loc));
+
       Put_Im : constant Node_Id :=
         Make_Attribute_Reference (Loc,
           Prefix         => New_Occurrence_Of (U_Type, Loc),
@@ -996,15 +997,16 @@ package body Exp_Put_Image is
       return Image;
    end Build_Image_Call;
 
-   ------------------
-   -- Preload_Sink --
-   ------------------
+   ------------------------------
+   -- Preload_Root_Buffer_Type --
+   ------------------------------
 
-   procedure Preload_Sink (Compilation_Unit : Node_Id) is
+   procedure Preload_Root_Buffer_Type (Compilation_Unit : Node_Id) is
    begin
-      --  We can't call RTE (RE_Sink) for at least some predefined units,
-      --  because it would introduce cyclic dependences. The package where Sink
-      --  is declared, for example, and things it depends on.
+      --  We can't call RTE (RE_Root_Buffer_Type) for at least some
+      --  predefined units, because it would introduce cyclic dependences.
+      --  The package where Root_Buffer_Type is declared, for example, and
+      --  things it depends on.
       --
       --  It's only needed for tagged types, so don't do it unless Put_Image is
       --  enabled for tagged types, and we've seen a tagged type. Note that
@@ -1013,25 +1015,26 @@ package body Exp_Put_Image is
       --  It's unfortunate to have this Tagged_Seen processing so scattered
       --  about, but we need to know if there are tagged types where this is
       --  called in Analyze_Compilation_Unit, before we have analyzed any type
-      --  declarations. This mechanism also prevents doing RTE (RE_Sink) when
-      --  compiling the compiler itself. Packages Ada.Strings.Text_Output and
-      --  friends are not included in the compiler.
+      --  declarations. This mechanism also prevents doing
+      --  RTE (RE_Root_Buffer_Type) when compiling the compiler itself.
+      --  Packages Ada.Strings.Buffer_Types and friends are not included
+      --  in the compiler.
       --
-      --  Don't do it if type Sink is unavailable in the runtime.
+      --  Don't do it if type Root_Buffer_Type is unavailable in the runtime.
 
       if not In_Predefined_Unit (Compilation_Unit)
         and then Tagged_Put_Image_Enabled
         and then Tagged_Seen
         and then not No_Run_Time_Mode
-        and then RTE_Available (RE_Sink)
+        and then RTE_Available (RE_Root_Buffer_Type)
       then
          declare
-            Ignore : constant Entity_Id := RTE (RE_Sink);
+            Ignore : constant Entity_Id := RTE (RE_Root_Buffer_Type);
          begin
             null;
          end;
       end if;
-   end Preload_Sink;
+   end Preload_Root_Buffer_Type;
 
    -------------------------
    -- Put_Image_Base_Type --

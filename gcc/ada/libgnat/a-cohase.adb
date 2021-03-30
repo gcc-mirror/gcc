@@ -1170,7 +1170,7 @@ is
    ---------------
 
    procedure Put_Image
-     (S : in out Ada.Strings.Text_Output.Sink'Class; V : Set)
+     (S : in out Ada.Strings.Text_Buffers.Root_Buffer_Type'Class; V : Set)
    is
       First_Time : Boolean := True;
       use System.Put_Images;

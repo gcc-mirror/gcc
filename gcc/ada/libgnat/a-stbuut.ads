@@ -2,9 +2,9 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                          SYSTEM.PUT_TASK_IMAGES                          --
+--                      ADA.STRINGS.TEXT_BUFFERS.UTILS                      --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
 --            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
@@ -29,20 +29,54 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Put_Task_Images is
+with Ada.Strings.UTF_Encoding.Wide_Wide_Strings;
 
-   use Ada.Strings.Text_Buffers;
+package Ada.Strings.Text_Buffers.Utils with Pure is
 
-   procedure Put_Image_Protected (S : in out Sink'Class) is
-   begin
-      Put_UTF_8 (S, "(protected object)");
-   end Put_Image_Protected;
+   --  Ada.Strings.Text_Buffers is a predefined unit (see Ada RM A.4.12).
+   --  This is a GNAT-defined child unit of that parent.
 
-   procedure Put_Image_Task
-     (S : in out Sink'Class; Id : Ada.Task_Identification.Task_Id)
-   is
-   begin
-      Put_UTF_8 (S, "(task " & Ada.Task_Identification.Image (Id) & ")");
-   end Put_Image_Task;
+   subtype Character_7 is
+     Character range Character'Val (0) .. Character'Val (2**7 - 1);
 
-end System.Put_Task_Images;
+   procedure Put_7bit
+     (Buffer : in out Root_Buffer_Type'Class; Item : Character_7);
+   procedure Put_Character
+     (Buffer : in out Root_Buffer_Type'Class; Item : Character);
+   procedure Put_Wide_Character
+     (Buffer : in out Root_Buffer_Type'Class; Item : Wide_Character);
+   procedure Put_Wide_Wide_Character
+     (Buffer : in out Root_Buffer_Type'Class; Item : Wide_Wide_Character);
+   --  Single character output procedures.
+
+   function Column (Buffer : Root_Buffer_Type'Class) return Positive with
+      Inline;
+   --  Current output column. The Column is initially 1, and is incremented for
+   --  each 8-bit character output. A call to New_Line sets Column back to 1.
+   --  The next character to be output will go in this column.
+
+   procedure Tab_To_Column
+     (Buffer : in out Root_Buffer_Type'Class; Column : Positive);
+   --  Put spaces until we're at or past Column.
+
+   subtype Sink is Root_Buffer_Type;
+
+   function NL return Character is (ASCII.LF) with Inline;
+
+   function UTF_8_Length (Buffer : Root_Buffer_Type'Class) return Natural;
+
+   subtype UTF_8_Lines is UTF_Encoding.UTF_8_String with
+     Predicate =>
+       UTF_Encoding.Wide_Wide_Strings.Encode
+         (UTF_Encoding.Wide_Wide_Strings.Decode (UTF_8_Lines)) = UTF_8_Lines;
+
+   subtype UTF_8 is UTF_8_Lines with
+     Predicate => (for all UTF_8_Char of UTF_8 => UTF_8_Char /= NL);
+
+   procedure Put_UTF_8_Lines
+     (Buffer : in out Root_Buffer_Type'Class; Item : UTF_8_Lines);
+
+private
+   function UTF_8_Length (Buffer : Root_Buffer_Type'Class) return Natural
+     is (Buffer.UTF_8_Length);
+end Ada.Strings.Text_Buffers.Utils;

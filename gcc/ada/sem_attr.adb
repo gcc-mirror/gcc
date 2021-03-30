@@ -2432,15 +2432,18 @@ package body Sem_Attr is
          Analyze_And_Resolve (E1);
 
          --  Check that the first argument is
-         --  Ada.Strings.Text_Output.Sink'Class.
+         --  Ada.Strings.Text_Buffers.Root_Buffer_Type'Class.
 
          --  Note: the double call to Root_Type here is needed because the
          --  root type of a class-wide type is the corresponding type (e.g.
          --  X for X'Class, and we really want to go to the root.)
 
-         if not Is_RTE (Root_Type (Root_Type (Etype (E1))), RE_Sink) then
+         if not Is_RTE (Root_Type (Root_Type (Etype (E1))),
+                        RE_Root_Buffer_Type)
+         then
             Error_Attr
-              ("expected Ada.Strings.Text_Output.Sink''Class", E1);
+              ("expected Ada.Strings.Text_Buffers.Root_Buffer_Type''Class",
+               E1);
          end if;
 
          --  Check that the second argument is of the right type

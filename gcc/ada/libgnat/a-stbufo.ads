@@ -2,9 +2,9 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---                          SYSTEM.PUT_TASK_IMAGES                          --
+--                    ADA.STRINGS.TEXT_BUFFERS.FORMATTING                   --
 --                                                                          --
---                                 B o d y                                  --
+--                                 S p e c                                  --
 --                                                                          --
 --            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
@@ -29,20 +29,45 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body System.Put_Task_Images is
+with Ada.Strings.Text_Buffers.Utils;
 
-   use Ada.Strings.Text_Buffers;
+package Ada.Strings.Text_Buffers.Formatting is
 
-   procedure Put_Image_Protected (S : in out Sink'Class) is
-   begin
-      Put_UTF_8 (S, "(protected object)");
-   end Put_Image_Protected;
+   --  Template-based output, based loosely on C's printf family. Unlike
+   --  printf, it is type safe. We don't support myriad formatting options; the
+   --  caller is expected to call 'Image, or other functions that might have
+   --  various formatting capabilities.
 
-   procedure Put_Image_Task
-     (S : in out Sink'Class; Id : Ada.Task_Identification.Task_Id)
-   is
-   begin
-      Put_UTF_8 (S, "(task " & Ada.Task_Identification.Image (Id) & ")");
-   end Put_Image_Task;
+   type Template is new Utils.UTF_8;
 
-end System.Put_Task_Images;
+   procedure Put
+     (S : in out Root_Buffer_Type'Class; T : Template;
+      X1, X2, X3, X4, X5, X6, X7, X8, X9 : Utils.UTF_8_Lines := "");
+   --  Prints the template as is, except for the following escape sequences:
+   --    "\n" is end of line.
+   --    "\i" indents by the default amount, and "\o" outdents.
+   --    "\I" indents by one space, and "\O" outdents.
+   --    "\1" is replaced with X1, and similarly for 2, 3, ....
+   --    "\\" is "\".
+
+   --  Note that the template is not type String, to avoid this sort of thing:
+   --
+   --      https://xkcd.com/327/
+
+   procedure Put
+     (T : Template;
+      X1, X2, X3, X4, X5, X6, X7, X8, X9 : Utils.UTF_8_Lines := "");
+   --  Sends to standard output
+
+   procedure Err
+     (T : Template;
+      X1, X2, X3, X4, X5, X6, X7, X8, X9 : Utils.UTF_8_Lines := "");
+   --  Sends to standard error
+
+   function Format
+     (T : Template;
+      X1, X2, X3, X4, X5, X6, X7, X8, X9 : Utils.UTF_8_Lines := "")
+     return Utils.UTF_8_Lines;
+   --  Returns a UTF-8-encoded String
+
+end Ada.Strings.Text_Buffers.Formatting;

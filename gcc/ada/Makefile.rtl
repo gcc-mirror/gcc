@@ -296,6 +296,12 @@ GNATRTL_NONTASKING_OBJS= \
   a-strunb$(objext) \
   a-ststio$(objext) \
   a-stteou$(objext) \
+  a-sttebu$(objext) \
+  a-stbuun$(objext) \
+  a-stbubo$(objext) \
+  a-stbuut$(objext) \
+  a-stbufi$(objext) \
+  a-stbufo$(objext) \
   a-stunau$(objext) \
   a-stunha$(objext) \
   a-stuten$(objext) \
