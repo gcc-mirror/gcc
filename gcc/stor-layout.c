@@ -2838,6 +2838,8 @@ set_min_and_max_values_for_integral_type (tree type,
   if (precision < 1)
     return;
 
+  gcc_assert (precision <= WIDE_INT_MAX_PRECISION);
+
   TYPE_MIN_VALUE (type)
     = wide_int_to_tree (type, wi::min_value (precision, sgn));
   TYPE_MAX_VALUE (type)
