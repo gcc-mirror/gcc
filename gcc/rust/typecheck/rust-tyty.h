@@ -527,7 +527,9 @@ public:
       }
   }
 
-  bool was_substituted () const { return !used_arguments.is_error (); }
+  bool needs_substitution () const { return used_arguments.is_error (); }
+
+  bool was_substituted () const { return !needs_substitution (); }
 
   SubstitutionArgumentMappings get_substitution_arguments ()
   {
