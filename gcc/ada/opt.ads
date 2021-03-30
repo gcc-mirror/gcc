@@ -191,6 +191,8 @@ package Opt is
    --  are valid and in range of their representations. This feature is now
    --  fully enabled in the compiler.
 
+   --  WARNING: There is a matching C declaration of this variable in fe.h
+
    Back_Annotate_Rep_Info : Boolean := False;
    --  GNAT
    --  If set True, enables back annotation of representation information
