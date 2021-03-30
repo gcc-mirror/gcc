@@ -28150,14 +28150,11 @@ arm_file_start (void)
       if (print_tune_info)
 	arm_print_tune_info ();
 
-      if (! TARGET_SOFT_FLOAT)
-	{
-	  if (TARGET_HARD_FLOAT && TARGET_VFP_SINGLE)
-	    arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 1);
+      if (TARGET_HARD_FLOAT && TARGET_VFP_SINGLE)
+	arm_emit_eabi_attribute ("Tag_ABI_HardFP_use", 27, 1);
 
-	  if (TARGET_HARD_FLOAT_ABI)
-	    arm_emit_eabi_attribute ("Tag_ABI_VFP_args", 28, 1);
-	}
+      if (TARGET_HARD_FLOAT_ABI)
+	arm_emit_eabi_attribute ("Tag_ABI_VFP_args", 28, 1);
 
       /* Some of these attributes only apply when the corresponding features
 	 are used.  However we don't have any easy way of figuring this out.
