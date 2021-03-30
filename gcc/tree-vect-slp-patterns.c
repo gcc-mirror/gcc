@@ -332,7 +332,8 @@ static inline bool
 vect_check_evenodd_blend (lane_permutation_t &permutes,
 			 unsigned even, unsigned odd)
 {
-  if (permutes.length () == 0)
+  if (permutes.length () == 0
+      || permutes.length () % 2 != 0)
     return false;
 
   unsigned val[2] = {even, odd};

@@ -57,7 +57,7 @@ testui2_cst(unsigned int x, vector unsigned int v)
 /* { dg-final { scan-assembler-times {\mlvewx\M} 4 { target lp64 } } } */
 /* { dg-final { scan-assembler-times {\mvperm\M} 12 { target lp64 } } } */
 
-/* { dg-final { scan-assembler-times {\mvperm\M} 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mstvx\M|\mstwx\M|\mstw\M|\mstxvw4x\M} 12 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvw4x\M} 8 { target { be && ilp32 } } } } */
+/* { dg-final { scan-assembler-times {\mvperm\M} 12 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstvx\M|\mstwx\M|\mstw\M|\mstxvw4x\M} 4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mlvx\M|\mlxvw4x\M} 4 { target { be && ilp32 } } } } */
 /* { dg-final { scan-assembler-times {\mlvewx\M} 4 { target ilp32 } } } */

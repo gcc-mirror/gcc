@@ -54,8 +54,8 @@ vector unsigned char testuu_cst (unsigned char x, vector unsigned char v)
 
 /* -m32 codegen. */
 /* { dg-final { scan-assembler-times {\mrlwinm\M} 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mstb\M} 8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mstb\M} 4 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlxv\M} 8 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mlvebx\M} 4 { target ilp32 } } } */
 /* { dg-final { scan-assembler-times {\mvperm\M} 4 { target ilp32 } } } */
-/* { dg-final { scan-assembler-times {\mxxperm\M} 0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times {\mxxperm\M} 8 { target ilp32 } } } */

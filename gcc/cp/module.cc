@@ -4325,8 +4325,8 @@ dumper::operator () (const char *format, ...)
 	case 'N': /* Name.  */
 	  {
 	    tree t = va_arg (args, tree);
-	    if (t && TREE_CODE (t) == OVERLOAD)
-	      t = OVL_FIRST (t);
+	    while (t && TREE_CODE (t) == OVERLOAD)
+	      t = OVL_FUNCTION (t);
 	    fputc ('\'', dumps->stream);
 	    dumps->nested_name (t);
 	    fputc ('\'', dumps->stream);
@@ -5206,8 +5206,7 @@ trees_out::core_bools (tree t)
       else if (code == VAR_DECL)
 	{
 	  /* This is DECL_INITIALIZED_P.  */
-	  if (DECL_CONTEXT (t)
-	      && TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
+	  if (TREE_CODE (DECL_CONTEXT (t)) != FUNCTION_DECL)
 	    /* We'll set this when reading the definition.  */
 	    flag_1 = false;
 	}
@@ -10331,8 +10330,8 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	      if (mk & MK_tmpl_alias_mask)
 		/* It should be in both tables.  */
 		gcc_checking_assert
-		  (match_mergeable_specialization (false, entry)
-		   == TREE_TYPE (existing));
+		  (same_type_p (match_mergeable_specialization (false, entry),
+				TREE_TYPE (existing)));
 	      if (mk & MK_tmpl_tmpl_mask)
 		existing = DECL_TI_TEMPLATE (existing);
 	    }
@@ -10345,7 +10344,10 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 	    }
 
 	  /* The walkabout should have found ourselves.  */
-	  gcc_checking_assert (existing == decl);
+	  gcc_checking_assert (TREE_CODE (decl) == TYPE_DECL
+			       ? same_type_p (TREE_TYPE (decl),
+					      TREE_TYPE (existing))
+			       : existing == decl);
 	}
     }
   else if (mk != MK_unique)
@@ -11513,7 +11515,11 @@ trees_in::read_var_def (tree decl, tree maybe_template)
       if (DECL_EXTERNAL (decl))
 	DECL_NOT_REALLY_EXTERN (decl) = true;
       if (VAR_P (decl))
-	DECL_INITIALIZED_P (decl) = true;
+	{
+	  DECL_INITIALIZED_P (decl) = true;
+	  if (maybe_dup && DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (maybe_dup))
+	    DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
+	}
       DECL_INITIAL (decl) = init;
       if (!dyn_init)
 	;

@@ -1,3 +1,9 @@
+2021-03-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/99802
+	* freeze.adb (Is_Full_Access_Aggregate): Call Is_Full_Access_Object
+	on the name of an N_Assignment_Statement to spot full access.
+
 2021-03-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Build a TYPE_STUB_DECL

@@ -1002,22 +1002,26 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
   poly_offset_int size = -1;
   tree size_tree = NULL_TREE;
 
-  /* First get the final access size from just the outermost expression.  */
+  machine_mode mode = TYPE_MODE (type);
+  if (mode == BLKmode)
+    size_tree = TYPE_SIZE (type);
+  else
+    size = GET_MODE_BITSIZE (mode);
+  if (size_tree != NULL_TREE
+      && poly_int_tree_p (size_tree))
+    size = wi::to_poly_offset (size_tree);
+
+  /* Lower the final access size from the outermost expression.  */
   op = &ops[0];
+  size_tree = NULL_TREE;
   if (op->opcode == COMPONENT_REF)
     size_tree = DECL_SIZE (op->op0);
   else if (op->opcode == BIT_FIELD_REF)
     size_tree = op->op0;
-  else
-    {
-      machine_mode mode = TYPE_MODE (type);
-      if (mode == BLKmode)
-	size_tree = TYPE_SIZE (type);
-      else
-	size = GET_MODE_BITSIZE (mode);
-    }
   if (size_tree != NULL_TREE
-      && poly_int_tree_p (size_tree))
+      && poly_int_tree_p (size_tree)
+      && (!known_size_p (size)
+	  || known_lt (wi::to_poly_offset (size_tree), size)))
     size = wi::to_poly_offset (size_tree);
 
   /* Initially, maxsize is the same as the accessed element size.

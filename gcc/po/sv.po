@@ -25,10 +25,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 11.1-b20210207\n"
+"Project-Id-Version: gcc 11.1-b20210321\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-03-19 21:31+0000\n"
-"PO-Revision-Date: 2021-03-21 22:26+0100\n"
+"PO-Revision-Date: 2021-03-28 15:46+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -7217,16 +7217,14 @@ msgid "Note a #include translation of a specific header."
 msgstr "Notera en #include-översättning av ett specifikt huvud."
 
 #: c-family/c.opt:1757
-#, fuzzy, no-c-format
-#| msgid "Only emit Compiled Module Interface."
+#, no-c-format
 msgid "Note Compiled Module Interface pathnames."
-msgstr "Mata endast ut kompilerade modulgränssnitt."
+msgstr "Notera kompilerade modulgränssnittssökvägar."
 
 #: c-family/c.opt:1761
-#, fuzzy, no-c-format
-#| msgid "Note a #include translation of a specific header."
+#, no-c-format
 msgid "Note Compiled Module Interface pathname of a specific module or header-unit."
-msgstr "Notera en #include-översättning av ett specifikt huvud."
+msgstr "Notera kompilerade modulgränssnittssökvägar för en specfik modul eller huvudenhet."
 
 #: c-family/c.opt:1765
 #, no-c-format
@@ -8125,10 +8123,9 @@ msgid "The maximum number of constraints per state."
 msgstr "Det maximala antalet begränsningar per tillstånd."
 
 #: analyzer/analyzer.opt:39
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping."
+#, no-c-format
 msgid "The maximum number of infeasible edges to reject before declaring a diagnostic as infeasible."
-msgstr "Det maximala antalet ingående bågar att överväga för korshopp."
+msgstr "Det maximala antalet omöjliga bågar att förkasta före ett diagnostikmeddelande deklareras omöjligt."
 
 #: analyzer/analyzer.opt:43
 #, no-c-format
@@ -8346,10 +8343,9 @@ msgid "Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
 msgstr "Dumpa en textuell representation av den exploderade grafen till KÄLLFIL.eg-ID.txt."
 
 #: analyzer/analyzer.opt:215
-#, fuzzy, no-c-format
-#| msgid "Dump various analyzer internals to SRCFILE.analyzer.txt."
+#, no-c-format
 msgid "Dump various analyzer internals to SRCFILE.*.fg.dot and SRCFILE.*.tg.dot."
-msgstr "Dumpa diverse intern information om analyseraren KÄLLFIL.analyzer.txt."
+msgstr "Dumpa diverse intern information om analyseraren KÄLLFIL.*.fg.dot och KÄLLFIL.*.tg.dot."
 
 #: analyzer/analyzer.opt:219
 #, no-c-format
@@ -12926,10 +12922,9 @@ msgid "Generate (do not generate) pc-relative memory addressing."
 msgstr "Generera (generera inte) pc-relativ minnesadressering."
 
 #: config/rs6000/rs6000.opt:614
-#, fuzzy, no-c-format
-#| msgid "Generate (do not generate) pc-relative memory addressing."
+#, no-c-format
 msgid "Generate (do not generate) pc-relative memory optimizations for externals."
-msgstr "Generera (generera inte) pc-relativ minnesadressering."
+msgstr "Generera (generera inte) pc-relativ minnesadressering för externa."
 
 #: config/rs6000/rs6000.opt:618
 #, no-c-format
@@ -19728,10 +19723,9 @@ msgid "Maximum number of conditional store pairs that can be sunk."
 msgstr "Maximalt antal villkorliga lagringspar som kan sänkas."
 
 #: params.opt:686 params.opt:690
-#, fuzzy, no-c-format
-#| msgid "Maximum number of constant stores to merge in the store merging pass."
+#, no-c-format
 msgid "Maximum number of store chains to track at the same time in the store merging pass."
-msgstr "Maximalt antal konstantlagringar att slå samman i passet för sammanslagning av lagring."
+msgstr "Maximalt antal lagringskedjor att spåra på samma gång i passet för sammanslagning av lagring."
 
 #: params.opt:694
 #, no-c-format
@@ -20044,8 +20038,7 @@ msgid "Maximum number of references stored in each modref base."
 msgstr "Maximalt antal referenser som lagras i varje modref-bas."
 
 #: params.opt:960
-#, fuzzy, no-c-format
-#| msgid "Maximum number of accesse stored in each modref reference."
+#, no-c-format
 msgid "Maximum number of accesses stored in each modref reference."
 msgstr "Maximalt antal åtkomster som lagras i varje modref-referens."
 
@@ -20892,8 +20885,7 @@ msgid "%qs specified bound %s exceeds the size of at most %E of unterminated arr
 msgstr "%qs angivna gränsen %s kan överskrida storleken på högst %E av oavslutad vektor"
 
 #: builtins.c:1181
-#, fuzzy, gcc-internal-format
-#| msgid "%qsargument missing terminating nul"
+#, gcc-internal-format
 msgid "%qs argument missing terminating nul"
 msgstr "argumentet till %qs saknar avslutande nolltecken"
 
@@ -21228,10 +21220,9 @@ msgid "%Kwriting %E bytes into a region of size %E overflows the destination"
 msgstr "%Katt skriva %E byte till en region av storlek %E spiller över destinationen"
 
 #: builtins.c:4239
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay write %E or more bytes into a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may write %E or more bytes into a region of size %E"
-msgstr "%Kkan skriva %E eller fler byte till en region av storlek %E"
+msgstr "%K%qD kan skriva %E eller fler byte till en region av storlek %E"
 
 #: builtins.c:4241 builtins.c:4779
 #, gcc-internal-format
@@ -21269,8 +21260,7 @@ msgid "%Kwriting between %E and %E bytes into a region of size %E overflows the 
 msgstr "%Katt skriva mellan %E och %E byte till en region av storlek %E spiller över destinationen"
 
 #: builtins.c:4284
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may reade %E byte from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may read %E byte from a region of size %E"
 msgstr "%K%qD kan läsa %E byte från en region av storlek %E"
 
@@ -21350,9 +21340,7 @@ msgid "%Kreading between %E and %E bytes from a region of size %E"
 msgstr "%Kläser mellan %E och %E byte från en region av storlek %E"
 
 #: builtins.c:4354
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD epecting %E byte in a region of size %E"
-#| msgid_plural "%K%qD expecting %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD expecting %E byte in a region of size %E"
 msgid_plural "%K%qD expecting %E bytes in a region of size %E"
 msgstr[0] "%K%qD förväntar sig %E byte i en region av storlek %E"
@@ -21381,8 +21369,7 @@ msgid "%K%qD expecting between %E and %E bytes in a region of size %E"
 msgstr "%K%qD förväntar sig mellan %E och %E byte i en region av storlek %E"
 
 #: builtins.c:4382
-#, fuzzy, gcc-internal-format
-#| msgid "%Kexpectting between %E and %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%Kexpecting between %E and %E bytes in a region of size %E"
 msgstr "%Kförväntar sig mellan %E och %E byte i en region av storlek %E"
 
@@ -23943,10 +23930,9 @@ msgid "%s: %d basic blocks and %d edges/basic block"
 msgstr "%s: %d grundblock och %d bågar/grundblock"
 
 #: gcse.c:4013
-#, fuzzy, gcc-internal-format
-#| msgid "%s: %d basic blocks and %d registers; increase %<--param max-gcse-memory%> above "
+#, gcc-internal-format
 msgid "%s: %d basic blocks and %d registers; increase %<--param max-gcse-memory%> above %wu"
-msgstr "%s: %d grundblock och %d register, öka %<--param max-gcse-memory%> över "
+msgstr "%s: %d grundblock och %d register, öka %<--param max-gcse-memory%> över %wu"
 
 #: gencfn-macros.c:195
 #, gcc-internal-format, gfc-internal-format
@@ -25387,10 +25373,9 @@ msgid "name %qs differs from name %qs defined in another translation unit"
 msgstr "namnet %qs skiljer från namnet %qs som är definierat i en annan översättningsenhet"
 
 #: ipa-devirt.c:4268
-#, fuzzy, gcc-internal-format
-#| msgid "name %qs is defined to different value in another translation unit"
+#, gcc-internal-format
 msgid "name %qs is defined to %wd while another translation unit defines it as %wd"
-msgstr "namnet %qs är definierat till ett annat värde i en annan översättningsenhet"
+msgstr "namnet %qs är definierat till %wd medan en annan översättningsenhet definierar det som %wd"
 
 #: ipa-devirt.c:4274
 #, gcc-internal-format
@@ -25912,7 +25897,7 @@ msgstr "nästad slinga i en reduktion behöver en reduktionsklausul för %qE"
 #: omp-low.c:2971
 #, gcc-internal-format
 msgid "%<target%> construct with nested %<teams%> construct contains directives outside of the %<teams%> construct"
-msgstr ""
+msgstr "%<target%>-konstruktion med nästad %<teams%>-konstruktion innehåller direktiv utanför %<teams%>-konstruktionen"
 
 #: omp-low.c:3028
 #, gcc-internal-format
@@ -28451,16 +28436,14 @@ msgid "function %q+F can never be inlined because it contains a computed goto"
 msgstr "funktion %q+F kan aldrig inline:as eftersom den innehåller ett beräknat goto"
 
 #: tree-inline.c:4032
-#, fuzzy, gcc-internal-format
-#| msgid "function %q+F can never be inlined because it uses variable argument lists"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it has a VLA return argument"
-msgstr "funktion %q+F kan aldrig inline:as eftersom den använder variabel argumentlista"
+msgstr "funktion %q+F kan aldrig inline:as eftersom den har ett VLA-returargument"
 
 #: tree-inline.c:4040
-#, fuzzy, gcc-internal-format
-#| msgid "function %q+F can never be inlined because it uses variable argument lists"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it has a VLA argument"
-msgstr "funktion %q+F kan aldrig inline:as eftersom den använder variabel argumentlista"
+msgstr "funktion %q+F kan aldrig inline:as eftersom den har ett VLA-argument"
 
 #: tree-inline.c:4108
 #, gcc-internal-format
@@ -29517,10 +29500,9 @@ msgid "visibility attribute not supported in this configuration; ignored"
 msgstr "synlighetsattribut stödjs inte för denna konfiguration, ignoreras"
 
 #: varasm.c:7789
-#, fuzzy, gcc-internal-format
-#| msgid "%+qD without %<used%> attribute and %qD with %<used%> attribute are placed in a section with the same name"
+#, gcc-internal-format
 msgid "%+qD without %<retain%> attribute and %qD with %<retain%> attribute are placed in a section with the same name"
-msgstr "%+qD utan attributet %<used%> och %qD med attributet %<used%> är placerad i en sektion med samma namn"
+msgstr "%+qD utan attributet %<retain%> och %qD med attributet %<retain%> är placerad i en sektion med samma namn"
 
 #: vec.c:200
 #, gcc-internal-format, gfc-internal-format
@@ -30153,16 +30135,14 @@ msgid "%qE attribute ignored on a function returning %qT"
 msgstr "attributet %qE ignoreras på en funktion som returnerar %qT"
 
 #: c-family/c-attribs.c:3564
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute argument %qE is not an integer constant"
+#, gcc-internal-format
 msgid "%qE attribute argument %E is not an integer constant"
-msgstr "argumentet %2$qE till attributet %1$qE är inte en heltalskonstant"
+msgstr "argumentet %2$E till attributet %1$qE är inte en heltalskonstant"
 
 #: c-family/c-attribs.c:3572
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute argument %qE is not recognised"
+#, gcc-internal-format
 msgid "%qE attribute argument %E is not positive"
-msgstr "argumentet %2$qE till attributet %1$qE är inte känt"
+msgstr "argumentet %2$E till attributet %1$qE är inte känt"
 
 #: c-family/c-attribs.c:3583
 #, gcc-internal-format
@@ -33869,10 +33849,9 @@ msgid "embedded NUL in CFString literal"
 msgstr "inbäddad NUL i CFString-litteral"
 
 #: config/host-darwin.c:65
-#, fuzzy, gcc-internal-format
-#| msgid "couldn%'t unmap pch_address_space: %m"
+#, gcc-internal-format
 msgid "could not unmap %<pch_address_space%> %m"
-msgstr "det gick inte att avmappa pch_address_space: %m"
+msgstr "det gick inte att avmappa %<pch_address_space%> %m"
 
 #: config/sol2-c.c:91 config/sol2-c.c:107
 #, gcc-internal-format
@@ -35869,22 +35848,19 @@ msgid "stack frame must be smaller than 64K"
 msgstr "stackramen måste vara mindre än 64 k"
 
 #: config/gcn/gcn.c:231
-#, fuzzy, gcc-internal-format
-#| msgid "amdgpu_hsa_kernel attribute requires string constant arguments"
+#, gcc-internal-format
 msgid "%<amdgpu_hsa_kernel%> attribute requires string constant arguments"
-msgstr "attributet amdgpu_hsa_kernel kräver en strängkonstant som argument"
+msgstr "attributet %<amdgpu_hsa_kernel%> kräver en strängkonstant som argument"
 
 #: config/gcn/gcn.c:244
-#, fuzzy, gcc-internal-format
-#| msgid "unknown specifier %s in amdgpu_hsa_kernel attribute"
+#, gcc-internal-format
 msgid "unknown specifier %qs in %<amdgpu_hsa_kernel%> attribute"
-msgstr "okänd specificerare %s i attributet amdgpu_hsa_kernel"
+msgstr "okänd specificerare %qs i attributet %<amdgpu_hsa_kernel%>"
 
 #: config/gcn/gcn.c:251
-#, fuzzy, gcc-internal-format
-#| msgid "duplicated parameter specifier %s in amdgpu_hsa_kernel attribute"
+#, gcc-internal-format
 msgid "duplicated parameter specifier %qs in %<amdgpu_hsa_kernel%> attribute"
-msgstr "dubblerad parameterspecificerare %s i attributet amdgpu_hsa_kernel"
+msgstr "dubblerad parameterspecificerare %qs i attributet %<amdgpu_hsa_kernel%>"
 
 #: config/gcn/gcn.c:303
 #, gcc-internal-format
@@ -35892,10 +35868,9 @@ msgid "too many arguments passed in sgpr registers"
 msgstr "för många argument skickade i sgpr-register"
 
 #: config/gcn/gcn.c:2105
-#, fuzzy, gcc-internal-format
-#| msgid "A non-default set of initial values has been requested, which violates the ABI!"
+#, gcc-internal-format
 msgid "A non-default set of initial values has been requested, which violates the ABI"
-msgstr "En icke-standard uppsättning initialvärden har begärts, vilket strider mot ABI:et!"
+msgstr "En icke-standard uppsättning initialvärden har begärts, vilket strider mot ABI:et"
 
 #: config/gcn/gcn.c:2341
 #, gcc-internal-format, gfc-internal-format
@@ -35918,22 +35893,19 @@ msgid "Builtin not implemented"
 msgstr "Inbyggd inte implementerad"
 
 #: config/gcn/gcn.c:4888
-#, fuzzy, gcc-internal-format
-#| msgid "using vector_length (64), ignoring %d"
+#, gcc-internal-format
 msgid "using %<vector_length (64)%>, ignoring %d"
-msgstr "använder vector_length (64), ignorerar %d"
+msgstr "använder %<vector_length (64)%>, ignorerar %d"
 
 #: config/gcn/gcn.c:4889
-#, fuzzy, gcc-internal-format
-#| msgid "using vector_length (64), ignoring runtime setting"
+#, gcc-internal-format
 msgid "using %<vector_length (64)%>, ignoring runtime setting"
-msgstr "använder vector_length (64), ignorerar körtidsinställningen"
+msgstr "använder %<vector_length (64)%>, ignorerar körtidsinställningen"
 
 #: config/gcn/gcn.c:4901
-#, fuzzy, gcc-internal-format
-#| msgid "using num_workers (%d), ignoring %d"
+#, gcc-internal-format
 msgid "using %<num_workers (%d)%>, ignoring %d"
-msgstr "använder num_workers (%d), ignorerar %d"
+msgstr "använder %<num_workers (%d)%>, ignorerar %d"
 
 #: config/gcn/gcn.c:4929 config/gcn/gcn.c:4956
 #, gcc-internal-format, gfc-internal-format
@@ -37915,8 +37887,7 @@ msgid "Unknown form for stack limit expression"
 msgstr "Okänd form på stackgränsuttryck"
 
 #: config/nios2/nios2.c:1182
-#, fuzzy, gcc-internal-format
-#| msgid "switch %<-mcustom-%s%> is required for double precision floating point"
+#, gcc-internal-format
 msgid "switch %<-mcustom-%s%> is required for double-precision floating-point"
 msgstr "flaggan %<-mcustom-%s%> behövs för dubbel precisions flyttal"
 
@@ -37946,34 +37917,29 @@ msgid "PIC support for %<-fstack-limit-symbol%>"
 msgstr "PIC-stöd för %<-fstack-limit-symbol%>"
 
 #: config/nios2/nios2.c:1382
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mgpopt%> not supported with PIC."
+#, gcc-internal-format
 msgid "%<-mgpopt%> not supported with PIC"
-msgstr "%<-mgpopt%> stödjs inte med PIC."
+msgstr "%<-mgpopt%> stödjs inte med PIC"
 
 #: config/nios2/nios2.c:1384
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mgprel-sec=%> not supported with PIC."
+#, gcc-internal-format
 msgid "%<-mgprel-sec=%> not supported with PIC"
-msgstr "%<-mgprel-sec=%> stödjs inte med PIC."
+msgstr "%<-mgprel-sec=%> stödjs inte med PIC"
 
 #: config/nios2/nios2.c:1386
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mr0rel-sec=%> not supported with PIC."
+#, gcc-internal-format
 msgid "%<-mr0rel-sec=%> not supported with PIC"
-msgstr "%<-mr0rel-sec=%> stödjs inte med PIC."
+msgstr "%<-mr0rel-sec=%> stödjs inte med PIC"
 
 #: config/nios2/nios2.c:1394
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mgprel-sec=%> argument is not a valid regular expression."
+#, gcc-internal-format
 msgid "%<-mgprel-sec=%> argument is not a valid regular expression"
-msgstr "argumentet till %<-mgprel-sec=%> är inte ett giltigt reguljärt uttryck."
+msgstr "argumentet till %<-mgprel-sec=%> är inte ett giltigt reguljärt uttryck"
 
 #: config/nios2/nios2.c:1400
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mr0rel-sec=%> argument is not a valid regular expression."
+#, gcc-internal-format
 msgid "%<-mr0rel-sec=%> argument is not a valid regular expression"
-msgstr "argumentet till %<-mr0rel-sec=%> är inte ett giltigt reguljärt uttryck."
+msgstr "argumentet till %<-mr0rel-sec=%> är inte ett giltigt reguljärt uttryck"
 
 #: config/nios2/nios2.c:1411
 #, gcc-internal-format
@@ -37991,46 +37957,39 @@ msgid "R2 architecture is little-endian only"
 msgstr "R2-arkitekturen har endast omvänd byteordning"
 
 #: config/nios2/nios2.c:3578
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot call %<__builtin_custom_%s%> without specifying switch %<-mcustom-%s%>"
+#, gcc-internal-format
 msgid "cannot call %<__builtin_custom_%s%> without specifying switch %<-mcustom-%s%>"
-msgstr "Kan inte anropa %<__builtin_custom_%s%> utan att ange flaggan %<-mcustom-%s%>"
+msgstr "det går inte att anropa %<__builtin_custom_%s%> utan att ange flaggan %<-mcustom-%s%>"
 
 #: config/nios2/nios2.c:3687
-#, fuzzy, gcc-internal-format
-#| msgid "custom instruction opcode must be compile time constant in the range 0-255 for %<__builtin_custom_%s%>"
+#, gcc-internal-format
 msgid "custom instruction opcode must be a compile-time constant in the range 0-255 for %<__builtin_custom_%s%>"
 msgstr "anpassade instruktions-opkoder måste vara kompileringstillfälleskonstanter i intervallet 0-255 för %<__builtin_custom_%s%>"
 
 #: config/nios2/nios2.c:3892
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Control register number must be in range 0-31 for %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "control register number must be in range 0-31 for %s"
-msgstr "Styrregisternummer måste vara i intervallet 0-31 för %s"
+msgstr "styrregisternummer måste vara i intervallet 0-31 för %s"
 
 #: config/nios2/nios2.c:3920
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Register number must be in range 0-31 for %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "register number must be in range 0-31 for %s"
-msgstr "Registernummer måste vara i intervallet 0-31 för %s"
+msgstr "registernummer måste vara i intervallet 0-31 för %s"
 
 #: config/nios2/nios2.c:3927
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The immediate value must fit into a %d-bit integer for %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "immediate value must fit into a %d-bit integer for %s"
-msgstr "Det omedelbara värdet måste passa i ett %d-bitars heltal för %s"
+msgstr "ett omedelbart värde måste passa i ett %d-bitars heltal för %s"
 
 #: config/nios2/nios2.c:3977
-#, fuzzy, gcc-internal-format
-#| msgid "The ENI instruction operand must be either 0 or 1"
+#, gcc-internal-format
 msgid "the ENI instruction operand must be either 0 or 1"
-msgstr "Operanden till instruktionen ENI måste vara antingen 0 eller 1"
+msgstr "operanden till instruktionen ENI måste vara antingen 0 eller 1"
 
 #: config/nios2/nios2.c:4005
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires Nios II R%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "built-in function %s requires Nios II R%d"
-msgstr "Den inbyggda funktionen %s behöver Nios II R%d"
+msgstr "den inbyggda funktionen %s behöver Nios II R%d"
 
 #: config/nios2/nios2.c:4085
 #, gcc-internal-format
@@ -38043,10 +38002,9 @@ msgid "call to %<__builtin_custom_%s%> conflicts with switch %<-mcustom-%s%>"
 msgstr "anrop till %<__builtin_custom_%s%> står i konflikt med flaggan %<-mcustom-%s%>"
 
 #: config/nios2/nios2.c:4212
-#, fuzzy, gcc-internal-format
-#| msgid "custom-fpu-cfg option does not support %<no-%>"
+#, gcc-internal-format
 msgid "%<custom-fpu-cfg%> option does not support %<no-%>"
-msgstr "flaggan custom-fpu-cfg stödjer inte %<no-%>"
+msgstr "flaggan %<custom-fpu-cfg%> stödjer inte %<no-%>"
 
 #: config/nios2/nios2.c:4217
 #, fuzzy, gcc-internal-format
@@ -58442,12 +58400,12 @@ msgstr "kan inte öppna loggfilen %<vtv_count_data.log%>: %m"
 #: d/dmd/dsymbolsem.c:134
 #, gcc-internal-format
 msgid "missing or corrupt object.d"
-msgstr ""
+msgstr "saknad eller trasig object.d"
 
 #: d/dmd/dsymbolsem.c:182
 #, gcc-internal-format
 msgid "%p has no semantic routine"
-msgstr ""
+msgstr "%p har ingen semantisk rutin"
 
 #: d/dmd/dsymbolsem.c:304
 #, fuzzy, gcc-internal-format
@@ -58458,12 +58416,12 @@ msgstr "Extern %qs vid %L kan inte ha en initierare"
 #: d/dmd/dsymbolsem.c:385
 #, gcc-internal-format
 msgid "__gshared not allowed in safe functions; use shared"
-msgstr ""
+msgstr "__gshared är inte tillåtet i säkra funktioner; använd delade"
 
 #: d/dmd/dsymbolsem.c:397
 #, gcc-internal-format, gfc-internal-format
 msgid "type %s is inferred from initializer %s, and variables cannot be of type void"
-msgstr ""
+msgstr "typen %s är härledd från initieraren %s, och variabler kan inte vara av typen void"
 
 #: d/dmd/dsymbolsem.c:401
 #, fuzzy, gcc-internal-format
@@ -58486,12 +58444,12 @@ msgstr "omdefinition av %<struct %E%>"
 #: d/dmd/dsymbolsem.c:420
 #, gcc-internal-format
 msgid "storage class `auto` has no effect if type is not inferred, did you mean `scope`?"
-msgstr ""
+msgstr "lagringsklassen ”auto” har ingen effekt om typen inte är härledd, menade du ”scope”?"
 
 #: d/dmd/dsymbolsem.c:605
 #, gcc-internal-format
 msgid "cannot be final, perhaps you meant const?"
-msgstr ""
+msgstr "kan inte vara final, kanske du menade const?"
 
 #: d/dmd/dsymbolsem.c:610
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -58520,50 +58478,47 @@ msgstr "en platshållartyp är inte tillåtet i denna kontext"
 #: d/dmd/dsymbolsem.c:663
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot be further field because it will change the determined %s size"
-msgstr ""
+msgstr "ytterligare fält går inte för att det kommer ändra den bestämda %s-storleken"
 
 #: d/dmd/dsymbolsem.c:684
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot use template to add field to aggregate `%s`"
-msgstr ""
+msgstr "det går inte att använda mallar för att lägga till fält till aggregatet ”%s”"
 
 #: d/dmd/dsymbolsem.c:691
 #, gcc-internal-format
 msgid "only parameters or foreach declarations can be ref"
-msgstr ""
+msgstr "endast parametrar eller foreach-deklarationer kan vara ref"
 
 #: d/dmd/dsymbolsem.c:700
 #, gcc-internal-format
 msgid "only parameters or stack based variables can be inout"
-msgstr ""
+msgstr "endast parametrar eller stackbaserade variabler kan vara inout"
 
 #: d/dmd/dsymbolsem.c:718
-#, fuzzy, gcc-internal-format
-#| msgid "%<inline%> can only be specified for functions"
+#, gcc-internal-format
 msgid "inout variables can only be declared inside inout functions"
-msgstr "%<inline%> kan endast anges för funktioner"
+msgstr "inout-variabler kan endast deklareras inuti inout-funktioner"
 
 #: d/dmd/dsymbolsem.c:737
 #, gcc-internal-format, gfc-internal-format
 msgid "default construction is disabled for type %s"
-msgstr ""
+msgstr "standardkonstruktion är avslaget för typen %s"
 
 #: d/dmd/dsymbolsem.c:746
 #, gcc-internal-format
 msgid "globals, statics, fields, manifest constants, ref and out parameters cannot be scope"
-msgstr ""
+msgstr "globala, statiska, fält, manifestkonstanter, ref och out-parametrar kan inte vara scope"
 
 #: d/dmd/dsymbolsem.c:752
-#, fuzzy, gcc-internal-format
-#| msgid "reference to dead statement"
+#, gcc-internal-format
 msgid "reference to scope class must be scope"
-msgstr "referens till död sats"
+msgstr "referens till scope-klass måste vara scope"
 
 #: d/dmd/dsymbolsem.c:762 d/dmd/dsymbolsem.c:769
-#, fuzzy, gcc-internal-format
-#| msgid "only zero initializers are allowed in section %qs"
+#, gcc-internal-format
 msgid "void initializers for pointers not allowed in safe functions"
-msgstr "endast nollinitierare är tillåtna i sektionen %qs"
+msgstr "void-initierare för pekare är inte tillåtna i säkra funktioner"
 
 #: d/dmd/dsymbolsem.c:782
 #, fuzzy, gcc-internal-format
@@ -58592,70 +58547,65 @@ msgstr "Extern %qs vid %L kan inte ha en initierare"
 #: d/dmd/dsymbolsem.c:993
 #, gcc-internal-format, gfc-internal-format
 msgid "of type struct %s uses this(this), which is not allowed in static initialization"
-msgstr ""
+msgstr "av typen struct %s använder this(this), vilket inte är tillåtet i statisk initiering"
 
 #: d/dmd/dsymbolsem.c:1028
 #, gcc-internal-format
 msgid "static storage variables cannot have destructors"
-msgstr ""
+msgstr "statiska lagringsvariabler kan inte ha destruerare"
 
 #: d/dmd/dsymbolsem.c:1339
-#, fuzzy, gcc-internal-format
-#| msgid "expected class name"
+#, gcc-internal-format
 msgid "string expected for library name"
-msgstr "klassnamn förväntades"
+msgstr "sträng förväntades som biblioteksnamn"
 
 #: d/dmd/dsymbolsem.c:1371
-#, fuzzy, gcc-internal-format
-#| msgid "unexpected text address:"
+#, gcc-internal-format
 msgid "function name expected for start address"
-msgstr "oväntad textadress:"
+msgstr "funktionsnamn förväntades som startadress"
 
 #: d/dmd/dsymbolsem.c:1386
 #, gcc-internal-format, gfc-internal-format
 msgid "function name expected for start address, not `%s`"
-msgstr ""
+msgstr "funktionsnamn förväntades som startadress, inte ”%s”"
 
 #: d/dmd/dsymbolsem.c:1400
-#, fuzzy, gcc-internal-format
-#| msgid "expected function name"
+#, gcc-internal-format
 msgid "string expected for mangled name"
-msgstr "ett funktionsnamn förväntades"
+msgstr "sträng förväntades som manglat namn"
 
 #: d/dmd/dsymbolsem.c:1413
 #, gcc-internal-format
 msgid "zero-length string not allowed for mangled name"
-msgstr ""
+msgstr "nollängdssträng är inte tillåtet som manglat namn"
 
 #: d/dmd/dsymbolsem.c:1418
 #, gcc-internal-format
 msgid "mangled name characters can only be of type char"
-msgstr ""
+msgstr "manglade namns tecken kan endast vara av typen char"
 
 #: d/dmd/dsymbolsem.c:1443
 msgid "char 0x%02x not allowed in mangled name"
-msgstr ""
+msgstr "tecknet 0x%02x är inte tillåtet i manglade namn"
 
 #: d/dmd/dsymbolsem.c:1456
 msgid "char 0x%04x not allowed in mangled name"
-msgstr ""
+msgstr "tecknet 0x%04x är inte tillåtet i manglade namn"
 
 #: d/dmd/dsymbolsem.c:1519
-#, fuzzy, gcc-internal-format
-#| msgid "Warn on primary template declaration."
+#, gcc-internal-format
 msgid "can only apply to a single declaration"
-msgstr "Varna vid primär malldeklaration."
+msgstr "kan endast gälla för en enda deklaration"
 
 #: d/dmd/dsymbolsem.c:1532
 #, gcc-internal-format
 msgid "pragma is missing closing `;`"
-msgstr ""
+msgstr "pragma saknar avslutande ”;”"
 
 #: d/dmd/dsymbolsem.c:1565
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "conflicting declaration %q#D"
+#, gcc-internal-format, gfc-internal-format
 msgid "incomplete mixin declaration (%s)"
-msgstr "motstridande deklaration av %q#D"
+msgstr "ofullständig mixin-deklaration (%s)"
 
 #: d/dmd/dsymbolsem.c:1747
 #, fuzzy, gcc-internal-format
@@ -58678,12 +58628,12 @@ msgstr "returnerar referens till en temporär"
 #: d/dmd/dsymbolsem.c:2037
 #, gcc-internal-format, gfc-internal-format
 msgid "initialization with (%s.%s + 1) causes overflow for type `%s`"
-msgstr ""
+msgstr "initiering med (%s.%s + 1) orsakar spill för typen ”%s”"
 
 #: d/dmd/dsymbolsem.c:2066
 #, gcc-internal-format
 msgid "has inexact value, due to loss of precision"
-msgstr ""
+msgstr "har ett oexakt värde, på grund av precisionsförlust"
 
 #: d/dmd/dsymbolsem.c:2144
 #, fuzzy, gcc-internal-format
@@ -58725,7 +58675,7 @@ msgstr "virtuella funktioner kan inte vara vänner"
 #: d/dmd/dsymbolsem.c:2734
 #, gcc-internal-format
 msgid "storage class `auto` has no effect if return type is not inferred"
-msgstr ""
+msgstr "lagringsklassen ”auto” har ingen effekt om returtypen inte härleds"
 
 #: d/dmd/dsymbolsem.c:2739
 #, fuzzy, gcc-internal-format
@@ -58739,7 +58689,7 @@ msgstr "virtuella funktioner kan inte vara vänner"
 #: d/dmd/dsymbolsem.c:2747
 #, gcc-internal-format
 msgid "static member has no `this` to which `return` can apply"
-msgstr ""
+msgstr "statisk medlen har ingen ”this” på vilken ”return” kan verka"
 
 #: d/dmd/dsymbolsem.c:2759
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -58750,7 +58700,7 @@ msgstr "funktionen %qs kan inte ha argument"
 #: d/dmd/dsymbolsem.c:2766
 #, gcc-internal-format, gfc-internal-format
 msgid "%s method is not virtual and cannot override"
-msgstr ""
+msgstr "metoden %s är inte virtuell och kan inte åsidosätta"
 
 #: d/dmd/dsymbolsem.c:2768
 #, fuzzy, gcc-internal-format
@@ -58767,17 +58717,17 @@ msgstr "kan inte falla igenom sista fallet i en switch"
 #: d/dmd/dsymbolsem.c:2784
 #, gcc-internal-format, gfc-internal-format
 msgid "constructors, destructors, postblits, invariants, new and delete functions are not allowed in interface %s"
-msgstr ""
+msgstr "konstruerare, destruerare, postblits, invarianter, new- och delete-funktioner är inte tillåtna i gränssnittet %s"
 
 #: d/dmd/dsymbolsem.c:2786
 #, gcc-internal-format, gfc-internal-format
 msgid "function body only allowed in final functions in interface %s"
-msgstr ""
+msgstr "en funktionskropp är endast tillåten i final-funktioner i gränssnittet %s"
 
 #: d/dmd/dsymbolsem.c:2794
 #, gcc-internal-format, gfc-internal-format
 msgid "destructors, postblits and invariants are not allowed in union %s"
-msgstr ""
+msgstr "destruerare, postblits och invarianter är inte tillåtna i unionen %s"
 
 #. If same name function exists in base class but 'this' is auto return,
 #. * cannot find index of base class's vtbl[] to override.
@@ -58785,7 +58735,7 @@ msgstr ""
 #: d/dmd/dsymbolsem.c:2850
 #, gcc-internal-format
 msgid "return type inference is not supported if may override base class function"
-msgstr ""
+msgstr "returtypshärledning stödjs inte om den kan åsidosätta basklassfunktionen"
 
 #: d/dmd/dsymbolsem.c:2880 d/dmd/dsymbolsem.c:2975
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -58808,7 +58758,7 @@ msgstr "%q+D har inkompatibla attribut %qs och %qs"
 #: d/dmd/dsymbolsem.c:3125
 #, gcc-internal-format, gfc-internal-format
 msgid "does not override any function, did you mean to override `%s%s`?"
-msgstr ""
+msgstr "åsidosätter inte någon funktion, menade du att åsidosätta ”%s%s”?"
 
 #: d/dmd/dsymbolsem.c:3128
 #, fuzzy, gcc-internal-format
@@ -58831,7 +58781,7 @@ msgstr "attributet naked är bara tillämpligt på funktioner"
 #: d/dmd/dsymbolsem.c:3173
 #, gcc-internal-format
 msgid "in and out contracts can only appear without a body when they are virtual interface functions or abstract"
-msgstr ""
+msgstr "in- och utkontrakt kan endast förekomma utan en kropp när de är virtuella gränssnittsfunktioner eller abstrakt"
 
 #: d/dmd/dsymbolsem.c:3196
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -58842,12 +58792,12 @@ msgstr "Varna för överlagrade virtuella funktionsnamn."
 #: d/dmd/dsymbolsem.c:3304
 #, gcc-internal-format
 msgid "default constructor for structs only allowed with @disable, no body, and no parameters"
-msgstr ""
+msgstr "standardkonstruerare för struct:er är endast tillåtna med @disable, ingen krop och inga parametrar"
 
 #: d/dmd/dsymbolsem.c:3648
 #, gcc-internal-format
 msgid "at least one argument of type size_t expected"
-msgstr ""
+msgstr "åtminstone ett argument av typen size_t förväntades"
 
 #: d/dmd/dsymbolsem.c:3654
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -58858,7 +58808,7 @@ msgstr "första argumentet måste vara []byte"
 #: d/dmd/dsymbolsem.c:3690
 #, gcc-internal-format
 msgid "one argument of type void* expected"
-msgstr ""
+msgstr "ett argument av typen void* förväntades"
 
 #: d/dmd/dsymbolsem.c:3696
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -58875,12 +58825,12 @@ msgstr "unionen kan inte göras transparent"
 #: d/dmd/dsymbolsem.c:3894 d/dmd/dsymbolsem.c:4446
 #, gcc-internal-format, gfc-internal-format
 msgid "already exists at %s. Perhaps in another function with the same name?"
-msgstr ""
+msgstr "finns redan vid %s. Kanske i en annan funktion med samma namn?"
 
 #: d/dmd/dsymbolsem.c:3976
 #, gcc-internal-format
 msgid "storage class `auto` is invalid when declaring a class, did you mean to use `scope`?"
-msgstr ""
+msgstr "lagringsklassen ”auto” är ogiltig vid deklaration av en klass, tänkte du använda ”scope”?"
 
 #: d/dmd/dsymbolsem.c:4039
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -58921,32 +58871,32 @@ msgstr "den typgenomskinliga klassen %qT har virtuella funktioner"
 #: d/dmd/dsymbolsem.c:4297
 #, gcc-internal-format, gfc-internal-format
 msgid "static class cannot inherit from nested class %s"
-msgstr ""
+msgstr "en statisk klass kan inte ärva från en nästad klass %s"
 
 #: d/dmd/dsymbolsem.c:4305
 #, gcc-internal-format, gfc-internal-format
 msgid "is nested within %s, but super class %s is nested within %s"
-msgstr ""
+msgstr "är nästad inuti %s, men superklassen %s är nästad inuti %s"
 
 #: d/dmd/dsymbolsem.c:4312
 #, gcc-internal-format, gfc-internal-format
 msgid "is not nested, but super class %s is nested within %s"
-msgstr ""
+msgstr "är inte nästad, men superklassen %s är nästad inuti %s"
 
 #: d/dmd/dsymbolsem.c:4420
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot implicitly generate a default ctor when base class %s is missing a default ctor"
-msgstr ""
+msgstr "kan inte implicit generera en standardkonstruerare när basklassen %s saknar en standardkonstruerare"
 
 #: d/dmd/dsymbolsem.c:4467
 #, gcc-internal-format, gfc-internal-format
 msgid "Field members of a synchronized class cannot be %s"
-msgstr ""
+msgstr "Fältmedlemmar i en synkroniserad klass kan inte vara %s"
 
 #: d/dmd/dsymbolsem.c:4607
 #, gcc-internal-format
 msgid "circular inheritance of interface"
-msgstr ""
+msgstr "cirkulärt arv av gränssnitt"
 
 #: d/dmd/dsymbolsem.c:4841
 #, fuzzy, gcc-internal-format
@@ -58975,7 +58925,7 @@ msgstr "kan inte ta adressen till %qs"
 #: d/dmd/semantic2.c:72
 #, gcc-internal-format
 msgid "\"%.*s\""
-msgstr ""
+msgstr "”%.*s”"
 
 #: d/dmd/semantic2.c:78
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -58986,17 +58936,17 @@ msgstr "%qs misslyckades"
 #: d/dmd/semantic2.c:210
 #, gcc-internal-format
 msgid ": Unable to initialize enum with class or pointer to struct. Use static const variable instead."
-msgstr ""
+msgstr ": Det går inte att initiera uppräkningstyp med klass eller pekare till strukt. Använd statisk konstantvariabel istället."
 
 #: d/dmd/semantic2.c:219
 #, gcc-internal-format, gfc-internal-format
 msgid "is mutable. Only const or immutable class thread local variable are allowed, not %s"
-msgstr ""
+msgstr "är muterbar. Endast konstanta eller omuterbar klass trådlokala variabler är tillåtna, inte %s"
 
 #: d/dmd/semantic2.c:226
 #, gcc-internal-format, gfc-internal-format
 msgid "is a pointer to mutable struct. Only pointers to const, immutable or shared struct thread local variable are allowed, not %s"
-msgstr ""
+msgstr "är en pekare på en muterbar struktur. Endast pekare till konstanta, omuterbara eller delad struktur-lokala variabler är tillåtna, inte %s"
 
 #: d/dmd/semantic2.c:384
 #, fuzzy, gcc-internal-format
@@ -59031,12 +58981,12 @@ msgstr "nästade funktioner kan inte profileras med %<-mfentry%> på s390"
 #: d/dmd/semantic3.c:478
 #, gcc-internal-format
 msgid "`object.TypeInfo_Tuple` could not be found, but is implicitly used in D-style variadic functions"
-msgstr ""
+msgstr "”object.TypeInfo_Tuple” kunde inte hittas, men är implict använt i variadiska funktioner i D-stil"
 
 #: d/dmd/semantic3.c:480
 #, gcc-internal-format
 msgid "`object.TypeInfo` could not be found, but is implicitly used in D-style variadic functions"
-msgstr ""
+msgstr "”object.TypeInfo” kunde inte hittas, men är implicit använt i variadiska funktioner i D-stil"
 
 #: d/dmd/semantic3.c:547 d/dmd/semantic3.c:587
 #, fuzzy, gcc-internal-format, gfc-internal-format
@@ -59065,12 +59015,12 @@ msgstr "felaktig typ för _Literal med konstruerare"
 #: d/dmd/semantic3.c:779
 #, gcc-internal-format
 msgid "cannot call super() implicitly because it is annotated with @disable"
-msgstr ""
+msgstr "kan inte anropa super() implicit för att den är annoterad med @disable"
 
 #: d/dmd/semantic3.c:860
 #, gcc-internal-format, gfc-internal-format
 msgid "has no return statement, but is expected to return a value of type %s"
-msgstr ""
+msgstr "har ingen retursats, men förväntas returnera ett värde av typen %s"
 
 #: d/dmd/semantic3.c:862
 #, fuzzy, gcc-internal-format
@@ -59081,7 +59031,7 @@ msgstr "funktionsreturtyp kan inte vara funktion"
 #: d/dmd/semantic3.c:1193
 #, gcc-internal-format, gfc-internal-format
 msgid "synchronized function %s must be a member of a class"
-msgstr ""
+msgstr "den synkroniserade funktionen %s måste vara en medlem av en klass"
 
 #: d/dmd/semantic3.c:1212
 #, fuzzy, gcc-internal-format
@@ -65949,7 +65899,7 @@ msgstr "Namnlistegruppnamn %qs vid %C är redan USE-associerat och får inte spe
 #: fortran/match.c:5546
 #, gcc-internal-format
 msgid "Symbol %qs in namelist %qs at %C must be declared before the namelist is declared."
-msgstr ""
+msgstr "Symbolen %qs i namnlistan %qs vid %C måste deklareras före namnlistan deklareras."
 
 #: fortran/match.c:5565
 #, gcc-internal-format

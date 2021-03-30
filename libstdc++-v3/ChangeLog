@@ -1,3 +1,8 @@
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Adjust link for PSTL.
+	* doc/html/manual/status.html: Regenerate.
+
 2021-03-28  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/forward_list

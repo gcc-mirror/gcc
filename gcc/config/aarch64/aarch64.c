@@ -14460,7 +14460,9 @@ aarch64_analyze_loop_vinfo (loop_vec_info loop_vinfo,
   /* Record the issue information for any SVE WHILE instructions that the
      loop needs.  */
   auto *issue_info = aarch64_tune_params.vec_costs->issue_info;
-  if (issue_info->sve && !LOOP_VINFO_MASKS (loop_vinfo).is_empty ())
+  if (issue_info
+      && issue_info->sve
+      && !LOOP_VINFO_MASKS (loop_vinfo).is_empty ())
     {
       unsigned int num_masks = 0;
       rgroup_controls *rgm;
