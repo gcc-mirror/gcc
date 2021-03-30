@@ -10943,6 +10943,23 @@ package body Sem_Util is
       end if;
    end Get_Index_Bounds;
 
+   function Get_Index_Bounds
+     (N             : Node_Id;
+      Use_Full_View : Boolean := False) return Range_Nodes is
+      Result : Range_Nodes;
+   begin
+      Get_Index_Bounds (N, Result.L, Result.H, Use_Full_View);
+      return Result;
+   end Get_Index_Bounds;
+
+   function Get_Index_Bounds
+     (N             : Node_Id;
+      Use_Full_View : Boolean := False) return Range_Values is
+      Nodes : constant Range_Nodes := Get_Index_Bounds (N, Use_Full_View);
+   begin
+      return (Expr_Value (Nodes.L), Expr_Value (Nodes.H));
+   end Get_Index_Bounds;
+
    -----------------------------
    -- Get_Interfacing_Aspects --
    -----------------------------
@@ -26984,7 +27001,7 @@ package body Sem_Util is
    is
    begin
       --  The only entities for which we track constant values are variables
-      --  which are not renamings, constants and formal parameters, so check
+      --  that are not renamings, constants and formal parameters, so check
       --  if we have this case.
 
       --  Note: it may seem odd to track constant values for constants, but in

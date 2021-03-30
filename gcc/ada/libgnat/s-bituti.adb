@@ -31,14 +31,6 @@
 
 package body System.Bitfield_Utils is
 
-   --  ???
-   --
-   --  This code does not yet work for overlapping bit fields. We need to copy
-   --  backwards in some cases (i.e. from higher to lower bit addresses).
-   --  Alternatively, we could avoid calling this if Forwards_OK is False.
-   --
-   --  ???
-
    package body G is
 
       Val_Bytes : constant Address := Address (Val'Size / Storage_Unit);
@@ -77,7 +69,7 @@ package body System.Bitfield_Utils is
 
       function Get_Bitfield
         (Src : Val_2; Src_Offset : Bit_Offset; Size : Small_Size)
-         return Val;
+         return Val with Inline;
       --  Returns the bit field in Src starting at Src_Offset, of the given
       --  Size. If Size < Small_Size'Last, then high order bits are zero.
 
@@ -86,7 +78,7 @@ package body System.Bitfield_Utils is
          Dest : Val_2;
          Dest_Offset : Bit_Offset;
          Size : Small_Size)
-        return Val_2;
+        return Val_2 with Inline;
       --  The bit field in Dest starting at Dest_Offset, of the given Size, is
       --  set to Src_Value. Src_Value must have high order bits (Size and
       --  above) zero. The result is returned as the function result.
@@ -425,6 +417,22 @@ package body System.Bitfield_Utils is
                Size);
          end if;
       end Copy_Bitfield;
+
+      function Fast_Copy_Bitfield
+        (Src         : Val_2;
+         Src_Offset  : Bit_Offset;
+         Dest        : Val_2;
+         Dest_Offset : Bit_Offset;
+         Size        : Small_Size)
+        return Val_2 is
+         Result : constant Val_2 := Set_Bitfield
+           (Get_Bitfield (Src, Src_Offset, Size), Dest, Dest_Offset, Size);
+      begin
+         --  No need to explicitly do nothing for zero size case, because Size
+         --  cannot be zero.
+
+         return Result;
+      end Fast_Copy_Bitfield;
 
    end G;
 

@@ -1167,6 +1167,26 @@ package Sem_Util is
    --  the index type turns out to be a partial view; this case should not
    --  arise during normal compilation of semantically correct programs.
 
+   type Range_Nodes is record
+      L, H : Node_Id; -- First and Last nodes of a discrete_range
+   end record;
+
+   type Range_Values is record
+      L, H : Uint; -- First and Last values of a discrete_range
+   end record;
+
+   function Get_Index_Bounds
+     (N             : Node_Id;
+      Use_Full_View : Boolean := False) return Range_Nodes;
+   --  Same as the above procedure, but returns the result as a record.
+   --  ???This should probably replace the procedure.
+
+   function Get_Index_Bounds
+     (N             : Node_Id;
+      Use_Full_View : Boolean := False) return Range_Values;
+   --  Same as the above function, but returns the values, which must be known
+   --  at compile time.
+
    procedure Get_Interfacing_Aspects
      (Iface_Asp : Node_Id;
       Conv_Asp  : out Node_Id;
@@ -2960,9 +2980,9 @@ package Sem_Util is
    --  the value is valid) for the given entity Ent. This value can only be
    --  captured if sequential execution semantics can be properly guaranteed so
    --  that a subsequent reference will indeed be sure that this current value
-   --  indication is correct. The node N is the construct which resulted in
-   --  the possible capture of the value (this is used to check if we are in
-   --  a conditional).
+   --  indication is correct. The node N is the construct that resulted in the
+   --  possible capture of the value (this is used to check if we are in a
+   --  conditional).
    --
    --  Cond is used to skip the test for being inside a conditional. It is used
    --  in the case of capturing values from if/while tests, which already do a
