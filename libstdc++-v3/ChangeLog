@@ -1,3 +1,714 @@
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/pstl/*: Add
+	dg-timeout-factor.
+	* testsuite/25_algorithms/pstl/*: Likewise.
+	* testsuite/26_numerics/pstl/*: Likewise.
+	* testsuite/28_regex/*: Likewise.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/28_regex/algorithms/regex_match/basic/string_range_01_03.cc:
+	Add dg-timeout-factor directive.
+	* testsuite/28_regex/algorithms/regex_match/cstring_bracket_01.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/char/backref.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/63199.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/anymatcher.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/cjk_match.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/ecma/wchar_t/hex.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_match/extended/wstring_locale.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_search/61720.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/assertion.cc:
+	Likewise.
+	* testsuite/28_regex/algorithms/regex_search/ecma/string_01.cc:
+	Likewise.
+	* testsuite/28_regex/basic_regex/ctors/deduction.cc: Likewise.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stop_token: Check _GLIBCXX_HAS_GTHREADS using
+	#ifdef instead of #if.
+	(stop_token::_S_yield()): Check _GLIBCXX_HAS_GTHREADS before
+	using __gthread_yield.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95765
+	* include/bits/stl_algobase.h (__size_to_integer(float))
+	(__size_to_integer(double), __size_to_integer(long double))
+	(__size_to_integer(__float128)): Cast return type explicitly.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Do not test 'v' on AIX.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-07-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (size_type, difference_type):
+	Use allocator_traits to obtain the allocator's size_type and
+	difference_type.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (duration::_S_gcd(intmax_t, intmax_t)):
+	New helper function for finding GCD of two positive intmax_t
+	values.
+	(duration::__divide): New helper alias for dividing one period
+	by another.
+	(duration::__is_harmonic): Use __divide not ratio_divide.
+	(duration(const duration<R2, P2>&)): Require the duration rep
+	types to be convertible.
+	* testsuite/20_util/duration/cons/dr2094.cc: New test.
+	* testsuite/20_util/duration/requirements/reduced_period.cc:
+	Fix definition of unused member functions in test type.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc:
+	Adjust expected errors.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (__duration_common_type): Ensure the
+	reduced ratio is used. Remove unused partial specialization
+	using __failure_type.
+	(common_type): Pass reduced ratios to __duration_common_type.
+	Add partial specializations for simple cases involving a single
+	duration or time_point type.
+	(duration::period): Use reduced ratio.
+	(duration::operator+(), duration::operator-()): Return duration
+	type using the reduced ratio.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc:
+	Adjust expected errors.
+	* testsuite/20_util/duration/requirements/reduced_period.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96592
+	* include/std/tuple (_TupleConstraints<true, T...>): Use
+	alternative is_constructible instead of std::is_constructible.
+	* testsuite/20_util/tuple/cons/96592.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/is_aggregate/value.cc: Adjust for changes to
+	definition of aggregates in C++20.
+	* testsuite/20_util/optional/requirements.cc: Adjust for
+	defaulted comparisons in C++20.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/tuple/78939.cc: Suppress warnings about
+	deprecation of volatile-qualified structured bindings in C++20.
+	* testsuite/20_util/variable_templates_for_traits.cc: Likewise
+	for deprecation of is_pod in C++20
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (bad_optional_access): Define default
+	constructor and destructor as defaulted.
+	* testsuite/20_util/optional/bad_access.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__copy_n_fn): Only call
+	ranges::copy for positive values.
+	* include/bits/stl_algo.h (copy_n): Convert Size argument to an
+	integral type and only call __copy_n for positive values.
+	* testsuite/util/testsuite_iterators.h
+	(random_access_iterator_wrapper::operator+=): Fix range check for
+	negative values.
+	(output_container, input_container, forward_container)
+	(bidirectional_container, random_access_container): New alias
+	templates.
+	* testsuite/25_algorithms/copy_n/5.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/atomic (atomic): Add static assertions.
+	* testsuite/29_atomics/atomic/requirements/types_neg.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (move_iterator::operator=): Define.
+	* testsuite/24_iterators/move_iterator/dr3265.cc: New test.
+
+2021-03-29  Paul Keir  <paul.keir@uws.ac.uk>
+
+	Backported from master:
+	2020-06-15  Paul Keir  <paul.keir@uws.ac.uk>
+
+	* include/bits/char_traits.h (char_traits::move): constexpr move with
+	overlap was using copy_backward incorrectly.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++20.cc:
+	New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/time_point_cast/rounding.cc: Remove
+	duplicate dg-do directive and add c++17 effective target.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/thread/cons/84535.cc: Use a custom
+	namespace.
+	* testsuite/30_threads/thread/cons/lwg2097.cc: Likewise.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Only set
+	tool_timeout if it hasn't been set by the user already.
+
+2021-03-29  Moritz Sichert  <sichert@in.tum.de>
+
+	Backported from master:
+	2021-03-23  Moritz Sichert  <sichert@in.tum.de>
+
+	* include/std/ranges (reverse_view::begin, reverse_view::end):
+	Qualify make_reverse_iterator calls to avoid ADL.
+	* testsuite/std/ranges/adaptors/reverse.cc: Test that
+	views::reverse works when make_reverse_iterator is defined
+	in an associated namespace.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin(T (&)[N]), end(T (&)[N])):
+	Add missing 'noexcept' as per LWG 2280.
+	(rbegin(T (&)[N]), rend(T (&)[N]), rbegin(initializer_list<T>))
+	(rend(initializer_list<T>)): Add 'noexcept' as per LWG 3537.
+	* testsuite/24_iterators/range_access/range_access.cc: Check for
+	expected noexcept specifiers. Check result types of generic
+	std::begin and std::end overloads.
+	* testsuite/24_iterators/range_access/range_access_cpp14.cc:
+	Check for expected noexcept specifiers.
+	* testsuite/24_iterators/range_access/range_access_cpp17.cc:
+	Likewise.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99537
+	* include/std/stop_token (_Stop_state_t::_M_release_ownership):
+	Use acq_rel memory ordering.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99533
+	* src/c++17/fs_dir.cc (recursive_directory_iterator): Use new
+	helper function to check for permission denied errors.
+	* src/filesystem/dir.cc (recursive_directory_iterator):
+	Likewise.
+	* src/filesystem/dir-common.h (is_permission_denied_error): New
+	helper function.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99536
+	* include/bits/random.h (normal_distribution): Use
+	default-initializer for _M_saved and _M_saved_available.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-03-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_cmp.h (__eq_builtin_ptr_cmp): Remove.
+	(ranges::equal_to, ranges::not_equal_to): Do not constrain
+	with __eq_builtin_ptr_cmp.
+	(ranges::less, ranges::greater, ranges::less_equal)
+	(ranges::greater_equal): Do not constrain with
+	__less_builtin_ptr_cmp.
+	* libsupc++/compare (compare_three_way): Do not constrain with
+	__3way_builtin_ptr_cmp.
+	* testsuite/18_support/comparisons/object/builtin-ptr-three-way.cc: Moved to...
+	* testsuite/18_support/comparisons/object/lwg3530.cc: ...here.
+	* testsuite/20_util/function_objects/range.cmp/lwg3530.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2014.xml: Document implementation
+	specific properties of std::experimental::filesystem::rename.
+	* doc/xml/manual/status_cxx2017.xml: Document implementation
+	specific properties of std::filesystem::rename.
+	* doc/html/*: Regenerate.
+	* src/c++17/fs_ops.cc (fs::rename): Implement correct behaviour
+	for directories on Windows.
+	* src/filesystem/ops-common.h (__gnu_posix::rename): Use
+	MoveFileExW on Windows.
+	* testsuite/27_io/filesystem/operations/rename.cc: New test.
+	* testsuite/experimental/filesystem/operations/rename.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_fs.h (nonexistent_path): Add
+	random number to the path.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v6::to_string): Include
+	scope ID in string.
+	(address_v6::loopback): Fix to be constexpr in C++14.
+	* testsuite/experimental/net/internet/address/v6/members.cc:
+	Test to_string() results.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v6::any): Avoid using
+	memcpy in constexpr function.
+	(address_v6::loopback): Likewise.
+	(make_address_v6): Fix missing return statements on error paths.
+	* include/experimental/io_context: Avoid -Wdangling-else
+	warning.
+	* testsuite/experimental/net/internet/address/v4/members.cc:
+	Remove unused variables.
+	* testsuite/experimental/net/internet/address/v6/members.cc:
+	New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/all_of/constexpr.cc: Check result of
+	the algorithm.
+	* testsuite/25_algorithms/any_of/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/binary_search/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/copy_backward/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/count/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/equal/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/equal_range/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/fill/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/find_end/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/find_if/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/is_partitioned/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/is_permutation/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/lexicographical_compare/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/lower_bound/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/merge/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/mismatch/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/none_of/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/partition_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/remove_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/remove_copy_if/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/remove_if/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/replace_if/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/reverse/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/reverse_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/rotate_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/search/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/set_difference/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/set_intersection/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/set_symmetric_difference/constexpr.cc:
+	Likewise.
+	* testsuite/25_algorithms/set_union/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/unique_copy/constexpr.cc: Likewise.
+	* testsuite/25_algorithms/upper_bound/constexpr.cc: Likewise.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99077
+	* src/c++11/cxx11-ios_failure.cc (__ios_failure(const char*, int)):
+	Change int parameter to error_code, to match std::ios_failure.
+	(__throw_ios_failure(const char*, int)): Construct error_code
+	from int parameter.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99058
+	* doc/xml/manual/status_cxx2011.xml: Document when support
+	became stable.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88881
+	* src/c++17/fs_ops.cc (fs::symlink_status): Re-enable workaround.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88881
+	* src/c++17/fs_ops.cc (fs::status): Re-enable workaround.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (fs::create_hard_link, fs::equivalent)
+	(fs::remove): Use std::system_category() for error codes from
+	GetLastError().
+	* src/filesystem/ops.cc (fs::create_hard_link, fs::remove):
+	Likewise.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/proximate.cc: Fix typo
+	in __MINGW32__ macro name.
+	* testsuite/27_io/filesystem/path/compare/lwg2936.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generation/proximate.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/generation/relative.cc:
+	Likewise.
+	* testsuite/util/testsuite_fs.h: Likewise.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc:
+	Add comparison with same category and different values.
+	* testsuite/19_diagnostics/error_code/operators/less.cc:
+	Likewise. Fix comparison involving different categories.
+	* testsuite/19_diagnostics/error_code/operators/three_way.cc:
+	Likewise.
+	* testsuite/19_diagnostics/error_condition/operators/less.cc:
+	Add comment.
+	* testsuite/19_diagnostics/error_condition/operators/three_way.cc:
+	Likewise.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98319
+	* include/experimental/random: Only define contents for C++14
+	and later.
+	* include/experimental/source_location: Likewise.
+	* include/experimental/utility: Likewise.
+	* testsuite/experimental/feat-lib-fund.cc: Include all LFTS
+	headers that are present. Allow test to run for all modes.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/93151
+	* acinclude.m4 (GLIBCXX_CHECK_SYSTEM_ERROR): Remove.
+	* configure.ac: Regenerate.
+	* config/os/generic/error_constants.h: Test POSIX errno macros
+	directly, instead of corresponding _GLIBCXX_HAVE_EXXX macros.
+	* testsuite/19_diagnostics/headers/system_error/errc_std_c++0x.cc:
+	Likewise.
+	* testsuite/19_diagnostics/headers/system_error/93151.cc: New
+	test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98226
+	* include/std/bit (__countl_one, __countr_one): Remove redundant
+	branches.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bit (__popcount): Remove redundant check for zero.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (enable_borrowed_view<take_view<T>>)
+	(enable_borrowed_view<drop_view<T>>)
+	(enable_borrowed_view<drop_while_view<T>>)
+	(enable_borrowed_view<reverse_view<T>>)
+	(enable_borrowed_view<common_view<T>>)
+	(enable_borrowed_view<elements_view<T>>): Add partial
+	specializations as per P2017R1.
+	* testsuite/std/ranges/adaptors/conditionally_borrowed.cc:
+	New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (subrange::subrange(R&&)): Use
+	direct-initialization instead of list-initialization, so a
+	potential narrowing conversion from ranges::size(r) to the
+	stored size isn't ill-formed.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82584
+	* include/bits/random.tcc
+	(discrete_distribution::param_type::_M_initialize)
+	(piecewise_constant_distribution::param_type::_M_initialize)
+	(piecewise_linear_distribution::param_type::_M_initialize):
+	Add assertions for positive sums..
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (__detail::_Mod): Revert last change.
+	(__detail::__mod): Do not use _Mod for a==0 case.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/call.cc:
+	Check other cases with a==0. Also check runtime results.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (__detail::_Mod): Avoid divide by zero.
+	* testsuite/26_numerics/random/linear_congruential_engine/operators/call.cc:
+	New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (drop_view::begin()): Adjust constraints
+	to match the correct condition for O(1) ranges::next (LWG 3482).
+	* testsuite/std/ranges/adaptors/drop.cc: Check that iterator is
+	cached for non-sized_range.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (transform_view, elements_view): Relax
+	constraints on operator- for iterators, as per LWG 3483.
+	* testsuite/std/ranges/adaptors/elements.cc: Check that we
+	can take the difference of two iterators from a non-random
+	access range.
+	* testsuite/std/ranges/adaptors/transform.cc: Likewise.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/95592
+	* include/bits/valarray_after.h (_DEFINE_EXPR_UNARY_OPERATOR)
+	(_DEFINE_EXPR_BINARY_OPERATOR, _DEFINE_EXPR_BINARY_FUNCTION):
+	Use elaborated-type-specifier and qualified-id to avoid
+	ambiguities with QNX system headers.
+	* testsuite/26_numerics/valarray/95592.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (__str_codecvt_out_all):
+	Add cast to compare operands of the same signedness.
+	* include/bits/locale_facets_nonio.tcc
+	(time_get::_M_extract_wday_or_month): Likewise.
+	* include/bits/sstream.tcc (basic_stringbuf::overflow):
+	Likewise.
+	* include/tr1/legendre_function.tcc (__sph_legendre): Use
+	unsigned for loop variable.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/locale_conv.h (__do_str_codecvt, __str_codecvt_in_all):
+	Add casts to compare types of the same signedness.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_algobase.h (__equal_fn): Remove unused
+	typedef.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/shared_ptr.h (shared_ptr(auto_ptr&&))
+	(operator=(auto_ptr&&)): Add diagnostic pragmas to suppress
+	warnings for uses of std::auto_ptr.
+	* include/experimental/type_traits (is_literal_type_v):
+	Likewise, for use of std::is_literal_type.
+	* include/std/condition_variable (condition_variable_any::_Unlock):
+	Likewise, for use of std::uncaught_exception.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::_List::type()): Avoid narrowing
+	conversion.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-09-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (__box): Simplify constraints as per LWG 3477.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (ranges::iota_view::size()): Perform all
+	calculations in the right unsigned types.
+	* testsuite/std/ranges/iota/size.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (system_context::_M_run()):
+	Fix predicate.
+	(system_context::join()): Do not join unless joinable.
+	* testsuite/experimental/net/system_context/1.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (inserter): Do not deduce
+	iterator type (LWG 561).
+	* testsuite/24_iterators/insert_iterator/dr561.cc: New test.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::_List::begin, path::_List::end):
+	Add noexcept to match definitions in src/c++17/fs_path.cc.
+
+2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (fs::directory_iterator::operator*):
+	Add noexcept. Do not throw on precondition violation.
+
 2021-03-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

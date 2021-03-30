@@ -1,3 +1,12 @@
+2021-03-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-03-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99318
+	* decl2.c (cp_warn_deprecated_use_scopes): Only call
+	cp_warn_deprecated_use when decl is a namespace, class, or enum.
+
 2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:

@@ -1,3 +1,21 @@
+2021-03-29  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-03-22  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/97252
+	* config/arm/arm-protos.h (neon_make_constant): Add generate
+	argument to guard emitting insns, default to true.
+	* config/arm/arm.c (arm_legitimate_constant_p_1): Reject
+	CONST_VECTORs which neon_make_constant can't handle.
+	(neon_vdup_constant): Add generate argument, avoid emitting
+	insns if it's not set.
+	(neon_make_constant): Plumb new generate argument through.
+	* config/arm/constraints.md (Ui): New. Use it...
+	* config/arm/mve.md (*mve_mov<mode>): ... here.
+	* config/arm/vec-common.md (movv8hf): Use neon_make_constant to
+	synthesize constants.
+
 2021-03-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2021-03-29  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99062
+	* c-attribs.c (handle_assume_aligned_attribute): Check that the
+	alignment argument is non-negative.  Tweak a warning message.
+
 2021-03-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-common.c (c_common_reswords): Add 'atomic' property
