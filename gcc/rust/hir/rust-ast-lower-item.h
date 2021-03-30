@@ -53,6 +53,39 @@ public:
     return resolver.translated;
   }
 
+  void visit (AST::TypeAlias &alias) override
+  {
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+    std::vector<HIR::Attribute> outer_attrs;
+
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (alias.has_generics ())
+      generic_params = lower_generic_params (alias.get_generic_params ());
+
+    HIR::Type *existing_type
+      = ASTLoweringType::translate (alias.get_type_aliased ().get ());
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, alias.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::TypeAlias (mapping, alias.get_new_type_name (),
+				     std::move (generic_params),
+				     std::move (where_clause),
+				     std::unique_ptr<HIR::Type> (existing_type),
+				     std::move (vis), std::move (outer_attrs),
+				     alias.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       alias.get_locus ());
+  }
+
   void visit (AST::TupleStruct &struct_decl) override
   {
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;

@@ -40,6 +40,14 @@ public:
     item->accept_vis (resolver);
   }
 
+  void visit (HIR::TypeAlias &alias) override
+  {
+    TyTy::BaseType *actual_type
+      = TypeCheckType::Resolve (alias.get_type_aliased ().get ());
+
+    context->insert_type (alias.get_mappings (), actual_type);
+  }
+
   void visit (HIR::TupleStruct &struct_decl) override
   {
     std::vector<TyTy::SubstitutionParamMapping> substitutions;

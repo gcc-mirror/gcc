@@ -39,6 +39,22 @@ public:
     item->accept_vis (resolver);
   };
 
+  void visit (AST::TypeAlias &alias) override
+  {
+    NodeId scope_node_id = alias.get_node_id ();
+    resolver->get_type_scope ().push (scope_node_id);
+
+    if (alias.has_generics ())
+      {
+	for (auto &generic : alias.get_generic_params ())
+	  ResolveGenericParam::go (generic.get (), alias.get_node_id ());
+      }
+
+    ResolveType::go (alias.get_type_aliased ().get (), alias.get_node_id ());
+
+    resolver->get_type_scope ().pop ();
+  }
+
   void visit (AST::TupleStruct &struct_decl) override
   {
     NodeId scope_node_id = struct_decl.get_node_id ();

@@ -38,6 +38,16 @@ public:
     item->accept_vis (resolver);
   };
 
+  void visit (AST::TypeAlias &alias) override
+  {
+    resolver->get_type_scope ().insert (
+      alias.get_new_type_name (), alias.get_node_id (), alias.get_locus (),
+      false, [&] (std::string, NodeId, Location locus) -> void {
+	rust_error_at (alias.get_locus (), "redefined multiple times");
+	rust_error_at (locus, "was defined here");
+      });
+  }
+
   void visit (AST::TupleStruct &struct_decl) override
   {
     resolver->get_type_scope ().insert (

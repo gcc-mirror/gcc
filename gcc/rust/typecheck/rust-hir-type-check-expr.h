@@ -115,10 +115,6 @@ public:
       }
 
     infered = field_tyty->get_field_type ();
-    printf ("ZXZX resolved: %s to: \n", expr.as_string ().c_str ());
-    adt->debug ();
-    infered->debug ();
-    printf ("ZXZX done\n");
   }
 
   void visit (HIR::TupleExpr &expr) override

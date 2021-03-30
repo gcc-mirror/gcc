@@ -242,15 +242,12 @@ public:
     auto expected_ret_tyty = resolve_fn_type->get_return_type ();
     context->push_return_type (expected_ret_tyty);
 
-    printf ("XXXX method body boyo: 1!!\n");
-
     auto block_expr_ty
       = TypeCheckExpr::Resolve (method.get_definition ().get (), false);
 
     context->pop_return_type ();
 
     expected_ret_tyty->unify (block_expr_ty);
-    printf ("XXXX method body boyo: 2!!\n");
   }
 
 private:
