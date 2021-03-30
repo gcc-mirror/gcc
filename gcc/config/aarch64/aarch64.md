@@ -5989,7 +5989,8 @@
   "@
    fcvtz<su>\t%<s>0, %<s>1
    fcvtz<su>\t%<w>0, %<s>1"
-  [(set_attr "type" "neon_fp_to_int_s,f_cvtf2i")]
+  [(set_attr "type" "neon_fp_to_int_s,f_cvtf2i")
+   (set_attr "arch" "simd,fp")]
 )
 
 ;; Convert HF -> SI or DI
