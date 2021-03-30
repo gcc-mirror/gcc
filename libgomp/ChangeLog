@@ -1,3 +1,16 @@
+2021-03-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR target/99555
+	* testsuite/lib/on_device_arch.c: Move to ...
+	* testsuite/libgomp.c-c++-common/on_device_arch.h: ... here.
+	* testsuite/libgomp.fortran/on_device_arch.c: New file;
+	#include on_device_arch.h.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c: #include
+	on_device_arch.h instead of using dg-additional-source.
+	* testsuite/libgomp.c/pr99555-1.c: Likewise.
+	* testsuite/libgomp.fortran/task-detach-6.f90: Update to use
+	on_device_arch.c without relative paths.
+
 2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/plugin-gcn.c (init_environment_variables): Don't prepend

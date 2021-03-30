@@ -1,3 +1,54 @@
+2021-03-29  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/61869
+	* gcc.dg/uninit-pr61869.c: New test.
+
+2021-03-29  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/61677
+	* gcc.dg/uninit-pr61677.c: New test.
+
+2021-03-29  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/61112
+	* gcc.dg/uninit-pr61112.c: New test.
+
+2021-03-29  Jan Hubicka  <jh@suse.cz>
+
+	PR ipa/99751
+	* gcc.c-torture/compile/pr99751.c: Rename from ...
+	* gcc.c-torture/execute/pr99751.c: ... to this.
+
+2021-03-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.c-torture/compile/pr99751.c: New test.
+
+2021-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93660
+	* gfortran.dg/gomp/declare-simd-coarray-lib.f90: Expect a mixed size
+	declare simd warning on aarch64.
+
+2021-03-29  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99216
+	* g++.target/aarch64/sve/pr99216.C: New test.
+
+2021-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99807
+	* gfortran.dg/vect/pr99807.f90: New testcase.
+
+2021-03-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99808
+	* gcc.target/aarch64/pr99808.c: New test.
+
+2021-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99777
+	* g++.dg/torture/pr99777.C: New test.
+
 2021-03-28  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/96770

@@ -1,3 +1,47 @@
+2021-03-29  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-modref.c (merge_call_lhs_flags): Correct handling of deref.
+	(analyze_ssa_name_flags): Fix typo in comment.
+
+2021-03-29  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99216
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_builder::add_function): Add placeholder_p argument, use
+	placeholder decls if this is set.
+	(function_builder::add_unique_function): Instead of conditionally adding
+	direct overloads, unconditionally add either a direct overload or a
+	placeholder.
+	(function_builder::add_overloaded_function): Set placeholder_p if we're
+	using C++ overloads. Use the obstack for string storage instead
+	of relying on the tree nodes.
+	(function_builder::add_overloaded_functions): Don't return early for
+	m_direct_overloads: we need to add placeholders.
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_builder::add_function): Add placeholder_p argument.
+
+2021-03-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99807
+	* tree-vect-slp.c (vect_slp_analyze_node_operations_1): Move
+	assert below VEC_PERM handling.
+
+2021-03-29  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99037
+	* config/aarch64/aarch64-simd.md (move_lo_quad_internal_<mode>): Use
+	aarch64_simd_or_scalar_imm_zero to match zeroes.  Remove pattern
+	matching const_int 0.
+	(move_lo_quad_internal_be_<mode>): Likewise.
+	(move_lo_quad_<mode>): Update for the above.
+	* config/aarch64/iterators.md (VQ_2E): Delete.
+
+2021-03-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99777
+	* fold-const.c (extract_muldiv_1): For conversions, punt on casts from
+	types other than scalar integral types.
+
 2021-03-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_output_dwarf_dtprel): Do not add
