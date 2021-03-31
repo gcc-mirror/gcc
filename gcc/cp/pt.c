@@ -28189,6 +28189,11 @@ placeholder_type_constraint_dependent_p (tree t)
   tree id = unpack_concept_check (t);
   tree args = TREE_OPERAND (id, 1);
   tree first = TREE_VEC_ELT (args, 0);
+  if (ARGUMENT_PACK_P (first))
+    {
+      args = expand_template_argument_pack (args);
+      first = TREE_VEC_ELT (args, 0);
+    }
   gcc_checking_assert (TREE_CODE (first) == WILDCARD_DECL
 		       || is_auto (first));
   for (int i = 1; i < TREE_VEC_LENGTH (args); ++i)
