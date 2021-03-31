@@ -1637,12 +1637,6 @@ struct processor_costs znver3_cost = {
 					   in 32,64,128,256 and 512-bit.  */
   6, 6,					/* SSE->integer and integer->SSE
 					   moves.  */
-  8, 8,				/* mask->integer and integer->mask moves */
-  {6, 6, 6},				/* cost of loading mask register
-					   in QImode, HImode, SImode.  */
-  {8, 8, 8},				/* cost if storing mask register
-					   in QImode, HImode, SImode.  */
-  2,					/* cost of moving mask register.  */
   /* End of register allocator costs.  */
   },
 
