@@ -1673,7 +1673,7 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 
 			if (!record_ipa)
 			  lattice[index].merge (call_flags);
-			if (record_ipa)
+			else
 			  lattice[index].add_escape_point (call, i,
 			     				   call_flags, true);
 		      }
@@ -1691,8 +1691,8 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
 			int call_flags = deref_flags
 			   (gimple_call_arg_flags (call, i), ignore_stores);
 			if (!record_ipa)
-			    lattice[index].merge (call_flags);
-			if (record_ipa)
+			  lattice[index].merge (call_flags);
+			else
 			  lattice[index].add_escape_point (call, i,
 							   call_flags, false);
 		      }
