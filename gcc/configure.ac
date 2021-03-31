@@ -6190,6 +6190,31 @@ if test x"$ld64_flag" = x"yes"; then
   [Define to 1 if ld64 supports '-export_dynamic'.])
 fi
 
+case $target_os in
+  win32 | pe | cygwin* | mingw32*)
+    AC_MSG_CHECKING(broken PE linker dwarf5 support)
+    gcc_cv_ld_broken_pe_dwarf5=yes
+    if test $in_tree_ld = yes ; then
+      if grep -q '\.debug_loclists.*BLOCK.*__section_alignment__.*NOLOAD.*:' \
+	   $gcc_cv_ld_gld_srcdir/scripttempl/pe*.sc \
+	 && grep -q '\.debug_rnglists.*BLOCK.*__section_alignment__.*NOLOAD.*:' \
+	      $gcc_cv_ld_gld_srcdir/scripttempl/pe*.sc; then
+	gcc_cv_ld_broken_pe_dwarf5=no
+      fi
+    else
+      if $gcc_cv_ld --verbose 2>&1 | grep -q '\.debug_loclists.*BLOCK.*__section_alignment__.*NOLOAD.*:' \
+	 && $gcc_cv_ld --verbose 2>&1 | grep -q '\.debug_rnglists.*BLOCK.*__section_alignment__.*NOLOAD.*:'; then
+	gcc_cv_ld_broken_pe_dwarf5=no
+      fi
+    fi
+    if test x$gcc_cv_ld_broken_pe_dwarf5 = xyes; then
+      AC_DEFINE(HAVE_LD_BROKEN_PE_DWARF5, 1,
+	        [Define if the PE linker has broken DWARF 5 support.])
+    fi
+    AC_MSG_RESULT($gcc_cv_ld_broken_pe_dwarf5)
+    ;;
+esac
+
 # --------
 # UNSORTED
 # --------

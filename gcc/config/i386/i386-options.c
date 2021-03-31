@@ -1861,6 +1861,13 @@ ix86_option_override_internal (bool main_args_p,
   SUBSUBTARGET_OVERRIDE_OPTIONS;
 #endif
 
+#ifdef HAVE_LD_BROKEN_PE_DWARF5
+  /* If the PE linker has broken DWARF 5 support, make
+     DWARF 4 the default.  */
+  if (TARGET_PECOFF)
+    SET_OPTION_IF_UNSET (opts, opts_set, dwarf_version, 4);
+#endif
+
   /* -fPIC is the default for x86_64.  */
   if (TARGET_MACHO && TARGET_64BIT_P (opts->x_ix86_isa_flags))
     opts->x_flag_pic = 2;
