@@ -20275,10 +20275,11 @@ aarch64_vectorize_preferred_vector_alignment (const_tree type)
 {
   if (aarch64_sve_data_mode_p (TYPE_MODE (type)))
     {
-      /* If the length of the vector is fixed, try to align to that length,
-	 otherwise don't try to align at all.  */
+      /* If the length of the vector is a fixed power of 2, try to align
+	 to that length, otherwise don't try to align at all.  */
       HOST_WIDE_INT result;
-      if (!BITS_PER_SVE_VECTOR.is_constant (&result))
+      if (!GET_MODE_BITSIZE (TYPE_MODE (type)).is_constant (&result)
+	  || !pow2p_hwi (result))
 	result = TYPE_ALIGN (TREE_TYPE (type));
       return result;
     }
