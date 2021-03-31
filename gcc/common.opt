@@ -960,7 +960,11 @@ Driver Undocumented
 ; 14: Corrects the mangling of nullptr expression.
 ;     Default in G++ 10.
 ;
-; 15: Changes the mangling of __alignof__ to be distinct from that of alignof.
+; 15: Corrects G++ 10 ABI tag regression [PR98481].
+;     Available, but not default, in G++ 10.3.
+;
+; 16: Changes the mangling of __alignof__ to be distinct from that of alignof.
+;     Adds missing 'on' in mangling of operator names in some cases.
 ;     Default in G++ 11.
 ;
 ; Additional positive integers will be assigned as new versions of
