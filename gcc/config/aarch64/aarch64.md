@@ -2015,8 +2015,8 @@
   [(set
     (match_operand:GPI 0 "register_operand" "=r,r,r,r,r,r,&r")
     (plus:GPI
-     (match_operand:GPI 1 "register_operand" "%rk,rk,rk,rk,rk,0,rk")
-     (match_operand:GPI 2 "aarch64_pluslong_or_poly_operand" "I,r,J,Uaa,Uav,Uai,Uat")))]
+     (match_operand:GPI 1 "register_operand" "%rk,rk,rk,rk,0,rk,rk")
+     (match_operand:GPI 2 "aarch64_pluslong_or_poly_operand" "I,r,J,Uaa,Uai,Uav,Uat")))]
   "TARGET_SVE && operands[0] != stack_pointer_rtx"
   "@
   add\\t%<w>0, %<w>1, %2
