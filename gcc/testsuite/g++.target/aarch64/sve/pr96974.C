@@ -15,4 +15,4 @@ struct c {
     int coeffs[10];
 } f;
 
-/* { dg-final { scan-tree-dump "Not vectorized: Incompatible number of vector subparts between" "slp1" } } */
+/* { dg-final { scan-tree-dump "Not vectorized: Incompatible number of vector subparts between" "slp1" { target lp64 } } } */

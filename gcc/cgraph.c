@@ -1860,6 +1860,9 @@ cgraph_node::release_body (bool keep_arguments)
       lto_free_function_in_decl_state_for_node (this);
       lto_file_data = NULL;
     }
+  gcc_assert (!clones);
+  remove_callees ();
+  remove_all_references ();
 }
 
 /* Remove function from symbol table.  */

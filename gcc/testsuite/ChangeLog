@@ -1,3 +1,75 @@
+2021-03-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/symbolic-1.c: Fix typo.
+
+2021-03-30  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99283
+	* g++.dg/modules/pr99283-5.h: New.
+	* g++.dg/modules/pr99283-5_a.H: New.
+	* g++.dg/modules/pr99283-5_b.H: New.
+	* g++.dg/modules/pr99283-5_c.C: New.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99790
+	* g++.dg/cpp1z/pr99790.C: New test.
+
+2021-03-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99822
+	* gcc.c-torture/compile/pr99822.c: New test.
+
+2021-03-30  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/99718
+	PR target/99718
+	* gcc.target/powerpc/fold-vec-insert-char-p8.c: Update
+	instruction counts.
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-double.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-float-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-int-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-short-p8.c: Likewise.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: Likewise.
+	* gcc.target/powerpc/pr79251.p8.c: Likewise.
+	* gcc.target/powerpc/pr79251.p9.c: Likewise.
+	* gcc.target/powerpc/vsx-builtin-7.c: Likewise.
+	* gcc.target/powerpc/pr79251-run.p7.c: New test.
+	* gcc.target/powerpc/pr79251.p7.c: New test.
+
+2021-03-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99744
+	* gcc.target/i386/pr99744-1.c: New test.
+
+2021-03-30  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/99825
+	* gfortran.dg/vect/pr99825.f90: New test.
+
+2021-03-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99808
+	* gcc.target/aarch64/pr99808.c: Use ULL constant suffix.
+
+2021-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99824
+	* gcc.dg/torture/pr99824.c: New testcase.
+
+2021-03-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98136
+	* g++.dg/pr98136.C: New test.
+
+2021-03-30  Mihailo Stojanovic  <mihailo.stojanovic@typhoon-hil.com>
+
+	* gcc.target/aarch64/fcvt_nosimd.c: New test.
+
 2021-03-29  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/61869

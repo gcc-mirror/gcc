@@ -1,3 +1,76 @@
+2021-03-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99820
+	* config/aarch64/aarch64.c (aarch64_analyze_loop_vinfo): Check for
+	available issue_info before using it.
+
+2021-03-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99822
+	* config/aarch64/aarch64.md (sub<mode>3_compare1_imm): Do not allow zero
+	in operand 1.
+
+2021-03-30  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	PR target/99718
+	* config/rs6000/altivec.md (altivec_lvsl_reg): Change to ...
+	(altivec_lvsl_reg_<mode>): ... this.
+	(altivec_lvsr_reg): Change to ...
+	(altivec_lvsr_reg_<mode>): ... this.
+	* config/rs6000/predicates.md (vec_set_index_operand): New.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Enable 32bit variable vec_insert for all TARGET_VSX.
+	* config/rs6000/rs6000.c (rs6000_expand_vector_set_var_p9):
+	Enable 32bit variable vec_insert for p9 and above.
+	(rs6000_expand_vector_set_var_p8): Rename to ...
+	(rs6000_expand_vector_set_var_p7): ... this.
+	(rs6000_expand_vector_set): Use TARGET_VSX and adjust assert
+	position.
+	* config/rs6000/vector.md (vec_set<mode>): Use vec_set_index_operand.
+	* config/rs6000/vsx.md (xl_len_r): Use gen_altivec_lvsl_reg_di and
+	gen_altivec_lvsr_reg_di.
+
+2021-03-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99744
+	* config/i386/ia32intrin.h (__rdtsc): Defined as macro.
+	(__rdtscp): Likewise.
+
+2021-03-30  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/99825
+	* tree-vect-slp-patterns.c (vect_check_evenodd_blend):
+	Reject non-mult 2 lanes.
+
+2021-03-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/99773
+	* config/arm/arm.c (arm_file_start): Fix emission of
+	Tag_ABI_VFP_args attribute.
+
+2021-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99824
+	* stor-layout.c (set_min_and_max_values_for_integral_type):
+	Assert the precision is within the bounds of
+	WIDE_INT_MAX_PRECISION.
+	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): Use
+	the outermost component ref only to lower the access size
+	and initialize that from the access type.
+
+2021-03-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98136
+	* config/aarch64/aarch64.md (mov<mode>): Pass multi-instruction
+	CONST_INTs to aarch64_expand_mov_immediate when called after RA.
+
+2021-03-30  Mihailo Stojanovic  <mihailo.stojanovic@typhoon-hil.com>
+
+	* config/aarch64/aarch64.md
+	(<optab>_trunc<fcvt_target><GPI:mode>2): Set the "arch"
+	attribute to disambiguate between SIMD and FP variants of the
+	instruction.
+
 2021-03-29  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-modref.c (merge_call_lhs_flags): Correct handling of deref.

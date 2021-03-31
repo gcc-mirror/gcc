@@ -1892,10 +1892,6 @@ cgraph_node::expand (void)
      comdat groups.  */
   assemble_thunks_and_aliases ();
   release_body ();
-  /* Eliminate all call edges.  This is important so the GIMPLE_CALL no longer
-     points to the dead function body.  */
-  remove_callees ();
-  remove_all_references ();
 }
 
 /* Node comparator that is responsible for the order that corresponds

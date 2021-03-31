@@ -721,14 +721,14 @@ static const struct processor_costs *processor_cost_table[] =
   &slm_cost,
   &skylake_cost,
   &skylake_cost,
+  &icelake_cost,
+  &icelake_cost,
+  &icelake_cost,
   &skylake_cost,
+  &icelake_cost,
   &skylake_cost,
-  &skylake_cost,
-  &skylake_cost,
-  &skylake_cost,
-  &skylake_cost,
-  &skylake_cost,
-  &skylake_cost,
+  &icelake_cost,
+  &icelake_cost,
   &intel_cost,
   &geode_cost,
   &k6_cost,
@@ -1859,6 +1859,13 @@ ix86_option_override_internal (bool main_args_p,
 
 #ifdef SUBSUBTARGET_OVERRIDE_OPTIONS
   SUBSUBTARGET_OVERRIDE_OPTIONS;
+#endif
+
+#ifdef HAVE_LD_BROKEN_PE_DWARF5
+  /* If the PE linker has broken DWARF 5 support, make
+     DWARF 4 the default.  */
+  if (TARGET_PECOFF)
+    SET_OPTION_IF_UNSET (opts, opts_set, dwarf_version, 4);
 #endif
 
   /* -fPIC is the default for x86_64.  */

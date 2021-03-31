@@ -5976,6 +5976,7 @@ expand_set_or_cpymem_via_rep (rtx destmem, rtx srcmem,
   /* If possible, it is shorter to use rep movs.
      TODO: Maybe it is better to move this logic to decide_alg.  */
   if (mode == QImode && CONST_INT_P (count) && !(INTVAL (count) & 3)
+      && !TARGET_PREFER_KNOWN_REP_MOVSB_STOSB
       && (!issetmem || orig_value == const0_rtx))
     mode = SImode;
 
@@ -6984,7 +6985,12 @@ decide_alg (HOST_WIDE_INT count, HOST_WIDE_INT expected_size,
 		  else if (!any_alg_usable_p)
 		    break;
 		}
-	      else if (alg_usable_p (candidate, memset, have_as))
+	      else if (alg_usable_p (candidate, memset, have_as)
+		       && !(TARGET_PREFER_KNOWN_REP_MOVSB_STOSB
+			    && candidate == rep_prefix_1_byte
+			    /* NB: If min_size != max_size, size is
+			       unknown.  */
+			    && min_size != max_size))
 		{
 		  *noalign = algs->size[i].noalign;
 		  return candidate;

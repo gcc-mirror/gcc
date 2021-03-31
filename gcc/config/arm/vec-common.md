@@ -103,7 +103,10 @@
   [(set (match_operand:VDQWH 0 "s_register_operand")
 	(mult:VDQWH (match_operand:VDQWH 1 "s_register_operand")
 		    (match_operand:VDQWH 2 "s_register_operand")))]
-  "ARM_HAVE_<MODE>_ARITH"
+  "ARM_HAVE_<MODE>_ARITH
+   && (!TARGET_REALLY_IWMMXT
+       || <MODE>mode == V4HImode
+       || <MODE>mode == V2SImode)"
 )
 
 (define_expand "smin<mode>3"

@@ -1722,6 +1722,15 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
 			     remove_attributes, flags);
       result = finish_underlying_type (type);
       break;
+    case TYPE_PACK_EXPANSION:
+      type = strip_typedefs (PACK_EXPANSION_PATTERN (t),
+			     remove_attributes, flags);
+      if (type != PACK_EXPANSION_PATTERN (t))
+	{
+	  result = copy_node (t);
+	  PACK_EXPANSION_PATTERN (result) = type;
+	}
+      break;
     default:
       break;
     }
