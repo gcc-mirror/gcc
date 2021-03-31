@@ -1,3 +1,45 @@
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99790
+	* g++.dg/cpp1z/pr99790.C: New test.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99777
+	* g++.dg/torture/pr99777.C: New test.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99705
+	* g++.dg/cpp0x/new5.C: New test.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99745
+	* g++.dg/cpp0x/variadic181.C: New test.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99650
+	* g++.dg/cpp1z/decomp55.C: New test.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99588
+	* gcc.dg/Wunused-var-5.c: New test.
+	* gcc.dg/Wunused-var-6.c: New test.
+
+2021-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99824
+	* gcc.dg/torture/pr99824.c: New testcase.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/93660
+	* gfortran.dg/gomp/declare-simd-coarray-lib.f90: Expect a mixed size
+	declare simd warning on aarch64.
+
 2021-03-29  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

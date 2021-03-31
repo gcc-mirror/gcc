@@ -1,3 +1,26 @@
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99790
+	* cp-gimplify.c (cp_gimplify_expr): Handle PTRMEM_CST.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99705
+	* tree.c (bot_manip): Remap artificial automatic temporaries mentioned
+	in DECL_EXPR or in BIND_EXPR_VARS.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99745
+	* decl2.c (grokbitfield): Diagnose bitfields containing bare parameter
+	packs and don't set DECL_BIT_FIELD_REPRESENTATIVE in that case.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99650
+	* decl.c (cp_finish_decomp): Diagnose void initializers when
+	using tuple_element and get.
+
 2021-03-29  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

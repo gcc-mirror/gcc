@@ -1,3 +1,37 @@
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99777
+	* fold-const.c (extract_muldiv_1): For conversions, punt on casts from
+	types other than scalar integral types.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99334
+	* dwarf2out.h (struct dw_fde_node): Add rule18 member.
+	* dwarf2cfi.c (dwarf2out_frame_debug_expr): When handling (set hfp sp)
+	assignment with drap_reg active, queue reg save for hfp with offset 0
+	and flush queued reg saves.  When handling a push with rule18,
+	defer queueing reg save for hfp and just assert the offset is 0.
+	(scan_trace): Assert that fde->rule18 is false.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99388
+	* dwarf2out.c (insert_float): Change return type from void to
+	unsigned, handle GET_MODE_SIZE (mode) == 2 and return element size.
+	(mem_loc_descriptor, loc_descriptor, add_const_value_attribute):
+	Adjust callers.
+
+2021-03-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99824
+	* stor-layout.c (set_min_and_max_values_for_integral_type):
+	Assert the precision is within the bounds of
+	WIDE_INT_MAX_PRECISION.
+	* tree-ssa-sccvn.c (ao_ref_init_from_vn_reference): Use
+	the outermost component ref only to lower the access size
+	and initialize that from the access type.
+
 2021-03-29  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
