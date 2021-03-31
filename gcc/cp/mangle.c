@@ -3124,11 +3124,9 @@ write_expression (tree expr)
 	  if (abi_version_at_least (15))
 	    {
 	      /* We used to mangle __alignof__ like alignof.  */
-	      write_string ("v111__alignof__");
-	      if (TYPE_P (TREE_OPERAND (expr, 0)))
-		write_type (TREE_OPERAND (expr, 0));
-	      else
-		write_expression (TREE_OPERAND (expr, 0));
+	      write_string ("u11__alignof__");
+	      write_template_arg (TREE_OPERAND (expr, 0));
+	      write_char ('E');
 	      return;
 	    }
 	}
