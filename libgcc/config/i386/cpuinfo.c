@@ -111,6 +111,12 @@ get_amd_cpu (unsigned int family, unsigned int model)
       if (model >= 0x30)
 	 __cpu_model.__cpu_subtype = AMDFAM17H_ZNVER2;
       break;
+    case 0x19:
+      __cpu_model.__cpu_type = AMDFAM19H;
+      /* AMD family 19h version 1.  */
+      if (model <= 0x0f)
+	__cpu_model.__cpu_subtype = AMDFAM19H_ZNVER3;
+      break;
     default:
       break;
     }

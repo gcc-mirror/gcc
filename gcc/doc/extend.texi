@@ -21810,6 +21810,12 @@ AMD Family 17h Zen version 1.
 
 @item znver2
 AMD Family 17h Zen version 2.
+
+@item amdfam19h
+AMD Family 19h CPU.
+
+@item znver3
+AMD Family 19h Zen version 3.
 @end table
 
 Here is an example:

@@ -165,6 +165,9 @@ extern void test_arch_barcelona (void)		__attribute__((__target__("arch=barcelon
 extern void test_arch_bdver1 (void)		__attribute__((__target__("arch=bdver1")));
 extern void test_arch_bdver2 (void)		__attribute__((__target__("arch=bdver2")));
 extern void test_arch_bdver3 (void)		__attribute__((__target__("arch=bdver3")));
+extern void test_arch_znver1 (void)             __attribute__((__target__("arch=znver1")));
+extern void test_arch_znver2 (void)             __attribute__((__target__("arch=znver2")));
+extern void test_arch_znver3 (void)             __attribute__((__target__("arch=znver3")));
 
 extern void test_tune_nocona (void)		__attribute__((__target__("tune=nocona")));
 extern void test_tune_core2 (void)		__attribute__((__target__("tune=core2")));
@@ -184,6 +187,9 @@ extern void test_tune_bdver1 (void)		__attribute__((__target__("tune=bdver1")));
 extern void test_tune_bdver2 (void)		__attribute__((__target__("tune=bdver2")));
 extern void test_tune_bdver3 (void)		__attribute__((__target__("tune=bdver3")));
 extern void test_tune_generic (void)		__attribute__((__target__("tune=generic")));
+extern void test_tune_znver1 (void)             __attribute__((__target__("tune=znver1")));
+extern void test_tune_znver2 (void)             __attribute__((__target__("tune=znver2")));
+extern void test_tune_znver3 (void)             __attribute__((__target__("tune=znver3")));
 
 extern void test_fpmath_sse (void)		__attribute__((__target__("sse2,fpmath=sse")));
 extern void test_fpmath_387 (void)		__attribute__((__target__("sse2,fpmath=387")));

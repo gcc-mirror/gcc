@@ -1582,7 +1582,8 @@ const char *const processor_names[] =
   "btver1",
   "btver2",
   "znver1",
-  "znver2"
+  "znver2",
+  "znver3"
 };
 
 /* Guarantee that the array is aligned with enum processor_type.  */
@@ -1816,6 +1817,17 @@ const pta processor_alias_table[] =
       | PTA_SHA | PTA_LZCNT | PTA_POPCNT | PTA_CLWB | PTA_RDPID
       | PTA_WBNOINVD,
     M_CPU_SUBTYPE (AMDFAM17H_ZNVER2), P_PROC_AVX2},
+  {"znver3", PROCESSOR_ZNVER2, CPU_ZNVER2,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+      | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_AVX2
+      | PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_PRFCHW
+      | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT | PTA_FSGSBASE
+      | PTA_RDRND | PTA_MOVBE | PTA_MWAITX | PTA_ADX | PTA_RDSEED
+      | PTA_CLZERO | PTA_CLFLUSHOPT | PTA_XSAVEC | PTA_XSAVES
+      | PTA_SHA | PTA_LZCNT | PTA_POPCNT | PTA_CLWB | PTA_RDPID
+      | PTA_WBNOINVD | PTA_VAES | PTA_VPCLMULQDQ | PTA_PKU,
+    M_CPU_SUBTYPE (AMDFAM19H_ZNVER3), P_PROC_AVX2},
   {"btver1", PROCESSOR_BTVER1, CPU_GENERIC,
     PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
       | PTA_SSSE3 | PTA_SSE4A | PTA_ABM | PTA_CX16 | PTA_PRFCHW
@@ -1842,6 +1854,8 @@ const pta processor_alias_table[] =
     M_CPU_TYPE (AMDFAM15H), P_NONE},
   {"amdfam17h", PROCESSOR_GENERIC, CPU_GENERIC, 0,
     M_CPU_TYPE (AMDFAM17H), P_NONE},
+  {"amdfam19h", PROCESSOR_GENERIC, CPU_GENERIC, 0,
+    M_CPU_TYPE (AMDFAM19H), P_NONE},
   {"shanghai", PROCESSOR_GENERIC, CPU_GENERIC, 0,
     M_CPU_TYPE (AMDFAM10H_SHANGHAI), P_NONE},
   {"istanbul", PROCESSOR_GENERIC, CPU_GENERIC, 0,
