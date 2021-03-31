@@ -17925,9 +17925,21 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
 {
   /* Support CSE and rematerialization of common constants.  */
   if (CONST_INT_P (x)
-      || (CONST_DOUBLE_P (x) && GET_MODE_CLASS (mode) == MODE_FLOAT)
-      || GET_CODE (x) == CONST_VECTOR)
+      || (CONST_DOUBLE_P (x) && GET_MODE_CLASS (mode) == MODE_FLOAT))
     return true;
+
+  /* Only accept variable-length vector constants if they can be
+     handled directly.
+
+     ??? It would be possible (but complex) to handle rematerialization
+     of other constants via secondary reloads.  */
+  if (!GET_MODE_SIZE (mode).is_constant ())
+    return aarch64_simd_valid_immediate (x, NULL);
+
+  /* Otherwise, accept any CONST_VECTOR that, if all else fails, can at
+     least be forced to memory and loaded from there.  */
+  if (GET_CODE (x) == CONST_VECTOR)
+    return !targetm.cannot_force_const_mem (mode, x);
 
   /* Do not allow vector struct mode constants for Advanced SIMD.
      We could support 0 and -1 easily, but they need support in
@@ -17935,14 +17947,6 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
   unsigned int vec_flags = aarch64_classify_vector_mode (mode);
   if (vec_flags == (VEC_ADVSIMD | VEC_STRUCT))
     return false;
-
-  /* Only accept variable-length vector constants if they can be
-     handled directly.
-
-     ??? It would be possible to handle rematerialization of other
-     constants via secondary reloads.  */
-  if (vec_flags & VEC_ANY_SVE)
-    return aarch64_simd_valid_immediate (x, NULL);
 
   if (GET_CODE (x) == HIGH)
     x = XEXP (x, 0);

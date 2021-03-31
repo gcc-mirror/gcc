@@ -5949,6 +5949,7 @@ bool
 valid_for_const_vector_p (machine_mode, rtx x)
 {
   return (CONST_SCALAR_INT_P (x)
+	  || CONST_POLY_INT_P (x)
 	  || CONST_DOUBLE_AS_FLOAT_P (x)
 	  || CONST_FIXED_P (x));
 }
