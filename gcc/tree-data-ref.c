@@ -2147,8 +2147,8 @@ create_intersect_range_checks_index (class loop *loop, tree *cond_expr,
 
   bool waw_or_war_p = (alias_pair.flags & ~(DR_ALIAS_WAR | DR_ALIAS_WAW)) == 0;
 
-  unsigned int i;
-  for (i = 0; i < DR_NUM_DIMENSIONS (dr_a.dr); i++)
+  int found = -1;
+  for (unsigned int i = 0; i < DR_NUM_DIMENSIONS (dr_a.dr); i++)
     {
       tree access1 = DR_ACCESS_FN (dr_a.dr, i);
       tree access2 = DR_ACCESS_FN (dr_b.dr, i);
@@ -2164,155 +2164,166 @@ create_intersect_range_checks_index (class loop *loop, tree *cond_expr,
 
 	  return false;
 	}
-      /* The two indices must have the same step.  */
-      if (!operand_equal_p (CHREC_RIGHT (access1), CHREC_RIGHT (access2), 0))
+      if (found >= 0)
 	return false;
-
-      tree idx_step = CHREC_RIGHT (access1);
-      /* Index must have const step, otherwise DR_STEP won't be constant.  */
-      gcc_assert (TREE_CODE (idx_step) == INTEGER_CST);
-      /* Index must evaluate in the same direction as DR.  */
-      gcc_assert (!neg_step || tree_int_cst_sign_bit (idx_step) == 1);
-
-      tree min1 = CHREC_LEFT (access1);
-      tree min2 = CHREC_LEFT (access2);
-      if (!types_compatible_p (TREE_TYPE (min1), TREE_TYPE (min2)))
-	return false;
-
-      /* Ideally, alias can be checked against loop's control IV, but we
-	 need to prove linear mapping between control IV and reference
-	 index.  Although that should be true, we check against (array)
-	 index of data reference.  Like segment length, index length is
-	 linear function of the number of iterations with index_step as
-	 the coefficient, i.e, niter_len * idx_step.  */
-      offset_int abs_idx_step = offset_int::from (wi::to_wide (idx_step),
-						  SIGNED);
-      if (neg_step)
-	abs_idx_step = -abs_idx_step;
-      poly_offset_int idx_len1 = abs_idx_step * niter_len1;
-      poly_offset_int idx_len2 = abs_idx_step * niter_len2;
-      poly_offset_int idx_access1 = abs_idx_step * niter_access1;
-      poly_offset_int idx_access2 = abs_idx_step * niter_access2;
-
-      gcc_assert (known_ge (idx_len1, 0)
-		  && known_ge (idx_len2, 0)
-		  && known_ge (idx_access1, 0)
-		  && known_ge (idx_access2, 0));
-
-      /* Each access has the following pattern, with lengths measured
-	 in units of INDEX:
-
-	      <-- idx_len -->
-	      <--- A: -ve step --->
-	      +-----+-------+-----+-------+-----+
-	      | n-1 | ..... |  0  | ..... | n-1 |
-	      +-----+-------+-----+-------+-----+
-			    <--- B: +ve step --->
-			    <-- idx_len -->
-			    |
-			   min
-
-	 where "n" is the number of scalar iterations covered by the segment
-	 and where each access spans idx_access units.
-
-	 A is the range of bytes accessed when the step is negative,
-	 B is the range when the step is positive.
-
-	 When checking for general overlap, we need to test whether
-	 the range:
-
-	   [min1 + low_offset1, min2 + high_offset1 + idx_access1 - 1]
-
-	 overlaps:
-
-	   [min2 + low_offset2, min2 + high_offset2 + idx_access2 - 1]
-
-	 where:
-
-	    low_offsetN = +ve step ? 0 : -idx_lenN;
-	   high_offsetN = +ve step ? idx_lenN : 0;
-
-	 This is equivalent to testing whether:
-
-	   min1 + low_offset1 <= min2 + high_offset2 + idx_access2 - 1
-	   && min2 + low_offset2 <= min1 + high_offset1 + idx_access1 - 1
-
-	 Converting this into a single test, there is an overlap if:
-
-	   0 <= min2 - min1 + bias <= limit
-
-	 where  bias = high_offset2 + idx_access2 - 1 - low_offset1
-	       limit = (high_offset1 - low_offset1 + idx_access1 - 1)
-		     + (high_offset2 - low_offset2 + idx_access2 - 1)
-	  i.e. limit = idx_len1 + idx_access1 - 1 + idx_len2 + idx_access2 - 1
-
-	 Combining the tests requires limit to be computable in an unsigned
-	 form of the index type; if it isn't, we fall back to the usual
-	 pointer-based checks.
-
-	 We can do better if DR_B is a write and if DR_A and DR_B are
-	 well-ordered in both the original and the new code (see the
-	 comment above the DR_ALIAS_* flags for details).  In this case
-	 we know that for each i in [0, n-1], the write performed by
-	 access i of DR_B occurs after access numbers j<=i of DR_A in
-	 both the original and the new code.  Any write or anti
-	 dependencies wrt those DR_A accesses are therefore maintained.
-
-	 We just need to make sure that each individual write in DR_B does not
-	 overlap any higher-indexed access in DR_A; such DR_A accesses happen
-	 after the DR_B access in the original code but happen before it in
-	 the new code.
-
-	 We know the steps for both accesses are equal, so by induction, we
-	 just need to test whether the first write of DR_B overlaps a later
-	 access of DR_A.  In other words, we need to move min1 along by
-	 one iteration:
-
-	   min1' = min1 + idx_step
-
-	 and use the ranges:
-
-	   [min1' + low_offset1', min1' + high_offset1' + idx_access1 - 1]
-
-	 and:
-
-	   [min2, min2 + idx_access2 - 1]
-
-	 where:
-
-	    low_offset1' = +ve step ? 0 : -(idx_len1 - |idx_step|)
-	   high_offset1' = +ve_step ? idx_len1 - |idx_step| : 0.  */
-      if (waw_or_war_p)
-	idx_len1 -= abs_idx_step;
-
-      poly_offset_int limit = idx_len1 + idx_access1 - 1 + idx_access2 - 1;
-      if (!waw_or_war_p)
-	limit += idx_len2;
-
-      tree utype = unsigned_type_for (TREE_TYPE (min1));
-      if (!wi::fits_to_tree_p (limit, utype))
-	return false;
-
-      poly_offset_int low_offset1 = neg_step ? -idx_len1 : 0;
-      poly_offset_int high_offset2 = neg_step || waw_or_war_p ? 0 : idx_len2;
-      poly_offset_int bias = high_offset2 + idx_access2 - 1 - low_offset1;
-      /* Equivalent to adding IDX_STEP to MIN1.  */
-      if (waw_or_war_p)
-	bias -= wi::to_offset (idx_step);
-
-      tree subject = fold_build2 (MINUS_EXPR, utype,
-				  fold_convert (utype, min2),
-				  fold_convert (utype, min1));
-      subject = fold_build2 (PLUS_EXPR, utype, subject,
-			     wide_int_to_tree (utype, bias));
-      tree part_cond_expr = fold_build2 (GT_EXPR, boolean_type_node, subject,
-					 wide_int_to_tree (utype, limit));
-      if (*cond_expr)
-	*cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-				  *cond_expr, part_cond_expr);
-      else
-	*cond_expr = part_cond_expr;
+      found = i;
     }
+
+  /* Ought not to happen in practice, since if all accesses are equal then the
+     alias should be decidable at compile time.  */
+  if (found < 0)
+    return false;
+
+  /* The two indices must have the same step.  */
+  tree access1 = DR_ACCESS_FN (dr_a.dr, found);
+  tree access2 = DR_ACCESS_FN (dr_b.dr, found);
+  if (!operand_equal_p (CHREC_RIGHT (access1), CHREC_RIGHT (access2), 0))
+    return false;
+
+  tree idx_step = CHREC_RIGHT (access1);
+  /* Index must have const step, otherwise DR_STEP won't be constant.  */
+  gcc_assert (TREE_CODE (idx_step) == INTEGER_CST);
+  /* Index must evaluate in the same direction as DR.  */
+  gcc_assert (!neg_step || tree_int_cst_sign_bit (idx_step) == 1);
+
+  tree min1 = CHREC_LEFT (access1);
+  tree min2 = CHREC_LEFT (access2);
+  if (!types_compatible_p (TREE_TYPE (min1), TREE_TYPE (min2)))
+    return false;
+
+  /* Ideally, alias can be checked against loop's control IV, but we
+     need to prove linear mapping between control IV and reference
+     index.  Although that should be true, we check against (array)
+     index of data reference.  Like segment length, index length is
+     linear function of the number of iterations with index_step as
+     the coefficient, i.e, niter_len * idx_step.  */
+  offset_int abs_idx_step = offset_int::from (wi::to_wide (idx_step),
+					      SIGNED);
+  if (neg_step)
+    abs_idx_step = -abs_idx_step;
+  poly_offset_int idx_len1 = abs_idx_step * niter_len1;
+  poly_offset_int idx_len2 = abs_idx_step * niter_len2;
+  poly_offset_int idx_access1 = abs_idx_step * niter_access1;
+  poly_offset_int idx_access2 = abs_idx_step * niter_access2;
+
+  gcc_assert (known_ge (idx_len1, 0)
+	      && known_ge (idx_len2, 0)
+	      && known_ge (idx_access1, 0)
+	      && known_ge (idx_access2, 0));
+
+  /* Each access has the following pattern, with lengths measured
+     in units of INDEX:
+
+	  <-- idx_len -->
+	  <--- A: -ve step --->
+	  +-----+-------+-----+-------+-----+
+	  | n-1 | ..... |  0  | ..... | n-1 |
+	  +-----+-------+-----+-------+-----+
+			<--- B: +ve step --->
+			<-- idx_len -->
+			|
+		       min
+
+     where "n" is the number of scalar iterations covered by the segment
+     and where each access spans idx_access units.
+
+     A is the range of bytes accessed when the step is negative,
+     B is the range when the step is positive.
+
+     When checking for general overlap, we need to test whether
+     the range:
+
+       [min1 + low_offset1, min1 + high_offset1 + idx_access1 - 1]
+
+     overlaps:
+
+       [min2 + low_offset2, min2 + high_offset2 + idx_access2 - 1]
+
+     where:
+
+	low_offsetN = +ve step ? 0 : -idx_lenN;
+       high_offsetN = +ve step ? idx_lenN : 0;
+
+     This is equivalent to testing whether:
+
+       min1 + low_offset1 <= min2 + high_offset2 + idx_access2 - 1
+       && min2 + low_offset2 <= min1 + high_offset1 + idx_access1 - 1
+
+     Converting this into a single test, there is an overlap if:
+
+       0 <= min2 - min1 + bias <= limit
+
+     where  bias = high_offset2 + idx_access2 - 1 - low_offset1
+	   limit = (high_offset1 - low_offset1 + idx_access1 - 1)
+		 + (high_offset2 - low_offset2 + idx_access2 - 1)
+      i.e. limit = idx_len1 + idx_access1 - 1 + idx_len2 + idx_access2 - 1
+
+     Combining the tests requires limit to be computable in an unsigned
+     form of the index type; if it isn't, we fall back to the usual
+     pointer-based checks.
+
+     We can do better if DR_B is a write and if DR_A and DR_B are
+     well-ordered in both the original and the new code (see the
+     comment above the DR_ALIAS_* flags for details).  In this case
+     we know that for each i in [0, n-1], the write performed by
+     access i of DR_B occurs after access numbers j<=i of DR_A in
+     both the original and the new code.  Any write or anti
+     dependencies wrt those DR_A accesses are therefore maintained.
+
+     We just need to make sure that each individual write in DR_B does not
+     overlap any higher-indexed access in DR_A; such DR_A accesses happen
+     after the DR_B access in the original code but happen before it in
+     the new code.
+
+     We know the steps for both accesses are equal, so by induction, we
+     just need to test whether the first write of DR_B overlaps a later
+     access of DR_A.  In other words, we need to move min1 along by
+     one iteration:
+
+       min1' = min1 + idx_step
+
+     and use the ranges:
+
+       [min1' + low_offset1', min1' + high_offset1' + idx_access1 - 1]
+
+     and:
+
+       [min2, min2 + idx_access2 - 1]
+
+     where:
+
+	low_offset1' = +ve step ? 0 : -(idx_len1 - |idx_step|)
+       high_offset1' = +ve_step ? idx_len1 - |idx_step| : 0.  */
+  if (waw_or_war_p)
+    idx_len1 -= abs_idx_step;
+
+  poly_offset_int limit = idx_len1 + idx_access1 - 1 + idx_access2 - 1;
+  if (!waw_or_war_p)
+    limit += idx_len2;
+
+  tree utype = unsigned_type_for (TREE_TYPE (min1));
+  if (!wi::fits_to_tree_p (limit, utype))
+    return false;
+
+  poly_offset_int low_offset1 = neg_step ? -idx_len1 : 0;
+  poly_offset_int high_offset2 = neg_step || waw_or_war_p ? 0 : idx_len2;
+  poly_offset_int bias = high_offset2 + idx_access2 - 1 - low_offset1;
+  /* Equivalent to adding IDX_STEP to MIN1.  */
+  if (waw_or_war_p)
+    bias -= wi::to_offset (idx_step);
+
+  tree subject = fold_build2 (MINUS_EXPR, utype,
+			      fold_convert (utype, min2),
+			      fold_convert (utype, min1));
+  subject = fold_build2 (PLUS_EXPR, utype, subject,
+			 wide_int_to_tree (utype, bias));
+  tree part_cond_expr = fold_build2 (GT_EXPR, boolean_type_node, subject,
+				     wide_int_to_tree (utype, limit));
+  if (*cond_expr)
+    *cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			      *cond_expr, part_cond_expr);
+  else
+    *cond_expr = part_cond_expr;
   if (dump_enabled_p ())
     {
       if (waw_or_war_p)
