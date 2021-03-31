@@ -46,8 +46,17 @@ jobs:
            cd gccrs-build; \
            make -j $(nproc)
 
-    - name: Test
+    - name: Run Tests
       run: |
            cd gccrs-build; \
-           make check-rust | tee results.log; \
-           if [ `grep "# of unexpected failures" results.log | wc -l` != "0" ]; then exit 1; fi
+           make check-rust
+    - name: Check regressions
+      run: |
+           cd gccrs-build; \
+           if grep "# of unexpected" gcc/testsuite/rust/rust.sum;\
+           then \
+              echo "some tests are not correct"; \
+              exit 1; \
+            else \
+              exit 0; \
+            fi
