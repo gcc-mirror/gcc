@@ -324,7 +324,8 @@ package body Sem_Attr is
 
       procedure Check_Enum_Image (Check_Enumeration_Maps : Boolean := False);
       --  Common processing for the Image and Value family of attributes,
-      --  including their Wide and Wide_Wide versions, Enum_Val and Img.
+      --  including their Wide and Wide_Wide versions, Enum_Val, Img,
+      --  and Valid_Value.
       --
       --  If the prefix type of an attribute is an enumeration type, set all
       --  its literals as referenced, since the attribute function can
@@ -387,6 +388,9 @@ package body Sem_Attr is
 
       procedure Check_Real_Type;
       --  Verify that prefix of attribute N is fixed or float type
+
+      procedure Check_Enumeration_Type;
+      --  Verify that prefix of attribute N is an enumeration type
 
       procedure Check_Scalar_Type;
       --  Verify that prefix of attribute N is a scalar type
@@ -1983,6 +1987,7 @@ package body Sem_Attr is
          pragma Assert
            (Check_Enumeration_Maps = (Attr_Id in Attribute_Image
                                                | Attribute_Img
+                                               | Attribute_Valid_Value
                                                | Attribute_Value
                                                | Attribute_Wide_Image
                                                | Attribute_Wide_Value
@@ -2362,6 +2367,19 @@ package body Sem_Attr is
             Error_Attr_P ("prefix of % attribute must be real type");
          end if;
       end Check_Real_Type;
+
+      ----------------------------
+      -- Check_Enumeration_Type --
+      ----------------------------
+
+      procedure Check_Enumeration_Type is
+      begin
+         Check_Type;
+
+         if not Is_Enumeration_Type (P_Type) then
+            Error_Attr_P ("prefix of % attribute must be enumeration type");
+         end if;
+      end Check_Enumeration_Type;
 
       -----------------------
       -- Check_Scalar_Type --
@@ -7074,6 +7092,31 @@ package body Sem_Attr is
          Set_Etype (N, Standard_Boolean);
       end Valid;
 
+      -----------------
+      -- Valid_Value --
+      -----------------
+
+      when Attribute_Valid_Value =>
+         Check_E1;
+         Check_Enumeration_Type;
+         Check_Enum_Image (Check_Enumeration_Maps => True);
+         Set_Etype (N, Standard_Boolean);
+         Validate_Non_Static_Attribute_Function_Call;
+
+         if P_Type in Standard_Boolean
+                    | Standard_Character
+                    | Standard_Wide_Character
+                    | Standard_Wide_Wide_Character
+         then
+            Error_Attr_P
+              ("prefix of % attribute must not be a type in Standard");
+         end if;
+
+         if Discard_Names (First_Subtype (P_Type)) then
+            Error_Attr_P
+              ("prefix of % attribute must not have Discard_Names");
+         end if;
+
       -------------------
       -- Valid_Scalars --
       -------------------
@@ -10479,6 +10522,7 @@ package body Sem_Attr is
          | Attribute_Unrestricted_Access
          | Attribute_Valid
          | Attribute_Valid_Scalars
+         | Attribute_Valid_Value
          | Attribute_Value
          | Attribute_Wchar_T_Size
          | Attribute_Wide_Value
@@ -12271,7 +12315,7 @@ package body Sem_Attr is
             --  reference is resolved.
 
             case Attr_Id is
-               when Attribute_Value =>
+               when Attribute_Valid_Value | Attribute_Value =>
                   Resolve (First (Expressions (N)), Standard_String);
 
                when Attribute_Wide_Value =>

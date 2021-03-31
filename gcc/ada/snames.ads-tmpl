@@ -1081,6 +1081,7 @@ package Snames is
    Name_To_Any                         : constant Name_Id := N + $; -- GNAT
    Name_Truncation                     : constant Name_Id := N + $;
    Name_TypeCode                       : constant Name_Id := N + $; -- GNAT
+   Name_Valid_Value                    : constant Name_Id := N + $; -- GNAT
    Name_Value                          : constant Name_Id := N + $;
    Name_Wide_Image                     : constant Name_Id := N + $;
    Name_Wide_Wide_Image                : constant Name_Id := N + $;
@@ -1606,6 +1607,7 @@ package Snames is
       Attribute_To_Any,
       Attribute_Truncation,
       Attribute_TypeCode,
+      Attribute_Valid_Value,
       Attribute_Value,
       Attribute_Wide_Image,
       Attribute_Wide_Wide_Image,

@@ -2036,9 +2036,13 @@ package Rtsfind is
 
      RE_Value_Decimal128,                -- System_Val_Decimal_128
 
-     RE_Value_Enumeration_8,             -- System.Val_Enum
-     RE_Value_Enumeration_16,            -- System.Val_Enum
-     RE_Value_Enumeration_32,            -- System.Val_Enum
+     RE_Value_Enumeration_8,             -- System.Val_Enum_8
+     RE_Value_Enumeration_16,            -- System.Val_Enum_16
+     RE_Value_Enumeration_32,            -- System.Val_Enum_32
+
+     RE_Valid_Enumeration_Value_8,       -- System.Val_Enum_8
+     RE_Valid_Enumeration_Value_16,      -- System.Val_Enum_16
+     RE_Valid_Enumeration_Value_32,      -- System.Val_Enum_32
 
      RE_Value_Fixed32,                   -- System_Val_Fixed_32
 
@@ -3726,6 +3730,12 @@ package Rtsfind is
 
      RE_Value_Enumeration_32             => System_Val_Enum_32,
 
+     RE_Valid_Enumeration_Value_8        => System_Val_Enum_8,
+
+     RE_Valid_Enumeration_Value_16       => System_Val_Enum_16,
+
+     RE_Valid_Enumeration_Value_32       => System_Val_Enum_32,
+
      RE_Value_Fixed32                    => System_Val_Fixed_32,
 
      RE_Value_Fixed64                    => System_Val_Fixed_64,
@@ -4074,10 +4084,11 @@ package Rtsfind is
    --  and without generating an error message, i.e. if the call will obtain
    --  the desired entity without any problems.
    --
-   --  If we call this and it returns True, we should generate a call to E.
-   --  In other words, the compiler should not call RTE_Available (E) until
-   --  it has decided it wants to generate a call to E. Otherwise we can get
-   --  spurious dependencies and elaboration orders.
+   --  If we call this and it returns True, we should generate a reference to
+   --  E (usually a call). In other words, for a subprogram E, the compiler
+   --  should not call RTE_Available (E) until it has decided it wants to
+   --  generate a call to E. Otherwise we can get spurious dependencies and
+   --  elaboration orders.
    --
    --     if RTE_Available (E) -- WRONG!
    --       and then <some condition>

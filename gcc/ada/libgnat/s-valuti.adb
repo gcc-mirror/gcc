@@ -68,10 +68,10 @@ package body System.Val_Util is
          F := F + 1;
       end loop;
 
-      --  Check for case when the string contained no characters
+      --  Case of no nonspace characters found
 
       if F > L then
-         Bad_Value (S);
+         return;
       end if;
 
       --  Scan for trailing spaces

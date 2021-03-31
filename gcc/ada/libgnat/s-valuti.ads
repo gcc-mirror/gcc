@@ -45,9 +45,7 @@ package System.Val_Util is
    --  non-blank character of S and L to be the index of the last non-blank
    --  character of S. Any lower case characters present in S will be folded to
    --  their upper case equivalent except for character literals. If S consists
-   --  of entirely blanks then Constraint_Error is raised.
-   --
-   --  Note: if S is the null string, F is set to S'First, L to S'Last
+   --  of entirely blanks (including when S = "") then we return with F > L.
 
    procedure Scan_Sign
      (Str   : String;

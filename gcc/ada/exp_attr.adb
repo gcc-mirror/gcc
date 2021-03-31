@@ -7384,6 +7384,13 @@ package body Exp_Attr is
          Validity_Checks_On := Save_Validity_Checks_On;
       end Valid;
 
+      -----------------
+      -- Valid_Value --
+      -----------------
+
+      when Attribute_Valid_Value =>
+         Exp_Imgv.Expand_Valid_Value_Attribute (N);
+
       -------------------
       -- Valid_Scalars --
       -------------------
@@ -7567,14 +7574,9 @@ package body Exp_Attr is
       --    typ'Value
       --      (Wide_Wide_String_To_String (X, Wide_Character_Encoding_Method))
 
-      --  Wide_Wide_String_To_String is a runtime function that converts its
-      --  wide string argument to String, converting any non-translatable
-      --  characters into appropriate escape sequences. This preserves the
-      --  required semantics of Wide_Wide_Value in all cases, and results in a
-      --  very simple implementation approach.
-
-      --  It's not quite right where typ = Wide_Wide_Character, because the
-      --  encoding method may not cover the whole character type ???
+      --  See Wide_Value for more information. This is not quite right where
+      --  typ = Wide_Wide_Character, because the encoding method may not cover
+      --  the whole character type.
 
       when Attribute_Wide_Wide_Value =>
          Rewrite (N,

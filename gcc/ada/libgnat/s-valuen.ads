@@ -67,4 +67,28 @@ package System.Value_N is
    --  If the image is found in Names, then the corresponding Pos value is
    --  returned. If not, Constraint_Error is raised.
 
+   function Valid_Enumeration_Value
+     (Names   : String;
+      Indexes : System.Address;
+      Hash    : Hash_Function_Ptr;
+      Num     : Natural;
+      Str     : String)
+      return    Boolean;
+   --  Returns True if Str is a valid Image of some enumeration literal, False
+   --  otherwise. That is, returns False if and only if Value_Enumeration would
+   --  raise Constraint_Error. The parameters have the same meaning as for
+   --  Value_Enumeration.
+
+   Invalid : constant Integer := -1;
+
+   function Value_Enumeration_Pos
+     (Names   : String;
+      Indexes : System.Address;
+      Hash    : Hash_Function_Ptr;
+      Num     : Natural;
+      Str     : String)
+      return    Integer;
+   --  Same as Value_Enumeration, except returns Invalid if Value_Enumeration
+   --  would raise Constraint_Error.
+
 end System.Value_N;
