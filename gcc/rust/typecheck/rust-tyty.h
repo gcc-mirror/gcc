@@ -527,7 +527,10 @@ public:
       }
   }
 
-  bool needs_substitution () const { return used_arguments.is_error (); }
+  bool needs_substitution () const
+  {
+    return has_substitutions () && used_arguments.is_error ();
+  }
 
   bool was_substituted () const { return !needs_substitution (); }
 

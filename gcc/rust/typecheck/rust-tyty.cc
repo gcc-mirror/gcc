@@ -362,7 +362,6 @@ ADTType *
 ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
   if (subst_mappings.size () != get_num_substitutions ())
-
     {
       rust_error_at (subst_mappings.get_locus (),
 		     "invalid number of generic arguments to generic ADT type");
@@ -565,8 +564,9 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
   if (subst_mappings.size () != get_num_substitutions ())
     {
-      rust_error_at (subst_mappings.get_locus (),
-		     "invalid number of generic arguments to generic ADT type");
+      rust_error_at (
+	subst_mappings.get_locus (),
+	"invalid number of generic arguments to generic Function type");
       return nullptr;
     }
 

@@ -243,7 +243,7 @@ public:
 	if (receiver_tyty->get_kind () == TyTy::TypeKind::ADT)
 	  {
 	    TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver_tyty);
-	    if (adt->has_substitutions ())
+	    if (adt->has_substitutions () && fn->needs_substitution ())
 	      {
 		rust_assert (adt->was_substituted ());
 		lookup
