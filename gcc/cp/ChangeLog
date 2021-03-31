@@ -1,3 +1,17 @@
+2021-03-30  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99283
+	* module.cc (dumper::operator): Make less brittle.
+	(trees_out::core_bools): VAR_DECLs always have a context.
+	(trees_out::key_mergeable): Use same_type_p for asserting.
+	(trees_in::read_var_def): Propagate
+	DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+
+2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99790
+	* cp-gimplify.c (cp_gimplify_expr): Handle PTRMEM_CST.
+
 2021-03-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/98352

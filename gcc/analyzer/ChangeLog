@@ -1,3 +1,19 @@
+2021-03-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* region.h (region::dump_to_pp): Remove old decl.
+
+2021-03-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-file.cc (fileptr_state_machine::on_stmt): Only call
+	get_diagnostic_tree if the result will be used.
+	* sm-malloc.cc (malloc_state_machine::on_stmt): Likewise.
+	(malloc_state_machine::on_deallocator_call): Likewise.
+	(malloc_state_machine::on_realloc_call): Likewise.
+	(malloc_state_machine::on_realloc_call): Likewise.
+	* sm-sensitive.cc
+	(sensitive_state_machine::warn_for_any_exposure): Likewise.
+	* sm-taint.cc (taint_state_machine::on_stmt): Likewise.
+
 2021-03-25  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/93695
