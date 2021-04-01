@@ -5055,8 +5055,18 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
   while (0)
 
   if (TYPE_P (*tp))
-    /* Walk into template args without looking through typedefs.  */
-    if (tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (*tp))
+    /* If *WALK_SUBTREES_P is 1, we're interested in the syntactic form of
+       the argument, so don't look through typedefs, but do walk into
+       template arguments for alias templates (and non-typedefed classes).
+
+       If *WALK_SUBTREES_P > 1, we're interested in type identity or
+       equivalence, so look through typedefs, ignoring template arguments for
+       alias templates, and walk into template args of classes.
+
+       See find_abi_tags_r for an example of setting *WALK_SUBTREES_P to 2
+       when that's the behavior the walk_tree_fn wants.  */
+    if (tree ti = (*walk_subtrees_p > 1 ? TYPE_TEMPLATE_INFO (*tp)
+		   : TYPE_TEMPLATE_INFO_MAYBE_ALIAS (*tp)))
       WALK_SUBTREE (TI_ARGS (ti));
 
   /* Not one of the easy cases.  We must explicitly go through the

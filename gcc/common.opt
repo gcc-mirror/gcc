@@ -956,10 +956,13 @@ Driver Undocumented
 ; 14: Corrects the mangling of nullptr expression.
 ;     Default in G++ 10.
 ;
+; 15: Corrects G++ 10 ABI tag regression [PR98481].
+;     Available, but not default, in G++ 10.3.
+;
 ; Additional positive integers will be assigned as new versions of
 ; the ABI become the default version of the ABI.
 fabi-version=
-Common Joined RejectNegative UInteger Var(flag_abi_version) Init(0)
+Common Joined RejectNegative UInteger Var(flag_abi_version) Init(14)
 The version of the C++ ABI in use.
 
 faggressive-loop-optimizations
