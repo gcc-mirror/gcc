@@ -1,3 +1,8 @@
+2021-03-31  Alexandre Oliva  <oliva@adacore.com>
+
+	* testsuite/30_threads/future/members/poll.cc: Use faster
+	after-ready call in the calibration loop.
+
 2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Adjust link for PSTL.

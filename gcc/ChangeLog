@@ -1,3 +1,157 @@
+2021-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/98265
+	* cif-code.def (USES_COMDAT_LOCAL): Make CIF_FINAL_NORMAL.
+
+2021-03-31  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	PR target/99133
+	* config/rs6000/altivec.md (xxspltiw_v4si, xxspltiw_v4sf_inst,
+	xxspltidp_v2df_inst, xxsplti32dx_v4si_inst, xxsplti32dx_v4sf_inst,
+	xxblend_<mode>, xxpermx_inst, xxeval): Mark prefixed.
+	* config/rs6000/mma.md (mma_<vvi4i4i8>, mma_<avvi4i4i8>,
+	mma_<vvi4i4i2>, mma_<avvi4i4i2>, mma_<vvi4i4>, mma_<avvi4i4>,
+	mma_<pvi4i2>, mma_<apvi4i2>, mma_<vvi4i4i4>, mma_<avvi4i4i4>):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_final_prescan_insn): Adjust test.
+	* config/rs6000/rs6000.md (define_attr "maybe_prefixed"): New.
+	(define_attr "prefixed"): Update initializer.
+
+2021-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99490
+	* dwarf2out.c (debug_ranges_dwo_section): New variable.
+	(DW_RANGES_IDX_SKELETON): Define.
+	(struct dw_ranges): Add begin_entry and end_entry members.
+	(DEBUG_DWO_RNGLISTS_SECTION): Define.
+	(add_ranges_num): Adjust r initializer for addition of *_entry
+	members.
+	(add_ranges_by_labels): For -gsplit-dwarf and force_direct,
+	set idx to DW_RANGES_IDX_SKELETON.
+	(use_distinct_base_address_for_range): New function.
+	(index_rnglists): Don't set r->idx if it is equal to
+	DW_RANGES_IDX_SKELETON.  Initialize r->begin_entry and
+	r->end_entry for -gsplit-dwarf if those will be needed by
+	output_rnglists.
+	(output_rnglists): Add DWO argument.  If true, switch to
+	debug_ranges_dwo_section rather than debug_ranges_section.
+	Adjust l1/l2 label indexes.  Only output the offset table when
+	dwo is true and don't include in there the skeleton range
+	entry if present.  For -gsplit-dwarf, skip ranges that belong
+	to the other rnglists section.  Change return type from void
+	to bool and return true if there are any range entries for
+	the other section.  For dwarf_split_debug_info use
+	DW_RLE_startx_endx, DW_RLE_startx_length and DW_RLE_base_addressx
+	entries instead of DW_RLE_start_end, DW_RLE_start_length and
+	DW_RLE_base_address.  Use use_distinct_base_address_for_range.
+	(init_sections_and_labels): Initialize debug_ranges_dwo_section
+	if -gsplit-dwarf and DWARF >= 5.  Adjust ranges_section_label
+	and range_base_label indexes.
+	(dwarf2out_finish): Call index_rnglists earlier before finalizing
+	.debug_addr.  Never emit DW_AT_rnglists_base attribute.  For
+	-gsplit-dwarf and DWARF >= 5 call output_rnglists up to twice
+	with different dwo arguments.
+	(dwarf2out_c_finalize): Clear debug_ranges_dwo_section.
+
+2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98268
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Call
+	recompute_tree_invariant_for_addr_expr after successfully
+	folding a TARGET_MEM_REF that occurs inside an ADDR_EXPR.
+
+2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/99726
+	* tree-data-ref.c (create_intersect_range_checks_index): Bail
+	out if there is more than one access function SCEV for the loop
+	being versioned.
+
+2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/97141
+	PR rtl-optimization/98726
+	* emit-rtl.c (valid_for_const_vector_p): Return true for
+	CONST_POLY_INT_P.
+	* rtx-vector-builder.h (rtx_vector_builder::step): Return a
+	poly_wide_int instead of a wide_int.
+	(rtx_vector_builder::apply_set): Take a poly_wide_int instead
+	of a wide_int.
+	* rtx-vector-builder.c (rtx_vector_builder::apply_set): Likewise.
+	* config/aarch64/aarch64.c (aarch64_legitimate_constant_p): Return
+	false for CONST_VECTORs that cannot be forced to memory.
+	* config/aarch64/aarch64-simd.md (mov<mode>): If a CONST_VECTOR
+	is too complex to force to memory, build it up from individual
+	elements instead.
+
+2021-03-31  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/99447
+	* cgraph.c (cgraph_node::release_body): Fix overactive check.
+
+2021-03-31  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99786
+	* config/arm/vec-common.md (mul<mode>3): Disable on iwMMXT, expect
+	for V4HI and V2SI.
+
+2021-03-31  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-expand.c (expand_set_or_cpymem_via_rep):
+	For TARGET_PREFER_KNOWN_REP_MOVSB_STOSB, don't convert QImode
+	to SImode.
+	(decide_alg): For TARGET_PREFER_KNOWN_REP_MOVSB_STOSB, use
+	"rep movsb/stosb" only for known sizes.
+	* config/i386/i386-options.c (processor_cost_table): Use Ice
+	Lake cost for Cannon Lake, Ice Lake, Tiger Lake, Sapphire
+	Rapids and Alder Lake.
+	* config/i386/i386.h (TARGET_PREFER_KNOWN_REP_MOVSB_STOSB): New.
+	* config/i386/x86-tune-costs.h (icelake_memcpy): New.
+	(icelake_memset): Likewise.
+	(icelake_cost): Likewise.
+	* config/i386/x86-tune.def (X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB):
+	New.
+
+2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98119
+	* config/aarch64/aarch64.c
+	(aarch64_vectorize_preferred_vector_alignment): Query the size
+	of the provided SVE vector; do not assume that all SVE vectors
+	have the same size.
+
+2021-03-31  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/99447
+	* cgraph.c (cgraph_node::release_body): Remove all callers and
+	references.
+	* cgraphclones.c (cgraph_node::materialize_clone): Do not do it here.
+	* cgraphunit.c (cgraph_node::expand): And here.
+
+2021-03-31  Martin Liska  <mliska@suse.cz>
+
+	* ipa-modref.c (analyze_ssa_name_flags): Fix coding style
+	and one negated condition.
+
+2021-03-31  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99813
+	* config/aarch64/aarch64.md (*add<mode>3_poly_1): Swap Uai and Uav
+	constraints on operands[2] and similarly 0 and rk constraints
+	on operands[1] corresponding to that.
+
+2021-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/98860
+	* configure.ac (HAVE_LD_BROKEN_PE_DWARF5): New AC_DEFINE if PECOFF
+	linker doesn't support DWARF sections new in DWARF5.
+	* config/i386/i386-options.c (ix86_option_override_internal): Default
+	to dwarf_version 4 if HAVE_LD_BROKEN_PE_DWARF5 for TARGET_PECOFF
+	targets.
+	* config.in: Regenerated.
+	* configure: Regenerated.
+
 2021-03-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR target/99820

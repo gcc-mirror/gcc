@@ -1,3 +1,21 @@
+2021-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99445
+	* tree.c (strip_typedefs): Handle TYPE_PACK_EXPANSION.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* mangle.c (write_expression): Adjust the mangling of
+	__alignof__.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99815
+	* pt.c (placeholder_type_constraint_dependent_p): Expand
+	argument packs to separate the first non-pack argument
+	from the rest.
+
 2021-03-30  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/99283

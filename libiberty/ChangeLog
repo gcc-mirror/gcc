@@ -1,3 +1,14 @@
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* cp-demangle.c (d_dump, d_make_comp, d_expression_1)
+	(d_count_templates_scopes): Handle DEMANGLE_COMPONENT_VENDOR_EXPR.
+	(d_print_comp_inner): Likewise.
+	<case DEMANGLE_COMPONENT_EXTENDED_OPERATOR>: Revert r11-4926
+	change.
+	<case DEMANGLE_COMPONENT_UNARY>: Likewise.
+	* testsuite/demangle-expected: Adjust __alignof__ tests.
+
 2021-03-16  Nick Clifton  <nickc@redhat.com>
 
 	* sha1.c (sha1_process_bytes): Use memmove in place of memcpy.
