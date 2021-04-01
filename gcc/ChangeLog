@@ -1,3 +1,136 @@
+2021-03-31  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/98265
+	* cif-code.def (USES_COMDAT_LOCAL): Make CIF_FINAL_NORMAL.
+
+2021-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/96264
+	* lra-remat.c (reg_overlap_for_remat_p): Check also output insn
+	hard regs.
+
+2021-03-31  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/97849
+	* tree-if-conv.c (tree_if_conversion): Move ssa_name
+	replacement code from ifcvt_local_dce to this function
+	before calling do_rpo_vn.
+
+2021-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-31  Jakub Jelinek  <jakub@redhat.com>
+		    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99813
+	* config/aarch64/aarch64.md (*add<mode>3_poly_1): Swap Uai and Uav
+	constraints on operands[2] and similarly 0 and rk constraints
+	on operands[1] corresponding to that.
+
+2021-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* common/config/i386/i386-common.c (ARRAY_SIZE): Make pta_size signed.
+
+2021-03-31  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-03-24  Martin Liska  <mliska@suse.cz>
+
+	PR target/99753
+	* common/config/i386/i386-common.c (ARRAY_SIZE): Fix off-by-one
+	error.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Add run-time assert.
+
+2021-03-31  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-03-18  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (struct processor_costs): Fix costs of
+	integer divides1.
+
+2021-03-31  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/x86-tune-costs.h (struct processor_costs): Remove
+	mask register costs.
+
+2021-03-31  Jan Hubicka  <jh@suse.cz>
+
+	Backported from master:
+	2021-03-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* config/i386/i386-options.c (processor_cost_table): Add znver3_cost.
+	* config/i386/x86-tune-costs.h (znver3_cost): New gobal variable; copy
+	of znver2_cost.
+
+2021-03-31  Jan Hubicka  <jh@suse.cz>
+
+	* common/config/i386/i386-common.c: Add znver3.
+	* common/config/i386/i386-cpuinfo.h (enum processor_types): Add
+	AMDFAM19H
+	(enum processor_subtypes): Add AMDFAM19H_ZNVER3.
+	(processor_alias_table): Add znver3 and AMDFAM19H entry.
+	* common/config/i386/i386-cpuinfo.h (processor_types): Add
+	AMDFAM19H.
+	(processor_subtypes): AMDFAM19H_ZNVER3.
+	* config.gcc (i[34567]86-*-linux* | ...): Likewise.
+	* config/i386/driver-i386.c: (host_detect_local_cpu): Let
+	-march=native recognize znver3 processors.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add
+	znver3.
+	* config/i386/i386-options.c (m_znver3): New definition.
+	(m_ZNVER): Include m_znver3.
+	(processor_cost_table): Add znver3.
+	* config/i386/i386.c (ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (TARGET_znver3): New definition.
+	(enum processor_type): Add PROCESSOR_ZNVER3.
+	* config/i386/i386.md (define_attr "cpu"): Add znver3.
+	* config/i386/x86-tune-sched.c: (ix86_issue_rate): Likewise.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_256FMA_CHAINS):
+	Likewise.
+	* config/i386/znver1.md: Add new reservations for znver3.
+	* doc/extend.texi: Add details about znver3.
+	* doc/invoke.texi: Likewise.
+
+2021-03-31  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2020-06-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/95842
+	* common/config/i386/i386-common.c (processor_alias_table): Add
+	processor model and priority to each entry.
+	(pta_size): Updated with -6.
+	(num_arch_names): New.
+	* common/config/i386/i386-cpuinfo.h: New file.
+	* config/i386/i386-builtins.c (feature_priority): Removed.
+	(processor_model): Likewise.
+	(_arch_names_table): Likewise.
+	(arch_names_table): Likewise.
+	(_isa_names_table): Replace P_ZERO with P_NONE.
+	(get_builtin_code_for_version): Replace P_ZERO with P_NONE.  Use
+	processor_alias_table.
+	(fold_builtin_cpu): Replace arch_names_table with
+	processor_alias_table.
+	* config/i386/i386.h: Include "common/config/i386/i386-cpuinfo.h".
+	(pta): Add model and priority.
+	(num_arch_names): New.
+
+2021-03-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99037
+	* config/aarch64/aarch64-simd.md (move_lo_quad_internal_<mode>): Use
+	aarch64_simd_or_scalar_imm_zero to match zeroes.  Remove pattern
+	matching const_int 0.
+	(move_lo_quad_internal_be_<mode>): Likewise.
+	(move_lo_quad_<mode>): Update for the above.
+	* config/aarch64/iterators.md (VQ_2E): Delete.
+
 2021-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/99777

@@ -1,3 +1,93 @@
+2021-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR testsuite/99233
+	* gcc.target/powerpc/pr96264.c: Run it only for powerpc64le.
+
+2021-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/96264
+	* gcc.target/powerpc/pr96264.c: New.
+
+2021-03-31  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96974
+	* g++.target/aarch64/sve/pr96974.C: Expect SLP diagnostic only
+	under lp64.
+
+2021-03-31  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/97849
+	* gcc.dg/tree-ssa/pr97849.c: New test.
+
+2021-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-31  Jakub Jelinek  <jakub@redhat.com>
+		    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99813
+	* g++.target/aarch64/sve/pr99813.C: New test.
+
+2021-03-31  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-03-24  Martin Liska  <mliska@suse.cz>
+
+	PR target/99753
+	* gcc.target/i386/pr99753.c: New test.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98990
+	* g++.dg/concepts/abbrev8.C: New test.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95468
+	* g++.dg/template/non-dependent15.C: New test.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98611
+	* g++.dg/cpp2a/concepts-ctad1.C: New test.
+	* g++.dg/cpp2a/concepts-ctad2.C: New test.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96531
+	PR c++/97103
+	* g++.dg/cpp2a/concepts-ttp2.C: New test.
+	* g++.dg/cpp2a/concepts-variadic1.C: New test.
+
+2021-03-31  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2021-03-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backported from master:
+	2021-03-30  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99808
+	* gcc.target/aarch64/pr99808.c: Use ULL constant suffix.
+
+2021-03-31  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99808
+	* gcc.target/aarch64/pr99808.c: New test.
+
 2021-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/99790

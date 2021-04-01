@@ -1,3 +1,9 @@
+2021-03-31  Jan Hubicka  <jh@suse.cz>
+
+	* config/i386/cpuinfo.c (get_amd_cpu): Support amdfam19.
+	* config/i386/cpuinfo.h (enum processor_types): Add AMDFAM19H.
+	(enum processor_subtypes): Add AMDFAM19H_ZNVER3.
+
 2021-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:

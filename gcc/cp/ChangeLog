@@ -1,3 +1,52 @@
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-02-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98990
+	* pt.c (splice_late_return_type): Rebuild the entire return type
+	if we have to adjust the level of an auto within.
+	(type_uses_auto): Adjust call to find_type_usage.
+	* type-utils.h (find_type_usage): Revert r10-6571 change that
+	made this function return a pointer to the auto node.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95468
+	* pt.c (tsubst_copy_and_build) <case BASELINK>: New case, copied
+	over from tsubst_copy.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-01-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98611
+	* tree.c (cp_walk_subtrees) <case TEMPLATE_TYPE_PARM>: Visit
+	the template of a CTAD placeholder.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/96531
+	PR c++/97103
+	* constraint.cc (map_arguments): Call template_parm_to_arg
+	in the self-mapping case.
+	(finish_shorthand_constraint): No need to build a TREE_LIST
+	before calling template_parm_to_arg.
+	* pt.c (template_parm_to_arg): Rewrite to handle TEMPLATE_PARM_P
+	nodes as well as DECL_TEMPLATE_PARM_P nodes, and to make the
+	overlying TREE_LIST node optional.
+	(keep_template_parm): Don't record a BOUND_TEMPLATE_TEMPLATE_PARM,
+	instead record its corresponding TEMPLATE_TEMPLATE_PARM.
+	(convert_generic_types_to_packs): Don't call
+	template_parm_to_arg.
+
 2021-03-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/99790
