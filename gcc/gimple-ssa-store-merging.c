@@ -333,7 +333,7 @@ init_symbolic_number (struct symbolic_number *n, tree src)
 {
   int size;
 
-  if (! INTEGRAL_TYPE_P (TREE_TYPE (src)))
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (src)) && !POINTER_TYPE_P (TREE_TYPE (src)))
     return false;
 
   n->base_addr = n->offset = n->alias_set = n->vuse = NULL_TREE;
