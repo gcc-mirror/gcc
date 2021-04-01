@@ -874,6 +874,7 @@ package Gen_IL.Fields is
       Requires_Overriding,
       Return_Applies_To,
       Return_Present,
+      Return_Statement,
       Returns_By_Ref,
       Reverse_Bit_Order,
       Reverse_Storage_Order,

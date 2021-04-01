@@ -4206,6 +4206,11 @@ package Einfo is
 --       entities (for convenience in setting it), but is only tested
 --       for the function case.
 
+--    Return_Statement
+--       Defined in E_Variable. Set when Is_Return_Object is set, in which
+--       case it points to the N_Simple_Return_Statement made from the
+--       extended return statement.
+
 --    Returns_By_Ref
 --       Defined in subprogram type entities and functions. Set if a function
 --       (or an access-to-function type) returns a result by reference, either

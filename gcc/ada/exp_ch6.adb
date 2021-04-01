@@ -6033,6 +6033,7 @@ package body Exp_Ch6 is
       --  Set the flag to prevent infinite recursion
 
       Set_Comes_From_Extended_Return_Statement (Return_Stmt);
+      Set_Return_Statement (Ret_Obj_Id, Return_Stmt);
 
       Rewrite (N, Result);
 
