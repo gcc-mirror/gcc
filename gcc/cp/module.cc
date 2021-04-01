@@ -3570,6 +3570,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			 unsigned, unsigned *crc_ptr);
   bool read_namespaces (unsigned);
 
+  void intercluster_seed (trees_out &sec, unsigned index, depset *dep);
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
 			  depset::hash &, unsigned *counts, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
@@ -8548,8 +8549,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
 	gcc_checking_assert (index == ~import_entity_index (decl));
 
 #if CHECKING_P
-      if (importedness)
-	gcc_assert (!import == (importedness < 0));
+      gcc_assert (!import || importedness >= 0);
 #endif
       i (tt_entity);
       u (import);
@@ -14419,7 +14419,33 @@ enum ct_bind_flags
   cbf_wrapped = 0x8,  	/* ... that is wrapped.  */
 };
 
-/* Write the cluster of depsets in SCC[0-SIZE).  */
+/* DEP belongs to a different cluster, seed it to prevent
+   unfortunately timed duplicate import.  */
+// FIXME: QOI For inter-cluster references we could just only pick
+// one entity from an earlier cluster.  Even better track
+// dependencies between earlier clusters
+
+void
+module_state::intercluster_seed (trees_out &sec, unsigned index_hwm, depset *dep)
+{
+  if (dep->is_import ()
+      || dep->cluster < index_hwm)
+    {
+      tree ent = dep->get_entity ();
+      if (!TREE_VISITED (ent))
+	{
+	  sec.tree_node (ent);
+	  dump (dumper::CLUSTER)
+	    && dump ("Seeded %s %N",
+		     dep->is_import () ? "import" : "intercluster", ent);
+	}
+    }
+}
+
+/* Write the cluster of depsets in SCC[0-SIZE).
+   dep->section -> section number
+   dep->cluster -> entity number
+ */
 
 unsigned
 module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
@@ -14431,6 +14457,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   trees_out sec (to, this, table, table.section);
   sec.begin ();
+  unsigned index_lwm = counts[MSC_entities];
 
   /* Determine entity numbers, mark for writing.   */
   dump (dumper::CLUSTER) && dump ("Cluster members:") && (dump.indent (), true);
@@ -14484,10 +14511,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
     }
   dump (dumper::CLUSTER) && (dump.outdent (), true);
 
-  /* Ensure every imported decl is referenced before we start
-     streaming.  This ensures that we never encounter the situation
-     where this cluster instantiates some implicit member that
-     importing some other decl causes to be instantiated.  */
+  /* Ensure every out-of-cluster decl is referenced before we start
+     streaming.  We must do both imports *and* earlier clusters,
+     because the latter could reach into the former and cause a
+     duplicate loop.   */
   sec.set_importing (+1);
   for (unsigned ix = 0; ix != size; ix++)
     {
@@ -14505,30 +14532,14 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		  depset *bind = dep->deps[ix];
 		  if (bind->get_entity_kind () == depset::EK_USING)
 		    bind = bind->deps[1];
-		  if (bind->is_import ())
-		    {
-		      tree import = bind->get_entity ();
-		      if (!TREE_VISITED (import))
-			{
-			  sec.tree_node (import);
-			  dump (dumper::CLUSTER)
-			    && dump ("Seeded import %N", import);
-			}
-		    }
+
+		  intercluster_seed (sec, index_lwm, bind);
 		}
 	      /* Also check the namespace itself.  */
 	      dep = dep->deps[0];
 	    }
 
-	  if (dep->is_import ())
-	    {
-	      tree import = dep->get_entity ();
-	      if (!TREE_VISITED (import))
-		{
-		  sec.tree_node (import);
-		  dump (dumper::CLUSTER) && dump ("Seeded import %N", import);
-		}
-	    }
+	  intercluster_seed (sec, index_lwm, dep);
 	}
     }
   sec.tree_node (NULL_TREE);
