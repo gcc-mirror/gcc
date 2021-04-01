@@ -17,8 +17,8 @@ int main ()
 
 // { dg-final { scan-lang-dump-times {Reading 1 initializers} 2 module } }
 
-// { dg-final { scan-lang-dump {Read:-1's named merge key \(new\) var_decl:'::var'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]*'s named merge key \(new\) var_decl:'::var'} module } }
 // { dg-final { scan-lang-dump-times {Reading definition var_decl '::var@[^\n]*/hdr-init-1_a.H:1'} 2 module } }
 
-// { dg-final { scan-lang-dump {Read:-1's named merge key \(matched\) var_decl:'::var'} module } }
+// { dg-final { scan-lang-dump {Read:-[0-9]*'s named merge key \(matched\) var_decl:'::var'} module } }
 

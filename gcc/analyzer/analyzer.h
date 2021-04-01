@@ -108,6 +108,7 @@ extern void dump_quoted_tree (pretty_printer *pp, tree t);
 extern void print_quoted_type (pretty_printer *pp, tree t);
 extern int readability_comparator (const void *p1, const void *p2);
 extern int tree_cmp (const void *p1, const void *p2);
+extern tree fixup_tree_for_diagnostic (tree);
 
 /* A tree, extended with stack frame information for locals, so that
    we can distinguish between different values of locals within a potentially

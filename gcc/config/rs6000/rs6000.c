@@ -26396,7 +26396,9 @@ static bool prepend_p_to_next_insn;
 void
 rs6000_final_prescan_insn (rtx_insn *insn, rtx [], int)
 {
-  prepend_p_to_next_insn = (get_attr_prefixed (insn) != PREFIXED_NO);
+  prepend_p_to_next_insn = (get_attr_maybe_prefixed (insn)
+			    == MAYBE_PREFIXED_YES
+			    && get_attr_prefixed (insn) == PREFIXED_YES);
   return;
 }
 

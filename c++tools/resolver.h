@@ -24,8 +24,10 @@ along with GCC; see the file COPYING3.  If not see
 // Mapper interface for client and server bits
 #include "cody.hh"
 // C++
+#if !IN_GCC
 #include <string>
 #include <map>
+#endif
 
 // This is a GCC class, so GCC coding conventions on new bits.  
 class module_resolver : public Cody::Resolver

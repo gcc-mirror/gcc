@@ -1,3 +1,19 @@
+2021-03-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99771
+	* analyzer.cc (maybe_reconstruct_from_def_stmt): New.
+	(fixup_tree_for_diagnostic_1): New.
+	(fixup_tree_for_diagnostic): New.
+	* analyzer.h (fixup_tree_for_diagnostic): New decl.
+	* checker-path.cc (call_event::get_desc): Call
+	fixup_tree_for_diagnostic and use it for the call_with_state call.
+	(warning_event::get_desc): Likewise for the final_event and
+	make_label_text calls.
+	* engine.cc (impl_region_model_context::on_state_leak): Likewise
+	for the on_leak and add_diagnostic calls.
+	* region-model.cc (region_model::get_representative_tree):
+	Likewise for the result.
+
 2021-03-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* region.h (region::dump_to_pp): Remove old decl.

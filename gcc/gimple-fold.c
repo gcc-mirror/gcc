@@ -5877,6 +5877,8 @@ maybe_canonicalize_mem_ref_addr (tree *t, bool is_debug = false)
       if (tem)
 	{
 	  *t = tem;
+	  if (TREE_CODE (*orig_t) == ADDR_EXPR)
+	    recompute_tree_invariant_for_addr_expr (*orig_t);
 	  res = true;
 	}
     }

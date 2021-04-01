@@ -1,3 +1,96 @@
+2021-03-31  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99771
+	* gcc.dg/analyzer/data-model-10.c: Update expected output.
+	* gcc.dg/analyzer/malloc-ipa-13.c: Likewise.
+	* gcc.dg/analyzer/malloc-ipa-13a.c: New test.
+	* gcc.dg/analyzer/pr99771-1.c: New test.
+
+2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98268
+	* gcc.target/aarch64/sve/pr98268-1.c: New test.
+	* gcc.target/aarch64/sve/pr98268-2.c: Likewise.
+
+2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/99726
+	* gcc.target/i386/pr99726.c: New test.
+
+2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/97141
+	PR rtl-optimization/98726
+	* gcc.c-torture/compile/pr97141.c: New test.
+	* gcc.c-torture/compile/pr98726.c: Likewise.
+	* gcc.target/aarch64/sve/pr97141.c: Likewise.
+	* gcc.target/aarch64/sve/pr98726.c: Likewise.
+
+2021-03-31  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/65182
+	* gcc.dg/uninit-pr65182.c: New test.
+
+2021-03-31  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99445
+	* g++.dg/cpp0x/alias-decl-variadic1.C: New test.
+
+2021-03-31  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96974
+	* g++.target/aarch64/sve/pr96974.C: Expect SLP diagnostic only
+	under lp64.
+
+2021-03-31  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99786
+	* gcc.target/arm/pr99786.c: New test.
+
+2021-03-31  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/memcpy-strategy-5.c: New test.
+	* gcc.target/i386/memcpy-strategy-6.c: Likewise.
+	* gcc.target/i386/memcpy-strategy-7.c: Likewise.
+	* gcc.target/i386/memcpy-strategy-8.c: Likewise.
+	* gcc.target/i386/memset-strategy-3.c: Likewise.
+	* gcc.target/i386/memset-strategy-4.c: Likewise.
+	* gcc.target/i386/memset-strategy-5.c: Likewise.
+	* gcc.target/i386/memset-strategy-6.c: Likewise.
+
+2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98119
+	* gcc.target/aarch64/sve/pr98119.c: New test.
+
+2021-03-31  Jakub Jelinek  <jakub@redhat.com>
+	    Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99813
+	* g++.target/aarch64/sve/pr99813.C: New test.
+
+2021-03-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/97680
+	* c-c++-common/zero-scratch-regs-6.c: Skip on ia64.
+	* c-c++-common/zero-scratch-regs-7.c: Likewise.
+	* c-c++-common/zero-scratch-regs-8.c: Change from dg-skip-if of
+	selected unsupported triplets to all targets but selected triplets
+	of supported targets.
+	* c-c++-common/zero-scratch-regs-9.c: Likewise.
+	* c-c++-common/zero-scratch-regs-10.c: Likewise.
+	* c-c++-common/zero-scratch-regs-11.c: Likewise.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	* g++.dg/cpp0x/alignof7.C: Adjust expected mangling.
+
+2021-03-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99815
+	* g++.dg/cpp2a/concepts-placeholder5.C: New test.
+
 2021-03-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/analyzer/symbolic-1.c: Fix typo.

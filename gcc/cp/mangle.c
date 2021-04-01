@@ -3119,9 +3119,9 @@ write_expression (tree expr)
     {
       if (!ALIGNOF_EXPR_STD_P (expr))
 	{
-	  if (abi_warn_or_compat_version_crosses (15))
+	  if (abi_warn_or_compat_version_crosses (16))
 	    G.need_abi_warning = true;
-	  if (abi_version_at_least (15))
+	  if (abi_version_at_least (16))
 	    {
 	      /* We used to mangle __alignof__ like alignof.  */
 	      write_string ("u11__alignof__");
@@ -3350,9 +3350,9 @@ write_expression (tree expr)
       tree name = dependent_name (expr);
       if (IDENTIFIER_ANY_OP_P (name))
 	{
-	  if (abi_version_at_least (15))
+	  if (abi_version_at_least (16))
 	    write_string ("on");
-	  if (abi_warn_or_compat_version_crosses (15))
+	  if (abi_warn_or_compat_version_crosses (16))
 	    G.need_abi_warning = 1;
 	}
       write_unqualified_id (name);

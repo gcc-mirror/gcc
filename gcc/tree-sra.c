@@ -2723,6 +2723,19 @@ budget_for_propagation_access (tree decl)
   return true;
 }
 
+/* Return true if ACC or any of its subaccesses has grp_child set.  */
+
+static bool
+access_or_its_child_written (struct access *acc)
+{
+  if (acc->grp_write)
+    return true;
+  for (struct access *sub = acc->first_child; sub; sub = sub->next_sibling)
+    if (access_or_its_child_written (sub))
+      return true;
+  return false;
+}
+
 /* Propagate subaccesses and grp_write flags of RACC across an assignment link
    to LACC.  Enqueue sub-accesses as necessary so that the write flag is
    propagated transitively.  Return true if anything changed.  Additionally, if
@@ -2836,7 +2849,7 @@ propagate_subaccesses_from_rhs (struct access *lacc, struct access *racc)
       if (rchild->grp_unscalarizable_region
 	  || !budget_for_propagation_access (lacc->base))
 	{
-	  if (rchild->grp_write && !lacc->grp_write)
+	  if (!lacc->grp_write && access_or_its_child_written (rchild))
 	    {
 	      ret = true;
 	      subtree_mark_written_and_rhs_enqueue (lacc);

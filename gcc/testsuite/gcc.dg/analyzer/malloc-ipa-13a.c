@@ -15,7 +15,8 @@ struct foo
   void *m_p;
 };
 
-void test (struct foo f)
+static void *  __attribute__((noinline))
+test_a (struct foo f)
 {
   do_stuff ();
 
@@ -23,7 +24,15 @@ void test (struct foo f)
 
   do_stuff ();
 
-  calls_free (f.m_p); /* { dg-message "passing freed pointer 'f\\.m_p' in call to 'calls_free' from 'test'" } */
+  return f.m_p;
+}
 
+void test_b (void *p)
+{
+  void *q;
+  struct foo f;
+  f.m_p = p;
+  q = test_a (f);
+  calls_free (q); /* { dg-message "passing freed pointer 'q' in call to 'calls_free' from 'test_b'" } */
   do_stuff ();
 }

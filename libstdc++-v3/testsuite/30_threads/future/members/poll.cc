@@ -55,6 +55,12 @@ int main()
      Attempt to calibrate it.  */
   if (start == stop)
     {
+      /* After set_value, wait_for is faster, so use that for the
+	 calibration to avoid zero at low clock resultions.  */
+      promise<int> pc;
+      future<int> fc = pc.get_future();
+      pc.set_value(1);
+
       /* Loop until the clock advances, so that start is right after a
 	 time increment.  */
       do
@@ -65,7 +71,7 @@ int main()
 	 after another time increment.  */
       do
 	{
-	  f.wait_for(chrono::seconds(0));
+	  fc.wait_for(chrono::seconds(0));
 	  stop = chrono::high_resolution_clock::now();
 	  i++;
 	}

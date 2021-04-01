@@ -634,12 +634,13 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
 	}
     }
 
-  pending_diagnostic *pd = sm.on_leak (leaked_tree);
+  tree leaked_tree_for_diag = fixup_tree_for_diagnostic (leaked_tree);
+  pending_diagnostic *pd = sm.on_leak (leaked_tree_for_diag);
   if (pd)
     m_eg->get_diagnostic_manager ().add_diagnostic
       (&sm, m_enode_for_diag, m_enode_for_diag->get_supernode (),
        m_stmt, &stmt_finder,
-       leaked_tree, sval, state, pd);
+       leaked_tree_for_diag, sval, state, pd);
 }
 
 /* Implementation of region_model_context::on_condition vfunc.

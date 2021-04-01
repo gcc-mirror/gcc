@@ -3851,13 +3851,13 @@ output.
 One can also define multiple version for a given symbol.
 
 @smallexample
-__attribute__ ((__symver__ ("foo@@VERS_2"), ("foo@@VERS_3")))
+__attribute__ ((__symver__ ("foo@@VERS_2"), __symver__ ("foo@@VERS_3")))
 int symver_foo_v1 (void)
 @{
 @}
 
-__attribute__ ((__symver__ ("bar@@VERS_2"))))
-__attribute__ ((__symver__ ("bar@@VERS_3"))))
+__attribute__ ((__symver__ ("bar@@VERS_2")))
+__attribute__ ((__symver__ ("bar@@VERS_3")))
 int symver_bar_v1 (void)
 @{
 @}
