@@ -1677,6 +1677,7 @@ vect_recog_over_widening_pattern (stmt_vec_info last_stmt_info, tree *type_out)
   /* Apply the minimum efficient precision we just calculated.  */
   if (new_precision < min_precision)
     new_precision = min_precision;
+  new_precision = vect_element_precision (new_precision);
   if (new_precision >= TYPE_PRECISION (type))
     return NULL;
 
