@@ -2934,7 +2934,12 @@ defaulted_late_check (tree fn)
       /* If the function was declared constexpr, check that the definition
 	 qualifies.  Otherwise we can define the function lazily.  */
       if (DECL_DECLARED_CONSTEXPR_P (fn) && !DECL_INITIAL (fn))
-	synthesize_method (fn);
+	{
+	  /* Prevent GC.  */
+	  function_depth++;
+	  synthesize_method (fn);
+	  function_depth--;
+	}
       return;
     }
 
