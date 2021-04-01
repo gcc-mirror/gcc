@@ -75,7 +75,7 @@ namespace ana {
 
 impl_region_model_context::
 impl_region_model_context (exploded_graph &eg,
-			   const exploded_node *enode_for_diag,
+			   exploded_node *enode_for_diag,
 			   const program_state *old_state,
 			   program_state *new_state,
 			   const gimple *stmt,
@@ -199,7 +199,7 @@ public:
   impl_sm_context (exploded_graph &eg,
 		   int sm_idx,
 		   const state_machine &sm,
-		   const exploded_node *enode_for_diag,
+		   exploded_node *enode_for_diag,
 		   const program_state *old_state,
 		   program_state *new_state,
 		   const sm_state_map *old_smap,
@@ -352,7 +352,7 @@ public:
 
   log_user m_logger;
   exploded_graph &m_eg;
-  const exploded_node *m_enode_for_diag;
+  exploded_node *m_enode_for_diag;
   const program_state *m_old_state;
   program_state *m_new_state;
   const sm_state_map *m_old_smap;
@@ -950,7 +950,7 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
       dump_processed_stmts (pp);
     }
 
-  dump_saved_diagnostics (pp, args.m_eg.get_diagnostic_manager ());
+  dump_saved_diagnostics (pp);
 
   args.dump_extra_info (this, pp);
 
@@ -988,18 +988,15 @@ exploded_node::dump_processed_stmts (pretty_printer *pp) const
 /* Dump any saved_diagnostics at this enode to PP.  */
 
 void
-exploded_node::dump_saved_diagnostics (pretty_printer *pp,
-				       const diagnostic_manager &dm) const
+exploded_node::dump_saved_diagnostics (pretty_printer *pp) const
 {
-  for (unsigned i = 0; i < dm.get_num_diagnostics (); i++)
+  unsigned i;
+  const saved_diagnostic *sd;
+  FOR_EACH_VEC_ELT (m_saved_diagnostics, i, sd)
     {
-      const saved_diagnostic *sd = dm.get_saved_diagnostic (i);
-      if (sd->m_enode == this)
-	{
-	  pp_printf (pp, "DIAGNOSTIC: %s (sd: %i)",
-		     sd->m_d->get_kind (), sd->get_index ());
-	  pp_newline (pp);
-	}
+      pp_printf (pp, "DIAGNOSTIC: %s (sd: %i)",
+		 sd->m_d->get_kind (), sd->get_index ());
+      pp_newline (pp);
     }
 }
 
@@ -1119,7 +1116,7 @@ exploded_node::on_stmt_flags
 exploded_node::on_stmt (exploded_graph &eg,
 			const supernode *snode,
 			const gimple *stmt,
-			program_state *state) const
+			program_state *state)
 {
   logger *logger = eg.get_logger ();
   LOG_SCOPE (logger);
@@ -1303,14 +1300,14 @@ bool
 exploded_node::on_edge (exploded_graph &eg,
 			const superedge *succ,
 			program_point *next_point,
-			program_state *next_state) const
+			program_state *next_state)
 {
   LOG_FUNC (eg.get_logger ());
 
   if (!next_point->on_edge (eg, succ))
     return false;
 
-  if (!next_state->on_edge (eg, *this, succ))
+  if (!next_state->on_edge (eg, this, succ))
     return false;
 
   return true;
@@ -1435,7 +1432,7 @@ void
 exploded_node::on_longjmp (exploded_graph &eg,
 			   const gcall *longjmp_call,
 			   program_state *new_state,
-			   region_model_context *ctxt) const
+			   region_model_context *ctxt)
 {
   tree buf_ptr = gimple_call_arg (longjmp_call, 0);
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (buf_ptr)));
@@ -1544,7 +1541,7 @@ exploded_node::on_longjmp (exploded_graph &eg,
    leaks.  */
 
 void
-exploded_node::detect_leaks (exploded_graph &eg) const
+exploded_node::detect_leaks (exploded_graph &eg)
 {
   LOG_FUNC_1 (eg.get_logger (), "EN: %i", m_index);
 
@@ -2163,7 +2160,7 @@ exploded_graph::add_function_entry (function *fun)
 exploded_node *
 exploded_graph::get_or_create_node (const program_point &point,
 				    const program_state &state,
-				    const exploded_node *enode_for_diag)
+				    exploded_node *enode_for_diag)
 {
   logger * const logger = get_logger ();
   LOG_FUNC (logger);
@@ -4664,16 +4661,13 @@ private:
 	break;
       }
     gv->end_tdtr ();
+
     /* Dump any saved_diagnostics at this enode.  */
-    {
-      const diagnostic_manager &dm = m_eg.get_diagnostic_manager ();
-      for (unsigned i = 0; i < dm.get_num_diagnostics (); i++)
-	{
-	  const saved_diagnostic *sd = dm.get_saved_diagnostic (i);
-	  if (sd->m_enode == enode)
-	    print_saved_diagnostic (gv, sd);
-	}
-    }
+    for (unsigned i = 0; i < enode->get_num_diagnostics (); i++)
+      {
+	const saved_diagnostic *sd = enode->get_saved_diagnostic (i);
+	print_saved_diagnostic (gv, sd);
+      }
     pp_printf (pp, "</TABLE>");
     pp_printf (pp, "</TD>");
   }

@@ -101,7 +101,7 @@ public:
   json::object *to_json () const;
 
   void add_diagnostic (const state_machine *sm,
-		       const exploded_node *enode,
+		       exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
 		       stmt_finder *finder,
 		       tree var,
@@ -109,7 +109,7 @@ public:
 		       state_machine::state_t state,
 		       pending_diagnostic *d);
 
-  void add_diagnostic (const exploded_node *enode,
+  void add_diagnostic (exploded_node *enode,
 		       const supernode *snode, const gimple *stmt,
 		       stmt_finder *finder,
 		       pending_diagnostic *d);

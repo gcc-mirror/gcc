@@ -791,7 +791,7 @@ diagnostic_manager::diagnostic_manager (logger *logger, engine *eng,
 
 void
 diagnostic_manager::add_diagnostic (const state_machine *sm,
-				    const exploded_node *enode,
+				    exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
 				    stmt_finder *finder,
 				    tree var,
@@ -809,16 +809,17 @@ diagnostic_manager::add_diagnostic (const state_machine *sm,
     = new saved_diagnostic (sm, enode, snode, stmt, finder, var, sval,
 			    state, d, m_saved_diagnostics.length ());
   m_saved_diagnostics.safe_push (sd);
+  enode->add_diagnostic (sd);
   if (get_logger ())
-    log ("adding saved diagnostic %i at SN %i: %qs",
+    log ("adding saved diagnostic %i at SN %i to EN %i: %qs",
 	 sd->get_index (),
-	 snode->m_index, d->get_kind ());
+	 snode->m_index, enode->m_index, d->get_kind ());
 }
 
 /* Queue pending_diagnostic D at ENODE for later emission.  */
 
 void
-diagnostic_manager::add_diagnostic (const exploded_node *enode,
+diagnostic_manager::add_diagnostic (exploded_node *enode,
 				    const supernode *snode, const gimple *stmt,
 				    stmt_finder *finder,
 				    pending_diagnostic *d)
