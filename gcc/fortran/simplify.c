@@ -8075,8 +8075,8 @@ gfc_simplify_transpose (gfc_expr *matrix)
 			       &matrix->where);
   result->rank = 2;
   result->shape = gfc_get_shape (result->rank);
-  mpz_set (result->shape[0], matrix->shape[1]);
-  mpz_set (result->shape[1], matrix->shape[0]);
+  mpz_init_set (result->shape[0], matrix->shape[1]);
+  mpz_init_set (result->shape[1], matrix->shape[0]);
 
   if (matrix->ts.type == BT_CHARACTER)
     result->ts.u.cl = matrix->ts.u.cl;
