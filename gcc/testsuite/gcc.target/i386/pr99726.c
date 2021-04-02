@@ -1,4 +1,5 @@
-/* { dg-options "-flive-patching=inline-clone -mavx512f -O2 -floop-nest-optimize -ftree-loop-vectorize -ftrapv -m32" } */
+/* { dg-options "-flive-patching=inline-clone -mavx512f -O2 -ftree-loop-vectorize -ftrapv" } */
+/* { dg-additional-options "-floop-nest-optimize" { target fgraphite } } */
 
 extern int a[256][1024];
 int b;
