@@ -4893,13 +4893,11 @@ Parser<ManagedTokenSource>::parse_trait_type (
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
   Identifier ident = ident_tok->get_str ();
 
-  bool has_colon = false;
   std::vector<std::unique_ptr<AST::TypeParamBound> > bounds;
 
   // parse optional colon
   if (lexer.peek_token ()->get_id () == COLON)
     {
-      has_colon = true;
       lexer.skip_token ();
 
       // parse optional type param bounds
