@@ -7,4 +7,3 @@ void
 bar (int *a)
 {
 }
-/* { dg-warning "GCC does not currently support mixed size types for 'simd' functions" "" { target aarch64*-*-* } .-3 } */

@@ -1,5 +1,5 @@
 /* Set up combined include path chain for the preprocessor.
-   Copyright (C) 1986-2020 Free Software Foundation, Inc.
+   Copyright (C) 1986-2021 Free Software Foundation, Inc.
 
    Broken out of cppinit.c and cppfiles.c and rewritten Mar 2003.
 
@@ -137,7 +137,8 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 	 IPREFIX and search them first.  */
       for (p = cpp_include_defaults; p->fname; p++)
 	{
-	  if (!p->cplusplus || cxx_stdinc)
+	  if (p->cplusplus == 0
+	      || (cxx_stdinc && (p->cplusplus == flag_stdlib_kind)))
 	    {
 	      /* Should we be translating sysrooted dirs too?  Assume
 		 that iprefix and sysroot are mutually exclusive, for
@@ -168,7 +169,8 @@ add_standard_paths (const char *sysroot, const char *iprefix,
 
   for (p = cpp_include_defaults; p->fname; p++)
     {
-      if (!p->cplusplus || cxx_stdinc)
+      if (p->cplusplus == 0
+	  || (cxx_stdinc && (p->cplusplus == flag_stdlib_kind)))
 	{
 	  char *str;
 

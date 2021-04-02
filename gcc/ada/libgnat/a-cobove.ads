@@ -61,7 +61,7 @@ package Ada.Containers.Bounded_Vectors is
       Default_Iterator  => Iterate,
       Iterator_Element  => Element_Type,
       Aggregate         => (Empty          => Empty,
-                            Add_Unnamed    => Append_One,
+                            Add_Unnamed    => Append,
                             New_Indexed    => New_Vector,
                             Assign_Indexed => Replace_Element);
 
@@ -190,17 +190,29 @@ package Ada.Containers.Bounded_Vectors is
 
    procedure Move (Target : in out Vector; Source : in out Vector);
 
-   procedure Insert
+   procedure Insert_Vector
      (Container : in out Vector;
       Before    : Extended_Index;
       New_Item  : Vector);
 
    procedure Insert
      (Container : in out Vector;
+      Before    : Extended_Index;
+      New_Item  : Vector) renames Insert_Vector;
+   --  Retained for now for compatibility; AI12-0400 will remove this.
+
+   procedure Insert_Vector
+     (Container : in out Vector;
       Before    : Cursor;
       New_Item  : Vector);
 
    procedure Insert
+     (Container : in out Vector;
+      Before    : Cursor;
+      New_Item  : Vector) renames Insert_Vector;
+   --  Retained for now for compatibility; AI12-0400 will remove this.
+
+   procedure Insert_Vector
      (Container : in out Vector;
       Before    : Cursor;
       New_Item  : Vector;
@@ -208,6 +220,13 @@ package Ada.Containers.Bounded_Vectors is
 
    procedure Insert
      (Container : in out Vector;
+      Before    : Cursor;
+      New_Item  : Vector;
+      Position  : out Cursor) renames Insert_Vector;
+   --  Retained for now for compatibility; AI12-0400 will remove this.
+
+   procedure Insert
+     (Container : in out Vector;
       Before    : Extended_Index;
       New_Item  : Element_Type;
       Count     : Count_Type := 1);
@@ -236,27 +255,36 @@ package Ada.Containers.Bounded_Vectors is
       Position  : out Cursor;
       Count     : Count_Type := 1);
 
-   procedure Prepend
+   procedure Prepend_Vector
      (Container : in out Vector;
       New_Item  : Vector);
+
+   procedure Prepend
+     (Container : in out Vector;
+      New_Item  : Vector) renames Prepend_Vector;
+   --  Retained for now for compatibility; AI12-0400 will remove this.
 
    procedure Prepend
      (Container : in out Vector;
       New_Item  : Element_Type;
       Count     : Count_Type := 1);
 
-   procedure Append
+   procedure Append_Vector
      (Container : in out Vector;
       New_Item  : Vector);
 
    procedure Append
      (Container : in out Vector;
-      New_Item  : Element_Type;
-      Count     : Count_Type := 1);
+      New_Item  : Vector) renames Append_Vector;
+   --  Retained for now for compatibility; AI12-0400 will remove this.
 
-   procedure Append_One (Container : in out Vector;
-                         New_Item  :        Element_Type);
-   --  Ada_2020 aggregate operation.
+   procedure Append
+     (Container : in out Vector;
+      New_Item  : Element_Type;
+      Count     : Count_Type);
+
+   procedure Append (Container : in out Vector;
+                     New_Item  :        Element_Type);
 
    procedure Insert_Space
      (Container : in out Vector;

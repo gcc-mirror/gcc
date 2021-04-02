@@ -9,6 +9,7 @@
  */
 module core.sys.windows.iptypes;
 version (Windows):
+@system:
 
 import core.sys.windows.windef;
 import core.stdc.time;

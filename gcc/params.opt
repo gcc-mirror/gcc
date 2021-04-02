@@ -1,6 +1,6 @@
 ; Parameter options of the compiler.
 
-; Copyright (C) 2019-2020 Free Software Foundation, Inc.
+; Copyright (C) 2019-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -373,6 +373,10 @@ Maximal stack frame growth due to inlining (in percent).
 Common Joined UInteger Var(param_large_unit_insns) Optimization Init(10000) Param
 The size of translation unit to be considered large.
 
+-param=lazy-modules=
+C++ Joined UInteger Var(param_lazy_modules) Init(32768) Param
+Maximum number of concurrently open C++ module files when lazy loading.
+
 -param=lim-expensive=
 Common Joined UInteger Var(param_lim_expensive) Init(20) Param Optimization
 The minimum cost of an expensive expression in the loop invariant motion.
@@ -510,8 +514,8 @@ Common Joined UInteger Var(param_max_gcse_insertion_ratio) Init(20) Param Optimi
 The maximum ratio of insertions to deletions of expressions in GCSE.
 
 -param=max-gcse-memory=
-Common Joined UInteger Var(param_max_gcse_memory) Init(134217728) Param Optimization
-The maximum amount of memory to be allocated by GCSE.
+Common Joined UInteger Var(param_max_gcse_memory) Init(131072) Param Optimization
+The maximum amount of memory to be allocated by GCSE, in kilobytes.
 
 -param=max-goto-duplication-insns=
 Common Joined UInteger Var(param_max_goto_duplication_insns) Init(8) Param Optimization
@@ -676,6 +680,14 @@ Maximum number of constant stores to merge in the store merging pass.
 -param=max-stores-to-sink=
 Common Joined UInteger Var(param_max_stores_to_sink) Init(2) Param Optimization
 Maximum number of conditional store pairs that can be sunk.
+
+-param=max-store-chains-to-track=
+Common Joined UInteger Var(param_max_store_chains_to_track) Init(64) IntegerRange(1, 65536) Param
+Maximum number of store chains to track at the same time in the store merging pass.
+
+-param=max-stores-to-track=
+Common Joined UInteger Var(param_max_stores_to_track) Init(1024) IntegerRange(2, 1048576) Param
+Maximum number of store chains to track at the same time in the store merging pass.
 
 -param=max-tail-merge-comparisons=
 Common Joined UInteger Var(param_max_tail_merge_comparisons) Init(10) Param Optimization
@@ -945,7 +957,7 @@ Maximum number of references stored in each modref base.
 
 -param=modref-max-accesses=
 Common Joined UInteger Var(param_modref_max_accesses) Init(16) Param Optimization
-Maximum number of accesse stored in each modref reference.
+Maximum number of accesses stored in each modref reference.
 
 -param=modref-max-tests=
 Common Joined UInteger Var(param_modref_max_tests) Init(64) Param Optimization

@@ -1,4 +1,4 @@
-c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -3233,20 +3233,120 @@ this reason the attribute is not allowed on types to annotate indirect
 calls.
 
 @item malloc
+@item malloc (@var{deallocator})
+@item malloc (@var{deallocator}, @var{ptr-index})
 @cindex @code{malloc} function attribute
 @cindex functions that behave like malloc
-This tells the compiler that a function is @code{malloc}-like, i.e.,
-that the pointer @var{P} returned by the function cannot alias any
+Attribute @code{malloc} indicates that a function is @code{malloc}-like,
+i.e., that the pointer @var{P} returned by the function cannot alias any
 other pointer valid when the function returns, and moreover no
-pointers to valid objects occur in any storage addressed by @var{P}.
+pointers to valid objects occur in any storage addressed by @var{P}. In
+addition, the GCC predicts that a function with the attribute returns
+non-null in most cases.
 
-Using this attribute can improve optimization.  Compiler predicts
-that a function with the attribute returns non-null in most cases.
-Functions like
-@code{malloc} and @code{calloc} have this property because they return
-a pointer to uninitialized or zeroed-out storage.  However, functions
-like @code{realloc} do not have this property, as they can return a
-pointer to storage containing pointers.
+Independently, the form of the attribute with one or two arguments
+associates @code{deallocator} as a suitable deallocation function for
+pointers returned from the @code{malloc}-like function.  @var{ptr-index}
+denotes the positional argument to which when the pointer is passed in
+calls to @code{deallocator} has the effect of deallocating it.
+
+Using the attribute with no arguments is designed to improve optimization
+by relying on the aliasing property it implies.  Functions like @code{malloc}
+and @code{calloc} have this property because they return a pointer to
+uninitialized or zeroed-out, newly obtained storage.  However, functions
+like @code{realloc} do not have this property, as they may return pointers
+to storage containing pointers to existing objects.  Additionally, since
+all such functions are assumed to return null only infrequently, callers
+can be optimized based on that assumption.
+
+Associating a function with a @var{deallocator} helps detect calls to
+mismatched allocation and deallocation functions and diagnose them under
+the control of options such as @option{-Wmismatched-dealloc}.  It also
+makes it possible to diagnose attempts to deallocate objects that were not
+allocated dynamically, by @option{-Wfree-nonheap-object}.  To indicate
+that an allocation function both satisifies the nonaliasing property and
+has a deallocator associated with it, both the plain form of the attribute
+and the one with the @var{deallocator} argument must be used.  The same
+function can be both an allocator and a deallocator.  Since inlining one
+of the associated functions but not the other could result in apparent
+mismatches, this form of attribute @code{malloc} is not accepted on inline
+functions.  For the same reason, using the attribute prevents both
+the allocation and deallocation functions from being expanded inline.
+
+For example, besides stating that the functions return pointers that do
+not alias any others, the following declarations make @code{fclose}
+a suitable deallocator for pointers returned from all functions except
+@code{popen}, and @code{pclose} as the only suitable deallocator for
+pointers returned from @code{popen}.  The deallocator functions must
+be declared before they can be referenced in the attribute.
+
+@smallexample
+int fclose (FILE*);
+int pclose (FILE*);
+
+__attribute__ ((malloc, malloc (fclose, 1)))
+  FILE* fdopen (int, const char*);
+__attribute__ ((malloc, malloc (fclose, 1)))
+  FILE* fopen (const char*, const char*);
+__attribute__ ((malloc, malloc (fclose, 1)))
+  FILE* fmemopen(void *, size_t, const char *);
+__attribute__ ((malloc, malloc (pclose, 1)))
+  FILE* popen (const char*, const char*);
+__attribute__ ((malloc, malloc (fclose, 1)))
+  FILE* tmpfile (void);
+@end smallexample
+
+The warnings guarded by @option{-fanalyzer} respect allocation and
+deallocation pairs marked with the @code{malloc}.  In particular:
+
+@itemize @bullet
+
+@item
+The analyzer will emit a @option{-Wanalyzer-mismatching-deallocation}
+diagnostic if there is an execution path in which the result of an
+allocation call is passed to a different deallocator.
+
+@item
+The analyzer will emit a @option{-Wanalyzer-double-free}
+diagnostic if there is an execution path in which a value is passed
+more than once to a deallocation call.
+
+@item
+The analyzer will consider the possibility that an allocation function
+could fail and return NULL.  It will emit
+@option{-Wanalyzer-possible-null-dereference} and
+@option{-Wanalyzer-possible-null-argument} diagnostics if there are
+execution paths in which an unchecked result of an allocation call is
+dereferenced or passed to a function requiring a non-null argument.
+If the allocator always returns non-null, use
+@code{__attribute__ ((returns_nonnull))} to suppress these warnings.
+For example:
+@smallexample
+char *xstrdup (const char *)
+  __attribute__((malloc (free), returns_nonnull));
+@end smallexample
+
+@item
+The analyzer will emit a @option{-Wanalyzer-use-after-free}
+diagnostic if there is an execution path in which the memory passed
+by pointer to a deallocation call is used after the deallocation.
+
+@item
+The analyzer will emit a @option{-Wanalyzer-malloc-leak} diagnostic if
+there is an execution path in which the result of an allocation call
+is leaked (without being passed to the deallocation function).
+
+@item
+The analyzer will emit a @option{-Wanalyzer-free-of-non-heap} diagnostic
+if a deallocation function is used on a global or on-stack variable.
+
+@end itemize
+
+The analyzer assumes that deallocators can gracefully handle the @code{NULL}
+pointer.  If this is not the case, the deallocator can be marked with
+@code{__attribute__((nonnull))} so that @option{-fanalyzer} can emit
+a @option{-Wanalyzer-possible-null-argument} diagnostic for code paths
+in which the deallocator is called with NULL.
 
 @item no_icf
 @cindex @code{no_icf} function attribute
@@ -3815,6 +3915,16 @@ inline assembly.
 When applied to a member function of a C++ class template, the
 attribute also means that the function is instantiated if the
 class itself is instantiated.
+
+@item retain
+@cindex @code{retain} function attribute
+For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
+will save the function from linker garbage collection.  To support
+this behavior, functions that have not been placed in specific sections
+(e.g. by the @code{section} attribute, or the @code{-ffunction-sections}
+option), will be placed in new, unique sections.
+
+This additional functionality requires Binutils version 2.36 or later.
 
 @item visibility ("@var{visibility_type}")
 @cindex @code{visibility} function attribute
@@ -6917,6 +7027,28 @@ On x86 targets, the @code{fentry_section} attribute sets the name
 of the section to record function entry instrumentation calls in when
 enabled with @option{-pg -mrecord-mcount}
 
+@item prefer-vector-width=@var{OPT}
+@cindex @code{prefer-vector-width} function attribute, x86
+On x86 targets, the @code{prefer-vector-width} attribute informs the
+compiler to use @var{OPT}-bit vector width in instructions
+instead of the default on the selected platform.
+
+Valid @var{OPT} values are:
+
+@table @samp
+@item none
+No extra limitations applied to GCC other than defined by the selected platform.
+
+@item 128
+Prefer 128-bit vector width for instructions.
+
+@item 256
+Prefer 256-bit vector width for instructions.
+
+@item 512
+Prefer 512-bit vector width for instructions.
+@end table
+
 @end table
 
 On the x86, the inliner does not inline a
@@ -7376,6 +7508,16 @@ referenced.
 When applied to a static data member of a C++ class template, the
 attribute also means that the member is instantiated if the
 class itself is instantiated.
+
+@item retain
+@cindex @code{retain} variable attribute
+For ELF targets that support the GNU or FreeBSD OSABIs, this attribute
+will save the variable from linker garbage collection.  To support
+this behavior, variables that have not been placed in specific sections
+(e.g. by the @code{section} attribute, or the @code{-fdata-sections} option),
+will be placed in new, unique sections.
+
+This additional functionality requires Binutils version 2.36 or later.
 
 @item vector_size (@var{bytes})
 @cindex @code{vector_size} variable attribute
@@ -10545,16 +10687,23 @@ should use @samp{+} constraint modifier meaning that the operand is
 input and output one.  With this modifier you will have the correct
 values on all possible paths from the @code{asm goto}.
 
-To reference a label in the assembler template,
-prefix it with @samp{%l} (lowercase @samp{L}) followed 
-by its (zero-based) position in @var{GotoLabels} plus the number of input 
-operands.  For example, if the @code{asm} has three inputs and references two 
-labels, refer to the first label as @samp{%l3} and the second as @samp{%l4}).
+To reference a label in the assembler template, prefix it with
+@samp{%l} (lowercase @samp{L}) followed by its (zero-based) position
+in @var{GotoLabels} plus the number of input and output operands.
+Output operand with constraint modifier @samp{+} is counted as two
+operands because it is considered as one output and one input operand.
+For example, if the @code{asm} has three inputs, one output operand
+with constraint modifier @samp{+} and one output operand with
+constraint modifier @samp{=} and references two labels, refer to the
+first label as @samp{%l6} and the second as @samp{%l7}).
 
-Alternately, you can reference labels using the actual C label name enclosed
-in brackets.  For example, to reference a label named @code{carry}, you can
-use @samp{%l[carry]}.  The label must still be listed in the @var{GotoLabels}
-section when using this approach.
+Alternately, you can reference labels using the actual C label name
+enclosed in brackets.  For example, to reference a label named
+@code{carry}, you can use @samp{%l[carry]}.  The label must still be
+listed in the @var{GotoLabels} section when using this approach.  It
+is better to use the named references for labels as in this case you
+can avoid counting input and output operands and special treatment of
+output operands with constraint modifier @samp{+}.
 
 Here is an example of @code{asm goto} for i386:
 
@@ -13572,6 +13721,21 @@ bits that are padding bits for all the union members.
 This built-in-function is useful if the padding bits of an object might
 have intederminate values and the object representation needs to be
 bitwise compared to some other object, for example for atomic operations.
+@end deftypefn
+
+@deftypefn {Built-in Function} @var{type} __builtin_bit_cast (@var{type}, @var{arg})
+The @code{__builtin_bit_cast} function is available only
+in C++.  The built-in is intended to be used by implementations of
+the @code{std::bit_cast} C++ template function.  Programs should make
+use of the latter function rather than invoking the built-in directly.
+
+This built-in function allows reinterpreting the bits of the @var{arg}
+argument as if it had type @var{type}.  @var{type} and the type of the
+@var{arg} argument need to be trivially copyable types with the same size.
+When manifestly constant-evaluated, it performs extra diagnostics required
+for @code{std::bit_cast} and returns a constant expression if @var{arg}
+is a constant expression.  For more details
+refer to the latest revision of the C++ standard.
 @end deftypefn
 
 @deftypefn {Built-in Function} long __builtin_expect (long @var{exp}, long @var{c})
@@ -21568,6 +21732,126 @@ integer value between 0 and 255 inclusive.
 @exdent vector unsigned int vec_genpcvm (vector unsigned long long int,
                                          const int)
 @end smallexample
+
+Vector Integer Multiply/Divide/Modulo
+
+@smallexample
+@exdent vector signed int
+@exdent vec_mulh (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_mulh (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer
+value in word element @code{i} of a is multiplied by the integer value in word
+element @code{i} of b. The high-order 32 bits of the 64-bit product are placed
+into word element @code{i} of the vector returned.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_mulh (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_mulh (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer
+value in doubleword element @code{i} of a is multiplied by the integer value in
+doubleword element @code{i} of b. The high-order 64 bits of the 128-bit product
+are placed into doubleword element @code{i} of the vector returned.
+
+@smallexample
+@exdent vector unsigned long long
+@exdent vec_mul (vector unsigned long long a, vector unsigned long long b)
+@exdent vector signed long long
+@exdent vec_mul (vector signed long long a, vector signed long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer
+value in doubleword element @code{i} of a is multiplied by the integer value in
+doubleword element @code{i} of b. The low-order 64 bits of the 128-bit product
+are placed into doubleword element @code{i} of the vector returned.
+
+@smallexample
+@exdent vector signed int
+@exdent vec_div (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_div (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer in
+word element @code{i} of a is divided by the integer in word element @code{i}
+of b. The unique integer quotient is placed into the word element @code{i} of
+the vector returned. If an attempt is made to perform any of the divisions
+<anything> ÷ 0 then the quotient is undefined.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_div (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_div (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer in
+doubleword element @code{i} of a is divided by the integer in doubleword
+element @code{i} of b. The unique integer quotient is placed into the
+doubleword element @code{i} of the vector returned. If an attempt is made to
+perform any of the divisions 0x8000_0000_0000_0000 ÷ -1 or <anything> ÷ 0 then
+the quotient is undefined.
+
+@smallexample
+@exdent vector signed int
+@exdent vec_dive (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_dive (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer in
+word element @code{i} of a is shifted left by 32 bits, then divided by the
+integer in word element @code{i} of b. The unique integer quotient is placed
+into the word element @code{i} of the vector returned. If the quotient cannot
+be represented in 32 bits, or if an attempt is made to perform any of the
+divisions <anything> ÷ 0 then the quotient is undefined.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_dive (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_dive (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer in
+doubleword element @code{i} of a is shifted left by 64 bits, then divided by
+the integer in doubleword element @code{i} of b. The unique integer quotient is
+placed into the doubleword element @code{i} of the vector returned. If the
+quotient cannot be represented in 64 bits, or if an attempt is made to perform
+<anything> ÷ 0 then the quotient is undefined.
+
+@smallexample
+@exdent vector signed int
+@exdent vec_mod (vector signed int a, vector signed int b)
+@exdent vector unsigned int
+@exdent vec_mod (vector unsigned int a, vector unsigned int b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 3, do the following. The integer in
+word element @code{i} of a is divided by the integer in word element @code{i}
+of b. The unique integer remainder is placed into the word element @code{i} of
+the vector returned.  If an attempt is made to perform any of the divisions
+0x8000_0000 ÷ -1 or <anything> ÷ 0 then the remainder is undefined.
+
+@smallexample
+@exdent vector signed long long
+@exdent vec_mod (vector signed long long a, vector signed long long b)
+@exdent vector unsigned long long
+@exdent vec_mod (vector unsigned long long a, vector unsigned long long b)
+@end smallexample
+
+For each integer value @code{i} from 0 to 1, do the following. The integer in
+doubleword element @code{i} of a is divided by the integer in doubleword
+element @code{i} of b. The unique integer remainder is placed into the
+doubleword element @code{i} of the vector returned. If an attempt is made to
+perform <anything> ÷ 0 then the remainder is undefined.
+
 Generate PCV from specified Mask size, as if implemented by the
 @code{xxgenpcvbm}, @code{xxgenpcvhm}, @code{xxgenpcvwm} instructions, where
 immediate value is either 0, 1, 2 or 3.
@@ -21938,8 +22222,8 @@ void __builtin_mma_xxsetaccz (__vector_quad *);
 void __builtin_mma_assemble_acc (__vector_quad *, vec_t, vec_t, vec_t, vec_t);
 void __builtin_mma_disassemble_acc (void *, __vector_quad *);
 
-void __builtin_mma_assemble_pair (__vector_pair *, vec_t, vec_t);
-void __builtin_mma_disassemble_pair (void *, __vector_pair *);
+void __builtin_vsx_assemble_pair (__vector_pair *, vec_t, vec_t);
+void __builtin_vsx_disassemble_pair (void *, __vector_pair *);
 
 vec_t __builtin_vsx_xvcvspbf16 (vec_t);
 vec_t __builtin_vsx_xvcvbf16spn (vec_t);
@@ -22824,6 +23108,12 @@ AMD Family 17h Zen version 1.
 
 @item znver2
 AMD Family 17h Zen version 2.
+
+@item amdfam19h
+AMD Family 19h CPU.
+
+@item znver3
+AMD Family 19h Zen version 3.
 @end table
 
 Here is an example:
@@ -24146,7 +24436,7 @@ void __builtin_ia32_wrpkru (unsigned int)
 unsigned int __builtin_ia32_rdpkru ()
 @end smallexample
 
-The following built-in functions are available when @option{-mcet} or
+The following built-in functions are available when
 @option{-mshstk} option is used.  They support shadow stack
 machine instructions from Intel Control-flow Enforcement Technology (CET).
 Each built-in function generates the  machine instruction that is part

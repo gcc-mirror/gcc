@@ -1,6 +1,6 @@
 ; Options for the Blackfin port of the compiler
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -44,28 +44,28 @@ Target RejectNegative Joined
 Specify the name of the target CPU.
 
 momit-leaf-frame-pointer
-Target Report Mask(OMIT_LEAF_FRAME_POINTER)
+Target Mask(OMIT_LEAF_FRAME_POINTER)
 Omit frame pointer for leaf functions.
 
 mlow64k
-Target Report Mask(LOW_64K)
+Target Mask(LOW_64K)
 Program is entirely located in low 64k of memory.
 
 mcsync-anomaly
-Target Report Var(bfin_csync_anomaly) Init(-1)
+Target Var(bfin_csync_anomaly) Init(-1)
 Work around a hardware anomaly by adding a number of NOPs before a
 CSYNC or SSYNC instruction.
 
 mspecld-anomaly
-Target Report Var(bfin_specld_anomaly) Init(-1)
+Target Var(bfin_specld_anomaly) Init(-1)
 Avoid speculative loads to work around a hardware anomaly.
 
 mid-shared-library
-Target Report Mask(ID_SHARED_LIBRARY)
+Target Mask(ID_SHARED_LIBRARY)
 Enabled ID based shared library.
 
 mleaf-id-shared-library
-Target Report Mask(LEAF_ID_SHARED_LIBRARY)
+Target Mask(LEAF_ID_SHARED_LIBRARY)
 Generate code that won't be linked against any other ID shared libraries,
 but may be used as a shared library.
 
@@ -74,45 +74,45 @@ Target RejectNegative Joined UInteger Var(bfin_library_id)
 ID of shared library to build.
 
 msep-data
-Target Report Mask(SEP_DATA)
+Target Mask(SEP_DATA)
 Enable separate data segment.
 
 mlong-calls
-Target Report Mask(LONG_CALLS)
+Target Mask(LONG_CALLS)
 Avoid generating pc-relative calls; use indirection.
 
 mfast-fp
-Target Report Mask(FAST_FP)
+Target Mask(FAST_FP)
 Link with the fast floating-point library.
 
 mfdpic
-Target Report Mask(FDPIC)
+Target Mask(FDPIC)
 Enable Function Descriptor PIC mode.
 
 minline-plt
-Target Report Mask(INLINE_PLT)
+Target Mask(INLINE_PLT)
 Enable inlining of PLT in function calls.
 
 mstack-check-l1
-Target Report Mask(STACK_CHECK_L1)
+Target Mask(STACK_CHECK_L1)
 Do stack checking using bounds in L1 scratch memory.
 
 mmulticore
-Target Report Mask(MULTICORE)
+Target Mask(MULTICORE)
 Enable multicore support.
 
 mcorea
-Target Report Mask(COREA)
+Target Mask(COREA)
 Build for Core A.
 
 mcoreb
-Target Report Mask(COREB)
+Target Mask(COREB)
 Build for Core B.
 
 msdram
-Target Report Mask(SDRAM)
+Target Mask(SDRAM)
 Build for SDRAM.
 
 micplb
-Target Report Mask(ICPLB)
+Target Mask(ICPLB)
 Assume ICPLBs are enabled at runtime.

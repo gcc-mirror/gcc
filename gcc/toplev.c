@@ -1,5 +1,5 @@
 /* Top level of GCC compilers (cc1, cc1plus, etc.)
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -115,9 +115,6 @@ static void compile_file (void);
 
 /* True if we don't need a backend (e.g. preprocessing only).  */
 static bool no_backend;
-
-/* Length of line when printing switch values.  */
-#define MAX_LINE 75
 
 /* Decoded options, and number of such options.  */
 struct cl_decoded_option *save_decoded_options;
@@ -687,148 +684,7 @@ print_version (FILE *file, const char *indent, bool show_global_state)
     }
 }
 
-static int
-print_to_asm_out_file (print_switch_type type, const char * text)
-{
-  bool prepend_sep = true;
 
-  switch (type)
-    {
-    case SWITCH_TYPE_LINE_END:
-      putc ('\n', asm_out_file);
-      return 1;
-
-    case SWITCH_TYPE_LINE_START:
-      fputs (ASM_COMMENT_START, asm_out_file);
-      return strlen (ASM_COMMENT_START);
-
-    case SWITCH_TYPE_DESCRIPTIVE:
-      if (ASM_COMMENT_START[0] == 0)
-	prepend_sep = false;
-      /* FALLTHRU */
-    case SWITCH_TYPE_PASSED:
-    case SWITCH_TYPE_ENABLED:
-      if (prepend_sep)
-	fputc (' ', asm_out_file);
-      fputs (text, asm_out_file);
-      /* No need to return the length here as
-	 print_single_switch has already done it.  */
-      return 0;
-
-    default:
-      return -1;
-    }
-}
-
-static int
-print_to_stderr (print_switch_type type, const char * text)
-{
-  switch (type)
-    {
-    case SWITCH_TYPE_LINE_END:
-      putc ('\n', stderr);
-      return 1;
-
-    case SWITCH_TYPE_LINE_START:
-      return 0;
-
-    case SWITCH_TYPE_PASSED:
-    case SWITCH_TYPE_ENABLED:
-      fputc (' ', stderr);
-      /* FALLTHRU */
-
-    case SWITCH_TYPE_DESCRIPTIVE:
-      fputs (text, stderr);
-      /* No need to return the length here as
-	 print_single_switch has already done it.  */
-      return 0;
-
-    default:
-      return -1;
-    }
-}
-
-/* Print an option value and return the adjusted position in the line.
-   ??? print_fn doesn't handle errors, eg disk full; presumably other
-   code will catch a disk full though.  */
-
-static int
-print_single_switch (print_switch_fn_type print_fn,
-		     int pos,
-		     print_switch_type type,
-		     const char * text)
-{
-  /* The ultrix fprintf returns 0 on success, so compute the result
-     we want here since we need it for the following test.  The +1
-     is for the separator character that will probably be emitted.  */
-  int len = strlen (text) + 1;
-
-  if (pos != 0
-      && pos + len > MAX_LINE)
-    {
-      print_fn (SWITCH_TYPE_LINE_END, NULL);
-      pos = 0;
-    }
-
-  if (pos == 0)
-    pos += print_fn (SWITCH_TYPE_LINE_START, NULL);
-
-  print_fn (type, text);
-  return pos + len;
-}
-
-/* Print active target switches using PRINT_FN.
-   POS is the current cursor position and MAX is the size of a "line".
-   Each line begins with INDENT and ends with TERM.
-   Each switch is separated from the next by SEP.  */
-
-static void
-print_switch_values (print_switch_fn_type print_fn)
-{
-  int pos = 0;
-  size_t j;
-
-  /* Print the options as passed.  */
-  pos = print_single_switch (print_fn, pos,
-			     SWITCH_TYPE_DESCRIPTIVE, _("options passed: "));
-
-  for (j = 1; j < save_decoded_options_count; j++)
-    {
-      switch (save_decoded_options[j].opt_index)
-	{
-	case OPT_o:
-	case OPT_d:
-	case OPT_dumpbase:
-	case OPT_dumpbase_ext:
-	case OPT_dumpdir:
-	case OPT_quiet:
-	case OPT_version:
-	  /* Ignore these.  */
-	  continue;
-	}
-
-      pos = print_single_switch (print_fn, pos, SWITCH_TYPE_PASSED,
-				 save_decoded_options[j].orig_option_with_args_text);
-    }
-
-  if (pos > 0)
-    print_fn (SWITCH_TYPE_LINE_END, NULL);
-
-  /* Print the -f and -m options that have been enabled.
-     We don't handle language specific options but printing argv
-     should suffice.  */
-  pos = print_single_switch (print_fn, 0,
-			     SWITCH_TYPE_DESCRIPTIVE, _("options enabled: "));
-
-  unsigned lang_mask = lang_hooks.option_lang_mask ();
-  for (j = 0; j < cl_options_count; j++)
-    if (cl_options[j].cl_report
-	&& option_enabled (j, lang_mask, &global_options) > 0)
-      pos = print_single_switch (print_fn, pos,
-				 SWITCH_TYPE_ENABLED, cl_options[j].opt_text);
-
-  print_fn (SWITCH_TYPE_LINE_END, NULL);
-}
 
 /* Open assembly code output file.  Do this even if -fsyntax-only is
    on, because then the driver will have provided the name of a
@@ -875,14 +731,11 @@ init_asm_output (const char *name)
 	{
 	  if (targetm.asm_out.record_gcc_switches)
 	    {
-	      /* Let the target know that we are about to start recording.  */
-	      targetm.asm_out.record_gcc_switches (SWITCH_TYPE_DESCRIPTIVE,
-						   NULL);
-	      /* Now record the switches.  */
-	      print_switch_values (targetm.asm_out.record_gcc_switches);
-	      /* Let the target know that the recording is over.  */
-	      targetm.asm_out.record_gcc_switches (SWITCH_TYPE_DESCRIPTIVE,
-						   NULL);
+	      const char *str
+		= gen_producer_string (lang_hooks.name,
+				       save_decoded_options,
+				       save_decoded_options_count);
+	      targetm.asm_out.record_gcc_switches (str);
 	    }
 	  else
 	    inform (UNKNOWN_LOCATION,
@@ -892,11 +745,14 @@ init_asm_output (const char *name)
 
       if (flag_verbose_asm)
 	{
-	  /* Print the list of switches in effect
-	     into the assembler file as comments.  */
 	  print_version (asm_out_file, ASM_COMMENT_START, true);
-	  print_switch_values (print_to_asm_out_file);
-	  putc ('\n', asm_out_file);
+	  fputs (ASM_COMMENT_START, asm_out_file);
+	  fputs (" options passed: ", asm_out_file);
+	  char *cmdline = gen_command_line_string (save_decoded_options,
+						   save_decoded_options_count);
+	  fputs (cmdline, asm_out_file);
+	  free (cmdline);
+	  fputc ('\n', asm_out_file);
 	}
     }
 }
@@ -1526,8 +1382,16 @@ process_options (void)
   if (version_flag)
     {
       print_version (stderr, "", true);
-      if (! quiet_flag)
-	print_switch_values (print_to_stderr);
+      if (!quiet_flag)
+	{
+	  fputs ("options passed: ", stderr);
+	  char *cmdline = gen_command_line_string (save_decoded_options,
+						   save_decoded_options_count);
+
+	  fputs (cmdline, stderr);
+	  free (cmdline);
+	  fputc ('\n', stderr);
+	}
     }
 
   if (flag_syntax_only)
@@ -1865,10 +1729,14 @@ process_options (void)
       flag_sanitize &= ~SANITIZE_HWADDRESS;
     }
 
+  HOST_WIDE_INT patch_area_size, patch_area_start;
+  parse_and_check_patch_area (flag_patchable_function_entry, false,
+			      &patch_area_size, &patch_area_start);
+
  /* Do not use IPA optimizations for register allocation if profiler is active
     or patchable function entries are inserted for run-time instrumentation
     or port does not emit prologue and epilogue as RTL.  */
-  if (profile_flag || function_entry_patch_area_size
+  if (profile_flag || patch_area_size
       || !targetm.have_prologue () || !targetm.have_epilogue ())
     flag_ipa_ra = 0;
 

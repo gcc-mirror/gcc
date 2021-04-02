@@ -15,8 +15,8 @@
  */
 module core.sys.posix.sys.types;
 
-private import core.sys.posix.config;
-private import core.stdc.stdint;
+import core.sys.posix.config;
+import core.stdc.stdint;
 public import core.stdc.stddef;
 
 version (OSX)
@@ -30,6 +30,7 @@ else version (WatchOS)
 
 version (Posix):
 extern (C):
+@system:
 
 //
 // bits/typesizes.h -- underlying types for *_t.
@@ -139,10 +140,33 @@ else version (CRuntime_Musl)
     alias int        pid_t;
     alias uint       uid_t;
     alias uint       gid_t;
+
+    /**
+     * Musl versions before v1.2.0 (up to v1.1.24) had different
+     * definitions for `time_t` for 32 bits.
+     * This was changed to always be 64 bits in v1.2.0:
+     * https://musl.libc.org/time64.html
+     * This change was only for 32 bits system and
+     * didn't affect 64 bits systems
+     *
+     * To check previous definitions, `grep` for `time_t` in `arch/`,
+     * and the result should be (in v1.1.24):
+     * ---
+     * // arch/riscv64/bits/alltypes.h.in:20:TYPEDEF long time_t;
+     * // arch/s390x/bits/alltypes.h.in:17:TYPEDEF long time_t;
+     * // arch/sh/bits/alltypes.h.in:21:TYPEDEF long time_t;
+     * ---
+     *
+     * In order to be compatible with old versions of Musl,
+     * one can recompile druntime with `CRuntime_Musl_Pre_Time64`.
+     */
     version (D_X32)
         alias long   time_t;
-    else
+    else version (CRuntime_Musl_Pre_Time64)
         alias c_long time_t;
+    else
+        alias long   time_t;
+
     alias c_long     clock_t;
     alias c_ulong    pthread_t;
     version (D_LP64)
@@ -168,14 +192,27 @@ else version (Darwin)
 }
 else version (FreeBSD)
 {
+    import core.sys.freebsd.config;
+
     // https://github.com/freebsd/freebsd/blob/master/sys/sys/_types.h
     alias long      blkcnt_t;
     alias uint      blksize_t;
-    alias uint      dev_t;
+
+    static if (__FreeBSD_version >= 1200000)
+    {
+        alias ulong dev_t;
+        alias ulong ino_t;
+        alias ulong nlink_t;
+    }
+    else
+    {
+        alias uint   dev_t;
+        alias uint   ino_t;
+        alias ushort nlink_t;
+    }
+
     alias uint      gid_t;
-    alias uint      ino_t;
     alias ushort    mode_t;
-    alias ushort    nlink_t;
     alias long      off_t;
     alias int       pid_t;
     //size_t (defined in core.stdc.stddef)
@@ -675,6 +712,18 @@ version (CRuntime_Glibc)
         enum __SIZEOF_PTHREAD_BARRIER_T = 32;
         enum __SIZEOF_PTHREAD_BARRIERATTR_T = 4;
     }
+    else version (SPARC)
+    {
+        enum __SIZEOF_PTHREAD_ATTR_T = 36;
+        enum __SIZEOF_PTHREAD_MUTEX_T = 24;
+        enum __SIZEOF_PTHREAD_MUTEXATTR_T = 4;
+        enum __SIZEOF_PTHREAD_COND_T = 48;
+        enum __SIZEOF_PTHREAD_CONDATTR_T = 4;
+        enum __SIZEOF_PTHREAD_RWLOCK_T = 32;
+        enum __SIZEOF_PTHREAD_RWLOCKATTR_T = 8;
+        enum __SIZEOF_PTHREAD_BARRIER_T = 20;
+        enum __SIZEOF_PTHREAD_BARRIERATTR_T = 4;
+    }
     else version (SPARC64)
     {
         enum __SIZEOF_PTHREAD_ATTR_T = 56;
@@ -1054,7 +1103,14 @@ else version (DragonFlyBSD)
     alias void* pthread_key_t;
     alias void* pthread_mutex_t;
     alias void* pthread_mutexattr_t;
-    alias void* pthread_once_t;
+
+    private struct pthread_once
+    {
+        int state;
+        pthread_mutex_t mutex;
+    }
+    alias pthread_once pthread_once_t;
+
     alias void* pthread_rwlock_t;
     alias void* pthread_rwlockattr_t;
     alias void* pthread_t;

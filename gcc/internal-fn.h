@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -224,6 +224,8 @@ extern bool internal_gather_scatter_fn_supported_p (internal_fn, tree,
 extern bool internal_check_ptrs_fn_supported_p (internal_fn, tree,
 						poly_uint64, unsigned int);
 
+extern void expand_addsub_overflow (location_t, tree_code, tree, tree, tree,
+				    bool, bool, bool, bool, tree *);
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
 extern void expand_PHI (internal_fn, gcall *);

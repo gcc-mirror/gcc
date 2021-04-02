@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for SPARC.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Contributed by Michael Tiemann (tiemann@cygnus.com)
    64-bit SPARC-V9 support by Michael Tiemann, Jim Wilson, and Doug Evans,
    at Cygnus Support.
@@ -708,6 +708,7 @@ static HOST_WIDE_INT sparc_constant_alignment (const_tree, HOST_WIDE_INT);
 static bool sparc_vectorize_vec_perm_const (machine_mode, rtx, rtx, rtx,
 					    const vec_perm_indices &);
 static bool sparc_can_follow_jump (const rtx_insn *, const rtx_insn *);
+static HARD_REG_SET sparc_zero_call_used_regs (HARD_REG_SET);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -958,6 +959,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_CAN_FOLLOW_JUMP
 #define TARGET_CAN_FOLLOW_JUMP sparc_can_follow_jump
+
+#undef TARGET_ZERO_CALL_USED_REGS
+#define TARGET_ZERO_CALL_USED_REGS sparc_zero_call_used_regs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9219,12 +9223,15 @@ register_ok_for_ldd (rtx reg)
 int
 memory_ok_for_ldd (rtx op)
 {
-  /* In 64-bit mode, we assume that the address is word-aligned.  */
-  if (TARGET_ARCH32 && !mem_min_alignment (op, 8))
+  if (!mem_min_alignment (op, 8))
     return 0;
 
-  if (! can_create_pseudo_p ()
+  /* We need to perform the job of a memory constraint.  */
+  if ((reload_in_progress || reload_completed)
       && !strict_memory_address_p (Pmode, XEXP (op, 0)))
+    return 0;
+
+  if (lra_in_progress && !memory_address_p (Pmode, XEXP (op, 0)))
     return 0;
 
   return 1;
@@ -12938,6 +12945,12 @@ sparc_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   if (vmode != V8QImode)
     return false;
 
+  rtx nop0 = force_reg (vmode, op0);
+  if (op0 == op1)
+    op1 = nop0;
+  op0 = nop0;
+  op1 = force_reg (vmode, op1);
+
   unsigned int i, mask;
   for (i = mask = 0; i < 8; ++i)
     mask |= (sel[i] & 0xf) << (28 - i*4);
@@ -13575,23 +13588,18 @@ sparc_expand_vcond (machine_mode mode, rtx *operands, int ccode, int fcode)
   emit_insn (gen_rtx_SET (operands[0], bshuf));
 }
 
-/* On sparc, any mode which naturally allocates into the float
+/* On the SPARC, any mode which naturally allocates into the single float
    registers should return 4 here.  */
 
 unsigned int
 sparc_regmode_natural_size (machine_mode mode)
 {
-  int size = UNITS_PER_WORD;
+  const enum mode_class cl = GET_MODE_CLASS (mode);
 
-  if (TARGET_ARCH64)
-    {
-      enum mode_class mclass = GET_MODE_CLASS (mode);
+  if ((cl == MODE_FLOAT || cl == MODE_VECTOR_INT) && GET_MODE_SIZE (mode) <= 4)
+    return 4;
 
-      if (mclass == MODE_FLOAT || mclass == MODE_VECTOR_INT)
-	size = 4;
-    }
-
-  return size;
+  return UNITS_PER_WORD;
 }
 
 /* Implement TARGET_HARD_REGNO_NREGS.
@@ -13808,6 +13816,52 @@ sparc_constant_alignment (const_tree exp, HOST_WIDE_INT align)
   if (TREE_CODE (exp) == STRING_CST)
     return MAX (align, FASTEST_ALIGNMENT);
   return align;
+}
+
+/* Implement TARGET_ZERO_CALL_USED_REGS.
+
+   Generate a sequence of instructions that zero registers specified by
+   NEED_ZEROED_HARDREGS.  Return the ZEROED_HARDREGS that are actually
+   zeroed.  */
+
+static HARD_REG_SET
+sparc_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
+{
+  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
+      {
+	/* Do not touch the CC registers or the FP registers if no VIS.  */
+	if (regno >= SPARC_FCC_REG
+	    || (regno >= SPARC_FIRST_FP_REG && !TARGET_VIS))
+	  CLEAR_HARD_REG_BIT (need_zeroed_hardregs, regno);
+
+	/* Do not access the odd upper FP registers individually.  */
+	else if (regno >= SPARC_FIRST_V9_FP_REG && (regno & 1))
+	  ;
+
+	/* Use the most natural mode for the registers, which is not given by
+	   regno_reg_rtx/reg_raw_mode for the FP registers on the SPARC.  */
+	else
+	  {
+	    machine_mode mode;
+	    rtx reg;
+
+	    if (regno < SPARC_FIRST_FP_REG)
+	      {
+		reg = regno_reg_rtx[regno];
+		mode = GET_MODE (reg);
+	      }
+	    else
+	      {
+		mode = regno < SPARC_FIRST_V9_FP_REG ? SFmode : DFmode;
+		reg = gen_raw_REG (mode, regno);
+	      }
+
+	    emit_move_insn (reg, CONST0_RTX (mode));
+	  }
+      }
+
+  return need_zeroed_hardregs;
 }
 
 #include "gt-sparc.h"

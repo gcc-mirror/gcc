@@ -1,5 +1,5 @@
 /* Mainly the interface between cpplib and the C front ends.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -834,6 +834,14 @@ interpret_integer (const cpp_token *token, unsigned int flags,
     type = ((flags & CPP_N_UNSIGNED)
 	    ? widest_unsigned_literal_type_node
 	    : widest_integer_literal_type_node);
+  else if (flags & CPP_N_SIZE_T)
+    {
+      /* itk refers to fundamental types not aliased size types.  */
+      if (flags & CPP_N_UNSIGNED)
+	type = size_type_node;
+      else
+	type = signed_size_type_node;
+    }
   else
     {
       type = integer_types[itk];

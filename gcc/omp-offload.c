@@ -1,7 +1,7 @@
 /* Bits of OpenMP and OpenACC handling that is specific to device offloading
    and a lowering pass for OpenACC device directives.
 
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -315,7 +315,7 @@ omp_discover_declare_target_var_r (tree *tp, int *walk_subtrees, void *data)
 	  DECL_ATTRIBUTES (*tp)
 	    = remove_attribute ("omp declare target link", DECL_ATTRIBUTES (*tp));
 	}
-      if (TREE_STATIC (*tp) && DECL_INITIAL (*tp))
+      if (TREE_STATIC (*tp) && lang_hooks.decls.omp_get_decl_init (*tp))
 	((vec<tree> *) data)->safe_push (*tp);
       DECL_ATTRIBUTES (*tp) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (*tp));
       symtab_node *node = symtab_node::get (*tp);
@@ -361,14 +361,15 @@ omp_discover_implicit_declare_target (void)
 		   && DECL_STRUCT_FUNCTION (cgn->decl)->has_omp_target)
 	    worklist.safe_push (cgn->decl);
       }
-  FOR_EACH_STATIC_INITIALIZER (vnode)
-    if (omp_declare_target_var_p (vnode->decl))
+  FOR_EACH_VARIABLE (vnode)
+    if (lang_hooks.decls.omp_get_decl_init (vnode->decl)
+	&& omp_declare_target_var_p (vnode->decl))
       worklist.safe_push (vnode->decl);
   while (!worklist.is_empty ())
     {
       tree decl = worklist.pop ();
       if (VAR_P (decl))
-	walk_tree_without_duplicates (&DECL_INITIAL (decl),
+	walk_tree_without_duplicates (lang_hooks.decls.omp_get_decl_init (decl),
 				      omp_discover_declare_target_var_r,
 				      &worklist);
       else if (omp_declare_target_fn_p (decl))
@@ -380,6 +381,8 @@ omp_discover_implicit_declare_target (void)
 				      omp_discover_declare_target_fn_r,
 				      &worklist);
     }
+
+  lang_hooks.decls.omp_finish_decl_inits ();
 }
 
 

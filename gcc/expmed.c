@@ -1,6 +1,6 @@
 /* Medium-level subroutines: convert bit-field store and extract
    and shifts, multiplies and divides to rtl instructions.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -31,8 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "memmodel.h"
 #include "tm_p.h"
-#include "expmed.h"
 #include "optabs.h"
+#include "expmed.h"
 #include "regs.h"
 #include "emit-rtl.h"
 #include "diagnostic-core.h"
@@ -412,7 +412,8 @@ flip_storage_order (machine_mode mode, rtx x)
 	  && __builtin_expect (reverse_float_storage_order_supported < 0, 0))
 	check_reverse_float_storage_order_support ();
 
-      if (!int_mode_for_size (GET_MODE_PRECISION (mode), 0).exists (&int_mode))
+      if (!int_mode_for_size (GET_MODE_PRECISION (mode), 0).exists (&int_mode)
+	  || !targetm.scalar_mode_supported_p (int_mode))
 	{
 	  sorry ("reverse storage order for %smode", GET_MODE_NAME (mode));
 	  return x;
@@ -628,9 +629,16 @@ store_bit_field_using_insv (const extraction_insn *insv, rtx op0,
       /* If xop0 is a register, we need it in OP_MODE
 	 to make it acceptable to the format of insv.  */
       if (GET_CODE (xop0) == SUBREG)
-	/* We can't just change the mode, because this might clobber op0,
-	   and we will need the original value of op0 if insv fails.  */
-	xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0), SUBREG_BYTE (xop0));
+	{
+	  /* If such a SUBREG can't be created, give up.  */
+	  if (!validate_subreg (op_mode, GET_MODE (SUBREG_REG (xop0)),
+				SUBREG_REG (xop0), SUBREG_BYTE (xop0)))
+	    return false;
+	  /* We can't just change the mode, because this might clobber op0,
+	     and we will need the original value of op0 if insv fails.  */
+	  xop0 = gen_rtx_SUBREG (op_mode, SUBREG_REG (xop0),
+				 SUBREG_BYTE (xop0));
+	}
       if (REG_P (xop0) && GET_MODE (xop0) != op_mode)
 	xop0 = gen_lowpart_SUBREG (op_mode, xop0);
     }
@@ -4193,7 +4201,8 @@ expand_sdiv_pow2 (scalar_int_mode mode, rtx op0, HOST_WIDE_INT d)
 
 rtx
 expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
-	       rtx op0, rtx op1, rtx target, int unsignedp)
+	       rtx op0, rtx op1, rtx target, int unsignedp,
+	       enum optab_methods methods)
 {
   machine_mode compute_mode;
   rtx tquotient;
@@ -4299,16 +4308,21 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
   optab2 = (op1_is_pow2 ? optab1
 	    : (unsignedp ? udivmod_optab : sdivmod_optab));
 
-  FOR_EACH_MODE_FROM (compute_mode, mode)
-    if (optab_handler (optab1, compute_mode) != CODE_FOR_nothing
-	|| optab_handler (optab2, compute_mode) != CODE_FOR_nothing)
-      break;
-
-  if (compute_mode == VOIDmode)
-    FOR_EACH_MODE_FROM (compute_mode, mode)
-      if (optab_libfunc (optab1, compute_mode)
-	  || optab_libfunc (optab2, compute_mode))
+  if (methods == OPTAB_WIDEN || methods == OPTAB_LIB_WIDEN)
+    {
+      FOR_EACH_MODE_FROM (compute_mode, mode)
+      if (optab_handler (optab1, compute_mode) != CODE_FOR_nothing
+	  || optab_handler (optab2, compute_mode) != CODE_FOR_nothing)
 	break;
+
+      if (compute_mode == VOIDmode && methods == OPTAB_LIB_WIDEN)
+	FOR_EACH_MODE_FROM (compute_mode, mode)
+	  if (optab_libfunc (optab1, compute_mode)
+	      || optab_libfunc (optab2, compute_mode))
+	    break;
+    }
+  else
+    compute_mode = mode;
 
   /* If we still couldn't find a mode, use MODE, but expand_binop will
      probably die.  */
@@ -4412,8 +4426,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			remainder
 			  = expand_binop (int_mode, and_optab, op0,
 					  gen_int_mode (mask, int_mode),
-					  remainder, 1,
-					  OPTAB_LIB_WIDEN);
+					  remainder, 1, methods);
 			if (remainder)
 			  return gen_lowpart (mode, remainder);
 		      }
@@ -4721,7 +4734,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			remainder = expand_binop
 			  (int_mode, and_optab, op0,
 			   gen_int_mode (mask, int_mode),
-			   remainder, 0, OPTAB_LIB_WIDEN);
+			   remainder, 0, methods);
 			if (remainder)
 			  return gen_lowpart (mode, remainder);
 		      }
@@ -4846,7 +4859,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	  do_cmp_and_jump (op1, const0_rtx, LT, compute_mode, label2);
 	  do_cmp_and_jump (adjusted_op0, const0_rtx, LT, compute_mode, label1);
 	  tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
-			      quotient, 0, OPTAB_LIB_WIDEN);
+			      quotient, 0, methods);
 	  if (tem != quotient)
 	    emit_move_insn (quotient, tem);
 	  emit_jump_insn (targetm.gen_jump (label5));
@@ -4858,7 +4871,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	  emit_label (label2);
 	  do_cmp_and_jump (adjusted_op0, const0_rtx, GT, compute_mode, label3);
 	  tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
-			      quotient, 0, OPTAB_LIB_WIDEN);
+			      quotient, 0, methods);
 	  if (tem != quotient)
 	    emit_move_insn (quotient, tem);
 	  emit_jump_insn (targetm.gen_jump (label5));
@@ -4867,7 +4880,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	  expand_dec (adjusted_op0, const1_rtx);
 	  emit_label (label4);
 	  tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
-			      quotient, 0, OPTAB_LIB_WIDEN);
+			      quotient, 0, methods);
 	  if (tem != quotient)
 	    emit_move_insn (quotient, tem);
 	  expand_dec (quotient, const1_rtx);
@@ -4892,7 +4905,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 				   floor_log2 (d), tquotient, 1);
 		t2 = expand_binop (int_mode, and_optab, op0,
 				   gen_int_mode (d - 1, int_mode),
-				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+				   NULL_RTX, 1, methods);
 		t3 = gen_reg_rtx (int_mode);
 		t3 = emit_store_flag (t3, NE, t2, const0_rtx, int_mode, 1, 1);
 		if (t3 == 0)
@@ -4963,7 +4976,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	      emit_label (label1);
 	      expand_dec (adjusted_op0, const1_rtx);
 	      tem = expand_binop (compute_mode, udiv_optab, adjusted_op0, op1,
-				  quotient, 1, OPTAB_LIB_WIDEN);
+				  quotient, 1, methods);
 	      if (tem != quotient)
 		emit_move_insn (quotient, tem);
 	      expand_inc (quotient, const1_rtx);
@@ -4987,7 +5000,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 				   floor_log2 (d), tquotient, 0);
 		t2 = expand_binop (compute_mode, and_optab, op0,
 				   gen_int_mode (d - 1, compute_mode),
-				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
+				   NULL_RTX, 1, methods);
 		t3 = gen_reg_rtx (compute_mode);
 		t3 = emit_store_flag (t3, NE, t2, const0_rtx,
 				      compute_mode, 1, 1);
@@ -5063,7 +5076,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	      do_cmp_and_jump (adjusted_op0, const0_rtx, GT,
 			       compute_mode, label1);
 	      tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
-				  quotient, 0, OPTAB_LIB_WIDEN);
+				  quotient, 0, methods);
 	      if (tem != quotient)
 		emit_move_insn (quotient, tem);
 	      emit_jump_insn (targetm.gen_jump (label5));
@@ -5076,7 +5089,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	      do_cmp_and_jump (adjusted_op0, const0_rtx, LT,
 			       compute_mode, label3);
 	      tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
-				  quotient, 0, OPTAB_LIB_WIDEN);
+				  quotient, 0, methods);
 	      if (tem != quotient)
 		emit_move_insn (quotient, tem);
 	      emit_jump_insn (targetm.gen_jump (label5));
@@ -5085,7 +5098,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	      expand_inc (adjusted_op0, const1_rtx);
 	      emit_label (label4);
 	      tem = expand_binop (compute_mode, sdiv_optab, adjusted_op0, op1,
-				  quotient, 0, OPTAB_LIB_WIDEN);
+				  quotient, 0, methods);
 	      if (tem != quotient)
 		emit_move_insn (quotient, tem);
 	      expand_inc (quotient, const1_rtx);
@@ -5133,10 +5146,10 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	      {
 		rtx tem;
 		quotient = expand_binop (int_mode, udiv_optab, op0, op1,
-					 quotient, 1, OPTAB_LIB_WIDEN);
+					 quotient, 1, methods);
 		tem = expand_mult (int_mode, quotient, op1, NULL_RTX, 1);
 		remainder = expand_binop (int_mode, sub_optab, op0, tem,
-					  remainder, 1, OPTAB_LIB_WIDEN);
+					  remainder, 1, methods);
 	      }
 	    tem = plus_constant (int_mode, op1, -1);
 	    tem = expand_shift (RSHIFT_EXPR, int_mode, tem, 1, NULL_RTX, 1);
@@ -5158,10 +5171,10 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	      {
 		rtx tem;
 		quotient = expand_binop (int_mode, sdiv_optab, op0, op1,
-					 quotient, 0, OPTAB_LIB_WIDEN);
+					 quotient, 0, methods);
 		tem = expand_mult (int_mode, quotient, op1, NULL_RTX, 0);
 		remainder = expand_binop (int_mode, sub_optab, op0, tem,
-					  remainder, 0, OPTAB_LIB_WIDEN);
+					  remainder, 0, methods);
 	      }
 	    abs_rem = expand_abs (int_mode, remainder, NULL_RTX, 1, 0);
 	    abs_op1 = expand_abs (int_mode, op1, NULL_RTX, 1, 0);
@@ -5258,7 +5271,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		quotient = sign_expand_binop (compute_mode,
 					      udiv_optab, sdiv_optab,
 					      op0, op1, target,
-					      unsignedp, OPTAB_LIB_WIDEN);
+					      unsignedp, methods);
 	    }
 	}
     }
@@ -5273,10 +5286,11 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	  /* No divide instruction either.  Use library for remainder.  */
 	  remainder = sign_expand_binop (compute_mode, umod_optab, smod_optab,
 					 op0, op1, target,
-					 unsignedp, OPTAB_LIB_WIDEN);
+					 unsignedp, methods);
 	  /* No remainder function.  Try a quotient-and-remainder
 	     function, keeping the remainder.  */
-	  if (!remainder)
+	  if (!remainder
+	      && (methods == OPTAB_LIB || methods == OPTAB_LIB_WIDEN))
 	    {
 	      remainder = gen_reg_rtx (compute_mode);
 	      if (!expand_twoval_binop_libfunc
@@ -5294,9 +5308,13 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 				   NULL_RTX, unsignedp);
 	  remainder = expand_binop (compute_mode, sub_optab, op0,
 				    remainder, target, unsignedp,
-				    OPTAB_LIB_WIDEN);
+				    methods);
 	}
     }
+
+  if (methods != OPTAB_LIB_WIDEN
+      && (rem_flag ? remainder : quotient) == NULL_RTX)
+    return NULL_RTX;
 
   return gen_lowpart (mode, rem_flag ? remainder : quotient);
 }

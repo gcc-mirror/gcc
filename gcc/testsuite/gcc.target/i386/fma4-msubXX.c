@@ -55,7 +55,7 @@ check_msubps ()
 	if (dst.f[i + j] != res.f[i + j]) 
 	  check_fails++;
       }
-  return check_fails++;
+  return check_fails;
 }
 
 static int
@@ -69,9 +69,8 @@ check_msubpd ()
 	if (dst.d[i + j] != res.d[i + j]) 
 	  check_fails++;
       }
-  return check_fails++;
+  return check_fails;
 }
-
 
 static int
 check_msubss ()
@@ -83,7 +82,7 @@ check_msubss ()
       if (dst.f[i] != res.f[i]) 
 	check_fails++;
     }	
-  return check_fails++;
+  return check_fails;
 }
 
 static int
@@ -96,7 +95,7 @@ check_msubsd ()
       if (dst.d[i] != res.d[i]) 
 	check_fails++;
     }
-  return check_fails++;
+  return check_fails;
 }
 
 static void

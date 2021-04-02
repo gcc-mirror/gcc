@@ -1233,7 +1233,7 @@ package body Ch4 is
       Attr_Node := New_Node (N_Attribute_Reference, Token_Ptr);
       Set_Attribute_Name (Attr_Node, Attr_Name);
       if Attr_Name /= Name_Reduce then
-         Error_Msg ("reduce attribute expected", Prev_Token_Ptr);
+         Error_Msg ("Reduce attribute expected", Prev_Token_Ptr);
       end if;
 
       Set_Prefix (Attr_Node, S);
@@ -1360,9 +1360,7 @@ package body Ch4 is
 
       procedure Box_Error is
       begin
-         if Ada_Version < Ada_2005 then
-            Error_Msg_SC ("box in aggregate is an Ada 2005 extension");
-         end if;
+         Error_Msg_Ada_2005_Extension ("'<'> in aggregate");
 
          --  Ada 2005 (AI-287): The box notation is allowed only with named
          --  notation because positional notation might be error prone. For
@@ -1580,17 +1578,13 @@ package body Ch4 is
          --  Deal with others association first. This is a named association
 
          if No (Expr_Node) then
-            if No (Assoc_List) then
-               Assoc_List := New_List;
-            end if;
-
-            Append (P_Record_Or_Array_Component_Association, Assoc_List);
+            Append_New (P_Record_Or_Array_Component_Association, Assoc_List);
 
          --  Improper use of WITH
 
          elsif Token = Tok_With then
             Error_Msg_SC ("WITH must be preceded by single expression in " &
-                             "extension aggregate");
+                          "extension aggregate");
             raise Error_Resync;
 
          --  Range attribute can only appear as part of a discrete choice list
@@ -1612,11 +1606,7 @@ package body Ch4 is
          elsif Nkind (Expr_Node) in
            N_Iterated_Component_Association | N_Iterated_Element_Association
          then
-            if No (Assoc_List) then
-               Assoc_List := New_List (Expr_Node);
-            else
-               Append_To (Assoc_List, Expr_Node);
-            end if;
+            Append_New (Expr_Node, Assoc_List);
 
          elsif Token = Tok_Comma
            or else Token = Tok_Right_Paren
@@ -1630,11 +1620,7 @@ package body Ch4 is
                   & "named association)");
             end if;
 
-            if No (Expr_List) then
-               Expr_List := New_List;
-            end if;
-
-            Append (Expr_Node, Expr_List);
+            Append_New (Expr_Node, Expr_List);
 
          --  Check for aggregate followed by left parent, maybe missing comma
 
@@ -1643,18 +1629,10 @@ package body Ch4 is
          then
             T_Comma;
 
-            if No (Expr_List) then
-               Expr_List := New_List;
-            end if;
-
-            Append (Expr_Node, Expr_List);
+            Append_New (Expr_Node, Expr_List);
 
          elsif Token = Tok_Right_Bracket then
-            if No (Expr_List) then
-               Expr_List := New_List;
-            end if;
-
-            Append (Expr_Node, Expr_List);
+            Append_New (Expr_Node, Expr_List);
             exit;
 
          --  Anything else is assumed to be a named association
@@ -1662,11 +1640,7 @@ package body Ch4 is
          else
             Restore_Scan_State (Scan_State); -- to start of expression
 
-            if No (Assoc_List) then
-               Assoc_List := New_List;
-            end if;
-
-            Append (P_Record_Or_Array_Component_Association, Assoc_List);
+            Append_New (P_Record_Or_Array_Component_Association, Assoc_List);
          end if;
 
          exit when not Comma_Present;
@@ -1779,11 +1753,7 @@ package body Ch4 is
          --  Ada 2005(AI-287): The box notation is used to indicate the
          --  default initialization of aggregate components
 
-         if Ada_Version < Ada_2005 then
-            Error_Msg_SP
-              ("component association with '<'> is an Ada 2005 extension");
-            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-         end if;
+         Error_Msg_Ada_2005_Extension ("component association with '<'>");
 
          Set_Box_Present (Assoc_Node);
          Scan; -- Past box
@@ -2958,10 +2928,7 @@ package body Ch4 is
                Scan; -- past minus
 
             when Tok_At_Sign =>  --  AI12-0125 : target_name
-               if Ada_Version < Ada_2020 then
-                  Error_Msg_SC ("target name is an Ada 202x feature");
-                  Error_Msg_SC ("\compile with -gnat2020");
-               end if;
+               Error_Msg_Ada_2020_Feature ("target name", Token_Ptr);
 
                Node1 := P_Name;
                return Node1;
@@ -3537,10 +3504,7 @@ package body Ch4 is
          Set_Expression (Assoc_Node, P_Expression);
       end if;
 
-      if Ada_Version < Ada_2020 then
-         Error_Msg_SC ("iterated component is an Ada 202x feature");
-         Error_Msg_SC ("\compile with -gnat2020");
-      end if;
+      Error_Msg_Ada_2020_Feature ("iterated component", Token_Ptr);
 
       return Assoc_Node;
    end P_Iterated_Component_Association;
@@ -3725,9 +3689,7 @@ package body Ch4 is
             Result : constant Node_Id :=
               Make_Expression_With_Actions (Loc, Actions, Expression);
          begin
-            if Ada_Version < Ada_2020 then
-               Error_Msg ("declare_expression is an Ada 2020 feature", Loc);
-            end if;
+            Error_Msg_Ada_2020_Feature ("declare expression", Loc);
 
             return Result;
          end;

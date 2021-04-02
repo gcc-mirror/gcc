@@ -1840,7 +1840,7 @@ improves performance for your program.
 
 .. _Floating_Point_Operations:
 
-Floating_Point_Operations
+Floating Point Operations
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. index:: Floating-Point Operations

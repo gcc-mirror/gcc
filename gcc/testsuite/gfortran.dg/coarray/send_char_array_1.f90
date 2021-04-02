@@ -25,28 +25,28 @@ program send_convert_char_array
   allocate(character(kind=4, len=5)::co_str_k4_arr(4)[*])
 
   ! First check send/copy to self
-  co_str_k1_scal[1] = str_k1_scal
+  co_str_k1_scal[this_image()] = str_k1_scal
   if (co_str_k1_scal /= str_k1_scal // '          ') STOP 1
 
-  co_str_k4_scal[1] = str_k4_scal
+  co_str_k4_scal[this_image()] = str_k4_scal
   if (co_str_k4_scal /= str_k4_scal // 4_'          ') STOP 2
 
-  co_str_k4_scal[1] = str_k1_scal
+  co_str_k4_scal[this_image()] = str_k1_scal
   if (co_str_k4_scal /= str_k4_scal // 4_'          ') STOP 3
 
-  co_str_k1_scal[1] = str_k4_scal
+  co_str_k1_scal[this_image()] = str_k4_scal
   if (co_str_k1_scal /= str_k1_scal // '          ') STOP 4
 
-  co_str_k1_arr(:)[1] = str_k1_arr
+  co_str_k1_arr(:)[this_image()] = str_k1_arr
   if (any(co_str_k1_arr /= ['abc  ', 'EFG  ', 'klm  ', 'NOP  '])) STOP 5
  
-  co_str_k4_arr(:)[1] = [4_'abc', 4_'EFG', 4_'klm', 4_'NOP']! str_k4_arr
+  co_str_k4_arr(:)[this_image()] = [4_'abc', 4_'EFG', 4_'klm', 4_'NOP']! str_k4_arr
   if (any(co_str_k4_arr /= [4_'abc  ', 4_'EFG  ', 4_'klm  ', 4_'NOP  '])) STOP 6
 
-  co_str_k4_arr(:)[1] = str_k1_arr
+  co_str_k4_arr(:)[this_image()] = str_k1_arr
   if (any(co_str_k4_arr /= [ 4_'abc  ', 4_'EFG  ', 4_'klm  ', 4_'NOP  '])) STOP 7
 
-  co_str_k1_arr(:)[1] = str_k4_arr
+  co_str_k1_arr(:)[this_image()] = str_k4_arr
   if (any(co_str_k1_arr /= ['abc  ', 'EFG  ', 'klm  ', 'NOP  '])) STOP 8
 
 end program send_convert_char_array

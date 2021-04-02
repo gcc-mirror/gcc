@@ -1,6 +1,6 @@
 // thread -*- C++ -*-
 
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -35,7 +35,8 @@
 #  include <unistd.h>
 # elif defined(_GLIBCXX_HAVE_WIN32_SLEEP)
 #  include <windows.h>
-# else
+# elif defined _GLIBCXX_NO_SLEEP && defined _GLIBCXX_HAS_GTHREADS
+// We expect to be able to sleep for targets that support multiple threads:
 #  error "No sleep function known for this target"
 # endif
 #endif
@@ -196,6 +197,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #endif // _GLIBCXX_HAS_GTHREADS
 
+#ifndef _GLIBCXX_NO_SLEEP
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -252,3 +254,4 @@ namespace this_thread
 }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
+#endif // ! NO_SLEEP

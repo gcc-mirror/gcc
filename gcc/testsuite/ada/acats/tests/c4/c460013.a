@@ -1,0 +1,188 @@
+-- C460013.A
+--
+--                             Grant of Unlimited Rights
+--
+--     The Ada Conformity Assessment Authority (ACAA) holds unlimited
+--     rights in the software and documentation contained herein. Unlimited
+--     rights are the same as those granted by the U.S. Government for older
+--     parts of the Ada Conformity Assessment Test Suite, and are defined
+--     in DFAR 252.227-7013(a)(19). By making this public release, the ACAA
+--     intends to confer upon all recipients unlimited rights equal to those
+--     held by the ACAA. These rights include rights to use, duplicate,
+--     release or disclose the released technical data and computer software
+--     in whole or in part, in any manner and for any purpose whatsoever, and
+--     to have or permit others to do so.
+--
+--                                    DISCLAIMER
+--
+--     ALL MATERIALS OR INFORMATION HEREIN RELEASED, MADE AVAILABLE OR
+--     DISCLOSED ARE AS IS.  THE GOVERNMENT MAKES NO EXPRESS OR IMPLIED
+--     WARRANTY AS TO ANY MATTER WHATSOEVER, INCLUDING THE CONDITIONS OF THE
+--     SOFTWARE, DOCUMENTATION OR OTHER INFORMATION RELEASED, MADE AVAILABLE
+--     OR DISCLOSED, OR THE OWNERSHIP, MERCHANTABILITY, OR FITNESS FOR A
+--     PARTICULAR PURPOSE OF SAID MATERIAL.
+--*
+--
+-- OBJECTIVE:
+--    Check that if the target subtype excludes null, the value is not
+--    null. Check access parameters, which null-excluding if:
+--     (1) not null is given in their definition;
+--     (2) the access parameter is controlling;
+--     (3) an Ada 95 compiler is in use.
+--
+--    Note that the not null syntax is required even for Ada 95 compilers
+--    (see AI95-00447).
+--
+-- CHANGE HISTORY:
+--    18 DEC 2006   RLB   Initial version.
+--    05 JAN 2007   RLB   Corrected syntax error.
+--
+--!
+with Ada.Exceptions;
+use Ada.Exceptions;
+with Report;
+use Report;
+procedure C460013 is
+
+
+    package Nest1 is
+        type Doggie is tagged record
+            Cnt : Natural;
+        end record;
+        type Doggie_Access is access all Doggie;
+
+        procedure Controlled (P : access Doggie); -- Always null-excluding.
+    end Nest1;
+
+    package Nest2 is
+        type Kitty is record
+            Cnt : Natural;
+        end record;
+        type Kitty_Access is access all Kitty;
+
+        procedure Include (P : access Kitty); -- Null-excluding only in Ada 95.
+        procedure Exclude (P : not null access Kitty); -- Always null-excluding.
+    end Nest2;
+
+
+    package body Nest1 is
+        procedure Controlled (P : access Doggie) is
+        begin
+            if P.Cnt /= Ident_Int(4) then
+                Failed ("Bad value in null-excluding controlling parameter");
+            -- else OK
+            end if;
+        exception
+            when Constraint_Error => -- Dereference of null
+                Failed ("Null allowed in null-excluding controlling parameter");
+        end Controlled;
+    end Nest1;
+
+    package body Nest2 is
+        procedure Include (P : access Kitty) is
+        begin
+            if P.Cnt /= Ident_Int(31) then
+                Failed ("Bad value in access parameter");
+            -- else OK
+            end if;
+        exception
+            when Constraint_Error => -- Dereference of null
+                null;
+                --Comment ("Null allowed in access parameter - Ada 2005 semantics");
+        end Include;
+
+        procedure Exclude (P : not null access Kitty) is
+        begin
+            if P.Cnt /= Ident_Int(80) then
+                Failed ("Bad value in explicit null-excluding parameter");
+            -- else OK
+            end if;
+        exception
+            when Constraint_Error => -- Dereference of null
+                Failed ("Null allowed in explicit null-excluding parameter");
+        end Exclude;
+    end Nest2;
+
+    Shep : aliased Nest1.Doggie := (Cnt => 4);
+    Frisky : aliased Nest2.Kitty := (Cnt => 80);
+    Snuggles : aliased Nest2.Kitty := (Cnt => 31);
+
+begin
+    Test ("C460013",
+          "Check that if the target subtype excludes null, the value is not" &
+          " null - access parameter cases");
+
+    declare
+        Ptr : Nest1.Doggie_Access := Shep'Access;
+    begin
+        begin
+            Nest1.Controlled (Ptr); -- OK.
+        exception
+	    when A: others =>
+	        Failed ("Unexpected exception " & Exception_Name (A) &
+                        " raised (1A) - " & Exception_Message (A));
+        end;
+        Ptr := null;
+        begin
+            Nest1.Controlled (Ptr);
+	    Failed ("Null allowed for null-excluding controlling access parameter (1)");
+        exception
+            when Constraint_Error =>
+                null;
+	    when B: others =>
+	        Failed ("Unexpected exception " & Exception_Name (B) &
+                        " raised (1B) - " & Exception_Message (B));
+        end;
+    end;
+
+    declare
+        Ptr : Nest2.Kitty_Access := Frisky'Access;
+    begin
+        begin
+            Nest2.Exclude (Ptr); -- OK.
+        exception
+	    when C: others =>
+	        Failed ("Unexpected exception " & Exception_Name (C) &
+                        " raised (2A) - " & Exception_Message (C));
+        end;
+        Ptr := null;
+        begin
+            Nest2.Exclude (Ptr);
+	    Failed ("Null allowed for null-excluding access parameter (2)");
+        exception
+            when Constraint_Error =>
+                null;
+	    when D: others =>
+	        Failed ("Unexpected exception " & Exception_Name (D) &
+                        " raised (2B) - " & Exception_Message (D));
+        end;
+    end;
+
+    declare
+        Ptr : Nest2.Kitty_Access := Snuggles'Access;
+    begin
+        begin
+            Nest2.Include (Ptr); -- OK.
+        exception
+	    when E: others =>
+	        Failed ("Unexpected exception " & Exception_Name (E) &
+                        " raised (3A) - " & Exception_Message (E));
+        end;
+        Ptr := null;
+        begin
+            Nest2.Include (Ptr);
+            Comment ("Null allowed for normal access parameter - " &
+                     "Ada 2005 semantics");
+        exception
+            when Constraint_Error =>
+                Comment ("Null not allowed for normal access parameter - " &
+                         "Ada 95 semantics");
+	    when F: others =>
+	        Failed ("Unexpected exception " & Exception_Name (F) &
+                        " raised (3B) - " & Exception_Message (F));
+        end;
+    end;
+
+    Result;
+end C460013;
+

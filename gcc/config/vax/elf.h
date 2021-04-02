@@ -1,5 +1,5 @@
 /* Target definitions for GNU compiler for VAX using ELF
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Matt Thomas <matt@3am-software.com>
 
 This file is part of GCC.
@@ -26,7 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #define REGISTER_PREFIX "%"
 #define REGISTER_NAMES \
   { "%r0", "%r1",  "%r2",  "%r3", "%r4", "%r5", "%r6", "%r7", \
-    "%r8", "%r9", "%r10", "%r11", "%ap", "%fp", "%sp", "%pc", }
+    "%r8", "%r9", "%r10", "%r11", "%ap", "%fp", "%sp", "%pc", \
+    "%psl" }
 
 #undef SIZE_TYPE
 #define SIZE_TYPE "long unsigned int"
@@ -88,6 +89,16 @@ along with GCC; see the file COPYING3.  If not see
   "%{!fno-pic: \
      %{!fpic: \
        %{!fPIC:-fPIC}}}"
+
+/* Don't let the LTO compiler switch the PIC options off.  */
+#define VAX_CC1_SPEC \
+  VAX_CC1_AND_CC1PLUS_SPEC \
+  " %{flinker-output=exec" \
+  ":%{no-pie:-flinker-output=exec;:-flinker-output=pie};" \
+  ":%{flinker-output=*}}" \
+  "%<flinker-output*"
+#define VAX_CC1PLUS_SPEC \
+  VAX_CC1_AND_CC1PLUS_SPEC
 
 /* VAX ELF is always gas; override the generic VAX ASM_SPEC.  */
 

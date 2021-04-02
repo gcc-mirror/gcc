@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -625,6 +625,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     void _M_init_extra(facet**);
     void _M_init_extra(void*, void*, const char*, const char*);
+
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+    void _M_init_extra_ldbl128(bool);
+#endif
   };
 
 

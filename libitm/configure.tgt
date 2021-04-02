@@ -1,5 +1,5 @@
 # -*- shell-script -*-
-#   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+#   Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -43,6 +43,7 @@ if test "$gcc_cv_have_tls" = yes ; then
     *-*-linux*)
 	XCFLAGS="${XCFLAGS} -ftls-model=initial-exec"
 	;;
+
   esac
 fi
 
@@ -58,16 +59,23 @@ case "${target_cpu}" in
 
   arm*)		ARCH=arm ;;
 
-  i[3456]86)
-	case " ${CC} ${CFLAGS} " in
-	  *" -m64 "*|*" -mx32 "*)
-	    ;;
-	  *)
-	    if test -z "$with_arch"; then
-	      XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
-	      XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
-	    fi
-	esac
+  i[3456]86 | x86_64)
+	cat > conftestx.c <<EOF
+#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+#error need -march=i486
+#endif
+EOF
+	if ${CC} ${CFLAGS} -E conftestx.c > /dev/null 2>&1; then
+	  :
+	else
+	  if test "${target_cpu}" = x86_64; then
+	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=generic"
+	  else
+	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=${target_cpu}"
+	  fi
+	  XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
+	fi
+	rm -f conftestx.c
 	XCFLAGS="${XCFLAGS} -mrtm"
 	ARCH=x86
 	;;
@@ -102,16 +110,6 @@ case "${target_cpu}" in
 	ARCH=sparc
 	;;
 
-  x86_64)
-	case " ${CC} ${CFLAGS} " in
-	  *" -m32 "*)
-	    XCFLAGS="${XCFLAGS} -march=i486 -mtune=generic"
-	    XCFLAGS="${XCFLAGS} -fomit-frame-pointer"
-	    ;;
-	esac
-	XCFLAGS="${XCFLAGS} -mrtm"
-	ARCH=x86
-	;;
   s390|s390x)
 	XCFLAGS="${XCFLAGS} -mzarch -mhtm"
 	ARCH=s390
@@ -144,8 +142,14 @@ case "${target}" in
   *-*-gnu* | *-*-k*bsd*-gnu \
   | *-*-netbsd* | *-*-freebsd* | *-*-openbsd* \
   | *-*-solaris2* | *-*-sysv4* | *-*-hpux11* \
-  | *-*-darwin* | *-*-aix* | *-*-dragonfly*)
+  | *-*-aix* | *-*-dragonfly*)
 	# POSIX system.  The OS is supported.
+	;;
+
+  *-*-darwin*)
+	# The OS is supported, but we need dynamic lookup to support undefined
+	# weak symbols at link-time.
+	XLDFLAGS="${XLDFLAGS} -Wl,-undefined,dynamic_lookup"
 	;;
 
   *)	# Non-POSIX, or embedded system

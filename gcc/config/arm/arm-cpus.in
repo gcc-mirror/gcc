@@ -1,6 +1,6 @@
 # CPU, FPU and architecture specifications for ARM.
 #
-# Copyright (C) 2011-2020 Free Software Foundation, Inc.
+# Copyright (C) 2011-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -1476,6 +1476,17 @@ begin cpu cortex-a78ae
  vendor 41
  part d42
 end cpu cortex-a78ae
+
+begin cpu cortex-a78c
+ cname cortexa78c
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+ vendor 41
+ part d4b
+end cpu cortex-a78c
 
 begin cpu cortex-x1
  cname cortexx1

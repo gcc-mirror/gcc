@@ -1,5 +1,5 @@
 /* RunTime Type Identification
-   Copyright (C) 1995-2020 Free Software Foundation, Inc.
+   Copyright (C) 1995-2021 Free Software Foundation, Inc.
    Mostly written by Jason Merrill (jason@cygnus.com).
 
 This file is part of GCC.
@@ -121,9 +121,7 @@ vec<tree, va_gc> *unemitted_tinfo_decls;
    and are generated as needed. */
 static GTY (()) vec<tinfo_s, va_gc> *tinfo_descs;
 
-static tree ifnonnull (tree, tree, tsubst_flags_t);
 static tree tinfo_name (tree, bool);
-static tree get_tinfo_decl_direct (tree type, tree name, int pseudo_ix);
 static tree build_dynamic_cast_1 (location_t, tree, tree, tsubst_flags_t);
 static tree throw_bad_cast (void);
 static tree throw_bad_typeid (void);
@@ -144,20 +142,6 @@ static bool typeinfo_in_lib_p (tree);
 
 static int doing_runtime = 0;
 
-static void
-push_abi_namespace (void)
-{
-  push_nested_namespace (abi_node);
-  push_visibility ("default", 2);
-}
-
-static void
-pop_abi_namespace (void)
-{
-  pop_visibility (2);
-  pop_nested_namespace (abi_node);
-}
-
 /* Declare language defined type_info type and a pointer to const
    type_info.  This is incomplete here, and will be completed when
    the user #includes <typeinfo>.  There are language defined
@@ -431,7 +415,7 @@ get_tinfo_decl (tree type)
 /* Get or create a tinfo VAR_DECL directly from the provided information.
    The caller must have already checked it is valid to do so.  */
 
-static tree
+tree
 get_tinfo_decl_direct (tree type, tree name, int pseudo_ix)
 {
   /* For a class type, the variable is cached in the type node
@@ -544,16 +528,23 @@ get_typeid (tree type, tsubst_flags_t complain)
 /* Check whether TEST is null before returning RESULT.  If TEST is used in
    RESULT, it must have previously had a save_expr applied to it.  */
 
-static tree
-ifnonnull (tree test, tree result, tsubst_flags_t complain)
+tree
+build_if_nonnull (tree test, tree result, tsubst_flags_t complain)
 {
-  tree cond = build2 (NE_EXPR, boolean_type_node, test,
-		      cp_convert (TREE_TYPE (test), nullptr_node, complain));
+  tree null_ptr = cp_convert (TREE_TYPE (test), nullptr_node, complain);
+  tree cond = build2 (NE_EXPR, boolean_type_node, test, null_ptr);
+
   /* This is a compiler generated comparison, don't emit
      e.g. -Wnonnull-compare warning for it.  */
   TREE_NO_WARNING (cond) = 1;
-  return build3 (COND_EXPR, TREE_TYPE (result), cond, result,
-		 cp_convert (TREE_TYPE (result), nullptr_node, complain));
+
+  null_ptr = cp_convert (TREE_TYPE (result), nullptr_node, complain);
+  cond = build3 (COND_EXPR, TREE_TYPE (result), cond, result, null_ptr);
+
+  /* Likewise, don't emit -Wnonnull for using the result to call
+     a member function.  */
+  TREE_NO_WARNING (cond) = 1;
+  return cond;
 }
 
 /* Execute a dynamic cast, as described in section 5.2.6 of the 9/93 working
@@ -686,7 +677,7 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 	  expr1 = build_headof (expr);
 	  if (TREE_TYPE (expr1) != type)
 	    expr1 = build1 (NOP_EXPR, type, expr1);
-	  return ifnonnull (expr, expr1, complain);
+	  return build_if_nonnull (expr, expr1, complain);
 	}
       else
 	{
@@ -766,7 +757,7 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 	  dcast_fn = dynamic_cast_node;
 	  if (!dcast_fn)
 	    {
-	      push_abi_namespace ();
+	      unsigned flags = push_abi_namespace ();
 	      tree tinfo_ptr = xref_tag (class_type,
 					 get_identifier ("__class_type_info"));
 	      tinfo_ptr = cp_build_qualified_type (tinfo_ptr, TYPE_QUAL_CONST);
@@ -781,7 +772,7 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 			       NULL_TREE));
 	      dcast_fn = (build_library_fn_ptr
 			  (fn_name, fn_type, ECF_LEAF | ECF_PURE | ECF_NOTHROW));
-	      pop_abi_namespace ();
+	      pop_abi_namespace (flags);
 	      dynamic_cast_node = dcast_fn;
 	    }
 	  result = build_cxx_call (dcast_fn, 4, elems, complain);
@@ -801,7 +792,7 @@ build_dynamic_cast_1 (location_t loc, tree type, tree expr,
 
 	  /* Now back to the type we want from a void*.  */
 	  result = cp_convert (type, result, complain);
-	  return ifnonnull (expr, result, complain);
+	  return build_if_nonnull (expr, result, complain);
 	}
     }
   else
@@ -955,11 +946,11 @@ tinfo_base_init (tinfo_s *ti, tree target)
   vtable_ptr = ti->vtable;
   if (!vtable_ptr)
     {
-      push_abi_namespace ();
+      int flags = push_abi_namespace ();
       tree real_type = xref_tag (class_type, ti->name);
       tree real_decl = TYPE_NAME (real_type);
       DECL_SOURCE_LOCATION (real_decl) = BUILTINS_LOCATION;
-      pop_abi_namespace ();
+      pop_abi_namespace (flags);
 
       if (!COMPLETE_TYPE_P (real_type))
 	{
@@ -1479,6 +1470,7 @@ get_tinfo_desc (unsigned ix)
   finish_builtin_struct (pseudo_type, pseudo_name, fields, NULL_TREE);
   CLASSTYPE_AS_BASE (pseudo_type) = pseudo_type;
   DECL_CONTEXT (TYPE_NAME (pseudo_type)) = FROB_CONTEXT (global_namespace);
+  DECL_TINFO_P (TYPE_NAME (pseudo_type)) = true;
   xref_basetypes (pseudo_type, /*bases=*/NULL_TREE);
 
   res->type = cp_build_qualified_type (pseudo_type, TYPE_QUAL_CONST);
@@ -1489,6 +1481,36 @@ get_tinfo_desc (unsigned ix)
   TREE_PUBLIC (TYPE_MAIN_DECL (res->type)) = 1;
 
   return res;
+}
+
+/* Return an identifying index for the pseudo type_info TYPE.
+   We wrote the index at the end of the name, so just scan it from
+   there.  This isn't critical, as it's only on the first use of this
+   type during module stream out.  */
+
+unsigned
+get_pseudo_tinfo_index (tree type)
+{
+  tree name = DECL_NAME (TYPE_NAME (type));
+  unsigned ix = 0, scale = 1;
+  size_t len = IDENTIFIER_LENGTH (name);
+  const char *ptr = IDENTIFIER_POINTER (name) + len;
+
+  for (; *--ptr != '_'; scale *= 10)
+    {
+      len--;
+      gcc_checking_assert (len && ISDIGIT (*ptr));
+      ix += (*ptr - '0') * scale;
+    }
+
+  gcc_assert (len != IDENTIFIER_LENGTH (name));
+  return ix;
+}
+
+tree
+get_pseudo_tinfo_type (unsigned ix)
+{
+  return get_tinfo_desc (ix)->type;
 }
 
 /* We lazily create the type info types.  */

@@ -1,5 +1,5 @@
 /* Tree based points-to analysis
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -280,6 +280,9 @@ struct variable_info
   /* True if this represents a IPA function info.  */
   unsigned int is_fn_info : 1;
 
+  /* True if this appears as RHS in a ADDRESSOF constraint.  */
+  unsigned int address_taken : 1;
+
   /* ???  Store somewhere better.  */
   unsigned short ruid;
 
@@ -393,6 +396,7 @@ new_var_info (tree t, const char *name, bool add_id)
   ret->is_global_var = (t == NULL_TREE);
   ret->is_ipa_escape_point = false;
   ret->is_fn_info = false;
+  ret->address_taken = false;
   if (t && DECL_P (t))
     ret->is_global_var = (is_global_var (t)
 			  /* We have to treat even local register variables
@@ -674,7 +678,10 @@ dump_constraint (FILE *file, constraint_t c)
     fprintf (file, "&");
   else if (c->lhs.type == DEREF)
     fprintf (file, "*");
-  fprintf (file, "%s", get_varinfo (c->lhs.var)->name);
+  if (dump_file)
+    fprintf (file, "%s", get_varinfo (c->lhs.var)->name);
+  else
+    fprintf (file, "V%d", c->lhs.var);
   if (c->lhs.offset == UNKNOWN_OFFSET)
     fprintf (file, " + UNKNOWN");
   else if (c->lhs.offset != 0)
@@ -684,7 +691,10 @@ dump_constraint (FILE *file, constraint_t c)
     fprintf (file, "&");
   else if (c->rhs.type == DEREF)
     fprintf (file, "*");
-  fprintf (file, "%s", get_varinfo (c->rhs.var)->name);
+  if (dump_file)
+    fprintf (file, "%s", get_varinfo (c->rhs.var)->name);
+  else
+    fprintf (file, "V%d", c->rhs.var);
   if (c->rhs.offset == UNKNOWN_OFFSET)
     fprintf (file, " + UNKNOWN");
   else if (c->rhs.offset != 0)
@@ -3101,6 +3111,8 @@ process_constraint (constraint_t t)
   else
     {
       gcc_assert (rhs.type != ADDRESSOF || rhs.offset == 0);
+      if (rhs.type == ADDRESSOF)
+	get_varinfo (get_varinfo (rhs.var)->head)->address_taken = true;
       constraints.safe_push (t);
     }
 }
@@ -4274,6 +4286,11 @@ handle_pure_call (gcall *stmt, vec<ce_s> *results)
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
     {
       tree arg = gimple_call_arg (stmt, i);
+      int flags = gimple_call_arg_flags (stmt, i);
+
+      /* If the argument is not used we can ignore it.  */
+      if (flags & EAF_UNUSED)
+	continue;
       if (!uses)
 	{
 	  uses = get_call_use_vi (stmt);
@@ -7283,15 +7300,14 @@ solve_constraints (void)
   unsigned int *map = XNEWVEC (unsigned int, varmap.length ());
   for (unsigned i = 0; i < integer_id + 1; ++i)
     map[i] = i;
-  /* Start with non-register vars (as possibly address-taken), followed
-     by register vars as conservative set of vars never appearing in
-     the points-to solution bitmaps.  */
+  /* Start with address-taken vars, followed by not address-taken vars
+     to move vars never appearing in the points-to solution bitmaps last.  */
   unsigned j = integer_id + 1;
   for (unsigned i = integer_id + 1; i < varmap.length (); ++i)
-    if (! varmap[i]->is_reg_var)
+    if (varmap[varmap[i]->head]->address_taken)
       map[i] = j++;
   for (unsigned i = integer_id + 1; i < varmap.length (); ++i)
-    if (varmap[i]->is_reg_var)
+    if (! varmap[varmap[i]->head]->address_taken)
       map[i] = j++;
   /* Shuffle varmap according to map.  */
   for (unsigned i = integer_id + 1; i < varmap.length (); ++i)

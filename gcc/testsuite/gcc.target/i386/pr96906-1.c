@@ -1,6 +1,6 @@
 /* PR target/96906 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx2" } */
+/* { dg-options "-O2 -mavx2 -mno-avx512f" } */
 /* { dg-final { scan-assembler-times "\tvpminub\[^\n\r]*xmm" 2 } } */
 /* { dg-final { scan-assembler-times "\tvpminuw\[^\n\r]*xmm" 2 } } */
 /* { dg-final { scan-assembler-times "\tvpminub\[^\n\r]*ymm" 2 } } */

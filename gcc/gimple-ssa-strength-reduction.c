@@ -1,5 +1,5 @@
 /* Straight-line strength reduction.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Bill Schmidt, IBM <wschmidt@linux.ibm.com>
 
 This file is part of GCC.
@@ -524,7 +524,7 @@ uses_consumed_by_stmt (tree name, gimple *stmt, unsigned recurse = 0)
 				     recurse + 1))
 	{
 	  retval = false;
-	  BREAK_FROM_IMM_USE_STMT (iter);
+	  break;
 	}
     }
 

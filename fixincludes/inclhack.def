@@ -731,7 +731,7 @@ fix = {
     select    = "typedef[ \t]*struct[ \t]*([{][^}]*[}][ \t]*\\*[ \t]*physadr_t;)";
     c_fix     = format;
     c_fix_arg = "typedef struct __physadr_s %1";
-    test_text = "typedef struct __physadr_s {";
+    test_text = "typedef	struct { random stuff } *	physadr_t;";
 };
 
 /*

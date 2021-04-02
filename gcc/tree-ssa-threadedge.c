@@ -1,5 +1,5 @@
 /* SSA Jump Threading
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Jeff Law  <law@redhat.com>
 
 This file is part of GCC.
@@ -263,6 +263,12 @@ record_temporary_equivalences_from_stmts_at_dest (edge e,
       if (gimple_code (stmt) == GIMPLE_CALL
 	  && gimple_call_internal_p (stmt)
 	  && gimple_call_internal_unique_p (stmt))
+	return NULL;
+
+      /* We cannot thread through __builtin_constant_p, because an
+	 expression that is constant on two threading paths may become
+	 non-constant (i.e.: phi) when they merge.  */
+      if (gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
 	return NULL;
 
       /* If duplicating this block is going to cause too much code

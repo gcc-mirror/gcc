@@ -33,4 +33,4 @@ float i1(float x)
 {
   return (x <= 0.f ? 1.f : -1.f);
 }
-/* { dg-final { scan-tree-dump-times "copysign" 8 "gimple"} } */
+/* { dg-final { scan-tree-dump-not "copysign" "gimple"} } */

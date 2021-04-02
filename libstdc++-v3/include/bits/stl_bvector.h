@@ -1,6 +1,6 @@
 // vector<bool> specialization -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -572,18 +572,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _S_nword(size_t __n)
       { return (__n + int(_S_word_bit) - 1) / int(_S_word_bit); }
     };
-
-_GLIBCXX_END_NAMESPACE_CONTAINER
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
-
-// Declare a partial specialization of vector<T, Alloc>.
-#include <bits/stl_vector.h>
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-_GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
    *  @brief  A specialization of vector for booleans which offers fixed time

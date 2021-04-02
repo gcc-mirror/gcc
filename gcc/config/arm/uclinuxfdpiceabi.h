@@ -1,5 +1,5 @@
 /* Configuration file for ARM GNU/Linux FDPIC EABI targets.
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by STMicroelectronics.
 
    This file is part of GCC.

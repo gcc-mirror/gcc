@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Renesas H8/300.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
    Contributed by Steve Chamberlain (sac@cygnus.com),
    Jim Wilson (wilson@cygnus.com), and Doug Evans (dje@cygnus.com).
 
@@ -1956,74 +1956,6 @@ h8300_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
   return CCmode;
 }
 
-#if 0
-/* Update the condition code from the insn.  */
-
-void
-notice_update_cc (rtx body, rtx_insn *insn)
-{
-  rtx set;
-
-  switch (get_attr_cc (insn))
-    {
-    case CC_NONE:
-      /* Insn does not affect CC at all.  */
-      break;
-
-    case CC_NONE_0HIT:
-      /* Insn does not change CC, but the 0'th operand has been changed.  */
-      if (cc_status.value1 != 0
-	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value1))
-	cc_status.value1 = 0;
-      if (cc_status.value2 != 0
-	  && reg_overlap_mentioned_p (recog_data.operand[0], cc_status.value2))
-	cc_status.value2 = 0;
-      break;
-
-    case CC_SET_ZN:
-      /* Insn sets the Z,N flags of CC to recog_data.operand[0].
-	 The V flag is unusable.  The C flag may or may not be known but
-	 that's ok because alter_cond will change tests to use EQ/NE.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_OVERFLOW_UNUSABLE | CC_NO_CARRY;
-      set = single_set (insn);
-      cc_status.value1 = SET_SRC (set);
-      if (SET_DEST (set) != cc0_rtx)
-	cc_status.value2 = SET_DEST (set);
-      break;
-
-    case CC_SET_ZNV:
-      /* Insn sets the Z,N,V flags of CC to recog_data.operand[0].
-	 The C flag may or may not be known but that's ok because
-	 alter_cond will change tests to use EQ/NE.  */
-      CC_STATUS_INIT;
-      cc_status.flags |= CC_NO_CARRY;
-      set = single_set (insn);
-      cc_status.value1 = SET_SRC (set);
-      if (SET_DEST (set) != cc0_rtx)
-	{
-	  /* If the destination is STRICT_LOW_PART, strip off
-	     STRICT_LOW_PART.  */
-	  if (GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
-	    cc_status.value2 = XEXP (SET_DEST (set), 0);
-	  else
-	    cc_status.value2 = SET_DEST (set);
-	}
-      break;
-
-    case CC_COMPARE:
-      /* The insn is a compare instruction.  */
-      CC_STATUS_INIT;
-      cc_status.value1 = SET_SRC (body);
-      break;
-
-    case CC_CLOBBER:
-      /* Insn doesn't leave CC in a usable state.  */
-      CC_STATUS_INIT;
-      break;
-    }
-}
-#endif
 
 /* Given that X occurs in an address of the form (plus X constant),
    return the part of X that is expected to be a register.  There are
@@ -2882,7 +2814,7 @@ compute_plussi_length (rtx *operands, bool need_flags)
 
 /* Compute which flag bits are valid after an addition insn.  */
 
-enum attr_cc
+enum attr_old_cc
 compute_plussi_cc (rtx *operands)
 {
   machine_mode mode = GET_MODE (operands[0]);
@@ -2895,9 +2827,9 @@ compute_plussi_cc (rtx *operands)
       HOST_WIDE_INT intval = INTVAL (operands[2]);
 
       if (TARGET_H8300SX && (intval >= 1 && intval <= 7))
-	return CC_SET_ZN;
+	return OLD_CC_SET_ZN;
       if (TARGET_H8300SX && (intval >= -7 && intval <= -1))
-	return CC_SET_ZN;
+	return OLD_CC_SET_ZN;
 
       /* See if we can finish with 2 bytes.  */
 
@@ -2906,28 +2838,28 @@ compute_plussi_cc (rtx *operands)
 	case 0x00000001:
 	case 0x00000002:
 	case 0x00000004:
-	  return CC_NONE_0HIT;
+	  return OLD_CC_NONE_0HIT;
 
 	case 0xffffffff:
 	case 0xfffffffe:
 	case 0xfffffffc:
-	  return CC_NONE_0HIT;
+	  return OLD_CC_NONE_0HIT;
 
 	case 0x00010000:
 	case 0x00020000:
-	  return CC_CLOBBER;
+	  return OLD_CC_CLOBBER;
 
 	case 0xffff0000:
 	case 0xfffe0000:
-	  return CC_CLOBBER;
+	  return OLD_CC_CLOBBER;
 	}
 
       /* See if we can finish with 4 bytes.  */
       if ((intval & 0xffff) == 0)
-	return CC_CLOBBER;
+	return OLD_CC_CLOBBER;
     }
 
-  return CC_SET_ZN;
+  return OLD_CC_SET_ZN;
 }
 
 /* Output a logical insn.  */
@@ -3234,7 +3166,7 @@ compute_logical_op_cc (machine_mode mode, rtx *operands)
   int lower_half_easy_p = 0;
   int upper_half_easy_p = 0;
   /* Condition code.  */
-  enum attr_cc cc = CC_CLOBBER;
+  enum attr_old_cc cc = OLD_CC_CLOBBER;
 
   switch (mode)
     {
@@ -3242,7 +3174,7 @@ compute_logical_op_cc (machine_mode mode, rtx *operands)
       /* First, see if we can finish with one insn.  */
       if (b0 != 0 && b1 != 0)
 	{
-	  cc = CC_SET_ZNV;
+	  cc = OLD_CC_SET_ZNV;
 	}
       break;
     case E_SImode:
@@ -3264,7 +3196,7 @@ compute_logical_op_cc (machine_mode mode, rtx *operands)
 	  && !(code == IOR && w1 == 0xffff
 	       && (w0 & 0x8000) != 0 && lower_half_easy_p))
 	{
-	  cc = CC_SET_ZNV;
+	  cc = OLD_CC_SET_ZNV;
 	}
       else
 	{
@@ -3272,7 +3204,7 @@ compute_logical_op_cc (machine_mode mode, rtx *operands)
 	      && w1 == 0xffff
 	      && (w0 & 0x8000) != 0)
 	    {
-	      cc = CC_SET_ZNV;
+	      cc = OLD_CC_SET_ZNV;
 	    }
 	}
       break;
@@ -3500,13 +3432,13 @@ enum shift_mode
 };
 
 /* For single bit shift insns, record assembler and what bits of the
-   condition code are valid afterwards (represented as various CC_FOO
+   condition code are valid afterwards (represented as various OLD_CC_FOO
    bits, 0 means CC isn't left in a usable state).  */
 
 struct shift_insn
 {
   const char *const assembler;
-  const enum attr_cc cc_valid;
+  const enum attr_old_cc cc_valid;
 };
 
 /* Assembler instruction shift table.
@@ -3520,42 +3452,42 @@ static const struct shift_insn shift_one[2][3][3] =
   {
 /* SHIFT_ASHIFT */
     {
-      { "shll\t%X0", CC_SET_ZNV },
-      { "add.w\t%T0,%T0", CC_SET_ZN },
-      { "add.w\t%f0,%f0\n\taddx\t%y0,%y0\n\taddx\t%z0,%z0", CC_CLOBBER }
+      { "shll\t%X0", OLD_CC_SET_ZNV },
+      { "add.w\t%T0,%T0", OLD_CC_SET_ZN },
+      { "add.w\t%f0,%f0\n\taddx\t%y0,%y0\n\taddx\t%z0,%z0", OLD_CC_CLOBBER }
     },
 /* SHIFT_LSHIFTRT */
     {
-      { "shlr\t%X0", CC_SET_ZNV },
-      { "shlr\t%t0\n\trotxr\t%s0", CC_CLOBBER },
-      { "shlr\t%z0\n\trotxr\t%y0\n\trotxr\t%x0\n\trotxr\t%w0", CC_CLOBBER }
+      { "shlr\t%X0", OLD_CC_SET_ZNV },
+      { "shlr\t%t0\n\trotxr\t%s0", OLD_CC_CLOBBER },
+      { "shlr\t%z0\n\trotxr\t%y0\n\trotxr\t%x0\n\trotxr\t%w0", OLD_CC_CLOBBER }
     },
 /* SHIFT_ASHIFTRT */
     {
-      { "shar\t%X0", CC_SET_ZNV },
-      { "shar\t%t0\n\trotxr\t%s0", CC_CLOBBER },
-      { "shar\t%z0\n\trotxr\t%y0\n\trotxr\t%x0\n\trotxr\t%w0", CC_CLOBBER }
+      { "shar\t%X0", OLD_CC_SET_ZNV },
+      { "shar\t%t0\n\trotxr\t%s0", OLD_CC_CLOBBER },
+      { "shar\t%z0\n\trotxr\t%y0\n\trotxr\t%x0\n\trotxr\t%w0", OLD_CC_CLOBBER }
     }
   },
 /* H8/300H */
   {
 /* SHIFT_ASHIFT */
     {
-      { "shll.b\t%X0", CC_SET_ZNV },
-      { "shll.w\t%T0", CC_SET_ZNV },
-      { "shll.l\t%S0", CC_SET_ZNV }
+      { "shll.b\t%X0", OLD_CC_SET_ZNV },
+      { "shll.w\t%T0", OLD_CC_SET_ZNV },
+      { "shll.l\t%S0", OLD_CC_SET_ZNV }
     },
 /* SHIFT_LSHIFTRT */
     {
-      { "shlr.b\t%X0", CC_SET_ZNV },
-      { "shlr.w\t%T0", CC_SET_ZNV },
-      { "shlr.l\t%S0", CC_SET_ZNV }
+      { "shlr.b\t%X0", OLD_CC_SET_ZNV },
+      { "shlr.w\t%T0", OLD_CC_SET_ZNV },
+      { "shlr.l\t%S0", OLD_CC_SET_ZNV }
     },
 /* SHIFT_ASHIFTRT */
     {
-      { "shar.b\t%X0", CC_SET_ZNV },
-      { "shar.w\t%T0", CC_SET_ZNV },
-      { "shar.l\t%S0", CC_SET_ZNV }
+      { "shar.b\t%X0", OLD_CC_SET_ZNV },
+      { "shar.w\t%T0", OLD_CC_SET_ZNV },
+      { "shar.l\t%S0", OLD_CC_SET_ZNV }
     }
   }
 };
@@ -3564,21 +3496,21 @@ static const struct shift_insn shift_two[3][3] =
 {
 /* SHIFT_ASHIFT */
     {
-      { "shll.b\t#2,%X0", CC_SET_ZNV },
-      { "shll.w\t#2,%T0", CC_SET_ZNV },
-      { "shll.l\t#2,%S0", CC_SET_ZNV }
+      { "shll.b\t#2,%X0", OLD_CC_SET_ZNV },
+      { "shll.w\t#2,%T0", OLD_CC_SET_ZNV },
+      { "shll.l\t#2,%S0", OLD_CC_SET_ZNV }
     },
 /* SHIFT_LSHIFTRT */
     {
-      { "shlr.b\t#2,%X0", CC_SET_ZNV },
-      { "shlr.w\t#2,%T0", CC_SET_ZNV },
-      { "shlr.l\t#2,%S0", CC_SET_ZNV }
+      { "shlr.b\t#2,%X0", OLD_CC_SET_ZNV },
+      { "shlr.w\t#2,%T0", OLD_CC_SET_ZNV },
+      { "shlr.l\t#2,%S0", OLD_CC_SET_ZNV }
     },
 /* SHIFT_ASHIFTRT */
     {
-      { "shar.b\t#2,%X0", CC_SET_ZNV },
-      { "shar.w\t#2,%T0", CC_SET_ZNV },
-      { "shar.l\t#2,%S0", CC_SET_ZNV }
+      { "shar.b\t#2,%X0", OLD_CC_SET_ZNV },
+      { "shar.w\t#2,%T0", OLD_CC_SET_ZNV },
+      { "shar.l\t#2,%S0", OLD_CC_SET_ZNV }
     }
 };
 
@@ -3674,10 +3606,10 @@ struct shift_info {
   const char *shift2;
 
   /* CC status for SHIFT_INLINE.  */
-  enum attr_cc cc_inline;
+  enum attr_old_cc cc_inline;
 
   /* CC status  for SHIFT_SPECIAL.  */
-  enum attr_cc cc_special;
+  enum attr_old_cc cc_special;
 };
 
 static void get_shift_alg (enum shift_type,
@@ -3746,7 +3678,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
     case SHIFT_ROT_AND:
       info->shift1 = rotate_one[cpu_type][shift_type][shift_mode];
       info->shift2 = rotate_two[shift_type][shift_mode];
-      info->cc_inline = CC_CLOBBER;
+      info->cc_inline = OLD_CC_CLOBBER;
       goto end;
 
     case SHIFT_SPECIAL:
@@ -3755,7 +3687,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
       info->shift1 = shift_one[cpu_type][shift_type][shift_mode].assembler;
       info->shift2 = shift_two[shift_type][shift_mode].assembler;
       info->cc_inline = shift_one[cpu_type][shift_type][shift_mode].cc_valid;
-      info->cc_special = CC_CLOBBER;
+      info->cc_special = OLD_CC_CLOBBER;
       break;
     }
 
@@ -3797,11 +3729,11 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.b\t%t0,%s0\n\textu.w\t%T0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      info->special = "mov.b\t%t0,%s0\n\texts.w\t%T0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    }
 	}
@@ -3817,7 +3749,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      if (TARGET_H8300H)
 		{
 		  info->special = "shll.b\t%t0\n\tsubx.b\t%s0,%s0\n\tshll.b\t%t0\n\trotxl.b\t%s0\n\texts.w\t%T0";
-		  info->cc_special = CC_SET_ZNV;
+		  info->cc_special = OLD_CC_SET_ZNV;
 		}
 	      else /* TARGET_H8300S */
 		gcc_unreachable ();
@@ -3863,11 +3795,11 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	    {
 	    case SHIFT_ASHIFT:
 	      info->special = "shlr.w\t%e0\n\tmov.w\t%f0,%e0\n\txor.w\t%f0,%f0\n\trotxr.l\t%S0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "shll.w\t%f0\n\tmov.w\t%e0,%f0\n\txor.w\t%e0,%e0\n\trotxl.l\t%S0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      gcc_unreachable ();
@@ -3885,11 +3817,11 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\textu.l\t%S0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\texts.l\t%S0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    }
 	}
@@ -3905,11 +3837,11 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\textu.w\t%f0\n\textu.l\t%S0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      info->special = "mov.w\t%e0,%f0\n\tmov.b\t%t0,%s0\n\texts.w\t%f0\n\texts.l\t%S0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    }
 	}
@@ -3927,7 +3859,7 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      if (TARGET_H8300H)
 		{
 		  info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
-		  info->cc_special = CC_SET_ZNV;
+		  info->cc_special = OLD_CC_SET_ZNV;
 		}
 	      else
 		info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t#2,%S0\n\textu.l\t%S0";
@@ -3950,12 +3882,12 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	      if (TARGET_H8300H)
 		{
 		  info->special = "sub.w\t%f0,%f0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
-		  info->cc_special = CC_SET_ZNV;
+		  info->cc_special = OLD_CC_SET_ZNV;
 		}
 	      else
 		{
 		  info->special = "sub.w\t%f0,%f0\n\trotl.l\t#2,%S0\n\trotl.l\t%S0\n\textu.l\t%S0";
-		  info->cc_special = CC_SET_ZNV;
+		  info->cc_special = OLD_CC_SET_ZNV;
 		}
 	      goto end;
 	    case SHIFT_ASHIFTRT:
@@ -3988,15 +3920,15 @@ get_shift_alg (enum shift_type shift_type, enum shift_mode shift_mode,
 	    {
 	    case SHIFT_ASHIFT:
 	      info->special = "shlr.l\t%S0\n\txor.l\t%S0,%S0\n\trotxr.l\t%S0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_LSHIFTRT:
 	      info->special = "shll.l\t%S0\n\txor.l\t%S0,%S0\n\trotxl.l\t%S0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    case SHIFT_ASHIFTRT:
 	      info->special = "shll\t%e0\n\tsubx\t%w0,%w0\n\texts.w\t%T0\n\texts.l\t%S0";
-	      info->cc_special = CC_SET_ZNV;
+	      info->cc_special = OLD_CC_SET_ZNV;
 	      goto end;
 	    }
 	}
@@ -4459,7 +4391,7 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
       
     case SHIFT_ROT_AND:
       /* This case always ends with an and instruction.  */
-      return CC_SET_ZNV;
+      return OLD_CC_SET_ZNV;
       
     case SHIFT_LOOP:
       /* A loop to shift by a "large" constant value.
@@ -4469,7 +4401,7 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
 	  if (n % 2)
 	    return info.cc_inline;
 	}
-      return CC_CLOBBER;
+      return OLD_CC_CLOBBER;
       
     default:
       gcc_unreachable ();

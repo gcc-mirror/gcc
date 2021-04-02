@@ -1,5 +1,5 @@
 /* Backend function setup
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -2075,7 +2075,8 @@ get_proc_pointer_decl (gfc_symbol *sym)
 /* Get a basic decl for an external function.  */
 
 tree
-gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args)
+gfc_get_extern_function_decl (gfc_symbol * sym, gfc_actual_arglist *actual_args,
+			      const char *fnspec)
 {
   tree type;
   tree fndecl;
@@ -2287,7 +2288,8 @@ module_sym:
       mangled_name = gfc_sym_mangled_function_id (sym);
     }
 
-  type = gfc_get_function_type (sym, actual_args);
+  type = gfc_get_function_type (sym, actual_args, fnspec);
+
   fndecl = build_decl (input_location,
 		       FUNCTION_DECL, name, type);
 
@@ -2486,7 +2488,9 @@ build_function_decl (gfc_symbol * sym, bool global)
 }
 
 
-/* Create the DECL_ARGUMENTS for a procedure.  */
+/* Create the DECL_ARGUMENTS for a procedure.
+   NOTE: The arguments added here must match the argument type created by
+   gfc_get_function_type ().  */
 
 static void
 create_function_arglist (gfc_symbol * sym)
@@ -2805,6 +2809,7 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_ARG_TYPE (token) = TREE_VALUE (typelist);
 	  TREE_READONLY (token) = 1;
 	  hidden_arglist = chainon (hidden_arglist, token);
+	  hidden_typelist = TREE_CHAIN (hidden_typelist);
 	  gfc_finish_decl (token);
 
 	  offset = build_decl (input_location, PARM_DECL,
@@ -2830,6 +2835,7 @@ create_function_arglist (gfc_symbol * sym)
 	  DECL_ARG_TYPE (offset) = TREE_VALUE (typelist);
 	  TREE_READONLY (offset) = 1;
 	  hidden_arglist = chainon (hidden_arglist, offset);
+	  hidden_typelist = TREE_CHAIN (hidden_typelist);
 	  gfc_finish_decl (offset);
 	}
 
@@ -6965,8 +6971,7 @@ gfc_generate_function_code (gfc_namespace * ns)
   gfc_init_block (&cleanup);
 
   /* Reset recursion-check variable.  */
-  if ((gfc_option.rtcheck & GFC_RTCHECK_RECURSION)
-      && !is_recursive && !flag_openmp && recurcheckvar != NULL_TREE)
+  if (recurcheckvar != NULL_TREE)
     {
       gfc_add_modify (&cleanup, recurcheckvar, logical_false_node);
       recurcheckvar = NULL;

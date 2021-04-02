@@ -750,9 +750,7 @@ package body Sem_Warn is
          Fstm : constant Node_Id :=
                   Original_Node (First (Statements (Loop_Statement)));
       begin
-         if Nkind (Fstm) = N_Delay_Relative_Statement
-           or else Nkind (Fstm) = N_Delay_Until_Statement
-         then
+         if Nkind (Fstm) in N_Delay_Statement then
             return;
          end if;
       end;
@@ -3077,14 +3075,14 @@ package body Sem_Warn is
             --  Here we generate the warning
 
             else
-               --  If -gnatwc is set then output message that we could be IN
+               --  If -gnatwk is set then output message that we could be IN
 
                if not Is_Trivial_Subprogram (Scope (E1)) then
                   if Warn_On_Constant then
                      Error_Msg_N
-                       ("?u?formal parameter & is not modified!", E1);
+                       ("?k?formal parameter & is not modified!", E1);
                      Error_Msg_N
-                       ("\?u?mode could be IN instead of `IN OUT`!", E1);
+                       ("\?k?mode could be IN instead of `IN OUT`!", E1);
 
                      --  We do not generate warnings for IN OUT parameters
                      --  unless we have at least -gnatwu. This is deliberately

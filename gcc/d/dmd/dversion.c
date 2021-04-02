@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -97,13 +97,6 @@ void DebugSymbol::addMember(Scope *, ScopeDsymbol *sds)
     }
 }
 
-void DebugSymbol::semantic(Scope *)
-{
-    //printf("DebugSymbol::semantic() %s\n", toChars());
-    if (semanticRun < PASSsemanticdone)
-        semanticRun = PASSsemanticdone;
-}
-
 const char *DebugSymbol::kind() const
 {
     return "debug";
@@ -186,12 +179,6 @@ void VersionSymbol::addMember(Scope *, ScopeDsymbol *sds)
         else
             m->versionlevel = level;
     }
-}
-
-void VersionSymbol::semantic(Scope *)
-{
-    if (semanticRun < PASSsemanticdone)
-        semanticRun = PASSsemanticdone;
 }
 
 const char *VersionSymbol::kind() const

@@ -1,7 +1,7 @@
 # @configure_input@
 # Makefile for libdecnumber.  Run 'configure' to generate Makefile from Makefile.in
 
-# Copyright (C) 2005-2020 Free Software Foundation, Inc.
+# Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 

@@ -14,15 +14,27 @@
  */
 module core.sys.posix.ucontext;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.sys.posix.signal; // for sigset_t, stack_t
-private import core.stdc.stdint : uintptr_t;
+import core.stdc.stdint : uintptr_t;
 
 version (Posix):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
+version (OSX)
+    version = Darwin;
+else version (iOS)
+    version = Darwin;
+else version (TVOS)
+    version = Darwin;
+else version (WatchOS)
+    version = Darwin;
+
+version (ARM)     version = ARM_Any;
+version (AArch64) version = ARM_Any;
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
 version (PPC)     version = PPC_Any;
@@ -114,7 +126,7 @@ version (CRuntime_Glibc)
 
             enum NGREG = 23;
 
-            alias c_long            greg_t;
+            alias long              greg_t;
             alias greg_t[NGREG]     gregset_t;
             alias _libc_fpstate*    fpregset_t;
         }
@@ -123,7 +135,7 @@ version (CRuntime_Glibc)
         {
             gregset_t   gregs;
             fpregset_t  fpregs;
-            c_ulong[8]  __reserved1;
+            ulong[8]    __reserved1;
         }
 
         struct ucontext_t
@@ -134,6 +146,7 @@ version (CRuntime_Glibc)
             mcontext_t      uc_mcontext;
             sigset_t        uc_sigmask;
             _libc_fpstate   __fpregs_mem;
+            ulong[4]        __ssp;
         }
     }
     else version (X86)
@@ -205,6 +218,7 @@ version (CRuntime_Glibc)
             mcontext_t      uc_mcontext;
             sigset_t        uc_sigmask;
             _libc_fpstate   __fpregs_mem;
+            c_ulong[4]      __ssp;
         }
     }
     else version (HPPA)
@@ -646,7 +660,7 @@ version (CRuntime_Glibc)
             mcontext_t  uc_mcontext;
         }
     }
-    else version (SPARC64)
+    else version (SPARC_Any)
     {
         enum MC_NGREG = 19;
         alias mc_greg_t = c_ulong;
@@ -906,6 +920,72 @@ else version (CRuntime_Musl)
     }
     else
         static assert(0, "unimplemented");
+}
+else version (Darwin)
+{
+    private
+    {
+        version (X86_64)
+        {
+            struct __darwin_mcontext
+            {
+                ulong[89] __opaque;
+            }
+            static assert(__darwin_mcontext.sizeof == 712);
+        }
+        else version (X86)
+        {
+            struct __darwin_mcontext
+            {
+                uint[150] __opaque;
+            }
+            static assert(__darwin_mcontext.sizeof == 600);
+        }
+        else version (AArch64)
+        {
+            struct __darwin_mcontext
+            {
+                align(16) ulong[102] __opaque;
+            }
+            static assert(__darwin_mcontext.sizeof == 816);
+        }
+        else version (ARM)
+        {
+            struct __darwin_mcontext
+            {
+                uint[85] __opaque;
+            }
+            static assert(__darwin_mcontext.sizeof == 340);
+        }
+        else version (PPC_Any)
+        {
+            struct __darwin_mcontext
+            {
+                version (PPC64)
+                    ulong[129] __opaque;
+                else
+                    uint[258] __opaque;
+            }
+            static assert(__darwin_mcontext.sizeof == 1032);
+        }
+        else
+            static assert(false, "mcontext_t unimplemented for this platform.");
+    }
+
+    alias mcontext_t = __darwin_mcontext*;
+
+    struct ucontext
+    {
+        int                uc_onstack;
+        sigset_t           uc_sigmask;
+        stack_t            uc_stack;
+        ucontext*          uc_link;
+        size_t             uc_mcsize;
+        __darwin_mcontext* uc_mcontext;
+        __darwin_mcontext  __mcontext_data;
+    }
+
+    alias ucontext_t = ucontext;
 }
 else version (FreeBSD)
 {
@@ -1276,7 +1356,7 @@ else version (OpenBSD)
             int     sc_trapno;
             int     sc_err;
             void*   sc_fpstate; // union savefpu*
-        };
+        }
     }
     else version (PPC)
     {
@@ -1363,7 +1443,7 @@ else version (DragonFlyBSD)
         uint            mc_reserved;
         uint[8]         mc_unused;
         int[256]        mc_fpregs;
-      };  // __attribute__((aligned(64)));
+      }  // __attribute__((aligned(64)));
     }
     else
     {
@@ -1387,7 +1467,7 @@ else version (DragonFlyBSD)
 }
 else version (Solaris)
 {
-    private import core.stdc.stdint;
+    import core.stdc.stdint;
 
     alias uint[4] upad128_t;
 
@@ -1477,7 +1557,7 @@ else version (Solaris)
             {
                 uint[32]   fpu_regs;
                 double[16] fpu_dregs;
-            };
+            }
             fq    *fpu_q;
             uint  fpu_fsr;
             ubyte fpu_qcnt;
@@ -1829,8 +1909,8 @@ else version (CRuntime_UClibc)
 /*
 int  getcontext(ucontext_t*);
 void makecontext(ucontext_t*, void function(), int, ...);
-int  setcontext(in ucontext_t*);
-int  swapcontext(ucontext_t*, in ucontext_t*);
+int  setcontext(const scope ucontext_t*);
+int  swapcontext(ucontext_t*, const scope ucontext_t*);
 */
 
 static if ( is( ucontext_t ) )
@@ -1850,13 +1930,13 @@ static if ( is( ucontext_t ) )
     else
         void makecontext(ucontext_t*, void function(), int, ...);
 
-    int  setcontext(in ucontext_t*);
-    int  swapcontext(ucontext_t*, in ucontext_t*);
+    int  setcontext(const scope ucontext_t*);
+    int  swapcontext(ucontext_t*, const scope ucontext_t*);
 }
 
 version (Solaris)
 {
-    int walkcontext(in ucontext_t*, int function(uintptr_t, int, void*), void*);
+    int walkcontext(const scope ucontext_t*, int function(uintptr_t, int, void*), void*);
     int addrtosymstr(uintptr_t, char*, int);
     int printstack(int);
 }

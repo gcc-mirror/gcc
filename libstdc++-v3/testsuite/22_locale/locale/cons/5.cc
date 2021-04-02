@@ -1,10 +1,12 @@
-// { dg-require-namedlocale "en_PH" }
 // { dg-require-namedlocale "de_DE" }
+// { dg-require-namedlocale "en_PH" }
+// { dg-require-namedlocale "es_MX" }
+// { dg-require-namedlocale "fr_FR" }
 // { dg-require-namedlocale "it_IT" }
 
 // 2000-09-13 Benjamin Kosnik <bkoz@redhat.com>
 
-// Copyright (C) 2000-2020 Free Software Foundation, Inc.
+// Copyright (C) 2000-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

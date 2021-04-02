@@ -1,5 +1,5 @@
 ; Options for the C, ObjC, C++ and ObjC++ front ends.
-; Copyright (C) 2003-2020 Free Software Foundation, Inc.
+; Copyright (C) 2003-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -235,6 +235,14 @@ Like -M but ignore system header files.
 MMD
 C ObjC C++ ObjC++ NoDriverArg Separate MissingArgError(missing filename after %qs)
 Like -MD but ignore system header files.
+
+Mmodules
+C++
+Generate C++ Module dependency information.
+
+Mno-modules
+C++
+; undocumented
 
 MP
 C ObjC C++ ObjC++
@@ -784,6 +792,16 @@ Warn about suspicious calls to memset where the third argument contains the numb
 Wmisleading-indentation
 C C++ Common Var(warn_misleading_indentation) Warning LangEnabledBy(C C++,Wall)
 Warn when the indentation of the code does not reflect the block structure.
+
+Wmismatched-dealloc
+C ObjC C++ ObjC++ Var(warn_mismatched_alloc) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn for deallocation calls with arguments returned from mismatched allocation
+functions.
+
+Wmismatched-new-delete
+C++ ObjC++ Var(warn_mismatched_new_delete) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn for mismatches between calls to operator new or delete and the corrsponding
+call to the allocation or deallocation function.
 
 Wmismatched-tags
 C++ ObjC++ Var(warn_mismatched_tags) Warning
@@ -1629,7 +1647,7 @@ C++ ObjC++ Var(flag_no_gnu_keywords, 0)
 Recognize GNU-defined keywords.
 
 fgnu-runtime
-ObjC ObjC++ LTO Report RejectNegative Var(flag_next_runtime,0) Init(NEXT_OBJC_RUNTIME)
+ObjC ObjC++ LTO RejectNegative Var(flag_next_runtime,0) Init(NEXT_OBJC_RUNTIME)
 Generate code for GNU runtime environment.
 
 fgnu89-inline
@@ -1673,7 +1691,7 @@ ffriend-injection
 C++ ObjC++ WarnRemoved
 
 fkeep-inline-dllexport
-C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Report Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)
+C C++ ObjC ObjC++ Var(flag_keep_inline_dllexport) Init(1) Condition(TARGET_DLLIMPORT_DECL_ATTRIBUTES)
 Don't emit dllexported inline functions unless needed.
 
 flabels-ok
@@ -1682,6 +1700,65 @@ C++ ObjC++ WarnRemoved
 flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
+
+fmodules-ts
+C++ ObjC++ Var(flag_modules) Integer Init(0)
+Enable C++ modules-ts (experimental).
+
+fno-modules
+C++ ObjC++ Undocumented RejectNegative Var(flag_modules,0) Integer
+;; undocumented
+
+fmodule-header
+C++ ObjC RejectNegative Var(flag_header_unit,0) Integer
+Enable C++ header module (experimental).
+
+fmodule-header=
+C++ ObjC++ Joined RejectNegative Undocumented
+
+fmodule-implicit-inline
+C++ ObjC++ Var(flag_module_implicit_inline,0) Integer
+Member functions defined within their class are inline in module purview.
+
+fmodule-only
+C++ ObjC RejectNegative Var(flag_module_only) Integer
+Only emit Compiled Module Interface.
+
+fmodule-mapper=
+C++ ObjC++ Joined RejectNegative MissingArgError(missing mapper)
+Mapper for module to CMI files.
+
+fmodule-lazy
+C++ ObjC++ Var(flag_module_lazy) Init(1)
+Enable lazy module importing.
+
+fmodule-version-ignore
+C++ ObjC Var(flag_module_version_ignore) Integer
+; undocumented, Very dangerous, but occasionally useful
+
+Winvalid-imported-macros
+C++ ObjC++ Var(warn_imported_macros)
+Warn about macros that have conflicting header units definitions.
+
+flang-info-include-translate
+C++ Var(note_include_translate_yes)
+Note #include directives translated to import declarations.
+
+flang-info-include-translate-not
+C++ Var(note_include_translate_no)
+Note #include directives not translated to import declarations, and not known to be textual.
+
+flang-info-include-translate=
+C++ Joined RejectNegative MissingArgError(missing header name)
+Note a #include translation of a specific header.
+
+flang-info-module-cmi
+C++ Var(note_module_cmi_yes)
+Note Compiled Module Interface pathnames.
+
+flang-info-module-cmi=
+C++ Joined RejectNegative MissingArgError(missing module name)
+Note Compiled Module Interface pathname of a specific module or header-unit.
 
 fmax-include-depth=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger
@@ -1711,7 +1788,7 @@ C++ ObjC++ Var(flag_new_ttp)
 Implement resolution of DR 150 for matching of template template arguments.
 
 fnext-runtime
-ObjC ObjC++ LTO Report RejectNegative Var(flag_next_runtime)
+ObjC ObjC++ LTO RejectNegative Var(flag_next_runtime)
 Generate code for NeXT (Apple Mac OS X) runtime environment.
 
 fnil-receivers
@@ -1752,7 +1829,7 @@ C++ ObjC++ Optimization Var(flag_nothrow_opt)
 Treat a throw() exception specification as noexcept to improve code size.
 
 fobjc-abi-version=
-ObjC ObjC++ LTO Joined Report RejectNegative UInteger Var(flag_objc_abi)
+ObjC ObjC++ LTO Joined RejectNegative UInteger Var(flag_objc_abi)
 Specify which ABI to use for Objective-C family code and meta-data generation.
 
 ; Generate special '- .cxx_construct' and '- .cxx_destruct' methods
@@ -2139,11 +2216,19 @@ Conform to the ISO 2017 C++ standard.
 
 std=c++2a
 C++ ObjC++ Alias(std=c++20) Undocumented
-Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard (experimental and incomplete support).
 
 std=c++20
 C++ ObjC++
-Conform to the ISO 2020 C++ draft standard (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard (experimental and incomplete support).
+
+std=c++2b
+C++ ObjC++ Alias(std=c++23)
+Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
+
+std=c++23
+C++ ObjC++ Undocumented
+Conform to the ISO 2023 C++ draft standard (experimental and incomplete support).
 
 std=c11
 C ObjC
@@ -2216,12 +2301,20 @@ C++ ObjC++
 Conform to the ISO 2017 C++ standard with GNU extensions.
 
 std=gnu++2a
-C++ ObjC++ Alias(std=gnu++20)
-Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
+C++ ObjC++ Alias(std=gnu++20) Undocumented
+Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
 
 std=gnu++20
 C++ ObjC++
-Conform to the ISO 2020 C++ draft standard with GNU extensions (experimental and incomplete support).
+Conform to the ISO 2020 C++ standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++2b
+C++ ObjC++ Alias(std=gnu++23)
+Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
+
+std=gnu++23
+C++ ObjC++ Undocumented
+Conform to the ISO 2023 C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11
 C ObjC
@@ -2286,6 +2379,20 @@ Conform to the ISO 2017 C standard (published in 2018).
 std=iso9899:2018
 C ObjC Alias(std=c17)
 Conform to the ISO 2017 C standard (published in 2018).
+
+stdlib=
+Driver C++ ObjC++ Common Condition(ENABLE_STDLIB_OPTION) Var(flag_stdlib_kind) Joined Enum(stdlib_kind) RejectNegative Init(1)
+-stdlib=[libstdc++|libc++]	The standard library to be used for C++ headers
+and runtime.
+
+Enum
+Name(stdlib_kind) Type(int)
+
+EnumValue
+Enum(stdlib_kind) String(libstdc++) Value(1)
+
+EnumValue
+Enum(stdlib_kind) String(libc++) Value(2)
 
 traditional
 Driver

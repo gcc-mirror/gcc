@@ -1,6 +1,6 @@
 ; Processor-independent options for GNU/Linux.
 ;
-; Copyright (C) 2006-2020 Free Software Foundation, Inc.
+; Copyright (C) 2006-2021 Free Software Foundation, Inc.
 ; Contributed by CodeSourcery.
 ;
 ; This file is part of GCC.
@@ -20,17 +20,17 @@
 ; <http://www.gnu.org/licenses/>.
 
 mbionic
-Target Report RejectNegative Var(linux_libc,LIBC_BIONIC) Init(DEFAULT_LIBC) Negative(mglibc)
+Target RejectNegative Var(linux_libc,LIBC_BIONIC) Init(DEFAULT_LIBC) Negative(mglibc)
 Use Bionic C library.
 
 mglibc
-Target Report RejectNegative Var(linux_libc,LIBC_GLIBC) Negative(muclibc)
+Target RejectNegative Var(linux_libc,LIBC_GLIBC) Negative(muclibc)
 Use GNU C library.
 
 muclibc
-Target Report RejectNegative Var(linux_libc,LIBC_UCLIBC) Negative(mmusl)
+Target RejectNegative Var(linux_libc,LIBC_UCLIBC) Negative(mmusl)
 Use uClibc C library.
 
 mmusl
-Target Report RejectNegative Var(linux_libc,LIBC_MUSL) Negative(mbionic)
+Target RejectNegative Var(linux_libc,LIBC_MUSL) Negative(mbionic)
 Use musl C library.

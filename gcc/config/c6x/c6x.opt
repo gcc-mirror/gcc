@@ -1,5 +1,5 @@
 ; Option definitions for TI C6X.
-; Copyright (C) 2010-2020 Free Software Foundation, Inc.
+; Copyright (C) 2010-2021 Free Software Foundation, Inc.
 ; Contributed by Bernd Schmidt <bernds@codesourcery.com>
 ; Contributed by CodeSourcery.
 ;
@@ -26,11 +26,11 @@ SourceInclude
 config/c6x/c6x-opts.h
 
 mbig-endian
-Target Report RejectNegative Mask(BIG_ENDIAN)
+Target RejectNegative Mask(BIG_ENDIAN)
 Use big-endian byte order.
 
 mlittle-endian
-Target Report RejectNegative InverseMask(BIG_ENDIAN, LITTLE_ENDIAN)
+Target RejectNegative InverseMask(BIG_ENDIAN, LITTLE_ENDIAN)
 Use little-endian byte order.
 
 msim
@@ -59,7 +59,7 @@ Target Mask(DSBT)
 Compile for the DSBT shared library ABI.
 
 mlong-calls
-Target Report Mask(LONG_CALLS)
+Target Mask(LONG_CALLS)
 Avoid generating pc-relative calls; use indirection.
 
 march=

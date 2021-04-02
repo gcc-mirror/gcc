@@ -1,6 +1,6 @@
 /* Write the GIMPLE representation to a file stream.
 
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Kenneth Zadeck <zadeck@naturalbridge.com>
    Re-implemented by Diego Novillo <dnovillo@google.com>
 
@@ -2670,7 +2670,7 @@ produce_lto_section ()
 
   bool slim_object = flag_generate_lto && !flag_fat_lto_objects;
   lto_section s
-    = { LTO_major_version, LTO_minor_version, slim_object, 0 };
+    = { LTO_major_version, LTO_minor_version, slim_object, 0, 0 };
   s.set_compression (compression);
   lto_write_data (&s, sizeof s);
   lto_end_section ();

@@ -31,7 +31,7 @@ extern void *mapassign (const struct maptype *, void *hmap, const void *key)
 // The type descriptor for map[string] bool.  */
 extern const char map_string_bool[] __attribute__ ((weak));
 extern const char map_string_bool[]
-  __asm__ (GOSYM_PREFIX "type..map.6string.7bool");
+  __asm__ (GOSYM_PREFIX "type..map_6string_7bool");
 
 void runtime_Fieldtrack (void *) __asm__ (GOSYM_PREFIX "runtime.Fieldtrack");
 

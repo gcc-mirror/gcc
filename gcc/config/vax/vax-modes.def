@@ -1,5 +1,5 @@
 /* VAX extra machine modes.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -20,3 +20,14 @@ along with GCC; see the file COPYING3.  If not see
 /* We just need to reset the floating point formats.  */
 RESET_FLOAT_FORMAT (SF, vax_f_format);
 RESET_FLOAT_FORMAT (DF, vax_d_format);
+
+/* `DImode' addition and subtraction operations do their calculation
+   on the low and then the high longword with separate instructions,
+   and therefore only usably set N.  */
+CC_MODE (CCN);
+/* Non-arithmetic integer instructions such as MOV or XOR as well as
+   instructions that produce a floating-point result only usably set
+   N and Z.  */
+CC_MODE (CCNZ);
+/* The FFC and FFS instructions only usably set Z.  */
+CC_MODE (CCZ);

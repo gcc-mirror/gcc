@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -205,6 +205,8 @@ gomp_new_team (unsigned nthreads)
   team->task_running_count = 0;
   team->work_share_cancelled = 0;
   team->team_cancelled = 0;
+
+  team->task_detach_count = 0;
 
   return team;
 }

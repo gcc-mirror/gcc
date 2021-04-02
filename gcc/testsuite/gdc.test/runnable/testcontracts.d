@@ -422,6 +422,56 @@ void test6417()
 }
 
 /*******************************************/
+// 6549
+
+class C6549
+{
+    static int ocount = 0;
+    static int icount = 0;
+
+    abstract int foo(int)
+    in { ++icount; }
+    out { ++ocount; }
+}
+
+class CD6549 : C6549
+{
+    override int foo(int)
+    in { assert(false); }
+    do { return 10; }
+}
+
+abstract class D6549
+{
+    static int icount = 0;
+    static int ocount = 0;
+
+    int foo(int)
+    in { ++icount; }
+    out { ++ocount; }
+}
+
+class DD6549 : D6549
+{
+    override int foo(int)
+    in { assert(false); }
+    do { return 10; }
+}
+
+void test6549()
+{
+    auto c = new CD6549;
+    c.foo(10);
+    assert(C6549.icount == 1);
+    assert(C6549.ocount == 1);
+
+    auto d = new DD6549;
+    d.foo(10);
+    assert(D6549.icount == 1);
+    assert(D6549.ocount == 1);
+}
+
+/*******************************************/
 // 7218
 
 void test7218()
@@ -1030,6 +1080,81 @@ void test14779()
 
 /*******************************************/
 
+//******************************************/
+// DIP 1009
+
+int dip1009_1(int x)
+  in  (x > 0, "x must be positive!")
+  out (r; r < 0, "r must be negative!")
+  in (true, "cover trailing comma case",)
+  out (; true, "cover trailing comma case",)
+{
+    return -x;
+}
+
+int dip1009_2(int x)
+  in  (x > 0)
+  out (r; r < 0)
+{
+    return -x;
+}
+
+int dip1009_3(int x)
+in  (x > 0,)
+out (r; r < 0,)
+do
+{
+    return -x;
+}
+
+void dip1009_4(int x)
+  in  (x > 0)
+  out (; x > 1)
+{
+    x += 1;
+}
+
+interface DIP1009_5
+{
+    void dip1009_5(int x)
+      in  (x > 0)
+      out (; x > 1);
+}
+
+int dip1009_6(int x, int y)
+  in  (x > 0)
+  out (r; r > 1)
+  out (; x > 0)
+  in  (y > 0)
+  in  (x + y > 1)
+  out (r; r > 1)
+{
+    return x+y;
+}
+
+int dip1009_7(int x)
+  in (x > 0)
+  in { assert(x > 1); }
+  out { assert(x > 2); }
+  out (; x > 3)
+  out (r; r > 3)
+{
+    x += 2;
+    return x;
+}
+
+class DIP1009_8
+{
+    private int x = 4;
+    invariant (x > 0, "x must stay positive");
+    invariant (x > 1, "x must be greater than one",);
+    invariant (x > 2);
+    invariant (x > 3,);
+    void foo(){ x = 5; }
+}
+
+/*******************************************/
+
 int main()
 {
     test1();
@@ -1043,6 +1168,7 @@ int main()
     test9();
     test4785();
     test6417();
+    test6549();
     test7218();
     test7517();
     test8073();
@@ -1051,6 +1177,13 @@ int main()
     test15524();
     test15524a();
     test14779();
+    dip1009_1(1);
+    dip1009_2(1);
+    dip1009_3(1);
+    dip1009_4(1);
+    dip1009_6(1, 1);
+    dip1009_7(3);
+    new DIP1009_8().foo();
 
     printf("Success\n");
     return 0;

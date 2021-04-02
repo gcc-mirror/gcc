@@ -127,12 +127,4 @@ __parallel_invoke(_ExecutionPolicy&&, _F1&& __f1, _F2&& __f2)
 } // namespace __serial_backend
 } // namespace __pstl
 
-namespace __pstl
-{
-namespace __par_backend
-{
-using namespace __pstl::__serial;
-}
-} // namespace __pstl
-
 #endif /* _PSTL_PARALLEL_BACKEND_SERIAL_H */

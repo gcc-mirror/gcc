@@ -1,5 +1,5 @@
 /* Array bounds checking.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -372,12 +372,23 @@ array_bounds_checker::check_array_ref (location_t location, tree ref,
   return warned;
 }
 
-/* Hack around the internal representation constraints and build a zero
-   element array type that actually renders as T[0] in diagnostcs.  */
+/* Wrapper around build_array_type_nelts that makes sure the array
+   can be created at all and handles zero sized arrays specially.  */
 
 static tree
-build_zero_elt_array_type (tree eltype)
+build_printable_array_type (tree eltype, unsigned HOST_WIDE_INT nelts)
 {
+  if (TYPE_SIZE_UNIT (eltype)
+      && TREE_CODE (TYPE_SIZE_UNIT (eltype)) == INTEGER_CST
+      && !integer_zerop (TYPE_SIZE_UNIT (eltype))
+      && TYPE_ALIGN_UNIT (eltype) > 1
+      && wi::zext (wi::to_wide (TYPE_SIZE_UNIT (eltype)),
+		   ffs_hwi (TYPE_ALIGN_UNIT (eltype)) - 1) != 0)
+    eltype = TYPE_MAIN_VARIANT (eltype);
+
+  if (nelts)
+    return build_array_type_nelts (eltype, nelts);
+
   tree idxtype = build_range_type (sizetype, size_zero_node, NULL_TREE);
   tree arrtype = build_array_type (eltype, idxtype);
   arrtype = build_distinct_type_copy (TYPE_MAIN_VARIANT (arrtype));
@@ -561,10 +572,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
 	return false;
 
       offset_int nelts = arrbounds[1] / eltsize;
-      if (nelts == 0)
-	reftype = build_zero_elt_array_type (reftype);
-      else
-	reftype = build_array_type_nelts (reftype, nelts.to_uhwi ());
+      reftype = build_printable_array_type (reftype, nelts.to_uhwi ());
     }
   else if (TREE_CODE (arg) == ADDR_EXPR)
     {
@@ -675,7 +683,7 @@ array_bounds_checker::check_mem_ref (location_t location, tree ref,
       /* Treat a reference to a non-array object as one to an array
 	 of a single element.  */
       if (TREE_CODE (reftype) != ARRAY_TYPE)
-	reftype = build_array_type_nelts (reftype, 1);
+	reftype = build_printable_array_type (reftype, 1);
 
       /* Extract the element type out of MEM_REF and use its size
 	 to compute the index to print in the diagnostic; arrays
@@ -882,6 +890,59 @@ array_bounds_checker::check_addr_expr (location_t location, tree t)
     }
 }
 
+/* Return true if T is a reference to a member of a base class that's within
+   the bounds of the enclosing complete object.  The function "hacks" around
+   problems discussed in pr98266 and pr97595.  */
+
+static bool
+inbounds_memaccess_p (tree t)
+{
+  if (TREE_CODE (t) != COMPONENT_REF)
+    return false;
+
+  tree mref = TREE_OPERAND (t, 0);
+  if (TREE_CODE (mref) != MEM_REF)
+    return false;
+
+  /* Consider the access if its type is a derived class.  */
+  tree mreftype = TREE_TYPE (mref);
+  if (!RECORD_OR_UNION_TYPE_P (mreftype)
+      || !TYPE_BINFO (mreftype))
+    return false;
+
+  /* Compute the size of the referenced object (it could be dynamically
+     allocated).  */
+  access_ref aref;   // unused
+  tree refop = TREE_OPERAND (mref, 0);
+  tree refsize = compute_objsize (refop, 1, &aref);
+  if (!refsize || TREE_CODE (refsize) != INTEGER_CST)
+    return false;
+
+  /* Compute the byte offset of the member within its enclosing class.  */
+  tree fld = TREE_OPERAND (t, 1);
+  tree fldpos = byte_position (fld);
+  if (TREE_CODE (fldpos) != INTEGER_CST)
+    return false;
+
+  /* Compute the byte offset of the member with the outermost complete
+     object by adding its offset computed above to the MEM_REF offset.  */
+  tree refoff = TREE_OPERAND (mref, 1);
+  tree fldoff = int_const_binop (PLUS_EXPR, fldpos, refoff);
+  /* Return false if the member offset is greater or equal to the size
+     of the complete object.  */
+  if (!tree_int_cst_lt (fldoff, refsize))
+    return false;
+
+  tree fldsiz = DECL_SIZE_UNIT (fld);
+  if (!fldsiz || TREE_CODE (fldsiz) != INTEGER_CST)
+    return false;
+
+  /* Return true if the offset just past the end of the member is less
+     than or equal to the size of the complete object.  */
+  tree fldend = int_const_binop (PLUS_EXPR, fldoff, fldsiz);
+  return tree_int_cst_le (fldend, refsize);
+}
+
 /* Callback for walk_tree to check a tree for out of bounds array
    accesses.  The array_bounds_checker class is passed in DATA.  */
 
@@ -911,8 +972,14 @@ array_bounds_checker::check_array_bounds (tree *tp, int *walk_subtree,
   else if (TREE_CODE (t) == ADDR_EXPR)
     {
       checker->check_addr_expr (location, t);
-      *walk_subtree = FALSE;
+      *walk_subtree = false;
     }
+  else if (inbounds_memaccess_p (t))
+    /* Hack: Skip MEM_REF checks in accesses to a member of a base class
+       at an offset that's within the bounds of the enclosing object.
+       See pr98266 and pr97595.  */
+    *walk_subtree = false;
+
   /* Propagate the no-warning bit to the outer expression.  */
   if (warned)
     TREE_NO_WARNING (t) = true;

@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for Tensilica's Xtensa architecture.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -1082,6 +1082,21 @@ xtensa_emit_move_sequence (rtx *operands, machine_mode mode)
 
       if (! TARGET_AUTO_LITPOOLS && ! TARGET_CONST16)
 	{
+	  /* Try to emit MOVI + SLLI sequence, that is smaller
+	     than L32R + literal.  */
+	  if (optimize_size && mode == SImode && register_operand (dst, mode))
+	    {
+	      HOST_WIDE_INT srcval = INTVAL (src);
+	      int shift = ctz_hwi (srcval);
+
+	      if (xtensa_simm12b (srcval >> shift))
+		{
+		  emit_move_insn (dst, GEN_INT (srcval >> shift));
+		  emit_insn (gen_ashlsi3_internal (dst, dst, GEN_INT (shift)));
+		  return 1;
+		}
+	    }
+
 	  src = force_const_mem (SImode, src);
 	  operands[1] = src;
 	}

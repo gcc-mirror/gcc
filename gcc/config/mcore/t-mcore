@@ -1,4 +1,4 @@
-# Copyright (C) 2000-2020 Free Software Foundation, Inc.
+# Copyright (C) 2000-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -23,7 +23,7 @@
 # MULTILIB_DIRNAMES    = align8 align4
 # MULTILIB_MATCHES     = 
 # MULTILIB_EXTRA_OPTS  = 
-# MULTILIB_EXCEPTIONS  =
 
+MULTILIB_EXCEPTIONS  = mlittle-endian/m210
 MULTILIB_OPTIONS     = mbig-endian/mlittle-endian m210/m340
 MULTILIB_DIRNAMES    = big little m210 m340

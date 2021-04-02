@@ -1,7 +1,3 @@
-/* { dg-additional-options "-Wno-analyzer-too-complex" } */
-/* TODO: the above ought not to be necessary, but currently is due to a
-   state explosion within the for loop.  */
-
 typedef struct list
 {
   struct list *next;

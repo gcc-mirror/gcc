@@ -1,6 +1,6 @@
 /* Routines required for instrumenting a program.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -94,6 +94,9 @@ __gcov_merge_time_profile (gcov_type *counters, unsigned n_counters)
 
    -- the stored candidate on the most common value of the measured entity
    -- counter
+
+   We use -TOTAL for situation when merging dropped some values.
+   The information is used for -fprofile-reproducible flag.
    */
 
 void
@@ -107,7 +110,9 @@ __gcov_merge_topn (gcov_type *counters, unsigned n_counters)
       gcov_type all = gcov_get_counter_ignore_scaling (-1);
       gcov_type n = gcov_get_counter_ignore_scaling (-1);
 
-      counters[GCOV_TOPN_MEM_COUNTERS * i] += all;
+      unsigned full = all < 0;
+      gcov_type *total = &counters[GCOV_TOPN_MEM_COUNTERS * i];
+      *total += full ? -all : all;
 
       for (unsigned j = 0; j < n; j++)
 	{
@@ -115,9 +120,12 @@ __gcov_merge_topn (gcov_type *counters, unsigned n_counters)
 	  gcov_type count = gcov_get_counter_ignore_scaling (-1);
 
 	  // TODO: we should use atomic here
-	  gcov_topn_add_value (counters + GCOV_TOPN_MEM_COUNTERS * i, value,
-			       count, 0, 0);
+	  full |= gcov_topn_add_value (counters + GCOV_TOPN_MEM_COUNTERS * i,
+				       value, count, 0, 0);
 	}
+
+      if (full)
+	*total = -(*total);
     }
 }
 #endif /* L_gcov_merge_topn */

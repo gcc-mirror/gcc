@@ -1,6 +1,6 @@
 ; Options for the Matsushita MN10300 port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -34,7 +34,7 @@ Target
 Target the AM33/2.0 processor.
 
 mam34
-Target Report
+Target
 Target the AM34 processor.
 
 mtune=
@@ -42,7 +42,7 @@ Target RejectNegative Joined Var(mn10300_tune_string)
 Tune code for the given processor.
 
 mmult-bug
-Target Report Mask(MULT_BUG)
+Target Mask(MULT_BUG)
 Work around hardware multiply bug.
 
 ; Ignored by the compiler
@@ -55,13 +55,13 @@ Target RejectNegative
 Enable linker relaxations.
 
 mreturn-pointer-on-d0
-Target Report Mask(PTR_A0D0)
+Target Mask(PTR_A0D0)
 Return pointers in both a0 and d0.
 
 mliw
-Target Report Mask(ALLOW_LIW)
+Target Mask(ALLOW_LIW)
 Allow gcc to generate LIW instructions.
 
 msetlb
-Target Report Mask(ALLOW_SETLB)
+Target Mask(ALLOW_SETLB)
 Allow gcc to generate the SETLB and Lcc instructions.

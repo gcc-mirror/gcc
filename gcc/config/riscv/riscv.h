@@ -1,5 +1,5 @@
 /* Definition of RISC-V target for GNU compiler.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Andrew Waterman (andrew@sifive.com).
    Based on MIPS target for GNU compiler.
 
@@ -32,6 +32,12 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Target CPU info for Rust.  */
 #define TARGET_RUST_CPU_INFO riscv_rust_target_cpu_info
+
+#ifdef TARGET_BIG_ENDIAN_DEFAULT
+#define DEFAULT_ENDIAN_SPEC    "b"
+#else
+#define DEFAULT_ENDIAN_SPEC    "l"
+#endif
 
 /* Default target_flags if no switches are specified  */
 
@@ -79,12 +85,23 @@ extern const char *riscv_default_mtune (int argc, const char **argv);
 #define ASM_MISA_SPEC ""
 #endif
 
+/* Reference:
+     https://gcc.gnu.org/onlinedocs/cpp/Stringizing.html#Stringizing  */
+#define STRINGIZING(s) __STRINGIZING(s)
+#define __STRINGIZING(s) #s
+
+#define MULTILIB_DEFAULTS \
+  {"march=" STRINGIZING (TARGET_RISCV_DEFAULT_ARCH), \
+   "mabi=" STRINGIZING (TARGET_RISCV_DEFAULT_ABI) }
+
 #undef ASM_SPEC
 #define ASM_SPEC "\
 %(subtarget_asm_debugging_spec) \
 %{" FPIE_OR_FPIC_SPEC ":-fpic} \
 %{march=*} \
 %{mabi=*} \
+%{mbig-endian} \
+%{mlittle-endian} \
 %(subtarget_asm_spec)" \
 ASM_MISA_SPEC
 
@@ -120,8 +137,8 @@ ASM_MISA_SPEC
 /* Target machine storage layout */
 
 #define BITS_BIG_ENDIAN 0
-#define BYTES_BIG_ENDIAN 0
-#define WORDS_BIG_ENDIAN 0
+#define BYTES_BIG_ENDIAN (TARGET_BIG_ENDIAN != 0)
+#define WORDS_BIG_ENDIAN (BYTES_BIG_ENDIAN)
 
 #define MAX_BITS_PER_WORD 64
 

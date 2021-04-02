@@ -578,8 +578,11 @@ package body Exp_Strm is
          elsif P_Size <= Standard_Long_Integer_Size then
             Lib_RE := RE_I_LI;
 
-         else
+         elsif P_Size <= Standard_Long_Long_Integer_Size then
             Lib_RE := RE_I_LLI;
+
+         else
+            Lib_RE := RE_I_LLLI;
          end if;
 
       --  Unsigned integer types, also includes unsigned fixed-point types
@@ -609,8 +612,11 @@ package body Exp_Strm is
          elsif P_Size <= Standard_Long_Integer_Size then
             Lib_RE := RE_I_LU;
 
-         else
+         elsif P_Size <= Standard_Long_Long_Integer_Size then
             Lib_RE := RE_I_LLU;
+
+         else
+            Lib_RE := RE_I_LLLU;
          end if;
 
       else pragma Assert (Is_Access_Type (U_Type));
@@ -802,16 +808,24 @@ package body Exp_Strm is
       then
          if P_Size <= Standard_Short_Short_Integer_Size then
             Lib_RE := RE_W_SSI;
+
          elsif P_Size <= Standard_Short_Integer_Size then
             Lib_RE := RE_W_SI;
+
          elsif P_Size = 24 then
             Lib_RE := RE_W_I24;
+
          elsif P_Size <= Standard_Integer_Size then
             Lib_RE := RE_W_I;
+
          elsif P_Size <= Standard_Long_Integer_Size then
             Lib_RE := RE_W_LI;
-         else
+
+         elsif P_Size <= Standard_Long_Long_Integer_Size then
             Lib_RE := RE_W_LLI;
+
+         else
+            Lib_RE := RE_W_LLLI;
          end if;
 
       --  Unsigned integer types, also includes unsigned fixed-point types
@@ -828,16 +842,24 @@ package body Exp_Strm is
       then
          if P_Size <= Standard_Short_Short_Integer_Size then
             Lib_RE := RE_W_SSU;
+
          elsif P_Size <= Standard_Short_Integer_Size then
             Lib_RE := RE_W_SU;
+
          elsif P_Size = 24 then
             Lib_RE := RE_W_U24;
+
          elsif P_Size <= Standard_Integer_Size then
             Lib_RE := RE_W_U;
+
          elsif P_Size <= Standard_Long_Integer_Size then
             Lib_RE := RE_W_LU;
-         else
+
+         elsif P_Size <= Standard_Long_Long_Integer_Size then
             Lib_RE := RE_W_LLU;
+
+         else
+            Lib_RE := RE_W_LLLU;
          end if;
 
       else pragma Assert (Is_Access_Type (U_Type));

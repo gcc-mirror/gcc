@@ -1,5 +1,5 @@
 /* Search for references that a functions loads or stores.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
    Contributed by David Cepelik and Jan Hubicka
 
 This file is part of GCC.
@@ -36,7 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 
    The following information is computed
      1) load/store access tree described in ipa-modref-tree.h
-	This is used by tree-ssa-alias to disambiguate load/dtores
+	This is used by tree-ssa-alias to disambiguate load/stores
      2) EAF flags used by points-to analysis (in tree-ssa-structlias).
 	and defined in tree-core.h.
    and stored to optimization_summaries.
@@ -835,10 +835,6 @@ merge_call_side_effects (modref_summary *cur_summary,
   auto_vec <modref_parm_map, 32> parm_map;
   bool changed = false;
 
-  if (dump_file)
-    fprintf (dump_file, " - Merging side effects of %s with parm map:",
-	     callee_node->dump_name ());
-
   /* We can not safely optimize based on summary of callee if it does
      not always bind to current def: it is possible that memory load
      was optimized out earlier which may not happen in the interposed
@@ -849,6 +845,10 @@ merge_call_side_effects (modref_summary *cur_summary,
 	fprintf (dump_file, " - May be interposed: collapsing loads.\n");
       cur_summary->loads->collapse ();
     }
+
+  if (dump_file)
+    fprintf (dump_file, " - Merging side effects of %s with parm map:",
+	     callee_node->dump_name ());
 
   parm_map.safe_grow_cleared (gimple_call_num_args (stmt), true);
   for (unsigned i = 0; i < gimple_call_num_args (stmt); i++)
@@ -1247,11 +1247,13 @@ analyze_stmt (modref_summary *summary, modref_summary_lto *summary_lto,
 	    && (!fnspec.global_memory_read_p ()
 		|| !fnspec.global_memory_written_p ()))
 	  {
-	    fnspec_summaries->get_create
-		 (cgraph_node::get (current_function_decl)->get_edge (stmt))
-			->fnspec = xstrdup (fnspec.get_str ());
-	    if (dump_file)
-	      fprintf (dump_file, "  Recorded fnspec %s\n", fnspec.get_str ());
+	    cgraph_edge *e = cgraph_node::get (current_function_decl)->get_edge (stmt);
+	    if (e->callee)
+	      {
+		fnspec_summaries->get_create (e)->fnspec = xstrdup (fnspec.get_str ());
+		if (dump_file)
+		  fprintf (dump_file, "  Recorded fnspec %s\n", fnspec.get_str ());
+	      }
 	  }
       }
      return true;
@@ -1437,6 +1439,8 @@ modref_lattice::add_escape_point (gcall *call, int arg, int min_flags,
 bool
 modref_lattice::merge (int f)
 {
+  if (f & EAF_UNUSED)
+    return false;
   if ((flags & f) != flags)
     {
       flags &= f;
@@ -1595,14 +1599,12 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, name)
     {
       if (lattice[index].flags == 0)
-	{
-	  BREAK_FROM_IMM_USE_STMT (ui);
-	}
+	break;
       if (is_gimple_debug (use_stmt))
 	continue;
       if (dump_file)
 	{
-	  fprintf (dump_file, "%*s  Analyzing stmt:", depth * 4, "");
+	  fprintf (dump_file, "%*s  Analyzing stmt: ", depth * 4, "");
 	  print_gimple_stmt (dump_file, use_stmt, 0);
 	}
 
@@ -1619,9 +1621,19 @@ analyze_ssa_name_flags (tree name, vec<modref_lattice> &lattice, int depth,
       else if (gcall *call = dyn_cast <gcall *> (use_stmt))
 	{
 	  tree callee = gimple_call_fndecl (call);
-
+	  /* Return slot optiomization would require bit of propagation;
+	     give up for now.  */
+	  if (gimple_call_return_slot_opt_p (call)
+	      && gimple_call_lhs (call) != NULL_TREE
+	      && TREE_ADDRESSABLE (TREE_TYPE (gimple_call_lhs (call))))
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "%*s  Unhandled return slot opt\n",
+			 depth * 4, "");
+	      lattice[index].merge (0);
+	    }
 	  /* Recursion would require bit of propagation; give up for now.  */
-	  if (callee && !ipa && recursive_call_p (current_function_decl,
+	  else if (callee && !ipa && recursive_call_p (current_function_decl,
 						  callee))
 	    lattice[index].merge (0);
 	  else
@@ -1825,8 +1837,26 @@ analyze_parms (modref_summary *summary, modref_summary_lto *summary_lto,
        parm = TREE_CHAIN (parm))
     {
       tree name = ssa_default_def (cfun, parm);
-      if (!name)
-	continue;
+      if (!name || has_zero_uses (name))
+	{
+	  /* We do not track non-SSA parameters,
+	     but we want to track unused gimple_regs.  */
+	  if (!is_gimple_reg (parm))
+	    continue;
+	  if (summary)
+	    {
+	      if (parm_index >= summary->arg_flags.length ())
+		summary->arg_flags.safe_grow_cleared (count, true);
+	      summary->arg_flags[parm_index] = EAF_UNUSED;
+	    }
+	  else if (summary_lto)
+	    {
+	      if (parm_index >= summary_lto->arg_flags.length ())
+		summary_lto->arg_flags.safe_grow_cleared (count, true);
+	      summary_lto->arg_flags[parm_index] = EAF_UNUSED;
+	    }
+	  continue;
+	}
       analyze_ssa_name_flags (name, lattice, 0, ipa);
       int flags = lattice[SSA_NAME_VERSION (name)].flags;
 
@@ -3044,14 +3074,14 @@ ipa_merge_modref_summary_after_inlining (cgraph_edge *edge)
     {
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	to_info->loads->collapse ();
-      if (ignore_stores)
+      if (!ignore_stores)
 	to_info->stores->collapse ();
     }
   if (!callee_info_lto && to_info_lto)
     {
       if (!(flags & (ECF_CONST | ECF_NOVOPS)))
 	to_info_lto->loads->collapse ();
-      if (ignore_stores)
+      if (!ignore_stores)
 	to_info_lto->stores->collapse ();
     }
   if (callee_info || callee_info_lto)
@@ -3636,7 +3666,8 @@ modref_merge_call_site_flags (escape_summary *sum,
 	}
       flags |= ee->min_flags;
       flags_lto |= ee->min_flags;
-      if (cur_summary && ee->parm_index < cur_summary->arg_flags.length ())
+      if (!(flags & EAF_UNUSED)
+	  && cur_summary && ee->parm_index < cur_summary->arg_flags.length ())
 	{
 	  int f = cur_summary->arg_flags[ee->parm_index];
 	  if ((f & flags) != f)
@@ -3648,7 +3679,8 @@ modref_merge_call_site_flags (escape_summary *sum,
 	      changed = true;
 	    }
 	}
-      if (cur_summary_lto
+      if (!(flags_lto & EAF_UNUSED)
+	  && cur_summary_lto
 	  && ee->parm_index < cur_summary_lto->arg_flags.length ())
 	{
 	  int f = cur_summary_lto->arg_flags[ee->parm_index];

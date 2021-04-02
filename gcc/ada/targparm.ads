@@ -544,16 +544,6 @@ package Targparm is
 
    --  WARNING: There is a matching C declaration of this variable in fe.h
 
-   -------------------------------------------
-   -- Boolean-Valued Fixed-Point Attributes --
-   -------------------------------------------
-
-   Fractional_Fixed_Ops_On_Target : Boolean := False;
-   --  Set to True for targets that support fixed-by-fixed multiplication
-   --  and division for fixed-point types with a small value equal to
-   --  2 ** (-(T'Object_Size - 1)) and whose values have an absolute
-   --  value less than 1.0.
-
    -----------------
    -- Subprograms --
    -----------------

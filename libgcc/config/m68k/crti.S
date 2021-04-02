@@ -1,6 +1,6 @@
 /* Specialized code needed to support construction and destruction of
    file-scope objects in C++ and Java code, and to support exception handling.
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Charles-Antoine Gauthier (charles.gauthier@iit.nrc.ca).
 
 This file is part of GCC.

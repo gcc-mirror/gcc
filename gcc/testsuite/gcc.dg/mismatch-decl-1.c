@@ -4,12 +4,12 @@
 
 /* The bug this is testing is that if a new decl conflicts with an
    explicit decl, you don't get the "changes type of builtin" message,
-   but if there was *also* a builtin, you *also* don't get the
-   "previous declaration was here" message, leaving you with no clue
-   where the previous declaration came from.  */
+   but if there was *also* a builtin, you *also* don't get the "previous
+   declaration" message, leaving you with no clue where the previous
+   declaration came from.  */
 
-extern char foo(int,int); /* { dg-message "previous declaration of 'foo' was here" } */
-extern char *index(const char *,int); /* { dg-message "previous declaration of 'index' was here" } */
+extern char foo(int,int); /* { dg-message "previous declaration of 'foo'" "note" } */
+extern char *index(const char *,int); /* { dg-message "previous declaration of 'index'" "note" } */
 
 /* This changes the type of "index", which is both a builtin and an
    explicit decl.  */

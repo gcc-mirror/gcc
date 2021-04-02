@@ -1476,3 +1476,15 @@ void f<int>(decltype (__alignof__(int)))
 
 _Z1fIiEvDTv111__alignof__tlT_EE
 void f<int>(decltype (__alignof__(int{})))
+
+_Z1gI1AEv1SIXadsrT_oncviEE
+void g<A>(S<&A::operator int>)
+
+_Z1jI1AEDTcldtfp_oncvPT_EES1_
+decltype (({parm#1}.(operator A*))()) j<A>(A)
+
+_Z1fI1AEDtdtfp_srT_1xES1_
+decltype ({parm#1}.A::x) f<A>(A)
+
+_Z2f6IP1AEDtptfp_gssr1A1BE1xET_
+decltype ({parm#1}->(::A::B::x)) f6<A*>(A*)

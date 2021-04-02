@@ -1,5 +1,5 @@
 /* __cxa_atexit backwards-compatibility support for Darwin.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 

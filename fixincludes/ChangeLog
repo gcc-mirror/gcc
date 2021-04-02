@@ -1,3 +1,10 @@
+2020-12-14  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* fixincl.x: Rerun genfixes.
+	* inclhack.def(aix_physadr_t): Change test_text to something
+	that needs to be replaced.
+	* tests/base/sys/types.h(aix_physadr_t): Add expectation.
+
 2020-11-18  Nathan Sidwell  <nathan@acm.org>
 
 	* inclhack.def (aix_physaddr_t): New.

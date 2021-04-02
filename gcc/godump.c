@@ -1,5 +1,5 @@
 /* Output Go language descriptions of types.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <iant@google.com>.
 
 This file is part of GCC.
@@ -697,15 +697,20 @@ go_format_type (class godump_container *container, tree type,
   ret = true;
   ob = &container->type_obstack;
 
-  if (TYPE_NAME (type) != NULL_TREE
-      && (container->decls_seen.contains (type)
-	  || container->decls_seen.contains (TYPE_NAME (type)))
+  if (use_type_name
+      && TYPE_NAME (type) != NULL_TREE
       && (AGGREGATE_TYPE_P (type)
 	  || POINTER_TYPE_P (type)
 	  || TREE_CODE (type) == FUNCTION_TYPE))
     {
       tree name;
       void **slot;
+
+      /* References to complex builtin types cannot be translated to
+	Go.  */
+      if (DECL_P (TYPE_NAME (type))
+	  && DECL_IS_UNDECLARED_BUILTIN (TYPE_NAME (type)))
+	ret = false;
 
       name = TYPE_IDENTIFIER (type);
 
@@ -714,12 +719,16 @@ go_format_type (class godump_container *container, tree type,
       if (slot != NULL)
 	ret = false;
 
+      /* References to incomplete structs are permitted in many
+	 contexts, like behind a pointer or inside of a typedef. So
+	 consider any referenced struct a potential dummy type.  */
+      if (RECORD_OR_UNION_TYPE_P (type))
+       container->pot_dummy_types.add (IDENTIFIER_POINTER (name));
+
       obstack_1grow (ob, '_');
       go_append_string (ob, name);
       return ret;
     }
-
-  container->decls_seen.add (type);
 
   switch (TREE_CODE (type))
     {
@@ -821,34 +830,6 @@ go_format_type (class godump_container *container, tree type,
       break;
 
     case POINTER_TYPE:
-      if (use_type_name
-          && TYPE_NAME (TREE_TYPE (type)) != NULL_TREE
-          && (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type))
-	      || (POINTER_TYPE_P (TREE_TYPE (type))
-                  && (TREE_CODE (TREE_TYPE (TREE_TYPE (type)))
-		      == FUNCTION_TYPE))))
-        {
-	  tree name;
-	  void **slot;
-
-	  name = TYPE_IDENTIFIER (TREE_TYPE (type));
-
-	  slot = htab_find_slot (container->invalid_hash,
-				 IDENTIFIER_POINTER (name), NO_INSERT);
-	  if (slot != NULL)
-	    ret = false;
-
-	  obstack_grow (ob, "*_", 2);
-	  go_append_string (ob, name);
-
-	  /* The pointer here can be used without the struct or union
-	     definition.  So this struct or union is a potential dummy
-	     type.  */
-	  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (type)))
-	    container->pot_dummy_types.add (IDENTIFIER_POINTER (name));
-
-	  return ret;
-        }
       if (TREE_CODE (TREE_TYPE (type)) == FUNCTION_TYPE)
 	obstack_grow (ob, "func", 4);
       else
@@ -1107,7 +1088,7 @@ go_output_type (class godump_container *container)
 static void
 go_output_fndecl (class godump_container *container, tree decl)
 {
-  if (!go_format_type (container, TREE_TYPE (decl), false, true, NULL, false))
+  if (!go_format_type (container, TREE_TYPE (decl), true, true, NULL, false))
     fprintf (go_dump_file, "// ");
   fprintf (go_dump_file, "func _%s ",
 	   IDENTIFIER_POINTER (DECL_NAME (decl)));
@@ -1174,16 +1155,28 @@ go_output_typedef (class godump_container *container, tree decl)
     {
       void **slot;
       const char *type;
+      tree original_type;
 
       type = IDENTIFIER_POINTER (DECL_NAME (decl));
+      original_type = DECL_ORIGINAL_TYPE (decl);
+      if (original_type == NULL_TREE)
+	original_type = TREE_TYPE (decl);
+
+      /* Suppress typedefs where the type name matches the underlying
+	 struct/union/enum tag. This way we'll emit the struct definition
+	 instead of an invalid recursive type.  */
+      if (TYPE_IDENTIFIER (original_type) != NULL
+	  && IDENTIFIER_POINTER (TYPE_IDENTIFIER (original_type)) == type)
+	return;
+
       /* If type defined already, skip.  */
       slot = htab_find_slot (container->type_hash, type, INSERT);
       if (*slot != NULL)
 	return;
       *slot = CONST_CAST (void *, (const void *) type);
 
-      if (!go_format_type (container, TREE_TYPE (decl), true, false, NULL,
-			   false))
+      if (!go_format_type (container, original_type, true, false,
+			   NULL, false))
 	{
 	  fprintf (go_dump_file, "// ");
 	  slot = htab_find_slot (container->invalid_hash, type, INSERT);
@@ -1206,7 +1199,9 @@ go_output_typedef (class godump_container *container, tree decl)
 
       container->decls_seen.add (decl);
     }
-  else if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
+  else if ((RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))
+	    || TREE_CODE (TREE_TYPE (decl)) == ENUMERAL_TYPE)
+	   && TYPE_NAME (TREE_TYPE (decl)) != NULL)
     {
        void **slot;
        const char *type;

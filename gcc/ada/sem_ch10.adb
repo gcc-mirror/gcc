@@ -6184,34 +6184,35 @@ package body Sem_Ch10 is
             null;
 
          when N_Subprogram_Declaration =>
-            Error_Msg_N ("subprograms not allowed in limited with_clauses", N);
+            Error_Msg_N
+              ("subprogram not allowed in `LIMITED WITH` clause", N);
             return;
 
          when N_Generic_Package_Declaration
             | N_Generic_Subprogram_Declaration
          =>
-            Error_Msg_N ("generics not allowed in limited with_clauses", N);
+            Error_Msg_N ("generic not allowed in `LIMITED WITH` clause", N);
             return;
 
          when N_Generic_Instantiation =>
             Error_Msg_N
-              ("generic instantiations not allowed in limited with_clauses",
+              ("generic instantiation not allowed in `LIMITED WITH` clause",
                N);
             return;
 
          when N_Generic_Renaming_Declaration =>
             Error_Msg_N
-              ("generic renamings not allowed in limited with_clauses", N);
+              ("generic renaming not allowed in `LIMITED WITH` clause", N);
             return;
 
          when N_Subprogram_Renaming_Declaration =>
             Error_Msg_N
-              ("renamed subprograms not allowed in limited with_clauses", N);
+              ("renamed subprogram not allowed in `LIMITED WITH` clause", N);
             return;
 
          when N_Package_Renaming_Declaration =>
             Error_Msg_N
-              ("renamed packages not allowed in limited with_clauses", N);
+              ("renamed package not allowed in `LIMITED WITH` clause", N);
             return;
 
          when others =>

@@ -1,5 +1,5 @@
 /* LRA (local register allocator) driver and LRA utilities.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Contributed by Vladimir Makarov <vmakarov@redhat.com>.
 
 This file is part of GCC.
@@ -2192,6 +2192,9 @@ int lra_constraint_new_regno_start;
    it is possible.  */
 int lra_bad_spill_regno_start;
 
+/* A pseudo of Pmode.  */
+rtx lra_pmode_pseudo;
+
 /* Inheritance pseudo regnos before the new spill pass.	 */
 bitmap_head lra_inheritance_pseudos;
 
@@ -2210,6 +2213,9 @@ bitmap_head lra_subreg_reload_pseudos;
 
 /* File used for output of LRA debug information.  */
 FILE *lra_dump_file;
+
+/* True if we split hard reg after the last constraint sub-pass.  */
+bool lra_hard_reg_split_p;
 
 /* True if we found an asm error.  */
 bool lra_asm_error_p;
@@ -2252,6 +2258,7 @@ lra (FILE *f)
 
   lra_dump_file = f;
   lra_asm_error_p = false;
+  lra_pmode_pseudo = gen_reg_rtx (Pmode);
   
   timevar_push (TV_LRA);
 
@@ -2359,6 +2366,7 @@ lra (FILE *f)
 	  if (live_p)
 	    lra_clear_live_ranges ();
 	  bool fails_p;
+	  lra_hard_reg_split_p = false;
 	  do
 	    {
 	      /* We need live ranges for lra_assign -- so build them.
@@ -2403,6 +2411,7 @@ lra (FILE *f)
 		  live_p = false;
 		  if (! lra_split_hard_reg_for ())
 		    break;
+		  lra_hard_reg_split_p = true;
 		}
 	    }
 	  while (fails_p);

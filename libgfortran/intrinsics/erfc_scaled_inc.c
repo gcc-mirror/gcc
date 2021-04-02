@@ -1,5 +1,5 @@
 /* Implementation of the ERFC_SCALED intrinsic, to be included by erfc_scaled.c
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
 
 This file is part of the GNU Fortran runtime library (libgfortran).
 

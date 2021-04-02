@@ -43,7 +43,7 @@
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
 
-@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 @c *** Converted to texinfo by Dean Wakerley, dean@wakerley.com
 
 @c IMPORTANT: whenever you modify this file, run `install.texi2html' to
@@ -68,7 +68,7 @@
 
 @c Part 2 Summary Description and Copyright
 @copying
-Copyright @copyright{} 1988-2020 Free Software Foundation, Inc.
+Copyright @copyright{} 1988-2021 Free Software Foundation, Inc.
 @sp 1
 Permission is granted to copy, distribute and/or modify this document
 under the terms of the GNU Free Documentation License, Version 1.3 or
@@ -2259,11 +2259,10 @@ instrumentation, see @option{-fcf-protection} option.  When
 to add @option{-fcf-protection} and, if needed, other target
 specific options to a set of building options.
 
-The option is disabled by default.  When @code{--enable-cet=auto}
-is used, it is enabled on Linux/x86 if target binutils
-supports @code{Intel CET} instructions and disabled otherwise.
-In this case the target libraries are configured to get additional
-@option{-fcf-protection} option.
+@code{--enable-cet=auto} is default.  CET is enabled on Linux/x86 if
+target binutils supports @code{Intel CET} instructions and disabled
+otherwise.  In this case, the target libraries are configured to get
+additional @option{-fcf-protection} option.
 
 @item --with-riscv-attribute=@samp{yes}, @samp{no} or @samp{default}
 Generate RISC-V attribute by default, in order to record extra build
@@ -2271,6 +2270,17 @@ information in object.
 
 The option is disabled by default. It is enabled on RISC-V/ELF (bare-metal)
 target if target binutils supported.
+
+@item --enable-s390-excess-float-precision
+@itemx --disable-s390-excess-float-precision
+On s390(x) targets, enable treatment of float expressions with double precision
+when in standards-compliant mode (e.g., when @code{--std=c99} or
+@code{-fexcess-precision=standard} are given).
+
+For a native build and cross compiles that have target headers, the option's
+default is derived from glibc's behavior. When glibc clamps float_t to double,
+GCC follows and enables the option. For other cross compiles, the default is
+disabled.
 @end table
 
 @subheading Cross-Compiler-Specific Options
@@ -2980,7 +2990,7 @@ Second, you must have the testing tools installed.  This includes
 the DejaGnu site has links to these. For running the BRIG frontend
 tests, a tool to assemble the binary BRIGs from HSAIL text,
 @uref{https://github.com/HSAFoundation/HSAIL-Tools/,,HSAILasm} must
-be installed.
+be installed.  Some optional tests also require Python3 and pytest module.
 
 If the directories where @command{runtest} and @command{expect} were
 installed are not in the @env{PATH}, you may need to set the following

@@ -30,7 +30,6 @@
 ------------------------------------------------------------------------------
 
 with Ada.Exceptions;
-with Ada.Unchecked_Conversion;
 
 with System.HTable;
 with System.Storage_Elements; use System.Storage_Elements;
@@ -96,12 +95,6 @@ package body Ada.Tags is
    function To_Tag is
      new Unchecked_Conversion (Integer_Address, Tag);
 
-   function To_Addr_Ptr is
-      new Ada.Unchecked_Conversion (System.Address, Addr_Ptr);
-
-   function To_Address is
-     new Ada.Unchecked_Conversion (Tag, System.Address);
-
    function To_Dispatch_Table_Ptr is
       new Ada.Unchecked_Conversion (Tag, Dispatch_Table_Ptr);
 
@@ -114,9 +107,6 @@ package body Ada.Tags is
    function To_Tag_Ptr is
      new Ada.Unchecked_Conversion (System.Address, Tag_Ptr);
 
-   function To_Type_Specific_Data_Ptr is
-     new Ada.Unchecked_Conversion (System.Address, Type_Specific_Data_Ptr);
-
    -------------------------------
    -- Inline_Always Subprograms --
    -------------------------------
@@ -124,40 +114,6 @@ package body Ada.Tags is
    --  Inline_always subprograms must be placed before their first call to
    --  avoid defeating the frontend inlining mechanism and thus ensure the
    --  generation of their correct debug info.
-
-   -------------------
-   -- CW_Membership --
-   -------------------
-
-   --  Canonical implementation of Classwide Membership corresponding to:
-
-   --     Obj in Typ'Class
-
-   --  Each dispatch table contains a reference to a table of ancestors (stored
-   --  in the first part of the Tags_Table) and a count of the level of
-   --  inheritance "Idepth".
-
-   --  Obj is in Typ'Class if Typ'Tag is in the table of ancestors that are
-   --  contained in the dispatch table referenced by Obj'Tag . Knowing the
-   --  level of inheritance of both types, this can be computed in constant
-   --  time by the formula:
-
-   --   TSD (Obj'tag).Tags_Table (TSD (Obj'tag).Idepth - TSD (Typ'tag).Idepth)
-   --     = Typ'tag
-
-   function CW_Membership (Obj_Tag : Tag; Typ_Tag : Tag) return Boolean is
-      Obj_TSD_Ptr : constant Addr_Ptr :=
-        To_Addr_Ptr (To_Address (Obj_Tag) - DT_Typeinfo_Ptr_Size);
-      Typ_TSD_Ptr : constant Addr_Ptr :=
-        To_Addr_Ptr (To_Address (Typ_Tag) - DT_Typeinfo_Ptr_Size);
-      Obj_TSD     : constant Type_Specific_Data_Ptr :=
-        To_Type_Specific_Data_Ptr (Obj_TSD_Ptr.all);
-      Typ_TSD     : constant Type_Specific_Data_Ptr :=
-        To_Type_Specific_Data_Ptr (Typ_TSD_Ptr.all);
-      Pos         : constant Integer := Obj_TSD.Idepth - Typ_TSD.Idepth;
-   begin
-      return Pos >= 0 and then Obj_TSD.Tags_Table (Pos) = Typ_Tag;
-   end CW_Membership;
 
    ----------------------
    -- Get_External_Tag --

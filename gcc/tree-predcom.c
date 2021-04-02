@@ -1,5 +1,5 @@
 /* Predictive commoning.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2367,7 +2367,7 @@ base_names_in_chain_on (class loop *loop, tree name, tree var)
 	      && flow_bb_inside_loop_p (loop, gimple_bb (stmt)))
 	    {
 	      phi = stmt;
-	      BREAK_FROM_IMM_USE_STMT (iter);
+	      break;
 	    }
 	}
       if (!phi)

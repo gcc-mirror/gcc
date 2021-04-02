@@ -1,5 +1,5 @@
 /* Subclasses of diagnostic_path and diagnostic_event for analyzer diagnostics.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -93,6 +93,10 @@ event_kind_to_string (enum event_kind ek)
       return "EK_CALL_EDGE";
     case EK_RETURN_EDGE:
       return "EK_RETURN_EDGE";
+    case EK_START_CONSOLIDATED_CFG_EDGES:
+      return "EK_START_CONSOLIDATED_CFG_EDGES";
+    case EK_END_CONSOLIDATED_CFG_EDGES:
+      return "EK_END_CONSOLIDATED_CFG_EDGES";
     case EK_SETJMP:
       return "EK_SETJMP";
     case EK_REWIND_FROM_LONGJMP:
@@ -709,6 +713,16 @@ return_event::is_return_p () const
   return true;
 }
 
+/* class start_consolidated_cfg_edges_event : public checker_event.  */
+
+label_text
+start_consolidated_cfg_edges_event::get_desc (bool can_colorize) const
+{
+  return make_label_text (can_colorize,
+			  "following %qs branch...",
+			  m_edge_sense ? "true" : "false");
+}
+
 /* class setjmp_event : public checker_event.  */
 
 /* Implementation of diagnostic_event::get_desc vfunc for
@@ -980,6 +994,27 @@ checker_path::add_final_event (const state_machine *sm,
 			 enode->get_stack_depth (),
 			 sm, var, state);
   add_event (end_of_path);
+}
+
+void
+checker_path::fixup_locations (pending_diagnostic *pd)
+{
+  checker_event *e;
+  int i;
+  FOR_EACH_VEC_ELT (m_events, i, e)
+    e->set_location (pd->fixup_location (e->get_location ()));
+}
+
+/* Return true if there is a (start_cfg_edge_event, end_cfg_edge_event) pair
+   at (IDX, IDX + 1).  */
+
+bool
+checker_path::cfg_edge_pair_at_p (unsigned idx) const
+{
+  if (m_events.length () < idx + 1)
+    return false;
+  return (m_events[idx]->m_kind == EK_START_CFG_EDGE
+	  && m_events[idx + 1]->m_kind == EK_END_CFG_EDGE);
 }
 
 } // namespace ana

@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -47,7 +47,6 @@ public:
     Dsymbol *syntaxCopy(Dsymbol *s);
     void addMember(Scope *sc, ScopeDsymbol *sds);
     void setScope(Scope *sc);
-    void semantic(Scope *sc);
     bool oneMember(Dsymbol **ps, Identifier *ident);
     Type *getType();
     const char *kind() const;
@@ -85,9 +84,10 @@ public:
     EnumDeclaration *ed;
 
     EnumMember(Loc loc, Identifier *id, Expression *value, Type *origType);
+    EnumMember(Loc loc, Identifier *id, Expression *value, Type *memType,
+        StorageClass stc, UserAttributeDeclaration *uad, DeprecatedDeclaration *dd);
     Dsymbol *syntaxCopy(Dsymbol *s);
     const char *kind() const;
-    void semantic(Scope *sc);
     Expression *getVarExp(Loc loc, Scope *sc);
 
     EnumMember *isEnumMember() { return this; }

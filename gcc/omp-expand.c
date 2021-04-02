@@ -2,7 +2,7 @@
    directives to separate functions, converts others into explicit calls to the
    runtime library (libgomp) and so forth
 
-Copyright (C) 2005-2020 Free Software Foundation, Inc.
+Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -762,6 +762,7 @@ expand_task_call (struct omp_region *region, basic_block bb,
   tree depend = omp_find_clause (clauses, OMP_CLAUSE_DEPEND);
   tree finalc = omp_find_clause (clauses, OMP_CLAUSE_FINAL);
   tree priority = omp_find_clause (clauses, OMP_CLAUSE_PRIORITY);
+  tree detach = omp_find_clause (clauses, OMP_CLAUSE_DETACH);
 
   unsigned int iflags
     = (untied ? GOMP_TASK_FLAG_UNTIED : 0)
@@ -811,8 +812,13 @@ expand_task_call (struct omp_region *region, basic_block bb,
       if (omp_find_clause (clauses, OMP_CLAUSE_REDUCTION))
 	iflags |= GOMP_TASK_FLAG_REDUCTION;
     }
-  else if (priority)
-    iflags |= GOMP_TASK_FLAG_PRIORITY;
+  else
+    {
+      if (priority)
+	iflags |= GOMP_TASK_FLAG_PRIORITY;
+      if (detach)
+	iflags |= GOMP_TASK_FLAG_DETACH;
+    }
 
   tree flags = build_int_cst (unsigned_type_node, iflags);
 
@@ -853,6 +859,11 @@ expand_task_call (struct omp_region *region, basic_block bb,
     priority = integer_zero_node;
 
   gsi = gsi_last_nondebug_bb (bb);
+
+  detach = (detach
+	    ? build_fold_addr_expr (OMP_CLAUSE_DECL (detach))
+	    : null_pointer_node);
+
   tree t = gimple_omp_task_data_arg (entry_stmt);
   if (t == NULL)
     t2 = null_pointer_node;
@@ -875,10 +886,10 @@ expand_task_call (struct omp_region *region, basic_block bb,
 			 num_tasks, priority, startvar, endvar, step);
   else
     t = build_call_expr (builtin_decl_explicit (BUILT_IN_GOMP_TASK),
-			 9, t1, t2, t3,
+			 10, t1, t2, t3,
 			 gimple_omp_task_arg_size (entry_stmt),
 			 gimple_omp_task_arg_align (entry_stmt), cond, flags,
-			 depend, priority);
+			 depend, priority, detach);
 
   force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 			    false, GSI_CONTINUE_LINKING);
@@ -4304,13 +4315,18 @@ expand_omp_for_generic (struct omp_region *region,
 	  gsi = gsi_last_bb (l0_bb);
 	  expand_omp_build_assign (&gsi, counts[fd->collapse - 1],
 				   istart0, true);
-	  gsi = gsi_last_bb (cont_bb);
-	  t = fold_build2 (PLUS_EXPR, fd->iter_type, counts[fd->collapse - 1],
-			   build_int_cst (fd->iter_type, 1));
-	  expand_omp_build_assign (&gsi, counts[fd->collapse - 1], t);
-	  tree aref = build4 (ARRAY_REF, fd->iter_type, counts[fd->ordered],
-			      size_zero_node, NULL_TREE, NULL_TREE);
-	  expand_omp_build_assign (&gsi, aref, counts[fd->collapse - 1]);
+	  if (cont_bb)
+	    {
+	      gsi = gsi_last_bb (cont_bb);
+	      t = fold_build2 (PLUS_EXPR, fd->iter_type,
+			       counts[fd->collapse - 1],
+			       build_int_cst (fd->iter_type, 1));
+	      expand_omp_build_assign (&gsi, counts[fd->collapse - 1], t);
+	      tree aref = build4 (ARRAY_REF, fd->iter_type,
+				  counts[fd->ordered], size_zero_node,
+				  NULL_TREE, NULL_TREE);
+	      expand_omp_build_assign (&gsi, aref, counts[fd->collapse - 1]);
+	    }
 	  t = counts[fd->collapse - 1];
 	}
       else if (fd->collapse > 1)
@@ -9255,7 +9271,7 @@ expand_omp_target (struct omp_region *region)
   gomp_target *entry_stmt;
   gimple *stmt;
   edge e;
-  bool offloaded, data_region;
+  bool offloaded;
   int target_kind;
 
   entry_stmt = as_a <gomp_target *> (last_stmt (region->entry));
@@ -9277,13 +9293,10 @@ expand_omp_target (struct omp_region *region)
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
     case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
-      data_region = false;
-      break;
     case GF_OMP_TARGET_KIND_DATA:
     case GF_OMP_TARGET_KIND_OACC_DATA:
     case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
     case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
-      data_region = true;
       break;
     default:
       gcc_unreachable ();
@@ -9850,13 +9863,6 @@ expand_omp_target (struct omp_region *region)
       gcc_assert (g && gimple_code (g) == GIMPLE_OMP_TARGET);
       gsi_remove (&gsi, true);
     }
-  if (data_region && region->exit)
-    {
-      gsi = gsi_last_nondebug_bb (region->exit);
-      g = gsi_stmt (gsi);
-      gcc_assert (g && gimple_code (g) == GIMPLE_OMP_RETURN);
-      gsi_remove (&gsi, true);
-    }
 }
 
 /* Expand the parallel region tree rooted at REGION.  Expansion
@@ -10021,19 +10027,19 @@ build_omp_regions_1 (basic_block bb, struct omp_region *parent,
 	      switch (gimple_omp_target_kind (stmt))
 		{
 		case GF_OMP_TARGET_KIND_REGION:
-		case GF_OMP_TARGET_KIND_DATA:
 		case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 		case GF_OMP_TARGET_KIND_OACC_KERNELS:
 		case GF_OMP_TARGET_KIND_OACC_SERIAL:
-		case GF_OMP_TARGET_KIND_OACC_DATA:
-		case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
 		case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
 		case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
-		case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 		  break;
 		case GF_OMP_TARGET_KIND_UPDATE:
 		case GF_OMP_TARGET_KIND_ENTER_DATA:
 		case GF_OMP_TARGET_KIND_EXIT_DATA:
+		case GF_OMP_TARGET_KIND_DATA:
+		case GF_OMP_TARGET_KIND_OACC_DATA:
+		case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+		case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 		case GF_OMP_TARGET_KIND_OACC_UPDATE:
 		case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
 		case GF_OMP_TARGET_KIND_OACC_DECLARE:
@@ -10278,19 +10284,19 @@ omp_make_gimple_edges (basic_block bb, struct omp_region **region,
       switch (gimple_omp_target_kind (last))
 	{
 	case GF_OMP_TARGET_KIND_REGION:
-	case GF_OMP_TARGET_KIND_DATA:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL:
 	case GF_OMP_TARGET_KIND_OACC_KERNELS:
 	case GF_OMP_TARGET_KIND_OACC_SERIAL:
-	case GF_OMP_TARGET_KIND_OACC_DATA:
-	case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED:
 	case GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE:
-	case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	  break;
 	case GF_OMP_TARGET_KIND_UPDATE:
 	case GF_OMP_TARGET_KIND_ENTER_DATA:
 	case GF_OMP_TARGET_KIND_EXIT_DATA:
+	case GF_OMP_TARGET_KIND_DATA:
+	case GF_OMP_TARGET_KIND_OACC_DATA:
+	case GF_OMP_TARGET_KIND_OACC_HOST_DATA:
+	case GF_OMP_TARGET_KIND_OACC_DATA_KERNELS:
 	case GF_OMP_TARGET_KIND_OACC_UPDATE:
 	case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
 	case GF_OMP_TARGET_KIND_OACC_DECLARE:

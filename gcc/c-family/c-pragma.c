@@ -1,5 +1,5 @@
 /* Handle #pragma, system V.4 style.  Supports #pragma weak and #pragma pack.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1309,6 +1309,7 @@ static const struct omp_pragma_def oacc_pragmas[] = {
   { "wait", PRAGMA_OACC_WAIT }
 };
 static const struct omp_pragma_def omp_pragmas[] = {
+  { "allocate", PRAGMA_OMP_ALLOCATE },
   { "atomic", PRAGMA_OMP_ATOMIC },
   { "barrier", PRAGMA_OMP_BARRIER },
   { "cancel", PRAGMA_OMP_CANCEL },
@@ -1317,7 +1318,6 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "depobj", PRAGMA_OMP_DEPOBJ },
   { "end", PRAGMA_OMP_END_DECLARE_TARGET },
   { "flush", PRAGMA_OMP_FLUSH },
-  { "master", PRAGMA_OMP_MASTER },
   { "requires", PRAGMA_OMP_REQUIRES },
   { "section", PRAGMA_OMP_SECTION },
   { "sections", PRAGMA_OMP_SECTIONS },
@@ -1333,6 +1333,7 @@ static const struct omp_pragma_def omp_pragmas_simd[] = {
   { "distribute", PRAGMA_OMP_DISTRIBUTE },
   { "for", PRAGMA_OMP_FOR },
   { "loop", PRAGMA_OMP_LOOP },
+  { "master", PRAGMA_OMP_MASTER },
   { "ordered", PRAGMA_OMP_ORDERED },
   { "parallel", PRAGMA_OMP_PARALLEL },
   { "scan", PRAGMA_OMP_SCAN },

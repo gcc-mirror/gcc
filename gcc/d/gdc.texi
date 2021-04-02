@@ -12,7 +12,7 @@
 @include gcc-common.texi
 
 @c Copyright years for this manual.
-@set copyrights-d 2006-2020
+@set copyrights-d 2006-2021
 
 @copying
 @c man begin COPYRIGHT
@@ -634,8 +634,6 @@ Report additional information about D language changes identified by
 @table @samp
 @item all
 List information on all language changes.
-@item checkimports
-Give deprecation messages about @option{-ftransition=import} anomalies.
 @item complex
 List all usages of complex or imaginary types.
 @item dip1000
@@ -644,14 +642,6 @@ Implements @uref{http://wiki.dlang.org/DIP1000} (experimental).
 Implements @uref{http://wiki.dlang.org/DIP25} (experimental).
 @item field
 List all non-mutable fields which occupy an object instance.
-@item import
-Tells the compiler to revert to using an old lookup behavior for resolving
-unqualified symbol names, where this was done in a single pass, ignoring
-any protection attributes.  The default name lookup strategy is to use two
-passes, the first ignoring imported declarations, and the second only
-looking at imports.  The protection (@code{private}, @code{package},
-@code{protected}) of symbols is also enforced to resolve any conflicts
-between private and public symbols.
 @item nogc
 List all hidden GC allocations.
 @item tls

@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -110,10 +110,8 @@ init_internal_fns ()
 #define mask_store_direct { 3, 2, false }
 #define store_lanes_direct { 0, 0, false }
 #define mask_store_lanes_direct { 0, 0, false }
-#define vec_cond_mask_direct { 0, 0, false }
-#define vec_cond_direct { 0, 0, false }
-#define vec_condu_direct { 0, 0, false }
-#define vec_condeq_direct { 0, 0, false }
+#define vec_cond_mask_direct { 1, 0, false }
+#define vec_cond_direct { 2, 0, false }
 #define scatter_store_direct { 3, 1, false }
 #define len_store_direct { 3, 3, false }
 #define vec_set_direct { 3, 3, false }
@@ -798,7 +796,7 @@ expand_ubsan_result_store (rtx target, rtx res)
 /* Add sub/add overflow checking to the statement STMT.
    CODE says whether the operation is +, or -.  */
 
-static void
+void
 expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 			tree arg0, tree arg1, bool unsr_p, bool uns0_p,
 			bool uns1_p, bool is_ubsan, tree *datap)
@@ -2766,7 +2764,7 @@ expand_partial_store_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
    The expansion of STMT happens based on OPTAB table associated.  */
 
 static void
-expand_vect_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+expand_vec_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   class expand_operand ops[6];
   insn_code icode;
@@ -2802,15 +2800,11 @@ expand_vect_cond_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
     emit_move_insn (target, ops[0].value);
 }
 
-#define expand_vec_cond_optab_fn expand_vect_cond_optab_fn
-#define expand_vec_condu_optab_fn expand_vect_cond_optab_fn
-#define expand_vec_condeq_optab_fn expand_vect_cond_optab_fn
-
 /* Expand VCOND_MASK optab internal function.
    The expansion of STMT happens based on OPTAB table associated.  */
 
 static void
-expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
+expand_vec_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
 {
   class expand_operand ops[4];
 
@@ -2843,8 +2837,6 @@ expand_vect_cond_mask_optab_fn (internal_fn, gcall *stmt, convert_optab optab)
   if (!rtx_equal_p (ops[0].value, target))
     emit_move_insn (target, ops[0].value);
 }
-
-#define expand_vec_cond_mask_optab_fn expand_vect_cond_mask_optab_fn
 
 /* Expand VEC_SET internal functions.  */
 
@@ -3230,27 +3222,68 @@ expand_DIVMOD (internal_fn, gcall *call_stmt)
 	 the division and modulo and if it emits any library calls or any
 	 {,U}{DIV,MOD} rtxes throw it away and use a divmod optab or
 	 divmod libcall.  */
-      struct separate_ops ops;
-      ops.code = TRUNC_DIV_EXPR;
-      ops.type = type;
-      ops.op0 = make_tree (ops.type, op0);
-      ops.op1 = arg1;
-      ops.op2 = NULL_TREE;
-      ops.location = gimple_location (call_stmt);
-      start_sequence ();
-      quotient = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-      if (contains_call_div_mod (get_insns ()))
-	quotient = NULL_RTX;
-      else
+      scalar_int_mode int_mode;
+      if (remainder == NULL_RTX
+	  && optimize
+	  && CONST_INT_P (op1)
+	  && !pow2p_hwi (INTVAL (op1))
+	  && is_int_mode (TYPE_MODE (type), &int_mode)
+	  && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
+	  && optab_handler (and_optab, word_mode) != CODE_FOR_nothing
+	  && optab_handler (add_optab, word_mode) != CODE_FOR_nothing
+	  && optimize_insn_for_speed_p ())
 	{
-	  ops.code = TRUNC_MOD_EXPR;
-	  remainder = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
-	  if (contains_call_div_mod (get_insns ()))
-	    remainder = NULL_RTX;
+	  rtx_insn *last = get_last_insn ();
+	  remainder = NULL_RTX;
+	  quotient = expand_doubleword_divmod (int_mode, op0, op1, &remainder,
+					       TYPE_UNSIGNED (type));
+	  if (quotient != NULL_RTX)
+	    {
+	      if (optab_handler (mov_optab, int_mode) != CODE_FOR_nothing)
+		{
+		  rtx_insn *move = emit_move_insn (quotient, quotient);
+		  set_dst_reg_note (move, REG_EQUAL,
+				    gen_rtx_fmt_ee (TYPE_UNSIGNED (type)
+						    ? UDIV : DIV, int_mode,
+						    copy_rtx (op0), op1),
+				    quotient);
+		  move = emit_move_insn (remainder, remainder);
+		  set_dst_reg_note (move, REG_EQUAL,
+				    gen_rtx_fmt_ee (TYPE_UNSIGNED (type)
+						    ? UMOD : MOD, int_mode,
+						    copy_rtx (op0), op1),
+				    quotient);
+		}
+	    }
+	  else
+	    delete_insns_since (last);
 	}
-      if (remainder)
-	insns = get_insns ();
-      end_sequence ();
+
+      if (remainder == NULL_RTX)
+	{
+	  struct separate_ops ops;
+	  ops.code = TRUNC_DIV_EXPR;
+	  ops.type = type;
+	  ops.op0 = make_tree (ops.type, op0);
+	  ops.op1 = arg1;
+	  ops.op2 = NULL_TREE;
+	  ops.location = gimple_location (call_stmt);
+	  start_sequence ();
+	  quotient = expand_expr_real_2 (&ops, NULL_RTX, mode, EXPAND_NORMAL);
+	  if (contains_call_div_mod (get_insns ()))
+	    quotient = NULL_RTX;
+	  else
+	    {
+	      ops.code = TRUNC_MOD_EXPR;
+	      remainder = expand_expr_real_2 (&ops, NULL_RTX, mode,
+					      EXPAND_NORMAL);
+	      if (contains_call_div_mod (get_insns ()))
+		remainder = NULL_RTX;
+	    }
+	  if (remainder)
+	    insns = get_insns ();
+	  end_sequence ();
+	}
     }
 
   if (remainder)
@@ -3529,10 +3562,8 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_store_optab_supported_p convert_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_cond_mask_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_cond_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_condu_optab_supported_p multi_vector_optab_supported_p
-#define direct_vec_condeq_optab_supported_p multi_vector_optab_supported_p
+#define direct_vec_cond_mask_optab_supported_p convert_optab_supported_p
+#define direct_vec_cond_optab_supported_p convert_optab_supported_p
 #define direct_scatter_store_optab_supported_p convert_optab_supported_p
 #define direct_len_store_optab_supported_p direct_optab_supported_p
 #define direct_while_optab_supported_p convert_optab_supported_p

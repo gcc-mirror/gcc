@@ -1,5 +1,5 @@
 /* Conditional constant propagation pass for the GNU compiler.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Adapted from original RTL SSA-CCP by Daniel Berlin <dberlin@dberlin.org>
    Adapted to GIMPLE trees by Diego Novillo <dnovillo@redhat.com>
 
@@ -3020,7 +3020,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 	}
 
       use_bool = false;
-      BREAK_FROM_IMM_USE_STMT (iter);
+      break;
     }
 
   tree new_lhs = make_ssa_name (TREE_TYPE (lhs));
@@ -3564,7 +3564,7 @@ pass_post_ipa_warn::execute (function *fun)
 	      if (argno == 0)
 		{
 		  if (warning_at (loc, OPT_Wnonnull,
-				  "%G%qs pointer null", stmt, "this")
+				  "%G%qs pointer is null", stmt, "this")
 		      && fndecl)
 		    inform (DECL_SOURCE_LOCATION (fndecl),
 			    "in a call to non-static member function %qD",

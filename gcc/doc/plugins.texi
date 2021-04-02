@@ -1,4 +1,4 @@
-@c Copyright (C) 2009-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2009-2021 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -217,6 +217,10 @@ enum plugin_event
    This could happen many times.  The event data is the included file path,
    as a const char* pointer.  */
   PLUGIN_INCLUDE_FILE,
+
+  /* Called when -fanalyzer starts. The event data is an
+     ana::plugin_analyzer_init_iface *.  */
+  PLUGIN_ANALYZER_INIT,
 
   PLUGIN_EVENT_FIRST_DYNAMIC    /* Dummy event used for indexing callback
                                    array.  */

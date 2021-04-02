@@ -1,3 +1,9 @@
+/*
+TEST_OUTPUT:
+---
+fail_compilation/fail316.d(17): Error: mixin `fail316.foo.BadImpl!(uint, Mix1)` cannot resolve forward reference
+---
+*/
 template BadImpl(T, alias thename)
 {
   void a_bad_idea(T t)

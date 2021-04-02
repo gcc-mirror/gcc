@@ -1,5 +1,5 @@
 /* libgcc routines for MIPS
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
    DMULT/DDIV replacement support by Juergen Urban, JuergenUrban@gmx.de.
 
 This file is part of GCC.

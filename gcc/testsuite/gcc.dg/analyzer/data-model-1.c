@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <alloca.h>
 #include "analyzer-decls.h"
 
 struct foo
@@ -140,8 +139,8 @@ void test_11 (void)
 
 void test_12 (void)
 {
-  void *p = alloca (256);
-  void *q = alloca (256);
+  void *p = __builtin_alloca (256);
+  void *q = __builtin_alloca (256);
 
   /* alloca results should be unique.  */
   __analyzer_eval (p == q); /* { dg-warning "FALSE" } */
@@ -783,7 +782,7 @@ void test_33 (void)
 }
 
 static int __attribute__((noinline))
-only_called_by_test_34 (int parm)
+__analyzer_only_called_by_test_34 (int parm)
 {
   __analyzer_eval (parm == 42); /* { dg-warning "TRUE" } */
 
@@ -792,7 +791,7 @@ only_called_by_test_34 (int parm)
 
 void test_34 (void)
 {
-  int result = only_called_by_test_34 (42);
+  int result = __analyzer_only_called_by_test_34 (42);
   __analyzer_eval (result == 84); /* { dg-warning "TRUE" } */
 }
 

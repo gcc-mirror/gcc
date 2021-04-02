@@ -1,5 +1,5 @@
 ;; ARM NEON coprocessor Machine Description
-;; Copyright (C) 2006-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2006-2021 Free Software Foundation, Inc.
 ;; Written by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -278,31 +278,6 @@
   src[3] = gen_rtx_REG (TImode, rsrc + 12);
 
   neon_disambiguate_copy (operands, dest, src, 4);
-})
-
-(define_expand "movmisalign<mode>"
-  [(set (match_operand:VDQX 0 "neon_perm_struct_or_reg_operand")
-	(unspec:VDQX [(match_operand:VDQX 1 "neon_perm_struct_or_reg_operand")]
-		     UNSPEC_MISALIGNED_ACCESS))]
-  "TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access"
-{
-  rtx adjust_mem;
-  /* This pattern is not permitted to fail during expansion: if both arguments
-     are non-registers (e.g. memory := constant, which can be created by the
-     auto-vectorizer), force operand 1 into a register.  */
-  if (!s_register_operand (operands[0], <MODE>mode)
-      && !s_register_operand (operands[1], <MODE>mode))
-    operands[1] = force_reg (<MODE>mode, operands[1]);
-
-  if (s_register_operand (operands[0], <MODE>mode))
-    adjust_mem = operands[1];
-  else
-    adjust_mem = operands[0];
-
-  /* Legitimize address.  */
-  if (!neon_vector_mem_operand (adjust_mem, 2, true))
-    XEXP (adjust_mem, 0) = force_reg (Pmode, XEXP (adjust_mem, 0));
-
 })
 
 (define_insn "*movmisalign<mode>_neon_store"
@@ -690,7 +665,7 @@
    (set_attr "predicable" "no")]
 )
 
-(define_insn "ior<mode>3"
+(define_insn "ior<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w,w")
 	(ior:VDQ (match_operand:VDQ 1 "s_register_operand" "w,0")
 		 (match_operand:VDQ 2 "neon_logic_op2" "w,Dl")))]
@@ -712,7 +687,7 @@
 ;; corresponds to the canonical form the middle-end expects to use for
 ;; immediate bitwise-ANDs.
 
-(define_insn "and<mode>3"
+(define_insn "and<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w,w")
 	(and:VDQ (match_operand:VDQ 1 "s_register_operand" "w,0")
 		 (match_operand:VDQ 2 "neon_inv_logic_op2" "w,DL")))]
@@ -747,7 +722,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "xor<mode>3"
+(define_insn "xor<mode>3_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
 	(xor:VDQ (match_operand:VDQ 1 "s_register_operand" "w")
 		 (match_operand:VDQ 2 "s_register_operand" "w")))]
@@ -756,7 +731,7 @@
   [(set_attr "type" "neon_logic<q>")]
 )
 
-(define_insn "one_cmpl<mode>2"
+(define_insn "one_cmpl<mode>2_neon"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
         (not:VDQ (match_operand:VDQ 1 "s_register_operand" "w")))]
   "TARGET_NEON"
@@ -775,7 +750,7 @@
                     (const_string "neon_abs<q>")))]
 )
 
-(define_insn "neg<mode>2"
+(define_insn "neon_neg<mode>2"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
 	(neg:VDQW (match_operand:VDQW 1 "s_register_operand" "w")))]
   "TARGET_NEON"
@@ -786,7 +761,7 @@
                     (const_string "neon_neg<q>")))]
 )
 
-(define_insn "<absneg_str><mode>2"
+(define_insn "neon_<absneg_str><mode>2"
   [(set (match_operand:VH 0 "s_register_operand" "=w")
     (ABSNEG:VH (match_operand:VH 1 "s_register_operand" "w")))]
  "TARGET_NEON_FP16INST"
@@ -800,7 +775,7 @@
    (ABSNEG:VH (match_operand:VH 1 "s_register_operand")))]
  "TARGET_NEON_FP16INST"
 {
-  emit_insn (gen_<absneg_str><mode>2 (operands[0], operands[1]));
+  emit_insn (gen_neon_<absneg_str><mode>2 (operands[0], operands[1]));
   DONE;
 })
 
@@ -870,25 +845,6 @@
 ; generic vectorizer code.  It ends up creating a V2DI constructor with
 ; SImode elements.
 
-(define_insn "vashl<mode>3"
-  [(set (match_operand:VDQIW 0 "s_register_operand" "=w,w")
-	(ashift:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w,w")
-		      (match_operand:VDQIW 2 "imm_lshift_or_reg_neon" "w,Dm")))]
-  "TARGET_NEON"
-  {
-    switch (which_alternative)
-      {
-        case 0: return "vshl.<V_s_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2";
-        case 1: return neon_output_shift_immediate ("vshl", 'i', &operands[2],
-                         			    <MODE>mode,
-						    VALID_NEON_QREG_MODE (<MODE>mode),
-						    true);
-        default: gcc_unreachable ();
-      }
-  }
-  [(set_attr "type" "neon_shift_reg<q>, neon_shift_imm<q>")]
-)
-
 (define_insn "vashr<mode>3_imm"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
 	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")
@@ -942,40 +898,6 @@
   "vshl.<V_u_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
   [(set_attr "type" "neon_shift_reg<q>")]
 )
-
-(define_expand "vashr<mode>3"
-  [(set (match_operand:VDQIW 0 "s_register_operand")
-	(ashiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
-			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "TARGET_NEON"
-{
-  if (s_register_operand (operands[2], <MODE>mode))
-    {
-      rtx neg = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_neg<mode>2 (neg, operands[2]));
-      emit_insn (gen_ashl<mode>3_signed (operands[0], operands[1], neg));
-    }
-  else
-    emit_insn (gen_vashr<mode>3_imm (operands[0], operands[1], operands[2]));
-  DONE;
-})
-
-(define_expand "vlshr<mode>3"
-  [(set (match_operand:VDQIW 0 "s_register_operand")
-	(lshiftrt:VDQIW (match_operand:VDQIW 1 "s_register_operand")
-			(match_operand:VDQIW 2 "imm_rshift_or_reg_neon")))]
-  "TARGET_NEON"
-{
-  if (s_register_operand (operands[2], <MODE>mode))
-    {
-      rtx neg = gen_reg_rtx (<MODE>mode);
-      emit_insn (gen_neg<mode>2 (neg, operands[2]));
-      emit_insn (gen_ashl<mode>3_unsigned (operands[0], operands[1], neg));
-    }
-  else
-    emit_insn (gen_vlshr<mode>3_imm (operands[0], operands[1], operands[2]));
-  DONE;
-})
 
 ;; 64-bit shifts
 
@@ -2953,7 +2875,7 @@
    (match_operand:VDQW 1 "s_register_operand")]
   "TARGET_NEON"
 {
-  emit_insn (gen_neg<mode>2 (operands[0], operands[1]));
+  emit_insn (gen_neon_neg<mode>2 (operands[0], operands[1]));
   DONE;
 })
 
@@ -3029,6 +2951,25 @@
   }
   [(set_attr "type" "neon_fcmla")]
 )
+
+;; The complex mul operations always need to expand to two instructions.
+;; The first operation does half the computation and the second does the
+;; remainder.  Because of this, expand early.
+(define_expand "cmul<conj_op><mode>3"
+  [(set (match_operand:VDF 0 "register_operand")
+	(unspec:VDF [(match_operand:VDF 1 "register_operand")
+		     (match_operand:VDF 2 "register_operand")]
+		    VCMUL_OP))]
+  "TARGET_COMPLEX && !BYTES_BIG_ENDIAN"
+{
+  rtx res1 = gen_reg_rtx (<MODE>mode);
+  rtx tmp = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
+  emit_insn (gen_neon_vcmla<rotsplit1><mode> (res1, tmp,
+					      operands[2], operands[1]));
+  emit_insn (gen_neon_vcmla<rotsplit2><mode> (operands[0], res1,
+					      operands[2], operands[1]));
+  DONE;
+})
 
 
 ;; These instructions map to the __builtins for the Dot Product operations.
@@ -3240,7 +3181,7 @@
    (match_operand:VDQIW 1 "s_register_operand")]
   "TARGET_NEON"
 {
-  emit_insn (gen_one_cmpl<mode>2 (operands[0], operands[1]));
+  emit_insn (gen_one_cmpl<mode>2_neon (operands[0], operands[1]));
   DONE;
 })
 

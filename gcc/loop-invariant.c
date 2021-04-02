@@ -1,5 +1,5 @@
 /* RTL-level loop invariant motion.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1097,6 +1097,10 @@ find_invariant_insn (rtx_insn *insn, bool always_reached, bool always_executed)
 
   /* We can't move a CC0 setter without the user.  */
   if (HAVE_cc0 && sets_cc0_p (insn))
+    return;
+
+  /* Jumps have control flow side-effects.  */
+  if (JUMP_P (insn))
     return;
 
   set = single_set (insn);

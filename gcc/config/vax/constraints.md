@@ -1,5 +1,5 @@
 ;; Constraints for the DEC VAX port.
-;; Copyright (C) 2007-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -111,6 +111,10 @@
     ""
     (and (match_operand:DI 0 "memory_operand")
 	 (not (match_operand:DI 0 "illegal_addsub_di_memory_operand" ""))))
+
+(define_constraint "A"
+    "@internal An integer constant suitable for address load operations."
+  (match_test ("CONSTANT_P (op) && pic_symbolic_operand (op, mode)")))
 
 (define_constraint "T"
     "@internal satisfies CONSTANT_P and, if pic is enabled, is not a SYMBOL_REF, LABEL_REF, or CONST."

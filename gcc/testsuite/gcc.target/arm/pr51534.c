@@ -3,7 +3,7 @@
 
 /* { dg-do assemble } */
 /* { dg-require-effective-target arm_neon_ok } */
-/* { dg-options "-save-temps -mfloat-abi=hard -O3" } */
+/* { dg-options "-save-temps -O3" } */
 /* { dg-add-options arm_neon } */
 
 #include <arm_neon.h>

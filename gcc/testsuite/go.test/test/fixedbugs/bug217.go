@@ -5,11 +5,13 @@
 // license that can be found in the LICENSE file.
 
 // Used to crash
-// http://code.google.com/p/go/issues/detail?id=204
+// https://golang.org/issue/204
 
 package main
 
 func () x()	// ERROR "no receiver"
 
 func (a b, c d) x()	// ERROR "multiple receiver"
+
+type b int
 

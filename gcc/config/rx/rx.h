@@ -1,5 +1,5 @@
 /* GCC backend definitions for the Renesas RX processor.
-   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+   Copyright (C) 2008-2021 Free Software Foundation, Inc.
    Contributed by Red Hat.
 
    This file is part of GCC.
@@ -630,6 +630,9 @@ typedef unsigned int CUMULATIVE_ARGS;
 #undef  PREFERRED_DEBUGGING_TYPE
 #define PREFERRED_DEBUGGING_TYPE (TARGET_AS100_SYNTAX \
 				  ? DBX_DEBUG : DWARF2_DEBUG)
+
+#define DBX_DEBUGGING_INFO 1
+#define DWARF2_DEBUGGING_INFO 1
 
 #define INCOMING_FRAME_SP_OFFSET		4
 #define ARG_POINTER_CFA_OFFSET(FNDECL)		4

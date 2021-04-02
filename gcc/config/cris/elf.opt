@@ -1,6 +1,6 @@
 ; ELF-specific options for the CRIS port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 melf
-Target Report RejectNegative Undocumented
+Target RejectNegative Undocumented
 
 sim
 Driver JoinedOrMissing

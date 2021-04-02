@@ -1,5 +1,5 @@
 /* GNU compiler vector extension intrinsics
-   Copyright (C) 2015-2020 Free Software Foundation, Inc.
+   Copyright (C) 2015-2021 Free Software Foundation, Inc.
    Contributed by Andreas Krebbel (Andreas.Krebbel@de.ibm.com)
 
 This file is part of GCC.
@@ -173,6 +173,12 @@ __lcbb(const void *ptr, int bndry)
 #define vec_vsterg vec_vlerh
 #define vec_vsterf_flt vec_vlerf_flt
 #define vec_vsterg_dbl vec_vlerg_dbl
+
+#define vec_extend_to_fp32_hi __builtin_s390_vclfnhs
+#define vec_extend_to_fp32_lo __builtin_s390_vclfnls
+#define vec_round_from_fp32 __builtin_s390_vcrnfs
+#define vec_convert_to_fp16 __builtin_s390_vcfn
+#define vec_convert_from_fp16 __builtin_s390_vcnf
 #define vec_gather_element __builtin_s390_vec_gather_element
 #define vec_xl __builtin_s390_vec_xl
 #define vec_xld2 __builtin_s390_vec_xld2

@@ -1,4 +1,4 @@
-; Copyright (C) 2009-2020 Free Software Foundation, Inc.
+; Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -23,7 +23,7 @@ map
 Target RejectNegative
 
 mmalloc64
-Target Report Var(flag_vms_malloc64) Init(1)
+Target Var(flag_vms_malloc64) Init(1)
 Malloc data into P2 space.
 
 mdebug-main=
@@ -31,11 +31,11 @@ Target RejectNegative Joined Var(vms_debug_main)
 Set name of main routine for the debugger.
 
 mvms-return-codes
-Target Report Var(flag_vms_return_codes)
+Target Var(flag_vms_return_codes)
 Use VMS exit codes instead of posix ones.
 
 mpointer-size=
-Target Joined Report RejectNegative Enum(vms_pointer_size) Var(flag_vms_pointer_size) Init(VMS_POINTER_SIZE_NONE)
+Target Joined RejectNegative Enum(vms_pointer_size) Var(flag_vms_pointer_size) Init(VMS_POINTER_SIZE_NONE)
 -mpointer-size=[no,32,short,64,long]	Set the default pointer size.
 
 Enum

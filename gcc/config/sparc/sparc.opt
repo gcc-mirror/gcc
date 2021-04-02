@@ -1,6 +1,6 @@
 ; Options for the SPARC port of the compiler
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -26,7 +26,7 @@ TargetVariable
 unsigned int sparc_debug
 
 mfpu
-Target Report Mask(FPU)
+Target Mask(FPU)
 Use hardware FP.
 
 mhard-float
@@ -38,95 +38,95 @@ Target RejectNegative InverseMask(FPU)
 Do not use hardware FP.
 
 mflat
-Target Report Mask(FLAT)
+Target Mask(FLAT)
 Use flat register window model.
 
 munaligned-doubles
-Target Report Mask(UNALIGNED_DOUBLES)
+Target Mask(UNALIGNED_DOUBLES)
 Assume possible double misalignment.
 
 mapp-regs
-Target Report Mask(APP_REGS)
+Target Mask(APP_REGS)
 Use ABI reserved registers.
 
 mhard-quad-float
-Target Report RejectNegative Mask(HARD_QUAD)
+Target RejectNegative Mask(HARD_QUAD)
 Use hardware quad FP instructions.
 
 msoft-quad-float
-Target Report RejectNegative InverseMask(HARD_QUAD)
+Target RejectNegative InverseMask(HARD_QUAD)
 Do not use hardware quad fp instructions.
 
 mlra
-Target Report Mask(LRA)
+Target Mask(LRA)
 Enable Local Register Allocation.
 
 mv8plus
-Target Report Mask(V8PLUS)
+Target Mask(V8PLUS)
 Compile for V8+ ABI.
 
 mvis
-Target Report Mask(VIS)
+Target Mask(VIS)
 Use UltraSPARC Visual Instruction Set version 1.0 extensions.
 
 mvis2
-Target Report Mask(VIS2)
+Target Mask(VIS2)
 Use UltraSPARC Visual Instruction Set version 2.0 extensions.
 
 mvis3
-Target Report Mask(VIS3)
+Target Mask(VIS3)
 Use UltraSPARC Visual Instruction Set version 3.0 extensions.
 
 mvis4
-Target Report Mask(VIS4)
+Target Mask(VIS4)
 Use UltraSPARC Visual Instruction Set version 4.0 extensions.
 
 mvis4b
-Target Report Mask(VIS4B)
+Target Mask(VIS4B)
 Use additional VIS instructions introduced in OSA2017.
 
 mcbcond
-Target Report Mask(CBCOND)
+Target Mask(CBCOND)
 Use UltraSPARC Compare-and-Branch extensions.
 
 mfmaf
-Target Report Mask(FMAF)
+Target Mask(FMAF)
 Use UltraSPARC Fused Multiply-Add extensions.
 
 mfsmuld
-Target Report Mask(FSMULD)
+Target Mask(FSMULD)
 Use Floating-point Multiply Single to Double (FsMULd) instruction.
 
 mpopc
-Target Report Mask(POPC)
+Target Mask(POPC)
 Use UltraSPARC Population-Count instruction.
 
 msubxc
-Target Report Mask(SUBXC)
+Target Mask(SUBXC)
 Use UltraSPARC Subtract-Extended-with-Carry instruction.
 
 mptr64
-Target Report RejectNegative Mask(PTR64)
+Target RejectNegative Mask(PTR64)
 Pointers are 64-bit.
 
 mptr32
-Target Report RejectNegative InverseMask(PTR64)
+Target RejectNegative InverseMask(PTR64)
 Pointers are 32-bit.
 
 m64
-Target Report RejectNegative Mask(64BIT)
+Target RejectNegative Mask(64BIT)
 Use 64-bit ABI.
 
 m32
-Target Report RejectNegative InverseMask(64BIT)
+Target RejectNegative InverseMask(64BIT)
 Use 32-bit ABI.
 
 mstack-bias
-Target Report Mask(STACK_BIAS)
+Target Mask(STACK_BIAS)
 Use stack bias.
 
 mfaster-structs
-Target Report Mask(FASTER_STRUCTS)
+Target Mask(FASTER_STRUCTS)
 Use structs on stronger alignment for double-word copies.
 
 mrelax
@@ -134,7 +134,7 @@ Target
 Optimize tail call instructions in assembler and linker.
 
 muser-mode
-Target Report InverseMask(SV_MODE)
+Target InverseMask(SV_MODE)
 Do not generate code that can only run in supervisor mode (default).
 
 mcpu=
@@ -247,24 +247,24 @@ Target RejectNegative Joined Undocumented Var(sparc_debug_string)
 Enable debug output.
 
 mstd-struct-return
-Target Report Var(sparc_std_struct_return)
+Target Var(sparc_std_struct_return)
 Enable strict 32-bit psABI struct return checking.
 
 mfix-at697f
-Target Report RejectNegative Var(sparc_fix_at697f)
+Target RejectNegative Var(sparc_fix_at697f)
 Enable workaround for single erratum of AT697F processor
 (corresponding to erratum #13 of AT697E processor).
 
 mfix-ut699
-Target Report RejectNegative Var(sparc_fix_ut699)
+Target RejectNegative Var(sparc_fix_ut699)
 Enable workarounds for the errata of the UT699 processor.
 
 mfix-ut700
-Target Report RejectNegative Var(sparc_fix_ut700)
+Target RejectNegative Var(sparc_fix_ut700)
 Enable workarounds for the errata of the UT699E/UT700 processor.
 
 mfix-gr712rc
-Target Report RejectNegative Var(sparc_fix_gr712rc)
+Target RejectNegative Var(sparc_fix_gr712rc)
 Enable workarounds for the errata of the GR712RC processor.
 
 ;; Enable workaround for back-to-back store errata

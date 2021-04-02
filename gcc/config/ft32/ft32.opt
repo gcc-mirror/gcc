@@ -1,6 +1,6 @@
 ; Options for the FT32 port of the compiler.
 
-; Copyright (C) 2015-2020 Free Software Foundation, Inc.
+; Copyright (C) 2015-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -19,25 +19,25 @@
 ; <http://www.gnu.org/licenses/>.
 
 msim
-Target Report Mask(SIM)
+Target Mask(SIM)
 Target the software simulator.
 
 mlra
-Target Report Var(ft32_lra_flag) Init(0) Save
+Target Var(ft32_lra_flag) Init(0) Save
 Use LRA instead of reload.
 
 mnodiv
-Target Report Mask(NODIV)
+Target Mask(NODIV)
 Avoid use of the DIV and MOD instructions.
 
 mft32b
-Target Report Mask(FT32B)
+Target Mask(FT32B)
 Target the FT32B architecture.
 
 mcompress
-Target Report Mask(COMPRESS)
+Target Mask(COMPRESS)
 Enable FT32B code compression.
 
 mnopm
-Target Report Mask(NOPM)
+Target Mask(NOPM)
 Avoid placing any readable data in program memory.

@@ -1,0 +1,114 @@
+#!/usr/bin/env python
+
+# Tool for canonical RISC-V architecture string.
+# Copyright (C) 2011-2021 Free Software Foundation, Inc.
+# Contributed by Andrew Waterman (andrew@sifive.com).
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+
+from __future__ import print_function
+import sys
+import collections
+import itertools
+from functools import reduce
+
+
+CANONICAL_ORDER = "mafdgqlcbjtpvn"
+LONG_EXT_PREFIXES = ['z', 's', 'h', 'x']
+
+#
+# IMPLIED_EXT(ext) -> implied extension list.
+#
+IMPLIED_EXT = {
+  "d" : ["f"],
+}
+
+def arch_canonicalize(arch):
+  # TODO: Support extension version.
+  new_arch = ""
+  if arch[:5] in ['rv32e', 'rv32i', 'rv32g', 'rv64i', 'rv64g']:
+    # TODO: We should expand g to imad_zifencei once we support newer spec.
+    new_arch = arch[:5].replace("g", "imafd")
+  else:
+    raise Exception("Unexpected arch: `%s`" % arch[:5])
+
+  # Find any Z, S, H or X
+  long_ext_prefixes_idx = map(lambda x: arch.find(x), LONG_EXT_PREFIXES)
+
+  # Filter out any non-existent index.
+  long_ext_prefixes_idx = list(filter(lambda x: x != -1, long_ext_prefixes_idx))
+  if long_ext_prefixes_idx:
+    first_long_ext_idx = min(long_ext_prefixes_idx)
+    long_exts = arch[first_long_ext_idx:].split("_")
+    std_exts = list(arch[5:first_long_ext_idx])
+  else:
+    long_exts = []
+    std_exts = list(arch[5:])
+
+  #
+  # Handle implied extensions.
+  #
+  for ext in std_exts + long_exts:
+    if ext in IMPLIED_EXT:
+      implied_exts = IMPLIED_EXT[ext]
+      for implied_ext in implied_exts:
+        if implied_ext not in std_exts + long_exts:
+          long_exts.append(implied_ext)
+
+  # Single letter extension might appear in the long_exts list,
+  # becasue we just append extensions list to the arch string.
+  std_exts += list(filter(lambda x:len(x) == 1, long_exts))
+
+  def longext_sort (exts):
+    if not exts.startswith("zxm") and exts.startswith("z"):
+      # If "Z" extensions are named, they should be ordered first by CANONICAL.
+      if exts[1] not in CANONICAL_ORDER:
+        raise Exception("Unsupported extension `%s`" % exts)
+      canonical_sort = CANONICAL_ORDER.index(exts[1])
+    else:
+      canonical_sort = -1
+    return (exts.startswith("x"), exts.startswith("zxm"),
+            LONG_EXT_PREFIXES.index(exts[0]), canonical_sort, exts[1:])
+
+  # Multi-letter extension must be in lexicographic order.
+  long_exts = list(sorted(filter(lambda x:len(x) != 1, long_exts),
+                          key=longext_sort))
+
+  # Put extensions in canonical order.
+  for ext in CANONICAL_ORDER:
+    if ext in std_exts:
+      new_arch += ext
+
+  # Check every extension is processed.
+  for ext in std_exts:
+    if ext == '_':
+      continue
+    if ext not in CANONICAL_ORDER:
+      raise Exception("Unsupported extension `%s`" % ext)
+
+  # Concat rest of the multi-char extensions.
+  if long_exts:
+    new_arch += "_" + "_".join(long_exts)
+  return new_arch
+
+if len(sys.argv) < 2:
+  print ("Usage: %s <arch_str> [<arch_str>*]" % sys.argv)
+  sys.exit(1)
+
+for arg in sys.argv[1:]:
+  print (arch_canonicalize(arg))

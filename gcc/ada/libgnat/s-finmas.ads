@@ -86,10 +86,6 @@ package System.Finalization_Masters is
    --  Destroy the relation pair object - Finalize_Address from the internal
    --  hash table.
 
-   procedure Detach (N : not null FM_Node_Ptr);
-   --  Compiler interface, do not call from within the run-time. Remove a node
-   --  from an arbitrary finalization master.
-
    procedure Detach_Unprotected (N : not null FM_Node_Ptr);
    --  Remove a node from an arbitrary finalization master
 

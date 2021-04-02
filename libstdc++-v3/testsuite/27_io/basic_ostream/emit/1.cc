@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -19,6 +19,7 @@
 // { dg-additional-options "-pthread" { target pthread } }
 // { dg-do run { target c++2a } }
 // { dg-require-effective-target cxx11-abi }
+// { dg-xfail-run-if "cannot catch forced_unwind" { *-*-* } { "-fno-rtti" } }
 
 #include <syncstream>
 #include <testsuite_hooks.h>

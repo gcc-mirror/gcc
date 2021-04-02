@@ -1,5 +1,5 @@
 /* Definitions for 64-bit PowerPC running FreeBSD using the ELF format
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -51,11 +51,10 @@ extern int dot_symbols;
 #define SET_CMODEL(opt) do {} while (0)
 #endif
 
-/* Until now the 970 is the only Processor where FreeBSD 64-bit runs on.  */
 #undef  PROCESSOR_DEFAULT
-#define PROCESSOR_DEFAULT PROCESSOR_POWER4
+#define PROCESSOR_DEFAULT PROCESSOR_PPC7450
 #undef  PROCESSOR_DEFAULT64
-#define PROCESSOR_DEFAULT64 PROCESSOR_POWER4
+#define PROCESSOR_DEFAULT64 PROCESSOR_POWER8
 
 /* We don't need to generate entries in .fixup, except when
    -mrelocatable or -mrelocatable-lib is given.  */
@@ -100,8 +99,8 @@ extern int dot_symbols;
 #define ASM_SPEC64 "-a64"
 
 #define ASM_SPEC_COMMON "%(asm_cpu) \
-%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}} \
-%{mlittle} %{mlittle-endian} %{mbig} %{mbig-endian}"
+%{,assembler|,assembler-with-cpp: %{mregnames} %{mno-regnames}}" \
+  ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 
 #undef	SUBSUBTARGET_EXTRA_SPECS
 #define SUBSUBTARGET_EXTRA_SPECS					\
@@ -123,9 +122,15 @@ extern int dot_symbols;
     %{static:-Bstatic}} \
   %{symbolic:-Bsymbolic}"
 
+#undef  DEFAULT_ASM_ENDIAN
 #define LINK_OS_FREEBSD_SPEC32 "-melf32ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
-  
+#if (TARGET_DEFAULT & MASK_LITTLE_ENDIAN)
+#define DEFAULT_ASM_ENDIAN " -mlittle"
+#define LINK_OS_FREEBSD_SPEC64 "-melf64lppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
+#else
+#define DEFAULT_ASM_ENDIAN " -mbig"
 #define LINK_OS_FREEBSD_SPEC64 "-melf64ppc_fbsd " LINK_OS_FREEBSD_SPEC_DEF
+#endif
 
 #undef	MULTILIB_DEFAULTS
 #define MULTILIB_DEFAULTS { "m64" }

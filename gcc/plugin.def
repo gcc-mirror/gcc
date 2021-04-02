@@ -1,5 +1,5 @@
 /* This file contains the definitions for plugin events in GCC.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -98,6 +98,10 @@ DEFEVENT (PLUGIN_NEW_PASS)
    this could happen many times.  The event data is the included file path,
    as a const char* pointer.  */
 DEFEVENT (PLUGIN_INCLUDE_FILE)
+
+/* Called when -fanalyzer starts. The event data is an
+   ana::plugin_analyzer_init_iface *.  */
+DEFEVENT (PLUGIN_ANALYZER_INIT)
 
 /* When adding a new hard-coded plugin event, don't forget to edit in
    file plugin.c the functions register_callback and

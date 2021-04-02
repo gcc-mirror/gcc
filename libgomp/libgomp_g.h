@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -294,7 +294,7 @@ extern bool GOMP_cancellation_point (int);
 /* task.c */
 
 extern void GOMP_task (void (*) (void *), void *, void (*) (void *, void *),
-		       long, long, bool, unsigned, void **, int);
+		       long, long, bool, unsigned, void **, int, void *);
 extern void GOMP_taskloop (void (*) (void *), void *,
 			   void (*) (void *, void *), long, long, unsigned,
 			   unsigned long, int, long, long, long);

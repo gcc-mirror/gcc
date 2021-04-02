@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -29,8 +29,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "ssa.h"
-#include "expmed.h"
 #include "optabs.h"
+#include "expmed.h"
 #include "regs.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ccmp.h"
 #include "gimple-fold.h"
 #include "rtx-vector-builder.h"
+#include "tree-pretty-print.h"
+#include "flags.h"
 
 
 /* If this is nonzero, we do not bother generating VOLATILE
@@ -5451,6 +5453,31 @@ expand_assignment (tree to, tree from, bool nontemporal)
 					       mode1, to_rtx, to, from,
 					       reversep))
 	    result = NULL;
+	  else if (SUBREG_P (to_rtx)
+		   && SUBREG_PROMOTED_VAR_P (to_rtx))
+	    {
+	      /* If to_rtx is a promoted subreg, we need to zero or sign
+		 extend the value afterwards.  */
+	      if (TREE_CODE (to) == MEM_REF
+		  && TYPE_MODE (TREE_TYPE (from)) != BLKmode
+		  && !REF_REVERSE_STORAGE_ORDER (to)
+		  && known_eq (bitpos, 0)
+		  && known_eq (bitsize, GET_MODE_BITSIZE (GET_MODE (to_rtx))))
+		result = store_expr (from, to_rtx, 0, nontemporal, false);
+	      else
+		{
+		  rtx to_rtx1
+		    = lowpart_subreg (subreg_unpromoted_mode (to_rtx),
+				      SUBREG_REG (to_rtx),
+				      subreg_promoted_mode (to_rtx));
+		  result = store_field (to_rtx1, bitsize, bitpos,
+					bitregion_start, bitregion_end,
+					mode1, from, get_alias_set (to),
+					nontemporal, reversep);
+		  convert_move (SUBREG_REG (to_rtx), to_rtx1,
+				SUBREG_PROMOTED_SIGN (to_rtx));
+		}
+	    }
 	  else
 	    result = store_field (to_rtx, bitsize, bitpos,
 				  bitregion_start, bitregion_end,
@@ -7187,7 +7214,13 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	      || !multiple_p (bitpos, BITS_PER_UNIT)
 	      || !poly_int_tree_p (DECL_SIZE (TREE_OPERAND (exp, 1)),
 				   &decl_bitsize)
-	      || maybe_ne (decl_bitsize, bitsize)))
+	      || maybe_ne (decl_bitsize, bitsize))
+	  /* A call with an addressable return type and return-slot
+	     optimization must not need bitfield operations but we must
+	     pass down the original target.  */
+	  && (TREE_CODE (exp) != CALL_EXPR
+	      || !TREE_ADDRESSABLE (TREE_TYPE (exp))
+	      || !CALL_EXPR_RETURN_SLOT_OPT (exp)))
       /* If we are expanding a MEM_REF of a non-BLKmode non-addressable
          decl we must use bitfield operations.  */
       || (known_size_p (bitsize)
@@ -11607,111 +11640,6 @@ is_aligning_offset (const_tree offset, const_tree exp)
   return TREE_CODE (offset) == ADDR_EXPR && TREE_OPERAND (offset, 0) == exp;
 }
 
-/* If EXPR is a constant initializer (either an expression or CONSTRUCTOR),
-   attempt to obtain its native representation as an array of nonzero BYTES.
-   Return true on success and false on failure (the latter without modifying
-   BYTES).  */
-
-static bool
-convert_to_bytes (tree type, tree expr, vec<unsigned char> *bytes)
-{
-  if (TREE_CODE (expr) == CONSTRUCTOR)
-    {
-      /* Set to the size of the CONSTRUCTOR elements.  */
-      unsigned HOST_WIDE_INT ctor_size = bytes->length ();
-
-      if (TREE_CODE (type) == ARRAY_TYPE)
-	{
-	  tree val, idx;
-	  tree eltype = TREE_TYPE (type);
-	  unsigned HOST_WIDE_INT elsize =
-	    tree_to_uhwi (TYPE_SIZE_UNIT (eltype));
-
-	  /* Jump through hoops to determine the lower bound for languages
-	     like Ada that can set it to an (almost) arbitrary value.  */
-	  tree dom = TYPE_DOMAIN (type);
-	  if (!dom)
-	    return false;
-	  tree min = TYPE_MIN_VALUE (dom);
-	  if (!min || !tree_fits_uhwi_p (min))
-	    return false;
-	  unsigned HOST_WIDE_INT i, last_idx = tree_to_uhwi (min) - 1;
-	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (expr), i, idx, val)
-	    {
-	      /* Append zeros for elements with no initializers.  */
-	      if (!tree_fits_uhwi_p (idx))
-		return false;
-	      unsigned HOST_WIDE_INT cur_idx = tree_to_uhwi (idx);
-	      if (unsigned HOST_WIDE_INT size = cur_idx - (last_idx + 1))
-		{
-		  size = size * elsize + bytes->length ();
-		  bytes->safe_grow_cleared (size, true);
-		}
-
-	      if (!convert_to_bytes (eltype, val, bytes))
-		return false;
-
-	      last_idx = cur_idx;
-	    }
-	}
-      else if (TREE_CODE (type) == RECORD_TYPE)
-	{
-	  tree val, fld;
-	  unsigned HOST_WIDE_INT i;
-	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (expr), i, fld, val)
-	    {
-	      /* Append zeros for members with no initializers and
-		 any padding.  */
-	      unsigned HOST_WIDE_INT cur_off = int_byte_position (fld);
-	      if (bytes->length () < cur_off)
-		bytes->safe_grow_cleared (cur_off, true);
-
-	      if (!convert_to_bytes (TREE_TYPE (val), val, bytes))
-		return false;
-	    }
-	}
-      else
-	return false;
-
-      /* Compute the size of the COSNTRUCTOR elements.  */
-      ctor_size = bytes->length () - ctor_size;
-
-      /* Append zeros to the byte vector to the full size of the type.
-	 The type size can be less than the size of the CONSTRUCTOR
-	 if the latter contains initializers for a flexible array
-	 member.  */
-      tree size = TYPE_SIZE_UNIT (type);
-      unsigned HOST_WIDE_INT type_size = tree_to_uhwi (size);
-      if (ctor_size < type_size)
-	if (unsigned HOST_WIDE_INT size_grow = type_size - ctor_size)
-	  bytes->safe_grow_cleared (bytes->length () + size_grow, true);
-
-      return true;
-    }
-
-  /* Except for RECORD_TYPE which may have an initialized flexible array
-     member, the size of a type is the same as the size of the initializer
-     (including any implicitly zeroed out members and padding).  Allocate
-     just enough for that many bytes.  */
-  tree expr_size = TYPE_SIZE_UNIT (TREE_TYPE (expr));
-  if (!expr_size || !tree_fits_uhwi_p (expr_size))
-    return false;
-  const unsigned HOST_WIDE_INT expr_bytes = tree_to_uhwi (expr_size);
-  const unsigned bytes_sofar = bytes->length ();
-  /* native_encode_expr can convert at most INT_MAX bytes.  vec is limited
-     to at most UINT_MAX.  */
-  if (bytes_sofar + expr_bytes > INT_MAX)
-    return false;
-
-  /* Unlike for RECORD_TYPE, there is no need to clear the memory since
-     it's completely overwritten by native_encode_expr.  */
-  bytes->safe_grow (bytes_sofar + expr_bytes, true);
-  unsigned char *pnext = bytes->begin () + bytes_sofar;
-  int nbytes = native_encode_expr (expr, pnext, expr_bytes, 0);
-  /* NBYTES is zero on failure.  Otherwise it should equal EXPR_BYTES.  */
-  return (unsigned HOST_WIDE_INT) nbytes == expr_bytes;
-}
-
 /* Return a STRING_CST corresponding to ARG's constant initializer either
    if it's a string constant, or, when VALREP is set, any other constant,
    or null otherwise.
@@ -11724,7 +11652,7 @@ static tree
 constant_byte_string (tree arg, tree *ptr_offset, tree *mem_size, tree *decl,
 		      bool valrep = false)
 {
-  tree dummy = NULL_TREE;;
+  tree dummy = NULL_TREE;
   if (!mem_size)
     mem_size = &dummy;
 
@@ -11879,18 +11807,42 @@ constant_byte_string (tree arg, tree *ptr_offset, tree *mem_size, tree *decl,
       if (!base_off.is_constant (&cstoff))
 	return NULL_TREE;
 
+      /* Check that the host and target are sane.  */
+      if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
+	return NULL_TREE;
+
+      HOST_WIDE_INT typesz = int_size_in_bytes (TREE_TYPE (init));
+      if (typesz <= 0 || (int) typesz != typesz)
+	return NULL_TREE;
+
+      HOST_WIDE_INT size = typesz;
+      if (VAR_P (array)
+	  && DECL_SIZE_UNIT (array)
+	  && tree_fits_shwi_p (DECL_SIZE_UNIT (array)))
+	{
+	  size = tree_to_shwi (DECL_SIZE_UNIT (array));
+	  gcc_checking_assert (size >= typesz);
+	}
+
       /* If value representation was requested convert the initializer
 	 for the whole array or object into a string of bytes forming
 	 its value representation and return it.  */
-      auto_vec<unsigned char> bytes;
-      if (!convert_to_bytes (TREE_TYPE (init), init, &bytes))
-	return NULL_TREE;
+      unsigned char *bytes = XNEWVEC (unsigned char, size);
+      int r = native_encode_initializer (init, bytes, size);
+      if (r < typesz)
+	{
+	  XDELETEVEC (bytes);
+	  return NULL_TREE;
+	}
 
-      unsigned n = bytes.length ();
-      const char *p = reinterpret_cast<const char *>(bytes.address ());
-      init = build_string_literal (n, p, char_type_node);
+      if (r < size)
+	memset (bytes + r, '\0', size - r);
+
+      const char *p = reinterpret_cast<const char *>(bytes);
+      init = build_string_literal (size, p, char_type_node);
       init = TREE_OPERAND (init, 0);
       init = TREE_OPERAND (init, 0);
+      XDELETE (bytes);
 
       *mem_size = size_int (TREE_STRING_LENGTH (init));
       *ptr_offset = wide_int_to_tree (ssizetype, base_off);
@@ -11941,6 +11893,10 @@ constant_byte_string (tree arg, tree *ptr_offset, tree *mem_size, tree *decl,
       && (TREE_CODE (TREE_TYPE (array)) == INTEGER_TYPE
 	  || TYPE_MAIN_VARIANT (inittype) == char_type_node))
     {
+      /* Check that the host and target are sane.  */
+      if (CHAR_BIT != 8 || BITS_PER_UNIT != 8)
+	return NULL_TREE;
+
       /* For a reference to (address of) a single constant character,
 	 store the native representation of the character in CHARBUF.
 	 If the reference is to an element of an array or a member
@@ -11983,6 +11939,9 @@ constant_byte_string (tree arg, tree *ptr_offset, tree *mem_size, tree *decl,
 	    initsize = integer_zero_node;
 
 	  unsigned HOST_WIDE_INT size = tree_to_uhwi (initsize);
+	  if (size > (unsigned HOST_WIDE_INT) INT_MAX)
+	    return NULL_TREE;
+
 	  init = build_string_literal (size, NULL, chartype, size);
 	  init = TREE_OPERAND (init, 0);
 	  init = TREE_OPERAND (init, 0);
@@ -12325,6 +12284,37 @@ maybe_optimize_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
   *arg1 = c4;
   return code == EQ_EXPR ? LE_EXPR : GT_EXPR;
 }
+
+/* Optimize x - y < 0 into x < 0 if x - y has undefined overflow.  */
+
+void
+maybe_optimize_sub_cmp_0 (enum tree_code code, tree *arg0, tree *arg1)
+{
+  gcc_checking_assert (code == GT_EXPR || code == GE_EXPR
+		       || code == LT_EXPR || code == LE_EXPR);
+  gcc_checking_assert (integer_zerop (*arg1));
+
+  if (!optimize)
+    return;
+
+  gimple *stmt = get_def_for_expr (*arg0, MINUS_EXPR);
+  if (stmt == NULL)
+    return;
+
+  tree treeop0 = gimple_assign_rhs1 (stmt);
+  tree treeop1 = gimple_assign_rhs2 (stmt);
+  if (!TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (treeop0)))
+    return;
+
+  if (issue_strict_overflow_warning (WARN_STRICT_OVERFLOW_COMPARISON))
+    warning_at (gimple_location (stmt), OPT_Wstrict_overflow,
+		"assuming signed overflow does not occur when "
+		"simplifying %<X - Y %s 0%> to %<X %s Y%>",
+		op_symbol_code (code), op_symbol_code (code));
+
+  *arg0 = treeop0;
+  *arg1 = treeop1;
+}
 
 /* Generate code to calculate OPS, and exploded expression
    using a store-flag instruction and return an rtx for the result.
@@ -12412,6 +12402,14 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 	  return do_store_flag (&nops, target, mode);
 	}
     }
+
+  /* Optimize (x - y) < 0 into x < y if x - y has undefined overflow.  */
+  if (!unsignedp
+      && (ops->code == LT_EXPR || ops->code == LE_EXPR
+	  || ops->code == GT_EXPR || ops->code == GE_EXPR)
+      && integer_zerop (arg1)
+      && TREE_CODE (arg0) == SSA_NAME)
+    maybe_optimize_sub_cmp_0 (ops->code, &arg0, &arg1);
 
   /* Get the rtx comparison code to use.  We know that EXP is a comparison
      operation of some type.  Some comparisons against 1 and -1 can be

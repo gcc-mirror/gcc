@@ -1,5 +1,5 @@
 /* Register to Stack convert for GNU compiler.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -3426,7 +3426,8 @@ static unsigned int
 rest_of_handle_stack_regs (void)
 {
 #ifdef STACK_REGS
-  reg_to_stack ();
+  if (reg_to_stack ())
+    df_insn_rescan_all ();
   regstack_completed = 1;
 #endif
   return 0;

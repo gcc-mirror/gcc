@@ -1,5 +1,5 @@
 /* Assembly functions for the Xtensa version of libgcc1.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Bob Wilson (bwilson@tensilica.com) at Tensilica.
 
 This file is part of GCC.
@@ -838,6 +838,45 @@ __lshrdi3:
 	.size	__lshrdi3, . - __lshrdi3
 
 #endif /* L_lshrdi3 */
+
+
+#ifdef L_bswapsi2
+	.align	4
+	.global	__bswapsi2
+	.type	__bswapsi2, @function
+__bswapsi2:
+	leaf_entry sp, 16
+	ssai	8
+	srli	a3, a2, 16
+	src	a3, a3, a2
+	src	a3, a3, a3
+	src	a2, a2, a3
+	leaf_return
+	.size	__bswapsi2, . - __bswapsi2
+
+#endif /* L_bswapsi2 */
+
+
+#ifdef L_bswapdi2
+	.align	4
+	.global	__bswapdi2
+	.type	__bswapdi2, @function
+__bswapdi2:
+	leaf_entry sp, 16
+	ssai	8
+	srli	a4, a2, 16
+	src	a4, a4, a2
+	src	a4, a4, a4
+	src	a4, a2, a4
+	srli	a2, a3, 16
+	src	a2, a2, a3
+	src	a2, a2, a2
+	src	a2, a3, a2
+	mov	a3, a4
+	leaf_return
+	.size	__bswapdi2, . - __bswapdi2
+
+#endif /* L_bswapdi2 */
 
 
 #include "ieee754-df.S"

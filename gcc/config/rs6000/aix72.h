@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for IBM RS/6000 POWER running AIX V7.2.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by David Edelsohn (edelsohn@gnu.org).
 
    This file is part of GCC.
@@ -62,6 +62,9 @@ do {									\
       /* aix/ppc doesn't support -mvsx and -maltivec with Go */		\
       rs6000_isa_flags &= ~(OPTION_MASK_VSX | OPTION_MASK_ALTIVEC);	\
     }									\
+  if (!global_options_set.x_dwarf_version)				\
+    /* AIX only supports DWARF 4.  */					\
+    dwarf_version = 4;							\
 } while (0)
 
 #define ASM_SPEC32 "-a32"

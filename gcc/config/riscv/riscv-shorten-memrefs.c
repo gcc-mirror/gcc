@@ -1,5 +1,5 @@
 /* Shorten memrefs pass for RISC-V.
-   Copyright (C) 2018-2019 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -75,12 +75,19 @@ private:
 
   regno_map * analyze (basic_block bb);
   void transform (regno_map *m, basic_block bb);
-  bool get_si_mem_base_reg (rtx mem, rtx *addr);
+  bool get_si_mem_base_reg (rtx mem, rtx *addr, bool *extend);
 }; // class pass_shorten_memrefs
 
 bool
-pass_shorten_memrefs::get_si_mem_base_reg (rtx mem, rtx *addr)
+pass_shorten_memrefs::get_si_mem_base_reg (rtx mem, rtx *addr, bool *extend)
 {
+  /* Whether it's sign/zero extended.  */
+  if (GET_CODE (mem) == ZERO_EXTEND || GET_CODE (mem) == SIGN_EXTEND)
+    {
+      *extend = true;
+      mem = XEXP (mem, 0);
+    }
+
   if (!MEM_P (mem) || GET_MODE (mem) != SImode)
     return false;
   *addr = XEXP (mem, 0);
@@ -110,7 +117,8 @@ pass_shorten_memrefs::analyze (basic_block bb)
 	{
 	  rtx mem = XEXP (pat, i);
 	  rtx addr;
-	  if (get_si_mem_base_reg (mem, &addr))
+	  bool extend = false;
+	  if (get_si_mem_base_reg (mem, &addr, &extend))
 	    {
 	      HOST_WIDE_INT regno = REGNO (XEXP (addr, 0));
 	      /* Do not count store zero as these cannot be compressed.  */
@@ -150,7 +158,8 @@ pass_shorten_memrefs::transform (regno_map *m, basic_block bb)
 	{
 	  rtx mem = XEXP (pat, i);
 	  rtx addr;
-	  if (get_si_mem_base_reg (mem, &addr))
+	  bool extend = false;
+	  if (get_si_mem_base_reg (mem, &addr, &extend))
 	    {
 	      HOST_WIDE_INT regno = REGNO (XEXP (addr, 0));
 	      /* Do not transform store zero as these cannot be compressed.  */
@@ -161,9 +170,20 @@ pass_shorten_memrefs::transform (regno_map *m, basic_block bb)
 		}
 	      if (m->get_or_insert (regno) > 3)
 		{
-		  addr
-		    = targetm.legitimize_address (addr, addr, GET_MODE (mem));
-		  XEXP (pat, i) = replace_equiv_address (mem, addr);
+		  if (extend)
+		    {
+		      addr
+			= targetm.legitimize_address (addr, addr,
+						      GET_MODE (XEXP (mem, 0)));
+		      XEXP (XEXP (pat, i), 0)
+			= replace_equiv_address (XEXP (mem, 0), addr);
+		    }
+		  else
+		    {
+		      addr = targetm.legitimize_address (addr, addr,
+							 GET_MODE (mem));
+		      XEXP (pat, i) = replace_equiv_address (mem, addr);
+		    }
 		  df_insn_rescan (insn);
 		}
 	    }

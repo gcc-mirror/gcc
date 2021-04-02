@@ -40,7 +40,7 @@ void driver()
   f3('a'); // { dg-error "" }
   f4(0, 0);
   f4(0, 'a'); // { dg-error "" }
-  f15(0);
+  f15(0); // { dg-bogus "" }
   f15('a'); // { dg-message "" }
 }
 

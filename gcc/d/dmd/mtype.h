@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -12,7 +12,6 @@
 
 #include "root/root.h"
 #include "root/stringtable.h"
-#include "root/dcompat.h" // for d_size_t
 
 #include "arraytypes.h"
 #include "ast_node.h"
@@ -41,6 +40,7 @@ typedef union tree_node type;
 typedef struct TYPE type;
 #endif
 
+Type *typeSemantic(Type *type, const Loc &loc, Scope *sc);
 void semanticTypeInfo(Scope *sc, Type *t);
 MATCH deduceType(RootObject *o, Scope *sc, Type *tparam, TemplateParameters *parameters, Objects *dedtypes, unsigned *wm = NULL, size_t inferStart = 0);
 StorageClass ModToStc(unsigned mod);
@@ -246,7 +246,6 @@ public:
     d_uns64 size();
     virtual d_uns64 size(Loc loc);
     virtual unsigned alignsize();
-    virtual Type *semantic(Loc loc, Scope *sc);
     Type *trySemantic(Loc loc, Scope *sc);
     Type *merge();
     Type *merge2();
@@ -449,7 +448,6 @@ public:
     static TypeVector *create(Type *basetype);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     d_uns64 size(Loc loc);
     unsigned alignsize();
     Expression *getProperty(Loc loc, Identifier *ident, int flag);
@@ -487,7 +485,6 @@ public:
     Type *syntaxCopy();
     d_uns64 size(Loc loc);
     unsigned alignsize();
-    Type *semantic(Loc loc, Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     bool isString();
@@ -513,7 +510,6 @@ public:
     Type *syntaxCopy();
     d_uns64 size(Loc loc) /*const*/;
     unsigned alignsize() /*const*/;
-    Type *semantic(Loc loc, Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     bool isString();
@@ -538,7 +534,6 @@ public:
     const char *kind();
     Type *syntaxCopy();
     d_uns64 size(Loc loc);
-    Type *semantic(Loc loc, Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     Expression *defaultInit(Loc loc);
@@ -558,7 +553,6 @@ public:
     static TypePointer *create(Type *t);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     d_uns64 size(Loc loc) /*const*/;
     MATCH implicitConvTo(Type *to);
     MATCH constConv(Type *to);
@@ -576,7 +570,6 @@ public:
     TypeReference(Type *t);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     d_uns64 size(Loc loc) /*const*/;
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     Expression *defaultInit(Loc loc);
@@ -624,9 +617,12 @@ public:
     Type *type;
     Identifier *ident;
     Expression *defaultArg;
+    UserAttributeDeclaration *userAttribDecl;   // user defined attributes
 
-    Parameter(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
-    static Parameter *create(StorageClass storageClass, Type *type, Identifier *ident, Expression *defaultArg);
+    Parameter(StorageClass storageClass, Type *type, Identifier *ident,
+              Expression *defaultArg, UserAttributeDeclaration *userAttribDecl);
+    static Parameter *create(StorageClass storageClass, Type *type, Identifier *ident,
+                             Expression *defaultArg, UserAttributeDeclaration *userAttribDecl);
     Parameter *syntaxCopy();
     Type *isLazyArray();
     // kludge for template.isType()
@@ -635,7 +631,7 @@ public:
 
     static Parameters *arraySyntaxCopy(Parameters *parameters);
     static size_t dim(Parameters *parameters);
-    static Parameter *getNth(Parameters *parameters, d_size_t nth, d_size_t *pn = NULL);
+    static Parameter *getNth(Parameters *parameters, size_t nth, size_t *pn = NULL);
     const char *toChars();
     bool isCovariant(bool returnByRef, const Parameter *p) const;
     static bool isCovariantScope(bool returnByRef, StorageClass from, StorageClass to);
@@ -678,7 +674,6 @@ public:
     static TypeFunction *create(Parameters *parameters, Type *treturn, VarArg varargs, LINK linkage, StorageClass stc = 0);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     void purityLevel();
     bool hasLazyParameters();
     bool isDstyleVariadic() const;
@@ -707,7 +702,6 @@ public:
     static TypeDelegate *create(Type *t);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     Type *addStorageClass(StorageClass stc);
     d_uns64 size(Loc loc) /*const*/;
     unsigned alignsize() /*const*/;
@@ -732,7 +726,6 @@ public:
 
     TypeTraits(const Loc &loc, TraitsExp *exp);
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     d_uns64 size(Loc loc);
     void accept(Visitor *v) { v->visit(this); }
@@ -772,7 +765,6 @@ public:
     Type *syntaxCopy();
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     Dsymbol *toDsymbol(Scope *sc);
-    Type *semantic(Loc loc, Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -787,7 +779,6 @@ public:
     const char *kind();
     Type *syntaxCopy();
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
-    Type *semantic(Loc loc, Scope *sc);
     Dsymbol *toDsymbol(Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -803,7 +794,6 @@ public:
     Type *syntaxCopy();
     Dsymbol *toDsymbol(Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
-    Type *semantic(Loc loc, Scope *sc);
     d_uns64 size(Loc loc);
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -816,7 +806,6 @@ public:
     Type *syntaxCopy();
     Dsymbol *toDsymbol(Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
-    Type *semantic(Loc loc, Scope *sc);
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -845,7 +834,6 @@ public:
     d_uns64 size(Loc loc);
     unsigned alignsize();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     Dsymbol *toDsymbol(Scope *sc);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     structalign_t alignment();
@@ -876,7 +864,6 @@ public:
     Type *syntaxCopy();
     d_uns64 size(Loc loc);
     unsigned alignsize();
-    Type *semantic(Loc loc, Scope *sc);
     Dsymbol *toDsymbol(Scope *sc);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     Expression *getProperty(Loc loc, Identifier *ident, int flag);
@@ -915,7 +902,6 @@ public:
     const char *kind();
     d_uns64 size(Loc loc) /*const*/;
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     Dsymbol *toDsymbol(Scope *sc);
     Expression *dotExp(Scope *sc, Expression *e, Identifier *ident, int flag);
     ClassDeclaration *isClassHandle();
@@ -946,7 +932,6 @@ public:
     TypeTuple(Type *t1, Type *t2);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     bool equals(RootObject *o);
     Expression *getProperty(Loc loc, Identifier *ident, int flag);
     Expression *defaultInit(Loc loc);
@@ -962,7 +947,6 @@ public:
     TypeSlice(Type *next, Expression *lwr, Expression *upr);
     const char *kind();
     Type *syntaxCopy();
-    Type *semantic(Loc loc, Scope *sc);
     void resolve(Loc loc, Scope *sc, Expression **pe, Type **pt, Dsymbol **ps, bool intypeid = false);
     void accept(Visitor *v) { v->visit(this); }
 };

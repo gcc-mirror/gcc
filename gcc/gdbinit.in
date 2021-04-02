@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -46,7 +46,7 @@ call debug ($debug_arg)
 end
 
 document pp
-GCC hook: pp [any]
+GCC hook: debug (<multiple overloads>)
 Print a representation of any GCC data structure for which an instance of
 overloaded function 'debug' is available.
 See also 'help-gcc-hooks'.
@@ -58,7 +58,7 @@ call debug_rtx ($debug_arg)
 end
 
 document pr
-GCC hook: pr [rtx]
+GCC hook: debug_rtx (rtx)
 Print the full structure of given rtx.
 See also 'help-gcc-hooks'.
 end
@@ -69,7 +69,7 @@ call debug_rtx_list ($debug_arg, debug_rtx_count)
 end
 
 document prl
-GCC hook: prl [rtx]
+GCC hook: debug_rtx_list (rtx)
 Print the full structure of all rtx insns beginning at given rtx.
 Uses variable debug_rtx_count to control number of insns printed:
   debug_rtx_count > 0: print from given rtx on.
@@ -85,7 +85,7 @@ call debug_tree ($debug_arg)
 end
 
 document pt
-GCC hook: pt [tree]
+GCC hook: debug_tree (tree)
 Print the full structure of given tree.
 See also 'help-gcc-hooks'.
 end
@@ -96,7 +96,7 @@ call debug_c_tree ($debug_arg)
 end
 
 document pct
-GCC hook: pct [tree]
+GCC hook: debug_c_tree (tree)
 Print given tree in C syntax.
 See also 'help-gcc-hooks'.
 end
@@ -107,7 +107,7 @@ call debug_gimple_stmt ($debug_arg)
 end
 
 document pgg
-GCC hook: pgg [gimple]
+GCC hook: debug_gimple_stmt (gimple)
 Print given GIMPLE statement in C syntax.
 See also 'help-gcc-hooks'.
 end
@@ -118,7 +118,7 @@ call debug_gimple_seq ($debug_arg)
 end
 
 document pgq
-GCC hook: pgq [gimple_seq]
+GCC hook: debug_gimple_seq (gimple_seq)
 Print given GIMPLE sequence in C syntax.
 See also 'help-gcc-hooks'.
 end
@@ -129,7 +129,7 @@ call debug_generic_stmt ($debug_arg)
 end
 
 document pgs
-GCC hook: pgs [tree]
+GCC hook: debug_generic_stmt (tree)
 Print given GENERIC statement in C syntax.
 See also 'help-gcc-hooks'.
 end
@@ -140,7 +140,7 @@ call debug_generic_expr ($debug_arg)
 end
 
 document pge
-GCC hook: pge [tree]
+GCC hook: debug_generic_expr (tree)
 Print given GENERIC expression in C syntax.
 See also 'help-gcc-hooks'.
 end
@@ -151,7 +151,7 @@ call mpz_out_str(stderr, 10, $debug_arg)
 end
 
 document pmz
-GCC hook: pmz [mpz_t]
+GCC hook: mpz_out_str (mpz_t)
 Print given mpz value.
 See also 'help-gcc-hooks'.
 end
@@ -163,7 +163,7 @@ echo \n
 end
 
 document ptc
-GCC hook: ptc [tree]
+GCC hook: TREE_CODE (tree)
 Print the tree-code of given tree node.
 See also 'help-gcc-hooks'.
 end
@@ -175,7 +175,7 @@ echo \n
 end
 
 document pdn
-GCC hook: pdn [tree]
+GCC hook: IDENTIFIER_POINTER (DECL_NAME (tree))
 Print the name of given decl-node.
 See also 'help-gcc-hooks'.
 end
@@ -187,7 +187,7 @@ echo \n
 end
 
 document ptn
-GCC hook: ptn [tree]
+GCC hook: IDENTIFIER_POINTER (DECL_NAME (TREE_TYPE (tree)))
 Print the name of given type-node.
 See also 'help-gcc-hooks'.
 end
@@ -198,7 +198,7 @@ call debug_dwarf_die ($debug_arg)
 end
 
 document pdd
-GCC hook: pdd [dw_die_ref]
+GCC hook: debug_dwarf_die (dw_die_ref)
 Print given dw_die_ref.
 See also 'help-gcc-hooks'.
 end
@@ -212,7 +212,7 @@ echo )\n
 end
 
 document prc
-GCC hook: prc [rtx]
+GCC hook: GET_CODE (rtx)
 Print the rtx-code and machine mode of given rtx.
 See also 'help-gcc-hooks'.
 end
@@ -223,7 +223,7 @@ print $debug_arg.u.fld[0].rt_rtx@7
 end
 
 document pi
-GCC hook: pi [rtx_insn]
+GCC hook: X0EXP (rtx_insn)
 Print the fields of given RTL instruction.
 See also 'help-gcc-hooks'.
 end
@@ -243,7 +243,7 @@ call bitmap_print (stderr, $debug_arg, "", "\n")
 end
 
 document pbm
-GCC hook: pbm [bitmap]
+GCC hook: bitmap_print (bitmap)
 Dump given bitmap as a comma-separated list of numbers.
 See also 'help-gcc-hooks'.
 end
@@ -255,7 +255,7 @@ echo \n
 end
 
 document pel
-GCC hook: pel [location_t]
+GCC hook: expand_location (location_t)
 Print given location.
 See also 'help-gcc-hooks'.
 end
@@ -275,7 +275,7 @@ print ($debug_arg.typed.type)
 end
 
 document trt
-GCC hook: trt [tree]
+GCC hook: TREE_TYPE (tree)
 Print TREE_TYPE of given tree node.
 See also 'help-gcc-hooks'.
 end

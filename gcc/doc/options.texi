@@ -1,4 +1,4 @@
-@c Copyright (C) 2003-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2003-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -453,9 +453,6 @@ a @samp{%qs} format which is the option name, or not taking any
 operands, which is passed to the @samp{warning} function.  If an alias
 is marked @code{Warn}, the target of the alias must not also be marked
 @code{Warn}.
-
-@item Report
-The state of the option should be printed by @option{-fverbose-asm}.
 
 @item Warning
 This is a warning option and should be shown as such in

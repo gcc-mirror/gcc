@@ -1,4 +1,4 @@
-;; Copyright (C) 2016-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2021 Free Software Foundation, Inc.
 
 ;; This file is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free
@@ -2185,7 +2185,7 @@
   [(set_attr "type" "vop3a")
    (set_attr "length" "8,8")])
 
-(define_insn "subdf"
+(define_insn "subdf3"
   [(set (match_operand:DF 0 "register_operand"  "=  v,   v")
 	(minus:DF
 	  (match_operand:DF 1 "gcn_alu_operand" "vSvB,   v")
@@ -2351,9 +2351,9 @@
 
 (define_insn "recip<mode>2<exec>"
   [(set (match_operand:V_FP 0 "register_operand"  "=  v")
-	(div:V_FP
-	  (vec_duplicate:V_FP (float:<SCALAR_MODE> (const_int 1)))
-	  (match_operand:V_FP 1 "gcn_alu_operand" "vSvB")))]
+	(unspec:V_FP
+	  [(match_operand:V_FP 1 "gcn_alu_operand" "vSvB")]
+	  UNSPEC_RCP))]
   ""
   "v_rcp%i0\t%0, %1"
   [(set_attr "type" "vop1")
@@ -2361,9 +2361,9 @@
 
 (define_insn "recip<mode>2"
   [(set (match_operand:FP 0 "register_operand"	 "=  v")
-	(div:FP
-	  (float:FP (const_int 1))
-	  (match_operand:FP 1 "gcn_alu_operand"	 "vSvB")))]
+	(unspec:FP
+	  [(match_operand:FP 1 "gcn_alu_operand" "vSvB")]
+	  UNSPEC_RCP))]
   ""
   "v_rcp%i0\t%0, %1"
   [(set_attr "type" "vop1")
@@ -2382,28 +2382,39 @@
    (match_operand:V_FP 2 "gcn_valu_src0_operand")]
   "flag_reciprocal_math"
   {
-    rtx two = gcn_vec_constant (<MODE>mode,
-		  const_double_from_real_value (dconst2, <SCALAR_MODE>mode));
+    rtx one = gcn_vec_constant (<MODE>mode,
+		  const_double_from_real_value (dconst1, <SCALAR_MODE>mode));
     rtx initrcp = gen_reg_rtx (<MODE>mode);
     rtx fma = gen_reg_rtx (<MODE>mode);
     rtx rcp;
+    rtx num = operands[1], denom = operands[2];
 
-    bool is_rcp = (GET_CODE (operands[1]) == CONST_VECTOR
+    bool is_rcp = (GET_CODE (num) == CONST_VECTOR
 		   && real_identical
 		        (CONST_DOUBLE_REAL_VALUE
-			  (CONST_VECTOR_ELT (operands[1], 0)), &dconstm1));
+			  (CONST_VECTOR_ELT (num, 0)), &dconstm1));
 
     if (is_rcp)
       rcp = operands[0];
     else
       rcp = gen_reg_rtx (<MODE>mode);
 
-    emit_insn (gen_recip<mode>2 (initrcp, operands[2]));
-    emit_insn (gen_fma<mode>4_negop2 (fma, initrcp, operands[2], two));
-    emit_insn (gen_mul<mode>3 (rcp, initrcp, fma));
+    emit_insn (gen_recip<mode>2 (initrcp, denom));
+    emit_insn (gen_fma<mode>4_negop2 (fma, initrcp, denom, one));
+    emit_insn (gen_fma<mode>4 (rcp, fma, initrcp, initrcp));
 
     if (!is_rcp)
-      emit_insn (gen_mul<mode>3 (operands[0], operands[1], rcp));
+      {
+	rtx div_est = gen_reg_rtx (<MODE>mode);
+	rtx fma2 = gen_reg_rtx (<MODE>mode);
+	rtx fma3 = gen_reg_rtx (<MODE>mode);
+	rtx fma4 = gen_reg_rtx (<MODE>mode);
+	emit_insn (gen_mul<mode>3 (div_est, num, rcp));
+	emit_insn (gen_fma<mode>4_negop2 (fma2, div_est, denom, num));
+	emit_insn (gen_fma<mode>4 (fma3, fma2, rcp, div_est));
+	emit_insn (gen_fma<mode>4_negop2 (fma4, fma3, denom, num));
+	emit_insn (gen_fma<mode>4 (operands[0], fma4, rcp, fma3));
+      }
 
     DONE;
   })
@@ -2414,10 +2425,11 @@
    (match_operand:FP 2 "gcn_valu_src0_operand")]
   "flag_reciprocal_math"
   {
-    rtx two = const_double_from_real_value (dconst2, <MODE>mode);
+    rtx one = const_double_from_real_value (dconst1, <MODE>mode);
     rtx initrcp = gen_reg_rtx (<MODE>mode);
     rtx fma = gen_reg_rtx (<MODE>mode);
     rtx rcp;
+    rtx num = operands[1], denom = operands[2];
 
     bool is_rcp = (GET_CODE (operands[1]) == CONST_DOUBLE
 		   && real_identical (CONST_DOUBLE_REAL_VALUE (operands[1]),
@@ -2428,12 +2440,22 @@
     else
       rcp = gen_reg_rtx (<MODE>mode);
 
-    emit_insn (gen_recip<mode>2 (initrcp, operands[2]));
-    emit_insn (gen_fma<mode>4_negop2 (fma, initrcp, operands[2], two));
-    emit_insn (gen_mul<mode>3 (rcp, initrcp, fma));
+    emit_insn (gen_recip<mode>2 (initrcp, denom));
+    emit_insn (gen_fma<mode>4_negop2 (fma, initrcp, denom, one));
+    emit_insn (gen_fma<mode>4 (rcp, fma, initrcp, initrcp));
 
     if (!is_rcp)
-      emit_insn (gen_mul<mode>3 (operands[0], operands[1], rcp));
+      {
+	rtx div_est = gen_reg_rtx (<MODE>mode);
+	rtx fma2 = gen_reg_rtx (<MODE>mode);
+	rtx fma3 = gen_reg_rtx (<MODE>mode);
+	rtx fma4 = gen_reg_rtx (<MODE>mode);
+	emit_insn (gen_mul<mode>3 (div_est, num, rcp));
+	emit_insn (gen_fma<mode>4_negop2 (fma2, div_est, denom, num));
+	emit_insn (gen_fma<mode>4 (fma3, fma2, rcp, div_est));
+	emit_insn (gen_fma<mode>4_negop2 (fma4, fma3, denom, num));
+	emit_insn (gen_fma<mode>4 (operands[0], fma4, rcp, fma3));
+      }
 
     DONE;
   })

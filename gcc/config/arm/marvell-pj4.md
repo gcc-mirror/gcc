@@ -1,5 +1,5 @@
 ;; Marvell ARM Processor Pipeline Description
-;; Copyright (C) 2010-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2021 Free Software Foundation, Inc.
 ;; Contributed by Marvell.
 
 ;; This file is part of GCC.
@@ -73,7 +73,7 @@
 
 (define_insn_reservation "pj4_shift" 1
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu_shift_imm,logic_shift_imm,\
+       (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,logic_shift_imm,\
                         alus_shift_imm,logics_shift_imm,\
                         alu_shift_reg,logic_shift_reg,\
                         alus_shift_reg,logics_shift_reg,\
@@ -84,7 +84,7 @@
 
 (define_insn_reservation "pj4_shift_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "alu_shift_imm,logic_shift_imm,\
+       (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,logic_shift_imm,\
                         alus_shift_imm,logics_shift_imm,\
                         alu_shift_reg,logic_shift_reg,\
                         alus_shift_reg,logics_shift_reg,\
@@ -96,7 +96,7 @@
 (define_insn_reservation "pj4_alu_shift" 1
   (and (eq_attr "tune" "marvell_pj4")
        (not (eq_attr "conds" "set"))
-       (eq_attr "type" "alu_shift_imm,logic_shift_imm,\
+       (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,logic_shift_imm,\
                         alus_shift_imm,logics_shift_imm,\
                         alu_shift_reg,logic_shift_reg,\
                         alus_shift_reg,logics_shift_reg,\
@@ -107,7 +107,7 @@
 (define_insn_reservation "pj4_alu_shift_conds" 4
   (and (eq_attr "tune" "marvell_pj4")
        (eq_attr "conds" "set")
-       (eq_attr "type" "alu_shift_imm,logic_shift_imm,alus_shift_imm,logics_shift_imm,\
+       (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,logic_shift_imm,alus_shift_imm,logics_shift_imm,\
                         alu_shift_reg,logic_shift_reg,alus_shift_reg,logics_shift_reg,\
                         extend,\
                         mov_shift,mvn_shift,mov_shift_reg,mvn_shift_reg"))

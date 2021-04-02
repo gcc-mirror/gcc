@@ -89,7 +89,15 @@ func badsystemstack() {
 // *ptr is uninitialized memory (e.g., memory that's being reused
 // for a new allocation) and hence contains only "junk".
 //
+// memclrNoHeapPointers ensures that if ptr is pointer-aligned, and n
+// is a multiple of the pointer size, then any pointer-aligned,
+// pointer-sized portion is cleared atomically. Despite the function
+// name, this is necessary because this function is the underlying
+// implementation of typedmemclr and memclrHasPointers. See the doc of
+// memmove for more details.
+//
 // The (CPU-specific) implementations of this function are in memclr_*.s.
+//
 //go:noescape
 func memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr)
 
@@ -98,9 +106,7 @@ func reflect_memclrNoHeapPointers(ptr unsafe.Pointer, n uintptr) {
 	memclrNoHeapPointers(ptr, n)
 }
 
-// memmove copies n bytes from "from" to "to".
 //go:noescape
-//extern __builtin_memmove
 func memmove(to, from unsafe.Pointer, n uintptr)
 
 //go:linkname reflect_memmove reflect.memmove
@@ -139,6 +145,12 @@ func fastrandn(n uint32) uint32 {
 
 //go:linkname sync_fastrand sync.fastrand
 func sync_fastrand() uint32 { return fastrand() }
+
+//go:linkname net_fastrand net.fastrand
+func net_fastrand() uint32 { return fastrand() }
+
+//go:linkname os_fastrand os.fastrand
+func os_fastrand() uint32 { return fastrand() }
 
 // in internal/bytealg/equal_*.s
 //go:noescape

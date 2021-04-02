@@ -1,0 +1,54 @@
+# Appended to version file.
+
+GLIBCXX_IEEE128_3.4.29 {
+
+  *__gnu_cxx_ieee128*;
+
+  _ZNSt14numeric_limitsIu9__ieee128E*;
+  _ZNSirsERu9__ieee128;
+  _ZNSolsEu9__ieee128;
+  _ZNSt13basic_istreamIwSt11char_traitsIwEErsERu9__ieee128;
+  _ZNSt13basic_ostreamIwSt11char_traitsIwEElsEu9__ieee128;
+  _ZSt14__convert_to_vIu9__ieee128EvPKcRT_RSt12_Ios_IostateRKP*;
+  _ZStlsIu9__ieee128[cw]St11char_traitsI[cw]EERSt13basic_ostreamIT0_T1_ES6_RKSt7complexIT_E;
+  _ZStrsIu9__ieee128[cw]St11char_traitsI[cw]EERSt13basic_istreamIT0_T1_ES6_RSt7complexIT_E;
+
+  _ZNSi10_M_extractIu9__ieee128EERSiRT_;
+  _ZNSt13basic_istreamIwSt11char_traitsIwEE10_M_extractIu9__ieee128EERS2_RT_;
+  _ZNSo9_M_insertIu9__ieee128EERSoT_;
+  _ZNSt13basic_ostreamIwSt11char_traitsIwEE9_M_insertIu9__ieee128EERS2_T_;
+
+  _ZNKSt3tr14hashIu9__ieee128EclEu9__ieee128;
+  _ZNKSt4hashIu9__ieee128EclEu9__ieee128;
+
+  _ZNKSt19__gnu_cxx11_ieee1289money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE6do_getES4_S4_bRSt8ios_baseRSt12_Ios_IostateRNSt7__cxx1112basic_stringIcS3_SaIcEEE;
+  _ZNKSt19__gnu_cxx11_ieee1289money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE6do_getES4_S4_bRSt8ios_baseRSt12_Ios_IostateRu9__ieee128;
+  _ZNKSt19__gnu_cxx11_ieee1289money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE8__do_getES4_S4_bRSt8ios_baseRSt12_Ios_IostateRd;
+  _ZNKSt19__gnu_cxx11_ieee1289money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE8__do_getES4_S4_bRSt8ios_baseRSt12_Ios_IostateRg;
+  _ZNKSt19__gnu_cxx11_ieee1289money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES4_bRSt8ios_basecRKNSt7__cxx1112basic_stringIcS3_SaIcEEE;
+  _ZNKSt19__gnu_cxx11_ieee1289money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE6do_putES4_bRSt8ios_basecu9__ieee128;
+  _ZNKSt19__gnu_cxx11_ieee1289money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE8__do_putES4_bRSt8ios_basecd;
+  _ZNKSt19__gnu_cxx11_ieee1289money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE8__do_putES4_bRSt8ios_basecg;
+  _ZSt9has_facetINSt19__gnu_cxx11_ieee1289money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEEEbRKSt6locale;
+  _ZSt9has_facetINSt19__gnu_cxx11_ieee1289money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEEEbRKSt6locale;
+  _ZSt9use_facetINSt19__gnu_cxx11_ieee1289money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEEERKT_RKSt6locale;
+  _ZSt9use_facetINSt19__gnu_cxx11_ieee1289money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEEERKT_RKSt6locale;
+  _ZTINSt19__gnu_cxx11_ieee1289money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEE;
+  _ZTVNSt19__gnu_cxx11_ieee1289money_getI[cw]St19istreambuf_iteratorI[cw]St11char_traitsI[cw]EEEE;
+  _ZTINSt19__gnu_cxx11_ieee1289money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEE;
+  _ZTVNSt19__gnu_cxx11_ieee1289money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEEE;
+
+  _ZNKSt19__gnu_cxx11_ieee1289money_putI[cw]St19ostreambuf_iteratorI[cw]St11char_traitsI[cw]EEE3putES4_bRSt8ios_base[cw]u9__ieee128;
+
+  _ZSt10from_charsPKcS0_Ru9__ieee128St12chars_format;
+  _ZSt8to_charsPcS_u9__ieee128*;
+
+} GLIBCXX_3.4.29;
+
+CXXABI_IEEE128_1.3.13 {
+
+  _ZT[IS]u9__ieee128;
+  _ZT[IS]Pu9__ieee128;
+  _ZT[IS]PKu9__ieee128;
+
+} CXXABI_1.3.13;

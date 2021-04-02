@@ -1,6 +1,6 @@
 /* Call-backs for C++ error reporting.
    This code is non-reentrant.
-   Copyright (C) 1993-2020 Free Software Foundation, Inc.
+   Copyright (C) 1993-2021 Free Software Foundation, Inc.
    This file is part of GCC.
 
 GCC is free software; you can redistribute it and/or modify
@@ -179,6 +179,38 @@ cxx_initialize_diagnostics (diagnostic_context *context)
   pp->m_format_postprocessor = new cxx_format_postprocessor ();
 }
 
+/* Dump an '@module' name suffix for DECL, if any.  */
+
+static void
+dump_module_suffix (cxx_pretty_printer *pp, tree decl)
+{
+  if (!modules_p ())
+    return;
+
+  if (!DECL_CONTEXT (decl))
+    return;
+
+  if (TREE_CODE (decl) != CONST_DECL
+      || !UNSCOPED_ENUM_P (DECL_CONTEXT (decl)))
+    {
+      if (!DECL_NAMESPACE_SCOPE_P (decl))
+	return;
+
+      if (TREE_CODE (decl) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (decl)
+	  && (TREE_PUBLIC (decl) || !TREE_PUBLIC (CP_DECL_CONTEXT (decl))))
+	return;
+    }
+
+  if (unsigned m = get_originating_module (decl))
+    if (const char *n = module_name (m, false))
+      {
+	pp_character (pp, '@');
+	pp->padding = pp_none;
+	pp_string (pp, n);
+      }
+}
+
 /* Dump a scope, if deemed necessary.  */
 
 static void
@@ -211,9 +243,7 @@ dump_scope (cxx_pretty_printer *pp, tree scope, int flags)
     }
   else if ((flags & TFF_SCOPE) && TREE_CODE (scope) == FUNCTION_DECL)
     {
-      if (DECL_USE_TEMPLATE (scope))
-	f |= TFF_NO_FUNCTION_ARGUMENTS;
-      dump_function_decl (pp, scope, f);
+      dump_function_decl (pp, scope, f | TFF_NO_TEMPLATE_BINDINGS);
       pp_cxx_colon_colon (pp);
     }
 }
@@ -771,6 +801,8 @@ dump_aggr_type (cxx_pretty_printer *pp, tree t, int flags)
   else
     pp_cxx_tree_identifier (pp, DECL_NAME (decl));
 
+  dump_module_suffix (pp, decl);
+
   if (tmplate)
     dump_template_parms (pp, TYPE_TEMPLATE_INFO (t),
 			 !CLASSTYPE_USE_TEMPLATE (t),
@@ -1077,6 +1109,9 @@ dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
     pp_string (pp, M_("<structured bindings>"));
   else
     pp_string (pp, M_("<anonymous>"));
+
+  dump_module_suffix (pp, t);
+
   if (flags & TFF_DECL_SPECIFIERS)
     dump_type_suffix (pp, type, flags);
 }
@@ -1894,6 +1929,8 @@ dump_function_name (cxx_pretty_printer *pp, tree t, int flags)
   else
     dump_decl (pp, name, flags);
 
+  dump_module_suffix (pp, t);
+
   if (DECL_TEMPLATE_INFO (t)
       && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t)
       && (TREE_CODE (DECL_TI_TEMPLATE (t)) != TEMPLATE_DECL
@@ -2313,7 +2350,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	if (INDIRECT_REF_P (ob))
 	  {
 	    ob = TREE_OPERAND (ob, 0);
-	    if (!is_this_parameter (ob))
+	    if (!is_this_parameter (ob)
+		&& !is_dummy_object (ob))
 	      {
 		dump_expr (pp, ob, flags | TFF_EXPR_IN_PARENS);
 		if (TYPE_REF_P (TREE_TYPE (ob)))
@@ -2378,32 +2416,8 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case MEM_REF:
-      if (TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR
-	  && integer_zerop (TREE_OPERAND (t, 1)))
-	dump_expr (pp, TREE_OPERAND (TREE_OPERAND (t, 0), 0), flags);
-      else
-	{
-	  pp_cxx_star (pp);
-	  if (!integer_zerop (TREE_OPERAND (t, 1)))
-	    {
-	      pp_cxx_left_paren (pp);
-	      if (!integer_onep (TYPE_SIZE_UNIT
-				 (TREE_TYPE (TREE_TYPE (TREE_OPERAND (t, 0))))))
-		{
-		  pp_cxx_left_paren (pp);
-		  dump_type (pp, ptr_type_node, flags);
-		  pp_cxx_right_paren (pp);
-		}
-	    }
-	  dump_expr (pp, TREE_OPERAND (t, 0), flags);
-	  if (!integer_zerop (TREE_OPERAND (t, 1)))
-	    {
-	      pp_cxx_ws_string (pp, "+");
-	      dump_expr (pp, fold_convert (ssizetype, TREE_OPERAND (t, 1)),
-                         flags);
-	      pp_cxx_right_paren (pp);
-	    }
-	}
+      /* Delegate to the base "C" pretty printer.  */
+      pp->c_pretty_printer::unary_expression (t);
       break;
 
     case TARGET_MEM_REF:
@@ -4061,10 +4075,6 @@ print_template_differences (pretty_printer *pp, tree type_a, tree type_b,
   pp_printf (pp, ">");
 }
 
-#if __GNUC__ >= 10
-#  pragma GCC diagnostic pop
-#endif
-
 /* As type_to_string, but for a template, potentially colorizing/eliding
    in comparison with PEER.
    For example, if TYPE is map<int,double> and PEER is map<int,int>,
@@ -4164,15 +4174,17 @@ add_quotes (const char *content, bool show_color)
   pretty_printer tmp_pp;
   pp_show_color (&tmp_pp) = show_color;
 
-  /* We use pp_quote & pp_string rather than pp_printf with "%<%s%>"
-     or "%qs" here in order to avoid quoting colorization bytes within
-     the results, and to avoid -Wformat-diag.  */
-  pp_quote (&tmp_pp);
-  pp_string (&tmp_pp, content);
-  pp_quote (&tmp_pp);
+  /* We have to use "%<%s%>" rather than "%qs" here in order to avoid
+     quoting colorization bytes within the results and using either
+     pp_quote or pp_begin_quote doesn't work the same.  */
+  pp_printf (&tmp_pp, "%<%s%>", content);
 
   return pp_ggc_formatted_text (&tmp_pp);
 }
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
 
 /* If we had %H and %I, and hence deferred printing them,
    print them now, storing the result into the chunk_info

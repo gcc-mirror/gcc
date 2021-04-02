@@ -1,5 +1,5 @@
 /* Liveness for SSA trees.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
 
 This file is part of GCC.
@@ -555,20 +555,17 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
      ;
    /* When not generating debug info we can eliminate info on unused
       variables.  */
-   else if (!flag_auto_profile && debug_info_level == DINFO_LEVEL_NONE
+   else if (!flag_auto_profile
+	    && debug_info_level == DINFO_LEVEL_NONE
 	    && !optinfo_wants_inlining_info_p ())
      {
-       /* Even for -g0 don't prune outer scopes from artificial
-	  functions, otherwise diagnostics using tree_nonartificial_location
-	  will not be emitted properly.  */
+       /* Even for -g0 don't prune outer scopes from inlined functions,
+	  otherwise late diagnostics from such functions will not be
+	  emitted or suppressed properly.  */
        if (inlined_function_outer_scope_p (scope))
 	 {
-	   tree ao = BLOCK_ORIGIN (scope);
-	   if (ao
-	       && TREE_CODE (ao) == FUNCTION_DECL
-	       && DECL_DECLARED_INLINE_P (ao)
-	       && lookup_attribute ("artificial", DECL_ATTRIBUTES (ao)))
-	     unused = false;
+	   gcc_assert (TREE_CODE (BLOCK_ORIGIN (scope)) == FUNCTION_DECL);
+	   unused = false;
 	 }
      }
    else if (BLOCK_VARS (scope) || BLOCK_NUM_NONLOCALIZED_VARS (scope))
@@ -623,13 +620,43 @@ clear_unused_block_pointer (void)
       {
 	unsigned i;
 	tree b;
-	gimple *stmt = gsi_stmt (gsi);
+	gimple *stmt;
 
+      next:
+	stmt = gsi_stmt (gsi);
 	if (!is_gimple_debug (stmt) && !gimple_clobber_p (stmt))
 	  continue;
 	b = gimple_block (stmt);
 	if (b && !TREE_USED (b))
-	  gimple_set_block (stmt, NULL);
+	  {
+	    /* Elide debug marker stmts that have an associated BLOCK from an
+	       inline instance removed with also the outermost scope BLOCK of
+	       said inline instance removed.  If the outermost scope BLOCK of
+	       said inline instance is preserved use that in place of the
+	       removed BLOCK.  That keeps the marker associated to the correct
+	       inline instance (or no inline instance in case it was not from
+	       an inline instance).  */
+	    if (gimple_debug_nonbind_marker_p (stmt)
+		&& BLOCK_ABSTRACT_ORIGIN (b))
+	      {
+		while (TREE_CODE (b) == BLOCK
+		       && !inlined_function_outer_scope_p (b))
+		  b = BLOCK_SUPERCONTEXT (b);
+		if (TREE_CODE (b) == BLOCK)
+		  {
+		    if (TREE_USED (b))
+		      {
+			gimple_set_block (stmt, b);
+			continue;
+		      }
+		    gsi_remove (&gsi, true);
+		    if (gsi_end_p (gsi))
+		      break;
+		    goto next;
+		  }
+	      }
+	    gimple_set_block (stmt, NULL);
+	  }
 	for (i = 0; i < gimple_num_ops (stmt); i++)
 	  walk_tree (gimple_op_ptr (stmt, i), clear_unused_block_pointer_1,
 		     NULL, NULL);

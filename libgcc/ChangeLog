@@ -1,3 +1,170 @@
+2021-03-23  Marcus Comstedt  <marcus@mc.pp.se>
+
+	* config/riscv/sfp-machine.h (__BYTE_ORDER): Set according
+	to __BYTE_ORDER__.
+
+2021-03-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR gcov-profile/99406
+	* libgcov.h (MAP_FAILED, MAP_ANONYMOUS): If HAVE_SYS_MMAN_H is
+	defined, define these macros if not defined already.
+
+2021-03-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/99105
+	* libgcov-driver.c (write_top_counters): Rename to ...
+	(write_topn_counters): ... this.
+	(write_one_data): Pre-allocate buffer for number of items
+	in the corresponding linked lists.
+	* libgcov.h (malloc_mmap): New function.
+	(allocate_gcov_kvp): Use it.
+
+2021-03-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/99385
+	* libgcov.h (allocate_gcov_kvp): Call mmap with fd equal to -1.
+
+2021-03-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/97461
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* configure.ac: Check sys/mman.h header file
+	* libgcov-driver.c (struct gcov_kvp): Remove static
+	pre-allocated pool and use a dynamic one.
+	* libgcov.h (MMAP_CHUNK_SIZE): New.
+	(gcov_counter_add): Use mmap to allocate pool for struct
+	gcov_kvp.
+
+2021-03-02  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/_sprintfkf.h (__sprintfkf): Fix prototype to match
+	the function.
+	* config/rs6000/_sprintfkf.c: Include _sprintfkf.h.
+
+2021-02-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgcc/99236
+	* libgcc2.c (__powisf2, __powidf2, __powitf2, __powixf2): Perform
+	negation of m in unsigned type.
+
+2021-02-24  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Hau Hsu  <hsuhau617@gmail.com>
+
+	PR target/99157
+	* config/arm/t-arm: Fix cmse support detection.
+
+2021-02-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	* dfp-bit.c (BFP_TO_DFP): Fix a comment line that was too long.
+
+2021-02-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/_dd_to_kf.c: New file.
+	* config/rs6000/_kf_to_dd.c: New file.
+	* config/rs6000/_kf_to_sd.c: New file.
+	* config/rs6000/_kf_to_td.c: New file.
+	* config/rs6000/_sd_to_kf.c: New file.
+	* config/rs6000/_sprintfkf.c: New file.
+	* config/rs6000/_sprintfkf.h: New file.
+	* config/rs6000/_strtokf.h: New file.
+	* config/rs6000/_strtokf.c: New file.
+	* config/rs6000/_td_to_kf.c: New file.
+	* config/rs6000/quad-float128.h: Add new declarations.
+	* config/rs6000/t-float128 (fp128_dec_funcs): New macro.
+	(fp128_decstr_funcs): New macro.
+	(ibm128_dec_funcs): New macro.
+	(fp128_ppc_funcs): Add the new conversions.
+	(fp128_dec_objs): Force Decimal <-> __float128 conversions to be
+	compiled with -mabi=ieeelongdouble.
+	(fp128_decstr_objs): Force __float128 <-> string conversions to be
+	compiled with -mabi=ibmlongdouble.
+	(ibm128_dec_objs): Force Decimal <-> __float128 conversions to be
+	compiled with -mabi=ieeelongdouble.
+	(FP128_CFLAGS_DECIMAL): New macro.
+	(IBM128_CFLAGS_DECIMAL): New macro.
+	* dfp-bit.c (DFP_TO_BFP): Add PowerPC _Float128 support.
+	(BFP_TO_DFP): Add PowerPC _Float128 support.
+	* dfp-bit.h (BFP_KIND): Add new binary floating point kind for
+	IEEE 128-bit floating point.
+	(DFP_TO_BFP): Add PowerPC _Float128 support.
+	(BFP_TO_DFP): Add PowerPC _Float128 support.
+	(BFP_SPRINTF): New macro.
+
+2021-01-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/savms64.h: Add .note.GNU-stack section on Linux.
+	* config/i386/savms64f.h: Likewise.
+	* config/i386/resms64.h: Likewise.
+	* config/i386/resms64f.h: Likewise.
+	* config/i386/resms64x.h: Likewise.
+	* config/i386/resms64fx.h: Likewise.
+
+2021-01-26  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* libgcov.h (gcov_topn_add_value): Do not train when
+	we have a merged profile with a negative number of total
+	value.
+
+2021-01-25  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/98739
+	* libgcov-merge.c (__gcov_merge_topn): Mark when merging
+	ends with a dropped counter.
+	* libgcov.h (gcov_topn_add_value): Add return value.
+
+2021-01-13  Stafford Horne  <shorne@gmail.com>
+
+	* config/or1k/sfp-machine.h (FP_RND_NEAREST, FP_RND_ZERO,
+	FP_RND_PINF, FP_RND_MINF, FP_RND_MASK, FP_EX_OVERFLOW,
+	FP_EX_UNDERFLOW, FP_EX_INEXACT, FP_EX_INVALID, FP_EX_DIVZERO,
+	FP_EX_ALL): New constant macros.
+	(_FP_DECL_EX, FP_ROUNDMODE, FP_INIT_ROUNDMODE,
+	FP_HANDLE_EXCEPTIONS): New macros.
+	(_FP_TININESS_AFTER_ROUNDING): Change to 1.
+
+2021-01-13  Samuel Thibault  <samuel.thibault@gnu.org>
+
+	* config/i386/gnu-unwind.h (x86_gnu_fallback_frame_state): Add the
+	posix siginfo case to struct handler_args. Detect between legacy
+	and siginfo from the second parameter, which is a small sigcode in
+	the legacy case, and a pointer in the siginfo case.
+
+2020-12-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/lib1funcs.S (__bswapsi2, __bswapdi2): New
+	functions.
+	* config/xtensa/t-xtensa (LIB1ASMFUNCS): Add _bswapsi2 and
+	_bswapdi2.
+
+2020-12-08  Ian Lance Taylor  <iant@golang.org>
+
+	* generic-morestack-thread.c (free_segments): Block signals during
+	thread exit.
+
+2020-12-03  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR libgcc/97543
+	PR libgcc/97643
+	* config/rs6000/t-linux (IBM128_STATIC_OBJS): New make variable.
+	(IBM128_SHARED_OBJS): New make variable.
+	(IBM128_OBJS): New make variable.  Set all objects to use the
+	explicit IBM format, and disable gnu attributes.
+	(IBM128_CFLAGS): New make variable.
+	(gcc_s_compile): Add -mno-gnu-attribute to all shared library
+	modules.
+
+2020-12-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/t-vxworks (LIB2ADD): Drop.
+	* config/t-vxworks7 (LIB2ADD): Likewise.
+	* config/vxcache.c: Remove.
+
+2020-11-30  Stefan Kanthak  <stefan.kanthak@nexgo.de>
+
+	* libgcc2.c (bswapsi2): Make constants unsigned.
+
 2020-11-25  Stefan Kanthak  <stefan.kanthak@nexgo.de>
 
 	* libgcc2.c (absvSI2): Simplify/improve implementation by using
@@ -11231,7 +11398,7 @@
 	shared-object.mk, siditi-object.mk, static-object.mk: New files.
 	* configure: Generated.
 
-Copyright (C) 2007-2020 Free Software Foundation, Inc.
+Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

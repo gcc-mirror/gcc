@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -3878,6 +3878,8 @@ is used for aligning trampolines.
 
 @hook TARGET_TRAMPOLINE_INIT
 
+@hook TARGET_EMIT_CALL_BUILTIN___CLEAR_CACHE
+
 @hook TARGET_TRAMPOLINE_ADJUST_ADDRESS
 
 Implementing trampolines is difficult on many machines because they have
@@ -3898,7 +3900,7 @@ the following macro.
 If defined, expands to a C expression clearing the @emph{instruction
 cache} in the specified interval.  The definition of this macro would
 typically be a series of @code{asm} statements.  Both @var{beg} and
-@var{end} are both pointer expressions.
+@var{end} are pointer expressions.
 @end defmac
 
 To use a standard subroutine, define the following macro.  In addition,
@@ -6461,6 +6463,8 @@ the jump-table.
 
 @hook TARGET_ASM_UNWIND_EMIT_BEFORE_INSN
 
+@hook TARGET_ASM_SHOULD_RESTORE_CFA_STATE
+
 @node Exception Region Output
 @subsection Assembler Commands for Exception Regions
 
@@ -7353,6 +7357,12 @@ floating-point support; they are not included in this mechanism.
 @hook TARGET_D_CPU_VERSIONS
 
 @hook TARGET_D_OS_VERSIONS
+
+@hook TARGET_D_MINFO_SECTION
+
+@hook TARGET_D_MINFO_START_NAME
+
+@hook TARGET_D_MINFO_END_NAME
 
 @node Rust Language and ABI
 @section Rust ABI parameters

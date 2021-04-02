@@ -1,5 +1,5 @@
 /* Subroutines for insn-output.c for NEC V850 series
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
    Contributed by Jeff Law (law@cygnus.com).
 
    This file is part of GCC.
@@ -2181,7 +2181,7 @@ construct_restore_jr (rtx op)
   unsigned long int first;
   unsigned long int last;
   int i;
-  static char buff [100]; /* XXX */
+  static char buff [256]; /* XXX */
   
   if (count <= 2)
     {
@@ -2286,7 +2286,7 @@ construct_save_jarl (rtx op)
   unsigned long int first;
   unsigned long int last;
   int i;
-  static char buff [100]; /* XXX */
+  static char buff [255]; /* XXX */
   
   if (count <= (TARGET_LONG_CALLS ? 3 : 2)) 
     {

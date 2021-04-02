@@ -1,7 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fopenmp -fdump-tree-vect-details" } */
+/* { dg-additional-options "-msse2" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-additional-options "-mavx" { target avx } } */
-/* { dg-final { scan-tree-dump-times "vectorized \[1-9]\[0-9]* loops in function" 5 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized \[1-9]\[0-9]* loops in function" 5 "vect" { target i?86-*-* x86_64-*-* aarch64-*-* } } } */
 
 int a[1024][1024];
 

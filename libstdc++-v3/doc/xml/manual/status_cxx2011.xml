@@ -24,6 +24,9 @@ features. See <link linkend="manual.intro.using.flags">dialect</link>
 options. The pre-defined symbol
 <constant>__cplusplus</constant> is used to check for the
 presence of the required flag.
+GCC 5.1 was the first release with non-experimental C++11 support,
+so the API and ABI of features added in C++11 is only stable
+since that release.
 </para>
 
 <para>
@@ -2174,7 +2177,6 @@ particular release.
       <entry>Class template <code>regex_traits</code></entry>
       <entry>Partial</entry>
       <entry><code>transform_primary</code> is not correctly implemented</entry>
-      <entry/>
     </row>
     <row>
       <entry>28.8</entry>
@@ -2401,10 +2403,11 @@ particular release.
       <?dbhtml bgcolor="#B0B0B0" ?>
       <entry>30.4.4.2</entry>
       <entry>Function <code>call_once</code></entry>
-      <entry>Broken</entry>
-      <entry>See <link xmlns:xlink="http://www.w3.org/1999/xlink"
+      <entry>Y</entry>
+      <entry>Exception support is broken on non-Linux targets.
+	See <link xmlns:xlink="http://www.w3.org/1999/xlink"
 	xlink:href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=66146">PR
-	66146</link>
+	66146</link>.
       </entry>
     </row>
     <row>

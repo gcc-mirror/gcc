@@ -1,5 +1,5 @@
 /* Statement simplification on GIMPLE.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Split out from tree-ssa-ccp.c.
 
 This file is part of GCC.
@@ -3958,6 +3958,10 @@ static const size_t clear_padding_buf_size = 32 * clear_padding_unit;
 /* Data passed through __builtin_clear_padding folding.  */
 struct clear_padding_struct {
   location_t loc;
+  /* 0 during __builtin_clear_padding folding, nonzero during
+     clear_type_padding_in_mask.  In that case, instead of clearing the
+     non-padding bits in union_ptr array clear the padding bits in there.  */
+  bool clear_in_mask;
   tree base;
   tree alias_type;
   gimple_stmt_iterator *gsi;
@@ -4000,6 +4004,39 @@ clear_padding_flush (clear_padding_struct *buf, bool full)
   size_t padding_bytes = buf->padding_bytes;
   if (buf->union_ptr)
     {
+      if (buf->clear_in_mask)
+	{
+	  /* During clear_type_padding_in_mask, clear the padding
+	     bits set in buf->buf in the buf->union_ptr mask.  */
+	  for (size_t i = 0; i < end; i++)
+	    {
+	      if (buf->buf[i] == (unsigned char) ~0)
+		padding_bytes++;
+	      else
+		{
+		  memset (&buf->union_ptr[buf->off + i - padding_bytes],
+			  0, padding_bytes);
+		  padding_bytes = 0;
+		  buf->union_ptr[buf->off + i] &= ~buf->buf[i];
+		}
+	    }
+	  if (full)
+	    {
+	      memset (&buf->union_ptr[buf->off + end - padding_bytes],
+		      0, padding_bytes);
+	      buf->off = 0;
+	      buf->size = 0;
+	      buf->padding_bytes = 0;
+	    }
+	  else
+	    {
+	      memmove (buf->buf, buf->buf + end, buf->size - end);
+	      buf->off += end;
+	      buf->size -= end;
+	      buf->padding_bytes = padding_bytes;
+	    }
+	  return;
+	}
       /* Inside of a union, instead of emitting any code, instead
 	 clear all bits in the union_ptr buffer that are clear
 	 in buf.  Whole padding bytes don't clear anything.  */
@@ -4311,6 +4348,7 @@ clear_padding_union (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 	clear_padding_flush (buf, false);
       union_buf = XALLOCA (clear_padding_struct);
       union_buf->loc = buf->loc;
+      union_buf->clear_in_mask = buf->clear_in_mask;
       union_buf->base = NULL_TREE;
       union_buf->alias_type = NULL_TREE;
       union_buf->gsi = NULL;
@@ -4335,9 +4373,10 @@ clear_padding_union (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 	      continue;
 	    gcc_assert (TREE_CODE (TREE_TYPE (field)) == ARRAY_TYPE
 			&& !COMPLETE_TYPE_P (TREE_TYPE (field)));
-	    error_at (buf->loc, "flexible array member %qD does not have "
-				"well defined padding bits for %qs",
-		      field, "__builtin_clear_padding");
+	    if (!buf->clear_in_mask)
+	      error_at (buf->loc, "flexible array member %qD does not have "
+				  "well defined padding bits for %qs",
+			field, "__builtin_clear_padding");
 	    continue;
 	  }
 	HOST_WIDE_INT fldsz = tree_to_shwi (DECL_SIZE_UNIT (field));
@@ -4529,9 +4568,10 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
 		  continue;
 		gcc_assert (TREE_CODE (ftype) == ARRAY_TYPE
 			    && !COMPLETE_TYPE_P (ftype));
-		error_at (buf->loc, "flexible array member %qD does not have "
-				    "well defined padding bits for %qs",
-			  field, "__builtin_clear_padding");
+		if (!buf->clear_in_mask)
+		  error_at (buf->loc, "flexible array member %qD does not "
+				      "have well defined padding bits for %qs",
+			    field, "__builtin_clear_padding");
 	      }
 	    else if (is_empty_type (TREE_TYPE (field)))
 	      continue;
@@ -4552,6 +4592,8 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
     case ARRAY_TYPE:
       HOST_WIDE_INT nelts, fldsz;
       fldsz = int_size_in_bytes (TREE_TYPE (type));
+      if (fldsz == 0)
+	break;
       nelts = sz / fldsz;
       if (nelts > 1
 	  && sz > 8 * UNITS_PER_WORD
@@ -4643,6 +4685,27 @@ clear_padding_type (clear_padding_struct *buf, tree type, HOST_WIDE_INT sz)
     }
 }
 
+/* Clear padding bits of TYPE in MASK.  */
+
+void
+clear_type_padding_in_mask (tree type, unsigned char *mask)
+{
+  clear_padding_struct buf;
+  buf.loc = UNKNOWN_LOCATION;
+  buf.clear_in_mask = true;
+  buf.base = NULL_TREE;
+  buf.alias_type = NULL_TREE;
+  buf.gsi = NULL;
+  buf.align = 0;
+  buf.off = 0;
+  buf.padding_bytes = 0;
+  buf.sz = int_size_in_bytes (type);
+  buf.size = 0;
+  buf.union_ptr = mask;
+  clear_padding_type (&buf, type, buf.sz);
+  clear_padding_flush (&buf, true);
+}
+
 /* Fold __builtin_clear_padding builtin.  */
 
 static bool
@@ -4662,6 +4725,7 @@ gimple_fold_builtin_clear_padding (gimple_stmt_iterator *gsi)
   gsi_prev (&gsiprev);
 
   buf.loc = loc;
+  buf.clear_in_mask = false;
   buf.base = ptr;
   buf.alias_type = NULL_TREE;
   buf.gsi = gsi;
@@ -5137,7 +5201,7 @@ gimple_fold_mask_load_store_mem_ref (gcall *call, tree vectype)
   if (!tree_fits_uhwi_p (alias_align) || !integer_all_onesp (mask))
     return NULL_TREE;
 
-  unsigned HOST_WIDE_INT align = tree_to_uhwi (alias_align) * BITS_PER_UNIT;
+  unsigned HOST_WIDE_INT align = tree_to_uhwi (alias_align);
   if (TYPE_ALIGN (vectype) != align)
     vectype = build_aligned_type (vectype, align);
   tree offset = build_zero_cst (TREE_TYPE (alias_align));
@@ -7943,7 +8007,7 @@ fold_const_aggregate_ref_1 (tree t, tree (*valueize) (tree))
 	      poly_offset_int woffset
 		= wi::sext (wi::to_poly_offset (idx)
 			    - wi::to_poly_offset (low_bound),
-			    TYPE_PRECISION (TREE_TYPE (idx)));
+			    TYPE_PRECISION (sizetype));
 	      woffset *= tree_to_uhwi (unit_size);
 	      woffset *= BITS_PER_UNIT;
 	      if (woffset.to_shwi (&offset))

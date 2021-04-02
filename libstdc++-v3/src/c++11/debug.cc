@@ -1,6 +1,6 @@
 // Debugging mode support code -*- C++ -*-
 
-// Copyright (C) 2003-2020 Free Software Foundation, Inc.
+// Copyright (C) 2003-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -424,10 +424,7 @@ namespace __gnu_debug
   bool
   _Safe_iterator_base::
   _M_can_compare(const _Safe_iterator_base& __x) const throw ()
-  {
-    return (!_M_singular()
-	    && !__x._M_singular() && _M_sequence == __x._M_sequence);
-  }
+  { return _M_sequence == __x._M_sequence; }
 
   __gnu_cxx::__mutex&
   _Safe_iterator_base::

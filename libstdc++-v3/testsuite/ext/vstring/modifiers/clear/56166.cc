@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2020 Free Software Foundation, Inc.
+// Copyright (C) 2016-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,12 +56,12 @@ template<typename T>
           throw std::bad_alloc();
         }
       }
-      return (T*)new char[n * sizeof(T)];
+      return (T*)operator new (n * sizeof(T));
     }
 
     void deallocate(T* p, size_type)
     {
-      delete[] (char*)p;
+      operator delete (p);
     }
   };
 
@@ -94,3 +94,7 @@ int main()
     }
   }
 }
+
+// The __versa_string destructor triggers a bogus -Wfree-nonheap-object
+// due to pr54202.
+// { dg-prune-output "\\\[-Wfree-nonheap-object" }

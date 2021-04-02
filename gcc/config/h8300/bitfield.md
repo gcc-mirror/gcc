@@ -69,8 +69,7 @@
 {
   return output_simode_bld (0, operands);
 }
-  [(set_attr "cc" "set_znv,set_znv")
-   (set_attr "length" "8,6")])
+  [(set_attr "length" "8,6")])
 
 ;;
 ;; Inverted loads with a 32bit destination.
@@ -104,8 +103,7 @@
 {
   return output_simode_bld (1, operands);
 }
-  [(set_attr "cc" "set_znv,set_znv")
-   (set_attr "length" "8,6")])
+  [(set_attr "length" "8,6")])
 
 (define_expand "insv"
   [(set (zero_extract:HI (match_operand:HI 0 "general_operand" "")
@@ -312,8 +310,7 @@
 			 - (1 << INTVAL (operands[3])));
   return "bfld	%2,%1,%R0";
 }
-  [(set_attr "cc" "none_0hit")
-   (set_attr "length_table" "bitfield")])
+  [(set_attr "length_table" "bitfield")])
 
 (define_insn_and_split "bfst"
   [(set (zero_extract:QI (match_operand:QI 0 "bit_memory_operand" "+WU")
@@ -339,8 +336,7 @@
 			 - (1 << INTVAL (operands[3])));
   return "bfst	%R1,%2,%0";
 }
-  [(set_attr "cc" "none_0hit")
-   (set_attr "length_table" "bitfield")])
+  [(set_attr "length_table" "bitfield")])
 
 ;;(define_expand "cstore<mode>4"
 ;;  [(use (match_operator 1 "eqne_operator"
@@ -357,8 +353,7 @@
 ;;  [(set (match_operand:HI 0 "register_operand" "=r")
 ;;	(match_operator:HI 1 "eqne_operator" [(cc0) (const_int 0)]))]
 ;;  "TARGET_H8300SX"
-;;  "mulu.w	#0,%T0\;b%k1	.Lh8BR%=\;inc.w	#1,%T0\\n.Lh8BR%=:"
-;;  [(set_attr "cc" "clobber")])
+;;  "mulu.w	#0,%T0\;b%k1	.Lh8BR%=\;inc.w	#1,%T0\\n.Lh8BR%=:")
 
 ;;(define_insn_and_split "*cmpstz"
 ;;  [(set (zero_extract:QI (match_operand:QI 0 "bit_memory_operand" "+WU,WU")
@@ -379,8 +374,7 @@
 ;;	(match_op_dup:QI 2 [(cc0) (const_int 0)]))]
 ;;  {
 ;;    operands[5] = gen_rtx_COMPARE (VOIDmode, operands[3], operands[4]);
-;;  }
-;;  [(set_attr "cc" "set_znv,compare")])
+;;  })
 
 ;;(define_insn "*bstz"
 ;;  [(set (zero_extract:QI (match_operand:QI 0 "bit_memory_operand" "+WU")
@@ -389,8 +383,7 @@
 ;;	(eq:QI (cc0) (const_int 0)))]
 ;;  "TARGET_H8300SX && reload_completed"
 ;;  "bstz	%1,%0"
-;;  [(set_attr "cc" "none_0hit")
-;;   (set_attr "length_table" "unary")])
+;;  [(set_attr "length_table" "unary")])
 
 ;;(define_insn "*bistz"
 ;;  [(set (zero_extract:QI (match_operand:QI 0 "bit_memory_operand" "+WU")
@@ -399,8 +392,7 @@
 ;;	(ne:QI (cc0) (const_int 0)))]
 ;;  "TARGET_H8300SX && reload_completed"
 ;;  "bistz	%1,%0"
-;;  [(set_attr "cc" "none_0hit")
-;;   (set_attr "length_table" "unary")])
+;;  [(set_attr "length_table" "unary")])
 
 ;;(define_insn_and_split "*cmpcondbset"
 ;;  [(set (match_operand:QI 0 "nonimmediate_operand" "=WU,WU")
@@ -420,8 +412,7 @@
 ;;			 (match_dup 4)))]
 ;;  {
 ;;    operands[6] = gen_rtx_COMPARE (VOIDmode, operands[2], operands[3]);
-;;  }
-;; [(set_attr "cc" "set_znv,compare")])
+;;  })
 
 ;;(define_insn "*condbset"
 ;;  [(set (match_operand:QI 0 "bit_memory_operand" "=WU")
@@ -432,8 +423,7 @@
 ;;			 (match_dup 3)))]
 ;;  "TARGET_H8300SX && reload_completed"
 ;;  "bset/%j2\t%V1,%0"
-;;  [(set_attr "cc" "none_0hit")
-;;   (set_attr "length_table" "logicb")])
+;;  [(set_attr "length_table" "logicb")])
 
 ;;(define_insn_and_split "*cmpcondbclr"
 ;;  [(set (match_operand:QI 0 "nonimmediate_operand" "=WU,WU")
@@ -453,8 +443,7 @@
 ;;			 (match_dup 4)))]
 ;;  {
 ;;    operands[6] = gen_rtx_COMPARE (VOIDmode, operands[2], operands[3]);
-;;  }
-;;  [(set_attr "cc" "set_znv,compare")])
+;;  })
 
 ;;(define_insn "*condbclr"
 ;;  [(set (match_operand:QI 0 "bit_memory_operand" "=WU")
@@ -465,8 +454,7 @@
 ;;			 (match_dup 3)))]
 ;;  "TARGET_H8300SX && reload_completed"
 ;;  "bclr/%j2\t%W1,%0"
-;;  [(set_attr "cc" "none_0hit")
-;;   (set_attr "length_table" "logicb")])
+;;  [(set_attr "length_table" "logicb")])
 
 ;;(define_insn_and_split "*cmpcondbsetreg"
 ;;  [(set (match_operand:QI 0 "nonimmediate_operand" "=WU,WU")
@@ -489,8 +477,7 @@
 ;;			 (match_dup 4)))]
 ;;  {
 ;;    operands[6] = gen_rtx_COMPARE (VOIDmode, operands[2], operands[3]);
-;;  }
-;;  [(set_attr "cc" "set_znv,compare")])
+;;  })
 
 ;;(define_insn "*condbsetreg"
 ;;  [(set (match_operand:QI 0 "bit_memory_operand" "=WU")
@@ -502,8 +489,7 @@
 ;;			 (match_dup 3)))]
 ;;  "TARGET_H8300SX && reload_completed"
 ;;  "bset/%j2\t%R1,%0"
-;;  [(set_attr "cc" "none_0hit")
-;;   (set_attr "length_table" "logicb")])
+;;  [(set_attr "length_table" "logicb")])
 
 ;;(define_insn_and_split "*cmpcondbclrreg"
 ;;  [(set (match_operand:QI 0 "nonimmediate_operand" "=WU,WU")
@@ -526,8 +512,7 @@
 ;;			 (match_dup 4)))]
 ;;  {
 ;;    operands[6] = gen_rtx_COMPARE (VOIDmode, operands[2], operands[3]);
-;;  }
-;;  [(set_attr "cc" "set_znv,compare")])
+;;  })
 
 ;;(define_insn "*condbclrreg"
 ;;  [(set (match_operand:QI 0 "bit_memory_operand" "=WU")
@@ -539,6 +524,5 @@
 ;;			 (match_dup 3)))]
 ;;  "TARGET_H8300SX && reload_completed"
 ;;  "bclr/%j2\t%R1,%0"
-;;  [(set_attr "cc" "none_0hit")
-;;   (set_attr "length_table" "logicb")])
+;;  [(set_attr "length_table" "logicb")])
 

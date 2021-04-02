@@ -1,5 +1,5 @@
 /* intrinsics.cc -- D language compiler intrinsics.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ struct intrinsic_decl
 static const intrinsic_decl intrinsic_decls[] =
 {
 #define DEF_D_INTRINSIC(CODE, BUILTIN, NAME, MODULE, DECO, CTFE) \
-    { INTRINSIC_ ## CODE, BUILT_IN_ ## BUILTIN, NAME, MODULE, DECO, CTFE },
+    { CODE, BUILTIN, NAME, MODULE, DECO, CTFE },
 
 #include "intrinsics.def"
 
@@ -81,7 +81,7 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 
   /* The builtin flag is updated only if we can evaluate the intrinsic
      at compile-time.  Such as the math or bitop intrinsics.  */
-  decl->builtin = BUILTINno;
+  decl->builtin = BUILTINunimp;
 
   /* Check if it's a compiler intrinsic.  We only require that any
      internally recognised intrinsics are declared in a module with
@@ -177,12 +177,12 @@ maybe_set_intrinsic (FuncDeclaration *decl)
 		 built-in function.  It could be `int pow(int, int)'.  */
 	      tree rettype = TREE_TYPE (TREE_TYPE (decl->csym));
 	      if (mathfn_built_in (rettype, BUILT_IN_POW) != NULL_TREE)
-		decl->builtin = BUILTINyes;
+		decl->builtin = BUILTINgcc;
 	      break;
 	    }
 
 	    default:
-	      decl->builtin = BUILTINyes;
+	      decl->builtin = BUILTINgcc;
 	      break;
 	    }
 
@@ -809,15 +809,20 @@ maybe_expand_intrinsic (tree callexp)
     case INTRINSIC_ROR_TIARG:
       return expand_intrinsic_rotate (intrinsic, callexp);
 
+    case INTRINSIC_BSWAP16:
     case INTRINSIC_BSWAP32:
     case INTRINSIC_BSWAP64:
     case INTRINSIC_CEIL:
     case INTRINSIC_CEILF:
     case INTRINSIC_CEILL:
+    case INTRINSIC_COS:
+    case INTRINSIC_COSF:
     case INTRINSIC_COSL:
     case INTRINSIC_EXP:
     case INTRINSIC_EXP2:
     case INTRINSIC_EXPM1:
+    case INTRINSIC_FABS:
+    case INTRINSIC_FABSF:
     case INTRINSIC_FABSL:
     case INTRINSIC_FLOOR:
     case INTRINSIC_FLOORF:
@@ -828,9 +833,15 @@ maybe_expand_intrinsic (tree callexp)
     case INTRINSIC_LOG:
     case INTRINSIC_LOG10:
     case INTRINSIC_LOG2:
+    case INTRINSIC_RINT:
+    case INTRINSIC_RINTF:
     case INTRINSIC_RINTL:
+    case INTRINSIC_RNDTOL:
+    case INTRINSIC_RNDTOLF:
     case INTRINSIC_RNDTOLL:
     case INTRINSIC_ROUND:
+    case INTRINSIC_SIN:
+    case INTRINSIC_SINF:
     case INTRINSIC_SINL:
     case INTRINSIC_SQRT:
     case INTRINSIC_SQRTF:
@@ -844,6 +855,8 @@ maybe_expand_intrinsic (tree callexp)
 
     case INTRINSIC_FMAX:
     case INTRINSIC_FMIN:
+    case INTRINSIC_LDEXP:
+    case INTRINSIC_LDEXPF:
     case INTRINSIC_LDEXPL:
       code = intrinsic_decls[intrinsic].built_in;
       gcc_assert (code != BUILT_IN_NONE);

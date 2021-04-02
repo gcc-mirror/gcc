@@ -130,6 +130,7 @@ toolexeclibgo_DATA = \
 	bytes.gox \
 	context.gox \
 	crypto.gox \
+	embed.gox \
 	encoding.gox \
 	errors.gox \
 	expvar.gox \
@@ -256,6 +257,11 @@ toolexeclibgogo_DATA = \
 	go/token.gox \
 	go/types.gox
 
+toolexeclibgogobuilddir = $(toolexeclibgogodir)/build
+
+toolexeclibgogobuild_DATA = \
+	go/build/constraint.gox
+
 toolexeclibgohashdir = $(toolexeclibgodir)/hash
 
 toolexeclibgohash_DATA = \
@@ -292,6 +298,7 @@ toolexeclibgoindex_DATA = \
 toolexeclibgoiodir = $(toolexeclibgodir)/io
 
 toolexeclibgoio_DATA = \
+	io/fs.gox \
 	io/ioutil.gox
 
 toolexeclibgologdir = $(toolexeclibgodir)/log
@@ -360,6 +367,7 @@ toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
 
 toolexeclibgoruntime_DATA = \
 	runtime/debug.gox \
+	runtime/metrics.gox \
 	runtime/pprof.gox \
 	runtime/trace.gox
 
@@ -371,6 +379,7 @@ toolexeclibgosync_DATA = \
 toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 
 toolexeclibgotesting_DATA = \
+	testing/fstest.gox \
 	testing/iotest.gox \
 	testing/quick.gox
 
@@ -439,13 +448,13 @@ runtime_files = \
 	runtime/go-assert.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
-	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-construct-map.c \
 	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
 	runtime/go-matherr.c \
 	runtime/go-memclr.c \
+	runtime/go-memmove.c \
 	runtime/go-memequal.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
@@ -657,7 +666,7 @@ noinst_DATA += zdefaultcc.go
 
 # Generate the list of go std packages that were included in libgo
 zstdpkglist.go: s-zstdpkglist; @true
-s-zstdpkglist: Makefile
+s-zstdpkglist: Makefile libgo-packages.txt
 	rm -f zstdpkglist.go.tmp
 	echo 'package goroot' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
@@ -776,6 +785,7 @@ libgo_go_objs = \
 	syscall/errno.lo \
 	syscall/signame.lo \
 	syscall/wait.lo \
+	os/dir_gccgo_c.lo \
 	$(golangorg_x_net_lif_lo) \
 	$(golangorg_x_net_route_lo) \
 	log/syslog/syslog_c.lo \
@@ -881,7 +891,7 @@ GOBENCH =
 CHECK = \
 	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
-	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
+	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
 	export GOLIBS; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
@@ -1063,6 +1073,7 @@ extra_go_files_os_user = os_user_linknames.go
 os/user.lo.dep: $(extra_go_files_os_user)
 
 extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_fsys = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
@@ -1076,9 +1087,13 @@ extra_check_libs_cmd_go_internal_modload = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_module = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_mvs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_search = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_str = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_test = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_vcs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_web2 = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
+
+extra_check_libs_cmd_internal_buildid = $(abs_builddir)/libgotool.a
 
 extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 
@@ -1122,6 +1137,11 @@ syscall/signame.lo: go/syscall/signame.c runtime.inc
 syscall/wait.lo: go/syscall/wait.c runtime.inc
 	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syscall/wait.c
+
+# An os function is written in C.
+os/dir_gccgo_c.lo: go/os/dir_gccgo_c.c runtime.inc
+	@$(MKDIR_P) os
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/os/dir_gccgo_c.c
 
 # internal/cpu needs some C code.
 internal/cpu/cpu_gccgo.lo: go/internal/cpu/cpu_gccgo.c runtime.inc

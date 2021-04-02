@@ -2,24 +2,6 @@
 #include "arm-neon-ref.h"
 #include "compute-ref-data.h"
 
-/* Expected values of cumulative_saturation flag with input=0.  */
-int VECT_VAR(expected_cumulative_sat_0,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_0,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_0,uint,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0,uint,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0,uint,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_0,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_0,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_0,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0,int,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat_0,uint,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_0,uint,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0,uint,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0,uint,64,2) = 0;
-
 /* Expected results with input=0.  */
 VECT_VAR_DECL(expected_0,int,8,8) [] = { 0x0, 0x0, 0x0, 0x0,
 					 0x0, 0x0, 0x0, 0x0 };
@@ -48,25 +30,6 @@ VECT_VAR_DECL(expected_0,uint,16,8) [] = { 0x0, 0x0, 0x0, 0x0,
 VECT_VAR_DECL(expected_0,uint,32,4) [] = { 0x0, 0x0, 0x0, 0x0 };
 VECT_VAR_DECL(expected_0,uint,64,2) [] = { 0x0, 0x0 };
 
-/* Expected values of cumulative_saturation flag with input=0 and
-   negative shift amount.  */
-int VECT_VAR(expected_cumulative_sat_0_neg,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,uint,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,uint,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,uint,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,int,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,uint,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,uint,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,uint,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0_neg,uint,64,2) = 0;
-
 /* Expected results with input=0 and negative shift amount.  */
 VECT_VAR_DECL(expected_0_neg,int,8,8) [] = { 0x0, 0x0, 0x0, 0x0,
 					     0x0, 0x0, 0x0, 0x0 };
@@ -94,24 +57,6 @@ VECT_VAR_DECL(expected_0_neg,uint,16,8) [] = { 0x0, 0x0, 0x0, 0x0,
 					       0x0, 0x0, 0x0, 0x0 };
 VECT_VAR_DECL(expected_0_neg,uint,32,4) [] = { 0x0, 0x0, 0x0, 0x0 };
 VECT_VAR_DECL(expected_0_neg,uint,64,2) [] = { 0x0, 0x0 };
-
-/* Expected values of cumulative_saturation flag.  */
-int VECT_VAR(expected_cumulative_sat,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat,uint,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat,int,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat,int,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat,int,32,4) = 1;
-int VECT_VAR(expected_cumulative_sat,int,64,2) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,32,4) = 1;
-int VECT_VAR(expected_cumulative_sat,uint,64,2) = 1;
 
 /* Expected results.  */
 VECT_VAR_DECL(expected,int,8,8) [] = { 0xe0, 0xe2, 0xe4, 0xe6,
@@ -144,25 +89,6 @@ VECT_VAR_DECL(expected,uint,32,4) [] = { 0xffffffff, 0xffffffff,
 VECT_VAR_DECL(expected,uint,64,2) [] = { 0xffffffffffffffff,
 					 0xffffffffffffffff };
 
-/* Expected values of cumulative_saturation flag with negative shift
-   amount.  */
-int VECT_VAR(expected_cumulative_sat_neg,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,uint,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,uint,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,uint,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,int,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,uint,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,uint,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,uint,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_neg,uint,64,2) = 0;
-
 /* Expected results with negative shift amount.  */
 VECT_VAR_DECL(expected_neg,int,8,8) [] = { 0xfc, 0xfc, 0xfd, 0xfd,
 					   0xfd, 0xfd, 0xfe, 0xfe };
@@ -191,25 +117,6 @@ VECT_VAR_DECL(expected_neg,uint,16,8) [] = { 0x20, 0x20, 0x20, 0x20,
 VECT_VAR_DECL(expected_neg,uint,32,4) [] = { 0x80000, 0x80000,
 					     0x80000, 0x80000 };
 VECT_VAR_DECL(expected_neg,uint,64,2) [] = { 0x100000000000, 0x100000000000 };
-
-/* Expected values of cumulative_saturation flag with input=max and
-   shift by -1.  */
-int VECT_VAR(expected_cumulative_sat_minus1,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,uint,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,uint,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,uint,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,int,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,uint,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,uint,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,uint,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_minus1,uint,64,2) = 0;
 
 /* Expected results with input=max and shift by -1.  */
 VECT_VAR_DECL(expected_minus1,int,8,8) [] = { 0x40, 0x40, 0x40, 0x40,
@@ -243,25 +150,6 @@ VECT_VAR_DECL(expected_minus1,uint,32,4) [] = { 0x80000000, 0x80000000,
 VECT_VAR_DECL(expected_minus1,uint,64,2) [] = { 0x8000000000000000,
 						0x8000000000000000 };
 
-/* Expected values of cumulative_saturation flag with input=max and
-   shift by -3.  */
-int VECT_VAR(expected_cumulative_sat_minus3,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,uint,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,uint,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,uint,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,int,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,uint,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,uint,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,uint,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_minus3,uint,64,2) = 0;
-
 /* Expected results with input=max and shift by -3.  */
 VECT_VAR_DECL(expected_minus3,int,8,8) [] = { 0x10, 0x10, 0x10, 0x10,
 					      0x10, 0x10, 0x10, 0x10 };
@@ -293,25 +181,6 @@ VECT_VAR_DECL(expected_minus3,uint,32,4) [] = { 0x20000000, 0x20000000,
 						0x20000000, 0x20000000 };
 VECT_VAR_DECL(expected_minus3,uint,64,2) [] = { 0x2000000000000000,
 						0x2000000000000000 };
-
-/* Expected values of cumulative_saturation flag with input=max and
-   large shift amount.  */
-int VECT_VAR(expected_cumulative_sat_large_sh,int,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,int,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,int,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,int,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,uint,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,uint,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,uint,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,uint,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,int,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,int,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,int,32,4) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,int,64,2) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,uint,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,uint,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,uint,32,4) = 1;
-int VECT_VAR(expected_cumulative_sat_large_sh,uint,64,2) = 1;
 
 /* Expected results with input=max and large shift amount.  */
 VECT_VAR_DECL(expected_large_sh,int,8,8) [] = { 0x7f, 0x7f, 0x7f, 0x7f,
@@ -350,25 +219,6 @@ VECT_VAR_DECL(expected_large_sh,uint,32,4) [] = { 0xffffffff, 0xffffffff,
 						  0xffffffff, 0xffffffff };
 VECT_VAR_DECL(expected_large_sh,uint,64,2) [] = { 0xffffffffffffffff,
 						  0xffffffffffffffff };
-
-/* Expected values of cumulative_saturation flag with negative input and
-   large shift amount.  */
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,int,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,int,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,int,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,int,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,uint,8,8) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,uint,16,4) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,uint,32,2) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,uint,64,1) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,int,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,int,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,int,32,4) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,int,64,2) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,uint,8,16) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,uint,16,8) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,uint,32,4) = 1;
-int VECT_VAR(expected_cumulative_sat_neg_large_sh,uint,64,2) = 1;
 
 /* Expected results with negative input and large shift amount.  */
 VECT_VAR_DECL(expected_neg_large_sh,int,8,8) [] = { 0x80, 0x80, 0x80, 0x80,
@@ -411,25 +261,6 @@ VECT_VAR_DECL(expected_neg_large_sh,uint,32,4) [] = { 0xffffffff,
 VECT_VAR_DECL(expected_neg_large_sh,uint,64,2) [] = { 0xffffffffffffffff,
 						      0xffffffffffffffff };
 
-/* Expected values of cumulative_saturation flag with max/min input and
-   large negative shift amount.  */
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,uint,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,uint,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,uint,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,int,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,uint,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,uint,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,uint,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_large_neg_sh,uint,64,2) = 0;
-
 /* Expected results with max/min input and large negative shift amount.  */
 VECT_VAR_DECL(expected_large_neg_sh,int,8,8) [] = { 0x0, 0x0, 0x0, 0x0,
 						    0x0, 0x0, 0x0, 0x0 };
@@ -457,25 +288,6 @@ VECT_VAR_DECL(expected_large_neg_sh,uint,16,8) [] = { 0x0, 0x0, 0x0, 0x0,
 						      0x0, 0x0, 0x0, 0x0 };
 VECT_VAR_DECL(expected_large_neg_sh,uint,32,4) [] = { 0x0, 0x0, 0x0, 0x0 };
 VECT_VAR_DECL(expected_large_neg_sh,uint,64,2) [] = { 0x0, 0x0 };
-
-/* Expected values of cumulative_saturation flag with input=0 and
-   large negative shift amount.  */
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,int,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,int,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,int,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,int,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,uint,8,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,uint,16,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,uint,32,2) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,uint,64,1) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,int,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,int,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,int,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,int,64,2) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,uint,8,16) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,uint,16,8) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,uint,32,4) = 0;
-int VECT_VAR(expected_cumulative_sat_0_large_neg_sh,uint,64,2) = 0;
 
 /* Expected results with input=0 and large negative shift amount.  */
 VECT_VAR_DECL(expected_0_large_neg_sh,int,8,8) [] = { 0x0, 0x0, 0x0, 0x0,
@@ -514,21 +326,20 @@ VECT_VAR_DECL(expected_0_large_neg_sh,uint,64,2) [] = { 0x0, 0x0 };
 FNNAME (INSN)
 {
   /* Basic test: v3=vqrshl(v1,v2), then store the result.  */
-#define TEST_VQRSHL2(INSN, T3, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT) \
+#define TEST_VQRSHL2(INSN, T3, Q, T1, T2, W, N, CMT) \
   Set_Neon_Cumulative_Sat(0, VECT_VAR(vector_res, T1, W, N));		\
   VECT_VAR(vector_res, T1, W, N) =					\
     INSN##Q##_##T2##W(VECT_VAR(vector, T1, W, N),			\
 		      VECT_VAR(vector_shift, T3, W, N));		\
   vst1##Q##_##T2##W(VECT_VAR(result, T1, W, N),				\
-		    VECT_VAR(vector_res, T1, W, N));			\
-  CHECK_CUMULATIVE_SAT(TEST_MSG, T1, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+		    VECT_VAR(vector_res, T1, W, N))
 
   /* Two auxliary macros are necessary to expand INSN */
-#define TEST_VQRSHL1(INSN, T3, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT) \
-  TEST_VQRSHL2(INSN, T3, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_VQRSHL1(INSN, T3, Q, T1, T2, W, N, CMT) \
+  TEST_VQRSHL2(INSN, T3, Q, T1, T2, W, N, CMT)
 
-#define TEST_VQRSHL(T3, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT)	\
-  TEST_VQRSHL1(INSN, T3, Q, T1, T2, W, N, EXPECTED_CUMULATIVE_SAT, CMT)
+#define TEST_VQRSHL(T3, Q, T1, T2, W, N, CMT)	\
+  TEST_VQRSHL1(INSN, T3, Q, T1, T2, W, N, CMT)
 
   DECL_VARIABLE_ALL_VARIANTS(vector);
   DECL_VARIABLE_ALL_VARIANTS(vector_res);
@@ -568,22 +379,22 @@ FNNAME (INSN)
   VDUP(vector_shift, q, int, s, 64, 2, 64);
 
 #define CMT " (with input = 0)"
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat_0, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat_0, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_0, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_0, CMT);
@@ -615,22 +426,22 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT " (input 0 and negative shift amount)"
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat_0_neg, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat_0_neg, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_0_neg, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_0_neg, CMT);
@@ -665,22 +476,22 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT ""
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected, CMT);
@@ -712,22 +523,22 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT " (negative shift amount)"
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat_neg, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat_neg, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_neg, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_neg, CMT);
@@ -779,22 +590,22 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT " (checking cumulative saturation: shift by -1)"
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat_minus1, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat_minus1, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_minus1, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_minus1, CMT);
@@ -827,22 +638,22 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT " (checking cumulative saturation: shift by -3)"
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat_minus3, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat_minus3, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_minus3, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_minus3, CMT);
@@ -874,22 +685,22 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT " (checking cumulative saturation: large shift amount)"
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat_large_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat_large_sh, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_large_sh, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_large_sh, CMT);
@@ -932,22 +743,22 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT " (checking cumulative saturation: large shift amount with negative input)"
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat_neg_large_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat_neg_large_sh, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_neg_large_sh, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_neg_large_sh, CMT);
@@ -990,22 +801,22 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT " (checking cumulative saturation: large negative shift amount)"
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat_large_neg_sh, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_large_neg_sh, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_large_neg_sh, CMT);
@@ -1048,22 +859,22 @@ FNNAME (INSN)
 
 #undef CMT
 #define CMT " (checking cumulative saturation: large negative shift amount with 0 input)"
-  TEST_VQRSHL(int, , int, s, 8, 8, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 16, 4, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 32, 2, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , int, s, 64, 1, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 8, 8, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 16, 4, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 32, 2, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, , uint, u, 64, 1, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 8, 16, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 16, 8, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 32, 4, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, int, s, 64, 2, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 8, 16, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 16, 8, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 32, 4, expected_cumulative_sat_large_neg_sh, CMT);
-  TEST_VQRSHL(int, q, uint, u, 64, 2, expected_cumulative_sat_large_neg_sh, CMT);
+  TEST_VQRSHL(int, , int, s, 8, 8, CMT);
+  TEST_VQRSHL(int, , int, s, 16, 4, CMT);
+  TEST_VQRSHL(int, , int, s, 32, 2, CMT);
+  TEST_VQRSHL(int, , int, s, 64, 1, CMT);
+  TEST_VQRSHL(int, , uint, u, 8, 8, CMT);
+  TEST_VQRSHL(int, , uint, u, 16, 4, CMT);
+  TEST_VQRSHL(int, , uint, u, 32, 2, CMT);
+  TEST_VQRSHL(int, , uint, u, 64, 1, CMT);
+  TEST_VQRSHL(int, q, int, s, 8, 16, CMT);
+  TEST_VQRSHL(int, q, int, s, 16, 8, CMT);
+  TEST_VQRSHL(int, q, int, s, 32, 4, CMT);
+  TEST_VQRSHL(int, q, int, s, 64, 2, CMT);
+  TEST_VQRSHL(int, q, uint, u, 8, 16, CMT);
+  TEST_VQRSHL(int, q, uint, u, 16, 8, CMT);
+  TEST_VQRSHL(int, q, uint, u, 32, 4, CMT);
+  TEST_VQRSHL(int, q, uint, u, 64, 2, CMT);
 
   CHECK(TEST_MSG, int, 8, 8, PRIx8, expected_large_neg_sh, CMT);
   CHECK(TEST_MSG, int, 16, 4, PRIx16, expected_large_neg_sh, CMT);

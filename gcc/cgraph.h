@@ -1,5 +1,5 @@
 /* Callgraph handling code.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -318,6 +318,9 @@ public:
 
   /* Return node that alias is aliasing.  */
   inline symtab_node *get_alias_target (void);
+
+  /* Return DECL that alias is aliasing.  */
+  inline tree get_alias_target_tree ();
 
   /* Set section for symbol and its aliases.  */
   void set_section (const char *section);
@@ -2663,6 +2666,17 @@ symtab_node::get_alias_target (void)
   iterate_reference (0, ref);
   gcc_checking_assert (ref->use == IPA_REF_ALIAS);
   return ref->referred;
+}
+
+/* Return the DECL (or identifier) that alias is aliasing.  Unlike the above,
+   this works whether or not the alias has been analyzed already.  */
+
+inline tree
+symtab_node::get_alias_target_tree ()
+{
+  if (alias_target)
+    return alias_target;
+  return get_alias_target ()->decl;
 }
 
 /* Return next reachable static symbol with initializer after the node.  */

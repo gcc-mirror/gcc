@@ -1,6 +1,6 @@
 ; Options for the MIPS port of the compiler
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -51,15 +51,15 @@ EnumValue
 Enum(mips_abi) String(eabi) Value(ABI_EABI)
 
 mabicalls
-Target Report Mask(ABICALLS)
+Target Mask(ABICALLS)
 Generate code that can be used in SVR4-style dynamic objects.
 
 mmad
-Target Report Var(TARGET_MAD)
+Target Var(TARGET_MAD)
 Use PMC-style 'mad' instructions.
 
 mimadd
-Target Report Mask(IMADD)
+Target Mask(IMADD)
 Use integer madd/msub instructions.
 
 march=
@@ -71,15 +71,15 @@ Target RejectNegative Joined UInteger Var(mips_branch_cost)
 -mbranch-cost=COST	Set the cost of branches to roughly COST instructions.
 
 mbranch-likely
-Target Report Mask(BRANCHLIKELY)
+Target Mask(BRANCHLIKELY)
 Use Branch Likely instructions, overriding the architecture default.
 
 mflip-mips16
-Target Report Var(TARGET_FLIP_MIPS16)
+Target Var(TARGET_FLIP_MIPS16)
 Switch on/off MIPS16 ASE on alternating functions for compiler testing.
 
 mcheck-zero-division
-Target Report Mask(CHECK_ZERO_DIV)
+Target Mask(CHECK_ZERO_DIV)
 Trap on integer divide by zero.
 
 mcode-readable=
@@ -100,27 +100,27 @@ EnumValue
 Enum(mips_code_readable_setting) String(no) Value(CODE_READABLE_NO)
 
 mdivide-breaks
-Target Report RejectNegative Mask(DIVIDE_BREAKS)
+Target RejectNegative Mask(DIVIDE_BREAKS)
 Use branch-and-break sequences to check for integer divide by zero.
 
 mdivide-traps
-Target Report RejectNegative InverseMask(DIVIDE_BREAKS, DIVIDE_TRAPS)
+Target RejectNegative InverseMask(DIVIDE_BREAKS, DIVIDE_TRAPS)
 Use trap instructions to check for integer divide by zero.
 
 mdmx
-Target Report RejectNegative Var(TARGET_MDMX)
+Target RejectNegative Var(TARGET_MDMX)
 Allow the use of MDMX instructions.
 
 mdouble-float
-Target Report RejectNegative InverseMask(SINGLE_FLOAT, DOUBLE_FLOAT)
+Target RejectNegative InverseMask(SINGLE_FLOAT, DOUBLE_FLOAT)
 Allow hardware floating-point instructions to cover both 32-bit and 64-bit operations.
 
 mdsp
-Target Report Var(TARGET_DSP)
+Target Var(TARGET_DSP)
 Use MIPS-DSP instructions.
 
 mdspr2
-Target Report Var(TARGET_DSPR2)
+Target Var(TARGET_DSPR2)
 Use MIPS-DSP REV 2 instructions.
 
 mdebug
@@ -130,83 +130,83 @@ mdebugd
 Target Var(TARGET_DEBUG_D_MODE) Undocumented
 
 meb
-Target Report RejectNegative Mask(BIG_ENDIAN)
+Target RejectNegative Mask(BIG_ENDIAN)
 Use big-endian byte order.
 
 mel
-Target Report RejectNegative InverseMask(BIG_ENDIAN, LITTLE_ENDIAN)
+Target RejectNegative InverseMask(BIG_ENDIAN, LITTLE_ENDIAN)
 Use little-endian byte order.
 
 membedded-data
-Target Report Var(TARGET_EMBEDDED_DATA)
+Target Var(TARGET_EMBEDDED_DATA)
 Use ROM instead of RAM.
 
 meva
-Target Report Var(TARGET_EVA)
+Target Var(TARGET_EVA)
 Use Enhanced Virtual Addressing instructions.
 
 mexplicit-relocs
-Target Report Mask(EXPLICIT_RELOCS)
+Target Mask(EXPLICIT_RELOCS)
 Use NewABI-style %reloc() assembly operators.
 
 mextern-sdata
-Target Report Var(TARGET_EXTERN_SDATA) Init(1)
+Target Var(TARGET_EXTERN_SDATA) Init(1)
 Use -G for data that is not defined by the current object.
 
 mfix-24k
-Target Report Var(TARGET_FIX_24K)
+Target Var(TARGET_FIX_24K)
 Work around certain 24K errata.
 
 mfix-r4000
-Target Report Mask(FIX_R4000)
+Target Mask(FIX_R4000)
 Work around certain R4000 errata.
 
 mfix-r4400
-Target Report Mask(FIX_R4400)
+Target Mask(FIX_R4400)
 Work around certain R4400 errata.
 
 mfix-r5900
-Target Report Mask(FIX_R5900)
+Target Mask(FIX_R5900)
 Work around the R5900 short loop erratum.
 
 mfix-rm7000
-Target Report Var(TARGET_FIX_RM7000)
+Target Var(TARGET_FIX_RM7000)
 Work around certain RM7000 errata.
 
 mfix-r10000
-Target Report Mask(FIX_R10000)
+Target Mask(FIX_R10000)
 Work around certain R10000 errata.
 
 mfix-sb1
-Target Report Var(TARGET_FIX_SB1)
+Target Var(TARGET_FIX_SB1)
 Work around errata for early SB-1 revision 2 cores.
 
 mfix-vr4120
-Target Report Var(TARGET_FIX_VR4120)
+Target Var(TARGET_FIX_VR4120)
 Work around certain VR4120 errata.
 
 mfix-vr4130
-Target Report Var(TARGET_FIX_VR4130)
+Target Var(TARGET_FIX_VR4130)
 Work around VR4130 mflo/mfhi errata.
 
 mfix4300
-Target Report Var(TARGET_4300_MUL_FIX)
+Target Var(TARGET_4300_MUL_FIX)
 Work around an early 4300 hardware bug.
 
 mfp-exceptions
-Target Report Var(TARGET_FP_EXCEPTIONS) Init(1)
+Target Var(TARGET_FP_EXCEPTIONS) Init(1)
 FP exceptions are enabled.
 
 mfp32
-Target Report RejectNegative InverseMask(FLOAT64)
+Target RejectNegative InverseMask(FLOAT64)
 Use 32-bit floating-point registers.
 
 mfpxx
-Target Report RejectNegative Mask(FLOATXX)
+Target RejectNegative Mask(FLOATXX)
 Conform to the o32 FPXX ABI.
 
 mfp64
-Target Report RejectNegative Mask(FLOAT64)
+Target RejectNegative Mask(FLOAT64)
 Use 64-bit floating-point registers.
 
 mflush-func=
@@ -232,31 +232,31 @@ EnumValue
 Enum(mips_ieee_754_value) String(legacy) Value(MIPS_IEEE_754_LEGACY)
 
 mgp32
-Target Report RejectNegative InverseMask(64BIT)
+Target RejectNegative InverseMask(64BIT)
 Use 32-bit general registers.
 
 mgp64
-Target Report RejectNegative Mask(64BIT)
+Target RejectNegative Mask(64BIT)
 Use 64-bit general registers.
 
 mgpopt
-Target Report Var(TARGET_GPOPT) Init(1)
+Target Var(TARGET_GPOPT) Init(1)
 Use GP-relative addressing to access small data.
 
 mplt
-Target Report Var(TARGET_PLT)
+Target Var(TARGET_PLT)
 When generating -mabicalls code, allow executables to use PLTs and copy relocations.
 
 mhard-float
-Target Report RejectNegative InverseMask(SOFT_FLOAT_ABI, HARD_FLOAT_ABI)
+Target RejectNegative InverseMask(SOFT_FLOAT_ABI, HARD_FLOAT_ABI)
 Allow the use of hardware floating-point ABI and instructions.
 
 minterlink-compressed
-Target Report Var(TARGET_INTERLINK_COMPRESSED) Init(0)
+Target Var(TARGET_INTERLINK_COMPRESSED) Init(0)
 Generate code that is link-compatible with MIPS16 and microMIPS code.
 
 minterlink-mips16
-Target Report Var(TARGET_INTERLINK_COMPRESSED) Init(0)
+Target Var(TARGET_INTERLINK_COMPRESSED) Init(0)
 An alias for minterlink-compressed provided for backward-compatibility.
 
 mips
@@ -264,59 +264,59 @@ Target RejectNegative Joined ToLower Enum(mips_mips_opt_value) Var(mips_isa_opti
 -mipsN	Generate code for ISA level N.
 
 mips16
-Target Report RejectNegative Mask(MIPS16)
+Target RejectNegative Mask(MIPS16)
 Generate MIPS16 code.
 
 mips3d
-Target Report RejectNegative Var(TARGET_MIPS3D)
+Target RejectNegative Var(TARGET_MIPS3D)
 Use MIPS-3D instructions.
 
 mllsc
-Target Report Mask(LLSC)
+Target Mask(LLSC)
 Use ll, sc and sync instructions.
 
 mlocal-sdata
-Target Report Var(TARGET_LOCAL_SDATA) Init(1)
+Target Var(TARGET_LOCAL_SDATA) Init(1)
 Use -G for object-local data.
 
 mlong-calls
-Target Report Var(TARGET_LONG_CALLS)
+Target Var(TARGET_LONG_CALLS)
 Use indirect calls.
 
 mlong32
-Target Report RejectNegative InverseMask(LONG64, LONG32)
+Target RejectNegative InverseMask(LONG64, LONG32)
 Use a 32-bit long type.
 
 mlong64
-Target Report RejectNegative Mask(LONG64)
+Target RejectNegative Mask(LONG64)
 Use a 64-bit long type.
 
 mmcount-ra-address
-Target Report Var(TARGET_MCOUNT_RA_ADDRESS)
+Target Var(TARGET_MCOUNT_RA_ADDRESS)
 Pass the address of the ra save location to _mcount in $12.
 
 mmemcpy
-Target Report Mask(MEMCPY)
+Target Mask(MEMCPY)
 Don't optimize block moves.
 
 mmicromips
-Target Report Mask(MICROMIPS)
+Target Mask(MICROMIPS)
 Use microMIPS instructions.
 
 mmsa
-Target Report Mask(MSA)
+Target Mask(MSA)
 Use MIPS MSA Extension instructions.
 
 mmt
-Target Report Var(TARGET_MT)
+Target Var(TARGET_MT)
 Allow the use of MT instructions.
 
 mno-float
-Target Report RejectNegative Var(TARGET_NO_FLOAT) Condition(TARGET_SUPPORTS_NO_FLOAT)
+Target RejectNegative Var(TARGET_NO_FLOAT) Condition(TARGET_SUPPORTS_NO_FLOAT)
 Prevent the use of all floating-point operations.
 
 mmcu
-Target Report Var(TARGET_MCU)
+Target Var(TARGET_MCU)
 Use MCU instructions.
 
 mno-flush-func
@@ -324,19 +324,19 @@ Target RejectNegative
 Do not use a cache-flushing function before calling stack trampolines.
 
 mno-mdmx
-Target Report RejectNegative Var(TARGET_MDMX, 0)
+Target RejectNegative Var(TARGET_MDMX, 0)
 Do not use MDMX instructions.
 
 mno-mips16
-Target Report RejectNegative InverseMask(MIPS16)
+Target RejectNegative InverseMask(MIPS16)
 Generate normal-mode code.
 
 mno-mips3d
-Target Report RejectNegative Var(TARGET_MIPS3D, 0)
+Target RejectNegative Var(TARGET_MIPS3D, 0)
 Do not use MIPS-3D instructions.
 
 mpaired-single
-Target Report Mask(PAIRED_SINGLE_FLOAT)
+Target Mask(PAIRED_SINGLE_FLOAT)
 Use paired-single floating-point instructions.
 
 mr10k-cache-barrier=
@@ -357,47 +357,47 @@ EnumValue
 Enum(mips_r10k_cache_barrier_setting) String(none) Value(R10K_CACHE_BARRIER_NONE)
 
 mrelax-pic-calls
-Target Report Mask(RELAX_PIC_CALLS)
+Target Mask(RELAX_PIC_CALLS)
 Try to allow the linker to turn PIC calls into direct calls.
 
 mshared
-Target Report Var(TARGET_SHARED) Init(1)
+Target Var(TARGET_SHARED) Init(1)
 When generating -mabicalls code, make the code suitable for use in shared libraries.
 
 msingle-float
-Target Report RejectNegative Mask(SINGLE_FLOAT)
+Target RejectNegative Mask(SINGLE_FLOAT)
 Restrict the use of hardware floating-point instructions to 32-bit operations.
 
 msmartmips
-Target Report Mask(SMARTMIPS)
+Target Mask(SMARTMIPS)
 Use SmartMIPS instructions.
 
 msoft-float
-Target Report RejectNegative Mask(SOFT_FLOAT_ABI)
+Target RejectNegative Mask(SOFT_FLOAT_ABI)
 Prevent the use of all hardware floating-point instructions.
 
 msplit-addresses
-Target Report Mask(SPLIT_ADDRESSES)
+Target Mask(SPLIT_ADDRESSES)
 Optimize lui/addiu address loads.
 
 msym32
-Target Report Var(TARGET_SYM32)
+Target Var(TARGET_SYM32)
 Assume all symbols have 32-bit values.
 
 msynci
-Target Report Mask(SYNCI)
+Target Mask(SYNCI)
 Use synci instruction to invalidate i-cache.
 
 mlra
-Target Report Var(mips_lra_flag) Init(1) Save
+Target Var(mips_lra_flag) Init(1) Save
 Use LRA instead of reload.
 
 mlxc1-sxc1
-Target Report Var(mips_lxc1_sxc1) Init(1)
+Target Var(mips_lxc1_sxc1) Init(1)
 Use lwxc1/swxc1/ldxc1/sdxc1 instructions where applicable.
 
 mmadd4
-Target Report Var(mips_madd4) Init(1)
+Target Var(mips_madd4) Init(1)
 Use 4-operand madd.s/madd.d and related instructions where applicable.
 
 mtune=
@@ -405,50 +405,50 @@ Target RejectNegative Joined Var(mips_tune_option) ToLower Enum(mips_arch_opt_va
 -mtune=PROCESSOR	Optimize the output for PROCESSOR.
 
 muninit-const-in-rodata
-Target Report Var(TARGET_UNINIT_CONST_IN_RODATA)
+Target Var(TARGET_UNINIT_CONST_IN_RODATA)
 Put uninitialized constants in ROM (needs -membedded-data).
 
 mvirt
-Target Report Var(TARGET_VIRT)
+Target Var(TARGET_VIRT)
 Use Virtualization (VZ) instructions.
 
 mxpa
-Target Report Var(TARGET_XPA)
+Target Var(TARGET_XPA)
 Use eXtended Physical Address (XPA) instructions.
 
 mcrc
-Target Report Var(TARGET_CRC)
+Target Var(TARGET_CRC)
 Use Cyclic Redundancy Check (CRC) instructions.
 
 mginv
-Target Report Var(TARGET_GINV)
+Target Var(TARGET_GINV)
 Use Global INValidate (GINV) instructions.
 
 mvr4130-align
-Target Report Mask(VR4130_ALIGN)
+Target Mask(VR4130_ALIGN)
 Perform VR4130-specific alignment optimizations.
 
 mxgot
-Target Report Var(TARGET_XGOT)
+Target Var(TARGET_XGOT)
 Lift restrictions on GOT size.
 
 modd-spreg
-Target Report Mask(ODD_SPREG)
+Target Mask(ODD_SPREG)
 Enable use of odd-numbered single-precision registers.
 
 mframe-header-opt
-Target Report Var(flag_frame_header_optimization) Optimization
+Target Var(flag_frame_header_optimization) Optimization
 Optimize frame header.
 
 noasmopt
 Driver
 
 mload-store-pairs
-Target Report Var(TARGET_LOAD_STORE_PAIRS) Init(1)
+Target Var(TARGET_LOAD_STORE_PAIRS) Init(1)
 Enable load/store bonding.
 
 mcompact-branches=
-Target RejectNegative JoinedOrMissing Var(mips_cb) Report Enum(mips_cb_setting) Init(MIPS_CB_OPTIMAL)
+Target RejectNegative JoinedOrMissing Var(mips_cb) Enum(mips_cb_setting) Init(MIPS_CB_OPTIMAL)
 Specify the compact branch usage policy.
 
 Enum
@@ -465,13 +465,13 @@ EnumValue
 Enum(mips_cb_setting) String(always) Value(MIPS_CB_ALWAYS)
 
 mloongson-mmi
-Target Report Mask(LOONGSON_MMI)
+Target Mask(LOONGSON_MMI)
 Use Loongson MultiMedia extensions Instructions (MMI) instructions.
 
 mloongson-ext
-Target Report Mask(LOONGSON_EXT)
+Target Mask(LOONGSON_EXT)
 Use Loongson EXTension (EXT) instructions.
 
 mloongson-ext2
-Target Report Var(TARGET_LOONGSON_EXT2)
+Target Var(TARGET_LOONGSON_EXT2)
 Use Loongson EXTension R2 (EXT2) instructions.

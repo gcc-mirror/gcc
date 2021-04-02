@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -4564,7 +4564,33 @@ specifically aligned memory is necessary or desirable for some insn
 operand.
 
 The syntax and semantics are otherwise identical to
-@code{define_constraint}.
+@code{define_memory_constraint}.
+@end deffn
+
+@deffn {MD Expression} define_relaxed_memory_constraint name docstring exp
+The test expression in a @code{define_memory_constraint} can assume
+that @code{TARGET_LEGITIMATE_ADDRESS_P} holds for the address inside
+a @code{mem} rtx and so it does not need to test this condition itself.
+In other words, a @code{define_memory_constraint} test of the form:
+
+@smallexample
+(match_test "mem")
+@end smallexample
+
+is enough to test whether an rtx is a @code{mem} @emph{and} whether
+its address satisfies @code{TARGET_MEM_CONSTRAINT} (which is usually
+@samp{'m'}).  Thus the conditions imposed by a @code{define_memory_constraint}
+always apply on top of the conditions imposed by @code{TARGET_MEM_CONSTRAINT}.
+
+However, it is sometimes useful to define memory constraints that allow
+addresses beyond those accepted by @code{TARGET_LEGITIMATE_ADDRESS_P}.
+@code{define_relaxed_memory_constraint} exists for this case.
+The test expression in a @code{define_relaxed_memory_constraint} is
+applied with no preconditions, so that the expression can determine
+``from scratch'' exactly which addresses are valid and which are not.
+
+The syntax and semantics are otherwise identical to
+@code{define_memory_constraint}.
 @end deffn
 
 @deffn {MD Expression} define_address_constraint name docstring exp
@@ -6151,6 +6177,188 @@ Equivalent to @samp{op0 = op1 * copysign (1.0, op2)}: store a value with
 the magnitude of operand 1 and the sign of operand 2 into operand 0.
 All operands have mode @var{m}, which is a scalar or vector
 floating-point mode.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cadd90@var{m}3} instruction pattern
+@item @samp{cadd90@var{m}3}
+Perform vector add and subtract on even/odd number pairs.  The operation being
+matched is semantically described as
+
+@smallexample
+  for (int i = 0; i < N; i += 2)
+    @{
+      c[i] = a[i] - b[i+1];
+      c[i+1] = a[i+1] + b[i];
+    @}
+@end smallexample
+
+This operation is semantically equivalent to performing a vector addition of
+complex numbers in operand 1 with operand 2 rotated by 90 degrees around
+the argand plane and storing the result in operand 0.
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cadd270@var{m}3} instruction pattern
+@item @samp{cadd270@var{m}3}
+Perform vector add and subtract on even/odd number pairs.  The operation being
+matched is semantically described as
+
+@smallexample
+  for (int i = 0; i < N; i += 2)
+    @{
+      c[i] = a[i] + b[i+1];
+      c[i+1] = a[i+1] - b[i];
+    @}
+@end smallexample
+
+This operation is semantically equivalent to performing a vector addition of
+complex numbers in operand 1 with operand 2 rotated by 270 degrees around
+the argand plane and storing the result in operand 0.
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cmla@var{m}4} instruction pattern
+@item @samp{cmla@var{m}4}
+Perform a vector multiply and accumulate that is semantically the same as
+a multiply and accumulate of complex numbers.
+
+@smallexample
+  complex TYPE c[N];
+  complex TYPE a[N];
+  complex TYPE b[N];
+  for (int i = 0; i < N; i += 1)
+    @{
+      c[i] += a[i] * b[i];
+    @}
+@end smallexample
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cmla_conj@var{m}4} instruction pattern
+@item @samp{cmla_conj@var{m}4}
+Perform a vector multiply by conjugate and accumulate that is semantically
+the same as a multiply and accumulate of complex numbers where the second
+multiply arguments is conjugated.
+
+@smallexample
+  complex TYPE c[N];
+  complex TYPE a[N];
+  complex TYPE b[N];
+  for (int i = 0; i < N; i += 1)
+    @{
+      c[i] += a[i] * conj (b[i]);
+    @}
+@end smallexample
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cmls@var{m}4} instruction pattern
+@item @samp{cmls@var{m}4}
+Perform a vector multiply and subtract that is semantically the same as
+a multiply and subtract of complex numbers.
+
+@smallexample
+  complex TYPE c[N];
+  complex TYPE a[N];
+  complex TYPE b[N];
+  for (int i = 0; i < N; i += 1)
+    @{
+      c[i] -= a[i] * b[i];
+    @}
+@end smallexample
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cmls_conj@var{m}4} instruction pattern
+@item @samp{cmls_conj@var{m}4}
+Perform a vector multiply by conjugate and subtract that is semantically
+the same as a multiply and subtract of complex numbers where the second
+multiply arguments is conjugated.
+
+@smallexample
+  complex TYPE c[N];
+  complex TYPE a[N];
+  complex TYPE b[N];
+  for (int i = 0; i < N; i += 1)
+    @{
+      c[i] -= a[i] * conj (b[i]);
+    @}
+@end smallexample
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cmul@var{m}4} instruction pattern
+@item @samp{cmul@var{m}4}
+Perform a vector multiply that is semantically the same as multiply of
+complex numbers.
+
+@smallexample
+  complex TYPE c[N];
+  complex TYPE a[N];
+  complex TYPE b[N];
+  for (int i = 0; i < N; i += 1)
+    @{
+      c[i] = a[i] * b[i];
+    @}
+@end smallexample
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
+
+This pattern is not allowed to @code{FAIL}.
+
+@cindex @code{cmul_conj@var{m}4} instruction pattern
+@item @samp{cmul_conj@var{m}4}
+Perform a vector multiply by conjugate that is semantically the same as a
+multiply of complex numbers where the second multiply arguments is conjugated.
+
+@smallexample
+  complex TYPE c[N];
+  complex TYPE a[N];
+  complex TYPE b[N];
+  for (int i = 0; i < N; i += 1)
+    @{
+      c[i] = a[i] * conj (b[i]);
+    @}
+@end smallexample
+
+In GCC lane ordering the real part of the number must be in the even lanes with
+the imaginary part in the odd lanes.
+
+The operation is only supported for vector modes @var{m}.
 
 This pattern is not allowed to @code{FAIL}.
 
@@ -11223,11 +11431,11 @@ The construct:
 @end smallexample
 
 defines a pseudo integer constant @var{name} that can be instantiated as
-@var{inti} if condition @var{condi} is true.  Each @var{int}
-must have the same rtx format.  @xref{RTL Classes}. Int iterators can appear
-in only those rtx fields that have 'i' as the specifier. This means that
-each @var{int} has to be a constant defined using define_constant or
-define_c_enum.
+@var{inti} if condition @var{condi} is true.  Each @var{int} must have the
+same rtx format.  @xref{RTL Classes}.  Int iterators can appear in only
+those rtx fields that have 'i', 'n', 'w', or 'p' as the specifier.  This
+means that each @var{int} has to be a constant defined using define_constant
+or define_c_enum.
 
 As with mode and code iterators, each pattern that uses @var{name} will be
 expanded @var{n} times, once with all uses of @var{name} replaced by

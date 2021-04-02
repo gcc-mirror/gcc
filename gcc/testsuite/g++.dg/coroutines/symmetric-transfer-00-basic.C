@@ -44,7 +44,7 @@ struct Loopy {
     }
 
     coro::suspend_always initial_suspend() { return {}; }
-    coro::suspend_always final_suspend() { return {}; }
+    coro::suspend_always final_suspend() noexcept { return {}; }
 
     void unhandled_exception() { /*std::terminate();*/  }
     void return_void() {}

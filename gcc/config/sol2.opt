@@ -1,6 +1,6 @@
 ; Options for the Solaris 2 port of the compiler
 ;
-; Copyright (C) 2010-2020 Free Software Foundation, Inc.
+; Copyright (C) 2010-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -28,11 +28,11 @@ Ym,
 Driver Joined
 
 mclear-hwcap
-Target Report
+Target
 Clear hardware capabilities when linking.
 
 mimpure-text
-Target Report
+Target
 Pass -z text to linker.
 
 pthread

@@ -1,6 +1,6 @@
 /* PR tree-optimization/96480 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fno-bit-tests -fno-jump-tables" } */
 /* { dg-final { scan-tree-dump " = _\[0-9]* <= 3;" "optimized" } } */
 
 int v[4];

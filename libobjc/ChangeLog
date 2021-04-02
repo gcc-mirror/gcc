@@ -1,3 +1,16 @@
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2020-10-11  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* encoding.c (_darwin_rs6000_special_round_type_align):
@@ -3593,7 +3606,7 @@ Mon Sep 21 23:27:10 1998  Ovidiu Predescu <ovidiu@slip.net>
 
 	* New directory.  Moved files from ../gcc/objc.
 
-Copyright (C) 1998-2020 Free Software Foundation, Inc.
+Copyright (C) 1998-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

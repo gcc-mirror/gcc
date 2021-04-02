@@ -1,5 +1,5 @@
 /* This file contains subroutine used by the C front-end to construct GENERIC.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Written by Benjamin Chelf (chelf@codesourcery.com).
 
 This file is part of GCC.

@@ -4,6 +4,7 @@
 /* { dg-skip-if "no support for hard-float VFP ABI" { arm_thumb1 } { "-march=*" } { "" } } */
 /* { dg-skip-if "-mpure-code and -fPIC incompatible" { *-*-* } { "-mpure-code" } } */
 /* { dg-options "-march=armv7-a+fp -mfloat-abi=hard -O2 -fPIC" } */
+/* { dg-require-effective-target fpic } */
 
 unsigned long a;
 static int b;

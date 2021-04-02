@@ -1,6 +1,6 @@
 ; Options for the ARM port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -55,22 +55,22 @@ EnumValue
 Enum(arm_abi_type) String(aapcs-linux) Value(ARM_ABI_AAPCS_LINUX)
 
 mabort-on-noreturn
-Target Report Mask(ABORT_NORETURN)
+Target Mask(ABORT_NORETURN)
 Generate a call to abort if a noreturn function returns.
 
 mapcs
 Target RejectNegative Mask(APCS_FRAME) Undocumented
 
 mapcs-frame
-Target Report Mask(APCS_FRAME)
+Target Mask(APCS_FRAME)
 Generate APCS conformant stack frames.
 
 mapcs-reentrant
-Target Report Mask(APCS_REENT)
+Target Mask(APCS_REENT)
 Generate re-entrant, PIC code.
 
 mapcs-stack-check
-Target Report Mask(APCS_STACK) Undocumented
+Target Mask(APCS_STACK) Undocumented
 
 march=
 Target Save RejectNegative Negative(march=) ToLower Joined Var(arm_arch_string)
@@ -82,19 +82,19 @@ EnumValue
 Enum(arm_arch) String(native) Value(-1) DriverOnly
 
 marm
-Target Report RejectNegative Negative(mthumb) InverseMask(THUMB)
+Target RejectNegative Negative(mthumb) InverseMask(THUMB)
 Generate code in 32 bit ARM state.
 
 mbig-endian
-Target Report RejectNegative Negative(mlittle-endian) Mask(BIG_END)
+Target RejectNegative Negative(mlittle-endian) Mask(BIG_END)
 Assume target CPU is configured as big endian.
 
 mcallee-super-interworking
-Target Report Mask(CALLEE_INTERWORKING)
+Target Mask(CALLEE_INTERWORKING)
 Thumb: Assume non-static functions may be called from ARM code.
 
 mcaller-super-interworking
-Target Report Mask(CALLER_INTERWORKING)
+Target Mask(CALLER_INTERWORKING)
 Thumb: Assume function pointers may go to non-Thumb aware code.
 
 mcpu=
@@ -123,7 +123,7 @@ EnumValue
 Enum(float_abi_type) String(hard) Value(ARM_FLOAT_ABI_HARD)
 
 mflip-thumb
-Target Report Var(TARGET_FLIP_THUMB) Undocumented
+Target Var(TARGET_FLIP_THUMB) Undocumented
 Switch ARM/Thumb modes on alternating functions for compiler testing.
 
 mfp16-format=
@@ -151,15 +151,15 @@ mhard-float
 Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
 
 mlittle-endian
-Target Report RejectNegative Negative(mbig-endian) InverseMask(BIG_END)
+Target RejectNegative Negative(mbig-endian) InverseMask(BIG_END)
 Assume target CPU is configured as little endian.
 
 mlong-calls
-Target Report Mask(LONG_CALLS)
+Target Mask(LONG_CALLS)
 Generate call insns as indirect calls, if necessary.
 
 mpic-data-is-text-relative
-Target Report Var(arm_pic_data_is_text_relative) Init(TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE)
+Target Var(arm_pic_data_is_text_relative) Init(TARGET_DEFAULT_PIC_DATA_IS_TEXT_RELATIVE)
 Assume data segments are relative to text segment.
 
 mpic-register=
@@ -167,15 +167,15 @@ Target RejectNegative Joined Var(arm_pic_register_string)
 Specify the register to be used for PIC addressing.
 
 mpoke-function-name
-Target Report Mask(POKE_FUNCTION_NAME)
+Target Mask(POKE_FUNCTION_NAME)
 Store function names in object code.
 
 msched-prolog
-Target Report Mask(SCHED_PROLOG)
+Target Mask(SCHED_PROLOG)
 Permit scheduling of a function's prologue sequence.
 
 msingle-pic-base
-Target Report Mask(SINGLE_PIC_BASE)
+Target Mask(SINGLE_PIC_BASE)
 Do not load the PIC register in function prologues.
 
 msoft-float
@@ -186,11 +186,11 @@ Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFA
 Specify the minimum bit alignment of structures. (Deprecated).
 
 mthumb
-Target Report RejectNegative Negative(marm) Mask(THUMB) Save
+Target RejectNegative Negative(marm) Mask(THUMB) Save
 Generate code for Thumb state.
 
 mthumb-interwork
-Target Report Mask(INTERWORK)
+Target Mask(INTERWORK)
 Support calls between Thumb and ARM instruction sets.
 
 mtls-dialect=
@@ -215,11 +215,11 @@ EnumValue
 Enum(arm_tp_type) String(cp15) Value(TP_CP15)
 
 mtpcs-frame
-Target Report Mask(TPCS_FRAME)
+Target Mask(TPCS_FRAME)
 Thumb: Generate (non-leaf) stack frames even if not needed.
 
 mtpcs-leaf-frame
-Target Report Mask(TPCS_LEAF_FRAME)
+Target Mask(TPCS_LEAF_FRAME)
 Thumb: Generate (leaf) stack frames even if not needed.
 
 mtune=
@@ -227,7 +227,7 @@ Target Save RejectNegative Negative(mtune=) ToLower Joined Var(arm_tune_string)
 Tune code for the given processor.
 
 mprint-tune-info
-Target Report RejectNegative Var(print_tune_info) Init(0)
+Target RejectNegative Var(print_tune_info) Init(0)
 Print CPU tuning information as comment in assembler file.  This is
 an option used only for regression testing of the compiler and not
 intended for ordinary use in compiling code.
@@ -238,11 +238,11 @@ EnumValue
 Enum(processor_type) String(native) Value(-1) DriverOnly
 
 mvectorize-with-neon-quad
-Target Report RejectNegative InverseMask(NEON_VECTORIZE_DOUBLE)
+Target RejectNegative InverseMask(NEON_VECTORIZE_DOUBLE)
 Use Neon quad-word (rather than double-word) registers for vectorization.
 
 mvectorize-with-neon-double
-Target Report RejectNegative Mask(NEON_VECTORIZE_DOUBLE)
+Target RejectNegative Mask(NEON_VECTORIZE_DOUBLE)
 Use Neon double-word (rather than quad-word) registers for vectorization.
 
 mverbose-cost-dump
@@ -250,20 +250,20 @@ Common Undocumented Var(arm_verbose_cost) Init(0)
 Enable more verbose RTX cost dumps during debug.  For GCC developers use only.
 
 mword-relocations
-Target Report Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)
+Target Var(target_word_relocations) Init(TARGET_DEFAULT_WORD_RELOCATIONS)
 Only generate absolute relocations on word sized values.
 
 mrestrict-it
-Target Report Var(arm_restrict_it) Init(2) Save
+Target Var(arm_restrict_it) Init(2) Save
 Generate IT blocks appropriate for ARMv8.
 
 mfix-cortex-m3-ldrd
-Target Report Var(fix_cm3_ldrd) Init(2)
+Target Var(fix_cm3_ldrd) Init(2)
 Avoid overlapping destination and address registers on LDRD instructions
 that may trigger Cortex-M3 errata.
 
 munaligned-access
-Target Report Var(unaligned_access) Init(2) Save
+Target Var(unaligned_access) Init(2) Save
 Enable unaligned word and halfword accesses to packed data.
 
 mneon-for-64bits
@@ -271,23 +271,23 @@ Target WarnRemoved
 This option is deprecated and has no effect.
 
 mslow-flash-data
-Target Report Var(target_slow_flash_data) Init(0)
+Target Var(target_slow_flash_data) Init(0)
 Assume loading data from flash is slower than fetching instructions.
 
 masm-syntax-unified
-Target Report Var(inline_asm_unified) Init(0) Save
+Target Var(inline_asm_unified) Init(0) Save
 Assume unified syntax for inline assembly code.
 
 mpure-code
-Target Report Var(target_pure_code) Init(0)
+Target Var(target_pure_code) Init(0)
 Do not allow constant data to be placed in code sections.
 
 mbe8
-Target Report RejectNegative Negative(mbe32) Mask(BE8)
+Target RejectNegative Negative(mbe32) Mask(BE8)
 When linking for big-endian targets, generate a BE8 format image.
 
 mbe32
-Target Report RejectNegative Negative(mbe8) InverseMask(BE8)
+Target RejectNegative Negative(mbe8) InverseMask(BE8)
 When linking for big-endian targets, generate a legacy BE32 format image.
 
 mbranch-cost=
@@ -295,9 +295,9 @@ Target RejectNegative Joined UInteger Var(arm_branch_cost) Init(-1)
 Cost to assume for a branch insn.
 
 mgeneral-regs-only
-Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
+Target RejectNegative Mask(GENERAL_REGS_ONLY) Save
 Generate code which uses the core registers only (r0-r14).
 
 mfdpic
-Target Report Mask(FDPIC)
+Target Mask(FDPIC)
 Enable Function Descriptor PIC mode.

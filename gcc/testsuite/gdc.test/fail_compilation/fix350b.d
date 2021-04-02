@@ -1,3 +1,11 @@
+/*
+TEST_OUTPUT:
+---
+fail_compilation/fix350b.d(15): Error: comma expected separating field initializers
+fail_compilation/fix350b.d(15): Error: comma expected separating field initializers
+fail_compilation/fix350b.d(16): Error: comma expected separating field initializers
+---
+*/
 int foo() { return 3; }
 
 struct S2

@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -41,10 +41,12 @@ test02()
     int operator>(void*) { return value != 0; }
   };
 
-  int i[3];
+  int i[5] = { 1, 2, 3, 4, 5 };
   Size n = {4};
   auto j = std::__uninitialized_default_n(i, n);
   VERIFY( j == (i + 4) );
+  // i[0:3] are default-initialized so have indeterminate values.
+  VERIFY( i[4] == 5 );
 }
 
 int

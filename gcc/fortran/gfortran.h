@@ -1,5 +1,5 @@
 /* gfortran header file
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -261,7 +261,7 @@ enum gfc_statement
   ST_OMP_TARGET_PARALLEL_DO_SIMD, ST_OMP_END_TARGET_PARALLEL_DO_SIMD,
   ST_OMP_TARGET_ENTER_DATA, ST_OMP_TARGET_EXIT_DATA,
   ST_OMP_TARGET_SIMD, ST_OMP_END_TARGET_SIMD,
-  ST_OMP_TASKLOOP, ST_OMP_END_TASKLOOP,
+  ST_OMP_TASKLOOP, ST_OMP_END_TASKLOOP, ST_OMP_SCAN,
   ST_OMP_TASKLOOP_SIMD, ST_OMP_END_TASKLOOP_SIMD, ST_OMP_ORDERED_DEPEND,
   ST_OMP_REQUIRES, ST_PROCEDURE, ST_GENERIC, ST_CRITICAL, ST_END_CRITICAL,
   ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_EVENT_POST,
@@ -1277,6 +1277,8 @@ enum
   OMP_LIST_MAP,
   OMP_LIST_TO,
   OMP_LIST_FROM,
+  OMP_LIST_SCAN_IN,
+  OMP_LIST_SCAN_EX,
   OMP_LIST_REDUCTION,
   OMP_LIST_REDUCTION_INSCAN,
   OMP_LIST_REDUCTION_TASK,
@@ -1414,6 +1416,7 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *hint;
   struct gfc_expr *num_tasks;
   struct gfc_expr *priority;
+  struct gfc_expr *detach;
   struct gfc_expr *if_exprs[OMP_IF_LAST];
   enum gfc_omp_sched_kind dist_sched_kind;
   struct gfc_expr *dist_chunk_size;
@@ -2697,7 +2700,7 @@ enum gfc_exec_op
   EXEC_OMP_TARGET_ENTER_DATA, EXEC_OMP_TARGET_EXIT_DATA,
   EXEC_OMP_TARGET_PARALLEL, EXEC_OMP_TARGET_PARALLEL_DO,
   EXEC_OMP_TARGET_PARALLEL_DO_SIMD, EXEC_OMP_TARGET_SIMD,
-  EXEC_OMP_TASKLOOP, EXEC_OMP_TASKLOOP_SIMD
+  EXEC_OMP_TASKLOOP, EXEC_OMP_TASKLOOP_SIMD, EXEC_OMP_SCAN
 };
 
 typedef struct gfc_code
@@ -3102,6 +3105,7 @@ extern int gfc_default_character_kind;
 extern int gfc_default_logical_kind;
 extern int gfc_default_complex_kind;
 extern int gfc_c_int_kind;
+extern int gfc_c_intptr_kind;
 extern int gfc_atomic_int_kind;
 extern int gfc_atomic_logical_kind;
 extern int gfc_intio_kind;
@@ -3465,6 +3469,7 @@ bool find_forall_index (gfc_expr *, gfc_symbol *, int);
 bool gfc_resolve_index (gfc_expr *, int);
 bool gfc_resolve_dim_arg (gfc_expr *);
 bool gfc_is_formal_arg (void);
+bool gfc_resolve_substring (gfc_ref *, bool *);
 void gfc_resolve_substring_charlen (gfc_expr *);
 match gfc_iso_c_sub_interface(gfc_code *, gfc_symbol *);
 gfc_expr *gfc_expr_to_initialize (gfc_expr *);

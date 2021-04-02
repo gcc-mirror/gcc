@@ -1,3 +1,241 @@
+2021-03-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99230
+	* c-gimplify.c (c_genericize_control_stmt): Handle STATEMENT_LIST.
+
+2021-03-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_declaration) <TYPE_DECL>: Dump nested types
+	after entering the separate class package, if any.
+
+2021-03-04  Richard Biener  <rguenther@suse.de>
+
+	* c-pretty-print.c (c_pretty_printer::direct_abstract_declarator):
+	Handle ERROR_MARK.
+
+2021-03-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99325
+	* c-ppoutput.c (print): Change src_line type from int to unsigned.
+	(token_streamer::stream) Likewise.
+	(maybe_print_line_1): Likewise.  Don't strcmp src_file if src_loc is
+	UNKNOWN_LOCATION.
+
+2021-03-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99324
+	* c-common.c (build_va_arg): Call c_common_mark_addressable_vec
+	instead of mark_addressable.  Fix a comment typo -
+	neutrallly -> neutrally.
+
+2021-02-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99304
+	* c-attribs.c (handle_malloc_attribute): Fix a typo in inform
+	message - refernced -> referenced.  Remove superfluous space before
+	closing paren of function calls.
+
+2021-02-25  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99166
+	* c.opt (-flang-info-module-cmi): Renamed option.
+
+2021-02-19  Nathan Sidwell  <nathan@acm.org>
+
+	* c.opt (flang-info-module-read, flang-info-module-read=): New.
+
+2021-02-18  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99113
+	* c-attribs.c (c_common_attribute_table): Add the "retain"
+	attribute.
+	(handle_retain_attribute): New function.
+
+2021-02-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99062
+	* c-attribs.c (handle_assume_aligned_attribute): Check that the
+	alignment argument is non-negative.  Tweak a warning message.
+
+2021-02-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/99055
+	* c-warn.c (warn_parm_array_mismatch): Free strings returned from
+	print_generic_expr_to_str.
+
+2021-02-10  Richard Biener  <rguenther@suse.de>
+
+	* c-common.c (parse_optimize_options): Free decoded_options.
+
+2021-02-04  emsr  <3dw4rd@verizon.net>
+
+	* c-cppbuiltin.c (c_cpp_builtins): __cpp_size_t_suffix=202011L.
+
+2021-02-03  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_size_t_suffix.
+	* c-lex.c (interpret_integer): Set node type for size literal.
+
+2021-01-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (-std=c++2a, -std=c++20, -std=gnu++2a, -std=gnu++20): Remove
+	draft from description.
+	(-std=c++2b): Fix a pasto, 2020 -> 2023.
+
+2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
+
+	* c-common.h (cxx_dialect): Add cxx23 as a dialect.
+	* c.opt: Add options for -std=c++23, std=c++2b, -std=gnu++23
+	and -std=gnu++2b
+	* c-opts.c (set_std_cxx23): New.
+	(c_common_handle_option): Set options when -std=c++23 is enabled.
+	(c_common_post_options): Adjust comments.
+	(set_std_cxx20): Likewise.
+
+2021-01-25  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/98646
+	* c-common.c (check_nonnull_arg): Adjust warning text.
+
+2021-01-17  Martin Sebor  <msebor@redhat.com>
+
+	* c-pretty-print.c (c_pretty_printer::primary_expression): Don't
+	assume SSA_NAME_IDENTIFIER evaluates to nonzero.
+
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-pragma.h (pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_DETACH.
+	Redefine PRAGMA_OACC_CLAUSE_DETACH.
+
+2021-01-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98597
+	* c-pretty-print.c: Include options.h.
+	(c_fold_indirect_ref_for_warn): New function.
+	(print_mem_ref): Use it.  If it returns something that has compatible
+	type and is TBAA compatible with zero offset, print it and return,
+	otherwise print it using offsetof syntax or array ref syntax.  Fix up
+	printing if MEM_REFs first operand is ADDR_EXPR, or when the first
+	argument has pointer to array type.  Print pointers using the standard
+	formatting.
+
+2021-01-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/98597
+	PR c/98592
+	* c-pretty-print.c (print_mem_ref): Avoid assuming MEM_REF operand
+	has pointer type.  Remove redundant code.  Avoid calling
+	gimple_canonical_types_compatible_p.
+
+2021-01-07  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98578
+	* c-pretty-print.c (print_mem_ref): Strip array from access type.
+	Avoid assuming acces type's size is constant.  Correct condition
+	guarding the printing of a parenthesis.
+
+2021-01-06  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/95768
+	* c-pretty-print.c (c_pretty_printer::primary_expression): For
+	SSA_NAMEs print VLA names and GIMPLE defining statements.
+	(print_mem_ref): New function.
+	(c_pretty_printer::unary_expression): Call it.
+
+2021-01-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/95582
+	* c-attribs.c (c_common_attribute_table): Add entry for
+	signed_bool_precision.
+	(handle_signed_bool_precision_attribute): New.
+
+2020-12-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c.opt: Add -stdlib= option and enumerations for
+	libstdc++ and libc++.
+
+2020-12-16  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Remove usage of Report.
+
+2020-12-14  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/98166
+	PR c++/57111
+	PR middle-end/98160
+	* c-attribs.c (maybe_add_noinline): New function.
+	(handle_malloc_attribute): Call it.  Use ATTR_FLAG_INTERNAL.
+	Implicitly add attribute noinline to functions not declared inline
+	and warn on those.
+
+2020-12-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-pragma.c (omp_pragmas): Add 'allocate'.
+	* c-pragma.h (enum pragma_kind): Add PRAGMA_OMP_ALLOCATE.
+
+2020-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98187
+	* c-pragma.c (omp_pragmas): Remove "master".
+	(omp_pragmas_simd): Add "master".
+
+2020-12-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98126
+	* c-common.c (verify_tree_lim_r): New function.
+	(verify_sequence_points): Use it.  Use nullptr instead of 0.
+
+2020-12-03  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/90629
+	PR middle-end/94527
+	* c-attribs.c (handle_dealloc_attribute): New function.
+	(handle_malloc_attribute): Handle argument forms of attribute.
+	* c.opt (-Wmismatched-dealloc): New option.
+	(-Wmismatched-new-delete): New option.
+
+2020-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/93121
+	* c-common.h (enum rid): Add RID_BUILTIN_BIT_CAST.
+	* c-common.c (c_common_reswords): Add __builtin_bit_cast.
+
+2020-12-01  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add predefined
+	{__GNUC_EXECUTION_CHARSET_NAME} and
+	_WIDE_EXECUTION_CHARSET_NAME} macros.
+
+2020-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (module, import, export): New internal tokens (with
+	trailing space).
+	* c-common.h (RID__MODULE, RID__IMPORT & RID__EXPORT): Enumerate
+	them.
+	(D_CXX_MODULES, D_CXX_MODULES_FLAGS): Enable them.
+	* c-cppbuiltin.c (c_cpp_builtins): Feature macro.
+
+2020-12-01  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (c_common_init_options): Ask for module dependencies.
+	(c_common_handle_option): Handle -Mmodules -Mno-modules.
+	* c-pch.c (c_common_valid_pch): ... does not play with C++
+	modules.
+	* c.opt (Mmodules, Mno-modules): New preprocessor dependency
+	options.
+	(fmodules-ts, fmodule-header, fmodule-implicit-inline)
+	(fmodule-only, fmodule-mapper, fmodule-lazy)
+	(fmodule-version-ignore, Winvalid-imported-macros)
+	(flang-info-include-translate, flang-info-include-translate-not):
+	New options
+
+2020-11-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_nested_type) <RECORD_TYPE>: Remove obsolete code.
+	(dump_ada_structure): Also deal with convention, unchecked union and
+	bit-field for nested types.  In the latter case, print an Alignment
+	aspect along with the Pack aspect.
+
 2020-11-25  Martin Sebor  <msebor@redhat.com>
 
 	PR bootstrap/94982
@@ -11755,7 +11993,7 @@
 	* c-common.c: Include gt-c-family-c-common.h.
 	* c-pragma.c: Include gt-c-family-c-pragma.h.
 
-Copyright (C) 2010-2020 Free Software Foundation, Inc.
+Copyright (C) 2010-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

@@ -1,5 +1,5 @@
 /* Common hooks for RISC-V.
-   Copyright (C) 2016-2020 Free Software Foundation, Inc.
+   Copyright (C) 2016-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -30,22 +30,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "flags.h"
 #include "diagnostic-core.h"
 #include "config/riscv/riscv-protos.h"
+#include "config/riscv/riscv-subset.h"
 
-#define RISCV_DONT_CARE_VERSION -1
-
-/* Subset info.  */
-struct riscv_subset_t
-{
-  riscv_subset_t ();
-
-  std::string name;
-  int major_version;
-  int minor_version;
-  struct riscv_subset_t *next;
-
-  bool explicit_version_p;
-  bool implied_p;
-};
+#ifdef  TARGET_BIG_ENDIAN_DEFAULT
+#undef  TARGET_DEFAULT_TARGET_FLAGS
+#define TARGET_DEFAULT_TARGET_FLAGS (MASK_BIG_ENDIAN)
+#endif
 
 /* Type for implied ISA info.  */
 struct riscv_implied_info_t
@@ -123,59 +113,14 @@ static const riscv_cpu_info riscv_cpu_tables[] =
     {NULL, NULL, NULL}
 };
 
-/* Subset list.  */
-class riscv_subset_list
-{
-private:
-  /* Original arch string.  */
-  const char *m_arch;
-
-  /* Location of arch string, used for report error.  */
-  location_t m_loc;
-
-  /* Head of subset info list.  */
-  riscv_subset_t *m_head;
-
-  /* Tail of subset info list.  */
-  riscv_subset_t *m_tail;
-
-  /* X-len of m_arch. */
-  unsigned m_xlen;
-
-  riscv_subset_list (const char *, location_t);
-
-  const char *parsing_subset_version (const char *, const char *, unsigned *,
-				      unsigned *, bool, bool *);
-
-  const char *parse_std_ext (const char *);
-
-  const char *parse_multiletter_ext (const char *, const char *,
-				     const char *);
-
-  void handle_implied_ext (riscv_subset_t *);
-
-public:
-  ~riscv_subset_list ();
-
-  void add (const char *, int, int, bool, bool);
-
-  void add (const char *, bool);
-
-  riscv_subset_t *lookup (const char *,
-			  int major_version = RISCV_DONT_CARE_VERSION,
-			  int minor_version = RISCV_DONT_CARE_VERSION) const;
-
-  std::string to_string (bool) const;
-
-  unsigned xlen() const {return m_xlen;};
-
-  static riscv_subset_list *parse (const char *, location_t);
-
-};
-
 static const char *riscv_supported_std_ext (void);
 
 static riscv_subset_list *current_subset_list = NULL;
+
+const riscv_subset_list *riscv_current_subset_list ()
+{
+  return current_subset_list;
+}
 
 riscv_subset_t::riscv_subset_t ()
   : name (), major_version (0), minor_version (0), next (NULL),
@@ -587,9 +532,7 @@ riscv_subset_list::parsing_subset_version (const char *ext,
 	      /* Might be beginning of `p` extension.  */
 	      if (std_ext_p)
 		{
-		  *major_version = version;
-		  *minor_version = 0;
-		  *explicit_version_p = true;
+		  get_default_version (ext, major_version, minor_version);
 		  return p;
 		}
 	      else

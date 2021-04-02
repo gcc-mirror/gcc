@@ -1,5 +1,5 @@
 /* Supporting functions for resolving DATA statement.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Lifang Zeng <zlf605@hotmail.com>
 
 This file is part of GCC.
@@ -20,14 +20,14 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Notes for DATA statement implementation:
-									       
+
    We first assign initial value to each symbol by gfc_assign_data_value
    during resolving DATA statement. Refer to check_data_variable and
    traverse_data_list in resolve.c.
-									       
+
    The complexity exists in the handling of array section, implied do
    and array of struct appeared in DATA statement.
-									       
+
    We call gfc_conv_structure, gfc_con_array_array_initializer,
    etc., to convert the initial value. Refer to trans-expr.c and
    trans-array.c.  */
@@ -183,6 +183,19 @@ create_character_initializer (gfc_expr *init, gfc_typespec *ts,
 	}
     }
 
+  if (start < 0)
+    {
+      gfc_error ("Substring start index at %L is less than one",
+		 &ref->u.ss.start->where);
+      return NULL;
+    }
+  if (end > init->value.character.length)
+    {
+      gfc_error ("Substring end index at %L exceeds the string length",
+		 &ref->u.ss.end->where);
+      return NULL;
+    }
+
   if (rvalue->ts.type == BT_HOLLERITH)
     {
       for (size_t i = 0; i < (size_t) len; i++)
@@ -221,13 +234,23 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
   gfc_ref *ref;
   gfc_expr *init;
   gfc_expr *expr = NULL;
+  gfc_expr *rexpr;
   gfc_constructor *con;
   gfc_constructor *last_con;
   gfc_symbol *symbol;
   gfc_typespec *last_ts;
   mpz_t offset;
+  const char *msg = "F18(R841): data-implied-do object at %L is neither an "
+		    "array-element nor a scalar-structure-component";
 
   symbol = lvalue->symtree->n.sym;
+  if (symbol->attr.flavor == FL_PARAMETER)
+    {
+      gfc_error ("PARAMETER %qs shall not appear in a DATA statement at %L",
+		 symbol->name, &lvalue->where);
+      return false;
+    }
+
   init = symbol->value;
   last_ts = &symbol->ts;
   last_con = NULL;
@@ -464,6 +487,74 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	    }
 	  break;
 
+	case REF_INQUIRY:
+
+	  /* After some discussion on clf it was determined that the following
+	     violates F18(R841). If the error is removed, the expected result
+	     is obtained. Leaving the code in place ensures a clean error
+	     recovery.  */
+	  gfc_error (msg, &lvalue->where);
+
+	  /* This breaks with the other reference types in that the output
+	     constructor has to be of type COMPLEX, whereas the lvalue is
+	     of type REAL.  The rvalue is copied to the real or imaginary
+	     part as appropriate.  In addition, for all except scalar
+	     complex variables, a complex expression has to provided, where
+	     the constructor does not have it, and the expression modified
+	     with a new value for the real or imaginary part.  */
+	  gcc_assert (ref->next == NULL && last_ts->type == BT_COMPLEX);
+	  rexpr = gfc_copy_expr (rvalue);
+	  if (!gfc_compare_types (&lvalue->ts, &rexpr->ts))
+	    gfc_convert_type (rexpr, &lvalue->ts, 0);
+
+	  /* This is the scalar, complex case, where an initializer exists.  */
+	  if (init && ref == lvalue->ref)
+	    expr = symbol->value;
+	  /* Then all cases, where a complex expression does not exist.  */
+	  else if (!last_con || !last_con->expr)
+	    {
+	      expr = gfc_get_constant_expr (BT_COMPLEX, lvalue->ts.kind,
+					    &lvalue->where);
+	      if (last_con)
+		last_con->expr = expr;
+	    }
+	  else
+	    /* Finally, and existing constructor expression to be modified.  */
+	    expr = last_con->expr;
+
+	  /* Rejection of LEN and KIND inquiry references is handled
+	     elsewhere. The error here is added as backup. The assertion
+	     of F2008 for RE and IM is also done elsewhere.  */
+	  switch (ref->u.i)
+	    {
+	    case INQUIRY_LEN:
+	    case INQUIRY_KIND:
+	      gfc_error ("LEN or KIND inquiry ref in DATA statement at %L",
+			 &lvalue->where);
+	      goto abort;
+	    case INQUIRY_RE:
+	      mpfr_set (mpc_realref (expr->value.complex),
+			rexpr->value.real,
+			GFC_RND_MODE);
+	      break;
+	    case INQUIRY_IM:
+	      mpfr_set (mpc_imagref (expr->value.complex),
+			rexpr->value.real,
+			GFC_RND_MODE);
+	      break;
+	    }
+
+	  /* Only the scalar, complex expression needs to be saved as the
+	     symbol value since the last constructor expression is already
+	     provided as the initializer in the code after the reference
+	     cases.  */
+	  if (ref == lvalue->ref)
+	    symbol->value = expr;
+
+	  gfc_free_expr (rexpr);
+	  mpz_clear (offset);
+	  return true;
+
 	default:
 	  gcc_unreachable ();
 	}
@@ -498,14 +589,18 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	return false;
     }
 
-  if (ref || last_ts->type == BT_CHARACTER)
+  if (ref || (last_ts->type == BT_CHARACTER
+	      && rvalue->expr_type == EXPR_CONSTANT))
     {
       /* An initializer has to be constant.  */
-      if (rvalue->expr_type != EXPR_CONSTANT
-	  || (lvalue->ts.u.cl->length == NULL
-	      && !(ref && ref->u.ss.length != NULL)))
+      if (lvalue->ts.u.cl->length == NULL && !(ref && ref->u.ss.length != NULL))
+	return false;
+      if (lvalue->ts.u.cl->length
+	  && lvalue->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 	return false;
       expr = create_character_initializer (init, last_ts, ref, rvalue);
+      if (!expr)
+	return false;
     }
   else
     {
@@ -513,7 +608,7 @@ gfc_assign_data_value (gfc_expr *lvalue, gfc_expr *rvalue, mpz_t index,
 	  && gfc_has_default_initializer (lvalue->ts.u.derived))
 	{
 	  gfc_error ("Nonpointer object %qs with default initialization "
-		     "shall not appear in a DATA statement at %L", 
+		     "shall not appear in a DATA statement at %L",
 		     symbol->name, &lvalue->where);
 	  return false;
 	}
@@ -540,13 +635,13 @@ abort:
 
 /* Modify the index of array section and re-calculate the array offset.  */
 
-void 
+void
 gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
 		     mpz_t *offset_ret)
 {
   int i;
   mpz_t delta;
-  mpz_t tmp; 
+  mpz_t tmp;
   bool forwards;
   int cmp;
   gfc_expr *start, *end, *stride;
@@ -567,21 +662,21 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
 	    forwards = true;
 	  else
 	    forwards = false;
-	  gfc_free_expr(stride);	
+	  gfc_free_expr(stride);
 	}
       else
 	{
 	  mpz_add_ui (section_index[i], section_index[i], 1);
 	  forwards = true;
 	}
-      
+
       if (ar->end[i])
         {
 	  end = gfc_copy_expr(ar->end[i]);
 	  if(!gfc_simplify_expr(end, 1))
 	    gfc_internal_error("Simplification error");
 	  cmp = mpz_cmp (section_index[i], end->value.integer);
-	  gfc_free_expr(end);	
+	  gfc_free_expr(end);
 	}
       else
 	cmp = mpz_cmp (section_index[i], ar->as->upper[i]->value.integer);
@@ -595,7 +690,7 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
 	      if(!gfc_simplify_expr(start, 1))
 	        gfc_internal_error("Simplification error");
 	      mpz_set (section_index[i], start->value.integer);
-	      gfc_free_expr(start); 
+	      gfc_free_expr(start);
 	    }
 	  else
 	    mpz_set (section_index[i], ar->as->lower[i]->value.integer);
@@ -613,7 +708,7 @@ gfc_advance_section (mpz_t *section_index, gfc_array_ref *ar,
       mpz_mul (tmp, tmp, delta);
       mpz_add (*offset_ret, tmp, *offset_ret);
 
-      mpz_sub (tmp, ar->as->upper[i]->value.integer, 
+      mpz_sub (tmp, ar->as->upper[i]->value.integer,
 	       ar->as->lower[i]->value.integer);
       mpz_add_ui (tmp, tmp, 1);
       mpz_mul (delta, tmp, delta);
@@ -699,7 +794,7 @@ gfc_formalize_init_value (gfc_symbol *sym)
 
 /* Get the integer value into RET_AS and SECTION from AS and AR, and return
    offset.  */
- 
+
 void
 gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset)
 {
@@ -741,7 +836,7 @@ gfc_get_section_index (gfc_array_ref *ar, mpz_t *section_index, mpz_t *offset)
 	  gcc_unreachable ();
 	}
 
-      mpz_sub (tmp, ar->as->upper[i]->value.integer, 
+      mpz_sub (tmp, ar->as->upper[i]->value.integer,
 	       ar->as->lower[i]->value.integer);
       mpz_add_ui (tmp, tmp, 1);
       mpz_mul (delta, tmp, delta);

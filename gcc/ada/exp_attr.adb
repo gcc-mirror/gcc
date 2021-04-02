@@ -3626,8 +3626,9 @@ package body Exp_Attr is
       --    For the most common ordinary fixed-point types
       --      xx   = Fixed{32,64,128}
       --      ftyp = Integer_{32,64,128}
-      --      pm   = Typ'Small
-      --             1.0 / Typ'Small
+      --      pm   = numerator of Typ'Small
+      --             denominator of Typ'Small
+      --             min (scale of Typ'Small, 0)
 
       --    For other ordinary fixed-point types
       --      xx   = Real
@@ -3666,20 +3667,26 @@ package body Exp_Attr is
 
                begin
                   if Siz <= 32
-                    and then Min = Uint_1
                     and then Max <= Uint_2 ** 31
+                    and then (Min = Uint_1
+                               or else Num < Den
+                               or else Num < Uint_10 ** 8)
                   then
                      Fid  := RE_Fore_Fixed32;
                      Ftyp := RTE (RE_Integer_32);
                   elsif Siz <= 64
-                    and then Min = Uint_1
                     and then Max <= Uint_2 ** 63
+                    and then (Min = Uint_1
+                               or else Num < Den
+                               or else Num < Uint_10 ** 17)
                   then
                      Fid  := RE_Fore_Fixed64;
                      Ftyp := RTE (RE_Integer_64);
                   elsif System_Max_Integer_Size = 128
-                    and then Min = Uint_1
                     and then Max <= Uint_2 ** 127
+                    and then (Min = Uint_1
+                               or else Num < Den
+                               or else Num < Uint_10 ** 37)
                   then
                      Fid  := RE_Fore_Fixed128;
                      Ftyp := RTE (RE_Integer_128);
@@ -3711,8 +3718,8 @@ package body Exp_Attr is
                Append_To (Arg_List,
                  Make_Integer_Literal (Loc, Scale_Value (Ptyp)));
 
-            --  For ordinary fixed-point types, append Num, Den parameters
-            --  and also set to do literal conversion
+            --  For ordinary fixed-point types, append Num, Den and Scale
+            --  parameters and also set to do literal conversion
 
             elsif Fid /= RE_Fore_Real then
                Set_Conversion_OK (First (Arg_List));
@@ -3723,6 +3730,20 @@ package body Exp_Attr is
 
                Append_To (Arg_List,
                  Make_Integer_Literal (Loc, -Norm_Den (Small_Value (Ptyp))));
+
+               declare
+                  Val   : Ureal := Small_Value (Ptyp);
+                  Scale : Int   := 0;
+
+               begin
+                  while Val >= Ureal_10 loop
+                     Val := Val / Ureal_10;
+                     Scale := Scale - 1;
+                  end loop;
+
+                  Append_To (Arg_List,
+                     Make_Integer_Literal (Loc, UI_From_Int (Scale)));
+               end;
             end if;
 
             Rewrite (N,
@@ -4681,13 +4702,15 @@ package body Exp_Attr is
 
       when Attribute_Mod => Mod_Case : declare
          Arg  : constant Node_Id := Relocate_Node (First (Exprs));
-         Hi   : constant Node_Id := Type_High_Bound (Etype (Arg));
+         Hi   : constant Node_Id := Type_High_Bound (Base_Type (Etype (Arg)));
          Modv : constant Uint    := Modulus (Btyp);
 
       begin
 
          --  This is not so simple. The issue is what type to use for the
-         --  computation of the modular value.
+         --  computation of the modular value. In addition we need to use
+         --  the base type as above to retrieve a static bound for the
+         --  comparisons that follow.
 
          --  The easy case is when the modulus value is within the bounds
          --  of the signed integer type of the argument. In this case we can
@@ -6173,20 +6196,19 @@ package body Exp_Attr is
       -- Round --
       -----------
 
-      --  The handling of the Round attribute is quite delicate. The processing
-      --  in Sem_Attr introduced a conversion to universal real, reflecting the
-      --  semantics of Round, but we do not want anything to do with universal
-      --  real at runtime, since this corresponds to using floating-point
-      --  arithmetic.
+      --  The handling of the Round attribute is delicate when the operand is
+      --  universal fixed. In this case, the processing in Sem_Attr introduced
+      --  a conversion to universal real, reflecting the semantics of Round,
+      --  but we do not want anything to do with universal real at run time,
+      --  since this corresponds to using floating-point arithmetic.
 
       --  What we have now is that the Etype of the Round attribute correctly
       --  indicates the final result type. The operand of the Round is the
       --  conversion to universal real, described above, and the operand of
       --  this conversion is the actual operand of Round, which may be the
-      --  special case of a fixed point multiplication or division (Etype =
-      --  universal fixed)
+      --  special case of a fixed point multiplication or division.
 
-      --  The exapander will expand first the operand of the conversion, then
+      --  The expander will expand first the operand of the conversion, then
       --  the conversion, and finally the round attribute itself, since we
       --  always work inside out. But we cannot simply process naively in this
       --  order. In the semantic world where universal fixed and real really
@@ -6194,14 +6216,13 @@ package body Exp_Attr is
       --  implementation world, where universal real is a floating-point type,
       --  we would get the wrong result.
 
-      --  So the approach is as follows. First, when expanding a multiply or
-      --  divide whose type is universal fixed, we do nothing at all, instead
-      --  deferring the operation till later.
-
-      --  The actual processing is done in Expand_N_Type_Conversion which
-      --  handles the special case of Round by looking at its parent to see if
-      --  it is a Round attribute, and if it is, handling the conversion (or
-      --  its fixed multiply/divide child) in an appropriate manner.
+      --  So the approach is as follows. When expanding a multiply or divide
+      --  whose type is universal fixed, Fixup_Universal_Fixed_Operation will
+      --  look up and skip the conversion to universal real if its parent is
+      --  a Round attribute, taking information from this attribute node. In
+      --  the other cases, Expand_N_Type_Conversion does the same by looking
+      --  at its parent to see if it is a Round attribute, before calling the
+      --  fixed-point expansion routine.
 
       --  This means that by the time we get to expanding the Round attribute
       --  itself, the Round is nothing more than a type conversion (and will
@@ -6209,8 +6230,12 @@ package body Exp_Attr is
       --  appropriate conversion operation.
 
       when Attribute_Round =>
-         Rewrite (N,
-           Convert_To (Etype (N), Relocate_Node (First (Exprs))));
+         if Etype (First (Exprs)) = Etype (N) then
+            Rewrite (N, Relocate_Node (First (Exprs)));
+         else
+            Rewrite (N, Convert_To (Etype (N), First (Exprs)));
+            Set_Rounded_Result (N);
+         end if;
          Analyze_And_Resolve (N);
 
       --------------
@@ -7813,6 +7838,8 @@ package body Exp_Attr is
          | Attribute_Scale
          | Attribute_Signed_Zeros
          | Attribute_Small
+         | Attribute_Small_Denominator
+         | Attribute_Small_Numerator
          | Attribute_Storage_Unit
          | Attribute_Stub_Type
          | Attribute_System_Allocator_Alignment
@@ -8284,27 +8311,25 @@ package body Exp_Attr is
       --  All we do is use the root type (historically this dealt with
       --  VAX-float .. to be cleaned up further later ???)
 
-      Fat_Type := Rtyp;
+      if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
+         Fat_Type := Standard_Float;
+         Fat_Pkg  := RE_Attr_Float;
 
-      if Fat_Type = Standard_Short_Float then
-         Fat_Pkg := RE_Attr_Short_Float;
+      elsif Rtyp = Standard_Long_Float then
+         Fat_Type := Standard_Long_Float;
+         Fat_Pkg  := RE_Attr_Long_Float;
 
-      elsif Fat_Type = Standard_Float then
-         Fat_Pkg := RE_Attr_Float;
-
-      elsif Fat_Type = Standard_Long_Float then
-         Fat_Pkg := RE_Attr_Long_Float;
-
-      elsif Fat_Type = Standard_Long_Long_Float then
-         Fat_Pkg := RE_Attr_Long_Long_Float;
+      elsif Rtyp = Standard_Long_Long_Float then
+         Fat_Type := Standard_Long_Long_Float;
+         Fat_Pkg  := RE_Attr_Long_Long_Float;
 
          --  Universal real (which is its own root type) is treated as being
          --  equivalent to Standard.Long_Long_Float, since it is defined to
          --  have the same precision as the longest Float type.
 
-      elsif Fat_Type = Universal_Real then
+      elsif Rtyp = Universal_Real then
          Fat_Type := Standard_Long_Long_Float;
-         Fat_Pkg := RE_Attr_Long_Long_Float;
+         Fat_Pkg  := RE_Attr_Long_Long_Float;
 
       else
          raise Program_Error;

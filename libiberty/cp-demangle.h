@@ -1,5 +1,5 @@
 /* Internal demangler interface for g++ V3 ABI.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Written by Ian Lance Taylor <ian@wasabisystems.com>.
 
    This file is part of the libiberty library, which is part of GCC.
@@ -122,6 +122,10 @@ struct d_info
   /* Non-zero if we are parsing the type operand of a conversion
      operator, but not when in an expression.  */
   int is_conversion;
+  /*  1: using new unresolved-name grammar.
+     -1: using new unresolved-name grammar and saw an unresolved-name.
+      0: using old unresolved-name grammar.  */
+  int unresolved_name_state;
   /* If DMGL_NO_RECURSE_LIMIT is not active then this is set to
      the current recursion level.  */
   unsigned int recursion_level;

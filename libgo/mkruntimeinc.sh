@@ -17,8 +17,9 @@ rm -f runtime.inc.tmp2 runtime.inc.tmp3
 # some systems and need not be exported back to C.
 # sigset conflicts with system type sigset on AIX, so we need to rename it.
 # boundsError has a field name that is a C keyword, and we don't need it.
+# mSpanInuse is both a constant and a field name, and we don't need it.
 
-grep -v "#define _" ${IN} | grep -v "#define [cm][01234] " | grep -v "#define empty " | grep -v "#define \\$" > runtime.inc.tmp2
+grep -v "#define _" ${IN} | grep -v "#define [cm][01234] " | grep -v "#define empty " | grep -v "#define \\$" | grep -v "#define mSpanInUse " > runtime.inc.tmp2
 for pattern in '_[GP][a-z]' _Max _Lock _Sig _Trace _MHeap _Num
 do
   grep "#define $pattern" ${IN} >> runtime.inc.tmp2

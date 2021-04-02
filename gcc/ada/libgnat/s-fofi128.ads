@@ -43,7 +43,8 @@ package System.Fore_Fixed_128 is
 
    package Impl is new Fore_F (Int128, Arith_128.Scaled_Divide128);
 
-   function Fore_Fixed128 (Lo, Hi, Num, Den : Int128) return Natural
+   function Fore_Fixed128
+     (Lo, Hi, Num, Den : Int128; Scale : Integer) return Natural
      renames Impl.Fore_Fixed;
 
 end System.Fore_Fixed_128;

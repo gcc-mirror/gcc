@@ -1,5 +1,5 @@
 /* Definitions for CPP library.
-   Copyright (C) 1995-2020 Free Software Foundation, Inc.
+   Copyright (C) 1995-2021 Free Software Foundation, Inc.
    Written by Per Bothner, 1994-95.
 
 This program is free software; you can redistribute it and/or modify it
@@ -173,7 +173,8 @@ enum c_lang {CLK_GNUC89 = 0, CLK_GNUC99, CLK_GNUC11, CLK_GNUC17, CLK_GNUC2X,
 	     CLK_STDC2X,
 	     CLK_GNUCXX, CLK_CXX98, CLK_GNUCXX11, CLK_CXX11,
 	     CLK_GNUCXX14, CLK_CXX14, CLK_GNUCXX17, CLK_CXX17,
-	     CLK_GNUCXX20, CLK_CXX20, CLK_ASM};
+	     CLK_GNUCXX20, CLK_CXX20, CLK_GNUCXX23, CLK_CXX23,
+	     CLK_ASM};
 
 /* Payload of a NUMBER, STRING, CHAR or COMMENT token.  */
 struct GTY(()) cpp_string {
@@ -499,6 +500,9 @@ struct cpp_options
   /* Nonzero means tokenize C++20 module directives.  */
   unsigned char module_directives;
 
+  /* Nonzero for C++23 size_t literals.  */
+  unsigned char size_t_literals;
+
   /* Holds the name of the target (execution) character set.  */
   const char *narrow_charset;
 
@@ -625,6 +629,7 @@ enum cpp_warning_reason {
   CPP_W_INVALID_PCH,
   CPP_W_WARNING_DIRECTIVE,
   CPP_W_LITERAL_SUFFIX,
+  CPP_W_SIZE_T_LITERALS,
   CPP_W_DATE_TIME,
   CPP_W_PEDANTIC,
   CPP_W_C90_C99_COMPAT,
@@ -826,7 +831,10 @@ struct GTY(()) cpp_macro {
      tokens.  */
   unsigned int extra_tokens : 1;
 
-  /* 1 bits spare (32-bit). 33 on 64-bit target.  */
+  /* Imported C++20 macro (from a header unit).  */
+  unsigned int imported_p : 1;
+
+  /* 0 bits spare (32-bit). 32 on 64-bit target.  */
 
   union cpp_exp_u
   {
@@ -921,9 +929,11 @@ struct GTY(()) cpp_hashnode {
 
   /* 5 bits spare.  */
 
-  /* On a 64-bit system there would be 32-bits of padding to the value
+  /* The deferred cookie is applicable to NT_USER_MACRO or NT_VOID.
+     The latter for when a macro had a prevailing undef.
+     On a 64-bit system there would be 32-bits of padding to the value
      field.  So placing the deferred index here is not costly.   */
-  unsigned deferred;			/* Deferred index, (unless zero).  */
+  unsigned deferred;			/* Deferred cookie  */
 
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
@@ -1002,8 +1012,13 @@ extern cpp_callbacks *cpp_get_callbacks (cpp_reader *) ATTRIBUTE_PURE;
 extern void cpp_set_callbacks (cpp_reader *, cpp_callbacks *);
 extern class mkdeps *cpp_get_deps (cpp_reader *) ATTRIBUTE_PURE;
 
-extern const char *cpp_find_header_unit (cpp_reader *, const char *file,
-					 bool angle_p,  location_t);
+extern const char *cpp_probe_header_unit (cpp_reader *, const char *file,
+					  bool angle_p,  location_t);
+
+/* Call these to get name data about the various compile-time
+   charsets.  */
+extern const char *cpp_get_narrow_charset_name (cpp_reader *) ATTRIBUTE_PURE;
+extern const char *cpp_get_wide_charset_name (cpp_reader *) ATTRIBUTE_PURE;
 
 /* This function reads the file, but does not start preprocessing.  It
    returns the name of the original file; this is the same as the
@@ -1200,7 +1215,9 @@ struct cpp_num
 #define CPP_N_FLOATN	0x400000 /* _FloatN types.  */
 #define CPP_N_FLOATNX	0x800000 /* _FloatNx types.  */
 
-#define CPP_N_USERDEF	0x1000000 /* C++0x user-defined literal.  */
+#define CPP_N_USERDEF	0x1000000 /* C++11 user-defined literal.  */
+
+#define CPP_N_SIZE_T	0x2000000 /* C++23 size_t literal.  */
 
 #define CPP_N_WIDTH_FLOATN_NX	0xF0000000 /* _FloatN / _FloatNx value
 					      of N, divided by 16.  */

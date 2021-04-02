@@ -8,6 +8,7 @@
  */
 module core.sys.windows.rpc;
 version (Windows):
+@system:
 
 /* Moved to rpcdecp (duplicate definition).
     typedef void *I_RPC_HANDLE;

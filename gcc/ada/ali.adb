@@ -3814,15 +3814,15 @@ package body ALI is
          return No_ALI_Id;
    end Scan_ALI;
 
-   -----------
-   -- Scope --
-   -----------
+   --------------
+   -- IS_Scope --
+   --------------
 
-   function Scope (IS_Id : Invocation_Signature_Id) return Name_Id is
+   function IS_Scope (IS_Id : Invocation_Signature_Id) return Name_Id is
    begin
       pragma Assert (Present (IS_Id));
       return Invocation_Signatures.Table (IS_Id).Scope;
-   end Scope;
+   end IS_Scope;
 
    ---------
    -- SEq --

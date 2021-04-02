@@ -1,5 +1,5 @@
 /* Dynamic testing for abstract is-a relationships.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Lawrence Crowl.
 
 This file is part of GCC.
@@ -116,9 +116,30 @@ the connection between the types has not been made.  See below.
 
 EXTENDING THE GENERIC TYPE FACILITY
 
-Each connection between types must be made by defining a specialization of the
-template member function 'test' of the template class 'is_a_helper'.  For
-example,
+Method 1
+--------
+
+If DERIVED is derived from BASE, and if BASE contains enough information
+to determine whether an object is actually an instance of DERIVED,
+then you can make the above routines work for DERIVED by defining
+a specialization of is_a_helper such as:
+
+  template<>
+  struct is_a_helper<DERIVED *> : static_is_a_helper<DERIVED *>
+  {
+    static inline bool test (const BASE *p) { return ...; }
+  };
+
+This test function should return true if P is an instanced of DERIVED.
+This on its own is enough; the comments below for method 2 do not apply.
+
+Method 2
+--------
+
+Alternatively, if two types are connected in ways other than C++
+inheritance, each connection between them must be made by defining a
+specialization of the template member function 'test' of the template
+class 'is_a_helper'.  For example,
 
   template <>
   template <>
@@ -145,34 +166,58 @@ when needed may result in a crash.  For example,
 #ifndef GCC_IS_A_H
 #define GCC_IS_A_H
 
+/* A base class that specializations of is_a_helper can use if casting
+   U * to T is simply a reinterpret_cast.  */
+
+template <typename T>
+struct reinterpret_is_a_helper
+{
+  template <typename U>
+  static inline T cast (U *p) { return reinterpret_cast <T> (p); }
+};
+
+/* A base class that specializations of is_a_helper can use if casting
+   U * to T is simply a static_cast.  This is more type-safe than
+   reinterpret_is_a_helper.  */
+
+template <typename T>
+struct static_is_a_helper
+{
+  template <typename U>
+  static inline T cast (U *p) { return static_cast <T> (p); }
+};
+
 /* A generic type conversion internal helper class.  */
 
 template <typename T>
-struct is_a_helper
+struct is_a_helper : reinterpret_is_a_helper<T>
 {
   template <typename U>
   static inline bool test (U *p);
+};
+
+/* Reuse the definition of is_a_helper<T *> to implement
+   is_a_helper<const T *>.  */
+
+template <typename T>
+struct is_a_helper<const T *>
+{
   template <typename U>
-  static inline T cast (U *p);
+  static inline const T *cast (const U *p)
+  {
+    return is_a_helper<T *>::cast (const_cast <U *> (p));
+  }
+  template <typename U>
+  static inline bool test (const U *p)
+  {
+    return is_a_helper<T *>::test (p);
+  }
 };
 
 /* Note that we deliberately do not define the 'test' member template.  Not
    doing so will result in a build-time error for type relationships that have
    not been defined, rather than a run-time error.  See the discussion above
    for when to define this member.  */
-
-/* This is the generic implementation for casting from one type to another.
-   Do not use this routine directly; it is an internal function.  See the
-   discussion above for when to define this member.  */
-
-template <typename T>
-template <typename U>
-inline T
-is_a_helper <T>::cast (U *p)
-{
-  return reinterpret_cast <T> (p);
-}
-
 
 /* The public interface.  */
 

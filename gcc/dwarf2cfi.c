@@ -1,5 +1,5 @@
 /* Dwarf2 Call Frame Information helper routines.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2847,6 +2847,12 @@ connect_traces (void)
 	      cfi = new_cfi ();
 	      cfi->dw_cfi_opc = DW_CFA_restore_state;
 	      add_cfi (cfi);
+
+	      /* If the target unwinder does not save the CFA as part of the
+		 register state, we need to restore it separately.  */
+	      if (targetm.asm_out.should_restore_cfa_state ()
+		  && (cfi = def_cfa_0 (&old_row->cfa, &ti->beg_row->cfa)))
+		add_cfi (cfi);
 
 	      old_row = prev_ti->beg_row;
 	    }

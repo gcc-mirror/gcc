@@ -1,5 +1,5 @@
 /* Header file for libgcov-*.c.
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -44,6 +44,10 @@
 #include "tm.h"
 #include "libgcc_tm.h"
 #include "gcov.h"
+
+#if HAVE_SYS_MMAN_H
+#include <sys/mman.h>
+#endif
 
 #if __CHAR_BIT__ == 8
 typedef unsigned gcov_unsigned_t __attribute__ ((mode (SI)));
@@ -168,6 +172,16 @@ extern struct gcov_info *gcov_list;
 #define ATTRIBUTE_HIDDEN
 #endif
 
+#if HAVE_SYS_MMAN_H
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
+
+#if !defined (MAP_ANONYMOUS) && defined (MAP_ANON)
+#define MAP_ANONYMOUS MAP_ANON
+#endif
+#endif
+
 #include "gcov-io.h"
 
 /* Structures embedded in coveraged program.  The structures generated
@@ -250,8 +264,9 @@ struct indirect_call_tuple
   
 /* Exactly one of these will be active in the process.  */
 extern struct gcov_master __gcov_master;
-extern struct gcov_kvp __gcov_kvp_pool[GCOV_PREALLOCATED_KVP];
-extern unsigned __gcov_kvp_pool_index;
+extern struct gcov_kvp *__gcov_kvp_dynamic_pool;
+extern unsigned __gcov_kvp_dynamic_pool_index;
+extern unsigned __gcov_kvp_dynamic_pool_size;
 
 /* Dump a set of gcov objects.  */
 extern void __gcov_dump_one (struct gcov_root *) ATTRIBUTE_HIDDEN;
@@ -404,45 +419,82 @@ gcov_counter_add (gcov_type *counter, gcov_type value,
     *counter += value;
 }
 
+#if HAVE_SYS_MMAN_H
+
+/* Allocate LENGTH with mmap function.  */
+
+static inline void *
+malloc_mmap (size_t length)
+{
+  return mmap (NULL, length, PROT_READ | PROT_WRITE,
+	       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+}
+
+#endif
+
 /* Allocate gcov_kvp from statically pre-allocated pool,
    or use heap otherwise.  */
 
 static inline struct gcov_kvp *
 allocate_gcov_kvp (void)
 {
+#define MMAP_CHUNK_SIZE	(128 * 1024)
   struct gcov_kvp *new_node = NULL;
+  unsigned kvp_sizeof = sizeof(struct gcov_kvp);
 
-#if !defined(IN_GCOV_TOOL) && !defined(L_gcov_merge_topn)
-  if (__gcov_kvp_pool_index < GCOV_PREALLOCATED_KVP)
+  /* Try mmaped pool if available.  */
+#if !defined(IN_GCOV_TOOL) && !defined(L_gcov_merge_topn) && HAVE_SYS_MMAN_H
+  if (__gcov_kvp_dynamic_pool == NULL
+      || __gcov_kvp_dynamic_pool_index >= __gcov_kvp_dynamic_pool_size)
+    {
+      void *ptr = malloc_mmap (MMAP_CHUNK_SIZE);
+      if (ptr != MAP_FAILED)
+	{
+	  __gcov_kvp_dynamic_pool = ptr;
+	  __gcov_kvp_dynamic_pool_size = MMAP_CHUNK_SIZE / kvp_sizeof;
+	  __gcov_kvp_dynamic_pool_index = 0;
+	}
+    }
+
+  if (__gcov_kvp_dynamic_pool != NULL)
     {
       unsigned index;
 #if GCOV_SUPPORTS_ATOMIC
       index
-	= __atomic_fetch_add (&__gcov_kvp_pool_index, 1, __ATOMIC_RELAXED);
+	= __atomic_fetch_add (&__gcov_kvp_dynamic_pool_index, 1,
+			      __ATOMIC_RELAXED);
 #else
-      index = __gcov_kvp_pool_index++;
+      index = __gcov_kvp_dynamic_pool_index++;
 #endif
-      if (index < GCOV_PREALLOCATED_KVP)
-	new_node = &__gcov_kvp_pool[index];
+      if (index < __gcov_kvp_dynamic_pool_size)
+	new_node = __gcov_kvp_dynamic_pool + index;
     }
 #endif
 
+  /* Fallback to malloc.  */
   if (new_node == NULL)
-    new_node = (struct gcov_kvp *)xcalloc (1, sizeof (struct gcov_kvp));
+    new_node = (struct gcov_kvp *)xcalloc (1, kvp_sizeof);
 
   return new_node;
 }
 
 /* Add key value pair VALUE:COUNT to a top N COUNTERS.  When INCREMENT_TOTAL
    is true, add COUNT to total of the TOP counter.  If USE_ATOMIC is true,
-   do it in atomic way.  */
+   do it in atomic way.  Return true when the counter is full, otherwise
+   return false.  */
 
-static inline void
+static inline unsigned
 gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
 		     int use_atomic, int increment_total)
 {
   if (increment_total)
-    gcov_counter_add (&counters[0], 1, use_atomic);
+    {
+      /* In the multi-threaded mode, we can have an already merged profile
+	 with a negative total value.  In that case, we should bail out.  */
+      if (counters[0] < 0)
+	return 0;
+      gcov_counter_add (&counters[0], 1, use_atomic);
+    }
 
   struct gcov_kvp *prev_node = NULL;
   struct gcov_kvp *minimal_node = NULL;
@@ -453,7 +505,7 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
       if (current_node->value == value)
 	{
 	  gcov_counter_add (&current_node->count, count, use_atomic);
-	  return;
+	  return 0;
 	}
 
       if (minimal_node == NULL
@@ -471,12 +523,14 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
 	  minimal_node->value = value;
 	  minimal_node->count = count;
 	}
+
+      return 1;
     }
   else
     {
       struct gcov_kvp *new_node = allocate_gcov_kvp ();
       if (new_node == NULL)
-	return;
+	return 0;
 
       new_node->value = value;
       new_node->count = count;
@@ -515,6 +569,8 @@ gcov_topn_add_value (gcov_type *counters, gcov_type value, gcov_type count,
       if (success)
 	gcov_counter_add (&counters[1], 1, use_atomic);
     }
+
+  return 0;
 }
 
 #endif /* !inhibit_libc */

@@ -156,6 +156,6 @@ test6_nor (vector unsigned long long x, vector unsigned long long y)
 // For simplicity, this test now only targets "powerpc_p8vector_ok" environments
 // where the answer is expected to be 6.
 
-/* { dg-final { scan-assembler-times {\mxxlor\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mxxlor\M} 9 } } */
 /* { dg-final { scan-assembler-times {\mxxlxor\M} 6 } } */
-/* { dg-final { scan-assembler-times {\mxxlnor\M} 6 } } */
+/* { dg-final { scan-assembler-times {\mxxlnor\M} 3 } } */

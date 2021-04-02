@@ -1,5 +1,5 @@
 /* Language-level data type conversion for GNU C++.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
    Hacked by Michael Tiemann (tiemann@cygnus.com)
 
 This file is part of GCC.
@@ -599,11 +599,14 @@ ignore_overflows (tree expr, tree orig)
 }
 
 /* Fold away simple conversions, but make sure TREE_OVERFLOW is set
-   properly.  */
+   properly and propagate TREE_NO_WARNING if folding EXPR results
+   in the same expression code.  */
 
 tree
 cp_fold_convert (tree type, tree expr)
 {
+  bool nowarn = TREE_NO_WARNING (expr);
+
   tree conv;
   if (TREE_TYPE (expr) == type)
     conv = expr;
@@ -626,6 +629,10 @@ cp_fold_convert (tree type, tree expr)
       conv = fold_convert (type, expr);
       conv = ignore_overflows (conv, expr);
     }
+
+  if (nowarn && TREE_CODE (expr) == TREE_CODE (conv))
+    TREE_NO_WARNING (conv) = nowarn;
+
   return conv;
 }
 
@@ -1031,6 +1038,9 @@ cp_get_callee_fndecl_nofold (tree call)
 static void
 maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
 {
+  if (!warn_unused_result || c_inhibit_evaluation_warnings)
+    return;
+
   tree call = expr;
   if (TREE_CODE (expr) == TARGET_EXPR)
     call = TARGET_EXPR_INITIAL (expr);
@@ -1160,7 +1170,7 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
   /* Explicitly evaluate void-converted concept checks since their
      satisfaction may produce ill-formed programs.  */
    if (concept_check_p (expr))
-     expr = evaluate_concept_check (expr, tf_warning_or_error);
+     expr = evaluate_concept_check (expr);
 
   if (VOID_TYPE_P (TREE_TYPE (expr)))
     return expr;
@@ -1188,8 +1198,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 	    new_op2 = convert_to_void (op2, ICV_CAST, complain);
 	  }
 
-	expr = build3 (COND_EXPR, TREE_TYPE (new_op2),
-		       TREE_OPERAND (expr, 0), new_op1, new_op2);
+	expr = build3_loc (loc, COND_EXPR, TREE_TYPE (new_op2),
+			   TREE_OPERAND (expr, 0), new_op1, new_op2);
 	break;
       }
 
@@ -1205,8 +1215,8 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
 
 	if (new_op1 != op1)
 	  {
-	    tree t = build2 (COMPOUND_EXPR, TREE_TYPE (new_op1),
-			     TREE_OPERAND (expr, 0), new_op1);
+	    tree t = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (new_op1),
+				 TREE_OPERAND (expr, 0), new_op1);
 	    expr = t;
 	  }
 
@@ -1221,12 +1231,14 @@ convert_to_void (tree expr, impl_conv_void implicit, tsubst_flags_t complain)
     case CALL_EXPR:   /* We have a special meaning for volatile void fn().  */
       /* cdtors may return this or void, depending on
 	 targetm.cxx.cdtor_returns_this, but this shouldn't affect our
-	 decisions here: neither nodiscard warnings (nodiscard cdtors
-	 are nonsensical), nor should any constexpr or template
-	 instantiations be affected by an ABI property that is, or at
-	 least ought to be transparent to the language.  */
+	 decisions here: neither nodiscard warnings (nodiscard dtors
+	 are nonsensical and ctors have a different behavior with that
+	 attribute that is handled in the TARGET_EXPR case), nor should
+	 any constexpr or template instantiations be affected by an ABI
+	 property that is, or at least ought to be transparent to the
+	 language.  */
       if (tree fn = cp_get_callee_fndecl_nofold (expr))
-	if (DECL_DESTRUCTOR_P (fn))
+	if (DECL_CONSTRUCTOR_P (fn) || DECL_DESTRUCTOR_P (fn))
 	  return expr;
 
       if (complain & tf_warning)

@@ -1,6 +1,6 @@
 // shared_ptr and weak_ptr implementation details -*- C++ -*-
 
-// Copyright (C) 2007-2020 Free Software Foundation, Inc.
+// Copyright (C) 2007-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -450,7 +450,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       virtual void*
-      _M_get_deleter(const std::type_info& __ti) noexcept
+      _M_get_deleter(const type_info& __ti [[__gnu__::__unused__]]) noexcept
       {
 #if __cpp_rtti
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS

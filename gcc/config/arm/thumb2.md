@@ -1,5 +1,5 @@
 ;; ARM Thumb-2 Machine Description
-;; Copyright (C) 2007-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2021 Free Software Foundation, Inc.
 ;; Written by CodeSourcery, LLC.
 ;;
 ;; This file is part of GCC.
@@ -536,19 +536,26 @@
   [(set_attr "type" "call")]
 )
 
-(define_insn "*nonsecure_call_reg_thumb2"
+(define_insn "*nonsecure_call_reg_thumb2_fpcxt"
   [(call (unspec:SI [(mem:SI (match_operand:SI 0 "s_register_operand" "l*r"))]
 		    UNSPEC_NONSECURE_MEM)
 	 (match_operand 1 "" ""))
    (use (match_operand 2 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB2 && use_cmse"
-  {
-    if (TARGET_HAVE_FPCXT_CMSE)
-      return "blxns\\t%0";
-    else
-      return "bl\\t__gnu_cmse_nonsecure_call";
-  }
+  "TARGET_THUMB2 && use_cmse && TARGET_HAVE_FPCXT_CMSE"
+  "blxns\\t%0"
+  [(set_attr "length" "4")
+   (set_attr "type" "call")]
+)
+
+(define_insn "*nonsecure_call_reg_thumb2"
+  [(call (unspec:SI [(mem:SI (reg:SI R4_REGNUM))]
+		    UNSPEC_NONSECURE_MEM)
+	 (match_operand 0 "" ""))
+   (use (match_operand 1 "" ""))
+   (clobber (reg:SI LR_REGNUM))]
+  "TARGET_THUMB2 && use_cmse && !TARGET_HAVE_FPCXT_CMSE"
+  "bl\\t__gnu_cmse_nonsecure_call"
   [(set_attr "length" "4")
    (set_attr "type" "call")]
 )
@@ -564,7 +571,7 @@
   [(set_attr "type" "call")]
 )
 
-(define_insn "*nonsecure_call_value_reg_thumb2"
+(define_insn "*nonsecure_call_value_reg_thumb2_fpcxt"
   [(set (match_operand 0 "" "")
 	(call
 	 (unspec:SI [(mem:SI (match_operand:SI 1 "register_operand" "l*r"))]
@@ -572,13 +579,21 @@
 	 (match_operand 2 "" "")))
    (use (match_operand 3 "" ""))
    (clobber (reg:SI LR_REGNUM))]
-  "TARGET_THUMB2 && use_cmse"
-  {
-    if (TARGET_HAVE_FPCXT_CMSE)
-      return "blxns\\t%1";
-    else
-      return "bl\\t__gnu_cmse_nonsecure_call";
-  }
+  "TARGET_THUMB2 && use_cmse && TARGET_HAVE_FPCXT_CMSE"
+  "blxns\\t%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "call")]
+)
+
+(define_insn "*nonsecure_call_value_reg_thumb2"
+  [(set (match_operand 0 "" "")
+	(call
+	 (unspec:SI [(mem:SI (reg:SI R4_REGNUM))] UNSPEC_NONSECURE_MEM)
+	 (match_operand 1 "" "")))
+   (use (match_operand 2 "" ""))
+   (clobber (reg:SI LR_REGNUM))]
+  "TARGET_THUMB2 && use_cmse && !TARGET_HAVE_FPCXT_CMSE"
+  "bl\\t__gnu_cmse_nonsecure_call"
   [(set_attr "length" "4")
    (set_attr "type" "call")]
 )
@@ -1261,7 +1276,9 @@
    (set_attr "shift" "1")
    (set_attr "length" "2")
    (set (attr "type") (if_then_else (match_operand 2 "const_int_operand" "")
-		      (const_string "alu_shift_imm")
+                        (if_then_else (match_operand 3 "alu_shift_operator_lsl_1_to_4")
+                          (const_string "alu_shift_imm_lsl_1to4")
+                          (const_string "alu_shift_imm_other"))
 		      (const_string "alu_shift_reg")))]
 )
 
@@ -1530,7 +1547,7 @@
   "orn%?\\t%0, %1, %2%S4"
   [(set_attr "predicable" "yes")
    (set_attr "shift" "2")
-   (set_attr "type" "alu_shift_imm")]
+   (set_attr "autodetect_type" "alu_shift_operator4")]
 )
 
 (define_peephole2
@@ -1709,15 +1726,27 @@
 
 ;; Originally expanded by 'doloop_end'.
 (define_insn "*doloop_end_internal"
-  [(parallel [(set (pc)
-                   (if_then_else
-                       (ne (reg:SI LR_REGNUM) (const_int 1))
-                     (label_ref (match_operand 0 "" ""))
-                     (pc)))
-              (set (reg:SI LR_REGNUM)
-                   (plus:SI (reg:SI LR_REGNUM) (const_int -1)))])]
+  [(set (pc)
+        (if_then_else
+            (ne (reg:SI LR_REGNUM) (const_int 1))
+          (label_ref (match_operand 0 "" ""))
+          (pc)))
+   (set (reg:SI LR_REGNUM)
+        (plus:SI (reg:SI LR_REGNUM) (const_int -1)))
+   (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && TARGET_HAVE_LOB"
-  "le\t%|lr, %l0")
+  {
+    if (get_attr_length (insn) == 4)
+      return "le\t%|lr, %l0";
+    else
+      return "subs\t%|lr, #1;bne\t%l0";
+  }
+  [(set (attr "length")
+        (if_then_else
+            (ltu (minus (pc) (match_dup 0)) (const_int 1024))
+	    (const_int 4)
+	    (const_int 6)))
+   (set_attr "type" "branch")])
 
 (define_expand "doloop_begin"
   [(match_operand 0 "" "")

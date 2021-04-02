@@ -1,5 +1,5 @@
 /* Generate code from to output assembler insns as recognized from rtl.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1024,6 +1024,7 @@ main (int argc, const char **argv)
       case DEFINE_ADDRESS_CONSTRAINT:
       case DEFINE_MEMORY_CONSTRAINT:
       case DEFINE_SPECIAL_MEMORY_CONSTRAINT:
+      case DEFINE_RELAXED_MEMORY_CONSTRAINT:
 	note_constraint (&info);
 	break;
 

@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2021 Free Software Foundation, Inc.
 
    This file is free software; you can redistribute it and/or modify it under
    the terms of the GNU General Public License as published by the Free
@@ -22,7 +22,8 @@ enum processor_type
 {
   PROCESSOR_FIJI,    // gfx803
   PROCESSOR_VEGA10,  // gfx900
-  PROCESSOR_VEGA20   // gfx906
+  PROCESSOR_VEGA20,  // gfx906
+  PROCESSOR_GFX908   // as yet unnamed
 };
 
 /* Set in gcn_option_override.  */

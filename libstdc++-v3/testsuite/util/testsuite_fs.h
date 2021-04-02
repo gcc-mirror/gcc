@@ -1,7 +1,7 @@
 // -*- C++ -*-
 // Filesystem utils for the C++ library testsuite.
 //
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -34,8 +34,13 @@ namespace test_fs = std::experimental::filesystem;
 #include <fstream>
 #include <string>
 #include <cstdio>
-#include <stdlib.h>
-#include <unistd.h>
+#include <unistd.h> // unlink, close, getpid
+
+#if defined(_GNU_SOURCE) || _XOPEN_SOURCE >= 500 || _POSIX_C_SOURCE >= 200112L
+#include <stdlib.h> // mkstemp
+#else
+#include <random>   // std::random_device
+#endif
 
 namespace __gnu_test
 {
@@ -82,7 +87,7 @@ namespace __gnu_test
   test_fs::path
   root_path()
   {
-#if defined(__MING32__) || defined(__MINGW64__)
+#if defined(__MINGW32__) || defined(__MINGW64__)
     return L"c:/";
 #else
     return "/";
@@ -121,13 +126,13 @@ namespace __gnu_test
     if (file.length() > 64)
       file.resize(64);
     char buf[128];
-    static int counter;
+    static unsigned counter = std::random_device{}();
 #if _GLIBCXX_USE_C99_STDIO
     std::snprintf(buf, 128,
 #else
     std::sprintf(buf,
 #endif
-      "filesystem-test.%d.%lu-%s", counter++, (unsigned long) ::getpid(),
+      "filesystem-test.%u.%lu-%s", counter++, (unsigned long) ::getpid(),
       file.c_str());
     p = buf;
 #endif

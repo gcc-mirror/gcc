@@ -14,7 +14,7 @@
  */
 module core.sys.posix.arpa.inet;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.stdc.inttypes; // for uint32_t, uint16_t
 public import core.sys.posix.sys.socket; // for socklen_t
 
@@ -51,11 +51,11 @@ uint16_t htons(uint16_t);
 uint32_t ntohl(uint32_t);
 uint16_t ntohs(uint16_t);
 
-in_addr_t inet_addr(in char*);
+in_addr_t inet_addr(const scope char*);
 char*     inet_ntoa(in_addr);
 // per spec: const char* inet_ntop(int, const void*, char*, socklen_t);
-char*     inet_ntop(int, in void*, char*, socklen_t);
-int       inet_pton(int, in char*, void*);
+char*     inet_ntop(int, const scope void*, char*, socklen_t);
+int       inet_pton(int, const scope char*, void*);
 */
 
 version (CRuntime_Glibc)
@@ -78,10 +78,10 @@ version (CRuntime_Glibc)
     uint16_t ntohs(uint16_t);
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, socklen_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, socklen_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 else version (Darwin)
 {
@@ -103,10 +103,10 @@ else version (Darwin)
     uint16_t ntohs(uint16_t);
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, socklen_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, socklen_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 else version (FreeBSD)
 {
@@ -128,10 +128,10 @@ else version (FreeBSD)
     uint16_t ntohs(uint16_t);
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, socklen_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, socklen_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 else version (NetBSD)
 {
@@ -153,10 +153,10 @@ else version (NetBSD)
     uint16_t ntohs(uint16_t);
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, socklen_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, socklen_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 else version (OpenBSD)
 {
@@ -194,10 +194,10 @@ else version (OpenBSD)
         uint16_t ntohs(uint16_t x) { return __swap16(x); }
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, socklen_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, socklen_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 else version (DragonFlyBSD)
 {
@@ -219,10 +219,10 @@ else version (DragonFlyBSD)
     uint16_t ntohs(uint16_t);
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, socklen_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, socklen_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 else version (Solaris)
 {
@@ -243,10 +243,10 @@ else version (Solaris)
     uint16_t ntohs(uint16_t);
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, socklen_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, socklen_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 else version (CRuntime_Bionic)
 {
@@ -283,10 +283,10 @@ else version (CRuntime_Bionic)
         uint16_t ntohs(uint16_t x) { return __swap16(x); }
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, size_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, size_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 else version (CRuntime_Musl)
 {
@@ -308,10 +308,10 @@ else version (CRuntime_Musl)
     uint16_t ntohs(uint16_t);
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, socklen_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, socklen_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 else version (CRuntime_UClibc)
 {
@@ -333,10 +333,10 @@ else version (CRuntime_UClibc)
     uint16_t ntohs(uint16_t);
     }
 
-    in_addr_t       inet_addr(in char*);
+    in_addr_t       inet_addr(const scope char*);
     char*           inet_ntoa(in_addr);
-    const(char)*    inet_ntop(int, in void*, char*, socklen_t);
-    int             inet_pton(int, in char*, void*);
+    const(char)*    inet_ntop(int, const scope void*, char*, socklen_t);
+    int             inet_pton(int, const scope char*, void*);
 }
 
 //

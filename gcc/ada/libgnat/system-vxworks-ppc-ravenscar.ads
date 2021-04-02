@@ -163,8 +163,6 @@ private
    Denorm                    : constant Boolean := True;
    Duration_32_Bits          : constant Boolean := True;
    Exit_Status_Supported     : constant Boolean := True;
-   Fractional_Fixed_Ops      : constant Boolean := False;
-   Frontend_Layout           : constant Boolean := False;
    Machine_Overflows         : constant Boolean := True;
    Machine_Rounds            : constant Boolean := True;
    Preallocated_Stacks       : constant Boolean := False;

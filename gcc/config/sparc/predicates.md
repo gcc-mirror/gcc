@@ -1,5 +1,5 @@
 ;; Predicate definitions for SPARC.
-;; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -296,6 +296,8 @@
   if (arith_double_operand (op, mode))
     return true;
 
+  /* Turning an add/sub instruction into the other changes the Carry flag
+     so the 4096 trick cannot be used for double operations in 32-bit mode.  */
   return TARGET_ARCH64 && const_4096_operand (op, mode);
 })
 

@@ -1,5 +1,5 @@
 /* Initialization of uninitialized regs.
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -105,7 +105,10 @@ initialize_uninitialized_regs (void)
 
 		  start_sequence ();
 		  emit_clobber (reg);
-		  emit_move_insn (reg, CONST0_RTX (GET_MODE (reg)));
+		  /* PR98872: Only emit an initialization if MODE has a
+		     CONST0_RTX defined.  */
+		  if (CONST0_RTX (GET_MODE (reg)))
+		    emit_move_insn (reg, CONST0_RTX (GET_MODE (reg)));
 		  move_insn = get_insns ();
 		  end_sequence ();
 		  emit_insn_before (move_insn, insn);

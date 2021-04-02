@@ -30,13 +30,10 @@
 ------------------------------------------------------------------------------
 
 with Ada.Text_IO.Generic_Aux; use Ada.Text_IO.Generic_Aux;
-with Ada.Text_IO.Float_Aux;
 
 with System.Img_Real; use System.Img_Real;
 
 package body Ada.Text_IO.Complex_Aux is
-
-   package Aux renames Ada.Text_IO.Float_Aux;
 
    ---------
    -- Get --
@@ -44,8 +41,8 @@ package body Ada.Text_IO.Complex_Aux is
 
    procedure Get
      (File  : File_Type;
-      ItemR : out Long_Long_Float;
-      ItemI : out Long_Long_Float;
+      ItemR : out Num;
+      ItemI : out Num;
       Width : Field)
    is
       Buf   : String (1 .. Field'Last);
@@ -95,8 +92,8 @@ package body Ada.Text_IO.Complex_Aux is
 
    procedure Gets
      (From  : String;
-      ItemR : out Long_Long_Float;
-      ItemI : out Long_Long_Float;
+      ItemR : out Num;
+      ItemI : out Num;
       Last  : out Positive)
    is
       Paren : Boolean;
@@ -139,8 +136,8 @@ package body Ada.Text_IO.Complex_Aux is
 
    procedure Put
      (File  : File_Type;
-      ItemR : Long_Long_Float;
-      ItemI : Long_Long_Float;
+      ItemR : Num;
+      ItemI : Num;
       Fore  : Field;
       Aft   : Field;
       Exp   : Field)
@@ -159,8 +156,8 @@ package body Ada.Text_IO.Complex_Aux is
 
    procedure Puts
      (To    : out String;
-      ItemR : Long_Long_Float;
-      ItemI : Long_Long_Float;
+      ItemR : Num;
+      ItemI : Num;
       Aft   : Field;
       Exp   : Field)
    is
@@ -174,9 +171,9 @@ package body Ada.Text_IO.Complex_Aux is
       --  Both parts are initially converted with a Fore of 0
 
       Rptr := 0;
-      Set_Image_Real (ItemR, R_String, Rptr, 0, Aft, Exp);
+      Set_Image_Real (Long_Long_Float (ItemR), R_String, Rptr, 0, Aft, Exp);
       Iptr := 0;
-      Set_Image_Real (ItemI, I_String, Iptr, 0, Aft, Exp);
+      Set_Image_Real (Long_Long_Float (ItemI), I_String, Iptr, 0, Aft, Exp);
 
       --  Check room for both parts plus parens plus comma (RM G.1.3(34))
 

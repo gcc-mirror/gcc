@@ -1,4 +1,4 @@
-!  Copyright (C) 2005-2020 Free Software Foundation, Inc.
+!  Copyright (C) 2005-2021 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU Offloading and Multi Processing Library
@@ -39,6 +39,7 @@
         integer, parameter :: omp_alloctrait_val_kind = c_intptr_t
         integer, parameter :: omp_memspace_handle_kind = c_intptr_t
         integer, parameter :: omp_depend_kind = @OMP_DEPEND_KIND@
+        integer, parameter :: omp_event_handle_kind = c_intptr_t
         integer (omp_sched_kind), parameter :: omp_sched_static = 1
         integer (omp_sched_kind), parameter :: omp_sched_dynamic = 2
         integer (omp_sched_kind), parameter :: omp_sched_guided = 3
@@ -553,6 +554,14 @@
           function omp_get_max_task_priority ()
             integer (4) :: omp_get_max_task_priority
           end function omp_get_max_task_priority
+        end interface
+
+        interface
+          subroutine omp_fulfill_event (event)
+            use omp_lib_kinds
+            integer (kind=omp_event_handle_kind), &
+              value, intent(in) :: event
+          end subroutine omp_fulfill_event
         end interface
 
         interface

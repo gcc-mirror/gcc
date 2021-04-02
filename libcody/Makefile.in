@@ -1,0 +1,141 @@
+# Nathan's generic Makefile		-*- mode:Makefile -*-
+# Copyright (C) 2019-2020 Nathan Sidwell, nathan@acm.org
+# License: Apache v2.0
+
+srcdir := @srcdir@
+prefix := @prefix@
+exec_prefix := @exec_prefix@
+bindir := @bindir@
+libdir := @libdir@
+includedir := @includedir@
+# Linker options
+LDFLAGS := @LDFLAGS@
+LIBS := @LIBS@
+
+# We have to place the -I paths last, so that building will see -I paths to us
+CXX := $(filter-out -I%,@CXX@)
+AR := @AR@
+RANLIB := @RANLIB@
+INSTALL := $(srcdir)/build-aux/install-sh
+
+# C++ compiler options
+CXXFLAGS := @CXXFLAGS@
+CXXINC := $(filter -I%,@CXX@)
+CXXOPTS := $(CXXFLAGS) @PICFLAG@
+
+ifneq (@EXCEPTIONS@,yes)
+CXXOPTS += -fno-exceptions -fno-rtti
+endif
+
+# Config
+CXXOPTS += $(filter-out -DHAVE_CONFIG_H,@DEFS@) -include config.h
+
+# Linker options
+LDFLAGS := @LDFLAGS@
+LIBS := @LIBS@
+
+# Per-source & per-directory compile flags (warning: recursive)
+SRC_CXXFLAGS = $(CXXFLAGS$(patsubst $(srcdir)%,%,$1)) \
+	$(if $(filter-out $(srcdir)/,$1),\
+	  $(call $0,$(dir $(patsubst %/,%,$1))))
+
+ifneq ($(MAINTAINER),)
+override MAINTAINER += $1
+endif
+ifeq (@MAINTAINER@,yes)
+MAINTAINER = $2
+else
+MAINTAINER = \# --enable-maintainer-mode to rebuild $1, or make MAINTAINER=touch
+endif
+
+vpath %.in $(srcdir)
+vpath %.cc $(srcdir)
+
+.SUFFIXES: .o .cc
+
+%.o: %.cc
+	@mkdir -p $(dir $@)
+	$(CXX) $(strip $(CXXOPTS) $(call SRC_CXXFLAGS,$<) $(CXXINC)) \
+	  -MMD -MP -MF ${@:.o=.d} -c -o $@ $<
+
+all:: Makefile
+
+clean:: Makefile
+
+# FIXME: Delete
+revision.stamp: $(srcdir)/.
+	@revision=$$(git -C $(srcdir) rev-parse HEAD 2>/dev/null) ;\
+	if test -n "$$revision" ;\
+	then revision=git-$$revision ;\
+	  if git -C $(srcdir) status --porcelain 2>/dev/null | grep -vq '^  ' ;\
+	  then revision+=M ;\
+	  fi ;\
+	else revision=unknown ;\
+	fi ;\
+	echo $$revision > $@
+
+revision: revision.stamp
+	@cmp -s $< $@ || cp -f $< $@
+
+clean::
+	rm -f revision.stamp revision
+
+distclean:: clean
+	rm -f config.log config.status
+
+$(srcdir)/configure: $(srcdir)/configure.ac $(srcdir)/config.m4
+	$(call MAINTAINER,$@,cd $(@D) && autoconf -W all,error)
+
+$(srcdir)/config.h.in: $(srcdir)/configure.ac $(srcdir)/config.m4
+	$(call MAINTAINER,$@,cd $(@D) && autoheader -f -W all,error)
+
+config.h: config.status config.h.in
+	./$< --header=$@
+	touch $@
+
+ifeq ($(filter %clean,$(MAKECMDGOALS)),)
+Makefile: config.status Makefile.in
+	./$< --file=$@
+	touch $@
+endif
+
+config.status: $(srcdir)/configure $(srcdir)/config.h.in
+	if test -x $@; then ./$@ -recheck; else $< @configure_args@; fi
+
+distclean:: clean
+	rm -f config.h
+
+maintainer-clean:: distclean
+	rm -f $(srcdir)/config.h.in
+
+clean::
+	rm -f $(shell find $(srcdir) -name '*~')
+
+.PHONY: all check clean distclean maintainer-clean
+
+CXXFLAGS/ := -I$(srcdir)
+LIBCODY.O := buffer.o client.o fatal.o netclient.o netserver.o \
+	resolver.o packet.o server.o
+
+all:: libcody.a
+
+libcody.a: $(LIBCODY.O)
+	$(AR) -cr $@ $^
+	$(RANLIB) $@
+
+clean::
+	rm -f $(LIBCODY.O) $(LIBCODY.O:.o=.d)
+	rm -f libcody.a
+
+CXXFLAGS/fatal.cc = -DSRCDIR='"$(srcdir)"'
+
+fatal.o: Makefile revision
+
+install::
+	$(INSTALL) -d $(libdir) $(includedir)
+	$(INSTALL) libcody.a $(libdir)
+	$(INSTALL) $(srcdir)/cody.hh $(includedir)
+
+ifeq ($(filter clean%,$(MAKECMDGOALS)),)
+-include $(LIBCODY.O:.o=.d)
+endif

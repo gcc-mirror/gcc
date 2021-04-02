@@ -1,5 +1,5 @@
 ; Command line options for the Renesas RX port of GCC.
-; Copyright (C) 2008-2020 Free Software Foundation, Inc.
+; Copyright (C) 2008-2021 Free Software Foundation, Inc.
 ; Contributed by Red Hat.
 ;
 ; This file is part of GCC.
@@ -28,7 +28,7 @@ Use the simulator runtime.
 ;---------------------------------------------------
 
 mas100-syntax
-Target Mask(AS100_SYNTAX) Report
+Target Mask(AS100_SYNTAX)
 Generate assembler output that is compatible with the Renesas AS100 assembler.  This may restrict some of the compiler's capabilities.  The default is to generate GAS compatible syntax.
 
 ;---------------------------------------------------

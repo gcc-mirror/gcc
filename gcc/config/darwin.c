@@ -1,5 +1,5 @@
 /* Functions for generic Darwin as target machine for GNU C compiler.
-   Copyright (C) 1989-2020 Free Software Foundation, Inc.
+   Copyright (C) 1989-2021 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
 This file is part of GCC.
@@ -2234,6 +2234,16 @@ darwin_make_eh_symbol_indirect (rtx orig, bool ARG_UNUSED (pubvis))
   return gen_rtx_SYMBOL_REF (Pmode,
 			     machopic_indirection_name (orig,
 							/*stub_p=*/false));
+}
+
+/* The unwinders in earlier Darwin versions are based on an old version
+   of libgcc_s and need current frame address stateto be reset after a
+   DW_CFA_restore_state recovers the register values.  */
+
+bool
+darwin_should_restore_cfa_state (void)
+{
+  return generating_for_darwin_version <= 10;
 }
 
 /* Return, and mark as used, the name of the stub for the mcount function.

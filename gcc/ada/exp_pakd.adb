@@ -1256,8 +1256,15 @@ package body Exp_Pakd is
          --  array type on Obj to get lost. So we save the type of Obj, and
          --  make sure it is reset properly.
 
-         New_Lhs := Duplicate_Subexpr (Obj, Name_Req => True);
-         New_Rhs := Duplicate_Subexpr_No_Checks (Obj);
+         declare
+            T : constant Entity_Id := Etype (Obj);
+         begin
+            New_Lhs := Duplicate_Subexpr (Obj, Name_Req => True);
+            New_Rhs := Duplicate_Subexpr_No_Checks (Obj);
+            Set_Etype (Obj, T);
+            Set_Etype (New_Lhs, T);
+            Set_Etype (New_Rhs, T);
+         end;
 
          --  First we deal with the "and"
 

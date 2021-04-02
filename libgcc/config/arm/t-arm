@@ -4,7 +4,7 @@ LIB1ASMFUNCS = _thumb1_case_sqi _thumb1_case_uqi _thumb1_case_shi \
 
 HAVE_CMSE:=$(findstring __ARM_FEATURE_CMSE,$(shell $(gcc_compile_bare) -dM -E - </dev/null))
 HAVE_V81M:=$(findstring armv8.1-m.main,$(gcc_compile_bare))
-ifeq ($(shell $(gcc_compile_bare) -E -mcmse - </dev/null >/dev/null 2>/dev/null; echo $?),0)
+ifeq ($(shell $(gcc_compile_bare) -E -mcmse - </dev/null >/dev/null 2>/dev/null; echo $$?),0)
 CMSE_OPTS:=-mcmse
 endif
 

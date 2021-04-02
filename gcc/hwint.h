@@ -1,5 +1,5 @@
 /* HOST_WIDE_INT definitions for the GNU compiler.
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -331,6 +331,48 @@ inline unsigned HOST_WIDE_INT
 absu_hwi (HOST_WIDE_INT x)
 {
   return x >= 0 ? (unsigned HOST_WIDE_INT)x : -(unsigned HOST_WIDE_INT)x;
+}
+
+/* Compute the sum of signed A and B and indicate in *OVERFLOW whether
+   that operation overflowed.  */
+
+inline HOST_WIDE_INT
+add_hwi (HOST_WIDE_INT a, HOST_WIDE_INT b, bool *overflow)
+{
+#if GCC_VERSION < 11000
+  unsigned HOST_WIDE_INT result = a + (unsigned HOST_WIDE_INT)b;
+  if ((((result ^ a) & (result ^ b))
+       >> (HOST_BITS_PER_WIDE_INT - 1)) & 1)
+    *overflow = true;
+  else
+    *overflow = false;
+  return result;
+#else
+  HOST_WIDE_INT result;
+  *overflow = __builtin_add_overflow (a, b, &result);
+  return result;
+#endif
+}
+
+/* Compute the product of signed A and B and indicate in *OVERFLOW whether
+   that operation overflowed.  */
+
+inline HOST_WIDE_INT
+mul_hwi (HOST_WIDE_INT a, HOST_WIDE_INT b, bool *overflow)
+{
+#if GCC_VERSION < 11000
+  unsigned HOST_WIDE_INT result = a * (unsigned HOST_WIDE_INT)b;
+  if ((a == -1 && b == HOST_WIDE_INT_MIN)
+      || (a != 0 && (HOST_WIDE_INT)result / a != b))
+    *overflow = true;
+  else
+    *overflow = false;
+  return result;
+#else
+  HOST_WIDE_INT result;
+  *overflow = __builtin_mul_overflow (a, b, &result);
+  return result;
+#endif
 }
 
 #endif /* ! GCC_HWINT_H */

@@ -111,7 +111,7 @@ package body Ada.Wide_Text_IO.Integer_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_Input, Item, Width);
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -169,7 +169,7 @@ package body Ada.Wide_Text_IO.Integer_IO is
       Base  : Number_Base := Default_Base)
    is
    begin
-      Put (Current_Output, Item, Width, Base);
+      Put (Current_Out, Item, Width, Base);
    end Put;
 
    procedure Put

@@ -1,6 +1,6 @@
 // <thread> -*- C++ -*-
 
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,7 +43,6 @@
 #endif
 
 #include <bits/std_thread.h> // std::thread, get_id, yield
-#include <bits/functional_hash.h> // std::hash
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
 # include <cerrno>  // errno, EINTR
@@ -94,17 +93,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return !(__x < __y); }
 #endif // __cpp_lib_three_way_comparison
 
-  // DR 889.
-  /// std::hash specialization for thread::id.
-  template<>
-    struct hash<thread::id>
-    : public __hash_base<size_t, thread::id>
-    {
-      size_t
-      operator()(const thread::id& __id) const noexcept
-      { return std::_Hash_impl::hash(__id._M_thread); }
-    };
-
   template<class _CharT, class _Traits>
     inline basic_ostream<_CharT, _Traits>&
     operator<<(basic_ostream<_CharT, _Traits>& __out, thread::id __id)
@@ -122,8 +110,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   namespace this_thread
   {
+#ifndef _GLIBCXX_NO_SLEEP
+
+#ifndef _GLIBCXX_USE_NANOSLEEP
     void
     __sleep_for(chrono::seconds, chrono::nanoseconds);
+#endif
 
     /// this_thread::sleep_for
     template<typename _Rep, typename _Period>
@@ -168,7 +160,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __now = _Clock::now();
 	  }
       }
-  }
+  } // namespace this_thread
+#endif // ! NO_SLEEP
 
 #ifdef __cpp_lib_jthread
 

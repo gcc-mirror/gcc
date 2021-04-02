@@ -19,6 +19,7 @@
  * Authors:   Andreas Bok Andersen, Mathias Lang
  * Standards: POSIX.1-2001.
  * See_Also:  $(HTTP pubs.opengroup.org/onlinepubs/9699919799/basedefs/mqueue.h.html, Standard)
+ * Source: $(DRUNTIMESRC core/sys/posix/mqueue.d)
  */
 module core.sys.posix.mqueue;
 
@@ -30,6 +31,7 @@ version (Posix):
 version (CRuntime_Glibc):
 extern (C):
 @nogc nothrow:
+@system:
 
 
 /// Message queue descriptor.
@@ -57,16 +59,17 @@ struct mq_attr
  * Note:
  * Linux prototypes are:
  * mqd_t mq_open (const(char)* name, int oflag);
- * mqd_t mq_open(const(char)* name, int oflag, mode_t mode, mq_attr* attr);
+ * mqd_t mq_open (const(char)* name, int oflag, mode_t mode, mq_attr* attr);
  *
  * Params:
  *   name   = Name of the message queue to open.
- *   oflags = determines the type of access used.
+ *   oflag  = determines the type of access used.
  *            If `O_CREAT` is on `oflag`, the third argument is taken as a
  *            `mode_t`, the mode of the created message queue.
  *            If `O_CREAT` is on `oflag`, the fourth argument is taken as
  *            a pointer to a `mq_attr' (message queue attributes).
  *            If the fourth argument is `null`, default attributes are used.
+ *   ...    = varargs matching the function prototypes
  *
  * Returns:
  *  Message queue descriptor or (mqd_t) -1 on error.

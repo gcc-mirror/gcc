@@ -30,10 +30,29 @@
 ------------------------------------------------------------------------------
 
 with Ada.Text_IO.Float_Aux;
+with System.Val_Flt;  use System.Val_Flt;
+with System.Val_LFlt; use System.Val_LFlt;
+with System.Val_LLF;  use System.Val_LLF;
 
-package body Ada.Text_IO.Float_IO is
+package body Ada.Text_IO.Float_IO with SPARK_Mode => Off is
 
-   package Aux renames Ada.Text_IO.Float_Aux;
+   package Aux_Float is new
+      Ada.Text_IO.Float_Aux (Float, Scan_Float);
+
+   package Aux_Long_Float is new
+      Ada.Text_IO.Float_Aux (Long_Float, Scan_Long_Float);
+
+   package Aux_Long_Long_Float is new
+      Ada.Text_IO.Float_Aux (Long_Long_Float, Scan_Long_Long_Float);
+
+   --  Throughout this generic body, we distinguish between the case where type
+   --  Float is OK, where type Long_Float is OK and where type Long_Long_Float
+   --  is needed. These boolean constants are used to test for this, such that
+   --  only code for the relevant case is included in the instance.
+
+   OK_Float : constant Boolean := Num'Base'Digits <= Float'Digits;
+
+   OK_Long_Float : constant Boolean := Num'Base'Digits <= Long_Float'Digits;
 
    ---------
    -- Get --
@@ -47,7 +66,13 @@ package body Ada.Text_IO.Float_IO is
       pragma Unsuppress (Range_Check);
 
    begin
-      Aux.Get (File, Long_Long_Float (Item), Width);
+      if OK_Float then
+         Aux_Float.Get (File, Float (Item), Width);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Get (File, Long_Float (Item), Width);
+      else
+         Aux_Long_Long_Float.Get (File, Long_Long_Float (Item), Width);
+      end if;
 
       --  In the case where the type is unconstrained (e.g. Standard'Float),
       --  the above conversion may result in an infinite value, which is
@@ -66,22 +91,8 @@ package body Ada.Text_IO.Float_IO is
      (Item  : out Num;
       Width : Field := 0)
    is
-      pragma Unsuppress (Range_Check);
-
    begin
-      Aux.Get (Current_In, Long_Long_Float (Item), Width);
-
-      --  In the case where the type is unconstrained (e.g. Standard'Float),
-      --  the above conversion may result in an infinite value, which is
-      --  normally fine for a conversion, but in this case, we want to treat
-      --  that as a data error.
-
-      if not Item'Valid then
-         raise Data_Error;
-      end if;
-
-   exception
-      when Constraint_Error => raise Data_Error;
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -92,7 +103,13 @@ package body Ada.Text_IO.Float_IO is
       pragma Unsuppress (Range_Check);
 
    begin
-      Aux.Gets (From, Long_Long_Float (Item), Last);
+      if OK_Float then
+         Aux_Float.Gets (From, Float (Item), Last);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Gets (From, Long_Float (Item), Last);
+      else
+         Aux_Long_Long_Float.Gets (From, Long_Long_Float (Item), Last);
+      end if;
 
       --  In the case where the type is unconstrained (e.g. Standard'Float),
       --  the above conversion may result in an infinite value, which is
@@ -119,7 +136,14 @@ package body Ada.Text_IO.Float_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Aux.Put (File, Long_Long_Float (Item), Fore, Aft, Exp);
+      if OK_Float then
+         Aux_Float.Put (File, Float (Item), Fore, Aft, Exp);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Put (File, Long_Float (Item), Fore, Aft, Exp);
+      else
+         Aux_Long_Long_Float.Put
+           (File, Long_Long_Float (Item), Fore, Aft, Exp);
+      end if;
    end Put;
 
    procedure Put
@@ -129,7 +153,7 @@ package body Ada.Text_IO.Float_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Aux.Put (Current_Out, Long_Long_Float (Item), Fore, Aft, Exp);
+      Put (Current_Out, Item, Fore, Aft, Exp);
    end Put;
 
    procedure Put
@@ -139,7 +163,13 @@ package body Ada.Text_IO.Float_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Aux.Puts (To, Long_Long_Float (Item), Aft, Exp);
+      if OK_Float then
+         Aux_Float.Puts (To, Float (Item), Aft, Exp);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Puts (To, Long_Float (Item), Aft, Exp);
+      else
+         Aux_Long_Long_Float.Puts (To, Long_Long_Float (Item), Aft, Exp);
+      end if;
    end Put;
 
 end Ada.Text_IO.Float_IO;

@@ -39,8 +39,7 @@ package body Targparm is
    --  The following array defines a tag name for each entry
 
    type Targparm_Tags is
-     (AAM,  --   AAMP
-      ACR,  --   Always_Compatible_Rep
+     (ACR,  --   Always_Compatible_Rep
       ASD,  --   Atomic_Sync_Default
       BDC,  --   Backend_Divide_Checks
       BOC,  --   Backend_Overflow_Checks
@@ -49,9 +48,7 @@ package body Targparm is
       D32,  --   Duration_32_Bits
       DEN,  --   Denorm
       EXS,  --   Exit_Status_Supported
-      FEL,  --   Frontend_Layout
       FEX,  --   Frontend_Exceptions
-      FFO,  --   Fractional_Fixed_Ops
       MOV,  --   Machine_Overflows
       MRN,  --   Machine_Rounds
       PAS,  --   Preallocated_Stacks
@@ -73,7 +70,6 @@ package body Targparm is
 
    --  The following list of string constants gives the parameter names
 
-   AAM_Str : aliased constant Source_Buffer := "AAMP";
    ACR_Str : aliased constant Source_Buffer := "Always_Compatible_Rep";
    ASD_Str : aliased constant Source_Buffer := "Atomic_Sync_Default";
    BDC_Str : aliased constant Source_Buffer := "Backend_Divide_Checks";
@@ -83,9 +79,7 @@ package body Targparm is
    D32_Str : aliased constant Source_Buffer := "Duration_32_Bits";
    DEN_Str : aliased constant Source_Buffer := "Denorm";
    EXS_Str : aliased constant Source_Buffer := "Exit_Status_Supported";
-   FEL_Str : aliased constant Source_Buffer := "Frontend_Layout";
    FEX_Str : aliased constant Source_Buffer := "Frontend_Exceptions";
-   FFO_Str : aliased constant Source_Buffer := "Fractional_Fixed_Ops";
    MOV_Str : aliased constant Source_Buffer := "Machine_Overflows";
    MRN_Str : aliased constant Source_Buffer := "Machine_Rounds";
    PAS_Str : aliased constant Source_Buffer := "Preallocated_Stacks";
@@ -107,8 +101,7 @@ package body Targparm is
 
    type Buffer_Ptr is access constant Source_Buffer;
    Targparm_Str : constant array (Targparm_Tags) of Buffer_Ptr :=
-     (AAM => AAM_Str'Access,
-      ACR => ACR_Str'Access,
+     (ACR => ACR_Str'Access,
       ASD => ASD_Str'Access,
       BDC => BDC_Str'Access,
       BOC => BOC_Str'Access,
@@ -117,9 +110,7 @@ package body Targparm is
       D32 => D32_Str'Access,
       DEN => DEN_Str'Access,
       EXS => EXS_Str'Access,
-      FEL => FEL_Str'Access,
       FEX => FEX_Str'Access,
-      FFO => FFO_Str'Access,
       MOV => MOV_Str'Access,
       MRN => MRN_Str'Access,
       PAS => PAS_Str'Access,
@@ -803,7 +794,6 @@ package body Targparm is
                   Result := (System_Text (P) = 'T');
 
                   case K is
-                     when AAM => null;
                      when ACR => Always_Compatible_Rep_On_Target     := Result;
                      when ASD => Atomic_Sync_Default_On_Target       := Result;
                      when BDC => Backend_Divide_Checks_On_Target     := Result;
@@ -813,9 +803,7 @@ package body Targparm is
                      when D32 => Duration_32_Bits_On_Target          := Result;
                      when DEN => Denorm_On_Target                    := Result;
                      when EXS => Exit_Status_Supported_On_Target     := Result;
-                     when FEL => null;
                      when FEX => Frontend_Exceptions_On_Target       := Result;
-                     when FFO => Fractional_Fixed_Ops_On_Target      := Result;
                      when MOV => Machine_Overflows_On_Target         := Result;
                      when MRN => Machine_Rounds_On_Target            := Result;
                      when PAS => Preallocated_Stacks_On_Target       := Result;

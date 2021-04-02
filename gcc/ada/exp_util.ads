@@ -293,23 +293,29 @@ package Exp_Util is
    --  type is frozen.
 
    function Build_DIC_Call
-     (Loc    : Source_Ptr;
-      Obj_Id : Entity_Id;
-      Typ    : Entity_Id) return Node_Id;
-   --  Build a call to the DIC procedure of type Typ with Obj_Id as the actual
+     (Loc      : Source_Ptr;
+      Obj_Name : Node_Id;
+      Typ      : Entity_Id) return Node_Id;
+   --  Build a call to the DIC procedure for Typ with Obj_Name as the actual
    --  parameter.
 
    procedure Build_DIC_Procedure_Body
-     (Typ        : Entity_Id;
-      For_Freeze : Boolean := False);
+     (Typ         : Entity_Id;
+      Partial_DIC : Boolean := False);
    --  Create the body of the procedure which verifies the assertion expression
-   --  of pragma Default_Initial_Condition at run time. Flag For_Freeze should
-   --  be set when the body is constructed as part of the freezing actions for
-   --  Typ.
+   --  of pragma Default_Initial_Condition at run time. Partial_DIC indicates
+   --  that a partial DIC-checking procedure body should be built, for checking
+   --  a DIC associated with the type's partial view, and which will be called
+   --  by the main DIC procedure.
 
-   procedure Build_DIC_Procedure_Declaration (Typ : Entity_Id);
+   procedure Build_DIC_Procedure_Declaration
+     (Typ         : Entity_Id;
+      Partial_DIC : Boolean := False);
    --  Create the declaration of the procedure which verifies the assertion
-   --  expression of pragma Default_Initial_Condition at run time.
+   --  expression of pragma Default_Initial_Condition at run time. Partial_DIC
+   --  indicates that a partial DIC-checking procedure should be declared,
+   --  for checking a DIC associated with the type's partial view, and which
+   --  will be called by the main DIC procedure.
 
    procedure Build_Invariant_Procedure_Body
      (Typ               : Entity_Id;
@@ -750,11 +756,6 @@ package Exp_Util is
    --  Return a suitable standard integer type containing at least S bits and
    --  of the signedness given by Uns.
 
-   function Is_All_Null_Statements (L : List_Id) return Boolean;
-   --  Return True if all the items of the list are N_Null_Statement nodes.
-   --  False otherwise. True for an empty list. It is an error to call this
-   --  routine with No_List as the argument.
-
    function Is_Displacement_Of_Object_Or_Function_Result
      (Obj_Id : Entity_Id) return Boolean;
    --  Determine whether Obj_Id is a source entity that has been initialized by
@@ -864,11 +865,6 @@ package Exp_Util is
    --  list. If Warn is True, a warning will be output at the start of N
    --  indicating the deletion of the code.
 
-   function Known_Non_Negative (Opnd : Node_Id) return Boolean;
-   --  Given a node for a subexpression, determines if it represents a value
-   --  that cannot possibly be negative, and if so returns True. A value of
-   --  False means that it is not known if the value is positive or negative.
-
    function Make_Invariant_Call (Expr : Node_Id) return Node_Id;
    --  Generate a call to the Invariant_Procedure associated with the type of
    --  expression Expr. Expr is passed as an actual parameter in the call.
@@ -948,11 +944,6 @@ package Exp_Util is
    --  Check whether the expression in an address clause is restricted to
    --  consist of constants, when the object has a nontrivial initialization
    --  or is controlled.
-
-   function Non_Limited_Designated_Type (T : Entity_Id) return Entity_Id;
-   --  An anonymous access type may designate a limited view. Check whether
-   --  non-limited view is available during expansion, to examine components
-   --  or other characteristics of the full type.
 
    function OK_To_Do_Constant_Replacement (E : Entity_Id) return Boolean;
    --  This function is used when testing whether or not to replace a reference
@@ -1171,15 +1162,6 @@ package Exp_Util is
    function Small_Integer_Type_For (S : Uint; Uns : Boolean) return Entity_Id;
    --  Return the smallest standard integer type containing at least S bits and
    --  of the signedness given by Uns.
-
-   function Target_Has_Fixed_Ops
-     (Left_Typ   : Entity_Id;
-      Right_Typ  : Entity_Id;
-      Result_Typ : Entity_Id) return Boolean;
-   --  Returns True if and only if the target machine has direct support
-   --  for fixed-by-fixed multiplications and divisions for the given
-   --  operand and result types. This is called in package Exp_Fixd to
-   --  determine whether to expand such operations.
 
    function Type_May_Have_Bit_Aligned_Components
      (Typ : Entity_Id) return Boolean;

@@ -244,8 +244,8 @@ package body Exp_Imgv is
    --    For the most common ordinary fixed-point types
    --      xx = Fixed{32,64,128}
    --      tv = Integer_{32,64,128} (Expr) [convert with no scaling]
-   --      pm = typ'Small (typ = subtype of expression)
-   --           1.0 / typ'Small
+   --      pm = numerator of typ'Small (typ = subtype of expression)
+   --           denominator of typ'Small
    --           (Integer_{32,64,128} x typ'Small)'Fore
    --           typ'Aft
 
@@ -604,21 +604,29 @@ package body Exp_Imgv is
             Siz : constant Uint := Esize (Rtyp);
 
          begin
+            --  Note that we do not use sharp bounds to speed things up
+
             if Siz <= 32
-              and then Min = Uint_1
               and then Max <= Uint_2 ** 31
+              and then (Min = Uint_1
+                         or else (Num < Den and then Den <= Uint_2 ** 27)
+                         or else (Den < Num and then Num <= Uint_2 ** 25))
             then
                Imid := RE_Image_Fixed32;
                Tent := RTE (RE_Integer_32);
             elsif Siz <= 64
-              and then Min = Uint_1
               and then Max <= Uint_2 ** 63
+              and then (Min = Uint_1
+                         or else (Num < Den and then Den <= Uint_2 ** 59)
+                         or else (Den < Num and then Num <= Uint_2 ** 53))
             then
                Imid := RE_Image_Fixed64;
                Tent := RTE (RE_Integer_64);
             elsif System_Max_Integer_Size = 128
-              and then Min = Uint_1
               and then Max <= Uint_2 ** 127
+              and then (Min = Uint_1
+                         or else (Num < Den and then Den <= Uint_2 ** 123)
+                         or else (Den < Num and then Num <= Uint_2 ** 122))
             then
                Imid := RE_Image_Fixed128;
                Tent := RTE (RE_Integer_128);
@@ -872,7 +880,7 @@ package body Exp_Imgv is
    --      xx = [Long_Long_[Long_]]Unsigned
 
    --    For floating-point types
-   --      xx = Real
+   --      xx = [Long_[Long_]]Float
 
    --  For decimal fixed-point types, typ'Value (X) expands into
 
@@ -880,7 +888,7 @@ package body Exp_Imgv is
 
    --  For the most common ordinary fixed-point types
 
-   --    btyp?(Value_Fixed{32,64,128} (X, S, 1.0 / S));
+   --    btyp?(Value_Fixed{32,64,128} (X, numerator of S, denominator of S));
    --    where S = typ'Small
 
    --  For Wide_[Wide_]Character types, typ'Value (X) expands into:
@@ -985,25 +993,25 @@ package body Exp_Imgv is
 
          begin
             if Siz <= 32
-              and then Min = Uint_1
               and then Max <= Uint_2 ** 31
+              and then (Min = Uint_1 or else Max <= Uint_2 ** 27)
             then
                Vid := RE_Value_Fixed32;
             elsif Siz <= 64
-              and then Min = Uint_1
               and then Max <= Uint_2 ** 63
+              and then (Min = Uint_1 or else Max <= Uint_2 ** 59)
             then
                Vid := RE_Value_Fixed64;
             elsif System_Max_Integer_Size = 128
-              and then Min = Uint_1
               and then Max <= Uint_2 ** 127
+              and then (Min = Uint_1 or else Max <= Uint_2 ** 123)
             then
                Vid := RE_Value_Fixed128;
             else
-               Vid := RE_Value_Real;
+               Vid := RE_Value_Long_Float;
             end if;
 
-            if Vid /= RE_Value_Real then
+            if Vid /= RE_Value_Long_Float then
                Append_To (Args,
                  Make_Integer_Literal (Loc, -Norm_Num (Small_Value (Rtyp))));
 
@@ -1023,7 +1031,27 @@ package body Exp_Imgv is
          end;
 
       elsif Is_Floating_Point_Type (Rtyp) then
-         Vid := RE_Value_Real;
+         --  Short_Float and Float are the same type for GNAT
+
+         if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
+            Vid := RE_Value_Float;
+
+         --  If Long_Float and Long_Long_Float are the same type, then use the
+         --  implementation of the former, which is faster and more accurate.
+
+         elsif Rtyp = Standard_Long_Float
+           or else (Rtyp = Standard_Long_Long_Float
+                     and then
+                    Standard_Long_Long_Float_Size = Standard_Long_Float_Size)
+         then
+            Vid := RE_Value_Long_Float;
+
+         elsif Rtyp = Standard_Long_Long_Float then
+            Vid := RE_Value_Long_Long_Float;
+
+         else
+            raise Program_Error;
+         end if;
 
       --  Only other possibility is user-defined enumeration type
 

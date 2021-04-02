@@ -1,5 +1,5 @@
 # configure.ac -- Backtrace configure script.
-# Copyright (C) 2012-2020 Free Software Foundation, Inc.
+# Copyright (C) 2012-2021 Free Software Foundation, Inc.
 
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -500,8 +500,7 @@ AC_CACHE_CHECK([whether objcopy supports debuglink],
   libbacktrace_cv_objcopy_debuglink=no
 elif ! test -n "${OBJCOPY}"; then
   libbacktrace_cv_objcopy_debuglink=no
-elif ${OBJCOPY} --add-gnu-debuglink=x /bin/ls /tmp/ls$$; then
-  rm -f /tmp/ls$$
+elif ${OBJCOPY} --help | fgrep add-gnu-debuglink >/dev/null 2>&1; then
   libbacktrace_cv_objcopy_debuglink=yes
 else
   libbacktrace_cv_objcopy_debuglink=no

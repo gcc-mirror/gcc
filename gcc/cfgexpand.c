@@ -1,5 +1,5 @@
 /* A pass for lowering trees to RTL.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -73,6 +73,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-address.h"
 #include "output.h"
 #include "builtins.h"
+#include "opts.h"
 
 /* Some systems use __main in a way incompatible with its use in gcc, in these
    cases use the macros NAME__MAIN to give a quoted symbol and SYMBOL__MAIN to
@@ -2621,6 +2622,14 @@ expand_gimple_cond (basic_block bb, gcond *stmt)
       && TREE_CODE (op1) == INTEGER_CST)
     code = maybe_optimize_mod_cmp (code, &op0, &op1);
 
+  /* Optimize (x - y) < 0 into x < y if x - y has undefined overflow.  */
+  if (!TYPE_UNSIGNED (TREE_TYPE (op0))
+      && (code == LT_EXPR || code == LE_EXPR
+	  || code == GT_EXPR || code == GE_EXPR)
+      && integer_zerop (op1)
+      && TREE_CODE (op0) == SSA_NAME)
+    maybe_optimize_sub_cmp_0 (code, &op0, &op1);
+
   last2 = last = get_last_insn ();
 
   extract_true_false_edges_from_block (bb, &true_edge, &false_edge);
@@ -2871,6 +2880,7 @@ expand_asm_loc (tree string, int vol, location_t locus)
       rtx asm_op, clob;
       unsigned i, nclobbers;
       auto_vec<rtx> input_rvec, output_rvec;
+      auto_vec<machine_mode> input_mode;
       auto_vec<const char *> constraints;
       auto_vec<rtx> clobber_rvec;
       HARD_REG_SET clobbered_regs;
@@ -2880,9 +2890,8 @@ expand_asm_loc (tree string, int vol, location_t locus)
       clobber_rvec.safe_push (clob);
 
       if (targetm.md_asm_adjust)
-	targetm.md_asm_adjust (output_rvec, input_rvec,
-			       constraints, clobber_rvec,
-			       clobbered_regs);
+	targetm.md_asm_adjust (output_rvec, input_rvec, input_mode,
+			       constraints, clobber_rvec, clobbered_regs);
 
       asm_op = body;
       nclobbers = clobber_rvec.length ();
@@ -3059,8 +3068,8 @@ expand_asm_stmt (gasm *stmt)
       return;
     }
 
-  /* There are some legacy diagnostics in here, and also avoids a
-     sixth parameger to targetm.md_asm_adjust.  */
+  /* There are some legacy diagnostics in here, and also avoids an extra
+     parameter to targetm.md_asm_adjust.  */
   save_input_location s_i_l(locus);
 
   unsigned noutputs = gimple_asm_noutputs (stmt);
@@ -3411,9 +3420,9 @@ expand_asm_stmt (gasm *stmt)
      the flags register.  */
   rtx_insn *after_md_seq = NULL;
   if (targetm.md_asm_adjust)
-    after_md_seq = targetm.md_asm_adjust (output_rvec, input_rvec,
-					  constraints, clobber_rvec,
-					  clobbered_regs);
+    after_md_seq
+	= targetm.md_asm_adjust (output_rvec, input_rvec, input_mode,
+				 constraints, clobber_rvec, clobbered_regs);
 
   /* Do not allow the hook to change the output and input count,
      lest it mess up the operand numbering.  */
@@ -5919,7 +5928,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 			  && !target_for_debug_bind (var))
 			goto delink_debug_stmt;
 
-		      if (DECL_P (var))
+		      if (DECL_P (var) && !VECTOR_TYPE_P (TREE_TYPE (var)))
 			mode = DECL_MODE (var);
 		      else
 			mode = TYPE_MODE (TREE_TYPE (var));
@@ -5936,7 +5945,10 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 
 		      value = gimple_debug_source_bind_get_value (stmt);
 
-		      mode = DECL_MODE (var);
+		      if (!VECTOR_TYPE_P (TREE_TYPE (var)))
+			mode = DECL_MODE (var);
+		      else
+			mode = TYPE_MODE (TREE_TYPE (var));
 
 		      val = gen_rtx_VAR_LOCATION (mode, var, (rtx)value,
 						  VAR_INIT_STATUS_UNINITIALIZED);
@@ -5953,14 +5965,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
 	      else if (gimple_debug_begin_stmt_p (stmt))
 		val = GEN_RTX_DEBUG_MARKER_BEGIN_STMT_PAT ();
 	      else if (gimple_debug_inline_entry_p (stmt))
-		{
-		  tree block = gimple_block (stmt);
-
-		  if (block)
-		    val = GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT ();
-		  else
-		    goto delink_debug_stmt;
-		}
+		val = GEN_RTX_DEBUG_MARKER_INLINE_ENTRY_PAT ();
 	      else
 		gcc_unreachable ();
 
@@ -6499,7 +6504,7 @@ const pass_data pass_data_expand =
     | PROP_gimple_lvec
     | PROP_gimple_lva), /* properties_required */
   PROP_rtl, /* properties_provided */
-  ( PROP_ssa | PROP_trees ), /* properties_destroyed */
+  ( PROP_ssa | PROP_gimple ), /* properties_destroyed */
   0, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
@@ -6841,8 +6846,9 @@ pass_expand::execute (function *fun)
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
 
-  unsigned HOST_WIDE_INT patch_area_size = function_entry_patch_area_size;
-  unsigned HOST_WIDE_INT patch_area_entry = function_entry_patch_area_start;
+  HOST_WIDE_INT patch_area_size, patch_area_entry;
+  parse_and_check_patch_area (flag_patchable_function_entry, false,
+			      &patch_area_size, &patch_area_entry);
 
   tree patchable_function_entry_attr
     = lookup_attribute ("patchable_function_entry",

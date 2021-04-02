@@ -1,5 +1,5 @@
 /* Header for Fortran 95 types backend support.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -88,7 +88,8 @@ tree gfc_sym_type (gfc_symbol *);
 tree gfc_typenode_for_spec (gfc_typespec *, int c = 0);
 int gfc_copy_dt_decls_ifequal (gfc_symbol *, gfc_symbol *, bool);
 
-tree gfc_get_function_type (gfc_symbol *, gfc_actual_arglist *args = NULL);
+tree gfc_get_function_type (gfc_symbol *, gfc_actual_arglist *args = NULL,
+			    const char *fnspec = NULL);
 
 tree gfc_type_for_size (unsigned, int);
 tree gfc_type_for_mode (machine_mode, int);

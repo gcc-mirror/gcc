@@ -3,7 +3,7 @@
    building RTL.  These routines are used both during actual parsing
    and during the instantiation of template functions.
 
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
    Written by Mark Mitchell (mmitchell@usa.net) based on code found
    formerly in parse.y and pt.c.
 
@@ -256,6 +256,72 @@ pop_to_parent_deferring_access_checks (void)
     }
 }
 
+/* Called from enforce_access.  A class has attempted (but failed) to access
+   DECL.  It is already established that a baseclass of that class,
+   PARENT_BINFO, has private access to DECL.  Examine certain special cases
+   to find a decl that accurately describes the source of the problem.  If
+   none of the special cases apply, simply return DECL as the source of the
+   problem.  */
+
+static tree
+get_class_access_diagnostic_decl (tree parent_binfo, tree decl)
+{
+  /* When a class is denied access to a decl in a baseclass, most of the
+     time it is because the decl itself was declared as private at the point
+     of declaration.
+
+     However, in C++, there are (at least) two situations in which a decl
+     can be private even though it was not originally defined as such.
+     These two situations only apply if a baseclass had private access to
+     DECL (this function is only called if that is the case).  */
+
+  /* We should first check whether the reason the parent had private access
+     to DECL was simply because DECL was created and declared as private in
+     the parent.  If it was, then DECL is definitively the source of the
+     problem.  */
+  if (SAME_BINFO_TYPE_P (context_for_name_lookup (decl),
+			 BINFO_TYPE (parent_binfo)))
+    return decl;
+
+  /* 1.  If the "using" keyword is used to inherit DECL within the parent,
+     this may cause DECL to be private, so we should return the using
+     statement as the source of the problem.
+
+     Scan the fields of PARENT_BINFO and see if there are any using decls.  If
+     there are, see if they inherit DECL.  If they do, that's where DECL must
+     have been declared private.  */
+
+  for (tree parent_field = TYPE_FIELDS (BINFO_TYPE (parent_binfo));
+       parent_field;
+       parent_field = DECL_CHAIN (parent_field))
+    /* Not necessary, but also check TREE_PRIVATE for the sake of
+       eliminating obviously non-relevant using decls.  */
+    if (TREE_CODE (parent_field) == USING_DECL
+	&& TREE_PRIVATE (parent_field))
+      {
+	tree decl_stripped = strip_using_decl (parent_field);
+
+	/* The using statement might be overloaded.  If so, we need to
+	   check all of the overloads.  */
+	for (ovl_iterator iter (decl_stripped); iter; ++iter)
+	  /* If equal, the using statement inherits DECL, and so is the
+	     source of the access failure, so return it.  */
+	  if (*iter == decl)
+	    return parent_field;
+      }
+
+  /* 2.  If DECL was privately inherited by the parent class, then DECL will
+     be inaccessible, even though it may originally have been accessible to
+     deriving classes.  In that case, the fault lies with the parent, since it
+     used a private inheritance, so we return the parent as the source of the
+     problem.
+
+     Since this is the last check, we just assume it's true.  At worst, it
+     will simply point to the class that failed to give access, which is
+     technically true.  */
+  return TYPE_NAME (BINFO_TYPE (parent_binfo));
+}
+
 /* If the current scope isn't allowed to access DECL along
    BASETYPE_PATH, give an error, or if we're parsing a function or class
    template, defer the access check to be performed at instantiation time.
@@ -316,7 +382,35 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
       if (flag_new_inheriting_ctors)
 	diag_decl = strip_inheriting_ctors (diag_decl);
       if (complain & tf_error)
-	complain_about_access (decl, diag_decl, true);
+	{
+	  access_kind access_failure_reason = ak_none;
+
+	  /* By default, using the decl as the source of the problem will
+	     usually give correct results.  */
+	  tree diag_location = diag_decl;
+
+	  /* However, if a parent of BASETYPE_PATH had private access to decl,
+	     then it actually might be the case that the source of the problem
+	     is not DECL.  */
+	  tree parent_binfo = get_parent_with_private_access (decl,
+							      basetype_path);
+
+	  /* So if a parent did have private access, then we need to do
+	     special checks to obtain the best diagnostic location decl.  */
+	  if (parent_binfo != NULL_TREE)
+	    {
+	      diag_location = get_class_access_diagnostic_decl (parent_binfo,
+								diag_decl);
+
+	      /* We also at this point know that the reason access failed was
+		 because decl was private.  */
+	      access_failure_reason = ak_private;
+	    }
+
+	  /* Finally, generate an error message.  */
+	  complain_about_access (decl, diag_decl, diag_location, true,
+				 access_failure_reason);
+	}
       if (afi)
 	afi->record_access_failure (basetype_path, decl, diag_decl);
       return false;
@@ -999,6 +1093,11 @@ finish_do_stmt (tree cond, tree do_stmt, bool ivdep, unsigned short unroll)
 {
   cond = maybe_convert_cond (cond);
   end_maybe_infinite_loop (cond);
+  /* Unlike other iteration statements, the condition may not contain
+     a declaration, so we don't call finish_cond which checks for
+     unexpanded parameter packs.  */
+  if (check_for_bare_parameter_packs (cond))
+    cond = error_mark_node;
   if (ivdep && cond != error_mark_node)
     cond = build3 (ANNOTATE_EXPR, TREE_TYPE (cond), cond,
 		   build_int_cst (integer_type_node, annot_expr_ivdep_kind),
@@ -2107,14 +2206,24 @@ check_accessibility_of_qualified_id (tree decl,
       /* If the reference is to a non-static member of the
 	 current class, treat it as if it were referenced through
 	 `this'.  */
-      tree ct;
       if (DECL_NONSTATIC_MEMBER_P (decl)
-	  && current_class_ptr
-	  && DERIVED_FROM_P (scope, ct = current_nonlambda_class_type ()))
-	qualifying_type = ct;
+	  && current_class_ptr)
+	if (tree current = current_nonlambda_class_type ())
+	  {
+	    if (dependent_type_p (current))
+	    /* In general we can't know whether this access goes through
+	       `this' until instantiation time.  Punt now, or else we might
+	       create a deferred access check that's not relative to `this'
+	       when it ought to be.  We'll check this access again after
+	       substitution, e.g. from tsubst_qualified_id.  */
+	      return true;
+
+	    if (DERIVED_FROM_P (scope, current))
+	      qualifying_type = current;
+	  }
       /* Otherwise, use the type indicated by the
 	 nested-name-specifier.  */
-      else
+      if (!qualifying_type)
 	qualifying_type = nested_name_specifier;
     }
   else
@@ -2204,8 +2313,7 @@ finish_qualified_id_expr (tree qualifying_class,
     {
       /* See if any of the functions are non-static members.  */
       /* If so, the expression may be relative to 'this'.  */
-      if ((type_dependent_expression_p (expr)
-	   || !shared_member_p (expr))
+      if (!shared_member_p (expr)
 	  && current_class_ptr
 	  && DERIVED_FROM_P (qualifying_class,
 			     current_nonlambda_class_type ()))
@@ -3220,6 +3328,19 @@ begin_class_definition (tree t)
       t = make_class_type (TREE_CODE (t));
       pushtag (TYPE_IDENTIFIER (t), t);
     }
+
+  if (modules_p ())
+    {
+      if (!module_may_redeclare (TYPE_NAME (t)))
+	{
+	  error ("cannot declare %qD in a different module", TYPE_NAME (t));
+	  inform (DECL_SOURCE_LOCATION (TYPE_NAME (t)), "declared here");
+	  return error_mark_node;
+	}
+      set_instantiating_module (TYPE_NAME (t));
+      set_defining_module (TYPE_NAME (t));
+    }
+
   maybe_process_partial_specialization (t);
   pushclass (t);
   TYPE_BEING_DEFINED (t) = 1;
@@ -4506,7 +4627,8 @@ expand_or_defer_fn_1 (tree fn)
 	 it out, even though we haven't.  */
       TREE_ASM_WRITTEN (fn) = 1;
       /* If this is a constexpr function, keep DECL_SAVED_TREE.  */
-      if (!DECL_DECLARED_CONSTEXPR_P (fn))
+      if (!DECL_DECLARED_CONSTEXPR_P (fn)
+	  && !(modules_p () && DECL_DECLARED_INLINE_P (fn)))
 	DECL_SAVED_TREE (fn) = NULL_TREE;
       return false;
     }
@@ -6377,6 +6499,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
   bool allocate_seen = false;
+  bool detach_seen = false;
+  bool mergeable_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -7394,6 +7518,42 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	    }
 	  break;
+	case OMP_CLAUSE_DETACH:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (detach_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"too many %qs clauses on a task construct",
+			"detach");
+	      remove = true;
+	      break;
+	    }
+	  else if (error_operand_p (t))
+	    {
+	      remove = true;
+	      break;
+	    }
+	  else
+	    {
+	      tree type = TYPE_MAIN_VARIANT (TREE_TYPE (t));
+	      if (!type_dependent_expression_p (t)
+		  && (!INTEGRAL_TYPE_P (type)
+		      || TREE_CODE (type) != ENUMERAL_TYPE
+		      || TYPE_NAME (type) == NULL_TREE
+		      || (DECL_NAME (TYPE_NAME (type))
+			  != get_identifier ("omp_event_handle_t"))))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "%<detach%> clause event handle "
+			    "has type %qT rather than "
+			    "%<omp_event_handle_t%>",
+			    type);
+		  remove = true;
+		}
+	      detach_seen = true;
+	      cxx_mark_addressable (t);
+	    }
+	  break;
 
 	case OMP_CLAUSE_MAP:
 	case OMP_CLAUSE_TO:
@@ -7925,7 +8085,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_DEFAULT:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
-	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_PARALLEL:
 	case OMP_CLAUSE_FOR:
 	case OMP_CLAUSE_SECTIONS:
@@ -7942,6 +8101,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_SEQ:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	  break;
+
+	case OMP_CLAUSE_MERGEABLE:
+	  mergeable_seen = true;
 	  break;
 
 	case OMP_CLAUSE_TILE:
@@ -8181,6 +8344,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
+	case OMP_CLAUSE_DETACH:
+	  if (mergeable_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<detach%> clause must not be used together with "
+			"%<mergeable%> clause");
+	      *pc = OMP_CLAUSE_CHAIN (c);
+	      continue;
+	    }
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
 	case OMP_CLAUSE_NOWAIT:
 	  if (copyprivate_seen)
 	    {
@@ -8339,6 +8513,19 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"clauses", omp_clause_printable_decl (t));
 	      remove = true;
 	    }
+	}
+
+      if (detach_seen
+	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE)
+	  && OMP_CLAUSE_DECL (c) == t)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (c),
+		    "the event handle of a %<detach%> clause "
+		    "should not be in a data-sharing clause");
+	  remove = true;
 	}
 
       /* We're interested in the base element, not arrays.  */
@@ -9991,6 +10178,9 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       return error_mark_node;
     }
 
+  /* decltype is an unevaluated context.  */
+  cp_unevaluated u;
+
   /* Depending on the resolution of DR 1172, we may later need to distinguish
      instantiation-dependent but not type-dependent expressions so that, say,
      A<decltype(sizeof(T))>::U doesn't require 'typename'.  */
@@ -10006,9 +10196,7 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
     }
   else if (processing_template_decl)
     {
-      ++cp_unevaluated_operand;
       expr = instantiate_non_dependent_expr_sfinae (expr, complain);
-      --cp_unevaluated_operand;
       if (expr == error_mark_node)
 	return error_mark_node;
     }
@@ -10677,6 +10865,81 @@ cp_build_vec_convert (tree arg, location_t loc, tree type,
     return ret;
 
   return build_call_expr_internal_loc (loc, IFN_VEC_CONVERT, type, 1, arg);
+}
+
+/* Finish __builtin_bit_cast (type, arg).  */
+
+tree
+cp_build_bit_cast (location_t loc, tree type, tree arg,
+		   tsubst_flags_t complain)
+{
+  if (error_operand_p (type))
+    return error_mark_node;
+  if (!dependent_type_p (type))
+    {
+      if (!complete_type_or_maybe_complain (type, NULL_TREE, complain))
+	return error_mark_node;
+      if (TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  /* std::bit_cast for destination ARRAY_TYPE is not possible,
+	     as functions may not return an array, so don't bother trying
+	     to support this (and then deal with VLAs etc.).  */
+	  error_at (loc, "%<__builtin_bit_cast%> destination type %qT "
+			 "is an array type", type);
+	  return error_mark_node;
+	}
+      if (!trivially_copyable_p (type))
+	{
+	  error_at (loc, "%<__builtin_bit_cast%> destination type %qT "
+			 "is not trivially copyable", type);
+	  return error_mark_node;
+	}
+    }
+
+  if (error_operand_p (arg))
+    return error_mark_node;
+
+  if (!type_dependent_expression_p (arg))
+    {
+      if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
+	{
+	  /* Don't perform array-to-pointer conversion.  */
+	  arg = mark_rvalue_use (arg, loc, true);
+	  if (!complete_type_or_maybe_complain (TREE_TYPE (arg), arg, complain))
+	    return error_mark_node;
+	}
+      else
+	arg = decay_conversion (arg, complain);
+
+      if (error_operand_p (arg))
+	return error_mark_node;
+
+      if (!trivially_copyable_p (TREE_TYPE (arg)))
+	{
+	  error_at (cp_expr_loc_or_loc (arg, loc),
+		    "%<__builtin_bit_cast%> source type %qT "
+		    "is not trivially copyable", TREE_TYPE (arg));
+	  return error_mark_node;
+	}
+      if (!dependent_type_p (type)
+	  && !cp_tree_equal (TYPE_SIZE_UNIT (type),
+			     TYPE_SIZE_UNIT (TREE_TYPE (arg))))
+	{
+	  error_at (loc, "%<__builtin_bit_cast%> source size %qE "
+			 "not equal to destination type size %qE",
+			 TYPE_SIZE_UNIT (TREE_TYPE (arg)),
+			 TYPE_SIZE_UNIT (type));
+	  return error_mark_node;
+	}
+    }
+
+  tree ret = build_min (BIT_CAST_EXPR, type, arg);
+  SET_EXPR_LOCATION (ret, loc);
+
+  if (!processing_template_decl && CLASS_TYPE_P (type))
+    ret = get_target_expr_sfinae (ret, complain);
+
+  return ret;
 }
 
 #include "gt-cp-semantics.h"

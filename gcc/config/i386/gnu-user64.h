@@ -1,5 +1,5 @@
 /* Definitions for AMD x86-64 using GNU userspace.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka <jh@suse.cz>, based on linux.h.
 
 This file is part of GCC.

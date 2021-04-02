@@ -1,4 +1,5 @@
 /*
+TEST_OUTPUT:
 ---
 fail_compilation/diag15713.d(18): Error: no property 'widthSign' for type 'Data'
 fail_compilation/diag15713.d(38): Error: template instance test.conwritefImpl!("parse-int", "width", "\x0a", Data()) error instantiating

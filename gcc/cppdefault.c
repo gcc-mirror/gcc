@@ -1,5 +1,5 @@
 /* CPP Library.
-   Copyright (C) 1986-2020 Free Software Foundation, Inc.
+   Copyright (C) 1986-2021 Free Software Foundation, Inc.
    Contributed by Per Bothner, 1994-95.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -54,6 +54,11 @@ const struct default_include cpp_include_defaults[]
     /* Pick up GNU C++ backward and deprecated include files.  */
     { GPLUSPLUS_BACKWARD_INCLUDE_DIR, "G++", 1, 1,
       GPLUSPLUS_INCLUDE_DIR_ADD_SYSROOT, 0 },
+#endif
+#ifdef GPLUSPLUS_LIBCXX_INCLUDE_DIR
+    /* Pick up libc++ include files, if we have -stdlib=libc++.  */
+    { GPLUSPLUS_LIBCXX_INCLUDE_DIR, "G++", 2, 1,
+      GPLUSPLUS_LIBCXX_INCLUDE_DIR_ADD_SYSROOT, 0 },
 #endif
 #ifdef GCC_INCLUDE_DIR
     /* This is the dir for gcc's private headers.  */

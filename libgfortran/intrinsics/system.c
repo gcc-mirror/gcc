@@ -1,5 +1,5 @@
 /* Implementation of the SYSTEM intrinsic.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Contributed by Tobias Schlüter.
 
 This file is part of the GNU Fortran runtime library (libgfortran).

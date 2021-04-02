@@ -1,6 +1,6 @@
 ; Options for the MMIX port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -20,48 +20,48 @@
 
 ; FIXME: Get rid of this one.
 mlibfuncs
-Target Report Mask(LIBFUNC)
+Target Mask(LIBFUNC)
 For intrinsics library: pass all parameters in registers.
 
 mabi=mmixware
-Target Report RejectNegative InverseMask(ABI_GNU)
+Target RejectNegative InverseMask(ABI_GNU)
 Use register stack for parameters and return value.
 
 mabi=gnu
-Target Report RejectNegative Mask(ABI_GNU)
+Target RejectNegative Mask(ABI_GNU)
 Use call-clobbered registers for parameters and return value.
 
 ; FIXME: Provide a way to *load* the epsilon register.
 mepsilon
-Target Report Mask(FCMP_EPSILON)
+Target Mask(FCMP_EPSILON)
 Use epsilon-respecting floating point compare instructions.
 
 mzero-extend
-Target Report Mask(ZERO_EXTEND)
+Target Mask(ZERO_EXTEND)
 Use zero-extending memory loads, not sign-extending ones.
 
 mknuthdiv
-Target Report Mask(KNUTH_DIVISION)
+Target Mask(KNUTH_DIVISION)
 Generate divide results with reminder having the same sign as the divisor (not the dividend).
 
 mtoplevel-symbols
-Target Report Mask(TOPLEVEL_SYMBOLS)
+Target Mask(TOPLEVEL_SYMBOLS)
 Prepend global symbols with \":\" (for use with PREFIX).
 
 mno-set-program-start
-Target Report RejectNegative
+Target RejectNegative
 Do not provide a default start-address 0x100 of the program.
 
 melf
-Target Report RejectNegative
+Target RejectNegative
 Link to emit program in ELF format (rather than mmo).
 
 mbranch-predict
-Target Report RejectNegative Mask(BRANCH_PREDICT)
+Target RejectNegative Mask(BRANCH_PREDICT)
 Use P-mnemonics for branches statically predicted as taken.
 
 mno-branch-predict
-Target Report RejectNegative InverseMask(BRANCH_PREDICT)
+Target RejectNegative InverseMask(BRANCH_PREDICT)
 Don't use P-mnemonics for branches.
 
 ; We use the term "base address" since that's what Knuth uses.  The base
@@ -75,25 +75,25 @@ Don't use P-mnemonics for branches.
 ; registers, and you'll not find out until link time whether you
 ; should have compiled with -mno-base-addresses.
 mbase-addresses
-Target Report RejectNegative Mask(BASE_ADDRESSES)
+Target RejectNegative Mask(BASE_ADDRESSES)
 Use addresses that allocate global registers.
 
 mno-base-addresses
-Target Report RejectNegative InverseMask(BASE_ADDRESSES)
+Target RejectNegative InverseMask(BASE_ADDRESSES)
 Do not use addresses that allocate global registers.
 
 msingle-exit
-Target Report RejectNegative InverseMask(USE_RETURN_INSN)
+Target RejectNegative InverseMask(USE_RETURN_INSN)
 Generate a single exit point for each function.
 
 mno-single-exit
-Target Report RejectNegative Mask(USE_RETURN_INSN)
+Target RejectNegative Mask(USE_RETURN_INSN)
 Do not generate a single exit point for each function.
 
 mset-program-start=
-Target Report RejectNegative Joined
+Target RejectNegative Joined
 Set start-address of the program.
 
 mset-data-start=
-Target Report RejectNegative Joined
+Target RejectNegative Joined
 Set start-address of data.

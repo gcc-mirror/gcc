@@ -1,5 +1,5 @@
 /* Machine description for AArch64 architecture.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -464,6 +464,22 @@ static const struct cpu_addrcost_table qdf24xx_addrcost_table =
   2, /* imm_offset  */
 };
 
+static const struct cpu_addrcost_table a64fx_addrcost_table =
+{
+    {
+      1, /* hi  */
+      1, /* si  */
+      1, /* di  */
+      2, /* ti  */
+    },
+  0, /* pre_modify  */
+  0, /* post_modify  */
+  2, /* register_offset  */
+  3, /* register_sextend  */
+  3, /* register_zextend  */
+  0, /* imm_offset  */
+};
+
 static const struct cpu_regmove_cost generic_regmove_cost =
 {
   1, /* GP2GP  */
@@ -559,6 +575,44 @@ static const struct cpu_regmove_cost tsv110_regmove_cost =
   2  /* FP2FP  */
 };
 
+static const struct cpu_regmove_cost a64fx_regmove_cost =
+{
+  1, /* GP2GP  */
+  /* Avoid the use of slow int<->fp moves for spilling by setting
+     their cost higher than memmov_cost.  */
+  5, /* GP2FP  */
+  7, /* FP2GP  */
+  2 /* FP2FP  */
+};
+
+/* Generic costs for Advanced SIMD vector operations.   */
+static const advsimd_vec_cost generic_advsimd_vector_cost =
+{
+  1, /* int_stmt_cost  */
+  1, /* fp_stmt_cost  */
+  2, /* permute_cost  */
+  2, /* vec_to_scalar_cost  */
+  1, /* scalar_to_vec_cost  */
+  1, /* align_load_cost  */
+  1, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
+};
+
+/* Generic costs for SVE vector operations.  */
+static const sve_vec_cost generic_sve_vector_cost =
+{
+  1, /* int_stmt_cost  */
+  1, /* fp_stmt_cost  */
+  2, /* permute_cost  */
+  2, /* vec_to_scalar_cost  */
+  1, /* scalar_to_vec_cost  */
+  1, /* align_load_cost  */
+  1, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
+};
+
 /* Generic costs for vector insn classes.  */
 static const struct cpu_vector_cost generic_vector_cost =
 {
@@ -566,17 +620,61 @@ static const struct cpu_vector_cost generic_vector_cost =
   1, /* scalar_fp_stmt_cost  */
   1, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  1, /* vec_int_stmt_cost  */
-  1, /* vec_fp_stmt_cost  */
-  2, /* vec_permute_cost  */
-  2, /* vec_to_scalar_cost  */
-  1, /* scalar_to_vec_cost  */
-  1, /* vec_align_load_cost  */
-  1, /* vec_unalign_load_cost  */
-  1, /* vec_unalign_store_cost  */
-  1, /* vec_store_cost  */
   3, /* cond_taken_branch_cost  */
-  1 /* cond_not_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &generic_advsimd_vector_cost, /* advsimd  */
+  &generic_sve_vector_cost /* sve */
+};
+
+static const advsimd_vec_cost a64fx_advsimd_vector_cost =
+{
+  2, /* int_stmt_cost  */
+  5, /* fp_stmt_cost  */
+  3, /* permute_cost  */
+  13, /* vec_to_scalar_cost  */
+  4, /* scalar_to_vec_cost  */
+  6, /* align_load_cost  */
+  6, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
+};
+
+static const sve_vec_cost a64fx_sve_vector_cost =
+{
+  2, /* int_stmt_cost  */
+  5, /* fp_stmt_cost  */
+  3, /* permute_cost  */
+  13, /* vec_to_scalar_cost  */
+  4, /* scalar_to_vec_cost  */
+  6, /* align_load_cost  */
+  6, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
+};
+
+static const struct cpu_vector_cost a64fx_vector_cost =
+{
+  1, /* scalar_int_stmt_cost  */
+  5, /* scalar_fp_stmt_cost  */
+  4, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  3, /* cond_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &a64fx_advsimd_vector_cost, /* advsimd  */
+  &a64fx_sve_vector_cost /* sve  */
+};
+
+static const advsimd_vec_cost qdf24xx_advsimd_vector_cost =
+{
+  1, /* int_stmt_cost  */
+  3, /* fp_stmt_cost  */
+  2, /* permute_cost  */
+  1, /* vec_to_scalar_cost  */
+  1, /* scalar_to_vec_cost  */
+  1, /* align_load_cost  */
+  1, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
 };
 
 /* QDF24XX costs for vector insn classes.  */
@@ -586,17 +684,24 @@ static const struct cpu_vector_cost qdf24xx_vector_cost =
   1, /* scalar_fp_stmt_cost  */
   1, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  1, /* vec_int_stmt_cost  */
-  3, /* vec_fp_stmt_cost  */
-  2, /* vec_permute_cost  */
-  1, /* vec_to_scalar_cost  */
-  1, /* scalar_to_vec_cost  */
-  1, /* vec_align_load_cost  */
-  1, /* vec_unalign_load_cost  */
-  1, /* vec_unalign_store_cost  */
-  1, /* vec_store_cost  */
   3, /* cond_taken_branch_cost  */
-  1 /* cond_not_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &qdf24xx_advsimd_vector_cost, /* advsimd  */
+  NULL /* sve  */
+};
+
+
+static const advsimd_vec_cost thunderx_advsimd_vector_cost =
+{
+  4, /* int_stmt_cost  */
+  1, /* fp_stmt_cost  */
+  4, /* permute_cost  */
+  2, /* vec_to_scalar_cost  */
+  2, /* scalar_to_vec_cost  */
+  3, /* align_load_cost  */
+  5, /* unalign_load_cost  */
+  5, /* unalign_store_cost  */
+  1  /* store_cost  */
 };
 
 /* ThunderX costs for vector insn classes.  */
@@ -606,17 +711,23 @@ static const struct cpu_vector_cost thunderx_vector_cost =
   1, /* scalar_fp_stmt_cost  */
   3, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  4, /* vec_int_stmt_cost  */
-  1, /* vec_fp_stmt_cost  */
-  4, /* vec_permute_cost  */
-  2, /* vec_to_scalar_cost  */
-  2, /* scalar_to_vec_cost  */
-  3, /* vec_align_load_cost  */
-  5, /* vec_unalign_load_cost  */
-  5, /* vec_unalign_store_cost  */
-  1, /* vec_store_cost  */
   3, /* cond_taken_branch_cost  */
-  3 /* cond_not_taken_branch_cost  */
+  3, /* cond_not_taken_branch_cost  */
+  &thunderx_advsimd_vector_cost, /* advsimd  */
+  NULL /* sve  */
+};
+
+static const advsimd_vec_cost tsv110_advsimd_vector_cost =
+{
+  2, /* int_stmt_cost  */
+  2, /* fp_stmt_cost  */
+  2, /* permute_cost  */
+  3, /* vec_to_scalar_cost  */
+  2, /* scalar_to_vec_cost  */
+  5, /* align_load_cost  */
+  5, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
 };
 
 static const struct cpu_vector_cost tsv110_vector_cost =
@@ -625,37 +736,49 @@ static const struct cpu_vector_cost tsv110_vector_cost =
   1, /* scalar_fp_stmt_cost  */
   5, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  2, /* vec_int_stmt_cost  */
-  2, /* vec_fp_stmt_cost  */
-  2, /* vec_permute_cost  */
-  3, /* vec_to_scalar_cost  */
-  2, /* scalar_to_vec_cost  */
-  5, /* vec_align_load_cost  */
-  5, /* vec_unalign_load_cost  */
-  1, /* vec_unalign_store_cost  */
-  1, /* vec_store_cost  */
   1, /* cond_taken_branch_cost  */
-  1 /* cond_not_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &tsv110_advsimd_vector_cost, /* advsimd  */
+  NULL, /* sve  */
 };
 
-/* Generic costs for vector insn classes.  */
+static const advsimd_vec_cost cortexa57_advsimd_vector_cost =
+{
+  2, /* int_stmt_cost  */
+  2, /* fp_stmt_cost  */
+  3, /* permute_cost  */
+  8, /* vec_to_scalar_cost  */
+  8, /* scalar_to_vec_cost  */
+  4, /* align_load_cost  */
+  4, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
+};
+
+/* Cortex-A57 costs for vector insn classes.  */
 static const struct cpu_vector_cost cortexa57_vector_cost =
 {
   1, /* scalar_int_stmt_cost  */
   1, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  2, /* vec_int_stmt_cost  */
-  2, /* vec_fp_stmt_cost  */
-  3, /* vec_permute_cost  */
-  8, /* vec_to_scalar_cost  */
-  8, /* scalar_to_vec_cost  */
-  4, /* vec_align_load_cost  */
-  4, /* vec_unalign_load_cost  */
-  1, /* vec_unalign_store_cost  */
-  1, /* vec_store_cost  */
   1, /* cond_taken_branch_cost  */
-  1 /* cond_not_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &cortexa57_advsimd_vector_cost, /* advsimd  */
+  NULL /* sve  */
+};
+
+static const advsimd_vec_cost exynosm1_advsimd_vector_cost =
+{
+  3, /* int_stmt_cost  */
+  3, /* fp_stmt_cost  */
+  3, /* permute_cost  */
+  3, /* vec_to_scalar_cost  */
+  3, /* scalar_to_vec_cost  */
+  5, /* align_load_cost  */
+  5, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
 };
 
 static const struct cpu_vector_cost exynosm1_vector_cost =
@@ -664,17 +787,23 @@ static const struct cpu_vector_cost exynosm1_vector_cost =
   1, /* scalar_fp_stmt_cost  */
   5, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  3, /* vec_int_stmt_cost  */
-  3, /* vec_fp_stmt_cost  */
-  3, /* vec_permute_cost  */
-  3, /* vec_to_scalar_cost  */
-  3, /* scalar_to_vec_cost  */
-  5, /* vec_align_load_cost  */
-  5, /* vec_unalign_load_cost  */
-  1, /* vec_unalign_store_cost  */
-  1, /* vec_store_cost  */
   1, /* cond_taken_branch_cost  */
-  1 /* cond_not_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &exynosm1_advsimd_vector_cost, /* advsimd  */
+  NULL /* sve  */
+};
+
+static const advsimd_vec_cost xgene1_advsimd_vector_cost =
+{
+  2, /* int_stmt_cost  */
+  2, /* fp_stmt_cost  */
+  2, /* permute_cost  */
+  4, /* vec_to_scalar_cost  */
+  4, /* scalar_to_vec_cost  */
+  10, /* align_load_cost  */
+  10, /* unalign_load_cost  */
+  2, /* unalign_store_cost  */
+  2  /* store_cost  */
 };
 
 /* Generic costs for vector insn classes.  */
@@ -684,17 +813,23 @@ static const struct cpu_vector_cost xgene1_vector_cost =
   1, /* scalar_fp_stmt_cost  */
   5, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  2, /* vec_int_stmt_cost  */
-  2, /* vec_fp_stmt_cost  */
-  2, /* vec_permute_cost  */
-  4, /* vec_to_scalar_cost  */
-  4, /* scalar_to_vec_cost  */
-  10, /* vec_align_load_cost  */
-  10, /* vec_unalign_load_cost  */
-  2, /* vec_unalign_store_cost  */
-  2, /* vec_store_cost  */
   2, /* cond_taken_branch_cost  */
-  1 /* cond_not_taken_branch_cost  */
+  1, /* cond_not_taken_branch_cost  */
+  &xgene1_advsimd_vector_cost, /* advsimd  */
+  NULL /* sve  */
+};
+
+static const advsimd_vec_cost thunderx2t99_advsimd_vector_cost =
+{
+  4, /* int_stmt_cost  */
+  5, /* fp_stmt_cost  */
+  10, /* permute_cost  */
+  6, /* vec_to_scalar_cost  */
+  5, /* scalar_to_vec_cost  */
+  4, /* align_load_cost  */
+  4, /* unalign_load_cost  */
+  1, /* unalign_store_cost  */
+  1  /* store_cost  */
 };
 
 /* Costs for vector insn classes for Vulcan.  */
@@ -704,17 +839,23 @@ static const struct cpu_vector_cost thunderx2t99_vector_cost =
   6, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  4, /* vec_int_stmt_cost  */
-  5, /* vec_fp_stmt_cost  */
-  10, /* vec_permute_cost  */
-  6, /* vec_to_scalar_cost  */
-  5, /* scalar_to_vec_cost  */
-  4, /* vec_align_load_cost  */
-  4, /* vec_unalign_load_cost  */
-  1, /* vec_unalign_store_cost  */
-  1, /* vec_store_cost  */
   2, /* cond_taken_branch_cost  */
-  1  /* cond_not_taken_branch_cost  */
+  1,  /* cond_not_taken_branch_cost  */
+  &thunderx2t99_advsimd_vector_cost, /* advsimd  */
+  NULL /* sve  */
+};
+
+static const advsimd_vec_cost thunderx3t110_advsimd_vector_cost =
+{
+  5, /* int_stmt_cost  */
+  5, /* fp_stmt_cost  */
+  10, /* permute_cost  */
+  5, /* vec_to_scalar_cost  */
+  5, /* scalar_to_vec_cost  */
+  4, /* align_load_cost  */
+  4, /* unalign_load_cost  */
+  4, /* unalign_store_cost  */
+  4  /* store_cost  */
 };
 
 static const struct cpu_vector_cost thunderx3t110_vector_cost =
@@ -723,17 +864,10 @@ static const struct cpu_vector_cost thunderx3t110_vector_cost =
   5, /* scalar_fp_stmt_cost  */
   4, /* scalar_load_cost  */
   1, /* scalar_store_cost  */
-  5, /* vec_int_stmt_cost  */
-  5, /* vec_fp_stmt_cost  */
-  10, /* vec_permute_cost  */
-  5, /* vec_to_scalar_cost  */
-  5, /* scalar_to_vec_cost  */
-  4, /* vec_align_load_cost  */
-  4, /* vec_unalign_load_cost  */
-  4, /* vec_unalign_store_cost  */
-  4, /* vec_store_cost  */
   2, /* cond_taken_branch_cost  */
-  1  /* cond_not_taken_branch_cost  */
+  1,  /* cond_not_taken_branch_cost  */
+  &thunderx3t110_advsimd_vector_cost, /* advsimd  */
+  NULL /* sve  */
 };
 
 
@@ -901,7 +1035,10 @@ static const struct tune_params generic_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  /* Enabling AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS significantly benefits
+     Neoverse V1.  It does not have a noticeable effect on A64FX and should
+     have at most a very minor effect on SVE2 cores.  */
+  (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -1358,7 +1495,7 @@ static const struct tune_params neoversev1_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
+  (AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS),	/* tune_flags.  */
   &generic_prefetch_tune
 };
 
@@ -1390,10 +1527,10 @@ static const struct tune_params neoversen2_tunings =
 
 static const struct tune_params a64fx_tunings =
 {
-  &generic_extra_costs,
-  &generic_addrcost_table,
-  &generic_regmove_cost,
-  &generic_vector_cost,
+  &a64fx_extra_costs,
+  &a64fx_addrcost_table,
+  &a64fx_regmove_cost,
+  &a64fx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   SVE_512, /* sve_width  */
@@ -4502,7 +4639,7 @@ aarch64_add_offset (scalar_int_mode mode, rtx dest, rtx src,
 	  if (can_create_pseudo_p ())
 	    {
 	      rtx coeff1 = gen_int_mode (factor, mode);
-	      val = expand_mult (mode, val, coeff1, NULL_RTX, false, true);
+	      val = expand_mult (mode, val, coeff1, NULL_RTX, true, true);
 	    }
 	  else
 	    {
@@ -5154,8 +5291,11 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
       switch (sty)
 	{
 	case SYMBOL_FORCE_TO_MEM:
+	  if (int_mode != ptr_mode)
+	    imm = convert_memory_address (ptr_mode, imm);
+
 	  if (const_offset != 0
-	      && targetm.cannot_force_const_mem (int_mode, imm))
+	      && targetm.cannot_force_const_mem (ptr_mode, imm))
 	    {
 	      gcc_assert (can_create_pseudo_p ());
 	      base = aarch64_force_temporary (int_mode, dest, base);
@@ -7366,7 +7506,18 @@ offset_4bit_signed_scaled_p (machine_mode mode, poly_int64 offset)
 	  && IN_RANGE (multiple, -8, 7));
 }
 
-/* Return true if OFFSET is a unsigned 6-bit value multiplied by the size
+/* Return true if OFFSET is a signed 6-bit value multiplied by the size
+   of MODE.  */
+
+static inline bool
+offset_6bit_signed_scaled_p (machine_mode mode, poly_int64 offset)
+{
+  HOST_WIDE_INT multiple;
+  return (constant_multiple_p (offset, GET_MODE_SIZE (mode), &multiple)
+	  && IN_RANGE (multiple, -32, 31));
+}
+
+/* Return true if OFFSET is an unsigned 6-bit value multiplied by the size
    of MODE.  */
 
 static inline bool
@@ -11037,10 +11188,10 @@ aarch64_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   /* XXX We should really define a "clear_cache" pattern and use
      gen_clear_cache().  */
   a_tramp = XEXP (m_tramp, 0);
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
-		     LCT_NORMAL, VOIDmode, a_tramp, ptr_mode,
-		     plus_constant (ptr_mode, a_tramp, TRAMPOLINE_SIZE),
-		     ptr_mode);
+  maybe_emit_call_builtin___clear_cache (a_tramp,
+					 plus_constant (ptr_mode,
+							a_tramp,
+							TRAMPOLINE_SIZE));
 }
 
 static unsigned char
@@ -11420,7 +11571,6 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
   if (VECTOR_MODE_P (mode))
     {
       unsigned int vec_flags = aarch64_classify_vector_mode (mode);
-      mode = GET_MODE_INNER (mode);
       if (vec_flags & VEC_ADVSIMD)
 	{
 	  /* The by-element versions of the instruction have the same costs as
@@ -11434,6 +11584,17 @@ aarch64_rtx_mult_cost (rtx x, enum rtx_code code, int outer, bool speed)
 	  else if (GET_CODE (op1) == VEC_DUPLICATE)
 	    op1 = XEXP (op1, 0);
 	}
+      cost += rtx_cost (op0, mode, MULT, 0, speed);
+      cost += rtx_cost (op1, mode, MULT, 1, speed);
+      if (speed)
+	{
+	  if (GET_CODE (x) == MULT)
+	    cost += extra_cost->vect.mult;
+	  /* This is to catch the SSRA costing currently flowing here.  */
+	  else
+	    cost += extra_cost->vect.alu;
+	}
+      return cost;
     }
 
   /* Integer multiply/fma.  */
@@ -11912,10 +12073,11 @@ aarch64_mask_and_shift_for_ubfiz_p (scalar_int_mode mode, rtx mask,
 				    rtx shft_amnt)
 {
   return CONST_INT_P (mask) && CONST_INT_P (shft_amnt)
-	 && INTVAL (shft_amnt) < GET_MODE_BITSIZE (mode)
-	 && exact_log2 ((INTVAL (mask) >> INTVAL (shft_amnt)) + 1) >= 0
-	 && (INTVAL (mask)
-	     & ((HOST_WIDE_INT_1U << INTVAL (shft_amnt)) - 1)) == 0;
+	 && INTVAL (mask) > 0
+	 && UINTVAL (shft_amnt) < GET_MODE_BITSIZE (mode)
+	 && exact_log2 ((UINTVAL (mask) >> UINTVAL (shft_amnt)) + 1) >= 0
+	 && (UINTVAL (mask)
+	     & ((HOST_WIDE_INT_1U << UINTVAL (shft_amnt)) - 1)) == 0;
 }
 
 /* Return true if the masks and a shift amount from an RTX of the form
@@ -12430,8 +12592,18 @@ cost_plus:
 	    *cost += rtx_cost (op0, mode, PLUS, 0, speed);
 
 	    if (speed)
-	      /* ADD (immediate).  */
-	      *cost += extra_cost->alu.arith;
+	      {
+		/* ADD (immediate).  */
+		*cost += extra_cost->alu.arith;
+
+		/* Some tunings prefer to not use the VL-based scalar ops.
+		   Increase the cost of the poly immediate to prevent their
+		   formation.  */
+		if (GET_CODE (op1) == CONST_POLY_INT
+		    && (aarch64_tune_params.extra_tuning_flags
+			& AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS))
+		  *cost += COSTS_N_INSNS (1);
+	      }
 	    return true;
 	  }
 
@@ -13333,6 +13505,9 @@ aarch64_init_builtins ()
 {
   aarch64_general_init_builtins ();
   aarch64_sve::init_builtins ();
+#ifdef SUBTARGET_INIT_BUILTINS
+  SUBTARGET_INIT_BUILTINS;
+#endif
 }
 
 /* Implement TARGET_FOLD_BUILTIN.  */
@@ -13712,6 +13887,13 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
   if (vectype != NULL)
     fp = FLOAT_TYPE_P (vectype);
 
+  const simd_vec_cost *simd_costs;
+  if (vectype != NULL && aarch64_sve_mode_p (TYPE_MODE (vectype))
+      && costs->sve != NULL)
+    simd_costs = costs->sve;
+  else
+    simd_costs = costs->advsimd;
+
   switch (type_of_cost)
     {
       case scalar_stmt:
@@ -13724,27 +13906,28 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	return costs->scalar_store_cost;
 
       case vector_stmt:
-	return fp ? costs->vec_fp_stmt_cost : costs->vec_int_stmt_cost;
+	return fp ? simd_costs->fp_stmt_cost
+		  : simd_costs->int_stmt_cost;
 
       case vector_load:
-	return costs->vec_align_load_cost;
+	return simd_costs->align_load_cost;
 
       case vector_store:
-	return costs->vec_store_cost;
+	return simd_costs->store_cost;
 
       case vec_to_scalar:
-	return costs->vec_to_scalar_cost;
+	return simd_costs->vec_to_scalar_cost;
 
       case scalar_to_vec:
-	return costs->scalar_to_vec_cost;
+	return simd_costs->scalar_to_vec_cost;
 
       case unaligned_load:
       case vector_gather_load:
-	return costs->vec_unalign_load_cost;
+	return simd_costs->unalign_load_cost;
 
       case unaligned_store:
       case vector_scatter_store:
-	return costs->vec_unalign_store_cost;
+	return simd_costs->unalign_store_cost;
 
       case cond_branch_taken:
 	return costs->cond_taken_branch_cost;
@@ -13753,10 +13936,11 @@ aarch64_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	return costs->cond_not_taken_branch_cost;
 
       case vec_perm:
-	return costs->vec_permute_cost;
+	return simd_costs->permute_cost;
 
       case vec_promote_demote:
-	return fp ? costs->vec_fp_stmt_cost : costs->vec_int_stmt_cost;
+	return fp ? simd_costs->fp_stmt_cost
+		  : simd_costs->int_stmt_cost;
 
       case vec_construct:
 	elements = estimated_poly_value (TYPE_VECTOR_SUBPARTS (vectype));
@@ -14304,6 +14488,19 @@ aarch64_parse_override_string (const char* input_string,
   free (string_root);
 }
 
+/* Adjust CURRENT_TUNE (a generic tuning struct) with settings that
+   are best for a generic target with the currently-enabled architecture
+   extensions.  */
+static void
+aarch64_adjust_generic_arch_tuning (struct tune_params &current_tune)
+{
+  /* Neoverse V1 is the only core that is known to benefit from
+     AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS.  There is therefore no
+     point enabling it for SVE2 and above.  */
+  if (TARGET_SVE2)
+    current_tune.extra_tuning_flags
+      &= ~AARCH64_EXTRA_TUNE_CSE_SVE_VL_CONSTANTS;
+}
 
 static void
 aarch64_override_options_after_change_1 (struct gcc_options *opts)
@@ -14374,6 +14571,8 @@ aarch64_override_options_internal (struct gcc_options *opts)
      we may later overwrite.  */
   aarch64_tune_params = *(selected_tune->tune);
   aarch64_architecture_version = selected_arch->architecture_version;
+  if (selected_tune->tune == &generic_tunings)
+    aarch64_adjust_generic_arch_tuning (aarch64_tune_params);
 
   if (opts->x_aarch64_override_tune_string)
     aarch64_parse_override_string (opts->x_aarch64_override_tune_string,
@@ -17095,7 +17294,7 @@ aarch64_composite_type_p (const_tree type,
    parameter passing registers are available).
 
    Upon successful return, *COUNT returns the number of needed registers,
-   *BASE_MODE returns the mode of the individual register and when IS_HAF
+   *BASE_MODE returns the mode of the individual register and when IS_HA
    is not NULL, *IS_HA indicates whether or not the argument is a homogeneous
    floating-point aggregate or a homogeneous short-vector aggregate.
 
@@ -17288,8 +17487,6 @@ aarch64_simd_container_mode (scalar_mode mode, poly_int64 width)
   return word_mode;
 }
 
-static HOST_WIDE_INT aarch64_estimated_poly_value (poly_int64);
-
 /* Compare an SVE mode SVE_M and an Advanced SIMD mode ASIMD_M
    and return whether the SVE mode should be preferred over the
    Advanced SIMD one in aarch64_autovectorize_vector_modes.  */
@@ -17322,8 +17519,8 @@ aarch64_cmp_autovec_modes (machine_mode sve_m, machine_mode asimd_m)
     return maybe_gt (nunits_sve, nunits_asimd);
 
   /* Otherwise estimate the runtime width of the modes involved.  */
-  HOST_WIDE_INT est_sve = aarch64_estimated_poly_value (nunits_sve);
-  HOST_WIDE_INT est_asimd = aarch64_estimated_poly_value (nunits_asimd);
+  HOST_WIDE_INT est_sve = estimated_poly_value (nunits_sve);
+  HOST_WIDE_INT est_asimd = estimated_poly_value (nunits_asimd);
 
   /* Preferring SVE means picking it first unless the Advanced SIMD mode
      is clearly wider.  */
@@ -17344,10 +17541,11 @@ aarch64_preferred_simd_mode (scalar_mode mode)
 {
   /* Take into account explicit auto-vectorization ISA preferences through
      aarch64_cmp_autovec_modes.  */
-  poly_int64 bits
-    = (TARGET_SVE && aarch64_cmp_autovec_modes (VNx16QImode, V16QImode))
-       ? BITS_PER_SVE_VECTOR : 128;
-  return aarch64_simd_container_mode (mode, bits);
+  if (TARGET_SVE && aarch64_cmp_autovec_modes (VNx16QImode, V16QImode))
+    return aarch64_full_sve_mode (mode).else_mode (word_mode);
+  if (TARGET_SIMD)
+    return aarch64_vq_mode (mode).else_mode (word_mode);
+  return word_mode;
 }
 
 /* Return a list of possible vector sizes for the vectorizer
@@ -18416,11 +18614,11 @@ bool
 aarch64_sve_prefetch_operand_p (rtx op, machine_mode mode)
 {
   struct aarch64_address_info addr;
-  if (!aarch64_classify_address (&addr, op, mode, false))
+  if (!aarch64_classify_address (&addr, op, mode, false, ADDR_QUERY_ANY))
     return false;
 
   if (addr.type == ADDRESS_REG_IMM)
-    return known_eq (addr.const_offset, 0);
+    return offset_6bit_signed_scaled_p (mode, addr.const_offset);
 
   return addr.type == ADDRESS_REG_REG;
 }
@@ -20928,8 +21126,11 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   d.vmode = vmode;
   d.vec_flags = aarch64_classify_vector_mode (d.vmode);
   d.target = target;
-  d.op0 = op0;
-  d.op1 = op1;
+  d.op0 = op0 ? force_reg (vmode, op0) : NULL_RTX;
+  if (op0 == op1)
+    d.op1 = d.op0;
+  else
+    d.op1 = op1 ? force_reg (vmode, op1) : NULL_RTX;
   d.testing_p = !target;
 
   if (!d.testing_p)
@@ -23116,19 +23317,38 @@ aarch64_speculation_safe_value (machine_mode mode,
 
 /* Implement TARGET_ESTIMATED_POLY_VALUE.
    Look into the tuning structure for an estimate.
-   VAL.coeffs[1] is multiplied by the number of VQ chunks over the initial
-   Advanced SIMD 128 bits.  */
+   KIND specifies the type of requested estimate: min, max or likely.
+   For cores with a known SVE width all three estimates are the same.
+   For generic SVE tuning we want to distinguish the maximum estimate from
+   the minimum and likely ones.
+   The likely estimate is the same as the minimum in that case to give a
+   conservative behavior of auto-vectorizing with SVE when it is a win
+   even for 128-bit SVE.
+   When SVE width information is available VAL.coeffs[1] is multiplied by
+   the number of VQ chunks over the initial Advanced SIMD 128 bits.  */
 
 static HOST_WIDE_INT
-aarch64_estimated_poly_value (poly_int64 val)
+aarch64_estimated_poly_value (poly_int64 val,
+			      poly_value_estimate_kind kind
+				= POLY_VALUE_LIKELY)
 {
   enum aarch64_sve_vector_bits_enum width_source
     = aarch64_tune_params.sve_width;
 
-  /* If we still don't have an estimate, use the default.  */
+  /* If there is no core-specific information then the minimum and likely
+     values are based on 128-bit vectors and the maximum is based on
+     the architectural maximum of 2048 bits.  */
   if (width_source == SVE_SCALABLE)
-    return default_estimated_poly_value (val);
+    switch (kind)
+      {
+      case POLY_VALUE_MIN:
+      case POLY_VALUE_LIKELY:
+	return val.coeffs[0];
+      case POLY_VALUE_MAX:
+	  return val.coeffs[0] + val.coeffs[1] * 15;
+      }
 
+  /* If the core provides width information, use that.  */
   HOST_WIDE_INT over_128 = width_source - 128;
   return val.coeffs[0] + val.coeffs[1] * over_128 / 128;
 }
@@ -23170,7 +23390,7 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
 					struct cgraph_simd_clone *clonei,
 					tree base_type, int num)
 {
-  tree t, ret_type, arg_type;
+  tree t, ret_type;
   unsigned int elt_bits, count;
   unsigned HOST_WIDE_INT const_simdlen;
   poly_uint64 vec_bits;
@@ -23210,11 +23430,17 @@ aarch64_simd_clone_compute_vecsize_and_simdlen (struct cgraph_node *node,
       return 0;
     }
 
-  for (t = DECL_ARGUMENTS (node->decl); t; t = DECL_CHAIN (t))
-    {
-      arg_type = TREE_TYPE (t);
+  int i;
+  tree type_arg_types = TYPE_ARG_TYPES (TREE_TYPE (node->decl));
+  bool decl_arg_p = (node->definition || type_arg_types == NULL_TREE);
 
-      if (!currently_supported_simd_type (arg_type, base_type))
+  for (t = (decl_arg_p ? DECL_ARGUMENTS (node->decl) : type_arg_types), i = 0;
+       t && t != void_list_node; t = TREE_CHAIN (t), i++)
+    {
+      tree arg_type = decl_arg_p ? TREE_TYPE (t) : TREE_VALUE (t);
+
+      if (clonei->args[i].arg_type != SIMD_CLONE_ARG_TYPE_UNIFORM
+	  && !currently_supported_simd_type (arg_type, base_type))
 	{
 	  if (TYPE_SIZE (arg_type) != TYPE_SIZE (base_type))
 	    warning_at (DECL_SOURCE_LOCATION (node->decl), 0,

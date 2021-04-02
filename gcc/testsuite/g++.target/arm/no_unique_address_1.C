@@ -1,5 +1,5 @@
 /* { dg-require-effective-target arm_arch_v8a_hard_ok } */
-/* { dg-options "-std=c++11 -O -foptimize-sibling-calls" } */
+/* { dg-options "-std=c++11 -O -foptimize-sibling-calls -mno-long-calls" } */
 /* { dg-add-options arm_arch_v8a_hard } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 

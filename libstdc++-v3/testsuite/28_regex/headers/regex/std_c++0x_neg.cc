@@ -1,7 +1,8 @@
 // { dg-options "-std=gnu++98" }
 // { dg-do compile { target c++98_only } }
+// { dg-timeout-factor 2 }
 
-// Copyright (C) 2007-2020 Free Software Foundation, Inc.
+// Copyright (C) 2007-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

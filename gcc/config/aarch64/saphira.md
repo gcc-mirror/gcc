@@ -1,5 +1,5 @@
 ;; Saphira pipeline description
-;; Copyright (C) 2017-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2017-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -224,7 +224,7 @@
 
 (define_insn_reservation "saphira_alu_1_xyz" 1
   (and (eq_attr "tune" "saphira")
-       (eq_attr "type" "alus_sreg,alus_imm,alus_shift_imm,csel,adc_reg,alu_imm,alu_sreg,alu_shift_imm,alu_ext,alus_ext,logic_imm,logic_reg,logic_shift_imm,logics_imm,logics_reg,logics_shift_imm,mov_reg"))
+       (eq_attr "type" "alus_sreg,alus_imm,alus_shift_imm,csel,adc_reg,alu_imm,alu_sreg,alu_shift_imm_lsl_1to4,alu_shift_imm_other,alu_ext,alus_ext,logic_imm,logic_reg,logic_shift_imm,logics_imm,logics_reg,logics_shift_imm,mov_reg"))
   "saphira_xyzb")
 
 ;; SIMD Miscellaneous Instructions

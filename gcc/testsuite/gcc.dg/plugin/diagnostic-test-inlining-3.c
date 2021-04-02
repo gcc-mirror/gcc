@@ -35,7 +35,8 @@ int main()
    This test case captures this behavior.  */
 
 /* { dg-regexp "In function 'foo'," "" } */
-/* { dg-regexp "    inlined from 'main' at .+/diagnostic-test-inlining-3.c:15:3:" "" } */
+/* { dg-regexp "    inlined from 'bar' at .+/diagnostic-test-inlining-3.c:15:3," "" } */
+/* { dg-regexp "    inlined from 'main' at .+/diagnostic-test-inlining-3.c:20:3:" "" } */
 /* { dg-warning "3: message" "" { target *-*-* } 9 } */
 /* { dg-begin-multiline-output "" }
    __emit_warning ("message");

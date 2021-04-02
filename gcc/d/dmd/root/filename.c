@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * (See accompanying file LICENSE or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -173,6 +173,20 @@ bool FileName::absolute(const char *name)
 #else
     assert(0);
 #endif
+}
+
+/**
+Return the given name as an absolute path
+
+Params:
+    name = path
+    base = the absolute base to prefix name with if it is relative
+
+Returns: name as an absolute path relative to base
+*/
+const char *FileName::toAbsolute(const char *name, const char *base)
+{
+    return absolute(name) ? name : combine(base ? base : getcwd(NULL, 0), name);
 }
 
 /********************************

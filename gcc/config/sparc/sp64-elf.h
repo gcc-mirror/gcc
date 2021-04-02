@@ -1,5 +1,5 @@
 /* Definitions of target machine for GCC, for SPARC64, ELF.
-   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+   Copyright (C) 1994-2021 Free Software Foundation, Inc.
    Contributed by Doug Evans, dje@cygnus.com.
 
 This file is part of GCC.

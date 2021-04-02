@@ -1,5 +1,5 @@
 /* Part of CPP library.  File handling.
-   Copyright (C) 1986-2020 Free Software Foundation, Inc.
+   Copyright (C) 1986-2021 Free Software Foundation, Inc.
    Written by Per Bothner, 1994.
    Based on CCCP program by Paul Rubin, June 1986
    Adapted to ANSI C, Richard Stallman, Jan 1987
@@ -918,13 +918,17 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 	 because we don't usually need that location (we're popping an
 	 include file).  However in this case we do want to do the
 	 increment.  So push a writable buffer of two newlines to acheive
-	 that.  */
-      static uchar newlines[] = "\n\n";
+	 that.  (We also need an extra newline, so this looks like a regular
+	 file, which we do that to to make sure we don't fall off the end in the
+	 middle of a line.  */
+      static uchar newlines[] = "\n\n\n";
       cpp_push_buffer (pfile, newlines, 2, true);
 
+      size_t len = strlen (buf);
+      buf[len] = '\n'; /* See above  */
       cpp_buffer *buffer
 	= cpp_push_buffer (pfile, reinterpret_cast<unsigned char *> (buf),
-			   strlen (buf), true);
+			   len, true);
       buffer->to_free = buffer->buf;
 
       file->header_unit = +1;
@@ -1104,31 +1108,54 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   return _cpp_stack_file (pfile, file, type, loc);
 }
 
-/* NAME is a header file name, find the path we'll use to open it.  */
+/* NAME is a header file name, find the _cpp_file, if any.  */
+
+static _cpp_file *
+test_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		  location_t loc)
+{
+  if (cpp_dir *dir = search_path_head (pfile, name, angle, IT_INCLUDE))
+    return _cpp_find_file (pfile, name, dir, angle, _cpp_FFK_NORMAL, loc);
+
+  return nullptr;
+}
+
+/* NAME is a header file name, find the path we'll use to open it and infer that
+   it is a header-unit.  */
 
 const char *
-cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
-		      location_t loc)
+_cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		       location_t loc)
 {
-  cpp_dir *dir = search_path_head (pfile, name, angle, IT_INCLUDE);
-  if (!dir)
-    return NULL;
-
-  _cpp_file *file = _cpp_find_file (pfile, name, dir, angle,
-				    _cpp_FFK_NORMAL, loc);
-  if (!file)
-    return NULL;
-
-  if (file->fd > 0)
+  if (_cpp_file *file = test_header_unit (pfile, name, angle, loc))
     {
-      /* Don't leave it open.  */
-      close (file->fd);
-      file->fd = 0;
+      if (file->fd > 0)
+	{
+	  /* Don't leave it open.  */
+	  close (file->fd);
+	  file->fd = 0;
+	}
+
+      file->header_unit = +1;
+      _cpp_mark_file_once_only (pfile, file);
+
+      return file->path;
     }
 
-  file->header_unit = +1;
-  _cpp_mark_file_once_only (pfile, file);
-  return file->path;
+  return nullptr;
+}
+
+/* NAME is a header file name, find the path we'll use to open it.  But do not
+   infer it is a header unit.  */
+
+const char *
+cpp_probe_header_unit (cpp_reader *pfile, const char *name, bool angle,
+		       location_t loc)
+{
+  if (_cpp_file *file = test_header_unit (pfile, name, angle, loc))
+    return file->path;
+
+  return nullptr;
 }
 
 /* Retrofit the just-entered main file asif it was an include.  This

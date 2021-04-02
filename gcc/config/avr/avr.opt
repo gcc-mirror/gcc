@@ -1,6 +1,6 @@
 ; Options for the ATMEL AVR port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 mcall-prologues
-Target Report Mask(CALL_PROLOGUES)
+Target Mask(CALL_PROLOGUES)
 Use subroutines for function prologues and epilogues.
 
 mmcu=
@@ -27,7 +27,7 @@ Target RejectNegative Joined Var(avr_mmcu) MissingArgError(missing device or arc
 -mmcu=MCU	Select the target MCU.
 
 mgas-isr-prologues
-Target Report Var(avr_gasisr_prologues) UInteger Init(0)
+Target Var(avr_gasisr_prologues) UInteger Init(0)
 Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues.
 
 mn-flash=
@@ -35,100 +35,100 @@ Target RejectNegative Joined Var(avr_n_flash) UInteger Init(-1)
 Set the number of 64 KiB flash segments.
 
 mskip-bug
-Target Report Mask(SKIP_BUG)
+Target Mask(SKIP_BUG)
 Indicate presence of a processor erratum.
 
 mrmw
-Target Report Mask(RMW)
+Target Mask(RMW)
 Enable Read-Modify-Write (RMW) instructions support/use.
 
 mdeb
-Target Report Undocumented Mask(ALL_DEBUG)
+Target Undocumented Mask(ALL_DEBUG)
 
 mlog=
 Target RejectNegative Joined Undocumented Var(avr_log_details)
 
 mshort-calls
-Target Report RejectNegative Mask(SHORT_CALLS)
+Target RejectNegative Mask(SHORT_CALLS)
 Use RJMP / RCALL even though CALL / JMP are available.
 
 mint8
-Target Report Mask(INT8)
+Target Mask(INT8)
 Use an 8-bit 'int' type.
 
 mno-interrupts
-Target Report RejectNegative Mask(NO_INTERRUPTS)
+Target RejectNegative Mask(NO_INTERRUPTS)
 Change the stack pointer without disabling interrupts.
 
 mbranch-cost=
-Target Report Joined RejectNegative UInteger Var(avr_branch_cost) Init(0)
+Target Joined RejectNegative UInteger Var(avr_branch_cost) Init(0)
 Set the branch costs for conditional branch instructions.  Reasonable values are small, non-negative integers.  The default branch cost is 0.
 
 mmain-is-OS_task
-Target Report Mask(MAIN_IS_OS_TASK)
+Target Mask(MAIN_IS_OS_TASK)
 Treat main as if it had attribute OS_task.
 
 morder1
-Target Report Undocumented Mask(ORDER_1)
+Target Undocumented Mask(ORDER_1)
 
 morder2
-Target Report Undocumented Mask(ORDER_2)
+Target Undocumented Mask(ORDER_2)
 
 mtiny-stack
-Target Report Mask(TINY_STACK)
+Target Mask(TINY_STACK)
 Change only the low 8 bits of the stack pointer.
 
 mrelax
-Target Report
+Target
 Relax branches.
 
 mpmem-wrap-around
-Target Report
+Target
 Make the linker relaxation machine assume that a program counter wrap-around occurs.
 
 maccumulate-args
-Target Report Mask(ACCUMULATE_OUTGOING_ARGS)
+Target Mask(ACCUMULATE_OUTGOING_ARGS)
 Accumulate outgoing function arguments and acquire/release the needed stack space for outgoing function arguments in function prologue/epilogue.  Without this option, outgoing arguments are pushed before calling a function and popped afterwards.  This option can lead to reduced code size for functions that call many functions that get their arguments on the stack like, for example printf.
 
 mstrict-X
-Target Report Var(avr_strict_X) Init(0)
+Target Var(avr_strict_X) Init(0)
 When accessing RAM, use X as imposed by the hardware, i.e. just use pre-decrement, post-increment and indirect addressing with the X register.  Without this option, the compiler may assume that there is an addressing mode X+const similar to Y+const and Z+const and emit instructions to emulate such an addressing mode for X.
 
 ;; For rationale behind -msp8 see explanation in avr.h.
 msp8
-Target Report RejectNegative Var(avr_sp8) Init(0)
+Target RejectNegative Var(avr_sp8) Init(0)
 The device has no SPH special function register. This option will be overridden by the compiler driver with the correct setting if presence/absence of SPH can be deduced from -mmcu=MCU.
 
 Waddr-space-convert
-Warning C Report Var(avr_warn_addr_space_convert) Init(0)
+Warning C Var(avr_warn_addr_space_convert) Init(0)
 Warn if the address space of an address is changed.
 
 Wmisspelled-isr
-Warning C C++ Report Var(avr_warn_misspelled_isr) Init(1)
+Warning C C++ Var(avr_warn_misspelled_isr) Init(1)
 Warn if the ISR is misspelled, i.e. without __vector prefix. Enabled by default.
 
 mfract-convert-truncate
-Target Report Mask(FRACT_CONV_TRUNC)
+Target Mask(FRACT_CONV_TRUNC)
 Allow to use truncation instead of rounding towards zero for fractional fixed-point types.
 
 mabsdata
-Target Report Mask(ABSDATA)
+Target Mask(ABSDATA)
 Assume that all data in static storage can be accessed by LDS / STS.  This option is only useful for reduced Tiny devices.
 
 mdouble=
-Target Report Joined RejectNegative Var(avr_double) Init(0) Enum(avr_bits_e)
+Target Joined RejectNegative Var(avr_double) Init(0) Enum(avr_bits_e)
 -mdouble=<BITS>	Use <BITS> bits wide double type.
 
 mlong-double=
-Target Report Joined RejectNegative Var(avr_long_double) Init(0) Enum(avr_bits_e)
+Target Joined RejectNegative Var(avr_long_double) Init(0) Enum(avr_bits_e)
 -mlong-double=<BITS>	Use <BITS> bits wide long double type.
 
 nodevicelib
-Driver Target Report RejectNegative
+Driver Target RejectNegative
 Do not link against the device-specific library lib<MCU>.a.
 
 nodevicespecs
-Driver Target Report RejectNegative
+Driver Target RejectNegative
 Do not use the device-specific specs file device-specs/specs-<MCU>.
 
 Enum

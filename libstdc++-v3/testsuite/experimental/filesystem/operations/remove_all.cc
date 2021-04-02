@@ -1,4 +1,4 @@
-// Copyright (C) 2016-2020 Free Software Foundation, Inc.
+// Copyright (C) 2016-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -137,6 +137,8 @@ test04()
   }
 
   fs::permissions(dir, fs::perms::owner_write|fs::perms::add_perms);
+  fs::remove_all(dir, ec);
+  f.path.clear();
 #endif
 }
 

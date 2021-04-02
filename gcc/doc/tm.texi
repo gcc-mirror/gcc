@@ -1,4 +1,4 @@
-@c Copyright (C) 1988-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1988-2021 Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
@@ -5458,9 +5458,22 @@ Note that the block move need only cover the constant parts of the
 trampoline.  If the target isolates the variable parts of the trampoline
 to the end, not all @code{TRAMPOLINE_SIZE} bytes need be copied.
 
-If the target requires any other actions, such as flushing caches or
+If the target requires any other actions, such as flushing caches
+(possibly calling function maybe_emit_call_builtin___clear_cache) or
 enabling stack execution, these actions should be performed after
 initializing the trampoline proper.
+@end deftypefn
+
+@deftypefn {Target Hook} void TARGET_EMIT_CALL_BUILTIN___CLEAR_CACHE (rtx @var{begin}, rtx @var{end})
+On targets that do not define a @code{clear_cache} insn expander,
+but that define the @code{CLEAR_CACHE_INSN} macro,
+maybe_emit_call_builtin___clear_cache relies on this target hook
+to clear an address range in the instruction cache.
+
+The default implementation calls the @code{__clear_cache} builtin,
+taking the assembler name from the builtin declaration.  Overriding
+definitions may call alternate functions, with alternate calling
+conventions, or emit alternate RTX to perform the job.
 @end deftypefn
 
 @deftypefn {Target Hook} rtx TARGET_TRAMPOLINE_ADJUST_ADDRESS (rtx @var{addr})
@@ -5491,7 +5504,7 @@ the following macro.
 If defined, expands to a C expression clearing the @emph{instruction
 cache} in the specified interval.  The definition of this macro would
 typically be a series of @code{asm} statements.  Both @var{beg} and
-@var{end} are both pointer expressions.
+@var{end} are pointer expressions.
 @end defmac
 
 To use a standard subroutine, define the following macro.  In addition,
@@ -6993,9 +7006,12 @@ delay slot branches filled using the basic filler is often still desirable
 as the delay slot can hide a pipeline bubble.
 @end deftypefn
 
-@deftypefn {Target Hook} HOST_WIDE_INT TARGET_ESTIMATED_POLY_VALUE (poly_int64 @var{val})
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_ESTIMATED_POLY_VALUE (poly_int64 @var{val}, poly_value_estimate_kind @var{kind})
 Return an estimate of the runtime value of @var{val}, for use in
-things like cost calculations or profiling frequencies.  The default
+things like cost calculations or profiling frequencies.  @var{kind} is used
+to ask for the minimum, maximum, and likely estimates of the value through
+the @code{POLY_VALUE_MIN}, @code{POLY_VALUE_MAX} and
+@code{POLY_VALUE_LIKELY} values.  The default
 implementation returns the lowest possible value of @var{val}.
 @end deftypefn
 
@@ -8078,43 +8094,9 @@ need to override this if your target has special flags that might be
 set via @code{__attribute__}.
 @end deftypefn
 
-@deftypefn {Target Hook} int TARGET_ASM_RECORD_GCC_SWITCHES (print_switch_type @var{type}, const char *@var{text})
+@deftypefn {Target Hook} void TARGET_ASM_RECORD_GCC_SWITCHES (const char *@var{})
 Provides the target with the ability to record the gcc command line
-switches that have been passed to the compiler, and options that are
-enabled.  The @var{type} argument specifies what is being recorded.
-It can take the following values:
-
-@table @gcctabopt
-@item SWITCH_TYPE_PASSED
-@var{text} is a command line switch that has been set by the user.
-
-@item SWITCH_TYPE_ENABLED
-@var{text} is an option which has been enabled.  This might be as a
-direct result of a command line switch, or because it is enabled by
-default or because it has been enabled as a side effect of a different
-command line switch.  For example, the @option{-O2} switch enables
-various different individual optimization passes.
-
-@item SWITCH_TYPE_DESCRIPTIVE
-@var{text} is either NULL or some descriptive text which should be
-ignored.  If @var{text} is NULL then it is being used to warn the
-target hook that either recording is starting or ending.  The first
-time @var{type} is SWITCH_TYPE_DESCRIPTIVE and @var{text} is NULL, the
-warning is for start up and the second time the warning is for
-wind down.  This feature is to allow the target hook to make any
-necessary preparations before it starts to record switches and to
-perform any necessary tidying up after it has finished recording
-switches.
-
-@item SWITCH_TYPE_LINE_START
-This option can be ignored by this target hook.
-
-@item  SWITCH_TYPE_LINE_END
-This option can be ignored by this target hook.
-@end table
-
-The hook's return value must be zero.  Other return values may be
-supported in the future.
+switches provided as argument.
 
 By default this hook is set to NULL, but an example implementation is
 provided for ELF based targets.  Called @var{elf_record_gcc_switches},
@@ -9570,6 +9552,10 @@ If necessary, modify personality and LSDA references to handle indirection.  The
 True if the @code{TARGET_ASM_UNWIND_EMIT} hook should be called before the assembly for @var{insn} has been emitted, false if the hook should be called afterward.
 @end deftypevr
 
+@deftypefn {Target Hook} bool TARGET_ASM_SHOULD_RESTORE_CFA_STATE (void)
+For DWARF-based unwind frames, two CFI instructions provide for save and restore of register state.  GCC maintains the current frame address (CFA) separately from the register bank but the unwinder in libgcc preserves this state along with the registers (and this is expected by the code that writes the unwind frames).  This hook allows the target to specify that the CFA data is not saved/restored along with the registers by the target unwinder so that suitable additional instructions should be emitted to restore it.
+@end deftypefn
+
 @node Exception Region Output
 @subsection Assembler Commands for Exception Regions
 
@@ -10823,6 +10809,26 @@ Similarly to @code{TARGET_D_CPU_VERSIONS}, but is used for versions
 relating to the target operating system.
 @end deftypefn
 
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION
+Contains the name of the section in which module info references should be
+placed.  This section is expected to be bracketed by two symbols to indicate
+the start and end address of the section, so that the runtime library can
+collect all modules for each loaded shared library and executable.  The
+default value of @code{NULL} disables the use of sections altogether.
+@end deftypevr
+
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_START_NAME
+If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
+as the name of the symbol indicating the start address of the module info
+section
+@end deftypevr
+
+@deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_END_NAME
+If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
+as the name of the symbol indicating the end address of the module info
+section
+@end deftypevr
+
 @node Rust Language and ABI
 @section Rust ABI parameters
 @cindex parameters, rust abi
@@ -11502,15 +11508,17 @@ from shared libraries (DLLs).
 You need not define this macro if it would always evaluate to zero.
 @end defmac
 
-@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs})
+@deftypefn {Target Hook} {rtx_insn *} TARGET_MD_ASM_ADJUST (vec<rtx>& @var{outputs}, vec<rtx>& @var{inputs}, vec<machine_mode>& @var{input_modes}, vec<const char *>& @var{constraints}, vec<rtx>& @var{clobbers}, HARD_REG_SET& @var{clobbered_regs})
 This target hook may add @dfn{clobbers} to @var{clobbers} and
 @var{clobbered_regs} for any hard regs the port wishes to automatically
 clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected
 to avoid clobbering a register that is already used by the asm.
 
-It may modify the @var{outputs}, @var{inputs}, and @var{constraints}
-as necessary for other pre-processing.  In this case the return value is
-a sequence of insns to emit after the asm.
+It may modify the @var{outputs}, @var{inputs}, @var{input_modes}, and
+@var{constraints} as necessary for other pre-processing.  In this case the
+return value is a sequence of insns to emit after the asm.  Note that
+changes to @var{inputs} must be accompanied by the corresponding changes
+to @var{input_modes}.
 @end deftypefn
 
 @defmac MATH_LIBRARY

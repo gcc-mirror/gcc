@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,7 +53,9 @@ test02()
   VERIFY( x.as_rvalue == true );
 
   char arr[2];
+#if __cplusplus <= 201703L
   std::istringstream("x") >> &arr[0];
+#endif
   std::istringstream("x") >> arr;
 }
 

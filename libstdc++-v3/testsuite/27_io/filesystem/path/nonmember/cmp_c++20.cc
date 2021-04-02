@@ -1,7 +1,7 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
 
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -53,7 +53,7 @@ void
 test02()
 {
   const path p0 = "/a/a/b/b";
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     VERIFY( std::is_eq(p <=> p) );
     VERIFY( (p <=> p0) == (p.compare(p0) <=> 0) );

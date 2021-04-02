@@ -9,11 +9,12 @@
  */
 module core.sys.windows.shellapi;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "shell32");
 
-private import core.sys.windows.w32api, core.sys.windows.windef, core.sys.windows.basetyps;
+import core.sys.windows.w32api, core.sys.windows.windef, core.sys.windows.basetyps;
 
 enum : UINT {
     ABE_LEFT,

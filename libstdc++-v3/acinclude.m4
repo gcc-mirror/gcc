@@ -1626,14 +1626,20 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
   fi
 
   if test x"$ac_has_nanosleep$ac_has_sleep" = x"nono"; then
+      ac_no_sleep=yes
       AC_MSG_CHECKING([for Sleep])
       AC_TRY_COMPILE([#include <windows.h>],
                      [Sleep(1)],
                      [ac_has_win32_sleep=yes],[ac_has_win32_sleep=no])
       if test x"$ac_has_win32_sleep" = x"yes"; then
         AC_DEFINE(HAVE_WIN32_SLEEP,1, [Defined if Sleep exists.])
+	ac_no_sleep=no
       fi
       AC_MSG_RESULT($ac_has_win32_sleep)
+  fi
+
+  if test x"$ac_no_sleep" = x"yes"; then
+    AC_DEFINE(NO_SLEEP,1, [Defined if no way to sleep is available.])
   fi
 
   AC_SUBST(GLIBCXX_LIBS)
@@ -2367,35 +2373,6 @@ AC_DEFUN([GLIBCXX_CHECK_MATH11_PROTO], [
 ])
 
 dnl
-dnl Check whether macros, etc are present for <system_error>
-dnl
-AC_DEFUN([GLIBCXX_CHECK_SYSTEM_ERROR], [
-
-m4_pushdef([n_syserr], [1])dnl
-m4_foreach([syserr], [EOWNERDEAD, ENOTRECOVERABLE, ENOLINK, EPROTO, ENODATA,
-		      ENOSR, ENOSTR, ETIME, EBADMSG, ECANCELED,
-		      EOVERFLOW, ENOTSUP, EIDRM, ETXTBSY,
-		      ECHILD, ENOSPC, EPERM,
-		      ETIMEDOUT, EWOULDBLOCK],
-[m4_pushdef([SYSERR], m4_toupper(syserr))dnl
-AC_MSG_CHECKING([for syserr])
-AC_CACHE_VAL([glibcxx_cv_system_error[]n_syserr], [
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <errno.h>]],
-				   [int i = syserr;])],
-		  [glibcxx_cv_system_error[]n_syserr=yes],
-		  [glibcxx_cv_system_error[]n_syserr=no])
-])
-AC_MSG_RESULT([$glibcxx_cv_system_error[]n_syserr])
-if test x"$glibcxx_cv_system_error[]n_syserr" = x"yes"; then
-  AC_DEFINE([HAVE_]SYSERR, 1, [Define if ]syserr[ exists.])
-fi
-m4_define([n_syserr], m4_incr(n_syserr))dnl
-m4_popdef([SYSERR])dnl
-])
-m4_popdef([n_syserr])dnl
-])
-
-dnl
 dnl Check for what type of C headers to use.
 dnl
 dnl --enable-cheaders= [does stuff].
@@ -2862,24 +2839,30 @@ AC_DEFUN([GLIBCXX_ENABLE_PARALLEL], [
 
 
 dnl
-dnl Check for which I/O library to use:  stdio, or something specific.
+dnl Check for which I/O library to use:  stdio and POSIX, or pure stdio.
 dnl
-dnl Default is stdio.
+dnl Default is stdio_posix.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_CSTDIO], [
   AC_MSG_CHECKING([for underlying I/O to use])
   GLIBCXX_ENABLE(cstdio,stdio,[[[=PACKAGE]]],
-    [use target-specific I/O package], [permit stdio])
+    [use target-specific I/O package], [permit stdio|stdio_posix|stdio_pure])
 
-  # Now that libio has been removed, you can have any color you want as long
-  # as it's black.  This is one big no-op until other packages are added, but
-  # showing the framework never hurts.
+  # The only available I/O model is based on stdio, via basic_file_stdio.
+  # The default "stdio" is actually "stdio + POSIX" because it uses fdopen(3)
+  # to get a file descriptor and then uses read(3) and write(3) with it.
+  # The "stdio_pure" model doesn't use fdopen and only uses FILE* for I/O.
   case ${enable_cstdio} in
-    stdio)
+    stdio*)
       CSTDIO_H=config/io/c_io_stdio.h
       BASIC_FILE_H=config/io/basic_file_stdio.h
       BASIC_FILE_CC=config/io/basic_file_stdio.cc
       AC_MSG_RESULT(stdio)
+
+      if test "x$enable_cstdio" = "xstdio_pure" ; then
+	AC_DEFINE(_GLIBCXX_USE_STDIO_PURE, 1,
+		  [Define to restrict std::__basic_file<> to stdio APIs.])
+      fi
       ;;
   esac
 

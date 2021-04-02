@@ -1,5 +1,6 @@
 /* { dg-do compile { target { powerpc*-*-darwin* powerpc*-*-aix* rs6000-*-* powerpc*-*-linux* } } } */
 /* { dg-options "-O2 -mlong-double-128 -fpic" } */
+/* { dg-require-effective-target fpic } */
 
 typedef int int32_t __attribute__ ((__mode__ (__SI__)));
 typedef unsigned char uint8_t;

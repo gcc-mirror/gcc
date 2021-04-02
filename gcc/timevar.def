@@ -1,6 +1,6 @@
 /* This file contains the definitions for timing variables used to
    measure run-time performance of the compiler.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Alex Samuel <samuel@codesourcery.com>
 
    This file is part of GCC.
@@ -145,6 +145,9 @@ DEFTIMEVAR (TV_CONSTEXPR	     , "constant expression evaluation")
 DEFTIMEVAR (TV_CONSTRAINT_NORM	     , "constraint normalization")
 DEFTIMEVAR (TV_CONSTRAINT_SAT	     , "constraint satisfaction")
 DEFTIMEVAR (TV_CONSTRAINT_SUB	     , "constraint subsumption")
+DEFTIMEVAR (TV_MODULE_IMPORT	     , "module import")
+DEFTIMEVAR (TV_MODULE_EXPORT	     , "module export")
+DEFTIMEVAR (TV_MODULE_MAPPER         , "module mapper")
 DEFTIMEVAR (TV_FLATTEN_INLINING      , "flatten inlining")
 DEFTIMEVAR (TV_EARLY_INLINING        , "early inlining heuristics")
 DEFTIMEVAR (TV_INLINE_PARAMETERS     , "inline parameters")
@@ -293,6 +296,7 @@ DEFTIMEVAR (TV_VAR_TRACKING          , "variable tracking")
 DEFTIMEVAR (TV_VAR_TRACKING_DATAFLOW , "var-tracking dataflow")
 DEFTIMEVAR (TV_VAR_TRACKING_EMIT     , "var-tracking emit")
 DEFTIMEVAR (TV_TREE_IFCOMBINE        , "tree if-combine")
+DEFTIMEVAR (TV_TREE_IF_TO_SWITCH     , "if to switch conversion")
 DEFTIMEVAR (TV_TREE_UNINIT           , "uninit var analysis")
 DEFTIMEVAR (TV_PLUGIN_INIT           , "plugin initialization")
 DEFTIMEVAR (TV_PLUGIN_RUN            , "plugin execution")

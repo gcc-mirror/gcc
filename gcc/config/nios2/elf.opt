@@ -1,5 +1,5 @@
 ; Options for the Altera Nios II port of the compiler.
-; Copyright (C) 2012-2020 Free Software Foundation, Inc.
+; Copyright (C) 2012-2021 Free Software Foundation, Inc.
 ; Contributed by Altera and Mentor Graphics, Inc.
 ;
 ; This file is part of GCC.
@@ -22,7 +22,7 @@
 ; toolchains.
 
 msmallc
-Target Report RejectNegative
+Target RejectNegative
 Link with a limited version of the C library.
 
 msys-lib=
@@ -34,5 +34,5 @@ Target RejectNegative Joined Var(nios2_sys_crt0_string)
 Name of the startfile.
 
 mhal
-Target Report RejectNegative
+Target RejectNegative
 Link with HAL BSP.

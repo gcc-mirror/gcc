@@ -1,5 +1,5 @@
 ;; Machine description for AArch64 SVE2.
-;; Copyright (C) 2019-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2019-2021 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 ;;
 ;; This file is part of GCC.
@@ -1799,6 +1799,16 @@
   [(set_attr "movprfx" "*,yes")]
 )
 
+;; unpredicated optab pattern for auto-vectorizer
+(define_expand "cadd<rot><mode>3"
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(unspec:SVE_FULL_I
+	  [(match_operand:SVE_FULL_I 1 "register_operand")
+	   (match_operand:SVE_FULL_I 2 "register_operand")]
+	  SVE2_INT_CADD_OP))]
+  "TARGET_SVE2"
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Complex ternary operations
 ;; -------------------------------------------------------------------------
@@ -1837,6 +1847,48 @@
    movprfx\t%0, %1\;<sve_int_op>\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>[%4], #<rot>"
   [(set_attr "movprfx" "*,yes")]
 )
+
+;; unpredicated optab pattern for auto-vectorizer
+;; The complex mla/mls operations always need to expand to two instructions.
+;; The first operation does half the computation and the second does the
+;; remainder.  Because of this, expand early.
+(define_expand "cml<fcmac1><conj_op><mode>4"
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(plus:SVE_FULL_I (match_operand:SVE_FULL_I 1 "register_operand")
+	  (unspec:SVE_FULL_I
+	    [(match_operand:SVE_FULL_I 2 "register_operand")
+	     (match_operand:SVE_FULL_I 3 "register_operand")]
+	    SVE2_INT_CMLA_OP)))]
+  "TARGET_SVE2"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_aarch64_sve_cmla<sve_rot1><mode> (tmp, operands[1],
+						   operands[3], operands[2]));
+  emit_insn (gen_aarch64_sve_cmla<sve_rot2><mode> (operands[0], tmp,
+						   operands[3], operands[2]));
+  DONE;
+})
+
+;; unpredicated optab pattern for auto-vectorizer
+;; The complex mul operations always need to expand to two instructions.
+;; The first operation does half the computation and the second does the
+;; remainder.  Because of this, expand early.
+(define_expand "cmul<conj_op><mode>3"
+  [(set (match_operand:SVE_FULL_I 0 "register_operand")
+	(unspec:SVE_FULL_I
+	  [(match_operand:SVE_FULL_I 1 "register_operand")
+	   (match_operand:SVE_FULL_I 2 "register_operand")]
+	  SVE2_INT_CMUL_OP))]
+  "TARGET_SVE2"
+{
+  rtx accum = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  emit_insn (gen_aarch64_sve_cmla<sve_rot1><mode> (tmp, accum,
+						   operands[2], operands[1]));
+  emit_insn (gen_aarch64_sve_cmla<sve_rot2><mode> (operands[0], tmp,
+						   operands[2], operands[1]));
+  DONE;
+})
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Complex dot product

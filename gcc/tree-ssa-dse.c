@@ -1,5 +1,5 @@
 /* Dead and redundant store elimination
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -693,7 +693,7 @@ dse_optimize_redundant_stores (gimple *stmt)
     {
       /* Limit stmt walking.  */
       if (++cnt > param_dse_max_alias_queries_per_store)
-	BREAK_FROM_IMM_USE_STMT (ui);
+	break;
 
       /* If USE_STMT stores 0 into one or more of the same locations
 	 as STMT and STMT would kill USE_STMT, then we can just remove
@@ -712,7 +712,7 @@ dse_optimize_redundant_stores (gimple *stmt)
 	  ao_ref write;
 
 	  if (!initialize_ao_ref_for_dse (use_stmt, &write))
-	    BREAK_FROM_IMM_USE_STMT (ui)
+	    break;
 
 	  if (valid_ao_ref_for_dse (&write)
 	      && stmt_kills_ref_p (stmt, &write))
@@ -805,7 +805,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	  if (++cnt > param_dse_max_alias_queries_per_store)
 	    {
 	      fail = true;
-	      BREAK_FROM_IMM_USE_STMT (ui);
+	      break;
 	    }
 
 	  /* We have visited ourselves already so ignore STMT for the
@@ -852,7 +852,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 		}
 
 	      fail = true;
-	      BREAK_FROM_IMM_USE_STMT (ui);
+	      break;
 	    }
 	  /* If this is a store, remember it as we possibly need to walk the
 	     defs uses.  */

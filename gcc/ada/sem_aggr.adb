@@ -1870,10 +1870,15 @@ package body Sem_Aggr is
       --  Test for the validity of an others choice if present
 
       if Others_Present and then not Others_Allowed then
-         Error_Msg_N
-           ("OTHERS choice not allowed here",
-            First (Choice_List (First (Component_Associations (N)))));
-         return Failure;
+         declare
+            Others_N : constant Node_Id :=
+              First (Choice_List (First (Component_Associations (N))));
+         begin
+            Error_Msg_N ("OTHERS choice not allowed here", Others_N);
+            Error_Msg_N ("\qualify the aggregate with a constrained subtype "
+                         & "to provide bounds for it", Others_N);
+            return Failure;
+         end;
       end if;
 
       --  Protect against cascaded errors
@@ -2944,7 +2949,7 @@ package body Sem_Aggr is
                   while Present (Choice) loop
                      Analyze_And_Resolve (Choice, Key_Type);
                      if not Is_Static_Expression (Choice) then
-                        Error_Msg_N ("Choice must be static", Choice);
+                        Error_Msg_N ("choice must be static", Choice);
                      end if;
 
                      Next (Choice);
@@ -2989,7 +2994,7 @@ package body Sem_Aggr is
 
             if Present (Component_Associations (N)) then
                if Present (Expressions (N)) then
-                  Error_Msg_N ("Container aggregate cannot be "
+                  Error_Msg_N ("container aggregate cannot be "
                     & "both positional and named", N);
                   return;
                end if;
@@ -3030,10 +3035,7 @@ package body Sem_Aggr is
       Base : constant Node_Id := Expression (N);
 
    begin
-      if Ada_Version < Ada_2020 then
-         Error_Msg_N ("delta_aggregate is an Ada 202x feature", N);
-         Error_Msg_N ("\compile with -gnat2020", N);
-      end if;
+      Error_Msg_Ada_2020_Feature ("delta aggregate", Sloc (N));
 
       if not Is_Composite_Type (Typ) then
          Error_Msg_N ("not a composite type", N);
@@ -3070,7 +3072,7 @@ package body Sem_Aggr is
             while Present (Choice) loop
                if Nkind (Choice) = N_Others_Choice then
                   Error_Msg_N
-                    ("others not allowed in delta aggregate", Choice);
+                    ("OTHERS not allowed in delta aggregate", Choice);
 
                elsif Nkind (Choice) = N_Subtype_Indication then
                   Resolve_Discrete_Subtype_Indication
@@ -3117,7 +3119,7 @@ package body Sem_Aggr is
 
                if Nkind (Choice) = N_Others_Choice then
                   Error_Msg_N
-                    ("others not allowed in delta aggregate", Choice);
+                    ("OTHERS not allowed in delta aggregate", Choice);
 
                elsif Is_Entity_Name (Choice)
                  and then Is_Type (Entity (Choice))
@@ -3710,9 +3712,10 @@ package body Sem_Aggr is
       --
       --  This variable is updated as a side effect of function Get_Value.
 
-      Box_Node       : Node_Id := Empty;
-      Is_Box_Present : Boolean := False;
-      Others_Box     : Natural := 0;
+      Box_Node               : Node_Id := Empty;
+      Is_Box_Present         : Boolean := False;
+      Is_Box_Init_By_Default : Boolean := False;
+      Others_Box             : Natural := 0;
       --  Ada 2005 (AI-287): Variables used in case of default initialization
       --  to provide a functionality similar to Others_Etype. Box_Present
       --  indicates that the component takes its default initialization;
@@ -3837,6 +3840,14 @@ package body Sem_Aggr is
              Choices     => Choice_List,
              Expression  => Expr,
              Box_Present => Is_Box_Present));
+
+         --  If this association has a box for a component that is initialized
+         --  by default, then set flag on the new association to indicate that
+         --  the original association was for such a box-initialized component.
+
+         if Is_Box_Init_By_Default then
+            Set_Was_Default_Init_Box_Association (Last (Assoc_List));
+         end if;
       end Add_Association;
 
       -----------------------------
@@ -4054,6 +4065,7 @@ package body Sem_Aggr is
 
       begin
          Is_Box_Present := False;
+         Is_Box_Init_By_Default := False;
 
          if No (From) then
             return Empty;
@@ -5049,6 +5061,11 @@ package body Sem_Aggr is
                Ctyp : constant Entity_Id := Etype (Component);
 
             begin
+               --  Initially assume that the box is for a default-initialized
+               --  component and reset to False in cases where that's not true.
+
+               Is_Box_Init_By_Default := True;
+
                --  If there is a default expression for the aggregate, copy
                --  it into a new association. This copy must modify the scopes
                --  of internal types that may be attached to the expression
@@ -5072,6 +5089,11 @@ package body Sem_Aggr is
                  and then Nkind (Parent (Component)) = N_Component_Declaration
                  and then Present (Expression (Parent (Component)))
                then
+                  --  If component declaration has an initialization expression
+                  --  then this is not a case of default initialization.
+
+                  Is_Box_Init_By_Default := False;
+
                   Expr :=
                     New_Copy_Tree_And_Copy_Dimensions
                       (Expression (Parent (Component)),
@@ -5362,7 +5384,7 @@ package body Sem_Aggr is
                     ("OTHERS must represent at least one component", Selectr);
 
                elsif Others_Box = 1 and then Warn_On_Redundant_Constructs then
-                  Error_Msg_N ("others choice is redundant?", Box_Node);
+                  Error_Msg_N ("OTHERS choice is redundant?", Box_Node);
                   Error_Msg_N
                     ("\previous choices cover all components?", Box_Node);
                end if;
@@ -5529,7 +5551,7 @@ package body Sem_Aggr is
          --  because the association may be a null array range.
 
          Error_Msg_N
-           ("(Ada 2005) null not allowed in null-excluding component??", Expr);
+           ("(Ada 2005) NULL not allowed in null-excluding component??", Expr);
          Error_Msg_N
            ("\Constraint_Error will be raised at run time??", Expr);
 

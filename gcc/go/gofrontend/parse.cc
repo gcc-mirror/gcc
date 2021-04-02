@@ -995,7 +995,7 @@ Parse::parameter_list(bool* is_varargs)
     }
   if (mix_error)
     {
-      go_error_at(location, "invalid named/anonymous mix");
+      go_error_at(location, "mixed named and unnamed function parameters");
       saw_error = true;
     }
   if (saw_error)
@@ -1315,12 +1315,36 @@ Parse::declaration()
     go_warning_at(token->location(), 0,
 		  "ignoring magic comment before non-function");
 
+  std::vector<std::string>* embeds = NULL;
+  if (this->lex_->has_embeds())
+    {
+      embeds = new(std::vector<std::string>);
+      this->lex_->get_and_clear_embeds(embeds);
+
+      if (!this->gogo_->current_file_imported_embed())
+	{
+	  go_error_at(token->location(),
+		      "invalid go:embed: missing import %<embed%>");
+	  delete embeds;
+	  embeds = NULL;
+	}
+      if (!token->is_keyword(KEYWORD_VAR))
+	{
+	  go_error_at(token->location(), "misplaced go:embed directive");
+	  if (embeds != NULL)
+	    {
+	      delete embeds;
+	      embeds = NULL;
+	    }
+	}
+    }
+
   if (token->is_keyword(KEYWORD_CONST))
     this->const_decl();
   else if (token->is_keyword(KEYWORD_TYPE))
     this->type_decl(pragmas);
   else if (token->is_keyword(KEYWORD_VAR))
-    this->var_decl();
+    this->var_decl(embeds);
   else if (token->is_keyword(KEYWORD_FUNC))
     this->function_decl(pragmas);
   else
@@ -1343,8 +1367,8 @@ Parse::declaration_may_start_here()
 // Decl<P> = P | "(" [ List<P> ] ")" .
 
 void
-Parse::decl(void (Parse::*pfn)(void*, unsigned int), void* varg,
-	    unsigned int pragmas)
+Parse::decl(void (Parse::*pfn)(unsigned int, std::vector<std::string>*),
+	    unsigned int pragmas, std::vector<std::string>* embeds)
 {
   if (this->peek_token()->is_eof())
     {
@@ -1354,15 +1378,18 @@ Parse::decl(void (Parse::*pfn)(void*, unsigned int), void* varg,
     }
 
   if (!this->peek_token()->is_op(OPERATOR_LPAREN))
-    (this->*pfn)(varg, pragmas);
+    (this->*pfn)(pragmas, embeds);
   else
     {
       if (pragmas != 0)
 	go_warning_at(this->location(), 0,
 		      "ignoring magic %<//go:...%> comment before group");
+      if (embeds != NULL)
+	go_error_at(this->location(),
+		    "ignoring %<//go:embed%> comment before group");
       if (!this->advance_token()->is_op(OPERATOR_RPAREN))
 	{
-	  this->list(pfn, varg, true);
+	  this->list(pfn, true);
 	  if (!this->peek_token()->is_op(OPERATOR_RPAREN))
 	    {
 	      go_error_at(this->location(), "missing %<)%>");
@@ -1383,10 +1410,10 @@ Parse::decl(void (Parse::*pfn)(void*, unsigned int), void* varg,
 // might follow.  This is either a '}' or a ')'.
 
 void
-Parse::list(void (Parse::*pfn)(void*, unsigned int), void* varg,
+Parse::list(void (Parse::*pfn)(unsigned int, std::vector<std::string>*),
 	    bool follow_is_paren)
 {
-  (this->*pfn)(varg, 0);
+  (this->*pfn)(0, NULL);
   Operator follow = follow_is_paren ? OPERATOR_RPAREN : OPERATOR_RCURLY;
   while (this->peek_token()->is_op(OPERATOR_SEMICOLON)
 	 || this->peek_token()->is_op(OPERATOR_COMMA))
@@ -1395,7 +1422,7 @@ Parse::list(void (Parse::*pfn)(void*, unsigned int), void* varg,
 	go_error_at(this->location(), "unexpected comma");
       if (this->advance_token()->is_op(follow))
 	break;
-      (this->*pfn)(varg, 0);
+      (this->*pfn)(0, NULL);
     }
 }
 
@@ -1442,6 +1469,7 @@ Parse::const_decl()
 void
 Parse::const_spec(int iota, Type** last_type, Expression_list** last_expr_list)
 {
+  Location loc = this->location();
   Typed_identifier_list til;
   this->identifier_list(&til);
 
@@ -1466,7 +1494,11 @@ Parse::const_spec(int iota, Type** last_type, Expression_list** last_expr_list)
       for (Expression_list::const_iterator p = (*last_expr_list)->begin();
 	   p != (*last_expr_list)->end();
 	   ++p)
-	expr_list->push_back((*p)->copy());
+	{
+	  Expression* copy = (*p)->copy();
+	  copy->set_location(loc);
+	  expr_list->push_back(copy);
+	}
     }
   else
     {
@@ -1517,13 +1549,13 @@ Parse::type_decl(unsigned int pragmas)
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_TYPE));
   this->advance_token();
-  this->decl(&Parse::type_spec, NULL, pragmas);
+  this->decl(&Parse::type_spec, pragmas, NULL);
 }
 
 // TypeSpec = identifier ["="] Type .
 
 void
-Parse::type_spec(void*, unsigned int pragmas)
+Parse::type_spec(unsigned int pragmas, std::vector<std::string>*)
 {
   const Token* token = this->peek_token();
   if (!token->is_identifier())
@@ -1567,7 +1599,6 @@ Parse::type_spec(void*, unsigned int pragmas)
       go_error_at(this->location(),
 		  "unexpected semicolon or newline in type declaration");
       type = Type::make_error_type();
-      this->advance_token();
     }
 
   if (type->is_error_type())
@@ -1618,26 +1649,41 @@ Parse::type_spec(void*, unsigned int pragmas)
 // VarDecl = "var" Decl<VarSpec> .
 
 void
-Parse::var_decl()
+Parse::var_decl(std::vector<std::string>* embeds)
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_VAR));
   this->advance_token();
-  this->decl(&Parse::var_spec, NULL, 0);
+  this->decl(&Parse::var_spec, 0, embeds);
 }
 
 // VarSpec = IdentifierList
 //             ( CompleteType [ "=" ExpressionList ] | "=" ExpressionList ) .
 
 void
-Parse::var_spec(void*, unsigned int pragmas)
+Parse::var_spec(unsigned int pragmas, std::vector<std::string>* embeds)
 {
+  Location loc = this->location();
+
   if (pragmas != 0)
-    go_warning_at(this->location(), 0,
-		  "ignoring magic %<//go:...%> comment before var");
+    go_warning_at(loc, 0, "ignoring magic %<//go:...%> comment before var");
 
   // Get the variable names.
   Typed_identifier_list til;
   this->identifier_list(&til);
+
+  if (embeds != NULL)
+    {
+      if (!this->gogo_->in_global_scope())
+	{
+	  go_error_at(loc, "go:embed only permitted at package scope");
+	  embeds = NULL;
+	}
+      if (til.size() > 1)
+	{
+	  go_error_at(loc, "go:embed cannot apply to multiple vars");
+	  embeds = NULL;
+	}
+    }
 
   Location location = this->location();
 
@@ -1666,7 +1712,13 @@ Parse::var_spec(void*, unsigned int pragmas)
       init = this->expression_list(NULL, false, true);
     }
 
-  this->init_vars(&til, type, init, false, location);
+  if (embeds != NULL && init != NULL)
+    {
+      go_error_at(loc, "go:embed cannot apply to var with initializer");
+      embeds = NULL;
+    }
+
+  this->init_vars(&til, type, init, false, embeds, location);
 
   if (init != NULL)
     delete init;
@@ -1679,11 +1731,12 @@ Parse::var_spec(void*, unsigned int pragmas)
 void
 Parse::init_vars(const Typed_identifier_list* til, Type* type,
 		 Expression_list* init, bool is_coloneq,
-		 Location location)
+		 std::vector<std::string>* embeds, Location location)
 {
   // Check for an initialization which can yield multiple values.
   if (init != NULL && init->size() == 1 && til->size() > 1)
     {
+      go_assert(embeds == NULL);
       if (this->init_vars_from_call(til, type, *init->begin(), is_coloneq,
 				    location))
 	return;
@@ -1725,8 +1778,12 @@ Parse::init_vars(const Typed_identifier_list* til, Type* type,
     {
       if (init != NULL)
 	go_assert(pexpr != init->end());
-      this->init_var(*p, type, init == NULL ? NULL : *pexpr, is_coloneq,
-		     false, &any_new, vars, vals);
+      Named_object* no = this->init_var(*p, type,
+					init == NULL ? NULL : *pexpr,
+					is_coloneq, false, &any_new,
+					vars, vals);
+      if (embeds != NULL && no->is_variable())
+	no->var_value()->set_embeds(embeds);
       if (init != NULL)
 	++pexpr;
     }
@@ -2071,6 +2128,7 @@ Parse::create_dummy_global(Type* type, Expression* init,
   if (type == NULL && init == NULL)
     type = Type::lookup_bool_type();
   Variable* var = new Variable(type, init, true, false, false, location);
+  var->set_is_global_sink();
   static int count;
   char buf[30];
   snprintf(buf, sizeof buf, "_.%d", count);
@@ -2165,8 +2223,12 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 		  id = this->gogo_->pack_hidden_name(id, is_id_exported);
 		  ins = uniq_idents.insert(id);
 		  if (!ins.second && !Gogo::is_sink_name(id))
-		    go_error_at(id_location, "multiple assignments to %s",
-				Gogo::message_name(id).c_str());
+		    {
+		      // Use %s to print := to avoid -Wformat-diag warning.
+		      go_error_at(id_location,
+				  "%qs repeated on left side of %s",
+				  Gogo::message_name(id).c_str(), ":=");
+		    }
 		  til.push_back(Typed_identifier(id, NULL, location));
 		}
 	      else
@@ -2219,7 +2281,11 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
   const Token* token = this->advance_token();
 
   if (!dup_name.empty())
-    go_error_at(dup_loc, "multiple assignments to %s", dup_name.c_str());
+    {
+      // Use %s to print := to avoid -Wformat-diag warning.
+      go_error_at(dup_loc, "%qs repeated on left side of %s",
+		  dup_name.c_str(), ":=");
+    }
 
   if (p_range_clause != NULL && token->is_keyword(KEYWORD_RANGE))
     {
@@ -2257,7 +2323,7 @@ Parse::simple_var_decl_or_assignment(const std::string& name,
 	}
     }
 
-  this->init_vars(&til, NULL, init, true, location);
+  this->init_vars(&til, NULL, init, true, NULL, location);
 }
 
 // FunctionDecl = "func" identifier Signature [ Block ] .
@@ -4414,7 +4480,7 @@ Parse::if_stat()
     {
       Location semi_loc = this->location();
       if (this->advance_token()->is_op(OPERATOR_LCURLY))
-	go_error_at(semi_loc, "missing %<{%> after if clause");
+	go_error_at(semi_loc, "unexpected semicolon or newline, expecting %<{%> after if clause");
       // Otherwise we will get an error when we call this->block
       // below.
     }
@@ -4478,7 +4544,7 @@ Parse::switch_stat(Label* label)
 
   bool saw_simple_stat = false;
   Expression* switch_val = NULL;
-  bool saw_send_stmt;
+  bool saw_send_stmt = false;
   Type_switch type_switch;
   bool have_type_switch_block = false;
   if (this->simple_stat_may_start_here())
@@ -4810,7 +4876,7 @@ Parse::type_switch_body(Label* label, const Type_switch& type_switch,
 	    }
 	}
       if (!used)
-	go_error_at(type_switch.location, "%qs declared and not used",
+	go_error_at(type_switch.location, "%qs declared but not used",
 		    Gogo::message_name(var_name).c_str());
     }
   return statement;
@@ -5304,7 +5370,7 @@ Parse::for_stat(Label* label)
 	{
 	  go_error_at(this->location(),
                       "var declaration not allowed in for initializer");
-	  this->var_decl();
+	  this->var_decl(NULL);
 	}
 
       if (token->is_op(OPERATOR_SEMICOLON))
@@ -5313,7 +5379,7 @@ Parse::for_stat(Label* label)
 	{
 	  // We might be looking at a Condition, an InitStat, or a
 	  // RangeClause.
-	  bool saw_send_stmt;
+	  bool saw_send_stmt = false;
 	  cond = this->simple_stat(false, &saw_send_stmt, &range_clause, NULL);
 	  if (!this->peek_token()->is_op(OPERATOR_SEMICOLON))
 	    {
@@ -5351,7 +5417,7 @@ Parse::for_stat(Label* label)
     {
       Location semi_loc = this->location();
       if (this->advance_token()->is_op(OPERATOR_LCURLY))
-	go_error_at(semi_loc, "missing %<{%> after for clause");
+	go_error_at(semi_loc, "unexpected semicolon or newline, expecting %<{%> after for clause");
       // Otherwise we will get an error when we call this->block
       // below.
     }
@@ -5422,7 +5488,7 @@ Parse::for_clause(Expression** cond, Block** post)
     *cond = NULL;
   else if (this->peek_token()->is_op(OPERATOR_LCURLY))
     {
-      go_error_at(this->location(), "missing %<{%> after for clause");
+      go_error_at(this->location(), "unexpected semicolon or newline, expecting %<{%> after for clause");
       *cond = NULL;
       *post = NULL;
       return;
@@ -5749,13 +5815,13 @@ Parse::import_decl()
 {
   go_assert(this->peek_token()->is_keyword(KEYWORD_IMPORT));
   this->advance_token();
-  this->decl(&Parse::import_spec, NULL, 0);
+  this->decl(&Parse::import_spec, 0, NULL);
 }
 
 // ImportSpec = [ "." | PackageName ] PackageFileName .
 
 void
-Parse::import_spec(void*, unsigned int pragmas)
+Parse::import_spec(unsigned int pragmas, std::vector<std::string>*)
 {
   if (pragmas != 0)
     go_warning_at(this->location(), 0,
@@ -5780,7 +5846,7 @@ Parse::import_spec(void*, unsigned int pragmas)
 
   if (!token->is_string())
     {
-      go_error_at(this->location(), "import statement not a string");
+      go_error_at(this->location(), "import path must be a string");
       this->advance_token();
       return;
     }

@@ -1,5 +1,5 @@
 /* Control flow graph manipulation code for GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -97,6 +97,7 @@ static basic_block rtl_split_block (basic_block, void *);
 static void rtl_dump_bb (FILE *, basic_block, int, dump_flags_t);
 static int rtl_verify_flow_info_1 (void);
 static void rtl_make_forwarder_block (edge);
+static bool rtl_bb_info_initialized_p (basic_block bb);
 
 /* Return true if NOTE is not one of the ones that must be kept paired,
    so that we may simply delete it.  */
@@ -2149,7 +2150,8 @@ rtl_dump_bb (FILE *outf, basic_block bb, int indent, dump_flags_t flags)
       putc ('\n', outf);
     }
 
-  if (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK)
+  if (bb->index != ENTRY_BLOCK && bb->index != EXIT_BLOCK
+      && rtl_bb_info_initialized_p (bb))
     {
       rtx_insn *last = BB_END (bb);
       if (last)
@@ -2379,11 +2381,11 @@ find_bbs_reachable_by_hot_paths (hash_set<basic_block> *set)
    cfg optimizations that may make hot blocks previously reached
    by both hot and cold blocks now only reachable along cold paths.  */
 
-static vec<basic_block>
+static auto_vec<basic_block>
 find_partition_fixes (bool flag_only)
 {
   basic_block bb;
-  vec<basic_block> bbs_to_fix = vNULL;
+  auto_vec<basic_block> bbs_to_fix;
   hash_set<basic_block> set;
 
   /* Callers check this.  */
@@ -2412,8 +2414,6 @@ find_partition_fixes (bool flag_only)
 void
 fixup_partitions (void)
 {
-  basic_block bb;
-
   if (!crtl->has_bb_partition)
     return;
 
@@ -2429,15 +2429,66 @@ fixup_partitions (void)
      a cold partition cannot dominate a basic block in a hot partition.
      Fixup any that now violate this requirement, as a result of edge
      forwarding and unreachable block deletion.  */
-  vec<basic_block> bbs_to_fix = find_partition_fixes (false);
+  auto_vec<basic_block> bbs_to_fix = find_partition_fixes (false);
 
   /* Do the partition fixup after all necessary blocks have been converted to
      cold, so that we only update the region crossings the minimum number of
      places, which can require forcing edges to be non fallthru.  */
-  while (! bbs_to_fix.is_empty ())
+  if (! bbs_to_fix.is_empty ())
     {
-      bb = bbs_to_fix.pop ();
-      fixup_new_cold_bb (bb);
+      do
+	{
+	  basic_block bb = bbs_to_fix.pop ();
+	  fixup_new_cold_bb (bb);
+	}
+      while (! bbs_to_fix.is_empty ());
+
+      /* Fix up hot cold block grouping if needed.  */
+      if (crtl->bb_reorder_complete && current_ir_type () == IR_RTL_CFGRTL)
+	{
+	  basic_block bb, first = NULL, second = NULL;
+	  int current_partition = BB_UNPARTITIONED;
+
+	  FOR_EACH_BB_FN (bb, cfun)
+	    {
+	      if (current_partition != BB_UNPARTITIONED
+		  && BB_PARTITION (bb) != current_partition)
+		{
+		  if (first == NULL)
+		    first = bb;
+		  else if (second == NULL)
+		    second = bb;
+		  else
+		    {
+		      /* If we switch partitions for the 3rd, 5th etc. time,
+			 move bbs first (inclusive) .. second (exclusive) right
+			 before bb.  */
+		      basic_block prev_first = first->prev_bb;
+		      basic_block prev_second = second->prev_bb;
+		      basic_block prev_bb = bb->prev_bb;
+		      prev_first->next_bb = second;
+		      second->prev_bb = prev_first;
+		      prev_second->next_bb = bb;
+		      bb->prev_bb = prev_second;
+		      prev_bb->next_bb = first;
+		      first->prev_bb = prev_bb;
+		      rtx_insn *prev_first_insn = PREV_INSN (BB_HEAD (first));
+		      rtx_insn *prev_second_insn
+			= PREV_INSN (BB_HEAD (second));
+		      rtx_insn *prev_bb_insn = PREV_INSN (BB_HEAD (bb));
+		      SET_NEXT_INSN (prev_first_insn) = BB_HEAD (second);
+		      SET_PREV_INSN (BB_HEAD (second)) = prev_first_insn;
+		      SET_NEXT_INSN (prev_second_insn) = BB_HEAD (bb);
+		      SET_PREV_INSN (BB_HEAD (bb)) = prev_second_insn;
+		      SET_NEXT_INSN (prev_bb_insn) = BB_HEAD (first);
+		      SET_PREV_INSN (BB_HEAD (first)) = prev_bb_insn;
+		      second = NULL;
+		    }
+		}
+	      current_partition = BB_PARTITION (bb);
+	    }
+	  gcc_assert (!second);
+	}
     }
 }
 
@@ -2680,7 +2731,7 @@ rtl_verify_edges (void)
   if (crtl->has_bb_partition && !err
       && current_ir_type () == IR_RTL_CFGLAYOUT)
     {
-      vec<basic_block> bbs_to_fix = find_partition_fixes (true);
+      auto_vec<basic_block> bbs_to_fix = find_partition_fixes (true);
       err = !bbs_to_fix.is_empty ();
     }
 
@@ -3415,6 +3466,53 @@ fixup_abnormal_edges (void)
     }
 
   return inserted;
+}
+
+/* Delete the unconditional jump INSN and adjust the CFG correspondingly.
+   Note that the INSN should be deleted *after* removing dead edges, so
+   that the kept edge is the fallthrough edge for a (set (pc) (pc))
+   but not for a (set (pc) (label_ref FOO)).  */
+
+void
+update_cfg_for_uncondjump (rtx_insn *insn)
+{
+  basic_block bb = BLOCK_FOR_INSN (insn);
+  gcc_assert (BB_END (bb) == insn);
+
+  purge_dead_edges (bb);
+
+  if (current_ir_type () != IR_RTL_CFGLAYOUT)
+    {
+      if (!find_fallthru_edge (bb->succs))
+	{
+	  auto barrier = next_nonnote_nondebug_insn (insn);
+	  if (!barrier || !BARRIER_P (barrier))
+	    emit_barrier_after (insn);
+	}
+      return;
+    }
+
+  delete_insn (insn);
+  if (EDGE_COUNT (bb->succs) == 1)
+    {
+      rtx_insn *insn;
+
+      single_succ_edge (bb)->flags |= EDGE_FALLTHRU;
+
+      /* Remove barriers from the footer if there are any.  */
+      for (insn = BB_FOOTER (bb); insn; insn = NEXT_INSN (insn))
+	if (BARRIER_P (insn))
+	  {
+	    if (PREV_INSN (insn))
+	      SET_NEXT_INSN (PREV_INSN (insn)) = NEXT_INSN (insn);
+	    else
+	      BB_FOOTER (bb) = NEXT_INSN (insn);
+	    if (NEXT_INSN (insn))
+	      SET_PREV_INSN (NEXT_INSN (insn)) = PREV_INSN (insn);
+	  }
+	else if (LABEL_P (insn))
+	  break;
+    }
 }
 
 /* Cut the insns from FIRST to LAST out of the insns stream.  */
@@ -4860,7 +4958,8 @@ rtl_block_empty_p (basic_block bb)
     return true;
 
   FOR_BB_INSNS (bb, insn)
-    if (NONDEBUG_INSN_P (insn) && !any_uncondjump_p (insn))
+    if (NONDEBUG_INSN_P (insn)
+	&& (!any_uncondjump_p (insn) || !onlyjump_p (insn)))
       return false;
 
   return true;
@@ -5133,6 +5232,12 @@ init_rtl_bb_info (basic_block bb)
   gcc_assert (!bb->il.x.rtl);
   bb->il.x.head_ = NULL;
   bb->il.x.rtl = ggc_cleared_alloc<rtl_bb_info> ();
+}
+
+static bool
+rtl_bb_info_initialized_p (basic_block bb)
+{
+  return bb->il.x.rtl;
 }
 
 /* Returns true if it is possible to remove edge E by redirecting

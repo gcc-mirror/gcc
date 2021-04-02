@@ -1,5 +1,5 @@
 ; Command line options for the Renesas RL78 port of GCC.
-; Copyright (C) 2011-2020 Free Software Foundation, Inc.
+; Copyright (C) 2011-2021 Free Software Foundation, Inc.
 ; Contributed by Red Hat.
 ;
 ; This file is part of GCC.
@@ -23,11 +23,11 @@ HeaderInclude
 config/rl78/rl78-opts.h
 
 msim
-Target Report
+Target
 Use the simulator runtime.
 
 mmul=
-Target RejectNegative Joined Var(rl78_mul_type) Report Tolower Enum(rl78_mul_types) Init(MUL_UNINIT)
+Target RejectNegative Joined Var(rl78_mul_type) Tolower Enum(rl78_mul_types) Init(MUL_UNINIT)
 Selects the type of hardware multiplication and division to use (none/g13/g14).
 
 Enum
@@ -46,15 +46,15 @@ EnumValue
 Enum(rl78_mul_types) String(rl78) Value(MUL_G14)
 
 mallregs
-Target Mask(ALLREGS) Report Optimization
+Target Mask(ALLREGS) Optimization
 Use all registers, reserving none for interrupt handlers.
 
 mrelax
-Target Report Optimization
+Target Optimization
 Enable assembler and linker relaxation.  Enabled by default at -Os.
 
 mcpu=
-Target RejectNegative Joined Var(rl78_cpu_type) Report ToLower Enum(rl78_cpu_types) Init(CPU_UNINIT)
+Target RejectNegative Joined Var(rl78_cpu_type) ToLower Enum(rl78_cpu_types) Init(CPU_UNINIT)
 Selects the type of RL78 core being targeted (g10/g13/g14).  The default is the G14.  If set, also selects the hardware multiply support to be used.
 
 Enum
@@ -73,19 +73,19 @@ EnumValue
 Enum(rl78_cpu_types) String(rl78) Value(CPU_G14)
 
 mg10
-Target RejectNegative Report Alias(mcpu=, g10)
+Target RejectNegative Alias(mcpu=, g10)
 Alias for -mcpu=g10.
 
 mg13
-Target RejectNegative Report Alias(mcpu=, g13)
+Target RejectNegative Alias(mcpu=, g13)
 Alias for -mcpu=g13.
 
 mg14
-Target RejectNegative Report Alias(mcpu=, g14)
+Target RejectNegative Alias(mcpu=, g14)
 Alias for -mcpu=g14.
 
 mrl78
-Target RejectNegative Report Alias(mcpu=, g14)
+Target RejectNegative Alias(mcpu=, g14)
 Alias for -mcpu=g14.
 
 mes0

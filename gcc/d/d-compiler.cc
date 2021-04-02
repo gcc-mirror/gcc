@@ -1,5 +1,5 @@
 /* d-compiler.cc -- D frontend interface to the gcc back-end.
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -59,9 +59,9 @@ Compiler::genCmain (Scope *sc)
     {
       m->importedFrom = m;
       m->importAll (NULL);
-      m->semantic (NULL);
-      m->semantic2 (NULL);
-      m->semantic3 (NULL);
+      dsymbolSemantic (m, NULL);
+      semantic2 (m, NULL);
+      semantic3 (m, NULL);
       d_add_entrypoint_module (m, sc->_module);
     }
 
@@ -133,7 +133,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
 
       cst = native_interpret_expr (vectype, buffer, len);
 
-      Expression *e = d_eval_constant_expression (cst);
+      Expression *e = d_eval_constant_expression (expr->loc, cst);
       gcc_assert (e != NULL && e->op == TOKvector);
 
       return e->isVectorExp ()->e1;
@@ -143,7 +143,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
       /* Normal interpret cast.  */
       cst = native_interpret_expr (build_ctype (type), buffer, len);
 
-      Expression *e = d_eval_constant_expression (cst);
+      Expression *e = d_eval_constant_expression (expr->loc, cst);
       gcc_assert (e != NULL);
 
       return e;
@@ -157,7 +157,7 @@ Compiler::paintAsType (UnionExp *, Expression *expr, Type *type)
     - core.stdc.*: For all gcc library builtins.  */
 
 void
-Compiler::loadModule (Module *m)
+Compiler::onParseModule (Module *m)
 {
   ModuleDeclaration *md = m->md;
 
@@ -179,4 +179,14 @@ Compiler::loadModule (Module *m)
 	  && !strcmp ((*md->packages)[1]->toChars (), "stdc"))
 	d_add_builtin_module (m);
     }
+}
+
+/* A callback function that is called once an imported module is parsed.
+   If the callback returns true, then it tells the front-end that the
+   driver intends on compiling the import.  */
+
+bool
+Compiler::onImport (Module *)
+{
+  return false;
 }

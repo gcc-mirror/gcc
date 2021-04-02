@@ -10,7 +10,7 @@ struct DummyYield {
   DummyYield (coro::coroutine_handle<> handle) : handle (handle) {}
   struct dummy_yield {
     coro::suspend_never initial_suspend() { return {}; }
-    coro::suspend_never final_suspend() { return {}; }
+    coro::suspend_never final_suspend() noexcept { return {}; }
     DummyYield get_return_object() {
       return DummyYield (coro::coroutine_handle<dummy_yield>::from_promise (*this));
     }

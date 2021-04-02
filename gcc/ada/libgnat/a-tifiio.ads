@@ -23,7 +23,7 @@
 private generic
    type Num is delta <>;
 
-package Ada.Text_IO.Fixed_IO is
+package Ada.Text_IO.Fixed_IO with SPARK_Mode => On is
 
    Default_Fore : Field := Num'Fore;
    Default_Aft  : Field := Num'Aft;

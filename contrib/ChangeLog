@@ -1,3 +1,173 @@
+2021-03-23  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Fix broken tests.
+
+2021-03-22  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Add --directory argument.
+
+2021-03-19  Matthias Klose  <doko@ubuntu.com>
+
+	* texi2pod.pl: Substitute @tie{} with a space for the man pages.
+
+2021-03-16  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Skip one problematic
+	commit.
+
+2021-03-12  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow deletion of ChangeLog
+	files.
+	* gcc-changelog/setup.cfg: Set line limit to 120 characters.
+	* gcc-changelog/test_email.py: Add test.
+	* gcc-changelog/test_patches.txt: Likewise.
+	* gcc-changelog/git_email.py: Fix parsing of deleted files.
+
+2021-02-08  Mike Frysinger  <vapier@gentoo.org>
+
+	* mklog.py (generated_files): New set.
+	(generate_changelog): Add entries based on generated_files.
+
+2021-02-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc_update (files_and_dependencies): Add dependency for
+	gcc/config/rs6000/fusion.md on gcc/config/rs6000/genfusion.md.
+
+2021-01-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR lto/85574
+	* compare-lto: Deal with PE-COFF executables specifically.
+
+2021-01-14  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Fix infinite loop for unsupported files.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Support wrapping of functions
+	in parentheses that can take multiple lines.
+	* gcc-changelog/test_email.py: Add tests for it.
+	* gcc-changelog/test_patches.txt: Add 2 patches.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Parse also define_insn_and_split and similar
+	directives in .md files.
+	* test_mklog.py: Test.
+
+2021-01-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow modifications of older
+	ChangeLog (or specific) files without need to make a ChangeLog
+	entry.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Add new patch.
+
+2021-01-11  Martin Liska  <mliska@suse.cz>
+
+	* update-copyright.py: Port to python3 by guessing encoding
+	(first utf8, then iso8859). Add 2 more ignores: .png and .pyc.
+
+2021-01-06  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add decode_path function.
+	* gcc-changelog/git_email.py: Use it in order to solve
+	utf8 encoding filename issues.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/test_email.py: Test it.
+
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add AMD and Ulf Adams as external authors.
+
+2021-01-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Use 8 spaces instead of tab to indent.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* mklog.py: Add --update-copyright option which adds:
+	"Update copyright years." to ChangeLog files belonging
+	to a modified file.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Skip Update copyright
+	years commits.
+
+2020-12-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add new error for quoted
+	filenames.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Test it.
+
+2020-12-21  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/test_email.py: New test.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-12-17  Nathan Sidwell  <nathan@acm.org>
+
+	PR bootstrap/98300
+	* gcc_update: Add c++tools/config.h.in.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc_update: Add c++tools & libcody.
+
+2020-12-15  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc-changelog/git_commit.py (changelog_locations): Add
+	libcody, c++tools.
+
+2020-12-08  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Filter more cases.
+
+2020-12-08  Martin Liska  <mliska@suse.cz>
+
+	* filter-clang-warnings.py: Modernize and filter 2 more
+	patterns.
+
+2020-12-04  Martin Liska  <mliska@suse.cz>
+
+	* check-params-in-docs.py: use flake8 and add some
+	tweaks to ignore aarch64 params.
+
+2020-12-02  Jason Merrill  <jason@redhat.com>
+
+	* gcc-git-customization.sh: Configure sendemail.to.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Suggest close file for
+	'unchanged file mentioned in a ChangeLog' error.
+	* gcc-changelog/test_email.py: Test it.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow sub-directory wildcard
+	changelog entry. Fix a typo caused by apostrophe escaping.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Likewise.
+
+2020-11-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_commit.py (wildcard_prefixes): Add libstdc++
+	testsuite directory.
+
+2020-11-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Allow wildcard pattern only.
+
+2020-11-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Use regex for cherry pick prefix.
+	* gcc-changelog/test_email.py: Test it.
+	* gcc-changelog/test_patches.txt: Likewise.
+
 2020-11-25  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Use revert_regex instead

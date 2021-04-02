@@ -1,5 +1,5 @@
 /* Interprocedural Identical Code Folding pass
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
    Contributed by Jan Hubicka <hubicka@ucw.cz> and Martin Liska <mliska@suse.cz>
 
@@ -88,6 +88,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vector-builder.h"
 #include "symtab-thunks.h"
 #include "alias.h"
+#include "asan.h"
 
 using namespace ipa_icf_gimple;
 
@@ -165,8 +166,11 @@ sem_item::add_reference (ref_map *refs,
   unsigned index = reference_count++;
   bool existed;
 
-  vec<sem_item *> &v
-    = refs->get_or_insert (new sem_usage_pair (target, index), &existed);
+  sem_usage_pair *pair = new sem_usage_pair (target, index);
+  vec<sem_item *> &v = refs->get_or_insert (pair, &existed);
+  if (existed)
+    delete pair;
+
   v.safe_push (this);
   bitmap_set_bit (target->usage_index_bitmap, index);
   refs_set.add (target->node);
@@ -2016,6 +2020,18 @@ sem_variable::merge (sem_item *alias_item)
       if (dump_enabled_p ())
 	dump_printf (MSG_MISSED_OPTIMIZATION,
 		     "Not unifying; address of original may be compared.\n");
+      return false;
+    }
+
+  if (DECL_ALIGN (original->decl) != DECL_ALIGN (alias->decl)
+      && (sanitize_flags_p (SANITIZE_ADDRESS, original->decl)
+	  || sanitize_flags_p (SANITIZE_ADDRESS, alias->decl)))
+    {
+      if (dump_enabled_p ())
+	dump_printf (MSG_MISSED_OPTIMIZATION,
+		     "Not unifying; "
+		     "ASAN requires equal alignments for original and alias\n");
+
       return false;
     }
 

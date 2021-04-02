@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -104,8 +104,6 @@ struct cl_option
   BOOL_BITFIELD cl_host_wide_int : 1;
   /* Argument should be converted to lowercase.  */
   BOOL_BITFIELD cl_tolower : 1;
-  /* Report argument with -fverbose-asm  */
-  BOOL_BITFIELD cl_report : 1;
   /* Argument is an unsigned integer with an optional byte suffix.  */
   BOOL_BITFIELD cl_byte_size: 1;
   /* Offset of field for this option in struct gcc_options, or
@@ -477,10 +475,20 @@ extern bool parse_and_check_align_values (const char *flag,
 					  bool report_error,
 					  location_t loc);
 
+extern void parse_and_check_patch_area (const char *arg, bool report_error,
+					HOST_WIDE_INT *patch_area_size,
+					HOST_WIDE_INT *patch_area_start);
+
 extern void parse_options_from_collect_gcc_options (const char *, obstack *,
 						    int *);
 
 extern void prepend_xassembler_to_collect_as_options (const char *, obstack *);
+
+extern char *gen_command_line_string (cl_decoded_option *options,
+				      unsigned int options_count);
+extern char *gen_producer_string (const char *language_string,
+				  cl_decoded_option *options,
+				  unsigned int options_count);
 
 /* Set OPTION in OPTS to VALUE if the option is not set in OPTS_SET.  */
 

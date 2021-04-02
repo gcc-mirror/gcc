@@ -2543,6 +2543,29 @@ package body Einfo is
       return Flag215 (Base_Type (Id));
    end Is_Param_Block_Component_Type;
 
+   function Is_Partial_DIC_Procedure (Id : E) return B is
+      Partial_DIC_Suffix : constant String := "Partial_DIC";
+      DIC_Nam            : constant String := Get_Name_String (Chars (Id));
+
+   begin
+      pragma Assert (Ekind (Id) in E_Function | E_Procedure);
+
+      --  Instead of adding a new Entity_Id flag (which are in short supply),
+      --  we test the form of the subprogram name. When the node field and flag
+      --  situation is eased, this should be replaced with a flag. ???
+
+      if DIC_Nam'Length > Partial_DIC_Suffix'Length
+        and then
+          DIC_Nam
+            (DIC_Nam'Last - Partial_DIC_Suffix'Length + 1 .. DIC_Nam'Last) =
+               Partial_DIC_Suffix
+      then
+         return True;
+      else
+         return False;
+      end if;
+   end Is_Partial_DIC_Procedure;
+
    function Is_Partial_Invariant_Procedure (Id : E) return B is
    begin
       pragma Assert (Ekind (Id) in E_Function | E_Procedure);
@@ -6779,7 +6802,9 @@ package body Einfo is
 
    procedure Set_Stores_Attribute_Old_Prefix (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind (Id) = E_Constant);
+      pragma Assert (Is_Type (Id)
+                      or else (Ekind (Id) in E_Constant
+                                           | E_Variable));
       Set_Flag270 (Id, V);
    end Set_Stores_Attribute_Old_Prefix;
 
@@ -7401,7 +7426,13 @@ package body Einfo is
          while Present (Subp_Elmt) loop
             Subp_Id := Node (Subp_Elmt);
 
-            if Is_DIC_Procedure (Subp_Id) then
+            --  Currently the flag Is_DIC_Procedure is set for both normal DIC
+            --  check procedures as well as for partial DIC check procedures,
+            --  and we don't have a flag for the partial procedures.
+
+            if Is_DIC_Procedure (Subp_Id)
+              and then not Is_Partial_DIC_Procedure (Subp_Id)
+            then
                return Subp_Id;
             end if;
 
@@ -8792,6 +8823,36 @@ package body Einfo is
       return Ekind (Id);
    end Parameter_Mode;
 
+   ---------------------------
+   -- Partial_DIC_Procedure --
+   ---------------------------
+
+   function Partial_DIC_Procedure (Id : E) return E is
+      Subp_Elmt : Elmt_Id;
+      Subp_Id   : Entity_Id;
+      Subps     : Elist_Id;
+
+   begin
+      pragma Assert (Is_Type (Id));
+
+      Subps := Subprograms_For_Type (Base_Type (Id));
+
+      if Present (Subps) then
+         Subp_Elmt := First_Elmt (Subps);
+         while Present (Subp_Elmt) loop
+            Subp_Id := Node (Subp_Elmt);
+
+            if Is_Partial_DIC_Procedure (Subp_Id) then
+               return Subp_Id;
+            end if;
+
+            Next_Elmt (Subp_Elmt);
+         end loop;
+      end if;
+
+      return Empty;
+   end Partial_DIC_Procedure;
+
    ---------------------------------
    -- Partial_Invariant_Procedure --
    ---------------------------------
@@ -9271,8 +9332,6 @@ package body Einfo is
 
    procedure Set_DIC_Procedure (Id : E; V : E) is
       Base_Typ  : Entity_Id;
-      Subp_Elmt : Elmt_Id;
-      Subp_Id   : Entity_Id;
       Subps     : Elist_Id;
 
    begin
@@ -9286,21 +9345,17 @@ package body Einfo is
          Set_Subprograms_For_Type (Base_Typ, Subps);
       end if;
 
-      Subp_Elmt := First_Elmt (Subps);
       Prepend_Elmt (V, Subps);
-
-      --  Check for a duplicate default initial condition procedure
-
-      while Present (Subp_Elmt) loop
-         Subp_Id := Node (Subp_Elmt);
-
-         if Is_DIC_Procedure (Subp_Id) then
-            raise Program_Error;
-         end if;
-
-         Next_Elmt (Subp_Elmt);
-      end loop;
    end Set_DIC_Procedure;
+
+   -------------------------------------
+   -- Set_Partial_Invariant_Procedure --
+   -------------------------------------
+
+   procedure Set_Partial_DIC_Procedure (Id : E; V : E) is
+   begin
+      Set_DIC_Procedure (Id, V);
+   end Set_Partial_DIC_Procedure;
 
    -----------------------------
    -- Set_Invariant_Procedure --

@@ -1,5 +1,5 @@
 ;; Machine description for AppliedMicro xgene1 core.
-;; Copyright (C) 2012-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2012-2021 Free Software Foundation, Inc.
 ;; Contributed by Theobroma Systems Design und Consulting GmbH.
 ;;
 ;; This file is part of GCC.
@@ -132,7 +132,7 @@
 
 (define_insn_reservation "xgene1_alu" 1
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "alu_imm,alu_sreg,alu_shift_imm,\
+       (eq_attr "type" "alu_imm,alu_sreg,alu_shift_imm_lsl_1to4,alu_shift_imm_other,\
                         alu_ext,adc_reg,logic_imm,\
                         logic_reg,logic_shift_imm,clz,\
                         rbit,adr,mov_reg,shift_imm,\

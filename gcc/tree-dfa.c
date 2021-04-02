@@ -1,5 +1,5 @@
 /* Data flow functions for trees.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -503,7 +503,7 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 		poly_offset_int woffset
 		  = wi::sext (wi::to_poly_offset (index)
 			      - wi::to_poly_offset (low_bound),
-			      TYPE_PRECISION (TREE_TYPE (index)));
+			      TYPE_PRECISION (sizetype));
 		woffset *= wi::to_offset (unit_size);
 		woffset <<= LOG2_BITS_PER_UNIT;
 		bit_offset += woffset;
@@ -564,7 +564,7 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 		      {
 			poly_offset_int woffset
 			  = wi::sext (omin - lbound,
-				      TYPE_PRECISION (TREE_TYPE (index)));
+				      TYPE_PRECISION (sizetype));
 			woffset *= wi::to_offset (unit_size);
 			woffset <<= LOG2_BITS_PER_UNIT;
 			bit_offset += woffset;
@@ -822,7 +822,7 @@ get_addr_base_and_unit_offset_1 (tree exp, poly_int64_pod *poffset,
 	    poly_offset_int woffset
 		= wi::sext (wi::to_poly_offset (index)
 			    - wi::to_poly_offset (low_bound),
-			    TYPE_PRECISION (TREE_TYPE (index)));
+			    TYPE_PRECISION (sizetype));
 	    woffset *= wi::to_offset (unit_size);
 	    byte_offset += woffset.force_shwi ();
 	  }

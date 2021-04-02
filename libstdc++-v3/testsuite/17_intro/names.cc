@@ -1,4 +1,4 @@
-// Copyright (C) 2017-2020 Free Software Foundation, Inc.
+// Copyright (C) 2017-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -197,9 +197,19 @@
 #undef v
 #endif
 
+#ifdef __APPLE__
+// inttypes.h:  extern intmax_t imaxabs(intmax_t j);
+#undef j
+#endif
+
 #ifdef __hpux__
 #undef d
 #undef r
+#endif
+
+#if defined (__linux__) && defined (__powerpc__)
+// <asm/types.h> defines __vector128::u
+#undef u
 #endif
 
 #if defined (__linux__) && defined (__sparc__)
@@ -210,5 +220,46 @@
 // See https://gcc.gnu.org/ml/libstdc++/2019-05/msg00175.html
 #undef ptr
 #endif
+
+#ifdef __VXWORKS__
+
+#include <_vxworks-versions.h>
+
+// Some VxWorks 6 or 7 headers are using those.
+
+// private/objLibP.h
+#undef u
+
+// arch/ppc/ffs/ArchLib.h
+#undef i
+#undef j
+
+// math.h
+#undef x
+#undef y
+
+// stdio.h
+#undef ptr
+
+// VxWorks >= 7 specificities
+
+#if _VXWORKS_MAJOR_GE(7)
+
+// regs.h regs structure has a field 'r'
+#undef r
+
+#ifndef __RTP__
+// in bootLib.h, bootParamCheck has parameters x, a-f
+#undef a
+#undef b
+#undef c
+#undef d
+#undef e
+#undef f
+#endif // __RTP__
+
+#endif // VxWorks Major >= 7
+
+#endif // __VXWORKS__
 
 #include <bits/stdc++.h>

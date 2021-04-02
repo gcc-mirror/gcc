@@ -1,5 +1,5 @@
 /* Code translation -- generate GCC trees from gfc_code.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook
 
 This file is part of GCC.
@@ -73,12 +73,57 @@ gfc_advance_chain (tree t, int n)
   return t;
 }
 
+static int num_var;
+
+#define MAX_PREFIX_LEN 20
+
+static tree
+create_var_debug_raw (tree type, const char *prefix)
+{
+  /* Space for prefix + "_" + 10-digit-number + \0.  */
+  char name_buf[MAX_PREFIX_LEN + 1 + 10 + 1];
+  tree t;
+  int i;
+
+  if (prefix == NULL)
+    prefix = "gfc";
+  else
+    gcc_assert (strlen (prefix) <= MAX_PREFIX_LEN);
+
+  for (i = 0; prefix[i] != 0; i++)
+    name_buf[i] = gfc_wide_toupper (prefix[i]);
+
+  snprintf (name_buf + i, sizeof (name_buf) - i, "_%d", num_var++);
+
+  t = build_decl (input_location, VAR_DECL, get_identifier (name_buf), type);
+
+  /* Not setting this causes some regressions.  */
+  DECL_ARTIFICIAL (t) = 1;
+
+  /* We want debug info for it.  */
+  DECL_IGNORED_P (t) = 0;
+  /* It should not be nameless.  */
+  DECL_NAMELESS (t) = 0;
+
+  /* Make the variable writable.  */
+  TREE_READONLY (t) = 0;
+
+  DECL_EXTERNAL (t) = 0;
+  TREE_STATIC (t) = 0;
+  TREE_USED (t) = 1;
+
+  return t;
+}
+
 /* Creates a variable declaration with a given TYPE.  */
 
 tree
 gfc_create_var_np (tree type, const char *prefix)
 {
   tree t;
+
+  if (flag_debug_aux_vars)
+    return create_var_debug_raw (type, prefix);
 
   t = create_tmp_var_raw (type, prefix);
 
@@ -435,21 +480,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
       /* Check if this is an unlimited polymorphic object carrying a character
 	 payload. In this case, the 'len' field is non-zero.  */
       if (decl && GFC_CLASS_TYPE_P (TREE_TYPE (decl)))
-	{
-	  tmp = gfc_class_len_or_zero_get (decl);
-	  if (!integer_zerop (tmp))
-	    {
-	      tree cond;
-	      tree stype = TREE_TYPE (span);
-	      tmp = fold_convert (stype, tmp);
-	      cond = fold_build2_loc (input_location, EQ_EXPR,
-				      logical_type_node, tmp,
-				      build_int_cst (stype, 0));
-	      tmp = fold_build2 (MULT_EXPR, stype, span, tmp);
-	      span = fold_build3_loc (input_location, COND_EXPR, stype,
-				      cond, span, tmp);
-	    }
-	}
+	span = gfc_resize_class_size_with_len (NULL, decl, span);
     }
   else if (decl)
     span = get_array_span (type, decl);
@@ -657,6 +688,9 @@ gfc_call_malloc (stmtblock_t * block, tree type, tree size)
 
   /* Call malloc.  */
   gfc_start_block (&block2);
+
+  if (size == NULL_TREE)
+    size = build_int_cst (size_type_node, 1);
 
   size = fold_convert (size_type_node, size);
   size = fold_build2_loc (input_location, MAX_EXPR, size_type_node, size,

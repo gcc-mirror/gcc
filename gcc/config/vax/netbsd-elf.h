@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for NetBSD/vax ELF systems.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -43,10 +43,10 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #undef CC1_SPEC
-#define CC1_SPEC NETBSD_CC1_AND_CC1PLUS_SPEC VAX_CC1_AND_CC1PLUS_SPEC
+#define CC1_SPEC NETBSD_CC1_AND_CC1PLUS_SPEC VAX_CC1_SPEC
 
 #undef CC1PLUS_SPEC
-#define CC1PLUS_SPEC NETBSD_CC1_AND_CC1PLUS_SPEC VAX_CC1_AND_CC1PLUS_SPEC
+#define CC1PLUS_SPEC NETBSD_CC1_AND_CC1PLUS_SPEC VAX_CC1PLUS_SPEC
 
 #define NETBSD_ENTRY_POINT "__start"
 

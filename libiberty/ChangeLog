@@ -1,3 +1,53 @@
+2021-03-16  Nick Clifton  <nickc@redhat.com>
+
+	* sha1.c (sha1_process_bytes): Use memmove in place of memcpy.
+
+2021-02-20  Mike Frysinger  <vapier@gentoo.org>
+
+	* Makefile.in (ACLOCAL, ACLOCAL_AMFLAGS, $(srcdir)/aclocal.m4): Define.
+	(configure_deps): Rename to ...
+	(aclocal_deps): ... this.  Replace aclocal.m4 with acinclude.m4.
+	($(srcdir)/configure): Replace $(configure_deps) with
+	$(srcdir)/aclocal.m4.
+	* aclocal.m4: Move libiberty macros to acinclude.m4, then regenerate.
+	* acinclude.m4: New file.
+	* configure: Regenerate.
+
+2021-02-19  Ayush Mittal  <ayush.m@samsung.com>
+
+	* argv.c (expandargv): free allocated buffer if read fails.
+
+2021-02-01  Martin Sebor  <msebor@redhat.com>
+
+	* dyn-string.c (dyn_string_insert_cstr): Use memcpy instead of strncpy
+	to avoid -Wstringop-truncation.
+
+2021-01-04  Martin Liska  <mliska@suse.cz>
+
+	* strverscmp.c: Convert to utf8 from iso8859.
+
+2020-12-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/67343
+	* cp-demangle.h (struct d_info): Add unresolved_name_state.
+	* cp-demangle.c (d_prefix): Add subst parm.
+	(d_nested_name): Pass it.
+	(d_unresolved_name): Split out from...
+	(d_expression_1): ...here.
+	(d_demangle_callback): Maybe retry with old sr mangling.
+	* testsuite/demangle-expected: Add test.
+
+2020-12-21  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_expression_1): Recognize qualified-id
+	on RHS of dt/pt.
+	* testsuite/demangle-expected: Add test.
+
+2020-12-21  Jason Merrill  <jason@redhat.com>
+
+	* cp-demangle.c (d_unqualified_name): Clear is_expression.
+	* testsuite/demangle-expected: Add tests.
+
 2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* configure: Regenerate.

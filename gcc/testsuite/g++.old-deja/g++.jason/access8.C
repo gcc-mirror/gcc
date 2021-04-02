@@ -3,13 +3,14 @@
 // Date: 25 Jan 1994 23:41:33 -0500
 // Bug: g++ forgets access decls after the definition.
 
-class inh { // { dg-message "" } inaccessible
+class inh { 
         int a;
 protected:
         void myf(int);
 };
 
-class mel : private inh {
+class mel : private inh // { dg-message "" } inaccessible
+{
 protected:
         int t;
 	inh::myf;  // { dg-warning "deprecated" }

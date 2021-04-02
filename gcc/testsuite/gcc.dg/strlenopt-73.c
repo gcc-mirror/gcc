@@ -69,6 +69,13 @@ void test_copy_cond_equal_length (void)
   T ( 0 ==, 33,  1, (i0 ? a32 : b32) + 32);
 }
 
+#if defined(__i386__) || defined(__x86_64__) || defined(__aarch64__) \
+    || defined(__s390__) || defined(__powerpc64__)
+
+/* The following tests assume GCC transforms the memcpy calls into
+   long long assignments which it does only on targets that define
+   the MOVE_MAX macro to 8 or higher.  Enable on a set of targets
+   known to do that.  */
 
 const char a4[16] = "0123";
 const char b4[16] = "3210";
@@ -84,12 +91,14 @@ void test_copy_cond_unequal_length_i64 (void)
   T (0 <, 16, 8, i0 ? a4 + 2 : b4 + 3);
 }
 
+#endif
 
-#if __i386__ && __SIZEOF_INT128__ == 16
+
+#if defined(__x86_64__) && __SIZEOF_INT128__ == 16
 
 /* The following tests assume GCC transforms the memcpy calls into
    int128_t assignments which it does only on targets that define
-   the MOVE_MAX macro to 16.  That's only s390 and i386 with
+   the MOVE_MAX macro to 16.  That's only s390 and x86_64 with
    int128_t support.  */
 
 const char a8[32] = "01234567";

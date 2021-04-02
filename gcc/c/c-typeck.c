@@ -1,5 +1,5 @@
 /* Build expressions with type checking for C compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1107,7 +1107,9 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
      not transitive: two enumerated types in the same translation unit
      are compatible with each other only if they are the same type.  */
 
-  if (TREE_CODE (t1) == ENUMERAL_TYPE && TREE_CODE (t2) != ENUMERAL_TYPE)
+  if (TREE_CODE (t1) == ENUMERAL_TYPE
+      && COMPLETE_TYPE_P (t1)
+      && TREE_CODE (t2) != ENUMERAL_TYPE)
     {
       t1 = c_common_type_for_size (TYPE_PRECISION (t1), TYPE_UNSIGNED (t1));
       if (TREE_CODE (t2) != VOID_TYPE)
@@ -1118,7 +1120,9 @@ comptypes_internal (const_tree type1, const_tree type2, bool *enum_and_int_p,
 	    *different_types_p = true;
 	}
     }
-  else if (TREE_CODE (t2) == ENUMERAL_TYPE && TREE_CODE (t1) != ENUMERAL_TYPE)
+  else if (TREE_CODE (t2) == ENUMERAL_TYPE
+	   && COMPLETE_TYPE_P (t2)
+	   && TREE_CODE (t1) != ENUMERAL_TYPE)
     {
       t2 = c_common_type_for_size (TYPE_PRECISION (t2), TYPE_UNSIGNED (t2));
       if (TREE_CODE (t1) != VOID_TYPE)
@@ -1964,6 +1968,50 @@ mark_exp_read (tree exp)
       mark_exp_read (TREE_OPERAND (exp, 0));
       break;
     case COMPOUND_EXPR:
+      /* Pattern match what build_atomic_assign produces with modifycode
+	 NOP_EXPR.  */
+      if (VAR_P (TREE_OPERAND (exp, 1))
+	  && DECL_ARTIFICIAL (TREE_OPERAND (exp, 1))
+	  && TREE_CODE (TREE_OPERAND (exp, 0)) == COMPOUND_EXPR)
+	{
+	  tree t1 = TREE_OPERAND (TREE_OPERAND (exp, 0), 0);
+	  tree t2 = TREE_OPERAND (TREE_OPERAND (exp, 0), 1);
+	  if (TREE_CODE (t1) == TARGET_EXPR
+	      && TARGET_EXPR_SLOT (t1) == TREE_OPERAND (exp, 1)
+	      && TREE_CODE (t2) == CALL_EXPR)
+	    {
+	      tree fndecl = get_callee_fndecl (t2);
+	      tree arg = NULL_TREE;
+	      if (fndecl
+		  && TREE_CODE (fndecl) == FUNCTION_DECL
+		  && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+		  && call_expr_nargs (t2) >= 2)
+		switch (DECL_FUNCTION_CODE (fndecl))
+		  {
+		  case BUILT_IN_ATOMIC_STORE:
+		    arg = CALL_EXPR_ARG (t2, 1);
+		    break;
+		  case BUILT_IN_ATOMIC_STORE_1:
+		  case BUILT_IN_ATOMIC_STORE_2:
+		  case BUILT_IN_ATOMIC_STORE_4:
+		  case BUILT_IN_ATOMIC_STORE_8:
+		  case BUILT_IN_ATOMIC_STORE_16:
+		    arg = CALL_EXPR_ARG (t2, 0);
+		    break;
+		  default:
+		    break;
+		  }
+	      if (arg)
+		{
+		  STRIP_NOPS (arg);
+		  if (TREE_CODE (arg) == ADDR_EXPR
+		      && DECL_P (TREE_OPERAND (arg, 0))
+		      && TYPE_ATOMIC (TREE_TYPE (TREE_OPERAND (arg, 0))))
+		    mark_exp_read (TREE_OPERAND (arg, 0));
+		}
+	    }
+	}
+      /* FALLTHRU */
     case C_MAYBE_CONST_EXPR:
       mark_exp_read (TREE_OPERAND (exp, 1));
       break;
@@ -2080,9 +2128,6 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
     exp = default_function_array_conversion (loc, exp);
   if (!VOID_TYPE_P (TREE_TYPE (exp.value)))
     exp.value = require_complete_type (loc, exp.value);
-  if (convert_p && !error_operand_p (exp.value)
-      && (TREE_CODE (TREE_TYPE (exp.value)) != ARRAY_TYPE))
-    exp.value = convert (build_qualified_type (TREE_TYPE (exp.value), TYPE_UNQUALIFIED), exp.value);
   if (really_atomic_lvalue (exp.value))
     {
       vec<tree, va_gc> *params;
@@ -2119,6 +2164,9 @@ convert_lvalue_to_rvalue (location_t loc, struct c_expr exp,
       exp.value = build4 (TARGET_EXPR, nonatomic_type, tmp, func_call,
 			  NULL_TREE, NULL_TREE);
     }
+  if (convert_p && !error_operand_p (exp.value)
+      && (TREE_CODE (TREE_TYPE (exp.value)) != ARRAY_TYPE))
+    exp.value = convert (build_qualified_type (TREE_TYPE (exp.value), TYPE_UNQUALIFIED), exp.value);
   return exp;
 }
 
@@ -3949,10 +3997,9 @@ pointer_diff (location_t loc, tree op0, tree op1, tree *instrument_expr)
     pedwarn (loc, OPT_Wpointer_arith,
 	     "pointer to a function used in subtraction");
 
-  if (sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
+  if (current_function_decl != NULL_TREE
+      && sanitize_flags_p (SANITIZE_POINTER_SUBTRACT))
     {
-      gcc_assert (current_function_decl != NULL_TREE);
-
       op0 = save_expr (op0);
       op1 = save_expr (op1);
 
@@ -4062,7 +4109,7 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   vec<tree, va_gc> *params;
   tree val, nonatomic_lhs_type, nonatomic_rhs_type, newval, newval_addr;
   tree old, old_addr;
-  tree compound_stmt;
+  tree compound_stmt = NULL_TREE;
   tree stmt, goto_stmt;
   tree loop_label, loop_decl, done_label, done_decl;
 
@@ -4083,7 +4130,15 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
 
   /* Create a compound statement to hold the sequence of statements
      with a loop.  */
-  compound_stmt = c_begin_compound_stmt (false);
+  if (modifycode != NOP_EXPR)
+    {
+      compound_stmt = c_begin_compound_stmt (false);
+
+      /* For consistency with build_modify_expr on non-_Atomic,
+	 mark the lhs as read.  Also, it would be very hard to match
+	 such expressions in mark_exp_read.  */
+      mark_exp_read (lhs);
+    }
 
   /* Remove any excess precision (which is only present here in the
      case of compound assignments).  */
@@ -4109,13 +4164,16 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   TREE_NO_WARNING (val) = 1;
   rhs = build4 (TARGET_EXPR, nonatomic_rhs_type, val, rhs, NULL_TREE,
 		NULL_TREE);
+  TREE_SIDE_EFFECTS (rhs) = 1;
   SET_EXPR_LOCATION (rhs, loc);
-  add_stmt (rhs);
+  if (modifycode != NOP_EXPR)
+    add_stmt (rhs);
 
   /* NOP_EXPR indicates it's a straight store of the RHS. Simply issue
      an atomic_store.  */
   if (modifycode == NOP_EXPR)
     {
+      compound_stmt = rhs;
       /* Build __atomic_store (&lhs, &val, SEQ_CST)  */
       rhs = build_unary_op (loc, ADDR_EXPR, val, false);
       fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_STORE);
@@ -4123,10 +4181,9 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
       params->quick_push (rhs);
       params->quick_push (seq_cst);
       func_call = c_build_function_call_vec (loc, vNULL, fndecl, params, NULL);
-      add_stmt (func_call);
 
-      /* Finish the compound statement.  */
-      compound_stmt = c_end_compound_stmt (loc, compound_stmt, false);
+      compound_stmt = build2 (COMPOUND_EXPR, void_type_node,
+			      compound_stmt, func_call);
 
       /* VAL is the value which was stored, return a COMPOUND_STMT of
 	 the statement and that value.  */
@@ -5487,7 +5544,7 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
      warn here, because the COND_EXPR will be turned into OP1.  */
   if (warn_duplicated_branches
       && TREE_CODE (ret) == COND_EXPR
-      && (op1 == op2 || operand_equal_p (op1, op2, 0)))
+      && (op1 == op2 || operand_equal_p (op1, op2, OEP_ADDRESS_OF_SAME_FIELD)))
     warning_at (EXPR_LOCATION (ret), OPT_Wduplicated_branches,
 		"this condition has identical branches");
 
@@ -6276,16 +6333,9 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 		    "enum conversion in assignment is invalid in C++");
     }
 
-  /* If the lhs is atomic, remove that qualifier.  */
-  if (is_atomic_op)
-    {
-      lhstype = build_qualified_type (lhstype, 
-				      (TYPE_QUALS (lhstype)
-				       & ~TYPE_QUAL_ATOMIC));
-      olhstype = build_qualified_type (olhstype, 
-				       (TYPE_QUALS (lhstype)
-					& ~TYPE_QUAL_ATOMIC));
-    }
+  /* Remove qualifiers.  */
+  lhstype = build_qualified_type (lhstype, TYPE_UNQUALIFIED);
+  olhstype = build_qualified_type (olhstype, TYPE_UNQUALIFIED);
 
   /* Convert new value to destination type.  Fold it first, then
      restore any excess precision information, for the sake of
@@ -10744,7 +10794,9 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 	  retval = TREE_OPERAND (retval, 0);
 	}
       retval = c_fully_fold (retval, false, NULL);
-      if (semantic_type)
+      if (semantic_type
+	  && valtype != NULL_TREE
+	  && TREE_CODE (valtype) != VOID_TYPE)
 	retval = build1 (EXCESS_PRECISION_EXPR, semantic_type, retval);
     }
 
@@ -12324,6 +12376,7 @@ build_binary_op (location_t location, enum tree_code code,
 	}
 
       if ((code0 == POINTER_TYPE || code1 == POINTER_TYPE)
+	  && current_function_decl != NULL_TREE
 	  && sanitize_flags_p (SANITIZE_POINTER_COMPARE))
 	{
 	  op0 = save_expr (op0);
@@ -13861,6 +13914,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   tree simdlen = NULL_TREE, safelen = NULL_TREE;
   bool branch_seen = false;
   bool copyprivate_seen = false;
+  bool mergeable_seen = false;
+  tree *detach_seen = NULL;
   bool linear_variable_step_check = false;
   tree *nowait_clause = NULL;
   tree ordered_clause = NULL_TREE;
@@ -13986,7 +14041,9 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      size = size_binop (MINUS_EXPR, size, size_one_node);
 	      size = save_expr (size);
 	      tree index_type = build_index_type (size);
-	      tree atype = build_array_type (type, index_type);
+	      tree atype = build_array_type (TYPE_MAIN_VARIANT (type),
+					     index_type);
+	      atype = c_build_qualified_type (atype, TYPE_QUALS (type));
 	      tree ptype = build_pointer_type (type);
 	      if (TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 		t = build_fold_addr_expr (t);
@@ -14942,6 +14999,21 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
+	case OMP_CLAUSE_DETACH:
+	  t = OMP_CLAUSE_DECL (c);
+	  if (detach_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"too many %qs clauses on a task construct",
+			"detach");
+	      remove = true;
+	      break;
+	    }
+	  detach_seen = pc;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  c_mark_addressable (t);
+	  continue;
+
 	case OMP_CLAUSE_IF:
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_NUM_TEAMS:
@@ -14950,7 +15022,6 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
 	case OMP_CLAUSE_FINAL:
-	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
 	case OMP_CLAUSE_PARALLEL:
@@ -14981,6 +15052,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_MERGEABLE:
+	  mergeable_seen = true;
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
@@ -15233,6 +15309,41 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		"%<nogroup%> clause must not be used together with "
 		"%<reduction%> clause");
       *nogroup_seen = OMP_CLAUSE_CHAIN (*nogroup_seen);
+    }
+
+  if (detach_seen)
+    {
+      if (mergeable_seen)
+	{
+	  error_at (OMP_CLAUSE_LOCATION (*detach_seen),
+		    "%<detach%> clause must not be used together with "
+		    "%<mergeable%> clause");
+	  *detach_seen = OMP_CLAUSE_CHAIN (*detach_seen);
+	}
+      else
+	{
+	  tree detach_decl = OMP_CLAUSE_DECL (*detach_seen);
+
+	  for (pc = &clauses, c = clauses; c ; c = *pc)
+	    {
+	      bool remove = false;
+	      if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SHARED
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+		   || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE)
+		  && OMP_CLAUSE_DECL (c) == detach_decl)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "the event handle of a %<detach%> clause "
+			    "should not be in a data-sharing clause");
+		  remove = true;
+		}
+	      if (remove)
+		*pc = OMP_CLAUSE_CHAIN (c);
+	      else
+		pc = &OMP_CLAUSE_CHAIN (c);
+	    }
+	}
     }
 
   bitmap_obstack_release (NULL);

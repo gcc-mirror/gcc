@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -26,7 +26,6 @@
 FuncDeclaration *isFuncAddress(Expression *e, bool *hasOverloads = NULL);
 bool isCommutative(TOK op);
 MOD MODmerge(MOD mod1, MOD mod2);
-Expression *semantic(Expression *e, Scope *sc);
 
 /* ==================== implicitCast ====================== */
 
@@ -1431,7 +1430,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                 TypeVector *tv = (TypeVector *)tob;
                 result = new CastExp(e->loc, e, tv->elementType());
                 result = new VectorExp(e->loc, result, tob);
-                result = ::semantic(result, sc);
+                result = expressionSemantic(result, sc);
                 return;
             }
             else if (tob->ty != Tvector && t1b->ty == Tvector)
@@ -1924,7 +1923,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                     {
                         f->tookAddressOf++;
                         SymOffExp *se = new SymOffExp(e->loc, f, 0, false);
-                        ::semantic(se, sc);
+                        expressionSemantic(se, sc);
                         // Let SymOffExp::castTo() do the heavy lifting
                         visit(se);
                         return;
@@ -2083,7 +2082,7 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                     (*ae->elements)[i] = ex;
                 }
                 Expression *ev = new VectorExp(e->loc, ae, tb);
-                ev = ::semantic(ev, sc);
+                ev = expressionSemantic(ev, sc);
                 result = ev;
                 return;
             }
@@ -2156,16 +2155,16 @@ Expression *castTo(Expression *e, Scope *sc, Type *t)
                         if (f->needThis() && hasThis(sc))
                         {
                             result = new DelegateExp(e->loc, new ThisExp(e->loc), f, false);
-                            result = ::semantic(result, sc);
+                            result = expressionSemantic(result, sc);
                         }
                         else if (f->isNested())
                         {
                             result = new DelegateExp(e->loc, new IntegerExp(0), f, false);
-                            result = ::semantic(result, sc);
+                            result = expressionSemantic(result, sc);
                         }
                         else if (f->needThis())
                         {
-                            e->error("no 'this' to create delegate for %s", f->toChars());
+                            e->error("no `this` to create delegate for %s", f->toChars());
                             result = new ErrorExp();
                             return;
                         }
@@ -2746,7 +2745,7 @@ Lagain:
             else
                 tx = d->pointerTo();
 
-            tx = tx->semantic(e1->loc, sc);
+            tx = typeSemantic(tx, e1->loc, sc);
 
             if (t1->implicitConvTo(tx) && t2->implicitConvTo(tx))
             {

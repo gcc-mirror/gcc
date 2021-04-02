@@ -1,5 +1,5 @@
 /* Definitions of various defaults for tm.h macros.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
    Contributed by Ron Guilmette (rfg@monkeys.com)
 
 This file is part of GCC.
@@ -283,6 +283,17 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define SUPPORTS_DISCRIMINATOR 1
 #else
 #define SUPPORTS_DISCRIMINATOR 0
+#endif
+#endif
+
+/* This determines whether or not we support marking sections with
+   SHF_GNU_RETAIN flag.  Also require .init_array/.fini_array section
+   for constructors and destructors.  */
+#ifndef SUPPORTS_SHF_GNU_RETAIN
+#if HAVE_GAS_SHF_GNU_RETAIN && HAVE_INITFINI_ARRAY_SUPPORT
+#define SUPPORTS_SHF_GNU_RETAIN 1
+#else
+#define SUPPORTS_SHF_GNU_RETAIN 0
 #endif
 #endif
 

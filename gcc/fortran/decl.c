@@ -1,5 +1,5 @@
 /* Declaration statement matcher
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -3066,8 +3066,7 @@ gfc_match_old_kind_spec (gfc_typespec *ts)
 	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
-
-      if (ts->kind == 8)
+      else if (ts->kind == 8)
 	{
 	  if (flag_real8_kind == 4)
 	    ts->kind = 4;
@@ -3246,8 +3245,7 @@ close_brackets:
 	  if (flag_real4_kind == 16)
 	    ts->kind = 16;
 	}
-
-      if (ts->kind == 8)
+      else if (ts->kind == 8)
 	{
 	  if (flag_real8_kind == 4)
 	    ts->kind = 4;
@@ -7408,6 +7406,7 @@ gfc_match_function_decl (void)
      procedure interface body.  */
     if (sym->attr.is_bind_c && sym->attr.module_procedure && sym->old_symbol
   	&& strcmp (sym->name, sym->old_symbol->name) == 0
+	&& sym->binding_label && sym->old_symbol->binding_label
 	&& strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
       {
 	  const char *null = "NULL", *s1, *s2;
@@ -7923,6 +7922,7 @@ gfc_match_subroutine (void)
 	 procedure interface body.  */
       if (sym->attr.module_procedure && sym->old_symbol
   	  && strcmp (sym->name, sym->old_symbol->name) == 0
+	  && sym->binding_label && sym->old_symbol->binding_label
 	  && strcmp (sym->binding_label, sym->old_symbol->binding_label) != 0)
 	{
 	  const char *null = "NULL", *s1, *s2;
@@ -9854,7 +9854,8 @@ gfc_match_modproc (void)
   gfc_namespace *module_ns;
   gfc_interface *old_interface_head, *interface;
 
-  if (gfc_state_stack->state != COMP_INTERFACE
+  if ((gfc_state_stack->state != COMP_INTERFACE
+       && gfc_state_stack->state != COMP_CONTAINS)
       || gfc_state_stack->previous == NULL
       || current_interface.type == INTERFACE_NAMELESS
       || current_interface.type == INTERFACE_ABSTRACT)

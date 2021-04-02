@@ -124,8 +124,8 @@ LTLIBRARIES = $(noinst_LTLIBRARIES)
 libc__17convenience_la_LIBADD =
 @ENABLE_DUAL_ABI_TRUE@am__objects_1 = cow-fs_dir.lo cow-fs_ops.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-fs_path.lo
-am__objects_2 = floating_from_chars.lo fs_dir.lo fs_ops.lo fs_path.lo \
-	memory_resource.lo $(am__objects_1)
+am__objects_2 = floating_from_chars.lo floating_to_chars.lo fs_dir.lo \
+	fs_ops.lo fs_path.lo memory_resource.lo $(am__objects_1)
 @ENABLE_DUAL_ABI_TRUE@am__objects_3 = cow-string-inst.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = ostream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.lo $(am__objects_3)
@@ -262,6 +262,8 @@ LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LONG_DOUBLE_128_FLAGS = @LONG_DOUBLE_128_FLAGS@
+LONG_DOUBLE_ALT128_COMPAT_FLAGS = @LONG_DOUBLE_ALT128_COMPAT_FLAGS@
 LONG_DOUBLE_COMPAT_FLAGS = @LONG_DOUBLE_COMPAT_FLAGS@
 LTLIBICONV = @LTLIBICONV@
 LTLIBOBJS = @LTLIBOBJS@
@@ -401,11 +403,13 @@ toolexeclibdir = $(glibcxx_toolexeclibdir)
 @ENABLE_WERROR_TRUE@WERROR_FLAG = -Werror
 @ENABLE_EXTERN_TEMPLATE_FALSE@XTEMPLATE_FLAGS = 
 @ENABLE_EXTERN_TEMPLATE_TRUE@XTEMPLATE_FLAGS = -fno-implicit-templates
+@GLIBCXX_LDBL_ALT128_COMPAT_FALSE@LDBL_128_FLAGS = 
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@LDBL_128_FLAGS = $(LONG_DOUBLE_128_FLAGS)
 
 # These bits are all figured out from configure.  Look in acinclude.m4
 # or configure.ac to see how they are set.  See GLIBCXX_EXPORT_FLAGS.
 CONFIG_CXXFLAGS = \
-	$(SECTION_FLAGS) $(HWCAP_CFLAGS) -frandom-seed=$@
+	$(SECTION_FLAGS) $(HWCAP_CFLAGS) -frandom-seed=$@ $(LDBL_128_FLAGS)
 
 WARN_CXXFLAGS = \
 	$(WARN_FLAGS) $(WERROR_FLAG) -fdiagnostics-show-location=once 
@@ -436,6 +440,7 @@ headers =
 
 sources = \
 	floating_from_chars.cc \
+	floating_to_chars.cc \
 	fs_dir.cc \
 	fs_ops.cc \
 	fs_path.cc \
@@ -751,6 +756,15 @@ uninstall-am:
 
 
 vpath % $(top_srcdir)/src/c++17
+
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@floating_from_chars.lo: floating_from_chars.cc
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@floating_from_chars.o: floating_from_chars.cc
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@floating_to_chars.lo: floating_to_chars.cc
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@floating_to_chars.o: floating_to_chars.cc
+@GLIBCXX_LDBL_ALT128_COMPAT_TRUE@	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

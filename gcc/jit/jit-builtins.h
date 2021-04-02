@@ -1,5 +1,5 @@
 /* jit-builtins.h -- Handling of builtin functions during JIT-compilation.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -126,6 +126,9 @@ public:
 
   tree
   get_attrs_tree (enum built_in_attribute attr);
+
+  void
+  ensure_optimization_builtins_exist ();
 
   void
   finish_playback (void);

@@ -1,5 +1,5 @@
 /* Tree-based target query functions relating to optabs
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -277,6 +277,75 @@ optab_for_tree_code (enum tree_code code, const_tree type,
     }
 }
 
+/* Check whether an operation represented by CODE is a 'half' widening operation
+   in which the input vector type has half the number of bits of the output
+   vector type e.g. V8QI->V8HI.
+
+   This is handled by widening the inputs using NOP_EXPRs then using a
+   non-widening stmt e.g. MINUS_EXPR.  RTL fusing converts these to the widening
+   hardware instructions if supported.
+
+   The more typical case (handled in supportable_widening_operation) is where
+   the input vector type has the same number of bits as the output vector type.
+   In this case half the elements of the input vectors must be processed at a
+   time into respective vector outputs with elements twice as wide i.e. a
+   'hi'/'lo' pair using codes such as VEC_WIDEN_MINUS_HI/LO.
+
+   Supported widening operations:
+    WIDEN_MINUS_EXPR
+    WIDEN_PLUS_EXPR
+    WIDEN_MULT_EXPR
+    WIDEN_LSHIFT_EXPR
+
+   Output:
+   - CODE1 - The non-widened code, which will be used after the inputs are
+     converted to the wide type.  */
+bool
+supportable_half_widening_operation (enum tree_code code, tree vectype_out,
+				     tree vectype_in, enum tree_code *code1)
+{
+  machine_mode m1,m2;
+  enum tree_code dummy_code;
+  optab op;
+
+  gcc_assert (VECTOR_TYPE_P (vectype_out) && VECTOR_TYPE_P (vectype_in));
+
+  m1 = TYPE_MODE (vectype_out);
+  m2 = TYPE_MODE (vectype_in);
+
+  if (!VECTOR_MODE_P (m1) || !VECTOR_MODE_P (m2))
+    return false;
+
+  if (maybe_ne (TYPE_VECTOR_SUBPARTS (vectype_in),
+		  TYPE_VECTOR_SUBPARTS (vectype_out)))
+    return false;
+
+  switch (code)
+    {
+    case WIDEN_LSHIFT_EXPR:
+      *code1 = LSHIFT_EXPR;
+      break;
+    case WIDEN_MINUS_EXPR:
+      *code1 = MINUS_EXPR;
+      break;
+    case WIDEN_PLUS_EXPR:
+      *code1 = PLUS_EXPR;
+      break;
+    case WIDEN_MULT_EXPR:
+      *code1 = MULT_EXPR;
+      break;
+    default:
+      return false;
+    }
+
+  if (!supportable_convert_operation (NOP_EXPR, vectype_out, vectype_in,
+				     &dummy_code))
+    return false;
+
+  op = optab_for_tree_code (*code1, vectype_out, optab_vector);
+  return (optab_handler (op, TYPE_MODE (vectype_out)) != CODE_FOR_nothing);
+}
+
 /* Function supportable_convert_operation
 
    Check whether an operation represented by the code CODE is a
@@ -337,6 +406,35 @@ supportable_convert_operation (enum tree_code code,
   return false;
 }
 
+/* Return true iff vec_cmp_optab/vec_cmpu_optab can handle a vector comparison
+   for code CODE, comparing operands of type VALUE_TYPE and producing a result
+   of type MASK_TYPE.  */
+
+static bool
+vec_cmp_icode_p (tree value_type, tree mask_type, enum tree_code code)
+{
+  enum rtx_code rcode = get_rtx_code_1 (code, TYPE_UNSIGNED (value_type));
+  if (rcode == UNKNOWN)
+    return false;
+
+  return can_vec_cmp_compare_p (rcode, TYPE_MODE (value_type),
+				TYPE_MODE (mask_type));
+}
+
+/* Return true iff vec_cmpeq_optab can handle a vector comparison for code
+   CODE, comparing operands of type VALUE_TYPE and producing a result of type
+   MASK_TYPE.  */
+
+static bool
+vec_cmp_eq_icode_p (tree value_type, tree mask_type, enum tree_code code)
+{
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return false;
+
+  return get_vec_cmp_eq_icode (TYPE_MODE (value_type), TYPE_MODE (mask_type))
+	 != CODE_FOR_nothing;
+}
+
 /* Return TRUE if appropriate vector insn is available
    for vector comparison expr with vector type VALUE_TYPE
    and resulting mask with MASK_TYPE.  */
@@ -344,14 +442,8 @@ supportable_convert_operation (enum tree_code code,
 bool
 expand_vec_cmp_expr_p (tree value_type, tree mask_type, enum tree_code code)
 {
-  if (get_vec_cmp_icode (TYPE_MODE (value_type), TYPE_MODE (mask_type),
-			 TYPE_UNSIGNED (value_type)) != CODE_FOR_nothing)
-    return true;
-  if ((code == EQ_EXPR || code == NE_EXPR)
-      && (get_vec_cmp_eq_icode (TYPE_MODE (value_type), TYPE_MODE (mask_type))
-	  != CODE_FOR_nothing))
-    return true;
-  return false;
+  return vec_cmp_icode_p (value_type, mask_type, code)
+	 || vec_cmp_eq_icode_p (value_type, mask_type, code);
 }
 
 /* Return true iff vcond_optab/vcondu_optab can handle a vector
@@ -361,8 +453,12 @@ expand_vec_cmp_expr_p (tree value_type, tree mask_type, enum tree_code code)
 static bool
 vcond_icode_p (tree value_type, tree cmp_op_type, enum tree_code code)
 {
-  return can_vcond_compare_p (get_rtx_code (code, TYPE_UNSIGNED (cmp_op_type)),
-			      TYPE_MODE (value_type), TYPE_MODE (cmp_op_type));
+  enum rtx_code rcode = get_rtx_code_1 (code, TYPE_UNSIGNED (cmp_op_type));
+  if (rcode == UNKNOWN)
+    return false;
+
+  return can_vcond_compare_p (rcode, TYPE_MODE (value_type),
+			      TYPE_MODE (cmp_op_type));
 }
 
 /* Return true iff vcondeq_optab can handle a vector comparison for code CODE,

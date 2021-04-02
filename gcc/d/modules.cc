@@ -1,5 +1,5 @@
 /* modules.cc -- D module initialization and termination.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 
 #include "d-tree.h"
+#include "d-target.h"
 
 
 /* D generates module information to inform the runtime library which modules
@@ -405,6 +406,10 @@ build_dso_registry_var (const char * name, tree type)
 static void
 register_moduleinfo (Module *decl, tree minfo)
 {
+  /* No defined minfo section for target.  */
+  if (targetdm.d_minfo_section == NULL)
+    return;
+
   if (!targetm_common.have_named_sections)
     sorry ("%<-fmoduleinfo%> is not supported on this target");
 
@@ -420,7 +425,8 @@ register_moduleinfo (Module *decl, tree minfo)
   DECL_EXTERNAL (mref) = 0;
   DECL_PRESERVE_P (mref) = 1;
 
-  set_decl_section_name (mref, "minfo");
+  set_decl_section_name (mref, targetdm.d_minfo_section);
+  symtab_node::get (mref)->implicit_section = true;
   d_pushdecl (mref);
   rest_of_decl_compilation (mref, 1, 0);
 
@@ -431,10 +437,12 @@ register_moduleinfo (Module *decl, tree minfo)
   if (!first_module)
     return;
 
-  start_minfo_node = build_dso_registry_var ("__start_minfo", ptr_type_node);
+  start_minfo_node = build_dso_registry_var (targetdm.d_minfo_start_name,
+					     ptr_type_node);
   rest_of_decl_compilation (start_minfo_node, 1, 0);
 
-  stop_minfo_node = build_dso_registry_var ("__stop_minfo", ptr_type_node);
+  stop_minfo_node = build_dso_registry_var (targetdm.d_minfo_end_name,
+					    ptr_type_node);
   rest_of_decl_compilation (stop_minfo_node, 1, 0);
 
   /* Declare dso_slot and dso_initialized.  */

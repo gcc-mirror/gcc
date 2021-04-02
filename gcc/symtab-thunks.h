@@ -1,5 +1,5 @@
 /* Representation of thunks inside symbol table.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -167,7 +167,7 @@ inline void
 thunk_info::release ()
 {
   if (symtab->m_thunks)
-    delete (symtab->m_thunks);
+    ggc_delete (symtab->m_thunks);
   symtab->m_thunks = NULL;
 }
 #endif  /* GCC_SYMTAB_THUNKS_H  */

@@ -1,5 +1,5 @@
 /* Code for GIMPLE range related routines.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>
    and Aldy Hernandez <aldyh@redhat.com>.
 
@@ -1072,6 +1072,12 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   // can sometimes get different results.  See PR 97741.
   r.intersect (tmp);
   m_cache.set_global_range (name, r);
+
+  // Pointers which resolve to non-zero at the defintion point do not need
+  // tracking in the cache as they will never change.  See PR 98866.
+  if (POINTER_TYPE_P (TREE_TYPE (name)) && r.nonzero_p ())
+    m_cache.set_range_invariant (name);
+
   return true;
 }
 

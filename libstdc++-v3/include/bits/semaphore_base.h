@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -33,7 +33,7 @@
 #pragma GCC system_header
 
 #include <bits/atomic_base.h>
-#ifdef _GLIBCXX_HAVE_ATOMIC_WAIT
+#if __cpp_lib_atomic_wait
 #include <bits/atomic_timed_wait.h>
 
 #include <ext/numeric_traits.h>
@@ -276,7 +276,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 // Note: the _GLIBCXX_REQUIRE_POSIX_SEMAPHORE macro can be used to force the
 // use of Posix semaphores (sem_t). Doing so however, alters the ABI.
-#ifdef _GLIBCXX_HAVE_LINUX_FUTEX && !_GLIBCXX_REQUIRE_POSIX_SEMAPHORE
+#if defined _GLIBCXX_HAVE_LINUX_FUTEX && !_GLIBCXX_REQUIRE_POSIX_SEMAPHORE
   // Use futex if available and didn't force use of POSIX
   using __fast_semaphore = __atomic_semaphore<__detail::__platform_wait_t>;
 #elif _GLIBCXX_HAVE_POSIX_SEMAPHORE
@@ -297,5 +297,5 @@ template<ptrdiff_t __least_max_value>
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#endif // HAVE_ATOMIC_WAIT
+#endif // __cpp_lib_atomic_wait
 #endif // _GLIBCXX_SEMAPHORE_BASE_H

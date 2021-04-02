@@ -1,5 +1,5 @@
 /* Default language-specific hooks.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva  <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -630,6 +630,22 @@ lhd_omp_scalar_p (tree decl)
       || TREE_CODE (type) == POINTER_TYPE)
     return true;
   return false;
+}
+
+/* Return static initializer for DECL.  */
+
+tree *
+lhd_omp_get_decl_init (tree decl)
+{
+  return &DECL_INITIAL (decl);
+}
+
+/* Free any extra memory used to hold initializer information for
+   variable declarations.  */
+
+void
+lhd_omp_finish_decl_inits (void)
+{
 }
 
 /* Register language specific type size variables as potentially OpenMP

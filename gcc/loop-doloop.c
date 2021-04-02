@@ -1,5 +1,5 @@
 /* Perform doloop optimizations
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Based on code by Michael P. Hayes (m.hayes@elec.canterbury.ac.nz)
 
 This file is part of GCC.
@@ -378,7 +378,7 @@ add_test (rtx cond, edge *e, basic_block dest)
   bb = split_edge_and_insert (*e, seq);
   *e = single_succ_edge (bb);
 
-  if (any_uncondjump_p (jump))
+  if (any_uncondjump_p (jump) && onlyjump_p (jump))
     {
       /* The condition is always true.  */
       delete_insn (jump);

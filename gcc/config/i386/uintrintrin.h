@@ -1,4 +1,4 @@
-/* Copyright (C) 2020 Free Software Foundation, Inc.
+/* Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -38,9 +38,6 @@
 
 struct __uintr_frame
 {
-  /* The position of the most significant bit set in user-interrupt
-     request register.  */
-  unsigned long long uirrv;
   /* RIP of the interrupted user process.  */
   unsigned long long rip;
   /* RFLAGS of the interrupted user process.  */

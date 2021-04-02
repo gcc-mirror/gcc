@@ -1364,7 +1364,11 @@ func (v Value) Set(x Value) {
 	}
 	x = x.assignTo("reflect.Set", v.typ, target)
 	if x.flag&flagIndir != 0 {
-		typedmemmove(v.typ, v.ptr, x.ptr)
+		if x.ptr == unsafe.Pointer(&zeroVal[0]) {
+			typedmemclr(v.typ, v.ptr)
+		} else {
+			typedmemmove(v.typ, v.ptr, x.ptr)
+		}
 	} else {
 		*(*unsafe.Pointer)(v.ptr) = x.ptr
 	}
@@ -2171,10 +2175,23 @@ func Zero(typ Type) Value {
 	t := typ.(*rtype)
 	fl := flag(t.Kind())
 	if ifaceIndir(t) {
-		return Value{t, unsafe_New(t), fl | flagIndir}
+		var p unsafe.Pointer
+		if t.size <= maxZero {
+			p = unsafe.Pointer(&zeroVal[0])
+		} else {
+			p = unsafe_New(t)
+		}
+		return Value{t, p, fl | flagIndir}
 	}
 	return Value{t, nil, fl}
 }
+
+// must match declarations in runtime/map.go.
+const maxZero = 1024
+
+// Using linkname here doesn't work for gofrontend.
+// //go:linkname zeroVal runtime.zeroVal
+var zeroVal [maxZero]byte
 
 // New returns a Value representing a pointer to a new zero value
 // for the specified type. That is, the returned Value's Type is PtrTo(typ).
@@ -2466,12 +2483,20 @@ func cvtComplex(v Value, t Type) Value {
 
 // convertOp: intXX -> string
 func cvtIntString(v Value, t Type) Value {
-	return makeString(v.flag.ro(), string(rune(v.Int())), t)
+	s := "\uFFFD"
+	if x := v.Int(); int64(rune(x)) == x {
+		s = string(rune(x))
+	}
+	return makeString(v.flag.ro(), s, t)
 }
 
 // convertOp: uintXX -> string
 func cvtUintString(v Value, t Type) Value {
-	return makeString(v.flag.ro(), string(rune(v.Uint())), t)
+	s := "\uFFFD"
+	if x := v.Uint(); uint64(rune(x)) == x {
+		s = string(rune(x))
+	}
+	return makeString(v.flag.ro(), s, t)
 }
 
 // convertOp: []byte -> string
@@ -2591,6 +2616,10 @@ func memmove(dst, src unsafe.Pointer, size uintptr)
 // typedmemmove copies a value of type t to dst from src.
 //go:noescape
 func typedmemmove(t *rtype, dst, src unsafe.Pointer)
+
+// typedmemclr zeros the value at ptr of type t.
+//go:noescape
+func typedmemclr(t *rtype, ptr unsafe.Pointer)
 
 // typedslicecopy copies a slice of elemType values from src to dst,
 // returning the number of elements copied.

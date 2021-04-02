@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -483,7 +483,7 @@ int blockExit(Statement *s, FuncDeclaration *func, bool mustNotThrow)
         void visit(CompoundAsmStatement *s)
         {
             if (mustNotThrow && !(s->stc & STCnothrow))
-                s->deprecation("asm statement is assumed to throw - mark it with 'nothrow' if it does not");
+                s->deprecation("asm statement is assumed to throw - mark it with `nothrow` if it does not");
 
             // Assume the worst
             result = BEfallthru | BEreturn | BEgoto | BEhalt;

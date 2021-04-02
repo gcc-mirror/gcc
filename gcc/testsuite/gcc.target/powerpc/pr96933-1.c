@@ -13,3 +13,4 @@
 /* { dg-final { scan-assembler-times {\mvpkudum\M} 12 } } */
 /* { dg-final { scan-assembler-not {\mstb\M} } } */
 /* { dg-final { scan-assembler-not {\msth\M} } } */
+/* { dg-final { scan-assembler-not {\mrlwinm\M} } } */

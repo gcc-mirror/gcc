@@ -1,3 +1,12 @@
+2021-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/98316
+	* ax_lib_socket_nsl.m4: Import from autoconf-archive.
+
+2021-01-03  Mike Frysinger  <vapier@gentoo.org>
+
+	* pkg.m4: New file from pkg-config-0.29.2.
+
 2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* bootstrap-hwasan.mk: Disable random frame tags for stack-tagging

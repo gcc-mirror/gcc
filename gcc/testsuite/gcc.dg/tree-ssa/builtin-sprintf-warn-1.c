@@ -112,17 +112,21 @@ void test_sprintf_c_const (void)
   T ( 3, "%1$c%2$c", '1', '2');
 
   /* Verify that a warning is issued for exceeding INT_MAX bytes and
-     not otherwise.  */
+     not otherwise.  In ILP32 the maximum object size is INT_MAX - 1
+     bytes so the calls are diagnosed due to the overflow.  */
   T (-1, "%*c",  INT_MAX - 1, '1');
-  T (-1, "%*c",  INT_MAX,     '1');
-  T (-1, "X%*c", INT_MAX - 1, '1');
-  T (-1, "X%*c", INT_MAX,     '1'); /* { dg-warning "directive output of \[0-9\]+ bytes causes result to exceed .INT_MAX." } */
+  T (-1, "%*c",  INT_MAX,     '1'); /* { dg-warning "writing a terminating nul past the end " "ilp32" { target ilp32 } } */
+  T (-1, "X%*c", INT_MAX - 1, '1'); /* { dg-warning "writing a terminating nul past the end " "ilp32" { target ilp32 } } */
+  T (-1, "X%*c", INT_MAX,     '1'); /* { dg-warning "directive output of \[0-9\]+ bytes causes result to exceed .INT_MAX." "lp64" { target lp64 } } */
+  /* { dg-warning "directive writing 2147483647 bytes into a region of size 2147483646" "ilp32" { target ilp32 } .-1 } */
 
-  T (-1, "%*c%*c", INT_MAX - 1, '1', INT_MAX - 1, '2'); /* { dg-warning "directive output of \[0-9\]+ bytes causes result to exceed .INT_MAX." } */
+  T (-1, "%*c%*c", INT_MAX - 1, '1', INT_MAX - 1, '2'); /* { dg-warning "directive output of \[0-9\]+ bytes causes result to exceed .INT_MAX." "lp64" { target lp64 } } */
+  /* { dg-warning "directive writing 2147483646 bytes into a region of size 1" "ilp32" { target ilp32 } .-1 } */
 
   T (-1, "%*cX", INT_MAX - 2, '1');
-  T (-1, "%*cX", INT_MAX - 1, '1');
-  T (-1, "%*cX", INT_MAX,     '1'); /* { dg-warning "output of \[0-9\]+ bytes causes result to exceed .INT_MAX." } */
+  T (-1, "%*cX", INT_MAX - 1, '1'); /* { dg-warning "writing a terminating nul past the end of the destination" "ilp32" { target ilp32 } } */
+  T (-1, "%*cX", INT_MAX,     '1'); /* { dg-warning "output of \[0-9\]+ bytes causes result to exceed .INT_MAX." "lp64" { target lp64 } } */
+  /* { dg-warning "directive writing 1 byte into a region of size 0" "ilp32" { target ilp32 } .-1 } */
 }
 
 /* Verify that no warning is issued for calls that write into a flexible
@@ -288,8 +292,9 @@ void test_sprintf_chk_s_const (void)
   /* Verify that output in excess of INT_MAX bytes is diagnosed even
      when the size of the destination object is unknown.  */
   T (-1, "%*s",  INT_MAX - 1, "");
-  T (-1, "%*s",  INT_MAX,     "");
-  T (-1, "X%*s", INT_MAX,     ""); /* { dg-warning "directive output of \[0-9\]+ bytes causes result to exceed .INT_MAX." } */
+  T (-1, "%*s",  INT_MAX,     ""); /* { dg-warning "writing a terminating nul past the end" "ilp32" { target ilp32 } } */
+  T (-1, "X%*s", INT_MAX,     ""); /* { dg-warning "directive output of \[0-9\]+ bytes causes result to exceed .INT_MAX." "lp64" { target lp64 } } */
+  /* { dg-warning "directive writing 2147483647 bytes into a region of size 2147483646" "ilp32" { target ilp32 } .-1 } */
 
   /* Multiple directives.  */
 

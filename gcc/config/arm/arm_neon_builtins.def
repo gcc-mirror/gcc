@@ -1,5 +1,5 @@
 /* NEON builtin definitions for ARM.
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
    Contributed by ARM Ltd.
 
    This file is part of GCC.
@@ -126,10 +126,6 @@ VAR6 (BINOP, vhsubu, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR3 (BINOP, vsubhn, v8hi, v4si, v2di)
 VAR3 (BINOP, vrsubhn, v8hi, v4si, v2di)
 VAR8 (BINOP, vceq, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf)
-VAR8 (BINOP, vcge, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf)
-VAR6 (BINOP, vcgeu, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
-VAR8 (BINOP, vcgt, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf)
-VAR6 (BINOP, vcgtu, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR2 (BINOP, vcage, v2sf, v4sf)
 VAR2 (BINOP, vcagt, v2sf, v4sf)
 VAR2 (BINOP, vcage, v4hf, v8hf)
@@ -195,7 +191,6 @@ VAR8 (UNOP, vabs, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf)
 VAR2 (UNOP, vabs, v8hf, v4hf)
 VAR2 (UNOP, vneg, v8hf, v4hf)
 VAR6 (UNOP, vqabs, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
-VAR8 (UNOP, vneg, v8qi, v4hi, v2si, v2sf, v16qi, v8hi, v4si, v4sf)
 VAR6 (UNOP, vqneg, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR6 (UNOP, vcls, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR6 (UNOP, vclz, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
@@ -205,7 +200,6 @@ VAR4 (UNOP, vrecpe, v2si, v2sf, v4si, v4sf)
 VAR2 (UNOP, vrecpe, v8hf, v4hf)
 VAR4 (UNOP, vrsqrte, v2si, v2sf, v4si, v4sf)
 VAR2 (UNOP, vrsqrte, v4hf, v8hf)
-VAR6 (UNOP, vmvn, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR2 (UNOP, vrnd, v8hf, v4hf)
 VAR2 (UNOP, vrnda, v8hf, v4hf)
 VAR2 (UNOP, vrndm, v8hf, v4hf)
@@ -218,7 +212,6 @@ VAR10 (GETLANE, vget_lane,
 VAR6 (GETLANE, vget_laneu, v8qi, v4hi, v2si, v16qi, v8hi, v4si)
 VAR10 (SETLANE, vset_lane,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
-VAR5 (UNOP, vcreate, v8qi, v4hi, v2si, v2sf, di)
 VAR10 (UNOP, vdup_n,
 	 v8qi, v4hi, v2si, v2sf, di, v16qi, v8hi, v4si, v4sf, v2di)
 VAR4 (UNOP, vdup_n, v8hf, v4hf, v8bf, v4bf)
