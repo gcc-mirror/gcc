@@ -1,3 +1,38 @@
+2021-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98481
+	* common.opt: Document v15 and v16.
+
+2021-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99863
+	* gimplify.c (gimplify_init_constructor): Recompute vector
+	constructor flags.
+
+2021-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/extend.texi (symver attribute): Fix up syntax errors
+	in the examples.
+
+2021-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96573
+	* gimple-ssa-store-merging.c (init_symbolic_number): Handle
+	also pointer types.
+
+2021-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99856
+	* tree-vect-patterns.c (vect_recog_over_widening_pattern): Promote
+	precision to vector element precision.
+
+2021-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/97009
+	* tree-sra.c (access_or_its_child_written): New function.
+	(propagate_subaccesses_from_rhs): Use it instead of a simple grp_write
+	test.
+
 2021-03-31  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/98265

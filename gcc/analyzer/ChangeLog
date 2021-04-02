@@ -1,3 +1,59 @@
+2021-04-01  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-manager.cc (diagnostic_manager::add_diagnostic): Make
+	enode param non-constant, and call add_diagnostic on it.  Add
+	enode index to log message.
+	(diagnostic_manager::add_diagnostic): Make enode param
+	non-constant.
+	* diagnostic-manager.h (diagnostic_manager::add_diagnostic):
+	Likewise for both decls.
+	* engine.cc
+	(impl_region_model_context::impl_region_model_context): Likewise
+	for enode_for_diag.
+	(impl_sm_context::impl_sm_context): Likewise.
+	(impl_sm_context::m_enode_for_diag): Likewise.
+	(exploded_node::dump_dot): Don't pass the diagnostic manager
+	to dump_saved_diagnostics.
+	(exploded_node::dump_saved_diagnostics): Drop param.  Iterate
+	directly through all saved diagnostics for the enode, rather
+	than all saved diagnostics in the diagnostic_manager and
+	filtering.
+	(exploded_node::on_stmt): Make non-const.
+	(exploded_node::on_edge): Likewise.
+	(exploded_node::on_longjmp): Likewise.
+	(exploded_node::detect_leaks): Likewise.
+	(exploded_graph::get_or_create_node): Make enode_for_diag param
+	non-const.
+	(exploded_graph_annotator::print_enode): Iterate
+	directly through all saved diagnostics for the enode, rather
+	than all saved diagnostics in the diagnostic_manager and
+	filtering.
+	* exploded-graph.h
+	(impl_region_model_context::impl_region_model_context): Make
+	enode_for_diag param non-constant.
+	(impl_region_model_context::m_enode_for_diag): Likewise.
+	(exploded_node::dump_saved_diagnostics): Drop param.
+	(exploded_node::on_stmt): Make non-const.
+	(exploded_node::on_edge): Likewise.
+	(exploded_node::on_longjmp): Likewise.
+	(exploded_node::detect_leaks): Likewise.
+	(exploded_node::add_diagnostic): New.
+	(exploded_node::get_num_diagnostics): New.
+	(exploded_node::get_saved_diagnostic): New.
+	(exploded_node::m_saved_diagnostics): New.
+	(exploded_graph::get_or_create_node): Make enode_for_diag param
+	non-constant.
+	* feasible-graph.cc (feasible_node::dump_dot): Drop
+	diagnostic_manager from call to dump_saved_diagnostics.
+	* program-state.cc (program_state::on_edge): Convert enode param
+	to non-const pointer.
+	(program_state::prune_for_point): Likewise for enode_for_diag
+	param.
+	* program-state.h (program_state::on_edge): Convert enode param
+	to non-const pointer.
+	(program_state::prune_for_point): Likewise for enode_for_diag
+	param.
+
 2021-03-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99771

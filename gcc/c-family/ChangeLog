@@ -1,3 +1,8 @@
+2021-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98481
+	* c-opts.c (c_common_post_options): Bump latest_abi_version.
+
 2021-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/99565
