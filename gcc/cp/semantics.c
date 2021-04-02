@@ -3036,14 +3036,13 @@ finish_compound_literal (tree type, tree compound_literal,
       return error_mark_node;
     }
 
-  if (tree anode = type_uses_auto (type))
-    if (CLASS_PLACEHOLDER_TEMPLATE (anode))
-      {
-	type = do_auto_deduction (type, compound_literal, anode, complain,
-				  adc_variable_type);
-	if (type == error_mark_node)
-	  return error_mark_node;
-      }
+  if (template_placeholder_p (type))
+    {
+      type = do_auto_deduction (type, compound_literal, type, complain,
+				adc_variable_type);
+      if (type == error_mark_node)
+	return error_mark_node;
+    }
 
   /* Used to hold a copy of the compound literal in a template.  */
   tree orig_cl = NULL_TREE;
