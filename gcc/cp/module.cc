@@ -4477,6 +4477,7 @@ trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
 {
 #if CHECKING_P
   tree *slot = note_defs->find_slot (decl, installing ? INSERT : NO_INSERT);
+  tree not_tmpl = STRIP_TEMPLATE (decl);
   if (installing)
     {
       /* We must be inserting for the first time.  */
@@ -4492,13 +4493,13 @@ trees_in::assert_definition (tree decl ATTRIBUTE_UNUSED,
     gcc_assert (!is_duplicate (decl)
 		? !slot
 		: (slot
-		   || !DECL_LANG_SPECIFIC (STRIP_TEMPLATE (decl))
-		   || !DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (decl))
-		   || (!DECL_MODULE_IMPORT_P (STRIP_TEMPLATE (decl))
+		   || !DECL_LANG_SPECIFIC (not_tmpl)
+		   || !DECL_MODULE_PURVIEW_P (not_tmpl)
+		   || (!DECL_MODULE_IMPORT_P (not_tmpl)
 		       && header_module_p ())));
 
-  if (TREE_CODE (decl) == TEMPLATE_DECL)
-    gcc_assert (!note_defs->find_slot (DECL_TEMPLATE_RESULT (decl), NO_INSERT));
+  if (not_tmpl != decl)
+    gcc_assert (!note_defs->find_slot (not_tmpl, NO_INSERT));
 #endif
 }
 
@@ -5519,7 +5520,9 @@ trees_out::lang_decl_bools (tree t)
   WB (lang->u.base.concept_p);
   WB (lang->u.base.var_declared_inline_p);
   WB (lang->u.base.dependent_init_p);
-  WB (lang->u.base.module_purview_p);
+  /* When building a header unit, everthing is marked as purview, but
+     that's the GM purview, so not what the importer will mean  */
+  WB (lang->u.base.module_purview_p && !header_module_p ());
   if (VAR_OR_FUNCTION_DECL_P (t))
     WB (lang->u.base.module_attached_p);
   switch (lang->u.base.selector)
@@ -11304,7 +11307,7 @@ trees_in::register_duplicate (tree decl, tree existing)
 /* We've read a definition of MAYBE_EXISTING.  If not a duplicate,
    return MAYBE_EXISTING (into which the definition should be
    installed).  Otherwise return NULL if already known bad, or the
-   duplicate we read (for ODR checking, or extracting addtional merge
+   duplicate we read (for ODR checking, or extracting additional merge
    information).  */
 
 tree

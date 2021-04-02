@@ -2756,8 +2756,8 @@ struct GTY(()) lang_decl_base {
   unsigned var_declared_inline_p : 1;	   /* var */
   unsigned dependent_init_p : 1;	   /* var */
 
-  /* The following apply to VAR, FUNCTION, TYPE, CONCEPT, TEMPLATE,
-     NAMESPACE decls.  */
+  /* The following apply to VAR, FUNCTION, TYPE, CONCEPT, & NAMESPACE
+     decls.  */
   unsigned module_purview_p : 1;	   /* in module purview (not GMF) */
   unsigned module_import_p : 1;     	   /* from an import */
   unsigned module_entity_p : 1;		   /* is in the entitity ary &
