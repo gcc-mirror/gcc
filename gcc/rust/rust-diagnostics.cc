@@ -190,6 +190,10 @@ rust_inform (const Location location, const char *fmt, ...)
 
 void
 rust_debug (const Location location, const char *fmt, ...)
+  ATTRIBUTE_PRINTF_2;
+
+void
+rust_debug (const Location location, const char *fmt, ...)
 {
   va_list ap;
 
