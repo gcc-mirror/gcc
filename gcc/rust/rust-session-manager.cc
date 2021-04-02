@@ -28,7 +28,17 @@
 #include "tm.h"
 #include "tm_p.h"
 
-#include "rust-target.h"
+//#include "rust-target.h"
+/*TODO This isn't (currently?) necessary, but if '#include'd after '#include "target.h"', causes:
+    In file included from [...]/gcc/rust/rust-session-manager.cc:31:
+    [...]/gcc/rust/rust-target.h:23: error: "DEFHOOK" redefined [-Werror]
+       23 | #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (*NAME) PARAMS;
+          | 
+    In file included from [...]/gcc/rust/rust-session-manager.cc:27:
+    [...]/gcc/target.h:272: note: this is the location of the previous definition
+      272 | #define DEFHOOK(NAME, DOC, TYPE, PARAMS, INIT) TYPE (* NAME) PARAMS;
+          | 
+*/
 
 #include "rust-lex.h"
 #include "rust-parse.h"
