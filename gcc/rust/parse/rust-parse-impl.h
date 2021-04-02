@@ -8570,12 +8570,8 @@ std::vector<std::unique_ptr<AST::Pattern> >
 Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
 {
   // skip optional leading '|'
-  bool has_leading_pipe = false;
   if (lexer.peek_token ()->get_id () == PIPE)
-    {
-      has_leading_pipe = true;
-      lexer.skip_token ();
-    }
+    lexer.skip_token ();
   /* TODO: do I even need to store the result of this? can't be used.
    * If semantically different, I need a wrapped "match arm patterns" object for
    * this. */
