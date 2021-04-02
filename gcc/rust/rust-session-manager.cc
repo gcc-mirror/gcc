@@ -121,7 +121,6 @@ void
 Session::enable_features ()
 {
   bool has_target_crt_static = false;
-  const char *target = "PLACEHOLDER";
 
   fprintf (
     stderr,
