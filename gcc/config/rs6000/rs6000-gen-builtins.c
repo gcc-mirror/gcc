@@ -385,6 +385,70 @@ handle_pointer (typeinfo *typedata)
 static int
 match_basetype (typeinfo *typedata)
 {
+  consume_whitespace ();
+  int oldpos = pos;
+  char *token = match_identifier ();
+  if (!token)
+    {
+      (*diag) ("missing base type in return type at column %d\n", pos + 1);
+      return 0;
+    }
+
+  if (!strcmp (token, "char"))
+    typedata->base = BT_CHAR;
+  else if (!strcmp (token, "short"))
+    typedata->base = BT_SHORT;
+  else if (!strcmp (token, "int"))
+    typedata->base = BT_INT;
+  else if (!strcmp (token, "long"))
+    {
+      consume_whitespace ();
+      oldpos = pos;
+      char *mustbelongordbl = match_identifier ();
+      if (!mustbelongordbl)
+	typedata->base = BT_LONG;
+      else if (!strcmp (mustbelongordbl, "long"))
+	typedata->base = BT_LONGLONG;
+      else if (!strcmp (mustbelongordbl, "double"))
+	typedata->base = BT_LONGDOUBLE;
+      else
+	/* Speculatively accept "long" here and push back the token.
+	   This occurs when "long" is a return type and the next token
+	   is the function name.  */
+	{
+	  typedata->base = BT_LONG;
+	  pos = oldpos;
+	}
+    }
+  else if (!strcmp (token, "float"))
+    typedata->base = BT_FLOAT;
+  else if (!strcmp (token, "double"))
+    typedata->base = BT_DOUBLE;
+  else if (!strcmp (token, "__int128"))
+    typedata->base = BT_INT128;
+  else if (!strcmp (token, "_Float128"))
+    typedata->base = BT_FLOAT128;
+  else if (!strcmp (token, "bool"))
+    typedata->base = BT_BOOL;
+  /* A "string" is a special "const char *" -- we need it because it
+     cannot match either signed or unsigned char *.  */
+  else if (!strcmp (token, "string"))
+    typedata->base = BT_STRING;
+  else if (!strcmp (token, "_Decimal32"))
+    typedata->base = BT_DECIMAL32;
+  else if (!strcmp (token, "_Decimal64"))
+    typedata->base = BT_DECIMAL64;
+  else if (!strcmp (token, "_Decimal128"))
+    typedata->base = BT_DECIMAL128;
+  else if (!strcmp (token, "__ibm128"))
+    typedata->base = BT_IBM128;
+  else
+    {
+      (*diag) ("unrecognized base type at column %d\n", oldpos + 1);
+      return 0;
+    }
+
+  handle_pointer (typedata);
   return 1;
 }
 
