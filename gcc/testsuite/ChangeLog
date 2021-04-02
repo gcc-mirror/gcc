@@ -1,3 +1,11 @@
+2021-04-01  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99856
+	* gcc.dg/vect/pr99856.c: New testcase.
+
 2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
