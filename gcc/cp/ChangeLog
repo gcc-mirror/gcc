@@ -1,3 +1,12 @@
+2021-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98481
+	* class.c (find_abi_tags_r): Set *walk_subtrees to 2 instead of 1
+	for types.
+	(mark_abi_tags_r): Likewise.
+	* tree.c (cp_walk_subtrees): If *walk_subtrees_p is 2, look through
+	typedefs.
+
 2021-03-31  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

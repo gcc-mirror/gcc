@@ -1,3 +1,31 @@
+2021-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98481
+	* g++.dg/abi/abi-tag24.C: New test.
+	* g++.dg/abi/abi-tag24a.C: New test.
+	* g++.dg/abi/macro0.C: Adjust expected value.
+
+2021-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/97009
+	* gcc.dg/tree-ssa/pr97009.c: New test.
+
+2021-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99856
+	* gcc.dg/vect/pr99856.c: New testcase.
+
+2021-04-01  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-04-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99840
+	* gfortran.dg/transpose_5.f90: New test.
+
 2021-03-31  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR testsuite/99233

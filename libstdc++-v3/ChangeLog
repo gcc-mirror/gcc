@@ -1,3 +1,23 @@
+2021-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99096
+	* testsuite/util/testsuite_fs.h: Always include <unistd.h>.
+
+2021-04-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config.h.in: Regenerate.
+	* config/os/djgpp/error_constants.h: Test POSIX errno macros
+	directly, instead of corresponding _GLIBCXX_HAVE_EXXX macros.
+	* config/os/mingw32-w64/error_constants.h: Likewise.
+	* config/os/mingw32/error_constants.h: Likewise.
+	* configure: Regenerate.
+
 2021-03-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
