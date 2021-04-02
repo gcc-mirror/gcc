@@ -817,11 +817,15 @@ public:
 
   // Copy constructor with vector clone
   QualifiedPathInType (QualifiedPathInType const &other)
-    : TypeNoBounds (mappings), path_type (other.path_type), locus (other.locus)
+    : TypeNoBounds (other.mappings), path_type (other.path_type),
+      locus (other.locus)
   {
     segments.reserve (other.segments.size ());
     for (const auto &e : other.segments)
       segments.push_back (e->clone_type_path_segment ());
+
+    // Untested.
+    gcc_unreachable ();
   }
 
   // Overloaded assignment operator with vector clone
