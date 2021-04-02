@@ -3217,7 +3217,7 @@ public:
   Location get_locus_slow () const final override { return get_locus (); }
 
   // should never be called - error if called
-  void set_outer_attrs (std::vector<Attribute> new_attrs) override
+  void set_outer_attrs (std::vector<Attribute> /* new_attrs */) override
   {
     rust_assert (false);
   }
@@ -4377,7 +4377,7 @@ public:
 
   IfLetExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 	     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
-	     std::vector<Attribute> outer_attrs, Location locus)
+	     std::vector<Attribute> /* outer_attrs */, Location locus)
     : match_arm_patterns (std::move (match_arm_patterns)),
       value (std::move (value)), if_block (std::move (if_block)), locus (locus)
   {}

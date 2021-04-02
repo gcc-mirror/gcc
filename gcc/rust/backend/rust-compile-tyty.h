@@ -64,7 +64,7 @@ public:
 
   void visit (TyTy::ParamType &) override { gcc_unreachable (); }
 
-  void visit (TyTy::FnPtr &type) override { gcc_unreachable (); }
+  void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
 
   void visit (TyTy::FnType &type) override
   {
