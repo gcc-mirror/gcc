@@ -430,8 +430,7 @@ Lexer::build_token ()
 		  if (current_char == EOF)
 		    {
 		      rust_error_at (
-			loc, "unexpected EOF while looking for end of comment",
-			current_char);
+			loc, "unexpected EOF while looking for end of comment");
 		      break;
 		    }
 
