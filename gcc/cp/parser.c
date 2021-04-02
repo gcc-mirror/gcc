@@ -18346,6 +18346,11 @@ cp_parser_explicit_specialization (cp_parser* parser)
   --parser->num_template_parameter_lists;
 }
 
+/* Preserve the attributes across a garbage collect (by making it a GC
+   root), which can occur when parsing a member function.  */
+
+static GTY(()) vec<tree, va_gc> *cp_parser_decl_specs_attrs;
+
 /* Parse a type-specifier.
 
    type-specifier:
@@ -18438,8 +18443,12 @@ cp_parser_type_specifier (cp_parser* parser,
       /* Parse tentatively so that we can back up if we don't find a
 	 class-specifier.  */
       cp_parser_parse_tentatively (parser);
+      if (decl_specs->attributes)
+	vec_safe_push (cp_parser_decl_specs_attrs, decl_specs->attributes);
       /* Look for the class-specifier.  */
       type_spec = cp_parser_class_specifier (parser);
+      if (decl_specs->attributes)
+	cp_parser_decl_specs_attrs->pop ();
       invoke_plugin_callbacks (PLUGIN_FINISH_TYPE, type_spec);
       /* If that worked, we're done.  */
       if (cp_parser_parse_definitely (parser))
