@@ -2004,6 +2004,11 @@ can_convert_qual (tree type, tree expr)
   tree expr_type = TREE_TYPE (expr);
   gcc_assert (!same_type_p (type, expr_type));
 
+  /* A function pointer conversion also counts as a Qualification Adjustment
+     under [over.ics.scs].  */
+  if (fnptr_conv_p (type, expr_type))
+    return true;
+
   if (TYPE_PTR_P (type) && TYPE_PTR_P (expr_type))
     return comp_ptr_ttypes (TREE_TYPE (type), TREE_TYPE (expr_type));
   else if (TYPE_PTRMEM_P (type) && TYPE_PTRMEM_P (expr_type))
