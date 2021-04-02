@@ -12878,7 +12878,9 @@ do_range_for_auto_deduction (tree decl, tree range_expr)
 					    RO_UNARY_STAR,
 					    tf_warning_or_error);
 	  TREE_TYPE (decl) = do_auto_deduction (TREE_TYPE (decl),
-						iter_decl, auto_node);
+						iter_decl, auto_node,
+						tf_warning_or_error,
+						adc_variable_type);
 	}
     }
 }
