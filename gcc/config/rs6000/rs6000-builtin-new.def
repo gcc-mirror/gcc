@@ -1961,3 +1961,42 @@
 
   const vsll __builtin_vsx_xxspltd_2di (vsll, const int<1>);
     XXSPLTD_V2DI vsx_xxspltd_v2di {}
+
+
+; Power7 builtins (ISA 2.06).
+[power7]
+  const unsigned int __builtin_addg6s (unsigned int, unsigned int);
+    ADDG6S addg6s {}
+
+  const signed long __builtin_bpermd (signed long, signed long);
+    BPERMD bpermd_di {}
+
+  const unsigned int __builtin_cbcdtd (unsigned int);
+    CBCDTD cbcdtd {}
+
+  const unsigned int __builtin_cdtbcd (unsigned int);
+    CDTBCD cdtbcd {}
+
+  const signed int __builtin_divwe (signed int, signed int);
+    DIVWE dive_si {}
+
+  const unsigned int __builtin_divweu (unsigned int, unsigned int);
+    DIVWEU diveu_si {}
+
+  const vsq __builtin_pack_vector_int128 (unsigned long long, unsigned long long);
+    PACK_V1TI packv1ti {}
+
+  void __builtin_ppc_speculation_barrier ();
+    SPECBARR speculation_barrier {}
+
+  const unsigned long __builtin_unpack_vector_int128 (vsq, const int<1>);
+    UNPACK_V1TI unpackv1ti {}
+
+
+; Power7 builtins requiring 64-bit GPRs (even with 32-bit addressing).
+[power7-64]
+  const signed long long __builtin_divde (signed long long, signed long long);
+    DIVDE dive_di {}
+
+  const unsigned long long __builtin_divdeu (unsigned long long, unsigned long long);
+    DIVDEU diveu_di {}
