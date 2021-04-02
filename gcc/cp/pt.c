@@ -25364,8 +25364,6 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      tree decl_parm;
-      tree pattern_parm;
       tree specs;
       int args_depth;
       int parms_depth;
@@ -25389,65 +25387,18 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 	  }
 
       /* Merge parameter declarations.  */
-      decl_parm = skip_artificial_parms_for (decl,
-					     DECL_ARGUMENTS (decl));
-      pattern_parm
-	= skip_artificial_parms_for (code_pattern,
-				     DECL_ARGUMENTS (code_pattern));
-      while (decl_parm && !DECL_PACK_P (pattern_parm))
+      if (tree pattern_parm
+	  = skip_artificial_parms_for (code_pattern,
+				       DECL_ARGUMENTS (code_pattern)))
 	{
-	  tree parm_type;
-	  tree attributes;
-
-	  if (DECL_NAME (decl_parm) != DECL_NAME (pattern_parm))
-	    DECL_NAME (decl_parm) = DECL_NAME (pattern_parm);
-	  parm_type = tsubst (TREE_TYPE (pattern_parm), args, tf_error,
-			      NULL_TREE);
-	  parm_type = type_decays_to (parm_type);
-	  if (!same_type_p (TREE_TYPE (decl_parm), parm_type))
-	    TREE_TYPE (decl_parm) = parm_type;
-	  attributes = DECL_ATTRIBUTES (pattern_parm);
-	  if (DECL_ATTRIBUTES (decl_parm) != attributes)
-	    {
-	      DECL_ATTRIBUTES (decl_parm) = attributes;
-	      cplus_decl_attributes (&decl_parm, attributes, /*flags=*/0);
-	    }
-	  decl_parm = DECL_CHAIN (decl_parm);
-	  pattern_parm = DECL_CHAIN (pattern_parm);
+	  tree *p = &DECL_ARGUMENTS (decl);
+	  for (int skip = num_artificial_parms_for (decl); skip; --skip)
+	    p = &DECL_CHAIN (*p);
+	  *p = tsubst_decl (pattern_parm, args, tf_error);
+	  for (tree t = *p; t; t = DECL_CHAIN (t))
+	    DECL_CONTEXT (t) = decl;
 	}
-      /* Merge any parameters that match with the function parameter
-         pack.  */
-      if (pattern_parm && DECL_PACK_P (pattern_parm))
-        {
-          int i, len;
-          tree expanded_types;
-          /* Expand the TYPE_PACK_EXPANSION that provides the types for
-             the parameters in this function parameter pack.  */
-          expanded_types = tsubst_pack_expansion (TREE_TYPE (pattern_parm), 
-                                                 args, tf_error, NULL_TREE);
-          len = TREE_VEC_LENGTH (expanded_types);
-          for (i = 0; i < len; i++)
-            {
-              tree parm_type;
-              tree attributes;
 
-              if (DECL_NAME (decl_parm) != DECL_NAME (pattern_parm))
-                /* Rename the parameter to include the index.  */
-                DECL_NAME (decl_parm) = 
-                  make_ith_pack_parameter_name (DECL_NAME (pattern_parm), i);
-              parm_type = TREE_VEC_ELT (expanded_types, i);
-              parm_type = type_decays_to (parm_type);
-              if (!same_type_p (TREE_TYPE (decl_parm), parm_type))
-                TREE_TYPE (decl_parm) = parm_type;
-              attributes = DECL_ATTRIBUTES (pattern_parm);
-              if (DECL_ATTRIBUTES (decl_parm) != attributes)
-                {
-                  DECL_ATTRIBUTES (decl_parm) = attributes;
-                  cplus_decl_attributes (&decl_parm, attributes, /*flags=*/0);
-                }
-              decl_parm = DECL_CHAIN (decl_parm);
-            }
-        }
       /* Merge additional specifiers from the CODE_PATTERN.  */
       if (DECL_DECLARED_INLINE_P (code_pattern)
 	  && !DECL_DECLARED_INLINE_P (decl))
