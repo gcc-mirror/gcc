@@ -559,7 +559,9 @@ convert_expr (tree exp, Type *etype, Type *totype)
       break;
 
     case Tnull:
-      /* Casting from typeof(null) is represented as all zeros.  */
+    case Tnoreturn:
+      /* Casting from `typeof(null)' for `null' expressions, or `typeof(*null)'
+	 for `noreturn' expressions is represented as all zeros.  */
       result = build_typeof_null_value (totype);
 
       /* Make sure the expression is still evaluated if necessary.  */
@@ -741,6 +743,16 @@ convert_for_condition (tree expr, Type *type)
 	result = build2 (BIT_IOR_EXPR, TREE_TYPE (obj), obj, func);
 	break;
       }
+
+    case Tnoreturn:
+      /* Front-end allows conditionals that never return, represent the
+	 conditional result value as all zeros.  */
+      result = build_zero_cst (d_bool_type);
+
+      /* Make sure the expression is still evaluated if necessary.  */
+      if (TREE_SIDE_EFFECTS (expr))
+	result = compound_expr (expr, result);
+      break;
 
     default:
       result = expr;

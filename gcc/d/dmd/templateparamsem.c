@@ -25,7 +25,7 @@ public:
     {
         this->sc = sc;
         this->parameters = parameters;
-	this->result = false;
+        this->result = false;
     }
 
     void visit(TemplateTypeParameter *ttp)

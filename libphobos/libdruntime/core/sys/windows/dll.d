@@ -31,17 +31,7 @@ public import core.sys.windows.threadaux;
 //  not access tls_array[tls_index] as needed for thread local _tlsstart and _tlsend
 extern (C)
 {
-        version (MinGW)
-        {
-            extern __gshared void* _tls_start;
-            extern __gshared void* _tls_end;
-            extern __gshared void* __xl_a;
-
-            alias _tls_start _tlsstart;
-            alias _tls_end   _tlsend;
-            alias __xl_a     _tls_callbacks_a;
-        }
-        else version (Win32)
+    version (Win32)
     {
         version (CRuntime_DigitalMars)
         {

@@ -1068,6 +1068,13 @@ public:
 
 	add_stmt (return_expr (decl));
       }
+    else if (tf->next->ty == Tnoreturn)
+      {
+	/* Returning an expression that has no value, but has a side effect
+	   that should never return.  */
+	add_stmt (build_expr_dtor (s->exp));
+	add_stmt (return_expr (NULL_TREE));
+      }
     else
       {
 	/* Convert for initializing the DECL_RESULT.  */

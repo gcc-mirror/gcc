@@ -3967,7 +3967,7 @@ if (isOctalLiteral(num))
 
 /// Ditto
 template octal(alias decimalInteger)
-if (isIntegral!(typeof(decimalInteger)))
+if (is(typeof(decimalInteger)) && isIntegral!(typeof(decimalInteger)))
 {
     enum octal = octal!(typeof(decimalInteger))(to!string(decimalInteger));
 }

@@ -249,6 +249,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/kickstart.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/parser.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/tests.lo \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/tests2.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/thompson.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/package.lo \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/signals.lo std/socket.lo \
@@ -572,12 +573,12 @@ libgphobos_la_LINK = $(LIBTOOL) --tag=D $(libgphobos_la_LIBTOOLFLAGS) \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/backtracking.d std/regex/internal/generator.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/ir.d std/regex/internal/kickstart.d \
 @ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/parser.d std/regex/internal/tests.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/thompson.d std/regex/package.d std/signals.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/socket.d std/stdint.d std/stdio.d std/string.d std/system.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/traits.d std/typecons.d std/typetuple.d std/uni.d std/uri.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/utf.d std/uuid.d std/variant.d std/windows/charset.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/registry.d std/windows/syserror.d std/xml.d std/zip.d \
-@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/zlib.d
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/internal/tests2.d std/regex/internal/thompson.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/regex/package.d std/signals.d std/socket.d std/stdint.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/stdio.d std/string.d std/system.d std/traits.d std/typecons.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/typetuple.d std/uni.d std/uri.d std/utf.d std/uuid.d std/variant.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/windows/charset.d std/windows/registry.d std/windows/syserror.d \
+@ENABLE_LIBDRUNTIME_ONLY_FALSE@	std/xml.d std/zip.d std/zlib.d
 
 
 # Source file definitions. Boring stuff, auto-generated with
@@ -851,6 +852,7 @@ std/regex/internal/ir.lo: std/regex/internal/$(am__dirstamp)
 std/regex/internal/kickstart.lo: std/regex/internal/$(am__dirstamp)
 std/regex/internal/parser.lo: std/regex/internal/$(am__dirstamp)
 std/regex/internal/tests.lo: std/regex/internal/$(am__dirstamp)
+std/regex/internal/tests2.lo: std/regex/internal/$(am__dirstamp)
 std/regex/internal/thompson.lo: std/regex/internal/$(am__dirstamp)
 std/regex/$(am__dirstamp):
 	@$(MKDIR_P) std/regex

@@ -52,6 +52,7 @@ Module::Module(const char *filename, Identifier *ident, int doDocComment, int do
     members = NULL;
     isDocFile = 0;
     isPackageFile = false;
+    pkg = NULL;
     needmoduleinfo = 0;
     selfimports = 0;
     rootimports = 0;
@@ -685,15 +686,27 @@ Module *Module::parse()
          *
          * To avoid the conflict:
          * 1. If preceding package name insertion had occurred by Package::resolve,
-         *    later package.d loading will change Package::isPkgMod to PKGmodule and set Package::mod.
+         *    reuse the previous wrapping 'Package' if it exists
          * 2. Otherwise, 'package.d' wrapped by 'Package' is inserted to the internal tree in here.
+         *
+         * Then change Package::isPkgMod to PKGmodule and set Package::mod.
+         *
+         * Note that the 'wrapping Package' is the Package that contains package.d and other submodules,
+         * the one inserted to the symbol table.
          */
-        Package *p = new Package(ident);
+        Dsymbol *ps = dst->lookup(ident);
+        Package *p = ps ? ps->isPackage() : NULL;
+        if (p == NULL)
+        {
+            p = new Package(ident);
+            p->tag = this->tag; // reuse the same package tag
+            p->symtab = new DsymbolTable();
+        }
+        this->tag= p->tag; // reuse the 'older' package tag
+        this->pkg = p;
         p->parent = this->parent;
         p->isPkgMod = PKGmodule;
         p->mod = this;
-        p->tag = this->tag; // reuse the same package tag
-        p->symtab = new DsymbolTable();
         s = p;
     }
     if (!dst->insert(s))
@@ -720,15 +733,9 @@ Module *Module::parse()
         }
         else if (Package *pkg = prev->isPackage())
         {
-            if (pkg->isPkgMod == PKGunknown && isPackageFile)
-            {
-                /* If the previous inserted Package is not yet determined as package.d,
-                 * link it to the actual module.
-                 */
-                pkg->isPkgMod = PKGmodule;
-                pkg->mod = this;
-                pkg->tag = this->tag; // reuse the same package tag
-            }
+            // 'package.d' loaded after a previous 'Package' insertion
+            if (isPackageFile)
+                amodules.push(this); // Add to global array of all modules
             else
                 error(md ? md->loc : loc, "from file %s conflicts with package name %s",
                     srcname, pkg->toChars());

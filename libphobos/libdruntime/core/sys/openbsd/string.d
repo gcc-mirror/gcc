@@ -18,4 +18,6 @@ nothrow:
 static if (__BSD_VISIBLE)
 {
     pure void* memmem(return const void* haystack, size_t haystacklen, scope const void* needle, size_t needlelen);
+    pure int timingsafe_bcmp(scope const void*, scope const void*, size_t);
+    pure int timingsafe_memcmp(scope const void*, scope const void*, size_t);
 }

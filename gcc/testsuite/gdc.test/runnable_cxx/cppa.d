@@ -571,18 +571,20 @@ void test13289()
     assert(f13289_cpp_test());
 }
 
+version(Posix)
+{
+    enum __c_wchar_t : dchar;
+}
+else version(Windows)
+{
+    enum __c_wchar_t : wchar;
+}
+alias wchar_t = __c_wchar_t;
 extern(C++)
 {
     bool f13289_cpp_test();
 
-    version(Posix)
-    {
-        dchar f13289_cpp_wchar_t(dchar);
-    }
-    else version(Windows)
-    {
-        wchar f13289_cpp_wchar_t(wchar);
-    }
+    wchar_t f13289_cpp_wchar_t(wchar_t);
 
     wchar f13289_d_wchar(wchar ch)
     {
@@ -600,6 +602,17 @@ extern(C++)
         if (ch <= 'z' && ch >= 'a')
         {
             return ch - ('a' - 'A');
+        }
+        else
+        {
+            return ch;
+        }
+    }
+    wchar_t f13289_d_wchar_t(wchar_t ch)
+    {
+        if (ch <= 'z' && ch >= 'a')
+        {
+            return cast(wchar_t)(ch - ('a' - 'A'));
         }
         else
         {

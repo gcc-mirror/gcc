@@ -164,6 +164,15 @@ Target::_init (const Param &)
   this->c.longsize = int_size_in_bytes (long_integer_type_node);
   this->c.long_doublesize = int_size_in_bytes (long_double_type_node);
 
+  /* Define what type to use for wchar_t.  We don't want to support wide
+     characters less than "short" in D.  */
+  if (WCHAR_TYPE_SIZE == 32)
+    this->c.twchar_t = Type::basic[Tdchar];
+  else if (WCHAR_TYPE_SIZE == 16)
+    this->c.twchar_t = Type::basic[Twchar];
+  else
+    sorry ("D does not support wide characters on this target.");
+
   /* Set-up target C++ ABI.  */
   this->cpp.reverseOverloads = false;
   this->cpp.exceptions = true;
@@ -417,6 +426,15 @@ TargetCPP::fundamentalType (const Type *, bool &)
   return false;
 }
 
+/* Get the starting offset position for fields of an `extern(C++)` class
+   that is derived from the given BASE_CLASS.  */
+
+unsigned
+TargetCPP::derivedClassOffset(ClassDeclaration *base_class)
+{
+  return base_class->structsize;
+}
+
 /* Return the default system linkage for the target.  */
 
 LINK
@@ -516,4 +534,14 @@ Target::getTargetInfo (const char *key, const Loc &loc)
     }
 
   return NULL;
+}
+
+/**
+ * Returns true if the implementation for object monitors is always defined
+ * in the D runtime library (rt/monitor_.d).  */
+
+bool
+Target::libraryObjectMonitors (FuncDeclaration *, Statement *)
+{
+  return true;
 }

@@ -208,16 +208,17 @@ DRUNTIME_DSOURCES_BIONIC = core/sys/bionic/err.d \
 
 DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/crt_externs.d \
 	core/sys/darwin/dlfcn.d core/sys/darwin/err.d \
-	core/sys/darwin/execinfo.d core/sys/darwin/ifaddrs.d \
-	core/sys/darwin/mach/dyld.d core/sys/darwin/mach/getsect.d \
-	core/sys/darwin/mach/kern_return.d core/sys/darwin/mach/loader.d \
-	core/sys/darwin/mach/nlist.d core/sys/darwin/mach/port.d \
-	core/sys/darwin/mach/semaphore.d core/sys/darwin/mach/stab.d \
-	core/sys/darwin/mach/thread_act.d core/sys/darwin/netinet/in_.d \
-	core/sys/darwin/pthread.d core/sys/darwin/stdlib.d \
-	core/sys/darwin/string.d core/sys/darwin/sys/attr.d \
-	core/sys/darwin/sys/cdefs.d core/sys/darwin/sys/event.d \
-	core/sys/darwin/sys/mman.d core/sys/darwin/sys/sysctl.d
+	core/sys/darwin/execinfo.d core/sys/darwin/fcntl.d \
+	core/sys/darwin/ifaddrs.d core/sys/darwin/mach/dyld.d \
+	core/sys/darwin/mach/getsect.d core/sys/darwin/mach/kern_return.d \
+	core/sys/darwin/mach/loader.d core/sys/darwin/mach/nlist.d \
+	core/sys/darwin/mach/port.d core/sys/darwin/mach/semaphore.d \
+	core/sys/darwin/mach/stab.d core/sys/darwin/mach/thread_act.d \
+	core/sys/darwin/netinet/in_.d core/sys/darwin/pthread.d \
+	core/sys/darwin/stdlib.d core/sys/darwin/string.d \
+	core/sys/darwin/sys/attr.d core/sys/darwin/sys/cdefs.d \
+	core/sys/darwin/sys/event.d core/sys/darwin/sys/mman.d \
+	core/sys/darwin/sys/sysctl.d
 
 DRUNTIME_DSOURCES_DRAGONFLYBSD = core/sys/dragonflybsd/dlfcn.d \
 	core/sys/dragonflybsd/err.d core/sys/dragonflybsd/execinfo.d \
@@ -275,7 +276,8 @@ DRUNTIME_DSOURCES_OPENBSD = core/sys/openbsd/dlfcn.d \
 	core/sys/openbsd/sys/elf.d core/sys/openbsd/sys/elf32.d \
 	core/sys/openbsd/sys/elf64.d core/sys/openbsd/sys/elf_common.d \
 	core/sys/openbsd/sys/link_elf.d core/sys/openbsd/sys/mman.d \
-	core/sys/openbsd/sys/sysctl.d core/sys/openbsd/time.d
+	core/sys/openbsd/sys/sysctl.d core/sys/openbsd/time.d \
+	core/sys/openbsd/unistd.d
 
 DRUNTIME_DSOURCES_POSIX = core/sys/posix/aio.d \
 	core/sys/posix/arpa/inet.d core/sys/posix/config.d \
@@ -382,22 +384,22 @@ DRUNTIME_DSOURCES_WINDOWS = core/sys/windows/accctrl.d \
 	core/sys/windows/sqlext.d core/sys/windows/sqltypes.d \
 	core/sys/windows/sqlucode.d core/sys/windows/sspi.d \
 	core/sys/windows/stacktrace.d core/sys/windows/stat.d \
-	core/sys/windows/stdc/time.d core/sys/windows/subauth.d \
-	core/sys/windows/threadaux.d core/sys/windows/tlhelp32.d \
-	core/sys/windows/tmschema.d core/sys/windows/unknwn.d \
-	core/sys/windows/uuid.d core/sys/windows/vfw.d \
-	core/sys/windows/w32api.d core/sys/windows/winbase.d \
-	core/sys/windows/winber.d core/sys/windows/wincon.d \
-	core/sys/windows/wincrypt.d core/sys/windows/windef.d \
-	core/sys/windows/windows.d core/sys/windows/winerror.d \
-	core/sys/windows/wingdi.d core/sys/windows/winhttp.d \
-	core/sys/windows/wininet.d core/sys/windows/winioctl.d \
-	core/sys/windows/winldap.d core/sys/windows/winnetwk.d \
-	core/sys/windows/winnls.d core/sys/windows/winnt.d \
-	core/sys/windows/winperf.d core/sys/windows/winreg.d \
-	core/sys/windows/winsock2.d core/sys/windows/winspool.d \
-	core/sys/windows/winsvc.d core/sys/windows/winuser.d \
-	core/sys/windows/winver.d core/sys/windows/wtsapi32.d \
-	core/sys/windows/wtypes.d
+	core/sys/windows/stdc/malloc.d core/sys/windows/stdc/time.d \
+	core/sys/windows/subauth.d core/sys/windows/threadaux.d \
+	core/sys/windows/tlhelp32.d core/sys/windows/tmschema.d \
+	core/sys/windows/unknwn.d core/sys/windows/uuid.d \
+	core/sys/windows/vfw.d core/sys/windows/w32api.d \
+	core/sys/windows/winbase.d core/sys/windows/winber.d \
+	core/sys/windows/wincon.d core/sys/windows/wincrypt.d \
+	core/sys/windows/windef.d core/sys/windows/windows.d \
+	core/sys/windows/winerror.d core/sys/windows/wingdi.d \
+	core/sys/windows/winhttp.d core/sys/windows/wininet.d \
+	core/sys/windows/winioctl.d core/sys/windows/winldap.d \
+	core/sys/windows/winnetwk.d core/sys/windows/winnls.d \
+	core/sys/windows/winnt.d core/sys/windows/winperf.d \
+	core/sys/windows/winreg.d core/sys/windows/winsock2.d \
+	core/sys/windows/winspool.d core/sys/windows/winsvc.d \
+	core/sys/windows/winuser.d core/sys/windows/winver.d \
+	core/sys/windows/wtsapi32.d core/sys/windows/wtypes.d
 
 DRUNTIME_DISOURCES = __entrypoint.di __main.di

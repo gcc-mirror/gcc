@@ -173,11 +173,12 @@ extern (D) @trusted
     wint_t getwchar()                     { return fgetwc(stdin);     }
     ///
     wint_t putwchar(wchar_t c)            { return fputwc(c,stdout);  }
-    ///
-    wint_t getwc(FILE* stream)            { return fgetwc(stream);    }
-    ///
-    wint_t putwc(wchar_t c, FILE* stream) { return fputwc(c, stream); }
 }
+
+///
+alias getwc = fgetwc;
+///
+alias putwc = fputwc;
 
 // No unsafe pointer manipulation.
 @trusted

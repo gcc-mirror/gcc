@@ -42,6 +42,8 @@ VarDeclaration *copyToTemp(StorageClass stc, const char *name, Expression *e);
 Initializer *inferType(Initializer *init, Scope *sc);
 void MODtoBuffer(OutBuffer *buf, MOD mod);
 bool reliesOnTident(Type *t, TemplateParameters *tparams = NULL, size_t iStart = 0);
+bool expressionsToString(OutBuffer &buf, Scope *sc, Expressions *exps);
+bool symbolIsVisible(Scope *sc, Dsymbol *s);
 Objc *objc();
 
 static unsigned setMangleOverride(Dsymbol *s, char *sym)
@@ -1098,22 +1100,7 @@ public:
                     scopesym->importScope(imp->mod, imp->protection);
                 }
 
-                // Mark the imported packages as accessible from the current
-                // scope. This access check is necessary when using FQN b/c
-                // we're using a single global package tree. See Bugzilla 313.
-                if (imp->packages)
-                {
-                    // import a.b.c.d;
-                    Package *p = imp->pkg; // a
-                    scopesym->addAccessiblePackage(p, imp->protection);
-                    for (size_t i = 1; i < imp->packages->length; i++) // [b, c]
-                    {
-                        Identifier *id = (*imp->packages)[i];
-                        p = (Package *) p->symtab->lookup(id);
-                        scopesym->addAccessiblePackage(p, imp->protection);
-                    }
-                }
-                scopesym->addAccessiblePackage(imp->mod, imp->protection); // d
+                imp->addPackageAccess(scopesym);
             }
 
             dsymbolSemantic(imp->mod, NULL);
@@ -1130,8 +1117,12 @@ public:
             {
                 AliasDeclaration *ad = imp->aliasdecls[i];
                 //printf("\tImport %s alias %s = %s, scope = %p\n", toPrettyChars(), imp->aliases[i]->toChars(), imp->names[i]->toChars(), ad->_scope);
-                if (imp->mod->search(imp->loc, imp->names[i]))
+                Dsymbol *sym = imp->mod->search(imp->loc, imp->names[i], IgnorePrivateImports);
+                if (sym)
                 {
+                    if (!symbolIsVisible(sc, sym))
+                        imp->mod->error(imp->loc, "member `%s` is not visible from module `%s`",
+                            imp->names[i]->toChars(), sc->_module->toChars());
                     dsymbolSemantic(ad, sc);
                     // If the import declaration is in non-root module,
                     // analysis of the aliased symbol is deferred.
@@ -1141,7 +1132,7 @@ public:
                 {
                     Dsymbol *s = imp->mod->search_correct(imp->names[i]);
                     if (s)
-                        imp->mod->error(imp->loc, "import `%s` not found, did you mean %s `%s`?", imp->names[i]->toChars(), s->kind(), s->toChars());
+                        imp->mod->error(imp->loc, "import `%s` not found, did you mean %s `%s`?", imp->names[i]->toChars(), s->kind(), s->toPrettyChars());
                     else
                         imp->mod->error(imp->loc, "import `%s` not found", imp->names[i]->toChars());
                     ad->type = Type::terror;
@@ -1312,8 +1303,6 @@ public:
                     e = expressionSemantic(e, sc);
                     e = resolveProperties(sc, e);
                     sc = sc->endCTFE();
-
-                    // pragma(msg) is allowed to contain types as well as expressions
                     e = ctfeInterpretForPragmaMsg(e);
                     if (e->op == TOKerror)
                     {
@@ -1458,6 +1447,12 @@ public:
                 }
             }
         }
+        else if (pd->ident == Id::printf || pd->ident == Id::scanf)
+        {
+            if (pd->args && pd->args->length != 0)
+                pd->error("takes no argument");
+            goto Ldecl;
+        }
         else if (global.params.ignoreUnsupportedPragmas)
         {
             if (global.params.verbose)
@@ -1547,13 +1542,14 @@ public:
     Dsymbols *compileIt(CompileDeclaration *cd)
     {
         //printf("CompileDeclaration::compileIt(loc = %d) %s\n", cd->loc.linnum, cd->exp->toChars());
-        StringExp *se = semanticString(sc, cd->exp, "argument to mixin");
-        if (!se)
+        OutBuffer buf;
+        if (expressionsToString(buf, sc, cd->exps))
             return NULL;
-        se = se->toUTF8(sc);
 
         unsigned errors = global.errors;
-        Parser p(cd->loc, sc->_module, (utf8_t *)se->string, se->len, 0);
+        const size_t len = buf.length();
+        const char *str = buf.extractChars();
+        Parser p(cd->loc, sc->_module, (const utf8_t *)str, len, false);
         p.nextToken();
 
         Dsymbols *d = p.parseDeclDefs(0);
@@ -1562,7 +1558,7 @@ public:
 
         if (p.token.value != TOKeof)
         {
-            cd->exp->error("incomplete mixin declaration (%s)", se->toChars());
+            cd->error("incomplete mixin declaration (%s)", str);
             return NULL;
         }
         return d;
@@ -1637,7 +1633,7 @@ public:
         Scope *sc = m->_scope;                  // see if already got one from importAll()
         if (!sc)
         {
-            Scope::createGlobal(m);      // create root scope
+            sc = Scope::createGlobal(m);      // create root scope
         }
 
         //printf("Module = %p, linkage = %d\n", sc->scopesym, sc->linkage);
@@ -1735,7 +1731,7 @@ public:
                     // memtype is forward referenced, so try again later
                     ed->_scope = scx ? scx : sc->copy();
                     ed->_scope->setNoFree();
-                    ed->_scope->_module->addDeferredSemantic(ed);
+                    Module::addDeferredSemantic(ed);
                     Module::dprogress = dprogress_save;
                     //printf("\tdeferring %s\n", ed->toChars());
                     ed->semanticRun = PASSinit;
@@ -2233,7 +2229,7 @@ public:
                 //printf("forward reference - deferring\n");
                 tm->_scope = scx ? scx : sc->copy();
                 tm->_scope->setNoFree();
-                tm->_scope->_module->addDeferredSemantic(tm);
+                Module::addDeferredSemantic(tm);
                 return;
             }
 
@@ -2457,6 +2453,23 @@ public:
         ns->semanticRun = PASSsemanticdone;
     }
 
+
+private:
+    static bool isPointerToChar(Parameter *p)
+    {
+        if (TypePointer *tptr = p->type->isTypePointer())
+        {
+            return tptr->next->ty == Tchar;
+        }
+        return false;
+    }
+
+    static bool isVa_list(Parameter *p, FuncDeclaration *funcdecl, Scope *sc)
+    {
+        return p->type->equals(target.va_listType(funcdecl->loc, sc));
+    }
+
+public:
     void funcDeclarationSemantic(FuncDeclaration *funcdecl)
     {
         TypeFunction *f;
@@ -2770,6 +2783,45 @@ public:
 
         if (funcdecl->isAbstract() && funcdecl->isFinalFunc())
             funcdecl->error("cannot be both final and abstract");
+
+        if (const unsigned pors = sc->flags & (SCOPEprintf | SCOPEscanf))
+        {
+            /* printf/scanf-like functions must be of the form:
+             *    extern (C/C++) T printf([parameters...], const(char)* format, ...);
+             * or:
+             *    extern (C/C++) T vprintf([parameters...], const(char)* format, va_list);
+             */
+            const size_t nparams = f->parameterList.length();
+            if ((f->linkage == LINKc || f->linkage == LINKcpp) &&
+
+                ((f->parameterList.varargs == VARARGvariadic &&
+                  nparams >= 1 &&
+                  isPointerToChar(f->parameterList[nparams - 1])) ||
+                 (f->parameterList.varargs == VARARGnone &&
+                  nparams >= 2 &&
+                  isPointerToChar(f->parameterList[nparams - 2]) &&
+                  isVa_list(f->parameterList[nparams - 1], funcdecl, sc))
+                )
+               )
+            {
+                funcdecl->flags |= (pors == SCOPEprintf) ? FUNCFLAGprintf : FUNCFLAGscanf;
+            }
+            else
+            {
+                const char *p = (pors == SCOPEprintf ? Id::printf : Id::scanf)->toChars();
+                if (f->parameterList.varargs == VARARGvariadic)
+                {
+                    funcdecl->error("`pragma(%s)` functions must be `extern(C) %s %s([parameters...], const(char)*, ...)`"
+                                    " not `%s`",
+                        p, f->next->toChars(), funcdecl->toChars(), funcdecl->type->toChars());
+                }
+                else
+                {
+                    funcdecl->error("`pragma(%s)` functions must be `extern(C) %s %s([parameters...], const(char)*, va_list)`",
+                        p, f->next->toChars(), funcdecl->toChars());
+                }
+            }
+        }
 
         id = parent->isInterfaceDeclaration();
         if (id)
@@ -3831,7 +3883,7 @@ public:
 
             sd->_scope = scx ? scx : sc->copy();
             sd->_scope->setNoFree();
-            sd->_scope->_module->addDeferredSemantic(sd);
+            Module::addDeferredSemantic(sd);
 
             //printf("\tdeferring %s\n", sd->toChars());
             return;
@@ -4079,7 +4131,7 @@ public:
                 {
                     //printf("\ttry later, forward reference of base class %s\n", tc->sym->toChars());
                     if (tc->sym->_scope)
-                        tc->sym->_scope->_module->addDeferredSemantic(tc->sym);
+                        Module::addDeferredSemantic(tc->sym);
                     cldec->baseok = BASEOKnone;
                 }
              L7: ;
@@ -4131,7 +4183,7 @@ public:
                 {
                     //printf("\ttry later, forward reference of base %s\n", tc->sym->toChars());
                     if (tc->sym->_scope)
-                        tc->sym->_scope->_module->addDeferredSemantic(tc->sym);
+                        Module::addDeferredSemantic(tc->sym);
                     cldec->baseok = BASEOKnone;
                 }
                 i++;
@@ -4141,7 +4193,7 @@ public:
                 // Forward referencee of one or more bases, try again later
                 cldec->_scope = scx ? scx : sc->copy();
                 cldec->_scope->setNoFree();
-                cldec->_scope->_module->addDeferredSemantic(cldec);
+                Module::addDeferredSemantic(cldec);
                 //printf("\tL%d semantic('%s') failed due to forward references\n", __LINE__, cldec->toChars());
                 return;
             }
@@ -4254,8 +4306,8 @@ public:
                 cldec->_scope = scx ? scx : sc->copy();
                 cldec->_scope->setNoFree();
                 if (tc->sym->_scope)
-                    tc->sym->_scope->_module->addDeferredSemantic(tc->sym);
-                cldec->_scope->_module->addDeferredSemantic(cldec);
+                    Module::addDeferredSemantic(tc->sym);
+                Module::addDeferredSemantic(cldec);
                 //printf("\tL%d semantic('%s') failed due to forward references\n", __LINE__, cldec->toChars());
                 return;
             }
@@ -4359,7 +4411,7 @@ public:
 
             cldec->_scope = scx ? scx : sc->copy();
             cldec->_scope->setNoFree();
-            cldec->_scope->_module->addDeferredSemantic(cldec);
+            Module::addDeferredSemantic(cldec);
             //printf("\tdeferring %s\n", cldec->toChars());
             return;
         }
@@ -4628,7 +4680,7 @@ public:
                 {
                     //printf("\ttry later, forward reference of base %s\n", tc->sym->toChars());
                     if (tc->sym->_scope)
-                        tc->sym->_scope->_module->addDeferredSemantic(tc->sym);
+                        Module::addDeferredSemantic(tc->sym);
                     idec->baseok = BASEOKnone;
                 }
                 i++;
@@ -4638,7 +4690,7 @@ public:
                 // Forward referencee of one or more bases, try again later
                 idec->_scope = scx ? scx : sc->copy();
                 idec->_scope->setNoFree();
-                idec->_scope->_module->addDeferredSemantic(idec);
+                Module::addDeferredSemantic(idec);
                 return;
             }
             idec->baseok = BASEOKdone;
@@ -4682,8 +4734,8 @@ public:
                 idec->_scope = scx ? scx : sc->copy();
                 idec->_scope->setNoFree();
                 if (tc->sym->_scope)
-                    tc->sym->_scope->_module->addDeferredSemantic(tc->sym);
-                idec->_scope->_module->addDeferredSemantic(idec);
+                    Module::addDeferredSemantic(tc->sym);
+                Module::addDeferredSemantic(idec);
                 return;
             }
         }
@@ -5335,6 +5387,7 @@ void aliasSemantic(AliasDeclaration *ds, Scope *sc)
     ds->userAttribDecl = sc->userAttribDecl;
 
     // TypeTraits needs to know if it's located in an AliasDeclaration
+    const unsigned oldflags = sc->flags;
     sc->flags |= SCOPEalias;
 
     if (ds->aliassym)
@@ -5345,7 +5398,7 @@ void aliasSemantic(AliasDeclaration *ds, Scope *sc)
         {
             if (fd && fd->semanticRun >= PASSsemanticdone)
             {
-                sc->flags &= ~SCOPEalias;
+                sc->flags = oldflags;
                 return;
             }
 
@@ -5361,13 +5414,13 @@ void aliasSemantic(AliasDeclaration *ds, Scope *sc)
                 ds->aliassym = NULL;
                 ds->type = Type::terror;
             }
-            sc->flags &= ~SCOPEalias;
+            sc->flags = oldflags;
             return;
         }
 
         if (ds->aliassym->isTemplateInstance())
             dsymbolSemantic(ds->aliassym, sc);
-        sc->flags &= ~SCOPEalias;
+        sc->flags = oldflags;
         return;
     }
     ds->inuse = 1;
@@ -5472,7 +5525,7 @@ void aliasSemantic(AliasDeclaration *ds, Scope *sc)
         if (!ds->overloadInsert(sx))
             ScopeDsymbol::multiplyDefined(Loc(), sx, ds);
     }
-    sc->flags &= ~SCOPEalias;
+    sc->flags = oldflags;
 }
 
 

@@ -22,6 +22,19 @@
 #include "declaration.h"
 #include "init.h"
 
+bool isSpecialEnumIdent(const Identifier *ident)
+{
+    return  ident == Id::__c_long ||
+            ident == Id::__c_ulong ||
+            ident == Id::__c_longlong ||
+            ident == Id::__c_ulonglong ||
+            ident == Id::__c_long_double ||
+            ident == Id::__c_wchar_t ||
+            ident == Id::__c_complex_float ||
+            ident == Id::__c_complex_double ||
+            ident == Id::__c_complex_real;
+}
+
 /********************************* EnumDeclaration ****************************/
 
 EnumDeclaration::EnumDeclaration(Loc loc, Identifier *id, Type *memtype)
@@ -187,11 +200,7 @@ Lerrors:
  */
 bool EnumDeclaration::isSpecial() const
 {
-    return (ident == Id::__c_long ||
-            ident == Id::__c_ulong ||
-            ident == Id::__c_longlong ||
-            ident == Id::__c_ulonglong ||
-            ident == Id::__c_long_double) && memtype;
+    return isSpecialEnumIdent(ident) && memtype;
 }
 
 Expression *EnumDeclaration::getDefaultValue(Loc loc)

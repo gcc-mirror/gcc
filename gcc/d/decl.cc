@@ -1277,6 +1277,10 @@ get_symbol_decl (Declaration *decl)
       if (decl->storage_class & STCfinal)
 	DECL_FINAL_P (decl->csym) = 1;
 
+      /* Function is of type `noreturn' or `typeof(*null)'.  */
+      if (fd->type->nextOf ()->ty == Tnoreturn)
+	TREE_THIS_VOLATILE (decl->csym) = 1;
+
       /* Check whether this function is expanded by the frontend.  */
       DECL_INTRINSIC_CODE (decl->csym) = INTRINSIC_NONE;
       maybe_set_intrinsic (fd);
