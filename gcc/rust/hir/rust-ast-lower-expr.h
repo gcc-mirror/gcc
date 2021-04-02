@@ -501,6 +501,8 @@ public:
       case CompoundAssignmentOperator::RIGHT_SHIFT:
 	op = ArithmeticOrLogicalOperator::RIGHT_SHIFT;
 	break;
+      default:
+	gcc_unreachable ();
       }
 
     HIR::Expr *asignee_expr
