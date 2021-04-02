@@ -607,8 +607,11 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	   parameter pack in this context.  We will want as many fields as we
 	   have elements in the expansion of the initializer, so use its packs
 	   instead.  */
-	PACK_EXPANSION_PARAMETER_PACKS (type)
-	  = uses_parameter_packs (initializer);
+	{
+	  PACK_EXPANSION_PARAMETER_PACKS (type)
+	    = uses_parameter_packs (initializer);
+	  PACK_EXPANSION_AUTO_P (type) = true;
+	}
     }
 
   /* Make member variable.  */
