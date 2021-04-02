@@ -1,3 +1,39 @@
+2021-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99831
+	* method.c (defaulted_late_check): ++ and -- function_depth around
+	the call to synthesize_method.
+	* pt.c: Remove the saved_trees global.
+
+2021-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99583
+	PR c++/99584
+	* tree.c (cp_walk_subtrees) [FUNCTION_TYPE]: Walk into
+	TYPE_RAISES_EXCEPTIONS.
+
+2021-04-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* mapper-client.cc (INCLUDE_MAP): New; require map to be
+	included from system.h.
+	* mapper-resolver.cc (INCLUDE_MAP): Likewise.
+
+2021-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98481
+	* mangle.c (write_expression): Adjust.
+	* class.c (find_abi_tags_r): Disable PR98481 fix for ABI v14.
+	(mark_abi_tags_r): Likewise.
+
+2021-04-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99283
+	* module.cc (trees_out::decl_node): Adjust importedness reference
+	assert.
+	(module_state::intercluster_seed): New.  Seed both imports and
+	inter-cluster references.  Broken out of ...
+	(module_state::write_cluster): ... here.  Call it.
+
 2021-03-31  Jason Merrill  <jason@redhat.com>
 
 	PR c++/99445

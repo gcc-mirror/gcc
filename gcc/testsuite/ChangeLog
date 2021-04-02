@@ -1,3 +1,59 @@
+2021-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99831
+	* g++.dg/other/gc6.C: New test.
+
+2021-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99583
+	* g++.dg/cpp0x/lambda/lambda-variadic12.C: New test.
+
+2021-04-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98481
+	* g++.dg/abi/abi-tag24a.C: New test.
+	* g++.dg/abi/macro0.C: Adjust expected value.
+
+2021-04-01  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99283
+	* g++.dg/modules/pr99283-6.h: New.
+	* g++.dg/modules/pr99283-6_a.H: New.
+	* g++.dg/modules/pr99283-6_b.H: New.
+	* g++.dg/modules/pr99283-6_c.C: New.
+	* g++.dg/modules/hdr-init-1_c.C: Adjust scan.
+	* g++.dg/modules/indirect-3_c.C: Adjust scan.
+	* g++.dg/modules/indirect-4_c.C: Adjust scan.
+	* g++.dg/modules/lambda-3_b.C: Adjust scan.
+	* g++.dg/modules/late-ret-3_c.C: Adjust scan.
+	* g++.dg/modules/pr99425-1_b.H: Adjust scan.
+	* g++.dg/modules/pr99425-1_c.C: Adjust scan.
+
+2021-04-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/98265
+	* gcc.dg/tree-ssa/pr98265.C: New test.
+
+2021-04-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96573
+	* gcc.dg/pr96573.c: New test.
+
+2021-04-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99856
+	* gcc.dg/vect/pr99856.c: New testcase.
+
+2021-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/97009
+	* gcc.dg/tree-ssa/pr97009.c: New test.
+
+2021-04-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99840
+	* gfortran.dg/transpose_5.f90: New test.
+
 2021-03-31  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99771

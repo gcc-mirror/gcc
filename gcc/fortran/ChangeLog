@@ -1,3 +1,9 @@
+2021-04-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99840
+	* simplify.c (gfc_simplify_transpose): Properly initialize
+	resulting shape.
+
 2021-03-28  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/99602

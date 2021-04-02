@@ -5415,6 +5415,11 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
 	}
       break;
 
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      WALK_SUBTREE (TYPE_RAISES_EXCEPTIONS (*tp));
+      break;
+
     default:
       return NULL_TREE;
     }

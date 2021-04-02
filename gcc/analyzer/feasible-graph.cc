@@ -79,7 +79,7 @@ base_feasible_node::dump_dot_id (pretty_printer *pp) const
 
 void
 feasible_node::dump_dot (graphviz_out *gv,
-			const dump_args_t &args) const
+			const dump_args_t &) const
 {
   pretty_printer *pp = gv->get_pp ();
 
@@ -102,8 +102,7 @@ feasible_node::dump_dot (graphviz_out *gv,
   pp_newline (pp);
 
   m_inner_node->dump_processed_stmts (pp);
-  m_inner_node->dump_saved_diagnostics
-    (pp, args.m_inner_args.m_eg.get_diagnostic_manager ());
+  m_inner_node->dump_saved_diagnostics (pp);
 
   pp_write_text_as_dot_label_to_stream (pp, /*for_record=*/true);
 
