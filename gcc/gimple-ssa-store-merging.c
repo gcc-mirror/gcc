@@ -985,10 +985,19 @@ public:
 static tree
 bswap_view_convert (gimple_stmt_iterator *gsi, tree type, tree val)
 {
-  gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (val)));
+  gcc_assert (INTEGRAL_TYPE_P (TREE_TYPE (val))
+	      || POINTER_TYPE_P (TREE_TYPE (val)));
   if (TYPE_SIZE (type) != TYPE_SIZE (TREE_TYPE (val)))
     {
       HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_SIZE (type));
+      if (POINTER_TYPE_P (TREE_TYPE (val)))
+	{
+	  gimple *g
+	    = gimple_build_assign (make_ssa_name (pointer_sized_int_node),
+				   NOP_EXPR, val);
+	  gsi_insert_before (gsi, g, GSI_SAME_STMT);
+	  val = gimple_assign_lhs (g);
+	}
       tree itype = build_nonstandard_integer_type (prec, 1);
       gimple *g = gimple_build_assign (make_ssa_name (itype), NOP_EXPR, val);
       gsi_insert_before (gsi, g, GSI_SAME_STMT);
