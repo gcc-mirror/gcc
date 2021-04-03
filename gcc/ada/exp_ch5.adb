@@ -1472,18 +1472,30 @@ package body Exp_Ch5 is
 
       Loc  : constant Source_Ptr := Sloc (N);
 
+      L_Typ : constant Entity_Id := Etype (Larray);
+      R_Typ : constant Entity_Id := Etype (Rarray);
+      --  The original type of the arrays
+
       L_Val : constant Node_Id :=
         Unchecked_Convert_To (RTE (RE_Val_2), Larray);
       R_Val : constant Node_Id :=
         Unchecked_Convert_To (RTE (RE_Val_2), Rarray);
       --  Converted values of left- and right-hand sides
 
-      C_Size : constant Uint := Component_Size (Etype (Larray));
+      L_Small : constant Boolean :=
+        Known_Static_RM_Size (L_Typ)
+          and then RM_Size (L_Typ) < Standard_Long_Long_Integer_Size;
+      R_Small : constant Boolean :=
+        Known_Static_RM_Size (R_Typ)
+          and then RM_Size (R_Typ) < Standard_Long_Long_Integer_Size;
+      --  Whether the above unchecked conversions need to be padded with zeros
+
+      C_Size : constant Uint := Component_Size (L_Typ);
       pragma Assert (C_Size >= 1);
-      pragma Assert (C_Size = Component_Size (Etype (Rarray)));
+      pragma Assert (C_Size = Component_Size (R_Typ));
 
       Larray_Bounds : constant Range_Values :=
-        Get_Index_Bounds (First_Index (Etype (Larray)));
+        Get_Index_Bounds (First_Index (L_Typ));
       L_Bounds : constant Range_Values :=
         (if Nkind (Name (N)) = N_Slice
          then Get_Index_Bounds (Discrete_Range (Name (N)))
@@ -1496,7 +1508,7 @@ package body Exp_Ch5 is
         Make_Integer_Literal (Loc, (L_Bounds.L - Larray_Bounds.L) * C_Size);
 
       Rarray_Bounds : constant Range_Values :=
-        Get_Index_Bounds (First_Index (Etype (Rarray)));
+        Get_Index_Bounds (First_Index (R_Typ));
       R_Bounds : constant Range_Values :=
         (if Nkind (Expression (N)) = N_Slice
          then Get_Index_Bounds (Discrete_Range (Expression (N)))
@@ -1516,15 +1528,56 @@ package body Exp_Ch5 is
               Duplicate_Subexpr (Larray, True),
             Attribute_Name => Name_Component_Size));
 
-      Call : constant Node_Id := Make_Function_Call (Loc,
-        Name => New_Occurrence_Of (RTE (RE_Fast_Copy_Bitfield), Loc),
-        Parameter_Associations => New_List (
-          R_Val, R_Bit, L_Val, L_Bit, Size));
+      L_Arg, R_Arg, Call : Node_Id;
 
    begin
+      --  The semantics of unchecked conversion between bit-packed arrays that
+      --  are implemented as modular types and modular types is precisely that
+      --  of unchecked conversion between modular types. Therefore, if it needs
+      --  to be padded with zeros, the padding must be moved to the correct end
+      --  for memory order because System.Bitfield_Utils works in memory order.
+
+      if L_Small
+        and then (Bytes_Big_Endian xor Reverse_Storage_Order (L_Typ))
+      then
+         L_Arg := Make_Op_Shift_Left (Loc,
+           Left_Opnd  => L_Val,
+           Right_Opnd => Make_Integer_Literal (Loc,
+                           Standard_Long_Long_Integer_Size - RM_Size (L_Typ)));
+      else
+         L_Arg := L_Val;
+      end if;
+
+      if R_Small
+        and then (Bytes_Big_Endian xor Reverse_Storage_Order (R_Typ))
+      then
+         R_Arg := Make_Op_Shift_Left (Loc,
+           Left_Opnd  => R_Val,
+           Right_Opnd => Make_Integer_Literal (Loc,
+                           Standard_Long_Long_Integer_Size - RM_Size (R_Typ)));
+      else
+         R_Arg := R_Val;
+      end if;
+
+      Call := Make_Function_Call (Loc,
+        Name => New_Occurrence_Of (RTE (RE_Fast_Copy_Bitfield), Loc),
+        Parameter_Associations => New_List (
+          R_Arg, R_Bit, L_Arg, L_Bit, Size));
+
+      --  Conversely, the final unchecked conversion must take significant bits
+
+      if L_Small
+        and then (Bytes_Big_Endian xor Reverse_Storage_Order (L_Typ))
+      then
+         Call := Make_Op_Shift_Right (Loc,
+           Left_Opnd  => Call,
+           Right_Opnd => Make_Integer_Literal (Loc,
+                           Standard_Long_Long_Integer_Size - RM_Size (L_Typ)));
+      end if;
+
       return Make_Assignment_Statement (Loc,
         Name => Duplicate_Subexpr (Larray, True),
-        Expression => Unchecked_Convert_To (Etype (Larray), Call));
+        Expression => Unchecked_Convert_To (L_Typ, Call));
    end Expand_Assign_Array_Bitfield_Fast;
 
    ------------------------------------------
