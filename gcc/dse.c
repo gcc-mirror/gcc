@@ -1950,8 +1950,7 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
 
 static bool
 replace_read (store_info *store_info, insn_info_t store_insn,
-	      read_info_t read_info, insn_info_t read_insn, rtx *loc,
-	      bitmap regs_live)
+	      read_info_t read_info, insn_info_t read_insn, rtx *loc)
 {
   machine_mode store_mode = GET_MODE (store_info->mem);
   machine_mode read_mode = GET_MODE (read_info->mem);
@@ -2020,7 +2019,8 @@ replace_read (store_info *store_info, insn_info_t store_insn,
 	  note_stores (this_insn, look_for_hardregs, regs_set);
 	}
 
-      bitmap_and_into (regs_set, regs_live);
+      if (store_insn->fixed_regs_live)
+	bitmap_and_into (regs_set, store_insn->fixed_regs_live);
       if (!bitmap_empty_p (regs_set))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2261,7 +2261,7 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 						 offset - store_info->offset,
 						 width)
 		      && replace_read (store_info, i_ptr, read_info,
-				       insn_info, loc, bb_info->regs_live))
+				       insn_info, loc))
 		    return;
 
 		  /* The bases are the same, just see if the offsets
@@ -2327,8 +2327,7 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
 				   store_info->width)
 	      && all_positions_needed_p (store_info,
 					 offset - store_info->offset, width)
-	      && replace_read (store_info, i_ptr,  read_info, insn_info, loc,
-			       bb_info->regs_live))
+	      && replace_read (store_info, i_ptr,  read_info, insn_info, loc))
 	    return;
 
 	  remove = canon_true_dependence (store_info->mem,
