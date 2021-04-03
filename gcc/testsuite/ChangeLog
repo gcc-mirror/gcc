@@ -1,3 +1,40 @@
+2021-04-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99869
+	* g++.dg/cpp2a/concepts-placeholder6.C: New test.
+
+2021-04-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99586
+	* g++.dg/cpp2a/nontype-class42.C: New test.
+
+2021-04-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97938
+	* g++.dg/cpp2a/lambda-pack-init6.C: New test.
+
+2021-04-02  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/pr99283-6_d.H: New.
+	* g++.dg/modules/pr99283-7-swap.h: New.
+	* g++.dg/modules/pr99283-7-traits.h: New.
+	* g++.dg/modules/pr99283-7_a.H: New.
+	* g++.dg/modules/pr99283-7_b.H: New.
+	* g++.dg/modules/pr99283-7_c.C: New.
+	* g++.dg/modules/pr99283-7_d.H: New.
+
+2021-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* go.test/test/fixedbugs/issue6036.go: Skip on sparc.
+	* go.test/test/fixedbugs/issue22200b.go: Likewise.
+
+2021-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99726
+	* gcc.target/i386/pr99726.c: Remove -m32 from dg-options.  Move
+	-floop-nest-optimize to dg-additional-options guarded on fgraphite
+	effective target.
+
 2021-04-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/99831

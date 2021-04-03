@@ -1,3 +1,7 @@
+2021-04-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (fdelete-dead-exceptions): Minor tweak.
+
 2021-04-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98481

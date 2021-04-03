@@ -1,3 +1,29 @@
+2021-04-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99869
+	* parser.c (do_range_for_auto_deduction): Pass adc_variable_type
+	to do_auto_deduction.
+
+2021-04-02  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99586
+	* semantics.c (finish_compound_literal): Check
+	template_placeholder_p instead of type_uses_auto.
+
+2021-04-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97938
+	* cp-tree.h (PACK_EXPANSION_AUTO_P): New.
+	* lambda.c (add_capture): Set it.
+	* pt.c (tsubst_pack_expansion): Handle it.
+
+2021-04-02  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (lang_decl_base): Correct module flag comment.
+	* module.cc (trees_in::assert_definition): Break out
+	not_tmpl var.
+	(trees_out::lang_decl_bools): Do not write purview for header units.
+
 2021-04-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/99831
