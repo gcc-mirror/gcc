@@ -1442,9 +1442,6 @@ massage_init_elt (tree type, tree init, int nested, int flags,
   if (flags & LOOKUP_AGGREGATE_PAREN_INIT)
     new_flags |= LOOKUP_AGGREGATE_PAREN_INIT;
   init = digest_init_r (type, init, nested ? 2 : 1, new_flags, complain);
-  /* Strip a simple TARGET_EXPR when we know this is an initializer.  */
-  if (SIMPLE_TARGET_EXPR_P (init))
-    init = TARGET_EXPR_INITIAL (init);
   /* When we defer constant folding within a statement, we may want to
      defer this folding as well.  */
   tree t = fold_non_dependent_init (init, complain);
