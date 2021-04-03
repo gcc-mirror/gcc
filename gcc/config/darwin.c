@@ -906,9 +906,6 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 		  emit_move_insn (reg, pic);
 		  pic = reg;
 		}
-#if 0
-	      emit_use (gen_rtx_REG (Pmode, PIC_OFFSET_TABLE_REGNUM));
-#endif
 
 	      if (lra_in_progress)
 		df_set_regs_ever_live (REGNO (pic), true);
@@ -977,9 +974,6 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 		      emit_move_insn (reg, pic);
 		      pic = reg;
 		    }
-#if 0
-		  emit_use (pic_offset_table_rtx);
-#endif
 		  if (lra_in_progress)
 		    df_set_regs_ever_live (REGNO (pic), true);
 		  pic_ref = gen_rtx_PLUS (Pmode,
@@ -990,21 +984,21 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	}
 
       if (GET_CODE (pic_ref) != REG)
-        {
-          if (reg != 0)
-            {
-              emit_move_insn (reg, pic_ref);
-              return reg;
-            }
-          else
-            {
-              return force_reg (mode, pic_ref);
-            }
-        }
+	{
+	  if (reg != 0)
+	    {
+	      emit_move_insn (reg, pic_ref);
+	      return reg;
+	    }
+	  else
+	    {
+	      return force_reg (mode, pic_ref);
+	    }
+	}
       else
-        {
-          return pic_ref;
-        }
+	{
+	  return pic_ref;
+	}
     }
   else if (GET_CODE (orig) == PLUS
 	   && (GET_CODE (XEXP (orig, 0)) == MEM
