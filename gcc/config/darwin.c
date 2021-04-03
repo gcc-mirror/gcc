@@ -907,7 +907,7 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 		  pic = reg;
 		}
 
-	      if (lra_in_progress)
+	      if (lra_in_progress && HARD_REGISTER_P (pic))
 		df_set_regs_ever_live (REGNO (pic), true);
 	      pic_ref = gen_rtx_PLUS (Pmode, pic,
 				      machopic_gen_offset (XEXP (orig, 0)));
@@ -974,7 +974,8 @@ machopic_legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 		      emit_move_insn (reg, pic);
 		      pic = reg;
 		    }
-		  if (lra_in_progress)
+
+		  if (lra_in_progress && HARD_REGISTER_P (pic))
 		    df_set_regs_ever_live (REGNO (pic), true);
 		  pic_ref = gen_rtx_PLUS (Pmode,
 					  pic,
