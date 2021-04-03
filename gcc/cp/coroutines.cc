@@ -1764,10 +1764,9 @@ await_statement_expander (tree *stmt, int *do_subtree, void *d)
     return NULL_TREE; /* Just process the sub-trees.  */
   else if (TREE_CODE (*stmt) == STATEMENT_LIST)
     {
-      tree_stmt_iterator i;
-      for (i = tsi_start (*stmt); !tsi_end_p (i); tsi_next (&i))
+      for (tree &s : tsi_range (*stmt))
 	{
-	  res = cp_walk_tree (tsi_stmt_ptr (i), await_statement_expander,
+	  res = cp_walk_tree (&s, await_statement_expander,
 			      d, NULL);
 	  if (res)
 	    return res;
@@ -3509,10 +3508,9 @@ await_statement_walker (tree *stmt, int *do_subtree, void *d)
     }
   else if (TREE_CODE (*stmt) == STATEMENT_LIST)
     {
-      tree_stmt_iterator i;
-      for (i = tsi_start (*stmt); !tsi_end_p (i); tsi_next (&i))
+      for (tree &s : tsi_range (*stmt))
 	{
-	  res = cp_walk_tree (tsi_stmt_ptr (i), await_statement_walker,
+	  res = cp_walk_tree (&s, await_statement_walker,
 			      d, NULL);
 	  if (res)
 	    return res;

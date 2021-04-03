@@ -18152,9 +18152,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     {
     case STATEMENT_LIST:
       {
-	tree_stmt_iterator i;
-	for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
-	  RECUR (tsi_stmt (i));
+	for (tree stmt : tsi_range (t))
+	  RECUR (stmt);
 	break;
       }
 
