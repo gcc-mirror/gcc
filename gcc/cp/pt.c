@@ -19265,8 +19265,13 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 the purposes of template argument deduction. */
       complain = tf_warning_or_error;
 
-      tsubst_expr (DECL_SAVED_TREE (oldfn), args, complain, r,
-		   /*constexpr*/false);
+      tree saved = DECL_SAVED_TREE (oldfn);
+      if (TREE_CODE (saved) == BIND_EXPR && BIND_EXPR_BODY_BLOCK (saved))
+	/* We already have a body block from start_lambda_function, we don't
+	   need another to confuse NRV (91217).  */
+	saved = BIND_EXPR_BODY (saved);
+
+      tsubst_expr (saved, args, complain, r, /*constexpr*/false);
 
       finish_lambda_function (body);
 
