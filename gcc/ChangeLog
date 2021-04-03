@@ -1,3 +1,18 @@
+2021-04-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in (PLUGIN_HEADERS): Add gomp-constants.h and $(EXPR_H).
+	(s-header-vars): Accept not just spaces but also tabs between *_H name
+	and =.  Handle common/config/ headers similarly to config.  Don't
+	throw away everything from first ... to last / on the remaining
+	string, instead skip just ... to corresponding last / without
+	intervening spaces and tabs.
+	(install-plugin): Treat common/config headers like config headers.
+	* config/i386/t-i386 (TM_H): Add
+	$(srcdir)/common/config/i386/i386-cpuinfo.h.
+
 2021-04-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/98481
