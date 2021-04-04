@@ -1,3 +1,17 @@
+2021-04-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/MERGE: Merge upstream druntime 483bc129.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_DARWIN): Add
+	core/sys/darwin/fcntl.d.
+	(DRUNTIME_DSOURCES_OPENBSD): Add core/sys/openbsd/unistd.d.
+	(DRUNTIME_DSOURCES_WINDOWS): Add core/sys/windows/stdc/malloc.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/MERGE: Merge upstream phobos f89dc217a.
+	* src/Makefile.am (PHOBOS_DSOURCES): Add std/regex/internal/tests2.d.
+	* src/Makefile.in: Regenerate.
+	* testsuite/libphobos.exceptions/chain.d: Fix format arguments.
+	* testsuite/libphobos.exceptions/line_trace.d: Likewise.
+
 2021-03-26  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.in: Regenerate.

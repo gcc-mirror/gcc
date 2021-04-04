@@ -1,3 +1,11 @@
+2021-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/97653
+	* config/rs6000/t-linux (IBM128_STATIC_OBJS): Fix spelling, use
+	$(objext) instead of $(object).  Use _floatunditf instead of
+	_floatunsditf.  Add tf <-> ti conversion objects.
+	(IBM128_SHARED_OBJS): Use proper substitution reference syntax.
+
 2021-03-29  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/t-float128 (fp128_decstr_funcs): Delete.

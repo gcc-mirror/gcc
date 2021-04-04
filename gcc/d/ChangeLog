@@ -1,3 +1,20 @@
+2021-04-03  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 3b808e838.
+	* Make-lang.in (D_FRONTEND_OBJS): Add d/chkformat.o.
+	* d-codegen.cc (build_struct_literal): Handle special enums.
+	* d-convert.cc (convert_expr): Handle noreturn type.
+	(convert_for_condition): Likewise.
+	* d-target.cc (Target::_init): Set type for wchar_t.
+	(TargetCPP::derivedClassOffset): New method.
+	(Target::libraryObjectMonitors): New method.
+	* decl.cc (get_symbol_decl): Set TREE_THIS_VOLATILE for functions of
+	type noreturn.
+	* toir.cc (IRVisitor::visit (ReturnStatement *)): Handle returning
+	noreturn types.
+	* types.cc (TypeVisitor::visit (TypeNoreturn *)): New method.
+	(TypeVisitor::visit (TypeEnum *)): Handle special enums.
+
 2021-03-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-builtins.cc (d_init_versions): Predefine D_PIE if flag_pie is set.

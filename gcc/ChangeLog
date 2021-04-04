@@ -1,3 +1,41 @@
+2021-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_legitimize_pic_address): Check
+	that the current pic register is one of the hard reg set
+	before setting liveness.
+
+2021-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_legitimize_pic_address): Fix
+	whitespace, remove unused code.
+
+2021-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99882
+	* gimple-ssa-store-merging.c (bswap_view_convert): Handle val with
+	pointer type.
+
+2021-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/99863
+	* dse.c (replace_read): Drop regs_live argument.  Instead of
+	regs_live, use store_insn->fixed_regs_live if non-NULL,
+	otherwise punt if insns sequence clobbers or sets any hard
+	registers.
+
+2021-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/98125
+	* targhooks.h (default_print_patchable_function_entry_1): Declare.
+	* targhooks.c (default_print_patchable_function_entry_1): New function,
+	copied from default_print_patchable_function_entry with an added flags
+	argument.
+	(default_print_patchable_function_entry): Rewritten into a small
+	wrapper around default_print_patchable_function_entry_1.
+	* config/rs6000/rs6000.c (TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY):
+	Redefine.
+	(rs6000_print_patchable_function_entry): New function.
+
 2021-04-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (fdelete-dead-exceptions): Minor tweak.

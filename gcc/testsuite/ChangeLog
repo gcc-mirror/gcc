@@ -1,3 +1,51 @@
+2021-04-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/pr94314-3.C: Zero-initialize main loop counter.
+
+2021-04-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/ipa/ipa-sra-19.c: Extend -Wno-psabi to ppc-vx7r2.
+
+2021-04-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91416
+	* g++.dg/other/gc7.C: New test.
+
+2021-04-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99818
+	* gfortran.dg/coarray_48.f90: New test.
+
+2021-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/99882
+	* gcc.dg/pr99882.c: New test.
+
+2021-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/99863
+	* gcc.target/i386/pr99863.c: New test.
+
+2021-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/98125
+	* g++.dg/pr93195a.C: Skip on powerpc*-*-* 64-bit.
+
+2021-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91217
+	* g++.dg/opt/nrv20.C: New test.
+
+2021-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90664
+	* g++.dg/cpp1z/noexcept-type24.C: New test.
+
+2021-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97900
+	* g++.dg/ext/vector40.C: New test.
+
 2021-04-02  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99869

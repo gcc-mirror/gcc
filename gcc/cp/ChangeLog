@@ -1,3 +1,26 @@
+2021-04-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91416
+	* parser.c: Create a GC root for attributes in a decl specifier.
+	(cp_parser_type_specifier): Push/pop ->attributes onto/from it.
+
+2021-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91217
+	* pt.c (tsubst_lambda_expr): Skip the body block from
+	DECL_SAVED_TREE.
+
+2021-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90664
+	* cvt.c (can_convert_qual): Check fnptr_conv_p.
+
+2021-04-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97900
+	* pt.c (regenerate_decl_from_template): tsubst_decl
+	the parms.
+
 2021-04-02  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99869
