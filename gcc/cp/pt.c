@@ -14269,6 +14269,19 @@ enclosing_instantiation_of (tree otctx)
 		  || instantiated_lambda_fn_p (tctx));
        tctx = decl_function_context (tctx))
     ++lambda_count;
+
+  if (!tctx)
+    {
+      /* Match using DECL_SOURCE_LOCATION, which is unique for all lambdas.
+
+	 For GCC 11 the above condition limits this to the previously failing
+	 case where all enclosing functions are lambdas (95870).  FIXME.  */
+      for (tree ofn = fn; ofn; ofn = decl_function_context (ofn))
+	if (DECL_SOURCE_LOCATION (ofn) == DECL_SOURCE_LOCATION (otctx))
+	  return ofn;
+      gcc_unreachable ();
+    }
+
   for (; fn; fn = decl_function_context (fn))
     {
       tree ofn = fn;
