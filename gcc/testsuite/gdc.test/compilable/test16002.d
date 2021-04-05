@@ -22,3 +22,6 @@ static assert(is(b == module));
 // This is supposed to work even though we haven't directly imported imports.pkgmodule.
 static assert(is(imports.pkgmodule == module));
 static assert(!is(MyStruct == module));
+
+static assert(!is(imports.nonexistent == package));
+static assert(!is(imports.nonexistent == module));

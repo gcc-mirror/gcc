@@ -135,11 +135,11 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
 	std/regex/internal/backtracking.d std/regex/internal/generator.d \
 	std/regex/internal/ir.d std/regex/internal/kickstart.d \
 	std/regex/internal/parser.d std/regex/internal/tests.d \
-	std/regex/internal/thompson.d std/regex/package.d std/signals.d \
-	std/socket.d std/stdint.d std/stdio.d std/string.d std/system.d \
-	std/traits.d std/typecons.d std/typetuple.d std/uni.d std/uri.d \
-	std/utf.d std/uuid.d std/variant.d std/windows/charset.d \
-	std/windows/registry.d std/windows/syserror.d std/xml.d std/zip.d \
-	std/zlib.d
+	std/regex/internal/tests2.d std/regex/internal/thompson.d \
+	std/regex/package.d std/signals.d std/socket.d std/stdint.d \
+	std/stdio.d std/string.d std/system.d std/traits.d std/typecons.d \
+	std/typetuple.d std/uni.d std/uri.d std/utf.d std/uuid.d std/variant.d \
+	std/windows/charset.d std/windows/registry.d std/windows/syserror.d \
+	std/xml.d std/zip.d std/zlib.d
 
 endif

@@ -139,7 +139,7 @@ else version (Darwin)
     char* dlerror();
     void* dlopen(const scope char*, int);
     void* dlsym(void*, const scope char*);
-    int   dladdr(void* addr, Dl_info* info);
+    int   dladdr(scope const void* addr, Dl_info* info);
 
     struct Dl_info
     {
@@ -294,6 +294,15 @@ else version (CRuntime_Musl)
     const(char)* dlerror();
     void*        dlopen(const scope char*, int);
     void*        dlsym(void*, const scope char*);
+
+    int dladdr(scope const void *addr, Dl_info *info);
+    struct Dl_info
+    {
+        const(char)* dli_fname;
+        void*        dli_fbase;
+        const(char)* dli_sname;
+        void*        dli_saddr;
+    }
 }
 else version (CRuntime_UClibc)
 {

@@ -883,10 +883,14 @@ public:
 
 /****************************************************************/
 
-class CompileExp : public UnaExp
+class CompileExp : public Expression
 {
 public:
-    CompileExp(Loc loc, Expression *e);
+    Expressions *exps;
+
+    CompileExp(Loc loc, Expressions *exps);
+    Expression *syntaxCopy();
+    bool equals(RootObject *o);
     void accept(Visitor *v) { v->visit(this); }
 };
 
@@ -1124,7 +1128,6 @@ class ArrayLengthExp : public UnaExp
 public:
     ArrayLengthExp(Loc loc, Expression *e1);
 
-    static Expression *rewriteOpAssign(BinExp *exp);
     void accept(Visitor *v) { v->visit(this); }
 };
 

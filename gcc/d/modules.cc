@@ -125,7 +125,7 @@ static Module *current_module_decl;
    by both module initialization and dso handlers.  */
 
 static FuncDeclaration *
-get_internal_fn (tree ident)
+get_internal_fn (tree ident, const Prot &prot)
 {
   Module *mod = current_module_decl;
   const char *name = IDENTIFIER_POINTER (ident);
@@ -141,9 +141,10 @@ get_internal_fn (tree ident)
 
   FuncDeclaration *fd = FuncDeclaration::genCfunc (NULL, Type::tvoid,
 						   Identifier::idPool (name));
+  fd->generated = true;
   fd->loc = Loc (mod->srcfile->toChars (), 1, 0);
   fd->parent = mod;
-  fd->protection.kind = Prot::private_;
+  fd->protection = prot;
   fd->semanticRun = PASSsemantic3done;
 
   return fd;
@@ -155,7 +156,7 @@ get_internal_fn (tree ident)
 static tree
 build_internal_fn (tree ident, tree expr)
 {
-  FuncDeclaration *fd = get_internal_fn (ident);
+  FuncDeclaration *fd = get_internal_fn (ident, Prot (Prot::private_));
   tree decl = get_symbol_decl (fd);
 
   tree old_context = start_function (fd);
@@ -337,15 +338,14 @@ build_dso_cdtor_fn (bool ctor_p)
 	}
     }
    */
-  FuncDeclaration *fd = get_internal_fn (get_identifier (name));
+  FuncDeclaration *fd = get_internal_fn (get_identifier (name),
+					 Prot (Prot::public_));
   tree decl = get_symbol_decl (fd);
 
   TREE_PUBLIC (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_VISIBILITY (decl) = VISIBILITY_HIDDEN;
   DECL_VISIBILITY_SPECIFIED (decl) = 1;
-
-  d_comdat_linkage (decl);
 
   /* Start laying out the body.  */
   tree old_context = start_function (fd);
@@ -443,15 +443,11 @@ register_moduleinfo (Module *decl, tree minfo)
   /* Declare dso_slot and dso_initialized.  */
   dso_slot_node = build_dso_registry_var (GDC_PREFIX ("dso_slot"),
 					  ptr_type_node);
-  DECL_EXTERNAL (dso_slot_node) = 0;
-  d_comdat_linkage (dso_slot_node);
-  rest_of_decl_compilation (dso_slot_node, 1, 0);
+  d_finish_decl (dso_slot_node);
 
   dso_initialized_node = build_dso_registry_var (GDC_PREFIX ("dso_initialized"),
 						 boolean_type_node);
-  DECL_EXTERNAL (dso_initialized_node) = 0;
-  d_comdat_linkage (dso_initialized_node);
-  rest_of_decl_compilation (dso_initialized_node, 1, 0);
+  d_finish_decl (dso_initialized_node);
 
   /* Declare dso_ctor() and dso_dtor().  */
   tree dso_ctor = build_dso_cdtor_fn (true);

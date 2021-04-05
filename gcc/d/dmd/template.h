@@ -78,6 +78,7 @@ public:
     bool ismixin;               // template declaration is only to be used as a mixin
     bool isstatic;              // this is static template declaration
     Prot protection;
+    int inuse;                  // for recursive expansion detection
 
     TemplatePrevious *previous;         // threaded list of previous instantiation attempts on stack
 

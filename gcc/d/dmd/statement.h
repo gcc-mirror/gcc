@@ -173,9 +173,10 @@ public:
 class CompileStatement : public Statement
 {
 public:
-    Expression *exp;
+    Expressions *exps;
 
     CompileStatement(Loc loc, Expression *exp);
+    CompileStatement(Loc loc, Expressions *exps);
     Statement *syntaxCopy();
     Statements *flatten(Scope *sc);
     void accept(Visitor *v) { v->visit(this); }

@@ -1,7 +1,7 @@
 /*
 TEST_OUTPUT:
 ---
-fail_compilation/fail3.d(40): Error: incompatible types for ((a) + (b)): 'vec2' and 'vec2'
+fail_compilation/fail3.d(41): Error: incompatible types for ((a) + (b)): both operands are of type 'vec2'
 ---
 */
 
@@ -14,6 +14,7 @@ template vector(T)
         T x, y;
     }
 
+    // not struct member
     vec2 opAdd(vec2 a, vec2 b)
     {
         vec2 r;

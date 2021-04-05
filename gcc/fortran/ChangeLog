@@ -1,3 +1,9 @@
+2021-04-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99818
+	* interface.c (compare_parameter): The codimension attribute is
+	applied to the _data field of class formal arguments.
+
 2021-04-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/99840

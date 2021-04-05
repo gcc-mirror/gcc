@@ -12757,7 +12757,11 @@ tsubst_binary_right_fold (tree t, tree args, tsubst_flags_t complain,
 class el_data
 {
 public:
+  /* Set of variables declared within the pattern.  */
   hash_set<tree> internal;
+  /* Set of AST nodes that have been visited by the traversal.  */
+  hash_set<tree> visited;
+  /* List of local_specializations used within the pattern.  */
   tree extra;
   tsubst_flags_t complain;
 
@@ -12777,6 +12781,15 @@ extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
 
   if (TREE_CODE (*tp) == DECL_EXPR)
     data.internal.add (DECL_EXPR_DECL (*tp));
+  else if (TREE_CODE (*tp) == LAMBDA_EXPR)
+    {
+      /* Since we defer implicit capture, look in the parms and body.  */
+      tree fn = lambda_function (*tp);
+      cp_walk_tree (&TREE_TYPE (fn), &extract_locals_r, &data,
+		    &data.visited);
+      cp_walk_tree (&DECL_SAVED_TREE (fn), &extract_locals_r, &data,
+		    &data.visited);
+    }
   else if (tree spec = retrieve_local_specialization (*tp))
     {
       if (data.internal.contains (*tp))
@@ -12833,7 +12846,7 @@ static tree
 extract_local_specs (tree pattern, tsubst_flags_t complain)
 {
   el_data data (complain);
-  cp_walk_tree_without_duplicates (&pattern, extract_locals_r, &data);
+  cp_walk_tree (&pattern, extract_locals_r, &data, &data.visited);
   return data.extra;
 }
 
@@ -19433,8 +19446,13 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 the purposes of template argument deduction. */
       complain = tf_warning_or_error;
 
-      tsubst_expr (DECL_SAVED_TREE (oldfn), args, complain, r,
-		   /*constexpr*/false);
+      tree saved = DECL_SAVED_TREE (oldfn);
+      if (TREE_CODE (saved) == BIND_EXPR && BIND_EXPR_BODY_BLOCK (saved))
+	/* We already have a body block from start_lambda_function, we don't
+	   need another to confuse NRV (91217).  */
+	saved = BIND_EXPR_BODY (saved);
+
+      tsubst_expr (saved, args, complain, r, /*constexpr*/false);
 
       finish_lambda_function (body);
 
@@ -24186,7 +24204,10 @@ mark_decl_instantiated (tree result, int extern_p)
   DECL_COMDAT (result) = 0;
 
   if (extern_p)
-    DECL_NOT_REALLY_EXTERN (result) = 0;
+    {
+      DECL_EXTERNAL (result) = 1;
+      DECL_NOT_REALLY_EXTERN (result) = 0;
+    }
   else
     {
       mark_definable (result);
@@ -25364,8 +25385,6 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
-      tree decl_parm;
-      tree pattern_parm;
       tree specs;
       int args_depth;
       int parms_depth;
@@ -25389,65 +25408,18 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 	  }
 
       /* Merge parameter declarations.  */
-      decl_parm = skip_artificial_parms_for (decl,
-					     DECL_ARGUMENTS (decl));
-      pattern_parm
-	= skip_artificial_parms_for (code_pattern,
-				     DECL_ARGUMENTS (code_pattern));
-      while (decl_parm && !DECL_PACK_P (pattern_parm))
+      if (tree pattern_parm
+	  = skip_artificial_parms_for (code_pattern,
+				       DECL_ARGUMENTS (code_pattern)))
 	{
-	  tree parm_type;
-	  tree attributes;
-
-	  if (DECL_NAME (decl_parm) != DECL_NAME (pattern_parm))
-	    DECL_NAME (decl_parm) = DECL_NAME (pattern_parm);
-	  parm_type = tsubst (TREE_TYPE (pattern_parm), args, tf_error,
-			      NULL_TREE);
-	  parm_type = type_decays_to (parm_type);
-	  if (!same_type_p (TREE_TYPE (decl_parm), parm_type))
-	    TREE_TYPE (decl_parm) = parm_type;
-	  attributes = DECL_ATTRIBUTES (pattern_parm);
-	  if (DECL_ATTRIBUTES (decl_parm) != attributes)
-	    {
-	      DECL_ATTRIBUTES (decl_parm) = attributes;
-	      cplus_decl_attributes (&decl_parm, attributes, /*flags=*/0);
-	    }
-	  decl_parm = DECL_CHAIN (decl_parm);
-	  pattern_parm = DECL_CHAIN (pattern_parm);
+	  tree *p = &DECL_ARGUMENTS (decl);
+	  for (int skip = num_artificial_parms_for (decl); skip; --skip)
+	    p = &DECL_CHAIN (*p);
+	  *p = tsubst_decl (pattern_parm, args, tf_error);
+	  for (tree t = *p; t; t = DECL_CHAIN (t))
+	    DECL_CONTEXT (t) = decl;
 	}
-      /* Merge any parameters that match with the function parameter
-         pack.  */
-      if (pattern_parm && DECL_PACK_P (pattern_parm))
-        {
-          int i, len;
-          tree expanded_types;
-          /* Expand the TYPE_PACK_EXPANSION that provides the types for
-             the parameters in this function parameter pack.  */
-          expanded_types = tsubst_pack_expansion (TREE_TYPE (pattern_parm), 
-                                                 args, tf_error, NULL_TREE);
-          len = TREE_VEC_LENGTH (expanded_types);
-          for (i = 0; i < len; i++)
-            {
-              tree parm_type;
-              tree attributes;
 
-              if (DECL_NAME (decl_parm) != DECL_NAME (pattern_parm))
-                /* Rename the parameter to include the index.  */
-                DECL_NAME (decl_parm) = 
-                  make_ith_pack_parameter_name (DECL_NAME (pattern_parm), i);
-              parm_type = TREE_VEC_ELT (expanded_types, i);
-              parm_type = type_decays_to (parm_type);
-              if (!same_type_p (TREE_TYPE (decl_parm), parm_type))
-                TREE_TYPE (decl_parm) = parm_type;
-              attributes = DECL_ATTRIBUTES (pattern_parm);
-              if (DECL_ATTRIBUTES (decl_parm) != attributes)
-                {
-                  DECL_ATTRIBUTES (decl_parm) = attributes;
-                  cplus_decl_attributes (&decl_parm, attributes, /*flags=*/0);
-                }
-              decl_parm = DECL_CHAIN (decl_parm);
-            }
-        }
       /* Merge additional specifiers from the CODE_PATTERN.  */
       if (DECL_DECLARED_INLINE_P (code_pattern)
 	  && !DECL_DECLARED_INLINE_P (decl))

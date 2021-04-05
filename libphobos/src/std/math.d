@@ -263,8 +263,8 @@ version (unittest)
             alias real_t = double;
         else
             alias real_t = real;
-        ix = sprintf(bufx.ptr, "%.*Lg", ndigits, cast(real_t) x);
-        iy = sprintf(bufy.ptr, "%.*Lg", ndigits, cast(real_t) y);
+        ix = sprintf(bufx.ptr, is(real_t == real) ? "%.*Lg" : "%.*g", ndigits, cast(real_t) x);
+        iy = sprintf(bufy.ptr, is(real_t == real) ? "%.*Lg" : "%.*g", ndigits, cast(real_t) y);
         assert(ix < bufx.length && ix > 0);
         assert(ix < bufy.length && ix > 0);
 

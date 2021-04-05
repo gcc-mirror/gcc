@@ -1600,11 +1600,11 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 		  if (bitmap_empty_p (nonnull_args)
 		      || bitmap_bit_p (nonnull_args, i))
 		    {
-		      tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 		      state_t state = sm_ctxt->get_state (stmt, arg);
 		      /* Can't use a switch as the states are non-const.  */
 		      if (unchecked_p (state))
 			{
+			  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 			  sm_ctxt->warn (node, stmt, arg,
 					 new possible_null_arg (*this, diag_arg,
 								callee_fndecl,
@@ -1616,6 +1616,7 @@ malloc_state_machine::on_stmt (sm_context *sm_ctxt,
 			}
 		      else if (state == m_null)
 			{
+			  tree diag_arg = sm_ctxt->get_diagnostic_tree (arg);
 			  sm_ctxt->warn (node, stmt, arg,
 					 new null_arg (*this, diag_arg,
 						       callee_fndecl, i));

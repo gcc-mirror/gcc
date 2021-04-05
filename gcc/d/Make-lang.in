@@ -64,6 +64,7 @@ D_FRONTEND_OBJS = \
 	d/blockexit.o \
 	d/canthrow.o \
 	d/checkedint.o \
+	d/chkformat.o \
 	d/clone.o \
 	d/cond.o \
 	d/constfold.o \

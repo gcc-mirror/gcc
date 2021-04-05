@@ -26,6 +26,7 @@
 FuncDeclaration *isFuncAddress(Expression *e, bool *hasOverloads = NULL);
 bool isCommutative(TOK op);
 MOD MODmerge(MOD mod1, MOD mod2);
+void toAutoQualChars(const char **result, Type *t1, Type *t2);
 
 /* ==================== implicitCast ====================== */
 
@@ -90,8 +91,10 @@ Expression *implicitCastTo(Expression *e, Scope *sc, Type *t)
                     //printf("type %p ty %d deco %p\n", type, type->ty, type->deco);
                     //type = type->semantic(loc, sc);
                     //printf("type %s t %s\n", type->deco, t->deco);
+                    const char *ts[2];
+                    toAutoQualChars(ts, e->type, t);
                     e->error("cannot implicitly convert expression (%s) of type %s to %s",
-                        e->toChars(), e->type->toChars(), t->toChars());
+                        e->toChars(), ts[0], ts[1]);
                 }
             }
             result = new ErrorExp();

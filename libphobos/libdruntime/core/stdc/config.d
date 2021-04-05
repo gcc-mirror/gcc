@@ -34,6 +34,7 @@ version (StdDdoc)
             alias ddoc_long = int;
             alias ddoc_ulong = uint;
         }
+        struct ddoc_complex(T) { T re; T im; };
     }
 
     /***
@@ -89,6 +90,24 @@ version (StdDdoc)
      * C++ compiler's `ptrdiff_t` type.
      */
     alias cpp_ptrdiff_t = ptrdiff_t;
+
+    /***
+     * Used for a complex floating point type that corresponds in size and ABI to the associated
+     * C compiler's `_Complex float` type.
+     */
+    alias c_complex_float = ddoc_complex!float;
+
+    /***
+     * Used for a complex floating point type that corresponds in size and ABI to the associated
+     * C compiler's `_Complex double` type.
+     */
+    alias c_complex_double = ddoc_complex!double;
+
+    /***
+     * Used for a complex floating point type that corresponds in size and ABI to the associated
+     * C compiler's `_Complex long double` type.
+     */
+    alias c_complex_real = ddoc_complex!real;
 }
 else
 {
@@ -230,4 +249,28 @@ else
     alias cpp_size_t = size_t;
     alias cpp_ptrdiff_t = ptrdiff_t;
 }
+
+// ABI layout of native complex types.
+private struct _Complex(T)
+{
+    T re;
+    T im;
+}
+
+version (Posix)
+{
+    align(float.alignof)  enum __c_complex_float : _Complex!float;
+    align(double.alignof) enum __c_complex_double : _Complex!double;
+    align(real.alignof)   enum __c_complex_real : _Complex!real;
+}
+else
+{
+    align(float.sizeof * 2)  enum __c_complex_float : _Complex!float;
+    align(double.sizeof * 2) enum __c_complex_double : _Complex!double;
+    align(real.alignof)      enum __c_complex_real : _Complex!real;
+}
+
+alias c_complex_float = __c_complex_float;
+alias c_complex_double = __c_complex_double;
+alias c_complex_real = __c_complex_real;
 }

@@ -1341,6 +1341,10 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_ASM_ASSEMBLE_VISIBILITY rs6000_assemble_visibility
 #endif
 
+#undef TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY
+#define TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY \
+  rs6000_print_patchable_function_entry
+
 #undef TARGET_SET_UP_BY_PROLOGUE
 #define TARGET_SET_UP_BY_PROLOGUE rs6000_set_up_by_prologue
 
@@ -14694,6 +14698,30 @@ rs6000_assemble_visibility (tree decl, int vis)
     default_assemble_visibility (decl, vis);
 }
 #endif
+
+/* Write PATCH_AREA_SIZE NOPs into the asm outfile FILE around a function
+   entry.  If RECORD_P is true and the target supports named sections,
+   the location of the NOPs will be recorded in a special object section
+   called "__patchable_function_entries".  This routine may be called
+   twice per function to put NOPs before and after the function
+   entry.  */
+
+void
+rs6000_print_patchable_function_entry (FILE *file,
+				       unsigned HOST_WIDE_INT patch_area_size,
+				       bool record_p)
+{
+  unsigned int flags = SECTION_WRITE | SECTION_RELRO;
+  /* When .opd section is emitted, the function symbol
+     default_print_patchable_function_entry_1 is emitted into the .opd section
+     while the patchable area is emitted into the function section.
+     Don't use SECTION_LINK_ORDER in that case.  */
+  if (!(TARGET_64BIT && DEFAULT_ABI != ABI_ELFv2)
+      && HAVE_GAS_SECTION_LINK_ORDER)
+    flags |= SECTION_LINK_ORDER;
+  default_print_patchable_function_entry_1 (file, patch_area_size, record_p,
+					    flags);
+}
 
 enum rtx_code
 rs6000_reverse_condition (machine_mode mode, enum rtx_code code)

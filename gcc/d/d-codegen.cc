@@ -1153,6 +1153,14 @@ build_struct_literal (tree type, vec <constructor_elt, va_gc> *init)
   if (vec_safe_is_empty (init))
     return build_constructor (type, NULL);
 
+  /* Struct literals can be seen for special enums representing `_Complex',
+     make sure to reinterpret the literal as the correct type.  */
+  if (COMPLEX_FLOAT_TYPE_P (type))
+    {
+      gcc_assert (vec_safe_length (init) == 2);
+      return build_complex (type, (*init)[0].value, (*init)[1].value);
+    }
+
   vec <constructor_elt, va_gc> *ve = NULL;
   HOST_WIDE_INT offset = 0;
   bool constant_p = true;

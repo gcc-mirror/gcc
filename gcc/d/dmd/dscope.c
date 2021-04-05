@@ -24,6 +24,7 @@
 #include "aggregate.h"
 #include "module.h"
 #include "id.h"
+#include "target.h"
 #include "template.h"
 
 Scope *Scope::freelist = NULL;
@@ -155,7 +156,8 @@ Scope *Scope::push()
     s->nofree = 0;
     s->fieldinit = saveFieldInit();
     s->flags = (flags & (SCOPEcontract | SCOPEdebug | SCOPEctfe | SCOPEcompile | SCOPEconstraint |
-                         SCOPEnoaccesscheck | SCOPEignoresymbolvisibility));
+                         SCOPEnoaccesscheck | SCOPEignoresymbolvisibility |
+                         SCOPEprintf | SCOPEscanf));
     s->lastdc = NULL;
 
     assert(this != s);
@@ -637,7 +639,7 @@ const char *Scope::search_correct_C(Identifier *ident)
     else if (ident == Id::C_unsigned)
         tok = TOKuns32;
     else if (ident == Id::C_wchar_t)
-        tok = global.params.isWindows ? TOKwchar : TOKdchar;
+        tok = target.c.twchar_t->ty == Twchar ? TOKwchar : TOKdchar;
     else
         return NULL;
     return Token::toChars(tok);

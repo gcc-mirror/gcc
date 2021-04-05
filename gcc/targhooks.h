@@ -230,6 +230,9 @@ extern bool default_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 						    bool);
 extern int default_compare_by_pieces_branch_ratio (machine_mode);
 
+extern void default_print_patchable_function_entry_1 (FILE *,
+						      unsigned HOST_WIDE_INT,
+						      bool, unsigned int);
 extern void default_print_patchable_function_entry (FILE *,
 						    unsigned HOST_WIDE_INT,
 						    bool);

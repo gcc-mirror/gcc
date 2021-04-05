@@ -76,7 +76,7 @@ debug(PRINTF_TO_FILE)
                 gcStartTick = MonoTime.currTime;
             immutable timeElapsed = MonoTime.currTime - gcStartTick;
             immutable secondsAsDouble = timeElapsed.total!"hnsecs" / cast(double)convert!("seconds", "hnsecs")(1);
-            len = fprintf(gcx_fh, "%10.6lf: ", secondsAsDouble);
+            len = fprintf(gcx_fh, "%10.6f: ", secondsAsDouble);
         }
         len += fprintf(gcx_fh, fmt, args);
         fflush(gcx_fh);
@@ -159,7 +159,7 @@ debug (LOGGING)
             printf("    p = %p, size = %zd, parent = %p ", p, size, parent);
             if (file)
             {
-                printf("%s(%u)", file, line);
+                printf("%s(%u)", file, cast(uint)line);
             }
             printf("\n");
         }

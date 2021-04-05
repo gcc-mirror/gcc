@@ -603,6 +603,12 @@ public:
     t->ctype = ptr_type_node;
   }
 
+  /* Bottom type used for functions that never return.  */
+
+  void visit (TypeNoreturn *t)
+  {
+    t->ctype = void_type_node;
+  }
 
   /* Basic Data Types.  */
 
@@ -852,7 +858,46 @@ public:
     tree basetype = (t->sym->memtype)
       ? build_ctype (t->sym->memtype) : void_type_node;
 
-    if (!INTEGRAL_TYPE_P (basetype) || TREE_CODE (basetype) == BOOLEAN_TYPE)
+    if (t->sym->isSpecial ())
+      {
+	/* Special enums are opaque types that bind to C types.  */
+	const char *ident = t->toChars ();
+	Type *underlying = NULL;
+
+	/* Skip over the prefixing `__c_'.  */
+	gcc_assert (strncmp (ident, "__c_", strlen ("__c_")) == 0);
+	ident = ident + strlen ("__c_");
+
+	/* To keep things compatible within the code generation we stick to
+	   mapping to equivalent D types.  However it should be OK to use the
+	   GCC provided C types here as the front-end enforces that everything
+	   must be explicitly cast from a D type to any of the opaque types.  */
+	if (strcmp (ident, "long") == 0)
+	  underlying = build_frontend_type (long_integer_type_node);
+	else if (strcmp (ident, "ulong") == 0)
+	  underlying = build_frontend_type (long_unsigned_type_node);
+	else if (strcmp (ident, "wchar_t") == 0)
+	  underlying = target.c.twchar_t;
+	else if (strcmp (ident, "longlong") == 0)
+	  underlying = build_frontend_type (long_long_integer_type_node);
+	else if (strcmp (ident, "ulonglong") == 0)
+	  underlying = build_frontend_type (long_long_unsigned_type_node);
+	else if (strcmp (ident, "long_double") == 0)
+	  underlying = build_frontend_type (long_double_type_node);
+	else if (strcmp (ident, "complex_real") == 0)
+	  underlying = build_frontend_type (complex_long_double_type_node);
+	else if (strcmp (ident, "complex_float") == 0)
+	  underlying = build_frontend_type (complex_float_type_node);
+	else if (strcmp (ident, "complex_double") == 0)
+	  underlying = build_frontend_type (complex_double_type_node);
+
+	/* Conversion failed or there's an unhandled special type.  */
+	gcc_assert (underlying != NULL);
+
+	t->ctype = build_variant_type_copy (build_ctype (underlying));
+	build_type_decl (t->ctype, t->sym);
+      }
+    else if (!INTEGRAL_TYPE_P (basetype) || TREE_CODE (basetype) == BOOLEAN_TYPE)
       {
 	/* Enums in D2 can have a base type that is not necessarily integral.
 	   For these, we simplify this a little by using the base type directly

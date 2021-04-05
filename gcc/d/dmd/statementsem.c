@@ -581,7 +581,7 @@ public:
                         {
                             fs->error("constant value %s cannot be ref", ie->toChars());
                         }
-                        else 
+                        else
                         {
                             fs->error("constant value %s cannot be ref", ident->toChars());
                         }

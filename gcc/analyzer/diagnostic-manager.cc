@@ -2081,7 +2081,7 @@ diagnostic_manager::prune_interproc_events (checker_path *path) const
   do
     {
       changed = false;
-      int idx = path->num_events () - 1;
+      int idx = (signed)path->num_events () - 1;
       while (idx >= 0)
 	{
 	  /* Prune [..., call, function-entry, return, ...] triples.  */
@@ -2200,7 +2200,9 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
   if (flag_analyzer_verbose_edges)
     return;
 
-  for (unsigned start_idx = 0; start_idx < path->num_events () - 1; start_idx++)
+  for (int start_idx = 0;
+       start_idx < (signed)path->num_events () - 1;
+       start_idx++)
     {
       if (path->cfg_edge_pair_at_p (start_idx))
 	{
@@ -2231,7 +2233,7 @@ diagnostic_manager::consolidate_conditions (checker_path *path) const
 	       [start_idx, next_idx)
 	     where all apart from the final event are on the same line,
 	     and all are either TRUE or FALSE edges, matching the initial.  */
-	  unsigned next_idx = start_idx + 2;
+	  int next_idx = start_idx + 2;
 	  while (path->cfg_edge_pair_at_p (next_idx)
 		 && same_line_as_p (start_exp_loc, path, next_idx))
 	    {
