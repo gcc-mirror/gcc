@@ -14437,55 +14437,22 @@ most_general_lambda (tree t)
 }
 
 /* We're instantiating a variable from template function TCTX.  Return the
-   corresponding current enclosing scope.  This gets complicated because lambda
-   functions in templates are regenerated rather than instantiated, but generic
-   lambda functions are subsequently instantiated.  */
+   corresponding current enclosing scope.  We can match them up using
+   DECL_SOURCE_LOCATION because lambdas only ever have one source location, and
+   the DECL_SOURCE_LOCATION for a function instantiation is updated to match
+   the template definition in regenerate_decl_from_template.  */
 
 static tree
-enclosing_instantiation_of (tree otctx)
+enclosing_instantiation_of (tree tctx)
 {
-  tree tctx = otctx;
   tree fn = current_function_decl;
-  int lambda_count = 0;
 
-  for (; tctx && (lambda_fn_in_template_p (tctx)
-		  || regenerated_lambda_fn_p (tctx));
-       tctx = decl_function_context (tctx))
-    ++lambda_count;
-
-  if (!tctx)
-    {
-      /* Match using DECL_SOURCE_LOCATION, which is unique for all lambdas.
-
-	 For GCC 11 the above condition limits this to the previously failing
-	 case where all enclosing functions are lambdas (95870).  FIXME.  */
-      for (tree ofn = fn; ofn; ofn = decl_function_context (ofn))
-	if (DECL_SOURCE_LOCATION (ofn) == DECL_SOURCE_LOCATION (otctx))
-	  return ofn;
-      gcc_unreachable ();
-    }
+  /* We shouldn't ever need to do this for other artificial functions.  */
+  gcc_assert (!DECL_ARTIFICIAL (tctx) || LAMBDA_FUNCTION_P (tctx));
 
   for (; fn; fn = decl_function_context (fn))
-    {
-      tree ofn = fn;
-      int flambda_count = 0;
-      for (; fn && regenerated_lambda_fn_p (fn);
-	   fn = decl_function_context (fn))
-	++flambda_count;
-      if ((fn && DECL_TEMPLATE_INFO (fn))
-	  ? most_general_template (fn) != most_general_template (tctx)
-	  : fn != tctx)
-	continue;
-      if (flambda_count != lambda_count)
-	{
-	  gcc_assert (flambda_count > lambda_count);
-	  for (; flambda_count > lambda_count; --flambda_count)
-	    ofn = decl_function_context (ofn);
-	}
-      gcc_assert (DECL_NAME (ofn) == DECL_NAME (otctx)
-		  || DECL_CONV_FN_P (ofn));
-      return ofn;
-    }
+    if (DECL_SOURCE_LOCATION (fn) == DECL_SOURCE_LOCATION (tctx))
+      return fn;
   gcc_unreachable ();
 }
 
@@ -25491,6 +25458,9 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
       tree specs;
       int args_depth;
       int parms_depth;
+
+      /* Use the source location of the definition.  */
+      DECL_SOURCE_LOCATION (decl) = DECL_SOURCE_LOCATION (tmpl);
 
       args_depth = TMPL_ARGS_DEPTH (args);
       parms_depth = TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl));
