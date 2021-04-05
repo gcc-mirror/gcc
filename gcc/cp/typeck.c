@@ -10037,6 +10037,9 @@ check_return_expr (tree retval, bool *no_warning)
     dependent:
       /* We should not have changed the return value.  */
       gcc_assert (retval == saved_retval);
+      /* We don't know if this is an lvalue or rvalue use, but
+	 either way we can mark it as read.  */
+      mark_exp_read (retval);
       return retval;
     }
 
