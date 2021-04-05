@@ -1,3 +1,8 @@
+2021-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99643
+	* g++.dg/cpp0x/initlist-new5.C: New test.
+
 2021-04-03  Alexandre Oliva  <oliva@adacore.com>
 
 	* g++.dg/pr94314-3.C: Zero-initialize main loop counter.

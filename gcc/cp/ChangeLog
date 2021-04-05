@@ -1,3 +1,8 @@
+2021-04-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99643
+	* typeck2.c (massage_init_elt): Don't strip TARGET_EXPR.
+
 2021-04-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/91416
