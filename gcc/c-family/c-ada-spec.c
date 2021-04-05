@@ -1932,8 +1932,8 @@ dump_ada_template (pretty_printer *buffer, tree t, int spc)
   return num_inst > 0;
 }
 
-/* Return true if NODE is a simple enum types, that can be mapped to an
-   Ada enum type directly.  */
+/* Return true if NODE is a simple enumeral type that can be mapped to an
+   Ada enumeration type directly.  */
 
 static bool
 is_simple_enum (tree node)
@@ -1947,9 +1947,7 @@ is_simple_enum (tree node)
       if (TREE_CODE (int_val) != INTEGER_CST)
 	int_val = DECL_INITIAL (int_val);
 
-      if (!tree_fits_shwi_p (int_val))
-	return false;
-      else if (tree_to_shwi (int_val) != count)
+      if (!tree_fits_shwi_p (int_val) || tree_to_shwi (int_val) != count)
 	return false;
 
       count++;
@@ -1958,11 +1956,12 @@ is_simple_enum (tree node)
   return true;
 }
 
-/* Dump in BUFFER an enumeral type NODE in Ada syntax.  SPC is the indentation
-   level.  */
+/* Dump in BUFFER the declaration of enumeral NODE of type TYPE in Ada syntax.
+   PARENT is the parent node of NODE.  SPC is the indentation level.  */
 
 static void
-dump_ada_enum_type (pretty_printer *buffer, tree node, int spc)
+dump_ada_enum_type (pretty_printer *buffer, tree node, tree type, tree parent,
+		    int spc)
 {
   if (is_simple_enum (node))
     {
@@ -1993,25 +1992,29 @@ dump_ada_enum_type (pretty_printer *buffer, tree node, int spc)
 	pp_string (buffer, "unsigned");
       else
 	pp_string (buffer, "int");
+
       for (tree value = TYPE_VALUES (node); value; value = TREE_CHAIN (value))
 	{
+	  tree int_val = TREE_VALUE (value);
+
+	  if (TREE_CODE (int_val) != INTEGER_CST)
+	    int_val = DECL_INITIAL (int_val);
+
 	  pp_semicolon (buffer);
 	  newline_and_indent (buffer, spc);
 
 	  pp_ada_tree_identifier (buffer, TREE_PURPOSE (value), node, false);
 	  pp_string (buffer, " : constant ");
 
-	  if (TYPE_UNSIGNED (node))
-	    pp_string (buffer, "unsigned");
+	  if (TYPE_NAME (node))
+	    dump_ada_node (buffer, node, NULL_TREE, spc, false, true);
+	  else if (type)
+	    dump_ada_node (buffer, type, NULL_TREE, spc, false, true);
 	  else
-	    pp_string (buffer, "int");
+	    dump_anonymous_type_name (buffer, node, parent);
 
 	  pp_string (buffer, " := ");
-	  dump_ada_node (buffer,
-			 TREE_CODE (TREE_VALUE (value)) == INTEGER_CST
-			 ? TREE_VALUE (value)
-			 : DECL_INITIAL (TREE_VALUE (value)),
-			 node, spc, false, true);
+	  dump_ada_node (buffer, int_val, node, spc, false, true);
 	}
     }
 }
@@ -2098,7 +2101,7 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
       if (name_only)
 	dump_ada_node (buffer, TYPE_NAME (node), node, spc, false, true);
       else
-	dump_ada_enum_type (buffer, node, spc);
+	dump_ada_enum_type (buffer, node, type, NULL_TREE, spc);
       break;
 
     case REAL_TYPE:
@@ -2577,7 +2580,7 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, tree parent,
       else
 	dump_anonymous_type_name (buffer, field_type, parent);
       pp_string (buffer, " is ");
-      dump_ada_enum_type (buffer, field_type, spc);
+      dump_ada_enum_type (buffer, field_type, NULL_TREE, parent, spc);
       pp_semicolon (buffer);
       newline_and_indent (buffer, spc);
       break;
