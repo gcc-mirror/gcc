@@ -42,7 +42,7 @@ else version (X86_64)
     else version (Windows) { /* no need for Win64 ABI */ }
     else version = WithArgTypes;
 }
-version (AArch64)
+else version (AArch64)
 {
     // Apple uses a trivial varargs implementation
     version (OSX) {}

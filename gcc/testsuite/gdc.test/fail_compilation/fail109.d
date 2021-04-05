@@ -53,10 +53,10 @@ enum B
 /* Bugzilla 11849
 TEST_OUTPUT:
 ---
-fail_compilation/fail109.d(72): Error: enum fail109.RegValueType1a recursive definition of `.max` property
-fail_compilation/fail109.d(79): Error: enum fail109.RegValueType1b recursive definition of `.max` property
-fail_compilation/fail109.d(84): Error: enum fail109.RegValueType2a recursive definition of `.min` property
-fail_compilation/fail109.d(91): Error: enum fail109.RegValueType2b recursive definition of `.min` property
+fail_compilation/fail109.d(72): Error: enum member `fail109.RegValueType1a.Unknown` is forward referenced looking for `.max`
+fail_compilation/fail109.d(79): Error: enum member `fail109.RegValueType1b.Unknown` is forward referenced looking for `.max`
+fail_compilation/fail109.d(84): Error: enum member `fail109.RegValueType2a.Unknown` is forward referenced looking for `.min`
+fail_compilation/fail109.d(91): Error: enum member `fail109.RegValueType2b.Unknown` is forward referenced looking for `.min`
 ---
 */
 

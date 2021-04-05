@@ -36,7 +36,7 @@ fail_compilation/chkformat.d(214): Deprecation: argument `0` for format specific
 fail_compilation/chkformat.d(215): Deprecation: argument `0` for format specification `"%hhu"` must be `ubyte*`, not `int`
 fail_compilation/chkformat.d(216): Deprecation: argument `0` for format specification `"%hu"` must be `ushort*`, not `int`
 fail_compilation/chkformat.d(218): Deprecation: argument `0` for format specification `"%llu"` must be `ulong*`, not `int`
-fail_compilation/chkformat.d(219): Deprecation: argument `0` for format specification `"%ju"` must be `ulong*`, not `int`
+fail_compilation/chkformat.d(219): Deprecation: argument `0` for format specification `"%ju"` must be `core.stdc.stdint.uintmax_t*`, not `int`
 fail_compilation/chkformat.d(220): Deprecation: argument `0` for format specification `"%zu"` must be `size_t*`, not `int`
 fail_compilation/chkformat.d(221): Deprecation: argument `0` for format specification `"%tu"` must be `ptrdiff_t*`, not `int`
 fail_compilation/chkformat.d(222): Deprecation: argument `8.0L` for format specification `"%g"` must be `float*`, not `real`
@@ -137,3 +137,35 @@ void test302() { va_list vargs; vscanf("%Q", vargs); }
 //void test() { vscanf(); }
 //void test() { vfscanf(); }
 //void test() { vsscanf(); }
+
+/* TEST_OUTPUT:
+---
+fail_compilation/chkformat.d(401): Deprecation: argument `p` for format specification `"%u"` must be `uint`, not `char*`
+fail_compilation/chkformat.d(402): Deprecation: argument `p` for format specification `"%d"` must be `int`, not `char*`
+fail_compilation/chkformat.d(403): Deprecation: argument `p` for format specification `"%hhu"` must be `ubyte`, not `char*`
+fail_compilation/chkformat.d(404): Deprecation: argument `p` for format specification `"%hhd"` must be `byte`, not `char*`
+fail_compilation/chkformat.d(405): Deprecation: argument `p` for format specification `"%hu"` must be `ushort`, not `char*`
+fail_compilation/chkformat.d(406): Deprecation: argument `p` for format specification `"%hd"` must be `short`, not `char*`
+fail_compilation/chkformat.d(407): Deprecation: argument `p` for format specification `"%lu"` must be `$?:windows=uint|32=uint|64=ulong$`, not `char*`
+fail_compilation/chkformat.d(408): Deprecation: argument `p` for format specification `"%ld"` must be `$?:windows=int|32=int|64=long$`, not `char*`
+fail_compilation/chkformat.d(409): Deprecation: argument `p` for format specification `"%llu"` must be `ulong`, not `char*`
+fail_compilation/chkformat.d(410): Deprecation: argument `p` for format specification `"%lld"` must be `long`, not `char*`
+fail_compilation/chkformat.d(411): Deprecation: argument `p` for format specification `"%ju"` must be `core.stdc.stdint.uintmax_t`, not `char*`
+fail_compilation/chkformat.d(412): Deprecation: argument `p` for format specification `"%jd"` must be `core.stdc.stdint.intmax_t`, not `char*`
+---
+*/
+
+#line 400
+
+void test401() { char* p; printf("%u", p); }
+void test402() { char* p; printf("%d", p); }
+void test403() { char* p; printf("%hhu", p); }
+void test404() { char* p; printf("%hhd", p); }
+void test405() { char* p; printf("%hu", p); }
+void test406() { char* p; printf("%hd", p); }
+void test407() { char* p; printf("%lu", p); }
+void test408() { char* p; printf("%ld", p); }
+void test409() { char* p; printf("%llu", p); }
+void test410() { char* p; printf("%lld", p); }
+void test411() { char* p; printf("%ju", p); }
+void test412() { char* p; printf("%jd", p); }
