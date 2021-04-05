@@ -199,6 +199,7 @@ Target::_init (const Param &)
   /* Initialize target info tables, the keys required by the language are added
      last, so that the OS and CPU handlers can override.  */
   targetdm.d_register_cpu_target_info ();
+  targetdm.d_register_os_target_info ();
   d_add_target_info_handlers (d_language_target_info);
 }
 

@@ -7359,6 +7359,8 @@ floating-point support; they are not included in this mechanism.
 
 @hook TARGET_D_REGISTER_CPU_TARGET_INFO
 
+@hook TARGET_D_REGISTER_OS_TARGET_INFO
+
 @hook TARGET_D_MINFO_SECTION
 
 @hook TARGET_D_MINFO_START_NAME

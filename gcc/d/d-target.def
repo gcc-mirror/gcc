@@ -58,6 +58,14 @@ describing the requested target information.",
  void, (void),
  hook_void_void)
 
+/* getTargetInfo keys relating to the target OS.  */
+DEFHOOK
+(d_register_os_target_info,
+ "Same as @code{TARGET_D_CPU_TARGET_INFO}, but is used for keys relating to\n\
+the target operating system.",
+ void, (void),
+ hook_void_void)
+
 /* ModuleInfo section name and brackets.  */
 DEFHOOKPOD
 (d_minfo_section,
