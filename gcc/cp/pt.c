@@ -24204,7 +24204,10 @@ mark_decl_instantiated (tree result, int extern_p)
   DECL_COMDAT (result) = 0;
 
   if (extern_p)
-    DECL_NOT_REALLY_EXTERN (result) = 0;
+    {
+      DECL_EXTERNAL (result) = 1;
+      DECL_NOT_REALLY_EXTERN (result) = 0;
+    }
   else
     {
       mark_definable (result);
