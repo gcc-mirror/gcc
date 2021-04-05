@@ -56,3 +56,33 @@ mips_d_target_versions (void)
       d_add_builtin_version ("D_SoftFloat");
     }
 }
+
+/* Handle a call to `__traits(getTargetInfo, "floatAbi")'.  */
+
+static tree
+mips_d_handle_target_float_abi (void)
+{
+  const char *abi;
+
+  if (TARGET_HARD_FLOAT_ABI)
+    abi = "hard";
+  else if (TARGET_SOFT_FLOAT_ABI)
+    abi = "soft";
+  else
+    abi = "";
+
+  return build_string_literal (strlen (abi) + 1, abi);
+}
+
+/* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
+
+void
+mips_d_register_target_info (void)
+{
+  const struct d_target_info_spec handlers[] = {
+    { "floatAbi", mips_d_handle_target_float_abi },
+    { NULL, NULL },
+  };
+
+  d_add_target_info_handlers (handlers);
+}

@@ -658,8 +658,9 @@ struct mips_cpu_info {
     }									\
   while (0)
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS mips_d_target_versions
+#define TARGET_D_REGISTER_CPU_TARGET_INFO mips_d_register_target_info
 
 /* Default target_flags if no switches are specified  */
 

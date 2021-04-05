@@ -46,6 +46,18 @@ relating to the target operating system.",
  void, (void),
  hook_void_void)
 
+/* getTargetInfo keys relating to the target CPU.  */
+DEFHOOK
+(d_register_cpu_target_info,
+ "Register all target information keys relating to the target CPU using the\n\
+function @code{d_add_target_info_handlers}, which takes a\n\
+@samp{struct d_target_info_spec} (defined in @file{d/d-target.h}).  The keys\n\
+added by this hook are made available at compile time by the\n\
+@code{__traits(getTargetInfo)} extension, the result is an expression\n\
+describing the requested target information.",
+ void, (void),
+ hook_void_void)
+
 /* ModuleInfo section name and brackets.  */
 DEFHOOKPOD
 (d_minfo_section,

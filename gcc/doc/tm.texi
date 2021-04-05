@@ -10808,6 +10808,15 @@ Similarly to @code{TARGET_D_CPU_VERSIONS}, but is used for versions
 relating to the target operating system.
 @end deftypefn
 
+@deftypefn {D Target Hook} void TARGET_D_REGISTER_CPU_TARGET_INFO (void)
+Register all target information keys relating to the target CPU using the
+function @code{d_add_target_info_handlers}, which takes a
+@samp{struct d_target_info_spec} (defined in @file{d/d-target.h}).  The keys
+added by this hook are made available at compile time by the
+@code{__traits(getTargetInfo)} extension, the result is an expression
+describing the requested target information.
+@end deftypefn
+
 @deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION
 Contains the name of the section in which module info references should be
 placed.  This section is expected to be bracketed by two symbols to indicate
