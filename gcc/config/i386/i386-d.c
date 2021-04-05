@@ -44,3 +44,23 @@ ix86_d_target_versions (void)
   else
     d_add_builtin_version ("D_SoftFloat");
 }
+
+/* Implement TARGET_D_HAS_STDCALL_CONVENTION for x86 targets.  */
+
+bool
+ix86_d_has_stdcall_convention (unsigned int *link_system,
+			       unsigned int *link_windows)
+{
+  if (ix86_abi == MS_ABI)
+    {
+      *link_system = 1;
+      *link_windows = (!TARGET_64BIT) ? 1 : 0;
+    }
+  else
+    {
+      *link_system = 0;
+      *link_windows = 0;
+    }
+
+  return true;
+}

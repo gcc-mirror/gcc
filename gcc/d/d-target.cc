@@ -435,11 +435,21 @@ TargetCPP::derivedClassOffset(ClassDeclaration *base_class)
   return base_class->structsize;
 }
 
-/* Return the default system linkage for the target.  */
+/* Return the default `extern (System)' linkage for the target.  */
 
 LINK
 Target::systemLinkage (void)
 {
+  unsigned link_system, link_windows;
+
+  if (targetdm.d_has_stdcall_convention (&link_system, &link_windows))
+    {
+      /* In [attribute/linkage], `System' is the same as `Windows' on Windows
+	 platforms, and `C' on other platforms.  */
+      if (link_system)
+	return LINKwindows;
+    }
+
   return LINKc;
 }
 

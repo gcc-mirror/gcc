@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 
 #include "d-tree.h"
+#include "d-target.h"
 
 
 /* Return the signed or unsigned version of TYPE, an integral type, the
@@ -800,13 +801,19 @@ public:
     switch (t->linkage)
       {
       case LINKwindows:
-	/* [attribute/linkage]
+	{
+	  /* [attribute/linkage]
 
-	   The Windows convention is distinct from the C convention only
-	   on Win32, where it is equivalent to the stdcall convention.  */
-	if (!global.params.is64bit)
-	  t->ctype = insert_type_attribute (t->ctype, "stdcall");
-	break;
+	     The Windows convention is distinct from the C convention only
+	     on Win32, where it is equivalent to the stdcall convention.  */
+	  unsigned link_system, link_windows;
+	  if (targetdm.d_has_stdcall_convention (&link_system, &link_windows))
+	    {
+	      if (link_windows)
+		t->ctype = insert_type_attribute (t->ctype, "stdcall");
+	    }
+	  break;
+	}
 
       case LINKc:
       case LINKcpp:

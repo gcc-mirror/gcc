@@ -802,8 +802,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Target Pragmas.  */
 #define REGISTER_TARGET_PRAGMAS() ix86_register_pragmas ()
 
-/* Target CPU versions for D.  */
+/* Target hooks for D language.  */
 #define TARGET_D_CPU_VERSIONS ix86_d_target_versions
+#define TARGET_D_HAS_STDCALL_CONVENTION ix86_d_has_stdcall_convention
 
 #ifndef CC1_SPEC
 #define CC1_SPEC "%(cc1_cpu) "
