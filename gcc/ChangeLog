@@ -1,3 +1,12 @@
+2021-04-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_legitimize_pic_address): Check
+	that the current pic register is one of the hard reg set
+	before setting liveness.
+
 2021-04-02  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
