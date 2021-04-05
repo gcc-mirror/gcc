@@ -33,8 +33,11 @@ ibm128_dec_funcs	= _tf_to_sd _tf_to_dd _tf_to_td \
 # New functions for software emulation
 fp128_ppc_funcs		= floattikf floatuntikf fixkfti fixunskfti \
 			  extendkftf2-sw trunctfkf2-sw \
-			  sfp-exceptions _mulkc3 _divkc3 _powikf2 \
-			  $(fp128_dec_funcs)
+			  sfp-exceptions _mulkc3 _divkc3 _powikf2
+
+ifeq ($(decimal_float),yes)
+fp128_ppc_funcs        += $(fp128_dec_funcs)
+endif
 
 fp128_ppc_src		= $(addprefix $(srcdir)/config/rs6000/,$(addsuffix \
 				.c,$(fp128_ppc_funcs)))
