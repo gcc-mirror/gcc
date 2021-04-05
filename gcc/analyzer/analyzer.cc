@@ -148,7 +148,7 @@ maybe_reconstruct_from_def_stmt (tree ssa_name,
 	  }
 	return build_call_array_loc (gimple_location (call_stmt),
 				     return_type, fn,
-				     num_args, &args[0]);
+				     num_args, args.address ());
       }
       break;
     }
