@@ -1141,7 +1141,8 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div @gol
 -msoft-mul  -msoft-div @gol
 -msoft-float  -mhard-float  -mdouble-float -munordered-float @gol
--mcmov  -mror  -mrori  -msext  -msfimm  -mshftimm}
+-mcmov  -mror  -mrori  -msext  -msfimm  -mshftimm @gol
+-mcmodel=@var{code-model}}
 
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
@@ -26683,6 +26684,15 @@ immediate to a register first.
 Enable generation of shift with immediate (@code{l.srai}, @code{l.srli},
 @code{l.slli}) instructions.  By default extra instructions will be generated
 to store the immediate to a register first.
+
+@item -mcmodel=small
+@opindex mcmodel=small
+Generate OpenRISC code for the small model: The GOT is limited to 64k. This is
+the default model.
+
+@item -mcmodel=large
+@opindex mcmodel=large
+Generate OpenRISC code for the large model: The GOT may grow up to 4G in size.
 
 
 @end table
