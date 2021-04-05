@@ -972,14 +972,18 @@ public:
   USizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::USIZE)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
   USizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::USIZE)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
@@ -1000,14 +1004,18 @@ public:
   ISizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ISIZE)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
   ISizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ISIZE)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
@@ -1028,14 +1036,18 @@ public:
   CharType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::CHAR)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
   CharType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::CHAR)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
@@ -1057,7 +1069,9 @@ public:
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::REF), base (base)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
@@ -1065,7 +1079,9 @@ public:
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::REF), base (base)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
@@ -1093,14 +1109,18 @@ public:
   StrType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::STR)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
   StrType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::STR)
   {
-    //TODO unused; should 'refs' be passed as the last argument to the 'BaseType' constructor call?  Potential change in behavior (if 'refs' is provided by caller)?
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
     (void) refs;
   }
 
