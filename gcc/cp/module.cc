@@ -19262,15 +19262,11 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
    filenames.   */
 
 static void
-name_pending_imports (cpp_reader *reader, bool at_end)
+name_pending_imports (cpp_reader *reader)
 {
   auto *mapper = get_mapper (cpp_main_loc (reader));
 
-  bool only_headers = (flag_preprocess_only
-		       && !bool (mapper->get_flags () & Cody::Flags::NameOnly)
-		       && !cpp_get_deps (reader));
-  if (at_end
-      && (!vec_safe_length (pending_imports) || only_headers))
+  if (!vec_safe_length (pending_imports))
     /* Not doing anything.  */
     return;
 
@@ -19278,40 +19274,56 @@ name_pending_imports (cpp_reader *reader, bool at_end)
 
   auto n = dump.push (NULL);
   dump () && dump ("Resolving direct import names");
+  bool want_deps = (bool (mapper->get_flags () & Cody::Flags::NameOnly)
+		    || cpp_get_deps (reader));
+  bool any = false;
 
-  mapper->Cork ();
   for (unsigned ix = 0; ix != pending_imports->length (); ix++)
     {
       module_state *module = (*pending_imports)[ix];
       gcc_checking_assert (module->is_direct ());
-      if (!module->filename
-	  && !module->visited_p
-	  && (module->is_header () || !only_headers))
+      if (!module->filename && !module->visited_p)
 	{
-	  module->visited_p = true;
-	  Cody::Flags flags = (flag_preprocess_only
-			       ? Cody::Flags::None : Cody::Flags::NameOnly);
+	  bool export_p = (module->module_p
+			   && (module->is_partition () || module->exported_p));
 
-	  if (module->module_p
-	      && (module->is_partition () || module->exported_p))
+	  Cody::Flags flags = Cody::Flags::None;
+	  if (flag_preprocess_only
+	      && !(module->is_header () && !export_p))
+	    {
+	      if (!want_deps)
+		continue;
+	      flags = Cody::Flags::NameOnly;
+	    }
+
+	  if (!any)
+	    {
+	      any = true;
+	      mapper->Cork ();
+	    }
+	  if (export_p)
 	    mapper->ModuleExport (module->get_flatname (), flags);
 	  else
 	    mapper->ModuleImport (module->get_flatname (), flags);
+	  module->visited_p = true;
 	}
     }
-  
-  auto response = mapper->Uncork ();
-  auto r_iter = response.begin ();
-  for (unsigned ix = 0; ix != pending_imports->length (); ix++)
-    {
-      module_state *module = (*pending_imports)[ix];
-      if (module->visited_p)
-	{
-	  module->visited_p = false;
-	  gcc_checking_assert (!module->filename);
 
-	  module->set_filename (*r_iter);
-	  ++r_iter;
+  if (any)
+    {
+      auto response = mapper->Uncork ();
+      auto r_iter = response.begin ();
+      for (unsigned ix = 0; ix != pending_imports->length (); ix++)
+	{
+	  module_state *module = (*pending_imports)[ix];
+	  if (module->visited_p)
+	    {
+	      module->visited_p = false;
+	      gcc_checking_assert (!module->filename);
+
+	      module->set_filename (*r_iter);
+	      ++r_iter;
+	    }
 	}
     }
 
@@ -19384,7 +19396,7 @@ preprocess_module (module_state *module, location_t from_loc,
 	  unsigned n = dump.push (NULL);
 
 	  dump () && dump ("Reading %M preprocessor state", module);
-	  name_pending_imports (reader, false);
+	  name_pending_imports (reader);
 
 	  /* Preserve the state of the line-map.  */
 	  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
@@ -19446,7 +19458,7 @@ preprocessed_module (cpp_reader *reader)
 
   dump () && dump ("Completed phase-4 (tokenization) processing");
 
-  name_pending_imports (reader, true);
+  name_pending_imports (reader);
   vec_free (pending_imports);
 
   spans.maybe_init ();
