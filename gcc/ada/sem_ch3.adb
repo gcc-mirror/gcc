@@ -19133,21 +19133,8 @@ package body Sem_Ch3 is
       -------------------
 
       function Is_Local_Type (Typ : Entity_Id) return Boolean is
-         Scop : Entity_Id;
-
       begin
-         Scop := Scope (Typ);
-         while Present (Scop)
-           and then Scop /= Standard_Standard
-         loop
-            if Scop = Scope (Current_Scope) then
-               return True;
-            end if;
-
-            Scop := Scope (Scop);
-         end loop;
-
-         return False;
+         return Scope_Within (Inner => Typ, Outer => Scope (Current_Scope));
       end Is_Local_Type;
 
    --  Start of processing for Is_Visible_Component
