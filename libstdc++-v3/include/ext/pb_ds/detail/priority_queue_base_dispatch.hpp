@@ -63,6 +63,12 @@ namespace __gnu_pbds
 {
   namespace detail
   {
+    /**
+     *  @ingroup pbds
+     *
+     *  @{
+     */
+
     /// Specialization for pairing_heap.
     template<typename _VTp, typename Cmp_Fn, typename _Alloc>
       struct container_base_dispatch<_VTp, Cmp_Fn, _Alloc, pairing_heap_tag,
