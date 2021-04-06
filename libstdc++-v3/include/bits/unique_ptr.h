@@ -906,7 +906,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return compare_three_way()(__x.get(), static_cast<pointer>(nullptr));
     }
 #endif
-  // @} relates unique_ptr
+  /// @} relates unique_ptr
 
   /// @cond undocumented
   template<typename _Up, typename _Ptr = typename _Up::pointer,
@@ -991,7 +991,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_unique_for_overwrite(_Args&&...) = delete;
 #endif // C++20
 
-  // @} relates unique_ptr
+  /// @} relates unique_ptr
 #endif // C++14
 
 #if __cplusplus > 201703L && __cpp_concepts
@@ -1009,7 +1009,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #endif // C++20
 
-  // @} group pointer_abstractions
+  /// @} group pointer_abstractions
 
 #if __cplusplus >= 201703L
   namespace __detail::__variant

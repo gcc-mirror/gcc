@@ -1051,7 +1051,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @endcond
 #endif
 
-  // @} group memory
+  /// @} group memory
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

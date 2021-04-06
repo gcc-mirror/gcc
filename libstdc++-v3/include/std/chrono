@@ -165,7 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct common_type<chrono::time_point<_Clock, _Duration>>
     { using type = chrono::time_point<_Clock, _Duration>; };
 
-  // @} group chrono
+  /// @} group chrono
 
   namespace chrono
   {
@@ -1070,7 +1070,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const time_point<_Clock, _Dur2>& __rhs)
       { return !(__lhs < __rhs); }
 
-    // @}
+    /// @}
 
     // Clocks.
 
@@ -3130,7 +3130,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 #endif // C++20
 
-    // @}
+    /// @}
   } // namespace chrono
 
 #if __cplusplus > 201103L

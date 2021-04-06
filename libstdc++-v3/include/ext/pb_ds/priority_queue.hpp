@@ -152,5 +152,5 @@ namespace __gnu_pbds
     { base_type::swap(other); }
   };
 } // namespace __gnu_pbds
- //@} heap-based
+ ///@} heap-based
 #endif

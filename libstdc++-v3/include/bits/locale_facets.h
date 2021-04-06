@@ -1674,11 +1674,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT			char_type;
       typedef basic_string<_CharT>	string_type;
-      //@}
+      ///@}
       typedef __numpunct_cache<_CharT>  __cache_type;
 
     protected:
@@ -1956,11 +1956,11 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT			char_type;
       typedef _InIter			iter_type;
-      //@}
+      ///@}
 
       /// Numpunct facet id.
       static locale::id			id;
@@ -2003,7 +2003,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	  ios_base::iostate& __err, bool& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
 
-      //@{
+      ///@{
       /**
        *  @brief  Numeric parsing.
        *
@@ -2066,9 +2066,9 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	  ios_base::iostate& __err, unsigned long long& __v)  const
       { return this->do_get(__in, __end, __io, __err, __v); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief  Numeric parsing.
        *
@@ -2109,7 +2109,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       get(iter_type __in, iter_type __end, ios_base& __io,
 	  ios_base::iostate& __err, long double& __v) const
       { return this->do_get(__in, __end, __io, __err, __v); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Numeric parsing.
@@ -2196,7 +2196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	  return __ret;
 	}
 
-      //@{
+      ///@{
       /**
        *  @brief  Numeric parsing.
        *
@@ -2290,7 +2290,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       do_get(iter_type, iter_type, ios_base&, ios_base::iostate&,
 	     long double&) const;
 #endif
-      //@}
+      ///@}
     };
 
   template<typename _CharT, typename _InIter>
@@ -2314,11 +2314,11 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
       typedef _CharT		char_type;
       typedef _OutIter		iter_type;
-      //@}
+      ///@}
 
       /// Numpunct facet id.
       static locale::id		id;
@@ -2352,7 +2352,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       put(iter_type __s, ios_base& __io, char_type __fill, bool __v) const
       { return this->do_put(__s, __io, __fill, __v); }
 
-      //@{
+      ///@{
       /**
        *  @brief  Numeric formatting.
        *
@@ -2409,9 +2409,9 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 	  unsigned long long __v) const
       { return this->do_put(__s, __io, __fill, __v); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief  Numeric formatting.
        *
@@ -2461,7 +2461,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       put(iter_type __s, ios_base& __io, char_type __fill,
 	  long double __v) const
       { return this->do_put(__s, __io, __fill, __v); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Numeric formatting.
@@ -2512,7 +2512,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       virtual
       ~num_put() { }
 
-      //@{
+      ///@{
       /**
        *  @brief  Numeric formatting.
        *
@@ -2577,7 +2577,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       virtual iter_type
       do_put(iter_type, ios_base&, char_type, long double) const;
 #endif
-      //@}
+      ///@}
     };
 
   template <typename _CharT, typename _OutIter>

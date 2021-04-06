@@ -79,7 +79,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @defgroup iterators Iterators
    *  Abstractions for uniform iterating through various underlying types.
   */
-  //@{ 
+  ///@{
 
   /**
    *  @defgroup iterator_tags Iterator Tags
@@ -88,7 +88,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  are.  Different underlying algorithms can then be used based on the
    *  different operations supported by different iterator types.
   */
-  //@{ 
+  ///@{
   ///  Marking input iterators.
   struct input_iterator_tag { };
 
@@ -110,7 +110,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Contiguous iterators point to objects stored contiguously in memory.
   struct contiguous_iterator_tag : public random_access_iterator_tag { };
 #endif
-  //@}
+  ///@}
 
   /**
    *  @brief  Common %iterator class.
@@ -238,7 +238,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __iterator_category(const _Iter&)
     { return typename iterator_traits<_Iter>::iterator_category(); }
 
-  //@}
+  ///@}
 
 #if __cplusplus >= 201103L
   template<typename _Iter>

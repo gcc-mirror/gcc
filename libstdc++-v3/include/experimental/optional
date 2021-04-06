@@ -910,8 +910,8 @@ inline namespace fundamentals_v1
     make_optional(_Tp&& __t)
     { return optional<decay_t<_Tp>> { std::forward<_Tp>(__t) }; }
 
-  // @} relates experimental::optional
-  // @} group optional
+  /// @} relates experimental::optional
+  /// @} group optional
 } // namespace fundamentals_v1
 } // namespace experimental
 

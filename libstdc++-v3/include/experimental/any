@@ -412,7 +412,7 @@ inline namespace fundamentals_v1
 	return std::move(*__p);
       __throw_bad_any_cast();
     }
-  // @}
+  /// @}
 
   /// @cond undocumented
   template<typename _Tp>
@@ -479,7 +479,7 @@ inline namespace fundamentals_v1
 	return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
       return nullptr;
     }
-  // @}
+  /// @}
 
   template<typename _Tp>
     void
@@ -555,7 +555,7 @@ inline namespace fundamentals_v1
       _S_manage(_Op, const any*, _Arg*) { }
     };
 
-  // @} group any
+  /// @} group any
 } // namespace fundamentals_v1
 } // namespace experimental
 

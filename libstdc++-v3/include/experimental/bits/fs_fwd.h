@@ -279,7 +279,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   bool is_regular_file(file_status) noexcept;
   bool is_symlink(file_status) noexcept;
 
-  // @} group filesystem-ts
+  /// @} group filesystem-ts
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental

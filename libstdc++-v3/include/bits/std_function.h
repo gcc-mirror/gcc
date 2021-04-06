@@ -630,7 +630,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	  return nullptr;
 	}
-      // @}
+      /// @}
 
     private:
       using _Invoker_type = _Res (*)(const _Any_data&, _ArgTypes&&...);
