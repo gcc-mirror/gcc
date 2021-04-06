@@ -9148,6 +9148,7 @@ maybe_set_vectorized_backedge_value (loop_vec_info loop_vinfo,
     if (gphi *phi = dyn_cast <gphi *> (USE_STMT (use_p)))
       if (gimple_bb (phi)->loop_father->header == gimple_bb (phi)
 	  && (phi_info = loop_vinfo->lookup_stmt (phi))
+	  && STMT_VINFO_RELEVANT_P (phi_info)
 	  && VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (phi_info))
 	  && STMT_VINFO_REDUC_TYPE (phi_info) != FOLD_LEFT_REDUCTION
 	  && STMT_VINFO_REDUC_TYPE (phi_info) != EXTRACT_LAST_REDUCTION)
