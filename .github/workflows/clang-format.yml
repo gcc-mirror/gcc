@@ -2,12 +2,14 @@ name: Clang Format Lint
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - trying
+      - staging
   pull_request:
     branches: [ master ]
 
 jobs:
-  build:
+  clang-format:
     runs-on: ubuntu-latest
 
     steps:
