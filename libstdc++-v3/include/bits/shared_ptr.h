@@ -730,7 +730,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  // @} group pointer_abstractions
+  /// @} group pointer_abstractions
 
 #if __cplusplus >= 201703L
   namespace __detail::__variant

@@ -1196,7 +1196,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __detail::__sph_neumann<__type>(__n, __x);
     }
 
-  // @} group mathsf
+  /// @} group mathsf
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

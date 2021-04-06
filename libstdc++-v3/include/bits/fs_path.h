@@ -1266,7 +1266,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
     return _M_at_end == __rhs._M_at_end;
   }
 
-  // @} group filesystem
+  /// @} group filesystem
 _GLIBCXX_END_NAMESPACE_CXX11
 } // namespace filesystem
 

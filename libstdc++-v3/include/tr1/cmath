@@ -1057,7 +1057,7 @@ namespace tr1
 
 #endif // __cplusplus < 201103L
 
-  // @}
+  /// @}
 
 #endif /* _GLIBCXX_USE_C99_MATH_TR1 */
 
@@ -1220,7 +1220,7 @@ namespace tr1
   using std::sph_neumannl;
   using std::sph_neumann;
 
-  /* @} */ // tr1_math_spec_func
+  /** @} */ // tr1_math_spec_func
 
 #else // ! _GLIBCXX_USE_STD_SPEC_FUNCS
 
@@ -1617,7 +1617,7 @@ namespace tr1
       return __detail::__sph_neumann<__type>(__n, __x);
     }
 
-  /* @} */ // tr1_math_spec_func
+  /** @} */ // tr1_math_spec_func
 #endif // _GLIBCXX_USE_STD_SPEC_FUNCS
 
 } // namespace tr1

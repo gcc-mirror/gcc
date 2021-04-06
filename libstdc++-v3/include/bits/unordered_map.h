@@ -106,7 +106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     public:
       // typedefs:
-      //@{
+      ///@{
       /// Public typedefs.
       typedef typename _Hashtable::key_type	key_type;
       typedef typename _Hashtable::value_type	value_type;
@@ -114,9 +114,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Hashtable::hasher	hasher;
       typedef typename _Hashtable::key_equal	key_equal;
       typedef typename _Hashtable::allocator_type allocator_type;
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       ///  Iterator-related typedefs.
       typedef typename _Hashtable::pointer		pointer;
       typedef typename _Hashtable::const_pointer	const_pointer;
@@ -128,7 +128,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Hashtable::const_local_iterator	const_local_iterator;
       typedef typename _Hashtable::size_type		size_type;
       typedef typename _Hashtable::difference_type	difference_type;
-      //@}
+      ///@}
 
 #if __cplusplus > 201402L
       using node_type = typename _Hashtable::node_type;
@@ -325,7 +325,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       begin() noexcept
       { return _M_h.begin(); }
 
-      //@{
+      ///@{
       /**
        *  Returns a read-only (constant) iterator that points to the first
        *  element in the %unordered_map.
@@ -337,7 +337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_iterator
       cbegin() const noexcept
       { return _M_h.begin(); }
-      //@}
+      ///@}
 
       /**
        *  Returns a read/write iterator that points one past the last element in
@@ -347,7 +347,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       end() noexcept
       { return _M_h.end(); }
 
-      //@{
+      ///@{
       /**
        *  Returns a read-only (constant) iterator that points one past the last
        *  element in the %unordered_map.
@@ -359,7 +359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_iterator
       cend() const noexcept
       { return _M_h.end(); }
-      //@}
+      ///@}
 
       // modifiers.
 
@@ -558,7 +558,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         }
 #endif // C++17
 
-      //@{
+      ///@{
       /**
        *  @brief Attempts to insert a std::pair into the %unordered_map.
 
@@ -591,9 +591,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		      pair<iterator, bool>>
 	insert(_Pair&& __x)
         { return _M_h.emplace(std::forward<_Pair>(__x)); }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief Attempts to insert a std::pair into the %unordered_map.
        *  @param  __hint  An iterator that serves as a hint as to where the
@@ -629,7 +629,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__enable_if_t<is_constructible<value_type, _Pair&&>::value, iterator>
 	insert(const_iterator __hint, _Pair&& __x)
 	{ return _M_h.emplace_hint(__hint, std::forward<_Pair>(__x)); }
-      //@}
+      ///@}
 
       /**
        *  @brief A template function that attempts to insert a range of
@@ -775,7 +775,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
         }
 #endif
 
-      //@{
+      ///@{
       /**
        *  @brief Erases an element from an %unordered_map.
        *  @param  __position  An iterator pointing to the element to be erased.
@@ -797,7 +797,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
       erase(iterator __position)
       { return _M_h.erase(__position); }
-      //@}
+      ///@}
 
       /**
        *  @brief Erases elements according to the provided key.
@@ -905,7 +905,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // lookup.
 
-      //@{
+      ///@{
       /**
        *  @brief Tries to locate an element in an %unordered_map.
        *  @param  __x  Key to be located.
@@ -924,7 +924,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_iterator
       find(const key_type& __x) const
       { return _M_h.find(__x); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Finds the number of elements.
@@ -950,7 +950,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_h.find(__x) != _M_h.end(); }
 #endif
 
-      //@{
+      ///@{
       /**
        *  @brief Finds a subsequence matching given key.
        *  @param  __x  Key to be located.
@@ -966,9 +966,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __x) const
       { return _M_h.equal_range(__x); }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief  Subscript ( @c [] ) access to %unordered_map data.
        *  @param  __k  The key for which data should be retrieved.
@@ -988,9 +988,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       mapped_type&
       operator[](key_type&& __k)
       { return _M_h[std::move(__k)]; }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief  Access to %unordered_map data.
        *  @param  __k  The key for which data should be retrieved.
@@ -1005,7 +1005,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const mapped_type&
       at(const key_type& __k) const
       { return _M_h.at(__k); }
-      //@}
+      ///@}
 
       // bucket interface.
 
@@ -1047,7 +1047,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       begin(size_type __n)
       { return _M_h.begin(__n); }
 
-      //@{
+      ///@{
       /**
        *  @brief  Returns a read-only (constant) iterator pointing to the first
        *         bucket element.
@@ -1061,7 +1061,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_local_iterator
       cbegin(size_type __n) const
       { return _M_h.cbegin(__n); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Returns a read/write iterator pointing to one past the last
@@ -1073,7 +1073,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       end(size_type __n)
       { return _M_h.end(__n); }
 
-      //@{
+      ///@{
       /**
        *  @brief  Returns a read-only (constant) iterator pointing to one past
        *         the last bucket elements.
@@ -1087,7 +1087,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_local_iterator
       cend(size_type __n) const
       { return _M_h.cend(__n); }
-      //@}
+      ///@}
 
       // hash policy.
 
@@ -1255,7 +1255,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     public:
       // typedefs:
-      //@{
+      ///@{
       /// Public typedefs.
       typedef typename _Hashtable::key_type	key_type;
       typedef typename _Hashtable::value_type	value_type;
@@ -1263,9 +1263,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Hashtable::hasher	hasher;
       typedef typename _Hashtable::key_equal	key_equal;
       typedef typename _Hashtable::allocator_type allocator_type;
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       ///  Iterator-related typedefs.
       typedef typename _Hashtable::pointer		pointer;
       typedef typename _Hashtable::const_pointer	const_pointer;
@@ -1277,7 +1277,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename _Hashtable::const_local_iterator	const_local_iterator;
       typedef typename _Hashtable::size_type		size_type;
       typedef typename _Hashtable::difference_type	difference_type;
-      //@}
+      ///@}
 
 #if __cplusplus > 201402L
       using node_type = typename _Hashtable::node_type;
@@ -1473,7 +1473,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       begin() noexcept
       { return _M_h.begin(); }
 
-      //@{
+      ///@{
       /**
        *  Returns a read-only (constant) iterator that points to the first
        *  element in the %unordered_multimap.
@@ -1485,7 +1485,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_iterator
       cbegin() const noexcept
       { return _M_h.begin(); }
-      //@}
+      ///@}
 
       /**
        *  Returns a read/write iterator that points one past the last element in
@@ -1495,7 +1495,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       end() noexcept
       { return _M_h.end(); }
 
-      //@{
+      ///@{
       /**
        *  Returns a read-only (constant) iterator that points one past the last
        *  element in the %unordered_multimap.
@@ -1507,7 +1507,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_iterator
       cend() const noexcept
       { return _M_h.end(); }
-      //@}
+      ///@}
 
       // modifiers.
 
@@ -1558,7 +1558,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	emplace_hint(const_iterator __pos, _Args&&... __args)
 	{ return _M_h.emplace_hint(__pos, std::forward<_Args>(__args)...); }
 
-      //@{
+      ///@{
       /**
        *  @brief Inserts a std::pair into the %unordered_multimap.
        *  @param __x Pair to be inserted (see std::make_pair for easy
@@ -1580,9 +1580,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__enable_if_t<is_constructible<value_type, _Pair&&>::value, iterator>
 	insert(_Pair&& __x)
         { return _M_h.emplace(std::forward<_Pair>(__x)); }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief Inserts a std::pair into the %unordered_multimap.
        *  @param  __hint  An iterator that serves as a hint as to where the
@@ -1616,7 +1616,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__enable_if_t<is_constructible<value_type, _Pair&&>::value, iterator>
 	insert(const_iterator __hint, _Pair&& __x)
         { return _M_h.emplace_hint(__hint, std::forward<_Pair>(__x)); }
-      //@}
+      ///@}
 
       /**
        *  @brief A template function that attempts to insert a range of
@@ -1669,7 +1669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_h._M_reinsert_node_multi(__hint, std::move(__nh)); }
 #endif // C++17
 
-      //@{
+      ///@{
       /**
        *  @brief Erases an element from an %unordered_multimap.
        *  @param  __position  An iterator pointing to the element to be erased.
@@ -1691,7 +1691,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       iterator
       erase(iterator __position)
       { return _M_h.erase(__position); }
-      //@}
+      ///@}
 
       /**
        *  @brief Erases elements according to the provided key.
@@ -1801,7 +1801,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       // lookup.
 
-      //@{
+      ///@{
       /**
        *  @brief Tries to locate an element in an %unordered_multimap.
        *  @param  __x  Key to be located.
@@ -1820,7 +1820,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_iterator
       find(const key_type& __x) const
       { return _M_h.find(__x); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Finds the number of elements.
@@ -1842,7 +1842,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { return _M_h.find(__x) != _M_h.end(); }
 #endif
 
-      //@{
+      ///@{
       /**
        *  @brief Finds a subsequence matching given key.
        *  @param  __x  Key to be located.
@@ -1856,7 +1856,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __x) const
       { return _M_h.equal_range(__x); }
-      //@}
+      ///@}
 
       // bucket interface.
 
@@ -1898,7 +1898,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       begin(size_type __n)
       { return _M_h.begin(__n); }
 
-      //@{
+      ///@{
       /**
        *  @brief  Returns a read-only (constant) iterator pointing to the first
        *         bucket element.
@@ -1912,7 +1912,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_local_iterator
       cbegin(size_type __n) const
       { return _M_h.cbegin(__n); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Returns a read/write iterator pointing to one past the last
@@ -1924,7 +1924,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       end(size_type __n)
       { return _M_h.end(__n); }
 
-      //@{
+      ///@{
       /**
        *  @brief  Returns a read-only (constant) iterator pointing to one past
        *         the last bucket elements.
@@ -1938,7 +1938,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       const_local_iterator
       cend(size_type __n) const
       { return _M_h.cend(__n); }
-      //@}
+      ///@}
 
       // hash policy.
 

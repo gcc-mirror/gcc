@@ -44,7 +44,7 @@ namespace regex_constants
   /**
    * @name 5.3 Error Types
    */
-  //@{
+  ///@{
 
   enum error_type
     {
@@ -119,7 +119,7 @@ namespace regex_constants
    */
   constexpr error_type error_stack(_S_error_stack);
 
-  //@}
+  ///@}
 } // namespace regex_constants
 
   // [7.8] Class regex_error
@@ -161,7 +161,7 @@ namespace regex_constants
     friend void __throw_regex_error(regex_constants::error_type, const char*);
   };
 
-  //@} // group regex
+  ///@} // group regex
 
   void
   __throw_regex_error(regex_constants::error_type __ecode);

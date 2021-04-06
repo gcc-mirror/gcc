@@ -392,7 +392,7 @@ namespace __detail
       _StateIdT _M_end;
     };
 
- //@} regex-detail
+ ///@} regex-detail
 } // namespace __detail
 
 _GLIBCXX_END_NAMESPACE_VERSION

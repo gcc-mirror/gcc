@@ -1472,7 +1472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     __atomic_val_t<_ITp> __i) noexcept
     { return atomic_fetch_xor_explicit(__a, __i, memory_order_seq_cst); }
 
-  // @} group atomics
+  /// @} group atomics
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

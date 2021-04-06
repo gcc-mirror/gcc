@@ -107,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       class sentry;
       friend class sentry;
 
-      //@{
+      ///@{
       /**
        *  @brief  Interface for manipulators.
        *
@@ -133,9 +133,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__pf(*this);
 	return *this;
       }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @name Extractors
        *
@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  be rethrown if badbit is set in the exceptions mask.
       */
 
-      //@{
+      ///@{
       /**
        *  @brief  Integer arithmetic extractors
        *  @param  __n A variable of builtin integral type.
@@ -199,9 +199,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator>>(unsigned long long& __n)
       { return _M_extract(__n); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief  Floating point arithmetic extractors
        *  @param  __f A variable of builtin floating point type.
@@ -221,7 +221,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __istream_type&
       operator>>(long double& __f)
       { return _M_extract(__f); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Basic arithmetic extractors
@@ -257,7 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       __istream_type&
       operator>>(__streambuf_type* __sb);
-      //@}
+      ///@}
 
       // [27.6.1.3] unformatted input
       /**
@@ -269,7 +269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       gcount() const
       { return _M_gcount; }
 
-      //@{
+      ///@{
       /**
        *  @name Unformatted Input Functions
        *
@@ -600,7 +600,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       __istream_type&
       seekg(off_type, ios_base::seekdir);
-      //@}
+      ///@}
 
     protected:
       basic_istream()
@@ -735,7 +735,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_ok; }
     };
 
-  //@{
+  ///@{
   /**
    *  @brief  Character extractors
    *  @param  __in  An input stream.
@@ -760,9 +760,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_istream<char, _Traits>&
     operator>>(basic_istream<char, _Traits>& __in, signed char& __c)
     { return (__in >> reinterpret_cast<char&>(__c)); }
-  //@}
+  ///@}
 
-  //@{
+  ///@{
   /**
    *  @brief  Character string extractors
    *  @param  __in  An input stream.
@@ -807,7 +807,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_istream<char, _Traits>&
     operator>>(basic_istream<char, _Traits>& __in, signed char* __s)
     { return (__in >> reinterpret_cast<char*>(__s)); }
-  //@}
+  ///@}
 
   /**
    *  @brief  Template class basic_iostream

@@ -310,7 +310,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         { return __t.operator->(); }
     };
 
-  //@{
+  ///@{
   /**
    *  @param  __x  A %reverse_iterator.
    *  @param  __y  A %reverse_iterator.
@@ -393,7 +393,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(const reverse_iterator<_IteratorL>& __x,
 	       const reverse_iterator<_IteratorR>& __y)
     { return !(__x < __y); }
-  //@}
+  ///@}
 
 #if __cplusplus < 201103L
   template<typename _Iterator>
@@ -765,7 +765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					 typename _Container::iterator(__i));
     }
 
-  // @} group iterators
+  /// @} group iterators
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
@@ -1242,7 +1242,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __make_move_if_noexcept_iterator(_Tp* __i)
     { return _ReturnType(__i); }
 
-  // @} group iterators
+  /// @} group iterators
 
   template<typename _Iterator>
     auto

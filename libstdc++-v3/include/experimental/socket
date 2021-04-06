@@ -2265,7 +2265,7 @@ inline namespace v1
       protocol_type _M_protocol;
     };
 
-  // @}
+  /// @}
 
   /** @brief Socket streams
    * @{
@@ -2435,7 +2435,7 @@ inline namespace v1
       __streambuf_type _M_sb;
     };
 
-  // @}
+  /// @}
 
   /** @brief synchronous connect operations
    * @{
@@ -2556,7 +2556,7 @@ inline namespace v1
 			  __ec);
     }
 
-  // @}
+  /// @}
 
   /** @brief asynchronous connect operations
    * @{
@@ -2606,11 +2606,11 @@ inline namespace v1
 				forward<_CompletionToken>(__token));
     }
 
-  // @}
+  /// @}
 
 #endif  // _GLIBCXX_HAVE_UNISTD_H
 
-  // @}
+  /// @}
 
 } // namespace v1
 } // namespace net

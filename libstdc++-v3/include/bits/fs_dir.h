@@ -522,7 +522,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 _GLIBCXX_END_NAMESPACE_CXX11
 
-  // @} group filesystem
+  /// @} group filesystem
 } // namespace filesystem
 
   // Use explicit instantiations of these types. Any inconsistency in the

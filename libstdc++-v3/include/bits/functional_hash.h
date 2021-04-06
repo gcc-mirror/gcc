@@ -269,7 +269,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #endif
 
-  // @} group hashes
+  /// @} group hashes
 
   // Hint about performance of hash functor. If not fast the hash-based
   // containers will cache the hash code.

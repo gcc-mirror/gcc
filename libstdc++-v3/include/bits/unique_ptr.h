@@ -868,7 +868,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_unique(_Args&&...) = delete;
 #endif
 
-  // @} group pointer_abstractions
+  /// @} group pointer_abstractions
 
 #if __cplusplus >= 201703L
   namespace __detail::__variant

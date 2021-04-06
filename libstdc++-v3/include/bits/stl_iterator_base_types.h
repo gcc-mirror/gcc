@@ -75,7 +75,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @defgroup iterators Iterators
    *  Abstractions for uniform iterating through various underlying types.
   */
-  //@{ 
+  ///@{
 
   /**
    *  @defgroup iterator_tags Iterator Tags
@@ -84,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  are.  Different underlying algorithms can then be used based on the
    *  different operations supported by different iterator types.
   */
-  //@{ 
+  ///@{
   ///  Marking input iterators.
   struct input_iterator_tag { };
 
@@ -101,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Random-access iterators support a superset of bidirectional
   /// iterator operations.
   struct random_access_iterator_tag : public bidirectional_iterator_tag { };
-  //@}
+  ///@}
 
   /**
    *  @brief  Common %iterator class.
@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __iterator_category(const _Iter&)
     { return typename iterator_traits<_Iter>::iterator_category(); }
 
-  //@}
+  ///@}
 
 #if __cplusplus < 201103L
   // If _Iterator has a base returns it otherwise _Iterator is returned

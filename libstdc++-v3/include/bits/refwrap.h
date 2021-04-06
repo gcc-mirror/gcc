@@ -376,7 +376,7 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
     cref(reference_wrapper<_Tp> __t) noexcept
     { return { __t.get() }; }
 
-  // @} group functors
+  /// @} group functors
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

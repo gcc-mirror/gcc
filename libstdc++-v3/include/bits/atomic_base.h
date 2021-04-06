@@ -817,7 +817,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return __atomic_fetch_sub(&_M_p, _M_type_size(__d), int(__m)); }
     };
 
-  // @} group atomics
+  /// @} group atomics
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
