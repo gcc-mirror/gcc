@@ -590,6 +590,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	    {
 	      push_to_top_level ();
 	      push_nested_class (ctx);
+	      push_deferring_access_checks (dk_no_deferred);
 	      pushed = true;
 	    }
 
@@ -615,6 +616,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 
 	  if (pushed)
 	    {
+	      pop_deferring_access_checks ();
 	      pop_nested_class ();
 	      pop_from_top_level ();
 	    }
