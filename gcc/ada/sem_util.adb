@@ -10772,22 +10772,26 @@ package body Sem_Util is
          when E_Class_Wide_Type =>
             return Get_Fullest_View (Root_Type (E), Include_PAT);
 
-         when  E_Class_Wide_Subtype =>
+         when E_Class_Wide_Subtype =>
             if Present (Equivalent_Type (E)) then
                return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
             elsif Present (Cloned_Subtype (E)) then
                return Get_Fullest_View (Cloned_Subtype (E), Include_PAT);
             end if;
 
-         when E_Protected_Type | E_Protected_Subtype
-            | E_Task_Type |  E_Task_Subtype =>
+         when E_Protected_Subtype
+            | E_Protected_Type
+            | E_Task_Subtype
+            | E_Task_Type
+         =>
             if Present (Corresponding_Record_Type (E)) then
                return Get_Fullest_View (Corresponding_Record_Type (E),
                                         Include_PAT);
             end if;
 
          when E_Access_Protected_Subprogram_Type
-            | E_Anonymous_Access_Protected_Subprogram_Type =>
+            | E_Anonymous_Access_Protected_Subprogram_Type
+         =>
             if Present (Equivalent_Type (E)) then
                return Get_Fullest_View (Equivalent_Type (E), Include_PAT);
             end if;
