@@ -595,7 +595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return _M_data[__i];
     }
 
-  // @} group numeric_arrays
+  /// @} group numeric_arrays
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
@@ -1245,7 +1245,7 @@ _DEFINE_BINARY_OPERATOR(>=, __greater_equal)
     { return std::__addressof(__va[0]) + __va.size(); }
 #endif // C++11
 
-  // @} group numeric_arrays
+  /// @} group numeric_arrays
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

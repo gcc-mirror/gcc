@@ -1362,7 +1362,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool
 	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
-      // @}
+      /// @}
 
     protected:
       // This constructor is non-standard, it is used by allocate_shared.

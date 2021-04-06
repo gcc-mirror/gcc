@@ -87,7 +87,7 @@ namespace __gnu_pbds
   inline void
   __throw_resize_error()
   { _GLIBCXX_THROW_OR_ABORT(resize_error()); }
-  //@}
+  ///@}
 } // namespace __gnu_pbds
 
 #endif

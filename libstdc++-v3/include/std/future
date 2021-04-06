@@ -1767,7 +1767,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // _GLIBCXX_ASYNC_ABI_COMPAT
 #endif // _GLIBCXX_HAS_GTHREADS
 
-  // @} group futures
+  /// @} group futures
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

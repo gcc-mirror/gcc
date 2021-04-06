@@ -1043,7 +1043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_ndy(result_type(0), __p.sigma())
       { }
 
-      // @}
+      /// @}
 
       /**
        * @brief Resets the distribution state.
@@ -1295,7 +1295,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_gd(__p.mu(), __p.omega() / __p.mu())
       { }
 
-      // @}
+      /// @}
 
       /**
        * @brief Resets the distribution state.
@@ -1540,7 +1540,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_ud()
       { }
 
-      // @}
+      /// @}
 
       /**
        * @brief Resets the distribution state.
@@ -1801,7 +1801,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_gd2(__p.nu(), __p.mu() / __p.nu())
       { }
 
-      // @}
+      /// @}
 
       /**
        * @brief Resets the distribution state.
@@ -2040,7 +2040,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      +1.5707963267948966192313216916397514L)
       { }
 
-      // @}
+      /// @}
 
       /**
        * @brief Resets the distribution state.
@@ -3303,7 +3303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_param(__p)
       { }
 
-      // @}
+      /// @}
 
       /**
        * @brief Resets the distribution state.
@@ -3709,7 +3709,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_param(__p), _M_uosd()
       { }
 
-      // @}
+      /// @}
 
       /**
        * @brief Resets the distribution state.

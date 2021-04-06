@@ -1695,7 +1695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++2a
 
-  // @} group atomics
+  /// @} group atomics
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

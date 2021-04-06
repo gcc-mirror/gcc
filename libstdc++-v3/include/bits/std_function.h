@@ -537,7 +537,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Functor>       _Functor* target() noexcept;
 
       template<typename _Functor> const _Functor* target() const noexcept;
-      // @}
+      /// @}
 #endif
 
     private:

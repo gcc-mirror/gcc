@@ -23,7 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 /** @file variant
- *  This is the <variant> C++ Library header.
+ *  This is the `<variant>` C++ Library header.
  */
 
 #ifndef _GLIBCXX_VARIANT

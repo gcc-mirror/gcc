@@ -351,7 +351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 _GLIBCXX_END_NAMESPACE_CXX11
 
-  // @} group filesystem-ts
+  /// @} group filesystem-ts
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental

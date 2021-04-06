@@ -155,7 +155,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool                      _M_reading;
       bool                      _M_writing;
 
-      //@{
+      ///@{
       /**
        *  Necessary bits for putback buffer management.
        *
@@ -165,7 +165,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       char_type*		_M_pback_cur_save;
       char_type*		_M_pback_end_save;
       bool			_M_pback_init;
-      //@}
+      ///@}
 
       // Cached codecvt facet.
       const __codecvt_type* 	_M_codecvt;

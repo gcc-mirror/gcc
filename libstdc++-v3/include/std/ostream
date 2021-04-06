@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       class sentry;
       friend class sentry;
 
-      //@{
+      ///@{
       /**
        *  @brief  Interface for manipulators.
        *
@@ -132,9 +132,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__pf(*this);
 	return *this;
       }
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @name Inserters
        *
@@ -153,7 +153,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  be rethrown.
       */
 
-      //@{
+      ///@{
       /**
        *  @brief Integer arithmetic inserters
        *  @param  __n A variable of builtin integral type.
@@ -205,9 +205,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       operator<<(unsigned long long __n)
       { return _M_insert(__n); }
 #endif
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @brief  Floating point arithmetic inserters
        *  @param  __f A variable of builtin floating point type.
@@ -231,7 +231,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __ostream_type&
       operator<<(long double __f)
       { return _M_insert(__f); }
-      //@}
+      ///@}
 
       /**
        *  @brief  Pointer arithmetic inserters
@@ -274,9 +274,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       __ostream_type&
       operator<<(__streambuf_type* __sb);
-      //@}
+      ///@}
 
-      //@{
+      ///@{
       /**
        *  @name Unformatted Output Functions
        *
@@ -339,7 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       __ostream_type&
       write(const char_type* __s, streamsize __n);
-      //@}
+      ///@}
 
       /**
        *  @brief  Synchronizing the stream buffer.
@@ -485,7 +485,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return _M_ok; }
     };
 
-  //@{
+  ///@{
   /**
    *  @brief  Character inserters
    *  @param  __out  An output stream.
@@ -568,9 +568,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<<(basic_ostream<wchar_t, _Traits>&, char32_t) = delete;
 #endif // _GLIBCXX_USE_WCHAR_T
 #endif // C++20
-  //@}
+  ///@}
 
-  //@{
+  ///@{
   /**
    *  @brief  String inserters
    *  @param  __out  An output stream.
@@ -664,7 +664,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<<(basic_ostream<wchar_t, _Traits>&, const char32_t*) = delete;
 #endif // _GLIBCXX_USE_WCHAR_T
 #endif // C++20
-  //@}
+  ///@}
 
   // Standard basic_ostream manipulators
 

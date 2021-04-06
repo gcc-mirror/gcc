@@ -214,7 +214,7 @@ namespace std
 #endif
     }
 
-  // @} group exceptions
+  /// @} group exceptions
 } // namespace std
 
 } // extern "C++"

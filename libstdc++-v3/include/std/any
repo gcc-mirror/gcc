@@ -488,7 +488,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return static_cast<_ValueType>(std::move(*__p));
       __throw_bad_any_cast();
     }
-  // @}
+  /// @}
 
   /// @cond undocumented
   template<typename _Tp>
@@ -547,7 +547,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return static_cast<_ValueType*>(__any_caster<_ValueType>(__any));
       return nullptr;
     }
-  // @}
+  /// @}
 
   template<typename _Tp>
     void

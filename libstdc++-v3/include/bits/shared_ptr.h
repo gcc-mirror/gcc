@@ -661,7 +661,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif // C++20
 #endif // C++17
 
-  // @}
+  /// @}
 
   /**
    * @brief  A non-owning observer for a pointer owned by a shared_ptr
@@ -888,8 +888,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
     };
 
-  // @} relates shared_ptr
-  // @} group pointer_abstractions
+  /// @} relates shared_ptr
+  /// @} group pointer_abstractions
 
 #if __cplusplus >= 201703L
   namespace __detail::__variant
