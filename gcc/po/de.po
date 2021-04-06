@@ -8,10 +8,10 @@
 # Roland Illig <roland.illig@gmx.de>, 2015, 2017-2021.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 11.1-b20210207\n"
+"Project-Id-Version: gcc 11.1-b20210321\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-03-19 21:31+0000\n"
-"PO-Revision-Date: 2021-03-06 21:04+0100\n"
+"PO-Revision-Date: 2021-04-03 16:17+0200\n"
 "Last-Translator: Roland Illig <roland.illig@gmx.de>\n"
 "Language-Team: German <translation-team-de@lists.sourceforge.net>\n"
 "Language: de\n"
@@ -7211,16 +7211,14 @@ msgid "Note a #include translation of a specific header."
 msgstr "Hinweisen, wenn das #include eines bestimmten Headers übersetzt wird."
 
 #: c-family/c.opt:1757
-#, fuzzy, no-c-format
-#| msgid "Only emit Compiled Module Interface."
+#, no-c-format
 msgid "Note Compiled Module Interface pathnames."
-msgstr "Nur die Schnittstelle des compilierten Moduls (CMI) ausgeben."
+msgstr "Pfadnamen für compilierte Modulschnittstellen zur Info ausgeben."
 
 #: c-family/c.opt:1761
-#, fuzzy, no-c-format
-#| msgid "Note a #include translation of a specific header."
+#, no-c-format
 msgid "Note Compiled Module Interface pathname of a specific module or header-unit."
-msgstr "Hinweisen, wenn das #include eines bestimmten Headers übersetzt wird."
+msgstr "Pfadname für compilierte Modulschnittstelle eines bestimmten Moduls oder Header-Einheit ausgeben."
 
 #: c-family/c.opt:1765
 #, no-c-format
@@ -8119,10 +8117,9 @@ msgid "The maximum number of constraints per state."
 msgstr "Die Höchstzahl der Einschränkungen pro Zustand."
 
 #: analyzer/analyzer.opt:39
-#, fuzzy, no-c-format
-#| msgid "The maximum number of incoming edges to consider for crossjumping."
+#, no-c-format
 msgid "The maximum number of infeasible edges to reject before declaring a diagnostic as infeasible."
-msgstr "Höchstzahl der zu betrachtenden eingehenden Kanten für Kreuzsprung."
+msgstr "Die maximale Anzahl der nicht durchführbaren Kanten, die zurückgewiesen werden, bevor eine Diagnose als nicht durchführbar erklärt wird."
 
 #: analyzer/analyzer.opt:43
 #, no-c-format
@@ -8340,10 +8337,9 @@ msgid "Dump a textual representation of the exploded graph to SRCFILE.eg-ID.txt.
 msgstr "Textdarstellung des expandierten Graphen nach SRCFILE.eg-ID.txt wegschreiben."
 
 #: analyzer/analyzer.opt:215
-#, fuzzy, no-c-format
-#| msgid "Dump various analyzer internals to SRCFILE.analyzer.txt."
+#, no-c-format
 msgid "Dump various analyzer internals to SRCFILE.*.fg.dot and SRCFILE.*.tg.dot."
-msgstr "Diverse Interna des Analysierers nach SRCFILE.analyzer.txt wegschreiben."
+msgstr "Diverse Interna des Analysierers nach SRCFILE.*.fg.dot und SRCFILE.*.tg.dot wegschreiben."
 
 #: analyzer/analyzer.opt:219
 #, no-c-format
@@ -12919,10 +12915,9 @@ msgid "Generate (do not generate) pc-relative memory addressing."
 msgstr "Speicheradressierung relativ zu PC (oder absolut) erzeugen."
 
 #: config/rs6000/rs6000.opt:614
-#, fuzzy, no-c-format
-#| msgid "Generate (do not generate) pc-relative memory addressing."
+#, no-c-format
 msgid "Generate (do not generate) pc-relative memory optimizations for externals."
-msgstr "Speicheradressierung relativ zu PC (oder absolut) erzeugen."
+msgstr "Optimierungen für Speicherzugriffe relative zu PC durchführen (nicht durchführen)."
 
 #: config/rs6000/rs6000.opt:618
 #, no-c-format
@@ -19719,10 +19714,9 @@ msgid "Maximum number of conditional store pairs that can be sunk."
 msgstr "Höchstzahl von bedingten Speicherpaaren, die ausgegeben werden können."
 
 #: params.opt:686 params.opt:690
-#, fuzzy, no-c-format
-#| msgid "Maximum number of constant stores to merge in the store merging pass."
+#, no-c-format
 msgid "Maximum number of store chains to track at the same time in the store merging pass."
-msgstr "Höchstzahl der konstanten Speicherungen, die im Speicherzusammenfassungs-Durchgang zusammengefasst werden."
+msgstr "Höchstzahl der Speicherungsketten, die im Speicherzusammenfassungs-Durchgang gleichzeitig berücksichtigt werden."
 
 #: params.opt:694
 #, no-c-format
@@ -20036,8 +20030,7 @@ msgstr "Höchstzahl der Verweise, die pro modref-Basis gespeichert werden."
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99167
 #: params.opt:960
-#, fuzzy, no-c-format
-#| msgid "Maximum number of accesse stored in each modref reference."
+#, no-c-format
 msgid "Maximum number of accesses stored in each modref reference."
 msgstr "Höchstzahl der Zugriffe, die pro modref-Verweis gespeichert werden."
 
@@ -20883,10 +20876,8 @@ msgstr "durch %qs angegebene Grenze %s überschreitet möglicherweise die Maxima
 msgid "%qs specified bound %s exceeds the size of at most %E of unterminated array"
 msgstr "durch %qs angegebene Grenze %s überschreitet die Maximalgröße %E des nicht abgeschlossenen Arrays"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99275
 #: builtins.c:1181
-#, fuzzy, gcc-internal-format
-#| msgid "%qsargument missing terminating nul"
+#, gcc-internal-format
 msgid "%qs argument missing terminating nul"
 msgstr "Argument für %qs hat kein abschließendes nul-Zeichen"
 
@@ -21221,10 +21212,9 @@ msgid "%Kwriting %E bytes into a region of size %E overflows the destination"
 msgstr "%KCode schreibt %E Bytes in eine Region der Größe %E und bringt dadurch das Zielobjekt zum Überlaufen"
 
 #: builtins.c:4239
-#, fuzzy, gcc-internal-format
-#| msgid "%Kmay write %E or more bytes into a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may write %E or more bytes into a region of size %E"
-msgstr "%KCode schreibt %E oder mehr Bytes in eine Region der Größe %E"
+msgstr "%K%qD schreibt möglicherweise %E oder mehr Bytes in eine Region der Größe %E"
 
 #: builtins.c:4241 builtins.c:4779
 #, gcc-internal-format
@@ -21261,10 +21251,8 @@ msgstr "%KCode schreibt möglicherweise zwischen %E und %E Bytes in eine Region 
 msgid "%Kwriting between %E and %E bytes into a region of size %E overflows the destination"
 msgstr "%KCode schreibt zwischen %E und %E Bytes in eine Region der Größe %E und bringt dadurch das Zielobjekt zum Überlaufen"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99278
 #: builtins.c:4284
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD may reade %E byte from a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD may read %E byte from a region of size %E"
 msgstr "%K%qD liest möglicherweise %E Byte aus einer Region der Größe %E"
 
@@ -21344,9 +21332,7 @@ msgid "%Kreading between %E and %E bytes from a region of size %E"
 msgstr "%KCode liest zwischen %E und %E Bytes aus einer Region der Größe %E"
 
 #: builtins.c:4354
-#, fuzzy, gcc-internal-format
-#| msgid "%K%qD epecting %E byte in a region of size %E"
-#| msgid_plural "%K%qD expecting %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%K%qD expecting %E byte in a region of size %E"
 msgid_plural "%K%qD expecting %E bytes in a region of size %E"
 msgstr[0] "%K%qD erwartet %E Byte in einer Region der Größe %E"
@@ -21375,8 +21361,7 @@ msgid "%K%qD expecting between %E and %E bytes in a region of size %E"
 msgstr "%K%qD erwartet zwischen %E und %E Bytes in einer Region der Größe %E"
 
 #: builtins.c:4382
-#, fuzzy, gcc-internal-format
-#| msgid "%Kexpectting between %E and %E bytes in a region of size %E"
+#, gcc-internal-format
 msgid "%Kexpecting between %E and %E bytes in a region of size %E"
 msgstr "%KCode erwartet zwischen %E und %E Bytes in einer Region der Größe %E"
 
@@ -23938,12 +23923,10 @@ msgstr "Skalierung muss nichtnegativ sein"
 msgid "%s: %d basic blocks and %d edges/basic block"
 msgstr "%s: %d Basis-Blöcke und %d Kanten/Basis-Blöcke"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99288
 #: gcse.c:4013
-#, fuzzy, gcc-internal-format
-#| msgid "%s: %d basic blocks and %d registers; increase %<--param max-gcse-memory%> above "
+#, gcc-internal-format
 msgid "%s: %d basic blocks and %d registers; increase %<--param max-gcse-memory%> above %wu"
-msgstr "%s: %d Basisblöcke und %d Register; erhöhen Sie %<--param max-gcse-memory%> auf mehr als […]"
+msgstr "%s: %d Basisblöcke und %d Register; erhöhen Sie %<--param max-gcse-memory%> auf mehr als %wu"
 
 #: gencfn-macros.c:195
 #, gcc-internal-format, gfc-internal-format
@@ -25385,10 +25368,9 @@ msgid "name %qs differs from name %qs defined in another translation unit"
 msgstr "der Name %qs unterscheidet sich vom Namen %qs, der in einer anderen Übersetzungseinheit definiert ist"
 
 #: ipa-devirt.c:4268
-#, fuzzy, gcc-internal-format
-#| msgid "name %qs is defined to different value in another translation unit"
+#, gcc-internal-format
 msgid "name %qs is defined to %wd while another translation unit defines it as %wd"
-msgstr "Name %qs wird in einer anderen Übersetzungseinheit mit unterschiedlichem Wert definiert"
+msgstr "Name %qs ist als %wd definiert, in einer anderen Übersetzungseinheit jedoch als %wd"
 
 #: ipa-devirt.c:4274
 #, gcc-internal-format
@@ -25910,7 +25892,7 @@ msgstr "geschachtelte Schleife in Reduktion benötigt Reduktionsklausel für %qE
 #: omp-low.c:2971
 #, gcc-internal-format
 msgid "%<target%> construct with nested %<teams%> construct contains directives outside of the %<teams%> construct"
-msgstr ""
+msgstr "%<target%>-Konstrukt mit geschachteltem %<teams%>-Konstrukt enthält Direktiven außerhalb des %<teams%>-Konstrukts"
 
 #: omp-low.c:3028
 #, gcc-internal-format
@@ -28510,16 +28492,14 @@ msgid "function %q+F can never be inlined because it contains a computed goto"
 msgstr "die Funktion %q+F kann nie »inline« sein, da sie ein berechnetes »goto« enthält"
 
 #: tree-inline.c:4032
-#, fuzzy, gcc-internal-format
-#| msgid "function %q+F can never be inlined because it uses variable argument lists"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it has a VLA return argument"
-msgstr "die Funktion %q+F kann nie »inline« sein, da sie eine variable Argumentliste verwendet"
+msgstr "die Funktion %q+F kann nie »inline« sein, da sie ein Rückgabeargument hat, das ein Array variabler Länge ist"
 
 #: tree-inline.c:4040
-#, fuzzy, gcc-internal-format
-#| msgid "function %q+F can never be inlined because it uses variable argument lists"
+#, gcc-internal-format
 msgid "function %q+F can never be inlined because it has a VLA argument"
-msgstr "die Funktion %q+F kann nie »inline« sein, da sie eine variable Argumentliste verwendet"
+msgstr "die Funktion %q+F kann nie »inline« sein, da sie ein Argument vom Typ Array variabler Länge hat"
 
 #: tree-inline.c:4108
 #, gcc-internal-format
@@ -29593,10 +29573,9 @@ msgid "visibility attribute not supported in this configuration; ignored"
 msgstr "Sichtbarkeitsattribute werden in dieser Konfiguration nicht unterstützt; ignoriert"
 
 #: varasm.c:7789
-#, fuzzy, gcc-internal-format
-#| msgid "%+qD without %<used%> attribute and %qD with %<used%> attribute are placed in a section with the same name"
+#, gcc-internal-format
 msgid "%+qD without %<retain%> attribute and %qD with %<retain%> attribute are placed in a section with the same name"
-msgstr "%+qD ohne %<used%>-Attribut und %qD mit %<used%>-Attribut liegen in einem Abschnitt mit demselben Namen"
+msgstr "%+qD ohne %<retain%>-Attribut und %qD mit %<retain%>-Attribut liegen in einem Abschnitt mit demselben Namen"
 
 #: vec.c:200
 #, gcc-internal-format, gfc-internal-format
@@ -30229,16 +30208,14 @@ msgid "%qE attribute ignored on a function returning %qT"
 msgstr "Attribut %qE an einer Funktion mit Rückgabetyp %qT wird ignoriert"
 
 #: c-family/c-attribs.c:3564
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute argument %qE is not an integer constant"
+#, gcc-internal-format
 msgid "%qE attribute argument %E is not an integer constant"
-msgstr "Attributargument %qE mit Wert %qE ist keine Ganzzahlkonstante"
+msgstr "Attribut %qE mit Argument %E ist keine Ganzzahlkonstante"
 
 #: c-family/c-attribs.c:3572
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute argument %qE is not recognised"
+#, gcc-internal-format
 msgid "%qE attribute argument %E is not positive"
-msgstr "Attribut %qE Argument %qE ist unbekannt"
+msgstr "Attribut %qE Argument %E ist nicht positiv"
 
 #: c-family/c-attribs.c:3583
 #, gcc-internal-format
@@ -33954,11 +33931,11 @@ msgstr "Nicht-ASCII-Zeichen in CFString-Literal"
 msgid "embedded NUL in CFString literal"
 msgstr "eingebettetes NUL in CFString-Literal"
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99733
 #: config/host-darwin.c:65
-#, fuzzy, gcc-internal-format
-#| msgid "couldn%'t unmap pch_address_space: %m"
+#, gcc-internal-format
 msgid "could not unmap %<pch_address_space%> %m"
-msgstr "Abbildung von pch_address_space konnte nicht aufgehoben werden: %m"
+msgstr "%<munmap%> von %<pch_address_space%> fehlgeschlagen: %m"
 
 #: config/sol2-c.c:91 config/sol2-c.c:107
 #, gcc-internal-format
@@ -35973,23 +35950,19 @@ msgid "stack frame must be smaller than 64K"
 msgstr "Stapelrahmen muss kleiner als 64k sein"
 
 #: config/gcn/gcn.c:231
-#, fuzzy, gcc-internal-format
-#| msgid "amdgpu_hsa_kernel attribute requires string constant arguments"
+#, gcc-internal-format
 msgid "%<amdgpu_hsa_kernel%> attribute requires string constant arguments"
 msgstr "Attribut %<amdgpu_hsa_kernel%> erfordert Zeichenkettenkonstanten als Argumente"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90160
 #: config/gcn/gcn.c:244
-#, fuzzy, gcc-internal-format
-#| msgid "unknown specifier %s in amdgpu_hsa_kernel attribute"
+#, gcc-internal-format
 msgid "unknown specifier %qs in %<amdgpu_hsa_kernel%> attribute"
-msgstr "unbekannte Angabe »%s« in Attribut »amdgpu_hsa_kernel«"
+msgstr "unbekannte Angabe %<%qs%> in Attribut %<amdgpu_hsa_kernel%>"
 
 #: config/gcn/gcn.c:251
-#, fuzzy, gcc-internal-format
-#| msgid "duplicated parameter specifier %s in amdgpu_hsa_kernel attribute"
+#, gcc-internal-format
 msgid "duplicated parameter specifier %qs in %<amdgpu_hsa_kernel%> attribute"
-msgstr "doppelt angegebener Parameter »%s« in Attribut »amdgpu_hsa_kernel«"
+msgstr "doppelt angegebener Parameter %qs in Attribut %<amdgpu_hsa_kernel%>"
 
 #: config/gcn/gcn.c:303
 #, gcc-internal-format
@@ -35997,10 +35970,9 @@ msgid "too many arguments passed in sgpr registers"
 msgstr "zu viele Argumente, die in SGPR-Registern übergeben werden"
 
 #: config/gcn/gcn.c:2105
-#, fuzzy, gcc-internal-format
-#| msgid "A non-default set of initial values has been requested, which violates the ABI!"
+#, gcc-internal-format
 msgid "A non-default set of initial values has been requested, which violates the ABI"
-msgstr "Es wurde ein nicht standardmäßiger Satz von Anfangswerten angefordert, was gegen das ABI verstößt!"
+msgstr "Es wurde ein nicht standardmäßiger Satz von Anfangswerten angefordert, was gegen das ABI verstößt"
 
 #: config/gcn/gcn.c:2341
 #, gcc-internal-format, gfc-internal-format
@@ -36023,22 +35995,19 @@ msgid "Builtin not implemented"
 msgstr "Eingebaute Funktion nicht implementiert"
 
 #: config/gcn/gcn.c:4888
-#, fuzzy, gcc-internal-format
-#| msgid "using vector_length (64), ignoring %d"
+#, gcc-internal-format
 msgid "using %<vector_length (64)%>, ignoring %d"
-msgstr "vector_length (64) wird verwendet, %d wird ignoriert"
+msgstr "%<vector_length (64)%> wird verwendet, %d wird ignoriert"
 
 #: config/gcn/gcn.c:4889
-#, fuzzy, gcc-internal-format
-#| msgid "using vector_length (64), ignoring runtime setting"
+#, gcc-internal-format
 msgid "using %<vector_length (64)%>, ignoring runtime setting"
-msgstr "vector_length (64) wird verwendet, Laufzeiteinstellung wird ignoriert"
+msgstr "%<vector_length (64)%> wird verwendet, Laufzeiteinstellung wird ignoriert"
 
 #: config/gcn/gcn.c:4901
-#, fuzzy, gcc-internal-format
-#| msgid "using num_workers (%d), ignoring %d"
+#, gcc-internal-format
 msgid "using %<num_workers (%d)%>, ignoring %d"
-msgstr "num_workers (%d) wird verwendet, %d wird ignoriert"
+msgstr "%<num_workers (%d)%> wird verwendet, %d wird ignoriert"
 
 #: config/gcn/gcn.c:4929 config/gcn/gcn.c:4956
 #, gcc-internal-format, gfc-internal-format
@@ -38021,8 +37990,7 @@ msgid "Unknown form for stack limit expression"
 msgstr "Unbekannte Form für Ausdruck für Stapelgrenze"
 
 #: config/nios2/nios2.c:1182
-#, fuzzy, gcc-internal-format
-#| msgid "switch %<-mcustom-%s%> is required for double precision floating point"
+#, gcc-internal-format
 msgid "switch %<-mcustom-%s%> is required for double-precision floating-point"
 msgstr "Option %<-mcustom-%s%> wird für doppeltgenaue Gleitkomma benötigt"
 
@@ -38052,34 +38020,29 @@ msgid "PIC support for %<-fstack-limit-symbol%>"
 msgstr "PIC-Unterstützung für %<-fstack-limit-symbol%>"
 
 #: config/nios2/nios2.c:1382
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mgpopt%> not supported with PIC."
+#, gcc-internal-format
 msgid "%<-mgpopt%> not supported with PIC"
-msgstr "%<-mgpopt%> wird nicht zusammen mit PIC unterstützt."
+msgstr "%<-mgpopt%> wird nicht zusammen mit PIC unterstützt"
 
 #: config/nios2/nios2.c:1384
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mgprel-sec=%> not supported with PIC."
+#, gcc-internal-format
 msgid "%<-mgprel-sec=%> not supported with PIC"
-msgstr "%<-mgprel-sec=%> wird nicht zusammen mit PIC unterstützt."
+msgstr "%<-mgprel-sec=%> wird nicht zusammen mit PIC unterstützt"
 
 #: config/nios2/nios2.c:1386
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mr0rel-sec=%> not supported with PIC."
+#, gcc-internal-format
 msgid "%<-mr0rel-sec=%> not supported with PIC"
-msgstr "%<-mr0rel-sec=%> wird nicht zusammen mit PIC unterstützt."
+msgstr "%<-mr0rel-sec=%> wird nicht zusammen mit PIC unterstützt"
 
 #: config/nios2/nios2.c:1394
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mgprel-sec=%> argument is not a valid regular expression."
+#, gcc-internal-format
 msgid "%<-mgprel-sec=%> argument is not a valid regular expression"
-msgstr "Argument für %<-mgprel-sec=%> ist kein gültiger regulärer Ausdruck."
+msgstr "Argument für %<-mgprel-sec=%> ist kein gültiger regulärer Ausdruck"
 
 #: config/nios2/nios2.c:1400
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mr0rel-sec=%> argument is not a valid regular expression."
+#, gcc-internal-format
 msgid "%<-mr0rel-sec=%> argument is not a valid regular expression"
-msgstr "Argument für %<-mr0rel-sec=%> ist kein gültiger regulärer Ausdruck."
+msgstr "Argument für %<-mr0rel-sec=%> ist kein gültiger regulärer Ausdruck"
 
 #: config/nios2/nios2.c:1411
 #, gcc-internal-format
@@ -38097,46 +38060,39 @@ msgid "R2 architecture is little-endian only"
 msgstr "Die R2-Architektur ist ausschließlich Little-Endian"
 
 #: config/nios2/nios2.c:3578
-#, fuzzy, gcc-internal-format
-#| msgid "Cannot call %<__builtin_custom_%s%> without specifying switch %<-mcustom-%s%>"
+#, gcc-internal-format
 msgid "cannot call %<__builtin_custom_%s%> without specifying switch %<-mcustom-%s%>"
 msgstr "%<__builtin_custom_%s%> kann nur aufgerufen werden, wenn %<-mcustom-%s%> angegeben ist"
 
 #: config/nios2/nios2.c:3687
-#, fuzzy, gcc-internal-format
-#| msgid "custom instruction opcode must be compile time constant in the range 0-255 for %<__builtin_custom_%s%>"
+#, gcc-internal-format
 msgid "custom instruction opcode must be a compile-time constant in the range 0-255 for %<__builtin_custom_%s%>"
-msgstr "eigener Befehlsopcode für %<__builtin_custom_%s%> muss bereits zur Kompilierzeit eine Konstante im Bereich 0 bis 255 sein"
+msgstr "eigener Befehlsopcode für %<__builtin_custom_%s%> muss zur Kompilierzeit eine Konstante im Bereich 0 bis 255 sein"
 
 #: config/nios2/nios2.c:3892
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Control register number must be in range 0-31 for %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "control register number must be in range 0-31 for %s"
-msgstr "Steuerregisternummer muss für »%s« im Bereich von 0 bis 31 liegen"
+msgstr "Steuerregisternummer für »%s« muss im Bereich von 0 bis 31 liegen"
 
 #: config/nios2/nios2.c:3920
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Register number must be in range 0-31 for %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "register number must be in range 0-31 for %s"
-msgstr "Registernummer muss für »%s« im Bereich 0 bis 31 sein"
+msgstr "Registernummer für %s muss im Bereich von 0 bis 31 liegen"
 
 #: config/nios2/nios2.c:3927
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "The immediate value must fit into a %d-bit integer for %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "immediate value must fit into a %d-bit integer for %s"
 msgstr "Der Direktwert für »%2$s« muss in eine %1$d-Bit-Ganzzahl passen"
 
 #: config/nios2/nios2.c:3977
-#, fuzzy, gcc-internal-format
-#| msgid "The ENI instruction operand must be either 0 or 1"
+#, gcc-internal-format
 msgid "the ENI instruction operand must be either 0 or 1"
 msgstr "Operand für den ENI-Befehl muss entweder 0 oder 1 sein"
 
 #: config/nios2/nios2.c:4005
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires Nios II R%d"
+#, gcc-internal-format, gfc-internal-format
 msgid "built-in function %s requires Nios II R%d"
-msgstr "Eingebaute Funktion %s erfordert Nios II R%d"
+msgstr "eingebaute Funktion %s erfordert Nios II R%d"
 
 #: config/nios2/nios2.c:4085
 #, gcc-internal-format
@@ -38149,16 +38105,14 @@ msgid "call to %<__builtin_custom_%s%> conflicts with switch %<-mcustom-%s%>"
 msgstr "Aufruf von %<__builtin_custom_%s%> steht in Konflikt mit Schalter %<-mcustom-%s%>"
 
 #: config/nios2/nios2.c:4212
-#, fuzzy, gcc-internal-format
-#| msgid "custom-fpu-cfg option does not support %<no-%>"
+#, gcc-internal-format
 msgid "%<custom-fpu-cfg%> option does not support %<no-%>"
-msgstr "Option »custom-fpu-cfg« unterstützt kein %<no-%>"
+msgstr "Option %<custom-fpu-cfg%> unterstützt kein %<no-%>"
 
 #: config/nios2/nios2.c:4217
-#, fuzzy, gcc-internal-format
-#| msgid "custom-fpu-cfg option requires configuration argument"
+#, gcc-internal-format
 msgid "%<custom-fpu-cfg%> option requires configuration argument"
-msgstr "Option »custom-fpu-cfg« erfordert Konfigurationsargument"
+msgstr "Option %<custom-fpu-cfg%> erfordert Konfigurationsargument"
 
 #: config/nios2/nios2.c:4246
 #, gcc-internal-format
@@ -38181,10 +38135,9 @@ msgid "%<custom-%s=%> is not recognized as FPU instruction"
 msgstr "%<custom-%s=%> ist nicht als ein FPU-Befehl bekannt"
 
 #: config/nios2/nios2.c:4290
-#, fuzzy, gcc-internal-format
-#| msgid "invalid cast to function type %qT"
+#, gcc-internal-format
 msgid "invalid custom instruction option %qs"
-msgstr "ungültige Umwandlung in Funktionstyp %qT"
+msgstr "ungültige Option für benutzerdefinierten Befehl %qs"
 
 #: config/nvptx/mkoffload.c:110
 #, gcc-internal-format
@@ -39422,10 +39375,9 @@ msgid "Builtin %qF requires z15 or higher."
 msgstr "Eingebaute %qF erfordert z15 oder höher."
 
 #: config/s390/s390.c:833
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin %qF requires z14 or higher."
+#, gcc-internal-format
 msgid "Builtin %qF requires arch14 or higher."
-msgstr "Eingebaute %qF erfordert z14 oder höher."
+msgstr "Eingebaute %qF erfordert arch14 oder höher."
 
 #: config/s390/s390.c:852
 #, gcc-internal-format
@@ -47332,10 +47284,9 @@ msgid "conversion from pointer type %qT to arithmetic type %qT in a constant exp
 msgstr "Umwandlung von Zeigertyp %qT in arithmetischen Typ %qT in Konstantenausdruck"
 
 #: cp/constexpr.c:6693
-#, fuzzy, gcc-internal-format
-#| msgid "%s%qs%s is not allowed"
+#, gcc-internal-format
 msgid "cast from %qT is not allowed"
-msgstr "%s%qs%s ist nicht erlaubt"
+msgstr "Cast von %qT ist nicht erlaubt"
 
 #: cp/constexpr.c:6729
 #, gcc-internal-format
@@ -52629,22 +52580,19 @@ msgid "C++11 %<noexcept%> only available with %<-std=c++11%> or %<-std=gnu++11%>
 msgstr "%<noexcept%> von C++11 ist nur mit %<-std=c++11%> oder %<-std=gnu++11%> verfügbar"
 
 #: cp/parser.c:3475
-#, fuzzy, gcc-internal-format
-#| msgid "%qE was not recognized as a module control-line"
+#, gcc-internal-format
 msgid "%qE is not recognized as a module control-line"
-msgstr "%qE wurde nicht als Modul-Steuerzeile erkannt"
+msgstr "unbekannte Modul-Steuerzeile %qE"
 
 #: cp/parser.c:3478
-#, fuzzy, gcc-internal-format
-#| msgid "%qE only available with %<-fmodules-ts%>"
+#, gcc-internal-format
 msgid "C++20 %qE only available with %<-fmodules-ts%>"
-msgstr "%qE ist nur mit %<-fmodules-ts%> verfügbar"
+msgstr "C++20 %qE ist nur mit %<-fmodules-ts%> verfügbar"
 
 #: cp/parser.c:3481
-#, fuzzy, gcc-internal-format
-#| msgid "C++20 %<constinit%> only available with %<-std=c++20%> or %<-std=gnu++20%>"
+#, gcc-internal-format
 msgid "C++20 %qE only available with %<-fmodules-ts%>, which is not yet enabled with %<-std=c++20%>"
-msgstr "%<constinit%> aus C++20 ist erst ab %<-std=c++20%> oder %<-std=gnu++20%> verfügbar"
+msgstr "%qE aus C++20 ist nur mit %<-fmodules-ts%> verfügbar, das ist jedoch noch nicht in %<-std=c++20%> enthalten"
 
 #: cp/parser.c:3487
 #, gcc-internal-format
@@ -53157,10 +53105,9 @@ msgid "default argument specified for lambda parameter"
 msgstr "Standardargument für Lambda-Parameter angegeben"
 
 #: cp/parser.c:11364
-#, fuzzy, gcc-internal-format
-#| msgid "structured binding declaration can be %qs only in %<-std=c++20%> or %<-std=gnu++20%>"
+#, gcc-internal-format
 msgid "parameter declaration before lambda declaration specifiers only optional with %<-std=c++2b%> or %<-std=gnu++2b%>"
-msgstr "strukturierte Bindungsdeklarationen können erst ab %<-std=c++20%> oder %<-std=gnu++20%> %qs sein"
+msgstr "Parameterdeklaration vor Lambdadeklarationsangaben ist erst ab %<-std=c++2b%> oder %<-std=gnu++2b%> optional"
 
 #: cp/parser.c:11376
 #, gcc-internal-format
@@ -53168,23 +53115,20 @@ msgid "duplicate %<mutable%>"
 msgstr "doppeltes %<mutable%>"
 
 #: cp/parser.c:11383
-#, fuzzy, gcc-internal-format
-#| msgid "range-based %<for%> loops with initializer only available with %<-std=c++20%> or %<-std=gnu++20%>"
+#, gcc-internal-format
 msgid "parameter declaration before lambda transaction qualifier only optional with %<-std=c++2b%> or %<-std=gnu++2b%>"
-msgstr "Bereichsbasierte %<for%>-Schleifen mit Initialisierer sind erst mit %<-std=c++20%> oder %<-std=gnu++20%> verfügbar"
+msgstr "Parameterdeklaration vor einem Lambda-Transaktions-Qualifizierer ist erst ab %<-std=c++2b%> oder %<-std=gnu++2b%> optional"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90183
 #: cp/parser.c:11396
-#, fuzzy, gcc-internal-format
-#| msgid "nested inline namespace definitions only available with %<-std=c++20%> or %<-std=gnu++20%>"
+#, gcc-internal-format
 msgid "parameter declaration before lambda exception specification only optional with %<-std=c++2b%> or %<-std=gnu++2b%>"
-msgstr "verschachtelte inline-Namensraumdefinitionen sind erst mit %<-std=c++20%> oder %<-std=gnu++20%> verfügbar"
+msgstr "Parameterdeklaration vor einer Lambda-Exception-Angabe ist erst ab %<-std=c++2b%> oder %<-std=gnu++2b%> optional"
 
 #: cp/parser.c:11414
-#, fuzzy, gcc-internal-format
-#| msgid "trailing return type only available with %<-std=c++11%> or %<-std=gnu++11%>"
+#, gcc-internal-format
 msgid "parameter declaration before lambda trailing return type only optional with %<-std=c++2b%> or %<-std=gnu++2b%>"
-msgstr "nachgestellter Rückgabetyp nur mit %<-std=c++11%> oder %<-std=gnu++11%> verfügbar"
+msgstr "Parameterdeklaration vor einem abschließenden Rückgabetyp ist erst ab %<-std=c++2b%> oder %<-std=gnu++2b%> optional"
 
 #: cp/parser.c:11456
 #, gcc-internal-format
@@ -53325,10 +53269,9 @@ msgid "expected module-name"
 msgstr "Modulname erwartet"
 
 #: cp/parser.c:13759
-#, fuzzy, gcc-internal-format
-#| msgid "post-module-declaration imports must not be from header inclusion"
+#, gcc-internal-format
 msgid "module-declaration not permitted in header-unit"
-msgstr "%<post-module-declaration%>-Importe dürfen nicht aus Header-Einbindung stammen"
+msgstr "%<module-declaration%> ist innerhalb von %<header-unit%> nicht erlaubt"
 
 #: cp/parser.c:13784
 #, gcc-internal-format
@@ -58557,293 +58500,266 @@ msgstr "Logdatei %<vtv_count_data.log%> kann nicht geöffnet werden: %m"
 #: d/dmd/dsymbolsem.c:134
 #, gcc-internal-format
 msgid "missing or corrupt object.d"
-msgstr ""
+msgstr "fehlende oder beschädigte object.d"
 
 #: d/dmd/dsymbolsem.c:182
 #, gcc-internal-format
 msgid "%p has no semantic routine"
-msgstr ""
+msgstr "%p hat keine semantische Routine"
 
 #: d/dmd/dsymbolsem.c:304
-#, fuzzy, gcc-internal-format
-#| msgid "External %qs at %L cannot have an initializer"
+#, gcc-internal-format
 msgid "extern symbols cannot have initializers"
-msgstr "Externes %qs bei %L kann keine Initialisierung haben"
+msgstr "externe Symbole können keine Initialisierung haben"
 
 #: d/dmd/dsymbolsem.c:385
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "__gshared not allowed in safe functions; use shared"
-msgstr "#pragma GCC option nicht innerhalb von Funktionen erlaubt"
+msgstr "%<__gshared%> nicht innerhalb von sicheren Funktionen erlaubt; verwenden Sie stattdessen %<shared%>"
 
 #: d/dmd/dsymbolsem.c:397
 #, gcc-internal-format, gfc-internal-format
 msgid "type %s is inferred from initializer %s, and variables cannot be of type void"
-msgstr ""
+msgstr "Typ %s wird aus dem Initialisierer %s hergeleitet, und Variablen können nicht vom Typ »void« sein"
 
 #: d/dmd/dsymbolsem.c:401
-#, fuzzy, gcc-internal-format
-#| msgid "variable __ctfe cannot be read at compile time"
+#, gcc-internal-format
 msgid "variables cannot be of type void"
-msgstr "Variable __cfte kann nicht zur Compilierzeit gelesen werden"
+msgstr "Variablen können nicht vom Typ %<void%> sein"
 
 #: d/dmd/dsymbolsem.c:407
-#, fuzzy, gcc-internal-format
-#| msgid "new cannot be applied to a function type"
+#, gcc-internal-format
 msgid "cannot be declared to be a function"
-msgstr "»new« kann nicht auf Funktionstyp angewendet werden"
+msgstr "kann nicht als Funktion deklariert werden"
 
 #: d/dmd/dsymbolsem.c:416
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "redefinition of %<struct %E%>"
+#, gcc-internal-format, gfc-internal-format
 msgid "no definition of struct %s"
-msgstr "Redefinition von %<struct %E%>"
+msgstr "keine Definition von »struct %s«"
 
 #: d/dmd/dsymbolsem.c:420
 #, gcc-internal-format
 msgid "storage class `auto` has no effect if type is not inferred, did you mean `scope`?"
-msgstr ""
+msgstr "Speicherklasse %<auto%> hat nur dann einen Effekt, wenn der Typ hergeleitet ist; meinten Sie %<scope%>?"
 
 #: d/dmd/dsymbolsem.c:605
 #, gcc-internal-format
 msgid "cannot be final, perhaps you meant const?"
-msgstr ""
+msgstr "kann nicht %<final%> sein, meinten Sie %<const%>?"
 
 #: d/dmd/dsymbolsem.c:610
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot open %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot be %s"
-msgstr "»%s« kann nicht geöffnet werden"
+msgstr "kann nicht »%s« sein"
 
 #: d/dmd/dsymbolsem.c:622
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot open %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot be `scope` and `%s`"
-msgstr "»%s« kann nicht geöffnet werden"
+msgstr "kann nicht gleichzeitig »scope« und »%s« sein"
 
 #: d/dmd/dsymbolsem.c:626
-#, fuzzy, gcc-internal-format
-#| msgid "%qD cannot be %qs"
+#, gcc-internal-format
 msgid "field cannot be `scope`"
-msgstr "%qD kann nicht %qs sein"
+msgstr "Feld kann nicht %<scope%> sein"
 
 #: d/dmd/dsymbolsem.c:659
-#, fuzzy, gcc-internal-format
-#| msgid "placeholder type not allowed in this context"
+#, gcc-internal-format
 msgid "field not allowed in interface"
-msgstr "Platzhaltertyp ist in diesem Kontext nicht erlaubt"
+msgstr "Feld nicht in Interface erlaubt"
 
 #: d/dmd/dsymbolsem.c:663
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot be further field because it will change the determined %s size"
-msgstr ""
+msgstr "kann kein weiteres Feld sein, da es die festgelegte Größe %s ändert"
 
 #: d/dmd/dsymbolsem.c:684
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot use template to add field to aggregate `%s`"
-msgstr ""
+msgstr "Template kann nicht verwendet werden, um das Feld zum zusammengesetzten »%s« hinzuzufügen"
 
 #: d/dmd/dsymbolsem.c:691
 #, gcc-internal-format
 msgid "only parameters or foreach declarations can be ref"
-msgstr ""
+msgstr "nur Parameter oder foreach-Deklarationen können %<ref%> sein"
 
 #: d/dmd/dsymbolsem.c:700
 #, gcc-internal-format
 msgid "only parameters or stack based variables can be inout"
-msgstr ""
+msgstr "nur Parameter oder Variablen auf dem Stapel können %<inout%> sein"
 
 #: d/dmd/dsymbolsem.c:718
-#, fuzzy, gcc-internal-format
-#| msgid "%<inline%> can only be specified for functions"
+#, gcc-internal-format
 msgid "inout variables can only be declared inside inout functions"
-msgstr "%<inline%> kann nur für Funktionen angegeben werden"
+msgstr "inout-Variablen können nur innerhalb von inout-Funktionen deklariert werden"
 
 #: d/dmd/dsymbolsem.c:737
 #, gcc-internal-format, gfc-internal-format
 msgid "default construction is disabled for type %s"
-msgstr ""
+msgstr "Standardkonstruktion ist für den Typ »%s« deaktiviert"
 
 #: d/dmd/dsymbolsem.c:746
 #, gcc-internal-format
 msgid "globals, statics, fields, manifest constants, ref and out parameters cannot be scope"
-msgstr ""
+msgstr "globale Variablen, statische Variablen, Felder, Manifest-Konstanten, ref- und out-Parameter können nicht %<scope%> sein"
 
 #: d/dmd/dsymbolsem.c:752
-#, fuzzy, gcc-internal-format
-#| msgid "reference to dead statement"
+#, gcc-internal-format
 msgid "reference to scope class must be scope"
-msgstr "Interner Fehler: reference to dead statement"
+msgstr "Referenz auf scope-Klasse muss selbst auch %<scope%> sein"
 
 #: d/dmd/dsymbolsem.c:762 d/dmd/dsymbolsem.c:769
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "void initializers for pointers not allowed in safe functions"
-msgstr "#pragma GCC option nicht innerhalb von Funktionen erlaubt"
+msgstr "void-Initialisierer für Zeiger ist in %<safe%>-Funktionen nicht erlaubt"
 
 #: d/dmd/dsymbolsem.c:782
-#, fuzzy, gcc-internal-format
-#| msgid "only constructors take member initializers"
+#, gcc-internal-format
 msgid "manifest constants must have initializers"
-msgstr "nur Konstruktoren nehmen Elementinitialisierungen"
+msgstr "Manifest-Konstanten müssen Initialisierer haben"
 
 #: d/dmd/dsymbolsem.c:794
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "size of type %s is invalid"
-msgstr "%qs bei %C ist keine Variable"
+msgstr "Größe des Typs »%s« ist ungültig"
 
 #: d/dmd/dsymbolsem.c:829
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs entity cannot have an initializer at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s does not have a default initializer"
-msgstr "Entität %qs bei %C kann keine Initialisierung haben"
+msgstr "»%s« hat keinen Standardinitialisierer"
 
 #: d/dmd/dsymbolsem.c:873
-#, fuzzy, gcc-internal-format
-#| msgid "External %qs at %L cannot have an initializer"
+#, gcc-internal-format
 msgid "is not a static and cannot have static initializer"
-msgstr "Externes %qs bei %L kann keine Initialisierung haben"
+msgstr "ist nicht %<static%> und kann daher keinen static-Initialisierer haben"
 
 #: d/dmd/dsymbolsem.c:993
 #, gcc-internal-format, gfc-internal-format
 msgid "of type struct %s uses this(this), which is not allowed in static initialization"
-msgstr ""
+msgstr "vom Typ »struct %s« verwendet »this(this)«, das ist jedoch in »static«-Initialisierung nicht erlaubt"
 
 #: d/dmd/dsymbolsem.c:1028
 #, gcc-internal-format
 msgid "static storage variables cannot have destructors"
-msgstr ""
+msgstr "Variablen im %<static%>-Speicher können keine Destruktoren haben"
 
 #: d/dmd/dsymbolsem.c:1339
-#, fuzzy, gcc-internal-format
-#| msgid "expected class name"
+#, gcc-internal-format
 msgid "string expected for library name"
-msgstr "Klassenname erwartet"
+msgstr "Zeichenkette für Bibliotheksnamen erwartet"
 
 #: d/dmd/dsymbolsem.c:1371
-#, fuzzy, gcc-internal-format
-#| msgid "unexpected text address:"
+#, gcc-internal-format
 msgid "function name expected for start address"
-msgstr "unerwartete Textadresse:"
+msgstr "Funktionsname für die Startadresse erwartet"
 
 #: d/dmd/dsymbolsem.c:1386
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "function name expected for start address, not `%s`"
-msgstr "%qT erwartet, aber Argument hat Typ %qT"
+msgstr "Funktionsname für die Startadresse erwartet, nicht »%s«"
 
 #: d/dmd/dsymbolsem.c:1400
-#, fuzzy, gcc-internal-format
-#| msgid "expected function name"
+#, gcc-internal-format
 msgid "string expected for mangled name"
-msgstr "Funktionsname erwartet"
+msgstr "Zeichenkette für gemangelten Namen erwartet"
 
 #: d/dmd/dsymbolsem.c:1413
 #, gcc-internal-format
 msgid "zero-length string not allowed for mangled name"
-msgstr ""
+msgstr "leere Zeichenkette ist für gemangelten Namen nicht erlaubt"
 
 #: d/dmd/dsymbolsem.c:1418
 #, gcc-internal-format
 msgid "mangled name characters can only be of type char"
-msgstr ""
+msgstr "die Zeichen in einem gemangelten Namen können nur vom Typ %<char%> sein"
 
 #: d/dmd/dsymbolsem.c:1443
-#, fuzzy
 msgid "char 0x%02x not allowed in mangled name"
-msgstr "Wertargument bei %L ist in diesem Kontext nicht erlaubt"
+msgstr "Zeichen 0x%02x ist in gemangeltem Namen nicht erlaubt"
 
 #: d/dmd/dsymbolsem.c:1456
-#, fuzzy
 msgid "char 0x%04x not allowed in mangled name"
-msgstr "Wertargument bei %L ist in diesem Kontext nicht erlaubt"
+msgstr "Zeichen 0x%04x ist in gemangeltem Namen nicht erlaubt"
 
 #: d/dmd/dsymbolsem.c:1519
-#, fuzzy, gcc-internal-format
-#| msgid "Warn on primary template declaration."
+#, gcc-internal-format
 msgid "can only apply to a single declaration"
-msgstr "Bei primärer Deklaration von Templates warnen."
+msgstr "kann nur auf eine einzelne Deklaration angewendet werden"
 
 #: d/dmd/dsymbolsem.c:1532
 #, gcc-internal-format
 msgid "pragma is missing closing `;`"
-msgstr ""
+msgstr "dem Pragma fehlt das schließende %<;%>"
 
 #: d/dmd/dsymbolsem.c:1565
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "incomplete mixin declaration (%s)"
-msgstr "inkompatible Typen in binärem Ausdruck"
+msgstr "unvollständige Mixin-Deklaration (%s)"
 
 #: d/dmd/dsymbolsem.c:1747
-#, fuzzy, gcc-internal-format
-#| msgid "Selector at %L must not be coindexed"
+#, gcc-internal-format
 msgid "base type must not be void"
-msgstr "Selektor bei %L darf nicht koindiziert sein"
+msgstr "der Basistyp kann nicht %<void%> sein"
 
 #: d/dmd/dsymbolsem.c:1773
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Procedure %qs with PASS at %L must have at least one argument"
+#, gcc-internal-format, gfc-internal-format
 msgid "enum %s must have at least one member"
-msgstr "Prozedur %qs mit PASS bei %L muss mindestens ein Argument haben"
+msgstr "die Aufzählung »%s« muss mindestens eine Konstante enthalten"
 
 #: d/dmd/dsymbolsem.c:1859
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "circular reference to enum member"
-msgstr "Referenz auf %q#T kann nicht deklariert werden"
+msgstr "zirkulärer Verweis auf enum-Konstante"
 
 #: d/dmd/dsymbolsem.c:2037
 #, gcc-internal-format, gfc-internal-format
 msgid "initialization with (%s.%s + 1) causes overflow for type `%s`"
-msgstr ""
+msgstr "Initialisierung mit »%s.%s + 1« erzeugt Überlauf für Typ »%s«"
 
 #: d/dmd/dsymbolsem.c:2066
 #, gcc-internal-format
 msgid "has inexact value, due to loss of precision"
-msgstr ""
+msgstr "hat ungenauen Wert, wegen Verlust der Genauigkeit"
 
 #: d/dmd/dsymbolsem.c:2144
-#, fuzzy, gcc-internal-format
-#| msgid "template type parameters must use the keyword %<class%> or %<typename%>"
+#, gcc-internal-format
 msgid "template tuple parameter must be last one"
-msgstr "Templatetypparameter müssen das Schlüsselwort %<class%> oder %<typename%> verwenden"
+msgstr "Template-Tupelparameter muss der letzte sein"
 
 #: d/dmd/dsymbolsem.c:2320
-#, fuzzy, gcc-internal-format
-#| msgid "recursive inlining"
+#, gcc-internal-format
 msgid "recursive mixin instantiation"
-msgstr "rekursives Inlining"
+msgstr "rekursive Mixin-Instanziierung"
 
 #. ensure error message gets printed
 #: d/dmd/dsymbolsem.c:2374 d/dmd/dsymbolsem.c:5234
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "recursive expansion"
-msgstr "rekursives Inlining"
+msgstr "rekursive Expansion"
 
 #: d/dmd/dsymbolsem.c:2414
-#, fuzzy, gcc-internal-format
-#| msgid "error writing %qs"
+#, gcc-internal-format
 msgid "error instantiating"
-msgstr "Fehler beim Schreiben von %qs"
+msgstr "Fehler beim Instanziieren"
 
 #: d/dmd/dsymbolsem.c:2537 d/dmd/dsymbolsem.c:2706
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs must be the first clause of %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s must be a function instead of %s"
-msgstr "%qs muss die erste Klausel von %qs sein"
+msgstr "»%s« muss eine Funktion sein statt »%s«"
 
 #: d/dmd/dsymbolsem.c:2634
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "virtual functions cannot be friends"
+#, gcc-internal-format, gfc-internal-format
 msgid "without `this` cannot be %s"
-msgstr "virtuelle Funktionen können keine friends sein"
+msgstr "ohne »this« kann »%s« nicht sein"
 
 #: d/dmd/dsymbolsem.c:2734
 #, gcc-internal-format
 msgid "storage class `auto` has no effect if return type is not inferred"
-msgstr ""
+msgstr "Speicherklasse %<auto%> hat nur dann einen Effekt, wenn der Rückgabetyp hergeleitet ist"
 
 #: d/dmd/dsymbolsem.c:2739
-#, fuzzy, gcc-internal-format
-#| msgid "virtual functions cannot be friends"
+#, gcc-internal-format
 msgid "functions cannot be scope"
-msgstr "virtuelle Funktionen können keine friends sein"
+msgstr "Funktionen können nicht %<scope%> sein"
 
 #. Non-static nested functions have a hidden 'this' pointer to which
 #. * the 'return' applies
@@ -58851,45 +58767,42 @@ msgstr "virtuelle Funktionen können keine friends sein"
 #: d/dmd/dsymbolsem.c:2747
 #, gcc-internal-format
 msgid "static member has no `this` to which `return` can apply"
-msgstr ""
+msgstr "statisches Element hat kein %<this%>, auf das sich das %<return%> beziehen könnte"
 
 #: d/dmd/dsymbolsem.c:2759
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs function cannot have arguments"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s functions cannot be abstract"
-msgstr "Funktion %qs kann keine Argumente haben"
+msgstr "»%s«-Funktionen können nicht abstrakt sein"
 
 #: d/dmd/dsymbolsem.c:2766
 #, gcc-internal-format, gfc-internal-format
 msgid "%s method is not virtual and cannot override"
-msgstr ""
+msgstr "die Methode »%s« ist nicht virtuell und kann daher nicht »override« sein"
 
 #: d/dmd/dsymbolsem.c:2768
-#, fuzzy, gcc-internal-format
-#| msgid "Warn about overloaded virtual function names."
+#, gcc-internal-format
 msgid "cannot override a non-virtual function"
-msgstr "Bei überladenen virtuellen Funktionsnamen warnen."
+msgstr "eine Funktion, die nicht %<virtual%> ist, kann nicht übersteuert werden"
 
 #: d/dmd/dsymbolsem.c:2772
-#, fuzzy, gcc-internal-format
-#| msgid "cannot fallthrough final case in switch"
+#, gcc-internal-format
 msgid "cannot be both final and abstract"
-msgstr "fallthrough ist bei letztem Fall einer switch-Anweisung unmöglich"
+msgstr "kann nicht gleichzeitig %<final%> und %<abstract%> sein"
 
 #: d/dmd/dsymbolsem.c:2784
 #, gcc-internal-format, gfc-internal-format
 msgid "constructors, destructors, postblits, invariants, new and delete functions are not allowed in interface %s"
-msgstr ""
+msgstr "Konstruktoren, Destruktoren, »postblit«, Invarianten, »new«- und »delete«-Funktionen sind im Interface »%s« nicht erlaubt"
 
 #: d/dmd/dsymbolsem.c:2786
 #, gcc-internal-format, gfc-internal-format
 msgid "function body only allowed in final functions in interface %s"
-msgstr ""
+msgstr "Funktionsrumpf ist innerhalb des Interface »%s« nur in final-Funktionen erlaubt"
 
 #: d/dmd/dsymbolsem.c:2794
 #, gcc-internal-format, gfc-internal-format
 msgid "destructors, postblits and invariants are not allowed in union %s"
-msgstr ""
+msgstr "Destruktoren, »postblit« und Invarianten sind in »union %s« nicht erlaubt"
 
 #. If same name function exists in base class but 'this' is auto return,
 #. * cannot find index of base class's vtbl[] to override.
@@ -58897,304 +58810,277 @@ msgstr ""
 #: d/dmd/dsymbolsem.c:2850
 #, gcc-internal-format
 msgid "return type inference is not supported if may override base class function"
-msgstr ""
+msgstr "Herleitung des Rückgabetypen wird nicht unterstützt, wenn die Funktion der Basisklasse übersteuert werden kann"
 
 #: d/dmd/dsymbolsem.c:2880 d/dmd/dsymbolsem.c:2975
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "overriding final function %q+D"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot override final function %s"
-msgstr "finale Funktion %q+D wird überschrieben"
+msgstr "»final«-Funktion »%s« kann nicht übersteuert werden"
 
 #: d/dmd/dsymbolsem.c:3008
-#, fuzzy, gcc-internal-format
-#| msgid "multiple save reg attributes to function %qD"
+#, gcc-internal-format
 msgid "multiple overrides of same function"
-msgstr "mehrere Registerspeicher-Attribute für Funktion %qD"
+msgstr "mehrere Übersteuerungen derselben Funktion"
 
 #: d/dmd/dsymbolsem.c:3103
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%q+D has incompatible attributes %qs and %qs"
+#, gcc-internal-format, gfc-internal-format
 msgid "incompatible covariant types %s and %s"
-msgstr "%q+D hat unverträgliche Attribute %qs und %qs"
+msgstr "inkompatible kovariante Typen »%s« und »%s«"
 
 #: d/dmd/dsymbolsem.c:3125
 #, gcc-internal-format, gfc-internal-format
 msgid "does not override any function, did you mean to override `%s%s`?"
-msgstr ""
+msgstr "übersteuert keine Funktion, wollten Sie »%s%s« übersteuern?"
 
 #: d/dmd/dsymbolsem.c:3128
-#, fuzzy, gcc-internal-format
-#| msgid "%qD does not refer to a function"
+#, gcc-internal-format
 msgid "does not override any function"
-msgstr "%qD bezeichnet keine Funktion"
+msgstr "übersteuert keine Funktion"
 
 #: d/dmd/dsymbolsem.c:3149
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "overriding final function %q+D"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot override final function %s.%s"
-msgstr "finale Funktion %q+D wird überschrieben"
+msgstr "»final«-Funktion »%s.%s« kann nicht übersteuert werden"
 
 #: d/dmd/dsymbolsem.c:3164
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "override only applies to class member functions"
-msgstr "%<this%> ist für statische Elementfunktionen nicht verfügbar"
+msgstr "%<override%> ist nur auf Klassenelementfunktionen anwendbar"
 
 #: d/dmd/dsymbolsem.c:3173
 #, gcc-internal-format
 msgid "in and out contracts can only appear without a body when they are virtual interface functions or abstract"
-msgstr ""
+msgstr "in- und out-Verträge können nur ohne Rumpf vorkommen, wenn sie virtuelle Interface-Funktionen sind, oder %<abstract%>"
 
 #: d/dmd/dsymbolsem.c:3196
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Warn about overloaded virtual function names."
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot use template to add virtual function to class `%s`"
-msgstr "Bei überladenen virtuellen Funktionsnamen warnen."
+msgstr "Template kann nicht verwendet werden, um virtuelle Funktion zu Klasse »%s« hinzuzufügen"
 
 #: d/dmd/dsymbolsem.c:3304
 #, gcc-internal-format
 msgid "default constructor for structs only allowed with @disable, no body, and no parameters"
-msgstr ""
+msgstr "Standardkonstruktor für %<struct%> ist nur mit %<@disable%>, ohne Rumpf und ohne Parameter erlaubt"
 
 #: d/dmd/dsymbolsem.c:3648
 #, gcc-internal-format
 msgid "at least one argument of type size_t expected"
-msgstr ""
+msgstr "mindestens ein Argument vom Typ %<size_t%> erwartet"
 
 #: d/dmd/dsymbolsem.c:3654
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "first argument must be []byte"
+#, gcc-internal-format, gfc-internal-format
 msgid "first argument must be type size_t, not %s"
-msgstr "erstes Argument muss []byte sein"
+msgstr "das erste Argument muss vom Typ »size_t« sein, nicht »%s«"
 
 #: d/dmd/dsymbolsem.c:3690
 #, gcc-internal-format
 msgid "one argument of type void* expected"
-msgstr ""
+msgstr "genau ein Argument vom Typ %<void*%> erwartet"
 
 #: d/dmd/dsymbolsem.c:3696
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "constant expression expected, not %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "one argument of type void* expected, not %s"
-msgstr "Konstanten-Ausdruck erforderlich, nicht %s"
+msgstr "genau ein Argument vom Typ »void« erwartet, nicht »%s«"
 
 #: d/dmd/dsymbolsem.c:3754
-#, fuzzy, gcc-internal-format
-#| msgid "union cannot be made transparent"
+#, gcc-internal-format
 msgid "structs, unions cannot be abstract"
-msgstr "union kann nicht transparent gemacht werden"
+msgstr "%<struct%> und %<union%> können nicht %<abstract%> sein"
 
 #: d/dmd/dsymbolsem.c:3894 d/dmd/dsymbolsem.c:4446
 #, gcc-internal-format, gfc-internal-format
 msgid "already exists at %s. Perhaps in another function with the same name?"
-msgstr ""
+msgstr "existiert bereits bei %s. Vielleicht in einer anderen Funktion desselben Namens?"
 
 #: d/dmd/dsymbolsem.c:3976
 #, gcc-internal-format
 msgid "storage class `auto` is invalid when declaring a class, did you mean to use `scope`?"
-msgstr ""
+msgstr "Speicherklasse %<auto%> ist beim Deklarieren einer Klasse ungültig, meinten Sie %<scope%>?"
 
 #: d/dmd/dsymbolsem.c:4039
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%s must be an array or pointer type, not %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "base type must be class or interface, not %s"
-msgstr "%s muss ein Array- oder Zeigertyp sein, nicht %s"
+msgstr "der Basistyp muss eine Klasse oder ein Interface sein, nicht »%s«"
 
 #: d/dmd/dsymbolsem.c:4062
-#, fuzzy, gcc-internal-format
-#| msgid "Warn on direct virtual inheritance."
+#, gcc-internal-format
 msgid "circular inheritance"
-msgstr "Bei direkter virtueller Vererbung warnen."
+msgstr "zirkuläre Vererbung"
 
 #: d/dmd/dsymbolsem.c:4098 d/dmd/dsymbolsem.c:4588
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Repeat spec must be an integer at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "base type must be interface, not %s"
-msgstr "Wiederholungsangabe bei %C muss eine Ganzzahl sein"
+msgstr "der Basistyp muss ein Interface sein, nicht »%s«"
 
 #: d/dmd/dsymbolsem.c:4109 d/dmd/dsymbolsem.c:4599
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ignoring duplicate directory \"%s\"\n"
+#, gcc-internal-format, gfc-internal-format
 msgid "inherits from duplicate interface %s"
-msgstr "doppeltes Verzeichnis »%s« wird ignoriert\n"
+msgstr "erbt vom doppelten Interface »%s«"
 
 #: d/dmd/dsymbolsem.c:4173
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot inherit from final class %s"
-msgstr "Zeichenkettentabelle aus %s konnte nicht gelesen werden"
+msgstr "von der »final«-Klasse »%s« kann nicht geerbt werden"
 
 #: d/dmd/dsymbolsem.c:4273
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "type transparent class %qT has virtual functions"
+#, gcc-internal-format, gfc-internal-format
 msgid "C++ base class %s needs at least one virtual function"
-msgstr "typtransparente Klasse %qT hat virtuelle Funktionen"
+msgstr "die C++-Basisklasse »%s« benötigt mindestens eine »virtual«-Funktion"
 
 #: d/dmd/dsymbolsem.c:4297
 #, gcc-internal-format, gfc-internal-format
 msgid "static class cannot inherit from nested class %s"
-msgstr ""
+msgstr "»static«-Klasse kann nicht von geschachtelter Klasse »%s« erben"
 
 #: d/dmd/dsymbolsem.c:4305
 #, gcc-internal-format, gfc-internal-format
 msgid "is nested within %s, but super class %s is nested within %s"
-msgstr ""
+msgstr "ist in »%s« geschachtelt, aber die Oberklasse »%s« ist in »%s« geschachtelt"
 
 #: d/dmd/dsymbolsem.c:4312
 #, gcc-internal-format, gfc-internal-format
 msgid "is not nested, but super class %s is nested within %s"
-msgstr ""
+msgstr "ist nicht geschachtelt, aber die Oberklasse »%s« ist in »%s« geschachtelt"
 
 #: d/dmd/dsymbolsem.c:4420
 #, gcc-internal-format, gfc-internal-format
 msgid "cannot implicitly generate a default ctor when base class %s is missing a default ctor"
-msgstr ""
+msgstr "ein impliziter Standardkonstruktor ist nicht möglich, da die Basisklasse »%s« keinen Standardkonstruktor hat"
 
 #: d/dmd/dsymbolsem.c:4467
 #, gcc-internal-format, gfc-internal-format
 msgid "Field members of a synchronized class cannot be %s"
-msgstr ""
+msgstr "Felder einer »synchronized«-Klasse können nicht »%s« sein"
 
 #: d/dmd/dsymbolsem.c:4607
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "circular inheritance of interface"
-msgstr "Typ-Switch mit Nicht-Interface-Wert ist nicht möglich"
+msgstr "zirkuläre Abhängigkeit eines Interfaces"
 
 #: d/dmd/dsymbolsem.c:4841
-#, fuzzy, gcc-internal-format
-#| msgid "template parameters do not match template %qD"
+#, gcc-internal-format
 msgid "mixin templates are not regular templates"
-msgstr "Template-Parameter passen nicht zum Template %qD"
+msgstr "Mixin-Templates sind keine regulären Templates"
 
 #: d/dmd/dsymbolsem.c:5028
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "template-id %qD for %q+D does not match any template declaration"
+#, gcc-internal-format, gfc-internal-format
 msgid "template instantiation %s forward references template declaration %s"
-msgstr "Template-ID %qD für %q+D passt zu keiner Templatedeklaration"
+msgstr "Template-Instanziierung »%s« verweist vorgreifend auf die Template-Deklaration »%s«"
 
 #: d/dmd/dsymbolsem.c:5409
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "cannot resolve"
-msgstr "»%s« kann nicht gelesen werden"
+msgstr "kann nicht aufgelöst werden"
 
 #: d/dmd/dsymbolsem.c:5436
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot take address of %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot alias an expression %s"
-msgstr "die Adresse von %s kann nicht ermittelt werden"
+msgstr "kann keinen Alias für den Ausdruck »%s« bilden"
 
 #: d/dmd/semantic2.c:72
 #, gcc-internal-format
 msgid "\"%.*s\""
-msgstr ""
+msgstr "\"%.*s\""
 
 #: d/dmd/semantic2.c:78
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%qs failed"
+#, gcc-internal-format, gfc-internal-format
 msgid "(%s) is false"
-msgstr "%qs fehlgeschlagen"
+msgstr "(%s) ist falsch"
 
 #: d/dmd/semantic2.c:210
 #, gcc-internal-format
 msgid ": Unable to initialize enum with class or pointer to struct. Use static const variable instead."
-msgstr ""
+msgstr "Aufzählung kann nicht mit Klasse oder Zeiger auf »struct« initialisiert werden. Verwenden Sie eine »static const«-Variable stattdessen."
 
 #: d/dmd/semantic2.c:219
 #, gcc-internal-format, gfc-internal-format
 msgid "is mutable. Only const or immutable class thread local variable are allowed, not %s"
-msgstr ""
+msgstr "ist veränderlich. Als threadlokale Variablen sind nur »const« oder »immutable class« erlaubt, nicht jedoch »%s«"
 
 #: d/dmd/semantic2.c:226
 #, gcc-internal-format, gfc-internal-format
 msgid "is a pointer to mutable struct. Only pointers to const, immutable or shared struct thread local variable are allowed, not %s"
-msgstr ""
+msgstr "ist ein Zeiger auf eine veränderliche »struct«. Nur Zeiger auf »const«, »immutable« oder »shared struct« sind als threadlokale Variablen erlaubt, nicht jedoch »%s«"
 
 #: d/dmd/semantic2.c:384
-#, fuzzy, gcc-internal-format
+#, gcc-internal-format
 msgid "has forward references"
-msgstr "Referenz auf »void« wird gebildet"
+msgstr "hat Vorwärtsreferenzen"
 
 #: d/dmd/semantic3.c:358
-#, fuzzy, gcc-internal-format
-#| msgid "return with value in function with no return type"
+#, gcc-internal-format
 msgid "has no function body with return type inference"
-msgstr "Rückgabe eines Wertes in Funktion ohne Rückgabetyp"
+msgstr "hat keinen Funktionsrumpf mit Rückgabetyp-Herleitung"
 
 #: d/dmd/semantic3.c:372
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "argument %u in call to function %qE does not have integral type"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot have an in contract when overriden function %s does not have an in contract"
-msgstr "Argument %u in Aufruf von %qE muss ein Ganzzahltyp sein"
+msgstr "kann keinen »in«-Vertrag haben, da die übersteuerte Funktion »%s« keinen »in«-Vertrag hat"
 
 #: d/dmd/semantic3.c:449
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot open %s: %m"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot be %s members"
-msgstr "%s kann nicht geöffnet werden: %m"
+msgstr "können keine »%s«-Elemente sein"
 
 #: d/dmd/semantic3.c:476
-#, fuzzy, gcc-internal-format
-#| msgid "array notation cannot be used with function type"
+#, gcc-internal-format
 msgid "D-style variadic functions cannot be used with -betterC"
-msgstr "Arraynotation kann nicht zusammen mit Funktionstypen verwendet werden"
+msgstr "variadische Funktionen im D-Stil können nicht mit »-betterC« verwendet werden"
 
 #: d/dmd/semantic3.c:478
 #, gcc-internal-format
 msgid "`object.TypeInfo_Tuple` could not be found, but is implicitly used in D-style variadic functions"
-msgstr ""
+msgstr "»object.TypeInfo_Tuple« wurde nicht gefunden, wird jedoch implizit von variadischen Funktionen im D-Stil verwendet"
 
 #: d/dmd/semantic3.c:480
 #, gcc-internal-format
 msgid "`object.TypeInfo` could not be found, but is implicitly used in D-style variadic functions"
-msgstr ""
+msgstr "»object.TypeInfo« wurde nicht gefunden, wird jedoch implizit von variadischen Funktionen im D-Stil verwendet"
 
 #: d/dmd/semantic3.c:547 d/dmd/semantic3.c:587
-#, fuzzy, gcc-internal-format, gfc-internal-format
+#, gcc-internal-format, gfc-internal-format
 msgid "parameter %s.%s is already defined"
-msgstr "Deklaration von %qD als Array von voids"
+msgstr "Parameter »%s.%s« ist bereits definiert"
 
 #: d/dmd/semantic3.c:746
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "missing initializer for field %qD of %qT"
+#, gcc-internal-format, gfc-internal-format
 msgid "missing initializer for %s field %s"
-msgstr "fehlende Initialisierung für Feld %qD von %qT fehlt"
+msgstr "fehlende Initialisierung für »%s«, Feld »%s«"
 
 #: d/dmd/semantic3.c:758
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "failed to initialize plugin %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "field %s must be initialized but skipped"
-msgstr "Plugin %s kann nicht initialisiert werden"
+msgstr "Feld »%s« muss initialisiert, aber übersprungen werden"
 
 #: d/dmd/semantic3.c:775
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type for _Literal with constructor"
+#, gcc-internal-format
 msgid "no match for implicit super() call in constructor"
-msgstr "Interner Fehler: invalid type for _Literal with constructor"
+msgstr "die Basisklasse enthält keinen Standardkonstruktor, der vom impliziten »super()« aufgerufen wird"
 
 #: d/dmd/semantic3.c:779
 #, gcc-internal-format
 msgid "cannot call super() implicitly because it is annotated with @disable"
-msgstr ""
+msgstr "der Standardkonstruktor der Basisklasse ist mit »@disabled« annotiert und kann daher nicht aufgerufen werden"
 
 #: d/dmd/semantic3.c:860
 #, gcc-internal-format, gfc-internal-format
 msgid "has no return statement, but is expected to return a value of type %s"
-msgstr ""
+msgstr "hat keine »return«-Anweisung, verspricht aber einen Rückgabewert vom Typ »%s«"
 
 #: d/dmd/semantic3.c:862
-#, fuzzy, gcc-internal-format
-#| msgid "function return type cannot be function"
+#, gcc-internal-format
 msgid "no return exp; or assert(0); at end of function"
-msgstr "Rückgabetyp der Funktion kann keine Funktion sein"
+msgstr "weder »return Ausdruck;« noch »assert(0);« am Ende der Funktion"
 
 #: d/dmd/semantic3.c:1193
 #, gcc-internal-format, gfc-internal-format
 msgid "synchronized function %s must be a member of a class"
-msgstr ""
+msgstr "»synchronized«-Funktion »%s« muss ein Element der Klasse sein"
 
 #: d/dmd/semantic3.c:1212
-#, fuzzy, gcc-internal-format
-#| msgid "indirect call in function, which are not supported by eBPF"
+#, gcc-internal-format
 msgid "naked assembly functions with contracts are not supported"
-msgstr "indirekter Aufruf in Funktion, das wird von eBPF nicht unterstützt"
+msgstr "nackte Assembler-Funktionen mit Verträgen werden nicht unterstützt"
 
 #: fortran/arith.c:47
 #, gcc-internal-format, gfc-internal-format
@@ -60854,10 +60740,9 @@ msgid "Substring end index at %L exceeds the string length"
 msgstr "End-Index der Teilzeichenkette bei %L überschreitet Zeichenkettenlänge"
 
 #: fortran/data.c:249
-#, fuzzy, gcc-internal-format
-#| msgid "Nonpointer object %qs with default initialization shall not appear in a DATA statement at %L"
+#, gcc-internal-format
 msgid "PARAMETER %qs shall not appear in a DATA statement at %L"
-msgstr "Nichtzeiger-Objekt %qs mit Standard-Initialisierung darf nicht in einer DATA-Anweisung bei %L erscheinen"
+msgstr "PARAMETER %qs darf nicht in einer DATA-Anweisung bei %L vorkommen"
 
 #: fortran/data.c:291
 #, gcc-internal-format
@@ -63587,8 +63472,7 @@ msgid "Index variable %qs not definable as INTENT(INOUT) argument at %L in subro
 msgstr "Indexvariable %qs ist nicht als INTENT(INOUT)-Argument definierbar bei %L in Unterroutine %qs, die aus der DO-Schleife bei %L heraus aufgerufen wird"
 
 #: fortran/frontend-passes.c:2657
-#, fuzzy, gcc-internal-format
-#| msgid "Variable %qs at %L set to undefined value inside loop  beginning at %L as INTENT(OUT) argument to subroutine %qs"
+#, gcc-internal-format
 msgid "Variable %qs at %L set to undefined value inside loop beginning at %L as INTENT(OUT) argument to subroutine %qs"
 msgstr "Variable %qs bei %L wird auf undefinierten Wert gesetzt, innerhalb der bei %L beginnenden Schleife, als INTENT(OUT)-Argument für Unterroutine %qs"
 
@@ -64866,10 +64750,9 @@ msgid "Scalar %qs in FORMAT tag at %L is not an ASSIGNED variable"
 msgstr "Skalares %qs in FORMAT-Marke bei %L ist keine ASSIGNED-Variable"
 
 #: fortran/io.c:1768
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Non-character in FORMAT tag at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Non-character non-Hollerith in FORMAT tag at %L"
-msgstr "Nicht-Zeichen in FORMAT-Markierung bei %L"
+msgstr "Weder Zeichen noch Hollerith in FORMAT-Markierung bei %L"
 
 #: fortran/io.c:1772
 #, gcc-internal-format, gfc-internal-format
@@ -66118,7 +66001,7 @@ msgstr "Gruppenname %qs der Namensliste bei %C ist bereits USE-verbunden und kan
 #: fortran/match.c:5546
 #, gcc-internal-format
 msgid "Symbol %qs in namelist %qs at %C must be declared before the namelist is declared."
-msgstr ""
+msgstr "Symbol %qs in Namensliste %qs bei %C muss deklariert sein, bevor die Namensliste deklariert wird."
 
 #: fortran/match.c:5565
 #, gcc-internal-format
@@ -66972,14 +66855,12 @@ msgid "!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> specified at %L ov
 msgstr "%<!$OMP REQUIRES%>-Klausel %<atomic_default_mem_order(%s)%>, die bei %L angegeben ist, übersteuert ein vorangehendes %<atomic_default_mem_order(%s)%> (das möglicherweise von einer Modulverwendung stammt)"
 
 #: fortran/openmp.c:3789
-#, fuzzy, gcc-internal-format
-#| msgid "!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> specified via module %qs use at %L but same clause is not set at for the program unit"
+#, gcc-internal-format
 msgid "!$OMP REQUIRES clause %<atomic_default_mem_order(%s)%> specified via module %qs use at %L but same clause is not specified for the program unit"
 msgstr "%<!$OMP REQUIRES%>-Klausel %<atomic_default_mem_order(%s)%> wird von der Modulverwendung %qs bei %L angegeben, aber diese Klausel ist in der Programmeinheit nicht ebenfalls angegeben"
 
 #: fortran/openmp.c:3794
-#, fuzzy, gcc-internal-format
-#| msgid "!$OMP REQUIRES clause %qs specified via module %qs use at %L but same clause is not set at for the program unit"
+#, gcc-internal-format
 msgid "!$OMP REQUIRES clause %qs specified via module %qs use at %L but same clause is not specified for the program unit"
 msgstr "%<!$OMP REQUIRES%>-Klausel %qs ist von der Modulverwendung %qs bei %L angegeben, aber diese Klausel ist in der Programmeinheit nicht ebenfalls angegeben"
 
@@ -67337,10 +67218,9 @@ msgid "Unexpected substring reference in %s clause at %L"
 msgstr "Unerwarteter Verweis auf Teilzeichenkette in %s-Klausel bei %L"
 
 #: fortran/openmp.c:5236
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Unexpected substring reference in %s clause at %L"
+#, gcc-internal-format, gfc-internal-format
 msgid "Unexpected complex-parts designator reference in %s clause at %L"
-msgstr "Unerwarteter Verweis auf Teilzeichenkette in %s-Klausel bei %L"
+msgstr "Unerwarteter Verweis auf »complex-parts designator« in »%s«-Klausel bei %L"
 
 #: fortran/openmp.c:5245 fortran/openmp.c:5263
 #, gcc-internal-format
@@ -67393,8 +67273,7 @@ msgid "Non-dummy object %qs in %s clause at %L"
 msgstr "Nicht-Scheinobjekt %qs in %s-Klausel bei %L"
 
 #: fortran/openmp.c:5413
-#, fuzzy, gcc-internal-format
-#| msgid "%<inscan%> and non-%<inscan%> %<reduction%> clauses on the same construct %L"
+#, gcc-internal-format
 msgid "%<inscan%> and non-%<inscan%> %<reduction%> clauses on the same construct at %L"
 msgstr "%<inscan%> und nicht-%<inscan%>-%<reduction%>-Klauseln am selben Konstrukt bei %L"
 
@@ -68701,10 +68580,9 @@ msgid "%qs at %C is not an inquiry reference to an intrinsic type component %qs"
 msgstr "%qs bei %C ist keine Ermittlungsreferenz auf eine intrinsische Typkomponente %qs"
 
 #: fortran/primary.c:2394
-#, fuzzy, gcc-internal-format
-#| msgid "%qs at %C is not an inquiry reference to an intrinsic type component %qs"
+#, gcc-internal-format
 msgid "%qs at %C is not an inquiry reference to an intrinsic type component"
-msgstr "%qs bei %C ist keine Ermittlungsreferenz auf eine intrinsische Typkomponente %qs"
+msgstr "%qs bei %C ist keine Ermittlungsreferenz auf eine intrinsische Typkomponente"
 
 #: fortran/primary.c:2464
 #, gcc-internal-format, gfc-internal-format
@@ -72599,16 +72477,14 @@ msgid "optional class parameter"
 msgstr "optionaler Klassenparameter"
 
 #: fortran/trans-openmp.c:3033
-#, fuzzy, gcc-internal-format
-#| msgid "Expected expression type"
+#, gcc-internal-format
 msgid "unhandled expression type"
-msgstr "Ausdruckstyp erwartet"
+msgstr "unbehandelter Ausdruckstyp"
 
 #: fortran/trans-openmp.c:3187
-#, fuzzy, gcc-internal-format
-#| msgid "bad expression"
+#, gcc-internal-format
 msgid "unhandled expression"
-msgstr "bad expression"
+msgstr "unbehandelter Ausdruck"
 
 # https://gcc.gnu.org/bugzilla/show_bug.cgi?id=79596
 #: fortran/trans-openmp.c:6039
@@ -74001,10 +73877,9 @@ msgid "missing header name"
 msgstr "fehlender Headername"
 
 #: c-family/c.opt:1760
-#, fuzzy, gcc-internal-format
-#| msgid "missing header name"
+#, gcc-internal-format
 msgid "missing module name"
-msgstr "fehlender Headername"
+msgstr "fehlender Modulname"
 
 #: c-family/c.opt:1807
 #, gcc-internal-format
