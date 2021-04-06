@@ -1838,7 +1838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       }
 
       // called by the second initialize_dispatch above
-      //@{
+      ///@{
       /**
        *  @brief Fills the deque with whatever is in [first,last).
        *  @param  __first  An input iterator.
@@ -1859,7 +1859,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	void
 	_M_range_initialize(_ForwardIterator __first, _ForwardIterator __last,
 			    std::forward_iterator_tag);
-      //@}
+      ///@}
 
       /**
        *  @brief Fills the %deque with copies of value.
@@ -1943,7 +1943,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  }
       }
 
-      //@{
+      ///@{
       /// Helper functions for push_* and pop_*.
 #if __cplusplus < 201103L
       void _M_push_back_aux(const value_type&);
@@ -1960,7 +1960,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void _M_pop_back_aux();
 
       void _M_pop_front_aux();
-      //@}
+      ///@}
 
       // Internal insert functions follow.  The *_aux functions do the actual
       // insertion work when all shortcuts fail.
@@ -2083,7 +2083,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_shrink_to_fit();
 #endif
 
-      //@{
+      ///@{
       /// Memory-handling helpers for the previous internal insert functions.
       iterator
       _M_reserve_elements_at_front(size_type __n)
@@ -2110,10 +2110,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       void
       _M_new_elements_at_back(size_type __new_elements);
-      //@}
+      ///@}
 
 
-      //@{
+      ///@{
       /**
        *  @brief Memory-handling helpers for the major %map.
        *
@@ -2139,7 +2139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       void
       _M_reallocate_map(size_type __nodes_to_add, bool __add_at_front);
-      //@}
+      ///@}
 
 #if __cplusplus >= 201103L
       // Constant-time, nothrow move assignment when source object's memory

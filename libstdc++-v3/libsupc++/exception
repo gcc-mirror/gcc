@@ -111,7 +111,7 @@ namespace std
   int uncaught_exceptions() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 #endif
 
-  // @} group exceptions
+  /// @} group exceptions
 } // namespace std
 
 namespace __gnu_cxx

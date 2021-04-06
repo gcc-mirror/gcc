@@ -239,6 +239,8 @@ vwarning (const Loc &loc, const char *format, va_list ap)
 
       d_diagnostic_report_diagnostic (loc, 0, format, ap, DK_WARNING, false);
     }
+  else if (global.gag)
+    global.gaggedWarnings++;
 }
 
 /* Print supplementary message about the last warning with explicit location
@@ -297,6 +299,8 @@ vdeprecation (const Loc &loc, const char *format, va_list ap,
 				      DK_WARNING, false);
       free (xformat);
     }
+  else if (global.gag)
+    global.gaggedWarnings++;
 }
 
 /* Print supplementary message about the last deprecation with explicit

@@ -1152,7 +1152,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       splice_after(const_iterator __pos, forward_list&,
 		   const_iterator __before, const_iterator __last) noexcept
       { _M_splice_after(__pos, __before, __last); }
-      // @}
+      /// @}
 
     private:
 #if __cplusplus > 201703L

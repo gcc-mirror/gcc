@@ -567,7 +567,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   typedef ratio<         1000000000000000, 1> peta;
   typedef ratio<      1000000000000000000, 1> exa;
 
-  // @} group ratio
+  /// @} group ratio
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

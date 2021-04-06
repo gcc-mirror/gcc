@@ -542,7 +542,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif // __cplusplus >= 201103L
 
-  // @} relates pair
+  /// @} relates pair
 
   /**
    *  @brief A convenience wrapper for creating a pair from two objects.

@@ -5220,6 +5220,7 @@ static const char *getMatchError(const char *format, ...)
     va_list ap;
     va_start(ap, format);
     buf.vprintf(format, ap);
+    va_end(ap);
     return buf.extractChars();
 }
 
@@ -6806,23 +6807,6 @@ Expression *TypeEnum::dotExp(Scope *sc, Expression *e, Identifier *ident, int fl
 
     if (sym->semanticRun < PASSsemanticdone)
         dsymbolSemantic(sym, NULL);
-    if (!sym->members)
-    {
-        if (sym->isSpecial())
-        {
-            /* Special enums forward to the base type
-             */
-            e = sym->memtype->dotExp(sc, e, ident, flag);
-        }
-        else if (!(flag & 1))
-        {
-            sym->error("is forward referenced when looking for `%s`", ident->toChars());
-            e = new ErrorExp();
-        }
-        else
-            e = NULL;
-        return e;
-    }
 
     Dsymbol *s = sym->search(e->loc, ident);
     if (!s)

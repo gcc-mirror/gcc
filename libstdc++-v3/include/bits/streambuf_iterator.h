@@ -53,7 +53,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
 #if __cplusplus < 201103L
       typedef _CharT& reference; // Changed to _CharT by LWG 445
@@ -68,7 +68,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename _Traits::int_type		int_type;
       typedef basic_streambuf<_CharT, _Traits>		streambuf_type;
       typedef basic_istream<_CharT, _Traits>		istream_type;
-      //@}
+      ///@}
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,
@@ -240,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
     public:
       // Types:
-      //@{
+      ///@{
       /// Public typedefs
 #if __cplusplus > 201703L
       using difference_type = ptrdiff_t;
@@ -249,7 +249,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Traits			       traits_type;
       typedef basic_streambuf<_CharT, _Traits> streambuf_type;
       typedef basic_ostream<_CharT, _Traits>   ostream_type;
-      //@}
+      ///@}
 
       template<typename _CharT2>
 	friend typename __gnu_cxx::__enable_if<__is_char<_CharT2>::__value,

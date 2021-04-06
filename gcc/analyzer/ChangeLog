@@ -1,3 +1,21 @@
+2021-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99906
+	* analyzer.cc (maybe_reconstruct_from_def_stmt): Fix NULL
+	dereference on calls with zero arguments.
+	* sm-malloc.cc (malloc_state_machine::on_stmt): When handling
+	__attribute__((nonnull)), only call get_diagnostic_tree if the
+	result will be used.
+
+2021-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99886
+	* diagnostic-manager.cc
+	(diagnostic_manager::prune_interproc_events): Use signed integers
+	when subtracting one from path->num_events ().
+	(diagnostic_manager::consolidate_conditions): Likewise.  Convert
+	next_idx to a signed int.
+
 2021-04-01  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-manager.cc (diagnostic_manager::add_diagnostic): Make

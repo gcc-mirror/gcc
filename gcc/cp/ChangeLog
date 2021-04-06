@@ -1,3 +1,51 @@
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96311
+	* typeck.c (check_return_expr): Call mark_exp_read in dependent
+	case.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98440
+	* typeck.c (build_reinterpret_cast_1): Don't perform
+	temporary materialization.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95317
+	* pt.c (lookup_template_class_1): Do tsubst_enum when
+	tsubsting a generic lambda.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95870
+	* pt.c (enclosing_instantiation_of): Compare DECL_SOURCE_LOCATION if
+	there is no enclosing non-lambda function.
+
+2021-04-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99380
+	* module.cc (name_pending_imports): Drop 'atend' parm.  Don't
+	query export when not needed.
+	(preprocess_module, preprocessed_module): Adjust.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99066
+	* pt.c (mark_decl_instantiated): Set DECL_EXTERNAL.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99201
+	* pt.c (class el_data): Add visited field.
+	(extract_local_specs): Pass it to cp_walk_tree.
+	(extract_locals_r): Walk into the body of a lambda.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	* ptree.c (cxx_print_decl): Check DECL_MODULE_IMPORT_P on
+	template result.
+
 2021-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/99643

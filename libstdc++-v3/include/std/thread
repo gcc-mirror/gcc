@@ -297,7 +297,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 #endif // __cpp_lib_jthread
 
-  // @} group threads
+  /// @} group threads
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -1,3 +1,54 @@
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96311
+	* g++.dg/cpp1y/lambda-generic-Wunused.C: New test.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/rv-cast6.C: Expect reinterpret_cast error.
+	* g++.dg/cpp0x/reinterpret_cast2.C: Adjust message.
+	* g++.old-deja/g++.jason/rvalue3.C: Likewise.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95317
+	* g++.dg/cpp1y/lambda-generic-enum1.C: New test.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95870
+	* g++.dg/cpp0x/lambda/lambda-nsdmi10.C: New test.
+
+2021-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99906
+	* gcc.dg/analyzer/pr99906.c: New test.
+
+2021-04-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99886
+	* gcc.dg/analyzer/pr99886.c: New test.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99066
+	* g++.dg/cpp0x/extern_template-6.C: New test.
+
+2021-04-05  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99201
+	* g++.dg/cpp1z/constexpr-if-lambda4.C: New test.
+
+2021-04-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99914
+	* gdc.dg/pr99914.d: New test.
+
+2021-04-05  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* gcc.dg/ipa/propmalloc-4.c: Add -fdelete-null-pointer-checks.
+	* gcc.dg/tree-ssa/evrp11.c: Likewise.
+
 2021-04-04  Jason Merrill  <jason@redhat.com>
 
 	PR c++/99643

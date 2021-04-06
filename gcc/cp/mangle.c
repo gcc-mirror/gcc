@@ -1628,6 +1628,7 @@ write_literal_operator_name (tree identifier)
 static void
 write_compact_number (int num)
 {
+  gcc_checking_assert (num >= 0);
   if (num > 0)
     write_unsigned_number (num - 1);
   write_char ('_');
@@ -2027,15 +2028,7 @@ write_local_name (tree function, const tree local_entity,
   /* For this purpose, parameters are numbered from right-to-left.  */
   if (parm)
     {
-      tree t;
-      int i = 0;
-      for (t = DECL_ARGUMENTS (function); t; t = DECL_CHAIN (t))
-	{
-	  if (t == parm)
-	    i = 1;
-	  else if (i)
-	    ++i;
-	}
+      int i = list_length (parm);
       write_char ('d');
       write_compact_number (i - 1);
     }

@@ -4224,7 +4224,7 @@ vect_bb_partition_graph_r (bb_vec_info bb_vinfo,
       stmt_instance = instance;
     }
 
-  if (visited.add (node))
+  if (!SLP_TREE_SCALAR_STMTS (node).is_empty () && visited.add (node))
     return;
 
   slp_tree child;

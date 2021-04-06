@@ -7938,22 +7938,18 @@ build_reinterpret_cast_1 (location_t loc, tree type, tree expr,
     type = cv_unqualified (type);
 
   /* [expr.reinterpret.cast]
-     A glvalue expression of type T1 can be cast to the type
+     A glvalue of type T1, designating an object x, can be cast to the type
      "reference to T2" if an expression of type "pointer to T1" can be
-     explicitly converted to the type "pointer to T2" using a
-     reinterpret_cast.  */
+     explicitly converted to the type "pointer to T2" using a reinterpret_cast.
+     The result is that of *reinterpret_cast<T2 *>(p) where p is a pointer to x
+     of type "pointer to T1". No temporary is created, no copy is made, and no
+     constructors (11.4.4) or conversion functions (11.4.7) are called.  */
   if (TYPE_REF_P (type))
     {
-      if (TYPE_REF_IS_RVALUE (type) && !VOID_TYPE_P (intype))
-	{
-	  if (!obvalue_p (expr))
-	    /* Perform the temporary materialization conversion.  */
-	    expr = get_target_expr_sfinae (expr, complain);
-	}
-      else if (!lvalue_p (expr))
+      if (!glvalue_p (expr))
 	{
           if (complain & tf_error)
-            error_at (loc, "invalid cast of an rvalue expression of type "
+	    error_at (loc, "invalid cast of a prvalue expression of type "
 		      "%qT to type %qT",
 		      intype, type);
 	  return error_mark_node;
@@ -10219,6 +10215,9 @@ check_return_expr (tree retval, bool *no_warning)
     dependent:
       /* We should not have changed the return value.  */
       gcc_assert (retval == saved_retval);
+      /* We don't know if this is an lvalue or rvalue use, but
+	 either way we can mark it as read.  */
+      mark_exp_read (retval);
       return retval;
     }
 

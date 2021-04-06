@@ -422,7 +422,7 @@ inline namespace fundamentals_v2
       return __pt._M_t;
     }
 
-  // @} group propagate_const
+  /// @} group propagate_const
 } // namespace fundamentals_v2
 } // namespace experimental
 

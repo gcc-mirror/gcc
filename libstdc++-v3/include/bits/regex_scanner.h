@@ -264,7 +264,7 @@ namespace __detail
       void (_Scanner::* _M_eat_escape)();
     };
 
- //@} regex-detail
+ ///@} regex-detail
 } // namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

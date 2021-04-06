@@ -47,6 +47,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct identity
   {
     template<typename _Tp>
+      [[nodiscard]]
       constexpr _Tp&&
       operator()(_Tp&& __t) const noexcept
       { return std::forward<_Tp>(__t); }

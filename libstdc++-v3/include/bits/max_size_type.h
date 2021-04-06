@@ -22,7 +22,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file bits/max_size_type.h.
+/** @file bits/max_size_type.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly. @headername{iterator}
  */

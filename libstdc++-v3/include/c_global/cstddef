@@ -169,6 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __l = __l ^ __r; }
 
   template<typename _IntegerType>
+    [[nodiscard]]
     constexpr _IntegerType
     to_integer(__byte_op_t<_IntegerType> __b) noexcept
     { return _IntegerType(__b); }

@@ -455,7 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline directory_iterator
   end(directory_iterator) noexcept
   { return directory_iterator(); }
-  // @}
+  /// @}
 
   /// Iterator type for recursively traversing a directory hierarchy.
   class recursive_directory_iterator
@@ -553,11 +553,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   inline recursive_directory_iterator
   end(recursive_directory_iterator) noexcept
   { return recursive_directory_iterator(); }
-  // @}
+  /// @}
 
 _GLIBCXX_END_NAMESPACE_CXX11
 
-  // @} group filesystem
+  /// @} group filesystem
 } // namespace filesystem
 
   // Use explicit instantiations of these types. Any inconsistency in the

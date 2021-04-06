@@ -126,7 +126,7 @@ namespace ip
   struct v4_mapped_t {};
   constexpr v4_mapped_t v4_mapped;
 
-  // @}
+  /// @}
 
   /// An IPv4 address.
   class address_v4
@@ -541,7 +541,7 @@ namespace ip
   operator>=(const address_v4& __a, const address_v4& __b) noexcept
   { return !(__a < __b); }
 
-  // @}
+  /// @}
 
   /** ip::address_v6 comparisons
    * @{
@@ -585,7 +585,7 @@ namespace ip
   operator>=(const address_v6& __a, const address_v6& __b) noexcept
   { return !(__a < __b); }
 
-  // @}
+  /// @}
 
   /** ip::address comparisons
    * @{
@@ -623,7 +623,7 @@ namespace ip
   operator>=(const address& __a, const address& __b) noexcept
   { return !(__a < __b); }
 
-  // @}
+  /// @}
 
   /** ip::address_v4 creation
    * @{
@@ -695,7 +695,7 @@ namespace ip
   make_address_v4(string_view __str)
   { return make_address_v4(__str, __throw_on_error{"make_address_v4"}); }
 
-  // @}
+  /// @}
 
   /** ip::address_v6 creation
    * @{
@@ -867,7 +867,7 @@ namespace ip
   make_address_v6(string_view __str)
   { return make_address_v6(__str, __throw_on_error{"make_address_v6"}); }
 
-  // @}
+  /// @}
 
   /** ip::address creation
    * @{
@@ -912,7 +912,7 @@ namespace ip
   make_address(string_view __str)
   { return make_address(__str, __throw_on_error{"make_address"}); }
 
-  // @}
+  /// @}
 
   /// ip::address I/O
   template<typename _CharT, typename _Traits>
@@ -1093,7 +1093,7 @@ namespace ip
 
   using address_v4_range = basic_address_range<address_v4>;
 
-  // @}
+  /// @}
 
   /** An IPv6 address range.
    * @{
@@ -1134,7 +1134,7 @@ namespace ip
 
   using address_v6_range = basic_address_range<address_v6>;
 
-  // @}
+  /// @}
 
   bool
   operator==(const network_v4& __a, const network_v4& __b) noexcept;
@@ -1307,7 +1307,7 @@ namespace ip
   operator!=(const network_v4& __a, const network_v4& __b) noexcept
   { return !(__a == __b); }
 
-  // @}
+  /// @}
 
   /** ip::network_v6 comparisons
    * @{
@@ -1324,7 +1324,7 @@ namespace ip
   operator!=(const network_v6& __a, const network_v6& __b) noexcept
   { return !(__a == __b); }
 
-  // @}
+  /// @}
 
   /** ip::network_v4 creation
    * @{
@@ -1356,7 +1356,7 @@ namespace ip
   make_network_v4(string_view __str)
   { return make_network_v4(__str, __throw_on_error{"make_network_v4"}); }
 
-  // @}
+  /// @}
 
   /** ip::network_v6 creation
    * @{
@@ -1384,7 +1384,7 @@ namespace ip
   make_network_v6(string_view __str)
   { return make_network_v6(__str, __throw_on_error{"make_network_v6"}); }
 
-  // @}
+  /// @}
 
   /// ip::network_v4 I/O
   template<typename _CharT, typename _Traits>
@@ -1566,7 +1566,7 @@ namespace ip
 	       const basic_endpoint<_InternetProtocol>& __b)
     { return !(__a < __b); }
 
-  // @}
+  /// @}
 
   /// basic_endpoint I/O
   template<typename _CharT, typename _Traits, typename _InternetProtocol>
@@ -1640,7 +1640,7 @@ namespace ip
 	       const basic_resolver_entry<_InternetProtocol>& __b)
     { return !(__a == __b); }
 
-  // @}
+  /// @}
 
   /** Base class defining flags for name/address resolution.
    * @{
@@ -1706,7 +1706,7 @@ namespace ip
 
   // TODO define resolver_base::flags static constants for C++14 mode
 
-  // @}
+  /// @}
 
   /** Container for results of name/address resolution.
    * @{
@@ -1788,7 +1788,7 @@ namespace ip
 	       const basic_resolver_results<_InternetProtocol>& __b)
     { return !(__a == __b); }
 
-  // @}
+  /// @}
 
   /// Perform name/address resolution.
   template<typename _InternetProtocol>
@@ -2071,7 +2071,7 @@ namespace ip
   host_name()
   { return host_name(std::allocator<char>{}, __throw_on_error{"host_name"}); }
 
-  // @}
+  /// @}
 
   /// The TCP byte-stream protocol.
   class tcp
@@ -2126,7 +2126,7 @@ namespace ip
   operator!=(const tcp& __a, const tcp& __b)
   { return !(__a == __b); }
 
-  // @}
+  /// @}
 
   /// The UDP datagram protocol.
   class udp
@@ -2165,7 +2165,7 @@ namespace ip
   operator!=(const udp& __a, const udp& __b)
   { return !(__a == __b); }
 
-  // @}
+  /// @}
 
   /// Restrict a socket created for an IPv6 protocol to IPv6 only.
   struct v6_only : __sockopt_crtp<v6_only, bool>
@@ -2395,7 +2395,7 @@ namespace ip
 
   } // namespace multicast
 
-  // @}
+  /// @}
 
 } // namespace ip
 } // namespace v1

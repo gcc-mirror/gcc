@@ -712,7 +712,7 @@ namespace __detail
       return __result;
     }
 
-  // @} group numeric_ops
+  /// @} group numeric_ops
 #endif // C++17
 
 _GLIBCXX_END_NAMESPACE_VERSION

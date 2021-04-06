@@ -386,7 +386,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define  __cpp_lib_as_const 201510
   template<typename _Tp>
-    constexpr add_const_t<_Tp>& as_const(_Tp& __t) noexcept { return __t; }
+    [[nodiscard]]
+    constexpr add_const_t<_Tp>&
+    as_const(_Tp& __t) noexcept
+    { return __t; }
 
   template<typename _Tp>
     void as_const(const _Tp&&) = delete;
@@ -466,6 +469,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __cpp_lib_to_underlying 202102L
   /// Convert an object of enumeration type to its underlying type.
   template<typename _Tp>
+    [[nodiscard]]
     constexpr underlying_type_t<_Tp>
     to_underlying(_Tp __value) noexcept
     { return static_cast<underlying_type_t<_Tp>>(__value); }

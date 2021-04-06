@@ -54,6 +54,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// Create a value of type `To` from the bits of `from`.
   template<typename _To, typename _From>
+    [[nodiscard]]
     constexpr _To
     bit_cast(const _From& __from) noexcept
     {

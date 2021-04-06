@@ -10173,7 +10173,8 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
 	= tree_cons (arglist, t,
 		     DECL_TEMPLATE_INSTANTIATIONS (found));
 
-      if (TREE_CODE (template_type) == ENUMERAL_TYPE && !is_dependent_type
+      if (TREE_CODE (template_type) == ENUMERAL_TYPE
+	  && !uses_template_parms (current_nonlambda_scope ())
 	  && !DECL_ALIAS_TEMPLATE_P (gen_tmpl))
 	/* Now that the type has been registered on the instantiations
 	   list, we set up the enumerators.  Because the enumeration
@@ -14371,6 +14372,19 @@ enclosing_instantiation_of (tree otctx)
 		  || instantiated_lambda_fn_p (tctx));
        tctx = decl_function_context (tctx))
     ++lambda_count;
+
+  if (!tctx)
+    {
+      /* Match using DECL_SOURCE_LOCATION, which is unique for all lambdas.
+
+	 For GCC 11 the above condition limits this to the previously failing
+	 case where all enclosing functions are lambdas (95870).  FIXME.  */
+      for (tree ofn = fn; ofn; ofn = decl_function_context (ofn))
+	if (DECL_SOURCE_LOCATION (ofn) == DECL_SOURCE_LOCATION (otctx))
+	  return ofn;
+      gcc_unreachable ();
+    }
+
   for (; fn; fn = decl_function_context (fn))
     {
       tree ofn = fn;
@@ -29441,8 +29455,6 @@ do_auto_deduction (tree type, tree init, tree auto_node,
                    tsubst_flags_t complain, auto_deduction_context context,
 		   tree outer_targs, int flags)
 {
-  tree targs;
-
   if (init == error_mark_node)
     return error_mark_node;
 
@@ -29506,14 +29518,17 @@ do_auto_deduction (tree type, tree init, tree auto_node,
   else
     init = resolve_nondeduced_context (init, complain);
 
+  tree targs;
   if (context == adc_decomp_type
       && auto_node == type
       && init != error_mark_node
       && TREE_CODE (TREE_TYPE (init)) == ARRAY_TYPE)
-    /* [dcl.decomp]/1 - if decomposition declaration has no ref-qualifiers
-       and initializer has array type, deduce cv-qualified array type.  */
-    return cp_build_qualified_type_real (TREE_TYPE (init), TYPE_QUALS (type),
-					 complain);
+    {
+      /* [dcl.struct.bind]/1 - if decomposition declaration has no ref-qualifiers
+	 and initializer has array type, deduce cv-qualified array type.  */
+      targs = make_tree_vec (1);
+      TREE_VEC_ELT (targs, 0) = TREE_TYPE (init);
+    }
   else if (AUTO_IS_DECLTYPE (auto_node))
     {
       tree stripped_init = tree_strip_any_location_wrapper (init);
@@ -29599,7 +29614,8 @@ do_auto_deduction (tree type, tree init, tree auto_node,
       if (processing_template_decl)
 	{
 	  gcc_checking_assert (context == adc_variable_type
-			       || context == adc_return_type);
+			       || context == adc_return_type
+			       || context == adc_decomp_type);
 	  gcc_checking_assert (!type_dependent_expression_p (init));
 	  /* If the constraint is dependent, we need to wait until
 	     instantiation time to resolve the placeholder.  */
@@ -29607,7 +29623,9 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	    return type;
 	}
 
-      if ((context == adc_return_type || context == adc_variable_type)
+      if ((context == adc_return_type
+	   || context == adc_variable_type
+	   || context == adc_decomp_type)
 	  && current_function_decl
 	  && DECL_TEMPLATE_INFO (current_function_decl))
 	outer_targs = DECL_TI_ARGS (current_function_decl);

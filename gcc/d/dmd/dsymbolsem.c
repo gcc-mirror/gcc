@@ -415,7 +415,19 @@ public:
             TypeStruct *ts = (TypeStruct *)tb;
             if (!ts->sym->members)
             {
-                dsym->error("no definition of struct %s", ts->toChars());
+                dsym->error("no definition of struct `%s`", ts->toChars());
+
+                // Explain why the definition is required when it's part of another type
+                if (!dsym->type->isTypeStruct())
+                {
+                    // Prefer Loc of the dependant type
+                    Dsymbol *s = dsym->type->toDsymbol(sc);
+                    Loc loc = s ? s->loc : dsym->loc;
+                    errorSupplemental(loc, "required by type `%s`", dsym->type->toChars());
+                }
+
+                // Flag variable as error to avoid invalid error messages due to unknown size
+                dsym->type = Type::terror;
             }
         }
         if ((dsym->storage_class & STCauto) && !inferred)
@@ -1737,6 +1749,9 @@ public:
                     ed->semanticRun = PASSinit;
                     return;
                 }
+                else
+                    // Ensure that semantic is run to detect. e.g. invalid forward references
+                    dsymbolSemantic(sym, sc);
             }
             if (ed->memtype->ty == Tvoid)
             {

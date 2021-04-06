@@ -250,7 +250,7 @@ namespace __detail
       bool                                                  _M_has_sol;
     };
 
- //@} regex-detail
+ ///@} regex-detail
 } // namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

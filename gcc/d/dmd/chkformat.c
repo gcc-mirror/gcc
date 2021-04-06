@@ -610,7 +610,7 @@ bool checkPrintfFormat(const Loc &loc, const char *format, Expressions &args, bo
         Type *t = e->type->toBasetype();
         Type *tnext = t->nextOf();
         const unsigned c_longsize = target.c.longsize;
-        const bool is64bit = global.params.is64bit;
+        const unsigned ptrsize = target.ptrsize;
 
         // Types which are promoted to int are allowed.
         // Spec: C99 6.5.2.2.7
@@ -619,46 +619,56 @@ bool checkPrintfFormat(const Loc &loc, const char *format, Expressions &args, bo
             case Format_u:      // unsigned int
             case Format_d:      // int
                 if (t->ty != Tint32 && t->ty != Tuns32)
-                    errorPrintfFormat(NULL, slice, e, "int", t);
+                    errorPrintfFormat(NULL, slice, e, fmt == Format_u ? "uint" : "int", t);
                 break;
 
             case Format_hhu:    // unsigned char
             case Format_hhd:    // signed char
                 if (t->ty != Tint32 && t->ty != Tuns32 && t->ty != Tint8 && t->ty != Tuns8)
-                    errorPrintfFormat(NULL, slice, e, "byte", t);
+                    errorPrintfFormat(NULL, slice, e, fmt == Format_hhu ? "ubyte" : "byte", t);
                 break;
 
             case Format_hu:     // unsigned short int
             case Format_hd:     // short int
                 if (t->ty != Tint32 && t->ty != Tuns32 && t->ty != Tint16 && t->ty != Tuns16)
-                    errorPrintfFormat(NULL, slice, e, "short", t);
+                    errorPrintfFormat(NULL, slice, e, fmt == Format_hu ? "ushort" : "short", t);
                 break;
 
             case Format_lu:     // unsigned long int
             case Format_ld:     // long int
                 if (!(t->isintegral() && t->size() == c_longsize))
-                    errorPrintfFormat(NULL, slice, e, (c_longsize == 4 ? "int" : "long"), t);
+                {
+                    if (fmt == Format_lu)
+                        errorPrintfFormat(NULL, slice, e, (c_longsize == 4 ? "uint" : "ulong"), t);
+                    else
+                        errorPrintfFormat(NULL, slice, e, (c_longsize == 4 ? "int" : "long"), t);
+                }
                 break;
 
             case Format_llu:    // unsigned long long int
             case Format_lld:    // long long int
                 if (t->ty != Tint64 && t->ty != Tuns64)
-                    errorPrintfFormat(NULL, slice, e, "long", t);
+                    errorPrintfFormat(NULL, slice, e, fmt == Format_llu ? "ulong" : "long", t);
                 break;
 
             case Format_ju:     // uintmax_t
             case Format_jd:     // intmax_t
                 if (t->ty != Tint64 && t->ty != Tuns64)
-                    errorPrintfFormat(NULL, slice, e, "core.stdc.stdint.intmax_t", t);
+                {
+                    if (fmt == Format_ju)
+                        errorPrintfFormat(NULL, slice, e, "core.stdc.stdint.uintmax_t", t);
+                    else
+                        errorPrintfFormat(NULL, slice, e, "core.stdc.stdint.intmax_t", t);
+                }
                 break;
 
             case Format_zd:     // size_t
-                if (!(t->isintegral() && t->size() == (is64bit ? 8 : 4)))
+                if (!(t->isintegral() && t->size() == ptrsize))
                     errorPrintfFormat(NULL, slice, e, "size_t", t);
                 break;
 
             case Format_td:     // ptrdiff_t
-                if (!(t->isintegral() && t->size() == (is64bit ? 8 : 4)))
+                if (!(t->isintegral() && t->size() == ptrsize))
                     errorPrintfFormat(NULL, slice, e, "ptrdiff_t", t);
                 break;
 
@@ -685,7 +695,7 @@ bool checkPrintfFormat(const Loc &loc, const char *format, Expressions &args, bo
                 break;
 
             case Format_ln:     // pointer to long int
-                if (!(t->ty == Tpointer && tnext->isintegral() && tnext->size() == c_longsize))
+                if (!(t->ty == Tpointer && tnext->isintegral() && !tnext->isunsigned() && tnext->size() == c_longsize))
                     errorPrintfFormat(NULL, slice, e, (c_longsize == 4 ? "int*" : "long*"), t);
                 break;
 
@@ -710,12 +720,12 @@ bool checkPrintfFormat(const Loc &loc, const char *format, Expressions &args, bo
                 break;
 
             case Format_zn:     // pointer to size_t
-                if (!(t->ty == Tpointer && tnext->ty == (is64bit ? Tuns64 : Tuns32)))
+                if (!(t->ty == Tpointer && tnext->isintegral() && tnext->isunsigned() && tnext->size() == ptrsize))
                     errorPrintfFormat(NULL, slice, e, "size_t*", t);
                 break;
 
             case Format_tn:     // pointer to ptrdiff_t
-                if (!(t->ty == Tpointer && tnext->ty == (is64bit ? Tint64 : Tint32)))
+                if (!(t->ty == Tpointer && tnext->isintegral() && !tnext->isunsigned() && tnext->size() == ptrsize))
                     errorPrintfFormat(NULL, slice, e, "ptrdiff_t*", t);
                 break;
 
@@ -845,7 +855,7 @@ bool checkScanfFormat(const Loc &loc, const char *format, Expressions &args, boo
         Type *t = e->type->toBasetype();
         Type *tnext = t->nextOf();
         const unsigned c_longsize = target.c.longsize;
-        const bool is64bit = global.params.is64bit;
+        const unsigned ptrsize = target.ptrsize;
 
         switch (fmt)
         {
@@ -887,13 +897,13 @@ bool checkScanfFormat(const Loc &loc, const char *format, Expressions &args, boo
 
             case Format_zn:
             case Format_zd:     // pointer to size_t
-                if (!(t->ty == Tpointer && tnext->ty == (is64bit ? Tuns64 : Tuns32)))
+                if (!(t->ty == Tpointer && tnext->isintegral() && tnext->isunsigned() && tnext->size() == ptrsize))
                     errorScanfFormat(NULL, slice, e, "size_t*", t);
                 break;
 
             case Format_tn:
             case Format_td:     // pointer to ptrdiff_t
-                if (!(t->ty == Tpointer && tnext->ty == (is64bit ? Tint64 : Tint32)))
+                if (!(t->ty == Tpointer && tnext->isintegral() && !tnext->isunsigned() && tnext->size() == ptrsize))
                     errorScanfFormat(NULL, slice, e, "ptrdiff_t*", t);
                 break;
 
@@ -913,7 +923,7 @@ bool checkScanfFormat(const Loc &loc, const char *format, Expressions &args, boo
                 break;
 
             case Format_lu:     // pointer to unsigned long int
-                if (!(t->ty == Tpointer && tnext->ty == (is64bit ? Tuns64 : Tuns32)))
+                if (!(t->ty == Tpointer && tnext->isintegral() && tnext->isunsigned() && tnext->size() == c_longsize))
                     errorScanfFormat(NULL, slice, e, (c_longsize == 4 ? "uint*" : "ulong*"), t);
                 break;
 
@@ -923,7 +933,7 @@ bool checkScanfFormat(const Loc &loc, const char *format, Expressions &args, boo
                 break;
 
             case Format_ju:     // pointer to uintmax_t
-                if (!(t->ty == Tpointer && tnext->ty == (is64bit ? Tuns64 : Tuns32)))
+                if (!(t->ty == Tpointer && tnext->ty == Tuns64))
                     errorScanfFormat(NULL, slice, e, "ulong*", t);
                 break;
 

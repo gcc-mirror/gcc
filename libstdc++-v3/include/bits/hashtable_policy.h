@@ -1939,7 +1939,7 @@ namespace __detail
       __buckets_alloc_traits::deallocate(__alloc, __ptr, __bkt_count);
     }
 
- //@} hashtable-detail
+ ///@} hashtable-detail
 } // namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

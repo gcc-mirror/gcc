@@ -403,7 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * @name Constants
        * std [28.8.1](1)
        */
-      //@{
+      ///@{
       static constexpr flag_type icase = regex_constants::icase;
       static constexpr flag_type nosubs = regex_constants::nosubs;
       static constexpr flag_type optimize = regex_constants::optimize;
@@ -414,7 +414,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       static constexpr flag_type awk = regex_constants::awk;
       static constexpr flag_type grep = regex_constants::grep;
       static constexpr flag_type egrep = regex_constants::egrep;
-      //@}
+      ///@}
 
       // [7.8.2] construct/copy/destroy
       /**
@@ -916,9 +916,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *
        * @param __s Another matched sequence to compare to this one.
        *
-       * @retval <0 this matched sequence will collate before @p __s.
-       * @retval =0 this matched sequence is equivalent to @p __s.
-       * @retval <0 this matched sequence will collate after @p __s.
+       * @retval negative  This matched sequence will collate before `__s`.
+       * @retval zero      This matched sequence is equivalent to `__s`.
+       * @retval positive  This matched sequence will collate after `__s`.
        */
       int
       compare(const sub_match& __s) const
@@ -926,13 +926,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        * @{
-       * @brief Compares this sub_match to a string.
+       * @brief Compares this `sub_match` to a string.
        *
-       * @param __s A string to compare to this sub_match.
+       * @param __s A string to compare to this `sub_match`.
        *
-       * @retval <0 this matched sequence will collate before @p __s.
-       * @retval =0 this matched sequence is equivalent to @p __s.
-       * @retval <0 this matched sequence will collate after @p __s.
+       * @retval negative  This matched sequence will collate before `__s`.
+       * @retval zero      This matched sequence is equivalent to `__s`.
+       * @retval positive  This matched sequence will collate after `__s`.
        */
       int
       compare(const string_type& __s) const
@@ -941,7 +941,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       int
       compare(const value_type* __s) const
       { return this->_M_str().compare(__s); }
-      // @}
+      /// @}
 
       /// @cond undocumented
       // Non-standard, used by comparison operators
@@ -1650,7 +1650,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	       const sub_match<_Bi_iter>& __m)
     { return __os << __m.str(); }
 
-  // @} relates sub_match
+  /// @} relates sub_match
 
   // [7.10] Class template match_results
 
@@ -1704,7 +1704,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**
        * @name 28.10 Public Types
        */
-      //@{
+      ///@{
       typedef sub_match<_Bi_iter>			   value_type;
       typedef const value_type&				   const_reference;
       typedef value_type&				   reference;
@@ -1715,13 +1715,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       typedef _Alloc					   allocator_type;
       typedef typename __iter_traits::value_type 	   char_type;
       typedef std::basic_string<char_type>		   string_type;
-      //@}
+      ///@}
 
     public:
       /**
        * @name 28.10.1 Construction, Copying, and Destruction
        */
-      //@{
+      ///@{
 
       /**
        * @brief Constructs a default %match_results container.
@@ -1765,7 +1765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        */
       ~match_results() = default;
 
-      //@}
+      ///@}
 
       // 28.10.2, state:
       /**
@@ -1778,7 +1778,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**
        * @name 28.10.2 Size
        */
-      //@{
+      ///@{
 
       /**
        * @brief Gets the number of matches and submatches.
@@ -1806,12 +1806,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       empty() const noexcept
       { return size() == 0; }
 
-      //@}
+      ///@}
 
       /**
        * @name 28.10.4 Element Access
        */
-      //@{
+      ///@{
 
       /**
        * @brief Gets the length of the indicated submatch.
@@ -1931,7 +1931,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       cend() const noexcept
       { return this->end(); }
 
-      //@}
+      ///@}
 
       /**
        * @name 28.10.5 Formatting
@@ -1941,7 +1941,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        * escape sequences accepted by these functions are determined by
        * their @p flags parameter as documented above.
        */
-       //@{
+       ///@{
 
       /**
        * @pre   ready() == true
@@ -1992,12 +1992,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return __result;
       }
 
-      //@}
+      ///@}
 
       /**
        * @name 28.10.6 Allocator
        */
-      //@{
+      ///@{
 
       /**
        * @brief Gets a copy of the allocator.
@@ -2006,12 +2006,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       get_allocator() const noexcept
       { return _Base_type::get_allocator(); }
 
-      //@}
+      ///@}
 
       /**
        * @name 28.10.7 Swap
        */
-       //@{
+       ///@{
 
       /**
        * @brief Swaps the contents of two match_results.
@@ -2023,7 +2023,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	_Base_type::swap(__that);
 	swap(_M_begin, __that._M_begin);
       }
-      //@}
+      ///@}
 
     private:
       template<typename, typename, typename>
@@ -2150,7 +2150,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   /**
    * @name Matching, Searching, and Replacing
    */
-  //@{
+  ///@{
 
   /**
    * @brief Determines if there is a match between the regular expression @p e
@@ -2612,7 +2612,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       return __result;
     }
 
-  //@}
+  ///@}
 
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
@@ -2975,7 +2975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   typedef regex_token_iterator<wstring::const_iterator> wsregex_token_iterator;
 #endif
 
-  //@} // group regex
+  ///@} // group regex
 
 _GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_VERSION
