@@ -1,4 +1,5 @@
 // PR c++/97900
+// { dg-options "-Wno-psabi -w" }
 
 template<typename T>
 T test(T __attribute__((vector_size(2 * sizeof(T)))) vec) {
