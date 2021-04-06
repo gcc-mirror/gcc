@@ -48,7 +48,7 @@ package System.Value_N is
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
       Str     : String)
-      return    Natural;
+      return    Natural with Inline;
    --  Used to compute Enum'Value (Str) where Enum is some enumeration type
    --  other than those defined in package Standard. Names is a string with
    --  a lower bound of 1 containing the characters of all the enumeration
@@ -73,7 +73,7 @@ package System.Value_N is
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
       Str     : String)
-      return    Boolean;
+      return    Boolean with Inline;
    --  Returns True if Str is a valid Image of some enumeration literal, False
    --  otherwise. That is, returns False if and only if Value_Enumeration would
    --  raise Constraint_Error. The parameters have the same meaning as for
@@ -87,7 +87,7 @@ package System.Value_N is
       Hash    : Hash_Function_Ptr;
       Num     : Natural;
       Str     : String)
-      return    Integer;
+      return    Integer with Pure_Function;
    --  Same as Value_Enumeration, except returns Invalid if Value_Enumeration
    --  would raise Constraint_Error.
 
