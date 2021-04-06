@@ -30,18 +30,15 @@
 #ifndef _GLIBCXX_NESTED_EXCEPTION_H
 #define _GLIBCXX_NESTED_EXCEPTION_H 1
 
-#pragma GCC visibility push(default)
-
 #if __cplusplus < 201103L
 # include <bits/c++0x_warning.h>
 #else
 
-#include <bits/c++config.h>
 #include <bits/move.h>
 
 extern "C++" {
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   /**
    * @addtogroup exceptions
@@ -165,7 +162,4 @@ namespace std
 } // extern "C++"
 
 #endif // C++11
-
-#pragma GCC visibility pop
-
 #endif // _GLIBCXX_NESTED_EXCEPTION_H

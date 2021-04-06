@@ -30,8 +30,6 @@
 #ifndef _GLIBCXX_BITS_SPECFUN_H
 #define _GLIBCXX_BITS_SPECFUN_H 1
 
-#pragma GCC visibility push(default)
-
 #include <bits/c++config.h>
 
 #define __STDCPP_MATH_SPEC_FUNCS__ 201003L
@@ -1384,7 +1382,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
 #endif // __STRICT_ANSI__
-
-#pragma GCC visibility pop
 
 #endif // _GLIBCXX_BITS_SPECFUN_H

@@ -34,15 +34,13 @@
 
 #if __cplusplus > 201703L && __cpp_impl_three_way_comparison >= 201907L
 
-#pragma GCC visibility push(default)
-
 #include <concepts>
 
 #if __cpp_lib_concepts
 # define __cpp_lib_three_way_comparison 201907L
 #endif
 
-namespace std
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   // [cmp.categories], comparison category types
 
@@ -1238,8 +1236,6 @@ namespace std
   } // namespace __detail
 #endif // concepts
 } // namespace std
-
-#pragma GCC visibility pop
 
 #endif // C++20
 

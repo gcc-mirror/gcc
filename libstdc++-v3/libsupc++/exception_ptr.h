@@ -31,8 +31,6 @@
 #ifndef _EXCEPTION_PTR_H
 #define _EXCEPTION_PTR_H
 
-#pragma GCC visibility push(default)
-
 #include <bits/c++config.h>
 #include <bits/exception_defines.h>
 #include <bits/cxxabi_init_exception.h>
@@ -51,7 +49,7 @@
 
 extern "C++" {
 
-namespace std 
+namespace std _GLIBCXX_VISIBILITY(default)
 {
   class type_info;
 
@@ -282,7 +280,5 @@ namespace std
 } // namespace std
 
 } // extern "C++"
-
-#pragma GCC visibility pop
 
 #endif
