@@ -6924,6 +6924,35 @@ Specify which floating-point unit to use.  You must specify the
 @code{target("fpmath=sse+387")} because the comma would separate
 different options.
 
+@item prefer-vector-width=@var{OPT}
+@cindex @code{prefer-vector-width} function attribute, x86
+On x86 targets, the @code{prefer-vector-width} attribute informs the
+compiler to use @var{OPT}-bit vector width in instructions
+instead of the default on the selected platform.
+
+Valid @var{OPT} values are:
+
+@table @samp
+@item none
+No extra limitations applied to GCC other than defined by the selected platform.
+
+@item 128
+Prefer 128-bit vector width for instructions.
+
+@item 256
+Prefer 256-bit vector width for instructions.
+
+@item 512
+Prefer 512-bit vector width for instructions.
+@end table
+
+On the x86, the inliner does not inline a
+function that has different target options than the caller, unless the
+callee has a subset of the target options of the caller.  For example
+a function declared with @code{target("sse3")} can inline a function
+with @code{target("sse2")}, since @code{-msse3} implies @code{-msse2}.
+@end table
+
 @item indirect_branch("@var{choice}")
 @cindex @code{indirect_branch} function attribute, x86
 On x86 targets, the @code{indirect_branch} attribute causes the compiler
@@ -7027,35 +7056,6 @@ On x86 targets, the @code{fentry_section} attribute sets the name
 of the section to record function entry instrumentation calls in when
 enabled with @option{-pg -mrecord-mcount}
 
-@item prefer-vector-width=@var{OPT}
-@cindex @code{prefer-vector-width} function attribute, x86
-On x86 targets, the @code{prefer-vector-width} attribute informs the
-compiler to use @var{OPT}-bit vector width in instructions
-instead of the default on the selected platform.
-
-Valid @var{OPT} values are:
-
-@table @samp
-@item none
-No extra limitations applied to GCC other than defined by the selected platform.
-
-@item 128
-Prefer 128-bit vector width for instructions.
-
-@item 256
-Prefer 256-bit vector width for instructions.
-
-@item 512
-Prefer 512-bit vector width for instructions.
-@end table
-
-@end table
-
-On the x86, the inliner does not inline a
-function that has different target options than the caller, unless the
-callee has a subset of the target options of the caller.  For example
-a function declared with @code{target("sse3")} can inline a function
-with @code{target("sse2")}, since @code{-msse3} implies @code{-msse2}.
 @end table
 
 @node Xstormy16 Function Attributes
