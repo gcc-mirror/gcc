@@ -1,3 +1,11 @@
+2021-04-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (is_simple_enum): Minor tweaks.
+	(dump_ada_enum_type): Add TYPE and PARENT parameters.  For non-simple
+	enumeral types use again the type name for the enumeration constants.
+	(dump_ada_node): Adjust call to dump_ada_enum_type.
+	(dump_nested_type): Likewise.
+
 2021-04-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98481
