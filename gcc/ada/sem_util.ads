@@ -3290,7 +3290,7 @@ package Sem_Util is
 
    function Validated_View (Typ : Entity_Id) return Entity_Id;
    --  Obtain the "validated view" of arbitrary type Typ which is suitable for
-   --  verification by attributes 'Valid_Scalars. This view is the type itself
+   --  verification by attribute 'Valid_Scalars. This view is the type itself
    --  or its full view while stripping away concurrency, derivations, and
    --  privacy.
 

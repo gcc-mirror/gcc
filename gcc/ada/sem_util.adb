@@ -29471,42 +29471,36 @@ package body Sem_Util is
    --------------------
 
    function Validated_View (Typ : Entity_Id) return Entity_Id is
-      Continue : Boolean;
-      Val_Typ  : Entity_Id;
-
    begin
-      Continue := True;
-      Val_Typ  := Base_Type (Typ);
-
       --  Obtain the full view of the input type by stripping away concurrency,
       --  derivations, and privacy.
 
-      while Continue loop
-         Continue := False;
-
-         if Is_Concurrent_Type (Val_Typ) then
-            if Present (Corresponding_Record_Type (Val_Typ)) then
-               Continue := True;
-               Val_Typ  := Corresponding_Record_Type (Val_Typ);
+      if Is_Base_Type (Typ) then
+         if Is_Concurrent_Type (Typ) then
+            if Present (Corresponding_Record_Type (Typ)) then
+               return Corresponding_Record_Type (Typ);
+            else
+               return Typ;
             end if;
 
-         elsif Is_Derived_Type (Val_Typ) then
-            Continue := True;
-            Val_Typ  := Etype (Val_Typ);
+         elsif Is_Derived_Type (Typ) then
+            return Validated_View (Etype (Typ));
 
-         elsif Is_Private_Type (Val_Typ) then
-            if Present (Underlying_Full_View (Val_Typ)) then
-               Continue := True;
-               Val_Typ  := Underlying_Full_View (Val_Typ);
+         elsif Is_Private_Type (Typ) then
+            if Present (Underlying_Full_View (Typ)) then
+               return Validated_View (Underlying_Full_View (Typ));
 
-            elsif Present (Full_View (Val_Typ)) then
-               Continue := True;
-               Val_Typ  := Full_View (Val_Typ);
+            elsif Present (Full_View (Typ)) then
+               return Validated_View (Full_View (Typ));
+            else
+               return Typ;
             end if;
          end if;
-      end loop;
 
-      return Val_Typ;
+         return Typ;
+      else
+         return Validated_View (Base_Type (Typ));
+      end if;
    end Validated_View;
 
    -----------------------
