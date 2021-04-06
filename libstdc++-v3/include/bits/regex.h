@@ -916,9 +916,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *
        * @param __s Another matched sequence to compare to this one.
        *
-       * @retval <0 this matched sequence will collate before @p __s.
-       * @retval =0 this matched sequence is equivalent to @p __s.
-       * @retval <0 this matched sequence will collate after @p __s.
+       * @retval negative  This matched sequence will collate before `__s`.
+       * @retval zero      This matched sequence is equivalent to `__s`.
+       * @retval positive  This matched sequence will collate after `__s`.
        */
       int
       compare(const sub_match& __s) const
@@ -926,13 +926,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       /**
        * @{
-       * @brief Compares this sub_match to a string.
+       * @brief Compares this `sub_match` to a string.
        *
-       * @param __s A string to compare to this sub_match.
+       * @param __s A string to compare to this `sub_match`.
        *
-       * @retval <0 this matched sequence will collate before @p __s.
-       * @retval =0 this matched sequence is equivalent to @p __s.
-       * @retval <0 this matched sequence will collate after @p __s.
+       * @retval negative  This matched sequence will collate before `__s`.
+       * @retval zero      This matched sequence is equivalent to `__s`.
+       * @retval positive  This matched sequence will collate after `__s`.
        */
       int
       compare(const string_type& __s) const
