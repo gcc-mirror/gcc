@@ -2458,6 +2458,34 @@ vect_match_slp_patterns (slp_instance instance, vec_info *vinfo,
   return vect_match_slp_patterns_2 (ref_node, vinfo, perm_cache, visited);
 }
 
+/* STMT_INFO is a store group of size GROUP_SIZE that we are considering
+   splitting into two, with the first split group having size NEW_GROUP_SIZE.
+   Return true if we could use IFN_STORE_LANES instead and if that appears
+   to be the better approach.  */
+
+static bool
+vect_slp_prefer_store_lanes_p (vec_info *vinfo, stmt_vec_info stmt_info,
+			       unsigned int group_size,
+			       unsigned int new_group_size)
+{
+  tree scalar_type = TREE_TYPE (DR_REF (STMT_VINFO_DATA_REF (stmt_info)));
+  tree vectype = get_vectype_for_scalar_type (vinfo, scalar_type);
+  if (!vectype)
+    return false;
+  /* Allow the split if one of the two new groups would operate on full
+     vectors *within* rather than across one scalar loop iteration.
+     This is purely a heuristic, but it should work well for group
+     sizes of 3 and 4, where the possible splits are:
+
+       3->2+1:  OK if the vector has exactly two elements
+       4->2+2:  Likewise
+       4->3+1:  Less clear-cut.  */
+  if (multiple_p (group_size - new_group_size, TYPE_VECTOR_SUBPARTS (vectype))
+      || multiple_p (new_group_size, TYPE_VECTOR_SUBPARTS (vectype)))
+    return false;
+  return vect_store_lanes_supported (vectype, group_size, false);
+}
+
 /* Analyze an SLP instance starting from a group of grouped stores.  Call
    vect_build_slp_tree to build a tree of packed stmts if possible.
    Return FALSE if it's impossible to SLP any stmt in the loop.  */
@@ -2693,7 +2721,8 @@ vect_build_slp_instance (vec_info *vinfo,
 
       /* For loop vectorization split into arbitrary pieces of size > 1.  */
       if (is_a <loop_vec_info> (vinfo)
-	  && (i > 1 && i < group_size))
+	  && (i > 1 && i < group_size)
+	  && !vect_slp_prefer_store_lanes_p (vinfo, stmt_info, group_size, i))
 	{
 	  unsigned group1_size = i;
 
