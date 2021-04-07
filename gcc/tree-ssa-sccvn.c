@@ -249,6 +249,55 @@ vn_reference_hasher::equal (const vn_reference_s *v, const vn_reference_s *c)
 typedef hash_table<vn_reference_hasher> vn_reference_table_type;
 typedef vn_reference_table_type::iterator vn_reference_iterator_type;
 
+/* Pretty-print OPS to OUTFILE.  */
+
+void
+print_vn_reference_ops (FILE *outfile, const vec<vn_reference_op_s> ops)
+{
+  vn_reference_op_t vro;
+  unsigned int i;
+  fprintf (outfile, "{");
+  for (i = 0; ops.iterate (i, &vro); i++)
+    {
+      bool closebrace = false;
+      if (vro->opcode != SSA_NAME
+	  && TREE_CODE_CLASS (vro->opcode) != tcc_declaration)
+	{
+	  fprintf (outfile, "%s", get_tree_code_name (vro->opcode));
+	  if (vro->op0)
+	    {
+	      fprintf (outfile, "<");
+	      closebrace = true;
+	    }
+	}
+      if (vro->op0)
+	{
+	  print_generic_expr (outfile, vro->op0);
+	  if (vro->op1)
+	    {
+	      fprintf (outfile, ",");
+	      print_generic_expr (outfile, vro->op1);
+	    }
+	  if (vro->op2)
+	    {
+	      fprintf (outfile, ",");
+	      print_generic_expr (outfile, vro->op2);
+	    }
+	}
+      if (closebrace)
+	fprintf (outfile, ">");
+      if (i != ops.length () - 1)
+	fprintf (outfile, ",");
+    }
+  fprintf (outfile, "}");
+}
+
+DEBUG_FUNCTION void
+debug_vn_reference_ops (const vec<vn_reference_op_s> ops)
+{
+  print_vn_reference_ops (stderr, ops);
+  fputc ('\n', stderr);
+}
 
 /* The set of VN hashtables.  */
 
