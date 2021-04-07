@@ -4,7 +4,7 @@
 
 @ifnothtml
 @comment node-name,     next,          previous, up
-@node    Old, GNU Free Documentation License, Specific, Top
+@node    Old
 @end ifnothtml
 @html
 <h1 align="center">Old installation documentation</h1>
