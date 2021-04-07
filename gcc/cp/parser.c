@@ -23672,7 +23672,7 @@ cp_parser_class_name (cp_parser *parser,
   /* Any name names a type if we're following the `typename' keyword
      in a qualified name where the enclosing scope is type-dependent.  */
   typename_p = (typename_keyword_p && scope && TYPE_P (scope)
-		&& dependent_type_p (scope));
+		&& dependent_scope_p (scope));
   /* Handle the common case (an identifier, but not a template-id)
      efficiently.  */
   if (token->type == CPP_NAME
