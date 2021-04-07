@@ -35,7 +35,7 @@ This manual documents the GNU Transactional Memory Library.
 @title The GNU Transactional Memory Library
 @page
 @vskip 0pt plus 1filll
-@comment For the @value{version-GCC} Version*
+@comment For the $$version-GCC$$ Version*
 @sp 1
 @insertcopying
 @end titlepage

@@ -58,14 +58,14 @@
 @c been placed, and before any authors are placed.
 @macro versionsubtitle
 @ifclear DEVELOPMENT
-@subtitle For @sc{gcc} version @value{version-GCC}
+@subtitle For @sc{gcc} version $$version-GCC$$ $$development-GCC$$
 @end ifclear
 @ifset DEVELOPMENT
-@subtitle For @sc{gcc} version @value{version-GCC} (pre-release)
+@subtitle For @sc{gcc} version $$version-GCC$$ $$development-GCC$$
 @end ifset
 @ifset VERSION_PACKAGE
 @sp 1
-@subtitle @value{VERSION_PACKAGE}
+@subtitle $$VERSION_PACKAGE$$
 @end ifset
 @c Even if there are no authors, the second titlepage line should be
 @c forced to the bottom of the page.

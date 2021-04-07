@@ -47,7 +47,7 @@ and the Info entries for @file{gcc}, @file{cpp}, @file{gfortran}, @file{as},
 @c man end
 @c man begin BUGS
 For instructions on reporting bugs, see
-@w{@value{BUGURL}}.
+$$BUGURL$$.
 @c man end
 @c man begin AUTHOR
 See the Info entry for @command{gfortran} for contributors to GCC and

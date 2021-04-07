@@ -44,7 +44,7 @@ Boston, MA 02110-1301 USA
 @title The GCC Quad-Precision Math Library
 @page
 @vskip 0pt plus 1filll
-@comment For the @value{version-GCC} Version*
+@comment For the $$version-GCC$$ Version*
 @sp 1
 Published by the Free Software Foundation @*
 51 Franklin Street, Fifth Floor@*
@@ -377,7 +377,7 @@ int main ()
 @chapter Reporting Bugs
 
 Bugs in the GCC Quad-Precision Math Library implementation should be
-reported via @value{BUGURL}.
+reported via $$BUGURL$$.
 
 
 @c ---------------------------------------------------------------------
