@@ -1501,6 +1501,21 @@ CNS(MSG_Forced_Flags, "")
 #endif
 CND(TCP_NODELAY, "Do not coalesce packets")
 
+#ifndef TCP_KEEPCNT
+# define TCP_KEEPCNT -1
+#endif
+CND(TCP_KEEPCNT, "Maximum number of keepalive probes")
+
+#ifndef TCP_KEEPIDLE
+# define TCP_KEEPIDLE -1
+#endif
+CND(TCP_KEEPIDLE, "Idle time before TCP starts sending keepalive probes")
+
+#ifndef TCP_KEEPINTVL
+# define TCP_KEEPINTVL -1
+#endif
+CND(TCP_KEEPINTVL, "Time between individual keepalive probes")
+
 #ifndef SO_REUSEADDR
 # define SO_REUSEADDR -1
 #endif
