@@ -115,6 +115,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "tree-eh.h"
 #include "gimple-fold.h"
+#include "tree-affine.h"
 
 
 #define MAX_DATAREFS_NUM \
@@ -1212,6 +1213,18 @@ generate_memcpy_builtin (class loop *loop, partition *partition)
     kind = BUILT_IN_MEMCPY;
   else
     kind = BUILT_IN_MEMMOVE;
+  /* Try harder if we're copying a constant size.  */
+  if (kind == BUILT_IN_MEMMOVE && poly_int_tree_p (nb_bytes))
+    {
+      aff_tree asrc, adest;
+      tree_to_aff_combination (src, ptr_type_node, &asrc);
+      tree_to_aff_combination (dest, ptr_type_node, &adest);
+      aff_combination_scale (&adest, -1);
+      aff_combination_add (&asrc, &adest);
+      if (aff_comb_cannot_overlap_p (&asrc, wi::to_poly_widest (nb_bytes),
+				     wi::to_poly_widest (nb_bytes)))
+	kind = BUILT_IN_MEMCPY;
+    }
 
   dest = force_gimple_operand_gsi (&gsi, dest, true, NULL_TREE,
 				   false, GSI_CONTINUE_LINKING);
@@ -1759,11 +1772,11 @@ loop_distribution::classify_builtin_ldst (loop_p loop, struct graph *rdg,
   /* Now check that if there is a dependence.  */
   ddr_p ddr = get_data_dependence (rdg, src_dr, dst_dr);
 
-  /* Classify as memcpy if no dependence between load and store.  */
+  /* Classify as memmove if no dependence between load and store.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
     {
       partition->builtin = alloc_builtin (dst_dr, src_dr, base, src_base, size);
-      partition->kind = PKIND_MEMCPY;
+      partition->kind = PKIND_MEMMOVE;
       return;
     }
 
@@ -3152,11 +3165,19 @@ loop_distribution::distribute_loop (class loop *loop, vec<gimple *> stmts,
 void loop_distribution::bb_top_order_init (void)
 {
   int rpo_num;
-  int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
+  edge entry = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  bitmap exit_bbs = BITMAP_ALLOC (NULL);
 
   bb_top_order_index = XNEWVEC (int, last_basic_block_for_fn (cfun));
   bb_top_order_index_size = last_basic_block_for_fn (cfun);
-  rpo_num = pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, true);
+
+  entry->flags &= ~EDGE_DFS_BACK;
+  bitmap_set_bit (exit_bbs, EXIT_BLOCK);
+  rpo_num = rev_post_order_and_mark_dfs_back_seme (cfun, entry, exit_bbs, true,
+						   rpo, NULL);
+  BITMAP_FREE (exit_bbs);
+
   for (int i = 0; i < rpo_num; i++)
     bb_top_order_index[rpo[i]] = i;
 

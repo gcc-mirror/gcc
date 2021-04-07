@@ -1,3 +1,45 @@
+2021-04-06  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99781
+	* lra-constraints.c (split_reg): Don't check paradoxical_subreg_p.
+	* lra-lives.c (clear_sparseset_regnos, regnos_in_sparseset_p): New
+	functions.
+	(process_bb_lives): Don't update biggest mode of hard reg for
+	implicit in multi-register group.  Use the new functions for
+	updating dead_set and unused_set by register notes.
+
+2021-04-06  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* config/csky/csky_pipeline_ck802.md : Use insn reservation name
+	instead of *.
+
+2021-04-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/x86-tune-costs.h (skylake_memcpy): Updated.
+	(skylake_memset): Likewise.
+	(skylake_cost): Change CLEAR_RATIO to 17.
+	* config/i386/x86-tune.def (X86_TUNE_PREFER_KNOWN_REP_MOVSB_STOSB):
+	Replace m_CANNONLAKE, m_ICELAKE_CLIENT, m_ICELAKE_SERVER,
+	m_TIGERLAKE and m_SAPPHIRERAPIDS with m_SKYLAKE and m_CORE_AVX512.
+
+2021-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99880
+	* tree-vect-loop.c (maybe_set_vectorized_backedge_value): Only
+	set vectorized defs of relevant PHIs.
+
+2021-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99924
+	* tree-vect-slp.c (vect_bb_partition_graph_r): Do not mark
+	nodes w/o scalar stmts as visited.
+
+2021-04-06  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99748
+	* config/arm/arm.c (arm_libcall_uses_aapcs_base): Also use base
+	PCS for [su]fix_optab.
+
 2021-04-03  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.c (machopic_legitimize_pic_address): Check

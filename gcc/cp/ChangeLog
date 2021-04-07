@@ -1,3 +1,27 @@
+2021-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96673
+	* init.c (get_nsdmi): Don't defer access checking.
+
+2021-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99901
+	* decl.c (cp_finish_decl): mark_needed an implicitly inline
+	static data member with an out-of-class redeclaration.
+
+2021-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91241
+	* mangle.c (write_compact_number): Add sanity check.
+	(write_local_name): Use list_length for parm number.
+
+2021-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99899
+	* pt.c (do_auto_deduction): Don't exit early when deducing the
+	array type of a structured binding.  Also handle adc_decomp_type
+	during constraint checking.
+
 2021-04-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96311

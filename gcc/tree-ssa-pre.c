@@ -1067,45 +1067,8 @@ print_pre_expr (FILE *outfile, const pre_expr expr)
 
     case REFERENCE:
       {
-	vn_reference_op_t vro;
-	unsigned int i;
 	vn_reference_t ref = PRE_EXPR_REFERENCE (expr);
-	fprintf (outfile, "{");
-	for (i = 0;
-	     ref->operands.iterate (i, &vro);
-	     i++)
-	  {
-	    bool closebrace = false;
-	    if (vro->opcode != SSA_NAME
-		&& TREE_CODE_CLASS (vro->opcode) != tcc_declaration)
-	      {
-		fprintf (outfile, "%s", get_tree_code_name (vro->opcode));
-		if (vro->op0)
-		  {
-		    fprintf (outfile, "<");
-		    closebrace = true;
-		  }
-	      }
-	    if (vro->op0)
-	      {
-		print_generic_expr (outfile, vro->op0);
-		if (vro->op1)
-		  {
-		    fprintf (outfile, ",");
-		    print_generic_expr (outfile, vro->op1);
-		  }
-		if (vro->op2)
-		  {
-		    fprintf (outfile, ",");
-		    print_generic_expr (outfile, vro->op2);
-		  }
-	      }
-	    if (closebrace)
-		fprintf (outfile, ">");
-	    if (i != ref->operands.length () - 1)
-	      fprintf (outfile, ",");
-	  }
-	fprintf (outfile, "}");
+	print_vn_reference_ops (outfile, ref->operands);
 	if (ref->vuse)
 	  {
 	    fprintf (outfile, "@");

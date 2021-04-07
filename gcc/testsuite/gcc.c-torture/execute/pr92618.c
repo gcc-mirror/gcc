@@ -1,6 +1,6 @@
 /* PR tree-optimization/92618 */
 
-typedef long long __m128i __attribute__((__may_alias__, __vector_size__(2 * sizeof (long long))));
+typedef long long __m128i __attribute__((__vector_size__(2 * sizeof (long long)),__may_alias__));
 
 double a[4];
 unsigned long long b[4];
@@ -14,7 +14,7 @@ bar (void)
 }
 
 #if __SIZEOF_LONG_LONG__ == __SIZEOF_DOUBLE__
-typedef double __m128d __attribute__((__may_alias__, __vector_size__(2 * sizeof (double))));
+typedef double __m128d __attribute__((__vector_size__(2 * sizeof (double)),__may_alias__));
 
 __attribute__((noipa)) __m128i
 qux (void)
