@@ -7460,7 +7460,7 @@ package body Exp_Attr is
                     (Build_Record_VS_Func
                       (Attr       => N,
                        Formal_Typ => Ptyp,
-                       Rec_Typ    => Val_Typ),
+                       Rec_Typ    => Validated_View (Ptyp)),
                     Loc),
                 Parameter_Associations => New_List (Pref));
          end if;
