@@ -1,3 +1,8 @@
+2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c: Update
+	additional options and expected messages.
+
 2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* target.c (__requires_mask_table, __requires_mask_table_end): Add

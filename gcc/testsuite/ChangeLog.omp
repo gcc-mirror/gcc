@@ -1,3 +1,29 @@
+2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Update
+	additional options and expected messages.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-conditional-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loop-auto.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loops.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-straight-line.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-auto.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-conditional-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loop-auto.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loops.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+
 2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-c++-common/gomp/pr94874.c: Update scan-tree-dump.

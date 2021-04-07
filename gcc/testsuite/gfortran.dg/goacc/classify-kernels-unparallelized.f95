@@ -3,7 +3,7 @@
 
 ! { dg-additional-options "-O2" }
 ! { dg-additional-options "-fno-openacc-kernels-annotate-loops" }
-! { dg-additional-options "-fopt-info-optimized-omp" }
+! { dg-additional-options "-fopt-info-note-optimized-omp" }
 ! { dg-additional-options "-fdump-tree-ompexp" }
 ! { dg-additional-options "-fdump-tree-parloops1-all" }
 ! { dg-additional-options "-fdump-tree-oaccloops" }
@@ -20,9 +20,8 @@ program main
 
   call setup(a, b)
 
-  !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1))
-  do i = 0, n - 1 ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
-                  ! { dg-message "optimized: beginning .parloops. region in OpenACC .kernels. construct" "" { target *-*-* } 24 }
+  !$acc kernels copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-message "optimized: assigned OpenACC seq loop parallelism" }
+  do i = 0, n - 1 ! { dg-message "note: beginning .parloops. part in OpenACC .kernels. region" }
      c(i) = a(f (i)) + b(f (i))
   end do
   !$acc end kernels
