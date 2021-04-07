@@ -1,3 +1,24 @@
+2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/note-parallelism-1-kernels-conditional-loop-independent_seq.c:
+	Update additional options and expected messages.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loop-auto.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-loops.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-1-kernels-straight-line.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-auto.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-combined-kernels-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-conditional-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loop-auto.c: Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loop-independent_seq.c:
+	Likewise.
+	* c-c++-common/goacc/note-parallelism-kernels-loops.c: Likewise.
+
 2021-02-01  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-c++-common/gomp/clauses-2.c: Adjust testcase.
