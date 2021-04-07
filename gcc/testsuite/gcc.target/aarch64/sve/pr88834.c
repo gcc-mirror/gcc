@@ -11,5 +11,6 @@ f (int *restrict x, int *restrict y, int *restrict z, int n)
     }
 }
 
-/* { dg-final { scan-assembler-times {\tld2w\t{z[0-9]+.s - z[0-9]+.s}, p[0-7]/z, \[x[0-9]+, x[0-9]+, lsl 2\]\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tst2w\t{z[0-9]+.s - z[0-9]+.s}, p[0-7], \[x[0-9]+, x[0-9]+, lsl 2\]\n} 1 } } */
+/* { dg-final { scan-assembler {\tptrue\tp[0-7]\.d, all\n} } } */
+/* { dg-final { scan-assembler-times {\tld1w\tz[0-9]+.s, p[0-7]/z, \[x[0-9]+, x[0-9]+, lsl 2\]\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tst1w\tz[0-9]+.s, p[0-7], \[x[0-9]+, x[0-9]+, lsl 2\]\n} 1 } } */
