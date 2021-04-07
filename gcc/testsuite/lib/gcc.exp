@@ -134,6 +134,9 @@ proc gcc_target_compile { source dest type options } {
 	    [info exists gluefile] } {
 	lappend options "libs=${gluefile}"
 	lappend options "ldflags=$wrap_flags"
+	if { $type == "executable" } {
+	    set options [concat "{additional_flags=-dumpbase \"\"}" $options]
+	}
     }
 
     global TEST_EXTRA_LIBS
