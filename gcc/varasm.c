@@ -4290,13 +4290,13 @@ output_constant_pool_contents (struct rtx_constant_pool *pool)
     if (desc->mark < 0)
       {
 #ifdef ASM_OUTPUT_DEF
-	const char *name = targetm.strip_name_encoding (XSTR (desc->sym, 0));
+	const char *name = XSTR (desc->sym, 0);
 	char label[256];
 	char buffer[256 + 32];
 	const char *p;
 
 	ASM_GENERATE_INTERNAL_LABEL (label, "LC", ~desc->mark);
-	p = targetm.strip_name_encoding (label);
+	p = label;
 	if (desc->offset)
 	  {
 	    sprintf (buffer, "%s+%ld", p, (long) (desc->offset));
