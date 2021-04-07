@@ -1,3 +1,134 @@
+2021-04-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h (forward, move, move_if_noexcept)
+	(addressof): Add _GLIBCXX_NODISCARD.
+	* include/bits/ranges_cmp.h (identity::operator()): Add
+	nodiscard attribute.
+	* include/c_global/cstddef (to_integer): Likewise.
+	* include/std/bit (bit_cast): Likewise.
+	* include/std/utility (as_const, to_underlying): Likewise.
+
+2021-04-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/move.h (forward): Change static_assert message
+	to be unambiguous about what must be true.
+	* testsuite/20_util/forward/c_neg.cc: Adjust dg-error.
+	* testsuite/20_util/forward/f_neg.cc: Likewise.
+
+2021-04-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h: Use markdown for code font.
+	* include/bits/basic_string.h: Fix @param names.
+	* include/bits/max_size_type.h: Remove period after @file.
+	* include/bits/regex.h: Fix duplicate @retval names, and rename.
+	* include/ext/pb_ds/detail/priority_queue_base_dispatch.hpp: Add
+	group open to match existing group close.
+	* include/ext/pb_ds/priority_queue.hpp: Add blank line before group
+	open.
+
+2021-04-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/tr1/regex:
+
+2021-04-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h: Fix doxygen group close.
+	* include/bits/basic_ios.h: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/fs_dir.h: Likewise.
+	* include/bits/fs_ops.h: Likewise.
+	* include/bits/fs_path.h: Likewise.
+	* include/bits/functional_hash.h: Likewise.
+	* include/bits/gslice.h: Likewise.
+	* include/bits/gslice_array.h: Likewise.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/indirect_array.h: Likewise.
+	* include/bits/locale_classes.h: Likewise.
+	* include/bits/locale_facets.h: Likewise.
+	* include/bits/locale_facets_nonio.h: Likewise.
+	* include/bits/mask_array.h: Likewise.
+	* include/bits/refwrap.h: Likewise.
+	* include/bits/regex.h: Likewise.
+	* include/bits/regex_automaton.h: Likewise.
+	* include/bits/regex_compiler.h: Likewise.
+	* include/bits/regex_constants.h: Likewise.
+	* include/bits/regex_error.h: Likewise.
+	* include/bits/regex_executor.h: Likewise.
+	* include/bits/regex_scanner.h: Likewise.
+	* include/bits/shared_ptr.h: Likewise.
+	* include/bits/shared_ptr_atomic.h: Likewise.
+	* include/bits/shared_ptr_base.h: Likewise.
+	* include/bits/slice_array.h: Likewise.
+	* include/bits/specfun.h: Likewise.
+	* include/bits/std_function.h: Likewise.
+	* include/bits/std_mutex.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_iterator.h: Likewise.
+	* include/bits/stl_iterator_base_types.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_numeric.h: Likewise.
+	* include/bits/stl_pair.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_uninitialized.h: Likewise.
+	* include/bits/stream_iterator.h: Likewise.
+	* include/bits/streambuf_iterator.h: Likewise.
+	* include/bits/unique_ptr.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/decimal/decimal: Likewise.
+	* include/experimental/any: Likewise.
+	* include/experimental/array: Likewise.
+	* include/experimental/bits/fs_dir.h: Likewise.
+	* include/experimental/bits/fs_fwd.h: Likewise.
+	* include/experimental/bits/fs_ops.h: Likewise.
+	* include/experimental/bits/fs_path.h: Likewise.
+	* include/experimental/buffer: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/optional: Likewise.
+	* include/experimental/propagate_const: Likewise.
+	* include/experimental/socket: Likewise.
+	* include/ext/pb_ds/assoc_container.hpp: Likewise.
+	* include/ext/pb_ds/detail/priority_queue_base_dispatch.hpp:
+	Likewise.
+	* include/ext/pb_ds/detail/tree_policy/node_metadata_selector.hpp: Likewise.
+	* include/ext/pb_ds/detail/trie_policy/node_metadata_selector.hpp: Likewise.
+	* include/ext/pb_ds/detail/types_traits.hpp: Likewise.
+	* include/ext/pb_ds/exception.hpp: Likewise.
+	* include/ext/pb_ds/priority_queue.hpp: Likewise.
+	* include/ext/pb_ds/tag_and_trait.hpp: Likewise.
+	* include/ext/random: Likewise.
+	* include/std/any: Likewise.
+	* include/std/atomic: Likewise.
+	* include/std/bitset: Likewise.
+	* include/std/chrono: Likewise.
+	* include/std/complex: Likewise.
+	* include/std/condition_variable: Likewise.
+	* include/std/fstream: Likewise.
+	* include/std/future: Likewise.
+	* include/std/iostream: Likewise.
+	* include/std/istream: Likewise.
+	* include/std/mutex: Likewise.
+	* include/std/numeric: Likewise.
+	* include/std/ostream: Likewise.
+	* include/std/ratio: Likewise.
+	* include/std/shared_mutex: Likewise.
+	* include/std/stdexcept: Likewise.
+	* include/std/streambuf: Likewise.
+	* include/std/system_error: Likewise.
+	* include/std/thread: Likewise.
+	* include/std/valarray: Likewise.
+	* include/std/variant: Likewise.
+	* include/tr1/cmath: Likewise.
+	* include/tr1/regex: Likewise.
+	* include/tr2/dynamic_bitset: Likewise.
+	* libsupc++/atomic_lockfree_defines.h: Likewise.
+	* libsupc++/exception: Likewise.
+	* libsupc++/exception.h: Likewise.
+	* libsupc++/exception_ptr.h: Likewise.
+	* libsupc++/nested_exception.h: Likewise.
+
 2021-03-31  Alexandre Oliva  <oliva@adacore.com>
 
 	* testsuite/30_threads/future/members/poll.cc: Use faster

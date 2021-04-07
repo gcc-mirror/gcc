@@ -1,3 +1,23 @@
+2021-04-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99917
+	* dmd/MERGE: Merge upstream dmd d16195406.
+
+2021-04-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-codegen.cc (build_frame_type): Use Array::find to get index of
+	element.
+
+2021-04-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-diagnostic.cc (vwarning): Increment gaggedWarnings if warning
+	message	was suppressed.
+	(vdeprecation): Likewise for deprecation messages.
+
+2021-04-06  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 5cc71ff83.
+
 2021-04-05  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/99914

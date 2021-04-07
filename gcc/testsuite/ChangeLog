@@ -1,3 +1,64 @@
+2021-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96673
+	* g++.dg/cpp1y/nsdmi-aggr13.C: New test.
+
+2021-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99901
+	* g++.dg/cpp1z/inline-var9.C: New test.
+
+2021-04-06  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/99781
+	* g++.target/aarch64/sve/pr99781.C: New.
+
+2021-04-06  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/memcpy-strategy-9.c: New test.
+	* gcc.target/i386/memcpy-strategy-10.c: Likewise.
+	* gcc.target/i386/memcpy-strategy-11.c: Likewise.
+	* gcc.target/i386/memset-strategy-7.c: Likewise.
+	* gcc.target/i386/memset-strategy-8.c: Likewise.
+	* gcc.target/i386/memset-strategy-9.c: Likewise.
+
+2021-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99880
+	* gcc.dg/torture/pr99880.c: New testcase.
+
+2021-04-06  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/modules/builtin-3_a.C: Remove dump scans.
+	* g++.dg/modules/builtin-3_b.C: Remove dump scans.
+
+2021-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96573
+	* gcc.dg/pr96573.c: Instead of __builtin_bswap accept also
+	VEC_PERM_EXPR with bswapping permutation.
+
+2021-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99924
+	* gfortran.dg/vect/pr99924.f90: New testcase.
+
+2021-04-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97900
+	* g++.dg/ext/vector40.C: Add -Wno-psabi -w to dg-options.
+
+2021-04-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91241
+	* g++.dg/abi/lambda-defarg1.C: New test.
+
+2021-04-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99899
+	* g++.dg/cpp2a/concepts-placeholder7.C: New test.
+	* g++.dg/cpp2a/concepts-placeholder8.C: New test.
+
 2021-04-05  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96311
