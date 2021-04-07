@@ -3152,11 +3152,19 @@ loop_distribution::distribute_loop (class loop *loop, vec<gimple *> stmts,
 void loop_distribution::bb_top_order_init (void)
 {
   int rpo_num;
-  int *rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (cfun) - NUM_FIXED_BLOCKS);
+  edge entry = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  bitmap exit_bbs = BITMAP_ALLOC (NULL);
 
   bb_top_order_index = XNEWVEC (int, last_basic_block_for_fn (cfun));
   bb_top_order_index_size = last_basic_block_for_fn (cfun);
-  rpo_num = pre_and_rev_post_order_compute_fn (cfun, NULL, rpo, true);
+
+  entry->flags &= ~EDGE_DFS_BACK;
+  bitmap_set_bit (exit_bbs, EXIT_BLOCK);
+  rpo_num = rev_post_order_and_mark_dfs_back_seme (cfun, entry, exit_bbs, true,
+						   rpo, NULL);
+  BITMAP_FREE (exit_bbs);
+
   for (int i = 0; i < rpo_num; i++)
     bb_top_order_index[rpo[i]] = i;
 
