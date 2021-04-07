@@ -17734,6 +17734,35 @@
    (set_attr "btver2_decode" "vector,vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_split
+  [(set (match_operand:VI1_AVX2 0 "register_operand")
+	(unspec:VI1_AVX2
+	  [(match_operand:VI1_AVX2 1 "vector_operand")
+	   (match_operand:VI1_AVX2 2 "register_operand")
+	   (not:VI1_AVX2 (match_operand:VI1_AVX2 3 "register_operand"))]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1"
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	  [(match_dup 2) (match_dup 1) (match_dup 3)]
+	  UNSPEC_BLENDV))])
+
+(define_split
+  [(set (match_operand:VI1_AVX2 0 "register_operand")
+	(unspec:VI1_AVX2
+	  [(match_operand:VI1_AVX2 1 "vector_operand")
+	   (match_operand:VI1_AVX2 2 "register_operand")
+	   (subreg:VI1_AVX2 (not (match_operand 3 "register_operand")) 0)]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1
+   && GET_MODE_CLASS (GET_MODE (operands[3])) == MODE_VECTOR_INT
+   && GET_MODE_SIZE (GET_MODE (operands[3])) == <MODE_SIZE>"
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	  [(match_dup 2) (match_dup 1) (match_dup 4)]
+	  UNSPEC_BLENDV))]
+  "operands[4] = gen_lowpart (<MODE>mode, operands[3]);")
+
 (define_insn_and_split "*<sse4_1_avx2>_pblendvb_lt"
   [(set (match_operand:VI1_AVX2 0 "register_operand" "=Yr,*x,x")
 	(unspec:VI1_AVX2
