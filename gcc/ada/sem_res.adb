@@ -3753,18 +3753,6 @@ package body Sem_Res is
 
          begin
             case Nkind (N) is
-               when N_Allocator =>
-                  if not Is_OK_Volatile_Context (Context       => Parent (N),
-                                                 Obj_Ref       => N,
-                                                 Check_Actuals => True)
-                  then
-                     Error_Msg_N
-                       ("allocator cannot appear in this context"
-                        & " (SPARK RM 7.1.3(10))", N);
-                  end if;
-
-                  return Skip;
-
                --  Do not consider nested function calls because they have
                --  already been processed during their own resolution.
 
