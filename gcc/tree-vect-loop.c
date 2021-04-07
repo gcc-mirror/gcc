@@ -8202,11 +8202,12 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 	  /* Fill up to the number of vectors we need for the whole group.  */
 	  nivs = least_common_multiple (group_size,
 					const_nunits) / const_nunits;
+	  vec_steps.reserve (nivs-ivn);
 	  for (; ivn < nivs; ++ivn)
 	    {
 	      SLP_TREE_VEC_STMTS (slp_node)
 		.quick_push (SLP_TREE_VEC_STMTS (slp_node)[0]);
-	      vec_steps.safe_push (vec_steps[0]);
+	      vec_steps.quick_push (vec_steps[0]);
 	    }
 	}
 
