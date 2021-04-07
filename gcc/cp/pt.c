@@ -976,6 +976,10 @@ maybe_process_partial_specialization (tree type)
   if (CLASS_TYPE_P (type) && CLASSTYPE_LAMBDA_EXPR (type))
     return type;
 
+  /* An injected-class-name is not a specialization.  */
+  if (DECL_SELF_REFERENCE_P (TYPE_NAME (type)))
+    return type;
+
   if (TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM)
     {
       error ("name of class shadows template template parameter %qD",
