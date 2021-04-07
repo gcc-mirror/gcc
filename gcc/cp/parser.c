@@ -24639,7 +24639,7 @@ cp_parser_class_name (cp_parser *parser,
   const bool typename_p = (typename_keyword_p
 			   && parser->scope
 			   && TYPE_P (parser->scope)
-			   && dependent_type_p (parser->scope));
+			   && dependent_scope_p (parser->scope));
   /* Handle the common case (an identifier, but not a template-id)
      efficiently.  */
   if (token->type == CPP_NAME
