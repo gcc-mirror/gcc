@@ -219,7 +219,11 @@ is_oacc_parallel_or_serial (omp_context *ctx)
 	  && ((gimple_omp_target_kind (ctx->stmt)
 	       == GF_OMP_TARGET_KIND_OACC_PARALLEL)
 	      || (gimple_omp_target_kind (ctx->stmt)
-		  == GF_OMP_TARGET_KIND_OACC_SERIAL)));
+		  == GF_OMP_TARGET_KIND_OACC_SERIAL)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED)
+	      || (gimple_omp_target_kind (ctx->stmt)
+		  == GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE)));
 }
 
 /* Return whether CTX represents an OpenACC 'kernels' construct.

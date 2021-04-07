@@ -1,3 +1,9 @@
+2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-low.cc (is_oacc_parallel_or_serial): Handle
+	GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_PARALLELIZED and
+	GF_OMP_TARGET_KIND_OACC_PARALLEL_KERNELS_GANG_SINGLE.
+
 2021-03-04  Andrew Stubbs <ams@codesourcery.com>
 
 	* dwarf2out.cc (notional_parents_list): New file variable.
