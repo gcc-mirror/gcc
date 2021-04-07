@@ -1,7 +1,7 @@
 /* Test the output of "-fopt-info-optimized-omp" for an OpenACC 'kernels'
    construct containing straight-line code.  */
 
-/* { dg-additional-options "-fopt-info-optimized-omp" } */
+/* { dg-additional-options "-fopt-info-note-optimized-omp" } */
 
 //TODO update accordingly
 /* See also "../../gfortran.dg/goacc/note-parallelism.f90".  */
@@ -29,7 +29,7 @@ main ()
 
 #pragma acc kernels /* { dg-warning "region contains gang partitioned code but is not gang partitioned" } */
   {
-    x = 0; /* { dg-message "optimized: beginning .gang-single. region in OpenACC .kernels. construct" } */
+    x = 0; /* { dg-message "note: beginning .gang-single. part in OpenACC .kernels. region" } */
     y = x < 10;
     z = x++;
     ;
