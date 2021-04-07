@@ -37,45 +37,45 @@ def get_copyright():
 
 
 def get_gnat_version():
-    m = re.search(r'Gnat_Static_Version_String : ' +
-                  r'constant String := "([^\(\)]+)\(.*\)?";',
+    m = re.search(br'Gnat_Static_Version_String : ' +
+                  br'constant String := "([^\(\)]+)\(.*\)?";',
                   gnatvsn_content)
     if m:
-        return m.group(1).strip()
+        return m.group(1).strip().decode()
     else:
         if texi_fsf and os.path.exists(basever):
             return ''
 
         try:
-            with open(basever, 'rb') as fd:
+            with open(basever) as fd:
                 return fd.read()
-        except:
+        except Exception:
             pass
 
-    print 'cannot find GNAT version in gnatvsn.ads or in ' + basever
+    print('cannot find GNAT version in gnatvsn.ads or in ' + basever)
     sys.exit(1)
 
 
 def get_gnat_build_type():
-    m = re.search(r'Build_Type : constant Gnat_Build_Type := (.+);',
+    m = re.search(br'Build_Type : constant Gnat_Build_Type := (.+);',
                   gnatvsn_content)
     if m:
-        return {'Gnatpro': 'PRO',
-                'FSF': 'FSF',
-                'GPL': 'GPL'}[m.group(1).strip()]
+        return {b'Gnatpro': 'PRO',
+                b'FSF': 'FSF',
+                b'GPL': 'GPL'}[m.group(1).strip()]
     else:
-        print 'cannot compute GNAT build type'
+        print('cannot compute GNAT build type')
         sys.exit(1)
 
 
 # First retrieve the name of the documentation we are building
 doc_name = os.environ.get('DOC_NAME', None)
 if doc_name is None:
-    print 'DOC_NAME environment variable should be set'
+    print('DOC_NAME environment variable should be set')
     sys.exit(1)
 
 if doc_name not in DOCS:
-    print '%s is not a valid documentation name' % doc_name
+    print('%s is not a valid documentation name' % doc_name)
     sys.exit(1)
 
 
@@ -84,11 +84,11 @@ exclude_patterns = []
 for d in os.listdir(root_source_dir):
     if d not in ('share', doc_name, doc_name + '.rst'):
         exclude_patterns.append(d)
-        print 'ignoring %s' % d
+        print('ignoring %s' % d)
 
 if doc_name == 'gnat_rm':
     exclude_patterns.append('share/gnat_project_manager.rst')
-    print 'ignoring share/gnat_project_manager.rst'
+    print('ignoring share/gnat_project_manager.rst')
 
 extensions = []
 templates_path = ['_templates']
@@ -103,7 +103,7 @@ copyright = get_copyright()
 version = get_gnat_version()
 release = get_gnat_version()
 
-pygments_style = 'sphinx'
+pygments_style = None
 tags.add(get_gnat_build_type())
 html_theme = 'sphinxdoc'
 if os.path.isfile('adacore_transparent.png'):
