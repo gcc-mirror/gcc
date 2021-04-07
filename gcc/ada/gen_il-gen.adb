@@ -2930,9 +2930,15 @@ package body Gen_IL.Gen is
       procedure Put_C_Type_And_Subtypes
         (S : in out Sink; Root : Root_Type) is
 
+         Cur_Pos : Root_Nat := 0;
+         --  Current Node_Kind'Pos or Entity_Kind'Pos to be printed
+
          procedure Put_Enum_Lit (T : Node_Or_Entity_Type);
          --  Print out the #define corresponding to the Ada enumeration literal
          --  for T in Node_Kind and Entity_Kind (i.e. concrete types).
+         --  This looks like "#define Some_Kind <pos>", where Some_Kind
+         --  is the Node_Kind or Entity_Kind enumeration literal, and
+         --  <pos> is Node_Kind'Pos or Entity_Kind'Pos of that literal.
 
          procedure Put_Kind_Subtype (T : Node_Or_Entity_Type);
          --  Print out the SUBTYPE macro call corresponding to an abstract
@@ -2941,7 +2947,8 @@ package body Gen_IL.Gen is
          procedure Put_Enum_Lit (T : Node_Or_Entity_Type) is
          begin
             if T in Concrete_Type then
-               Put (S, "#define " & Image (T) & " " & Image (Pos (T)) & "" & LF);
+               Put (S, "#define " & Image (T) & " " & Image (Cur_Pos) & LF);
+               Cur_Pos := Cur_Pos + 1;
             end if;
          end Put_Enum_Lit;
 
@@ -2961,7 +2968,7 @@ package body Gen_IL.Gen is
          Iterate_Types (Root, Pre => Put_Enum_Lit'Access);
 
          Put (S, "#define Number_" & Node_Or_Entity (Root) & "_Kinds " &
-              Image (Pos (Last_Concrete (Root)) + 1) & "" & LF & LF);
+              Image (Cur_Pos) & "" & LF & LF);
 
          Iterate_Types (Root, Pre => Put_Kind_Subtype'Access);
 

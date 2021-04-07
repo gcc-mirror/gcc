@@ -477,16 +477,4 @@ package body Gen_IL.Internals is
       Put (S, "--  End type hierarchy for " & N_Or_E & LF & LF);
    end Put_Type_Hierarchy;
 
-   ---------
-   -- Pos --
-   ---------
-
-   function Pos (T : Concrete_Type) return Root_Nat is
-      First : constant Concrete_Type :=
-        (if T in Concrete_Node then Concrete_Node'First
-         else Concrete_Entity'First);
-   begin
-      return Type_Enum'Pos (T) - Type_Enum'Pos (First);
-   end Pos;
-
 end Gen_IL.Internals;
