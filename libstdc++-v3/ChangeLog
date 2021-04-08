@@ -36,10 +36,6 @@
 
 2021-04-06  Jonathan Wakely  <jwakely@redhat.com>
 
-	* include/tr1/regex:
-
-2021-04-06  Jonathan Wakely  <jwakely@redhat.com>
-
 	* include/bits/atomic_base.h: Fix doxygen group close.
 	* include/bits/basic_ios.h: Likewise.
 	* include/bits/forward_list.h: Likewise.
