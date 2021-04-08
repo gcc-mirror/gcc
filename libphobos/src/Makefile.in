@@ -388,6 +388,7 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
+SECTION_FLAGS = @SECTION_FLAGS@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
@@ -482,7 +483,7 @@ D_EXTRA_DFLAGS = -nostdinc -I $(srcdir) \
 # D flags for compilation
 AM_DFLAGS = \
 	$(phobos_lt_pic_flag) $(phobos_compiler_shared_flag) \
-	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(CET_DFLAGS)
+	$(WARN_DFLAGS) $(CHECKING_DFLAGS) $(SECTION_FLAGS) $(CET_DFLAGS)
 
 
 # Flags for other kinds of sources
