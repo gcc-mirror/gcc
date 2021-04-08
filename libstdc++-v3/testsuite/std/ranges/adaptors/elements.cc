@@ -89,10 +89,26 @@ test03()
   VERIFY( (next(b_const, 2) - b_const) == 2 );
 }
 
+void
+test05()
+{
+  // LWG 3502
+  std::vector<int> vec = {42};
+  auto r1 = vec
+    | views::transform([](auto c) { return std::make_tuple(c, c); })
+    | views::keys;
+  VERIFY( ranges::equal(r1, (int[]){42}) );
+
+  std::tuple<int, int> a[] = {{1,2},{3,4}};
+  auto r2 = a | views::keys;
+  VERIFY( r2[0] == 1 && r2[1] == 3 );
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test05();
 }
