@@ -982,6 +982,16 @@ namespace views::__adaptor
   // having to include that entire header.
   namespace __detail
   {
+    template<typename _Iter, typename _Sent, typename _Tp>
+      constexpr _Iter
+      find(_Iter __first, _Sent __last, const _Tp& __value)
+      {
+	while (__first != __last
+	       && !(bool)(*__first == __value))
+	  ++__first;
+	return __first;
+      }
+
     template<typename _Iter, typename _Sent, typename _Pred>
       constexpr _Iter
       find_if(_Iter __first, _Sent __last, _Pred __pred)
@@ -2656,21 +2666,31 @@ namespace views::__adaptor
 	  constexpr _OuterIter&
 	  operator++()
 	  {
+	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	    // 3505. split_view::outer-iterator::operator++ misspecified
 	    const auto __end = ranges::end(_M_parent->_M_base);
 	    if (__current() == __end)
 	      return *this;
 	    const auto [__pbegin, __pend] = subrange{_M_parent->_M_pattern};
 	    if (__pbegin == __pend)
 	      ++__current();
+	    else if constexpr (__detail::__tiny_range<_Pattern>)
+	      {
+		__current() = __detail::find(std::move(__current()), __end,
+					     *__pbegin);
+		if (__current() != __end)
+		  ++__current();
+	      }
 	    else
 	      do
 		{
 		  auto [__b, __p]
-		    = __detail::mismatch(std::move(__current()), __end,
-					 __pbegin, __pend);
-		  __current() = std::move(__b);
+		    = __detail::mismatch(__current(), __end, __pbegin, __pend);
 		  if (__p == __pend)
-		    break;
+		    {
+		      __current() = __b;
+		      break;
+		    }
 		} while (++__current() != __end);
 	    return *this;
 	  }
