@@ -800,7 +800,7 @@ functions.
 
 Wmismatched-new-delete
 C++ ObjC++ Var(warn_mismatched_new_delete) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
-Warn for mismatches between calls to operator new or delete and the corrsponding
+Warn for mismatches between calls to operator new or delete and the corresponding
 call to the allocation or deallocation function.
 
 Wmismatched-tags
