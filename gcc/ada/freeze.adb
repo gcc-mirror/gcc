@@ -4141,9 +4141,10 @@ package body Freeze is
                elsif not After_Last_Declaration
                  and then not Freezing_Library_Level_Tagged_Type
                then
-                  Error_Msg_Node_1 := F_Type;
-                  Error_Msg_N
-                    ("type & must be fully defined before this point", N);
+                  Error_Msg_NE
+                    ("type & must be fully defined before this point",
+                     N,
+                     F_Type);
                end if;
             end if;
 
