@@ -222,11 +222,13 @@ public:
 
   bool on_edge (exploded_graph &eg,
 		exploded_node *enode,
-		const superedge *succ);
+		const superedge *succ,
+		uncertainty_t *uncertainty);
 
   program_state prune_for_point (exploded_graph &eg,
 				 const program_point &point,
-				 exploded_node *enode_for_diag) const;
+				 exploded_node *enode_for_diag,
+				 uncertainty_t *uncertainty) const;
 
   tree get_representative_tree (const svalue *sval) const;
 

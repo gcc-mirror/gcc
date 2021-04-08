@@ -119,6 +119,83 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* A class for keeping track of aspects of a program_state that we don't
+   know about, to avoid false positives about leaks.
+
+   Consider:
+
+      p->field = malloc (1024);
+      q->field = NULL;
+
+   where we don't know whether or not p and q point to the same memory,
+   and:
+
+      p->field = malloc (1024);
+      unknown_fn (p);
+
+   In both cases, the svalue for the address of the allocated buffer
+   goes from being bound to p->field to not having anything explicitly bound
+   to it.
+
+   Given that we conservatively discard bindings due to possible aliasing or
+   calls to unknown function, the store loses references to svalues,
+   but these svalues could still be live.  We don't want to warn about
+   them leaking - they're effectively in a "maybe live" state.
+
+   This "maybe live" information is somewhat transient.
+
+   We don't want to store this "maybe live" information in the program_state,
+   region_model, or store, since we don't want to bloat these objects (and
+   potentially bloat the exploded_graph with more nodes).
+   However, we can't store it in the region_model_context, as these context
+   objects sometimes don't last long enough to be around when comparing the
+   old vs the new state.
+
+   This class is a way to track a set of such svalues, so that we can
+   temporarily capture that they are in a "maybe live" state whilst
+   comparing old and new states.  */
+
+class uncertainty_t
+{
+public:
+  typedef hash_set<const svalue *>::iterator iterator;
+
+  void on_maybe_bound_sval (const svalue *sval)
+  {
+    m_maybe_bound_svals.add (sval);
+  }
+  void on_mutable_sval_at_unknown_call (const svalue *sval)
+  {
+    m_mutable_at_unknown_call_svals.add (sval);
+  }
+
+  bool unknown_sm_state_p (const svalue *sval)
+  {
+    return (m_maybe_bound_svals.contains (sval)
+	    || m_mutable_at_unknown_call_svals.contains (sval));
+  }
+
+  void dump_to_pp (pretty_printer *pp, bool simple) const;
+  void dump (bool simple) const;
+
+  iterator begin_maybe_bound_svals () const
+  {
+    return m_maybe_bound_svals.begin ();
+  }
+  iterator end_maybe_bound_svals () const
+  {
+    return m_maybe_bound_svals.end ();
+  }
+
+private:
+
+  /* svalues that might or might not still be bound.  */
+  hash_set<const svalue *> m_maybe_bound_svals;
+
+  /* svalues that have mutable sm-state at unknown calls.  */
+  hash_set<const svalue *> m_mutable_at_unknown_call_svals;
+};
+
 class concrete_binding;
 
 /* An enum for discriminating between "direct" vs "default" levels of
@@ -409,7 +486,8 @@ public:
   void clobber_region (store_manager *mgr, const region *reg);
   void purge_region (store_manager *mgr, const region *reg);
   void zero_fill_region (store_manager *mgr, const region *reg);
-  void mark_region_as_unknown (store_manager *mgr, const region *reg);
+  void mark_region_as_unknown (store_manager *mgr, const region *reg,
+			       uncertainty_t *uncertainty);
 
   const svalue *get_binding (store_manager *mgr, const region *reg,
 			      binding_kind kind) const;
@@ -421,7 +499,8 @@ public:
   const svalue *maybe_get_compound_binding (store_manager *mgr,
 					     const region *reg) const;
 
-  void remove_overlapping_bindings (store_manager *mgr, const region *reg);
+  void remove_overlapping_bindings (store_manager *mgr, const region *reg,
+				    uncertainty_t *uncertainty);
 
   template <typename T>
   void for_each_value (void (*cb) (const svalue *sval, T user_data),
@@ -539,11 +618,13 @@ public:
   bool called_unknown_fn_p () const { return m_called_unknown_fn; }
 
   void set_value (store_manager *mgr, const region *lhs_reg,
-		  const svalue *rhs_sval, enum binding_kind kind);
+		  const svalue *rhs_sval, enum binding_kind kind,
+		  uncertainty_t *uncertainty);
   void clobber_region (store_manager *mgr, const region *reg);
   void purge_region (store_manager *mgr, const region *reg);
   void zero_fill_region (store_manager *mgr, const region *reg);
-  void mark_region_as_unknown (store_manager *mgr, const region *reg);
+  void mark_region_as_unknown (store_manager *mgr, const region *reg,
+			       uncertainty_t *uncertainty);
 
   const binding_cluster *get_cluster (const region *base_reg) const;
   binding_cluster *get_cluster (const region *base_reg);

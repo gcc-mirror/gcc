@@ -63,6 +63,61 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+/* Dump SVALS to PP, sorting them to ensure determinism.  */
+
+static void
+dump_svalue_set (const hash_set <const svalue *> &svals,
+		 pretty_printer *pp, bool simple)
+{
+  auto_vec <const svalue *> v;
+  for (hash_set<const svalue *>::iterator iter = svals.begin ();
+       iter != svals.end (); ++iter)
+    {
+      v.safe_push (*iter);
+    }
+  v.qsort (svalue::cmp_ptr_ptr);
+
+  pp_character (pp, '{');
+  const svalue *sval;
+  unsigned i;
+  FOR_EACH_VEC_ELT (v, i, sval)
+    {
+      if (i > 0)
+	pp_string (pp, ", ");
+      sval->dump_to_pp (pp, simple);
+    }
+  pp_character (pp, '}');
+}
+
+/* class uncertainty_t.  */
+
+/* Dump this object to PP.  */
+
+void
+uncertainty_t::dump_to_pp (pretty_printer *pp, bool simple) const
+{
+  pp_string (pp, "{m_maybe_bound_svals: ");
+  dump_svalue_set (m_maybe_bound_svals, pp, simple);
+
+  pp_string (pp, ", m_mutable_at_unknown_call_svals: ");
+  dump_svalue_set (m_mutable_at_unknown_call_svals, pp, simple);
+  pp_string (pp, "}");
+}
+
+/* Dump this object to stderr.  */
+
+DEBUG_FUNCTION void
+uncertainty_t::dump (bool simple) const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp, simple);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
 /* Get a human-readable string for KIND for dumps.  */
 
 const char *binding_kind_to_string (enum binding_kind kind)
@@ -876,7 +931,7 @@ binding_cluster::bind_compound_sval (store_manager *mgr,
 void
 binding_cluster::clobber_region (store_manager *mgr, const region *reg)
 {
-  remove_overlapping_bindings (mgr, reg);
+  remove_overlapping_bindings (mgr, reg, NULL);
 }
 
 /* Remove any bindings for REG within this cluster.  */
@@ -913,13 +968,16 @@ binding_cluster::zero_fill_region (store_manager *mgr, const region *reg)
   m_touched = false;
 }
 
-/* Mark REG within this cluster as being unknown.  */
+/* Mark REG within this cluster as being unknown.
+   If UNCERTAINTY is non-NULL, use it to record any svalues that
+   had bindings to them removed, as being maybe-bound.  */
 
 void
 binding_cluster::mark_region_as_unknown (store_manager *mgr,
-					 const region *reg)
+					 const region *reg,
+					 uncertainty_t *uncertainty)
 {
-  remove_overlapping_bindings (mgr, reg);
+  remove_overlapping_bindings (mgr, reg, uncertainty);
 
   /* Add a default binding to "unknown".  */
   region_model_manager *sval_mgr = mgr->get_svalue_manager ();
@@ -1143,11 +1201,14 @@ binding_cluster::get_overlapping_bindings (store_manager *mgr,
 
 /* Remove any bindings within this cluster that overlap REG,
    but retain default bindings that overlap but aren't fully covered
-   by REG.  */
+   by REG.
+   If UNCERTAINTY is non-NULL, use it to record any svalues that
+   were removed, as being maybe-bound.  */
 
 void
 binding_cluster::remove_overlapping_bindings (store_manager *mgr,
-					      const region *reg)
+					      const region *reg,
+					      uncertainty_t *uncertainty)
 {
   auto_vec<const binding_key *> bindings;
   get_overlapping_bindings (mgr, reg, &bindings);
@@ -1165,6 +1226,8 @@ binding_cluster::remove_overlapping_bindings (store_manager *mgr,
 	  if (reg_binding != iter_binding)
 	    continue;
 	}
+      if (uncertainty)
+	uncertainty->on_maybe_bound_sval (m_map.get (iter_binding));
       m_map.remove (iter_binding);
     }
 }
@@ -1826,7 +1889,8 @@ store::get_any_binding (store_manager *mgr, const region *reg) const
 
 void
 store::set_value (store_manager *mgr, const region *lhs_reg,
-		  const svalue *rhs_sval, enum binding_kind kind)
+		  const svalue *rhs_sval, enum binding_kind kind,
+		  uncertainty_t *uncertainty)
 {
   remove_overlapping_bindings (mgr, lhs_reg);
 
@@ -1880,7 +1944,8 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	      gcc_unreachable ();
 
 	    case tristate::TS_UNKNOWN:
-	      iter_cluster->mark_region_as_unknown (mgr, iter_base_reg);
+	      iter_cluster->mark_region_as_unknown (mgr, iter_base_reg,
+						    uncertainty);
 	      break;
 
 	    case tristate::TS_TRUE:
@@ -2021,13 +2086,14 @@ store::zero_fill_region (store_manager *mgr, const region *reg)
 /* Mark REG as having unknown content.  */
 
 void
-store::mark_region_as_unknown (store_manager *mgr, const region *reg)
+store::mark_region_as_unknown (store_manager *mgr, const region *reg,
+			       uncertainty_t *uncertainty)
 {
   const region *base_reg = reg->get_base_region ();
   if (base_reg->symbolic_for_unknown_ptr_p ())
     return;
   binding_cluster *cluster = get_or_create_cluster (base_reg);
-  cluster->mark_region_as_unknown (mgr, reg);
+  cluster->mark_region_as_unknown (mgr, reg, uncertainty);
 }
 
 /* Get the cluster for BASE_REG, or NULL (const version).  */
@@ -2238,7 +2304,7 @@ store::remove_overlapping_bindings (store_manager *mgr, const region *reg)
 	  delete cluster;
 	  return;
 	}
-      cluster->remove_overlapping_bindings (mgr, reg);
+      cluster->remove_overlapping_bindings (mgr, reg, NULL);
     }
 }
 

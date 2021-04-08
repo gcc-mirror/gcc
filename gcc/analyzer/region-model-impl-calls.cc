@@ -79,6 +79,14 @@ call_details::call_details (const gcall *call, region_model *model,
     }
 }
 
+/* Get any uncertainty_t associated with the region_model_context.  */
+
+uncertainty_t *
+call_details::get_uncertainty () const
+{
+  return m_ctxt->get_uncertainty ();
+}
+
 /* If the callsite has a left-hand-side region, set it to RESULT
    and return true.
    Otherwise do nothing and return false.  */
@@ -346,7 +354,7 @@ region_model::impl_call_memcpy (const call_details &cd)
   check_for_writable_region (dest_reg, cd.get_ctxt ());
 
   /* Otherwise, mark region's contents as unknown.  */
-  mark_region_as_unknown (dest_reg);
+  mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
 }
 
 /* Handle the on_call_pre part of "memset" and "__builtin_memset".  */
@@ -389,7 +397,7 @@ region_model::impl_call_memset (const call_details &cd)
   check_for_writable_region (dest_reg, cd.get_ctxt ());
 
   /* Otherwise, mark region's contents as unknown.  */
-  mark_region_as_unknown (dest_reg);
+  mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
   return false;
 }
 
@@ -453,7 +461,7 @@ region_model::impl_call_strcpy (const call_details &cd)
   check_for_writable_region (dest_reg, cd.get_ctxt ());
 
   /* For now, just mark region's contents as unknown.  */
-  mark_region_as_unknown (dest_reg);
+  mark_region_as_unknown (dest_reg, cd.get_uncertainty ());
 }
 
 /* Handle the on_call_pre part of "strlen".

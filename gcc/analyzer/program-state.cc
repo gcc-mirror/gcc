@@ -516,6 +516,7 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
 				  impl_region_model_context *ctxt)
 {
   svalue_set svals_to_unset;
+  uncertainty_t *uncertainty = ctxt->get_uncertainty ();
 
   auto_vec<const svalue *> leaked_svals (m_map.elements ());
   for (map_t::iterator iter = m_map.begin ();
@@ -530,6 +531,9 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
 	  if (!m_sm.can_purge_p (e.m_state))
 	    leaked_svals.quick_push (iter_sval);
 	}
+      if (uncertainty)
+	if (uncertainty->unknown_sm_state_p (iter_sval))
+	  svals_to_unset.add (iter_sval);
     }
 
   leaked_svals.qsort (svalue::cmp_ptr_ptr);
@@ -960,7 +964,8 @@ program_state::get_current_function () const
 bool
 program_state::on_edge (exploded_graph &eg,
 			exploded_node *enode,
-			const superedge *succ)
+			const superedge *succ,
+			uncertainty_t *uncertainty)
 {
   /* Update state.  */
   const program_point &point = enode->get_point ();
@@ -978,6 +983,7 @@ program_state::on_edge (exploded_graph &eg,
   impl_region_model_context ctxt (eg, enode,
 				  &enode->get_state (),
 				  this,
+				  uncertainty,
 				  last_stmt);
   if (!m_region_model->maybe_update_for_edge (*succ,
 					      last_stmt,
@@ -992,8 +998,8 @@ program_state::on_edge (exploded_graph &eg,
     }
 
   program_state::detect_leaks (enode->get_state (), *this,
-				NULL, eg.get_ext_state (),
-				&ctxt);
+			       NULL, eg.get_ext_state (),
+			       &ctxt);
 
   return true;
 }
@@ -1007,7 +1013,8 @@ program_state::on_edge (exploded_graph &eg,
 program_state
 program_state::prune_for_point (exploded_graph &eg,
 				const program_point &point,
-				exploded_node *enode_for_diag) const
+				exploded_node *enode_for_diag,
+				uncertainty_t *uncertainty) const
 {
   logger * const logger = eg.get_logger ();
   LOG_SCOPE (logger);
@@ -1071,6 +1078,7 @@ program_state::prune_for_point (exploded_graph &eg,
 	  impl_region_model_context ctxt (eg, enode_for_diag,
 					  this,
 					  &new_state,
+					  uncertainty,
 					  point.get_stmt ());
 	  detect_leaks (*this, new_state, NULL, eg.get_ext_state (), &ctxt);
 	}
@@ -1189,6 +1197,7 @@ program_state::detect_leaks (const program_state &src_state,
 {
   logger *logger = ext_state.get_logger ();
   LOG_SCOPE (logger);
+  const uncertainty_t *uncertainty = ctxt->get_uncertainty ();
   if (logger)
     {
       pretty_printer *pp = logger->get_printer ();
@@ -1207,31 +1216,46 @@ program_state::detect_leaks (const program_state &src_state,
 	  extra_sval->dump_to_pp (pp, true);
 	  logger->end_log_line ();
 	}
+      if (uncertainty)
+	{
+	  logger->start_log_line ();
+	  pp_string (pp, "uncertainty: ");
+	  uncertainty->dump_to_pp (pp, true);
+	  logger->end_log_line ();
+	}
     }
 
-  /* Get svalues reachable from each of src_state and dst_state.  */
-  svalue_set src_svalues;
-  svalue_set dest_svalues;
-  src_state.m_region_model->get_reachable_svalues (&src_svalues, NULL);
-  dest_state.m_region_model->get_reachable_svalues (&dest_svalues, extra_sval);
+  /* Get svalues reachable from each of src_state and dest_state.
+     Get svalues *known* to be reachable in src_state.
+     Pass in uncertainty for dest_state so that we additionally get svalues that
+     *might* still be reachable in dst_state.  */
+  svalue_set known_src_svalues;
+  src_state.m_region_model->get_reachable_svalues (&known_src_svalues,
+						   NULL, NULL);
+  svalue_set maybe_dest_svalues;
+  dest_state.m_region_model->get_reachable_svalues (&maybe_dest_svalues,
+						    extra_sval, uncertainty);
 
   if (logger)
     {
-      log_set_of_svalues (logger, "src_state reachable svalues:", src_svalues);
-      log_set_of_svalues (logger, "dest_state reachable svalues:",
-			  dest_svalues);
+      log_set_of_svalues (logger, "src_state known reachable svalues:",
+			  known_src_svalues);
+      log_set_of_svalues (logger, "dest_state maybe reachable svalues:",
+			  maybe_dest_svalues);
     }
 
-  auto_vec <const svalue *> dead_svals (src_svalues.elements ());
-  for (svalue_set::iterator iter = src_svalues.begin ();
-       iter != src_svalues.end (); ++iter)
+  auto_vec <const svalue *> dead_svals (known_src_svalues.elements ());
+  for (svalue_set::iterator iter = known_src_svalues.begin ();
+       iter != known_src_svalues.end (); ++iter)
     {
       const svalue *sval = (*iter);
       /* For each sval reachable from SRC_STATE, determine if it is
-	 live in DEST_STATE: either explicitly reachable, or implicitly
-	 live based on the set of explicitly reachable svalues.
-	 Record those that have ceased to be live.  */
-      if (!sval->live_p (&dest_svalues, dest_state.m_region_model))
+	 live in DEST_STATE: either explicitly reachable, implicitly
+	 live based on the set of explicitly reachable svalues,
+	 or possibly reachable as recorded in uncertainty.
+	 Record those that have ceased to be live i.e. were known
+	 to be live, and are now not known to be even possibly-live.  */
+      if (!sval->live_p (&maybe_dest_svalues, dest_state.m_region_model))
 	dead_svals.quick_push (sval);
     }
 
@@ -1244,11 +1268,12 @@ program_state::detect_leaks (const program_state &src_state,
     ctxt->on_svalue_leak (sval);
 
   /* Purge dead svals from sm-state.  */
-  ctxt->on_liveness_change (dest_svalues, dest_state.m_region_model);
+  ctxt->on_liveness_change (maybe_dest_svalues,
+			    dest_state.m_region_model);
 
   /* Purge dead svals from constraints.  */
   dest_state.m_region_model->get_constraints ()->on_liveness_change
-    (dest_svalues, dest_state.m_region_model);
+    (maybe_dest_svalues, dest_state.m_region_model);
 }
 
 #if CHECKING_P
@@ -1456,7 +1481,8 @@ test_program_state_merging ()
   region_model_manager *mgr = eng.get_model_manager ();
 
   program_state s0 (ext_state);
-  impl_region_model_context ctxt (&s0, ext_state);
+  uncertainty_t uncertainty;
+  impl_region_model_context ctxt (&s0, ext_state, &uncertainty);
 
   region_model *model0 = s0.m_region_model;
   const svalue *size_in_bytes
