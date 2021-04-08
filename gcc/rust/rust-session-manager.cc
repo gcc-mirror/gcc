@@ -48,6 +48,8 @@
 #include "rust-ast-resolve.h"
 #include "rust-ast-lower.h"
 #include "rust-hir-type-check.h"
+#include "rust-hir-liveness.h"
+#include "rust-hir-scan-deadcode.h"
 #include "rust-tycheck-dump.h"
 #include "rust-ast-resolve-unused.h"
 #include "rust-compile.h"
@@ -557,6 +559,18 @@ Session::parse_file (const char *filename)
     {
       dump_type_resolution (hir);
     }
+
+  // liveness analysis
+  std::set<HirId> live_symbols = Analysis::Liveness::Analysis (hir);
+
+  if (saw_errors ())
+    return;
+
+  // scan dead code
+  Analysis::ScanDeadcode::Scan (hir, live_symbols);
+
+  if (saw_errors ())
+    return;
 
   // scan unused has to be done after type resolution since methods are resolved
   // at that point
