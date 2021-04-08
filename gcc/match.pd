@@ -3646,7 +3646,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Sink binary operation to branches, but only if we can fold it.  */
 (for op (tcc_comparison plus minus mult bit_and bit_ior bit_xor
-	 rdiv trunc_div ceil_div floor_div round_div
+	 lshift rshift rdiv trunc_div ceil_div floor_div round_div
 	 trunc_mod ceil_mod floor_mod round_mod min max)
 /* (c ? a : b) op (c ? d : e)  -->  c ? (a op d) : (b op e) */
  (simplify
