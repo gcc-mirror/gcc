@@ -2758,7 +2758,6 @@ package body Sem_Ch3 is
                Resolve_Aspects;
 
             elsif L /= Visible_Declarations (Parent (L))
-              or else No (Private_Declarations (Parent (L)))
               or else Is_Empty_List (Private_Declarations (Parent (L)))
             then
                Adjust_Decl;
