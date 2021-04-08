@@ -17,7 +17,23 @@
 
 // <charconv> is supported in C++14 as a GNU extension, but this test uses C++17
 // hexadecimal floating-point literals.
-// { dg-do run { target c++17 } }
+
+// When long double is larger than double, the long double to_chars overloads
+// are partially implemented in terms of printf, so this test in turn uses
+// printf to verify correctness these overloads.
+// When long double == double, the long double to_chars overloads are simple
+// wrappers around the corresponding double overloads.  Since they don't go
+// through printf, we can't portably verify their output by comparing it with
+// that of printf, so it's simplest to just not run this test on such targets;
+// correctness of these overloads is already implied by that of the double
+// overloads.
+// { dg-do run { target { c++17 && large_long_double } } }
+// { dg-do compile { target { c++17 && { ! large_long_double } } } }
+
+// The system printf on these targets appear to be buggy.  FIXME: Make this test
+// more portable and robust to differences in system printf behavior.
+// { dg-xfail-run-if "Non-conforming printf (see PR98384)" { *-*-solaris* *-*-darwin* } }
+
 // { dg-require-effective-target ieee-floats }
 
 #include <charconv>
