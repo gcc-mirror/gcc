@@ -3234,6 +3234,10 @@ namespace views::__adaptor
 	{ std::get<_Nm>(__t) }
 	  -> convertible_to<const tuple_element_t<_Nm, _Tp>&>;
       };
+
+    template<typename _Tp, size_t _Nm>
+      concept __returnable_element
+	= is_reference_v<_Tp> || move_constructible<tuple_element_t<_Nm, _Tp>>;
   }
 
   template<input_range _Vp, size_t _Nm>
@@ -3241,6 +3245,7 @@ namespace views::__adaptor
       && __detail::__has_tuple_element<range_value_t<_Vp>, _Nm>
       && __detail::__has_tuple_element<remove_reference_t<range_reference_t<_Vp>>,
 				       _Nm>
+      && __detail::__returnable_element<range_reference_t<_Vp>, _Nm>
     class elements_view : public view_interface<elements_view<_Vp, _Nm>>
     {
     public:
@@ -3298,9 +3303,22 @@ namespace views::__adaptor
       template<bool _Const>
 	struct _Iterator
 	{
+	private:
 	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
 
 	  iterator_t<_Base> _M_current = iterator_t<_Base>();
+
+	  static constexpr decltype(auto)
+	  _S_get_element(const iterator_t<_Base>& __i)
+	  {
+	    if constexpr (is_reference_v<range_reference_t<_Base>>)
+	      return std::get<_Nm>(*__i);
+	    else
+	      {
+		using _Et = remove_cv_t<tuple_element_t<_Nm, range_reference_t<_Base>>>;
+		return static_cast<_Et>(std::get<_Nm>(*__i));
+	      }
+	  }
 
 	  friend _Iterator<!_Const>;
 
@@ -3334,8 +3352,8 @@ namespace views::__adaptor
 	  { return std::move(_M_current); }
 
 	  constexpr decltype(auto)
-	    operator*() const
-	  { return std::get<_Nm>(*_M_current); }
+	  operator*() const
+	  { return _S_get_element(_M_current); }
 
 	  constexpr _Iterator&
 	  operator++()
@@ -3345,7 +3363,7 @@ namespace views::__adaptor
 	  }
 
 	  constexpr void
-	  operator++(int) requires (!forward_range<_Base>)
+	  operator++(int)
 	  { ++_M_current; }
 
 	  constexpr _Iterator
@@ -3390,7 +3408,7 @@ namespace views::__adaptor
 	  constexpr decltype(auto)
 	  operator[](difference_type __n) const
 	    requires random_access_range<_Base>
-	  { return std::get<_Nm>(*(_M_current + __n)); }
+	  { return _S_get_element(_M_current + __n); }
 
 	  friend constexpr bool
 	  operator==(const _Iterator& __x, const _Iterator& __y)
