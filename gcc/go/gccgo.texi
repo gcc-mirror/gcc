@@ -90,7 +90,6 @@ package documentation, see @uref{http://golang.org/}.
 * Import and Export::           Importing and exporting package data.
 * Compiler Directives::         Comments to control compilation.
 * C Interoperability::          Calling C from Go and vice-versa.
-* Index::                       Index.
 @end menu
 
 
@@ -512,9 +511,6 @@ call the function from C you must set the name using the @command{gcc}
 @smallexample
 extern int go_function(int) __asm__ ("mypkgpath.Function");
 @end smallexample
-
-@node Index
-@unnumbered Index
 
 @printindex cp
 
