@@ -2201,6 +2201,7 @@ determine_specialization (tree template_id,
     ++header_count;
 
   tree orig_fns = fns;
+  bool header_mismatch = false;
 
   if (variable_template_p (fns))
     {
@@ -2248,7 +2249,10 @@ determine_specialization (tree template_id,
 	     specialization but rather a template instantiation, so there
 	     is no check we can perform here.  */
 	  if (header_count && header_count != template_count + 1)
-	    continue;
+	    {
+	      header_mismatch = true;
+	      continue;
+	    }
 
 	  /* Check that the number of template arguments at the
 	     innermost level for DECL is the same as for FN.  */
@@ -2482,13 +2486,12 @@ determine_specialization (tree template_id,
     {
       error ("template-id %qD for %q+D does not match any template "
 	     "declaration", template_id, decl);
-      if (header_count && header_count != template_count + 1)
+      if (header_mismatch)
 	inform (DECL_SOURCE_LOCATION (decl),
 		"saw %d %<template<>%>, need %d for "
 		"specializing a member function template",
 		header_count, template_count + 1);
-      else
-	print_candidates (orig_fns);
+      print_candidates (orig_fns);
       return error_mark_node;
     }
   else if ((templates && TREE_CHAIN (templates))
