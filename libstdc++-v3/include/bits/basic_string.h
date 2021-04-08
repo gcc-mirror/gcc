@@ -4709,8 +4709,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @brief  Insert a string_view.
        *  @param __pos1  Position in string to insert at.
        *  @param __svt   The object convertible to string_view to insert from.
-       *  @param __pos2  Position in string_view to insert
-       *  from.
+       *  @param __pos2  Position in string_view to insert from.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
       */
