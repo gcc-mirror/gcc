@@ -138,7 +138,8 @@ namespace test_ns
   void make_reverse_iterator(T&&) {}
 } // namespace test_ns
 
-void test06()
+void
+test06()
 {
   // Check that views::reverse works and does not use ADL which could lead
   // to accidentally finding test_ns::make_reverse_iterator(A*).
@@ -147,6 +148,17 @@ void test06()
   using V = decltype(v);
   static_assert( std::ranges::view<V> );
   static_assert( std::ranges::range<const V> );
+}
+
+template<auto reverse = views::reverse>
+void
+test07()
+{
+  // Verify SFINAE behavior.
+  static_assert(!requires { reverse(); });
+  static_assert(!requires { reverse(0, 0); });
+  static_assert(!requires { reverse(0); });
+  static_assert(!requires { 0 | reverse; });
 }
 
 int
@@ -158,4 +170,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }

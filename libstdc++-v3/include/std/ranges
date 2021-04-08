@@ -724,168 +724,172 @@ namespace __detail
 
 } // namespace __detail
 
-namespace views
+namespace views::__adaptor
 {
-  namespace __adaptor
+  // True if the range adaptor _Adaptor can be applied with _Args.
+  template<typename _Adaptor, typename... _Args>
+    concept __adaptor_invocable
+      = requires { std::declval<_Adaptor>()(declval<_Args>()...); };
+
+  // True if the range adaptor non-closure _Adaptor can be partially applied
+  // with _Args.
+  template<typename _Adaptor, typename... _Args>
+    concept __adaptor_partial_app_viable = (_Adaptor::_S_arity > 1)
+      && (sizeof...(_Args) == _Adaptor::_S_arity - 1)
+      && (constructible_from<decay_t<_Args>, _Args> && ...);
+
+  template<typename _Adaptor, typename... _Args>
+    struct _Partial;
+
+  template<typename _Lhs, typename _Rhs>
+    struct _Pipe;
+
+  // The base class of every range adaptor closure.
+  struct _RangeAdaptorClosure
   {
-    template<typename _Tp>
-      inline constexpr auto
-      __maybe_refwrap(_Tp& __arg)
-      { return reference_wrapper<_Tp>{__arg}; }
+    // range | adaptor is equivalent to adaptor(range).
+    template<typename _Self, typename _Range>
+      requires derived_from<remove_cvref_t<_Self>, _RangeAdaptorClosure>
+	&& __adaptor_invocable<_Self, _Range>
+      friend constexpr auto
+      operator|(_Range&& __r, _Self&& __self)
+      { return std::forward<_Self>(__self)(std::forward<_Range>(__r)); }
 
-    template<typename _Tp>
-      inline constexpr auto
-      __maybe_refwrap(const _Tp& __arg)
-      { return reference_wrapper<const _Tp>{__arg}; }
+    // Compose the adaptors __lhs and __rhs into a pipeline, returning
+    // another range adaptor closure object.
+    template<typename _Lhs, typename _Rhs>
+      requires derived_from<_Lhs, _RangeAdaptorClosure>
+	&& derived_from<_Rhs, _RangeAdaptorClosure>
+      friend constexpr auto
+      operator|(_Lhs __lhs, _Rhs __rhs)
+      { return _Pipe<_Lhs, _Rhs>{std::move(__lhs), std::move(__rhs)}; }
+  };
 
-    template<typename _Tp>
-      inline constexpr decltype(auto)
-      __maybe_refwrap(_Tp&& __arg)
-      { return std::forward<_Tp>(__arg); }
+  // The base class of every range adaptor non-closure.
+  //
+  // The static data member _Derived::_S_arity must contain the total number of
+  // arguments that the adaptor takes, and the class _Derived must introduce
+  // _RangeAdaptor::operator() into the class scope via a using-declaration.
+  template<typename _Derived>
+    struct _RangeAdaptor
+    {
+      // Partially apply the arguments __args to the range adaptor _Derived,
+      // returning a range adaptor closure object.
+      template<typename... _Args>
+	requires __adaptor_partial_app_viable<_Derived, _Args...>
+	constexpr auto
+	operator()(_Args&&... __args) const
+	{
+	  return _Partial<_Derived, decay_t<_Args>...>{std::forward<_Args>(__args)...};
+	}
+    };
 
-    template<typename _Callable>
-      struct _RangeAdaptorClosure;
+  // A range adaptor closure that represents partial application of
+  // the range adaptor _Adaptor with arguments _Args.
+  template<typename _Adaptor, typename... _Args>
+    struct _Partial : _RangeAdaptorClosure
+    {
+      tuple<_Args...> _M_args;
 
-    template<typename _Callable>
-      struct _RangeAdaptor
-      {
-      protected:
-	[[no_unique_address]]
-	  __detail::__maybe_present_t<!is_default_constructible_v<_Callable>,
-				      _Callable> _M_callable;
+      constexpr
+      _Partial(_Args... __args)
+	: _M_args(std::move(__args)...)
+      { }
 
-      public:
-	constexpr
-	_RangeAdaptor(const _Callable& = {})
-	  requires is_default_constructible_v<_Callable>
-	{ }
+      // Invoke _Adaptor with arguments __r, _M_args... according to the
+      // value category of the range adaptor closure object.
+      template<typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
+	constexpr auto
+	operator()(_Range&& __r) const &
+	{
+	  auto __forwarder = [&__r] (const auto&... __args) {
+	    return _Adaptor{}(std::forward<_Range>(__r), __args...);
+	  };
+	  return std::apply(__forwarder, _M_args);
+	}
 
-	constexpr
-	_RangeAdaptor(_Callable __callable)
-	  requires (!is_default_constructible_v<_Callable>)
-	  : _M_callable(std::move(__callable))
-	{ }
+      template<typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, _Args...>
+	constexpr auto
+	operator()(_Range&& __r) &&
+	{
+	  auto __forwarder = [&__r] (auto&... __args) {
+	    return _Adaptor{}(std::forward<_Range>(__r), std::move(__args)...);
+	  };
+	  return std::apply(__forwarder, _M_args);
+	}
 
-	template<typename... _Args>
-	  requires (sizeof...(_Args) >= 1)
-	  constexpr auto
-	  operator()(_Args&&... __args) const
-	  {
-	    // [range.adaptor.object]: If a range adaptor object accepts more
-	    // than one argument, then the following expressions are equivalent:
-	    //
-	    //   (1) adaptor(range, args...)
-	    //   (2) adaptor(args...)(range)
-	    //   (3) range | adaptor(args...)
-	    //
-	    // In this case, adaptor(args...) is a range adaptor closure object.
-	    //
-	    // We handle (1) and (2) here, and (3) is just a special case of a
-	    // more general case already handled by _RangeAdaptorClosure.
-	    if constexpr (is_invocable_v<_Callable, _Args...>)
-	      {
-		static_assert(sizeof...(_Args) != 1,
-			      "a _RangeAdaptor that accepts only one argument "
-			      "should be defined as a _RangeAdaptorClosure");
-		// Here we handle adaptor(range, args...) -- just forward all
-		// arguments to the underlying adaptor routine.
-		return _Callable{}(std::forward<_Args>(__args)...);
-	      }
-	    else
-	      {
-		// Here we handle adaptor(args...)(range).
-		// Given args..., we return a _RangeAdaptorClosure that takes a
-		// range argument, such that (2) is equivalent to (1).
-		//
-		// We need to be careful about how we capture args... in this
-		// closure.  By using __maybe_refwrap, we capture lvalue
-		// references by reference (through a reference_wrapper) and
-		// otherwise capture by value.
-		auto __closure
-		  = [...__args(__maybe_refwrap(std::forward<_Args>(__args)))]
-		    <typename _Range> (_Range&& __r) {
-		      // This static_cast has two purposes: it forwards a
-		      // reference_wrapper<T> capture as a T&, and otherwise
-		      // forwards the captured argument as an rvalue.
-		      return _Callable{}(std::forward<_Range>(__r),
-			       (static_cast<unwrap_reference_t
-					    <remove_const_t<decltype(__args)>>>
-				(__args))...);
-		    };
-		using _ClosureType = decltype(__closure);
-		return _RangeAdaptorClosure<_ClosureType>(std::move(__closure));
-	      }
-	  }
-      };
+      template<typename _Range>
+	constexpr auto
+	operator()(_Range&& __r) const && = delete;
+    };
 
-    template<typename _Callable>
-      _RangeAdaptor(_Callable) -> _RangeAdaptor<_Callable>;
+  // A lightweight specialization of the above primary template for
+  // the common case where _Adaptor accepts a single extra argument.
+  template<typename _Adaptor, typename _Arg>
+    struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure
+    {
+      _Arg _M_arg;
 
-    template<typename _Callable>
-      struct _RangeAdaptorClosure : public _RangeAdaptor<_Callable>
-      {
-	using _RangeAdaptor<_Callable>::_RangeAdaptor;
+      constexpr
+      _Partial(_Arg __arg)
+	: _M_arg(std::move(__arg))
+      { }
 
-	template<viewable_range _Range>
-	  requires requires { declval<_Callable>()(declval<_Range>()); }
-	  constexpr auto
-	  operator()(_Range&& __r) const
-	  {
-	    if constexpr (is_default_constructible_v<_Callable>)
-	      return _Callable{}(std::forward<_Range>(__r));
-	    else
-	      return this->_M_callable(std::forward<_Range>(__r));
-	  }
+      template<typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
+	constexpr auto
+	operator()(_Range&& __r) const &
+	{ return _Adaptor{}(std::forward<_Range>(__r), _M_arg); }
 
-	template<viewable_range _Range>
-	  requires requires { declval<_Callable>()(declval<_Range>()); }
-	  friend constexpr auto
-	  operator|(_Range&& __r, const _RangeAdaptorClosure& __o)
-	  { return __o(std::forward<_Range>(__r)); }
+      template<typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, _Arg>
+	constexpr auto
+	operator()(_Range&& __r) &&
+	{ return _Adaptor{}(std::forward<_Range>(__r), std::move(_M_arg)); }
 
-	template<typename _Tp>
-	  friend constexpr auto
-	  operator|(const _RangeAdaptorClosure<_Tp>& __x,
-		    const _RangeAdaptorClosure& __y)
-	  {
-	    if constexpr (is_default_constructible_v<_Tp>
-			  && is_default_constructible_v<_Callable>)
-	      {
-		auto __closure = [] <typename _Up> (_Up&& __e) {
-		  return std::forward<_Up>(__e) | decltype(__x){} | decltype(__y){};
-		};
-		return _RangeAdaptorClosure<decltype(__closure)>(__closure);
-	      }
-	    else if constexpr (is_default_constructible_v<_Tp>
-			       && !is_default_constructible_v<_Callable>)
-	      {
-		auto __closure = [__y] <typename _Up> (_Up&& __e) {
-		  return std::forward<_Up>(__e) | decltype(__x){} | __y;
-		};
-		return _RangeAdaptorClosure<decltype(__closure)>(__closure);
-	      }
-	    else if constexpr (!is_default_constructible_v<_Tp>
-			       && is_default_constructible_v<_Callable>)
-	      {
-		auto __closure = [__x] <typename _Up> (_Up&& __e) {
-		  return std::forward<_Up>(__e) | __x | decltype(__y){};
-		};
-		return _RangeAdaptorClosure<decltype(__closure)>(__closure);
-	      }
-	    else
-	      {
-		auto __closure = [__x, __y] <typename _Up> (_Up&& __e) {
-		  return std::forward<_Up>(__e) | __x | __y;
-		};
-		return _RangeAdaptorClosure<decltype(__closure)>(__closure);
-	      }
-	  }
-      };
+      template<typename _Range>
+	constexpr auto
+	operator()(_Range&& __r) const && = delete;
+    };
 
-    template<typename _Callable>
-      _RangeAdaptorClosure(_Callable) -> _RangeAdaptorClosure<_Callable>;
-  } // namespace __adaptor
-} // namespace views
+  template<typename _Lhs, typename _Rhs, typename _Range>
+    concept __pipe_invocable
+      = requires { std::declval<_Rhs>()(std::declval<_Lhs>()(std::declval<_Range>())); };
+
+  // A range adaptor closure that represents composition of the range
+  // adaptor closures _Lhs and _Rhs.
+  template<typename _Lhs, typename _Rhs>
+    struct _Pipe : _RangeAdaptorClosure
+    {
+      [[no_unique_address]] _Lhs _M_lhs;
+      [[no_unique_address]] _Rhs _M_rhs;
+
+      constexpr
+      _Pipe(_Lhs __lhs, _Rhs __rhs)
+	: _M_lhs(std::move(__lhs)), _M_rhs(std::move(__rhs))
+      { }
+
+      // Invoke _M_rhs(_M_lhs(__r)) according to the value category of this
+      // range adaptor closure object.
+      template<typename _Range>
+	requires __pipe_invocable<const _Lhs&, const _Rhs&, _Range>
+	constexpr auto
+	operator()(_Range&& __r) const &
+	{ return _M_rhs(_M_lhs(std::forward<_Range>(__r))); }
+
+      template<typename _Range>
+	requires __pipe_invocable<_Lhs, _Rhs, _Range>
+	constexpr auto
+	operator()(_Range&& __r) &&
+	{ return std::move(_M_rhs)(std::move(_M_lhs)(std::forward<_Range>(__r))); }
+
+      template<typename _Range>
+	constexpr auto
+	operator()(_Range&& __r) const && = delete;
+    };
+} // namespace views::__adaptor
 
   template<range _Range> requires is_object_v<_Range>
     class ref_view : public view_interface<ref_view<_Range>>
@@ -941,20 +945,37 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptorClosure all
-      = [] <viewable_range _Range> (_Range&& __r)
-      {
-	if constexpr (view<decay_t<_Range>>)
-	  return std::forward<_Range>(__r);
-	else if constexpr (requires { ref_view{std::forward<_Range>(__r)}; })
-	  return ref_view{std::forward<_Range>(__r)};
-	else
-	  return subrange{std::forward<_Range>(__r)};
-      };
+    namespace __detail
+    {
+      template<typename _Range>
+	concept __can_ref_view = requires { ref_view{std::declval<_Range>()}; };
+
+      template<typename _Range>
+	concept __can_subrange = requires { subrange{std::declval<_Range>()}; };
+    } // namespace __detail
+
+    struct _All : __adaptor::_RangeAdaptorClosure
+    {
+      template<viewable_range _Range>
+	requires view<decay_t<_Range>>
+	  || __detail::__can_ref_view<_Range>
+	  || __detail::__can_subrange<_Range>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{
+	  if constexpr (view<decay_t<_Range>>)
+	    return std::forward<_Range>(__r);
+	  else if constexpr (__detail::__can_ref_view<_Range>)
+	    return ref_view{std::forward<_Range>(__r)};
+	  else
+	    return subrange{std::forward<_Range>(__r)};
+	}
+    };
+
+    inline constexpr _All all;
 
     template<viewable_range _Range>
       using all_t = decltype(all(std::declval<_Range>()));
-
   } // namespace views
 
   // XXX: the following algos are copied from ranges_algo.h to avoid a circular
@@ -1305,11 +1326,28 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptor filter
-      = [] <viewable_range _Range, typename _Pred> (_Range&& __r, _Pred&& __p)
-      {
-	return filter_view{std::forward<_Range>(__r), std::forward<_Pred>(__p)};
-      };
+    namespace __detail
+    {
+      template<typename _Range, typename _Pred>
+	concept __can_filter_view
+	  = requires { filter_view{std::declval<_Range>(), std::declval<_Pred>()}; };
+    } // namespace __detail
+
+    struct _Filter : __adaptor::_RangeAdaptor<_Filter>
+    {
+      template<viewable_range _Range, typename _Pred>
+	requires __detail::__can_filter_view<_Range, _Pred>
+	constexpr auto
+	operator()(_Range&& __r, _Pred&& __p) const
+	{
+	  return filter_view{std::forward<_Range>(__r), std::forward<_Pred>(__p)};
+	}
+
+      using _RangeAdaptor<_Filter>::operator();
+      static constexpr int _S_arity = 2;
+    };
+
+    inline constexpr _Filter filter;
   } // namespace views
 
   template<input_range _Vp, copy_constructible _Fp>
@@ -1653,11 +1691,28 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptor transform
-      = [] <viewable_range _Range, typename _Fp> (_Range&& __r, _Fp&& __f)
-      {
-	return transform_view{std::forward<_Range>(__r), std::forward<_Fp>(__f)};
-      };
+    namespace __detail
+    {
+      template<typename _Range, typename _Fp>
+	concept __can_transform_view
+	  = requires { transform_view{std::declval<_Range>(), std::declval<_Fp>()}; };
+    } // namespace __detail
+
+    struct _Transform : __adaptor::_RangeAdaptor<_Transform>
+    {
+      template<viewable_range _Range, typename _Fp>
+	requires __detail::__can_transform_view<_Range, _Fp>
+	constexpr auto
+	operator()(_Range&& __r, _Fp&& __f) const
+	{
+	  return transform_view{std::forward<_Range>(__r), std::forward<_Fp>(__f)};
+	}
+
+      using _RangeAdaptor<_Transform>::operator();
+      static constexpr int _S_arity = 2;
+    };
+
+    inline constexpr _Transform transform;
   } // namespace views
 
   template<view _Vp>
@@ -1816,11 +1871,28 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptor take
-      = [] <viewable_range _Range, typename _Tp> (_Range&& __r, _Tp&& __n)
-      {
-	return take_view{std::forward<_Range>(__r), std::forward<_Tp>(__n)};
-      };
+    namespace __detail
+    {
+      template<typename _Range, typename _Tp>
+	concept __can_take_view
+	  = requires { take_view{std::declval<_Range>(), std::declval<_Tp>()}; };
+    } // namespace __detail
+
+    struct _Take : __adaptor::_RangeAdaptor<_Take>
+    {
+      template<viewable_range _Range, typename _Tp>
+	requires __detail::__can_take_view<_Range, _Tp>
+	constexpr auto
+	operator()(_Range&& __r, _Tp&& __n) const
+	{
+	  return take_view{std::forward<_Range>(__r), std::forward<_Tp>(__n)};
+	}
+
+      using _RangeAdaptor<_Take>::operator();
+      static constexpr int _S_arity = 2;
+    };
+
+    inline constexpr _Take take;
   } // namespace views
 
   template<view _Vp, typename _Pred>
@@ -1918,11 +1990,28 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptor take_while
-      = [] <viewable_range _Range, typename _Pred> (_Range&& __r, _Pred&& __p)
-      {
-	return take_while_view{std::forward<_Range>(__r), std::forward<_Pred>(__p)};
-      };
+    namespace __detail
+    {
+      template<typename _Range, typename _Pred>
+	concept __can_take_while_view
+	  = requires { take_while_view{std::declval<_Range>(), std::declval<_Pred>()}; };
+    } // namespace __detail
+
+    struct _TakeWhile : __adaptor::_RangeAdaptor<_TakeWhile>
+    {
+      template<viewable_range _Range, typename _Pred>
+	requires __detail::__can_take_while_view<_Range, _Pred>
+	constexpr auto
+	operator()(_Range&& __r, _Pred&& __p) const
+	{
+	  return take_while_view{std::forward<_Range>(__r), std::forward<_Pred>(__p)};
+	}
+
+      using _RangeAdaptor<_TakeWhile>::operator();
+      static constexpr int _S_arity = 2;
+    };
+
+    inline constexpr _TakeWhile take_while;
   } // namespace views
 
   template<view _Vp>
@@ -2020,11 +2109,28 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptor drop
-      = [] <viewable_range _Range, typename _Tp> (_Range&& __r, _Tp&& __n)
-      {
-	return drop_view{std::forward<_Range>(__r), std::forward<_Tp>(__n)};
-      };
+    namespace __detail
+    {
+      template<typename _Range, typename _Tp>
+	concept __can_drop_view
+	  = requires { drop_view{std::declval<_Range>(), std::declval<_Tp>()}; };
+    } // namespace __detail
+
+    struct _Drop : __adaptor::_RangeAdaptor<_Drop>
+    {
+      template<viewable_range _Range, typename _Tp>
+	requires __detail::__can_drop_view<_Range, _Tp>
+	constexpr auto
+	operator()(_Range&& __r, _Tp&& __n) const
+	{
+	  return drop_view{std::forward<_Range>(__r), std::forward<_Tp>(__n)};
+	}
+
+      using _RangeAdaptor<_Drop>::operator();
+      static constexpr int _S_arity = 2;
+    };
+
+    inline constexpr _Drop drop;
   } // namespace views
 
   template<view _Vp, typename _Pred>
@@ -2085,12 +2191,29 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptor drop_while
-      = [] <viewable_range _Range, typename _Pred> (_Range&& __r, _Pred&& __p)
-      {
-	return drop_while_view{std::forward<_Range>(__r),
-			       std::forward<_Pred>(__p)};
-      };
+    namespace __detail
+    {
+      template<typename _Range, typename _Pred>
+	concept __can_drop_while_view
+	  = requires { drop_while_view{std::declval<_Range>(), std::declval<_Pred>()}; };
+    } // namespace __detail
+
+    struct _DropWhile : __adaptor::_RangeAdaptor<_DropWhile>
+    {
+      template<viewable_range _Range, typename _Pred>
+	requires __detail::__can_drop_while_view<_Range, _Pred>
+	constexpr auto
+	operator()(_Range&& __r, _Pred&& __p) const
+	{
+	  return drop_while_view{std::forward<_Range>(__r),
+				 std::forward<_Pred>(__p)};
+	}
+
+      using _RangeAdaptor<_DropWhile>::operator();
+      static constexpr int _S_arity = 2;
+    };
+
+    inline constexpr _DropWhile drop_while;
   } // namespace views
 
   template<input_range _Vp>
@@ -2409,13 +2532,27 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptorClosure join
-      = [] <viewable_range _Range> (_Range&& __r)
-      {
-	// _GLIBCXX_RESOLVE_LIB_DEFECTS
-	// 3474. Nesting join_views is broken because of CTAD
-	return join_view<views::all_t<_Range>>{std::forward<_Range>(__r)};
-      };
+    namespace __detail
+    {
+      template<typename _Range>
+	concept __can_join_view
+	  = requires { join_view<all_t<_Range>>{std::declval<_Range>()}; };
+    } // namespace __detail
+
+    struct _Join : __adaptor::_RangeAdaptorClosure
+    {
+      template<viewable_range _Range>
+	requires __detail::__can_join_view<_Range>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3474. Nesting join_views is broken because of CTAD
+	  return join_view<all_t<_Range>>{std::forward<_Range>(__r)};
+	}
+    };
+
+    inline constexpr _Join join;
   } // namespace views
 
   namespace __detail
@@ -2784,9 +2921,9 @@ namespace views
       }
     };
 
-  template<typename _Range, typename _Pred>
-    split_view(_Range&&, _Pred&&)
-      -> split_view<views::all_t<_Range>, views::all_t<_Pred>>;
+  template<typename _Range, typename _Pattern>
+    split_view(_Range&&, _Pattern&&)
+      -> split_view<views::all_t<_Range>, views::all_t<_Pattern>>;
 
   template<input_range _Range>
     split_view(_Range&&, range_value_t<_Range>)
@@ -2794,11 +2931,28 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptor split
-      = [] <viewable_range _Range, typename _Fp> (_Range&& __r, _Fp&& __f)
-      {
-	return split_view{std::forward<_Range>(__r), std::forward<_Fp>(__f)};
-      };
+    namespace __detail
+    {
+      template<typename _Range, typename _Pattern>
+	concept __can_split_view
+	  = requires { split_view{std::declval<_Range>(), std::declval<_Pattern>()}; };
+    } // namespace __detail
+
+    struct _Split : __adaptor::_RangeAdaptor<_Split>
+    {
+      template<viewable_range _Range, typename _Pattern>
+	requires __detail::__can_split_view<_Range, _Pattern>
+	constexpr auto
+	operator()(_Range&& __r, _Pattern&& __f) const
+	{
+	  return split_view{std::forward<_Range>(__r), std::forward<_Pattern>(__f)};
+	}
+
+      using _RangeAdaptor<_Split>::operator();
+      static constexpr int _S_arity = 2;
+    };
+
+    inline constexpr _Split split;
   } // namespace views
 
   namespace views
@@ -2911,16 +3065,33 @@ namespace views
 
   namespace views
   {
-    inline constexpr __adaptor::_RangeAdaptorClosure common
-      = [] <viewable_range _Range> (_Range&& __r)
-      {
-	if constexpr (common_range<_Range>
-		      && requires { views::all(std::forward<_Range>(__r)); })
-	  return views::all(std::forward<_Range>(__r));
-	else
-	  return common_view{std::forward<_Range>(__r)};
-      };
+    namespace __detail
+    {
+      template<typename _Range>
+	concept __already_common = common_range<_Range>
+	  && requires { views::all(std::declval<_Range>()); };
 
+      template<typename _Range>
+	concept __can_common_view
+	  = requires { common_view{std::declval<_Range>()}; };
+    } // namespace __detail
+
+    struct _Common : __adaptor::_RangeAdaptorClosure
+    {
+      template<viewable_range _Range>
+	requires __detail::__already_common<_Range>
+	  || __detail::__can_common_view<_Range>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{
+	  if constexpr (__detail::__already_common<_Range>)
+	    return views::all(std::forward<_Range>(__r));
+	  else
+	    return common_view{std::forward<_Range>(__r)};
+	}
+    };
+
+    inline constexpr _Common common;
   } // namespace views
 
   template<view _Vp>
@@ -3016,27 +3187,40 @@ namespace views
 
       template<typename _Vp>
 	inline constexpr bool __is_reverse_view<reverse_view<_Vp>> = true;
-    }
 
-    inline constexpr __adaptor::_RangeAdaptorClosure reverse
-      = [] <viewable_range _Range> (_Range&& __r)
-      {
-	using _Tp = remove_cvref_t<_Range>;
-	if constexpr (__detail::__is_reverse_view<_Tp>)
-	  return std::forward<_Range>(__r).base();
-	else if constexpr (__detail::__is_reversible_subrange<_Tp>)
-	  {
-	    using _Iter = decltype(ranges::begin(__r).base());
-	    if constexpr (sized_range<_Tp>)
-	      return subrange<_Iter, _Iter, subrange_kind::sized>
-		      (__r.end().base(), __r.begin().base(), __r.size());
-	    else
-	      return subrange<_Iter, _Iter, subrange_kind::unsized>
-		      (__r.end().base(), __r.begin().base());
-	  }
-	else
-	  return reverse_view{std::forward<_Range>(__r)};
-      };
+      template<typename _Range>
+	concept __can_reverse_view
+	  = requires { reverse_view{std::declval<_Range>()}; };
+    } // namespace __detail
+
+    struct _Reverse : __adaptor::_RangeAdaptorClosure
+    {
+      template<viewable_range _Range>
+	requires __detail::__is_reverse_view<remove_cvref_t<_Range>>
+	  || __detail::__is_reversible_subrange<remove_cvref_t<_Range>>
+	  || __detail::__can_reverse_view<_Range>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{
+	  using _Tp = remove_cvref_t<_Range>;
+	  if constexpr (__detail::__is_reverse_view<_Tp>)
+	    return std::forward<_Range>(__r).base();
+	  else if constexpr (__detail::__is_reversible_subrange<_Tp>)
+	    {
+	      using _Iter = decltype(ranges::begin(__r).base());
+	      if constexpr (sized_range<_Tp>)
+		return subrange<_Iter, _Iter, subrange_kind::sized>
+			{__r.end().base(), __r.begin().base(), __r.size()};
+	      else
+		return subrange<_Iter, _Iter, subrange_kind::unsized>
+			{__r.end().base(), __r.begin().base()};
+	    }
+	  else
+	    return reverse_view{std::forward<_Range>(__r)};
+	}
+    };
+
+    inline constexpr _Reverse reverse;
   } // namespace views
 
   namespace __detail
@@ -3335,16 +3519,29 @@ namespace views
 
   namespace views
   {
+    namespace __detail
+    {
+      template<size_t _Nm, typename _Range>
+	concept __can_elements_view
+	  = requires { elements_view<all_t<_Range>, _Nm>{std::declval<_Range>()}; };
+    } // namespace __detail
+
     template<size_t _Nm>
-    inline constexpr __adaptor::_RangeAdaptorClosure elements
-      = [] <viewable_range _Range> (_Range&& __r)
+      struct _Elements : __adaptor::_RangeAdaptorClosure
       {
-	using _El = elements_view<views::all_t<_Range>, _Nm>;
-	return _El{std::forward<_Range>(__r)};
+	template<viewable_range _Range>
+	  requires __detail::__can_elements_view<_Nm, _Range>
+	  constexpr auto
+	  operator()(_Range&& __r) const
+	  {
+	    return elements_view<all_t<_Range>, _Nm>{std::forward<_Range>(__r)};
+	  }
       };
 
-    inline constexpr __adaptor::_RangeAdaptorClosure keys = elements<0>;
-    inline constexpr __adaptor::_RangeAdaptorClosure values = elements<1>;
+    template<size_t _Nm>
+      inline constexpr _Elements<_Nm> elements;
+    inline constexpr auto keys = elements<0>;
+    inline constexpr auto values = elements<1>;
   } // namespace views
 
 } // namespace ranges

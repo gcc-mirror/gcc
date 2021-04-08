@@ -1,4 +1,4 @@
-// Copyright (C) 2020-2021 Free Software Foundation, Inc.
+// Copyright (C) 2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -18,28 +18,24 @@
 // { dg-options "-std=gnu++2a" }
 // { dg-do compile { target c++2a } }
 
-#include <algorithm>
+// PR libstdc++/99433
+
 #include <ranges>
-#include <string_view>
+#include <vector>
 
-namespace ranges = std::ranges;
-namespace views = std::ranges::views;
-
-void
-test01()
+template <typename underlying_adaptor_t>
+struct deep
 {
-  using namespace std::literals;
-  auto x = "the  quick  brown  fox"sv;
-  auto v = views::split(x, std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
-}
+  underlying_adaptor_t adaptor;
 
-void
-test02()
-{
-  using namespace std::literals;
-  auto x = "the  quick  brown  fox"sv;
-  auto v1 = views::split(std::initializer_list<char>{' ', ' '})(x); // { dg-error "deleted" }
-  auto v2 = x | views::split(std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
-}
+  template <typename range_t>
+  friend auto operator|(range_t &range, deep const &me)
+  {
+   return me.adaptor(range[0]);
+  }
+};
 
-// { dg-prune-output "in requirements" }
+auto f = [] (auto nucl) { return nucl + ' '; };
+auto complement = deep{std::views::transform(f)};
+std::vector<std::vector<char>> foo{};
+auto v = foo | complement;

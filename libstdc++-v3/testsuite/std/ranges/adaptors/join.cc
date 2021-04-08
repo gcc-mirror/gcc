@@ -149,6 +149,17 @@ test08()
   VERIFY( i->a == 5 );
 }
 
+template<auto join = views::join>
+void
+test09()
+{
+  // Verify SFINAE behavior.
+  static_assert(!requires { join(); });
+  static_assert(!requires { join(0, 0); });
+  static_assert(!requires { join(0); });
+  static_assert(!requires { 0 | join; });
+}
+
 int
 main()
 {
@@ -160,4 +171,5 @@ main()
   test06();
   test07();
   test08();
+  test09();
 }

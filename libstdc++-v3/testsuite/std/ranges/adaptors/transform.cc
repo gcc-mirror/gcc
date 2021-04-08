@@ -145,6 +145,33 @@ test06()
   VERIFY( (next(b_const, 2) - b_const) == 2 );
 }
 
+void
+test07()
+{
+  int x[] = {1,2,3,4,5};
+  auto v1 = views::transform([] (auto& x) { return &x; });
+  auto v2 = views::transform([] (auto x) { return *x; });
+  auto v = x | (v1 | v2);
+  VERIFY( ranges::equal(v, x) );
+}
+
+template<auto transform = views::transform>
+void
+test08()
+{
+  // Verify SFINAE behavior.
+  extern int x[5];
+  auto f = [] (int* e) { return e; };
+  static_assert(!requires { transform(); });
+  static_assert(!requires { transform(x, f, f); });
+  static_assert(!requires { transform(x, f); });
+  static_assert(!requires { transform(f)(x); });
+  static_assert(!requires { x | (transform(f) | views::all); });
+  static_assert(!requires { (transform(f) | views::all)(x); });
+  static_assert(!requires { transform | views::all; });
+  static_assert(!requires { views::all | transform; });
+}
+
 int
 main()
 {
@@ -154,4 +181,6 @@ main()
   test04();
   test05();
   test06();
+  test07();
+  test08();
 }

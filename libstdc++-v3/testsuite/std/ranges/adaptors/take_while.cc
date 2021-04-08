@@ -79,6 +79,23 @@ test04()
   static_assert(!ranges::range<decltype(v) const>);
 }
 
+template<auto take_while = views::take_while>
+void
+test05()
+{
+  // Verify SFINAE behavior.
+  extern int x[5];
+  auto p = [] (int*) { return true; };
+  static_assert(!requires { take_while(); });
+  static_assert(!requires { take_while(x, p, p); });
+  static_assert(!requires { take_while(x, p); });
+  static_assert(!requires { take_while(p)(x); });
+  static_assert(!requires { x | (take_while(p) | views::all); });
+  static_assert(!requires { (take_while(p) | views::all)(x); });
+  static_assert(!requires { take_while | views::all; });
+  static_assert(!requires { views::all | take_while; });
+}
+
 int
 main()
 {
@@ -86,4 +103,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }
