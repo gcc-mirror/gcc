@@ -2179,7 +2179,7 @@ package body Freeze is
          elsif Is_Concurrent_Type (E) then
             Item := First_Entity (E);
             while Present (Item) loop
-               if (Is_Entry (Item) or else Is_Subprogram (Item))
+               if Is_Subprogram_Or_Entry (Item)
                  and then not Default_Expressions_Processed (Item)
                then
                   Process_Default_Expressions (Item, After);
