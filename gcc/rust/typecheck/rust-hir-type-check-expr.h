@@ -706,16 +706,7 @@ public:
       return true;
     });
 
-    // Create an infer type and register it in TypeCheckContext
-    // TODO: This is very leaky. Need a refactor of some sort.
-    auto crateNum = Analysis::Mappings::get ()->get_current_crate ();
-    auto nodeId = UNKNOWN_NODEID;
-    auto hirId = mappings->get_next_hir_id ();
-    auto localDefId = UNKNOWN_LOCAL_DEFID;
-    auto mappings = Analysis::NodeMapping (crateNum, nodeId, hirId, localDefId);
-    infered_array_elems
-      = new TyTy::InferType (hirId, TyTy::InferType::InferTypeKind::GENERAL);
-    context->insert_type (mappings, infered_array_elems);
+    infered_array_elems = TyTy::TyVar::get_implict_infer_var ().get_tyty ();
 
     for (auto &type : types)
       {
