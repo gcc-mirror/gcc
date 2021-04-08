@@ -975,7 +975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++14
 
-  // @} group chrono
+  /// @} group chrono
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

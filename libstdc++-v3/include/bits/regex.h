@@ -1639,7 +1639,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       : _Base_type(__a)
       { }
 
-      // @}
+      /// @}
 
       /**
        * @brief Copy constructs a %match_results.

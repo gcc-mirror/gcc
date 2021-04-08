@@ -237,7 +237,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     swap(unique_lock<_Mutex>& __x, unique_lock<_Mutex>& __y) noexcept
     { __x.swap(__y); }
 
-  // @} group mutexes
+  /// @} group mutexes
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

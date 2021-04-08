@@ -379,7 +379,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   bool is_regular_file(file_status) noexcept;
   bool is_symlink(file_status) noexcept;
 
-  // @} group filesystem
+  /// @} group filesystem
 } // namespace filesystem
 
 _GLIBCXX_END_NAMESPACE_VERSION
