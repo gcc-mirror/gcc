@@ -28602,7 +28602,8 @@ rewrite_tparm_list (tree oldelt, unsigned index, unsigned level,
 /* Returns a C++17 class deduction guide template based on the constructor
    CTOR.  As a special case, CTOR can be a RECORD_TYPE for an implicit default
    guide, REFERENCE_TYPE for an implicit copy/move guide, or TREE_LIST for an
-   aggregate initialization guide.  */
+   aggregate initialization guide.  OUTER_ARGS are the template arguments
+   for the enclosing scope of the class.  */
 
 static tree
 build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t complain)
@@ -28728,7 +28729,15 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
 	  if (fparms == error_mark_node)
 	    ok = false;
 	  if (ci)
-	    ci = tsubst_constraint_info (ci, tsubst_args, complain, ctor);
+	    {
+	      if (outer_args)
+		/* FIXME: We'd like to avoid substituting outer template
+		   arguments into the constraint ahead of time, but the
+		   construction of tsubst_args assumes that outer arguments
+		   are already substituted in.  */
+		ci = tsubst_constraint_info (ci, outer_args, complain, ctor);
+	      ci = tsubst_constraint_info (ci, tsubst_args, complain, ctor);
+	    }
 
 	  /* Parms are to have DECL_CHAIN tsubsted, which would be skipped if
 	     cp_unevaluated_operand.  */
@@ -28744,7 +28753,12 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
 	  fparms = tsubst_arg_types (fparms, targs, NULL_TREE, complain, ctor);
 	  fargs = tsubst (fargs, targs, complain, ctor);
 	  if (ci)
-	    ci = tsubst_constraint_info (ci, targs, complain, ctor);
+	    {
+	      if (outer_args)
+		/* FIXME: As above.  */
+		ci = tsubst_constraint_info (ci, outer_args, complain, ctor);
+	      ci = tsubst_constraint_info (ci, targs, complain, ctor);
+	    }
 	}
 
       --processing_template_decl;
