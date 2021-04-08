@@ -128,7 +128,7 @@ undeclare_no_pointers(char*, size_t) { }
 /// The type of pointer safety supported by the implementation.
 inline pointer_safety
 get_pointer_safety() noexcept { return pointer_safety::relaxed; }
-// @}
+/// @}
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

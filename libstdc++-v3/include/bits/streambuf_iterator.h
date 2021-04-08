@@ -498,7 +498,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __i._M_c = __eof;
     }
 
-// @} group iterators
+/// @} group iterators
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
