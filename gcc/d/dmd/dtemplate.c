@@ -222,7 +222,8 @@ bool definitelyValueParameter(Expression *e)
         e->op == TOKtype || e->op == TOKdottype ||
         e->op == TOKtemplate ||  e->op == TOKdottd ||
         e->op == TOKfunction || e->op == TOKerror ||
-        e->op == TOKthis || e->op == TOKsuper)
+        e->op == TOKthis || e->op == TOKsuper ||
+        e->op == TOKdot)
         return false;
 
     if (e->op != TOKdotvar)
@@ -531,6 +532,8 @@ TemplateDeclaration::TemplateDeclaration(Loc loc, Identifier *id,
     this->literal = literal;
     this->ismixin = ismixin;
     this->isstatic = true;
+    this->isTrivialAliasSeq = false;
+    this->isTrivialAlias = false;
     this->previous = NULL;
     this->protection = Prot(Prot::undefined);
     this->inuse = 0;
@@ -538,13 +541,46 @@ TemplateDeclaration::TemplateDeclaration(Loc loc, Identifier *id,
 
     // Compute in advance for Ddoc's use
     // Bugzilla 11153: ident could be NULL if parsing fails.
-    if (members && ident)
+    if (!members || !ident)
+        return;
+
+    Dsymbol *s;
+    if (!Dsymbol::oneMembers(members, &s, ident) || !s)
+        return;
+
+    onemember = s;
+    s->parent = this;
+
+    /* Set isTrivialAliasSeq if this fits the pattern:
+     *   template AliasSeq(T...) { alias AliasSeq = T; }
+     * or set isTrivialAlias if this fits the pattern:
+     *   template Alias(T) { alias Alias = qualifiers(T); }
+     */
+    if (!(parameters && parameters->length == 1))
+        return;
+
+    AliasDeclaration *ad = s->isAliasDeclaration();
+    if (!ad || !ad->type)
+        return;
+
+    TypeIdentifier *ti = ad->type->isTypeIdentifier();
+    if (!ti || ti->idents.length != 0)
+        return;
+
+    if (TemplateTupleParameter *ttp = (*parameters)[0]->isTemplateTupleParameter())
     {
-        Dsymbol *s;
-        if (Dsymbol::oneMembers(members, &s, ident) && s)
+        if (ti->ident == ttp->ident && ti->mod == 0)
         {
-            onemember = s;
-            s->parent = this;
+            //printf("found isAliasSeq %s %s\n", s->toChars(), ad->type->toChars());
+            isTrivialAliasSeq = true;
+        }
+    }
+    else if (TemplateTypeParameter *ttp = (*parameters)[0]->isTemplateTypeParameter())
+    {
+        if (ti->ident == ttp->ident)
+        {
+            //printf("found isAlias %s %s\n", s->toChars(), ad->type->toChars());
+            isTrivialAlias = true;
         }
     }
 }
@@ -6223,6 +6259,14 @@ bool TemplateInstance::semanticTiargs(Loc loc, Scope *sc, Objects *tiargs, int f
                 sa = ((DotTemplateExp *)ea)->td;
                 goto Ldsym;
             }
+            if (ea->op == TOKdot)
+            {
+                if (ScopeExp *se = ((DotExp *)ea)->e2->isScopeExp())
+                {
+                    sa = se->sds;
+                    goto Ldsym;
+                }
+            }
         }
         else if (sa)
         {
@@ -6770,8 +6814,7 @@ Dsymbols *TemplateInstance::appendToModuleMember()
 {
     Module *mi = minst;     // instantiated -> inserted module
 
-    if (global.params.useUnitTests ||
-        global.params.debuglevel)
+    if (global.params.useUnitTests)
     {
         // Turn all non-root instances to speculative
         if (mi && !mi->isRoot())

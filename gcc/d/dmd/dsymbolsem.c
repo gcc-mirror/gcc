@@ -570,7 +570,7 @@ public:
                     ti = dsym->_init ? dsym->_init->syntaxCopy() : NULL;
 
                 VarDeclaration *v = new VarDeclaration(dsym->loc, arg->type, id, ti);
-                v->storage_class |= STCtemp | dsym->storage_class;
+                v->storage_class |= STCtemp | STClocal | dsym->storage_class;
                 if (arg->storageClass & STCparameter)
                     v->storage_class |= arg->storageClass;
                 //printf("declaring field %s of type %s\n", v->toChars(), v->type->toChars());
@@ -4843,6 +4843,54 @@ public:
     }
 };
 
+/******************************************************
+ * Do template instance semantic for isAliasSeq templates.
+ * This is a greatly simplified version of TemplateInstance::semantic().
+ */
+static void aliasSeqInstanceSemantic(TemplateInstance *tempinst, Scope *sc, TemplateDeclaration *tempdecl)
+{
+    //printf("[%s] aliasSeqInstanceSemantic('%s')\n", tempinst->loc.toChars(), tempinst->toChars());
+    Scope *paramscope = sc->push();
+    paramscope->stc = 0;
+    paramscope->protection = Prot(Prot::public_);
+
+    TemplateTupleParameter *ttp = (*tempdecl->parameters)[0]->isTemplateTupleParameter();
+    Tuple *va = isTuple(tempinst->tdtypes[0]);
+    Declaration *d = new TupleDeclaration(tempinst->loc, ttp->ident, &va->objects);
+    d->storage_class |= STCtemplateparameter;
+    dsymbolSemantic(d, sc);
+
+    paramscope->pop();
+
+    tempinst->aliasdecl = d;
+
+    tempinst->semanticRun = PASSsemanticdone;
+}
+
+/******************************************************
+ * Do template instance semantic for isAlias templates.
+ * This is a greatly simplified version of TemplateInstance::semantic().
+ */
+static void aliasInstanceSemantic(TemplateInstance *tempinst, Scope *sc, TemplateDeclaration *tempdecl)
+{
+    //printf("[%s] aliasInstanceSemantic('%s')\n", tempinst->loc.toChars(), tempinst->toChars());
+    Scope *paramscope = sc->push();
+    paramscope->stc = 0;
+    paramscope->protection = Prot(Prot::public_);
+
+    TemplateTypeParameter *ttp = (*tempdecl->parameters)[0]->isTemplateTypeParameter();
+    Type *ta = isType(tempinst->tdtypes[0]);
+    Declaration *d = new AliasDeclaration(tempinst->loc, ttp->ident, ta->addMod(tempdecl->onemember->isAliasDeclaration()->type->mod));
+    d->storage_class |= STCtemplateparameter;
+    dsymbolSemantic(d, sc);
+
+    paramscope->pop();
+
+    tempinst->aliasdecl = d;
+
+    tempinst->semanticRun = PASSsemanticdone;
+}
+
 void templateInstanceSemantic(TemplateInstance *tempinst, Scope *sc, Expressions *fargs)
 {
     //printf("[%s] TemplateInstance::semantic('%s', this=%p, gag = %d, sc = %p)\n", tempinst->loc.toChars(), tempinst->toChars(), tempinst, global.gag, sc);
@@ -4912,6 +4960,21 @@ Lerror:
     tempinst->hasNestedArgs(tempinst->tiargs, tempdecl->isstatic);
     if (tempinst->errors)
         goto Lerror;
+
+    /* Greatly simplified semantic processing for AliasSeq templates
+     */
+    if (tempdecl->isTrivialAliasSeq)
+    {
+        tempinst->inst = tempinst;
+        return aliasSeqInstanceSemantic(tempinst, sc, tempdecl);
+    }
+    /* Greatly simplified semantic processing for Alias templates
+     */
+    else if (tempdecl->isTrivialAlias)
+    {
+        tempinst->inst = tempinst;
+        return aliasInstanceSemantic(tempinst, sc, tempdecl);
+    }
 
     /* See if there is an existing TemplateInstantiation that already
      * implements the typeargs. If so, just refer to that one instead.

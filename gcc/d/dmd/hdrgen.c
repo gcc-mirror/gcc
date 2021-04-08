@@ -1714,6 +1714,10 @@ public:
                 objectToBuffer(arg);
             }
         }
+        else if (Parameter *p = isParameter(oarg))
+        {
+            p->accept(this);
+        }
         else if (!oarg)
         {
             buf->writestring("NULL");

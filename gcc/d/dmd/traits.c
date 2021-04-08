@@ -1560,6 +1560,13 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
             s = imp->mod;
         }
 
+        // https://issues.dlang.org/show_bug.cgi?id=16044
+        if (Package *p = s->isPackage())
+        {
+            if (Module *pm = p->isPackageMod())
+                s = pm;
+        }
+
         ScopeDsymbol *sds = s->isScopeDsymbol();
         if (!sds || sds->isTemplateDeclaration())
         {
@@ -1586,6 +1593,11 @@ Expression *semanticTraits(TraitsExp *e, Scope *sc)
                         return 0;
                     }
                 }
+
+                // https://issues.dlang.org/show_bug.cgi?id=20915
+                // skip version and debug identifiers
+                if (sm->isVersionSymbol() || sm->isDebugSymbol())
+                    return 0;
 
                 //printf("\t[%i] %s %s\n", i, sm->kind(), sm->toChars());
                 if (sm->ident)

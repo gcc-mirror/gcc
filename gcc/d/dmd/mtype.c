@@ -7039,7 +7039,10 @@ Expression *TypeStruct::dotExp(Scope *sc, Expression *e, Identifier *ident, int 
          */
         e = expressionSemantic(e, sc);  // do this before turning on noaccesscheck
 
-        sym->size(e->loc);      // do semantic of type
+        if (!sym->determineFields())
+        {
+            error(e->loc, "unable to determine fields of `%s` because of forward references", toChars());
+        }
 
         Expression *e0 = NULL;
         Expression *ev = e->op == TOKtype ? NULL : e;
@@ -7373,7 +7376,9 @@ bool TypeStruct::hasPointers()
     // Probably should cache this information in sym rather than recompute
     StructDeclaration *s = sym;
 
-    sym->size(Loc());               // give error for forward references
+    if (sym->members && !sym->determineFields() && sym->type != Type::terror)
+        error(sym->loc, "no size because of forward references");
+
     for (size_t i = 0; i < s->fields.length; i++)
     {
         Declaration *d = s->fields[i];
