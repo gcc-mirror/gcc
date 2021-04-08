@@ -428,7 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
   }
 
-  // @} group threads
+  /// @} group threads
 
 #ifdef __cpp_lib_jthread
 

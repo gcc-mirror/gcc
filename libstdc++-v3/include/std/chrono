@@ -1127,7 +1127,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using local_days = local_time<days>;
 #endif // C++20
 
-    // @}
+    /// @}
   } // namespace chrono
 
 #if __cplusplus > 201103L

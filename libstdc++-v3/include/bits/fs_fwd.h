@@ -339,7 +339,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
   bool is_symlink(file_status) noexcept;
 
 } // namespace filesystem
-// @}
+/// @}
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
