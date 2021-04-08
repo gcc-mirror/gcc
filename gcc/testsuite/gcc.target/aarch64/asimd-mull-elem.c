@@ -3,6 +3,8 @@
 /* { dg-require-effective-target vect_float } */
 /* { dg-options "-Ofast" } */
 
+#pragma GCC target "+nosve"
+
 #include <arm_neon.h>
 
 void s_mult_i (int32_t* restrict res, int32_t* restrict a, int32_t b)

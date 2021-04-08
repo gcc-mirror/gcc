@@ -17991,6 +17991,9 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
 tree
 build_explicit_specifier (tree expr, tsubst_flags_t complain)
 {
+  if (check_for_bare_parameter_packs (expr))
+    return error_mark_node;
+
   if (instantiation_dependent_expression_p (expr))
     /* Wait for instantiation, tsubst_function_decl will handle it.  */
     return expr;

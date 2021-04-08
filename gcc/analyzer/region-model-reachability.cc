@@ -170,6 +170,7 @@ void
 reachable_regions::handle_sval (const svalue *sval)
 {
   m_reachable_svals.add (sval);
+  m_mutable_svals.add (sval);
   if (const region_svalue *ptr = sval->dyn_cast_region_svalue ())
     {
       const region *pointee = ptr->get_pointee ();

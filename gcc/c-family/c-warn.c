@@ -2394,7 +2394,7 @@ do_warn_double_promotion (tree result_type, tree type1, tree type2,
      warn about it.  */
   if (c_inhibit_evaluation_warnings)
     return;
-  /* If an invalid conversion has occured, don't warn.  */
+  /* If an invalid conversion has occurred, don't warn.  */
   if (result_type == error_mark_node)
     return;
   if (TYPE_MAIN_VARIANT (result_type) != double_type_node
@@ -2900,7 +2900,7 @@ warn_for_multistatement_macros (location_t body_loc, location_t next_loc,
 	    "this %qs clause", guard_tinfo_to_string (keyword));
 }
 
-/* Return struct or union type if the alignment of data memeber, FIELD,
+/* Return struct or union type if the alignment of data member, FIELD,
    is less than the alignment of TYPE.  Otherwise, return NULL_TREE.
    If RVALUE is true, only arrays evaluate to pointers.  */
 
@@ -3151,7 +3151,7 @@ vla_bound_parm_decl (tree expr)
 }
 
 /* Diagnose mismatches in VLA bounds between function parameters NEWPARMS
-   of pointer types on a redeclaration os a function previously declared
+   of pointer types on a redeclaration of a function previously declared
    with CURPARMS at ORIGLOC.  */
 
 static void
@@ -3220,7 +3220,7 @@ warn_parm_ptrarray_mismatch (location_t origloc, tree curparms, tree newparms)
       if (origloc == UNKNOWN_LOCATION)
 	origloc = newloc;
 
-      /* Issue -Warray-parameter onless one or more mismatches involves
+      /* Issue -Warray-parameter unless one or more mismatches involves
 	 a VLA bound; then issue -Wvla-parameter.  */
       int opt = OPT_Warray_parameter_;
       /* Traverse the two array types looking for variable bounds and
@@ -3335,15 +3335,15 @@ expr_to_str (pretty_printer &pp, tree expr, const char *dflt)
 
 /* Detect and diagnose a mismatch between an attribute access specification
    on the original declaration of FNDECL and that on the parameters NEWPARMS
-   from its refeclaration.  ORIGLOC is the location of the first declaration
+   from its redeclaration.  ORIGLOC is the location of the first declaration
    (FNDECL's is set to the location of the redeclaration).  */
 
 void
 warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 {
-    /* The original parameter list (copied from the original declaration
-       into the current [re]declaration, FNDECL)).  The two are equal if
-       and only if FNDECL is the first declaratation.  */
+  /* The original parameter list (copied from the original declaration
+     into the current [re]declaration, FNDECL)).  The two are equal if
+     and only if FNDECL is the first declaration.  */
   tree curparms = DECL_ARGUMENTS (fndecl);
   if (!curparms || !newparms || curparms == newparms)
     return;
@@ -3375,7 +3375,7 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
       return;
     }
   /* ...otherwise, if at least one spec isn't empty there may be mismatches,
-     such as  between f(T*) and f(T[1]), where the former mapping woud be
+     such as between f(T*) and f(T[1]), where the former mapping would be
      empty.  */
 
   /* Create an empty access specification and use it for pointers with

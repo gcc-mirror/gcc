@@ -104,18 +104,14 @@
    (set_attr "thumb2_pool_range" "*,*,*,*,1018,*,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,*,996,*,*,*,*")])
 
-(define_insn "*mve_mov<mode>"
-  [(set (match_operand:MVE_types 0 "s_register_operand" "=w,w")
-	(vec_duplicate:MVE_types
-	  (match_operand:SI 1 "nonmemory_operand" "r,i")))]
+(define_insn "*mve_vdup<mode>"
+  [(set (match_operand:MVE_vecs 0 "s_register_operand" "=w")
+	(vec_duplicate:MVE_vecs
+	  (match_operand:<V_elem> 1 "s_register_operand" "r")))]
   "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
-{
-  if (which_alternative == 0)
-    return "vdup.<V_sz_elem>\t%q0, %1";
-  return "vmov.<V_sz_elem>\t%q0, %1";
-}
-  [(set_attr "length" "4,4")
-   (set_attr "type" "mve_move,mve_move")])
+  "vdup.<V_sz_elem>\t%q0, %1"
+  [(set_attr "length" "4")
+   (set_attr "type" "mve_move")])
 
 ;;
 ;; [vst4q])
@@ -10736,13 +10732,6 @@
  "vpst\;vshlct\t%q0, %1, %4"
  [(set_attr "type" "mve_move")
   (set_attr "length" "8")])
-
-(define_insn "*mve_vec_duplicate<mode>"
- [(set (match_operand:MVE_VLD_ST 0 "s_register_operand" "=w")
-       (vec_duplicate:MVE_VLD_ST (match_operand:<V_elem> 1 "general_operand" "r")))]
- "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
- "vdup.<V_sz_elem>\t%q0, %1"
- [(set_attr "type" "mve_move")])
 
 ;; CDE instructions on MVE registers.
 

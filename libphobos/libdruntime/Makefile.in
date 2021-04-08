@@ -209,11 +209,12 @@ am__objects_1 = core/atomic.lo core/attribute.lo core/bitop.lo \
 	core/thread/types.lo core/time.lo core/vararg.lo \
 	core/volatile.lo gc/bits.lo gc/config.lo gc/gcinterface.lo \
 	gc/impl/conservative/gc.lo gc/impl/manual/gc.lo gc/os.lo \
-	gc/pooltable.lo gc/proxy.lo gcc/attribute.lo gcc/backtrace.lo \
-	gcc/builtins.lo gcc/deh.lo gcc/emutls.lo gcc/gthread.lo \
-	gcc/sections/android.lo gcc/sections/elf_shared.lo \
-	gcc/sections/osx.lo gcc/sections/package.lo \
-	gcc/sections/win32.lo gcc/sections/win64.lo gcc/unwind/arm.lo \
+	gc/pooltable.lo gc/proxy.lo gcc/attribute.lo gcc/attributes.lo \
+	gcc/backtrace.lo gcc/builtins.lo gcc/deh.lo gcc/emutls.lo \
+	gcc/gthread.lo gcc/sections/android.lo \
+	gcc/sections/elf_shared.lo gcc/sections/osx.lo \
+	gcc/sections/package.lo gcc/sections/win32.lo \
+	gcc/sections/win64.lo gcc/unwind/arm.lo \
 	gcc/unwind/arm_common.lo gcc/unwind/c6x.lo \
 	gcc/unwind/generic.lo gcc/unwind/package.lo gcc/unwind/pe.lo \
 	object.lo rt/aApply.lo rt/aApplyR.lo rt/aaA.lo rt/adi.lo \
@@ -816,8 +817,8 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/thread/threadbase.d core/thread/threadgroup.d core/thread/types.d \
 	core/time.d core/vararg.d core/volatile.d gc/bits.d gc/config.d \
 	gc/gcinterface.d gc/impl/conservative/gc.d gc/impl/manual/gc.d gc/os.d \
-	gc/pooltable.d gc/proxy.d gcc/attribute.d gcc/backtrace.d \
-	gcc/builtins.d gcc/deh.d gcc/emutls.d gcc/gthread.d \
+	gc/pooltable.d gc/proxy.d gcc/attribute.d gcc/attributes.d \
+	gcc/backtrace.d gcc/builtins.d gcc/deh.d gcc/emutls.d gcc/gthread.d \
 	gcc/sections/android.d gcc/sections/elf_shared.d gcc/sections/osx.d \
 	gcc/sections/package.d gcc/sections/win32.d gcc/sections/win64.d \
 	gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \
@@ -1209,6 +1210,7 @@ gcc/$(am__dirstamp):
 	@$(MKDIR_P) gcc
 	@: > gcc/$(am__dirstamp)
 gcc/attribute.lo: gcc/$(am__dirstamp)
+gcc/attributes.lo: gcc/$(am__dirstamp)
 gcc/backtrace.lo: gcc/$(am__dirstamp)
 gcc/builtins.lo: gcc/$(am__dirstamp)
 gcc/deh.lo: gcc/$(am__dirstamp)

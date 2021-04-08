@@ -1237,7 +1237,7 @@ print_rtx_insn_vec (FILE *file, const vec<rtx_insn *> &vec)
   unsigned int len = vec.length ();
   for (unsigned int i = 0; i < len; i++)
     {
-      print_rtl (file, vec[i]);
+      print_rtl_single (file, vec[i]);
       if (i < len - 1)
 	fputs (", ", file);
     }

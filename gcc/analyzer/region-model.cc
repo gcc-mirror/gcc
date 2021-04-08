@@ -726,7 +726,7 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
 	   access will "inherit" the individual chars.  */
 	const svalue *rhs_sval = get_rvalue (rhs1, ctxt);
 	m_store.set_value (m_mgr->get_store_manager(), lhs_reg, rhs_sval,
-			   BK_default);
+			   BK_default, ctxt->get_uncertainty ());
       }
       break;
     }
@@ -1003,6 +1003,8 @@ region_model::handle_unrecognized_call (const gcall *call,
       }
   }
 
+  uncertainty_t *uncertainty = ctxt->get_uncertainty ();
+
   /* Purge sm-state for the svalues that were reachable,
      both in non-mutable and mutable form.  */
   for (svalue_set::iterator iter
@@ -1018,6 +1020,8 @@ region_model::handle_unrecognized_call (const gcall *call,
     {
       const svalue *sval = (*iter);
       ctxt->on_unknown_change (sval, true);
+      if (uncertainty)
+	uncertainty->on_mutable_sval_at_unknown_call (sval);
     }
 
   /* Mark any clusters that have escaped.  */
@@ -1035,11 +1039,15 @@ region_model::handle_unrecognized_call (const gcall *call,
    for reachability (for handling return values from functions when
    analyzing return of the only function on the stack).
 
+   If UNCERTAINTY is non-NULL, treat any svalues that were recorded
+   within it as being maybe-bound as additional "roots" for reachability.
+
    Find svalues that haven't leaked.    */
 
 void
 region_model::get_reachable_svalues (svalue_set *out,
-				     const svalue *extra_sval)
+				     const svalue *extra_sval,
+				     const uncertainty_t *uncertainty)
 {
   reachable_regions reachable_regs (this);
 
@@ -1050,6 +1058,12 @@ region_model::get_reachable_svalues (svalue_set *out,
 
   if (extra_sval)
     reachable_regs.handle_sval (extra_sval);
+
+  if (uncertainty)
+    for (uncertainty_t::iterator iter
+	   = uncertainty->begin_maybe_bound_svals ();
+	 iter != uncertainty->end_maybe_bound_svals (); ++iter)
+      reachable_regs.handle_sval (*iter);
 
   /* Get regions for locals that have explicitly bound values.  */
   for (store::cluster_map_t::iterator iter = m_store.begin ();
@@ -1798,7 +1812,7 @@ region_model::set_value (const region *lhs_reg, const svalue *rhs_sval,
   check_for_writable_region (lhs_reg, ctxt);
 
   m_store.set_value (m_mgr->get_store_manager(), lhs_reg, rhs_sval,
-		     BK_direct);
+		     BK_direct, ctxt ? ctxt->get_uncertainty () : NULL);
 }
 
 /* Set the value of the region given by LHS to the value given by RHS.  */
@@ -1840,9 +1854,11 @@ region_model::zero_fill_region (const region *reg)
 /* Mark REG as having unknown content.  */
 
 void
-region_model::mark_region_as_unknown (const region *reg)
+region_model::mark_region_as_unknown (const region *reg,
+				      uncertainty_t *uncertainty)
 {
-  m_store.mark_region_as_unknown (m_mgr->get_store_manager(), reg);
+  m_store.mark_region_as_unknown (m_mgr->get_store_manager(), reg,
+				  uncertainty);
 }
 
 /* Determine what is known about the condition "LHS_SVAL OP RHS_SVAL" within
@@ -2666,7 +2682,8 @@ region_model::update_for_call_summary (const callgraph_superedge &cg_sedge,
   const gcall *call_stmt = cg_sedge.get_call_stmt ();
   tree lhs = gimple_call_lhs (call_stmt);
   if (lhs)
-    mark_region_as_unknown (get_lvalue (lhs, ctxt));
+    mark_region_as_unknown (get_lvalue (lhs, ctxt),
+			    ctxt ? ctxt->get_uncertainty () : NULL);
 
   // TODO: actually implement some kind of summary here
 }

@@ -378,6 +378,7 @@ public:
 		region_model_context *ctxt);
 
   region_model_context *get_ctxt () const { return m_ctxt; }
+  uncertainty_t *get_uncertainty () const;
   tree get_lhs_type () const { return m_lhs_type; }
   const region *get_lhs_region () const { return m_lhs_region; }
 
@@ -474,7 +475,8 @@ class region_model
   void handle_unrecognized_call (const gcall *call,
 				 region_model_context *ctxt);
   void get_reachable_svalues (svalue_set *out,
-			      const svalue *extra_sval);
+			      const svalue *extra_sval,
+			      const uncertainty_t *uncertainty);
 
   void on_return (const greturn *stmt, region_model_context *ctxt);
   void on_setjmp (const gcall *stmt, const exploded_node *enode,
@@ -518,7 +520,7 @@ class region_model
   void clobber_region (const region *reg);
   void purge_region (const region *reg);
   void zero_fill_region (const region *reg);
-  void mark_region_as_unknown (const region *reg);
+  void mark_region_as_unknown (const region *reg, uncertainty_t *uncertainty);
 
   void copy_region (const region *dst_reg, const region *src_reg,
 		    region_model_context *ctxt);
@@ -698,6 +700,8 @@ class region_model_context
 
   /* Hook for clients to be notified when a function_decl escapes.  */
   virtual void on_escaped_function (tree fndecl) = 0;
+
+  virtual uncertainty_t *get_uncertainty () = 0;
 };
 
 /* A "do nothing" subclass of region_model_context.  */
@@ -726,6 +730,8 @@ public:
   void on_unexpected_tree_code (tree, const dump_location_t &) OVERRIDE {}
 
   void on_escaped_function (tree) OVERRIDE {}
+
+  uncertainty_t *get_uncertainty () OVERRIDE { return NULL; }
 };
 
 /* A subclass of region_model_context for determining if operations fail

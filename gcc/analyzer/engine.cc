@@ -78,6 +78,7 @@ impl_region_model_context (exploded_graph &eg,
 			   exploded_node *enode_for_diag,
 			   const program_state *old_state,
 			   program_state *new_state,
+			   uncertainty_t *uncertainty,
 			   const gimple *stmt,
 			   stmt_finder *stmt_finder)
 : m_eg (&eg), m_logger (eg.get_logger ()),
@@ -86,20 +87,23 @@ impl_region_model_context (exploded_graph &eg,
   m_new_state (new_state),
   m_stmt (stmt),
   m_stmt_finder (stmt_finder),
-  m_ext_state (eg.get_ext_state ())
+  m_ext_state (eg.get_ext_state ()),
+  m_uncertainty (uncertainty)
 {
 }
 
 impl_region_model_context::
 impl_region_model_context (program_state *state,
 			   const extrinsic_state &ext_state,
+			   uncertainty_t *uncertainty,
 			   logger *logger)
 : m_eg (NULL), m_logger (logger), m_enode_for_diag (NULL),
   m_old_state (NULL),
   m_new_state (state),
   m_stmt (NULL),
   m_stmt_finder (NULL),
-  m_ext_state (ext_state)
+  m_ext_state (ext_state),
+  m_uncertainty (uncertainty)
 {
 }
 
@@ -148,6 +152,12 @@ void
 impl_region_model_context::on_escaped_function (tree fndecl)
 {
   m_eg->on_escaped_function (fndecl);
+}
+
+uncertainty_t *
+impl_region_model_context::get_uncertainty ()
+{
+  return m_uncertainty;
 }
 
 /* struct setjmp_record.  */
@@ -220,7 +230,7 @@ public:
   {
     impl_region_model_context old_ctxt
       (m_eg, m_enode_for_diag, NULL, NULL/*m_enode->get_state ()*/,
-       call);
+       NULL, call);
     region_model *model = m_new_state->m_region_model;
     return model->get_fndecl_for_call (call, &old_ctxt);
   }
@@ -232,7 +242,7 @@ public:
     LOG_FUNC (logger);
     impl_region_model_context old_ctxt
       (m_eg, m_enode_for_diag, NULL, NULL/*m_enode->get_state ()*/,
-       stmt);
+       NULL, stmt);
     const svalue *var_old_sval
       = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
 
@@ -250,12 +260,13 @@ public:
     LOG_FUNC (logger);
     impl_region_model_context old_ctxt
       (m_eg, m_enode_for_diag, NULL, NULL/*m_enode->get_state ()*/,
-       stmt);
+       NULL, stmt);
     const svalue *var_old_sval
       = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
 
     impl_region_model_context new_ctxt (m_eg, m_enode_for_diag,
 					m_old_state, m_new_state,
+					NULL,
 					stmt);
     const svalue *var_new_sval
       = m_new_state->m_region_model->get_rvalue (var, &new_ctxt);
@@ -280,7 +291,7 @@ public:
     LOG_FUNC (get_logger ());
     gcc_assert (d); // take ownership
     impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL);
+      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, NULL);
 
     const svalue *var_old_sval
       = m_old_state->m_region_model->get_rvalue (var, &old_ctxt);
@@ -340,7 +351,7 @@ public:
     if (!assign_stmt)
      return NULL_TREE;
     impl_region_model_context old_ctxt
-      (m_eg, m_enode_for_diag, m_old_state, m_new_state, stmt);
+      (m_eg, m_enode_for_diag, m_old_state, m_new_state, NULL, stmt);
     if (const svalue *sval
 	= m_new_state->m_region_model->get_gassign_result (assign_stmt,
 							    &old_ctxt))
@@ -1116,7 +1127,8 @@ exploded_node::on_stmt_flags
 exploded_node::on_stmt (exploded_graph &eg,
 			const supernode *snode,
 			const gimple *stmt,
-			program_state *state)
+			program_state *state,
+			uncertainty_t *uncertainty)
 {
   logger *logger = eg.get_logger ();
   LOG_SCOPE (logger);
@@ -1140,7 +1152,7 @@ exploded_node::on_stmt (exploded_graph &eg,
   const program_state old_state (*state);
 
   impl_region_model_context ctxt (eg, this,
-				  &old_state, state,
+				  &old_state, state, uncertainty,
 				  stmt);
 
   bool unknown_side_effects = false;
@@ -1300,14 +1312,15 @@ bool
 exploded_node::on_edge (exploded_graph &eg,
 			const superedge *succ,
 			program_point *next_point,
-			program_state *next_state)
+			program_state *next_state,
+			uncertainty_t *uncertainty)
 {
   LOG_FUNC (eg.get_logger ());
 
   if (!next_point->on_edge (eg, succ))
     return false;
 
-  if (!next_state->on_edge (eg, this, succ))
+  if (!next_state->on_edge (eg, this, succ, uncertainty))
     return false;
 
   return true;
@@ -1563,8 +1576,9 @@ exploded_node::detect_leaks (exploded_graph &eg)
 
   gcc_assert (new_state.m_region_model);
 
+  uncertainty_t uncertainty;
   impl_region_model_context ctxt (eg, this,
-				  &old_state, &new_state,
+				  &old_state, &new_state, &uncertainty,
 				  get_stmt ());
   const svalue *result = NULL;
   new_state.m_region_model->pop_frame (NULL, &result, &ctxt);
@@ -2195,8 +2209,9 @@ exploded_graph::get_or_create_node (const program_point &point,
 
   /* Prune state to try to improve the chances of a cache hit,
      avoiding generating redundant nodes.  */
+  uncertainty_t uncertainty;
   program_state pruned_state
-    = state.prune_for_point (*this, point, enode_for_diag);
+    = state.prune_for_point (*this, point, enode_for_diag, &uncertainty);
 
   pruned_state.validate (get_ext_state ());
 
@@ -2775,8 +2790,10 @@ maybe_process_run_of_before_supernode_enodes (exploded_node *enode)
       const program_point &iter_point = iter_enode->get_point ();
       if (const superedge *iter_sedge = iter_point.get_from_edge ())
 	{
+	  uncertainty_t uncertainty;
 	  impl_region_model_context ctxt (*this, iter_enode,
-					  &state, next_state, NULL);
+					  &state, next_state,
+					  &uncertainty, NULL);
 	  const cfg_superedge *last_cfg_superedge
 	    = iter_sedge->dyn_cast_cfg_superedge ();
 	  if (last_cfg_superedge)
@@ -2950,11 +2967,13 @@ exploded_graph::process_node (exploded_node *node)
     case PK_BEFORE_SUPERNODE:
       {
 	program_state next_state (state);
+	uncertainty_t uncertainty;
 
 	if (point.get_from_edge ())
 	  {
 	    impl_region_model_context ctxt (*this, node,
-					    &state, &next_state, NULL);
+					    &state, &next_state,
+					    &uncertainty, NULL);
 	    const cfg_superedge *last_cfg_superedge
 	      = point.get_from_edge ()->dyn_cast_cfg_superedge ();
 	    if (last_cfg_superedge)
@@ -2992,6 +3011,7 @@ exploded_graph::process_node (exploded_node *node)
 	   the sm-state-change occurs on an edge where the src enode has
 	   exactly one stmt, the one that caused the change. */
 	program_state next_state (state);
+	uncertainty_t uncertainty;
 	const supernode *snode = point.get_supernode ();
 	unsigned stmt_idx;
 	const gimple *prev_stmt = NULL;
@@ -3013,7 +3033,7 @@ exploded_graph::process_node (exploded_node *node)
 
 	    /* Process the stmt.  */
 	    exploded_node::on_stmt_flags flags
-	      = node->on_stmt (*this, snode, stmt, &next_state);
+	      = node->on_stmt (*this, snode, stmt, &next_state, &uncertainty);
 	    node->m_num_processed_stmts++;
 
 	    /* If flags.m_terminate_path, stop analyzing; any nodes/edges
@@ -3024,7 +3044,8 @@ exploded_graph::process_node (exploded_node *node)
 	    if (next_state.m_region_model)
 	      {
 		impl_region_model_context ctxt (*this, node,
-						&old_state, &next_state, stmt);
+						&old_state, &next_state,
+						&uncertainty, stmt);
 		program_state::detect_leaks (old_state, next_state, NULL,
 					     get_ext_state (), &ctxt);
 	      }
@@ -3036,7 +3057,8 @@ exploded_graph::process_node (exploded_node *node)
 					       point.get_call_string ())
 		 : program_point::after_supernode (point.get_supernode (),
 						   point.get_call_string ()));
-	    next_state = next_state.prune_for_point (*this, next_point, node);
+	    next_state = next_state.prune_for_point (*this, next_point, node,
+						     &uncertainty);
 
 	    if (flags.m_sm_changes || flag_analyzer_fine_grained)
 	      {
@@ -3128,15 +3150,15 @@ exploded_graph::process_node (exploded_node *node)
 	      = program_point::before_supernode (succ->m_dest, succ,
 						 point.get_call_string ());
 	    program_state next_state (state);
-
-	    if (!node->on_edge (*this, succ, &next_point, &next_state))
+	    uncertainty_t uncertainty;
+	    if (!node->on_edge (*this, succ, &next_point, &next_state,
+				&uncertainty))
 	      {
 		if (logger)
 		  logger->log ("skipping impossible edge to SN: %i",
 			       succ->m_dest->m_index);
 		continue;
 	      }
-
 	    exploded_node *next = get_or_create_node (next_point, next_state,
 						      node);
 	    if (next)

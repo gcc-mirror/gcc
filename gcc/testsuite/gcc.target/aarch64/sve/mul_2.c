@@ -21,14 +21,14 @@ TEST_TYPE (uint8_t, 32, 2, 250)
 
 TEST_TYPE (int8_t, 64, -110, 110)
 TEST_TYPE (uint8_t, 64, 3, 253)
-TEST_TYPE (int16_t, 64, -128, 123)
+TEST_TYPE (int16_t, 64, -123, 123)
 TEST_TYPE (uint16_t, 64, 3, 255)
 
-TEST_TYPE (int8_t, 128, -120, 120)
+TEST_TYPE (int8_t, 128, -119, 120)
 TEST_TYPE (uint8_t, 128, 4, 251)
-TEST_TYPE (int16_t, 128, -128, 123)
+TEST_TYPE (int16_t, 128, -123, 123)
 TEST_TYPE (uint16_t, 128, 2, 255)
-TEST_TYPE (int32_t, 128, -128, 123)
+TEST_TYPE (int32_t, 128, -123, 123)
 TEST_TYPE (uint32_t, 128, 4, 255)
 
 /* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.b, p[0-7]/m, z[0-9]+\.b, z[0-9]+\.b\n} 6 } } */
@@ -37,9 +37,9 @@ TEST_TYPE (uint32_t, 128, 4, 255)
 
 /* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.b, z[0-9]+\.b, #-100\n} 1 } } */
 /* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.b, z[0-9]+\.b, #-110\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.b, z[0-9]+\.b, #-120\n} 1 } } */
-/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.h, z[0-9]+\.h, #-128\n} 2 } } */
-/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.s, z[0-9]+\.s, #-128\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.b, z[0-9]+\.b, #-119\n} 1 } } */
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.h, z[0-9]+\.h, #-123\n} 2 } } */
+/* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.s, z[0-9]+\.s, #-123\n} 1 } } */
 
 /* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.b, z[0-9]+\.b, #50\n} 6 } } */
 /* { dg-final { scan-assembler-times {\tmul\tz[0-9]+\.h, z[0-9]+\.h, #50\n} 4 } } */

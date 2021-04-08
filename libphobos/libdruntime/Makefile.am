@@ -184,8 +184,8 @@ DRUNTIME_DSOURCES = core/atomic.d core/attribute.d core/bitop.d \
 	core/thread/threadbase.d core/thread/threadgroup.d core/thread/types.d \
 	core/time.d core/vararg.d core/volatile.d gc/bits.d gc/config.d \
 	gc/gcinterface.d gc/impl/conservative/gc.d gc/impl/manual/gc.d gc/os.d \
-	gc/pooltable.d gc/proxy.d gcc/attribute.d gcc/backtrace.d \
-	gcc/builtins.d gcc/deh.d gcc/emutls.d gcc/gthread.d \
+	gc/pooltable.d gc/proxy.d gcc/attribute.d gcc/attributes.d \
+	gcc/backtrace.d gcc/builtins.d gcc/deh.d gcc/emutls.d gcc/gthread.d \
 	gcc/sections/android.d gcc/sections/elf_shared.d gcc/sections/osx.d \
 	gcc/sections/package.d gcc/sections/win32.d gcc/sections/win64.d \
 	gcc/unwind/arm.d gcc/unwind/arm_common.d gcc/unwind/c6x.d \

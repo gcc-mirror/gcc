@@ -754,7 +754,7 @@ proc scan-lto-assembler { args } {
     set testcase [testname-for-summary]
     # The name might include a list of options; extract the file name.
     set filename [lindex $testcase 0]
-    set output_file "[file rootname [file tail $filename]].exe.ltrans0.s"
+    set output_file "[file rootname [file tail $filename]].ltrans0.ltrans.s"
     verbose "output_file: $output_file"
     dg-scan "scan-lto-assembler" 1 $testcase $output_file $args
 }

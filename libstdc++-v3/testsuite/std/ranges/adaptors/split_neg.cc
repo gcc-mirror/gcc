@@ -30,8 +30,7 @@ test01()
 {
   using namespace std::literals;
   auto x = "the  quick  brown  fox"sv;
-  auto v = views::split(x, std::initializer_list<char>{' ', ' '});
-  v.begin(); // { dg-error "" }
+  auto v = views::split(x, std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
 }
 
 void
@@ -39,11 +38,8 @@ test02()
 {
   using namespace std::literals;
   auto x = "the  quick  brown  fox"sv;
-  auto v = x | views::split(std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
-  v.begin();
+  auto v1 = views::split(std::initializer_list<char>{' ', ' '})(x); // { dg-error "deleted" }
+  auto v2 = x | views::split(std::initializer_list<char>{' ', ' '}); // { dg-error "no match" }
 }
 
 // { dg-prune-output "in requirements" }
-// { dg-error "deduction failed" "" { target *-*-* } 0 }
-// { dg-error "no match" "" { target *-*-* } 0 }
-// { dg-error "constraint failure" "" { target *-*-* } 0 }

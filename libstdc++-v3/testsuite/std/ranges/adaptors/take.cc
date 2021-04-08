@@ -100,6 +100,23 @@ test05()
   b = ranges::end(v);
 }
 
+template<auto take = views::take>
+void
+test06()
+{
+  // Verify SFINAE behavior.
+  extern int x[5];
+  int* n = 0;
+  static_assert(!requires { take(); });
+  static_assert(!requires { take(x, n, n); });
+  static_assert(!requires { take(x, n); });
+  static_assert(!requires { take(n)(x); });
+  static_assert(!requires { x | (take(n) | views::all); });
+  static_assert(!requires { (take(n) | views::all)(x); });
+  static_assert(!requires { take | views::all; });
+  static_assert(!requires { views::all | take; });
+}
+
 int
 main()
 {
@@ -108,4 +125,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

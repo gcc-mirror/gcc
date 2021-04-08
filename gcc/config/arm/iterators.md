@@ -261,6 +261,7 @@
 
 ;; MVE mode iterator.
 (define_mode_iterator MVE_types [V16QI V8HI V4SI V2DI TI V8HF V4SF V2DF])
+(define_mode_iterator MVE_vecs [V16QI V8HI V4SI V2DI V8HF V4SF V2DF])
 (define_mode_iterator MVE_VLD_ST [V16QI V8HI V4SI V8HF V4SF])
 (define_mode_iterator MVE_0 [V8HF V4SF])
 (define_mode_iterator MVE_1 [V16QI V8HI V4SI V2DI])
@@ -567,9 +568,10 @@
 			  (V4HI "HI") (V8HI "HI")
 			  (V4HF "HF") (V8HF "HF")
 			  (V4BF "BF") (V8BF "BF")
-                          (V2SI "SI") (V4SI "SI")
-                          (V2SF "SF") (V4SF "SF")
-                          (DI "DI")   (V2DI "DI")])
+			  (V2SI "SI") (V4SI "SI")
+			  (V2SF "SF") (V4SF "SF")
+			  (DI   "DI") (V2DI "DI")
+			  (V2DF "DF")])
 
 ;; As above but in lower case.
 (define_mode_attr V_elem_l [(V8QI "qi") (V16QI "qi")

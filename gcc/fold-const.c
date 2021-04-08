@@ -7390,7 +7390,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
   return NULL_TREE;
 }
 
-/* Test whether it is preferable two swap two operands, ARG0 and
+/* Test whether it is preferable to swap two operands, ARG0 and
    ARG1, for example because ARG0 is an integer constant and ARG1
    isn't.  */
 

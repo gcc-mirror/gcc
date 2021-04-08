@@ -1228,6 +1228,8 @@ type_throw_all_p (const_tree type)
 tree
 build_noexcept_spec (tree expr, tsubst_flags_t complain)
 {
+  if (check_for_bare_parameter_packs (expr))
+    return error_mark_node;
   if (TREE_CODE (expr) != DEFERRED_NOEXCEPT
       && !value_dependent_expression_p (expr))
     {

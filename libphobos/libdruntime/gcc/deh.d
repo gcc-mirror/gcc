@@ -28,7 +28,7 @@ import gcc.unwind;
 import gcc.unwind.pe;
 import gcc.builtins;
 import gcc.config;
-import gcc.attribute;
+import gcc.attributes;
 
 extern(C)
 {

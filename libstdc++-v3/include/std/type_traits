@@ -3287,9 +3287,20 @@ template <typename _From, typename _To>
     : false_type
     { };
 
-  template<typename _Tp> requires __is_enum(_Tp)
+  template<typename _Tp>
+    requires __is_enum(_Tp)
+    && requires(_Tp __t) { __t = __t; } // fails if incomplete
     struct is_scoped_enum<_Tp>
-    : __not_<is_convertible<_Tp, __underlying_type(_Tp)>>::type
+    : bool_constant<!requires(_Tp __t, void(*__f)(int)) { __f(__t); }>
+    { };
+
+  // FIXME remove this partial specialization and use remove_cv_t<_Tp> above
+  // when PR c++/99968 is fixed.
+  template<typename _Tp>
+    requires __is_enum(_Tp)
+    && requires(_Tp __t) { __t = __t; } // fails if incomplete
+    struct is_scoped_enum<const _Tp>
+    : bool_constant<!requires(_Tp __t, void(*__f)(int)) { __f(__t); }>
     { };
 
   template<typename _Tp>

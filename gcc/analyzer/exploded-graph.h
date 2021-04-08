@@ -36,12 +36,14 @@ class impl_region_model_context : public region_model_context
 				old state, rather than the new?  */
 			     const program_state *old_state,
 			     program_state *new_state,
+			     uncertainty_t *uncertainty,
 
 			     const gimple *stmt,
 			     stmt_finder *stmt_finder = NULL);
 
   impl_region_model_context (program_state *state,
 			     const extrinsic_state &ext_state,
+			     uncertainty_t *uncertainty,
 			     logger *logger = NULL);
 
   void warn (pending_diagnostic *d) FINAL OVERRIDE;
@@ -68,6 +70,8 @@ class impl_region_model_context : public region_model_context
 
   void on_escaped_function (tree fndecl) FINAL OVERRIDE;
 
+  uncertainty_t *get_uncertainty () FINAL OVERRIDE;
+
   exploded_graph *m_eg;
   log_user m_logger;
   exploded_node *m_enode_for_diag;
@@ -76,6 +80,7 @@ class impl_region_model_context : public region_model_context
   const gimple *m_stmt;
   stmt_finder *m_stmt_finder;
   const extrinsic_state &m_ext_state;
+  uncertainty_t *m_uncertainty;
 };
 
 /* A <program_point, program_state> pair, used internally by
@@ -226,11 +231,13 @@ class exploded_node : public dnode<eg_traits>
   on_stmt_flags on_stmt (exploded_graph &eg,
 			 const supernode *snode,
 			 const gimple *stmt,
-			 program_state *state);
+			 program_state *state,
+			 uncertainty_t *uncertainty);
   bool on_edge (exploded_graph &eg,
 		const superedge *succ,
 		program_point *next_point,
-		program_state *next_state);
+		program_state *next_state,
+		uncertainty_t *uncertainty);
   void on_longjmp (exploded_graph &eg,
 		   const gcall *call,
 		   program_state *new_state,

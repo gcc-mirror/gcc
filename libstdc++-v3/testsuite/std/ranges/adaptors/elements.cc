@@ -89,10 +89,22 @@ test03()
   VERIFY( (next(b_const, 2) - b_const) == 2 );
 }
 
+template<auto elements = views::elements<0>>
+void
+test04()
+{
+  // Verify SFINAE behavior.
+  static_assert(!requires { elements(); });
+  static_assert(!requires { elements(0, 0); });
+  static_assert(!requires { elements(0); });
+  static_assert(!requires { 0 | elements; });
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }
