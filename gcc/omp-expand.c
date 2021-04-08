@@ -1541,7 +1541,7 @@ expand_oacc_collapse_init (const struct omp_for_data *fd,
       tree iter_type = TREE_TYPE (loop->v);
       tree plus_type = iter_type;
 
-      gcc_assert (loop->cond_code == fd->loop.cond_code);
+      gcc_assert (loop->cond_code == LT_EXPR || loop->cond_code == GT_EXPR);
 
       if (POINTER_TYPE_P (iter_type))
 	plus_type = sizetype;
