@@ -1,3 +1,7 @@
+2021-04-08  Release Manager
+
+	* GCC 10.3.0 released.
+
 2021-03-09  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/99458

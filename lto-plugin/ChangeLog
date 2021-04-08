@@ -1,3 +1,7 @@
+2021-04-08  Release Manager
+
+	* GCC 10.3.0 released.
+
 2020-09-09  Nick Clifton  <nickc@redhat.com>
 
 	* lto-plugin.c (struct plugin_symtab): Add last_sym field.

@@ -1,3 +1,7 @@
+2021-04-08  Release Manager
+
+	* GCC 10.3.0 released.
+
 2021-03-31  Jan Hubicka  <jh@suse.cz>
 
 	* config/i386/cpuinfo.c (get_amd_cpu): Support amdfam19.
