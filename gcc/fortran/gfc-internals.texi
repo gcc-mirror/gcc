@@ -124,7 +124,6 @@ not accurately reflect the status of the most recent GNU Fortran compiler.
 * LibGFortran::            The LibGFortran Runtime Library.
 * GNU Free Documentation License::
                            How you can copy and share this manual.
-* Index::                  Index of this documentation.
 @end menu
 @end ifnottex
 
@@ -960,8 +959,6 @@ and @code{VERS_1.2} as well as in @code{VERS_2.0}.
 @c Index
 @c ---------------------------------------------------------------------
 
-@node Index
-@unnumbered Index
 
 @printindex cp
 
