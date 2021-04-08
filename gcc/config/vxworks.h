@@ -132,8 +132,7 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_NET_LIBS_RTP "-lnet -ldsi"
 #endif
 
-#define VXWORKS_BASE_LIBS_RTP \
-  "-lc -lgcc %{!shared:%{!non-static:-lc_internal}}"
+#define VXWORKS_BASE_LIBS_RTP "-lc -lgcc %{!shared:-lc_internal}"
 
 #define VXWORKS_EXTRA_LIBS_RTP
 
@@ -179,15 +178,23 @@ along with GCC; see the file COPYING3.  If not see
 		  " TLS_SYM "                                              \
 		  --start-group " VXWORKS_LIBS_RTP " --end-group}}"
 
-/* The no-op spec for "-shared" below is present because otherwise GCC
-   will treat it as an unrecognized option.  */
-#undef VXWORKS_LINK_SPEC
-#define VXWORKS_LINK_SPEC				\
+#if TARGET_VXWORKS7
+#define VXWORKS_EXTRA_LINK_SPEC ""
+#else
+/* Older VxWorks RTPs can only link with shared libs, and
+   need special switches --force-dynamic --export-dynamic. */
+#define VXWORKS_EXTRA_LINK_SPEC				\
+"%{mrtp:%{!shared:%{non-static:--force-dynamic --export-dynamic}}}"
+#endif
+
+/* A default link_os expansion for RTPs, that cpu ports may override.  */
+#undef VXWORKS_LINK_OS_SPEC
+#define VXWORKS_LINK_OS_SPEC "%(link_os)"
+
+/* The -B and -X switches are for DIAB based linking. */
+#undef VXWORKS_BASE_LINK_SPEC
+#define VXWORKS_BASE_LINK_SPEC				\
 "%{!mrtp:-r}						\
- %{!shared:						\
-   %{mrtp:-q %{h*}					\
-          %{R*} %{!T*: %(link_start) }			\
-          %(link_os)}}					\
  %{v:-V}						\
  %{shared:-shared}					\
  %{Bstatic:-Bstatic}					\
@@ -195,8 +202,12 @@ along with GCC; see the file COPYING3.  If not see
  %{!Xbind-lazy:-z now}					\
  %{Xbind-now:%{Xbind-lazy:				\
    %e-Xbind-now and -Xbind-lazy are incompatible}}	\
- %{mrtp:%{!shared:%{!non-static:-static}		\
- 		  %{non-static:--force-dynamic --export-dynamic}}}"
+ %{mrtp:-q %{!shared:%{!non-static:-static}}            \
+        %{h*} %{R*} %{!T*: %(link_start)}"              \
+        VXWORKS_LINK_OS_SPEC "}"
+
+#undef VXWORKS_LINK_SPEC
+#define VXWORKS_LINK_SPEC VXWORKS_BASE_LINK_SPEC " " VXWORKS_EXTRA_LINK_SPEC
 
 #undef VXWORKS_LIBGCC_SPEC
 #if defined(ENABLE_SHARED_LIBGCC)
