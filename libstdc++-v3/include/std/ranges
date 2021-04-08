@@ -978,65 +978,40 @@ namespace views::__adaptor
       using all_t = decltype(all(std::declval<_Range>()));
   } // namespace views
 
-  // XXX: the following algos are copied from ranges_algo.h to avoid a circular
-  // dependency with that header.
+  // The following simple algos are transcribed from ranges_algo.h to avoid
+  // having to include that entire header.
   namespace __detail
   {
-    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
-	     typename _Proj = identity,
-	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
+    template<typename _Iter, typename _Sent, typename _Pred>
       constexpr _Iter
-      find_if(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {})
+      find_if(_Iter __first, _Sent __last, _Pred __pred)
       {
 	while (__first != __last
-	    && !(bool)std::__invoke(__pred, std::__invoke(__proj, *__first)))
+	       && !(bool)std::__invoke(__pred, *__first))
 	  ++__first;
 	return __first;
       }
 
-    template<input_iterator _Iter, sentinel_for<_Iter> _Sent,
-	     typename _Proj = identity,
-	     indirect_unary_predicate<projected<_Iter, _Proj>> _Pred>
+    template<typename _Iter, typename _Sent, typename _Pred>
       constexpr _Iter
-      find_if_not(_Iter __first, _Sent __last, _Pred __pred, _Proj __proj = {})
+      find_if_not(_Iter __first, _Sent __last, _Pred __pred)
       {
 	while (__first != __last
-	    && (bool)std::__invoke(__pred, std::__invoke(__proj, *__first)))
+	       && (bool)std::__invoke(__pred, *__first))
 	  ++__first;
 	return __first;
       }
 
-    template<typename _Tp, typename _Proj = identity,
-	     indirect_strict_weak_order<projected<const _Tp*, _Proj>>
-	       _Comp = ranges::less>
-      constexpr const _Tp&
-      min(const _Tp& __a, const _Tp& __b, _Comp __comp = {}, _Proj __proj = {})
-      {
-	if (std::__invoke(std::move(__comp),
-			  std::__invoke(__proj, __b),
-			  std::__invoke(__proj, __a)))
-	  return __b;
-	else
-	  return __a;
-      }
-
-    template<input_iterator _Iter1, sentinel_for<_Iter1> _Sent1,
-	     input_iterator _Iter2, sentinel_for<_Iter2> _Sent2,
-	     typename _Pred = ranges::equal_to,
-	     typename _Proj1 = identity, typename _Proj2 = identity>
-      requires indirectly_comparable<_Iter1, _Iter2, _Pred, _Proj1, _Proj2>
+    template<typename _Iter1, typename _Sent1, typename _Iter2, typename _Sent2>
       constexpr pair<_Iter1, _Iter2>
-      mismatch(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2,
-	       _Pred __pred = {}, _Proj1 __proj1 = {}, _Proj2 __proj2 = {})
+      mismatch(_Iter1 __first1, _Sent1 __last1, _Iter2 __first2, _Sent2 __last2)
       {
 	while (__first1 != __last1 && __first2 != __last2
-	       && (bool)std::__invoke(__pred,
-				      std::__invoke(__proj1, *__first1),
-				      std::__invoke(__proj2, *__first2)))
-	{
-	  ++__first1;
-	  ++__first2;
-	}
+	       && (bool)ranges::equal_to{}(*__first1, *__first2))
+	  {
+	    ++__first1;
+	    ++__first2;
+	  }
 	return { std::move(__first1), std::move(__first2) };
       }
   } // namespace __detail
@@ -1847,14 +1822,14 @@ namespace views::__adaptor
       size() requires sized_range<_Vp>
       {
 	auto __n = ranges::size(_M_base);
-	return __detail::min(__n, static_cast<decltype(__n)>(_M_count));
+	return std::min(__n, static_cast<decltype(__n)>(_M_count));
       }
 
       constexpr auto
       size() const requires sized_range<const _Vp>
       {
 	auto __n = ranges::size(_M_base);
-	return __detail::min(__n, static_cast<decltype(__n)>(_M_count));
+	return std::min(__n, static_cast<decltype(__n)>(_M_count));
       }
     };
 
