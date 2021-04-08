@@ -1555,6 +1555,32 @@ free_constructor (tree t)
     }
 }
 
+/* Helper function of cxx_bind_parameters_in_call.  Return non-NULL
+   if *TP is address of a static variable (or part of it) currently being
+   constructed or of a heap artificial variable.  */
+
+static tree
+addr_of_non_const_var (tree *tp, int *walk_subtrees, void *data)
+{
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    if (tree var = get_base_address (TREE_OPERAND (*tp, 0)))
+      if (VAR_P (var) && TREE_STATIC (var))
+	{
+	  if (DECL_NAME (var) == heap_uninit_identifier
+	      || DECL_NAME (var) == heap_identifier
+	      || DECL_NAME (var) == heap_vec_uninit_identifier
+	      || DECL_NAME (var) == heap_vec_identifier)
+	    return var;
+
+	  constexpr_global_ctx *global = (constexpr_global_ctx *) data;
+	  if (global->values.get (var))
+	    return var;
+	}
+  if (TYPE_P (*tp))
+    *walk_subtrees = false;
+  return NULL_TREE;
+}
+
 /* Subroutine of cxx_eval_call_expression.
    We are processing a call expression (either CALL_EXPR or
    AGGR_INIT_EXPR) in the context of CTX.  Evaluate
@@ -1615,6 +1641,15 @@ cxx_bind_parameters_in_call (const constexpr_ctx *ctx, tree t,
 	  else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type))
 	    /* The destructor needs to see any modifications the callee makes
 	       to the argument.  */
+	    *non_constant_args = true;
+	    /* If arg is or contains address of a heap artificial variable or
+	       of a static variable being constructed, avoid caching the
+	       function call, as those variables might be modified by the
+	       function, or might be modified by the callers in between
+	       the cached function and just read by the function.  */
+	  else if (!*non_constant_args
+		   && cp_walk_tree (&arg, addr_of_non_const_var, ctx->global,
+				    NULL))
 	    *non_constant_args = true;
 
 	  /* For virtual calls, adjust the this argument, so that it is
