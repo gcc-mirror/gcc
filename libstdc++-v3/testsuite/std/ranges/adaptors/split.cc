@@ -152,6 +152,17 @@ test08()
   VERIFY( i == v.end() );
 }
 
+void
+test10()
+{
+  // LWG 3505
+  auto to_string = [] (auto r) {
+    return std::string(r.begin(), ranges::next(r.begin(), r.end()));
+  };
+  auto v = "xxyx"sv | views::split("xy"sv) | views::transform(to_string);
+  VERIFY( ranges::equal(v, (std::string_view[]){"x", "x"}) );
+}
+
 int
 main()
 {
@@ -163,4 +174,5 @@ main()
   test06();
   test07();
   test08();
+  test10();
 }
