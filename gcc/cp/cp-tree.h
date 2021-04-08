@@ -490,7 +490,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       OVL_NESTED_P (in OVERLOAD)
-      LAMBDA_EXPR_INSTANTIATED (in LAMBDA_EXPR)
       DECL_MODULE_EXPORT_P (in _DECL)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
@@ -1434,10 +1433,6 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_CAPTURE_OPTIMIZED(NODE) \
   TREE_LANG_FLAG_2 (LAMBDA_EXPR_CHECK (NODE))
 
-/* True iff this LAMBDA_EXPR was generated in tsubst_lambda_expr.  */
-#define LAMBDA_EXPR_INSTANTIATED(NODE) \
-  TREE_LANG_FLAG_3 (LAMBDA_EXPR_CHECK (NODE))
-
 /* True if this TREE_LIST in LAMBDA_EXPR_CAPTURE_LIST is for an explicit
    capture.  */
 #define LAMBDA_CAPTURE_EXPLICIT_P(NODE) \
@@ -1461,6 +1456,16 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_PENDING_PROXIES(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->pending_proxies)
 
+/* The immediate LAMBDA_EXPR from which NODE was regenerated, or NULL_TREE
+   (if NODE was not regenerated via tsubst_lambda_expr).  */
+#define LAMBDA_EXPR_REGENERATED_FROM(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->regenerated_from)
+
+/* The full set of template arguments used to regenerate NODE, or NULL_TREE
+   (if NODE was not regenerated via tsubst_lambda_expr).  */
+#define LAMBDA_EXPR_REGENERATING_TARGS(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->regenerating_targs)
+
 /* The closure type of the lambda, which is also the type of the
    LAMBDA_EXPR.  */
 #define LAMBDA_EXPR_CLOSURE(NODE) \
@@ -1472,6 +1477,8 @@ struct GTY (()) tree_lambda_expr
   tree capture_list;
   tree this_capture;
   tree extra_scope;
+  tree regenerated_from;
+  tree regenerating_targs;
   vec<tree, va_gc> *pending_proxies;
   location_t locus;
   enum cp_lambda_default_capture_mode_type default_capture_mode : 8;
@@ -7247,6 +7254,7 @@ extern unsigned get_mergeable_specialization_flags (tree tmpl, tree spec);
 extern void add_mergeable_specialization        (bool is_decl, bool is_alias,
 						 spec_entry *,
 						 tree outer, unsigned);
+extern tree add_to_template_args		(tree, tree);
 extern tree add_outermost_template_args		(tree, tree);
 extern tree add_extra_args			(tree, tree);
 extern tree build_extra_args			(tree, tree, tsubst_flags_t);
@@ -7557,6 +7565,8 @@ extern void record_null_lambda_scope		(tree);
 extern void finish_lambda_scope			(void);
 extern tree start_lambda_function		(tree fn, tree lambda_expr);
 extern void finish_lambda_function		(tree body);
+extern bool regenerated_lambda_fn_p		(tree);
+extern tree most_general_lambda			(tree);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);

@@ -886,6 +886,16 @@ get_normalized_constraints_from_decl (tree d, bool diag = false)
      it has the correct template information attached. */
   d = strip_inheriting_ctors (d);
 
+  if (regenerated_lambda_fn_p (d))
+    {
+      /* If this lambda was regenerated, DECL_TEMPLATE_PARMS doesn't contain
+	 all in-scope template parameters, but the lambda from which it was
+	 ultimately regenerated does, so use that instead.  */
+      tree lambda = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (d));
+      lambda = most_general_lambda (lambda);
+      d = lambda_function (lambda);
+    }
+
   if (TREE_CODE (d) == TEMPLATE_DECL)
     {
       tmpl = d;
@@ -3174,12 +3184,26 @@ satisfy_declaration_constraints (tree t, sat_info info)
       args = TI_ARGS (ti);
       if (inh_ctor_targs)
 	args = add_outermost_template_args (args, inh_ctor_targs);
-
-      /* If any arguments depend on template parameters, we can't
-	 check constraints. Pretend they're satisfied for now.  */
-      if (uses_template_parms (args))
-	return boolean_true_node;
     }
+
+  if (regenerated_lambda_fn_p (t))
+    {
+      /* The TI_ARGS of a regenerated lambda contains only the innermost
+	 set of template arguments.  Augment this with the outer template
+	 arguments that were used to regenerate the lambda.  */
+      gcc_assert (!args || TMPL_ARGS_DEPTH (args) == 1);
+      tree lambda = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (t));
+      tree outer_args = LAMBDA_EXPR_REGENERATING_TARGS (lambda);
+      if (args)
+	args = add_to_template_args (outer_args, args);
+      else
+	args = outer_args;
+    }
+
+  /* If any arguments depend on template parameters, we can't
+     check constraints. Pretend they're satisfied for now.  */
+  if (uses_template_parms (args))
+    return boolean_true_node;
 
   /* Get the normalized constraints.  */
   tree norm = get_normalized_constraints_from_decl (t, info.noisy ());
@@ -3227,7 +3251,16 @@ satisfy_declaration_constraints (tree t, tree args, sat_info info)
 
   gcc_assert (TREE_CODE (t) == TEMPLATE_DECL);
 
-  args = add_outermost_template_args (t, args);
+  if (regenerated_lambda_fn_p (t))
+    {
+      /* As in the two-parameter version of this function.  */
+      gcc_assert (TMPL_ARGS_DEPTH (args) == 1);
+      tree lambda = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (t));
+      tree outer_args = LAMBDA_EXPR_REGENERATING_TARGS (lambda);
+      args = add_to_template_args (outer_args, args);
+    }
+  else
+    args = add_outermost_template_args (t, args);
 
   /* If any arguments depend on template parameters, we can't
      check constraints. Pretend they're satisfied for now.  */

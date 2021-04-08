@@ -151,7 +151,6 @@ static tree coerce_template_parms (tree, tree, tree, tsubst_flags_t,
 static tree coerce_innermost_template_parms (tree, tree, tree, tsubst_flags_t,
 					      bool, bool);
 static void tsubst_enum	(tree, tree, tree);
-static tree add_to_template_args (tree, tree);
 static bool check_instantiated_args (tree, tree, tsubst_flags_t);
 static int check_non_deducible_conversion (tree, tree, int, int,
 					   struct conversion **, bool);
@@ -553,7 +552,7 @@ maybe_end_member_template_processing (void)
 /* Return a new template argument vector which contains all of ARGS,
    but has as its innermost set of arguments the EXTRA_ARGS.  */
 
-static tree
+tree
 add_to_template_args (tree args, tree extra_args)
 {
   tree new_args;
@@ -14065,10 +14064,7 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
      don't substitute through the constraints; that's only done when
      they are checked.  */
   if (tree ci = get_constraints (t))
-    /* Unless we're regenerating a lambda, in which case we'll set the
-       lambda's constraints in tsubst_lambda_expr.  */
-    if (!lambda_fntype)
-      set_constraints (r, ci);
+    set_constraints (r, ci);
 
   if (DECL_FRIEND_CONTEXT (t))
     SET_DECL_FRIEND_CONTEXT (r,
@@ -14354,13 +14350,24 @@ lambda_fn_in_template_p (tree fn)
    which the above is true.  */
 
 bool
-instantiated_lambda_fn_p (tree fn)
+regenerated_lambda_fn_p (tree fn)
 {
   if (!fn || !LAMBDA_FUNCTION_P (fn))
     return false;
   tree closure = DECL_CONTEXT (fn);
   tree lam = CLASSTYPE_LAMBDA_EXPR (closure);
-  return LAMBDA_EXPR_INSTANTIATED (lam);
+  return LAMBDA_EXPR_REGENERATED_FROM (lam) != NULL_TREE;
+}
+
+/* Return the LAMBDA_EXPR from which T was ultimately regenerated.
+   If T is not a regenerated LAMBDA_EXPR, return T.  */
+
+tree
+most_general_lambda (tree t)
+{
+  while (LAMBDA_EXPR_REGENERATED_FROM (t))
+    t = LAMBDA_EXPR_REGENERATED_FROM (t);
+  return t;
 }
 
 /* We're instantiating a variable from template function TCTX.  Return the
@@ -14376,7 +14383,7 @@ enclosing_instantiation_of (tree otctx)
   int lambda_count = 0;
 
   for (; tctx && (lambda_fn_in_template_p (tctx)
-		  || instantiated_lambda_fn_p (tctx));
+		  || regenerated_lambda_fn_p (tctx));
        tctx = decl_function_context (tctx))
     ++lambda_count;
 
@@ -14396,7 +14403,7 @@ enclosing_instantiation_of (tree otctx)
     {
       tree ofn = fn;
       int flambda_count = 0;
-      for (; fn && instantiated_lambda_fn_p (fn);
+      for (; fn && regenerated_lambda_fn_p (fn);
 	   fn = decl_function_context (fn))
 	++flambda_count;
       if ((fn && DECL_TEMPLATE_INFO (fn))
@@ -19271,7 +19278,9 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (r)
     = LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (t);
   LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
-  LAMBDA_EXPR_INSTANTIATED (r) = true;
+  LAMBDA_EXPR_REGENERATED_FROM (r) = t;
+  LAMBDA_EXPR_REGENERATING_TARGS (r)
+    = add_to_template_args (LAMBDA_EXPR_REGENERATING_TARGS (t), args);
 
   gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
@@ -19411,17 +19420,6 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      goto out;
 	    }
 	  finish_member_declaration (fn);
-	}
-
-      if (tree ci = get_constraints (oldfn))
-	{
-	  /* Substitute into the lambda's constraints.  */
-	  if (oldtmpl)
-	    ++processing_template_decl;
-	  ci = tsubst_constraint_info (ci, args, complain, in_decl);
-	  if (oldtmpl)
-	    --processing_template_decl;
-	  set_constraints (fn, ci);
 	}
 
       /* Let finish_function set this.  */
