@@ -1,5 +1,8 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -save-temps" } */
+
+#pragma GCC target "+nosve"
+
 #include <stdint.h>
 #include <string.h>
 
