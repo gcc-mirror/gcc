@@ -2447,6 +2447,10 @@ Target has the basic signed and unsigned C types in @code{stdint.h}.
 This will be obsolete when GCC ensures a working @code{stdint.h} for
 all targets.
 
+@item stdint_types_mbig_endian
+Target accepts the option @option{-mbig-endian} and @code{stdint.h}
+can be included without error when @option{-mbig-endian} is passed.
+
 @item stpcpy
 Target provides @code{stpcpy} function.
 

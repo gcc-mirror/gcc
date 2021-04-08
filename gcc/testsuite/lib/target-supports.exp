@@ -8254,6 +8254,18 @@ proc check_effective_target_stdint_types { } {
     }]
 }
 
+# Like check_effective_target_stdint_types, but test what happens when
+# -mbig-endian is passed.  This test only makes sense on targets that
+# support -mbig-endian; it will fail elsewhere.
+
+proc check_effective_target_stdint_types_mbig_endian { } {
+    return [check_no_compiler_messages stdint_types_mbig_endian assembly {
+	#include <stdint.h>
+	int8_t a; int16_t b; int32_t c; int64_t d;
+	uint8_t e; uint16_t f; uint32_t g; uint64_t h;
+    } "-mbig-endian"]
+}
+
 # Return 1 if target has the basic signed and unsigned types in
 # <inttypes.h>, 0 otherwise.  This is for tests that GCC's notions of
 # these types agree with those in the header, as some systems have
