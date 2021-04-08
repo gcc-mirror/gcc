@@ -1,3 +1,60 @@
+2021-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/97513
+	* tree-vect-slp.c (vect_add_slp_permutation): New function,
+	split out from...
+	(vectorizable_slp_permutation): ...here.  Detect cases in which
+	all VEC_PERM_EXPRs are guaranteed to have the same stepped
+	permute vector and only generate one permute vector for that case.
+	Extend that case to handle variable-length vectors.
+
+2021-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/99873
+	* tree-vect-slp.c (vect_slp_prefer_store_lanes_p): New function.
+	(vect_build_slp_instance): Don't split store groups that could
+	use IFN_STORE_LANES.
+
+2021-04-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99872
+	* varasm.c (output_constant_pool_contents): Don't strip name encoding
+	from XSTR (desc->sym, 0) or from label before passing those to
+	ASM_OUTPUT_DEF.
+
+2021-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99954
+	* tree-loop-distribution.c: Include tree-affine.h.
+	(generate_memcpy_builtin): Try using tree-affine to prove
+	non-overlap.
+	(loop_distribution::classify_builtin_ldst): Always classify
+	as PKIND_MEMMOVE.
+
+2021-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99947
+	* tree-vect-loop.c (vectorizable_induction): Pre-allocate
+	steps vector to avoid pushing elements from the reallocated
+	vector.
+
+2021-04-07  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (print_vn_reference_ops): Declare.
+	* tree-ssa-pre.c (print_pre_expr): Factor out VN reference operand
+	printing...
+	* tree-ssa-sccvn.c (print_vn_reference_ops): ... into this new
+	function.
+	(debug_vn_reference_ops): New.
+
+2021-04-07  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/98736
+	* tree-loop-distribution.c
+	* (loop_distribution::bb_top_order_init):
+	Compute RPO with programing order preserved by calling function
+	rev_post_order_and_mark_dfs_back_seme.
+
 2021-04-06  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/99781

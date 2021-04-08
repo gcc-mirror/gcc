@@ -1,3 +1,67 @@
+2021-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41723
+	* g++.dg/template/friend71.C: New test.
+
+2021-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52625
+	* g++.dg/template/friend70.C: New test.
+
+2021-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92918
+	* g++.dg/lookup/using66.C: New test.
+
+2021-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/gcc.exp (gcc_target_compile): Add -dumpbase ""
+	when building an executable with testglue.
+
+2021-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pr88834.c: Expect the vectorizer to use SLP.
+	* gcc.target/aarch64/sve/pr88834_ld3.c: New test.
+
+2021-04-07  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/slp-21.c: Only expect 2 of the loops to use SLP
+	if IFN_STORE_LANES is available.
+	* gcc.dg/vect/vect-complex-5.c: Expect no loops to use SLP if
+	IFN_STORE_LANES is available.
+	* gcc.target/aarch64/pr99873_1.c: New test.
+	* gcc.target/aarch64/pr99873_2.c: Likewise.
+	* gcc.target/aarch64/pr99873_3.c: Likewise.
+	* gcc.target/aarch64/sve/pr99873_1.c: Likewise.
+	* gcc.target/aarch64/sve/pr99873_2.c: Likewise.
+	* gcc.target/aarch64/sve/pr99873_3.c: Likewise.
+
+2021-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99954
+	* gcc.dg/torture/pr99954.c: New testcase.
+
+2021-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/99955
+	* gcc.c-torture/execute/pr92618.c: Move may_alias attributes
+	last.
+
+2021-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99947
+	* gcc.dg/torture/pr99947.c: New testcase.
+
+2021-04-07  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/98736
+	* gcc.c-torture/execute/pr98736.c: New test.
+
+2021-04-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/52202
+	* g++.dg/cpp0x/rv-life.C: New test.
+
 2021-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96673

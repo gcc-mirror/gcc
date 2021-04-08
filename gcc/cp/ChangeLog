@@ -1,3 +1,20 @@
+2021-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41723
+	* parser.c (cp_parser_class_name): Check dependent_scope_p.
+
+2021-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52625
+	* pt.c (maybe_process_partial_specialization): Check
+	DECL_SELF_REFERENCE_P.
+
+2021-04-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92918
+	* name-lookup.c (push_class_level_binding_1): Do overload a new
+	function with a previous using-declaration.
+
 2021-04-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/96673

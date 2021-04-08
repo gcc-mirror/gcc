@@ -1,3 +1,11 @@
+2021-04-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99805
+	* src/c++17/fs_path.cc (path::_M_split_cmpts): Do not call
+	non-const member on _M_pathname, to avoid copy-on-write.
+	* testsuite/27_io/filesystem/path/decompose/parent_path.cc:
+	Check construction from strings that might be shared.
+
 2021-04-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/move.h (forward, move, move_if_noexcept)
