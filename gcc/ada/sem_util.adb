@@ -29473,34 +29473,53 @@ package body Sem_Util is
 
    function Validated_View (Typ : Entity_Id) return Entity_Id is
    begin
+      --  Scalar types can be always validated. In fast, switiching to the base
+      --  type would drop the range constraints and force validation to use a
+      --  larger type than necessary.
+
+      if Is_Scalar_Type (Typ) then
+         return Typ;
+
+      --  Array types can be validated even when they are derived, because
+      --  validation only requires their bounds and component types to be
+      --  accessible. In fact, switching to the parent type would pollute
+      --  expansion of attribute Valid_Scalars with unnecessary conversion
+      --  that might not be eliminated by the frontend.
+
+      elsif Is_Array_Type (Typ) then
+         return Typ;
+
+      --  For other types, in particular for record subtypes, we switch to the
+      --  base type.
+
+      elsif not Is_Base_Type (Typ) then
+         return Validated_View (Base_Type (Typ));
+
       --  Obtain the full view of the input type by stripping away concurrency,
       --  derivations, and privacy.
 
-      if Is_Base_Type (Typ) then
-         if Is_Concurrent_Type (Typ) then
-            if Present (Corresponding_Record_Type (Typ)) then
-               return Corresponding_Record_Type (Typ);
-            else
-               return Typ;
-            end if;
-
-         elsif Is_Derived_Type (Typ) then
-            return Validated_View (Etype (Typ));
-
-         elsif Is_Private_Type (Typ) then
-            if Present (Underlying_Full_View (Typ)) then
-               return Validated_View (Underlying_Full_View (Typ));
-
-            elsif Present (Full_View (Typ)) then
-               return Validated_View (Full_View (Typ));
-            else
-               return Typ;
-            end if;
+      elsif Is_Concurrent_Type (Typ) then
+         if Present (Corresponding_Record_Type (Typ)) then
+            return Corresponding_Record_Type (Typ);
+         else
+            return Typ;
          end if;
 
-         return Typ;
+      elsif Is_Derived_Type (Typ) then
+         return Validated_View (Etype (Typ));
+
+      elsif Is_Private_Type (Typ) then
+         if Present (Underlying_Full_View (Typ)) then
+            return Validated_View (Underlying_Full_View (Typ));
+
+         elsif Present (Full_View (Typ)) then
+            return Validated_View (Full_View (Typ));
+         else
+            return Typ;
+         end if;
+
       else
-         return Validated_View (Base_Type (Typ));
+         return Typ;
       end if;
    end Validated_View;
 
