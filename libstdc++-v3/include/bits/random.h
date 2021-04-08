@@ -1673,7 +1673,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
   };
 
-  /* @} */ // group random_generators
+  /// @} group random_generators
 
   /**
    * @addtogroup random_distributions Random Number Distributions
@@ -1949,7 +1949,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>>(std::basic_istream<_CharT, _Traits>&,
 	       std::uniform_real_distribution<_RealType>&);
 
-  /* @} */ // group random_distributions_uniform
+  /// @} group random_distributions_uniform
 
   /**
    * @addtogroup random_distributions_normal Normal Distributions
@@ -3504,7 +3504,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(__d1 == __d2); }
 
 
-  /* @} */ // group random_distributions_normal
+  /// @} group random_distributions_normal
 
   /**
    * @addtogroup random_distributions_bernoulli Bernoulli Distributions
@@ -4400,7 +4400,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(__d1 == __d2); }
 
 
-  /* @} */ // group random_distributions_bernoulli
+  /// @} group random_distributions_bernoulli
 
   /**
    * @addtogroup random_distributions_poisson Poisson Distributions
@@ -6046,9 +6046,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(__d1 == __d2); }
 
 
-  /* @} */ // group random_distributions_poisson
+  /// @} group random_distributions_poisson
 
-  /* @} */ // group random_distributions
+  /// @} *group random_distributions
 
   /**
    * @addtogroup random_utilities Random Number Utilities
@@ -6099,9 +6099,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     std::vector<result_type> _M_v;
   };
 
-  /* @} */ // group random_utilities
+  /// @} group random_utilities
 
-  /* @} */ // group random
+  /// @} group random
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
