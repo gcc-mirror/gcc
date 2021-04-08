@@ -142,7 +142,7 @@ class Bug:
             return False
 
     def serialize_summary(self):
-        assert not self.versions
+        assert self.versions
         assert self.is_regression
 
         new_version = '/'.join(self.versions)
