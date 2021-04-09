@@ -702,7 +702,7 @@ public:
       return true;
     });
 
-    infered_array_elems = TyTy::TyVar::get_implict_infer_var ().get_tyty ();
+    infered_array_elems = TyTy::TyVar::get_implicit_infer_var ().get_tyty ();
 
     for (auto &type : types)
       {

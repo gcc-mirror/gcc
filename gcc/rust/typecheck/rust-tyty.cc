@@ -48,7 +48,7 @@ TyVar::get_tyty () const
 }
 
 TyVar
-TyVar::get_implict_infer_var ()
+TyVar::get_implicit_infer_var ()
 {
   auto mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
