@@ -4061,6 +4061,15 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       *walk_subtrees = 0;
       return NULL_TREE;
 
+    case TAG_DEFN:
+      /* Local class, need to look through the whole definition.  */
+      t = TREE_TYPE (t);
+      if (CLASS_TYPE_P (t))
+	for (tree bb : BINFO_BASE_BINFOS (TYPE_BINFO (t)))
+	  cp_walk_tree (&BINFO_TYPE (bb), &find_parameter_packs_r,
+			ppd, ppd->visited);
+      return NULL_TREE;
+
     default:
       return NULL_TREE;
     }
