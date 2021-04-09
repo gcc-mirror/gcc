@@ -41,8 +41,7 @@ build_lambda_expr (void)
   LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) = CPLD_NONE;
   LAMBDA_EXPR_CAPTURE_LIST         (lambda) = NULL_TREE;
   LAMBDA_EXPR_THIS_CAPTURE         (lambda) = NULL_TREE;
-  LAMBDA_EXPR_REGENERATED_FROM     (lambda) = NULL_TREE;
-  LAMBDA_EXPR_REGENERATING_TARGS   (lambda) = NULL_TREE;
+  LAMBDA_EXPR_REGEN_INFO           (lambda) = NULL_TREE;
   LAMBDA_EXPR_PENDING_PROXIES      (lambda) = NULL;
   LAMBDA_EXPR_MUTABLE_P            (lambda) = false;
   return lambda;

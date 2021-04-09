@@ -1456,15 +1456,12 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_PENDING_PROXIES(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->pending_proxies)
 
-/* The immediate LAMBDA_EXPR from which NODE was regenerated, or NULL_TREE
-   (if NODE was not regenerated via tsubst_lambda_expr).  */
-#define LAMBDA_EXPR_REGENERATED_FROM(NODE) \
-  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->regenerated_from)
-
-/* The full set of template arguments used to regenerate NODE, or NULL_TREE
-   (if NODE was not regenerated via tsubst_lambda_expr).  */
-#define LAMBDA_EXPR_REGENERATING_TARGS(NODE) \
-  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->regenerating_targs)
+/* If NODE was regenerated via tsubst_lambda_expr, this is a TEMPLATE_INFO
+   whose TI_TEMPLATE is the immediate LAMBDA_EXPR from which NODE was
+   regenerated, and TI_ARGS is the full set of template arguments used
+   to regenerate NODE from the most general lambda.  */
+#define LAMBDA_EXPR_REGEN_INFO(NODE) \
+  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->regen_info)
 
 /* The closure type of the lambda, which is also the type of the
    LAMBDA_EXPR.  */
@@ -1477,8 +1474,7 @@ struct GTY (()) tree_lambda_expr
   tree capture_list;
   tree this_capture;
   tree extra_scope;
-  tree regenerated_from;
-  tree regenerating_targs;
+  tree regen_info;
   vec<tree, va_gc> *pending_proxies;
   location_t locus;
   enum cp_lambda_default_capture_mode_type default_capture_mode : 8;

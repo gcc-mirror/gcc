@@ -14356,7 +14356,7 @@ regenerated_lambda_fn_p (tree fn)
     return false;
   tree closure = DECL_CONTEXT (fn);
   tree lam = CLASSTYPE_LAMBDA_EXPR (closure);
-  return LAMBDA_EXPR_REGENERATED_FROM (lam) != NULL_TREE;
+  return LAMBDA_EXPR_REGEN_INFO (lam) != NULL_TREE;
 }
 
 /* Return the LAMBDA_EXPR from which T was ultimately regenerated.
@@ -14365,8 +14365,8 @@ regenerated_lambda_fn_p (tree fn)
 tree
 most_general_lambda (tree t)
 {
-  while (LAMBDA_EXPR_REGENERATED_FROM (t))
-    t = LAMBDA_EXPR_REGENERATED_FROM (t);
+  while (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
+    t = TI_TEMPLATE (ti);
   return t;
 }
 
@@ -19278,9 +19278,12 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (r)
     = LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (t);
   LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
-  LAMBDA_EXPR_REGENERATED_FROM (r) = t;
-  LAMBDA_EXPR_REGENERATING_TARGS (r)
-    = add_to_template_args (LAMBDA_EXPR_REGENERATING_TARGS (t), args);
+  if (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
+    LAMBDA_EXPR_REGEN_INFO (r)
+      = build_template_info (t, add_to_template_args (TI_ARGS (ti), args));
+  else
+    LAMBDA_EXPR_REGEN_INFO (r)
+      = build_template_info (t, args);
 
   gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
