@@ -1920,7 +1920,7 @@ package body Exp_Aggr is
 
       function Gen_Loop (L, H : Node_Id; Expr : Node_Id) return List_Id is
          Is_Iterated_Component : constant Boolean :=
-           Nkind (Parent (Expr)) = N_Iterated_Component_Association;
+           Parent_Kind (Expr) = N_Iterated_Component_Association;
 
          L_J : Node_Id;
 
@@ -2436,7 +2436,7 @@ package body Exp_Aggr is
 
                      Expr := Get_Assoc_Expr (Others_Assoc);
                      Dup_Expr := New_Copy_Tree (Expr);
-                     Set_Parent (Dup_Expr, Parent (Expr));
+                     Copy_Parent (To => Dup_Expr, From => Expr);
 
                      Set_Loop_Actions (Others_Assoc, New_List);
                      Append_List

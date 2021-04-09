@@ -2027,7 +2027,7 @@ package body Sem_Util is
          --  the original constraint from its component declaration.
 
          Sel := Entity (Selector_Name (N));
-         if Nkind (Parent (Sel)) /= N_Component_Declaration then
+         if Parent_Kind (Sel) /= N_Component_Declaration then
             return Empty;
          end if;
       end if;
@@ -6366,8 +6366,8 @@ package body Sem_Util is
          Is_Type_In_Pkg :=
            Is_Package_Or_Generic_Package (B_Scope)
              and then
-               Nkind (Parent (Declaration_Node (First_Subtype (T)))) /=
-                                                           N_Package_Body;
+           Parent_Kind (Declaration_Node (First_Subtype (T))) /=
+             N_Package_Body;
 
          while Present (Id) loop
 
@@ -6385,8 +6385,8 @@ package body Sem_Util is
               and then (Is_Type_In_Pkg
                          or else Is_Derived_Type (B_Type)
                          or else Is_Primitive (Id))
-              and then Nkind (Parent (Parent (Id)))
-                         not in N_Formal_Subprogram_Declaration
+              and then Parent_Kind (Parent (Id))
+                                    not in N_Formal_Subprogram_Declaration
             then
                Is_Prim := False;
 
@@ -20042,7 +20042,8 @@ package body Sem_Util is
 
    function Is_Renamed_Entry (Proc_Nam : Entity_Id) return Boolean is
       Orig_Node : Node_Id := Empty;
-      Subp_Decl : Node_Id := Parent (Parent (Proc_Nam));
+      Subp_Decl : Node_Id :=
+        (if No (Parent (Proc_Nam)) then Empty else Parent (Parent (Proc_Nam)));
 
       function Is_Entry (Nam : Node_Id) return Boolean;
       --  Determine whether Nam is an entry. Traverse selectors if there are
@@ -27072,7 +27073,7 @@ package body Sem_Util is
       --  or an exception handler). We skip this if Cond is True, since the
       --  capturing of values from conditional tests handles this ok.
 
-      if Cond then
+      if Cond or else No (N) then
          return True;
       end if;
 

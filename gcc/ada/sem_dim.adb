@@ -3765,16 +3765,20 @@ package body Sem_Dim is
    ---------------
 
    function System_Of (E : Entity_Id) return System_Type is
-      Type_Decl : constant Node_Id := Parent (E);
-
    begin
-      --  Look for Type_Decl in System_Table
+      if Present (E) then
+         declare
+            Type_Decl : constant Node_Id := Parent (E);
+         begin
+            --  Look for Type_Decl in System_Table
 
-      for Dim_Sys in 1 .. System_Table.Last loop
-         if Type_Decl = System_Table.Table (Dim_Sys).Type_Decl then
-            return System_Table.Table (Dim_Sys);
-         end if;
-      end loop;
+            for Dim_Sys in 1 .. System_Table.Last loop
+               if Type_Decl = System_Table.Table (Dim_Sys).Type_Decl then
+                  return System_Table.Table (Dim_Sys);
+               end if;
+            end loop;
+         end;
+      end if;
 
       return Null_System;
    end System_Of;

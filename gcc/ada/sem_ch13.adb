@@ -10652,7 +10652,7 @@ package body Sem_Ch13 is
       --  in particular, it has no type.
 
       Err : Boolean;
-      --  Set False if error
+      --  Set True if error
 
       --  On entry to this procedure, Entity (Ident) contains a copy of the
       --  original expression from the aspect, saved for this purpose, and
@@ -10786,7 +10786,9 @@ package body Sem_Ch13 is
          --  Indicate that the expression comes from an aspect specification,
          --  which is used in subsequent analysis even if expansion is off.
 
-         Set_Parent (End_Decl_Expr, ASN);
+         if Present (End_Decl_Expr) then
+            Set_Parent (End_Decl_Expr, ASN);
+         end if;
 
          --  In a generic context the original aspect expressions have not
          --  been preanalyzed, so do it now. There are no conformance checks

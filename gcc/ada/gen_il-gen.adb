@@ -2329,6 +2329,7 @@ package body Gen_IL.Gen is
          Put (B, "with Nlists; use Nlists;" & LF);
          Put (B, "pragma Warnings (Off);" & LF);
          Put (B, "with Einfo.Utils; use Einfo.Utils;" & LF);
+         Put (B, "with Sinfo.Utils; use Sinfo.Utils;" & LF);
          Put (B, "pragma Warnings (On);" & LF);
 
          Put (B, LF & "package body Sinfo.Nodes is" & LF & LF);

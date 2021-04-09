@@ -11709,7 +11709,7 @@ package body Sem_Ch6 is
          if Inside_Freezing_Actions = 0
            and then Is_Package_Or_Generic_Package (Current_Scope)
            and then In_Private_Part (Current_Scope)
-           and then Nkind (Parent (E)) = N_Private_Extension_Declaration
+           and then Parent_Kind (E) = N_Private_Extension_Declaration
            and then Nkind (Parent (S)) = N_Full_Type_Declaration
            and then Full_View (Defining_Identifier (Parent (E)))
                       = Defining_Identifier (Parent (S))

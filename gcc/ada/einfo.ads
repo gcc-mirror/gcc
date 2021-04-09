@@ -5088,9 +5088,9 @@ package Einfo is
    -- Applicable attributes by entity kind --
    ------------------------------------------
 
-   --  In the conversion to variable-sized nodes and entities, which is an
-   --  ongoing project, a number of discrepancies were noticed. They are
-   --  documented in comments, and marked with "$$$".
+   --  In the conversion to variable-sized nodes and entities, a number of
+   --  discrepancies were noticed. They are documented in comments, and marked
+   --  with "$$$".
 
    --  E_Abstract_State
    --    Refinement_Constituents

@@ -11258,7 +11258,8 @@ package body Sem_Ch12 is
       A_Gen_Obj   : constant Entity_Id  :=
                       Defining_Identifier (Analyzed_Formal);
       Acc_Def     : Node_Id             := Empty;
-      Act_Assoc   : constant Node_Id    := Parent (Actual);
+      Act_Assoc   : constant Node_Id    :=
+        (if No (Actual) then Empty else Parent (Actual));
       Actual_Decl : Node_Id             := Empty;
       Decl_Node   : Node_Id;
       Def         : Node_Id;
@@ -11289,7 +11290,7 @@ package body Sem_Ch12 is
          Error_Msg_N ("duplicate instantiation of generic parameter", Actual);
       end if;
 
-      Set_Parent (List, Parent (Actual));
+      Set_Parent (List, Act_Assoc);
 
       --  OUT present
 
@@ -11654,7 +11655,9 @@ package body Sem_Ch12 is
          end if;
       end if;
 
-      if Nkind (Actual) in N_Has_Entity then
+      if Nkind (Actual) in N_Has_Entity
+        and then Present (Entity (Actual))
+      then
          Actual_Decl := Parent (Entity (Actual));
       end if;
 
@@ -16339,7 +16342,7 @@ package body Sem_Ch12 is
                --  global in the current generic it must be preserved for its
                --  instantiation.
 
-               if Nkind (Parent (Typ)) = N_Subtype_Declaration
+               if Parent_Kind (Typ) = N_Subtype_Declaration
                  and then Present (Generic_Parent_Type (Parent (Typ)))
                then
                   Typ := Base_Type (Typ);

@@ -9257,7 +9257,9 @@ package body Sem_Prag is
                --  just the same scope). If the pragma comes from an aspect
                --  specification we know that it is part of the declaration.
 
-               elsif Parent (Unit_Declaration_Node (Def_Id)) /= Parent (N)
+               elsif (No (Unit_Declaration_Node (Def_Id))
+                        or else Parent (Unit_Declaration_Node (Def_Id)) /=
+                                Parent (N))
                  and then Nkind (Parent (N)) /= N_Compilation_Unit_Aux
                  and then not From_Aspect_Specification (N)
                then
@@ -9848,7 +9850,7 @@ package body Sem_Prag is
             --  inlineable either.
 
             elsif Is_Generic_Instance (Subp)
-              or else Nkind (Parent (Parent (Subp))) = N_Subprogram_Declaration
+              or else Parent_Kind (Parent (Subp)) = N_Subprogram_Declaration
             then
                null;
 
@@ -9894,7 +9896,11 @@ package body Sem_Prag is
                if In_Same_Source_Unit (Subp, Inner_Subp) then
                   Set_Inline_Flags (Inner_Subp);
 
-                  Decl := Parent (Parent (Inner_Subp));
+                  if Present (Parent (Inner_Subp)) then
+                     Decl := Parent (Parent (Inner_Subp));
+                  else
+                     Decl := Empty;
+                  end if;
 
                   if Nkind (Decl) = N_Subprogram_Declaration
                     and then Present (Corresponding_Body (Decl))
@@ -30892,7 +30898,7 @@ package body Sem_Prag is
       --  Follow subprogram renaming chain
 
       if Is_Subprogram (Def_Id)
-        and then Nkind (Parent (Declaration_Node (Def_Id))) =
+        and then Parent_Kind (Declaration_Node (Def_Id)) =
                    N_Subprogram_Renaming_Declaration
         and then Present (Alias (Def_Id))
       then

@@ -12277,7 +12277,9 @@ package body Exp_Util is
 
          --  Local variables
 
-         Context : constant Node_Id    := Parent (Ref);
+         Context : constant Node_Id :=
+           (if No (Ref) then Empty else Parent (Ref));
+
          Loc     : constant Source_Ptr := Sloc (Ref);
          Ref_Id  : Entity_Id;
          Result  : Traverse_Result;
@@ -13493,7 +13495,7 @@ package body Exp_Util is
          --  modification of that variable within the loop may incorrectly
          --  affect the execution of the loop.
 
-         elsif Nkind (Parent (Parent (N))) = N_Loop_Parameter_Specification
+         elsif Parent_Kind (Parent (N)) = N_Loop_Parameter_Specification
            and then Within_In_Parameter (Prefix (N))
            and then Variable_Ref
          then
