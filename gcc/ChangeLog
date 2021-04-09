@@ -1,3 +1,13 @@
+2021-04-08  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2021-04-01  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/97009
+	* tree-sra.c (access_or_its_child_written): New function.
+	(propagate_subaccesses_from_rhs): Use it instead of a simple grp_write
+	test.
+
 2021-04-01  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
