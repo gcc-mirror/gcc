@@ -43,7 +43,7 @@ import re
 
 import requests
 
-from semantic_version import SimpleSpec
+from semantic_version import Version
 
 base_url = 'https://gcc.gnu.org/bugzilla/rest.cgi/'
 statuses = ['UNCONFIRMED', 'ASSIGNED', 'SUSPENDED', 'NEW', 'WAITING', 'REOPENED']
@@ -149,9 +149,15 @@ class Bug:
         new_summary = self.regex_match.group(1) + new_version + self.regex_match.group(3) + self.regex_match.group(4)
         return new_summary
 
+    @staticmethod
+    def to_version(version):
+        if len(version.split('.')) == 2:
+            version += '.0'
+        return Version(version)
+
     def serialize_known_to_fail(self):
         assert type(self.fail_versions) is list
-        return ', '.join(sorted(self.fail_versions, key=lambda x: SimpleSpec(x)))
+        return ', '.join(sorted(self.fail_versions, key=self.to_version))
 
     def modify_bug(self, api_key, params, doit):
         u = base_url + 'bug/' + str(self.data['id'])
