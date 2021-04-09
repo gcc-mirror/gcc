@@ -218,7 +218,7 @@ parser.add_argument('--add', nargs='?', help='Add a new release to summary, e.g.
 parser.add_argument('--limit', nargs='?', help='Limit number of bugs affected by the script')
 parser.add_argument('--doit', action='store_true', help='Really modify BUGs in the bugzilla')
 parser.add_argument('--new-target-milestone', help='Set a new target milestone, '
-                    'e.g. 4.9.3:4.9.4 will set milestone to 4.9.4 for all PRs having milestone set to 4.9.3')
+                    'e.g. 8.5:9.4 will set milestone to 9.4 for all PRs having milestone set to 8.5')
 parser.add_argument('--add-known-to-fail', help='Set a new known to fail '
                     'for all PRs affected by --new-target-milestone')
 parser.add_argument('--comment', help='Comment a PR for which we set a new target milestore')
