@@ -1,5 +1,5 @@
 /* Classes for representing the state of interest at a given path of analysis.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -156,6 +156,9 @@ public:
   void on_unknown_change (const svalue *sval,
 			  bool is_mutable,
 			  const extrinsic_state &ext_state);
+
+  void purge_state_involving (const svalue *sval,
+			      const extrinsic_state &ext_state);
 
   iterator_t begin () const { return m_map.begin (); }
   iterator_t end () const { return m_map.end (); }

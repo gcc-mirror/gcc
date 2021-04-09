@@ -79,10 +79,10 @@ CHECK_EXP (union256i_uw, unsigned short, "%d")
 CHECK_EXP (union256i_ud, unsigned int, "0x%x")
 CHECK_EXP (union256i_uq, unsigned long long, "0x%llx")
 
-#define CHECK_FP_EXP(UINON_TYPE, VALUE_TYPE, ESP, FMT)		\
+#define CHECK_FP_EXP(UNION_TYPE, VALUE_TYPE, ESP, FMT)		\
 static int							\
 __attribute__((noinline, unused))				\
-check_fp_##UINON_TYPE (UINON_TYPE u, const VALUE_TYPE *v)	\
+check_fp_##UNION_TYPE (UNION_TYPE u, const VALUE_TYPE *v)	\
 {								\
   int i;							\
   int err = 0;							\

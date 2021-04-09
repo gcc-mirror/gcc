@@ -8,7 +8,7 @@
  */
 module core.sys.posix.sys.select;
 
-private import core.sys.posix.config;
+import core.sys.posix.config;
 public import core.stdc.time;           // for timespec
 public import core.sys.posix.sys.time;  // for timeval
 public import core.sys.posix.sys.types; // for time_t
@@ -27,6 +27,7 @@ else version (WatchOS)
 
 version (Posix):
 extern (C) nothrow @nogc:
+@system:
 
 //
 // Required
@@ -46,7 +47,7 @@ void FD_ZERO(fd_set* fdset);
 
 FD_SETSIZE
 
-int  pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+int  pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
 int  select(int, fd_set*, fd_set*, fd_set*, timeval*);
 */
 
@@ -130,7 +131,7 @@ version (CRuntime_Glibc)
          __result; }))
      +/
 
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else version (Darwin)
@@ -168,7 +169,7 @@ else version (Darwin)
         fdset.fds_bits[0 .. $] = 0;
     }
 
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else version (FreeBSD)
@@ -217,7 +218,7 @@ else version (FreeBSD)
             _p.__fds_bits[--_n] = 0;
     }
 
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else version (NetBSD)
@@ -266,7 +267,7 @@ else version (NetBSD)
             _p.__fds_bits[--_n] = 0;
     }
 
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else version (OpenBSD)
@@ -313,7 +314,7 @@ else version (OpenBSD)
             _p.__fds_bits[--_n] = 0;
     }
 
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else version (DragonFlyBSD)
@@ -362,7 +363,7 @@ else version (DragonFlyBSD)
             _p.__fds_bits[--_n] = 0;
     }
 
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else version (Solaris)
@@ -406,7 +407,7 @@ else version (Solaris)
     }
 
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
 }
 else version (CRuntime_Bionic)
 {
@@ -454,7 +455,7 @@ else version (CRuntime_Bionic)
         fdset.fds_bits[0 .. $] = 0;
     }
 
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else version (CRuntime_Musl)
@@ -501,7 +502,7 @@ else version (CRuntime_Musl)
     {
         fdset.fds_bits[0 .. $] = 0;
     }
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else version (CRuntime_UClibc)
@@ -549,7 +550,7 @@ else version (CRuntime_UClibc)
         fdset.fds_bits[0 .. $] = 0;
     }
 
-    int pselect(int, fd_set*, fd_set*, fd_set*, in timespec*, in sigset_t*);
+    int pselect(int, fd_set*, fd_set*, fd_set*, const scope timespec*, const scope sigset_t*);
     int select(int, fd_set*, fd_set*, fd_set*, timeval*);
 }
 else

@@ -683,8 +683,9 @@ Gogo::write_barrier_variable()
       Location bloc = Linemap::predeclared_location();
 
       Type* bool_type = Type::lookup_bool_type();
-      Array_type* pad_type = Type::make_array_type(this->lookup_global("byte")->type_value(),
-						   Expression::make_integer_ul(3, NULL, bloc));
+      Array_type* pad_type =
+	Type::make_array_type(Type::lookup_integer_type("byte"),
+			      Expression::make_integer_ul(3, NULL, bloc));
       Type* uint64_type = Type::lookup_integer_type("uint64");
       Type* wb_type = Type::make_builtin_struct_type(5,
 						     "enabled", bool_type,
@@ -882,7 +883,7 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
 			   Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 			   NULL)
       && rhs->type()->interface_type() != NULL
-      && !rhs->is_variable())
+      && !rhs->is_multi_eval_safe())
     {
       // May need a temporary for interface conversion.
       Temporary_statement* temp = Statement::make_temporary(NULL, rhs, loc);
@@ -891,7 +892,7 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
     }
   rhs = Expression::convert_for_assignment(this, type, rhs, loc);
   Temporary_statement* rhs_temp = NULL;
-  if (!rhs->is_variable() && !rhs->is_constant())
+  if (!rhs->is_multi_eval_safe())
     {
       rhs_temp = Statement::make_temporary(NULL, rhs, loc);
       inserter->insert(rhs_temp);

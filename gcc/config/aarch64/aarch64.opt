@@ -1,5 +1,5 @@
 ; Machine description for AArch64 architecture.
-; Copyright (C) 2009-2020 Free Software Foundation, Inc.
+; Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ; Contributed by ARM Ltd.
 ;
 ; This file is part of GCC.
@@ -64,11 +64,11 @@ EnumValue
 Enum(cmodel) String(large) Value(AARCH64_CMODEL_LARGE)
 
 mbig-endian
-Target Report RejectNegative Mask(BIG_END)
+Target RejectNegative Mask(BIG_END)
 Assume target CPU is configured as big endian.
 
 mgeneral-regs-only
-Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Save
+Target RejectNegative Mask(GENERAL_REGS_ONLY) Save
 Generate code which uses only the general registers.
 
 mharden-sls=
@@ -76,15 +76,15 @@ Target RejectNegative Joined Var(aarch64_harden_sls_string)
 Generate code to mitigate against straight line speculation.
 
 mfix-cortex-a53-835769
-Target Report Var(aarch64_fix_a53_err835769) Init(2) Save
+Target Var(aarch64_fix_a53_err835769) Init(2) Save
 Workaround for ARM Cortex-A53 Erratum number 835769.
 
 mfix-cortex-a53-843419
-Target Report Var(aarch64_fix_a53_err843419) Init(2) Save
+Target Var(aarch64_fix_a53_err843419) Init(2) Save
 Workaround for ARM Cortex-A53 Erratum number 843419.
 
 mlittle-endian
-Target Report RejectNegative InverseMask(BIG_END)
+Target RejectNegative InverseMask(BIG_END)
 Assume target CPU is configured as little endian.
 
 mcmodel=
@@ -92,11 +92,11 @@ Target RejectNegative Joined Enum(cmodel) Var(aarch64_cmodel_var) Init(AARCH64_C
 Specify the code model.
 
 mstrict-align
-Target Report Mask(STRICT_ALIGN) Save
+Target Mask(STRICT_ALIGN) Save
 Don't assume that unaligned accesses are handled by the system.
 
 momit-leaf-frame-pointer
-Target Report Var(flag_omit_leaf_frame_pointer) Init(2) Save
+Target Var(flag_omit_leaf_frame_pointer) Init(2) Save
 Omit the frame pointer in leaf functions.
 
 mtls-dialect=
@@ -153,7 +153,7 @@ EnumValue
 Enum(aarch64_abi) String(lp64) Value(AARCH64_ABI_LP64)
 
 mpc-relative-literal-loads
-Target Report Save Var(pcrelative_literal_loads) Init(2) Save
+Target Save Var(pcrelative_literal_loads) Init(2) Save
 PC relative literal loads.
 
 mbranch-protection=
@@ -260,7 +260,7 @@ TargetVariable
 long aarch64_stack_protector_guard_offset = 0
 
 moutline-atomics
-Target Report Var(aarch64_flag_outline_atomics) Init(2) Save
+Target Var(aarch64_flag_outline_atomics) Init(2) Save
 Generate local calls to out-of-line atomic operations.
 
 -param=aarch64-sve-compare-costs=

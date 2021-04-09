@@ -1,5 +1,5 @@
 /* Subroutines shared by all languages that are variants of C.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -374,6 +374,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__auto_type",	RID_AUTO_TYPE,	D_CONLY },
   { "__bases",          RID_BASES, D_CXXONLY },
   { "__builtin_addressof", RID_ADDRESSOF, D_CXXONLY },
+  { "__builtin_bit_cast", RID_BUILTIN_BIT_CAST, D_CXXONLY },
   { "__builtin_call_with_static_chain",
     RID_BUILTIN_CALL_WITH_STATIC_CHAIN, D_CONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
@@ -539,6 +540,12 @@ const struct c_common_resword c_common_reswords[] =
   /* Concepts-related keywords */
   { "concept",		RID_CONCEPT,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
   { "requires", 	RID_REQUIRES,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
+
+  /* Modules-related keywords, these are internal unspellable tokens,
+     created by the preprocessor.  */
+  { "module ",		RID__MODULE,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+  { "import ",		RID__IMPORT,	D_CXX_MODULES_FLAGS | D_CXXWARN },
+  { "export ",		RID__EXPORT,	D_CXX_MODULES_FLAGS | D_CXXWARN },
 
   /* Coroutines-related keywords */
   { "co_await",		RID_CO_AWAIT,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
@@ -2049,23 +2056,45 @@ verify_tree (tree x, struct tlist **pbefore_sp, struct tlist **pno_sp,
     }
 }
 
+static constexpr size_t verify_sequence_points_limit = 1024;
+
+/* Called from verify_sequence_points via walk_tree.  */
+
+static tree
+verify_tree_lim_r (tree *tp, int *walk_subtrees, void *data)
+{
+  if (++*((size_t *) data) > verify_sequence_points_limit)
+    return integer_zero_node;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
+  return NULL_TREE;
+}
+
 /* Try to warn for undefined behavior in EXPR due to missing sequence
    points.  */
 
 void
 verify_sequence_points (tree expr)
 {
-  struct tlist *before_sp = 0, *after_sp = 0;
+  tlist *before_sp = nullptr, *after_sp = nullptr;
 
-  warned_ids = 0;
-  save_expr_cache = 0;
-  if (tlist_firstobj == 0)
+  /* verify_tree is highly recursive, and merge_tlist is O(n^2),
+     so we return early if the expression is too big.  */
+  size_t n = 0;
+  if (walk_tree (&expr, verify_tree_lim_r, &n, nullptr))
+    return;
+
+  warned_ids = nullptr;
+  save_expr_cache = nullptr;
+  if (!tlist_firstobj)
     {
       gcc_obstack_init (&tlist_obstack);
       tlist_firstobj = (char *) obstack_alloc (&tlist_obstack, 0);
     }
 
-  verify_tree (expr, &before_sp, &after_sp, 0);
+  verify_tree (expr, &before_sp, &after_sp, NULL_TREE);
   warn_for_collisions (after_sp);
   obstack_free (&tlist_obstack, tlist_firstobj);
 }
@@ -4524,7 +4553,7 @@ build_va_arg (location_t loc, tree expr, tree type)
       if (canon_va_type == NULL_TREE)
 	error_at (loc, "first argument to %<va_arg%> not of type %<va_list%>");
 
-      /* Let's handle things neutrallly, if expr:
+      /* Let's handle things neutrally, if expr:
 	 - has undeclared type, or
 	 - is not an va_list type.  */
       return build_va_arg_1 (loc, type, error_mark_node);
@@ -4536,7 +4565,7 @@ build_va_arg (location_t loc, tree expr, tree type)
 
       /* Take the address, to get '&ap'.  Note that &ap is not a va_list
 	 type.  */
-      mark_addressable (expr);
+      c_common_mark_addressable_vec (expr);
       expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (expr)), expr);
 
       return build_va_arg_1 (loc, type, expr);
@@ -4598,7 +4627,7 @@ build_va_arg (location_t loc, tree expr, tree type)
 
       /* Take the address, to get '&ap'.  Make sure it's a pointer to array
 	 elem type.  */
-      mark_addressable (expr);
+      c_common_mark_addressable_vec (expr);
       expr = build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (canon_va_type)),
 		     expr);
 
@@ -5566,7 +5595,7 @@ check_nonnull_arg (void *ctx, tree param, unsigned HOST_WIDE_INT param_num)
   if (param_num == 0)
     {
       warned = warning_at (loc, OPT_Wnonnull,
-			   "%qs pointer null", "this");
+			   "%qs pointer is null", "this");
       if (warned && pctx->fndecl)
 	inform (DECL_SOURCE_LOCATION (pctx->fndecl),
 		"in a call to non-static member function %qD",
@@ -5741,6 +5770,7 @@ parse_optimize_options (tree args, bool attr_p)
   decode_options (&global_options, &global_options_set,
 		  decoded_options, decoded_options_count,
 		  input_location, global_dc, NULL);
+  free (decoded_options);
 
   targetm.override_options_after_change();
 

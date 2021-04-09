@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2021 Free Software Foundation, Inc.
    Contributed by Martin Sebor <msebor@redhat.com>.
 
 This file is part of GCC.
@@ -4032,26 +4032,22 @@ compute_format_length (call_info &info, format_result *res, range_query *query)
    available, or the maximum possible size otherwise.  */
 
 static unsigned HOST_WIDE_INT
-get_destination_size (tree dest)
+get_destination_size (tree dest, pointer_query &ptr_qry)
 {
   /* When there is no destination return the maximum.  */
   if (!dest)
     return HOST_WIDE_INT_MAX;
 
-  /* Initialize object size info before trying to compute it.  */
-  init_object_sizes ();
+  /* Use compute_objsize to determine the size of the destination object.  */
+  access_ref aref;
+  if (!ptr_qry.get_ref (dest, &aref))
+    return HOST_WIDE_INT_MAX;
 
-  /* Use __builtin_object_size to determine the size of the destination
-     object.  When optimizing, determine the smallest object (such as
-     a member array as opposed to the whole enclosing object), otherwise
-     use type-zero object size to determine the size of the enclosing
-     object (the function fails without optimization in this type).  */
-  int ost = optimize > 0;
-  unsigned HOST_WIDE_INT size;
-  if (compute_builtin_object_size (dest, ost, &size))
-    return size;
+  offset_int remsize = aref.size_remaining ();
+  if (!wi::fits_uhwi_p (remsize))
+    return HOST_WIDE_INT_MAX;
 
-  return HOST_WIDE_INT_MAX;
+  return remsize.to_uhwi ();
 }
 
 /* Return true if the call described by INFO with result RES safe to
@@ -4296,7 +4292,7 @@ get_user_idx_format (tree fndecl, unsigned *idx_args)
    gsi_next should not be performed in the caller.  */
 
 bool
-handle_printf_call (gimple_stmt_iterator *gsi, range_query *query)
+handle_printf_call (gimple_stmt_iterator *gsi, pointer_query &ptr_qry)
 {
   init_target_to_host_charmap ();
 
@@ -4519,7 +4515,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, range_query *query)
       /* For non-bounded functions like sprintf, determine the size
 	 of the destination from the object or pointer passed to it
 	 as the first argument.  */
-      dstsize = get_destination_size (dstptr);
+      dstsize = get_destination_size (dstptr, ptr_qry);
     }
   else if (tree size = gimple_call_arg (info.callstmt, idx_dstsize))
     {
@@ -4566,7 +4562,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, range_query *query)
 	     and use the greater of the two at level 1 and the smaller
 	     of them at level 2.  */
 	  value_range vr;
-	  query->range_of_expr (vr, size, info.callstmt);
+	  ptr_qry.rvals->range_of_expr (vr, size, info.callstmt);
 
 	  if (!vr.undefined_p ())
 	    {
@@ -4683,7 +4679,7 @@ handle_printf_call (gimple_stmt_iterator *gsi, range_query *query)
      never set to true again).  */
   res.posunder4k = posunder4k && dstptr;
 
-  bool success = compute_format_length (info, &res, query);
+  bool success = compute_format_length (info, &res, ptr_qry.rvals);
   if (res.warned)
     gimple_set_no_warning (info.callstmt, true);
 

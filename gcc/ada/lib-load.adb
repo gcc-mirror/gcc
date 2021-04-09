@@ -646,7 +646,7 @@ package body Lib.Load is
                   else
                      Error_Msg_File_1 := Fname;
                      Error_Msg_Unit_1 := Uname_Actual;
-                     Error_Msg ("File{ does not contain unit$", Load_Msg_Sloc);
+                     Error_Msg ("file{ does not contain unit$", Load_Msg_Sloc);
                   end if;
 
                   Write_Dependency_Chain;

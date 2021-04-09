@@ -1,3 +1,37 @@
+2021-03-08  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/98920
+	* asan/asan_interceptors.cpp (COMMON_INTERCEPT_FUNCTION_VER):
+	Cherry pick.
+	(COMMON_INTERCEPT_FUNCTION_VER_UNVERSIONED_FALLBACK): Likewise.
+	* asan/asan_interceptors.h (ASAN_INTERCEPT_FUNC_VER_UNVERSIONED_FALLBACK): Likewise.
+	* sanitizer_common/sanitizer_common_interceptors.inc
+	(COMMON_INTERCEPT_FUNCTION_GLIBC_VER_MIN): Likewise.
+	(INIT_REGEX): Likewise.
+	* tsan/tsan_interceptors_posix.cpp (COMMON_INTERCEPT_FUNCTION_VER_UNVERSIONED_FALLBACK):
+	Likewise.
+
+2021-01-26  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/98828
+	* lsan/Makefile.am: Add missing lsan_posix.cpp file.
+	* lsan/Makefile.in: Likewise.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure.tgt: Add dynamic_lookup to EXTRA_CXXFLAGS for
+	Darwin.
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2020-11-25  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* LOCAL_PATCHES: Add one commit.

@@ -1,4 +1,4 @@
-;; Copyright (C) 2016-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2021 Free Software Foundation, Inc.
 
 ;; This file is free software; you can redistribute it and/or modify it under
 ;; the terms of the GNU General Public License as published by the Free
@@ -80,7 +80,8 @@
   UNSPEC_MOV_DPP_SHR
   UNSPEC_MOV_FROM_LANE63
   UNSPEC_GATHER
-  UNSPEC_SCATTER])
+  UNSPEC_SCATTER
+  UNSPEC_RCP])
 
 ;; }}}
 ;; {{{ Attributes

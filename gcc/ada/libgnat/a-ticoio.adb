@@ -29,18 +29,42 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Text_IO;
-
 with Ada.Text_IO.Complex_Aux;
+with Ada.Text_IO.Float_Aux;
+with System.Val_Flt;  use System.Val_Flt;
+with System.Val_LFlt; use System.Val_LFlt;
+with System.Val_LLF;  use System.Val_LLF;
 
 package body Ada.Text_IO.Complex_IO is
 
    use Complex_Types;
 
-   package Aux renames Ada.Text_IO.Complex_Aux;
+   package Scalar_Float is new
+      Ada.Text_IO.Float_Aux (Float, Scan_Float);
 
-   subtype LLF is Long_Long_Float;
-   --  Type used for calls to routines in Aux
+   package Scalar_Long_Float is new
+      Ada.Text_IO.Float_Aux (Long_Float, Scan_Long_Float);
+
+   package Scalar_Long_Long_Float is new
+      Ada.Text_IO.Float_Aux (Long_Long_Float, Scan_Long_Long_Float);
+
+   package Aux_Float is new
+      Ada.Text_IO.Complex_Aux (Float, Scalar_Float);
+
+   package Aux_Long_Float is new
+      Ada.Text_IO.Complex_Aux (Long_Float, Scalar_Long_Float);
+
+   package Aux_Long_Long_Float is new
+      Ada.Text_IO.Complex_Aux (Long_Long_Float, Scalar_Long_Long_Float);
+
+   --  Throughout this generic body, we distinguish between the case where type
+   --  Float is OK, where type Long_Float is OK and where type Long_Long_Float
+   --  is needed. These boolean constants are used to test for this, such that
+   --  only code for the relevant case is included in the instance.
+
+   OK_Float : constant Boolean := Real'Base'Digits <= Float'Digits;
+
+   OK_Long_Float : constant Boolean := Real'Base'Digits <= Long_Float'Digits;
 
    ---------
    -- Get --
@@ -48,14 +72,24 @@ package body Ada.Text_IO.Complex_IO is
 
    procedure Get
      (File  : File_Type;
-      Item  : out Complex_Types.Complex;
+      Item  : out Complex;
       Width : Field := 0)
    is
       Real_Item : Real'Base;
       Imag_Item : Real'Base;
 
    begin
-      Aux.Get (File, LLF (Real_Item), LLF (Imag_Item), Width);
+      if OK_Float then
+         Aux_Float.Get (File, Float (Real_Item), Float (Imag_Item), Width);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Get
+           (File, Long_Float (Real_Item), Long_Float (Imag_Item), Width);
+      else
+         Aux_Long_Long_Float.Get
+           (File, Long_Long_Float (Real_Item), Long_Long_Float (Imag_Item),
+            Width);
+      end if;
+
       Item := (Real_Item, Imag_Item);
 
    exception
@@ -67,7 +101,7 @@ package body Ada.Text_IO.Complex_IO is
    ---------
 
    procedure Get
-     (Item  : out Complex_Types.Complex;
+     (Item  : out Complex;
       Width : Field := 0)
    is
    begin
@@ -80,14 +114,24 @@ package body Ada.Text_IO.Complex_IO is
 
    procedure Get
      (From : String;
-      Item : out Complex_Types.Complex;
+      Item : out Complex;
       Last : out Positive)
    is
       Real_Item : Real'Base;
       Imag_Item : Real'Base;
 
    begin
-      Aux.Gets (From, LLF (Real_Item), LLF (Imag_Item), Last);
+      if OK_Float then
+         Aux_Float.Gets (From, Float (Real_Item), Float (Imag_Item), Last);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Gets
+           (From, Long_Float (Real_Item), Long_Float (Imag_Item), Last);
+      else
+         Aux_Long_Long_Float.Gets
+           (From, Long_Long_Float (Real_Item), Long_Long_Float (Imag_Item),
+            Last);
+      end if;
+
       Item := (Real_Item, Imag_Item);
 
    exception
@@ -100,13 +144,24 @@ package body Ada.Text_IO.Complex_IO is
 
    procedure Put
      (File : File_Type;
-      Item : Complex_Types.Complex;
+      Item : Complex;
       Fore : Field := Default_Fore;
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
    is
    begin
-      Aux.Put (File, LLF (Re (Item)), LLF (Im (Item)), Fore, Aft, Exp);
+      if OK_Float then
+         Aux_Float.Put
+           (File, Float (Re (Item)), Float (Im (Item)), Fore, Aft, Exp);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Put
+           (File, Long_Float (Re (Item)), Long_Float (Im (Item)), Fore, Aft,
+            Exp);
+      else
+         Aux_Long_Long_Float.Put
+           (File, Long_Long_Float (Re (Item)), Long_Long_Float (Im (Item)),
+            Fore, Aft, Exp);
+      end if;
    end Put;
 
    ---------
@@ -114,7 +169,7 @@ package body Ada.Text_IO.Complex_IO is
    ---------
 
    procedure Put
-     (Item : Complex_Types.Complex;
+     (Item : Complex;
       Fore : Field := Default_Fore;
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
@@ -129,12 +184,21 @@ package body Ada.Text_IO.Complex_IO is
 
    procedure Put
      (To   : out String;
-      Item : Complex_Types.Complex;
+      Item : Complex;
       Aft  : Field := Default_Aft;
       Exp  : Field := Default_Exp)
    is
    begin
-      Aux.Puts (To, LLF (Re (Item)), LLF (Im (Item)), Aft, Exp);
+      if OK_Float then
+         Aux_Float.Puts (To, Float (Re (Item)), Float (Im (Item)), Aft, Exp);
+      elsif OK_Long_Float then
+         Aux_Long_Float.Puts
+           (To, Long_Float (Re (Item)), Long_Float (Im (Item)), Aft, Exp);
+      else
+         Aux_Long_Long_Float.Puts
+           (To, Long_Long_Float (Re (Item)), Long_Long_Float (Im (Item)),
+            Aft, Exp);
+      end if;
    end Put;
 
 end Ada.Text_IO.Complex_IO;

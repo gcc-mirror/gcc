@@ -1,5 +1,5 @@
 ;; Cavium ThunderX pipeline description
-;; Copyright (C) 2014-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2014-2021 Free Software Foundation, Inc.
 ;;
 ;; Written by Andrew Pinski  <apinski@cavium.com>
 
@@ -51,7 +51,7 @@
 
 (define_insn_reservation "thunderx_arith_shift" 2
   (and (eq_attr "tune" "thunderx")
-       (eq_attr "type" "alu_ext,alu_shift_imm,alu_shift_reg,alus_ext,logic_shift_imm,logic_shift_reg,logics_shift_imm,logics_shift_reg,alus_shift_imm"))
+       (eq_attr "type" "alu_ext,alu_shift_imm_lsl_1to4,alu_shift_imm_other,alu_shift_reg,alus_ext,logic_shift_imm,logic_shift_reg,logics_shift_imm,logics_shift_reg,alus_shift_imm"))
   "thunderx_pipe0 | thunderx_pipe1")
 
 (define_insn_reservation "thunderx_csel" 2

@@ -1,6 +1,6 @@
 /* Form lists of pseudo register references for autoinc optimization
    for GNU compiler.  This is part of flow optimization.
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Originally contributed by Michael P. Hayes
              (m.hayes@elec.canterbury.ac.nz, mhayes@redhat.com)
    Major rewrite contributed by Danny Berlin (dberlin@dberlin.org)
@@ -929,6 +929,7 @@ public:
   /* The results of the dataflow problem.  */
   bitmap_head in;    /* At the top of the block.  */
   bitmap_head out;   /* At the bottom of the block.  */
+  bool con_visited;  /* Visited by con_fun_{0,n}.  */
 };
 
 

@@ -1,5 +1,5 @@
 /* GCC instrumentation plugin for ThreadSanitizer.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Dmitry Vyukov <dvyukov@google.com>
 
 This file is part of GCC.
@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "asan.h"
 #include "builtins.h"
 #include "target.h"
+#include "diagnostic-core.h"
 
 /* Number of instrumented memory accesses in the current function.  */
 
@@ -500,6 +501,11 @@ instrument_builtin_call (gimple_stmt_iterator *gsi)
       continue;
     else
       {
+	if (fcode == BUILT_IN_ATOMIC_THREAD_FENCE)
+	  warning_at (gimple_location (stmt), OPT_Wtsan,
+		      "%qs is not supported with %qs", "atomic_thread_fence",
+		      "-fsanitize=thread");
+
 	tree decl = builtin_decl_implicit (tsan_atomic_table[i].tsan_fcode);
 	if (decl == NULL_TREE)
 	  return;

@@ -1,5 +1,5 @@
 /* Tree switch conversion for GNU compiler.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -48,8 +48,8 @@ class cluster
 {
 public:
   /* Constructor.  */
-  cluster (tree case_label_expr, basic_block case_bb, profile_probability prob,
-	   profile_probability subtree_prob);
+  inline cluster (tree case_label_expr, basic_block case_bb,
+		  profile_probability prob, profile_probability subtree_prob);
 
   /* Destructor.  */
   virtual ~cluster ()
@@ -71,7 +71,7 @@ public:
   virtual void dump (FILE *f, bool details = false) = 0;
 
   /* Emit GIMPLE code to handle the cluster.  */
-  virtual void emit (tree, tree, tree, basic_block) = 0;
+  virtual void emit (tree, tree, tree, basic_block, location_t) = 0;
 
   /* Return true if a cluster handles only a single case value and the
      value is not a range.  */
@@ -121,8 +121,9 @@ class simple_cluster: public cluster
 {
 public:
   /* Constructor.  */
-  simple_cluster (tree low, tree high, tree case_label_expr,
-		  basic_block case_bb, profile_probability prob);
+  inline simple_cluster (tree low, tree high, tree case_label_expr,
+			 basic_block case_bb, profile_probability prob,
+			 bool has_forward_bb = false);
 
   /* Destructor.  */
   ~simple_cluster ()
@@ -146,6 +147,11 @@ public:
     return m_high;
   }
 
+  void set_high (tree high)
+  {
+    m_high = high;
+  }
+
   void
   debug ()
   {
@@ -164,7 +170,7 @@ public:
     fprintf (f, " ");
   }
 
-  void emit (tree, tree, tree, basic_block)
+  void emit (tree, tree, tree, basic_block, location_t)
   {
     gcc_unreachable ();
   }
@@ -182,12 +188,16 @@ public:
 
   /* True if case is a range.  */
   bool m_range_p;
+
+  /* True if the case will use a forwarder BB.  */
+  bool m_has_forward_bb;
 };
 
 simple_cluster::simple_cluster (tree low, tree high, tree case_label_expr,
-				basic_block case_bb, profile_probability prob):
+				basic_block case_bb, profile_probability prob,
+				bool has_forward_bb):
   cluster (case_label_expr, case_bb, prob, prob),
-  m_low (low), m_high (high)
+  m_low (low), m_high (high), m_has_forward_bb (has_forward_bb)
 {
   m_range_p = m_high != NULL;
   if (m_high == NULL)
@@ -250,7 +260,7 @@ public:
   }
 
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb);
+	     tree default_label_expr, basic_block default_bb, location_t loc);
 
   /* Find jump tables of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */
@@ -271,7 +281,7 @@ public:
   static inline unsigned int case_values_threshold (void);
 
   /* Return whether jump table expansion is allowed.  */
-  static bool is_enabled (void);
+  static inline bool is_enabled (void);
 };
 
 /* A GIMPLE switch statement can be expanded to a short sequence of bit-wise
@@ -368,7 +378,7 @@ public:
     There *MUST* be max_case_bit_tests or less unique case
     node targets.  */
   void emit (tree index_expr, tree index_type,
-	     tree default_label_expr, basic_block default_bb);
+	     tree default_label_expr, basic_block default_bb, location_t loc);
 
   /* Find bit tests of given CLUSTERS, where all members of the vector
      are of type simple_cluster.  New clusters are returned.  */
@@ -881,6 +891,16 @@ switch_decision_tree::reset_out_edges_aux (gswitch *swtch)
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, bb->succs)
     e->aux = (void *) 0;
+}
+
+/* Release CLUSTERS vector and destruct all dynamically allocated items.  */
+
+static inline void
+release_clusters (vec<cluster *> &clusters)
+{
+  for (unsigned i = 0; i < clusters.length (); i++)
+    delete clusters[i];
+  clusters.release ();
 }
 
 } // tree_switch_conversion namespace

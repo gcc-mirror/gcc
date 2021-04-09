@@ -1,5 +1,5 @@
 /* Soft-FP definitions for TI PRU.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Based on C6X soft-fp header.
 
    This files is free software; you can redistribute it and/or

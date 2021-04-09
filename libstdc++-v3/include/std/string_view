@@ -1,6 +1,6 @@
 // Components for manipulating non-owning sequences of characters -*- C++ -*-
 
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -44,6 +44,10 @@
 #include <bits/ranges_base.h>
 #include <bits/ostream_insert.h>
 #include <ext/numeric_traits.h>
+
+#if __cplusplus > 202002L
+# include <bits/ranges_base.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -135,7 +139,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_len{__len}, _M_str{__str}
       { }
 
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#if __cplusplus >= 202002L && __cpp_lib_concepts
       template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
 	requires same_as<iter_value_t<_It>, _CharT>
 	  && (!convertible_to<_End, size_type>)
@@ -143,7 +147,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	basic_string_view(_It __first, _End __last)
 	: _M_len(__last - __first), _M_str(std::to_address(__first))
 	{ }
-#endif
+
+#if __cplusplus > 202002L
+      template<typename _Range, typename _DRange = remove_cvref_t<_Range>>
+	requires (!is_same_v<_DRange, basic_string_view>)
+	  && ranges::contiguous_range<_Range>
+	  && ranges::sized_range<_Range>
+	  && is_same_v<ranges::range_value_t<_Range>, _CharT>
+	  && (!is_convertible_v<_Range, const _CharT*>)
+	  && (!requires (_DRange& __d) {
+		__d.operator ::std::basic_string_view<_CharT, _Traits>();
+	      })
+	  && (!requires { typename _DRange::traits_type; }
+	      || is_same_v<typename _DRange::traits_type, _Traits>)
+	constexpr
+	basic_string_view(_Range&& __r)
+	noexcept(noexcept(ranges::size(__r)) && noexcept(ranges::data(__r)))
+	: _M_len(ranges::size(__r)), _M_str(ranges::data(__r))
+	{ }
+#endif // C++23
+#endif // C++20
 
       constexpr basic_string_view&
       operator=(const basic_string_view&) noexcept = default;
@@ -352,6 +375,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return this->ends_with(basic_string_view(__x)); }
 #endif // C++20
 
+#if __cplusplus > 202002L
+#define __cpp_lib_string_contains 202011L
+      constexpr bool
+      contains(basic_string_view __x) const noexcept
+      { return this->find(__x) != npos; }
+
+      constexpr bool
+      contains(_CharT __x) const noexcept
+      { return this->find(__x) != npos; }
+
+      constexpr bool
+      contains(const _CharT* __x) const noexcept
+      { return this->find(__x) != npos; }
+#endif // C++23
+
       // [string.view.find], searching
 
       constexpr size_type
@@ -475,6 +513,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus > 201703L && __cpp_lib_concepts && __cpp_deduction_guides
   template<contiguous_iterator _It, sized_sentinel_for<_It> _End>
     basic_string_view(_It, _End) -> basic_string_view<iter_value_t<_It>>;
+
+#if __cplusplus > 202002L
+  template<ranges::contiguous_range _Range>
+    basic_string_view(_Range&&)
+      -> basic_string_view<ranges::range_value_t<_Range>>;
+#endif
 #endif
 
   // [string.view.comparison], non-member basic_string_view comparison function

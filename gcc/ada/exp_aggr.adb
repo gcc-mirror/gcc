@@ -1895,6 +1895,22 @@ package body Exp_Aggr is
                   Append_To (Stmts, Init_Call);
                end if;
             end if;
+
+            --  If Default_Initial_Condition applies to the component type,
+            --  add a DIC check after the component is default-initialized,
+            --  as well as after an Initialize procedure is called, in the
+            --  case of components of a controlled type. It will be analyzed
+            --  and resolved before the code for initialization of other
+            --  components.
+
+            --  Theoretically this might also be needed for cases where Expr
+            --  is not empty, but a default init still applies, such as for
+            --  Default_Value cases, in which case we won't get here. ???
+
+            if Has_DIC (Ctype) and then Present (DIC_Procedure (Ctype)) then
+               Append_To (Stmts,
+                 Build_DIC_Call (Loc, New_Copy_Tree (Indexed_Comp), Ctype));
+            end if;
          end if;
 
          return Add_Loop_Actions (Stmts);
@@ -3504,6 +3520,18 @@ package body Exp_Aggr is
                   then
                      Check_Ancestor_Discriminants (Entity (Ancestor));
                   end if;
+
+                  --  If ancestor type has Default_Initialization_Condition,
+                  --  add a DIC check after the ancestor object is initialized
+                  --  by default.
+
+                  if Has_DIC (Entity (Ancestor))
+                    and then Present (DIC_Procedure (Entity (Ancestor)))
+                  then
+                     Append_To (L,
+                       Build_DIC_Call
+                         (Loc, New_Copy_Tree (Ref), Entity (Ancestor)));
+                  end if;
                end if;
 
             --  Handle calls to C++ constructors
@@ -4107,6 +4135,22 @@ package body Exp_Aggr is
                   end;
                end if;
             end;
+         end if;
+
+         --  If the component association was specified with a box and the
+         --  component type has a Default_Initial_Condition, then generate
+         --  a call to the DIC procedure.
+
+         if Has_DIC (Etype (Selector))
+           and then Was_Default_Init_Box_Association (Comp)
+           and then Present (DIC_Procedure (Etype (Selector)))
+         then
+            Append_To (L,
+              Build_DIC_Call (Loc,
+                Make_Selected_Component (Loc,
+                  Prefix        => New_Copy_Tree (Target),
+                  Selector_Name => New_Occurrence_Of (Selector, Loc)),
+                Etype (Selector)));
          end if;
 
          Next (Comp);

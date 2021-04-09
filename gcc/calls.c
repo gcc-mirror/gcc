@@ -1,5 +1,5 @@
 /* Convert function calls to rtl insns, for GNU C compiler.
-   Copyright (C) 1989-2020 Free Software Foundation, Inc.
+   Copyright (C) 1989-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2032,7 +2032,7 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
       tree sizrng[2] = { size_zero_node, build_all_ones_cst (sizetype) };
       if (get_size_range (access_size, sizrng, true))
 	{
-	  const char *s0 = print_generic_expr_to_str (sizrng[0]);
+	  char *s0 = print_generic_expr_to_str (sizrng[0]);
 	  if (tree_int_cst_equal (sizrng[0], sizrng[1]))
 	    {
 	      gcc_checking_assert (strlen (s0) < sizeof sizstr);
@@ -2040,11 +2040,13 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	    }
 	  else
 	    {
-	      const char *s1 = print_generic_expr_to_str (sizrng[1]);
+	      char *s1 = print_generic_expr_to_str (sizrng[1]);
 	      gcc_checking_assert (strlen (s0) + strlen (s1)
 				   < sizeof sizstr - 4);
 	      sprintf (sizstr, "[%s, %s]", s0, s1);
+	      free (s1);
 	    }
+	  free (s0);
 	}
       else
 	*sizstr = '\0';
@@ -2386,19 +2388,17 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
       function_arg_info arg (type, argpos < n_named_args);
       if (pass_by_reference (args_so_far_pnt, arg))
 	{
-	  bool callee_copies;
-	  tree base = NULL_TREE;
+	  const bool callee_copies
+	    = reference_callee_copied (args_so_far_pnt, arg);
+	  tree base;
 
-	  callee_copies = reference_callee_copied (args_so_far_pnt, arg);
-
-	  /* If we're compiling a thunk, pass through invisible references
-	     instead of making a copy.  */
-	  if (call_from_thunk_p
-	      || (callee_copies
-		  && !TREE_ADDRESSABLE (type)
-		  && (base = get_base_address (args[i].tree_value))
-		  && TREE_CODE (base) != SSA_NAME
-		  && (!DECL_P (base) || MEM_P (DECL_RTL (base)))))
+	  /* If we're compiling a thunk, pass directly the address of an object
+	     already in memory, instead of making a copy.  Likewise if we want
+	     to make the copy in the callee instead of the caller.  */
+	  if ((call_from_thunk_p || callee_copies)
+	      && (base = get_base_address (args[i].tree_value))
+	      && TREE_CODE (base) != SSA_NAME
+	      && (!DECL_P (base) || MEM_P (DECL_RTL (base))))
 	    {
 	      /* We may have turned the parameter value into an SSA name.
 		 Go back to the original parameter so we can take the
@@ -2623,6 +2623,10 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 
   /* Check attribute access arguments.  */
   maybe_warn_rdwr_sizes (&rdwr_idx, fndecl, fntype, exp);
+
+  /* Check calls to operator new for mismatched forms and attempts
+     to deallocate unallocated objects.  */
+  maybe_emit_free_warning (exp);
 }
 
 /* Update ARGS_SIZE to contain the total size for the argument block.

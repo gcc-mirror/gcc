@@ -1,5 +1,5 @@
 /* Generic routines for manipulating SSA_NAME expressions
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -102,6 +102,14 @@ init_ssanames (struct function *fn, int size)
 void
 fini_ssanames (struct function *fn)
 {
+  unsigned i;
+  tree name;
+  /* Some SSA names leak into global tree data structures so we can't simply
+     ggc_free them.  But make sure to clear references to stmts since we now
+     ggc_free the CFG itself.  */
+  FOR_EACH_VEC_SAFE_ELT (SSANAMES (fn), i, name)
+    if (name)
+      SSA_NAME_DEF_STMT (name) = NULL;
   vec_free (SSANAMES (fn));
   vec_free (FREE_SSANAMES (fn));
   vec_free (FREE_SSANAMES_QUEUE (fn));

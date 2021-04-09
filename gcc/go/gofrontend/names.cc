@@ -186,6 +186,20 @@
 // struct tag, the brace or backslash will be backslash quoted, before
 // underscore encoding.
 //
+// Many of these names will be visible in the debugger.  The debugger
+// will be given these names before applying any underscore encoding.
+// These user names do not have to be unique--they are only used by
+// the debugger, not the linker--so this is OK.  However, there is an
+// exception: if the name would otherwise include characters that
+// can't normally appear in an identifier, then the user name will
+// also be underscore encoded.  This avoids problems with
+// communicating the debug info to the assembler and with handling the
+// debug info in the debugger.  A Go-aware debugger will need to know
+// whether to apply underscore decoding to a name before showing it to
+// the user.  We indicate this by adding a prefix of "g.", and
+// assuming that cases of a package path of "g" are unusual.  This
+// prefix will only appear in the user name, not the assembler name.
+//
 // The underscore encoding is, naturally, an underscore followed by
 // other characters.  As there are various characters that commonly
 // appear in type literals and in package paths, we have a set of
@@ -512,7 +526,7 @@ Gogo::recover_thunk_name(const std::string& name, const Type* rtype)
   if (rtype != NULL)
     {
       Backend_name bname;
-      rtype->backend_name(this, &bname);
+      rtype->deref()->backend_name(this, &bname);
       ret = bname.name();
       ret.append(1, '.');
     }
@@ -634,37 +648,45 @@ Type::backend_name(Gogo* gogo, Backend_name* bname) const
     }
 
   std::string name;
+  bool is_non_identifier = false;
 
   // The do_symbol_name virtual function will set RET to the mangled
   // name before encoding.
-  this->do_mangled_name(gogo, &name);
+  this->do_mangled_name(gogo, &name, &is_non_identifier);
 
   bname->add(name);
+  if (is_non_identifier)
+    bname->set_is_non_identifier();
 }
 
 // The mangled name is implemented as a method on each instance of
 // Type.
 
 void
-Error_type::do_mangled_name(Gogo*, std::string* ret) const
+Error_type::do_mangled_name(Gogo*, std::string* ret,
+			    bool* is_non_identifier) const
 {
   ret->append("{error}");
+  *is_non_identifier = true;
 }
 
 void
-Void_type::do_mangled_name(Gogo*, std::string* ret) const
+Void_type::do_mangled_name(Gogo*, std::string* ret,
+			   bool* is_non_identifier) const
 {
   ret->append("{void}");
+  *is_non_identifier = true;
 }
 
 void
-Boolean_type::do_mangled_name(Gogo*, std::string* ret) const
+Boolean_type::do_mangled_name(Gogo*, std::string* ret, bool*) const
 {
   ret->append("bool");
 }
 
 void
-Integer_type::do_mangled_name(Gogo*, std::string* ret) const
+Integer_type::do_mangled_name(Gogo*, std::string* ret,
+			      bool* is_non_identifier) const
 {
   char buf[100];
   snprintf(buf, sizeof buf, "%s%si%d",
@@ -672,43 +694,53 @@ Integer_type::do_mangled_name(Gogo*, std::string* ret) const
 	   this->is_unsigned_ ? "u" : "",
 	   this->bits_);
   ret->append(buf);
+  if (this->is_abstract_)
+    *is_non_identifier = true;
 }
 
 void
-Float_type::do_mangled_name(Gogo*, std::string* ret) const
+Float_type::do_mangled_name(Gogo*, std::string* ret,
+			    bool* is_non_identifier) const
 {
   char buf[100];
   snprintf(buf, sizeof buf, "%sfloat%d",
 	   this->is_abstract_ ? "{abstract}" : "",
 	   this->bits_);
   ret->append(buf);
+  if (this->is_abstract_)
+    *is_non_identifier = true;
 }
 
 void
-Complex_type::do_mangled_name(Gogo*, std::string* ret) const
+Complex_type::do_mangled_name(Gogo*, std::string* ret,
+			      bool* is_non_identifier) const
 {
   char buf[100];
   snprintf(buf, sizeof buf, "%sc%d",
 	   this->is_abstract_ ? "{abstract}" : "",
 	   this->bits_);
   ret->append(buf);
+  if (this->is_abstract_)
+    *is_non_identifier = true;
 }
 
 void
-String_type::do_mangled_name(Gogo*, std::string* ret) const
+String_type::do_mangled_name(Gogo*, std::string* ret, bool*) const
 {
   ret->append("string");
 }
 
 void
-Function_type::do_mangled_name(Gogo* gogo, std::string* ret) const
+Function_type::do_mangled_name(Gogo* gogo, std::string* ret,
+			       bool* is_non_identifier) const
 {
   ret->append("func");
 
   if (this->receiver_ != NULL)
     {
       ret->push_back('(');
-      this->append_mangled_name(this->receiver_->type(), gogo, ret);
+      this->append_mangled_name(this->receiver_->type(), gogo, ret,
+				is_non_identifier);
       ret->append(")");
     }
 
@@ -727,7 +759,8 @@ Function_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	    ret->push_back(',');
 	  if (this->is_varargs_ && p + 1 == params->end())
 	    ret->append("...");
-	  this->append_mangled_name(p->type(), gogo, ret);
+	  this->append_mangled_name(p->type(), gogo, ret,
+				    is_non_identifier);
 	}
     }
   ret->push_back(')');
@@ -745,27 +778,34 @@ Function_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	    first = false;
 	  else
 	    ret->append(",");
-	  this->append_mangled_name(p->type(), gogo, ret);
+	  this->append_mangled_name(p->type(), gogo, ret, is_non_identifier);
 	}
     }
   ret->push_back(')');
+
+  *is_non_identifier = true;
 }
 
 void
-Pointer_type::do_mangled_name(Gogo* gogo, std::string* ret) const
+Pointer_type::do_mangled_name(Gogo* gogo, std::string* ret,
+			      bool* is_non_identifier) const
 {
   ret->push_back('*');
-  this->append_mangled_name(this->to_type_, gogo, ret);
+  this->append_mangled_name(this->to_type_, gogo, ret, is_non_identifier);
+  *is_non_identifier = true;
 }
 
 void
-Nil_type::do_mangled_name(Gogo*, std::string* ret) const
+Nil_type::do_mangled_name(Gogo*, std::string* ret,
+			  bool* is_non_identifier) const
 {
   ret->append("{nil}");
+  *is_non_identifier = true;
 }
 
 void
-Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
+Struct_type::do_mangled_name(Gogo* gogo, std::string* ret,
+			     bool* is_non_identifier) const
 {
   ret->append("struct{");
 
@@ -796,9 +836,10 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	  if (p->is_anonymous()
 	      && p->type()->named_type() != NULL
 	      && p->type()->named_type()->is_alias())
-	    p->type()->named_type()->append_symbol_type_name(gogo, true, ret);
+	    p->type()->named_type()->append_symbol_type_name(gogo, true, ret,
+							     is_non_identifier);
 	  else
-	    this->append_mangled_name(p->type(), gogo, ret);
+	    this->append_mangled_name(p->type(), gogo, ret, is_non_identifier);
 
 	  if (p->has_tag())
 	    {
@@ -813,10 +854,13 @@ Struct_type::do_mangled_name(Gogo* gogo, std::string* ret) const
     }
 
   ret->push_back('}');
+
+  *is_non_identifier = true;
 }
 
 void
-Array_type::do_mangled_name(Gogo* gogo, std::string* ret) const
+Array_type::do_mangled_name(Gogo* gogo, std::string* ret,
+			    bool* is_non_identifier) const
 {
   ret->push_back('[');
   if (this->length_ != NULL)
@@ -841,20 +885,24 @@ Array_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	ret->append("x");
     }
   ret->push_back(']');
-  this->append_mangled_name(this->element_type_, gogo, ret);
+  this->append_mangled_name(this->element_type_, gogo, ret, is_non_identifier);
+  *is_non_identifier = true;
 }
 
 void
-Map_type::do_mangled_name(Gogo* gogo, std::string* ret) const
+Map_type::do_mangled_name(Gogo* gogo, std::string* ret,
+			  bool* is_non_identifier) const
 {
   ret->append("map[");
-  this->append_mangled_name(this->key_type_, gogo, ret);
+  this->append_mangled_name(this->key_type_, gogo, ret, is_non_identifier);
   ret->push_back(']');
-  this->append_mangled_name(this->val_type_, gogo, ret);
+  this->append_mangled_name(this->val_type_, gogo, ret, is_non_identifier);
+  *is_non_identifier = true;
 }
 
 void
-Channel_type::do_mangled_name(Gogo* gogo, std::string* ret) const
+Channel_type::do_mangled_name(Gogo* gogo, std::string* ret,
+			      bool* is_non_identifier) const
 {
   if (!this->may_send_)
     ret->append("<-");
@@ -862,11 +910,13 @@ Channel_type::do_mangled_name(Gogo* gogo, std::string* ret) const
   if (!this->may_receive_)
     ret->append("<-");
   ret->push_back(' ');
-  this->append_mangled_name(this->element_type_, gogo, ret);
+  this->append_mangled_name(this->element_type_, gogo, ret, is_non_identifier);
+  *is_non_identifier = true;
 }
 
 void
-Interface_type::do_mangled_name(Gogo* gogo, std::string* ret) const
+Interface_type::do_mangled_name(Gogo* gogo, std::string* ret,
+				bool* is_non_identifier) const
 {
   go_assert(this->methods_are_finalized_);
 
@@ -892,25 +942,29 @@ Interface_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 	      ret->push_back(' ');
 	    }
 
-	  this->append_mangled_name(p->type(), gogo, ret);
+	  this->append_mangled_name(p->type(), gogo, ret, is_non_identifier);
 	}
       this->seen_ = false;
     }
 
   ret->push_back('}');
+
+  *is_non_identifier = true;
 }
 
 void
-Named_type::do_mangled_name(Gogo* gogo, std::string* ret) const
+Named_type::do_mangled_name(Gogo* gogo, std::string* ret,
+			    bool* is_non_identifier) const
 {
-  this->append_symbol_type_name(gogo, false, ret);
+  this->append_symbol_type_name(gogo, false, ret, is_non_identifier);
 }
 
 void
-Forward_declaration_type::do_mangled_name(Gogo* gogo, std::string* ret) const
+Forward_declaration_type::do_mangled_name(Gogo* gogo, std::string* ret,
+					  bool *is_non_identifier) const
 {
   if (this->is_defined())
-    this->append_mangled_name(this->real_type(), gogo, ret);
+    this->append_mangled_name(this->real_type(), gogo, ret, is_non_identifier);
   else
     {
       const Named_object* no = this->named_object();
@@ -929,7 +983,8 @@ Forward_declaration_type::do_mangled_name(Gogo* gogo, std::string* ret) const
 
 void
 Named_type::append_symbol_type_name(Gogo* gogo, bool use_alias,
-				    std::string* ret) const
+				    std::string* ret,
+				    bool* is_non_identifier) const
 {
   if (this->is_error_)
     return;
@@ -938,7 +993,7 @@ Named_type::append_symbol_type_name(Gogo* gogo, bool use_alias,
       if (this->seen_alias_)
 	return;
       this->seen_alias_ = true;
-      this->append_mangled_name(this->type_, gogo, ret);
+      this->append_mangled_name(this->type_, gogo, ret, is_non_identifier);
       this->seen_alias_ = false;
       return;
     }
@@ -957,6 +1012,8 @@ Named_type::append_symbol_type_name(Gogo* gogo, bool use_alias,
 	      Backend_name bname;
 	      rcvr->type()->deref()->backend_name(gogo, &bname);
 	      ret->append(bname.name());
+	      if (bname.is_non_identifier())
+		*is_non_identifier = true;
 	    }
 	  else if (this->in_function_->package() == NULL)
 	    ret->append(gogo->pkgpath());
@@ -1017,7 +1074,7 @@ Gogo::type_descriptor_backend_name(const Type* type, Named_type* nt,
   bool is_pointer = false;
   if (nt == NULL && type->points_to() != NULL)
     {
-      nt = type->points_to()->named_type();
+      nt = type->points_to()->unalias()->named_type();
       is_pointer = true;
     }
 
@@ -1160,6 +1217,15 @@ Backend_name::name() const
 {
   if (this->is_asm_name_)
     return this->components_[0];
+
+  // If there is some character in the name that can't appear in an
+  // identifier, use the assembler name as the user name.  This avoids
+  // possible problems in the assembler or debugger.  The usual
+  // demangling scheme will still work.  We use a prefix of "g." to
+  // tell the debugger about this.
+  if (this->is_non_identifier_)
+    return "g." + this->asm_name();
+
   std::string ret;
   if (this->prefix_ != NULL)
     ret.append(this->prefix_);
@@ -1203,6 +1269,8 @@ Backend_name::optional_asm_name() const
 {
   if (this->is_asm_name_)
     return "";
+  if (this->is_non_identifier_)
+    return this->asm_name();
   for (int i = 0; i < this->count_; i++)
     if (go_id_needs_encoding(this->components_[i]))
       return this->asm_name();

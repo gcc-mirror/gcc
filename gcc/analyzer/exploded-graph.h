@@ -1,5 +1,5 @@
 /* Classes for managing a directed graph of <point, state> pairs.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -135,6 +135,9 @@ struct eg_traits
 
     bool show_enode_details_p (const exploded_node &enode) const;
 
+    virtual void
+    dump_extra_info (const exploded_node *, pretty_printer *) const {}
+
     const exploded_graph &m_eg;
   };
   typedef exploded_cluster cluster_t;
@@ -181,6 +184,10 @@ class exploded_node : public dnode<eg_traits>
   void dump_to_pp (pretty_printer *pp, const extrinsic_state &ext_state) const;
   void dump (FILE *fp, const extrinsic_state &ext_state) const;
   void dump (const extrinsic_state &ext_state) const;
+
+  void dump_processed_stmts (pretty_printer *pp) const;
+  void dump_saved_diagnostics (pretty_printer *pp,
+			       const diagnostic_manager &dm) const;
 
   json::object *to_json (const extrinsic_state &ext_state) const;
 
@@ -311,6 +318,7 @@ class exploded_edge : public dedge<eg_traits>
   ~exploded_edge ();
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const FINAL OVERRIDE;
+  void dump_dot_label (pretty_printer *pp) const;
 
   json::object *to_json () const;
 
@@ -622,6 +630,8 @@ public:
 
   void dump () const;
 
+  json::array *to_json () const;
+
 private:
   struct per_node_data
   {
@@ -663,6 +673,8 @@ public:
   {
     return m_scc.get_scc_id (snode.m_index);
   }
+
+  json::object *to_json () const;
 
 private:
   class key_t
@@ -862,7 +874,6 @@ class exploded_path
 public:
   exploded_path () : m_edges () {}
   exploded_path (const exploded_path &other);
-  exploded_path & operator= (const exploded_path &other);
 
   unsigned length () const { return m_edges.length (); }
 
@@ -875,7 +886,6 @@ public:
   void dump (FILE *fp) const;
   void dump () const;
 
-  bool feasible_p (logger *logger, feasibility_problem **out) const;
   bool feasible_p (logger *logger, feasibility_problem **out,
 		    engine *eng, const exploded_graph *eg) const;
 
@@ -902,6 +912,28 @@ public:
   const exploded_edge &m_eedge;
   const gimple *m_last_stmt;
   rejected_constraint *m_rc;
+};
+
+/* A class for capturing the state of a node when checking a path
+   through the exploded_graph for feasibility.  */
+
+class feasibility_state
+{
+public:
+  feasibility_state (region_model_manager *manager,
+		     const supergraph &sg);
+  feasibility_state (const feasibility_state &other);
+
+  bool maybe_update_for_edge (logger *logger,
+			      const exploded_edge *eedge,
+			      rejected_constraint **out_rc);
+
+  const region_model &get_model () const { return m_model; }
+  const auto_sbitmap &get_snodes_visited () const { return m_snodes_visited; }
+
+private:
+  region_model m_model;
+  auto_sbitmap m_snodes_visited;
 };
 
 /* Finding the shortest exploded_path within an exploded_graph.  */

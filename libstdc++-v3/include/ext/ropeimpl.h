@@ -1,6 +1,6 @@
 // SGI's rope class implementation -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -524,7 +524,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <class _CharT, class _Alloc>
     typename rope<_CharT, _Alloc>::_RopeRep*
     rope<_CharT, _Alloc>::
-    _S_concat_char_iter(_RopeRep* __r, const _CharT*__s, std::size_t __slen)
+    _S_concat_char_iter(_RopeRep* __r, const _CharT*__s, std::size_t __slen,
+			allocator_type& __a)
     {
       using std::size_t;
       _RopeRep* __result;
@@ -534,8 +535,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __r;
 	}
       if (0 == __r)
-	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen,
-						__r->_M_get_allocator());
+	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __a);
       if (__r->_M_tag == __detail::_S_leaf
 	  && __r->_M_size + __slen <= size_t(_S_copy_max))
 	{
@@ -564,8 +564,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return __result;
 	    }
 	}
-      _RopeRep* __nright =
-	__STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __r->_M_get_allocator());
+      _RopeRep* __nright = __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __a);
       __try
 	{
 	  __r->_M_ref_nonnil();
@@ -585,17 +584,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typename rope<_CharT,_Alloc>::_RopeRep*
     rope<_CharT,_Alloc>::
     _S_destr_concat_char_iter(_RopeRep* __r, const _CharT* __s,
-			      std::size_t __slen)
+			      std::size_t __slen, allocator_type& __a)
     {
       using std::size_t;
       _RopeRep* __result;
       if (0 == __r)
-	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen,
-						__r->_M_get_allocator());
+	return __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __a);
       size_t __count = __r->_M_ref_count;
       size_t __orig_size = __r->_M_size;
       if (__count > 1)
-	return _S_concat_char_iter(__r, __s, __slen);
+	return _S_concat_char_iter(__r, __s, __slen, __a);
       if (0 == __slen)
 	{
 	  __r->_M_ref_count = 2;      // One more than before
@@ -632,8 +630,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return __r;
 	    }
 	}
-      _RopeRep* __right =
-	__STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __r->_M_get_allocator());
+      _RopeRep* __right = __STL_ROPE_FROM_UNOWNED_CHAR_PTR(__s, __slen, __a);
       __r->_M_ref_nonnil();
       __try
 	{ __result = _S_tree_concat(__r, __right); }
@@ -1500,9 +1497,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Self_destruct_ptr __left(_My_rope::_S_substring(__old, 0, _M_pos));
       _Self_destruct_ptr __right(_My_rope::_S_substring(__old, _M_pos + 1,
 							__old->_M_size));
+      typename _RopeRep::allocator_type __a = _M_root->_M_get_allocator();
       _Self_destruct_ptr __result_left(_My_rope::
 				       _S_destr_concat_char_iter(__left,
-								 &__c, 1));
+								 &__c, 1,
+								 __a));
 
       _RopeRep* __result = _My_rope::_S_concat(__result_left, __right);
 #ifndef __GC

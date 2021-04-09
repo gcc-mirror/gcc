@@ -1,5 +1,5 @@
 /* Data References Analysis and Manipulation Utilities for Vectorization.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
    and Ira Rosen <irar@il.ibm.com>
 
@@ -136,6 +136,8 @@ vect_get_smallest_scalar_type (stmt_vec_info stmt_info,
 	  || gimple_assign_rhs_code (assign) == WIDEN_SUM_EXPR
 	  || gimple_assign_rhs_code (assign) == WIDEN_MULT_EXPR
 	  || gimple_assign_rhs_code (assign) == WIDEN_LSHIFT_EXPR
+	  || gimple_assign_rhs_code (assign) == WIDEN_PLUS_EXPR
+	  || gimple_assign_rhs_code (assign) == WIDEN_MINUS_EXPR
 	  || gimple_assign_rhs_code (assign) == FLOAT_EXPR))
     {
       tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (assign));
@@ -2536,7 +2538,11 @@ vect_analyze_group_access_1 (vec_info *vinfo, dr_vec_info *dr_info)
 	 size.  */
       if (DR_IS_READ (dr)
 	  && (dr_step % type_size) == 0
-	  && groupsize > 0)
+	  && groupsize > 0
+	  /* This could be UINT_MAX but as we are generating code in a very
+	     inefficient way we have to cap earlier.
+	     See PR91403 for example.  */
+	  && groupsize <= 4096)
 	{
 	  DR_GROUP_FIRST_ELEMENT (stmt_info) = stmt_info;
 	  DR_GROUP_SIZE (stmt_info) = groupsize;
@@ -3256,7 +3262,7 @@ vect_vfa_access_size (vec_info *vinfo, dr_vec_info *dr_info)
 static unsigned int
 vect_vfa_align (dr_vec_info *dr_info)
 {
-  return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_info->dr)));
+  return dr_alignment (dr_info->dr);
 }
 
 /* Function vect_no_alias_p.

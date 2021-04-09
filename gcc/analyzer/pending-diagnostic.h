@@ -1,5 +1,5 @@
 /* Classes for analyzer diagnostics.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -157,7 +157,7 @@ class pending_diagnostic
   /* Compare for equality with OTHER, which might be of a different
      subclass.  */
 
-  bool equal_p (const pending_diagnostic &other)
+  bool equal_p (const pending_diagnostic &other) const
   {
     /* Check for pointer equality on the IDs from get_kind.  */
     if (get_kind () != other.get_kind ())
@@ -174,6 +174,14 @@ class pending_diagnostic
   /* Return true if T1 and T2 are "the same" for the purposes of
      diagnostic deduplication.  */
   static bool same_tree_p (tree t1, tree t2);
+
+  /* A vfunc for fixing up locations (both the primary location for the
+     diagnostic, and for events in their paths), e.g. to avoid unwinding
+     inside specific macros.  */
+  virtual location_t fixup_location (location_t loc) const
+  {
+    return loc;
+  }
 
   /* For greatest precision-of-wording, the various following "describe_*"
      virtual functions give the pending diagnostic a way to describe events

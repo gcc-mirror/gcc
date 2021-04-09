@@ -1,9 +1,10 @@
 // { dg-do run { target c++11 } }
+// { dg-timeout-factor 2 }
 
 //
 // 2013-10-01  Tim Shen <timshen91@gmail.com>
 //
-// Copyright (C) 2013-2020 Free Software Foundation, Inc.
+// Copyright (C) 2013-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the

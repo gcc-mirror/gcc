@@ -1,6 +1,6 @@
 # Handlers for additional dg-xxx keywords in tests.
 
-# Copyright (C) 2004-2020 Free Software Foundation, Inc.
+# Copyright (C) 2004-2021 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -257,13 +257,14 @@ proc add_options_for_net_ts { flags } {
     return $flags
 }
 
-# Add to FLAGS all the target-specific flags to link to libatomic, if required.
+# Add to FLAGS all the target-specific flags to link to libatomic,
+# if required for atomics on pointers and 64-bit types.
 
 proc add_options_for_libatomic { flags } {
     if { [istarget hppa*-*-hpux*]
-	 || [istarget powerpc-ibm-aix*]
-	 || [istarget powerpc*-*-darwin*]
-	 || [istarget riscv*-*-*] } {
+	 || ([istarget powerpc*-*-*] && [check_effective_target_ilp32])
+	 || [istarget riscv*-*-*]
+       } {
 	return "$flags -L../../libatomic/.libs -latomic"
     }
     return $flags

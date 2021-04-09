@@ -1,5 +1,5 @@
 /* Utility functions for the analyzer.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -169,7 +169,7 @@ public:
     return m_offset;
   }
 
-  bool operator== (const region_offset &other)
+  bool operator== (const region_offset &other) const
   {
     return (m_base_region == other.m_base_region
 	    && m_offset == other.m_offset
@@ -189,6 +189,15 @@ private:
 
 extern location_t get_stmt_location (const gimple *stmt, function *fun);
 
+/* Passed by pointer to PLUGIN_ANALYZER_INIT callbacks.  */
+
+class plugin_analyzer_init_iface
+{
+public:
+  virtual void register_state_machine (state_machine *) = 0;
+  virtual logger *get_logger () const = 0;
+};
+
 } // namespace ana
 
 extern bool is_special_named_call_p (const gcall *call, const char *funcname,
@@ -196,6 +205,7 @@ extern bool is_special_named_call_p (const gcall *call, const char *funcname,
 extern bool is_named_call_p (tree fndecl, const char *funcname);
 extern bool is_named_call_p (tree fndecl, const char *funcname,
 			     const gcall *call, unsigned int num_args);
+extern bool is_std_named_call_p (tree fndecl, const char *funcname);
 extern bool is_std_named_call_p (tree fndecl, const char *funcname,
 				 const gcall *call, unsigned int num_args);
 extern bool is_setjmp_call_p (const gcall *call);
@@ -308,5 +318,9 @@ private:
 #if __GNUC__ >= 10
 #pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
+
+#if !ENABLE_ANALYZER
+extern void sorry_no_analyzer ();
+#endif /* #if !ENABLE_ANALYZER */
 
 #endif /* GCC_ANALYZER_ANALYZER_H */

@@ -1,6 +1,6 @@
 ; SYSV4 options for PPC port.
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -28,7 +28,7 @@ Target RejectNegative Joined Var(rs6000_sdata_name)
 -msdata=[none,data,sysv,eabi]	Select method for sdata handling.
 
 mreadonly-in-sdata
-Target Report Var(rs6000_readonly_in_sdata) Init(1) Save
+Target Var(rs6000_readonly_in_sdata) Init(1) Save
 Allow readonly data in sdata.
 
 mtls-size=
@@ -48,16 +48,16 @@ EnumValue
 Enum(rs6000_tls_size) String(64) Value(64)
 
 mbit-align
-Target Report Var(TARGET_NO_BITFIELD_TYPE) Save
+Target Var(TARGET_NO_BITFIELD_TYPE) Save
 Align to the base type of the bit-field.
 
 mstrict-align
-Target Report Mask(STRICT_ALIGN) Var(rs6000_isa_flags)
+Target Mask(STRICT_ALIGN) Var(rs6000_isa_flags)
 Align to the base type of the bit-field.
 Don't assume that unaligned accesses are handled by the system.
 
 mrelocatable
-Target Report Mask(RELOCATABLE) Var(rs6000_isa_flags)
+Target Mask(RELOCATABLE) Var(rs6000_isa_flags)
 Produce code relocatable at runtime.
 
 mrelocatable-lib
@@ -65,19 +65,19 @@ Target
 Produce code relocatable at runtime.
 
 mlittle-endian
-Target Report RejectNegative Mask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
+Target RejectNegative Mask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
 Produce little endian code.
 
 mlittle
-Target Report RejectNegative Mask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
+Target RejectNegative Mask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
 Produce little endian code.
 
 mbig-endian
-Target Report RejectNegative InverseMask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
+Target RejectNegative InverseMask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
 Produce big endian code.
 
 mbig
-Target Report RejectNegative InverseMask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
+Target RejectNegative InverseMask(LITTLE_ENDIAN) Var(rs6000_isa_flags)
 Produce big endian code.
 
 ;; FIXME: This does nothing.  What should be done?
@@ -99,11 +99,11 @@ Target RejectNegative
 No description yet.
 
 meabi
-Target Report Mask(EABI) Var(rs6000_isa_flags)
+Target Mask(EABI) Var(rs6000_isa_flags)
 Use EABI.
 
 mbit-word
-Target Report Var(TARGET_NO_BITFIELD_WORD) Save
+Target Var(TARGET_NO_BITFIELD_WORD) Save
 Allow bit-fields to cross word boundaries.
 
 mregnames
@@ -141,11 +141,11 @@ Target RejectNegative
 No description yet.
 
 m64
-Target Report RejectNegative Negative(m32) Mask(64BIT) Var(rs6000_isa_flags)
+Target RejectNegative Negative(m32) Mask(64BIT) Var(rs6000_isa_flags)
 Generate 64-bit code.
 
 m32
-Target Report RejectNegative Negative(m64) InverseMask(64BIT) Var(rs6000_isa_flags)
+Target RejectNegative Negative(m64) InverseMask(64BIT) Var(rs6000_isa_flags)
 Generate 32-bit code.
 
 mnewlib
@@ -153,17 +153,17 @@ Target RejectNegative
 No description yet.
 
 msecure-plt
-Target Report RejectNegative Var(secure_plt, 1) Save
+Target RejectNegative Var(secure_plt, 1) Save
 Generate code to use a non-exec PLT and GOT.
 
 mbss-plt
-Target Report RejectNegative Var(secure_plt, 0) Save
+Target RejectNegative Var(secure_plt, 0) Save
 Generate code for old exec BSS PLT.
 
 mpltseq
-Target Report Var(rs6000_pltseq) Init(1) Save
+Target Var(rs6000_pltseq) Init(1) Save
 Use inline plt sequences to implement long calls and -fno-plt.
 
 mgnu-attribute
-Target Report Var(rs6000_gnu_attr) Init(1) Save
+Target Var(rs6000_gnu_attr) Init(1) Save
 Emit .gnu_attribute tags.

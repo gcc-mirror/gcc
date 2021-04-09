@@ -1,5 +1,5 @@
 /* Character scanner.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -899,21 +899,14 @@ skip_free_comments (void)
 		if (next_char () == '$')
 		  {
 		    c = next_char ();
-		      if (c == 'a' || c == 'A')
-			{
-			  if (skip_free_oacc_sentinel (start, old_loc))
-			    return false;
-			  gfc_current_locus = old_loc;
-			  next_char();
-			  c = next_char();
-			}
-		      if (continue_flag || c == ' ' || c == '\t')
-			{
-			  gfc_current_locus = old_loc;
-			  next_char();
-			  openacc_flag = 0;
-			  return true;
-			}
+		    if (c == 'a' || c == 'A')
+		      {
+			if (skip_free_oacc_sentinel (start, old_loc))
+			  return false;
+			gfc_current_locus = old_loc;
+			next_char();
+			c = next_char();
+		      }
 		  }
 		gfc_current_locus = old_loc;
 	      }
@@ -1076,8 +1069,7 @@ skip_fixed_comments (void)
 		}
 	      gfc_current_locus = start;
 	    }
-
-	  if (flag_openacc && !(flag_openmp || flag_openmp_simd))
+	  else if (flag_openacc && !(flag_openmp || flag_openmp_simd))
 	    {
 	      if (next_char () == '$')
 		{
@@ -1087,13 +1079,10 @@ skip_fixed_comments (void)
 		      if (skip_fixed_oacc_sentinel (&start))
 			return;
 		    }
-		  else
-		    goto check_for_digits;
 		}
 	      gfc_current_locus = start;
 	    }
-
-	  if (flag_openacc || flag_openmp || flag_openmp_simd)
+	  else if (flag_openacc || flag_openmp || flag_openmp_simd)
 	    {
 	      if (next_char () == '$')
 		{
@@ -1120,6 +1109,7 @@ skip_fixed_comments (void)
 	  gcc_unreachable ();
 check_for_digits:
 	  {
+	    /* Required for OpenMP's conditional compilation sentinel. */
 	    int digit_seen = 0;
 
 	    for (col = 3; col < 6; col++, c = next_char ())

@@ -1,4 +1,4 @@
-.. Copyright (C) 2014-2020 Free Software Foundation, Inc.
+.. Copyright (C) 2014-2021 Free Software Foundation, Inc.
    Originally contributed by David Malcolm <dmalcolm@redhat.com>
 
    This is free software: you can redistribute it and/or modify it
@@ -20,10 +20,6 @@ libgccjit
 
 This document describes `libgccjit <http://gcc.gnu.org/wiki/JIT>`_, an API
 for embedding GCC inside programs and libraries.
-
-Note that libgccjit is currently of "Alpha" quality;
-the APIs are not yet set in stone, and they shouldn't be used in
-production yet.
 
 There are actually two APIs for the library:
 

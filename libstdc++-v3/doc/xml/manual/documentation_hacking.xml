@@ -261,7 +261,7 @@
 
       <para>
 	Prerequisite tools are Bash 2.0 or later,
-	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.doxygen.nl">Doxygen</link>, and
+	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.doxygen.nl">Doxygen</link>, and
 	the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/software/coreutils/">GNU
 	coreutils</link>. (GNU versions of find, xargs, and possibly
 	sed and grep are used, just because the GNU versions make
@@ -447,7 +447,7 @@
 	Adding Doxygen markup to a file (informally called
 	<quote>doxygenating</quote>) is very simple. See the
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-         xlink:href="http://www.doxygen.nl/download.html#latestman">Doxygen
+         xlink:href="https://www.doxygen.nl/download.html#latestman">Doxygen
          manual</link> for details.
 	We try to use a very-recent version of Doxygen.
       </para>
@@ -465,7 +465,7 @@
       <para>
 	Some commentary to accompany
 	the first list in the <link xmlns:xlink="http://www.w3.org/1999/xlink"
-        xlink:href="http://www.doxygen.nl/manual/docblocks.html">Special
+        xlink:href="https://www.doxygen.nl/manual/docblocks.html">Special
 	Documentation Blocks</link> section of the Doxygen manual:
       </para>
 

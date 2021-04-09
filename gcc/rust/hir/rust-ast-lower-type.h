@@ -67,6 +67,8 @@ public:
 	  case AST::MaybeNamedParam::ParamKind::WILDCARD:
 	    kind = HIR::MaybeNamedParam::ParamKind::WILDCARD;
 	    break;
+	  default:
+	    gcc_unreachable ();
 	  }
 
 	HIR::Type *param_type

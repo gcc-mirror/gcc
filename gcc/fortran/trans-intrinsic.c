@@ -1,5 +1,5 @@
 /* Intrinsic translation
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-types.h"
 #include "trans-array.h"
 #include "dependency.h"	/* For CAF array alias analysis.  */
+#include "attribs.h"
+
 /* Only for gfc_trans_assign and gfc_trans_pointer_assign.  */
 
 /* This maps Fortran intrinsic math functions to external library or GCC
@@ -405,7 +407,7 @@ build_round_expr (tree arg, tree restype)
       if (kind < 0)
 	gfc_internal_error ("Could not find real kind with at least %d bits",
 			    resprec);
-      arg = fold_convert (gfc_float128_type_node, arg);
+      arg = fold_convert (gfc_get_real_type (kind), arg);
       fn = gfc_builtin_decl_for_float_kind (BUILT_IN_ROUND, kind);
     }
   else
@@ -4257,10 +4259,69 @@ remove_empty_actual_arguments (gfc_actual_arglist **ap)
     }
 }
 
+#define MAX_SPEC_ARG 12
+
+/* Make up an fn spec that's right for intrinsic functions that we
+   want to call.  */
+
+static char *
+intrinsic_fnspec (gfc_expr *expr)
+{
+  static char fnspec_buf[MAX_SPEC_ARG*2+1];
+  char *fp;
+  int i;
+  int num_char_args;
+
+#define ADD_CHAR(c) do { *fp++ = c; *fp++ = ' '; } while(0)
+
+  /* Set the fndecl.  */
+  fp = fnspec_buf;
+  /* Function return value.  FIXME: Check if the second letter could
+     be something other than a space, for further optimization.  */
+  ADD_CHAR ('.');
+  if (expr->rank == 0)
+    {
+      if (expr->ts.type == BT_CHARACTER)
+	{
+	  ADD_CHAR ('w');  /* Address of character.  */
+	  ADD_CHAR ('.');  /* Length of character.  */
+	}
+    }
+  else
+    ADD_CHAR ('w');  /* Return value is a descriptor.  */
+
+  num_char_args = 0;
+  for (gfc_actual_arglist *a = expr->value.function.actual; a; a = a->next)
+    {
+      if (a->expr == NULL)
+	continue;
+
+      if (a->name && strcmp (a->name,"%VAL") == 0)
+	ADD_CHAR ('.');
+      else
+	{
+	  if (a->expr->rank > 0)
+	    ADD_CHAR ('r');
+	  else
+	    ADD_CHAR ('R');
+	}
+      num_char_args += a->expr->ts.type == BT_CHARACTER;
+      gcc_assert (fp - fnspec_buf + num_char_args <= MAX_SPEC_ARG*2);
+    }
+
+  for (i = 0; i < num_char_args; i++)
+    ADD_CHAR ('.');
+
+  *fp = '\0';
+  return fnspec_buf;
+}
+
+#undef MAX_SPEC_ARG
+#undef ADD_CHAR
+
 /* Generate the right symbol for the specific intrinsic function and
  modify the expr accordingly.  This assumes that absent optional
- arguments should be removed.  FIXME: This should be extended for
- procedures which do not ignore optional arguments (PR 97454).  */
+ arguments should be removed.  */
 
 gfc_symbol *
 specific_intrinsic_symbol (gfc_expr *expr)
@@ -4278,14 +4339,19 @@ specific_intrinsic_symbol (gfc_expr *expr)
       gfc_copy_formal_args_intr (sym, expr->value.function.isym,
 				 expr->value.function.actual, true);
       sym->backend_decl
-	= gfc_get_extern_function_decl (sym, expr->value.function.actual);
+	= gfc_get_extern_function_decl (sym, expr->value.function.actual,
+					intrinsic_fnspec (expr));
     }
+
   remove_empty_actual_arguments (&(expr->value.function.actual));
 
   return sym;
 }
 
-/* Generate a call to an external intrinsic function.  */
+/* Generate a call to an external intrinsic function.  FIXME: So far,
+   this only works for functions which are called with well-defined
+   types; CSHIFT and friends will come later.  */
+
 static void
 gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 {
@@ -4302,11 +4368,16 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
 
   switch (expr->value.function.isym->id)
     {
+    case GFC_ISYM_ANY:
+    case GFC_ISYM_ALL:
     case GFC_ISYM_FINDLOC:
     case GFC_ISYM_MAXLOC:
     case GFC_ISYM_MINLOC:
     case GFC_ISYM_MAXVAL:
     case GFC_ISYM_MINVAL:
+    case GFC_ISYM_NORM2:
+    case GFC_ISYM_PRODUCT:
+    case GFC_ISYM_SUM:
       specific_symbol = true;
       break;
     default:
@@ -7935,8 +8006,10 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
     {
       symbol_attribute attr;
       char *msg;
+      tree temp;
+      tree cond;
 
-      attr = gfc_expr_attr (e);
+      attr = sym ? sym->attr : gfc_expr_attr (e);
       if (attr.allocatable)
 	msg = xasprintf ("Allocatable argument '%s' is not allocated",
 			 e->symtree->n.sym->name);
@@ -7946,14 +8019,24 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
       else
 	goto end_arg_check;
 
-      argse.descriptor_only = 1;
-      gfc_conv_expr_descriptor (&argse, actual->expr);
-      tree temp = gfc_conv_descriptor_data_get (argse.expr);
-      tree cond = fold_build2_loc (input_location, EQ_EXPR,
-				   logical_type_node, temp,
-				   fold_convert (TREE_TYPE (temp),
-						 null_pointer_node));
+      if (sym)
+	{
+	  temp = gfc_class_data_get (sym->backend_decl);
+	  temp = gfc_conv_descriptor_data_get (temp);
+	}
+      else
+	{
+	  argse.descriptor_only = 1;
+	  gfc_conv_expr_descriptor (&argse, actual->expr);
+	  temp = gfc_conv_descriptor_data_get (argse.expr);
+	}
+
+      cond = fold_build2_loc (input_location, EQ_EXPR,
+			      logical_type_node, temp,
+			      fold_convert (TREE_TYPE (temp),
+					    null_pointer_node));
       gfc_trans_runtime_check (true, false, cond, &argse.pre, &e->where, msg);
+
       free (msg);
     }
  end_arg_check:
@@ -8931,7 +9014,8 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
   else
     {
       /* An optional target.  */
-      if (arg2->expr->ts.type == BT_CLASS)
+      if (arg2->expr->ts.type == BT_CLASS
+	  && arg2->expr->expr_type != EXPR_FUNCTION)
 	gfc_add_data_component (arg2->expr);
 
       if (scalar)
@@ -8952,6 +9036,11 @@ gfc_conv_associated (gfc_se *se, gfc_expr *expr)
 	      && arg2->expr->symtree->n.sym->attr.dummy)
 	    arg2se.expr = build_fold_indirect_ref_loc (input_location,
 						       arg2se.expr);
+	  if (arg2->expr->ts.type == BT_CLASS)
+	    {
+	      arg2se.expr = gfc_evaluate_now (arg2se.expr, &arg2se.pre);
+	      arg2se.expr = gfc_class_data_get (arg2se.expr);
+	    }
 	  gfc_add_block_to_block (&se->pre, &arg1se.pre);
 	  gfc_add_block_to_block (&se->post, &arg1se.post);
 	  gfc_add_block_to_block (&se->pre, &arg2se.pre);

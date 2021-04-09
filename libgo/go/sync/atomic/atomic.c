@@ -8,6 +8,10 @@
 
 #include "runtime.h"
 
+extern void panicUnaligned(void)
+  __asm__ (GOSYM_PREFIX "runtime_1internal_1atomic.panicUnaligned")
+  __attribute__ ((noreturn));
+
 int32_t SwapInt32 (int32_t *, int32_t)
   __asm__ (GOSYM_PREFIX "sync_1atomic.SwapInt32")
   __attribute__ ((no_split_stack));
@@ -26,7 +30,7 @@ int64_t
 SwapInt64 (int64_t *addr, int64_t new)
 {
   if (((uintptr_t) addr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
 }
 
@@ -48,7 +52,7 @@ uint64_t
 SwapUint64 (uint64_t *addr, uint64_t new)
 {
   if (((uintptr_t) addr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_exchange_n (addr, new, __ATOMIC_SEQ_CST);
 }
 
@@ -81,7 +85,7 @@ _Bool
 CompareAndSwapInt64 (int64_t *val, int64_t old, int64_t new)
 {
   if (((uintptr_t) val & 7) != 0)
-    val = NULL;
+    panicUnaligned ();
   return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
 				      __ATOMIC_RELAXED);
 }
@@ -105,7 +109,7 @@ _Bool
 CompareAndSwapUint64 (uint64_t *val, uint64_t old, uint64_t new)
 {
   if (((uintptr_t) val & 7) != 0)
-    val = NULL;
+    panicUnaligned ();
   return __atomic_compare_exchange_n (val, &old, new, false, __ATOMIC_SEQ_CST,
 				      __ATOMIC_RELAXED);
 }
@@ -149,7 +153,7 @@ int64_t
 AddInt64 (int64_t *val, int64_t delta)
 {
   if (((uintptr_t) val & 7) != 0)
-    val = NULL;
+    panicUnaligned ();
   return __atomic_add_fetch (val, delta, __ATOMIC_SEQ_CST);
 }
 
@@ -161,7 +165,7 @@ uint64_t
 AddUint64 (uint64_t *val, uint64_t delta)
 {
   if (((uintptr_t) val & 7) != 0)
-    val = NULL;
+    panicUnaligned ();
   return __atomic_add_fetch (val, delta, __ATOMIC_SEQ_CST);
 }
 
@@ -193,7 +197,7 @@ int64_t
 LoadInt64 (int64_t *addr)
 {
   if (((uintptr_t) addr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_load_n (addr, __ATOMIC_SEQ_CST);
 }
 
@@ -215,7 +219,7 @@ uint64_t
 LoadUint64 (uint64_t *addr)
 {
   if (((uintptr_t) addr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   return __atomic_load_n (addr, __ATOMIC_SEQ_CST);
 }
 
@@ -257,7 +261,7 @@ void
 StoreInt64 (int64_t *addr, int64_t val)
 {
   if (((uintptr_t) addr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   __atomic_store_n (addr, val, __ATOMIC_SEQ_CST);
 }
 
@@ -279,7 +283,7 @@ void
 StoreUint64 (uint64_t *addr, uint64_t val)
 {
   if (((uintptr_t) addr & 7) != 0)
-    panicmem ();
+    panicUnaligned ();
   __atomic_store_n (addr, val, __ATOMIC_SEQ_CST);
 }
 

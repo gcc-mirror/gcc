@@ -362,17 +362,15 @@ ADTType *
 ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
   if (subst_mappings.size () != get_num_substitutions ())
-
     {
       rust_error_at (subst_mappings.get_locus (),
 		     "invalid number of generic arguments to generic ADT type");
       return nullptr;
     }
 
-  used_arguments = subst_mappings;
-
   ADTType *adt = static_cast<ADTType *> (clone ());
   adt->set_ty_ref (mappings->get_next_hir_id ());
+  adt->used_arguments = subst_mappings;
 
   for (auto &sub : adt->get_substs ())
     {
@@ -566,15 +564,15 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
   if (subst_mappings.size () != get_num_substitutions ())
     {
-      rust_error_at (subst_mappings.get_locus (),
-		     "invalid number of generic arguments to generic ADT type");
+      rust_error_at (
+	subst_mappings.get_locus (),
+	"invalid number of generic arguments to generic Function type");
       return nullptr;
     }
 
-  used_arguments = subst_mappings;
-
   FnType *fn = static_cast<FnType *> (clone ());
   fn->set_ty_ref (mappings->get_next_hir_id ());
+  fn->used_arguments = subst_mappings;
 
   for (auto &sub : fn->get_substs ())
     {

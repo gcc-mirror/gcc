@@ -1,3 +1,110 @@
+2021-03-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/99323
+	* line-map.c (rich_location::maybe_add_fixit): Reject fix-it hints
+	at column 0.
+
+2021-02-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/98718
+	* include/line-map.h
+	* line-map.c
+
+2021-02-24  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99072
+	* init.c (read_original_filename): Expunge all evidence of the
+	original filename.
+
+2021-02-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/99023
+	* include/cpplib.h (cpp_find_header_unit): Rename to ...
+	(cpp_probe_header_unit): ... this.
+	* internal.h (_cp_find_header_unit): Declare.
+	* files.c (cpp_find_header_unit): Break apart to ..
+	(test_header_unit): ... this, and ...
+	(_cpp_find_header_unit): ... and, or and ...
+	(cpp_probe_header_unit): ... this.
+	* macro.c (cpp_get_token_1): Call _cpp_find_header_unit.
+
+2021-02-16  Nathan Sidwell  <nathan@acm.org>
+
+	* files.c (_cpp_stack_file): Make buffers end in unread \n.
+
+2021-02-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/96391
+	* line-map.c (linemap_compare_locations): Require that
+	the location be <= LINE_MAP_MAX_LOCATION_WITH_COLS when
+	treating locations as coming from the same macro expansion.
+
+2021-02-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* expr.c (cpp_classify_number): Use make_signed_t<size_t> instead of
+	make_signed<size_t>::type in the diagnostics.
+
+2021-02-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/98882
+	* lex.c (cpp_directive_only_process): Don't assert that rlimit[-1]
+	is a newline, instead assert that rlimit[0] is either newline or
+	carriage return.  When seeing '\\' followed by '\r', check limit
+	before accessing pos[1].
+
+2021-02-03  Ed Smith-Rowland  <3dw4rd@verizon.net>
+
+	* expr.c (interpret_int_suffix): Detect 'z' integer suffix.
+	(cpp_classify_number): Compat warning for use of 'z' suffix.
+	* include/cpplib.h (struct cpp_options): New flag.
+	(enum cpp_warning_reason): New flag.
+	(CPP_N_USERDEF): Comment C++0x -> C++11.
+	(CPP_N_SIZE_T): New flag for cpp_classify_number.
+	* init.c (cpp_set_lang): Initialize new flag.
+
+2021-01-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98833
+	* lex.c (search_line_sse2): Replace builtins with == operator.
+
+2021-01-26  Paul Fee  <paul.f.fee@gmail.com>
+
+	* include/cpplib.h (c_lang): Add CXX23 and GNUCXX23.
+	* init.c (lang_defaults): Add rows for CXX23 and GNUCXX23.
+	(cpp_init_builtins): Set __cplusplus to 202100L for C++23.
+
+2021-01-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/95253
+	* mkdeps.c (munge): Do not escape ':'.
+
+2020-12-14  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_macro): Add imported_p field.
+	(struct cpp_hashnode): Tweak deferred field documentation.
+	* macro.c (_cpp_new_macro): Clear new field.
+	(cpp_get_deferred_macro, get_deferred_or_lazy_macro): Assert
+	more.
+
+2020-12-10  Jason Merrill  <jason@redhat.com>
+
+	* init.c (cpp_init_builtins): Update __cplusplus for C++20.
+
+2020-12-01  JeanHeyd Meneide  <phdofthehouse@gmail.com>
+
+	* charset.c (init_iconv_desc): Initialize "to" and "from" fields.
+	* directives.c (cpp_get_narrow_charset_name): New function.
+	(cpp_get_wide_charset_name): Likewise.
+	* include/cpplib.h (cpp_get_narrow_charset_name): Prototype.
+	(cpp_get_wide_charset_name): Likewise.
+	* internal.h (cset_converter): Add "to" and "from" fields.
+
+2020-11-27  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/97602
+	* directives.c (strtolinenum): Check for overflow before it
+	occurs.  Correct comment.
+
 2020-11-24  Nathan Sidwell  <nathan@acm.org>
 
 	* include/cpplib.h (struct cpp_hashnode): Add deferred field.
@@ -6547,7 +6654,7 @@
 	* include/symtab.h: Moved from gcc/hashtable.h.  Change header
 	guard name.
 
-Copyright (C) 2004-2020 Free Software Foundation, Inc.
+Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

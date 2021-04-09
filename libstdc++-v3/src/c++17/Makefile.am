@@ -1,6 +1,6 @@
 ## Makefile for the C++17 sources of the GNU C++ Standard library.
 ##
-## Copyright (C) 1997-2020 Free Software Foundation, Inc.
+## Copyright (C) 1997-2021 Free Software Foundation, Inc.
 ##
 ## This file is part of the libstdc++ version 3 distribution.
 ## Process this file with automake to produce Makefile.in.
@@ -51,6 +51,7 @@ endif
 
 sources = \
 	floating_from_chars.cc \
+	floating_to_chars.cc \
 	fs_dir.cc \
 	fs_ops.cc \
 	fs_path.cc \
@@ -60,6 +61,17 @@ sources = \
 vpath % $(top_srcdir)/src/c++17
 
 libc__17convenience_la_SOURCES = $(sources)  $(inst_sources)
+
+if GLIBCXX_LDBL_ALT128_COMPAT
+floating_from_chars.lo: floating_from_chars.cc
+	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+floating_from_chars.o: floating_from_chars.cc
+	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+floating_to_chars.lo: floating_to_chars.cc
+	$(LTCXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+floating_to_chars.o: floating_to_chars.cc
+	$(CXXCOMPILE) -mabi=ibmlongdouble $(LONG_DOUBLE_128_FLAGS) -c $<
+endif
 
 # AM_CXXFLAGS needs to be in each subdirectory so that it can be
 # modified in a per-library or per-sub-library way.  Need to manually

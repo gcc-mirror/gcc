@@ -1,4 +1,4 @@
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,8 +32,6 @@
 # error This file should not be compiled for this configuration.
 #endif
 
-#ifndef C
-# define C char
-# define C_is_char
-#endif
+#define C char
+#define C_is_char
 # include "locale-inst.cc"

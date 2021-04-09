@@ -1,6 +1,6 @@
 // Filesystem directory iterator utilities -*- C++ -*-
 
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -140,6 +140,18 @@ struct _Dir_base
 
   posix::DIR*	dirp;
 };
+
+inline bool
+is_permission_denied_error(int e)
+{
+  if (e == EACCES)
+    return true;
+#ifdef __APPLE__
+  if (e == EPERM) // See PR 99533
+    return true;
+#endif
+  return false;
+}
 
 } // namespace filesystem
 

@@ -1,5 +1,5 @@
 ; Options for the TI PRU port of the compiler.
-; Copyright (C) 2018-2020 Free Software Foundation, Inc.
+; Copyright (C) 2018-2021 Free Software Foundation, Inc.
 ; Contributed by Dimitar Dimitrov <dimitar@dinux.eu>
 ;
 ; This file is part of GCC.
@@ -22,7 +22,7 @@ HeaderInclude
 config/pru/pru-opts.h
 
 minrt
-Target Report Mask(MINRT) RejectNegative
+Target Mask(MINRT) RejectNegative
 Use a minimum runtime (no static initializers or ctors) for memory-constrained
 devices.
 
@@ -31,7 +31,7 @@ Target RejectNegative Joined
 -mmcu=MCU	Select the target System-On-Chip variant that embeds this PRU.
 
 mno-relax
-Target Report RejectNegative
+Target RejectNegative
 Make GCC pass the --no-relax command-line option to the linker instead of
 the --relax option.
 
@@ -40,7 +40,7 @@ Target Mask(OPT_LOOP)
 Allow (or do not allow) gcc to use the LOOP instruction.
 
 mabi=
-Target RejectNegative Report Joined Enum(pru_abi_t) Var(pru_current_abi) Init(PRU_ABI_GNU) Save
+Target RejectNegative Joined Enum(pru_abi_t) Var(pru_current_abi) Init(PRU_ABI_GNU) Save
 Select target ABI variant.
 
 Enum

@@ -1,4 +1,18 @@
 // PERMUTE_ARGS: -unittest -O -release -inline -fPIC -g
+/*
+TEST_OUTPUT:
+---
+runnable/sdtor.d(36): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/sdtor.d(59): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/sdtor.d(93): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/sdtor.d(117): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/sdtor.d(143): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/sdtor.d(177): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/sdtor.d(203): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+runnable/sdtor.d(276): Deprecation: The `delete` keyword has been deprecated.  Use `object.destroy()` (and `core.memory.GC.free()` if applicable) instead.
+S7353
+---
+*/
 
 import core.vararg;
 
@@ -879,8 +893,10 @@ void test34()
     X34[2] xs;
 //  xs[0][0] = X34();
     printf("foreach\n");
-    for (int j = 0; j < xs.length; j++) { auto x = (j++,j--,xs[j]);
-        //foreach(x; xs) {
+    for (int j = 0; j < xs.length; j++) {
+        j++,j--;
+        auto x = xs[j];
+        //foreach(x; xs)
         //printf("foreach x.i = %d\n", x[0].i);
         //assert(x[0].i == 1);
         printf("foreach x.i = %d\n", x.i);
@@ -1395,22 +1411,22 @@ void test54()
     assert(S54.t == "c");
 
     {   S54.t = null;
-        int b = 1 && (bar54(S54(1)), 1);
+        int b = 1 && (){ bar54(S54(1)); return 1;}();
     }
     assert(S54.t == "ac");
 
     {   S54.t = null;
-        int b = 0 && (bar54(S54(1)), 1);
+        int b = 0 && (){ bar54(S54(1)); return 1;}();
     }
     assert(S54.t == "");
 
     {   S54.t = null;
-        int b = 0 || (bar54(S54(1)), 1);
+        int b = 0 || (){ bar54(S54(1)); return 1;}();
     }
     assert(S54.t == "ac");
 
     {   S54.t = null;
-        int b = 1 || (bar54(S54(1)), 1);
+        int b = 1 || (){ bar54(S54(1)); return 1;}();
     }
     assert(S54.t == "");
 
@@ -1529,7 +1545,8 @@ void test57()
 
     printf("----\n");    //+
     dtor_cnt = 0;
-    if (auto s = (S57(1), S57(2), S57(10)))
+    S57(1), S57(2);
+    if (auto s = S57(10))
     {
         assert(dtor_cnt == 2);
         printf("ifbody\n");
@@ -1562,7 +1579,8 @@ void test57()
 
     printf("----\n");    //+
     dtor_cnt = 0;
-    if (auto s = (f(1), f(2), f(10)))
+    f(1), f(2);
+    if (auto s = f(10))
     {
         assert(dtor_cnt == 2);
         printf("ifbody\n");
@@ -1596,7 +1614,8 @@ void test57()
 
     printf("----\n");
     dtor_cnt = 0;
-    if ((S57(1), S57(2), S57(10)))
+    S57(1), S57(2);
+    if (S57(10))
     {
         assert(dtor_cnt == 3);
         printf("ifbody\n");
@@ -1628,7 +1647,8 @@ void test57()
 
     printf("----\n");
     dtor_cnt = 0;
-    if ((f(1), f(2), f(10)))
+    f(1), f(2);
+    if (f(10))
     {
         assert(dtor_cnt == 3);
         printf("ifbody\n");
@@ -4432,7 +4452,8 @@ struct S64
 
 S64 foo64()
 {
-    return S64((X64(), 1));
+    X64();
+    return S64(1);
 }
 
 void test64()

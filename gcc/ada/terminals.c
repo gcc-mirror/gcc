@@ -1244,7 +1244,7 @@ allocate_pty_desc (pty_desc **desc) {
   result->slave_fd   = slave_fd;
   /* the string returned by ptsname or _getpty is a static allocated string. So
      we should make a copy */
-  strncpy (result->slave_name, slave_name, sizeof (result->slave_name));
+  strncpy (result->slave_name, slave_name, sizeof (result->slave_name) - 1);
   result->slave_name[sizeof (result->slave_name) - 1] = '\0';
   result->child_pid  = -1;
   *desc=result;

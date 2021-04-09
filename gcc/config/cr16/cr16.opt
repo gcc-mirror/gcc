@@ -1,5 +1,5 @@
 ; Options for the National Semiconductor CR16 port of the compiler.
-; Copyright (C) 2012-2020 Free Software Foundation, Inc.
+; Copyright (C) 2012-2021 Free Software Foundation, Inc.
 ; Contributed by KPIT Cummins Infosystems Limited.
 ;
 ; This file is part of GCC.
@@ -23,11 +23,11 @@ Target
 Use simulator runtime.
 
 mbit-ops
-Target Report Mask(BIT_OPS)
+Target Mask(BIT_OPS)
 Generate SBIT, CBIT instructions.
 
 mmac
-Target Report Mask(MAC)
+Target Mask(MAC)
 Support multiply accumulate instructions.
 
 mdebug-addr

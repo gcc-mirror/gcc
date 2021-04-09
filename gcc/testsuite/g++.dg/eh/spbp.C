@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-gdwarf-2" } */
-/* { dg-skip-if "No Dwarf" { { *-*-aix* hppa*-*-hpux* } && { ! hppa*64*-*-* } } } */
+/* { dg-skip-if "No Dwarf" { { hppa*-*-hpux* } && { ! hppa*64*-*-* } } } */
 /* { dg-require-effective-target alloca } */
 
 /* This was a bug on x86-darwin, where the register numbering for SP

@@ -1,5 +1,5 @@
 /* Move half-word library function.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Red Hat, Inc.
   
    This file is part of GCC.

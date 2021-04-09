@@ -814,8 +814,8 @@ s-zdefaultcc: Makefile
 
 mostlyclean-local:
 	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
-	rm -rf check-go-dir check-runtime-dir cgo-test-dir carchive-test-dir \
-	check-vet-dir gocache-test
+	rm -rf check-go-dir cgo-test-dir carchive-test-dir \
+	check-vet-dir check-embed-dir gocache-test
 
 @NATIVE_TRUE@go$(EXEEXT): $(go_cmd_go_files) $(LIBGOTOOL) $(LIBGODEP)
 @NATIVE_TRUE@	$(GOLINK) $(go_cmd_go_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
@@ -881,6 +881,11 @@ mostlyclean-local:
 @NATIVE_TRUE@	if test -d check-go-dir; then chmod -R u+w check-go-dir; fi
 @NATIVE_TRUE@	rm -rf check-go-dir cmd_go-testlog
 @NATIVE_TRUE@	$(MKDIR_P) check-go-dir/src/cmd/go
+@NATIVE_TRUE@	cp $(libgosrcdir)/go.mod check-go-dir/src/
+@NATIVE_TRUE@	cp $(cmdsrcdir)/go.mod check-go-dir/src/cmd/
+@NATIVE_TRUE@	$(MKDIR_P) check-go-dir/src/vendor check-go-dir/src/cmd/vendor
+@NATIVE_TRUE@	cp $(libgosrcdir)/vendor/modules.txt check-go-dir/src/vendor/
+@NATIVE_TRUE@	cp $(libgosrcdir)/cmd/vendor/modules.txt check-go-dir/src/cmd/vendor/
 @NATIVE_TRUE@	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/go/internal check-go-dir/src/cmd/go/
 @NATIVE_TRUE@	cp $(libgodir)/zdefaultcc.go check-go-dir/src/cmd/go/internal/cfg/
@@ -905,8 +910,7 @@ mostlyclean-local:
 # but the runtime tests use the go tool heavily, so testing
 # here too will catch more problems.
 @NATIVE_TRUE@check-runtime: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
-@NATIVE_TRUE@	rm -rf check-runtime-dir runtime-testlog
-@NATIVE_TRUE@	$(MKDIR_P) check-runtime-dir
+@NATIVE_TRUE@	rm -f runtime-testlog
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 @NATIVE_TRUE@	export LD_LIBRARY_PATH; \
@@ -927,6 +931,7 @@ mostlyclean-local:
 @NATIVE_TRUE@check-cgo-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 @NATIVE_TRUE@	rm -rf cgo-test-dir cgo-testlog
 @NATIVE_TRUE@	$(MKDIR_P) cgo-test-dir/misc/cgo
+@NATIVE_TRUE@	echo 'module misc' > cgo-test-dir/misc/go.mod
 @NATIVE_TRUE@	cp -r $(libgomiscdir)/cgo/test cgo-test-dir/misc/cgo/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	echo "cd cgo-test-dir/misc/cgo/test && $(ECHO_ENV) GOTRACEBACK=2 $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > cgo-testlog
@@ -941,6 +946,7 @@ mostlyclean-local:
 @NATIVE_TRUE@check-carchive-test: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 @NATIVE_TRUE@	rm -rf carchive-test-dir carchive-testlog
 @NATIVE_TRUE@	$(MKDIR_P) carchive-test-dir/misc/cgo
+@NATIVE_TRUE@	echo 'module misc' > carchive-test-dir/misc/go.mod
 @NATIVE_TRUE@	cp -r $(libgomiscdir)/cgo/testcarchive carchive-test-dir/misc/cgo/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	echo "cd carchive-test-dir/misc/cgo/testcarchive && $(ECHO_ENV) LIBRARY_PATH=`echo $${abs_libgodir}/.libs` $(abs_builddir)/go$(EXEEXT) test -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > carchive-testlog
@@ -954,6 +960,11 @@ mostlyclean-local:
 @NATIVE_TRUE@check-vet: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 @NATIVE_TRUE@	rm -rf check-vet-dir cmd_vet-testlog
 @NATIVE_TRUE@	$(MKDIR_P) check-vet-dir/src/cmd/internal check-vet-dir/src/cmd/vendor/golang.org/x
+@NATIVE_TRUE@	cp $(libgosrcdir)/go.mod check-vet-dir/src/
+@NATIVE_TRUE@	cp $(cmdsrcdir)/go.mod check-vet-dir/src/cmd/
+@NATIVE_TRUE@	$(MKDIR_P) check-vet-dir/src/vendor check-vet-dir/src/cmd/vendor
+@NATIVE_TRUE@	cp $(libgosrcdir)/vendor/modules.txt check-vet-dir/src/vendor/
+@NATIVE_TRUE@	cp $(libgosrcdir)/cmd/vendor/modules.txt check-vet-dir/src/cmd/vendor/
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/vet check-vet-dir/src/cmd/
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/internal/objabi check-vet-dir/src/cmd/internal
 @NATIVE_TRUE@	cp $(libgodir)/objabi.go check-vet-dir/src/cmd/internal/objabi/
@@ -967,11 +978,28 @@ mostlyclean-local:
 @NATIVE_TRUE@	(cd check-vet-dir/src/cmd/vet && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> cmd_vet-testlog 2>&1 || echo "--- $${fl}: go test cmd/vet (0.00s)" >> cmd_vet-testlog
 @NATIVE_TRUE@	grep '^--- ' cmd_vet-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
 
+# check-embed runs `go test embed/internal/embedtest` in our environment.
+@NATIVE_TRUE@check-embed: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
+@NATIVE_TRUE@	rm -rf check-embed-dir embed-testlog
+@NATIVE_TRUE@	$(MKDIR_P) check-embed-dir/src/embed/internal
+@NATIVE_TRUE@	cp $(libgosrcdir)/go.mod check-embed-dir/src/
+@NATIVE_TRUE@	$(MKDIR_P) check-embed-dir/src/vendor
+@NATIVE_TRUE@	cp $(libgosrcdir)/vendor/modules.txt check-embed-dir/src/vendor/
+@NATIVE_TRUE@	cp -r $(libgosrcdir)/embed/internal/embedtest check-embed-dir/src/embed/internal
+@NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
+@NATIVE_TRUE@	abs_checkdir=`cd check-embed-dir && $(PWD_COMMAND)`; \
+@NATIVE_TRUE@	echo "cd check-embed-dir/src/embed/internal/embedtest && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > embed-testlog
+@NATIVE_TRUE@	$(CHECK_ENV) \
+@NATIVE_TRUE@	GOPATH=`cd check-embed-dir && $(PWD_COMMAND)`; \
+@NATIVE_TRUE@	export GOPATH; \
+@NATIVE_TRUE@	(cd check-embed-dir/src/embed/internal/embedtest && $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v) >> embed-testlog 2>&1 || echo "--- $${fl}: go test embed/internal/embedtest (0.00s)" >> embed-testlog
+@NATIVE_TRUE@	grep '^--- ' embed-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/' | sort -k 2
+
 # The check targets runs the tests and assembles the output files.
-@NATIVE_TRUE@check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet
+@NATIVE_TRUE@check: check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet check-embed
 @NATIVE_TRUE@	@mv gotools.head gotools.sum
 @NATIVE_TRUE@	@cp gotools.sum gotools.log
-@NATIVE_TRUE@	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog cmd_vet-testlog; do \
+@NATIVE_TRUE@	@for file in cmd_go-testlog runtime-testlog cgo-testlog carchive-testlog cmd_vet-testlog embed-testlog; do \
 @NATIVE_TRUE@	  testname=`echo $${file} | sed -e 's/-testlog//' -e 's|_|/|'`; \
 @NATIVE_TRUE@	  echo "Running $${testname}" >> gotools.sum; \
 @NATIVE_TRUE@	  echo "Running $${testname}" >> gotools.log; \
@@ -997,7 +1025,8 @@ mostlyclean-local:
 @NATIVE_TRUE@	@echo "runtest completed at `date`" >> gotools.log
 @NATIVE_TRUE@	@if grep '^FAIL' gotools.sum >/dev/null 2>&1; then exit 1; fi
 
-@NATIVE_TRUE@.PHONY: check check-head check-go-tool check-runtime check-cgo-test check-carchive-test check-vet
+@NATIVE_TRUE@.PHONY: check check-head check-go-tool check-runtime check-cgo-test
+@NATIVE_TRUE@.PHONY: check-carchive-test check-vet check-embed
 
 # For a non-native build we have to build the programs using a
 # previously built host (or build -> host) Go compiler.  We should

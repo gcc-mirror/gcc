@@ -55,6 +55,9 @@
 --      01 DEC 97   EDS    Made correction wrt RM 7.6(21)
 --      16 MAR 01   RLB    Corrected Adjust cases to avoid problems with
 --                         RM 7.6.1(16/1) from Technical Corrigendum 1.
+--      05 JUL 12   RLB    Redid Unchecked_Deallocation case to handle
+--                         the fact that the behavior is unspecified (see
+--                         AI95-0179-1). Also fixed indentation.
 --
 --!
 
@@ -346,23 +349,39 @@ procedure C761006 is
     -- finalization of Item/Target should cause PE
     end Finalize_15;
 
-  -- check failure in finalize due to Unchecked_Deallocation
+    -- check failure in finalize due to Unchecked_Deallocation
 
-  type Shark is access C761006_2.Fin_Check;
+    procedure Finalize_17_Outer is
+      -- This procedure exists to make Shark local, so everything allocated
+      -- on it will be finalized when this routine exits.
 
-  procedure Catch is
-    new Unchecked_Deallocation( C761006_2.Fin_Check, Shark );
+      type Shark is access C761006_2.Fin_Check;
 
-  procedure Finalize_17 is
-    White : Shark := new C761006_2.Fin_Check;
-  begin
-    Catch( White );
-  exception
-    when Program_Error =>
+      procedure Catch is
+        new Unchecked_Deallocation( C761006_2.Fin_Check, Shark );
+
+      procedure Finalize_17_Inner is
+        White : Shark := new C761006_2.Fin_Check;
+      begin
+        Catch (White);
+          -- Note: It is unspecified if Catch deallocates the memory
+          -- of the allocated object, and if it ceases to exist.
+          -- As such, it is possible that it will be finalized when
+          -- the scope of the access type is exited. We check for this
+          -- case below.
+      exception
+        when Program_Error =>
            if not Sup.Events_Occurring(Sup.Good_Finalize) then
              Report.Failed("Unchecked_Deallocation: " & Fin_Not_Perf);
            end if;
-  end Finalize_17;
+      end Finalize_17_Inner;
+
+    begin
+       Finalize_17_Inner;
+    exception
+      when others =>
+        Report.Failed("Unchecked_Deallocation check, unwanted exception in Outer");
+    end Finalize_17_Outer;
 
   begin
 
@@ -373,10 +392,12 @@ procedure C761006 is
     end Exception_In_Finalization;
 
     Use_Of_Unchecked_Deallocation: begin
-      Finalize_17;
+      Finalize_17_Outer;
     exception
+      when Program_Error =>
+        Report.Comment("Unchecked_Deallocation check, double finalization occurred");
       when others =>
-        Report.Failed("Unchecked_Deallocation check, unwanted exception");
+        Report.Failed("Unchecked_Deallocation check, unwanted exception in caller");
     end Use_Of_Unchecked_Deallocation;
 
   end Finalize_Test;

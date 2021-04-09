@@ -1537,12 +1537,12 @@ package body Sem_Ch6 is
                   --  Can it really happen (extended return???)
 
                   Error_Msg_N
-                    ("aliased only allowed for limited return objects "
+                    ("ALIASED only allowed for limited return objects "
                      & "in Ada 2012??", N);
 
                elsif not Is_Limited_View (R_Type) then
                   Error_Msg_N
-                    ("aliased only allowed for limited return objects", N);
+                    ("ALIASED only allowed for limited return objects", N);
                end if;
             end if;
 
@@ -2490,13 +2490,11 @@ package body Sem_Ch6 is
          Result : Entity_Id := Empty;
 
       begin
-         --  Loop outward through the Scope_Stack, skipping blocks, loops,
-         --  and postconditions.
+         --  Loop outward through the Scope_Stack, skipping blocks, and loops
 
          for J in reverse 0 .. Scope_Stack.Last loop
             Result := Scope_Stack.Table (J).Entity;
-            exit when Ekind (Result) not in E_Block | E_Loop
-              and then Chars (Result) /= Name_uPostconditions;
+            exit when Ekind (Result) not in E_Block | E_Loop;
          end loop;
 
          pragma Assert (Present (Result));
@@ -4401,22 +4399,46 @@ package body Sem_Ch6 is
 
       if Expander_Active
         and then Transform_Function_Array
-        and then Present (Spec_Id)
-        and then Ekind (Spec_Id) = E_Function
         and then Nkind (N) /= N_Subprogram_Body_Stub
-        and then Rewritten_For_C (Spec_Id)
       then
-         Set_Has_Completion (Spec_Id);
+         declare
+            S         : constant Entity_Id :=
+                          (if Present (Spec_Id)
+                           then Spec_Id
+                           else Defining_Unit_Name (Specification (N)));
+            Proc_Body : Node_Id;
 
-         Rewrite (N, Build_Procedure_Body_Form (Spec_Id, N));
-         Analyze (N);
+         begin
+            if Ekind (S) = E_Function and then Rewritten_For_C (S) then
+               Set_Has_Completion (S);
+               Proc_Body := Build_Procedure_Body_Form (S, N);
 
-         --  The entity for the created procedure must remain invisible, so it
-         --  does not participate in resolution of subsequent references to the
-         --  function.
+               if Present (Spec_Id) then
+                  Rewrite (N, Proc_Body);
+                  Analyze (N);
 
-         Set_Is_Immediately_Visible (Corresponding_Spec (N), False);
-         goto Leave;
+                  --  The entity for the created procedure must remain
+                  --  invisible, so it does not participate in resolution of
+                  --  subsequent references to the function.
+
+                  Set_Is_Immediately_Visible (Corresponding_Spec (N), False);
+
+               --  If we do not have a separate spec for N, build one and
+               --  insert the new body right after.
+
+               else
+                  Rewrite (N,
+                    Make_Subprogram_Declaration (Loc,
+                      Specification => Relocate_Node (Specification (N))));
+                  Analyze (N);
+                  Insert_After_And_Analyze (N, Proc_Body);
+                  Set_Is_Immediately_Visible
+                    (Corresponding_Spec (Proc_Body), False);
+               end if;
+
+               goto Leave;
+            end if;
+         end;
       end if;
 
       --  If a separate spec is present, then deal with freezing issues
@@ -9946,7 +9968,7 @@ package body Sem_Ch6 is
                Error_Msg_Sloc :=
                  Text_Ptr'Max (Sloc (Entity (E1)), Sloc (Entity (E2)));
                Error_Msg_NE
-                 ("Meaning of& differs because of declaration#", E1, E2);
+                 ("meaning of& differs because of declaration#", E1, E2);
             end if;
 
             return Result;

@@ -1,5 +1,5 @@
 /* Definitions of target machine for GNU compiler.  VAX version.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -21,13 +21,15 @@ extern bool legitimate_constant_address_p (rtx);
 extern void vax_expand_prologue (void);
 
 #ifdef RTX_CODE
+extern bool vax_acceptable_pic_operand_p (rtx, bool, bool);
+extern machine_mode vax_select_cc_mode (enum rtx_code, rtx, rtx);
 extern const char *cond_name (rtx);
 extern bool adjacent_operands_p (rtx, rtx, machine_mode);
 extern const char *rev_cond_name (rtx);
 extern void print_operand_address (FILE *, rtx);
 extern void print_operand (FILE *, rtx, int);
-extern void vax_notice_update_cc (rtx, rtx);
 extern void vax_expand_addsub_di_operands (rtx *, enum rtx_code);
+extern bool vax_maybe_split_dimode_move (rtx *);
 extern const char * vax_output_int_move (rtx, rtx *, machine_mode);
 extern const char * vax_output_int_add (rtx_insn *, rtx *, machine_mode);
 extern const char * vax_output_int_subtract (rtx_insn *, rtx *, machine_mode);

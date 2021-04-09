@@ -1,6 +1,6 @@
 /* More subroutines needed by GCC output code on some machines.  */
 /* Compile this one with gcc.  */
-/* Copyright (C) 1989-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1989-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -468,10 +468,10 @@ __ashrdi3 (DWtype u, shift_count_type b)
 SItype
 __bswapsi2 (SItype u)
 {
-  return ((((u) & 0xff000000) >> 24)
-	  | (((u) & 0x00ff0000) >>  8)
-	  | (((u) & 0x0000ff00) <<  8)
-	  | (((u) & 0x000000ff) << 24));
+  return ((((u) & 0xff000000u) >> 24)
+	  | (((u) & 0x00ff0000u) >>  8)
+	  | (((u) & 0x0000ff00u) <<  8)
+	  | (((u) & 0x000000ffu) << 24));
 }
 #endif
 #ifdef L_bswapdi2
@@ -1834,7 +1834,7 @@ __fixunssfSI (SFtype a)
 TYPE
 NAME (TYPE x, int m)
 {
-  unsigned int n = m < 0 ? -m : m;
+  unsigned int n = m < 0 ? -(unsigned int) m : (unsigned int) m;
   TYPE y = n % 2 ? x : 1;
   while (n >>= 1)
     {

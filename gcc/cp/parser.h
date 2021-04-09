@@ -1,5 +1,5 @@
 /* Data structures and function exported by the C++ Parser.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -58,7 +58,8 @@ struct GTY (()) cp_token {
      deleted.  */
   bool purged_p : 1;
   bool tree_check_p : 1;
-  /* 4 unused bits.  */
+  bool main_source_p : 1;
+  /* 3 unused bits.  */
 
   /* The location at which this token was found.  */
   location_t location;
@@ -348,6 +349,10 @@ struct GTY(()) cp_parser {
      contexts where new types may not be defined, and the type list
      is terminated by colon.  */
   bool colon_doesnt_start_class_def_p;
+
+  /* TRUE if we are parsing an objective c message, and ':' is permitted
+     to terminate an assignment-expression.  */
+  bool objective_c_message_context_p;
 
   /* If non-NULL, then we are parsing a construct where new type
      definitions are not permitted.  The string stored here will be

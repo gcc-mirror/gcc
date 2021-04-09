@@ -1,6 +1,6 @@
 /* Print GENERIC declaration (functions, variables, types) trees coming from
    the C and C++ front-ends as well as macros in Ada syntax.
-   Copyright (C) 2010-2020 Free Software Foundation, Inc.
+   Copyright (C) 2010-2021 Free Software Foundation, Inc.
    Adapted from tree-pretty-print.c by Arnaud Charlet  <charlet@adacore.com>
 
 This file is part of GCC.
@@ -2598,16 +2598,6 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, tree parent,
 
       pp_string (buffer, " is ");
       dump_ada_structure (buffer, field_type, t, true, spc);
-
-      pp_string (buffer, "with Convention => C_Pass_By_Copy");
-
-      if (TREE_CODE (field_type) == UNION_TYPE)
-	{
-	  pp_comma (buffer);
-	  newline_and_indent (buffer, spc + 5);
-	  pp_string (buffer, "Unchecked_Union => True");
-	}
-
       pp_semicolon (buffer);
       newline_and_indent (buffer, spc);
       break;
@@ -2857,8 +2847,6 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	      pp_string (buffer, "subtype ");
 	    else
 	      {
-		dump_nested_types (buffer, t, spc);
-
                 if (separate_class_package (t))
 		  {
 		    is_class = true;
@@ -2868,6 +2856,8 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		    spc += INDENT_INCR;
 		    newline_and_indent (buffer, spc);
 		  }
+
+		dump_nested_types (buffer, t, spc);
 
 		pp_string (buffer, "type ");
 	      }
@@ -3318,10 +3308,7 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
   newline_and_indent (buffer, spc);
 
   /* We disregard the methods for anonymous nested types.  */
-  if (nested)
-    return;
-
-  if (has_nontrivial_methods (node))
+  if (has_nontrivial_methods (node) && !nested)
     {
       pp_string (buffer, "with Import => True,");
       newline_and_indent (buffer, spc + 5);
@@ -3339,11 +3326,19 @@ dump_ada_structure (pretty_printer *buffer, tree node, tree type, bool nested,
 
   if (bitfield_used)
     {
+      char buf[32];
       pp_comma (buffer);
       newline_and_indent (buffer, spc + 5);
       pp_string (buffer, "Pack => True");
+      pp_comma (buffer);
+      newline_and_indent (buffer, spc + 5);
+      sprintf (buf, "Alignment => %d", TYPE_ALIGN (node) / BITS_PER_UNIT);
+      pp_string (buffer, buf);
       bitfield_used = false;
     }
+
+  if (nested)
+    return;
 
   need_semicolon = !dump_ada_methods (buffer, node, spc);
 

@@ -15,7 +15,7 @@ void sink (void*);
 void char_flexarray_cst_off_cst_size (void)
 {
   extern struct { char n, a[]; }
-    caxcc;                              // { dg-message "at offset \[1-9\]\[0-9\]+ into destination object 'caxcc'" }
+    caxcc;                              // { dg-message "at offset \[1-9\]\[0-9\]+ into destination object 'caxcc'" "note" }
 
   char *p = caxcc.a;
   size_t idx = DIFF_MAX - 4;
@@ -38,7 +38,7 @@ void char_flexarray_cst_off_cst_size (void)
 void char_flexarray_var_off_cst_size (ptrdiff_t idx)
 {
   extern struct { char n, a[]; }
-    caxvc;                              // { dg-message "destination object 'caxvc'" }
+    caxvc;                              // { dg-message "destination object 'caxvc'" "note" }
 
   char *p = caxvc.a;
 
@@ -55,7 +55,7 @@ void char_flexarray_var_off_cst_size (ptrdiff_t idx)
 void char_flexarray_var_off_var_size (size_t n, ptrdiff_t idx)
 {
   extern struct { char n, a[]; }
-    caxvv;                              // { dg-message "destination object 'caxvv'" }
+    caxvv;                              // { dg-message "destination object 'caxvv'" "note" }
 
   char *p = caxvv.a;
 
@@ -76,7 +76,7 @@ void char_flexarray_var_off_var_size (size_t n, ptrdiff_t idx)
 void alloc_array_var_off_cst_size (size_t n, ptrdiff_t idx)
 {
   struct { char n, a[]; }
-    *p = __builtin_malloc (n);          // { dg-message "at offset \\d+ into destination object" }
+    *p = __builtin_malloc (n);          // { dg-message "at offset \\d+ into destination object" "note" }
 
   if (idx < DIFF_MAX - 4)
     idx = DIFF_MAX - 4;
@@ -91,7 +91,7 @@ void alloc_array_var_off_cst_size (size_t n, ptrdiff_t idx)
 void int_array_cst_off_cst_size (void)
 {
   extern struct { int n, a[]; }
-    iaxc;                               // { dg-message "at offset \[1-9\]\[0-9\]+ into destination object 'iaxc'" }
+    iaxc;                               // { dg-message "at offset \[1-9\]\[0-9\]+ into destination object 'iaxc'" "note" }
 
   int *p = iaxc.a;
   size_t idx = DIFF_MAX / sizeof *p - 1;

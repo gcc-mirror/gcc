@@ -1,5 +1,5 @@
 /* Regions of memory.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -968,6 +968,11 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
       return mgr->get_or_create_compound_svalue (TREE_TYPE (m_decl),
 						 c.get_map ());
     }
+
+  /* LTO can write out error_mark_node as the DECL_INITIAL for simple scalar
+     values (to avoid writing out an extra section).  */
+  if (init == error_mark_node)
+    return NULL;
 
   if (TREE_CODE (init) == CONSTRUCTOR)
     return get_svalue_for_constructor (init, mgr);

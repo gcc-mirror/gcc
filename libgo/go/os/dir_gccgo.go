@@ -5,9 +5,8 @@
 package os
 
 import (
+	"internal/poll"
 	"io"
-	"runtime"
-	"sync/atomic"
 	"syscall"
 	"unsafe"
 )
@@ -16,8 +15,7 @@ import (
 //extern pathconf
 func libc_pathconf(*byte, int32) int
 
-//extern dup
-func libc_dup(int32) int32
+func direntType(*syscall.Dirent) byte
 
 func clen(n []byte) int {
 	for i := 0; i < len(n); i++ {
@@ -28,95 +26,118 @@ func clen(n []byte) int {
 	return len(n)
 }
 
-var nameMax int32
-
-func (file *File) readdirnames(n int) (names []string, err error) {
-	if file.dirinfo == nil {
-		p, err := syscall.BytePtrFromString(file.name)
+func (f *File) readdir(n int, mode readdirMode) (names []string, dirents []DirEntry, infos []FileInfo, err error) {
+	// If this file has no dirinfo, create one.
+	if f.dirinfo == nil {
+		fd, call, err := poll.DupCloseOnExec(int(f.pfd.Sysfd))
 		if err != nil {
-			return nil, err
-		}
-
-		elen := int(atomic.LoadInt32(&nameMax))
-		if elen == 0 {
-			syscall.Entersyscall()
-			plen := libc_pathconf(p, syscall.PC_NAME_MAX)
-			syscall.Exitsyscall()
-			if plen < 1024 {
-				plen = 1024
-			}
-			var dummy syscall.Dirent
-			elen = int(unsafe.Offsetof(dummy.Name)) + plen + 1
-			atomic.StoreInt32(&nameMax, int32(elen))
+			return nil, nil, nil, NewSyscallError(call, err)
 		}
 
 		syscall.Entersyscall()
-		fd := libc_dup(int32(file.pfd.Sysfd))
+		r := libc_fdopendir(int32(fd))
 		errno := syscall.GetErrno()
 		syscall.Exitsyscall()
-		if fd < 0 {
-			return nil, &PathError{"dup", file.name, errno}
-		}
-
-		syscall.Entersyscall()
-		r := libc_fdopendir(fd)
-		errno = syscall.GetErrno()
-		syscall.Exitsyscall()
 		if r == nil {
-			return nil, &PathError{"fdopendir", file.name, errno}
+			return nil, nil, nil, &PathError{"fdopendir", f.name, errno}
 		}
 
-		file.dirinfo = new(dirInfo)
-		file.dirinfo.buf = make([]byte, elen)
-		file.dirinfo.dir = r
+		f.dirinfo = &dirInfo{r}
 	}
+	dir := f.dirinfo.dir
 
-	entryDirent := (*syscall.Dirent)(unsafe.Pointer(&file.dirinfo.buf[0]))
-
-	size := n
-	if size <= 0 {
-		size = 100
+	// Change the meaning of n for the implementation below.
+	//
+	// The n above was for the public interface of "if n <= 0,
+	// Readdir returns all the FileInfo from the directory in a
+	// single slice".
+	//
+	// But below, we use only negative to mean looping until the
+	// end and positive to mean bounded, with positive
+	// terminating at 0.
+	if n == 0 {
 		n = -1
 	}
 
-	names = make([]string, 0, size) // Empty with room to grow.
-
 	for n != 0 {
-		var dirent *syscall.Dirent
-		pr := &dirent
 		syscall.Entersyscall()
-		i := libc_readdir_r(file.dirinfo.dir, entryDirent, pr)
+		syscall.SetErrno(0)
+		dirent := libc_readdir(dir)
+		errno := syscall.GetErrno()
 		syscall.Exitsyscall()
-		// On AIX when readdir_r hits EOF it sets dirent to nil and returns 9.
-		//  https://www.ibm.com/support/knowledgecenter/ssw_aix_71/com.ibm.aix.basetrf2/readdir_r.htm
-		if runtime.GOOS == "aix" && i == 9 && dirent == nil {
-			break
-		}
-		if i != 0 {
-			return names, NewSyscallError("readdir_r", i)
-		}
+
 		if dirent == nil {
+			if errno != 0 {
+				return names, dirents, infos, &PathError{Op: "readdir", Path: f.name, Err: errno}
+			}
 			break // EOF
 		}
-		bytes := (*[10000]byte)(unsafe.Pointer(&dirent.Name[0]))
-		var name = string(bytes[0:clen(bytes[:])])
-		if name == "." || name == ".." { // Useless names
+
+		// In some cases the actual name can be longer than
+		// the Name field.
+		name := (*[1 << 16]byte)(unsafe.Pointer(&dirent.Name[0]))[:]
+		for i, c := range name {
+			if c == 0 {
+				name = name[:i]
+				break
+			}
+		}
+		// Check for useless names before allocating a string.
+		if (len(name) == 1 && name[0] == '.') || (len(name) == 2 && name[0] == '.' && name[1] == '.') {
 			continue
 		}
-		names = append(names, name)
-		n--
-	}
-	if n >= 0 && len(names) == 0 {
-		return names, io.EOF
-	}
-	return names, nil
-}
+		if n > 0 { // see 'n == 0' comment above
+			n--
+		}
+		if mode == readdirName {
+			names = append(names, string(name))
+		} else if mode == readdirDirEntry {
+			var typ FileMode
+			switch direntType(dirent) {
+			case 'B':
+				typ = ModeDevice
+			case 'C':
+				typ = ModeDevice | ModeCharDevice
+			case 'D':
+				typ = ModeDir
+			case 'F':
+				typ = ModeNamedPipe
+			case 'L':
+				typ = ModeSymlink
+			case 'R':
+				typ = 0
+			case 'S':
+				typ = ModeSocket
+			case 'U':
+				typ = ^FileMode(0)
+			}
 
-func (f *File) seekInvalidate() {
-	if f.file.dirinfo != nil {
-		syscall.Entersyscall()
-		libc_closedir(f.file.dirinfo.dir)
-		syscall.Exitsyscall()
-		f.file.dirinfo = nil
+			de, err := newUnixDirent(f.name, string(name), typ)
+			if IsNotExist(err) {
+				// File disappeared between readdir and stat.
+				// Treat as if it didn't exist.
+				continue
+			}
+			if err != nil {
+				return nil, dirents, nil, err
+			}
+			dirents = append(dirents, de)
+		} else {
+			info, err := lstat(f.name + "/" + string(name))
+			if IsNotExist(err) {
+				// File disappeared between readdir + stat.
+				// Treat as if it didn't exist.
+				continue
+			}
+			if err != nil {
+				return nil, nil, infos, err
+			}
+			infos = append(infos, info)
+		}
 	}
+
+	if n > 0 && len(names)+len(dirents)+len(infos) == 0 {
+		return nil, nil, nil, io.EOF
+	}
+	return names, dirents, infos, nil
 }

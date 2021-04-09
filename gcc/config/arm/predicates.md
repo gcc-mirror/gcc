@@ -1,5 +1,5 @@
 ;; Predicate definitions for ARM and Thumb
-;; Copyright (C) 2004-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2004-2021 Free Software Foundation, Inc.
 ;; Contributed by ARM Ltd.
 
 ;; This file is part of GCC.
@@ -17,6 +17,8 @@
 ;; You should have received a copy of the GNU General Public License
 ;; along with GCC; see the file COPYING3.  If not see
 ;; <http://www.gnu.org/licenses/>.
+
+(include "common.md")
 
 (define_predicate "s_register_operand"
   (match_code "reg,subreg")
@@ -107,7 +109,7 @@
 (define_predicate "imm_for_neon_inv_logic_operand"
   (match_code "const_vector")
 {
-  return (TARGET_NEON
+  return ((TARGET_NEON || TARGET_HAVE_MVE)
           && neon_immediate_valid_for_logic (op, mode, 1, NULL, NULL));
 })
 
@@ -118,7 +120,7 @@
 (define_predicate "imm_for_neon_logic_operand"
   (match_code "const_vector")
 {
-  return (TARGET_NEON
+  return ((TARGET_NEON || TARGET_HAVE_MVE)
           && neon_immediate_valid_for_logic (op, mode, 0, NULL, NULL));
 })
 

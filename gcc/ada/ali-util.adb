@@ -31,7 +31,6 @@ with Osint;   use Osint;
 with Scans;   use Scans;
 with Scng;
 with Sinput.C;
-with Snames;  use Snames;
 with Stringt;
 with Styleg;
 
@@ -153,15 +152,6 @@ package body ALI.Util is
       end if;
 
       Scanner.Initialize_Scanner (Source_Index);
-
-      --  Make sure that the project language reserved words are not
-      --  recognized as reserved words, but as identifiers. The byte info for
-      --  those names have been set if we are in gnatmake.
-
-      Set_Name_Table_Byte (Name_Project,          0);
-      Set_Name_Table_Byte (Name_Extends,          0);
-      Set_Name_Table_Byte (Name_External,         0);
-      Set_Name_Table_Byte (Name_External_As_List, 0);
 
       --  Scan the complete file to compute its checksum
 

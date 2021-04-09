@@ -1,5 +1,5 @@
 
-/* Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+/* Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
@@ -9,7 +9,6 @@
 #pragma once
 
 #include "root.h"
-#include "dcompat.h" // for d_size_t
 
 struct StringEntry;
 
@@ -40,13 +39,13 @@ private:
     size_t count;
 
 public:
-    void _init(d_size_t size = 0);
-    void reset(d_size_t size = 0);
+    void _init(size_t size = 0);
+    void reset(size_t size = 0);
     ~StringTable();
 
-    StringValue *lookup(const char *s, d_size_t len);
+    StringValue *lookup(const char *s, size_t len);
     StringValue *insert(const char *s, size_t len, void *ptrvalue);
-    StringValue *update(const char *s, d_size_t len);
+    StringValue *update(const char *s, size_t len);
     int apply(int (*fp)(StringValue *));
 
 private:

@@ -11,5 +11,5 @@ foo (int x)
 }
 
 /* Check if the tests have been folded into a bit test.  */
-/* { dg-final { scan-tree-dump "(8784908|0x0*860c0c)" "optimized" } } */
+/* { dg-final { scan-tree-dump "(8784908|-8784909|0x0*860c0c)" "optimized" } } */
 /* { dg-final { scan-tree-dump "(<<|>>)" "optimized" } } */

@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -30,99 +30,92 @@
 #  define SYS_futex	202
 # endif
 
-static inline void
-futex_wait (int *addr, int val)
+static inline long
+__futex_wait (int *addr, int futex_op, int val)
 {
   long res;
 
-  register long r10 __asm__("%r10") = 0;
+  register void *timeout __asm ("r10") = NULL;
   __asm volatile ("syscall"
 		  : "=a" (res)
-		  : "0" (SYS_futex), "D" (addr), "S" (gomp_futex_wait),
-		    "d" (val), "r" (r10)
+		  : "0" (SYS_futex), "D" (addr), "S" (futex_op),
+		    "d" (val), "r" (timeout)
 		  : "r11", "rcx", "memory");
-  if (__builtin_expect (res == -ENOSYS, 0))
-    {
-      gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
-      gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
-      __asm volatile ("syscall"
-		      : "=a" (res)
-		      : "0" (SYS_futex), "D" (addr), "S" (gomp_futex_wait),
-			"d" (val), "r" (r10)
-		      : "r11", "rcx", "memory");
-    }
+  return res;
 }
 
-static inline void
-futex_wake (int *addr, int count)
+static inline long
+__futex_wake (int *addr, int futex_op, int count)
 {
   long res;
 
   __asm volatile ("syscall"
 		  : "=a" (res)
-		  : "0" (SYS_futex), "D" (addr), "S" (gomp_futex_wake),
+		  : "0" (SYS_futex), "D" (addr), "S" (futex_op),
 		    "d" (count)
 		  : "r11", "rcx", "memory");
-  if (__builtin_expect (res == -ENOSYS, 0))
-    {
-      gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
-      gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
-      __asm volatile ("syscall"
-		      : "=a" (res)
-		      : "0" (SYS_futex), "D" (addr), "S" (gomp_futex_wake),
-			"d" (count)
-		      : "r11", "rcx", "memory");
-    }
+  return res;
 }
 #else
 # ifndef SYS_futex
 #  define SYS_futex	240
 # endif
 
-static inline void
-futex_wait (int *addr, int val)
+static inline long
+__futex_wait (int *addr, int futex_op, int val)
+{
+  long res;
+
+  void *timeout = NULL;
+  __asm volatile ("int $0x80"
+		  : "=a" (res)
+		  : "0" (SYS_futex), "b" (addr), "c" (futex_op),
+		    "d" (val), "S" (timeout)
+		  : "memory");
+  return res;
+}
+
+static inline long
+__futex_wake (int *addr, int futex_op, int count)
 {
   long res;
 
   __asm volatile ("int $0x80"
 		  : "=a" (res)
-		  : "0" (SYS_futex), "b" (addr), "c" (gomp_futex_wait),
-		    "d" (val), "S" (0)
+		  : "0" (SYS_futex), "b" (addr), "c" (futex_op),
+		    "d" (count)
 		  : "memory");
-  if (__builtin_expect (res == -ENOSYS, 0))
+  return res;
+}
+#endif /* __x86_64__ */
+
+static inline void
+futex_wait (int *addr, int val)
+{
+  long err = __futex_wait (addr, gomp_futex_wait, val);
+
+  if (__builtin_expect (err == -ENOSYS, 0))
     {
       gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
       gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
-      __asm volatile ("int $0x80"
-		      : "=a" (res)
-		      : "0" (SYS_futex), "b" (addr), "c" (gomp_futex_wait),
-		        "d" (val), "S" (0)
-		      : "memory");
+
+      __futex_wait (addr, gomp_futex_wait, val);
     }
 }
 
 static inline void
 futex_wake (int *addr, int count)
 {
-  long res;
+  long err = __futex_wake (addr, gomp_futex_wake, count);
 
-  __asm volatile ("int $0x80"
-		  : "=a" (res)
-		  : "0" (SYS_futex), "b" (addr), "c" (gomp_futex_wake),
-		    "d" (count)
-		  : "memory");
-  if (__builtin_expect (res == -ENOSYS, 0))
+  if (__builtin_expect (err == -ENOSYS, 0))
     {
       gomp_futex_wait &= ~FUTEX_PRIVATE_FLAG;
       gomp_futex_wake &= ~FUTEX_PRIVATE_FLAG;
-      __asm volatile ("int $0x80"
-		      : "=a" (res)
-		      : "0" (SYS_futex), "b" (addr), "c" (gomp_futex_wake),
-		        "d" (count)
-		      : "memory");
+
+      __futex_wake (addr, gomp_futex_wake, count);
     }
 }
-#endif /* __x86_64__ */
 
 static inline void
 cpu_relax (void)

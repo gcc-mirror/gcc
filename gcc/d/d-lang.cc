@@ -1,5 +1,5 @@
 /* d-lang.cc -- Language-dependent hooks for D.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -114,26 +114,35 @@ deps_add_target (const char *target, bool quoted)
     }
 
   /* Quote characters in target which are significant to Make.  */
+  unsigned slashes = 0;
+
   for (const char *p = target; *p != '\0'; p++)
     {
       switch (*p)
 	{
+	case '\\':
+	  slashes++;
+	  break;
+
 	case ' ':
 	case '\t':
-	  for (const char *q = p - 1; target <= q && *q == '\\';  q--)
+	  while (slashes--)
 	    obstack_1grow (&buffer, '\\');
 	  obstack_1grow (&buffer, '\\');
-	  break;
+	  goto Ldef;
 
 	case '$':
 	  obstack_1grow (&buffer, '$');
-	  break;
+	  goto Ldef;
 
 	case '#':
+	case ':':
 	  obstack_1grow (&buffer, '\\');
-	  break;
+	  goto Ldef;
 
 	default:
+	Ldef:
+	  slashes = 0;
 	  break;
 	}
 
@@ -332,9 +341,6 @@ d_init_options_struct (gcc_options *opts)
 {
   /* GCC options.  */
   opts->x_flag_exceptions = 1;
-
-  /* Avoid range issues for complex multiply and divide.  */
-  opts->x_flag_complex_method = 2;
 
   /* Unlike C, there is no global `errno' variable.  */
   opts->x_flag_errno_math = 0;
@@ -542,10 +548,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
       global.params.vcomplex = value;
       break;
 
-    case OPT_ftransition_checkimports:
-      global.params.check10378 = value;
-      break;
-
     case OPT_ftransition_complex:
       global.params.vcomplex = value;
       break;
@@ -561,10 +563,6 @@ d_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 
     case OPT_ftransition_field:
       global.params.vfield = value;
-      break;
-
-    case OPT_ftransition_import:
-      global.params.bug10378 = value;
       break;
 
     case OPT_ftransition_nogc:
@@ -979,7 +977,6 @@ d_parse_file (void)
 
       m->importedFrom = m;
       m->parse ();
-      Compiler::loadModule (m);
 
       if (m->isDocFile)
 	{
@@ -1051,7 +1048,7 @@ d_parse_file (void)
       if (global.params.verbose)
 	message ("semantic  %s", m->toChars ());
 
-      m->semantic (NULL);
+      dsymbolSemantic (m, NULL);
     }
 
   /* Do deferred semantic analysis.  */
@@ -1083,7 +1080,7 @@ d_parse_file (void)
       if (global.params.verbose)
 	message ("semantic2 %s", m->toChars ());
 
-      m->semantic2 (NULL);
+      semantic2 (m, NULL);
     }
 
   Module::runDeferredSemantic2 ();
@@ -1099,7 +1096,7 @@ d_parse_file (void)
       if (global.params.verbose)
 	message ("semantic3 %s", m->toChars ());
 
-      m->semantic3 (NULL);
+      semantic3 (m, NULL);
     }
 
   Module::runDeferredSemantic3 ();

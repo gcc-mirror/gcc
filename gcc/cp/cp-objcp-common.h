@@ -1,5 +1,5 @@
 /* Language hooks common to C++ and ObjC++ front ends.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
    Contributed by Ziemowit Laski  <zlaski@apple.com>
 
 This file is part of GCC.
@@ -34,6 +34,8 @@ extern tree cp_unit_size_without_reusable_padding (tree);
 extern tree cp_get_global_decls ();
 extern tree cp_pushdecl (tree);
 extern void cp_register_dumps (gcc::dump_manager *);
+extern bool cp_handle_option (size_t, const char *, HOST_WIDE_INT, int,
+			      location_t, const struct cl_option_handlers *);
 extern tree cxx_make_type_hook			(tree_code);
 extern tree cxx_simulate_enum_decl (location_t, const char *,
 				    vec<string_int_pair>);
@@ -63,7 +65,7 @@ extern tree cxx_simulate_enum_decl (location_t, const char *,
 #undef LANG_HOOKS_REGISTER_DUMPS
 #define LANG_HOOKS_REGISTER_DUMPS cp_register_dumps
 #undef LANG_HOOKS_HANDLE_OPTION
-#define LANG_HOOKS_HANDLE_OPTION c_common_handle_option
+#define LANG_HOOKS_HANDLE_OPTION cp_handle_option
 #undef LANG_HOOKS_HANDLE_FILENAME
 #define LANG_HOOKS_HANDLE_FILENAME c_common_handle_filename
 #undef LANG_HOOKS_POST_OPTIONS

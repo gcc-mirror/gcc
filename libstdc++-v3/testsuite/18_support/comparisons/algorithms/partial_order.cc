@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -70,7 +70,7 @@ test03()
   constexpr double epsilon = std::numeric_limits<double>::epsilon();
   static_assert( partial_order(denorm, smallest) == partial_ordering::less );
   static_assert( partial_order(denorm, 0.0) == partial_ordering::greater );
-  // FIXME: these should all use static_assert
+  // FIXME: these should all use static_assert.  See PR88173.
   VERIFY( partial_order(0.0, nan) == partial_ordering::unordered );
   VERIFY( partial_order(nan, nan) == partial_ordering::unordered );
   VERIFY( partial_order(nan, 0.0) == partial_ordering::unordered );
@@ -81,7 +81,7 @@ test03()
   VERIFY( partial_order(-inf, -nan) == partial_ordering::unordered );
   static_assert( partial_order(max, inf) == partial_ordering::less );
   static_assert( partial_order(inf, max) == partial_ordering::greater );
-  static_assert( partial_order(inf, nan) == partial_ordering::unordered );
+  VERIFY( partial_order(inf, nan) == partial_ordering::unordered );
   static_assert( partial_order(1.0, 1.0+epsilon) == partial_ordering::less );
 }
 

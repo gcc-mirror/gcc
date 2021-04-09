@@ -1,6 +1,6 @@
 /* Plugin for AMD GCN execution.
 
-   Copyright (C) 2013-2020 Free Software Foundation, Inc.
+   Copyright (C) 2013-2021 Free Software Foundation, Inc.
 
    Contributed by Mentor Embedded
 
@@ -37,6 +37,7 @@
 #include <stdbool.h>
 #include <limits.h>
 #include <hsa.h>
+#include <hsa_ext_amd.h>
 #include <dlfcn.h>
 #include <signal.h>
 #include "libgomp-plugin.h"
@@ -45,11 +46,6 @@
 #include "oacc-plugin.h"
 #include "oacc-int.h"
 #include <assert.h>
-
-/* Additional definitions not in HSA 1.1.
-   FIXME: this needs to be updated in hsa.h for upstream, but the only source
-          right now is the ROCr source which may cause license issues.  */
-#define HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT 0xA002
 
 /* These probably won't be in elf.h for a while.  */
 #ifndef R_AMDGPU_NONE
@@ -407,6 +403,7 @@ typedef enum {
   EF_AMDGPU_MACH_AMDGCN_GFX803 = 0x02a,
   EF_AMDGPU_MACH_AMDGCN_GFX900 = 0x02c,
   EF_AMDGPU_MACH_AMDGCN_GFX906 = 0x02f,
+  EF_AMDGPU_MACH_AMDGCN_GFX908 = 0x030
 } EF_AMDGPU_MACH;
 
 const static int EF_AMDGPU_MACH_MASK = 0x000000ff;
@@ -1075,7 +1072,7 @@ init_environment_variables (void)
 
   hsa_runtime_lib = secure_getenv ("HSA_RUNTIME_LIB");
   if (hsa_runtime_lib == NULL)
-    hsa_runtime_lib = HSA_RUNTIME_LIB "libhsa-runtime64.so.1";
+    hsa_runtime_lib = "libhsa-runtime64.so.1";
 
   support_cpu_devices = secure_getenv ("GCN_SUPPORT_CPU_DEVICES");
 
@@ -1600,6 +1597,7 @@ elf_gcn_isa_field (Elf64_Ehdr *image)
 const static char *gcn_gfx803_s = "gfx803";
 const static char *gcn_gfx900_s = "gfx900";
 const static char *gcn_gfx906_s = "gfx906";
+const static char *gcn_gfx908_s = "gfx908";
 const static int gcn_isa_name_len = 6;
 
 /* Returns the name that the HSA runtime uses for the ISA or NULL if we do not
@@ -1615,6 +1613,8 @@ isa_hsa_name (int isa) {
       return gcn_gfx900_s;
     case EF_AMDGPU_MACH_AMDGCN_GFX906:
       return gcn_gfx906_s;
+    case EF_AMDGPU_MACH_AMDGCN_GFX908:
+      return gcn_gfx908_s;
     }
   return NULL;
 }
@@ -1647,6 +1647,9 @@ isa_code(const char *isa) {
 
   if (!strncmp (isa, gcn_gfx906_s, gcn_isa_name_len))
     return EF_AMDGPU_MACH_AMDGCN_GFX906;
+
+  if (!strncmp (isa, gcn_gfx908_s, gcn_isa_name_len))
+    return EF_AMDGPU_MACH_AMDGCN_GFX908;
 
   return -1;
 }

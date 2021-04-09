@@ -1,7 +1,7 @@
 /* Decompose OpenACC 'kernels' constructs into parts, a sequence of compute
    constructs
 
-   Copyright (C) 2020 Free Software Foundation, Inc.
+   Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -740,8 +740,17 @@ flatten_binds (gbind *bind, bool include_toplevel_vars = false)
 	  /* Flatten recursively, and collect all variables.  */
 	  tree inner_vars = flatten_binds (inner_bind, true);
 	  gimple_seq inner_sequence = gimple_bind_body (inner_bind);
-	  gcc_assert (gimple_code (inner_sequence) != GIMPLE_BIND
-		      || top_level_omp_for_in_stmt (inner_sequence));
+	  if (flag_checking)
+	    {
+	      for (gimple_stmt_iterator inner_gsi = gsi_start (inner_sequence);
+		   !gsi_end_p (inner_gsi);
+		   gsi_next (&inner_gsi))
+		{
+		  gimple *inner_stmt = gsi_stmt (inner_gsi);
+		  gcc_assert (gimple_code (inner_stmt) != GIMPLE_BIND
+			      || top_level_omp_for_in_stmt (inner_stmt));
+		}
+	    }
 	  gimple_seq_add_seq (&new_body, inner_sequence);
 	  /* Find the last variable; we will append others to it.  */
 	  while (last_var != NULL && TREE_CHAIN (last_var) != NULL)

@@ -1,5 +1,5 @@
 // -*- C++ -*- Implement the members of exception_ptr.
-// Copyright (C) 2008-2020 Free Software Foundation, Inc.
+// Copyright (C) 2008-2021 Free Software Foundation, Inc.
 //
 // This file is part of GCC.
 //
@@ -25,11 +25,15 @@
 #include <bits/c++config.h>
 #include "eh_atomics.h"
 
-#if ! _GLIBCXX_INLINE_VERSION
 // This macro causes exception_ptr to declare an older API (with corresponding
-// definitions in this file) and to mark some inline functions as "used" so
-// that definitions will be emitted in this translation unit.
+// definitions in this file).
 #define _GLIBCXX_EH_PTR_COMPAT
+
+#if ! _GLIBCXX_INLINE_VERSION
+// This macro causes some inline functions in exception_ptr to be marked
+// as "used" so that definitions will be emitted in this translation unit.
+// We need this because those functions were not inline in previous releases.
+#define _GLIBCXX_EH_PTR_RELOPS_COMPAT
 #endif
 
 #include <exception>

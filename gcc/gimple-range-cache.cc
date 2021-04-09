@@ -1,5 +1,5 @@
 /* Gimple ranger SSA cache implementation.
-   Copyright (C) 2017-2020 Free Software Foundation, Inc.
+   Copyright (C) 2017-2021 Free Software Foundation, Inc.
    Contributed by Andrew MacLeod <amacleod@redhat.com>.
 
 This file is part of GCC.
@@ -779,8 +779,10 @@ ranger_cache::ssa_range_in_bb (irange &r, tree name, basic_block bb)
   // Look for the on-entry value of name in BB from the cache.
   else if (!m_on_entry.get_bb_range (r, name, bb))
     {
-      // If it has no entry then mark this as a poor value.
-      if (push_poor_value (bb, name))
+      // If it has no entry but should, then mark this as a poor value.
+      // Its not a poor value if it does not have *any* edge ranges,
+      // Then global range is as good as it gets.
+      if (has_edge_range_p (name) && push_poor_value (bb, name))
 	{
 	  if (DEBUG_RANGE_CACHE)
 	    {
@@ -811,6 +813,11 @@ bool
 ranger_cache::block_range (irange &r, basic_block bb, tree name, bool calc)
 {
   gcc_checking_assert (gimple_range_ssa_p (name));
+
+  // If there are no range calculations anywhere in the IL, global range
+  // applies everywhere, so don't bother caching it.
+  if (!has_edge_range_p (name))
+    return false;
 
   if (calc)
     {
@@ -1072,7 +1079,7 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	    {
 	      if (DEBUG_RANGE_CACHE)
 		fprintf (dump_file, "has cache, ");
-	      if (!r.undefined_p () || has_edge_range_p (e, name))
+	      if (!r.undefined_p () || has_edge_range_p (name, e))
 		{
 		  add_to_update (node);
 		  if (DEBUG_RANGE_CACHE)

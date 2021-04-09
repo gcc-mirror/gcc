@@ -1,5 +1,5 @@
 /* Rtl-level induction variable analysis.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -44,7 +44,7 @@ along with GCC; see the file COPYING3.  If not see
    iv_analyze_result (insn, def, iv):  Stores to IV the description of the iv
      corresponding to DEF, which is a register defined in INSN.
    iv_analyze_expr (insn, mode, expr, iv):  Stores to IV the description of iv
-     corresponding to expression EXPR evaluated at INSN.  All registers used bu
+     corresponding to expression EXPR evaluated at INSN.  All registers used by
      EXPR must also be used in INSN.  MODE is the mode of EXPR.
 */
 
@@ -1936,7 +1936,7 @@ simplify_using_initial_values (class loop *loop, enum rtx_code op, rtx *expr)
   while (1)
     {
       insn = BB_END (e->src);
-      if (any_condjump_p (insn))
+      if (any_condjump_p (insn) && onlyjump_p (insn))
 	{
 	  rtx cond = get_condition (BB_END (e->src), NULL, false, true);
 
@@ -2887,7 +2887,7 @@ check_simple_exit (class loop *loop, edge e, class niter_desc *desc)
     return;
 
   /* It must end in a simple conditional jump.  */
-  if (!any_condjump_p (BB_END (exit_bb)))
+  if (!any_condjump_p (BB_END (exit_bb)) || !onlyjump_p (BB_END (exit_bb)))
     return;
 
   ein = EDGE_SUCC (exit_bb, 0);

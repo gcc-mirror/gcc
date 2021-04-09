@@ -1,5 +1,5 @@
 /* Functions dealing with attribute handling, used by most front ends.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2124,7 +2124,7 @@ init_attr_rdwr_indices (rdwr_map *rwm, tree attrs)
 		  if (*m == '$')
 		    {
 		      ++m;
-		      if (!acc.size)
+		      if (!acc.size && vblist)
 			{
 			  /* Extract the list of VLA bounds for the current
 			     parameter, store it in ACC.SIZE, and advance
@@ -2238,6 +2238,42 @@ attr_access::vla_bounds (unsigned *nunspec) const
   return list_length (size);
 }
 
+/* Reset front end-specific attribute access data from ATTRS.
+   Called from the free_lang_data pass.  */
+
+/* static */ void
+attr_access::free_lang_data (tree attrs)
+{
+  for (tree acs = attrs; (acs = lookup_attribute ("access", acs));
+       acs = TREE_CHAIN (acs))
+    {
+      tree vblist = TREE_VALUE (acs);
+      vblist = TREE_CHAIN (vblist);
+      if (!vblist)
+	continue;
+
+      for (vblist = TREE_VALUE (vblist); vblist; vblist = TREE_CHAIN (vblist))
+	{
+	  tree *pvbnd = &TREE_VALUE (vblist);
+	  if (!*pvbnd || DECL_P (*pvbnd))
+	    continue;
+
+	  /* VLA bounds that are expressions as opposed to DECLs are
+	     only used in the front end.  Reset them to keep front end
+	     trees leaking into the middle end (see pr97172) and to
+	     free up memory.  */
+	  *pvbnd = NULL_TREE;
+	}
+    }
+
+  for (tree argspec = attrs; (argspec = lookup_attribute ("arg spec", argspec));
+       argspec = TREE_CHAIN (argspec))
+    {
+      /* Same as above.  */
+      tree *pvblist = &TREE_VALUE (argspec);
+      *pvblist = NULL_TREE;
+    }
+}
 
 /* Defined in attr_access.  */
 constexpr char attr_access::mode_chars[];

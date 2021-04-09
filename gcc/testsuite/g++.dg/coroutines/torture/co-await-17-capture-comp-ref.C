@@ -20,7 +20,7 @@ struct resumable::promise_type {
     return coro_handle::from_promise(*this);
   }
   auto initial_suspend() { return std::suspend_never(); }
-  auto final_suspend() { return std::suspend_always(); }
+  auto final_suspend() noexcept { return std::suspend_always(); }
   void return_value(int x) {used = x;}
   void unhandled_exception() {}
 

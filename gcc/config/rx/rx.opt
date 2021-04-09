@@ -1,5 +1,5 @@
 ; Command line options for the Renesas RX port of GCC.
-; Copyright (C) 2008-2020 Free Software Foundation, Inc.
+; Copyright (C) 2008-2021 Free Software Foundation, Inc.
 ; Contributed by Red Hat.
 ;
 ; This file is part of GCC.
@@ -25,11 +25,11 @@ config/rx/rx-opts.h
 ; The default is -fpu -m32bit-doubles.
 
 m64bit-doubles
-Target RejectNegative Mask(64BIT_DOUBLES) Report
+Target RejectNegative Mask(64BIT_DOUBLES)
 Store doubles in 64 bits.
 
 m32bit-doubles
-Target RejectNegative InverseMask(64BIT_DOUBLES) Report
+Target RejectNegative InverseMask(64BIT_DOUBLES)
 Stores doubles in 32 bits.  This is the default.
 
 nofpu
@@ -37,16 +37,16 @@ Target RejectNegative Alias(mnofpu)
 Disable the use of RX FPU instructions.
 
 mnofpu
-Target RejectNegative Mask(NO_USE_FPU) Report Undocumented
+Target RejectNegative Mask(NO_USE_FPU) Undocumented
 
 fpu
-Target RejectNegative InverseMask(NO_USE_FPU) Report
+Target RejectNegative InverseMask(NO_USE_FPU)
 Enable the use of RX FPU instructions.  This is the default.
 
 ;---------------------------------------------------
 
 mcpu=
-Target RejectNegative Joined Var(rx_cpu_type) Report ToLower Enum(rx_cpu_types) Init(RX600)
+Target RejectNegative Joined Var(rx_cpu_type) ToLower Enum(rx_cpu_types) Init(RX600)
 Specify the target RX cpu type.
 
 Enum
@@ -67,11 +67,11 @@ Enum(rx_cpu_types) String(rx100) Value(RX100)
 ;---------------------------------------------------
 
 mbig-endian-data
-Target RejectNegative Mask(BIG_ENDIAN_DATA) Report
+Target RejectNegative Mask(BIG_ENDIAN_DATA)
 Data is stored in big-endian format.
 
 mlittle-endian-data
-Target RejectNegative InverseMask(BIG_ENDIAN_DATA) Report
+Target RejectNegative InverseMask(BIG_ENDIAN_DATA)
 Data is stored in little-endian format.  (Default).
 
 ;---------------------------------------------------
@@ -113,33 +113,33 @@ Enables Position-Independent-Data (PID) mode.
 ;---------------------------------------------------
 
 mwarn-multiple-fast-interrupts
-Target Report Var(rx_warn_multiple_fast_interrupts) Init(1) Warning
+Target Var(rx_warn_multiple_fast_interrupts) Init(1) Warning
 Warn when multiple, different, fast interrupt handlers are in the compilation unit.
 
 ;---------------------------------------------------
 
 mgcc-abi
-Target RejectNegative Report Mask(GCC_ABI)
+Target RejectNegative Mask(GCC_ABI)
 Enable the use of the old, broken, ABI where all stacked function arguments are aligned to 32-bits.
 
 mrx-abi
-Target RejectNegative Report InverseMask(GCC_ABI)
+Target RejectNegative InverseMask(GCC_ABI)
 Enable the use the standard RX ABI where all stacked function arguments are naturally aligned.  This is the default.
 
 ;---------------------------------------------------
 
 mlra
-Target Report Mask(ENABLE_LRA)
+Target Mask(ENABLE_LRA)
 Enable the use of the LRA register allocator.
 
 ;---------------------------------------------------
 
 mallow-string-insns
-Target Report Var(rx_allow_string_insns) Init(1)
+Target Var(rx_allow_string_insns) Init(1)
 Enables or disables the use of the SMOVF, SMOVB, SMOVU, SUNTIL, SWHILE and RMPA instructions.  Enabled by default.
 
 ;---------------------------------------------------
 
 mjsr
-Target Report Mask(JSR)
+Target Mask(JSR)
 Always use JSR, never BSR, for calls.

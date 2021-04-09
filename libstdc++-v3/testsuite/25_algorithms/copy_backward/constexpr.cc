@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -52,3 +52,15 @@ test02()
 }
 
 static_assert(test02());
+
+constexpr bool
+test03()
+{
+  std::array<int, 12> ma0{{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}};
+  const auto out7 = std::copy_backward(ma0.begin(), ma0.begin() + 8,
+				       ma0.begin() + 10);
+
+  return out7 == ma0.begin() + 2 && *out7 == 0 && *(ma0.begin() + 9) == 7;
+}
+
+static_assert(test03());

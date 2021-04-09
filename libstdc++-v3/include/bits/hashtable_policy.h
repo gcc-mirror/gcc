@@ -1,6 +1,6 @@
 // Internal policy header for unordered_set and unordered_map -*- C++ -*-
 
-// Copyright (C) 2010-2020 Free Software Foundation, Inc.
+// Copyright (C) 2010-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -290,7 +290,7 @@ namespace __detail
 
       __node_type* _M_cur;
 
-      _Node_iterator_base() = default;
+      _Node_iterator_base() : _M_cur(nullptr) { }
       _Node_iterator_base(__node_type* __p) noexcept
       : _M_cur(__p) { }
 
@@ -331,8 +331,7 @@ namespace __detail
       using reference = typename std::conditional<__constant_iterators,
 				  const value_type&, value_type&>::type;
 
-      _Node_iterator() noexcept
-      : __base_type(nullptr) { }
+      _Node_iterator() = default;
 
       explicit
       _Node_iterator(__node_type* __p) noexcept
@@ -379,8 +378,7 @@ namespace __detail
       typedef const value_type*				pointer;
       typedef const value_type&				reference;
 
-      _Node_const_iterator() noexcept
-      : __base_type(nullptr) { }
+      _Node_const_iterator() = default;
 
       explicit
       _Node_const_iterator(__node_type* __p) noexcept
@@ -1219,6 +1217,15 @@ namespace __detail
 	return _M_hash()(__k);
       }
 
+      template<typename _Kt>
+	__hash_code
+	_M_hash_code_tr(const _Kt& __k) const
+	{
+	  static_assert(__is_invocable<const _Hash&, const _Kt&>{},
+	    "hash function must be invocable with an argument of key type");
+	  return _M_hash()(__k);
+	}
+
       std::size_t
       _M_bucket_index(__hash_code __c, std::size_t __bkt_count) const
       { return _RangeHash{}(__c, __bkt_count); }
@@ -1606,6 +1613,19 @@ namespace __detail
 	  "key type");
 	return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
       }
+
+      template<typename _Kt>
+	bool
+	_M_equals_tr(const _Kt& __k, __hash_code __c,
+		     const _Hash_node_value<_Value,
+					    __hash_cached::value>& __n) const
+	{
+	  static_assert(
+	    __is_invocable<const _Equal&, const _Kt&, const _Key&>{},
+	    "key equality predicate must be invocable with two arguments of "
+	    "key type");
+	  return _S_equals(__c, __n) && _M_eq()(__k, _ExtractKey{}(__n._M_v()));
+	}
 
       bool
       _M_node_equals(

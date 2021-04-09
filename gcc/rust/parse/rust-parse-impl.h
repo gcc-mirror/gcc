@@ -729,7 +729,7 @@ Parser<ManagedTokenSource>::parse_attr_input ()
     case LEFT_SQUARE:
       case LEFT_CURLY: {
 	// must be a delimited token tree, so parse that
-	std::unique_ptr<AST::DelimTokenTree> input_tree (
+	std::unique_ptr<AST::AttrInput> input_tree (
 	  new AST::DelimTokenTree (parse_delim_token_tree ()));
 
 	// TODO: potential checks on DelimTokenTree before returning
@@ -785,7 +785,7 @@ Parser<ManagedTokenSource>::parse_attr_input ()
 	AST::LiteralExpr lit_expr (t->get_str (), lit_type, t->get_type_hint (),
 				   {}, t->get_locus ());
 
-	std::unique_ptr<AST::AttrInputLiteral> attr_input_lit (
+	std::unique_ptr<AST::AttrInput> attr_input_lit (
 	  new AST::AttrInputLiteral (std::move (lit_expr)));
 
 	// do checks or whatever? none required, really
@@ -4866,7 +4866,7 @@ Parser<ManagedTokenSource>::parse_trait_item ()
       }
       default: {
 	// TODO: try and parse macro invocation semi - if fails, maybe error.
-	std::unique_ptr<AST::MacroInvocationSemi> macro_invoc
+	std::unique_ptr<AST::TraitItem> macro_invoc
 	  = parse_macro_invocation_semi (outer_attrs);
 
 	if (macro_invoc == nullptr)
@@ -4896,13 +4896,11 @@ Parser<ManagedTokenSource>::parse_trait_type (
   const_TokenPtr ident_tok = expect_token (IDENTIFIER);
   Identifier ident = ident_tok->get_str ();
 
-  bool has_colon = false;
-  std::vector<std::unique_ptr<AST::TypeParamBound>> bounds;
+  std::vector<std::unique_ptr<AST::TypeParamBound> > bounds;
 
   // parse optional colon
   if (lexer.peek_token ()->get_id () == COLON)
     {
-      has_colon = true;
       lexer.skip_token ();
 
       // parse optional type param bounds
@@ -8575,12 +8573,8 @@ std::vector<std::unique_ptr<AST::Pattern>>
 Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
 {
   // skip optional leading '|'
-  bool has_leading_pipe = false;
   if (lexer.peek_token ()->get_id () == PIPE)
-    {
-      has_leading_pipe = true;
-      lexer.skip_token ();
-    }
+    lexer.skip_token ();
   /* TODO: do I even need to store the result of this? can't be used.
    * If semantically different, I need a wrapped "match arm patterns" object for
    * this. */

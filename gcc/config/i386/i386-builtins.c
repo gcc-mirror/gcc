@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1888,7 +1888,7 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
       gcc_assert (new_target);
       
       if (new_target->arch_specified && new_target->arch > 0)
-	for (i = 0; i < (unsigned int) pta_size; i++)
+	for (i = 0; i < pta_size; i++)
 	  if (processor_alias_table[i].processor == new_target->arch)
 	    {
 	      const pta *arch_info = &processor_alias_table[i];

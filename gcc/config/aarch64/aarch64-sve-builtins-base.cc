@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE (__ARM_FEATURE_SVE intrinsics)
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -2294,17 +2294,6 @@ class svundef_impl : public quiet<multi_vector_function>
 public:
   CONSTEXPR svundef_impl (unsigned int vectors_per_tuple)
     : quiet<multi_vector_function> (vectors_per_tuple) {}
-
-  gimple *
-  fold (gimple_folder &f) const OVERRIDE
-  {
-    /* Don't fold svundef at the gimple level.  There's no exact
-       correspondence for SSA_NAMEs, and we explicitly don't want
-       to generate a specific value (like an all-zeros vector).  */
-    if (vectors_per_tuple () == 1)
-      return NULL;
-    return gimple_build_assign (f.lhs, build_clobber (TREE_TYPE (f.lhs)));
-  }
 
   rtx
   expand (function_expander &e) const OVERRIDE

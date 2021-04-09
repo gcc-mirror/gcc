@@ -1,5 +1,5 @@
 /* Define control flow data structures for the CFG.
-   Copyright (C) 2014-2020 Free Software Foundation, Inc.
+   Copyright (C) 2014-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -47,6 +47,7 @@ extern void fixup_partitions (void);
 extern bool purge_dead_edges (basic_block);
 extern bool purge_all_dead_edges (void);
 extern bool fixup_abnormal_edges (void);
+extern void update_cfg_for_uncondjump (rtx_insn *);
 extern rtx_insn *unlink_insn_chain (rtx_insn *, rtx_insn *);
 extern void relink_block_chain (bool);
 extern rtx_insn *duplicate_insn_chain (rtx_insn *, rtx_insn *,

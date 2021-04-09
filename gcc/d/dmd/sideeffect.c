@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -25,7 +25,6 @@
 
 bool walkPostorder(Expression *e, StoppableVisitor *v);
 bool lambdaHasSideEffect(Expression *e);
-Expression *semantic(Expression *e, Scope *sc);
 
 /**************************************************
  * Front-end expression rewriting should create temporary variables for
@@ -425,8 +424,8 @@ Expression *extractSideEffect(Scope *sc, const char *name,
 
     Expression *de = new DeclarationExp(vd->loc, vd);
     Expression *ve = new VarExp(vd->loc, vd);
-    de = semantic(de, sc);
-    ve = semantic(ve, sc);
+    de = expressionSemantic(de, sc);
+    ve = expressionSemantic(ve, sc);
 
     *e0 = Expression::combine(*e0, de);
     return ve;

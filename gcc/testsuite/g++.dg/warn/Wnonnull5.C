@@ -35,29 +35,29 @@ struct S
 
 void warn_nullptr_this ()
 {
-  ((S*)nullptr)->f0 ("");        // { dg-warning "3:'this' pointer null" "pr86568" { xfail *-*-* } }
-                                 // { dg-warning "this' pointer null" "pr86568" { target *-*-* } .-1 }
+  ((S*)nullptr)->f0 ("");        // { dg-warning "3:'this' pointer is null" "pr86568" { xfail *-*-* } }
+                                 // { dg-warning "this' pointer is null" "pr86568 second variant" { target *-*-* } .-1 }
 }
 
 void warn_null_this_cst ()
 {
   S* const null = 0;
-  null->f1 ("");                  // { dg-warning "3:'this' pointer null" }
+  null->f1 ("");                  // { dg-warning "3:'this' pointer is null" }
 }
 
 void warn_null_this_var ()
 {
   S* null = 0;
-  null->f2 (&null);               // { dg-warning "3:'this' pointer null" "pr86568" { xfail *-*-* } }
-                                  // { dg-warning "'this' pointer null" "pr86568" { target *-*-* } .-1 }
+  null->f2 (&null);               // { dg-warning "3:'this' pointer is null" "pr86568" { xfail *-*-* } }
+                                  // { dg-warning "'this' pointer is null" "pr86568 second variant" { target *-*-* } .-1 }
 }
 
 void warn_nullptr (S s)
 {
   s.f3 (nullptr, &s);              // { dg-warning "9:argument 1 null where non-null expected" "pr86568" { xfail *-*-* } }
-                                   // { dg-warning "argument 1 null where non-null expected" "pr86568" { target *-*-* } .-1 }
+                                   // { dg-warning "argument 1 null where non-null expected" "pr86568 second variant" { target *-*-* } .-1 }
   s.f3 (&s, nullptr);              // { dg-warning "13:argument 2 null where non-null expected" "pr86568" { xfail *-*-* } }
-                                   // { dg-warning "argument 2 null where non-null expected" "pr86568" { target *-*-* } .-1 }
+                                   // { dg-warning "argument 2 null where non-null expected" "pr86568 second variant" { target *-*-* } .-1 }
 }
 
 
@@ -72,9 +72,9 @@ void warn_null_var (S s)
 {
   void* null = 0;
   s.f5 (null, &s);                // { dg-warning "9:argument 1 null where non-null expected" "pr86568" { xfail *-*-* } }
-                                  // { dg-warning "argument 1 null where non-null expected" "pr86568" { target *-*-* } .-1 }
+                                  // { dg-warning "argument 1 null where non-null expected" "pr86568 second variant" { target *-*-* } .-1 }
   s.f5 (&s, null);                // { dg-warning "16:argument 2 null where non-null expected" "pr86568" { xfail *-*-* } }
-                                  // { dg-warning "argument 2 null where non-null expected" "pr86568" { target *-*-* } .-1 }
+                                  // { dg-warning "argument 2 null where non-null expected" "pr86568 second variant" { target *-*-* } .-1 }
 }
 
 void warn_null_cond (S s, void *null)
@@ -83,9 +83,9 @@ void warn_null_cond (S s, void *null)
     return;
 
   s.f6 (null, &s);                // { dg-warning "9:argument 1 null where non-null expected" "pr86568" { xfail *-*-* } }
-                                  // { dg-warning "argument 1 null where non-null expected" "pr86568" { target *-*-* } .-1 }
+                                  // { dg-warning "argument 1 null where non-null expected" "pr86568 second variant" { target *-*-* } .-1 }
   s.f6 (&s, null);                // { dg-warning "13:argument 2 null where non-null expected" "pr86568" { xfail *-*-* } }
-                                  // { dg-warning "argument 2 null where non-null expected" "pr86568" { target *-*-* } .-1 }
+                                  // { dg-warning "argument 2 null where non-null expected" "pr86568 second variant" { target *-*-* } .-1 }
 }
 
 

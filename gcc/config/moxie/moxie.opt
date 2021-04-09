@@ -1,6 +1,6 @@
 ; Options for the moxie compiler port.
 
-; Copyright (C) 2012-2020 Free Software Foundation, Inc.
+; Copyright (C) 2012-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -19,15 +19,15 @@
 ; <http://www.gnu.org/licenses/>.
 
 meb
-Target RejectNegative Report InverseMask(LITTLE_ENDIAN)
+Target RejectNegative InverseMask(LITTLE_ENDIAN)
 Generate big-endian code.
 
 mel
-Target RejectNegative Report Mask(LITTLE_ENDIAN)
+Target RejectNegative Mask(LITTLE_ENDIAN)
 Generate little-endian code.
 
 mmul.x
-Target Report Mask(HAS_MULX)
+Target Mask(HAS_MULX)
 Enable MUL.X and UMUL.X instructions.
 
 ; Ignored by the compiler

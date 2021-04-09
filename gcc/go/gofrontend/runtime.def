@@ -62,12 +62,6 @@ DEF_GO_RUNTIME(STRINGTOSLICERUNE, "runtime.stringtoslicerune",
 	       P2(POINTER, STRING), R1(SLICE))
 
 
-// Complex division.
-DEF_GO_RUNTIME(COMPLEX64_DIV, "__go_complex64_div",
-	       P2(COMPLEX64, COMPLEX64), R1(COMPLEX64))
-DEF_GO_RUNTIME(COMPLEX128_DIV, "__go_complex128_div",
-	       P2(COMPLEX128, COMPLEX128), R1(COMPLEX128))
-
 // Make a slice.
 DEF_GO_RUNTIME(MAKESLICE, "runtime.makeslice", P3(TYPE, INT, INT),
 	       R1(POINTER))
@@ -201,8 +195,8 @@ DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P2(CHAN, POINTER), R1(BOOL))
 
 // Run a select, returning the index of the selected clause and
 // whether that channel received a value.
-DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P3(POINTER, POINTER, INT),
-	       R2(INT, BOOL))
+DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo",
+	       P5(POINTER, POINTER, INT, INT, BOOL), R2(INT, BOOL))
 
 // Non-blocking send a value on a channel, used for two-case select
 // statement with a default case.
@@ -248,14 +242,6 @@ DEF_GO_RUNTIME(DEFERRETURN, "runtime.deferreturn", P1(BOOLPTR), R0())
 DEF_GO_RUNTIME(CLOSE, "runtime.closechan", P1(CHAN), R0())
 
 
-// Copy.
-DEF_GO_RUNTIME(SLICECOPY, "runtime.slicecopy",
-	       P5(POINTER, INT, POINTER, INT, UINTPTR), R1(INT))
-
-// Copy from string.
-DEF_GO_RUNTIME(SLICESTRINGCOPY, "runtime.slicestringcopy",
-	       P3(POINTER, INT, STRING), R1(INT))
-
 // Copy of value containing pointers.
 DEF_GO_RUNTIME(TYPEDSLICECOPY, "runtime.typedslicecopy",
 	       P5(TYPE, POINTER, INT, POINTER, INT), R1(INT))
@@ -264,6 +250,11 @@ DEF_GO_RUNTIME(TYPEDSLICECOPY, "runtime.typedslicecopy",
 DEF_GO_RUNTIME(GROWSLICE, "runtime.growslice",
                P5(TYPE, POINTER, INT, INT, INT), R1(SLICE))
 
+
+// Check the length and cap passed to make, without making a slice.
+// This is used for apend(s, make([]T, len)...).
+DEF_GO_RUNTIME(CHECK_MAKE_SLICE, "runtime.checkMakeSlice", P3(TYPE, INT, INT),
+	       R1(UINTPTR))
 
 // Register roots (global variables) for the garbage collector.
 DEF_GO_RUNTIME(REGISTER_GC_ROOTS, "runtime.registerGCRoots", P1(POINTER), R0())

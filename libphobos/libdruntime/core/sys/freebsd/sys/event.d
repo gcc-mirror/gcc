@@ -18,6 +18,7 @@ extern (C):
 nothrow:
 @nogc:
 
+import core.sys.freebsd.config;
 import core.stdc.stdint;    // intptr_t, uintptr_t
 import core.sys.posix.time; // timespec
 
@@ -38,19 +39,35 @@ enum
     EVFILT_SYSCOUNT =  11,
 }
 
+static if (__FreeBSD_version >= 1200000)
+{
+    struct kevent_t
+    {
+        uintptr_t ident;
+        short     filter;
+        ushort    flags;
+        uint      fflags;
+        long      data;
+        void*     udata;
+        ulong[4]  ext;
+    }
+}
+else
+{
+    struct kevent_t
+    {
+        uintptr_t    ident; /* identifier for this event */
+        short       filter; /* filter for event */
+        ushort       flags;
+        uint        fflags;
+        intptr_t      data;
+        void        *udata; /* opaque user data identifier */
+    }
+}
+
 extern(D) void EV_SET(kevent_t* kevp, typeof(kevent_t.tupleof) args)
 {
     *kevp = kevent_t(args);
-}
-
-struct kevent_t
-{
-    uintptr_t    ident; /* identifier for this event */
-    short       filter; /* filter for event */
-    ushort       flags;
-    uint        fflags;
-    intptr_t      data;
-    void        *udata; /* opaque user data identifier */
 }
 
 enum
@@ -144,6 +161,23 @@ enum
 }
 
 int kqueue();
-int kevent(int kq, const kevent_t *changelist, int nchanges,
-           kevent_t *eventlist, int nevents,
-           const timespec *timeout);
+
+version (GNU)
+{
+    int kevent(int kq, const kevent_t *changelist, int nchanges,
+               kevent_t *eventlist, int nevents,
+               const timespec *timeout);
+}
+else
+{
+    static if (__FreeBSD_version >= 1200000)
+        pragma(mangle, "kevent@@FBSD_1.5")
+        int kevent(int kq, const kevent_t *changelist, int nchanges,
+                   kevent_t *eventlist, int nevents,
+                   const timespec *timeout);
+    else
+        pragma(mangle, "kevent@FBSD_1.0")
+        int kevent(int kq, const kevent_t *changelist, int nchanges,
+                   kevent_t *eventlist, int nevents,
+                   const timespec *timeout);
+}

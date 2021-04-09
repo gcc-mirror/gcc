@@ -43,7 +43,7 @@ void test_cst_off ()
     /* Offsets are treated as signed so SIZE_MAX is indistinguishable
        from -1.  */
     char ca1[1];                // { dg-message "at offset \\d+ from 'ca1' declared here" "note" { xfail *-*-* } }
-                                // { dg-message "at offset -1 from 'ca1' declared here" "note" { target *-*-* } .-1 }
+                                // { dg-message "at offset -1 from 'ca1' declared here" "note second variant" { target *-*-* } .-1 }
     new (ca1 + SIZE_MAX) S<1>;  // { dg-warning "constructing an object of type 'S<1>' and size '1' in a region of type 'char \\\[1]' and size '0'" }
   }
 }

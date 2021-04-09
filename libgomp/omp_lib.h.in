@@ -1,4 +1,4 @@
-!  Copyright (C) 2005-2020 Free Software Foundation, Inc.
+!  Copyright (C) 2005-2021 Free Software Foundation, Inc.
 !  Contributed by Jakub Jelinek <jakub@redhat.com>.
 
 !  This file is part of the GNU Offloading and Multi Processing Library
@@ -82,10 +82,12 @@
 
       integer omp_allocator_handle_kind, omp_alloctrait_key_kind
       integer omp_alloctrait_val_kind, omp_memspace_handle_kind
+      integer omp_event_handle_kind
       parameter (omp_allocator_handle_kind = @INTPTR_T_KIND@)
       parameter (omp_alloctrait_key_kind = 4)
       parameter (omp_alloctrait_val_kind = @INTPTR_T_KIND@)
       parameter (omp_memspace_handle_kind = @INTPTR_T_KIND@)
+      parameter (omp_event_handle_kind = @INTPTR_T_KIND@)
       integer (omp_alloctrait_key_kind) omp_atk_sync_hint
       integer (omp_alloctrait_key_kind) omp_atk_alignment
       integer (omp_alloctrait_key_kind) omp_atk_access
@@ -244,6 +246,8 @@
 
       external omp_get_max_task_priority
       integer(4) omp_get_max_task_priority
+
+      external omp_fulfill_event
 
       external omp_set_affinity_format, omp_get_affinity_format
       external omp_display_affinity, omp_capture_affinity

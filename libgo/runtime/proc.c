@@ -222,6 +222,9 @@ runtime_m(void)
 }
 
 // Set g.
+
+void runtime_setg(G*) __attribute__ ((no_split_stack));
+
 void
 runtime_setg(G* gp)
 {
@@ -799,8 +802,8 @@ runtime_malg(bool allocatestack, bool signalstack, byte** ret_stack, uintptr* re
 		if(signalstack) {
 			stacksize = 32 * 1024; // OS X wants >= 8K, GNU/Linux >= 2K
 #ifdef SIGSTKSZ
-			if(stacksize < SIGSTKSZ)
-				stacksize = SIGSTKSZ;
+			if(stacksize < (uintptr)(SIGSTKSZ))
+				stacksize = (uintptr)(SIGSTKSZ);
 #endif
 		}
 

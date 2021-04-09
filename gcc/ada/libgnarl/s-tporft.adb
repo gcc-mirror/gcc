@@ -53,6 +53,7 @@ begin
 
    Local_ATCB.Common.LL.Thread := Thread;
    Local_ATCB.Common.Current_Priority := System.Priority'First;
+   Local_ATCB.Common.Global_Task_Lock_Nesting := 0;
    Specific.Set (Local_ATCB'Unchecked_Access);
 
    --  It is now safe to use an allocator

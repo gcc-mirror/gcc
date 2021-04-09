@@ -42,12 +42,12 @@ int main ()
       || ue[0] != 27L || ue[1] != 27L || uf[0] != 14L || uf[1] != 14L)
     abort ();
 
-  vector double da = vec_ctf (sa, -2);
+  vector double da = vec_ctf (sa, 2);
   vector double db = vec_ctf (ua, 2);
-  vector long long sg = vec_cts (da, -2);
+  vector long long sg = vec_cts (da, 2);
   vector unsigned long long ug = vec_ctu (db, 2);
 
-  if (da[0] != 108.0 || da[1] != -56.0 || db[0] != 6.75 || db[1] != 3.5
+  if (da[0] != 6.75 || da[1] != -3.5 || db[0] != 6.75 || db[1] != 3.5
       || sg[0] != 27L || sg[1] != -14L || ug[0] != 27L || ug[1] != 14L)
     abort ();
 

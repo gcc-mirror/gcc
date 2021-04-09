@@ -8,6 +8,7 @@
  */
 module core.sys.windows.rpcndr;
 version (Windows):
+@system:
 pragma(lib, "rpcrt4");
 
 /* Translation notes:
@@ -19,9 +20,9 @@ pragma(lib, "rpcrt4");
 enum __RPCNDR_H_VERSION__= 450;
 
 import core.sys.windows.rpcnsip;
-private import core.sys.windows.rpc, core.sys.windows.rpcdce, core.sys.windows.unknwn, core.sys.windows.windef;
-private import core.sys.windows.objidl; // for IRpcChannelBuffer, IRpcStubBuffer
-private import core.sys.windows.basetyps;
+import core.sys.windows.rpc, core.sys.windows.rpcdce, core.sys.windows.unknwn, core.sys.windows.windef;
+import core.sys.windows.objidl; // for IRpcChannelBuffer, IRpcStubBuffer
+import core.sys.windows.basetyps;
 
 extern (Windows):
 

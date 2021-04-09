@@ -527,7 +527,12 @@ public:
       }
   }
 
-  bool was_substituted () const { return !used_arguments.is_error (); }
+  bool needs_substitution () const
+  {
+    return has_substitutions () && used_arguments.is_error ();
+  }
+
+  bool was_substituted () const { return !needs_substitution (); }
 
   SubstitutionArgumentMappings get_substitution_arguments ()
   {
@@ -966,11 +971,21 @@ class USizeType : public BaseType
 public:
   USizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::USIZE)
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   USizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::USIZE)
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   void accept_vis (TyVisitor &vis) override;
 
@@ -988,11 +1003,21 @@ class ISizeType : public BaseType
 public:
   ISizeType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ISIZE)
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   ISizeType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ISIZE)
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   void accept_vis (TyVisitor &vis) override;
 
@@ -1010,12 +1035,21 @@ class CharType : public BaseType
 public:
   CharType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::CHAR)
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   CharType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::CHAR)
-
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   void accept_vis (TyVisitor &vis) override;
 
@@ -1034,12 +1068,22 @@ public:
   ReferenceType (HirId ref, TyVar base,
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::REF), base (base)
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   ReferenceType (HirId ref, HirId ty_ref, TyVar base,
 		 std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::REF), base (base)
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   BaseType *get_base () const;
 
@@ -1064,11 +1108,21 @@ class StrType : public BaseType
 public:
   StrType (HirId ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::STR)
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   StrType (HirId ref, HirId ty_ref, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::STR)
-  {}
+  {
+    // TODO unused; should 'refs' be passed as the last argument to the
+    // 'BaseType' constructor call?  Potential change in behavior (if 'refs' is
+    // provided by caller)?
+    (void) refs;
+  }
 
   std::string get_name () const override final { return as_string (); }
 

@@ -1,4 +1,4 @@
-@c Copyright (C) 1999-2020 Free Software Foundation, Inc.
+@c Copyright (C) 1999-2021 Free Software Foundation, Inc.
 @c This is part of the CPP and GCC manuals.
 @c For copying conditions, see the file gcc.texi.
 
@@ -138,6 +138,10 @@ also suppresses preprocessed output, as a missing header file renders
 this useless.
 
 This feature is used in automatic updating of makefiles.
+
+@item -Mno-modules
+@opindex Mno-modules
+Disable dependency generation for compiled module interfaces.
 
 @item -MP
 @opindex MP

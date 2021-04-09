@@ -18,8 +18,8 @@ foo (T x)
   unsigned long ret = 0;
   while (x > 0)
     {
-      ret = ret + x % 10;
-      x = x / 10;
+      ret = ret + x % 123456;
+      x = x / 123456;
     }
   return ret;
 }

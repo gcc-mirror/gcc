@@ -1,5 +1,5 @@
 /* Lower vector operations to scalar operations.
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2089,7 +2089,7 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi,
       if (op >= FIRST_NORM_OPTAB && op <= LAST_NORM_OPTAB
 	  && optab_handler (op, TYPE_MODE (TREE_TYPE (type))) != CODE_FOR_nothing)
 	{
-	  tree slhs = make_ssa_name (TREE_TYPE (srhs1));
+	  tree slhs = make_ssa_name (TREE_TYPE (TREE_TYPE (lhs)));
 	  gimple *repl = gimple_build_assign (slhs, code, srhs1, srhs2);
 	  gsi_insert_before (gsi, repl, GSI_SAME_STMT);
 	  gimple_assign_set_rhs_from_tree (gsi,

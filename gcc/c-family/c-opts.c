@@ -1,5 +1,5 @@
 /* C/ObjC/C++ command line option handling.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Neil Booth.
 
 This file is part of GCC.
@@ -113,6 +113,7 @@ static void set_std_cxx11 (int);
 static void set_std_cxx14 (int);
 static void set_std_cxx17 (int);
 static void set_std_cxx20 (int);
+static void set_std_cxx23 (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
@@ -234,6 +235,7 @@ c_common_init_options (unsigned int decoded_options_count,
   cpp_opts = cpp_get_options (parse_in);
   cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
   cpp_opts->objc = c_dialect_objc ();
+  cpp_opts->deps.modules = true;
 
   /* Reset to avoid warnings on internal definitions.  We set it just
      before passing on command-line options to cpplib.  */
@@ -365,6 +367,18 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_MP:
       deps_seen = true;
       cpp_opts->deps.phony_targets = true;
+      break;
+
+    case OPT_Mmodules:
+      /* Do not set deps_seen, so the user can unconditionally turn
+	 this on or off.  */
+      cpp_opts->deps.modules = true;
+      break;
+
+    case OPT_Mno_modules:
+      /* Do not set deps_seen, so the user can unconditionally turn
+	 this on or off.  */
+      cpp_opts->deps.modules = false;
       break;
 
     case OPT_MQ:
@@ -634,6 +648,12 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_std_gnu__20:
       if (!preprocessing_asm_p)
 	set_std_cxx20 (code == OPT_std_c__20 /* ISO */);
+      break;
+
+    case OPT_std_c__23:
+    case OPT_std_gnu__23:
+      if (!preprocessing_asm_p)
+	set_std_cxx23 (code == OPT_std_c__23 /* ISO */);
       break;
 
     case OPT_std_c90:
@@ -1006,7 +1026,7 @@ c_common_post_options (const char **pfilename)
 	warn_narrowing = 1;
 
       /* Unless -f{,no-}ext-numeric-literals has been used explicitly,
-	 for -std=c++{11,14,17,2a} default to -fno-ext-numeric-literals.  */
+	 for -std=c++{11,14,17,20,23} default to -fno-ext-numeric-literals.  */
       if (flag_iso && !global_options_set.x_flag_ext_numeric_literals)
 	cpp_opts->ext_numeric_literals = 0;
     }
@@ -1750,7 +1770,7 @@ set_std_cxx20 (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  /* C++17 includes the C11 standard library.  */
+  /* C++20 includes the C11 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
@@ -1758,6 +1778,24 @@ set_std_cxx20 (int iso)
   flag_coroutines = true;
   cxx_dialect = cxx20;
   lang_hooks.name = "GNU C++20";
+}
+
+/* Set the C++ 2023 standard (without GNU extensions if ISO).  */
+static void
+set_std_cxx23 (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_CXX23: CLK_GNUCXX23);
+  flag_no_gnu_keywords = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  /* C++23 includes the C11 standard library.  */
+  flag_isoc94 = 1;
+  flag_isoc99 = 1;
+  flag_isoc11 = 1;
+  /* C++23 includes coroutines.  */
+  flag_coroutines = true;
+  cxx_dialect = cxx23;
+  lang_hooks.name = "GNU C++23";
 }
 
 /* Args to -d specify what to dump.  Silently ignore

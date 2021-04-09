@@ -261,11 +261,13 @@ void test8234()
 /***************************************************/
 // 8504
 
+import core.demangle : demangle;
+
 void foo8504()()
 {
     static assert(typeof(foo8504!()).stringof == "void()");
     static assert(typeof(foo8504!()).mangleof == "FZv");
-    static assert(foo8504!().mangleof == "_D13testInference12__T7foo8504Z7foo8504FZv");
+    static assert(demangle(foo8504!().mangleof) == "void testInference.foo8504!().foo8504()");
 }
 
 auto toDelegate8504a(F)(auto ref F fp) { return fp; }
@@ -277,7 +279,7 @@ void test8504()
 {
     static assert(typeof(foo8504!()).stringof == "pure nothrow @nogc @safe void()");
     static assert(typeof(foo8504!()).mangleof == "FNaNbNiNfZv");
-    static assert(foo8504!().mangleof == "_D13testInference12__T7foo8504Z7foo8504FNaNbNiNfZv");
+    static assert(demangle(foo8504!().mangleof) == "pure nothrow @nogc @safe void testInference.foo8504!().foo8504()");
 
     auto fp1 = toDelegate8504a(&testC8504);
     auto fp2 = toDelegate8504b(&testC8504);
@@ -651,7 +653,7 @@ void foo10296()()
 
     void bar()() { a[1] = 2; }
     bar();
-    pragma(msg, typeof(bar!()));    // nothrow @safe void()
+    static assert(typeof(bar!()).stringof == "pure nothrow @nogc @safe void()");    // nothrow @safe void()
 }
 pure void test10296()
 {
@@ -809,7 +811,7 @@ void test13840() nothrow
             func13840();        // throwable function call
         }
     }
-    catch
+    catch(Throwable)
     {}
 }
 

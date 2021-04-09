@@ -103,6 +103,8 @@
 #define SIZE 252
 #elif defined (__csky__)
 #  define SIZE 252
+#elif defined (__CRIS__)
+#  define SIZE 252
 #else
 #  define SIZE 256
 #endif

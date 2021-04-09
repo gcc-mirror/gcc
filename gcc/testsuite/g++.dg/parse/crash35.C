@@ -4,4 +4,4 @@
 struct a {};
 
 class foo : public a, a		// { dg-error "duplicate base" }
-{ // { dg-error "-:at end of input" "" { target *-*-* } .+1 } 
+{ // { dg-error "2:at end of input" } 

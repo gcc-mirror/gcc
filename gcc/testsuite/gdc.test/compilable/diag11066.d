@@ -1,10 +1,4 @@
 // REQUIRED_ARGS: -w -profile
-/*
-TEST_OUTPUT:
----
----
-*/
-
 void main()
 {
     string s;

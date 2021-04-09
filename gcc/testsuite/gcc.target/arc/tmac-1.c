@@ -7,5 +7,5 @@
 
 /* { dg-final { scan-assembler "macd " } } */
 /* { dg-final { scan-assembler "macdu" } } */
-/* { dg-final { scan-assembler "mpyd " } } */
+/* { dg-final { scan-assembler "mpyd\\t" } } */
 /* { dg-final { scan-assembler "mpydu" } } */

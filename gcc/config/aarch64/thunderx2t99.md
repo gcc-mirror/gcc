@@ -1,5 +1,5 @@
 ;; Cavium ThunderX 2 CN99xx pipeline description
-;; Copyright (C) 2016-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2016-2021 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Cavium, Broadcom and Mentor Embedded.
 
@@ -109,7 +109,7 @@
 
 (define_insn_reservation "thunderx2t99_alu_shift" 2
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "alu_shift_imm,alu_ext,\
+       (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,alu_ext,\
 			alus_shift_imm,alus_ext,\
 			logic_shift_imm,logics_shift_imm"))
   "thunderx2t99_i012,thunderx2t99_i012")

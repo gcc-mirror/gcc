@@ -118,10 +118,6 @@ public:
       }
 
     infered = field_tyty->get_field_type ();
-    printf ("ZXZX resolved: %s to: \n", expr.as_string ().c_str ());
-    adt->debug ();
-    infered->debug ();
-    printf ("ZXZX done\n");
   }
 
   void visit (HIR::TupleExpr &expr) override
@@ -250,7 +246,7 @@ public:
 	if (receiver_tyty->get_kind () == TyTy::TypeKind::ADT)
 	  {
 	    TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver_tyty);
-	    if (adt->has_substitutions ())
+	    if (adt->has_substitutions () && fn->needs_substitution ())
 	      {
 		rust_assert (adt->was_substituted ());
 		lookup

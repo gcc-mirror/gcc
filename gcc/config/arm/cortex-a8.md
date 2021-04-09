@@ -1,5 +1,5 @@
 ;; ARM Cortex-A8 scheduling description.
-;; Copyright (C) 2007-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2007-2021 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 
 ;; This file is part of GCC.
@@ -95,7 +95,7 @@
 
 (define_insn_reservation "cortex_a8_alu_shift" 2
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "alu_shift_imm,alus_shift_imm,\
+       (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,alus_shift_imm,\
                         logic_shift_imm,logics_shift_imm,\
                         extend"))
   "cortex_a8_default")

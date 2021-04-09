@@ -1,5 +1,5 @@
 /* Main parser.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
    Contributed by Andy Vaught
 
 This file is part of GCC.
@@ -999,6 +999,7 @@ decode_omp_directive (void)
       matcho ("requires", gfc_match_omp_requires, ST_OMP_REQUIRES);
       break;
     case 's':
+      matcho ("scan", gfc_match_omp_scan, ST_OMP_SCAN);
       matcho ("sections", gfc_match_omp_sections, ST_OMP_SECTIONS);
       matcho ("section", gfc_match_omp_eos_error, ST_OMP_SECTION);
       matcho ("single", gfc_match_omp_single, ST_OMP_SINGLE);
@@ -1590,7 +1591,7 @@ next_statement (void)
   case ST_OMP_CANCEL: case ST_OMP_CANCELLATION_POINT: \
   case ST_OMP_TARGET_UPDATE: case ST_OMP_TARGET_ENTER_DATA: \
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: \
-  case ST_ERROR_STOP: case ST_SYNC_ALL: \
+  case ST_ERROR_STOP: case ST_OMP_SCAN: case ST_SYNC_ALL: \
   case ST_SYNC_IMAGES: case ST_SYNC_MEMORY: case ST_LOCK: case ST_UNLOCK: \
   case ST_FORM_TEAM: case ST_CHANGE_TEAM: \
   case ST_END_TEAM: case ST_SYNC_TEAM: \
@@ -2446,6 +2447,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_REQUIRES:
       p = "!$OMP REQUIRES";
+      break;
+    case ST_OMP_SCAN:
+      p = "!$OMP SCAN";
       break;
     case ST_OMP_SECTIONS:
       p = "!$OMP SECTIONS";

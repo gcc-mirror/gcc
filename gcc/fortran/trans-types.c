@@ -1,5 +1,5 @@
 /* Backend support for Fortran 95 basic types and derived types.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Paul Brook <paul@nowt.org>
    and Steven Bosscher <s.bosscher@student.tudelft.nl>
 
@@ -114,6 +114,7 @@ int gfc_default_character_kind;
 int gfc_default_logical_kind;
 int gfc_default_complex_kind;
 int gfc_c_int_kind;
+int gfc_c_intptr_kind;
 int gfc_atomic_int_kind;
 int gfc_atomic_logical_kind;
 
@@ -691,6 +692,8 @@ gfc_init_kinds (void)
   /* Choose atomic kinds to match C's int.  */
   gfc_atomic_int_kind = gfc_c_int_kind;
   gfc_atomic_logical_kind = gfc_c_int_kind;
+
+  gfc_c_intptr_kind = POINTER_SIZE / 8;
 }
 
 
@@ -3008,8 +3011,13 @@ create_fn_spec (gfc_symbol *sym, tree fntype)
   return build_type_attribute_variant (fntype, tmp);
 }
 
+
+/* NOTE: The returned function type must match the argument list created by
+   create_function_arglist.  */
+
 tree
-gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args)
+gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
+		       const char *fnspec)
 {
   tree type;
   vec<tree, va_gc> *typelist = NULL;
@@ -3115,10 +3123,11 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args)
         }
     }
 
-  /* Add hidden string length parameters.  */
+  /* Add hidden arguments.  */
   for (f = gfc_sym_get_dummy_args (sym); f; f = f->next)
     {
       arg = f->sym;
+      /* Add hidden string length parameters.  */
       if (arg && arg->ts.type == BT_CHARACTER && !sym->attr.is_bind_c)
 	{
 	  if (!arg->ts.deferred)
@@ -3141,6 +3150,20 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args)
 	       && arg->ts.type != BT_CLASS
 	       && !gfc_bt_struct (arg->ts.type))
 	vec_safe_push (typelist, boolean_type_node);
+      /* Coarrays which are descriptorless or assumed-shape pass with
+	 -fcoarray=lib the token and the offset as hidden arguments.  */
+      else if (arg
+	       && flag_coarray == GFC_FCOARRAY_LIB
+	       && ((arg->ts.type != BT_CLASS
+		    && arg->attr.codimension
+		    && !arg->attr.allocatable)
+		   || (arg->ts.type == BT_CLASS
+		       && CLASS_DATA (arg)->attr.codimension
+		       && !CLASS_DATA (arg)->attr.allocatable)))
+	{
+	  vec_safe_push (typelist, pvoid_type_node);  /* caf_token.  */
+	  vec_safe_push (typelist, gfc_array_index_type);  /* caf_offset.  */
+	}
     }
 
   if (!vec_safe_is_empty (typelist)
@@ -3193,7 +3216,19 @@ arg_type_list_done:
     type = build_varargs_function_type_vec (type, typelist);
   else
     type = build_function_type_vec (type, typelist);
-  type = create_fn_spec (sym, type);
+
+  /* If we were passed an fn spec, add it here, otherwise determine it from
+     the formal arguments.  */
+  if (fnspec)
+    {
+      tree tmp;
+      int spec_len = strlen (fnspec);
+      tmp = build_tree_list (NULL_TREE, build_string (spec_len, fnspec));
+      tmp = tree_cons (get_identifier ("fn spec"), tmp, TYPE_ATTRIBUTES (type));
+      type = build_type_attribute_variant (type, tmp);
+    }
+  else
+    type = create_fn_spec (sym, type);
 
   return type;
 }

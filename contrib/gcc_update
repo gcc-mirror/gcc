@@ -89,6 +89,7 @@ gcc/config/c6x/c6x-mult.md: gcc/config/c6x/c6x-mult.md.in gcc/config/c6x/genmult
 gcc/config/m68k/m68k-tables.opt: gcc/config/m68k/m68k-devices.def gcc/config/m68k/m68k-isas.def gcc/config/m68k/m68k-microarchs.def gcc/config/m68k/genopt.sh
 gcc/config/mips/mips-tables.opt: gcc/config/mips/mips-cpus.def gcc/config/mips/genopt.sh
 gcc/config/rs6000/rs6000-tables.opt: gcc/config/rs6000/rs6000-cpus.def gcc/config/rs6000/genopt.sh
+gcc/config/rs6000/fusion.md: gcc/config/rs6000/genfusion.pl
 gcc/config/tilegx/mul-tables.c: gcc/config/tilepro/gen-mul-tables.cc
 gcc/config/tilepro/mul-tables.c: gcc/config/tilepro/gen-mul-tables.cc
 # And then, language-specific files
@@ -102,6 +103,9 @@ gcc/testsuite/gcc.dg/cpp/direct2s.c: gcc/testsuite/gcc.dg/cpp/direct2.c
 # lto-plugin
 lto-plugin/configure: lto-plugin/configure.ac lto-plugin/aclocal.m4
 lto-plugin/Makefile.in: lto-plugin/Makefile.am lto-plugin/aclocal.m4
+# tools
+c++tools/configure: c++tools/configure.ac
+c++tools/config.h.in: c++tools/configure.ac
 # And libraries, at last
 libbanshee/configure: libbanshee/configure.ac
 libmudflap/configure: libmudflap/configure.ac
@@ -126,6 +130,7 @@ libquadmath/configure: libquadmath/configure.ac libquadmath/aclocal.m4
 libquadmath/aclocal.m4: libquadmath/configure.ac libquadmath/acinclude.m4
 libquadmath/Makefile.in: libquadmath/Makefile.am libquadmath/configure.ac libgfortran/aclocal.m4
 libgfortran/configure: libgfortran/configure.ac libgfortran/aclocal.m4
+libcody/configure: libcody/configure.ac libcody/config.m4
 libcpp/aclocal.m4: libcpp/configure.ac
 libcpp/Makefile.in: libcpp/configure.ac libcpp/aclocal.m4
 libcpp/configure: libcpp/configure.ac libcpp/aclocal.m4

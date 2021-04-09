@@ -1,5 +1,5 @@
 ;; ARM Cortex-A9 pipeline description
-;; Copyright (C) 2008-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2008-2021 Free Software Foundation, Inc.
 ;; Originally written by CodeSourcery for VFP.
 ;;
 ;; Rewritten by Ramana Radhakrishnan <ramana.radhakrishnan@arm.com>
@@ -93,7 +93,7 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 ;; An instruction using the shifter will go down E1.
 (define_insn_reservation "cortex_a9_dp_shift" 3
    (and (eq_attr "tune" "cortexa9")
-        (eq_attr "type" "alu_shift_imm,alus_shift_imm,\
+        (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,alus_shift_imm,\
                          logic_shift_imm,logics_shift_imm,\
                          alu_shift_reg,alus_shift_reg,\
                          logic_shift_reg,logics_shift_reg,\

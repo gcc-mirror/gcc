@@ -9,9 +9,10 @@
  */
 module core.sys.windows.mgmtapi;
 version (Windows):
+@system:
 
 import core.sys.windows.snmp;
-private import core.sys.windows.windef;
+import core.sys.windows.windef;
 
 enum {
     SNMP_MGMTAPI_TIMEOUT = 40,

@@ -29,13 +29,26 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  This package contains routines for scanning real values for use in
+--  Text_IO.Float_IO and the Value attribute.
+
+generic
+
+   type Num is digits <>;
+
+   type Uns is mod <>;
+
+   Maxpow : Positive;
+
+   Powten_Address : System.Address;
+
 package System.Val_Real is
    pragma Preelaborate;
 
    function Scan_Real
      (Str : String;
       Ptr : not null access Integer;
-      Max : Integer) return Long_Long_Float;
+      Max : Integer) return Num;
    --  This function scans the string starting at Str (Ptr.all) for a valid
    --  real literal according to the syntax described in (RM 3.5(43)). The
    --  substring scanned extends no further than Str (Max). There are three
@@ -65,10 +78,10 @@ package System.Val_Real is
    --  If this occurs Program_Error is raised with a message noting that this
    --  case is not supported. Most such cases are eliminated by the caller.
 
-   function Value_Real (Str : String) return Long_Long_Float;
+   function Value_Real (Str : String) return Num;
    --  Used in computing X'Value (Str) where X is a floating-point type or an
    --  ordinary fixed-point type. Str is the string argument of the attribute.
    --  Constraint_Error is raised if the string is malformed, or if the value
-   --  out of range of Long_Long_Float.
+   --  out of range of Num.
 
 end System.Val_Real;

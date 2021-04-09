@@ -317,6 +317,7 @@ package body System.Bitfield_Utils is
                  Get_Val_2 (S_Addr, S_Off, Initial_Size);
                Initial_Val : constant Val :=
                  Get_Bitfield (Initial_Val_2, S_Off, Initial_Size);
+
             begin
                Set_Bitfield
                  (Initial_Val, D_Addr, D_Off, Initial_Size);

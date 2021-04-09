@@ -1,5 +1,53 @@
-// RUNNABLE_PHOBOS_TEST
-// PERMUTE_ARGS:
+/* RUNNABLE_PHOBOS_TEST
+PERMUTE_ARGS:
+EXTRA_FILES: imports/testmangle.d
+TEST_OUTPUT:
+---
+func
+double
+All good 1
+All good 2
+All good 3
+_D7imports10testmangle12detectMangleFPSQBlQBg6DetectZQq
+_D7imports10testmangle__T10DetectTmplTiZQpFNaNbNiNfZv
+true
+false
+uint
+int[]
+int[]
+const(K5886)
+4 ; const(K5886)
+8 ; const(K5886)
+K5886
+immutable(K5886)
+4 ; K5886
+4 ; immutable(K5886)
+1 ; K5886
+2 ; const(K5886)
+3 ; immutable(K5886)
+8 ; K5886
+9 ; const(K5886)
+10 ; immutable(K5886)
+> U = int, N:$?:64=ulong = 3LU|32=uint = 3u$
+K=string, V=int
+K=char, V=string
+T = SA, E = int, dim = $?:64=5LU|32=5u$
+T = DA, E = int
+T = AA, K = string, V = int
+pure nothrow @nogc @safe void(int t)
+pure nothrow @nogc @safe void(int t)
+T = byte
+T = char
+---
+
+RUN_OUTPUT:
+---
+typeof(T)=double typeof(S)=int
+typeof(T)=double typeof(S)=int
+typeof(T)=float typeof(S)=int
+Success
+---
+*/
 
 module breaker;
 
@@ -4465,6 +4513,7 @@ void test13807()
 
 /******************************************/
 // 14174
+import imports.testmangle;
 
 struct Config14174(a, b) {}
 
@@ -4474,22 +4523,22 @@ alias defConfig14174 = Config14174!(N14174, N14174);
 
 void accepter14174a(Config : Config14174!(T) = defConfig14174, T...)()
 {
-    static assert(accepter14174a.mangleof
-        == "_D7breaker131__T14"~
+    static assert(equalDemangle(accepter14174a.mangleof,
+           "_D7breaker131__T14"~
            "accepter14174a"~
            "HTS7breaker51__T11Config14174TS7breaker6N14174TS7breaker6N14174Z11Config14174TS7breaker6N14174TS7breaker6N14174Z14"~
            "accepter14174a"~
-           "FZv");
+           "FZv"));
 }
 
 void accepter14174b(Config : Config14174!(T) = defConfig14174, T...)()
 {
-    static assert(accepter14174b.mangleof
-        == "_D7breaker131__T14"~
+    static assert(equalDemangle(accepter14174b.mangleof,
+           "_D7breaker131__T14"~
            "accepter14174b"~
            "HTS7breaker51__T11Config14174TS7breaker6N14174TS7breaker6N14174Z11Config14174TS7breaker6N14174TS7breaker6N14174Z14"~
            "accepter14174b"~
-           "FZv");
+           "FZv"));
 }
 
 void test14174()

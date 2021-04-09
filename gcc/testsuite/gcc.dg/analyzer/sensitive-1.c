@@ -6,6 +6,11 @@
 
 #include <string.h>
 
+/* Declare getpass, in case unistd doesn't declare it.
+   Parenthesize it, in case it's a macro.
+   Don't use a prototype, to avoid const mismatches.  */
+extern char *(getpass) ();
+
 char test_1 (FILE *logfile)
 {
   char *password = getpass (">"); /* { dg-message "\\(1\\) sensitive value acquired here" } */

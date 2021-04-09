@@ -138,11 +138,6 @@ package body Repinfo is
    -- Local Subprograms --
    -----------------------
 
-   function Back_End_Layout return Boolean;
-   --  Test for layout mode, True = back end, False = front end. This function
-   --  is used rather than checking the configuration parameter because we do
-   --  not want Repinfo to depend on Targparm.
-
    procedure List_Entities
      (Ent              : Entity_Id;
       Bytes_Big_Endian : Boolean;
@@ -217,18 +212,6 @@ package body Repinfo is
    --  dependent on discriminants are written as two question marks. If the
    --  flag Paren is set, then the output is surrounded in parentheses if it is
    --  other than a simple value.
-
-   ---------------------
-   -- Back_End_Layout --
-   ---------------------
-
-   function Back_End_Layout return Boolean is
-   begin
-      --  We have back-end layout if the back end has made any entries in the
-      --  table of GCC expressions, otherwise we have front-end layout.
-
-      return Rep_Table.Last > 0;
-   end Back_End_Layout;
 
    ------------------------
    -- Create_Discrim_Ref --
@@ -1223,14 +1206,6 @@ package body Repinfo is
 
          else
             Write_Val (Esiz, Paren => not List_Representation_Info_To_JSON);
-
-            --  If in front-end layout mode, then dynamic size is stored in
-            --  storage units, so renormalize for output.
-
-            if not Back_End_Layout then
-               Write_Str (" * ");
-               Write_Int (SSU);
-            end if;
 
             --  Add appropriate first bit offset
 
@@ -2397,11 +2372,7 @@ package body Repinfo is
                Write_Char ('(');
             end if;
 
-            if Back_End_Layout then
-               List_GCC_Expression (Val);
-            else
-               Write_Name_Decoded (Chars (Get_Dynamic_SO_Entity (Val)));
-            end if;
+            List_GCC_Expression (Val);
 
             if Paren then
                Write_Char (')');

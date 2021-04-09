@@ -15,10 +15,9 @@ import (
 //go:linkname panicmakeslicelen
 //go:linkname panicmakeslicecap
 //go:linkname makeslice
+//go:linkname checkMakeSlice
 //go:linkname makeslice64
 //go:linkname growslice
-//go:linkname slicecopy
-//go:linkname slicestringcopy
 
 type slice struct {
 	array unsafe.Pointer
@@ -91,6 +90,13 @@ func makeslicecopy(et *_type, tolen int, fromlen int, from unsafe.Pointer) unsaf
 }
 
 func makeslice(et *_type, len, cap int) unsafe.Pointer {
+	mem := checkMakeSlice(et, len, cap)
+	return mallocgc(mem, et, true)
+}
+
+// checkMakeSlice is called for append(s, make([]T, len, cap)...) to check
+// the values of len and cap.
+func checkMakeSlice(et *_type, len, cap int) uintptr {
 	mem, overflow := math.MulUintptr(et.size, uintptr(cap))
 	if overflow || mem > maxAlloc || len < 0 || len > cap {
 		// NOTE: Produce a 'len out of range' error instead of a
@@ -104,8 +110,7 @@ func makeslice(et *_type, len, cap int) unsafe.Pointer {
 		}
 		panicmakeslicecap()
 	}
-
-	return mallocgc(mem, et, true)
+	return mem
 }
 
 func makeslice64(et *_type, len64, cap64 int64) unsafe.Pointer {
@@ -151,7 +156,7 @@ func growslice(et *_type, oldarray unsafe.Pointer, oldlen, oldcap, cap int) slic
 	if cap > doublecap {
 		newcap = cap
 	} else {
-		if oldlen < 1024 {
+		if oldcap < 1024 {
 			newcap = doublecap
 		} else {
 			// Check 0 < newcap to detect overflow
@@ -248,12 +253,13 @@ func isPowerOfTwo(x uintptr) bool {
 	return x&(x-1) == 0
 }
 
-func slicecopy(toPtr unsafe.Pointer, toLen int, fmPtr unsafe.Pointer, fmLen int, width uintptr) int {
-	if fmLen == 0 || toLen == 0 {
+// slicecopy is used to copy from a string or slice of pointerless elements into a slice.
+func slicecopy(toPtr unsafe.Pointer, toLen int, fromPtr unsafe.Pointer, fromLen int, width uintptr) int {
+	if fromLen == 0 || toLen == 0 {
 		return 0
 	}
 
-	n := fmLen
+	n := fromLen
 	if toLen < n {
 		n = toLen
 	}
@@ -262,46 +268,23 @@ func slicecopy(toPtr unsafe.Pointer, toLen int, fmPtr unsafe.Pointer, fmLen int,
 		return n
 	}
 
+	size := uintptr(n) * width
 	if raceenabled {
 		callerpc := getcallerpc()
 		pc := funcPC(slicecopy)
-		racereadrangepc(fmPtr, uintptr(n*int(width)), callerpc, pc)
-		racewriterangepc(toPtr, uintptr(n*int(width)), callerpc, pc)
+		racereadrangepc(fromPtr, size, callerpc, pc)
+		racewriterangepc(toPtr, size, callerpc, pc)
 	}
 	if msanenabled {
-		msanread(fmPtr, uintptr(n*int(width)))
-		msanwrite(toPtr, uintptr(n*int(width)))
+		msanread(fromPtr, size)
+		msanwrite(toPtr, size)
 	}
 
-	size := uintptr(n) * width
 	if size == 1 { // common case worth about 2x to do here
 		// TODO: is this still worth it with new memmove impl?
-		*(*byte)(toPtr) = *(*byte)(fmPtr) // known to be a byte pointer
+		*(*byte)(toPtr) = *(*byte)(fromPtr) // known to be a byte pointer
 	} else {
-		memmove(toPtr, fmPtr, size)
+		memmove(toPtr, fromPtr, size)
 	}
-	return n
-}
-
-func slicestringcopy(toPtr *byte, toLen int, fm string) int {
-	if len(fm) == 0 || toLen == 0 {
-		return 0
-	}
-
-	n := len(fm)
-	if toLen < n {
-		n = toLen
-	}
-
-	if raceenabled {
-		callerpc := getcallerpc()
-		pc := funcPC(slicestringcopy)
-		racewriterangepc(unsafe.Pointer(toPtr), uintptr(n), callerpc, pc)
-	}
-	if msanenabled {
-		msanwrite(unsafe.Pointer(toPtr), uintptr(n))
-	}
-
-	memmove(unsafe.Pointer(toPtr), stringStructOf(&fm).str, uintptr(n))
 	return n
 }

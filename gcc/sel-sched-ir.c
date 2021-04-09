@@ -1,5 +1,5 @@
 /* Instruction scheduling pass.  Selective scheduler and pipeliner.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -3793,7 +3793,8 @@ maybe_tidy_empty_bb (basic_block bb)
 	  else if (single_succ_p (pred_bb) && any_condjump_p (BB_END (pred_bb)))
 	    {
 	      /* If possible, try to remove the unneeded conditional jump.  */
-	      if (INSN_SCHED_TIMES (BB_END (pred_bb)) == 0
+	      if (onlyjump_p (BB_END (pred_bb))
+		  && INSN_SCHED_TIMES (BB_END (pred_bb)) == 0
 		  && !IN_CURRENT_FENCE_P (BB_END (pred_bb)))
 		{
 		  if (!sel_remove_insn (BB_END (pred_bb), false, false))

@@ -1,5 +1,5 @@
 /* Dead code elimination pass for the GNU compiler.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Ben Elliston <bje@redhat.com>
    and Andrew MacLeod <amacleod@redhat.com>
    Adapted to use control dependence by Steven Bosscher, SUSE Labs.
@@ -656,67 +656,7 @@ valid_new_delete_pair_p (gimple *new_call, gimple *delete_call)
 {
   tree new_asm = DECL_ASSEMBLER_NAME (gimple_call_fndecl (new_call));
   tree delete_asm = DECL_ASSEMBLER_NAME (gimple_call_fndecl (delete_call));
-  const char *new_name = IDENTIFIER_POINTER (new_asm);
-  const char *delete_name = IDENTIFIER_POINTER (delete_asm);
-  unsigned int new_len = IDENTIFIER_LENGTH (new_asm);
-  unsigned int delete_len = IDENTIFIER_LENGTH (delete_asm);
-
-  if (new_len < 5 || delete_len < 6)
-    return false;
-  if (new_name[0] == '_')
-    ++new_name, --new_len;
-  if (new_name[0] == '_')
-    ++new_name, --new_len;
-  if (delete_name[0] == '_')
-    ++delete_name, --delete_len;
-  if (delete_name[0] == '_')
-    ++delete_name, --delete_len;
-  if (new_len < 4 || delete_len < 5)
-    return false;
-  /* *_len is now just the length after initial underscores.  */
-  if (new_name[0] != 'Z' || new_name[1] != 'n')
-    return false;
-  if (delete_name[0] != 'Z' || delete_name[1] != 'd')
-    return false;
-  /* _Znw must match _Zdl, _Zna must match _Zda.  */
-  if ((new_name[2] != 'w' || delete_name[2] != 'l')
-      && (new_name[2] != 'a' || delete_name[2] != 'a'))
-    return false;
-  /* 'j', 'm' and 'y' correspond to size_t.  */
-  if (new_name[3] != 'j' && new_name[3] != 'm' && new_name[3] != 'y')
-    return false;
-  if (delete_name[3] != 'P' || delete_name[4] != 'v')
-    return false;
-  if (new_len == 4
-      || (new_len == 18 && !memcmp (new_name + 4, "RKSt9nothrow_t", 14)))
-    {
-      /* _ZnXY or _ZnXYRKSt9nothrow_t matches
-	 _ZdXPv, _ZdXPvY and _ZdXPvRKSt9nothrow_t.  */
-      if (delete_len == 5)
-	return true;
-      if (delete_len == 6 && delete_name[5] == new_name[3])
-	return true;
-      if (delete_len == 19 && !memcmp (delete_name + 5, "RKSt9nothrow_t", 14))
-	return true;
-    }
-  else if ((new_len == 19 && !memcmp (new_name + 4, "St11align_val_t", 15))
-	   || (new_len == 33
-	       && !memcmp (new_name + 4, "St11align_val_tRKSt9nothrow_t", 29)))
-    {
-      /* _ZnXYSt11align_val_t or _ZnXYSt11align_val_tRKSt9nothrow_t matches
-	 _ZdXPvSt11align_val_t or _ZdXPvYSt11align_val_t or  or
-	 _ZdXPvSt11align_val_tRKSt9nothrow_t.  */
-      if (delete_len == 20 && !memcmp (delete_name + 5, "St11align_val_t", 15))
-	return true;
-      if (delete_len == 21
-	  && delete_name[5] == new_name[3]
-	  && !memcmp (delete_name + 6, "St11align_val_t", 15))
-	return true;
-      if (delete_len == 34
-	  && !memcmp (delete_name + 5, "St11align_val_tRKSt9nothrow_t", 29))
-	return true;
-    }
-  return false;
+  return valid_new_delete_pair_p (new_asm, delete_asm);
 }
 
 /* Propagate necessity using the operands of necessary statements.
@@ -1576,7 +1516,7 @@ eliminate_unnecessary_stmts (void)
 			    || gimple_plf (stmt, STMT_NECESSARY))
 			  {
 			    found = true;
-			    BREAK_FROM_IMM_USE_STMT (iter);
+			    break;
 			  }
 		      }
 		    if (found)
@@ -1847,14 +1787,25 @@ class pass_cd_dce : public gimple_opt_pass
 {
 public:
   pass_cd_dce (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_cd_dce, ctxt)
+    : gimple_opt_pass (pass_data_cd_dce, ctxt), update_address_taken_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_cd_dce (m_ctxt); }
+  void set_pass_param (unsigned n, bool param)
+    {
+      gcc_assert (n == 0);
+      update_address_taken_p = param;
+    }
   virtual bool gate (function *) { return flag_tree_dce != 0; }
-  virtual unsigned int execute (function *) { return tree_ssa_cd_dce (); }
+  virtual unsigned int execute (function *)
+    {
+      return (tree_ssa_cd_dce ()
+	      | (update_address_taken_p ? TODO_update_address_taken : 0));
+    }
 
+private:
+  bool update_address_taken_p;
 }; // class pass_cd_dce
 
 } // anon namespace

@@ -16,4 +16,7 @@ f (void)
   x[7] /= 9;
 }
 
-/* { dg-final { scan-tree-dump "optimized: basic block" "slp2" { xfail *-*-* } } } */
+/* We can vectorize the store from a CTOR built from scalar division
+   results but ideally we'd like to see vectorizing the load and the
+   division as well.  */
+/* { dg-final { scan-tree-dump "transform load" "slp2" { xfail *-*-* } } } */

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Free Software Foundation, Inc.
+# Copyright (C) 2020-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +41,24 @@ proc check_effective_target_fsanitize_hwaddress {} {
 
 proc check_effective_target_hwaddress_exec {} {
     if ![check_runtime hwaddress_exec {
-	int main (void) { return 0; }
+	#ifdef __cplusplus
+	extern "C" {
+	#endif
+	extern int prctl(int, unsigned long, unsigned long, unsigned long, unsigned long);
+	#ifdef __cplusplus
+	}
+	#endif
+	int main (void) {
+	#define PR_SET_TAGGED_ADDR_CTRL 55
+	#define PR_GET_TAGGED_ADDR_CTRL 56
+	#define PR_TAGGED_ADDR_ENABLE (1UL << 0)
+	  if (prctl (PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0) == -1)
+	    return 1;
+	  if (prctl(PR_SET_TAGGED_ADDR_CTRL, PR_TAGGED_ADDR_ENABLE, 0, 0, 0) == -1
+	      || !prctl(PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0))
+	    return 1;
+	  return 0;
+	}
     }] {
 	return 0;
     }

@@ -1,6 +1,6 @@
 /* Function declarations for libiberty.
 
-   Copyright (C) 1997-2020 Free Software Foundation, Inc.
+   Copyright (C) 1997-2021 Free Software Foundation, Inc.
    
    Note - certain prototypes declared in this header file are for
    functions whoes implementation copyright does not belong to the
@@ -711,11 +711,6 @@ extern long long int strtoll (const char *nptr,
 __extension__
 extern unsigned long long int strtoull (const char *nptr,
                                         char **endptr, int base);
-#endif
-
-#if defined(HAVE_DECL_STRVERSCMP) && !HAVE_DECL_STRVERSCMP
-/* Compare version strings.  */
-extern int strverscmp (const char *, const char *);
 #endif
 
 /* Set the title of a process */

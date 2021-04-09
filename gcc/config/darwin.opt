@@ -1,6 +1,6 @@
 ; Processor-independent options for Darwin.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -30,7 +30,7 @@ dependency-file
 C ObjC C++ ObjC++ Separate Alias(MF) MissingArgError(missing filename after %qs)
 
 fapple-kext
-Target Report C++ Var(flag_apple_kext)
+Target C++ Var(flag_apple_kext)
 Generate code for darwin loadable kernel extensions.
 
 iframework
@@ -38,28 +38,28 @@ Target RejectNegative C ObjC C++ ObjC++ Joined Separate
 -iframework <dir>	Add <dir> to the end of the system framework include path.
 
 mconstant-cfstrings
-Target Report Var(darwin_constant_cfstrings) Init(1)
+Target Var(darwin_constant_cfstrings) Init(1)
 Generate compile-time CFString objects.
 
 Wnonportable-cfstrings
-Target Report Var(darwin_warn_nonportable_cfstrings) Init(1) Warning
+Target Var(darwin_warn_nonportable_cfstrings) Init(1) Warning
 Warn if constant CFString objects contain non-portable characters.
 
 ; Use new-style pic stubs if this is true, x86 only so far.
 matt-stubs
-Target Report Var(darwin_macho_att_stub) Init(1)
+Target Var(darwin_macho_att_stub) Init(1)
 Generate AT&T-style stubs for Mach-O.
 
 mdynamic-no-pic
-Target Common Report Mask(MACHO_DYNAMIC_NO_PIC)
+Target Common Mask(MACHO_DYNAMIC_NO_PIC)
 Generate code suitable for executables (NOT shared libs).
 
 mfix-and-continue
-Target Report Var(darwin_fix_and_continue)
+Target Var(darwin_fix_and_continue)
 Generate code suitable for fast turn around debugging.
 
 mkernel
-Target Report Var(flag_mkernel)
+Target Var(flag_mkernel)
 Generate code for the kernel or loadable kernel extensions.
 
 ; The Init here is for the convenience of GCC developers, so that cc1
@@ -67,24 +67,24 @@ Generate code for the kernel or loadable kernel extensions.
 ; driver will always pass a -mmacosx-version-min, so in normal use the
 ; Init is never used.
 mmacosx-version-min=
-Target RejectNegative Joined Report Var(darwin_macosx_version_min) Init(DEF_MIN_OSX_VERSION)
+Target RejectNegative Joined Var(darwin_macosx_version_min) Init(DEF_MIN_OSX_VERSION)
 The earliest macOS version on which this program will run.
 
 ; Really, only relevant to PowerPC which has a 4 byte bool by default.
 mone-byte-bool
-Target RejectNegative Report Var(darwin_one_byte_bool)
+Target RejectNegative Var(darwin_one_byte_bool)
 Set sizeof(bool) to 1.
 
 msymbol-stubs
-Target Report Var(darwin_symbol_stubs) Init(0)
+Target Var(darwin_symbol_stubs) Init(0)
 Force generation of external symbol indirection stubs.
 
 ; Some code-gen may be improved / adjusted if the linker is sufficiently modern.
 mtarget-linker=
-Target RejectNegative Joined Report Alias(mtarget-linker)
+Target RejectNegative Joined Alias(mtarget-linker)
 
 mtarget-linker
-Target RejectNegative Joined Separate Report Var(darwin_target_linker) Init(LD64_VERSION)
+Target RejectNegative Joined Separate Var(darwin_target_linker) Init(LD64_VERSION)
 -mtarget-linker <version>	Specify that ld64 <version> is the toolchain linker for the current invocation.
 
 ; Driver options.

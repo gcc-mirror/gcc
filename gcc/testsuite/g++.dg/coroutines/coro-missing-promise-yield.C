@@ -7,7 +7,7 @@ struct MissingPromiseYield {
   MissingPromiseYield (coro::coroutine_handle<> handle) : handle (handle) {}
   struct missing_yield {
     coro::suspend_never initial_suspend() { return {}; }
-    coro::suspend_never final_suspend() { return {}; }
+    coro::suspend_never final_suspend() noexcept { return {}; }
     MissingPromiseYield get_return_object() {
       return MissingPromiseYield (coro::coroutine_handle<missing_yield>::from_promise (*this));
     }

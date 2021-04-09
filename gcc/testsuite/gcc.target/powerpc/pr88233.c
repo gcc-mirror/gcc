@@ -1,4 +1,4 @@
-/* { dg-do compile { target lp64 } } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8" } */
 
 typedef struct { double a[2]; } A;

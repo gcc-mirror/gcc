@@ -8,9 +8,10 @@
  */
 module core.sys.windows.lmstats;
 version (Windows):
+@system:
 pragma(lib, "netapi32");
 
-private import core.sys.windows.lmcons, core.sys.windows.windef;
+import core.sys.windows.lmcons, core.sys.windows.windef;
 
 enum ULONG
     STATSOPT_CLR   = 1,

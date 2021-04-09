@@ -1,5 +1,5 @@
 /* ACLE support for AArch64 SVE
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -1467,6 +1467,9 @@ function_resolver::require_vector_type (unsigned int argno,
 {
   tree expected = acle_vector_types[0][type];
   tree actual = get_argument_type (argno);
+  if (actual == error_mark_node)
+    return false;
+
   if (!matches_type_p (expected, actual))
     {
       error_at (location, "passing %qT to argument %d of %qE, which"
@@ -2580,7 +2583,7 @@ gimple_folder::fold_contiguous_base (gimple_seq &stmts, tree vectype)
 tree
 gimple_folder::load_store_cookie (tree type)
 {
-  return build_int_cst (build_pointer_type (type), TYPE_ALIGN_UNIT (type));
+  return build_int_cst (build_pointer_type (type), TYPE_ALIGN (type));
 }
 
 /* Fold the call to a call to INSTANCE, with the same arguments.  */

@@ -1,12 +1,12 @@
 // run
 
-// Copyright 2013 The Go Authors.  All rights reserved.
+// Copyright 2013 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
 // Test division of variables. Generate many test cases,
 // compute correct answer using shift and subtract,
-// and then compare against results from divison and
+// and then compare against results from division and
 // modulus operators.
 //
 // Primarily useful for testing software div/mod.

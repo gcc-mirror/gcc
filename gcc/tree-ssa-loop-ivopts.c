@@ -1,5 +1,5 @@
 /* Induction variable optimizations.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -7627,7 +7627,7 @@ remove_unused_ivs (struct ivopts_data *data, bitmap toremove)
 		    count++;
 
 		  if (count > 1)
-		    BREAK_FROM_IMM_USE_STMT (imm_iter);
+		    break;
 		}
 
 	      if (!count)

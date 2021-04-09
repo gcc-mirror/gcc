@@ -1,5 +1,5 @@
 ; Options for the LTO front end.
-; Copyright (C) 2008-2020 Free Software Foundation, Inc.
+; Copyright (C) 2008-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -49,12 +49,12 @@ EnumValue
 Enum(lto_linker_output) String(exec) Value(LTO_LINKER_OUTPUT_EXEC)
 
 flinker-output=
-LTO Report Driver Joined RejectNegative Enum(lto_linker_output) Var(flag_lto_linker_output) Init(LTO_LINKER_OUTPUT_UNKNOWN)
+LTO Driver Joined RejectNegative Enum(lto_linker_output) Var(flag_lto_linker_output) Init(LTO_LINKER_OUTPUT_UNKNOWN)
 Set linker output type (used internally during LTO optimization).
 
 
 fltrans
-LTO Report Var(flag_ltrans)
+LTO Var(flag_ltrans)
 Run the link-time optimizer in local transformation (LTRANS) mode.
 
 fltrans-output-list=
@@ -62,7 +62,7 @@ LTO Joined Var(ltrans_output_list)
 Specify a file to which a list of files output by LTRANS is written.
 
 fwpa
-LTO Driver Report
+LTO Driver
 Run the link-time optimizer in whole program analysis (WPA) mode.
 
 fwpa=

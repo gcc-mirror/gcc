@@ -151,7 +151,7 @@ liblsan_la_DEPENDENCIES =  \
 am__objects_1 = lsan_common.lo lsan_common_linux.lo lsan_common_mac.lo
 am__objects_2 = $(am__objects_1) lsan.lo lsan_linux.lo lsan_mac.lo \
 	lsan_malloc_mac.lo lsan_allocator.lo lsan_interceptors.lo \
-	lsan_thread.lo
+	lsan_thread.lo lsan_posix.lo
 am_liblsan_la_OBJECTS = $(am__objects_2)
 liblsan_la_OBJECTS = $(am_liblsan_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -401,7 +401,8 @@ lsan_files = \
 	lsan_malloc_mac.cpp \
 	lsan_allocator.cpp \
 	lsan_interceptors.cpp \
-	lsan_thread.cpp
+	lsan_thread.cpp \
+	lsan_posix.cpp
 
 libsanitizer_lsan_la_SOURCES = $(sanitizer_lsan_files)
 liblsan_la_SOURCES = $(lsan_files)
@@ -551,6 +552,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_malloc_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsan_thread.Plo@am__quote@
 
 .cpp.o:

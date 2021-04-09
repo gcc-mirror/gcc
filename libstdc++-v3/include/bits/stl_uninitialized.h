@@ -1,6 +1,6 @@
 // Raw memory manipulators -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -56,15 +56,16 @@
 #ifndef _STL_UNINITIALIZED_H
 #define _STL_UNINITIALIZED_H 1
 
-#if __cplusplus > 201402L
-#include <bits/stl_pair.h>
-#endif
-
 #if __cplusplus >= 201103L
 #include <type_traits>
 #endif
 
-#include <ext/alloc_traits.h>
+#include <bits/stl_algobase.h>    // copy
+#include <ext/alloc_traits.h>     // __alloc_traits
+
+#if __cplusplus >= 201703L
+#include <bits/stl_pair.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -9,10 +9,11 @@
  */
 module core.sys.windows.custcntl;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 
-private import core.sys.windows.windef;
+import core.sys.windows.windef;
 
 // FIXME: check type
 enum CCF_NOTEXT = 1;

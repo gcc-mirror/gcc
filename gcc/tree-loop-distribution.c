@@ -1,5 +1,5 @@
 /* Loop distribution.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Georges-Andre Silber <Georges-Andre.Silber@ensmp.fr>
    and Sebastian Pop <sebastian.pop@amd.com>.
 
@@ -2358,6 +2358,7 @@ loop_distribution::merge_dep_scc_partitions (struct graph *rdg,
   sort_partitions_by_post_order (pg, partitions);
   gcc_assert (partitions->length () == (unsigned)num_sccs);
   free_partition_graph_vdata (pg);
+  for_each_edge (pg, free_partition_graph_edata_cb, NULL);
   free_graph (pg);
 }
 

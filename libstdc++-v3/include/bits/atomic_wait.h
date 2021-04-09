@@ -1,6 +1,6 @@
 // -*- C++ -*- header.
 
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -50,8 +50,7 @@
 # include <bits/std_mutex.h>  // std::mutex, std::__condvar
 #endif
 
-// Other headers use this to check for the facilities defined in this header.
-#define _GLIBCXX_HAVE_ATOMIC_WAIT 1
+#define __cpp_lib_atomic_wait 201907L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -215,23 +214,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
     inline void
-    __thread_relax() noexcept
+    __thread_yield() noexcept
     {
-#if defined __i386__ || defined __x86_64__
-      __builtin_ia32_pause();
-#elif defined _GLIBCXX_USE_SCHED_YIELD
+#if defined _GLIBCXX_HAS_GTHREADS && defined _GLIBCXX_USE_SCHED_YIELD
       __gthread_yield();
 #endif
     }
 
     inline void
-    __thread_yield() noexcept
+    __thread_relax() noexcept
     {
-#if defined _GLIBCXX_USE_SCHED_YIELD
-     __gthread_yield();
+#if defined __i386__ || defined __x86_64__
+      __builtin_ia32_pause();
+#else
+      __thread_yield();
 #endif
     }
-
   } // namespace __detail
 
   template<typename _Pred>

@@ -2,6 +2,7 @@
    Instead, initialization is handled by munch.  */
 
 /* { dg-do compile { target vxworks_kernel } } */
+/* { dg-skip-if "vxworks7 SR06x0 now uses .init_array" { *-*-vxworks7r* } } */
 /* { dg-final { scan-assembler-not "\.ctors" } } */
 /* { dg-final { scan-assembler-not "\.dtors" } } */
 

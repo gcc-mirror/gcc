@@ -1,5 +1,5 @@
 ; lang.opt -- Options for the D front end.
-; Copyright (C) 2006-2020 Free Software Foundation, Inc.
+; Copyright (C) 2006-2021 Free Software Foundation, Inc.
 ;
 ; GCC is free software; you can redistribute it and/or modify it under
 ; the terms of the GNU General Public License as published by the Free
@@ -289,10 +289,6 @@ ftransition=all
 D RejectNegative
 List information on all language changes.
 
-ftransition=checkimports
-D RejectNegative
-Give deprecation messages about -ftransition=import anomalies.
-
 ftransition=complex
 D RejectNegative
 List all usages of complex or imaginary types.
@@ -308,10 +304,6 @@ Implement DIP25: Sealed references (experimental).
 ftransition=field
 D RejectNegative
 List all non-mutable fields which occupy an object instance.
-
-ftransition=import
-D RejectNegative
-Revert to single phase name lookup.
 
 ftransition=nogc
 D RejectNegative

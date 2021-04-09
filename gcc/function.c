@@ -1,5 +1,5 @@
 /* Expands front end tree to back end RTL for GCC.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1785,12 +1785,16 @@ instantiate_virtual_regs_in_insn (rtx_insn *insn)
 	{
 	  error_for_asm (insn, "impossible constraint in %<asm%>");
 	  /* For asm goto, instead of fixing up all the edges
-	     just clear the template and clear input operands
-	     (asm goto doesn't have any output operands).  */
+	     just clear the template and clear input and output operands
+	     and strip away clobbers.  */
 	  if (JUMP_P (insn))
 	    {
 	      rtx asm_op = extract_asm_operands (PATTERN (insn));
+	      PATTERN (insn) = asm_op;
+	      PUT_MODE (asm_op, VOIDmode);
 	      ASM_OPERANDS_TEMPLATE (asm_op) = ggc_strdup ("");
+	      ASM_OPERANDS_OUTPUT_CONSTRAINT (asm_op) = "";
+	      ASM_OPERANDS_OUTPUT_IDX (asm_op) = 0;
 	      ASM_OPERANDS_INPUT_VEC (asm_op) = rtvec_alloc (0);
 	      ASM_OPERANDS_INPUT_CONSTRAINT_VEC (asm_op) = rtvec_alloc (0);
 	    }
@@ -2206,12 +2210,14 @@ use_register_for_decl (const_tree decl)
       /* Otherwise, if RESULT_DECL is DECL_BY_REFERENCE, it will take
 	 the function_result_decl's assignment.  Since it's a pointer,
 	 we can short-circuit a number of the tests below, and we must
-	 duplicat e them because we don't have the
-	 function_result_decl to test.  */
+	 duplicate them because we don't have the function_result_decl
+	 to test.  */
       if (!targetm.calls.allocate_stack_slots_for_args ())
 	return true;
       /* We don't set DECL_IGNORED_P for the function_result_decl.  */
       if (optimize)
+	return true;
+      if (cfun->tail_call_marked)
 	return true;
       /* We don't set DECL_REGISTER for the function_result_decl.  */
       return false;
@@ -5880,6 +5886,10 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 	continue;
       if (only_arg && !FUNCTION_ARG_REGNO_P (regno))
 	continue;
+#ifdef LEAF_REG_REMAP
+      if (crtl->uses_only_leaf_regs && LEAF_REG_REMAP (regno) < 0)
+	continue;
+#endif
 
       /* Now this is a register that we might want to zero.  */
       SET_HARD_REG_BIT (selected_hardregs, regno);

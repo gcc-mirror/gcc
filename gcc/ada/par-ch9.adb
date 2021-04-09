@@ -220,10 +220,7 @@ package body Ch9 is
             if Token = Tok_New then
                Scan; --  past NEW
 
-               if Ada_Version < Ada_2005 then
-                  Error_Msg_SP ("task interface is an Ada 2005 extension");
-                  Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-               end if;
+               Error_Msg_Ada_2005_Extension ("task interface");
 
                Set_Interface_List (Task_Node, New_List);
 
@@ -565,10 +562,7 @@ package body Ch9 is
          if Token = Tok_New then
             Scan; --  past NEW
 
-            if Ada_Version < Ada_2005 then
-               Error_Msg_SP ("protected interface is an Ada 2005 extension");
-               Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-            end if;
+            Error_Msg_Ada_2005_Extension ("protected interface");
 
             Set_Interface_List (Protected_Node, New_List);
 
@@ -758,8 +752,7 @@ package body Ch9 is
 
          if Is_Overriding or else Not_Overriding then
             if Ada_Version < Ada_2005 then
-               Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
-               Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
+               Error_Msg_Ada_2005_Extension ("overriding indicator");
 
             elsif Token = Tok_Entry then
                Decl := P_Entry_Declaration;
@@ -910,7 +903,7 @@ package body Ch9 is
             Resync_Past_Semicolon;
 
          elsif Token in Token_Class_Declk then
-            Error_Msg_SC ("this declaration not allowed in protected body");
+            Error_Msg_SC ("declaration not allowed in protected body");
             Resync_Past_Semicolon;
 
          else
@@ -968,9 +961,7 @@ package body Ch9 is
 
       if Is_Overriding or else Not_Overriding then
          if Ada_Version < Ada_2005 then
-            Error_Msg_SP ("overriding indicator is an Ada 2005 extension");
-            Error_Msg_SP ("\unit must be compiled with -gnat05 switch");
-
+            Error_Msg_Ada_2005_Extension ("overriding indicator");
          elsif Token /= Tok_Entry then
             Error_Msg_SC -- CODEFIX
               ("ENTRY expected!");
@@ -1316,6 +1307,7 @@ package body Ch9 is
 
    --  ENTRY_INDEX_SPECIFICATION ::=
    --    for DEFINING_IDENTIFIER in DISCRETE_SUBTYPE_DEFINITION
+   --                                                    [ASPECT_SPECIFICATION]
 
    --  Error recovery: can raise Error_Resync
 
@@ -1329,6 +1321,11 @@ package body Ch9 is
       T_In;
       Set_Discrete_Subtype_Definition
         (Iterator_Node, P_Discrete_Subtype_Definition);
+
+      if Token = Tok_With then
+         P_Aspect_Specifications (Iterator_Node, False);
+      end if;
+
       return Iterator_Node;
    end P_Entry_Index_Specification;
 
@@ -1654,7 +1651,7 @@ package body Ch9 is
             if Ada_Version = Ada_83 then
                Error_Msg_BC ("OR or ELSE expected");
             else
-               Error_Msg_BC ("OR or ELSE or THEN ABORT expected");
+               Error_Msg_BC ("OR or ELSE or `THEN ABORT` expected");
             end if;
 
             Select_Node := Error;

@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on the Tilera TILEPro.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
    Contributed by Walter Lee (walt@tilera.com)
 
    This file is part of GCC.
@@ -4458,9 +4458,7 @@ tilepro_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
   end_addr = force_reg (Pmode, plus_constant (Pmode, XEXP (m_tramp, 0),
 					      TRAMPOLINE_SIZE));
 
-  emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
-		     LCT_NORMAL, VOIDmode, begin_addr, Pmode,
-		     end_addr, Pmode);
+  maybe_emit_call_builtin___clear_cache (begin_addr, end_addr);
 }
 
 

@@ -15,7 +15,7 @@ atomic_int
 fn2 (void)
 {
   atomic_int y = 0;
-  y;		/* { dg-warning "statement with no effect" } */
+  y;
   return y;
 }
 

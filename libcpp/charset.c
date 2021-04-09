@@ -1,5 +1,5 @@
 /* CPP Library - charsets
-   Copyright (C) 1998-2020 Free Software Foundation, Inc.
+   Copyright (C) 1998-2021 Free Software Foundation, Inc.
 
    Broken out of c-lex.c Apr 2003, adding valid C99 UCN ranges.
 
@@ -637,6 +637,9 @@ init_iconv_desc (cpp_reader *pfile, const char *to, const char *from)
   struct cset_converter ret;
   char *pair;
   size_t i;
+
+  ret.to = to;
+  ret.from = from;
 
   if (!strcasecmp (to, from))
     {

@@ -143,11 +143,11 @@ T (v0 ? b[1] : "", bsz);
 T (v0 ? b[2] : "", bsz);
 T (v0 ? b[3] : "", bsz);
 
-T (v0 ? "" : b[0], bsz + 1);
+T (v0 ? "" : b[0], bsz + 1);      /* { dg-warning "bound 6 may exceed source size 5" } */
 T (v0 ? "" : b[1], bsz + 1);
 T (v0 ? "" : b[2], bsz + 1);
 T (v0 ? "" : b[3], bsz + 1);      /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
-T (v0 ? b[0] : "", bsz + 1);
+T (v0 ? b[0] : "", bsz + 1);      /* { dg-warning "bound 6 may exceed source size 5" } */
 T (v0 ? b[1] : "", bsz + 1);
 T (v0 ? b[2] : "", bsz + 1);
 T (v0 ? b[3] : "", bsz + 1);      /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
@@ -185,8 +185,8 @@ T (v0 ? "1234" : b[i3], bsz + 1); /* { dg-warning "unterminated" "pr86937" { xfa
 T (v0 ? b[3] : "1234", bsz + 1);  /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
 T (v0 ? b[i3] : "1234", bsz + 1); /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
 
-T (v0 ? a : b[3], bsz + 1);       /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
-T (v0 ? b[0] : b[2], bsz + 1);
+T (v0 ? a : b[3], bsz + 1);       /* { dg-warning "bound 6 may exceed source size 5" "pr86937" { xfail *-*-*} } */
+T (v0 ? b[0] : b[2], bsz + 1);    /* { dg-warning "bound 6 may exceed source size 5" "pr86937" } */
 T (v0 ? b[2] : b[3], bsz + 1);    /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
 T (v0 ? b[3] : b[2], bsz + 1);    /* { dg-warning "unterminated" "pr86937" { xfail *-*-* } } */
 

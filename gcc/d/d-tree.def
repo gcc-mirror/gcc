@@ -1,6 +1,6 @@
 /* d-tree.def -- Definitions and documentation for additional tree codes used
    in the D compiler  (see tree.def for standard codes).
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 GCC is free software; you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

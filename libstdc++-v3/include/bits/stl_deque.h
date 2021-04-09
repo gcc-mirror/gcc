@@ -1,6 +1,6 @@
 // Deque implementation -*- C++ -*-
 
-// Copyright (C) 2001-2020 Free Software Foundation, Inc.
+// Copyright (C) 2001-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -353,7 +353,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       operator-(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
       {
 	return difference_type(_S_buffer_size())
-	  * (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
+	  * (__x._M_node - __y._M_node - int(__x._M_node != 0))
+	  + (__x._M_cur - __x._M_first)
 	  + (__y._M_last - __y._M_cur);
       }
 
@@ -367,7 +368,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  const _Deque_iterator<_Tp, _RefR, _PtrR>& __y) _GLIBCXX_NOEXCEPT
 	{
 	  return difference_type(_S_buffer_size())
-	    * (__x._M_node - __y._M_node - 1) + (__x._M_cur - __x._M_first)
+	    * (__x._M_node - __y._M_node - int(__x._M_node != 0))
+	    + (__x._M_cur - __x._M_first)
 	    + (__y._M_last - __y._M_cur);
 	}
 

@@ -113,7 +113,9 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0096')
         assert email.errors
         err = email.errors[0]
-        assert err.message == 'unchanged file mentioned in a ChangeLog'
+        assert err.message == 'unchanged file mentioned in a ChangeLog (did ' \
+            'you mean "gcc/testsuite/gcc.target/aarch64/' \
+            'advsimd-intrinsics/vdot-3-1.c"?)'
         assert err.line == 'gcc/testsuite/gcc.target/aarch64/' \
                            'advsimd-intrinsics/vdot-compile-3-1.c'
 
@@ -333,7 +335,7 @@ class TestGccChangelog(unittest.TestCase):
         assert not email.errors
         email = self.from_patch_glob('0002-libstdc-Fake-test-change-1.patch')
         assert len(email.errors) == 1
-        msg = 'pattern doesn''t match any changed files'
+        msg = "pattern doesn't match any changed files"
         assert email.errors[0].message == msg
         assert email.errors[0].line == 'libstdc++-v3/doc/html/'
         email = self.from_patch_glob('0003-libstdc-Fake-test-change-2.patch')
@@ -386,3 +388,35 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-lto-fix-LTO-debug')
         assert not email.errors
         assert len(email.changelog_entries) == 1
+
+    def test_wildcard_in_subdir(self):
+        email = self.from_patch_glob('0001-Wildcard-subdirs.patch')
+        assert len(email.changelog_entries) == 1
+        err = email.errors[0]
+        assert err.message == "pattern doesn't match any changed files"
+        assert err.line == 'libstdc++-v3/testsuite/28_regex_not-existing/'
+
+    def test_unicode_chars_in_filename(self):
+        email = self.from_patch_glob('0001-Add-horse.patch')
+        assert not email.errors
+
+    def test_bad_unicode_chars_in_filename(self):
+        email = self.from_patch_glob('0001-Add-horse2.patch')
+        assert not email.errors
+        assert email.changelog_entries[0].files == ['koníček.txt']
+
+    def test_modification_of_old_changelog(self):
+        email = self.from_patch_glob('0001-fix-old-ChangeLog.patch')
+        assert not email.errors
+
+    def test_multiline_parentheses(self):
+        email = self.from_patch_glob('0001-Add-macro.patch')
+        assert not email.errors
+
+    def test_multiline_bad_parentheses(self):
+        email = self.from_patch_glob('0002-Wrong-macro-changelog.patch')
+        assert email.errors[0].message == 'bad parentheses wrapping'
+
+    def test_changelog_removal(self):
+        email = self.from_patch_glob('0001-ChangeLog-removal.patch', strict=True)
+        assert not email.errors

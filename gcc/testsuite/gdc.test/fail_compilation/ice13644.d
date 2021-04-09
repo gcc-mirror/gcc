@@ -1,3 +1,9 @@
+/*
+TEST_OUTPUT:
+---
+fail_compilation/ice13644.d(22): Error: foreach: key cannot be of non-integral type `string`
+---
+*/
 
 struct Tuple(T...)
 {

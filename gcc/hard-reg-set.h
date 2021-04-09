@@ -1,5 +1,5 @@
 /* Sets (bit vectors) of hard registers, and operations on them.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC
 
@@ -358,6 +358,8 @@ hard_reg_set_iter_next (hard_reg_set_iterator *iter, unsigned *regno)
    and are also considered fixed.  */
 
 extern char global_regs[FIRST_PSEUDO_REGISTER];
+
+extern HARD_REG_SET global_reg_set;
 
 class simplifiable_subreg;
 class subreg_shape;

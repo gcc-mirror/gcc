@@ -11,6 +11,7 @@ int printf(const char *, ...);
 #define HW3	HW2 HW2 HW2 HW2 HW2 HW2 HW2 HW2 HW2 HW2
 #define HW4	HW3 HW3 HW3 HW3 HW3 HW3 HW3 HW3 HW3 HW3
 #define HW5	HW4 HW4 HW4 HW4 HW4 HW4 HW4 HW4 HW4 HW4
+#define HW6	HW5 HW5
 
 __attribute__((noinline,noclone)) void f1 (int a)
 {
@@ -25,7 +26,7 @@ __attribute__((noinline,noclone)) void f2 (int a)
 
 __attribute__((noinline,noclone)) void f3 (int a)
 {
-  if (a) { HW5 }
+  if (a) { HW6 }
 }
 
 __attribute__((noinline,noclone)) void f4 (int a)
@@ -41,7 +42,7 @@ __attribute__((noinline,noclone)) void f5 (int a)
 
 __attribute__((noinline,noclone)) void f6 (int a)
 {
-  if (a == 1) { HW5 }
+  if (a == 1) { HW6 }
 }
 
 

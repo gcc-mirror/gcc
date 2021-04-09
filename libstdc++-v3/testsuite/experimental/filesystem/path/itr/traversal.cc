@@ -2,7 +2,7 @@
 // { dg-do run { target c++11 } }
 // { dg-require-filesystem-ts "" }
 
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -69,7 +69,7 @@ test02()
   using reverse_iterator = std::reverse_iterator<path::iterator>;
   std::vector<path> fwd, rev;
 
-  for (const path& p : __gnu_test::test_paths)
+  for (const path p : __gnu_test::test_paths)
   {
     const auto begin = p.begin(), end = p.end();
     fwd.assign(begin, end);

@@ -1,6 +1,6 @@
 /* Definitions of target machine for GNU compiler,
    for some generic XCOFF file format
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
    This file is part of GCC.
 
@@ -255,11 +255,11 @@
      } while (0)
 
 #ifdef HAVE_AS_TLS
-#define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)	\
-  do { fputs (COMMON_ASM_OP, (FILE));			\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), "[UL]," HOST_WIDE_INT_PRINT_UNSIGNED"\n", \
-       (SIZE));						\
+#define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)   \
+  do { fputs (LOCAL_COMMON_ASM_OP, (FILE));             \
+       fprintf ((FILE), "%s," HOST_WIDE_INT_PRINT_UNSIGNED",%s[UL],3\n", \
+		(*targetm.strip_name_encoding) (NAME), (SIZE),	\
+		(*targetm.strip_name_encoding) (NAME));	\
   } while (0)
 #endif
 
@@ -273,7 +273,9 @@
    We still need to define this macro to let middle-end know that aliases are
    supported.
  */
-#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2) do { } while (0)
+#define ASM_OUTPUT_DEF(FILE,LABEL1,LABEL2) do { (void) (FILE);	\
+						(void) (LABEL1); \
+						(void) (LABEL2); } while (0)
 
 /* Used by rs6000_assemble_integer, among others.  */
 

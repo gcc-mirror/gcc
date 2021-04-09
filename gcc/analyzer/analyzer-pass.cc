@@ -1,5 +1,5 @@
 /* Integration of the analyzer with GCC's pass manager.
-   Copyright (C) 2019-2020 Free Software Foundation, Inc.
+   Copyright (C) 2019-2021 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
 This file is part of GCC.
@@ -25,6 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "diagnostic.h"
 #include "options.h"
+#include "tree.h"
+#include "function.h"
+#include "analyzer/analyzer.h"
 #include "analyzer/engine.h"
 
 namespace {
@@ -83,9 +86,7 @@ pass_analyzer::execute (function *)
 #if ENABLE_ANALYZER
   ana::run_checkers ();
 #else
-  sorry ("%qs was not enabled in this build of GCC"
-	 " (missing configure-time option %qs)",
-	 "-fanalyzer", "--enable-analyzer");
+  sorry_no_analyzer ();
 #endif
 
   return 0;
@@ -100,3 +101,17 @@ make_pass_analyzer (gcc::context *ctxt)
 {
   return new pass_analyzer (ctxt);
 }
+
+#if !ENABLE_ANALYZER
+
+/* Issue a "sorry" diagnostic that the analyzer was not enabled.  */
+
+void
+sorry_no_analyzer ()
+{
+  sorry ("%qs was not enabled in this build of GCC"
+	 " (missing configure-time option %qs)",
+	 "-fanalyzer", "--enable-analyzer");
+}
+
+#endif /* #if !ENABLE_ANALYZER */

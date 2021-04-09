@@ -1,0 +1,59 @@
+name: GCC Bootstrap Build
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Deps
+      run: |
+          sudo apt-get update;
+          sudo apt-get install -y \
+                  automake \
+                  autoconf \
+                  libtool \
+                  autogen \
+                  bison \
+                  flex \
+                  libgmp3-dev \
+                  libmpfr-dev \
+                  libmpc-dev \
+                  build-essential \
+                  gcc-multilib \
+                  g++-multilib \
+                  dejagnu
+
+    - name: Configure
+      run: |
+           mkdir -p gccrs-build;
+           cd gccrs-build;
+           ../configure \
+               --enable-languages=rust \
+               --enable-multilib
+
+    - name: Build
+      run: |
+           cd gccrs-build; \
+           make -j $(nproc)
+
+    - name: Run Tests
+      run: |
+           cd gccrs-build; \
+           make check-rust
+    - name: Check regressions
+      run: |
+           cd gccrs-build; \
+           if grep "# of unexpected" gcc/testsuite/rust/rust.sum;\
+           then \
+              echo "some tests are not correct"; \
+              exit 1; \
+            else \
+              exit 0; \
+            fi

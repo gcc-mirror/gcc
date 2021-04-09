@@ -154,15 +154,17 @@ package Inline is
    --  its treatment of the subprogram.
 
    procedure Cannot_Inline
-     (Msg        : String;
-      N          : Node_Id;
-      Subp       : Entity_Id;
-      Is_Serious : Boolean := False);
+     (Msg           : String;
+      N             : Node_Id;
+      Subp          : Entity_Id;
+      Is_Serious    : Boolean := False;
+      Suppress_Info : Boolean := False);
    --  This procedure is called if the node N, an instance of a call to
    --  subprogram Subp, cannot be inlined. Msg is the message to be issued,
    --  which ends with ? (it does not end with ?p?, this routine takes care of
-   --  the need to change ? to ?p?). The behavior of this routine depends on
-   --  the value of Back_End_Inlining:
+   --  the need to change ? to ?p?). Suppress_Info is set to True to prevent
+   --  issuing an info message in GNATprove mode. The behavior of this routine
+   --  depends on the value of Back_End_Inlining:
    --
    --    * If Back_End_Inlining is not set (ie. legacy frontend inlining model)
    --      then if Subp has a pragma Always_Inlined, then an error message is

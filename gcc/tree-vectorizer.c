@@ -1,5 +1,5 @@
 /* Vectorizer
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Dorit Naishlos <dorit@il.ibm.com>
 
 This file is part of GCC.
@@ -525,6 +525,19 @@ vec_info::add_stmt (gimple *stmt)
   return res;
 }
 
+/* Record that STMT belongs to the vectorizable region.  Create a new
+   stmt_vec_info and mark VECINFO as being related and return the new
+   stmt_vec_info.  */
+
+stmt_vec_info
+vec_info::add_pattern_stmt (gimple *stmt, stmt_vec_info stmt_info)
+{
+  stmt_vec_info res = new_stmt_vec_info (stmt);
+  set_vinfo_for_stmt (stmt, res, false);
+  STMT_VINFO_RELATED_STMT (res) = stmt_info;
+  return res;
+}
+
 /* If STMT has an associated stmt_vec_info, return that vec_info, otherwise
    return null.  It is safe to call this function on any statement, even if
    it might not be part of the vectorizable region.  */
@@ -682,6 +695,7 @@ vec_info::new_stmt_vec_info (gimple *stmt)
   STMT_VINFO_REDUC_FN (res) = IFN_LAST;
   STMT_VINFO_REDUC_IDX (res) = -1;
   STMT_VINFO_SLP_VECT_ONLY (res) = false;
+  STMT_VINFO_SLP_VECT_ONLY_PATTERN (res) = false;
   STMT_VINFO_VEC_STMTS (res) = vNULL;
 
   if (is_a <loop_vec_info> (this)
@@ -702,12 +716,12 @@ vec_info::new_stmt_vec_info (gimple *stmt)
 /* Associate STMT with INFO.  */
 
 void
-vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
+vec_info::set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info, bool check_ro)
 {
   unsigned int uid = gimple_uid (stmt);
   if (uid == 0)
     {
-      gcc_assert (!stmt_vec_info_ro);
+      gcc_assert (!check_ro || !stmt_vec_info_ro);
       gcc_checking_assert (info);
       uid = stmt_vec_infos.length () + 1;
       gimple_set_uid (stmt, uid);
@@ -1171,7 +1185,7 @@ vectorize_loops (void)
   if (vect_loops_num <= 1)
     return 0;
 
-  slp_tree_pool = new object_allocator<_slp_tree> ("SLP nodes for vect");
+  vect_slp_init ();
 
   if (cfun->has_simduid_loops)
     note_simd_array_uses (&simd_array_to_simduid_htab);
@@ -1295,8 +1309,7 @@ vectorize_loops (void)
     shrink_simd_arrays (simd_array_to_simduid_htab, simduid_to_vf_htab);
   delete simduid_to_vf_htab;
   cfun->has_simduid_loops = false;
-  delete slp_tree_pool;
-  slp_tree_pool = NULL;
+  vect_slp_fini ();
 
   if (num_vectorized_loops > 0)
     {
@@ -1432,12 +1445,11 @@ pass_slp_vectorize::execute (function *fun)
 	}
     }
 
-  slp_tree_pool = new object_allocator<_slp_tree> ("SLP nodes for slp");
+  vect_slp_init ();
 
   vect_slp_function (fun);
 
-  delete slp_tree_pool;
-  slp_tree_pool = NULL;
+  vect_slp_fini ();
 
   if (!in_loop_pipeline)
     {

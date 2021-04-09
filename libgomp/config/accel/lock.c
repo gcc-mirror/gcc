@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2016-2021 Free Software Foundation, Inc.
    Contributed by Alexander Monakov <amonakov@ispras.ru>.
 
    This file is part of the GNU Offloading and Multi Processing Library

@@ -1,5 +1,5 @@
 /* RTL dead store elimination.
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
    Contributed by Richard Sandiford <rsandifor@codesourcery.com>
    and Kenneth Zadeck <zadeck@naturalbridge.com>
@@ -1757,8 +1757,7 @@ find_shift_sequence (poly_int64 access_size,
      the machine.  */
 
   opt_scalar_int_mode new_mode_iter;
-  FOR_EACH_MODE_FROM (new_mode_iter,
-		      smallest_int_mode_for_size (GET_MODE_BITSIZE (read_mode)))
+  FOR_EACH_MODE_IN_CLASS (new_mode_iter, MODE_INT)
     {
       rtx target, new_reg, new_lhs;
       rtx_insn *shift_seq, *insn;
@@ -1767,6 +1766,8 @@ find_shift_sequence (poly_int64 access_size,
       new_mode = new_mode_iter.require ();
       if (GET_MODE_BITSIZE (new_mode) > BITS_PER_WORD)
 	break;
+      if (maybe_lt (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (read_mode)))
+	continue;
 
       /* Try a wider mode if truncating the store mode to NEW_MODE
 	 requires a real instruction.  */
@@ -2218,6 +2219,11 @@ check_mem_read_rtx (rtx *loc, bb_info_t bb_info)
     }
   if (maybe_ne (offset, 0))
     mem_addr = plus_constant (get_address_mode (mem), mem_addr, offset);
+  /* Avoid passing VALUE RTXen as mem_addr to canon_true_dependence
+     which will over and over re-create proper RTL and re-apply the
+     offset above.  See PR80960 where we almost allocate 1.6GB of PLUS
+     RTXen that way.  */
+  mem_addr = get_addr (mem_addr);
 
   if (group_id >= 0)
     {

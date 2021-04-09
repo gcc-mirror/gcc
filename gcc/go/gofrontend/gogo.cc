@@ -37,6 +37,7 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
     imports_(),
     imported_unsafe_(false),
     current_file_imported_unsafe_(false),
+    current_file_imported_embed_(false),
     packages_(),
     init_functions_(),
     var_deps_(),
@@ -117,17 +118,11 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
 
   // "byte" is an alias for "uint8".
   uint8_type->integer_type()->set_is_byte();
-  Named_object* byte_type = Named_object::make_type("byte", NULL, uint8_type,
-						    loc);
-  byte_type->type_value()->set_is_alias();
-  this->add_named_type(byte_type->type_value());
+  this->add_named_type(Type::make_integer_type_alias("byte", uint8_type));
 
   // "rune" is an alias for "int32".
   int32_type->integer_type()->set_is_rune();
-  Named_object* rune_type = Named_object::make_type("rune", NULL, int32_type,
-						    loc);
-  rune_type->type_value()->set_is_alias();
-  this->add_named_type(rune_type->type_value());
+  this->add_named_type(Type::make_integer_type_alias("rune", int32_type));
 
   this->add_named_type(Type::make_named_bool_type());
 
@@ -475,6 +470,9 @@ Gogo::import_package(const std::string& filename,
       return;
     }
 
+  if (filename == "embed")
+    this->current_file_imported_embed_ = true;
+
   Imports::const_iterator p = this->imports_.find(filename);
   if (p != this->imports_.end())
     {
@@ -765,7 +763,7 @@ Gogo::register_gc_vars(const std::vector<Named_object*>& var_gc,
 
   Type* pvt = Type::make_pointer_type(Type::make_void_type());
   Type* uintptr_type = Type::lookup_integer_type("uintptr");
-  Type* byte_type = this->lookup_global("byte")->type_value();
+  Type* byte_type = Type::lookup_integer_type("byte");
   Type* pointer_byte_type = Type::make_pointer_type(byte_type);
   Struct_type* root_type =
     Type::make_builtin_struct_type(4,
@@ -1563,6 +1561,17 @@ Gogo::write_globals()
       if ((no->is_function() && no->func_value()->is_sink())
 	  || (no->is_const() && no->const_value()->is_sink()))
         continue;
+
+      // Skip global sink variables with static initializers.  With
+      // non-static initializers we have to evaluate for side effects,
+      // and we wind up initializing a dummy variable.  That is not
+      // ideal but it works and it's a rare case.
+      if (no->is_variable()
+	  && no->var_value()->is_global_sink()
+	  && !no->var_value()->has_pre_init()
+	  && (no->var_value()->init() == NULL
+	      || no->var_value()->init()->is_static_initializer()))
+	continue;
 
       // There is nothing useful we can output for constants which
       // have ideal or non-integral type.
@@ -2712,6 +2721,7 @@ Gogo::clear_file_scope()
     }
 
   this->current_file_imported_unsafe_ = false;
+  this->current_file_imported_embed_ = false;
 }
 
 // Queue up a type-specific hash function for later writing.  These
@@ -3744,7 +3754,7 @@ Check_types_traverse::variable(Named_object* named_object)
           && !var->type()->is_error()
           && (init == NULL || !init->is_error_expression())
           && !Lex::is_invalid_identifier(named_object->name()))
-	go_error_at(var->location(), "%qs declared and not used",
+	go_error_at(var->location(), "%qs declared but not used",
 		    named_object->message_name().c_str());
     }
   return TRAVERSE_CONTINUE;
@@ -5893,7 +5903,7 @@ Function::export_func_with_type(Export* exp, const Named_object* no,
       exp->write_name(receiver->name());
       exp->write_escape(receiver->note());
       exp->write_c_string(" ");
-      exp->write_type(receiver->type());
+      exp->write_type(receiver->type()->unalias());
       exp->write_c_string(") ");
     }
 
@@ -7451,9 +7461,9 @@ Variable::Variable(Type* type, Expression* init, bool is_global,
 		   bool is_parameter, bool is_receiver,
 		   Location location)
   : type_(type), init_(init), preinit_(NULL), location_(location),
-    backend_(NULL), is_global_(is_global), is_parameter_(is_parameter),
-    is_closure_(false), is_receiver_(is_receiver),
-    is_varargs_parameter_(false), is_used_(false),
+    embeds_(NULL), backend_(NULL), is_global_(is_global),
+    is_parameter_(is_parameter), is_closure_(false), is_receiver_(is_receiver),
+    is_varargs_parameter_(false), is_global_sink_(false), is_used_(false),
     is_address_taken_(false), is_non_escaping_address_taken_(false),
     seen_(false), init_is_lowered_(false), init_is_flattened_(false),
     type_from_init_tuple_(false), type_from_range_index_(false),
@@ -7496,6 +7506,17 @@ Variable::lower_init_expression(Gogo* gogo, Named_object* function,
   Named_object* dep = gogo->var_depends_on(this);
   if (dep != NULL && dep->is_variable())
     dep->var_value()->lower_init_expression(gogo, function, inserter);
+
+  if (this->embeds_ != NULL)
+    {
+      // Now that we have seen any possible type aliases, convert the
+      // go:embed directives into an initializer.
+      go_assert(this->init_ == NULL && this->type_ != NULL);
+      this->init_ = gogo->initializer_for_embeds(this->type_, this->embeds_,
+						 this->location_);
+      delete this->embeds_;
+      this->embeds_ = NULL;
+    }
 
   if (this->init_ != NULL && !this->init_is_lowered_)
     {
@@ -7558,7 +7579,7 @@ Variable::flatten_init_expression(Gogo* gogo, Named_object* function,
 				  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 				  NULL)
 	  && this->init_->type()->interface_type() != NULL
-	  && !this->init_->is_variable())
+	  && !this->init_->is_multi_eval_safe())
 	{
 	  Temporary_statement* temp =
 	    Statement::make_temporary(NULL, this->init_, this->location_);

@@ -2,7 +2,7 @@
 ; Generated automatically by parsecpu.awk from arm-cpus.in.
 ; Do not edit.
 
-; Copyright (C) 2011-2020 Free Software Foundation, Inc.
+; Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
 ; This file is part of GCC.
 
@@ -245,6 +245,9 @@ Enum(processor_type) String(cortex-a78) Value( TARGET_CPU_cortexa78)
 
 EnumValue
 Enum(processor_type) String(cortex-a78ae) Value( TARGET_CPU_cortexa78ae)
+
+EnumValue
+Enum(processor_type) String(cortex-a78c) Value( TARGET_CPU_cortexa78c)
 
 EnumValue
 Enum(processor_type) String(cortex-x1) Value( TARGET_CPU_cortexx1)

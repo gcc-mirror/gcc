@@ -1,5 +1,5 @@
 /* Interprocedural constant propagation
-   Copyright (C) 2005-2020 Free Software Foundation, Inc.
+   Copyright (C) 2005-2021 Free Software Foundation, Inc.
 
    Contributed by Razya Ladelsky <RAZYA@il.ibm.com> and Martin Jambor
    <mjambor@suse.cz>
@@ -1276,6 +1276,7 @@ initialize_node_lattices (struct cgraph_node *node)
     {
       ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
       if (disable
+	  || !ipa_get_type (info, i)
 	  || (pre_modified && (surviving_params.length () <= (unsigned) i
 			       || !surviving_params[i])))
 	{
@@ -1302,6 +1303,21 @@ initialize_node_lattices (struct cgraph_node *node)
 	ipa_get_parm_lattices (info,
 			       ie->indirect_info->param_index)->virt_call = 1;
       }
+}
+
+/* Return true if VALUE can be safely IPA-CP propagated to a parameter of type
+   PARAM_TYPE.  */
+
+static bool
+ipacp_value_safe_for_type (tree param_type, tree value)
+{
+  tree val_type = TREE_TYPE (value);
+  if (param_type == val_type
+      || useless_type_conversion_p (param_type, val_type)
+      || fold_convertible_p (param_type, value))
+    return true;
+  else
+    return false;
 }
 
 /* Return true iff X and Y should be considered equal values by IPA-CP.  */
@@ -2072,7 +2088,8 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
 	    {
 	      tree cstval = get_val_across_arith_op (opcode, opnd1_type, opnd2,
 						     src_val, res_type);
-	      if (!cstval)
+	      if (!cstval
+		  || !ipacp_value_safe_for_type (res_type, cstval))
 		break;
 
 	      ret |= dest_lat->add_value (cstval, cs, src_val, src_idx,
@@ -2096,7 +2113,8 @@ propagate_vals_across_arith_jfunc (cgraph_edge *cs,
 
 	tree cstval = get_val_across_arith_op (opcode, opnd1_type, opnd2,
 					       src_val, res_type);
-	if (cstval)
+	if (cstval
+	    && ipacp_value_safe_for_type (res_type, cstval))
 	  ret |= dest_lat->add_value (cstval, cs, src_val, src_idx,
 				      src_offset);
 	else
@@ -2132,7 +2150,8 @@ static bool
 propagate_vals_across_ancestor (struct cgraph_edge *cs,
 				struct ipa_jump_func *jfunc,
 				ipcp_lattice<tree> *src_lat,
-				ipcp_lattice<tree> *dest_lat, int src_idx)
+				ipcp_lattice<tree> *dest_lat, int src_idx,
+				tree param_type)
 {
   ipcp_value<tree> *src_val;
   bool ret = false;
@@ -2144,7 +2163,7 @@ propagate_vals_across_ancestor (struct cgraph_edge *cs,
     {
       tree t = ipa_get_jf_ancestor_result (jfunc, src_val->value);
 
-      if (t)
+      if (t && ipacp_value_safe_for_type (param_type, t))
 	ret |= dest_lat->add_value (t, cs, src_val, src_idx);
       else
 	ret |= dest_lat->set_contains_variable ();
@@ -2169,7 +2188,10 @@ propagate_scalar_across_jump_function (struct cgraph_edge *cs,
   if (jfunc->type == IPA_JF_CONST)
     {
       tree val = ipa_get_jf_constant (jfunc);
-      return dest_lat->add_value (val, cs, NULL, 0);
+      if (ipacp_value_safe_for_type (param_type, val))
+	return dest_lat->add_value (val, cs, NULL, 0);
+      else
+	return dest_lat->set_contains_variable ();
     }
   else if (jfunc->type == IPA_JF_PASS_THROUGH
 	   || jfunc->type == IPA_JF_ANCESTOR)
@@ -2196,10 +2218,11 @@ propagate_scalar_across_jump_function (struct cgraph_edge *cs,
 
       if (jfunc->type == IPA_JF_PASS_THROUGH)
 	ret = propagate_vals_across_pass_through (cs, jfunc, src_lat,
-						  dest_lat, src_idx, param_type);
+						  dest_lat, src_idx,
+						  param_type);
       else
 	ret = propagate_vals_across_ancestor (cs, jfunc, src_lat, dest_lat,
-					      src_idx);
+					      src_idx, param_type);
 
       if (src_lat->contains_variable)
 	ret |= dest_lat->set_contains_variable ();
@@ -3272,13 +3295,6 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
     return false;
 
   gcc_assert (size_cost > 0);
-  if (size_cost == INT_MAX)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "     good_cloning_opportunity_p returning "
-		 "false because of size overflow.\n");
-      return false;
-    }
 
   class ipa_node_params *info = IPA_NODE_REF (node);
   int eval_threshold = opt_for_fn (node->decl, param_ipa_cp_eval_threshold);
@@ -3848,20 +3864,6 @@ propagate_constants_topo (class ipa_topo_info *topo)
     }
 }
 
-
-/* Return the sum of A and B if none of them is bigger than INT_MAX/2, return
-   INT_MAX.  */
-
-static int
-safe_add (int a, int b)
-{
-  if (a > INT_MAX/2 || b > INT_MAX/2)
-    return INT_MAX;
-  else
-    return a + b;
-}
-
-
 /* Propagate the estimated effects of individual values along the topological
    from the dependent values to those they depend on.  */
 
@@ -3870,30 +3872,51 @@ void
 value_topo_info<valtype>::propagate_effects ()
 {
   ipcp_value<valtype> *base;
+  hash_set<ipcp_value<valtype> *> processed_srcvals;
 
   for (base = values_topo; base; base = base->topo_next)
     {
       ipcp_value_source<valtype> *src;
       ipcp_value<valtype> *val;
       sreal time = 0;
-      int size = 0;
+      HOST_WIDE_INT size = 0;
 
       for (val = base; val; val = val->scc_next)
 	{
 	  time = time + val->local_time_benefit + val->prop_time_benefit;
-	  size = safe_add (size, safe_add (val->local_size_cost,
-					   val->prop_size_cost));
+	  size = size + val->local_size_cost + val->prop_size_cost;
 	}
 
       for (val = base; val; val = val->scc_next)
-	for (src = val->sources; src; src = src->next)
-	  if (src->val
-	      && src->cs->maybe_hot_p ())
+	{
+	  processed_srcvals.empty ();
+	  for (src = val->sources; src; src = src->next)
+	    if (src->val
+		&& src->cs->maybe_hot_p ())
+	      {
+		if (!processed_srcvals.add (src->val))
+		  {
+		    HOST_WIDE_INT prop_size = size + src->val->prop_size_cost;
+		    if (prop_size < INT_MAX)
+		      src->val->prop_size_cost = prop_size;
+		    else
+		      continue;
+		  }
+		src->val->prop_time_benefit
+		  += time * src->cs->sreal_frequency ();
+	      }
+
+	  if (size < INT_MAX)
 	    {
-	      src->val->prop_time_benefit = time + src->val->prop_time_benefit;
-	      src->val->prop_size_cost = safe_add (size,
-						   src->val->prop_size_cost);
+	      val->prop_time_benefit = time;
+	      val->prop_size_cost = size;
 	    }
+	  else
+	    {
+	      val->prop_time_benefit = 0;
+	      val->prop_size_cost = 0;
+	    }
+	}
     }
 }
 
@@ -5508,12 +5531,8 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
   if (!good_cloning_opportunity_p (node, val->local_time_benefit,
 				   freq_sum, count_sum,
 				   val->local_size_cost)
-      && !good_cloning_opportunity_p (node,
-				      val->local_time_benefit
-				      + val->prop_time_benefit,
-				      freq_sum, count_sum,
-				      safe_add (val->local_size_cost,
-						val->prop_size_cost)))
+      && !good_cloning_opportunity_p (node, val->prop_time_benefit,
+				      freq_sum, count_sum, val->prop_size_cost))
     return false;
 
   if (dump_file)

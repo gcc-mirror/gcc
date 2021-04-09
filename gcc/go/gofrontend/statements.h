@@ -1092,6 +1092,9 @@ class Select_clauses
   size() const
   { return this->clauses_.size(); }
 
+  bool
+  has_default() const;
+
   // Traverse the select clauses.
   int
   traverse(Traverse*);
@@ -1099,7 +1102,7 @@ class Select_clauses
   // Lower statements.
   void
   lower(Gogo*, Named_object*, Block*, Temporary_statement*,
-	Temporary_statement*);
+	Temporary_statement*, int* send_count, int* recv_count);
 
   // Determine types.
   void
@@ -1138,8 +1141,9 @@ class Select_clauses
 		  Named_object* closedvar, bool is_default, Block* statements,
 		  Location location)
       : channel_(channel), val_(val), closed_(closed), var_(var),
-	closedvar_(closedvar), statements_(statements), location_(location),
-	is_send_(is_send), is_default_(is_default), is_lowered_(false)
+	closedvar_(closedvar), statements_(statements), case_index_(0),
+	location_(location), is_send_(is_send), is_default_(is_default),
+	is_lowered_(false), is_case_index_set_(false)
     { go_assert(is_default ? channel == NULL : channel != NULL); }
 
     // Traverse the select clause.
@@ -1148,7 +1152,7 @@ class Select_clauses
 
     // Lower statements.
     void
-    lower(Gogo*, Named_object*, Block*, Temporary_statement*, size_t,
+    lower(Gogo*, Named_object*, Block*, Temporary_statement*, int,
 	  Temporary_statement*);
 
     // Determine types.
@@ -1210,6 +1214,23 @@ class Select_clauses
     location() const
     { return this->location_; }
 
+    // Return the case index for this clause.
+    int
+    case_index() const
+    {
+      go_assert(this->is_case_index_set_);
+      return this->case_index_;
+    }
+
+    // Set the case index.
+    void
+    set_case_index(int i)
+    {
+      go_assert(!this->is_case_index_set_);
+      this->case_index_ = i;
+      this->is_case_index_set_ = true;
+    }
+
     // Whether this clause may fall through to the statement which
     // follows the overall select statement.
     bool
@@ -1224,17 +1245,6 @@ class Select_clauses
     dump_clause(Ast_dump_context*) const;
 
    private:
-    // These values must match the values in libgo/go/runtime/select.go.
-    enum
-    {
-      caseRecv = 1,
-      caseSend = 2,
-      caseDefault = 3,
-    };
-
-    void
-    lower_default(Block*, Expression*);
-
     void
     lower_send(Block*, Expression*, Expression*);
 
@@ -1243,7 +1253,7 @@ class Select_clauses
 	       Temporary_statement*);
 
     void
-    set_case(Block*, Expression*, Expression*, Expression*, int);
+    set_case(Block*, Expression*, Expression*, Expression*);
 
     // The channel.
     Expression* channel_;
@@ -1259,6 +1269,10 @@ class Select_clauses
     Named_object* closedvar_;
     // The statements to execute.
     Block* statements_;
+    // The index of this clause in the switch statement.  If
+    // runtime.selectgo returns this index, this clause has been
+    // chosen.
+    int case_index_;
     // The location of this clause.
     Location location_;
     // Whether this is a send or a receive.
@@ -1267,6 +1281,8 @@ class Select_clauses
     bool is_default_;
     // Whether this has been lowered.
     bool is_lowered_;
+    // Whether the case index has been set.
+    bool is_case_index_set_;
   };
 
   Select_clause&

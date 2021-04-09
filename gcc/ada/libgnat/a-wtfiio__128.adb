@@ -38,19 +38,20 @@ with System.Img_Fixed_128; use System.Img_Fixed_128;
 with System.Val_Fixed_32;  use System.Val_Fixed_32;
 with System.Val_Fixed_64;  use System.Val_Fixed_64;
 with System.Val_Fixed_128; use System.Val_Fixed_128;
+with System.Val_LLF;       use System.Val_LLF;
 with System.WCh_Con;       use System.WCh_Con;
 with System.WCh_WtS;       use System.WCh_WtS;
 
 package body Ada.Wide_Text_IO.Fixed_IO is
 
    --  Note: we still use the floating-point I/O routines for types whose small
-   --  is not a sufficiently small integer or the reciprocal thereof. This will
-   --  result in inaccuracies for fixed point types that require more precision
-   --  than is available in Long_Long_Float.
+   --  is not the ratio of two sufficiently small integers. This will result in
+   --  inaccuracies for fixed point types that require more precision than is
+   --  available in Long_Long_Float.
 
-   subtype Int32  is Interfaces.Integer_32;
-   subtype Int64  is Interfaces.Integer_64;
-   subtype Int128 is Interfaces.Integer_128;
+   subtype Int32  is Interfaces.Integer_32;  use type Int32;
+   subtype Int64  is Interfaces.Integer_64;  use type Int64;
+   subtype Int128 is Interfaces.Integer_128; use type Int128;
 
    package Aux32 is new
      Ada.Wide_Text_IO.Fixed_Aux (Int32, Scan_Fixed32, Set_Image_Fixed32);
@@ -61,31 +62,93 @@ package body Ada.Wide_Text_IO.Fixed_IO is
    package Aux128 is new
      Ada.Wide_Text_IO.Fixed_Aux (Int128, Scan_Fixed128, Set_Image_Fixed128);
 
-   Exact : constant Boolean :=
-     (Float'Floor (Num'Small) = Float'Ceiling (Num'Small)
-       or else Float'Floor (1.0 / Num'Small) = Float'Ceiling (1.0 / Num'Small))
-     and then Num'Small >= 2.0**(-127)
-     and then Num'Small <= 2.0**127;
-   --  True if the exact algorithm implemented in Fixed_Aux can be used. The
-   --  condition is a Small which is either an integer or the reciprocal of an
-   --  integer with the appropriate magnitude.
+   package Aux_Long_Long_Float is new
+     Ada.Wide_Text_IO.Float_Aux (Long_Long_Float, Scan_Long_Long_Float);
 
-   Need_64 : constant Boolean :=
-     Num'Object_Size > 32
-       or else Num'Small > 2.0**31
-       or else Num'Small < 2.0**(-31);
-   Need_128 : constant Boolean :=
-     Num'Object_Size > 64
-       or else Num'Small > 2.0**63
-       or else Num'Small < 2.0**(-63);
-   --  Throughout this generic body, we distinguish between the cases where
-   --  type Int32 is acceptable, where type Int64 is acceptable, and where
-   --  type Int128 is needed. These boolean constants are used to test for
-   --  these cases and since they are constant, only code for the relevant
-   --  case will be really included in the instance.
+   --  Throughout this generic body, we distinguish between the case where type
+   --  Int32 is OK, where type Int64 is OK and where type Int128 is OK. These
+   --  boolean constants are used to test for this, such that only code for the
+   --  relevant case is included in the instance; that's why the computation of
+   --  their value must be fully static (although it is not a static expression
+   --  in the RM sense).
+
+   OK_Get_32 : constant Boolean :=
+     Num'Base'Object_Size <= 32
+       and then
+         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
+           or else
+          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**31)
+           or else
+          (Num'Small_Numerator <= 2**27
+            and then Num'Small_Denominator <= 2**27));
+   --  These conditions are derived from the prerequisites of System.Value_F
+
+   OK_Put_32 : constant Boolean :=
+     Num'Base'Object_Size <= 32
+       and then
+         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**31)
+           or else
+          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**31)
+           or else
+          (Num'Small_Numerator < Num'Small_Denominator
+            and then Num'Small_Denominator <= 2**27)
+           or else
+          (Num'Small_Denominator < Num'Small_Numerator
+            and then Num'Small_Numerator <= 2**25));
+   --  These conditions are derived from the prerequisites of System.Image_F
+
+   OK_Get_64 : constant Boolean :=
+     Num'Base'Object_Size <= 64
+       and then
+         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
+           or else
+          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**63)
+           or else
+          (Num'Small_Numerator <= 2**59
+            and then Num'Small_Denominator <= 2**59));
+   --  These conditions are derived from the prerequisites of System.Value_F
+
+   OK_Put_64 : constant Boolean :=
+     Num'Base'Object_Size <= 64
+       and then
+         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**63)
+           or else
+          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**63)
+           or else
+          (Num'Small_Numerator < Num'Small_Denominator
+            and then Num'Small_Denominator <= 2**59)
+           or else
+          (Num'Small_Denominator < Num'Small_Numerator
+            and then Num'Small_Numerator <= 2**53));
+   --  These conditions are derived from the prerequisites of System.Image_F
+
+   OK_Get_128 : constant Boolean :=
+     Num'Base'Object_Size <= 128
+       and then
+         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**127)
+           or else
+          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**127)
+           or else
+          (Num'Small_Numerator <= 2**123
+            and then Num'Small_Denominator <= 2**123));
+   --  These conditions are derived from the prerequisites of System.Value_F
+
+   OK_Put_128 : constant Boolean :=
+     Num'Base'Object_Size <= 128
+       and then
+         ((Num'Small_Numerator = 1 and then Num'Small_Denominator <= 2**127)
+           or else
+          (Num'Small_Denominator = 1 and then Num'Small_Numerator <= 2**127)
+           or else
+          (Num'Small_Numerator < Num'Small_Denominator
+            and then Num'Small_Denominator <= 2**123)
+           or else
+          (Num'Small_Denominator < Num'Small_Numerator
+            and then Num'Small_Numerator <= 2**122));
+   --  These conditions are derived from the prerequisites of System.Image_F
 
    E : constant Natural :=
-         31 + 32 * Boolean'Pos (Need_64) + 64 * Boolean'Pos (Need_128);
+         127 - 64 * Boolean'Pos (OK_Put_64) - 32 * Boolean'Pos (OK_Put_32);
    --  T'Size - 1 for the selected Int{32,64,128}
 
    F0 : constant Natural := 0;
@@ -122,23 +185,23 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       pragma Unsuppress (Range_Check);
 
    begin
-      if not Exact then
-         Float_Aux.Get (File, Long_Long_Float (Item), Width);
-      elsif Need_128 then
-         Item := Num'Fixed_Value
-                   (Aux128.Get (File, Width,
-                                Int128 (-Float'Ceiling (Num'Small)),
-                                Int128 (-Float'Ceiling (1.0 / Num'Small))));
-      elsif Need_64 then
-         Item := Num'Fixed_Value
-                   (Aux64.Get (File, Width,
-                               Int64 (-Float'Ceiling (Num'Small)),
-                               Int64 (-Float'Ceiling (1.0 / Num'Small))));
-      else
+      if OK_Get_32 then
          Item := Num'Fixed_Value
                    (Aux32.Get (File, Width,
-                               Int32 (-Float'Ceiling (Num'Small)),
-                               Int32 (-Float'Ceiling (1.0 / Num'Small))));
+                               -Num'Small_Numerator,
+                               -Num'Small_Denominator));
+      elsif OK_Get_64 then
+         Item := Num'Fixed_Value
+                   (Aux64.Get (File, Width,
+                               -Num'Small_Numerator,
+                               -Num'Small_Denominator));
+      elsif OK_Get_128 then
+         Item := Num'Fixed_Value
+                   (Aux128.Get (File, Width,
+                                -Num'Small_Numerator,
+                                -Num'Small_Denominator));
+      else
+         Aux_Long_Long_Float.Get (File, Long_Long_Float (Item), Width);
       end if;
 
    exception
@@ -150,7 +213,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       Width : Field := 0)
    is
    begin
-      Get (Current_Input, Item, Width);
+      Get (Current_In, Item, Width);
    end Get;
 
    procedure Get
@@ -167,23 +230,23 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       --  Aux.Gets will raise Data_Error in any case.
 
    begin
-      if not Exact then
-         Float_Aux.Gets (S, Long_Long_Float (Item), Last);
-      elsif Need_128 then
-         Item := Num'Fixed_Value
-                   (Aux128.Gets (S, Last,
-                                 Int128 (-Float'Ceiling (Num'Small)),
-                                 Int128 (-Float'Ceiling (1.0 / Num'Small))));
-      elsif Need_64 then
-         Item := Num'Fixed_Value
-                   (Aux64.Gets (S, Last,
-                                Int64 (-Float'Ceiling (Num'Small)),
-                                Int64 (-Float'Ceiling (1.0 / Num'Small))));
-      else
+      if OK_Get_32 then
          Item := Num'Fixed_Value
                    (Aux32.Gets (S, Last,
-                                Int32 (-Float'Ceiling (Num'Small)),
-                                Int32 (-Float'Ceiling (1.0 / Num'Small))));
+                                -Num'Small_Numerator,
+                                -Num'Small_Denominator));
+      elsif OK_Get_64 then
+         Item := Num'Fixed_Value
+                   (Aux64.Gets (S, Last,
+                                -Num'Small_Numerator,
+                                -Num'Small_Denominator));
+      elsif OK_Get_128 then
+         Item := Num'Fixed_Value
+                   (Aux128.Gets (S, Last,
+                                 -Num'Small_Numerator,
+                                 -Num'Small_Denominator));
+      else
+         Aux_Long_Long_Float.Gets (S, Long_Long_Float (Item), Last);
       end if;
 
    exception
@@ -202,23 +265,21 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      if not Exact then
-         Float_Aux.Put (File, Long_Long_Float (Item), Fore, Aft, Exp);
-      elsif Need_128 then
-         Aux128.Put (File, Int128'Integer_Value (Item), Fore, Aft, Exp,
-                     Int128 (-Float'Ceiling (Num'Small)),
-                     Int128 (-Float'Ceiling (1.0 / Num'Small)),
-                     For0, Num'Aft);
-      elsif Need_64 then
-         Aux64.Put (File, Int64'Integer_Value (Item), Fore, Aft, Exp,
-                    Int64 (-Float'Ceiling (Num'Small)),
-                    Int64 (-Float'Ceiling (1.0 / Num'Small)),
-                    For0, Num'Aft);
-      else
+      if OK_Put_32 then
          Aux32.Put (File, Int32'Integer_Value (Item), Fore, Aft, Exp,
-                    Int32 (-Float'Ceiling (Num'Small)),
-                    Int32 (-Float'Ceiling (1.0 / Num'Small)),
+                    -Num'Small_Numerator, -Num'Small_Denominator,
                     For0, Num'Aft);
+      elsif OK_Put_64 then
+         Aux64.Put (File, Int64'Integer_Value (Item), Fore, Aft, Exp,
+                    -Num'Small_Numerator, -Num'Small_Denominator,
+                    For0, Num'Aft);
+      elsif OK_Put_128 then
+         Aux128.Put (File, Int128'Integer_Value (Item), Fore, Aft, Exp,
+                     -Num'Small_Numerator, -Num'Small_Denominator,
+                     For0, Num'Aft);
+      else
+         Aux_Long_Long_Float.Put
+           (File, Long_Long_Float (Item), Fore, Aft, Exp);
       end if;
    end Put;
 
@@ -229,7 +290,7 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       Exp  : Field := Default_Exp)
    is
    begin
-      Put (Current_Output, Item, Fore, Aft, Exp);
+      Put (Current_Out, Item, Fore, Aft, Exp);
    end Put;
 
    procedure Put
@@ -241,24 +302,22 @@ package body Ada.Wide_Text_IO.Fixed_IO is
       S : String (To'First .. To'Last);
 
    begin
-      if not Exact then
-         Float_Aux.Puts (S, Long_Long_Float (Item), Aft, Exp);
-      elsif Need_128 then
-         Aux128.Puts (S, Int128'Integer_Value (Item), Aft, Exp,
-                      Int128 (-Float'Ceiling (Num'Small)),
-                      Int128 (-Float'Ceiling (1.0 / Num'Small)),
-                      For0, Num'Aft);
-      elsif Need_64 then
-         Aux64.Puts (S, Int64'Integer_Value (Item), Aft, Exp,
-                     Int64 (-Float'Ceiling (Num'Small)),
-                     Int64 (-Float'Ceiling (1.0 / Num'Small)),
-                     For0, Num'Aft);
-      else
+      if OK_Put_32 then
          Aux32.Puts (S, Int32'Integer_Value (Item), Aft, Exp,
-                     Int32 (-Float'Ceiling (Num'Small)),
-                     Int32 (-Float'Ceiling (1.0 / Num'Small)),
+                     -Num'Small_Numerator, -Num'Small_Denominator,
                      For0, Num'Aft);
+      elsif OK_Put_64 then
+         Aux64.Puts (S, Int64'Integer_Value (Item), Aft, Exp,
+                     -Num'Small_Numerator, -Num'Small_Denominator,
+                     For0, Num'Aft);
+      elsif OK_Put_128 then
+         Aux128.Puts (S, Int128'Integer_Value (Item), Aft, Exp,
+                      -Num'Small_Numerator, -Num'Small_Denominator,
+                      For0, Num'Aft);
+      else
+         Aux_Long_Long_Float.Puts (S, Long_Long_Float (Item), Aft, Exp);
       end if;
+
       for J in S'Range loop
          To (J) := Wide_Character'Val (Character'Pos (S (J)));
       end loop;

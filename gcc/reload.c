@@ -1,5 +1,5 @@
 /* Search an insn for pseudo regs that must be in hard regs and are not.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1043,53 +1043,72 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
      Also reload the inner expression if it does not require a secondary
      reload but the SUBREG does.
 
-     Finally, reload the inner expression if it is a register that is in
+     Also reload the inner expression if it is a register that is in
      the class whose registers cannot be referenced in a different size
      and M1 is not the same size as M2.  If subreg_lowpart_p is false, we
      cannot reload just the inside since we might end up with the wrong
      register class.  But if it is inside a STRICT_LOW_PART, we have
-     no choice, so we hope we do get the right register class there.  */
+     no choice, so we hope we do get the right register class there.
+
+     Finally, reload the inner expression if it is a pseudo that will
+     become a MEM and the MEM has a mode-dependent address, as in that
+     case we obviously cannot change the mode of the MEM to that of the
+     containing SUBREG as that would change the interpretation of the
+     address.  */
 
   scalar_int_mode inner_mode;
   if (in != 0 && GET_CODE (in) == SUBREG
-      && (subreg_lowpart_p (in) || strict_low)
       && targetm.can_change_mode_class (GET_MODE (SUBREG_REG (in)),
 					inmode, rclass)
       && contains_allocatable_reg_of_mode[rclass][GET_MODE (SUBREG_REG (in))]
-      && (CONSTANT_P (SUBREG_REG (in))
-	  || GET_CODE (SUBREG_REG (in)) == PLUS
-	  || strict_low
-	  || (((REG_P (SUBREG_REG (in))
-		&& REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER)
-	       || MEM_P (SUBREG_REG (in)))
-	      && (paradoxical_subreg_p (inmode, GET_MODE (SUBREG_REG (in)))
-		  || (known_le (GET_MODE_SIZE (inmode), UNITS_PER_WORD)
-		      && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (in)),
-						 &inner_mode)
-		      && GET_MODE_SIZE (inner_mode) <= UNITS_PER_WORD
-		      && paradoxical_subreg_p (inmode, inner_mode)
-		      && LOAD_EXTEND_OP (inner_mode) != UNKNOWN)
-		  || (WORD_REGISTER_OPERATIONS
-		      && partial_subreg_p (inmode, GET_MODE (SUBREG_REG (in)))
-		      && (known_equal_after_align_down
-			  (GET_MODE_SIZE (inmode) - 1,
-			   GET_MODE_SIZE (GET_MODE (SUBREG_REG (in))) - 1,
-			   UNITS_PER_WORD)))))
+      && (strict_low
+	  || (subreg_lowpart_p (in)
+	      && (CONSTANT_P (SUBREG_REG (in))
+		  || GET_CODE (SUBREG_REG (in)) == PLUS
+		  || (((REG_P (SUBREG_REG (in))
+			&& REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER)
+		       || MEM_P (SUBREG_REG (in)))
+		      && (paradoxical_subreg_p (inmode,
+						GET_MODE (SUBREG_REG (in)))
+			  || (known_le (GET_MODE_SIZE (inmode), UNITS_PER_WORD)
+			      && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG
+								   (in)),
+							 &inner_mode)
+			      && GET_MODE_SIZE (inner_mode) <= UNITS_PER_WORD
+			      && paradoxical_subreg_p (inmode, inner_mode)
+			      && LOAD_EXTEND_OP (inner_mode) != UNKNOWN)
+			  || (WORD_REGISTER_OPERATIONS
+			      && partial_subreg_p (inmode,
+						   GET_MODE (SUBREG_REG (in)))
+			      && (known_equal_after_align_down
+				  (GET_MODE_SIZE (inmode) - 1,
+				   GET_MODE_SIZE (GET_MODE (SUBREG_REG
+							    (in))) - 1,
+				   UNITS_PER_WORD)))))
+		  || (REG_P (SUBREG_REG (in))
+		      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
+		      /* The case where out is nonzero
+			 is handled differently in the following statement.  */
+		      && (out == 0 || subreg_lowpart_p (in))
+		      && (complex_word_subreg_p (inmode, SUBREG_REG (in))
+			  || !targetm.hard_regno_mode_ok (subreg_regno (in),
+							  inmode)))
+		  || (secondary_reload_class (1, rclass, inmode, in) != NO_REGS
+		      && (secondary_reload_class (1, rclass,
+						  GET_MODE (SUBREG_REG (in)),
+						  SUBREG_REG (in))
+			  == NO_REGS))
+		  || (REG_P (SUBREG_REG (in))
+		      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
+		      && !REG_CAN_CHANGE_MODE_P (REGNO (SUBREG_REG (in)),
+						 GET_MODE (SUBREG_REG (in)),
+						 inmode))))
 	  || (REG_P (SUBREG_REG (in))
-	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
-	      /* The case where out is nonzero
-		 is handled differently in the following statement.  */
-	      && (out == 0 || subreg_lowpart_p (in))
-	      && (complex_word_subreg_p (inmode, SUBREG_REG (in))
-		  || !targetm.hard_regno_mode_ok (subreg_regno (in), inmode)))
-	  || (secondary_reload_class (1, rclass, inmode, in) != NO_REGS
-	      && (secondary_reload_class (1, rclass, GET_MODE (SUBREG_REG (in)),
-					  SUBREG_REG (in))
-		  == NO_REGS))
-	  || (REG_P (SUBREG_REG (in))
-	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
-	      && !REG_CAN_CHANGE_MODE_P (REGNO (SUBREG_REG (in)),
-					 GET_MODE (SUBREG_REG (in)), inmode))))
+	      && REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER
+	      && reg_equiv_mem (REGNO (SUBREG_REG (in)))
+	      && (mode_dependent_address_p
+		  (XEXP (reg_equiv_mem (REGNO (SUBREG_REG (in))), 0),
+		   MEM_ADDR_SPACE (reg_equiv_mem (REGNO (SUBREG_REG (in)))))))))
     {
 #ifdef LIMIT_RELOAD_CLASS
       in_subreg_loc = inloc;
@@ -3157,6 +3176,19 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 				  && paradoxical_subreg_p (operand_mode[i],
 							   inner_mode)
 				  && LOAD_EXTEND_OP (inner_mode) != UNKNOWN)))
+		      /* We must force a reload of a SUBREG's inner expression
+			 if it is a pseudo that will become a MEM and the MEM
+			 has a mode-dependent address, as in that case we
+			 obviously cannot change the mode of the MEM to that
+			 of the containing SUBREG as that would change the
+			 interpretation of the address.  */
+		      || (REG_P (operand)
+			  && REGNO (operand) >= FIRST_PSEUDO_REGISTER
+			  && reg_equiv_mem (REGNO (operand))
+			  && (mode_dependent_address_p
+			      (XEXP (reg_equiv_mem (REGNO (operand)), 0),
+			       (MEM_ADDR_SPACE
+				(reg_equiv_mem (REGNO (operand)))))))
 		      )
 		    force_reload = 1;
 		}
@@ -3472,6 +3504,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 			break;
 
 		      case CT_SPECIAL_MEMORY:
+		      case CT_RELAXED_MEMORY:
 			if (force_reload)
 			  break;
 			if (constraint_satisfied_p (operand, cn))

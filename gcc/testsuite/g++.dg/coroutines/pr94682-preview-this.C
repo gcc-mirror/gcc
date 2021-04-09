@@ -13,7 +13,7 @@ struct promise
   promise(Class &,int) { static_assert(!std::is_pointer<Class>::value, ""); }
 
   coro::suspend_never initial_suspend() { return {}; }
-  coro::suspend_never final_suspend() { return {}; }
+  coro::suspend_never final_suspend() noexcept { return {}; }
 
   future get_return_object() { return {}; }
 

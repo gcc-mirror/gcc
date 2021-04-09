@@ -1619,7 +1619,7 @@ package body Sem_Ch12 is
                Others_Choice  := Actual;
 
                if Present (Next (Actual)) then
-                  Error_Msg_N ("others must be last association", Actual);
+                  Error_Msg_N ("OTHERS must be last association", Actual);
                end if;
 
                --  This subprogram is used both for formal packages and for
@@ -1630,7 +1630,7 @@ package body Sem_Ch12 is
                  and then Comes_From_Source (I_Node)
                then
                   Error_Msg_N
-                    ("others association not allowed in an instance",
+                    ("OTHERS association not allowed in an instance",
                       Actual);
                end if;
 
@@ -12936,10 +12936,10 @@ package body Sem_Ch12 is
             elsif Ekind (A_Gen_T) = E_General_Access_Type
               and then Ekind (Base_Type (Act_T)) /= E_General_Access_Type
             then
-               Error_Msg_N -- CODEFIX
+               Error_Msg_N
                  ("actual must be general access type!", Actual);
                Error_Msg_NE -- CODEFIX
-                 ("add ALL to }!", Actual, Act_T);
+                 ("\add ALL to }!", Actual, Act_T);
                Abandon_Instantiation (Actual);
             end if;
          end if;
@@ -13230,7 +13230,7 @@ package body Sem_Ch12 is
                      else
                         Error_Msg_Name_1 := Chars (Act_T);
                         Error_Msg_NE
-                          ("Actual% must implement interface&",
+                          ("actual% must implement interface&",
                            Actual, Etype (Iface));
                      end if;
 

@@ -1,5 +1,5 @@
 ; Options of Andes NDS32 cpu for GNU compiler
-; Copyright (C) 2012-2020 Free Software Foundation, Inc.
+; Copyright (C) 2012-2021 Free Software Foundation, Inc.
 ; Contributed by Andes Technology Corporation.
 ;
 ; This file is part of GCC.
@@ -67,11 +67,11 @@ Specify use soft floating point ABI which mean alias to -mabi=2fp+.
 ; ---------------------------------------------------------------
 
 mreduced-regs
-Target Report RejectNegative Negative(mfull-regs) Mask(REDUCED_REGS)
+Target RejectNegative Negative(mfull-regs) Mask(REDUCED_REGS)
 Use reduced-set registers for register allocation.
 
 mfull-regs
-Target Report RejectNegative Negative(mreduced-regs) InverseMask(REDUCED_REGS)
+Target RejectNegative Negative(mreduced-regs) InverseMask(REDUCED_REGS)
 Use full-set registers for register allocation.
 
 ; ---------------------------------------------------------------
@@ -115,43 +115,43 @@ EnumValue
 Enum(nds32_ict_model_type) String(large) Value(ICT_MODEL_LARGE)
 
 mcmov
-Target Report Mask(CMOV)
+Target Mask(CMOV)
 Generate conditional move instructions.
 
 mhw-abs
-Target Report Mask(HW_ABS)
+Target Mask(HW_ABS)
 Generate hardware abs instructions.
 
 mext-perf
-Target Report Mask(EXT_PERF)
+Target Mask(EXT_PERF)
 Generate performance extension instructions.
 
 mext-perf2
-Target Report Mask(EXT_PERF2)
+Target Mask(EXT_PERF2)
 Generate performance extension version 2 instructions.
 
 mext-string
-Target Report Mask(EXT_STRING)
+Target Mask(EXT_STRING)
 Generate string extension instructions.
 
 mext-dsp
-Target Report Mask(EXT_DSP)
+Target Mask(EXT_DSP)
 Generate DSP extension instructions.
 
 mv3push
-Target Report Mask(V3PUSH)
+Target Mask(V3PUSH)
 Generate v3 push25/pop25 instructions.
 
 m16-bit
-Target Report Mask(16_BIT)
+Target Mask(16_BIT)
 Generate 16-bit instructions.
 
 mrelax-hint
-Target Report Mask(RELAX_HINT)
+Target Mask(RELAX_HINT)
 Insert relax hint for linker to do relaxation.
 
 mvh
-Target Report Mask(VH) Condition(!TARGET_LINUX_ABI)
+Target Mask(VH) Condition(!TARGET_LINUX_ABI)
 Enable Virtual Hosting support.
 
 misr-vector-size=
@@ -421,27 +421,27 @@ EnumValue
 Enum(nds32_register_ports) String(2r1w) Value(REG_PORT_2R1W)
 
 mctor-dtor
-Target Report
+Target
 Enable constructor/destructor feature.
 
 mrelax
-Target Report
+Target
 Guide linker to relax instructions.
 
 mext-fpu-fma
-Target Report Mask(EXT_FPU_FMA)
+Target Mask(EXT_FPU_FMA)
 Generate floating-point multiply-accumulation instructions.
 
 mext-fpu-sp
-Target Report Mask(FPU_SINGLE)
+Target Mask(FPU_SINGLE)
 Generate single-precision floating-point instructions.
 
 mext-fpu-dp
-Target Report Mask(FPU_DOUBLE)
+Target Mask(FPU_DOUBLE)
 Generate double-precision floating-point instructions.
 
 mforce-no-ext-dsp
-Target Undocumented Report Mask(FORCE_NO_EXT_DSP)
+Target Undocumented Mask(FORCE_NO_EXT_DSP)
 Force disable hardware loop, even use -mext-dsp.
 
 msched-prolog-epilog
@@ -457,9 +457,9 @@ Target Var(flag_always_save_lp) Init(0)
 Always save $lp in the stack.
 
 munaligned-access
-Target Report Var(flag_unaligned_access) Init(0)
+Target Var(flag_unaligned_access) Init(0)
 Enable unaligned word and halfword accesses to packed data.
 
 minline-asm-r15
-Target Report Var(flag_inline_asm_r15) Init(0)
+Target Var(flag_inline_asm_r15) Init(0)
 Allow use r15 for inline ASM.

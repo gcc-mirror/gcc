@@ -1504,6 +1504,31 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam> > &get_generic_params () const
+  {
+    return generic_params;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause ()
+  {
+    rust_assert (has_where_clause ());
+    return where_clause;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  std::unique_ptr<Type> &get_type_aliased ()
+  {
+    rust_assert (existing_type != nullptr);
+    return existing_type;
+  }
+
+  Identifier get_new_type_name () const { return new_type_name; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */

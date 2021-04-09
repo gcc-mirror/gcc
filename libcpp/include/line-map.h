@@ -1,5 +1,5 @@
 /* Map (unsigned int) keys to (source file, line, column) triples.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of the GNU General Public License as published by the
@@ -1136,8 +1136,9 @@ extern location_t linemap_module_loc
 extern void linemap_module_reparent
   (line_maps *, location_t loc, location_t new_parent);
 
-/* Restore the linemap state such that the map at LWM-1 continues.  */
-extern void linemap_module_restore
+/* Restore the linemap state such that the map at LWM-1 continues.
+   Return start location of the new map.  */
+extern unsigned linemap_module_restore
   (line_maps *, unsigned lwm);
 
 /* Given a logical source location, returns the map which the

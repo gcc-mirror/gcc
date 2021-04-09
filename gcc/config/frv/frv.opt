@@ -1,6 +1,6 @@
 ; Options for the FR-V port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -26,19 +26,19 @@ Variable
 frv_cpu_t frv_cpu_type = CPU_TYPE
 
 macc-4
-Target Report RejectNegative Mask(ACC_4)
+Target RejectNegative Mask(ACC_4)
 Use 4 media accumulators.
 
 macc-8
-Target Report RejectNegative InverseMask(ACC_4, ACC_8)
+Target RejectNegative InverseMask(ACC_4, ACC_8)
 Use 8 media accumulators.
 
 malign-labels
-Target Report Mask(ALIGN_LABELS)
+Target Mask(ALIGN_LABELS)
 Enable label alignment optimizations.
 
 malloc-cc
-Target Report RejectNegative Mask(ALLOC_CC)
+Target RejectNegative Mask(ALLOC_CC)
 Dynamically allocate cc registers.
 
 ; We used to default the branch cost to 2, but it was changed it to 1 to avoid
@@ -49,7 +49,7 @@ Target RejectNegative Joined UInteger Var(frv_branch_cost_int) Init(1)
 Set the cost of branches.
 
 mcond-exec
-Target Report Mask(COND_EXEC)
+Target Mask(COND_EXEC)
 Enable conditional execution other than moves/scc.
 
 mcond-exec-insns=
@@ -61,7 +61,7 @@ Target RejectNegative Joined UInteger Var(frv_condexec_temps) Init(4)
 Change the number of temporary registers that are available to conditionally-executed sequences.
 
 mcond-move
-Target Report Mask(COND_MOVE)
+Target Mask(COND_MOVE)
 Enable conditional moves.
 
 mcpu=
@@ -118,75 +118,75 @@ mdebug-stack
 Target Undocumented Var(TARGET_DEBUG_STACK)
 
 mdouble
-Target Report Mask(DOUBLE)
+Target Mask(DOUBLE)
 Use fp double instructions.
 
 mdword
-Target Report Mask(DWORD)
+Target Mask(DWORD)
 Change the ABI to allow double word insns.
 
 mfdpic
-Target Report Mask(FDPIC)
+Target Mask(FDPIC)
 Enable Function Descriptor PIC mode.
 
 mfixed-cc
-Target Report RejectNegative InverseMask(ALLOC_CC, FIXED_CC)
+Target RejectNegative InverseMask(ALLOC_CC, FIXED_CC)
 Just use icc0/fcc0.
 
 mfpr-32
-Target Report RejectNegative Mask(FPR_32)
+Target RejectNegative Mask(FPR_32)
 Only use 32 FPRs.
 
 mfpr-64
-Target Report RejectNegative InverseMask(FPR_32, FPR_64)
+Target RejectNegative InverseMask(FPR_32, FPR_64)
 Use 64 FPRs.
 
 mgpr-32
-Target Report RejectNegative Mask(GPR_32)
+Target RejectNegative Mask(GPR_32)
 Only use 32 GPRs.
 
 mgpr-64
-Target Report RejectNegative InverseMask(GPR_32, GPR_64)
+Target RejectNegative InverseMask(GPR_32, GPR_64)
 Use 64 GPRs.
 
 mgprel-ro
-Target Report Mask(GPREL_RO)
+Target Mask(GPREL_RO)
 Enable use of GPREL for read-only data in FDPIC.
 
 mhard-float
-Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
+Target RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
 Use hardware floating point.
 
 minline-plt
-Target Report Mask(INLINE_PLT)
+Target Mask(INLINE_PLT)
 Enable inlining of PLT in function calls.
 
 mlibrary-pic
-Target Report Mask(LIBPIC)
+Target Mask(LIBPIC)
 Enable PIC support for building libraries.
 
 mlinked-fp
-Target Report Mask(LINKED_FP)
+Target Mask(LINKED_FP)
 Follow the EABI linkage requirements.
 
 mlong-calls
-Target Report Mask(LONG_CALLS)
+Target Mask(LONG_CALLS)
 Disallow direct calls to global functions.
 
 mmedia
-Target Report Mask(MEDIA)
+Target Mask(MEDIA)
 Use media instructions.
 
 mmuladd
-Target Report Mask(MULADD)
+Target Mask(MULADD)
 Use multiply add/subtract instructions.
 
 mmulti-cond-exec
-Target Report Mask(MULTI_CE)
+Target Mask(MULTI_CE)
 Enable optimizing &&/|| in conditional execution.
 
 mnested-cond-exec
-Target Report Mask(NESTED_CE)
+Target Mask(NESTED_CE)
 Enable nested conditional execution optimizations.
 
 ; Not used by the compiler proper.
@@ -195,15 +195,15 @@ Target RejectNegative
 Do not mark ABI switches in e_flags.
 
 moptimize-membar
-Target Report Mask(OPTIMIZE_MEMBAR)
+Target Mask(OPTIMIZE_MEMBAR)
 Remove redundant membars.
 
 mpack
-Target Report Mask(PACK)
+Target Mask(PACK)
 Pack VLIW instructions.
 
 mscc
-Target Report Mask(SCC)
+Target Mask(SCC)
 Enable setting GPRs to the result of comparisons.
 
 msched-lookahead=
@@ -211,15 +211,15 @@ Target RejectNegative Joined UInteger Var(frv_sched_lookahead) Init(4)
 Change the amount of scheduler lookahead.
 
 msoft-float
-Target Report RejectNegative Mask(SOFT_FLOAT)
+Target RejectNegative Mask(SOFT_FLOAT)
 Use software floating point.
 
 mTLS
-Target Report RejectNegative Mask(BIG_TLS)
+Target RejectNegative Mask(BIG_TLS)
 Assume a large TLS segment.
 
 mtls
-Target Report RejectNegative InverseMask(BIG_TLS)
+Target RejectNegative InverseMask(BIG_TLS)
 Do not assume a large TLS segment.
 
 ; Not used by the compiler proper.
@@ -233,5 +233,5 @@ Target RejectNegative
 Link with the library-pic libraries.
 
 mvliw-branch
-Target Report Mask(VLIW_BRANCH)
+Target Mask(VLIW_BRANCH)
 Allow branches to be packed with other instructions.

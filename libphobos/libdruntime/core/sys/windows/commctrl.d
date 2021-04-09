@@ -8,13 +8,14 @@
  */
 module core.sys.windows.commctrl;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 pragma(lib, "comctl32");
 
-private import core.sys.windows.w32api, core.sys.windows.windef, core.sys.windows.winuser;
-private import core.sys.windows.winbase; // for SYSTEMTIME
-private import core.sys.windows.objfwd;  // for LPSTREAM
+import core.sys.windows.w32api, core.sys.windows.windef, core.sys.windows.winuser;
+import core.sys.windows.winbase; // for SYSTEMTIME
+import core.sys.windows.objfwd;  // for LPSTREAM
 
 import core.sys.windows.prsht;
 
@@ -3898,7 +3899,7 @@ static if (_WIN32_WINNT >= 0x600) {
     {
         int iItem;
         int iGroup;
-    };
+    }
     alias LVITEMINDEX* PLVITEMINDEX;
 
     struct LVFOOTERINFO

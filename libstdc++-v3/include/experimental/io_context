@@ -1,6 +1,6 @@
 // <experimental/io_service> -*- C++ -*-
 
-// Copyright (C) 2015-2020 Free Software Foundation, Inc.
+// Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -680,10 +680,12 @@ inline namespace v1
 	    continue;
 
 	  if (__res == __reactor::_S_timeout)
-	    if (__timerq == nullptr)
-	      return false;
-	    else
-	      continue;  // timed out, so restart loop and process the timer
+	    {
+	      if (__timerq == nullptr)
+		return false;
+	      else
+		continue;  // timed out, so restart loop and process the timer
+	    }
 
 	  __timerq = nullptr;
 

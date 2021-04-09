@@ -1,5 +1,5 @@
 ;; GCC machine description for MMX and 3dNOW! instructions
-;; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;;
 ;; This file is part of GCC.
 ;;
@@ -60,6 +60,9 @@
 
 (define_mode_attr mmxdoublemode
   [(V8QI "V8HI") (V4HI "V4SI")])
+
+(define_mode_attr Yv_Yw
+  [(V8QI "Yw") (V4HI "Yw") (V2SI "Yv") (V1DI "Yv") (V2SF "Yv")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -1135,7 +1138,7 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "mmx_<plusminus_insn><mode>3"
+(define_expand "mmx_<insn><mode>3"
   [(set (match_operand:MMXMODEI8 0 "register_operand")
 	(plusminus:MMXMODEI8
 	  (match_operand:MMXMODEI8 1 "register_mmxmem_operand")
@@ -1143,7 +1146,7 @@
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_expand "<plusminus_insn><mode>3"
+(define_expand "<insn><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand")
 	(plusminus:MMXMODEI
 	  (match_operand:MMXMODEI 1 "register_operand")
@@ -1151,11 +1154,11 @@
   "TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_insn "*mmx_<plusminus_insn><mode>3"
-  [(set (match_operand:MMXMODEI8 0 "register_operand" "=y,x,Yv")
+(define_insn "*mmx_<insn><mode>3"
+  [(set (match_operand:MMXMODEI8 0 "register_operand" "=y,x,<Yv_Yw>")
         (plusminus:MMXMODEI8
-	  (match_operand:MMXMODEI8 1 "register_mmxmem_operand" "<comm>0,0,Yv")
-	  (match_operand:MMXMODEI8 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:MMXMODEI8 1 "register_mmxmem_operand" "<comm>0,0,<Yv_Yw>")
+	  (match_operand:MMXMODEI8 2 "register_mmxmem_operand" "ym,x,<Yv_Yw>")))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
@@ -1167,7 +1170,7 @@
    (set_attr "type" "mmxadd,sseadd,sseadd")
    (set_attr "mode" "DI,TI,TI")])
 
-(define_expand "mmx_<plusminus_insn><mode>3"
+(define_expand "mmx_<insn><mode>3"
   [(set (match_operand:MMXMODE12 0 "register_operand")
 	(sat_plusminus:MMXMODE12
 	  (match_operand:MMXMODE12 1 "register_mmxmem_operand")
@@ -1175,11 +1178,11 @@
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
-(define_insn "*mmx_<plusminus_insn><mode>3"
-  [(set (match_operand:MMXMODE12 0 "register_operand" "=y,x,Yv")
+(define_insn "*mmx_<insn><mode>3"
+  [(set (match_operand:MMXMODE12 0 "register_operand" "=y,x,Yw")
         (sat_plusminus:MMXMODE12
-	  (match_operand:MMXMODE12 1 "register_mmxmem_operand" "<comm>0,0,Yv")
-	  (match_operand:MMXMODE12 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:MMXMODE12 1 "register_mmxmem_operand" "<comm>0,0,Yw")
+	  (match_operand:MMXMODE12 2 "register_mmxmem_operand" "ym,x,Yw")))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
@@ -1206,9 +1209,9 @@
   "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
 
 (define_insn "*mmx_mulv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
-        (mult:V4HI (match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv")
-		   (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
+        (mult:V4HI (match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yw")
+		   (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw")))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (MULT, V4HImode, operands)"
   "@
@@ -1234,14 +1237,14 @@
   "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
 
 (define_insn "*mmx_smulv4hi3_highpart"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
 	(truncate:V4HI
 	  (lshiftrt:V4SI
 	    (mult:V4SI
 	      (sign_extend:V4SI
-		(match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv"))
+		(match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yw"))
 	      (sign_extend:V4SI
-		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")))
+		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw")))
 	    (const_int 16))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (MULT, V4HImode, operands)"
@@ -1269,14 +1272,14 @@
   "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
 
 (define_insn "*mmx_umulv4hi3_highpart"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
 	(truncate:V4HI
 	  (lshiftrt:V4SI
 	    (mult:V4SI
 	      (zero_extend:V4SI
-		(match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv"))
+		(match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yw"))
 	      (zero_extend:V4SI
-		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")))
+		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw")))
 	  (const_int 16))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)
@@ -1313,16 +1316,16 @@
   "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
 
 (define_insn "*mmx_pmaddwd"
-  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V2SI 0 "register_operand" "=y,x,Yw")
         (plus:V2SI
 	  (mult:V2SI
 	    (sign_extend:V2SI
 	      (vec_select:V2HI
-		(match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv")
+		(match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yw")
 		(parallel [(const_int 0) (const_int 2)])))
 	    (sign_extend:V2SI
 	      (vec_select:V2HI
-		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")
+		(match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw")
 		(parallel [(const_int 0) (const_int 2)]))))
 	  (mult:V2SI
 	    (sign_extend:V2SI
@@ -1432,10 +1435,10 @@
   "ix86_fixup_binary_operands_no_copy (<CODE>, V4HImode, operands);")
 
 (define_insn "*mmx_<code>v4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
         (smaxmin:V4HI
-	  (match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv")
-	  (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yw")
+	  (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw")))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)
    && ix86_binary_operator_ok (<CODE>, V4HImode, operands)"
@@ -1466,10 +1469,10 @@
   "ix86_fixup_binary_operands_no_copy (<CODE>, V8QImode, operands);")
 
 (define_insn "*mmx_<code>v8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
         (umaxmin:V8QI
-	  (match_operand:V8QI 1 "register_mmxmem_operand" "%0,0,Yv")
-	  (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:V8QI 1 "register_mmxmem_operand" "%0,0,Yw")
+	  (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yw")))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)
    && ix86_binary_operator_ok (<CODE>, V8QImode, operands)"
@@ -1483,10 +1486,10 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "mmx_ashr<mode>3"
-  [(set (match_operand:MMXMODE24 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:MMXMODE24 0 "register_operand" "=y,x,<Yv_Yw>")
         (ashiftrt:MMXMODE24
-	  (match_operand:MMXMODE24 1 "register_operand" "0,0,Yv")
-	  (match_operand:DI 2 "nonmemory_operand" "yN,xN,YvN")))]
+	  (match_operand:MMXMODE24 1 "register_operand" "0,0,<Yv_Yw>")
+	  (match_operand:DI 2 "nonmemory_operand" "yN,xN,<Yv_Yw>N")))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    psra<mmxvecsize>\t{%2, %0|%0, %2}
@@ -1508,11 +1511,11 @@
 	  (match_operand:DI 2 "nonmemory_operand")))]
   "TARGET_MMX_WITH_SSE")
 
-(define_insn "mmx_<shift_insn><mode>3"
-  [(set (match_operand:MMXMODE248 0 "register_operand" "=y,x,Yv")
+(define_insn "mmx_<insn><mode>3"
+  [(set (match_operand:MMXMODE248 0 "register_operand" "=y,x,<Yv_Yw>")
         (any_lshift:MMXMODE248
-	  (match_operand:MMXMODE248 1 "register_operand" "0,0,Yv")
-	  (match_operand:DI 2 "nonmemory_operand" "yN,xN,YvN")))]
+	  (match_operand:MMXMODE248 1 "register_operand" "0,0,<Yv_Yw>")
+	  (match_operand:DI 2 "nonmemory_operand" "yN,xN,<Yv_Yw>N")))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    p<vshift><mmxvecsize>\t{%2, %0|%0, %2}
@@ -1527,10 +1530,10 @@
        (const_string "0")))
    (set_attr "mode" "DI,TI,TI")])
 
-(define_expand "<shift_insn><mode>3"
-  [(set (match_operand:MMXMODE248 0 "register_operand")
-        (any_lshift:MMXMODE248
-	  (match_operand:MMXMODE248 1 "register_operand")
+(define_expand "<insn><mode>3"
+  [(set (match_operand:MMXMODE24 0 "register_operand")
+        (any_lshift:MMXMODE24
+	  (match_operand:MMXMODE24 1 "register_operand")
 	  (match_operand:DI 2 "nonmemory_operand")))]
   "TARGET_MMX_WITH_SSE")
 
@@ -1549,10 +1552,10 @@
   "ix86_fixup_binary_operands_no_copy (EQ, <MODE>mode, operands);")
 
 (define_insn "*mmx_eq<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x")
         (eq:MMXMODEI
-	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "%0,0,Yv")
-	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "%0,0,x")
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,x")))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (EQ, <MODE>mode, operands)"
   "@
@@ -1565,10 +1568,10 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "mmx_gt<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x")
         (gt:MMXMODEI
-	  (match_operand:MMXMODEI 1 "register_operand" "0,0,Yv")
-	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:MMXMODEI 1 "register_operand" "0,0,x")
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,x")))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    pcmpgt<mmxvecsize>\t{%2, %0|%0, %2}
@@ -1594,19 +1597,20 @@
   "operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));")
 
 (define_insn "mmx_andnot<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x,v")
 	(and:MMXMODEI
-	  (not:MMXMODEI (match_operand:MMXMODEI 1 "register_operand" "0,0,Yv"))
-	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (not:MMXMODEI (match_operand:MMXMODEI 1 "register_operand" "0,0,x,v"))
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,x,v")))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    pandn\t{%2, %0|%0, %2}
    pandn\t{%2, %0|%0, %2}
-   vpandn\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "*,sse2_noavx,avx")
-   (set_attr "mmx_isa" "native,*,*")
-   (set_attr "type" "mmxadd,sselog,sselog")
-   (set_attr "mode" "DI,TI,TI")])
+   vpandn\t{%2, %1, %0|%0, %1, %2}
+   vpandnd\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "*,sse2_noavx,avx,avx512vl")
+   (set_attr "mmx_isa" "native,*,*,*")
+   (set_attr "type" "mmxadd,sselog,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI,TI")])
 
 (define_expand "mmx_<code><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand")
@@ -1625,20 +1629,21 @@
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*mmx_<code><mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x,v")
         (any_logic:MMXMODEI
-	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "%0,0,Yv")
-	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,Yv")))]
+	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "%0,0,x,v")
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,x,v")))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
    p<logic>\t{%2, %0|%0, %2}
    p<logic>\t{%2, %0|%0, %2}
-   vp<logic>\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "*,sse2_noavx,avx")
-   (set_attr "mmx_isa" "native,*,*")
-   (set_attr "type" "mmxadd,sselog,sselog")
-   (set_attr "mode" "DI,TI,TI")])
+   vp<logic>\t{%2, %1, %0|%0, %1, %2}
+   vp<logic>d\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "*,sse2_noavx,avx,avx512vl")
+   (set_attr "mmx_isa" "native,*,*,*")
+   (set_attr "type" "mmxadd,sselog,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI,TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -1652,12 +1657,12 @@
 (define_code_attr s_trunsuffix [(ss_truncate "s") (us_truncate "u")])
 
 (define_insn_and_split "mmx_pack<s_trunsuffix>swb"
-  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
 	(vec_concat:V8QI
 	  (any_s_truncate:V4QI
-	    (match_operand:V4HI 1 "register_operand" "0,0,Yv"))
+	    (match_operand:V4HI 1 "register_operand" "0,0,Yw"))
 	  (any_s_truncate:V4QI
-	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv"))))]
+	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw"))))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    pack<s_trunsuffix>swb\t{%2, %0|%0, %2}
@@ -1672,12 +1677,12 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn_and_split "mmx_packssdw"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
 	(vec_concat:V4HI
 	  (ss_truncate:V2HI
-	    (match_operand:V2SI 1 "register_operand" "0,0,Yv"))
+	    (match_operand:V2SI 1 "register_operand" "0,0,Yw"))
 	  (ss_truncate:V2HI
-	    (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yv"))))]
+	    (match_operand:V2SI 2 "register_mmxmem_operand" "ym,x,Yw"))))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    packssdw\t{%2, %0|%0, %2}
@@ -1692,11 +1697,11 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn_and_split "mmx_punpckhbw"
-  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
 	(vec_select:V8QI
 	  (vec_concat:V16QI
-	    (match_operand:V8QI 1 "register_operand" "0,0,Yv")
-	    (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	    (match_operand:V8QI 1 "register_operand" "0,0,Yw")
+	    (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yw"))
           (parallel [(const_int 4) (const_int 12)
                      (const_int 5) (const_int 13)
                      (const_int 6) (const_int 14)
@@ -1715,11 +1720,11 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn_and_split "mmx_punpcklbw"
-  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
 	(vec_select:V8QI
 	  (vec_concat:V16QI
-	    (match_operand:V8QI 1 "register_operand" "0,0,Yv")
-	    (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	    (match_operand:V8QI 1 "register_operand" "0,0,Yw")
+	    (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yw"))
           (parallel [(const_int 0) (const_int 8)
                      (const_int 1) (const_int 9)
                      (const_int 2) (const_int 10)
@@ -1738,11 +1743,11 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn_and_split "mmx_punpckhwd"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
 	(vec_select:V4HI
 	  (vec_concat:V8HI
-	    (match_operand:V4HI 1 "register_operand" "0,0,Yv")
-	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	    (match_operand:V4HI 1 "register_operand" "0,0,Yw")
+	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw"))
           (parallel [(const_int 2) (const_int 6)
                      (const_int 3) (const_int 7)])))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
@@ -1759,11 +1764,11 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn_and_split "mmx_punpcklwd"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
 	(vec_select:V4HI
 	  (vec_concat:V8HI
-	    (match_operand:V4HI 1 "register_operand" "0,0,Yv")
-	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv"))
+	    (match_operand:V4HI 1 "register_operand" "0,0,Yw")
+	    (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw"))
           (parallel [(const_int 0) (const_int 4)
                      (const_int 1) (const_int 5)])))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
@@ -1866,11 +1871,11 @@
 })
 
 (define_insn "*mmx_pinsrw"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,YW")
         (vec_merge:V4HI
           (vec_duplicate:V4HI
             (match_operand:HI 2 "nonimmediate_operand" "rm,rm,rm"))
-	  (match_operand:V4HI 1 "register_operand" "0,0,Yv")
+	  (match_operand:V4HI 1 "register_operand" "0,0,YW")
           (match_operand:SI 3 "const_int_operand")))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)
@@ -1902,11 +1907,11 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "*mmx_pinsrb"
-  [(set (match_operand:V8QI 0 "register_operand" "=x,Yv")
+  [(set (match_operand:V8QI 0 "register_operand" "=x,YW")
         (vec_merge:V8QI
           (vec_duplicate:V8QI
             (match_operand:QI 2 "nonimmediate_operand" "rm,rm"))
-	  (match_operand:V8QI 1 "register_operand" "0,Yv")
+	  (match_operand:V8QI 1 "register_operand" "0,YW")
           (match_operand:SI 3 "const_int_operand")))]
   "TARGET_MMX_WITH_SSE && TARGET_SSE4_1
    && ((unsigned) exact_log2 (INTVAL (operands[3]))
@@ -1940,7 +1945,7 @@
 (define_insn "*mmx_pextrw"
   [(set (match_operand:HI 0 "register_sse4nonimm_operand" "=r,r,m")
 	(vec_select:HI
-	  (match_operand:V4HI 1 "register_operand" "y,Yv,Yv")
+	  (match_operand:V4HI 1 "register_operand" "y,YW,YW")
 	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n,n")])))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
@@ -1959,7 +1964,7 @@
   [(set (match_operand:SWI48 0 "register_operand" "=r,r")
 	(zero_extend:SWI48
 	  (vec_select:HI
-	    (match_operand:V4HI 1 "register_operand" "y,Yv")
+	    (match_operand:V4HI 1 "register_operand" "y,YW")
 	    (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n")]))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
@@ -1976,7 +1981,7 @@
 (define_insn "*mmx_pextrb"
   [(set (match_operand:QI 0 "nonimmediate_operand" "=r,m")
 	(vec_select:QI
-	  (match_operand:V8QI 1 "register_operand" "Yv,Yv")
+	  (match_operand:V8QI 1 "register_operand" "YW,YW")
 	  (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n,n")])))]
   "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
   "@
@@ -1993,7 +1998,7 @@
   [(set (match_operand:SWI248 0 "register_operand" "=r")
 	(zero_extend:SWI248
 	  (vec_select:QI
-	    (match_operand:V8QI 1 "register_operand" "Yv")
+	    (match_operand:V8QI 1 "register_operand" "YW")
 	    (parallel [(match_operand:SI 2 "const_0_to_7_operand" "n")]))))]
   "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
   "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
@@ -2021,9 +2026,9 @@
 })
 
 (define_insn "mmx_pshufw_1"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,Yw")
         (vec_select:V4HI
-          (match_operand:V4HI 1 "register_mmxmem_operand" "ym,xYw")
+	  (match_operand:V4HI 1 "register_mmxmem_operand" "ym,Yw")
           (parallel [(match_operand 2 "const_0_to_3_operand")
                      (match_operand 3 "const_0_to_3_operand")
                      (match_operand 4 "const_0_to_3_operand")
@@ -2076,6 +2081,17 @@
    (set_attr "length_immediate" "1")
    (set_attr "mode" "TI")])
 
+;; Optimize V2SImode load from memory, swapping the elements and
+;; storing back into the memory into DImode rotate of the memory by 32.
+(define_split
+  [(set (match_operand:V2SI 0 "memory_operand")
+	(vec_select:V2SI (match_dup 0)
+	  (parallel [(const_int 1) (const_int 0)])))]
+  "TARGET_64BIT && (TARGET_READ_MODIFY_WRITE || optimize_insn_for_size_p ())"
+  [(set (match_dup 0)
+	(rotate:DI (match_dup 0) (const_int 32)))]
+  "operands[0] = adjust_address (operands[0], DImode, 0);")
+
 (define_insn "mmx_pswapdv2si2"
   [(set (match_operand:V2SI 0 "register_operand" "=y,Yv")
 	(vec_select:V2SI
@@ -2094,10 +2110,10 @@
    (set_attr "mode" "DI,TI")])
 
 (define_insn "*vec_dupv4hi"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,xYw")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,Yw")
 	(vec_duplicate:V4HI
 	  (truncate:HI
-	    (match_operand:SI 1 "register_operand" "0,xYw"))))]
+	    (match_operand:SI 1 "register_operand" "0,Yw"))))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "@
@@ -2383,15 +2399,15 @@
 })
 
 (define_insn "*mmx_uavgv8qi3"
-  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
 	(truncate:V8QI
 	  (lshiftrt:V8HI
 	    (plus:V8HI
 	      (plus:V8HI
 		(zero_extend:V8HI
-		  (match_operand:V8QI 1 "register_mmxmem_operand" "%0,0,Yv"))
+		  (match_operand:V8QI 1 "register_mmxmem_operand" "%0,0,Yw"))
 		(zero_extend:V8HI
-		  (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")))
+		  (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yw")))
 	      (const_vector:V8HI [(const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)
@@ -2429,15 +2445,15 @@
    (set_attr "mode" "DI,TI,TI")])
 
 (define_insn "*mmx_uavgv4hi3"
-  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yv")
+  [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
 	(truncate:V4HI
 	  (lshiftrt:V4SI
 	    (plus:V4SI
 	      (plus:V4SI
 		(zero_extend:V4SI
-		  (match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yv"))
+		  (match_operand:V4HI 1 "register_mmxmem_operand" "%0,0,Yw"))
 		(zero_extend:V4SI
-		  (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yv")))
+		  (match_operand:V4HI 2 "register_mmxmem_operand" "ym,x,Yw")))
 	      (const_vector:V4SI [(const_int 1) (const_int 1)
 				  (const_int 1) (const_int 1)]))
 	    (const_int 1))))]
@@ -2472,9 +2488,9 @@
 })
 
 (define_insn "mmx_psadbw"
-  [(set (match_operand:V1DI 0 "register_operand" "=y,x,Yv")
-        (unspec:V1DI [(match_operand:V8QI 1 "register_operand" "0,0,Yv")
-		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yv")]
+  [(set (match_operand:V1DI 0 "register_operand" "=y,x,Yw")
+        (unspec:V1DI [(match_operand:V8QI 1 "register_operand" "0,0,Yw")
+		      (match_operand:V8QI 2 "register_mmxmem_operand" "ym,x,Yw")]
 		     UNSPEC_PSADBW))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && (TARGET_SSE || TARGET_3DNOW_A)"

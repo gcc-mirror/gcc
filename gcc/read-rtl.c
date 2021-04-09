@@ -1,5 +1,5 @@
 /* RTL reader for GCC.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -77,12 +77,12 @@ struct iterator_group {
 
   /* Treat the given string as the name of a standard mode, etc., and
      return its integer value.  */
-  int (*find_builtin) (const char *);
+  HOST_WIDE_INT (*find_builtin) (const char *);
 
   /* Make the given rtx use the iterator value given by the third argument.
      If the iterator applies to operands, the second argument gives the
      operand index, otherwise it is ignored.  */
-  void (*apply_iterator) (rtx, unsigned int, int);
+  void (*apply_iterator) (rtx, unsigned int, HOST_WIDE_INT);
 
   /* Return the C token for the given standard mode, code, etc.  */
   const char *(*get_c_token) (int);
@@ -139,7 +139,7 @@ static void one_time_initialization (void);
 
 /* Global singleton.  */
 rtx_reader *rtx_reader_ptr = NULL;
-
+
 /* The mode and code iterator structures.  */
 static struct iterator_group modes, codes, ints, substs;
 
@@ -152,9 +152,49 @@ static vec<iterator_use> iterator_uses;
 /* The list of all attribute uses in the current rtx.  */
 static vec<attribute_use> attribute_uses;
 
+/* Provide a version of a function to read a long long if the system does
+   not provide one.  */
+#if (HOST_BITS_PER_WIDE_INT > HOST_BITS_PER_LONG			\
+     && !HAVE_DECL_ATOLL						\
+     && !defined (HAVE_ATOQ))
+HOST_WIDE_INT atoll (const char *);
+
+HOST_WIDE_INT
+atoll (const char *p)
+{
+  int neg = 0;
+  HOST_WIDE_INT tmp_wide;
+
+  while (ISSPACE (*p))
+    p++;
+  if (*p == '-')
+    neg = 1, p++;
+  else if (*p == '+')
+    p++;
+
+  tmp_wide = 0;
+  while (ISDIGIT (*p))
+    {
+      HOST_WIDE_INT new_wide = tmp_wide*10 + (*p - '0');
+      if (new_wide < tmp_wide)
+	{
+	  /* Return INT_MAX equiv on overflow.  */
+	  tmp_wide = HOST_WIDE_INT_M1U >> 1;
+	  break;
+	}
+      tmp_wide = new_wide;
+      p++;
+    }
+
+  if (neg)
+    tmp_wide = -tmp_wide;
+  return tmp_wide;
+}
+#endif
+
 /* Implementations of the iterator_group callbacks for modes.  */
 
-static int
+static HOST_WIDE_INT
 find_mode (const char *name)
 {
   int i;
@@ -167,7 +207,7 @@ find_mode (const char *name)
 }
 
 static void
-apply_mode_iterator (rtx x, unsigned int, int mode)
+apply_mode_iterator (rtx x, unsigned int, HOST_WIDE_INT mode)
 {
   PUT_MODE (x, (machine_mode) mode);
 }
@@ -215,7 +255,7 @@ maybe_find_code (const char *name)
 
 /* Implementations of the iterator_group callbacks for codes.  */
 
-static int
+static HOST_WIDE_INT
 find_code (const char *name)
 {
   rtx_code code = maybe_find_code (name);
@@ -225,7 +265,7 @@ find_code (const char *name)
 }
 
 static void
-apply_code_iterator (rtx x, unsigned int, int code)
+apply_code_iterator (rtx x, unsigned int, HOST_WIDE_INT code)
 {
   PUT_CODE (x, (enum rtx_code) code);
 }
@@ -245,20 +285,52 @@ get_code_token (int code)
    we have to accept any int as valid.  No cross-checking can
    be done.  */
 
-static int
+static HOST_WIDE_INT
 find_int (const char *name)
 {
+  HOST_WIDE_INT tmp;
+
   validate_const_int (name);
-  return atoi (name);
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
+  tmp = atoi (name);
+#else
+#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
+  tmp = atol (name);
+#else
+  /* Prefer atoll over atoq, since the former is in the ISO C99 standard.
+     But prefer not to use our hand-rolled function above either.  */
+#if HAVE_DECL_ATOLL || !defined(HAVE_ATOQ)
+  tmp = atoll (name);
+#else
+  tmp = atoq (name);
+#endif
+#endif
+#endif
+  return tmp;
 }
 
 static void
-apply_int_iterator (rtx x, unsigned int index, int value)
+apply_int_iterator (rtx x, unsigned int index, HOST_WIDE_INT value)
 {
-  if (GET_CODE (x) == SUBREG)
-    SUBREG_BYTE (x) = value;
-  else
-    XINT (x, index) = value;
+  RTX_CODE code = GET_CODE (x);
+  const char *format_ptr = GET_RTX_FORMAT (code);
+
+  switch (format_ptr[index])
+    {
+    case 'i':
+    case 'n':
+      XINT (x, index) = value;
+      break;
+    case 'w':
+      XWINT (x, index) = value;
+      break;
+    case 'p':
+      gcc_assert (code == SUBREG);
+      SUBREG_BYTE (x) = value;
+      break;
+    default:
+      gcc_unreachable ();
+    }
 }
 
 static const char *
@@ -279,7 +351,7 @@ get_int_token (int value)
    applied.  If such attribute has already been added, then no the
    routine has no effect.  */
 static void
-apply_subst_iterator (rtx rt, unsigned int, int value)
+apply_subst_iterator (rtx rt, unsigned int, HOST_WIDE_INT value)
 {
   rtx new_attr;
   rtvec attrs_vec, new_attrs_vec;
@@ -1003,44 +1075,6 @@ initialize_iterators (void)
     }
 }
 
-/* Provide a version of a function to read a long long if the system does
-   not provide one.  */
-#if HOST_BITS_PER_WIDE_INT > HOST_BITS_PER_LONG && !HAVE_DECL_ATOLL && !defined(HAVE_ATOQ)
-HOST_WIDE_INT atoll (const char *);
-
-HOST_WIDE_INT
-atoll (const char *p)
-{
-  int neg = 0;
-  HOST_WIDE_INT tmp_wide;
-
-  while (ISSPACE (*p))
-    p++;
-  if (*p == '-')
-    neg = 1, p++;
-  else if (*p == '+')
-    p++;
-
-  tmp_wide = 0;
-  while (ISDIGIT (*p))
-    {
-      HOST_WIDE_INT new_wide = tmp_wide*10 + (*p - '0');
-      if (new_wide < tmp_wide)
-	{
-	  /* Return INT_MAX equiv on overflow.  */
-	  tmp_wide = HOST_WIDE_INT_M1U >> 1;
-	  break;
-	}
-      tmp_wide = new_wide;
-      p++;
-    }
-
-  if (neg)
-    tmp_wide = -tmp_wide;
-  return tmp_wide;
-}
-#endif
-
 
 #ifdef GENERATOR_FILE
 /* Process a define_conditions directive, starting with the optional
@@ -1617,6 +1651,25 @@ rtx_reader::read_rtx_code (const char *code_name)
       return return_rtx;
     }
 
+  /* Handle "const_double_zero".  */
+  if (strcmp (code_name, "const_double_zero") == 0)
+    {
+      code = CONST_DOUBLE;
+      return_rtx = rtx_alloc (code);
+      memset (return_rtx, 0, RTX_CODE_SIZE (code));
+      PUT_CODE (return_rtx, code);
+      c = read_skip_spaces ();
+      if (c == ':')
+	{
+	  file_location loc = read_name (&name);
+	  record_potential_iterator_use (&modes, loc, return_rtx, 0,
+					 name.string);
+	}
+      else
+	unread_char (c);
+      return return_rtx;
+    }
+
   /* If we end up with an insn expression then we free this space below.  */
   return_rtx = rtx_alloc_for_name (code_name);
   code = GET_CODE (return_rtx);
@@ -1939,32 +1992,9 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
       }
       break;
 
-    case 'w':
-      {
-	HOST_WIDE_INT tmp_wide;
-	read_name (&name);
-	validate_const_int (name.string);
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_INT
-	tmp_wide = atoi (name.string);
-#else
-#if HOST_BITS_PER_WIDE_INT == HOST_BITS_PER_LONG
-	tmp_wide = atol (name.string);
-#else
-	/* Prefer atoll over atoq, since the former is in the ISO C99 standard.
-	   But prefer not to use our hand-rolled function above either.  */
-#if HAVE_DECL_ATOLL || !defined(HAVE_ATOQ)
-	tmp_wide = atoll (name.string);
-#else
-	tmp_wide = atoq (name.string);
-#endif
-#endif
-#endif
-	XWINT (return_rtx, idx) = tmp_wide;
-      }
-      break;
-
     case 'i':
     case 'n':
+    case 'w':
     case 'p':
       {
 	/* Can be an iterator or an integer constant.  */

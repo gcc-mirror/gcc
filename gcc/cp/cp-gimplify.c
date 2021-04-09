@@ -1,6 +1,6 @@
 /* C++-specific tree lowering bits; see also c-gimplify.c and gimple.c.
 
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by Jason Merrill <jason@redhat.com>
 
 This file is part of GCC.
@@ -324,6 +324,18 @@ simple_empty_class_p (tree type, tree op, tree_code code)
       && TYPE_HAS_TRIVIAL_DESTRUCTOR (type))
     /* The TARGET_EXPR is itself a simple copy, look through it.  */
     return simple_empty_class_p (type, TARGET_EXPR_INITIAL (op), code);
+
+  if (TREE_CODE (op) == PARM_DECL
+      && TREE_ADDRESSABLE (TREE_TYPE (op)))
+    {
+      tree fn = DECL_CONTEXT (op);
+      if (DECL_THUNK_P (fn)
+	  || lambda_static_thunk_p (fn))
+	/* In a thunk, we pass through invisible reference parms, so this isn't
+	   actually a copy.  */
+	return false;
+    }
+
   return
     (TREE_CODE (op) == EMPTY_CLASS_EXPR
      || code == MODIFY_EXPR
@@ -882,7 +894,7 @@ static tree genericize_spaceship (tree expr)
   tree type = TREE_TYPE (expr);
   tree op0 = TREE_OPERAND (expr, 0);
   tree op1 = TREE_OPERAND (expr, 1);
-  return genericize_spaceship (type, op0, op1);
+  return genericize_spaceship (input_location, type, op0, op1);
 }
 
 /* If EXPR involves an anonymous VLA type, prepend a DECL_EXPR for that type
@@ -1369,10 +1381,18 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	 normal functions.  */
       if (concept_check_p (stmt))
 	{
-	  *stmt_p = evaluate_concept_check (stmt, tf_warning_or_error);
+	  *stmt_p = evaluate_concept_check (stmt);
 	  * walk_subtrees = 0;
 	  break;
 	}
+
+      if (tree fndecl = cp_get_callee_fndecl_nofold (stmt))
+	if (DECL_IMMEDIATE_FUNCTION_P (fndecl))
+	  {
+	    gcc_assert (source_location_current_p (fndecl));
+	    *stmt_p = cxx_constant_value (stmt);
+	    break;
+	  }
 
       if (!wtd->no_sanitize_p
 	  && sanitize_flags_p ((SANITIZE_NULL
@@ -1433,45 +1453,15 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 
     case REQUIRES_EXPR:
       /* Emit the value of the requires-expression.  */
-      *stmt_p = constant_boolean_node (constraints_satisfied_p (stmt),
-				       boolean_type_node);
+      *stmt_p = evaluate_requires_expr (stmt);
       *walk_subtrees = 0;
       break;
 
     case TEMPLATE_ID_EXPR:
       gcc_assert (concept_check_p (stmt));
       /* Emit the value of the concept check.  */
-      *stmt_p = evaluate_concept_check (stmt, tf_warning_or_error);
+      *stmt_p = evaluate_concept_check (stmt);
       walk_subtrees = 0;
-      break;
-
-    case STATEMENT_LIST:
-      if (TREE_SIDE_EFFECTS (stmt))
-	{
-	  tree_stmt_iterator i;
-	  int nondebug_stmts = 0;
-	  bool clear_side_effects = true;
-	  /* Genericization can clear TREE_SIDE_EFFECTS, e.g. when
-	     transforming an IF_STMT into COND_EXPR.  If such stmt
-	     appears in a STATEMENT_LIST that contains only that
-	     stmt and some DEBUG_BEGIN_STMTs, without -g where the
-	     STATEMENT_LIST wouldn't be present at all the resulting
-	     expression wouldn't have TREE_SIDE_EFFECTS set, so make sure
-	     to clear it even on the STATEMENT_LIST in such cases.  */
-	  for (i = tsi_start (stmt); !tsi_end_p (i); tsi_next (&i))
-	    {
-	      tree t = tsi_stmt (i);
-	      if (TREE_CODE (t) != DEBUG_BEGIN_STMT && nondebug_stmts < 2)
-		nondebug_stmts++;
-	      cp_walk_tree (tsi_stmt_ptr (i), cp_genericize_r, data, NULL);
-	      if (TREE_CODE (t) != DEBUG_BEGIN_STMT
-		  && (nondebug_stmts > 1 || TREE_SIDE_EFFECTS (tsi_stmt (i))))
-		clear_side_effects = false;
-	    }
-	  if (clear_side_effects)
-	    TREE_SIDE_EFFECTS (stmt) = 0;
-	  *walk_subtrees = 0;
-	}
       break;
 
     case OMP_DISTRIBUTE:
@@ -1547,9 +1537,15 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
     case OMP_SIMD:
     case OMP_LOOP:
     case OACC_LOOP:
+    case STATEMENT_LIST:
       /* These cases are handled by shared code.  */
       c_genericize_control_stmt (stmt_p, walk_subtrees, data,
 				 cp_genericize_r, cp_walk_subtrees);
+      break;
+
+    case BIT_CAST_EXPR:
+      *stmt_p = build1_loc (EXPR_LOCATION (stmt), VIEW_CONVERT_EXPR,
+			    TREE_TYPE (stmt), TREE_OPERAND (stmt, 0));
       break;
 
     default:
@@ -2918,6 +2914,21 @@ struct source_location_table_entry_hash
 	    && ref.uid == 0
 	    && ref.var == NULL_TREE);
   }
+
+  static void
+  pch_nx (source_location_table_entry &p)
+  {
+    extern void gt_pch_nx (source_location_table_entry &);
+    gt_pch_nx (p);
+  }
+
+  static void
+  pch_nx (source_location_table_entry &p, gt_pointer_operator op, void *cookie)
+  {
+    extern void gt_pch_nx (source_location_table_entry *, gt_pointer_operator,
+			   void *);
+    gt_pch_nx (&p, op, cookie);
+  }
 };
 
 static GTY(()) hash_table <source_location_table_entry_hash>
@@ -2992,7 +3003,7 @@ fold_builtin_source_location (location_t loc)
 	      const char *name = "";
 
 	      if (current_function_decl)
-		name = cxx_printable_name (current_function_decl, 0);
+		name = cxx_printable_name (current_function_decl, 2);
 
 	      val = build_string_literal (strlen (name) + 1, name);
 	    }

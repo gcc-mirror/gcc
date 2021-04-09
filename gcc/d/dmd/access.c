@@ -1,5 +1,5 @@
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -342,16 +342,9 @@ bool checkAccess(Loc loc, Scope *sc, Expression *e, Declaration *d)
         return false;
     }
     if (!e)
-    {
-        if ((d->prot().kind == Prot::private_ && d->getAccessModule() != sc->_module) ||
-            (d->prot().kind == Prot::package_ && !hasPackageAccess(sc, d)))
-        {
-            error(loc, "%s %s is not accessible from module %s",
-                d->kind(), d->toPrettyChars(), sc->_module->toChars());
-            return true;
-        }
-    }
-    else if (e->type->ty == Tclass)
+        return false;
+
+    if (e->type->ty == Tclass)
     {
         // Do access check
         ClassDeclaration *cd = (ClassDeclaration *)(((TypeClass *)e->type)->sym);
@@ -386,7 +379,7 @@ bool checkAccess(Loc loc, Scope *sc, Expression *e, Declaration *d)
  * (see Bugzilla 313).
  *
  */
-bool checkAccess(Loc loc, Scope *sc, Package *p)
+bool checkAccess(Scope *sc, Package *p)
 {
     if (sc->_module == p)
         return false;
@@ -395,11 +388,7 @@ bool checkAccess(Loc loc, Scope *sc, Package *p)
         if (sc->scopesym && sc->scopesym->isPackageAccessible(p, Prot(Prot::private_)))
             return false;
     }
-    const char *name = p->toPrettyChars();
-    if (p->isPkgMod == PKGmodule || p->isModule())
-        deprecation(loc, "%s %s is not accessible here, perhaps add 'static import %s;'", p->kind(), name, name);
-    else
-        deprecation(loc, "%s %s is not accessible here", p->kind(), name);
+
     return true;
 }
 

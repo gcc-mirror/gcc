@@ -1,7 +1,7 @@
 /*
  * Special support for e500 eabi and SVR4
  *
- *   Copyright (C) 2008-2020 Free Software Foundation, Inc.
+ *   Copyright (C) 2008-2021 Free Software Foundation, Inc.
  *   Written by Nathan Froyd
  * 
  * This file is free software; you can redistribute it and/or modify it

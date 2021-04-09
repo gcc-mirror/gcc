@@ -1,5 +1,5 @@
 /* Driver of optimization process
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -859,8 +859,11 @@ process_function_and_variable_attributes (cgraph_node *first,
       if (node->alias
 	  && lookup_attribute ("flatten", DECL_ATTRIBUTES (decl)))
 	{
-	  warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
-		      "%<flatten%> attribute is ignored on aliases");
+	  tree tdecl = node->get_alias_target_tree ();
+	  if (!tdecl || !DECL_P (tdecl)
+	      || !lookup_attribute ("flatten", DECL_ATTRIBUTES (tdecl)))
+	    warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+			"%<flatten%> attribute is ignored on aliases");
 	}
       if (DECL_PRESERVE_P (decl))
 	node->mark_force_output ();
@@ -1191,8 +1194,6 @@ analyze_functions (bool first_time)
 	      changed = true;
 	      if (symtab->dump_file)
 		fprintf (symtab->dump_file, " %s", node->dump_asm_name ());
-	      if (!changed && symtab->dump_file)
-		fprintf (symtab->dump_file, "\n");
 	    }
 	  if (node == first_analyzed
 	      || node == first_analyzed_var)

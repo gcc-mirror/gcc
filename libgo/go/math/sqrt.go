@@ -74,7 +74,7 @@ func Sqrt(x float64) float64 {
 //
 //      One may easily use induction to prove (4) and (5).
 //      Note. Since the left hand side of (3) contain only i+2 bits,
-//            it does not necessary to do a full (53-bit) comparison
+//            it is not necessary to do a full (53-bit) comparison
 //            in (3).
 //   3. Final rounding
 //      After generating the 53 bits result, we compute one more bit.

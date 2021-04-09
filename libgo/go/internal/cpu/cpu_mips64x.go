@@ -6,7 +6,7 @@
 
 package cpu
 
-const CacheLinePadSize = 32
+// const CacheLinePadSize = 32
 
 // This is initialized by archauxv and should not be changed after it is
 // initialized.

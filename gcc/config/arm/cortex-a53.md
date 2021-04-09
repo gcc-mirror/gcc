@@ -1,5 +1,5 @@
 ;; ARM Cortex-A53 pipeline description
-;; Copyright (C) 2013-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2013-2021 Free Software Foundation, Inc.
 ;;
 ;; Contributed by ARM Ltd.
 ;;
@@ -91,7 +91,7 @@
 
 (define_insn_reservation "cortex_a53_alu_shift" 3
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "alu_shift_imm,alus_shift_imm,
+       (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,alus_shift_imm,
 			crc,logic_shift_imm,logics_shift_imm,
 			alu_ext,alus_ext,bfm,bfx,extend,mvn_shift"))
   "cortex_a53_slot_any")

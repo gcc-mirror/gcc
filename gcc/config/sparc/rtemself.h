@@ -1,5 +1,5 @@
 /* Definitions for rtems targeting a SPARC using ELF.
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
    Contributed by Joel Sherrill (joel@OARcorp.com).
 
    This file is part of GCC.
@@ -33,6 +33,8 @@
 	builtin_assert ("system=rtems");	\
 	if (sparc_fix_b2bst)			\
 	  builtin_define ("__FIX_LEON3FT_B2BST"); \
+	if (sparc_fix_gr712rc || sparc_fix_ut700 || sparc_fix_ut699) \
+	  builtin_define ("__FIX_LEON3FT_TN0018"); \
     }						\
   while (0)
 

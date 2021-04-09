@@ -1,5 +1,5 @@
 /* Target Code for OpenRISC
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Contributed by Stafford Horne based on other ports.
 
    This file is part of GCC.

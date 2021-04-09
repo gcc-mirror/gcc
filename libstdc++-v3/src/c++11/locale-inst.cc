@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1999-2020 Free Software Foundation, Inc.
+// Copyright (C) 1999-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -43,6 +43,9 @@
 # define C_is_char
 #endif
 
+#include "locale-inst-numeric.h"
+#include "locale-inst-monetary.h"
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -58,33 +61,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template class moneypunct_byname<C, false>;
   template class moneypunct_byname<C, true>;
 _GLIBCXX_END_NAMESPACE_CXX11
-_GLIBCXX_BEGIN_NAMESPACE_LDBL_OR_CXX11
-  template class money_get<C, istreambuf_iterator<C> >;
-  template class money_put<C, ostreambuf_iterator<C> >;
-  template
-    istreambuf_iterator<C>
-    money_get<C, istreambuf_iterator<C> >::
-    _M_extract<true>(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		     ios_base&, ios_base::iostate&, string&) const;
-
-  template
-    istreambuf_iterator<C>
-    money_get<C, istreambuf_iterator<C> >::
-    _M_extract<false>(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		      ios_base&, ios_base::iostate&, string&) const;
-
-  template
-    ostreambuf_iterator<C>
-    money_put<C, ostreambuf_iterator<C> >::
-    _M_insert<true>(ostreambuf_iterator<C>, ios_base&, C,
-		    const string_type&) const;
-
-  template
-    ostreambuf_iterator<C>
-    money_put<C, ostreambuf_iterator<C> >::
-    _M_insert<false>(ostreambuf_iterator<C>, ios_base&, C,
-		     const string_type&) const;
-_GLIBCXX_END_NAMESPACE_LDBL_OR_CXX11
 
   // numpunct, numpunct_byname, num_get, and num_put
 #if ! _GLIBCXX_USE_CXX11_ABI
@@ -94,97 +70,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   template class numpunct<C>;
   template class numpunct_byname<C>;
 _GLIBCXX_END_NAMESPACE_CXX11
-_GLIBCXX_BEGIN_NAMESPACE_LDBL
-#if ! _GLIBCXX_USE_CXX11_ABI
-  template class num_get<C, istreambuf_iterator<C> >;
-#endif
-
-  template
-    istreambuf_iterator<C>
-    num_get<C, istreambuf_iterator<C> >::
-    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		   ios_base&, ios_base::iostate&,
-		   long&) const;
-
-  template
-    istreambuf_iterator<C>
-    num_get<C, istreambuf_iterator<C> >::
-    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		   ios_base&, ios_base::iostate&,
-		   unsigned short&) const;
-
-  template
-    istreambuf_iterator<C>
-    num_get<C, istreambuf_iterator<C> >::
-    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		   ios_base&, ios_base::iostate&,
-		   unsigned int&) const;
-
-  template
-    istreambuf_iterator<C>
-    num_get<C, istreambuf_iterator<C> >::
-    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		   ios_base&, ios_base::iostate&,
-		   unsigned long&) const;
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-  template
-    istreambuf_iterator<C>
-    num_get<C, istreambuf_iterator<C> >::
-    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		   ios_base&, ios_base::iostate&,
-		   long long&) const;
-
-  template
-    istreambuf_iterator<C>
-    num_get<C, istreambuf_iterator<C> >::
-    _M_extract_int(istreambuf_iterator<C>, istreambuf_iterator<C>,
-		   ios_base&, ios_base::iostate&,
-		   unsigned long long&) const;
-#endif
-
-#if ! _GLIBCXX_USE_CXX11_ABI
-  template class num_put<C, ostreambuf_iterator<C> >;
-
-  template
-    ostreambuf_iterator<C>
-    num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C,
-		  long) const;
-
-  template
-    ostreambuf_iterator<C>
-    num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C,
-		  unsigned long) const;
-
-#ifdef _GLIBCXX_USE_LONG_LONG
-  template
-    ostreambuf_iterator<C>
-    num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C,
-		  long long) const;
-
-  template
-    ostreambuf_iterator<C>
-    num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_int(ostreambuf_iterator<C>, ios_base&, C,
-		  unsigned long long) const;
-#endif
-
-  template
-    ostreambuf_iterator<C>
-    num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_float(ostreambuf_iterator<C>, ios_base&, C, char,
-		    double) const;
-
-  template
-    ostreambuf_iterator<C>
-    num_put<C, ostreambuf_iterator<C> >::
-    _M_insert_float(ostreambuf_iterator<C>, ios_base&, C, char,
-		    long double) const;
-#endif
-_GLIBCXX_END_NAMESPACE_LDBL
 
   // time_get and time_put
 #if ! _GLIBCXX_USE_CXX11_ABI
@@ -250,16 +135,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
     const numpunct<C>&
     use_facet<numpunct<C> >(const locale&);
 
-#if ! _GLIBCXX_USE_CXX11_ABI
-  template
-    const num_put<C>&
-    use_facet<num_put<C> >(const locale&);
-
-  template
-    const num_get<C>&
-    use_facet<num_get<C> >(const locale&);
-#endif
-
   template
     const moneypunct<C, true>&
     use_facet<moneypunct<C, true> >(const locale&);
@@ -267,14 +142,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
   template
     const moneypunct<C, false>&
     use_facet<moneypunct<C, false> >(const locale&);
-
-  template
-    const money_put<C>&
-    use_facet<money_put<C> >(const locale&);
-
-  template
-    const money_get<C>&
-    use_facet<money_get<C> >(const locale&);
 
 #if ! _GLIBCXX_USE_CXX11_ABI
   template
@@ -313,27 +180,9 @@ _GLIBCXX_END_NAMESPACE_CXX11
     bool
     has_facet<numpunct<C> >(const locale&);
 
-#if ! _GLIBCXX_USE_CXX11_ABI
-  template
-    bool
-    has_facet<num_put<C> >(const locale&);
-
-  template
-    bool
-    has_facet<num_get<C> >(const locale&);
-#endif
-
   template
     bool
     has_facet<moneypunct<C> >(const locale&);
-
-  template
-    bool
-    has_facet<money_put<C> >(const locale&);
-
-  template
-    bool
-    has_facet<money_get<C> >(const locale&);
 
 #if ! _GLIBCXX_USE_CXX11_ABI
   template
@@ -380,45 +229,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 
 // XXX GLIBCXX_ABI Deprecated
-#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && defined C_is_char \
-      && _GLIBCXX_USE_CXX11_ABI == 0
-
-#pragma GCC diagnostic ignored "-Wattribute-alias"
-
-#define _GLIBCXX_LDBL_COMPAT(dbl, ldbl) \
-  extern "C" void ldbl (void) __attribute__ ((alias (#dbl), weak))
-
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intIjEES4_S4_S4_RSt8ios_baseRSt12_Ios_IostateRT_,
-		     _ZNKSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intIjEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intIlEES4_S4_S4_RSt8ios_baseRSt12_Ios_IostateRT_,
-		     _ZNKSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intIlEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intImEES4_S4_S4_RSt8ios_baseRSt12_Ios_IostateRT_,
-		     _ZNKSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intImEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intItEES4_S4_S4_RSt8ios_baseRSt12_Ios_IostateRT_,
-		     _ZNKSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intItEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intIxEES4_S4_S4_RSt8ios_baseRSt12_Ios_IostateRT_,
-		     _ZNKSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intIxEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intIyEES4_S4_S4_RSt8ios_baseRSt12_Ios_IostateRT_,
-		     _ZNKSt7num_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE14_M_extract_intIyEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIlEES4_S4_RSt8ios_basecT_,
-		     _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIlEES3_S3_RSt8ios_basecT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intImEES4_S4_RSt8ios_basecT_,
-		     _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intImEES3_S3_RSt8ios_basecT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIxEES4_S4_RSt8ios_basecT_,
-		     _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIxEES3_S3_RSt8ios_basecT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIyEES4_S4_RSt8ios_basecT_,
-		     _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE13_M_insert_intIyEES3_S3_RSt8ios_basecT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1287num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE15_M_insert_floatIdEES4_S4_RSt8ios_baseccT_,
-		     _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE15_M_insert_floatIdEES3_S3_RSt8ios_baseccT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE15_M_insert_floatIdEES3_S3_RSt8ios_baseccT_,
-		     _ZNKSt7num_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE15_M_insert_floatIeEES3_S3_RSt8ios_baseccT_);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1289money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE10_M_extractILb0EEES4_S4_S4_RSt8ios_baseRSt12_Ios_IostateRSs,
-		     _ZNKSt9money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE10_M_extractILb0EEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRSs);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1289money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE10_M_extractILb1EEES4_S4_S4_RSt8ios_baseRSt12_Ios_IostateRSs,
-		     _ZNKSt9money_getIcSt19istreambuf_iteratorIcSt11char_traitsIcEEE10_M_extractILb1EEES3_S3_S3_RSt8ios_baseRSt12_Ios_IostateRSs);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1289money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE9_M_insertILb0EEES4_S4_RSt8ios_basecRKSs,
-		     _ZNKSt9money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE9_M_insertILb0EEES3_S3_RSt8ios_basecRKSs);
-_GLIBCXX_LDBL_COMPAT(_ZNKSt17__gnu_cxx_ldbl1289money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE9_M_insertILb1EEES4_S4_RSt8ios_basecRKSs,
-		     _ZNKSt9money_putIcSt19ostreambuf_iteratorIcSt11char_traitsIcEEE9_M_insertILb1EEES3_S3_RSt8ios_basecRKSs);
-
+#if defined _GLIBCXX_LONG_DOUBLE_COMPAT && ! _GLIBCXX_USE_CXX11_ABI
+#include "compatibility-ldbl-facets-aliases.h"
 #endif // _GLIBCXX_LONG_DOUBLE_COMPAT

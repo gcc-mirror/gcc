@@ -1,7 +1,7 @@
 # configure.ac for GCC
 # Process this file with autoconf to generate a configuration script.
 
-# Copyright (C) 1997-2020 Free Software Foundation, Inc.
+# Copyright (C) 1997-2021 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -225,6 +225,48 @@ elif test "${with_sysroot+set}" = set; then
   if test "${gcc_gxx_without_sysroot}"; then
     gcc_gxx_include_dir="${gcc_gxx_without_sysroot}"
     gcc_gxx_include_dir_add_sysroot=1
+  fi
+fi
+
+# Configuration for an alternate set of C++ headers.
+gcc_gxx_libcxx_include_dir=
+# Specify the alternate g++ header file directory
+AC_ARG_WITH(gxx-libcxx-include-dir,
+[AS_HELP_STRING([--with-gxx-libcxx-include-dir=DIR],
+                [specifies directory to find libc++ header files])],
+[case "${withval}" in
+yes)	AC_MSG_ERROR(bad value ${withval} given for libc++ include directory) ;;
+no)	;;
+*)	gcc_gxx_libcxx_include_dir=$with_gxx_libcxx_include_dir ;;
+esac])
+
+# If both --with-sysroot and --with-gxx-libcxx-include-dir are passed, we
+# check to see if the latter starts with the former and, upon success, compute
+# gcc_gxx_libcxx_include_dir as relative to the sysroot.
+gcc_gxx_libcxx_include_dir_add_sysroot=0
+
+if test x${gcc_gxx_libcxx_include_dir} != x; then
+  AC_DEFINE(ENABLE_STDLIB_OPTION, 1,
+            [Define if the -stdlib= option should be enabled.])
+else
+  AC_DEFINE(ENABLE_STDLIB_OPTION, 0)
+fi
+# ??? This logic must match libstdc++-v3/acinclude.m4:GLIBCXX_EXPORT_INSTALL_INFO.
+if test x${gcc_gxx_libcxx_include_dir} = x; then
+  if test x${enable_version_specific_runtime_libs} = xyes; then
+    gcc_gxx_libcxx_include_dir='${libsubdir}/libc++_include/c++/v1'
+  else
+    libcxx_incdir='libc++_include/c++/$(version)/v1'
+    if test x$host != x$target; then
+       libcxx_incdir="$target_alias/$libcxx_incdir"
+    fi
+    gcc_gxx_libcxx_include_dir="\$(libsubdir)/\$(libsubdir_to_prefix)$libcxx_incdir"
+  fi
+elif test "${with_sysroot+set}" = set; then
+  gcc_gxx_libcxx_without_sysroot=`expr "${gcc_gxx_libcxx_include_dir}" : "${with_sysroot}"'\(.*\)'`
+  if test "${gcc_gxx_libcxx_without_sysroot}"; then
+    gcc_gxx_libcxx_include_dir="${gcc_gxx_libcxx_without_sysroot}"
+    gcc_gxx_libcxx_include_dir_add_sysroot=1
   fi
 fi
 
@@ -1242,7 +1284,7 @@ AC_CHECK_HEADERS(ext/hash_map)
 ZW_CREATE_DEPDIR
 AC_CONFIG_COMMANDS([gccdepdir],[
   ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs build/$DEPDIR
-  for lang in $subdirs c-family common analyzer
+  for lang in $subdirs c-family common analyzer rtl-ssa
   do
       ${CONFIG_SHELL-/bin/sh} $ac_aux_dir/mkinstalldirs $lang/$DEPDIR
   done], [subdirs="$subdirs" ac_aux_dir=$ac_aux_dir DEPDIR=$DEPDIR])
@@ -1290,6 +1332,15 @@ AC_SEARCH_LIBS(kstat_open, kstat)
 EXTRA_GCC_LIBS="$LIBS"
 LIBS="$save_LIBS"
 AC_SUBST(EXTRA_GCC_LIBS)
+
+# Solaris needs libsocket and libnsl for socket functions before 11.4.
+# C++ needs those for libcody.
+save_LIBS="$LIBS"
+LIBS=
+AX_LIB_SOCKET_NSL
+NETLIBS="$LIBS"
+LIBS="$save_LIBS"
+AC_SUBST(NETLIBS)
 
 # Some systems put ldexp and frexp in libm instead of libc; assume
 # they're both in the same place.  jcf-dump needs them.
@@ -3088,34 +3139,38 @@ AC_MSG_RESULT($gcc_cv_ld_ro_rw_mix)
 gcc_AC_INITFINI_ARRAY
 
 # Check if we have .[us]leb128, and support symbol arithmetic with it.
+# Older versions of GAS and some non-GNU assemblers, have a bugs handling
+# these directives, even when they appear to accept them.
 gcc_GAS_CHECK_FEATURE([.sleb128 and .uleb128], gcc_cv_as_leb128,
-  [elf,2,11,0],,
+ [elf,2,11,0],,
 [	.data
 	.uleb128 L2 - L1
 L1:
 	.uleb128 1280
 	.sleb128 -1010
-L2:],
-[[# GAS versions before 2.11 do not support uleb128,
-  # despite appearing to.
-  # ??? There exists an elf-specific test that will crash
-  # the assembler.  Perhaps it's better to figure out whether
-  # arbitrary sections are supported and try the test.
-  as_ver=`$gcc_cv_as --version 2>/dev/null | sed 1q`
-  if echo "$as_ver" | grep GNU > /dev/null; then
-    as_vers=`echo $as_ver | sed -n \
-	-e 's,^.*[	 ]\([0-9][0-9]*\.[0-9][0-9]*.*\)$,\1,p'`
-    as_major=`expr "$as_vers" : '\([0-9]*\)'`
-    as_minor=`expr "$as_vers" : '[0-9]*\.\([0-9]*\)'`
-    if test $as_major -eq 2 && test $as_minor -lt 11
-    then :
-    else gcc_cv_as_leb128=yes
-    fi
-  fi]],
-  [AC_DEFINE(HAVE_AS_LEB128, 1,
-    [Define if your assembler supports .sleb128 and .uleb128.])],
-  [AC_DEFINE(HAVE_AS_LEB128, 0,
-    [Define if your assembler supports .sleb128 and .uleb128.])])
+L2:
+	.uleb128 0x8000000000000000
+],
+[[
+if test "x$gcc_cv_objdump" != x; then
+  if $gcc_cv_objdump -s conftest.o 2>/dev/null \
+     | grep '04800a8e 78808080 80808080 808001' >/dev/null; then
+    gcc_cv_as_leb128=yes
+  fi
+elif test "x$gcc_cv_otool" != x; then
+  if $gcc_cv_otool -d conftest.o 2>/dev/null \
+     | grep '04 80 0a 8e 78 80 80 80 80 80 80 80 80 80 01' >/dev/null; then
+    gcc_cv_as_leb128=yes
+  fi
+else
+  # play safe, assume the assembler is broken.
+  :
+fi
+]],
+ [AC_DEFINE(HAVE_AS_LEB128, 1,
+   [Define if your assembler supports .sleb128 and .uleb128.])],
+ [AC_DEFINE(HAVE_AS_LEB128, 0,
+   [Define if your assembler supports .sleb128 and .uleb128.])])
 
 # Determine if an .eh_frame section is read-only.
 gcc_fn_eh_frame_ro () {
@@ -3341,6 +3396,48 @@ fi
 AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_EXCLUDE,
   [`if test $gcc_cv_as_section_exclude_e = yes || test $gcc_cv_as_section_exclude_hash = yes; then echo 1; else echo 0; fi`],
 [Define if your assembler supports specifying the exclude section flag.])
+
+# Test if the assembler supports the section flag 'R' for specifying
+# section with SHF_GNU_RETAIN.
+case "${target}" in
+  # Solaris may use GNU assembler with Solairs ld.  Even if GNU
+  # assembler supports the section flag 'R', it doesn't mean that
+  # Solairs ld supports it.
+  *-*-solaris2*)
+    gcc_cv_as_shf_gnu_retain=no
+    ;;
+  *)
+    gcc_GAS_CHECK_FEATURE([section 'R' flag], gcc_cv_as_shf_gnu_retain,
+      [elf,2,36,0], [--fatal-warnings],
+      [.section .foo,"awR",%progbits
+.byte 0])
+    ;;
+esac
+AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_GNU_RETAIN,
+  [`if test $gcc_cv_as_shf_gnu_retain = yes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your assembler supports marking sections with SHF_GNU_RETAIN flag.])
+
+# Test if the assembler supports the section flag 'o' for specifying
+# section with link-order.
+case "${target}" in
+  # Solaris may use GNU assembler with Solairs ld.  Even if GNU
+  # assembler supports the section flag 'o', it doesn't mean that
+  # Solairs ld supports it.
+  *-*-solaris2*)
+    gcc_cv_as_section_link_order=no
+    ;;
+  *)
+    gcc_GAS_CHECK_FEATURE([section 'o' flag], gcc_cv_as_section_link_order,
+      [2,35,0], [--fatal-warnings],
+      [.section .foo,"a"
+.byte 0
+.section __patchable_function_entries,"awo",%progbits,.foo
+.byte 0])
+    ;;
+esac
+AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_LINK_ORDER,
+  [`if test $gcc_cv_as_section_link_order = yes; then echo 1; else echo 0; fi`],
+  [Define 0/1 if your assembler supports 'o' flag in .section directive.])
 
 gcc_GAS_CHECK_FEATURE(section merging support, gcc_cv_as_shf_merge,
  [elf,2,12,0], [--fatal-warnings],
@@ -5335,8 +5432,12 @@ if test x"$insn" != x; then
 
  gcc_GAS_CHECK_FEATURE([--gdwarf-5 option],
   gcc_cv_as_gdwarf_5_flag,
-  [elf,2,36,0], [--gdwarf-5], [$insn],,
-  [AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
+  [elf,2,36,0], [--gdwarf-5], [$insn],
+  [if test x$gcc_cv_readelf != x \
+      && $gcc_cv_readelf -wi conftest.o 2>&1 \
+	 | grep DW_TAG_compile_unit > /dev/null 2>&1; then
+     gcc_cv_as_gdwarf_5_flag=yes;
+   fi],[AC_DEFINE(HAVE_AS_GDWARF_5_DEBUG_FLAG, 1,
 [Define if your assembler supports the --gdwarf-5 option.])])
 
  dwarf4_debug_info_size=0x46
@@ -6244,6 +6345,9 @@ case "$target:$tm_file" in
      *-*-linux*)
      emul_name="-melf64ppc"
       ;;
+     *le-*-freebsd*)
+     emul_name="-melf64lppc_fbsd"
+      ;;
      *-*-freebsd*)
      emul_name="-melf64ppc_fbsd"
       ;;
@@ -6891,7 +6995,12 @@ changequote([,])dnl
 	$ok || continue
 
 	all_lang_configurefrags="$all_lang_configurefrags \$(srcdir)/$gcc_subdir/config-lang.in"
-	all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
+	if test "x$language" = xc && test -n "$all_lang_makefrags"; then
+	    # Put c/Make-lang.in fragment first to match serialization languages order.
+	    all_lang_makefrags="\$(srcdir)/$gcc_subdir/Make-lang.in $all_lang_makefrags"
+	else
+	    all_lang_makefrags="$all_lang_makefrags \$(srcdir)/$gcc_subdir/Make-lang.in"
+	fi
 	if test -f $srcdir/$gcc_subdir/lang.opt; then
 	    lang_opt_files="$lang_opt_files $srcdir/$gcc_subdir/lang.opt"
 	    all_opt_files="$all_opt_files $srcdir/$gcc_subdir/lang.opt"
@@ -7063,6 +7172,8 @@ AC_SUBST(float_h_file)
 AC_SUBST(gcc_config_arguments)
 AC_SUBST(gcc_gxx_include_dir)
 AC_SUBST(gcc_gxx_include_dir_add_sysroot)
+AC_SUBST(gcc_gxx_libcxx_include_dir)
+AC_SUBST(gcc_gxx_libcxx_include_dir_add_sysroot)
 AC_SUBST(host_exeext)
 AC_SUBST(host_xm_file_list)
 AC_SUBST(host_xm_include_list)
@@ -7336,6 +7447,73 @@ if test x"$ld_pushpopstate_support" = xyes; then
 	[Define if your linker supports --push-state/--pop-state])
 fi
 AC_MSG_RESULT($ld_pushpopstate_support)
+
+# On s390, float_t has historically been statically defined as double for no
+# good reason. To comply with the C standard in the light of this definition,
+# gcc has evaluated float expressions in double precision when in
+# standards-compatible mode or when given -fexcess-precision=standard. To enable
+# a smooth transition towards the new model used by most architectures, where
+# gcc describes its behavior via the macro __FLT_EVAL_METHOD__ and glibc derives
+# float_t from that, this behavior can be configured with
+# --enable-s390-excess-float-precision. When given as enabled, that flag selects
+# the old model. When omitted, native builds and cross compiles that have target
+# libc headers will detect whether libc clamps float_t to double and in that
+# case maintain the old model. Otherwise, they will default to the new model.
+AC_ARG_ENABLE(s390-excess-float-precision,
+  [AS_HELP_STRING([--enable-s390-excess-float-precision],
+		  [on s390 targets, evaluate float with double precision
+		   when in standards-conforming mode])],
+  [],[enable_s390_excess_float_precision=auto])
+
+case $target in
+  s390*-linux*)
+  if test x"$enable_s390_excess_float_precision" = xauto; then
+    # Can we autodetect the behavior of the target libc?
+    if test "$target" = "$host" -a "$host" = "$build"; then
+      enable_s390_excess_float_precision=autodetect
+    elif test "x$with_headers" != xno; then
+      # cross build. are target headers available?
+      # carefully coerce the build-system compiler to use target headers
+      saved_CXXFLAGS="$CXXFLAGS"
+      CROSS_TEST_CXXFLAGS="-nostdinc ${XGCC_FLAGS_FOR_TARGET//-B/-idirafter/}"
+      CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+      AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#include <math.h>
+]])], [enable_s390_excess_float_precision=autodetect], [])
+      CXXFLAGS="$saved_CXXFLAGS"
+    fi
+
+    if test x"$enable_s390_excess_float_precision" = xautodetect; then
+      saved_CXXFLAGS="$CXXFLAGS"
+      if ! test "$target" = "$host" -a "$host" = "$build"; then
+        CXXFLAGS="$CROSS_TEST_CXXFLAGS"
+	unset CROSS_TEST_CXXFLAGS
+      fi
+      AC_CACHE_CHECK([for glibc clamping float_t to double],
+        gcc_cv_float_t_clamped_to_double, [
+        AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#define __FLT_EVAL_METHOD__ 0
+#include <math.h>
+int dummy[sizeof(float_t) == sizeof(double) ? 1 : -1];
+]])],
+          [gcc_cv_float_t_clamped_to_double=yes],
+          [gcc_cv_float_t_clamped_to_double=no])])
+      CXXFLAGS="$saved_CXXFLAGS"
+      enable_s390_excess_float_precision="$gcc_cv_float_t_clamped_to_double"
+    else
+      # no way to detect behavior of target libc, default to new model
+      enable_s390_excess_float_precision=no
+    fi
+  fi
+
+  GCC_TARGET_TEMPLATE(ENABLE_S390_EXCESS_FLOAT_PRECISION)
+  if test x"$enable_s390_excess_float_precision" = xyes; then
+    AC_DEFINE(ENABLE_S390_EXCESS_FLOAT_PRECISION, 1,
+[Define to enable evaluating float expressions with double precision in
+standards-compatible mode on s390 targets.])
+  fi
+  ;;
+esac
 
 # Configure the subdirectories
 # AC_CONFIG_SUBDIRS($subdirs)

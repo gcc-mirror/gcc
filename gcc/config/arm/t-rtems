@@ -17,8 +17,8 @@ MULTILIB_DIRNAMES	+= eb
 MULTILIB_OPTIONS	+= mthumb
 MULTILIB_DIRNAMES	+= thumb
 
-MULTILIB_OPTIONS	+= march=armv5te+fp/march=armv6-m/march=armv7-a/march=armv7-a+simd/march=armv7-r/march=armv7-r+fp/mcpu=cortex-m3/mcpu=cortex-m4/mcpu=cortex-m4+nofp/mcpu=cortex-m7
-MULTILIB_DIRNAMES	+= armv5te+fp       armv6-m       armv7-a       armv7-a+simd       armv7-r       armv7-r+fp       cortex-m3      cortex-m4      cortex-m4+nofp      cortex-m7
+MULTILIB_OPTIONS	+= march=armv5te+fp/march=armv6-m/march=armv7-a/march=armv7-a+simd/march=armv7-r/march=armv7-r+fp/mcpu=cortex-r52/mcpu=cortex-m3/mcpu=cortex-m4/mcpu=cortex-m4+nofp/mcpu=cortex-m7
+MULTILIB_DIRNAMES	+= armv5te+fp       armv6-m       armv7-a       armv7-a+simd       armv7-r       armv7-r+fp       cortex-r52      cortex-m3      cortex-m4      cortex-m4+nofp      cortex-m7
 
 MULTILIB_OPTIONS	+= mfloat-abi=hard
 MULTILIB_DIRNAMES	+= hard
@@ -31,6 +31,7 @@ MULTILIB_REQUIRED	+= mthumb/march=armv7-a+simd/mfloat-abi=hard
 MULTILIB_REQUIRED	+= mthumb/march=armv7-a
 MULTILIB_REQUIRED	+= mthumb/march=armv7-r+fp/mfloat-abi=hard
 MULTILIB_REQUIRED	+= mthumb/march=armv7-r
+MULTILIB_REQUIRED	+= mthumb/mcpu=cortex-r52/mfloat-abi=hard
 MULTILIB_REQUIRED	+= mthumb/mcpu=cortex-m3
 MULTILIB_REQUIRED	+= mthumb/mcpu=cortex-m4/mfloat-abi=hard
 MULTILIB_REQUIRED	+= mthumb/mcpu=cortex-m4+nofp

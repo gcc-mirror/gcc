@@ -1,5 +1,5 @@
 /* Symbol table.
-   Copyright (C) 2012-2020 Free Software Foundation, Inc.
+   Copyright (C) 2012-2021 Free Software Foundation, Inc.
    Contributed by Jan Hubicka
 
 This file is part of GCC.
@@ -1668,6 +1668,10 @@ symtab_node::set_section_for_node (const char *section)
     }
 }
 
+/* Set the section of node THIS to be the same as the section
+   of node OTHER.  Keep reference counts of the sections
+   up-to-date as needed.  */
+
 void
 symtab_node::set_section_for_node (const symtab_node &other)
 {
@@ -1679,7 +1683,10 @@ symtab_node::set_section_for_node (const symtab_node &other)
   if (other.x_section)
     x_section = retain_section_hash_entry (other.x_section);
   else
-    x_section = NULL;
+    {
+      x_section = NULL;
+      implicit_section = false;
+    }
 }
 
 /* Workers for set_section.  */
@@ -1690,6 +1697,9 @@ symtab_node::set_section_from_string (symtab_node *n, void *s)
   n->set_section_for_node ((char *)s);
   return false;
 }
+
+/* Set the section of node N to be the same as the section
+   of node O.  */
 
 bool
 symtab_node::set_section_from_node (symtab_node *n, void *o)

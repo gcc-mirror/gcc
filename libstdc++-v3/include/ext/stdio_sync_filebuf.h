@@ -1,6 +1,6 @@
 // Iostreams wrapper for stdio FILE* -*- C++ -*-
 
-// Copyright (C) 2003-2020 Free Software Foundation, Inc.
+// Copyright (C) 2003-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -32,7 +32,6 @@
 #pragma GCC system_header
 
 #include <streambuf>
-#include <unistd.h>
 #include <cstdio>
 #include <bits/c++io.h>  // For __c_file
 #include <bits/move.h>   // For __exchange

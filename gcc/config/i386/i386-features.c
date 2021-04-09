@@ -1,4 +1,4 @@
-/* Copyright (C) 1988-2020 Free Software Foundation, Inc.
+/* Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1266,9 +1266,10 @@ pseudo_reg_set (rtx_insn *insn)
     return NULL;
 
   /* Check pseudo register push first. */
+  machine_mode mode = TARGET_64BIT ? TImode : DImode;
   if (REG_P (SET_SRC (set))
       && !HARD_REGISTER_P (SET_SRC (set))
-      && push_operand (SET_DEST (set), GET_MODE (SET_DEST (set))))
+      && push_operand (SET_DEST (set), mode))
     return set;
 
   df_ref ref;
@@ -1626,7 +1627,7 @@ convert_scalars_to_vector (bool timode_p)
     bitmap_initialize (&candidates[i], &bitmap_default_obstack);
 
   calculate_dominance_info (CDI_DOMINATORS);
-  df_set_flags (DF_DEFER_INSN_RESCAN);
+  df_set_flags (DF_DEFER_INSN_RESCAN | DF_RD_PRUNE_DEAD_DEFS);
   df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
   df_analyze ();
 
@@ -1836,19 +1837,22 @@ ix86_add_reg_usage_to_vzerouppers (void)
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
-  int i;
+  if (TARGET_VZEROUPPER
+      && flag_expensive_optimizations
+      && !optimize_size)
+    {
+      /* vzeroupper instructions are inserted immediately after reload to
+	 account for possible spills from 256bit or 512bit registers.  The pass
+	 reuses mode switching infrastructure by re-running mode insertion
+	 pass, so disable entities that have already been processed.  */
+      for (int i = 0; i < MAX_386_ENTITIES; i++)
+	ix86_optimize_mode_switching[i] = 0;
 
-  /* vzeroupper instructions are inserted immediately after reload to
-     account for possible spills from 256bit or 512bit registers.  The pass
-     reuses mode switching infrastructure by re-running mode insertion
-     pass, so disable entities that have already been processed.  */
-  for (i = 0; i < MAX_386_ENTITIES; i++)
-    ix86_optimize_mode_switching[i] = 0;
+      ix86_optimize_mode_switching[AVX_U128] = 1;
 
-  ix86_optimize_mode_switching[AVX_U128] = 1;
-
-  /* Call optimize_mode_switching.  */
-  g->get_passes ()->execute_pass_mode_switching ();
+      /* Call optimize_mode_switching.  */
+      g->get_passes ()->execute_pass_mode_switching ();
+    }
   ix86_add_reg_usage_to_vzerouppers ();
   return 0;
 }
@@ -1879,8 +1883,10 @@ public:
   virtual bool gate (function *)
     {
       return TARGET_AVX
-	     && TARGET_VZEROUPPER && flag_expensive_optimizations
-	     && !optimize_size;
+	     && ((TARGET_VZEROUPPER
+		  && flag_expensive_optimizations
+		  && !optimize_size)
+		 || cfun->machine->has_explicit_vzeroupper);
     }
 
   virtual unsigned int execute (function *)
@@ -2271,6 +2277,9 @@ remove_partial_avx_dependency (void)
 
   auto_vec<rtx_insn *> control_flow_insns;
 
+  /* We create invalid RTL initially so defer rescans.  */
+  df_set_flags (DF_DEFER_INSN_RESCAN);
+
   FOR_EACH_BB_FN (bb, cfun)
     {
       FOR_BB_INSNS (bb, insn)
@@ -2291,14 +2300,7 @@ remove_partial_avx_dependency (void)
 	    continue;
 
 	  if (!v4sf_const0)
-	    {
-	      calculate_dominance_info (CDI_DOMINATORS);
-	      df_set_flags (DF_DEFER_INSN_RESCAN);
-	      df_chain_add_problem (DF_DU_CHAIN | DF_UD_CHAIN);
-	      df_md_add_problem ();
-	      df_analyze ();
-	      v4sf_const0 = gen_reg_rtx (V4SFmode);
-	    }
+	    v4sf_const0 = gen_reg_rtx (V4SFmode);
 
 	  /* Convert PARTIAL_XMM_UPDATE_TRUE insns, DF -> SF, SF -> DF,
 	     SI -> SF, SI -> DF, DI -> SF, DI -> DF, to vec_dup and
@@ -2359,6 +2361,7 @@ remove_partial_avx_dependency (void)
     {
       /* (Re-)discover loops so that bb->loop_father can be used in the
 	 analysis below.  */
+      calculate_dominance_info (CDI_DOMINATORS);
       loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
       /* Generate a vxorps at entry of the nearest dominator for basic
@@ -2390,7 +2393,6 @@ remove_partial_avx_dependency (void)
 	set_insn = emit_insn_after (set,
 				    insn ? PREV_INSN (insn) : BB_END (bb));
       df_insn_rescan (set_insn);
-      df_process_deferred_rescans ();
       loop_optimizer_finalize ();
 
       if (!control_flow_insns.is_empty ())
@@ -2411,6 +2413,8 @@ remove_partial_avx_dependency (void)
 	}
     }
 
+  df_process_deferred_rescans ();
+  df_clear_flags (DF_DEFER_INSN_RESCAN);
   bitmap_obstack_release (NULL);
   BITMAP_FREE (convert_bbs);
 
@@ -2440,7 +2444,7 @@ const pass_data pass_data_remove_partial_avx_dependency =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_df_finish, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_remove_partial_avx_dependency : public rtl_opt_pass

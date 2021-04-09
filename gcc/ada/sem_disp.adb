@@ -625,7 +625,7 @@ package body Sem_Disp is
                   Par := Parent (Par);
                end if;
 
-               if Nkind (Par) in N_Function_Call | N_Procedure_Call_Statement
+               if Nkind (Par) in N_Subprogram_Call
                  and then Is_Entity_Name (Name (Par))
                then
                   declare

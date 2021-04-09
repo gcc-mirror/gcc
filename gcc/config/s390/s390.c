@@ -1,5 +1,5 @@
 /* Subroutines used for code generation on IBM S/390 and zSeries
-   Copyright (C) 1999-2020 Free Software Foundation, Inc.
+   Copyright (C) 1999-2021 Free Software Foundation, Inc.
    Contributed by Hartmut Penner (hpenner@de.ibm.com) and
                   Ulrich Weigand (uweigand@de.ibm.com) and
                   Andreas Krebbel (Andreas.Krebbel@de.ibm.com).
@@ -337,6 +337,7 @@ const struct s390_processor processor_table[] =
   { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost,  11 },
   { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost,  12 },
   { "z15",    "arch13", PROCESSOR_8561_Z15,    &zEC12_cost,  13 },
+  { "arch14", "arch14", PROCESSOR_ARCH14,      &zEC12_cost,  14 },
   { "native", "",       PROCESSOR_NATIVE,      NULL,         0  }
 };
 
@@ -824,6 +825,12 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       if ((bflags & B_VXE2) && !TARGET_VXE2)
 	{
 	  error ("Builtin %qF requires z15 or higher.", fndecl);
+	  return const0_rtx;
+	}
+
+      if ((bflags & B_NNPA) && !TARGET_NNPA)
+	{
+	  error ("Builtin %qF requires arch14 or higher.", fndecl);
 	  return const0_rtx;
 	}
     }
@@ -6562,6 +6569,7 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
 
   if (GET_MODE_CLASS (GET_MODE (cmp_op1)) == MODE_VECTOR_FLOAT)
     {
+      cmp_op2 = force_reg (GET_MODE (cmp_op1), cmp_op2);
       switch (cond)
 	{
 	  /* NE a != b -> !(a == b) */
@@ -6600,6 +6608,19 @@ s390_expand_vec_compare (rtx target, enum rtx_code cond,
     }
   else
     {
+      /* Turn x < 0 into x >> (bits per element - 1)  */
+      if (cond == LT && cmp_op2 == CONST0_RTX (mode))
+	{
+	  int shift = GET_MODE_BITSIZE (GET_MODE_INNER (mode)) - 1;
+	  rtx res = expand_simple_binop (mode, ASHIFTRT, cmp_op1,
+					 GEN_INT (shift), target,
+					 0, OPTAB_DIRECT);
+	  if (res != target)
+	    emit_move_insn (target, res);
+	  return;
+	}
+      cmp_op2 = force_reg (GET_MODE (cmp_op1), cmp_op2);
+
       switch (cond)
 	{
 	  /* NE: a != b -> !(a == b) */
@@ -6817,11 +6838,7 @@ s390_expand_vcond (rtx target, rtx then, rtx els,
   if (!REG_P (cmp_op1))
     cmp_op1 = force_reg (GET_MODE (cmp_op1), cmp_op1);
 
-  if (!REG_P (cmp_op2))
-    cmp_op2 = force_reg (GET_MODE (cmp_op2), cmp_op2);
-
-  s390_expand_vec_compare (result_target, cond,
-			   cmp_op1, cmp_op2);
+  s390_expand_vec_compare (result_target, cond, cmp_op1, cmp_op2);
 
   /* If the results are supposed to be either -1 or 0 we are done
      since this is what our compare instructions generate anyway.  */
@@ -8409,6 +8426,7 @@ s390_issue_rate (void)
     case PROCESSOR_2827_ZEC12:
     case PROCESSOR_2964_Z13:
     case PROCESSOR_3906_Z14:
+    case PROCESSOR_ARCH14:
     default:
       return 1;
     }
@@ -9400,6 +9418,37 @@ s390_output_pool_entry (rtx exp, machine_mode mode, unsigned int align)
     }
 }
 
+/* Return true if MEM refers to an integer constant in the literal pool.  If
+   VAL is not nullptr, then also fill it with the constant's value.  */
+
+bool
+s390_const_int_pool_entry_p (rtx mem, HOST_WIDE_INT *val)
+{
+  /* Try to match the following:
+     - (mem (unspec [(symbol_ref) (reg)] UNSPEC_LTREF)).
+     - (mem (symbol_ref)).  */
+
+  if (!MEM_P (mem))
+    return false;
+
+  rtx addr = XEXP (mem, 0);
+  rtx sym;
+  if (GET_CODE (addr) == UNSPEC && XINT (addr, 1) == UNSPEC_LTREF)
+    sym = XVECEXP (addr, 0, 0);
+  else
+    sym = addr;
+
+  if (!SYMBOL_REF_P (sym) || !CONSTANT_POOL_ADDRESS_P (sym))
+    return false;
+
+  rtx val_rtx = get_pool_constant (sym);
+  if (!CONST_INT_P (val_rtx))
+    return false;
+
+  if (val != nullptr)
+    *val = INTVAL (val_rtx);
+  return true;
+}
 
 /* Return an RTL expression representing the value of the return address
    for the frame COUNT steps up from the current frame.  FRAME is the
@@ -11051,7 +11100,7 @@ s390_prologue_plus_offset (rtx target, rtx reg, rtx offset, bool frame_related_p
 static void
 s390_emit_stack_probe (rtx addr)
 {
-  rtx mem = gen_rtx_MEM (Pmode, addr);
+  rtx mem = gen_rtx_MEM (word_mode, addr);
   MEM_VOLATILE_P (mem) = 1;
   emit_insn (gen_probe_stack (mem));
 }
@@ -14737,6 +14786,7 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
       break;
     case PROCESSOR_8561_Z15:
+    case PROCESSOR_ARCH14:
       if (get_attr_z15_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z15_expanded (insn))
@@ -14784,6 +14834,7 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
 	mask |= 1 << 3;
       break;
     case PROCESSOR_8561_Z15:
+    case PROCESSOR_ARCH14:
       *units = 4;
       if (get_attr_z15_unit_lsu (insn))
 	mask |= 1 << 0;
@@ -16376,20 +16427,28 @@ s390_invalid_binary_op (int op ATTRIBUTE_UNUSED, const_tree type1, const_tree ty
   return NULL;
 }
 
-/* Implement TARGET_C_EXCESS_PRECISION.
+#if ENABLE_S390_EXCESS_FLOAT_PRECISION == 1
+/* Implement TARGET_C_EXCESS_PRECISION to maintain historic behavior with older
+   glibc versions
 
-   FIXME: For historical reasons, float_t and double_t are typedef'ed to
+   For historical reasons, float_t and double_t had been typedef'ed to
    double on s390, causing operations on float_t to operate in a higher
    precision than is necessary.  However, it is not the case that SFmode
    operations have implicit excess precision, and we generate more optimal
    code if we let the compiler know no implicit extra precision is added.
 
-   That means when we are compiling with -fexcess-precision=fast, the value
-   we set for FLT_EVAL_METHOD will be out of line with the actual precision of
-   float_t (though they would be correct for -fexcess-precision=standard).
+   With a glibc with that "historic" definition, configure will enable this hook
+   to set FLT_EVAL_METHOD to 1 for -fexcess-precision=standard (e.g., as implied
+   by -std=cXY).  That means when we are compiling with -fexcess-precision=fast,
+   the value we set for FLT_EVAL_METHOD will be out of line with the actual
+   precision of float_t.
 
-   A complete fix would modify glibc to remove the unnecessary typedef
-   of float_t to double.  */
+   Newer versions of glibc will be modified to derive the definition of float_t
+   from FLT_EVAL_METHOD on s390x, as on many other architectures.  There,
+   configure will disable this hook by default, so that we defer to the default
+   of FLT_EVAL_METHOD_PROMOTE_TO_FLOAT and a resulting typedef of float_t to
+   float.  Note that in that scenario, float_t and FLT_EVAL_METHOD will be in
+   line independent of -fexcess-precision. */
 
 static enum flt_eval_method
 s390_excess_precision (enum excess_precision_type type)
@@ -16412,6 +16471,7 @@ s390_excess_precision (enum excess_precision_type type)
     }
   return FLT_EVAL_METHOD_UNPREDICTABLE;
 }
+#endif
 
 /* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
 
@@ -16648,6 +16708,97 @@ s390_shift_truncation_mask (machine_mode mode)
   return mode == DImode || mode == SImode ? 63 : 0;
 }
 
+/* Return TRUE iff CONSTRAINT is an "f" constraint, possibly with additional
+   modifiers.  */
+
+static bool
+f_constraint_p (const char *constraint)
+{
+  bool seen_f_p = false;
+  bool seen_v_p = false;
+
+  for (size_t i = 0, c_len = strlen (constraint); i < c_len;
+       i += CONSTRAINT_LEN (constraint[i], constraint + i))
+    {
+      if (constraint[i] == 'f')
+	seen_f_p = true;
+      if (constraint[i] == 'v')
+	seen_v_p = true;
+    }
+
+  /* Treat "fv" constraints as "v", because LRA will choose the widest register
+   * class.  */
+  return seen_f_p && !seen_v_p;
+}
+
+/* Implement TARGET_MD_ASM_ADJUST hook in order to fix up "f"
+   constraints when long doubles are stored in vector registers.  */
+
+static rtx_insn *
+s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
+		    vec<machine_mode> &input_modes,
+		    vec<const char *> &constraints, vec<rtx> & /*clobbers*/,
+		    HARD_REG_SET & /*clobbered_regs*/)
+{
+  if (!TARGET_VXE)
+    /* Long doubles are stored in FPR pairs - nothing to do.  */
+    return NULL;
+
+  rtx_insn *after_md_seq = NULL, *after_md_end = NULL;
+
+  unsigned ninputs = inputs.length ();
+  unsigned noutputs = outputs.length ();
+  for (unsigned i = 0; i < noutputs; i++)
+    {
+      if (GET_MODE (outputs[i]) != TFmode)
+	/* Not a long double - nothing to do.  */
+	continue;
+      const char *constraint = constraints[i];
+      bool allows_mem, allows_reg, is_inout;
+      bool ok = parse_output_constraint (&constraint, i, ninputs, noutputs,
+					 &allows_mem, &allows_reg, &is_inout);
+      gcc_assert (ok);
+      if (!f_constraint_p (constraint))
+	/* Long double with a constraint other than "=f" - nothing to do.  */
+	continue;
+      gcc_assert (allows_reg);
+      gcc_assert (!is_inout);
+      /* Copy output value from a FPR pair into a vector register.  */
+      rtx fprx2 = gen_reg_rtx (FPRX2mode);
+      push_to_sequence2 (after_md_seq, after_md_end);
+      emit_insn (gen_fprx2_to_tf (outputs[i], fprx2));
+      after_md_seq = get_insns ();
+      after_md_end = get_last_insn ();
+      end_sequence ();
+      outputs[i] = fprx2;
+    }
+
+  for (unsigned i = 0; i < ninputs; i++)
+    {
+      if (GET_MODE (inputs[i]) != TFmode)
+	/* Not a long double - nothing to do.  */
+	continue;
+      const char *constraint = constraints[noutputs + i];
+      bool allows_mem, allows_reg;
+      bool ok = parse_input_constraint (&constraint, i, ninputs, noutputs, 0,
+					constraints.address (), &allows_mem,
+					&allows_reg);
+      gcc_assert (ok);
+      if (!f_constraint_p (constraint))
+	/* Long double with a constraint other than "f" (or "=f" for inout
+	   operands) - nothing to do.  */
+	continue;
+      gcc_assert (allows_reg);
+      /* Copy input value from a vector register into a FPR pair.  */
+      rtx fprx2 = gen_reg_rtx (FPRX2mode);
+      emit_insn (gen_tf_to_fprx2 (fprx2, inputs[i]));
+      inputs[i] = fprx2;
+      input_modes[i] = FPRX2mode;
+    }
+
+  return after_md_seq;
+}
+
 /* Initialize GCC target structure.  */
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
@@ -16708,8 +16859,12 @@ s390_shift_truncation_mask (machine_mode mode)
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK hook_bool_const_tree_hwi_hwi_const_tree_true
 
+#if ENABLE_S390_EXCESS_FLOAT_PRECISION == 1
+/* This hook is only needed to maintain the historic behavior with glibc
+   versions that typedef float_t to double. */
 #undef TARGET_C_EXCESS_PRECISION
 #define TARGET_C_EXCESS_PRECISION s390_excess_precision
+#endif
 
 #undef  TARGET_SCHED_ADJUST_PRIORITY
 #define TARGET_SCHED_ADJUST_PRIORITY s390_adjust_priority
@@ -16950,6 +17105,9 @@ s390_shift_truncation_mask (machine_mode mode)
    the floating point instructions.  */
 #undef TARGET_MAX_ANCHOR_OFFSET
 #define TARGET_MAX_ANCHOR_OFFSET 0xfff
+
+#undef TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST s390_md_asm_adjust
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

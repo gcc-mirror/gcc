@@ -1,3 +1,17 @@
+2021-01-16  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* gomp-constants.h (GOMP_TASK_FLAG_DETACH): New.
+
+2021-01-03  Mike Frysinger  <vapier@gentoo.org>
+
+	* libiberty.h (strverscmp): Delete duplicate prototype.
+
+2020-12-09  Andrew Stubbs  <ams@codesourcery.com>
+
+	* hsa.h: Replace whole file.
+	* hsa_ext_amd.h: New file.
+	* hsa_ext_image.h: New file.
+
 2020-09-24  Mark Wielaard  <mark@klomp.org>
 
 	* dwarf2.def: Add DWARF5 Unit type header encoding macros

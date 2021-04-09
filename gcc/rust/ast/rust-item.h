@@ -1720,6 +1720,8 @@ public:
     return existing_type;
   }
 
+  Identifier get_new_type_name () const { return new_type_name; }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */

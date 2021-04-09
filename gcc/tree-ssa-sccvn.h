@@ -1,5 +1,5 @@
 /* Tree SCC value numbering
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Daniel Berlin <dberlin@dberlin.org>
 
    This file is part of GCC.
@@ -212,6 +212,8 @@ struct vn_avail
   int location;
   /* The LEADER for the value we are chained on.  */
   int leader;
+  /* The previous value we pushed a avail record to.  */
+  struct vn_ssa_aux *next_undo;
 };
 
 typedef struct vn_ssa_aux

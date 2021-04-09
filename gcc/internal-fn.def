@@ -1,5 +1,5 @@
 /* Internal functions.
-   Copyright (C) 2011-2020 Free Software Foundation, Inc.
+   Copyright (C) 2011-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -141,8 +141,8 @@ DEF_INTERNAL_OPTAB_FN (MASK_STORE_LANES, 0,
 		       vec_mask_store_lanes, mask_store_lanes)
 
 DEF_INTERNAL_OPTAB_FN (VCOND, 0, vcond, vec_cond)
-DEF_INTERNAL_OPTAB_FN (VCONDU, 0, vcondu, vec_condu)
-DEF_INTERNAL_OPTAB_FN (VCONDEQ, 0, vcondeq, vec_condeq)
+DEF_INTERNAL_OPTAB_FN (VCONDU, 0, vcondu, vec_cond)
+DEF_INTERNAL_OPTAB_FN (VCONDEQ, 0, vcondeq, vec_cond)
 DEF_INTERNAL_OPTAB_FN (VCOND_MASK, 0, vcond_mask, vec_cond_mask)
 
 DEF_INTERNAL_OPTAB_FN (VEC_SET, 0, vec_set, vec_set)
@@ -277,12 +277,21 @@ DEF_INTERNAL_FLT_FN (SCALB, ECF_CONST, scalb, binary)
 DEF_INTERNAL_FLT_FLOATN_FN (FMIN, ECF_CONST, fmin, binary)
 DEF_INTERNAL_FLT_FLOATN_FN (FMAX, ECF_CONST, fmax, binary)
 DEF_INTERNAL_OPTAB_FN (XORSIGN, ECF_CONST, xorsign, binary)
+DEF_INTERNAL_OPTAB_FN (COMPLEX_ADD_ROT90, ECF_CONST, cadd90, binary)
+DEF_INTERNAL_OPTAB_FN (COMPLEX_ADD_ROT270, ECF_CONST, cadd270, binary)
+DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL, ECF_CONST, cmul, binary)
+DEF_INTERNAL_OPTAB_FN (COMPLEX_MUL_CONJ, ECF_CONST, cmul_conj, binary)
+
 
 /* FP scales.  */
 DEF_INTERNAL_FLT_FN (LDEXP, ECF_CONST, ldexp, binary)
 
 /* Ternary math functions.  */
 DEF_INTERNAL_FLT_FLOATN_FN (FMA, ECF_CONST, fma, ternary)
+DEF_INTERNAL_OPTAB_FN (COMPLEX_FMA, ECF_CONST, cmla, ternary)
+DEF_INTERNAL_OPTAB_FN (COMPLEX_FMA_CONJ, ECF_CONST, cmla_conj, ternary)
+DEF_INTERNAL_OPTAB_FN (COMPLEX_FMS, ECF_CONST, cmls, ternary)
+DEF_INTERNAL_OPTAB_FN (COMPLEX_FMS_CONJ, ECF_CONST, cmls_conj, ternary)
 
 /* Unary integer ops.  */
 DEF_INTERNAL_INT_FN (CLRSB, ECF_CONST | ECF_NOTHROW, clrsb, unary)

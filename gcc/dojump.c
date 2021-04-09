@@ -1,5 +1,5 @@
 /* Convert tree expression to rtl instructions, for GNU compiler.
-   Copyright (C) 1988-2020 Free Software Foundation, Inc.
+   Copyright (C) 1988-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1114,13 +1114,19 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 	           /* ... or if there is no libcall for it.  */
 	           || code_to_optab (code) == unknown_optab))
         {
-	  enum rtx_code first_code;
+	  enum rtx_code first_code, orig_code = code;
 	  bool and_them = split_comparison (code, mode, &first_code, &code);
 
 	  /* If there are no NaNs, the first comparison should always fall
 	     through.  */
 	  if (!HONOR_NANS (mode))
 	    gcc_assert (first_code == (and_them ? ORDERED : UNORDERED));
+
+	  else if ((orig_code == EQ || orig_code == NE)
+		   && rtx_equal_p (op0, op1))
+	    /* Self-comparisons x == x or x != x can be optimized into
+	       just x ord x or x nord x.  */
+	    code = orig_code == EQ ? ORDERED : UNORDERED;
 
 	  else
 	    {
@@ -1132,18 +1138,37 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
 		cprob = cprob.apply_scale (99, 100);
 	      else
 		cprob = profile_probability::even ();
-	      /* We want to split:
+	      /* For and_them we want to split:
 		 if (x) goto t; // prob;
+		 goto f;
 		 into
-		 if (a) goto t; // first_prob;
-		 if (b) goto t; // prob;
+		 if (a) ; else goto f; // first_prob for ;
+				       // 1 - first_prob for goto f;
+		 if (b) goto t; // adjusted prob;
+		 goto f;
 		 such that the overall probability of jumping to t
-		 remains the same and first_prob is prob * cprob.  */
+		 remains the same.  The and_them case should be
+		 probability-wise equivalent to the !and_them case with
+		 f and t swapped and also the conditions inverted, i.e.
+		 if (!a) goto f;
+		 if (!b) goto f;
+		 goto t;
+		 where the overall probability of jumping to f is
+		 1 - prob (thus the first prob.invert () below).
+		 cprob.invert () is because the a condition is inverted,
+		 so if it was originally ORDERED, !a is UNORDERED and
+		 thus should be relative 1% rather than 99%.
+		 The invert () on assignment to first_prob is because
+		 first_prob represents the probability of fallthru,
+		 rather than goto f.  And the last prob.invert () is
+		 because the adjusted prob represents the probability of
+		 jumping to t rather than to f.  */
 	      if (and_them)
 		{
 		  rtx_code_label *dest_label;
 		  prob = prob.invert ();
-		  profile_probability first_prob = prob.split (cprob).invert ();
+		  profile_probability first_prob
+		    = prob.split (cprob.invert ()).invert ();
 		  prob = prob.invert ();
 		  /* If we only jump if true, just bypass the second jump.  */
 		  if (! if_false_label)
@@ -1157,11 +1182,37 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
                   do_compare_rtx_and_jump (op0, op1, first_code, unsignedp, mode,
 					   size, dest_label, NULL, first_prob);
 		}
+	      /* For !and_them we want to split:
+		 if (x) goto t; // prob;
+		 goto f;
+		 into
+		 if (a) goto t; // first_prob;
+		 if (b) goto t; // adjusted prob;
+		 goto f;
+		 such that the overall probability of jumping to t
+		 remains the same and first_prob is prob * cprob.  */
               else
 		{
 		  profile_probability first_prob = prob.split (cprob);
 		  do_compare_rtx_and_jump (op0, op1, first_code, unsignedp, mode,
 					   size, NULL, if_true_label, first_prob);
+		  if (orig_code == NE && can_compare_p (UNEQ, mode, ccp_jump))
+		    {
+		      /* x != y can be split into x unord y || x ltgt y
+			 or x unord y || !(x uneq y).  The latter has the
+			 advantage that both comparisons are non-signalling and
+			 so there is a higher chance that the RTL optimizations
+			 merge the two comparisons into just one.  */
+		      code = UNEQ;
+		      prob = prob.invert ();
+		      if (! if_false_label)
+			{
+			  if (! dummy_label)
+			    dummy_label = gen_label_rtx ();
+			  if_false_label = dummy_label;
+			}
+		      std::swap (if_false_label, if_true_label);
+		    }
 		}
 	    }
 	}

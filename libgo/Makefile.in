@@ -169,6 +169,7 @@ am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibgodebugdir)" \
 	"$(DESTDIR)$(toolexeclibgoencodingdir)" \
 	"$(DESTDIR)$(toolexeclibgogodir)" \
+	"$(DESTDIR)$(toolexeclibgogobuilddir)" \
 	"$(DESTDIR)$(toolexeclibgohashdir)" \
 	"$(DESTDIR)$(toolexeclibgohtmldir)" \
 	"$(DESTDIR)$(toolexeclibgoimagedir)" \
@@ -224,7 +225,7 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 am__DEPENDENCIES_3 = $(addsuffix .lo,$(PACKAGES)) \
 	internal/bytealg/bytealg.lo reflect/makefunc_ffi_c.lo \
 	$(am__DEPENDENCIES_1) syscall/errno.lo syscall/signame.lo \
-	syscall/wait.lo $(golangorg_x_net_lif_lo) \
+	syscall/wait.lo os/dir_gccgo_c.lo $(golangorg_x_net_lif_lo) \
 	$(golangorg_x_net_route_lo) log/syslog/syslog_c.lo \
 	runtime/internal/atomic_c.lo sync/atomic_c.lo \
 	internal/cpu/cpu_gccgo.lo $(am__DEPENDENCIES_2)
@@ -240,10 +241,10 @@ am__objects_2 = $(am__objects_1)
 @LIBGO_IS_RTEMS_TRUE@am__objects_3 =  \
 @LIBGO_IS_RTEMS_TRUE@	runtime/rtems-task-variable-add.lo
 am__objects_4 = runtime/aeshash.lo runtime/go-assert.lo \
-	runtime/go-caller.lo runtime/go-callers.lo runtime/go-cdiv.lo \
-	runtime/go-cgo.lo runtime/go-construct-map.lo \
-	runtime/go-ffi.lo runtime/go-fieldtrack.lo \
-	runtime/go-matherr.lo runtime/go-memclr.lo \
+	runtime/go-caller.lo runtime/go-callers.lo runtime/go-cgo.lo \
+	runtime/go-construct-map.lo runtime/go-ffi.lo \
+	runtime/go-fieldtrack.lo runtime/go-matherr.lo \
+	runtime/go-memclr.lo runtime/go-memmove.lo \
 	runtime/go-memequal.lo runtime/go-nanotime.lo \
 	runtime/go-now.lo runtime/go-nosys.lo \
 	runtime/go-reflect-call.lo runtime/go-setenv.lo \
@@ -336,16 +337,16 @@ DATA = $(noinst_DATA) $(toolexeclibgo_DATA) \
 	$(toolexeclibgocryptox509_DATA) $(toolexeclibgodatabase_DATA) \
 	$(toolexeclibgodatabasesql_DATA) $(toolexeclibgodebug_DATA) \
 	$(toolexeclibgoencoding_DATA) $(toolexeclibgogo_DATA) \
-	$(toolexeclibgohash_DATA) $(toolexeclibgohtml_DATA) \
-	$(toolexeclibgoimage_DATA) $(toolexeclibgoimagecolor_DATA) \
-	$(toolexeclibgoindex_DATA) $(toolexeclibgointernal_DATA) \
-	$(toolexeclibgoio_DATA) $(toolexeclibgolog_DATA) \
-	$(toolexeclibgomath_DATA) $(toolexeclibgomime_DATA) \
-	$(toolexeclibgonet_DATA) $(toolexeclibgonethttp_DATA) \
-	$(toolexeclibgonetrpc_DATA) $(toolexeclibgoos_DATA) \
-	$(toolexeclibgopath_DATA) $(toolexeclibgoregexp_DATA) \
-	$(toolexeclibgoruntime_DATA) $(toolexeclibgosync_DATA) \
-	$(toolexeclibgotesting_DATA) \
+	$(toolexeclibgogobuild_DATA) $(toolexeclibgohash_DATA) \
+	$(toolexeclibgohtml_DATA) $(toolexeclibgoimage_DATA) \
+	$(toolexeclibgoimagecolor_DATA) $(toolexeclibgoindex_DATA) \
+	$(toolexeclibgointernal_DATA) $(toolexeclibgoio_DATA) \
+	$(toolexeclibgolog_DATA) $(toolexeclibgomath_DATA) \
+	$(toolexeclibgomime_DATA) $(toolexeclibgonet_DATA) \
+	$(toolexeclibgonethttp_DATA) $(toolexeclibgonetrpc_DATA) \
+	$(toolexeclibgoos_DATA) $(toolexeclibgopath_DATA) \
+	$(toolexeclibgoregexp_DATA) $(toolexeclibgoruntime_DATA) \
+	$(toolexeclibgosync_DATA) $(toolexeclibgotesting_DATA) \
 	$(toolexeclibgotestinginternal_DATA) $(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) $(toolexeclibgotime_DATA) \
 	$(toolexeclibgounicode_DATA)
@@ -629,6 +630,7 @@ toolexeclibgo_DATA = \
 	bytes.gox \
 	context.gox \
 	crypto.gox \
+	embed.gox \
 	encoding.gox \
 	errors.gox \
 	expvar.gox \
@@ -745,6 +747,10 @@ toolexeclibgogo_DATA = \
 	go/token.gox \
 	go/types.gox
 
+toolexeclibgogobuilddir = $(toolexeclibgogodir)/build
+toolexeclibgogobuild_DATA = \
+	go/build/constraint.gox
+
 toolexeclibgohashdir = $(toolexeclibgodir)/hash
 toolexeclibgohash_DATA = \
 	hash/adler32.gox \
@@ -775,6 +781,7 @@ toolexeclibgoindex_DATA = \
 
 toolexeclibgoiodir = $(toolexeclibgodir)/io
 toolexeclibgoio_DATA = \
+	io/fs.gox \
 	io/ioutil.gox
 
 toolexeclibgologdir = $(toolexeclibgodir)/log
@@ -833,6 +840,7 @@ toolexeclibgoregexp_DATA = \
 toolexeclibgoruntimedir = $(toolexeclibgodir)/runtime
 toolexeclibgoruntime_DATA = \
 	runtime/debug.gox \
+	runtime/metrics.gox \
 	runtime/pprof.gox \
 	runtime/trace.gox
 
@@ -842,6 +850,7 @@ toolexeclibgosync_DATA = \
 
 toolexeclibgotestingdir = $(toolexeclibgodir)/testing
 toolexeclibgotesting_DATA = \
+	testing/fstest.gox \
 	testing/iotest.gox \
 	testing/quick.gox
 
@@ -892,13 +901,13 @@ runtime_files = \
 	runtime/go-assert.c \
 	runtime/go-caller.c \
 	runtime/go-callers.c \
-	runtime/go-cdiv.c \
 	runtime/go-cgo.c \
 	runtime/go-construct-map.c \
 	runtime/go-ffi.c \
 	runtime/go-fieldtrack.c \
 	runtime/go-matherr.c \
 	runtime/go-memclr.c \
+	runtime/go-memmove.c \
 	runtime/go-memequal.c \
 	runtime/go-nanotime.c \
 	runtime/go-now.c \
@@ -942,6 +951,7 @@ libgo_go_objs = \
 	syscall/errno.lo \
 	syscall/signame.lo \
 	syscall/wait.lo \
+	os/dir_gccgo_c.lo \
 	$(golangorg_x_net_lif_lo) \
 	$(golangorg_x_net_route_lo) \
 	log/syslog/syslog_c.lo \
@@ -1030,7 +1040,7 @@ GOBENCH =
 CHECK = \
 	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
-	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
+	GOLIBS="$(extra_check_libs_$(subst .,_,$(subst /,_,$(@D)))) $(PTHREAD_LIBS) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
 	export GOLIBS; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
@@ -1132,6 +1142,7 @@ extra_go_files_cmd_go_internal_cfg = zdefaultcc.go
 extra_go_files_os = os_linknames.go
 extra_go_files_os_user = os_user_linknames.go
 extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_fsys = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
@@ -1145,9 +1156,12 @@ extra_check_libs_cmd_go_internal_modload = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_module = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_mvs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_search = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_str = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_test = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_vcs = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_web2 = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_internal_buildid = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
 @HAVE_STAT_TIMESPEC_FALSE@@LIBGO_IS_SOLARIS_TRUE@matchargs_os = 
 
@@ -1343,8 +1357,6 @@ runtime/go-caller.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-callers.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
-runtime/go-cdiv.lo: runtime/$(am__dirstamp) \
-	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-cgo.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-construct-map.lo: runtime/$(am__dirstamp) \
@@ -1356,6 +1368,8 @@ runtime/go-fieldtrack.lo: runtime/$(am__dirstamp) \
 runtime/go-matherr.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-memclr.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/go-memmove.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/go-memequal.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
@@ -1417,7 +1431,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-assert.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-caller.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-callers.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-cdiv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-cgo.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-construct-map.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-context.Plo@am__quote@
@@ -1426,6 +1439,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-matherr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memclr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memequal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-memmove.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nanotime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-nosys.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@runtime/$(DEPDIR)/go-now.Plo@am__quote@
@@ -1777,6 +1791,27 @@ uninstall-toolexeclibgogoDATA:
 	@list='$(toolexeclibgogo_DATA)'; test -n "$(toolexeclibgogodir)" || list=; \
 	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
 	dir='$(DESTDIR)$(toolexeclibgogodir)'; $(am__uninstall_files_from_dir)
+install-toolexeclibgogobuildDATA: $(toolexeclibgogobuild_DATA)
+	@$(NORMAL_INSTALL)
+	@list='$(toolexeclibgogobuild_DATA)'; test -n "$(toolexeclibgogobuilddir)" || list=; \
+	if test -n "$$list"; then \
+	  echo " $(MKDIR_P) '$(DESTDIR)$(toolexeclibgogobuilddir)'"; \
+	  $(MKDIR_P) "$(DESTDIR)$(toolexeclibgogobuilddir)" || exit 1; \
+	fi; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  echo "$$d$$p"; \
+	done | $(am__base_list) | \
+	while read files; do \
+	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(toolexeclibgogobuilddir)'"; \
+	  $(INSTALL_DATA) $$files "$(DESTDIR)$(toolexeclibgogobuilddir)" || exit $$?; \
+	done
+
+uninstall-toolexeclibgogobuildDATA:
+	@$(NORMAL_UNINSTALL)
+	@list='$(toolexeclibgogobuild_DATA)'; test -n "$(toolexeclibgogobuilddir)" || list=; \
+	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
+	dir='$(DESTDIR)$(toolexeclibgogobuilddir)'; $(am__uninstall_files_from_dir)
 install-toolexeclibgohashDATA: $(toolexeclibgohash_DATA)
 	@$(NORMAL_INSTALL)
 	@list='$(toolexeclibgohash_DATA)'; test -n "$(toolexeclibgohashdir)" || list=; \
@@ -2393,7 +2428,7 @@ all-am: Makefile $(LIBRARIES) $(LTLIBRARIES) $(DATA) config.h \
 		all-local
 installdirs: installdirs-recursive
 installdirs-am:
-	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgointernaldir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgotimedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
+	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibgodir)" "$(DESTDIR)$(toolexeclibgoarchivedir)" "$(DESTDIR)$(toolexeclibgocompressdir)" "$(DESTDIR)$(toolexeclibgocontainerdir)" "$(DESTDIR)$(toolexeclibgocryptodir)" "$(DESTDIR)$(toolexeclibgocryptox509dir)" "$(DESTDIR)$(toolexeclibgodatabasedir)" "$(DESTDIR)$(toolexeclibgodatabasesqldir)" "$(DESTDIR)$(toolexeclibgodebugdir)" "$(DESTDIR)$(toolexeclibgoencodingdir)" "$(DESTDIR)$(toolexeclibgogodir)" "$(DESTDIR)$(toolexeclibgogobuilddir)" "$(DESTDIR)$(toolexeclibgohashdir)" "$(DESTDIR)$(toolexeclibgohtmldir)" "$(DESTDIR)$(toolexeclibgoimagedir)" "$(DESTDIR)$(toolexeclibgoimagecolordir)" "$(DESTDIR)$(toolexeclibgoindexdir)" "$(DESTDIR)$(toolexeclibgointernaldir)" "$(DESTDIR)$(toolexeclibgoiodir)" "$(DESTDIR)$(toolexeclibgologdir)" "$(DESTDIR)$(toolexeclibgomathdir)" "$(DESTDIR)$(toolexeclibgomimedir)" "$(DESTDIR)$(toolexeclibgonetdir)" "$(DESTDIR)$(toolexeclibgonethttpdir)" "$(DESTDIR)$(toolexeclibgonetrpcdir)" "$(DESTDIR)$(toolexeclibgoosdir)" "$(DESTDIR)$(toolexeclibgopathdir)" "$(DESTDIR)$(toolexeclibgoregexpdir)" "$(DESTDIR)$(toolexeclibgoruntimedir)" "$(DESTDIR)$(toolexeclibgosyncdir)" "$(DESTDIR)$(toolexeclibgotestingdir)" "$(DESTDIR)$(toolexeclibgotestinginternaldir)" "$(DESTDIR)$(toolexeclibgotextdir)" "$(DESTDIR)$(toolexeclibgotexttemplatedir)" "$(DESTDIR)$(toolexeclibgotimedir)" "$(DESTDIR)$(toolexeclibgounicodedir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: install-recursive
@@ -2472,8 +2507,8 @@ install-exec-am: install-exec-local install-toolexeclibLIBRARIES \
 	install-toolexeclibgodatabasesqlDATA \
 	install-toolexeclibgodebugDATA \
 	install-toolexeclibgoencodingDATA install-toolexeclibgogoDATA \
-	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
-	install-toolexeclibgoimageDATA \
+	install-toolexeclibgogobuildDATA install-toolexeclibgohashDATA \
+	install-toolexeclibgohtmlDATA install-toolexeclibgoimageDATA \
 	install-toolexeclibgoimagecolorDATA \
 	install-toolexeclibgoindexDATA \
 	install-toolexeclibgointernalDATA install-toolexeclibgoioDATA \
@@ -2541,7 +2576,9 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgodatabasesqlDATA \
 	uninstall-toolexeclibgodebugDATA \
 	uninstall-toolexeclibgoencodingDATA \
-	uninstall-toolexeclibgogoDATA uninstall-toolexeclibgohashDATA \
+	uninstall-toolexeclibgogoDATA \
+	uninstall-toolexeclibgogobuildDATA \
+	uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
 	uninstall-toolexeclibgoimagecolorDATA \
@@ -2587,8 +2624,8 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	install-toolexeclibgodatabasesqlDATA \
 	install-toolexeclibgodebugDATA \
 	install-toolexeclibgoencodingDATA install-toolexeclibgogoDATA \
-	install-toolexeclibgohashDATA install-toolexeclibgohtmlDATA \
-	install-toolexeclibgoimageDATA \
+	install-toolexeclibgogobuildDATA install-toolexeclibgohashDATA \
+	install-toolexeclibgohtmlDATA install-toolexeclibgoimageDATA \
 	install-toolexeclibgoimagecolorDATA \
 	install-toolexeclibgoindexDATA \
 	install-toolexeclibgointernalDATA install-toolexeclibgoioDATA \
@@ -2619,7 +2656,9 @@ uninstall-am: uninstall-toolexeclibLIBRARIES \
 	uninstall-toolexeclibgodatabasesqlDATA \
 	uninstall-toolexeclibgodebugDATA \
 	uninstall-toolexeclibgoencodingDATA \
-	uninstall-toolexeclibgogoDATA uninstall-toolexeclibgohashDATA \
+	uninstall-toolexeclibgogoDATA \
+	uninstall-toolexeclibgogobuildDATA \
+	uninstall-toolexeclibgohashDATA \
 	uninstall-toolexeclibgohtmlDATA \
 	uninstall-toolexeclibgoimageDATA \
 	uninstall-toolexeclibgoimagecolorDATA \
@@ -2828,7 +2867,7 @@ s-runtime-inc: runtime.lo mkruntimeinc.sh Makefile
 
 # Generate the list of go std packages that were included in libgo
 zstdpkglist.go: s-zstdpkglist; @true
-s-zstdpkglist: Makefile
+s-zstdpkglist: Makefile libgo-packages.txt
 	rm -f zstdpkglist.go.tmp
 	echo 'package goroot' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
@@ -3013,6 +3052,11 @@ syscall/signame.lo: go/syscall/signame.c runtime.inc
 syscall/wait.lo: go/syscall/wait.c runtime.inc
 	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syscall/wait.c
+
+# An os function is written in C.
+os/dir_gccgo_c.lo: go/os/dir_gccgo_c.c runtime.inc
+	@$(MKDIR_P) os
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/os/dir_gccgo_c.c
 
 # internal/cpu needs some C code.
 internal/cpu/cpu_gccgo.lo: go/internal/cpu/cpu_gccgo.c runtime.inc

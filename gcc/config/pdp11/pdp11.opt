@@ -1,6 +1,6 @@
 ; Options for the PDP11 port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -23,49 +23,49 @@ Target RejectNegative
 Generate code for an 11/10.
 
 m40
-Target Report Mask(40)
+Target Mask(40)
 Generate code for an 11/40.
 
 m45
-Target Report Mask(45)
+Target Mask(45)
 Generate code for an 11/45.
 
 mac0
-Target Report Mask(AC0)
+Target Mask(AC0)
 Return floating-point results in ac0 (fr0 in Unix assembler syntax).
 
 mdec-asm
-Target RejectNegative Report Mask(DEC_ASM) Negative(mgnu-asm)
+Target RejectNegative Mask(DEC_ASM) Negative(mgnu-asm)
 Use the DEC assembler syntax.
 
 mgnu-asm
-Target RejectNegative Report Mask(GNU_ASM) Negative(munix-asm)
+Target RejectNegative Mask(GNU_ASM) Negative(munix-asm)
 Use the GNU assembler syntax.
 
 mfpu
-Target RejectNegative Report Mask(FPU)
+Target RejectNegative Mask(FPU)
 Use hardware floating point.
 
 mint16
-Target Report InverseMask(INT32, INT16)
+Target InverseMask(INT32, INT16)
 Use 16 bit int.
 
 mint32
-Target Report Mask(INT32)
+Target Mask(INT32)
 Use 32 bit int.
 
 msoft-float
-Target RejectNegative Report InverseMask(FPU, SOFT_FLOAT)
+Target RejectNegative InverseMask(FPU, SOFT_FLOAT)
 Do not use hardware floating point.
 
 msplit
-Target Report Mask(SPLIT)
+Target Mask(SPLIT)
 Target has split I&D.
 
 munix-asm
-Target RejectNegative Report Mask(UNIX_ASM) Negative(mdec-asm)
+Target RejectNegative Mask(UNIX_ASM) Negative(mdec-asm)
 Use UNIX assembler syntax.
 
 mlra
-Target Report Mask(LRA)
+Target Mask(LRA)
 Use LRA register allocator.

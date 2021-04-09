@@ -1,5 +1,5 @@
 /* Common VxWorks target definitions for GNU compiler.
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by CodeSourcery, Inc.
 
 This file is part of GCC.
@@ -27,6 +27,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "output.h"
 #include "fold-const.h"
+#include "rtl.h"
+#include "memmodel.h"
+#include "optabs.h"
 
 #if !HAVE_INITFINI_ARRAY_SUPPORT
 /* Like default_named_section_asm_out_constructor, except that even
@@ -169,4 +172,25 @@ vxworks_override_options (void)
 
   if (!global_options_set.x_dwarf_version)
     dwarf_version = VXWORKS_DWARF_VERSION_DEFAULT;
+
+}
+
+/* We don't want to use library symbol __clear_cache on SR0640.  Avoid
+   it and issue a direct call to cacheTextUpdate.  It takes a size_t
+   length rather than the END address, so we have to compute it.  */
+
+void
+vxworks_emit_call_builtin___clear_cache (rtx begin, rtx end)
+{
+  /* STATUS cacheTextUpdate (void *, size_t); */
+  rtx callee = gen_rtx_SYMBOL_REF (Pmode, "cacheTextUpdate");
+
+  enum machine_mode size_mode = TYPE_MODE (sizetype);
+
+  rtx len = simplify_gen_binary (MINUS, size_mode, end, begin);
+
+  emit_library_call (callee,
+		     LCT_NORMAL, VOIDmode,
+		     begin, ptr_mode,
+		     len, size_mode);
 }

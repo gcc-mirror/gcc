@@ -38,7 +38,9 @@ generic
 
    type Uns is mod <>;
 
-   Floating : Boolean;
+   Precision_Limit : Uns;
+
+   Round : Boolean;
 
 package System.Value_R is
    pragma Preelaborate;

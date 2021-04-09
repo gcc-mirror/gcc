@@ -1,5 +1,5 @@
 /* Implementation of subroutines for the GNU C++ pretty-printer.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
    Contributed by Gabriel Dos Reis <gdr@integrable-solutions.net>
 
 This file is part of GCC.
@@ -651,6 +651,15 @@ cxx_pretty_printer::postfix_expression (tree t)
       type_id (TREE_TYPE (t));
       pp_cxx_end_template_argument_list (this);
       pp_left_paren (this);
+      expression (TREE_OPERAND (t, 0));
+      pp_right_paren (this);
+      break;
+
+    case BIT_CAST_EXPR:
+      pp_cxx_ws_string (this, "__builtin_bit_cast");
+      pp_left_paren (this);
+      type_id (TREE_TYPE (t));
+      pp_comma (this);
       expression (TREE_OPERAND (t, 0));
       pp_right_paren (this);
       break;
@@ -1372,6 +1381,10 @@ cxx_pretty_printer::simple_type_specifier (tree t)
       pp_cxx_right_paren (this);
       break;
 
+    case NULLPTR_TYPE:
+      pp_cxx_ws_string (this, "std::nullptr_t");
+      break;
+
     default:
       c_pretty_printer::simple_type_specifier (t);
       break;
@@ -1399,6 +1412,7 @@ pp_cxx_type_specifier_seq (cxx_pretty_printer *pp, tree t)
     case TYPE_DECL:
     case BOUND_TEMPLATE_TEMPLATE_PARM:
     case DECLTYPE_TYPE:
+    case NULLPTR_TYPE:
       pp_cxx_cv_qualifier_seq (pp, t);
       pp->simple_type_specifier (t);
       break;
@@ -1864,6 +1878,7 @@ cxx_pretty_printer::type_id (tree t)
     case TYPEOF_TYPE:
     case UNDERLYING_TYPE:
     case DECLTYPE_TYPE:
+    case NULLPTR_TYPE:
     case TEMPLATE_ID_EXPR:
     case OFFSET_TYPE:
       pp_cxx_type_specifier_seq (this, t);
@@ -2665,6 +2680,12 @@ pp_cxx_trait_expression (cxx_pretty_printer *pp, tree t)
       break;
     case CPTK_IS_CONSTRUCTIBLE:
       pp_cxx_ws_string (pp, "__is_constructible");
+      break;
+    case CPTK_IS_NOTHROW_ASSIGNABLE:
+      pp_cxx_ws_string (pp, "__is_nothrow_assignable");
+      break;
+    case CPTK_IS_NOTHROW_CONSTRUCTIBLE:
+      pp_cxx_ws_string (pp, "__is_nothrow_constructible");
       break;
 
     default:

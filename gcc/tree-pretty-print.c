@@ -1,5 +1,5 @@
 /* Pretty formatting of GENERIC trees in C syntax.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Adapted from c-pretty-print.c by Diego Novillo <dnovillo@redhat.com>
 
 This file is part of GCC.
@@ -35,6 +35,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "gimple.h"
 #include "fold-const.h"
+
+/* Routines in this file get invoked via the default tree printer
+   used by diagnostics and thus they are called from pp_printf which
+   isn't reentrant.  Avoid using pp_printf in this file.  */
+#pragma GCC poison pp_printf
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
    that (intentionally) don't follow GCC diagnostic conventions.  */
@@ -169,7 +174,8 @@ print_generic_expr (FILE *file, tree t, dump_flags_t flags)
   pp_flush (tree_pp);
 }
 
-/* Print a single expression T to string, and return it.  */
+/* Print a single expression T to string, and return it.  The caller
+   must free the returned memory.  */
 
 char *
 print_generic_expr_to_str (tree t)
@@ -292,29 +298,41 @@ dump_decl_name (pretty_printer *pp, tree node, dump_flags_t flags)
   if ((flags & TDF_UID) || name == NULL_TREE)
     {
       if (TREE_CODE (node) == LABEL_DECL && LABEL_DECL_UID (node) != -1)
-	pp_printf (pp, "L%c%d", uid_sep, (int) LABEL_DECL_UID (node));
+	{
+	  pp_character (pp, 'L');
+	  pp_character (pp, uid_sep);
+	  pp_decimal_int (pp, (int) LABEL_DECL_UID (node));
+	}
       else if (TREE_CODE (node) == DEBUG_EXPR_DECL)
 	{
 	  if (flags & TDF_NOUID)
 	    pp_string (pp, "D#xxxx");
 	  else
-	    pp_printf (pp, "D#%i", DEBUG_TEMP_UID (node));
+	    {
+	      pp_string (pp, "D#");
+	      pp_decimal_int (pp, (int) DEBUG_TEMP_UID (node));
+	    }
 	}
       else
 	{
 	  char c = TREE_CODE (node) == CONST_DECL ? 'C' : 'D';
+	  pp_character (pp, c);
+	  pp_character (pp, uid_sep);
 	  if (flags & TDF_NOUID)
-	    pp_printf (pp, "%c.xxxx", c);
+	    pp_string (pp, "xxxx");
 	  else
-	    pp_printf (pp, "%c%c%u", c, uid_sep, DECL_UID (node));
+	    pp_scalar (pp, "%u", DECL_UID (node));
 	}
     }
   if ((flags & TDF_ALIAS) && DECL_PT_UID (node) != DECL_UID (node))
     {
       if (flags & TDF_NOUID)
-	pp_printf (pp, "ptD.xxxx");
+	pp_string (pp, "ptD.xxxx");
       else
-	pp_printf (pp, "ptD.%u", DECL_PT_UID (node));
+	{
+	  pp_string (pp, "ptD.");
+	  pp_scalar (pp, "%u", DECL_PT_UID (node));
+	}
     }
 }
 
@@ -1265,6 +1283,12 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
     case OMP_CLAUSE_FINALIZE:
       pp_string (pp, "finalize");
       break;
+    case OMP_CLAUSE_DETACH:
+      pp_string (pp, "detach(");
+      dump_generic_node (pp, OMP_CLAUSE_DECL (clause), spc, flags,
+			 false);
+      pp_right_paren (pp);
+      break;
 
     default:
       gcc_unreachable ();
@@ -1321,10 +1345,16 @@ dump_block_node (pretty_printer *pp, tree block, int spc, dump_flags_t flags)
 {
   tree t;
 
-  pp_printf (pp, "BLOCK #%d ", BLOCK_NUMBER (block));
+  pp_string (pp, "BLOCK #");
+  pp_decimal_int (pp, BLOCK_NUMBER (block));
+  pp_character (pp, ' ');
 
   if (flags & TDF_ADDRESS)
-    pp_printf (pp, "[%p] ", (void *) block);
+    {
+      pp_character (pp, '[');
+      pp_scalar (pp, "%p", (void *) block);
+      pp_string (pp, "] ");
+    }
 
   if (TREE_ASM_WRITTEN (block))
     pp_string (pp, "[written] ");
@@ -1643,7 +1673,11 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
   is_expr = EXPR_P (node);
 
   if (is_stmt && (flags & TDF_STMTADDR))
-    pp_printf (pp, "<&%p> ", (void *)node);
+    {
+      pp_string (pp, "<&");
+      pp_scalar (pp, "%p", (void *)node);
+      pp_string (pp, "> ");
+    }
 
   if ((flags & TDF_LINENO) && EXPR_HAS_LOCATION (node))
     dump_location (pp, EXPR_LOCATION (node));
@@ -1850,9 +1884,13 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  if (TYPE_IDENTIFIER (node))
 	    dump_generic_node (pp, TYPE_NAME (node), spc, flags, false);
 	  else if (flags & TDF_NOUID)
-	    pp_printf (pp, "<Txxxx>");
+	    pp_string (pp, "<Txxxx>");
 	  else
-	    pp_printf (pp, "<T%x>", TYPE_UID (node));
+	    {
+	      pp_string (pp, "<T");
+	      pp_scalar (pp, "%x", TYPE_UID (node));
+	      pp_character (pp, '>');
+	    }
 
 	  pp_right_paren (pp);
 	  dump_function_declaration (pp, fnode, spc, flags);
@@ -1929,6 +1967,13 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  pp_string (pp, "const ");
 	if (quals & TYPE_QUAL_VOLATILE)
 	  pp_string (pp, "volatile ");
+
+	if (!ADDR_SPACE_GENERIC_P (TYPE_ADDR_SPACE (node)))
+	  {
+	    pp_string (pp, "<address-space-");
+	    pp_decimal_int (pp, TYPE_ADDR_SPACE (node));
+	    pp_string (pp, "> ");
+	  }
 
         /* Print the name of the structure.  */
         if (TREE_CODE (node) == RECORD_TYPE)
@@ -2130,9 +2175,13 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       else if (TYPE_NAME (node) && DECL_NAME (TYPE_NAME (node)))
 	dump_decl_name (pp, TYPE_NAME (node), flags);
       else if (flags & TDF_NOUID)
-	pp_printf (pp, "<Txxxx>");
+	pp_string (pp, "<Txxxx>");
       else
-	pp_printf (pp, "<T%x>", TYPE_UID (node));
+	{
+	  pp_string (pp, "<T");
+	  pp_scalar (pp, "%x", TYPE_UID (node));
+	  pp_character (pp, '>');
+	}
       dump_function_declaration (pp, node, spc, flags);
       break;
 
@@ -2147,9 +2196,16 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       else if (LABEL_DECL_UID (node) != -1)
 	{
 	  if (flags & TDF_GIMPLE)
-	    pp_printf (pp, "L%d", (int) LABEL_DECL_UID (node));
+	    {
+	      pp_character (pp, 'L');
+	      pp_decimal_int (pp, (int) LABEL_DECL_UID (node));
+	    }
 	  else
-	    pp_printf (pp, "<L%d>", (int) LABEL_DECL_UID (node));
+	    {
+	      pp_string (pp, "<L");
+	      pp_decimal_int (pp, (int) LABEL_DECL_UID (node));
+	      pp_character (pp, '>');
+	    }
 	}
       else
 	{
@@ -2158,9 +2214,16 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  else
 	    {
 	      if (flags & TDF_GIMPLE)
-		pp_printf (pp, "<D%u>", DECL_UID (node));
+		{
+		  pp_character (pp, 'D');
+		  pp_scalar (pp, "%u", DECL_UID (node));
+		}
 	      else
-		pp_printf (pp, "<D.%u>", DECL_UID (node));
+		{
+		  pp_string (pp, "<D.");
+		  pp_scalar (pp, "%u", DECL_UID (node));
+		  pp_character (pp, '>');
+		}
 	    }
 	}
       break;
@@ -2649,6 +2712,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
       /* Binary arithmetic and logic expressions.  */
+    case WIDEN_PLUS_EXPR:
+    case WIDEN_MINUS_EXPR:
     case WIDEN_SUM_EXPR:
     case WIDEN_MULT_EXPR:
     case MULT_EXPR:
@@ -3012,9 +3077,12 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	  pp_string (pp, ", ivdep");
 	  break;
 	case annot_expr_unroll_kind:
-	  pp_printf (pp, ", unroll %d",
-		     (int) TREE_INT_CST_LOW (TREE_OPERAND (node, 2)));
-	  break;
+	  {
+	    pp_string (pp, ", unroll ");
+	    pp_decimal_int (pp,
+			    (int) TREE_INT_CST_LOW (TREE_OPERAND (node, 2)));
+	    break;
+	  }
 	case annot_expr_no_vector_kind:
 	  pp_string (pp, ", no-vector");
 	  break;
@@ -3196,7 +3264,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       dump_generic_node (pp, CHREC_LEFT (node), spc, flags, false);
       pp_string (pp, ", +, ");
       dump_generic_node (pp, CHREC_RIGHT (node), spc, flags, false);
-      pp_printf (pp, "}_%u", CHREC_VARIABLE (node));
+      pp_string (pp, "}_");
+      pp_scalar (pp, "%u", CHREC_VARIABLE (node));
       is_stmt = false;
       break;
 
@@ -3580,6 +3649,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case VEC_SERIES_EXPR:
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
+    case VEC_WIDEN_PLUS_HI_EXPR:
+    case VEC_WIDEN_PLUS_LO_EXPR:
+    case VEC_WIDEN_MINUS_HI_EXPR:
+    case VEC_WIDEN_MINUS_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:
     case VEC_WIDEN_MULT_ODD_EXPR:
     case VEC_WIDEN_LSHIFT_HI_EXPR:
@@ -4096,6 +4169,12 @@ op_symbol_code (enum tree_code code)
 
     case WIDEN_LSHIFT_EXPR:
       return "w<<";
+
+    case WIDEN_PLUS_EXPR:
+      return "w+";
+
+    case WIDEN_MINUS_EXPR:
+      return "w-";
 
     case POINTER_PLUS_EXPR:
       return "+";

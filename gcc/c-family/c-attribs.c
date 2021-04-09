@@ -1,5 +1,5 @@
 /* C-family attributes handling.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -113,6 +113,7 @@ static tree handle_no_instrument_function_attribute (tree *, tree,
 static tree handle_no_profile_instrument_function_attribute (tree *, tree,
 							     tree, int, bool *);
 static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
+static tree handle_dealloc_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_limit_stack_attribute (tree *, tree, tree, int,
 					     bool *);
@@ -160,6 +161,9 @@ static tree handle_copy_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nsobject_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_root_class_attribute (tree *, tree, tree, int, bool *);
 static tree handle_objc_nullability_attribute (tree *, tree, tree, int, bool *);
+static tree handle_signed_bool_precision_attribute (tree *, tree, tree, int,
+						    bool *);
+static tree handle_retain_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -273,6 +277,8 @@ const struct attribute_spec c_common_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+  { "signed_bool_precision",  1, 1, false, true, false, true,
+			      handle_signed_bool_precision_attribute, NULL },
   { "packed",                 0, 0, false, false, false, false,
 			      handle_packed_attribute,
 	                      attr_aligned_exclusions },
@@ -323,6 +329,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_used_attribute, NULL },
   { "unused",                 0, 0, false, false, false, false,
 			      handle_unused_attribute, NULL },
+  { "retain",                 0, 0, true,  false, false, false,
+			      handle_retain_attribute, NULL },
   { "externally_visible",     0, 0, true,  false, false, false,
 			      handle_externally_visible_attribute, NULL },
   { "no_reorder",	      0, 0, true, false, false, false,
@@ -364,7 +372,7 @@ const struct attribute_spec c_common_attribute_table[] =
   { "no_profile_instrument_function",  0, 0, true, false, false, false,
 			      handle_no_profile_instrument_function_attribute,
 			      NULL },
-  { "malloc",                 0, 0, true,  false, false, false,
+  { "malloc",                 0, 2, true,  false, false, false,
 			      handle_malloc_attribute, attr_alloc_exclusions },
   { "returns_twice",          0, 0, true,  false, false, false,
 			      handle_returns_twice_attribute,
@@ -524,6 +532,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_objc_root_class_attribute, NULL },
   { "objc_nullability",	      1, 1, true, false, false, false,
 			      handle_objc_nullability_attribute, NULL },
+  { "*dealloc",                1, 2, true, false, false, false,
+			      handle_dealloc_attribute, NULL },
   { NULL,                     0, 0, false, false, false, false, NULL, NULL }
 };
 
@@ -890,6 +900,43 @@ validate_attr_arg (tree node[2], tree name, tree newarg)
 }
 
 /* Attribute handlers common to C front ends.  */
+
+/* Handle a "signed_bool_precision" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_signed_bool_precision_attribute (tree *node, tree name, tree args,
+					int, bool *no_add_attrs)
+{
+  *no_add_attrs = true;
+  if (!flag_gimple)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      return NULL_TREE;
+    }
+
+  if (!TYPE_P (*node) || TREE_CODE (*node) != BOOLEAN_TYPE)
+    {
+      warning (OPT_Wattributes, "%qE attribute only supported on "
+	       "boolean types", name);
+      return NULL_TREE;
+    }
+
+  unsigned HOST_WIDE_INT prec = HOST_WIDE_INT_M1U;
+  if (tree_fits_uhwi_p (TREE_VALUE (args)))
+    prec = tree_to_uhwi (TREE_VALUE (args));
+  if (prec > MAX_FIXED_MODE_SIZE)
+    {
+      warning (OPT_Wattributes, "%qE attribute with unsupported boolean "
+	       "precision", name);
+      return NULL_TREE;
+    }
+
+  tree new_type = build_nonstandard_boolean_type (prec);
+  *node = lang_hooks.types.reconstruct_complex_type (*node, new_type);
+
+  return NULL_TREE;
+}
 
 /* Handle a "packed" attribute; arguments as in
    struct attribute_spec.handler.  */
@@ -1515,6 +1562,28 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
       if (!(flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
 	*node = build_variant_type_copy (*node);
       TREE_USED (*node) = 1;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "retain" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_retain_attribute (tree *pnode, tree name, tree ARG_UNUSED (args),
+			 int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  tree node = *pnode;
+
+  if (SUPPORTS_SHF_GNU_RETAIN
+      && (TREE_CODE (node) == FUNCTION_DECL
+	  || (VAR_P (node) && TREE_STATIC (node))))
+    ;
+  else
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
     }
 
   return NULL_TREE;
@@ -3127,20 +3196,260 @@ handle_no_profile_instrument_function_attribute (tree *node, tree name, tree,
   return NULL_TREE;
 }
 
-/* Handle a "malloc" attribute; arguments as in
-   struct attribute_spec.handler.  */
+/* If ALLOC_DECL and DEALLOC_DECL are a pair of user-defined functions,
+   if they are declared inline issue warnings and return null.  Otherwise
+   create attribute noinline, install it in ALLOC_DECL, and return it.
+   Otherwise return null. */
 
 static tree
-handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
-			 int ARG_UNUSED (flags), bool *no_add_attrs)
+maybe_add_noinline (tree name, tree alloc_decl, tree dealloc_decl,
+		    bool *no_add_attrs)
 {
-  if (TREE_CODE (*node) == FUNCTION_DECL
-      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (*node))))
-    DECL_IS_MALLOC (*node) = 1;
-  else
+  if (fndecl_built_in_p (alloc_decl) || fndecl_built_in_p (dealloc_decl))
+    return NULL_TREE;
+
+  /* When inlining (or optimization) is enabled and the allocator and
+     deallocator are not built-in functions, ignore the attribute on
+     functions declared inline since it could lead to false positives
+     when inlining one or the other call would wind up calling
+     a mismatched allocator or  deallocator.  */
+  if ((optimize && DECL_DECLARED_INLINE_P (alloc_decl))
+      || lookup_attribute ("always_inline", DECL_ATTRIBUTES (alloc_decl)))
     {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      warning (OPT_Wattributes,
+	       "%<%E (%E)%> attribute ignored on functions "
+	       "declared %qs", name, DECL_NAME (dealloc_decl), "inline");
       *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if ((optimize && DECL_DECLARED_INLINE_P (dealloc_decl))
+      || lookup_attribute ("always_inline", DECL_ATTRIBUTES (dealloc_decl)))
+    {
+      warning (OPT_Wattributes,
+	       "%<%E (%E)%> attribute ignored with deallocation "
+	       "functions declared %qs",
+	       name, DECL_NAME (dealloc_decl), "inline");
+      inform (DECL_SOURCE_LOCATION (dealloc_decl),
+	      "deallocation function declared here" );
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* Disable inlining for non-standard deallocators to avoid false
+     positives due to mismatches between the inlined implementation
+     of one and not the other pair of functions.  */
+  tree attr = tree_cons (get_identifier ("noinline"), NULL_TREE, NULL_TREE);
+  decl_attributes (&alloc_decl, attr, 0);
+  return attr;
+}
+
+/* Handle the "malloc" attribute.  */
+
+static tree
+handle_malloc_attribute (tree *node, tree name, tree args, int flags,
+			 bool *no_add_attrs)
+{
+  if (flags & ATTR_FLAG_INTERNAL)
+    /* Recursive call.  */
+    return NULL_TREE;
+
+  tree fndecl = *node;
+
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored; valid only "
+	       "for functions",
+	       name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  tree rettype = TREE_TYPE (TREE_TYPE (*node));
+  if (!POINTER_TYPE_P (rettype))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored on functions "
+	       "returning %qT; valid only for pointer return types",
+	       name, rettype);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (!args)
+    {
+      /* Only the form of the attribute with no arguments declares
+	 a function malloc-like.  */
+      DECL_IS_MALLOC (*node) = 1;
+      return NULL_TREE;
+    }
+
+  tree dealloc = TREE_VALUE (args);
+  if (error_operand_p (dealloc))
+    {
+      /* If the argument is in error it will have already been diagnosed.
+	 Avoid issuing redundant errors here.  */
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  STRIP_NOPS (dealloc);
+  if (TREE_CODE (dealloc) == ADDR_EXPR)
+    {
+      /* In C++ the argument may be wrapped in a cast to disambiguate
+	 one of a number of overloads (such as operator delete).  To
+	 make things interesting, the cast looks different between
+	 different C++ versions.  Strip it and install the attribute
+	 with the disambiguated function.  */
+      dealloc = TREE_OPERAND (dealloc, 0);
+
+      *no_add_attrs = true;
+      tree attr = tree_cons (NULL_TREE, dealloc, TREE_CHAIN (args));
+      attr = build_tree_list (name, attr);
+      return decl_attributes (node, attr, 0);
+    }
+
+  if (TREE_CODE (dealloc) != FUNCTION_DECL)
+    {
+      if (TREE_CODE (dealloc) == OVERLOAD)
+	{
+	  /* Handle specially the common case of specifying one of a number
+	     of overloads, such as operator delete.  */
+	  error ("%qE attribute argument 1 is ambiguous", name);
+	  inform (input_location,
+		  "use a cast to the expected type to disambiguate");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      error ("%qE attribute argument 1 does not name a function", name);
+      if (DECL_P (dealloc))
+	inform (DECL_SOURCE_LOCATION (dealloc),
+		"argument references a symbol declared here");
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* Mentioning the deallocation function qualifies as its use.  */
+  TREE_USED (dealloc) = 1;
+
+  tree fntype = TREE_TYPE (dealloc);
+  tree argpos = TREE_CHAIN (args) ? TREE_VALUE (TREE_CHAIN (args)) : NULL_TREE;
+  if (!argpos)
+    {
+      tree argtypes = TYPE_ARG_TYPES (fntype);
+      if (!argtypes)
+	{
+	  /* Reject functions without a prototype.  */
+	  error ("%qE attribute argument 1 must take a pointer "
+		 "type as its first argument", name);
+	  inform (DECL_SOURCE_LOCATION (dealloc),
+		  "referenced symbol declared here");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      tree argtype = TREE_VALUE (argtypes);
+      if (TREE_CODE (argtype) != POINTER_TYPE)
+	{
+	  /* Reject functions that don't take a pointer as their first
+	     argument.  */
+	  error ("%qE attribute argument 1 must take a pointer type "
+		 "as its first argument; have %qT", name, argtype);
+	  inform (DECL_SOURCE_LOCATION (dealloc),
+		  "referenced symbol declared here");
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      /* Disable inlining for non-standard deallocators to avoid false
+	 positives (or warn if either function is explicitly inline).  */
+      tree at_noinline =
+	maybe_add_noinline (name, fndecl, dealloc, no_add_attrs);
+      if (*no_add_attrs)
+	return NULL_TREE;
+
+      /* Add attribute *dealloc to the deallocator function associating
+	 it with this one.  Ideally, the attribute would reference
+	 the DECL of the deallocator but since that changes for each
+	 redeclaration, use DECL_NAME instead.  (DECL_ASSEMBLER_NAME
+	 need not be set set this point and setting it here is too early.  */
+      tree attrs = build_tree_list (NULL_TREE, DECL_NAME (fndecl));
+      attrs = tree_cons (get_identifier ("*dealloc"), attrs, at_noinline);
+      decl_attributes (&dealloc, attrs, 0);
+      return NULL_TREE;
+    }
+
+  /* Validate the positional argument.  */
+  argpos = positional_argument (fntype, name, argpos, POINTER_TYPE);
+  if (!argpos)
+    {
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* As above, disable inlining for non-standard deallocators to avoid
+     false positives (or warn).  */
+  tree at_noinline =
+    maybe_add_noinline (name, fndecl, dealloc, no_add_attrs);
+  if (*no_add_attrs)
+    return NULL_TREE;
+
+  /* It's valid to declare the same function with multiple instances
+     of attribute malloc, each naming the same or different deallocator
+     functions, and each referencing either the same or a different
+     positional argument.  */
+  tree attrs = tree_cons (NULL_TREE, argpos, NULL_TREE);
+  attrs = tree_cons (NULL_TREE, DECL_NAME (fndecl), attrs);
+  attrs = tree_cons (get_identifier ("*dealloc"), attrs, at_noinline);
+  decl_attributes (&dealloc, attrs, 0);
+  return NULL_TREE;
+}
+
+/* Handle the internal "*dealloc" attribute added for functions declared
+   with the one- and two-argument forms of attribute malloc.  Add it
+   to *NODE unless it's already there with the same arguments.  */
+
+static tree
+handle_dealloc_attribute (tree *node, tree name, tree args, int,
+			  bool *no_add_attrs)
+{
+  tree fndecl = *node;
+
+  tree attrs = DECL_ATTRIBUTES (fndecl);
+  if (!attrs)
+    return NULL_TREE;
+
+  tree arg = TREE_VALUE (args);
+  args = TREE_CHAIN (args);
+  tree arg_pos = args ? TREE_VALUE (args) : integer_zero_node;
+
+  gcc_checking_assert ((DECL_P (arg)
+			&& fndecl_built_in_p (arg, BUILT_IN_NORMAL))
+		       || TREE_CODE (arg) == IDENTIFIER_NODE);
+
+  const char* const namestr = IDENTIFIER_POINTER (name);
+  for (tree at = attrs; (at = lookup_attribute (namestr, at));
+       at = TREE_CHAIN (at))
+    {
+      tree alloc = TREE_VALUE (at);
+      if (!alloc)
+	continue;
+
+      tree pos = TREE_CHAIN (alloc);
+      alloc = TREE_VALUE (alloc);
+      pos = pos ? TREE_VALUE (pos) : integer_zero_node;
+      gcc_checking_assert ((DECL_P (alloc)
+			    && fndecl_built_in_p (alloc, BUILT_IN_NORMAL))
+			   || TREE_CODE (alloc) == IDENTIFIER_NODE);
+
+      if (alloc == arg && tree_int_cst_equal (pos, arg_pos))
+	{
+	  /* The function already has the attribute either without any
+	     arguments or with the same arguments as the attribute that's
+	     being added.  Return without adding another copy.  */
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
     }
 
   return NULL_TREE;
@@ -3252,8 +3561,15 @@ handle_assume_aligned_attribute (tree *node, tree name, tree args, int,
       if (!tree_fits_shwi_p (val))
 	{
 	  warning (OPT_Wattributes,
-		   "%qE attribute %E is not an integer constant",
+		   "%qE attribute argument %E is not an integer constant",
 		   name, val);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+      else if (tree_int_cst_sgn (val) < 0)
+	{
+	  warning (OPT_Wattributes,
+		   "%qE attribute argument %E is not positive", name, val);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -3272,7 +3588,7 @@ handle_assume_aligned_attribute (tree *node, tree name, tree args, int,
 
 	  align = val;
 	}
-      else if (tree_int_cst_sgn (val) < 0 || tree_int_cst_le (align, val))
+      else if (tree_int_cst_le (align, val))
 	{
 	  /* The misalignment specified by the second argument
 	     must be non-negative and less than the alignment.  */

@@ -1,3 +1,26 @@
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2020-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/98380
+	* configure.ac: Set darwin_dynamic_lookup=no instead to empty
+	string.
+	* configure: Regenerated.
+
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* Makefile.am: Add dynamic_lookup to LD flags for Darwin.
+	* configure.ac: Test for Darwin host and set a flag.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2020-11-11  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/88115

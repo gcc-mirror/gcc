@@ -15,6 +15,7 @@
 *.o
 *.pyc
 *.tmp
+*.a
 
 .deps
 .libs
@@ -44,6 +45,9 @@ compile_commands.json
 .gdbinit
 .gdb_history
 
+perf.data
+perf.data.old
+
 # ignore core files, but not java/net/protocol/core/
 core
 !core/
@@ -53,6 +57,9 @@ lost+found
 # ignore ./contrib/gcc_update output
 LAST_UPDATED
 REVISION
+
+stamp-*
+*.stamp
 
 # ignore in-tree prerequisites
 /mpfr*

@@ -1,5 +1,5 @@
 /* Definitions for code generation pass of GNU compiler.
-   Copyright (C) 1987-2020 Free Software Foundation, Inc.
+   Copyright (C) 1987-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -298,6 +298,7 @@ extern tree string_constant (tree, tree *, tree *, tree *);
 extern tree byte_representation (tree, tree *, tree *, tree *);
 
 extern enum tree_code maybe_optimize_mod_cmp (enum tree_code, tree *, tree *);
+extern void maybe_optimize_sub_cmp_0 (enum tree_code, tree *, tree *);
 
 /* Two different ways of generating switch statements.  */
 extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx, profile_probability);

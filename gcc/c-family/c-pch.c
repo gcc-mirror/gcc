@@ -1,5 +1,5 @@
 /* Precompiled header implementation for the C languages.
-   Copyright (C) 2000-2020 Free Software Foundation, Inc.
+   Copyright (C) 2000-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -205,6 +205,10 @@ c_common_valid_pch (cpp_reader *pfile, const char *name, int fd)
 
   /* Perform a quick test of whether this is a valid
      precompiled header for the current language.  */
+
+  /* C++ modules and PCH don't play together.  */
+  if (flag_modules)
+    return 2;
 
   sizeread = read (fd, ident, IDENT_LENGTH + 16);
   if (sizeread == -1)

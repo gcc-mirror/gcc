@@ -1,5 +1,5 @@
 # Top level configure fragment for GNU C++.
-#   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+#   Copyright (C) 1994-2021 Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -47,7 +47,7 @@ gtfiles="\
 \$(srcdir)/cp/friend.c \
 \$(srcdir)/cp/init.c \
 \$(srcdir)/cp/lambda.c \$(srcdir)/cp/lex.c \$(srcdir)/cp/logic.cc \
-\$(srcdir)/cp/mangle.c \$(srcdir)/cp/method.c \
+\$(srcdir)/cp/mangle.c \$(srcdir)/cp/method.c \$(srcdir)/cp/module.cc \
 \$(srcdir)/cp/name-lookup.c \
 \$(srcdir)/cp/parser.c \$(srcdir)/cp/pt.c \
 \$(srcdir)/cp/rtti.c \

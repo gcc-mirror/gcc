@@ -1,6 +1,6 @@
 // Class filesystem::directory_entry etc. -*- C++ -*-
 
-// Copyright (C) 2014-2020 Free Software Foundation, Inc.
+// Copyright (C) 2014-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -202,7 +202,7 @@ recursive_directory_iterator(const path& p, directory_options options,
   else
     {
       const int err = errno;
-      if (err == EACCES
+      if (std::filesystem::is_permission_denied_error(err)
 	  && is_set(options, fs::directory_options::skip_permission_denied))
 	{
 	  if (ecptr)

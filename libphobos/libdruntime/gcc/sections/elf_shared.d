@@ -1,5 +1,5 @@
 // ELF-specific support for sections with shared libraries.
-// Copyright (C) 2019-2020 Free Software Foundation, Inc.
+// Copyright (C) 2019-2021 Free Software Foundation, Inc.
 
 // GCC is free software; you can redistribute it and/or modify it under
 // the terms of the GNU General Public License as published by the Free
@@ -22,6 +22,8 @@
 
 module gcc.sections.elf_shared;
 
+version (MIPS32)  version = MIPS_Any;
+version (MIPS64)  version = MIPS_Any;
 version (RISCV32) version = RISCV_Any;
 version (RISCV64) version = RISCV_Any;
 version (S390)    version = IBMZ_Any;
@@ -236,6 +238,15 @@ version (Shared)
         }
     }
 
+    size_t sizeOfTLS() nothrow @nogc
+    {
+        auto tdsos = initTLSRanges();
+        size_t sum;
+        foreach (ref tdso; *tdsos)
+            sum += tdso._tlsRange.length;
+        return sum;
+    }
+
     // interface for core.thread to inherit loaded libraries
     void* pinLoadedLibraries() nothrow @nogc
     {
@@ -336,6 +347,15 @@ else
             foreach (rng; *rngs)
                 dg(rng.ptr, rng.ptr + rng.length);
         }
+    }
+
+    size_t sizeOfTLS() nothrow @nogc
+    {
+        auto rngs = initTLSRanges();
+        size_t sum;
+        foreach (rng; *rngs)
+            sum += rng.length;
+        return sum;
     }
 }
 
@@ -762,6 +782,8 @@ version (Shared)
                     // while upstreaming RISC-V support. Otherwise MIPS is the only arch which sets
                     // in glibc: #define DL_RO_DYN_SECTION 1
                     version (RISCV_Any)
+                        strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
+                    else version (MIPS_Any)
                         strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                     else
                         strtab = cast(const(char)*)dyn.d_un.d_ptr;

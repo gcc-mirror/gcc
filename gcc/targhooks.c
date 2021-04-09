@@ -1,5 +1,5 @@
 /* Default target hook functions.
-   Copyright (C) 2003-2020 Free Software Foundation, Inc.
+   Copyright (C) 2003-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -1757,7 +1757,7 @@ default_slow_unaligned_access (machine_mode, unsigned int)
 /* The default implementation of TARGET_ESTIMATED_POLY_VALUE.  */
 
 HOST_WIDE_INT
-default_estimated_poly_value (poly_int64 x)
+default_estimated_poly_value (poly_int64 x, poly_value_estimate_kind)
 {
   return x.coeffs[0];
 }
@@ -1864,8 +1864,11 @@ default_print_patchable_function_entry (FILE *file,
       patch_area_number++;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", patch_area_number);
 
+      unsigned int flags = SECTION_WRITE | SECTION_RELRO;
+      if (HAVE_GAS_SECTION_LINK_ORDER)
+	flags |= SECTION_LINK_ORDER;
       switch_to_section (get_section ("__patchable_function_entries",
-				      SECTION_WRITE | SECTION_RELRO, NULL));
+				      flags, current_function_decl));
       assemble_align (POINTER_SIZE);
       fputs (asm_op, file);
       assemble_name_raw (file, buf);

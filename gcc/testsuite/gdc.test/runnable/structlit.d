@@ -1295,7 +1295,7 @@ struct Z11256c(Ranges...)
 
 struct F11256(alias pred)
 {
-    this(int[] = null) { }
+    this(int[]) { }
 }
 
 Z!Ranges z11256(alias Z, Ranges...)(Ranges ranges)
@@ -1305,9 +1305,9 @@ Z!Ranges z11256(alias Z, Ranges...)(Ranges ranges)
 
 void test11256()
 {
-    z11256!Z11256a(S11256.init, F11256!(gv => true)());
-    z11256!Z11256b(S11256.init, F11256!(gv => true)());
-    z11256!Z11256c(S11256.init, F11256!(gv => true)());
+    z11256!Z11256a(S11256.init, F11256!(gv => true)(null));
+    z11256!Z11256b(S11256.init, F11256!(gv => true)(null));
+    z11256!Z11256c(S11256.init, F11256!(gv => true)(null));
 }
 
 /********************************************/

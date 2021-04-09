@@ -1,6 +1,6 @@
 ; Options for the DEC Alpha port of the compiler
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -19,11 +19,11 @@
 ; <http://www.gnu.org/licenses/>.
 
 msoft-float
-Target Report Mask(SOFT_FP)
+Target Mask(SOFT_FP)
 Do not use hardware fp.
 
 mfp-regs
-Target Report Mask(FPREGS)
+Target Mask(FPREGS)
 Use fp registers.
 
 mgas
@@ -35,70 +35,70 @@ Target RejectNegative Mask(IEEE_CONFORMANT)
 Request IEEE-conformant math library routines (OSF/1).
 
 mieee
-Target Report RejectNegative Mask(IEEE)
+Target RejectNegative Mask(IEEE)
 Emit IEEE-conformant code, without inexact exceptions.
 
 mieee-with-inexact
-Target Report RejectNegative Mask(IEEE_WITH_INEXACT)
+Target RejectNegative Mask(IEEE_WITH_INEXACT)
 
 mbuild-constants
-Target Report Mask(BUILD_CONSTANTS)
+Target Mask(BUILD_CONSTANTS)
 Do not emit complex integer constants to read-only memory.
 
 mfloat-vax
-Target Report RejectNegative Mask(FLOAT_VAX)
+Target RejectNegative Mask(FLOAT_VAX)
 Use VAX fp.
 
 mfloat-ieee
-Target Report RejectNegative InverseMask(FLOAT_VAX)
+Target RejectNegative InverseMask(FLOAT_VAX)
 Do not use VAX fp.
 
 mbwx
-Target Report Mask(BWX)
+Target Mask(BWX)
 Emit code for the byte/word ISA extension.
 
 mmax
-Target Report Mask(MAX)
+Target Mask(MAX)
 Emit code for the motion video ISA extension.
 
 mfix
-Target Report Mask(FIX)
+Target Mask(FIX)
 Emit code for the fp move and sqrt ISA extension.
 
 mcix
-Target Report Mask(CIX)
+Target Mask(CIX)
 Emit code for the counting ISA extension.
 
 mexplicit-relocs
-Target Report Mask(EXPLICIT_RELOCS)
+Target Mask(EXPLICIT_RELOCS)
 Emit code using explicit relocation directives.
 
 msmall-data
-Target Report RejectNegative Mask(SMALL_DATA)
+Target RejectNegative Mask(SMALL_DATA)
 Emit 16-bit relocations to the small data areas.
 
 mlarge-data
-Target Report RejectNegative InverseMask(SMALL_DATA)
+Target RejectNegative InverseMask(SMALL_DATA)
 Emit 32-bit relocations to the small data areas.
 
 msmall-text
-Target Report RejectNegative Mask(SMALL_TEXT)
+Target RejectNegative Mask(SMALL_TEXT)
 Emit direct branches to local functions.
 
 mlarge-text
-Target Report RejectNegative InverseMask(SMALL_TEXT)
+Target RejectNegative InverseMask(SMALL_TEXT)
 Emit indirect branches to local functions.
 
 mtls-kernel
-Target Report Mask(TLS_KERNEL)
+Target Mask(TLS_KERNEL)
 Emit rdval instead of rduniq for thread pointer.
 
 mlong-double-128
-Target Report RejectNegative Mask(LONG_DOUBLE_128)
+Target RejectNegative Mask(LONG_DOUBLE_128)
 Use 128-bit long double.
 
 mlong-double-64
-Target Report RejectNegative InverseMask(LONG_DOUBLE_128)
+Target RejectNegative InverseMask(LONG_DOUBLE_128)
 Use 64-bit long double.
 
 mcpu=

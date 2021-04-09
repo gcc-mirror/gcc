@@ -236,6 +236,16 @@
 /* Define if you want runtime assertions enabled. This is a cheap check. */
 #undef ENABLE_RUNTIME_CHECKING
 
+/* Define to enable evaluating float expressions with double precision in
+   standards-compatible mode on s390 targets. */
+#undef ENABLE_S390_EXCESS_FLOAT_PRECISION
+
+/* Define if the -stdlib= option should be enabled. */
+#ifndef USED_FOR_TARGET
+#undef ENABLE_STDLIB_OPTION
+#endif
+
+
 /* Define if you want all operations on trees (the basic data structure of the
    front ends) to be checked for dynamic type safety at runtime. This is
    moderately expensive. */
@@ -1379,6 +1389,19 @@
 /* Define if your assembler supports specifying the exclude section flag. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_GAS_SECTION_EXCLUDE
+#endif
+
+
+/* Define 0/1 if your assembler supports 'o' flag in .section directive. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_SECTION_LINK_ORDER
+#endif
+
+
+/* Define 0/1 if your assembler supports marking sections with SHF_GNU_RETAIN
+   flag. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_SHF_GNU_RETAIN
 #endif
 
 

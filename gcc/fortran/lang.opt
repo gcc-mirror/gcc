@@ -1,5 +1,5 @@
 ; Options for the Fortran front end.
-; Copyright (C) 2003-2020 Free Software Foundation, Inc.
+; Copyright (C) 2003-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -451,6 +451,10 @@ Ignore 'D' in column one in fixed form.
 fd-lines-as-comments
 Fortran RejectNegative
 Treat lines with 'D' in column one as comments.
+
+fdebug-aux-vars
+Fortran Var(flag_debug_aux_vars)
+Issue debug information for compiler-generated auxiliary variables.
 
 fdec
 Fortran Var(flag_dec)

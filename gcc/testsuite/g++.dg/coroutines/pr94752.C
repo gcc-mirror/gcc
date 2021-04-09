@@ -9,7 +9,7 @@ struct task {
         promise_type() {}
         task get_return_object() { return {}; }
         suspend_never initial_suspend() { return {}; }
-        suspend_never final_suspend() { return {}; }
+        suspend_never final_suspend() noexcept { return {}; }
         void return_void() {}
         void unhandled_exception() {}
     };

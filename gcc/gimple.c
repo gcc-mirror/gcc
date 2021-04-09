@@ -1,6 +1,6 @@
 /* Gimple IR support functions.
 
-   Copyright (C) 2007-2020 Free Software Foundation, Inc.
+   Copyright (C) 2007-2021 Free Software Foundation, Inc.
    Contributed by Aldy Hernandez <aldyh@redhat.com>
 
 This file is part of GCC.
@@ -1514,11 +1514,12 @@ gimple_call_fnspec (const gcall *stmt)
      such operator, then we can treat it as free.  */
   if (fndecl
       && DECL_IS_OPERATOR_DELETE_P (fndecl)
+      && DECL_IS_REPLACEABLE_OPERATOR (fndecl)
       && gimple_call_from_new_or_delete (stmt))
     return ".co ";
   /* Similarly operator new can be treated as malloc.  */
   if (fndecl
-      && DECL_IS_OPERATOR_NEW_P (fndecl)
+      && DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fndecl)
       && gimple_call_from_new_or_delete (stmt))
     return "mC";
   return "";

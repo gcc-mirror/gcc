@@ -1,4 +1,4 @@
-#   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+#   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 #   Written by Ian Lance Taylor <iant@google.com>.
 
 # This program is free software; you can redistribute it and/or modify
@@ -101,50 +101,31 @@ proc errchk { test opts } {
 	set changed ""
 	while { $changed != $copy_line } {
 	    set changed $copy_line
-	    regsub "\(// \[^\"\]*\"\[^\"\]*\)\" \"" $copy_line "\\1|" out_line
+	    regsub {(// [^"]*"[^"]*)" "} $copy_line {\1|} out_line
 	    set copy_line $out_line
 	}
 
-	regsub "// \(GCCGO_\)?ERROR \"\(\[^\"\]*\)\".*$" $copy_line "// \{ dg-error \"\\2\" \}" out_line
-	if [string match "*dg-error*\\\[*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\\\\\\\[" $out_line "\\\\\\\\\\\[" out_line
+	set index [string first // $copy_line]
+	set eindex [string first ERROR $copy_line]
+	if { $index >= 0 && $eindex > $index } {
+	    # We're putting the regexp in curly braces, so replace any
+	    # curly braces in the regexp with hex escapes.
+	    regsub -start $index -all "\{" $copy_line {\x7b} copy_line
+	    regsub -start $index -all "\}" $copy_line {\x7d} copy_line
+
+	    # Replace .* with [ -~]* because .* will eat newlines.
+	    # We can't easily use (?n) because this regexp will appear
+	    # in the middle of a large regexp.
+	    regsub -all {\.\*} $copy_line {[ -~]*} copy_line
 	}
-	if [string match "*dg-error*\\\]*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\\\\\\\]" $out_line "\\\\\\\\\\\]" out_line
-	}
-	if [string match "*dg-error*.\**" $out_line] {
-	    # I worked out the right number of backslashes by
-	    # experimentation, not analysis.
-	    regsub -all "\\.\\*" $out_line "\\\\\[ -~\\\\\]*" out_line
-	}
-	if [string match "*dg-error*\\\[?\\\]*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -all "\\\[\(.\)\\\]" $out_line "\\\\\[\\1\\\\\]" out_line
-	}
-	if [string match "*dg-error*\{*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\(\[^\\\\]\)\{" $out_line "\\1\\\\\[\\\{\\\\\]" out_line
-	}
-	if [string match "*dg-error*\}*\}" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\(\[^\\\\]\)\}\(.\)" $out_line "\\1\\\\\[\\\}\\\\\]\\2" out_line
-	}
-	if [string match "*dg-error*\(*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\\\\\\\(" $out_line "\\\\\[\\\(\\\\\]" out_line
-	}
-	if [string match "*dg-error*\)*\}" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index -all "\\\\\\\)\(.\)" $out_line "\\\\\[\\\)\\\\\]\\1" out_line
-	}
-	# Special case for bug332, in which the error message wants to
-	# match the file name, which is not what dg-error expects.
-	if [string match "*dg-error*bug332*" $out_line] {
-	    set index [string first "dg-error" $out_line]
-	    regsub -start $index "bug332" $out_line "undefined type" out_line
-	}
+
+	# Change
+	#   // ERROR "string"
+	# to
+	#   // { dg-error {string} }
+	# The latter is what go-dg-runtest expects.
+	regsub {// (GCCGO_)?ERROR "([^"]*)"([^"]*)$} $copy_line "// \{ dg-error \{\\2\} \}\\3" out_line
+
 	puts $fdout $out_line
     }
     close $fdin
@@ -274,6 +255,53 @@ proc go-set-goarch { } {
     setenv GOARCH $goarch
 }
 
+# This be kept in sync with libgo/configure.ac.
+proc go-set-goos { } {
+    global target_triplet
+
+    switch -glob $target_triplet {
+	"*-*-darwin*" {
+	    set goos "darwin"
+	}
+	"*-*-freebsd*" {
+	    set goos "freebsd"
+	}
+	"*-*-irix6*" {
+	    set goos "irix"
+	}
+	"*-*-linux*" {
+	    set goos "linux"
+	}
+	"*-*-netbsd*" {
+	    set goos "netbsd"
+	}
+	"*-*-openbsd*" {
+	    set goos "openbsd"
+	}
+	"*-*-dragonfly*" {
+	    set goos "dragonfly"
+	}
+	"*-*-rtems*" {
+	    set goos "rtems"
+	}
+	"*-*-solaris2*" {
+	    set goos "solaris"
+	}
+	"*-*-aix*" {
+	    set goos "aix"
+	}
+	"*-*-gnu*" {
+	    set goos "hurd"
+	}
+	default {
+	    perror "$target_triplet: unhandled GOOS"
+	    return
+	}
+    }
+    verbose -log "Setting GOOS=$goos" 1
+    setenv GOOS $goos
+}
+
 # Take a list of files and return a lists of lists, where each list is
 # the set of files in the same package.
 proc go-find-packages { test name files } {
@@ -310,6 +338,27 @@ proc go-find-packages { test name files } {
     return $packages
 }
 
+proc go-gc-match { name } {
+    verbose -log "go-gc-match $name"
+    set idx [string first "," $name]
+    if { $idx >= 0 } {
+	set left [string range $name 0 [expr $idx - 1]]
+	set right [string range $name [expr $idx + 1] end]
+	return [expr [go-gc-match $left] && [go-gc-match $right]]
+    }
+    if { [string index $name 0] == "!" && [string index $name 1] == "!" } {
+	return 0
+    }
+    if { [string index $name 0] == "!" } {
+	return [expr ! [go-gc-match [string range $name 1 end]]]
+    }
+    if { $name == [getenv GOARCH] || $name == [getenv GOOS] || $name == "gccgo" } {
+	return 1
+    }
+
+    return 0
+}
+
 proc go-gc-tests { } {
     global srcdir subdir
     global runtests
@@ -330,8 +379,9 @@ proc go-gc-tests { } {
     set options ""
     lappend options "additional_flags=$DEFAULT_GOCFLAGS"
 
-    # Set GOARCH for tests that need it.
+    # Set GOARCH and GOOS for tests that need it.
     go-set-goarch
+    go-set-goos
 
     # Running all the torture options takes too long and, since the
     # frontend ignores the standard options, it doesn't significantly
@@ -451,72 +501,60 @@ proc go-gc-tests { } {
 
 	set lines_ok 1
 
+	set test_line ""
 	while 1 {
-	    if { [gets $fd test_line] < 0 } {
-		close $fd
-		clone_output "$test: could not read first line"
+	    if { [gets $fd file_line] < 0 } {
+		if [eof $fd] {
+		    break
+		}
+		clone_output "$test: read failed"
 		unresolved $name
 		set lines_ok 0
 		break
 	    }
 
-	    if { [ string match "*nacl*exit 0*" $test_line ] \
-		     || [ string match "*exit 0*nacl*" $test_line ] \
-		     || [ string match "*Android*exit 0*" $test_line ] \
-		     || [ string match "*exit 0*Android*" $test_line ] \
-		     || [ string match "*\"\$GOOS\" == windows*" $test_line ] } {
+	    if { [ string match "*nacl*exit 0*" $file_line ] \
+		     || [ string match "*exit 0*nacl*" $file_line ] \
+		     || [ string match "*Android*exit 0*" $file_line ] \
+		     || [ string match "*exit 0*Android*" $file_line ] \
+		     || [ string match "*\"\$GOOS\" == windows*" $file_line ] } {
 		continue
 	    }
 
-	    if { [ string match "// +build *" $test_line ] } {
-		set matches_pos 0
-		set matches_neg 0
-		if { [ regexp -line "\[ 	\][getenv GOARCH]\(\[ 	\]\|\$\)" $test_line ] } {
-		    set matches_pos 1
-		} elseif { [ regexp -line "\[ 	\]\![getenv GOARCH]\(\[ 	\]\|\$\)" $test_line ] } {
-		    set matches_neg 1
-		} elseif { [ regexp -line "\[ 	\]linux\(\[ 	\]\|\$\)" $test_line ] } {
-		    set matches_pos 1
-		} elseif { [ regexp -line "\[ 	\]\!linux\(\[ 	\]\|\$\)" $test_line ] } {
-		    set matches_neg 1
-		} elseif { [ regexp -line "\[ 	\]\!windows\(\[ 	\]\|\$\)" $test_line ] } {
-		    set matches_pos 1
-		} elseif { [ regexp -line "\[ 	\]windows\(\[ 	\]\|\$\)" $test_line ] } {
-		    set matches_neg 1
+	    if ![string match "// *" $file_line] {
+		if { $file_line != "" } {
+		    break
 		}
-		if { $matches_pos == 1 && $matches_neg == 0 } {
-		    continue
-		}
-		close $fd
-		unsupported $name
-		set lines_ok 0
+		continue
 	    }
 
-	    break
-	}
-
-	if { $lines_ok == 0 } {
-	    continue
-	}
-
-	set lineno 1
-	set test_line1 $test_line
-
-	while { [eval "string match \"//*&&\" \${test_line$lineno}"] } {
-	    set lineno [expr $lineno + 1]
-	    if { [eval "gets \$fd test_line$lineno"] < 0 } {
-		close $fd
-		clone_output "$test: could not read line $lineno"
-		unresolved $name
+	    if { [ string match "// +build *" $file_line ] } {
+		set words [split $file_line]
+		set matches 0
+		for { set idx 2 } { $idx < [llength $words] } { incr idx } {
+		    if { [go-gc-match [lindex $words $idx]] } {
+			set matches 1
+			break
+		    }
+		}
+		if { $matches == 1 } {
+		    continue
+		}
+		unsupported $name
 		set lines_ok 0
 		break
 	    }
-	}
-	if { $lines_ok == 0 } {
-	    continue
+
+	    if { $test_line == "" } {
+		set test_line $file_line
+	    }
 	}
 
 	close $fd
+
+	if { $lines_ok == 0 } {
+	    continue
+	}
 
 	# runtest_file_p is already run above, and the code below can run
 	# runtest_file_p again, make sure everything for this test is
@@ -636,7 +674,7 @@ proc go-gc-tests { } {
 	    go-execute-xfail $test
 	} elseif { $test_line == "// errorcheck" } {
 	    errchk $test ""
-	} elseif { $test_line == "// errorcheckdir" } {
+	} elseif { $test_line == "// errorcheckdir" || $test_line == "// errorcheckdir -n" } {
 	    set hold_runtests $runtests
 	    set runtests "go-test.exp"
 	    set dir "[file rootname $test].dir"
@@ -648,7 +686,7 @@ proc go-gc-tests { } {
 		set last [lindex $packages end]
 		set packages [lreplace $packages end end]
 		foreach p $packages {
-		    dg-test -keep-output [lrange $p 1 end] "-O" "-w $DEFAULT_GOCFLAGS"
+		    dg-test -keep-output [lrange $p 1 end] "-O -I." "-w $DEFAULT_GOCFLAGS"
 		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
 		}
 		errchk [lindex $last 1] "[lrange $last 2 end]"
@@ -692,7 +730,7 @@ proc go-gc-tests { } {
 	    if { [llength $packages] > 0 } {
 		set del [list]
 		foreach p $packages {
-		    dg-test -keep-output [lindex $p 1] "[lrange $p 2 end] -O" "-w $DEFAULT_GOCFLAGS"
+		    dg-test -keep-output [lindex $p 1] "[lrange $p 2 end] -O -I." "-w $DEFAULT_GOCFLAGS"
 		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
 		}
 		foreach f $del {
@@ -712,7 +750,7 @@ proc go-gc-tests { } {
 		set last [lindex $packages end]
 		set packages [lreplace $packages end end]
 		foreach p $packages {
-		    dg-test -keep-output [lrange $p 1 end] "-O" "-w $DEFAULT_GOCFLAGS"
+		    dg-test -keep-output [lrange $p 1 end] "-O -I." "-w $DEFAULT_GOCFLAGS"
 		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
 		}
 		set dg-do-what-default "link"
@@ -737,11 +775,11 @@ proc go-gc-tests { } {
 		set last [lindex $packages end]
 		set packages [lreplace $packages end end]
 		foreach p $packages {
-		    dg-test -keep-output [lrange $p 1 end] "-O" "-w $DEFAULT_GOCFLAGS"
+		    dg-test -keep-output [lrange $p 1 end] "-O -I." "-w $DEFAULT_GOCFLAGS"
 		    lappend del "[file rootname [file tail [lindex $p 1]]].o"
 		}
 		set dg-do-what-default "link"
-		dg-test -keep-output [lrange $last 1 end] "$del -O" "-w $DEFAULT_GOCFLAGS"
+		dg-test -keep-output [lrange $last 1 end] "$del -O -I." "-w $DEFAULT_GOCFLAGS"
 		set base "[file rootname [file tail [lindex $last 1]]]"
 		set output_file "./$base.exe"
 		lappend del $output_file

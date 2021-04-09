@@ -1,6 +1,6 @@
 // -*- C++ -*-
 
-// Copyright (C) 2005-2020 Free Software Foundation, Inc.
+// Copyright (C) 2005-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the terms
@@ -63,6 +63,10 @@
 # include <tr1/random>
 #endif
 #include <ext/alloc_traits.h>
+
+#if !__has_builtin(__builtin_sprintf)
+# include <cstdio>
+#endif
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -310,6 +314,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static void
     log_to_string(std::string& s, const_reference ref)
     {
+#if ! __has_builtin(__builtin_sprintf)
+      __typeof__(&std::sprintf) __builtin_sprintf = &std::sprintf;
+#endif
+
       char buf[40];
       const char tab('\t');
       s += "label: ";
@@ -332,6 +340,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static void
     log_to_string(std::string& s, const std::pair<const void*, size_t>& ref)
     {
+#if ! __has_builtin(__builtin_sprintf)
+      auto __builtin_sprintf = &std::sprintf;
+#endif
+
       char buf[40];
       const char tab('\t');
       s += "label: ";
@@ -564,6 +576,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef std::tr1::variate_generator<engine_type, distribution_type> gen_t;
       distribution_type distribution(0, 1);
       static gen_t generator(engine(), distribution);
+#endif
+
+#if ! __has_builtin(__builtin_sprintf)
+      __typeof__(&std::sprintf) __builtin_sprintf = &std::sprintf;
 #endif
 
       double random = generator();

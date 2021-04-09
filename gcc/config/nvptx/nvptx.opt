@@ -1,5 +1,5 @@
 ; Options for the NVPTX port
-; Copyright (C) 2014-2020 Free Software Foundation, Inc.
+; Copyright (C) 2014-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -20,35 +20,35 @@
 ; It's not clear whether this was ever build/tested/used, so this is no longer
 ; exposed to the user.
 ;m32
-;Target Report RejectNegative InverseMask(ABI64)
+;Target RejectNegative InverseMask(ABI64)
 ;Generate code for a 32-bit ABI.
 
 m64
-Target Report RejectNegative Mask(ABI64)
+Target RejectNegative Mask(ABI64)
 Generate code for a 64-bit ABI.
 
 mmainkernel
-Target Report RejectNegative
+Target RejectNegative
 Link in code for a __main kernel.
 
 moptimize
-Target Report Var(nvptx_optimize) Init(-1)
+Target Var(nvptx_optimize) Init(-1)
 Optimize partition neutering.
 
 msoft-stack
-Target Report Mask(SOFT_STACK)
+Target Mask(SOFT_STACK)
 Use custom stacks instead of local memory for automatic storage.
 
 msoft-stack-reserve-local=
-Target Report Joined RejectNegative UInteger Var(nvptx_softstack_size) Init(128)
+Target Joined RejectNegative UInteger Var(nvptx_softstack_size) Init(128)
 Specify size of .local memory used for stack when the exact amount is not known.
 
 muniform-simt
-Target Report Mask(UNIFORM_SIMT)
+Target Mask(UNIFORM_SIMT)
 Generate code that can keep local state uniform across all lanes.
 
 mgomp
-Target Report Mask(GOMP)
+Target Mask(GOMP)
 Generate code for OpenMP offloading: enables -msoft-stack and -muniform-simt.
 
 Enum

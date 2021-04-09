@@ -1,5 +1,5 @@
 /* Implementation of Fortran 2003 Polymorphism.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
    Contributed by Paul Richard Thomas <pault@gcc.gnu.org>
    and Janus Weil <janus@gcc.gnu.org>
 
@@ -2906,7 +2906,9 @@ gfc_find_vtab (gfc_typespec *ts)
     case BT_DERIVED:
       return gfc_find_derived_vtab (ts->u.derived);
     case BT_CLASS:
-      if (ts->u.derived->components && ts->u.derived->components->ts.u.derived)
+      if (ts->u.derived->attr.is_class
+	  && ts->u.derived->components
+	  && ts->u.derived->components->ts.u.derived)
 	return gfc_find_derived_vtab (ts->u.derived->components->ts.u.derived);
       else
 	return NULL;

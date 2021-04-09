@@ -1,0 +1,353 @@
+# Copyright (C) 2017-2021 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+#
+# Contributed by Nathan Sidwell <nathan@acm.org> while at Facebook
+
+
+# Test C++ modules, which requires multiple TUs
+#
+# A test case might consist of multiple source files, each is compiled
+# separately, in a well-defined order.  The resulting object files might
+# be optionally linked and optionally executed.  Grouping is indicated by
+# naming files '*_[a-z].[CH]'
+
+# { dg-module-cmi "[!]module-name" } # an interface file is (not) expected
+# { dg-module-do [link|run] [xfail] [options] } # link [and run]
+
+load_lib g++-dg.exp
+
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CXXFLAGS
+if ![info exists DEFAULT_CXXFLAGS] then {
+    set DEFAULT_CXXFLAGS " -pedantic-errors -Wno-long-long"
+}
+set DEFAULT_MODFLAGS $DEFAULT_CXXFLAGS
+set MOD_STD_LIST { 17 2a 2b }
+
+dg-init
+
+if {[is_remote host]} {
+    # remote testing not functional here :(
+    return
+}
+
+global module_do
+global module_cmis
+
+set DEFAULT_REPO "gcm.cache"
+
+# Register the module name this produces.
+# dg-module-cmi !?=?NAME WHEN?
+# dg-module-cmi !?{} - header unit
+proc dg-module-cmi { args } {
+    if { [llength $args] > 3 } {
+	error "[lindex $args 0]: too many arguments"
+	return
+    }
+    set spec [lindex $args 1]
+    if { [llength $args] > 2 } {
+	set when [lindex $args 2]
+    } else {
+	set when {}
+    }
+
+    if { [string index $spec 0] == "!" } {
+	set name [string range $spec 1 end]
+	set not 1
+    } else {
+	set name $spec
+	set not 0
+    }
+
+    if { [string index $name 0] == "=" } {
+	set cmi [string range $name 1 end]
+    } else {
+	if { $name == "" } {
+	    # get the source file name.  ick!
+	    upvar prog srcname
+	    set cmi "$srcname.gcm"
+	    if { [string index $cmi 0] == "/" } {
+		set cmi [string range $cmi 1 end]
+	    } else {
+		set cmi ",/$cmi"
+	    }
+	    set path [file split $cmi]
+	    # subst /../ -> /,,/
+	    # sadly tcl 8.5 does not have lmap
+	    set rplac {}
+	    foreach elt $path {lappend rplac [expr {$elt == ".." ? ",," : $elt}]}
+	    set cmi [file join {*}$rplac]
+	} else {
+	    set cmi "[regsub : $name -].gcm"
+	}
+	global DEFAULT_REPO
+	set cmi "$DEFAULT_REPO/$cmi"
+    }
+
+    # delete file, so we don't get confused by a stale one.
+    file_on_host delete "$cmi"
+
+    global module_cmis
+    lappend module_cmis [list $spec $when $not $cmi]
+}
+
+# check the expected module files exist (or not)
+# return list to delete
+proc module_cmi_p { src ifs } {
+    set res {}
+    foreach if_arg $ifs {
+	set spec [lindex $if_arg 0]
+	set when [lindex $if_arg 1]
+	if { $when != "" } {
+	    switch [dg-process-target $when] {
+		"S" { }
+		"N" { continue }
+		"F" { setup_xfail "*-*-*" }
+		"P" { }
+	    }
+	}
+	set not [lindex $if_arg 2]
+	set cmi [lindex $if_arg 3]
+	global srcdir
+	set relcmi [string map [list $srcdir "/\$srcdir"] $cmi]
+	if { $not != [file_on_host exists $cmi] } {
+	    pass "$src module-cmi $spec ($relcmi)"
+	} else {
+	    fail "$src module-cmi $spec ($relcmi)"
+	    set not [expr ! $not ]
+	}
+	if { ! $not } {
+	    lappend res $cmi
+	}
+    }
+    return $res
+}
+
+# link and maybe run a set of object files
+# dg-module-do WHAT WHEN
+proc dg-module-do { args } {
+    if { [llength $args] > 3 } {
+	error "[lindex $args 0]: too many arguments"
+	return
+    }
+
+    set do_what [lindex $args 1]
+    set expected "P"
+    if { [llength $args] > 2 } {
+	set expected [dg-process-target [lindex $args 2]]
+    }
+
+    global module_do
+    set module_do [list $do_what $expected]
+}
+
+proc module_do_it { do_what testcase std asm_list } {
+    global tool
+
+    set run 0
+    switch [lindex $do_what 0] {
+	"compile" { return 1 }
+	"link" { }
+	"run" { set run 1 }
+	default { error "unknown module-do action [lindex $do_what 0]" }
+    }
+
+    set xfail {}
+    switch [lindex $do_what 1] {
+	"S" { }
+	"N" { return 1 }
+	"F" { set xfail {setup_xfail "*-*-*"} }
+	"P" { }
+    }
+
+    set ok 1
+    # make sure all asms are around
+    foreach asm $asm_list {
+	if { ! [file_on_host exists $asm] } {
+	    set ok 0
+	}
+    }
+
+    set options { }
+    set ident $testcase
+    if { $std != "" } {
+	lappend options "additional_flags=$std"
+	set ident "$ident $std"
+    }
+    if { [llength $do_what] > 3 } {
+	lappend options "additional_flags=[lindex $do_what 3]"
+    }
+
+    set execname "./[file tail $testcase].exe"
+
+    # link it
+    verbose "Linking $asm_list" 1
+    if { !$ok } {
+	unresolved "$ident link"
+    } else {
+	set out [${tool}_target_compile $asm_list \
+		     $execname executable $options]
+	eval $xfail
+	if { $out == "" } {
+	    pass "$ident link"
+	} else {
+	    fail "$ident link"
+	    set ok 0
+	}
+    }
+
+    # run it?
+    if { !$run } {
+    } elseif { !$ok } {
+	unresolved "$ident execute"
+    } else {
+	set out [${tool}_load $execname "" ""]
+	set status [lindex $out 0]
+	eval $xfail
+	$status "$ident execute"
+	if { $status != "pass" } {
+	    set $ok 0
+	}
+    }
+
+    if { $ok } {
+	file_on_host delete $execname
+    }
+
+    return $ok
+}
+
+# delete the specified set of module files
+proc cleanup_module_files { files } {
+    foreach file $files {
+	file_on_host delete $file
+    }
+}
+
+global testdir
+set testdir $srcdir/$subdir
+proc srcdir {} {
+    global testdir
+    return $testdir
+}
+
+# Return set of std options to iterate over, taken from g++-dg.exp & compat.exp
+proc module-init { src } {
+    set tmp [dg-get-options $src]
+    set option_list {}
+    set have_std 0
+    set std_prefix "-std=c++"
+
+    foreach op $tmp {
+	switch [lindex $op 0] {
+	    "dg-options" {
+		set std_prefix "-std=gnu++"
+		if { [string match "*-std=*" [lindex $op 2]] } {
+		    set have_std 1
+		}
+	    }
+	    "dg-additional-options" {
+		if { [string match "*-std=*" [lindex $op 2]] } {
+		    set have_std 1
+		}
+	    }
+	}
+    }
+
+    if { !$have_std } {
+	global MOD_STD_LIST
+	foreach x $MOD_STD_LIST {
+	    lappend option_list "${std_prefix}$x"
+	}
+    } else {
+	lappend option_list ""
+    }
+
+    return $option_list
+}
+
+# cleanup any detritus from previous run
+cleanup_module_files [find $DEFAULT_REPO *.gcm]
+
+# not grouped tests, sadly tcl doesn't have negated glob
+foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
+		  "$srcdir/$subdir/*_?.\[CH\]"] {
+    if [runtest_file_p $runtests $test] {
+	set nshort [file tail [file dirname $test]]/[file tail $test]
+
+	set std_list [module-init $test]
+	foreach std $std_list {
+	    global module_cmis
+	    set module_cmis {}
+	    verbose "Testing $nshort $std" 1
+	    dg-test $test "$std" $DEFAULT_MODFLAGS
+	    set testcase [string range $test [string length "$srcdir/"] end]
+	    cleanup_module_files [module_cmi_p $testcase $module_cmis]
+	}
+    }
+}
+
+# grouped tests
+foreach src [lsort [find $srcdir/$subdir {*_a.[CHX}]] {
+    # use the FOO_a.C name as the parallelization key
+    if [runtest_file_p $runtests $src] {
+	set tests [lsort [find [file dirname $src] \
+			      [regsub {_a.[CHX]$} [file tail $src] {_[a-z].[CHX]}]]]
+
+	set std_list [module-init $src]
+	foreach std $std_list {
+	    set mod_files {}
+	    global module_do
+	    set module_do {"compile" "P"}
+	    set asm_list {}
+	    set any_hdrs 0
+	    global DEFAULT_REPO
+	    file_on_host delete $DEFAULT_REPO
+	    foreach test $tests {
+		if { [lindex $module_do 1] != "N" } {
+		    global module_cmis
+		    set module_cmis {}
+		    set nshort [file tail [file dirname $test]]/[file tail $test]
+		    verbose "Testing $nshort $std" 1
+		    switch [file extension $test] {
+			".C" {		
+			    lappend asm_list [file rootname [file tail $test]].s
+			}
+			".X" {
+			    set any_hdrs 1
+			}
+		    }
+		    dg-test -keep-output $test "$std" $DEFAULT_MODFLAGS
+		    set testcase [string range $test [string length "$srcdir/"] end]
+		    lappend mod_files [module_cmi_p $testcase $module_cmis]
+		}
+	    }
+	    set testcase [regsub {_a.[CH]} $src {}]
+	    set testcase \
+		[string range $testcase [string length "$srcdir/"] end]
+	    module_do_it $module_do $testcase $std $asm_list
+	    foreach asm $asm_list {
+		file_on_host delete $asm
+	    }
+	    if { $any_hdrs } {
+		set mod_files [find $DEFAULT_REPO *.gcm]
+	    }
+	    cleanup_module_files $mod_files
+	}
+    }
+}
+
+dg-finish

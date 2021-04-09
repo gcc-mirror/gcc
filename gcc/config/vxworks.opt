@@ -1,6 +1,6 @@
 ; Processor-independent options for VxWorks.
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ; Contributed by CodeSourcery, LLC.
 ;
 ; This file is part of GCC.
@@ -32,7 +32,7 @@ Xbind-now
 Driver Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
 
 mrtp
-Target Report RejectNegative Mask(VXWORKS_RTP) Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
+Target RejectNegative Mask(VXWORKS_RTP) Condition(VXWORKS_KIND == VXWORKS_KIND_NORMAL)
 Assume the VxWorks RTP environment.
 
 ; VxWorks AE has two modes: kernel mode and vThreads mode.  In

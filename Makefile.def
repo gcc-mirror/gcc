@@ -81,6 +81,15 @@ host_modules= { module= itcl; };
 host_modules= { module= ld; bootstrap=true; };
 host_modules= { module= libbacktrace; bootstrap=true; };
 host_modules= { module= libcpp; bootstrap=true; };
+// As with libiconv, don't install any of libcody
+host_modules= { module= libcody; bootstrap=true;
+		no_install= true;
+		missing= pdf;
+		missing= html;
+		missing= info;
+		missing= install-pdf;
+		missing= install-html;
+		missing= install-info; };
 host_modules= { module= libdecnumber; bootstrap=true; };
 host_modules= { module= libgui; };
 host_modules= { module= libiberty; bootstrap=true;
@@ -125,14 +134,14 @@ host_modules= { module= libtermcap; no_check=true;
                 missing=distclean;
                 missing=maintainer-clean; };
 host_modules= { module= utils; no_check=true; };
+host_modules= { module= c++tools; };
 host_modules= { module= gnattools; };
 host_modules= { module= lto-plugin; bootstrap=true;
 		extra_configure_flags='--enable-shared @extra_linker_plugin_flags@ @extra_linker_plugin_configure_flags@';
 		extra_make_flags='@extra_linker_plugin_flags@'; };
 host_modules= { module= libcc1; extra_configure_flags=--enable-shared; };
 host_modules= { module= gotools; };
-host_modules= { module= libctf; no_install=true; no_check=true;
-		bootstrap=true; };
+host_modules= { module= libctf; bootstrap=true; };
 
 target_modules = { module= libstdc++-v3;
 		   bootstrap=true;
@@ -347,6 +356,7 @@ dependencies = { module=all-gcc; on=all-build-libcpp; };
 dependencies = { module=all-gcc; on=all-zlib; };
 dependencies = { module=all-gcc; on=all-libbacktrace; hard=true; };
 dependencies = { module=all-gcc; on=all-libcpp; hard=true; };
+dependencies = { module=all-gcc; on=all-libcody; hard=true; };
 dependencies = { module=all-gcc; on=all-libdecnumber; hard=true; };
 dependencies = { module=all-gcc; on=all-libiberty; };
 dependencies = { module=all-gcc; on=all-fixincludes; };
@@ -381,6 +391,8 @@ dependencies = { module=all-lto-plugin; on=all-libiberty-linker-plugin; };
 dependencies = { module=configure-libcc1; on=configure-gcc; };
 dependencies = { module=all-libcc1; on=all-gcc; };
 
+// we want version.o from gcc, and implicitly depend on libcody
+dependencies = { module=all-c++tools; on=all-gcc; };
 dependencies = { module=all-gotools; on=all-target-libgo; };
 
 dependencies = { module=all-utils; on=all-libiberty; };
@@ -450,6 +462,7 @@ dependencies = { module=all-binutils; on=all-build-bison; };
 dependencies = { module=all-binutils; on=all-intl; };
 dependencies = { module=all-binutils; on=all-gas; };
 dependencies = { module=all-binutils; on=all-libctf; };
+dependencies = { module=all-ld; on=all-libctf; };
 
 // We put install-opcodes before install-binutils because the installed
 // binutils might be on PATH, and they might need the shared opcodes
@@ -534,7 +547,6 @@ dependencies = { module=all-sim; on=all-libiberty; };
 dependencies = { module=all-sim; on=all-bfd; };
 dependencies = { module=all-sim; on=all-opcodes; };
 dependencies = { module=all-sim; on=all-readline; };
-dependencies = { module=all-sim; on=configure-gdb; };
 
 // Other host modules.
 dependencies = { module=all-fastjar; on=all-zlib; };
@@ -548,6 +560,7 @@ dependencies = { module=configure-libctf; on=all-bfd; };
 dependencies = { module=configure-libctf; on=all-intl; };
 dependencies = { module=configure-libctf; on=all-zlib; };
 dependencies = { module=configure-libctf; on=all-libiconv; };
+dependencies = { module=check-libctf; on=all-ld; };
 
 // Warning, these are not well tested.
 dependencies = { module=all-bison; on=all-intl; };

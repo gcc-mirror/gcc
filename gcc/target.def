@@ -1,5 +1,5 @@
 /* Target hook definitions.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the
@@ -210,6 +210,20 @@ DEFHOOKPOD
  the assembly for @var{insn} has been emitted, false if the hook should\
  be called afterward.",
  bool, true)
+
+/* Return true if the target needs extra instructions to restore the current
+   frame address after a DW_CFA_restore_state opcode.  */
+DEFHOOK
+(should_restore_cfa_state,
+ "For DWARF-based unwind frames, two CFI instructions provide for save and\
+ restore of register state.  GCC maintains the current frame address (CFA)\
+ separately from the register bank but the unwinder in libgcc preserves this\
+ state along with the registers (and this is expected by the code that writes\
+ the unwind frames).  This hook allows the target to specify that the CFA data\
+ is not saved/restored along with the registers by the target unwinder so that\
+ suitable additional instructions should be emitted to restore it.",
+ bool, (void),
+ hook_bool_void_false)
 
 /* Generate an internal label.
    For now this is just a wrapper for ASM_GENERATE_INTERNAL_LABEL.  */
@@ -757,41 +771,7 @@ directive to annotate @var{symbol} as used.  The Darwin target uses the\n\
 DEFHOOK
 (record_gcc_switches,
  "Provides the target with the ability to record the gcc command line\n\
-switches that have been passed to the compiler, and options that are\n\
-enabled.  The @var{type} argument specifies what is being recorded.\n\
-It can take the following values:\n\
-\n\
-@table @gcctabopt\n\
-@item SWITCH_TYPE_PASSED\n\
-@var{text} is a command line switch that has been set by the user.\n\
-\n\
-@item SWITCH_TYPE_ENABLED\n\
-@var{text} is an option which has been enabled.  This might be as a\n\
-direct result of a command line switch, or because it is enabled by\n\
-default or because it has been enabled as a side effect of a different\n\
-command line switch.  For example, the @option{-O2} switch enables\n\
-various different individual optimization passes.\n\
-\n\
-@item SWITCH_TYPE_DESCRIPTIVE\n\
-@var{text} is either NULL or some descriptive text which should be\n\
-ignored.  If @var{text} is NULL then it is being used to warn the\n\
-target hook that either recording is starting or ending.  The first\n\
-time @var{type} is SWITCH_TYPE_DESCRIPTIVE and @var{text} is NULL, the\n\
-warning is for start up and the second time the warning is for\n\
-wind down.  This feature is to allow the target hook to make any\n\
-necessary preparations before it starts to record switches and to\n\
-perform any necessary tidying up after it has finished recording\n\
-switches.\n\
-\n\
-@item SWITCH_TYPE_LINE_START\n\
-This option can be ignored by this target hook.\n\
-\n\
-@item  SWITCH_TYPE_LINE_END\n\
-This option can be ignored by this target hook.\n\
-@end table\n\
-\n\
-The hook's return value must be zero.  Other return values may be\n\
-supported in the future.\n\
+switches provided as argument.\n\
 \n\
 By default this hook is set to NULL, but an example implementation is\n\
 provided for ELF based targets.  Called @var{elf_record_gcc_switches},\n\
@@ -799,7 +779,7 @@ it records the switches as ASCII text inside a new, string mergeable\n\
 section in the assembler output file.  The name of the new section is\n\
 provided by the @code{TARGET_ASM_RECORD_GCC_SWITCHES_SECTION} target\n\
 hook.",
- int, (print_switch_type type, const char *text),
+ void, (const char *),
  NULL)
 
 /* The name of the section that the example ELF implementation of
@@ -3885,9 +3865,12 @@ default_new_address_profitable_p)
 DEFHOOK
 (estimated_poly_value,
  "Return an estimate of the runtime value of @var{val}, for use in\n\
-things like cost calculations or profiling frequencies.  The default\n\
+things like cost calculations or profiling frequencies.  @var{kind} is used\n\
+to ask for the minimum, maximum, and likely estimates of the value through\n\
+the @code{POLY_VALUE_MIN}, @code{POLY_VALUE_MAX} and\n\
+@code{POLY_VALUE_LIKELY} values.  The default\n\
 implementation returns the lowest possible value of @var{val}.",
- HOST_WIDE_INT, (poly_int64 val),
+ HOST_WIDE_INT, (poly_int64 val, poly_value_estimate_kind kind),
  default_estimated_poly_value)
 
 /* Permit speculative instructions in delay slots during delayed-branch 
@@ -4189,12 +4172,15 @@ DEFHOOK
 clobber for an asm.  The @var{outputs} and @var{inputs} may be inspected\n\
 to avoid clobbering a register that is already used by the asm.\n\
 \n\
-It may modify the @var{outputs}, @var{inputs}, and @var{constraints}\n\
-as necessary for other pre-processing.  In this case the return value is\n\
-a sequence of insns to emit after the asm.",
+It may modify the @var{outputs}, @var{inputs}, @var{input_modes}, and\n\
+@var{constraints} as necessary for other pre-processing.  In this case the\n\
+return value is a sequence of insns to emit after the asm.  Note that\n\
+changes to @var{inputs} must be accompanied by the corresponding changes\n\
+to @var{input_modes}.",
  rtx_insn *,
- (vec<rtx>& outputs, vec<rtx>& inputs, vec<const char *>& constraints,
-  vec<rtx>& clobbers, HARD_REG_SET& clobbered_regs),
+ (vec<rtx>& outputs, vec<rtx>& inputs, vec<machine_mode>& input_modes,
+  vec<const char *>& constraints, vec<rtx>& clobbers,
+  HARD_REG_SET& clobbered_regs),
  NULL)
 
 /* This target hook allows the backend to specify a calling convention
@@ -5166,11 +5152,27 @@ Note that the block move need only cover the constant parts of the\n\
 trampoline.  If the target isolates the variable parts of the trampoline\n\
 to the end, not all @code{TRAMPOLINE_SIZE} bytes need be copied.\n\
 \n\
-If the target requires any other actions, such as flushing caches or\n\
+If the target requires any other actions, such as flushing caches\n\
+(possibly calling function maybe_emit_call_builtin___clear_cache) or\n\
 enabling stack execution, these actions should be performed after\n\
 initializing the trampoline proper.",
  void, (rtx m_tramp, tree fndecl, rtx static_chain),
  default_trampoline_init)
+
+/* Emit a call to a function to clear the instruction cache.  */
+DEFHOOK
+(emit_call_builtin___clear_cache,
+ "On targets that do not define a @code{clear_cache} insn expander,\n\
+but that define the @code{CLEAR_CACHE_INSN} macro,\n\
+maybe_emit_call_builtin___clear_cache relies on this target hook\n\
+to clear an address range in the instruction cache.\n\
+\n\
+The default implementation calls the @code{__clear_cache} builtin,\n\
+taking the assembler name from the builtin declaration.  Overriding\n\
+definitions may call alternate functions, with alternate calling\n\
+conventions, or emit alternate RTX to perform the job.",
+ void, (rtx begin, rtx end),
+ default_emit_call_builtin___clear_cache)
 
 /* Adjust the address of the trampoline in a target-specific way.  */
 DEFHOOK

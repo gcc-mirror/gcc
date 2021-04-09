@@ -8,11 +8,12 @@
  */
 module core.sys.windows.odbcinst;
 version (Windows):
+@system:
 
 version (ANSI) {} else version = Unicode;
 
 import core.sys.windows.sql;
-private import core.sys.windows.windef;
+import core.sys.windows.windef;
 
 /*  FIXME: The Unicode/Ansi functions situation is a mess. How do the xxxA
  *  versions of these functions fit into the scheme?

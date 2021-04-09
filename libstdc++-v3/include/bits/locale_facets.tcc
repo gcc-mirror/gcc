@@ -1,6 +1,6 @@
 // Locale support -*- C++ -*-
 
-// Copyright (C) 1997-2020 Free Software Foundation, Inc.
+// Copyright (C) 1997-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -772,6 +772,24 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       return __beg;
     }
 
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+      && defined __LONG_DOUBLE_IEEE128__
+  template<typename _CharT, typename _InIter>
+    _InIter
+    num_get<_CharT, _InIter>::
+    __do_get(iter_type __beg, iter_type __end, ios_base& __io,
+	     ios_base::iostate& __err, __ibm128& __v) const
+    {
+      string __xtrc;
+      __xtrc.reserve(32);
+      __beg = _M_extract_float(__beg, __end, __io, __err, __xtrc);
+      std::__convert_to_v(__xtrc.c_str(), __v, __err, _S_get_c_locale());
+      if (__beg == __end)
+	__err |= ios_base::eofbit;
+      return __beg;
+    }
+#endif
+
   // For use by integer and floating-point types after they have been
   // converted into a char_type string.
   template<typename _CharT, typename _OutIter>
@@ -1194,6 +1212,15 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
       return __s;
     }
 
+#if defined _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT \
+      && defined __LONG_DOUBLE_IEEE128__
+  template<typename _CharT, typename _OutIter>
+    _OutIter
+    num_put<_CharT, _OutIter>::
+    __do_put(iter_type __s, ios_base& __io, char_type __fill,
+	     __ibm128 __v) const
+    { return _M_insert_float(__s, __io, __fill, 'L', __v); }
+#endif
 _GLIBCXX_END_NAMESPACE_LDBL
 
   // Construct correctly padded string, as per 22.2.2.2.2

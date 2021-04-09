@@ -1,4 +1,4 @@
-// Copyright (C) 2020 Free Software Foundation, Inc.
+// Copyright (C) 2020-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,6 +17,7 @@
 
 // { dg-do run }
 // { dg-options "-DSIMULATOR_TEST" { target simulator } }
+// { dg-timeout-factor 2 { target ilp32 } }
 
 // PR libstdc++/94749
 // basic_istream::ignore(n, c) discards n+1 if next character is equal to c.

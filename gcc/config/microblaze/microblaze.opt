@@ -1,6 +1,6 @@
 ; Options for the MicroBlaze port of the compiler
 ;
-; Copyright (C) 2009-2020 Free Software Foundation, Inc.
+; Copyright (C) 2009-2021 Free Software Foundation, Inc.
 ;
 ; Contributed by Michael Eager <eager@eagercon.com>.
 ;
@@ -36,11 +36,11 @@ Zxl-mode-xmdstub
 Driver
 
 msoft-float
-Target Report RejectNegative Mask(SOFT_FLOAT)
+Target RejectNegative Mask(SOFT_FLOAT)
 Use software emulation for floating point (default).
 
 mhard-float
-Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
+Target RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT)
 Use hardware floating point instructions.
 
 msmall-divides
@@ -56,11 +56,11 @@ Target Mask(MEMCPY)
 Don't optimize block moves, use memcpy.
 
 mbig-endian
-Target Report RejectNegative InverseMask(LITTLE_ENDIAN)
+Target RejectNegative InverseMask(LITTLE_ENDIAN)
 Assume target CPU is configured as big endian.
 
 mlittle-endian
-Target Report RejectNegative Mask(LITTLE_ENDIAN)
+Target RejectNegative Mask(LITTLE_ENDIAN)
 Assume target CPU is configured as little endian.
 
 mxl-soft-mul

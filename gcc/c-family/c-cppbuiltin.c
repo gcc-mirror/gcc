@@ -1,5 +1,5 @@
 /* Define builtin-in macros for the C family front ends.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -877,6 +877,13 @@ c_cpp_builtins (cpp_reader *pfile)
 
   define_language_independent_builtin_macros (pfile);
 
+  /* encoding definitions used by users and libraries  */
+  builtin_define_with_value ("__GNUC_EXECUTION_CHARSET_NAME",
+    cpp_get_narrow_charset_name (pfile), 1);
+  builtin_define_with_value ("__GNUC_WIDE_EXECUTION_CHARSET_NAME",
+    cpp_get_wide_charset_name (pfile), 1);
+
+
   if (c_dialect_cxx ())
   {
     int major;
@@ -1018,6 +1025,11 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_aggregate_paren_init=201902L");
 	  cpp_define (pfile, "__cpp_using_enum=201907L");
 	}
+      if (cxx_dialect > cxx20)
+	{
+	  /* Set feature test macros for C++23.  */
+	  cpp_define (pfile, "__cpp_size_t_suffix=202011L");
+	}
       if (flag_concepts)
         {
 	  if (cxx_dialect >= cxx20)
@@ -1025,6 +1037,10 @@ c_cpp_builtins (cpp_reader *pfile)
           else
             cpp_define (pfile, "__cpp_concepts=201507L");
         }
+      if (flag_modules)
+	/* The std-defined value is 201907L, but I don't think we can
+	   claim victory yet.  201810 is the p1103 date. */
+	cpp_define (pfile, "__cpp_modules=201810L");
       if (flag_coroutines)
 	cpp_define (pfile, "__cpp_impl_coroutine=201902L"); /* n4861, DIS */
       if (flag_tm)

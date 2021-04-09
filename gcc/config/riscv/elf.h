@@ -1,5 +1,5 @@
 /* Target macros for riscv*-elf targets.
-   Copyright (C) 1994-2020 Free Software Foundation, Inc.
+   Copyright (C) 1994-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -18,8 +18,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #define LINK_SPEC "\
--melf" XLEN_SPEC "lriscv \
+-melf" XLEN_SPEC DEFAULT_ENDIAN_SPEC "riscv \
 %{mno-relax:--no-relax} \
+%{mbig-endian:-EB} \
+%{mlittle-endian:-EL} \
 %{shared}"
 
 /* Link against Newlib libraries, because the ELF backend assumes Newlib.

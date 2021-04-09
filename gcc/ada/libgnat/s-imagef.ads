@@ -30,9 +30,8 @@
 ------------------------------------------------------------------------------
 
 --  This package contains the routines for supporting the Image attribute for
---  ordinary fixed point types whose Small is an integer or its reciprocal,
---  and also for conversion operations required in Text_IO.Fixed_IO for such
---  types.
+--  ordinary fixed point types whose Small is the ratio of two Int values, and
+--  also for conversion operations required in Text_IO.Fixed_IO for such types.
 
 generic
 

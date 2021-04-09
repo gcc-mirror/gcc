@@ -1,5 +1,5 @@
 ;; ARM Cortex-M4 pipeline description
-;; Copyright (C) 2010-2020 Free Software Foundation, Inc.
+;; Copyright (C) 2010-2021 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 ;;
 ;; This file is part of GCC.
@@ -36,7 +36,7 @@
                              adc_imm,adcs_imm,adc_reg,adcs_reg,\
                              adr,bfm,clz,rbit,rev,alu_dsp_reg,\
                              shift_imm,shift_reg,extend,\
-                             alu_shift_imm,alus_shift_imm,\
+                             alu_shift_imm_lsl_1to4,alu_shift_imm_other,alus_shift_imm,\
                              logic_shift_imm,logics_shift_imm,\
                              alu_shift_reg,alus_shift_reg,\
                              logic_shift_reg,logics_shift_reg,\

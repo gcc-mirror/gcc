@@ -1,4 +1,4 @@
-/* Copyright (C) 2005-2020 Free Software Foundation, Inc.
+/* Copyright (C) 2005-2021 Free Software Foundation, Inc.
    Contributed by Richard Henderson <rth@redhat.com>.
 
    This file is part of the GNU Offloading and Multi Processing Library
@@ -111,6 +111,26 @@ void gomp_sem_destroy (gomp_sem_t *sem)
   ret = pthread_cond_destroy (&sem->cond);
 
   return;
+}
+
+int gomp_sem_getcount (gomp_sem_t *sem)
+{
+  int ret, count;
+
+  ret = pthread_mutex_lock (&sem->mutex);
+  if (ret)
+    return -1;
+
+  count = sem->value;
+
+  ret = pthread_mutex_unlock (&sem->mutex);
+  if (ret)
+    return -1;
+
+  if (count < 0)
+    return -1;
+
+  return count;
 }
 #else /* HAVE_BROKEN_POSIX_SEMAPHORES  */
 void

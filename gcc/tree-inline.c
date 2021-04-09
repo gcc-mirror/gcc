@@ -1,5 +1,5 @@
 /* Tree inlining.
-   Copyright (C) 2001-2020 Free Software Foundation, Inc.
+   Copyright (C) 2001-2021 Free Software Foundation, Inc.
    Contributed by Alexandre Oliva <aoliva@redhat.com>
 
 This file is part of GCC.
@@ -1819,12 +1819,11 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  /* If the inlined function has too many debug markers,
 	     don't copy them.  */
 	  if (id->src_cfun->debug_marker_count
-	      > param_max_debug_marker_count)
+	      > param_max_debug_marker_count
+	      || id->reset_location)
 	    return stmts;
 
 	  gdebug *copy = as_a <gdebug *> (gimple_copy (stmt));
-	  if (id->reset_location)
-	    gimple_set_location (copy, input_location);
 	  id->debug_stmts.safe_push (copy);
 	  gimple_seq_add_stmt (&stmts, copy);
 	  return stmts;
@@ -3169,7 +3168,14 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
     }
 
   if (gimple_debug_nonbind_marker_p (stmt))
-    return;
+    {
+      if (id->call_stmt && !gimple_block (stmt))
+	{
+	  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+	  gsi_remove (&gsi, true);
+	}
+      return;
+    }
 
   /* Remap all the operands in COPY.  */
   memset (&wi, 0, sizeof (wi));
@@ -3346,7 +3352,10 @@ insert_init_debug_bind (copy_body_data *id,
 	base_stmt = gsi_stmt (gsi);
     }
 
-  note = gimple_build_debug_bind (tracked_var, unshare_expr (value), base_stmt);
+  note = gimple_build_debug_bind (tracked_var,
+				  value == error_mark_node
+				  ? NULL_TREE : unshare_expr (value),
+				  base_stmt);
 
   if (bb)
     {
@@ -3412,7 +3421,9 @@ force_value_to_type (tree type, tree value)
      Still if we end up with truly mismatched types here, fall back
      to using a VIEW_CONVERT_EXPR or a literal zero to not leak invalid
      GIMPLE to the following passes.  */
-  if (!is_gimple_reg_type (TREE_TYPE (value))
+  if (TREE_CODE (value) == WITH_SIZE_EXPR)
+    return error_mark_node;
+  else if (!is_gimple_reg_type (TREE_TYPE (value))
 	   || TYPE_SIZE (type) == TYPE_SIZE (TREE_TYPE (value)))
     return fold_build1 (VIEW_CONVERT_EXPR, type, value);
   else
@@ -3428,14 +3439,8 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 {
   gimple *init_stmt = NULL;
   tree var;
-  tree rhs = value;
   tree def = (gimple_in_ssa_p (cfun)
 	      ? ssa_default_def (id->src_cfun, p) : NULL);
-
-  if (value
-      && value != error_mark_node
-      && !useless_type_conversion_p (TREE_TYPE (p), TREE_TYPE (value)))
-    rhs = force_value_to_type (TREE_TYPE (p), value);
 
   /* Make an equivalent VAR_DECL.  Note that we must NOT remap the type
      here since the type of this decl must be visible to the calling
@@ -3494,6 +3499,12 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
      assigned to only once.  */
   if (TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (p)))
     TREE_READONLY (var) = 0;
+
+  tree rhs = value;
+  if (value
+      && value != error_mark_node
+      && !useless_type_conversion_p (TREE_TYPE (p), TREE_TYPE (value)))
+    rhs = force_value_to_type (TREE_TYPE (p), value);
 
   /* If there is no setup required and we are in SSA, take the easy route
      replacing all SSA names representing the function parameter by the
@@ -4010,6 +4021,26 @@ inline_forbidden_p (tree fndecl)
   memset (&wi, 0, sizeof (wi));
   wi.info = (void *) fndecl;
   wi.pset = &visited_nodes;
+
+  /* We cannot inline a function with a VLA typed argument or result since
+     we have no implementation materializing a variable of such type in
+     the caller.  */
+  if (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
+      && !poly_int_tree_p (TYPE_SIZE (TREE_TYPE (TREE_TYPE (fndecl)))))
+    {
+      inline_forbidden_reason
+	= G_("function %q+F can never be inlined because "
+	     "it has a VLA return argument");
+      return true;
+    }
+  for (tree parm = DECL_ARGUMENTS (fndecl); parm; parm = DECL_CHAIN (parm))
+    if (!poly_int_tree_p (DECL_SIZE (parm)))
+      {
+	inline_forbidden_reason
+	  = G_("function %q+F can never be inlined because "
+	       "it has a VLA argument");
+	return true;
+      }
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -4834,9 +4865,11 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
       gimple_call_set_fndecl (stmt, edge->callee->decl);
       update_stmt (stmt);
       id->src_node->remove ();
-      expand_call_inline (bb, stmt, id, to_purge);
+      successfully_inlined = expand_call_inline (bb, stmt, id, to_purge);
       maybe_remove_unused_call_args (cfun, stmt);
-      return true;
+      /* This used to return true even though we do fail to inline in
+	 some cases.  See PR98525.  */
+      goto egress;
     }
   fn = cg_edge->callee->decl;
   cg_edge->callee->get_untransformed_body ();
@@ -6207,6 +6240,12 @@ tree_function_versioning (tree old_decl, tree new_decl,
   auto_vec<gimple *, 10> init_stmts;
   tree vars = NULL_TREE;
 
+  /* We can get called recursively from expand_call_inline via clone
+     materialization.  While expand_call_inline maintains input_location
+     we cannot tolerate it to leak into the materialized clone.  */
+  location_t saved_location = input_location;
+  input_location = UNKNOWN_LOCATION;
+
   gcc_assert (TREE_CODE (old_decl) == FUNCTION_DECL
 	      && TREE_CODE (new_decl) == FUNCTION_DECL);
   DECL_POSSIBLY_INLINED (old_decl) = 1;
@@ -6508,6 +6547,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   gcc_assert (!id.debug_stmts.exists ());
   pop_cfun ();
+  input_location = saved_location;
   return;
 }
 

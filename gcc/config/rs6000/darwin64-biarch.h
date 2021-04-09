@@ -1,6 +1,6 @@
 /* Target definitions for PowerPC64 running Darwin (Mac OS X) for a 64b host
    supporting a 32b multilib.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
    Contributed by Apple Computer Inc.
 
    This file is part of GCC.

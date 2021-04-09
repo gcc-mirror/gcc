@@ -1,6 +1,6 @@
 // <bit> -*- C++ -*-
 
-// Copyright (C) 2018-2020 Free Software Foundation, Inc.
+// Copyright (C) 2018-2021 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -49,6 +49,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+#if __cplusplus > 201703l && __has_builtin(__builtin_bit_cast)
+#define __cpp_lib_bit_cast 201806L
+
+  /// Create a value of type `To` from the bits of `from`.
+  template<typename _To, typename _From>
+    constexpr _To
+    bit_cast(const _From& __from) noexcept
+    {
+      return __builtin_bit_cast(_To, __from);
+    }
+#endif
+
   /// @cond undoc
 
   template<typename _Tp>
@@ -56,6 +68,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __rotl(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
+      if _GLIBCXX17_CONSTEXPR ((_Nd & (_Nd - 1)) == 0)
+	{
+	  // Variant for power of two _Nd which the compiler can
+	  // easily pattern match.
+	  constexpr unsigned __uNd = _Nd;
+	  const unsigned __r = __s;
+	  return (__x << (__r % __uNd)) | (__x >> ((-__r) % __uNd));
+	}
       const int __r = __s % _Nd;
       if (__r == 0)
 	return __x;
@@ -70,6 +90,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __rotr(_Tp __x, int __s) noexcept
     {
       constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
+      if _GLIBCXX17_CONSTEXPR ((_Nd & (_Nd - 1)) == 0)
+	{
+	  // Variant for power of two _Nd which the compiler can
+	  // easily pattern match.
+	  constexpr unsigned __uNd = _Nd;
+	  const unsigned __r = __s;
+	  return (__x >> (__r % __uNd)) | (__x << ((-__r) % __uNd));
+	}
       const int __r = __s % _Nd;
       if (__r == 0)
 	return __x;
@@ -129,8 +157,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countl_one(_Tp __x) noexcept
     {
-      if (__x == __gnu_cxx::__int_traits<_Tp>::__max)
-	return __gnu_cxx::__int_traits<_Tp>::__digits;
       return std::__countl_zero<_Tp>((_Tp)~__x);
     }
 
@@ -172,8 +198,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr int
     __countr_one(_Tp __x) noexcept
     {
-      if (__x == __gnu_cxx::__int_traits<_Tp>::__max)
-	return __gnu_cxx::__int_traits<_Tp>::__digits;
       return std::__countr_zero((_Tp)~__x);
     }
 

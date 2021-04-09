@@ -1,5 +1,5 @@
 /* File format for coverage information
-   Copyright (C) 1996-2020 Free Software Foundation, Inc.
+   Copyright (C) 1996-2021 Free Software Foundation, Inc.
    Contributed by Bob Manson <manson@cygnus.com>.
    Completely remangled by Nathan Sidwell <nathan@codesourcery.com>.
 
@@ -291,9 +291,6 @@ GCOV_COUNTERS
 
 /* Maximum number of tracked TOP N value profiles.  */
 #define GCOV_TOPN_MAXIMUM_TRACKED_VALUES 32
-
-/* Number of pre-allocated gcov_kvp structures.  */
-#define GCOV_PREALLOCATED_KVP 64
 
 /* Convert a counter index to a tag.  */
 #define GCOV_TAG_FOR_COUNTER(COUNT)				\

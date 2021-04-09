@@ -1,4 +1,4 @@
-@c Copyright (C) 2018-2020 Free Software Foundation, Inc.
+@c Copyright (C) 2018-2021 Free Software Foundation, Inc.
 @c Free Software Foundation, Inc.
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
@@ -85,6 +85,31 @@ user doesn't agree with.  Ideally a diagnostic should contain enough
 information to allow the user to make an informed choice about whether
 they should care (and how to fix it), but a balance must be drawn against
 overloading the user with irrelevant data.
+
+@subsection Sometimes the user didn't write the code
+
+GCC is typically used in two different ways:
+
+@itemize @bullet
+@item
+Semi-interactive usage: GCC is used as a development tool when the user
+is writing code, as the ``compile'' part of the ``edit-compile-debug''
+cycle.  The user is actively hacking on the code themself (perhaps a
+project they wrote, or someone else's), where they just made a change
+to the code and want to see what happens, and to be warned about
+mistakes.
+
+@item
+Batch rebuilds: where the user is recompiling one or more existing
+packages, and GCC is a detail that's being invoked by various build
+scripts.  Examples include a user trying to bring up an operating system
+consisting of hundreds of packages on a new CPU architecture, where the
+packages were written by many different people, or simply rebuilding
+packages after a dependency changed, where the user is hoping
+``nothing breaks'', since they are unfamiliar with the code.
+@end itemize
+
+Keep both of these styles of usage in mind when implementing diagnostics.
 
 @subsection Precision of Wording
 

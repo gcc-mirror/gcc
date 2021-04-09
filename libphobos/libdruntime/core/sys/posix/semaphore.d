@@ -14,8 +14,8 @@
  */
 module core.sys.posix.semaphore;
 
-private import core.sys.posix.config;
-private import core.sys.posix.time;
+import core.sys.posix.config;
+import core.sys.posix.time;
 
 version (OSX)
     version = Darwin;
@@ -30,6 +30,7 @@ version (Posix):
 extern (C):
 nothrow:
 @nogc:
+@system:
 
 //
 // Required
@@ -42,10 +43,10 @@ int sem_close(sem_t*);
 int sem_destroy(sem_t*);
 int sem_getvalue(sem_t*, int*);
 int sem_init(sem_t*, int, uint);
-sem_t* sem_open(in char*, int, ...);
+sem_t* sem_open(const scope char*, int, ...);
 int sem_post(sem_t*);
 int sem_trywait(sem_t*);
-int sem_unlink(in char*);
+int sem_unlink(const scope char*);
 int sem_wait(sem_t*);
 */
 
@@ -169,58 +170,58 @@ int sem_close(sem_t*);
 int sem_destroy(sem_t*);
 int sem_getvalue(sem_t*, int*);
 int sem_init(sem_t*, int, uint);
-sem_t* sem_open(in char*, int, ...);
+sem_t* sem_open(const scope char*, int, ...);
 int sem_post(sem_t*);
 int sem_trywait(sem_t*);
-int sem_unlink(in char*);
+int sem_unlink(const scope char*);
 int sem_wait(sem_t*);
 
 //
 // Timeouts (TMO)
 //
 /*
-int sem_timedwait(sem_t*, in timespec*);
+int sem_timedwait(sem_t*, const scope timespec*);
 */
 
 version (CRuntime_Glibc)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (Darwin)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (FreeBSD)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (NetBSD)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (OpenBSD)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (DragonFlyBSD)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (Solaris)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (CRuntime_Bionic)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (CRuntime_Musl)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else version (CRuntime_UClibc)
 {
-    int sem_timedwait(sem_t*, in timespec*);
+    int sem_timedwait(sem_t*, const scope timespec*);
 }
 else
 {

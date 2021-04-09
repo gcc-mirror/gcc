@@ -1,3 +1,55 @@
+2021-03-03  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (read_line_program): Don't special case file 0.
+	(read_function_entry): Likewise.
+
+2021-03-02  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/98818
+	* dwarf.c (dwarf_buf_error): Add errnum parameter.  Change all
+	callers.
+	* backtrace.h: Update backtrace_error_callback comment.
+
+2021-02-12  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Check for objcopy --add-gnu-debuglink by using
+	objcopy --help.
+	* configure: Regenerate
+
+2021-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (%_dwz): If dwz fails, use uncompressed debug info.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
+2021-01-18  Ian Lance Taylor  <iant@golang.org>
+
+	PR debug/98716
+	* dwarf.c (read_v2_paths): Allocate zero entry for dirs and
+	filenames.
+	(read_line_program): Remove parameter u, change caller.  Don't
+	subtract one from dirs and filenames index.
+	(read_function_entry): Don't subtract one from filenames index.
+
+2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
+
+	* configure: Re-generate.
+
+2020-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/97865
+	* configure: Regenerate.
+
+2020-12-02  Ian Lance Taylor  <iant@golang.org>
+
+	* dwarf.c (resolve_string): Use > rather than >= to check whether
+	string index extends past buffer.
+	(resolve_addr_index): Similarly for address index.
+
+2020-11-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	* configure: Regenerate.
+
 2020-10-20  Ian Lance Taylor  <iant@golang.org>
 
 	* internal.h (ATTRIBUTE_FALLTHROUGH): Define.
@@ -1695,7 +1747,7 @@
 
 	* Initial implementation.
 
-Copyright (C) 2012-2020 Free Software Foundation, Inc.
+Copyright (C) 2012-2021 Free Software Foundation, Inc.
 
 Copying and distribution of this file, with or without modification,
 are permitted in any medium without royalty provided the copyright

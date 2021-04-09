@@ -1,5 +1,5 @@
 /* Wrapper to call lto.  Used by collect2 and the linker plugin.
-   Copyright (C) 2009-2020 Free Software Foundation, Inc.
+   Copyright (C) 2009-2021 Free Software Foundation, Inc.
 
    Factored out of collect2 by Rafael Espindola <espindola@google.com>
 
@@ -1780,6 +1780,8 @@ cont1:
 	{
 	  char buf[256];
 	  init_num_threads ();
+	  if (nthreads_var == 0)
+	    nthreads_var = 1;
 	  if (verbose)
 	    fprintf (stderr, "LTO parallelism level set to %ld\n",
 		     nthreads_var);

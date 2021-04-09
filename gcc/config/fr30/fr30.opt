@@ -1,6 +1,6 @@
 ; Options for the FR30 port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -19,7 +19,7 @@
 ; <http://www.gnu.org/licenses/>.
 
 msmall-model
-Target Report Mask(SMALL_MODEL)
+Target Mask(SMALL_MODEL)
 Assume small address space.
 
 mno-lsim

@@ -1,5 +1,5 @@
 /* Command line option handling.
-   Copyright (C) 2006-2020 Free Software Foundation, Inc.
+   Copyright (C) 2006-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -766,6 +766,7 @@ decode_cmdline_option (const char *const *argv, unsigned int lang_mask,
       werror_arg[0] = 'W';
 
       size_t warning_index = find_opt (werror_arg, lang_mask);
+      free (werror_arg);
       if (warning_index != OPT_SPECIAL_unknown)
 	{
 	  const struct cl_option *warning_option
@@ -1466,9 +1467,15 @@ set_option (struct gcc_options *opts, struct gcc_options *opts_set,
 	  }
 	else
 	  {
-	    *(int *) flag_var = value;
-	    if (set_flag_var)
-	      *(int *) set_flag_var = 1;
+	    if (value > INT_MAX)
+	      error_at (loc, "argument to %qs is bigger than %d",
+			option->opt_text, INT_MAX);
+	    else
+	      {
+		*(int *) flag_var = value;
+		if (set_flag_var)
+		  *(int *) set_flag_var = 1;
+	      }
 	  }
 
 	break;

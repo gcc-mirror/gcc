@@ -1,5 +1,5 @@
 /* Output routines for Visium.
-   Copyright (C) 2002-2020 Free Software Foundation, Inc.
+   Copyright (C) 2002-2021 Free Software Foundation, Inc.
    Contributed by C.Nettleton, J.P.Parkes and P.Garbett.
 
    This file is part of GCC.
@@ -188,8 +188,9 @@ static bool visium_frame_pointer_required (void);
 static tree visium_build_builtin_va_list (void);
 
 static rtx_insn *visium_md_asm_adjust (vec<rtx> &, vec<rtx> &,
-				       vec<const char *> &,
-				       vec<rtx> &, HARD_REG_SET &);
+				       vec<machine_mode> &,
+				       vec<const char *> &, vec<rtx> &,
+				       HARD_REG_SET &);
 
 static bool visium_legitimate_constant_p (machine_mode, rtx);
 
@@ -791,9 +792,10 @@ visium_conditional_register_usage (void)
    the original cc0-based compiler.  */
 
 static rtx_insn *
-visium_md_asm_adjust (vec<rtx> &/*outputs*/, vec<rtx> &/*inputs*/,
-		      vec<const char *> &/*constraints*/,
-		      vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
+visium_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
+		      vec<machine_mode> & /*input_modes*/,
+		      vec<const char *> & /*constraints*/, vec<rtx> &clobbers,
+		      HARD_REG_SET &clobbered_regs)
 {
   clobbers.safe_push (gen_rtx_REG (CCmode, FLAGS_REGNUM));
   SET_HARD_REG_BIT (clobbered_regs, FLAGS_REGNUM);

@@ -1,5 +1,5 @@
 ; Options for the TILE-Gx port of the compiler.
-; Copyright (C) 2011-2020 Free Software Foundation, Inc.
+; Copyright (C) 2011-2021 Free Software Foundation, Inc.
 ; Contributed by Walter Lee (walt@tilera.com)
 ;
 ; This file is part of GCC.
@@ -33,19 +33,19 @@ EnumValue
 Enum(tilegx_cpu) String(tilegx) Value(0)
 
 m32
-Target Report RejectNegative Negative(m64) Mask(32BIT)
+Target RejectNegative Negative(m64) Mask(32BIT)
 Compile with 32 bit longs and pointers.
 
 m64
-Target Report RejectNegative Negative(m32) InverseMask(32BIT, 64BIT)
+Target RejectNegative Negative(m32) InverseMask(32BIT, 64BIT)
 Compile with 64 bit longs and pointers.
 
 mbig-endian
-Target Report RejectNegative Mask(BIG_ENDIAN)
+Target RejectNegative Mask(BIG_ENDIAN)
 Use big-endian byte order.
 
 mlittle-endian
-Target Report RejectNegative InverseMask(BIG_ENDIAN)
+Target RejectNegative InverseMask(BIG_ENDIAN)
 Use little-endian byte order.
 
 mcmodel=

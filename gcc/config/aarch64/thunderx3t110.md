@@ -1,5 +1,5 @@
 ;; Cavium ThunderX 3 CN11xx pipeline description
-;; Copyright (C) 2020 Free Software Foundation, Inc.
+;; Copyright (C) 2020-2021 Free Software Foundation, Inc.
 ;;
 ;; Contributed by Marvell
 
@@ -126,14 +126,14 @@
 ; is it actually 1,1/2,{i0,i1} vs 2,1/4,{i0,i1,i2,i3}
 (define_insn_reservation "thunderx3t110_alu_shift" 2
   (and (eq_attr "tune" "thunderx3t110")
-       (eq_attr "type" "alu_shift_imm,alu_ext,\
+       (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,alu_ext,\
 			alus_shift_imm,alus_ext,\
 			logic_shift_imm,logics_shift_imm"))
   "thunderx3t110_i0123")
 
 (define_insn_reservation "thunderx3t110_alu_shift1" 1
   (and (eq_attr "tune" "thunderx3t110")
-       (eq_attr "type" "alu_shift_imm,alu_ext,\
+       (eq_attr "type" "alu_shift_imm_lsl_1to4,alu_shift_imm_other,alu_ext,\
 			alus_shift_imm,alus_ext,\
 			logic_shift_imm,logics_shift_imm"))
   "thunderx3t110_i01")

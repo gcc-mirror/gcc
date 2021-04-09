@@ -1,6 +1,6 @@
 ; Options for the Motorola 68000 port of the compiler.
 
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ;
 ; This file is part of GCC.
 ;
@@ -95,7 +95,7 @@ Target RejectNegative Mask(HARD_FLOAT)
 Generate code that uses 68881 floating-point instructions.
 
 malign-int
-Target Report Mask(ALIGN_INT)
+Target Mask(ALIGN_INT)
 Align variables on a 32-bit boundary.
 
 march=
@@ -103,7 +103,7 @@ Target RejectNegative Joined Enum(m68k_isa) Var(m68k_arch_option)
 Specify the name of the target architecture.
 
 mbitfield
-Target Report Mask(BITFIELD)
+Target Mask(BITFIELD)
 Use the bit-field instructions.
 
 mc68000
@@ -127,7 +127,7 @@ Target RejectNegative Alias(mcpu=, 68332)
 Generate code for a cpu32.
 
 mdiv
-Target Report Mask(CF_HWDIV)
+Target Mask(CF_HWDIV)
 Use hardware division instructions on ColdFire.
 
 mfidoa
@@ -139,11 +139,11 @@ Target RejectNegative Mask(HARD_FLOAT)
 Generate code which uses hardware floating point instructions.
 
 mid-shared-library
-Target Report Mask(ID_SHARED_LIBRARY)
+Target Mask(ID_SHARED_LIBRARY)
 Enable ID based shared library.
 
 mlong-jump-table-offsets
-Target Report RejectNegative Mask(LONG_JUMP_TABLE_OFFSETS)
+Target RejectNegative Mask(LONG_JUMP_TABLE_OFFSETS)
 Use 32-bit offsets in jump tables rather than 16-bit offsets.
 
 mnobitfield
@@ -159,15 +159,15 @@ Target RejectNegative InverseMask(SHORT)
 Consider type 'int' to be 32 bits wide.
 
 mpcrel
-Target Report Mask(PCREL)
+Target Mask(PCREL)
 Generate pc-relative code.
 
 mrtd
-Target Report Mask(RTD)
+Target Mask(RTD)
 Use different calling convention using 'rtd'.
 
 msep-data
-Target Report Mask(SEP_DATA)
+Target Mask(SEP_DATA)
 Enable separate data segment.
 
 mshared-library-id=
@@ -175,7 +175,7 @@ Target RejectNegative Joined UInteger
 ID of shared library to build.
 
 mshort
-Target Report Mask(SHORT)
+Target Mask(SHORT)
 Consider type 'int' to be 16 bits wide.
 
 msoft-float
@@ -183,7 +183,7 @@ Target RejectNegative InverseMask(HARD_FLOAT)
 Generate code with library calls for floating point.
 
 mstrict-align
-Target Report Mask(STRICT_ALIGNMENT)
+Target Mask(STRICT_ALIGNMENT)
 Do not use unaligned memory references.
 
 mtune=
@@ -191,9 +191,9 @@ Target RejectNegative Joined Enum(uarch_type) Var(m68k_tune_option) Init(unk_arc
 Tune for the specified target CPU or architecture.
 
 mxgot
-Target Report Mask(XGOT)
+Target Mask(XGOT)
 Support more than 8192 GOT entries on ColdFire.
 
 mxtls
-Target Report Mask(XTLS)
+Target Mask(XTLS)
 Support TLS segment larger than 64K.

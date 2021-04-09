@@ -446,7 +446,7 @@ indicate a place that may require attention for multi-thread safety.
 
       MS adds:
       _T
-			__deref
+      __deref
 
       BSD adds:
       __used

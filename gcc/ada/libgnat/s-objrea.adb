@@ -645,6 +645,9 @@ package body System.Object_Reader is
             when EM_X86_64 =>
                Res.Arch := x86_64;
 
+            when EM_ARM =>
+               Res.Arch := ARM;
+
             when others =>
                raise Format_Error with "unrecognized architecture";
          end case;
@@ -2030,6 +2033,7 @@ package body System.Object_Reader is
             | MIPS
             | PPC
             | SPARC
+            | ARM
          =>
             Address_32 := Read (S);
             return uint64 (Address_32);

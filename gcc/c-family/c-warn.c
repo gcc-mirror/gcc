@@ -1,5 +1,5 @@
 /* Diagnostic routines shared by all languages that are variants of C.
-   Copyright (C) 1992-2020 Free Software Foundation, Inc.
+   Copyright (C) 1992-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -2779,7 +2779,8 @@ do_warn_duplicated_branches (tree expr)
 
   /* Compare the hashes.  */
   if (h0 == h1
-      && operand_equal_p (thenb, elseb, OEP_LEXICOGRAPHIC)
+      && operand_equal_p (thenb, elseb, OEP_LEXICOGRAPHIC
+					| OEP_ADDRESS_OF_SAME_FIELD)
       /* Don't warn if any of the branches or their subexpressions comes
 	 from a macro.  */
       && !walk_tree_without_duplicates (&thenb, expr_from_macro_expansion_r,
@@ -3319,6 +3320,19 @@ warn_parm_ptrarray_mismatch (location_t origloc, tree curparms, tree newparms)
     }
 }
 
+/* Format EXPR if nonnull and return the formatted string.  If EXPR is
+   null return DFLT.  */
+
+static inline const char*
+expr_to_str (pretty_printer &pp, tree expr, const char *dflt)
+{
+  if (!expr)
+    return dflt;
+
+  dump_generic_node (&pp, expr, 0, TDF_VOPS | TDF_MEMSYMS, false);
+  return pp_formatted_text (&pp);
+}
+
 /* Detect and diagnose a mismatch between an attribute access specification
    on the original declaration of FNDECL and that on the parameters NEWPARMS
    from its refeclaration.  ORIGLOC is the location of the first declaration
@@ -3585,10 +3599,9 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	       the same.  */
 	    continue;
 
-	  const char* const newbndstr =
-	    newbnd ? print_generic_expr_to_str (newbnd) : "*";
-	  const char* const curbndstr =
-	    curbnd ? print_generic_expr_to_str (curbnd) : "*";
+	  pretty_printer pp1, pp2;
+	  const char* const newbndstr = expr_to_str (pp1, newbnd, "*");
+	  const char* const curbndstr = expr_to_str (pp2, curbnd, "*");
 
 	  if (!newpos != !curpos
 	      || (newpos && !tree_int_cst_equal (newpos, curpos)))

@@ -29,7 +29,8 @@ lsan_files = \
 	lsan_malloc_mac.cpp \
 	lsan_allocator.cpp \
 	lsan_interceptors.cpp \
-	lsan_thread.cpp
+	lsan_thread.cpp \
+	lsan_posix.cpp
 
 libsanitizer_lsan_la_SOURCES = $(sanitizer_lsan_files)
 

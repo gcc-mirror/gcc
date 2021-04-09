@@ -39,7 +39,7 @@ const(ubyte)[] toUbyte(T)(const ref T val) if (is(Unqual!T == float) || is(Unqua
 {
     if (__ctfe)
     {
-        static if (T.mant_dig == float.mant_dig || T.mant_dig == double.mant_dig)
+        static if (floatFormat!T == FloatFormat.Float || floatFormat!T == FloatFormat.Double)
         {
             static if (is(T : ireal)) // https://issues.dlang.org/show_bug.cgi?id=19932
                 const f = val.im;
@@ -628,7 +628,14 @@ template floatFormat(T) if (is(T:real) || is(T:ireal))
     static if (T.mant_dig == 24)
         enum floatFormat = FloatFormat.Float;
     else static if (T.mant_dig == 53)
-        enum floatFormat = FloatFormat.Double;
+    {
+        // Double precision, or real == double
+        static if (T.sizeof == double.sizeof)
+            enum floatFormat = FloatFormat.Double;
+        // 80-bit real with rounding precision set to 53 bits.
+        else static if (T.sizeof == real.sizeof)
+            enum floatFormat = FloatFormat.Real80;
+    }
     else static if (T.mant_dig == 64)
         enum floatFormat = FloatFormat.Real80;
     else static if (T.mant_dig == 106)

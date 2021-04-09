@@ -11,6 +11,7 @@ module core.sys.freebsd.sys.mount;
 
 version (FreeBSD):
 
+import core.sys.freebsd.config;
 import core.stdc.config : c_long;
 import core.sys.posix.sys.stat : stat_t;
 import core.sys.posix.sys.types : uid_t;
@@ -32,8 +33,17 @@ struct fid
 }
 
 enum MFSNAMELEN = 16;
-enum MNAMELEN   = 88;
-enum STATFS_VERSION = 0x20030518;
+
+static if (__FreeBSD_version >= 1200000)
+{
+    enum MNAMELEN   = 1024;
+    enum STATFS_VERSION = 0x20140518;
+}
+else
+{
+    enum MNAMELEN   = 88;
+    enum STATFS_VERSION = 0x20030518;
+}
 
 struct statfs_t
 {
@@ -288,17 +298,47 @@ enum uint VQ_FLAG2000 = 0x2000;
 enum uint VQ_FLAG4000 = 0x4000;
 enum uint VQ_FLAG8000 = 0x8000;
 
-int fhopen(const fhandle_t*, int);
-int fhstat(const fhandle_t*, stat_t*);
-int fhstatfs(const fhandle_t*, statfs_t*);
-int fstatfs(int, statfs_t*);
-int getfh(const char*, fhandle_t*);
-int getfsstat(statfs_t*, c_long, int);
-int getmntinfo(statfs_t**, int);
-int lgetfh(const char*, fhandle_t*);
-int mount(const char*, const char*, int, void*);
-//int nmount(iovec*, uint, int);
-int statfs(const char*, statfs_t*);
-int unmount(const char*, int);
-
-//int getvfsbyname(const char*, xvfsconf*);
+version (GNU)
+{
+    int fhopen(const fhandle_t*, int);
+    int fhstat(const fhandle_t*, stat_t*);
+    int fhstatfs(const fhandle_t*, statfs_t*);
+    int fstatfs(int, statfs_t*);
+    int getfh(const char*, fhandle_t*);
+    int getfsstat(statfs_t*, c_long, int);
+    int getmntinfo(statfs_t**, int);
+    int lgetfh(const char*, fhandle_t*);
+    int mount(const char*, const char*, int, void*);
+    //int nmount(iovec*, uint, int);
+    int statfs(const char*, statfs_t*);
+    int unmount(const char*, int);
+    //int getvfsbyname(const char*, xvfsconf*);
+}
+else
+{
+    static if (__FreeBSD_version >= 1200000)
+    {
+        pragma(mangle, "fhstat@FBSD_1.5")     int fhstat(const fhandle_t*, stat_t*);
+        pragma(mangle, "fhstatfs@FBSD_1.5")   int fhstatfs(const fhandle_t*, statfs_t*);
+        pragma(mangle, "fstatfs@FBSD_1.5")    int fstatfs(int, statfs_t*);
+        pragma(mangle, "getfsstat@FBSD_1.5")  int getfsstat(statfs_t*, c_long, int);
+        pragma(mangle, "getmntinfo@FBSD_1.5") int getmntinfo(statfs_t**, int);
+        pragma(mangle, "statfs@FBSD_1.5")     int statfs(const char*, statfs_t*);
+    }
+    else
+    {
+        pragma(mangle, "fhstat@FBSD_1.0")     int fhstat(const fhandle_t*, stat_t*);
+        pragma(mangle, "fhstatfs@FBSD_1.0")   int fhstatfs(const fhandle_t*, statfs_t*);
+        pragma(mangle, "fstatfs@FBSD_1.0")    int fstatfs(int, statfs_t*);
+        pragma(mangle, "getfsstat@FBSD_1.0")  int getfsstat(statfs_t*, c_long, int);
+        pragma(mangle, "getmntinfo@FBSD_1.0") int getmntinfo(statfs_t**, int);
+        pragma(mangle, "statfs@FBSD_1.0")     int statfs(const char*, statfs_t*);
+    }
+    pragma(mangle, "fhopen@@FBSD_1.0")        int fhopen(const fhandle_t*, int);
+    pragma(mangle, "getfh@@FBSD_1.0")         int getfh(const char*, fhandle_t*);
+    pragma(mangle, "lgetfh@@FBSD_1.0")        int lgetfh(const char*, fhandle_t*);
+    pragma(mangle, "mount@@FBSD_1.0")         int mount(const char*, const char*, int, void*);
+    //int nmount(iovec*, uint, int);
+    pragma(mangle, "unmount@@FBSD_1.0")       int unmount(const char*, int);
+    //int getvfsbyname(const char*, xvfsconf*);
+}

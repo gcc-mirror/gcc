@@ -1020,15 +1020,6 @@ procedure Gnat1drv is
       --  by the backend where possible).
 
       Sem_Ch13.Validate_Address_Clauses;
-
-      --  Validate independence pragmas (again using values annotated by the
-      --  back end for component layout where possible) but only for non-GCC
-      --  back ends, as this is done a priori for GCC back ends.
-      --  ??? We use to test for AAMP_On_Target which is now gone, consider
-      --
-      --  if AAMP_On_Target then
-      --     Sem_Ch13.Validate_Independence;
-      --  end if;
    end Post_Compilation_Validation_Checks;
 
    -----------------------------------

@@ -11,6 +11,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <sys/types.h>
 #include <dirent.h>
 #include <errno.h>
@@ -336,6 +337,9 @@ enum {
 #endif
 #ifdef BIOCVERSION
   BIOCVERSION_val = BIOCVERSION,
+#endif
+#ifdef SO_RCVTIMEO
+  SO_RCVTIMEO_val = SO_RCVTIMEO,
 #endif
 };
 

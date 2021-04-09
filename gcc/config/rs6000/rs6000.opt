@@ -1,6 +1,6 @@
 ; Options for the rs6000 port of the compiler
 ;
-; Copyright (C) 2005-2020 Free Software Foundation, Inc.
+; Copyright (C) 2005-2021 Free Software Foundation, Inc.
 ; Contributed by Aldy Hernandez <aldy@quesejoda.com>.
 ;
 ; This file is part of GCC.
@@ -117,31 +117,31 @@ mpowerpc
 Target RejectNegative Undocumented Ignore
 
 mpowerpc64
-Target Report Mask(POWERPC64) Var(rs6000_isa_flags)
+Target Mask(POWERPC64) Var(rs6000_isa_flags)
 Use PowerPC-64 instruction set.
 
 mpowerpc-gpopt
-Target Report Mask(PPC_GPOPT) Var(rs6000_isa_flags)
+Target Mask(PPC_GPOPT) Var(rs6000_isa_flags)
 Use PowerPC General Purpose group optional instructions.
 
 mpowerpc-gfxopt
-Target Report Mask(PPC_GFXOPT) Var(rs6000_isa_flags)
+Target Mask(PPC_GFXOPT) Var(rs6000_isa_flags)
 Use PowerPC Graphics group optional instructions.
 
 mmfcrf
-Target Report Mask(MFCRF) Var(rs6000_isa_flags)
+Target Mask(MFCRF) Var(rs6000_isa_flags)
 Use PowerPC V2.01 single field mfcr instruction.
 
 mpopcntb
-Target Report Mask(POPCNTB) Var(rs6000_isa_flags)
+Target Mask(POPCNTB) Var(rs6000_isa_flags)
 Use PowerPC V2.02 popcntb instruction.
 
 mfprnd
-Target Report Mask(FPRND) Var(rs6000_isa_flags)
+Target Mask(FPRND) Var(rs6000_isa_flags)
 Use PowerPC V2.02 floating point rounding instructions.
 
 mcmpb
-Target Report Mask(CMPB) Var(rs6000_isa_flags)
+Target Mask(CMPB) Var(rs6000_isa_flags)
 Use PowerPC V2.05 compare bytes instruction.
 
 ;; This option existed in the past, but now is always off.
@@ -152,27 +152,27 @@ mmfpgpr
 Target RejectNegative Undocumented WarnRemoved
 
 maltivec
-Target Report Mask(ALTIVEC) Var(rs6000_isa_flags)
+Target Mask(ALTIVEC) Var(rs6000_isa_flags)
 Use AltiVec instructions.
 
 mfold-gimple
-Target Report Var(rs6000_fold_gimple) Init(1)
+Target Var(rs6000_fold_gimple) Init(1)
 Enable early gimple folding of builtins.
 
 mhard-dfp
-Target Report Mask(DFP) Var(rs6000_isa_flags)
+Target Mask(DFP) Var(rs6000_isa_flags)
 Use decimal floating point instructions.
 
 mmulhw
-Target Report Mask(MULHW) Var(rs6000_isa_flags)
+Target Mask(MULHW) Var(rs6000_isa_flags)
 Use 4xx half-word multiply instructions.
 
 mdlmzb
-Target Report Mask(DLMZB) Var(rs6000_isa_flags)
+Target Mask(DLMZB) Var(rs6000_isa_flags)
 Use 4xx string-search dlmzb instruction.
 
 mmultiple
-Target Report Mask(MULTIPLE) Var(rs6000_isa_flags)
+Target Mask(MULTIPLE) Var(rs6000_isa_flags)
 Generate load/store multiple instructions.
 
 ;; This option existed in the past, but now is always off.
@@ -183,19 +183,19 @@ mstring
 Target RejectNegative Undocumented WarnRemoved
 
 msoft-float
-Target Report RejectNegative Mask(SOFT_FLOAT) Var(rs6000_isa_flags)
+Target RejectNegative Mask(SOFT_FLOAT) Var(rs6000_isa_flags)
 Do not use hardware floating point.
 
 mhard-float
-Target Report RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT) Var(rs6000_isa_flags)
+Target RejectNegative InverseMask(SOFT_FLOAT, HARD_FLOAT) Var(rs6000_isa_flags)
 Use hardware floating point.
 
 mpopcntd
-Target Report Mask(POPCNTD) Var(rs6000_isa_flags)
+Target Mask(POPCNTD) Var(rs6000_isa_flags)
 Use PowerPC V2.06 popcntd instruction.
 
 mfriz
-Target Report Var(TARGET_FRIZ) Init(-1) Save
+Target Var(TARGET_FRIZ) Init(-1) Save
 Under -ffast-math, generate a FRIZ instruction for (double)(long long) conversions.
 
 mveclibabi=
@@ -203,11 +203,11 @@ Target RejectNegative Joined Var(rs6000_veclibabi_name)
 Vector library ABI to use.
 
 mvsx
-Target Report Mask(VSX) Var(rs6000_isa_flags)
+Target Mask(VSX) Var(rs6000_isa_flags)
 Use vector/scalar (VSX) instructions.
 
 mvsx-align-128
-Target Undocumented Report Var(TARGET_VSX_ALIGN_128) Save
+Target Undocumented Var(TARGET_VSX_ALIGN_128) Save
 ; If -mvsx, set alignment to 128 bits instead of 32/64
 
 mallow-movmisalign
@@ -215,74 +215,74 @@ Target Undocumented Var(TARGET_ALLOW_MOVMISALIGN) Init(-1) Save
 ; Allow the movmisalign in DF/DI vectors
 
 mefficient-unaligned-vsx
-Target Undocumented Report Mask(EFFICIENT_UNALIGNED_VSX) Var(rs6000_isa_flags)
+Target Undocumented Mask(EFFICIENT_UNALIGNED_VSX) Var(rs6000_isa_flags)
 ; Consider unaligned VSX vector and fp accesses to be efficient
 
 msched-groups
-Target Undocumented Report Var(TARGET_SCHED_GROUPS) Init(-1) Save
+Target Undocumented Var(TARGET_SCHED_GROUPS) Init(-1) Save
 ; Explicitly set rs6000_sched_groups
 
 malways-hint
-Target Undocumented Report Var(TARGET_ALWAYS_HINT) Init(-1) Save
+Target Undocumented Var(TARGET_ALWAYS_HINT) Init(-1) Save
 ; Explicitly set rs6000_always_hint
 
 malign-branch-targets
-Target Undocumented Report Var(TARGET_ALIGN_BRANCH_TARGETS) Init(-1) Save
+Target Undocumented Var(TARGET_ALIGN_BRANCH_TARGETS) Init(-1) Save
 ; Explicitly set rs6000_align_branch_targets
 
 mno-update
-Target Report RejectNegative Mask(NO_UPDATE) Var(rs6000_isa_flags)
+Target RejectNegative Mask(NO_UPDATE) Var(rs6000_isa_flags)
 Do not generate load/store with update instructions.
 
 mupdate
-Target Report RejectNegative InverseMask(NO_UPDATE, UPDATE) Var(rs6000_isa_flags)
+Target RejectNegative InverseMask(NO_UPDATE, UPDATE) Var(rs6000_isa_flags)
 Generate load/store with update instructions.
 
 msingle-pic-base
-Target Report Var(TARGET_SINGLE_PIC_BASE) Init(0)
+Target Var(TARGET_SINGLE_PIC_BASE) Init(0)
 Do not load the PIC register in function prologues.
 
 mavoid-indexed-addresses
-Target Report Var(TARGET_AVOID_XFORM) Init(-1) Save
+Target Var(TARGET_AVOID_XFORM) Init(-1) Save
 Avoid generation of indexed load/store instructions when possible.
 
 msched-epilog
 Target Undocumented Var(TARGET_SCHED_PROLOG) Init(1) Save
 
 msched-prolog
-Target Report Var(TARGET_SCHED_PROLOG) Save
+Target Var(TARGET_SCHED_PROLOG) Save
 Schedule the start and end of the procedure.
 
 maix-struct-return
-Target Report RejectNegative Var(aix_struct_return) Save
+Target RejectNegative Var(aix_struct_return) Save
 Return all structures in memory (AIX default).
 
 msvr4-struct-return
-Target Report RejectNegative Var(aix_struct_return,0) Save
+Target RejectNegative Var(aix_struct_return,0) Save
 Return small structures in registers (SVR4 default).
 
 mxl-compat
-Target Report Var(TARGET_XL_COMPAT) Save
+Target Var(TARGET_XL_COMPAT) Save
 Conform more closely to IBM XLC semantics.
 
 mrecip
-Target Report
+Target
 Generate software reciprocal divide and square root for better throughput.
 
 mrecip=
-Target Report RejectNegative Joined Var(rs6000_recip_name)
+Target RejectNegative Joined Var(rs6000_recip_name)
 Generate software reciprocal divide and square root for better throughput.
 
 mrecip-precision
-Target Report Mask(RECIP_PRECISION) Var(rs6000_isa_flags)
+Target Mask(RECIP_PRECISION) Var(rs6000_isa_flags)
 Assume that the reciprocal estimate instructions provide more accuracy.
 
 mno-fp-in-toc
-Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC) Save
+Target RejectNegative Var(TARGET_NO_FP_IN_TOC) Save
 Do not place floating point constants in TOC.
 
 mfp-in-toc
-Target Report RejectNegative Var(TARGET_NO_FP_IN_TOC,0) Save
+Target RejectNegative Var(TARGET_NO_FP_IN_TOC,0) Save
 Place floating point constants in TOC.
 
 mno-sum-in-toc
@@ -301,15 +301,15 @@ Place symbol+offset constants in TOC.
 ;   This is at the cost of having 2 extra loads and one extra store per
 ;   function, and one less allocable register.
 mminimal-toc
-Target Report Mask(MINIMAL_TOC) Var(rs6000_isa_flags)
+Target Mask(MINIMAL_TOC) Var(rs6000_isa_flags)
 Use only one TOC entry per procedure.
 
 mfull-toc
-Target Report
+Target
 Put everything in the regular TOC.
 
 mvrsave
-Target Report Var(TARGET_ALTIVEC_VRSAVE) Save
+Target Var(TARGET_ALTIVEC_VRSAVE) Save
 Generate VRSAVE instructions when generating AltiVec code.
 
 mvrsave=no
@@ -321,11 +321,11 @@ Target RejectNegative Alias(mvrsave) Warn(%<-mvrsave=yes%> is deprecated; use %<
 Deprecated option.  Use -mvrsave instead.
 
 mblock-move-inline-limit=
-Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined UInteger Save
+Target Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined UInteger Save
 Max number of bytes to move inline.
 
 mblock-ops-unaligned-vsx
-Target Report Mask(BLOCK_OPS_UNALIGNED_VSX) Var(rs6000_isa_flags)
+Target Mask(BLOCK_OPS_UNALIGNED_VSX) Var(rs6000_isa_flags)
 Generate unaligned VSX load/store for inline expansion of memcpy/memmove.
 
 mblock-ops-vector-pair
@@ -333,25 +333,26 @@ Target Undocumented Mask(BLOCK_OPS_VECTOR_PAIR) Var(rs6000_isa_flags)
 Generate unaligned VSX vector pair load/store for inline expansion of memcpy/memmove.
 
 mblock-compare-inline-limit=
-Target Report Var(rs6000_block_compare_inline_limit) Init(63) RejectNegative Joined UInteger Save
+Target Var(rs6000_block_compare_inline_limit) Init(63) RejectNegative Joined UInteger Save
 Max number of bytes to compare without loops.
 
 mblock-compare-inline-loop-limit=
-Target Report Var(rs6000_block_compare_inline_loop_limit) Init(-1) RejectNegative Joined UInteger Save
+Target Var(rs6000_block_compare_inline_loop_limit) Init(-1) RejectNegative Joined UInteger Save
 Max number of bytes to compare with loops.
 
 mstring-compare-inline-limit=
-Target Report Var(rs6000_string_compare_inline_limit) Init(64) RejectNegative Joined UInteger Save
+Target Var(rs6000_string_compare_inline_limit) Init(64) RejectNegative Joined UInteger Save
 Max number of bytes to compare.
 
 misel
-Target Report Mask(ISEL) Var(rs6000_isa_flags)
+Target Mask(ISEL) Var(rs6000_isa_flags)
 Generate isel instructions.
 
 mdebug=
 Target RejectNegative Joined
 -mdebug=	Enable debug output.
 
+; Altivec ABI
 mabi=altivec
 Target RejectNegative Var(rs6000_altivec_abi) Save
 Use the AltiVec ABI extensions.
@@ -360,6 +361,16 @@ mabi=no-altivec
 Target RejectNegative Var(rs6000_altivec_abi, 0)
 Do not use the AltiVec ABI extensions.
 
+; AIX Extended vector ABI
+mabi=vec-extabi
+Target RejectNegative Var(rs6000_aix_extabi, 1) Save
+Use the AIX Vector Extended ABI.
+
+mabi=vec-default
+Target RejectNegative Var(rs6000_aix_extabi, 0)
+Do not use the AIX Vector Extended ABI.
+
+; PPC64 Linux ELF ABI
 mabi=elfv1
 Target RejectNegative Var(rs6000_elf_abi, 1) Save
 Use the ELFv1 ABI.
@@ -409,7 +420,7 @@ EnumValue
 Enum(rs6000_traceback_type) String(no) Value(traceback_none)
 
 mlongcall
-Target Report Var(rs6000_default_long_calls) Save
+Target Var(rs6000_default_long_calls) Save
 Avoid all range limits on call instructions.
 
 ; This option existed in the past, but now is always on.
@@ -456,11 +467,11 @@ Target RejectNegative Joined UInteger Var(rs6000_sched_restricted_insns_priority
 Specify scheduling priority for dispatch slot restricted insns.
 
 mpointers-to-nested-functions
-Target Report Var(TARGET_POINTERS_TO_NESTED_FUNCTIONS) Init(1) Save
+Target Var(TARGET_POINTERS_TO_NESTED_FUNCTIONS) Init(1) Save
 Use r11 to hold the static link in calls to functions via pointers.
 
 msave-toc-indirect
-Target Report Mask(SAVE_TOC_INDIRECT) Var(rs6000_isa_flags)
+Target Mask(SAVE_TOC_INDIRECT) Var(rs6000_isa_flags)
 Save the TOC in the prologue for indirect calls rather than inline.
 
 ; This option existed in the past, but now is always the same as -mvsx.
@@ -468,7 +479,7 @@ mvsx-timode
 Target RejectNegative Undocumented Ignore
 
 mpower8-fusion
-Target Report Mask(P8_FUSION) Var(rs6000_isa_flags)
+Target Mask(P8_FUSION) Var(rs6000_isa_flags)
 Fuse certain integer operations together for better performance on power8.
 
 mpower8-fusion-sign
@@ -476,30 +487,42 @@ Target Undocumented Mask(P8_FUSION_SIGN) Var(rs6000_isa_flags)
 Allow sign extension in fusion operations.
 
 mpower8-vector
-Target Report Mask(P8_VECTOR) Var(rs6000_isa_flags)
+Target Mask(P8_VECTOR) Var(rs6000_isa_flags)
 Use vector and scalar instructions added in ISA 2.07.
 
+mpower10-fusion
+Target Mask(P10_FUSION) Var(rs6000_isa_flags)
+Fuse certain integer operations together for better performance on power10.
+
+mpower10-fusion-ld-cmpi
+Target Undocumented Mask(P10_FUSION_LD_CMPI) Var(rs6000_isa_flags)
+Fuse certain integer operations together for better performance on power10.
+
+mpower10-fusion-2logical
+Target Undocumented Mask(P10_FUSION_2LOGICAL) Var(rs6000_isa_flags)
+Fuse certain integer operations together for better performance on power10.
+
 mcrypto
-Target Report Mask(CRYPTO) Var(rs6000_isa_flags)
+Target Mask(CRYPTO) Var(rs6000_isa_flags)
 Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions.
 
 mdirect-move
 Target Undocumented Mask(DIRECT_MOVE) Var(rs6000_isa_flags) WarnRemoved
 
 mhtm
-Target Report Mask(HTM) Var(rs6000_isa_flags)
+Target Mask(HTM) Var(rs6000_isa_flags)
 Use ISA 2.07 transactional memory (HTM) instructions.
 
 mquad-memory
-Target Report Mask(QUAD_MEMORY) Var(rs6000_isa_flags)
+Target Mask(QUAD_MEMORY) Var(rs6000_isa_flags)
 Generate the quad word memory instructions (lq/stq).
 
 mquad-memory-atomic
-Target Report Mask(QUAD_MEMORY_ATOMIC) Var(rs6000_isa_flags)
+Target Mask(QUAD_MEMORY_ATOMIC) Var(rs6000_isa_flags)
 Generate the quad word memory atomic instructions (lqarx/stqcx).
 
 mcompat-align-parm
-Target Report Var(rs6000_compat_align_parm) Init(0) Save
+Target Var(rs6000_compat_align_parm) Init(0) Save
 Generate aggregate parameter passing code with at most 64-bit alignment.
 
 moptimize-swaps
@@ -511,11 +534,11 @@ Target Undocumented Var(unroll_only_small_loops) Init(0) Save
 ; Use conservative small loop unrolling.
 
 mpower9-misc
-Target Undocumented Report Mask(P9_MISC) Var(rs6000_isa_flags)
+Target Undocumented Mask(P9_MISC) Var(rs6000_isa_flags)
 Use certain scalar instructions added in ISA 3.0.
 
 mpower9-vector
-Target Undocumented Report Mask(P9_VECTOR) Var(rs6000_isa_flags)
+Target Undocumented Mask(P9_VECTOR) Var(rs6000_isa_flags)
 Use vector instructions added in ISA 3.0.
 
 mpower9-minmax
@@ -527,15 +550,15 @@ Target Undocumented Mask(TOC_FUSION) Var(rs6000_isa_flags)
 Fuse medium/large code model toc references with the memory instruction.
 
 mmodulo
-Target Undocumented Report Mask(MODULO) Var(rs6000_isa_flags)
+Target Undocumented Mask(MODULO) Var(rs6000_isa_flags)
 Generate the integer modulo instructions.
 
 mfloat128
-Target Report Mask(FLOAT128_KEYWORD) Var(rs6000_isa_flags)
+Target Mask(FLOAT128_KEYWORD) Var(rs6000_isa_flags)
 Enable IEEE 128-bit floating point via the __float128 keyword.
 
 mfloat128-hardware
-Target Report Mask(FLOAT128_HW) Var(rs6000_isa_flags)
+Target Mask(FLOAT128_HW) Var(rs6000_isa_flags)
 Enable using IEEE 128-bit floating point instructions.
 
 mfloat128-convert
@@ -579,15 +602,19 @@ mpower10
 Target Undocumented Mask(POWER10) Var(rs6000_isa_flags) WarnRemoved
 
 mprefixed
-Target Report Mask(PREFIXED) Var(rs6000_isa_flags)
+Target Mask(PREFIXED) Var(rs6000_isa_flags)
 Generate (do not generate) prefixed memory instructions.
 
 mpcrel
-Target Report Mask(PCREL) Var(rs6000_isa_flags)
+Target Mask(PCREL) Var(rs6000_isa_flags)
 Generate (do not generate) pc-relative memory addressing.
 
+mpcrel-opt
+Target Undocumented Mask(PCREL_OPT) Var(rs6000_isa_flags)
+Generate (do not generate) pc-relative memory optimizations for externals.
+
 mmma
-Target Report Mask(MMA) Var(rs6000_isa_flags)
+Target Mask(MMA) Var(rs6000_isa_flags)
 Generate (do not generate) MMA instructions.
 
 mrelative-jumptables

@@ -1,5 +1,5 @@
 /* Exported functions from emit-rtl.c
-   Copyright (C) 2004-2020 Free Software Foundation, Inc.
+   Copyright (C) 2004-2021 Free Software Foundation, Inc.
 
 This file is part of GCC.
 
@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 class temp_slot;
 typedef class temp_slot *temp_slot_p;
 class predefined_function_abi;
+namespace rtl_ssa { class function_info; }
 
 /* Information mainlined about RTL representation of incoming arguments.  */
 struct GTY(()) incoming_args {
@@ -72,6 +73,8 @@ struct GTY(()) rtl_data {
      Other functions (including those called by this function) might use
      different ABIs.  */
   const predefined_function_abi *GTY((skip)) abi;
+
+  rtl_ssa::function_info *GTY((skip)) ssa;
 
   /* For function.c  */
 

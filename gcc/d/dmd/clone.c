@@ -1,6 +1,6 @@
 
 /* Compiler implementation of the D programming language
- * Copyright (C) 1999-2020 by The D Language Foundation, All Rights Reserved
+ * Copyright (C) 1999-2021 by The D Language Foundation, All Rights Reserved
  * written by Walter Bright
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
@@ -22,8 +22,6 @@
 #include "init.h"
 #include "template.h"
 #include "tokens.h"
-
-Expression *semantic(Expression *e, Scope *sc);
 
 /*******************************************
  * Merge function attributes pure, nothrow, @safe, @nogc, and @disable
@@ -244,7 +242,7 @@ FuncDeclaration *buildOpAssign(StructDeclaration *sd, Scope *sc)
     }
 
     Parameters *fparams = new Parameters;
-    fparams->push(new Parameter(STCnodtor, sd->type, Id::p, NULL));
+    fparams->push(new Parameter(STCnodtor, sd->type, Id::p, NULL, NULL));
     TypeFunction *tf = new TypeFunction(ParameterList(fparams), sd->handleType(), LINKd, stc | STCref);
 
     FuncDeclaration *fop = new FuncDeclaration(declLoc, Loc(), Id::assign, stc, tf);
@@ -326,8 +324,8 @@ FuncDeclaration *buildOpAssign(StructDeclaration *sd, Scope *sc)
     sc2->stc = 0;
     sc2->linkage = LINKd;
 
-    fop->semantic(sc2);
-    fop->semantic2(sc2);
+    dsymbolSemantic(fop, sc2);
+    semantic2(fop, sc2);
     // Bugzilla 15044: fop->semantic3 isn't run here for lazy forward reference resolution.
 
     sc2->pop();
@@ -503,10 +501,10 @@ FuncDeclaration *buildXopEquals(StructDeclaration *sd, Scope *sc)
                 /* const bool opEquals(ref const S s);
                  */
                 Parameters *parameters = new Parameters;
-                parameters->push(new Parameter(STCref | STCconst, sd->type, NULL, NULL));
+                parameters->push(new Parameter(STCref | STCconst, sd->type, NULL, NULL, NULL));
                 tfeqptr = new TypeFunction(ParameterList(parameters), Type::tbool, LINKd);
                 tfeqptr->mod = MODconst;
-                tfeqptr = (TypeFunction *)tfeqptr->semantic(Loc(), &scx);
+                tfeqptr = (TypeFunction *)typeSemantic(tfeqptr, Loc(), &scx);
             }
             fd = fd->overloadExactMatch(tfeqptr);
             if (fd)
@@ -521,7 +519,7 @@ FuncDeclaration *buildXopEquals(StructDeclaration *sd, Scope *sc)
         Expression *e = new IdentifierExp(sd->loc, Id::empty);
         e = new DotIdExp(sd->loc, e, Id::object);
         e = new DotIdExp(sd->loc, e, id);
-        e = semantic(e, sc);
+        e = expressionSemantic(e, sc);
         Dsymbol *s = getDsymbol(e);
         assert(s);
         sd->xerreq = s->isFuncDeclaration();
@@ -531,8 +529,8 @@ FuncDeclaration *buildXopEquals(StructDeclaration *sd, Scope *sc)
     Loc loc = Loc();        // loc is unnecessary so errors are gagged
 
     Parameters *parameters = new Parameters;
-    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL));
-    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::q, NULL));
+    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL, NULL));
+    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::q, NULL, NULL));
     TypeFunction *tf = new TypeFunction(ParameterList(parameters), Type::tbool, LINKd);
 
     Identifier *id = Id::xopEquals;
@@ -549,8 +547,8 @@ FuncDeclaration *buildXopEquals(StructDeclaration *sd, Scope *sc)
     sc2->stc = 0;
     sc2->linkage = LINKd;
 
-    fop->semantic(sc2);
-    fop->semantic2(sc2);
+    dsymbolSemantic(fop, sc2);
+    semantic2(fop, sc2);
 
     sc2->pop();
     if (global.endGagging(errors))    // if errors happened
@@ -583,10 +581,10 @@ FuncDeclaration *buildXopCmp(StructDeclaration *sd, Scope *sc)
                 /* const int opCmp(ref const S s);
                  */
                 Parameters *parameters = new Parameters;
-                parameters->push(new Parameter(STCref | STCconst, sd->type, NULL, NULL));
+                parameters->push(new Parameter(STCref | STCconst, sd->type, NULL, NULL, NULL));
                 tfcmpptr = new TypeFunction(ParameterList(parameters), Type::tint32, LINKd);
                 tfcmpptr->mod = MODconst;
-                tfcmpptr = (TypeFunction *)tfcmpptr->semantic(Loc(), &scx);
+                tfcmpptr = (TypeFunction *)typeSemantic(tfcmpptr, Loc(), &scx);
             }
             fd = fd->overloadExactMatch(tfcmpptr);
             if (fd)
@@ -606,7 +604,7 @@ FuncDeclaration *buildXopCmp(StructDeclaration *sd, Scope *sc)
         Expression *e = new IdentifierExp(sd->loc, Id::empty);
         e = new DotIdExp(sd->loc, e, Id::object);
         e = new DotIdExp(sd->loc, e, id);
-        e = semantic(e, sc);
+        e = expressionSemantic(e, sc);
         Dsymbol *s = getDsymbol(e);
         assert(s);
         sd->xerrcmp = s->isFuncDeclaration();
@@ -616,8 +614,8 @@ FuncDeclaration *buildXopCmp(StructDeclaration *sd, Scope *sc)
     Loc loc = Loc();        // loc is unnecessary so errors are gagged
 
     Parameters *parameters = new Parameters;
-    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL));
-    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::q, NULL));
+    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL, NULL));
+    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::q, NULL, NULL));
     TypeFunction *tf = new TypeFunction(ParameterList(parameters), Type::tint32, LINKd);
 
     Identifier *id = Id::xopCmp;
@@ -638,8 +636,8 @@ FuncDeclaration *buildXopCmp(StructDeclaration *sd, Scope *sc)
     sc2->stc = 0;
     sc2->linkage = LINKd;
 
-    fop->semantic(sc2);
-    fop->semantic2(sc2);
+    dsymbolSemantic(fop, sc2);
+    semantic2(fop, sc2);
 
     sc2->pop();
     if (global.endGagging(errors))    // if errors happened
@@ -738,7 +736,7 @@ FuncDeclaration *buildXtoHash(StructDeclaration *sd, Scope *sc)
     Loc loc = Loc();        // internal code should have no loc to prevent coverage
 
     Parameters *parameters = new Parameters();
-    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL));
+    parameters->push(new Parameter(STCref | STCconst, sd->type, Id::p, NULL, NULL));
     TypeFunction *tf = new TypeFunction(ParameterList(parameters), Type::thash_t,
                                         LINKd, STCnothrow | STCtrusted);
 
@@ -762,8 +760,8 @@ FuncDeclaration *buildXtoHash(StructDeclaration *sd, Scope *sc)
     sc2->stc = 0;
     sc2->linkage = LINKd;
 
-    fop->semantic(sc2);
-    fop->semantic2(sc2);
+    dsymbolSemantic(fop, sc2);
+    semantic2(fop, sc2);
 
     sc2->pop();
 
@@ -927,7 +925,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
         dd->fbody = (stc & STCdisable) ? NULL : new CompoundStatement(loc, a);
         sd->postblits.shift(dd);
         sd->members->push(dd);
-        dd->semantic(sc);
+        dsymbolSemantic(dd, sc);
     }
 
     FuncDeclaration *xpostblit = NULL;
@@ -961,7 +959,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
             dd->storage_class |= STCinference;
             dd->fbody = new ExpStatement(loc, e);
             sd->members->push(dd);
-            dd->semantic(sc);
+            dsymbolSemantic(dd, sc);
             xpostblit = dd;
             break;
     }
@@ -969,7 +967,7 @@ FuncDeclaration *buildPostBlit(StructDeclaration *sd, Scope *sc)
     if (xpostblit)
     {
         AliasDeclaration *alias = new AliasDeclaration(Loc(), Id::__xpostblit, xpostblit);
-        alias->semantic(sc);
+        dsymbolSemantic(alias, sc);
         sd->members->push(alias);
         alias->addMember(sc, sd); // add to symbol table
     }
@@ -1074,7 +1072,7 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc)
         dd->fbody = new ExpStatement(loc, e);
         ad->dtors.shift(dd);
         ad->members->push(dd);
-        dd->semantic(sc);
+        dsymbolSemantic(dd, sc);
     }
 
     FuncDeclaration *xdtor = NULL;
@@ -1109,7 +1107,7 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc)
             dd->storage_class |= STCinference;
             dd->fbody = new ExpStatement(loc, e);
             ad->members->push(dd);
-            dd->semantic(sc);
+            dsymbolSemantic(dd, sc);
             xdtor = dd;
             break;
     }
@@ -1117,7 +1115,7 @@ FuncDeclaration *buildDtor(AggregateDeclaration *ad, Scope *sc)
     if (xdtor)
     {
         AliasDeclaration *alias = new AliasDeclaration(Loc(), Id::__xdtor, xdtor);
-        alias->semantic(sc);
+        dsymbolSemantic(alias, sc);
         ad->members->push(alias);
         alias->addMember(sc, ad); // add to symbol table
     }
@@ -1175,7 +1173,7 @@ FuncDeclaration *buildInv(AggregateDeclaration *ad, Scope *sc)
             inv = new InvariantDeclaration(declLoc, Loc(), stc | stcx, Id::classInvariant);
             inv->fbody = new ExpStatement(loc, e);
             ad->members->push(inv);
-            inv->semantic(sc);
+            dsymbolSemantic(inv, sc);
             return inv;
     }
 }

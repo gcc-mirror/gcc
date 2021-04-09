@@ -1,4 +1,4 @@
-# Copyright (C) 2001-2020 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -456,6 +456,7 @@ proc profopt-execute { src } {
 		set id [remote_spawn "" $cmd]
 		if { $id < 0 } {
 		    unsupported "$testcase -fauto-profile: cannot run create_gcov"
+		    unset testname_with_flags
 		    set status "fail"
 		    return
 		}

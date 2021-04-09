@@ -3182,6 +3182,7 @@ MacroExpander::expand_cfg_macro (AST::MacroInvocData &invoc)
     return AST::Literal ("false", AST::Literal::BOOL, CORETYPE_BOOL);
 }
 
+#if 0
 AST::ASTFragment
 MacroExpander::expand_decl_macro (AST::MacroInvocData &invoc,
 				  AST::MacroRulesDefinition &rules_def)
@@ -3225,6 +3226,7 @@ MacroExpander::expand_decl_macro (AST::MacroInvocData &invoc,
    * all the time, while still allowing the heterogenous storage of token trees.
    */
 }
+#endif
 
 void
 MacroExpander::expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc)
@@ -3329,7 +3331,7 @@ MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
 void
 MacroExpander::expand_cfg_attrs (std::vector<AST::Attribute> &attrs)
 {
-  for (std::size_t i = 0; i < attrs.size ();)
+  for (std::size_t i = 0; i < attrs.size (); i++)
     {
       auto &attr = attrs[i];
       if (attr.get_path () == "cfg_attr")
