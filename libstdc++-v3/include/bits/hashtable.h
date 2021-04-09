@@ -1283,8 +1283,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       _H1, _H2, _Hash, _RehashPolicy, _Traits>::
     _Hashtable(_Hashtable&& __ht, __node_alloc_type&& __a,
 	       true_type /* alloc always equal */)
-    noexcept(std::is_nothrow_copy_constructible<_H1>::value &&
-	     std::is_nothrow_copy_constructible<_Equal>::value)
+    noexcept(_S_nothrow_move())
     : __hashtable_base(__ht),
       __map_base(__ht),
       __rehash_base(__ht),
