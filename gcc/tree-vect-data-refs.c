@@ -780,16 +780,20 @@ vect_slp_analyze_node_dependences (vec_info *vinfo, slp_tree node,
 		 stmt we have to resort to the alias oracle.  */
 	      stmt_vec_info stmt_info = vinfo->lookup_stmt (stmt);
 	      data_reference *dr_b = STMT_VINFO_DATA_REF (stmt_info);
-	      if (!dr_b)
+
+	      /* We are hoisting a load - this means we can use
+		 TBAA for disambiguation.  */
+	      if (!ref_initialized_p)
+		ao_ref_init (&ref, DR_REF (dr_a));
+	      if (stmt_may_clobber_ref_p_1 (stmt, &ref, true))
 		{
-		  /* We are hoisting a load - this means we can use
-		     TBAA for disambiguation.  */
-		  if (!ref_initialized_p)
-		    ao_ref_init (&ref, DR_REF (dr_a));
-		  if (stmt_may_clobber_ref_p_1 (stmt, &ref, true))
+		  if (!dr_b)
 		    return false;
-		  continue;
+		  /* Resort to dependence checking below.  */
 		}
+	      else
+		/* No dependence.  */
+		continue;
 
 	      bool dependent = false;
 	      /* If we run into a store of this same instance (we've just
