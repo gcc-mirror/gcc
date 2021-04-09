@@ -30,6 +30,13 @@
 #
 # Very similar to previous invocation, but instead of adding to known-to-fail,
 # '5' release is removed from all issues that have the regression prefix.
+# NOTE: If the version 5 is the only one in regression marker ([5 Regression] ...),
+# then the bug summary is not modified.
+#
+# NOTE: If we change target milestone in between releases and the PR does not
+# regress in the new branch, then target milestone change is skipped:
+#
+#  not changing target milestone: not a regression or does not regress with the new milestone
 #
 # $ ./maintainer-scripts/branch_changer.py api_key --add=7:8
 #
@@ -102,7 +109,7 @@ class Bug:
         new_summary = self.serialize_summary()
         if new_summary != summary:
             print(self.name())
-            print('  changing summary: "%s" to "%s"' % (summary, new_summary))
+            print('  changing summary to "%s"' % (new_summary))
             self.modify_bug(api_key, {'summary': new_summary}, doit)
 
             return True
