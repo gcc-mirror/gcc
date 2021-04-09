@@ -727,8 +727,7 @@ public:
 
     /* assuming you can't strip away the ArrayElems type, but can strip
      * internal expressions and whatever */
-    if (expr.has_array_elems ())
-      expr.get_array_elems ()->accept_vis (*this);
+    expr.get_array_elems ()->accept_vis (*this);
   }
   void visit (AST::ArrayIndexExpr &expr) override
   {
@@ -3264,8 +3263,8 @@ MacroExpander::expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc)
     // how would errors be signalled? null fragment? something else?
     // what about error vs just not having stuff in rules definition yet?
 
-    /* replace macro invocation with ast frag. actually, don't have any context here. maybe attach ast 
-     * frag to macro invocation, and then have a method above get it? Or just return the ast frag from 
+    /* replace macro invocation with ast frag. actually, don't have any context here. maybe attach ast
+     * frag to macro invocation, and then have a method above get it? Or just return the ast frag from
      * this method. */
   }
 #endif

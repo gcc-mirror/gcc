@@ -2165,10 +2165,7 @@ ArrayExpr::as_string () const
   str += append_attributes (inner_attrs, INNER);
 
   str += "\n Array elems: ";
-  if (!has_array_elems ())
-    str += "none";
-  else
-    str += internal_elements->as_string ();
+  str += internal_elements->as_string ();
 
   return str;
 }

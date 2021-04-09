@@ -154,7 +154,7 @@ public:
 
   BaseType *get_tyty () const;
 
-  static TyVar get_implict_infer_var ();
+  static TyVar get_implicit_infer_var ();
 
 private:
   HirId ref;
@@ -560,7 +560,7 @@ public:
     std::vector<SubstitutionArg> args;
     for (auto &sub : get_substs ())
       {
-	TyVar infer_var = TyVar::get_implict_infer_var ();
+	TyVar infer_var = TyVar::get_implicit_infer_var ();
 	args.push_back (SubstitutionArg (&sub, infer_var.get_tyty ()));
       }
 

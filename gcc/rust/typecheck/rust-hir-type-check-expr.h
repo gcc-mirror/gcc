@@ -35,6 +35,9 @@ class TypeCheckExpr : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
+  /* Perform type checking on expr. Also runs type unification algorithm.
+     Returns the unified type of expr.
+     `inside_loop` acts as a context for BreakExpr, etc. May change later. */
   static TyTy::BaseType *Resolve (HIR::Expr *expr, bool inside_loop)
   {
     TypeCheckExpr resolver (inside_loop);
@@ -682,6 +685,7 @@ public:
     HIR::ArrayElems *elements = expr.get_internal_elements ();
     size_t num_elems = elements->get_num_elements ();
 
+    // Check the type of array elements
     elements->accept_vis (*this);
     rust_assert (infered_array_elems != nullptr);
 
@@ -698,14 +702,16 @@ public:
       return true;
     });
 
-    infered_array_elems = types[0];
-    for (size_t i = 1; i < types.size (); i++)
-      {
-	infered_array_elems = infered_array_elems->unify (types.at (i));
-      }
+    infered_array_elems = TyTy::TyVar::get_implicit_infer_var ().get_tyty ();
 
+    for (auto &type : types)
+      {
+	infered_array_elems = infered_array_elems->unify (type);
+      }
     for (auto &elem : types)
-      infered_array_elems->append_reference (elem->get_ref ());
+      {
+	infered_array_elems->append_reference (elem->get_ref ());
+      }
   }
 
   void visit (HIR::ArrayElemsCopied &elems) override
@@ -991,7 +997,11 @@ private:
     gcc_unreachable ();
   }
 
+  /* The return value of TypeCheckExpr::Resolve */
   TyTy::BaseType *infered;
+
+  /* The return value of visit(ArrayElemsValues&) and visit(ArrayElemsCopied&)
+     Stores the type of array elements, if `expr` is ArrayExpr. */
   TyTy::BaseType *infered_array_elems;
 
   bool inside_loop;
