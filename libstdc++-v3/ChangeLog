@@ -1,3 +1,153 @@
+2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h: Tweak doxygen comment.
+
+2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::find): Define.
+	(split_view::_OuterIter::operator++): Apply proposed resolution
+	of LWG 3505.
+	* testsuite/std/ranges/adaptors/split.cc (test10): New test.
+
+2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::find_if): Simplify.
+	(__detail::find_if_not): Likewise.
+	(__detail::min): Remove.
+	(__detail::mismatch): Simplify.
+	(take_view::size): Use std::min instead of __detail::min.
+
+2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__returnable_element): New
+	concept.
+	(elements_view): Use this concept in its constraints.  Add
+	missing private access specifier.
+	(elements_view::_S_get_element): Define as per LWG 3502.
+	(elements_view::operator*, elements_view::operator[]): Use
+	_S_get_element.
+	(elements_view::operator++): Remove unnecessary constraint
+	as per LWG 3492.
+	* testsuite/std/ranges/adaptors/elements.cc (test05): New test.
+
+2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/Makefile.am (stamp-pdf-doxygen): Also grep for
+	out-of-memory error in log file.
+	* doc/Makefile.in: Regenerate.
+
+2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure: Regenerate.
+
+2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h: Fix doxygen group commands.
+	* include/bits/regex_constants.h: Likewise.
+	* include/tr1/random.h: Likewise.
+
+2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable::_S_nothrow_move()):
+	New function to determine noexcept-specifier for move
+	constructors.
+	(_Hashtable): Use _S_nothrow_move() on move constructors.
+	* testsuite/23_containers/unordered_map/cons/noexcept_move_construct.cc:
+	Correct static assertion message.
+	* testsuite/23_containers/unordered_multimap/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multiset/cons/noexcept_move_construct.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_set/cons/noexcept_move_construct.cc:
+	Likewise.
+
+2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/98384
+	* testsuite/20_util/to_chars/long_double.cc: Don't run the test
+	on targets without a large long double.  XFAIL the execution on
+	targets with a non-conforming printf.
+
+2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/99433
+	* include/std/ranges (__adaptor::__maybe_refwrap): Remove.
+	(__adaptor::__adaptor_invocable): New concept.
+	(__adaptor::__adaptor_partial_app_viable): New concept.
+	(__adaptor::_RangeAdaptorClosure): Rewrite, turning it into a
+	non-template base class.
+	(__adaptor::_RangeAdaptor): Rewrite, turning it into a CRTP base
+	class template.
+	(__adaptor::_Partial): New class template that represents
+	partial application of a range adaptor non-closure.
+	(__adaptor::__pipe_invocable): New concept.
+	(__adaptor::_Pipe): New class template.
+	(__detail::__can_ref_view): New concept.
+	(__detail::__can_subrange): New concept.
+	(all): Replace the lambda here with ...
+	(_All): ... this functor.  Add appropriate constraints.
+	(__detail::__can_filter_view): New concept.
+	(filter, _Filter): As in all/_All.
+	(__detail::__can_transform): New concept.
+	(transform, _Transform): As in all/_All.
+	(__detail::__can_take_view): New concept.
+	(take, _Take): As in all/_All.
+	(__detail::__can_take_while_view): New concept.
+	(take_while, _TakeWhile): As in all/_All.
+	(__detail::__can_drop_view): New concept.
+	(drop, _Drop): As in all/_All.
+	(__detail::__can_drop_while_view): New concept.
+	(drop_while, _DropWhile): As in all/_All.
+	(__detail::__can_join_view): New concept.
+	(join, _Join): As in all/_All.
+	(__detail::__can_split_view): New concept.
+	(split, _Split): As in all/_All.  Rename template parameter
+	_Fp to _Pattern.
+	(__detail::__already_common): New concept.
+	(__detail::__can_common_view): New concept.
+	(common, _Common): As in all/_All.
+	(__detail::__can_reverse_view): New concept.
+	(reverse, _Reverse): As in all/_All.
+	(__detail::__can_elements_view): New concept.
+	(elements, _Elements): As in all/_All.
+	(keys, values): Adjust.
+	* testsuite/std/ranges/adaptors/99433.cc: New test.
+	* testsuite/std/ranges/adaptors/all.cc: No longer expect that
+	adding empty range adaptor closure objects to a pipeline doesn't
+	increase the size of the pipeline.
+	(test05): New test.
+	* testsuite/std/ranges/adaptors/common.cc (test03): New test.
+	* testsuite/std/ranges/adaptors/drop.cc (test09): New test.
+	* testsuite/std/ranges/adaptors/drop_while.cc (test04): New test.
+	* testsuite/std/ranges/adaptors/elements.cc (test04): New test.
+	* testsuite/std/ranges/adaptors/filter.cc (test06): New test.
+	* testsuite/std/ranges/adaptors/join.cc (test09): New test.
+	* testsuite/std/ranges/adaptors/p2281.cc: New test.
+	* testsuite/std/ranges/adaptors/reverse.cc (test07): New test.
+	* testsuite/std/ranges/adaptors/split.cc (test01, test04):
+	Adjust.
+	(test09): New test.
+	* testsuite/std/ranges/adaptors/split_neg.cc (test01): Adjust
+	expected error message.
+	(test02): Likewise.  Extend test.
+	* testsuite/std/ranges/adaptors/take.cc (test06): New test.
+	* testsuite/std/ranges/adaptors/take_while.cc (test05): New test.
+	* testsuite/std/ranges/adaptors/transform.cc (test07, test08):
+	New test.
+
+2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/string_view: Adjust Doxygen @file comment.
+
+2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (is_scoped_enum<T>): Constrain partial
+	specialization to not match incomplete enum types. Use a
+	requires-expression instead of instantiating is_convertible.
+	(is_scoped_enum<const T>): Add as workaround for PR c++/99968.
+	* testsuite/20_util/is_scoped_enum/value.cc: Check with
+	incomplete types and opaque-enum-declarations.
+
 2021-04-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/99805

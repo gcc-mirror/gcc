@@ -1,3 +1,8 @@
+2021-04-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99883
+	* lto-lang.c (lto_post_options): Correct spelling.
+
 2021-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/99304

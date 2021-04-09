@@ -409,7 +409,7 @@ namespace regex_constants
 
   ///@}
 } // namespace regex_constants
-/* @} */ // group regex
+/// @} group regex
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

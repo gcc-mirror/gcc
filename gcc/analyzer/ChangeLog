@@ -1,3 +1,97 @@
+2021-04-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99042
+	PR analyzer/99774
+	* engine.cc
+	(impl_region_model_context::impl_region_model_context): Add
+	uncertainty param and use it to initialize m_uncertainty.
+	(impl_region_model_context::get_uncertainty): New.
+	(impl_sm_context::get_fndecl_for_call): Add NULL for new
+	uncertainty param when constructing impl_region_model_context.
+	(impl_sm_context::get_state): Likewise.
+	(impl_sm_context::set_next_state): Likewise.
+	(impl_sm_context::warn): Likewise.
+	(exploded_node::on_stmt): Add uncertainty param
+	and use it when constructing impl_region_model_context.
+	(exploded_node::on_edge): Add uncertainty param and pass
+	to on_edge call.
+	(exploded_node::detect_leaks): Create uncertainty_t and pass to
+	impl_region_model_context.
+	(exploded_graph::get_or_create_node): Create uncertainty_t and
+	pass to prune_for_point.
+	(maybe_process_run_of_before_supernode_enodes): Create
+	uncertainty_t and pass to impl_region_model_context.
+	(exploded_graph::process_node): Create uncertainty_t instances and
+	pass around as needed.
+	* exploded-graph.h
+	(impl_region_model_context::impl_region_model_context): Add
+	uncertainty param.
+	(impl_region_model_context::get_uncertainty): New decl.
+	(impl_region_model_context::m_uncertainty): New field.
+	(exploded_node::on_stmt): Add uncertainty param.
+	(exploded_node::on_edge): Likewise.
+	* program-state.cc (sm_state_map::on_liveness_change): Get
+	uncertainty from context and use it to unset sm-state from
+	svalues as appropriate.
+	(program_state::on_edge): Add uncertainty param and use it when
+	constructing impl_region_model_context.  Fix indentation.
+	(program_state::prune_for_point): Add uncertainty param and use it
+	when constructing impl_region_model_context.
+	(program_state::detect_leaks): Get any uncertainty from ctxt and
+	use it to get maybe-live svalues for dest_state, rather than
+	definitely-live ones; use this when determining which svalues
+	have leaked.
+	(selftest::test_program_state_merging): Create uncertainty_t and
+	pass to impl_region_model_context.
+	* program-state.h (program_state::on_edge): Add uncertainty param.
+	(program_state::prune_for_point): Likewise.
+	* region-model-impl-calls.cc (call_details::get_uncertainty): New.
+	(region_model::impl_call_memcpy): Pass uncertainty to
+	mark_region_as_unknown call.
+	(region_model::impl_call_memset): Likewise.
+	(region_model::impl_call_strcpy): Likewise.
+	* region-model-reachability.cc (reachable_regions::handle_sval):
+	Also add sval to m_mutable_svals.
+	* region-model.cc (region_model::on_assignment): Pass any
+	uncertainty from ctxt to the store::set_value call.
+	(region_model::handle_unrecognized_call): Get any uncertainty from
+	ctxt and use it to record mutable svalues at the unknown call.
+	(region_model::get_reachable_svalues): Add uncertainty param and
+	use it to mark any maybe-bound svalues as being reachable.
+	(region_model::set_value): Pass any uncertainty from ctxt to the
+	store::set_value call.
+	(region_model::mark_region_as_unknown): Add uncertainty param and
+	pass it on to the store::mark_region_as_unknown call.
+	(region_model::update_for_call_summary): Add uncertainty param and
+	pass it on to the region_model::mark_region_as_unknown call.
+	* region-model.h (call_details::get_uncertainty): New decl.
+	(region_model::get_reachable_svalues): Add uncertainty param.
+	(region_model::mark_region_as_unknown): Add uncertainty param.
+	(region_model_context::get_uncertainty): New vfunc.
+	(noop_region_model_context::get_uncertainty): New vfunc
+	implementation.
+	* store.cc (dump_svalue_set): New.
+	(uncertainty_t::dump_to_pp): New.
+	(uncertainty_t::dump): New.
+	(binding_cluster::clobber_region): Pass NULL for uncertainty to
+	remove_overlapping_bindings.
+	(binding_cluster::mark_region_as_unknown): Add uncertainty param
+	and pass it to remove_overlapping_bindings.
+	(binding_cluster::remove_overlapping_bindings): Add uncertainty param.
+	Use it to record any svalues that were in clobbered bindings.
+	(store::set_value): Add uncertainty param.  Pass it to
+	binding_cluster::mark_region_as_unknown when handling symbolic
+	regions.
+	(store::mark_region_as_unknown): Add uncertainty param and pass it
+	to binding_cluster::mark_region_as_unknown.
+	(store::remove_overlapping_bindings): Add uncertainty param and
+	pass it to binding_cluster::remove_overlapping_bindings.
+	* store.h (binding_cluster::mark_region_as_unknown): Add
+	uncertainty param.
+	(binding_cluster::remove_overlapping_bindings): Likewise.
+	(store::set_value): Likewise.
+	(store::mark_region_as_unknown): Likewise.
+
 2021-04-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99906

@@ -21285,14 +21285,14 @@ rs6000_xcoff_select_section (tree decl, int reloc,
 #if HAVE_AS_TLS
       if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
 	{
-	  if (TREE_PUBLIC (decl))
-	    return tls_data_section;
-	  else if (bss_initializer_p (decl))
+	  if (bss_initializer_p (decl))
 	    {
 	      /* Convert to COMMON to emit in BSS.  */
 	      DECL_COMMON (decl) = 1;
 	      return tls_comm_section;
 	    }
+	  else if (TREE_PUBLIC (decl))
+	    return tls_data_section;
 	  else
 	    return tls_private_data_section;
 	}

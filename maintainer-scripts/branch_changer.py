@@ -30,6 +30,13 @@
 #
 # Very similar to previous invocation, but instead of adding to known-to-fail,
 # '5' release is removed from all issues that have the regression prefix.
+# NOTE: If the version 5 is the only one in regression marker ([5 Regression] ...),
+# then the bug summary is not modified.
+#
+# NOTE: If we change target milestone in between releases and the PR does not
+# regress in the new branch, then target milestone change is skipped:
+#
+#  not changing target milestone: not a regression or does not regress with the new milestone
 #
 # $ ./maintainer-scripts/branch_changer.py api_key --add=7:8
 #
@@ -40,10 +47,11 @@
 import argparse
 import json
 import re
+import sys
 
 import requests
 
-from semantic_version import SimpleSpec
+from semantic_version import Version
 
 base_url = 'https://gcc.gnu.org/bugzilla/rest.cgi/'
 statuses = ['UNCONFIRMED', 'ASSIGNED', 'SUSPENDED', 'NEW', 'WAITING', 'REOPENED']
@@ -74,12 +82,14 @@ class Bug:
             self.fail_versions = [x for x in re.split(' |,', v) if x != '']
 
     def name(self):
-        return 'PR%d (%s)' % (self.data['id'], self.data['summary'])
+        bugid = self.data['id']
+        url = f'https://gcc.gnu.org/bugzilla/show_bug.cgi?id={bugid}'
+        if sys.stdout.isatty():
+            return f'\u001b]8;;{url}\u001b\\PR{bugid}\u001b]8;;\u001b\\ ({self.data["summary"]})'
+        else:
+            return f'PR{bugid} ({self.data["summary"]})'
 
     def remove_release(self, release):
-        # Do not remove last value of [x Regression]
-        if len(self.versions) == 1:
-            return
         self.versions = list(filter(lambda x: x != release, self.versions))
 
     def add_release(self, releases):
@@ -98,13 +108,17 @@ class Bug:
             return True
 
     def update_summary(self, api_key, doit):
+        if not self.versions:
+            print(self.name())
+            print('  not changing summary, candidate for CLOSING')
+            return False
+
         summary = self.data['summary']
         new_summary = self.serialize_summary()
         if new_summary != summary:
             print(self.name())
-            print('  changing summary: "%s" to "%s"' % (summary, new_summary))
+            print('  changing summary to "%s"' % (new_summary))
             self.modify_bug(api_key, {'summary': new_summary}, doit)
-
             return True
 
         return False
@@ -149,9 +163,15 @@ class Bug:
         new_summary = self.regex_match.group(1) + new_version + self.regex_match.group(3) + self.regex_match.group(4)
         return new_summary
 
+    @staticmethod
+    def to_version(version):
+        if len(version.split('.')) == 2:
+            version += '.0'
+        return Version(version)
+
     def serialize_known_to_fail(self):
         assert type(self.fail_versions) is list
-        return ', '.join(sorted(self.fail_versions, key=lambda x: SimpleSpec(x)))
+        return ', '.join(sorted(self.fail_versions, key=self.to_version))
 
     def modify_bug(self, api_key, params, doit):
         u = base_url + 'bug/' + str(self.data['id'])
@@ -218,7 +238,7 @@ parser.add_argument('--add', nargs='?', help='Add a new release to summary, e.g.
 parser.add_argument('--limit', nargs='?', help='Limit number of bugs affected by the script')
 parser.add_argument('--doit', action='store_true', help='Really modify BUGs in the bugzilla')
 parser.add_argument('--new-target-milestone', help='Set a new target milestone, '
-                    'e.g. 4.9.3:4.9.4 will set milestone to 4.9.4 for all PRs having milestone set to 4.9.3')
+                    'e.g. 8.5:9.4 will set milestone to 9.4 for all PRs having milestone set to 8.5')
 parser.add_argument('--add-known-to-fail', help='Set a new known to fail '
                     'for all PRs affected by --new-target-milestone')
 parser.add_argument('--comment', help='Comment a PR for which we set a new target milestore')

@@ -1,3 +1,46 @@
+2021-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-attribs.cc: Include fold-const.h and opts.h.
+	(attr_noreturn_exclusions): Add alloc_size.
+	(attr_const_pure_exclusions): Likewise.
+	(attr_inline_exclusions): Add target_clones.
+	(attr_noinline_exclusions): Rename forceinline to always_inline.
+	(attr_target_exclusions): New array.
+	(attr_target_clones_exclusions): New array.
+	(attr_alloc_exclusions): New array.
+	(attr_cold_hot_exclusions): New array.
+	(d_langhook_common_attribute_table): Add new D attribute handlers.
+	(build_attributes): Update to look for gcc.attributes.  Issue warning
+	if not given a struct literal.  Handle void initialized arguments.
+	(handle_always_inline_attribute): Remove function.
+	(d_handle_noinline_attribute): Don't extract TYPE_LANG_FRONTEND.
+	(d_handle_forceinline_attribute): Rename to...
+	(d_handle_always_inline_attribute): ...this.  Remove special handling.
+	(d_handle_flatten_attribute): Don't extract TYPE_LANG_FRONTEND.
+	(d_handle_target_attribute): Likewise.  Warn about empty arguments.
+	(d_handle_target_clones_attribute): New function.
+	(optimize_args): New static variable.
+	(parse_optimize_options): New function.
+	(d_handle_optimize_attribute): New function.
+	(d_handle_noclone_attribute): Don't extract TYPE_LANG_FRONTEND.
+	(d_handle_alias_attribute): Remove function.
+	(d_handle_noicf_attribute): New function.
+	(d_handle_noipa_attribute): New function.
+	(d_handle_section_attribute): Call the handle_generic_attribute target
+	hook after performing target independent processing.
+	(d_handle_symver_attribute): New function.
+	(d_handle_noplt_attribute): New function.
+	(positional_argument): New function.
+	(d_handle_alloc_size_attribute): New function.
+	(d_handle_cold_attribute): New function.
+	(d_handle_restrict_attribute): New function.
+	(d_handle_used_attribute): New function.
+	* decl.cc (gcc_attribute_p): Update to look for gcc.attributes.
+	(get_symbol_decl): Update decl source location of old prototypes to
+	the new declaration being merged.
+	* types.cc (layout_aggregate_members): Apply user defined attributes
+	on fields.
+
 2021-04-06  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/99917

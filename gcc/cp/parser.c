@@ -26433,8 +26433,8 @@ cp_parser_member_declaration (cp_parser* parser)
 		  || !DECL_DECLARES_FUNCTION_P (decl))
 		finish_member_declaration (decl);
 
-	      if (TREE_CODE (decl) == FUNCTION_DECL)
-		cp_parser_save_default_args (parser, decl);
+	      if (DECL_DECLARES_FUNCTION_P (decl))
+		cp_parser_save_default_args (parser, STRIP_TEMPLATE (decl));
 	      else if (TREE_CODE (decl) == FIELD_DECL
 		       && DECL_INITIAL (decl))
 		/* Add DECL to the queue of NSDMI to be parsed later.  */

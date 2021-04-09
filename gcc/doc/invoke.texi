@@ -12371,10 +12371,12 @@ the link-time optimization step directly from the WPA phase.
 @opindex flto-compression-level
 This option specifies the level of compression used for intermediate
 language written to LTO object files, and is only meaningful in
-conjunction with LTO mode (@option{-flto}).  Valid
-values are 0 (no compression) to 9 (maximum compression).  Values
-outside this range are clamped to either 0 or 9.  If the option is not
-given, a default balanced compression setting is used.
+conjunction with LTO mode (@option{-flto}).  GCC currently supports two
+LTO compression algorithms. For zstd, valid values are 0 (no compression)
+to 19 (maximum compression), while zlib supports values from 0 to 9.
+Values outside this range are clamped to either minimum or maximum
+of the supported values.  If the option is not given,
+a default balanced compression setting is used.
 
 @item -fuse-linker-plugin
 @opindex fuse-linker-plugin

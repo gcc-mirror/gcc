@@ -1,3 +1,19 @@
+2021-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-warn.c (do_warn_double_promotion): Fix comment typo,
+	occured -> occurred.
+	(check_alignment_of_packed_member): Fix a comment typo,
+	memeber -> member.
+	(warn_parm_ptrarray_mismatch): Fix comment typos, os -> of
+	and onless -> unless.
+	(warn_parm_array_mismatch): Fix comment typos, declaratation
+	-> declaration and woud -> would.  Fix up comment indentation.
+
+2021-04-08  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/99883
+	* c.opt (Wmismatched-new-delete): Correct spelling.
+
 2021-04-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (is_simple_enum): Minor tweaks.

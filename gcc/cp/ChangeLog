@@ -1,3 +1,65 @@
+2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99874
+	* constraint.cc (get_normalized_constraints_from_decl): Handle
+	regenerated lambdas.
+	(satisfy_declaration_constraints): Likewise.  Check for
+	dependent args later.
+	* cp-tree.h (LAMBDA_EXPR_INSTANTIATED): Replace with ...
+	(LAMBDA_EXPR_REGENERATED_FROM): ... this.
+	(LAMBDA_EXPR_REGENERATING_TARGS): New.
+	(tree_lambda_expr::regenerated_from): New data member.
+	(tree_lambda_expr::regenerating_targs): New data member.
+	(add_to_template_args): Declare.
+	(regenerated_lambda_fn_p): Likewise.
+	(most_general_lambda): Likewise.
+	* lambda.c (build_lambda_expr): Set LAMBDA_EXPR_REGENERATED_FROM
+	and LAMBDA_EXPR_REGENERATING_TARGS.
+	* pt.c (add_to_template_args): No longer static.
+	(tsubst_function_decl): Unconditionally propagate constraints on
+	the substituted function decl.
+	(instantiated_lambda_fn_p): Rename to ...
+	(regenerated_lambda_fn_p): ... this.  Check
+	LAMBDA_EXPR_REGENERATED_FROM instead of
+	LAMBDA_EXPR_INSTANTIATED.
+	(most_general_lambda): Define.
+	(enclosing_instantiation_of): Adjust after renaming
+	instantiated_lambda_fn_p.
+	(tsubst_lambda_expr): Don't set LAMBDA_EXPR_INSTANTIATED.  Set
+	LAMBDA_EXPR_REGENERATED_FROM and LAMBDA_EXPR_REGENERATING_TARGS.
+	Don't substitute or set constraints on the regenerated lambda.
+
+2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97679
+	* pt.c (build_deduction_guide): Document OUTER_ARGS.  Substitute
+	them into the propagated constraints.
+
+2021-04-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91849
+	* call.c (convert_like_internal): Improve reference diagnostic.
+
+2021-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99859
+	* constexpr.c (addr_of_non_const_var): New function.
+	(cxx_bind_parameters_in_call): Set *non_constant_args to true
+	even if cp_walk_tree on arg with addr_of_non_const_var callback
+	returns true.
+
+2021-04-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94529
+	* pt.c (determine_specialization): Improve diagnostic.
+
+2021-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99844
+	* decl.c (build_explicit_specifier): Call
+	check_for_bare_parameter_packs.
+	* except.c (build_noexcept_spec): Likewise.
+
 2021-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41723

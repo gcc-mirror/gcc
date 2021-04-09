@@ -6818,10 +6818,9 @@
 			UNSPEC_TLSDESC))
 	      (const_int 0)))
    (unspec:DI [(match_operand:DI 1 "const_int_operand")] UNSPEC_CALLEE_ABI)
-   (clobber (reg:DI LR_REGNUM))
-   (clobber (match_scratch:DI 2 "=r"))]
+   (clobber (reg:DI LR_REGNUM))]
   "TARGET_TLS_DESC && TARGET_SVE"
-  "adrp\\tx0, %A0\;ldr\\t%<w>2, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\t%2"
+  "adrp\\tx0, %A0\;ldr\\t<w>30, [x0, #%L0]\;add\\t<w>0, <w>0, %L0\;.tlsdesccall\\t%0\;blr\\tx30"
   [(set_attr "type" "call")
    (set_attr "length" "16")])
 

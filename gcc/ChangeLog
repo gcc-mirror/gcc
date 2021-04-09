@@ -1,3 +1,39 @@
+2021-04-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_select_section): Select
+	TLS BSS before TLS data.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_TLS_COMMON): Use .comm.
+
+2021-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi (stdint_types_mbig_endian): Document.
+
+2021-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* match.pd: Extend vec_cond folds to handle shifts.
+
+2021-04-08  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/vax/vax.md: Fix comment for `*bit<mode>' pattern's
+	peephole.
+
+2021-04-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99647
+	* config/arm/iterators.md (MVE_vecs): New.
+	(V_elem): Also handle V2DF.
+	* config/arm/mve.md (*mve_mov<mode>): Rename to ...
+	(*mve_vdup<mode>): ... this. Remove second alternative since
+	vec_duplicate of const_int is not canonical RTL, and we don't
+	want to match symbol_refs.
+	(*mve_vec_duplicate<mode>): Delete (pattern is redundant).
+
+2021-04-08  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* fold-const.c (fold_single_bit_test): Fix typo.
+	* print-rtl.c (print_rtx_insn_vec): Call print_rtl_single
+	instead.
+
 2021-04-07  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/97513

@@ -3152,14 +3152,14 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 	vec_safe_push (typelist, boolean_type_node);
       /* Coarrays which are descriptorless or assumed-shape pass with
 	 -fcoarray=lib the token and the offset as hidden arguments.  */
-      else if (arg
-	       && flag_coarray == GFC_FCOARRAY_LIB
-	       && ((arg->ts.type != BT_CLASS
-		    && arg->attr.codimension
-		    && !arg->attr.allocatable)
-		   || (arg->ts.type == BT_CLASS
-		       && CLASS_DATA (arg)->attr.codimension
-		       && !CLASS_DATA (arg)->attr.allocatable)))
+      if (arg
+	  && flag_coarray == GFC_FCOARRAY_LIB
+	  && ((arg->ts.type != BT_CLASS
+	       && arg->attr.codimension
+	       && !arg->attr.allocatable)
+	      || (arg->ts.type == BT_CLASS
+		  && CLASS_DATA (arg)->attr.codimension
+		  && !CLASS_DATA (arg)->attr.allocatable)))
 	{
 	  vec_safe_push (typelist, pvoid_type_node);  /* caf_token.  */
 	  vec_safe_push (typelist, gfc_array_index_type);  /* caf_offset.  */

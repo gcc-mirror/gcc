@@ -16,7 +16,7 @@ typedef struct bitfield
 bitfield
 bfi1 (bitfield a)
 {
-  /* { dg-final { scan-assembler "bfi\tx\[0-9\]+, x\[0-9\]+, 0, 8" } } */
+  /* { dg-final { scan-assembler "bfi\tx\[0-9\]+, x\[0-9\]+, 0, 8" { xfail *-*-* } } } */
   a.eight = 3;
   return a;
 }
@@ -24,7 +24,7 @@ bfi1 (bitfield a)
 bitfield
 bfi2 (bitfield a)
 {
-  /* { dg-final { scan-assembler "bfi\tx\[0-9\]+, x\[0-9\]+, 16, 5" } } */
+  /* { dg-final { scan-assembler "bfi\tx\[0-9\]+, x\[0-9\]+, 16, 5" { xfail *-*-* } } } */
   a.five = 7;
   return a;
 }

@@ -255,11 +255,11 @@
      } while (0)
 
 #ifdef HAVE_AS_TLS
-#define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)   \
-  do { fputs (LOCAL_COMMON_ASM_OP, (FILE));             \
-       fprintf ((FILE), "%s," HOST_WIDE_INT_PRINT_UNSIGNED",%s[UL],3\n", \
-		(*targetm.strip_name_encoding) (NAME), (SIZE),	\
-		(*targetm.strip_name_encoding) (NAME));	\
+#define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)	\
+  do { fputs (COMMON_ASM_OP, (FILE));			\
+       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
+       fprintf ((FILE), "[UL]," HOST_WIDE_INT_PRINT_UNSIGNED"\n", \
+       (SIZE));						\
   } while (0)
 #endif
 
