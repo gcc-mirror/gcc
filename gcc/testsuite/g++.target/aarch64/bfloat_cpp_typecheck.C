@@ -7,8 +7,8 @@
 
 void foo (void)
 {
-  bfloat16_t (); /* { dg-bogus {invalid conversion to type 'bfloat16_t'} "" { xfail *-*-* } } */
-  bfloat16_t a = bfloat16_t(); /* { dg-bogus {invalid conversion to type 'bfloat16_t'} "" { xfail *-*-* } } */
+  bfloat16_t (); /* { dg-bogus {invalid conversion to type 'bfloat16_t'} "" } */
+  bfloat16_t a = bfloat16_t(); /* { dg-bogus {invalid conversion to type 'bfloat16_t'} "" } */
   bfloat16_t (0x1234); /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
   bfloat16_t (0.1); /* { dg-error {invalid conversion to type 'bfloat16_t'} } */
 }
