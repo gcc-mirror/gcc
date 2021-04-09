@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-skip-if "PR libfortran/78314" { aarch64*-*-gnu* arm*-*-gnueabi arm*-*-gnueabihf } }
 !
 ! This test will fail on older x86_64 glibc (< 2.20), due to this bug:
 ! https://sourceware.org/bugzilla/show_bug.cgi?id=16198
