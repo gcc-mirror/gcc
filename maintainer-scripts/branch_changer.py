@@ -47,6 +47,7 @@
 import argparse
 import json
 import re
+import sys
 
 import requests
 
@@ -83,7 +84,10 @@ class Bug:
     def name(self):
         bugid = self.data['id']
         url = f'https://gcc.gnu.org/bugzilla/show_bug.cgi?id={bugid}'
-        return f'\u001b]8;;{url}\u001b\\PR{bugid}\u001b]8;;\u001b\\ ({self.data["summary"]})'
+        if sys.stdout.isatty():
+            return f'\u001b]8;;{url}\u001b\\PR{bugid}\u001b]8;;\u001b\\ ({self.data["summary"]})'
+        else:
+            return f'PR{bugid} ({self.data["summary"]})'
 
     def remove_release(self, release):
         self.versions = list(filter(lambda x: x != release, self.versions))
