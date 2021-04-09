@@ -16945,10 +16945,14 @@ aarch64_option_restore (struct gcc_options *opts,
 			struct gcc_options */* opts_set */,
 			struct cl_target_option *ptr)
 {
-  opts->x_explicit_tune_core = ptr->x_explicit_tune_core;
-  selected_tune = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
   opts->x_explicit_arch = ptr->x_explicit_arch;
   selected_arch = aarch64_get_arch (ptr->x_explicit_arch);
+  opts->x_explicit_tune_core = ptr->x_explicit_tune_core;
+  if (opts->x_explicit_tune_core == aarch64_none
+      && opts->x_explicit_arch != aarch64_no_arch)
+    selected_tune = &all_cores[selected_arch->ident];
+  else
+    selected_tune = aarch64_get_tune_cpu (ptr->x_explicit_tune_core);
   opts->x_aarch64_override_tune_string = ptr->x_aarch64_override_tune_string;
   opts->x_aarch64_branch_protection_string
     = ptr->x_aarch64_branch_protection_string;
