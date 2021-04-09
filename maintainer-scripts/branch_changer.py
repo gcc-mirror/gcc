@@ -81,12 +81,11 @@ class Bug:
             self.fail_versions = [x for x in re.split(' |,', v) if x != '']
 
     def name(self):
-        return 'PR%d (%s)' % (self.data['id'], self.data['summary'])
+        bugid = self.data['id']
+        url = f'https://gcc.gnu.org/bugzilla/show_bug.cgi?id={bugid}'
+        return f'\u001b]8;;{url}\u001b\\PR{bugid}\u001b]8;;\u001b\\ ({self.data["summary"]})'
 
     def remove_release(self, release):
-        # Do not remove last value of [x Regression]
-        if len(self.versions) == 1:
-            return
         self.versions = list(filter(lambda x: x != release, self.versions))
 
     def add_release(self, releases):
@@ -105,13 +104,17 @@ class Bug:
             return True
 
     def update_summary(self, api_key, doit):
+        if not self.versions:
+            print(self.name())
+            print('  not changing summary, candidate for CLOSING')
+            return False
+
         summary = self.data['summary']
         new_summary = self.serialize_summary()
         if new_summary != summary:
             print(self.name())
             print('  changing summary to "%s"' % (new_summary))
             self.modify_bug(api_key, {'summary': new_summary}, doit)
-
             return True
 
         return False
