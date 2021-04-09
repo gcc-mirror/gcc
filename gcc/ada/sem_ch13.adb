@@ -12479,8 +12479,6 @@ package body Sem_Ch13 is
 
             else
                Size_Too_Small_Error (Asiz);
-               Set_Esize   (T, Asiz);
-               Set_RM_Size (T, Asiz);
             end if;
          end;
 
@@ -12518,8 +12516,6 @@ package body Sem_Ch13 is
 
             if Siz < M then
                Size_Too_Small_Error (M);
-               Set_Esize   (T, M);
-               Set_RM_Size (T, M);
             else
                Biased := True;
             end if;

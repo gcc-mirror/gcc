@@ -669,7 +669,7 @@ package Einfo is
 --       this field is always set. A negative value is used to represent
 --       a value which is not known at compile time, and must be computed
 --       at run-time (this happens if fields of a record have variable
---       lengths). See package Layout for details of these values.
+--       lengths). See package Repinfo for details of these values.
 --
 --       Note: Component_Bit_Offset is redundant with respect to the fields
 --       Normalized_First_Bit and Normalized_Position, and could in principle
@@ -691,8 +691,9 @@ package Einfo is
 --       by the front end in package Layout, or by the backend. A negative
 --       value is used to represent a value which is not known at compile
 --       time, and must be computed at run-time (this happens if the type
---       of the component has a variable length size). See package Layout
---       for details of these values.
+--       of the component has a variable length size). See package Repinfo
+--       for details of these values. Component_Size can also be negative in
+--       an illegal program that says e.g. "for T'Component_Size use -8;".
 
 --    Component_Type [implementation base type only]
 --       Defined in array types and string types. References component type.
