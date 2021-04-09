@@ -28808,7 +28808,8 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  unsigned len = TREE_VEC_LENGTH (ftparms);
 	  tree targs = make_tree_vec (len);
 	  int err = unify (ftparms, targs, ret, utype, UNIFY_ALLOW_NONE, false);
-	  gcc_assert (!err);
+	  if (err)
+	    continue;
 
 	  /* The number of parms for f' is the number of parms for A plus
 	     non-deduced parms of f.  */
@@ -28841,7 +28842,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	     guideness, and explicit-specifier.  */
 	  tree g = tsubst_decl (DECL_TEMPLATE_RESULT (f), targs, complain);
 	  if (g == error_mark_node)
-	    return error_mark_node;
+	    continue;
 	  DECL_USE_TEMPLATE (g) = 0;
 	  fprime = build_template_decl (g, gtparms, false);
 	  DECL_TEMPLATE_RESULT (fprime) = g;
@@ -28855,7 +28856,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  if (ci)
 	    ci = tsubst_constraint_info (ci, targs, complain, in_decl);
 	  if (ci == error_mark_node)
-	    return error_mark_node;
+	    continue;
 
 	  /* Add a constraint that the return type matches the instantiation of
 	     A with the same template arguments.  */
