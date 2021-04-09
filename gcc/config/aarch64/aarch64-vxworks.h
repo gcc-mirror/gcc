@@ -50,7 +50,8 @@ along with GCC; see the file COPYING3.  If not see
       builtin_define ("ARMEB");                 \
     else                                        \
       builtin_define ("ARMEL");                 \
-    builtin_define ("_VX_CPU=ARMARCH8A"); \
+    builtin_define \
+      (VX_CPU_PREFIX "CPU=" VX_CPU_PREFIX "ARMARCH8A");	\
     VXWORKS_OS_CPP_BUILTINS ();		  \
   } while (0)
 
