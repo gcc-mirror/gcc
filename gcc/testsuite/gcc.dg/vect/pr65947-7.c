@@ -9,7 +9,7 @@ extern void abort (void) __attribute__ ((noreturn));
 /* Condition reduction with comparison is a different type to the data.  Will
    fail to vectorize.  */
 
-int
+int __attribute__ ((noipa))
 condition_reduction (short *a, int min_v, int *b)
 {
   int last = N + 65;
@@ -52,4 +52,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target vect_fold_extract_last } } } */
+/* { dg-final { scan-tree-dump-not "LOOP VECTORIZED" "vect" { target { ! vect_fold_extract_last } } } } */
