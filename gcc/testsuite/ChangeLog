@@ -1,3 +1,139 @@
+2021-04-08  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/gomp/tls-5.C: Expect tbss failure on AIX.
+
+2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99874
+	* g++.dg/cpp2a/concepts-lambda16.C: New test.
+	* g++.dg/cpp2a/concepts-lambda17.C: New test.
+
+2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97679
+	* g++.dg/cpp2a/concepts-ctad3.C: New test.
+
+2021-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/scanasm.exp (scan-lto-assembler): Update expected name
+	of dump file.
+
+2021-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_stdint_types_mbig_endian): New proc.
+	* gcc.target/aarch64/advsimd-intrinsics/bf16_get-be.c: Require
+	stdint_types_mbig_endian.
+	* gcc.target/aarch64/advsimd-intrinsics/bfdot-2.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vdot-3-2.c: Likewise.
+
+2021-04-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91849
+	* g++.dg/conversion/pr66211.C: Adjust diagnostic.
+	* g++.dg/conversion/ref7.C: New test.
+
+2021-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99859
+	* g++.dg/cpp1y/constexpr-99859-1.C: New test.
+	* g++.dg/cpp1y/constexpr-99859-2.C: New test.
+	* g++.dg/cpp2a/constexpr-new18.C: New test.
+	* g++.dg/cpp2a/constexpr-new19.C: New test.
+
+2021-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr99102.c: Add -fdump-tree-vect-details.
+
+2021-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/func_redef_1.c: Remove
+	"was here" from error message.
+	* gcc.target/aarch64/sve/acle/general-c/func_redef_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/func_redef_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/func_redef_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_1.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_3.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_5.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_6.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_9.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_10.c: Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/type_redef_13.c: Likewise.
+
+2021-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/asimd-mull-elem.c: Add +nosve.
+	* gcc.target/aarch64/pr98772.c: Likewise.
+	* gcc.target/aarch64/simd/vect_su_add_sub.c: Likewise.
+
+2021-04-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/mul_2.c: Adjust negative constants to avoid
+	conversion to shifts and adds.
+
+2021-04-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99042
+	PR analyzer/99774
+	* gcc.dg/analyzer/pr99042.c: New test.
+	* gcc.dg/analyzer/pr99774-1.c: New test.
+	* gcc.dg/analyzer/pr99774-2.c: New test.
+
+2021-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gdc.dg/gdc108.d: Update test.
+	* gdc.dg/gdc142.d: Likewise.
+	* gdc.dg/pr90136a.d: Likewise.
+	* gdc.dg/pr90136b.d: Likewise.
+	* gdc.dg/pr90136c.d: Likewise.
+	* gdc.dg/pr95173.d: Likewise.
+	* gdc.dg/attr_allocsize1.d: New test.
+	* gdc.dg/attr_allocsize2.d: New test.
+	* gdc.dg/attr_alwaysinline1.d: New test.
+	* gdc.dg/attr_cold1.d: New test.
+	* gdc.dg/attr_exclusions1.d: New test.
+	* gdc.dg/attr_exclusions2.d: New test.
+	* gdc.dg/attr_flatten1.d: New test.
+	* gdc.dg/attr_module.d: New test.
+	* gdc.dg/attr_noclone1.d: New test.
+	* gdc.dg/attr_noicf1.d: New test.
+	* gdc.dg/attr_noinline1.d: New test.
+	* gdc.dg/attr_noipa1.d: New test.
+	* gdc.dg/attr_noplt1.d: New test.
+	* gdc.dg/attr_optimize1.d: New test.
+	* gdc.dg/attr_optimize2.d: New test.
+	* gdc.dg/attr_optimize3.d: New test.
+	* gdc.dg/attr_optimize4.d: New test.
+	* gdc.dg/attr_restrict1.d: New test.
+	* gdc.dg/attr_section1.d: New test.
+	* gdc.dg/attr_symver1.d: New test.
+	* gdc.dg/attr_target1.d: New test.
+	* gdc.dg/attr_targetclones1.d: New test.
+	* gdc.dg/attr_used1.d: New test.
+	* gdc.dg/attr_used2.d: New test.
+	* gdc.dg/attr_weak1.d: New test.
+	* gdc.dg/imports/attributes.d: New test.
+
+2021-04-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94529
+	* g++.dg/template/mem-spec2.C: New test.
+
+2021-04-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99844
+	* g++.dg/cpp2a/explicit16.C: Use c++20.
+	* g++.dg/cpp0x/noexcept66.C: New test.
+	* g++.dg/cpp2a/explicit17.C: New test.
+
+2021-04-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99647
+	* gcc.c-torture/compile/pr99647.c: New test.
+
 2021-04-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/41723
