@@ -2040,9 +2040,9 @@ package Rtsfind is
      RE_Value_Enumeration_16,            -- System.Val_Enum_16
      RE_Value_Enumeration_32,            -- System.Val_Enum_32
 
-     RE_Valid_Enumeration_Value_8,       -- System.Val_Enum_8
-     RE_Valid_Enumeration_Value_16,      -- System.Val_Enum_16
-     RE_Valid_Enumeration_Value_32,      -- System.Val_Enum_32
+     RE_Valid_Value_Enumeration_8,       -- System.Val_Enum_8
+     RE_Valid_Value_Enumeration_16,      -- System.Val_Enum_16
+     RE_Valid_Value_Enumeration_32,      -- System.Val_Enum_32
 
      RE_Value_Fixed32,                   -- System_Val_Fixed_32
 
@@ -3731,11 +3731,11 @@ package Rtsfind is
 
      RE_Value_Enumeration_32             => System_Val_Enum_32,
 
-     RE_Valid_Enumeration_Value_8        => System_Val_Enum_8,
+     RE_Valid_Value_Enumeration_8        => System_Val_Enum_8,
 
-     RE_Valid_Enumeration_Value_16       => System_Val_Enum_16,
+     RE_Valid_Value_Enumeration_16       => System_Val_Enum_16,
 
-     RE_Valid_Enumeration_Value_32       => System_Val_Enum_32,
+     RE_Valid_Value_Enumeration_32       => System_Val_Enum_32,
 
      RE_Value_Fixed32                    => System_Val_Fixed_32,
 
