@@ -1,3 +1,86 @@
+2021-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97973
+	* g++.dg/conversion/real-to-int1.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99806
+	* g++.dg/concepts/abbrev10.C: New test.
+	* g++.dg/concepts/abbrev11.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-04-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91416
+	* g++.dg/other/gc7.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99831
+	* g++.dg/other/gc6.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99331
+	* g++.dg/warn/Wconversion5.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	DR 1312
+	PR c++/99176
+	* g++.dg/cpp0x/constexpr-nullptr-2.C: Adjust dg-error.
+	* g++.dg/cpp0x/constexpr-cast2.C: New test.
+	* g++.dg/cpp0x/constexpr-cast3.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99120
+	* g++.dg/warn/Wshadow-17.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99374
+	* g++.dg/cpp1z/noexcept-type23.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98947
+	* g++.dg/cpp2a/volatile5.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97966
+	* g++.dg/cpp0x/noexcept63.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98333
+	* g++.dg/cpp0x/noexcept62.C: New test.
+
 2021-04-08  Release Manager
 
 	* GCC 10.3.0 released.

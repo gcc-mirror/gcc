@@ -1,3 +1,13 @@
+2021-04-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	Backported from master:
+	2021-04-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/84991
+	PR middle-end/84992
+	PR middle-end/90779
+	* testsuite/libgomp.oacc-c-c++-common/static-variable-1.c: New.
+
 2021-04-08  Release Manager
 
 	* GCC 10.3.0 released.

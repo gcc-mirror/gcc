@@ -1,3 +1,104 @@
+2021-04-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97973
+	* call.c (conv_unsafe_in_template_p): New.
+	(convert_like): Use it.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99806
+	* parser.c (cp_parser_member_declaration): Call
+	cp_parser_save_default_args even for function templates.  Use
+	STRIP_TEMPLATE on the declaration we're passing.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-04-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/91416
+	* parser.c: Create a GC root for attributes in a decl specifier.
+	(cp_parser_type_specifier): Push/pop ->attributes onto/from it.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-04-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99831
+	* method.c (defaulted_late_check): ++ and -- function_depth around
+	the call to synthesize_method.
+	* pt.c: Remove the saved_trees global.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-03-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99331
+	* call.c (build_converted_constant_expr_internal): Don't emit
+	-Wconversion warnings.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	DR 1312
+	PR c++/99176
+	* constexpr.c (is_std_construct_at): New overload.
+	(is_std_allocator_allocate): New overload.
+	(cxx_eval_call_expression): Use the new overloads.
+	(cxx_eval_constant_expression): Reject casting
+	from void * as per DR 1312.  Don't check can_convert.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99120
+	* name-lookup.c (check_local_shadow): Check if the type of decl
+	is non-null before checking TYPE_PTR*.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-03-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99374
+	* call.c (standard_conversion): When converting pointers to
+	member, don't return NULL when the bases are equivalent but
+	incomplete.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-02-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98947
+	* call.c (build_conditional_expr_1): Don't call mark_lvalue_use
+	on arg2/arg3.
+	* expr.c (mark_use) <case MODIFY_EXPR>: Don't check read_p when
+	issuing the -Wvolatile warning.  Only set TREE_THIS_VOLATILE if
+	a warning was emitted.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97966
+	* pt.c (instantiate_class_template_1): Instantiate members
+	marked with attribute used only after we're done instantiating
+	the class.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-01-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/98333
+	* parser.c (cp_parser_class_specifier_1): Perform late-parsing
+	of NSDMIs before late-parsing of noexcept-specifiers.
+
 2021-04-08  Release Manager
 
 	* GCC 10.3.0 released.
