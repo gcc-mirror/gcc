@@ -1,3 +1,25 @@
+2021-04-09  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (LAMBDA_EXPR_REGENERATED_FROM)
+	(LAMBDA_EXPR_REGENERATING_TARGS): Replace these with ...
+	(LAMBDA_EXPR_REGEN_INFO): ... this.
+	(tree_lambda_expr::regenerated_from)
+	(tree_lambda_expr::regenerating_targs): Replace these with ...
+	(tree_lambda_expr::regen_info): ... this.
+	* constraint.cc (satisfy_declaration_constraints): Adjust
+	accordingly.
+	* lambda.c (build_lambda_expr): Likewise.
+	* pt.c (regenerated_lambda_fn_p): Likewise.
+	(most_general_lambda): Likewise.
+	(tsubst_lambda_expr): Likewise.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99806
+	* parser.c (cp_parser_member_declaration): Call
+	cp_parser_save_default_args even for function templates.  Use
+	STRIP_TEMPLATE on the declaration we're passing.
+
 2021-04-08  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/99874

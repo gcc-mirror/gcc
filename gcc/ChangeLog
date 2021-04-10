@@ -1,3 +1,23 @@
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_option_restore): If the
+	architecture was specified explicitly and the tuning wasn't,
+	tune for the architecture rather than the configured default CPU.
+
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/aarch64.md (tlsdesc_small_sve_<mode>): Use X30
+	as the temporary register.
+
+2021-04-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Move non-target attributes on the top level.
+
+2021-04-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document minimum and maximum value of the
+	argument for both supported compression algorithms.
+
 2021-04-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_xcoff_select_section): Select

@@ -1,3 +1,49 @@
+2021-04-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/99402
+	* include/debug/helper_functions.h (__can_advance(_InputIterator,
+	const std::pair<_Diff, _Distance_precision>&, int)): New.
+	(__can_advance(const _Safe_iterator<>&,
+	const std::pair<_Diff, _Distance_precision>&, int)): New.
+	* include/debug/macros.h (__glibcxx_check_can_increment_dist): New,
+	use latter.
+	(__glibcxx_check_can_increment_range): Adapt to use latter.
+	(__glibcxx_check_can_decrement_range): Likewise.
+	* include/debug/safe_iterator.h
+	(_Safe_iterator<>::_M_can_advance(const std::pair<_Diff, _Distance_precision>&,
+	int)): New.
+	(__can_advance(const _Safe_iterator<>&,
+	const std::pair<_Diff, _Distance_precision>&, int)): New.
+	* include/debug/safe_iterator.tcc
+	(_Safe_iterator<>::_M_can_advance(const std::pair<_Diff, _Distance_precision>&,
+	int)): New.
+	(_Safe_iterator<>::_M_valid_range(const _Safe_iterator<>&,
+	std::pair<difference_type, _Distance_precision>&, bool)): Adapt for
+	__dp_sign_max_size.
+	(__copy_move_a): Adapt to use __glibcxx_check_can_increment_dist.
+	(__copy_move_backward_a): Likewise.
+	(__equal_aux): Likewise.
+	* include/debug/stl_iterator.h (__can_advance(const std::reverse_iterator<>&,
+	const std::pair<_Diff, _Distance_precision>&, int)): New.
+	(__can_advance(const std::move_iterator<>&,
+	const std::pair<_Diff, _Distance_precision>&, int)): New.
+	* testsuite/25_algorithms/copy/debug/99402.cc: New test.
+
+2021-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99985
+	* include/bits/hashtable.h (_Hashtable::_S_nothrow_move()): Fix
+	to be a valid constexpr function in C++11.
+	* testsuite/23_containers/unordered_set/cons/99985.cc: New test.
+
+2021-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h: Fix doxygen group command.
+	* include/bits/streambuf_iterator.h: Likewise.
+	* include/bits/uses_allocator_args.h: Likewise.
+	* include/std/memory: Likewise.
+	* include/tr1/complex: Likewise.
+
 2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/basic_string.h: Tweak doxygen comment.

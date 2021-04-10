@@ -1,3 +1,17 @@
+2021-04-09  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/84991
+	PR middle-end/84992
+	PR middle-end/90779
+	* testsuite/libgomp.oacc-c-c++-common/static-variable-1.c: New.
+
+2021-04-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/99984
+	* team.c (gomp_thread_start): Call pthread_setspecific for
+	!(defined HAVE_TLS || defined USE_EMUTLS) only after local_thr
+	has been initialized to avoid false positive warning.
+
 2021-03-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR target/99555
