@@ -1,4 +1,4 @@
-fn test(x: i32) -> bool { // { dg-error "expected .bool. got .<tyty::error>.." }
+fn test(x: i32) -> bool {
     return x + 1; // { dg-error "expected .bool. got .i32." }
 }
 

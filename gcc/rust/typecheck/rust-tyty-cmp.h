@@ -84,6 +84,8 @@ public:
 
   virtual void visit (StrType &) override { ok = false; }
 
+  virtual void visit (NeverType &) override { ok = false; }
+
 protected:
   BaseCmp (BaseType *base)
     : mappings (Analysis::Mappings::get ()),
@@ -813,6 +815,21 @@ private:
   BaseType *get_base () override { return base; }
 
   StrType *base;
+};
+
+class NeverCmp : public BaseCmp
+{
+  using Rust::TyTy::BaseCmp::visit;
+
+public:
+  NeverCmp (NeverType *base) : BaseCmp (base), base (base) {}
+
+  void visit (NeverType &type) override { ok = true; }
+
+private:
+  BaseType *get_base () override { return base; }
+
+  NeverType *base;
 };
 
 } // namespace TyTy

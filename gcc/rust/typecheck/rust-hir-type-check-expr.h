@@ -145,16 +145,15 @@ public:
 
   void visit (HIR::ReturnExpr &expr) override
   {
-    if (!expr.has_return_expr ())
-      {
-	infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
-	return;
-      }
-
     auto fn_return_tyty = context->peek_return_type ();
     rust_assert (fn_return_tyty != nullptr);
 
-    auto expr_ty = TypeCheckExpr::Resolve (expr.get_expr (), false);
+    TyTy::BaseType *expr_ty;
+    if (expr.has_return_expr ())
+      expr_ty = TypeCheckExpr::Resolve (expr.get_expr (), false);
+    else
+      expr_ty = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+
     if (expr_ty == nullptr)
       {
 	rust_error_at (expr.get_locus (),
@@ -166,6 +165,8 @@ public:
     fn_return_tyty->append_reference (expr_ty->get_ref ());
     for (auto &ref : infered->get_combined_refs ())
       fn_return_tyty->append_reference (ref);
+
+    infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::CallExpr &expr) override
@@ -622,17 +623,28 @@ public:
     auto else_blk_resolved
       = TypeCheckExpr::Resolve (expr.get_else_block (), inside_loop);
 
-    infered = if_blk_resolved->unify (else_blk_resolved);
+    if (if_blk_resolved->get_kind () == TyTy::NEVER)
+      infered = else_blk_resolved;
+    else if (else_blk_resolved->get_kind () == TyTy::NEVER)
+      infered = if_blk_resolved;
+    else
+      infered = if_blk_resolved->unify (else_blk_resolved);
   }
 
   void visit (HIR::IfExprConseqIf &expr) override
   {
     TypeCheckExpr::Resolve (expr.get_if_condition (), false);
-    auto if_blk = TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
-    auto else_blk
+    auto if_blk_resolved
+      = TypeCheckExpr::Resolve (expr.get_if_block (), inside_loop);
+    auto else_blk_resolved
       = TypeCheckExpr::Resolve (expr.get_conseq_if_expr (), inside_loop);
 
-    infered = if_blk->unify (else_blk);
+    if (if_blk_resolved->get_kind () == TyTy::NEVER)
+      infered = else_blk_resolved;
+    else if (else_blk_resolved->get_kind () == TyTy::NEVER)
+      infered = if_blk_resolved;
+    else
+      infered = if_blk_resolved->unify (else_blk_resolved);
   }
 
   void visit (HIR::BlockExpr &expr) override;
@@ -929,7 +941,7 @@ public:
 	context->swap_head_loop_context (unified_ty);
       }
 
-    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+    infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::ContinueExpr &expr) override
@@ -941,7 +953,7 @@ public:
 	return;
       }
 
-    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+    infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
   }
 
   void visit (HIR::BorrowExpr &expr) override

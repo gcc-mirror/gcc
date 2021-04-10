@@ -2511,7 +2511,7 @@ public:
   // Returns whether the block contains an expression
   bool has_expr () const { return expr != nullptr; }
 
-  bool tail_expr_reachable () const { return tail_reachable; }
+  bool is_tail_reachable () const { return tail_reachable; }
 
   BlockExpr (Analysis::NodeMapping mappings,
 	     std::vector<std::unique_ptr<Stmt> > block_statements,

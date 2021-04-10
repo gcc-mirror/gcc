@@ -293,6 +293,14 @@ public:
 		   type.as_string ().c_str ());
   }
 
+  virtual void visit (NeverType &type) override
+  {
+    Location ref_locus = mappings->lookup_location (type.get_ref ());
+    rust_error_at (ref_locus, "expected [%s] got [%s]",
+		   get_base ()->as_string ().c_str (),
+		   type.as_string ().c_str ());
+  }
+
 protected:
   BaseRules (BaseType *base)
     : mappings (Analysis::Mappings::get ()),
@@ -1136,6 +1144,21 @@ private:
   BaseType *get_base () override { return base; }
 
   StrType *base;
+};
+
+class NeverRules : public BaseRules
+{
+  using Rust::TyTy::BaseRules::visit;
+
+public:
+  NeverRules (NeverType *base) : BaseRules (base), base (base) {}
+
+  virtual void visit (NeverType &type) override { resolved = type.clone (); }
+
+private:
+  BaseType *get_base () override { return base; }
+
+  NeverType *base;
 };
 
 } // namespace TyTy

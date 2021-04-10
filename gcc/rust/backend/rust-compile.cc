@@ -256,7 +256,7 @@ CompileBlock::visit (HIR::BlockExpr &expr)
 	}
     }
 
-  if (expr.has_expr () && expr.tail_expr_reachable ())
+  if (expr.has_expr ())
     {
       // the previous passes will ensure this is a valid return
       // dead code elimination should remove any bad trailing expressions
@@ -410,17 +410,15 @@ HIRCompileBase::compile_function_body (
 	}
     }
 
-  if (function_body->has_expr () && function_body->tail_expr_reachable ())
+  if (function_body->has_expr ())
     {
       // the previous passes will ensure this is a valid return
       // dead code elimination should remove any bad trailing expressions
       Bexpression *compiled_expr
 	= CompileExpr::Compile (function_body->expr.get (), ctx);
 
-      if (has_return_type)
+      if (has_return_type && compiled_expr)
 	{
-	  rust_assert (compiled_expr != nullptr);
-
 	  std::vector<Bexpression *> retstmts;
 	  retstmts.push_back (compiled_expr);
 
