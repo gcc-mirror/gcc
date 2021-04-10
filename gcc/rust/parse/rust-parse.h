@@ -27,7 +27,7 @@ namespace Rust {
  * probably take up the same amount of space. */
 struct ExprOrStmt
 {
-  std::unique_ptr<AST::ExprWithoutBlock> expr;
+  std::unique_ptr<AST::Expr> expr;
   std::unique_ptr<AST::Stmt> stmt;
 
   /* I was going to resist the urge to make this a real class and make it POD,
@@ -35,9 +35,7 @@ struct ExprOrStmt
    * constructor. */
 
   // expression constructor
-  ExprOrStmt (std::unique_ptr<AST::ExprWithoutBlock> expr)
-    : expr (std::move (expr))
-  {}
+  ExprOrStmt (std::unique_ptr<AST::Expr> expr) : expr (std::move (expr)) {}
 
   // statement constructor
   ExprOrStmt (std::unique_ptr<AST::Stmt> stmt) : stmt (std::move (stmt)) {}
@@ -63,9 +61,7 @@ struct ExprOrStmt
 
 private:
   // private constructor only used for creating error state expr or stmt objects
-  ExprOrStmt (AST::ExprWithoutBlock *expr, AST::Stmt *stmt)
-    : expr (expr), stmt (stmt)
-  {}
+  ExprOrStmt (AST::Expr *expr, AST::Stmt *stmt) : expr (expr), stmt (stmt) {}
 
   // make this work: have a disambiguation specifically for known statements
   // (i.e. ';' and 'let'). then, have a special "parse expr or stmt" function
@@ -487,6 +483,8 @@ private:
     ParseRestrictions restrictions = ParseRestrictions ());
 
   // Expression-related (non-Pratt parsed)
+  std::unique_ptr<AST::ExprWithBlock>
+  parse_expr_with_block (std::vector<AST::Attribute> outer_attrs);
   std::unique_ptr<AST::ExprWithoutBlock>
   parse_expr_without_block (std::vector<AST::Attribute> outer_attrs
 			    = std::vector<AST::Attribute> ());
@@ -591,6 +589,8 @@ private:
   std::unique_ptr<AST::ExprStmtWithoutBlock>
   parse_expr_stmt_without_block (std::vector<AST::Attribute> outer_attrs);
   ExprOrStmt parse_stmt_or_expr_without_block ();
+  ExprOrStmt
+  parse_stmt_or_expr_with_block (std::vector<AST::Attribute> outer_attrs);
   ExprOrStmt
   parse_macro_invocation_maybe_semi (std::vector<AST::Attribute> outer_attrs);
   ExprOrStmt

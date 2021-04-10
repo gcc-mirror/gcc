@@ -2828,7 +2828,7 @@ class BlockExpr : public ExprWithBlock
   std::vector<Attribute> outer_attrs;
   std::vector<Attribute> inner_attrs;
   std::vector<std::unique_ptr<Stmt> > statements;
-  std::unique_ptr<ExprWithoutBlock> expr;
+  std::unique_ptr<Expr> expr;
   Location locus;
   bool marked_for_strip = false;
 
@@ -2842,7 +2842,7 @@ public:
   bool has_tail_expr () const { return expr != nullptr; }
 
   BlockExpr (std::vector<std::unique_ptr<Stmt> > block_statements,
-	     std::unique_ptr<ExprWithoutBlock> block_expr,
+	     std::unique_ptr<Expr> block_expr,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, Location locus)
     : outer_attrs (std::move (outer_attribs)),
@@ -2859,7 +2859,7 @@ public:
   {
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
-      expr = other.expr->clone_expr_without_block ();
+      expr = other.expr->clone_expr ();
 
     statements.reserve (other.statements.size ());
     for (const auto &e : other.statements)
@@ -2877,7 +2877,7 @@ public:
 
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
-      expr = other.expr->clone_expr_without_block ();
+      expr = other.expr->clone_expr ();
     else
       expr = nullptr;
 
@@ -2929,7 +2929,7 @@ public:
   std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
 
   // TODO: is this better? Or is a "vis_block" better?
-  std::unique_ptr<ExprWithoutBlock> &get_tail_expr ()
+  std::unique_ptr<Expr> &get_tail_expr ()
   {
     rust_assert (has_tail_expr ());
     return expr;

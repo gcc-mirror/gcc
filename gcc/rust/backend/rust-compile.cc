@@ -416,10 +416,11 @@ HIRCompileBase::compile_function_body (
       // dead code elimination should remove any bad trailing expressions
       Bexpression *compiled_expr
 	= CompileExpr::Compile (function_body->expr.get (), ctx);
-      rust_assert (compiled_expr != nullptr);
 
       if (has_return_type)
 	{
+	  rust_assert (compiled_expr != nullptr);
+
 	  std::vector<Bexpression *> retstmts;
 	  retstmts.push_back (compiled_expr);
 
@@ -428,7 +429,7 @@ HIRCompileBase::compile_function_body (
 	    function_body->get_final_expr ()->get_locus_slow ());
 	  ctx->add_statement (ret);
 	}
-      else
+      else if (compiled_expr)
 	{
 	  Bstatement *final_stmt
 	    = ctx->get_backend ()->expression_statement (fndecl, compiled_expr);

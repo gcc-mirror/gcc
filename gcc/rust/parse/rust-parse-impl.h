@@ -7022,11 +7022,9 @@ Parser<ManagedTokenSource>::parse_expr_stmt (
     }
 }
 
-/* Parses a expression statement containing an expression with block.
- * Disambiguates internally. */
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::ExprStmtWithBlock>
-Parser<ManagedTokenSource>::parse_expr_stmt_with_block (
+std::unique_ptr<AST::ExprWithBlock>
+Parser<ManagedTokenSource>::parse_expr_with_block (
   std::vector<AST::Attribute> outer_attrs)
 {
   std::unique_ptr<AST::ExprWithBlock> expr_parsed = nullptr;
@@ -7113,9 +7111,23 @@ Parser<ManagedTokenSource>::parse_expr_stmt_with_block (
       return nullptr;
     }
 
+  return expr_parsed;
+}
+
+/* Parses a expression statement containing an expression with block.
+ * Disambiguates internally. */
+template <typename ManagedTokenSource>
+std::unique_ptr<AST::ExprStmtWithBlock>
+Parser<ManagedTokenSource>::parse_expr_stmt_with_block (
+  std::vector<AST::Attribute> outer_attrs)
+{
+  auto expr_parsed = parse_expr_with_block (std::move (outer_attrs));
+  auto locus = expr_parsed->get_locus ();
+
   // return expr stmt created from expr
   return std::unique_ptr<AST::ExprStmtWithBlock> (
-    new AST::ExprStmtWithBlock (std::move (expr_parsed), t->get_locus ()));
+    new AST::ExprStmtWithBlock (std::move (expr_parsed), locus,
+				lexer.peek_token ()->get_id () == SEMICOLON));
 }
 
 /* Parses an expression statement containing an expression without block.
@@ -7286,7 +7298,7 @@ Parser<ManagedTokenSource>::parse_block_expr (
 
   // parse statements and expression
   std::vector<std::unique_ptr<AST::Stmt>> stmts;
-  std::unique_ptr<AST::ExprWithoutBlock> expr = nullptr;
+  std::unique_ptr<AST::Expr> expr = nullptr;
 
   const_TokenPtr t = lexer.peek_token ();
   while (t->get_id () != RIGHT_CURLY)
@@ -11438,6 +11450,29 @@ Parser<ManagedTokenSource>::parse_struct_pattern_field_partial (
     }
 }
 
+template <typename ManagedTokenSource>
+ExprOrStmt
+Parser<ManagedTokenSource>::parse_stmt_or_expr_with_block (
+  std::vector<AST::Attribute> outer_attrs)
+{
+  auto expr = parse_expr_with_block (std::move (outer_attrs));
+  auto tok = lexer.peek_token ();
+
+  // tail expr in a block expr
+  if (tok->get_id () == RIGHT_CURLY)
+    return ExprOrStmt (std::move (expr));
+
+  // internal block expr must either have semicolons followed, or evaluate to ()
+  auto locus = expr->get_locus_slow ();
+  std::unique_ptr<AST::ExprStmtWithBlock> stmt (
+    new AST::ExprStmtWithBlock (std::move (expr), locus,
+				tok->get_id () == SEMICOLON));
+  if (tok->get_id () == SEMICOLON)
+    lexer.skip_token ();
+
+  return ExprOrStmt (std::move (stmt));
+}
+
 /* Parses a statement or expression (depending on whether a trailing semicolon
  * exists). Useful for block expressions where it cannot be determined through
  * lookahead whether it is a statement or expression to be parsed. */
@@ -11508,9 +11543,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 	  {
 	    case LEFT_CURLY: {
 	      // unsafe block
-	      std::unique_ptr<AST::ExprStmtWithBlock> stmt (
-		parse_expr_stmt_with_block (std::move (outer_attrs)));
-	      return ExprOrStmt (std::move (stmt));
+	      return parse_stmt_or_expr_with_block (std::move (outer_attrs));
 	    }
 	    case TRAIT: {
 	      // unsafe trait
@@ -11577,11 +11610,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
     case MATCH_TOK:
     case LEFT_CURLY:
       case ASYNC: {
-	// all expressions with block, so cannot be final expr without block in
-	// function
-	std::unique_ptr<AST::ExprStmtWithBlock> stmt (
-	  parse_expr_stmt_with_block (std::move (outer_attrs)));
-	return ExprOrStmt (std::move (stmt));
+	return parse_stmt_or_expr_with_block (std::move (outer_attrs));
       }
       case LIFETIME: {
 	/* FIXME: are there any expressions without blocks that can have
@@ -11592,9 +11621,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_without_block ()
 	    && (t2->get_id () == LOOP || t2->get_id () == WHILE
 		|| t2->get_id () == FOR))
 	  {
-	    std::unique_ptr<AST::ExprStmtWithBlock> stmt (
-	      parse_expr_stmt_with_block (std::move (outer_attrs)));
-	    return ExprOrStmt (std::move (stmt));
+	    return parse_stmt_or_expr_with_block (std::move (outer_attrs));
 	  }
 	else
 	  {

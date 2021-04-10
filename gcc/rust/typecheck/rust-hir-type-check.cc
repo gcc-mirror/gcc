@@ -143,10 +143,10 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 	delete block_tyty;
 	block_tyty = resolved;
       }
-    else if (!resolved->is_unit ())
+    else if (s->is_unit_check_needed () && !resolved->is_unit ())
       {
-	rust_error_at (s->get_locus_slow (), "expected () got %s",
-		       resolved->as_string ().c_str ());
+	auto unit = new TyTy::TupleType (s->get_mappings ().get_hirid ());
+	resolved = unit->unify (resolved);
       }
 
     return true;
