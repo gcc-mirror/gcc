@@ -215,7 +215,7 @@ package body Repinfo.Input is
          J_COMMA,
          J_COLON,
          J_EOF);
-      --  JSON Token kind. Note that in ECMA 404 there is no notion of integer.
+      --  JSON token kind. Note that in ECMA 404 there is no notion of integer.
       --  Only numbers are supported. In our implementation we return J_INTEGER
       --  if there is no decimal part in the number. The semantic is that this
       --  is a J_NUMBER token that might be represented as an integer. Special
