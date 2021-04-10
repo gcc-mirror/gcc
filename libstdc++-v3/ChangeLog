@@ -1,3 +1,32 @@
+2021-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR bootstrap/99983
+	* include/bits/hashtable.h (_Hashtable): Fix noexcept-specifier
+	on definition to match the one on the declaration.
+
+2021-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99985
+	* include/bits/hashtable.h (_Hashtable::_S_nothrow_move()): Fix
+	to be a valid constexpr function in C++11.
+	* testsuite/23_containers/unordered_set/cons/99985.cc: New test.
+
+2021-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-04-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_fwd.h: Fix doxygen group command.
+	* include/bits/regex.h: Likewise.
+	* include/bits/streambuf_iterator.h: Likewise.
+	* include/bits/unique_lock.h: Likewise.
+	* include/std/chrono: Likewise.
+	* include/std/thread: Likewise.
+	* include/tr1/complex: Likewise.
+
 2021-04-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
