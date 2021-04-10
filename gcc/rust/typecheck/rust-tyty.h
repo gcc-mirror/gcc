@@ -91,6 +91,8 @@ public:
 
   virtual bool is_unit () const { return false; }
 
+  virtual bool is_concrete () const { return true; }
+
   TypeKind get_kind () const { return kind; }
 
   /* Returns a pointer to a clone of this. The caller is responsible for
@@ -193,6 +195,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   bool default_type (BaseType **type) const;
+
+  bool is_concrete () const final override { return false; }
 
 private:
   InferTypeKind infer_kind;
@@ -320,6 +324,16 @@ public:
   BaseType *get_field (size_t index) const;
 
   BaseType *clone () final override;
+
+  bool is_concrete () const override final
+  {
+    for (size_t i = 0; i < num_fields (); i++)
+      {
+	if (!get_field (i)->is_concrete ())
+	  return false;
+      }
+    return true;
+  }
 
   void iterate_fields (std::function<bool (BaseType *)> cb) const
   {
@@ -823,6 +837,11 @@ public:
   BaseType *get_element_type () const;
 
   BaseType *clone () final override;
+
+  bool is_concrete () const final override
+  {
+    return get_element_type ()->is_concrete ();
+  }
 
 private:
   size_t capacity;

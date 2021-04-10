@@ -44,9 +44,11 @@ TypeResolution::Resolve (HIR::Crate &crate)
   if (saw_errors ())
     return;
 
+  auto resolver = Resolver::Resolver::get ();
   auto mappings = Analysis::Mappings::get ();
   auto context = TypeCheckContext::get ();
 
+  // default inference variables if possible
   context->iterate ([&] (HirId id, TyTy::BaseType *ty) mutable -> bool {
     if (ty->get_kind () == TyTy::TypeKind::ERROR)
       {
@@ -61,19 +63,51 @@ TypeResolution::Resolve (HIR::Crate &crate)
     TyTy::InferType *infer_var = (TyTy::InferType *) ty;
     TyTy::BaseType *default_type;
     bool ok = infer_var->default_type (&default_type);
-    if (!ok)
+    if (ok)
       {
-	rust_error_at (mappings->lookup_location (id),
-		       "unable to determine type: please give this a type: %u",
-		       id);
-	return true;
+	auto result = ty->unify (default_type);
+	result->set_ref (id);
+	context->insert_type (
+	  Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
+				 UNKNOWN_LOCAL_DEFID),
+	  result);
       }
-    auto result = ty->unify (default_type);
-    result->set_ref (id);
-    context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
-						 0, id, UNKNOWN_LOCAL_DEFID),
-			  result);
+    return true;
+  });
 
+  // scan the ribs to ensure the decls are all setup correctly
+  resolver->iterate_name_ribs ([&] (Rib *r) -> bool {
+    r->iterate_decls ([&] (NodeId decl_node_id, Location locus) -> bool {
+      Definition def;
+      if (!resolver->lookup_definition (decl_node_id, &def))
+	{
+	  rust_error_at (locus, "failed to lookup decl def");
+	  return true;
+	}
+
+      HirId hir_node = UNKNOWN_HIRID;
+      if (!mappings->lookup_node_to_hir (mappings->get_current_crate (),
+					 def.parent, &hir_node))
+	{
+	  rust_error_at (locus, "failed to lookup type hir node id");
+	  return true;
+	}
+
+      // lookup the ty
+      TyTy::BaseType *ty = nullptr;
+      bool ok = context->lookup_type (hir_node, &ty);
+      if (!ok)
+	{
+	  rust_error_at (locus, "failed to lookup type for decl node_id: %u",
+			 decl_node_id);
+	  return true;
+	}
+
+      if (!ty->is_concrete ())
+	rust_error_at (locus, "unable to determine type");
+
+      return true;
+    });
     return true;
   });
 }
