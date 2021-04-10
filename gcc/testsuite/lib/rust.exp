@@ -182,7 +182,7 @@ proc rust_target_compile { source dest type options } {
     # Only keep line containing error so that the test will correctly report the error and the test
     # can FAIL or XFAIL
     global additional_prunes
-    lappend additional_prunes "^((?!error).)*$"
+    lappend additional_prunes "^((?!error: ).)*$"
 
     return [target_compile $source $dest $type $options]
 }
