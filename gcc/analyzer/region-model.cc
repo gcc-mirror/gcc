@@ -726,7 +726,7 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
 	   access will "inherit" the individual chars.  */
 	const svalue *rhs_sval = get_rvalue (rhs1, ctxt);
 	m_store.set_value (m_mgr->get_store_manager(), lhs_reg, rhs_sval,
-			   BK_default, ctxt->get_uncertainty ());
+			   BK_default, ctxt ? ctxt->get_uncertainty () : NULL);
       }
       break;
     }
