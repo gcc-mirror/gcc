@@ -22,6 +22,7 @@
 #include "rust-hir-type-check-base.h"
 #include "rust-hir-full.h"
 #include "rust-tyty.h"
+#include "rust-hir-path-probe.h"
 #include "rust-substitution-mapper.h"
 
 namespace Rust {
@@ -32,74 +33,32 @@ class MethodResolution : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static std::vector<HIR::Method *> Probe (TyTy::BaseType *receiver,
-					   HIR::PathExprSegment method_name)
+  static std::vector<PathProbeCandidate>
+  Probe (std::vector<PathProbeCandidate> &path_candidates)
   {
-    MethodResolution probe (receiver, method_name);
+    MethodResolution probe;
+    for (auto &c : path_candidates)
+      probe.process_candidate (c);
 
-    // lookup impl items for this crate and find all methods that can resolve to
-    // this receiver
-    probe.mappings->iterate_impl_items (
-      [&] (HirId id, HIR::InherentImplItem *item,
-	   HIR::InherentImpl *impl) mutable -> bool {
-	item->accept_vis (probe);
-	return true;
-      });
-
-    return probe.probed;
+    return probe.candidates;
   }
 
-  void visit (HIR::Method &method) override
+  void process_candidate (PathProbeCandidate &candidate)
   {
-    TyTy::BaseType *self_lookup = nullptr;
-    if (!context->lookup_type (
-	  method.get_self_param ().get_mappings ().get_hirid (), &self_lookup))
-      {
-	rust_error_at (method.get_self_param ().get_locus (),
-		       "failed to lookup lookup self type in MethodProbe");
-	return;
-      }
+    is_method_flag = false;
+    candidate.impl_item->accept_vis (*this);
 
-    // are the names the same
-    HIR::PathIdentSegment seg = method_name.get_segment ();
-    if (seg.as_string ().compare (method.get_method_name ()) != 0)
-      {
-	// if the method name does not match then this is not a valid match
-	return;
-      }
-
-    if (self_lookup->get_kind () != receiver->get_kind ())
-      return;
-
-    if (receiver->has_subsititions_defined ()
-	!= self_lookup->has_subsititions_defined ())
-      return;
-
-    if (self_lookup->has_subsititions_defined ())
-      {
-	// we assume the receiver should be fully substituted at this stage
-	self_lookup = SubstMapperFromExisting::Resolve (receiver, self_lookup);
-      }
-
-    if (!receiver->is_equal (*self_lookup))
-      {
-	// incompatible self argument then this is not a valid method for this
-	// receiver
-	return;
-      }
-
-    probed.push_back (&method);
+    if (is_method_flag)
+      candidates.push_back (candidate);
   }
+
+  void visit (HIR::Method &method) override { is_method_flag = true; }
 
 private:
-  MethodResolution (TyTy::BaseType *receiver, HIR::PathExprSegment method_name)
-    : TypeCheckBase (), receiver (receiver), method_name (method_name)
-  {}
+  MethodResolution () : TypeCheckBase () {}
 
-  TyTy::BaseType *receiver;
-  HIR::PathExprSegment method_name;
-
-  std::vector<HIR::Method *> probed;
+  bool is_method_flag;
+  std::vector<PathProbeCandidate> candidates;
 };
 
 } // namespace Resolver

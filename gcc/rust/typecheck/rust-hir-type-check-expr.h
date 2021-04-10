@@ -210,33 +210,36 @@ public:
     // which is simple. There will need to be adjustments to ensure we can turn
     // the receiver into borrowed references etc
 
-    auto probes
-      = MethodResolution::Probe (receiver_tyty, expr.get_method_name ());
-    if (probes.size () == 0)
+    auto candidates
+      = PathProbeType::Probe (receiver_tyty,
+			      expr.get_method_name ().get_segment ());
+    if (candidates.size () == 0)
       {
 	rust_error_at (expr.get_locus (),
 		       "failed to resolve the PathExprSegment to any Method");
 	return;
       }
-    else if (probes.size () > 1)
+
+    // filter all methods
+    auto possible_methods = MethodResolution::Probe (candidates);
+    if (possible_methods.size () == 0)
       {
-	rust_error_at (
-	  expr.get_locus (),
-	  "multiple candidates in MethodCallExpr have been probed is "
-	  "not currently supported");
+	rust_error_at (expr.get_method_name ().get_locus (),
+		       "no method named %s found in scope",
+		       expr.get_method_name ().as_string ().c_str ());
+	return;
+      }
+    else if (possible_methods.size () > 1)
+      {
+	ReportMultipleCandidateError::Report (
+	  possible_methods, expr.get_method_name ().get_segment (),
+	  expr.get_method_name ().get_locus ());
 	return;
       }
 
-    auto resolved_method = probes.at (0);
-    TyTy::BaseType *lookup_tyty;
-    if (!context->lookup_type (resolved_method->get_mappings ().get_hirid (),
-			       &lookup_tyty))
-      {
-	rust_error_at (resolved_method->get_locus (),
-		       "failed to lookup type for CallExpr: %s",
-		       expr.as_string ().c_str ());
-	return;
-      }
+    auto resolved_candidate = possible_methods.at (0);
+    HIR::InherentImplItem *resolved_method = resolved_candidate.impl_item;
+    TyTy::BaseType *lookup_tyty = resolved_candidate.ty;
 
     TyTy::BaseType *lookup = lookup_tyty;
     if (lookup_tyty->get_kind () == TyTy::TypeKind::FNDEF)
@@ -270,7 +273,7 @@ public:
     // set up the resolved name on the path
     resolver->insert_resolved_name (
       expr.get_mappings ().get_nodeid (),
-      resolved_method->get_mappings ().get_nodeid ());
+      resolved_method->get_impl_mappings ().get_nodeid ());
 
     // return the result of the function back
     infered = function_ret_tyty;
