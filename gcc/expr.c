@@ -8050,7 +8050,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, scalar_int_mode tmode,
 	 array with address of COMPOUND_LITERAL_EXPR in DECL_INITIAL;
 	 the initializers aren't gimplified.  */
       if (COMPOUND_LITERAL_EXPR_DECL (exp)
-	  && TREE_STATIC (COMPOUND_LITERAL_EXPR_DECL (exp)))
+	  && is_global_var (COMPOUND_LITERAL_EXPR_DECL (exp)))
 	return expand_expr_addr_expr_1 (COMPOUND_LITERAL_EXPR_DECL (exp),
 					target, tmode, modifier, as);
       /* FALLTHRU */
