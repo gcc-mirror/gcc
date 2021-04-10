@@ -15,7 +15,7 @@
 # <http://www.gnu.org/licenses/>.
 
 # Immediately exit if we can't run target executables.
-if { ![isnative] || ![is-effective-target static] } {
+if { ![isnative] } {
     return
 }
 
