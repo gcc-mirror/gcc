@@ -360,12 +360,14 @@ public:
 				   mappings->get_next_localdef_id (crate_num));
 
     std::vector<std::unique_ptr<HIR::InherentImplItem> > impl_items;
+    std::vector<HirId> impl_item_ids;
     for (auto &impl_item : impl_block.get_impl_items ())
       {
 	HIR::InherentImplItem *lowered
 	  = ASTLowerImplItem::translate (impl_item.get (),
 					 mapping.get_hirid ());
 	impl_items.push_back (std::unique_ptr<HIR::InherentImplItem> (lowered));
+	impl_item_ids.push_back (lowered->get_impl_mappings ().get_hirid ());
       }
 
     translated
@@ -381,6 +383,13 @@ public:
 			       translated);
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       impl_block.get_locus ());
+
+    for (auto &impl_item_id : impl_item_ids)
+      {
+	mappings->insert_impl_item_mapping (impl_item_id,
+					    static_cast<HIR::InherentImpl *> (
+					      translated));
+      }
   }
 
 private:

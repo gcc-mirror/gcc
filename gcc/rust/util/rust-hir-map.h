@@ -158,19 +158,23 @@ public:
     return hirNodesWithinCrate[crate];
   }
 
-  void
-  iterate_impl_items (std::function<bool (HirId, HIR::InherentImplItem *)> cb)
+  void insert_impl_item_mapping (HirId impl_item_id, HIR::InherentImpl *impl)
   {
-    for (auto it = hirImplItemMappings.begin ();
-	 it != hirImplItemMappings.end (); it++)
-      {
-	for (auto iy = it->second.begin (); iy != it->second.end (); iy++)
-	  {
-	    if (!cb (iy->first, iy->second.second))
-	      return;
-	  }
-      }
+    rust_assert (hirImplItemsToImplMappings.find (impl_item_id)
+		 == hirImplItemsToImplMappings.end ());
+    hirImplItemsToImplMappings[impl_item_id] = impl;
   }
+
+  HIR::InherentImpl *lookup_associated_impl (HirId impl_item_id)
+  {
+    auto lookup = hirImplItemsToImplMappings.find (impl_item_id);
+    rust_assert (lookup != hirImplItemsToImplMappings.end ());
+    return lookup->second;
+  }
+
+  void iterate_impl_items (
+    std::function<bool (HirId, HIR::InherentImplItem *, HIR::InherentImpl *)>
+      cb);
 
 private:
   Mappings ();
@@ -198,6 +202,7 @@ private:
 	   std::map<HirId, std::pair<HirId, HIR::InherentImplItem *> > >
     hirImplItemMappings;
   std::map<CrateNum, std::map<HirId, HIR::SelfParam *> > hirSelfParamMappings;
+  std::map<HirId, HIR::InherentImpl *> hirImplItemsToImplMappings;
 
   // location info
   std::map<CrateNum, std::map<NodeId, Location> > locations;

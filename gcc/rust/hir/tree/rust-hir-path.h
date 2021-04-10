@@ -255,6 +255,12 @@ public:
       }
   }
 
+  size_t get_num_segments () const { return segments.size (); }
+
+  std::vector<PathExprSegment> &get_segments () { return segments; }
+
+  PathExprSegment &get_root_seg () { return segments.at (0); }
+
   PathExprSegment get_final_segment () const { return segments.back (); }
 };
 
