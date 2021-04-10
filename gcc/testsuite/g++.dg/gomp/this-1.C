@@ -3,7 +3,7 @@
 
 struct S
 {
-  #pragma omp declare simd linear(this)		// { dg-error "is not a function argument" }
+  #pragma omp declare simd linear(this)	// { dg-error "invalid use of .this" }
   static void foo ();
   void bar ();
 };
@@ -35,7 +35,7 @@ S::bar ()
 template <int N>
 struct T
 {
-  #pragma omp declare simd linear(this)		// { dg-error "is not a function argument" }
+  #pragma omp declare simd linear(this)	// { dg-error "invalid use of .this" }
   static void foo ();
   void bar ();
 };
