@@ -995,7 +995,7 @@ Gcc_backend::function_type (const Btyped_identifier &receiver,
 Btype *
 Gcc_backend::function_ptr_type (Btype *result_type,
 				const std::vector<Btype *> &parameters,
-				Location locus)
+				Location /* locus */)
 {
   tree args = NULL_TREE;
   tree *pp = &args;

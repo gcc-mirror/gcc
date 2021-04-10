@@ -150,7 +150,7 @@ grs_langhook_option_lang_mask (void)
 
 /* Initialize the options structure. */
 static void
-grs_langhook_init_options_struct (struct gcc_options *opts)
+grs_langhook_init_options_struct (struct gcc_options * /* opts */)
 {
   // nothing yet - used by frontends to change specific options for the language
   session.init_options ();
