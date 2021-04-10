@@ -26,6 +26,62 @@
 namespace Rust {
 namespace Resolver {
 
+// https://doc.rust-lang.org/reference/paths.html#canonical-paths
+//
+// struct X - path X
+// impl X { fn test - path X::test }
+//
+// struct X<T> - path X
+//
+// impl X<T>   { fn test - path X::test}
+// impl X<i32> { fn test - path X<i32>::test }
+// impl X<f32> { fn test - path X<f32>::test }
+class CanonicalPath
+{
+public:
+  explicit CanonicalPath (std::string path) : path (path) {}
+
+  CanonicalPath (const CanonicalPath &other) : path (other.path) {}
+
+  CanonicalPath &operator= (const CanonicalPath &other)
+  {
+    path = other.path;
+    return *this;
+  }
+
+  std::string get () const { return path; }
+
+  static CanonicalPath get_big_self () { return CanonicalPath ("Self"); }
+
+  static CanonicalPath get_wee_self () { return CanonicalPath ("self"); }
+
+  static CanonicalPath create_empty ()
+  {
+    return CanonicalPath (std::string ());
+  }
+
+  bool is_error () const { return path.empty (); }
+
+  CanonicalPath append (const CanonicalPath &other) const
+  {
+    rust_assert (!other.is_error ());
+    return is_error () ? CanonicalPath (other.get ())
+		       : CanonicalPath (append (other.get ()));
+  }
+
+  bool operator== (const CanonicalPath &b) const
+  {
+    return get ().compare (b.get ()) == 0;
+  }
+
+  bool operator< (const CanonicalPath &b) const { return get () < b.get (); }
+
+private:
+  std::string append (std::string elem) const { return path + "::" + elem; }
+
+  std::string path;
+};
+
 class Rib
 {
 public:
@@ -37,10 +93,11 @@ public:
 
   ~Rib () {}
 
-  void insert_name (std::string ident, NodeId id, Location locus, bool shadow,
-		    std::function<void (std::string, NodeId, Location)> dup_cb)
+  void insert_name (
+    const CanonicalPath &path, NodeId id, Location locus, bool shadow,
+    std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
   {
-    auto it = mappings.find (ident);
+    auto it = mappings.find (path);
     bool already_exists = it != mappings.end ();
     if (already_exists && !shadow)
       {
@@ -48,20 +105,20 @@ public:
 	  {
 	    if (decl.first == it->second)
 	      {
-		dup_cb (ident, it->second, decl.second);
+		dup_cb (path, it->second, decl.second);
 		return;
 	      }
 	  }
-	dup_cb (ident, it->second, locus);
+	dup_cb (path, it->second, locus);
 	return;
       }
 
-    mappings[ident] = id;
+    mappings[path] = id;
     decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
   }
 
-  bool lookup_name (std::string ident, NodeId *id)
+  bool lookup_name (const CanonicalPath &ident, NodeId *id)
   {
     auto it = mappings.find (ident);
     if (it == mappings.end ())
@@ -71,7 +128,7 @@ public:
     return true;
   }
 
-  void clear_name (std::string ident, NodeId id)
+  void clear_name (const CanonicalPath &ident, NodeId id)
   {
     mappings.erase (ident);
     for (auto &it : decls_within_rib)
@@ -136,7 +193,7 @@ public:
 private:
   CrateNum crate_num;
   NodeId node_id;
-  std::map<std::string, NodeId> mappings;
+  std::map<CanonicalPath, NodeId> mappings;
   std::set<std::pair<NodeId, Location> > decls_within_rib;
   std::map<NodeId, std::set<NodeId> > references;
 };
@@ -145,21 +202,24 @@ class Scope
 {
 public:
   Scope (CrateNum crate_num) : crate_num (crate_num) {}
+
   ~Scope () {}
 
-  void insert (std::string ident, NodeId id, Location locus, bool shadow,
-	       std::function<void (std::string, NodeId, Location)> dup_cb)
+  void
+  insert (const CanonicalPath &ident, NodeId id, Location locus, bool shadow,
+	  std::function<void (const CanonicalPath &, NodeId, Location)> dup_cb)
   {
     peek ()->insert_name (ident, id, locus, shadow, dup_cb);
   }
 
-  void insert (std::string ident, NodeId id, Location locus)
+  void insert (const CanonicalPath &ident, NodeId id, Location locus)
   {
     peek ()->insert_name (ident, id, locus, true,
-			  [] (std::string, NodeId, Location) -> void {});
+			  [] (const CanonicalPath &, NodeId, Location) -> void {
+			  });
   }
 
-  bool lookup (std::string ident, NodeId *id)
+  bool lookup (const CanonicalPath &ident, NodeId *id)
   {
     NodeId lookup = UNKNOWN_NODEID;
     iterate ([&] (Rib *r) mutable -> bool {

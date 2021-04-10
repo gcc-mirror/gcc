@@ -40,7 +40,8 @@ public:
     // lookup impl items for this crate and find all methods that can resolve to
     // this receiver
     probe.mappings->iterate_impl_items (
-      [&] (HirId id, HIR::InherentImplItem *item) mutable -> bool {
+      [&] (HirId id, HIR::InherentImplItem *item,
+	   HIR::InherentImpl *impl) mutable -> bool {
 	item->accept_vis (probe);
 	return true;
       });

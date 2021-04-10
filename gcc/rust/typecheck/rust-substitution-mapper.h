@@ -37,6 +37,11 @@ public:
     return mapper.resolved;
   }
 
+  static TyTy::BaseType *InferSubst (TyTy::BaseType *base, Location locus)
+  {
+    return SubstMapper::Resolve (base, locus, nullptr);
+  }
+
   bool have_generic_args () const { return generics != nullptr; }
 
   void visit (TyTy::FnType &type) override

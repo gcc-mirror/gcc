@@ -50,7 +50,8 @@ Resolver::Resolver ()
   : mappings (Analysis::Mappings::get ()), tyctx (TypeCheckContext::get ()),
     name_scope (Scope (mappings->get_current_crate ())),
     type_scope (Scope (mappings->get_current_crate ())),
-    label_scope (Scope (mappings->get_current_crate ()))
+    label_scope (Scope (mappings->get_current_crate ())),
+    global_type_node_id (UNKNOWN_NODEID), unit_ty_node_id (UNKNOWN_NODEID)
 {
   generate_builtins ();
 }
@@ -116,9 +117,12 @@ Resolver::insert_builtin_types (Rib *r)
 {
   auto builtins = get_builtin_types ();
   for (auto &builtin : builtins)
-    r->insert_name (builtin->as_string (), builtin->get_node_id (),
-		    Linemap::predeclared_location (), false,
-		    [] (std::string, NodeId, Location) -> void {});
+    {
+      CanonicalPath builtin_path (builtin->as_string ());
+      r->insert_name (builtin_path, builtin->get_node_id (),
+		      Linemap::predeclared_location (), false,
+		      [] (const CanonicalPath &, NodeId, Location) -> void {});
+    }
 }
 
 std::vector<AST::Type *> &
@@ -374,41 +378,84 @@ ResolveStructExprField::visit (AST::StructExprFieldIdentifier &field)
 
 // rust-ast-resolve-type.h
 
-void
-ResolveTypeToSimplePath::visit (AST::TypePathSegmentGeneric &seg)
+CanonicalPath
+ResolveTypeToCanonicalPath::canonicalize_generic_args (AST::GenericArgs &args)
 {
-  if (!path_only_flag)
+  std::string buf;
+
+  size_t i = 0;
+  size_t total = args.get_type_args ().size ();
+
+  for (auto &ty_arg : args.get_type_args ())
     {
-      AST::GenericArgs &generics = seg.get_generic_args ();
-      for (auto &gt : generics.get_type_args ())
-	ResolveType::go (gt.get (), UNKNOWN_NODEID);
+      buf += ty_arg->as_string ();
+      if ((i + 1) < total)
+	buf += ",";
+
+      i++;
     }
 
-  if (seg.is_error ())
-    {
-      type_seg_failed_flag = true;
-      rust_error_at (Location (), "segment has error: %s",
-		     seg.as_string ().c_str ());
-      return;
-    }
+  return CanonicalPath ("<" + buf + ">");
+}
 
-  segs.push_back (AST::SimplePathSegment (seg.get_ident_segment ().as_string (),
-					  seg.get_locus ()));
+bool
+ResolveTypeToCanonicalPath::type_resolve_generic_args (AST::GenericArgs &args)
+{
+  for (auto &gt : args.get_type_args ())
+    {
+      ResolveType::go (gt.get (), UNKNOWN_NODEID);
+      // FIXME error handling here for inference variable since they do not have
+      // a node to resolve to
+      // if (resolved == UNKNOWN_NODEID) return false;
+    }
+  return true;
 }
 
 void
-ResolveTypeToSimplePath::visit (AST::TypePathSegment &seg)
+ResolveTypeToCanonicalPath::visit (AST::TypePathSegmentGeneric &seg)
 {
   if (seg.is_error ())
     {
-      type_seg_failed_flag = true;
-      rust_error_at (Location (), "segment has error: %s",
+      failure_flag = true;
+      rust_error_at (seg.get_locus (), "segment has error: %s",
 		     seg.as_string ().c_str ());
       return;
     }
 
-  segs.push_back (AST::SimplePathSegment (seg.get_ident_segment ().as_string (),
-					  seg.get_locus ()));
+  // ident seg
+  CanonicalPath ident_seg
+    = CanonicalPath (seg.get_ident_segment ().as_string ());
+  result = result.append (ident_seg);
+
+  // generic args
+  if (seg.has_generic_args ())
+    {
+      if (include_generic_args_flag)
+	result
+	  = result.append (canonicalize_generic_args (seg.get_generic_args ()));
+
+      if (type_resolve_generic_args_flag)
+	{
+	  bool ok = type_resolve_generic_args (seg.get_generic_args ());
+	  failure_flag = !ok;
+	}
+    }
+}
+
+void
+ResolveTypeToCanonicalPath::visit (AST::TypePathSegment &seg)
+{
+  if (seg.is_error ())
+    {
+      failure_flag = true;
+      rust_error_at (seg.get_locus (), "segment has error: %s",
+		     seg.as_string ().c_str ());
+      return;
+    }
+
+  CanonicalPath ident_seg
+    = CanonicalPath (seg.get_ident_segment ().as_string ());
+  result = result.append (ident_seg);
 }
 
 // rust-ast-resolve-expr.h
@@ -416,38 +463,77 @@ ResolveTypeToSimplePath::visit (AST::TypePathSegment &seg)
 void
 ResolvePath::resolve_path (AST::PathInExpression *expr)
 {
-  // this needs extended similar to the TypePath to lookup each segment
-  // in turn then look its rib for the next segment and so forth until we
-  // resolve to a final NodeId generic args can be ignored
-  std::string path_buf;
-  for (auto &seg : expr->get_segments ())
+  // resolve root segment first then apply segments in turn
+  AST::PathExprSegment &root_segment = expr->get_segments ().at (0);
+  AST::PathIdentSegment &root_ident_seg = root_segment.get_ident_segment ();
+
+  bool segment_is_type = false;
+  CanonicalPath root_seg_path (root_ident_seg.as_string ());
+
+  // name scope first
+  if (resolver->get_name_scope ().lookup (root_seg_path, &resolved_node))
     {
-      auto s = seg.get_ident_segment ();
-      if (s.is_error () && !seg.has_generic_args ())
+      segment_is_type = false;
+      resolver->insert_resolved_name (root_segment.get_node_id (),
+				      resolved_node);
+      resolver->insert_new_definition (root_segment.get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+    }
+  // check the type scope
+  else if (resolver->get_type_scope ().lookup (root_seg_path, &resolved_node))
+    {
+      segment_is_type = true;
+      resolver->insert_resolved_type (root_segment.get_node_id (),
+				      resolved_node);
+      resolver->insert_new_definition (root_segment.get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+    }
+  else
+    {
+      rust_error_at (expr->get_locus (),
+		     "unknown root segment in path %s lookup %s",
+		     expr->as_string ().c_str (),
+		     root_ident_seg.as_string ().c_str ());
+      return;
+    }
+
+  if (root_segment.has_generic_args ())
+    {
+      bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
+	root_segment.get_generic_args ());
+      if (!ok)
 	{
-	  rust_error_at (expr->get_locus (), "malformed path");
+	  rust_error_at (root_segment.get_locus (),
+			 "failed to resolve generic args");
 	  return;
-	}
-
-      if (seg.has_generic_args ())
-	{
-	  AST::GenericArgs &args = seg.get_generic_args ();
-	  for (auto &gt : args.get_type_args ())
-	    ResolveType::go (gt.get (), UNKNOWN_NODEID);
-	}
-
-      if (!s.is_error ())
-	{
-	  bool needs_sep = !path_buf.empty ();
-	  if (needs_sep)
-	    path_buf += "::";
-
-	  path_buf += s.as_string ();
 	}
     }
 
-  // name scope first
-  if (resolver->get_name_scope ().lookup (path_buf, &resolved_node))
+  if (expr->is_single_segment ())
+    {
+      if (segment_is_type)
+	resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
+      else
+	resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
+
+      resolver->insert_new_definition (expr->get_node_id (),
+				       Definition{expr->get_node_id (),
+						  parent});
+      return;
+    }
+
+  // we can attempt to resolve this path fully
+  CanonicalPath path = root_seg_path;
+  for (size_t i = 1; i < expr->get_segments ().size (); i++)
+    {
+      AST::PathExprSegment &seg = expr->get_segments ().at (i);
+      auto s = ResolvePathSegmentToCanonicalPath::resolve (seg);
+      path = path.append (s);
+    }
+
+  if (resolver->get_name_scope ().lookup (path, &resolved_node))
     {
       resolver->insert_resolved_name (expr->get_node_id (), resolved_node);
       resolver->insert_new_definition (expr->get_node_id (),
@@ -455,7 +541,7 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
 						  parent});
     }
   // check the type scope
-  else if (resolver->get_type_scope ().lookup (path_buf, &resolved_node))
+  else if (resolver->get_type_scope ().lookup (path, &resolved_node))
     {
       resolver->insert_resolved_type (expr->get_node_id (), resolved_node);
       resolver->insert_new_definition (expr->get_node_id (),
@@ -464,8 +550,42 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
     }
   else
     {
-      rust_error_at (expr->get_locus (), "unknown path %s lookup %s",
-		     expr->as_string ().c_str (), path_buf.c_str ());
+      // attempt to fully resolve the path which is allowed to fail given the
+      // following scenario
+      //
+      // https://github.com/Rust-GCC/gccrs/issues/355 Paths are
+      // resolved fully here, there are limitations though imagine:
+      //
+      // struct Foo<A> (A);
+      //
+      // impl Foo<isize> {
+      //    fn test() -> ...
+      //
+      // impl Foo<f32> {
+      //    fn test() -> ...
+      //
+      // fn main() {
+      //    let a:i32 = Foo::test();
+      //
+      // there are multiple paths that test can resolve to Foo::<?>::test here
+      // so we cannot resolve this case
+      //
+      // canonical names:
+      //
+      // struct Foo<A>            -> Foo
+      // impl Foo<isize>::fn test -> Foo::isize::test
+      // impl Foo<f32>::fn test   -> Foo::f32::test
+      //
+      // Since there is the case we have the following paths for test:
+      //
+      // Foo::isize::test
+      // Foo::f32::test
+      // vs
+      // Foo::test
+      //
+      // but the lookup was simply Foo::test we must rely on type resolution to
+      // figure this type out in a similar fashion to method resolution with a
+      // probe phase
     }
 }
 

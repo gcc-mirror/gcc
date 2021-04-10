@@ -58,7 +58,7 @@ public:
       {
 	init_expr_ty
 	  = TypeCheckExpr::Resolve (stmt.get_init_expr (), inside_loop);
-	if (init_expr_ty == nullptr)
+	if (init_expr_ty->get_kind () == TyTy::TypeKind::ERROR)
 	  return;
 
 	init_expr_ty = init_expr_ty->clone ();

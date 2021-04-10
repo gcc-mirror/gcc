@@ -60,6 +60,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
     // nothing to do
     if (ty->get_kind () != TyTy::TypeKind::INFER)
       return true;
+
     TyTy::InferType *infer_var = (TyTy::InferType *) ty;
     TyTy::BaseType *default_type;
     bool ok = infer_var->default_type (&default_type);
@@ -72,6 +73,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
 				 UNKNOWN_LOCAL_DEFID),
 	  result);
       }
+
     return true;
   });
 
@@ -161,14 +163,16 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 void
 TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 {
-  struct_expr.get_struct_name ().accept_vis (*this);
-  if (struct_path_resolved == nullptr)
+  TyTy::BaseType *struct_path_ty
+    = TypeCheckExpr::Resolve (&struct_expr.get_struct_name (), false);
+  if (struct_path_ty->get_kind () != TyTy::TypeKind::ADT)
     {
-      rust_fatal_error (struct_expr.get_struct_name ().get_locus (),
-			"Failed to resolve type");
+      rust_error_at (struct_expr.get_struct_name ().get_locus (),
+		     "expected an ADT type for constructor");
       return;
     }
 
+  struct_path_resolved = static_cast<TyTy::ADTType *> (struct_path_ty);
   TyTy::ADTType *struct_def = struct_path_resolved;
   if (struct_expr.has_struct_base ())
     {
@@ -289,78 +293,6 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
   struct_expr.set_fields_as_owner (std::move (ordered_fields));
 
   resolved = struct_def;
-}
-
-void
-TypeCheckStructExpr::visit (HIR::PathInExpression &expr)
-{
-  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
-
-  // then lookup the reference_node_id
-  NodeId ref_node_id;
-  if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-    {
-      if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
-	{
-	  rust_error_at (expr.get_locus (),
-			 "Failed to lookup reference for node: %s",
-			 expr.as_string ().c_str ());
-	  return;
-	}
-    }
-
-  // node back to HIR
-  HirId ref;
-  if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				     ref_node_id, &ref))
-    {
-      rust_error_at (expr.get_locus (), "reverse lookup failure");
-      return;
-    }
-
-  // the base reference for this name _must_ have a type set
-  TyTy::BaseType *lookup;
-  if (!context->lookup_type (ref, &lookup))
-    {
-      rust_error_at (mappings->lookup_location (ref),
-		     "consider giving this a type: %s",
-		     expr.as_string ().c_str ());
-      return;
-    }
-
-  if (lookup->get_kind () != TyTy::TypeKind::ADT)
-    {
-      rust_fatal_error (mappings->lookup_location (ref),
-			"expected an ADT type");
-      return;
-    }
-
-  struct_path_resolved = static_cast<TyTy::ADTType *> (lookup);
-  if (struct_path_resolved->has_substitutions ())
-    {
-      HIR::PathExprSegment seg = expr.get_final_segment ();
-      if (!struct_path_resolved->needs_substitution ()
-	  && seg.has_generic_args ())
-	{
-	  rust_error_at (seg.get_generic_args ().get_locus (),
-			 "unexpected type arguments");
-	}
-      else if (struct_path_resolved->needs_substitution ())
-	{
-	  TyTy::BaseType *subst
-	    = SubstMapper::Resolve (struct_path_resolved, expr.get_locus (),
-				    seg.has_generic_args ()
-				      ? &seg.get_generic_args ()
-				      : nullptr);
-	  if (subst == nullptr || subst->get_kind () != TyTy::TypeKind::ADT)
-	    {
-	      rust_fatal_error (mappings->lookup_location (ref),
-				"expected a substituted ADT type");
-	      return;
-	    }
-	  struct_path_resolved = static_cast<TyTy::ADTType *> (subst);
-	}
-    }
 }
 
 void

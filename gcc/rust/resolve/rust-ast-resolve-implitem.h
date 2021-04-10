@@ -31,25 +31,19 @@ class ResolveToplevelImplItem : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static void go (AST::InherentImplItem *item, AST::Type *base)
+  static void go (AST::InherentImplItem *item, const CanonicalPath &prefix)
   {
-    ResolveToplevelImplItem resolver (base);
-    if (resolver.base_path.is_empty ())
-      {
-	rust_error_at (base->get_locus_slow (),
-		       "failed to resolve simple path");
-	return;
-      }
+    ResolveToplevelImplItem resolver (prefix);
     item->accept_vis (resolver);
   }
 
   void visit (AST::ConstantItem &constant) override
   {
-    std::string identifier
-      = base_path.as_string () + "::" + constant.get_identifier ();
+    auto path
+      = prefix.append (ResolveConstantItemToCanonicalPath::resolve (constant));
     resolver->get_name_scope ().insert (
-      identifier, constant.get_node_id (), constant.get_locus (), false,
-      [&] (std::string, NodeId, Location locus) -> void {
+      path, constant.get_node_id (), constant.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	rust_error_at (constant.get_locus (), "redefined multiple times");
 	rust_error_at (locus, "was defined here");
       });
@@ -60,11 +54,11 @@ public:
 
   void visit (AST::Function &function) override
   {
-    std::string identifier
-      = base_path.as_string () + "::" + function.get_function_name ();
+    auto path
+      = prefix.append (ResolveFunctionItemToCanonicalPath::resolve (function));
     resolver->get_name_scope ().insert (
-      identifier, function.get_node_id (), function.get_locus (), false,
-      [&] (std::string, NodeId, Location locus) -> void {
+      path, function.get_node_id (), function.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	rust_error_at (function.get_locus (), "redefined multiple times");
 	rust_error_at (locus, "was defined here");
       });
@@ -75,11 +69,11 @@ public:
 
   void visit (AST::Method &method) override
   {
-    std::string identifier
-      = base_path.as_string () + "::" + method.get_method_name ();
+    auto path
+      = prefix.append (ResolveMethodItemToCanonicalPath::resolve (method));
     resolver->get_name_scope ().insert (
-      identifier, method.get_node_id (), method.get_locus (), false,
-      [&] (std::string, NodeId, Location locus) -> void {
+      path, method.get_node_id (), method.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	rust_error_at (method.get_locus (), "redefined multiple times");
 	rust_error_at (locus, "was defined here");
       });
@@ -89,15 +83,13 @@ public:
   }
 
 private:
-  ResolveToplevelImplItem (AST::Type *base)
-    : ResolverBase (UNKNOWN_NODEID), base (base),
-      base_path (AST::SimplePath::create_empty ())
+  ResolveToplevelImplItem (const CanonicalPath &prefix)
+    : ResolverBase (UNKNOWN_NODEID), prefix (prefix)
   {
-    ResolveTypeToSimplePath::go (base, base_path, true);
+    rust_assert (!prefix.is_error ());
   }
 
-  AST::Type *base;
-  AST::SimplePath base_path;
+  const CanonicalPath &prefix;
 };
 
 } // namespace Resolver

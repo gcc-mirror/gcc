@@ -57,7 +57,8 @@ public:
 
   void visit (AST::IdentifierExpr &expr) override
   {
-    if (!resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
+    if (!resolver->get_name_scope ().lookup (CanonicalPath (expr.as_string ()),
+					     &resolved_node))
       return;
 
     ok = true;

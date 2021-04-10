@@ -109,15 +109,16 @@ public:
 
   void visit (AST::IdentifierExpr &expr) override
   {
-    if (resolver->get_name_scope ().lookup (expr.as_string (), &resolved_node))
+    if (resolver->get_name_scope ().lookup (CanonicalPath (expr.as_string ()),
+					    &resolved_node))
       {
 	resolver->insert_resolved_name (expr.get_node_id (), resolved_node);
 	resolver->insert_new_definition (expr.get_node_id (),
 					 Definition{expr.get_node_id (),
 						    parent});
       }
-    else if (resolver->get_type_scope ().lookup (expr.as_string (),
-						 &resolved_node))
+    else if (resolver->get_type_scope ().lookup (
+	       CanonicalPath (expr.as_string ()), &resolved_node))
       {
 	resolver->insert_resolved_type (expr.get_node_id (), resolved_node);
 	resolver->insert_new_definition (expr.get_node_id (),
@@ -255,8 +256,9 @@ public:
 	auto label_name = label.get_lifetime ().get_lifetime_name ();
 	auto label_lifetime_node_id = label.get_lifetime ().get_node_id ();
 	resolver->get_label_scope ().insert (
-	  label_name, label_lifetime_node_id, label.get_locus (), false,
-	  [&] (std::string, NodeId, Location locus) -> void {
+	  CanonicalPath (label_name), label_lifetime_node_id,
+	  label.get_locus (), false,
+	  [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	    rust_error_at (label.get_locus (),
 			   "label redefined multiple times");
 	    rust_error_at (locus, "was defined here");
@@ -281,8 +283,8 @@ public:
 	  }
 
 	NodeId resolved_node = UNKNOWN_NODEID;
-	if (!resolver->get_label_scope ().lookup (label.get_lifetime_name (),
-						  &resolved_node))
+	if (!resolver->get_label_scope ().lookup (
+	      CanonicalPath (label.get_lifetime_name ()), &resolved_node))
 	  {
 	    rust_error_at (expr.get_label ().get_locus (),
 			   "failed to resolve label");
@@ -311,8 +313,9 @@ public:
 	auto label_name = label.get_lifetime ().get_lifetime_name ();
 	auto label_lifetime_node_id = label.get_lifetime ().get_node_id ();
 	resolver->get_label_scope ().insert (
-	  label_name, label_lifetime_node_id, label.get_locus (), false,
-	  [&] (std::string, NodeId, Location locus) -> void {
+	  CanonicalPath (label_name), label_lifetime_node_id,
+	  label.get_locus (), false,
+	  [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	    rust_error_at (label.get_locus (),
 			   "label redefined multiple times");
 	    rust_error_at (locus, "was defined here");
@@ -338,8 +341,8 @@ public:
 	  }
 
 	NodeId resolved_node = UNKNOWN_NODEID;
-	if (!resolver->get_label_scope ().lookup (label.get_lifetime_name (),
-						  &resolved_node))
+	if (!resolver->get_label_scope ().lookup (
+	      CanonicalPath (label.get_lifetime_name ()), &resolved_node))
 	  {
 	    rust_error_at (expr.get_label ().get_locus (),
 			   "failed to resolve label");
