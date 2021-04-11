@@ -12134,7 +12134,9 @@ instantiate_class_template_1 (tree type)
 
   /* Now that we've gone through all the members, instantiate those
      marked with attribute used.  */
-  for (tree x : used)
+  unsigned int i;
+  tree x;
+  FOR_EACH_VEC_ELT (used, i, x)
     mark_used (x);
 
   return type;
