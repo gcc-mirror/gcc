@@ -2715,6 +2715,18 @@ The default definition returns true.",
  bool, (machine_mode mode, rtx x),
  hook_bool_mode_rtx_true)
 
+/* True if X is a TLS operand whose value should be pre-computed.  */
+DEFHOOK
+(precompute_tls_p,
+ "This hook returns true if @var{x} is a TLS operand on the target\n\
+machine that should be pre-computed when used as the argument in a call.\n\
+You can assume that @var{x} satisfies @code{CONSTANT_P}, so you need not \n\
+check this.\n\
+\n\
+The default definition returns false.",
+ bool, (machine_mode mode, rtx x),
+ hook_bool_mode_rtx_false)
+
 /* True if the constant X cannot be placed in the constant pool.  */
 DEFHOOK
 (cannot_force_const_mem,
