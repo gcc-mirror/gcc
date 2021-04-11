@@ -39,8 +39,33 @@ winnt_d_os_builtins (void)
 #endif
 }
 
+/* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
+
+static tree
+winnt_d_handle_target_object_format (void)
+{
+  const char *objfmt = "coff";
+
+  return build_string_literal (strlen (objfmt) + 1, objfmt);
+}
+
+/* Implement TARGET_D_REGISTER_OS_TARGET_INFO for Windows targets.  */
+
+static void
+winnt_d_register_target_info (void)
+{
+  const struct d_target_info_spec handlers[] = {
+    { "objectFormat", winnt_d_handle_target_object_format },
+    { NULL, NULL },
+  };
+
+  d_add_target_info_handlers (handlers);
+}
 #undef TARGET_D_OS_VERSIONS
 #define TARGET_D_OS_VERSIONS winnt_d_os_builtins
+
+#undef TARGET_D_REGISTER_OS_TARGET_INFO
+#define TARGET_D_REGISTER_OS_TARGET_INFO winnt_d_register_target_info
 
 /* Define TARGET_D_MINFO_SECTION for Windows targets.  */
 

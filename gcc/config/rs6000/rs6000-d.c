@@ -63,6 +63,26 @@ rs6000_d_handle_target_float_abi (void)
   return build_string_literal (strlen (abi) + 1, abi);
 }
 
+/* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
+
+static tree
+rs6000_d_handle_target_object_format (void)
+{
+  const char *objfmt = NULL;
+
+  if (TARGET_ELF)
+    objfmt = "elf";
+  else if (TARGET_MACHO)
+    objfmt = "macho";
+  else if (TARGET_XCOFF)
+    objfmt = "coff";
+
+  if (objfmt == NULL)
+    return NULL_TREE;
+
+  return build_string_literal (strlen (objfmt) + 1, objfmt);
+}
+
 /* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
 
 void
@@ -70,6 +90,7 @@ rs6000_d_register_target_info (void)
 {
   const struct d_target_info_spec handlers[] = {
     { "floatAbi", rs6000_d_handle_target_float_abi },
+    { "objectFormat", rs6000_d_handle_target_object_format },
     { NULL, NULL },
   };
 
