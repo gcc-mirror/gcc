@@ -1,3 +1,34 @@
+2021-04-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99744
+	* config/i386/serializeintrin.h (_serialize): Defined as macro.
+
+2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/99849
+	* expr.c (expand_expr_addr_expr_1): Test is_global_var rather than
+	just TREE_STATIC on COMPOUND_LITERAL_EXPR_DECLs.
+
+2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99989
+	* gimple-ssa-warn-alloca.c
+	(alloca_type_and_limit::alloca_type_and_limit): Initialize limit to
+	0 with integer precision unconditionally.
+
+2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98601
+	* rtlanal.c (rtx_addr_can_trap_p_1): Allow in assert unknown size
+	not just for BLKmode, but also for VOIDmode.  For STRICT_ALIGNMENT
+	unaligned_mems handle VOIDmode like BLKmode.
+
+2021-04-10  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/99857
+	* tree.c (free_lang_data_in_decl): Do not release body of
+	declare_variant_alt.
+
 2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_option_restore): If the

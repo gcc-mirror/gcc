@@ -1,3 +1,55 @@
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Call DRUNTIME_SECTION_FLAGS.
+	* libdruntime/Makefile.am: Add SECTION_FLAGS to AM_DFLAGS.
+	* libdruntime/Makefile.in: Regenerate.
+	* m4/druntime.m4 (DRUNTIME_SECTION_FLAGS): New macro.
+	* src/Makefile.am: Add SECTION_FLAGS to AM_DFLAGS.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Removed
+	gcc/sections/android.d, elf_shared.d, osx.d, win32.d, and win64.d.
+	Added gcc/sections/common.d, elf.d macho.d, and pecoff.d.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/core/thread/osthread.d: Update externDFunc FQDN names to
+	use platform independant section function names.
+	* libdruntime/gcc/sections/elf_shared.d: Renamed to...
+	* libdruntime/gcc/sections/elf.d: ...this.  Mangle functions for
+	core.thread interface as if they come from the gcc.sections module.
+	* libdruntime/gcc/sections/package.d: Update public imports, declare
+	functions for core.thread interface.
+	* libdruntime/gcc/sections/android.d: Removed.
+	* libdruntime/gcc/sections/osx.d: Removed.
+	* libdruntime/gcc/sections/win32.d: Removed.
+	* libdruntime/gcc/sections/win64.d: Removed.
+	* libdruntime/gcc/sections/common.d: New file.
+	* libdruntime/gcc/sections/macho.d: New file.
+	* libdruntime/gcc/sections/pecoff.d: New file.
+
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.druntime/druntime.exp: Compile all tests with
+	-static-libphobos.
+	* testsuite/libphobos.phobos/phobos.exp: Likewise.
+
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* testsuite/libphobos.druntime/druntime.exp: Remove
+	is-effective-target static.
+	* testsuite/libphobos.phobos/phobos.exp: Likewise.
+
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99812
+	* testsuite/libphobos.druntime_shared/druntime_shared.exp: Re-add
+	-fno-moduleinfo flag to dg-runtest.
+	* testsuite/libphobos.phobos_shared/phobos_shared.exp: Likewise.
+
 2021-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* libdruntime/Makefile.am (DRUNTIME_DSOURCES): Add

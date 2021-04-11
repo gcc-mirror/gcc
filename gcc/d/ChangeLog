@@ -1,3 +1,7 @@
+2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd 0450061c8.
+
 2021-04-08  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-attribs.cc: Include fold-const.h and opts.h.

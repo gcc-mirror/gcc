@@ -1,3 +1,9 @@
+2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99990
+	* c-decl.c (finish_decl): Don't overwrite TREE_TYPE of
+	error_mark_node.
+
 2021-03-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/99565

@@ -1,3 +1,26 @@
+2021-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98800
+	PR c++/97399
+	* parser.c (cp_parser_direct_declarator): Don't
+	inject_this_parameter if static_p.
+	(cp_parser_omp_var_list_no_open): Parse 'this' even if
+	current_class_ptr isn't set for a better diagnostic.
+
+2021-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99180
+	PR c++/93295
+	PR c++/93867
+	PR c++/99118
+	PR c++/96873
+	* pt.c (alias_ctad_tweaks): Handle failure better.
+
+2021-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100006
+	* pt.c (find_parameter_packs_r) [TAG_DEFN]: Look into bases.
+
 2021-04-09  Patrick Palka  <ppalka@redhat.com>
 
 	* cp-tree.h (LAMBDA_EXPR_REGENERATED_FROM)
