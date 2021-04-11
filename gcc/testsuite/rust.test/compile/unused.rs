@@ -1,9 +1,9 @@
 
-fn bar() { // {dg-warning "function is never used: `bar`"}
+fn bar() {
     foo();
 }
 
-fn foo() { // {dg-warning "function is never used: `foo`"}
+fn foo() {
     bar();
 }
 

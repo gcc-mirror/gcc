@@ -2506,6 +2506,8 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
+  BlockExpr *get_block_expr () { return block_expr.get (); }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemFunc *clone_trait_item_impl () const override
@@ -2651,6 +2653,8 @@ public:
   Location get_locus () const { return locus; }
 
   void accept_vis (HIRVisitor &vis) override;
+
+  BlockExpr *get_block_expr () { return block_expr.get (); }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -3130,6 +3134,10 @@ public:
   TraitImpl &operator= (TraitImpl &&other) = default;
 
   void accept_vis (HIRVisitor &vis) override;
+  std::vector<std::unique_ptr<TraitImplItem> > &get_impl_items ()
+  {
+    return impl_items;
+  };
 
 protected:
   /* Use covariance to implement clone function as returning this object
