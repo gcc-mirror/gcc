@@ -41,7 +41,7 @@ Copyright @copyright{} 2008-2021, Free Software Foundation
 @c %** end of user preamble
 
 @ifnottex
-@node Top
+@node Top, About This Guide
 @top GNAT User's Guide for Native Platforms
 @insertcopying
 @end ifnottex
