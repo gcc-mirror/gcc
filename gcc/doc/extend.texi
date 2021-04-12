@@ -3848,23 +3848,33 @@ foo_v1 (void)
 Will produce a @code{.symver foo_v1, foo@@VERS_1} directive in the assembler
 output. 
 
-One can also define multiple version for a given symbol.
+One can also define multiple version for a given symbol
+(starting from binutils 2.35).
 
 @smallexample
 __attribute__ ((__symver__ ("foo@@VERS_2"), __symver__ ("foo@@VERS_3")))
 int symver_foo_v1 (void)
 @{
 @}
-
-__attribute__ ((__symver__ ("bar@@VERS_2")))
-__attribute__ ((__symver__ ("bar@@VERS_3")))
-int symver_bar_v1 (void)
-@{
-@}
 @end smallexample
 
-This example creates an alias of @code{foo_v1} with symbol name
-@code{symver_foo_v1} which will be version @code{VERS_2} of @code{foo}.
+This example creates a symbol name @code{symver_foo_v1}
+which will be version @code{VERS_2} and @code{VERS_3} of @code{foo}.
+
+If you have an older release of binutils, then symbol alias needs to
+be used:
+
+@smallexample
+__attribute__ ((__symver__ ("foo@@VERS_2")))
+int foo_v1 (void)
+{
+  return 0;
+}
+
+__attribute__ ((__symver__ ("foo@VERS_3")))
+__attribute__ ((alias ("foo_v1")))
+int symver_foo_v1 (void);
+@end smallexample
 
 Finally if the parameter is @code{"@var{name2}@@@@@var{nodename}"} then in
 addition to creating a symbol version (as if
