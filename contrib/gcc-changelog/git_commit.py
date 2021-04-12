@@ -416,7 +416,7 @@ class GitCommit:
                 self.errors.append(Error('trailing whitespace', line))
             if len(line.replace('\t', ' ' * TAB_WIDTH)) > LINE_LIMIT:
                 # support long filenames
-                if not line.startswith('\t* ') or not line.endswith(':'):
+                if not line.startswith('\t* ') or not line.endswith(':') or ' ' in line[3:-1]:
                     self.errors.append(Error('line exceeds %d character limit'
                                              % LINE_LIMIT, line))
             m = changelog_regex.match(line)
