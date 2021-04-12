@@ -18,5 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // libstdc++/49745
-#include <iostream>
+#include <bits/stdc++.h>
 int truncate = 0;
+
+// { dg-xfail-if "PR libstdc++/99995" { c++20 } }
