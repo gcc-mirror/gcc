@@ -262,6 +262,9 @@ func addtimer(t *timer) {
 
 	when := t.when
 
+	// Disable preemption while using pp to avoid changing another P's heap.
+	mp := acquirem()
+
 	pp := getg().m.p.ptr()
 	lock(&pp.timersLock)
 	cleantimers(pp)
@@ -269,6 +272,8 @@ func addtimer(t *timer) {
 	unlock(&pp.timersLock)
 
 	wakeNetPoller(when)
+
+	releasem(mp)
 }
 
 // doaddtimer adds t to the current P's heap.
