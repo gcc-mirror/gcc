@@ -331,6 +331,15 @@ build_base_path (enum tree_code code,
       return error_mark_node;
     }
 
+  bool uneval = (cp_unevaluated_operand != 0
+		 || processing_template_decl
+		 || in_template_function ());
+
+  /* For a non-pointer simple base reference, express it as a COMPONENT_REF
+     without taking its address (and so causing lambda capture, 91933).  */
+  if (code == PLUS_EXPR && !v_binfo && !want_pointer && !has_empty && !uneval)
+    return build_simple_base_path (expr, binfo);
+
   if (!want_pointer)
     {
       rvalue = !lvalue_p (expr);
@@ -358,9 +367,7 @@ build_base_path (enum tree_code code,
      template (even in instantiate_non_dependent_expr), we don't have vtables
      set up properly yet, and the value doesn't matter there either; we're
      just interested in the result of overload resolution.  */
-  if (cp_unevaluated_operand != 0
-      || processing_template_decl
-      || in_template_function ())
+  if (uneval)
     {
       expr = build_nop (ptr_target_type, expr);
       goto indout;
