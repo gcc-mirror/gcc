@@ -1,3 +1,7 @@
+2021-04-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gnat_ugn.texi (Top): Avoid invalid "up" link.
+
 2021-03-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/99802

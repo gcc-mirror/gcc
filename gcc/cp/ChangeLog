@@ -1,3 +1,9 @@
+2021-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97974
+	* decl.c (fixup_anonymous_aggr): Prune all functions from
+	CLASSTYPE_MEMBER_VEC.
+
 2021-04-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/98800

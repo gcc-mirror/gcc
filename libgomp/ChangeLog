@@ -1,3 +1,10 @@
+2021-04-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	PR middle-end/98088
+	* testsuite/libgomp.oacc-c-c++-common/collapse-2.c: Add check
+	for loop with GT/GE condition.
+	* testsuite/libgomp.oacc-c-c++-common/collapse-3.c: Likewise.
+
 2021-04-09  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/84991
