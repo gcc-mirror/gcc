@@ -36,11 +36,105 @@ public:
   static std::set<HirId> Analysis (HIR::Crate &crate);
   void go (HIR::Crate &crate);
 
-  void visit (HIR::ExprStmtWithoutBlock &stmt) override;
-  void visit (HIR::CallExpr &expr) override;
-  void visit (HIR::Function &function) override;
-  void visit (HIR::BlockExpr &expr) override;
   void visit (HIR::PathInExpression &expr) override;
+  void visit (HIR::IdentifierExpr &expr) override;
+
+  void visit (HIR::BlockExpr &expr) override
+  {
+    expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
+      s->accept_vis (*this);
+      return true;
+    });
+    if (expr.has_expr ())
+      {
+	expr.get_final_expr ().get ()->accept_vis (*this);
+      }
+  }
+  void visit (HIR::Function &function) override
+  {
+    function.get_definition ().get ()->accept_vis (*this);
+  }
+
+  void visit (HIR::ExprStmtWithoutBlock &stmt) override
+  {
+    stmt.get_expr ()->accept_vis (*this);
+  }
+
+  void visit (HIR::ExprStmtWithBlock &stmt) override
+  {
+    stmt.get_expr ()->accept_vis (*this);
+  }
+
+  void visit (HIR::CallExpr &expr) override
+  {
+    expr.get_fnexpr ()->accept_vis (*this);
+  }
+
+  void visit (HIR::ArithmeticOrLogicalExpr &expr) override
+  {
+    expr.visit_lhs (*this);
+    expr.visit_rhs (*this);
+  }
+  void visit (HIR::ComparisonExpr &expr) override
+  {
+    expr.get_lhs ()->accept_vis (*this);
+    expr.get_rhs ()->accept_vis (*this);
+  }
+  void visit (HIR::AssignmentExpr &expr) override
+  {
+    expr.visit_lhs (*this);
+    expr.visit_rhs (*this);
+  }
+  void visit (HIR::Method &method) override
+  {
+    method.get_definition ().get ()->accept_vis (*this);
+  }
+  void visit (HIR::TraitItemFunc &item) override
+  {
+    item.get_block_expr ()->accept_vis (*this);
+  }
+  void visit (HIR::TraitItemMethod &item) override
+  {
+    item.get_block_expr ()->accept_vis (*this);
+  }
+  void visit (HIR::InherentImpl &impl) override
+  {
+    for (auto &&item : impl.get_impl_items ())
+      {
+	item.get ()->accept_vis (*this);
+      }
+  }
+  void visit (HIR::TraitImpl &impl) override
+  {
+    for (auto &&item : impl.get_impl_items ())
+      {
+	item.get ()->accept_vis (*this);
+      }
+  }
+  void visit (HIR::LetStmt &stmt) override
+  {
+    if (stmt.has_init_expr ())
+      {
+	stmt.get_init_expr ()->accept_vis (*this);
+      }
+  }
+
+  void visit (HIR::StructExprStructFields &stct) override
+  {
+    stct.iterate ([&] (HIR::StructExprField *field) -> bool {
+      field->accept_vis (*this);
+      return true;
+    });
+    if (stct.has_struct_base ())
+      {
+	stct.struct_base->base_struct.get ()->accept_vis (*this);
+      }
+  }
+
+  void visit (HIR::StructExprStructBase &stct) override
+  {
+    stct.get_struct_base ()->base_struct.get ()->accept_vis (*this);
+  }
 
 private:
   std::vector<HirId> worklist;

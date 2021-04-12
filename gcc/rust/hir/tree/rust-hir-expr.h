@@ -1635,6 +1635,7 @@ public:
   {}
 
   void accept_vis (HIRVisitor &vis) override;
+  StructBase *get_struct_base () { return &struct_base; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

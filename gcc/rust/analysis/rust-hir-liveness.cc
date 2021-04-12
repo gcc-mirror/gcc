@@ -65,31 +65,27 @@ Liveness::Analysis (HIR::Crate &crate)
 void
 Liveness::go (HIR::Crate &crate)
 {
+  CrateNum crateNum = crate.get_mappings ().get_crate_num ();
   while (!worklist.empty ())
     {
       HirId hirId = worklist.back ();
       worklist.pop_back ();
       scannedSymbols.emplace (hirId);
-      HIR::Item *item
-	= mappings->lookup_hir_item (crate.get_mappings ().get_crate_num (),
-				     hirId);
-      if (item == nullptr)
-	continue;
+      HIR::Item *item = mappings->lookup_hir_item (crateNum, hirId);
       liveSymbols.emplace (hirId);
-      item->accept_vis (*this);
+      if (item != nullptr)
+	{
+	  item->accept_vis (*this);
+	}
+      else
+	{ // the item maybe inside a trait impl
+	  HirId parent_impl_id = UNKNOWN_HIRID;
+	  HIR::InherentImplItem *implItem
+	    = mappings->lookup_hir_implitem (crateNum, hirId, &parent_impl_id);
+	  if (implItem != nullptr)
+	    implItem->accept_vis (*this);
+	}
     }
-}
-
-void
-Liveness::visit (HIR::ExprStmtWithoutBlock &stmt)
-{
-  stmt.get_expr ()->accept_vis (*this);
-}
-
-void
-Liveness::visit (HIR::CallExpr &expr)
-{
-  expr.get_fnexpr ()->accept_vis (*this);
 }
 
 void
@@ -114,7 +110,7 @@ Liveness::visit (HIR::PathInExpression &expr)
 	  rust_error_at (expr.get_locus (), "reverse lookup failure");
 	  return;
 	}
-      if (scannedSymbols.find (ref) != scannedSymbols.end ())
+      if (scannedSymbols.find (ref) == scannedSymbols.end ())
 	{
 	  worklist.push_back (ref);
 	}
@@ -123,18 +119,47 @@ Liveness::visit (HIR::PathInExpression &expr)
 }
 
 void
-Liveness::visit (HIR::Function &function)
+Liveness::visit (HIR::IdentifierExpr &expr)
 {
-  function.get_definition ().get ()->accept_vis (*this);
-}
+  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
 
-void
-Liveness::visit (HIR::BlockExpr &expr)
-{
-  expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-    s->accept_vis (*this);
-    return true;
-  });
+  // then lookup the reference_node_id
+  NodeId ref_node_id = UNKNOWN_NODEID;
+  if (resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
+    {
+      // these ref_node_ids will resolve to a pattern declaration but we are
+      // interested in the definition that this refers to get the parent id
+      Resolver::Definition def;
+      if (!resolver->lookup_definition (ref_node_id, &def))
+	{
+	  rust_error_at (expr.get_locus (),
+			 "unknown reference for resolved name");
+	  return;
+	}
+      ref_node_id = def.parent;
+    }
+
+  if (ref_node_id == UNKNOWN_NODEID)
+    {
+      rust_error_at (expr.get_locus (), "unresolved node: %s",
+		     expr.as_string ().c_str ());
+      return;
+    }
+
+  // node back to HIR
+  HirId ref;
+  if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
+				     ref_node_id, &ref))
+    {
+      rust_error_at (expr.get_locus (), "reverse lookup failure");
+      return;
+    }
+
+  if (scannedSymbols.find (ref) == scannedSymbols.end ())
+    {
+      worklist.push_back (ref);
+    }
+  liveSymbols.emplace (ref);
 }
 
 } // namespace Analysis
