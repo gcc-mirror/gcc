@@ -3729,6 +3729,11 @@ package body Sem_Warn is
 
       if Nkind (N) not in N_Subprogram_Call | N_Entry_Call_Statement then
          return;
+
+      --  Guard against previous errors
+
+      elsif Error_Posted (N) then
+         return;
       end if;
 
       --  If a call C has two or more parameters of mode in out or out that are
@@ -3800,10 +3805,9 @@ package body Sem_Warn is
                   and then Is_Composite_Type (Etype (Form1)))
                then
 
-               --  Guard against previous errors
+                  --  Guard against previous errors
 
-                  if Error_Posted (N)
-                    or else No (Etype (Act1))
+                  if No (Etype (Act1))
                     or else No (Etype (Act2))
                   then
                      null;
