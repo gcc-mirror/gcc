@@ -23046,6 +23046,9 @@ Intel Core i7 sapphirerapids CPU.
 @item alderlake
 Intel Core i7 Alderlake CPU.
 
+@item rocketlake
+Intel Core i7 Rocketlake CPU.
+
 @item bonnell
 Intel Atom Bonnell CPU.
 
