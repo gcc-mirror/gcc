@@ -10170,7 +10170,7 @@ simplify_and_const_int_1 (scalar_int_mode mode, rtx varop,
   constop &= nonzero;
 
   /* If we don't have any bits left, return zero.  */
-  if (constop == 0)
+  if (constop == 0 && !side_effects_p (varop))
     return const0_rtx;
 
   /* If VAROP is a NEG of something known to be zero or 1 and CONSTOP is
