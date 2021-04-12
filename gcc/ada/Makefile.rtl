@@ -1457,12 +1457,12 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7%,$(target_cpu) $(targ
         endif
       endif
 
-      EXTRA_GNATRTL_NONTASKING_OBJS += i-vxwork.o i-vxwoio.o
+      EXTRA_GNATRTL_NONTASKING_OBJS += i-vxinco.o i-vxwork.o i-vxwoio.o
     endif
   endif
 
   EXTRA_GNATRTL_NONTASKING_OBJS += s-stchop.o
-  EXTRA_GNATRTL_TASKING_OBJS += i-vxinco.o s-vxwork.o s-vxwext.o
+  EXTRA_GNATRTL_TASKING_OBJS += s-vxwork.o s-vxwext.o
 
   EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
 
