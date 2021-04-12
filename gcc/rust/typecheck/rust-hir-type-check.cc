@@ -22,6 +22,7 @@
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-struct-field.h"
+#include "rust-hir-inherent-impl-overlap.h"
 
 extern bool
 saw_errors (void);
@@ -35,6 +36,10 @@ TypeResolution::Resolve (HIR::Crate &crate)
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     TypeCheckTopLevel::Resolve (it->get ());
 
+  if (saw_errors ())
+    return;
+
+  OverlappingImplItemPass::go ();
   if (saw_errors ())
     return;
 
