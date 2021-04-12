@@ -1,3 +1,5 @@
+// { dg-prune-output "warning: unused name" } as there are many of these expected.
+
 fn main() {
     let a1: f32 = 1.0f32;
     let a2: f64 = 2.0f64;

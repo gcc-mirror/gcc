@@ -4,4 +4,5 @@ fn foo() -> isize {
 
 fn main() {
     let a = foo();
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

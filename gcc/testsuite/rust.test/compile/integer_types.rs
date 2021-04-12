@@ -1,3 +1,5 @@
+// { dg-prune-output "warning: unused name" } as there are many of these expected.
+
 fn main() {
     let a1: i8 = 1i8;
     let a2: i16 = 2i16;

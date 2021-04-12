@@ -8,4 +8,5 @@ fn gcd(x: i32, y: i32) -> i32 {
 
 fn main() {
     let a = gcd(100, 5);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

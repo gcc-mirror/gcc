@@ -29,7 +29,7 @@ dg-init
 set saved-dg-do-what-default ${dg-do-what-default}
 
 set dg-do-what-default "compile"
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.rs]] "" "-w"
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.rs]] "" ""
 set dg-do-what-default ${saved-dg-do-what-default}
 
 # All done.

@@ -36,6 +36,8 @@ fn main() {
     let rect = Rectangle::from(p1, p2);
 
     let sum = rect.sum_x();
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     // multiple MethodCallExpr were causing issue #310
     let sum = rect.sum_x();
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

@@ -20,7 +20,9 @@ fn test5(x: i32) -> i32 {
 
 fn main() {
     let call3: i32 = { test3(3) + 2 };
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let call5 = {
+        // { dg-warning "unused name" "" { target *-*-* } .-1 }
         let a = test5(5);
         a + 1
     };

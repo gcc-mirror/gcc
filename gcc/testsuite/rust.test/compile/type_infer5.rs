@@ -8,4 +8,5 @@ fn main() {
     a = Foo { a: 1, b: 2 };
 
     let b = a.a;
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

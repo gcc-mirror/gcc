@@ -11,4 +11,5 @@ fn main() {
         b: true,
     };
     let b: i32 = a.a.0;
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

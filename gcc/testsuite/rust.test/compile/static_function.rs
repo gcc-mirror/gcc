@@ -4,4 +4,5 @@ fn test(x: i32) -> i32 {
 
 fn main() {
     let call_test = test(1);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

@@ -28,7 +28,11 @@ fn main() {
     let c: bool = is_positive(3);
     let d: bool = is_negative(4);
     let e: bool = is_positive_or_zero(5);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let f: bool = is_negative_or_zero(6);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let g: bool = a || b;
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let h: bool = c && d;
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

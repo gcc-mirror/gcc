@@ -6,6 +6,7 @@ fn test(x: u32) -> u32 {
 
 fn main() {
     let x = TEST_CONST;
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 
     let a = 1u32;
     let b = a;
@@ -20,4 +21,5 @@ fn main() {
     param = 123;
 
     let test_call = test(param);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

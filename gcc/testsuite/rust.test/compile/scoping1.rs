@@ -7,4 +7,5 @@ fn main() {
         }
     }
     let x = x + 1;
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

@@ -1,3 +1,5 @@
+// { dg-prune-output "warning: unused name" } as there are many of these expected.
+
 fn main() {
     let hex: i32 = 0xFF;
     let binary: i32 = 0b11110000;

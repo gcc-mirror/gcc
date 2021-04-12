@@ -55,11 +55,19 @@ fn test8() -> i32 {
 
 fn main() {
     let call1 = test1();
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let call2 = test2();
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let call3 = test3(3);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let call4 = test4(4);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let call5 = test5(5);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let call6 = test6(6);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let call7 = test7(7);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
     let call8 = test8();
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }
