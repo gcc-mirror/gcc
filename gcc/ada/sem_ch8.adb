@@ -3299,7 +3299,9 @@ package body Sem_Ch8 is
                Style.Missing_Overriding (N, Rename_Spec);
             end if;
 
-         elsif Must_Override (Specification (N)) then
+         elsif Must_Override (Specification (N))
+           and then not Can_Override_Operator (Rename_Spec)
+         then
             Error_Msg_NE ("subprogram& is not overriding", N, Rename_Spec);
          end if;
 
