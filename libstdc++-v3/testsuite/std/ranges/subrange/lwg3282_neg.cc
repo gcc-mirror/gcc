@@ -29,3 +29,18 @@ struct Base {};
 struct Derived : Base {};
 subrange<Derived*> sd;
 subrange<Base*> sb = sd; // { dg-error "conversion" }
+
+void
+test_lwg3404()
+{
+  // LWG 3404. Finish removing subrange's conversions from pair-like
+  std::pair<char*, char*> p;
+  subrange sb1(p);			// { dg-error "no matching function" }
+  // { dg-error "class template argument deduction" "" { target *-*-* } 38 }
+  subrange sb2(p, p.second - p.first);	// { dg-error "no matching function" }
+  // { dg-error "class template argument deduction" "" { target *-*-* } 40 }
+
+  // { dg-prune-output "in requirements with" }
+  // { dg-prune-output "template constraint failure" }
+  // { dg-prune-output "unsatisfied constraints" }
+}
