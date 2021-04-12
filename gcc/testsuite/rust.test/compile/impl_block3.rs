@@ -28,4 +28,5 @@ fn main() {
     let p1 = Point::origin();
     let p2 = Point::new(3.0, 4.0);
     let rect = Rectangle::from(p1, p2);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

@@ -15,4 +15,5 @@ fn main() {
         b: true,
     };
     let b: Foo<i32> = test(a);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

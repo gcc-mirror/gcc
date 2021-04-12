@@ -14,4 +14,5 @@ fn main() {
     let rect = Rectangle { p1, p2 };
 
     let a = rect.p1.x;
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

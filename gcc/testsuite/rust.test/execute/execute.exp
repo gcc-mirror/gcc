@@ -28,7 +28,7 @@ dg-init
 set saved-dg-do-what-default ${dg-do-what-default}
 
 set dg-do-what-default "run"
-gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.rs]] "" "-w"
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.rs]] "" ""
 set dg-do-what-default ${saved-dg-do-what-default}
 
 # All done.

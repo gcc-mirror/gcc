@@ -1,5 +1,3 @@
-// { dg-excess-errors "Noisy error and debug" }
-
 struct Foo(i32, bool);
 
 impl Foo {

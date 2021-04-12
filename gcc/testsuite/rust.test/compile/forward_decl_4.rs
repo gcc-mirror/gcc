@@ -3,6 +3,7 @@ fn main() {
     x = x + 1;
 
     let mut y = x + TEST_CONST;
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }
 
 const TEST_CONST: i32 = 10;

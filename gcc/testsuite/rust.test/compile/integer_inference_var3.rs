@@ -7,4 +7,5 @@ fn main() {
     param = 123;
 
     let a = test(param);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

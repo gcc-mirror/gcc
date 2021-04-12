@@ -6,4 +6,5 @@ struct Foo {
 fn main() {
     let a = Foo { a: 1, b: 2 };
     let b = Foo { a: 3, b: 4, ..a };
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }

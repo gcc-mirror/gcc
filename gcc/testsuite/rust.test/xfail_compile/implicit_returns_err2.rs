@@ -2,6 +2,7 @@
 
 fn test(x: i32) -> i32 {
     return 1;
+    // { dg-warning "unreachable expression" "" { target *-*-* } .+1 }
     true
 }
 

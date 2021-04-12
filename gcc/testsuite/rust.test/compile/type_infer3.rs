@@ -10,4 +10,5 @@ fn main() {
     x = 1;
 
     let call_test = test(1);
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }
