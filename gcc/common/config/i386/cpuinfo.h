@@ -476,6 +476,7 @@ get_intel_cpu (struct __processor_model *cpu_model,
       cpu_model->__cpu_subtype = INTEL_COREI7_TIGERLAKE;
       break;
     case 0x97:
+    case 0x9a:
       /* Alder Lake.  */
       cpu = "alderlake";
       CHECK___builtin_cpu_is ("corei7");
