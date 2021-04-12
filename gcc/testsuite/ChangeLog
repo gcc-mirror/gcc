@@ -1,3 +1,125 @@
+2021-04-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	PR middle-end/98088
+	* c-c++-common/goacc/collapse-2.c: New.
+
+2021-04-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97974
+	* g++.dg/lookup/pr84962.C: Adjust diagnostic.
+	* g++.dg/other/anon-union5.C: New test.
+
+2021-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/98800
+	* g++.dg/gomp/this-1.C: Adjust diagnostic.
+	* g++.dg/cpp0x/constexpr-this1.C: New test.
+
+2021-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100011
+	* gcc.dg/analyzer/pr100011.c: New test.
+
+2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99990
+	* gcc.dg/pr99990.c: New test.
+
+2021-04-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99744
+	* gcc.target/i386/pr99744-2.c: New test.
+
+2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/99849
+	* gcc.dg/lto/pr99849_0.c: New test.
+
+2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98601
+	* gcc.dg/torture/pr98601.c: New test.
+
+2021-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99180
+	PR c++/93295
+	PR c++/93867
+	PR c++/95486
+	* g++.dg/cpp2a/class-deduction-alias5.C: New test.
+	* g++.dg/cpp2a/class-deduction-alias6.C: New test.
+	* g++.dg/cpp2a/class-deduction-alias7.C: New test.
+	* g++.dg/cpp2a/class-deduction-alias8.C: New test.
+
+2021-04-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100006
+	* g++.dg/cpp0x/lambda/lambda-variadic13.C: New test.
+
+2021-04-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/55288
+	* g++.dg/warn/uninit-pr55288.C: New test.
+
+2021-04-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/90215
+	* g++.dg/cpp1z/fold-lambda4.C: New test.
+
+2021-04-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99806
+	* g++.dg/concepts/abbrev10.C: New test.
+	* g++.dg/concepts/abbrev11.C: New test.
+
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/pr70398.c: Require a target that can link
+	static executables.
+
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/bfloat_cpp_typecheck.C: Remove XFAILs.
+
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gfortran.dg/vect/vect-8.f90: Expect 24 loops to be vectorized
+	with SVE.
+
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.dg/tree-ssa/pr83518.C: XFAIL for vect_variable_length.
+	* gcc.dg/pr96573.c: Likewise.
+	* gcc.dg/tree-ssa/pr84512.c: Likewise.
+	* gcc.dg/vect/bb-slp-43.c: Likewise.
+	* gcc.dg/vect/slp-reduc-11.c: Likewise.
+
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/vect/pr65947-7.c: Add a noipa attribute.  Expect the
+	loop to vectorized if vect_fold_extract_last.
+
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/mem-shift-canonical.c: Use an asm instead
+	of relying on vectorisation.
+
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/87763
+	* gcc.target/aarch64/insv_1.c: XFAIL two scan tests.
+
+2021-04-09  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR libfortran/78314
+	* gfortran.dg/ieee/ieee_6.f90: Skip for arm* and aarch64*.
+	* gfortran.dg/ieee/ieee_8.f90: Likewise.
+
+2021-04-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99817
+	* gfortran.dg/coarray/dummy_2.f90: New test.
+
 2021-04-08  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/gomp/tls-5.C: Expect tbss failure on AIX.

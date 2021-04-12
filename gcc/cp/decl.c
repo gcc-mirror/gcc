@@ -5005,6 +5005,14 @@ fixup_anonymous_aggr (tree t)
     else
       prev_p = &DECL_CHAIN (probe);
 
+  /* Splice all functions out of CLASSTYPE_MEMBER_VEC.  */
+  vec<tree,va_gc>* vec = CLASSTYPE_MEMBER_VEC (t);
+  unsigned store = 0;
+  for (tree elt : vec)
+    if (!is_overloaded_fn (elt))
+      (*vec)[store++] = elt;
+  vec_safe_truncate (vec, store);
+
   /* Anonymous aggregates cannot have fields with ctors, dtors or complex
      assignment operators (because they cannot have these methods themselves).
      For anonymous unions this is already checked because they are not allowed

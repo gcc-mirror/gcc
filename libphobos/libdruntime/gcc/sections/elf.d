@@ -20,7 +20,7 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-module gcc.sections.elf_shared;
+module gcc.sections.elf;
 
 version (MIPS32)  version = MIPS_Any;
 version (MIPS64)  version = MIPS_Any;
@@ -39,7 +39,6 @@ else version (Solaris) enum SharedELF = true;
 else enum SharedELF = false;
 static if (SharedELF):
 
-// debug = PRINTF;
 import core.memory;
 import core.stdc.config;
 import core.stdc.stdio;
@@ -81,25 +80,14 @@ else
     static assert(0, "unimplemented");
 }
 import core.sys.posix.pthread;
-import gcc.builtins;
-import gcc.config;
 import rt.deh;
 import rt.dmain2;
 import rt.minfo;
 import rt.util.container.array;
 import rt.util.container.hashtab;
-
-/****
- * Asserts the specified condition, independent from -release, by abort()ing.
- * Regular assertions throw an AssertError and thus require an initialized
- * GC, which isn't the case (yet or anymore) for the startup/shutdown code in
- * this module (called by CRT ctors/dtors etc.).
- */
-private void safeAssert(bool condition, scope string msg, size_t line = __LINE__) @nogc nothrow @safe
-{
-    import core.internal.abort;
-    condition || abort(msg, __FILE__, line);
-}
+import gcc.builtins;
+import gcc.config;
+import gcc.sections.common;
 
 alias DSO SectionGroup;
 struct DSO
@@ -132,11 +120,6 @@ struct DSO
     @property ref inout(ModuleGroup) moduleGroup() inout nothrow @nogc
     {
         return _moduleGroup;
-    }
-
-    @property immutable(FuncTable)[] ehTables() const nothrow @nogc
-    {
-        return null;
     }
 
     @property inout(void[])[] gcRanges() inout nothrow @nogc
@@ -177,22 +160,12 @@ private:
 __gshared bool _isRuntimeInitialized;
 
 
-version (FreeBSD) private __gshared void* dummy_ref;
-version (DragonFlyBSD) private __gshared void* dummy_ref;
-version (NetBSD) private __gshared void* dummy_ref;
-version (Solaris) private __gshared void* dummy_ref;
-
 /****
  * Gets called on program startup just before GC is initialized.
  */
 void initSections() nothrow @nogc
 {
     _isRuntimeInitialized = true;
-    // reference symbol to support weak linkage
-    version (FreeBSD) dummy_ref = &_d_dso_registry;
-    version (DragonFlyBSD) dummy_ref = &_d_dso_registry;
-    version (NetBSD) dummy_ref = &_d_dso_registry;
-    version (Solaris) dummy_ref = &_d_dso_registry;
 }
 
 
@@ -208,6 +181,9 @@ alias ScanDG = void delegate(void* pbeg, void* pend) nothrow;
 
 version (Shared)
 {
+    import gcc.sections : pinLoadedLibraries, unpinLoadedLibraries,
+           inheritLoadedLibraries, cleanupLoadedLibraries;
+
     /***
      * Called once per thread; returns array of thread local storage ranges
      */
@@ -248,6 +224,7 @@ version (Shared)
     }
 
     // interface for core.thread to inherit loaded libraries
+    pragma(mangle, gcc.sections.pinLoadedLibraries.mangleof)
     void* pinLoadedLibraries() nothrow @nogc
     {
         auto res = cast(Array!(ThreadDSO)*)calloc(1, Array!(ThreadDSO).sizeof);
@@ -266,6 +243,7 @@ version (Shared)
         return res;
     }
 
+    pragma(mangle, gcc.sections.unpinLoadedLibraries.mangleof)
     void unpinLoadedLibraries(void* p) nothrow @nogc
     {
         auto pary = cast(Array!(ThreadDSO)*)p;
@@ -285,6 +263,7 @@ version (Shared)
 
     // Called before TLS ctors are ran, copy over the loaded libraries
     // of the parent thread.
+    pragma(mangle, gcc.sections.inheritLoadedLibraries.mangleof)
     void inheritLoadedLibraries(void* p) nothrow @nogc
     {
         safeAssert(_loadedDSOs.empty, "DSOs have already been registered for this thread.");
@@ -298,6 +277,7 @@ version (Shared)
     }
 
     // Called after all TLS dtors ran, decrements all remaining dlopen refs.
+    pragma(mangle, gcc.sections.cleanupLoadedLibraries.mangleof)
     void cleanupLoadedLibraries() nothrow @nogc
     {
         foreach (ref tdso; _loadedDSOs)
@@ -403,12 +383,6 @@ version (Shared)
      */
     __gshared pthread_mutex_t _handleToDSOMutex;
     @property ref HashTab!(void*, DSO*) _handleToDSO() @nogc nothrow { __gshared HashTab!(void*, DSO*) x; return x; }
-
-    /*
-     * Section in executable that contains copy relocations.
-     * Might be null when druntime is dynamically loaded by a C host.
-     */
-    __gshared const(void)[] _copyRelocSection;
 }
 else
 {
@@ -974,29 +948,6 @@ bool findSegmentForAddr(in ref dl_phdr_info info, in void* addr, ElfW!"Phdr"* re
         }
     }
     return false;
-}
-
-version (linux) import core.sys.linux.errno : program_invocation_name;
-// should be in core.sys.freebsd.stdlib
-version (FreeBSD) extern(C) const(char)* getprogname() nothrow @nogc;
-version (DragonFlyBSD) extern(C) const(char)* getprogname() nothrow @nogc;
-version (NetBSD) extern(C) const(char)* getprogname() nothrow @nogc;
-version (Solaris) extern(C) const(char)* getprogname() nothrow @nogc;
-
-@property const(char)* progname() nothrow @nogc
-{
-    version (linux) return program_invocation_name;
-    version (FreeBSD) return getprogname();
-    version (DragonFlyBSD) return getprogname();
-    version (NetBSD) return getprogname();
-    version (Solaris) return getprogname();
-}
-
-const(char)[] dsoName(const char* dlpi_name) nothrow @nogc
-{
-    // the main executable doesn't have a name in its dlpi_name field
-    const char* p = dlpi_name[0] != 0 ? dlpi_name : progname;
-    return p[0 .. strlen(p)];
 }
 
 /**************************

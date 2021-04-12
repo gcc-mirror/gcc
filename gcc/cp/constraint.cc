@@ -3193,7 +3193,7 @@ satisfy_declaration_constraints (tree t, sat_info info)
 	 arguments that were used to regenerate the lambda.  */
       gcc_assert (!args || TMPL_ARGS_DEPTH (args) == 1);
       tree lambda = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (t));
-      tree outer_args = LAMBDA_EXPR_REGENERATING_TARGS (lambda);
+      tree outer_args = TI_ARGS (LAMBDA_EXPR_REGEN_INFO (lambda));
       if (args)
 	args = add_to_template_args (outer_args, args);
       else
@@ -3256,7 +3256,7 @@ satisfy_declaration_constraints (tree t, tree args, sat_info info)
       /* As in the two-parameter version of this function.  */
       gcc_assert (TMPL_ARGS_DEPTH (args) == 1);
       tree lambda = CLASSTYPE_LAMBDA_EXPR (DECL_CONTEXT (t));
-      tree outer_args = LAMBDA_EXPR_REGENERATING_TARGS (lambda);
+      tree outer_args = TI_ARGS (LAMBDA_EXPR_REGEN_INFO (lambda));
       args = add_to_template_args (outer_args, args);
     }
   else

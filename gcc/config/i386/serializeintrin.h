@@ -34,12 +34,7 @@
 #define __DISABLE_SERIALIZE__
 #endif /* __SERIALIZE__ */
 
-extern __inline void
-__attribute__((__gnu_inline__, __always_inline__, __artificial__))
-_serialize (void)
-{
-  __builtin_ia32_serialize ();
-}
+#define _serialize()	__builtin_ia32_serialize ()
 
 #ifdef __DISABLE_SERIALIZE__
 #undef __DISABLE_SERIALIZE__

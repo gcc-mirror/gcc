@@ -5849,7 +5849,7 @@ free_lang_data_in_decl (tree decl, class free_lang_data_d *fld)
       if (!(node = cgraph_node::get (decl))
 	  || (!node->definition && !node->clones))
 	{
-	  if (node)
+	  if (node && !node->declare_variant_alt)
 	    node->release_body ();
 	  else
 	    {

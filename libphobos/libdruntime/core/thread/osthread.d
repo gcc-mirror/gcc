@@ -510,7 +510,7 @@ class Thread : ThreadBase
                 {
                     version (GNU)
                     {
-                        auto libs = externDFunc!("gcc.sections.elf_shared.pinLoadedLibraries",
+                        auto libs = externDFunc!("gcc.sections.pinLoadedLibraries",
                                                  void* function() @nogc nothrow)();
                     }
                     else
@@ -527,7 +527,7 @@ class Thread : ThreadBase
                     {
                         version (GNU)
                         {
-                            externDFunc!("gcc.sections.elf_shared.unpinLoadedLibraries",
+                            externDFunc!("gcc.sections.unpinLoadedLibraries",
                                          void function(void*) @nogc nothrow)(libs);
                         }
                         else
@@ -2196,7 +2196,7 @@ else version (Posix)
             // before initilizing GC for TLS (rt_tlsgc_init)
             version (GNUShared)
             {
-                externDFunc!("gcc.sections.elf_shared.inheritLoadedLibraries",
+                externDFunc!("gcc.sections.inheritLoadedLibraries",
                              void function(void*) @nogc nothrow)(loadedLibraries);
             }
             else version (Shared)
@@ -2287,7 +2287,7 @@ else version (Posix)
                 rt_moduleTlsDtor();
                 version (GNUShared)
                 {
-                    externDFunc!("gcc.sections.elf_shared.cleanupLoadedLibraries",
+                    externDFunc!("gcc.sections.cleanupLoadedLibraries",
                                  void function() @nogc nothrow)();
                 }
                 else version (Shared)
@@ -2786,7 +2786,7 @@ private size_t adjustStackSize(size_t sz) nothrow @nogc
         // On glibc, TLS uses the top of the stack, so add its size to the requested size
         version (GNU)
         {
-            sz += externDFunc!("gcc.sections.elf_shared.sizeOfTLS",
+            sz += externDFunc!("gcc.sections.elf.sizeOfTLS",
                                size_t function() @nogc nothrow)();
         }
         else

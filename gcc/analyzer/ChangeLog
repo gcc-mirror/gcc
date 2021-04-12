@@ -1,3 +1,9 @@
+2021-04-10  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100011
+	* region-model.cc (region_model::on_assignment): Avoid NULL
+	dereference if ctxt is NULL when assigning from a STRING_CST.
+
 2021-04-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99042

@@ -4061,6 +4061,15 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
       *walk_subtrees = 0;
       return NULL_TREE;
 
+    case TAG_DEFN:
+      /* Local class, need to look through the whole definition.  */
+      t = TREE_TYPE (t);
+      if (CLASS_TYPE_P (t))
+	for (tree bb : BINFO_BASE_BINFOS (TYPE_BINFO (t)))
+	  cp_walk_tree (&BINFO_TYPE (bb), &find_parameter_packs_r,
+			ppd, ppd->visited);
+      return NULL_TREE;
+
     default:
       return NULL_TREE;
     }
@@ -14356,7 +14365,7 @@ regenerated_lambda_fn_p (tree fn)
     return false;
   tree closure = DECL_CONTEXT (fn);
   tree lam = CLASSTYPE_LAMBDA_EXPR (closure);
-  return LAMBDA_EXPR_REGENERATED_FROM (lam) != NULL_TREE;
+  return LAMBDA_EXPR_REGEN_INFO (lam) != NULL_TREE;
 }
 
 /* Return the LAMBDA_EXPR from which T was ultimately regenerated.
@@ -14365,8 +14374,8 @@ regenerated_lambda_fn_p (tree fn)
 tree
 most_general_lambda (tree t)
 {
-  while (LAMBDA_EXPR_REGENERATED_FROM (t))
-    t = LAMBDA_EXPR_REGENERATED_FROM (t);
+  while (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
+    t = TI_TEMPLATE (ti);
   return t;
 }
 
@@ -19278,9 +19287,12 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (r)
     = LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (t);
   LAMBDA_EXPR_MUTABLE_P (r) = LAMBDA_EXPR_MUTABLE_P (t);
-  LAMBDA_EXPR_REGENERATED_FROM (r) = t;
-  LAMBDA_EXPR_REGENERATING_TARGS (r)
-    = add_to_template_args (LAMBDA_EXPR_REGENERATING_TARGS (t), args);
+  if (tree ti = LAMBDA_EXPR_REGEN_INFO (t))
+    LAMBDA_EXPR_REGEN_INFO (r)
+      = build_template_info (t, add_to_template_args (TI_ARGS (ti), args));
+  else
+    LAMBDA_EXPR_REGEN_INFO (r)
+      = build_template_info (t, args);
 
   gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
@@ -29030,7 +29042,8 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  unsigned len = TREE_VEC_LENGTH (ftparms);
 	  tree targs = make_tree_vec (len);
 	  int err = unify (ftparms, targs, ret, utype, UNIFY_ALLOW_NONE, false);
-	  gcc_assert (!err);
+	  if (err)
+	    continue;
 
 	  /* The number of parms for f' is the number of parms for A plus
 	     non-deduced parms of f.  */
@@ -29063,7 +29076,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	     guideness, and explicit-specifier.  */
 	  tree g = tsubst_decl (DECL_TEMPLATE_RESULT (f), targs, complain);
 	  if (g == error_mark_node)
-	    return error_mark_node;
+	    continue;
 	  DECL_USE_TEMPLATE (g) = 0;
 	  fprime = build_template_decl (g, gtparms, false);
 	  DECL_TEMPLATE_RESULT (fprime) = g;
@@ -29077,7 +29090,7 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  if (ci)
 	    ci = tsubst_constraint_info (ci, targs, complain, in_decl);
 	  if (ci == error_mark_node)
-	    return error_mark_node;
+	    continue;
 
 	  /* Add a constraint that the return type matches the instantiation of
 	     A with the same template arguments.  */

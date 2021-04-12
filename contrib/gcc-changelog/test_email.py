@@ -420,3 +420,7 @@ class TestGccChangelog(unittest.TestCase):
     def test_changelog_removal(self):
         email = self.from_patch_glob('0001-ChangeLog-removal.patch', strict=True)
         assert not email.errors
+
+    def test_long_filenames(self):
+        email = self.from_patch_glob('0001-long-filenames')
+        assert not email.errors

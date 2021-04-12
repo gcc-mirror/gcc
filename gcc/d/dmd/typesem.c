@@ -797,7 +797,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
 
                 if (tf->isreturn && !tf->isref && !tf->next->hasPointers())
                 {
-                    ::error(loc, "function type `%s` has `return` but does not return any indirections", tf->toChars());
+                    tf->isreturn = false;
                 }
             }
 
@@ -872,7 +872,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
                             if (0 && !tf->isref)
                             {
                                 StorageClass stc = fparam->storageClass & (STCref | STCout);
-                                ::error(loc, "parameter %s is `return %s` but function does not return by ref",
+                                ::error(loc, "parameter `%s` is `return %s` but function does not return by `ref`",
                                     fparam->ident ? fparam->ident->toChars() : "",
                                     stcToChars(stc));
                                 errors = true;
@@ -886,9 +886,7 @@ Type *typeSemantic(Type *type, const Loc &loc, Scope *sc)
                             }
                             else if (!tf->isref && tf->next && !tf->next->hasPointers())
                             {
-                                ::error(loc, "parameter %s is `return` but function does not return any indirections",
-                                    fparam->ident ? fparam->ident->toChars() : "");
-                                errors = true;
+                                fparam->storageClass &= STCreturn;   // https://issues.dlang.org/show_bug.cgi?id=18963
                             }
                         }
                     }

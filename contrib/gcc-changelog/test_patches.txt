@@ -3511,3 +3511,38 @@ index 5dd33a75c3a..c4ce432cb98 100644
 -- 
 2.30.1
 
+=== 0001-long-filenames ===
+From 0a5b3f87bdac5e61f9a626c795d30f9e93198585 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 12 Apr 2021 13:10:14 +0200
+Subject: [PATCH] libstdc++: Fix some tests that fail in C++20 mode
+
+The linear_congruential_engine negative tests fail with a different
+error in C++20 mode, because double is no longer an invalid type for
+NTTP. Adjust the expected errors.
+
+libstdc++-v3/ChangeLog:
+
+	* testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc:
+	Adjust expected error for C++20 mode.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc:
+	Likewise.
+---
+ .../linear_congruential_engine/requirements/non_uint_neg.cc   | 4 +++-
+ .../random/linear_congruential/requirements/non_uint_neg.cc   | 3 ++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/libstdc++-v3/testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc b/libstdc++-v3/testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc
+index e04e8ca6972..a36d63c6c7b 100644
+--- a/libstdc++-v3/testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc
++++ b/libstdc++-v3/testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc
+@@ -1 +1,2 @@
+ 
++
+diff --git a/libstdc++-v3/testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc b/libstdc++-v3/testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc
+index 5ad82db1def..53b15f32516 100644
+--- a/libstdc++-v3/testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc
++++ b/libstdc++-v3/testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc
+@@ -1 +1,2 @@
+ 
++

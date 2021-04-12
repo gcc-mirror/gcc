@@ -242,6 +242,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__alderlake");
       def_or_undef (parse_in, "__alderlake__");
       break;
+    case PROCESSOR_ROCKETLAKE:
+      def_or_undef (parse_in, "__rocketlake");
+      def_or_undef (parse_in, "__rocketlake__");
+      break;
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
       break;
@@ -404,6 +408,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_ALDERLAKE:
       def_or_undef (parse_in, "__tune_alderlake__");
+      break;
+    case PROCESSOR_ROCKETLAKE:
+      def_or_undef (parse_in, "__tune_rocketlake__");
       break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:
