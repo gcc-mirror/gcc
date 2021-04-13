@@ -1,3 +1,28 @@
+2021-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/99905
+	* gcc.target/i386/pr99905.c: New test.
+
+2021-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99830
+	* gcc.dg/pr99830.c: New test.
+
+2021-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93085
+	* g++.dg/template/dependent-tmpl1.C: New test.
+
+2021-04-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/99877
+	* g++.dg/asan/pr99877.C: New test.
+
+2021-04-12  Cui,Lili  <lili.cui@intel.com>
+
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+	* g++.target/i386/mv16.C: Handle new march
+
 2021-04-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	PR middle-end/98088

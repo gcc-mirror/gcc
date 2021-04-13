@@ -5601,6 +5601,38 @@
   [(set_attr "type" "bfm")]
 )
 
+(define_insn "*aarch64_bfxil<mode>_extr"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+        (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
+			  (match_operand:GPI 2 "const_int_operand" "n"))
+		 (zero_extract:GPI
+		   (match_operand:GPI 3 "register_operand" "r")
+		   (match_operand:GPI 4 "aarch64_simd_shift_imm_<mode>" "n")
+		   (match_operand:GPI 5 "aarch64_simd_shift_imm_<mode>" "n"))))]
+  "UINTVAL (operands[2]) == HOST_WIDE_INT_M1U << INTVAL (operands[4])
+   && INTVAL (operands[4])
+   && (UINTVAL (operands[4]) + UINTVAL (operands[5])
+       <= GET_MODE_BITSIZE (<MODE>mode))"
+  "bfxil\t%<GPI:w>0, %<GPI:w>3, %5, %4"
+  [(set_attr "type" "bfm")]
+)
+
+(define_insn "*aarch64_bfxilsi_extrdi"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (ior:SI (and:SI (match_operand:SI 1 "register_operand" "0")
+			(match_operand:SI 2 "const_int_operand" "n"))
+		(match_operator:SI 6 "subreg_lowpart_operator"
+		  [(zero_extract:DI
+		     (match_operand:DI 3 "register_operand" "r")
+		     (match_operand:SI 4 "aarch64_simd_shift_imm_si" "n")
+		     (match_operand:SI 5 "aarch64_simd_shift_imm_si" "n"))])))]
+  "UINTVAL (operands[2]) == HOST_WIDE_INT_M1U << INTVAL (operands[4])
+   && INTVAL (operands[4])
+   && UINTVAL (operands[4]) + UINTVAL (operands[5]) <= 32"
+  "bfxil\t%w0, %w3, %5, %4"
+  [(set_attr "type" "bfm")]
+)
+
 (define_insn "*extr_insv_lower_reg<mode>"
   [(set (zero_extract:GPI (match_operand:GPI 0 "register_operand" "+r")
 			  (match_operand 1 "const_int_operand" "n")

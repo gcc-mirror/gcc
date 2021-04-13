@@ -7035,12 +7035,19 @@ simplify_immed_subreg (fixed_size_mode outermode, rtx x,
       while (buffer.length () < buffer_bytes)
 	buffer.quick_push (filler);
     }
-  else
+  else if (!native_encode_rtx (innermode, x, buffer, first_byte, inner_bytes))
+    return NULL_RTX;
+  rtx ret = native_decode_rtx (outermode, buffer, 0);
+  if (ret && MODE_COMPOSITE_P (outermode))
     {
-      if (!native_encode_rtx (innermode, x, buffer, first_byte, inner_bytes))
+      auto_vec<target_unit, 128> buffer2 (buffer_bytes);
+      if (!native_encode_rtx (outermode, ret, buffer2, 0, buffer_bytes))
 	return NULL_RTX;
-      }
-  return native_decode_rtx (outermode, buffer, 0);
+      for (unsigned int i = 0; i < buffer_bytes; ++i)
+	if (buffer[i] != buffer2[i])
+	  return NULL_RTX;
+    }
+  return ret;
 }
 
 /* Simplify SUBREG:OUTERMODE(OP:INNERMODE, BYTE)
@@ -7334,6 +7341,13 @@ simplify_context::simplify_gen_subreg (machine_mode outermode, rtx op,
   if (GET_CODE (op) == SUBREG
       || GET_CODE (op) == CONCAT
       || GET_MODE (op) == VOIDmode)
+    return NULL_RTX;
+
+  if (MODE_COMPOSITE_P (outermode)
+      && (CONST_SCALAR_INT_P (op)
+	  || CONST_DOUBLE_AS_FLOAT_P (op)
+	  || CONST_FIXED_P (op)
+	  || GET_CODE (op) == CONST_VECTOR))
     return NULL_RTX;
 
   if (validate_subreg (outermode, innermode, op, byte))

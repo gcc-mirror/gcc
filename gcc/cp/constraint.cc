@@ -3066,6 +3066,9 @@ satisfy_normalized_constraints (tree t, tree args, sat_info info)
   /* We need to check access during satisfaction.  */
   deferring_access_check_sentinel acs (dk_no_deferred);
 
+  /* Constraints are unevaluated operands.  */
+  cp_unevaluated u;
+
   return satisfy_constraint_r (t, args, info);
 }
 

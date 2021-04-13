@@ -1,3 +1,9 @@
+2021-04-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93085
+	* pt.c (uses_outer_template_parms): Handle non-type and template
+	template parameters specifically.
+
 2021-04-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/97974

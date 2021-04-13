@@ -13709,7 +13709,7 @@ ordinary_loc_of (line_maps *lmaps, location_t from)
     {
       if (IS_ADHOC_LOC (from))
 	from = get_location_from_adhoc_loc (lmaps, from);
-      if (IS_MACRO_LOC (from))
+      if (from >= LINEMAPS_MACRO_LOWEST_LOCATION (lmaps))
 	{
 	  /* Find the ordinary location nearest FROM.  */
 	  const line_map *map = linemap_lookup (lmaps, from);
@@ -15554,7 +15554,7 @@ module_state::write_location (bytes_out &sec, location_t loc)
       write_location (sec, range.m_start);
       write_location (sec, range.m_finish);
     }
-  else if (IS_MACRO_LOC (loc))
+  else if (loc >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
     {
       if (const loc_spans::span *span = spans.macro (loc))
 	{

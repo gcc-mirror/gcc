@@ -28,7 +28,7 @@ msgstr ""
 "Project-Id-Version: gcc 11.1-b20210321\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-03-19 21:31+0000\n"
-"PO-Revision-Date: 2021-04-02 20:17+0200\n"
+"PO-Revision-Date: 2021-04-12 18:31+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -7225,7 +7225,7 @@ msgstr "Notera kompilerade modulgränssnittssökvägar."
 #: c-family/c.opt:1761
 #, no-c-format
 msgid "Note Compiled Module Interface pathname of a specific module or header-unit."
-msgstr "Notera kompilerade modulgränssnittssökvägar för en specfik modul eller huvudenhet."
+msgstr "Notera kompilerade modulgränssnittssökvägar för en specifik modul eller huvudenhet."
 
 #: c-family/c.opt:1765
 #, no-c-format
@@ -8311,7 +8311,7 @@ msgstr "Styr vilka händelser som visas i diagnostikvägar."
 #: analyzer/analyzer.opt:187
 #, no-c-format
 msgid "Dump various analyzer internals to SRCFILE.analyzer.txt."
-msgstr "Dumpa diverse intern information om analyseraren KÄLLFIL.analyzer.txt."
+msgstr "Dumpa diverse intern information om analyseraren till KÄLLFIL.analyzer.txt."
 
 #: analyzer/analyzer.opt:191
 #, no-c-format
@@ -8346,7 +8346,7 @@ msgstr "Dumpa en textuell representation av den exploderade grafen till KÄLLFIL
 #: analyzer/analyzer.opt:215
 #, no-c-format
 msgid "Dump various analyzer internals to SRCFILE.*.fg.dot and SRCFILE.*.tg.dot."
-msgstr "Dumpa diverse intern information om analyseraren KÄLLFIL.*.fg.dot och KÄLLFIL.*.tg.dot."
+msgstr "Dumpa diverse intern information om analyseraren till KÄLLFIL.*.fg.dot och KÄLLFIL.*.tg.dot."
 
 #: analyzer/analyzer.opt:219
 #, no-c-format
@@ -30143,7 +30143,7 @@ msgstr "argumentet %2$E till attributet %1$qE är inte en heltalskonstant"
 #: c-family/c-attribs.c:3572
 #, gcc-internal-format
 msgid "%qE attribute argument %E is not positive"
-msgstr "argumentet %2$E till attributet %1$qE är inte känt"
+msgstr "argumentet %2$E till attributet %1$qE är inte positivt"
 
 #: c-family/c-attribs.c:3583
 #, gcc-internal-format
@@ -35037,7 +35037,7 @@ msgstr "iwmmxt-abi kräver en CPU som klarar iwmmxt"
 #: config/arm/arm.c:3818
 #, gcc-internal-format
 msgid "target CPU does not support interworking"
-msgstr "målprocessorn stödjer interworking"
+msgstr "målprocessorn stödjer inte interworking"
 
 #: config/arm/arm.c:3831
 #, gcc-internal-format
@@ -52486,7 +52486,7 @@ msgstr "C++20 %qE är endast tillgängligt med %<-fmodules-ts%>"
 #: cp/parser.c:3481
 #, gcc-internal-format
 msgid "C++20 %qE only available with %<-fmodules-ts%>, which is not yet enabled with %<-std=c++20%>"
-msgstr "C++20 %qE är endast tillgängligt med %<-modules-ts%>, som inte ännu aktiveras med %<-std=c++20%>"
+msgstr "C++20 %qE är endast tillgängligt med %<-fmodules-ts%>, som inte ännu aktiveras med %<-std=c++20%>"
 
 #: cp/parser.c:3487
 #, gcc-internal-format
@@ -58404,7 +58404,7 @@ msgstr "externa symboler kan inte ha initierare"
 #: d/dmd/dsymbolsem.c:385
 #, gcc-internal-format
 msgid "__gshared not allowed in safe functions; use shared"
-msgstr "__gshared är inte tillåtet i säkra funktioner; använd delade"
+msgstr "__gshared är inte tillåtet i säkra funktioner; använd shared"
 
 #: d/dmd/dsymbolsem.c:397
 #, gcc-internal-format, gfc-internal-format
@@ -58612,7 +58612,7 @@ msgstr "har ett oexakt värde, på grund av precisionsförlust"
 #: d/dmd/dsymbolsem.c:2144
 #, gcc-internal-format
 msgid "template tuple parameter must be last one"
-msgstr "malltupelparametrern måste vara den sista"
+msgstr "malltupelparametern måste vara den sista"
 
 #: d/dmd/dsymbolsem.c:2320
 #, gcc-internal-format
@@ -58656,7 +58656,7 @@ msgstr "funktioner får inte vara räckvidd"
 #: d/dmd/dsymbolsem.c:2747
 #, gcc-internal-format
 msgid "static member has no `this` to which `return` can apply"
-msgstr "statisk medlen har ingen ”this” på vilken ”return” kan verka"
+msgstr "statisk medlem har ingen ”this” på vilken ”return” kan verka"
 
 #: d/dmd/dsymbolsem.c:2759
 #, gcc-internal-format, gfc-internal-format
@@ -58686,7 +58686,7 @@ msgstr "konstruerare, destruerare, postblits, invarianter, new- och delete-funkt
 #: d/dmd/dsymbolsem.c:2786
 #, gcc-internal-format, gfc-internal-format
 msgid "function body only allowed in final functions in interface %s"
-msgstr "en funktionskropp är endast tillåten i final-funktioner i gränssnittet %s"
+msgstr "en funktionskropp är endast tillåten i slutliga funktioner i gränssnittet %s"
 
 #: d/dmd/dsymbolsem.c:2794
 #, gcc-internal-format, gfc-internal-format
@@ -58749,7 +58749,7 @@ msgstr "det går inte att använda en mall för att lägga till en virtuell funk
 #: d/dmd/dsymbolsem.c:3304
 #, gcc-internal-format
 msgid "default constructor for structs only allowed with @disable, no body, and no parameters"
-msgstr "standardkonstruerare för struct:er är endast tillåtna med @disable, ingen krop och inga parametrar"
+msgstr "standardkonstruerare för struct:er är endast tillåtna med @disable, ingen kropp och inga parametrar"
 
 #: d/dmd/dsymbolsem.c:3648
 #, gcc-internal-format
@@ -58849,7 +58849,7 @@ msgstr "cirkulärt arv av gränssnitt"
 #: d/dmd/dsymbolsem.c:4841
 #, gcc-internal-format
 msgid "mixin templates are not regular templates"
-msgstr "mixin-maller är inte med normala mallar"
+msgstr "mixin-mallar är inte med normala mallar"
 
 #: d/dmd/dsymbolsem.c:5028
 #, gcc-internal-format, gfc-internal-format
@@ -58919,7 +58919,7 @@ msgstr "variadiska funktioner i D-stil kan inte användas med -betterC"
 #: d/dmd/semantic3.c:478
 #, gcc-internal-format
 msgid "`object.TypeInfo_Tuple` could not be found, but is implicitly used in D-style variadic functions"
-msgstr "”object.TypeInfo_Tuple” kunde inte hittas, men är implict använt i variadiska funktioner i D-stil"
+msgstr "”object.TypeInfo_Tuple” kunde inte hittas, men är implicit använt i variadiska funktioner i D-stil"
 
 #: d/dmd/semantic3.c:480
 #, gcc-internal-format
@@ -68389,7 +68389,7 @@ msgstr "%qs vid %C är inte en frågereferens till inbyggd typkomponent %qs"
 #: fortran/primary.c:2394
 #, gcc-internal-format
 msgid "%qs at %C is not an inquiry reference to an intrinsic type component"
-msgstr "%qs vid %C är inte en frågereferens till en inbyggt typkomponent"
+msgstr "%qs vid %C är inte en frågereferens till en inbyggd typkomponent"
 
 #: fortran/primary.c:2464
 #, gcc-internal-format, gfc-internal-format

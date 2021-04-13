@@ -1,3 +1,26 @@
+2021-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100044
+	* include/bits/ranges_util.h (__detail::__iterator_sentinel_pair):
+	Remove helper concept.
+	(subrange(_Pr), subrange(Pr, __make_unsigned_like<...>)): Remove
+	deduction guides, as per LWG 3404.
+	* testsuite/std/ranges/subrange/lwg3282_neg.cc: Check that class
+	template argument deduction fails.
+
+2021-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc:
+	Adjust expected error for C++20 mode.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc:
+	Likewise.
+
+2021-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99995
+	* testsuite/17_intro/headers/c++1998/49745.cc: Include all
+	standard headers and XFAIL for effective-target c++20.
+
 2021-04-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/99402

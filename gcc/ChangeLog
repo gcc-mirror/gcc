@@ -1,3 +1,66 @@
+2021-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/99905
+	* combine.c (expand_compound_operation): If pos + len > modewidth,
+	perform the right shift by pos in inner_mode and then convert to mode,
+	instead of trying to simplify a shift of rtx with inner_mode by pos
+	as if it was a shift in mode.
+
+2021-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99830
+	* combine.c (simplify_and_const_int_1): Don't optimize varop
+	away if it has side-effects.
+
+2021-04-12  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Escape @smallexample content.
+
+2021-04-12  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* config/s390/s390.md ("*movdi_31", "*movdi_64"): Add
+	  alternative in order to load a DFP zero.
+
+2021-04-12  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Be more precise in documentation
+	of symver attribute.
+
+2021-04-12  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/99877
+	* gimplify.c (gimplify_expr): Right now, we unpoison all
+	variables before a goto <dest>. We should not do it if we are
+	in a omp context.
+
+2021-04-12  Cui,Lili  <lili.cui@intel.com>
+
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Handle
+	rocketlake.
+	* common/config/i386/i386-common.c (processor_names): Add
+	rocketlake.
+	(processor_alias_table): Add rocketlake.
+	* common/config/i386/i386-cpuinfo.h (processor_subtypes): Add
+	INTEL_COREI7_ROCKETLAKE.
+	* config.gcc: Add -march=rocketlake.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	rocketlake.
+	* config/i386/i386-options.c (m_ROCKETLAKE)  : Define.
+	(processor_cost_table): Add rocketlake cost.
+	* config/i386/i386.h (ix86_size_cost) : Define
+	TARGET_ROCKETLAKE.
+	(processor_type) : Add PROCESSOR_ROCKETLAKE.
+	(PTA_ROCKETLAKE): Ditto.
+	* doc/extend.texi: Add rocketlake.
+	* doc/invoke.texi: Add rocketlake.
+
+2021-04-12  Cui,Lili  <lili.cui@intel.com>
+
+	* config/i386/i386.h (PTA_ALDERLAKE): Change alderlake ISA list.
+	* config/i386/i386-options.c (m_CORE_AVX2): Add m_ALDERLAKE.
+	* common/config/i386/cpuinfo.h (get_intel_cpu): Add AlderLake model.
+	* doc/invoke.texi: Change alderlake ISA list.
+
 2021-04-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	PR middle-end/98088

@@ -10846,11 +10846,22 @@ uses_outer_template_parms (tree decl)
 			      &depth, NULL, /*include_nondeduced_p=*/true))
     return true;
   if (PRIMARY_TEMPLATE_P (decl)
-      && for_each_template_parm (INNERMOST_TEMPLATE_PARMS
-				 (DECL_TEMPLATE_PARMS (decl)),
-				 template_parm_outer_level,
-				 &depth, NULL, /*include_nondeduced_p=*/true))
-    return true;
+      || DECL_TEMPLATE_TEMPLATE_PARM_P (decl))
+    {
+      tree parms = INNERMOST_TEMPLATE_PARMS (DECL_TEMPLATE_PARMS (decl));
+      for (int i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
+	{
+	  tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+	  if (TREE_CODE (parm) == PARM_DECL
+	      && for_each_template_parm (TREE_TYPE (parm),
+					 template_parm_outer_level,
+					 &depth, NULL, /*nondeduced*/true))
+	    return true;
+	  if (TREE_CODE (parm) == TEMPLATE_DECL
+	      && uses_outer_template_parms (parm))
+	    return true;
+	}
+    }
   tree ci = get_constraints (decl);
   if (ci)
     ci = CI_ASSOCIATED_CONSTRAINTS (ci);
@@ -29275,7 +29286,11 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
     return ptype;
 
   /* Initializing one placeholder from another.  */
-  if (init && TREE_CODE (init) == TEMPLATE_PARM_INDEX
+  if (init
+      && (TREE_CODE (init) == TEMPLATE_PARM_INDEX
+	  || (TREE_CODE (init) == EXPR_PACK_EXPANSION
+	      && (TREE_CODE (PACK_EXPANSION_PATTERN (init))
+		  == TEMPLATE_PARM_INDEX)))
       && is_auto (TREE_TYPE (init))
       && CLASS_PLACEHOLDER_TEMPLATE (TREE_TYPE (init)) == tmpl)
     return cp_build_qualified_type (TREE_TYPE (init), cp_type_quals (ptype));
@@ -29290,10 +29305,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
     }
   else if (cxx_dialect < cxx20 && DECL_ALIAS_TEMPLATE_P (tmpl))
     {
-      /* This doesn't affect conforming C++17 code, so just pedwarn.  */
-      if (complain & tf_warning_or_error)
-	pedwarn (input_location, 0, "alias template deduction only available "
-		 "with %<-std=c++20%> or %<-std=gnu++20%>");
+      if (complain & tf_error)
+	error ("alias template deduction only available "
+	       "with %<-std=c++20%> or %<-std=gnu++20%>");
+      return error_mark_node;
     }
 
   tree type = TREE_TYPE (tmpl);
