@@ -87,6 +87,50 @@ supergraph_call_edge (function *fun, gimple *stmt)
   return edge;
 }
 
+/* class saved_uids.
+
+   In order to ensure consistent results without relying on the ordering
+   of pointer values we assign a uid to each gimple stmt, globally unique
+   across all functions.
+
+   Normally, the stmt uids are a scratch space that each pass can freely
+   assign its own values to.  However, in the case of LTO, the uids are
+   used to associate call stmts with callgraph edges between the WPA phase
+   (where the analyzer runs in LTO mode) and the LTRANS phase; if the
+   analyzer changes them in the WPA phase, it leads to errors when
+   streaming the code back in at LTRANS.
+   lto_prepare_function_for_streaming has code to renumber the stmt UIDs
+   when the code is streamed back out, but for some reason this isn't
+   called for clones.
+
+   Hence, as a workaround, this class has responsibility for tracking
+   the original uids and restoring them once the pass is complete
+   (in the supergraph dtor).  */
+
+/* Give STMT a globally unique uid, storing its original uid so it can
+   later be restored.  */
+
+void
+saved_uids::make_uid_unique (gimple *stmt)
+{
+  unsigned next_uid = m_old_stmt_uids.length ();
+  unsigned old_stmt_uid = stmt->uid;
+  stmt->uid = next_uid;
+  m_old_stmt_uids.safe_push
+    (std::pair<gimple *, unsigned> (stmt, old_stmt_uid));
+}
+
+/* Restore the saved uids of all stmts.  */
+
+void
+saved_uids::restore_uids () const
+{
+  unsigned i;
+  std::pair<gimple *, unsigned> *pair;
+  FOR_EACH_VEC_ELT (m_old_stmt_uids, i, pair)
+    pair->first->uid = pair->second;
+}
+
 /* supergraph's ctor.  Walk the callgraph, building supernodes for each
    CFG basic block, splitting the basic blocks at callsites.  Join
    together the supernodes with interprocedural and intraprocedural
@@ -101,8 +145,6 @@ supergraph::supergraph (logger *logger)
 
   /* First pass: make supernodes (and assign UIDs to the gimple stmts).  */
   {
-    unsigned next_uid = 0;
-
     /* Sort the cgraph_nodes?  */
     cgraph_node *node;
     FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
@@ -127,7 +169,7 @@ supergraph::supergraph (logger *logger)
 	    {
 	      gimple *stmt = gsi_stmt (gpi);
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
-	      stmt->uid = next_uid++;
+	      m_stmt_uids.make_uid_unique (stmt);
 	    }
 
 	  /* Append statements from BB to the current supernode, splitting
@@ -139,7 +181,7 @@ supergraph::supergraph (logger *logger)
 	      gimple *stmt = gsi_stmt (gsi);
 	      node_for_stmts->m_stmts.safe_push (stmt);
 	      m_stmt_to_node_t.put (stmt, node_for_stmts);
-	      stmt->uid = next_uid++;
+	      m_stmt_uids.make_uid_unique (stmt);
 	      if (cgraph_edge *edge = supergraph_call_edge (fun, stmt))
 		{
 		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
@@ -255,6 +297,13 @@ supergraph::supergraph (logger *logger)
 
     }
   }
+}
+
+/* supergraph's dtor.  Reset stmt uids.  */
+
+supergraph::~supergraph ()
+{
+  m_stmt_uids.restore_uids ();
 }
 
 /* Dump this graph in .dot format to PP, using DUMP_ARGS.

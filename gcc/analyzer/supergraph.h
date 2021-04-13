@@ -79,6 +79,18 @@ struct supergraph_traits
   typedef supercluster cluster_t;
 };
 
+/* A class to manage the setting and restoring of statement uids.  */
+
+class saved_uids
+{
+public:
+  void make_uid_unique (gimple *stmt);
+  void restore_uids () const;
+
+private:
+  auto_vec<std::pair<gimple *, unsigned> > m_old_stmt_uids;
+};
+
 /* A "supergraph" is a directed graph formed by joining together all CFGs,
    linking them via interprocedural call and return edges.
 
@@ -90,6 +102,7 @@ class supergraph : public digraph<supergraph_traits>
 {
 public:
   supergraph (logger *logger);
+  ~supergraph ();
 
   supernode *get_node_for_function_entry (function *fun) const
   {
@@ -205,6 +218,8 @@ private:
 
   typedef hash_map<const function *, unsigned> function_to_num_snodes_t;
   function_to_num_snodes_t m_function_to_num_snodes;
+
+  saved_uids m_stmt_uids;
 };
 
 /* A node within a supergraph.  */
