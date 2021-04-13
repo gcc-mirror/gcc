@@ -4171,7 +4171,7 @@ vn_nary_op_insert_pieces_predicated (unsigned int length, enum tree_code code,
 }
 
 static bool
-dominated_by_p_w_unex (basic_block bb1, basic_block bb2);
+dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool);
 
 static tree
 vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb)
@@ -4180,9 +4180,12 @@ vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb)
     return vno->u.result;
   for (vn_pval *val = vno->u.values; val; val = val->next)
     for (unsigned i = 0; i < val->n; ++i)
-      if (dominated_by_p_w_unex (bb,
-			  BASIC_BLOCK_FOR_FN
-			    (cfun, val->valid_dominated_by_p[i])))
+      /* Do not handle backedge executability optimistically since
+	 when figuring out whether to iterate we do not consider
+	 changed predication.  */
+      if (dominated_by_p_w_unex
+	    (bb, BASIC_BLOCK_FOR_FN (cfun, val->valid_dominated_by_p[i]),
+	     false))
 	return val->result;
   return NULL_TREE;
 }
@@ -4482,10 +4485,11 @@ vn_phi_insert (gimple *phi, tree result, bool backedges_varying_p)
 
 
 /* Return true if BB1 is dominated by BB2 taking into account edges
-   that are not executable.  */
+   that are not executable.  When ALLOW_BACK is false consider not
+   executable backedges as executable.  */
 
 static bool
-dominated_by_p_w_unex (basic_block bb1, basic_block bb2)
+dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
 {
   edge_iterator ei;
   edge e;
@@ -4502,7 +4506,8 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2)
     {
       edge prede = NULL;
       FOR_EACH_EDGE (e, ei, bb1->preds)
-	if (e->flags & EDGE_EXECUTABLE)
+	if ((e->flags & EDGE_EXECUTABLE)
+	    || (!allow_back && (e->flags & EDGE_DFS_BACK)))
 	  {
 	    if (prede)
 	      {
@@ -6901,7 +6906,7 @@ rpo_elim::eliminate_avail (basic_block bb, tree op)
 	     may also be able to "pre-compute" (bits of) the next immediate
 	     (non-)dominator during the RPO walk when marking edges as
 	     executable.  */
-	  if (dominated_by_p_w_unex (bb, abb))
+	  if (dominated_by_p_w_unex (bb, abb, true))
 	    {
 	      tree leader = ssa_name (av->leader);
 	      /* Prevent eliminations that break loop-closed SSA.  */
