@@ -2197,24 +2197,13 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
 	    error_at (loc, "invalid use of %qT", anode);
 	  return error_mark_node;
 	}
-      else if (!parms)
+      else
 	{
-	  /* Even if there are no parameters, we might be able to deduce from
-	     default template arguments.  Pass TF_NONE so that we don't
-	     generate redundant diagnostics.  */
-	  type = do_auto_deduction (type, parms, anode, tf_none,
+	  type = do_auto_deduction (type, parms, anode, complain,
 				    adc_variable_type);
 	  if (type == error_mark_node)
-	    {
-	      if (complain & tf_error)
-		error_at (loc, "cannot deduce template arguments "
-			  "for %qT from %<()%>", anode);
-	      return error_mark_node;
-	    }
+	    return error_mark_node;
 	}
-      else
-	type = do_auto_deduction (type, parms, anode, complain,
-				  adc_variable_type);
     }
 
   if (processing_template_decl)

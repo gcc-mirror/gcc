@@ -29305,10 +29305,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
     }
   else if (cxx_dialect < cxx20 && DECL_ALIAS_TEMPLATE_P (tmpl))
     {
-      /* This doesn't affect conforming C++17 code, so just pedwarn.  */
-      if (complain & tf_warning_or_error)
-	pedwarn (input_location, 0, "alias template deduction only available "
-		 "with %<-std=c++20%> or %<-std=gnu++20%>");
+      if (complain & tf_error)
+	error ("alias template deduction only available "
+	       "with %<-std=c++20%> or %<-std=gnu++20%>");
+      return error_mark_node;
     }
 
   tree type = TREE_TYPE (tmpl);
