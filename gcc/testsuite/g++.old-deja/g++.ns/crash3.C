@@ -6,6 +6,6 @@ namespace N {
 
 void f()
 {
-  N::S(); // { dg-error "6:cannot deduce template arguments" "" { target c++17 } } invalid use of template
+  N::S(); // { dg-error "8:class template argument deduction failed|no match" "" { target c++17 } } invalid use of template
   // { dg-error "7:missing template arguments" "" { target c++14_down } .-1 }
 }
