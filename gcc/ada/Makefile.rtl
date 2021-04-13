@@ -2193,7 +2193,7 @@ ifeq ($(strip $(filter-out rtems%,$(target_os))),)
     EH_MECHANISM=-gcc
   endif
 
-  ifeq ($(strip $(filter-out riscv%,$(target_cpu))),)
+  ifeq ($(strip $(filter-out aarch64% riscv%,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += a-nallfl.ads<libgnat/a-nallfl__wraplf.ads
   endif
 endif
