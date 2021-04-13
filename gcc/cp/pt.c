@@ -6255,6 +6255,10 @@ get_underlying_template (tree tmpl)
 	      != num_innermost_template_parms (underlying)))
 	break;
 
+      /* Does the alias add cv-quals?  */
+      if (TYPE_QUALS (TREE_TYPE (underlying)) != TYPE_QUALS (TREE_TYPE (tmpl)))
+	break;
+
       tree alias_args = INNERMOST_TEMPLATE_ARGS
 	(template_parms_to_args (DECL_TEMPLATE_PARMS (tmpl)));
       if (!comp_template_args (TI_ARGS (tinfo), alias_args))
