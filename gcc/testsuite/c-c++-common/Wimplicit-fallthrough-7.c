@@ -22,8 +22,8 @@ f (int i)
     {
     case 1:
       { /* { dg-warning "statement may fall through" "" { target c } } */
-	int a[i]; /* { dg-warning "statement may fall through" "" { target c++ } } */
-      }
+	int a[i];
+      } /* { dg-warning "statement may fall through" "" { target c++ } } */
     case 2:
       bar (99);
     }
