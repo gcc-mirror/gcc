@@ -3,6 +3,7 @@
 ![Docker Build](https://img.shields.io/docker/cloud/build/philberty/gccrs)
 ![Docker Pulls](https://img.shields.io/docker/pulls/philberty/gccrs)
 [![project chat](https://img.shields.io/badge/zulip-join_chat-brightgreen.svg)](https://gcc-rust.zulipchat.com/)
+[![Bors enabled](https://bors.tech/images/badge_small.svg)](https://app.bors.tech/repositories/32890)
 # GCC Rust
 ![GCC Rust](logo.png?raw=true "GCC rust Logo")
 
