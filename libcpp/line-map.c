@@ -1244,7 +1244,7 @@ linemap_location_from_macro_expansion_p (const class line_maps *set,
   if (IS_ADHOC_LOC (location))
     location = get_location_from_adhoc_loc (set, location);
 
-  return IS_MACRO_LOC (location);
+  return location >= LINEMAPS_MACRO_LOWEST_LOCATION (set);
 }
 
 /* Given two virtual locations *LOC0 and *LOC1, return the first
