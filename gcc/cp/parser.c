@@ -28353,6 +28353,9 @@ cp_parser_label_declaration (cp_parser* parser)
 static tree
 cp_parser_concept_definition (cp_parser *parser)
 {
+  /* A concept definition is an unevaluated context.  */
+  cp_unevaluated u;
+
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_CONCEPT));
   cp_lexer_consume_token (parser->lexer);
 
@@ -28714,6 +28717,9 @@ cp_parser_constraint_expression (cp_parser *parser)
 static tree
 cp_parser_requires_clause_opt (cp_parser *parser, bool lambda_p)
 {
+  /* A requires clause is an unevaluated context.  */
+  cp_unevaluated u;
+
   cp_token *tok = cp_lexer_peek_token (parser->lexer);
   if (tok->keyword != RID_REQUIRES)
     {
