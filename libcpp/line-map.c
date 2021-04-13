@@ -1243,7 +1243,7 @@ linemap_location_from_macro_expansion_p (const struct line_maps *set,
     location = set->location_adhoc_data_map.data[location
 						 & MAX_LOCATION_T].locus;
 
-  return IS_MACRO_LOC (location);
+  return location >= LINEMAPS_MACRO_LOWEST_LOCATION (set);
 }
 
 /* Given two virtual locations *LOC0 and *LOC1, return the first

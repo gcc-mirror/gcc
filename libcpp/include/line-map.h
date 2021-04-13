@@ -561,7 +561,7 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
 #define linemap_assert_fails(EXPR) (! (EXPR))
 #endif
 
-/* Get whether location LOC is an ad-hoc, ordinary or macro location.  */
+/* Get whether location LOC is an ordinary location.  */
 
 inline bool
 IS_ORDINARY_LOC (location_t loc)
@@ -569,16 +569,12 @@ IS_ORDINARY_LOC (location_t loc)
   return loc < LINE_MAP_MAX_LOCATION;
 }
 
+/* Get whether location LOC is an ad-hoc location.  */
+
 inline bool
 IS_ADHOC_LOC (location_t loc)
 {
   return loc > MAX_LOCATION_T;
-}
-
-inline bool
-IS_MACRO_LOC (location_t loc)
-{
-  return !IS_ORDINARY_LOC (loc) && !IS_ADHOC_LOC (loc);
 }
 
 /* Categorize line map kinds.  */
