@@ -968,8 +968,8 @@ void test_45 (void)
 {
   struct ubits bits;
   bits.b0 = 1;
-  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
+  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "desired, PR99212" { xfail { ! { cris-*-* } } } } */
+  /* { dg-warning "UNKNOWN" "status quo, PR99212" { target { *-*-* } xfail { cris-*-* } } .-1 } */
   // TODO(xfail): ^^^^
 
   bits.b456 = 5;
