@@ -366,6 +366,9 @@ gnat_init (void)
   sbitsize_one_node = sbitsize_int (1);
   sbitsize_unit_node = sbitsize_int (BITS_PER_UNIT);
 
+  /* In Ada, we do not use location ranges.  */
+  line_table->default_range_bits = 0;
+
   /* Register our internal error function.  */
   global_dc->internal_error = &internal_error_function;
 

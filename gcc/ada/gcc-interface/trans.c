@@ -252,16 +252,26 @@ static tree build_raise_check (int, enum exception_info_kind);
 static tree create_init_temporary (const char *, tree, tree *, Node_Id);
 static bool maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk);
 
-/* Hooks for debug info back-ends, only supported and used in a restricted set
-   of configurations.  */
-static const char *extract_encoding (const char *) ATTRIBUTE_UNUSED;
-static const char *decode_name (const char *) ATTRIBUTE_UNUSED;
-
 /* This makes gigi's file_info_ptr visible in this translation unit,
    so that Sloc_to_locus can look it up when deciding whether to map
    decls to instances.  */
 
 static struct File_Info_Type *file_map;
+
+/* Return the string of the identifier allocated for the file name Id.  */
+
+static const char*
+File_Name_to_gnu (Name_Id Id)
+{
+  /* __gnat_to_canonical_file_spec translates file names from pragmas
+     Source_Reference that contain host style syntax not understood by GDB.  */
+  const char *name = __gnat_to_canonical_file_spec (Get_Name_String (Id));
+
+  /* Use the identifier table to make a permanent copy of the file name as
+     the name table gets reallocated after Gigi returns but before all the
+     debugging information is output.  */
+  return IDENTIFIER_POINTER (get_identifier (name));
+}
 
 /* This is the main program of the back-end.  It sets up all the table
    structures and then generates code.  */
@@ -316,23 +326,18 @@ gigi (Node_Id gnat_root,
 
   for (i = 0; i < number_file; i++)
     {
-      /* Use the identifier table to make a permanent copy of the filename as
-	 the name table gets reallocated after Gigi returns but before all the
-	 debugging information is output.  The __gnat_to_canonical_file_spec
-	 call translates filenames from pragmas Source_Reference that contain
-	 host style syntax not understood by gdb.  */
-      const char *filename
-	= IDENTIFIER_POINTER
-	   (get_identifier
-	    (__gnat_to_canonical_file_spec
-	     (Get_Name_String (file_info_ptr[i].File_Name))));
-
       /* We rely on the order isomorphism between files and line maps.  */
-      gcc_assert ((int) LINEMAPS_ORDINARY_USED (line_table) == i);
+      if ((int) LINEMAPS_ORDINARY_USED (line_table) != i)
+	{
+	  gcc_assert (i > 0);
+	  error ("%s contains too many lines",
+		 File_Name_to_gnu (file_info_ptr[i - 1].File_Name));
+	}
 
       /* We create the line map for a source file at once, with a fixed number
 	 of columns chosen to avoid jumping over the next power of 2.  */
-      linemap_add (line_table, LC_ENTER, 0, filename, 1);
+      linemap_add (line_table, LC_ENTER, 0,
+		   File_Name_to_gnu (file_info_ptr[i].File_Name), 1);
       linemap_line_start (line_table, file_info_ptr[i].Num_Source_Lines, 252);
       linemap_position_for_column (line_table, 252 - 1);
       linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
@@ -10976,28 +10981,7 @@ set_end_locus_from_node (tree gnu_node, Node_Id gnat_node)
       return false;
     }
 }
-
-/* Return a colon-separated list of encodings contained in encoded Ada
-   name.  */
 
-static const char *
-extract_encoding (const char *name)
-{
-  char *encoding = (char *) ggc_alloc_atomic (strlen (name));
-  get_encoding (name, encoding);
-  return encoding;
-}
-
-/* Extract the Ada name from an encoded name.  */
-
-static const char *
-decode_name (const char *name)
-{
-  char *decoded = (char *) ggc_alloc_atomic (strlen (name) * 2 + 60);
-  __gnat_decode (name, decoded, 0);
-  return decoded;
-}
-
 /* Post an error message.  MSG is the error message, properly annotated.
    NODE is the node at which to post the error and the node to use for the
    '&' substitution.  */
