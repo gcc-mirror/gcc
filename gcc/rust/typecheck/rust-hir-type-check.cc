@@ -22,6 +22,7 @@
 #include "rust-hir-type-check-item.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-struct-field.h"
+#include "rust-hir-inherent-impl-overlap.h"
 
 extern bool
 saw_errors (void);
@@ -38,15 +39,21 @@ TypeResolution::Resolve (HIR::Crate &crate)
   if (saw_errors ())
     return;
 
+  OverlappingImplItemPass::go ();
+  if (saw_errors ())
+    return;
+
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     TypeCheckItem::Resolve (it->get ());
 
   if (saw_errors ())
     return;
 
+  auto resolver = Resolver::Resolver::get ();
   auto mappings = Analysis::Mappings::get ();
   auto context = TypeCheckContext::get ();
 
+  // default inference variables if possible
   context->iterate ([&] (HirId id, TyTy::BaseType *ty) mutable -> bool {
     if (ty->get_kind () == TyTy::TypeKind::ERROR)
       {
@@ -58,22 +65,56 @@ TypeResolution::Resolve (HIR::Crate &crate)
     // nothing to do
     if (ty->get_kind () != TyTy::TypeKind::INFER)
       return true;
+
     TyTy::InferType *infer_var = (TyTy::InferType *) ty;
     TyTy::BaseType *default_type;
     bool ok = infer_var->default_type (&default_type);
-    if (!ok)
+    if (ok)
       {
-	rust_error_at (mappings->lookup_location (id),
-		       "unable to determine type: please give this a type: %u",
-		       id);
-	return true;
+	auto result = ty->unify (default_type);
+	result->set_ref (id);
+	context->insert_type (
+	  Analysis::NodeMapping (mappings->get_current_crate (), 0, id,
+				 UNKNOWN_LOCAL_DEFID),
+	  result);
       }
-    auto result = ty->unify (default_type);
-    result->set_ref (id);
-    context->insert_type (Analysis::NodeMapping (mappings->get_current_crate (),
-						 0, id, UNKNOWN_LOCAL_DEFID),
-			  result);
 
+    return true;
+  });
+
+  // scan the ribs to ensure the decls are all setup correctly
+  resolver->iterate_name_ribs ([&] (Rib *r) -> bool {
+    r->iterate_decls ([&] (NodeId decl_node_id, Location locus) -> bool {
+      Definition def;
+      if (!resolver->lookup_definition (decl_node_id, &def))
+	{
+	  rust_error_at (locus, "failed to lookup decl def");
+	  return true;
+	}
+
+      HirId hir_node = UNKNOWN_HIRID;
+      if (!mappings->lookup_node_to_hir (mappings->get_current_crate (),
+					 def.parent, &hir_node))
+	{
+	  rust_error_at (locus, "failed to lookup type hir node id");
+	  return true;
+	}
+
+      // lookup the ty
+      TyTy::BaseType *ty = nullptr;
+      bool ok = context->lookup_type (hir_node, &ty);
+      if (!ok)
+	{
+	  rust_error_at (locus, "failed to lookup type for decl node_id: %u",
+			 decl_node_id);
+	  return true;
+	}
+
+      if (!ty->is_concrete ())
+	rust_error_at (locus, "unable to determine type");
+
+      return true;
+    });
     return true;
   });
 }
@@ -127,14 +168,16 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 void
 TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 {
-  struct_expr.get_struct_name ().accept_vis (*this);
-  if (struct_path_resolved == nullptr)
+  TyTy::BaseType *struct_path_ty
+    = TypeCheckExpr::Resolve (&struct_expr.get_struct_name (), false);
+  if (struct_path_ty->get_kind () != TyTy::TypeKind::ADT)
     {
-      rust_fatal_error (struct_expr.get_struct_name ().get_locus (),
-			"Failed to resolve type");
+      rust_error_at (struct_expr.get_struct_name ().get_locus (),
+		     "expected an ADT type for constructor");
       return;
     }
 
+  struct_path_resolved = static_cast<TyTy::ADTType *> (struct_path_ty);
   TyTy::ADTType *struct_def = struct_path_resolved;
   if (struct_expr.has_struct_base ())
     {
@@ -255,78 +298,6 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
   struct_expr.set_fields_as_owner (std::move (ordered_fields));
 
   resolved = struct_def;
-}
-
-void
-TypeCheckStructExpr::visit (HIR::PathInExpression &expr)
-{
-  NodeId ast_node_id = expr.get_mappings ().get_nodeid ();
-
-  // then lookup the reference_node_id
-  NodeId ref_node_id;
-  if (!resolver->lookup_resolved_name (ast_node_id, &ref_node_id))
-    {
-      if (!resolver->lookup_resolved_type (ast_node_id, &ref_node_id))
-	{
-	  rust_error_at (expr.get_locus (),
-			 "Failed to lookup reference for node: %s",
-			 expr.as_string ().c_str ());
-	  return;
-	}
-    }
-
-  // node back to HIR
-  HirId ref;
-  if (!mappings->lookup_node_to_hir (expr.get_mappings ().get_crate_num (),
-				     ref_node_id, &ref))
-    {
-      rust_error_at (expr.get_locus (), "reverse lookup failure");
-      return;
-    }
-
-  // the base reference for this name _must_ have a type set
-  TyTy::BaseType *lookup;
-  if (!context->lookup_type (ref, &lookup))
-    {
-      rust_error_at (mappings->lookup_location (ref),
-		     "consider giving this a type: %s",
-		     expr.as_string ().c_str ());
-      return;
-    }
-
-  if (lookup->get_kind () != TyTy::TypeKind::ADT)
-    {
-      rust_fatal_error (mappings->lookup_location (ref),
-			"expected an ADT type");
-      return;
-    }
-
-  struct_path_resolved = static_cast<TyTy::ADTType *> (lookup);
-  if (struct_path_resolved->has_substitutions ())
-    {
-      HIR::PathExprSegment seg = expr.get_final_segment ();
-      if (!struct_path_resolved->needs_substitution ()
-	  && seg.has_generic_args ())
-	{
-	  rust_error_at (seg.get_generic_args ().get_locus (),
-			 "unexpected type arguments");
-	}
-      else if (struct_path_resolved->needs_substitution ())
-	{
-	  TyTy::BaseType *subst
-	    = SubstMapper::Resolve (struct_path_resolved, expr.get_locus (),
-				    seg.has_generic_args ()
-				      ? &seg.get_generic_args ()
-				      : nullptr);
-	  if (subst == nullptr || subst->get_kind () != TyTy::TypeKind::ADT)
-	    {
-	      rust_fatal_error (mappings->lookup_location (ref),
-				"expected a substituted ADT type");
-	      return;
-	    }
-	  struct_path_resolved = static_cast<TyTy::ADTType *> (subst);
-	}
-    }
 }
 
 void

@@ -41,8 +41,6 @@ public:
 
   void visit (HIR::StructExprStructFields &struct_expr) override;
 
-  void visit (HIR::PathInExpression &path) override;
-
   void visit (HIR::StructExprFieldIdentifierValue &field) override;
 
   void visit (HIR::StructExprFieldIndexValue &field) override;

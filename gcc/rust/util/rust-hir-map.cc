@@ -524,5 +524,24 @@ Mappings::resolve_nodeid_to_stmt (CrateNum crate, NodeId id, HIR::Stmt **stmt)
   return resolved_stmt != nullptr;
 }
 
+void
+Mappings::iterate_impl_items (
+  std::function<bool (HirId, HIR::InherentImplItem *, HIR::InherentImpl *)> cb)
+{
+  for (auto it = hirImplItemMappings.begin (); it != hirImplItemMappings.end ();
+       it++)
+    {
+      for (auto iy = it->second.begin (); iy != it->second.end (); iy++)
+	{
+	  auto id = iy->first;
+	  auto impl_item = iy->second.second;
+	  auto impl = lookup_associated_impl (
+	    impl_item->get_impl_mappings ().get_hirid ());
+	  if (!cb (id, impl_item, impl))
+	    return;
+	}
+    }
+}
+
 } // namespace Analysis
 } // namespace Rust

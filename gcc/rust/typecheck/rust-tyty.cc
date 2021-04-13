@@ -22,6 +22,7 @@
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-type.h"
 #include "rust-tyty-rules.h"
+#include "rust-tyty-cmp.h"
 #include "rust-hir-map.h"
 #include "rust-substitution-mapper.h"
 
@@ -91,6 +92,13 @@ InferType::unify (BaseType *other)
   return r.unify (other);
 }
 
+bool
+InferType::can_eq (BaseType *other)
+{
+  InferCmp r (this);
+  return r.can_eq (other);
+}
+
 BaseType *
 InferType::clone ()
 {
@@ -107,11 +115,13 @@ InferType::default_type (BaseType **type) const
     {
     case GENERAL:
       return false;
+
       case INTEGRAL: {
 	ok = context->lookup_builtin ("i32", type);
 	rust_assert (ok);
 	return ok;
       }
+
       case FLOAT: {
 	ok = context->lookup_builtin ("f64", type);
 	rust_assert (ok);
@@ -137,6 +147,12 @@ BaseType *
 ErrorType::unify (BaseType *other)
 {
   return this;
+}
+
+bool
+ErrorType::can_eq (BaseType *other)
+{
+  return get_kind () == other->get_kind ();
 }
 
 BaseType *
@@ -304,6 +320,13 @@ ADTType::unify (BaseType *other)
 }
 
 bool
+ADTType::can_eq (BaseType *other)
+{
+  ADTCmp r (this);
+  return r.can_eq (other);
+}
+
+bool
 ADTType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
@@ -418,8 +441,7 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	BaseType *concrete
 	  = Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
 
-	if (concrete == nullptr
-	    || concrete->get_kind () == TyTy::TypeKind::ERROR)
+	if (concrete->get_kind () == TyTy::TypeKind::ERROR)
 	  {
 	    rust_error_at (subst_mappings.get_locus (),
 			   "Failed to resolve field substitution type: %s",
@@ -467,6 +489,13 @@ TupleType::unify (BaseType *other)
 {
   TupleRules r (this);
   return r.unify (other);
+}
+
+bool
+TupleType::can_eq (BaseType *other)
+{
+  TupleCmp r (this);
+  return r.can_eq (other);
 }
 
 bool
@@ -521,6 +550,13 @@ FnType::unify (BaseType *other)
 {
   FnRules r (this);
   return r.unify (other);
+}
+
+bool
+FnType::can_eq (BaseType *other)
+{
+  FnCmp r (this);
+  return r.can_eq (other);
 }
 
 bool
@@ -713,6 +749,13 @@ FnPtr::unify (BaseType *other)
 }
 
 bool
+FnPtr::can_eq (BaseType *other)
+{
+  FnptrCmp r (this);
+  return r.can_eq (other);
+}
+
+bool
 FnPtr::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
@@ -767,6 +810,13 @@ ArrayType::unify (BaseType *other)
 }
 
 bool
+ArrayType::can_eq (BaseType *other)
+{
+  ArrayCmp r (this);
+  return r.can_eq (other);
+}
+
+bool
 ArrayType::is_equal (const BaseType &other) const
 {
   if (get_kind () != other.get_kind ())
@@ -814,6 +864,13 @@ BoolType::unify (BaseType *other)
   return r.unify (other);
 }
 
+bool
+BoolType::can_eq (BaseType *other)
+{
+  BoolCmp r (this);
+  return r.can_eq (other);
+}
+
 BaseType *
 BoolType::clone ()
 {
@@ -851,6 +908,13 @@ IntType::unify (BaseType *other)
 {
   IntRules r (this);
   return r.unify (other);
+}
+
+bool
+IntType::can_eq (BaseType *other)
+{
+  IntCmp r (this);
+  return r.can_eq (other);
 }
 
 BaseType *
@@ -903,6 +967,13 @@ UintType::unify (BaseType *other)
   return r.unify (other);
 }
 
+bool
+UintType::can_eq (BaseType *other)
+{
+  UintCmp r (this);
+  return r.can_eq (other);
+}
+
 BaseType *
 UintType::clone ()
 {
@@ -947,6 +1018,13 @@ FloatType::unify (BaseType *other)
   return r.unify (other);
 }
 
+bool
+FloatType::can_eq (BaseType *other)
+{
+  FloatCmp r (this);
+  return r.can_eq (other);
+}
+
 BaseType *
 FloatType::clone ()
 {
@@ -983,6 +1061,13 @@ USizeType::unify (BaseType *other)
   return r.unify (other);
 }
 
+bool
+USizeType::can_eq (BaseType *other)
+{
+  USizeCmp r (this);
+  return r.can_eq (other);
+}
+
 BaseType *
 USizeType::clone ()
 {
@@ -1006,6 +1091,13 @@ ISizeType::unify (BaseType *other)
 {
   ISizeRules r (this);
   return r.unify (other);
+}
+
+bool
+ISizeType::can_eq (BaseType *other)
+{
+  ISizeCmp r (this);
+  return r.can_eq (other);
 }
 
 BaseType *
@@ -1033,6 +1125,13 @@ CharType::unify (BaseType *other)
   return r.unify (other);
 }
 
+bool
+CharType::can_eq (BaseType *other)
+{
+  CharCmp r (this);
+  return r.can_eq (other);
+}
+
 BaseType *
 CharType::clone ()
 {
@@ -1056,6 +1155,13 @@ ReferenceType::unify (BaseType *other)
 {
   ReferenceRules r (this);
   return r.unify (other);
+}
+
+bool
+ReferenceType::can_eq (BaseType *other)
+{
+  ReferenceCmp r (this);
+  return r.can_eq (other);
 }
 
 bool
@@ -1108,6 +1214,13 @@ ParamType::unify (BaseType *other)
 {
   ParamRules r (this);
   return r.unify (other);
+}
+
+bool
+ParamType::can_eq (BaseType *other)
+{
+  ParamCmp r (this);
+  return r.can_eq (other);
 }
 
 BaseType *
@@ -1176,6 +1289,13 @@ StrType::unify (BaseType *other)
 {
   StrRules r (this);
   return r.unify (other);
+}
+
+bool
+StrType::can_eq (BaseType *other)
+{
+  StrCmp r (this);
+  return r.can_eq (other);
 }
 
 bool

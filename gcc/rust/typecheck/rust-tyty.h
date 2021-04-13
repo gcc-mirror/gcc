@@ -75,21 +75,28 @@ public:
 
   virtual std::string get_name () const = 0;
 
-  /* Unify two types. Returns a pointer to the newly-created unified ty, or
-     nullptr if the two ty cannot be unified. The caller is responsible for
-     releasing the memory of the returned ty. */
+  // Unify two types. Returns a pointer to the newly-created unified ty, or
+  // nullptr if the two ty cannot be unified. The caller is responsible for
+  // releasing the memory of the returned ty. using ignore_errors alows for a
+  // can_eq style unification
   virtual BaseType *unify (BaseType *other) = 0;
 
-  /* Check value equality between two ty. Type inference rules are ignored. Two
-     ty are considered equal if they're of the same kind, and
-       1. (For ADTs, arrays, tuples, refs) have the same underlying ty
-       2. (For functions) have the same signature */
+  // similar to unify but does not actually perform type unification but
+  // determines whether they are compatible
+  virtual bool can_eq (BaseType *other) = 0;
+
+  // Check value equality between two ty. Type inference rules are ignored. Two
+  //   ty are considered equal if they're of the same kind, and
+  //     1. (For ADTs, arrays, tuples, refs) have the same underlying ty
+  //     2. (For functions) have the same signature
   virtual bool is_equal (const BaseType &other) const
   {
     return get_kind () == other.get_kind ();
   }
 
   virtual bool is_unit () const { return false; }
+
+  virtual bool is_concrete () const { return true; }
 
   TypeKind get_kind () const { return kind; }
 
@@ -111,6 +118,8 @@ public:
     return supports_substitutions () && has_subsititions_defined ();
   }
 
+  virtual bool needs_generic_substitutions () const { return false; }
+
   std::string mappings_str () const
   {
     std::string buffer = "Ref: " + std::to_string (get_ref ())
@@ -127,7 +136,11 @@ public:
     return as_string () + ":" + mappings_str ();
   }
 
-  void debug () const { printf ("%s\n", debug_str ().c_str ()); }
+  void debug () const
+  {
+    printf ("[%p] %s\n", static_cast<const void *> (this),
+	    debug_str ().c_str ());
+  }
 
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind,
@@ -186,6 +199,8 @@ public:
 
   BaseType *unify (BaseType *other) override;
 
+  bool can_eq (BaseType *other) override;
+
   BaseType *clone () final override;
 
   InferTypeKind get_infer_kind () const { return infer_kind; }
@@ -193,6 +208,8 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   bool default_type (BaseType **type) const;
+
+  bool is_concrete () const final override { return false; }
 
 private:
   InferTypeKind infer_kind;
@@ -216,6 +233,7 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   BaseType *clone () final override;
 
@@ -242,6 +260,7 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   BaseType *clone () final override;
 
@@ -312,6 +331,7 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -320,6 +340,16 @@ public:
   BaseType *get_field (size_t index) const;
 
   BaseType *clone () final override;
+
+  bool is_concrete () const override final
+  {
+    for (size_t i = 0; i < num_fields (); i++)
+      {
+	if (!get_field (i)->is_concrete ())
+	  return false;
+      }
+    return true;
+  }
 
   void iterate_fields (std::function<bool (BaseType *)> cb) const
   {
@@ -405,6 +435,12 @@ public:
 
   static SubstitutionArg error () { return SubstitutionArg (nullptr, nullptr); }
 
+  bool is_conrete () const
+  {
+    return argument != nullptr && argument->get_kind () != TyTy::TypeKind::ERROR
+	   && argument->get_kind () != TyTy::TypeKind::PARAM;
+  }
+
   std::string as_string () const
   {
     return param->as_string () + ":" + argument->as_string ();
@@ -457,6 +493,19 @@ public:
 	  }
       }
     return false;
+  }
+
+  // is_concrete means if the used args is non error, ie: non empty this will
+  // verify if actual real types have been put in place of are they still
+  // ParamTy
+  bool is_concrete () const
+  {
+    for (auto &mapping : mappings)
+      {
+	if (!mapping.is_conrete ())
+	  return false;
+      }
+    return true;
   }
 
   Location get_locus () { return locus; }
@@ -529,7 +578,8 @@ public:
 
   bool needs_substitution () const
   {
-    return has_substitutions () && used_arguments.is_error ();
+    return has_substitutions ()
+	   && (used_arguments.is_error () || !used_arguments.is_concrete ());
   }
 
   bool was_substituted () const { return !needs_substitution (); }
@@ -608,10 +658,13 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
   size_t num_fields () const { return fields.size (); }
+
+  std::string get_identifier () const { return identifier; }
 
   std::string get_name () const override final
   {
@@ -655,6 +708,11 @@ public:
 	if (!cb (f))
 	  return;
       }
+  }
+
+  bool needs_generic_substitutions () const override final
+  {
+    return needs_substitution ();
   }
 
   bool supports_substitutions () const override final { return true; }
@@ -702,6 +760,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -730,6 +789,11 @@ public:
   BaseType *get_return_type () const { return type; }
 
   BaseType *clone () final override;
+
+  bool needs_generic_substitutions () const override final
+  {
+    return needs_substitution ();
+  }
 
   bool supports_substitutions () const override final { return true; }
 
@@ -774,6 +838,7 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -815,6 +880,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -823,6 +889,11 @@ public:
   BaseType *get_element_type () const;
 
   BaseType *clone () final override;
+
+  bool is_concrete () const final override
+  {
+    return get_element_type ()->is_concrete ();
+  }
 
 private:
   size_t capacity;
@@ -847,6 +918,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -879,6 +951,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   IntKind get_int_kind () const { return int_kind; }
 
@@ -918,6 +991,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   UintKind get_uint_kind () const { return uint_kind; }
 
@@ -955,6 +1029,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   FloatKind get_float_kind () const { return float_kind; }
 
@@ -994,6 +1069,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -1026,6 +1102,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -1058,6 +1135,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   BaseType *clone () final override;
 };
@@ -1094,6 +1172,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 
@@ -1131,6 +1210,7 @@ public:
   std::string as_string () const override;
 
   BaseType *unify (BaseType *other) override;
+  bool can_eq (BaseType *other) override;
 
   bool is_equal (const BaseType &other) const override;
 

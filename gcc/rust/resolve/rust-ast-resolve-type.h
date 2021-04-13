@@ -25,73 +25,136 @@
 namespace Rust {
 namespace Resolver {
 
-class ResolveTypeToSimplePath : public ResolverBase
+class ResolveConstantItemToCanonicalPath
+{
+public:
+  static CanonicalPath resolve (AST::ConstantItem &constant)
+  {
+    return CanonicalPath (constant.get_identifier ());
+  }
+};
+
+class ResolveFunctionItemToCanonicalPath
+{
+public:
+  static CanonicalPath resolve (AST::Function &function)
+  {
+    return CanonicalPath (function.get_function_name ());
+  }
+};
+
+class ResolveMethodItemToCanonicalPath
+{
+public:
+  static CanonicalPath resolve (AST::Method &method)
+  {
+    return CanonicalPath (method.get_method_name ());
+  }
+};
+
+class ResolveTypeToCanonicalPath : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static bool go (AST::Type *type, AST::SimplePath &simple_path_result,
-		  bool path_only = false)
+  static CanonicalPath resolve (AST::Type &type,
+				bool include_generic_args = true,
+				bool type_resolve_generic_args = true)
   {
-    ResolveTypeToSimplePath resolver (simple_path_result, path_only);
-    type->accept_vis (resolver);
-    return !resolver.type_seg_failed_flag;
+    ResolveTypeToCanonicalPath resolver (include_generic_args,
+					 type_resolve_generic_args);
+    type.accept_vis (resolver);
+    return resolver.result;
   }
 
   void visit (AST::TypePath &path) override
   {
-    segs.reserve (path.get_num_segments ());
     for (auto &seg : path.get_segments ())
       {
 	seg->accept_vis (*this);
-	if (type_seg_failed_flag)
+	if (failure_flag)
 	  return;
       }
-
-    if (segs.empty ())
-      {
-	rust_error_at (path.get_locus (), "failed to resolve path: %s",
-		       path.as_string ().c_str ());
-	return;
-      }
-
-    bool has_opening_scope_res = false;
-    result = AST::SimplePath (std::move (segs), has_opening_scope_res,
-			      path.get_locus ());
   }
 
   void visit (AST::TypePathSegmentGeneric &seg) override;
 
   void visit (AST::TypePathSegment &seg) override;
 
+  static CanonicalPath canonicalize_generic_args (AST::GenericArgs &args);
+
+  static bool type_resolve_generic_args (AST::GenericArgs &args);
+
 private:
-  ResolveTypeToSimplePath (AST::SimplePath &simple_path_result, bool path_only)
-    : ResolverBase (UNKNOWN_NODEID), type_seg_failed_flag (false),
-      result (simple_path_result), path_only_flag (path_only)
+  ResolveTypeToCanonicalPath (bool include_generic_args,
+			      bool type_resolve_generic_args)
+    : ResolverBase (UNKNOWN_NODEID), result (CanonicalPath::create_empty ()),
+      include_generic_args_flag (include_generic_args),
+      type_resolve_generic_args_flag (type_resolve_generic_args),
+      failure_flag (false)
   {}
 
-  bool type_seg_failed_flag;
-  std::vector<AST::SimplePathSegment> segs;
-  AST::SimplePath &result;
-  bool path_only_flag;
+  CanonicalPath result;
+  bool include_generic_args_flag;
+  bool type_resolve_generic_args_flag;
+  bool failure_flag;
 };
 
-class ResolveTypePath
+class ResolvePathSegmentToCanonicalPath
 {
 public:
-  static NodeId go (AST::TypePath &path, NodeId parent)
+  static CanonicalPath resolve (AST::PathExprSegment &seg)
   {
-    AST::SimplePath path_buffer = AST::SimplePath::create_empty ();
-    if (!ResolveTypeToSimplePath::go (&path, path_buffer))
-      return UNKNOWN_NODEID;
+    CanonicalPath path = CanonicalPath (seg.get_ident_segment ().as_string ());
+    if (seg.has_generic_args ())
+      {
+	bool ok = ResolveTypeToCanonicalPath::type_resolve_generic_args (
+	  seg.get_generic_args ());
+	if (!ok)
+	  {
+	    rust_error_at (seg.get_locus (),
+			   "failed to resolve all generic args");
+	    return CanonicalPath::create_empty ();
+	  }
+
+	path
+	  = path.append (ResolveTypeToCanonicalPath::canonicalize_generic_args (
+	    seg.get_generic_args ()));
+      }
+    return path;
+  }
+};
+
+// FIXME: as part of imports and visibility we need to be able to keep a context
+// for handling PathInExpressions segments as they can be local to a particular
+// lexical scope requiring a context to be maintained for resolution
+class ResolveRelativeTypePath
+{
+public:
+  static NodeId go (AST::TypePath &path, NodeId parent,
+		    const CanonicalPath &prefix,
+		    bool canonicalize_type_with_generics)
+  {
+    CanonicalPath canonical_path
+      = ResolveTypeToCanonicalPath::resolve (path,
+					     canonicalize_type_with_generics,
+					     true);
+    if (canonical_path.is_error ())
+      {
+	rust_error_at (path.get_locus (), "Failed to resolve canonical path");
+	return UNKNOWN_NODEID;
+      }
+
+    CanonicalPath lookup = canonical_path;
+    if (!prefix.is_error ())
+      lookup = prefix.append (canonical_path);
 
     auto resolver = Resolver::get ();
     NodeId resolved_node = UNKNOWN_NODEID;
-    if (!resolver->get_type_scope ().lookup (path_buffer.as_string (),
-					     &resolved_node))
+    if (!resolver->get_type_scope ().lookup (canonical_path, &resolved_node))
       {
 	rust_error_at (path.get_locus_slow (), "failed to resolve TypePath: %s",
-		       path_buffer.as_string ().c_str ());
+		       canonical_path.get ().c_str ());
 	return UNKNOWN_NODEID;
       }
 
@@ -104,9 +167,10 @@ class ResolveType : public ResolverBase
   using Rust::Resolver::ResolverBase::visit;
 
 public:
-  static NodeId go (AST::Type *type, NodeId parent)
+  static NodeId go (AST::Type *type, NodeId parent,
+		    bool canonicalize_type_with_generics = false)
   {
-    ResolveType resolver (parent);
+    ResolveType resolver (parent, canonicalize_type_with_generics);
     type->accept_vis (resolver);
     if (!resolver.ok)
       rust_error_at (type->get_locus_slow (), "unresolved type");
@@ -139,7 +203,10 @@ public:
 
   void visit (AST::TypePath &path) override
   {
-    resolved_node = ResolveTypePath::go (path, parent);
+    resolved_node
+      = ResolveRelativeTypePath::go (path, parent,
+				     CanonicalPath::create_empty (),
+				     canonicalize_type_with_generics);
     ok = resolved_node != UNKNOWN_NODEID;
     if (ok)
       {
@@ -160,12 +227,16 @@ public:
     type.get_type_referenced ()->accept_vis (*this);
   }
 
-  // nothing to do for inferred types
   void visit (AST::InferredType &type) override { ok = true; }
 
 private:
-  ResolveType (NodeId parent) : ResolverBase (parent), ok (false) {}
+  ResolveType (NodeId parent, bool canonicalize_type_with_generics)
+    : ResolverBase (parent),
+      canonicalize_type_with_generics (canonicalize_type_with_generics),
+      ok (false)
+  {}
 
+  bool canonicalize_type_with_generics;
   bool ok;
 };
 
@@ -190,9 +261,9 @@ public:
 
     // for now lets focus on handling the basics: like struct<T> { a:T, ....}
     resolver->get_type_scope ().insert (
-      param.get_type_representation (), param.get_node_id (),
+      CanonicalPath (param.get_type_representation ()), param.get_node_id (),
       param.get_locus (), false,
-      [&] (std::string, NodeId, Location locus) -> void {
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	rust_error_at (param.get_locus (),
 		       "generic param redefined multiple times");
 	rust_error_at (locus, "was defined here");
@@ -200,7 +271,11 @@ public:
   }
 
 private:
-  ResolveGenericParam (NodeId parent) : ResolverBase (parent), ok (false) {}
+  ResolveGenericParam (NodeId parent)
+    : ResolverBase (parent),
+
+      ok (false)
+  {}
 
   bool ok;
 };

@@ -33,7 +33,6 @@ public:
   static void go (AST::Pattern *pattern, NodeId parent)
   {
     ResolvePattern resolver (parent);
-
     pattern->accept_vis (resolver);
     if (resolver.resolved_node == UNKNOWN_NODEID)
       {
@@ -42,12 +41,10 @@ public:
       }
   };
 
-  ~ResolvePattern () {}
-
   void visit (AST::IdentifierPattern &pattern) override
   {
-    if (resolver->get_name_scope ().lookup (pattern.get_ident (),
-					    &resolved_node))
+    if (resolver->get_name_scope ().lookup (
+	  CanonicalPath (pattern.get_ident ()), &resolved_node))
       {
 	resolver->insert_resolved_name (pattern.get_node_id (), resolved_node);
 	resolver->insert_new_definition (pattern.get_node_id (),
@@ -68,23 +65,14 @@ public:
   static void go (AST::Pattern *pattern, NodeId parent)
   {
     PatternDeclaration resolver (parent);
-
     pattern->accept_vis (resolver);
-    if (resolver.resolved_node != UNKNOWN_NODEID)
-      {
-	// print both locations?!
-	rust_error_at (resolver.locus, "duplicate pattern %s",
-		       pattern->as_string ().c_str ());
-      }
   };
-
-  ~PatternDeclaration () {}
 
   void visit (AST::IdentifierPattern &pattern) override
   {
     // if we have a duplicate id this then allows for shadowing correctly
     // as new refs to this decl will match back here so it is ok to overwrite
-    resolver->get_name_scope ().insert (pattern.get_ident (),
+    resolver->get_name_scope ().insert (CanonicalPath (pattern.get_ident ()),
 					pattern.get_node_id (),
 					pattern.get_locus ());
     resolver->insert_new_definition (pattern.get_node_id (),

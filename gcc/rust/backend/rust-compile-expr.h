@@ -526,7 +526,7 @@ public:
 
   void visit (HIR::PathInExpression &expr) override
   {
-    translated = ResolvePathRef::Compile (&expr, ctx);
+    translated = ResolvePathRef::Compile (expr, ctx);
   }
 
   void visit (HIR::LoopExpr &expr) override

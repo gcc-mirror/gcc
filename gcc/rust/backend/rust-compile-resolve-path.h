@@ -30,10 +30,10 @@ class ResolvePathRef : public HIRCompileBase
   using Rust::Compile::HIRCompileBase::visit;
 
 public:
-  static Bexpression *Compile (HIR::Expr *expr, Context *ctx)
+  static Bexpression *Compile (HIR::PathInExpression &expr, Context *ctx)
   {
     ResolvePathRef resolver (ctx);
-    expr->accept_vis (resolver);
+    expr.accept_vis (resolver);
     return resolver.resolved;
   }
 

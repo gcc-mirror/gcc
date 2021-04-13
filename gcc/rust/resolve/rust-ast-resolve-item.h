@@ -179,18 +179,21 @@ public:
 	  }
       }
 
+    bool canonicalize_type_with_generics = false;
     NodeId resolved_node = ResolveType::go (impl_block.get_type ().get (),
-					    impl_block.get_node_id ());
+					    impl_block.get_node_id (),
+					    canonicalize_type_with_generics);
     if (resolved_node == UNKNOWN_NODEID)
       return;
 
+    auto Self = CanonicalPath::get_big_self ();
     resolver->get_type_scope ().insert (
-      "Self", resolved_node, impl_block.get_type ()->get_locus_slow ());
+      Self, resolved_node, impl_block.get_type ()->get_locus_slow ());
 
     for (auto &impl_item : impl_block.get_impl_items ())
       impl_item->accept_vis (*this);
 
-    resolver->get_type_scope ().peek ()->clear_name ("Self", resolved_node);
+    resolver->get_type_scope ().peek ()->clear_name (Self, resolved_node);
     resolver->get_type_scope ().pop ();
   }
 
