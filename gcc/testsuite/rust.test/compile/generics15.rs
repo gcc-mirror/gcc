@@ -15,7 +15,9 @@ impl Foo<f32> {
 fn main() {
     let a = Foo(123, true);
     let aa = a.bar();
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 
     let b = Foo(456f32, true);
     let bb = b.bar();
+    // { dg-warning "unused name" "" { target *-*-* } .-1 }
 }
