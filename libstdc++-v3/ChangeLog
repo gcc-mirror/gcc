@@ -1,3 +1,26 @@
+2021-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100044
+	* include/std/ranges (__detail::__iterator_sentinel_pair):
+	Remove helper concept.
+	(subrange(_Pr), subrange(Pr, __make_unsigned_like<...>)): Remove
+	deduction guides, as per LWG 3404.
+	* testsuite/std/ranges/subrange/lwg3282_neg.cc: Check that class
+	template argument deduction fails.
+
+2021-04-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h (indirectly_readable): Add
+	partial specializations to resolve ambiguities (LWG 3446).
+	* testsuite/24_iterators/associated_types/readable.traits.cc:
+	Check types with both value_type and element_type.
+
 2021-04-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR bootstrap/99983

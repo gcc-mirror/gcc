@@ -1,3 +1,11 @@
+2021-04-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-04-09  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/99817
+	* gfortran.dg/coarray/dummy_2.f90: New test.
+
 2021-04-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97973
