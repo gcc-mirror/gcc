@@ -1,3 +1,13 @@
+2021-04-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-08-03  Richard Biener  <rguenther@suse.de>
+
+	PR lto/96385
+	* simple-object-elf.c
+	(simple_object_elf_copy_lto_debug_sections): Localize global
+	UNDEFs and reuse the prevailing name.
+
 2020-03-12  Release Manager
 
 	* GCC 9.3.0 released.
