@@ -631,7 +631,6 @@ extern void d_finish_decl (tree);
 extern tree make_thunk (FuncDeclaration *, int);
 extern tree start_function (FuncDeclaration *);
 extern void finish_function (tree);
-extern void mark_needed (tree);
 extern tree get_vtable_decl (ClassDeclaration *);
 extern tree build_new_class_expr (ClassReferenceExp *);
 extern tree aggregate_initializer_decl (AggregateDeclaration *);

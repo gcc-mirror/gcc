@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-thunks.h"
 
 #include "d-tree.h"
+#include "d-target.h"
 
 
 /* Return identifier for the external mangled name of DECL.  */
@@ -1960,8 +1961,8 @@ finish_function (tree old_context)
 /* Mark DECL, which is a VAR_DECL or FUNCTION_DECL as a symbol that
    must be emitted in this, output module.  */
 
-void
-mark_needed (tree decl)
+static void
+d_mark_needed (tree decl)
 {
   TREE_USED (decl) = 1;
 
@@ -2379,6 +2380,18 @@ set_linkage_for_decl (tree decl)
      translation units.  */
   if (TREE_CODE (decl) == FUNCTION_DECL && DECL_DECLARED_INLINE_P (decl))
     return d_comdat_linkage (decl);
+
+  /* If all instantiations must go in COMDAT, give them that linkage.
+     This also applies to other extern declarations, so that it is possible
+     for them to override template declarations.  */
+  if (targetdm.d_templates_always_comdat)
+    {
+      /* Make sure that instantiations are not removed.  */
+      if (flag_weak_templates && DECL_INSTANTIATED (decl))
+	d_mark_needed (decl);
+
+      return d_comdat_linkage (decl);
+    }
 
   /* Instantiated variables and functions need to be overridable by any other
      symbol with the same name, so give them weak linkage.  */

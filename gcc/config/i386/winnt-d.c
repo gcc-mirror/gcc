@@ -78,4 +78,9 @@ winnt_d_register_target_info (void)
 #undef TARGET_D_MINFO_END_NAME
 #define TARGET_D_MINFO_END_NAME "__stop_minfo"
 
+/* Define TARGET_D_TEMPLATES_ALWAYS_COMDAT for Windows targets.  */
+
+#undef TARGET_D_TEMPLATES_ALWAYS_COMDAT
+#define TARGET_D_TEMPLATES_ALWAYS_COMDAT true
+
 struct gcc_targetdm targetdm = TARGETDM_INITIALIZER;
