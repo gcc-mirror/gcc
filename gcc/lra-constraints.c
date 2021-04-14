@@ -834,6 +834,11 @@ operands_match_p (rtx x, rtx y, int y_hard_regno)
     CASE_CONST_UNIQUE:
       return false;
 
+    case CONST_VECTOR:
+      if (!same_vector_encodings_p (x, y))
+	return false;
+      break;
+
     case LABEL_REF:
       return label_ref_label (x) == label_ref_label (y);
     case SYMBOL_REF:
