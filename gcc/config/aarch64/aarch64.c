@@ -5166,6 +5166,56 @@ aarch64_expand_sve_ld1rq (rtx dest, rtx src)
   return true;
 }
 
+/* SRC is an SVE CONST_VECTOR that contains N "foreground" values followed
+   by N "background" values.  Try to move it into TARGET using:
+
+      PTRUE PRED.<T>, VL<N>
+      MOV TRUE.<T>, #<foreground>
+      MOV FALSE.<T>, #<background>
+      SEL TARGET.<T>, PRED.<T>, TRUE.<T>, FALSE.<T>
+
+   The PTRUE is always a single instruction but the MOVs might need a
+   longer sequence.  If the background value is zero (as it often is),
+   the sequence can sometimes collapse to a PTRUE followed by a
+   zero-predicated move.
+
+   Return the target on success, otherwise return null.  */
+
+static rtx
+aarch64_expand_sve_const_vector_sel (rtx target, rtx src)
+{
+  gcc_assert (CONST_VECTOR_NELTS_PER_PATTERN (src) == 2);
+
+  /* Make sure that the PTRUE is valid.  */
+  machine_mode mode = GET_MODE (src);
+  machine_mode pred_mode = aarch64_sve_pred_mode (mode);
+  unsigned int npatterns = CONST_VECTOR_NPATTERNS (src);
+  if (aarch64_svpattern_for_vl (pred_mode, npatterns)
+      == AARCH64_NUM_SVPATTERNS)
+    return NULL_RTX;
+
+  rtx_vector_builder pred_builder (pred_mode, npatterns, 2);
+  rtx_vector_builder true_builder (mode, npatterns, 1);
+  rtx_vector_builder false_builder (mode, npatterns, 1);
+  for (unsigned int i = 0; i < npatterns; ++i)
+    {
+      true_builder.quick_push (CONST_VECTOR_ENCODED_ELT (src, i));
+      pred_builder.quick_push (CONST1_RTX (BImode));
+    }
+  for (unsigned int i = 0; i < npatterns; ++i)
+    {
+      false_builder.quick_push (CONST_VECTOR_ENCODED_ELT (src, i + npatterns));
+      pred_builder.quick_push (CONST0_RTX (BImode));
+    }
+  expand_operand ops[4];
+  create_output_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], true_builder.build (), mode);
+  create_input_operand (&ops[2], false_builder.build (), mode);
+  create_input_operand (&ops[3], pred_builder.build (), pred_mode);
+  expand_insn (code_for_vcond_mask (mode, mode), 4, ops);
+  return target;
+}
+
 /* Return a register containing CONST_VECTOR SRC, given that SRC has an
    SVE data mode and isn't a legitimate constant.  Use TARGET for the
    result if convenient.
@@ -5299,6 +5349,10 @@ aarch64_expand_sve_const_vector (rtx target, rtx src)
      if we can.  */
   if (GET_MODE_NUNITS (mode).is_constant ())
     return NULL_RTX;
+
+  if (nelts_per_pattern == 2)
+    if (rtx res = aarch64_expand_sve_const_vector_sel (target, src))
+      return res;
 
   /* Expand each pattern individually.  */
   gcc_assert (npatterns > 1);
