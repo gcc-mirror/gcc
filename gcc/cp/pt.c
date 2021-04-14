@@ -10856,6 +10856,7 @@ uses_outer_template_parms (tree decl)
       for (int i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
 	{
 	  tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+	  tree defarg = TREE_PURPOSE (TREE_VEC_ELT (parms, i));
 	  if (TREE_CODE (parm) == PARM_DECL
 	      && for_each_template_parm (TREE_TYPE (parm),
 					 template_parm_outer_level,
@@ -10863,6 +10864,10 @@ uses_outer_template_parms (tree decl)
 	    return true;
 	  if (TREE_CODE (parm) == TEMPLATE_DECL
 	      && uses_outer_template_parms (parm))
+	    return true;
+	  if (defarg
+	      && for_each_template_parm (defarg, template_parm_outer_level,
+					 &depth, NULL, /*nondeduced*/true))
 	    return true;
 	}
     }
