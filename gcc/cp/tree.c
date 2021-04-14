@@ -4680,20 +4680,30 @@ zero_init_expr_p (tree t)
   tree type = TREE_TYPE (t);
   if (!type || uses_template_parms (type))
     return false;
-  if (zero_init_p (type))
-    return initializer_zerop (t);
   if (TYPE_PTRMEM_P (type))
     return null_member_pointer_value_p (t);
-  if (TREE_CODE (t) == CONSTRUCTOR
-      && CP_AGGREGATE_TYPE_P (type))
+  if (TREE_CODE (t) == CONSTRUCTOR)
     {
-      tree elt_init;
-      unsigned HOST_WIDE_INT i;
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), i, elt_init)
-	if (!zero_init_expr_p (elt_init))
-	  return false;
+      if (CONSTRUCTOR_IS_DEPENDENT (t)
+	  || BRACE_ENCLOSED_INITIALIZER_P (t))
+	/* Undigested, conversions might change the zeroness.
+
+	   Other COMPOUND_LITERAL_P in template context are also undigested,
+	   but there isn't currently a way to distinguish between them and
+	   COMPOUND_LITERAL_P from non-template context that are digested.  */
+	return false;
+      for (constructor_elt &elt : CONSTRUCTOR_ELTS (t))
+	{
+	  if (TREE_CODE (type) == UNION_TYPE
+	      && elt.index != first_field (type))
+	    return false;
+	  if (!zero_init_expr_p (elt.value))
+	    return false;
+	}
       return true;
     }
+  if (zero_init_p (type))
+    return initializer_zerop (t);
   return false;
 }
 

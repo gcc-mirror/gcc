@@ -7150,6 +7150,9 @@ get_template_parm_object (tree expr, tsubst_flags_t complain)
   if (invalid_tparm_referent_p (TREE_TYPE (expr), expr, complain))
     return error_mark_node;
 
+  /* This is no longer a compound literal.  */
+  TREE_HAS_CONSTRUCTOR (expr) = 0;
+
   tree name = mangle_template_parm_object (expr);
   tree decl = get_global_binding (name);
   if (decl)

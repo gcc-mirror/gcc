@@ -6152,7 +6152,7 @@ struct reshape_iter
 
 static tree reshape_init_r (tree, reshape_iter *, tree, tsubst_flags_t);
 
-/* FIELD is a FIELD_DECL or NULL.  In the former case, the value
+/* FIELD is an element of TYPE_FIELDS or NULL.  In the former case, the value
    returned is the next FIELD_DECL (possibly FIELD itself) that can be
    initialized.  If there are no more such fields, the return value
    will be NULL.  */
