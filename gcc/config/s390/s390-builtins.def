@@ -29,6 +29,9 @@
 #undef O_U16
 #undef O_U32
 
+#undef O_M5
+#undef O_M12
+
 #undef O_S2
 #undef O_S3
 #undef O_S4
@@ -37,6 +40,7 @@
 #undef O_S12
 #undef O_S16
 #undef O_S32
+
 #undef O_ELEM
 #undef O_LIT
 
@@ -84,6 +88,16 @@
 #undef O2_U32
 #undef O3_U32
 #undef O4_U32
+
+#undef O1_M5
+#undef O2_M5
+#undef O3_M5
+#undef O4_M5
+
+#undef O1_M12
+#undef O2_M12
+#undef O3_M12
+#undef O4_M12
 
 #undef O1_S2
 #undef O2_S2
@@ -140,31 +154,34 @@
 #undef O_UIMM_P
 #undef O_SIMM_P
 
-#define O_U1   1 /* unsigned  1 bit literal */
-#define O_U2   2 /* unsigned  2 bit literal */
-#define O_U3   3 /* unsigned  3 bit literal */
-#define O_U4   4 /* unsigned  4 bit literal */
-#define O_U5   5 /* unsigned  5 bit literal */
-#define O_U8   6 /* unsigned  8 bit literal */
-#define O_U12  7 /* unsigned 16 bit literal */
-#define O_U16  8 /* unsigned 16 bit literal */
-#define O_U32  9 /* unsigned 32 bit literal */
+#define O_U1     1 /* unsigned  1 bit literal */
+#define O_U2     2 /* unsigned  2 bit literal */
+#define O_U3     3 /* unsigned  3 bit literal */
+#define O_U4     4 /* unsigned  4 bit literal */
+#define O_U5     5 /* unsigned  5 bit literal */
+#define O_U8     6 /* unsigned  8 bit literal */
+#define O_U12    7 /* unsigned 16 bit literal */
+#define O_U16    8 /* unsigned 16 bit literal */
+#define O_U32    9 /* unsigned 32 bit literal */
 
-#define O_S2  10 /* signed  2 bit literal */
-#define O_S3  11 /* signed  3 bit literal */
-#define O_S4  12 /* signed  4 bit literal */
-#define O_S5  13 /* signed  5 bit literal */
-#define O_S8  14 /* signed  8 bit literal */
-#define O_S12 15 /* signed 12 bit literal */
-#define O_S16 16 /* signed 16 bit literal */
-#define O_S32 17 /* signed 32 bit literal */
+#define O_M5    10 /* matches bitmask of 5 */
+#define O_M12   11 /* matches bitmask of 12 */
 
-#define O_ELEM  18 /* Element selector requiring modulo arithmetic. */
-#define O_LIT   19 /* Operand must be a literal fitting the target type.  */
+#define O_S2    12 /* signed  2 bit literal */
+#define O_S3    13 /* signed  3 bit literal */
+#define O_S4    14 /* signed  4 bit literal */
+#define O_S5    15 /* signed  5 bit literal */
+#define O_S8    16 /* signed  8 bit literal */
+#define O_S12   17 /* signed 12 bit literal */
+#define O_S16   18 /* signed 16 bit literal */
+#define O_S32   19 /* signed 32 bit literal */
+
+#define O_ELEM  20 /* Element selector requiring modulo arithmetic. */
+#define O_LIT   21 /* Operand must be a literal fitting the target type.  */
 
 #define O_SHIFT 5
 
-#define O_UIMM_P(X) ((X) >= O_U1 && (X) <= O_U32)
+#define O_UIMM_P(X) ((X) >= O_U1 && (X) <= O_M12)
 #define O_SIMM_P(X) ((X) >= O_S2 && (X) <= O_S32)
 #define O_IMM_P(X) ((X) == O_LIT || ((X) >= O_U1 && (X) <= O_S32))
 
@@ -212,6 +229,16 @@
 #define O2_U32 (O_U32 << O_SHIFT)
 #define O3_U32 (O_U32 << (2 * O_SHIFT))
 #define O4_U32 (O_U32 << (3 * O_SHIFT))
+
+#define O1_M5 O_M5
+#define O2_M5 (O_M5 << O_SHIFT)
+#define O3_M5 (O_M5 << (2 * O_SHIFT))
+#define O4_M5 (O_M5 << (3 * O_SHIFT))
+
+#define O1_M12 O_M12
+#define O2_M12 (O_M12 << O_SHIFT)
+#define O3_M12 (O_M12 << (2 * O_SHIFT))
+#define O4_M12 (O_M12 << (3 * O_SHIFT))
 
 
 #define O1_S2 O_S2
@@ -644,12 +671,12 @@ OB_DEF_VAR (s390_vec_perm_dbl,          s390_vperm,         0,                  
 B_DEF      (s390_vperm,                 vec_permv16qi,      0,                  B_VX,               0,                  BT_FN_UV16QI_UV16QI_UV16QI_UV16QI)
 
 OB_DEF     (s390_vec_permi,             s390_vec_permi_s64, s390_vec_permi_dbl, B_VX,               BT_FN_OV4SI_OV4SI_OV4SI_INT)
-OB_DEF_VAR (s390_vec_permi_s64,         s390_vpdi,          0,                  O3_U2,              BT_OV_V2DI_V2DI_V2DI_INT)
-OB_DEF_VAR (s390_vec_permi_b64,         s390_vpdi,          0,                  O3_U2,              BT_OV_BV2DI_BV2DI_BV2DI_INT)
-OB_DEF_VAR (s390_vec_permi_u64,         s390_vpdi,          0,                  O3_U2,              BT_OV_UV2DI_UV2DI_UV2DI_INT)
-OB_DEF_VAR (s390_vec_permi_dbl,         s390_vpdi,          0,                  O3_U2,              BT_OV_V2DF_V2DF_V2DF_INT)
+OB_DEF_VAR (s390_vec_permi_s64,         s390_vpdi,          0,                  O3_M5,              BT_OV_V2DI_V2DI_V2DI_INT)
+OB_DEF_VAR (s390_vec_permi_b64,         s390_vpdi,          0,                  O3_M5,              BT_OV_BV2DI_BV2DI_BV2DI_INT)
+OB_DEF_VAR (s390_vec_permi_u64,         s390_vpdi,          0,                  O3_M5,              BT_OV_UV2DI_UV2DI_UV2DI_INT)
+OB_DEF_VAR (s390_vec_permi_dbl,         s390_vpdi,          0,                  O3_M5,              BT_OV_V2DF_V2DF_V2DF_INT)
 
-B_DEF      (s390_vpdi,                  vec_permiv2di,      0,                  B_VX,               O3_U2,              BT_FN_UV2DI_UV2DI_UV2DI_INT)
+B_DEF      (s390_vpdi,                  vec_permiv2di,      0,                  B_VX,               O3_M5,              BT_FN_UV2DI_UV2DI_UV2DI_INT)
 
 OB_DEF     (s390_vec_splat,             s390_vec_splat2_s8, s390_vec_splat2_dbl,B_VX,               BT_FN_OV4SI_OV4SI_UCHAR)
 OB_DEF_VAR (s390_vec_splat2_s8,         s390_vrepb,         0,                  O2_U4,              BT_OV_V16QI_V16QI_UCHAR)
@@ -2287,8 +2314,8 @@ OB_DEF_VAR (s390_vec_test_mask_dbl,     s390_vtm,           0,                  
 
 B_DEF      (s390_vtm,                   vec_test_mask_intv16qi,0,               B_VX,               0,                  BT_FN_INT_UV16QI_UV16QI)
 
-B_DEF      (s390_vec_msum_u128,         vec_msumv2di,       0,                  B_VXE,              O4_U2,              BT_FN_UV16QI_UV2DI_UV2DI_UV16QI_INT)
-B_DEF      (s390_vmslg,                 vmslg,              0,                  B_VXE,              O4_U4,              BT_FN_INT128_UV2DI_UV2DI_INT128_INT)
+B_DEF      (s390_vec_msum_u128,         vec_msumv2di,       0,                  B_VXE,              O4_M12,             BT_FN_UV16QI_UV2DI_UV2DI_UV16QI_INT)
+B_DEF      (s390_vmslg,                 vmslg,              0,                  B_VXE,              O4_M12,             BT_FN_INT128_UV2DI_UV2DI_INT128_INT)
 
 OB_DEF     (s390_vec_eqv,               s390_vec_eqv_b8,    s390_vec_eqv_dbl_c, B_VXE,              BT_FN_OV4SI_OV4SI_OV4SI)
 OB_DEF_VAR (s390_vec_eqv_b8,            s390_vnx,           0,                  0,                  BT_OV_BV16QI_BV16QI_BV16QI)
