@@ -2163,7 +2163,7 @@ static enum tree_code cp_parser_assignment_operator_opt
 static cp_expr cp_parser_expression
   (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false, bool = false);
 static cp_expr cp_parser_constant_expression
-  (cp_parser *, bool = false, bool * = NULL, bool = false);
+  (cp_parser *, int = 0, bool * = NULL, bool = false);
 static cp_expr cp_parser_builtin_offsetof
   (cp_parser *);
 static cp_expr cp_parser_lambda_expression
@@ -10374,13 +10374,15 @@ cp_parser_expression (cp_parser* parser, cp_id_kind * pidk,
   If ALLOW_NON_CONSTANT_P a non-constant expression is silently
   accepted.  If ALLOW_NON_CONSTANT_P is true and the expression is not
   constant, *NON_CONSTANT_P is set to TRUE.  If ALLOW_NON_CONSTANT_P
-  is false, NON_CONSTANT_P should be NULL.  If STRICT_P is true,
+  is false, NON_CONSTANT_P should be NULL.  If ALLOW_NON_CONSTANT_P is
+  greater than 1, this isn't really a constant-expression, only a
+  potentially constant-evaluated expression.  If STRICT_P is true,
   only parse a conditional-expression, otherwise parse an
   assignment-expression.  See below for rationale.  */
 
 static cp_expr
 cp_parser_constant_expression (cp_parser* parser,
-			       bool allow_non_constant_p,
+			       int allow_non_constant_p,
 			       bool *non_constant_p,
 			       bool strict_p)
 {
@@ -10416,6 +10418,11 @@ cp_parser_constant_expression (cp_parser* parser,
   parser->allow_non_integral_constant_expression_p
     = (allow_non_constant_p || cxx_dialect >= cxx11);
   parser->non_integral_constant_expression_p = false;
+
+  /* A manifestly constant-evaluated expression is evaluated even in an
+     unevaluated operand.  */
+  cp_evaluated ev (/*reset if*/allow_non_constant_p <= 1);
+
   /* Although the grammar says "conditional-expression", when not STRICT_P,
      we parse an "assignment-expression", which also permits
      "throw-expression" and the use of assignment operators.  In the case
@@ -24236,7 +24243,7 @@ cp_parser_initializer_clause (cp_parser* parser, bool* non_constant_p)
     {
       initializer
 	= cp_parser_constant_expression (parser,
-					/*allow_non_constant_p=*/true,
+					/*allow_non_constant_p=*/2,
 					non_constant_p);
     }
   else

@@ -5480,9 +5480,10 @@ class cp_evaluated
 public:
   int uneval;
   int inhibit;
-  cp_evaluated ()
+  cp_evaluated (bool reset = true)
     : uneval(cp_unevaluated_operand), inhibit(c_inhibit_evaluation_warnings)
-  { cp_unevaluated_operand = c_inhibit_evaluation_warnings = 0; }
+  { if (reset)
+      cp_unevaluated_operand = c_inhibit_evaluation_warnings = 0; }
   ~cp_evaluated ()
   { cp_unevaluated_operand = uneval;
     c_inhibit_evaluation_warnings = inhibit; }
