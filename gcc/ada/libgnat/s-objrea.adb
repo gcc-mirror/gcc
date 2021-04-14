@@ -78,6 +78,7 @@ package body System.Object_Reader is
       EM_SPARCV9     : constant := 43; --  SPARC v9 64-bit
       EM_IA_64       : constant := 50; --  Intel Merced
       EM_X86_64      : constant := 62; --  AMD x86-64 architecture
+      EM_AARCH64     : constant := 183; --  Aarch64
 
       EN_NIDENT  : constant := 16;
 
@@ -647,6 +648,9 @@ package body System.Object_Reader is
 
             when EM_ARM =>
                Res.Arch := ARM;
+
+            when EM_AARCH64 =>
+               Res.Arch := AARCH64;
 
             when others =>
                raise Format_Error with "unrecognized architecture";
@@ -2038,7 +2042,8 @@ package body System.Object_Reader is
             Address_32 := Read (S);
             return uint64 (Address_32);
 
-         when IA64
+         when AARCH64
+            | IA64
             | PPC64
             | SPARC64
             | x86_64
