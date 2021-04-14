@@ -3398,4 +3398,151 @@ index 00000000000..56c67f58752
 -- 
 2.29.2
 
+=== 0001-fix-old-ChangeLog.patch ===
+From fd498465b2801203089616be9a0e3c1f4fc065a0 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Wed, 13 Jan 2021 11:45:37 +0100
+Subject: [PATCH] Fix a changelog.
 
+---
+ gcc/ChangeLog-2020 | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/ChangeLog-2020 b/gcc/ChangeLog-2020
+index 6553720acad..2c170ef014a 100644
+--- a/gcc/ChangeLog-2020
++++ b/gcc/ChangeLog-2020
+@@ -1 +1,2 @@
+ 
++
+ 
+-- 
+2.29.2
+=== 0001-Add-macro.patch ===
+From 9b7eedc932fe594547fb060b36dfd9e4178c4f9b Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Wed, 13 Jan 2021 16:26:45 +0100
+Subject: [PATCH 1/2] Add macro.
+
+gcc/ChangeLog:
+
+	* config/i386/i386.md (*fix_trunc<mode>_i387_1, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_0, *add<mode>3_ne_0, *add<mode>3_eq,
+	*fist<mode>2_<rounding>_1, *<code><mode>3_1, *<code>di3_doubleword):
+	Use ix86_pre_reload_split instead of can_create_pseudo_p in condition.
+	* config/i386/sse.md
+	(*fix_trunc<mode>_i387_1, *add<mode>3_eq,
+	*add<mode>3_ne, *add<mode>3_eq_0, *add<mode>3_ne_0, *add<mode>3_eq,
+	*fist<mode>2_<rounding>_1): This should also work.
+---
+ gcc/config/i386/i386.md | 1 +
+ gcc/config/i386/sse.md  | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/gcc/config/i386/i386.md b/gcc/config/i386/i386.md
+index b60784a2908..ac63591b33f 100644
+--- a/gcc/config/i386/i386.md
++++ b/gcc/config/i386/i386.md
+@@ -1 +1,2 @@
+ 
++
+
+diff --git a/gcc/config/i386/sse.md b/gcc/config/i386/sse.md
+index 7f03fc491c3..0e17997db26 100644
+--- a/gcc/config/i386/sse.md
++++ b/gcc/config/i386/sse.md
+@@ -1 +1,2 @@
+ 
++
+
+-- 
+2.29.2
+
+=== 0002-Wrong-macro-changelog.patch ===
+From 3542802111d4c6752ac7233ef96655b7fb78aae4 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Wed, 13 Jan 2021 16:54:58 +0100
+Subject: [PATCH 2/2] Wrong macro changelog
+
+gcc/ChangeLog:
+
+	* config/i386/i386.md (*fix_trunc<mode>_i387_1,
+	(foo): Change it.
+---
+ gcc/config/i386/i386.md | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gcc/config/i386/i386.md b/gcc/config/i386/i386.md
+index ac63591b33f..ff4d61764e7 100644
+--- a/gcc/config/i386/i386.md
++++ b/gcc/config/i386/i386.md
+@@ -1 +1,2 @@
+ 
++
+-- 
+2.29.2
+
+=== 0001-ChangeLog-removal.patch ===
+From b39fadf9df1a9510afcab0a391182da7dc68de24 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Fri, 12 Mar 2021 09:10:55 +0100
+Subject: [PATCH] Test ChangeLog removal.
+
+gcc/ChangeLog:
+
+	* ipa-icf.c (make_pass_ipa_icf): Add line.
+---
+diff --git a/gcc/analyzer/ChangeLog b/gcc/analyzer/ChangeLog
+deleted file mode 100644
+index 94e87f6bcde..00000000000
+--- a/gcc/analyzer/ChangeLog
++++ /dev/null
+@@ -1,1 +0,0 @@
+- foo
+diff --git a/gcc/ipa-icf.c b/gcc/ipa-icf.c
+index 5dd33a75c3a..c4ce432cb98 100644
+--- a/gcc/ipa-icf.c
++++ b/gcc/ipa-icf.c
+@@ -3655,3 +3655,4 @@ make_pass_ipa_icf (gcc::context *ctxt)
+ {
+   return new ipa_icf::pass_ipa_icf (ctxt);
+ }
++
+-- 
+2.30.1
+
+=== 0001-long-filenames ===
+From 0a5b3f87bdac5e61f9a626c795d30f9e93198585 Mon Sep 17 00:00:00 2001
+From: Martin Liska <mliska@suse.cz>
+Date: Mon, 12 Apr 2021 13:10:14 +0200
+Subject: [PATCH] libstdc++: Fix some tests that fail in C++20 mode
+
+The linear_congruential_engine negative tests fail with a different
+error in C++20 mode, because double is no longer an invalid type for
+NTTP. Adjust the expected errors.
+
+libstdc++-v3/ChangeLog:
+
+	* testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc:
+	Adjust expected error for C++20 mode.
+	* testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc:
+	Likewise.
+---
+ .../linear_congruential_engine/requirements/non_uint_neg.cc   | 4 +++-
+ .../random/linear_congruential/requirements/non_uint_neg.cc   | 3 ++-
+ 2 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/libstdc++-v3/testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc b/libstdc++-v3/testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc
+index e04e8ca6972..a36d63c6c7b 100644
+--- a/libstdc++-v3/testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc
++++ b/libstdc++-v3/testsuite/26_numerics/random/linear_congruential_engine/requirements/non_uint_neg.cc
+@@ -1 +1,2 @@
+ 
++
+diff --git a/libstdc++-v3/testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc b/libstdc++-v3/testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc
+index 5ad82db1def..53b15f32516 100644
+--- a/libstdc++-v3/testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc
++++ b/libstdc++-v3/testsuite/tr1/5_numerical_facilities/random/linear_congruential/requirements/non_uint_neg.cc
+@@ -1 +1,2 @@
+ 
++
