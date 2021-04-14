@@ -1,3 +1,12 @@
+2021-04-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-04-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100060
+	* include/std/bit: Only include <ext/numeric_traits.h> for
+	hosted build, use <limits> otherwise.
+
 2021-04-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
