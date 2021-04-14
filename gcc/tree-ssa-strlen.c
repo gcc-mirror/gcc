@@ -2158,8 +2158,7 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	  if (bound)
 	    rhs = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (rhs), rhs, bound);
 
-	  if (!update_call_from_tree (gsi, rhs))
-	    gimplify_and_update_call_from_tree (gsi, rhs);
+	  gimplify_and_update_call_from_tree (gsi, rhs);
 	  stmt = gsi_stmt (*gsi);
 	  update_stmt (stmt);
 	  if (dump_file && (dump_flags & TDF_DETAILS) != 0)
@@ -2258,8 +2257,7 @@ handle_builtin_strlen (gimple_stmt_iterator *gsi)
 	      }
 	    if (!useless_type_conversion_p (TREE_TYPE (lhs), TREE_TYPE (ret)))
 	      ret = fold_convert_loc (loc, TREE_TYPE (lhs), ret);
-	    if (!update_call_from_tree (gsi, ret))
-	      gimplify_and_update_call_from_tree (gsi, ret);
+	    gimplify_and_update_call_from_tree (gsi, ret);
 	    stmt = gsi_stmt (*gsi);
 	    update_stmt (stmt);
 	    if (dump_file && (dump_flags & TDF_DETAILS) != 0)
@@ -2337,8 +2335,7 @@ handle_builtin_strchr (gimple_stmt_iterator *gsi)
 					      TREE_TYPE (rhs)))
 		rhs = fold_convert_loc (loc, TREE_TYPE (lhs), rhs);
 	    }
-	  if (!update_call_from_tree (gsi, rhs))
-	    gimplify_and_update_call_from_tree (gsi, rhs);
+	  gimplify_and_update_call_from_tree (gsi, rhs);
 	  stmt = gsi_stmt (*gsi);
 	  update_stmt (stmt);
 	  if (dump_file && (dump_flags & TDF_DETAILS) != 0)

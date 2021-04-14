@@ -12369,7 +12369,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	/* Convert result back to the lhs type.  */
 	res = gimple_build (&stmts, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), res);
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	update_call_from_tree (gsi, res);
+	replace_call_with_value (gsi, res);
 	return true;
       }
     /* Vector loads.  */

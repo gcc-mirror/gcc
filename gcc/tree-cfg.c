@@ -7530,7 +7530,7 @@ fold_loop_internal_call (gimple *g, tree value)
   gimple *use_stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (g);
 
-  update_call_from_tree (&gsi, value);
+  replace_call_with_value (&gsi, value);
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
     {
       FOR_EACH_IMM_USE_ON_STMT (use_p, iter)

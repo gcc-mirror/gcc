@@ -4149,8 +4149,7 @@ try_substitute_return_value (gimple_stmt_iterator *gsi,
 	  /* Replace the call to the bounded function with a zero size
 	     (e.g., snprintf(0, 0, "%i", 123) with the constant result
 	     of the function.  */
-	  if (!update_call_from_tree (gsi, cst))
-	    gimplify_and_update_call_from_tree (gsi, cst);
+	  gimplify_and_update_call_from_tree (gsi, cst);
 	  gimple *callstmt = gsi_stmt (*gsi);
 	  update_stmt (callstmt);
 	}

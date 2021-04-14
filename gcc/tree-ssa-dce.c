@@ -1274,8 +1274,7 @@ maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
       fprintf (dump_file, "\n");
     }
 
-  if (!update_call_from_tree (gsi, result))
-    gimplify_and_update_call_from_tree (gsi, result);
+  gimplify_and_update_call_from_tree (gsi, result);
 }
 
 /* Eliminate unnecessary statements. Any instruction not marked as necessary
