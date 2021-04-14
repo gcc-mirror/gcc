@@ -515,7 +515,7 @@ valid_gimple_rhs_p (tree expr)
 	default:
 	  if (get_gimple_rhs_class (code) == GIMPLE_TERNARY_RHS)
 	    {
-	      if (((code == VEC_COND_EXPR || code == COND_EXPR)
+	      if ((code == COND_EXPR
 		   ? !is_gimple_condexpr (TREE_OPERAND (expr, 0))
 		   : !is_gimple_val (TREE_OPERAND (expr, 0)))
 		  || !is_gimple_val (TREE_OPERAND (expr, 1))
