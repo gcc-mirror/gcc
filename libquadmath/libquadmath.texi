@@ -371,7 +371,7 @@ int main ()
 @c ---------------------------------------------------------------------
 
 @c For BUGURL
-@include libquadmath-vers.texi
+@include gcc-vers.texi
 
 @node Reporting Bugs
 @chapter Reporting Bugs
