@@ -3230,21 +3230,22 @@ arm_configure_build_target (struct arm_build_target *target,
 	  bitmap_xor (isa_delta, cpu_isa, target->isa);
 	  /* Ignore any bits that are quirk bits.  */
 	  bitmap_and_compl (isa_delta, isa_delta, isa_quirkbits);
-	  /* Ignore (for now) any bits that might be set by -mfpu.  */
-	  bitmap_and_compl (isa_delta, isa_delta, isa_all_fpubits_internal);
-
-	  /* And if the target ISA lacks floating point, ignore any
-	     extensions that depend on that.  */
-	  if (!bitmap_bit_p (target->isa, isa_bit_vfpv2))
+	  /* If the user (or the default configuration) has specified a
+	     specific FPU, then ignore any bits that depend on the FPU
+	     configuration.  Do similarly if using the soft-float
+	     ABI.  */
+	  if (opts->x_arm_fpu_index != TARGET_FPU_auto
+	      || arm_float_abi == ARM_FLOAT_ABI_SOFT)
 	    bitmap_and_compl (isa_delta, isa_delta, isa_all_fpbits);
 
 	  if (!bitmap_empty_p (isa_delta))
 	    {
 	      if (warn_compatible)
 		warning (0, "switch %<-mcpu=%s%> conflicts "
-			 "with %<-march=%s%> switch",
-			 arm_selected_cpu->common.name,
-			 arm_selected_arch->common.name);
+			 "with switch %<-march=%s%>",
+			 opts->x_arm_cpu_string,
+			 opts->x_arm_arch_string);
+
 	      /* -march wins for code generation.
 		 -mcpu wins for default tuning.  */
 	      if (!arm_selected_tune)
@@ -3395,7 +3396,9 @@ arm_configure_build_target (struct arm_build_target *target,
       auto_sbitmap fpu_bits (isa_num_bits);
 
       arm_initialize_isa (fpu_bits, arm_selected_fpu->isa_bits);
-      bitmap_and_compl (target->isa, target->isa, isa_all_fpubits_internal);
+      /* Clear out ALL bits relating to the FPU/simd extensions, to avoid
+	 potentially invalid combinations later on that we can't match.  */
+      bitmap_and_compl (target->isa, target->isa, isa_all_fpbits);
       bitmap_ior (target->isa, target->isa, fpu_bits);
     }
 
@@ -3856,7 +3859,7 @@ arm_options_perform_arch_sanity_checks (void)
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
 	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2)
 	      && !bitmap_bit_p (arm_active_target.isa, isa_bit_mve))
-	    error ("%<-mfloat-abi=hard%>: selected processor lacks an FPU");
+	    error ("%<-mfloat-abi=hard%>: selected architecture lacks an FPU");
 	}
       else
 	arm_pcs_default = ARM_PCS_AAPCS;
