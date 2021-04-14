@@ -10796,7 +10796,21 @@ cp_parser_lambda_expression (cp_parser* parser)
   LAMBDA_EXPR_LOCATION (lambda_expr) = token->location;
 
   if (cxx_dialect >= cxx20)
-    /* C++20 allows lambdas in unevaluated context.  */;
+    {
+      /* C++20 allows lambdas in unevaluated context, but one in the type of a
+	 non-type parameter is nonsensical.
+
+	 Distinguish a lambda in the parameter type from a lambda in the
+	 default argument by looking at local_variables_forbidden_p, which is
+	 only set in default arguments.  */
+      if (processing_template_parmlist && !parser->local_variables_forbidden_p)
+	{
+	  error_at (token->location,
+		    "lambda-expression in template parameter type");
+	  token->error_reported = true;
+	  ok = false;
+	}
+    }
   else if (cp_unevaluated_operand)
     {
       if (!token->error_reported)
@@ -12126,10 +12140,11 @@ cp_parser_compound_statement (cp_parser *parser, tree in_statement_expr,
   if (function_body)
     maybe_splice_retval_cleanup (compound_stmt);
 
-  /* Finish the compound-statement.  */
-  finish_compound_stmt (compound_stmt);
   /* Consume the `}'.  */
   braces.require_close (parser);
+
+  /* Finish the compound-statement.  */
+  finish_compound_stmt (compound_stmt);
 
   return compound_stmt;
 }

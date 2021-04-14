@@ -1,3 +1,15 @@
+2021-04-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/99446
+	* line-map.c (line-map.c): Do not advance to linemaps for
+	different files.
+
+2021-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* include/line-map.h (IS_MACRO_LOC): Delete.
+	* line-map.c (linemap_location_from_macro_expansion_p): Test
+	LINEMAPS_MACRO_LOWEST_LOCATION of the linemap.
+
 2021-03-02  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/99323

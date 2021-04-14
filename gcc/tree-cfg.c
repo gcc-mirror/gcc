@@ -4246,6 +4246,8 @@ verify_gimple_assign_ternary (gassign *stmt)
 	  debug_generic_expr (rhs1_type);
 	  return true;
 	}
+      if (!is_gimple_val (rhs1))
+	return true;
       /* Fallthrough.  */
     case COND_EXPR:
       if (!is_gimple_val (rhs1)

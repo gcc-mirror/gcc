@@ -115,3 +115,4 @@ extern const int pa_magic_milli[];
 
 /* Routines implemented in pa-d.c  */
 extern void pa_d_target_versions (void);
+extern void pa_d_register_target_info (void);

@@ -1,3 +1,87 @@
+2021-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/82800
+	* g++.dg/warn/uninit-pr82800.C: New test.
+
+2021-04-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/86058
+	* gcc.dg/pr86058.c: New test.
+
+2021-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99008
+	* g++.old-deja/g++.ns/crash3.C: Adjust expected diagnostic.
+	* g++.old-deja/g++.ns/template7.C: Likewise.
+	* g++.old-deja/g++.pt/crash8.C: Likewise.
+
+2021-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100032
+	* g++.dg/cpp0x/alias-decl-equiv1.C: New test.
+
+2021-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97121
+	* g++.dg/cpp2a/spaceship-err6.C: New test.
+
+2021-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100054
+	* g++.dg/cpp1y/lambda-generic-local-class1.C: New test.
+
+2021-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99008
+	* g++.dg/parse/template2.C: Adjust expected diagnostic.
+	* g++.dg/template/error8.C: Likewise.
+	* g++.dg/cpp1z/class-deduction84.C: New test.
+
+2021-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100053
+	* gcc.dg/torture/pr100053.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-93.c: Likewise.
+
+2021-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91933
+	* g++.dg/cpp0x/constexpr-base7.C: New test.
+
+2021-04-13  Nathan Sidwell  <nathan@acm.org>
+
+	PR preprocessor/99446
+	* g++.dg/diagnostic/pr72803.C: Adjust expected column.
+
+2021-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100028
+	* gcc.target/aarch64/pr100028.c: New test.
+
+2021-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97134
+	* g++.dg/cpp2a/nontype-class43.C: New test.
+
+2021-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99961
+	PR c++/99994
+	* g++.dg/cpp2a/concepts-uneval1.C: New test.
+	* g++.dg/cpp2a/concepts-uneval2.C: New test.
+
+2021-04-13  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR analyzer/99212
+	* gcc.dg/analyzer/data-model-1.c (test_45): Inverse xfail at
+	line 971 for cris-*-*.
+
+2021-04-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98599
+	* gcc.dg/analyzer/pr98599-a.c: New test.
+	* gcc.dg/analyzer/pr98599-b.c: New test.
+
 2021-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/99905

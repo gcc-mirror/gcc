@@ -1,3 +1,15 @@
+2021-04-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/98599
+	* supergraph.cc (saved_uids::make_uid_unique): New.
+	(saved_uids::restore_uids): New.
+	(supergraph::supergraph): Replace assignments to stmt->uid with
+	calls to m_stmt_uids.make_uid_unique.
+	(supergraph::~supergraph): New.
+	* supergraph.h (class saved_uids): New.
+	(supergraph::~supergraph): New decl.
+	(supergraph::m_stmt_uids): New field.
+
 2021-04-10  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/100011

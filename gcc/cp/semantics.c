@@ -602,6 +602,22 @@ add_decl_expr (tree decl)
   add_stmt (r);
 }
 
+/* Set EXPR_LOCATION of the cleanups of any CLEANUP_STMT in STMTS to LOC.  */
+
+static void
+set_cleanup_locs (tree stmts, location_t loc)
+{
+  if (TREE_CODE (stmts) == CLEANUP_STMT)
+    {
+      protected_set_expr_location (CLEANUP_EXPR (stmts), loc);
+      set_cleanup_locs (CLEANUP_BODY (stmts), loc);
+    }
+  else if (TREE_CODE (stmts) == STATEMENT_LIST)
+    for (tree_stmt_iterator i = tsi_start (stmts);
+	 !tsi_end_p (i); tsi_next (&i))
+      set_cleanup_locs (tsi_stmt (i), loc);
+}
+
 /* Finish a scope.  */
 
 tree
@@ -613,6 +629,9 @@ do_poplevel (tree stmt_list)
     block = poplevel (kept_level_p (), 1, 0);
 
   stmt_list = pop_stmt_list (stmt_list);
+
+  /* input_location is the last token of the scope, usually a }.  */
+  set_cleanup_locs (stmt_list, input_location);
 
   if (!processing_template_decl)
     {
@@ -4074,6 +4093,12 @@ finish_id_expression_1 (tree id_expression,
 
 	  cp_warn_deprecated_use_scopes (scope);
 
+	  /* In a constant-expression context, turn off cp_unevaluated_operand
+	     so finish_non_static_data_member will complain (93314).  */
+	  auto eval = make_temp_override (cp_unevaluated_operand);
+	  if (integral_constant_expression_p && TREE_CODE (decl) == FIELD_DECL)
+	    cp_unevaluated_operand = 0;
+
 	  if (TYPE_P (scope))
 	    decl = finish_qualified_id_expr (scope,
 					     decl,
@@ -4087,6 +4112,10 @@ finish_id_expression_1 (tree id_expression,
 	}
       else if (TREE_CODE (decl) == FIELD_DECL)
 	{
+	  auto eval = make_temp_override (cp_unevaluated_operand);
+	  if (integral_constant_expression_p)
+	    cp_unevaluated_operand = 0;
+
 	  /* Since SCOPE is NULL here, this is an unqualified name.
 	     Access checking has been performed during name lookup
 	     already.  Turn off checking to avoid duplicate errors.  */

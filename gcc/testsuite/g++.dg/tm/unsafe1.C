@@ -5,8 +5,8 @@ struct S {
   virtual ~S();
 };
 void f() transaction_safe {
-  S s;		     // { dg-error "unsafe" "invocation of unsafe destructor" }
-}
+  S s;
+} // { dg-error "unsafe" "invocation of unsafe destructor" }
 
 int g(int x) { // is transaction-safe
   if (x <= 0)

@@ -2556,8 +2556,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (!DECL_USE_TEMPLATE (newdecl))
 	    DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
 
-	  DECL_INITIALIZED_IN_CLASS_P (newdecl)
-	    |= DECL_INITIALIZED_IN_CLASS_P (olddecl);
+	  if (!DECL_TEMPLATE_SPECIALIZATION (newdecl))
+	    DECL_INITIALIZED_IN_CLASS_P (newdecl)
+	      |= DECL_INITIALIZED_IN_CLASS_P (olddecl);
 	}
 
       /* Don't really know how much of the language-specific

@@ -45,3 +45,33 @@ rs6000_d_target_versions (void)
       d_add_builtin_version ("D_SoftFloat");
     }
 }
+
+/* Handle a call to `__traits(getTargetInfo, "floatAbi")'.  */
+
+static tree
+rs6000_d_handle_target_float_abi (void)
+{
+  const char *abi;
+
+  if (TARGET_HARD_FLOAT)
+    abi = "hard";
+  else if (TARGET_SOFT_FLOAT)
+    abi = "soft";
+  else
+    abi = "";
+
+  return build_string_literal (strlen (abi) + 1, abi);
+}
+
+/* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
+
+void
+rs6000_d_register_target_info (void)
+{
+  const struct d_target_info_spec handlers[] = {
+    { "floatAbi", rs6000_d_handle_target_float_abi },
+    { NULL, NULL },
+  };
+
+  d_add_target_info_handlers (handlers);
+}

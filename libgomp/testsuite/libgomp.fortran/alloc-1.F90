@@ -155,12 +155,13 @@
         cp = omp_alloc (ONEoFIVE,                                       &
      &                  omp_null_allocator)
         if (mod (transfer (cp, intptr), 32_c_intptr_t) /= 0) stop 17
-        call c_f_pointer (cq, q, [ONEoFIVE                              &
+        call c_f_pointer (cp, p, [ONEoFIVE                              &
      &                            / c_sizeof (i)])
         p(1) = 5
         p(ONEoFIVE / c_sizeof (i)) = 6
         cq = omp_alloc (768_c_size_t, omp_null_allocator)
         if (mod (transfer (cq, intptr), 128_c_intptr_t) /= 0) stop 18
+        call c_f_pointer (cq, q, [768 / c_sizeof (i)])
         q(1) = 7
         q(768 / c_sizeof (i)) = 8
         if (c_associated (omp_alloc (768_c_size_t, omp_null_allocator))) &

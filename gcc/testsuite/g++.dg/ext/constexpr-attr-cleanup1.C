@@ -15,9 +15,9 @@ cleanup2 (int *x)
 constexpr bool
 foo ()
 {
-  int a __attribute__((cleanup (cleanup))) = 1;	// { dg-message "in 'constexpr' expansion of" }
+  int a __attribute__((cleanup (cleanup))) = 1;
   return true;
-}
+} // { dg-message "in 'constexpr' expansion of" }
 
 constexpr bool
 bar ()

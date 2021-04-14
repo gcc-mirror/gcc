@@ -39,3 +39,31 @@ pa_d_target_versions (void)
   else
     d_add_builtin_version ("D_HardFloat");
 }
+
+/* Handle a call to `__traits(getTargetInfo, "floatAbi")'.  */
+
+static tree
+pa_d_handle_target_float_abi (void)
+{
+  const char *abi;
+
+  if (TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
+    abi = "soft";
+  else
+    abi = "hard";
+
+  return build_string_literal (strlen (abi) + 1, abi);
+}
+
+/* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
+
+void
+pa_d_register_target_info (void)
+{
+  const struct d_target_info_spec handlers[] = {
+    { "floatAbi", pa_d_handle_target_float_abi },
+    { NULL, NULL },
+  };
+
+  d_add_target_info_handlers (handlers);
+}

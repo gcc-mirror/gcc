@@ -1562,9 +1562,6 @@ create_typeinfo (Type *type, Module *mod)
 	case TK_STRUCT_TYPE:
 	  if (!tinfo_types[tk])
 	    {
-	      /* Some ABIs add extra TypeInfo fields on the end.  */
-	      tree argtype = global.params.is64bit ? ptr_type_node : NULL_TREE;
-
 	      ident = Identifier::idPool ("TypeInfo_Struct");
 	      make_internal_typeinfo (tk, ident,
 				      array_type_node, array_type_node,
@@ -1572,7 +1569,7 @@ create_typeinfo (Type *type, Module *mod)
 				      ptr_type_node, ptr_type_node,
 				      d_uint_type, ptr_type_node,
 				      ptr_type_node, d_uint_type,
-				      ptr_type_node, argtype, argtype, NULL);
+				      ptr_type_node, NULL);
 	    }
 	  t->vtinfo = TypeInfoStructDeclaration::create (t);
 	  break;

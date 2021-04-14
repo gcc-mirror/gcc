@@ -39,3 +39,49 @@ riscv_d_target_versions (void)
   else
     d_add_builtin_version ("D_SoftFloat");
 }
+
+/* Handle a call to `__traits(getTargetInfo, "floatAbi")'.  */
+
+static tree
+riscv_d_handle_target_float_abi (void)
+{
+  const char *abi;
+
+  switch (riscv_abi)
+    {
+    case ABI_ILP32E:
+    case ABI_ILP32:
+    case ABI_LP64:
+      abi = "soft";
+      break;
+
+    case ABI_ILP32F:
+    case ABI_LP64F:
+      abi = "single";
+      break;
+
+    case ABI_ILP32D:
+    case ABI_LP64D:
+      abi = "double";
+      break;
+
+    default:
+      abi = "";
+      break;
+    }
+
+  return build_string_literal (strlen (abi) + 1, abi);
+}
+
+/* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
+
+void
+riscv_d_register_target_info (void)
+{
+  const struct d_target_info_spec handlers[] = {
+    { "floatAbi", riscv_d_handle_target_float_abi },
+    { NULL, NULL },
+  };
+
+  d_add_target_info_handlers (handlers);
+}

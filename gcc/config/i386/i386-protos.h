@@ -264,6 +264,8 @@ extern void ix86_register_pragmas (void);
 
 /* In i386-d.c  */
 extern void ix86_d_target_versions (void);
+extern void ix86_d_register_target_info (void);
+extern bool ix86_d_has_stdcall_convention (unsigned int *, unsigned int *);
 
 /* In winnt.c  */
 extern void i386_pe_unique_section (tree, int);
