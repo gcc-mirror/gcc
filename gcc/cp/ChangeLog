@@ -1,3 +1,49 @@
+2021-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100032
+	* pt.c (get_underlying_template): Compare TYPE_QUALS.
+
+2021-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100054
+	PR c++/90479
+	* init.c (get_nsdmi): Do more context adjustment for local classes.
+
+2021-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99008
+	* pt.c (do_class_deduction): Reject alias CTAD in C++17 mode
+	rather than issuing a pedwarn.
+	* typeck2.c (build_functional_cast_1): Handle CTAD uniformly
+	for consistent diagnostics.
+
+2021-04-13  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91933
+	* class.c (build_base_path): Shortcut simple non-pointer case.
+
+2021-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* module.cc (ordinary_loc_of): Test LINEMAPS_MACRO_LOWEST_LOCATION
+	of the linemap.
+	(module_state::write_location): Likewise.
+
+2021-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97134
+	* pt.c (do_class_deduction): Look through EXPR_PACK_EXPANSION
+	when checking if the initializer is an equivalent class
+	placeholder template parameter.
+
+2021-04-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99961
+	PR c++/99994
+	* constraint.cc (satisfy_normalized_constraints): Set
+	cp_unevaluated.
+	* parser.c (cp_parser_concept_definition): Likewise.
+	(cp_parser_requires_clause_opt): Likewise.
+
 2021-04-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/93085

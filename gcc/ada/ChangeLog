@@ -1,3 +1,12 @@
+2021-04-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_init): Set default range bits to 0.
+	* gcc-interface/trans.c (extract_encoding): Delete.
+	(decode_name): Likewise.
+	(File_Name_to_gnu): New function.
+	(gigi): Call it to translate file names.  Replace assertion on
+	1-1 mapping between files and line maps with conditional error.
+
 2021-04-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* gnat_ugn.texi (Top): Avoid invalid "up" link.

@@ -1,3 +1,8 @@
+2021-04-13  Martin Storsjö  <martin@martin.st>
+
+	* mh-mingw: Set __USE_MINGW_ACCESS in missed C++ flags
+	variables
+
 2021-01-05  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR c++/98316

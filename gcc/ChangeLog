@@ -1,3 +1,28 @@
+2021-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100053
+	* tree-ssa-sccvn.c (vn_nary_op_get_predicated_value): Do
+	not use optimistic dominance queries for backedges to validate
+	predicated values.
+	(dominated_by_p_w_unex): Add parameter to ignore executable
+	state on backedges.
+	(rpo_elim::eliminate_avail): Adjust.
+
+2021-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100028
+	* config/aarch64/aarch64.md (*aarch64_bfxil<mode>_extr,
+	*aarch64_bfxilsi_extrdi): New define_insn patterns.
+
+2021-04-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99648
+	* simplify-rtx.c (simplify_immed_subreg): For MODE_COMPOSITE_P
+	outermode, return NULL if the result doesn't encode back to the
+	original byte sequence.
+	(simplify_gen_subreg): Don't create SUBREGs from constants to
+	MODE_COMPOSITE_P outermode.
+
 2021-04-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/99905
