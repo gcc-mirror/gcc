@@ -1210,7 +1210,7 @@ lower_opt (simplify *s, vec<simplify *>& simplifiers)
     }
 }
 
-/* Lower the compare operand of COND_EXPRs and VEC_COND_EXPRs to a
+/* Lower the compare operand of COND_EXPRs to a
    GENERIC and a GIMPLE variant.  */
 
 static vec<operand *>
@@ -1257,8 +1257,7 @@ lower_cond (operand *o)
       /* If this is a COND with a captured expression or an
          expression with two operands then also match a GENERIC
 	 form on the compare.  */
-      if ((*e->operation == COND_EXPR
-	   || *e->operation == VEC_COND_EXPR)
+      if (*e->operation == COND_EXPR
 	  && ((is_a <capture *> (e->ops[0])
 	       && as_a <capture *> (e->ops[0])->what
 	       && is_a <expr *> (as_a <capture *> (e->ops[0])->what)
@@ -1296,7 +1295,7 @@ lower_cond (operand *o)
   return ro;
 }
 
-/* Lower the compare operand of COND_EXPRs and VEC_COND_EXPRs to a
+/* Lower the compare operand of COND_EXPRs to a
    GENERIC and a GIMPLE variant.  */
 
 static void
@@ -2132,9 +2131,7 @@ capture_info::capture_info (simplify *s, operand *result, bool gimple_)
 		(i != 0 && *e->operation == COND_EXPR)
 		|| *e->operation == TRUTH_ANDIF_EXPR
 		|| *e->operation == TRUTH_ORIF_EXPR,
-		i == 0
-		&& (*e->operation == COND_EXPR
-		    || *e->operation == VEC_COND_EXPR));
+		i == 0 && *e->operation == COND_EXPR);
 
   walk_result (s->result, false, result);
 }
@@ -2197,8 +2194,7 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
 		   || *e->operation == TRUTH_ORIF_EXPR)
 	    cond_p = true;
 	  if (i == 0
-	      && (*e->operation == COND_EXPR
-		  || *e->operation == VEC_COND_EXPR))
+	      && *e->operation == COND_EXPR)
 	    expr_cond_p = true;
 	  walk_match (e->ops[i], toplevel_arg, cond_p, expr_cond_p);
 	}
@@ -2494,8 +2490,7 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 			    i == 0 ? NULL : op0type);
       ops[i]->gen_transform (f, indent, dest1, gimple, depth + 1, optype1,
 			     cinfo, indexes,
-			     (*opr == COND_EXPR
-			      || *opr == VEC_COND_EXPR) && i == 0 ? 1 : 2);
+			     *opr == COND_EXPR && i == 0 ? 1 : 2);
     }
 
   const char *opr_name;
@@ -3417,8 +3412,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 		 into COND_EXPRs.  */
 	      int cond_handling = 0;
 	      if (!is_predicate)
-		cond_handling = ((*opr == COND_EXPR
-				  || *opr == VEC_COND_EXPR) && j == 0) ? 1 : 2;
+		cond_handling = (*opr == COND_EXPR && j == 0) ? 1 : 2;
 	      e->ops[j]->gen_transform (f, indent, dest, true, 1, optype,
 					&cinfo, indexes, cond_handling);
 	    }
