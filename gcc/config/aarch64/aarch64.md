@@ -4431,6 +4431,59 @@
   [(set_attr "type" "logic_shift_imm")]
 )
 
+(define_split
+  [(set (match_operand:GPI 0 "register_operand")
+	(LOGICAL:GPI
+	  (and:GPI (ashift:GPI (match_operand:GPI 1 "register_operand")
+			       (match_operand:QI 2 "aarch64_shift_imm_<mode>"))
+		   (match_operand:GPI 3 "const_int_operand"))
+	  (zero_extend:GPI (match_operand 4 "register_operand"))))]
+  "can_create_pseudo_p ()
+   && ((paradoxical_subreg_p (operands[1])
+	&& rtx_equal_p (SUBREG_REG (operands[1]), operands[4]))
+       || (REG_P (operands[1])
+	   && REG_P (operands[4])
+	   && REGNO (operands[1]) == REGNO (operands[4])))
+   && (trunc_int_for_mode (GET_MODE_MASK (GET_MODE (operands[4]))
+			   << INTVAL (operands[2]), <MODE>mode)
+       == INTVAL (operands[3]))"
+  [(set (match_dup 5) (zero_extend:GPI (match_dup 4)))
+   (set (match_dup 0) (LOGICAL:GPI (ashift:GPI (match_dup 5) (match_dup 2))
+				   (match_dup 5)))]
+  "operands[5] = gen_reg_rtx (<MODE>mode);"
+)
+
+(define_split
+  [(set (match_operand:GPI 0 "register_operand")
+	(LOGICAL:GPI
+	  (and:GPI (ashift:GPI (match_operand:GPI 1 "register_operand")
+			       (match_operand:QI 2 "aarch64_shift_imm_<mode>"))
+		   (match_operand:GPI 4 "const_int_operand"))
+	  (and:GPI (match_dup 1) (match_operand:GPI 3 "const_int_operand"))))]
+  "can_create_pseudo_p ()
+   && pow2_or_zerop (UINTVAL (operands[3]) + 1)
+   && (trunc_int_for_mode (UINTVAL (operands[3])
+			   << INTVAL (operands[2]), <MODE>mode)
+       == INTVAL (operands[4]))"
+  [(set (match_dup 5) (and:GPI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0) (LOGICAL:GPI (ashift:GPI (match_dup 5) (match_dup 2))
+				   (match_dup 5)))]
+  "operands[5] = gen_reg_rtx (<MODE>mode);"
+)
+
+(define_split
+  [(set (match_operand:GPI 0 "register_operand")
+	(LOGICAL:GPI
+	  (ashift:GPI (sign_extend:GPI (match_operand 1 "register_operand"))
+		      (match_operand:QI 2 "aarch64_shift_imm_<mode>"))
+	  (sign_extend:GPI (match_dup 1))))]
+  "can_create_pseudo_p ()"
+  [(set (match_dup 3) (sign_extend:GPI (match_dup 1)))
+   (set (match_dup 0) (LOGICAL:GPI (ashift:GPI (match_dup 3) (match_dup 2))
+				   (match_dup 3)))]
+  "operands[3] = gen_reg_rtx (<MODE>mode);"
+)
+
 (define_insn "*<optab>_rol<mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(LOGICAL:GPI (rotate:GPI
