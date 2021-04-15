@@ -175,3 +175,46 @@ rust_get_linemap ()
 {
   return new Gcc_linemap;
 }
+
+RichLocation::RichLocation (Location root)
+  : gcc_rich_loc (line_table, root.gcc_location ())
+{
+  /*rich_location (line_maps *set, location_t loc,
+		 const range_label *label = NULL);*/
+}
+
+RichLocation::~RichLocation () {}
+
+void
+RichLocation::add_range (Location loc)
+{
+  gcc_rich_loc.add_range (loc.gcc_location ());
+}
+
+void
+RichLocation::add_fixit_insert_before (const std::string &new_parent)
+{
+  gcc_rich_loc.add_fixit_insert_before (new_parent.c_str ());
+}
+
+void
+RichLocation::add_fixit_insert_before (Location where,
+				       const std::string &new_parent)
+{
+  gcc_rich_loc.add_fixit_insert_before (where.gcc_location (),
+					new_parent.c_str ());
+}
+
+void
+RichLocation::add_fixit_insert_after (const std::string &new_parent)
+{
+  gcc_rich_loc.add_fixit_insert_after (new_parent.c_str ());
+}
+
+void
+RichLocation::add_fixit_insert_after (Location where,
+				      const std::string &new_parent)
+{
+  gcc_rich_loc.add_fixit_insert_after (where.gcc_location (),
+				       new_parent.c_str ());
+}

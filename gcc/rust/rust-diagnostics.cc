@@ -186,6 +186,17 @@ rust_inform (const Location location, const char *fmt, ...)
   va_end (ap);
 }
 
+// Rich Locations
+void
+rust_error_at (const RichLocation location, const char *fmt, ...)
+{
+  va_list ap;
+
+  va_start (ap, fmt);
+  rust_be_error_at (location, expand_message (fmt, ap));
+  va_end (ap);
+}
+
 // rust_debug uses normal printf formatting, not GCC diagnostic formatting.
 
 void

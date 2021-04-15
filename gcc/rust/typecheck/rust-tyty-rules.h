@@ -109,7 +109,10 @@ public:
   virtual void visit (TupleType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -117,7 +120,10 @@ public:
   virtual void visit (ADTType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -125,7 +131,10 @@ public:
   virtual void visit (InferType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -133,7 +142,10 @@ public:
   virtual void visit (FnType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -141,7 +153,10 @@ public:
   virtual void visit (FnPtr &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -149,7 +164,10 @@ public:
   virtual void visit (ArrayType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -157,7 +175,10 @@ public:
   virtual void visit (BoolType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -165,7 +186,10 @@ public:
   virtual void visit (IntType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -173,7 +197,10 @@ public:
   virtual void visit (UintType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -181,7 +208,10 @@ public:
   virtual void visit (USizeType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -189,7 +219,10 @@ public:
   virtual void visit (ISizeType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -197,7 +230,10 @@ public:
   virtual void visit (FloatType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -205,7 +241,10 @@ public:
   virtual void visit (ErrorType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -213,7 +252,10 @@ public:
   virtual void visit (CharType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -221,7 +263,10 @@ public:
   virtual void visit (ReferenceType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -229,7 +274,10 @@ public:
   virtual void visit (ParamType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }
@@ -237,7 +285,10 @@ public:
   virtual void visit (StrType &type) override
   {
     Location ref_locus = mappings->lookup_location (type.get_ref ());
-    rust_error_at (ref_locus, "expected [%s] got [%s]",
+    Location base_locus = mappings->lookup_location (get_base ()->get_ref ());
+    RichLocation r (ref_locus);
+    r.add_range (base_locus);
+    rust_error_at (r, "expected [%s] got [%s]",
 		   get_base ()->as_string ().c_str (),
 		   type.as_string ().c_str ());
   }

@@ -1,4 +1,3 @@
-// { dg-excess-errors "Noisy error and debug" }
 struct Foo<A> {
     a: A,
 }

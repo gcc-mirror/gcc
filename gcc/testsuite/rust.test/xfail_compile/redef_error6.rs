@@ -1,4 +1,3 @@
-// { dg-excess-errors "Noisy error and debug" }
 struct Foo<T>(T, usize);
 
 impl Foo<i32> {
@@ -6,8 +5,7 @@ impl Foo<i32> {
         123
     }
 
-    fn test(self) -> i32 {
-        // { dg-error "redefined multiple times" "" { target *-*-* } .-1 }
+    fn test(self) -> i32 { // { dg-error "redefined multiple times" }
         self.0
     }
 }

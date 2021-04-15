@@ -9,7 +9,6 @@ fn main() {
     let mut x;
     x = 1;
     x = true; // { dg-error "expected .<integer>. got .bool." }
-    // { dg-error "type resolution failure in AssignmentExpr" "" { target { *-*-* } } .-1 }
 
     let call_test = test(1);
 }

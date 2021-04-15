@@ -1,4 +1,4 @@
-const TEST: i32 = 2;  // { dg-error "was defined here" }
-const TEST: f32 = 3.0;  // { dg-error "redefined multiple times" }
+const TEST: i32 = 2;
+const TEST: f32 = 3.0; // { dg-error "redefined multiple times" }
 
 fn main() {}
