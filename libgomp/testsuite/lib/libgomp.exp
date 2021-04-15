@@ -401,6 +401,18 @@ proc check_effective_target_offload_device_shared_as { } {
     } ]
 }
 
+# Return 1 if using nvptx offload device.
+proc check_effective_target_offload_device_nvptx { } {
+    return [check_runtime_nocache offload_device_nvptx {
+      #include <omp.h>
+      #include "testsuite/libgomp.c-c++-common/on_device_arch.h"
+      int main ()
+	{
+	  return !on_device_arch_nvptx ();
+	}
+    } ]
+}
+
 # Return 1 if at least one Nvidia GPU is accessible.
 
 proc check_effective_target_openacc_nvidia_accel_present { } {

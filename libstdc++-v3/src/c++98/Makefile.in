@@ -127,9 +127,9 @@ libc__98convenience_la_LIBADD =
 @ENABLE_DUAL_ABI_TRUE@	messages_members_cow.lo \
 @ENABLE_DUAL_ABI_TRUE@	monetary_members_cow.lo \
 @ENABLE_DUAL_ABI_TRUE@	numeric_members_cow.lo
-am__objects_3 = $(am__objects_2) atomicity.lo codecvt_members.lo \
-	collate_members.lo messages_members.lo monetary_members.lo \
-	numeric_members.lo time_members.lo
+am__objects_3 = $(am__objects_2) codecvt_members.lo collate_members.lo \
+	messages_members.lo monetary_members.lo numeric_members.lo \
+	time_members.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_4 = allocator-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	concept-inst.lo ext-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	misc-inst.lo
@@ -448,7 +448,6 @@ headers =
 # particular host.
 host_sources = \
 	$(cow_string_host_sources) \
-	atomicity.cc \
 	codecvt_members.cc \
 	collate_members.cc \
 	messages_members.cc \
@@ -456,7 +455,6 @@ host_sources = \
 	numeric_members.cc \
 	time_members.cc
 
-atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
 
 # Source files linked in via configuration/make substitution for a
 # particular host, but with ad hoc naming rules.
@@ -847,8 +845,6 @@ numeric_members.cc: ${glibcxx_srcdir}/$(CNUMERIC_CC)
 
 time_members.cc: ${glibcxx_srcdir}/$(CTIME_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CTIME_CC) . || true
-atomicity.cc: ${atomicity_file}
-	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
 @ENABLE_DUAL_ABI_TRUE@collate_members_cow.cc: ${glibcxx_srcdir}/$(CCOLLATE_CC)
 @ENABLE_DUAL_ABI_TRUE@	$(LN_S) ${glibcxx_srcdir}/$(CCOLLATE_CC) ./$@ || true

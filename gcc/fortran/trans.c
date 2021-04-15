@@ -422,6 +422,9 @@ get_array_span (tree type, tree decl)
 		return NULL_TREE;
 	    }
 	  span = gfc_class_vtab_size_get (decl);
+	  /* For unlimited polymorphic entities then _len component needs
+	     to be multiplied with the size.  */
+	  span = gfc_resize_class_size_with_len (NULL, decl, span);
 	}
       else if (GFC_DECL_PTR_ARRAY_P (decl))
 	{
@@ -439,13 +442,31 @@ get_array_span (tree type, tree decl)
 }
 
 
+tree
+gfc_build_spanned_array_ref (tree base, tree offset, tree span)
+{
+  tree type;
+  tree tmp;
+  type = TREE_TYPE (TREE_TYPE (base));
+  offset = fold_build2_loc (input_location, MULT_EXPR,
+			    gfc_array_index_type,
+			    offset, span);
+  tmp = gfc_build_addr_expr (pvoid_type_node, base);
+  tmp = fold_build_pointer_plus_loc (input_location, tmp, offset);
+  tmp = fold_convert (build_pointer_type (type), tmp);
+  if ((TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != ARRAY_TYPE)
+      || !TYPE_STRING_FLAG (type))
+    tmp = build_fold_indirect_ref_loc (input_location, tmp);
+  return tmp;
+}
+
+
 /* Build an ARRAY_REF with its natural type.  */
 
 tree
 gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
 {
   tree type = TREE_TYPE (base);
-  tree tmp;
   tree span = NULL_TREE;
 
   if (GFC_ARRAY_TYPE_P (type) && GFC_TYPE_ARRAY_RANK (type) == 0)
@@ -488,18 +509,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
   /* If a non-null span has been generated reference the element with
      pointer arithmetic.  */
   if (span != NULL_TREE)
-    {
-      offset = fold_build2_loc (input_location, MULT_EXPR,
-				gfc_array_index_type,
-				offset, span);
-      tmp = gfc_build_addr_expr (pvoid_type_node, base);
-      tmp = fold_build_pointer_plus_loc (input_location, tmp, offset);
-      tmp = fold_convert (build_pointer_type (type), tmp);
-      if ((TREE_CODE (type) != INTEGER_TYPE && TREE_CODE (type) != ARRAY_TYPE)
-	  || !TYPE_STRING_FLAG (type))
-	tmp = build_fold_indirect_ref_loc (input_location, tmp);
-      return tmp;
-    }
+    return gfc_build_spanned_array_ref (base, offset, span);
   /* Otherwise use a straightforward array reference.  */
   else
     return build4_loc (input_location, ARRAY_REF, type, base, offset,

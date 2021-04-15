@@ -264,6 +264,7 @@ proc add_options_for_libatomic { flags } {
     if { [istarget hppa*-*-hpux*]
 	 || ([istarget powerpc*-*-*] && [check_effective_target_ilp32])
 	 || [istarget riscv*-*-*]
+	 || ([istarget sparc*-*-linux-gnu] && [check_effective_target_ilp32])
        } {
 	return "$flags -L../../libatomic/.libs -latomic"
     }

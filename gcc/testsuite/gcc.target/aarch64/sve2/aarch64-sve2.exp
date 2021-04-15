@@ -28,12 +28,6 @@ if {![istarget aarch64*-*-*] } then {
 # Load support procs.
 load_lib gcc-dg.exp
 
-# If a testcase doesn't have special options, use these.
-global DEFAULT_CFLAGS
-if ![info exists DEFAULT_CFLAGS] then {
-    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
-}
-
 # Initialize `dg'.
 dg-init
 
@@ -44,9 +38,11 @@ if { [check_effective_target_aarch64_sve2] } {
     set sve2_flags "-march=armv8.5-a+sve2"
 }
 
-# Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
-    $sve2_flags $DEFAULT_CFLAGS
+aarch64-with-arch-dg-options $sve2_flags {
+    # Main loop.
+    dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
+	"" $sve2_flags
+}
 
 # All done.
 dg-finish

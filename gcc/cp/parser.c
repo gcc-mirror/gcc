@@ -16923,6 +16923,10 @@ cp_parser_default_type_template_argument (cp_parser *parser)
 
   cp_token *token = cp_lexer_peek_token (parser->lexer);
 
+  /* Tell cp_parser_lambda_expression this is a default argument.  */
+  auto lvf = make_temp_override (parser->local_variables_forbidden_p);
+  parser->local_variables_forbidden_p = LOCAL_VARS_AND_THIS_FORBIDDEN;
+
   /* Parse the default-argument.  */
   push_deferring_access_checks (dk_no_deferred);
   tree default_argument = cp_parser_type_id (parser,
