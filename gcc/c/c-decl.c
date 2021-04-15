@@ -3263,11 +3263,10 @@ pushdecl (tree x)
 	  else
 	    thistype = type;
 	  b->u.type = TREE_TYPE (b->decl);
-	  if (TREE_CODE (b->decl) == FUNCTION_DECL
-	      && fndecl_built_in_p (b->decl))
-	    thistype
-	      = build_type_attribute_variant (thistype,
-					      TYPE_ATTRIBUTES (b->u.type));
+	  /* Propagate the type attributes to the decl.  */
+	  thistype
+	    = build_type_attribute_variant (thistype,
+					    TYPE_ATTRIBUTES (b->u.type));
 	  TREE_TYPE (b->decl) = thistype;
 	  bind (name, b->decl, scope, /*invisible=*/false, /*nested=*/true,
 		locus);
