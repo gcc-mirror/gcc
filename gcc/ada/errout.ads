@@ -985,10 +985,6 @@ package Errout is
    --  the name at that source location, we copy the casing from the source,
    --  otherwise we set appropriate default casing.
 
-   procedure Adjust_Name_Case (Loc : Source_Ptr);
-   --  Uses Buf => Global_Name_Buffer. There are no calls to this in the
-   --  compiler, but it is called in SPARK 2014.
-
    procedure Set_Identifier_Casing
      (Identifier_Name : System.Address;
       File_Name       : System.Address);

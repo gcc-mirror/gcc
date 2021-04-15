@@ -3402,7 +3402,7 @@ package body Errout is
          --  For standard locations, always use mixed case
 
          if Loc <= No_Location then
-            Set_Casing (Mixed_Case);
+            Set_Casing (Buf, Mixed_Case);
 
          else
             --  Determine if the reference we are dealing with corresponds to
@@ -3438,11 +3438,6 @@ package body Errout is
             end if;
          end if;
       end;
-   end Adjust_Name_Case;
-
-   procedure Adjust_Name_Case (Loc : Source_Ptr) is
-   begin
-      Adjust_Name_Case (Global_Name_Buffer, Loc);
    end Adjust_Name_Case;
 
    ---------------------------
