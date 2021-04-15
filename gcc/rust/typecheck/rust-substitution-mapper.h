@@ -223,6 +223,48 @@ private:
   TyTy::BaseType *resolved;
 };
 
+class GetUsedSubstArgs : public TyTy::TyVisitor
+{
+public:
+  static TyTy::SubstitutionArgumentMappings From (TyTy::BaseType *from)
+  {
+    GetUsedSubstArgs mapper;
+    from->accept_vis (mapper);
+    return mapper.args;
+  }
+
+  void visit (TyTy::FnType &type) override
+  {
+    args = type.get_substitution_arguments ();
+  }
+
+  void visit (TyTy::ADTType &type) override
+  {
+    args = type.get_substitution_arguments ();
+  }
+
+  void visit (TyTy::InferType &) override { gcc_unreachable (); }
+  void visit (TyTy::TupleType &) override { gcc_unreachable (); }
+  void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
+  void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
+  void visit (TyTy::BoolType &) override { gcc_unreachable (); }
+  void visit (TyTy::IntType &) override { gcc_unreachable (); }
+  void visit (TyTy::UintType &) override { gcc_unreachable (); }
+  void visit (TyTy::FloatType &) override { gcc_unreachable (); }
+  void visit (TyTy::USizeType &) override { gcc_unreachable (); }
+  void visit (TyTy::ISizeType &) override { gcc_unreachable (); }
+  void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
+  void visit (TyTy::CharType &) override { gcc_unreachable (); }
+  void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
+  void visit (TyTy::ParamType &) override { gcc_unreachable (); }
+  void visit (TyTy::StrType &) override { gcc_unreachable (); }
+
+private:
+  GetUsedSubstArgs () : args (TyTy::SubstitutionArgumentMappings::error ()) {}
+
+  TyTy::SubstitutionArgumentMappings args;
+};
+
 } // namespace Resolver
 } // namespace Rust
 

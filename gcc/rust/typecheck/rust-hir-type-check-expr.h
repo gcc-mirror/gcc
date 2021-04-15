@@ -251,8 +251,10 @@ public:
 	    if (adt->has_substitutions () && fn->needs_substitution ())
 	      {
 		rust_assert (adt->was_substituted ());
+		auto used_args_in_prev_segment = GetUsedSubstArgs::From (adt);
 		lookup
-		  = fn->handle_substitions (adt->get_substitution_arguments ());
+		  = SubstMapperInternal::Resolve (fn,
+						  used_args_in_prev_segment);
 	      }
 	  }
       }
@@ -767,10 +769,15 @@ public:
       return;
     else if (expr.get_num_segments () == 1)
       {
+	Location locus = expr.get_segments ().back ().get_locus ();
+	if (tyseg->needs_generic_substitutions ())
+	  tyseg = SubstMapper::InferSubst (tyseg, locus);
+
 	infered = tyseg;
 	return;
       }
 
+    TyTy::BaseType *prev_segment = tyseg;
     NodeId resolved_node_id = UNKNOWN_NODEID;
     for (size_t i = 1; i < expr.get_num_segments (); i++)
       {
@@ -792,11 +799,11 @@ public:
 	  }
 
 	auto candidate = candidates.at (0);
+	prev_segment = tyseg;
 	tyseg = candidate.ty;
 	resolved_node_id
 	  = candidate.impl_item->get_impl_mappings ().get_nodeid ();
 
-	bool did_substitute = false;
 	if (seg.has_generic_args ())
 	  {
 	    if (!tyseg->can_substitute ())
@@ -807,23 +814,30 @@ public:
 		return;
 	      }
 
-	    did_substitute = true;
 	    tyseg = SubstMapper::Resolve (tyseg, expr.get_locus (),
 					  &seg.get_generic_args ());
-
 	    if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
 	      return;
 	  }
+      }
+
+    if (tyseg->needs_generic_substitutions ())
+      {
+	Location locus = expr.get_segments ().back ().get_locus ();
+	if (!prev_segment->needs_generic_substitutions ())
+	  {
+	    auto used_args_in_prev_segment
+	      = GetUsedSubstArgs::From (prev_segment);
+	    tyseg
+	      = SubstMapperInternal::Resolve (tyseg, used_args_in_prev_segment);
+	  }
 	else
 	  {
-	    if (tyseg->needs_generic_substitutions ())
-	      {
-		did_substitute = true;
-		tyseg = SubstMapper::InferSubst (tyseg, expr.get_locus ());
-		if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
-		  return;
-	      }
+	    tyseg = SubstMapper::InferSubst (tyseg, locus);
 	  }
+
+	if (tyseg->get_kind () == TyTy::TypeKind::ERROR)
+	  return;
       }
 
     rust_assert (resolved_node_id != UNKNOWN_NODEID);
@@ -1027,10 +1041,6 @@ private:
 	lookup = SubstMapper::Resolve (lookup, expr.get_locus (),
 				       &root.get_generic_args ());
       }
-    else if (lookup->needs_generic_substitutions ())
-      {
-	lookup = SubstMapper::InferSubst (lookup, expr.get_locus ());
-      }
 
     return lookup;
   }
@@ -1089,7 +1099,7 @@ private:
   TyTy::BaseType *infered_array_elems;
 
   bool inside_loop;
-};
+}; // namespace Resolver
 
 } // namespace Resolver
 } // namespace Rust

@@ -495,6 +495,15 @@ public:
     return false;
   }
 
+  bool get_argument_at (size_t index, SubstitutionArg *argument)
+  {
+    if (index > mappings.size ())
+      return false;
+
+    *argument = mappings.at (index);
+    return true;
+  }
+
   // is_concrete means if the used args is non error, ie: non empty this will
   // verify if actual real types have been put in place of are they still
   // ParamTy

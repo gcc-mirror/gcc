@@ -776,13 +776,22 @@ public:
     bool ok = context->lookup_type (base->get_ty_ref (), &lookup);
     rust_assert (ok);
 
+    if (lookup->get_kind () == TypeKind::PARAM)
+      {
+	InferType infer (UNKNOWN_HIRID, InferType::InferTypeKind::GENERAL);
+	return infer.can_eq (other);
+      }
+
     return lookup->can_eq (other);
   }
 
-  void visit (ParamType &type) override
-  {
-    ok = base->get_symbol ().compare (type.get_symbol ()) == 0;
-  }
+  // imagine the case where we have:
+  // struct Foo<T>(T);
+  // Then we declare a generic impl block
+  // impl <X>Foo<X> { ... }
+  // both of these types are compatible so we mostly care about the number of
+  // generic arguments
+  void visit (ParamType &type) override { ok = true; }
 
 private:
   BaseType *get_base () override { return base; }
