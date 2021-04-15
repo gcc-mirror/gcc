@@ -9944,7 +9944,8 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 		  tree a = instance;
 		  if (TREE_THIS_VOLATILE (a))
 		    a = build_this (a);
-		  call = build2 (COMPOUND_EXPR, TREE_TYPE (call), a, call);
+		  if (TREE_SIDE_EFFECTS (a))
+		    call = build2 (COMPOUND_EXPR, TREE_TYPE (call), a, call);
 		}
 	      else if (call != error_mark_node
 		       && DECL_DESTRUCTOR_P (cand->fn)
