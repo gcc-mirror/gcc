@@ -9106,7 +9106,7 @@ package body Sem_Ch12 is
          --  Handle the following case:
          --
          --    package Parent_Inst is new ...
-         --    Parent_Inst []
+         --    freeze Parent_Inst []
          --
          --    procedure P ...  --  this body freezes Parent_Inst
          --
@@ -9942,7 +9942,7 @@ package body Sem_Ch12 is
                --  Handle the following case:
 
                --    package Parent_Inst is new ...
-               --    Parent_Inst []
+               --    freeze Parent_Inst []
 
                --    procedure P ...  --  this body freezes Parent_Inst
 
