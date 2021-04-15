@@ -3890,6 +3890,10 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     (struct find_parameter_pack_data*)data;
   bool parameter_pack_p = false;
 
+#define WALK_SUBTREE(NODE)				\
+  cp_walk_tree (&(NODE), &find_parameter_packs_r,	\
+		ppd, ppd->visited)			\
+
   /* Don't look through typedefs; we are interested in whether a
      parameter pack is actually written in the expression/type we're
      looking at, not the target type.  */
@@ -4070,9 +4074,16 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 			ppd, ppd->visited);
       return NULL_TREE;
 
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      WALK_SUBTREE (TYPE_RAISES_EXCEPTIONS (t));
+      break;
+
     default:
       return NULL_TREE;
     }
+
+#undef WALK_SUBTREE
 
   return NULL_TREE;
 }
