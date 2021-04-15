@@ -2625,6 +2625,11 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_ix86_isa_flags
       |= OPTION_MASK_ISA_POPCNT & ~opts->x_ix86_isa_flags_explicit;
 
+  /* Enable crc32 instruction for -msse4.2.  */
+  if (TARGET_SSE4_2_P (opts->x_ix86_isa_flags))
+    opts->x_ix86_isa_flags
+      |= OPTION_MASK_ISA_CRC32 & ~opts->x_ix86_isa_flags_explicit;
+
   /* Enable lzcnt instruction for -mabm.  */
   if (TARGET_ABM_P(opts->x_ix86_isa_flags))
     opts->x_ix86_isa_flags
