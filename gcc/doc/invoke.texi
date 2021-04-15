@@ -1372,7 +1372,7 @@ See RS/6000 and PowerPC Options.
 -mno-wide-multiply  -mrtd  -malign-double @gol
 -mpreferred-stack-boundary=@var{num} @gol
 -mincoming-stack-boundary=@var{num} @gol
--mcld  -mcx16  -msahf  -mmovbe  -mcrc32 @gol
+-mcld  -mcx16  -msahf  -mmovbe  -mcrc32 -mmwait @gol
 -mrecip  -mrecip=@var{opt} @gol
 -mvzeroupper  -mprefer-avx128  -mprefer-vector-width=@var{opt} @gol
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
@@ -31186,6 +31186,12 @@ from x86 Control-flow Enforcement Technology (CET).
 This option enables built-in functions @code{__builtin_ia32_crc32qi},
 @code{__builtin_ia32_crc32hi}, @code{__builtin_ia32_crc32si} and
 @code{__builtin_ia32_crc32di} to generate the @code{crc32} machine instruction.
+
+@item -mmwait
+@opindex mmwait
+This option enables built-in functions @code{__builtin_ia32_monitor},
+and @code{__builtin_ia32_mwait} to generate the @code{monitor} and
+@code{mwait} machine instructions.
 
 @item -mrecip
 @opindex mrecip

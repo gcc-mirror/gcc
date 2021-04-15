@@ -207,6 +207,7 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mmovbe",		OPTION_MASK_ISA2_MOVBE },
   { "-mclzero",		OPTION_MASK_ISA2_CLZERO },
   { "-mmwaitx",		OPTION_MASK_ISA2_MWAITX },
+  { "-mmwait",		OPTION_MASK_ISA2_MWAIT },
   { "-mmovdir64b",	OPTION_MASK_ISA2_MOVDIR64B },
   { "-mwaitpkg",	OPTION_MASK_ISA2_WAITPKG },
   { "-mcldemote",	OPTION_MASK_ISA2_CLDEMOTE },
@@ -1015,6 +1016,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("fsgsbase",	OPT_mfsgsbase),
     IX86_ATTR_ISA ("rdrnd",	OPT_mrdrnd),
     IX86_ATTR_ISA ("mwaitx",	OPT_mmwaitx),
+    IX86_ATTR_ISA ("mwait",	OPT_mmwait),
     IX86_ATTR_ISA ("clzero",	OPT_mclzero),
     IX86_ATTR_ISA ("pku",	OPT_mpku),
     IX86_ATTR_ISA ("lwp",	OPT_mlwp),
@@ -2611,6 +2613,11 @@ ix86_option_override_internal (bool main_args_p,
 	  && !TARGET_3DNOW_P (opts->x_ix86_isa_flags))
       || TARGET_PREFETCHWT1_P (opts->x_ix86_isa_flags))
     ix86_prefetch_sse = true;
+
+  /* Enable mwait/monitor instructions for -msse3.  */
+  if (TARGET_SSE3_P (opts->x_ix86_isa_flags))
+    opts->x_ix86_isa_flags2
+      |= OPTION_MASK_ISA2_MWAIT & ~opts->x_ix86_isa_flags2_explicit;
 
   /* Enable popcnt instruction for -msse4.2 or -mabm.  */
   if (TARGET_SSE4_2_P (opts->x_ix86_isa_flags)
