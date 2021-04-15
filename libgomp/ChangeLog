@@ -1,3 +1,10 @@
+2021-04-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/100071
+	* testsuite/libgomp.fortran/alloc-1.F90: Call c_f_pointer after last
+	cp = omp_alloc with cp, p arguments instead of cq, q and call
+	c_f_pointer after last cq = omp_alloc with cq, q.
+
 2021-04-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	PR middle-end/98088

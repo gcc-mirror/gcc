@@ -1,3 +1,40 @@
+2021-04-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::_init): Call new targetdm hook to register OS
+	specific target info keys.
+	* d-target.def (d_register_os_target_info): New hook.
+
+2021-04-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-builtins.cc (d_add_builtin_version): Remove all setting of
+	target-specific global.params.
+	* typeinfo.cc (create_typeinfo): Don't add argType fields to
+	TypeInfo_Struct.
+
+2021-04-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99914
+	* decl.cc (DeclVisitor::visit (StructDeclaration *)): Don't set
+	DECL_INSTANTIATED on static initializer declarations.
+	(DeclVisitor::visit (ClassDeclaration *)): Likewise.
+	(DeclVisitor::visit (EnumDeclaration *)): Likewise.
+	(d_finish_decl): Move call to set_linkage_for_decl to...
+	(declare_extern_var): ...here.
+
+2021-04-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::_init): Call new targetdm hook to register CPU
+	specific target info keys.
+	* d-target.def (d_register_cpu_target_info): New hook.
+
+2021-04-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (Target::systemLinkage): Return LINKwindows if
+	d_has_stdcall_convention applies to LINKsystem.
+	* d-target.def (d_has_stdcall_convention): New hook.
+	* types.cc (TypeVisitor::visit (TypeFunction *)): Insert "stdcall"
+	function attribute if d_has_stdcall_convention applies to LINKwindows.
+
 2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd 0450061c8.

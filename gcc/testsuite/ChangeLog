@@ -1,3 +1,67 @@
+2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pr99929_1.c: New file.
+	* gcc.target/aarch64/sve/pr99929_2.c: Likewise.
+
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100078
+	* g++.dg/template/dependent-tmpl2.C: New test.
+
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93314
+	* g++.dg/parse/uneval1.C: New test.
+
+2021-04-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/100066
+	* gcc.target/i386/pr100066.c: New.
+
+2021-04-14  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/pr86058.c: Limit to just x86_64.
+
+2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99246
+	* gcc.target/aarch64/sve/acle/general/pr99246.c: New test.
+
+2021-04-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/imm-range-error-1.c: New test.
+	* gcc.target/s390/zvector/vec_msum_u128-1.c: New test.
+
+2021-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/83476
+	PR c++/99885
+	* g++.dg/cpp1z/class-deduction85.C: New test.
+	* g++.dg/template/ref11.C: New test.
+
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99478
+	* g++.dg/cpp2a/lambda-uneval14.C: New test.
+
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90674
+	* g++.dg/debug/defaulted1.C: New test.
+
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88742
+	* g++.dg/debug/cleanup1.C: New test.
+	* c-c++-common/Wimplicit-fallthrough-6.c: Adjust diagnostic line.
+	* c-c++-common/Wimplicit-fallthrough-7.c: Likewise.
+	* g++.dg/cpp2a/constexpr-dtor3.C: Likewise.
+	* g++.dg/ext/constexpr-attr-cleanup1.C: Likewise.
+	* g++.dg/tm/inherit2.C: Likewise.
+	* g++.dg/tm/unsafe1.C: Likewise.
+	* g++.dg/warn/Wimplicit-fallthrough-1.C: Likewise.
+	* g++.dg/gcov/gcov-2.C: Adjust coverage counts.
+
 2021-04-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/82800

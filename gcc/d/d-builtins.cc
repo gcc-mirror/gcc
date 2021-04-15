@@ -418,25 +418,6 @@ d_eval_constant_expression (const Loc &loc, tree cst)
 void
 d_add_builtin_version (const char* ident)
 {
-  /* For now, we need to tell the D frontend what platform is being targeted.
-     This should be removed once the frontend has been fixed.  */
-  if (strcmp (ident, "linux") == 0)
-    global.params.isLinux = true;
-  else if (strcmp (ident, "OSX") == 0)
-    global.params.isOSX = true;
-  else if (strcmp (ident, "Windows") == 0)
-    global.params.isWindows = true;
-  else if (strcmp (ident, "FreeBSD") == 0)
-    global.params.isFreeBSD = true;
-  else if (strcmp (ident, "OpenBSD") == 0)
-    global.params.isOpenBSD = true;
-  else if (strcmp (ident, "Solaris") == 0)
-    global.params.isSolaris = true;
-  /* The is64bit field only refers to x86_64 target.  */
-  else if (strcmp (ident, "X86_64") == 0)
-    global.params.is64bit = true;
-  /* No other fields are required to be set for the frontend.  */
-
   VersionCondition::addPredefinedGlobalIdent (ident);
 }
 

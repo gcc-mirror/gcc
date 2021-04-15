@@ -10856,6 +10856,7 @@ uses_outer_template_parms (tree decl)
       for (int i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
 	{
 	  tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
+	  tree defarg = TREE_PURPOSE (TREE_VEC_ELT (parms, i));
 	  if (TREE_CODE (parm) == PARM_DECL
 	      && for_each_template_parm (TREE_TYPE (parm),
 					 template_parm_outer_level,
@@ -10863,6 +10864,10 @@ uses_outer_template_parms (tree decl)
 	    return true;
 	  if (TREE_CODE (parm) == TEMPLATE_DECL
 	      && uses_outer_template_parms (parm))
+	    return true;
+	  if (defarg
+	      && for_each_template_parm (defarg, template_parm_outer_level,
+					 &depth, NULL, /*nondeduced*/true))
 	    return true;
 	}
     }
@@ -21902,8 +21907,10 @@ static bool uses_deducible_template_parms (tree type);
 static bool
 deducible_expression (tree expr)
 {
-  /* Strip implicit conversions.  */
-  while (CONVERT_EXPR_P (expr) || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
+  /* Strip implicit conversions and implicit INDIRECT_REFs.  */
+  while (CONVERT_EXPR_P (expr)
+	 || TREE_CODE (expr) == VIEW_CONVERT_EXPR
+	 || REFERENCE_REF_P (expr))
     expr = TREE_OPERAND (expr, 0);
   return (TREE_CODE (expr) == TEMPLATE_PARM_INDEX);
 }

@@ -1,7 +1,7 @@
 /* PR tree-optimization/93210 */
 /* { dg-do run } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-final { scan-tree-dump-times "return \[0-9]\[0-9a-fA-FxX]*;" 31 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "(?:return|<retval> =) \[0-9]\[0-9a-fA-FxX]*;" 31 "optimized" } } */
 
 #ifdef __SIZEOF_INT128__
 typedef unsigned __int128 L;

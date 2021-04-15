@@ -173,6 +173,7 @@ extern bool s390_const_operand_ok (tree, int, int, tree);
 
 /* s390-d.c routines */
 extern void s390_d_target_versions (void);
+extern void s390_d_register_target_info (void);
 
 /* Pass management.  */
 namespace gcc { class context; }

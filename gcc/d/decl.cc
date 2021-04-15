@@ -387,7 +387,6 @@ public:
     /* Generate static initializer.  */
     d->sinit = aggregate_initializer_decl (d);
     DECL_INITIAL (d->sinit) = layout_struct_initializer (d);
-    DECL_INSTANTIATED (d->sinit) = (d->isInstantiated () != NULL);
     d_finish_decl (d->sinit);
 
     /* Put out the members.  There might be static constructors in the members
@@ -500,7 +499,6 @@ public:
 
     /* Generate static initializer.  */
     DECL_INITIAL (d->sinit) = layout_class_initializer (d);
-    DECL_INSTANTIATED (d->sinit) = (d->isInstantiated () != NULL);
     d_finish_decl (d->sinit);
 
     /* Put out the TypeInfo.  */
@@ -611,7 +609,6 @@ public:
 	/* Generate static initializer.  */
 	d->sinit = enum_initializer_decl (d);
 	DECL_INITIAL (d->sinit) = build_expr (tc->sym->defaultval, true);
-	DECL_INSTANTIATED (d->sinit) = (d->isInstantiated () != NULL);
 	d_finish_decl (d->sinit);
       }
 
@@ -1379,6 +1376,8 @@ declare_extern_var (tree ident, tree type)
   /* The decl has not been defined -- yet.  */
   DECL_EXTERNAL (decl) = 1;
 
+  set_linkage_for_decl (decl);
+
   return decl;
 }
 
@@ -1540,7 +1539,6 @@ d_finish_decl (tree decl)
     set_decl_tls_model (decl, decl_default_tls_model (decl));
 
   relayout_decl (decl);
-  set_linkage_for_decl (decl);
 
   if (flag_checking && DECL_INITIAL (decl))
     {

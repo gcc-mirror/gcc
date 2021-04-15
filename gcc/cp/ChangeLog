@@ -1,3 +1,45 @@
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100078
+	PR c++/93085
+	* pt.c (uses_outer_template_parms): Also look at default
+	template argument.
+
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/93314
+	* semantics.c (finish_id_expression_1): Clear cp_unevaluated_operand
+	for a non-static data member in a constant-expression.
+
+2021-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/83476
+	PR c++/99885
+	* pt.c (deducible_expression): Look through implicit
+	INDIRECT_REFs as well.
+
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99478
+	* parser.c (cp_parser_lambda_expression): Reject lambda
+	in template parameter type.
+
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90674
+	* decl.c (duplicate_decls): Don't propagate
+	DECL_INITIALIZED_IN_CLASS_P to a specialization.
+
+2021-04-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/88742
+	PR c++/49951
+	PR c++/58123
+	* semantics.c (set_cleanup_locs): New.
+	(do_poplevel): Call it.
+	* parser.c (cp_parser_compound_statement): Consume the }
+	before finish_compound_stmt.
+
 2021-04-13  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100032

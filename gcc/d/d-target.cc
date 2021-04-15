@@ -198,6 +198,8 @@ Target::_init (const Param &)
 
   /* Initialize target info tables, the keys required by the language are added
      last, so that the OS and CPU handlers can override.  */
+  targetdm.d_register_cpu_target_info ();
+  targetdm.d_register_os_target_info ();
   d_add_target_info_handlers (d_language_target_info);
 }
 
@@ -435,11 +437,21 @@ TargetCPP::derivedClassOffset(ClassDeclaration *base_class)
   return base_class->structsize;
 }
 
-/* Return the default system linkage for the target.  */
+/* Return the default `extern (System)' linkage for the target.  */
 
 LINK
 Target::systemLinkage (void)
 {
+  unsigned link_system, link_windows;
+
+  if (targetdm.d_has_stdcall_convention (&link_system, &link_windows))
+    {
+      /* In [attribute/linkage], `System' is the same as `Windows' on Windows
+	 platforms, and `C' on other platforms.  */
+      if (link_system)
+	return LINKwindows;
+    }
+
   return LINKc;
 }
 

@@ -10808,6 +10808,20 @@ Similarly to @code{TARGET_D_CPU_VERSIONS}, but is used for versions
 relating to the target operating system.
 @end deftypefn
 
+@deftypefn {D Target Hook} void TARGET_D_REGISTER_CPU_TARGET_INFO (void)
+Register all target information keys relating to the target CPU using the
+function @code{d_add_target_info_handlers}, which takes a
+@samp{struct d_target_info_spec} (defined in @file{d/d-target.h}).  The keys
+added by this hook are made available at compile time by the
+@code{__traits(getTargetInfo)} extension, the result is an expression
+describing the requested target information.
+@end deftypefn
+
+@deftypefn {D Target Hook} void TARGET_D_REGISTER_OS_TARGET_INFO (void)
+Same as @code{TARGET_D_CPU_TARGET_INFO}, but is used for keys relating to
+the target operating system.
+@end deftypefn
+
 @deftypevr {D Target Hook} {const char *} TARGET_D_MINFO_SECTION
 Contains the name of the section in which module info references should be
 placed.  This section is expected to be bracketed by two symbols to indicate
@@ -10827,6 +10841,14 @@ If @code{TARGET_D_MINFO_SECTION} is defined, then this must also be defined
 as the name of the symbol indicating the end address of the module info
 section
 @end deftypevr
+
+@deftypefn {D Target Hook} bool TARGET_D_HAS_STDCALL_CONVENTION (unsigned int *@var{link_system}, unsigned int *@var{link_windows})
+Returns @code{true} if the target supports the stdcall calling convention.
+The hook should also set @var{link_system} to @code{1} if the @code{stdcall}
+attribute should be applied to functions with @code{extern(System)} linkage,
+and @var{link_windows} to @code{1} to apply @code{stdcall} to functions with
+@code{extern(Windows)} linkage.
+@end deftypefn
 
 @node Named Address Spaces
 @section Adding support for named address spaces

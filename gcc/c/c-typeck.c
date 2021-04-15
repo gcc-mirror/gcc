@@ -740,10 +740,16 @@ c_common_type (tree t1, tree t2)
     t2 = TYPE_MAIN_VARIANT (t2);
 
   if (TYPE_ATTRIBUTES (t1) != NULL_TREE)
-    t1 = build_type_attribute_variant (t1, NULL_TREE);
+    {
+      tree attrs = affects_type_identity_attributes (TYPE_ATTRIBUTES (t1));
+      t1 = build_type_attribute_variant (t1, attrs);
+    }
 
   if (TYPE_ATTRIBUTES (t2) != NULL_TREE)
-    t2 = build_type_attribute_variant (t2, NULL_TREE);
+    {
+      tree attrs = affects_type_identity_attributes (TYPE_ATTRIBUTES (t2));
+      t2 = build_type_attribute_variant (t2, attrs);
+    }
 
   /* Save time if the two types are the same.  */
 

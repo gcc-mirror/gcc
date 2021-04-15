@@ -388,5 +388,6 @@ extern void mips_expand_vec_cond_expr (machine_mode, machine_mode, rtx *);
 
 /* Routines implemented in mips-d.c  */
 extern void mips_d_target_versions (void);
+extern void mips_d_register_target_info (void);
 
 #endif /* ! GCC_MIPS_PROTOS_H */

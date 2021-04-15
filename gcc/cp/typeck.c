@@ -261,6 +261,17 @@ original_type (tree t)
   return cp_build_qualified_type (t, quals);
 }
 
+/* Merge the attributes of type OTHER_TYPE into the attributes of type TYPE
+   and return a variant of TYPE with the merged attributes.  */
+
+static tree
+merge_type_attributes_from (tree type, tree other_type)
+{
+  tree attrs = targetm.merge_type_attributes (type, other_type);
+  attrs = restrict_type_identity_attributes_to (attrs, TYPE_ATTRIBUTES (type));
+  return cp_build_type_attribute_variant (type, attrs);
+}
+
 /* Return the common type for two arithmetic types T1 and T2 under the
    usual arithmetic conversions.  The default conversions have already
    been applied, and enumerated types converted to their compatible
@@ -320,9 +331,9 @@ cp_common_type (tree t1, tree t2)
       /* When we get here we should have two vectors of the same size.
 	 Just prefer the unsigned one if present.  */
       if (TYPE_UNSIGNED (t1))
-	return build_type_attribute_variant (t1, attributes);
+	return merge_type_attributes_from (t1, t2);
       else
-	return build_type_attribute_variant (t2, attributes);
+	return merge_type_attributes_from (t2, t1);
     }
 
   /* If only one is real, use it as the result.  */

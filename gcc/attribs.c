@@ -1366,6 +1366,83 @@ comp_type_attributes (const_tree type1, const_tree type2)
   return targetm.comp_type_attributes (type1, type2);
 }
 
+/* PREDICATE acts as a function of type:
+
+     (const_tree attr, const attribute_spec *as) -> bool
+
+   where ATTR is an attribute and AS is its possibly-null specification.
+   Return a list of every attribute in attribute list ATTRS for which
+   PREDICATE is true.  Return ATTRS itself if PREDICATE returns true
+   for every attribute.  */
+
+template<typename Predicate>
+tree
+remove_attributes_matching (tree attrs, Predicate predicate)
+{
+  tree new_attrs = NULL_TREE;
+  tree *ptr = &new_attrs;
+  const_tree start = attrs;
+  for (const_tree attr = attrs; attr; attr = TREE_CHAIN (attr))
+    {
+      tree name = get_attribute_name (attr);
+      const attribute_spec *as = lookup_attribute_spec (name);
+      const_tree end;
+      if (!predicate (attr, as))
+	end = attr;
+      else if (start == attrs)
+	continue;
+      else
+	end = TREE_CHAIN (attr);
+
+      for (; start != end; start = TREE_CHAIN (start))
+	{
+	  *ptr = tree_cons (TREE_PURPOSE (start),
+			    TREE_VALUE (start), NULL_TREE);
+	  TREE_CHAIN (*ptr) = NULL_TREE;
+	  ptr = &TREE_CHAIN (*ptr);
+	}
+      start = TREE_CHAIN (attr);
+    }
+  gcc_assert (!start || start == attrs);
+  return start ? attrs : new_attrs;
+}
+
+/* If VALUE is true, return the subset of ATTRS that affect type identity,
+   otherwise return the subset of ATTRS that don't affect type identity.  */
+
+tree
+affects_type_identity_attributes (tree attrs, bool value)
+{
+  auto predicate = [value](const_tree, const attribute_spec *as) -> bool
+    {
+      return bool (as && as->affects_type_identity) == value;
+    };
+  return remove_attributes_matching (attrs, predicate);
+}
+
+/* Remove attributes that affect type identity from ATTRS unless the
+   same attributes occur in OK_ATTRS.  */
+
+tree
+restrict_type_identity_attributes_to (tree attrs, tree ok_attrs)
+{
+  auto predicate = [ok_attrs](const_tree attr,
+			      const attribute_spec *as) -> bool
+    {
+      if (!as || !as->affects_type_identity)
+	return true;
+
+      for (tree ok_attr = lookup_attribute (as->name, ok_attrs);
+	   ok_attr;
+	   ok_attr = lookup_attribute (as->name, TREE_CHAIN (ok_attr)))
+	if (simple_cst_equal (TREE_VALUE (ok_attr), TREE_VALUE (attr)) == 1)
+	  return true;
+
+      return false;
+    };
+  return remove_attributes_matching (attrs, predicate);
+}
+
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTE
    is ATTRIBUTE.
 
