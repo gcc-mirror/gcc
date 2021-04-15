@@ -9198,49 +9198,6 @@ insert_cond_bb (basic_block bb, gimple *stmt, gimple *cond,
   return new_bb;
 }
 
-/* Build a ternary operation and gimplify it.  Emit code before GSI.
-   Return the gimple_val holding the result.  */
-
-tree
-gimplify_build3 (gimple_stmt_iterator *gsi, enum tree_code code,
-		 tree type, tree a, tree b, tree c)
-{
-  tree ret;
-  location_t loc = gimple_location (gsi_stmt (*gsi));
-
-  ret = fold_build3_loc (loc, code, type, a, b, c);
-  return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
-                                   GSI_SAME_STMT);
-}
-
-/* Build a binary operation and gimplify it.  Emit code before GSI.
-   Return the gimple_val holding the result.  */
-
-tree
-gimplify_build2 (gimple_stmt_iterator *gsi, enum tree_code code,
-		 tree type, tree a, tree b)
-{
-  tree ret;
-
-  ret = fold_build2_loc (gimple_location (gsi_stmt (*gsi)), code, type, a, b);
-  return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
-                                   GSI_SAME_STMT);
-}
-
-/* Build a unary operation and gimplify it.  Emit code before GSI.
-   Return the gimple_val holding the result.  */
-
-tree
-gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
-		 tree a)
-{
-  tree ret;
-
-  ret = fold_build1_loc (gimple_location (gsi_stmt (*gsi)), code, type, a);
-  return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
-                                   GSI_SAME_STMT);
-}
-
 
 
 /* Given a basic block B which ends with a conditional and has

@@ -7019,7 +7019,9 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	/* Compute the size of the elements in the CTOR.  It differs
 	   from the size of the vector type elements only when the
 	   CTOR elements are vectors themselves.  */
-	tree val_type = TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value);
+	tree val_type = (CONSTRUCTOR_NELTS (exp) != 0
+			 ? TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value)
+			 : elttype);
 	if (VECTOR_TYPE_P (val_type))
 	  bitsize = tree_to_uhwi (TYPE_SIZE (val_type));
 	else
