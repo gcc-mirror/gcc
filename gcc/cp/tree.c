@@ -4684,13 +4684,9 @@ zero_init_expr_p (tree t)
     return null_member_pointer_value_p (t);
   if (TREE_CODE (t) == CONSTRUCTOR)
     {
-      if (CONSTRUCTOR_IS_DEPENDENT (t)
+      if (COMPOUND_LITERAL_P (t)
 	  || BRACE_ENCLOSED_INITIALIZER_P (t))
-	/* Undigested, conversions might change the zeroness.
-
-	   Other COMPOUND_LITERAL_P in template context are also undigested,
-	   but there isn't currently a way to distinguish between them and
-	   COMPOUND_LITERAL_P from non-template context that are digested.  */
+	/* Undigested, conversions might change the zeroness.  */
 	return false;
       for (constructor_elt &elt : CONSTRUCTOR_ELTS (t))
 	{

@@ -4407,7 +4407,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    When appearing in a SAVE_EXPR, it means that underneath
    is a call to a constructor.
 
-   When appearing in a CONSTRUCTOR, the expression is a
+   When appearing in a CONSTRUCTOR, the expression is an unconverted
    compound literal.
 
    When appearing in a FIELD_DECL, it means that this field
@@ -4419,7 +4419,9 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (TREE_CODE (NODE) == CONSTRUCTOR && TREE_TYPE (NODE) == init_list_type_node)
 
 /* True if NODE is a compound-literal, i.e., a brace-enclosed
-   initializer cast to a particular type.  */
+   initializer cast to a particular type.  This is mostly only set during
+   template parsing; once the initializer has been digested into an actual
+   value of the type, the expression is represented by a TARGET_EXPR.  */
 #define COMPOUND_LITERAL_P(NODE) \
   (TREE_CODE (NODE) == CONSTRUCTOR && TREE_HAS_CONSTRUCTOR (NODE))
 

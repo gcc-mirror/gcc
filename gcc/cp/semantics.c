@@ -3177,9 +3177,13 @@ finish_compound_literal (tree type, tree compound_literal,
     }
 
   /* Represent other compound literals with TARGET_EXPR so we produce
-     an lvalue, but can elide copies.  */
+     a prvalue, and can elide copies.  */
   if (!VECTOR_TYPE_P (type))
-    compound_literal = get_target_expr_sfinae (compound_literal, complain);
+    {
+      /* The CONSTRUCTOR is now an initializer, not a compound literal.  */
+      TREE_HAS_CONSTRUCTOR (compound_literal) = false;
+      compound_literal = get_target_expr_sfinae (compound_literal, complain);
+    }
 
   return compound_literal;
 }
