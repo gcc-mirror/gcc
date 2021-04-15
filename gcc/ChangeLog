@@ -1,3 +1,123 @@
+2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/99929
+	* rtl.h (same_vector_encodings_p): New function.
+	* cse.c (exp_equiv_p): Check that CONST_VECTORs have the same encoding.
+	* cselib.c (rtx_equal_for_cselib_1): Likewise.
+	* jump.c (rtx_renumbered_equal_p): Likewise.
+	* lra-constraints.c (operands_match_p): Likewise.
+	* reload.c (operands_match_p): Likewise.
+	* rtl.c (rtx_equal_p_cb, rtx_equal_p): Likewise.
+
+2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* print-rtl.c (rtx_writer::print_rtx_operand_codes_E_and_V): Print
+	more information about variable-length CONST_VECTORs.
+
+2021-04-14  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/100066
+	* lra-constraints.c (split_reg): Check paradoxical_subreg_p for
+	ordered modes when choosing splitting mode for hard reg.
+
+2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99246
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_vector_sel):
+	New function.
+	(aarch64_expand_sve_const_vector): Use it for nelts_per_pattern==2.
+
+2021-04-14  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-builtins.def (O_M5, O_M12, ...): Add new macros
+	for mask operand types.
+	(s390_vec_permi_s64, s390_vec_permi_b64, s390_vec_permi_u64)
+	(s390_vec_permi_dbl, s390_vpdi): Use the M5 type for the immediate
+	operand.
+	(s390_vec_msum_u128, s390_vmslg): Use the M12 type for the
+	immediate operand.
+	* config/s390/s390.c (s390_const_operand_ok): Check the new
+	operand types and generate a list of valid values.
+
+2021-04-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (D language and ABI): Add @hook for
+	TARGET_D_REGISTER_OS_TARGET_INFO.
+
+2021-04-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/aarch64/aarch64-d.c (aarch64_d_handle_target_float_abi): New
+	function.
+	(aarch64_d_register_target_info): New function.
+	* config/aarch64/aarch64-protos.h (aarch64_d_register_target_info):
+	Declare.
+	* config/aarch64/aarch64.h (TARGET_D_REGISTER_CPU_TARGET_INFO):
+	Define.
+	* config/arm/arm-d.c (arm_d_handle_target_float_abi): New function.
+	(arm_d_register_target_info): New function.
+	* config/arm/arm-protos.h (arm_d_register_target_info): Declare.
+	* config/arm/arm.h (TARGET_D_REGISTER_CPU_TARGET_INFO): Define.
+	* config/i386/i386-d.c (ix86_d_handle_target_float_abi): New function.
+	(ix86_d_register_target_info): New function.
+	* config/i386/i386-protos.h (ix86_d_register_target_info): Declare.
+	* config/i386/i386.h (TARGET_D_REGISTER_CPU_TARGET_INFO): Define.
+	* config/mips/mips-d.c (mips_d_handle_target_float_abi): New function.
+	(mips_d_register_target_info): New function.
+	* config/mips/mips-protos.h (mips_d_register_target_info): Declare.
+	* config/mips/mips.h (TARGET_D_REGISTER_CPU_TARGET_INFO): Define.
+	* config/pa/pa-d.c (pa_d_handle_target_float_abi): New function.
+	(pa_d_register_target_info): New function.
+	* config/pa/pa-protos.h (pa_d_register_target_info): Declare.
+	* config/pa/pa.h (TARGET_D_REGISTER_CPU_TARGET_INFO): Define.
+	* config/riscv/riscv-d.c (riscv_d_handle_target_float_abi): New
+	function.
+	(riscv_d_register_target_info): New function.
+	* config/riscv/riscv-protos.h (riscv_d_register_target_info): Declare.
+	* config/riscv/riscv.h (TARGET_D_REGISTER_CPU_TARGET_INFO): Define.
+	* config/rs6000/rs6000-d.c (rs6000_d_handle_target_float_abi): New
+	function.
+	(rs6000_d_register_target_info): New function.
+	* config/rs6000/rs6000-protos.h (rs6000_d_register_target_info):
+	Declare.
+	* config/rs6000/rs6000.h (TARGET_D_REGISTER_CPU_TARGET_INFO): Define.
+	* config/s390/s390-d.c (s390_d_handle_target_float_abi): New function.
+	(s390_d_register_target_info): New function.
+	* config/s390/s390-protos.h (s390_d_register_target_info): Declare.
+	* config/s390/s390.h (TARGET_D_REGISTER_CPU_TARGET_INFO): Define.
+	* config/sparc/sparc-d.c (sparc_d_handle_target_float_abi): New
+	function.
+	(sparc_d_register_target_info): New function.
+	* config/sparc/sparc-protos.h (sparc_d_register_target_info): Declare.
+	* config/sparc/sparc.h (TARGET_D_REGISTER_CPU_TARGET_INFO): Define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (D language and ABI): Add @hook for
+	TARGET_D_REGISTER_CPU_TARGET_INFO.
+
+2021-04-14  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/i386/i386-d.c (ix86_d_has_stdcall_convention): New function.
+	* config/i386/i386-protos.h (ix86_d_has_stdcall_convention): Declare.
+	* config/i386/i386.h (TARGET_D_HAS_STDCALL_CONVENTION): Define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (D language and ABI): Add @hook for
+	TARGET_D_HAS_STDCALL_CONVENTION.
+
+2021-04-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_gimple_assign_ternary): Verify that
+	VEC_COND_EXPRs have a gimple_val condition.
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): VEC_COND_EXPR
+	can no longer have a GENERIC condition.
+
+2021-04-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100067
+	* config/arm/arm.c (arm_configure_build_target): Strip isa_all_fpbits
+	from the isa_delta when -mfpu has been used.
+	(arm_options_perform_arch_sanity_checks): It's the architecture that
+	lacks an FPU not the processor.
+
 2021-04-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/100053
