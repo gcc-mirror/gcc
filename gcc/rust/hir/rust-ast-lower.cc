@@ -71,26 +71,16 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
   std::vector<std::unique_ptr<HIR::Stmt> > block_stmts;
   bool block_did_terminate = false;
   expr.iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
+    if (block_did_terminate)
+      rust_warning_at (s->get_locus_slow (), 0, "unreachable statement");
+
     bool terminated = false;
     auto translated_stmt = ASTLoweringStmt::translate (s, &terminated);
     block_stmts.push_back (std::unique_ptr<HIR::Stmt> (translated_stmt));
-    block_did_terminate = terminated;
-    return !block_did_terminate;
-  });
-
-  // if there was a return expression everything after that becomes
-  // unreachable code. This can be detected for any AST NodeIDs that have no
-  // associated HIR Mappings
-  expr.iterate_stmts ([&] (AST::Stmt *s) -> bool {
-    HirId ref;
-    if (!mappings->lookup_node_to_hir (mappings->get_current_crate (),
-				       s->get_node_id (), &ref))
-      rust_warning_at (s->get_locus_slow (), 0, "unreachable statement");
-
+    block_did_terminate |= terminated;
     return true;
   });
 
-  bool tail_reachable = !block_did_terminate;
   if (expr.has_tail_expr () && block_did_terminate)
     {
       // warning unreachable tail expressions
@@ -101,10 +91,13 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
   HIR::ExprWithoutBlock *tail_expr = nullptr;
   if (expr.has_tail_expr ())
     {
-      tail_expr = (HIR::ExprWithoutBlock *) ASTLoweringExpr::translate (
-	expr.get_tail_expr ().get ());
+      bool terminated = false;
+      tail_expr = (HIR::ExprWithoutBlock *)
+	ASTLoweringExpr::translate (expr.get_tail_expr ().get (), &terminated);
+      block_did_terminate |= terminated;
     }
 
+  bool tail_reachable = !block_did_terminate;
   auto crate_num = mappings->get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
 				 mappings->get_next_hir_id (crate_num),

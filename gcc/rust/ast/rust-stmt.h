@@ -38,6 +38,8 @@ public:
 
   EmptyStmt (Location locus) : locus (locus) {}
 
+  Location get_locus_slow () const final override { return get_locus (); }
+
   Location get_locus () const { return locus; }
 
   void accept_vis (ASTVisitor &vis) override;
@@ -134,6 +136,8 @@ public:
   // move constructors
   LetStmt (LetStmt &&other) = default;
   LetStmt &operator= (LetStmt &&other) = default;
+
+  Location get_locus_slow () const final override { return get_locus (); }
 
   Location get_locus () const { return locus; }
 
