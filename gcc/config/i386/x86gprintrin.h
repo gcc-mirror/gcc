@@ -56,6 +56,8 @@
 
 #include <movdirintrin.h>
 
+#include <mwaitintrin.h>
+
 #include <mwaitxintrin.h>
 
 #include <pconfigintrin.h>

@@ -16593,7 +16593,7 @@
   [(unspec_volatile [(match_operand:SI 0 "register_operand" "c")
 		     (match_operand:SI 1 "register_operand" "a")]
 		    UNSPECV_MWAIT)]
-  "TARGET_SSE3"
+  "TARGET_MWAIT"
 ;; 64bit version is "mwait %rax,%rcx". But only lower 32bits are used.
 ;; Since 32bit register operands are implicitly zero extended to 64bit,
 ;; we only need to set up 32bit registers.
@@ -16605,7 +16605,7 @@
 		     (match_operand:SI 1 "register_operand" "c")
 		     (match_operand:SI 2 "register_operand" "d")]
 		    UNSPECV_MONITOR)]
-  "TARGET_SSE3"
+  "TARGET_MWAIT"
 ;; 64bit version is "monitor %rax,%rcx,%rdx". But only lower 32bits in
 ;; RCX and RDX are used.  Since 32bit register operands are implicitly
 ;; zero extended to 64bit, we only need to set up 32bit registers.
