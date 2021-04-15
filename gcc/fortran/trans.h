@@ -424,7 +424,8 @@ tree gfc_class_vptr_get (tree);
 tree gfc_class_len_get (tree);
 tree gfc_class_len_or_zero_get (tree);
 tree gfc_resize_class_size_with_len (stmtblock_t *, tree, tree);
-gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false);
+gfc_expr * gfc_find_and_cut_at_last_class_ref (gfc_expr *, bool is_mold = false,
+					       gfc_typespec **ts = NULL);
 /* Get an accessor to the class' vtab's * field, when a class handle is
    available.  */
 tree gfc_class_vtab_hash_get (tree);
@@ -621,6 +622,9 @@ tree gfc_build_addr_expr (tree, tree);
 
 /* Build an ARRAY_REF.  */
 tree gfc_build_array_ref (tree, tree, tree, tree vptr = NULL_TREE);
+
+/* Build an array ref using pointer arithmetic.  */
+tree gfc_build_spanned_array_ref (tree base, tree offset, tree span);
 
 /* Creates a label.  Decl is artificial if label_id == NULL_TREE.  */
 tree gfc_build_label_decl (tree);

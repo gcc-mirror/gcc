@@ -4391,7 +4391,7 @@ get_iso_c_binding_dt (int sym_id)
 	  if (dt_list->from_intmod != INTMOD_NONE
 	      && dt_list->intmod_sym_id == sym_id)
 	    return dt_list;
-	
+
 	  dt_list = dt_list->dt_next;
 	}
     }

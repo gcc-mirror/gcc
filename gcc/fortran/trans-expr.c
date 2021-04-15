@@ -380,15 +380,20 @@ gfc_vptr_size_get (tree vptr)
 #undef VTABLE_FINAL_FIELD
 
 
-/* Search for the last _class ref in the chain of references of this
-   expression and cut the chain there.  Albeit this routine is similiar
-   to class.c::gfc_add_component_ref (), is there a significant
-   difference: gfc_add_component_ref () concentrates on an array ref to
-   be the last ref in the chain.  This routine is oblivious to the kind
-   of refs following.  */
+/* IF ts is null (default), search for the last _class ref in the chain
+   of references of the expression and cut the chain there.  Although
+   this routine is similiar to class.c:gfc_add_component_ref (), there
+   is a significant difference: gfc_add_component_ref () concentrates
+   on an array ref that is the last ref in the chain and is oblivious
+   to the kind of refs following.
+   ELSE IF ts is non-null the cut is at the class entity or component
+   that is followed by an array reference, which is not an element.
+   These calls come from trans-array.c:build_class_array_ref, which
+   handles scalarized class array references.*/
 
 gfc_expr *
-gfc_find_and_cut_at_last_class_ref (gfc_expr *e, bool is_mold)
+gfc_find_and_cut_at_last_class_ref (gfc_expr *e, bool is_mold,
+				    gfc_typespec **ts)
 {
   gfc_expr *base_expr;
   gfc_ref *ref, *class_ref, *tail = NULL, *array_ref;
@@ -396,26 +401,58 @@ gfc_find_and_cut_at_last_class_ref (gfc_expr *e, bool is_mold)
   /* Find the last class reference.  */
   class_ref = NULL;
   array_ref = NULL;
+
+  if (ts)
+    {
+      if (e->symtree
+	  && e->symtree->n.sym->ts.type == BT_CLASS)
+	*ts = &e->symtree->n.sym->ts;
+      else
+	*ts = NULL;
+    }
+
   for (ref = e->ref; ref; ref = ref->next)
     {
-      if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
-	array_ref = ref;
-
-      if (ref->type == REF_COMPONENT
-	  && ref->u.c.component->ts.type == BT_CLASS)
+      if (ts)
 	{
-	  /* Component to the right of a part reference with nonzero rank
-	     must not have the ALLOCATABLE attribute.  If attempts are
-	     made to reference such a component reference, an error results
-	     followed by an ICE.  */
-	  if (array_ref && CLASS_DATA (ref->u.c.component)->attr.allocatable)
-	    return NULL;
-	  class_ref = ref;
-	}
+	  if (ref->type == REF_COMPONENT
+	      && ref->u.c.component->ts.type == BT_CLASS
+	      && ref->next && ref->next->type == REF_COMPONENT
+	      && !strcmp (ref->next->u.c.component->name, "_data")
+	      && ref->next->next
+	      && ref->next->next->type == REF_ARRAY
+	      && ref->next->next->u.ar.type != AR_ELEMENT)
+	    {
+	      *ts = &ref->u.c.component->ts;
+	      class_ref = ref;
+	      break;
+	    }
 
-      if (ref->next == NULL)
-	break;
+	  if (ref->next == NULL)
+	    break;
+	}
+      else
+	{
+	  if (ref->type == REF_ARRAY && ref->u.ar.type != AR_ELEMENT)
+	    array_ref = ref;
+
+	  if (ref->type == REF_COMPONENT
+	      && ref->u.c.component->ts.type == BT_CLASS)
+	    {
+	      /* Component to the right of a part reference with nonzero
+		 rank must not have the ALLOCATABLE attribute.  If attempts
+		 are made to reference such a component reference, an error
+		 results followed by an ICE.  */
+	      if (array_ref
+		  && CLASS_DATA (ref->u.c.component)->attr.allocatable)
+		return NULL;
+	      class_ref = ref;
+	    }
+	}
     }
+
+  if (ts && *ts == NULL)
+    return NULL;
 
   /* Remove and store all subsequent references after the
      CLASS reference.  */
@@ -10005,17 +10042,20 @@ gfc_trans_scalar_assign (gfc_se * lse, gfc_se * rse, gfc_typespec ts,
       gfc_add_modify (&block, lse->expr, tmp);
     }
   /* If possible use the rhs vptr copy with trans_scalar_class_assign....  */
-  else if (ts.type == BT_CLASS
-	   && !trans_scalar_class_assign (&block, lse, rse))
+  else if (ts.type == BT_CLASS)
     {
       gfc_add_block_to_block (&block, &lse->pre);
       gfc_add_block_to_block (&block, &rse->pre);
-      /* ...otherwise assignment suffices. Note the use of VIEW_CONVERT_EXPR
-	 for the lhs which ensures that class data rhs cast as a string assigns
-	 correctly.  */
-      tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
-			     TREE_TYPE (rse->expr), lse->expr);
-      gfc_add_modify (&block, tmp, rse->expr);
+
+      if (!trans_scalar_class_assign (&block, lse, rse))
+	{
+	  /* ...otherwise assignment suffices. Note the use of VIEW_CONVERT_EXPR
+	  for the lhs which ensures that class data rhs cast as a string assigns
+	  correctly.  */
+	  tmp = fold_build1_loc (input_location, VIEW_CONVERT_EXPR,
+				 TREE_TYPE (rse->expr), lse->expr);
+	  gfc_add_modify (&block, tmp, rse->expr);
+	}
     }
   else if (ts.type != BT_CLASS)
     {
