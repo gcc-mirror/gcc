@@ -1420,6 +1420,29 @@ affects_type_identity_attributes (tree attrs, bool value)
   return remove_attributes_matching (attrs, predicate);
 }
 
+/* Remove attributes that affect type identity from ATTRS unless the
+   same attributes occur in OK_ATTRS.  */
+
+tree
+restrict_type_identity_attributes_to (tree attrs, tree ok_attrs)
+{
+  auto predicate = [ok_attrs](const_tree attr,
+			      const attribute_spec *as) -> bool
+    {
+      if (!as || !as->affects_type_identity)
+	return true;
+
+      for (tree ok_attr = lookup_attribute (as->name, ok_attrs);
+	   ok_attr;
+	   ok_attr = lookup_attribute (as->name, TREE_CHAIN (ok_attr)))
+	if (simple_cst_equal (TREE_VALUE (ok_attr), TREE_VALUE (attr)) == 1)
+	  return true;
+
+      return false;
+    };
+  return remove_attributes_matching (attrs, predicate);
+}
+
 /* Return a type like TTYPE except that its TYPE_ATTRIBUTE
    is ATTRIBUTE.
 

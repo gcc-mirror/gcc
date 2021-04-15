@@ -66,6 +66,7 @@ extern bool attribute_value_equal (const_tree, const_tree);
 extern int comp_type_attributes (const_tree, const_tree);
 
 extern tree affects_type_identity_attributes (tree, bool = true);
+extern tree restrict_type_identity_attributes_to (tree, tree);
 
 /* Default versions of target-overridable functions.  */
 extern tree merge_decl_attributes (tree, tree);
