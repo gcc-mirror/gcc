@@ -59,6 +59,7 @@ irange::operator= (const irange &src)
     m_base[x - 1] = src.m_base[src.m_num_ranges * 2 - 1];
 
   m_num_ranges = lim;
+  m_kind = src.m_kind;
   return *this;
 }
 
@@ -106,8 +107,8 @@ void
 irange::copy_to_legacy (const irange &src)
 {
   gcc_checking_assert (legacy_mode_p ());
-  // Copy legacy to legacy.
-  if (src.legacy_mode_p ())
+  // Handle legacy to legacy and other things that are easy to copy.
+  if (src.legacy_mode_p () || src.varying_p () || src.undefined_p ())
     {
       m_num_ranges = src.m_num_ranges;
       m_base[0] = src.m_base[0];
@@ -116,11 +117,7 @@ irange::copy_to_legacy (const irange &src)
       return;
     }
   // Copy multi-range to legacy.
-  if (src.undefined_p ())
-    set_undefined ();
-  else if (src.varying_p ())
-    set_varying (src.type ());
-  else if (src.maybe_anti_range ())
+  if (src.maybe_anti_range ())
     {
       int_range<3> r (src);
       r.invert ();
@@ -180,6 +177,9 @@ irange::irange_set (tree min, tree max)
   m_base[0] = min;
   m_base[1] = max;
   m_num_ranges = 1;
+  m_kind = VR_RANGE;
+  normalize_kind ();
+
   if (flag_checking)
     verify_range ();
 }
@@ -247,6 +247,10 @@ irange::irange_set_anti_range (tree min, tree max)
       m_base[m_num_ranges * 2 + 1] = type_range.tree_upper_bound (0);
       ++m_num_ranges;
     }
+
+  m_kind = VR_RANGE;
+  normalize_kind ();
+
   if (flag_checking)
     verify_range ();
 }
@@ -353,7 +357,7 @@ irange::set (tree min, tree max, value_range_kind kind)
   m_base[0] = min;
   m_base[1] = max;
   m_num_ranges = 1;
-  normalize_min_max ();
+  normalize_kind ();
   if (flag_checking)
     verify_range ();
 }
@@ -363,9 +367,22 @@ irange::set (tree min, tree max, value_range_kind kind)
 void
 irange::verify_range ()
 {
+  if (m_kind == VR_UNDEFINED)
+    {
+      gcc_assert (m_num_ranges == 0);
+      return;
+    }
+  gcc_assert (m_num_ranges != 0);
+
+  if (m_kind == VR_VARYING)
+    {
+      gcc_checking_assert (m_num_ranges == 1);
+      gcc_checking_assert (varying_compatible_p ());
+      return;
+    }
   if (!legacy_mode_p ())
     {
-      gcc_checking_assert (m_kind == VR_RANGE);
+      gcc_checking_assert (!varying_compatible_p ());
       for (unsigned i = 0; i < m_num_ranges; ++i)
 	{
 	  tree lb = tree_lower_bound (i);
@@ -375,28 +392,11 @@ irange::verify_range ()
 	}
       return;
     }
-
-  switch (m_kind)
+  if (m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
     {
-    case VR_UNDEFINED:
-      gcc_assert (m_num_ranges == 0);
-      break;
-
-    case VR_VARYING:
       gcc_assert (m_num_ranges == 1);
-      break;
-
-    case VR_ANTI_RANGE:
-    case VR_RANGE:
-      {
-	gcc_assert (m_num_ranges == 1);
-	int cmp = compare_values (tree_lower_bound (0), tree_upper_bound (0));
-	gcc_assert (cmp == 0 || cmp == -1 || cmp == -2);
-	return;
-      }
-
-    default:
-      gcc_unreachable ();
+      int cmp = compare_values (tree_lower_bound (0), tree_upper_bound (0));
+      gcc_assert (cmp == 0 || cmp == -1 || cmp == -2);
     }
 }
 
@@ -1667,6 +1667,9 @@ irange::irange_union (const irange &r)
     m_base[j] = res [j];
   m_num_ranges = i / 2;
 
+  m_kind = VR_RANGE;
+  normalize_kind ();
+
   if (flag_checking)
     verify_range ();
 }
@@ -1758,6 +1761,10 @@ irange::irange_intersect (const irange &r)
   // At the exit of this loop, it is one of 2 things:
   // ran out of r1, or r2, but either means we are done.
   m_num_ranges = bld_pair;
+
+  m_kind = VR_RANGE;
+  normalize_kind ();
+
   if (flag_checking)
     verify_range ();
 }
@@ -1889,6 +1896,10 @@ irange::invert ()
 	nitems -= 2;
     }
   m_num_ranges = nitems / 2;
+
+  // We disallow undefined or varying coming in, so the result can
+  // only be a VR_RANGE.
+  gcc_checking_assert (m_kind == VR_RANGE);
 
   if (flag_checking)
     verify_range ();
