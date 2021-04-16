@@ -1,5 +1,5 @@
 # Makefile for directory with message catalog handling library of GNU gettext
-# Copyright (C) 1995-1998, 2000-2003 Free Software Foundation, Inc.
+# Copyright (C) 1995-2021 Free Software Foundation, Inc.
 #
 # This program is free software; you can redistribute it and/or modify it
 # under the terms of the GNU Library General Public License as published
@@ -45,7 +45,7 @@ RANLIB = @RANLIB@
 YACC = @INTLBISON@ -y -d
 YFLAGS = --name-prefix=__gettext
 CPPFLAGS = @CPPFLAGS@
-CFLAGS = @CFLAGS@
+CFLAGS = @CFLAGS@ @PICFLAG@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 DEFS = -DHAVE_CONFIG_H
