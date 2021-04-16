@@ -2126,9 +2126,28 @@ package Sem_Util is
    --  assertion expression of pragma Default_Initial_Condition and if it does,
    --  the encapsulated expression is nontrivial.
 
-   function Is_Null_Record_Type (T : Entity_Id) return Boolean;
-   --  Determine whether T is declared with a null record definition or a
-   --  null component list.
+   function Is_Null_Extension
+    (T : Entity_Id; Ignore_Privacy : Boolean := False) return Boolean;
+   --  Given a tagged type, returns True if argument is a type extension
+   --  that introduces no new components (discriminant or nondiscriminant).
+   --  Ignore_Privacy should be True for use in implementing dynamic semantics.
+
+   function Is_Null_Extension_Of
+     (Descendant, Ancestor : Entity_Id) return Boolean;
+   --  Given two tagged types, the first a descendant of the second,
+   --  returns True if every component of Descendant is inherited
+   --  (directly or indirectly) from Ancestor. Privacy is ignored.
+
+   function Is_Null_Record_Definition (Record_Def : Node_Id) return Boolean;
+   --  Returns True for an N_Record_Definition node that has no user-defined
+   --  components (and no variant part).
+
+   function Is_Null_Record_Type
+     (T : Entity_Id; Ignore_Privacy : Boolean := False) return Boolean;
+   --  Determine whether T is declared with a null record definition, a
+   --  null component list, or as a type derived from a null record type
+   --  (with a null extension if tagged). Returns True for interface types,
+   --  False for discriminated types.
 
    function Is_Object_Image (Prefix : Node_Id) return Boolean;
    --  Returns True if an 'Img, 'Image, 'Wide_Image, or 'Wide_Wide_Image

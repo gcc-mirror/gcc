@@ -10345,9 +10345,7 @@ package body Exp_Ch3 is
 
       --  Spec of Put_Image
 
-      if Enable_Put_Image (Tag_Typ)
-        and then No (TSS (Tag_Typ, TSS_Put_Image))
-      then
+      if Enable_Put_Image (Tag_Typ) then
          Append_To (Res, Predef_Spec_Or_Body (Loc,
            Tag_Typ => Tag_Typ,
            Name    => Make_TSS_Name (Tag_Typ, TSS_Put_Image),

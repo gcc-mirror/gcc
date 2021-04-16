@@ -5230,44 +5230,64 @@ package body Sem_Ch13 is
 
             F := First_Formal (Subp);
 
-            if No (F)
-              or else Etype (F) /= Class_Wide_Type (RTE (RE_Root_Buffer_Type))
+            if No (F) then
+               return False;
+            end if;
+
+            if Base_Type (Etype (F))
+              /= Class_Wide_Type (RTE (RE_Root_Buffer_Type))
             then
+               if Report then
+                  Error_Msg_N
+                    ("wrong type for Put_Image procedure''s first parameter",
+                     Parameter_Type (Parent (F)));
+               end if;
+
+               return False;
+            end if;
+
+            if Parameter_Mode (F) /= E_In_Out_Parameter then
+               if Report then
+                  Error_Msg_N
+                    ("wrong mode for Put_Image procedure''s first parameter",
+                     Parent (F));
+               end if;
+
                return False;
             end if;
 
             Next_Formal (F);
-
-            if Parameter_Mode (F) /= E_In_Parameter then
-               return False;
-            end if;
 
             Typ := Etype (F);
 
             --  Verify that the prefix of the attribute and the local name for
             --  the type of the formal match.
 
-            if Typ /= Ent then
+            if Base_Type (Typ) /= Base_Type (Ent) then
+               if Report then
+                  Error_Msg_N
+                    ("wrong type for Put_Image procedure''s second parameter",
+                     Parameter_Type (Parent (F)));
+               end if;
+
+               return False;
+            end if;
+
+            if Parameter_Mode (F) /= E_In_Parameter then
+               if Report then
+                  Error_Msg_N
+                    ("wrong mode for Put_Image procedure''s second parameter",
+                     Parent (F));
+               end if;
+
                return False;
             end if;
 
             if Present (Next_Formal (F)) then
                return False;
-
-            elsif not Is_Scalar_Type (Typ)
-              and then not Is_First_Subtype (Typ)
-            then
-               if Report and not Is_First_Subtype (Typ) then
-                  Error_Msg_N
-                    ("subtype of formal in Put_Image operation must be a "
-                     & "first subtype", Parameter_Type (Parent (F)));
-               end if;
-
-               return False;
-
-            else
-               return True;
             end if;
+
+            return True;
          end Has_Good_Profile;
 
       --  Start of processing for Analyze_Put_Image_TSS_Definition
@@ -5386,7 +5406,7 @@ package body Sem_Ch13 is
 
             if No (F)
               or else Ekind (Etype (F)) /= E_Anonymous_Access_Type
-              or else Designated_Type (Etype (F)) /=
+              or else Base_Type (Designated_Type (Etype (F))) /=
                         Class_Wide_Type (RTE (RE_Root_Stream_Type))
             then
                return False;

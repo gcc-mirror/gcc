@@ -712,7 +712,7 @@ package body Sem_Util is
                return Make_Level_Literal
                         (Type_Access_Level (Etype (E)));
 
-            --  A non-discriminant selected component where the component
+            --  A nondiscriminant selected component where the component
             --  is an anonymous access type means that its associated
             --  level is that of the containing type - see RM 3.10.2 (16).
 
@@ -18576,18 +18576,143 @@ package body Sem_Util is
       return False;
    end Is_Nontrivial_DIC_Procedure;
 
+   -----------------------
+   -- Is_Null_Extension --
+   -----------------------
+
+   function Is_Null_Extension
+     (T : Entity_Id; Ignore_Privacy : Boolean := False) return Boolean
+   is
+      Type_Decl : Node_Id;
+      Type_Def  : Node_Id;
+   begin
+      if Ignore_Privacy then
+         Type_Decl := Parent (Underlying_Type (Base_Type (T)));
+      else
+         Type_Decl := Parent (Base_Type (T));
+         if Nkind (Type_Decl) /= N_Full_Type_Declaration then
+            return False;
+         end if;
+      end if;
+      pragma Assert (Nkind (Type_Decl) = N_Full_Type_Declaration);
+      Type_Def := Type_Definition (Type_Decl);
+      if Present (Discriminant_Specifications (Type_Decl))
+        or else Nkind (Type_Def) /= N_Derived_Type_Definition
+        or else not Is_Tagged_Type (T)
+        or else No (Record_Extension_Part (Type_Def))
+      then
+         return False;
+      end if;
+
+      return Is_Null_Record_Definition (Record_Extension_Part (Type_Def));
+   end Is_Null_Extension;
+
+   --------------------------
+   -- Is_Null_Extension_Of --
+   --------------------------
+
+   function Is_Null_Extension_Of
+     (Descendant, Ancestor : Entity_Id) return Boolean
+   is
+      Ancestor_Type : constant Entity_Id
+        := Underlying_Type (Base_Type (Ancestor));
+      Descendant_Type : Entity_Id := Underlying_Type (Base_Type (Descendant));
+   begin
+      pragma Assert (Descendant_Type /= Ancestor_Type);
+      while Descendant_Type /= Ancestor_Type loop
+         if not Is_Null_Extension
+                  (Descendant_Type, Ignore_Privacy => True)
+         then
+            return False;
+         end if;
+         Descendant_Type := Etype (Subtype_Indication
+                              (Type_Definition (Parent (Descendant_Type))));
+         Descendant_Type := Underlying_Type (Base_Type (Descendant_Type));
+      end loop;
+      return True;
+   end Is_Null_Extension_Of;
+
+   -------------------------------
+   -- Is_Null_Record_Definition --
+   -------------------------------
+
+   function Is_Null_Record_Definition (Record_Def : Node_Id) return Boolean is
+      Item : Node_Id;
+   begin
+      --  Testing Null_Present is just an optimization, not required.
+
+      if Null_Present (Record_Def) then
+         return True;
+      elsif Present (Variant_Part (Component_List (Record_Def))) then
+         return False;
+      elsif not Present (Component_List (Record_Def)) then
+         return True;
+      end if;
+
+      Item := First (Component_Items (Component_List (Record_Def)));
+
+      while Present (Item) loop
+         if Nkind (Item) = N_Component_Declaration
+           and then Is_Internal_Name (Chars (Defining_Identifier (Item)))
+         then
+            null;
+         elsif Nkind (Item) = N_Pragma then
+            null;
+         else
+            return False;
+         end if;
+         Item := Next (Item);
+      end loop;
+
+      return True;
+   end Is_Null_Record_Definition;
+
    -------------------------
    -- Is_Null_Record_Type --
    -------------------------
 
-   function Is_Null_Record_Type (T : Entity_Id) return Boolean is
-      Decl : constant Node_Id := Parent (T);
+   function Is_Null_Record_Type
+     (T : Entity_Id; Ignore_Privacy : Boolean := False) return Boolean
+   is
+      Decl     : Node_Id;
+      Type_Def : Node_Id;
    begin
-      return Nkind (Decl) = N_Full_Type_Declaration
-        and then Nkind (Type_Definition (Decl)) = N_Record_Definition
-        and then
-          (No (Component_List (Type_Definition (Decl)))
-            or else Null_Present (Component_List (Type_Definition (Decl))));
+      if not Is_Record_Type (T) then
+         return False;
+      end if;
+
+      if Ignore_Privacy then
+         Decl := Parent (Underlying_Type (Base_Type (T)));
+      else
+         Decl := Parent (Base_Type (T));
+         if Nkind (Decl) /= N_Full_Type_Declaration then
+            return False;
+         end if;
+      end if;
+      pragma Assert (Nkind (Decl) = N_Full_Type_Declaration);
+      Type_Def := Type_Definition (Decl);
+
+      if Has_Discriminants (Defining_Identifier (Decl)) then
+         return False;
+      end if;
+
+      case Nkind (Type_Def) is
+         when N_Record_Definition =>
+            return Is_Null_Record_Definition (Type_Def);
+         when N_Derived_Type_Definition =>
+            if not Is_Null_Record_Type
+                     (Etype (Subtype_Indication (Type_Def)),
+                      Ignore_Privacy => Ignore_Privacy)
+            then
+               return False;
+            elsif not Is_Tagged_Type (T) then
+               return True;
+            else
+               return Is_Null_Extension (T, Ignore_Privacy => Ignore_Privacy);
+            end if;
+         when others =>
+            return False;
+      end case;
    end Is_Null_Record_Type;
 
    ---------------------
@@ -19183,7 +19308,7 @@ package body Sem_Util is
          elsif Is_Tagged_Type (Typ) then
             return True;
 
-         --  Case of non-discriminated record
+         --  Case of nondiscriminated record
 
          else
             declare

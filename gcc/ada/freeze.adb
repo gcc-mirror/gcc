@@ -7591,6 +7591,7 @@ package body Freeze is
                          or else Is_TSS (Id, TSS_Stream_Output)
                          or else Is_TSS (Id, TSS_Stream_Read)
                          or else Is_TSS (Id, TSS_Stream_Write)
+                         or else Is_TSS (Id, TSS_Put_Image)
                          or else Nkind (Original_Node (P)) =
                                              N_Subprogram_Renaming_Declaration)
             then

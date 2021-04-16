@@ -45,7 +45,6 @@ with Restrict;       use Restrict;
 with Rident;         use Rident;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
-with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Eval;       use Sem_Eval;
@@ -1209,7 +1208,7 @@ package body Sem_Disp is
          --     primitives.
 
          --  3. Subprograms associated with stream attributes (built by
-         --     New_Stream_Subprogram)
+         --     New_Stream_Subprogram) or with the Put_Image attribute.
 
          --  4. Wrappers built for inherited operations with inherited class-
          --     wide conditions, where the conditions include calls to other
@@ -1238,6 +1237,7 @@ package body Sem_Disp is
 
               or else Get_TSS_Name (Subp) = TSS_Stream_Read
               or else Get_TSS_Name (Subp) = TSS_Stream_Write
+              or else Get_TSS_Name (Subp) = TSS_Put_Image
 
               or else
                (Is_Wrapper (Subp)
