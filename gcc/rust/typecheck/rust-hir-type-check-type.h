@@ -95,9 +95,11 @@ class TypeCheckType : public TypeCheckBase
   using Rust::Resolver::TypeCheckBase::visit;
 
 public:
-  static TyTy::BaseType *Resolve (HIR::Type *type)
+  static TyTy::BaseType *
+  Resolve (HIR::Type *type,
+	   std::vector<TyTy::SubstitutionParamMapping> *mappings = nullptr)
   {
-    TypeCheckType resolver;
+    TypeCheckType resolver (mappings);
     type->accept_vis (resolver);
 
     if (resolver.translated == nullptr)
@@ -186,6 +188,11 @@ public:
 		    translated
 		      = SubstMapper::Resolve (translated, path.get_locus (),
 					      &args);
+		    if (translated->get_kind () != TyTy::TypeKind::ERROR
+			&& mappings != nullptr)
+		      {
+			check_for_unconstrained (args.get_type_args ());
+		      }
 		  }
 		else
 		  {
@@ -241,8 +248,39 @@ public:
   }
 
 private:
-  TypeCheckType () : TypeCheckBase (), translated (nullptr) {}
+  TypeCheckType (std::vector<TyTy::SubstitutionParamMapping> *mappings)
+    : TypeCheckBase (), mappings (mappings), translated (nullptr)
+  {}
 
+  void
+  check_for_unconstrained (std::vector<std::unique_ptr<HIR::Type> > &type_args)
+  {
+    std::map<std::string, Location> param_location_map;
+    std::set<std::string> param_tys;
+    for (auto &mapping : *mappings)
+      {
+	std::string sym = mapping.get_param_ty ()->get_symbol ();
+	param_tys.insert (sym);
+	param_location_map[sym]
+	  = mapping.get_generic_param ()->get_locus_slow ();
+      }
+
+    std::set<std::string> args;
+    for (auto &arg : type_args)
+      args.insert (arg->as_string ());
+
+    for (auto &exp : param_tys)
+      {
+	bool used = args.find (exp) != args.end ();
+	if (!used)
+	  {
+	    Location locus = param_location_map.at (exp);
+	    rust_error_at (locus, "unconstrained type parameter");
+	  }
+      }
+  }
+
+  std::vector<TyTy::SubstitutionParamMapping> *mappings;
   TyTy::BaseType *translated;
 };
 
