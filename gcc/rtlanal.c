@@ -2311,15 +2311,25 @@ rtx_properties::try_to_add_insn (const rtx_insn *insn, bool include_notes)
 {
   if (CALL_P (insn))
     {
-      /* Adding the global registers first removes a situation in which
+      /* Non-const functions can read from global registers.  Impure
+	 functions can also set them.
+
+	 Adding the global registers first removes a situation in which
 	 a fixed-form clobber of register R could come before a real set
 	 of register R.  */
-      if (!hard_reg_set_empty_p (global_reg_set))
+      if (!hard_reg_set_empty_p (global_reg_set)
+	  && !RTL_CONST_CALL_P (insn))
 	{
-	  unsigned int flags = (rtx_obj_flags::IS_READ
-				| rtx_obj_flags::IS_WRITE);
+	  unsigned int flags = rtx_obj_flags::IS_READ;
+	  if (!RTL_PURE_CALL_P (insn))
+	    flags |= rtx_obj_flags::IS_WRITE;
 	  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
-	    if (global_regs[regno] && ref_iter != ref_end)
+	    /* As a special case, the stack pointer is invariant across calls
+	       even if it has been marked global; see the corresponding
+	       handling in df_get_call_refs.  */
+	    if (regno != STACK_POINTER_REGNUM
+		&& global_regs[regno]
+		&& ref_iter != ref_end)
 	      *ref_iter++ = rtx_obj_reference (regno, flags,
 					       reg_raw_mode[regno], 0);
 	}
