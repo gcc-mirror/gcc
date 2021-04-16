@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-additional-options "-w" }
 
 program reduction
   implicit none

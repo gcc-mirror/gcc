@@ -1,8 +1,6 @@
 /* Test of reduction on parallel directive (with async).  */
 /* See also Fortran variants in "../libgomp.oacc-fortran/par-reduction-2*".  */
 
-/* { dg-additional-options "-w" } */
-
 #include <assert.h>
 #include <openacc.h>
 
