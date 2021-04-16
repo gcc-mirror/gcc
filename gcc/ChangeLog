@@ -1,3 +1,26 @@
+2021-04-15  Lili Cui  <lili.cui@intel.com>
+
+	* common/config/i386/i386-common.c
+	(processor_names): Add tigerlake.
+	(processor_alias_table): Ditto.
+	* config.gcc (x86_64_archs): Ditto.
+	* config/i386/driver-i386.c
+	(host_detect_local_cpu): Detect tigerlake, add "has_avx" to
+	classify processor.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_TIGERLAKE.
+	* config/i386/i386.c (m_TIGERLAKE): Define.
+	(m_CORE_AVX512): Add m_TIGERLAKE.
+	(processor_cost_table): Add skylake_cost for tigerlake.
+	(processor_model): Add M_INTEL_COREI7_TIGERLAKE.
+	(arch_names_table): Add tigerlake.
+	(get_builtin_code_for_version): Handle PROCESSOR_TIGERLAKE.
+	* config/i386/i386.h (TARGET_TIGERLAKE): Define.
+	(enum processor_type): Add PROCESSOR_TIGERLAKE.
+	(PTA_TIGERLAKE): Define.
+	* doc/extend.texi (__builtin_cpu_is): Add tigerlake.
+	* doc/invoke.texi (-march=cpu-type): Ditto.
+
 2021-04-12  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	Backported from master:

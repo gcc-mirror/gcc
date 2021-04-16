@@ -1,3 +1,9 @@
+2021-04-15  Lili Cui  <lili.cui@intel.com>
+
+	* config/i386/cpuinfo.h (enum processor_subtypes): Add
+	INTEL_COREI7_TIGERLAKE.
+	From-SVN: r274693
+
 2021-01-13  Samuel Thibault  <samuel.thibault@gnu.org>
 
 	Backported from master:
