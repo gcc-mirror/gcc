@@ -2618,9 +2618,16 @@ ix86_option_override_internal (bool main_args_p,
   if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL]
       && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_LOAD))
     opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_LOAD;
+  else if (!main_args_p
+	   && ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_LOAD_OPTIMAL])
+    opts->x_target_flags &= ~MASK_AVX256_SPLIT_UNALIGNED_LOAD;
+
   if (!ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL]
       && !(opts_set->x_target_flags & MASK_AVX256_SPLIT_UNALIGNED_STORE))
     opts->x_target_flags |= MASK_AVX256_SPLIT_UNALIGNED_STORE;
+  else if (!main_args_p
+	   && ix86_tune_features[X86_TUNE_AVX256_UNALIGNED_STORE_OPTIMAL])
+    opts->x_target_flags &= ~MASK_AVX256_SPLIT_UNALIGNED_STORE;
 
   /* Enable 128-bit AVX instruction generation
      for the auto-vectorizer.  */
