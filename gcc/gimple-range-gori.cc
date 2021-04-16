@@ -29,6 +29,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
 
+// Return TRUE if GS is a logical && or || expression.
+
+static inline bool
+is_gimple_logical_p (const gimple *gs)
+{
+  // Look for boolean and/or condition.
+  if (is_gimple_assign (gs))
+    switch (gimple_expr_code (gs))
+      {
+	case TRUTH_AND_EXPR:
+	case TRUTH_OR_EXPR:
+	  return true;
+
+	case BIT_AND_EXPR:
+	case BIT_IOR_EXPR:
+	  // Bitwise operations on single bits are logical too.
+	  if (types_compatible_p (TREE_TYPE (gimple_assign_rhs1 (gs)),
+				  boolean_type_node))
+	    return true;
+	  break;
+
+	default:
+	  break;
+      }
+  return false;
+}
 
 /* RANGE_DEF_CHAIN is used to determine what SSA names in a block can
    have range information calculated for them, and what the
@@ -76,6 +102,7 @@ public:
 private:
   vec<bitmap> m_def_chain;	// SSA_NAME : def chain components.
   void build_def_chain (tree name, bitmap result, basic_block bb);
+  int m_logical_depth;
 };
 
 
@@ -85,6 +112,7 @@ range_def_chain::range_def_chain ()
 {
   m_def_chain.create (0);
   m_def_chain.safe_grow_cleared (num_ssa_names);
+  m_logical_depth = 0;
 }
 
 // Destruct a range_def_chain.
@@ -157,6 +185,7 @@ range_def_chain::get_def_chain (tree name)
 {
   tree ssa1, ssa2, ssa3;
   unsigned v = SSA_NAME_VERSION (name);
+  bool is_logical = false;
 
   // If it has already been processed, just return the cached value.
   if (has_def_chain (name))
@@ -169,6 +198,15 @@ range_def_chain::get_def_chain (tree name)
   gimple *stmt = SSA_NAME_DEF_STMT (name);
   if (gimple_range_handler (stmt))
     {
+      is_logical = is_gimple_logical_p (stmt);
+      // Terminate the def chains if we see too many cascading logical stmts.
+      if (is_logical)
+	{
+	  if (m_logical_depth == param_ranger_logical_depth)
+	    return NULL;
+	  m_logical_depth++;
+	}
+
       ssa1 = gimple_range_ssa_p (gimple_range_operand1 (stmt));
       ssa2 = gimple_range_ssa_p (gimple_range_operand2 (stmt));
       ssa3 = NULL_TREE;
@@ -194,6 +232,9 @@ range_def_chain::get_def_chain (tree name)
     build_def_chain (ssa2, m_def_chain[v], bb);
   if (ssa3)
     build_def_chain (ssa3, m_def_chain[v], bb);
+
+  if (is_logical)
+    m_logical_depth--;
 
   // If we run into pathological cases where the defintion chains are
   // huge (ie  huge basic block fully unrolled) we might be able to limit
@@ -562,32 +603,6 @@ gori_compute::compute_operand_range_switch (irange &r, gswitch *s,
   return false;
 }
 
-// Return TRUE if GS is a logical && or || expression.
-
-static inline bool
-is_gimple_logical_p (const gimple *gs)
-{
-  // Look for boolean and/or condition.
-  if (gimple_code (gs) == GIMPLE_ASSIGN)
-    switch (gimple_expr_code (gs))
-      {
-	case TRUTH_AND_EXPR:
-	case TRUTH_OR_EXPR:
-	  return true;
-
-	case BIT_AND_EXPR:
-	case BIT_IOR_EXPR:
-	  // Bitwise operations on single bits are logical too.
-	  if (types_compatible_p (TREE_TYPE (gimple_assign_rhs1 (gs)),
-				  boolean_type_node))
-	    return true;
-	  break;
-
-	default:
-	  break;
-      }
-  return false;
-}
 
 // Return an evaluation for NAME as it would appear in STMT when the
 // statement's lhs evaluates to LHS.  If successful, return TRUE and
