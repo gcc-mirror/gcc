@@ -8455,6 +8455,20 @@
   "<perm_insn>\t%0.<Vetype>, %1.<Vetype>, %2.<Vetype>"
 )
 
+;; Special purpose permute used by the predicate generation instructions.
+;; Unlike the normal permute patterns, these instructions operate on VNx16BI
+;; regardless of the element size, so that all input and output bits are
+;; well-defined.  Operand 3 then indicates the size of the permute.
+(define_insn "@aarch64_sve_trn1_conv<mode>"
+  [(set (match_operand:VNx16BI 0 "register_operand" "=Upa")
+	(unspec:VNx16BI [(match_operand:VNx16BI 1 "register_operand" "Upa")
+			 (match_operand:VNx16BI 2 "register_operand" "Upa")
+			 (match_operand:PRED_ALL 3 "aarch64_simd_imm_zero")]
+			UNSPEC_TRN1_CONV))]
+  "TARGET_SVE"
+  "trn1\t%0.<PRED_ALL:Vetype>, %1.<PRED_ALL:Vetype>, %2.<PRED_ALL:Vetype>"
+)
+
 ;; =========================================================================
 ;; == Conversions
 ;; =========================================================================
