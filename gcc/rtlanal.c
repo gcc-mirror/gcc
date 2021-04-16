@@ -2333,6 +2333,15 @@ rtx_properties::try_to_add_insn (const rtx_insn *insn, bool include_notes)
 	      *ref_iter++ = rtx_obj_reference (regno, flags,
 					       reg_raw_mode[regno], 0);
 	}
+      /* Untyped calls implicitly set all function value registers.
+	 Again, we add them first in case the main pattern contains
+	 a fixed-form clobber.  */
+      if (find_reg_note (insn, REG_UNTYPED_CALL, NULL_RTX))
+	for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+	  if (targetm.calls.function_value_regno_p (regno)
+	      && ref_iter != ref_end)
+	    *ref_iter++ = rtx_obj_reference (regno, rtx_obj_flags::IS_WRITE,
+					     reg_raw_mode[regno], 0);
       if (ref_iter != ref_end && !RTL_CONST_CALL_P (insn))
 	{
 	  auto mem_flags = rtx_obj_flags::IS_READ;
