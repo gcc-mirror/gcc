@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-additional-options "-cpp -w" }
+! { dg-additional-options "-cpp" }
 
 program reduction
   implicit none

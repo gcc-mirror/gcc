@@ -1,5 +1,4 @@
 ! { dg-do run }
-! { dg-additional-options "-w" }
 
 ! subroutine reduction with private and firstprivate variables
 
