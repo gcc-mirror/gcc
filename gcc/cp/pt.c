@@ -12830,7 +12830,27 @@ extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
     tp = &TYPE_NAME (*tp);
 
   if (TREE_CODE (*tp) == DECL_EXPR)
-    data.internal.add (DECL_EXPR_DECL (*tp));
+    {
+      tree decl = DECL_EXPR_DECL (*tp);
+      data.internal.add (decl);
+      if (VAR_P (decl)
+	  && DECL_DECOMPOSITION_P (decl)
+	  && TREE_TYPE (decl) != error_mark_node)
+	{
+	  gcc_assert (DECL_NAME (decl) == NULL_TREE);
+	  for (tree decl2 = DECL_CHAIN (decl);
+	       decl2
+	       && VAR_P (decl2)
+	       && DECL_DECOMPOSITION_P (decl2)
+	       && DECL_NAME (decl2)
+	       && TREE_TYPE (decl2) != error_mark_node;
+	       decl2 = DECL_CHAIN (decl2))
+	    {
+	      gcc_assert (DECL_DECOMP_BASE (decl2) == decl);
+	      data.internal.add (decl2);
+	    }
+	}
+    }
   else if (TREE_CODE (*tp) == LAMBDA_EXPR)
     {
       /* Since we defer implicit capture, look in the parms and body.  */
