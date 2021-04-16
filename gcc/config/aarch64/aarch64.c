@@ -5535,12 +5535,12 @@ aarch64_expand_sve_const_pred_trn (rtx target, rtx_vector_builder &builder,
 	}
     }
 
-  /* Emit the TRN1 itself.  */
+  /* Emit the TRN1 itself.  We emit a TRN that operates on VNx16BI
+     operands but permutes them as though they had mode MODE.  */
   machine_mode mode = aarch64_sve_pred_mode (permute_size).require ();
-  target = aarch64_target_reg (target, mode);
-  emit_insn (gen_aarch64_sve (UNSPEC_TRN1, mode, target,
-			      gen_lowpart (mode, a),
-			      gen_lowpart (mode, b)));
+  target = aarch64_target_reg (target, GET_MODE (a));
+  rtx type_reg = CONST0_RTX (mode);
+  emit_insn (gen_aarch64_sve_trn1_conv (mode, target, a, b, type_reg));
   return target;
 }
 

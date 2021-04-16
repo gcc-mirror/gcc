@@ -3572,6 +3572,18 @@
   [(set_attr "autodetect_type" "alu_shift_<shift>_op2")]
 )
 
+(define_insn "*neg_asr_si2_extr"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(neg:SI (match_operator:SI 4 "subreg_lowpart_operator"
+		  [(sign_extract:DI
+		     (match_operand:DI 1 "register_operand" "r")
+		     (match_operand 3 "aarch64_simd_shift_imm_offset_si" "n")
+		     (match_operand 2 "aarch64_simd_shift_imm_offset_si" "n"))])))]
+  "INTVAL (operands[2]) + INTVAL (operands[3]) == 32"
+  "neg\\t%w0, %w1, asr %2"
+  [(set_attr "autodetect_type" "alu_shift_asr_op2")]
+)
+
 (define_insn "mul<mode>3"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(mult:GPI (match_operand:GPI 1 "register_operand" "r")
@@ -5379,6 +5391,22 @@
 			    (match_operand 3 "const_int_operand" "n")))))]
   "UINTVAL (operands[3]) < 32 &&
    (UINTVAL (operands[3]) + UINTVAL (operands[4]) == 32)"
+  "extr\\t%w0, %w1, %w2, %4"
+  [(set_attr "type" "rotate_imm")]
+)
+
+(define_insn "*extrsi5_insn_di"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ior:SI (ashift:SI (match_operand:SI 1 "register_operand" "r")
+			   (match_operand 3 "const_int_operand" "n"))
+		(match_operator:SI 6 "subreg_lowpart_operator"
+		  [(zero_extract:DI
+		     (match_operand:DI 2 "register_operand" "r")
+		     (match_operand 5 "const_int_operand" "n")
+		     (match_operand 4 "const_int_operand" "n"))])))]
+  "UINTVAL (operands[3]) < 32
+   && UINTVAL (operands[3]) + UINTVAL (operands[4]) == 32
+   && INTVAL (operands[3]) == INTVAL (operands[5])"
   "extr\\t%w0, %w1, %w2, %4"
   [(set_attr "type" "rotate_imm")]
 )

@@ -622,6 +622,7 @@ ac_unique_file="gettext.c"
 ac_header_list=
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
+PICFLAG
 BISON3_NO
 BISON3_YES
 INCINTL
@@ -726,6 +727,7 @@ with_included_gettext
 with_libintl_prefix
 with_libintl_type
 enable_maintainer_mode
+enable_host_shared
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1350,6 +1352,7 @@ Optional Features:
   --disable-nls           do not use Native Language Support
   --disable-rpath         do not hardcode runtime library paths
   --enable-maintainer-mode enable rules only needed by maintainers
+  --enable-host-shared    build host code as shared libraries
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -6811,6 +6814,15 @@ $as_echo "$ac_prog_version" >&6; }
     BISON3_YES=
     BISON3_NO='#'
   fi
+fi
+
+
+
+# Check whether --enable-host-shared was given.
+if test "${enable_host_shared+set}" = set; then :
+  enableval=$enable_host_shared; PICFLAG=-fPIC
+else
+  PICFLAG=
 fi
 
 

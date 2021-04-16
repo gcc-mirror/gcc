@@ -19,7 +19,7 @@ TEQ(U(0),U(0));
 // value.  We need to distinguish these.
 TNEQ(U(0),U(0u));
 
-// { dg-final { scan-assembler "_Z1f1AIXtl1Udi1iLi0EEEE" } }
+// { dg-final { scan-assembler "_Z1f1AIXtl1UEEE" } }
 void f(A<U(0)>) { }
 // { dg-final { scan-assembler "_Z1g1AIXtl1Udi1jLi0EEEE" } }
 void g(A<U(0u)>) { }

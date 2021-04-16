@@ -3890,6 +3890,10 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
     (struct find_parameter_pack_data*)data;
   bool parameter_pack_p = false;
 
+#define WALK_SUBTREE(NODE)				\
+  cp_walk_tree (&(NODE), &find_parameter_packs_r,	\
+		ppd, ppd->visited)			\
+
   /* Don't look through typedefs; we are interested in whether a
      parameter pack is actually written in the expression/type we're
      looking at, not the target type.  */
@@ -4070,9 +4074,16 @@ find_parameter_packs_r (tree *tp, int *walk_subtrees, void* data)
 			ppd, ppd->visited);
       return NULL_TREE;
 
+    case FUNCTION_TYPE:
+    case METHOD_TYPE:
+      WALK_SUBTREE (TYPE_RAISES_EXCEPTIONS (t));
+      break;
+
     default:
       return NULL_TREE;
     }
+
+#undef WALK_SUBTREE
 
   return NULL_TREE;
 }
@@ -7138,6 +7149,9 @@ get_template_parm_object (tree expr, tsubst_flags_t complain)
     }
   if (invalid_tparm_referent_p (TREE_TYPE (expr), expr, complain))
     return error_mark_node;
+
+  /* This is no longer a compound literal.  */
+  TREE_HAS_CONSTRUCTOR (expr) = 0;
 
   tree name = mangle_template_parm_object (expr);
   tree decl = get_global_binding (name);
@@ -12816,7 +12830,27 @@ extract_locals_r (tree *tp, int */*walk_subtrees*/, void *data_)
     tp = &TYPE_NAME (*tp);
 
   if (TREE_CODE (*tp) == DECL_EXPR)
-    data.internal.add (DECL_EXPR_DECL (*tp));
+    {
+      tree decl = DECL_EXPR_DECL (*tp);
+      data.internal.add (decl);
+      if (VAR_P (decl)
+	  && DECL_DECOMPOSITION_P (decl)
+	  && TREE_TYPE (decl) != error_mark_node)
+	{
+	  gcc_assert (DECL_NAME (decl) == NULL_TREE);
+	  for (tree decl2 = DECL_CHAIN (decl);
+	       decl2
+	       && VAR_P (decl2)
+	       && DECL_DECOMPOSITION_P (decl2)
+	       && DECL_NAME (decl2)
+	       && TREE_TYPE (decl2) != error_mark_node;
+	       decl2 = DECL_CHAIN (decl2))
+	    {
+	      gcc_assert (DECL_DECOMP_BASE (decl2) == decl);
+	      data.internal.add (decl2);
+	    }
+	}
+    }
   else if (TREE_CODE (*tp) == LAMBDA_EXPR)
     {
       /* Since we defer implicit capture, look in the parms and body.  */

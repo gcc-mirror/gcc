@@ -1,3 +1,32 @@
+2021-04-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/99307
+	* symbol.c: Remove trailing white space.
+	* trans-array.c (gfc_trans_create_temp_array): Create a class
+	temporary for class expressions and assign the new descriptor
+	to the data field.
+	(build_class_array_ref): If the class expr can be extracted,
+	then use that for 'decl'. Class function results are reliably
+	handled this way. Call gfc_find_and_cut_at_last_class_ref to
+	eliminate largely redundant code. Remove dead code and recast
+	the rest of the code to extract 'decl' for remaining cases.
+	Call gfc_build_spanned_array_ref.
+	(gfc_alloc_allocatable_for_assignment): Use class descriptor
+	element length for 'elemsize1'. Eliminate repeat set of dtype
+	for class expressions.
+	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): Include
+	additional code from build_class_array_ref, and use optional
+	gfc_typespec pointer argument.
+	(gfc_trans_scalar_assign): Make use of pre and post blocks for
+	all class expressions.
+	* trans.c (get_array_span): For unlimited polymorphic exprs
+	multiply the span by the value of the _len field.
+	(gfc_build_spanned_array_ref): New function.
+	(gfc_build_array_ref): Call gfc_build_spanned_array_ref and
+	eliminate repeated code.
+	* trans.h: Add arg to gfc_find_and_cut_at_last_class_ref and
+	add prototype for gfc_build_spanned_array_ref.
+
 2021-04-14  Martin Liska  <mliska@suse.cz>
 
 	* intrinsic.texi: The table has first column empty and it makes

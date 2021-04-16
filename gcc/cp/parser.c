@@ -24730,9 +24730,7 @@ cp_parser_class_name (cp_parser *parser,
   decl = cp_parser_maybe_treat_template_as_class (decl, class_head_p);
 
   /* If this is a typename, create a TYPENAME_TYPE.  */
-  if (typename_p
-      && decl != error_mark_node
-      && !is_overloaded_fn (decl))
+  if (typename_p && decl != error_mark_node)
     {
       decl = make_typename_type (scope, decl, typename_type,
 				 /*complain=*/tf_error);
@@ -28530,7 +28528,20 @@ cp_parser_constraint_requires_parens (cp_parser *parser, bool lambda_p)
       case CPP_PLUS_PLUS:
       case CPP_MINUS_MINUS:
       case CPP_DOT:
+	/* Unenclosed postfix operator.  */
+	return pce_maybe_postfix;
+
       case CPP_DEREF:
+	/* A primary constraint that precedes the lambda-declarator of a
+	   lambda expression is followed by trailing return type.
+
+	      []<typename T> requires C -> void {}
+
+	   Don't try to re-parse this as a postfix expression in
+	   C++23 and later.  In C++20 ( needs to come in between but we
+	   allow it to be omitted with pedwarn.  */
+	if (lambda_p)
+	  return pce_ok;
 	/* Unenclosed postfix operator.  */
 	return pce_maybe_postfix;
    }

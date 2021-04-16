@@ -3964,6 +3964,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	  break;
 
 	case REG_CALL_DECL:
+	case REG_UNTYPED_CALL:
 	  gcc_assert (call_insn != NULL_RTX);
 	  add_reg_note (call_insn, REG_NOTE_KIND (note), XEXP (note, 0));
 	  break;

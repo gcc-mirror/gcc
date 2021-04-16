@@ -1,3 +1,84 @@
+2021-04-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/99420
+	PR c/99972
+	* gcc.dg/Warray-parameter-9.c: New test.
+	* gcc.dg/Wnonnull-6.c: New test.
+	* gcc.dg/Wreturn-type3.c: New test.
+	* gcc.dg/Wunused-result.c: New test.
+	* gcc.dg/attr-noreturn.c: New test.
+	* gcc.dg/attr-returns-nonnull.c: New test.
+
+2021-04-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR middle-end/84877
+	* gcc.dg/pr84877.c: Xfail for cris-*-*.
+
+2021-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80456
+	* g++.dg/cpp0x/constexpr-volatile3.C: New test.
+
+2021-04-15  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/uninit-pr89230-1.c: New test.
+	* gcc.dg/uninit-pr89230-2.c: Same.
+
+2021-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100101
+	* g++.dg/cpp0x/noexcept67.C: New test.
+
+2021-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100091
+	* g++.dg/cpp2a/lambda-uneval15.C: New test.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* g++.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: Add
+	-mtune=generic to the SVE flags.
+	* g++.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/sve/acle/aarch64-sve-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Likewise.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/gcc-defs.exp (aarch64-arch-dg-options): New procedure.
+	(aarch64-with-arch-dg-options): Likewise.
+	* g++.target/aarch64/sve/aarch64-sve.exp: Run the tests inside
+	aarch64-with-arch-dg-options.  Move the default architecture
+	flags to the final dg-runtest argument.
+	* gcc.target/aarch64/sve/aarch64-sve.exp: Likewise.  Dispense with
+	DEFAULT_CFLAGS.
+	* gcc.target/aarch64/sve2/aarch64-sve2.exp: Likewise.
+
+2021-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/100073
+	* gcc.dg/pr86058.c: Enable also on i?86-*-*.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/98852
+	* g++.target/aarch64/advsimd-intrinsics/advsimd-intrinsics.exp: New file.
+	* g++.target/aarch64/advsimd-intrinsics/pr98852.C: New file.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/98852
+	* gcc.target/aarch64/advsimd-intrinsics/pr98852.c: New test.
+
+2021-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100056
+	* gcc.target/aarch64/pr100056.c: New test.
+
+2021-04-15  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/pr93210.c: Adapt regex in order to also support a
+	RESULT_DECL as an operand for a RETURN_EXPR.
+
 2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	* gcc.target/aarch64/sve/pr99929_1.c: New file.

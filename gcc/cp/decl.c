@@ -4055,6 +4055,12 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
 	error ("%qD used without template arguments", name);
       return error_mark_node;
     }
+  else if (is_overloaded_fn (name))
+    {
+      if (complain & tf_error)
+	error ("%qD is a function, not a type", name);
+      return error_mark_node;
+    }
   gcc_assert (identifier_p (name));
   gcc_assert (TYPE_P (context));
 
@@ -4066,7 +4072,7 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
 	error ("%q#T is not a class", context);
       return error_mark_node;
     }
-  
+
   /* When the CONTEXT is a dependent type,  NAME could refer to a
      dependent base class of CONTEXT.  But look inside it anyway
      if CONTEXT is a currently open scope, in case it refers to a
@@ -6152,7 +6158,7 @@ struct reshape_iter
 
 static tree reshape_init_r (tree, reshape_iter *, tree, tsubst_flags_t);
 
-/* FIELD is a FIELD_DECL or NULL.  In the former case, the value
+/* FIELD is an element of TYPE_FIELDS or NULL.  In the former case, the value
    returned is the next FIELD_DECL (possibly FIELD itself) that can be
    initialized.  If there are no more such fields, the return value
    will be NULL.  */

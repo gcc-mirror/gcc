@@ -1,3 +1,15 @@
+2021-04-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/99420
+	PR c/99972
+	* c-decl.c (pushdecl): Always propagate type attribute.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/98852
+	* c-typeck.c (c_common_type): Do not drop attributes that
+	affect type identity.
+
 2021-04-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/99990

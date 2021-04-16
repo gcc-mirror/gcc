@@ -2490,8 +2490,12 @@ expand_builtin_apply (rtx function, rtx arguments, rtx argsize)
   if (targetm.have_untyped_call ())
     {
       rtx mem = gen_rtx_MEM (FUNCTION_MODE, function);
-      emit_call_insn (targetm.gen_untyped_call (mem, result,
-						result_vector (1, result)));
+      rtx_insn *seq = targetm.gen_untyped_call (mem, result,
+						result_vector (1, result));
+      for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
+	if (CALL_P (insn))
+	  add_reg_note (insn, REG_UNTYPED_CALL, NULL_RTX);
+      emit_insn (seq);
     }
   else if (targetm.have_call_value ())
     {

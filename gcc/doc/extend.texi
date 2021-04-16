@@ -18165,14 +18165,216 @@ Internally, GCC uses built-in functions to achieve the functionality in
 the aforementioned header file, but they are not supported and are
 subject to change without notice.
 
-GCC complies with the OpenPOWER 64-Bit ELF V2 ABI Specification,
+GCC complies with the Power Vector Intrinsic Programming Reference (PVIPR),
 which may be found at
-@uref{https://openpowerfoundation.org/?resource_lib=64-bit-elf-v2-abi-specification-power-architecture}.
-Appendix A of this document lists the vector API interfaces that must be
+@uref{https://openpowerfoundation.org/?resource_lib=power-vector-intrinsic-programming-reference}.
+Chapter 4 of this document fully documents the vector API interfaces
+that must be
 provided by compliant compilers.  Programmers should preferentially use
 the interfaces described therein.  However, historically GCC has provided
 additional interfaces for access to vector instructions.  These are
-briefly described below.
+briefly described below.  Where the PVIPR provides a portable interface,
+other functions in GCC that provide the same capabilities should be
+considered deprecated.
+
+The PVIPR documents the following overloaded functions:
+
+@multitable @columnfractions 0.33 0.33 0.33
+
+@item @code{vec_abs}
+@tab @code{vec_absd}
+@tab @code{vec_abss}
+@item @code{vec_add}
+@tab @code{vec_addc}
+@tab @code{vec_adde}
+@item @code{vec_addec}
+@tab @code{vec_adds}
+@tab @code{vec_all_eq}
+@item @code{vec_all_ge}
+@tab @code{vec_all_gt}
+@tab @code{vec_all_in}
+@item @code{vec_all_le}
+@tab @code{vec_all_lt}
+@tab @code{vec_all_nan}
+@item @code{vec_all_ne}
+@tab @code{vec_all_nge}
+@tab @code{vec_all_ngt}
+@item @code{vec_all_nle}
+@tab @code{vec_all_nlt}
+@tab @code{vec_all_numeric}
+@item @code{vec_and}
+@tab @code{vec_andc}
+@tab @code{vec_any_eq}
+@item @code{vec_any_ge}
+@tab @code{vec_any_gt}
+@tab @code{vec_any_le}
+@item @code{vec_any_lt}
+@tab @code{vec_any_nan}
+@tab @code{vec_any_ne}
+@item @code{vec_any_nge}
+@tab @code{vec_any_ngt}
+@tab @code{vec_any_nle}
+@item @code{vec_any_nlt}
+@tab @code{vec_any_numeric}
+@tab @code{vec_any_out}
+@item @code{vec_avg}
+@tab @code{vec_bperm}
+@tab @code{vec_ceil}
+@item @code{vec_cipher_be}
+@tab @code{vec_cipherlast_be}
+@tab @code{vec_cmpb}
+@item @code{vec_cmpeq}
+@tab @code{vec_cmpge}
+@tab @code{vec_cmpgt}
+@item @code{vec_cmple}
+@tab @code{vec_cmplt}
+@tab @code{vec_cmpne}
+@item @code{vec_cmpnez}
+@tab @code{vec_cntlz}
+@tab @code{vec_cntlz_lsbb}
+@item @code{vec_cnttz}
+@tab @code{vec_cnttz_lsbb}
+@tab @code{vec_cpsgn}
+@item @code{vec_ctf}
+@tab @code{vec_cts}
+@tab @code{vec_ctu}
+@item @code{vec_div}
+@tab @code{vec_double}
+@tab @code{vec_doublee}
+@item @code{vec_doubleh}
+@tab @code{vec_doublel}
+@tab @code{vec_doubleo}
+@item @code{vec_eqv}
+@tab @code{vec_expte}
+@tab @code{vec_extract}
+@item @code{vec_extract_exp}
+@tab @code{vec_extract_fp32_from_shorth}
+@tab @code{vec_extract_fp32_from_shortl}
+@item @code{vec_extract_sig}
+@tab @code{vec_extract_4b}
+@tab @code{vec_first_match_index}
+@item @code{vec_first_match_or_eos_index}
+@tab @code{vec_first_mismatch_index}
+@tab @code{vec_first_mismatch_or_eos_index}
+@item @code{vec_float}
+@tab @code{vec_float2}
+@tab @code{vec_floate}
+@item @code{vec_floato}
+@tab @code{vec_floor}
+@tab @code{vec_gb}
+@item @code{vec_insert}
+@tab @code{vec_insert_exp}
+@tab @code{vec_insert4b}
+@item @code{vec_ld}
+@tab @code{vec_lde}
+@tab @code{vec_ldl}
+@item @code{vec_loge}
+@tab @code{vec_madd}
+@tab @code{vec_madds}
+@item @code{vec_max}
+@tab @code{vec_mergee}
+@tab @code{vec_mergeh}
+@item @code{vec_mergel}
+@tab @code{vec_mergeo}
+@tab @code{vec_mfvscr}
+@item @code{vec_min}
+@tab @code{vec_mradds}
+@tab @code{vec_msub}
+@item @code{vec_msum}
+@tab @code{vec_msums}
+@tab @code{vec_mtvscr}
+@item @code{vec_mul}
+@tab @code{vec_mule}
+@tab @code{vec_mulo}
+@item @code{vec_nabs}
+@tab @code{vec_nand}
+@tab @code{vec_ncipher_be}
+@item @code{vec_ncipherlast_be}
+@tab @code{vec_nearbyint}
+@tab @code{vec_neg}
+@item @code{vec_nmadd}
+@tab @code{vec_nmsub}
+@tab @code{vec_nor}
+@item @code{vec_or}
+@tab @code{vec_orc}
+@tab @code{vec_pack}
+@item @code{vec_pack_to_short_fp32}
+@tab @code{vec_packpx}
+@tab @code{vec_packs}
+@item @code{vec_packsu}
+@tab @code{vec_parity_lsbb}
+@tab @code{vec_perm}
+@item @code{vec_permxor}
+@tab @code{vec_pmsum_be}
+@tab @code{vec_popcnt}
+@item @code{vec_re}
+@tab @code{vec_recipdiv}
+@tab @code{vec_revb}
+@item @code{vec_reve}
+@tab @code{vec_rint}
+@tab @code{vec_rl}
+@item @code{vec_rlmi}
+@tab @code{vec_rlnm}
+@tab @code{vec_round}
+@item @code{vec_rsqrt}
+@tab @code{vec_rsqrte}
+@tab @code{vec_sbox_be}
+@item @code{vec_sel}
+@tab @code{vec_shasigma_be}
+@tab @code{vec_signed}
+@item @code{vec_signed2}
+@tab @code{vec_signede}
+@tab @code{vec_signedo}
+@item @code{vec_sl}
+@tab @code{vec_sld}
+@tab @code{vec_sldw}
+@item @code{vec_sll}
+@tab @code{vec_slo}
+@tab @code{vec_slv}
+@item @code{vec_splat}
+@tab @code{vec_splat_s8}
+@tab @code{vec_splat_s16}
+@item @code{vec_splat_s32}
+@tab @code{vec_splat_u8}
+@tab @code{vec_splat_u16}
+@item @code{vec_splat_u32}
+@tab @code{vec_splats}
+@tab @code{vec_sqrt}
+@item @code{vec_sr}
+@tab @code{vec_sra}
+@tab @code{vec_srl}
+@item @code{vec_sro}
+@tab @code{vec_srv}
+@tab @code{vec_st}
+@item @code{vec_ste}
+@tab @code{vec_stl}
+@tab @code{vec_sub}
+@item @code{vec_subc}
+@tab @code{vec_sube}
+@tab @code{vec_subec}
+@item @code{vec_subs}
+@tab @code{vec_sum2s}
+@tab @code{vec_sum4s}
+@item @code{vec_sums}
+@tab @code{vec_test_data_class}
+@tab @code{vec_trunc}
+@item @code{vec_unpackh}
+@tab @code{vec_unpackl}
+@tab @code{vec_unsigned}
+@item @code{vec_unsigned2}
+@tab @code{vec_unsignede}
+@tab @code{vec_unsignedo}
+@item @code{vec_xl}
+@tab @code{vec_xl_be}
+@tab @code{vec_xl_len}
+@item @code{vec_xl_len_r}
+@tab @code{vec_xor}
+@tab @code{vec_xst}
+@item @code{vec_xst_be}
+@tab @code{vec_xst_len}
+@tab @code{vec_xst_len_r}
+
+@end multitable
 
 @menu
 * PowerPC AltiVec Built-in Functions on ISA 2.05::
@@ -18194,442 +18396,9 @@ be used.
 Arguments that are documented as @code{const int} require literal
 integral values within the range required for that operation.
 
+Only functions excluded from the PVIPR are listed here.
+
 @smallexample
-vector signed char vec_abs (vector signed char);
-vector signed short vec_abs (vector signed short);
-vector signed int vec_abs (vector signed int);
-vector float vec_abs (vector float);
-
-vector signed char vec_abss (vector signed char);
-vector signed short vec_abss (vector signed short);
-vector signed int vec_abss (vector signed int);
-
-vector signed char vec_add (vector bool char, vector signed char);
-vector signed char vec_add (vector signed char, vector bool char);
-vector signed char vec_add (vector signed char, vector signed char);
-vector unsigned char vec_add (vector bool char, vector unsigned char);
-vector unsigned char vec_add (vector unsigned char, vector bool char);
-vector unsigned char vec_add (vector unsigned char, vector unsigned char);
-vector signed short vec_add (vector bool short, vector signed short);
-vector signed short vec_add (vector signed short, vector bool short);
-vector signed short vec_add (vector signed short, vector signed short);
-vector unsigned short vec_add (vector bool short, vector unsigned short);
-vector unsigned short vec_add (vector unsigned short, vector bool short);
-vector unsigned short vec_add (vector unsigned short, vector unsigned short);
-vector signed int vec_add (vector bool int, vector signed int);
-vector signed int vec_add (vector signed int, vector bool int);
-vector signed int vec_add (vector signed int, vector signed int);
-vector unsigned int vec_add (vector bool int, vector unsigned int);
-vector unsigned int vec_add (vector unsigned int, vector bool int);
-vector unsigned int vec_add (vector unsigned int, vector unsigned int);
-vector float vec_add (vector float, vector float);
-
-vector unsigned int vec_addc (vector unsigned int, vector unsigned int);
-
-vector unsigned char vec_adds (vector bool char, vector unsigned char);
-vector unsigned char vec_adds (vector unsigned char, vector bool char);
-vector unsigned char vec_adds (vector unsigned char, vector unsigned char);
-vector signed char vec_adds (vector bool char, vector signed char);
-vector signed char vec_adds (vector signed char, vector bool char);
-vector signed char vec_adds (vector signed char, vector signed char);
-vector unsigned short vec_adds (vector bool short, vector unsigned short);
-vector unsigned short vec_adds (vector unsigned short, vector bool short);
-vector unsigned short vec_adds (vector unsigned short, vector unsigned short);
-vector signed short vec_adds (vector bool short, vector signed short);
-vector signed short vec_adds (vector signed short, vector bool short);
-vector signed short vec_adds (vector signed short, vector signed short);
-vector unsigned int vec_adds (vector bool int, vector unsigned int);
-vector unsigned int vec_adds (vector unsigned int, vector bool int);
-vector unsigned int vec_adds (vector unsigned int, vector unsigned int);
-vector signed int vec_adds (vector bool int, vector signed int);
-vector signed int vec_adds (vector signed int, vector bool int);
-vector signed int vec_adds (vector signed int, vector signed int);
-
-int vec_all_eq (vector signed char, vector bool char);
-int vec_all_eq (vector signed char, vector signed char);
-int vec_all_eq (vector unsigned char, vector bool char);
-int vec_all_eq (vector unsigned char, vector unsigned char);
-int vec_all_eq (vector bool char, vector bool char);
-int vec_all_eq (vector bool char, vector unsigned char);
-int vec_all_eq (vector bool char, vector signed char);
-int vec_all_eq (vector signed short, vector bool short);
-int vec_all_eq (vector signed short, vector signed short);
-int vec_all_eq (vector unsigned short, vector bool short);
-int vec_all_eq (vector unsigned short, vector unsigned short);
-int vec_all_eq (vector bool short, vector bool short);
-int vec_all_eq (vector bool short, vector unsigned short);
-int vec_all_eq (vector bool short, vector signed short);
-int vec_all_eq (vector pixel, vector pixel);
-int vec_all_eq (vector signed int, vector bool int);
-int vec_all_eq (vector signed int, vector signed int);
-int vec_all_eq (vector unsigned int, vector bool int);
-int vec_all_eq (vector unsigned int, vector unsigned int);
-int vec_all_eq (vector bool int, vector bool int);
-int vec_all_eq (vector bool int, vector unsigned int);
-int vec_all_eq (vector bool int, vector signed int);
-int vec_all_eq (vector float, vector float);
-
-int vec_all_ge (vector bool char, vector unsigned char);
-int vec_all_ge (vector unsigned char, vector bool char);
-int vec_all_ge (vector unsigned char, vector unsigned char);
-int vec_all_ge (vector bool char, vector signed char);
-int vec_all_ge (vector signed char, vector bool char);
-int vec_all_ge (vector signed char, vector signed char);
-int vec_all_ge (vector bool short, vector unsigned short);
-int vec_all_ge (vector unsigned short, vector bool short);
-int vec_all_ge (vector unsigned short, vector unsigned short);
-int vec_all_ge (vector signed short, vector signed short);
-int vec_all_ge (vector bool short, vector signed short);
-int vec_all_ge (vector signed short, vector bool short);
-int vec_all_ge (vector bool int, vector unsigned int);
-int vec_all_ge (vector unsigned int, vector bool int);
-int vec_all_ge (vector unsigned int, vector unsigned int);
-int vec_all_ge (vector bool int, vector signed int);
-int vec_all_ge (vector signed int, vector bool int);
-int vec_all_ge (vector signed int, vector signed int);
-int vec_all_ge (vector float, vector float);
-
-int vec_all_gt (vector bool char, vector unsigned char);
-int vec_all_gt (vector unsigned char, vector bool char);
-int vec_all_gt (vector unsigned char, vector unsigned char);
-int vec_all_gt (vector bool char, vector signed char);
-int vec_all_gt (vector signed char, vector bool char);
-int vec_all_gt (vector signed char, vector signed char);
-int vec_all_gt (vector bool short, vector unsigned short);
-int vec_all_gt (vector unsigned short, vector bool short);
-int vec_all_gt (vector unsigned short, vector unsigned short);
-int vec_all_gt (vector bool short, vector signed short);
-int vec_all_gt (vector signed short, vector bool short);
-int vec_all_gt (vector signed short, vector signed short);
-int vec_all_gt (vector bool int, vector unsigned int);
-int vec_all_gt (vector unsigned int, vector bool int);
-int vec_all_gt (vector unsigned int, vector unsigned int);
-int vec_all_gt (vector bool int, vector signed int);
-int vec_all_gt (vector signed int, vector bool int);
-int vec_all_gt (vector signed int, vector signed int);
-int vec_all_gt (vector float, vector float);
-
-int vec_all_in (vector float, vector float);
-
-int vec_all_le (vector bool char, vector unsigned char);
-int vec_all_le (vector unsigned char, vector bool char);
-int vec_all_le (vector unsigned char, vector unsigned char);
-int vec_all_le (vector bool char, vector signed char);
-int vec_all_le (vector signed char, vector bool char);
-int vec_all_le (vector signed char, vector signed char);
-int vec_all_le (vector bool short, vector unsigned short);
-int vec_all_le (vector unsigned short, vector bool short);
-int vec_all_le (vector unsigned short, vector unsigned short);
-int vec_all_le (vector bool short, vector signed short);
-int vec_all_le (vector signed short, vector bool short);
-int vec_all_le (vector signed short, vector signed short);
-int vec_all_le (vector bool int, vector unsigned int);
-int vec_all_le (vector unsigned int, vector bool int);
-int vec_all_le (vector unsigned int, vector unsigned int);
-int vec_all_le (vector bool int, vector signed int);
-int vec_all_le (vector signed int, vector bool int);
-int vec_all_le (vector signed int, vector signed int);
-int vec_all_le (vector float, vector float);
-
-int vec_all_lt (vector bool char, vector unsigned char);
-int vec_all_lt (vector unsigned char, vector bool char);
-int vec_all_lt (vector unsigned char, vector unsigned char);
-int vec_all_lt (vector bool char, vector signed char);
-int vec_all_lt (vector signed char, vector bool char);
-int vec_all_lt (vector signed char, vector signed char);
-int vec_all_lt (vector bool short, vector unsigned short);
-int vec_all_lt (vector unsigned short, vector bool short);
-int vec_all_lt (vector unsigned short, vector unsigned short);
-int vec_all_lt (vector bool short, vector signed short);
-int vec_all_lt (vector signed short, vector bool short);
-int vec_all_lt (vector signed short, vector signed short);
-int vec_all_lt (vector bool int, vector unsigned int);
-int vec_all_lt (vector unsigned int, vector bool int);
-int vec_all_lt (vector unsigned int, vector unsigned int);
-int vec_all_lt (vector bool int, vector signed int);
-int vec_all_lt (vector signed int, vector bool int);
-int vec_all_lt (vector signed int, vector signed int);
-int vec_all_lt (vector float, vector float);
-
-int vec_all_nan (vector float);
-
-int vec_all_ne (vector signed char, vector bool char);
-int vec_all_ne (vector signed char, vector signed char);
-int vec_all_ne (vector unsigned char, vector bool char);
-int vec_all_ne (vector unsigned char, vector unsigned char);
-int vec_all_ne (vector bool char, vector bool char);
-int vec_all_ne (vector bool char, vector unsigned char);
-int vec_all_ne (vector bool char, vector signed char);
-int vec_all_ne (vector signed short, vector bool short);
-int vec_all_ne (vector signed short, vector signed short);
-int vec_all_ne (vector unsigned short, vector bool short);
-int vec_all_ne (vector unsigned short, vector unsigned short);
-int vec_all_ne (vector bool short, vector bool short);
-int vec_all_ne (vector bool short, vector unsigned short);
-int vec_all_ne (vector bool short, vector signed short);
-int vec_all_ne (vector pixel, vector pixel);
-int vec_all_ne (vector signed int, vector bool int);
-int vec_all_ne (vector signed int, vector signed int);
-int vec_all_ne (vector unsigned int, vector bool int);
-int vec_all_ne (vector unsigned int, vector unsigned int);
-int vec_all_ne (vector bool int, vector bool int);
-int vec_all_ne (vector bool int, vector unsigned int);
-int vec_all_ne (vector bool int, vector signed int);
-int vec_all_ne (vector float, vector float);
-
-int vec_all_nge (vector float, vector float);
-
-int vec_all_ngt (vector float, vector float);
-
-int vec_all_nle (vector float, vector float);
-
-int vec_all_nlt (vector float, vector float);
-
-int vec_all_numeric (vector float);
-
-vector float vec_and (vector float, vector float);
-vector float vec_and (vector float, vector bool int);
-vector float vec_and (vector bool int, vector float);
-vector bool int vec_and (vector bool int, vector bool int);
-vector signed int vec_and (vector bool int, vector signed int);
-vector signed int vec_and (vector signed int, vector bool int);
-vector signed int vec_and (vector signed int, vector signed int);
-vector unsigned int vec_and (vector bool int, vector unsigned int);
-vector unsigned int vec_and (vector unsigned int, vector bool int);
-vector unsigned int vec_and (vector unsigned int, vector unsigned int);
-vector bool short vec_and (vector bool short, vector bool short);
-vector signed short vec_and (vector bool short, vector signed short);
-vector signed short vec_and (vector signed short, vector bool short);
-vector signed short vec_and (vector signed short, vector signed short);
-vector unsigned short vec_and (vector bool short, vector unsigned short);
-vector unsigned short vec_and (vector unsigned short, vector bool short);
-vector unsigned short vec_and (vector unsigned short, vector unsigned short);
-vector signed char vec_and (vector bool char, vector signed char);
-vector bool char vec_and (vector bool char, vector bool char);
-vector signed char vec_and (vector signed char, vector bool char);
-vector signed char vec_and (vector signed char, vector signed char);
-vector unsigned char vec_and (vector bool char, vector unsigned char);
-vector unsigned char vec_and (vector unsigned char, vector bool char);
-vector unsigned char vec_and (vector unsigned char, vector unsigned char);
-
-vector float vec_andc (vector float, vector float);
-vector float vec_andc (vector float, vector bool int);
-vector float vec_andc (vector bool int, vector float);
-vector bool int vec_andc (vector bool int, vector bool int);
-vector signed int vec_andc (vector bool int, vector signed int);
-vector signed int vec_andc (vector signed int, vector bool int);
-vector signed int vec_andc (vector signed int, vector signed int);
-vector unsigned int vec_andc (vector bool int, vector unsigned int);
-vector unsigned int vec_andc (vector unsigned int, vector bool int);
-vector unsigned int vec_andc (vector unsigned int, vector unsigned int);
-vector bool short vec_andc (vector bool short, vector bool short);
-vector signed short vec_andc (vector bool short, vector signed short);
-vector signed short vec_andc (vector signed short, vector bool short);
-vector signed short vec_andc (vector signed short, vector signed short);
-vector unsigned short vec_andc (vector bool short, vector unsigned short);
-vector unsigned short vec_andc (vector unsigned short, vector bool short);
-vector unsigned short vec_andc (vector unsigned short, vector unsigned short);
-vector signed char vec_andc (vector bool char, vector signed char);
-vector bool char vec_andc (vector bool char, vector bool char);
-vector signed char vec_andc (vector signed char, vector bool char);
-vector signed char vec_andc (vector signed char, vector signed char);
-vector unsigned char vec_andc (vector bool char, vector unsigned char);
-vector unsigned char vec_andc (vector unsigned char, vector bool char);
-vector unsigned char vec_andc (vector unsigned char, vector unsigned char);
-
-int vec_any_eq (vector signed char, vector bool char);
-int vec_any_eq (vector signed char, vector signed char);
-int vec_any_eq (vector unsigned char, vector bool char);
-int vec_any_eq (vector unsigned char, vector unsigned char);
-int vec_any_eq (vector bool char, vector bool char);
-int vec_any_eq (vector bool char, vector unsigned char);
-int vec_any_eq (vector bool char, vector signed char);
-int vec_any_eq (vector signed short, vector bool short);
-int vec_any_eq (vector signed short, vector signed short);
-int vec_any_eq (vector unsigned short, vector bool short);
-int vec_any_eq (vector unsigned short, vector unsigned short);
-int vec_any_eq (vector bool short, vector bool short);
-int vec_any_eq (vector bool short, vector unsigned short);
-int vec_any_eq (vector bool short, vector signed short);
-int vec_any_eq (vector pixel, vector pixel);
-int vec_any_eq (vector signed int, vector bool int);
-int vec_any_eq (vector signed int, vector signed int);
-int vec_any_eq (vector unsigned int, vector bool int);
-int vec_any_eq (vector unsigned int, vector unsigned int);
-int vec_any_eq (vector bool int, vector bool int);
-int vec_any_eq (vector bool int, vector unsigned int);
-int vec_any_eq (vector bool int, vector signed int);
-int vec_any_eq (vector float, vector float);
-
-int vec_any_ge (vector signed char, vector bool char);
-int vec_any_ge (vector unsigned char, vector bool char);
-int vec_any_ge (vector unsigned char, vector unsigned char);
-int vec_any_ge (vector signed char, vector signed char);
-int vec_any_ge (vector bool char, vector unsigned char);
-int vec_any_ge (vector bool char, vector signed char);
-int vec_any_ge (vector unsigned short, vector bool short);
-int vec_any_ge (vector unsigned short, vector unsigned short);
-int vec_any_ge (vector signed short, vector signed short);
-int vec_any_ge (vector signed short, vector bool short);
-int vec_any_ge (vector bool short, vector unsigned short);
-int vec_any_ge (vector bool short, vector signed short);
-int vec_any_ge (vector signed int, vector bool int);
-int vec_any_ge (vector unsigned int, vector bool int);
-int vec_any_ge (vector unsigned int, vector unsigned int);
-int vec_any_ge (vector signed int, vector signed int);
-int vec_any_ge (vector bool int, vector unsigned int);
-int vec_any_ge (vector bool int, vector signed int);
-int vec_any_ge (vector float, vector float);
-
-int vec_any_gt (vector bool char, vector unsigned char);
-int vec_any_gt (vector unsigned char, vector bool char);
-int vec_any_gt (vector unsigned char, vector unsigned char);
-int vec_any_gt (vector bool char, vector signed char);
-int vec_any_gt (vector signed char, vector bool char);
-int vec_any_gt (vector signed char, vector signed char);
-int vec_any_gt (vector bool short, vector unsigned short);
-int vec_any_gt (vector unsigned short, vector bool short);
-int vec_any_gt (vector unsigned short, vector unsigned short);
-int vec_any_gt (vector bool short, vector signed short);
-int vec_any_gt (vector signed short, vector bool short);
-int vec_any_gt (vector signed short, vector signed short);
-int vec_any_gt (vector bool int, vector unsigned int);
-int vec_any_gt (vector unsigned int, vector bool int);
-int vec_any_gt (vector unsigned int, vector unsigned int);
-int vec_any_gt (vector bool int, vector signed int);
-int vec_any_gt (vector signed int, vector bool int);
-int vec_any_gt (vector signed int, vector signed int);
-int vec_any_gt (vector float, vector float);
-
-int vec_any_le (vector bool char, vector unsigned char);
-int vec_any_le (vector unsigned char, vector bool char);
-int vec_any_le (vector unsigned char, vector unsigned char);
-int vec_any_le (vector bool char, vector signed char);
-int vec_any_le (vector signed char, vector bool char);
-int vec_any_le (vector signed char, vector signed char);
-int vec_any_le (vector bool short, vector unsigned short);
-int vec_any_le (vector unsigned short, vector bool short);
-int vec_any_le (vector unsigned short, vector unsigned short);
-int vec_any_le (vector bool short, vector signed short);
-int vec_any_le (vector signed short, vector bool short);
-int vec_any_le (vector signed short, vector signed short);
-int vec_any_le (vector bool int, vector unsigned int);
-int vec_any_le (vector unsigned int, vector bool int);
-int vec_any_le (vector unsigned int, vector unsigned int);
-int vec_any_le (vector bool int, vector signed int);
-int vec_any_le (vector signed int, vector bool int);
-int vec_any_le (vector signed int, vector signed int);
-int vec_any_le (vector float, vector float);
-
-int vec_any_lt (vector bool char, vector unsigned char);
-int vec_any_lt (vector unsigned char, vector bool char);
-int vec_any_lt (vector unsigned char, vector unsigned char);
-int vec_any_lt (vector bool char, vector signed char);
-int vec_any_lt (vector signed char, vector bool char);
-int vec_any_lt (vector signed char, vector signed char);
-int vec_any_lt (vector bool short, vector unsigned short);
-int vec_any_lt (vector unsigned short, vector bool short);
-int vec_any_lt (vector unsigned short, vector unsigned short);
-int vec_any_lt (vector bool short, vector signed short);
-int vec_any_lt (vector signed short, vector bool short);
-int vec_any_lt (vector signed short, vector signed short);
-int vec_any_lt (vector bool int, vector unsigned int);
-int vec_any_lt (vector unsigned int, vector bool int);
-int vec_any_lt (vector unsigned int, vector unsigned int);
-int vec_any_lt (vector bool int, vector signed int);
-int vec_any_lt (vector signed int, vector bool int);
-int vec_any_lt (vector signed int, vector signed int);
-int vec_any_lt (vector float, vector float);
-
-int vec_any_nan (vector float);
-
-int vec_any_ne (vector signed char, vector bool char);
-int vec_any_ne (vector signed char, vector signed char);
-int vec_any_ne (vector unsigned char, vector bool char);
-int vec_any_ne (vector unsigned char, vector unsigned char);
-int vec_any_ne (vector bool char, vector bool char);
-int vec_any_ne (vector bool char, vector unsigned char);
-int vec_any_ne (vector bool char, vector signed char);
-int vec_any_ne (vector signed short, vector bool short);
-int vec_any_ne (vector signed short, vector signed short);
-int vec_any_ne (vector unsigned short, vector bool short);
-int vec_any_ne (vector unsigned short, vector unsigned short);
-int vec_any_ne (vector bool short, vector bool short);
-int vec_any_ne (vector bool short, vector unsigned short);
-int vec_any_ne (vector bool short, vector signed short);
-int vec_any_ne (vector pixel, vector pixel);
-int vec_any_ne (vector signed int, vector bool int);
-int vec_any_ne (vector signed int, vector signed int);
-int vec_any_ne (vector unsigned int, vector bool int);
-int vec_any_ne (vector unsigned int, vector unsigned int);
-int vec_any_ne (vector bool int, vector bool int);
-int vec_any_ne (vector bool int, vector unsigned int);
-int vec_any_ne (vector bool int, vector signed int);
-int vec_any_ne (vector float, vector float);
-
-int vec_any_nge (vector float, vector float);
-
-int vec_any_ngt (vector float, vector float);
-
-int vec_any_nle (vector float, vector float);
-
-int vec_any_nlt (vector float, vector float);
-
-int vec_any_numeric (vector float);
-
-int vec_any_out (vector float, vector float);
-
-vector unsigned char vec_avg (vector unsigned char, vector unsigned char);
-vector signed char vec_avg (vector signed char, vector signed char);
-vector unsigned short vec_avg (vector unsigned short, vector unsigned short);
-vector signed short vec_avg (vector signed short, vector signed short);
-vector unsigned int vec_avg (vector unsigned int, vector unsigned int);
-vector signed int vec_avg (vector signed int, vector signed int);
-
-vector float vec_ceil (vector float);
-
-vector signed int vec_cmpb (vector float, vector float);
-
-vector bool char vec_cmpeq (vector bool char, vector bool char);
-vector bool short vec_cmpeq (vector bool short, vector bool short);
-vector bool int vec_cmpeq (vector bool int, vector bool int);
-vector bool char vec_cmpeq (vector signed char, vector signed char);
-vector bool char vec_cmpeq (vector unsigned char, vector unsigned char);
-vector bool short vec_cmpeq (vector signed short, vector signed short);
-vector bool short vec_cmpeq (vector unsigned short, vector unsigned short);
-vector bool int vec_cmpeq (vector signed int, vector signed int);
-vector bool int vec_cmpeq (vector unsigned int, vector unsigned int);
-vector bool int vec_cmpeq (vector float, vector float);
-
-vector bool int vec_cmpge (vector float, vector float);
-
-vector bool char vec_cmpgt (vector unsigned char, vector unsigned char);
-vector bool char vec_cmpgt (vector signed char, vector signed char);
-vector bool short vec_cmpgt (vector unsigned short, vector unsigned short);
-vector bool short vec_cmpgt (vector signed short, vector signed short);
-vector bool int vec_cmpgt (vector unsigned int, vector unsigned int);
-vector bool int vec_cmpgt (vector signed int, vector signed int);
-vector bool int vec_cmpgt (vector float, vector float);
-
-vector bool int vec_cmple (vector float, vector float);
-
-vector bool char vec_cmplt (vector unsigned char, vector unsigned char);
-vector bool char vec_cmplt (vector signed char, vector signed char);
-vector bool short vec_cmplt (vector unsigned short, vector unsigned short);
-vector bool short vec_cmplt (vector signed short, vector signed short);
-vector bool int vec_cmplt (vector unsigned int, vector unsigned int);
-vector bool int vec_cmplt (vector signed int, vector signed int);
-vector bool int vec_cmplt (vector float, vector float);
-
-vector float vec_cpsgn (vector float, vector float);
-
-vector float vec_ctf (vector unsigned int, const int);
-vector float vec_ctf (vector signed int, const int);
-
-vector signed int vec_cts (vector float, const int);
-
-vector unsigned int vec_ctu (vector float, const int);
-
 void vec_dss (const int);
 
 void vec_dssall (void);
@@ -18712,58 +18481,6 @@ void vec_dstt (const unsigned int *, int, const int);
 void vec_dstt (const int *, int, const int);
 void vec_dstt (const float *, int, const int);
 
-vector float vec_expte (vector float);
-
-vector float vec_floor (vector float);
-
-vector float vec_ld (int, const vector float *);
-vector float vec_ld (int, const float *);
-vector bool int vec_ld (int, const vector bool int *);
-vector signed int vec_ld (int, const vector signed int *);
-vector signed int vec_ld (int, const int *);
-vector unsigned int vec_ld (int, const vector unsigned int *);
-vector unsigned int vec_ld (int, const unsigned int *);
-vector bool short vec_ld (int, const vector bool short *);
-vector pixel vec_ld (int, const vector pixel *);
-vector signed short vec_ld (int, const vector signed short *);
-vector signed short vec_ld (int, const short *);
-vector unsigned short vec_ld (int, const vector unsigned short *);
-vector unsigned short vec_ld (int, const unsigned short *);
-vector bool char vec_ld (int, const vector bool char *);
-vector signed char vec_ld (int, const vector signed char *);
-vector signed char vec_ld (int, const signed char *);
-vector unsigned char vec_ld (int, const vector unsigned char *);
-vector unsigned char vec_ld (int, const unsigned char *);
-
-vector signed char vec_lde (int, const signed char *);
-vector unsigned char vec_lde (int, const unsigned char *);
-vector signed short vec_lde (int, const short *);
-vector unsigned short vec_lde (int, const unsigned short *);
-vector float vec_lde (int, const float *);
-vector signed int vec_lde (int, const int *);
-vector unsigned int vec_lde (int, const unsigned int *);
-
-vector float vec_ldl (int, const vector float *);
-vector float vec_ldl (int, const float *);
-vector bool int vec_ldl (int, const vector bool int *);
-vector signed int vec_ldl (int, const vector signed int *);
-vector signed int vec_ldl (int, const int *);
-vector unsigned int vec_ldl (int, const vector unsigned int *);
-vector unsigned int vec_ldl (int, const unsigned int *);
-vector bool short vec_ldl (int, const vector bool short *);
-vector pixel vec_ldl (int, const vector pixel *);
-vector signed short vec_ldl (int, const vector signed short *);
-vector signed short vec_ldl (int, const short *);
-vector unsigned short vec_ldl (int, const vector unsigned short *);
-vector unsigned short vec_ldl (int, const unsigned short *);
-vector bool char vec_ldl (int, const vector bool char *);
-vector signed char vec_ldl (int, const vector signed char *);
-vector signed char vec_ldl (int, const signed char *);
-vector unsigned char vec_ldl (int, const vector unsigned char *);
-vector unsigned char vec_ldl (int, const unsigned char *);
-
-vector float vec_loge (vector float);
-
 vector signed char vec_lvebx (int, char *);
 vector unsigned char vec_lvebx (int, unsigned char *);
 
@@ -18790,486 +18507,6 @@ vector unsigned char vec_lvsr (int, const unsigned int *);
 vector unsigned char vec_lvsr (int, const int *);
 vector unsigned char vec_lvsr (int, const float *);
 
-vector float vec_madd (vector float, vector float, vector float);
-
-vector signed short vec_madds (vector signed short, vector signed short,
-                               vector signed short);
-
-vector unsigned char vec_max (vector bool char, vector unsigned char);
-vector unsigned char vec_max (vector unsigned char, vector bool char);
-vector unsigned char vec_max (vector unsigned char, vector unsigned char);
-vector signed char vec_max (vector bool char, vector signed char);
-vector signed char vec_max (vector signed char, vector bool char);
-vector signed char vec_max (vector signed char, vector signed char);
-vector unsigned short vec_max (vector bool short, vector unsigned short);
-vector unsigned short vec_max (vector unsigned short, vector bool short);
-vector unsigned short vec_max (vector unsigned short, vector unsigned short);
-vector signed short vec_max (vector bool short, vector signed short);
-vector signed short vec_max (vector signed short, vector bool short);
-vector signed short vec_max (vector signed short, vector signed short);
-vector unsigned int vec_max (vector bool int, vector unsigned int);
-vector unsigned int vec_max (vector unsigned int, vector bool int);
-vector unsigned int vec_max (vector unsigned int, vector unsigned int);
-vector signed int vec_max (vector bool int, vector signed int);
-vector signed int vec_max (vector signed int, vector bool int);
-vector signed int vec_max (vector signed int, vector signed int);
-vector float vec_max (vector float, vector float);
-
-vector bool char vec_mergeh (vector bool char, vector bool char);
-vector signed char vec_mergeh (vector signed char, vector signed char);
-vector unsigned char vec_mergeh (vector unsigned char, vector unsigned char);
-vector bool short vec_mergeh (vector bool short, vector bool short);
-vector pixel vec_mergeh (vector pixel, vector pixel);
-vector signed short vec_mergeh (vector signed short, vector signed short);
-vector unsigned short vec_mergeh (vector unsigned short, vector unsigned short);
-vector float vec_mergeh (vector float, vector float);
-vector bool int vec_mergeh (vector bool int, vector bool int);
-vector signed int vec_mergeh (vector signed int, vector signed int);
-vector unsigned int vec_mergeh (vector unsigned int, vector unsigned int);
-
-vector bool char vec_mergel (vector bool char, vector bool char);
-vector signed char vec_mergel (vector signed char, vector signed char);
-vector unsigned char vec_mergel (vector unsigned char, vector unsigned char);
-vector bool short vec_mergel (vector bool short, vector bool short);
-vector pixel vec_mergel (vector pixel, vector pixel);
-vector signed short vec_mergel (vector signed short, vector signed short);
-vector unsigned short vec_mergel (vector unsigned short, vector unsigned short);
-vector float vec_mergel (vector float, vector float);
-vector bool int vec_mergel (vector bool int, vector bool int);
-vector signed int vec_mergel (vector signed int, vector signed int);
-vector unsigned int vec_mergel (vector unsigned int, vector unsigned int);
-
-vector unsigned short vec_mfvscr (void);
-
-vector unsigned char vec_min (vector bool char, vector unsigned char);
-vector unsigned char vec_min (vector unsigned char, vector bool char);
-vector unsigned char vec_min (vector unsigned char, vector unsigned char);
-vector signed char vec_min (vector bool char, vector signed char);
-vector signed char vec_min (vector signed char, vector bool char);
-vector signed char vec_min (vector signed char, vector signed char);
-vector unsigned short vec_min (vector bool short, vector unsigned short);
-vector unsigned short vec_min (vector unsigned short, vector bool short);
-vector unsigned short vec_min (vector unsigned short, vector unsigned short);
-vector signed short vec_min (vector bool short, vector signed short);
-vector signed short vec_min (vector signed short, vector bool short);
-vector signed short vec_min (vector signed short, vector signed short);
-vector unsigned int vec_min (vector bool int, vector unsigned int);
-vector unsigned int vec_min (vector unsigned int, vector bool int);
-vector unsigned int vec_min (vector unsigned int, vector unsigned int);
-vector signed int vec_min (vector bool int, vector signed int);
-vector signed int vec_min (vector signed int, vector bool int);
-vector signed int vec_min (vector signed int, vector signed int);
-vector float vec_min (vector float, vector float);
-
-vector signed short vec_mladd (vector signed short, vector signed short,
-                               vector signed short);
-vector signed short vec_mladd (vector signed short, vector unsigned short,
-                               vector unsigned short);
-vector signed short vec_mladd (vector unsigned short, vector signed short,
-                               vector signed short);
-vector unsigned short vec_mladd (vector unsigned short, vector unsigned short,
-                                 vector unsigned short);
-
-vector signed short vec_mradds (vector signed short, vector signed short,
-                                vector signed short);
-
-vector unsigned int vec_msum (vector unsigned char, vector unsigned char,
-                              vector unsigned int);
-vector signed int vec_msum (vector signed char, vector unsigned char,
-                            vector signed int);
-vector unsigned int vec_msum (vector unsigned short, vector unsigned short,
-                              vector unsigned int);
-vector signed int vec_msum (vector signed short, vector signed short,
-                            vector signed int);
-
-vector unsigned int vec_msums (vector unsigned short, vector unsigned short,
-                               vector unsigned int);
-vector signed int vec_msums (vector signed short, vector signed short,
-                             vector signed int);
-
-void vec_mtvscr (vector signed int);
-void vec_mtvscr (vector unsigned int);
-void vec_mtvscr (vector bool int);
-void vec_mtvscr (vector signed short);
-void vec_mtvscr (vector unsigned short);
-void vec_mtvscr (vector bool short);
-void vec_mtvscr (vector pixel);
-void vec_mtvscr (vector signed char);
-void vec_mtvscr (vector unsigned char);
-void vec_mtvscr (vector bool char);
-
-vector float vec_mul (vector float, vector float);
-
-vector unsigned short vec_mule (vector unsigned char, vector unsigned char);
-vector signed short vec_mule (vector signed char, vector signed char);
-vector unsigned int vec_mule (vector unsigned short, vector unsigned short);
-vector signed int vec_mule (vector signed short, vector signed short);
-
-vector unsigned short vec_mulo (vector unsigned char, vector unsigned char);
-vector signed short vec_mulo (vector signed char, vector signed char);
-vector unsigned int vec_mulo (vector unsigned short, vector unsigned short);
-vector signed int vec_mulo (vector signed short, vector signed short);
-
-vector signed char vec_nabs (vector signed char);
-vector signed short vec_nabs (vector signed short);
-vector signed int vec_nabs (vector signed int);
-vector float vec_nabs (vector float);
-
-vector float vec_nmsub (vector float, vector float, vector float);
-
-vector float vec_nor (vector float, vector float);
-vector signed int vec_nor (vector signed int, vector signed int);
-vector unsigned int vec_nor (vector unsigned int, vector unsigned int);
-vector bool int vec_nor (vector bool int, vector bool int);
-vector signed short vec_nor (vector signed short, vector signed short);
-vector unsigned short vec_nor (vector unsigned short, vector unsigned short);
-vector bool short vec_nor (vector bool short, vector bool short);
-vector signed char vec_nor (vector signed char, vector signed char);
-vector unsigned char vec_nor (vector unsigned char, vector unsigned char);
-vector bool char vec_nor (vector bool char, vector bool char);
-
-vector float vec_or (vector float, vector float);
-vector float vec_or (vector float, vector bool int);
-vector float vec_or (vector bool int, vector float);
-vector bool int vec_or (vector bool int, vector bool int);
-vector signed int vec_or (vector bool int, vector signed int);
-vector signed int vec_or (vector signed int, vector bool int);
-vector signed int vec_or (vector signed int, vector signed int);
-vector unsigned int vec_or (vector bool int, vector unsigned int);
-vector unsigned int vec_or (vector unsigned int, vector bool int);
-vector unsigned int vec_or (vector unsigned int, vector unsigned int);
-vector bool short vec_or (vector bool short, vector bool short);
-vector signed short vec_or (vector bool short, vector signed short);
-vector signed short vec_or (vector signed short, vector bool short);
-vector signed short vec_or (vector signed short, vector signed short);
-vector unsigned short vec_or (vector bool short, vector unsigned short);
-vector unsigned short vec_or (vector unsigned short, vector bool short);
-vector unsigned short vec_or (vector unsigned short, vector unsigned short);
-vector signed char vec_or (vector bool char, vector signed char);
-vector bool char vec_or (vector bool char, vector bool char);
-vector signed char vec_or (vector signed char, vector bool char);
-vector signed char vec_or (vector signed char, vector signed char);
-vector unsigned char vec_or (vector bool char, vector unsigned char);
-vector unsigned char vec_or (vector unsigned char, vector bool char);
-vector unsigned char vec_or (vector unsigned char, vector unsigned char);
-
-vector signed char vec_pack (vector signed short, vector signed short);
-vector unsigned char vec_pack (vector unsigned short, vector unsigned short);
-vector bool char vec_pack (vector bool short, vector bool short);
-vector signed short vec_pack (vector signed int, vector signed int);
-vector unsigned short vec_pack (vector unsigned int, vector unsigned int);
-vector bool short vec_pack (vector bool int, vector bool int);
-
-vector pixel vec_packpx (vector unsigned int, vector unsigned int);
-
-vector unsigned char vec_packs (vector unsigned short, vector unsigned short);
-vector signed char vec_packs (vector signed short, vector signed short);
-vector unsigned short vec_packs (vector unsigned int, vector unsigned int);
-vector signed short vec_packs (vector signed int, vector signed int);
-
-vector unsigned char vec_packsu (vector unsigned short, vector unsigned short);
-vector unsigned char vec_packsu (vector signed short, vector signed short);
-vector unsigned short vec_packsu (vector unsigned int, vector unsigned int);
-vector unsigned short vec_packsu (vector signed int, vector signed int);
-
-vector float vec_perm (vector float, vector float, vector unsigned char);
-vector signed int vec_perm (vector signed int, vector signed int, vector unsigned char);
-vector unsigned int vec_perm (vector unsigned int, vector unsigned int,
-                              vector unsigned char);
-vector bool int vec_perm (vector bool int, vector bool int, vector unsigned char);
-vector signed short vec_perm (vector signed short, vector signed short,
-                              vector unsigned char);
-vector unsigned short vec_perm (vector unsigned short, vector unsigned short,
-                                vector unsigned char);
-vector bool short vec_perm (vector bool short, vector bool short, vector unsigned char);
-vector pixel vec_perm (vector pixel, vector pixel, vector unsigned char);
-vector signed char vec_perm (vector signed char, vector signed char,
-                             vector unsigned char);
-vector unsigned char vec_perm (vector unsigned char, vector unsigned char,
-                               vector unsigned char);
-vector bool char vec_perm (vector bool char, vector bool char, vector unsigned char);
-
-vector float vec_re (vector float);
-
-vector bool char vec_reve (vector bool char);
-vector signed char vec_reve (vector signed char);
-vector unsigned char vec_reve (vector unsigned char);
-vector bool int vec_reve (vector bool int);
-vector signed int vec_reve (vector signed int);
-vector unsigned int vec_reve (vector unsigned int);
-vector bool short vec_reve (vector bool short);
-vector signed short vec_reve (vector signed short);
-vector unsigned short vec_reve (vector unsigned short);
-
-vector signed char vec_rl (vector signed char, vector unsigned char);
-vector unsigned char vec_rl (vector unsigned char, vector unsigned char);
-vector signed short vec_rl (vector signed short, vector unsigned short);
-vector unsigned short vec_rl (vector unsigned short, vector unsigned short);
-vector signed int vec_rl (vector signed int, vector unsigned int);
-vector unsigned int vec_rl (vector unsigned int, vector unsigned int);
-
-vector float vec_round (vector float);
-
-vector float vec_rsqrt (vector float);
-
-vector float vec_rsqrte (vector float);
-
-vector float vec_sel (vector float, vector float, vector bool int);
-vector float vec_sel (vector float, vector float, vector unsigned int);
-vector signed int vec_sel (vector signed int, vector signed int, vector bool int);
-vector signed int vec_sel (vector signed int, vector signed int, vector unsigned int);
-vector unsigned int vec_sel (vector unsigned int, vector unsigned int, vector bool int);
-vector unsigned int vec_sel (vector unsigned int, vector unsigned int,
-                             vector unsigned int);
-vector bool int vec_sel (vector bool int, vector bool int, vector bool int);
-vector bool int vec_sel (vector bool int, vector bool int, vector unsigned int);
-vector signed short vec_sel (vector signed short, vector signed short,
-                             vector bool short);
-vector signed short vec_sel (vector signed short, vector signed short,
-                             vector unsigned short);
-vector unsigned short vec_sel (vector unsigned short, vector unsigned short,
-                               vector bool short);
-vector unsigned short vec_sel (vector unsigned short, vector unsigned short,
-                               vector unsigned short);
-vector bool short vec_sel (vector bool short, vector bool short, vector bool short);
-vector bool short vec_sel (vector bool short, vector bool short, vector unsigned short);
-vector signed char vec_sel (vector signed char, vector signed char, vector bool char);
-vector signed char vec_sel (vector signed char, vector signed char,
-                            vector unsigned char);
-vector unsigned char vec_sel (vector unsigned char, vector unsigned char,
-                              vector bool char);
-vector unsigned char vec_sel (vector unsigned char, vector unsigned char,
-                              vector unsigned char);
-vector bool char vec_sel (vector bool char, vector bool char, vector bool char);
-vector bool char vec_sel (vector bool char, vector bool char, vector unsigned char);
-
-vector signed char vec_sl (vector signed char, vector unsigned char);
-vector unsigned char vec_sl (vector unsigned char, vector unsigned char);
-vector signed short vec_sl (vector signed short, vector unsigned short);
-vector unsigned short vec_sl (vector unsigned short, vector unsigned short);
-vector signed int vec_sl (vector signed int, vector unsigned int);
-vector unsigned int vec_sl (vector unsigned int, vector unsigned int);
-
-vector float vec_sld (vector float, vector float, const int);
-vector signed int vec_sld (vector signed int, vector signed int, const int);
-vector unsigned int vec_sld (vector unsigned int, vector unsigned int, const int);
-vector bool int vec_sld (vector bool int, vector bool int, const int);
-vector signed short vec_sld (vector signed short, vector signed short, const int);
-vector unsigned short vec_sld (vector unsigned short, vector unsigned short, const int);
-vector bool short vec_sld (vector bool short, vector bool short, const int);
-vector pixel vec_sld (vector pixel, vector pixel, const int);
-vector signed char vec_sld (vector signed char, vector signed char, const int);
-vector unsigned char vec_sld (vector unsigned char, vector unsigned char, const int);
-vector bool char vec_sld (vector bool char, vector bool char, const int);
-
-vector signed int vec_sll (vector signed int, vector unsigned int);
-vector signed int vec_sll (vector signed int, vector unsigned short);
-vector signed int vec_sll (vector signed int, vector unsigned char);
-vector unsigned int vec_sll (vector unsigned int, vector unsigned int);
-vector unsigned int vec_sll (vector unsigned int, vector unsigned short);
-vector unsigned int vec_sll (vector unsigned int, vector unsigned char);
-vector bool int vec_sll (vector bool int, vector unsigned int);
-vector bool int vec_sll (vector bool int, vector unsigned short);
-vector bool int vec_sll (vector bool int, vector unsigned char);
-vector signed short vec_sll (vector signed short, vector unsigned int);
-vector signed short vec_sll (vector signed short, vector unsigned short);
-vector signed short vec_sll (vector signed short, vector unsigned char);
-vector unsigned short vec_sll (vector unsigned short, vector unsigned int);
-vector unsigned short vec_sll (vector unsigned short, vector unsigned short);
-vector unsigned short vec_sll (vector unsigned short, vector unsigned char);
-vector bool short vec_sll (vector bool short, vector unsigned int);
-vector bool short vec_sll (vector bool short, vector unsigned short);
-vector bool short vec_sll (vector bool short, vector unsigned char);
-vector pixel vec_sll (vector pixel, vector unsigned int);
-vector pixel vec_sll (vector pixel, vector unsigned short);
-vector pixel vec_sll (vector pixel, vector unsigned char);
-vector signed char vec_sll (vector signed char, vector unsigned int);
-vector signed char vec_sll (vector signed char, vector unsigned short);
-vector signed char vec_sll (vector signed char, vector unsigned char);
-vector unsigned char vec_sll (vector unsigned char, vector unsigned int);
-vector unsigned char vec_sll (vector unsigned char, vector unsigned short);
-vector unsigned char vec_sll (vector unsigned char, vector unsigned char);
-vector bool char vec_sll (vector bool char, vector unsigned int);
-vector bool char vec_sll (vector bool char, vector unsigned short);
-vector bool char vec_sll (vector bool char, vector unsigned char);
-
-vector float vec_slo (vector float, vector signed char);
-vector float vec_slo (vector float, vector unsigned char);
-vector signed int vec_slo (vector signed int, vector signed char);
-vector signed int vec_slo (vector signed int, vector unsigned char);
-vector unsigned int vec_slo (vector unsigned int, vector signed char);
-vector unsigned int vec_slo (vector unsigned int, vector unsigned char);
-vector signed short vec_slo (vector signed short, vector signed char);
-vector signed short vec_slo (vector signed short, vector unsigned char);
-vector unsigned short vec_slo (vector unsigned short, vector signed char);
-vector unsigned short vec_slo (vector unsigned short, vector unsigned char);
-vector pixel vec_slo (vector pixel, vector signed char);
-vector pixel vec_slo (vector pixel, vector unsigned char);
-vector signed char vec_slo (vector signed char, vector signed char);
-vector signed char vec_slo (vector signed char, vector unsigned char);
-vector unsigned char vec_slo (vector unsigned char, vector signed char);
-vector unsigned char vec_slo (vector unsigned char, vector unsigned char);
-
-vector signed char vec_splat (vector signed char, const int);
-vector unsigned char vec_splat (vector unsigned char, const int);
-vector bool char vec_splat (vector bool char, const int);
-vector signed short vec_splat (vector signed short, const int);
-vector unsigned short vec_splat (vector unsigned short, const int);
-vector bool short vec_splat (vector bool short, const int);
-vector pixel vec_splat (vector pixel, const int);
-vector float vec_splat (vector float, const int);
-vector signed int vec_splat (vector signed int, const int);
-vector unsigned int vec_splat (vector unsigned int, const int);
-vector bool int vec_splat (vector bool int, const int);
-
-vector signed short vec_splat_s16 (const int);
-
-vector signed int vec_splat_s32 (const int);
-
-vector signed char vec_splat_s8 (const int);
-
-vector unsigned short vec_splat_u16 (const int);
-
-vector unsigned int vec_splat_u32 (const int);
-
-vector unsigned char vec_splat_u8 (const int);
-
-vector signed char vec_splats (signed char);
-vector unsigned char vec_splats (unsigned char);
-vector signed short vec_splats (signed short);
-vector unsigned short vec_splats (unsigned short);
-vector signed int vec_splats (signed int);
-vector unsigned int vec_splats (unsigned int);
-vector float vec_splats (float);
-
-vector signed char vec_sr (vector signed char, vector unsigned char);
-vector unsigned char vec_sr (vector unsigned char, vector unsigned char);
-vector signed short vec_sr (vector signed short, vector unsigned short);
-vector unsigned short vec_sr (vector unsigned short, vector unsigned short);
-vector signed int vec_sr (vector signed int, vector unsigned int);
-vector unsigned int vec_sr (vector unsigned int, vector unsigned int);
-
-vector signed char vec_sra (vector signed char, vector unsigned char);
-vector unsigned char vec_sra (vector unsigned char, vector unsigned char);
-vector signed short vec_sra (vector signed short, vector unsigned short);
-vector unsigned short vec_sra (vector unsigned short, vector unsigned short);
-vector signed int vec_sra (vector signed int, vector unsigned int);
-vector unsigned int vec_sra (vector unsigned int, vector unsigned int);
-
-vector signed int vec_srl (vector signed int, vector unsigned int);
-vector signed int vec_srl (vector signed int, vector unsigned short);
-vector signed int vec_srl (vector signed int, vector unsigned char);
-vector unsigned int vec_srl (vector unsigned int, vector unsigned int);
-vector unsigned int vec_srl (vector unsigned int, vector unsigned short);
-vector unsigned int vec_srl (vector unsigned int, vector unsigned char);
-vector bool int vec_srl (vector bool int, vector unsigned int);
-vector bool int vec_srl (vector bool int, vector unsigned short);
-vector bool int vec_srl (vector bool int, vector unsigned char);
-vector signed short vec_srl (vector signed short, vector unsigned int);
-vector signed short vec_srl (vector signed short, vector unsigned short);
-vector signed short vec_srl (vector signed short, vector unsigned char);
-vector unsigned short vec_srl (vector unsigned short, vector unsigned int);
-vector unsigned short vec_srl (vector unsigned short, vector unsigned short);
-vector unsigned short vec_srl (vector unsigned short, vector unsigned char);
-vector bool short vec_srl (vector bool short, vector unsigned int);
-vector bool short vec_srl (vector bool short, vector unsigned short);
-vector bool short vec_srl (vector bool short, vector unsigned char);
-vector pixel vec_srl (vector pixel, vector unsigned int);
-vector pixel vec_srl (vector pixel, vector unsigned short);
-vector pixel vec_srl (vector pixel, vector unsigned char);
-vector signed char vec_srl (vector signed char, vector unsigned int);
-vector signed char vec_srl (vector signed char, vector unsigned short);
-vector signed char vec_srl (vector signed char, vector unsigned char);
-vector unsigned char vec_srl (vector unsigned char, vector unsigned int);
-vector unsigned char vec_srl (vector unsigned char, vector unsigned short);
-vector unsigned char vec_srl (vector unsigned char, vector unsigned char);
-vector bool char vec_srl (vector bool char, vector unsigned int);
-vector bool char vec_srl (vector bool char, vector unsigned short);
-vector bool char vec_srl (vector bool char, vector unsigned char);
-
-vector float vec_sro (vector float, vector signed char);
-vector float vec_sro (vector float, vector unsigned char);
-vector signed int vec_sro (vector signed int, vector signed char);
-vector signed int vec_sro (vector signed int, vector unsigned char);
-vector unsigned int vec_sro (vector unsigned int, vector signed char);
-vector unsigned int vec_sro (vector unsigned int, vector unsigned char);
-vector signed short vec_sro (vector signed short, vector signed char);
-vector signed short vec_sro (vector signed short, vector unsigned char);
-vector unsigned short vec_sro (vector unsigned short, vector signed char);
-vector unsigned short vec_sro (vector unsigned short, vector unsigned char);
-vector pixel vec_sro (vector pixel, vector signed char);
-vector pixel vec_sro (vector pixel, vector unsigned char);
-vector signed char vec_sro (vector signed char, vector signed char);
-vector signed char vec_sro (vector signed char, vector unsigned char);
-vector unsigned char vec_sro (vector unsigned char, vector signed char);
-vector unsigned char vec_sro (vector unsigned char, vector unsigned char);
-
-void vec_st (vector float, int, vector float *);
-void vec_st (vector float, int, float *);
-void vec_st (vector signed int, int, vector signed int *);
-void vec_st (vector signed int, int, int *);
-void vec_st (vector unsigned int, int, vector unsigned int *);
-void vec_st (vector unsigned int, int, unsigned int *);
-void vec_st (vector bool int, int, vector bool int *);
-void vec_st (vector bool int, int, unsigned int *);
-void vec_st (vector bool int, int, int *);
-void vec_st (vector signed short, int, vector signed short *);
-void vec_st (vector signed short, int, short *);
-void vec_st (vector unsigned short, int, vector unsigned short *);
-void vec_st (vector unsigned short, int, unsigned short *);
-void vec_st (vector bool short, int, vector bool short *);
-void vec_st (vector bool short, int, unsigned short *);
-void vec_st (vector pixel, int, vector pixel *);
-void vec_st (vector bool short, int, short *);
-void vec_st (vector signed char, int, vector signed char *);
-void vec_st (vector signed char, int, signed char *);
-void vec_st (vector unsigned char, int, vector unsigned char *);
-void vec_st (vector unsigned char, int, unsigned char *);
-void vec_st (vector bool char, int, vector bool char *);
-void vec_st (vector bool char, int, unsigned char *);
-void vec_st (vector bool char, int, signed char *);
-
-void vec_ste (vector signed char, int, signed char *);
-void vec_ste (vector unsigned char, int, unsigned char *);
-void vec_ste (vector bool char, int, signed char *);
-void vec_ste (vector bool char, int, unsigned char *);
-void vec_ste (vector signed short, int, short *);
-void vec_ste (vector unsigned short, int, unsigned short *);
-void vec_ste (vector bool short, int, short *);
-void vec_ste (vector bool short, int, unsigned short *);
-void vec_ste (vector pixel, int, short *);
-void vec_ste (vector pixel, int, unsigned short *);
-void vec_ste (vector float, int, float *);
-void vec_ste (vector signed int, int, int *);
-void vec_ste (vector unsigned int, int, unsigned int *);
-void vec_ste (vector bool int, int, int *);
-void vec_ste (vector bool int, int, unsigned int *);
-
-void vec_stl (vector float, int, vector float *);
-void vec_stl (vector float, int, float *);
-void vec_stl (vector signed int, int, vector signed int *);
-void vec_stl (vector signed int, int, int *);
-void vec_stl (vector unsigned int, int, vector unsigned int *);
-void vec_stl (vector unsigned int, int, unsigned int *);
-void vec_stl (vector bool int, int, vector bool int *);
-void vec_stl (vector bool int, int, unsigned int *);
-void vec_stl (vector bool int, int, int *);
-void vec_stl (vector signed short, int, vector signed short *);
-void vec_stl (vector signed short, int, short *);
-void vec_stl (vector unsigned short, int, vector unsigned short *);
-void vec_stl (vector unsigned short, int, unsigned short *);
-void vec_stl (vector bool short, int, vector bool short *);
-void vec_stl (vector bool short, int, unsigned short *);
-void vec_stl (vector bool short, int, short *);
-void vec_stl (vector pixel, int, vector pixel *);
-void vec_stl (vector signed char, int, vector signed char *);
-void vec_stl (vector signed char, int, signed char *);
-void vec_stl (vector unsigned char, int, vector unsigned char *);
-void vec_stl (vector unsigned char, int, unsigned char *);
-void vec_stl (vector bool char, int, vector bool char *);
-void vec_stl (vector bool char, int, unsigned char *);
-void vec_stl (vector bool char, int, signed char *);
-
 void vec_stvebx (vector signed char, int, signed char *);
 void vec_stvebx (vector unsigned char, int, unsigned char *);
 void vec_stvebx (vector bool char, int, signed char *);
@@ -19285,80 +18522,6 @@ void vec_stvewx (vector signed int, int, int *);
 void vec_stvewx (vector unsigned int, int, unsigned int *);
 void vec_stvewx (vector bool int, int, int *);
 void vec_stvewx (vector bool int, int, unsigned int *);
-
-vector signed char vec_sub (vector bool char, vector signed char);
-vector signed char vec_sub (vector signed char, vector bool char);
-vector signed char vec_sub (vector signed char, vector signed char);
-vector unsigned char vec_sub (vector bool char, vector unsigned char);
-vector unsigned char vec_sub (vector unsigned char, vector bool char);
-vector unsigned char vec_sub (vector unsigned char, vector unsigned char);
-vector signed short vec_sub (vector bool short, vector signed short);
-vector signed short vec_sub (vector signed short, vector bool short);
-vector signed short vec_sub (vector signed short, vector signed short);
-vector unsigned short vec_sub (vector bool short, vector unsigned short);
-vector unsigned short vec_sub (vector unsigned short, vector bool short);
-vector unsigned short vec_sub (vector unsigned short, vector unsigned short);
-vector signed int vec_sub (vector bool int, vector signed int);
-vector signed int vec_sub (vector signed int, vector bool int);
-vector signed int vec_sub (vector signed int, vector signed int);
-vector unsigned int vec_sub (vector bool int, vector unsigned int);
-vector unsigned int vec_sub (vector unsigned int, vector bool int);
-vector unsigned int vec_sub (vector unsigned int, vector unsigned int);
-vector float vec_sub (vector float, vector float);
-
-vector signed int vec_subc (vector signed int, vector signed int);
-vector unsigned int vec_subc (vector unsigned int, vector unsigned int);
-
-vector signed int vec_sube (vector signed int, vector signed int,
-                            vector signed int);
-vector unsigned int vec_sube (vector unsigned int, vector unsigned int,
-                              vector unsigned int);
-
-vector signed int vec_subec (vector signed int, vector signed int,
-                             vector signed int);
-vector unsigned int vec_subec (vector unsigned int, vector unsigned int,
-                               vector unsigned int);
-
-vector unsigned char vec_subs (vector bool char, vector unsigned char);
-vector unsigned char vec_subs (vector unsigned char, vector bool char);
-vector unsigned char vec_subs (vector unsigned char, vector unsigned char);
-vector signed char vec_subs (vector bool char, vector signed char);
-vector signed char vec_subs (vector signed char, vector bool char);
-vector signed char vec_subs (vector signed char, vector signed char);
-vector unsigned short vec_subs (vector bool short, vector unsigned short);
-vector unsigned short vec_subs (vector unsigned short, vector bool short);
-vector unsigned short vec_subs (vector unsigned short, vector unsigned short);
-vector signed short vec_subs (vector bool short, vector signed short);
-vector signed short vec_subs (vector signed short, vector bool short);
-vector signed short vec_subs (vector signed short, vector signed short);
-vector unsigned int vec_subs (vector bool int, vector unsigned int);
-vector unsigned int vec_subs (vector unsigned int, vector bool int);
-vector unsigned int vec_subs (vector unsigned int, vector unsigned int);
-vector signed int vec_subs (vector bool int, vector signed int);
-vector signed int vec_subs (vector signed int, vector bool int);
-vector signed int vec_subs (vector signed int, vector signed int);
-
-vector signed int vec_sum2s (vector signed int, vector signed int);
-
-vector unsigned int vec_sum4s (vector unsigned char, vector unsigned int);
-vector signed int vec_sum4s (vector signed char, vector signed int);
-vector signed int vec_sum4s (vector signed short, vector signed int);
-
-vector signed int vec_sums (vector signed int, vector signed int);
-
-vector float vec_trunc (vector float);
-
-vector signed short vec_unpackh (vector signed char);
-vector bool short vec_unpackh (vector bool char);
-vector signed int vec_unpackh (vector signed short);
-vector bool int vec_unpackh (vector bool short);
-vector unsigned int vec_unpackh (vector pixel);
-
-vector signed short vec_unpackl (vector signed char);
-vector bool short vec_unpackl (vector bool char);
-vector unsigned int vec_unpackl (vector pixel);
-vector signed int vec_unpackl (vector signed short);
-vector bool int vec_unpackl (vector bool short);
 
 vector float vec_vaddfp (vector float, vector float);
 
@@ -19700,31 +18863,6 @@ vector signed short vec_vupklsb (vector signed char);
 
 vector bool int vec_vupklsh (vector bool short);
 vector signed int vec_vupklsh (vector signed short);
-
-vector float vec_xor (vector float, vector float);
-vector float vec_xor (vector float, vector bool int);
-vector float vec_xor (vector bool int, vector float);
-vector bool int vec_xor (vector bool int, vector bool int);
-vector signed int vec_xor (vector bool int, vector signed int);
-vector signed int vec_xor (vector signed int, vector bool int);
-vector signed int vec_xor (vector signed int, vector signed int);
-vector unsigned int vec_xor (vector bool int, vector unsigned int);
-vector unsigned int vec_xor (vector unsigned int, vector bool int);
-vector unsigned int vec_xor (vector unsigned int, vector unsigned int);
-vector bool short vec_xor (vector bool short, vector bool short);
-vector signed short vec_xor (vector bool short, vector signed short);
-vector signed short vec_xor (vector signed short, vector bool short);
-vector signed short vec_xor (vector signed short, vector signed short);
-vector unsigned short vec_xor (vector bool short, vector unsigned short);
-vector unsigned short vec_xor (vector unsigned short, vector bool short);
-vector unsigned short vec_xor (vector unsigned short, vector unsigned short);
-vector signed char vec_xor (vector bool char, vector signed char);
-vector bool char vec_xor (vector bool char, vector bool char);
-vector signed char vec_xor (vector signed char, vector bool char);
-vector signed char vec_xor (vector signed char, vector signed char);
-vector unsigned char vec_xor (vector bool char, vector unsigned char);
-vector unsigned char vec_xor (vector unsigned char, vector bool char);
-vector unsigned char vec_xor (vector unsigned char, vector unsigned char);
 @end smallexample
 
 @node PowerPC AltiVec Built-in Functions Available on ISA 2.06
@@ -19748,17 +18886,9 @@ vector double
 
 The long long types are only implemented for 64-bit code generation.
 
+Only functions excluded from the PVIPR are listed here.
+
 @smallexample
-
-vector bool long long vec_and (vector bool long long int, vector bool long long);
-
-vector double vec_ctf (vector unsigned long, const int);
-vector double vec_ctf (vector signed long, const int);
-
-vector signed long vec_cts (vector double, const int);
-
-vector unsigned long vec_ctu (vector double, const int);
-
 void vec_dst (const unsigned long *, int, const int);
 void vec_dst (const long *, int, const int);
 
@@ -19774,306 +18904,8 @@ vector unsigned char vec_lvsl (int, const long *);
 vector unsigned char vec_lvsr (int, const unsigned long *);
 vector unsigned char vec_lvsr (int, const long *);
 
-vector double vec_mul (vector double, vector double);
-vector long vec_mul (vector long, vector long);
-vector unsigned long vec_mul (vector unsigned long, vector unsigned long);
-
-vector unsigned long long vec_mule (vector unsigned int, vector unsigned int);
-vector signed long long vec_mule (vector signed int, vector signed int);
-
-vector unsigned long long vec_mulo (vector unsigned int, vector unsigned int);
-vector signed long long vec_mulo (vector signed int, vector signed int);
-
-vector double vec_nabs (vector double);
-
-vector bool long long vec_reve (vector bool long long);
-vector signed long long vec_reve (vector signed long long);
-vector unsigned long long vec_reve (vector unsigned long long);
-vector double vec_sld (vector double, vector double, const int);
-
-vector bool long long int vec_sld (vector bool long long int,
-                                   vector bool long long int, const int);
-vector long long int vec_sld (vector long long int, vector  long long int, const int);
-vector unsigned long long int vec_sld (vector unsigned long long int,
-                                       vector unsigned long long int, const int);
-
-vector long long int vec_sll (vector long long int, vector unsigned char);
-vector unsigned long long int vec_sll (vector unsigned long long int,
-                                       vector unsigned char);
-
-vector signed long long vec_slo (vector signed long long, vector signed char);
-vector signed long long vec_slo (vector signed long long, vector unsigned char);
-vector unsigned long long vec_slo (vector unsigned long long, vector signed char);
-vector unsigned long long vec_slo (vector unsigned long long, vector unsigned char);
-
-vector signed long vec_splat (vector signed long, const int);
-vector unsigned long vec_splat (vector unsigned long, const int);
-
-vector long long int vec_srl (vector long long int, vector unsigned char);
-vector unsigned long long int vec_srl (vector unsigned long long int,
-                                       vector unsigned char);
-
-vector long long int vec_sro (vector long long int, vector char);
-vector long long int vec_sro (vector long long int, vector unsigned char);
-vector unsigned long long int vec_sro (vector unsigned long long int, vector char);
-vector unsigned long long int vec_sro (vector unsigned long long int,
-                                       vector unsigned char);
-
-vector signed __int128 vec_subc (vector signed __int128, vector signed __int128);
-vector unsigned __int128 vec_subc (vector unsigned __int128, vector unsigned __int128);
-
-vector signed __int128 vec_sube (vector signed __int128, vector signed __int128,
-                                 vector signed __int128);
-vector unsigned __int128 vec_sube (vector unsigned __int128, vector unsigned __int128,
-                                   vector unsigned __int128);
-
-vector signed __int128 vec_subec (vector signed __int128, vector signed __int128,
-                                  vector signed __int128);
-vector unsigned __int128 vec_subec (vector unsigned __int128, vector unsigned __int128,
-                                    vector unsigned __int128);
-
-vector double vec_unpackh (vector float);
-
-vector double vec_unpackl (vector float);
-
-vector double vec_doublee (vector float);
-vector double vec_doublee (vector signed int);
-vector double vec_doublee (vector unsigned int);
-
-vector double vec_doubleo (vector float);
-vector double vec_doubleo (vector signed int);
-vector double vec_doubleo (vector unsigned int);
-
-vector double vec_doubleh (vector float);
-vector double vec_doubleh (vector signed int);
-vector double vec_doubleh (vector unsigned int);
-
-vector double vec_doublel (vector float);
-vector double vec_doublel (vector signed int);
-vector double vec_doublel (vector unsigned int);
-
-vector float vec_float (vector signed int);
-vector float vec_float (vector unsigned int);
-
-vector float vec_float2 (vector signed long long, vector signed long long);
-vector float vec_float2 (vector unsigned long long, vector signed long long);
-
-vector float vec_floate (vector double);
-vector float vec_floate (vector signed long long);
-vector float vec_floate (vector unsigned long long);
-
-vector float vec_floato (vector double);
-vector float vec_floato (vector signed long long);
-vector float vec_floato (vector unsigned long long);
-
-vector signed long long vec_signed (vector double);
-vector signed int vec_signed (vector float);
-
-vector signed int vec_signede (vector double);
-
-vector signed int vec_signedo (vector double);
-
-vector signed char vec_sldw (vector signed char, vector signed char, const int);
-vector unsigned char vec_sldw (vector unsigned char, vector unsigned char, const int);
-vector signed short vec_sldw (vector signed short, vector signed short, const int);
-vector unsigned short vec_sldw (vector unsigned short,
-                                vector unsigned short, const int);
-vector signed int vec_sldw (vector signed int, vector signed int, const int);
-vector unsigned int vec_sldw (vector unsigned int, vector unsigned int, const int);
-vector signed long long vec_sldw (vector signed long long,
-                                  vector signed long long, const int);
-vector unsigned long long vec_sldw (vector unsigned long long,
-                                    vector unsigned long long, const int);
-
-vector signed long long vec_unsigned (vector double);
-vector signed int vec_unsigned (vector float);
-
-vector signed int vec_unsignede (vector double);
-
-vector signed int vec_unsignedo (vector double);
-
-vector double vec_abs (vector double);
-vector double vec_add (vector double, vector double);
-vector double vec_and (vector double, vector double);
-vector double vec_and (vector double, vector bool long);
-vector double vec_and (vector bool long, vector double);
-vector long vec_and (vector long, vector long);
-vector long vec_and (vector long, vector bool long);
-vector long vec_and (vector bool long, vector long);
-vector unsigned long vec_and (vector unsigned long, vector unsigned long);
-vector unsigned long vec_and (vector unsigned long, vector bool long);
-vector unsigned long vec_and (vector bool long, vector unsigned long);
-vector double vec_andc (vector double, vector double);
-vector double vec_andc (vector double, vector bool long);
-vector double vec_andc (vector bool long, vector double);
-vector long vec_andc (vector long, vector long);
-vector long vec_andc (vector long, vector bool long);
-vector long vec_andc (vector bool long, vector long);
-vector unsigned long vec_andc (vector unsigned long, vector unsigned long);
-vector unsigned long vec_andc (vector unsigned long, vector bool long);
-vector unsigned long vec_andc (vector bool long, vector unsigned long);
-vector double vec_ceil (vector double);
-vector bool long vec_cmpeq (vector double, vector double);
-vector bool long vec_cmpge (vector double, vector double);
-vector bool long vec_cmpgt (vector double, vector double);
-vector bool long vec_cmple (vector double, vector double);
-vector bool long vec_cmplt (vector double, vector double);
-vector double vec_cpsgn (vector double, vector double);
-vector float vec_div (vector float, vector float);
-vector double vec_div (vector double, vector double);
-vector long vec_div (vector long, vector long);
-vector unsigned long vec_div (vector unsigned long, vector unsigned long);
-vector double vec_floor (vector double);
-vector signed long long vec_ld (int, const vector signed long long *);
-vector signed long long vec_ld (int, const signed long long *);
-vector unsigned long long vec_ld (int, const vector unsigned long long *);
-vector unsigned long long vec_ld (int, const unsigned long long *);
-vector __int128 vec_ld (int, const vector __int128 *);
-vector unsigned __int128 vec_ld (int, const vector unsigned __int128 *);
-vector __int128 vec_ld (int, const __int128 *);
-vector unsigned __int128 vec_ld (int, const unsigned __int128 *);
-vector double vec_ld (int, const vector double *);
-vector double vec_ld (int, const double *);
-vector double vec_ldl (int, const vector double *);
-vector double vec_ldl (int, const double *);
 vector unsigned char vec_lvsl (int, const double *);
 vector unsigned char vec_lvsr (int, const double *);
-vector double vec_madd (vector double, vector double, vector double);
-vector double vec_max (vector double, vector double);
-vector signed long vec_mergeh (vector signed long, vector signed long);
-vector signed long vec_mergeh (vector signed long, vector bool long);
-vector signed long vec_mergeh (vector bool long, vector signed long);
-vector unsigned long vec_mergeh (vector unsigned long, vector unsigned long);
-vector unsigned long vec_mergeh (vector unsigned long, vector bool long);
-vector unsigned long vec_mergeh (vector bool long, vector unsigned long);
-vector signed long vec_mergel (vector signed long, vector signed long);
-vector signed long vec_mergel (vector signed long, vector bool long);
-vector signed long vec_mergel (vector bool long, vector signed long);
-vector unsigned long vec_mergel (vector unsigned long, vector unsigned long);
-vector unsigned long vec_mergel (vector unsigned long, vector bool long);
-vector unsigned long vec_mergel (vector bool long, vector unsigned long);
-vector double vec_min (vector double, vector double);
-vector float vec_msub (vector float, vector float, vector float);
-vector double vec_msub (vector double, vector double, vector double);
-vector float vec_nearbyint (vector float);
-vector double vec_nearbyint (vector double);
-vector float vec_nmadd (vector float, vector float, vector float);
-vector double vec_nmadd (vector double, vector double, vector double);
-vector double vec_nmsub (vector double, vector double, vector double);
-vector double vec_nor (vector double, vector double);
-vector long vec_nor (vector long, vector long);
-vector long vec_nor (vector long, vector bool long);
-vector long vec_nor (vector bool long, vector long);
-vector unsigned long vec_nor (vector unsigned long, vector unsigned long);
-vector unsigned long vec_nor (vector unsigned long, vector bool long);
-vector unsigned long vec_nor (vector bool long, vector unsigned long);
-vector double vec_or (vector double, vector double);
-vector double vec_or (vector double, vector bool long);
-vector double vec_or (vector bool long, vector double);
-vector long vec_or (vector long, vector long);
-vector long vec_or (vector long, vector bool long);
-vector long vec_or (vector bool long, vector long);
-vector unsigned long vec_or (vector unsigned long, vector unsigned long);
-vector unsigned long vec_or (vector unsigned long, vector bool long);
-vector unsigned long vec_or (vector bool long, vector unsigned long);
-vector double vec_perm (vector double, vector double, vector unsigned char);
-vector long vec_perm (vector long, vector long, vector unsigned char);
-vector unsigned long vec_perm (vector unsigned long, vector unsigned long,
-                               vector unsigned char);
-vector bool char vec_permxor (vector bool char, vector bool char,
-                              vector bool char);
-vector unsigned char vec_permxor (vector signed char, vector signed char,
-                                  vector signed char);
-vector unsigned char vec_permxor (vector unsigned char, vector unsigned char,
-                                  vector unsigned char);
-vector double vec_rint (vector double);
-vector double vec_recip (vector double, vector double);
-vector double vec_rsqrt (vector double);
-vector double vec_rsqrte (vector double);
-vector double vec_sel (vector double, vector double, vector bool long);
-vector double vec_sel (vector double, vector double, vector unsigned long);
-vector long vec_sel (vector long, vector long, vector long);
-vector long vec_sel (vector long, vector long, vector unsigned long);
-vector long vec_sel (vector long, vector long, vector bool long);
-vector unsigned long vec_sel (vector unsigned long, vector unsigned long,
-                              vector long);
-vector unsigned long vec_sel (vector unsigned long, vector unsigned long,
-                              vector unsigned long);
-vector unsigned long vec_sel (vector unsigned long, vector unsigned long,
-                              vector bool long);
-vector double vec_splats (double);
-vector signed long vec_splats (signed long);
-vector unsigned long vec_splats (unsigned long);
-vector float vec_sqrt (vector float);
-vector double vec_sqrt (vector double);
-void vec_st (vector signed long long, int, vector signed long long *);
-void vec_st (vector signed long long, int, signed long long *);
-void vec_st (vector unsigned long long, int, vector unsigned long long *);
-void vec_st (vector unsigned long long, int, unsigned long long *);
-void vec_st (vector bool long long, int, vector bool long long *);
-void vec_st (vector bool long long, int, signed long long *);
-void vec_st (vector bool long long, int, unsigned long long *);
-void vec_st (vector double, int, vector double *);
-void vec_st (vector double, int, double *);
-vector double vec_sub (vector double, vector double);
-vector double vec_trunc (vector double);
-vector double vec_xl (int, vector double *);
-vector double vec_xl (int, double *);
-vector long long vec_xl (int, vector long long *);
-vector long long vec_xl (int, long long *);
-vector unsigned long long vec_xl (int, vector unsigned long long *);
-vector unsigned long long vec_xl (int, unsigned long long *);
-vector float vec_xl (int, vector float *);
-vector float vec_xl (int, float *);
-vector int vec_xl (int, vector int *);
-vector int vec_xl (int, int *);
-vector unsigned int vec_xl (int, vector unsigned int *);
-vector unsigned int vec_xl (int, unsigned int *);
-vector double vec_xor (vector double, vector double);
-vector double vec_xor (vector double, vector bool long);
-vector double vec_xor (vector bool long, vector double);
-vector long vec_xor (vector long, vector long);
-vector long vec_xor (vector long, vector bool long);
-vector long vec_xor (vector bool long, vector long);
-vector unsigned long vec_xor (vector unsigned long, vector unsigned long);
-vector unsigned long vec_xor (vector unsigned long, vector bool long);
-vector unsigned long vec_xor (vector bool long, vector unsigned long);
-void vec_xst (vector double, int, vector double *);
-void vec_xst (vector double, int, double *);
-void vec_xst (vector long long, int, vector long long *);
-void vec_xst (vector long long, int, long long *);
-void vec_xst (vector unsigned long long, int, vector unsigned long long *);
-void vec_xst (vector unsigned long long, int, unsigned long long *);
-void vec_xst (vector float, int, vector float *);
-void vec_xst (vector float, int, float *);
-void vec_xst (vector int, int, vector int *);
-void vec_xst (vector int, int, int *);
-void vec_xst (vector unsigned int, int, vector unsigned int *);
-void vec_xst (vector unsigned int, int, unsigned int *);
-int vec_all_eq (vector double, vector double);
-int vec_all_ge (vector double, vector double);
-int vec_all_gt (vector double, vector double);
-int vec_all_le (vector double, vector double);
-int vec_all_lt (vector double, vector double);
-int vec_all_nan (vector double);
-int vec_all_ne (vector double, vector double);
-int vec_all_nge (vector double, vector double);
-int vec_all_ngt (vector double, vector double);
-int vec_all_nle (vector double, vector double);
-int vec_all_nlt (vector double, vector double);
-int vec_all_numeric (vector double);
-int vec_any_eq (vector double, vector double);
-int vec_any_ge (vector double, vector double);
-int vec_any_gt (vector double, vector double);
-int vec_any_le (vector double, vector double);
-int vec_any_lt (vector double, vector double);
-int vec_any_nan (vector double);
-int vec_any_ne (vector double, vector double);
-int vec_any_nge (vector double, vector double);
-int vec_any_ngt (vector double, vector double);
-int vec_any_nle (vector double, vector double);
-int vec_any_nlt (vector double, vector double);
-int vec_any_numeric (vector double);
 
 vector double vec_vsx_ld (int, const vector double *);
 vector double vec_vsx_ld (int, const double *);
@@ -20174,197 +19006,9 @@ can use @var{vector long} instead of @var{vector long long},
 @var{vector bool long} instead of @var{vector bool long long}, and
 @var{vector unsigned long} instead of @var{vector unsigned long long}.
 
+Only functions excluded from the PVIPR are listed here.
+
 @smallexample
-vector signed char vec_neg (vector signed char);
-vector signed short vec_neg (vector signed short);
-vector signed int vec_neg (vector signed int);
-vector signed long long vec_neg (vector signed long long);
-vector float  char vec_neg (vector float);
-vector double vec_neg (vector double);
-
-vector signed int vec_signed2 (vector double, vector double);
-
-vector signed int vec_unsigned2 (vector double, vector double);
-
-vector long long vec_abs (vector long long);
-
-vector long long vec_add (vector long long, vector long long);
-vector unsigned long long vec_add (vector unsigned long long,
-                                   vector unsigned long long);
-
-int vec_all_eq (vector long long, vector long long);
-int vec_all_eq (vector unsigned long long, vector unsigned long long);
-int vec_all_ge (vector long long, vector long long);
-int vec_all_ge (vector unsigned long long, vector unsigned long long);
-int vec_all_gt (vector long long, vector long long);
-int vec_all_gt (vector unsigned long long, vector unsigned long long);
-int vec_all_le (vector long long, vector long long);
-int vec_all_le (vector unsigned long long, vector unsigned long long);
-int vec_all_lt (vector long long, vector long long);
-int vec_all_lt (vector unsigned long long, vector unsigned long long);
-int vec_all_ne (vector long long, vector long long);
-int vec_all_ne (vector unsigned long long, vector unsigned long long);
-
-int vec_any_eq (vector long long, vector long long);
-int vec_any_eq (vector unsigned long long, vector unsigned long long);
-int vec_any_ge (vector long long, vector long long);
-int vec_any_ge (vector unsigned long long, vector unsigned long long);
-int vec_any_gt (vector long long, vector long long);
-int vec_any_gt (vector unsigned long long, vector unsigned long long);
-int vec_any_le (vector long long, vector long long);
-int vec_any_le (vector unsigned long long, vector unsigned long long);
-int vec_any_lt (vector long long, vector long long);
-int vec_any_lt (vector unsigned long long, vector unsigned long long);
-int vec_any_ne (vector long long, vector long long);
-int vec_any_ne (vector unsigned long long, vector unsigned long long);
-
-vector bool long long vec_cmpeq (vector bool long long, vector bool long long);
-
-vector long long vec_eqv (vector long long, vector long long);
-vector long long vec_eqv (vector bool long long, vector long long);
-vector long long vec_eqv (vector long long, vector bool long long);
-vector unsigned long long vec_eqv (vector unsigned long long, vector unsigned long long);
-vector unsigned long long vec_eqv (vector bool long long, vector unsigned long long);
-vector unsigned long long vec_eqv (vector unsigned long long,
-                                   vector bool long long);
-vector int vec_eqv (vector int, vector int);
-vector int vec_eqv (vector bool int, vector int);
-vector int vec_eqv (vector int, vector bool int);
-vector unsigned int vec_eqv (vector unsigned int, vector unsigned int);
-vector unsigned int vec_eqv (vector bool unsigned int, vector unsigned int);
-vector unsigned int vec_eqv (vector unsigned int, vector bool unsigned int);
-vector short vec_eqv (vector short, vector short);
-vector short vec_eqv (vector bool short, vector short);
-vector short vec_eqv (vector short, vector bool short);
-vector unsigned short vec_eqv (vector unsigned short, vector unsigned short);
-vector unsigned short vec_eqv (vector bool unsigned short, vector unsigned short);
-vector unsigned short vec_eqv (vector unsigned short, vector bool unsigned short);
-vector signed char vec_eqv (vector signed char, vector signed char);
-vector signed char vec_eqv (vector bool signed char, vector signed char);
-vector signed char vec_eqv (vector signed char, vector bool signed char);
-vector unsigned char vec_eqv (vector unsigned char, vector unsigned char);
-vector unsigned char vec_eqv (vector bool unsigned char, vector unsigned char);
-vector unsigned char vec_eqv (vector unsigned char, vector bool unsigned char);
-
-vector long long vec_max (vector long long, vector long long);
-vector unsigned long long vec_max (vector unsigned long long,
-                                   vector unsigned long long);
-
-vector signed int vec_mergee (vector signed int, vector signed int);
-vector unsigned int vec_mergee (vector unsigned int, vector unsigned int);
-vector bool int vec_mergee (vector bool int, vector bool int);
-
-vector signed int vec_mergeo (vector signed int, vector signed int);
-vector unsigned int vec_mergeo (vector unsigned int, vector unsigned int);
-vector bool int vec_mergeo (vector bool int, vector bool int);
-
-vector long long vec_min (vector long long, vector long long);
-vector unsigned long long vec_min (vector unsigned long long,
-                                   vector unsigned long long);
-
-vector signed long long vec_nabs (vector signed long long);
-
-vector long long vec_nand (vector long long, vector long long);
-vector long long vec_nand (vector bool long long, vector long long);
-vector long long vec_nand (vector long long, vector bool long long);
-vector unsigned long long vec_nand (vector unsigned long long,
-                                    vector unsigned long long);
-vector unsigned long long vec_nand (vector bool long long, vector unsigned long long);
-vector unsigned long long vec_nand (vector unsigned long long, vector bool long long);
-vector int vec_nand (vector int, vector int);
-vector int vec_nand (vector bool int, vector int);
-vector int vec_nand (vector int, vector bool int);
-vector unsigned int vec_nand (vector unsigned int, vector unsigned int);
-vector unsigned int vec_nand (vector bool unsigned int, vector unsigned int);
-vector unsigned int vec_nand (vector unsigned int, vector bool unsigned int);
-vector short vec_nand (vector short, vector short);
-vector short vec_nand (vector bool short, vector short);
-vector short vec_nand (vector short, vector bool short);
-vector unsigned short vec_nand (vector unsigned short, vector unsigned short);
-vector unsigned short vec_nand (vector bool unsigned short, vector unsigned short);
-vector unsigned short vec_nand (vector unsigned short, vector bool unsigned short);
-vector signed char vec_nand (vector signed char, vector signed char);
-vector signed char vec_nand (vector bool signed char, vector signed char);
-vector signed char vec_nand (vector signed char, vector bool signed char);
-vector unsigned char vec_nand (vector unsigned char, vector unsigned char);
-vector unsigned char vec_nand (vector bool unsigned char, vector unsigned char);
-vector unsigned char vec_nand (vector unsigned char, vector bool unsigned char);
-
-vector long long vec_orc (vector long long, vector long long);
-vector long long vec_orc (vector bool long long, vector long long);
-vector long long vec_orc (vector long long, vector bool long long);
-vector unsigned long long vec_orc (vector unsigned long long,
-                                   vector unsigned long long);
-vector unsigned long long vec_orc (vector bool long long, vector unsigned long long);
-vector unsigned long long vec_orc (vector unsigned long long, vector bool long long);
-vector int vec_orc (vector int, vector int);
-vector int vec_orc (vector bool int, vector int);
-vector int vec_orc (vector int, vector bool int);
-vector unsigned int vec_orc (vector unsigned int, vector unsigned int);
-vector unsigned int vec_orc (vector bool unsigned int, vector unsigned int);
-vector unsigned int vec_orc (vector unsigned int, vector bool unsigned int);
-vector short vec_orc (vector short, vector short);
-vector short vec_orc (vector bool short, vector short);
-vector short vec_orc (vector short, vector bool short);
-vector unsigned short vec_orc (vector unsigned short, vector unsigned short);
-vector unsigned short vec_orc (vector bool unsigned short, vector unsigned short);
-vector unsigned short vec_orc (vector unsigned short, vector bool unsigned short);
-vector signed char vec_orc (vector signed char, vector signed char);
-vector signed char vec_orc (vector bool signed char, vector signed char);
-vector signed char vec_orc (vector signed char, vector bool signed char);
-vector unsigned char vec_orc (vector unsigned char, vector unsigned char);
-vector unsigned char vec_orc (vector bool unsigned char, vector unsigned char);
-vector unsigned char vec_orc (vector unsigned char, vector bool unsigned char);
-
-vector int vec_pack (vector long long, vector long long);
-vector unsigned int vec_pack (vector unsigned long long, vector unsigned long long);
-vector bool int vec_pack (vector bool long long, vector bool long long);
-vector float vec_pack (vector double, vector double);
-
-vector int vec_packs (vector long long, vector long long);
-vector unsigned int vec_packs (vector unsigned long long, vector unsigned long long);
-
-vector unsigned char vec_packsu (vector signed short, vector signed short)
-vector unsigned char vec_packsu (vector unsigned short, vector unsigned short)
-vector unsigned short int vec_packsu (vector signed int, vector signed int);
-vector unsigned short int vec_packsu (vector unsigned int, vector unsigned int);
-vector unsigned int vec_packsu (vector long long, vector long long);
-vector unsigned int vec_packsu (vector unsigned long long, vector unsigned long long);
-vector unsigned int vec_packsu (vector signed long long, vector signed long long);
-
-vector unsigned char vec_popcnt (vector signed char);
-vector unsigned char vec_popcnt (vector unsigned char);
-vector unsigned short vec_popcnt (vector signed short);
-vector unsigned short vec_popcnt (vector unsigned short);
-vector unsigned int vec_popcnt (vector signed int);
-vector unsigned int vec_popcnt (vector unsigned int);
-vector unsigned long long vec_popcnt (vector signed long long);
-vector unsigned long long vec_popcnt (vector unsigned long long);
-
-vector long long vec_rl (vector long long, vector unsigned long long);
-vector long long vec_rl (vector unsigned long long, vector unsigned long long);
-
-vector long long vec_sl (vector long long, vector unsigned long long);
-vector long long vec_sl (vector unsigned long long, vector unsigned long long);
-
-vector long long vec_sr (vector long long, vector unsigned long long);
-vector unsigned long long char vec_sr (vector unsigned long long,
-                                       vector unsigned long long);
-
-vector long long vec_sra (vector long long, vector unsigned long long);
-vector unsigned long long vec_sra (vector unsigned long long,
-                                   vector unsigned long long);
-
-vector long long vec_sub (vector long long, vector long long);
-vector unsigned long long vec_sub (vector unsigned long long,
-                                   vector unsigned long long);
-
-vector long long vec_unpackh (vector int);
-vector unsigned long long vec_unpackh (vector unsigned int);
-
-vector long long vec_unpackl (vector int);
-vector unsigned long long vec_unpackl (vector unsigned int);
-
 vector long long vec_vaddudm (vector long long, vector long long);
 vector long long vec_vaddudm (vector bool long long, vector long long);
 vector long long vec_vaddudm (vector long long, vector bool long long);
@@ -20374,22 +19018,6 @@ vector unsigned long long vec_vaddudm (vector bool unsigned long long,
                                        vector unsigned long long);
 vector unsigned long long vec_vaddudm (vector unsigned long long,
                                        vector bool unsigned long long);
-
-vector long long vec_vbpermq (vector signed char, vector signed char);
-vector long long vec_vbpermq (vector unsigned char, vector unsigned char);
-
-vector unsigned char vec_bperm (vector unsigned char, vector unsigned char);
-vector unsigned char vec_bperm (vector unsigned long long, vector unsigned char);
-vector unsigned long long vec_bperm (vector unsigned __int128, vector unsigned char);
-
-vector long long vec_cntlz (vector long long);
-vector unsigned long long vec_cntlz (vector unsigned long long);
-vector int vec_cntlz (vector int);
-vector unsigned int vec_cntlz (vector int);
-vector short vec_cntlz (vector short);
-vector unsigned short vec_cntlz (vector unsigned short);
-vector signed char vec_cntlz (vector signed char);
-vector unsigned char vec_cntlz (vector unsigned char);
 
 vector long long vec_vclz (vector long long);
 vector unsigned long long vec_vclz (vector unsigned long long);
@@ -20500,6 +19128,8 @@ The normal vector extract, and set operations work on
 @var{vector __int128} and @var{vector __uint128} types,
 but the index value must be 0.
 
+Only functions excluded from the PVIPR are listed here.
+
 @smallexample
 vector __int128 vec_vaddcuq (vector __int128, vector __int128);
 vector __uint128 vec_vaddcuq (vector __uint128, vector __uint128);
@@ -20563,7 +19193,10 @@ int __builtin_bcdsub_ov (vector unsigned char, vector unsigned char, const int);
 
 The following additional built-in functions are also available for the
 PowerPC family of processors, starting with ISA 3.0
-(@option{-mcpu=power9}) or later:
+(@option{-mcpu=power9}) or later.
+
+Only instructions excluded from the PVIPR are listed here.
+
 @smallexample
 unsigned int scalar_extract_exp (double source);
 unsigned long long int scalar_extract_exp (__ieee128 source);
@@ -20591,13 +19224,6 @@ bool scalar_test_data_class (__ieee128 source, const int condition);
 bool scalar_test_neg (float source);
 bool scalar_test_neg (double source);
 bool scalar_test_neg (__ieee128 source);
-
-vector _uint128_t vec_msum (vector unsigned long long,
-			    vector unsigned long long,
-			    vector _uint128_t);
-vector _int128_t vec_msum (vector signed long long,
-			   vector signed long long,
-			   vector _int128_t);
 @end smallexample
 
 The @code{scalar_extract_exp} and @code{scalar_extract_sig}
@@ -20617,9 +19243,6 @@ Note that the sign of the significand is not represented in the result
 returned from the @code{scalar_extract_sig} function.  Use the
 @code{scalar_test_neg} function to test the sign of its @code{double}
 argument.
-The @code{vec_msum} functions perform a vector multiply-sum, returning
-the result of arg1*arg2+arg3.  ISA 3.0 adds support for vec_msum returning
-a vector int128 result.
 
 The @code{scalar_insert_exp}
 functions require a 64-bit environment supporting ISA 3.0 or later.
@@ -20673,7 +19296,10 @@ The following built-in functions are also available for the PowerPC family
 of processors, starting with ISA 3.0 or later
 (@option{-mcpu=power9}).  These string functions are described
 separately in order to group the descriptions closer to the function
-prototypes:
+prototypes.
+
+Only functions excluded from the PVIPR are listed here.
+
 @smallexample
 int vec_all_nez (vector signed char, vector signed char);
 int vec_all_nez (vector unsigned char, vector unsigned char);
@@ -20688,101 +19314,6 @@ int vec_any_eqz (vector signed short, vector signed short);
 int vec_any_eqz (vector unsigned short, vector unsigned short);
 int vec_any_eqz (vector signed int, vector signed int);
 int vec_any_eqz (vector unsigned int, vector unsigned int);
-
-vector bool char vec_cmpnez (vector signed char arg1, vector signed char arg2);
-vector bool char vec_cmpnez (vector unsigned char arg1, vector unsigned char arg2);
-vector bool short vec_cmpnez (vector signed short arg1, vector signed short arg2);
-vector bool short vec_cmpnez (vector unsigned short arg1, vector unsigned short arg2);
-vector bool int vec_cmpnez (vector signed int arg1, vector signed int arg2);
-vector bool int vec_cmpnez (vector unsigned int, vector unsigned int);
-
-vector signed char vec_cnttz (vector signed char);
-vector unsigned char vec_cnttz (vector unsigned char);
-vector signed short vec_cnttz (vector signed short);
-vector unsigned short vec_cnttz (vector unsigned short);
-vector signed int vec_cnttz (vector signed int);
-vector unsigned int vec_cnttz (vector unsigned int);
-vector signed long long vec_cnttz (vector signed long long);
-vector unsigned long long vec_cnttz (vector unsigned long long);
-
-signed int vec_cntlz_lsbb (vector signed char);
-signed int vec_cntlz_lsbb (vector unsigned char);
-
-signed int vec_cnttz_lsbb (vector signed char);
-signed int vec_cnttz_lsbb (vector unsigned char);
-
-unsigned int vec_first_match_index (vector signed char, vector signed char);
-unsigned int vec_first_match_index (vector unsigned char, vector unsigned char);
-unsigned int vec_first_match_index (vector signed int, vector signed int);
-unsigned int vec_first_match_index (vector unsigned int, vector unsigned int);
-unsigned int vec_first_match_index (vector signed short, vector signed short);
-unsigned int vec_first_match_index (vector unsigned short, vector unsigned short);
-unsigned int vec_first_match_or_eos_index (vector signed char, vector signed char);
-unsigned int vec_first_match_or_eos_index (vector unsigned char, vector unsigned char);
-unsigned int vec_first_match_or_eos_index (vector signed int, vector signed int);
-unsigned int vec_first_match_or_eos_index (vector unsigned int, vector unsigned int);
-unsigned int vec_first_match_or_eos_index (vector signed short, vector signed short);
-unsigned int vec_first_match_or_eos_index (vector unsigned short,
-                                           vector unsigned short);
-unsigned int vec_first_mismatch_index (vector signed char, vector signed char);
-unsigned int vec_first_mismatch_index (vector unsigned char, vector unsigned char);
-unsigned int vec_first_mismatch_index (vector signed int, vector signed int);
-unsigned int vec_first_mismatch_index (vector unsigned int, vector unsigned int);
-unsigned int vec_first_mismatch_index (vector signed short, vector signed short);
-unsigned int vec_first_mismatch_index (vector unsigned short, vector unsigned short);
-unsigned int vec_first_mismatch_or_eos_index (vector signed char, vector signed char);
-unsigned int vec_first_mismatch_or_eos_index (vector unsigned char,
-                                              vector unsigned char);
-unsigned int vec_first_mismatch_or_eos_index (vector signed int, vector signed int);
-unsigned int vec_first_mismatch_or_eos_index (vector unsigned int, vector unsigned int);
-unsigned int vec_first_mismatch_or_eos_index (vector signed short, vector signed short);
-unsigned int vec_first_mismatch_or_eos_index (vector unsigned short,
-                                              vector unsigned short);
-
-vector unsigned short vec_pack_to_short_fp32 (vector float, vector float);
-
-vector signed char vec_xl_be (signed long long, signed char *);
-vector unsigned char vec_xl_be (signed long long, unsigned char *);
-vector signed int vec_xl_be (signed long long, signed int *);
-vector unsigned int vec_xl_be (signed long long, unsigned int *);
-vector signed __int128 vec_xl_be (signed long long, signed __int128 *);
-vector unsigned __int128 vec_xl_be (signed long long, unsigned __int128 *);
-vector signed long long vec_xl_be (signed long long, signed long long *);
-vector unsigned long long vec_xl_be (signed long long, unsigned long long *);
-vector signed short vec_xl_be (signed long long, signed short *);
-vector unsigned short vec_xl_be (signed long long, unsigned short *);
-vector double vec_xl_be (signed long long, double *);
-vector float vec_xl_be (signed long long, float *);
-
-vector signed char vec_xl_len (signed char *addr, size_t len);
-vector unsigned char vec_xl_len (unsigned char *addr, size_t len);
-vector signed int vec_xl_len (signed int *addr, size_t len);
-vector unsigned int vec_xl_len (unsigned int *addr, size_t len);
-vector signed __int128 vec_xl_len (signed __int128 *addr, size_t len);
-vector unsigned __int128 vec_xl_len (unsigned __int128 *addr, size_t len);
-vector signed long long vec_xl_len (signed long long *addr, size_t len);
-vector unsigned long long vec_xl_len (unsigned long long *addr, size_t len);
-vector signed short vec_xl_len (signed short *addr, size_t len);
-vector unsigned short vec_xl_len (unsigned short *addr, size_t len);
-vector double vec_xl_len (double *addr, size_t len);
-vector float vec_xl_len (float *addr, size_t len);
-
-vector unsigned char vec_xl_len_r (unsigned char *addr, size_t len);
-
-void vec_xst_len (vector signed char data, signed char *addr, size_t len);
-void vec_xst_len (vector unsigned char data, unsigned char *addr, size_t len);
-void vec_xst_len (vector signed int data, signed int *addr, size_t len);
-void vec_xst_len (vector unsigned int data, unsigned int *addr, size_t len);
-void vec_xst_len (vector unsigned __int128 data, unsigned __int128 *addr, size_t len);
-void vec_xst_len (vector signed long long data, signed long long *addr, size_t len);
-void vec_xst_len (vector unsigned long long data, unsigned long long *addr, size_t len);
-void vec_xst_len (vector signed short data, signed short *addr, size_t len);
-void vec_xst_len (vector unsigned short data, unsigned short *addr, size_t len);
-void vec_xst_len (vector signed __int128 data, signed __int128 *addr, size_t len);
-void vec_xst_len (vector double data, double *addr, size_t len);
-void vec_xst_len (vector float data, float *addr, size_t len);
-
-void vec_xst_len_r (vector unsigned char data, unsigned char *addr, size_t len);
 
 signed char vec_xlx (unsigned int index, vector signed char data);
 unsigned char vec_xlx (unsigned int index, vector unsigned char data);
@@ -20816,34 +19347,6 @@ denote that either the corresponding elements of the incoming arguments are
 not equal or that at least one of the corresponding elements contains
 zero.  Otherwise, the element of the returned vector contains all zeros.
 
-The @code{vec_cntlz_lsbb} function returns the count of the number of
-consecutive leading byte elements (starting from position 0 within the
-supplied vector argument) for which the least-significant bit
-equals zero.  The @code{vec_cnttz_lsbb} function returns the count of
-the number of consecutive trailing byte elements (starting from
-position 15 and counting backwards within the supplied vector
-argument) for which the least-significant bit equals zero.
-
-The @code{vec_xl_len} and @code{vec_xst_len} functions require a
-64-bit environment supporting ISA 3.0 or later.  The @code{vec_xl_len}
-function loads a variable length vector from memory.  The
-@code{vec_xst_len} function stores a variable length vector to memory.
-With both the @code{vec_xl_len} and @code{vec_xst_len} functions, the
-@code{addr} argument represents the memory address to or from which
-data will be transferred, and the
-@code{len} argument represents the number of bytes to be
-transferred, as computed by the C expression @code{min((len & 0xff), 16)}.
-If this expression's value is not a multiple of the vector element's
-size, the behavior of this function is undefined.
-In the case that the underlying computer is configured to run in
-big-endian mode, the data transfer moves bytes 0 to @code{(len - 1)} of
-the corresponding vector.  In little-endian mode, the data transfer
-moves bytes @code{(16 - len)} to @code{15} of the corresponding
-vector.  For the load function, any bytes of the result vector that
-are not loaded from memory are set to zero.
-The value of the @code{addr} argument need not be aligned on a
-multiple of the vector's element size.
-
 The @code{vec_xlx} and @code{vec_xrx} functions extract the single
 element selected by the @code{index} argument from the vector
 represented by the @code{data} argument.  The @code{index} argument
@@ -20858,30 +19361,12 @@ element size.  However, if the size of the vector element added to
 @code{index} is greater than 15, the content of the returned value is
 undefined.
 
-If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
-are available:
+The following functions are also available if the ISA 3.0 instruction
+set additions (@option{-mcpu=power9}) are available.
+
+Only functions excluded from the PVIPR are listed here.
 
 @smallexample
-vector unsigned long long vec_bperm (vector unsigned long long, vector unsigned char);
-
-vector bool char vec_cmpne (vector bool char, vector bool char);
-vector bool char vec_cmpne (vector signed char, vector signed char);
-vector bool char vec_cmpne (vector unsigned char, vector unsigned char);
-vector bool int vec_cmpne (vector bool int, vector bool int);
-vector bool int vec_cmpne (vector signed int, vector signed int);
-vector bool int vec_cmpne (vector unsigned int, vector unsigned int);
-vector bool long long vec_cmpne (vector bool long long, vector bool long long);
-vector bool long long vec_cmpne (vector signed long long, vector signed long long);
-vector bool long long vec_cmpne (vector unsigned long long, vector unsigned long long);
-vector bool short vec_cmpne (vector bool short, vector bool short);
-vector bool short vec_cmpne (vector signed short, vector signed short);
-vector bool short vec_cmpne (vector unsigned short, vector unsigned short);
-vector bool long long vec_cmpne (vector double, vector double);
-vector bool int vec_cmpne (vector float, vector float);
-
-vector float vec_extract_fp32_from_shorth (vector unsigned short);
-vector float vec_extract_fp32_from_shortl (vector unsigned short);
-
 vector long long vec_vctz (vector long long);
 vector unsigned long long vec_vctz (vector unsigned long long);
 vector int vec_vctz (vector int);
@@ -20902,20 +19387,6 @@ vector unsigned short vec_vctzh (vector unsigned short);
 
 vector int vec_vctzw (vector int);
 vector unsigned int vec_vctzw (vector int);
-
-vector unsigned long long vec_extract4b (vector unsigned char, const int);
-
-vector unsigned char vec_insert4b (vector signed int, vector unsigned char,
-                                   const int);
-vector unsigned char vec_insert4b (vector unsigned int, vector unsigned char,
-                                   const int);
-
-vector unsigned int vec_parity_lsbb (vector signed int);
-vector unsigned int vec_parity_lsbb (vector unsigned int);
-vector unsigned __int128 vec_parity_lsbb (vector signed __int128);
-vector unsigned __int128 vec_parity_lsbb (vector unsigned __int128);
-vector unsigned long long vec_parity_lsbb (vector signed long long);
-vector unsigned long long vec_parity_lsbb (vector unsigned long long);
 
 vector int vec_vprtyb (vector int);
 vector unsigned int vec_vprtyb (vector unsigned int);
@@ -20945,49 +19416,12 @@ vector __int128 vec_vprtybq (vector __int128);
 vector __uint128 vec_vprtybd (vector __uint128);
 @end smallexample
 
-The following built-in vector functions are available for the PowerPC family
-of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
-@smallexample
-__vector unsigned char
-vec_slv (__vector unsigned char src, __vector unsigned char shift_distance);
-__vector unsigned char
-vec_srv (__vector unsigned char src, __vector unsigned char shift_distance);
-@end smallexample
-
-The @code{vec_slv} and @code{vec_srv} functions operate on
-all of the bytes of their @code{src} and @code{shift_distance}
-arguments in parallel.  The behavior of the @code{vec_slv} is as if
-there existed a temporary array of 17 unsigned characters
-@code{slv_array} within which elements 0 through 15 are the same as
-the entries in the @code{src} array and element 16 equals 0.  The
-result returned from the @code{vec_slv} function is a
-@code{__vector} of 16 unsigned characters within which element
-@code{i} is computed using the C expression
-@code{0xff & (*((unsigned short *)(slv_array + i)) << (0x07 &
-shift_distance[i]))},
-with this resulting value coerced to the @code{unsigned char} type.
-The behavior of the @code{vec_srv} is as if
-there existed a temporary array of 17 unsigned characters
-@code{srv_array} within which element 0 equals zero and
-elements 1 through 16 equal the elements 0 through 15 of
-the @code{src} array.  The
-result returned from the @code{vec_srv} function is a
-@code{__vector} of 16 unsigned characters within which element
-@code{i} is computed using the C expression
-@code{0xff & (*((unsigned short *)(srv_array + i)) >>
-(0x07 & shift_distance[i]))},
-with this resulting value coerced to the @code{unsigned char} type.
-
 The following built-in functions are available for the PowerPC family
-of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
-@smallexample
-__vector unsigned char
-vec_absd (__vector unsigned char arg1, __vector unsigned char arg2);
-__vector unsigned short
-vec_absd (__vector unsigned short arg1, __vector unsigned short arg2);
-__vector unsigned int
-vec_absd (__vector unsigned int arg1, __vector unsigned int arg2);
+of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}).
 
+Only functions excluded from the PVIPR are listed here.
+
+@smallexample
 __vector unsigned char
 vec_absdb (__vector unsigned char arg1, __vector unsigned char arg2);
 __vector unsigned short
@@ -21005,114 +19439,10 @@ elements of the vector result.
 The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
 @smallexample
-__vector unsigned int vec_extract_exp (__vector float source);
-__vector unsigned long long int vec_extract_exp (__vector double source);
-
-__vector unsigned int vec_extract_sig (__vector float source);
-__vector unsigned long long int vec_extract_sig (__vector double source);
-
-__vector float vec_insert_exp (__vector unsigned int significands,
-                               __vector unsigned int exponents);
-__vector float vec_insert_exp (__vector unsigned float significands,
-                               __vector unsigned int exponents);
-__vector double vec_insert_exp (__vector unsigned long long int significands,
-                                __vector unsigned long long int exponents);
-__vector double vec_insert_exp (__vector unsigned double significands,
-                                __vector unsigned long long int exponents);
-
-__vector bool int vec_test_data_class (__vector float source, const int condition);
-__vector bool long long int vec_test_data_class (__vector double source,
-                                                 const int condition);
-@end smallexample
-
-The @code{vec_extract_sig} and @code{vec_extract_exp} built-in
-functions return vectors representing the significands and biased
-exponent values of their @code{source} arguments respectively.
-Within the result vector returned by @code{vec_extract_sig}, the
-@code{0x800000} bit of each vector element returned when the
-function's @code{source} argument is of type @code{float} is set to 1
-if the corresponding floating point value is in normalized form.
-Otherwise, this bit is set to 0.  When the @code{source} argument is
-of type @code{double}, the @code{0x10000000000000} bit within each of
-the result vector's elements is set according to the same rules.
-Note that the sign of the significand is not represented in the result
-returned from the @code{vec_extract_sig} function.  To extract the
-sign bits, use the
-@code{vec_cpsgn} function, which returns a new vector within which all
-of the sign bits of its second argument vector are overwritten with the
-sign bits copied from the coresponding elements of its first argument
-vector, and all other (non-sign) bits of the second argument vector
-are copied unchanged into the result vector.
-
-The @code{vec_insert_exp} built-in functions return a vector of
-single- or double-precision floating
-point values constructed by assembling the values of their
-@code{significands} and @code{exponents} arguments into the
-corresponding elements of the returned vector.
-The sign of each
-element of the result is copied from the most significant bit of the
-corresponding entry within the @code{significands} argument.
-Note that the relevant
-bits of the @code{significands} argument are the same, for both integer
-and floating point types.
-The
-significand and exponent components of each element of the result are
-composed of the least significant bits of the corresponding
-@code{significands} element and the least significant bits of the
-corresponding @code{exponents} element.
-
-The @code{vec_test_data_class} built-in function returns a vector
-representing the results of testing the @code{source} vector for the
-condition selected by the @code{condition} argument.  The
-@code{condition} argument must be a compile-time constant integer with
-value not exceeding 127.  The
-@code{condition} argument is encoded as a bitmask with each bit
-enabling the testing of a different condition, as characterized by the
-following:
-@smallexample
-0x40    Test for NaN
-0x20    Test for +Infinity
-0x10    Test for -Infinity
-0x08    Test for +Zero
-0x04    Test for -Zero
-0x02    Test for +Denormal
-0x01    Test for -Denormal
-@end smallexample
-
-If any of the enabled test conditions is true, the corresponding entry
-in the result vector is -1.  Otherwise (all of the enabled test
-conditions are false), the corresponding entry of the result vector is 0.
-
-The following built-in functions are available for the PowerPC family
-of processors, starting with ISA 3.0 or later (@option{-mcpu=power9}):
-@smallexample
-vector unsigned int vec_rlmi (vector unsigned int, vector unsigned int,
-                              vector unsigned int);
-vector unsigned long long vec_rlmi (vector unsigned long long,
-                                    vector unsigned long long,
-                                    vector unsigned long long);
-vector unsigned int vec_rlnm (vector unsigned int, vector unsigned int,
-                              vector unsigned int);
-vector unsigned long long vec_rlnm (vector unsigned long long,
-                                    vector unsigned long long,
-                                    vector unsigned long long);
 vector unsigned int vec_vrlnm (vector unsigned int, vector unsigned int);
 vector unsigned long long vec_vrlnm (vector unsigned long long,
                                      vector unsigned long long);
 @end smallexample
-
-The result of @code{vec_rlmi} is obtained by rotating each element of
-the first argument vector left and inserting it under mask into the
-second argument vector.  The third argument vector contains the mask
-beginning in bits 11:15, the mask end in bits 19:23, and the shift
-count in bits 27:31, of each element.
-
-The result of @code{vec_rlnm} is obtained by rotating each element of
-the first argument vector left and ANDing it with a mask specified by
-the second and third argument vectors.  The second argument vector
-contains the shift count for each element in the low-order byte.  The
-third argument vector contains the mask end for each element in the
-low-order byte, with the mask begin in the next higher byte.
 
 The result of @code{vec_vrlnm} is obtained by rotating each element
 of the first argument vector left and ANDing it with a mask.  The
@@ -21120,69 +19450,26 @@ second argument vector contains the mask  beginning in bits 11:15,
 the mask end in bits 19:23, and the shift count in bits 27:31,
 of each element.
 
-If the ISA 3.0 instruction set additions (@option{-mcpu=power9})
-are available:
-@smallexample
-vector signed bool char vec_revb (vector signed char);
-vector signed char vec_revb (vector signed char);
-vector unsigned char vec_revb (vector unsigned char);
-vector bool short vec_revb (vector bool short);
-vector short vec_revb (vector short);
-vector unsigned short vec_revb (vector unsigned short);
-vector bool int vec_revb (vector bool int);
-vector int vec_revb (vector int);
-vector unsigned int vec_revb (vector unsigned int);
-vector float vec_revb (vector float);
-vector bool long long vec_revb (vector bool long long);
-vector long long vec_revb (vector long long);
-vector unsigned long long vec_revb (vector unsigned long long);
-vector double vec_revb (vector double);
-@end smallexample
-
-On 64-bit targets, if the ISA 3.0 additions (@option{-mcpu=power9})
-are available:
-@smallexample
-vector long vec_revb (vector long);
-vector unsigned long vec_revb (vector unsigned long);
-vector __int128 vec_revb (vector __int128);
-vector __uint128 vec_revb (vector __uint128);
-@end smallexample
-
-The @code{vec_revb} built-in function reverses the bytes on an element
-by element basis.  A vector of @code{vector unsigned char} or
-@code{vector signed char} reverses the bytes in the whole word.
-
 If the cryptographic instructions are enabled (@option{-mcrypto} or
 @option{-mcpu=power8}), the following builtins are enabled.
+
+Only functions excluded from the PVIPR are listed here.
 
 @smallexample
 vector unsigned long long __builtin_crypto_vsbox (vector unsigned long long);
 
-vector unsigned char vec_sbox_be (vector unsigned char);
-
 vector unsigned long long __builtin_crypto_vcipher (vector unsigned long long,
                                                     vector unsigned long long);
-
-vector unsigned char vec_cipher_be (vector unsigned char, vector unsigned char);
 
 vector unsigned long long __builtin_crypto_vcipherlast
                                      (vector unsigned long long,
                                       vector unsigned long long);
 
-vector unsigned char vec_cipherlast_be (vector unsigned char,
-                                        vector unsigned char);
-
 vector unsigned long long __builtin_crypto_vncipher (vector unsigned long long,
                                                      vector unsigned long long);
 
-vector unsigned char vec_ncipher_be (vector unsigned char,
-                                     vector unsigned char);
-
 vector unsigned long long __builtin_crypto_vncipherlast (vector unsigned long long,
                                                          vector unsigned long long);
-
-vector unsigned char vec_ncipherlast_be (vector unsigned char,
-                                         vector unsigned char);
 
 vector unsigned char __builtin_crypto_vpermxor (vector unsigned char,
                                                 vector unsigned char,
@@ -21222,29 +19509,6 @@ The second argument to @var{__builtin_crypto_vshasigmad} and
 @var{__builtin_crypto_vshasigmaw} must be a constant
 integer that is 0 or 1.  The third argument to these built-in functions
 must be a constant integer in the range of 0 to 15.
-
-If the ISA 3.0 instruction set additions 
-are enabled (@option{-mcpu=power9}), the following additional
-functions are available for both 32-bit and 64-bit targets.
-@smallexample
-vector short vec_xl (int, vector short *);
-vector short vec_xl (int, short *);
-vector unsigned short vec_xl (int, vector unsigned short *);
-vector unsigned short vec_xl (int, unsigned short *);
-vector char vec_xl (int, vector char *);
-vector char vec_xl (int, char *);
-vector unsigned char vec_xl (int, vector unsigned char *);
-vector unsigned char vec_xl (int, unsigned char *);
-
-void vec_xst (vector short, int, vector short *);
-void vec_xst (vector short, int, short *);
-void vec_xst (vector unsigned short, int, vector unsigned short *);
-void vec_xst (vector unsigned short, int, unsigned short *);
-void vec_xst (vector char, int, vector char *);
-void vec_xst (vector char, int, char *);
-void vec_xst (vector unsigned char, int, vector unsigned char *);
-void vec_xst (vector unsigned char, int, unsigned char *);
-@end smallexample
 
 @node PowerPC AltiVec Built-in Functions Available on ISA 3.1
 @subsubsection PowerPC AltiVec Built-in Functions Available on ISA 3.1

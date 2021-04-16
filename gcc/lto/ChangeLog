@@ -1,3 +1,8 @@
+2021-04-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/98599
+	* lto.c (lto_wpa_write_files): Fix handling of clones.
+
 2021-04-08  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/99883
