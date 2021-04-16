@@ -159,6 +159,7 @@ proc libitm_init { args } {
     }
 
     if [istarget *-*-darwin*] {
+	lappend ALWAYS_CFLAGS "additional_flags=-B${blddir}/.libs"
 	lappend ALWAYS_CFLAGS "additional_flags=-shared-libgcc"
     }
 
