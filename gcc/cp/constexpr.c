@@ -46,6 +46,7 @@ do {									\
 
 static HOST_WIDE_INT find_array_ctor_elt (tree ary, tree dindex,
 					  bool insert = false);
+static int array_index_cmp (tree key, tree index);
 
 /* Returns true iff FUN is an instantiation of a constexpr function
    template or a defaulted constexpr function.  */
@@ -2910,9 +2911,27 @@ reduced_constant_expression_p (tree t)
 	    /* An initialized vector would have a VECTOR_CST.  */
 	    return false;
 	  else if (cxx_dialect >= cxx20
-		   /* An ARRAY_TYPE doesn't have any TYPE_FIELDS.  */
 		   && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
-	    field = NULL_TREE;
+	    {
+	      /* There must be a valid constant initializer at every array
+		 index.  */
+	      tree min = TYPE_MIN_VALUE (TYPE_DOMAIN (TREE_TYPE (t)));
+	      tree max = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (t)));
+	      tree cursor = min;
+	      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, idx, val)
+		{
+		  if (!reduced_constant_expression_p (val))
+		    return false;
+		  if (array_index_cmp (cursor, idx) != 0)
+		    return false;
+		  if (TREE_CODE (idx) == RANGE_EXPR)
+		    cursor = TREE_OPERAND (idx, 1);
+		  cursor = int_const_binop (PLUS_EXPR, cursor, size_one_node);
+		}
+	      if (find_array_ctor_elt (t, max) == -1)
+		return false;
+	      goto ok;
+	    }
 	  else if (cxx_dialect >= cxx20
 		   && TREE_CODE (TREE_TYPE (t)) == UNION_TYPE)
 	    {
@@ -2946,6 +2965,7 @@ reduced_constant_expression_p (tree t)
       for (; field; field = next_initializable_field (DECL_CHAIN (field)))
 	if (!is_really_empty_class (TREE_TYPE (field), /*ignore_vptr*/false))
 	  return false;
+ok:
       if (CONSTRUCTOR_NO_CLEARING (t))
 	/* All the fields are initialized.  */
 	CONSTRUCTOR_NO_CLEARING (t) = false;
