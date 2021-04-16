@@ -6078,6 +6078,17 @@ write_symtree (gfc_symtree *st)
   if (check_unique_name (st->name))
     return;
 
+  /* From F2003 onwards, intrinsic procedures are no longer subject to
+     the restriction, "that an elemental intrinsic function here be of
+     type integer or character and each argument must be an initialization
+     expr of type integer or character" is lifted so that intrinsic
+     procedures can be over-ridden. This requires that the intrinsic
+     symbol not appear in the module file, thereby preventing ambiguity
+     when USEd.  */
+  if (strcmp (sym->module, "(intrinsic)") == 0
+      && (gfc_option.allow_std & GFC_STD_F2003))
+    return;
+
   p = find_pointer (sym);
   if (p == NULL)
     gfc_internal_error ("write_symtree(): Symbol not written");
