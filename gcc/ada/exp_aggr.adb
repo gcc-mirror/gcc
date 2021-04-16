@@ -4437,6 +4437,15 @@ package body Exp_Aggr is
       end;
 
       Set_No_Initialization (N);
+
+      --  After expansion the expression can be removed from the declaration
+      --  except if the object is class-wide, in which case the aggregate
+      --  provides the actual type.
+
+      if not Is_Class_Wide_Type (Etype (Obj)) then
+         Set_Expression (N, Empty);
+      end if;
+
       Initialize_Discriminants (N, Typ);
    end Convert_Aggr_In_Object_Decl;
 
