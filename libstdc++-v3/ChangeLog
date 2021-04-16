@@ -1,3 +1,17 @@
+2021-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/dg-options.exp (add_options_for_libatomic): Also
+	add libatomic options for 32-bit sparc*-*-linux-gnu.
+
+2021-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96657
+	* libsupc++/Makefile.am: Add atomicity.cc here.
+	* src/c++98/Makefile.am: Remove it from here.
+	* libsupc++/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* testsuite/18_support/exception_ptr/96657.cc: New test.
+
 2021-04-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/100060

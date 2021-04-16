@@ -1,3 +1,31 @@
+2021-04-15  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Other params don't use it, remove it.
+
+2021-04-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-builder.h: Add deprecation note.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/98852
+	* attribs.h (restrict_type_identity_attributes_to): Declare.
+	* attribs.c (restrict_type_identity_attributes_to): New function.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/98852
+	* attribs.h (affects_type_identity_attributes): Declare.
+	* attribs.c (remove_attributes_matching): New function.
+	(affects_type_identity_attributes): Likewise.
+
+2021-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100056
+	* config/aarch64/aarch64.md (*<LOGICAL:optab>_<SHIFT:optab><mode>3):
+	Add combine splitters for *<LOGICAL:optab>_ashl<mode>3 with
+	ZERO_EXTEND, SIGN_EXTEND or AND.
+
 2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/99929

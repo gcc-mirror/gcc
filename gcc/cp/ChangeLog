@@ -1,3 +1,30 @@
+2021-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80456
+	* call.c (build_new_method_call_1): Check again for side-effects
+	with a volatile object.
+
+2021-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100101
+	PR c++/99583
+	* pt.c (find_parameter_packs_r) [FUNCTION_TYPE]: Walk into
+	TYPE_RAISES_EXCEPTIONS here.
+	* tree.c (cp_walk_subtrees): Not here.
+
+2021-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100091
+	PR c++/99478
+	* parser.c (cp_parser_default_type_template_argument): Set
+	parser->local_variables_forbidden_p.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/98852
+	* typeck.c (merge_type_attributes_from): New function.
+	(cp_common_type): Use it for vector types.
+
 2021-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100078

@@ -1,3 +1,14 @@
+2021-04-15  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR target/99555
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_device_nvptx): New.
+	* testsuite/libgomp.c/pr99555-1.c <nvptx offload device>: Until
+	resolved, make sure that we exit quickly, with error status,
+	XFAILed.
+	* testsuite/libgomp.c-c++-common/task-detach-6.c: Likewise.
+	* testsuite/libgomp.fortran/task-detach-6.f90: Likewise.
+
 2021-04-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/100071
