@@ -48,6 +48,7 @@
 // All other format specifiers are as defined by 'sprintf'. The final resulting
 // message is then sent to the back end via rust_be_error_at/rust_be_warning_at.
 
+// simple location
 extern void
 rust_error_at (const Location, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
@@ -59,6 +60,11 @@ rust_fatal_error (const Location, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 extern void
 rust_inform (const Location, const char *fmt, ...)
+  RUST_ATTRIBUTE_GCC_DIAG (2, 3);
+
+// rich locations
+extern void
+rust_error_at (const RichLocation, const char *fmt, ...)
   RUST_ATTRIBUTE_GCC_DIAG (2, 3);
 
 // These interfaces provide a way for the front end to ask for
@@ -77,6 +83,8 @@ rust_close_quote ();
 
 extern void
 rust_be_error_at (const Location, const std::string &errmsg);
+extern void
+rust_be_error_at (const RichLocation, const std::string &errmsg);
 extern void
 rust_be_warning_at (const Location, int opt, const std::string &warningmsg);
 extern void

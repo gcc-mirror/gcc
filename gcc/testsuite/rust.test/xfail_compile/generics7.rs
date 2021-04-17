@@ -1,4 +1,3 @@
-// { dg-excess-errors "Noisy error and debug" }
 struct Foo<A> {
     a: A,
 }
@@ -16,7 +15,7 @@ impl Foo<char> {
 }
 
 impl<T> Foo<T> {
-    fn bar(self) -> T {
+    fn bar(self) -> T { // { dg-error "duplicate definitions with name bar" }
         self.a
     }
 }

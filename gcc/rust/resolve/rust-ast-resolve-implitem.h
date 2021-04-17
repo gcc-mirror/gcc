@@ -44,8 +44,9 @@ public:
     resolver->get_name_scope ().insert (
       path, constant.get_node_id (), constant.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
-	rust_error_at (constant.get_locus (), "redefined multiple times");
-	rust_error_at (locus, "was defined here");
+	RichLocation r (constant.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
       });
     resolver->insert_new_definition (constant.get_node_id (),
 				     Definition{constant.get_node_id (),
@@ -59,8 +60,9 @@ public:
     resolver->get_name_scope ().insert (
       path, function.get_node_id (), function.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
-	rust_error_at (function.get_locus (), "redefined multiple times");
-	rust_error_at (locus, "was defined here");
+	RichLocation r (function.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
       });
     resolver->insert_new_definition (function.get_node_id (),
 				     Definition{function.get_node_id (),
@@ -74,8 +76,9 @@ public:
     resolver->get_name_scope ().insert (
       path, method.get_node_id (), method.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
-	rust_error_at (method.get_locus (), "redefined multiple times");
-	rust_error_at (locus, "was defined here");
+	RichLocation r (method.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
       });
     resolver->insert_new_definition (method.get_node_id (),
 				     Definition{method.get_node_id (),

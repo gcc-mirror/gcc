@@ -51,6 +51,13 @@ rust_be_inform (const Location location, const std::string &infomsg)
 }
 
 void
+rust_be_error_at (const RichLocation location, const std::string &errmsg)
+{
+  rich_location gcc_loc = location.get ();
+  error_at (&gcc_loc, "%s", errmsg.c_str ());
+}
+
+void
 rust_be_get_quotechars (const char **open_qu, const char **close_qu)
 {
   *open_qu = open_quote;

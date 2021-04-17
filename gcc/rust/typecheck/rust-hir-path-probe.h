@@ -129,31 +129,34 @@ public:
   static void Report (std::vector<PathProbeCandidate> &candidates,
 		      const HIR::PathIdentSegment &query, Location query_locus)
   {
-    rust_error_at (query_locus, "multiple applicable items in scope for: %s",
-		   query.as_string ().c_str ());
-
-    ReportMultipleCandidateError visitor;
+    RichLocation r (query_locus);
+    ReportMultipleCandidateError visitor (r);
     for (auto &c : candidates)
       c.impl_item->accept_vis (visitor);
+
+    rust_error_at (r, "multiple applicable items in scope for: %s",
+		   query.as_string ().c_str ());
   }
 
   void visit (HIR::ConstantItem &constant) override
   {
-    rust_error_at (constant.get_locus (), "possible candidate");
+    r.add_range (constant.get_locus ());
   }
 
   void visit (HIR::Function &function) override
   {
-    rust_error_at (function.get_locus (), "possible candidate");
+    r.add_range (function.get_locus ());
   }
 
   void visit (HIR::Method &method) override
   {
-    rust_error_at (method.get_locus (), "possible candidate");
+    r.add_range (method.get_locus ());
   }
 
 private:
-  ReportMultipleCandidateError () : TypeCheckBase () {}
+  ReportMultipleCandidateError (RichLocation &r) : TypeCheckBase (), r (r) {}
+
+  RichLocation &r;
 };
 
 } // namespace Resolver

@@ -290,11 +290,7 @@ public:
 
     auto result = lhs->unify (rhs);
     if (result->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (expr.get_locus (),
-		       "type resolution failure in AssignmentExpr");
-	return;
-      }
+      return;
 
     // in the case of declare first for an ADT Type:
     //

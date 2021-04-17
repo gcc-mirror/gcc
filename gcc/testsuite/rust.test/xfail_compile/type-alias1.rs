@@ -1,4 +1,3 @@
-// { dg-excess-errors "Noisy error and debug" }
 type TypeAlias = (i32, u32);
 
 fn main() {

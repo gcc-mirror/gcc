@@ -189,18 +189,17 @@ public:
   void collision_detected (HIR::InherentImplItem *query,
 			   HIR::InherentImplItem *dup, const std::string &name)
   {
-    Location qlocus;
+    Location qlocus; // query
     bool ok = GetLocusFromImplItem::Resolve (query, qlocus);
     rust_assert (ok);
 
-    Location dlocus;
+    Location dlocus; // dup
     ok = GetLocusFromImplItem::Resolve (dup, dlocus);
     rust_assert (ok);
 
-    // this needs GCC Rich locations see
-    // https://github.com/Rust-GCC/gccrs/issues/97
-    rust_error_at (qlocus, "duplicate definitions with name %s", name.c_str ());
-    rust_error_at (dlocus, "duplicate def associated with");
+    RichLocation r (qlocus);
+    r.add_range (dlocus);
+    rust_error_at (r, "duplicate definitions with name %s", name.c_str ());
   }
 
 private:
@@ -209,9 +208,6 @@ private:
   std::map<TyTy::BaseType *,
 	   std::set<std::pair<HIR::InherentImplItem *, std::string> > >
     impl_mappings;
-
-  std::map<TyTy::BaseType *, std::set<TyTy::BaseType *> >
-    possible_colliding_impls;
 };
 
 } // namespace Resolver

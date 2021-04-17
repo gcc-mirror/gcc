@@ -1,4 +1,4 @@
-fn test() -> bool {  // { dg-error "was defined here" }
+fn test() -> bool {
     true
 }
 
