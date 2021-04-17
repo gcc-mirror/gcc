@@ -1,3 +1,14 @@
+2021-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2021-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/100048
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_trn1_conv<mode>): New.
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_pred_trn): Use new
+	TRN optab.
+	* config/aarch64/iterators.md (UNSPEC_TRN1_CONV): New.
+
 2021-04-08  Richard Biener  <rguenther@suse.de>
 
 	PR lto/99898

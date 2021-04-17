@@ -1,3 +1,11 @@
+2021-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2021-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/100048
+	* gcc.target/aarch64/sve/pr100048.c: New test.
+
 2021-04-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
