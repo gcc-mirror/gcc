@@ -1,3 +1,58 @@
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91710
+	* config/aarch64/aarch64.c (aarch64_function_arg_alignment): Change
+	abi_break argument from bool * to unsigned *, store there the pre-GCC 9
+	alignment.
+	(aarch64_layout_arg, aarch64_gimplify_va_arg_expr): Adjust callers.
+	(aarch64_function_arg_regno_p): Likewise.  Only emit -Wpsabi note if
+	the old and new alignment after applying MIN/MAX to it is different.
+
+2021-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/100048
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_trn1_conv<mode>): New.
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_pred_trn): Use new
+	TRN optab.
+	* config/aarch64/iterators.md (UNSPEC_TRN1_CONV): New.
+
+2021-04-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions): Revise
+	this section and its subsections.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100075
+	* config/aarch64/aarch64.md (*neg_asr_si2_extr, *extrsi5_insn_di): New
+	define_insn patterns.
+
+2021-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98689
+	* reg-notes.def (UNTYPED_CALL): New note.
+	* combine.c (distribute_notes): Handle it.
+	* emit-rtl.c (try_split): Likewise.
+	* rtlanal.c (rtx_properties::try_to_add_insn): Likewise.  Assume
+	that calls with the note implicitly set all return value registers.
+	* builtins.c (expand_builtin_apply): Add a REG_UNTYPED_CALL
+	to untyped_calls.
+
+2021-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/99596
+	* rtlanal.c (rtx_properties::try_to_add_insn): Don't add global
+	register accesses for const calls.  Assume that pure functions
+	can only read from global registers.  Ignore cases in which
+	the stack pointer has been marked global.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99767
+	* tree-vect-loop.c (vect_transform_loop): Don't remove just
+	dead scalar .MASK_LOAD calls, but also dead .COND_* calls - replace
+	them by their last argument.
+
 2021-04-15  Martin Liska  <mliska@suse.cz>
 
 	* doc/invoke.texi: Other params don't use it, remove it.

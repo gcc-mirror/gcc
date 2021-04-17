@@ -1,3 +1,115 @@
+2021-04-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100094
+	* gfortran.dg/PR100094.f90: New test.
+
+2021-04-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/96770
+	* gcc.target/arm/pure-code/pr96770.c: Fix scan-assembler-times
+	with movt/movw.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91710
+	* gcc.target/aarch64/pr91710.c: New test.
+
+2021-04-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100018
+	* gfortran.dg/PR10018.f90: New test.
+
+2021-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/100048
+	* gcc.target/aarch64/sve/pr100048.c: New test.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100111
+	* g++.dg/cpp0x/constexpr-100111.C: New test.
+
+2021-04-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99803
+	* g++.dg/cpp2a/typename14.C: Don't expect particular error
+	messages.
+	* g++.dg/cpp2a/typename19.C: New test.
+
+2021-04-16  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/gimplefe-40.c: Moved to...
+	* gcc.dg/vect/gimplefe-40.c: ...here.
+	* gcc.dg/gimplefe-41.c: Moved to...
+	* gcc.dg/vect/gimplefe-41.c: ...here.
+
+2021-04-16  Harald Anlauf  <anlauf@gmx.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/63797
+	* gfortran.dg/pr63797.f90: New test.
+
+2021-04-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/pr83403-1.c: Revert
+	max-completely-peeled-insns to the default value on IBM Z.
+	* gcc.dg/tree-ssa/pr83403-2.c: Likewise.
+
+2021-04-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99700
+	* g++.dg/cpp2a/constexpr-init21.C: New test.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100075
+	* gcc.target/aarch64/pr100075.c: New test.
+
+2021-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/99596
+	* gcc.target/arm/pr99596.c: New test.
+
+2021-04-16  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100067
+	* g++.target/arm/arm.exp (dg_runtest_extra_prunes): Update prune
+	template.
+	* gcc.target/arm/arm.exp (dg_runtest_extra_prunes): Likewise.
+	* g++.target/arm/mve.exp (dg_runtest_extra_prunes): Likewise.  Fix
+	missing quotes around switch names.
+	* gcc.target/arm/mve/mve.exp: (dg_runtest_extra_prunes): Likewise.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99767
+	* gcc.target/aarch64/pr99767.c: New test.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99850
+	* g++.dg/cpp23/lambda-specifiers2.C: New test.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99833
+	* g++.dg/cpp1z/pr99833.C: New test.
+	* g++.dg/cpp2a/pr99833.C: New test.
+
+2021-04-16  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/unroll-and-jam.c: Revert max-completely-peel-times to
+	the default value on IBM Z.
+
+2021-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100079
+	* g++.dg/abi/mangle71.C: Fix expected mangling.
+	* g++.dg/abi/mangle77.C: New test.
+	* g++.dg/cpp2a/nontype-class-union1.C: Likewise.
+	* g++.dg/cpp2a/nontype-class-equiv1.C: Removed.
+	* g++.dg/cpp2a/nontype-class44.C: New test.
+
 2021-04-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c/99420
