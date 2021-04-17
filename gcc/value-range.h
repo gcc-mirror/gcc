@@ -224,7 +224,7 @@ irange::num_pairs () const
 inline tree
 irange::type () const
 {
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   return TREE_TYPE (m_base[0]);
 }
 
@@ -501,7 +501,7 @@ irange::lower_bound (unsigned pair) const
 {
   if (legacy_mode_p ())
     return legacy_lower_bound (pair);
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   return wi::to_wide (tree_lower_bound (pair));
 }
@@ -514,7 +514,7 @@ irange::upper_bound (unsigned pair) const
 {
   if (legacy_mode_p ())
     return legacy_upper_bound (pair);
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   return wi::to_wide (tree_upper_bound (pair));
 }

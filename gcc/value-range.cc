@@ -441,7 +441,7 @@ irange::legacy_lower_bound (unsigned pair) const
       numeric_range.normalize_symbolics ();
       return numeric_range.legacy_lower_bound (pair);
     }
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   if (m_kind == VR_ANTI_RANGE)
     {
@@ -468,7 +468,7 @@ irange::legacy_upper_bound (unsigned pair) const
       numeric_range.normalize_symbolics ();
       return numeric_range.legacy_upper_bound (pair);
     }
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   if (m_kind == VR_ANTI_RANGE)
     {
