@@ -3621,7 +3621,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				   __gnu_cxx::__ops::__iter_comp_iter(__pred));
     }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 
 #define __cpp_lib_clamp 201603
 
@@ -3631,14 +3631,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __val  A value of arbitrary type.
    *  @param  __lo   A lower limit of arbitrary type.
    *  @param  __hi   An upper limit of arbitrary type.
-   *  @return max(__val, __lo) if __val < __hi or min(__val, __hi) otherwise.
+   *  @retval `__lo` if `__val < __lo`
+   *  @retval `__hi` if `__hi < __val`
+   *  @retval `__val` otherwise.
+   *  @pre `_Tp` is LessThanComparable and `(__hi < __lo)` is false.
    */
   template<typename _Tp>
     constexpr const _Tp&
     clamp(const _Tp& __val, const _Tp& __lo, const _Tp& __hi)
     {
       __glibcxx_assert(!(__hi < __lo));
-      return (__val < __lo) ? __lo : (__hi < __val) ? __hi : __val;
+      return std::min(std::max(__val, __lo), __hi);
     }
 
   /**
@@ -3648,15 +3651,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @param  __lo    A lower limit of arbitrary type.
    *  @param  __hi    An upper limit of arbitrary type.
    *  @param  __comp  A comparison functor.
-   *  @return max(__val, __lo, __comp) if __comp(__val, __hi)
-   *	      or min(__val, __hi, __comp) otherwise.
+   *  @retval `__lo` if `__comp(__val, __lo)`
+   *  @retval `__hi` if `__comp(__hi, __val)`
+   *  @retval `__val` otherwise.
+   *  @pre `__comp(__hi, __lo)` is false.
    */
   template<typename _Tp, typename _Compare>
     constexpr const _Tp&
     clamp(const _Tp& __val, const _Tp& __lo, const _Tp& __hi, _Compare __comp)
     {
       __glibcxx_assert(!__comp(__hi, __lo));
-      return __comp(__val, __lo) ? __lo : __comp(__hi, __val) ? __hi : __val;
+      return std::min(std::max(__val, __lo, __comp), __hi, __comp);
     }
 #endif // C++17
 #endif // C++14
