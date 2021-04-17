@@ -534,22 +534,17 @@ irange::equal_p (const irange &other) const
 bool
 irange::symbolic_p () const
 {
-  return (!varying_p ()
-	  && !undefined_p ()
+  return (m_num_ranges > 0
 	  && (!is_gimple_min_invariant (min ())
 	      || !is_gimple_min_invariant (max ())));
 }
 
-/* NOTE: This is not the inverse of symbolic_p because the range
-   could also be varying or undefined.  Ideally they should be inverse
-   of each other, with varying only applying to symbolics.  Varying of
-   constants would be represented as [-MIN, +MAX].  */
+/* Return TRUE if this is a constant range.  */
 
 bool
 irange::constant_p () const
 {
-  return (!varying_p ()
-	  && !undefined_p ()
+  return (m_num_ranges > 0
 	  && TREE_CODE (min ()) == INTEGER_CST
 	  && TREE_CODE (max ()) == INTEGER_CST);
 }
