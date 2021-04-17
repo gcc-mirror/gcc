@@ -195,14 +195,14 @@ public:
 		      "the type %s does not have any",
 		      path.as_string ().c_str (),
 		      translated->as_string ().c_str ());
-		    return;
 		  }
 	      }
 	    else if (translated->has_subsititions_defined ())
 	      {
 		translated
-		  = SubstMapper::Resolve (translated, path.get_locus ());
+		  = SubstMapper::InferSubst (translated, path.get_locus ());
 	      }
+
 	    return;
 	  }
       }

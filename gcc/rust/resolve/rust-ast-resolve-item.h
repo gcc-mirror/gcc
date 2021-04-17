@@ -186,14 +186,15 @@ public:
     if (resolved_node == UNKNOWN_NODEID)
       return;
 
-    auto Self = CanonicalPath::get_big_self ();
     resolver->get_type_scope ().insert (
-      Self, resolved_node, impl_block.get_type ()->get_locus_slow ());
+      CanonicalPath::get_big_self (), impl_block.get_type ()->get_node_id (),
+      impl_block.get_type ()->get_locus_slow ());
 
     for (auto &impl_item : impl_block.get_impl_items ())
       impl_item->accept_vis (*this);
 
-    resolver->get_type_scope ().peek ()->clear_name (Self, resolved_node);
+    resolver->get_type_scope ().peek ()->clear_name (
+      CanonicalPath::get_big_self (), impl_block.get_type ()->get_node_id ());
     resolver->get_type_scope ().pop ();
   }
 
@@ -208,7 +209,7 @@ public:
     resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
     resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
 
-    // self turns into self: Self as a function param
+    // self turns into (self: Self) as a function param
     AST::SelfParam &self_param = method.get_self_param ();
     AST::IdentifierPattern self_pattern (
       self_param.get_node_id (), "self", self_param.get_locus (),
