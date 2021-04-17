@@ -369,11 +369,9 @@ irange::verify_range ()
 {
   if (m_kind == VR_UNDEFINED)
     {
-      gcc_assert (m_num_ranges == 0);
+      gcc_checking_assert (m_num_ranges == 0);
       return;
     }
-  gcc_assert (m_num_ranges != 0);
-
   if (m_kind == VR_VARYING)
     {
       gcc_checking_assert (m_num_ranges == 1);
@@ -382,50 +380,23 @@ irange::verify_range ()
     }
   if (!legacy_mode_p ())
     {
+      gcc_checking_assert (m_num_ranges != 0);
       gcc_checking_assert (!varying_compatible_p ());
       for (unsigned i = 0; i < m_num_ranges; ++i)
 	{
 	  tree lb = tree_lower_bound (i);
 	  tree ub = tree_upper_bound (i);
 	  int c = compare_values (lb, ub);
-	  gcc_assert (c == 0 || c == -1);
+	  gcc_checking_assert (c == 0 || c == -1);
 	}
       return;
     }
   if (m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
     {
-      gcc_assert (m_num_ranges == 1);
+      gcc_checking_assert (m_num_ranges == 1);
       int cmp = compare_values (tree_lower_bound (0), tree_upper_bound (0));
-      gcc_assert (cmp == 0 || cmp == -1 || cmp == -2);
+      gcc_checking_assert (cmp == 0 || cmp == -1 || cmp == -2);
     }
-}
-
-unsigned
-irange::legacy_num_pairs () const
-{
-  gcc_checking_assert (legacy_mode_p ());
-
-  if (undefined_p ())
-    return 0;
-  if (varying_p ())
-    return 1;
-  // Inlined symbolic_p for performance:
-  if (!is_gimple_min_invariant (min ()) || !is_gimple_min_invariant (max ()))
-    {
-      value_range numeric_range (*this);
-      numeric_range.normalize_symbolics ();
-      return numeric_range.num_pairs ();
-    }
-  if (m_kind == VR_ANTI_RANGE)
-    {
-      // ~[MIN, X] has one sub-range of [X+1, MAX], and
-      // ~[X, MAX] has one sub-range of [MIN, X-1].
-      if (vrp_val_is_min (min ()) || vrp_val_is_max (max ()))
-	return 1;
-      return 2;
-    }
-  gcc_checking_assert (m_num_ranges == 1);
-  return 1;
 }
 
 // Return the lower bound for a sub-range.  PAIR is the sub-range in
@@ -1810,7 +1781,7 @@ irange::invert ()
       return;
     }
 
-  gcc_assert (!undefined_p () && !varying_p ());
+  gcc_checking_assert (!undefined_p () && !varying_p ());
 
   // We always need one more set of bounds to represent an inverse, so
   // if we're at the limit, we can't properly represent things.

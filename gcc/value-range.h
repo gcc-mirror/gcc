@@ -118,7 +118,6 @@ protected:
   void legacy_union (irange *, const irange *);
   void legacy_intersect (irange *, const irange *);
   void verify_range ();
-  unsigned legacy_num_pairs () const;
   wide_int legacy_lower_bound (unsigned = 0) const;
   wide_int legacy_upper_bound (unsigned) const;
   int value_inside_range (tree) const;
@@ -207,10 +206,10 @@ irange::kind () const
 inline unsigned
 irange::num_pairs () const
 {
-  if (!legacy_mode_p ())
-    return m_num_ranges;
+  if (m_kind == VR_ANTI_RANGE)
+    return constant_p () ? 2 : 1;
   else
-    return legacy_num_pairs ();
+    return m_num_ranges;
 }
 
 inline tree
