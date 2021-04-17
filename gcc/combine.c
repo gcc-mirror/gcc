@@ -14392,6 +14392,11 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	     we keep notes from i2 or i1 if they will turn into REG_DEAD
 	     notes.  */
 
+	  /* If this register is set or clobbered between FROM_INSN and I3,
+	     we should not create a note for it.  */
+	  if (reg_set_between_p (XEXP (note, 0), from_insn, i3))
+	    break;
+
 	  /* If this register is set or clobbered in I3, put the note there
 	     unless there is one already.  */
 	  if (reg_set_p (XEXP (note, 0), PATTERN (i3)))
