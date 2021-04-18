@@ -8561,7 +8561,7 @@ package body Sem_Ch13 is
 
                      Generate_Reference
                        (Comp, Component_Name (CC), Set_Ref => False);
-                     Set_Entity (Component_Name (CC), Comp);
+                     Set_Entity_With_Checks (Component_Name (CC), Comp);
 
                      --  Update Fbit and Lbit to the actual bit number
 
