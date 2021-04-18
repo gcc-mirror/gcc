@@ -1,3 +1,57 @@
+2021-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99914
+	* config/i386/winnt-d.c (TARGET_D_TEMPLATES_ALWAYS_COMDAT): Define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (D language and ABI): Add @hook for
+	TARGET_D_TEMPLATES_ALWAYS_COMDAT.
+
+2021-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/darwin-d.c (darwin_d_handle_target_object_format): New
+	function.
+	(darwin_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/dragonfly-d.c (dragonfly_d_handle_target_object_format): New
+	function.
+	(dragonfly_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/freebsd-d.c (freebsd_d_handle_target_object_format): New
+	function.
+	(freebsd_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/glibc-d.c (glibc_d_handle_target_object_format): New
+	function.
+	(glibc_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/i386/i386-d.c (ix86_d_handle_target_object_format): New
+	function.
+	(ix86_d_register_target_info): Add ix86_d_handle_target_object_format
+	as handler for objectFormat key.
+	* config/i386/winnt-d.c (winnt_d_handle_target_object_format): New
+	function.
+	(winnt_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/netbsd-d.c (netbsd_d_handle_target_object_format): New
+	function.
+	(netbsd_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/openbsd-d.c (openbsd_d_handle_target_object_format): New
+	function.
+	(openbsd_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/pa/pa-d.c (pa_d_handle_target_object_format): New function.
+	(pa_d_register_target_info): Add pa_d_handle_target_object_format as
+	handler for objectFormat key.
+	* config/rs6000/rs6000-d.c (rs6000_d_handle_target_object_format): New
+	function.
+	(rs6000_d_register_target_info): Add
+	rs6000_d_handle_target_object_format as handler for objectFormat key.
+	* config/sol2-d.c (solaris_d_handle_target_object_format): New
+	function.
+	(solaris_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+
 2021-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/91710

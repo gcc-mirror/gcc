@@ -1,3 +1,11 @@
+2021-04-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* c-c++-common/zero-scratch-regs-8.c: Enable on s390*.
+	* c-c++-common/zero-scratch-regs-9.c: Likewise.
+	* c-c++-common/zero-scratch-regs-10.c: Likewise.
+	* c-c++-common/zero-scratch-regs-11.c: Likewise.
+	* gcc.target/s390/zero-scratch-regs-1.c: New test.
+
 2021-04-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100094
