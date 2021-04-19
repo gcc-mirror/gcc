@@ -86,10 +86,12 @@ else static if (GNU_Thread_Model == ThreadModel.Single)
 }
 else static if (GNU_Thread_Model == ThreadModel.Win32)
 {
+    import core.stdc.config;
+
     struct __gthread_once_t
     {
-        INT done;
-        LONG started;
+        int done;
+        c_long started;
     }
 
     int __gthr_win32_key_create(__gthread_key_t* keyp, GthreadDestroyFn dtor);

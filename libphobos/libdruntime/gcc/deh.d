@@ -805,7 +805,7 @@ version (GNU_SEH_Exceptions)
                                                            void* ms_orig_context, void* ms_disp)
     {
         return _GCC_specific_handler(ms_exc, this_frame, ms_orig_context,
-                                     ms_disp, &__gdc_personality_imp);
+                                     ms_disp, &gdc_personality);
     }
 }
 else version (GNU_SjLj_Exceptions)

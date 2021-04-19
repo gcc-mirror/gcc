@@ -9,6 +9,9 @@
  * Source: $(DRUNTIMESRC src/rt/_dmain2.d)
  */
 
+/* NOTE: This file has been patched from the original DMD distribution to
+ * work with the GDC compiler.
+ */
 module rt.dmain2;
 
 private
@@ -68,70 +71,6 @@ version (OSX)
 version (CRuntime_Microsoft)
 {
     extern(C) void init_msvc();
-}
-
-/***********************************
- * These are a temporary means of providing a GC hook for DLL use.  They may be
- * replaced with some other similar functionality later.
- */
-extern (C)
-{
-    void* gc_getProxy();
-    void  gc_setProxy(void* p);
-    void  gc_clrProxy();
-
-    alias void* function()      gcGetFn;
-    alias void  function(void*) gcSetFn;
-    alias void  function()      gcClrFn;
-}
-
-version (Windows)
-{
-    /*******************************************
-     * Loads a DLL written in D with the name 'name'.
-     * Returns:
-     *      opaque handle to the DLL if successfully loaded
-     *      null if failure
-     */
-    extern (C) void* rt_loadLibrary(const char* name)
-    {
-        return initLibrary(.LoadLibraryA(name));
-    }
-
-    extern (C) void* rt_loadLibraryW(const wchar_t* name)
-    {
-        return initLibrary(.LoadLibraryW(name));
-    }
-
-    void* initLibrary(void* mod)
-    {
-        // BUG: LoadLibrary() call calls rt_init(), which fails if proxy is not set!
-        // (What? LoadLibrary() is a Windows API call, it shouldn't call rt_init().)
-        if (mod is null)
-            return mod;
-        gcSetFn gcSet = cast(gcSetFn) GetProcAddress(mod, "gc_setProxy");
-        if (gcSet !is null)
-        {   // BUG: Set proxy, but too late
-            gcSet(gc_getProxy());
-        }
-        return mod;
-    }
-
-    /*************************************
-     * Unloads DLL that was previously loaded by rt_loadLibrary().
-     * Input:
-     *      ptr     the handle returned by rt_loadLibrary()
-     * Returns:
-     *      1   succeeded
-     *      0   some failure happened
-     */
-    extern (C) int rt_unloadLibrary(void* ptr)
-    {
-        gcClrFn gcClr  = cast(gcClrFn) GetProcAddress(ptr, "gc_clrProxy");
-        if (gcClr !is null)
-            gcClr();
-        return FreeLibrary(ptr) != 0;
-    }
 }
 
 /* To get out-of-band access to the args[] passed to main().
