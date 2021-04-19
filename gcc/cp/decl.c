@@ -10365,6 +10365,12 @@ grokvardecl (tree type,
 		    "a non-template variable cannot be %<concept%>");
           return NULL_TREE;
         }
+      else if (!at_namespace_scope_p ())
+	{
+	  error_at (declspecs->locations[ds_concept],
+		    "concept must be defined at namespace scope");
+	  return NULL_TREE;
+	}
       else
         DECL_DECLARED_CONCEPT_P (decl) = true;
       if (!same_type_ignoring_top_level_qualifiers_p (type, boolean_type_node))
