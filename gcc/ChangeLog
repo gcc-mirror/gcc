@@ -1,3 +1,12 @@
+2021-04-18  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	Backported from master:
+	2021-04-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	PR middle-end/98088
+	* omp-expand.c (expand_oacc_collapse_init): Update condition in
+	a gcc_assert.
+
 2021-04-16  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:

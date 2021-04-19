@@ -1,3 +1,20 @@
+2021-04-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-04-16  Harald Anlauf  <anlauf@gmx.de>
+		    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/63797
+	* gfortran.dg/pr63797.f90: New test.
+
+2021-04-18  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	Backported from master:
+	2021-04-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	PR middle-end/98088
+	* c-c++-common/goacc/collapse-2.c: New.
+
 2021-04-16  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:

@@ -1,3 +1,13 @@
+2021-04-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-04-16  Harald Anlauf  <anlauf@gmx.de>
+		    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/63797
+	* module.c (write_symtree): Do not write interface of intrinsic
+	procedure to module file for F2003 and newer.
+
 2021-04-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
