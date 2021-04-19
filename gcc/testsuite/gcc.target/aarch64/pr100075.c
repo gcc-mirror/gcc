@@ -1,5 +1,6 @@
 /* PR target/100075 */
 /* { dg-do compile } */
+/* { dg-require-effective-target aarch64_little_endian } */
 /* { dg-options "-O2" } */
 /* { dg-final { scan-assembler-not {\tsbfx\tx[0-9]+, x[0-9]+, 16, 16} } } */
 /* { dg-final { scan-assembler {\tneg\tw[0-9]+, w[0-9]+, asr 16} } } */
