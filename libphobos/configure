@@ -14917,7 +14917,7 @@ fi
 
   DCFG_HAVE_LIBATOMIC=false
   LIBATOMIC=
-  if test "x$with_libatomic" != "xno"; then :
+  if test "x$enable_libatomic" != "xno" && test "x$with_libatomic" != "xno"; then :
 
     DCFG_HAVE_LIBATOMIC=true
     LIBATOMIC=../../libatomic/libatomic_convenience.la
@@ -14953,7 +14953,7 @@ if test "${with_libbacktrace+set}" = set; then :
 fi
 
 
-  if test "x$with_libbacktrace" != "xno"; then :
+  if test "x$enable_libbacktrace" != "xno" && test "x$with_libbacktrace" != "xno"; then :
 
     LIBBACKTRACE=../../libbacktrace/libbacktrace.la
 
