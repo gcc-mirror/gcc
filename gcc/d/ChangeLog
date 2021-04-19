@@ -1,3 +1,21 @@
+2021-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99914
+	* d-target.def (d_templates_always_comdat): New hook.
+	* d-tree.h (mark_needed): Remove prototype.
+	* decl.cc: Include d-target.h.
+	(mark_needed): Rename to...
+	(d_mark_needed): ...this.  Make static.
+	(set_linkage_for_decl): Put variables in comdat if
+	d_templates_always_comdat.
+
+2021-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-target.cc (d_handle_target_object_format): New function.
+	(d_language_target_info): Add d_handle_target_object_format as handler
+	for objectFormat key.
+	(Target::getTargetInfo): Continue if handler returned NULL_TREE.
+
 2021-04-14  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-target.cc (Target::_init): Call new targetdm hook to register OS

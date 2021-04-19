@@ -10874,6 +10874,20 @@ gfc_trans_deferred_array (gfc_symbol * sym, gfc_wrapped_block * block)
 	}
     }
 
+  /* Set initial TKR for pointers and allocatables */
+  if (GFC_DESCRIPTOR_TYPE_P (type)
+      && (sym->attr.pointer || sym->attr.allocatable))
+    {
+      tree etype;
+
+      gcc_assert (sym->as && sym->as->rank>=0);
+      tmp = gfc_conv_descriptor_dtype (descriptor);
+      etype = gfc_get_element_type (type);
+      tmp = fold_build2_loc (input_location, MODIFY_EXPR,
+  			     TREE_TYPE (tmp), tmp,
+  			     gfc_get_dtype_rank_type (sym->as->rank, etype));
+      gfc_add_expr_to_block (&init, tmp);
+    }
   gfc_restore_backend_locus (&loc);
   gfc_init_block (&cleanup);
 

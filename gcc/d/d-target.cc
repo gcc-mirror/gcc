@@ -47,6 +47,7 @@ Target target;
 /* Internal key handlers for `__traits(getTargetInfo)'.  */
 static tree d_handle_target_cpp_std (void);
 static tree d_handle_target_cpp_runtime_library (void);
+static tree d_handle_target_object_format (void);
 
 /* In [traits/getTargetInfo], a reliable subset of getTargetInfo keys exists
    which are always available.  */
@@ -56,7 +57,7 @@ static const struct d_target_info_spec d_language_target_info[] =
   { "cppStd", d_handle_target_cpp_std },
   { "cppRuntimeLibrary", d_handle_target_cpp_runtime_library },
   { "floatAbi", NULL },
-  { "objectFormat", NULL },
+  { "objectFormat", d_handle_target_object_format },
   { NULL, NULL },
 };
 
@@ -517,6 +518,25 @@ d_handle_target_cpp_runtime_library (void)
   return build_string_literal (strlen (libstdcxx) + 1, libstdcxx);
 }
 
+/* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
+
+tree
+d_handle_target_object_format (void)
+{
+  const char *objfmt;
+
+#ifdef OBJECT_FORMAT_ELF
+  objfmt = "elf";
+#else
+  if (TARGET_COFF || TARGET_PECOFF)
+    objfmt = "coff";
+  else
+    objfmt = "";
+#endif
+
+  return build_string_literal (strlen (objfmt) + 1, objfmt);
+}
+
 /* Look up the target info KEY in the available getTargetInfo tables, and return
    the result as an Expression, or NULL if KEY is not found.  When the key must
    always exist, but is not supported, an empty string expression is returned.
@@ -533,13 +553,20 @@ Target::getTargetInfo (const char *key, const Loc &loc)
       tree result;
 
       if (strcmp (key, spec->name) != 0)
-       continue;
+	continue;
 
       /* Get the requested information, or empty string if unhandled.  */
       if (spec->handler)
-       result = (spec->handler) ();
+	{
+	  result = (spec->handler) ();
+	  /* Handler didn't return a result, meaning it really does not support
+	     the key in the current target configuration.  Check whether there
+	     are any other handlers which may recognize the key.  */
+	  if (result == NULL_TREE)
+	    continue;
+	}
       else
-       result = build_string_literal (1, "");
+	result = build_string_literal (1, "");
 
       gcc_assert (result);
       return d_eval_constant_expression (loc, result);

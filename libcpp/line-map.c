@@ -982,7 +982,7 @@ linemap_position_for_loc_and_offset (line_maps *set,
      the next line map of the set.  Otherwise, we try to encode the
      location in the next map.  */
   for (; map != LINEMAPS_LAST_ORDINARY_MAP (set)
-	 && (loc + (column << map->m_range_bits)
+	 && (loc + (column_offset << map->m_range_bits)
 	     >= MAP_START_LOCATION (map + 1)); map++)
     /* If the next map is a different file, or starts in a higher line, we
        cannot encode the location there.  */

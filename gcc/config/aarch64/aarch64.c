@@ -6337,9 +6337,9 @@ aarch64_vfp_is_call_candidate (cumulative_args_t pcum_v, machine_mode mode,
 
 static unsigned int
 aarch64_function_arg_alignment (machine_mode mode, const_tree type,
-				bool *abi_break)
+				unsigned int *abi_break)
 {
-  *abi_break = false;
+  *abi_break = 0;
   if (!type)
     return GET_MODE_ALIGNMENT (mode);
 
@@ -6381,7 +6381,7 @@ aarch64_function_arg_alignment (machine_mode mode, const_tree type,
 
   if (bitfield_alignment > alignment)
     {
-      *abi_break = true;
+      *abi_break = alignment;
       return bitfield_alignment;
     }
 
@@ -6403,7 +6403,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   int ncrn, nvrn, nregs;
   bool allocate_ncrn, allocate_nvrn;
   HOST_WIDE_INT size;
-  bool abi_break;
+  unsigned int abi_break;
 
   /* We need to do this once per argument.  */
   if (pcum->aapcs_arg_processed)
@@ -6721,14 +6721,19 @@ aarch64_function_arg_regno_p (unsigned regno)
 static unsigned int
 aarch64_function_arg_boundary (machine_mode mode, const_tree type)
 {
-  bool abi_break;
+  unsigned int abi_break;
   unsigned int alignment = aarch64_function_arg_alignment (mode, type,
 							   &abi_break);
+  alignment = MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
   if (abi_break & warn_psabi)
-    inform (input_location, "parameter passing for argument of type "
-	    "%qT changed in GCC 9.1", type);
+    {
+      abi_break = MIN (MAX (abi_break, PARM_BOUNDARY), STACK_BOUNDARY);
+      if (alignment != abi_break)
+	inform (input_location, "parameter passing for argument of type "
+		"%qT changed in GCC 9.1", type);
+    }
 
-  return MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
+  return alignment;
 }
 
 /* Implement TARGET_GET_RAW_RESULT_MODE and TARGET_GET_RAW_ARG_MODE.  */
@@ -18253,7 +18258,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 		  f_stack, NULL_TREE);
   size = int_size_in_bytes (type);
 
-  bool abi_break;
+  unsigned int abi_break;
   align
     = aarch64_function_arg_alignment (mode, type, &abi_break) / BITS_PER_UNIT;
 

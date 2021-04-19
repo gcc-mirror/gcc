@@ -116,7 +116,7 @@ AC_DEFUN([DRUNTIME_LIBRARIES_ATOMIC],
 
   DCFG_HAVE_LIBATOMIC=false
   LIBATOMIC=
-  AS_IF([test "x$with_libatomic" != "xno"], [
+  AS_IF([test "x$enable_libatomic" != "xno" && test "x$with_libatomic" != "xno"], [
     DCFG_HAVE_LIBATOMIC=true
     LIBATOMIC=../../libatomic/libatomic_convenience.la
   ], [
@@ -145,7 +145,7 @@ AC_DEFUN([DRUNTIME_LIBRARIES_BACKTRACE],
     AS_HELP_STRING([--without-libbacktrace],
                    [Do not use libbacktrace in core.runtime (default: auto)]))
 
-  AS_IF([test "x$with_libbacktrace" != "xno"], [
+  AS_IF([test "x$enable_libbacktrace" != "xno" && test "x$with_libbacktrace" != "xno"], [
     LIBBACKTRACE=../../libbacktrace/libbacktrace.la
 
     gdc_save_CPPFLAGS=$CPPFLAGS

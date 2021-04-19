@@ -33,6 +33,7 @@ version (CRuntime_Glibc) enum SharedELF = true;
 else version (CRuntime_Musl) enum SharedELF = true;
 else version (FreeBSD) enum SharedELF = true;
 else version (NetBSD) enum SharedELF = true;
+else version (OpenBSD) enum SharedELF = true;
 else version (DragonFlyBSD) enum SharedELF = true;
 else version (CRuntime_UClibc) enum SharedELF = true;
 else version (Solaris) enum SharedELF = true;
@@ -61,6 +62,12 @@ else version (NetBSD)
     import core.sys.netbsd.dlfcn;
     import core.sys.netbsd.sys.elf;
     import core.sys.netbsd.sys.link_elf;
+}
+else version (OpenBSD)
+{
+    import core.sys.openbsd.dlfcn;
+    import core.sys.openbsd.sys.elf;
+    import core.sys.openbsd.sys.link_elf;
 }
 else version (DragonFlyBSD)
 {
@@ -688,19 +695,21 @@ version (Shared)
 @nogc nothrow:
     link_map* linkMapForHandle(void* handle)
     {
-        link_map* map;
-        const success = dlinfo(handle, RTLD_DI_LINKMAP, &map) == 0;
-        safeAssert(success, "Failed to get DSO info.");
-        return map;
+        static if (__traits(compiles, RTLD_DI_LINKMAP))
+        {
+            link_map* map;
+            const success = dlinfo(handle, RTLD_DI_LINKMAP, &map) == 0;
+            safeAssert(success, "Failed to get DSO info.");
+            return map;
+        }
+        else version (OpenBSD)
+        {
+            safeAssert(handle !is null, "Failed to get DSO info.");
+            return cast(link_map*)handle;
+        }
+        else
+            static assert(0, "unimplemented");
     }
-
-     link_map* exeLinkMap(link_map* map)
-     {
-         safeAssert(map !is null, "Invalid link_map.");
-         while (map.l_prev !is null)
-             map = map.l_prev;
-         return map;
-     }
 
     DSO* dsoForHandle(void* handle)
     {
@@ -766,6 +775,8 @@ version (Shared)
                     strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                 else version (NetBSD)
                     strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
+                else version (OpenBSD)
+                    strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                 else version (DragonFlyBSD)
                     strtab = cast(const(char)*)(info.dlpi_addr + dyn.d_un.d_ptr); // relocate
                 else version (Solaris)
@@ -795,9 +806,21 @@ version (Shared)
 
     void* handleForName(const char* name)
     {
-        auto handle = .dlopen(name, RTLD_NOLOAD | RTLD_LAZY);
-        version (Solaris) { }
-        else if (handle !is null) .dlclose(handle); // drop reference count
+        version (Solaris) enum refCounted = false;
+        else version (OpenBSD) enum refCounted = false;
+        else enum refCounted = true;
+
+        static if (__traits(compiles, RTLD_NOLOAD))
+            enum flags = (RTLD_NOLOAD | RTLD_LAZY);
+        else
+            enum flags = RTLD_LAZY;
+
+        auto handle = .dlopen(name, flags);
+        static if (refCounted)
+        {
+            if (handle !is null)
+                .dlclose(handle); // drop reference count
+        }
         return handle;
     }
 }
@@ -891,6 +914,7 @@ bool findDSOInfoForAddr(in void* addr, dl_phdr_info* result=null) nothrow @nogc
 {
     version (linux)        enum IterateManually = true;
     else version (NetBSD)  enum IterateManually = true;
+    else version (OpenBSD) enum IterateManually = true;
     else version (Solaris) enum IterateManually = true;
     else                   enum IterateManually = false;
 

@@ -2438,8 +2438,8 @@ static void write_local (outf_p output_header,
 static int contains_scalar_p (type_p t);
 static void put_mangled_filename (outf_p, const input_file *);
 static void finish_root_table (struct flist *flp, const char *pfx,
-			       const char *tname, const char *lastname,
-			       const char *name);
+			       const char *lastname,
+			       const char *tname, const char *name);
 static void write_root (outf_p, pair_p, type_p, const char *, int,
 			struct fileloc *, bool);
 static void write_array (outf_p f, pair_p v,

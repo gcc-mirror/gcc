@@ -349,7 +349,8 @@ class Thread : ThreadBase
         }
         else version (Posix)
         {
-            pthread_detach( m_addr );
+            if (m_addr != m_addr.init)
+                pthread_detach( m_addr );
             m_addr = m_addr.init;
         }
         version (Darwin)
@@ -419,6 +420,17 @@ class Thread : ThreadBase
         else version (ARM)
         {
             uint[16]        m_reg; // r0-r15
+        }
+        else version (PPC)
+        {
+            // Make the assumption that we only care about non-fp and non-vr regs.
+            // ??? : it seems plausible that a valid address can be copied into a VR.
+            uint[32]        m_reg; // r0-31
+        }
+        else version (PPC64)
+        {
+            // As above.
+            ulong[32]       m_reg; // r0-31
         }
         else
         {
@@ -578,7 +590,7 @@ class Thread : ThreadBase
     {
         version (Windows)
         {
-            if ( WaitForSingleObject( m_hndl, INFINITE ) != WAIT_OBJECT_0 )
+            if ( m_addr != m_addr.init && WaitForSingleObject( m_hndl, INFINITE ) != WAIT_OBJECT_0 )
                 throw new ThreadException( "Unable to join thread" );
             // NOTE: m_addr must be cleared before m_hndl is closed to avoid
             //       a race condition with isRunning. The operation is done
@@ -589,7 +601,7 @@ class Thread : ThreadBase
         }
         else version (Posix)
         {
-            if ( pthread_join( m_addr, null ) != 0 )
+            if ( m_addr != m_addr.init && pthread_join( m_addr, null ) != 0 )
                 throw new ThreadException( "Unable to join thread" );
             // NOTE: pthread_join acts as a substitute for pthread_detach,
             //       which is normally called by the dtor.  Setting m_addr
@@ -1396,8 +1408,98 @@ in (fn)
     void *sp = void;
     version (GNU)
     {
-        __builtin_unwind_init();
-        sp = &sp;
+        // The generic solution below using a call to __builtin_unwind_init ()
+        // followed by an assignment to sp has two issues:
+        // 1) On some archs it stores a huge amount of FP and Vector state which
+        //    is not the subject of the scan - and, indeed might produce false
+        //    hits.
+        // 2) Even on archs like X86, where there are no callee-saved FPRs/VRs there
+        //    tend to be 'holes' in the frame allocations (to deal with alignment) which
+        //    also will  contain random data which could produce false positives.
+        // This solution stores only the integer callee-saved registers.
+        version (X86)
+        {
+            void*[3] regs = void;
+            asm pure nothrow @nogc
+            {
+                "movl   %%ebx, %0" : "=m" (regs[0]);
+                "movl   %%esi, %0" : "=m" (regs[1]);
+                "movl   %%edi, %0" : "=m" (regs[2]);
+            }
+            sp = cast(void*)&regs[0];
+        }
+        else version (X86_64)
+        {
+            void*[5] regs = void;
+            asm pure nothrow @nogc
+            {
+                "movq   %%rbx, %0" : "=m" (regs[0]);
+                "movq   %%r12, %0" : "=m" (regs[1]);
+                "movq   %%r13, %0" : "=m" (regs[2]);
+                "movq   %%r14, %0" : "=m" (regs[3]);
+                "movq   %%r15, %0" : "=m" (regs[4]);
+            }
+            sp = cast(void*)&regs[0];
+        }
+        else version (PPC)
+        {
+            void*[19] regs = void;
+            asm pure nothrow @nogc
+            {
+                "stw r13, %0" : "=m" (regs[ 0]);
+                "stw r14, %0" : "=m" (regs[ 1]);
+                "stw r15, %0" : "=m" (regs[ 2]);
+                "stw r16, %0" : "=m" (regs[ 3]);
+                "stw r17, %0" : "=m" (regs[ 4]);
+                "stw r18, %0" : "=m" (regs[ 5]);
+                "stw r19, %0" : "=m" (regs[ 6]);
+                "stw r20, %0" : "=m" (regs[ 7]);
+                "stw r21, %0" : "=m" (regs[ 9]);
+                "stw r22, %0" : "=m" (regs[ 9]);
+                "stw r23, %0" : "=m" (regs[10]);
+                "stw r24, %0" : "=m" (regs[11]);
+                "stw r25, %0" : "=m" (regs[12]);
+                "stw r26, %0" : "=m" (regs[13]);
+                "stw r27, %0" : "=m" (regs[14]);
+                "stw r28, %0" : "=m" (regs[15]);
+                "stw r29, %0" : "=m" (regs[16]);
+                "stw r30, %0" : "=m" (regs[17]);
+                "stw r31, %0" : "=m" (regs[18]);
+            }
+            sp = cast(void*)&regs[0];
+        }
+        else version (PPC64)
+        {
+            void*[19] regs = void;
+            asm pure nothrow @nogc
+            {
+                "std r13, %0" : "=m" (regs[ 0]);
+                "std r14, %0" : "=m" (regs[ 1]);
+                "std r15, %0" : "=m" (regs[ 2]);
+                "std r16, %0" : "=m" (regs[ 3]);
+                "std r17, %0" : "=m" (regs[ 4]);
+                "std r18, %0" : "=m" (regs[ 5]);
+                "std r19, %0" : "=m" (regs[ 6]);
+                "std r20, %0" : "=m" (regs[ 7]);
+                "std r21, %0" : "=m" (regs[ 8]);
+                "std r22, %0" : "=m" (regs[ 9]);
+                "std r23, %0" : "=m" (regs[10]);
+                "std r24, %0" : "=m" (regs[11]);
+                "std r25, %0" : "=m" (regs[12]);
+                "std r26, %0" : "=m" (regs[13]);
+                "std r27, %0" : "=m" (regs[14]);
+                "std r28, %0" : "=m" (regs[15]);
+                "std r29, %0" : "=m" (regs[16]);
+                "std r30, %0" : "=m" (regs[17]);
+                "std r31, %0" : "=m" (regs[18]);
+            }
+            sp = cast(void*)&regs[0];
+        }
+        else
+        {
+            __builtin_unwind_init();
+            sp = &sp;
+        }
     }
     else version (AsmX86_Posix)
     {
@@ -1539,9 +1641,9 @@ package extern(D) void* getStackBottom() nothrow @nogc
             void *bottom;
 
             version (X86)
-                asm pure nothrow @nogc { "movl %%fs:4, %0;" : "=r" bottom; }
+                asm pure nothrow @nogc { "movl %%fs:4, %0;" : "=r" (bottom); }
             else version (X86_64)
-                asm pure nothrow @nogc { "movq %%gs:8, %0;" : "=r" bottom; }
+                asm pure nothrow @nogc { "movq %%gs:8, %0;" : "=r" (bottom); }
             else
                 static assert(false, "Platform not supported.");
 
@@ -1789,6 +1891,28 @@ private extern (D) bool suspend( Thread t ) nothrow @nogc
             t.m_reg[13] = state.sp;
             t.m_reg[14] = state.lr;
             t.m_reg[15] = state.pc;
+        }
+        else version (PPC)
+        {
+            ppc_thread_state_t state = void;
+            mach_msg_type_number_t count = PPC_THREAD_STATE_COUNT;
+
+            if (thread_get_state(t.m_tmach, PPC_THREAD_STATE, &state, &count) != KERN_SUCCESS)
+                onThreadError("Unable to load thread state");
+            if (!t.m_lock)
+                t.m_curr.tstack = cast(void*) state.r[1];
+            t.m_reg[] = state.r[];
+        }
+        else version (PPC64)
+        {
+            ppc_thread_state64_t state = void;
+            mach_msg_type_number_t count = PPC_THREAD_STATE64_COUNT;
+
+            if (thread_get_state(t.m_tmach, PPC_THREAD_STATE64, &state, &count) != KERN_SUCCESS)
+                onThreadError("Unable to load thread state");
+            if (!t.m_lock)
+                t.m_curr.tstack = cast(void*) state.r[1];
+            t.m_reg[] = state.r[];
         }
         else
         {

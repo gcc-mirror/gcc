@@ -18,7 +18,7 @@ import core.sys.windows.windef;
 
 public import core.sys.windows.dbghelp_types;
 
-extern(System)
+extern(Windows)
 {
     alias BOOL         function(HANDLE hProcess, DWORD64 lpBaseAddress, PVOID lpBuffer, DWORD nSize, LPDWORD lpNumberOfBytesRead) ReadProcessMemoryProc64;
     alias PVOID        function(HANDLE hProcess, DWORD64 AddrBase) FunctionTableAccessProc64;

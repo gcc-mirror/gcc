@@ -104,5 +104,13 @@ and @var{link_windows} to @code{1} to apply @code{stdcall} to functions with\n\
  bool, (unsigned int *link_system, unsigned int *link_windows),
  hook_bool_uintp_uintp_false)
 
+/* True if instantiations are always COMDAT if they have external linkage.  */
+DEFHOOKPOD
+(d_templates_always_comdat,
+ "This flag is true if instantiated functions and variables are always COMDAT\n\
+if they have external linkage.  If this flag is false, then instantiated\n\
+decls will be emitted as weak symbols.  The default is @code{false}.",
+ bool, false)
+
 /* Close the 'struct gcc_targetdm' definition.  */
 HOOK_VECTOR_END (C90_EMPTY_HACK)

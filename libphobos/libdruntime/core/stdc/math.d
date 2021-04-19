@@ -424,6 +424,90 @@ else version (CRuntime_Microsoft) // fully supported since MSVCRT 12 (VS 2013) o
     pure int _fpclass(double x);
   }
 
+  version (MinGW)
+  {
+    enum
+    {
+        ///
+        FP_NAN = 0x0100,
+        ///
+        FP_NORMAL = 0x0400,
+        ///
+        FP_INFINITE = FP_NAN | FP_NORMAL,
+        ///
+        FP_ZERO = 0x0400,
+        ///
+        FP_SUBNORMAL = FP_NORMAL | FP_ZERO
+    }
+
+    pure int __fpclassifyf(float x);
+    pure int __fpclassify(double x);
+    pure int __fpclassifyl(real x);
+
+    pure int __isnanf(float x);
+    pure int __isnan(double x);
+    pure int __isnanl(real x);
+
+    pure int __signbitf(float x);
+    pure int __signbit(double x);
+    pure int __signbitl(real x);
+
+    extern (D)
+    {
+        //int fpclassify(real-floating x);
+        ///
+        extern(C) pragma(mangle, "__fpclassifyf") pure int fpclassify(float x);
+        ///
+        extern(C) pragma(mangle, "__fpclassify")  pure int fpclassify(double x);
+        ///
+        extern(C) pragma(mangle, real.sizeof == double.sizeof ? "__fpclassify" : "__fpclassifyl")
+            pure int fpclassify(real x);
+
+        //int isfinite(real-floating x);
+        ///
+        pure int isfinite(float x)       { return (fpclassify(x) & FP_NORMAL) == 0; }
+        ///
+        pure int isfinite(double x)      { return (fpclassify(x) & FP_NORMAL) == 0; }
+        ///
+        pure int isfinite(real x)        { return (fpclassify(x) & FP_NORMAL) == 0; }
+
+        //int isinf(real-floating x);
+        ///
+        pure int isinf(float x)          { return fpclassify(x) == FP_INFINITE; }
+        ///
+        pure int isinf(double x)         { return fpclassify(x) == FP_INFINITE; }
+        ///
+        pure int isinf(real x)           { return fpclassify(x) == FP_INFINITE; }
+
+        //int isnan(real-floating x);
+        ///
+        extern(C) pragma(mangle, "__isnanf") pure int isnan(float x);
+        ///
+        extern(C) pragma(mangle, "__isnan")  pure int isnan(double x);
+        ///
+        extern(C) pragma(mangle, real.sizeof == double.sizeof ? "__isnan" : "__isnanl")
+            pure int isnan(real x);
+
+        //int isnormal(real-floating x);
+        ///
+        int isnormal(float x)       { return fpclassify(x) == FP_NORMAL; }
+        ///
+        int isnormal(double x)      { return fpclassify(x) == FP_NORMAL; }
+        ///
+        int isnormal(real x)        { return fpclassify(x) == FP_NORMAL; }
+
+        //int signbit(real-floating x);
+        ///
+        extern(C) pragma(mangle, "__signbitf") pure int signbit(float x);
+        ///
+        extern(C) pragma(mangle, "__signbit")  pure int signbit(double x);
+        ///
+        extern(C) pragma(mangle, real.sizeof == double.sizeof ? "__signbit" : "__signbitl")
+            int signbit(real x);
+    }
+  }
+  else
+  {
     enum
     {
         ///
@@ -438,78 +522,79 @@ else version (CRuntime_Microsoft) // fully supported since MSVCRT 12 (VS 2013) o
         FP_NAN       =  2,
     }
 
-  extern(D)
-  {
-    //int fpclassify(real-floating x);
-    ///
-    extern(C) pragma(mangle, "_fdclass") pure int fpclassify(float x);
-    ///
-    extern(C) pragma(mangle, "_dclass")  pure int fpclassify(double x);
-    ///
-    pure int fpclassify()(real x)
+    extern(D)
     {
-        static if (real.sizeof == double.sizeof)
-            return fpclassify(cast(double) x);
-        else
-            static assert(false, "fpclassify(real) not supported by MS C runtime");
-    }
+        //int fpclassify(real-floating x);
+        ///
+        extern(C) pragma(mangle, "_fdclass") pure int fpclassify(float x);
+        ///
+        extern(C) pragma(mangle, "_dclass")  pure int fpclassify(double x);
+        ///
+        pure int fpclassify()(real x)
+        {
+            static if (real.sizeof == double.sizeof)
+                return fpclassify(cast(double) x);
+            else
+                static assert(false, "fpclassify(real) not supported by MS C runtime");
+        }
 
-    //int isfinite(real-floating x);
-    ///
-    pure int isfinite()(float x)     { return fpclassify(x) <= 0; }
-    ///
-    pure int isfinite()(double x)    { return fpclassify(x) <= 0; }
-    ///
-    pure int isfinite()(real x)      { return fpclassify(x) <= 0; }
+        //int isfinite(real-floating x);
+        ///
+        pure int isfinite()(float x)     { return fpclassify(x) <= 0; }
+        ///
+        pure int isfinite()(double x)    { return fpclassify(x) <= 0; }
+        ///
+        pure int isfinite()(real x)      { return fpclassify(x) <= 0; }
 
-    //int isinf(real-floating x);
-    ///
-    pure int isinf()(float x)        { return fpclassify(x) == FP_INFINITE; }
-    ///
-    pure int isinf()(double x)       { return fpclassify(x) == FP_INFINITE; }
-    ///
-    pure int isinf()(real x)         { return fpclassify(x) == FP_INFINITE; }
+        //int isinf(real-floating x);
+        ///
+        pure int isinf()(float x)        { return fpclassify(x) == FP_INFINITE; }
+        ///
+        pure int isinf()(double x)       { return fpclassify(x) == FP_INFINITE; }
+        ///
+        pure int isinf()(real x)         { return fpclassify(x) == FP_INFINITE; }
 
-    //int isnan(real-floating x);
-    version (none) // requires MSVCRT 12+ (VS 2013)
-    {
-        ///
-        pure int isnan(float x)      { return fpclassify(x) == FP_NAN; }
-        ///
-        pure int isnan(double x)     { return fpclassify(x) == FP_NAN; }
-        ///
-        pure int isnan(real x)       { return fpclassify(x) == FP_NAN; }
-    }
-    else // for backward compatibility with older runtimes
-    {
-        ///
-        pure int isnan(float x)      { version (Win64) return _isnanf(x); else return _isnan(cast(double) x); }
-        ///
-        extern(C) pragma(mangle, "_isnan") pure int isnan(double x);
-        ///
-        pure int isnan(real x)       { return _isnan(cast(double) x); }
-    }
+        //int isnan(real-floating x);
+        version (none) // requires MSVCRT 12+ (VS 2013)
+        {
+            ///
+            pure int isnan(float x)      { return fpclassify(x) == FP_NAN; }
+            ///
+            pure int isnan(double x)     { return fpclassify(x) == FP_NAN; }
+            ///
+            pure int isnan(real x)       { return fpclassify(x) == FP_NAN; }
+        }
+        else // for backward compatibility with older runtimes
+        {
+            ///
+            pure int isnan(float x)      { version (Win64) return _isnanf(x); else return _isnan(cast(double) x); }
+            ///
+            extern(C) pragma(mangle, "_isnan") pure int isnan(double x);
+            ///
+            pure int isnan(real x)       { return _isnan(cast(double) x); }
+        }
 
-    //int isnormal(real-floating x);
-    ///
-    pure int isnormal()(float x)     { return fpclassify(x) == FP_NORMAL; }
-    ///
-    pure int isnormal()(double x)    { return fpclassify(x) == FP_NORMAL; }
-    ///
-    pure int isnormal()(real x)      { return fpclassify(x) == FP_NORMAL; }
+        //int isnormal(real-floating x);
+        ///
+        pure int isnormal()(float x)     { return fpclassify(x) == FP_NORMAL; }
+        ///
+        pure int isnormal()(double x)    { return fpclassify(x) == FP_NORMAL; }
+        ///
+        pure int isnormal()(real x)      { return fpclassify(x) == FP_NORMAL; }
 
-    //int signbit(real-floating x);
-    ///
-    extern(C) pragma(mangle, "_fdsign") pure int signbit(float x);
-    ///
-    extern(C) pragma(mangle, "_dsign")  pure int signbit(double x);
-    ///
-    pure int signbit()(real x)
-    {
-        static if (real.sizeof == double.sizeof)
-            return signbit(cast(double) x);
-        else
-            return (cast(short*)&(x))[4] & 0x8000;
+        //int signbit(real-floating x);
+        ///
+        extern(C) pragma(mangle, "_fdsign") pure int signbit(float x);
+        ///
+        extern(C) pragma(mangle, "_dsign")  pure int signbit(double x);
+        ///
+        pure int signbit()(real x)
+        {
+            static if (real.sizeof == double.sizeof)
+                return signbit(cast(double) x);
+            else
+                return (cast(short*)&(x))[4] & 0x8000;
+        }
     }
   }
 }
@@ -835,88 +920,6 @@ else version (CRuntime_UClibc)
     int signbit(real x);
   }
 }
-else version (MinGW)
-{
-    enum
-    {
-        ///
-        FP_NAN = 0x0100,
-        ///
-        FP_NORMAL = 0x0400,
-        ///
-        FP_INFINITE = FP_NAN | FP_NORMAL,
-        ///
-        FP_ZERO = 0x0400,
-        ///
-        FP_SUBNORMAL = FP_NORMAL | FP_ZERO
-    }
-
-    pure int __fpclassifyf(float x);
-    pure int __fpclassify(double x);
-    pure int __fpclassifyl(real x);
-
-    pure int __isnanf(float x);
-    pure int __isnan(double x);
-    pure int __isnanl(real x);
-
-    pure int __signbitf(float x);
-    pure int __signbit(double x);
-    pure int __signbitl(real x);
-
-  extern (D)
-  {
-    //int fpclassify(real-floating x);
-      ///
-    extern(C) pragma(mangle, "__fpclassifyf") pure int fpclassify(float x);
-    ///
-    extern(C) pragma(mangle, "__fpclassify")  pure int fpclassify(double x);
-    ///
-    extern(C) pragma(mangle, real.sizeof == double.sizeof ? "__fpclassify" : "__fpclassifyl")
-    pure int fpclassify(real x);
-
-    //int isfinite(real-floating x);
-    ///
-    pure int isfinite(float x)       { return (fpclassify(x) & FP_NORMAL) == 0; }
-    ///
-    pure int isfinite(double x)      { return (fpclassify(x) & FP_NORMAL) == 0; }
-    ///
-    pure int isfinite(real x)        { return (fpclassify(x) & FP_NORMAL) == 0; }
-
-    //int isinf(real-floating x);
-    ///
-    pure int isinf(float x)          { return fpclassify(x) == FP_INFINITE; }
-    ///
-    pure int isinf(double x)         { return fpclassify(x) == FP_INFINITE; }
-    ///
-    pure int isinf(real x)           { return fpclassify(x) == FP_INFINITE; }
-
-    //int isnan(real-floating x);
-    ///
-    extern(C) pragma(mangle, "__isnanf") pure int isnan(float x);
-    ///
-    extern(C) pragma(mangle, "__isnan")  pure int isnan(double x);
-    ///
-    extern(C) pragma(mangle, real.sizeof == double.sizeof ? "__isnan" : "__isnanl")
-    pure int isnan(real x);
-
-    //int isnormal(real-floating x);
-    ///
-    int isnormal(float x)       { return fpclassify(x) == FP_NORMAL; }
-    ///
-    int isnormal(double x)      { return fpclassify(x) == FP_NORMAL; }
-    ///
-    int isnormal(real x)        { return fpclassify(x) == FP_NORMAL; }
-
-    //int signbit(real-floating x);
-    ///
-    extern(C) pragma(mangle, "__signbitf") pure int signbit(float x);
-    ///
-    extern(C) pragma(mangle, "__signbit")  pure int signbit(double x);
-    ///
-    extern(C) pragma(mangle, real.sizeof == double.sizeof ? "__signbit" : "__signbitl")
-    int signbit(real x);
-  }
-}
 else version (Darwin)
 {
     enum
@@ -1166,7 +1169,7 @@ else version (OpenBSD)
         FP_FAST_FMAL = 1,
     }
 
-    pure int __fpclassifyd(double);
+    pure int __fpclassify(double);
     pure int __fpclassifyf(float);
     pure int __fpclassifyl(real);
     pure int __isfinitef(float);
@@ -1188,7 +1191,7 @@ else version (OpenBSD)
       ///
     extern(C) pragma(mangle, "__fpclassifyf") pure int fpclassify(float x);
     ///
-    extern(C) pragma(mangle, "__fpclassifyd") pure int fpclassify(double x);
+    extern(C) pragma(mangle, "__fpclassify") pure int fpclassify(double x);
     ///
     extern(C) pragma(mangle, "__fpclassifyl") pure int fpclassify(real x);
 

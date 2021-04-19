@@ -7369,6 +7369,8 @@ floating-point support; they are not included in this mechanism.
 
 @hook TARGET_D_HAS_STDCALL_CONVENTION
 
+@hook TARGET_D_TEMPLATES_ALWAYS_COMDAT
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces

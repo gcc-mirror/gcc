@@ -1,3 +1,21 @@
+2021-04-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100094
+	* trans-array.c (gfc_trans_deferred_array): Add code to initialize
+	pointers and allocatables with correct TKR parameters.
+
+2021-04-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100018
+	* resolve.c: Add association check before de-referencing pointer.
+
+2021-04-16  Harald Anlauf  <anlauf@gmx.de>
+	    Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/63797
+	* module.c (write_symtree): Do not write interface of intrinsic
+	procedure to module file for F2003 and newer.
+
 2021-04-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/99307

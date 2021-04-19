@@ -186,7 +186,18 @@ else version (Posix)
   }
 }
 
-version (CRuntime_Microsoft)
+version (GNU)
+    alias c_long_double = real;
+else version (LDC)
+    alias c_long_double = real; // 64-bit real for MSVC targets
+else version (SDC)
+{
+    version (X86)
+        alias c_long_double = real;
+    else version (X86_64)
+        alias c_long_double = real;
+}
+else version (CRuntime_Microsoft)
 {
     /* long double is 64 bits, not 80 bits, but is mangled differently
      * than double. To distinguish double from long double, create a wrapper to represent
@@ -222,17 +233,6 @@ else version (DigitalMars)
             alias real c_long_double;
     }
 }
-else version (GNU)
-    alias real c_long_double;
-else version (LDC)
-    alias real c_long_double;
-else version (SDC)
-{
-    version (X86)
-        alias real c_long_double;
-    else version (X86_64)
-        alias real c_long_double;
-}
 
 static assert(is(c_long_double), "c_long_double needs to be declared for this platform/architecture.");
 
@@ -257,18 +257,9 @@ private struct _Complex(T)
     T im;
 }
 
-version (Posix)
-{
-    align(float.alignof)  enum __c_complex_float : _Complex!float;
-    align(double.alignof) enum __c_complex_double : _Complex!double;
-    align(real.alignof)   enum __c_complex_real : _Complex!real;
-}
-else
-{
-    align(float.sizeof * 2)  enum __c_complex_float : _Complex!float;
-    align(double.sizeof * 2) enum __c_complex_double : _Complex!double;
-    align(real.alignof)      enum __c_complex_real : _Complex!real;
-}
+enum __c_complex_float  : _Complex!float;
+enum __c_complex_double : _Complex!double;
+enum __c_complex_real   : _Complex!c_long_double;
 
 alias c_complex_float = __c_complex_float;
 alias c_complex_double = __c_complex_double;
