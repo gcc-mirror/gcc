@@ -8527,31 +8527,21 @@ extract_base_bit_offset (tree base, tree *base_ref, poly_int64 *bitposp,
   poly_offset_int poffset;
 
   if (base_ref)
-    {
-      *base_ref = NULL_TREE;
+    *base_ref = NULL_TREE;
 
+  if (TREE_CODE (base) == ARRAY_REF)
+    {
       while (TREE_CODE (base) == ARRAY_REF)
 	base = TREE_OPERAND (base, 0);
-
-      if (TREE_CODE (base) == INDIRECT_REF)
-	base = TREE_OPERAND (base, 0);
+      if (TREE_CODE (base) != COMPONENT_REF
+	  || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE)
+	return NULL_TREE;
     }
-  else
-    {
-      if (TREE_CODE (base) == ARRAY_REF)
-	{
-	  while (TREE_CODE (base) == ARRAY_REF)
-	    base = TREE_OPERAND (base, 0);
-	  if (TREE_CODE (base) != COMPONENT_REF
-	      || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE)
-	    return NULL_TREE;
-	}
-      else if (TREE_CODE (base) == INDIRECT_REF
-	       && TREE_CODE (TREE_OPERAND (base, 0)) == COMPONENT_REF
-	       && (TREE_CODE (TREE_TYPE (TREE_OPERAND (base, 0)))
-		   == REFERENCE_TYPE))
-	base = TREE_OPERAND (base, 0);
-    }
+  else if (TREE_CODE (base) == INDIRECT_REF
+	   && TREE_CODE (TREE_OPERAND (base, 0)) == COMPONENT_REF
+	   && (TREE_CODE (TREE_TYPE (TREE_OPERAND (base, 0)))
+	       == REFERENCE_TYPE))
+    base = TREE_OPERAND (base, 0);
 
   base = get_inner_reference (base, &bitsize, &bitpos, &offset, &mode,
 			      &unsignedp, &reversep, &volatilep);
