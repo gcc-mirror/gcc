@@ -37,6 +37,10 @@ if { [check_effective_target_aarch64_sve2] } {
     set sve2_flags "-march=armv8.5-a+sve2"
 }
 
+# Turn off any codegen tweaks by default that may affect expected assembly.
+# Tests relying on those should turn them on explicitly.
+set sve_flags "$sve_flags -mtune=generic -moverride=tune=none"
+
 lappend extra_flags "-fno-ipa-icf"
 
 global gcc_runtest_parallelize_limit_minor

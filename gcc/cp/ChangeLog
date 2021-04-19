@@ -1,3 +1,75 @@
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100111
+	* constexpr.c (cxx_eval_store_expression): Don't add CONSTRUCTORs
+	for empty classes into *valp when types don't match even when *valp
+	is NULL.
+
+2021-04-16  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/99803
+	* decl.c (make_typename_type): Give an error and return when
+	name is is_overloaded_fn.
+	* parser.c (cp_parser_class_name): Don't check is_overloaded_fn
+	before calling make_typename_type.
+
+2021-04-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99700
+	* constexpr.c (reduced_constant_expression_p): For array
+	CONSTRUCTORs, use a dedicated loop that additionally verifies
+	the CONSTRUCTOR spans the entire array.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99850
+	* parser.c (cp_parser_constraint_requires_parens) <case CPP_DEREF>:
+	If lambda_p, return pce_ok instead of pce_maybe_postfix.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99833
+	* pt.c (extract_locals_r): When handling DECL_EXPR of a structured
+	binding, add to data.internal also all corresponding structured
+	binding decls.
+
+2021-04-16  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100079
+	* cp-tree.h (first_field): Declare.
+	* mangle.c (range_expr_nelts): New.
+	(write_expression): Improve class NTTP mangling.
+	* pt.c (get_template_parm_object): Clear TREE_HAS_CONSTRUCTOR.
+	* tree.c (zero_init_expr_p): Improve class NTTP handling.
+	* decl.c: Adjust comment.
+
+2021-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80456
+	* call.c (build_new_method_call_1): Check again for side-effects
+	with a volatile object.
+
+2021-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100101
+	PR c++/99583
+	* pt.c (find_parameter_packs_r) [FUNCTION_TYPE]: Walk into
+	TYPE_RAISES_EXCEPTIONS here.
+	* tree.c (cp_walk_subtrees): Not here.
+
+2021-04-15  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100091
+	PR c++/99478
+	* parser.c (cp_parser_default_type_template_argument): Set
+	parser->local_variables_forbidden_p.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/98852
+	* typeck.c (merge_type_attributes_from): New function.
+	(cp_common_type): Use it for vector types.
+
 2021-04-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100078

@@ -6695,6 +6695,7 @@ extern void initialize_artificial_var		(tree, vec<constructor_elt, va_gc> *);
 extern tree check_var_type			(tree, tree, location_t);
 extern tree reshape_init                        (tree, tree, tsubst_flags_t);
 extern tree next_initializable_field (tree);
+extern tree first_field				(const_tree);
 extern tree fndecl_declared_return_type		(tree);
 extern bool undeduced_auto_decl			(tree);
 extern bool require_deduced_type		(tree, tsubst_flags_t = tf_warning_or_error);

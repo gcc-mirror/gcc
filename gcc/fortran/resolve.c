@@ -11999,6 +11999,7 @@ start:
 	    /* Assigning a class object always is a regular assign.  */
 	    if (code->expr2->ts.type == BT_CLASS
 		&& code->expr1->ts.type == BT_CLASS
+		&& CLASS_DATA (code->expr2)
 		&& !CLASS_DATA (code->expr2)->attr.dimension
 		&& !(gfc_expr_attr (code->expr1).proc_pointer
 		     && code->expr2->expr_type == EXPR_VARIABLE

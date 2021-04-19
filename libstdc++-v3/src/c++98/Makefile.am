@@ -39,7 +39,6 @@ endif
 # particular host.
 host_sources = \
 	$(cow_string_host_sources) \
-	atomicity.cc \
 	codecvt_members.cc \
 	collate_members.cc \
 	messages_members.cc \
@@ -64,10 +63,6 @@ numeric_members.cc: ${glibcxx_srcdir}/$(CNUMERIC_CC)
 
 time_members.cc: ${glibcxx_srcdir}/$(CTIME_CC)
 	$(LN_S) ${glibcxx_srcdir}/$(CTIME_CC) . || true
-
-atomicity_file = ${glibcxx_srcdir}/$(ATOMICITY_SRCDIR)/atomicity.h
-atomicity.cc: ${atomicity_file}
-	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
 if ENABLE_DUAL_ABI
 collate_members_cow.cc: ${glibcxx_srcdir}/$(CCOLLATE_CC)

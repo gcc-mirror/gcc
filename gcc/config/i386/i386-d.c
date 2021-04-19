@@ -60,6 +60,24 @@ ix86_d_handle_target_float_abi (void)
   return build_string_literal (strlen (abi) + 1, abi);
 }
 
+/* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
+
+static tree
+ix86_d_handle_target_object_format (void)
+{
+  const char *objfmt = NULL;
+
+  if (TARGET_MACHO)
+    objfmt = "macho";
+  else if (TARGET_COFF || TARGET_PECOFF)
+    objfmt = "coff";
+
+  if (objfmt == NULL)
+    return NULL_TREE;
+
+  return build_string_literal (strlen (objfmt) + 1, objfmt);
+}
+
 /* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
 
 void
@@ -67,6 +85,7 @@ ix86_d_register_target_info (void)
 {
   const struct d_target_info_spec handlers[] = {
     { "floatAbi", ix86_d_handle_target_float_abi },
+    { "objectFormat", ix86_d_handle_target_object_format },
     { NULL, NULL },
   };
 

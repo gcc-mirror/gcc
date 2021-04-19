@@ -1,3 +1,146 @@
+2021-04-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/99927
+	* combine.c (distribute_notes) [REG_UNUSED]: If the register already
+	is dead, just drop it.
+
+2021-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99914
+	* config/i386/winnt-d.c (TARGET_D_TEMPLATES_ALWAYS_COMDAT): Define.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (D language and ABI): Add @hook for
+	TARGET_D_TEMPLATES_ALWAYS_COMDAT.
+
+2021-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config/darwin-d.c (darwin_d_handle_target_object_format): New
+	function.
+	(darwin_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/dragonfly-d.c (dragonfly_d_handle_target_object_format): New
+	function.
+	(dragonfly_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/freebsd-d.c (freebsd_d_handle_target_object_format): New
+	function.
+	(freebsd_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/glibc-d.c (glibc_d_handle_target_object_format): New
+	function.
+	(glibc_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/i386/i386-d.c (ix86_d_handle_target_object_format): New
+	function.
+	(ix86_d_register_target_info): Add ix86_d_handle_target_object_format
+	as handler for objectFormat key.
+	* config/i386/winnt-d.c (winnt_d_handle_target_object_format): New
+	function.
+	(winnt_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/netbsd-d.c (netbsd_d_handle_target_object_format): New
+	function.
+	(netbsd_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/openbsd-d.c (openbsd_d_handle_target_object_format): New
+	function.
+	(openbsd_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+	* config/pa/pa-d.c (pa_d_handle_target_object_format): New function.
+	(pa_d_register_target_info): Add pa_d_handle_target_object_format as
+	handler for objectFormat key.
+	* config/rs6000/rs6000-d.c (rs6000_d_handle_target_object_format): New
+	function.
+	(rs6000_d_register_target_info): Add
+	rs6000_d_handle_target_object_format as handler for objectFormat key.
+	* config/sol2-d.c (solaris_d_handle_target_object_format): New
+	function.
+	(solaris_d_register_target_info): New function.
+	(TARGET_D_REGISTER_OS_TARGET_INFO): Define.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/91710
+	* config/aarch64/aarch64.c (aarch64_function_arg_alignment): Change
+	abi_break argument from bool * to unsigned *, store there the pre-GCC 9
+	alignment.
+	(aarch64_layout_arg, aarch64_gimplify_va_arg_expr): Adjust callers.
+	(aarch64_function_arg_regno_p): Likewise.  Only emit -Wpsabi note if
+	the old and new alignment after applying MIN/MAX to it is different.
+
+2021-04-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/100048
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_trn1_conv<mode>): New.
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_pred_trn): Use new
+	TRN optab.
+	* config/aarch64/iterators.md (UNSPEC_TRN1_CONV): New.
+
+2021-04-16  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* doc/extend.texi (PowerPC AltiVec/VSX Built-in Functions): Revise
+	this section and its subsections.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100075
+	* config/aarch64/aarch64.md (*neg_asr_si2_extr, *extrsi5_insn_di): New
+	define_insn patterns.
+
+2021-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/98689
+	* reg-notes.def (UNTYPED_CALL): New note.
+	* combine.c (distribute_notes): Handle it.
+	* emit-rtl.c (try_split): Likewise.
+	* rtlanal.c (rtx_properties::try_to_add_insn): Likewise.  Assume
+	that calls with the note implicitly set all return value registers.
+	* builtins.c (expand_builtin_apply): Add a REG_UNTYPED_CALL
+	to untyped_calls.
+
+2021-04-16  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/99596
+	* rtlanal.c (rtx_properties::try_to_add_insn): Don't add global
+	register accesses for const calls.  Assume that pure functions
+	can only read from global registers.  Ignore cases in which
+	the stack pointer has been marked global.
+
+2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99767
+	* tree-vect-loop.c (vect_transform_loop): Don't remove just
+	dead scalar .MASK_LOAD calls, but also dead .COND_* calls - replace
+	them by their last argument.
+
+2021-04-15  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Other params don't use it, remove it.
+
+2021-04-15  Richard Biener  <rguenther@suse.de>
+
+	* gimple-builder.h: Add deprecation note.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c++/98852
+	* attribs.h (restrict_type_identity_attributes_to): Declare.
+	* attribs.c (restrict_type_identity_attributes_to): New function.
+
+2021-04-15  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/98852
+	* attribs.h (affects_type_identity_attributes): Declare.
+	* attribs.c (remove_attributes_matching): New function.
+	(affects_type_identity_attributes): Likewise.
+
+2021-04-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100056
+	* config/aarch64/aarch64.md (*<LOGICAL:optab>_<SHIFT:optab><mode>3):
+	Add combine splitters for *<LOGICAL:optab>_ashl<mode>3 with
+	ZERO_EXTEND, SIGN_EXTEND or AND.
+
 2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/99929

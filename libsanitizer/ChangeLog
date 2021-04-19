@@ -1,3 +1,10 @@
+2021-04-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/100114
+	* sanitizer_common/sanitizer_posix_libcdep.cpp: Cherry-pick
+	llvm-project revisions 82150606fb11d28813ae6da1101f5bda638165fe
+	and b93629dd335ffee2fc4b9b619bf86c3f9e6b0023.
+
 2021-03-08  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/98920

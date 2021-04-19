@@ -10850,6 +10850,12 @@ and @var{link_windows} to @code{1} to apply @code{stdcall} to functions with
 @code{extern(Windows)} linkage.
 @end deftypefn
 
+@deftypevr {D Target Hook} bool TARGET_D_TEMPLATES_ALWAYS_COMDAT
+This flag is true if instantiated functions and variables are always COMDAT
+if they have external linkage.  If this flag is false, then instantiated
+decls will be emitted as weak symbols.  The default is @code{false}.
+@end deftypevr
+
 @node Named Address Spaces
 @section Adding support for named address spaces
 @cindex named address spaces

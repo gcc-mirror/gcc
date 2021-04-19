@@ -55,6 +55,22 @@ pa_d_handle_target_float_abi (void)
   return build_string_literal (strlen (abi) + 1, abi);
 }
 
+/* Handle a call to `__traits(getTargetInfo, "objectFormat")'.  */
+
+static tree
+pa_d_handle_target_object_format (void)
+{
+  const char *objfmt = NULL;
+
+  if (TARGET_SOM)
+    objfmt = "som";
+
+  if (objfmt == NULL)
+    return NULL_TREE;
+
+  return build_string_literal (strlen (objfmt) + 1, objfmt);
+}
+
 /* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
 
 void
@@ -62,6 +78,7 @@ pa_d_register_target_info (void)
 {
   const struct d_target_info_spec handlers[] = {
     { "floatAbi", pa_d_handle_target_float_abi },
+    { "objectFormat", pa_d_handle_target_object_format },
     { NULL, NULL },
   };
 

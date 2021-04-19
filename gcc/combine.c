@@ -14337,6 +14337,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	case REG_SETJMP:
 	case REG_TM:
 	case REG_CALL_DECL:
+	case REG_UNTYPED_CALL:
 	case REG_CALL_NOCF_CHECK:
 	  /* These notes must remain with the call.  It should not be
 	     possible for both I2 and I3 to be a call.  */
@@ -14364,6 +14365,11 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 	     i2 or i1 for register which were both used and clobbered, so
 	     we keep notes from i2 or i1 if they will turn into REG_DEAD
 	     notes.  */
+
+	  /* If this register is set or clobbered between FROM_INSN and I3,
+	     we should not create a note for it.  */
+	  if (reg_set_between_p (XEXP (note, 0), from_insn, i3))
+	    break;
 
 	  /* If this register is set or clobbered in I3, put the note there
 	     unless there is one already.  */
