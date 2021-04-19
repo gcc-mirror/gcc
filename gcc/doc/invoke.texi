@@ -202,7 +202,7 @@ in the following sections.
 -aux-info @var{filename}  -fallow-parameterless-variadic-functions @gol
 -fno-asm  -fno-builtin  -fno-builtin-@var{function}  -fgimple@gol
 -fhosted  -ffreestanding @gol
--fopenacc  -fopenacc-dim=@var{geom}  -fopenacc-kernels=@var{mode} @gol
+-fopenacc  -fopenacc-dim=@var{geom} @gol
 -fopenmp  -fopenmp-simd @gol
 -fms-extensions  -fplan9-extensions  -fsso-struct=@var{endianness} @gol
 -fallow-single-precision  -fcond-mismatch  -flax-vector-conversions @gol
@@ -2618,18 +2618,6 @@ Specify default compute dimensions for parallel offload regions that do
 not explicitly specify.  The @var{geom} value is a triple of
 ':'-separated sizes, in order 'gang', 'worker' and, 'vector'.  A size
 can be omitted, to use a target-specific default value.
-
-@item -fopenacc-kernels=@var{mode}
-@opindex fopenacc-kernels
-@cindex OpenACC accelerator programming
-Specify mode of OpenACC `kernels' constructs handling.
-With @option{-fopenacc-kernels=decompose}, OpenACC `kernels'
-constructs are decomposed into parts, a sequence of compute
-constructs, each then handled individually.
-This is work in progress.
-With @option{-fopenacc-kernels=parloops}, OpenACC `kernels' constructs
-are handled by the @samp{parloops} pass, en bloc.
-This is the current default.
 
 @item -fopenmp
 @opindex fopenmp
@@ -14375,6 +14363,16 @@ The parameter is used only in GIMPLE FE.
 @item analyzer-bb-explosion-factor
 The maximum number of 'after supernode' exploded nodes within the analyzer
 per supernode, before terminating analysis.
+
+@item openacc-kernels
+Specify mode of OpenACC `kernels' constructs handling.
+With @option{--param=openacc-kernels=decompose}, OpenACC `kernels'
+constructs are decomposed into parts, a sequence of compute
+constructs, each then handled individually.
+This is work in progress.
+With @option{--param=openacc-kernels=parloops}, OpenACC `kernels'
+constructs are handled by the @samp{parloops} pass, en bloc.
+This is the current default.
 
 @end table
 

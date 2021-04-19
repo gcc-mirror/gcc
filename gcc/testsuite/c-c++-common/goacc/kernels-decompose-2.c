@@ -1,7 +1,7 @@
 /* Test OpenACC 'kernels' construct decomposition.  */
 
 /* { dg-additional-options "-fopt-info-omp-all" } */
-/* { dg-additional-options "-fopenacc-kernels=decompose" }
+/* { dg-additional-options "--param=openacc-kernels=decompose" }
 /* { dg-additional-options "-O2" } for 'parloops'.  */
 
 /* See also '../../gfortran.dg/goacc/kernels-decompose-2.f95'.  */
