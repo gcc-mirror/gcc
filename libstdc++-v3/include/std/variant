@@ -71,7 +71,7 @@ namespace __variant
 } // namespace __variant
 } // namespace __detail
 
-#define __cpp_lib_variant 201606L
+#define __cpp_lib_variant 202102L
 
   template<typename... _Types> class tuple;
   template<typename... _Types> class variant;
@@ -201,6 +201,28 @@ namespace __variant
       std::__do_visit<__variant_idx_cookie>(std::forward<_Visitor>(__visitor),
 	  std::forward<_Variants>(__variants)...);
     }
+
+  // The __as function templates implement the exposition-only "as-variant"
+
+  template<typename... _Types>
+    constexpr std::variant<_Types...>&
+    __as(std::variant<_Types...>& __v)
+    { return __v; }
+
+  template<typename... _Types>
+    constexpr const std::variant<_Types...>&
+    __as(const std::variant<_Types...>& __v) noexcept
+    { return __v; }
+
+  template<typename... _Types>
+    constexpr std::variant<_Types...>&&
+    __as(std::variant<_Types...>&& __v) noexcept
+    { return std::move(__v); }
+
+  template<typename... _Types>
+    constexpr const std::variant<_Types...>&&
+    __as(const std::variant<_Types...>&& __v) noexcept
+    { return std::move(__v); }
 
   // _Uninitialized<T> is guaranteed to be a trivially destructible type,
   // even if T is not.
@@ -1063,8 +1085,12 @@ namespace __variant
 			      std::index_sequence<__indices...>>
     : _Base_dedup<__indices, __poison_hash<remove_const_t<_Types>>>... { };
 
-  template<size_t _Np, typename _Variant>
-    using __get_t = decltype(std::get<_Np>(std::declval<_Variant>()));
+  // Equivalent to decltype(get<_Np>(as-variant(declval<_Variant>())))
+  template<size_t _Np, typename _Variant,
+      typename _AsV = decltype(__variant::__as(std::declval<_Variant>())),
+      typename _Tp = variant_alternative_t<_Np, remove_reference_t<_AsV>>>
+    using __get_t
+      = conditional_t<is_lvalue_reference_v<_Variant>, _Tp&, _Tp&&>;
 
   // Return type of std::visit.
   template<typename _Visitor, typename... _Variants>
@@ -1741,7 +1767,9 @@ namespace __variant
     constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
-      if ((__variants.valueless_by_exception() || ...))
+      namespace __variant = std::__detail::__variant;
+
+      if ((__variant::__as(__variants).valueless_by_exception() || ...))
 	__throw_bad_variant_access("std::visit: variant is valueless");
 
       using _Result_type
@@ -1751,10 +1779,11 @@ namespace __variant
 
       if constexpr (sizeof...(_Variants) == 1)
 	{
+	  using _Vp = decltype(__variant::__as(std::declval<_Variants>()...));
+
 	  constexpr bool __visit_rettypes_match = __detail::__variant::
-	    __check_visitor_results<_Visitor, _Variants...>(
-	      std::make_index_sequence<
-	        std::variant_size<remove_reference_t<_Variants>...>::value>());
+	    __check_visitor_results<_Visitor, _Vp>(
+	      make_index_sequence<variant_size_v<remove_reference_t<_Vp>>>());
 	  if constexpr (!__visit_rettypes_match)
 	    {
 	      static_assert(__visit_rettypes_match,
@@ -1765,12 +1794,12 @@ namespace __variant
 	  else
 	    return std::__do_visit<_Tag>(
 	      std::forward<_Visitor>(__visitor),
-	      std::forward<_Variants>(__variants)...);
+	      static_cast<_Vp>(__variants)...);
 	}
       else
 	return std::__do_visit<_Tag>(
 	  std::forward<_Visitor>(__visitor),
-	  std::forward<_Variants>(__variants)...);
+	  __variant::__as(std::forward<_Variants>(__variants))...);
     }
 
 #if __cplusplus > 201703L
@@ -1778,11 +1807,13 @@ namespace __variant
     constexpr _Res
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
-      if ((__variants.valueless_by_exception() || ...))
+      namespace __variant = std::__detail::__variant;
+
+      if ((__variant::__as(__variants).valueless_by_exception() || ...))
 	__throw_bad_variant_access("std::visit<R>: variant is valueless");
 
       return std::__do_visit<_Res>(std::forward<_Visitor>(__visitor),
-				   std::forward<_Variants>(__variants)...);
+	  __variant::__as(std::forward<_Variants>(__variants))...);
     }
 #endif
 

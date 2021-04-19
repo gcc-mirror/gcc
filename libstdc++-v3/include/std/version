@@ -171,7 +171,7 @@
 # define __cpp_lib_to_chars 201611L
 #endif
 #define __cpp_lib_unordered_map_try_emplace 201411
-#define __cpp_lib_variant 201606L
+#define __cpp_lib_variant 202102L
 #endif
 
 #if __cplusplus >= 202002L
