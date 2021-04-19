@@ -1,3 +1,12 @@
+2019-09-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Adjust arguments, add
+	kernel argument setup code, adjust cuLaunchKernel calling code.
+	(GOMP_OFFLOAD_openacc_exec): Adjust nvptx_exec call, delete
+	profiling code.
+	(GOMP_OFFLOAD_openacc_async_exec): Likewise.
+	(cuda_free_argmem): Delete function.
+
 2018-12-11  Julian Brown  <julian@codesourcery.com>
 	    Chung-Lin Tang  <cltang@codesourcery.com>
 

@@ -1,3 +1,10 @@
+2019-09-10  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_expand_to_rtl_hook): New function
+	implementing CUDA .params space transformation.
+	(TARGET_EXPAND_TO_RTL_HOOK): implement hook with
+	nvptx_expand_to_rtl_hook.
+
 2018-12-13  Cesar Philippidis  <cesar@codesourcery.com>
             Nathan Sidwell  <nathan@acm.org>
             Julian Brown  <julian@codesourcery.com>

@@ -68,6 +68,10 @@
 #include "attribs.h"
 #include "tree-vrp.h"
 #include "tree-ssa-operands.h"
+#include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
+#include "tree-cfg.h"
+#include "gimple-ssa.h"
 #include "tree-ssanames.h"
 #include "gimplify.h"
 #include "tree-phinodes.h"
@@ -6848,6 +6852,228 @@ nvptx_libc_has_function (enum function_class fn_class, tree type)
   return default_libc_has_function (fn_class, type);
 }
 
+static void
+nvptx_expand_to_rtl_hook (void)
+{
+  /* For utilizing CUDA .param kernel arguments, we detect and modify
+     the gimple of offloaded child functions, here before RTL expansion,
+     starting with standard OMP form:
+      foo._omp_fn.0 (const struct .omp_data_t.8 & restrict .omp_data_i) { ... }
+   
+     and transform it into a style where the OMP data record fields are
+     "exploded" into individual scalar arguments:
+      foo._omp_fn.0 (int * a, int * b, int * c) { ... }
+
+     Note that there are implicit assumptions of how OMP lowering (and/or other
+     intervening passes) behaves contained in this transformation code;
+     if those passes change in their output, this code may possibly need
+     updating.  */
+
+  if (lookup_attribute ("omp target entrypoint",
+			DECL_ATTRIBUTES (current_function_decl))
+      /* The rather indirect manner in which OpenMP target functions are
+	 launched makes this transformation only valid for OpenACC currently.
+	 TODO: e.g. write_omp_entry(), nvptx_declare_function_name(), etc.
+	 needs changes for this to work with OpenMP.  */
+      && lookup_attribute ("oacc function",
+			   DECL_ATTRIBUTES (current_function_decl))
+      && VOID_TYPE_P (TREE_TYPE (DECL_RESULT (current_function_decl))))
+    {
+      tree omp_data_arg = DECL_ARGUMENTS (current_function_decl);
+      tree argtype = TREE_TYPE (omp_data_arg);
+
+      /* Ensure this function is of the form of a single reference argument
+	 to the OMP data record, or a single void* argument (when no values
+	 passed)  */
+      if (! (DECL_CHAIN (omp_data_arg) == NULL_TREE
+	     && ((TREE_CODE (argtype) == REFERENCE_TYPE
+		  && TREE_CODE (TREE_TYPE (argtype)) == RECORD_TYPE)
+		 || (TREE_CODE (argtype) == POINTER_TYPE
+		     && TREE_TYPE (argtype) == void_type_node))))
+	return;
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Detected offloaded child function %s, "
+		   "starting parameter conversion\n",
+		   print_generic_expr_to_str (current_function_decl));
+	  fprintf (dump_file, "OMP data record argument: %s (tree type: %s)\n",
+		   print_generic_expr_to_str (omp_data_arg),
+		   print_generic_expr_to_str (argtype));
+	  fprintf (dump_file, "Data record fields:\n");
+	}
+      
+      hash_map<tree,tree> fld_to_args;
+      tree fld, rectype = TREE_TYPE (argtype);
+      tree arglist = NULL_TREE, argtypelist = NULL_TREE;
+
+      if (TREE_CODE (rectype) == RECORD_TYPE)
+	{
+	  /* For each field in the OMP data record type, create a corresponding
+	     PARM_DECL, and map field -> parm using the fld_to_args hash_map.
+	     Also create the tree chains for creating function type and
+	     DECL_ARGUMENTS below.  */
+	  for (fld = TYPE_FIELDS (rectype); fld; fld = DECL_CHAIN (fld))
+	    {
+	      tree narg = build_decl (DECL_SOURCE_LOCATION (fld), PARM_DECL,
+				      DECL_NAME (fld), TREE_TYPE (fld));
+	      DECL_ARTIFICIAL (narg) = 1;
+	      DECL_ARG_TYPE (narg) = TREE_TYPE (fld);
+	      DECL_CONTEXT (narg) = current_function_decl;
+	      TREE_USED (narg) = 1;
+	      TREE_READONLY (narg) = 1;
+
+	      if (dump_file)
+		fprintf (dump_file, "\t%s, type: %s, offset: %s bytes + %s bits\n",
+			 print_generic_expr_to_str (fld),
+			 print_generic_expr_to_str (TREE_TYPE (fld)),
+			 print_generic_expr_to_str (DECL_FIELD_OFFSET (fld)),
+			 print_generic_expr_to_str (DECL_FIELD_BIT_OFFSET (fld)));
+	      fld_to_args.put (fld, narg);
+
+	      TREE_CHAIN (narg) = arglist;
+	      arglist = narg;
+	      argtypelist = tree_cons (NULL_TREE, TREE_TYPE (narg),
+				       argtypelist);
+	    }
+	  arglist = nreverse (arglist);
+	  argtypelist = nreverse (argtypelist);
+	}
+      /* This is needed to not be mistaken for a stdarg function.  */
+      argtypelist = chainon (argtypelist, void_list_node);
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Function before OMP data arg replaced:\n");
+	  dump_function_to_file (current_function_decl, dump_file, dump_flags);
+	}
+
+      /* Actually modify the tree type and DECL_ARGUMENTS here.  */
+      TREE_TYPE (current_function_decl) = build_function_type (void_type_node,
+							       argtypelist);
+      DECL_ARGUMENTS (current_function_decl) = arglist;
+
+      /* Remove local decls which correspond to *.omp_data_i->FIELD entries, by
+	 scanning and skipping those entries, creating a new local_decls list.
+	 We assume a very specific MEM_REF tree expression shape.  */
+      tree decl;
+      unsigned int i;
+      vec<tree, va_gc> *new_local_decls = NULL;
+      FOR_EACH_VEC_SAFE_ELT (cfun->local_decls, i, decl)
+	{
+	  if (DECL_HAS_VALUE_EXPR_P (decl))
+	    {
+	      tree t = DECL_VALUE_EXPR (decl);
+	      if (TREE_CODE (t) == MEM_REF
+		  && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF
+		  && TREE_CODE (TREE_OPERAND (TREE_OPERAND (t, 0), 0)) == MEM_REF
+		  && (TREE_OPERAND (TREE_OPERAND (TREE_OPERAND (t, 0), 0), 0)
+		      == omp_data_arg))
+		continue;
+	    }
+	  vec_safe_push (new_local_decls, decl);
+	}
+      vec_free (cfun->local_decls);
+      cfun->local_decls = new_local_decls;
+      
+      /* Scan function body for assignments from .omp_data_i->FIELD, and using
+	 the above created fld_to_args hash map, convert them to reads of
+	 function arguments.  */
+      basic_block bb;
+      gimple_stmt_iterator gsi;
+      FOR_EACH_BB_FN (bb, cfun)
+	for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	  {
+	    tree val, *val_ptr = NULL;
+	    gimple *stmt = gsi_stmt (gsi);
+	    if (is_gimple_assign (stmt)
+		&& gimple_assign_rhs_class (stmt) == GIMPLE_SINGLE_RHS)
+	      val_ptr = gimple_assign_rhs1_ptr (stmt);
+	    else if (is_gimple_debug (stmt) && gimple_debug_bind_p (stmt))
+	      val_ptr = gimple_debug_bind_get_value_ptr (stmt);
+
+	    if (val_ptr == NULL || (val = *val_ptr) == NULL_TREE)
+	      continue;
+
+	    tree new_val = NULL_TREE, fld = NULL_TREE;
+
+	    if (TREE_CODE (val) == COMPONENT_REF
+		&& TREE_CODE (TREE_OPERAND (val, 0)) == MEM_REF
+		&& (TREE_CODE (TREE_OPERAND (TREE_OPERAND (val, 0), 0))
+		    == SSA_NAME)
+		&& (SSA_NAME_VAR (TREE_OPERAND (TREE_OPERAND (val, 0), 0))
+		    == omp_data_arg))
+	      {
+		/* .omp_data->FIELD case.  */
+		fld = TREE_OPERAND (val, 1);
+		new_val = *fld_to_args.get (fld);
+	      }
+	    else if (TREE_CODE (val) == MEM_REF
+		     && TREE_CODE (TREE_OPERAND (val, 0)) == SSA_NAME
+		     && SSA_NAME_VAR (TREE_OPERAND (val, 0)) == omp_data_arg)
+	      {
+		/* This case may happen in the final tree level optimization
+		   output, due to SLP:
+		   vect.XX = MEM <vector(1) unsigned long> [(void *).omp_data_i_5(D) + 8B]
+
+		   Therefore here we need a more elaborate search of the field
+		   list to reverse map to which field the offset is referring
+		   to.  */
+		unsigned HOST_WIDE_INT offset
+		  = tree_to_uhwi (TREE_OPERAND (val, 1));
+
+		for (hash_map<tree, tree>::iterator i = fld_to_args.begin ();
+		     i != fld_to_args.end (); ++i)
+		  {
+		    tree cur_fld = (*i).first;
+		    tree cur_arg = (*i).second;
+		    gcc_assert (TREE_CODE (cur_arg) == PARM_DECL);
+
+		    unsigned HOST_WIDE_INT cur_offset =
+		      (tree_to_uhwi (DECL_FIELD_OFFSET (cur_fld))
+		       + (tree_to_uhwi (DECL_FIELD_BIT_OFFSET (cur_fld))
+			  / BITS_PER_UNIT));
+
+		    if (offset == cur_offset)
+		      {
+			new_val = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (val),
+					  cur_arg);
+			break;
+		      }
+		  }
+	      }
+
+	    /* If we found the corresponding OMP data record field, replace the
+	       RHS with the new created PARM_DECL.  */
+	    if (new_val != NULL_TREE)
+	      {
+		if (dump_file)
+		  {
+		    fprintf (dump_file, "For gimple stmt: ");
+		    print_gimple_stmt (dump_file, stmt, 0);
+		    fprintf (dump_file, "\tReplacing OMP recv ref %s with %s\n",
+			     print_generic_expr_to_str (val),
+			     print_generic_expr_to_str (new_val));
+		  }
+		/* Write in looked up ARG as new RHS value.  */
+		*val_ptr = new_val;
+	      }
+	  }
+
+      /* Delete SSA_NAMEs of .omp_data_i by setting them to NULL_TREE.  */
+      tree name;
+      FOR_EACH_SSA_NAME (i, name, cfun)
+	if (SSA_NAME_VAR (name) == omp_data_arg)
+	  (*SSANAMES (cfun))[SSA_NAME_VERSION (name)] = NULL_TREE;
+
+      if (dump_file)
+	{
+	  fprintf (dump_file, "Function after OMP data arg replaced: ");
+	  dump_function_to_file (current_function_decl, dump_file, dump_flags);
+	}
+    }
+}
+
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
 
@@ -6998,6 +7224,9 @@ nvptx_libc_has_function (enum function_class fn_class, tree type)
 
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION nvptx_libc_has_function
+
+#undef TARGET_EXPAND_TO_RTL_HOOK
+#define TARGET_EXPAND_TO_RTL_HOOK nvptx_expand_to_rtl_hook
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
