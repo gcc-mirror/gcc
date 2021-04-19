@@ -48,7 +48,7 @@ expand_d_format (const char *format)
 
   for (const char *p = format; *p;)
     {
-      while (*p != '\0' && *p != '%' && *p != '`')
+      while (*p != '\0' && *p != '\\' && *p != '%' && *p != '`')
 	{
 	  buf.writeByte (*p);
 	  p++;
@@ -56,6 +56,21 @@ expand_d_format (const char *format)
 
       if (*p == '\0')
 	break;
+
+      if (*p == '\\')
+	{
+	  if (p[1] == '`')
+	    {
+	      /* Escaped backtick, don't expand it as a quoted string.  */
+	      buf.writeByte ('`');
+	      p++;;
+	    }
+	  else
+	    buf.writeByte (*p);
+
+	  p++;
+	  continue;
+	}
 
       if (*p == '`')
 	{
@@ -111,6 +126,43 @@ expand_d_format (const char *format)
 
   gcc_assert (!inbacktick);
   return buf.extractString ();
+}
+
+/* Rewrite the format string FORMAT to deal with any characters that require
+   escaping before expand_d_format expands it.  */
+
+static char *
+escape_d_format (const char *format)
+{
+  obstack buf;
+
+  gcc_obstack_init (&buf);
+
+  for (const char *p = format; *p; p++)
+    {
+      switch (*p)
+	{
+	case '%':
+	  /* Escape `%' characters so that pp_format does not confuse them
+	     for actual format specifiers.  */
+	  obstack_1grow (&buf, '%');
+	  break;
+
+	case '`':
+	  /* Escape '`' characters so that expand_d_format does not confuse them
+	     for a quoted string.  */
+	  obstack_1grow (&buf, '\\');
+	  break;
+
+	default:
+	  break;
+	}
+
+      obstack_1grow (&buf, *p);
+    }
+
+  obstack_1grow (&buf, '\0');
+  return (char *) obstack_finish (&buf);
 }
 
 /* Helper routine for all error routines.  Reports a diagnostic specified by
@@ -177,9 +229,10 @@ verror (const Loc& loc, const char *format, va_list ap,
 
       /* Build string and emit.  */
       if (prefix2 != NULL)
-	xformat = xasprintf ("%s %s %s", prefix1, prefix2, format);
+	xformat = xasprintf ("%s %s %s", escape_d_format (prefix1),
+			     escape_d_format (prefix2), format);
       else if (prefix1 != NULL)
-	xformat = xasprintf ("%s %s", prefix1, format);
+	xformat = xasprintf ("%s %s", escape_d_format (prefix1), format);
       else
 	xformat = xasprintf ("%s", format);
 
@@ -287,9 +340,10 @@ vdeprecation (const Loc& loc, const char *format, va_list ap,
 
       /* Build string and emit.  */
       if (prefix2 != NULL)
-	xformat = xasprintf ("%s %s %s", prefix1, prefix2, format);
+	xformat = xasprintf ("%s %s %s", escape_d_format (prefix1),
+			     escape_d_format (prefix2), format);
       else if (prefix1 != NULL)
-	xformat = xasprintf ("%s %s", prefix1, format);
+	xformat = xasprintf ("%s %s", escape_d_format (prefix1), format);
       else
 	xformat = xasprintf ("%s", format);
 
