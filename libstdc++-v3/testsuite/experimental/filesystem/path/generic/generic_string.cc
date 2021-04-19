@@ -35,7 +35,12 @@ test01()
   __gnu_test::compare_paths( path("//a//b").generic_u16string(), "//a/b" );
 }
 
+#if _GLIBCXX_USE_CXX11_ABI
 using __gnu_test::SimpleAllocator;
+#else
+// COW std::basic_string doesn't use std::allocator_traits properly.
+template<typename T> using SimpleAllocator = __gnu_test::uneq_allocator<T>;
+#endif
 
 void
 test02()
