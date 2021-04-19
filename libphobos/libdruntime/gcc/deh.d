@@ -34,11 +34,6 @@ extern(C)
 {
     int _d_isbaseof(ClassInfo, ClassInfo);
     void _d_createTrace(Object, void*);
-
-    // Not used in GDC but declaration required by rt/sections.d
-    struct FuncTable
-    {
-    }
 }
 
 /**

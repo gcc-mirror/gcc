@@ -883,6 +883,7 @@ class Fiber
      */
     static Fiber getThis() @safe nothrow @nogc
     {
+        version (GNU) pragma(inline, false);
         return sm_this;
     }
 
@@ -1731,6 +1732,11 @@ unittest
 // Multiple threads running shared fibers
 version (PPC)   version = UnsafeFiberMigration;
 version (PPC64) version = UnsafeFiberMigration;
+version (OSX)
+{
+    version (X86)    version = UnsafeFiberMigration;
+    version (X86_64) version = UnsafeFiberMigration;
+}
 
 version (UnsafeFiberMigration)
 {
