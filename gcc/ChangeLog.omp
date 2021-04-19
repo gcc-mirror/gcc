@@ -1,5 +1,10 @@
 2021-06-02  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (extract_base_bit_offset): Unify ARRAY_REF/INDIRECT_REF
+	stripping code in first call/subsequent call cases.
+
+2021-06-02  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (gimplify_scan_omp_clauses): Simplify condition
 	for changing GOMP_MAP_ATTACH_DETACH to GOMP_MAP_ATTACH or
 	GOMP_MAP_DETACH.
