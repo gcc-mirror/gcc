@@ -10,6 +10,9 @@
  * Source:    $(DRUNTIMESRC core/thread/osthread.d)
  */
 
+/* NOTE: This file has been patched from the original DMD distribution to
+ * work with the GDC compiler.
+ */
 module core.thread.threadbase;
 
 import core.thread.context;

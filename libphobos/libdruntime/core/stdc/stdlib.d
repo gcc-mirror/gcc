@@ -121,19 +121,22 @@ ulong   strtoull(scope inout(char)* nptr, scope inout(char)** endptr, int base);
 
 version (CRuntime_Microsoft)
 {
-    // strtold exists starting from VS2013, so we give it D linkage to avoid link errors
-    ///
-    extern (D) real strtold(scope inout(char)* nptr, inout(char)** endptr)
-    {   // Fake it 'till we make it
-        return strtod(nptr, endptr);
+    version (MinGW)
+    {
+        ///
+        real __mingw_strtold(scope inout(char)* nptr, scope inout(char)** endptr);
+        ///
+        alias __mingw_strtold strtold;
     }
-}
-else version (MinGW)
-{
-    ///
-    real __mingw_strtold(scope inout(char)* nptr, scope inout(char)** endptr);
-    ///
-    alias __mingw_strtold strtold;
+    else
+    {
+        // strtold exists starting from VS2013, so we give it D linkage to avoid link errors
+        ///
+        extern (D) real strtold(scope inout(char)* nptr, inout(char)** endptr)
+        {   // Fake it 'till we make it
+            return strtod(nptr, endptr);
+        }
+    }
 }
 else
 {
