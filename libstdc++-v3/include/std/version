@@ -161,7 +161,9 @@
 #endif
 #define __cpp_lib_shared_ptr_weak_type 201606
 #define __cpp_lib_string_view 201803L
-// #define __cpp_lib_to_chars 201611L
+#if _GLIBCXX_HAVE_USELOCALE
+# define __cpp_lib_to_chars 201611L
+#endif
 #define __cpp_lib_unordered_map_try_emplace 201411
 #define __cpp_lib_variant 201606L
 #endif
