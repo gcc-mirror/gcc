@@ -1,3 +1,51 @@
+2021-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97362
+	* doc/html/manual/source_code_style.html: Regenerate.
+	* doc/xml/manual/appendix_contributing.xml: Add __deref to
+	BADNAMES.
+	* include/debug/functions.h (_Irreflexive_checker::__deref):
+	Rename to __ref.
+
+2021-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/97570
+	* libsupc++/new_opa.cc: Declare size_t in global namespace.
+	Remove unused header.
+
+2021-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/98319
+	* include/experimental/memory_resource: Add system_header pragma
+	and only define contents for C++14 and later.
+	* include/experimental/random: Only define contents for C++14
+	and later.
+	* include/experimental/source_location: Likewise.
+	* include/experimental/utility: Likewise.
+	* testsuite/experimental/feat-lib-fund.cc: Include all LFTS
+	headers that are present. Allow test to run for all modes.
+
+2021-04-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99058
+	* doc/xml/manual/status_cxx2011.xml: Document when support
+	became stable.
+	* doc/xml/manual/status_cxx2014.xml: Likewise.
+	* doc/xml/manual/status_cxx2017.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
 2021-01-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
