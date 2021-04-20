@@ -1,3 +1,69 @@
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98494
+	* libdruntime/MERGE: Merge upstream druntime 89f870b7.
+	* src/MERGE: Merge upstream phobos e6907ff3e.
+
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98058
+	* configure: Regenerate.
+	* libdruntime/Makefile.am (DRUNTIME_DSOURCES_DARWIN): Add
+	core/sys/darwin/config.d
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/powerpc/switchcontext.S: Implement
+	fiber_switchContext for __MACH__.
+	* libdruntime/config/x86/switchcontext.S: Likewise.
+	* libdruntime/core/sys/darwin/config.d: New file.
+	* libdruntime/core/thread/fiber.d (Fiber.getThis): Mark noinline.
+	(UnsafeFiberMigration): Define for OSX/X86 and OSX/X86_64.
+	* libdruntime/core/thread/osthread.d (callWithStackShell): Add inline
+	assembler implementation for X86, X86_64, PPC, and PPC64.
+	* libdruntime/core/thread/threadbase.d (ThreadBase.getThis): Mark
+	noinline.
+	* libdruntime/gcc/deh.d (FuncTable): Remove definition.
+	* m4/druntime/os.m4 (DRUNTIME_OS_MINFO_BRACKETING): Check for right
+	bracket symbol on darwin* targets.
+	* testsuite/libphobos.thread/fiber_guard_page.d: Update test to
+	support ucontext-based Fibers.
+
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99794
+	* libdruntime/Makefile.am (DRUNTIME_SOURCES_CONFIGURED): Add
+	config/mingw/msvc.c on DRUNTIME_OS_MINGW.
+	* libdruntime/Makefile.in: Regenerate.
+	* libdruntime/config/mingw/msvc.c: New file.
+	* libdruntime/config/mingw/switchcontext.S (fiber_switchContext): Fix
+	function definition.
+	* libdruntime/gcc/deh.d (__gdc_personality_seh0): Fix call to
+	_GCC_specific_handler.
+	* libdruntime/gcc/gthread.d (__gthread_once_t): Fix definition.
+	* libdruntime/gcc/unwind/generic.d (_GCC_specific_handler): Fix
+	declaration.
+	* libdruntime/rt/dmain2.d (rt_loadLibrary): Remove function.
+	(rt_loadLibraryW): Remove function.
+	(initLibrary): Remove function.
+	(rt_unloadLibrary): Remove function.
+
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/99691
+	* configure: Regenerate.
+	* libdruntime/config/common/threadasm.S: Add __OpenBSD__.
+	* libdruntime/gcc/backtrace.d: Import core.sys.openbsd.dlfcn on
+	OpenBSD platforms.
+	* libdruntime/gcc/sections/elf.d (SharedElf): Define on OpenBSD.
+	(linkMapForHandle): Implement for OpenBSD.
+	(exeLinkMap): Remove.
+	(getDependencies): Adjust dlpi_addr on OpenBSD.
+	(handleForName): Implement for OpenBSD.
+	(IterateManually): Define on OpenBSD.
+	* libdruntime/gcc/sections/package.d (SectionsElf): Define on OpenBSD.
+	* m4/druntime/libraries.m4 (DRUNTIME_LIBRARIES_ATOMIC): Test for
+	enable_libatomic.
+	(DRUNTIME_LIBRARIES_BACKTRACE): Test for enable_libbacktrace.
+
 2021-04-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.in: Regenerate.

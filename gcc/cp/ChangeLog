@@ -1,3 +1,9 @@
+2021-04-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97536
+	* decl.c (grokvardecl): Given an error when a concept is not defined
+	at namespace scope.
+
 2021-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/100111
