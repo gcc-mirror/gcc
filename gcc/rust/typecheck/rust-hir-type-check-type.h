@@ -26,45 +26,6 @@
 namespace Rust {
 namespace Resolver {
 
-class ArrayCapacityConstant : public TypeCheckBase
-{
-  using Rust::Resolver::TypeCheckBase::visit;
-
-public:
-  static bool fold (HIR::Expr *expr, size_t *folded_result)
-  {
-    ArrayCapacityConstant folder;
-    expr->accept_vis (folder);
-    *folded_result = folder.result;
-    return folder.ok;
-  }
-
-  virtual ~ArrayCapacityConstant () {}
-
-  void visit (HIR::LiteralExpr &expr) override
-  {
-    auto literal_value = expr.get_literal ();
-    switch (expr.get_lit_type ())
-      {
-	case HIR::Literal::LitType::INT: {
-	  ok = true;
-	  std::stringstream ss (literal_value->as_string ());
-	  ss >> result;
-	}
-	break;
-
-      default:
-	return;
-      }
-  }
-
-private:
-  ArrayCapacityConstant () : TypeCheckBase (), ok (false), result (-1) {}
-
-  bool ok;
-  size_t result;
-}; // namespace Resolver
-
 class TypeCheckResolveGenericArguments : public TypeCheckBase
 {
   using Rust::Resolver::TypeCheckBase::visit;
@@ -218,20 +179,7 @@ public:
       }
   }
 
-  void visit (HIR::ArrayType &type) override
-  {
-    size_t capacity;
-    if (!ArrayCapacityConstant::fold (type.get_size_expr (), &capacity))
-      {
-	rust_error_at (type.get_size_expr ()->get_locus_slow (),
-		       "non-constant value");
-	return;
-      }
-
-    TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
-    translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
-				      capacity, TyTy::TyVar (base->get_ref ()));
-  }
+  void visit (HIR::ArrayType &type) override;
 
   void visit (HIR::ReferenceType &type) override
   {

@@ -27,6 +27,7 @@
 #include "rust-compile-tyty.h"
 #include "rust-ast-full.h"
 #include "rust-hir-full.h"
+#include "rust-hir-const-fold-ctx.h"
 
 namespace Rust {
 namespace Compile {
@@ -43,7 +44,8 @@ public:
   Context (::Backend *backend)
     : backend (backend), resolver (Resolver::Resolver::get ()),
       tyctx (Resolver::TypeCheckContext::get ()),
-      mappings (Analysis::Mappings::get ())
+      mappings (Analysis::Mappings::get ()),
+      const_ctx (ConstFold::Context::get ())
   {
     // insert the builtins
     auto builtins = resolver->get_builtin_types ();
@@ -104,6 +106,7 @@ public:
   Resolver::Resolver *get_resolver () { return resolver; }
   Resolver::TypeCheckContext *get_tyctx () { return tyctx; }
   Analysis::Mappings *get_mappings () { return mappings; }
+  ConstFold::Context *get_const_ctx () { return const_ctx; }
 
   void push_block (Bblock *scope)
   {
@@ -260,6 +263,7 @@ private:
   Resolver::Resolver *resolver;
   Resolver::TypeCheckContext *tyctx;
   Analysis::Mappings *mappings;
+  ConstFold::Context *const_ctx;
 
   // state
   std::vector<fncontext> fn_stack;
@@ -420,16 +424,10 @@ public:
 
   void visit (TyTy::ArrayType &type) override
   {
-    mpz_t ival;
-    mpz_init_set_ui (ival, type.get_capacity ());
-
-    Btype *capacity_type = ctx->get_backend ()->integer_type (true, 32);
-    Bexpression *length
-      = ctx->get_backend ()->integer_constant_expression (capacity_type, ival);
-
     Btype *element_type
       = TyTyResolveCompile::compile (ctx, type.get_element_type ());
-    translated = ctx->get_backend ()->array_type (element_type, length);
+    translated
+      = ctx->get_backend ()->array_type (element_type, type.get_capacity ());
   }
 
   void visit (TyTy::BoolType &type) override

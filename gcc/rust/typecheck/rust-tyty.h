@@ -19,6 +19,7 @@
 #ifndef RUST_TYTY
 #define RUST_TYTY
 
+#include "rust-backend.h"
 #include "rust-hir-map.h"
 #include "rust-hir-full.h"
 
@@ -870,13 +871,13 @@ private:
 class ArrayType : public BaseType
 {
 public:
-  ArrayType (HirId ref, size_t capacity, TyVar base,
+  ArrayType (HirId ref, Bexpression *capacity, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ARRAY, refs), capacity (capacity),
       element_type (base)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, size_t capacity, TyVar base,
+  ArrayType (HirId ref, HirId ty_ref, Bexpression *capacity, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ARRAY, refs), capacity (capacity),
       element_type (base)
@@ -893,7 +894,8 @@ public:
 
   bool is_equal (const BaseType &other) const override;
 
-  size_t get_capacity () const { return capacity; }
+  Bexpression *get_capacity () const { return capacity; }
+  std::string capacity_string () const;
 
   BaseType *get_element_type () const;
 
@@ -905,7 +907,7 @@ public:
   }
 
 private:
-  size_t capacity;
+  Bexpression *capacity;
   TyVar element_type;
 };
 

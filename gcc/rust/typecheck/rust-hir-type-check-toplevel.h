@@ -140,6 +140,9 @@ public:
       = TypeCheckExpr::Resolve (constant.get_expr (), false);
 
     context->insert_type (constant.get_mappings (), type->unify (expr_type));
+
+    // notify the constant folder of this
+    ConstFold::ConstFoldItem::fold (constant);
   }
 
   void visit (HIR::Function &function) override

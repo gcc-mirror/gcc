@@ -93,6 +93,11 @@ public:
   virtual void debug (Bvariable *) = 0;
   virtual void debug (Blabel *) = 0;
 
+  // const folder helpers
+  virtual bool const_size_cast (Bexpression *, size_t *) = 0;
+  virtual std::string const_size_val_to_string (Bexpression *) = 0;
+  virtual bool const_values_equal (Bexpression *, Bexpression *) = 0;
+
   // Types.
 
   // Produce an error type.  Actually the backend could probably just
@@ -282,6 +287,9 @@ public:
   // not occur in a correct program, in order to keep the compilation
   // going without crashing.
   virtual Bexpression *error_expression () = 0;
+
+  // return whether this is error_mark_node
+  virtual bool is_error_expression (Bexpression *) = 0;
 
   // Create a nil pointer expression.
   virtual Bexpression *nil_pointer_expression () = 0;

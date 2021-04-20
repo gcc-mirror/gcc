@@ -23,6 +23,7 @@
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check-struct-field.h"
 #include "rust-hir-inherent-impl-overlap.h"
+#include "rust-hir-const-fold.h"
 
 extern bool
 saw_errors (void);
@@ -390,6 +391,32 @@ TypeCheckStructExpr::visit (HIR::StructExprFieldIdentifier &field)
       fields_assigned.insert (field.field_name);
       adtFieldIndexToField[field_index] = &field;
     }
+}
+
+// rust-hir-type-check-type.h
+
+void
+TypeCheckType::visit (HIR::ArrayType &type)
+{
+  auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr (), false);
+  if (capacity_type->get_kind () == TyTy::TypeKind::ERROR)
+    return;
+
+  TyTy::USizeType *expected_ty
+    = new TyTy::USizeType (type.get_size_expr ()->get_mappings ().get_hirid ());
+  context->insert_type (type.get_size_expr ()->get_mappings (), expected_ty);
+
+  auto unified = expected_ty->unify (capacity_type);
+  if (unified->get_kind () == TyTy::TypeKind::ERROR)
+    return;
+
+  auto capacity = ConstFold::ConstFoldExpr::fold (type.get_size_expr ());
+  if (capacity == nullptr)
+    return;
+
+  TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
+  translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (), capacity,
+				    TyTy::TyVar (base->get_ref ()));
 }
 
 } // namespace Resolver
