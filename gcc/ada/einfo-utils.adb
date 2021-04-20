@@ -593,13 +593,12 @@ package body Einfo.Utils is
 
    function Unknown_Alignment                     (E : Entity_Id) return B is
    begin
-      return Alignment (E) = Uint_0
-        or else Alignment (E) = No_Uint;
+      return not Known_Alignment (E);
    end Unknown_Alignment;
 
    function Unknown_Component_Bit_Offset          (E : Entity_Id) return B is
    begin
-      return Component_Bit_Offset (E) = No_Uint;
+      return not Known_Component_Bit_Offset (E);
    end Unknown_Component_Bit_Offset;
 
    function Unknown_Component_Size                (E : Entity_Id) return B is
@@ -609,32 +608,27 @@ package body Einfo.Utils is
 
    function Unknown_Esize                         (E : Entity_Id) return B is
    begin
-      return Esize (E) = No_Uint
-               or else
-             Esize (E) = Uint_0;
+      return not Known_Esize (E);
    end Unknown_Esize;
 
    function Unknown_Normalized_First_Bit          (E : Entity_Id) return B is
    begin
-      return Normalized_First_Bit (E) = No_Uint;
+      return not Known_Normalized_First_Bit (E);
    end Unknown_Normalized_First_Bit;
 
    function Unknown_Normalized_Position           (E : Entity_Id) return B is
    begin
-      return Normalized_Position (E) = No_Uint;
+      return not Known_Normalized_Position (E);
    end Unknown_Normalized_Position;
 
    function Unknown_Normalized_Position_Max       (E : Entity_Id) return B is
    begin
-      return Normalized_Position_Max (E) = No_Uint;
+      return not Known_Normalized_Position_Max (E);
    end Unknown_Normalized_Position_Max;
 
    function Unknown_RM_Size                       (E : Entity_Id) return B is
    begin
-      return (RM_Size (E) = Uint_0
-                and then not Is_Discrete_Type (E)
-                and then not Is_Fixed_Point_Type (E))
-        or else RM_Size (E) = No_Uint;
+      return not Known_RM_Size (E);
    end Unknown_RM_Size;
 
    --------------------
