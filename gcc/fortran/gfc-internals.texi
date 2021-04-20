@@ -102,11 +102,11 @@ Boston, MA 02110-1301, USA@*
 This manual documents the internals of @command{gfortran}, 
 the GNU Fortran compiler.
 
-ifsetDEVELOPMENT
+@ifset DEVELOPMENT
 @emph{Warning:} This document, and the compiler it describes, are still
 under development.  While efforts are made to keep it up-to-date, it might
 not accurately reflect the status of the most recent GNU Fortran compiler.
-endifset
+@end ifset
 
 @comment
 @comment  When you add a new menu item, please keep the right hand
@@ -139,12 +139,12 @@ endifset
 This manual documents the internals of @command{gfortran}, the GNU Fortran
 compiler.
 
-ifsetDEVELOPMENT
+@ifset DEVELOPMENT
 @emph{Warning:} This document, and the compiler it describes, are still
 under development.  While efforts are made to keep it up-to-date, it
 might not accurately reflect the status of the most recent GNU Fortran
 compiler.
-endifset
+@end ifset
 @end iftex
 
 At present, this manual is very much a work in progress, containing 
