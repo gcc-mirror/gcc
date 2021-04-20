@@ -225,6 +225,7 @@ bits_headers = \
 	${bits_srcdir}/streambuf.tcc \
 	${bits_srcdir}/stringfwd.h \
 	${bits_srcdir}/string_view.tcc \
+	${bits_srcdir}/this_thread_sleep.h \
 	${bits_srcdir}/uniform_int_dist.h \
 	${bits_srcdir}/unique_lock.h \
 	${bits_srcdir}/unique_ptr.h \

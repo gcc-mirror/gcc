@@ -235,22 +235,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     wait(bool __old,
 	memory_order __m = memory_order_seq_cst) const noexcept
     {
-      std::__atomic_wait(&_M_i, static_cast<__atomic_flag_data_type>(__old),
-			 [__m, this, __old]()
-			 { return this->test(__m) != __old; });
+      const __atomic_flag_data_type __v
+	= __old ? __GCC_ATOMIC_TEST_AND_SET_TRUEVAL : 0;
+
+      std::__atomic_wait_address_v(&_M_i, __v,
+	  [__m, this] { return __atomic_load_n(&_M_i, int(__m)); });
     }
 
     // TODO add const volatile overload
 
     _GLIBCXX_ALWAYS_INLINE void
     notify_one() const noexcept
-    { std::__atomic_notify(&_M_i, false); }
+    { std::__atomic_notify_address(&_M_i, false); }
 
     // TODO add const volatile overload
 
     _GLIBCXX_ALWAYS_INLINE void
     notify_all() const noexcept
-    { std::__atomic_notify(&_M_i, true); }
+    { std::__atomic_notify_address(&_M_i, true); }
 
     // TODO add const volatile overload
 #endif // __cpp_lib_atomic_wait
@@ -609,22 +611,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait(__int_type __old,
 	  memory_order __m = memory_order_seq_cst) const noexcept
       {
-	std::__atomic_wait(&_M_i, __old,
-			   [__m, this, __old]
-			   { return this->load(__m) != __old; });
+	std::__atomic_wait_address_v(&_M_i, __old,
+			   [__m, this] { return this->load(__m); });
       }
 
       // TODO add const volatile overload
 
       _GLIBCXX_ALWAYS_INLINE void
       notify_one() const noexcept
-      { std::__atomic_notify(&_M_i, false); }
+      { std::__atomic_notify_address(&_M_i, false); }
 
       // TODO add const volatile overload
 
       _GLIBCXX_ALWAYS_INLINE void
       notify_all() const noexcept
-      { std::__atomic_notify(&_M_i, true); }
+      { std::__atomic_notify_address(&_M_i, true); }
 
       // TODO add const volatile overload
 #endif // __cpp_lib_atomic_wait
@@ -903,22 +904,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait(__pointer_type __old,
 	   memory_order __m = memory_order_seq_cst) noexcept
       {
-	std::__atomic_wait(&_M_p, __old,
-		      [__m, this, __old]()
-		      { return this->load(__m) != __old; });
+	std::__atomic_wait_address_v(&_M_p, __old,
+				     [__m, this]
+				     { return this->load(__m); });
       }
 
       // TODO add const volatile overload
 
       _GLIBCXX_ALWAYS_INLINE void
       notify_one() const noexcept
-      { std::__atomic_notify(&_M_p, false); }
+      { std::__atomic_notify_address(&_M_p, false); }
 
       // TODO add const volatile overload
 
       _GLIBCXX_ALWAYS_INLINE void
       notify_all() const noexcept
-      { std::__atomic_notify(&_M_p, true); }
+      { std::__atomic_notify_address(&_M_p, true); }
 
       // TODO add const volatile overload
 #endif // __cpp_lib_atomic_wait
@@ -1017,8 +1018,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait(const _Tp* __ptr, _Val<_Tp> __old,
 	   memory_order __m = memory_order_seq_cst) noexcept
       {
-	std::__atomic_wait(__ptr, __old,
-	    [=]() { return load(__ptr, __m) == __old; });
+	std::__atomic_wait_address_v(__ptr, __old,
+	    [__ptr, __m]() { return __atomic_impl::load(__ptr, __m); });
       }
 
       // TODO add const volatile overload
@@ -1026,14 +1027,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Tp>
       _GLIBCXX_ALWAYS_INLINE void
       notify_one(const _Tp* __ptr) noexcept
-      { std::__atomic_notify(__ptr, false); }
+      { std::__atomic_notify_address(__ptr, false); }
 
       // TODO add const volatile overload
 
     template<typename _Tp>
       _GLIBCXX_ALWAYS_INLINE void
       notify_all(const _Tp* __ptr) noexcept
-      { std::__atomic_notify(__ptr, true); }
+      { std::__atomic_notify_address(__ptr, true); }
 
       // TODO add const volatile overload
 #endif // __cpp_lib_atomic_wait

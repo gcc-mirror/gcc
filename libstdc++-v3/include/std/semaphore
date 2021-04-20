@@ -33,8 +33,6 @@
 
 #if __cplusplus > 201703L
 #include <bits/semaphore_base.h>
-#if __cpp_lib_atomic_wait
-#include <ext/numeric_traits.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -42,13 +40,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #define __cpp_lib_semaphore 201907L
 
-  template<ptrdiff_t __least_max_value =
-			__gnu_cxx::__int_traits<ptrdiff_t>::__max>
+  template<ptrdiff_t __least_max_value = __semaphore_impl::_S_max>
     class counting_semaphore
     {
       static_assert(__least_max_value >= 0);
+      static_assert(__least_max_value <= __semaphore_impl::_S_max);
 
-      __semaphore_impl<__least_max_value> _M_sem;
+      __semaphore_impl _M_sem;
 
     public:
       explicit counting_semaphore(ptrdiff_t __desired) noexcept
@@ -91,6 +89,5 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
-#endif // __cpp_lib_atomic_wait
 #endif // C++20
 #endif // _GLIBCXX_SEMAPHORE
