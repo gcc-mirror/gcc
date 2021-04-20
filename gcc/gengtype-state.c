@@ -2150,7 +2150,7 @@ read_state_options (options_p *opt)
 
 /* Read a version, and check against the version of the gengtype.  */
 static void
-read_state_version (const char *version_string)
+read_state_version (const char *ver_string)
 {
   struct state_token_st *t0 = peek_state_token (0);
   struct state_token_st *t1 = peek_state_token (1);
@@ -2166,10 +2166,10 @@ read_state_version (const char *version_string)
 	{
 	  /* Check that the read version string is the same as current
 	     version.  */
-	  if (strcmp (version_string, t0->stok_un.stok_string))
+	  if (strcmp (ver_string, t0->stok_un.stok_string))
 	    fatal_reading_state_printf (t0,
 					"version string mismatch; expecting %s but got %s",
-					version_string,
+					ver_string,
 					t0->stok_un.stok_string);
 	  next_state_tokens (2);
 	}

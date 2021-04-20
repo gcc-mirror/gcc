@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin-api.h"
 #include "gcov-io.h"
 #include "diagnostic.h"
+#include "version.h"
 
 /* The encoding for a function consists of the following sections:
 
@@ -120,7 +121,7 @@ along with GCC; see the file COPYING3.  If not see
      String are represented in the table as pairs, a length in ULEB128
      form followed by the data for the string.  */
 
-#define LTO_major_version 9
+#define LTO_major_version GCC_major_version
 #define LTO_minor_version 0
 
 typedef unsigned char	lto_decl_flags_t;
