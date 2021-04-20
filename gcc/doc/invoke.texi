@@ -14364,6 +14364,10 @@ The parameter is used only in GIMPLE FE.
 The maximum number of 'after supernode' exploded nodes within the analyzer
 per supernode, before terminating analysis.
 
+@item ranger-logical-depth
+Maximum depth of logical expression evaluation ranger will look through
+when evaluting outgoing edge ranges.
+
 @item openacc-kernels
 Specify mode of OpenACC `kernels' constructs handling.
 With @option{--param=openacc-kernels=decompose}, OpenACC `kernels'
