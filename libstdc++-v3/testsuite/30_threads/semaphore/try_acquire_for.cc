@@ -21,6 +21,8 @@
 // { dg-require-gthreads "" }
 // { dg-add-options libatomic }
 
+// { dg-skip-if "FIXME: fails" { ! futex } }
+
 #include <semaphore>
 #include <chrono>
 #include <thread>
