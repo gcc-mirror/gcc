@@ -290,6 +290,13 @@ namespace ranges
 	  { __j - __j } -> convertible_to<__iota_diff_t<_It>>;
 	};
 
+    template<typename _Winc>
+      struct __iota_view_iter_cat
+      { };
+
+    template<incrementable _Winc>
+      struct __iota_view_iter_cat<_Winc>
+      { using iterator_category = input_iterator_tag; };
   } // namespace __detail
 
   template<weakly_incrementable _Winc,
@@ -301,11 +308,11 @@ namespace ranges
     private:
       struct _Sentinel;
 
-      struct _Iterator
+      struct _Iterator : __detail::__iota_view_iter_cat<_Winc>
       {
       private:
 	static auto
-	_S_iter_cat()
+	_S_iter_concept()
 	{
 	  using namespace __detail;
 	  if constexpr (__advanceable<_Winc>)
@@ -319,7 +326,8 @@ namespace ranges
 	}
 
       public:
-	using iterator_category = decltype(_S_iter_cat());
+	using iterator_concept = decltype(_S_iter_concept());
+	// iterator_category defined in __iota_view_iter_cat
 	using value_type = _Winc;
 	using difference_type = __detail::__iota_diff_t<_Winc>;
 
@@ -1100,7 +1108,32 @@ namespace views::__adaptor
 	  _M_offset = __it - ranges::begin(__r);
 	}
       };
+  } // namespace __detail
 
+  namespace __detail
+  {
+    template<typename _Base>
+      struct __filter_view_iter_cat
+      { };
+
+    template<forward_range _Base>
+      struct __filter_view_iter_cat<_Base>
+      {
+      private:
+	static auto
+	_S_iter_cat()
+	{
+	  using _Cat = typename iterator_traits<iterator_t<_Base>>::iterator_category;
+	  if constexpr (derived_from<_Cat, bidirectional_iterator_tag>)
+	    return bidirectional_iterator_tag{};
+	  else if constexpr (derived_from<_Cat, forward_iterator_tag>)
+	    return forward_iterator_tag{};
+	  else
+	    return _Cat{};
+	}
+      public:
+	using iterator_category = decltype(_S_iter_cat());
+      };
   } // namespace __detail
 
   template<input_range _Vp,
@@ -1111,7 +1144,7 @@ namespace views::__adaptor
     private:
       struct _Sentinel;
 
-      struct _Iterator
+      struct _Iterator : __detail::__filter_view_iter_cat<_Vp>
       {
       private:
 	static constexpr auto
@@ -1125,18 +1158,6 @@ namespace views::__adaptor
 	    return input_iterator_tag{};
 	}
 
-	static constexpr auto
-	_S_iter_cat()
-	{
-	  using _Cat = typename iterator_traits<_Vp_iter>::iterator_category;
-	  if constexpr (derived_from<_Cat, bidirectional_iterator_tag>)
-	    return bidirectional_iterator_tag{};
-	  else if constexpr (derived_from<_Cat, forward_iterator_tag>)
-	    return forward_iterator_tag{};
-	  else
-	    return _Cat{};
-	}
-
 	friend filter_view;
 
 	using _Vp_iter = iterator_t<_Vp>;
@@ -1146,7 +1167,7 @@ namespace views::__adaptor
 
       public:
 	using iterator_concept = decltype(_S_iter_concept());
-	using iterator_category = decltype(_S_iter_cat());
+	// iterator_category defined in __filter_view_iter_cat
 	using value_type = range_value_t<_Vp>;
 	using difference_type = range_difference_t<_Vp>;
 
@@ -1344,16 +1365,49 @@ namespace views::__adaptor
     {
     private:
       template<bool _Const>
+	using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+
+      template<bool _Const>
+	struct __iter_cat
+	{ };
+
+      template<bool _Const>
+	requires forward_range<_Base<_Const>>
+	struct __iter_cat<_Const>
+	{
+	private:
+	  static auto
+	  _S_iter_cat()
+	  {
+	    using _Base = transform_view::_Base<_Const>;
+	    using _Res = invoke_result_t<_Fp&, range_reference_t<_Base>>;
+	    if constexpr (is_lvalue_reference_v<_Res>)
+	      {
+		using _Cat
+		  = typename iterator_traits<iterator_t<_Base>>::iterator_category;
+		if constexpr (derived_from<_Cat, contiguous_iterator_tag>)
+		  return random_access_iterator_tag{};
+		else
+		  return _Cat{};
+	      }
+	    else
+	      return input_iterator_tag{};
+	  }
+	public:
+	  using iterator_category = decltype(_S_iter_cat());
+	};
+
+      template<bool _Const>
 	struct _Sentinel;
 
       template<bool _Const>
-	struct _Iterator
+	struct _Iterator : __iter_cat<_Const>
 	{
 	private:
 	  using _Parent = __detail::__maybe_const_t<_Const, transform_view>;
-	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+	  using _Base = transform_view::_Base<_Const>;
 
-	  static constexpr auto
+	  static auto
 	  _S_iter_concept()
 	  {
 	    if constexpr (random_access_range<_Vp>)
@@ -1366,23 +1420,6 @@ namespace views::__adaptor
 	      return input_iterator_tag{};
 	  }
 
-	  static constexpr auto
-	  _S_iter_cat()
-	  {
-	    using _Res = invoke_result_t<_Fp&, range_reference_t<_Base>>;
-	    if constexpr (is_lvalue_reference_v<_Res>)
-	      {
-		using _Cat
-		  = typename iterator_traits<_Base_iter>::iterator_category;
-		if constexpr (derived_from<_Cat, contiguous_iterator_tag>)
-		  return random_access_iterator_tag{};
-		else
-		  return _Cat{};
-	      }
-	    else
-	      return input_iterator_tag{};
-	  }
-
 	  using _Base_iter = iterator_t<_Base>;
 
 	  _Base_iter _M_current = _Base_iter();
@@ -1390,7 +1427,7 @@ namespace views::__adaptor
 
 	public:
 	  using iterator_concept = decltype(_S_iter_concept());
-	  using iterator_category = decltype(_S_iter_cat());
+	  // iterator_category defined in __transform_view_iter_cat
 	  using value_type
 	    = remove_cvref_t<invoke_result_t<_Fp&, range_reference_t<_Base>>>;
 	  using difference_type = range_difference_t<_Base>;
@@ -1556,7 +1593,7 @@ namespace views::__adaptor
 	{
 	private:
 	  using _Parent = __detail::__maybe_const_t<_Const, transform_view>;
-	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+	  using _Base = transform_view::_Base<_Const>;
 
 	  template<bool _Const2>
 	    constexpr auto
@@ -2211,17 +2248,61 @@ namespace views::__adaptor
       using _InnerRange = range_reference_t<_Vp>;
 
       template<bool _Const>
+	using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+
+      template<bool _Const>
+	using _Outer_iter = iterator_t<_Base<_Const>>;
+
+      template<bool _Const>
+	using _Inner_iter = iterator_t<range_reference_t<_Base<_Const>>>;
+
+      template<bool _Const>
+	static constexpr bool _S_ref_is_glvalue
+	  = is_reference_v<range_reference_t<_Base<_Const>>>;
+
+      template<bool _Const>
+	struct __iter_cat
+	{ };
+
+      template<bool _Const>
+	requires _S_ref_is_glvalue<_Const>
+	  && forward_range<_Base<_Const>>
+	  && forward_range<range_reference_t<_Base<_Const>>>
+	struct __iter_cat<_Const>
+	{
+	private:
+	  static constexpr auto
+	  _S_iter_cat()
+	  {
+	    using _Outer_iter = join_view::_Outer_iter<_Const>;
+	    using _Inner_iter = join_view::_Inner_iter<_Const>;
+	    using _OuterCat = typename iterator_traits<_Outer_iter>::iterator_category;
+	    using _InnerCat = typename iterator_traits<_Inner_iter>::iterator_category;
+	    if constexpr (derived_from<_OuterCat, bidirectional_iterator_tag>
+			  && derived_from<_InnerCat, bidirectional_iterator_tag>)
+	      return bidirectional_iterator_tag{};
+	    else if constexpr (derived_from<_OuterCat, forward_iterator_tag>
+			       && derived_from<_InnerCat, forward_iterator_tag>)
+	      return forward_iterator_tag{};
+	    else
+	      return input_iterator_tag{};
+	  }
+	public:
+	  using iterator_category = decltype(_S_iter_cat());
+	};
+
+      template<bool _Const>
 	struct _Sentinel;
 
       template<bool _Const>
-	struct _Iterator
+	struct _Iterator : __iter_cat<_Const>
 	{
 	private:
 	  using _Parent = __detail::__maybe_const_t<_Const, join_view>;
-	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+	  using _Base = join_view::_Base<_Const>;
 
 	  static constexpr bool _S_ref_is_glvalue
-	    = is_reference_v<range_reference_t<_Base>>;
+	    = join_view::_S_ref_is_glvalue<_Const>;
 
 	  constexpr void
 	  _M_satisfy()
@@ -2261,30 +2342,8 @@ namespace views::__adaptor
 	      return input_iterator_tag{};
 	  }
 
-	  static constexpr auto
-	  _S_iter_cat()
-	  {
-	    using _OuterCat
-	      = typename iterator_traits<_Outer_iter>::iterator_category;
-	    using _InnerCat
-	      = typename iterator_traits<_Inner_iter>::iterator_category;
-	    if constexpr (_S_ref_is_glvalue
-			  && derived_from<_OuterCat, bidirectional_iterator_tag>
-			  && derived_from<_InnerCat, bidirectional_iterator_tag>)
-	      return bidirectional_iterator_tag{};
-	    else if constexpr (_S_ref_is_glvalue
-			       && derived_from<_OuterCat, forward_iterator_tag>
-			       && derived_from<_InnerCat, forward_iterator_tag>)
-	      return forward_iterator_tag{};
-	    else if constexpr (derived_from<_OuterCat, input_iterator_tag>
-			       && derived_from<_InnerCat, input_iterator_tag>)
-	      return input_iterator_tag{};
-	    else
-	      return output_iterator_tag{};
-	  }
-
-	  using _Outer_iter = iterator_t<_Base>;
-	  using _Inner_iter = iterator_t<range_reference_t<_Base>>;
+	  using _Outer_iter = join_view::_Outer_iter<_Const>;
+	  using _Inner_iter = join_view::_Inner_iter<_Const>;
 
 	  _Outer_iter _M_outer = _Outer_iter();
 	  _Inner_iter _M_inner = _Inner_iter();
@@ -2292,7 +2351,7 @@ namespace views::__adaptor
 
 	public:
 	  using iterator_concept = decltype(_S_iter_concept());
-	  using iterator_category = decltype(_S_iter_cat());
+	  // iterator_category defined in __join_view_iter_cat
 	  using value_type = range_value_t<range_reference_t<_Base>>;
 	  using difference_type
 	    = common_type_t<range_difference_t<_Base>,
@@ -2412,7 +2471,7 @@ namespace views::__adaptor
 	{
 	private:
 	  using _Parent = __detail::__maybe_const_t<_Const, join_view>;
-	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+	  using _Base = join_view::_Base<_Const>;
 
 	  template<bool _Const2>
 	    constexpr bool
@@ -2550,6 +2609,35 @@ namespace views::__adaptor
 	&& requires
 	   { typename __require_constant<remove_reference_t<_Range>::size()>; }
 	&& (remove_reference_t<_Range>::size() <= 1);
+
+    template<typename _Base>
+      struct __split_view_outer_iter_cat
+      { };
+
+    template<forward_range _Base>
+      struct __split_view_outer_iter_cat<_Base>
+      { using iterator_category = input_iterator_tag; };
+
+    template<typename _Base>
+      struct __split_view_inner_iter_cat
+      { };
+
+    template<forward_range _Base>
+      struct __split_view_inner_iter_cat<_Base>
+      {
+      private:
+	static constexpr auto
+	_S_iter_cat()
+	{
+	  using _Cat = typename iterator_traits<iterator_t<_Base>>::iterator_category;
+	  if constexpr (derived_from<_Cat, forward_iterator_tag>)
+	    return forward_iterator_tag{};
+	  else
+	    return _Cat{};
+	}
+      public:
+	using iterator_category = decltype(_S_iter_cat());
+      };
   }
 
   template<input_range _Vp, forward_range _Pattern>
@@ -2561,14 +2649,18 @@ namespace views::__adaptor
     {
     private:
       template<bool _Const>
+	using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+
+      template<bool _Const>
 	struct _InnerIter;
 
       template<bool _Const>
 	struct _OuterIter
+	  : __detail::__split_view_outer_iter_cat<_Base<_Const>>
 	{
 	private:
 	  using _Parent = __detail::__maybe_const_t<_Const, split_view>;
-	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+	  using _Base = split_view::_Base<_Const>;
 
 	  constexpr bool
 	  __at_end() const
@@ -2607,7 +2699,7 @@ namespace views::__adaptor
 	  using iterator_concept = conditional_t<forward_range<_Base>,
 						 forward_iterator_tag,
 						 input_iterator_tag>;
-	  using iterator_category = input_iterator_tag;
+	  // iterator_category defined in __split_view_outer_iter_cat
 	  using difference_type = range_difference_t<_Base>;
 
 	  struct value_type : view_interface<value_type>
@@ -2723,9 +2815,10 @@ namespace views::__adaptor
 
       template<bool _Const>
 	struct _InnerIter
+	  : __detail::__split_view_inner_iter_cat<_Base<_Const>>
 	{
 	private:
-	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+	  using _Base = split_view::_Base<_Const>;
 
 	  constexpr bool
 	  __at_end() const
@@ -2759,17 +2852,6 @@ namespace views::__adaptor
 	      }
 	  }
 
-	  static constexpr auto
-	  _S_iter_cat()
-	  {
-	    using _Cat
-              = typename iterator_traits<iterator_t<_Base>>::iterator_category;
-	    if constexpr (derived_from<_Cat, forward_iterator_tag>)
-	      return forward_iterator_tag{};
-	    else
-	      return _Cat{};
-	  }
-
 	  constexpr auto&
 	  _M_i_current() noexcept
 	  { return _M_i.__current(); }
@@ -2784,7 +2866,7 @@ namespace views::__adaptor
 	public:
 	  using iterator_concept
 	    = typename _OuterIter<_Const>::iterator_concept;
-	  using iterator_category = decltype(_S_iter_cat());
+	  // iterator_category defined in __split_view_inner_iter_cat
 	  using value_type = range_value_t<_Base>;
 	  using difference_type = range_difference_t<_Base>;
 
@@ -3293,13 +3375,41 @@ namespace views::__adaptor
 
     private:
       template<bool _Const>
+	using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+
+      template<bool _Const>
+	struct __iter_cat
+	{ };
+
+      template<bool _Const>
+	requires forward_range<_Base<_Const>>
+	struct __iter_cat<_Const>
+	{
+	private:
+	  static auto _S_iter_cat()
+	  {
+	    using _Base = elements_view::_Base<_Const>;
+	    using _Cat = iterator_traits<iterator_t<_Base>>::iterator_category;
+	    using _Res = decltype((std::get<_Nm>(*std::declval<iterator_t<_Base>>())));
+	    if constexpr (!is_lvalue_reference_v<_Res>)
+	      return input_iterator_tag{};
+	    else if constexpr (derived_from<_Cat, random_access_iterator_tag>)
+	      return random_access_iterator_tag{};
+	    else
+	      return _Cat{};
+	  }
+	public:
+	  using iterator_category = decltype(_S_iter_cat());
+	};
+
+      template<bool _Const>
 	struct _Sentinel;
 
       template<bool _Const>
-	struct _Iterator
+	struct _Iterator : __iter_cat<_Const>
 	{
 	private:
-	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+	  using _Base = elements_view::_Base<_Const>;
 
 	  iterator_t<_Base> _M_current = iterator_t<_Base>();
 
@@ -3315,11 +3425,24 @@ namespace views::__adaptor
 	      }
 	  }
 
+	  static auto
+	  _S_iter_concept()
+	  {
+	    if constexpr (random_access_range<_Vp>)
+	      return random_access_iterator_tag{};
+	    else if constexpr (bidirectional_range<_Vp>)
+	      return bidirectional_iterator_tag{};
+	    else if constexpr (forward_range<_Vp>)
+	      return forward_iterator_tag{};
+	    else
+	      return input_iterator_tag{};
+	  }
+
 	  friend _Iterator<!_Const>;
 
 	public:
-	  using iterator_category
-	    = typename iterator_traits<iterator_t<_Base>>::iterator_category;
+	  using iterator_concept = decltype(_S_iter_concept());
+	  // iterator_category defined in elements_view::__iter_cat
 	  using value_type
 	    = remove_cvref_t<tuple_element_t<_Nm, range_value_t<_Base>>>;
 	  using difference_type = range_difference_t<_Base>;
@@ -3471,7 +3594,7 @@ namespace views::__adaptor
 	  _M_equal(const _Iterator<_Const>& __x) const
 	  { return __x._M_current == _M_end; }
 
-	  using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+	  using _Base = elements_view::_Base<_Const>;
 	  sentinel_t<_Base> _M_end = sentinel_t<_Base>();
 
 	public:
