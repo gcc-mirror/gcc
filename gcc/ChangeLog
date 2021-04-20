@@ -1,3 +1,19 @@
+2021-04-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2020-11-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/97880
+	* omp-expand.c (expand_oacc_collapse_init, expand_oacc_collapse_vars):
+	Use now passed diff_type.
+	(expand_oacc_for): Take largest type for diff_type, taking tiling
+	and collapsing into account.
+
+2021-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/winnt.c (i386_pe_seh_cold_init): Properly deal with
+	frames larger than the SEH maximum frame size.
+
 2021-04-18  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	Backported from master:
