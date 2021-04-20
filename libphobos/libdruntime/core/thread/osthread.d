@@ -1444,55 +1444,35 @@ in (fn)
         else version (PPC)
         {
             void*[19] regs = void;
-            asm pure nothrow @nogc
-            {
-                "stw r13, %0" : "=m" (regs[ 0]);
-                "stw r14, %0" : "=m" (regs[ 1]);
-                "stw r15, %0" : "=m" (regs[ 2]);
-                "stw r16, %0" : "=m" (regs[ 3]);
-                "stw r17, %0" : "=m" (regs[ 4]);
-                "stw r18, %0" : "=m" (regs[ 5]);
-                "stw r19, %0" : "=m" (regs[ 6]);
-                "stw r20, %0" : "=m" (regs[ 7]);
-                "stw r21, %0" : "=m" (regs[ 9]);
-                "stw r22, %0" : "=m" (regs[ 9]);
-                "stw r23, %0" : "=m" (regs[10]);
-                "stw r24, %0" : "=m" (regs[11]);
-                "stw r25, %0" : "=m" (regs[12]);
-                "stw r26, %0" : "=m" (regs[13]);
-                "stw r27, %0" : "=m" (regs[14]);
-                "stw r28, %0" : "=m" (regs[15]);
-                "stw r29, %0" : "=m" (regs[16]);
-                "stw r30, %0" : "=m" (regs[17]);
-                "stw r31, %0" : "=m" (regs[18]);
-            }
+            version (Darwin)
+                enum regname = "r";
+            else
+                enum regname = "";
+            static foreach (i; 0 .. regs.length)
+            {{
+                enum int j = 13 + i; // source register
+                asm pure nothrow @nogc
+                {
+                    "stw "~regname~j.stringof~", %0" : "=m" (regs[i]);
+                }
+            }}
             sp = cast(void*)&regs[0];
         }
         else version (PPC64)
         {
             void*[19] regs = void;
-            asm pure nothrow @nogc
-            {
-                "std r13, %0" : "=m" (regs[ 0]);
-                "std r14, %0" : "=m" (regs[ 1]);
-                "std r15, %0" : "=m" (regs[ 2]);
-                "std r16, %0" : "=m" (regs[ 3]);
-                "std r17, %0" : "=m" (regs[ 4]);
-                "std r18, %0" : "=m" (regs[ 5]);
-                "std r19, %0" : "=m" (regs[ 6]);
-                "std r20, %0" : "=m" (regs[ 7]);
-                "std r21, %0" : "=m" (regs[ 8]);
-                "std r22, %0" : "=m" (regs[ 9]);
-                "std r23, %0" : "=m" (regs[10]);
-                "std r24, %0" : "=m" (regs[11]);
-                "std r25, %0" : "=m" (regs[12]);
-                "std r26, %0" : "=m" (regs[13]);
-                "std r27, %0" : "=m" (regs[14]);
-                "std r28, %0" : "=m" (regs[15]);
-                "std r29, %0" : "=m" (regs[16]);
-                "std r30, %0" : "=m" (regs[17]);
-                "std r31, %0" : "=m" (regs[18]);
-            }
+            version (Darwin)
+                enum regname = "r";
+            else
+                enum regname = "";
+            static foreach (i; 0 .. regs.length)
+            {{
+                enum int j = 13 + i; // source register
+                asm pure nothrow @nogc
+                {
+                    "std "~regname~j.stringof~", %0" : "=m" (regs[i]);
+                }
+            }}
             sp = cast(void*)&regs[0];
         }
         else
