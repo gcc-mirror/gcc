@@ -1420,7 +1420,9 @@ tree
 build_type_constraint (tree decl, tree args, tsubst_flags_t complain)
 {
   tree wildcard = build_nt (WILDCARD_DECL);
+  ++processing_template_decl;
   tree check = build_concept_check (decl, wildcard, args, complain);
+  --processing_template_decl;
   if (check == error_mark_node)
     return error_mark_node;
   return unpack_concept_check (check);

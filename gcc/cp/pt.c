@@ -27997,7 +27997,9 @@ make_constrained_placeholder_type (tree type, tree con, tree args)
   tree expr = tmpl;
   if (TREE_CODE (con) == FUNCTION_DECL)
     expr = ovl_make (tmpl);
+  ++processing_template_decl;
   expr = build_concept_check (expr, type, args, tf_warning_or_error);
+  --processing_template_decl;
 
   PLACEHOLDER_TYPE_CONSTRAINTS (type) = expr;
 
