@@ -1302,6 +1302,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 #endif // C++20
 
+  namespace __detail
+  {
+#if __cplusplus > 201703L && __cpp_lib_concepts
+    template<typename _Iterator>
+      struct __move_iter_cat
+      { };
+
+    template<typename _Iterator>
+      requires requires { typename iterator_traits<_Iterator>::iterator_category; }
+      struct __move_iter_cat<_Iterator>
+      {
+	using iterator_category
+	  = __clamp_iter_cat<typename iterator_traits<_Iterator>::iterator_category,
+			     random_access_iterator_tag>;
+      };
+#endif
+  }
+
   // 24.4.3  Move iterators
   /**
    *  Class template move_iterator is an iterator adapter with the same
@@ -1313,13 +1331,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Iterator>
     class move_iterator
+#if __cplusplus > 201703L && __cpp_lib_concepts
+      : public __detail::__move_iter_cat<_Iterator>
+#endif
     {
       _Iterator _M_current;
 
       using __traits_type = iterator_traits<_Iterator>;
-#if __cplusplus > 201703L && __cpp_lib_concepts
-      using __base_cat = typename __traits_type::iterator_category;
-#else
+#if ! (__cplusplus > 201703L && __cpp_lib_concepts)
       using __base_ref = typename __traits_type::reference;
 #endif
 
@@ -1339,8 +1358,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus > 201703L && __cpp_lib_concepts
       using iterator_concept = input_iterator_tag;
-      using iterator_category
-	= __detail::__clamp_iter_cat<__base_cat, random_access_iterator_tag>;
+      // iterator_category defined in __move_iter_cat
       using value_type = iter_value_t<_Iterator>;
       using difference_type = iter_difference_t<_Iterator>;
       using pointer = _Iterator;
@@ -1662,6 +1680,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    || is_reference_v<iter_reference_t<_It>>
 	    || constructible_from<iter_value_t<_It>, iter_reference_t<_It>>);
 
+    template<typename _It>
+      concept __common_iter_use_postfix_proxy
+	= (!requires (_It& __i) { { *__i++ } -> __can_reference; })
+	  && constructible_from<iter_value_t<_It>, iter_reference_t<_It>>;
   } // namespace __detail
 
   /// An iterator/sentinel adaptor for representing a non-common range.
@@ -1684,11 +1706,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_noexcept()
       { return _S_noexcept1<_It, _It2>() && _S_noexcept1<_Sent, _Sent2>(); }
 
-    class _Proxy
+    class __arrow_proxy
     {
       iter_value_t<_It> _M_keep;
 
-      _Proxy(iter_reference_t<_It>&& __x)
+      __arrow_proxy(iter_reference_t<_It>&& __x)
       : _M_keep(std::move(__x)) { }
 
       friend class common_iterator;
@@ -1697,6 +1719,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const iter_value_t<_It>*
       operator->() const
       { return std::__addressof(_M_keep); }
+    };
+
+    class __postfix_proxy
+    {
+      iter_value_t<_It> _M_keep;
+
+      __postfix_proxy(iter_reference_t<_It>&& __x)
+      : _M_keep(std::move(__x)) { }
+
+      friend class common_iterator;
+
+    public:
+      const iter_value_t<_It>&
+      operator*() const
+      { return _M_keep; }
     };
 
   public:
@@ -1855,7 +1892,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return std::__addressof(__tmp);
 	}
       else
-	return _Proxy{*_M_it};
+	return __arrow_proxy{*_M_it};
     }
 
     common_iterator&
@@ -1876,8 +1913,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  ++*this;
 	  return __tmp;
 	}
-      else
+      else if constexpr (!__detail::__common_iter_use_postfix_proxy<_It>)
 	return _M_it++;
+      else
+	{
+	  __postfix_proxy __p(**this);
+	  ++*this;
+	  return __p;
+	}
     }
 
     template<typename _It2, sentinel_for<_It> _Sent2>
@@ -2008,12 +2051,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using type = decltype(std::declval<const _CIter&>().operator->());
 	};
 
+      static auto
+      _S_iter_cat()
+      {
+	using _Traits = iterator_traits<_It>;
+	if constexpr (requires { requires derived_from<typename _Traits::iterator_category,
+						       forward_iterator_tag>; })
+	  return forward_iterator_tag{};
+	else
+	  return input_iterator_tag{};
+      }
+
     public:
       using iterator_concept = conditional_t<forward_iterator<_It>,
 	    forward_iterator_tag, input_iterator_tag>;
-      using iterator_category = __detail::__clamp_iter_cat<
-	typename iterator_traits<_It>::iterator_category,
-	forward_iterator_tag, input_iterator_tag>;
+      using iterator_category = decltype(_S_iter_cat());
       using value_type = iter_value_t<_It>;
       using difference_type = iter_difference_t<_It>;
       using pointer = typename __ptr<_It>::type;
@@ -2022,12 +2074,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [iterators.counted] Counted iterators
 
+  namespace __detail
+  {
+    template<typename _It>
+      struct __counted_iter_value_type
+      { };
+
+    template<indirectly_readable _It>
+      struct __counted_iter_value_type<_It>
+      { using value_type = iter_value_t<_It>; };
+
+    template<typename _It>
+      struct __counted_iter_concept
+      { };
+
+    template<typename _It>
+      requires requires { typename _It::iterator_concept; }
+      struct __counted_iter_concept<_It>
+      { using iterator_concept = typename _It::iterator_concept; };
+
+    template<typename _It>
+      struct __counted_iter_cat
+      { };
+
+    template<typename _It>
+      requires requires { typename _It::iterator_category; }
+      struct __counted_iter_cat<_It>
+      { using iterator_category = typename _It::iterator_category; };
+  }
+
   /// An iterator adaptor that keeps track of the distance to the end.
   template<input_or_output_iterator _It>
     class counted_iterator
+      : public __detail::__counted_iter_value_type<_It>,
+	public __detail::__counted_iter_concept<_It>,
+	public __detail::__counted_iter_cat<_It>
     {
     public:
       using iterator_type = _It;
+      // value_type defined in __counted_iter_value_type
+      using difference_type = iter_difference_t<_It>;
+      // iterator_concept defined in __counted_iter_concept
+      // iterator_category defined in __counted_iter_cat
 
       constexpr counted_iterator() = default;
 
@@ -2083,6 +2171,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__glibcxx_assert( _M_length > 0 );
 	return *_M_current;
       }
+
+      constexpr auto
+      operator->() const noexcept
+      requires contiguous_iterator<_It>
+      { return std::to_address(_M_current); }
 
       constexpr counted_iterator&
       operator++()
@@ -2232,16 +2325,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       iter_difference_t<_It> _M_length = 0;
     };
 
-  template<typename _It>
-    struct incrementable_traits<counted_iterator<_It>>
-    {
-      using difference_type = iter_difference_t<_It>;
-    };
-
   template<input_iterator _It>
+    requires same_as<__detail::__iter_traits<_It>, iterator_traits<_It>>
     struct iterator_traits<counted_iterator<_It>> : iterator_traits<_It>
     {
-      using pointer = void;
+      using pointer = conditional_t<contiguous_iterator<_It>,
+				    add_pointer_t<iter_reference_t<_It>>,
+				    void>;
     };
 #endif // C++20
 

@@ -1,3 +1,41 @@
+2021-04-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/100081
+	* gimple-range-cache.h (ranger_cache): Inherit from gori_compute
+	rather than gori_compute_cache.
+	* gimple-range-gori.cc (is_gimple_logical_p): Move to top of file.
+	(range_def_chain::m_logical_depth): New member.
+	(range_def_chain::range_def_chain): Initialize m_logical_depth.
+	(range_def_chain::get_def_chain): Don't build defchains through more
+	than LOGICAL_LIMIT logical expressions.
+	* params.opt (param_ranger_logical_depth): New.
+
+2021-04-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100067
+	* config/arm/arm.c (arm_configure_build_target): Do not strip
+	extended FPU/SIMD feature bits from the target ISA when -mfpu
+	is specified (partial revert of r11-8168).
+
+2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* params.opt (-param=openacc-kernels=): Add.
+	* omp-oacc-kernels-decompose.cc
+	(pass_omp_oacc_kernels_decompose::gate): Use it.
+	* doc/invoke.texi (-fopenacc-kernels=@var{mode}): Move...
+	(--param): ... here, 'openacc-kernels'.
+
+2021-04-19  Martin Liska  <mliska@suse.cz>
+
+	PR c/100143
+	* gengtype.c (finish_root_table): Align function arguments
+	in between declaration and definition.
+
+2021-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/winnt.c (i386_pe_seh_cold_init): Properly deal with
+	frames larger than the SEH maximum frame size.
+
 2021-04-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/99927

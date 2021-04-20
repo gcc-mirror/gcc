@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     static constexpr ptrdiff_t
     max() noexcept
-    { return __gnu_cxx::__int_traits<ptrdiff_t>::__max; }
+    { return __gnu_cxx::__int_traits<__detail::__platform_wait_t>::__max; }
 
     constexpr explicit latch(ptrdiff_t __expected) noexcept
       : _M_a(__expected) { }
@@ -73,8 +73,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_ALWAYS_INLINE void
     wait() const noexcept
     {
-      auto const __old = __atomic_impl::load(&_M_a, memory_order::acquire);
-      std::__atomic_wait(&_M_a, __old, [this] { return this->try_wait(); });
+      auto const __pred = [this] { return this->try_wait(); };
+      std::__atomic_wait_address(&_M_a, __pred);
     }
 
     _GLIBCXX_ALWAYS_INLINE void
@@ -85,7 +85,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   private:
-    alignas(__alignof__(ptrdiff_t)) ptrdiff_t _M_a;
+    alignas(__alignof__(__detail::__platform_wait_t)) __detail::__platform_wait_t _M_a;
   };
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

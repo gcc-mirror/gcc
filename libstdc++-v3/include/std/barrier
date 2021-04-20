@@ -94,7 +94,7 @@ It looks different from literature pseudocode for two main reasons:
       alignas(__phase_alignment) __barrier_phase_t  _M_phase;
 
       bool
-      _M_arrive(__barrier_phase_t __old_phase)
+      _M_arrive(__barrier_phase_t __old_phase, size_t __current)
       {
 	const auto __old_phase_val = static_cast<unsigned char>(__old_phase);
 	const auto __half_step =
@@ -104,8 +104,7 @@ It looks different from literature pseudocode for two main reasons:
 
 	size_t __current_expected = _M_expected;
 	std::hash<std::thread::id> __hasher;
-	size_t __current = __hasher(std::this_thread::get_id())
-					  % ((_M_expected + 1) >> 1);
+	__current %= ((_M_expected + 1) >> 1);
 
 	for (int __round = 0; ; ++__round)
 	  {
@@ -163,12 +162,14 @@ It looks different from literature pseudocode for two main reasons:
       [[nodiscard]] arrival_token
       arrive(ptrdiff_t __update)
       {
+	std::hash<std::thread::id> __hasher;
+	size_t __current = __hasher(std::this_thread::get_id());
 	__atomic_phase_ref_t __phase(_M_phase);
 	const auto __old_phase = __phase.load(memory_order_relaxed);
 	const auto __cur = static_cast<unsigned char>(__old_phase);
 	for(; __update; --__update)
 	  {
-	    if(_M_arrive(__old_phase))
+	    if(_M_arrive(__old_phase, __current))
 	      {
 		_M_completion();
 		_M_expected += _M_expected_adjustment.load(memory_order_relaxed);
@@ -185,11 +186,11 @@ It looks different from literature pseudocode for two main reasons:
       wait(arrival_token&& __old_phase) const
       {
 	__atomic_phase_const_ref_t __phase(_M_phase);
-	auto const __test_fn = [=, this]
+	auto const __test_fn = [=]
 	  {
 	    return __phase.load(memory_order_acquire) != __old_phase;
 	  };
-	std::__atomic_wait(&_M_phase, __old_phase, __test_fn);
+	std::__atomic_wait_address(&_M_phase, __test_fn);
       }
 
       void

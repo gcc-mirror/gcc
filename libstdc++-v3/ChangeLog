@@ -1,3 +1,8 @@
+2021-04-19  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt:
+	Updated.
+
 2021-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/abi/post/powerpc-linux-gnu/baseline_symbols.txt: Update.

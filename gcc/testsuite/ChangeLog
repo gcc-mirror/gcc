@@ -1,3 +1,41 @@
+2021-04-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/97536
+	* g++.dg/concepts/diagnostic16.C: New test.
+
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98457
+	* gdc.dg/pr98457.d: New test.
+
+2021-04-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/100075
+	* gcc.target/aarch64/pr100075.c: Add aarch64_little_endian
+	effective target.
+
+2021-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR preprocessor/100142
+	* gcc.dg/pr100142.c: New testcase.
+	* g++.dg/diagnostic/pr72803.C: Revert last change.
+
+2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/if-clause-2.c: '-fopenacc-kernels=[...]' ->
+	'--param=openacc-kernels=[...]'.
+	* c-c++-common/goacc/kernels-decompose-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-ice-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-ice-2.c: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+	* gfortran.dg/goacc/kernels-tree.f95: Likewise.
+
+2021-04-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt92.adb: New test.
+
 2021-04-17  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
 
 	* c-c++-common/zero-scratch-regs-8.c: Enable on s390*.

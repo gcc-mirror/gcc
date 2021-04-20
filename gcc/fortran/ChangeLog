@@ -1,3 +1,7 @@
+2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt (fopenacc-kernels=): Remove.
+
 2021-04-16  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100094

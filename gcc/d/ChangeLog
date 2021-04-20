@@ -1,3 +1,11 @@
+2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98457
+	* d-diagnostic.cc (expand_d_format): Handle escaped backticks.
+	(escape_d_format): New funtion.
+	(verror): Call escape_d_format on prefixing strings.
+	(vdeprecation): Likewise.
+
 2021-04-17  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/99914

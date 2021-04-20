@@ -1,3 +1,13 @@
+2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
+	'-fopenacc-kernels=[...]' -> '--param=openacc-kernels=[...]'.
+	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/kernels-decompose-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/pr94358-1.f90: Likewise.
+
 2021-04-15  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR target/99555

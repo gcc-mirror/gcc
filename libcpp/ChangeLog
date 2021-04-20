@@ -1,3 +1,9 @@
+2021-04-19  Richard Biener  <rguenther@suse.de>
+
+	PR preprocessor/100142
+	* line-map.c (linemap_position_for_loc_and_offset): Revert
+	unintended s/column_offset/column/ change.
+
 2021-04-13  Nathan Sidwell  <nathan@acm.org>
 
 	PR preprocessor/99446
