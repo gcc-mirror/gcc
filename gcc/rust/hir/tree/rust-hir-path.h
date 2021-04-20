@@ -165,11 +165,11 @@ public:
   GenericArgs &operator= (GenericArgs &&other) = default;
 
   // Creates an empty GenericArgs (no arguments)
-  static GenericArgs create_empty ()
+  static GenericArgs create_empty (Location locus = Location ())
   {
     return GenericArgs (std::vector<Lifetime> (),
 			std::vector<std::unique_ptr<Type> > (),
-			std::vector<GenericArgsBinding> ());
+			std::vector<GenericArgsBinding> (), locus);
   }
 
   bool is_empty () const
