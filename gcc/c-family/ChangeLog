@@ -1,3 +1,7 @@
+2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (fopenacc-kernels=): Remove.
+
 2021-04-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-warn.c (do_warn_double_promotion): Fix comment typo,

@@ -1873,19 +1873,6 @@ fopenacc-dim=
 C ObjC C++ ObjC++ LTO Joined Var(flag_openacc_dims)
 Specify default OpenACC compute dimensions.
 
-fopenacc-kernels=
-C ObjC C++ ObjC++ RejectNegative Joined Enum(openacc_kernels) Var(flag_openacc_kernels) Init(OPENACC_KERNELS_PARLOOPS)
--fopenacc-kernels=[decompose|parloops]	Specify mode of OpenACC 'kernels' constructs handling.
-
-Enum
-Name(openacc_kernels) Type(enum openacc_kernels)
-
-EnumValue
-Enum(openacc_kernels) String(decompose) Value(OPENACC_KERNELS_DECOMPOSE)
-
-EnumValue
-Enum(openacc_kernels) String(parloops) Value(OPENACC_KERNELS_PARLOOPS)
-
 fopenmp
 C ObjC C++ ObjC++ LTO Var(flag_openmp)
 Enable OpenMP (implies -frecursive in Fortran).

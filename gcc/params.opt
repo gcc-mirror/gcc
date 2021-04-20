@@ -157,6 +157,11 @@ Enum(evrp_mode) String(trace) Value(EVRP_MODE_TRACE)
 EnumValue
 Enum(evrp_mode) String(debug) Value(EVRP_MODE_DEBUG)
 
+-param=ranger-logical-depth=
+Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 999) Param Optimization
+Maximum depth of logical expression evaluation ranger will look through when
+evaluting outgoing edge ranges.
+
 -param=fsm-maximum-phi-arguments=
 Common Joined UInteger Var(param_fsm_maximum_phi_arguments) Init(100) IntegerRange(1, 999999) Param Optimization
 Maximum number of arguments a PHI may have before the FSM threader will not try to thread through its block.
@@ -776,6 +781,19 @@ The minimum probability of reaching a source block for interblock speculative sc
 -param=min-vect-loop-bound=
 Common Joined UInteger Var(param_min_vect_loop_bound) Param Optimization
 If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization.
+
+-param=openacc-kernels=
+Common Joined Enum(openacc_kernels) Var(param_openacc_kernels) Init(OPENACC_KERNELS_PARLOOPS) Param
+--param=openacc-kernels=[decompose|parloops]	Specify mode of OpenACC 'kernels' constructs handling.
+
+Enum
+Name(openacc_kernels) Type(enum openacc_kernels)
+
+EnumValue
+Enum(openacc_kernels) String(decompose) Value(OPENACC_KERNELS_DECOMPOSE)
+
+EnumValue
+Enum(openacc_kernels) String(parloops) Value(OPENACC_KERNELS_PARLOOPS)
 
 -param=parloops-chunk-size=
 Common Joined UInteger Var(param_parloops_chunk_size) Param Optimization

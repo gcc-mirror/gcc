@@ -10,6 +10,9 @@
  * Source:    $(DRUNTIMESRC core/thread/osthread.d)
  */
 
+/* NOTE: This file has been patched from the original DMD distribution to
+ * work with the GDC compiler.
+ */
 module core.thread.threadbase;
 
 import core.thread.context;
@@ -313,6 +316,7 @@ class ThreadBase
         // NOTE: This function may not be called until thread_init has
         //       completed.  See thread_suspendAll for more information
         //       on why this might occur.
+        version (GNU) pragma(inline, false);
         return sm_this;
     }
 

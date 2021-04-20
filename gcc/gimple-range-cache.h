@@ -87,7 +87,7 @@ private:
 // them available for gori-computes to query so outgoing edges can be
 // properly calculated.
 
-class ranger_cache : public gori_compute_cache
+class ranger_cache : public gori_compute
 {
 public:
   ranger_cache (class gimple_ranger &q);

@@ -27,6 +27,7 @@ version (CRuntime_Musl)   version = SectionsElf;
 version (CRuntime_UClibc) version = SectionsElf;
 version (FreeBSD)         version = SectionsElf;
 version (NetBSD)          version = SectionsElf;
+version (OpenBSD)         version = SectionsElf;
 version (DragonFlyBSD)    version = SectionsElf;
 version (Solaris)         version = SectionsElf;
 version (OSX)             version = SectionsMacho;

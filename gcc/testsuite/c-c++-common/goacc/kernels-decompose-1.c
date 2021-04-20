@@ -2,7 +2,7 @@
 
 /* { dg-additional-options "-fopt-info-omp-all" } */
 /* { dg-additional-options "-fdump-tree-gimple" } */
-/* { dg-additional-options "-fopenacc-kernels=decompose" }
+/* { dg-additional-options "--param=openacc-kernels=decompose" }
    { dg-additional-options "-fdump-tree-omp_oacc_kernels_decompose" } */
 
 /* See also '../../gfortran.dg/goacc/kernels-decompose-1.f95'.  */

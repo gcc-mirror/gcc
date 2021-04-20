@@ -414,7 +414,7 @@ int dll_getRefCount( HINSTANCE hInstance ) nothrow @nogc
     {
         version (GNU_InlineAsm)
         {
-            asm pure nothrow @nogc { "movq %%gs:0x60, %0;" : "=r" peb; }
+            asm pure nothrow @nogc { "movq %%gs:0x60, %0;" : "=r" (peb); }
         }
         else
         {
@@ -431,7 +431,7 @@ int dll_getRefCount( HINSTANCE hInstance ) nothrow @nogc
     {
         version (GNU_InlineAsm)
         {
-            asm pure nothrow @nogc { "movl %%fs:0x30, %0;" : "=r" peb; }
+            asm pure nothrow @nogc { "movl %%fs:0x30, %0;" : "=r" (peb); }
         }
         else
         {

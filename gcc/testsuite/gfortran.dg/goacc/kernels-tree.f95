@@ -1,6 +1,6 @@
 ! { dg-do compile } 
 ! { dg-additional-options "-fdump-tree-original" } 
-! { dg-additional-options "-fopenacc-kernels=decompose" }
+! { dg-additional-options "--param=openacc-kernels=decompose" }
 ! { dg-additional-options "-fdump-tree-omp_oacc_kernels_decompose" }
 
 program test

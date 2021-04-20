@@ -424,8 +424,10 @@ private:
         import core.sys.freebsd.dlfcn;
     else version (NetBSD)
         import core.sys.netbsd.dlfcn;
+    else version (OpenBSD)
+        import core.sys.openbsd.dlfcn;
     else version (Solaris)
-        import core.sys.netbsd.dlfcn;
+        import core.sys.solaris.dlfcn;
     else version (Posix)
         import core.sys.posix.dlfcn;
 

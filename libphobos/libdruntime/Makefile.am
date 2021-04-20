@@ -69,7 +69,8 @@ if DRUNTIME_OS_LINUX
     DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_LINUX)
 endif
 if DRUNTIME_OS_MINGW
-    DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_WINDOWS)
+    DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_WINDOWS) \
+				   config/mingw/msvc.c
 endif
 if DRUNTIME_OS_SOLARIS
     DRUNTIME_SOURCES_CONFIGURED += $(DRUNTIME_DSOURCES_SOLARIS)
@@ -205,19 +206,19 @@ DRUNTIME_DSOURCES_BIONIC = core/sys/bionic/err.d \
 	core/sys/bionic/fcntl.d core/sys/bionic/stdlib.d \
 	core/sys/bionic/string.d core/sys/bionic/unistd.d
 
-DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/crt_externs.d \
-	core/sys/darwin/dlfcn.d core/sys/darwin/err.d \
-	core/sys/darwin/execinfo.d core/sys/darwin/fcntl.d \
-	core/sys/darwin/ifaddrs.d core/sys/darwin/mach/dyld.d \
-	core/sys/darwin/mach/getsect.d core/sys/darwin/mach/kern_return.d \
-	core/sys/darwin/mach/loader.d core/sys/darwin/mach/nlist.d \
-	core/sys/darwin/mach/port.d core/sys/darwin/mach/semaphore.d \
-	core/sys/darwin/mach/stab.d core/sys/darwin/mach/thread_act.d \
-	core/sys/darwin/netinet/in_.d core/sys/darwin/pthread.d \
-	core/sys/darwin/stdlib.d core/sys/darwin/string.d \
-	core/sys/darwin/sys/attr.d core/sys/darwin/sys/cdefs.d \
-	core/sys/darwin/sys/event.d core/sys/darwin/sys/mman.d \
-	core/sys/darwin/sys/sysctl.d
+DRUNTIME_DSOURCES_DARWIN = core/sys/darwin/config.d \
+	core/sys/darwin/crt_externs.d core/sys/darwin/dlfcn.d \
+	core/sys/darwin/err.d core/sys/darwin/execinfo.d \
+	core/sys/darwin/fcntl.d core/sys/darwin/ifaddrs.d \
+	core/sys/darwin/mach/dyld.d core/sys/darwin/mach/getsect.d \
+	core/sys/darwin/mach/kern_return.d core/sys/darwin/mach/loader.d \
+	core/sys/darwin/mach/nlist.d core/sys/darwin/mach/port.d \
+	core/sys/darwin/mach/semaphore.d core/sys/darwin/mach/stab.d \
+	core/sys/darwin/mach/thread_act.d core/sys/darwin/netinet/in_.d \
+	core/sys/darwin/pthread.d core/sys/darwin/stdlib.d \
+	core/sys/darwin/string.d core/sys/darwin/sys/attr.d \
+	core/sys/darwin/sys/cdefs.d core/sys/darwin/sys/event.d \
+	core/sys/darwin/sys/mman.d core/sys/darwin/sys/sysctl.d
 
 DRUNTIME_DSOURCES_DRAGONFLYBSD = core/sys/dragonflybsd/dlfcn.d \
 	core/sys/dragonflybsd/err.d core/sys/dragonflybsd/execinfo.d \
