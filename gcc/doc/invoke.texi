@@ -14366,7 +14366,7 @@ per supernode, before terminating analysis.
 
 @item ranger-logical-depth
 Maximum depth of logical expression evaluation ranger will look through
-when evaluting outgoing edge ranges.
+when evaluating outgoing edge ranges.
 
 @item openacc-kernels
 Specify mode of OpenACC `kernels' constructs handling.
