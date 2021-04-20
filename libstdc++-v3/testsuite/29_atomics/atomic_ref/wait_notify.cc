@@ -23,73 +23,25 @@
 
 #include <atomic>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <chrono>
-#include <type_traits>
 
 #include <testsuite_hooks.h>
-
-template<typename Tp>
-Tp check_wait_notify(Tp val1, Tp val2)
-{
-  using namespace std::literals::chrono_literals;
-
-  std::mutex m;
-  std::condition_variable cv;
-  std::unique_lock<std::mutex> l(m);
-
-  Tp aa = val1;
-  std::atomic_ref<Tp> a(aa);
-  std::thread t([&]
-		{
-		  {
-		    // This ensures we block until cv.wait(l) starts.
-		    std::lock_guard<std::mutex> ll(m);
-		  }
-		  cv.notify_one();
-		  a.wait(val1);
-		  if (a.load() != val2)
-		    a = val1;
-		});
-  cv.wait(l);
-  std::this_thread::sleep_for(100ms);
-  a.store(val2);
-  a.notify_one();
-  t.join();
-  return a.load();
-}
-
-template<typename Tp,
-	 bool = std::is_integral_v<Tp>
-	 || std::is_floating_point_v<Tp>>
-struct check;
-
-template<typename Tp>
-struct check<Tp, true>
-{
-  check()
-  {
-    Tp a = 0;
-    Tp b = 42;
-    VERIFY(check_wait_notify(a, b) == b);
-  }
-};
-
-template<typename Tp>
-struct check<Tp, false>
-{
-  check(Tp b)
-  {
-    Tp a;
-    VERIFY(check_wait_notify(a, b) == b);
-  }
-};
 
 int
 main ()
 {
-  check<long>();
-  check<double>();
+  struct S{ int i; };
+  S aa{ 0 };
+  S bb{ 42 };
+
+  std::atomic_ref<S> a{ aa };
+  VERIFY( a.load().i == aa.i );
+  a.wait(bb);
+  std::thread t([&]
+    {
+      a.store(bb);
+      a.notify_one();
+    });
+  a.wait(aa);
+  t.join();
   return 0;
 }

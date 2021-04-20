@@ -23,42 +23,21 @@
 
 #include <atomic>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <type_traits>
-#include <chrono>
 
 #include <testsuite_hooks.h>
 
 int
 main ()
 {
-  using namespace std::literals::chrono_literals;
-
-  std::mutex m;
-  std::condition_variable cv;
-  std::unique_lock<std::mutex> l(m);
-
-  std::atomic<bool> a(false);
-  std::atomic<bool> b(false);
+  std::atomic<bool> a{ true };
+  VERIFY( a.load() );
+  a.wait(false);
   std::thread t([&]
-		{
-		  {
-		    // This ensures we block until cv.wait(l) starts.
-		    std::lock_guard<std::mutex> ll(m);
-		  }
-		  cv.notify_one();
-		  a.wait(false);
-		  if (a.load())
-		    {
-		      b.store(true);
-		    }
-		});
-  cv.wait(l);
-  std::this_thread::sleep_for(100ms);
-  a.store(true);
-  a.notify_one();
+    {
+      a.store(false);
+      a.notify_one();
+    });
+  a.wait(true);
   t.join();
-  VERIFY( b.load() );
   return 0;
 }
