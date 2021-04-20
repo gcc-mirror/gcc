@@ -1506,7 +1506,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
      declaration of the entity and memory allocated/deallocated.  */
   if ((sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
       && sym->param_list != NULL
-      && !(sym->attr.host_assoc || sym->attr.use_assoc || sym->attr.dummy))
+      && gfc_current_ns == sym->ns
+      && !(sym->attr.use_assoc || sym->attr.dummy))
     gfc_defer_symbol_init (sym);
 
   /* Dummy PDT 'len' parameters should be checked when they are explicit.  */
