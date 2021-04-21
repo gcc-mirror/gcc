@@ -487,7 +487,10 @@ balance_partitions (union_find *ds, int n, int jobs)
 	{
 	  ipa_size_summary *summary = ipa_size_summaries->get (cnode);
 	  if (summary)
-	    sizes[root] += summary->size;
+	    {
+	      printf("%s; %d\n", cnode->name (), summary->size);
+	      sizes[root] += summary->size;
+	    }
 	  else
 	    sizes[root] += 10;
 	}

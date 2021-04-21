@@ -3405,14 +3405,7 @@ append_split_outputs (extra_arg_storer *storer,
 	  argv[argc++] = extra_argument;
 	}
 
-      if (have_c)
-	{
-	  argv[argc++] = "-fPIE";
-	  argv[argc++] = "-fPIC";
-	}
-
       argv[argc]   = NULL;
-
       commands[0].argv = argv;
     }
 
@@ -3977,7 +3970,7 @@ execute (void)
   /* FIXME: Interact with GNU Jobserver if necessary.  */
 
   commands_batch = commands;
-  n = flag_parallel_jobs? 1: n_commands;
+  n = n_commands;
 
   for (int i = 0; i < n_commands; i += n)
     {
