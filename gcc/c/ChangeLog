@@ -1,3 +1,12 @@
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99990
+	* c-decl.c (finish_decl): Don't overwrite TREE_TYPE of
+	error_mark_node.
+
 2021-04-08  Release Manager
 
 	* GCC 10.3.0 released.

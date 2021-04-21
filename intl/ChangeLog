@@ -1,3 +1,13 @@
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR jit/100096
+	* configure.ac: Add --enable-host-shared support.
+	* Makefile.in: Update copyright.  Add @PICFLAG@ to CFLAGS.
+	* configure: Regenerated.
+
 2021-04-08  Release Manager
 
 	* GCC 10.3.0 released.

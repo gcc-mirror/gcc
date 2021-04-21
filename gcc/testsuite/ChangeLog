@@ -1,3 +1,113 @@
+2021-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97052
+	* g++.dg/cpp2a/concepts-defarg2.C: New test.
+
+2021-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95434
+	* g++.dg/cpp2a/lambda-generic9.C: New test.
+
+2021-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/83476
+	PR c++/99885
+	* g++.dg/cpp1z/class-deduction85.C: New test.
+	* g++.dg/template/ref11.C: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100111
+	* g++.dg/cpp0x/constexpr-100111.C: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99767
+	* gcc.target/aarch64/pr99767.c: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99833
+	* g++.dg/cpp1z/pr99833.C: New test.
+	* g++.dg/cpp2a/pr99833.C: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/99905
+	* gcc.target/i386/pr99905.c: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/99830
+	* gcc.dg/pr99830.c: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99990
+	* gcc.dg/pr99990.c: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/99849
+	* gcc.dg/lto/pr99849_0.c: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/98601
+	* gcc.dg/torture/pr98601.c: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99859
+	* g++.dg/cpp1y/constexpr-99859-1.C: New test.
+	* g++.dg/cpp1y/constexpr-99859-2.C: New test.
+	* g++.dg/cpp2a/constexpr-new18.C: New test.
+	* g++.dg/cpp2a/constexpr-new19.C: New test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/99863
+	* gcc.target/i386/pr99863.c: New test.
+
 2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

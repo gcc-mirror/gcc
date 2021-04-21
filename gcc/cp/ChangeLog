@@ -1,3 +1,64 @@
+2021-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-08  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97052
+	* constraint.cc (build_type_constraint): Temporarily increment
+	processing_template_decl before calling build_concept_check.
+	* pt.c (make_constrained_placeholder_type): Likewise.
+
+2021-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-01-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95434
+	* pt.c (tsubst) <case TEMPLATE_TYPE_PARM>: If tsubsting
+	CLASS_PLACEHOLDER_TEMPLATE yields a TEMPLATE_TEMPLATE_PARM,
+	adjust to its TEMPLATE_TEMPLATE_PARM_TEMPLATE_DECL.
+
+2021-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/83476
+	PR c++/99885
+	* pt.c (deducible_expression): Look through implicit
+	INDIRECT_REFs as well.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100111
+	* constexpr.c (cxx_eval_store_expression): Don't add CONSTRUCTORs
+	for empty classes into *valp when types don't match even when *valp
+	is NULL.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99833
+	* pt.c (extract_locals_r): When handling DECL_EXPR of a structured
+	binding, add to data.internal also all corresponding structured
+	binding decls.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99859
+	* constexpr.c (addr_of_non_const_var): New function.
+	(cxx_bind_parameters_in_call): Set *non_constant_args to true
+	even if cp_walk_tree on arg with addr_of_non_const_var callback
+	returns true.
+
 2021-04-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97966
