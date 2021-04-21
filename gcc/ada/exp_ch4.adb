@@ -10393,7 +10393,9 @@ package body Exp_Ch4 is
       --  types and this is really marginal). We will just assume that we need
       --  the test if the left operand can be negative at all.
 
-      if Lneg and Rneg then
+      if (Lneg and Rneg)
+         and then not CodePeer_Mode
+      then
          Rewrite (N,
            Make_If_Expression (Loc,
              Expressions => New_List (
