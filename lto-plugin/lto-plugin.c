@@ -636,10 +636,10 @@ exec_lto_wrapper (char *argv[])
 
   /* Write argv to a file to avoid a command line that is too long
      Save the file locally on save-temps.  */
+  const char *suffix = ".lto_wrapper_args";
+  suffix += skip_in_suffix;
   if (save_temps && link_output_name)
-    arguments_file_name = concat (link_output_name,
-				  ".lto_wrapper_args"
-				  + skip_in_suffix, NULL);
+    arguments_file_name = concat (link_output_name, suffix, NULL);
   else
     arguments_file_name = make_temp_file (".lto_wrapper_args");
   check (arguments_file_name, LDPL_FATAL,
