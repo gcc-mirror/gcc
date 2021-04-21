@@ -261,7 +261,7 @@ enum gfc_statement
   ST_OMP_TARGET_PARALLEL_DO_SIMD, ST_OMP_END_TARGET_PARALLEL_DO_SIMD,
   ST_OMP_TARGET_ENTER_DATA, ST_OMP_TARGET_EXIT_DATA,
   ST_OMP_TARGET_SIMD, ST_OMP_END_TARGET_SIMD,
-  ST_OMP_TASKLOOP, ST_OMP_END_TASKLOOP, ST_OMP_SCAN,
+  ST_OMP_TASKLOOP, ST_OMP_END_TASKLOOP, ST_OMP_SCAN, ST_OMP_DEPOBJ,
   ST_OMP_TASKLOOP_SIMD, ST_OMP_END_TASKLOOP_SIMD, ST_OMP_ORDERED_DEPEND,
   ST_OMP_REQUIRES, ST_PROCEDURE, ST_GENERIC, ST_CRITICAL, ST_END_CRITICAL,
   ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_EVENT_POST,
@@ -1198,9 +1198,12 @@ enum gfc_omp_reduction_op
 
 enum gfc_omp_depend_op
 {
+  OMP_DEPEND_UNSET,
   OMP_DEPEND_IN,
   OMP_DEPEND_OUT,
   OMP_DEPEND_INOUT,
+  OMP_DEPEND_MUTEXINOUTSET,
+  OMP_DEPEND_DEPOBJ,
   OMP_DEPEND_SINK_FIRST,
   OMP_DEPEND_SINK
 };
@@ -1402,11 +1405,12 @@ typedef struct gfc_omp_clauses
   bool nowait, ordered, untied, mergeable;
   bool inbranch, notinbranch, defaultmap, nogroup;
   bool sched_simd, sched_monotonic, sched_nonmonotonic;
-  bool simd, threads, depend_source, order_concurrent, capture;
+  bool simd, threads, depend_source, destroy, order_concurrent, capture;
   enum gfc_omp_atomic_op atomic_op;
   enum gfc_omp_memorder memorder;
   enum gfc_omp_cancel_kind cancel;
   enum gfc_omp_proc_bind_kind proc_bind;
+  enum gfc_omp_depend_op depobj_update;
   struct gfc_expr *safelen_expr;
   struct gfc_expr *simdlen_expr;
   struct gfc_expr *num_teams;
@@ -1417,6 +1421,7 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *num_tasks;
   struct gfc_expr *priority;
   struct gfc_expr *detach;
+  struct gfc_expr *depobj;
   struct gfc_expr *if_exprs[OMP_IF_LAST];
   enum gfc_omp_sched_kind dist_sched_kind;
   struct gfc_expr *dist_chunk_size;
@@ -1437,7 +1442,6 @@ typedef struct gfc_omp_clauses
   unsigned par_auto:1, gang_static:1;
   unsigned if_present:1, finalize:1;
   locus loc;
-
 }
 gfc_omp_clauses;
 
@@ -2700,7 +2704,7 @@ enum gfc_exec_op
   EXEC_OMP_TARGET_ENTER_DATA, EXEC_OMP_TARGET_EXIT_DATA,
   EXEC_OMP_TARGET_PARALLEL, EXEC_OMP_TARGET_PARALLEL_DO,
   EXEC_OMP_TARGET_PARALLEL_DO_SIMD, EXEC_OMP_TARGET_SIMD,
-  EXEC_OMP_TASKLOOP, EXEC_OMP_TASKLOOP_SIMD, EXEC_OMP_SCAN
+  EXEC_OMP_TASKLOOP, EXEC_OMP_TASKLOOP_SIMD, EXEC_OMP_SCAN, EXEC_OMP_DEPOBJ
 };
 
 typedef struct gfc_code

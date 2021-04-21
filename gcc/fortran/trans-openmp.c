@@ -2545,6 +2545,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  tree decl = gfc_trans_omp_variable (n->sym, false);
 		  if (gfc_omp_privatize_by_reference (decl))
 		    decl = build_fold_indirect_ref (decl);
+		  if (n->u.depend_op == OMP_DEPEND_DEPOBJ
+		      && POINTER_TYPE_P (TREE_TYPE (decl)))
+		    decl = build_fold_indirect_ref (decl);
 		  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
 		    {
 		      decl = gfc_conv_descriptor_data_get (decl);
@@ -2586,6 +2589,13 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  break;
 		case OMP_DEPEND_INOUT:
 		  OMP_CLAUSE_DEPEND_KIND (node) = OMP_CLAUSE_DEPEND_INOUT;
+		  break;
+		case OMP_DEPEND_MUTEXINOUTSET:
+		  OMP_CLAUSE_DEPEND_KIND (node)
+		    = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
+		  break;
+		case OMP_DEPEND_DEPOBJ:
+		  OMP_CLAUSE_DEPEND_KIND (node) = OMP_CLAUSE_DEPEND_DEPOBJ;
 		  break;
 		default:
 		  gcc_unreachable ();
@@ -4913,6 +4923,62 @@ gfc_trans_oacc_combined_directive (gfc_code *code)
 }
 
 static tree
+gfc_trans_omp_depobj (gfc_code *code)
+{
+  stmtblock_t block;
+  gfc_se se;
+  gfc_init_se (&se, NULL);
+  gfc_init_block (&block);
+  gfc_conv_expr (&se, code->ext.omp_clauses->depobj);
+  gcc_assert (se.pre.head == NULL && se.post.head == NULL);
+  tree depobj = se.expr;
+  location_t loc = EXPR_LOCATION (depobj);
+  if (!POINTER_TYPE_P (TREE_TYPE (depobj)))
+    depobj = gfc_build_addr_expr (NULL, depobj);
+  depobj = fold_convert (build_pointer_type_for_mode (ptr_type_node,
+						      TYPE_MODE (ptr_type_node),
+						      true), depobj);
+  gfc_omp_namelist *n = code->ext.omp_clauses->lists[OMP_LIST_DEPEND];
+  if (n)
+    {
+      tree var;
+      if (n->expr)
+        var = gfc_convert_expr_to_tree (&block, n->expr);
+      else
+	var = gfc_get_symbol_decl (n->sym);
+      if (!POINTER_TYPE_P (TREE_TYPE (var)))
+        var = gfc_build_addr_expr (NULL, var);
+      depobj = save_expr (depobj);
+      tree r = build_fold_indirect_ref_loc (loc, depobj);
+      gfc_add_expr_to_block (&block,
+			     build2 (MODIFY_EXPR, void_type_node, r, var));
+    }
+
+  /* Only one may be set. */
+  gcc_assert (((int)(n != NULL) + (int)(code->ext.omp_clauses->destroy)
+	      + (int)(code->ext.omp_clauses->depobj_update != OMP_DEPEND_UNSET))
+	      == 1);
+  int k = -1; /* omp_clauses->destroy */
+  if (!code->ext.omp_clauses->destroy)
+    switch (code->ext.omp_clauses->depobj_update != OMP_DEPEND_UNSET
+	    ? code->ext.omp_clauses->depobj_update : n->u.depend_op)
+      {
+      case OMP_DEPEND_IN: k = GOMP_DEPEND_IN; break;
+      case OMP_DEPEND_OUT: k = GOMP_DEPEND_IN; break;
+      case OMP_DEPEND_INOUT: k = GOMP_DEPEND_IN; break;
+      case OMP_DEPEND_MUTEXINOUTSET: k = GOMP_DEPEND_MUTEXINOUTSET; break;
+      default: gcc_unreachable ();
+      }
+  tree t = build_int_cst (ptr_type_node, k);
+  depobj = build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (depobj), depobj,
+                       TYPE_SIZE_UNIT (ptr_type_node));
+  depobj = build_fold_indirect_ref_loc (loc, depobj);
+  gfc_add_expr_to_block (&block, build2 (MODIFY_EXPR, void_type_node, depobj, t));
+
+  return gfc_finish_block (&block);
+}
+
+static tree
 gfc_trans_omp_flush (gfc_code *code)
 {
   tree call;
@@ -6181,6 +6247,8 @@ gfc_trans_omp_directive (gfc_code *code)
       return gfc_trans_omp_cancellation_point (code);
     case EXEC_OMP_CRITICAL:
       return gfc_trans_omp_critical (code);
+    case EXEC_OMP_DEPOBJ:
+      return gfc_trans_omp_depobj (code);
     case EXEC_OMP_DISTRIBUTE:
     case EXEC_OMP_DO:
     case EXEC_OMP_SIMD:
