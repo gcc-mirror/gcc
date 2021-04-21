@@ -1,3 +1,22 @@
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99324
+	* c-common.c (build_va_arg): Call c_common_mark_addressable_vec
+	instead of mark_addressable.  Fix a comment typo -
+	neutrallly -> neutrally.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-01-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/98187
+	* c-pragma.c (omp_pragmas): Remove "master".
+	(omp_pragmas_simd): Add "master".
+
 2020-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

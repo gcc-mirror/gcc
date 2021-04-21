@@ -1,3 +1,245 @@
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/99181
+	* testsuite/21_strings/char_traits/requirements/char/99181.cc: New
+	test.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/99181
+	* include/bits/char_traits.h (char_traits<char>::compare): For
+	constexpr evaluation don't call
+	__gnu_cxx::char_traits<char_type>::compare but do the comparison loop
+	directly.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (copy_n): Only call __copy_n for positive
+	values.
+	* testsuite/util/testsuite_iterators.h
+	(random_access_iterator_wrapper::operator+=): Fix range check for
+	negative values.
+	* testsuite/25_algorithms/copy_n/5.cc: New test.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator.h (inserter): Do not deduce
+	iterator type (LWG 561).
+	* testsuite/24_iterators/insert_iterator/dr561.cc: New test.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2019-06-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/simple.cc: Use non-palindromic
+	vector<bool> for test.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
+2021-04-20  Michael Weghorn  <m.weghorn@posteo.de>
+
+	Backported from master:
+	2019-06-19  Michael Weghorn  <m.weghorn@posteo.de>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/90945
+	* python/libstdcxx/v6/printers.py (StdVectorPrinter._iterator): Use
+	values of type bool for vector<bool> elements.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Test vector<bool>.
+	* testsuite/libstdc++-prettyprinters/simple11.cc: Likewise.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/94854
+	* include/bits/basic_string.tcc: Update comment about explicit
+	instantiations.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/executor (system_context::_M_run()):
+	Fix predicate.
+	(system_context::join()): Do not join unless joinable.
+	* testsuite/experimental/net/system_context/1.cc: New test.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/thread/cons/84535.cc: Use a custom
+	namespace.
+	* testsuite/30_threads/thread/cons/lwg2097.cc: Likewise.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_dir.cc (fs::directory_iterator::operator*):
+	Add noexcept. Do not throw on precondition violation.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (path::_List::begin, path::_List::end):
+	Add noexcept to match definitions in src/c++17/fs_path.cc.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/filesystem/operations/proximate.cc: Fix typo
+	in __MINGW32__ macro name.
+	* testsuite/27_io/filesystem/path/compare/lwg2936.cc: Likewise.
+	* testsuite/27_io/filesystem/path/generation/proximate.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/generation/relative.cc:
+	Likewise.
+	* testsuite/util/testsuite_fs.h: Likewise.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/fs_ops.cc (fs::create_hard_link, fs::equivalent)
+	(fs::remove): Use std::system_category() for error codes from
+	GetLastError().
+	* src/filesystem/ops.cc (fs::create_hard_link, fs::remove):
+	Likewise.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99533
+	* src/c++17/fs_dir.cc (recursive_directory_iterator): Use new
+	helper function to check for permission denied errors.
+	* src/filesystem/dir.cc (recursive_directory_iterator):
+	Likewise.
+	* src/filesystem/dir-common.h (is_permission_denied_error): New
+	helper function.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99536
+	* include/bits/random.h (normal_distribution): Use
+	default-initializer for _M_saved and _M_saved_available.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v6::to_string): Include
+	scope ID in string.
+	(address_v6::loopback): Fix to be constexpr in C++14.
+	* testsuite/experimental/net/internet/address/v6/members.cc:
+	Test to_string() results.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v6::any): Avoid using
+	memcpy in constexpr function.
+	(address_v6::loopback): Likewise.
+	(make_address_v6): Fix missing return statements on error paths.
+	* include/experimental/io_context: Avoid -Wdangling-else
+	warning.
+	* testsuite/experimental/net/internet/address/v4/members.cc:
+	Remove unused variables.
+	* testsuite/experimental/net/internet/address/v6/members.cc:
+	New test.
+
+2021-04-20  Nuno Lopes  <nuno.lopes@ist.utl.pt>
+
+	Backported from master:
+	2020-10-13  Nuno Lopes  <nuno.lopes@ist.utl.pt>
+
+	* include/bits/stl_algo.h (any_of): Fix incorrect description
+	in comment.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (copy, move, copy_backward)
+	(move_backward): Fix documentation for returned iterator.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82584
+	* include/bits/random.tcc
+	(discrete_distribution::param_type::_M_initialize)
+	(piecewise_constant_distribution::param_type::_M_initialize)
+	(piecewise_linear_distribution::param_type::_M_initialize):
+	Add assertions for positive sums..
+	* testsuite/26_numerics/random/pr60037-neg.cc: Adjust dg-error
+	line.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-02-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/19_diagnostics/error_code/operators/not_equal.cc:
+	Add comparison with same category and different values.
+	* testsuite/19_diagnostics/error_code/operators/less.cc:
+	Likewise. Fix comparison involving different categories.
+	* testsuite/19_diagnostics/error_condition/operators/less.cc:
+	Add comment.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2020-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/names.cc: Do not test 'v' on AIX.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-03-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/range_access.h (begin(T (&)[N]), end(T (&)[N])):
+	Add missing 'noexcept' as per LWG 2280.
+	(rbegin(T (&)[N]), rend(T (&)[N]), rbegin(initializer_list<T>))
+	(rend(initializer_list<T>)): Add 'noexcept' as per LWG 3537.
+	* testsuite/24_iterators/range_access.cc: Check for expected
+	noexcept specifiers. Check result types of generic std::begin
+	and std::end overloads.
+	* testsuite/24_iterators/range_access_cpp14.cc: Check for
+	expected noexcept specifiers.
+	* testsuite/24_iterators/range_access_cpp17.cc: Likewise.
+
 2021-04-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/filesystem/path/generic/94242.cc: Do not test
