@@ -17,6 +17,7 @@
 
 // { dg-do run { target c++14 } }
 // { dg-add-options net_ts }
+// { dg-require-gthreads "" }
 
 #include <experimental/internet>
 #include <sstream>
