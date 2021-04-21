@@ -1253,9 +1253,12 @@ demangle_const_char (struct rust_demangler *rdm)
   else if (value == '\n')
     PRINT ("\\n");
   else if (value > ' ' && value < '~')
-    /* Rust also considers many non-ASCII codepoints to be printable, but
-       that logic is not easily ported to C. */
-    print_str (rdm, (char *) &value, 1);
+    {
+      /* Rust also considers many non-ASCII codepoints to be printable, but
+	 that logic is not easily ported to C. */
+      char c = value;
+      print_str (rdm, &c, 1);
+    }
   else
     {
       PRINT ("\\u{");

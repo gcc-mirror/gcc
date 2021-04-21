@@ -1,3 +1,153 @@
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/semaphore/try_acquire_for.cc: Disable
+	test for targets not using futexes for semaphores.
+	* testsuite/30_threads/semaphore/try_acquire_until.cc: Likewise.
+	* testsuite/30_threads/stop_token/stop_callback/destroy.cc:
+	Disable for all targets.
+
+2021-04-20  Thomas Rodgers  <trodgers@redhat.com>
+
+	* include/Makefile.am: Add new <bits/this_thread_sleep.h> header.
+	* include/Makefile.in: Regenerate.
+	* include/bits/this_thread_sleep.h: New file.
+	* include/bits/atomic_base.h: Adjust all calls
+	to __atomic_wait/__atomic_notify for new call signatures.
+	* include/bits/atomic_timed_wait.h: Extensive rewrite.
+	* include/bits/atomic_wait.h: Likewise.
+	* include/bits/semaphore_base.h: Adjust all calls
+	to __atomic_wait/__atomic_notify for new call signatures.
+	* include/std/atomic: Likewise.
+	* include/std/barrier: Likewise.
+	* include/std/latch: Likewise.
+	* include/std/semaphore: Likewise.
+	* include/std/thread (this_thread::sleep_for)
+	(this_thread::sleep_until): Move to new header.
+	* testsuite/29_atomics/atomic/wait_notify/bool.cc: Simplify
+	test.
+	* testsuite/29_atomics/atomic/wait_notify/generic.cc: Likewise.
+	* testsuite/29_atomics/atomic/wait_notify/pointers.cc: Likewise.
+	* testsuite/29_atomics/atomic_flag/wait_notify/1.cc: Likewise.
+	* testsuite/29_atomics/atomic_float/wait_notify.cc: Likewise.
+	* testsuite/29_atomics/atomic_integral/wait_notify.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Likewise.
+
+2021-04-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/95983
+	* include/bits/stl_iterator.h (__detail::__move_iter_cat):
+	Define.
+	(move_iterator): Derive from the above in C++20 in order to
+	conditionally define iterator_category as per P2259.
+	(move_iterator::__base_cat): No longer used, so remove.
+	(move_iterator::iterator_category): Remove in C++20.
+	(__detail::__common_iter_use_postfix_proxy): Define.
+	(common_iterator::_Proxy): Rename to ...
+	(common_iterator:__arrow_proxy): ... this.
+	(common_iterator::__postfix_proxy): Define as per P2259.
+	(common_iterator::operator->): Adjust.
+	(common_iterator::operator++): Adjust as per P2259.
+	(iterator_traits<common_iterator>::_S_iter_cat): Define.
+	(iterator_traits<common_iterator>::iterator_category): Change as
+	per P2259.
+	(__detail::__counted_iter_value_type): Define.
+	(__detail::__counted_iter_concept): Define.
+	(__detail::__counted_iter_cat): Define.
+	(counted_iterator): Derive from the above three classes in order
+	to conditionally define value_type, iterator_concept and
+	iterator category respectively as per P2259.
+	(counted_iterator::operator->): Define as per P2259.
+	(incrementable_traits<counted_iterator>): Remove as per P2259.
+	(iterator_traits<counted_iterator>): Adjust as per P2259.
+	* include/std/ranges (__detail::__iota_view_iter_cat): Define.
+	(iota_view::_Iterator): Derive from the above in order to
+	conditionally define iterator_category as per P2259.
+	(iota_view::_S_iter_cat): Rename to ...
+	(iota_view::_S_iter_concept): ... this.
+	(iota_view::iterator_concept): Use it to apply LWG 3291 changes.
+	(iota_view::iterator_category): Remove.
+	(__detail::__filter_view_iter_cat): Define.
+	(filter_view::_Iterator): Derive from the above in order to
+	conditionally define iterator_category as per P2259.
+	(filter_view::_Iterator): Move to struct __filter_view_iter_cat.
+	(filter_view::_Iterator::iterator_category): Remove.
+	(transform_view::_Base): Define.
+	(transform_view::__iter_cat): Define.
+	(transform_view::_Iterator): Derive from the above in order to
+	conditionally define iterator_category as per P2259.
+	(transform_view::_Iterator::_Base): Just alias
+	transform_view::_Base.
+	(transform_view::_Iterator::_S_iter_cat): Move to struct
+	transform_view::__iter_cat.
+	(transform_view::_Iterator::iterator_category): Remove.
+	(transform_view::_Sentinel::_Base): Just alias
+	transform_view::_Base.
+	(join_view::_Base): Define.
+	(join_view::_Outer_iter): Define.
+	(join_view::_Inner_iter): Define.
+	(join_view::_S_ref_is_glvalue): Define.
+	(join_view::__iter_cat): Define.
+	(join_view::_Iterator): Derive from it in order to conditionally
+	define iterator_category as per P2259.
+	(join_view::_Iterator::_Base): Just alias join_view::_Base.
+	(join_view::_Iterator::_S_ref_is_glvalue): Just alias
+	join_view::_S_ref_is_glvalue.
+	(join_view::_Iterator::_S_iter_cat): Move to struct
+	transform_view::__iter_cat.
+	(join_view::_Iterator::_Outer_iter): Just alias
+	join_view::_Outer_iter.
+	(join_view::_Iterator::_Inner_iter): Just alias
+	join_view::_Inner_iter.
+	(join_view::_Iterator::iterator_category): Remove.
+	(join_view::_Sentinel::_Base): Just alias join_view::_Base.
+	(__detail::__split_view_outer_iter_cat): Define.
+	(__detail::__split_view_inner_iter_cat): Define.
+	(split_view::_Base): Define.
+	(split_view::_Outer_iter): Derive from __split_view_outer_iter_cat
+	in order to conditionally define iterator_category as per P2259.
+	(split_view::_Outer_iter::iterator_category): Remove.
+	(split_view::_Inner_iter): Derive from __split_view_inner_iter_cat
+	in order to conditionally define iterator_category as per P2259.
+	(split_view::_Inner_iter::_S_iter_cat): Move to
+	__split_view_inner_iter_cat.
+	(split_view::_Inner_iter::iterator_category): Remove.
+	(elements_view::_Base): Define.
+	(elements_view::__iter_cat): Define.
+	(elements_view::_Iterator): Derive from the above in order to
+	conditionall define iterator_category as per P2259.
+	(elements_view::_Iterator::_Base): Just alias
+	elements_view::_Base.
+	(elements_view::_Iterator::_S_iter_concept)
+	(elements_view::_Iterator::iterator_concept): Define as per
+	P2259.
+	(elements_view::_Iterator::iterator_category): Remove.
+	(elements_view::_Sentinel::_Base): Just alias
+	elements_view::_Base.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc:
+	Adjust constraints on iterator_traits<counted_iterator>.
+	* testsuite/std/ranges/p2259.cc: New test.
+
+2021-04-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100146
+	* include/std/charconv (__cpp_lib_to_chars): Define
+	conditionally.
+	* include/std/version (__cpp_lib_to_chars): Likewise..
+	* testsuite/20_util/from_chars/4.cc: Only check feature test
+	macro, not _GLIBCXX_HAVE_USELOCALE.
+	* testsuite/20_util/from_chars/5.cc: Likewise.
+	* testsuite/20_util/from_chars/6.cc: Likewise.
+	* testsuite/20_util/to_chars/long_double.cc: Likewise.
+
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/util/testsuite_abi.cc (compare_symbols): If any symbol
+	versions with _IEEE128_ substring are found, set ieee_version_found
+	to true.  Ignore missing symbols with _IEEE128_ in version name if
+	!ieee_version_found.  Use i->first as version_name instead of
+	i->second.version_name if the latter is empty.
+	* config/abi/post/powerpc64-linux-gnu/baseline_symbols.txt: Update.
+
 2021-04-19  H.J. Lu  <hjl.tools@gmail.com>
 
 	* config/abi/post/x86_64-linux-gnu/x32/baseline_symbols.txt:

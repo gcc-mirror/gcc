@@ -218,6 +218,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_CANCELLATION_POINT:
     case EXEC_OMP_CRITICAL:
+    case EXEC_OMP_DEPOBJ:
     case EXEC_OMP_DISTRIBUTE:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:

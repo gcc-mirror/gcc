@@ -1,3 +1,30 @@
+2021-04-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define
+	__CRC32__ for -mcrc32.
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Enable crc32 instruction for -msse4.2.
+	* config/i386/i386.md (sse4_2_crc32<mode>): Remove TARGET_SSE4_2
+	check.
+	(sse4_2_crc32di): Likewise.
+	* config/i386/ia32intrin.h: Use crc32 target option for CRC32
+	intrinsics.
+
+2021-04-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/100108
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Do not consider
+	OPTION_MASK_ISEL.
+
+2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Fix typo.
+	* params.opt: Likewise.
+
+2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document new param.
+
 2021-04-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/100081

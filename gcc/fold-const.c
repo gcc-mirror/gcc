@@ -2619,15 +2619,6 @@ non_lvalue_loc (location_t loc, tree x)
     return x;
   return build1_loc (loc, NON_LVALUE_EXPR, TREE_TYPE (x), x);
 }
-
-/* When pedantic, return an expr equal to X but certainly not valid as a
-   pedantic lvalue.  Otherwise, return X.  */
-
-static tree
-pedantic_non_lvalue_loc (location_t loc, tree x)
-{
-  return protected_set_expr_location_unshare (x, loc);
-}
 
 /* Given a tree comparison code, return the code that is the logical inverse.
    It is generally not safe to do this for floating-point comparisons, except
@@ -12532,9 +12523,9 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
       if (TREE_SIDE_EFFECTS (arg0) || TREE_CONSTANT (arg1))
 	return NULL_TREE;
       /* Don't let (0, 0) be null pointer constant.  */
-      tem = integer_zerop (arg1) ? build1 (NOP_EXPR, type, arg1)
+      tem = integer_zerop (arg1) ? build1_loc (loc, NOP_EXPR, type, arg1)
 				 : fold_convert_loc (loc, type, arg1);
-      return pedantic_non_lvalue_loc (loc, tem);
+      return tem;
 
     case ASSERT_EXPR:
       /* An ASSERT_EXPR should never be passed to fold_binary.  */
@@ -12781,7 +12772,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
                || !contains_label_p (unused_op))
               && (! VOID_TYPE_P (TREE_TYPE (tem))
                   || VOID_TYPE_P (type)))
-	    return pedantic_non_lvalue_loc (loc, tem);
+	    return protected_set_expr_location_unshare (tem, loc);
 	  return NULL_TREE;
 	}
       else if (TREE_CODE (arg0) == VECTOR_CST)
@@ -12864,7 +12855,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	     a COND, which will recurse.  In that case, the COND_EXPR
 	     is probably the best choice, so leave it alone.  */
 	  && type == TREE_TYPE (arg0))
-	return pedantic_non_lvalue_loc (loc, arg0);
+	return protected_set_expr_location_unshare (arg0, loc);
 
       /* Convert A ? 0 : 1 to !A.  This prefers the use of NOT_EXPR
 	 over COND_EXPR in cases such as floating point comparisons.  */
@@ -12873,10 +12864,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && integer_onep (op2)
 	  && !VECTOR_TYPE_P (type)
 	  && truth_value_p (TREE_CODE (arg0)))
-	return pedantic_non_lvalue_loc (loc,
-				    fold_convert_loc (loc, type,
-					      invert_truthvalue_loc (loc,
-								     arg0)));
+	return fold_convert_loc (loc, type,
+				 invert_truthvalue_loc (loc, arg0));
 
       /* A < 0 ? <sign bit of A> : 0 is simply (A & <sign bit of A>).  */
       if (TREE_CODE (arg0) == LT_EXPR
@@ -12982,10 +12971,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	     second operand 32-bit -128, which is not a power of two (or vice
 	     versa.  */
 	  && integer_pow2p (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1)))
-	return pedantic_non_lvalue_loc (loc,
-					fold_convert_loc (loc, type,
-							  TREE_OPERAND (arg0,
-									0)));
+	return fold_convert_loc (loc, type, TREE_OPERAND (arg0, 0));
 
       /* Disable the transformations below for vectors, since
 	 fold_binary_op_with_conditional_arg may undo them immediately,

@@ -1,3 +1,8 @@
+2021-04-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100109
+	* pt.c (find_parameter_packs_r): Look into enum initializers.
+
 2021-04-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97536

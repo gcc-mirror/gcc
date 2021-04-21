@@ -1381,6 +1381,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		depend_op = OMP_DEPEND_IN;
 	      else if (gfc_match ("out") == MATCH_YES)
 		depend_op = OMP_DEPEND_OUT;
+	      else if (gfc_match ("mutexinoutset") == MATCH_YES)
+		depend_op = OMP_DEPEND_MUTEXINOUTSET;
+	      else if (gfc_match ("depobj") == MATCH_YES)
+		depend_op = OMP_DEPEND_DEPOBJ;
 	      else if (!c->depend_source
 		       && gfc_match ("source )") == MATCH_YES)
 		{
@@ -2898,6 +2902,86 @@ gfc_match_omp_end_critical (void)
   return MATCH_YES;
 }
 
+/* depobj(depobj) depend(dep-type:loc)|destroy|update(dep-type)
+   dep-type = in/out/inout/mutexinoutset/depobj/source/sink
+   depend: !source, !sink
+   update: !source, !sink, !depobj
+   locator = exactly one list item  .*/
+match
+gfc_match_omp_depobj (void)
+{
+  gfc_omp_clauses *c = NULL;
+  gfc_expr *depobj;
+
+  if (gfc_match (" ( %v ) ", &depobj) != MATCH_YES)
+    {
+      gfc_error ("Expected %<( depobj )%> at %C");
+      return MATCH_ERROR;
+    }
+  if (gfc_match ("update ( ") == MATCH_YES)
+    {
+      c = gfc_get_omp_clauses ();
+      if (gfc_match ("inout )") == MATCH_YES)
+	c->depobj_update = OMP_DEPEND_INOUT;
+      else if (gfc_match ("in )") == MATCH_YES)
+	c->depobj_update = OMP_DEPEND_IN;
+      else if (gfc_match ("out )") == MATCH_YES)
+	c->depobj_update = OMP_DEPEND_OUT;
+      else if (gfc_match ("mutexinoutset )") == MATCH_YES)
+	c->depobj_update = OMP_DEPEND_MUTEXINOUTSET;
+      else
+	{
+	  gfc_error ("Expected IN, OUT, INOUT, MUTEXINOUTSET followed by "
+		     "%<)%> at %C");
+	  goto error;
+	}
+    }
+  else if (gfc_match ("destroy") == MATCH_YES)
+    {
+      c = gfc_get_omp_clauses ();
+      c->destroy = true;
+    }
+  else if (gfc_match_omp_clauses (&c, omp_mask (OMP_CLAUSE_DEPEND), true, false)
+	   != MATCH_YES)
+    goto error;
+
+  if (c->depobj_update == OMP_DEPEND_UNSET && !c->destroy)
+    {
+      if (!c->depend_source && !c->lists[OMP_LIST_DEPEND])
+	{
+	  gfc_error ("Expected DEPEND, UPDATE, or DESTROY clause at %C");
+	  goto error;
+	}
+      if (c->depend_source
+	  || c->lists[OMP_LIST_DEPEND]->u.depend_op == OMP_DEPEND_SINK_FIRST
+	  || c->lists[OMP_LIST_DEPEND]->u.depend_op == OMP_DEPEND_SINK
+	  || c->lists[OMP_LIST_DEPEND]->u.depend_op == OMP_DEPEND_DEPOBJ)
+	{
+	  gfc_error ("DEPEND clause at %L of OMP DEPOBJ construct shall not "
+		     "have dependence-type SOURCE, SINK or DEPOBJ",
+		     c->lists[OMP_LIST_DEPEND]
+		     ? &c->lists[OMP_LIST_DEPEND]->where : &gfc_current_locus);
+	  goto error;
+	}
+      if (c->lists[OMP_LIST_DEPEND]->next)
+	{
+	  gfc_error ("DEPEND clause at %L of OMP DEPOBJ construct shall have "
+		     "only a single locator",
+		     &c->lists[OMP_LIST_DEPEND]->next->where);
+	  goto error;
+	}
+    }
+
+  c->depobj = depobj;
+  new_st.op = EXEC_OMP_DEPOBJ;
+  new_st.ext.omp_clauses = c;
+  return MATCH_YES;
+
+error:
+  gfc_free_expr (depobj);
+  gfc_free_omp_clauses (c);
+  return MATCH_ERROR;
+}
 
 match
 gfc_match_omp_distribute (void)
@@ -4877,6 +4961,14 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		   "clause at %L", &code->loc);
     }
 
+  if (omp_clauses->depobj
+      && (!gfc_resolve_expr (omp_clauses->depobj)
+	  || omp_clauses->depobj->ts.type != BT_INTEGER
+	  || omp_clauses->depobj->ts.kind != 2 * gfc_index_integer_kind
+	  || omp_clauses->depobj->rank != 0))
+    gfc_error ("DEPOBJ in DEPOBJ construct at %L shall be a scalar integer "
+	       "of OMP_DEPEND_KIND kind", &omp_clauses->depobj->where);
+
   /* Check that no symbol appears on multiple clauses, except that
      a symbol can appear on both firstprivate and lastprivate.  */
   for (list = 0; list < OMP_LIST_NUM; list++)
@@ -5173,6 +5265,26 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		      gfc_error ("Only SOURCE or SINK dependence types "
 				 "are allowed on ORDERED directive at %L",
 				 &n->where);
+		    else if (n->u.depend_op == OMP_DEPEND_DEPOBJ
+			     && !n->expr
+			     && (n->sym->ts.type != BT_INTEGER
+				 || n->sym->ts.kind
+				    != 2 * gfc_index_integer_kind
+				 || n->sym->attr.dimension))
+		      gfc_error ("Locator %qs at %L in DEPEND clause of depobj "
+				 "type shall be a scalar integer of "
+				 "OMP_DEPEND_KIND kind", n->sym->name,
+				 &n->where);
+		    else if (n->u.depend_op == OMP_DEPEND_DEPOBJ
+			     && n->expr
+			     && (!gfc_resolve_expr (n->expr)
+				 || n->expr->ts.type != BT_INTEGER
+				 || n->expr->ts.kind
+				    != 2 * gfc_index_integer_kind
+				 || n->expr->rank != 0))
+		      gfc_error ("Locator at %L in DEPEND clause of depobj "
+				 "type shall be a scalar integer of "
+				 "OMP_DEPEND_KIND kind", &n->expr->where);
 		  }
 		gfc_ref *lastref = NULL, *lastslice = NULL;
 		bool resolved = false;
@@ -7211,6 +7323,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_TASK:
     case EXEC_OMP_TEAMS:
     case EXEC_OMP_WORKSHARE:
+    case EXEC_OMP_DEPOBJ:
       if (code->ext.omp_clauses)
 	resolve_omp_clauses (code, code->ext.omp_clauses, NULL);
       break;

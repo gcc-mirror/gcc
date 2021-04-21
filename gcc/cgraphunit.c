@@ -678,8 +678,6 @@ cgraph_node::analyze (void)
 	  gimple_register_cfg_hooks ();
 	  bitmap_obstack_initialize (NULL);
 	  execute_pass_list (cfun, g->get_passes ()->all_lowering_passes);
-	  free_dominance_info (CDI_POST_DOMINATORS);
-	  free_dominance_info (CDI_DOMINATORS);
 	  compact_blocks ();
 	  bitmap_obstack_release (NULL);
 	  lowered = true;

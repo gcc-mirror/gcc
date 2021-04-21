@@ -1314,6 +1314,10 @@ get_block_for_decl (tree decl)
   if (SECTION_STYLE (sect) == SECTION_NOSWITCH)
     return NULL;
 
+  if (bool (lookup_attribute ("retain", DECL_ATTRIBUTES (decl)))
+      != bool (sect->common.flags & SECTION_RETAIN))
+    return NULL;
+
   return get_block_for_section (sect);
 }
 
@@ -7758,33 +7762,33 @@ output_section_asm_op (const void *directive)
 void
 switch_to_section (section *new_section, tree decl)
 {
-  if (in_section == new_section)
+  bool retain_p;
+  if ((new_section->common.flags & SECTION_NAMED)
+      && decl != nullptr
+      && DECL_P (decl)
+      && ((retain_p = !!lookup_attribute ("retain",
+					  DECL_ATTRIBUTES (decl)))
+	  != !!(new_section->common.flags & SECTION_RETAIN)))
     {
-      bool retain_p;
-      if ((new_section->common.flags & SECTION_NAMED)
-	  && decl != nullptr
-	  && DECL_P (decl)
-	  && ((retain_p = !!lookup_attribute ("retain",
-					      DECL_ATTRIBUTES (decl)))
-	      != !!(new_section->common.flags & SECTION_RETAIN)))
-	{
-	  /* If the SECTION_RETAIN bit doesn't match, switch to a new
-	     section.  */
-	  tree used_decl, no_used_decl;
+      /* If the SECTION_RETAIN bit doesn't match, switch to a new
+	 section.  */
+      tree used_decl, no_used_decl;
 
-	  if (retain_p)
-	    {
-	      new_section->common.flags |= SECTION_RETAIN;
-	      used_decl = decl;
-	      no_used_decl = new_section->named.decl;
-	    }
-	  else
-	    {
-	      new_section->common.flags &= ~(SECTION_RETAIN
-					     | SECTION_DECLARED);
-	      used_decl = new_section->named.decl;
-	      no_used_decl = decl;
-	    }
+      if (retain_p)
+	{
+	  new_section->common.flags |= SECTION_RETAIN;
+	  used_decl = decl;
+	  no_used_decl = new_section->named.decl;
+	}
+      else
+	{
+	  new_section->common.flags &= ~(SECTION_RETAIN
+					 | SECTION_DECLARED);
+	  used_decl = new_section->named.decl;
+	  no_used_decl = decl;
+	}
+      if (no_used_decl != used_decl)
+	{
 	  warning (OPT_Wattributes,
 		   "%+qD without %<retain%> attribute and %qD with "
 		   "%<retain%> attribute are placed in a section with "
@@ -7792,9 +7796,9 @@ switch_to_section (section *new_section, tree decl)
 	  inform (DECL_SOURCE_LOCATION (used_decl),
 		  "%qD was declared here", used_decl);
 	}
-      else
-	return;
     }
+  else if (in_section == new_section)
+    return;
 
   if (new_section->common.flags & SECTION_FORGET)
     in_section = NULL;
@@ -8007,7 +8011,7 @@ output_object_block (struct object_block *block)
       && (strcmp (block->sect->named.name, ".vtable_map_vars") == 0))
     handle_vtv_comdat_section (block->sect, block->sect->named.decl);
   else
-    switch_to_section (block->sect);
+    switch_to_section (block->sect, SYMBOL_REF_DECL ((*block->objects)[0]));
 
   gcc_checking_assert (!(block->sect->common.flags & SECTION_MERGE));
   assemble_align (block->alignment);

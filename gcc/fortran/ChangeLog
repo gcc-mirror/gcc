@@ -1,3 +1,10 @@
+2021-04-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/100110
+	* trans-decl.c (gfc_get_symbol_decl): Replace test for host
+	association with a check that the current and symbol namespaces
+	are the same.
+
 2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lang.opt (fopenacc-kernels=): Remove.

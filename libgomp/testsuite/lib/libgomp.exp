@@ -340,8 +340,10 @@ proc offload_target_to_openacc_device_type { offload_target } {
     }
 }
 
-# Return 1 if compiling for offload target nvptx.
-proc check_effective_target_offload_target_nvptx { } {
+# Return 1 if compiling for the specified offload target
+# Takes -foffload=... into account by checking OFFLOAD_TARGET_NAMES=
+# in the -v compiler output.
+proc libgomp_check_effective_target_offload_target { target_name } {
     # Consider all actual options, including the flags passed to
     # 'gcc-dg-runtest', or 'gfortran-dg-runtest' (see the 'libgomp.*/*.exp'
     # files; in particular, '-foffload', 'libgomp.oacc-*/*.exp'), which don't
@@ -354,11 +356,21 @@ proc check_effective_target_offload_target_nvptx { } {
     set gcc_output [libgomp_target_compile "" "" "none" $options]
     if [regexp "(?n)^OFFLOAD_TARGET_NAMES=(.*)" $gcc_output dummy offload_targets] {
 	verbose "compiling for offload targets: $offload_targets"
-	return [string match "*:nvptx*:*" ":$offload_targets:"]
+	return [string match "*:$target_name*:*" ":$offload_targets:"]
     }
 
-    verbose "not compiling for any offload targets"
+    verbose "not compiling for $target_name offload target"
     return 0
+}
+
+# Return 1 if compiling for offload target nvptx.
+proc check_effective_target_offload_target_nvptx { } {
+    return [libgomp_check_effective_target_offload_target "nvptx"]
+}
+
+# Return 1 if compiling for offload target amdgcn
+proc check_effective_target_offload_target_amdgcn { } {
+    return [libgomp_check_effective_target_offload_target "amdgcn"]
 }
 
 # Return 1 if offload device is available.

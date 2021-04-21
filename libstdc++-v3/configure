@@ -75836,7 +75836,7 @@ fi
 
   if test $ac_have_posix_semaphore = yes ; then
 
-$as_echo "#define _GLIBCXX_HAVE_POSIX_SEMAPHORE 1" >>confdefs.h
+$as_echo "#define HAVE_POSIX_SEMAPHORE 1" >>confdefs.h
 
   fi
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_have_posix_semaphore" >&5
