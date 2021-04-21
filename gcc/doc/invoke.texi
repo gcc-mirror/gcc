@@ -1448,7 +1448,7 @@ See RS/6000 and PowerPC Options.
 -mindirect-branch=@var{choice}  -mfunction-return=@var{choice} @gol
 -mindirect-branch-register -mharden-sls=@var{choice} @gol
 -mindirect-branch-cs-prefix -mneeded -mno-direct-extern-access @gol
--munroll-only-small-loops}
+-munroll-only-small-loops -mlam=@var{choice}}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -33891,6 +33891,13 @@ Controls conservative small loop unrolling. It is default enabled by
 O2, and unrolls loop with less than 4 insns by 1 time. Explicit
 -f[no-]unroll-[all-]loops would disable this flag to avoid any
 unintended unrolling behavior that user does not want.
+
+@item -mlam=@var{choice}
+@opindex mlam
+LAM(linear-address masking) allows special bits in the pointer to be used
+for metadata. The default is @samp{none}. With @samp{u48}, pointer bits in
+positions 62:48 can be used for metadata; With @samp{u57}, pointer bits in
+positions 62:57 can be used for metadata.
 @end table
 
 @node x86 Windows Options
