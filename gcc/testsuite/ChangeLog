@@ -1,3 +1,20 @@
+2021-04-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100109
+	* g++.dg/cpp0x/lambda/lambda-variadic14.C: New test.
+
+2021-04-20  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.target/s390/zero-scratch-regs-1.c: Force test to run for
+	z/Architecture only.
+
+2021-04-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/100110
+	* gfortran.dg/pdt_31.f03: New test.
+	* gfortran.dg/pdt_26.f03: Reduce 'builtin_malloc' count from 9
+	to 8.
+
 2021-04-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/97536

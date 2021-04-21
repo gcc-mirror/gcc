@@ -1,3 +1,7 @@
+2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	* gnatvsn.ads: Bump Library_Version to 12.
+
 2021-04-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init): Set default range bits to 0.

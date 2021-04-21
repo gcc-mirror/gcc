@@ -1,3 +1,17 @@
+2021-04-20  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/98584
+	* libdruntime/gcc/deh.d (scanLSDA): Update calls to read_uleb128 and
+	read_encoded_value.
+	(actionTableLookup): Update calls to read_sleb128 and
+	read_encoded_value_with_base.
+	* libdruntime/gcc/unwind/pe.d (read_uleb128): Update signature.
+	(read_sleb128): Update signature.
+	(read_unaligned): New function.
+	(read_encoded_value_with_base): Update signature.  Call read_unaligned
+	instead of unsafe pointer dereferencing.
+	(read_encoded_value): Update signature.
+
 2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/98494
