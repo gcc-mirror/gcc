@@ -21,8 +21,6 @@
 // { dg-require-effective-target pthread }
 // { dg-require-gthreads "" }
 
-// { dg-skip-if "FIXME: times out" { *-*-* } }
-
 #include <stop_token>
 #include <atomic>
 #include <thread>
