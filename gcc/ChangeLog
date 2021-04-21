@@ -1,3 +1,31 @@
+2021-04-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2021-04-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/100108
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Do not consider
+	OPTION_MASK_ISEL.
+
+2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	* lto-streamer.h (LTO_major_version): Bump to 11.
+
+2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Fix typo.
+	* params.opt: Likewise.
+
+2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document new param.
+
 2021-04-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/100081
