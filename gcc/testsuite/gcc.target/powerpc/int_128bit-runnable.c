@@ -4,21 +4,16 @@
 
 /* Check that the expected 128-bit instructions are generated if the processor
    supports the 128-bit integer instructions. */
+/* { dg-final { scan-assembler-times {\mvextsd2q\M} 4 } } */
 /* { dg-final { scan-assembler-times {\mvslq\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvsrq\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvsraq\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvrlq\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvrlqnm\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mvrlqmi\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mvcmpuq\M} 0 } } */
-/* { dg-final { scan-assembler-times {\mvcmpsq\M} 0 } } */
-/* { dg-final { scan-assembler-times {\mvcmpequq\M} 0 } } */
-/* { dg-final { scan-assembler-times {\mvcmpequq.\M} 16 } } */
-/* { dg-final { scan-assembler-times {\mvcmpgtsq\M} 0 } } */
-/* { dg-final { scan-assembler-times {\mvcmpgtsq.\M} 16 } } */
-/* { dg-final { scan-assembler-times {\mvcmpgtuq\M} 0 } } */
-/* { dg-final { scan-assembler-times {\mvcmpgtuq.\M} 16 } } */
-/* { dg-final { scan-assembler-times {\mvmuleud\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mvcmpequq\M} 16 } } */
+/* { dg-final { scan-assembler-times {\mvcmpgtsq\M} 16 } } */
+/* { dg-final { scan-assembler-times {\mvcmpgtuq\M} 16 } } */
 /* { dg-final { scan-assembler-times {\mvmuloud\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmulesd\M} 1 } } */
 /* { dg-final { scan-assembler-times {\mvmulosd\M} 1 } } */

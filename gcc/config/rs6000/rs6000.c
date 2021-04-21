@@ -11041,10 +11041,10 @@ init_float128_ieee (machine_mode mode)
 
       if (TARGET_POWERPC64)
 	{
-	  set_conv_libfunc (sfix_optab, TImode, mode, "__fixkfti");
-	  set_conv_libfunc (ufix_optab, TImode, mode, "__fixunskfti");
-	  set_conv_libfunc (sfloat_optab, mode, TImode, "__floattikf");
-	  set_conv_libfunc (ufloat_optab, mode, TImode, "__floatuntikf");
+	  set_conv_libfunc (sfix_optab, TImode, mode, "__fixkfti_sw");
+	  set_conv_libfunc (ufix_optab, TImode, mode, "__fixunskfti_sw");
+	  set_conv_libfunc (sfloat_optab, mode, TImode, "__floattikf_sw");
+	  set_conv_libfunc (ufloat_optab, mode, TImode, "__floatuntikf_sw");
 	}
     }
 

@@ -31,7 +31,8 @@ ibm128_dec_funcs	= _tf_to_sd _tf_to_dd _tf_to_td \
 			  _sd_to_tf _dd_to_tf _td_to_tf
 
 # New functions for software emulation
-fp128_ppc_funcs		= floattikf floatuntikf fixkfti fixunskfti \
+fp128_ppc_funcs		= floattikf-sw floatuntikf-sw \
+			  fixkfti-sw fixunskfti-sw \
 			  extendkftf2-sw trunctfkf2-sw \
 			  sfp-exceptions _mulkc3 _divkc3 _powikf2
 
@@ -47,13 +48,16 @@ fp128_ppc_obj		= $(fp128_ppc_static_obj) $(fp128_ppc_shared_obj)
 
 # All functions
 fp128_funcs		= $(fp128_softfp_funcs) $(fp128_ppc_funcs) \
-			  $(fp128_hw_funcs) $(fp128_ifunc_funcs)
+			  $(fp128_hw_funcs) $(fp128_ifunc_funcs) \
+			  $(fp128_3_1_hw_funcs)
 
 fp128_src		= $(fp128_softfp_src) $(fp128_ppc_src) \
-			  $(fp128_hw_src) $(fp128_ifunc_src)
+			  $(fp128_hw_src) $(fp128_ifunc_src) \
+			  $(fp128_3_1_hw_src)
 
 fp128_obj		= $(fp128_softfp_obj) $(fp128_ppc_obj) \
-			  $(fp128_hw_obj) $(fp128_ifunc_obj)
+			  $(fp128_hw_obj) $(fp128_ifunc_obj) \
+			  $(fp128_3_1_hw_obj)
 
 fp128_sed		= $(srcdir)/config/rs6000/float128-sed$(fp128_sed_hw)
 fp128_dep		= $(fp128_sed) $(srcdir)/config/rs6000/t-float128
