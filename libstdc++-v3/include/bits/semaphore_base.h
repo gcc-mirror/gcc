@@ -196,9 +196,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __atomic_semaphore& operator=(const __atomic_semaphore&) = delete;
 
     static _GLIBCXX_ALWAYS_INLINE bool
-    _S_do_try_acquire(__detail::__platform_wait_t* __counter,
-		      __detail::__platform_wait_t& __old) noexcept
+    _S_do_try_acquire(__detail::__platform_wait_t* __counter) noexcept
     {
+      auto __old = __atomic_impl::load(__counter, memory_order::acquire);
       if (__old == 0)
 	return false;
 
@@ -211,18 +211,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_ALWAYS_INLINE void
     _M_acquire() noexcept
     {
-      auto __old = __atomic_impl::load(&_M_counter, memory_order::acquire);
       auto const __pred =
-	[this, &__old] { return _S_do_try_acquire(&this->_M_counter, __old); };
+	[this] { return _S_do_try_acquire(&this->_M_counter); };
       std::__atomic_wait_address_bare(&_M_counter, __pred);
     }
 
     bool
     _M_try_acquire() noexcept
     {
-      auto __old = __atomic_impl::load(&_M_counter, memory_order::acquire);
       auto const __pred =
-	[this, &__old] { return _S_do_try_acquire(&this->_M_counter, __old); };
+	[this] { return _S_do_try_acquire(&this->_M_counter); };
       return std::__detail::__atomic_spin(__pred);
     }
 
@@ -231,9 +229,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_try_acquire_until(const chrono::time_point<_Clock,
 			   _Duration>& __atime) noexcept
       {
-	auto __old = __atomic_impl::load(&_M_counter, memory_order_relaxed);
 	auto const __pred =
-	  [this, &__old] { return _S_do_try_acquire(&this->_M_counter, __old); };
+	  [this] { return _S_do_try_acquire(&this->_M_counter); };
 
 	return __atomic_wait_address_until_bare(&_M_counter, __pred, __atime);
       }
@@ -243,9 +240,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_try_acquire_for(const chrono::duration<_Rep, _Period>& __rtime)
 	noexcept
       {
-	auto __old = __atomic_impl::load(&_M_counter, memory_order_relaxed);
 	auto const __pred =
-	  [this, &__old] { return _S_do_try_acquire(&this->_M_counter, __old); };
+	  [this] { return _S_do_try_acquire(&this->_M_counter); };
 
 	return __atomic_wait_address_for_bare(&_M_counter, __pred, __rtime);
       }
