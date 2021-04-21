@@ -7217,6 +7217,7 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
          have instruction to move the whole thing.  */
       && (! MEM_VOLATILE_P (op)
 	  || ! have_insn_for (SET, innermode))
+      && !(STRICT_ALIGNMENT && MEM_ALIGN (op) < GET_MODE_ALIGNMENT (outermode))
       && known_le (outersize, innersize))
     return adjust_address_nv (op, outermode, byte);
 
