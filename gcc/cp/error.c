@@ -1365,7 +1365,7 @@ dump_decl (cxx_pretty_printer *pp, tree t, int flags)
       if (DECL_NAME (t))
 	pp_cxx_tree_identifier (pp, DECL_NAME (t));
       else
-	dump_generic_node (pp, t, 0, TDF_SLIM, false);
+	dump_generic_node (pp, t, 0, flags | TDF_SLIM, false);
       break;
 
     case CONST_DECL:
