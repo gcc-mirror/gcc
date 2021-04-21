@@ -24344,6 +24344,26 @@ package body Sem_Util is
             EWA_Inner_Scope_Level := EWA_Inner_Scope_Level + 1;
          end if;
 
+         --  If the node is a block, we need to process all declarations
+         --  in the block and make new entities for each.
+
+         if Nkind (N) = N_Block_Statement and then Present (Declarations (N))
+         then
+            declare
+               Decl : Node_Id := First (Declarations (N));
+
+            begin
+               while Present (Decl) loop
+                  if Nkind (Decl) = N_Object_Declaration then
+                     Add_New_Entity (Defining_Identifier (Decl),
+                                     New_Copy (Defining_Identifier (Decl)));
+                  end if;
+
+                  Next (Decl);
+               end loop;
+            end;
+         end if;
+
          declare
             procedure Action (U : Union_Id);
             procedure Action (U : Union_Id) is
