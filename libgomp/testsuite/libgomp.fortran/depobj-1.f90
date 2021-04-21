@@ -1,7 +1,6 @@
 module m
-!  use omp_lib
+  use omp_lib, only: omp_depend_kind
   implicit none (type, external)
-integer, parameter :: omp_depend_kind = 16
   integer :: xx
   integer(omp_depend_kind) :: dd1, dd2
 contains

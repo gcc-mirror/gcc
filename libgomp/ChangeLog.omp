@@ -3,6 +3,14 @@
 	Backport from mainline
 	2021-04-21  Tobias Burnus  <tobias@codesourcery.com>
 
+	* testsuite/libgomp.fortran/depobj-1.f90: Use omp_lib's
+	omp_depend_kind instead of defining it as 16.
+
+2021-04-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-04-21  Tobias Burnus  <tobias@codesourcery.com>
+
 	* testsuite/libgomp.fortran/depobj-1.f90: New test.
 
 2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
