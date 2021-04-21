@@ -29,6 +29,7 @@ case "${target}" in
 		TSAN_SUPPORTED=yes
 		LSAN_SUPPORTED=yes
 		TSAN_TARGET_DEPENDENT_OBJECTS=tsan_rtl_amd64.lo
+		HWASAN_SUPPORTED=yes
 	fi
 	;;
   powerpc*-*-linux*)
