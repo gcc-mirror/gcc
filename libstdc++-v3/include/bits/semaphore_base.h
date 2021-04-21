@@ -86,6 +86,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
+    _GLIBCXX_ALWAYS_INLINE bool
+    _M_try_acquire() noexcept
+    {
+      for (;;)
+	{
+	  auto __err = sem_trywait(&_M_semaphore);
+	  if (__err && (errno == EINTR))
+	    continue;
+	  else if (__err && (errno == EAGAIN))
+	    return false;
+	  else if (__err)
+	    std::terminate();
+	  else
+	    break;
+	}
+      return true;
+    }
+
     _GLIBCXX_ALWAYS_INLINE void
     _M_release(std::ptrdiff_t __update) noexcept
     {
