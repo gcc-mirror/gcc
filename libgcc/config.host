@@ -1224,6 +1224,10 @@ powerpc*-*-linux*)
 		tmake_file="${tmake_file} rs6000/t-float128-hw"
 	fi
 
+	if test $libgcc_cv_powerpc_3_1_float128_hw = yes; then
+		tmake_file="${tmake_file} rs6000/t-float128-p10-hw"
+	fi
+
 	extra_parts="$extra_parts ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
