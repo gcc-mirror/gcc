@@ -4591,12 +4591,12 @@
 
 ;; sqmovn and uqmovn
 
-(define_insn "aarch64_<sur>qmovn<mode>"
+(define_insn "aarch64_<su>qmovn<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
-	(unspec:<VNARROWQ> [(match_operand:VSQN_HSDI 1 "register_operand" "w")]
-                            SUQMOVN))]
+	(SAT_TRUNC:<VNARROWQ>
+    (match_operand:VSQN_HSDI 1 "register_operand" "w")))]
   "TARGET_SIMD"
-  "<sur>qxtn\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
+  "<su>qxtn\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
    [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 

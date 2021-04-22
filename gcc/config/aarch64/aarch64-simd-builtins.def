@@ -266,7 +266,7 @@
   /* Implemented by aarch64_sqxtun2<mode>.  */
   BUILTIN_VQN (BINOP_UUS, sqxtun2, 0, NONE)
 
-  /* Implemented by aarch64_<sur>qmovn<mode>.  */
+  /* Implemented by aarch64_<su>qmovn<mode>.  */
   BUILTIN_VSQN_HSDI (UNOP, sqmovn, 0, NONE)
   BUILTIN_VSQN_HSDI (UNOP, uqmovn, 0, NONE)
 

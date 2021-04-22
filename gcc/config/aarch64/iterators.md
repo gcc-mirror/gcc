@@ -523,8 +523,6 @@
     UNSPEC_SUQADD	; Used in aarch64-simd.md.
     UNSPEC_SQXTUN	; Used in aarch64-simd.md.
     UNSPEC_SQXTUN2	; Used in aarch64-simd.md.
-    UNSPEC_SQXTN	; Used in aarch64-simd.md.
-    UNSPEC_UQXTN	; Used in aarch64-simd.md.
     UNSPEC_SSRA		; Used in aarch64-simd.md.
     UNSPEC_USRA		; Used in aarch64-simd.md.
     UNSPEC_SRSRA	; Used in aarch64-simd.md.
@@ -2258,8 +2256,6 @@
 
 (define_int_iterator USSUQADD [UNSPEC_SUQADD UNSPEC_USQADD])
 
-(define_int_iterator SUQMOVN [UNSPEC_SQXTN UNSPEC_UQXTN])
-
 (define_int_iterator VSHL [UNSPEC_SSHL UNSPEC_USHL
 		           UNSPEC_SRSHL UNSPEC_URSHL])
 
@@ -2998,7 +2994,6 @@
 		      (UNSPEC_SUBHN "") (UNSPEC_RSUBHN "r")
 		      (UNSPEC_ADDHN2 "") (UNSPEC_RADDHN2 "r")
 		      (UNSPEC_SUBHN2 "") (UNSPEC_RSUBHN2 "r")
-		      (UNSPEC_SQXTN "s") (UNSPEC_UQXTN "u")
 		      (UNSPEC_USQADD "us") (UNSPEC_SUQADD "su")
 		      (UNSPEC_SSLI  "s") (UNSPEC_USLI  "u")
 		      (UNSPEC_SSRI  "s") (UNSPEC_USRI  "u")
