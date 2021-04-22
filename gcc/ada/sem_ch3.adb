@@ -11149,12 +11149,28 @@ package body Sem_Ch3 is
 
          if Present (Overridden_Operation (Subp))
            and then No_Return (Overridden_Operation (Subp))
-           and then not No_Return (Subp)
          then
-            Error_Msg_N ("overriding subprogram & must be No_Return", Subp);
-            Error_Msg_N
-              ("\since overridden subprogram is No_Return (RM 6.5.1(6/2))",
-               Subp);
+
+            --  If the subprogram is a renaming, check that the renamed
+            --  subprogram is No_Return.
+
+            if Present (Renamed_Or_Alias (Subp)) then
+               if not No_Return (Renamed_Or_Alias (Subp)) then
+                  Error_Msg_N ("subprogram & must be No_Return",
+                    Renamed_Or_Alias (Subp));
+                  Error_Msg_N ("\since renaming & overrides No_Return "
+                    & "subprogram (RM 6.5.1(6/2))",
+                    Subp);
+               end if;
+
+            --  Make sure that the subprogram itself is No_Return.
+
+            elsif not No_Return (Subp) then
+               Error_Msg_N ("overriding subprogram & must be No_Return", Subp);
+               Error_Msg_N
+                 ("\since overridden subprogram is No_Return (RM 6.5.1(6/2))",
+                  Subp);
+            end if;
          end if;
 
          --  If the operation is a wrapper for a synchronized primitive, it
