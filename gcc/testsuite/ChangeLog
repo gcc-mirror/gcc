@@ -1,3 +1,38 @@
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95468
+	* g++.dg/template/non-dependent15.C: New test.
+
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-08-05  Patrick Palka  <ppalka@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/96282
+	* g++.dg/cpp0x/constexpr-array26.C: New test.
+	* g++.dg/cpp0x/constexpr-array27.C: New test.
+
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/64194
+	* g++.dg/cpp1y/auto-fn60.C: New test.
+
+2021-04-21  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/100176
+	* g++.dg/compat/struct-layout-1_generate.c: Add missing return.
+	* gcc.dg/compat/struct-layout-1_generate.c: Likewise.
+
 2021-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

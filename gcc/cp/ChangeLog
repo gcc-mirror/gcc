@@ -1,3 +1,34 @@
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-02-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95468
+	* pt.c (tsubst_copy_and_build) <case BASELINK>: New case, copied
+	over from tsubst_copy.
+
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-08-05  Patrick Palka  <ppalka@redhat.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/96282
+	* constexpr.c (cxx_eval_vec_init_1): Truncate ctx->ctor and
+	then clear CONSTRUCTOR_NO_CLEARING on each appended element
+	initializer if we're initializing a previously zero-initialized
+	array object.
+
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/64194
+	* pt.c (resolve_overloaded_unification): If the function
+	template specialization has a placeholder return type,
+	then instantiate it before attempting unification.
+
 2021-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2021-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100180
+	* testsuite/experimental/net/internet/address/v6/members.cc:
+	Require gthreads.
+
 2021-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
