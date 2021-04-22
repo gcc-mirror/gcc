@@ -1,3 +1,13 @@
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88115
+	PR libstdc++/97273
+	* tree.c (cp_tree_equal) <case ALIGNOF_EXPR>: Return false if
+	ALIGNOF_EXPR_STD_P differ.
+
 2020-12-16  Nathan Sidwell  <nathan@acm.org>
 
 	* parser.c (cp_parser_elaborated_type_specifier): Test
