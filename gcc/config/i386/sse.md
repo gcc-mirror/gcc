@@ -811,19 +811,22 @@
 
 ;; Mapping of vector modes to a vector mode of double size
 (define_mode_attr ssedoublevecmode
-  [(V32QI "V64QI") (V16HI "V32HI") (V8SI "V16SI") (V4DI "V8DI")
+  [(V64QI "V128QI") (V32HI "V64HI") (V16SI "V32SI") (V8DI "V16DI")
+   (V32QI "V64QI") (V16HI "V32HI") (V8SI "V16SI") (V4DI "V8DI")
    (V16QI "V32QI") (V8HI "V16HI") (V4SI "V8SI") (V2DI "V4DI")
+   (V16SF "V32SF") (V8DF "V16DF")
    (V8SF "V16SF") (V4DF "V8DF")
    (V4SF "V8SF") (V2DF "V4DF")])
 
 ;; Mapping of vector modes to a vector mode of half size
+;; instead of V1DI/V1DF, DI/DF are used for V2DI/V2DF although they are scalar.
 (define_mode_attr ssehalfvecmode
   [(V64QI "V32QI") (V32HI "V16HI") (V16SI "V8SI") (V8DI "V4DI") (V4TI "V2TI")
    (V32QI "V16QI") (V16HI  "V8HI") (V8SI  "V4SI") (V4DI "V2DI")
-   (V16QI  "V8QI") (V8HI   "V4HI") (V4SI  "V2SI")
+   (V16QI  "V8QI") (V8HI   "V4HI") (V4SI  "V2SI") (V2DI "DI")
    (V16SF "V8SF") (V8DF "V4DF")
    (V8SF  "V4SF") (V4DF "V2DF")
-   (V4SF  "V2SF")])
+   (V4SF  "V2SF") (V2DF "DF")])
 
 (define_mode_attr ssehalfvecmodelower
   [(V64QI "v32qi") (V32HI "v16hi") (V16SI "v8si") (V8DI "v4di") (V4TI "v2ti")
@@ -15939,11 +15942,11 @@
    (set_attr "prefix" "orig,maybe_evex,orig,orig,maybe_evex")
    (set_attr "mode" "TI,TI,V4SF,V2SF,V2SF")])
 
-(define_insn "*vec_concatv4si_0"
-  [(set (match_operand:V4SI 0 "register_operand"       "=v,x")
-	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" "vm,?!*y")
-	  (match_operand:V2SI 2 "const0_operand"       " C,C")))]
+(define_insn "*vec_concat<mode>_0"
+  [(set (match_operand:VI124_128 0 "register_operand"       "=v,x")
+	(vec_concat:VI124_128
+	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "vm,?!*y")
+	  (match_operand:<ssehalfvecmode> 2 "const0_operand"       " C,C")))]
   "TARGET_SSE2"
   "@
    %vmovq\t{%1, %0|%0, %1}
@@ -22157,6 +22160,24 @@
    (set_attr "length_immediate" "1,1,*,*")
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn_and_split "*vec_concat<mode>_0_1"
+  [(set (match_operand:V 0 "register_operand")
+	(vec_select:V
+	  (vec_concat:<ssedoublevecmode>
+	    (match_operand:V 1 "nonimmediate_operand")
+	    (match_operand:V 2 "const0_operand"))
+	  (match_parallel 3 "movq_parallel"
+	    [(match_operand 4 "const_int_operand")])))]
+  "ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_concat:V (match_dup 1) (match_dup 5)))]
+{
+  operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);
+  operands[5] = CONST0_RTX (<ssehalfvecmode>mode);
+})
 
 (define_insn "vcvtph2ps<mask_name>"
   [(set (match_operand:V4SF 0 "register_operand" "=v")
