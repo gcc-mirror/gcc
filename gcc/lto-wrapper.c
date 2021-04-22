@@ -1304,8 +1304,6 @@ init_num_threads (void)
 #endif
 }
 
-/* FIXME: once using -std=c++11, we can use std::thread::hardware_concurrency.  */
-
 /* Test and return reason why a jobserver cannot be detected.  */
 
 static const char *
