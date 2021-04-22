@@ -422,9 +422,15 @@ enum reg_class
    Try to use asm_output_aligned_bss to implement this macro.  */
 
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
-  do {								\
-    ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);		\
-  } while (0)
+  do									\
+    {									\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");			\
+      fprintf ((FILE), "%s", "\t.lcomm\t");				\
+      assemble_name ((FILE), (NAME));					\
+      fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",	\
+	       (SIZE), (ALIGN) / BITS_PER_UNIT);			\
+    }									\
+  while (0)
 
 /*** Output and Generation of Labels.  */
 
