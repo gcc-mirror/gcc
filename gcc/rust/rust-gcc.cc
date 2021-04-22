@@ -167,7 +167,6 @@ public:
   void debug (Blabel *t) { debug_tree (t->get_tree ()); };
 
   // Types.
-
   Btype *error_type () { return this->make_type (error_mark_node); }
 
   Btype *void_type () { return this->make_type (void_type_node); }
@@ -175,6 +174,46 @@ public:
   Btype *bool_type () { return this->make_type (boolean_type_node); }
 
   Btype *char_type () { return this->make_type (char_type_node); }
+
+  bool const_size_cast (Bexpression *expr, size_t *result)
+  {
+    rust_assert (TREE_CONSTANT (expr->get_tree ()));
+
+    unsigned char buf[sizeof (size_t) + 1];
+    memset (buf, 0, sizeof (buf));
+
+    int ret = native_encode_expr (expr->get_tree (), buf, sizeof (buf), 0);
+    if (ret <= 0)
+      return false;
+
+    size_t *tmp = (size_t *) buf;
+    *result = *tmp;
+    return true;
+  }
+
+  std::string const_size_val_to_string (Bexpression *expr)
+  {
+    rust_assert (TREE_CONSTANT (expr->get_tree ()));
+
+    unsigned char buf[sizeof (size_t) + 1];
+    memset (buf, 0, sizeof (buf));
+
+    int ret = native_encode_expr (expr->get_tree (), buf, sizeof (buf), 0);
+    rust_assert (ret > 0);
+
+    size_t *ptr = (size_t *) buf;
+    return std::to_string (*ptr);
+  }
+
+  bool const_values_equal (Bexpression *a, Bexpression *b)
+  {
+    return operand_equal_p (a->get_tree (), b->get_tree (),
+			    OEP_ONLY_CONST | OEP_PURE_SAME);
+    // printf ("comparing!\n");
+    // debug_tree (a->get_tree ());
+    // debug_tree (b->get_tree ());
+    // printf ("ok = %s\n", ok ? "true" : "false");
+  }
 
   Btype *wchar_type ()
   {
@@ -248,6 +287,11 @@ public:
   Bexpression *error_expression ()
   {
     return this->make_expression (error_mark_node);
+  }
+
+  bool is_error_expression (Bexpression *expr)
+  {
+    return expr->get_tree () == error_mark_node;
   }
 
   Bexpression *nil_pointer_expression ()

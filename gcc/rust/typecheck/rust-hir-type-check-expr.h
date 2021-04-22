@@ -27,6 +27,7 @@
 #include "rust-hir-method-resolve.h"
 #include "rust-hir-path-probe.h"
 #include "rust-substitution-mapper.h"
+#include "rust-hir-const-fold.h"
 
 namespace Rust {
 namespace Resolver {
@@ -688,21 +689,23 @@ public:
 	return;
       }
 
-    TyTy::ArrayType *array_type = (TyTy::ArrayType *) infered;
+    TyTy::ArrayType *array_type = static_cast<TyTy::ArrayType *> (infered);
     infered = array_type->get_element_type ()->clone ();
   }
 
   void visit (HIR::ArrayExpr &expr) override
   {
     HIR::ArrayElems *elements = expr.get_internal_elements ();
-    size_t num_elems = elements->get_num_elements ();
 
-    // Check the type of array elements
     elements->accept_vis (*this);
-    rust_assert (infered_array_elems != nullptr);
+    if (infered_array_elems == nullptr)
+      return;
+    if (folded_array_capacity == nullptr)
+      return;
 
     infered
-      = new TyTy::ArrayType (expr.get_mappings ().get_hirid (), num_elems,
+      = new TyTy::ArrayType (expr.get_mappings ().get_hirid (),
+			     folded_array_capacity,
 			     TyTy::TyVar (infered_array_elems->get_ref ()));
   }
 
@@ -724,10 +727,40 @@ public:
       {
 	infered_array_elems->append_reference (elem->get_ref ());
       }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, UNKNOWN_NODEID,
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+    std::string capacity_str = std::to_string (elems.get_num_elements ());
+    HIR::LiteralExpr implicit_literal_capacity (
+      mapping, capacity_str, HIR::Literal::LitType::INT,
+      PrimitiveCoreType::CORETYPE_USIZE, Location ());
+
+    // mark the type for this implicit node
+    context->insert_type (mapping, new TyTy::USizeType (mapping.get_hirid ()));
+
+    folded_array_capacity
+      = ConstFold::ConstFoldExpr::fold (&implicit_literal_capacity);
   }
 
   void visit (HIR::ArrayElemsCopied &elems) override
   {
+    auto capacity_type
+      = TypeCheckExpr::Resolve (elems.get_num_copies_expr (), false);
+
+    TyTy::USizeType *expected_ty = new TyTy::USizeType (
+      elems.get_num_copies_expr ()->get_mappings ().get_hirid ());
+    context->insert_type (elems.get_num_copies_expr ()->get_mappings (),
+			  expected_ty);
+
+    auto unified = expected_ty->unify (capacity_type);
+    if (unified->get_kind () == TyTy::TypeKind::ERROR)
+      return;
+
+    folded_array_capacity
+      = ConstFold::ConstFoldExpr::fold (elems.get_num_copies_expr ());
+
     infered_array_elems
       = TypeCheckExpr::Resolve (elems.get_elem_to_copy (), false);
   }
@@ -985,7 +1018,7 @@ public:
 private:
   TypeCheckExpr (bool inside_loop)
     : TypeCheckBase (), infered (nullptr), infered_array_elems (nullptr),
-      inside_loop (inside_loop)
+      folded_array_capacity (nullptr), inside_loop (inside_loop)
   {}
 
   TyTy::BaseType *resolve_root_path (HIR::PathInExpression &expr)
@@ -1069,6 +1102,8 @@ private:
 	return (type->get_kind () == TyTy::TypeKind::INT)
 	       || (type->get_kind () == TyTy::TypeKind::UINT)
 	       || (type->get_kind () == TyTy::TypeKind::FLOAT)
+	       || (type->get_kind () == TyTy::TypeKind::USIZE)
+	       || (type->get_kind () == TyTy::TypeKind::ISIZE)
 	       || (type->get_kind () == TyTy::TypeKind::INFER
 		   && (((TyTy::InferType *) type)->get_infer_kind ()
 		       == TyTy::InferType::INTEGRAL))
@@ -1082,6 +1117,8 @@ private:
       case ArithmeticOrLogicalOperator::BITWISE_XOR:
 	return (type->get_kind () == TyTy::TypeKind::INT)
 	       || (type->get_kind () == TyTy::TypeKind::UINT)
+	       || (type->get_kind () == TyTy::TypeKind::USIZE)
+	       || (type->get_kind () == TyTy::TypeKind::ISIZE)
 	       || (type->get_kind () == TyTy::TypeKind::BOOL)
 	       || (type->get_kind () == TyTy::TypeKind::INFER
 		   && (((TyTy::InferType *) type)->get_infer_kind ()
@@ -1092,6 +1129,8 @@ private:
       case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
 	return (type->get_kind () == TyTy::TypeKind::INT)
 	       || (type->get_kind () == TyTy::TypeKind::UINT)
+	       || (type->get_kind () == TyTy::TypeKind::USIZE)
+	       || (type->get_kind () == TyTy::TypeKind::ISIZE)
 	       || (type->get_kind () == TyTy::TypeKind::INFER
 		   && (((TyTy::InferType *) type)->get_infer_kind ()
 		       == TyTy::InferType::INTEGRAL));
@@ -1105,6 +1144,7 @@ private:
   /* The return value of visit(ArrayElemsValues&) and visit(ArrayElemsCopied&)
      Stores the type of array elements, if `expr` is ArrayExpr. */
   TyTy::BaseType *infered_array_elems;
+  Bexpression *folded_array_capacity;
 
   bool inside_loop;
 }; // namespace Resolver

@@ -57,6 +57,9 @@ public:
       {
 	TyTy::SubstitutionArgumentMappings mappings
 	  = type.get_mappings_from_generic_args (*generics);
+	if (mappings.is_error ())
+	  return;
+
 	concrete = type.handle_substitions (mappings);
       }
 
@@ -77,6 +80,9 @@ public:
       {
 	TyTy::SubstitutionArgumentMappings mappings
 	  = type.get_mappings_from_generic_args (*generics);
+	if (mappings.is_error ())
+	  return;
+
 	concrete = type.handle_substitions (mappings);
       }
 

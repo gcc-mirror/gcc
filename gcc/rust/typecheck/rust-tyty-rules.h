@@ -25,6 +25,9 @@
 #include "rust-hir-map.h"
 #include "rust-hir-type-check.h"
 
+extern ::Backend *
+rust_get_backend ();
+
 namespace Rust {
 namespace TyTy {
 
@@ -714,11 +717,12 @@ public:
 	return;
       }
 
+    auto backend = rust_get_backend ();
+
     // need to check the base types and capacity
-    if (type.get_capacity () != base->get_capacity ())
+    if (!backend->const_values_equal (type.get_capacity (),
+				      base->get_capacity ()))
       {
-	Location locus = mappings->lookup_location (type.get_ref ());
-	rust_error_at (locus, "mismatch in array capacity");
 	BaseRules::visit (type);
 	return;
       }

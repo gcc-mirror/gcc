@@ -589,5 +589,14 @@ ResolvePath::resolve_path (AST::PathInExpression *expr)
     }
 }
 
+// rust-ast-resolve-type.h
+
+void
+ResolveType::visit (AST::ArrayType &type)
+{
+  type.get_elem_type ()->accept_vis (*this);
+  ResolveExpr::go (type.get_size_expr ().get (), type.get_node_id ());
+}
+
 } // namespace Resolver
 } // namespace Rust

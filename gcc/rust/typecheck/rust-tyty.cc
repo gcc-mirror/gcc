@@ -26,6 +26,9 @@
 #include "rust-hir-map.h"
 #include "rust-substitution-mapper.h"
 
+extern ::Backend *
+rust_get_backend ();
+
 namespace Rust {
 namespace TyTy {
 
@@ -801,8 +804,14 @@ ArrayType::accept_vis (TyVisitor &vis)
 std::string
 ArrayType::as_string () const
 {
-  return "[" + get_element_type ()->as_string () + ":"
-	 + std::to_string (capacity) + "]";
+  return "[" + get_element_type ()->as_string () + ":" + capacity_string ()
+	 + "]";
+}
+
+std::string
+ArrayType::capacity_string () const
+{
+  return rust_get_backend ()->const_size_val_to_string (get_capacity ());
 }
 
 BaseType *

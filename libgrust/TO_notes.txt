@@ -1,3 +1,0 @@
-TO notes:
-
-This is the Rust runtime library, i.e. not the actual compiler bit.

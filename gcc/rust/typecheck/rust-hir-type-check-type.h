@@ -26,45 +26,6 @@
 namespace Rust {
 namespace Resolver {
 
-class ArrayCapacityConstant : public TypeCheckBase
-{
-  using Rust::Resolver::TypeCheckBase::visit;
-
-public:
-  static bool fold (HIR::Expr *expr, size_t *folded_result)
-  {
-    ArrayCapacityConstant folder;
-    expr->accept_vis (folder);
-    *folded_result = folder.result;
-    return folder.ok;
-  }
-
-  virtual ~ArrayCapacityConstant () {}
-
-  void visit (HIR::LiteralExpr &expr) override
-  {
-    auto literal_value = expr.get_literal ();
-    switch (expr.get_lit_type ())
-      {
-	case HIR::Literal::LitType::INT: {
-	  ok = true;
-	  std::stringstream ss (literal_value->as_string ());
-	  ss >> result;
-	}
-	break;
-
-      default:
-	return;
-      }
-  }
-
-private:
-  ArrayCapacityConstant () : TypeCheckBase (), ok (false), result (-1) {}
-
-  bool ok;
-  size_t result;
-}; // namespace Resolver
-
 class TypeCheckResolveGenericArguments : public TypeCheckBase
 {
   using Rust::Resolver::TypeCheckBase::visit;
@@ -72,7 +33,7 @@ class TypeCheckResolveGenericArguments : public TypeCheckBase
 public:
   static HIR::GenericArgs resolve (HIR::TypePathSegment *segment)
   {
-    TypeCheckResolveGenericArguments resolver;
+    TypeCheckResolveGenericArguments resolver (segment->get_locus ());
     segment->accept_vis (resolver);
     return resolver.args;
   };
@@ -83,8 +44,8 @@ public:
   }
 
 private:
-  TypeCheckResolveGenericArguments ()
-    : TypeCheckBase (), args (HIR::GenericArgs::create_empty ())
+  TypeCheckResolveGenericArguments (Location locus)
+    : TypeCheckBase (), args (HIR::GenericArgs::create_empty (locus))
   {}
 
   HIR::GenericArgs args;
@@ -165,73 +126,60 @@ public:
 	return;
       }
 
-    // reverse lookup the hir node from ast node id
     HirId hir_lookup;
-    if (context->lookup_type_by_node_id (ref, &hir_lookup))
+    if (!context->lookup_type_by_node_id (ref, &hir_lookup))
       {
-	// we got an HIR node
-	if (context->lookup_type (hir_lookup, &translated))
-	  {
-	    translated = translated->clone ();
-	    auto ref = path.get_mappings ().get_hirid ();
-	    translated->set_ref (ref);
-
-	    HIR::TypePathSegment *final_seg = path.get_final_segment ();
-	    HIR::GenericArgs args
-	      = TypeCheckResolveGenericArguments::resolve (final_seg);
-
-	    bool path_declared_generic_arguments = !args.is_empty ();
-	    if (path_declared_generic_arguments)
-	      {
-		if (translated->has_subsititions_defined ())
-		  {
-		    translated
-		      = SubstMapper::Resolve (translated, path.get_locus (),
-					      &args);
-		    if (translated->get_kind () != TyTy::TypeKind::ERROR
-			&& mappings != nullptr)
-		      {
-			check_for_unconstrained (args.get_type_args ());
-		      }
-		  }
-		else
-		  {
-		    rust_error_at (
-		      path.get_locus (),
-		      "TypePath %s declares generic argument's but "
-		      "the type %s does not have any",
-		      path.as_string ().c_str (),
-		      translated->as_string ().c_str ());
-		  }
-	      }
-	    else if (translated->has_subsititions_defined ())
-	      {
-		translated
-		  = SubstMapper::InferSubst (translated, path.get_locus ());
-	      }
-
-	    return;
-	  }
-      }
-
-    rust_error_at (path.get_locus (), "failed to type-resolve TypePath: %s",
-		   path.as_string ().c_str ());
-  }
-
-  void visit (HIR::ArrayType &type) override
-  {
-    size_t capacity;
-    if (!ArrayCapacityConstant::fold (type.get_size_expr (), &capacity))
-      {
-	rust_error_at (type.get_size_expr ()->get_locus_slow (),
-		       "non-constant value");
+	rust_error_at (path.get_locus (), "failed to lookup HIR node");
 	return;
       }
 
-    TyTy::BaseType *base = TypeCheckType::Resolve (type.get_element_type ());
-    translated = new TyTy::ArrayType (type.get_mappings ().get_hirid (),
-				      capacity, TyTy::TyVar (base->get_ref ()));
+    TyTy::BaseType *lookup = nullptr;
+    if (!context->lookup_type (hir_lookup, &lookup))
+      {
+	rust_error_at (path.get_locus (), "failed to lookup HIR TyTy");
+	return;
+      }
+
+    TyTy::BaseType *path_type = lookup->clone ();
+    path_type->set_ref (path.get_mappings ().get_hirid ());
+
+    HIR::TypePathSegment *final_seg = path.get_final_segment ();
+    HIR::GenericArgs args
+      = TypeCheckResolveGenericArguments::resolve (final_seg);
+
+    bool is_big_self = final_seg->is_ident_only ()
+		       && (final_seg->as_string ().compare ("Self") == 0);
+
+    if (path_type->needs_generic_substitutions ())
+      {
+	if (is_big_self)
+	  {
+	    translated = path_type;
+	    return;
+	  }
+
+	translated = SubstMapper::Resolve (path_type, path.get_locus (), &args);
+	if (translated->get_kind () != TyTy::TypeKind::ERROR
+	    && mappings != nullptr)
+	  {
+	    check_for_unconstrained (args.get_type_args ());
+	  }
+      }
+    else if (!args.is_empty ())
+      {
+	rust_error_at (path.get_locus (),
+		       "TypePath %s declares generic argument's but "
+		       "the type %s does not have any",
+		       path.as_string ().c_str (),
+		       translated->as_string ().c_str ());
+      }
+    else
+      {
+	translated = path_type;
+      }
   }
+
+  void visit (HIR::ArrayType &type) override;
 
   void visit (HIR::ReferenceType &type) override
   {

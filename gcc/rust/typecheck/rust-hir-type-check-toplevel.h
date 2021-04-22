@@ -140,6 +140,9 @@ public:
       = TypeCheckExpr::Resolve (constant.get_expr (), false);
 
     context->insert_type (constant.get_mappings (), type->unify (expr_type));
+
+    // notify the constant folder of this
+    ConstFold::ConstFoldItem::fold (constant);
   }
 
   void visit (HIR::Function &function) override
@@ -214,10 +217,7 @@ public:
     auto self
       = TypeCheckType::Resolve (impl_block.get_type ().get (), &substitutions);
     if (self == nullptr || self->get_kind () == TyTy::TypeKind::ERROR)
-      {
-	rust_error_at (impl_block.get_locus (), "failed to resolve impl type");
-	return;
-      }
+      return;
 
     for (auto &impl_item : impl_block.get_impl_items ())
       TypeCheckTopLevelImplItem::Resolve (impl_item.get (), self,

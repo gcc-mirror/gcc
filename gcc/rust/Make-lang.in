@@ -79,7 +79,8 @@ GRS_OBJS = \
     rust/rust-hir-type-check.o \
     rust/rust-tyty.o \
     rust/rust-tyctx.o \
-	rust/rust-hir-liveness.o \
+    rust/rust-hir-const-fold.o \
+    rust/rust-hir-liveness.o \
     $(END)
 # removed object files from here
 
