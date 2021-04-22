@@ -57,8 +57,8 @@
    64-bit at any time.  */
 #define STACK_BOUNDARY 64
 
-/* Function entry points are aligned to 128 bits.  */
-#define FUNCTION_BOUNDARY 128
+/* Function entry points are aligned to 64 bits.  */
+#define FUNCTION_BOUNDARY 64
 
 /* Maximum alignment required by data of any type.  */
 #define BIGGEST_ALIGNMENT 64
