@@ -6431,18 +6431,7 @@ package body Exp_Ch6 is
       --  Returns_By_Ref flag is normally set when the subprogram is frozen but
       --  subprograms with no specs are not frozen.
 
-      declare
-         Typ  : constant Entity_Id := Etype (Spec_Id);
-         Utyp : constant Entity_Id := Underlying_Type (Typ);
-
-      begin
-         if Is_Limited_View (Typ) then
-            Set_Returns_By_Ref (Spec_Id);
-
-         elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
-            Set_Returns_By_Ref (Spec_Id);
-         end if;
-      end;
+      Compute_Returns_By_Ref (Spec_Id);
 
       --  For a procedure, we add a return for all possible syntactic ends of
       --  the subprogram.
@@ -7851,18 +7840,7 @@ package body Exp_Ch6 is
       --  of the normal semantic analysis of the spec since the underlying
       --  returned type may not be known yet (for private types).
 
-      declare
-         Typ  : constant Entity_Id := Etype (Subp);
-         Utyp : constant Entity_Id := Underlying_Type (Typ);
-
-      begin
-         if Is_Limited_View (Typ) then
-            Set_Returns_By_Ref (Subp);
-
-         elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
-            Set_Returns_By_Ref (Subp);
-         end if;
-      end;
+      Compute_Returns_By_Ref (Subp);
 
       --  Wnen freezing a null procedure, analyze its delayed aspects now
       --  because we may not have reached the end of the declarative list when

@@ -582,6 +582,9 @@ package Sem_Util is
    --  emitted immediately after the main message (and before output of any
    --  message indicating that Constraint_Error will be raised).
 
+   procedure Compute_Returns_By_Ref (Func : Entity_Id);
+   --  Set the Returns_By_Ref flag on Func if appropriate
+
    generic
       with function Predicate (Typ : Entity_Id) return Boolean;
    function Collect_Types_In_Hierarchy
@@ -652,6 +655,12 @@ package Sem_Util is
    --  then that is what is returned, otherwise the Enclosing_Subprogram of the
    --  Current_Scope is returned. The returned value is Empty if this is called
    --  from a library package which is not within any subprogram.
+
+   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean;
+   --  True if T is a class-wide type, or if it has controlled parts ("part"
+   --  means T or any of its subcomponents). Same as Needs_Finalization, except
+   --  when pragma Restrictions (No_Finalization) applies, in which case we
+   --  know that class-wide objects do not contain controlled parts.
 
    function Deepest_Type_Access_Level (Typ : Entity_Id) return Uint;
    --  Same as Type_Access_Level, except that if the type is the type of an Ada
@@ -2556,8 +2565,7 @@ package Sem_Util is
    --  entity E. If no such instance exits, return Empty.
 
    function Needs_Finalization (Typ : Entity_Id) return Boolean;
-   --  Determine whether type Typ is controlled and thus requires finalization
-   --  actions.
+   --  True if Typ requires finalization actions
 
    function Needs_One_Actual (E : Entity_Id) return Boolean;
    --  Returns True if a function has defaults for all but its first formal,

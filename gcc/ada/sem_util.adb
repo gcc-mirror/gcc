@@ -6672,6 +6672,23 @@ package body Sem_Util is
       return N;
    end Compile_Time_Constraint_Error;
 
+   ----------------------------
+   -- Compute_Returns_By_Ref --
+   ----------------------------
+
+   procedure Compute_Returns_By_Ref (Func : Entity_Id) is
+      Typ  : constant Entity_Id := Etype (Func);
+      Utyp : constant Entity_Id := Underlying_Type (Typ);
+
+   begin
+      if Is_Limited_View (Typ) then
+         Set_Returns_By_Ref (Func);
+
+      elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
+         Set_Returns_By_Ref (Func);
+      end if;
+   end Compute_Returns_By_Ref;
+
    --------------------------------
    -- Collect_Types_In_Hierarchy --
    --------------------------------
@@ -7071,6 +7088,15 @@ package body Sem_Util is
          return Enclosing_Subprogram (Scop);
       end if;
    end Current_Subprogram;
+
+   -------------------------------
+   -- CW_Or_Has_Controlled_Part --
+   -------------------------------
+
+   function CW_Or_Has_Controlled_Part (T : Entity_Id) return Boolean is
+   begin
+      return Is_Class_Wide_Type (T) or else Needs_Finalization (T);
+   end CW_Or_Has_Controlled_Part;
 
    -------------------------------
    -- Deepest_Type_Access_Level --

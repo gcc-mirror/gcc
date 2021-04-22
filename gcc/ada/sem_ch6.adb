@@ -36,7 +36,6 @@ with Errout;         use Errout;
 with Expander;       use Expander;
 with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch6;        use Exp_Ch6;
-with Exp_Ch7;        use Exp_Ch7;
 with Exp_Ch9;        use Exp_Ch9;
 with Exp_Dbug;       use Exp_Dbug;
 with Exp_Tss;        use Exp_Tss;
@@ -6748,18 +6747,7 @@ package body Sem_Ch6 is
       --  may not be known yet (for private types).
 
       if not Has_Delayed_Freeze (Designator) and then Expander_Active then
-         declare
-            Typ  : constant Entity_Id := Etype (Designator);
-            Utyp : constant Entity_Id := Underlying_Type (Typ);
-
-         begin
-            if Is_Limited_View (Typ) then
-               Set_Returns_By_Ref (Designator);
-
-            elsif Present (Utyp) and then CW_Or_Has_Controlled_Part (Utyp) then
-               Set_Returns_By_Ref (Designator);
-            end if;
-         end;
+         Compute_Returns_By_Ref (Designator);
       end if;
    end Check_Delayed_Subprogram;
 
