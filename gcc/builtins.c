@@ -9986,7 +9986,7 @@ expand_builtin (tree exp, rtx target, rtx subtarget, machine_mode mode,
       break;
 
     /* Expand it as BUILT_IN_MEMCMP_EQ first. If not successful, change it
-       back to a BUILT_IN_STRCMP. Remember to delete the 3rd paramater
+       back to a BUILT_IN_STRCMP. Remember to delete the 3rd parameter
        when changing it to a strcmp call.  */
     case BUILT_IN_STRCMP_EQ:
       target = expand_builtin_memcmp (exp, target, true);

@@ -373,7 +373,7 @@ optimize_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
   return 0;
 }
 
-/* Auxiliary function to handle the arguments to reduction intrnisics.  If the
+/* Auxiliary function to handle the arguments to reduction intrinsics.  If the
    function is a scalar, just copy it; otherwise returns the new element, the
    old one can be freed.  */
 
