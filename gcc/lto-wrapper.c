@@ -1585,8 +1585,9 @@ run_gcc (unsigned argc, char *argv[])
       if (jobserver && jobserver_error != NULL)
 	{
 	  warning (0, jobserver_error);
-	  parallel = 0;
+	  /* Fall back to auto parallelism.  */
 	  jobserver = 0;
+	  auto_parallel = 1;
 	}
       else if (!jobserver && jobserver_error == NULL)
 	{

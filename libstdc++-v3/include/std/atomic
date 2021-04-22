@@ -384,26 +384,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
     {
-      std::__atomic_wait(&_M_i, __old,
-			 [__m, this, __old]
-			 {
-			   const auto __v = this->load(__m);
-			   // TODO make this ignore padding bits when we
-			   // can do that
-			   return __builtin_memcmp(&__old, &__v,
-						    sizeof(_Tp)) != 0;
-			 });
+      std::__atomic_wait_address_v(&_M_i, __old,
+			 [__m, this] { return this->load(__m); });
     }
 
     // TODO add const volatile overload
 
     void
     notify_one() const noexcept
-    { std::__atomic_notify(&_M_i, false); }
+    { std::__atomic_notify_address(&_M_i, false); }
 
     void
     notify_all() const noexcept
-    { std::__atomic_notify(&_M_i, true); }
+    { std::__atomic_notify_address(&_M_i, true); }
 #endif // __cpp_lib_atomic_wait 
 
     };

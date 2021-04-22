@@ -303,13 +303,11 @@ get_symbol_constant_value (tree sym)
 
 
 
-/* Subroutine of fold_stmt.  We perform several simplifications of the
-   memory reference tree EXPR and make sure to re-gimplify them properly
-   after propagation of constant addresses.  IS_LHS is true if the
-   reference is supposed to be an lvalue.  */
+/* Subroutine of fold_stmt.  We perform constant folding of the
+   memory reference tree EXPR.  */
 
 static tree
-maybe_fold_reference (tree expr, bool is_lhs)
+maybe_fold_reference (tree expr)
 {
   tree result;
 
@@ -330,8 +328,7 @@ maybe_fold_reference (tree expr, bool is_lhs)
 			     TREE_OPERAND (expr, 1),
 			     TREE_OPERAND (expr, 2));
 
-  if (!is_lhs
-      && (result = fold_const_aggregate_ref (expr))
+  if ((result = fold_const_aggregate_ref (expr))
       && is_gimple_min_invariant (result))
     return result;
 
@@ -363,7 +360,7 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	  return NULL_TREE;
 
 	if (REFERENCE_CLASS_P (rhs))
-	  return maybe_fold_reference (rhs, false);
+	  return maybe_fold_reference (rhs);
 
 	else if (TREE_CODE (rhs) == OBJ_TYPE_REF)
 	  {
@@ -405,28 +402,14 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 	else if (TREE_CODE (rhs) == ADDR_EXPR)
 	  {
 	    tree ref = TREE_OPERAND (rhs, 0);
-	    tree tem = maybe_fold_reference (ref, true);
-	    if (tem
-		&& TREE_CODE (tem) == MEM_REF
-		&& integer_zerop (TREE_OPERAND (tem, 1)))
-	      result = fold_convert (TREE_TYPE (rhs), TREE_OPERAND (tem, 0));
-	    else if (tem)
-	      result = fold_convert (TREE_TYPE (rhs),
-				     build_fold_addr_expr_loc (loc, tem));
-	    else if (TREE_CODE (ref) == MEM_REF
-		     && integer_zerop (TREE_OPERAND (ref, 1)))
-	      result = fold_convert (TREE_TYPE (rhs), TREE_OPERAND (ref, 0));
-
-	    if (result)
+	    if (TREE_CODE (ref) == MEM_REF
+		&& integer_zerop (TREE_OPERAND (ref, 1)))
 	      {
-		/* Strip away useless type conversions.  Both the
-		   NON_LVALUE_EXPR that may have been added by fold, and
-		   "useless" type conversions that might now be apparent
-		   due to propagation.  */
-		STRIP_USELESS_TYPE_CONVERSION (result);
-
-		if (result != rhs && valid_gimple_rhs_p (result))
-		  return result;
+		result = TREE_OPERAND (ref, 0);
+		if (!useless_type_conversion_p (TREE_TYPE (rhs),
+						TREE_TYPE (result)))
+		  result = build1 (NOP_EXPR, TREE_TYPE (rhs), result);
+		return result;
 	      }
 	  }
 
@@ -5262,7 +5245,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
   for (i = 0; i < gimple_call_num_args (stmt); ++i)
     if (REFERENCE_CLASS_P (gimple_call_arg (stmt, i)))
       {
-	tree tmp = maybe_fold_reference (gimple_call_arg (stmt, i), false);
+	tree tmp = maybe_fold_reference (gimple_call_arg (stmt, i));
 	if (tmp)
 	  {
 	    gimple_call_set_arg (stmt, i, tmp);
@@ -5373,7 +5356,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	}
       else
 	{
-	  tree tmp = maybe_fold_reference (gimple_call_chain (stmt), false);
+	  tree tmp = maybe_fold_reference (gimple_call_chain (stmt));
 	  if (tmp)
 	    {
 	      gimple_call_set_chain (stmt, tmp);
@@ -6107,18 +6090,11 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	noutputs = gimple_asm_noutputs (asm_stmt);
 	oconstraints = XALLOCAVEC (const char *, noutputs);
 
-	for (i = 0; i < gimple_asm_noutputs (asm_stmt); ++i)
+	for (i = 0; i < noutputs; ++i)
 	  {
 	    tree link = gimple_asm_output_op (asm_stmt, i);
-	    tree op = TREE_VALUE (link);
 	    oconstraints[i]
 	      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
-	    if (REFERENCE_CLASS_P (op)
-		&& (op = maybe_fold_reference (op, true)) != NULL_TREE)
-	      {
-		TREE_VALUE (link) = op;
-		changed = true;
-	      }
 	  }
 	for (i = 0; i < gimple_asm_ninputs (asm_stmt); ++i)
 	  {
@@ -6129,8 +6105,8 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	    parse_input_constraint (&constraint, 0, 0, noutputs, 0,
 				    oconstraints, &allows_mem, &allows_reg);
 	    if (REFERENCE_CLASS_P (op)
-		&& (op = maybe_fold_reference (op, !allows_reg && allows_mem))
-		   != NULL_TREE)
+		&& (allows_reg || !allows_mem)
+		&& (op = maybe_fold_reference (op)) != NULL_TREE)
 	      {
 		TREE_VALUE (link) = op;
 		changed = true;
@@ -6146,7 +6122,7 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 	  if (val
 	      && REFERENCE_CLASS_P (val))
 	    {
-	      tree tem = maybe_fold_reference (val, false);
+	      tree tem = maybe_fold_reference (val);
 	      if (tem)
 		{
 		  gimple_debug_bind_set_value (stmt, tem);
@@ -6157,7 +6133,7 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 		   && TREE_CODE (val) == ADDR_EXPR)
 	    {
 	      tree ref = TREE_OPERAND (val, 0);
-	      tree tem = maybe_fold_reference (ref, false);
+	      tree tem = maybe_fold_reference (ref);
 	      if (tem)
 		{
 		  tem = build_fold_addr_expr_with_type (tem, TREE_TYPE (val));
@@ -6190,21 +6166,6 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
     }
 
   stmt = gsi_stmt (*gsi);
-
-  /* Fold *& on the lhs.  */
-  if (gimple_has_lhs (stmt))
-    {
-      tree lhs = gimple_get_lhs (stmt);
-      if (lhs && REFERENCE_CLASS_P (lhs))
-	{
-	  tree new_lhs = maybe_fold_reference (lhs, true);
-	  if (new_lhs)
-	    {
-	      gimple_set_lhs (stmt, new_lhs);
-	      changed = true;
-	    }
-	}
-    }
 
   fold_undefer_overflow_warnings (changed && !nowarning, stmt, 0);
   return changed;

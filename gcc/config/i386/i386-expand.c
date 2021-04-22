@@ -7055,7 +7055,7 @@ decide_alignment (int align,
   desired_align = GET_MODE_SIZE (move_mode);
   /* PentiumPro has special logic triggering for 8 byte aligned blocks.
      copying whole cacheline at once.  */
-  if (TARGET_PENTIUMPRO
+  if (TARGET_CPU_P (PENTIUMPRO)
       && (alg == rep_prefix_4_byte || alg == rep_prefix_1_byte))
     desired_align = 8;
 

@@ -1162,3 +1162,7 @@ AVXVNNI built-in functions and code generation.
 mneeded
 Target Var(ix86_needed) Save
 Emit GNU_PROPERTY_X86_ISA_1_NEEDED GNU property.
+
+mmwait
+Target Mask(ISA2_MWAIT) Var(ix86_isa_flags2) Save
+Support MWAIT and MONITOR built-in functions and code generation.

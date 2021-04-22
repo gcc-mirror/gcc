@@ -5564,37 +5564,29 @@ gimple_verify_flow_info (void)
 	  label = gimple_label_label (as_a <glabel *> (stmt));
 	  if (prev_stmt && DECL_NONLOCAL (label))
 	    {
-	      error ("nonlocal label ");
-	      print_generic_expr (stderr, label);
-	      fprintf (stderr, " is not first in a sequence of labels in bb %d",
-		       bb->index);
+	      error ("nonlocal label %qD is not first in a sequence "
+		     "of labels in bb %d", label, bb->index);
 	      err = 1;
 	    }
 
 	  if (prev_stmt && EH_LANDING_PAD_NR (label) != 0)
 	    {
-	      error ("EH landing pad label ");
-	      print_generic_expr (stderr, label);
-	      fprintf (stderr, " is not first in a sequence of labels in bb %d",
-		       bb->index);
+	      error ("EH landing pad label %qD is not first in a sequence "
+		     "of labels in bb %d", label, bb->index);
 	      err = 1;
 	    }
 
 	  if (label_to_block (cfun, label) != bb)
 	    {
-	      error ("label ");
-	      print_generic_expr (stderr, label);
-	      fprintf (stderr, " to block does not match in bb %d",
-		       bb->index);
+	      error ("label %qD to block does not match in bb %d",
+		     label, bb->index);
 	      err = 1;
 	    }
 
 	  if (decl_function_context (label) != current_function_decl)
 	    {
-	      error ("label ");
-	      print_generic_expr (stderr, label);
-	      fprintf (stderr, " has incorrect context in bb %d",
-		       bb->index);
+	      error ("label %qD has incorrect context in bb %d",
+		     label, bb->index);
 	      err = 1;
 	    }
 	}
@@ -5616,9 +5608,8 @@ gimple_verify_flow_info (void)
 
 	  if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
 	    {
-	      error ("label ");
-	      print_generic_expr (stderr, gimple_label_label (label_stmt));
-	      fprintf (stderr, " in the middle of basic block %d", bb->index);
+	      error ("label %qD in the middle of basic block %d",
+		     gimple_label_label (label_stmt), bb->index);
 	      err = 1;
 	    }
 	}

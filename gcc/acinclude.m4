@@ -422,8 +422,18 @@ changequote([,])dnl
 ])],, [gcc_cv_initfini_array=no]);;
     esac
   else
-    AC_MSG_CHECKING(cross compile... guessing)
-    gcc_cv_initfini_array=no
+    case "${target}" in
+      aarch64*-linux-gnu*)
+	# AArch64 postdates glibc support for .init_array/.fini_array,
+	# so we don't need the preprocessor test above.
+	gcc_cv_initfini_array=yes
+	;;
+
+      *)
+	AC_MSG_CHECKING(cross compile... guessing)
+	gcc_cv_initfini_array=no
+	;;
+    esac
   fi])
   enable_initfini_array=$gcc_cv_initfini_array
 ])

@@ -24132,9 +24132,19 @@ fi
 rm -f conftest.err conftest.i conftest.$ac_ext;;
     esac
   else
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking cross compile... guessing" >&5
+    case "${target}" in
+      aarch64*-linux-gnu*)
+	# AArch64 postdates glibc support for .init_array/.fini_array,
+	# so we don't need the preprocessor test above.
+	gcc_cv_initfini_array=yes
+	;;
+
+      *)
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: checking cross compile... guessing" >&5
 $as_echo_n "checking cross compile... guessing... " >&6; }
-    gcc_cv_initfini_array=no
+	gcc_cv_initfini_array=no
+	;;
+    esac
   fi
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_initfini_array" >&5

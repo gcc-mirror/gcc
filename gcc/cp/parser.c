@@ -19942,6 +19942,10 @@ cp_parser_enum_specifier (cp_parser* parser)
       /* Consume the `:'.  */
       cp_lexer_consume_token (parser->lexer);
 
+      auto tdf
+	= make_temp_override (parser->type_definition_forbidden_message,
+			      G_("types may not be defined in enum-base"));
+
       /* Parse the type-specifier-seq.  */
       cp_parser_type_specifier_seq (parser, CP_PARSER_FLAGS_NONE,
 				    /*is_declaration=*/false,

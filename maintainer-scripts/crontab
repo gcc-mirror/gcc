@@ -1,7 +1,8 @@
 16  0 * * * sh /home/gccadmin/scripts/update_version_git
 50  0 * * * sh /home/gccadmin/scripts/update_web_docs_git
 55  0 * * * sh /home/gccadmin/scripts/update_web_docs_libstdcxx_git
-32 22 * * 4 sh /home/gccadmin/scripts/gcc_release -s 8:releases/gcc-8 -l -d /sourceware/snapshot-tmp/gcc all
-32 22 * * 5 sh /home/gccadmin/scripts/gcc_release -s 9:releases/gcc-9 -l -d /sourceware/snapshot-tmp/gcc all
-32 22 * * 6 sh /home/gccadmin/scripts/gcc_release -s 10:releases/gcc-10 -l -d /sourceware/snapshot-tmp/gcc all
-32 22 * * 7 sh /home/gccadmin/scripts/gcc_release -s 11:master -l -d /sourceware/snapshot-tmp/gcc all
+32 22 * * 3 sh /home/gccadmin/scripts/gcc_release -s 8:releases/gcc-8 -l -d /sourceware/snapshot-tmp/gcc all
+32 22 * * 4 sh /home/gccadmin/scripts/gcc_release -s 9:releases/gcc-9 -l -d /sourceware/snapshot-tmp/gcc all
+32 22 * * 5 sh /home/gccadmin/scripts/gcc_release -s 10:releases/gcc-10 -l -d /sourceware/snapshot-tmp/gcc all
+32 22 * * 6 sh /home/gccadmin/scripts/gcc_release -s 11:releases/gcc-11 -l -d /sourceware/snapshot-tmp/gcc all
+32 22 * * 7 sh /home/gccadmin/scripts/gcc_release -s 12:master -l -d /sourceware/snapshot-tmp/gcc all

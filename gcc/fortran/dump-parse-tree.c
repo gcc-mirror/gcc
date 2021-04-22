@@ -1332,6 +1332,10 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_DEPEND_IN: fputs ("in:", dumpfile); break;
 	  case OMP_DEPEND_OUT: fputs ("out:", dumpfile); break;
 	  case OMP_DEPEND_INOUT: fputs ("inout:", dumpfile); break;
+	  case OMP_DEPEND_DEPOBJ: fputs ("depobj:", dumpfile); break;
+	  case OMP_DEPEND_MUTEXINOUTSET:
+	    fputs ("mutexinoutset:", dumpfile);
+	    break;
 	  case OMP_DEPEND_SINK_FIRST:
 	    fputs ("sink:", dumpfile);
 	    while (1)
@@ -1754,10 +1758,27 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
       show_expr (omp_clauses->if_exprs[i]);
       fputc (')', dumpfile);
     }
+  if (omp_clauses->destroy)
+    fputs (" DESTROY", dumpfile);
   if (omp_clauses->depend_source)
     fputs (" DEPEND(source)", dumpfile);
   if (omp_clauses->capture)
     fputs (" CAPTURE", dumpfile);
+  if (omp_clauses->depobj_update != OMP_DEPEND_UNSET)
+    {
+      const char *deptype;
+      fputs (" UPDATE(", dumpfile);
+      switch (omp_clauses->depobj_update)
+	{
+	case OMP_DEPEND_IN: deptype = "IN"; break;
+	case OMP_DEPEND_OUT: deptype = "OUT"; break;
+	case OMP_DEPEND_INOUT: deptype = "INOUT"; break;
+	case OMP_DEPEND_MUTEXINOUTSET: deptype = "MUTEXINOUTSET"; break;
+	default: gcc_unreachable ();
+	}
+      fputs (deptype, dumpfile);
+      fputc (')', dumpfile);
+    }
   if (omp_clauses->atomic_op != GFC_OMP_ATOMIC_UNSET)
     {
       const char *atomic_op;
@@ -1831,6 +1852,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_FLUSH: name = "FLUSH"; break;
     case EXEC_OMP_MASTER: name = "MASTER"; break;
     case EXEC_OMP_ORDERED: name = "ORDERED"; break;
+    case EXEC_OMP_DEPOBJ: name = "DEPOBJ"; break;
     case EXEC_OMP_PARALLEL: name = "PARALLEL"; break;
     case EXEC_OMP_PARALLEL_DO: name = "PARALLEL DO"; break;
     case EXEC_OMP_PARALLEL_DO_SIMD: name = "PARALLEL DO SIMD"; break;
@@ -1941,6 +1963,15 @@ show_omp_node (int level, gfc_code *c)
       if (omp_clauses)
 	fprintf (dumpfile, " (%s)", c->ext.omp_clauses->critical_name);
       break;
+    case EXEC_OMP_DEPOBJ:
+      omp_clauses = c->ext.omp_clauses;
+      if (omp_clauses)
+	{
+	  fputc ('(', dumpfile);
+	  show_expr (c->ext.omp_clauses->depobj);
+	  fputc (')', dumpfile);
+	}
+      break;
     case EXEC_OMP_FLUSH:
       if (c->ext.omp_namelist)
 	{
@@ -1969,6 +2000,7 @@ show_omp_node (int level, gfc_code *c)
       || c->op == EXEC_OACC_ENTER_DATA || c->op == EXEC_OACC_EXIT_DATA
       || c->op == EXEC_OMP_TARGET_UPDATE || c->op == EXEC_OMP_TARGET_ENTER_DATA
       || c->op == EXEC_OMP_TARGET_EXIT_DATA || c->op == EXEC_OMP_SCAN
+      || c->op == EXEC_OMP_DEPOBJ
       || (c->op == EXEC_OMP_ORDERED && c->block == NULL))
     return;
   if (c->op == EXEC_OMP_SECTIONS || c->op == EXEC_OMP_PARALLEL_SECTIONS)
@@ -3094,6 +3126,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_CANCELLATION_POINT:
     case EXEC_OMP_BARRIER:
     case EXEC_OMP_CRITICAL:
+    case EXEC_OMP_DEPOBJ:
     case EXEC_OMP_DISTRIBUTE:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:

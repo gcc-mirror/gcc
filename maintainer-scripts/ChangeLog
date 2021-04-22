@@ -1,3 +1,8 @@
+2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Snapshots from trunk are now GCC 12 related.
+	Add GCC 11 snapshots from the respective branch.
+
 2021-04-09  Martin Liska  <mliska@suse.cz>
 
 	* branch_changer.py: Generate URL only when emitting

@@ -44,8 +44,9 @@
 #include <bits/error_constants.h> // for std::errc
 #include <ext/numeric_traits.h>
 
-// FIXME: Define when floating point is supported:
-// #define __cpp_lib_to_chars 201611L
+#if _GLIBCXX_HAVE_USELOCALE
+# define __cpp_lib_to_chars 201611L
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

@@ -895,6 +895,7 @@ decode_omp_directive (void)
     case 'd':
       matchds ("declare reduction", gfc_match_omp_declare_reduction,
 	       ST_OMP_DECLARE_REDUCTION);
+      matcho ("depobj", gfc_match_omp_depobj, ST_OMP_DEPOBJ);
       matchs ("distribute parallel do simd",
 	      gfc_match_omp_distribute_parallel_do_simd,
 	      ST_OMP_DISTRIBUTE_PARALLEL_DO_SIMD);
@@ -1588,7 +1589,7 @@ next_statement (void)
   case ST_ASSIGNMENT: case ST_ARITHMETIC_IF: case ST_WHERE: case ST_FORALL: \
   case ST_LABEL_ASSIGNMENT: case ST_FLUSH: case ST_OMP_FLUSH: \
   case ST_OMP_BARRIER: case ST_OMP_TASKWAIT: case ST_OMP_TASKYIELD: \
-  case ST_OMP_CANCEL: case ST_OMP_CANCELLATION_POINT: \
+  case ST_OMP_CANCEL: case ST_OMP_CANCELLATION_POINT: case ST_OMP_DEPOBJ: \
   case ST_OMP_TARGET_UPDATE: case ST_OMP_TARGET_ENTER_DATA: \
   case ST_OMP_TARGET_EXIT_DATA: case ST_OMP_ORDERED_DEPEND: \
   case ST_ERROR_STOP: case ST_OMP_SCAN: case ST_SYNC_ALL: \
@@ -2284,6 +2285,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_DECLARE_TARGET:
       p = "!$OMP DECLARE TARGET";
+      break;
+    case ST_OMP_DEPOBJ:
+      p = "!$OMP DEPOBJ";
       break;
     case ST_OMP_DISTRIBUTE:
       p = "!$OMP DISTRIBUTE";

@@ -414,7 +414,8 @@ i[34567]86-*-*)
 		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
 		       tsxldtrkintrin.h amxtileintrin.h amxint8intrin.h
 		       amxbf16intrin.h x86gprintrin.h uintrintrin.h
-		       hresetintrin.h keylockerintrin.h avxvnniintrin.h"
+		       hresetintrin.h keylockerintrin.h avxvnniintrin.h
+		       mwaitintrin.h"
 	;;
 x86_64-*-*)
 	cpu_type=i386
@@ -451,7 +452,8 @@ x86_64-*-*)
 		       avx512vp2intersectintrin.h avx512vp2intersectvlintrin.h
 		       tsxldtrkintrin.h amxtileintrin.h amxint8intrin.h
 		       amxbf16intrin.h x86gprintrin.h uintrintrin.h
-		       hresetintrin.h keylockerintrin.h avxvnniintrin.h"
+		       hresetintrin.h keylockerintrin.h avxvnniintrin.h
+		       mwaitintrin.h"
 	;;
 ia64-*-*)
 	extra_headers=ia64intrin.h

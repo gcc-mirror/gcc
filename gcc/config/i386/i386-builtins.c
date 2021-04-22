@@ -628,9 +628,9 @@ ix86_init_mmx_sse_builtins (void)
 			    VOID_FTYPE_VOID, IX86_BUILTIN_MFENCE);
 
   /* SSE3.  */
-  def_builtin (OPTION_MASK_ISA_SSE3, 0, "__builtin_ia32_monitor",
+  def_builtin (0, OPTION_MASK_ISA2_MWAIT, "__builtin_ia32_monitor",
 	       VOID_FTYPE_PCVOID_UNSIGNED_UNSIGNED, IX86_BUILTIN_MONITOR);
-  def_builtin (OPTION_MASK_ISA_SSE3, 0, "__builtin_ia32_mwait",
+  def_builtin (0, OPTION_MASK_ISA2_MWAIT, "__builtin_ia32_mwait",
 	       VOID_FTYPE_UNSIGNED_UNSIGNED, IX86_BUILTIN_MWAIT);
 
   /* AES */
