@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "simple-object.h"
 #include "lto-section-names.h"
 #include "collect-utils.h"
+#include "opts-diagnostic.h"
 
 /* Environment variable, used for passing the names of offload targets from GCC
    driver to lto-wrapper.  */
@@ -1322,6 +1323,23 @@ jobserver_active_p (void)
     return JS_PREFIX "cannot access %<" JS_NEEDLE "%> file descriptors";
 }
 
+/* Print link to -flto documentation with a hint message.  */
+
+void
+print_lto_docs_link ()
+{
+  const char *url = get_option_url (NULL, OPT_flto);
+
+  pretty_printer pp;
+  pp.url_format = URL_FORMAT_DEFAULT;
+  pp_string (&pp, "see the ");
+  pp_begin_url (&pp, url);
+  pp_string (&pp, "%<-flto%> option documentation");
+  pp_end_url (&pp);
+  pp_string (&pp, " for more information");
+  inform (UNKNOWN_LOCATION, pp_formatted_text (&pp));
+}
+
 /* Test that a make command is present and working, return true if so.  */
 
 static bool
@@ -1356,8 +1374,10 @@ run_gcc (unsigned argc, char *argv[])
   char *collect_gcc_options;
   int parallel = 0;
   int jobserver = 0;
+  bool jobserver_requested = false;
   int auto_parallel = 0;
   bool no_partition = false;
+  const char *jobserver_error = NULL;
   vec<cl_decoded_option> fdecoded_options;
   fdecoded_options.create (16);
   vec<cl_decoded_option> offload_fdecoded_options = vNULL;
@@ -1502,6 +1522,7 @@ run_gcc (unsigned argc, char *argv[])
 	    {
 	      parallel = 1;
 	      jobserver = 1;
+	      jobserver_requested = true;
 	    }
 	  else if (strcmp (option->arg, "auto") == 0)
 	    {
@@ -1556,15 +1577,15 @@ run_gcc (unsigned argc, char *argv[])
     {
       lto_mode = LTO_MODE_LTO;
       jobserver = 0;
+      jobserver_requested = false;
       auto_parallel = 0;
       parallel = 0;
     }
   else
     {
-      const char *jobserver_error = jobserver_active_p ();
+      jobserver_error = jobserver_active_p ();
       if (jobserver && jobserver_error != NULL)
 	{
-	  warning (0, jobserver_error);
 	  /* Fall back to auto parallelism.  */
 	  jobserver = 0;
 	  auto_parallel = 1;
@@ -1878,6 +1899,20 @@ cont:
       fclose (stream);
       maybe_unlink (ltrans_output_file);
       ltrans_output_file = NULL;
+
+      if (nr > 1)
+	{
+	  if (jobserver_requested && jobserver_error != NULL)
+	    {
+	      warning (0, jobserver_error);
+	      print_lto_docs_link ();
+	    }
+	  else if (parallel == 0)
+	    {
+	      warning (0, "using serial compilation of %d LTRANS jobs", nr);
+	      print_lto_docs_link ();
+	    }
+	}
 
       if (parallel)
 	{

@@ -3243,8 +3243,12 @@ get_option_html_page (int option_index)
   const cl_option *cl_opt = &cl_options[option_index];
 
   /* Analyzer options are on their own page.  */
-  if (strstr(cl_opt->opt_text, "analyzer-"))
+  if (strstr (cl_opt->opt_text, "analyzer-"))
     return "gcc/Static-Analyzer-Options.html";
+
+  /* Handle -flto= option.  */
+  if (strstr (cl_opt->opt_text, "flto"))
+    return "gcc/Optimize-Options.html";
 
 #ifdef CL_Fortran
   if ((cl_opt->flags & CL_Fortran) != 0
