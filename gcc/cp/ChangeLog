@@ -1,3 +1,21 @@
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-09-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97051
+	* constraint.cc (satisfy_atom): Pass true as the
+	manifestly_const_eval argument to maybe_constant_value.
+
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-07-30  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/95486
+	* pt.c (alias_ctad_tweaks): Call remove_constraints before
+	calling set_constraints.
+
 2021-04-20  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

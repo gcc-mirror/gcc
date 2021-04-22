@@ -1,3 +1,81 @@
+2021-04-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100180
+	* testsuite/experimental/net/internet/address/v6/members.cc:
+	Require gthreads.
+
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::find): Define.
+	(split_view::_OuterIter::operator++): Apply proposed resolution
+	of LWG 3505.
+	* testsuite/std/ranges/adaptors/split.cc (test10): New test.
+
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::find_if): Simplify.
+	(__detail::find_if_not): Likewise.
+	(__detail::min): Remove.
+	(__detail::mismatch): Simplify.
+	(take_view::size): Use std::min instead of __detail::min.
+
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-08  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__returnable_element): New
+	concept.
+	(elements_view): Use this concept in its constraints.  Add
+	missing private access specifier.
+	(elements_view::_S_get_element): Define as per LWG 3502.
+	(elements_view::operator*, elements_view::operator[]): Use
+	_S_get_element.
+	(elements_view::operator++): Remove unnecessary constraint
+	as per LWG 3492.
+	* testsuite/std/ranges/adaptors/elements.cc (test05): New test.
+
+2021-04-21  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2020-10-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/97600
+	* include/std/ranges (basic_istream_view::begin): Initialize
+	_Iterator from 'this' instead of '*this'.
+	(basic_istream_view::_Iterator::_Iterator): Adjust constructor
+	accordingly.
+	(filter_view::_Iterator::_Iterator): Take a filter_view*
+	argument instead of a filter_view& argument.
+	(filter_view::_Sentinel::_Sentinel): Likewise.
+	(filter_view::begin): Initialize _Iterator from 'this' instead
+	of '*this'.
+	(filter_view::end): Likewise.
+	(transform_view::_Iterator::_Iterator): Take a _Parent* instead
+	of a _Parent&.
+	(filter_view::_Iterator::operator+): Adjust accordingly.
+	(filter_view::_Iterator::operator-): Likewise.
+	(filter_view::begin): Initialize _Iterator from 'this' instead
+	of '*this'.
+	(filter_view::end): Likewise.
+	(join_view::_Iterator): Take a _Parent* instead of a _Parent&.
+	(join_view::_Sentinel): Likewise.
+	(join_view::begin): Initialize _Iterator from 'this' instead of
+	'*this'.
+	(join_view::end): Initialize _Sentinel from 'this' instead of
+	'*this'.
+	(split_view::_OuterIter): Take a _Parent& instead of a _Parent*.
+	(split_view::begin): Initialize _OuterIter from 'this' instead
+	of '*this'.
+	(split_view::end): Likewise.
+	* testsuite/std/ranges/97600.cc: New test.
+
 2021-04-19  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/99402
