@@ -1,3 +1,24 @@
+2021-04-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/depobj-1.f90: Use omp_lib's
+	omp_depend_kind instead of defining it as 16.
+
+2021-04-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (offload_target_to_openacc_device_type):
+	New, based on check_effective_target_offload_target_nvptx.
+	(check_effective_target_offload_target_nvptx): Call it.
+	(check_effective_target_offload_target_amdgcn): New.
+	* testsuite/libgomp.c-c++-common/function-not-offloaded.c:
+	Require target offload_target_nvptx || offload_target_amdgcn.
+	* testsuite/libgomp.c-c++-common/variable-not-offloaded.c: Likewise.
+	* testsuite/libgomp.c/pr86416-1.c: Likewise.
+	* testsuite/libgomp.c/pr86416-2.c: Likewise.
+
+2021-04-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/depobj-1.f90: New test.
+
 2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:

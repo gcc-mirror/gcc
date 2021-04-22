@@ -1,3 +1,175 @@
+2021-04-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/i386/darwin.h (TARGET_64BIT): Remove definition
+	based on TARGET_ISA_64BIT.
+	(TARGET_64BIT_P): Remove definition based on
+	TARGET_ISA_64BIT_P().
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (cpuset_popcount): Remove.
+	(init_num_threads): Remove and use hardware_concurrency.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	PR jit/98615
+	* main.c (main): Call toplev::finalize in CHECKING_P mode.
+	* ipa-modref.c (ipa_modref_c_finalize): summaries are NULL
+	when incremental LTO linking happens.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (run_gcc): When -flto=jobserver is used, but the
+	makeserver cannot be detected, then use -flto=N fallback.
+
+2021-04-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* acinclude.m4 (gcc_AC_INITFINI_ARRAY): When cross-compiling,
+	default to yes for aarch64-linux-gnu.
+	* configure: Regenerate.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (cpuset_popcount): Remove.
+	(init_num_threads): Remove and use hardware_concurrency.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.c: Remove superfluous || TARGET_MACHO
+	which remains to be '(... || 0)' and clang complains about it.
+	* dwarf2out.c (AT_vms_delta): Declare conditionally.
+	(add_AT_vms_delta): Likewise.
+	* tree.c (fld_simplified_type): Use rather more common pattern
+	for disabling of something (#if 0).
+	(get_tree_code_name): Likewise.
+	(verify_type_variant): Likewise.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-expand.c (decide_alignment): Use newly named
+	macro TARGET_CPU_P.
+	* config/i386/i386.c (ix86_decompose_address): Likewise.
+	(ix86_address_cost): Likewise.
+	(ix86_lea_outperforms): Likewise.
+	(ix86_avoid_lea_for_addr): Likewise.
+	(ix86_add_stmt_cost): Likewise.
+	* config/i386/i386.h (TARGET_*): Remove.
+	(TARGET_CPU_P): New macro.
+	* config/i386/i386.md: Use newly named macro TARGET_CPU_P.
+	* config/i386/x86-tune-sched-atom.c (do_reorder_for_imul): Likewise.
+	(swap_top_of_ready_list): Likewise.
+	(ix86_atom_sched_reorder): Likewise.
+	* config/i386/x86-tune-sched-bd.c (ix86_bd_has_dispatch): Likewise.
+	* config/i386/x86-tune-sched.c (ix86_adjust_cost): Likewise.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-options.c (TARGET_EXPLICIT_NO_SAHF_P):
+	Define.
+	(SET_TARGET_NO_SAHF): Likewise.
+	(TARGET_EXPLICIT_PREFETCH_SSE_P): Likewise.
+	(SET_TARGET_PREFETCH_SSE): Likewise.
+	(TARGET_EXPLICIT_NO_TUNE_P): Likewise.
+	(SET_TARGET_NO_TUNE): Likewise.
+	(TARGET_EXPLICIT_NO_80387_P): Likewise.
+	(SET_TARGET_NO_80387): Likewise.
+	(DEF_PTA): New.
+	* config/i386/i386.h (TARGET_*): Remove.
+	* opth-gen.awk: Generate new used macros.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386.h (PTA_*): Remove.
+	(enum pta_flag): New.
+	(DEF_PTA): Generate PTA_* values from i386-isa.def.
+	* config/i386/i386-isa.def: New file.
+
+2021-04-21  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99988
+	* config/aarch64/aarch64-bti-insert.c (aarch64_bti_j_insn_p): New.
+	(rest_of_insert_bti): Avoid inserting duplicate bti j insns for
+	jump table targets.
+
+2021-04-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config.gcc: Install mwaitintrin.h for i[34567]86-*-* and
+	x86_64-*-* targets.
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA2_MWAIT_SET):
+	New.
+	(OPTION_MASK_ISA2_MWAIT_UNSET): Likewise.
+	(ix86_handle_option): Handle -mmwait.
+	* config/i386/i386-builtins.c (ix86_init_mmx_sse_builtins):
+	Replace OPTION_MASK_ISA_SSE3 with OPTION_MASK_ISA2_MWAIT on
+	__builtin_ia32_monitor and __builtin_ia32_mwait.
+	* config/i386/i386-options.c (isa2_opts): Add -mmwait.
+	(ix86_valid_target_attribute_inner_p): Likewise.
+	(ix86_option_override_internal): Enable mwait/monitor
+	instructions for -msse3.
+	* config/i386/i386.h (TARGET_MWAIT): New.
+	(TARGET_MWAIT_P): Likewise.
+	* config/i386/i386.opt: Add -mmwait.
+	* config/i386/mwaitintrin.h: New file.
+	* config/i386/pmmintrin.h: Include <mwaitintrin.h>.
+	* config/i386/sse.md (sse3_mwait): Replace TARGET_SSE3 with
+	TARGET_MWAIT.
+	(@sse3_monitor_<mode>): Likewise.
+	* config/i386/x86gprintrin.h: Include <mwaitintrin.h>.
+	* doc/extend.texi: Document mwait target attribute.
+	* doc/invoke.texi: Document -mmwait.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* config/i386/i386-options.c (DEF_ENUM): Remove it.
+	* config/i386/i386-opts.h (DEF_ENUM): Likewise.
+	* config/i386/stringop.def (DEF_ENUM): Likewise.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* tree-cfg.c (gimple_verify_flow_info): Use qD instead
+	of print_generic_expr.
+
+2021-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100148
+	* cprop.c (constprop_register): Use next_nondebug_insn instead of
+	NEXT_INSN.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/98815
+	* cgraphunit.c (cgraph_node::analyze): Remove duplicate
+	free_dominance_info calls.
+
+2021-04-21  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (maybe_fold_reference): Remove is_lhs
+	parameter (and assume it to be false).
+	(fold_gimple_assign): Adjust, remove all callers of
+	maybe_fold_reference calling it with is_lhs true.
+	(gimple_fold_call): Likewise.
+	(fold_stmt_1): Likewise.
+
+2021-04-21  Richard Biener  <rguenther@suse.de>
+
+	* fold-const.c (pedantic_non_lvalue_loc): Remove.
+	(fold_binary_loc): Adjust.
+	(fold_ternary_loc): Likewise.
+
+2021-04-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/100130
+	* varasm.c (get_block_for_decl): Make sure that any use of the
+	retain attribute matches the section's retain flag.
+	(switch_to_section): Check for retain mismatches even when
+	changing sections, but do not warn if the given decl is the
+	section's named.decl.
+	(output_object_block): Pass the first decl in the block (if any)
+	to switch_to_section.
+
 2021-04-20  H.J. Lu  <hjl.tools@gmail.com>
 
 	* config/i386/i386-c.c (ix86_target_macros_internal): Define

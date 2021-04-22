@@ -1550,6 +1550,8 @@ ix86_expand_convert_uns_sixf_sse (rtx, rtx)
   gcc_unreachable ();
 }
 
+static rtx ix86_expand_sse_fabs (rtx op0, rtx *smask);
+
 /* Convert an unsigned SImode value into a DFmode.  Only currently used
    for SSE, but applicable anywhere.  */
 
@@ -1569,6 +1571,11 @@ ix86_expand_convert_uns_sidf_sse (rtx target, rtx input)
   x = const_double_from_real_value (TWO31r, DFmode);
 
   x = expand_simple_binop (DFmode, PLUS, fp, x, target, 0, OPTAB_DIRECT);
+
+  /* Remove the sign with FE_DOWNWARD, where x - x = -0.0.  */
+  if (HONOR_SIGNED_ZEROS (DFmode) && flag_rounding_math)
+    x = ix86_expand_sse_fabs (x, NULL);
+
   if (x != target)
     emit_move_insn (target, x);
 }

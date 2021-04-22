@@ -25,11 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef DARWIN_X86
 #define DARWIN_X86 1
 
-#undef TARGET_64BIT
-#define TARGET_64BIT TARGET_ISA_64BIT
-#undef TARGET_64BIT_P
-#define TARGET_64BIT_P(x) TARGET_ISA_64BIT_P(x)
-
 #ifdef IN_LIBGCC2
 #undef TARGET_64BIT
 #ifdef __x86_64__

@@ -7,7 +7,7 @@
    asks for.
 
    { dg-do compile }
-   { dg-options "-O2 -Wall -Warray-parameter -Wno-vla-paramater" } */
+   { dg-options "-O2 -Wall -Warray-parameter -Wno-vla-parameter" } */
 
 #define NOIPA __attribute__  ((noipa))
 

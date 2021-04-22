@@ -139,12 +139,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 // (e.g. __ulock_wait())which is better than pthread_cond_clockwait
 #endif // ! PLATFORM_TIMED_WAIT
 
-    // returns true if wait ended before timeout
-    template<typename _Dur>
+    // Returns true if wait ended before timeout.
+    // _Clock must be either steady_clock or system_clock.
+    template<typename _Clock, typename _Dur>
       bool
       __cond_wait_until_impl(__condvar& __cv, mutex& __mx,
-	  const chrono::time_point<chrono::steady_clock, _Dur>& __atime)
+			     const chrono::time_point<_Clock, _Dur>& __atime)
       {
+	static_assert(std::__is_one_of<_Clock, chrono::steady_clock,
+					       chrono::system_clock>::value);
+
 	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
 	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
 
@@ -155,12 +159,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  };
 
 #ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
-	__cv.wait_until(__mx, CLOCK_MONOTONIC, __ts);
-	return chrono::steady_clock::now() < __atime;
-#else
-	__cv.wait_until(__mx, __ts);
-	return chrono::system_clock::now() < __atime;
-#endif // ! _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
+	if constexpr (is_same_v<chrono::steady_clock, _Clock>)
+	  __cv.wait_until(__mx, CLOCK_MONOTONIC, __ts);
+	else
+#endif
+	  __cv.wait_until(__mx, __ts);
+	return _Clock::now() < __atime;
       }
 
     // returns true if wait ended before timeout
