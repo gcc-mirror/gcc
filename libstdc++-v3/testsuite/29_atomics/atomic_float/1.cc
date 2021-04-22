@@ -18,6 +18,7 @@
 // { dg-add-options ieee }
 // { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
+// { dg-xfail-run-if "PR100182" { ia32 } }
 
 #include <atomic>
 #include <testsuite_hooks.h>
