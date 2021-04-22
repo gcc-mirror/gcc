@@ -731,7 +731,6 @@ program_state::operator= (const program_state &other)
   return *this;
 }
 
-#if __cplusplus >= 201103
 /* Move constructor for program_state (when building with C++11).  */
 program_state::program_state (program_state &&other)
 : m_region_model (other.m_region_model),
@@ -747,7 +746,6 @@ program_state::program_state (program_state &&other)
 
   m_valid = other.m_valid;
 }
-#endif
 
 /* program_state's dtor.  */
 
