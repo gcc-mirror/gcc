@@ -1,3 +1,66 @@
+2021-04-21  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gfortran.dg/bind_c_array_params_2.f90: Look for AIX-specific call
+	pattern.
+
+2021-04-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96380
+	* g++.dg/cpp0x/enum_base4.C: New test.
+	* g++.dg/cpp0x/enum_base5.C: New test.
+
+2021-04-21  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99988
+	* gcc.target/aarch64/pr99988.c: New test.
+
+2021-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/constexpr-lambda26.C: Add dg-additional-options
+	-fchecking.
+	* g++.dg/cpp1y/auto-fn61.C: Likewise.
+	* g++.dg/cpp2a/nontype-class39.C: Likewise.
+	* g++.dg/cpp0x/constexpr-52830.C: Likewise.
+	* g++.dg/cpp0x/vt-88982.C: Likewise.
+	* c-c++-common/goacc/kernels-decompose-ice-1.c: Add -fchecking to
+	dg-additional-options.
+	* c-c++-common/goacc/kernels-decompose-ice-2.c: Likewise.
+
+2021-04-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/monitor-2.c: New test.
+
+2021-04-21  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/100176
+	* g++.dg/compat/struct-layout-1_generate.c: Add missing return.
+	* gcc.dg/compat/struct-layout-1_generate.c: Likewise.
+
+2021-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100148
+	* g++.dg/opt/pr100148.C: New test.
+
+2021-04-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depobj-1.f90: New test.
+	* gfortran.dg/gomp/depobj-2.f90: New test.
+
+2021-04-21  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/vect/pr71264.c: Xfail on IBM Z due to V4QImode support.
+
+2021-04-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/100130
+	* c-c++-common/attr-retain-10.c: New test.
+	* c-c++-common/attr-retain-11.c: Likewise.
+
+2021-04-21  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/vect/bb-slp-39.c: Change number of times the pattern
+	must match for target IBM Z only.
+
 2021-04-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100109

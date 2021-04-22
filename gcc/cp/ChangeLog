@@ -1,3 +1,24 @@
+2021-04-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96380
+	* parser.c (cp_parser_enum_specifier): Don't allow defining
+	types in enum-base.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* error.c (dump_decl): Use flags in dump_generic_node call.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* error.c (dump_decl): Use flags in dump_generic_node call.
+
+2021-04-21  Martin Liska  <mliska@suse.cz>
+
+	* error.c (dump_decl): Support anonymous labels.
+
 2021-04-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100109
