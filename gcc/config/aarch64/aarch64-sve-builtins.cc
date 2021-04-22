@@ -995,12 +995,29 @@ registered_function &
 function_builder::add_function (const function_instance &instance,
 				const char *name, tree fntype, tree attrs,
 				uint64_t required_extensions,
-				bool overloaded_p)
+				bool overloaded_p,
+				bool placeholder_p)
 {
   unsigned int code = vec_safe_length (registered_functions);
   code = (code << AARCH64_BUILTIN_SHIFT) | AARCH64_BUILTIN_SVE;
-  tree decl = simulate_builtin_function_decl (input_location, name, fntype,
-					      code, NULL, attrs);
+
+  /* We need to be able to generate placeholders to enusre that we have a
+     consistent numbering scheme for function codes between the C and C++
+     frontends, so that everything ties up in LTO.
+
+     Currently, tree-streamer-in.c:unpack_ts_function_decl_value_fields
+     validates that tree nodes returned by TARGET_BUILTIN_DECL are non-NULL and
+     some node other than error_mark_node. This is a holdover from when builtin
+     decls were streamed by code rather than by value.
+
+     Ultimately, we should be able to remove this validation of BUILT_IN_MD
+     nodes and remove the target hook. For now, however, we need to appease the
+     validation and return a non-NULL, non-error_mark_node node, so we
+     arbitrarily choose integer_zero_node.  */
+  tree decl = placeholder_p
+    ? integer_zero_node
+    : simulate_builtin_function_decl (input_location, name, fntype,
+				      code, NULL, attrs);
 
   registered_function &rfn = *ggc_alloc <registered_function> ();
   rfn.instance = instance;
@@ -1032,7 +1049,7 @@ function_builder::add_unique_function (const function_instance &instance,
 					   argument_types.address ());
   tree attrs = get_attributes (instance);
   registered_function &rfn = add_function (instance, name, fntype, attrs,
-					   required_extensions, false);
+					   required_extensions, false, false);
 
   /* Enter the function into the hash table.  */
   hashval_t hash = instance.hash ();
@@ -1043,16 +1060,14 @@ function_builder::add_unique_function (const function_instance &instance,
 
   /* Also add the function under its overloaded alias, if we want
      a separate decl for each instance of an overloaded function.  */
-  if (m_direct_overloads || force_direct_overloads)
+  char *overload_name = get_name (instance, true);
+  if (strcmp (name, overload_name) != 0)
     {
-      char *overload_name = get_name (instance, true);
-      if (strcmp (name, overload_name) != 0)
-	{
-	  /* Attribute lists shouldn't be shared.  */
-	  tree attrs = get_attributes (instance);
-	  add_function (instance, overload_name, fntype, attrs,
-			required_extensions, false);
-	}
+      /* Attribute lists shouldn't be shared.  */
+      tree attrs = get_attributes (instance);
+      bool placeholder_p = !(m_direct_overloads || force_direct_overloads);
+      add_function (instance, overload_name, fntype, attrs,
+		    required_extensions, false, placeholder_p);
     }
 
   obstack_free (&m_string_obstack, name);
@@ -1073,18 +1088,19 @@ function_builder::add_overloaded_function (const function_instance &instance,
 {
   char *name = get_name (instance, true);
   if (registered_function **map_value = m_overload_names.get (name))
-    gcc_assert ((*map_value)->instance == instance
-		&& ((*map_value)->required_extensions
-		    & ~required_extensions) == 0);
+    {
+      gcc_assert ((*map_value)->instance == instance
+		  && ((*map_value)->required_extensions
+		      & ~required_extensions) == 0);
+      obstack_free (&m_string_obstack, name);
+    }
   else
     {
       registered_function &rfn
 	= add_function (instance, name, m_overload_type, NULL_TREE,
-			required_extensions, true);
-      const char *permanent_name = IDENTIFIER_POINTER (DECL_NAME (rfn.decl));
-      m_overload_names.put (permanent_name, &rfn);
+			required_extensions, true, m_direct_overloads);
+      m_overload_names.put (name, &rfn);
     }
-  obstack_free (&m_string_obstack, name);
 }
 
 /* If we are using manual overload resolution, add one function decl
@@ -1094,9 +1110,6 @@ void
 function_builder::add_overloaded_functions (const function_group_info &group,
 					    mode_suffix_index mode)
 {
-  if (m_direct_overloads)
-    return;
-
   unsigned int explicit_type0 = (*group.shape)->explicit_type_suffix_p (0);
   unsigned int explicit_type1 = (*group.shape)->explicit_type_suffix_p (1);
   for (unsigned int pi = 0; group.preds[pi] != NUM_PREDS; ++pi)
