@@ -34,6 +34,7 @@
 #if __cplusplus > 201703L
 #include <bits/semaphore_base.h>
 
+#if __cpp_lib_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -89,5 +90,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
+#endif // cpp_lib_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE
 #endif // C++20
 #endif // _GLIBCXX_SEMAPHORE
