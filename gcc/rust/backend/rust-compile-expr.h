@@ -275,7 +275,12 @@ public:
 	return;
       }
 
-    Btype *array_type = TyTyResolveCompile::compile (ctx, tyty);
+    rust_assert (tyty->get_kind () == TyTy::TypeKind::ARRAY);
+    TyTy::ArrayType *array_tyty = static_cast<TyTy::ArrayType *> (tyty);
+    capacity_expr = array_tyty->get_capacity ();
+
+    Btype *array_type = TyTyResolveCompile::compile (ctx, array_tyty);
+    rust_assert (array_type != nullptr);
 
     expr.get_internal_elements ()->accept_vis (*this);
     std::vector<unsigned long> indexes;
@@ -302,7 +307,11 @@ public:
     Bexpression *translated_expr
       = CompileExpr::Compile (elems.get_elem_to_copy (), ctx);
 
-    for (size_t i = 0; i < elems.get_num_elements (); ++i)
+    size_t capacity;
+    bool ok = ctx->get_backend ()->const_size_cast (capacity_expr, &capacity);
+    rust_assert (ok);
+
+    for (size_t i = 0; i < capacity; ++i)
       constructor.push_back (translated_expr);
   }
 
@@ -786,9 +795,12 @@ public:
   }
 
 private:
-  CompileExpr (Context *ctx) : HIRCompileBase (ctx), translated (nullptr) {}
+  CompileExpr (Context *ctx)
+    : HIRCompileBase (ctx), translated (nullptr), capacity_expr (nullptr)
+  {}
 
   Bexpression *translated;
+  Bexpression *capacity_expr;
   std::vector<Bexpression *> constructor;
 };
 

@@ -217,10 +217,7 @@ public:
       }
   }
 
-  void visit (AST::ArrayType &type) override
-  {
-    type.get_elem_type ()->accept_vis (*this);
-  }
+  void visit (AST::ArrayType &type) override;
 
   void visit (AST::ReferenceType &type) override
   {
