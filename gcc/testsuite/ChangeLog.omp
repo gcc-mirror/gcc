@@ -1,3 +1,38 @@
+2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-04-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/diag-parallelism-1.c: New.
+	* c-c++-common/goacc/acc-icf.c: Specify '-Wopenacc-parallelism',
+	and match diagnostics, as appropriate.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Likewise.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* c-c++-common/goacc/classify-serial.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* c-c++-common/goacc/parallel-dims-1.c: Likewise.
+	* c-c++-common/goacc/parallel-reduction.c: Likewise.
+	* c-c++-common/goacc/pr70688.c: Likewise.
+	* c-c++-common/goacc/routine-1.c: Likewise.
+	* c-c++-common/goacc/routine-level-of-parallelism-2.c: Likewise.
+	* c-c++-common/goacc/uninit-dim-clause.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+	* gfortran.dg/goacc/classify-serial.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+	* gfortran.dg/goacc/parallel-tree.f95: Likewise.
+	* gfortran.dg/goacc/routine-4.f90: Likewise.
+	* gfortran.dg/goacc/routine-level-of-parallelism-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-multiple-directives-1.f90: Likewise.
+	* gfortran.dg/goacc/uninit-dim-clause.f95: Likewise.
+
 2021-04-29  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/classify-serial.c: Surpress warnings.  Dump

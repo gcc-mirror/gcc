@@ -1050,6 +1050,7 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
   check = false;
 #endif
   if (check
+      && warn_openacc_parallelism
       && !lookup_attribute ("oacc kernels", DECL_ATTRIBUTES (fn)))
     {
       static char const *const axes[] =
@@ -1061,13 +1062,13 @@ oacc_validate_dims (tree fn, tree attrs, int *dims, int level, unsigned used)
 	else if ((used & GOMP_DIM_MASK (ix)) && dims[ix] == 1)
 	  /* There is partitioned execution, but the user requested a
 	     dimension size of 1.  They're probably confused.  */
-	  warning_at (DECL_SOURCE_LOCATION (fn), 0,
+	  warning_at (DECL_SOURCE_LOCATION (fn), OPT_Wopenacc_parallelism,
 		      "region contains %s partitioned code but"
 		      " is not %s partitioned", axes[ix], axes[ix]);
 	else if (!(used & GOMP_DIM_MASK (ix)) && dims[ix] != 1)
 	  /* The dimension is explicitly partitioned to non-unity, but
 	     no use is made within the region.  */
-	  warning_at (DECL_SOURCE_LOCATION (fn), 0,
+	  warning_at (DECL_SOURCE_LOCATION (fn), OPT_Wopenacc_parallelism,
 		      "region is %s partitioned but"
 		      " does not contain %s partitioned code",
 		      axes[ix], axes[ix]);

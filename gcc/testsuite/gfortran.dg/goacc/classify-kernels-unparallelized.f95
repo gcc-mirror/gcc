@@ -8,6 +8,9 @@
 ! { dg-additional-options "-fdump-tree-parloops1-all" }
 ! { dg-additional-options "-fdump-tree-oaccloops" }
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 program main
   implicit none
   integer, parameter :: n = 1024

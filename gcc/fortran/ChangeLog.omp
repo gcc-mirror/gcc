@@ -1,3 +1,10 @@
+2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-04-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt (Wopenacc-parallelism): New.
+
 2021-04-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

@@ -1,23 +1,23 @@
 ! { dg-additional-options "-Wuninitialized" }
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 subroutine acc_parallel
   implicit none
   integer :: i, j, k
 
-  !$acc parallel loop gang num_gangs(i) ! { dg-warning "is used uninitialized" }
-  do i = 0, 1
-  end do
-  !$acc end parallel loop
+  !$acc parallel num_gangs(i) ! { dg-warning "is used uninitialized" }
+  ! { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } .-1 }
+  !$acc end parallel
 
-  !$acc parallel loop worker num_workers(j) ! { dg-warning "is used uninitialized" }
-  do j = 0, 1
-  end do
-  !$acc end parallel loop
+  !$acc parallel num_workers(j) ! { dg-warning "is used uninitialized" }
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
+  !$acc end parallel
 
-  !$acc parallel loop vector vector_length(k) ! { dg-warning "is used uninitialized" }
-  do k = 0, 1
-  end do
-  !$acc end parallel loop
+  !$acc parallel vector_length(k) ! { dg-warning "is used uninitialized" }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 }
+  !$acc end parallel
 end subroutine acc_parallel
 
 subroutine acc_kernels

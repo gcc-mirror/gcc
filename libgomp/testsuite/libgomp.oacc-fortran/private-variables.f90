@@ -2,6 +2,9 @@
 
 ! { dg-do run }
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 
 ! Test of gang-private variables declared on loop directive.
 
@@ -13,8 +16,8 @@ subroutine t1()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 15 }
-  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 15 }
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 }
   !$acc loop gang private(x)
   do i = 1, 32
      x = i * 2;
@@ -39,7 +42,7 @@ subroutine t2()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 41 }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 }
   !$acc loop gang private(x)
   do i = 0, 31
      x = i * 2;
@@ -68,7 +71,7 @@ subroutine t3()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 70 }
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
   !$acc loop gang private(x)
   do i = 0, 31
      x = i * 2;
@@ -102,7 +105,7 @@ subroutine t4()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 104 }
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
   !$acc loop gang private(pt)
   do i = 0, 31
      pt%x = i
@@ -213,7 +216,7 @@ subroutine t7()
   end do
 
   !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
-  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 215 }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 }
   !$acc loop gang private(x)
   do i = 0, 31
      !$acc loop worker private(x)
@@ -513,8 +516,8 @@ subroutine t14()
   end do
 
   !$acc parallel private(x) copy(arr) num_gangs(n) num_workers(8) vector_length(32)
-  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 515 }
-  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 515 }
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 }
     !$acc loop gang(static:1)
     do i = 1, n
       x = i * 2;

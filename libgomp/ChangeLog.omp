@@ -1,6 +1,46 @@
 2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2021-04-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/firstprivate-1.c: Specify
+	'-Wopenacc-parallelism', and match diagnostics, as appropriate.
+	* testsuite/libgomp.oacc-c-c++-common/loop-auto-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-red-w-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/loop-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/mode-transitions.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/par-reduction-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-reduction.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/private-variables.c:
+	Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/reduction-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-g-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-w-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/static-variable-1.c:
+	Likewise.
+	* testsuite/libgomp.oacc-fortran/optional-private.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-1.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-reduction.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/pr84028.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/private-variables.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/reduction-6.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/routine-7.f90: Likewise.
+
+2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2021-04-16  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/par-reduction-1.c: Don't

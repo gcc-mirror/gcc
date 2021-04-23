@@ -1,3 +1,12 @@
+2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-04-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-offload.c (oacc_validate_dims): Implement
+	'-Wopenacc-parallelism'.
+	* doc/invoke.texi (-Wopenacc-parallelism): Document.
+
 2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-low.c (is_oacc_parallel_or_serial): Handle

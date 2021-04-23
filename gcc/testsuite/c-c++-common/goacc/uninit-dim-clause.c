@@ -1,20 +1,23 @@
 /* { dg-additional-options "-Wuninitialized" } */
 
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 void acc_parallel()
 {
   int i, j, k;
 
-  #pragma acc parallel loop gang num_gangs(i) /* { dg-warning "is used uninitialized" } */
-  for (i = 0; i < 1; i++)
-    ;
+  #pragma acc parallel num_gangs(i) /* { dg-warning "is used uninitialized" } */
+  /* { dg-warning "region is gang partitioned but does not contain gang partitioned code" "" { target *-*-* } .-1 } */
+  ;
 
-  #pragma acc parallel loop worker num_workers(j) /* { dg-warning "is used uninitialized" } */
-  for (j = 0; j < 1; j++)
-    ;
+  #pragma acc parallel num_workers(j) /* { dg-warning "is used uninitialized" } */
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 } */
+  ;
 
-  #pragma acc parallel loop vector vector_length(k) /* { dg-warning "is used uninitialized" } */
-  for (k = 0; k < 1; k++)
-    ;
+  #pragma acc parallel vector_length(k) /* { dg-warning "is used uninitialized" } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 } */
+  ;
 }
 
 void acc_kernels()

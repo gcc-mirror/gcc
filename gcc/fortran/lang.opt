@@ -289,6 +289,10 @@ Wopenacc-kernels-annotate-loops
 Fortran
 ; Documented in C
 
+Wopenacc-parallelism
+Fortran
+; Documented in C
+
 Wopenmp-simd
 Fortran
 ; Documented in C

@@ -1,5 +1,8 @@
 ! Test invalid calls to routines.
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 module param
   integer, parameter :: N = 32
 end module param

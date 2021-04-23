@@ -1,5 +1,8 @@
 /* Tests of reduction on loop directive.  */
 
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 #include <assert.h>
 
 
@@ -14,8 +17,8 @@ void g_np_1()
     arr[i] = i;
 
   #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
-  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 16 } */
-  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 16 } */
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 } */
   {
     #pragma acc loop gang reduction(+:res)
     for (i = 0; i < 1024; i++)
@@ -30,8 +33,8 @@ void g_np_1()
   res = hres = 1;
 
   #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
-  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 32 } */
-  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 32 } */
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 } */
   {
     #pragma acc loop gang reduction(*:res)
     for (i = 0; i < 12; i++)
@@ -56,7 +59,7 @@ void gv_np_1()
     arr[i] = i;
 
   #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
-  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 58 } */
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 } */
   {
     #pragma acc loop gang vector reduction(+:res)
     for (i = 0; i < 1024; i++)
@@ -81,7 +84,7 @@ void gw_np_1()
     arr[i] = i;
 
   #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32)
-  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 83 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 } */
   {
     #pragma acc loop gang worker reduction(+:res)
     for (i = 0; i < 1024; i++)
@@ -245,7 +248,7 @@ void v_p_1()
 
   #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
 		       private(res) copyout(out)
-  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "worker" { target *-*-* } 246 } */
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-2 } */
   {
     #pragma acc loop gang
     for (j = 0; j < 32; j++)
@@ -322,7 +325,7 @@ void w_p_1()
 
   #pragma acc parallel num_gangs(32) num_workers(32) vector_length(32) \
 		       private(res) copyout(out)
-  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } 323 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 } */
   {
     #pragma acc loop gang
     for (j = 0; j < 32; j++)

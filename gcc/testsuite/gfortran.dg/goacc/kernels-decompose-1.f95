@@ -5,6 +5,9 @@
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
 ! { dg-additional-options "-fdump-tree-omp_oacc_kernels_decompose" }
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 ! See also '../../c-c++-common/goacc/kernels-decompose-1.c'.
 
 ! It's only with Tcl 8.5 (released in 2007) that "the variable 'varName'

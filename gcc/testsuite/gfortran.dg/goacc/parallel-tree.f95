@@ -2,6 +2,9 @@
 
 ! test for tree-dump-original and spaces-commas
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 program test
   implicit none
   integer :: q, i, j, k, m, n, o, p, r, s, t, u, v, w

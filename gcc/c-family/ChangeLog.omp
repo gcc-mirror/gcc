@@ -1,3 +1,10 @@
+2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-04-23  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c.opt (Wopenacc-parallelism): New.
+
 2020-08-30  Sandra Loosemore  <sandra@codesourcery.com>
 
 	* c-omp.c (end_test_ok_for_annotation_r): New.
