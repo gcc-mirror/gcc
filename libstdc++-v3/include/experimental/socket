@@ -954,7 +954,7 @@ inline namespace v1
 	    }
 
 	  get_executor().context().async_wait( native_handle(),
-	      socket_base::wait_read,
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                __ep = std::move(__endpoint),
                __fd = native_handle()]
@@ -1165,7 +1165,7 @@ inline namespace v1
             __init{__token};
 
 	  this->get_executor().context().async_wait(this->native_handle(),
-	      socket_base::wait_read,
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __fd = this->native_handle()]
@@ -1271,7 +1271,7 @@ inline namespace v1
             __init{__token};
 
 	  this->get_executor().context().async_wait( this->native_handle(),
-	      socket_base::wait_read,
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __sender = std::move(__sender),
@@ -1366,7 +1366,7 @@ inline namespace v1
             __init{__token};
 
 	  this->get_executor().context().async_wait( this->native_handle(),
-	      socket_base::wait_write,
+	      (int) socket_base::wait_write,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __fd = this->native_handle()]
@@ -1469,7 +1469,7 @@ inline namespace v1
             __init{__token};
 
 	  this->get_executor().context().async_wait( this->native_handle(),
-	      socket_base::wait_write,
+	      (int) socket_base::wait_write,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __recipient = std::move(__recipient),
@@ -1634,7 +1634,7 @@ inline namespace v1
 	    }
 
           this->get_executor().context().async_wait(this->native_handle(),
-	      socket_base::wait_read,
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __fd = this->native_handle()]
@@ -1741,7 +1741,7 @@ inline namespace v1
 	    }
 
           this->get_executor().context().async_wait(this->native_handle(),
-	      socket_base::wait_write,
+	      (int) socket_base::wait_write,
 	      [__h = std::move(__init.completion_handler),
                &__buffers, __flags = static_cast<int>(__flags),
                __fd = this->native_handle()]
@@ -2098,8 +2098,8 @@ inline namespace v1
           async_completion<_CompletionToken, void(error_code, socket_type)>
             __init{__token};
 
-	  __ctx.get_executor().context().async_wait(native_handle(),
-	      socket_base::wait_read,
+	  __ctx.async_wait(native_handle(),
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
                __connabort = enable_connection_aborted(),
                __fd = native_handle(),
@@ -2189,8 +2189,8 @@ inline namespace v1
           async_completion<_CompletionToken, void(error_code, socket_type)>
             __init{__token};
 
-	  __ctx.get_executor().context().async_wait(native_handle(),
-	      socket_base::wait_read,
+	  __ctx.async_wait(native_handle(),
+	      (int) socket_base::wait_read,
 	      [__h = std::move(__init.completion_handler),
               __ep = std::move(__endpoint),
                __connabort = enable_connection_aborted(),
