@@ -19,4 +19,4 @@ void foo_d (void)
   __atomic_store_n (&d.ll, tmp.ll, __ATOMIC_SEQ_CST);
 }
 
-/* { dg-final { scan-assembler-not "(fistp|fild)" } } */
+/* { dg-final { scan-assembler-not "(fistp|fild)" { xfail *-*-* } } } */
