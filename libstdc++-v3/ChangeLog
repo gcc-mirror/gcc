@@ -1,3 +1,42 @@
+2021-04-22  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	Backported from master:
+	2021-04-22  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	* include/bits/atomic_wait.h: Always notify waiters in the
+	case of 'bare' address notification.
+
+2021-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100179
+	* include/bits/semaphore_base.h: Remove #error.
+	* include/std/semaphore: Do not define anything unless one of
+	the implementations is available.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100182
+	* testsuite/29_atomics/atomic_float/1.cc: Add dg-xfail-run-if for
+	ia32.
+	* testsuite/29_atomics/atomic_float/wait_notify.cc: Add dg-skip-if for
+	ia32.
+
+2021-04-22  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	Backported from master:
+	2021-04-21  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	* include/bits/semaphore_base.h: Always reload __old in
+	__atomic_semaphore::_S_do_try_acquire().
+	* testsuite/30_threads/stop_token/stop_callback/destroy.cc:
+	re-enable testcase.
+
 2021-04-21  Thomas Rodgers  <rodgert@twrodgers.com>
 
 	Backported from master:

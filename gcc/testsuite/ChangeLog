@@ -1,3 +1,20 @@
+2021-04-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-04-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/set_vm_limit.c (set_vm_limit): Call getrlimit, use
+	obtained hard limit, and only call setrlimit if new softlimit is lower.
+
+2021-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-22  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/100176
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c: Add
+	missing return.
+
 2021-04-21  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

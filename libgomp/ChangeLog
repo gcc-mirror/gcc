@@ -1,3 +1,11 @@
+2021-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-22  Richard Biener  <rguenther@suse.de>
+
+	* testsuite/libgomp.c-c++-common/reduction-16.c: Use -latomic
+	only on nvptx-none.
+
 2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:
