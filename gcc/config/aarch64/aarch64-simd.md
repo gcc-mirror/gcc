@@ -35,6 +35,17 @@
 		&& aarch64_mem_pair_operand (operands[0], DImode))
 	       || known_eq (GET_MODE_SIZE (<MODE>mode), 8))))
       operands[1] = force_reg (<MODE>mode, operands[1]);
+
+  /* If a constant is too complex to force to memory (e.g. because it
+     contains CONST_POLY_INTs), build it up from individual elements instead.
+     We should only need to do this before RA; aarch64_legitimate_constant_p
+     should ensure that we don't try to rematerialize the constant later.  */
+  if (GET_CODE (operands[1]) == CONST_VECTOR
+      && targetm.cannot_force_const_mem (<MODE>mode, operands[1]))
+    {
+      aarch64_expand_vector_init (operands[0], operands[1]);
+      DONE;
+    }
   "
 )
 

@@ -46,11 +46,11 @@ rtx_vector_builder::build (rtvec v)
 
 rtx
 rtx_vector_builder::apply_step (rtx base, unsigned int factor,
-				const wide_int &step) const
+				const poly_wide_int &step) const
 {
   scalar_int_mode int_mode = as_a <scalar_int_mode> (GET_MODE_INNER (m_mode));
-  return immed_wide_int_const (wi::add (rtx_mode_t (base, int_mode),
-					factor * step),
+  return immed_wide_int_const (wi::to_poly_wide (base, int_mode)
+			       + factor * step,
 			       int_mode);
 }
 
