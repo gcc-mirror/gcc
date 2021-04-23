@@ -1537,38 +1537,36 @@ pp_cxx_parameter_declaration (cxx_pretty_printer *pp, tree t)
 static void
 pp_cxx_parameter_declaration_clause (cxx_pretty_printer *pp, tree t)
 {
-  tree args;
-  tree types;
-  bool abstract;
-
-  // For a requires clause or the explicit printing of a parameter list
-  // we expect T to be a chain of PARM_DECLs. Otherwise, the list of
-  // args and types are taken from the function decl T.
-  if (TREE_CODE (t) == PARM_DECL)
+  gcc_assert (FUNC_OR_METHOD_TYPE_P (t) || TREE_CODE (t) == FUNCTION_DECL);
+  tree types, args;
+  if (TYPE_P (t))
     {
-      args = t;
-      types = t;
-      abstract = false;
+      types = TYPE_ARG_TYPES (t);
+      args = NULL_TREE;
     }
   else
     {
-      bool type_p = TYPE_P (t);
-      args = type_p ? NULL : FUNCTION_FIRST_USER_PARM (t);
-      types = type_p ? TYPE_ARG_TYPES (t) : FUNCTION_FIRST_USER_PARMTYPE (t);
-      abstract = args == NULL || pp->flags & pp_c_flag_abstract;
+      types = FUNCTION_FIRST_USER_PARMTYPE (t);
+      args = FUNCTION_FIRST_USER_PARM (t);
     }
-  bool first = true;
+  bool abstract = !args || (pp->flags & pp_c_flag_abstract);
 
   /* Skip artificial parameter for non-static member functions.  */
   if (TREE_CODE (t) == METHOD_TYPE)
     types = TREE_CHAIN (types);
 
+  bool first = true;
   pp_cxx_left_paren (pp);
-  for (; args; args = TREE_CHAIN (args), types = TREE_CHAIN (types))
+  for (; types != void_list_node; types = TREE_CHAIN (types))
     {
       if (!first)
 	pp_cxx_separate_with (pp, ',');
       first = false;
+      if (!types)
+	{
+	  pp_cxx_ws_string (pp, "...");
+	  break;
+	}
       pp_cxx_parameter_declaration (pp, abstract ? TREE_VALUE (types) : args);
       if (!abstract && pp->flags & pp_cxx_flag_default_argument)
 	{
@@ -1577,6 +1575,8 @@ pp_cxx_parameter_declaration_clause (cxx_pretty_printer *pp, tree t)
 	  pp_cxx_whitespace (pp);
 	  pp->assignment_expression (TREE_PURPOSE (types));
 	}
+      if (!abstract)
+	args = TREE_CHAIN (args);
     }
   pp_cxx_right_paren (pp);
 }
@@ -2775,9 +2775,18 @@ void
 pp_cxx_requires_expr (cxx_pretty_printer *pp, tree t)
 {
   pp_string (pp, "requires");
-  if (tree parms = TREE_OPERAND (t, 0))
+  if (tree parms = REQUIRES_EXPR_PARMS (t))
     {
-      pp_cxx_parameter_declaration_clause (pp, parms);
+      bool first = true;
+      pp_cxx_left_paren (pp);
+      for (; parms; parms = TREE_CHAIN (parms))
+	{
+	  if (!first)
+	    pp_cxx_separate_with (pp, ',' );
+	  first = false;
+	  pp_cxx_parameter_declaration (pp, parms);
+	}
+      pp_cxx_right_paren (pp);
       pp_cxx_whitespace (pp);
     }
   pp_cxx_requirement_body (pp, TREE_OPERAND (t, 1));
