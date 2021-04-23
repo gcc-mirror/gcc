@@ -1177,11 +1177,11 @@ package Sem_Util is
    --  arise during normal compilation of semantically correct programs.
 
    type Range_Nodes is record
-      L, H : Node_Id; -- First and Last nodes of a discrete_range
+      First, Last : Node_Id; -- First and Last nodes of a discrete_range
    end record;
 
    type Range_Values is record
-      L, H : Uint; -- First and Last values of a discrete_range
+      First, Last : Uint; -- First and Last values of a discrete_range
    end record;
 
    function Get_Index_Bounds

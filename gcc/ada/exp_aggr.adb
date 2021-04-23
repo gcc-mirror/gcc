@@ -375,15 +375,6 @@ package body Exp_Aggr is
    --  specifically optimized for the target.
 
    function Aggr_Assignment_OK_For_Backend (N : Node_Id) return Boolean is
-      Csiz      : Uint := No_Uint;
-      Ctyp      : Entity_Id;
-      Expr      : Node_Id;
-      High      : Node_Id;
-      Index     : Entity_Id;
-      Low       : Node_Id;
-      Nunits    : Int;
-      Remainder : Uint;
-      Value     : Uint;
 
       function Is_OK_Aggregate (Aggr : Node_Id) return Boolean;
       --  Return true if Aggr is suitable for back-end assignment
@@ -422,6 +413,15 @@ package body Exp_Aggr is
          return Nkind (First (Assoc)) /= N_Iterated_Component_Association;
       end Is_OK_Aggregate;
 
+      Bounds    : Range_Nodes;
+      Csiz      : Uint := No_Uint;
+      Ctyp      : Entity_Id;
+      Expr      : Node_Id;
+      Index     : Entity_Id;
+      Nunits    : Int;
+      Remainder : Uint;
+      Value     : Uint;
+
    --  Start of processing for Aggr_Assignment_OK_For_Backend
 
    begin
@@ -444,9 +444,9 @@ package body Exp_Aggr is
 
          Index := First_Index (Ctyp);
          while Present (Index) loop
-            Get_Index_Bounds (Index, Low, High);
+            Bounds := Get_Index_Bounds (Index);
 
-            if Is_Null_Range (Low, High) then
+            if Is_Null_Range (Bounds.First, Bounds.Last) then
                return False;
             end if;
 
@@ -2282,9 +2282,11 @@ package body Exp_Aggr is
       Assoc  : Node_Id;
       Choice : Node_Id;
       Expr   : Node_Id;
-      High   : Node_Id;
-      Low    : Node_Id;
       Typ    : Entity_Id;
+
+      Bounds : Range_Nodes;
+      Low    : Node_Id renames Bounds.First;
+      High   : Node_Id renames Bounds.Last;
 
       Nb_Choices : Nat := 0;
       Table      : Case_Table_Type (1 .. Number_Of_Choices (N));
@@ -2347,7 +2349,7 @@ package body Exp_Aggr is
                   exit;
                end if;
 
-               Get_Index_Bounds (Choice, Low, High);
+               Bounds := Get_Index_Bounds (Choice);
 
                if Low /= High then
                   Set_Loop_Actions (Assoc, New_List);
@@ -4508,11 +4510,9 @@ package body Exp_Aggr is
       Is_Array : constant Boolean := Is_Array_Type (Etype (N));
 
       Aggr_In     : Node_Id;
-      Aggr_Lo     : Node_Id;
-      Aggr_Hi     : Node_Id;
+      Aggr_Bounds : Range_Nodes;
       Obj_In      : Node_Id;
-      Obj_Lo      : Node_Id;
-      Obj_Hi      : Node_Id;
+      Obj_Bounds  : Range_Nodes;
       Parent_Kind : Node_Kind;
       Parent_Node : Node_Id;
 
@@ -4823,16 +4823,17 @@ package body Exp_Aggr is
          end if;
 
          while Present (Aggr_In) loop
-            Get_Index_Bounds (Aggr_In, Aggr_Lo, Aggr_Hi);
-            Get_Index_Bounds (Obj_In, Obj_Lo, Obj_Hi);
+            Aggr_Bounds := Get_Index_Bounds (Aggr_In);
+            Obj_Bounds := Get_Index_Bounds (Obj_In);
 
             --  We require static bounds for the target and a static matching
             --  of low bound for the aggregate.
 
-            if not Compile_Time_Known_Value (Obj_Lo)
-              or else not Compile_Time_Known_Value (Obj_Hi)
-              or else not Compile_Time_Known_Value (Aggr_Lo)
-              or else Expr_Value (Aggr_Lo) /= Expr_Value (Obj_Lo)
+            if not Compile_Time_Known_Value (Obj_Bounds.First)
+              or else not Compile_Time_Known_Value (Obj_Bounds.Last)
+              or else not Compile_Time_Known_Value (Aggr_Bounds.First)
+              or else Expr_Value (Aggr_Bounds.First) /=
+                      Expr_Value (Obj_Bounds.First)
             then
                return False;
 
@@ -4848,8 +4849,9 @@ package body Exp_Aggr is
             elsif Parent_Kind = N_Assignment_Statement
               or else Is_Constrained (Etype (Parent_Node))
             then
-               if not Compile_Time_Known_Value (Aggr_Hi)
-                 or else Expr_Value (Aggr_Hi) /= Expr_Value (Obj_Hi)
+               if not Compile_Time_Known_Value (Aggr_Bounds.Last)
+                 or else Expr_Value (Aggr_Bounds.Last) /=
+                         Expr_Value (Obj_Bounds.Last)
                then
                   return False;
                end if;
@@ -5692,7 +5694,7 @@ package body Exp_Aggr is
       --  type using the computable sizes of the aggregate and its sub-
       --  aggregates.
 
-      procedure Check_Bounds (Aggr_Bounds : Node_Id; Index_Bounds : Node_Id);
+      procedure Check_Bounds (Aggr_Bounds_Node, Index_Bounds_Node : Node_Id);
       --  Checks that the bounds of Aggr_Bounds are within the bounds defined
       --  by Index_Bounds.
 
@@ -5792,55 +5794,58 @@ package body Exp_Aggr is
       -- Check_Bounds --
       ------------------
 
-      procedure Check_Bounds (Aggr_Bounds : Node_Id; Index_Bounds : Node_Id) is
-         Aggr_Lo : Node_Id;
-         Aggr_Hi : Node_Id;
+      procedure Check_Bounds (Aggr_Bounds_Node, Index_Bounds_Node : Node_Id) is
+         Aggr_Bounds : constant Range_Nodes :=
+           Get_Index_Bounds (Aggr_Bounds_Node);
+         Ind_Bounds  : constant Range_Nodes :=
+           Get_Index_Bounds (Index_Bounds_Node);
 
-         Ind_Lo  : Node_Id;
-         Ind_Hi  : Node_Id;
-
-         Cond    : Node_Id := Empty;
+         Cond : Node_Id := Empty;
 
       begin
-         Get_Index_Bounds (Aggr_Bounds, Aggr_Lo, Aggr_Hi);
-         Get_Index_Bounds (Index_Bounds, Ind_Lo, Ind_Hi);
-
          --  Generate the following test:
 
          --    [constraint_error when
-         --      Aggr_Lo <= Aggr_Hi and then
-         --        (Aggr_Lo < Ind_Lo or else Aggr_Hi > Ind_Hi)]
+         --      Aggr_Bounds.First <= Aggr_Bounds.Last and then
+         --        (Aggr_Bounds.First < Ind_Bounds.First
+         --         or else Aggr_Bounds.Last > Ind_Bounds.Last)]
 
          --  As an optimization try to see if some tests are trivially vacuous
          --  because we are comparing an expression against itself.
 
-         if Aggr_Lo = Ind_Lo and then Aggr_Hi = Ind_Hi then
+         if Aggr_Bounds.First = Ind_Bounds.First
+           and then Aggr_Bounds.Last = Ind_Bounds.Last
+         then
             Cond := Empty;
 
-         elsif Aggr_Hi = Ind_Hi then
+         elsif Aggr_Bounds.Last = Ind_Bounds.Last then
             Cond :=
               Make_Op_Lt (Loc,
-                Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Lo),
-                Right_Opnd => Duplicate_Subexpr_Move_Checks (Ind_Lo));
+                Left_Opnd  =>
+                  Duplicate_Subexpr_Move_Checks (Aggr_Bounds.First),
+                Right_Opnd =>
+                  Duplicate_Subexpr_Move_Checks (Ind_Bounds.First));
 
-         elsif Aggr_Lo = Ind_Lo then
+         elsif Aggr_Bounds.First = Ind_Bounds.First then
             Cond :=
               Make_Op_Gt (Loc,
-                Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Hi),
-                Right_Opnd => Duplicate_Subexpr_Move_Checks (Ind_Hi));
+                Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Bounds.Last),
+                Right_Opnd => Duplicate_Subexpr_Move_Checks (Ind_Bounds.Last));
 
          else
             Cond :=
               Make_Or_Else (Loc,
                 Left_Opnd =>
                   Make_Op_Lt (Loc,
-                    Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Lo),
-                    Right_Opnd => Duplicate_Subexpr_Move_Checks (Ind_Lo)),
+                    Left_Opnd  =>
+                      Duplicate_Subexpr_Move_Checks (Aggr_Bounds.First),
+                    Right_Opnd =>
+                      Duplicate_Subexpr_Move_Checks (Ind_Bounds.First)),
 
                 Right_Opnd =>
                   Make_Op_Gt (Loc,
-                    Left_Opnd  => Duplicate_Subexpr (Aggr_Hi),
-                    Right_Opnd => Duplicate_Subexpr (Ind_Hi)));
+                    Left_Opnd  => Duplicate_Subexpr (Aggr_Bounds.Last),
+                    Right_Opnd => Duplicate_Subexpr (Ind_Bounds.Last)));
          end if;
 
          if Present (Cond) then
@@ -5848,8 +5853,10 @@ package body Exp_Aggr is
               Make_And_Then (Loc,
                 Left_Opnd =>
                   Make_Op_Le (Loc,
-                    Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Lo),
-                    Right_Opnd => Duplicate_Subexpr_Move_Checks (Aggr_Hi)),
+                    Left_Opnd  =>
+                      Duplicate_Subexpr_Move_Checks (Aggr_Bounds.First),
+                    Right_Opnd =>
+                      Duplicate_Subexpr_Move_Checks (Aggr_Bounds.Last)),
 
                 Right_Opnd => Cond);
 
@@ -6116,8 +6123,6 @@ package body Exp_Aggr is
                --  Used to sort all the different choice values
 
                J    : Pos := 1;
-               Low  : Node_Id;
-               High : Node_Id;
 
             begin
                Assoc := First (Component_Associations (Sub_Aggr));
@@ -6128,9 +6133,13 @@ package body Exp_Aggr is
                         exit;
                      end if;
 
-                     Get_Index_Bounds (Choice, Low, High);
-                     Table (J).Choice_Lo := Low;
-                     Table (J).Choice_Hi := High;
+                     declare
+                        Bounds : constant Range_Nodes :=
+                          Get_Index_Bounds (Choice);
+                     begin
+                        Table (J).Choice_Lo := Bounds.First;
+                        Table (J).Choice_Hi := Bounds.Last;
+                     end;
 
                      J := J + 1;
                      Next (Choice);
@@ -9144,14 +9153,6 @@ package body Exp_Aggr is
       declare
          Csiz  : constant Nat := UI_To_Int (Component_Size (Typ));
 
-         Lo : Node_Id;
-         Hi : Node_Id;
-         --  Bounds of index type
-
-         Lob : Uint;
-         Hib : Uint;
-         --  Values of bounds if compile time known
-
          function Get_Component_Val (N : Node_Id) return Uint;
          --  Given a expression value N of the component type Ctyp, returns a
          --  value of Csiz (component size) bits representing this value. If
@@ -9193,147 +9194,154 @@ package body Exp_Aggr is
             return Val mod Uint_2 ** Csiz;
          end Get_Component_Val;
 
+         Bounds : constant Range_Nodes := Get_Index_Bounds (First_Index (Typ));
+
       --  Here we know we have a one dimensional bit packed array
 
       begin
-         Get_Index_Bounds (First_Index (Typ), Lo, Hi);
-
          --  Cannot do anything if bounds are dynamic
 
-         if not Compile_Time_Known_Value (Lo)
-              or else
-            not Compile_Time_Known_Value (Hi)
+         if not (Compile_Time_Known_Value (Bounds.First)
+                   and then
+                 Compile_Time_Known_Value (Bounds.Last))
          then
             return False;
          end if;
-
-         --  Or are silly out of range of int bounds
-
-         Lob := Expr_Value (Lo);
-         Hib := Expr_Value (Hi);
-
-         if not UI_Is_In_Int_Range (Lob)
-              or else
-            not UI_Is_In_Int_Range (Hib)
-         then
-            return False;
-         end if;
-
-         --  At this stage we have a suitable aggregate for handling at compile
-         --  time. The only remaining checks are that the values of expressions
-         --  in the aggregate are compile-time known (checks are performed by
-         --  Get_Component_Val), and that any subtypes or ranges are statically
-         --  known.
-
-         --  If the aggregate is not fully positional at this stage, then
-         --  convert it to positional form. Either this will fail, in which
-         --  case we can do nothing, or it will succeed, in which case we have
-         --  succeeded in handling the aggregate and transforming it into a
-         --  modular value, or it will stay an aggregate, in which case we
-         --  have failed to create a packed value for it.
-
-         if Present (Component_Associations (N)) then
-            Convert_To_Positional (N, Handle_Bit_Packed => True);
-            return Nkind (N) /= N_Aggregate;
-         end if;
-
-         --  Otherwise we are all positional, so convert to proper value
 
          declare
-            Lov : constant Int := UI_To_Int (Lob);
-            Hiv : constant Int := UI_To_Int (Hib);
-
-            Len : constant Nat := Int'Max (0, Hiv - Lov + 1);
-            --  The length of the array (number of elements)
-
-            Aggregate_Val : Uint;
-            --  Value of aggregate. The value is set in the low order bits of
-            --  this value. For the little-endian case, the values are stored
-            --  from low-order to high-order and for the big-endian case the
-            --  values are stored from high-order to low-order. Note that gigi
-            --  will take care of the conversions to left justify the value in
-            --  the big endian case (because of left justified modular type
-            --  processing), so we do not have to worry about that here.
-
-            Lit : Node_Id;
-            --  Integer literal for resulting constructed value
-
-            Shift : Nat;
-            --  Shift count from low order for next value
-
-            Incr : Int;
-            --  Shift increment for loop
-
-            Expr : Node_Id;
-            --  Next expression from positional parameters of aggregate
-
-            Left_Justified : Boolean;
-            --  Set True if we are filling the high order bits of the target
-            --  value (i.e. the value is left justified).
-
+            Bounds_Vals : Range_Values;
+            --  Compile-time known values of bounds
          begin
-            --  For little endian, we fill up the low order bits of the target
-            --  value. For big endian we fill up the high order bits of the
-            --  target value (which is a left justified modular value).
+            --  Or are silly out of range of int bounds
 
-            Left_Justified := Bytes_Big_Endian;
+            Bounds_Vals.First := Expr_Value (Bounds.First);
+            Bounds_Vals.Last := Expr_Value (Bounds.Last);
 
-            --  Switch justification if using -gnatd8
-
-            if Debug_Flag_8 then
-               Left_Justified := not Left_Justified;
+            if not UI_Is_In_Int_Range (Bounds_Vals.First)
+                 or else
+               not UI_Is_In_Int_Range (Bounds_Vals.Last)
+            then
+               return False;
             end if;
 
-            --  Switch justfification if reverse storage order
+            --  At this stage we have a suitable aggregate for handling at
+            --  compile time. The only remaining checks are that the values of
+            --  expressions in the aggregate are compile-time known (checks are
+            --  performed by Get_Component_Val), and that any subtypes or
+            --  ranges are statically known.
 
-            if Reverse_Storage_Order (Base_Type (Typ)) then
-               Left_Justified := not Left_Justified;
+            --  If the aggregate is not fully positional at this stage, then
+            --  convert it to positional form. Either this will fail, in which
+            --  case we can do nothing, or it will succeed, in which case we
+            --  have succeeded in handling the aggregate and transforming it
+            --  into a modular value, or it will stay an aggregate, in which
+            --  case we have failed to create a packed value for it.
+
+            if Present (Component_Associations (N)) then
+               Convert_To_Positional (N, Handle_Bit_Packed => True);
+               return Nkind (N) /= N_Aggregate;
             end if;
 
-            if Left_Justified then
-               Shift := Csiz * (Len - 1);
-               Incr  := -Csiz;
-            else
-               Shift := 0;
-               Incr  := +Csiz;
-            end if;
+            --  Otherwise we are all positional, so convert to proper value
 
-            --  Loop to set the values
+            declare
+               Len : constant Nat :=
+                 Int'Max (0, UI_To_Int (Bounds_Vals.Last) -
+                             UI_To_Int (Bounds_Vals.First) + 1);
+               --  The length of the array (number of elements)
 
-            if Len = 0 then
-               Aggregate_Val := Uint_0;
-            else
-               Expr := First (Expressions (N));
-               Aggregate_Val := Get_Component_Val (Expr) * Uint_2 ** Shift;
+               Aggregate_Val : Uint;
+               --  Value of aggregate. The value is set in the low order bits
+               --  of this value. For the little-endian case, the values are
+               --  stored from low-order to high-order and for the big-endian
+               --  case the values are stored from high order to low order.
+               --  Note that gigi will take care of the conversions to left
+               --  justify the value in the big endian case (because of left
+               --  justified modular type processing), so we do not have to
+               --  worry about that here.
 
-               for J in 2 .. Len loop
-                  Shift := Shift + Incr;
-                  Next (Expr);
-                  Aggregate_Val :=
-                    Aggregate_Val + Get_Component_Val (Expr) * Uint_2 ** Shift;
-               end loop;
-            end if;
+               Lit : Node_Id;
+               --  Integer literal for resulting constructed value
 
-            --  Now we can rewrite with the proper value
+               Shift : Nat;
+               --  Shift count from low order for next value
 
-            Lit := Make_Integer_Literal (Loc, Intval => Aggregate_Val);
-            Set_Print_In_Hex (Lit);
+               Incr : Int;
+               --  Shift increment for loop
 
-            --  Construct the expression using this literal. Note that it is
-            --  important to qualify the literal with its proper modular type
-            --  since universal integer does not have the required range and
-            --  also this is a left justified modular type, which is important
-            --  in the big-endian case.
+               Expr : Node_Id;
+               --  Next expression from positional parameters of aggregate
 
-            Rewrite (N,
-              Unchecked_Convert_To (Typ,
-                Make_Qualified_Expression (Loc,
-                  Subtype_Mark =>
-                    New_Occurrence_Of (Packed_Array_Impl_Type (Typ), Loc),
-                  Expression   => Lit)));
+               Left_Justified : Boolean;
+               --  Set True if we are filling the high order bits of the target
+               --  value (i.e. the value is left justified).
 
-            Analyze_And_Resolve (N, Typ);
-            return True;
+            begin
+               --  For little endian, we fill up the low order bits of the
+               --  target value. For big endian we fill up the high order bits
+               --  of the target value (which is a left justified modular
+               --  value).
+
+               Left_Justified := Bytes_Big_Endian;
+
+               --  Switch justification if using -gnatd8
+
+               if Debug_Flag_8 then
+                  Left_Justified := not Left_Justified;
+               end if;
+
+               --  Switch justfification if reverse storage order
+
+               if Reverse_Storage_Order (Base_Type (Typ)) then
+                  Left_Justified := not Left_Justified;
+               end if;
+
+               if Left_Justified then
+                  Shift := Csiz * (Len - 1);
+                  Incr  := -Csiz;
+               else
+                  Shift := 0;
+                  Incr  := +Csiz;
+               end if;
+
+               --  Loop to set the values
+
+               if Len = 0 then
+                  Aggregate_Val := Uint_0;
+               else
+                  Expr := First (Expressions (N));
+                  Aggregate_Val := Get_Component_Val (Expr) * Uint_2 ** Shift;
+
+                  for J in 2 .. Len loop
+                     Shift := Shift + Incr;
+                     Next (Expr);
+                     Aggregate_Val :=
+                       Aggregate_Val +
+                       Get_Component_Val (Expr) * Uint_2 ** Shift;
+                  end loop;
+               end if;
+
+               --  Now we can rewrite with the proper value
+
+               Lit := Make_Integer_Literal (Loc, Intval => Aggregate_Val);
+               Set_Print_In_Hex (Lit);
+
+               --  Construct the expression using this literal. Note that it
+               --  is important to qualify the literal with its proper modular
+               --  type since universal integer does not have the required
+               --  range and also this is a left justified modular type,
+               --  which is important in the big-endian case.
+
+               Rewrite (N,
+                 Unchecked_Convert_To (Typ,
+                   Make_Qualified_Expression (Loc,
+                     Subtype_Mark =>
+                       New_Occurrence_Of (Packed_Array_Impl_Type (Typ), Loc),
+                     Expression   => Lit)));
+
+               Analyze_And_Resolve (N, Typ);
+               return True;
+            end;
          end;
       end;
 
@@ -9408,8 +9416,6 @@ package body Exp_Aggr is
      (Obj_Type : Entity_Id;
       Typ      : Entity_Id) return Boolean
    is
-      L1, L2, H1, H2 : Node_Id;
-
    begin
       --  No sliding if the type of the object is not established yet, if it is
       --  an unconstrained type whose actual subtype comes from the aggregate,
@@ -9427,20 +9433,25 @@ package body Exp_Aggr is
       else
          --  Sliding can only occur along the first dimension
 
-         Get_Index_Bounds (First_Index (Typ), L1, H1);
-         Get_Index_Bounds (First_Index (Obj_Type), L2, H2);
+         declare
+            Bounds1 : constant Range_Nodes :=
+              Get_Index_Bounds (First_Index (Typ));
+            Bounds2 : constant Range_Nodes :=
+              Get_Index_Bounds (First_Index (Obj_Type));
 
-         if not Is_OK_Static_Expression (L1) or else
-            not Is_OK_Static_Expression (L2) or else
-            not Is_OK_Static_Expression (H1) or else
-            not Is_OK_Static_Expression (H2)
-         then
-            return False;
-         else
-            return Expr_Value (L1) /= Expr_Value (L2)
-                     or else
-                   Expr_Value (H1) /= Expr_Value (H2);
-         end if;
+         begin
+            if not Is_OK_Static_Expression (Bounds1.First) or else
+               not Is_OK_Static_Expression (Bounds2.First) or else
+               not Is_OK_Static_Expression (Bounds1.Last) or else
+               not Is_OK_Static_Expression (Bounds2.Last)
+            then
+               return False;
+            else
+               return Expr_Value (Bounds1.First) /= Expr_Value (Bounds2.First)
+                        or else
+                      Expr_Value (Bounds1.Last) /= Expr_Value (Bounds2.Last);
+            end if;
+         end;
       end if;
    end Must_Slide;
 

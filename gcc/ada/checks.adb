@@ -9931,8 +9931,7 @@ package body Checks is
 
             declare
                Indx_Type : Node_Id;
-               Lo        : Node_Id;
-               Hi        : Node_Id;
+               Bounds    : Range_Nodes;
                Do_Expand : Boolean := False;
 
             begin
@@ -9942,37 +9941,38 @@ package body Checks is
                   Next_Index (Indx_Type);
                end loop;
 
-               Get_Index_Bounds (Indx_Type, Lo, Hi);
+               Bounds := Get_Index_Bounds (Indx_Type);
 
-               if Nkind (Lo) = N_Identifier
-                 and then Ekind (Entity (Lo)) = E_In_Parameter
+               if Nkind (Bounds.First) = N_Identifier
+                 and then Ekind (Entity (Bounds.First)) = E_In_Parameter
                then
-                  Lo := Get_Discriminal (E, Lo);
+                  Bounds.First := Get_Discriminal (E, Bounds.First);
                   Do_Expand := True;
                end if;
 
-               if Nkind (Hi) = N_Identifier
-                 and then Ekind (Entity (Hi)) = E_In_Parameter
+               if Nkind (Bounds.Last) = N_Identifier
+                 and then Ekind (Entity (Bounds.Last)) = E_In_Parameter
                then
-                  Hi := Get_Discriminal (E, Hi);
+                  Bounds.Last := Get_Discriminal (E, Bounds.Last);
                   Do_Expand := True;
                end if;
 
                if Do_Expand then
-                  if not Is_Entity_Name (Lo) then
-                     Lo := Duplicate_Subexpr_No_Checks (Lo);
+                  if not Is_Entity_Name (Bounds.First) then
+                     Bounds.First :=
+                       Duplicate_Subexpr_No_Checks (Bounds.First);
                   end if;
 
-                  if not Is_Entity_Name (Hi) then
-                     Lo := Duplicate_Subexpr_No_Checks (Hi);
+                  if not Is_Entity_Name (Bounds.Last) then
+                     Bounds.First := Duplicate_Subexpr_No_Checks (Bounds.Last);
                   end if;
 
                   N :=
                     Make_Op_Add (Loc,
                       Left_Opnd =>
                         Make_Op_Subtract (Loc,
-                          Left_Opnd  => Hi,
-                          Right_Opnd => Lo),
+                          Left_Opnd  => Bounds.Last,
+                          Right_Opnd => Bounds.First),
 
                       Right_Opnd => Make_Integer_Literal (Loc, 1));
                   return N;
@@ -10215,10 +10215,8 @@ package body Checks is
 
                   L_Index  : Node_Id;
                   R_Index  : Node_Id;
-                  L_Low    : Node_Id;
-                  L_High   : Node_Id;
-                  R_Low    : Node_Id;
-                  R_High   : Node_Id;
+                  L_Bounds : Range_Nodes;
+                  R_Bounds : Range_Nodes;
                   L_Length : Uint;
                   R_Length : Uint;
                   Ref_Node : Node_Id;
@@ -10250,29 +10248,33 @@ package body Checks is
                                or else
                              Nkind (R_Index) = N_Raise_Constraint_Error)
                      then
-                        Get_Index_Bounds (L_Index, L_Low, L_High);
-                        Get_Index_Bounds (R_Index, R_Low, R_High);
+                        L_Bounds := Get_Index_Bounds (L_Index);
+                        R_Bounds := Get_Index_Bounds (R_Index);
 
                         --  Deal with compile time length check. Note that we
                         --  skip this in the access case, because the access
                         --  value may be null, so we cannot know statically.
 
                         if not Do_Access
-                          and then Compile_Time_Known_Value (L_Low)
-                          and then Compile_Time_Known_Value (L_High)
-                          and then Compile_Time_Known_Value (R_Low)
-                          and then Compile_Time_Known_Value (R_High)
+                          and then Compile_Time_Known_Value (L_Bounds.First)
+                          and then Compile_Time_Known_Value (L_Bounds.Last)
+                          and then Compile_Time_Known_Value (R_Bounds.First)
+                          and then Compile_Time_Known_Value (R_Bounds.Last)
                         then
-                           if Expr_Value (L_High) >= Expr_Value (L_Low) then
-                              L_Length := Expr_Value (L_High) -
-                                          Expr_Value (L_Low) + 1;
+                           if Expr_Value (L_Bounds.Last) >=
+                              Expr_Value (L_Bounds.First)
+                           then
+                              L_Length := Expr_Value (L_Bounds.Last) -
+                                          Expr_Value (L_Bounds.First) + 1;
                            else
                               L_Length := UI_From_Int (0);
                            end if;
 
-                           if Expr_Value (R_High) >= Expr_Value (R_Low) then
-                              R_Length := Expr_Value (R_High) -
-                                          Expr_Value (R_Low) + 1;
+                           if Expr_Value (R_Bounds.Last) >=
+                              Expr_Value (R_Bounds.First)
+                           then
+                              R_Length := Expr_Value (R_Bounds.Last) -
+                                          Expr_Value (R_Bounds.First) + 1;
                            else
                               R_Length := UI_From_Int (0);
                            end if;
@@ -10304,8 +10306,9 @@ package body Checks is
                             (Etype (L_Index), Etype (R_Index))
 
                           and then not
-                            (Same_Bounds (L_Low, R_Low)
-                              and then Same_Bounds (L_High, R_High))
+                            (Same_Bounds (L_Bounds.First, R_Bounds.First)
+                              and then
+                             Same_Bounds (L_Bounds.Last, R_Bounds.Last))
                         then
                            Evolve_Or_Else
                              (Cond, Length_E_Cond (Exptyp, T_Typ, Indx));

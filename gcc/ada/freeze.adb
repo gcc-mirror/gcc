@@ -867,11 +867,8 @@ package body Freeze is
       ----------------
 
       function Size_Known (T : Entity_Id) return Boolean is
-         Index : Entity_Id;
          Comp  : Entity_Id;
          Ctyp  : Entity_Id;
-         Low   : Node_Id;
-         High  : Node_Id;
 
       begin
          if Size_Known_At_Compile_Time (T) then
@@ -918,8 +915,11 @@ package body Freeze is
             --  thus may be packable).
 
             declare
-               Size : Uint := Component_Size (T);
-               Dim  : Uint;
+               Index : Entity_Id;
+               Low   : Node_Id;
+               High  : Node_Id;
+               Size  : Uint := Component_Size (T);
+               Dim   : Uint;
 
             begin
                Index := First_Index (T);

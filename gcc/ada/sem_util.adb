@@ -10978,7 +10978,7 @@ package body Sem_Util is
       Use_Full_View : Boolean := False) return Range_Nodes is
       Result : Range_Nodes;
    begin
-      Get_Index_Bounds (N, Result.L, Result.H, Use_Full_View);
+      Get_Index_Bounds (N, Result.First, Result.Last, Use_Full_View);
       return Result;
    end Get_Index_Bounds;
 
@@ -10987,7 +10987,7 @@ package body Sem_Util is
       Use_Full_View : Boolean := False) return Range_Values is
       Nodes : constant Range_Nodes := Get_Index_Bounds (N, Use_Full_View);
    begin
-      return (Expr_Value (Nodes.L), Expr_Value (Nodes.H));
+      return (Expr_Value (Nodes.First), Expr_Value (Nodes.Last));
    end Get_Index_Bounds;
 
    -----------------------------
