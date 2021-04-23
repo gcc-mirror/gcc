@@ -2312,6 +2312,9 @@ ix86_option_override_internal (bool main_args_p,
 	opts->x_ix86_isa_flags
 	  |= TARGET_SUBTARGET64_ISA_DEFAULT & ~opts->x_ix86_isa_flags_explicit;
 
+      if (!TARGET_128BIT_LONG_DOUBLE_P (opts->x_target_flags))
+	error ("%<-m96bit-long-double%> is not compatible with this target");
+
       if (TARGET_RTD_P (opts->x_target_flags))
 	warning (0,
 		 main_args_p
