@@ -1,3 +1,28 @@
+2021-04-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix71.h (PREFERRED_DEBUGGING_TYPE): Change to
+	DWARF2_DEBUG.
+	* config/rs6000/aix72.h (PREFERRED_DEBUGGING_TYPE): Same.
+
+2021-04-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config.gcc (powerpc-ibm-aix6.*): Remove.
+	* config/rs6000/aix61.h: Delete.
+
+2021-04-22  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100159
+	PR testsuite/100192
+	* builtins.c (expand_builtin): Fix typos and missing comments.
+	* dwarf2out.c (gen_subprogram_die): Likewise.
+	(gen_struct_or_union_type_die): Likewise.
+
+2021-04-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100119
+	* config/i386/i386-expand.c (ix86_expand_convert_uns_sidf_sse):
+	Remove the sign with FE_DOWNWARD, where x - x = -0.0.
+
 2021-04-21  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/i386/darwin.h (TARGET_64BIT): Remove definition

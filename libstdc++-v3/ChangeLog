@@ -1,3 +1,52 @@
+2021-04-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/os/aix/atomicity.h: Delete.
+
+2021-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_timed_wait.h (__cond_wait_until_impl):
+	Handle system_clock as well as steady_clock.
+	* testsuite/30_threads/semaphore/try_acquire_for.cc: Re-enable.
+	* testsuite/30_threads/semaphore/try_acquire_until.cc:
+	Re-enable.
+
+2021-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/30_threads/semaphore/try_acquire_posix.cc: Add
+	options for libatomic.
+
+2021-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/os/gnu-linux/os_defines.h: Fix type in comment.
+
+2021-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99006
+	* include/bits/shared_ptr.h (allocate_shared): Assert that _Tp
+	is not an array type.
+	* include/bits/shared_ptr_base.h (__allocate_shared): Likewise.
+	* testsuite/20_util/shared_ptr/creation/99006.cc: New test.
+
+2021-04-22  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	* include/bits/atomic_wait.h: Always notify waiters in the
+	case of 'bare' address notification.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100182
+	* testsuite/29_atomics/atomic_float/1.cc: Add dg-xfail-run-if for
+	ia32.
+	* testsuite/29_atomics/atomic_float/wait_notify.cc: Add dg-skip-if for
+	ia32.
+
+2021-04-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100179
+	* include/bits/semaphore_base.h: Remove #error.
+	* include/std/semaphore: Do not define anything unless one of
+	the implementations is available.
+
 2021-04-21  Thomas Rodgers  <rodgert@twrodgers.com>
 
 	* include/bits/semaphore_base.h: Always reload __old in
