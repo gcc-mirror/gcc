@@ -4096,8 +4096,6 @@ pass_profile::execute (function *fun)
   if (dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (dump_file, NULL, 0);
 
-  mark_irreducible_loops ();
-
   nb_loops = number_of_loops (fun);
   if (nb_loops > 1)
     scev_initialize ();
@@ -4319,8 +4317,6 @@ report_predictor_hitrates (void)
   loop_optimizer_init (LOOPS_NORMAL);
   if (dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (dump_file, NULL, 0);
-
-  mark_irreducible_loops ();
 
   nb_loops = number_of_loops (cfun);
   if (nb_loops > 1)
