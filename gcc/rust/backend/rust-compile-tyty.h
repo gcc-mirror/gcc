@@ -222,6 +222,11 @@ public:
       = backend->named_type ("str", raw_str, Linemap::predeclared_location ());
   }
 
+  void visit (TyTy::NeverType &) override
+  {
+    translated = backend->void_type ();
+  }
+
 private:
   TyTyCompile (::Backend *backend)
     : backend (backend), translated (nullptr),

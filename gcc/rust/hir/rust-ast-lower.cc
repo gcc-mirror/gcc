@@ -90,7 +90,7 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
     return true;
   });
 
-  bool tail_reachable = expr.has_tail_expr () && !block_did_terminate;
+  bool tail_reachable = !block_did_terminate;
   if (expr.has_tail_expr () && block_did_terminate)
     {
       // warning unreachable tail expressions

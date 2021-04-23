@@ -107,7 +107,7 @@ public:
       return true;
     });
 
-    if (expr.has_expr () && expr.tail_expr_reachable ())
+    if (expr.has_expr ())
       {
 	dump += indent ();
 	expr.expr->accept_vis (*this);

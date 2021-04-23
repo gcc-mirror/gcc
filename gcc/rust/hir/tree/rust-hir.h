@@ -723,6 +723,8 @@ public:
    * methods. */
   virtual Location get_locus_slow () const { return Location (); }
 
+  virtual bool is_unit_check_needed () const { return false; }
+
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
 
 protected:

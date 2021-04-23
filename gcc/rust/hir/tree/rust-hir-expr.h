@@ -2489,7 +2489,7 @@ public:
   std::vector<Attribute> inner_attrs;
 
   std::vector<std::unique_ptr<Stmt> > statements;
-  std::unique_ptr<ExprWithoutBlock> expr; // inlined from Statements
+  std::unique_ptr<Expr> expr; // inlined from Statements
 
   bool tail_reachable;
   Location locus;
@@ -2502,11 +2502,11 @@ public:
   // Returns whether the block contains an expression
   bool has_expr () const { return expr != nullptr; }
 
-  bool tail_expr_reachable () const { return tail_reachable; }
+  bool is_tail_reachable () const { return tail_reachable; }
 
   BlockExpr (Analysis::NodeMapping mappings,
 	     std::vector<std::unique_ptr<Stmt> > block_statements,
-	     std::unique_ptr<ExprWithoutBlock> block_expr, bool tail_reachable,
+	     std::unique_ptr<Expr> block_expr, bool tail_reachable,
 	     std::vector<Attribute> inner_attribs,
 	     std::vector<Attribute> outer_attribs, Location locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
@@ -2522,7 +2522,7 @@ public:
   {
     // guard to protect from null pointer dereference
     if (other.expr != nullptr)
-      expr = other.expr->clone_expr_without_block ();
+      expr = other.expr->clone_expr ();
 
     statements.reserve (other.statements.size ());
     for (const auto &e : other.statements)
@@ -2534,7 +2534,7 @@ public:
   {
     ExprWithBlock::operator= (other);
     // statements = other.statements;
-    expr = other.expr->clone_expr_without_block ();
+    expr = other.expr->clone_expr ();
     inner_attrs = other.inner_attrs;
     locus = other.locus;
     // outer_attrs = other.outer_attrs;
@@ -2580,7 +2580,7 @@ public:
     return statements[statements.size () - 1]->get_locus_slow ();
   }
 
-  std::unique_ptr<ExprWithoutBlock> &get_final_expr () { return expr; }
+  std::unique_ptr<Expr> &get_final_expr () { return expr; }
 
   std::vector<std::unique_ptr<Stmt> > &get_statements () { return statements; }
 

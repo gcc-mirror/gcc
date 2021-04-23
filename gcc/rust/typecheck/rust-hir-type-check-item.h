@@ -82,7 +82,8 @@ public:
 
     context->pop_return_type ();
 
-    expected_ret_tyty->unify (block_expr_ty);
+    if (block_expr_ty->get_kind () != TyTy::NEVER)
+      expected_ret_tyty->unify (block_expr_ty);
   }
 
 private:

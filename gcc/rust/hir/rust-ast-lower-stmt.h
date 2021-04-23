@@ -59,7 +59,8 @@ public:
     translated
       = new HIR::ExprStmtWithBlock (mapping,
 				    std::unique_ptr<HIR::ExprWithBlock> (expr),
-				    stmt.get_locus ());
+				    stmt.get_locus (),
+				    !stmt.is_semicolon_followed ());
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       stmt.get_locus ());
     mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);

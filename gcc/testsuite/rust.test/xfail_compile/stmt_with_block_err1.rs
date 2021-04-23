@@ -4,9 +4,14 @@ fn test(x: i32) -> i32 {
     } else {
         2
     }
+
+    { // { dg-error "expected .... got .<integer>." }
+        3
+    }
+
     3
 }
 
 fn main() {
-    let a = test(1);
+    let a = test(0);
 }

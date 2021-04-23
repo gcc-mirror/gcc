@@ -124,14 +124,7 @@ TypeResolution::Resolve (HIR::Crate &crate)
 void
 TypeCheckExpr::visit (HIR::BlockExpr &expr)
 {
-  TyTy::BaseType *block_tyty
-    = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
-
   expr.iterate_stmts ([&] (HIR::Stmt *s) mutable -> bool {
-    bool is_final_stmt = expr.is_final_stmt (s);
-    bool has_final_expr = expr.has_expr () && expr.tail_expr_reachable ();
-    bool stmt_is_final_expr = is_final_stmt && !has_final_expr;
-
     auto resolved = TypeCheckStmt::Resolve (s, inside_loop);
     if (resolved == nullptr)
       {
@@ -139,29 +132,23 @@ TypeCheckExpr::visit (HIR::BlockExpr &expr)
 	return false;
       }
 
-    if (stmt_is_final_expr)
+    if (s->is_unit_check_needed () && !resolved->is_unit ())
       {
-	delete block_tyty;
-	block_tyty = resolved;
-      }
-    else if (!resolved->is_unit ())
-      {
-	rust_error_at (s->get_locus_slow (), "expected () got %s",
-		       resolved->as_string ().c_str ());
+	auto unit = new TyTy::TupleType (s->get_mappings ().get_hirid ());
+	resolved = unit->unify (resolved);
       }
 
     return true;
   });
 
   if (expr.has_expr ())
-    {
-      delete block_tyty;
-
-      block_tyty
-	= TypeCheckExpr::Resolve (expr.get_final_expr ().get (), inside_loop);
-    }
-
-  infered = block_tyty->clone ();
+    infered
+      = TypeCheckExpr::Resolve (expr.get_final_expr ().get (), inside_loop)
+	  ->clone ();
+  else if (expr.is_tail_reachable ())
+    infered = new TyTy::TupleType (expr.get_mappings ().get_hirid ());
+  else
+    infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
 }
 
 // RUST_HIR_TYPE_CHECK_STRUCT_FIELD

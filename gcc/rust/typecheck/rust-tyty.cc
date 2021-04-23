@@ -1316,6 +1316,38 @@ StrType::is_equal (const BaseType &other) const
   return get_kind () == other.get_kind ();
 }
 
+void
+NeverType::accept_vis (TyVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+std::string
+NeverType::as_string () const
+{
+  return "!";
+}
+
+BaseType *
+NeverType::unify (BaseType *other)
+{
+  NeverRules r (this);
+  return r.unify (other);
+}
+
+bool
+NeverType::can_eq (BaseType *other)
+{
+  NeverCmp r (this);
+  return r.can_eq (other);
+}
+
+BaseType *
+NeverType::clone ()
+{
+  return new NeverType (get_ref (), get_ty_ref (), get_combined_refs ());
+}
+
 // rust-tyty-call.h
 
 void

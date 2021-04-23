@@ -269,14 +269,17 @@ protected:
 class ExprStmtWithBlock : public ExprStmt
 {
   std::unique_ptr<ExprWithBlock> expr;
+  bool semicolon_followed;
 
 public:
   std::string as_string () const override;
 
   std::vector<LetStmt *> locals;
 
-  ExprStmtWithBlock (std::unique_ptr<ExprWithBlock> expr, Location locus)
-    : ExprStmt (locus), expr (std::move (expr))
+  ExprStmtWithBlock (std::unique_ptr<ExprWithBlock> expr, Location locus,
+		     bool semicolon_followed)
+    : ExprStmt (locus), expr (std::move (expr)),
+      semicolon_followed (semicolon_followed)
   {}
 
   // Copy constructor with clone
@@ -317,6 +320,8 @@ public:
     rust_assert (expr != nullptr);
     return expr;
   }
+
+  bool is_semicolon_followed () const { return semicolon_followed; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

@@ -501,6 +501,11 @@ public:
     translated = compiled_type;
   }
 
+  void visit (TyTy::NeverType &) override
+  {
+    translated = ctx->get_backend ()->void_type ();
+  }
+
 private:
   TyTyResolveCompile (Context *ctx) : ctx (ctx), translated (nullptr) {}
 

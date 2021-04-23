@@ -193,13 +193,16 @@ protected:
 class ExprStmtWithBlock : public ExprStmt
 {
   std::unique_ptr<ExprWithBlock> expr;
+  bool must_be_unit;
 
 public:
   std::string as_string () const override;
 
   ExprStmtWithBlock (Analysis::NodeMapping mappings,
-		     std::unique_ptr<ExprWithBlock> expr, Location locus)
-    : ExprStmt (std::move (mappings), locus), expr (std::move (expr))
+		     std::unique_ptr<ExprWithBlock> expr, Location locus,
+		     bool must_be_unit)
+    : ExprStmt (std::move (mappings), locus), expr (std::move (expr)),
+      must_be_unit (must_be_unit)
   {}
 
   // Copy constructor with clone
@@ -223,6 +226,8 @@ public:
   void accept_vis (HIRVisitor &vis) override;
 
   ExprWithBlock *get_expr () { return expr.get (); }
+
+  bool is_unit_check_needed () const override { return must_be_unit; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather

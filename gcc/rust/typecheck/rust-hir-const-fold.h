@@ -183,6 +183,8 @@ public:
       = backend->named_type ("str", raw_str, Linemap::predeclared_location ());
   }
 
+  void visit (TyTy::NeverType &) override { gcc_unreachable (); }
+
 private:
   ConstFoldType (::Backend *backend)
     : backend (backend), translated (backend->error_type ())
