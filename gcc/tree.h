@@ -4714,7 +4714,6 @@ extern tree first_field (const_tree);
 extern bool initializer_zerop (const_tree, bool * = NULL);
 extern bool initializer_each_zero_or_onep (const_tree);
 
-extern wide_int vector_cst_int_elt (const_tree, unsigned int);
 extern tree vector_cst_elt (const_tree, unsigned int);
 
 /* Given a vector VEC, return its first element if all elements are
