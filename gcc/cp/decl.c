@@ -6191,7 +6191,13 @@ is_direct_enum_init (tree type, tree init)
       && ENUM_FIXED_UNDERLYING_TYPE_P (type)
       && TREE_CODE (init) == CONSTRUCTOR
       && CONSTRUCTOR_IS_DIRECT_INIT (init)
-      && CONSTRUCTOR_NELTS (init) == 1)
+      && CONSTRUCTOR_NELTS (init) == 1
+      /* DR 2374: The single element needs to be implicitly
+	 convertible to the underlying type of the enum.  */
+      && can_convert_arg (ENUM_UNDERLYING_TYPE (type),
+			  TREE_TYPE (CONSTRUCTOR_ELT (init, 0)->value),
+			  CONSTRUCTOR_ELT (init, 0)->value,
+			  LOOKUP_IMPLICIT, tf_none))
     return true;
   return false;
 }
