@@ -1,3 +1,13 @@
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/100114
+	* sanitizer_common/sanitizer_posix_libcdep.cc: Cherry-pick
+	llvm-project revisions 82150606fb11d28813ae6da1101f5bda638165fe
+	and b93629dd335ffee2fc4b9b619bf86c3f9e6b0023.
+
 2020-03-04  Release Manager
 
 	* GCC 8.4.0 released.

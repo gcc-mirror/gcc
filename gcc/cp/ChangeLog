@@ -1,3 +1,131 @@
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99833
+	* pt.c (extract_locals_r): When handling DECL_EXPR of a structured
+	binding, add to data.internal also all corresponding structured
+	binding decls.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99790
+	* cp-gimplify.c (cp_gimplify_expr): Handle PTRMEM_CST.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99745
+	* decl2.c (grokbitfield): Diagnose bitfields containing bare parameter
+	packs and don't set DECL_BIT_FIELD_REPRESENTATIVE in that case.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99650
+	* decl.c (cp_finish_decomp): Diagnose void initializers when
+	using tuple_element and get.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99613
+	* decl.c (expand_static_init): For thread guards, call __cxa_atexit
+	before calling __cxa_guard_release rather than after it.  Formatting
+	fixes.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82959
+	* call.c (op_is_ordered): Handle TRUTH_ANDIF_EXPR, TRUTH_ORIF_EXPR
+	and COMPOUND_EXPR.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95451
+	* lambda.c (is_lambda_ignored_entity): Before checking for
+	LAMBDA_FUNCTION_P, use OVL_FIRST.  Drop FUNCTION_DECL check.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/99106
+	* init.c (build_zero_init_1): For flexible array members just return
+	NULL_TREE instead of returning empty CONSTRUCTOR with non-complete
+	ARRAY_TYPE.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/99033
+	* init.c (build_zero_init_1): Handle zero initialiation of
+	flexible array members like initialization of [0] arrays.
+	Use integer_minus_onep instead of comparison to integer_minus_one_node
+	and integer_zerop instead of comparison against size_zero_node.
+	Formatting fixes.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97878
+	* decl.c (check_array_initializer): For structured bindings, require
+	the array type to be complete.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/33661
+	PR c++/98847
+	* decl.c (cp_finish_decl): For register vars with asmspec in templates
+	call set_user_assembler_name and set DECL_HARD_REGISTER.
+	* pt.c (tsubst_expr): When instantiating DECL_HARD_REGISTER vars,
+	pass asmspec_tree to cp_finish_decl.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-01-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/95693
+	* init.c (build_zero_init_1): Revert the 2018-03-06 change to
+	return build_zero_cst for reference types.
+	* typeck2.c (process_init_constructor_record): Instead call
+	build_zero_cst here during error recovery instead of build_zero_init.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-11-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/97663
+	* parser.c (cp_parser_init_declarator): Don't try to parse
+	C++17 deduction guides if there are any type specifiers even when
+	type is NULL.
+
 2021-04-21  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

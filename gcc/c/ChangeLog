@@ -1,3 +1,44 @@
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99990
+	* c-decl.c (finish_decl): Don't overwrite TREE_TYPE of
+	error_mark_node.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99588
+	* c-typeck.c (mark_exp_read): Recognize what build_atomic_assign
+	with modifycode NOP_EXPR produces and mark the _Atomic var as read
+	if found.
+	(build_atomic_assign): For modifycode of NOP_EXPR, use COMPOUND_EXPRs
+	rather than STATEMENT_LIST.  Otherwise call mark_exp_read on lhs.
+	Set TREE_SIDE_EFFECTS on the TARGET_EXPR.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99136
+	* c-typeck.c (c_finish_return): Don't wrap retval into
+	EXCESS_PRECISION_EXPR in functions that return void.
+
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2020-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/97958
+	* c-parser.c (c_parser_binary_expression): For omp atomic binary
+	expressions, use make_node instead of build2 to avoid checking build2
+	performs.
+
 2020-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

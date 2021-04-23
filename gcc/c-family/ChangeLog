@@ -1,3 +1,13 @@
+2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-03-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/99324
+	* c-common.c (build_va_arg): Call c_common_mark_addressable_vec
+	instead of mark_addressable.  Fix a comment typo -
+	neutrallly -> neutrally.
+
 2020-09-17  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
