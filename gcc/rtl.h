@@ -3087,6 +3087,23 @@ vec_series_p (const_rtx x, rtx *base_out, rtx *step_out)
   return const_vec_series_p (x, base_out, step_out);
 }
 
+/* Return true if CONST_VECTORs X and Y, which are known to have the same mode,
+   also have the same encoding.  This means that they are equal whenever their
+   operands are equal.  */
+
+inline bool
+same_vector_encodings_p (const_rtx x, const_rtx y)
+{
+  /* Don't be fussy about the encoding of constant-length vectors,
+     since XVECEXP (X, 0) and XVECEXP (Y, 0) list all the elements anyway.  */
+  if (poly_uint64 (CONST_VECTOR_NUNITS (x)).is_constant ())
+    return true;
+
+  return (CONST_VECTOR_NPATTERNS (x) == CONST_VECTOR_NPATTERNS (y)
+	  && (CONST_VECTOR_NELTS_PER_PATTERN (x)
+	      == CONST_VECTOR_NELTS_PER_PATTERN (y)));
+}
+
 /* Return the unpromoted (outer) mode of SUBREG_PROMOTED_VAR_P subreg X.  */
 
 inline scalar_int_mode
