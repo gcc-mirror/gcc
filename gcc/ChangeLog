@@ -1,3 +1,21 @@
+2021-04-22  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99216
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_builder::add_function): Add placeholder_p argument, use
+	placeholder decls if this is set.
+	(function_builder::add_unique_function): Instead of conditionally adding
+	direct overloads, unconditionally add either a direct overload or a
+	placeholder.
+	(function_builder::add_overloaded_function): Set placeholder_p if we're
+	using C++ overloads. Use the obstack for string storage instead
+	of relying on the tree nodes.
+	(function_builder::add_overloaded_functions): Don't return early for
+	m_direct_overloads: we need to add placeholders.
+	* config/aarch64/aarch64-sve-builtins.h
+	(function_builder::add_function): Add placeholder_p argument.
+	* lto-streamer.h (LTO_minor_version): Bump.
+
 2021-04-21  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

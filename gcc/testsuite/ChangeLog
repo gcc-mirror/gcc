@@ -1,3 +1,8 @@
+2021-04-22  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99216
+	* g++.target/aarch64/sve/pr99216.C: New test.
+
 2021-04-21  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
