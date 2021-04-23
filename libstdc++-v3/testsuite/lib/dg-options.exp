@@ -260,13 +260,58 @@ proc add_options_for_net_ts { flags } {
 # Add to FLAGS all the target-specific flags to link to libatomic,
 # if required for atomics on pointers and 64-bit types.
 
+proc atomic_link_flags { paths } {
+    global srcdir
+    global ld_library_path
+    global shlib_ext
+
+    set gccpath ${paths}
+    set flags ""
+
+    set shlib_ext [get_shlib_extension]
+
+    if { $gccpath != "" } {
+      if { [file exists "${gccpath}/libatomic/.libs/libatomic.a"]
+           || [file exists "${gccpath}/libatomic/.libs/libatomic.${shlib_ext}"] } {
+          append flags " -B${gccpath}/libatomic/ "
+          append flags " -L${gccpath}/libatomic/.libs"
+          append ld_library_path ":${gccpath}/libatomic/.libs"
+      }
+    } else {
+      global tool_root_dir
+
+      set libatomic [lookfor_file ${tool_root_dir} libatomic]
+      if { $libatomic != "" } {
+          append flags "-L${libatomic} "
+          append ld_library_path ":${libatomic}"
+      }
+    }
+
+    set_ld_library_path_env_vars
+
+    return "$flags"
+}
+
 proc add_options_for_libatomic { flags } {
     if { [istarget hppa*-*-hpux*]
 	 || ([istarget powerpc*-*-*] && [check_effective_target_ilp32])
 	 || [istarget riscv*-*-*]
 	 || ([istarget sparc*-*-linux-gnu] && [check_effective_target_ilp32])
        } {
-	return "$flags -L../../libatomic/.libs -latomic"
+	global TOOL_OPTIONS
+
+	set link_flags ""
+	if ![is_remote host] {
+	    if [info exists TOOL_OPTIONS] {
+		set link_flags "[atomic_link_flags [get_multilibs ${TOOL_OPTIONS}]]"
+	    } else {
+		set link_flags "[atomic_link_flags [get_multilibs]]"
+	    }
+	}
+
+	append link_flags " -latomic "
+
+	return "$flags $link_flags"
     }
     return $flags
 }
