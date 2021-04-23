@@ -250,37 +250,29 @@ inline namespace v1
       static const int _S_name = SO_SNDLOWAT;
     };
 
-    enum shutdown_type : int
-    {
-      __shutdown_receive	= SHUT_RD,
-      __shutdown_send		= SHUT_WR,
-      __shutdown_both		= SHUT_RDWR
-    };
-    static constexpr shutdown_type shutdown_receive	= __shutdown_receive;
-    static constexpr shutdown_type shutdown_send	= __shutdown_send;
-    static constexpr shutdown_type shutdown_both	= __shutdown_both;
+    enum shutdown_type : int { };
+    static constexpr shutdown_type shutdown_receive = (shutdown_type)SHUT_RD;
+    static constexpr shutdown_type shutdown_send    = (shutdown_type)SHUT_WR;
+    static constexpr shutdown_type shutdown_both    = (shutdown_type)SHUT_RDWR;
 
+    enum wait_type : int { };
 #ifdef _GLIBCXX_HAVE_POLL_H
-    enum wait_type : int
-    {
-      __wait_read		= POLLIN,
-      __wait_write		= POLLOUT,
-      __wait_error		= POLLERR
-    };
-    static constexpr wait_type wait_read		= __wait_read;
-    static constexpr wait_type wait_write		= __wait_write;
-    static constexpr wait_type wait_error		= __wait_error;
+    static constexpr wait_type wait_read  = (wait_type)POLLIN;
+    static constexpr wait_type wait_write = (wait_type)POLLOUT;
+    static constexpr wait_type wait_error = (wait_type)POLLERR;
+#else
+    static constexpr wait_type wait_read  = (wait_type)1;
+    static constexpr wait_type wait_write = (wait_type)2;
+    static constexpr wait_type wait_error = (wait_type)4;
 #endif
 
-    enum message_flags : int
-    {
-      __message_peek		= MSG_PEEK,
-      __message_oob		= MSG_OOB,
-      __message_dontroute	= MSG_DONTROUTE
-    };
-    static constexpr message_flags message_peek		= __message_peek;
-    static constexpr message_flags message_out_of_band	= __message_oob;
-    static constexpr message_flags message_do_not_route	= __message_dontroute;
+    enum message_flags : int { };
+    static constexpr message_flags message_peek
+      = (message_flags)MSG_PEEK;
+    static constexpr message_flags message_out_of_band
+      = (message_flags)MSG_OOB;
+    static constexpr message_flags message_do_not_route
+      = (message_flags)MSG_DONTROUTE;
 
     static const int max_listen_connections = SOMAXCONN;
 #endif
@@ -350,30 +342,37 @@ inline namespace v1
 
   constexpr socket_base::message_flags
   operator&(socket_base::message_flags __f1, socket_base::message_flags __f2)
+    noexcept
   { return socket_base::message_flags( int(__f1) & int(__f2) ); }
 
   constexpr socket_base::message_flags
   operator|(socket_base::message_flags __f1, socket_base::message_flags __f2)
+    noexcept
   { return socket_base::message_flags( int(__f1) | int(__f2) ); }
 
   constexpr socket_base::message_flags
   operator^(socket_base::message_flags __f1, socket_base::message_flags __f2)
+    noexcept
   { return socket_base::message_flags( int(__f1) ^ int(__f2) ); }
 
   constexpr socket_base::message_flags
   operator~(socket_base::message_flags __f)
+    noexcept
   { return socket_base::message_flags( ~int(__f) ); }
 
-  inline socket_base::message_flags&
+  constexpr socket_base::message_flags&
   operator&=(socket_base::message_flags& __f1, socket_base::message_flags __f2)
+    noexcept
   { return __f1 = (__f1 & __f2); }
 
-  inline socket_base::message_flags&
+  constexpr socket_base::message_flags&
   operator|=(socket_base::message_flags& __f1, socket_base::message_flags __f2)
+    noexcept
   { return __f1 = (__f1 | __f2); }
 
-  inline socket_base::message_flags&
+  constexpr socket_base::message_flags&
   operator^=(socket_base::message_flags& __f1, socket_base::message_flags __f2)
+    noexcept
   { return __f1 = (__f1 ^ __f2); }
 
 #if _GLIBCXX_HAVE_UNISTD_H
