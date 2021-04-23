@@ -5670,7 +5670,8 @@ classtype_has_depr_implicit_copy (tree t)
 	 iter; ++iter)
       {
 	tree fn = *iter;
-	if (user_provided_p (fn) && copy_fn_p (fn))
+	if (DECL_CONTEXT (fn) == t
+	    && user_provided_p (fn) && copy_fn_p (fn))
 	  return fn;
       }
 
