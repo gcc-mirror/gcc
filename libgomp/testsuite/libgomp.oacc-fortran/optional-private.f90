@@ -4,6 +4,9 @@
 
 ! { dg-do run }
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 program main
   implicit none
 
@@ -30,6 +33,8 @@ contains
     end do
 
     !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
+    ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
+    ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 }
     !$acc loop gang private(x)
     do i = 1, 32
        x = i * 2;
@@ -55,6 +60,7 @@ contains
     end do
 
     !$acc parallel copy(arr) num_gangs(32) num_workers(8) vector_length(32)
+    ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 }
     !$acc loop gang private(pt)
     do i = 0, 31
        pt%x = i

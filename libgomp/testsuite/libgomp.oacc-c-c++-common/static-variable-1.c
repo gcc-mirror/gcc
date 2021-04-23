@@ -9,6 +9,9 @@
    variables" (only visible to members of the GitHub OpenACC organization).
 */
 
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 
 #undef NDEBUG
 #include <assert.h>
@@ -63,6 +66,9 @@ static void t0_c(void)
 static const int t0_r_var_init = 61;
 
 #pragma acc routine gang
+/* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'atomic'" { xfail *-*-* } .+4 } */
+/* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .+3 } */
+/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .+2 } */
 __attribute__((noinline))
 static int t0_r_r(void)
 {
@@ -123,6 +129,7 @@ static void t1_c(void)
     {
       int result = 0;
       int num_gangs_actual = -1;
+      /* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'atomic'" { xfail *-*-* } .+1 } */
 #pragma acc parallel \
   num_gangs(num_gangs_request) \
   reduction(max:num_gangs_actual) \
@@ -153,6 +160,9 @@ static void t1_c(void)
 static const int t1_r2_var_init = 166;
 
 #pragma acc routine gang
+/* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'atomic'" { xfail *-*-* } .+4 } */
+/* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .+3 } */
+/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .+2 } */
 __attribute__((noinline))
 static int t1_r2_r(void)
 {
@@ -245,6 +255,9 @@ static void t1_r2(void)
 static const int t2_var_init_2 = -55;
 
 #pragma acc routine gang
+/* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'atomic'" { xfail *-*-* } .+4 } */
+/* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .+3 } */
+/* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .+2 } */
 __attribute__((noinline))
 static int t2_r(void)
 {
@@ -286,6 +299,7 @@ static void t2(void)
 	   itself, meaning that all 'i = 0' execution has finished (on the
 	   device) before 'i = 1' is started (on the device), etc.  */
 
+	/* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'atomic'" { xfail *-*-* } .+1 } */
 #pragma acc parallel \
   present(results_1) \
   num_gangs(num_gangs_request_1) \
@@ -308,6 +322,7 @@ static void t2(void)
 	  results_2[i][__builtin_goacc_parlevel_id(GOMP_DIM_GANG)] += t2_r();
 	}
 
+	/* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'atomic'" { xfail *-*-* } .+1 } */
 #pragma acc parallel \
   present(results_3) \
   num_gangs(num_gangs_request_3) \

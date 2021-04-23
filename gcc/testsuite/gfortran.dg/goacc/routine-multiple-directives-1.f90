@@ -1,5 +1,8 @@
 ! Check for valid cases of multiple OpenACC 'routine' directives.
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
       SUBROUTINE s_1
 !$ACC ROUTINE(s_1)
 !$ACC ROUTINE(s_1) SEQ
@@ -17,12 +20,14 @@
 !$ACC ROUTINE VECTOR
 !$ACC ROUTINE(v_1) VECTOR
 !$ACC ROUTINE VECTOR
+! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-5 }
       END SUBROUTINE v_1
 
       SUBROUTINE v_2
 !$ACC ROUTINE(v_2) VECTOR
 !$ACC ROUTINE VECTOR
 !$ACC ROUTINE(v_2) VECTOR
+! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-4 }
       END SUBROUTINE v_2
 
       SUBROUTINE sub_1

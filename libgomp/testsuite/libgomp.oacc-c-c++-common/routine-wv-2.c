@@ -1,3 +1,6 @@
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 #include <stdio.h>
 #include <openacc.h>
 #include <gomp-constants.h>
@@ -44,6 +47,7 @@ int DoWorkVec (int nw)
   printf ("spawning %d ...", nw); fflush (stdout);
   
 #pragma acc parallel num_workers(nw) vector_length (NUM_VECTORS) copy (ary)
+  /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target openacc_radeon_accel_selected } .-1 } */
   {
     WorkVec ((int *)ary, WIDTH, HEIGHT, nw, NUM_VECTORS);
   }

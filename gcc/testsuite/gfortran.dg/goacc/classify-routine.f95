@@ -6,6 +6,9 @@
 ! { dg-additional-options "-fdump-tree-ompexp" }
 ! { dg-additional-options "-fdump-tree-oaccdevlow" }
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 subroutine ROUTINE
   !$acc routine worker
   integer, parameter :: n = 1024

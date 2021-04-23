@@ -4,6 +4,9 @@
 ! { dg-additional-options "--param=openacc-kernels=decompose" }
 ! { dg-additional-options "-O2" } for 'parloops'.
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 ! See also '../../c-c++-common/goacc/kernels-decompose-2.c'.
 
 ! It's only with Tcl 8.5 (released in 2007) that "the variable 'varName'
@@ -119,6 +122,7 @@ program main
   !$acc end kernels
 
   !$acc kernels
+  ! { dg-bogus "warning: region contains gang partitioned code but is not gang partitioned" "TODO 'kernels'" { xfail *-*-* } .-1 }
   y = f_g (a(5)) ! { dg-line l_part[incr c_part] }
   !TODO If such a construct is placed in its own part (like it is, here), can't this actually use gang paralelism, instead of "gang-single"?
   ! { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" "" { target *-*-* } l_part$c_part }

@@ -1,3 +1,6 @@
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 #include <stdio.h>
 #include <openacc.h>
 #include <gomp-constants.h>
@@ -16,6 +19,7 @@ int main ()
   
 #pragma acc parallel num_workers(32) vector_length(32) copy(ary) copy(ondev) \
 	    copyout(workersize)
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "vector" { target *-*-* } .-2 } */
   {
 #pragma acc loop worker
     for (unsigned ix = 0; ix < N; ix++)

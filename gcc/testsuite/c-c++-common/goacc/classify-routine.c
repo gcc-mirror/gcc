@@ -6,6 +6,9 @@
    { dg-additional-options "-fdump-tree-ompexp" }
    { dg-additional-options "-fdump-tree-oaccdevlow" } */
 
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 #define N 1024
 
 extern unsigned int *__restrict a;
