@@ -475,6 +475,9 @@ inline namespace v1
 	return 0;
       }
 
+    // The caller must know what the wait-type __w will be interpreted.
+    // In the current implementation the reactor is based on <poll.h>
+    // so the parameter must be one of POLLIN, POLLOUT or POLLERR.
     template<typename _Op>
       void
       async_wait(int __fd, int __w, _Op&& __op)
