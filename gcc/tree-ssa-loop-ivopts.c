@@ -7286,12 +7286,13 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
     }
 
   comp = fold_convert (type, comp);
-  if (!valid_gimple_rhs_p (comp)
-      || (gimple_code (use->stmt) != GIMPLE_PHI
-	  /* We can't allow re-allocating the stmt as it might be pointed
-	     to still.  */
-	  && (get_gimple_rhs_num_ops (TREE_CODE (comp))
-	      >= gimple_num_ops (gsi_stmt (bsi)))))
+  comp = force_gimple_operand (comp, &seq, false, NULL);
+  gimple_seq_add_seq (&stmt_list, seq);
+  if (gimple_code (use->stmt) != GIMPLE_PHI
+      /* We can't allow re-allocating the stmt as it might be pointed
+	 to still.  */
+      && (get_gimple_rhs_num_ops (TREE_CODE (comp))
+	  >= gimple_num_ops (gsi_stmt (bsi))))
     {
       comp = force_gimple_operand (comp, &seq, true, NULL);
       gimple_seq_add_seq (&stmt_list, seq);

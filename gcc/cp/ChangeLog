@@ -1,3 +1,9 @@
+2021-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100161
+	* pt.c (tsubst_copy_and_build) <case PLUS_EXPR>: Test op0 and
+	op1 separately for value- or type-dependence.
+
 2021-04-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/96380

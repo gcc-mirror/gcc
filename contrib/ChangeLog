@@ -1,3 +1,9 @@
+2021-04-22  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config-list.mk: Remove rs6000-ibm-aix6.1.
+	Rename rs6000-ibm-aix7.1 to powerpc-ibm-aix7.1.
+	Add powerpc-ibm-aix7.2.
+
 2021-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-changelog/git_update_version.py (active_refs): Add

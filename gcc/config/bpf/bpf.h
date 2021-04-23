@@ -57,8 +57,8 @@
    64-bit at any time.  */
 #define STACK_BOUNDARY 64
 
-/* Function entry points are aligned to 128 bits.  */
-#define FUNCTION_BOUNDARY 128
+/* Function entry points are aligned to 64 bits.  */
+#define FUNCTION_BOUNDARY 64
 
 /* Maximum alignment required by data of any type.  */
 #define BIGGEST_ALIGNMENT 64
@@ -422,9 +422,15 @@ enum reg_class
    Try to use asm_output_aligned_bss to implement this macro.  */
 
 #define ASM_OUTPUT_ALIGNED_BSS(FILE, DECL, NAME, SIZE, ALIGN)	\
-  do {								\
-    ASM_OUTPUT_ALIGNED_LOCAL (FILE, NAME, SIZE, ALIGN);		\
-  } while (0)
+  do									\
+    {									\
+      ASM_OUTPUT_TYPE_DIRECTIVE (FILE, NAME, "object");			\
+      fprintf ((FILE), "%s", "\t.lcomm\t");				\
+      assemble_name ((FILE), (NAME));					\
+      fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED ",%u\n",	\
+	       (SIZE), (ALIGN) / BITS_PER_UNIT);			\
+    }									\
+  while (0)
 
 /*** Output and Generation of Labels.  */
 

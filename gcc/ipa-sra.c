@@ -2394,7 +2394,6 @@ process_scan_results (cgraph_node *node, struct function *fun,
 	    if (!pdoms_calculated)
 	      {
 		gcc_checking_assert (cfun);
-		add_noreturn_fake_exit_edges ();
 		connect_infinite_loops_to_exit ();
 		calculate_dominance_info (CDI_POST_DOMINATORS);
 		pdoms_calculated = true;

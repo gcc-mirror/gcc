@@ -1,3 +1,70 @@
+2021-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/94508
+	* g++.dg/cpp2a/concepts-uneval3.C: New test.
+
+2021-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/77435
+	* g++.dg/template/partial-specialization9.C: New test.
+
+2021-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100161
+	* g++.dg/warn/Wtype-limits6.C: New test.
+
+2021-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/84689
+	* g++.dg/cpp0x/sfinae67.C: New test.
+
+2021-04-22  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/16617
+	* g++.dg/template/access36.C: New test.
+
+2021-04-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* substr_9.f90: Move to ...
+	* gfortran.dg/substr_9.f90: ... here.
+	* substr_10.f90: Move to ...
+	* gfortran.dg/substr_10.f90: ... here.
+
+2021-04-22  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100159
+	PR testsuite/100192
+	* g++.dg/template/nontype29.C: Fix typos and missing comments.
+	* gcc.dg/Warray-bounds-64.c: Likewise.
+	* gcc.dg/Warray-parameter.c: Likewise.
+	* gcc.dg/Wstring-compare.c: Likewise.
+	* gcc.dg/format/gcc_diag-11.c: Likewise.
+	* gfortran.dg/array_constructor_3.f90: Likewise.
+	* gfortran.dg/matmul_bounds_9.f90: Likewise.
+	* gfortran.dg/pr78033.f90: Likewise.
+	* gfortran.dg/pr96325.f90: Likewise.
+
+2021-04-22  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100119
+	* gcc.target/i386/pr100119.c: New test.
+
+2021-04-22  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99988
+	* gcc.target/aarch64/pr99988.c: Skip if not lp64 target.
+
+2021-04-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/set_vm_limit.c (set_vm_limit): Call getrlimit, use
+	obtained hard limit, and only call setrlimit if new softlimit is lower.
+
+2021-04-22  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/100176
+	* objc.dg/gnu-encoding/struct-layout-encoding-1_generate.c: Add
+	missing return.
+
 2021-04-21  David Edelsohn  <dje.gcc@gmail.com>
 
 	* gfortran.dg/bind_c_array_params_2.f90: Look for AIX-specific call
