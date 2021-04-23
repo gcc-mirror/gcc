@@ -996,7 +996,6 @@ count_occurrences (const_rtx x, const_rtx find, int count_dest)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
       return 0;
 
     case EXPR_LIST:
@@ -1090,7 +1089,6 @@ reg_mentioned_p (const_rtx reg, const_rtx in)
       /* These codes have no constituent expressions
 	 and are unique.  */
     case SCRATCH:
-    case CC0:
     case PC:
       return 0;
 
@@ -1173,11 +1171,10 @@ reg_referenced_p (const_rtx x, const_rtx body)
       if (reg_overlap_mentioned_p (x, SET_SRC (body)))
 	return 1;
 
-      /* If the destination is anything other than CC0, PC, a REG or a SUBREG
+      /* If the destination is anything other than PC, a REG or a SUBREG
 	 of a REG that occupies all of the REG, the insn references X if
 	 it is mentioned in the destination.  */
-      if (GET_CODE (SET_DEST (body)) != CC0
-	  && GET_CODE (SET_DEST (body)) != PC
+      if (GET_CODE (SET_DEST (body)) != PC
 	  && !REG_P (SET_DEST (body))
 	  && ! (GET_CODE (SET_DEST (body)) == SUBREG
 		&& REG_P (SUBREG_REG (SET_DEST (body)))
@@ -1324,7 +1321,6 @@ modified_between_p (const_rtx x, const rtx_insn *start, const rtx_insn *end)
       return 0;
 
     case PC:
-    case CC0:
       return 1;
 
     case MEM:
@@ -1379,7 +1375,6 @@ modified_in_p (const_rtx x, const_rtx insn)
       return 0;
 
     case PC:
-    case CC0:
       return 1;
 
     case MEM:
@@ -1917,7 +1912,6 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
 
     case SCRATCH:
     case PC:
-    case CC0:
       return reg_mentioned_p (x, in);
 
     case PARALLEL:
@@ -1943,7 +1937,7 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
    ignored by note_stores, but passed to FUN.
 
    FUN receives three arguments:
-   1. the REG, MEM, CC0 or PC being stored in or clobbered,
+   1. the REG, MEM or PC being stored in or clobbered,
    2. the SET or CLOBBER rtx that does the store,
    3. the pointer DATA provided to note_stores.
 
@@ -2392,8 +2386,8 @@ vec_rtx_properties_base::grow (ptrdiff_t start)
 }
 
 /* Return nonzero if X's old contents don't survive after INSN.
-   This will be true if X is (cc0) or if X is a register and
-   X dies in INSN or because INSN entirely sets X.
+   This will be true if X is a register and X dies in INSN or because
+   INSN entirely sets X.
 
    "Entirely set" means set directly and not through a SUBREG, or
    ZERO_EXTRACT, so no trace of the old contents remains.
@@ -2413,10 +2407,6 @@ dead_or_set_p (const rtx_insn *insn, const_rtx x)
 {
   unsigned int regno, end_regno;
   unsigned int i;
-
-  /* Can't use cc0_rtx below since this file is used by genattrtab.c.  */
-  if (GET_CODE (x) == CC0)
-    return 1;
 
   gcc_assert (REG_P (x));
 
@@ -2717,8 +2707,6 @@ alloc_reg_note (enum reg_note kind, rtx datum, rtx list)
   gcc_checking_assert (!int_reg_note_p (kind));
   switch (kind)
     {
-    case REG_CC_SETTER:
-    case REG_CC_USER:
     case REG_LABEL_TARGET:
     case REG_LABEL_OPERAND:
     case REG_TM:
@@ -2963,7 +2951,6 @@ volatile_insn_p (const_rtx x)
     case SYMBOL_REF:
     case CONST:
     CASE_CONST_ANY:
-    case CC0:
     case PC:
     case REG:
     case SCRATCH:
@@ -3024,7 +3011,6 @@ volatile_refs_p (const_rtx x)
     case SYMBOL_REF:
     case CONST:
     CASE_CONST_ANY:
-    case CC0:
     case PC:
     case REG:
     case SCRATCH:
@@ -3084,7 +3070,6 @@ side_effects_p (const_rtx x)
     case SYMBOL_REF:
     case CONST:
     CASE_CONST_ANY:
-    case CC0:
     case PC:
     case REG:
     case SCRATCH:
@@ -3172,7 +3157,6 @@ may_trap_p_1 (const_rtx x, unsigned flags)
     case LABEL_REF:
     case CONST:
     case PC:
-    case CC0:
     case REG:
     case SCRATCH:
       return 0;
@@ -5828,7 +5812,7 @@ seq_cost (const rtx_insn *seq, bool speed)
    canonical form to simplify testing by callers.  Specifically:
 
    (1) The code will always be a comparison operation (EQ, NE, GT, etc.).
-   (2) Both operands will be machine operands; (cc0) will have been replaced.
+   (2) Both operands will be machine operands.
    (3) If an operand is a constant, it will be the second operand.
    (4) (LE x const) will be replaced with (LT x <const+1>) and similarly
        for GE, GEU, and LEU.
@@ -5890,22 +5874,6 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
     {
       /* Set nonzero when we find something of interest.  */
       rtx x = 0;
-
-      /* If comparison with cc0, import actual comparison from compare
-	 insn.  */
-      if (op0 == cc0_rtx)
-	{
-	  if ((prev = prev_nonnote_insn (prev)) == 0
-	      || !NONJUMP_INSN_P (prev)
-	      || (set = single_set (prev)) == 0
-	      || SET_DEST (set) != cc0_rtx)
-	    return 0;
-
-	  op0 = SET_SRC (set);
-	  op1 = CONST0_RTX (GET_MODE (op0));
-	  if (earliest)
-	    *earliest = prev;
-	}
 
       /* If this is a COMPARE, pick up the two things being compared.  */
       if (GET_CODE (op0) == COMPARE)
@@ -6094,10 +6062,6 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
 	  break;
 	}
     }
-
-  /* Never return CC0; return zero instead.  */
-  if (CC0_P (op0))
-    return 0;
 
   /* We promised to return a comparison.  */
   rtx ret = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);

@@ -1748,7 +1748,6 @@ print_value (pretty_printer *pp, const_rtx x, int verbose)
       pp_wide_integer (pp, SUBREG_BYTE (x));
       break;
     case SCRATCH:
-    case CC0:
     case PC:
       pp_string (pp, GET_RTX_NAME (GET_CODE (x)));
       break;

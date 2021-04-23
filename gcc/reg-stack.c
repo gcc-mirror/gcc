@@ -1251,7 +1251,7 @@ swap_rtx_condition (rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
 
-  /* We're looking for a single set to cc0 or an HImode temporary.  */
+  /* We're looking for a single set to an HImode temporary.  */
 
   if (GET_CODE (pat) == SET
       && REG_P (SET_DEST (pat))
@@ -1298,7 +1298,7 @@ swap_rtx_condition (rtx_insn *insn)
 	  || ! dead_or_set_p (insn, dest))
 	return 0;
 
-      /* Now we are prepared to handle this as a normal cc0 setter.  */
+      /* Now we are prepared to handle this.  */
       insn = next_flags_user (insn);
       if (insn == NULL_RTX)
 	return 0;
@@ -1586,9 +1586,7 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	    break;
 
 	  case REG:
-	    /* This is a `tstM2' case.  */
-	    gcc_assert (*dest == cc0_rtx);
-	    src1 = src;
+	    gcc_unreachable ();
 
 	    /* Fall through.  */
 
@@ -1596,8 +1594,7 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	  case SQRT:
 	  case ABS:
 	  case NEG:
-	    /* These insns only operate on the top of the stack. DEST might
-	       be cc0_rtx if we're processing a tstM pattern. Also, it's
+	    /* These insns only operate on the top of the stack.  It's
 	       possible that the tstM case results in a REG_DEAD note on the
 	       source.  */
 

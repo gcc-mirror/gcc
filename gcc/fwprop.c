@@ -784,7 +784,7 @@ forward_propagate_and_simplify (use_info *use, set_info *def,
   if (need_single_set && !use_set)
     return false;
 
-  /* Do not propagate into PC, CC0, etc.
+  /* Do not propagate into PC etc.
 
      ??? This too seems unnecessary.  The current code should work correctly
      without it, including cases where jumps become unconditional.  */

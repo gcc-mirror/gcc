@@ -3011,7 +3011,6 @@ clear_struct_flag (rtx x)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case EQ_ATTR:
     case ATTR_FLAG:
       return;

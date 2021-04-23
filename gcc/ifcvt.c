@@ -3458,7 +3458,6 @@ noce_process_if_block (struct noce_if_info *if_info)
   /* First look for multiple SETS.  */
   if (!else_bb
       && HAVE_conditional_move
-      && !HAVE_cc0
       && bb_ok_for_noce_convert_multiple_sets (then_bb))
     {
       if (noce_convert_multiple_sets (if_info))

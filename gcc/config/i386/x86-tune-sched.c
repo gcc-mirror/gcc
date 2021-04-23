@@ -181,7 +181,6 @@ exact_dependency_1 (rtx addr, rtx insn)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case EXPR_LIST:
       return false;
     default:

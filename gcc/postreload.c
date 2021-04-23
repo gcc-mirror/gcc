@@ -1013,10 +1013,6 @@ reload_combine_recognize_const_pattern (rtx_insn *insn)
 	      && reg_state[clobbered_regno].real_store_ruid >= use_ruid)
 	    break;
 
-	  /* Do not separate cc0 setter and cc0 user on HAVE_cc0 targets.  */
-	  if (HAVE_cc0 && must_move_add && sets_cc0_p (PATTERN (use_insn)))
-	    break;
-
 	  gcc_assert (reg_state[regno].store_ruid <= use_ruid);
 	  /* Avoid moving a use of ADDREG past a point where it is stored.  */
 	  if (reg_state[REGNO (addreg)].store_ruid > use_ruid)

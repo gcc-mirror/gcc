@@ -295,14 +295,13 @@ copy_rtx (rtx orig)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case RETURN:
     case SIMPLE_RETURN:
     case SCRATCH:
       /* SCRATCH must be shared because they represent distinct values.  */
       return orig;
     case CLOBBER:
-      /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
+      /* Share clobbers of hard registers, but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
       if (REG_P (XEXP (orig, 0)) && REGNO (XEXP (orig, 0)) < FIRST_PSEUDO_REGISTER
@@ -388,7 +387,6 @@ shallow_copy_rtx (const_rtx orig MEM_STAT_DECL)
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case RETURN:
     case SIMPLE_RETURN:
     case SCRATCH:

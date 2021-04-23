@@ -6310,21 +6310,16 @@ or target-specific sections.
 @section Condition Code Status
 @cindex condition code status
 
-The macros in this section can be split in two families, according to the
-two ways of representing condition codes in GCC.
-
-The first representation is the so called @code{(cc0)} representation
-(@pxref{Jump Patterns}), where all instructions can have an implicit
-clobber of the condition codes.  The second is the condition code
-register representation, which provides better schedulability for
+Condition codes in GCC are represented as registers,
+which provides better schedulability for
 architectures that do have a condition code register, but on which
 most instructions do not affect it.  The latter category includes
 most RISC machines.
 
-The implicit clobbering poses a strong restriction on the placement of
+Implicit clobbering would pose a strong restriction on the placement of
 the definition and use of the condition code.  In the past the definition
 and use were always adjacent.  However, recent changes to support trapping
-arithmatic may result in the definition and user being in different blocks.
+arithmetic may result in the definition and user being in different blocks.
 Thus, there may be a @code{NOTE_INSN_BASIC_BLOCK} between them.  Additionally,
 the definition may be the source of exception handling edges.
 
@@ -6335,8 +6330,7 @@ three instructions earlier than the conditional branch.  The instruction
 scheduler cannot perform this optimization if it is not permitted to
 separate the definition and use of the condition code register.
 
-For this reason, it is possible and suggested to use a register to
-represent the condition code for new ports.  If there is a specific
+If there is a specific
 condition code register in the machine, use a hard register.  If the
 condition code or comparison result can be placed in any general register,
 or if there are multiple condition registers, use a pseudo register.
@@ -6348,77 +6342,8 @@ specified already in the compare instruction.  In this case, you are not
 interested in most macros in this section.
 
 @menu
-* CC0 Condition Codes::      Old style representation of condition codes.
 * MODE_CC Condition Codes::  Modern representation of condition codes.
 @end menu
-
-@node CC0 Condition Codes
-@subsection Representation of condition codes using @code{(cc0)}
-@findex cc0
-
-@findex cc_status
-The file @file{conditions.h} defines a variable @code{cc_status} to
-describe how the condition code was computed (in case the interpretation of
-the condition code depends on the instruction that it was set by).  This
-variable contains the RTL expressions on which the condition code is
-currently based, and several standard flags.
-
-Sometimes additional machine-specific flags must be defined in the machine
-description header file.  It can also add additional machine-specific
-information by defining @code{CC_STATUS_MDEP}.
-
-@defmac CC_STATUS_MDEP
-C code for a data type which is used for declaring the @code{mdep}
-component of @code{cc_status}.  It defaults to @code{int}.
-
-This macro is not used on machines that do not use @code{cc0}.
-@end defmac
-
-@defmac CC_STATUS_MDEP_INIT
-A C expression to initialize the @code{mdep} field to ``empty''.
-The default definition does nothing, since most machines don't use
-the field anyway.  If you want to use the field, you should probably
-define this macro to initialize it.
-
-This macro is not used on machines that do not use @code{cc0}.
-@end defmac
-
-@defmac NOTICE_UPDATE_CC (@var{exp}, @var{insn})
-A C compound statement to set the components of @code{cc_status}
-appropriately for an insn @var{insn} whose body is @var{exp}.  It is
-this macro's responsibility to recognize insns that set the condition
-code as a byproduct of other activity as well as those that explicitly
-set @code{(cc0)}.
-
-This macro is not used on machines that do not use @code{cc0}.
-
-If there are insns that do not set the condition code but do alter
-other machine registers, this macro must check to see whether they
-invalidate the expressions that the condition code is recorded as
-reflecting.  For example, on the 68000, insns that store in address
-registers do not set the condition code, which means that usually
-@code{NOTICE_UPDATE_CC} can leave @code{cc_status} unaltered for such
-insns.  But suppose that the previous insn set the condition code
-based on location @samp{a4@@(102)} and the current insn stores a new
-value in @samp{a4}.  Although the condition code is not changed by
-this, it will no longer be true that it reflects the contents of
-@samp{a4@@(102)}.  Therefore, @code{NOTICE_UPDATE_CC} must alter
-@code{cc_status} in this case to say that nothing is known about the
-condition code value.
-
-The definition of @code{NOTICE_UPDATE_CC} must be prepared to deal
-with the results of peephole optimization: insns whose patterns are
-@code{parallel} RTXs containing various @code{reg}, @code{mem} or
-constants which are just the operands.  The RTL structure of these
-insns is not sufficient to indicate what the insns actually do.  What
-@code{NOTICE_UPDATE_CC} should do when it sees one is just to run
-@code{CC_STATUS_INIT}.
-
-A possible definition of @code{NOTICE_UPDATE_CC} is to call a function
-that looks at an attribute (@pxref{Insn Attributes}) named, for example,
-@samp{cc}.  This avoids having detailed information about patterns in
-two places, the @file{md} file and in @code{NOTICE_UPDATE_CC}.
-@end defmac
 
 @node MODE_CC Condition Codes
 @subsection Representation of condition codes using registers
@@ -6534,7 +6459,7 @@ like:
 @end defmac
 
 @deftypefn {Target Hook} bool TARGET_FIXED_CONDITION_CODE_REGS (unsigned int *@var{p1}, unsigned int *@var{p2})
-On targets which do not use @code{(cc0)}, and which use a hard
+On targets which use a hard
 register rather than a pseudo-register to hold condition codes, the
 regular CSE passes are often not able to identify cases in which the
 hard register is set to a common value.  Use this hook to enable a
@@ -11578,8 +11503,7 @@ for cross-profiling.
 
 A C expression for the maximum number of instructions to execute via
 conditional execution instructions instead of a branch.  A value of
-@code{BRANCH_COST}+1 is the default if the machine does not use cc0, and
-1 if it does use cc0.
+@code{BRANCH_COST}+1 is the default.
 @end defmac
 
 @defmac IFCVT_MODIFY_TESTS (@var{ce_info}, @var{true_expr}, @var{false_expr})

@@ -7071,7 +7071,7 @@ such as
   [(set (pc)
         (if_then_else (match_operator
                          0 "comparison_operator"
-                         [(cc0) (const_int 0)])
+                         [(reg:CC CC_REG) (const_int 0)])
                       (return)
                       (pc)))]
   "@var{condition}"
@@ -7989,15 +7989,8 @@ works better when different sets of comparison operators are supported
 by different kinds of conditional branches (e.g.@: integer vs.@:
 floating-point), or by conditional branches with respect to conditional stores.
 
-Two separate insns are always used if the machine description represents
-a condition code register using the legacy RTL expression @code{(cc0)},
-and on most machines that use a separate condition code register
-(@pxref{Condition Code}).  For machines that use @code{(cc0)}, in
-fact, the set and use of the condition code must be separate and
-adjacent@footnote{@code{note} insns can separate them, though.}, thus
-allowing flags in @code{cc_status} to be used (@pxref{Condition Code}) and
-so that the comparison and branch insns could be located from each other
-by using the functions @code{prev_cc0_setter} and @code{next_cc0_user}.
+Two separate insns are always used on most machines that use a separate
+condition code register (@pxref{Condition Code}).
 
 Even in this case having a single entry point for conditional branches
 is advantageous, because it handles equally well the case where a single
@@ -8191,7 +8184,7 @@ the operations as far as possible.  For instance,
 @cindex @code{compare}, canonicalization of
 @item
 For the @code{compare} operator, a constant is always the second operand
-if the first argument is a condition code register or @code{(cc0)}.
+if the first argument is a condition code register.
 
 @item
 For instructions that inherently set a condition code register, the
@@ -9330,8 +9323,7 @@ In addition to describing the instruction supported by the target machine,
 the @file{md} file also defines a group of @dfn{attributes} and a set of
 values for each.  Every generated insn is assigned a value for each attribute.
 One possible attribute would be the effect that the insn has on the machine's
-condition code.  This attribute can then be used by @code{NOTICE_UPDATE_CC}
-to track the condition codes.
+condition code.
 
 @menu
 * Defining Attributes:: Specifying attributes and their values.

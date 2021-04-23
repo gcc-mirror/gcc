@@ -1003,7 +1003,6 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
     {
     case CONST:
     CASE_CONST_ANY:
-    case CC0:
     case PC:
     case SYMBOL_REF:
     case LABEL_REF:

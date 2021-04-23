@@ -1491,7 +1491,6 @@ function_reader::consolidate_singletons (rtx x)
     case PC: return pc_rtx;
     case RETURN: return ret_rtx;
     case SIMPLE_RETURN: return simple_return_rtx;
-    case CC0: return cc0_rtx;
 
     case REG:
       return consolidate_reg (x);
