@@ -1229,10 +1229,19 @@
     if (GET_CODE (operands[0]) == MEM && operands[1] != const0_rtx)
       operands[1] = force_reg (<MODE>mode, operands[1]);
 
-    /* FIXME: RR we still need to fix up what we are doing with
-       symbol_refs and other types of constants.  */
-    if (CONSTANT_P (operands[1])
-        && !CONST_INT_P (operands[1]))
+    /* Lower moves of symbolic constants into individual instructions.
+       Doing this now is sometimes necessary for correctness, since some
+       sequences require temporary pseudo registers.  Lowering now is also
+       often better for optimization, since more RTL passes get the
+       chance to optimize the individual instructions.
+
+       When called after RA, also split multi-instruction moves into
+       smaller pieces now, since we can't be sure that sure that there
+       will be a following split pass.  */
+    if (CONST_INT_P (operands[1])
+	? (reload_completed
+	   && !aarch64_mov_imm_operand (operands[1], <MODE>mode))
+	: CONSTANT_P (operands[1]))
      {
        aarch64_expand_mov_immediate (operands[0], operands[1]);
        DONE;
