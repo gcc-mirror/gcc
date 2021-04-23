@@ -219,12 +219,13 @@
    (set (match_operand:DI 2 "memory_operand")
 	(unspec:DI [(match_dup 0)]
 		   UNSPEC_FIST_ATOMIC))
-   (set (match_operand:DF 3 "any_fp_register_operand")
+   (set (match_operand:DF 3 "sse_reg_operand")
 	(match_operand:DF 4 "memory_operand"))]
   "!TARGET_64BIT
    && peep2_reg_dead_p (2, operands[0])
    && rtx_equal_p (XEXP (operands[4], 0), XEXP (operands[2], 0))"
-  [(set (match_dup 3) (match_dup 5))]
+  [(set (match_dup 3) (match_dup 5))
+   (set (match_dup 4) (match_dup 3))]
   "operands[5] = gen_lowpart (DFmode, operands[1]);")
 
 (define_peephole2
@@ -236,7 +237,7 @@
 		   UNSPEC_FIST_ATOMIC))
    (set (mem:BLK (scratch:SI))
 	(unspec:BLK [(mem:BLK (scratch:SI))] UNSPEC_MEMORY_BLOCKAGE))
-   (set (match_operand:DF 3 "any_fp_register_operand")
+   (set (match_operand:DF 3 "sse_reg_operand")
 	(match_operand:DF 4 "memory_operand"))]
   "!TARGET_64BIT
    && peep2_reg_dead_p (2, operands[0])
@@ -244,6 +245,7 @@
   [(const_int 0)]
 {
   emit_move_insn (operands[3], gen_lowpart (DFmode, operands[1]));
+  emit_move_insn (operands[4], operands[3]);
   emit_insn (gen_memory_blockage ());
   DONE;
 })
@@ -255,12 +257,13 @@
    (set (match_operand:DI 2 "memory_operand")
 	(unspec:DI [(match_dup 0)]
 		   UNSPEC_STX_ATOMIC))
-   (set (match_operand:DF 3 "any_fp_register_operand")
+   (set (match_operand:DF 3 "sse_reg_operand")
 	(match_operand:DF 4 "memory_operand"))]
   "!TARGET_64BIT
    && peep2_reg_dead_p (2, operands[0])
    && rtx_equal_p (XEXP (operands[4], 0), XEXP (operands[2], 0))"
-  [(set (match_dup 3) (match_dup 5))]
+  [(set (match_dup 3) (match_dup 5))
+   (set (match_dup 4) (match_dup 3))]
   "operands[5] = gen_lowpart (DFmode, operands[1]);")
 
 (define_peephole2
@@ -272,7 +275,7 @@
 		   UNSPEC_STX_ATOMIC))
    (set (mem:BLK (scratch:SI))
 	(unspec:BLK [(mem:BLK (scratch:SI))] UNSPEC_MEMORY_BLOCKAGE))
-   (set (match_operand:DF 3 "any_fp_register_operand")
+   (set (match_operand:DF 3 "sse_reg_operand")
 	(match_operand:DF 4 "memory_operand"))]
   "!TARGET_64BIT
    && peep2_reg_dead_p (2, operands[0])
@@ -280,6 +283,7 @@
   [(const_int 0)]
 {
   emit_move_insn (operands[3], gen_lowpart (DFmode, operands[1]));
+  emit_move_insn (operands[4], operands[3]);
   emit_insn (gen_memory_blockage ());
   DONE;
 })
@@ -385,7 +389,8 @@
   "!TARGET_64BIT
    && peep2_reg_dead_p (3, operands[2])
    && rtx_equal_p (XEXP (operands[0], 0), XEXP (operands[3], 0))"
-  [(set (match_dup 5) (match_dup 1))]
+  [(set (match_dup 0) (match_dup 1))
+   (set (match_dup 5) (match_dup 1))]
   "operands[5] = gen_lowpart (DFmode, operands[4]);")
 
 (define_peephole2
@@ -404,6 +409,7 @@
    && rtx_equal_p (XEXP (operands[0], 0), XEXP (operands[3], 0))"
   [(const_int 0)]
 {
+  emit_move_insn (operands[0], operands[1]);
   emit_insn (gen_memory_blockage ());
   emit_move_insn (gen_lowpart (DFmode, operands[4]), operands[1]);
   DONE;
@@ -421,7 +427,8 @@
   "!TARGET_64BIT
    && peep2_reg_dead_p (3, operands[2])
    && rtx_equal_p (XEXP (operands[0], 0), XEXP (operands[3], 0))"
-  [(set (match_dup 5) (match_dup 1))]
+  [(set (match_dup 0) (match_dup 1))
+   (set (match_dup 5) (match_dup 1))]
   "operands[5] = gen_lowpart (DFmode, operands[4]);")
 
 (define_peephole2
@@ -440,6 +447,7 @@
    && rtx_equal_p (XEXP (operands[0], 0), XEXP (operands[3], 0))"
   [(const_int 0)]
 {
+  emit_move_insn (operands[0], operands[1]);
   emit_insn (gen_memory_blockage ());
   emit_move_insn (gen_lowpart (DFmode, operands[4]), operands[1]);
   DONE;
