@@ -1,3 +1,156 @@
+2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	Backported from master:
+	2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	* config/bpf/bpf.h (ASM_OUTPUT_ALIGNED_BSS): Use .type and .lcomm.
+
+2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	Backported from master:
+	2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	* config/bpf/bpf.h (FUNCTION_BOUNDARY): Set to 64.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/99929
+	* rtl.h (same_vector_encodings_p): New function.
+	* cse.c (exp_equiv_p): Check that CONST_VECTORs have the same encoding.
+	* cselib.c (rtx_equal_for_cselib_1): Likewise.
+	* jump.c (rtx_renumbered_equal_p): Likewise.
+	* lra-constraints.c (operands_match_p): Likewise.
+	* reload.c (operands_match_p): Likewise.
+	* rtl.c (rtx_equal_p_cb, rtx_equal_p): Likewise.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98119
+	* config/aarch64/aarch64.c
+	(aarch64_vectorize_preferred_vector_alignment): Query the size
+	of the provided SVE vector; do not assume that all SVE vectors
+	have the same size.
+
+2021-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backported from master:
+	2021-04-07  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/98736
+	* tree-loop-distribution.c
+	* (loop_distribution::bb_top_order_init):
+	Compute RPO with programing order preserved by calling function
+	rev_post_order_and_mark_dfs_back_seme.
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.h (rev_post_order_and_mark_dfs_back_seme): Adjust
+	prototype.
+	* cfganal.c (rpoamdbs_bb_data): New struct with pre BB data.
+	(tag_header): New helper.
+	(cmp_edge_dest_pre): Likewise.
+	(rev_post_order_and_mark_dfs_back_seme): Compute SCCs,
+	find SCC exits and perform a DFS walk with extra edges to
+	compute a RPO with adjacent SCC members when requesting an
+	iteration optimized order and populate the toplevel SCC array.
+	* tree-ssa-sccvn.c (do_rpo_vn): Remove ad-hoc computation
+	of max_rpo and fill it in from SCC extent info instead.
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-20  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.c (rev_post_order_and_mark_dfs_back_seme): Remove
+	write-only post array.
+
+2021-04-23  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-04-06  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99748
+	* config/arm/arm.c (arm_libcall_uses_aapcs_base): Also use base
+	PCS for [su]fix_optab.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99249
+	* config/aarch64/aarch64.c (aarch64_expand_sve_const_vector_sel):
+	New function.
+	(aarch64_expand_sve_const_vector): Use it for nelts_per_pattern==2.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/97141
+	PR rtl-optimization/98726
+	* emit-rtl.c (valid_for_const_vector_p): Return true for
+	CONST_POLY_INT_P.
+	* rtx-vector-builder.h (rtx_vector_builder::step): Return a
+	poly_wide_int instead of a wide_int.
+	(rtx_vector_builder::apply_set): Take a poly_wide_int instead
+	of a wide_int.
+	* rtx-vector-builder.c (rtx_vector_builder::apply_set): Likewise.
+	* config/aarch64/aarch64.c (aarch64_legitimate_constant_p): Return
+	false for CONST_VECTORs that cannot be forced to memory.
+	* config/aarch64/aarch64-simd.md (mov<mode>): If a CONST_VECTOR
+	is too complex to force to memory, build it up from individual
+	elements instead.
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/98726
+	* tree.h (vector_cst_int_elt): Remove.
+	* tree.c (vector_cst_int_elt): Use poly_wide_int for computations,
+	make static.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98136
+	* config/aarch64/aarch64.md (mov<mode>): Pass multi-instruction
+	CONST_INTs to aarch64_expand_mov_immediate when called after RA.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98268
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Call
+	recompute_tree_invariant_for_addr_expr after successfully
+	folding a TARGET_MEM_REF that occurs inside an ADDR_EXPR.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/99726
+	* tree-data-ref.c (create_intersect_range_checks_index): Bail
+	out if there is more than one access function SCEV for the loop
+	being versioned.
+
 2021-04-22  Alex Coplan  <alex.coplan@arm.com>
 
 	PR target/99216

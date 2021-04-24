@@ -1,3 +1,79 @@
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/sve/pr99929_1.c: New file.
+	* gcc.target/aarch64/sve/pr99929_2.c: Likewise.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98119
+	* gcc.target/aarch64/sve/pr98119.c: New test.
+
+2021-04-23  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	Backported from master:
+	2021-04-07  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/98736
+	* gcc.c-torture/execute/pr98736.c: New test.
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2020-07-31  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/20200727-0.c: New testcase.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/99249
+	* gcc.target/aarch64/sve/acle/general/pr99246.c: New test.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/97141
+	PR rtl-optimization/98726
+	* gcc.c-torture/compile/pr97141.c: New test.
+	* gcc.c-torture/compile/pr98726.c: Likewise.
+	* gcc.target/aarch64/sve/pr97141.c: Likewise.
+	* gcc.target/aarch64/sve/pr98726.c: Likewise.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98136
+	* g++.dg/pr98136.C: New test.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98268
+	* gcc.target/aarch64/sve/pr98268-1.c: New test.
+	* gcc.target/aarch64/sve/pr98268-2.c: Likewise.
+
+2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/99726
+	* gcc.target/i386/pr99726.c: New test.
+
 2021-04-22  Alex Coplan  <alex.coplan@arm.com>
 
 	PR target/99216
