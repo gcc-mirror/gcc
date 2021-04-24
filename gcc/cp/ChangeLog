@@ -1,3 +1,24 @@
+2021-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98767
+	* cxx-pretty-print.c (pp_cxx_parameter_declaration_clause):
+	Adjust parameter list loop to iterate over 'types' instead of
+	'args'.  Output the trailing '...' for a variadic function.
+	Remove PARM_DECL support.
+	(pp_cxx_requires_expr): Pretty print the parameter list directly
+	instead of going through pp_cxx_parameter_declaration_clause.
+
+2021-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2374
+	* decl.c (is_direct_enum_init): Check the implicit
+	convertibility requirement added by CWG 2374.
+
+2021-04-23  Martin Liska  <mliska@suse.cz>
+
+	* cp-tree.h (STATIC_ASSERT): Prefer static assert.
+	* lex.c (init_operators): Remove run-time check.
+
 2021-04-22  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/100161

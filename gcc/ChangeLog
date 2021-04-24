@@ -1,3 +1,95 @@
+2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	* config/bpf/bpf.h (ASM_OUTPUT_ALIGNED_BSS): Use .type and .lcomm.
+
+2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	* config/bpf/bpf.h (FUNCTION_BOUNDARY): Set to 64.
+
+2021-04-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100041
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Error out when -m96bit-long-double is used with 64bit targets.
+	* config/i386/i386.md (*pushxf_rounded): Remove pattern.
+
+2021-04-23  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c: Remove FIXME about usage of
+	hardware_concurrency. The function is not on par with
+	what we have now.
+
+2021-04-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* config/i386/sync.md (FILD_ATOMIC/FIST_ATOMIC FP load peephole2):
+	Copy operand 3 to operand 4.  Use sse_reg_operand
+	as operand 3 predicate.
+	(FILD_ATOMIC/FIST_ATOMIC FP load peephole2 with mem blockage): Ditto.
+	(LDX_ATOMIC/STX_ATOMIC FP load peephole2): Ditto.
+	(LDX_ATOMIC/LDX_ATOMIC FP load peephole2 with mem blockage): Ditto.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2):
+	Copy operand 1 to operand 0.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2 with mem blockage): Ditto.
+	(LDX_ATOMIC/STX_ATOMIC FP store peephole2): Ditto.
+	(LDX_ATOMIC/LDX_ATOMIC FP store peephole2 with mem blockage): Ditto.
+
+2021-04-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/100230
+	* early-remat.c (early_remat::sort_candidates): Use delete[]
+	instead of delete for array allocated with new[].
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	* genmatch.c (lower_cond): Remove VEC_COND_EXPR special-casing.
+	(capture_info::capture_info): Likewise.
+	(capture_info::walk_match): Likewise.
+	(expr::gen_transform): Likewise.
+	(dt_simplify::gen_1): Likewise.
+	* gimple-match-head.c (maybe_resimplify_conditional_op):
+	Remove VEC_COND_EXPR special-casing.
+	(gimple_simplify): Likewise.
+	* gimple.c (gimple_could_trap_p_1): Adjust.
+	* tree-ssa-pre.c (compute_avail): Allow VEC_COND_EXPR
+	to participate in PRE.
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	* cfganal.c (connect_infinite_loops_to_exit): First call
+	add_noreturn_fake_exit_edges.
+	* ipa-sra.c (process_scan_results): Do not call the now redundant
+	add_noreturn_fake_exit_edges.
+	* predict.c (tree_estimate_probability): Likewise.
+	(rebuild_frequencies): Likewise.
+	* store-motion.c (one_store_motion_pass): Likewise.
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100222
+	* predict.c (pass_profile::execute): Remove redundant call to
+	mark_irreducible_loops.
+	(report_predictor_hitrates): Likewise.
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-ivopts.c (rewrite_use_nonlinear_expr): Avoid
+	valid_gimple_rhs_p by instead gimplifying to one.
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99971
+	* tree-vect-data-refs.c (vect_slp_analyze_node_dependences):
+	Always use TBAA for loads.
+
+2021-04-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100093
+	* config/i386/i386-options.c (ix86_option_override_internal):
+	Clear MASK_AVX256_SPLIT_UNALIGNED_LOAD/STORE in x_target_flags
+	when X86_TUNE_AVX256_UNALIGNED_LOAD/STORE_OPTIMAL is enabled
+	by target attribute.
+
 2021-04-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix71.h (PREFERRED_DEBUGGING_TYPE): Change to

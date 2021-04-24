@@ -1,3 +1,41 @@
+2021-04-23  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/98952
+	* gcc.target/powerpc/pr98952.c: New test.
+
+2021-04-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100041
+	* gcc.target/i386/pr79514.c (dg-error):
+	Expect error for 64bit targets.
+
+2021-04-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* gcc.target/i386/pr100182.c: New test.
+	* gcc.target/i386/pr71245-1.c (dg-final): Xfail scan-assembler-not.
+	* gcc.target/i386/pr71245-2.c (dg-final): Ditto.
+
+2021-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98767
+	* g++.dg/concepts/diagnostic17.C: New test.
+
+2021-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2374
+	* g++.dg/cpp1z/direct-enum-init2.C: New test.
+
+2021-04-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99971
+	* g++.dg/vect/slp-pr99971.cc: New testcase.
+
+2021-04-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100093
+	* gcc.target/i386/pr100093.c: New test.
+
 2021-04-22  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/94508

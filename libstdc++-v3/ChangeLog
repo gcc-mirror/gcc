@@ -1,3 +1,37 @@
+2021-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100180
+	* include/experimental/io_context (io_context): Define
+	dummy_pollfd type so that most member functions still compile
+	without <poll.h> and struct pollfd.
+
+2021-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/io_context (io_context::async_wait): Add
+	comment.
+	* include/experimental/socket (basic_socket::async_connect):
+	Cast wait_type constant to int.
+	(basic_datagram_socket::async_receive): Likewise.
+	(basic_datagram_socket::async_receive_from): Likewise.
+	(basic_datagram_socket::async_send): Likewise.
+	(basic_datagram_socket::async_send_to): Likewise.
+	(basic_stream_socket::async_receive): Likewise.
+	(basic_stream_socket::async_send): Likewise. Use io_context
+	parameter directly, instead of via an executor.
+	(basic_socket_acceptor::async_accept): Likewise.
+
+2021-04-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/socket (socket_base::shutdown_type):
+	(socket_base::wait_type, socket_base::message_flags):
+	Remove enumerators. Initialize constants directly with desired
+	values.
+	(socket_base::message_flags): Make all operators constexpr and
+	noexcept.
+	* testsuite/util/testsuite_common_types.h (test_bitmask_values):
+	New test utility.
+	* testsuite/experimental/net/socket/socket_base.cc: New test.
+
 2021-04-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/os/aix/atomicity.h: Delete.
