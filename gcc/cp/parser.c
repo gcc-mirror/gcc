@@ -23270,10 +23270,13 @@ cp_parser_type_id_1 (cp_parser *parser, cp_parser_flags flags,
 	    location_t loc = type_specifier_seq.locations[ds_type_spec];
 	    if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (auto_node))
 	      {
-		error_at (loc, "missing template arguments after %qT",
-			  auto_node);
-		inform (DECL_SOURCE_LOCATION (tmpl), "%qD declared here",
-			tmpl);
+		if (!cp_parser_simulate_error (parser))
+		  {
+		    error_at (loc, "missing template arguments after %qT",
+			      auto_node);
+		    inform (DECL_SOURCE_LOCATION (tmpl), "%qD declared here",
+			    tmpl);
+		  }
 	      }
 	    else if (parser->in_template_argument_list_p)
 	      error_at (loc, "%qT not permitted in template argument",
