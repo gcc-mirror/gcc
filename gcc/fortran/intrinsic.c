@@ -3423,7 +3423,7 @@ add_subroutines (void)
   /* Argument names.  These are used as argument keywords and so need to
      match the documentation.  Please keep this list in sorted order.  */
   static const char
-    *a = "a", *c = "count", *cm = "count_max", *com = "command",
+    *a = "a", *c_ = "c", *c = "count", *cm = "count_max", *com = "command",
     *cr = "count_rate", *dt = "date", *errmsg = "errmsg", *f = "from",
     *fp = "frompos", *gt = "get", *h = "harvest", *han = "handler",
     *length = "length", *ln = "len", *md = "mode", *msk = "mask",
@@ -3803,12 +3803,12 @@ add_subroutines (void)
   add_sym_3s ("fgetc", GFC_ISYM_FGETC, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fgetputc_sub, NULL, gfc_resolve_fgetc_sub,
 	      ut, BT_INTEGER, di, REQUIRED, INTENT_IN,
-	      c, BT_CHARACTER, dc, REQUIRED, INTENT_OUT,
+	      c_, BT_CHARACTER, dc, REQUIRED, INTENT_OUT,
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_2s ("fget", GFC_ISYM_FGET, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fgetput_sub, NULL, gfc_resolve_fget_sub,
-	      c, BT_CHARACTER, dc, REQUIRED, INTENT_OUT,
+	      c_, BT_CHARACTER, dc, REQUIRED, INTENT_OUT,
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_1s ("flush", GFC_ISYM_FLUSH, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
@@ -3818,12 +3818,12 @@ add_subroutines (void)
   add_sym_3s ("fputc", GFC_ISYM_FPUTC, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fgetputc_sub, NULL, gfc_resolve_fputc_sub,
 	      ut, BT_INTEGER, di, REQUIRED, INTENT_IN,
-	      c, BT_CHARACTER, dc, REQUIRED, INTENT_IN,
+	      c_, BT_CHARACTER, dc, REQUIRED, INTENT_IN,
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_2s ("fput", GFC_ISYM_FPUT, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
 	      gfc_check_fgetput_sub, NULL, gfc_resolve_fput_sub,
-	      c, BT_CHARACTER, dc, REQUIRED, INTENT_IN,
+	      c_, BT_CHARACTER, dc, REQUIRED, INTENT_IN,
 	      st, BT_INTEGER, di, OPTIONAL, INTENT_OUT);
 
   add_sym_1s ("free", GFC_ISYM_FREE, CLASS_IMPURE, BT_UNKNOWN, 0, GFC_STD_GNU,
