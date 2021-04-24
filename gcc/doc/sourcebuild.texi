@@ -1301,6 +1301,8 @@ A selector is:
 @item one or more target triplets, possibly including wildcard characters;
 use @samp{*-*-*} to match any target
 @item a single effective-target keyword (@pxref{Effective-Target Keywords})
+@item a list of compiler options that should be included or excluded
+(as described in more detail below)
 @item a logical expression
 @end itemize
 
@@ -1313,14 +1315,96 @@ test to fail for targets that match @var{selector2}.
 
 A selector expression appears within curly braces and uses a single
 logical operator: one of @samp{!}, @samp{&&}, or @samp{||}.  An
-operand is another selector expression, an effective-target keyword,
-a single target triplet, or a list of target triplets within quotes or
-curly braces.  For example:
+operand is one of the following:
+
+@itemize @bullet
+@item
+another selector expression, in curly braces
+
+@item
+an effective-target keyword, such as @code{lp64}
+
+@item
+a single target triplet
+
+@item
+a list of target triplets within quotes or curly braces
+
+@item
+one of the following:
+
+@table @samp
+@item @{ any-opts @var{opt1} @dots{} @var{optn} @}
+Each of @var{opt1} to @var{optn} is a space-separated list of option globs.
+The selector expression evaluates to true if, for one of these strings,
+every glob in the string matches an option that was passed to the compiler.
+For example:
+
+@smallexample
+@{ any-opts "-O3 -flto" "-O[2g]" @}
+@end smallexample
+
+is true if any of the following are true:
+
+@itemize @bullet
+@item
+@option{-O2} was passed to the compiler
+
+@item
+@option{-Og} was passed to the compiler
+
+@item
+both @option{-O3} and @option{-flto} were passed to the compiler
+@end itemize
+
+This kind of selector can only be used within @code{dg-final} directives.
+Use @code{dg-skip-if}, @code{dg-xfail-if} or @code{dg-xfail-run-if} to
+skip whole tests based on options, or to mark them as expected to fail
+with certain options.
+
+@item @{ no-opts @var{opt1} @dots{} @var{optn} @}
+As for @code{any-opts} above, each of @var{opt1} to @var{optn} is a
+space-separated list of option globs.  The selector expression
+evaluates to true if, for all of these strings, there is at least
+one glob that does not match an option that was passed to the compiler.
+It is shorthand for:
+
+@smallexample
+@{ ! @{ any-opts @var{opt1} @dots{} @var{optn} @} @}
+@end smallexample
+
+For example:
+
+@smallexample
+@{ no-opts "-O3 -flto" "-O[2g]" @}
+@end smallexample
+
+is true if all of the following are true:
+
+@itemize @bullet
+@item
+@option{-O2} was not passed to the compiler
+
+@item
+@option{-Og} was not passed to the compiler
+
+@item
+at least one of @option{-O3} or @option{-flto} was not passed to the compiler
+@end itemize
+
+Like @code{any-opts}, this kind of selector can only be used within
+@code{dg-final} directives.
+
+@end table
+@end itemize
+
+Here are some examples of full target selectors:
 
 @smallexample
 @{ target @{ ! "hppa*-*-* ia64*-*-*" @} @}
 @{ target @{ powerpc*-*-* && lp64 @} @}
 @{ xfail @{ lp64 || vect_no_align @} @}
+@{ xfail @{ aarch64*-*-* && @{ any-opts "-O2" @} @} @}
 @end smallexample
 
 @node Effective-Target Keywords
