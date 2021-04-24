@@ -3134,16 +3134,25 @@ darwin_file_end (void)
 /* TODO: Add a language hook for identifying if a decl is a vtable.  */
 #define DARWIN_VTABLE_P(DECL) 0
 
-/* Cross-module name binding.  Darwin does not support overriding
-   functions at dynamic-link time, except for vtables in kexts.  */
+/* Cross-module name binding.
+   Darwin's dynamic linker supports interposition and lazy symbol binding.
+   If we are generating PIC code and a symbol is public, then it could
+   potentially be indirected via a lazy-resolver stub; we cannot tell at
+   compile-time if this will be done (since the indirection can be the
+   result of adding a -flat-namespace option at link-time).  Here we are
+   conservative and assume that any such symbol cannot bind locally.
+   The default implementation for binds_local_p handles undefined, weak and
+   common symbols which are always indirected.  */
 
 bool
 darwin_binds_local_p (const_tree decl)
 {
   /* We use the "shlib" input to indicate that a symbol should be
-     considered overridable; only relevant for vtables in kernel modules
-     on earlier system versions, and with a TODO to complete.  */
+     considered overridable.  Older versions of the kernel also support
+     interposition for extensions (although this code is a place-holder
+     until there is an implementation for DARWIN_VTABLE_P).  */
   bool force_overridable = TARGET_KEXTABI && DARWIN_VTABLE_P (decl);
+  force_overridable |= MACHOPIC_PURE;
   return default_binds_local_p_3 (decl, force_overridable /* shlib */,
 				  false /* weak dominate */,
 				  false /* extern_protected_data */,
