@@ -1,3 +1,13 @@
+2021-04-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-04-22  Tobias Burnus  <tobias@codesourcery.com>
+
+	* substr_9.f90: Move to ...
+	* gfortran.dg/substr_9.f90: ... here.
+	* substr_10.f90: Move to ...
+	* gfortran.dg/substr_10.f90: ... here.
+
 2021-04-22  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
