@@ -234,32 +234,19 @@ CompileBlock::visit (HIR::BlockExpr &expr)
   for (auto &s : expr.get_statements ())
     {
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
-      if (compiled_expr == nullptr)
-	continue;
-
-      if (result == nullptr)
+      if (compiled_expr != nullptr)
 	{
-	  Bstatement *final_stmt
+	  Bstatement *compiled_stmt
 	    = ctx->get_backend ()->expression_statement (fnctx.fndecl,
 							 compiled_expr);
-	  ctx->add_statement (final_stmt);
-	}
-      else
-	{
-	  Bexpression *result_reference
-	    = ctx->get_backend ()->var_expression (result,
-						   s->get_locus_slow ());
-
-	  Bstatement *assignment = ctx->get_backend ()->assignment_statement (
-	    fnctx.fndecl, result_reference, compiled_expr, expr.get_locus ());
-	  ctx->add_statement (assignment);
+	  ctx->add_statement (compiled_stmt);
 	}
     }
 
   if (expr.has_expr ())
     {
-      // the previous passes will ensure this is a valid return
-      // dead code elimination should remove any bad trailing expressions
+      // the previous passes will ensure this is a valid return or
+      // a valid trailing expression
       Bexpression *compiled_expr = CompileExpr::Compile (expr.expr.get (), ctx);
       if (compiled_expr != nullptr)
 	{
@@ -390,14 +377,29 @@ HIRCompileBase::compile_function_body (
       auto compiled_expr = CompileStmt::Compile (s.get (), ctx);
       if (compiled_expr != nullptr)
 	{
+	  Bstatement *compiled_stmt
+	    = ctx->get_backend ()->expression_statement (fndecl, compiled_expr);
+	  ctx->add_statement (compiled_stmt);
+	}
+    }
+
+  if (function_body->has_expr ())
+    {
+      // the previous passes will ensure this is a valid return
+      // or a valid trailing expression
+      Bexpression *compiled_expr
+	= CompileExpr::Compile (function_body->expr.get (), ctx);
+
+      if (compiled_expr != nullptr)
+	{
 	  if (has_return_type)
 	    {
 	      std::vector<Bexpression *> retstmts;
 	      retstmts.push_back (compiled_expr);
 
-	      auto ret
-		= ctx->get_backend ()->return_statement (fndecl, retstmts,
-							 s->get_locus_slow ());
+	      auto ret = ctx->get_backend ()->return_statement (
+		fndecl, retstmts,
+		function_body->get_final_expr ()->get_locus_slow ());
 	      ctx->add_statement (ret);
 	    }
 	  else
@@ -407,31 +409,6 @@ HIRCompileBase::compile_function_body (
 							     compiled_expr);
 	      ctx->add_statement (final_stmt);
 	    }
-	}
-    }
-
-  if (function_body->has_expr ())
-    {
-      // the previous passes will ensure this is a valid return
-      // dead code elimination should remove any bad trailing expressions
-      Bexpression *compiled_expr
-	= CompileExpr::Compile (function_body->expr.get (), ctx);
-
-      if (has_return_type && compiled_expr)
-	{
-	  std::vector<Bexpression *> retstmts;
-	  retstmts.push_back (compiled_expr);
-
-	  auto ret = ctx->get_backend ()->return_statement (
-	    fndecl, retstmts,
-	    function_body->get_final_expr ()->get_locus_slow ());
-	  ctx->add_statement (ret);
-	}
-      else if (compiled_expr)
-	{
-	  Bstatement *final_stmt
-	    = ctx->get_backend ()->expression_statement (fndecl, compiled_expr);
-	  ctx->add_statement (final_stmt);
 	}
     }
 }
