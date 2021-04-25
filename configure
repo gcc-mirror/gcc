@@ -10418,10 +10418,11 @@ $as_echo "$as_me: WARNING: some C libraries are required to build $language: $mi
         esac
 
         # Disable jit if -enable-host-shared not specified
-        # but not if building for Mingw. All code in Windows
+        # but not if building for MinGW or Cygwin. All code in Windows
         # is position independent code (PIC).
         case $target in
           *mingw*) ;;
+          *cygwin*) ;;
           *)
           case ${add_this_lang}:${language}:${host_shared} in
             yes:jit:no)

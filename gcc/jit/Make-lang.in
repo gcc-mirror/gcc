@@ -44,8 +44,13 @@
 LIBGCCJIT_MINOR_NUM = 0
 LIBGCCJIT_RELEASE_NUM = 1
 
-ifneq (,$(findstring mingw,$(target)))
-LIBGCCJIT_FILENAME = libgccjit-$(LIBGCCJIT_VERSION_NUM).dll
+SHARED_PFX=lib
+ifneq (,$(filter %cygwin,$(target)))
+SHARED_PFX=cyg
+endif
+
+ifneq (,$(or $(findstring mingw,$(target)),$(filter %-cygwin,$(target))))
+LIBGCCJIT_FILENAME = $(SHARED_PFX)gccjit-$(LIBGCCJIT_VERSION_NUM).dll
 LIBGCCJIT_IMPORT_LIB = libgccjit.dll.a
 
 jit: $(LIBGCCJIT_FILENAME) \
@@ -164,7 +169,7 @@ else
 JIT_LDFLAGS = $(LDFLAGS)
 endif
 
-ifneq (,$(findstring mingw,$(target)))
+ifneq (,$(or $(findstring mingw,$(target)),$(filter %-cygwin,$(target))))
 LIBGCCJIT_DEF_FILE = libgccjit.def
 
 # Create import library
@@ -208,7 +213,7 @@ $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	@$(call LINK_PROGRESS,$(INDEX.jit),end)
 
 # Create symlinks when not building for Windows
-ifeq (,$(findstring mingw,$(target)))
+ifeq (,$(or $(findstring mingw,$(target)),$(filter %-cygwin,$(target))))
 
 ifeq (,$(findstring darwin,$(host)))
 # but only one level for Darwin, version info is embedded.
@@ -394,7 +399,7 @@ jit.install-headers: installdirs
 	$(INSTALL_DATA) $(srcdir)/jit/libgccjit++.h \
 	  $(DESTDIR)$(includedir)/libgccjit++.h
 
-ifneq (,$(findstring mingw,$(target)))
+ifneq (,$(or $(findstring mingw,$(target)),$(filter %-cygwin,$(target))))
 jit.install-common: installdirs jit.install-headers
 # Install import library
 	$(INSTALL_PROGRAM) $(LIBGCCJIT_IMPORT_LIB) \
