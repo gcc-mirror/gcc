@@ -4374,11 +4374,11 @@ public:
 
   IfLetExpr (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 	     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
-	     std::vector<Attribute> /* outer_attrs */, Location locus)
-    : match_arm_patterns (std::move (match_arm_patterns)),
+	     std::vector<Attribute> outer_attrs, Location locus)
+    : outer_attrs (std::move (outer_attrs)),
+      match_arm_patterns (std::move (match_arm_patterns)),
       value (std::move (value)), if_block (std::move (if_block)), locus (locus)
   {}
-  // outer attributes not allowed on if let exprs either
 
   // copy constructor with clone
   IfLetExpr (IfLetExpr const &other)
