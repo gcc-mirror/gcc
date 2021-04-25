@@ -133,6 +133,8 @@ public:
   {
     TyTy::SubstitutionArgumentMappings adjusted
       = type.adjust_mappings_for_this (mappings);
+    if (adjusted.is_error ())
+      return;
 
     TyTy::BaseType *concrete = type.handle_substitions (adjusted);
     if (concrete != nullptr)
@@ -143,6 +145,8 @@ public:
   {
     TyTy::SubstitutionArgumentMappings adjusted
       = type.adjust_mappings_for_this (mappings);
+    if (adjusted.is_error ())
+      return;
 
     TyTy::BaseType *concrete = type.handle_substitions (adjusted);
     if (concrete != nullptr)

@@ -242,15 +242,6 @@ SubstitutionArgumentMappings
 SubstitutionRef::adjust_mappings_for_this (
   SubstitutionArgumentMappings &mappings)
 {
-  if (substitutions.size () > mappings.size ())
-    {
-      rust_error_at (mappings.get_locus (),
-		     "not enough type arguments: subs %s vs mappings %s",
-		     subst_as_string ().c_str (),
-		     mappings.as_string ().c_str ());
-      return SubstitutionArgumentMappings::error ();
-    }
-
   Analysis::Mappings *mappings_table = Analysis::Mappings::get ();
 
   std::vector<SubstitutionArg> resolved_mappings;
@@ -259,13 +250,33 @@ SubstitutionRef::adjust_mappings_for_this (
       auto &subst = substitutions.at (i);
 
       SubstitutionArg arg = SubstitutionArg::error ();
-      bool ok = mappings.get_argument_at (0, &arg);
+      if (mappings.size () == substitutions.size ())
+	{
+	  mappings.get_argument_at (i, &arg);
+	}
+      else
+	{
+	  if (subst.needs_substitution ())
+	    {
+	      // get from passed in mappings
+	      mappings.get_argument_for_symbol (subst.get_param_ty (), &arg);
+	    }
+	  else
+	    {
+	      // we should already have this somewhere
+	      used_arguments.get_argument_for_symbol (subst.get_param_ty (),
+						      &arg);
+	    }
+	}
+
+      bool ok = !arg.is_error ();
       if (!ok)
 	{
 	  rust_error_at (mappings_table->lookup_location (
 			   subst.get_param_ty ()->get_ref ()),
-			 "failed to find parameter type: %s",
-			 subst.get_param_ty ()->as_string ().c_str ());
+			 "failed to find parameter type: %s vs mappings [%s]",
+			 subst.get_param_ty ()->as_string ().c_str (),
+			 mappings.as_string ().c_str ());
 	  return SubstitutionArgumentMappings::error ();
 	}
 

@@ -408,6 +408,15 @@ public:
 
   void override_context ();
 
+  bool needs_substitution () const
+  {
+    auto p = get_param_ty ();
+    if (!p->can_resolve ())
+      return true;
+
+    return p->resolve ()->get_kind () == TypeKind::PARAM;
+  }
+
 private:
   std::unique_ptr<HIR::GenericParam> &generic;
   ParamType *param;
@@ -436,6 +445,8 @@ public:
   SubstitutionParamMapping *get_param_mapping () { return param; }
 
   static SubstitutionArg error () { return SubstitutionArg (nullptr, nullptr); }
+
+  bool is_error () const { return param == nullptr || argument == nullptr; }
 
   bool is_conrete () const
   {
@@ -598,6 +609,17 @@ public:
   SubstitutionArgumentMappings get_substitution_arguments ()
   {
     return used_arguments;
+  }
+
+  size_t num_required_substitutions () const
+  {
+    size_t n = 0;
+    for (auto &p : substitutions)
+      {
+	if (p.needs_substitution ())
+	  n++;
+      }
+    return n;
   }
 
   // We are trying to subst <i32, f32> into Struct Foo<X,Y> {}
