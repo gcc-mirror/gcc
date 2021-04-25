@@ -1,3 +1,20 @@
+2021-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89565
+	PR c++/93383
+	PR c++/95291
+	PR c++/99200
+	PR c++/99683
+	* pt.c (do_class_deduction): Punt if the initializer is
+	type-dependent.
+
+2021-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/87709
+	* parser.c (cp_parser_type_id_1): If we see a template
+	placeholder, first try simulating an error before issuing
+	a real error.
+
 2021-04-23  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/98767

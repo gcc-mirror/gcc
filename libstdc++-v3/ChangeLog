@@ -1,3 +1,8 @@
+2021-04-24  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/lib/dg-options.exp (atomic_link_flags): New.
+	(add_options_for_libatomic): Use atomic_link_flags.
+
 2021-04-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/100180

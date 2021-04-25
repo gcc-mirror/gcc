@@ -1,3 +1,25 @@
+2021-04-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Revert:
+	2021-04-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/100152
+	* config/darwin.c (darwin_binds_local_p): Assume that any
+	public symbol might be interposed for PIC code. Update function
+	header comment to reflect current Darwin capability.
+
+2021-04-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/100152
+	* config/darwin.c (darwin_binds_local_p): Assume that any
+	public symbol might be interposed for PIC code. Update function
+	header comment to reflect current Darwin capability.
+
+2021-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* doc/sourcebuild.texi: Document no-opts and any-opts target
+	selectors.
+
 2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
 
 	* config/bpf/bpf.h (ASM_OUTPUT_ALIGNED_BSS): Use .type and .lcomm.

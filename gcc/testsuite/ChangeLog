@@ -1,3 +1,70 @@
+2021-04-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100244
+	* g++.dg/analyzer/pr100244.C: New test.
+
+2021-04-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100154
+	* gfortran.dg/pr100154.f90: New test.
+
+2021-04-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100218
+	* gfortran.dg/ptr-func-4.f90: New test.
+
+2021-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.dg/guality/example.c: Update aarch64*-*-* xfails.
+	* gcc.dg/guality/guality.c: Likewise.
+	* gcc.dg/guality/inline-params.c: Likewise.
+	* gcc.dg/guality/loop-1.c: Likewise.
+	* gcc.dg/guality/pr36728-1.c: Likewise.
+	* gcc.dg/guality/pr36728-2.c: Likewise.
+	* gcc.dg/guality/pr36728-3.c: Likewise.
+	* gcc.dg/guality/pr41447-1.c: Likewise.
+	* gcc.dg/guality/pr54200.c:  Likewise.
+	* gcc.dg/guality/pr54519-1.c: Likewise.
+	* gcc.dg/guality/pr54519-2.c: Likewise.
+	* gcc.dg/guality/pr54519-3.c: Likewise.
+	* gcc.dg/guality/pr54519-4.c: Likewise.
+	* gcc.dg/guality/pr54519-5.c: Likewise.
+	* gcc.dg/guality/pr54519-6.c: Likewise.
+	* gcc.dg/guality/pr54693-2.c: Likewise.
+	* gcc.dg/guality/pr56154-1.c: Likewise.
+	* gcc.dg/guality/pr59776.c: Likewise.
+	* gcc.dg/guality/pr68860-1.c: Likewise.
+	* gcc.dg/guality/pr68860-2.c: Likewise.
+	* gcc.dg/guality/pr90074.c: Likewise.
+	* gcc.dg/guality/pr90716.c: Likewise.
+	* gcc.dg/guality/sra-1.c: Likewise.
+
+2021-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* lib/target-supports-dg.exp (selector_expression): Handle any-opts
+	and no-opts.
+	* gcc.dg/guality/pr41353-1.c: Exclude -O0 from xfail.
+	* gcc.dg/guality/pr59776.c: Likewise.
+	* gcc.dg/guality/pr54970.c: Likewise -O0 and -Og.
+
+2021-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89565
+	PR c++/93383
+	PR c++/95291
+	PR c++/99200
+	PR c++/99683
+	* g++.dg/cpp2a/nontype-class39.C: Remove dg-ice directive.
+	* g++.dg/cpp2a/nontype-class45.C: New test.
+	* g++.dg/cpp2a/nontype-class46.C: New test.
+	* g++.dg/cpp2a/nontype-class47.C: New test.
+	* g++.dg/cpp2a/nontype-class48.C: New test.
+
+2021-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/87709
+	* g++.dg/cpp1z/class-deduction86.C: New test.
+
 2021-04-23  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/98952
