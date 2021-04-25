@@ -1,3 +1,8 @@
+2021-04-24  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/96796
+	* gcc.c-torture/compile/pr96796.c: New test.
+
 2021-04-23  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
