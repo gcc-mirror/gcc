@@ -1364,6 +1364,7 @@
 			  (V2SI "w") (V4SI "w")
 			  (DI   "x") (V2DI "x")
 			  (V4HF "w") (V8HF "w")
+			  (V4BF "w") (V8BF "w")
 			  (V2SF "w") (V4SF "w")
 			  (V2DF "x")
 			  (VNx16QI "w") (VNx8QI "w") (VNx4QI "w") (VNx2QI "w")
