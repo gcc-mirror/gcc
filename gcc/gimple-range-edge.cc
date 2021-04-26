@@ -112,8 +112,7 @@ outgoing_range::calc_switch_ranges (gswitch *sw)
   //
   // Allocate an int_range_max for the default range case, start with
   // varying and intersect each other case from it.
-  irange *default_range = m_range_allocator.allocate (255);
-  default_range->set_varying (type);
+  int_range_max default_range (type);
 
   for (x = 1; x < lim; x++)
     {
@@ -132,7 +131,7 @@ outgoing_range::calc_switch_ranges (gswitch *sw)
       int_range_max def_range (low, high);
       range_cast (def_range, type);
       def_range.invert ();
-      default_range->intersect (def_range);
+      default_range.intersect (def_range);
 
       // Create/union this case with anything on else on the edge.
       int_range_max case_range (low, high);
@@ -156,7 +155,8 @@ outgoing_range::calc_switch_ranges (gswitch *sw)
   irange *&slot = m_edge_table->get_or_insert (default_edge, &existed);
   // This should be the first call into this switch.
   gcc_checking_assert (!existed);
-  slot = default_range;
+  irange *dr = m_range_allocator.allocate (default_range);
+  slot = dr;
 }
 
 
