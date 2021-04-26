@@ -365,13 +365,13 @@ static char text_end_label[MAX_ARTIFICIAL_LABEL_BYTES];
 #define ASM_OUTPUT_DEBUG_STRING(FILE,P)		\
   do						\
     {						\
-      register int slen = strlen (P);		\
-      register const char *p = (P);		\
-      register int i;				\
+      int slen = strlen (P);			\
+      const char *p = (P);			\
+      int i;					\
       fprintf (FILE, "\t.ascii \"");		\
       for (i = 0; i < slen; i++)		\
 	{					\
-	  register int c = p[i];		\
+	  int c = p[i];				\
 	  if (c == '\"' || c == '\\')		\
 	    putc ('\\', FILE);			\
 	  if (c >= ' ' && c < 0177)		\
@@ -1229,7 +1229,7 @@ vmsdbgout_end_epilogue (unsigned int line, const char *file)
    a lexical block.  */
 
 static void
-vmsdbgout_begin_block (register unsigned line, register unsigned blocknum)
+vmsdbgout_begin_block (unsigned line, unsigned blocknum)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.begin_block) (line, blocknum);
@@ -1242,7 +1242,7 @@ vmsdbgout_begin_block (register unsigned line, register unsigned blocknum)
    lexical block.  */
 
 static void
-vmsdbgout_end_block (register unsigned line, register unsigned blocknum)
+vmsdbgout_end_block (unsigned line, unsigned blocknum)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
     (*dwarf2_debug_hooks.end_block) (line, blocknum);
@@ -1315,8 +1315,8 @@ static unsigned int
 lookup_filename (const char *file_name)
 {
   static unsigned int last_file_lookup_index = 0;
-  register char *fn;
-  register unsigned i;
+  char *fn;
+  unsigned i;
   const char *fnam;
   long long cdt = 0;
   long ebk = 0;
@@ -1405,8 +1405,8 @@ vmsdbgout_write_source_line (unsigned line, const char *filename,
 }
 
 static void
-vmsdbgout_source_line (register unsigned line, unsigned int column,
-		       register const char *filename,
+vmsdbgout_source_line (unsigned line, unsigned int column,
+		       const char *filename,
                        int discriminator, bool is_stmt)
 {
   if (write_symbols == VMS_AND_DWARF2_DEBUG)
