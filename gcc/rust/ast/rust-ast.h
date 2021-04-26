@@ -1232,6 +1232,8 @@ class LifetimeParam : public GenericParam
   Location locus;
 
 public:
+  Lifetime get_lifetime () const { return lifetime; }
+
   // Returns whether the lifetime param has any lifetime bounds.
   bool has_lifetime_bounds () const { return !lifetime_bounds.empty (); }
 
