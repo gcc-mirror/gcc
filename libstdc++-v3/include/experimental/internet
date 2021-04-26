@@ -52,7 +52,7 @@
 # include <arpa/inet.h>		// inet_ntop
 #endif
 #ifdef _GLIBCXX_HAVE_NETINET_IN_H
-# include <netinet/in.h>	// IPPROTO_IP
+# include <netinet/in.h>	// IPPROTO_IP, IPPROTO_IPV6, in_addr, in6_addr
 #endif
 #ifdef _GLIBCXX_HAVE_NETINET_TCP_H
 # include <netinet/tcp.h>	// TCP_NODELAY
@@ -2078,6 +2078,7 @@ namespace ip
     struct no_delay : __sockopt_crtp<no_delay, bool>
     {
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
       static const int _S_level = IPPROTO_TCP;
       static const int _S_name = TCP_NODELAY;
@@ -2157,10 +2158,14 @@ namespace ip
   /// @}
 
   /// Restrict a socket created for an IPv6 protocol to IPv6 only.
-  struct v6_only : __sockopt_crtp<v6_only, bool>
+  class v6_only : public __sockopt_crtp<v6_only, bool>
   {
+  public:
     using __sockopt_crtp::__sockopt_crtp;
+    using __sockopt_crtp::operator=;
 
+  private:
+    friend __sockopt_crtp<v6_only, bool>;
     static const int _S_level = IPPROTO_IPV6;
     static const int _S_name = IPV6_V6ONLY;
   };
@@ -2168,9 +2173,11 @@ namespace ip
   namespace unicast
   {
     /// Set the default number of hops (TTL) for outbound datagrams.
-    struct hops : __sockopt_crtp<hops>
+    class hops : public __sockopt_crtp<hops>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
       template<typename _Protocol>
 	int
@@ -2186,17 +2193,34 @@ namespace ip
 
   namespace multicast
   {
-    /// Request that a socket joins a multicast group.
-    struct join_group
+    class __mcastopt
     {
+    public:
       explicit
-      join_group(const address&);
+      __mcastopt(const address& __grp) noexcept
+      : __mcastopt(__grp.is_v4() ? __mcastopt(__grp.to_v4()) : __mcastopt(__grp.to_v6()))
+      { }
 
       explicit
-      join_group(const address_v4&, const address_v4& = address_v4::any());
+      __mcastopt(const address_v4& __grp,
+		 const address_v4& __iface = address_v4::any()) noexcept
+      {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	_M_v4.imr_multiaddr.s_addr = __grp.to_uint();
+	_M_v4.imr_interface.s_addr = __iface.to_uint();
+#else
+	_M_v4.imr_multiaddr.s_addr = __builtin_bswap32(__grp.to_uint());
+	_M_v4.imr_interface.s_addr = __builtin_bswap32(__iface.to_uint());
+#endif
+      }
 
       explicit
-      join_group(const address_v6&, unsigned int = 0);
+      __mcastopt(const address_v6& __grp, unsigned int __iface = 0) noexcept
+      {
+	const auto __addr = __grp.to_bytes();
+	__builtin_memcpy(_M_v6.ipv6mr_multiaddr.s6_addr, __addr.data(), 16);
+	_M_v6.ipv6mr_interface = __iface;
+      }
 
       template<typename _Protocol>
 	int
@@ -2204,112 +2228,76 @@ namespace ip
 	{ return __p.family() == AF_INET6 ? IPPROTO_IPV6 : IPPROTO_IP; }
 
       template<typename _Protocol>
-	int
-	name(const _Protocol& __p) const noexcept
-	{
-	  return __p.family() == AF_INET6
-	    ? IPV6_JOIN_GROUP : IP_ADD_MEMBERSHIP;
-	}
-      template<typename _Protocol>
-	void*
-	data(const _Protocol&) noexcept
-	{ return std::addressof(_M_value); }
-
-      template<typename _Protocol>
 	const void*
-	data(const _Protocol&) const noexcept
-	{ return std::addressof(_M_value); }
+	data(const _Protocol& __p) const noexcept
+	{ return __p.family() == AF_INET6 ? &_M_v6 : &_M_v4; }
 
       template<typename _Protocol>
 	size_t
 	size(const _Protocol& __p) const noexcept
-	{
-	  return __p.family() == AF_INET6
-	    ? sizeof(_M_value._M_v6) : sizeof(_M_value._M_v4);
-	}
+	{ return __p.family() == AF_INET6 ? sizeof(_M_v6) : sizeof(_M_v4); }
+
+    private:
+      ipv6_mreq _M_v6 = {};
+      ip_mreq _M_v4 = {};
+    };
+
+    /// Request that a socket joins a multicast group.
+    class join_group : private __mcastopt
+    {
+    public:
+      using __mcastopt::__mcastopt;
+      using __mcastopt::level;
+      using __mcastopt::data;
+      using __mcastopt::size;
 
       template<typename _Protocol>
-	void
-	resize(const _Protocol& __p, size_t __s)
+	int
+	name(const _Protocol& __p) const noexcept
 	{
-	  if (__s != size(__p))
-	    __throw_length_error("invalid value for socket option resize");
+	  if (__p.family() == AF_INET6)
+	    return IPV6_JOIN_GROUP;
+	  return IP_ADD_MEMBERSHIP;
 	}
-
-    protected:
-      union
-      {
-	ipv6_mreq _M_v6;
-	ip_mreq _M_v4;
-      } _M_value;
     };
 
     /// Request that a socket leaves a multicast group.
-    struct leave_group
+    class leave_group : private __mcastopt
     {
-      explicit
-      leave_group(const address&);
-
-      explicit
-      leave_group(const address_v4&, const address_v4& = address_v4::any());
-
-      explicit
-      leave_group(const address_v6&, unsigned int = 0);
-
-      template<typename _Protocol>
-	int
-	level(const _Protocol& __p) const noexcept
-	{ return __p.family() == AF_INET6 ? IPPROTO_IPV6 : IPPROTO_IP; }
+    public:
+      using __mcastopt::__mcastopt;
+      using __mcastopt::level;
+      using __mcastopt::data;
+      using __mcastopt::size;
 
       template<typename _Protocol>
 	int
 	name(const _Protocol& __p) const noexcept
 	{
-	  return __p.family() == AF_INET6
-	    ? IPV6_LEAVE_GROUP : IP_DROP_MEMBERSHIP;
+	  if (__p.family() == AF_INET6)
+	    return IPV6_LEAVE_GROUP;
+	  return IP_DROP_MEMBERSHIP;
 	}
-      template<typename _Protocol>
-	void*
-	data(const _Protocol&) noexcept
-	{ return std::addressof(_M_value); }
-
-      template<typename _Protocol>
-	const void*
-	data(const _Protocol&) const noexcept
-	{ return std::addressof(_M_value); }
-
-      template<typename _Protocol>
-	size_t
-	size(const _Protocol& __p) const noexcept
-	{
-	  return __p.family() == AF_INET6
-	    ? sizeof(_M_value._M_v6) : sizeof(_M_value._M_v4);
-	}
-
-      template<typename _Protocol>
-	void
-	resize(const _Protocol& __p, size_t __s)
-	{
-	  if (__s != size(__p))
-	    __throw_length_error("invalid value for socket option resize");
-	}
-
-    protected:
-      union
-      {
-	ipv6_mreq _M_v6;
-	ip_mreq _M_v4;
-      } _M_value;
     };
 
     /// Specify the network interface for outgoing multicast datagrams.
     class outbound_interface
     {
+    public:
       explicit
-      outbound_interface(const address_v4&);
+      outbound_interface(const address_v4& __v4) noexcept
+      {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	_M_v4.s_addr = __v4.to_uint();
+#else
+	_M_v4.s_addr = __builtin_bswap32(__v4.to_uint());
+#endif
+      }
 
       explicit
-      outbound_interface(unsigned int);
+      outbound_interface(unsigned int __v6) noexcept
+      : _M_v4(), _M_v6(__v6)
+      { }
 
       template<typename _Protocol>
 	int
@@ -2326,28 +2314,25 @@ namespace ip
 
       template<typename _Protocol>
 	const void*
-	data(const _Protocol&) const noexcept
-	{ return std::addressof(_M_value); }
+	data(const _Protocol& __p) const noexcept
+	{ return __p.family() == AF_INET6 ? &_M_v6 : &_M_v4; }
 
       template<typename _Protocol>
 	size_t
 	size(const _Protocol& __p) const noexcept
-	{
-	  return __p.family() == AF_INET6
-	    ? sizeof(_M_value._M_v6) : sizeof(_M_value._M_v4);
-	}
+	{ return __p.family() == AF_INET6 ? sizeof(_M_v6) : sizeof(_M_v4); }
 
-    protected:
-      union {
-	unsigned _M_v6;
-	in_addr _M_v4;
-      } _M_value;
+    private:
+      in_addr _M_v4;
+      unsigned _M_v6 = 0;
     };
 
     /// Set the default number of hops (TTL) for outbound datagrams.
-    struct hops : __sockopt_crtp<hops>
+    class hops : public __sockopt_crtp<hops>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
       template<typename _Protocol>
 	int
@@ -2364,9 +2349,11 @@ namespace ip
     };
 
     /// Set whether datagrams are delivered back to the local application.
-    struct enable_loopback : __sockopt_crtp<enable_loopback>
+    class enable_loopback : public __sockopt_crtp<enable_loopback, bool>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
       template<typename _Protocol>
 	int
