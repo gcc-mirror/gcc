@@ -2096,6 +2096,9 @@ div instruction.
 ARM target supports ARMv8-M Security Extensions, enabled by the @code{-mcmse}
 option.
 
+@item arm_cmse_hw
+Test system supports executing CMSE instructions.
+
 @item arm_coproc1_ok
 @anchor{arm_coproc1_ok}
 ARM target supports the following coprocessor instructions: @code{CDP},

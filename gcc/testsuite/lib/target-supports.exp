@@ -4861,6 +4861,21 @@ proc check_effective_target_arm_cmse_ok {} {
     } "-mcmse"];
 }
 
+# Return 1 if the target supports executing CMSE instructions, 0
+# otherwise.  Cache the result.
+
+proc check_effective_target_arm_cmse_hw { } {
+    return [check_runtime arm_cmse_hw_available {
+	int __attribute__ ((cmse_nonsecure_entry)) ns_func(void)
+	{
+	    return 0;
+	}
+	int main (void)
+	{
+	    return ns_func();
+	}
+    } "-mcmse -Wl,--section-start,.gnu.sgstubs=0x00400000"]
+}
 # Return 1 if the target supports executing MVE instructions, 0
 # otherwise.
 

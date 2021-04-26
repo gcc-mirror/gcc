@@ -34,7 +34,12 @@ if ![info exists DEFAULT_CFLAGS] then {
 dg-init
 
 set saved-dg-do-what-default ${dg-do-what-default}
-set dg-do-what-default "assemble"
+
+if {[is-effective-target arm_cmse_hw]} then {
+    set dg-do-what-default run
+} else {
+    set dg-do-what-default assemble
+}
 
 set saved-lto_torture_options ${LTO_TORTURE_OPTIONS}
 set LTO_TORTURE_OPTIONS ""
