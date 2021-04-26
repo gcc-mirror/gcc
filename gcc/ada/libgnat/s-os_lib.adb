@@ -139,7 +139,7 @@ package body System.OS_Lib is
 
    function "<"  (X, Y : OS_Time) return Boolean is
    begin
-      return Long_Integer (X) < Long_Integer (Y);
+      return Long_Long_Integer (X) < Long_Long_Integer (Y);
    end "<";
 
    ----------
@@ -148,7 +148,7 @@ package body System.OS_Lib is
 
    function "<="  (X, Y : OS_Time) return Boolean is
    begin
-      return Long_Integer (X) <= Long_Integer (Y);
+      return Long_Long_Integer (X) <= Long_Long_Integer (Y);
    end "<=";
 
    ---------
@@ -157,7 +157,7 @@ package body System.OS_Lib is
 
    function ">"  (X, Y : OS_Time) return Boolean is
    begin
-      return Long_Integer (X) > Long_Integer (Y);
+      return Long_Long_Integer (X) > Long_Long_Integer (Y);
    end ">";
 
    ----------
@@ -166,7 +166,7 @@ package body System.OS_Lib is
 
    function ">="  (X, Y : OS_Time) return Boolean is
    begin
-      return Long_Integer (X) >= Long_Integer (Y);
+      return Long_Long_Integer (X) >= Long_Long_Integer (Y);
    end ">=";
 
    -----------------

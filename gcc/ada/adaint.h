@@ -101,11 +101,7 @@ extern "C" {
 #endif
 
 /* Type corresponding to GNAT.OS_Lib.OS_Time */
-#if defined (_WIN64)
 typedef long long OS_Time;
-#else
-typedef long OS_Time;
-#endif
 
 #define __int64 long long
 GNAT_STRUCT_STAT;

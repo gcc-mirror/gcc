@@ -2191,8 +2191,7 @@ package body Osint is
       GNAT_Time : Time_Stamp_Type;
 
       type Underlying_OS_Time is
-        range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-              +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+        range -(2 ** 63) ..  +(2 ** 63 - 1);
       --  Underlying_OS_Time is a redeclaration of OS_Time to allow integer
       --  manipulation. Remove this in favor of To_Ada/To_C once newer
       --  GNAT releases are available with these functions.

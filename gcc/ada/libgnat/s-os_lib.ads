@@ -1098,8 +1098,7 @@ private
    pragma Import (C, Current_Process_Id, "__gnat_current_process_id");
 
    type OS_Time is
-     range -(2 ** (Standard'Address_Size - Integer'(1))) ..
-           +(2 ** (Standard'Address_Size - Integer'(1)) - 1);
+     range -(2 ** 63) ..  +(2 ** 63 - 1);
    --  Type used for timestamps in the compiler. This type is used to hold
    --  time stamps, but may have a different representation than C's time_t.
    --  This type needs to match the declaration of OS_Time in adaint.h.
