@@ -24,6 +24,12 @@
 using S = std::experimental::net::socket_base;
 using namespace std;
 
+static_assert( ! is_default_constructible<S>(), "protected" );
+static_assert( ! is_destructible<S>(), "protected" );
+struct Sock : S { };
+static_assert( is_default_constructible<Sock>(), "" );
+static_assert( is_destructible<Sock>(), "" );
+
 // Dummy protocol
 struct P
 {
@@ -33,9 +39,6 @@ struct P
     P protocol() const;
   };
 };
-
-static_assert( ! is_default_constructible<S>(), "" );
-static_assert( ! is_destructible<S>(), "" );
 
 template<typename C, typename T>
 void check_gettable_sockopt()
@@ -92,6 +95,7 @@ void check_boolean_sockopt()
   static_assert( is_nothrow_copy_assignable<C>(), "" );
 
   static_assert( is_nothrow_constructible<C, bool>(), "" );
+  static_assert( ! is_convertible<bool, C>(), "constructor is explicit" );
   static_assert( is_nothrow_assignable<C&, bool>(), "" );
 
   static_assert( is_same<decltype(declval<const C&>().value()), bool>(), "" );
@@ -116,6 +120,7 @@ void check_integer_sockopt()
   static_assert( is_nothrow_copy_assignable<C>(), "" );
 
   static_assert( is_nothrow_constructible<C, int>(), "" );
+  static_assert( ! is_convertible<int, C>(), "constructor is explicit" );
   static_assert( is_nothrow_assignable<C&, int>(), "" );
 
   static_assert( is_same<decltype(declval<const C&>().value()), int>(), "" );
@@ -124,6 +129,7 @@ void check_integer_sockopt()
 
 void test_option_types()
 {
+#if __has_include(<socket.h>)
   check_boolean_sockopt<S::broadcast>();
 
   check_boolean_sockopt<S::debug>();
@@ -163,10 +169,12 @@ void test_option_types()
   check_integer_sockopt<S::send_buffer_size>();
 
   check_integer_sockopt<S::send_low_watermark>();
+#endif
 }
 
 void test_constants()
 {
+#if __has_include(<socket.h>)
   static_assert( is_enum<S::shutdown_type>::value, "" );
   static_assert( S::shutdown_receive != S::shutdown_send, "" );
   static_assert( S::shutdown_receive != S::shutdown_both, "" );
@@ -183,6 +191,7 @@ void test_constants()
 
   auto m = &S::max_listen_connections;
   static_assert( is_same<decltype(m), const int*>::value, "" );
+#endif
 }
 
 int main()

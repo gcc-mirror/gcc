@@ -419,6 +419,8 @@ inline namespace v1
     noexcept
   { return __f1 = (__f1 ^ __f2); }
 
+  // TODO define socket_base static constants in .so for C++14 mode
+
 #if _GLIBCXX_HAVE_UNISTD_H
 
   class __socket_impl
