@@ -1,3 +1,32 @@
+2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98136
+	* g++.dg/pr98136.C: New test.
+
+2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/96796
+	* gcc.c-torture/compile/pr96796.c: New test.
+
+2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98302
+	* gcc.dg/vect/pr98302.c: New test.
+
+2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95694
+	* gcc.dg/pr95694.c: New test.
+
 2021-04-21  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

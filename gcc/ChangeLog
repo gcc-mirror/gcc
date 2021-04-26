@@ -1,3 +1,55 @@
+2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-14  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/99929
+	* rtl.h (same_vector_encodings_p): New function.
+	* cse.c (exp_equiv_p): Check that CONST_VECTORs have the same encoding.
+	* cselib.c (rtx_equal_for_cselib_1): Likewise.
+	* jump.c (rtx_renumbered_equal_p): Likewise.
+	* lra-constraints.c (operands_match_p): Likewise.
+	* reload.c (operands_match_p): Likewise.
+	* rtl.c (rtx_equal_p_cb, rtx_equal_p): Likewise.
+
+2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-03-30  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/98136
+	* config/aarch64/aarch64.md (mov<mode>): Pass multi-instruction
+	CONST_INTs to aarch64_expand_mov_immediate when called after RA.
+
+2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/96796
+	* lra-constraints.c (in_class_p): Add a default-false
+	allow_all_reload_class_changes_p parameter.  Do not treat
+	reload moves specially when the parameter is true.
+	(get_reload_reg): Try to narrow the class of an existing OP_OUT
+	reload if we're reloading a reload pseudo in a reload instruction.
+
+2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-12-31  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/98302
+	* tree-vect-patterns.c (vect_determine_precisions_from_users): Make
+	sure that the precision remains greater than the shift count.
+
+2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2020-07-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/95694
+	* expr.c (expand_expr_real_2): Get the mode from the type rather
+	than the rtx, and assert that it is consistent with the mode of
+	the rtx (where known).  Optimize all constant integers, not just
+	those that can be represented in poly_int64.
+
 2021-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
