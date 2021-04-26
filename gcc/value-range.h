@@ -111,14 +111,13 @@ protected:
   void irange_set (tree, tree);
   void irange_set_anti_range (tree, tree);
 
-  void normalize_min_max ();
+  void normalize_kind ();
 
   bool legacy_mode_p () const;
   bool legacy_equal_p (const irange &) const;
   void legacy_union (irange *, const irange *);
   void legacy_intersect (irange *, const irange *);
   void verify_range ();
-  unsigned legacy_num_pairs () const;
   wide_int legacy_lower_bound (unsigned = 0) const;
   wide_int legacy_upper_bound (unsigned) const;
   int value_inside_range (tree) const;
@@ -128,6 +127,7 @@ protected:
 
 private:
   void irange_set_1bit_anti_range (tree, tree);
+  bool varying_compatible_p () const;
 
   unsigned char m_num_ranges;
   unsigned char m_max_ranges;
@@ -198,16 +198,7 @@ extern bool vrp_operand_equal_p (const_tree, const_tree);
 inline value_range_kind
 irange::kind () const
 {
-  if (legacy_mode_p ())
-    return m_kind;
-
-  if (undefined_p ())
-    return VR_UNDEFINED;
-
-  if (varying_p ())
-    return VR_VARYING;
-
-  return VR_RANGE;
+  return m_kind;
 }
 
 // Number of sub-ranges in a range.
@@ -215,16 +206,16 @@ irange::kind () const
 inline unsigned
 irange::num_pairs () const
 {
-  if (!legacy_mode_p ())
-    return m_num_ranges;
+  if (m_kind == VR_ANTI_RANGE)
+    return constant_p () ? 2 : 1;
   else
-    return legacy_num_pairs ();
+    return m_num_ranges;
 }
 
 inline tree
 irange::type () const
 {
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   return TREE_TYPE (m_base[0]);
 }
 
@@ -271,17 +262,18 @@ irange::max () const
 }
 
 inline bool
-irange::varying_p () const
+irange::varying_compatible_p () const
 {
-  if (legacy_mode_p ())
-    return m_kind == VR_VARYING;
-
   if (m_num_ranges != 1)
     return false;
 
   tree l = m_base[0];
   tree u = m_base[1];
   tree t = TREE_TYPE (l);
+
+  if (m_kind == VR_VARYING && t == error_mark_node)
+    return true;
+
   unsigned prec = TYPE_PRECISION (t);
   signop sign = TYPE_SIGN (t);
   if (INTEGRAL_TYPE_P (t))
@@ -291,22 +283,17 @@ irange::varying_p () const
     return (wi::to_wide (l) == 0
 	    && wi::to_wide (u) == wi::max_value (prec, sign));
   return true;
+}
 
+inline bool
+irange::varying_p () const
+{
+  return m_kind == VR_VARYING;
 }
 
 inline bool
 irange::undefined_p () const
 {
-  if (!legacy_mode_p ())
-    return m_num_ranges == 0;
-
-  if (CHECKING_P && legacy_mode_p ())
-    {
-      if (m_kind == VR_UNDEFINED)
-	gcc_checking_assert (m_num_ranges == 0);
-      else
-	gcc_checking_assert (m_num_ranges != 0);
-    }
   return m_kind == VR_UNDEFINED;
 }
 
@@ -389,10 +376,7 @@ irange::irange (tree *base, unsigned nranges)
   m_base = base;
   m_num_ranges = 0;
   m_max_ranges = nranges;
-  if (legacy_mode_p ())
-    m_kind = VR_UNDEFINED;
-  else
-    m_kind = VR_RANGE;
+  m_kind = VR_UNDEFINED;
 }
 
 // Constructors for int_range<>.
@@ -459,18 +443,16 @@ irange::set (tree val)
 inline void
 irange::set_undefined ()
 {
+  m_kind = VR_UNDEFINED;
   m_num_ranges = 0;
-  if (legacy_mode_p ())
-    m_kind = VR_UNDEFINED;
 }
 
 inline void
 irange::set_varying (tree type)
 {
-  if (legacy_mode_p ())
-    m_kind = VR_VARYING;
-
+  m_kind = VR_VARYING;
   m_num_ranges = 1;
+
   if (INTEGRAL_TYPE_P (type))
     {
       wide_int min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
@@ -501,7 +483,7 @@ irange::lower_bound (unsigned pair) const
 {
   if (legacy_mode_p ())
     return legacy_lower_bound (pair);
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   return wi::to_wide (tree_lower_bound (pair));
 }
@@ -514,7 +496,7 @@ irange::upper_bound (unsigned pair) const
 {
   if (legacy_mode_p ())
     return legacy_upper_bound (pair);
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   return wi::to_wide (tree_upper_bound (pair));
 }
@@ -574,17 +556,14 @@ irange::set_zero (tree type)
 // Normalize a range to VARYING or UNDEFINED if possible.
 
 inline void
-irange::normalize_min_max ()
+irange::normalize_kind ()
 {
-  gcc_checking_assert (legacy_mode_p ());
-  gcc_checking_assert (!undefined_p ());
-  unsigned prec = TYPE_PRECISION (type ());
-  signop sign = TYPE_SIGN (type ());
-  if (wi::eq_p (wi::to_wide (min ()), wi::min_value (prec, sign))
-      && wi::eq_p (wi::to_wide (max ()), wi::max_value (prec, sign)))
+  if (m_num_ranges == 0)
+    m_kind = VR_UNDEFINED;
+  else if (varying_compatible_p ())
     {
       if (m_kind == VR_RANGE)
-	set_varying (type ());
+	m_kind = VR_VARYING;
       else if (m_kind == VR_ANTI_RANGE)
 	set_undefined ();
       else

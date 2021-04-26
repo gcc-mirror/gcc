@@ -2,6 +2,10 @@
 ! { dg-do run }
 ! { dg-additional-options "-cpp" }
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+!TODO { dg-additional-options "-fno-inline" } for stable results regarding OpenACC 'routine'.
+
 #define M 8
 #define N 32
 
@@ -97,6 +101,8 @@ end subroutine worker
 
 subroutine gang (a)
   !$acc routine gang
+  ! { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-2 }
+  ! { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-3 }
   integer, intent (inout) :: a(N)
   integer :: i
 

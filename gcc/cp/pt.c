@@ -29368,6 +29368,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
       return error_mark_node;
     }
 
+  /* Wait until the initializer is non-dependent.  */
+  if (type_dependent_expression_p (init))
+    return ptype;
+
   tree type = TREE_TYPE (tmpl);
 
   bool try_list_ctor = false;

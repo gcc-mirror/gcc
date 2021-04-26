@@ -4059,7 +4059,7 @@ vrp_prop::finalize ()
 	continue;
 
       const value_range_equiv *vr = m_vr_values->get_value_range (name);
-      if (!name || !vr->constant_p ())
+      if (!name || vr->varying_p () || !vr->constant_p ())
 	continue;
 
       if (POINTER_TYPE_P (TREE_TYPE (name))
@@ -4679,7 +4679,7 @@ determine_value_range (tree expr, wide_int *min, wide_int *max)
 {
   value_range vr;
   determine_value_range_1 (&vr, expr);
-  if (vr.constant_p ())
+  if (!vr.varying_p () && vr.constant_p ())
     {
       *min = wi::to_wide (vr.min ());
       *max = wi::to_wide (vr.max ());

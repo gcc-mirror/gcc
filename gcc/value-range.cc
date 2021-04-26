@@ -59,6 +59,7 @@ irange::operator= (const irange &src)
     m_base[x - 1] = src.m_base[src.m_num_ranges * 2 - 1];
 
   m_num_ranges = lim;
+  m_kind = src.m_kind;
   return *this;
 }
 
@@ -106,8 +107,8 @@ void
 irange::copy_to_legacy (const irange &src)
 {
   gcc_checking_assert (legacy_mode_p ());
-  // Copy legacy to legacy.
-  if (src.legacy_mode_p ())
+  // Handle legacy to legacy and other things that are easy to copy.
+  if (src.legacy_mode_p () || src.varying_p () || src.undefined_p ())
     {
       m_num_ranges = src.m_num_ranges;
       m_base[0] = src.m_base[0];
@@ -116,11 +117,7 @@ irange::copy_to_legacy (const irange &src)
       return;
     }
   // Copy multi-range to legacy.
-  if (src.undefined_p ())
-    set_undefined ();
-  else if (src.varying_p ())
-    set_varying (src.type ());
-  else if (src.maybe_anti_range ())
+  if (src.maybe_anti_range ())
     {
       int_range<3> r (src);
       r.invert ();
@@ -180,6 +177,9 @@ irange::irange_set (tree min, tree max)
   m_base[0] = min;
   m_base[1] = max;
   m_num_ranges = 1;
+  m_kind = VR_RANGE;
+  normalize_kind ();
+
   if (flag_checking)
     verify_range ();
 }
@@ -247,6 +247,10 @@ irange::irange_set_anti_range (tree min, tree max)
       m_base[m_num_ranges * 2 + 1] = type_range.tree_upper_bound (0);
       ++m_num_ranges;
     }
+
+  m_kind = VR_RANGE;
+  normalize_kind ();
+
   if (flag_checking)
     verify_range ();
 }
@@ -353,7 +357,7 @@ irange::set (tree min, tree max, value_range_kind kind)
   m_base[0] = min;
   m_base[1] = max;
   m_num_ranges = 1;
-  normalize_min_max ();
+  normalize_kind ();
   if (flag_checking)
     verify_range ();
 }
@@ -363,69 +367,36 @@ irange::set (tree min, tree max, value_range_kind kind)
 void
 irange::verify_range ()
 {
+  if (m_kind == VR_UNDEFINED)
+    {
+      gcc_checking_assert (m_num_ranges == 0);
+      return;
+    }
+  if (m_kind == VR_VARYING)
+    {
+      gcc_checking_assert (m_num_ranges == 1);
+      gcc_checking_assert (varying_compatible_p ());
+      return;
+    }
   if (!legacy_mode_p ())
     {
-      gcc_checking_assert (m_kind == VR_RANGE);
+      gcc_checking_assert (m_num_ranges != 0);
+      gcc_checking_assert (!varying_compatible_p ());
       for (unsigned i = 0; i < m_num_ranges; ++i)
 	{
 	  tree lb = tree_lower_bound (i);
 	  tree ub = tree_upper_bound (i);
 	  int c = compare_values (lb, ub);
-	  gcc_assert (c == 0 || c == -1);
+	  gcc_checking_assert (c == 0 || c == -1);
 	}
       return;
     }
-
-  switch (m_kind)
+  if (m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
     {
-    case VR_UNDEFINED:
-      gcc_assert (m_num_ranges == 0);
-      break;
-
-    case VR_VARYING:
-      gcc_assert (m_num_ranges == 1);
-      break;
-
-    case VR_ANTI_RANGE:
-    case VR_RANGE:
-      {
-	gcc_assert (m_num_ranges == 1);
-	int cmp = compare_values (tree_lower_bound (0), tree_upper_bound (0));
-	gcc_assert (cmp == 0 || cmp == -1 || cmp == -2);
-	return;
-      }
-
-    default:
-      gcc_unreachable ();
+      gcc_checking_assert (m_num_ranges == 1);
+      int cmp = compare_values (tree_lower_bound (0), tree_upper_bound (0));
+      gcc_checking_assert (cmp == 0 || cmp == -1 || cmp == -2);
     }
-}
-
-unsigned
-irange::legacy_num_pairs () const
-{
-  gcc_checking_assert (legacy_mode_p ());
-
-  if (undefined_p ())
-    return 0;
-  if (varying_p ())
-    return 1;
-  // Inlined symbolic_p for performance:
-  if (!is_gimple_min_invariant (min ()) || !is_gimple_min_invariant (max ()))
-    {
-      value_range numeric_range (*this);
-      numeric_range.normalize_symbolics ();
-      return numeric_range.num_pairs ();
-    }
-  if (m_kind == VR_ANTI_RANGE)
-    {
-      // ~[MIN, X] has one sub-range of [X+1, MAX], and
-      // ~[X, MAX] has one sub-range of [MIN, X-1].
-      if (vrp_val_is_min (min ()) || vrp_val_is_max (max ()))
-	return 1;
-      return 2;
-    }
-  gcc_checking_assert (m_num_ranges == 1);
-  return 1;
 }
 
 // Return the lower bound for a sub-range.  PAIR is the sub-range in
@@ -441,7 +412,7 @@ irange::legacy_lower_bound (unsigned pair) const
       numeric_range.normalize_symbolics ();
       return numeric_range.legacy_lower_bound (pair);
     }
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   if (m_kind == VR_ANTI_RANGE)
     {
@@ -468,7 +439,7 @@ irange::legacy_upper_bound (unsigned pair) const
       numeric_range.normalize_symbolics ();
       return numeric_range.legacy_upper_bound (pair);
     }
-  gcc_checking_assert (!undefined_p ());
+  gcc_checking_assert (m_num_ranges > 0);
   gcc_checking_assert (pair + 1 <= num_pairs ());
   if (m_kind == VR_ANTI_RANGE)
     {
@@ -534,22 +505,17 @@ irange::equal_p (const irange &other) const
 bool
 irange::symbolic_p () const
 {
-  return (!varying_p ()
-	  && !undefined_p ()
+  return (m_num_ranges > 0
 	  && (!is_gimple_min_invariant (min ())
 	      || !is_gimple_min_invariant (max ())));
 }
 
-/* NOTE: This is not the inverse of symbolic_p because the range
-   could also be varying or undefined.  Ideally they should be inverse
-   of each other, with varying only applying to symbolics.  Varying of
-   constants would be represented as [-MIN, +MAX].  */
+/* Return TRUE if this is a constant range.  */
 
 bool
 irange::constant_p () const
 {
-  return (!varying_p ()
-	  && !undefined_p ()
+  return (m_num_ranges > 0
 	  && TREE_CODE (min ()) == INTEGER_CST
 	  && TREE_CODE (max ()) == INTEGER_CST);
 }
@@ -1672,6 +1638,9 @@ irange::irange_union (const irange &r)
     m_base[j] = res [j];
   m_num_ranges = i / 2;
 
+  m_kind = VR_RANGE;
+  normalize_kind ();
+
   if (flag_checking)
     verify_range ();
 }
@@ -1763,6 +1732,10 @@ irange::irange_intersect (const irange &r)
   // At the exit of this loop, it is one of 2 things:
   // ran out of r1, or r2, but either means we are done.
   m_num_ranges = bld_pair;
+
+  m_kind = VR_RANGE;
+  normalize_kind ();
+
   if (flag_checking)
     verify_range ();
 }
@@ -1808,7 +1781,7 @@ irange::invert ()
       return;
     }
 
-  gcc_assert (!undefined_p () && !varying_p ());
+  gcc_checking_assert (!undefined_p () && !varying_p ());
 
   // We always need one more set of bounds to represent an inverse, so
   // if we're at the limit, we can't properly represent things.
@@ -1894,6 +1867,10 @@ irange::invert ()
 	nitems -= 2;
     }
   m_num_ranges = nitems / 2;
+
+  // We disallow undefined or varying coming in, so the result can
+  // only be a VR_RANGE.
+  gcc_checking_assert (m_kind == VR_RANGE);
 
   if (flag_checking)
     verify_range ();

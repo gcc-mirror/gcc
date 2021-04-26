@@ -1037,6 +1037,10 @@ Wold-style-definition
 C ObjC Var(warn_old_style_definition) Init(-1) Warning
 Warn if an old-style parameter definition is used.
 
+Wopenacc-parallelism
+C C++ Var(warn_openacc_parallelism) Warning
+Warn about potentially suboptimal choices related to OpenACC parallelism.
+
 Wopenmp-simd
 C C++ Var(warn_openmp_simd) Warning LangEnabledBy(C C++,Wall)
 Warn if a simd directive is overridden by the vectorizer cost model.

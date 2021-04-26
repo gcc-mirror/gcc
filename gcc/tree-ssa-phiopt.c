@@ -752,16 +752,16 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
     }
 
   tree arg = wide_int_to_tree (type, a);
-  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-  if (!useless_type_conversion_p (type, TREE_TYPE (lhs)))
-    lhs = gimplify_build1 (&gsi, NOP_EXPR, type, lhs);
+  gimple_seq stmts = NULL;
+  lhs = gimple_convert (&stmts, type, lhs);
   tree new_rhs;
   if (code == PLUS_EXPR)
-    new_rhs = gimplify_build2 (&gsi, PLUS_EXPR, type, lhs, arg);
+    new_rhs = gimple_build (&stmts, PLUS_EXPR, type, lhs, arg);
   else
-    new_rhs = gimplify_build2 (&gsi, MINUS_EXPR, type, arg, lhs);
-  if (!useless_type_conversion_p (TREE_TYPE (arg0), type))
-    new_rhs = gimplify_build1 (&gsi, NOP_EXPR, TREE_TYPE (arg0), new_rhs);
+    new_rhs = gimple_build (&stmts, MINUS_EXPR, type, arg, lhs);
+  new_rhs = gimple_convert (&stmts, TREE_TYPE (arg0), new_rhs);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  gsi_insert_seq_before (&gsi, stmts, GSI_SAME_STMT);
 
   replace_phi_edge_with_variable (cond_bb, e1, phi, new_rhs);
 
@@ -2490,9 +2490,8 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   locus = gimple_location (assign);
   lhs = gimple_assign_lhs (assign);
   rhs = gimple_assign_rhs1 (assign);
-  if ((TREE_CODE (lhs) != MEM_REF
-       && TREE_CODE (lhs) != ARRAY_REF
-       && TREE_CODE (lhs) != COMPONENT_REF)
+  if ((!REFERENCE_CLASS_P (lhs)
+       && !DECL_P (lhs))
       || !is_gimple_reg_type (TREE_TYPE (lhs)))
     return false;
 

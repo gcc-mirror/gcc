@@ -12875,14 +12875,6 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define_expand "avx2_eq<mode>3"
-  [(set (match_operand:VI_256 0 "register_operand")
-	(eq:VI_256
-	  (match_operand:VI_256 1 "nonimmediate_operand")
-	  (match_operand:VI_256 2 "nonimmediate_operand")))]
-  "TARGET_AVX2"
-  "ix86_fixup_binary_operands_no_copy (EQ, <MODE>mode, operands);")
-
 (define_insn "*avx2_eq<mode>3"
   [(set (match_operand:VI_256 0 "register_operand" "=x")
 	(eq:VI_256
@@ -13058,22 +13050,6 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "TI")])
 
-(define_expand "sse2_eq<mode>3"
-  [(set (match_operand:VI124_128 0 "register_operand")
-	(eq:VI124_128
-	  (match_operand:VI124_128 1 "vector_operand")
-	  (match_operand:VI124_128 2 "vector_operand")))]
-  "TARGET_SSE2 && !TARGET_XOP "
-  "ix86_fixup_binary_operands_no_copy (EQ, <MODE>mode, operands);")
-
-(define_expand "sse4_1_eqv2di3"
-  [(set (match_operand:V2DI 0 "register_operand")
-	(eq:V2DI
-	  (match_operand:V2DI 1 "vector_operand")
-	  (match_operand:V2DI 2 "vector_operand")))]
-  "TARGET_SSE4_1"
-  "ix86_fixup_binary_operands_no_copy (EQ, V2DImode, operands);")
-
 (define_insn "sse4_2_gtv2di3"
   [(set (match_operand:V2DI 0 "register_operand" "=Yr,*x,x")
 	(gt:V2DI
@@ -13144,7 +13120,7 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "sse2_gt<mode>3"
+(define_insn "*sse2_gt<mode>3"
   [(set (match_operand:VI124_128 0 "register_operand" "=x,x")
 	(gt:VI124_128
 	  (match_operand:VI124_128 1 "register_operand" "0,x")

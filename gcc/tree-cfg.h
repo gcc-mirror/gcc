@@ -95,12 +95,6 @@ extern bool gimple_purge_dead_eh_edges (basic_block);
 extern bool gimple_purge_all_dead_eh_edges (const_bitmap);
 extern bool gimple_purge_dead_abnormal_call_edges (basic_block);
 extern bool gimple_purge_all_dead_abnormal_call_edges (const_bitmap);
-extern tree gimplify_build3 (gimple_stmt_iterator *, enum tree_code,
-			     tree, tree, tree, tree);
-extern tree gimplify_build2 (gimple_stmt_iterator *, enum tree_code,
-			     tree, tree, tree);
-extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
-			     tree, tree);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
 extern tree find_case_label_for_value (const gswitch *switch_stmt, tree val);
 extern edge find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val);

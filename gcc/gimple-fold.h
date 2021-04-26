@@ -28,6 +28,7 @@ extern tree get_symbol_constant_value (tree);
 struct c_strlen_data;
 extern bool get_range_strlen (tree, c_strlen_data *, unsigned eltsize);
 extern void gimplify_and_update_call_from_tree (gimple_stmt_iterator *, tree);
+extern bool update_gimple_call (gimple_stmt_iterator *, tree, int, ...);
 extern bool fold_stmt (gimple_stmt_iterator *);
 extern bool fold_stmt (gimple_stmt_iterator *, tree (*) (tree));
 extern bool fold_stmt_inplace (gimple_stmt_iterator *);

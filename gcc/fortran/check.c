@@ -1055,6 +1055,13 @@ variable_check (gfc_expr *e, int n, bool allow_proc)
 	  return true;
     }
 
+  /* F2018:R902: function reference having a data pointer result.  */
+  if (e->expr_type == EXPR_FUNCTION
+      && e->symtree->n.sym->attr.flavor == FL_PROCEDURE
+      && e->symtree->n.sym->attr.function
+      && e->symtree->n.sym->attr.pointer)
+    return true;
+
   gfc_error ("%qs argument of %qs intrinsic at %L must be a variable",
 	     gfc_current_intrinsic_arg[n]->name, gfc_current_intrinsic, &e->where);
 
@@ -5690,6 +5697,19 @@ gfc_check_spread (gfc_expr *source, gfc_expr *dim, gfc_expr *ncopies)
    functions).  */
 
 bool
+arg_strlen_is_zero (gfc_expr *c, int n)
+{
+  if (gfc_var_strlen (c) == 0)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L must have "
+		 "length at least 1", gfc_current_intrinsic_arg[n]->name,
+		 gfc_current_intrinsic, &c->where);
+      return true;
+    }
+  return false;
+}
+
+bool
 gfc_check_fgetputc_sub (gfc_expr *unit, gfc_expr *c, gfc_expr *status)
 {
   if (!type_check (unit, 0, BT_INTEGER))
@@ -5702,13 +5722,19 @@ gfc_check_fgetputc_sub (gfc_expr *unit, gfc_expr *c, gfc_expr *status)
     return false;
   if (!kind_value_check (c, 1, gfc_default_character_kind))
     return false;
+  if (strcmp (gfc_current_intrinsic, "fgetc") == 0
+      && !variable_check (c, 1, false))
+    return false;
+  if (arg_strlen_is_zero (c, 1))
+    return false;
 
   if (status == NULL)
     return true;
 
   if (!type_check (status, 2, BT_INTEGER)
       || !kind_value_check (status, 2, gfc_default_integer_kind)
-      || !scalar_check (status, 2))
+      || !scalar_check (status, 2)
+      || !variable_check (status, 2, false))
     return false;
 
   return true;
@@ -5729,13 +5755,19 @@ gfc_check_fgetput_sub (gfc_expr *c, gfc_expr *status)
     return false;
   if (!kind_value_check (c, 0, gfc_default_character_kind))
     return false;
+  if (strcmp (gfc_current_intrinsic, "fget") == 0
+      && !variable_check (c, 0, false))
+    return false;
+  if (arg_strlen_is_zero (c, 0))
+    return false;
 
   if (status == NULL)
     return true;
 
   if (!type_check (status, 1, BT_INTEGER)
       || !kind_value_check (status, 1, gfc_default_integer_kind)
-      || !scalar_check (status, 1))
+      || !scalar_check (status, 1)
+      || !variable_check (status, 1, false))
     return false;
 
   return true;

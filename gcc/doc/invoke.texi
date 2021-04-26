@@ -364,7 +364,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wmissing-include-dirs  -Wmissing-noreturn  -Wno-missing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
--Wnull-dereference  -Wno-odr  -Wopenmp-simd  @gol
+-Wnull-dereference  -Wno-odr  @gol
+-Wopenacc-parallelism  @gol
+-Wopenmp-simd  @gol
 -Wno-overflow  -Woverlength-strings  -Wno-override-init-side-effects @gol
 -Wpacked  -Wno-packed-bitfield-compat  -Wpacked-not-aligned  -Wpadded @gol
 -Wparentheses  -Wno-pedantic-ms-format @gol
@@ -8748,6 +8750,12 @@ Do not warn about compile-time overflow in constant expressions.
 @opindex Wodr
 Warn about One Definition Rule violations during link-time optimization.
 Enabled by default.
+
+@item -Wopenacc-parallelism
+@opindex Wopenacc-parallelism
+@opindex Wno-openacc-parallelism
+@cindex OpenACC accelerator programming
+Warn about potentially suboptimal choices related to OpenACC parallelism.
 
 @item -Wopenmp-simd
 @opindex Wopenmp-simd

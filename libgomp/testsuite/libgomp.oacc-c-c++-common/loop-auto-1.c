@@ -3,6 +3,9 @@
 
 /* { dg-additional-options "-fopenacc-dim=32" } */
 
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 #include <stdio.h>
 #include <openacc.h>
 #include <gomp-constants.h>
@@ -151,6 +154,7 @@ int gang_1 (int *ary, int size)
   clear (ary, size);
   
 #pragma acc parallel num_gangs (32) num_workers (32) vector_length(32) copy(ary[0:size]) firstprivate (size)
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-1 } */
   {
 #pragma acc loop auto
     for (int jx = 0; jx <  size  / 64; jx++)

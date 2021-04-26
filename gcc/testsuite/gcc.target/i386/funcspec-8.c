@@ -8,6 +8,7 @@ typedef float     __m128  __attribute__ ((__vector_size__ (16), __may_alias__));
 typedef double    __m128d __attribute__ ((__vector_size__ (16), __may_alias__));
 typedef int	  __m128w __attribute__ ((__vector_size__ (16), __may_alias__));
 typedef long long __m128i __attribute__ ((__vector_size__ (16), __may_alias__));
+typedef char __m128qi __attribute__ ((__vector_size__ (16), __may_alias__));
 
 #ifdef __SSE3__
 #error "-msse3 should not be set for this test"
@@ -70,19 +71,19 @@ generic_blendvpd  (__m128d a, __m128d b, __m128d c)
 #error "-msse4.2 should not be set for this test"
 #endif
 
-__m128i sse4_2_pcmpgtq (__m128i a, __m128i b) __attribute__((__target__("sse4.2")));
-__m128i generic_pcmpgtq (__m128i ab, __m128i b);
+__m128qi sse4_2_cmpistrm (__m128qi a, __m128qi b) __attribute__((__target__("sse4.2")));
+__m128qi generic_cmpistrm (__m128qi a, __m128qi b);
 
-__m128i
-sse4_2_pcmpgtq (__m128i a, __m128i b)
+__m128qi
+sse4_2_cmpistrm (__m128qi a, __m128qi b)
 {
-  return __builtin_ia32_pcmpgtq (a, b);
+  return  __builtin_ia32_pcmpistrm128 (a, b, 0);
 }
 
-__m128i
-generic_pcmpgtq (__m128i a, __m128i b)
+__m128qi
+generic_comistrm (__m128qi a, __m128qi b)
 {
-  return __builtin_ia32_pcmpgtq (a, b);			/* { dg-error "needs isa option" } */
+  return  __builtin_ia32_pcmpistrm128 (a, b, 0);	/* { dg-error "needs isa option" } */
 }
 
 #ifdef __SSE4A__

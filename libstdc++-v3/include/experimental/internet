@@ -101,10 +101,10 @@ namespace ip
     return __c;
   }
 
-  error_code make_error_code(resolver_errc __e) noexcept
+  inline error_code make_error_code(resolver_errc __e) noexcept
   { return error_code(static_cast<int>(__e), resolver_category()); }
 
-  error_condition make_error_condition(resolver_errc __e) noexcept
+  inline error_condition make_error_condition(resolver_errc __e) noexcept
   { return error_condition(static_cast<int>(__e), resolver_category()); }
 
   /// @}
@@ -1334,7 +1334,7 @@ namespace ip
   make_network_v4(const address_v4& __a, int __prefix_len)
   { return network_v4{__a, __prefix_len}; }
 
-  network_v4
+  inline network_v4
   make_network_v4(const address_v4& __a, const address_v4& __mask)
   { return network_v4{ __a, __mask }; }
 
@@ -2157,7 +2157,7 @@ namespace ip
    * @{
    */
 
-  bool
+  inline bool
   operator==(const udp& __a, const udp& __b)
   { return __a.family() == __b.family(); }
 

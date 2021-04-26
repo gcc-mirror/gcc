@@ -6203,7 +6203,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       /* We keep an exact subset of the constructor elements.  */
       (if (multiple_p (idx, k, &elt) && multiple_p (n, k, &count))
        (if (CONSTRUCTOR_NELTS (ctor) == 0)
-        { build_constructor (type, NULL); }
+        { build_zero_cst (type); }
 	(if (count == 1)
 	 (if (elt < CONSTRUCTOR_NELTS (ctor))
 	  (view_convert { CONSTRUCTOR_ELT (ctor, elt)->value; })
@@ -6212,15 +6212,24 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    ???  Eventually allow this if the CTOR ends up constant or
 	    uniform.  */
 	 (if (single_use (@0))
-	  {
-	    vec<constructor_elt, va_gc> *vals;
-	    vec_alloc (vals, count);
-	    for (unsigned i = 0;
-		 i < count && elt + i < CONSTRUCTOR_NELTS (ctor); ++i)
-	      CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE,
-				      CONSTRUCTOR_ELT (ctor, elt + i)->value);
-	    build_constructor (type, vals);
-	  }))))
+	  (with
+	    {
+	      vec<constructor_elt, va_gc> *vals;
+	      vec_alloc (vals, count);
+	      bool constant_p = true;
+	      tree res;
+	      for (unsigned i = 0;
+		   i < count && elt + i < CONSTRUCTOR_NELTS (ctor); ++i)
+		{
+		  tree e = CONSTRUCTOR_ELT (ctor, elt + i)->value;
+		  CONSTRUCTOR_APPEND_ELT (vals, NULL_TREE, e);
+		  if (!CONSTANT_CLASS_P (e))
+		    constant_p = false;
+		}
+	      res = (constant_p ? build_vector_from_ctor (type, vals)
+		     : build_constructor (type, vals));
+	    }
+	    { res; })))))
       /* The bitfield references a single constructor element.  */
       (if (k.is_constant (&const_k)
 	   && idx + n <= (idx / const_k + 1) * const_k)

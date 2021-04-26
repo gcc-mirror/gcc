@@ -1,3 +1,9 @@
+2021-04-24  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100244
+	* sm-malloc.cc (free_of_non_heap::describe_state_change):
+	Bulletproof against change.m_expr being NULL.
+
 2021-04-13  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/98599
