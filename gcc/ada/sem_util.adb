@@ -11820,22 +11820,22 @@ package body Sem_Util is
                         Set_Result (Known_Incompatible);
                      end if;
 
-                     --  See if Expr is an object with known alignment
+                  --  See if Expr is an object with known alignment
 
                   elsif Is_Entity_Name (Expr)
                     and then Known_Alignment (Entity (Expr))
                   then
                      ExpA := Alignment (Entity (Expr));
 
-                     --  Otherwise, we can use the alignment of the type of
-                     --  Expr given that we already checked for
-                     --  discombobulating rep clauses for the cases of indexed
-                     --  and selected components above.
+                  --  Otherwise, we can use the alignment of the type of Expr
+                  --  given that we already checked for discombobulating rep
+                  --  clauses for the cases of indexed and selected components
+                  --  above.
 
                   elsif Known_Alignment (Etype (Expr)) then
                      ExpA := Alignment (Etype (Expr));
 
-                     --  Otherwise the alignment is unknown
+                  --  Otherwise the alignment is unknown
 
                   else
                      Set_Result (Default);
@@ -11854,14 +11854,14 @@ package body Sem_Util is
                   if Offs /= No_Uint then
                      null;
 
-                     --  See if Expr is an object with known size
+                  --  See if Expr is an object with known size
 
                   elsif Is_Entity_Name (Expr)
                     and then Known_Static_Esize (Entity (Expr))
                   then
                      SizA := Esize (Entity (Expr));
 
-                     --  Otherwise, we check the object size of the Expr type
+                  --  Otherwise, we check the object size of the Expr type
 
                   elsif Known_Static_Esize (Etype (Expr)) then
                      SizA := Esize (Etype (Expr));
@@ -11906,25 +11906,24 @@ package body Sem_Util is
                --  where we do not know the alignment of Obj.
 
                if Known_Alignment (Entity (Expr))
-                 and then UI_To_Int (Alignment (Entity (Expr))) <
-                                                    Ttypes.Maximum_Alignment
+                 and then Alignment (Entity (Expr)) < Ttypes.Maximum_Alignment
                then
                   Set_Result (Unknown);
 
-                  --  Now check size of Expr object. Any size that is not an
-                  --  even multiple of Maximum_Alignment is also worrisome
-                  --  since it may cause the alignment of the object to be less
-                  --  than the alignment of the type.
+               --  Now check size of Expr object. Any size that is not an even
+               --  multiple of Maximum_Alignment is also worrisome since it
+               --  may cause the alignment of the object to be less than the
+               --  alignment of the type.
 
                elsif Known_Static_Esize (Entity (Expr))
                  and then
-                   (UI_To_Int (Esize (Entity (Expr))) mod
-                     (Ttypes.Maximum_Alignment * Ttypes.System_Storage_Unit))
+                   Esize (Entity (Expr)) mod
+                     (Ttypes.Maximum_Alignment * Ttypes.System_Storage_Unit)
                                                                         /= 0
                then
                   Set_Result (Unknown);
 
-                  --  Otherwise same type is decisive
+               --  Otherwise same type is decisive
 
                else
                   Set_Result (Known_Compatible);
