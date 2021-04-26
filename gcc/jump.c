@@ -1767,6 +1767,11 @@ rtx_renumbered_equal_p (const_rtx x, const_rtx y)
     CASE_CONST_UNIQUE:
       return 0;
 
+    case CONST_VECTOR:
+      if (!same_vector_encodings_p (x, y))
+	return false;
+      break;
+
     case LABEL_REF:
       /* We can't assume nonlocal labels have their following insns yet.  */
       if (LABEL_REF_NONLOCAL_P (x) || LABEL_REF_NONLOCAL_P (y))
