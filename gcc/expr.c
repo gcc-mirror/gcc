@@ -1041,6 +1041,9 @@ pieces_addr::maybe_postinc (HOST_WIDE_INT size)
 
 class op_by_pieces_d
 {
+ private:
+  scalar_int_mode get_usable_mode (scalar_int_mode mode, unsigned int);
+
  protected:
   pieces_addr m_to, m_from;
   unsigned HOST_WIDE_INT m_len;
@@ -1108,6 +1111,25 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
   m_align = align;
 }
 
+/* This function returns the largest usable integer mode for LEN bytes
+   whose size is no bigger than size of MODE.  */
+
+scalar_int_mode
+op_by_pieces_d::get_usable_mode (scalar_int_mode mode, unsigned int len)
+{
+  unsigned int size;
+  do
+    {
+      size = GET_MODE_SIZE (mode);
+      if (len >= size && prepare_mode (mode, m_align))
+	break;
+      /* NB: widest_int_mode_for_size checks SIZE > 1.  */
+      mode = widest_int_mode_for_size (size);
+    }
+  while (1);
+  return mode;
+}
+
 /* This function contains the main loop used for expanding a block
    operation.  First move what we can in the largest integer mode,
    then go to successively smaller modes.  For every access, call
@@ -1116,42 +1138,50 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
 void
 op_by_pieces_d::run ()
 {
-  while (m_max_size > 1 && m_len > 0)
+  if (m_len == 0)
+    return;
+
+  /* NB: widest_int_mode_for_size checks M_MAX_SIZE > 1.  */
+  scalar_int_mode mode = widest_int_mode_for_size (m_max_size);
+  mode = get_usable_mode (mode, m_len);
+
+  do
     {
-      scalar_int_mode mode = widest_int_mode_for_size (m_max_size);
+      unsigned int size = GET_MODE_SIZE (mode);
+      rtx to1 = NULL_RTX, from1;
 
-      if (prepare_mode (mode, m_align))
+      while (m_len >= size)
 	{
-	  unsigned int size = GET_MODE_SIZE (mode);
-	  rtx to1 = NULL_RTX, from1;
+	  if (m_reverse)
+	    m_offset -= size;
 
-	  while (m_len >= size)
-	    {
-	      if (m_reverse)
-		m_offset -= size;
+	  to1 = m_to.adjust (mode, m_offset);
+	  from1 = m_from.adjust (mode, m_offset);
 
-	      to1 = m_to.adjust (mode, m_offset);
-	      from1 = m_from.adjust (mode, m_offset);
+	  m_to.maybe_predec (-(HOST_WIDE_INT)size);
+	  m_from.maybe_predec (-(HOST_WIDE_INT)size);
 
-	      m_to.maybe_predec (-(HOST_WIDE_INT)size);
-	      m_from.maybe_predec (-(HOST_WIDE_INT)size);
+	  generate (to1, from1, mode);
 
-	      generate (to1, from1, mode);
+	  m_to.maybe_postinc (size);
+	  m_from.maybe_postinc (size);
 
-	      m_to.maybe_postinc (size);
-	      m_from.maybe_postinc (size);
+	  if (!m_reverse)
+	    m_offset += size;
 
-	      if (!m_reverse)
-		m_offset += size;
-
-	      m_len -= size;
-	    }
-
-	  finish_mode (mode);
+	  m_len -= size;
 	}
 
-      m_max_size = GET_MODE_SIZE (mode);
+      finish_mode (mode);
+
+      if (m_len == 0)
+	return;
+
+      /* NB: widest_int_mode_for_size checks SIZE > 1.  */
+      mode = widest_int_mode_for_size (size);
+      mode = get_usable_mode (mode, m_len);
     }
+  while (1);
 
   /* The code above should have handled everything.  */
   gcc_assert (!m_len);
