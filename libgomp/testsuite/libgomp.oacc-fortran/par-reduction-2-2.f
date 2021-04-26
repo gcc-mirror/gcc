@@ -18,7 +18,7 @@
 
 !$ACC PARALLEL NUM_GANGS(256) NUM_WORKERS(32) VECTOR_LENGTH(32)
 !$ACC& REDUCTION(+:RES1) COPY(RES1, RES2) ASYNC(1)
-!     { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction', 'atomic'" { xfail *-*-* } .-1 }
+!     { dg-bogus "Warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction', 'atomic'" { xfail *-*-* } .-1 }
 !     { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-2 }
 !     { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-3 }
       res1 = res1 + 5
@@ -43,7 +43,7 @@
 
 !$ACC PARALLEL NUM_GANGS(8) NUM_WORKERS(32) VECTOR_LENGTH(32)
 !$ACC& REDUCTION(*:RES1) COPY(RES1, RES2) ASYNC(1)
-!     { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction', 'atomic'" { xfail *-*-* } .-1 }
+!     { dg-bogus "Warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction', 'atomic'" { xfail *-*-* } .-1 }
 !     { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-2 }
 !     { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-3 }
       res1 = res1 * 5

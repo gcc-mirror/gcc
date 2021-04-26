@@ -13,7 +13,7 @@ program reduction
   s2 = 0
 
   !$acc parallel reduction(+:s1,s2) num_gangs (n) copy(s1)
-  ! { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-1 }
+  ! { dg-bogus "Warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-1 }
   s1 = s1 + 1
   s2 = s2 + 1
   !$acc end parallel
@@ -44,7 +44,7 @@ subroutine redsub(s1, s2, n)
   integer :: s1, s2, n
 
   !$acc parallel reduction(+:s1,s2) num_gangs (10)  copy(s1)
-  ! { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-1 }
+  ! { dg-bogus "Warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-1 }
   s1 = s1 + 1
   s2 = s2 + 1
   !$acc end parallel

@@ -87,9 +87,9 @@ program main
   vectors_max = -huge(gangs_max) - 1 ! INT_MIN
   !$acc serial copy (vectors_actual) &
   !$acc   copy (gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max) ! { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } }
-  ! { dg-bogus "warning: region contains gang partitioned code but is not gang partitioned" "TODO 'serial'" { xfail *-*-* } .-1 }
-  ! { dg-bogus "warning: region contains worker partitioned code but is not worker partitioned" "TODO 'serial'" { xfail *-*-* } .-2 }
-  ! { dg-bogus "warning: region contains vector partitioned code but is not vector partitioned" "TODO 'serial'" { xfail *-*-* } .-3 }
+  ! { dg-bogus "Warning: region contains gang partitioned code but is not gang partitioned" "TODO 'serial'" { xfail *-*-* } .-1 }
+  ! { dg-bogus "Warning: region contains worker partitioned code but is not worker partitioned" "TODO 'serial'" { xfail *-*-* } .-2 }
+  ! { dg-bogus "Warning: region contains vector partitioned code but is not vector partitioned" "TODO 'serial'" { xfail *-*-* } .-3 }
   if (acc_on_device (acc_device_nvidia)) then
      ! The GCC nvptx back end enforces vector_length (32).
      ! It's unclear if that's actually permissible here;

@@ -1,6 +1,16 @@
 2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
+	2021-04-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/classify-serial.f95:
+	Correct spelling in dg-bogus to match -Wopenacc-parallelism.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+
+2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
 	2021-04-23  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/diag-parallelism-1.c: New.
