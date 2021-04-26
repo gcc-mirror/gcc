@@ -1,3 +1,10 @@
+2021-04-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98911
+	* gcc.target/i386/pr98911.c: New test.
+	* gcc.target/i386/funcspec-8.c: Replace __builtin_ia32_pcmpgtq
+	with __builtin_ia32_pcmpistrm128 since it has been folded.
+
 2021-04-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/100244

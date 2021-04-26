@@ -1,3 +1,23 @@
+2021-04-25  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/98911
+	* config/i386/i386-builtin.def (BDESC): Change the icode of
+	the following builtins to CODE_FOR_nothing.
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Fold
+	IX86_BUILTIN_PCMPEQB128, IX86_BUILTIN_PCMPEQW128,
+	IX86_BUILTIN_PCMPEQD128, IX86_BUILTIN_PCMPEQQ,
+	IX86_BUILTIN_PCMPEQB256, IX86_BUILTIN_PCMPEQW256,
+	IX86_BUILTIN_PCMPEQD256, IX86_BUILTIN_PCMPEQQ256,
+	IX86_BUILTIN_PCMPGTB128, IX86_BUILTIN_PCMPGTW128,
+	IX86_BUILTIN_PCMPGTD128, IX86_BUILTIN_PCMPGTQ,
+	IX86_BUILTIN_PCMPGTB256, IX86_BUILTIN_PCMPGTW256,
+	IX86_BUILTIN_PCMPGTD256, IX86_BUILTIN_PCMPGTQ256.
+	* config/i386/sse.md (avx2_eq<mode>3): Deleted.
+	(sse2_eq<mode>3): Ditto.
+	(sse4_1_eqv2di3): Ditto.
+	(sse2_gt<mode>3): Rename to ..
+	(*sse2_gt<mode>3): .. this.
+
 2021-04-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Revert:
