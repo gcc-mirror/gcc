@@ -4894,12 +4894,26 @@ cxx_fold_indirect_ref (const constexpr_ctx *ctx, location_t loc, tree type,
 	   && tree_fits_uhwi_p (TREE_OPERAND (sub, 1)))
     {
       tree op00 = TREE_OPERAND (sub, 0);
-      tree op01 = TREE_OPERAND (sub, 1);
+      tree off = TREE_OPERAND (sub, 1);
 
       STRIP_NOPS (op00);
       if (TREE_CODE (op00) == ADDR_EXPR)
-	return cxx_fold_indirect_ref_1 (ctx, loc, type, TREE_OPERAND (op00, 0),
-					tree_to_uhwi (op01), empty_base);
+	{
+	  tree obj = TREE_OPERAND (op00, 0);
+	  while (TREE_CODE (obj) == COMPONENT_REF
+		 && tree_int_cst_sign_bit (off))
+	    {
+	      /* Canonicalize this object/offset pair by iteratively absorbing
+		 the innermost component into the offset until the offset is
+		 nonnegative, so that cxx_fold_indirect_ref_1 can identify
+		 more folding opportunities.  */
+	      tree field = TREE_OPERAND (obj, 1);
+	      off = int_const_binop (PLUS_EXPR, off, byte_position (field));
+	      obj = TREE_OPERAND (obj, 0);
+	    }
+	  return cxx_fold_indirect_ref_1 (ctx, loc, type, obj,
+					  tree_to_uhwi (off), empty_base);
+	}
     }
   /* *(foo *)fooarrptr => (*fooarrptr)[0] */
   else if (TREE_CODE (TREE_TYPE (subtype)) == ARRAY_TYPE
