@@ -4,6 +4,18 @@
 	2021-04-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/par-reduction-2-1.f:
+	Use [Ww]arning in dg-bogus as FE diagnostic and default
+	diagnostic differ and the result depends on ENABLE_OFFLOAD.
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/parallel-reduction.f90: Likewise.
+
+2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-04-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.oacc-fortran/par-reduction-2-1.f:
 	Correct spelling in dg-bogus to match -Wopenacc-parallelism.
 	* testsuite/libgomp.oacc-fortran/par-reduction-2-2.f: Likewise.
 	* testsuite/libgomp.oacc-fortran/parallel-dims.f90: Likewise.

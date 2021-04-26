@@ -4,6 +4,17 @@
 	2021-04-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/goacc/classify-serial.f95:
+	Use [Ww]arning in dg-bogus as FE diagnostic and default
+	diagnostic differ and the result depends on ENABLE_OFFLOAD.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+
+2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-04-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/classify-serial.f95:
 	Correct spelling in dg-bogus to match -Wopenacc-parallelism.
 	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
 	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
