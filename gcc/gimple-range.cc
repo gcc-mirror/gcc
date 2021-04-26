@@ -1003,14 +1003,23 @@ gimple_ranger::range_on_exit (irange &r, basic_block bb, tree name)
   gcc_checking_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
   gcc_checking_assert (gimple_range_ssa_p (name));
 
-  gimple *s = last_stmt (bb);
-  // If there is no statement in the block and this isn't the entry
-  // block, go get the range_on_entry for this block.  For the entry
-  // block, a NULL stmt will return the global value for NAME.
-  if (!s && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
-    range_on_entry (r, bb, name);
-  else
+  gimple *s = SSA_NAME_DEF_STMT (name);
+  basic_block def_bb = gimple_bb (s);
+  // If this is not the definition block, get the range on the last stmt in
+  // the block... if there is one.
+  if (def_bb != bb)
+    s = last_stmt (bb);
+  // If there is no statement provided, get the range_on_entry for this block.
+  if (s)
     range_of_expr (r, name, s);
+  else
+    {
+      range_on_entry (r, bb, name);
+      // See if there was a deref in this block, if applicable
+      if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
+	  m_cache.m_non_null.non_null_deref_p (name, bb))
+	r = range_nonzero (TREE_TYPE (name));
+    }
   gcc_checking_assert (r.undefined_p ()
 		       || range_compatible_p (r.type (), TREE_TYPE (name)));
 }
