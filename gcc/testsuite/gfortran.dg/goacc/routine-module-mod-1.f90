@@ -56,7 +56,7 @@ contains
   subroutine g_1
     implicit none
     !$acc routine gang
-    ! { dg-bogus "warning: region is worker partitioned but does not contain worker partitioned code" "TODO default 'gang' 'vector'" { xfail *-*-* } .-3 }
+    ! { dg-bogus "Warning: region is worker partitioned but does not contain worker partitioned code" "TODO default 'gang' 'vector'" { xfail *-*-* } .-3 }
 
     integer :: i
 
