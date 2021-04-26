@@ -210,7 +210,7 @@ package Ttypes is
                                Set_Targ.Strict_Alignment /= 0;
    --  True if instructions will fail if data is misaligned. Note that this
    --  is a variable rather than a constant since it can be modified (set to
-   --  True) if the debug flag -gnatd.A is used.
+   --  True) if the debug flag -gnatd.a is used.
 
    Target_Double_Float_Alignment : constant Nat :=
                                      Set_Targ.Double_Float_Alignment;
