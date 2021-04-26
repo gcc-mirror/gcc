@@ -52,12 +52,26 @@ gimple_outgoing_range_stmt_p (basic_block bb)
 }
 
 
-outgoing_range::outgoing_range ()
+// Return a TRUE or FALSE range representing the edge value of a GCOND.
+
+void
+gcond_edge_range (irange &r, edge e)
+{
+  gcc_checking_assert (e->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE));
+  if (e->flags & EDGE_TRUE_VALUE)
+    r = int_range<2> (boolean_true_node, boolean_true_node);
+  else
+    r = int_range<2> (boolean_false_node, boolean_false_node);
+}
+
+
+gimple_outgoing_range::gimple_outgoing_range ()
 {
   m_edge_table = NULL;
 }
 
-outgoing_range::~outgoing_range ()
+
+gimple_outgoing_range::~gimple_outgoing_range ()
 {
   if (m_edge_table)
     delete m_edge_table;
@@ -68,7 +82,7 @@ outgoing_range::~outgoing_range ()
 // Use a cached value if it exists, or calculate it if not.
 
 bool
-outgoing_range::get_edge_range (irange &r, gimple *s, edge e)
+gimple_outgoing_range::get_edge_range (irange &r, gimple *s, edge e)
 {
   gcc_checking_assert (is_a<gswitch *> (s));
   gswitch *sw = as_a<gswitch *> (s);
@@ -100,7 +114,7 @@ outgoing_range::get_edge_range (irange &r, gimple *s, edge e)
 // Calculate all switch edges from SW and cache them in the hash table.
 
 void
-outgoing_range::calc_switch_ranges (gswitch *sw)
+gimple_outgoing_range::calc_switch_ranges (gswitch *sw)
 {
   bool existed;
   unsigned x, lim;
@@ -165,7 +179,7 @@ outgoing_range::calc_switch_ranges (gswitch *sw)
 // return NULL
 
 gimple *
-outgoing_range::edge_range_p (irange &r, edge e)
+gimple_outgoing_range::edge_range_p (irange &r, edge e)
 {
   // Determine if there is an outgoing edge.
   gimple *s = gimple_outgoing_range_stmt_p (e->src);
@@ -174,12 +188,7 @@ outgoing_range::edge_range_p (irange &r, edge e)
 
   if (is_a<gcond *> (s))
     {
-      if (e->flags & EDGE_TRUE_VALUE)
-	r = int_range<2> (boolean_true_node, boolean_true_node);
-      else if (e->flags & EDGE_FALSE_VALUE)
-	r = int_range<2> (boolean_false_node, boolean_false_node);
-      else
-	gcc_unreachable ();
+      gcond_edge_range (r, e);
       return s;
     }
 
