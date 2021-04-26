@@ -122,7 +122,7 @@ program main
   !$acc end kernels
 
   !$acc kernels
-  ! { dg-bogus "Warning: region contains gang partitioned code but is not gang partitioned" "TODO 'kernels'" { xfail *-*-* } .-1 }
+  ! { dg-bogus "\[Ww\]arning: region contains gang partitioned code but is not gang partitioned" "TODO 'kernels'" { xfail *-*-* } .-1 }
   y = f_g (a(5)) ! { dg-line l_part[incr c_part] }
   !TODO If such a construct is placed in its own part (like it is, here), can't this actually use gang paralelism, instead of "gang-single"?
   ! { dg-message "note: beginning 'gang-single' part in OpenACC 'kernels' region" "" { target *-*-* } l_part$c_part }
