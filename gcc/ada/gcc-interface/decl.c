@@ -217,7 +217,8 @@ static void set_reverse_storage_order_on_array_type (tree);
 static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (tree, Entity_Id);
 static bool compile_time_known_address_p (Node_Id);
-static bool cannot_be_superflat (Node_Id);
+static bool flb_cannot_be_superflat (Node_Id);
+static bool range_cannot_be_superflat (Node_Id);
 static bool constructor_address_p (tree);
 static bool allocatable_size_p (tree, bool);
 static bool initial_value_needs_conversion (tree, tree);
@@ -2238,13 +2239,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     index += (convention_fortran_p ? - 1 : 1),
 	     gnat_index = Next_Index (gnat_index))
 	  {
-	    char field_name[16];
+	    const bool is_flb
+	      = Is_Fixed_Lower_Bound_Index_Subtype (Etype (gnat_index));
 	    tree gnu_index_type = get_unpadded_type (Etype (gnat_index));
 	    tree gnu_orig_min = TYPE_MIN_VALUE (gnu_index_type);
 	    tree gnu_orig_max = TYPE_MAX_VALUE (gnu_index_type);
 	    tree gnu_index_base_type = get_base_type (gnu_index_type);
 	    tree gnu_lb_field, gnu_hb_field;
 	    tree gnu_min, gnu_max, gnu_high;
+	    char field_name[16];
 
 	    /* Update the maximum size of the array in elements.  */
 	    if (gnu_max_size)
@@ -2278,25 +2281,38 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	    /* We can't use build_component_ref here since the template type
 	       isn't complete yet.  */
-	    gnu_orig_min = build3 (COMPONENT_REF, TREE_TYPE (gnu_lb_field),
-				   gnu_template_reference, gnu_lb_field,
-				   NULL_TREE);
+	    if (!is_flb)
+	      {
+		gnu_orig_min = build3 (COMPONENT_REF, TREE_TYPE (gnu_lb_field),
+				       gnu_template_reference, gnu_lb_field,
+				       NULL_TREE);
+		TREE_READONLY (gnu_orig_min) = 1;
+	      }
+
 	    gnu_orig_max = build3 (COMPONENT_REF, TREE_TYPE (gnu_hb_field),
 				   gnu_template_reference, gnu_hb_field,
 				   NULL_TREE);
-	    TREE_READONLY (gnu_orig_min) = TREE_READONLY (gnu_orig_max) = 1;
+	    TREE_READONLY (gnu_orig_max) = 1;
 
 	    gnu_min = convert (sizetype, gnu_orig_min);
 	    gnu_max = convert (sizetype, gnu_orig_max);
 
 	    /* Compute the size of this dimension.  See the E_Array_Subtype
 	       case below for the rationale.  */
-	    gnu_high
-	      = build3 (COND_EXPR, sizetype,
-			build2 (GE_EXPR, boolean_type_node,
-				gnu_orig_max, gnu_orig_min),
-			gnu_max,
-			size_binop (MINUS_EXPR, gnu_min, size_one_node));
+	    if (is_flb
+		&& Nkind (gnat_index) == N_Subtype_Indication
+	        && flb_cannot_be_superflat (gnat_index))
+	      gnu_high = gnu_max;
+
+	    else
+	      gnu_high
+		= build3 (COND_EXPR, sizetype,
+			  build2 (GE_EXPR, boolean_type_node,
+				  gnu_orig_max, gnu_orig_min),
+			  gnu_max,
+			  TREE_CODE (gnu_min) == INTEGER_CST
+			  ? int_const_binop (MINUS_EXPR, gnu_min, size_one_node)
+			  : size_binop (MINUS_EXPR, gnu_min, size_one_node));
 
 	    /* Make a range type with the new range in the Ada base type.
 	       Then make an index type with the size range in sizetype.  */
@@ -2595,7 +2611,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 this.  If we can prove that the array can never be superflat,
 		 we can just use the high bound of the index type.  */
 	      else if ((Nkind (gnat_index) == N_Range
-		        && cannot_be_superflat (gnat_index))
+		        && range_cannot_be_superflat (gnat_index))
 		       /* Bit-Packed Array Impl. Types are never superflat.  */
 		       || (Is_Packed_Array_Impl_Type (gnat_entity)
 			   && Is_Bit_Packed_Array
@@ -6414,33 +6430,81 @@ compile_time_known_address_p (Node_Id gnat_address)
   return Compile_Time_Known_Value (gnat_address);
 }
 
-/* Return true if GNAT_RANGE, a N_Range node, cannot be superflat, i.e. if the
-   inequality HB >= LB-1 is true.  LB and HB are the low and high bounds.  */
+/* Return true if GNAT_INDIC, a N_Subtype_Indication node for the index of a
+   FLB, cannot yield superflat objects, i.e. if the inequality HB >= LB - 1
+   is true for these objects.  LB and HB are the low and high bounds.  */
 
 static bool
-cannot_be_superflat (Node_Id gnat_range)
+flb_cannot_be_superflat (Node_Id gnat_indic)
+{
+  const Entity_Id gnat_type = Entity (Subtype_Mark (gnat_indic));
+  const Entity_Id gnat_subtype = Etype (gnat_indic);
+  Node_Id gnat_scalar_range, gnat_lb, gnat_hb;
+  tree gnu_lb, gnu_hb, gnu_lb_minus_one;
+
+  /* This is a FLB so LB is fixed.  */
+  if ((Ekind (gnat_subtype) == E_Signed_Integer_Subtype
+       || Ekind (gnat_subtype) == E_Modular_Integer_Subtype)
+      && (gnat_scalar_range = Scalar_Range (gnat_subtype)))
+    {
+      gnat_lb = Low_Bound (gnat_scalar_range);
+      gcc_assert (Nkind (gnat_lb) == N_Integer_Literal);
+    }
+  else
+    return false;
+
+  /* The low bound of the type is a lower bound for HB.  */
+  if ((Ekind (gnat_type) == E_Signed_Integer_Subtype
+       || Ekind (gnat_type) == E_Modular_Integer_Subtype)
+      && (gnat_scalar_range = Scalar_Range (gnat_type)))
+    {
+      gnat_hb = Low_Bound (gnat_scalar_range);
+      gcc_assert (Nkind (gnat_hb) == N_Integer_Literal);
+    }
+  else
+    return false;
+
+  /* We need at least a signed 64-bit type to catch most cases.  */
+  gnu_lb = UI_To_gnu (Intval (gnat_lb), sbitsizetype);
+  gnu_hb = UI_To_gnu (Intval (gnat_hb), sbitsizetype);
+  if (TREE_OVERFLOW (gnu_lb) || TREE_OVERFLOW (gnu_hb))
+    return false;
+
+  /* If the low bound is the smallest integer, nothing can be smaller.  */
+  gnu_lb_minus_one = size_binop (MINUS_EXPR, gnu_lb, sbitsize_one_node);
+  if (TREE_OVERFLOW (gnu_lb_minus_one))
+    return true;
+
+  return !tree_int_cst_lt (gnu_hb, gnu_lb_minus_one);
+}
+
+/* Return true if GNAT_RANGE, a N_Range node, cannot be superflat, i.e. if the
+   inequality HB >= LB - 1 is true.  LB and HB are the low and high bounds.  */
+
+static bool
+range_cannot_be_superflat (Node_Id gnat_range)
 {
   Node_Id gnat_lb = Low_Bound (gnat_range), gnat_hb = High_Bound (gnat_range);
-  Node_Id scalar_range;
+  Node_Id gnat_scalar_range;
   tree gnu_lb, gnu_hb, gnu_lb_minus_one;
 
   /* If the low bound is not constant, try to find an upper bound.  */
   while (Nkind (gnat_lb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_lb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_lb)) == E_Modular_Integer_Subtype)
-	 && (scalar_range = Scalar_Range (Etype (gnat_lb)))
-	 && (Nkind (scalar_range) == N_Signed_Integer_Type_Definition
-	     || Nkind (scalar_range) == N_Range))
-    gnat_lb = High_Bound (scalar_range);
+	 && (gnat_scalar_range = Scalar_Range (Etype (gnat_lb)))
+	 && (Nkind (gnat_scalar_range) == N_Signed_Integer_Type_Definition
+	     || Nkind (gnat_scalar_range) == N_Range))
+    gnat_lb = High_Bound (gnat_scalar_range);
 
   /* If the high bound is not constant, try to find a lower bound.  */
   while (Nkind (gnat_hb) != N_Integer_Literal
 	 && (Ekind (Etype (gnat_hb)) == E_Signed_Integer_Subtype
 	     || Ekind (Etype (gnat_hb)) == E_Modular_Integer_Subtype)
-	 && (scalar_range = Scalar_Range (Etype (gnat_hb)))
-	 && (Nkind (scalar_range) == N_Signed_Integer_Type_Definition
-	     || Nkind (scalar_range) == N_Range))
-    gnat_hb = Low_Bound (scalar_range);
+	 && (gnat_scalar_range = Scalar_Range (Etype (gnat_hb)))
+	 && (Nkind (gnat_scalar_range) == N_Signed_Integer_Type_Definition
+	     || Nkind (gnat_scalar_range) == N_Range))
+    gnat_hb = Low_Bound (gnat_scalar_range);
 
   /* If we have failed to find constant bounds, punt.  */
   if (Nkind (gnat_lb) != N_Integer_Literal
