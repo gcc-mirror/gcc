@@ -25371,6 +25371,7 @@ rs6000_legitimate_constant_p (machine_mode mode, rtx x)
   return true;
 }
 
+#if TARGET_AIX_OS
 /* Implement TARGET_PRECOMPUTE_TLS_P.
 
    On the AIX, TLS symbols are in the TOC, which is maintained in the
@@ -25382,6 +25383,7 @@ rs6000_aix_precompute_tls_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 {
   return tls_referenced_p (x);
 }
+#endif
 
 
 /* Return TRUE iff the sequence ending in LAST sets the static chain.  */
