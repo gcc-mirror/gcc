@@ -10778,7 +10778,7 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	}
 
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_INT)
-	asm_fprintf (f, "%wd", -INTVAL (elt));
+	asm_fprintf (f, "%wd", -UINTVAL (elt));
       else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_FLOAT
 	       && aarch64_print_vector_float_operand (f, x, true))
 	;
@@ -21598,7 +21598,7 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
     case MINUS:
       if (CONST_INT_P (value))
 	{
-	  value = GEN_INT (-INTVAL (value));
+	  value = GEN_INT (-UINTVAL (value));
 	  code = PLUS;
 	}
       /* Fall through.  */
@@ -23514,7 +23514,7 @@ aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
     {
       if (aarch64_plus_immediate (low_in2, DImode))
 	emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
-					    GEN_INT (-INTVAL (low_in2))));
+					    GEN_INT (-UINTVAL (low_in2))));
       else
 	{
 	  low_in2 = force_reg (DImode, low_in2);
