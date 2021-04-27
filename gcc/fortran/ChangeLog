@@ -1,3 +1,11 @@
+2021-04-26  Thomas Schwinge  <thomas@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Tom de Vries  <vries@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* lang.opt (Wopenacc-parallelism): New.
+
 2021-04-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/100154
