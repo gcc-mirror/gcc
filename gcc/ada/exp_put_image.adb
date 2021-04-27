@@ -26,6 +26,7 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Csets;          use Csets;
+with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -49,6 +50,9 @@ with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
 
 package body Exp_Put_Image is
+
+   Tagged_Put_Image_Enabled : Boolean renames Debug_Flag_Underscore_Z;
+   --  Temporary until we resolve mixing Ada 2012 and 2022 code
 
    -----------------------
    -- Local Subprograms --
@@ -933,6 +937,7 @@ package body Exp_Put_Image is
       if Ada_Version < Ada_2022
         or else Is_Remote_Types (Scope (Typ))
         or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
+        or else (Is_Tagged_Type (Typ) and then not Tagged_Put_Image_Enabled)
       then
          return False;
       end if;
@@ -1188,6 +1193,7 @@ package body Exp_Put_Image is
 
       if not In_Predefined_Unit (Compilation_Unit)
         and then Ada_Version >= Ada_2022
+        and then Tagged_Put_Image_Enabled
         and then Tagged_Seen
         and then not No_Run_Time_Mode
         and then RTE_Available (RE_Root_Buffer_Type)
