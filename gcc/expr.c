@@ -8664,6 +8664,56 @@ expand_misaligned_mem_ref (rtx temp, machine_mode mode, int unsignedp,
   return temp;
 }
 
+/* Helper function of expand_expr_2, expand a division or modulo.
+   op0 and op1 should be already expanded treeop0 and treeop1, using
+   expand_operands.  */
+
+static rtx
+expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
+		    tree treeop1, rtx op0, rtx op1, rtx target, int unsignedp)
+{
+  bool mod_p = (code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR
+		|| code == CEIL_MOD_EXPR || code == ROUND_MOD_EXPR);
+  if (SCALAR_INT_MODE_P (mode)
+      && optimize >= 2
+      && get_range_pos_neg (treeop0) == 1
+      && get_range_pos_neg (treeop1) == 1)
+    {
+      /* If both arguments are known to be positive when interpreted
+	 as signed, we can expand it as both signed and unsigned
+	 division or modulo.  Choose the cheaper sequence in that case.  */
+      bool speed_p = optimize_insn_for_speed_p ();
+      do_pending_stack_adjust ();
+      start_sequence ();
+      rtx uns_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 1);
+      rtx_insn *uns_insns = get_insns ();
+      end_sequence ();
+      start_sequence ();
+      rtx sgn_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 0);
+      rtx_insn *sgn_insns = get_insns ();
+      end_sequence ();
+      unsigned uns_cost = seq_cost (uns_insns, speed_p);
+      unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+
+      /* If costs are the same then use as tie breaker the other other
+	 factor.  */
+      if (uns_cost == sgn_cost)
+	{
+	  uns_cost = seq_cost (uns_insns, !speed_p);
+	  sgn_cost = seq_cost (sgn_insns, !speed_p);
+	}
+
+      if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
+	{
+	  emit_insn (uns_insns);
+	  return uns_ret;
+	}
+      emit_insn (sgn_insns);
+      return sgn_ret;
+    }
+  return expand_divmod (mod_p, code, mode, op0, op1, target, unsignedp);
+}
+
 rtx
 expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    enum expand_modifier modifier)
@@ -9201,13 +9251,77 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  if (!REG_P (op0))
 	    op0 = copy_to_mode_reg (mode, op0);
 
-	  return REDUCE_BIT_FIELD (gen_rtx_MULT (mode, op0,
-			       gen_int_mode (tree_to_shwi (exp1),
-					     TYPE_MODE (TREE_TYPE (exp1)))));
+	  op1 = gen_int_mode (tree_to_shwi (exp1),
+			      TYPE_MODE (TREE_TYPE (exp1)));
+	  return REDUCE_BIT_FIELD (gen_rtx_MULT (mode, op0, op1));
 	}
 
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
+
+      if (SCALAR_INT_MODE_P (mode) && optimize >= 2)
+	{
+	  gimple *def_stmt0 = get_def_for_expr (treeop0, TRUNC_DIV_EXPR);
+	  gimple *def_stmt1 = get_def_for_expr (treeop1, TRUNC_DIV_EXPR);
+	  if (def_stmt0
+	      && !operand_equal_p (treeop1, gimple_assign_rhs2 (def_stmt0), 0))
+	    def_stmt0 = NULL;
+	  if (def_stmt1
+	      && !operand_equal_p (treeop0, gimple_assign_rhs2 (def_stmt1), 0))
+	    def_stmt1 = NULL;
+
+	  if (def_stmt0 || def_stmt1)
+	    {
+	      /* X / Y * Y can be expanded as X - X % Y too.
+		 Choose the cheaper sequence of those two.  */
+	      if (def_stmt0)
+		treeop0 = gimple_assign_rhs1 (def_stmt0);
+	      else
+		{
+		  treeop1 = treeop0;
+		  treeop0 = gimple_assign_rhs1 (def_stmt1);
+		}
+	      expand_operands (treeop0, treeop1, subtarget, &op0, &op1,
+			       EXPAND_NORMAL);
+	      bool speed_p = optimize_insn_for_speed_p ();
+	      do_pending_stack_adjust ();
+	      start_sequence ();
+	      rtx divmul_ret
+		= expand_expr_divmod (TRUNC_DIV_EXPR, mode, treeop0, treeop1,
+				      op0, op1, NULL_RTX, unsignedp);
+	      divmul_ret = expand_mult (mode, divmul_ret, op1, target,
+					unsignedp);
+	      rtx_insn *divmul_insns = get_insns ();
+	      end_sequence ();
+	      start_sequence ();
+	      rtx modsub_ret
+		= expand_expr_divmod (TRUNC_MOD_EXPR, mode, treeop0, treeop1,
+				      op0, op1, NULL_RTX, unsignedp);
+	      this_optab = optab_for_tree_code (MINUS_EXPR, type,
+						optab_default);
+	      modsub_ret = expand_binop (mode, this_optab, op0, modsub_ret,
+					 target, unsignedp, OPTAB_LIB_WIDEN);
+	      rtx_insn *modsub_insns = get_insns ();
+	      end_sequence ();
+	      unsigned divmul_cost = seq_cost (divmul_insns, speed_p);
+	      unsigned modsub_cost = seq_cost (modsub_insns, speed_p);
+	      /* If costs are the same then use as tie breaker the other other
+		 factor.  */
+	      if (divmul_cost == modsub_cost)
+		{
+		  divmul_cost = seq_cost (divmul_insns, !speed_p);
+		  modsub_cost = seq_cost (modsub_insns, !speed_p);
+		}
+
+	      if (divmul_cost <= modsub_cost)
+		{
+		  emit_insn (divmul_insns);
+		  return REDUCE_BIT_FIELD (divmul_ret);
+		}
+	      emit_insn (modsub_insns);
+	      return REDUCE_BIT_FIELD (modsub_ret);
+	    }
+	}
 
       expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
       return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
@@ -9222,61 +9336,21 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case CEIL_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
-     {
-       /* If this is a fixed-point operation, then we cannot use the code
-	  below because "expand_divmod" doesn't support sat/no-sat fixed-point
-	  divisions.   */
-       if (ALL_FIXED_POINT_MODE_P (mode))
-	 goto binop;
+      /* If this is a fixed-point operation, then we cannot use the code
+	 below because "expand_divmod" doesn't support sat/no-sat fixed-point
+	 divisions.   */
+      if (ALL_FIXED_POINT_MODE_P (mode))
+	goto binop;
 
-       if (modifier == EXPAND_STACK_PARM)
-	 target = 0;
-       /* Possible optimization: compute the dividend with EXPAND_SUM
-	  then if the divisor is constant can optimize the case
-	  where some terms of the dividend have coeffs divisible by it.  */
-       expand_operands (treeop0, treeop1,
-			subtarget, &op0, &op1, EXPAND_NORMAL);
-       bool mod_p = code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR
-		    || code == CEIL_MOD_EXPR || code == ROUND_MOD_EXPR;
-       if (SCALAR_INT_MODE_P (mode)
-	   && optimize >= 2
-	   && get_range_pos_neg (treeop0) == 1
-	   && get_range_pos_neg (treeop1) == 1)
-	 {
-	   /* If both arguments are known to be positive when interpreted
-	      as signed, we can expand it as both signed and unsigned
-	      division or modulo.  Choose the cheaper sequence in that case.  */
-	   bool speed_p = optimize_insn_for_speed_p ();
-	   do_pending_stack_adjust ();
-	   start_sequence ();
-	   rtx uns_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 1);
-	   rtx_insn *uns_insns = get_insns ();
-	   end_sequence ();
-	   start_sequence ();
-	   rtx sgn_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 0);
-	   rtx_insn *sgn_insns = get_insns ();
-	   end_sequence ();
-	   unsigned uns_cost = seq_cost (uns_insns, speed_p);
-	   unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+      if (modifier == EXPAND_STACK_PARM)
+	target = 0;
+      /* Possible optimization: compute the dividend with EXPAND_SUM
+	 then if the divisor is constant can optimize the case
+	 where some terms of the dividend have coeffs divisible by it.  */
+      expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
+      return expand_expr_divmod (code, mode, treeop0, treeop1, op0, op1,
+				 target, unsignedp);
 
-	   /* If costs are the same then use as tie breaker the other
-	      other factor.  */
-	   if (uns_cost == sgn_cost)
-	     {
-		uns_cost = seq_cost (uns_insns, !speed_p);
-		sgn_cost = seq_cost (sgn_insns, !speed_p);
-	     }
-
-	   if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
-	     {
-	       emit_insn (uns_insns);
-	       return uns_ret;
-	     }
-	   emit_insn (sgn_insns);
-	   return sgn_ret;
-	 }
-       return expand_divmod (mod_p, code, mode, op0, op1, target, unsignedp);
-     }
     case RDIV_EXPR:
       goto binop;
 
