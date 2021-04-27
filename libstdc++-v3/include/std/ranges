@@ -2528,7 +2528,7 @@ namespace views
 	  constexpr _Iterator&
 	  operator++()
 	  {
-	    auto&& __inner_range = [this] () -> decltype(auto) {
+	    auto&& __inner_range = [this] () -> auto&& {
 	      if constexpr (_S_ref_is_glvalue)
 		return *_M_outer;
 	      else

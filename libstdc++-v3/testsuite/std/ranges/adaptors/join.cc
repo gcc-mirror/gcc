@@ -149,6 +149,16 @@ test08()
   VERIFY( i->a == 5 );
 }
 
+void
+test10()
+{
+  // PR libstdc++/100290
+  auto v = views::single(0)
+    | views::transform([](const auto& s) { return views::single(s); })
+    | views::join;
+  VERIFY( ranges::next(v.begin()) == v.end() );
+}
+
 int
 main()
 {
@@ -160,4 +170,5 @@ main()
   test06();
   test07();
   test08();
+  test10();
 }
