@@ -1122,6 +1122,62 @@ print_option_information (diagnostic_context *context,
     }
 }
 
+/* Returns whether a DIAGNOSTIC should be printed, and adjusts diagnostic->kind
+   as appropriate for #pragma GCC diagnostic and -Werror=foo.  */
+
+static bool
+diagnostic_enabled (diagnostic_context *context,
+		    diagnostic_info *diagnostic)
+{
+  /* Diagnostics with no option or -fpermissive are always enabled.  */
+  if (!diagnostic->option_index
+      || diagnostic->option_index == permissive_error_option (context))
+    return true;
+
+  /* This tests if the user provided the appropriate -Wfoo or
+     -Wno-foo option.  */
+  if (! context->option_enabled (diagnostic->option_index,
+				 context->lang_mask,
+				 context->option_state))
+    return false;
+
+  /* This tests for #pragma diagnostic changes.  */
+  diagnostic_t diag_class
+    = update_effective_level_from_pragmas (context, diagnostic);
+
+  /* This tests if the user provided the appropriate -Werror=foo
+     option.  */
+  if (diag_class == DK_UNSPECIFIED
+      && (context->classify_diagnostic[diagnostic->option_index]
+	  != DK_UNSPECIFIED))
+    diagnostic->kind
+      = context->classify_diagnostic[diagnostic->option_index];
+
+  /* This allows for future extensions, like temporarily disabling
+     warnings for ranges of source code.  */
+  if (diagnostic->kind == DK_IGNORED)
+    return false;
+
+  return true;
+}
+
+/* Returns whether warning OPT is enabled at LOC.  */
+
+bool
+warning_enabled_at (location_t loc, int opt)
+{
+  if (!diagnostic_report_warnings_p (global_dc, loc))
+    return false;
+
+  rich_location richloc (line_table, loc);
+  diagnostic_info diagnostic = {};
+  diagnostic.option_index = opt;
+  diagnostic.richloc = &richloc;
+  diagnostic.message.m_richloc = &richloc;
+  diagnostic.kind = DK_WARNING;
+  return diagnostic_enabled (global_dc, &diagnostic);
+}
+
 /* Report a diagnostic message (an error or a warning) as specified by
    DC.  This function is *the* subroutine in terms of which front-ends
    should implement their specific diagnostic handling modules.  The
@@ -1172,33 +1228,8 @@ diagnostic_report_diagnostic (diagnostic_context *context,
       && diagnostic->kind == DK_WARNING)
     diagnostic->kind = DK_ERROR;
 
-  if (diagnostic->option_index
-      && diagnostic->option_index != permissive_error_option (context))
-    {
-      /* This tests if the user provided the appropriate -Wfoo or
-	 -Wno-foo option.  */
-      if (! context->option_enabled (diagnostic->option_index,
-				     context->lang_mask,
-				     context->option_state))
-	return false;
-
-      /* This tests for #pragma diagnostic changes.  */
-      diagnostic_t diag_class
-	= update_effective_level_from_pragmas (context, diagnostic);
-
-      /* This tests if the user provided the appropriate -Werror=foo
-	 option.  */
-      if (diag_class == DK_UNSPECIFIED
-	  && (context->classify_diagnostic[diagnostic->option_index]
-	      != DK_UNSPECIFIED))
-	diagnostic->kind
-	  = context->classify_diagnostic[diagnostic->option_index];
-
-      /* This allows for future extensions, like temporarily disabling
-	 warnings for ranges of source code.  */
-      if (diagnostic->kind == DK_IGNORED)
-	return false;
-    }
+  if (!diagnostic_enabled (context, diagnostic))
+    return false;
 
   if (diagnostic->kind != DK_NOTE && diagnostic->kind != DK_ICE)
     diagnostic_check_max_errors (context);
