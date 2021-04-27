@@ -1,3 +1,7 @@
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
 2021-04-09  Martin Liska  <mliska@suse.cz>
 
 	* branch_changer.py: Generate URL only when emitting

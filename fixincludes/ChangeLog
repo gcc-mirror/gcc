@@ -1,3 +1,7 @@
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
 2020-12-14  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* fixincl.x: Rerun genfixes.

@@ -1,3 +1,7 @@
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
 2020-07-30  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/96202

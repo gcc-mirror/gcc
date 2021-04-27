@@ -1,3 +1,7 @@
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
 2021-01-28  Ian Lance Taylor  <iant@golang.org>
 
 	* gospec.c (lang_specific_driver): Add -g if no debugging options

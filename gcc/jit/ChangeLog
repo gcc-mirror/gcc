@@ -1,3 +1,7 @@
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
 2021-03-24  Matthias Klose  <doko@ubuntu.com>
 
 	* Make-lang.in (jit.sphinx.html, jit.sphinx.pdf): Use $(mkinstalldirs),
