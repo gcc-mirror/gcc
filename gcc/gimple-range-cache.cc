@@ -48,9 +48,10 @@ non_null_ref::~non_null_ref ()
 
 // Return true if NAME has a non-null dereference in block bb.  If this is the
 // first query for NAME, calculate the summary first.
+// If SEARCH_DOM is true, the search the dominator tree as well.
 
 bool
-non_null_ref::non_null_deref_p (tree name, basic_block bb)
+non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
 {
   if (!POINTER_TYPE_P (TREE_TYPE (name)))
     return false;
@@ -59,7 +60,24 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb)
   if (!m_nn[v])
     process_name (name);
 
-  return bitmap_bit_p (m_nn[v], bb->index);
+  if (bitmap_bit_p (m_nn[v], bb->index))
+    return true;
+
+  // See if any dominator has set non-zero.
+  if (search_dom && dom_info_available_p (CDI_DOMINATORS))
+    {
+      // Search back to the Def block, or the top, whichever is closer.
+      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+      basic_block def_dom = def_bb
+			    ? get_immediate_dominator (CDI_DOMINATORS, def_bb)
+			    : NULL;
+      for ( ;
+	    bb && bb != def_dom;
+	    bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+	if (bitmap_bit_p (m_nn[v], bb->index))
+	  return true;
+    }
+  return false;
 }
 
 // Allocate an populate the bitmap for NAME.  An ON bit for a block
@@ -800,7 +818,7 @@ ranger_cache::ssa_range_in_bb (irange &r, tree name, basic_block bb)
   // Check if pointers have any non-null dereferences.  Non-call
   // exceptions mean we could throw in the middle of the block, so just
   // punt for now on those.
-  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb) &&
+  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
       !cfun->can_throw_non_call_exceptions)
     r = range_nonzero (TREE_TYPE (name));
 }
@@ -1066,7 +1084,8 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 
 	  // Regardless of whether we have visited pred or not, if the
 	  // pred has a non-null reference, revisit this block.
-	  if (m_non_null.non_null_deref_p (name, pred))
+	  // Don't search the DOM tree.
+	  if (m_non_null.non_null_deref_p (name, pred, false))
 	    {
 	      if (DEBUG_RANGE_CACHE)
 		fprintf (dump_file, "nonnull: update ");
