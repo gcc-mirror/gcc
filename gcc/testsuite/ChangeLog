@@ -1,3 +1,86 @@
+2021-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100209
+	* g++.dg/cpp1y/constexpr-base1.C: New test.
+	* g++.dg/cpp1y/constexpr-ptrsub1.C: New test.
+
+2021-04-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/classify-serial.f95:
+	Use [Ww]arning in dg-bogus as FE diagnostic and default
+	diagnostic differ and the result depends on ENABLE_OFFLOAD.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+
+2021-04-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/classify-serial.f95:
+	Correct spelling in dg-bogus to match -Wopenacc-parallelism.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99956
+	* gfortran.dg/pr99956.f: New testcase.
+
+2021-04-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/cmse/bitfield-1.c: Remove dg-do.
+	* gcc.target/arm/cmse/bitfield-2.c: Likewise.
+	* gcc.target/arm/cmse/bitfield-3.c: Likewise.
+	* gcc.target/arm/cmse/cmse-16.c: Likewise.
+	* gcc.target/arm/cmse/struct-1.c: Likewise.
+	* gcc.target/arm/cmse/cmse.exp: Set dg-do-what-default depending
+	on arm_cmse_hw.
+	* lib/target-supports.exp (check_effective_target_arm_cmse_hw):
+	New.
+
+2021-04-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr84877.c: XFAIL on SPARC as well.
+
+2021-04-26  Thomas Schwinge  <thomas@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Tom de Vries  <vries@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/diag-parallelism-1.c: New.
+	* c-c++-common/goacc/acc-icf.c: Specify '-Wopenacc-parallelism',
+	and match diagnostics, as appropriate.
+	* c-c++-common/goacc/classify-kernels-unparallelized.c: Likewise.
+	* c-c++-common/goacc/classify-kernels.c: Likewise.
+	* c-c++-common/goacc/classify-parallel.c: Likewise.
+	* c-c++-common/goacc/classify-routine.c: Likewise.
+	* c-c++-common/goacc/classify-serial.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* c-c++-common/goacc/parallel-dims-1.c: Likewise.
+	* c-c++-common/goacc/parallel-reduction.c: Likewise.
+	* c-c++-common/goacc/pr70688.c: Likewise.
+	* c-c++-common/goacc/routine-1.c: Likewise.
+	* c-c++-common/goacc/routine-level-of-parallelism-2.c: Likewise.
+	* c-c++-common/goacc/uninit-dim-clause.c: Likewise.
+	* gfortran.dg/goacc/classify-kernels-unparallelized.f95: Likewise.
+	* gfortran.dg/goacc/classify-kernels.f95: Likewise.
+	* gfortran.dg/goacc/classify-parallel.f95: Likewise.
+	* gfortran.dg/goacc/classify-routine.f95: Likewise.
+	* gfortran.dg/goacc/classify-serial.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-1.f95: Likewise.
+	* gfortran.dg/goacc/kernels-decompose-2.f95: Likewise.
+	* gfortran.dg/goacc/parallel-tree.f95: Likewise.
+	* gfortran.dg/goacc/routine-4.f90: Likewise.
+	* gfortran.dg/goacc/routine-level-of-parallelism-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-module-mod-1.f90: Likewise.
+	* gfortran.dg/goacc/routine-multiple-directives-1.f90: Likewise.
+	* gfortran.dg/goacc/uninit-dim-clause.f95: Likewise.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99473
+	* gcc.dg/tree-ssa/pr99473-1.c: New testcase.
+
 2021-04-25  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/98911

@@ -279,3 +279,4 @@
 /* Use standard DWARF numbering for DWARF debugging information.  */
 #define RS6000_USE_DWARF_NUMBERING
 
+#define TARGET_PRECOMPUTE_TLS_P rs6000_aix_precompute_tls_p

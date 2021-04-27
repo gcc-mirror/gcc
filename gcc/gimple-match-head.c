@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-tree.h"
 #include "tree-eh.h"
 #include "dbgcnt.h"
+#include "tm.h"
 
 /* Forward declarations of the private auto-generated matchers.
    They expect valueized operands in canonical order and do not

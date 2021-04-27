@@ -1,3 +1,59 @@
+2021-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (tcp::no_delay, v6_only)
+	(unicast::hops, multicast::hops, multicast::enable_loopback):
+	Change access of base class and static data members. Add
+	using-declaration for __socket_crtp::operator=(_Tp).
+	(multicast::__mcastopt): New type.
+	(multicast::join_group, multicast::leave_group): Derive from
+	__mcastopt for common implementation.
+	* include/experimental/socket: Add comment.
+	* testsuite/experimental/net/internet/socket/opt.cc: New test.
+	* testsuite/experimental/net/socket/socket_base.cc: Check for
+	protected constructor/destructor of socket_base. Check for
+	explicit constructors of socket option classes.
+
+2021-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/bits/net.h (__socket_base): Add
+	bool template parameter to allow BooleanSocketOption and
+	IntegerSocketOption to have different __socket_base<int>
+	base classes.
+	(__socket_base<bool>): Adjust base class.
+	(__socket_base<int>): Add partial specialization.
+	(__socket_crtp::operator=(_Tp)): Add noexcept-specifier.
+	* include/experimental/socket (socket_base::broadcast)
+	(socket_base::debug, socket_base::do_not_route)
+	(socket_base::keep_alive, socket_base::linger)
+	(socket_base::out_of_band_inline)
+	(socket_base::receive_buffer_size)
+	(socket_base::receive_low_watermark)
+	(socket_base::reuse_address, socket_base::send_buffer_size)
+	(socket_base::send_low_watermark): Add using-declaration for
+	__socket_crtp::operator=(_Tp).
+	* testsuite/experimental/net/socket/socket_base.cc: Check
+	properties of socket option types.
+
+2021-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (resolver_base::flags): Remove
+	enumerators. Initialize constants directly with desired values.
+	Make all operators constexpr and noexcept.
+	* testsuite/experimental/net/internet/resolver/base.cc: Use
+	__gnu_test::test_bitmask_values for bitmask type. Check
+	construction and destruction is protected.
+
+2021-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/semaphore_base.h: Include <exception> and <errno.h>.
+
+2021-04-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100259
+	* include/experimental/internet (net::ip::make_error_code)
+	(net::ip::make_error_condition, net::ip::make_network_v4)
+	(net::ip::operator==(const udp&, const udp&)): Add 'inline'.
+
 2021-04-24  David Edelsohn  <dje.gcc@gmail.com>
 
 	* testsuite/lib/dg-options.exp (atomic_link_flags): New.

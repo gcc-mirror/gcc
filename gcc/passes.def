@@ -210,7 +210,11 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, true /* warn_array_bounds_p */);
+      NEXT_PASS (pass_dse);
       NEXT_PASS (pass_dce);
+      /* pass_stdarg is always run and at this point we execute
+         TODO_remove_unused_locals to prune CLOBBERs of dead
+	 variables which are otherwise a churn on alias walkings.  */
       NEXT_PASS (pass_stdarg);
       NEXT_PASS (pass_call_cdce);
       NEXT_PASS (pass_cselim);
@@ -236,7 +240,6 @@ along with GCC; see the file COPYING3.  If not see
       /* Identify paths that should never be executed in a conforming
 	 program and isolate those paths.  */
       NEXT_PASS (pass_isolate_erroneous_paths);
-      NEXT_PASS (pass_dse);
       NEXT_PASS (pass_reassoc, true /* insert_powi_p */);
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_forwprop);
@@ -254,6 +257,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_sancov);
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
+      NEXT_PASS (pass_dse);
       NEXT_PASS (pass_dce);
       /* Pass group that runs when 1) enabled, 2) there are loops
 	 in the function.  Make sure to run pass_fix_loops before

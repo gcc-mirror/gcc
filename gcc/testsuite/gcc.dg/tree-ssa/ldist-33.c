@@ -1,5 +1,8 @@
 /* { dg-do compile { target size32plus } } */
-/* { dg-options "-O2 -ftree-loop-distribution -ftree-loop-distribute-patterns -fdump-tree-ldist-details" } */
+/* The desire is to show we can generate a memset from the outer loop
+   store.  Both store motion and PRE expose a DSE opportunity for this
+   zeroing - while desirable this defeats the purpose of this testcase.  */
+/* { dg-options "-O2 -fno-tree-loop-im -fno-tree-pre -ftree-loop-distribution -ftree-loop-distribute-patterns -fdump-tree-ldist-details" } */
 
 #define N (1024)
 double a[N][N], b[N][N], c[N][N];

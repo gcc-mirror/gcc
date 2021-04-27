@@ -26389,9 +26389,16 @@ tsubst_initializer_list (tree t, tree argvec)
 		  tree expanded_exprs;
 
 		  /* Expand the argument.  */
-		  SET_PACK_EXPANSION_PATTERN (expr, TREE_VALUE (arg));
+		  tree value;
+		  if (TREE_CODE (TREE_VALUE (arg)) == EXPR_PACK_EXPANSION)
+		    value = TREE_VALUE (arg);
+		  else
+		    {
+		      value = expr;
+		      SET_PACK_EXPANSION_PATTERN (value, TREE_VALUE (arg));
+		    }
 		  expanded_exprs
-		    = tsubst_pack_expansion (expr, argvec,
+		    = tsubst_pack_expansion (value, argvec,
 					     tf_warning_or_error,
 					     NULL_TREE);
 		  if (expanded_exprs == error_mark_node)
@@ -26400,12 +26407,17 @@ tsubst_initializer_list (tree t, tree argvec)
 		  /* Prepend each of the expanded expressions to the
 		     corresponding TREE_LIST in EXPANDED_ARGUMENTS.  */
 		  for (i = 0; i < len; i++)
-		    {
-		      TREE_VEC_ELT (expanded_arguments, i) =
-			tree_cons (NULL_TREE,
-				   TREE_VEC_ELT (expanded_exprs, i),
-				   TREE_VEC_ELT (expanded_arguments, i));
-		    }
+		    if (TREE_CODE (TREE_VALUE (arg)) == EXPR_PACK_EXPANSION)
+		      for (int j = 0; j < TREE_VEC_LENGTH (expanded_exprs); j++)
+			TREE_VEC_ELT (expanded_arguments, i)
+			  = tree_cons (NULL_TREE,
+				       TREE_VEC_ELT (expanded_exprs, j),
+				       TREE_VEC_ELT (expanded_arguments, i));
+		    else
+		      TREE_VEC_ELT (expanded_arguments, i)
+			= tree_cons (NULL_TREE,
+				     TREE_VEC_ELT (expanded_exprs, i),
+				     TREE_VEC_ELT (expanded_arguments, i));
 		}
 	      in_base_initializer = 0;
 

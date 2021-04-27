@@ -1,3 +1,174 @@
+2021-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::irange_set_1bit_anti_range): Add assert.
+	(irange::set): Call irange_set_1bit_anti_range for handling all
+	1-bit ranges.  Fall through on ~[MIN,MAX].
+
+2021-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::legacy_num_pairs): Remove.
+	(irange::invert): Change gcc_assert to gcc_checking_assert.
+	* value-range.h (irange::num_pairs): Adjust for a cached
+	num_pairs().  Also, rename all gcc_assert's to
+	gcc_checking_assert's.
+
+2021-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::operator=): Set m_kind.
+	(irange::copy_to_legacy): Handle varying and undefined sources
+	as a legacy copy since they can be easily copied.
+	(irange::irange_set): Set m_kind.
+	(irange::irange_set_anti_range): Same.
+	(irange::set): Rename normalize_min_max to normalize_kind.
+	(irange::verify_range): Adjust for multi-ranges having the
+	m_kind field set.
+	(irange::irange_union): Set m_kind.
+	(irange::irange_intersect): Same.
+	(irange::invert): Same.
+	* value-range.h (irange::kind): Always return m_kind.
+	(irange::varying_p): Rename to...
+	(irange::varying_comptaible_p): ...this.
+	(irange::undefined_p): Only look at m_kind.
+	(irange::irange): Always set VR_UNDEFINED if applicable.
+	(irange::set_undefined): Always set VR_UNDEFINED.
+	(irange::set_varying): Always set m_kind to VR_VARYING.
+	(irange::normalize_min_max): Rename to...
+	(irange::normalize_kind): ...this.
+
+2021-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::set_ssa_range_info):
+	Adjust for constant_p including varying_p.
+	* tree-vrp.c (vrp_prop::finalize): Same.
+	(determine_value_range): Same.
+	* vr-values.c (vr_values::range_of_expr): Same.
+	* value-range.cc (irange::symbolic_p): Do not check varying_p.
+	(irange::constant_p): Same.
+
+2021-04-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::legacy_lower_bound): Replace
+	  !undefined_p check with num_ranges > 0.
+	(irange::legacy_upper_bound): Same.
+	* value-range.h (irange::type): Same.
+	(irange::lower_bound): Same.
+	(irange::upper_bound): Same.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99956
+	* gimple-loop-interchange.cc (compute_access_stride):
+	Try instantiating the access in a shallower loop nest
+	if instantiating failed.
+	(compute_access_strides): Pass adjustable loop_nest
+	to compute_access_stride.
+
+2021-04-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (arm_cmse_hw): Document.
+
+2021-04-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/iterators.md (vwcore): Handle V4BF, V8BF.
+
+2021-04-26  Thomas Schwinge  <thomas@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Tom de Vries  <vries@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-offload.c (oacc_validate_dims): Implement
+	'-Wopenacc-parallelism'.
+	* doc/invoke.texi (-Wopenacc-parallelism): Document.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.h (gimplify_build1): Remove.
+	(gimplify_build2): Likewise.
+	(gimplify_build3): Likewise.
+	* tree-cfg.c (gimplify_build1): Move to tree-vect-generic.c.
+	(gimplify_build2): Likewise.
+	(gimplify_build3): Likewise.
+	* tree-vect-generic.c (gimplify_build1): Move from tree-cfg.c.
+	Modernize.
+	(gimplify_build2): Likewise.
+	(gimplify_build3): Likewise.
+	(tree_vec_extract): Use resimplify with following SSA edges.
+	(expand_vector_parallel): Avoid passing NULL size/bitpos
+	to tree_vec_extract.
+	* expr.c (store_constructor): Deal with zero-element CTORs.
+	* match.pd (bit_field_ref <vector CTOR>): Make sure to
+	produce vector constants when possible.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-complex.c: Include gimple-fold.h.
+	(expand_complex_addition): Use gimple_build.
+	(expand_complex_multiplication_components): Likewise.
+	(expand_complex_multiplication): Likewise.
+	(expand_complex_div_straight): Likewise.
+	(expand_complex_div_wide): Likewise.
+	(expand_complex_division): Likewise.
+	(expand_complex_conjugate): Likewise.
+	(expand_complex_comparison): Likewise.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-phiopt.c (two_value_replacement): Remove use
+	of legacy gimplify_buildN API.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99473
+	* tree-ssa-phiopt.c (cond_store_replacement): Handle all
+	stores.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	* config/rs6000/rs6000-call.c (rs6000_gimple_fold_builtin):
+	Use replace_call_with_value.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-propagate.h (valid_gimple_rhs_p): Remove.
+	(update_gimple_call): Likewise.
+	(update_call_from_tree): Likewise.
+	* tree-ssa-propagate.c (valid_gimple_rhs_p): Remove.
+	(valid_gimple_call_p): Likewise.
+	(move_ssa_defining_stmt_for_defs): Likewise.
+	(finish_update_gimple_call): Likewise.
+	(update_gimple_call): Likewise.
+	(update_call_from_tree): Likewise.
+	(propagate_tree_value_into_stmt): Use replace_call_with_value.
+	* gimple-fold.h (update_gimple_call): Declare.
+	* gimple-fold.c (valid_gimple_rhs_p): Move here from
+	tree-ssa-propagate.c.
+	(update_gimple_call): Likewise.
+	(valid_gimple_call_p): Likewise.
+	(finish_update_gimple_call): Likewise, and simplify.
+	(gimplify_and_update_call_from_tree): Implement
+	update_call_from_tree functionality, avoid excessive
+	push/pop_gimplify_context.
+	(gimple_fold_builtin): Use only gimplify_and_update_call_from_tree.
+	(gimple_fold_call): Likewise.
+	* gimple-ssa-sprintf.c (try_substitute_return_value): Likewise.
+	* tree-ssa-ccp.c (ccp_folder::fold_stmt): Likewise.
+	(pass_fold_builtins::execute): Likewise.
+	(optimize_stack_restore): Use replace_call_with_value.
+	* tree-cfg.c (fold_loop_internal_call): Likewise.
+	* tree-ssa-dce.c (maybe_optimize_arith_overflow): Use
+	only gimplify_and_update_call_from_tree.
+	* tree-ssa-strlen.c (handle_builtin_strlen): Likewise.
+	(handle_builtin_strchr): Likewise.
+	* tsan.c: Include gimple-fold.h instead of tree-ssa-propagate.h.
+
+2021-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100255
+	* vmsdbgout.c (ASM_OUTPUT_DEBUG_STRING, vmsdbgout_begin_block,
+	vmsdbgout_end_block, lookup_filename, vmsdbgout_source_line): Remove
+	register keywords.
+
 2021-04-25  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/98911

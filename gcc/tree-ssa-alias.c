@@ -2034,6 +2034,17 @@ indirect_ref_may_alias_decl_p (tree ref1 ATTRIBUTE_UNUSED, tree base1,
   if (TREE_CODE (base1) != TARGET_MEM_REF
       && !ranges_maybe_overlap_p (offset1 + moff, -1, offset2, max_size2))
     return false;
+
+  /* If the pointer based access is bigger than the variable they cannot
+     alias.  This is similar to the check below where we use TBAA to
+     increase the size of the pointer based access based on the dynamic
+     type of a containing object we can infer from it.  */
+  poly_int64 dsize2;
+  if (known_size_p (size1)
+      && poly_int_tree_p (DECL_SIZE (base2), &dsize2)
+      && known_lt (dsize2, size1))
+    return false;
+
   /* They also cannot alias if the pointer may not point to the decl.  */
   if (!ptr_deref_may_alias_decl_p (ptr1, base2))
     return false;

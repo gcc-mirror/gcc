@@ -203,6 +203,8 @@ irange::irange_set_1bit_anti_range (tree min, tree max)
   else
     {
       // The only alternative is [MIN,MAX], which is the empty range.
+      gcc_checking_assert (vrp_val_is_min (min));
+      gcc_checking_assert (vrp_val_is_max (max));
       set_undefined ();
     }
   if (flag_checking)
@@ -313,29 +315,21 @@ irange::set (tree min, tree max, value_range_kind kind)
   // Anti-ranges that can be represented as ranges should be so.
   if (kind == VR_ANTI_RANGE)
     {
-      /* For -fstrict-enums we may receive out-of-range ranges so consider
-         values < -INF and values > INF as -INF/INF as well.  */
       bool is_min = vrp_val_is_min (min);
       bool is_max = vrp_val_is_max (max);
-      tree type = TREE_TYPE (min);
 
       if (is_min && is_max)
 	{
-	  /* We cannot deal with empty ranges, drop to varying.
-	     ???  This could be VR_UNDEFINED instead.  */
-	  set_varying (type);
-	  return;
+	  // Fall through.  This will either be normalized as
+	  // VR_UNDEFINED if the anti-range spans the entire
+	  // precision, or it will remain an VR_ANTI_RANGE in the case
+	  // of an -fstrict-enum where [MIN,MAX] is less than the span
+	  // of underlying precision.
 	}
-      else if (TYPE_PRECISION (TREE_TYPE (min)) == 1
-	       && (is_min || is_max))
+      else if (TYPE_PRECISION (TREE_TYPE (min)) == 1)
 	{
-	  /* Non-empty boolean ranges can always be represented
-	     as a singleton range.  */
-	  if (is_min)
-	    min = max = vrp_val_max (TREE_TYPE (min));
-	  else
-	    min = max = vrp_val_min (TREE_TYPE (min));
-	  kind = VR_RANGE;
+	  irange_set_1bit_anti_range (min, max);
+	  return;
 	}
       else if (is_min)
         {
