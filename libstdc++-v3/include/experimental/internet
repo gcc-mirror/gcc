@@ -273,8 +273,11 @@ namespace ip
     // types:
     struct bytes_type : array<unsigned char, 16>
     {
-      template<typename... _Tp> explicit constexpr bytes_type(_Tp... __t)
-	: array<unsigned char, 16>{{static_cast<unsigned char>(__t)...}} { }
+      template<typename... _Tp>
+	explicit constexpr
+	bytes_type(_Tp... __t)
+	: array<unsigned char, 16>{{static_cast<unsigned char>(__t)...}}
+	{ }
     };
 
     // constructors:
@@ -1476,15 +1479,14 @@ namespace ip
       // members:
       constexpr protocol_type protocol() const noexcept
       {
-	return _M_data._M_v4.sin_family == AF_INET6
-	  ? protocol_type::v6() : protocol_type::v4();
+	return _M_is_v6() ? protocol_type::v6() : protocol_type::v4();
       }
 
       constexpr ip::address
       address() const noexcept
       {
 	ip::address __addr;
-	if (protocol().family() == AF_INET6)
+	if (_M_is_v6())
 	  {
 	    __builtin_memcpy(&__addr._M_v6._M_bytes,
 			     _M_data._M_v6.sin6_addr.s6_addr, 16);
@@ -1525,18 +1527,16 @@ namespace ip
       { _M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num); }
 
       void* data() noexcept { return &_M_data; }
+
       const void* data() const noexcept { return &_M_data; }
+
       constexpr size_t size() const noexcept
-      {
-	return protocol().family() == AF_INET6
-	  ? sizeof(sockaddr_in6) : sizeof(sockaddr_in);
-      }
+      { return _M_is_v6() ? sizeof(sockaddr_in6) : sizeof(sockaddr_in); }
 
       void
       resize(size_t __s)
       {
-	if ((protocol().family() == AF_INET6 && __s != sizeof(sockaddr_in6))
-	    || (protocol().family() == AF_INET && __s != sizeof(sockaddr_in)))
+	if (__s != size())
 	  __throw_length_error("net::ip::basic_endpoint::resize");
       }
 
@@ -1548,6 +1548,9 @@ namespace ip
 	sockaddr_in	_M_v4;
 	sockaddr_in6	_M_v6;
       } _M_data;
+
+      constexpr bool _M_is_v6() const noexcept
+      { return _M_data._M_v4.sin_family == AF_INET6; }
     };
 
   /** basic_endpoint comparisons
@@ -2136,12 +2139,12 @@ namespace ip
    * @{
    */
 
-  inline bool
-  operator==(const tcp& __a, const tcp& __b)
+  constexpr bool
+  operator==(const tcp& __a, const tcp& __b) noexcept
   { return __a.family() == __b.family(); }
 
-  inline bool
-  operator!=(const tcp& __a, const tcp& __b)
+  constexpr bool
+  operator!=(const tcp& __a, const tcp& __b) noexcept
   { return !(__a == __b); }
 
   /// @}
@@ -2177,12 +2180,12 @@ namespace ip
    * @{
    */
 
-  inline bool
-  operator==(const udp& __a, const udp& __b)
+  constexpr bool
+  operator==(const udp& __a, const udp& __b) noexcept
   { return __a.family() == __b.family(); }
 
-  inline bool
-  operator!=(const udp& __a, const udp& __b)
+  constexpr bool
+  operator!=(const udp& __a, const udp& __b) noexcept
   { return !(__a == __b); }
 
   /// @}
