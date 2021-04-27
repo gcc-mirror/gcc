@@ -1,3 +1,9 @@
+2021-04-26  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/98952
+	* gcc.target/powerpc/pr98952.c: New test.  Test backported from
+	trunk change on 4/23, 886b6c1e8af502b69e3f318b9830b73b88215878.
+
 2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
