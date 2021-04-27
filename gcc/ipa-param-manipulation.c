@@ -856,6 +856,7 @@ ipa_param_adjustments::modify_call (gcall *stmt,
 
   gcall *new_stmt = gimple_build_call_vec (callee_decl, vargs);
 
+  tree ssa_to_remove = NULL;
   if (tree lhs = gimple_call_lhs (stmt))
     {
       if (!m_skip_return)
@@ -880,6 +881,7 @@ ipa_param_adjustments::modify_call (gcall *stmt,
 		}
 	      update_stmt (using_stmt);
 	    }
+	  ssa_to_remove = lhs;
 	}
     }
 
@@ -898,6 +900,8 @@ ipa_param_adjustments::modify_call (gcall *stmt,
       fprintf (dump_file, "\n");
     }
   gsi_replace (&gsi, new_stmt, true);
+  if (ssa_to_remove)
+    release_ssa_name (ssa_to_remove);
   if (update_references)
     do
       {
