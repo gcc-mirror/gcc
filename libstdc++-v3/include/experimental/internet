@@ -1660,38 +1660,38 @@ namespace ip
     static constexpr flags all_matching		= (flags)AI_ALL;
     static constexpr flags address_configured	= (flags)AI_ADDRCONFIG;
 
+    friend constexpr flags
+    operator&(flags __f1, flags __f2) noexcept
+    { return flags( int(__f1) & int(__f2) ); }
+
+    friend constexpr flags
+    operator|(flags __f1, flags __f2) noexcept
+    { return flags( int(__f1) | int(__f2) ); }
+
+    friend constexpr flags
+    operator^(flags __f1, flags __f2) noexcept
+    { return flags( int(__f1) ^ int(__f2) ); }
+
+    friend constexpr flags
+    operator~(flags __f) noexcept
+    { return flags( ~int(__f) ); }
+
+    friend constexpr flags&
+    operator&=(flags& __f1, flags __f2) noexcept
+    { return __f1 = (__f1 & __f2); }
+
+    friend constexpr flags&
+    operator|=(flags& __f1, flags __f2) noexcept
+    { return __f1 = (__f1 | __f2); }
+
+    friend constexpr flags&
+    operator^=(flags& __f1, flags __f2) noexcept
+    { return __f1 = (__f1 ^ __f2); }
+
   protected:
     resolver_base() = default;
     ~resolver_base() = default;
   };
-
-  constexpr resolver_base::flags
-  operator&(resolver_base::flags __f1, resolver_base::flags __f2) noexcept
-  { return resolver_base::flags( int(__f1) & int(__f2) ); }
-
-  constexpr resolver_base::flags
-  operator|(resolver_base::flags __f1, resolver_base::flags __f2) noexcept
-  { return resolver_base::flags( int(__f1) | int(__f2) ); }
-
-  constexpr resolver_base::flags
-  operator^(resolver_base::flags __f1, resolver_base::flags __f2) noexcept
-  { return resolver_base::flags( int(__f1) ^ int(__f2) ); }
-
-  constexpr resolver_base::flags
-  operator~(resolver_base::flags __f) noexcept
-  { return resolver_base::flags( ~int(__f) ); }
-
-  constexpr resolver_base::flags&
-  operator&=(resolver_base::flags& __f1, resolver_base::flags __f2) noexcept
-  { return __f1 = (__f1 & __f2); }
-
-  constexpr resolver_base::flags&
-  operator|=(resolver_base::flags& __f1, resolver_base::flags __f2) noexcept
-  { return __f1 = (__f1 | __f2); }
-
-  constexpr resolver_base::flags&
-  operator^=(resolver_base::flags& __f1, resolver_base::flags __f2) noexcept
-  { return __f1 = (__f1 ^ __f2); }
 
   // TODO define resolver_base::flags static constants in .so for C++14 mode
 
