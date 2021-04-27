@@ -160,6 +160,16 @@ test09()
   static_assert(!requires { 0 | join; });
 }
 
+void
+test10()
+{
+  // PR libstdc++/100290
+  auto v = views::single(0)
+    | views::transform([](const auto& s) { return views::single(s); })
+    | views::join;
+  VERIFY( ranges::next(v.begin()) == v.end() );
+}
+
 int
 main()
 {
@@ -172,4 +182,5 @@ main()
   test07();
   test08();
   test09();
+  test10();
 }
