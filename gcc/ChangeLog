@@ -1,3 +1,51 @@
+2021-04-26  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-04-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99647
+	* config/arm/iterators.md (MVE_vecs): New.
+	(V_elem): Also handle V2DF.
+	* config/arm/mve.md (*mve_mov<mode>): Rename to ...
+	(*mve_vdup<mode>): ... this. Remove second alternative since
+	vec_duplicate of const_int is not canonical RTL, and we don't
+	want to match symbol_refs.
+	(*mve_vec_duplicate<mode>): Delete (pattern is redundant).
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100053
+	* tree-ssa-sccvn.c (vn_nary_op_get_predicated_value): Do
+	not use optimistic dominance queries for backedges to validate
+	predicated values.
+	(dominated_by_p_w_unex): Add parameter to ignore executable
+	state on backedges.
+	(rpo_elim::eliminate_avail): Adjust.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99954
+	* tree-loop-distribution.c: Include tree-affine.h.
+	(generate_memcpy_builtin): Try using tree-affine to prove
+	non-overlap.
+	(loop_distribution::classify_builtin_ldst): Always classify
+	as PKIND_MEMMOVE.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99880
+	* tree-vect-loop.c (maybe_set_vectorized_backedge_value): Only
+	set vectorized defs of relevant PHIs.
+
 2021-04-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/96796

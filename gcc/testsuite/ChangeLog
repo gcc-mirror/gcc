@@ -1,3 +1,36 @@
+2021-04-26  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-04-08  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99647
+	* gcc.c-torture/compile/pr99647.c: New test.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100053
+	* gcc.dg/torture/pr100053.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-93.c: Likewise.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99954
+	* gcc.dg/torture/pr99954.c: New testcase.
+
+2021-04-26  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99880
+	* gcc.dg/torture/pr99880.c: New testcase.
+
 2021-04-24  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR rtl-optimization/96796
