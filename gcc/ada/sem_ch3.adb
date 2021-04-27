@@ -11156,7 +11156,8 @@ package body Sem_Ch3 is
 
             if Present (Renamed_Or_Alias (Subp)) then
                if not No_Return (Renamed_Or_Alias (Subp)) then
-                  Error_Msg_N ("subprogram & must be No_Return",
+                  Error_Msg_NE ("subprogram & must be No_Return",
+                    Subp,
                     Renamed_Or_Alias (Subp));
                   Error_Msg_N ("\since renaming & overrides No_Return "
                     & "subprogram (RM 6.5.1(6/2))",
