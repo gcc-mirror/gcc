@@ -122,6 +122,8 @@ public:
 
   virtual bool needs_generic_substitutions () const { return false; }
 
+  virtual bool contains_type_parameters () const { return false; }
+
   std::string mappings_str () const
   {
     std::string buffer = "Ref: " + std::to_string (get_ref ())
@@ -242,6 +244,7 @@ public:
   std::string get_name () const override final { return as_string (); }
 };
 
+class SubstitutionArgumentMappings;
 class ParamType : public BaseType
 {
 public:
@@ -277,6 +280,18 @@ public:
   std::string get_name () const override final { return as_string (); }
 
   bool is_equal (const BaseType &other) const override;
+
+  bool contains_type_parameters () const override final
+  {
+    if (can_resolve ())
+      {
+	auto r = resolve ();
+	return r->contains_type_parameters ();
+      }
+    return true;
+  }
+
+  ParamType *handle_substitions (SubstitutionArgumentMappings mappings);
 
 private:
   std::string symbol;
@@ -1211,6 +1226,13 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   BaseType *clone () final override;
+
+  bool contains_type_parameters () const override final
+  {
+    return get_base ()->contains_type_parameters ();
+  }
+
+  ReferenceType *handle_substitions (SubstitutionArgumentMappings mappings);
 
 private:
   TyVar base;

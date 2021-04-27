@@ -153,8 +153,21 @@ public:
       resolved = concrete;
   }
 
-  void visit (TyTy::InferType &) override { gcc_unreachable (); }
+  // these don't support generic arguments but might contain a type param
   void visit (TyTy::TupleType &) override { gcc_unreachable (); }
+
+  void visit (TyTy::ReferenceType &type) override
+  {
+    resolved = type.handle_substitions (mappings);
+  }
+
+  void visit (TyTy::ParamType &type) override
+  {
+    resolved = type.handle_substitions (mappings);
+  }
+
+  // nothing to do for these
+  void visit (TyTy::InferType &) override { gcc_unreachable (); }
   void visit (TyTy::FnPtr &) override { gcc_unreachable (); }
   void visit (TyTy::ArrayType &) override { gcc_unreachable (); }
   void visit (TyTy::BoolType &) override { gcc_unreachable (); }
@@ -165,8 +178,6 @@ public:
   void visit (TyTy::ISizeType &) override { gcc_unreachable (); }
   void visit (TyTy::ErrorType &) override { gcc_unreachable (); }
   void visit (TyTy::CharType &) override { gcc_unreachable (); }
-  void visit (TyTy::ReferenceType &) override { gcc_unreachable (); }
-  void visit (TyTy::ParamType &) override { gcc_unreachable (); }
   void visit (TyTy::StrType &) override { gcc_unreachable (); }
   void visit (TyTy::NeverType &) override { gcc_unreachable (); }
 
