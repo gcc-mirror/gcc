@@ -49,8 +49,10 @@ template<typename C, typename T = int>
 void check_boolean_sockopt()
 {
   namespace ip = std::experimental::net::ip;
+#if __has_include(<netinet/in.h>)
   check_gettable_sockopt<C, T>(ip::tcp::v4());
   check_settable_sockopt<C, T>(ip::tcp::v4());
+#endif
 
   static_assert( is_destructible<C>(), "" );
   static_assert( is_nothrow_default_constructible<C>(), "" );
@@ -74,8 +76,10 @@ template<typename C, typename T = int>
 void check_integer_sockopt()
 {
   namespace ip = std::experimental::net::ip;
+#if __has_include(<netinet/in.h>)
   check_gettable_sockopt<C, T>(ip::tcp::v4());
   check_settable_sockopt<C, T>(ip::tcp::v4());
+#endif
 
   static_assert( is_destructible<C>(), "" );
   static_assert( is_nothrow_default_constructible<C>(), "" );
@@ -97,8 +101,10 @@ void check_mcast_sockopt(C& c)
   static_assert( is_copy_constructible<C>(), "" );
   static_assert( is_copy_assignable<C>(), "" );
 
+#if __has_include(<netinet/in.h>)
   check_settable_sockopt<C, ipv6_mreq>(ip::tcp::v6(), c);
   check_settable_sockopt<C, ip_mreq>(ip::tcp::v4(), c);
+#endif
 
   static_assert( is_nothrow_constructible<C, const ip::address&>(), "" );
   static_assert( ! is_convertible<const ip::address&, C>(), "explicit" );
@@ -113,8 +119,11 @@ void check_mcast_sockopt(C& c)
 void test_option_types()
 {
   namespace ip = std::experimental::net::ip;
+
 #if __has_include(<netinet/in.h>)
+#if __has_include(<netinet/tcp.h>)
   check_boolean_sockopt<ip::tcp::no_delay>();
+#endif
 
   check_boolean_sockopt<ip::v6_only>();
 

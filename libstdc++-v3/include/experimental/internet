@@ -72,20 +72,20 @@ inline namespace v1
 {
 namespace ip
 {
-
   /** @addtogroup networking-ts
    *  @{
    */
 
-#ifdef _GLIBCXX_HAVE_NETDB_H
   /** Error codes for resolver errors.
    * @{
    */
 
   enum class resolver_errc : int {
+#ifdef _GLIBCXX_HAVE_NETDB_H
     host_not_found = EAI_NONAME,
     host_not_found_try_again = EAI_AGAIN,
     service_not_found = EAI_SERVICE
+#endif
   };
 
   /// Error category for resolver errors.
@@ -94,7 +94,13 @@ namespace ip
     struct __cat : error_category
     {
       const char* name() const noexcept { return "resolver"; }
-      std::string message(int __e) const { return ::gai_strerror(__e); }
+      std::string message(int __e) const {
+#ifdef _GLIBCXX_HAVE_NETDB_H
+	  return ::gai_strerror(__e);
+#else
+	  return "name resolution requires <netdb.h>";
+#endif
+      }
       virtual void __message(int) { } // TODO dual ABI XXX
     };
     static __cat __c;
@@ -108,7 +114,6 @@ namespace ip
   { return error_condition(static_cast<int>(__e), resolver_category()); }
 
   /// @}
-#endif
 
   using port_type = uint_least16_t;	///< Type used for port numbers.
   using scope_id_type = uint_least32_t;	///< Type used for IPv6 scope IDs.
@@ -118,6 +123,16 @@ namespace ip
     using __string_with
       = enable_if_t<std::is_same<typename _Alloc::value_type, char>::value,
 		    std::basic_string<char, std::char_traits<char>, _Alloc>>;
+
+  constexpr errc
+  __unsupported_err() noexcept
+  {
+#if defined EAFNOSUPPORT
+    return std::errc::address_family_not_supported;
+#else
+    return std::errc::operation_not_supported;
+#endif
+  }
 
   /** Tag indicating conversion between IPv4 and IPv4-mapped IPv6 addresses.
    * @{
@@ -197,20 +212,22 @@ namespace ip
     constexpr uint_type
     to_uint() const noexcept { return _S_ntoh_32(_M_addr); }
 
-#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     template<typename _Allocator = allocator<char>>
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
 	__string_with<_Allocator> __str(__a);
-	__str.resize(INET6_ADDRSTRLEN);
+	__str.resize(INET_ADDRSTRLEN);
 	if (inet_ntop(AF_INET, &_M_addr, &__str.front(), __str.size()))
 	  __str.erase(__str.find('\0'));
 	else
 	  __str.resize(0);
 	return __str;
-      }
+#else
+	std::__throw_system_error((int)__unsupported_err());
 #endif
+      }
 
     // static members:
     static constexpr address_v4 any() noexcept { return address_v4{}; }
@@ -338,11 +355,11 @@ namespace ip
 
     constexpr bytes_type to_bytes() const noexcept { return _M_bytes; }
 
-#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     template<typename _Allocator = allocator<char>>
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
 	__string_with<_Allocator> __str(__a);
 	__str.resize(INET6_ADDRSTRLEN + (_M_scope_id ? 11 : 0));
 	char* const __p = &__str.front();
@@ -364,8 +381,10 @@ namespace ip
 	else
 	  __str.resize(0);
 	return __str;
-      }
+#else
+	std::__throw_system_error((int)__unsupported_err());
 #endif
+      }
 
     // static members:
 
@@ -650,6 +669,7 @@ namespace ip
   inline address_v4
   make_address_v4(const char* __str, error_code& __ec) noexcept
   {
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     address_v4 __a;
     const int __res = ::inet_pton(AF_INET, __str, &__a._M_addr);
     if (__res == 1)
@@ -661,6 +681,9 @@ namespace ip
       __ec = std::make_error_code(std::errc::invalid_argument);
     else
       __ec.assign(errno, generic_category());
+#else
+    __ec = std::make_error_code(__unsupported_err());
+#endif
     return {};
   }
 
@@ -718,8 +741,9 @@ namespace ip
   inline address_v6
   __make_address_v6(const char* __addr, const char* __scope, error_code& __ec)
   {
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     address_v6::bytes_type __b;
-    int __res = ::inet_pton(AF_INET6, __addr, __b.data());
+    const int __res = ::inet_pton(AF_INET6, __addr, __b.data());
     if (__res == 1)
       {
 	__ec.clear();
@@ -741,6 +765,9 @@ namespace ip
       __ec = std::make_error_code(std::errc::invalid_argument);
     else
       __ec.assign(errno, generic_category());
+#else
+    __ec = std::make_error_code(__unsupported_err());
+#endif
     return {};
   }
 
@@ -2062,6 +2089,7 @@ namespace ip
 
   /// @}
 
+#ifdef IPPROTO_TCP
   /// The TCP byte-stream protocol.
   class tcp
   {
@@ -2073,7 +2101,7 @@ namespace ip
     using acceptor = basic_socket_acceptor<tcp>; ///< A TCP acceptor.
     using iostream = basic_socket_iostream<tcp>; /// A TCP iostream.
 
-#ifdef _GLIBCXX_HAVE_NETINET_TCP_H
+#ifdef TCP_NODELAY
     /// Disable coalescing of small segments (i.e. the Nagle algorithm).
     struct no_delay : __sockopt_crtp<no_delay, bool>
     {
@@ -2117,7 +2145,9 @@ namespace ip
   { return !(__a == __b); }
 
   /// @}
+#endif // IPPROTO_TCP
 
+#ifdef IPPROTO_UDP
   /// The UDP datagram protocol.
   class udp
   {
@@ -2156,6 +2186,9 @@ namespace ip
   { return !(__a == __b); }
 
   /// @}
+#endif // IPPROTO_UDP
+
+#if defined IPPROTO_IP && defined IPPROTO_IPV6
 
   /// Restrict a socket created for an IPv6 protocol to IPv6 only.
   class v6_only : public __sockopt_crtp<v6_only, bool>
@@ -2370,6 +2403,8 @@ namespace ip
     };
 
   } // namespace multicast
+
+#endif // IPPROTO_IP && IPPROTO_IPV6
 
   /// @}
 
