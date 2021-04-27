@@ -319,13 +319,38 @@ inline namespace v1
       = (message_flags)MSG_DONTROUTE;
 
     static const int max_listen_connections = SOMAXCONN;
-#endif
+
+    // message_flags bitmask operations are defined as hidden friends.
+
+    friend constexpr message_flags
+    operator&(message_flags __f1, message_flags __f2) noexcept
+    { return message_flags( int(__f1) & int(__f2) ); }
+
+    friend constexpr message_flags
+    operator|(message_flags __f1, message_flags __f2) noexcept
+    { return message_flags( int(__f1) | int(__f2) ); }
+
+    friend constexpr message_flags
+    operator^(message_flags __f1, message_flags __f2) noexcept
+    { return message_flags( int(__f1) ^ int(__f2) ); }
+
+    friend constexpr message_flags
+    operator~(message_flags __f) noexcept
+    { return message_flags( ~int(__f) ); }
+
+    friend constexpr message_flags&
+    operator&=(message_flags& __f1, message_flags __f2) noexcept
+    { return __f1 = (__f1 & __f2); }
+
+    friend constexpr message_flags&
+    operator|=(message_flags& __f1, message_flags __f2) noexcept
+    { return __f1 = (__f1 | __f2); }
+
+    friend constexpr message_flags&
+    operator^=(message_flags& __f1, message_flags __f2) noexcept
+    { return __f1 = (__f1 ^ __f2); }
 
   protected:
-    socket_base() = default;
-    ~socket_base() = default;
-
-#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
     struct __msg_hdr : ::msghdr
     {
 #ifdef IOV_MAX
@@ -382,42 +407,11 @@ inline namespace v1
 	}
     };
 #endif
+
+  protected:
+    socket_base() = default;
+    ~socket_base() = default;
   };
-
-  constexpr socket_base::message_flags
-  operator&(socket_base::message_flags __f1, socket_base::message_flags __f2)
-    noexcept
-  { return socket_base::message_flags( int(__f1) & int(__f2) ); }
-
-  constexpr socket_base::message_flags
-  operator|(socket_base::message_flags __f1, socket_base::message_flags __f2)
-    noexcept
-  { return socket_base::message_flags( int(__f1) | int(__f2) ); }
-
-  constexpr socket_base::message_flags
-  operator^(socket_base::message_flags __f1, socket_base::message_flags __f2)
-    noexcept
-  { return socket_base::message_flags( int(__f1) ^ int(__f2) ); }
-
-  constexpr socket_base::message_flags
-  operator~(socket_base::message_flags __f)
-    noexcept
-  { return socket_base::message_flags( ~int(__f) ); }
-
-  constexpr socket_base::message_flags&
-  operator&=(socket_base::message_flags& __f1, socket_base::message_flags __f2)
-    noexcept
-  { return __f1 = (__f1 & __f2); }
-
-  constexpr socket_base::message_flags&
-  operator|=(socket_base::message_flags& __f1, socket_base::message_flags __f2)
-    noexcept
-  { return __f1 = (__f1 | __f2); }
-
-  constexpr socket_base::message_flags&
-  operator^=(socket_base::message_flags& __f1, socket_base::message_flags __f2)
-    noexcept
-  { return __f1 = (__f1 ^ __f2); }
 
   // TODO define socket_base static constants in .so for C++14 mode
 
