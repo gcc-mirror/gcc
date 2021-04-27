@@ -811,8 +811,15 @@ public:
     else if (expr.get_num_segments () == 1)
       {
 	Location locus = expr.get_segments ().back ().get_locus ();
-	if (tyseg->needs_generic_substitutions ())
-	  tyseg = SubstMapper::InferSubst (tyseg, locus);
+
+	bool is_big_self
+	  = expr.get_segments ().front ().get_segment ().as_string ().compare (
+	      "Self")
+	    == 0;
+	if (!is_big_self && tyseg->needs_generic_substitutions ())
+	  {
+	    tyseg = SubstMapper::InferSubst (tyseg, locus);
+	  }
 
 	infered = tyseg;
 	return;
