@@ -4034,6 +4034,16 @@ compute_avail (void)
 		      if (ref->set == set
 			  || alias_set_subset_of (set, ref->set))
 			;
+		      else if (ref1->opcode != ref2->opcode
+			       || (ref1->opcode != MEM_REF
+				   && ref1->opcode != TARGET_MEM_REF))
+			{
+			  /* With mismatching base opcodes or bases
+			     other than MEM_REF or TARGET_MEM_REF we
+			     can't do any easy TBAA adjustment.  */
+			  operands.release ();
+			  continue;
+			}
 		      else if (alias_set_subset_of (ref->set, set))
 			{
 			  ref->set = set;
