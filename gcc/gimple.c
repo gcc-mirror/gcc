@@ -2161,9 +2161,6 @@ gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
       /* For COND_EXPR only the condition may trap.  */
       if (op == COND_EXPR)
 	return tree_could_trap_p (gimple_assign_rhs1 (s));
-      /* A VEC_COND_EXPR cannot trap.  */
-      else if (op == VEC_COND_EXPR)
-	return false;
 
       /* For comparisons we need to check rhs operand types instead of rhs type
          (which is BOOLEAN_TYPE).  */
