@@ -64,8 +64,7 @@ FUNC_START(__trampoline_setup)
         mflr	r11
         addi	r7,r11,trampoline_initial-4-.LCF0 /* trampoline address -4 */
 
-	li	r8,trampoline_size	/* verify that the trampoline is big enough */
-	cmpw	cr1,r8,r4
+	cmpwi	cr1,r4,trampoline_size	/* verify that the trampoline is big enough */
 	srwi	r4,r4,2		/* # words to move */
 	addi	r9,r3,-4	/* adjust pointer for lwzu */
 	mtctr	r4
@@ -150,8 +149,7 @@ FUNC_START(__trampoline_setup)
 	addis 7,2,.LC0@toc@ha
 	ld 7,.LC0@toc@l(7)	/* trampoline address -8 */
 
-	li	r8,trampoline_size	/* verify that the trampoline is big enough */
-	cmpw	cr1,r8,r4
+	cmpwi	cr1,r4,trampoline_size	/* verify that the trampoline is big enough */
 	srwi	r4,r4,3		/* # doublewords to move */
 	addi	r9,r3,-8	/* adjust pointer for stdu */
 	mtctr	r4
