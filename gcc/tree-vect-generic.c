@@ -1563,7 +1563,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 					      elements + i - first)
 		     : maybe_ge (poly_uint64 (indices[i]), elements))
 	      break;
-	  if (i == elements)
+	  if (first && i == elements)
 	    {
 	      gimple_assign_set_rhs3 (stmt, mask);
 	      update_stmt (stmt);
