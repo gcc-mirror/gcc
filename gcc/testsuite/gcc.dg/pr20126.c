@@ -1,5 +1,5 @@
-/* dg-do run */
-/* dg-options "-O2" */
+/* { dg-do run } */
+/* { dg-options "-O2" } */
 
 /* PR target/20126 was not really target-specific, but rather a loop's
    failure to take into account the possibility that a DEST_ADDR giv
