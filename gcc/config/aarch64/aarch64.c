@@ -10778,7 +10778,7 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	}
 
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_INT)
-	asm_fprintf (f, "%wd", -UINTVAL (elt));
+	asm_fprintf (f, "%wd", (HOST_WIDE_INT) -UINTVAL (elt));
       else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_FLOAT
 	       && aarch64_print_vector_float_operand (f, x, true))
 	;
