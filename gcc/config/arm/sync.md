@@ -187,20 +187,20 @@
 ;; Constraints of this pattern must be at least as strict as those of the
 ;; cbranchsi operations in thumb1.md and aim to be as permissive.
 (define_insn_and_split "@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1"
-  [(set (match_operand:CCSI 0 "cc_register_operand" "=&c,&l,&l,&l")	;; bool out
+  [(set (match_operand:CCSI 0 "cc_register_operand" "=&c,&l,&l")	;; bool out
 	(unspec_volatile:CCSI [(const_int 0)] VUNSPEC_ATOMIC_CAS))
-   (set (match_operand:SI 1 "s_register_operand" "=&r,&l,&0,&l*h")	;; val out
+   (set (match_operand:SI 1 "s_register_operand" "=&r,&l,&l*h")	;; val out
 	(zero_extend:SI
-	  (match_operand:NARROW 2 "mem_noofs_operand" "+Ua,Ua,Ua,Ua")))	;; memory
+	  (match_operand:NARROW 2 "mem_noofs_operand" "+Ua,Ua,Ua")))	;; memory
    (set (match_dup 2)
 	(unspec_volatile:NARROW
-	  [(match_operand:SI 3 "arm_add_operand" "rIL,lIL*h,J,*r")	;; expected
-	   (match_operand:NARROW 4 "s_register_operand" "r,r,r,r")	;; desired
+	  [(match_operand:SI 3 "arm_add_operand" "rIL,lILJ*h,*r")	;; expected
+	   (match_operand:NARROW 4 "s_register_operand" "r,r,r")	;; desired
 	   (match_operand:SI 5 "const_int_operand")		;; is_weak
 	   (match_operand:SI 6 "const_int_operand")		;; mod_s
 	   (match_operand:SI 7 "const_int_operand")]		;; mod_f
 	  VUNSPEC_ATOMIC_CAS))
-   (clobber (match_scratch:SI 8 "=&r,X,X,X"))]
+   (clobber (match_scratch:SI 8 "=&r,X,X"))]
   "<NARROW:sync_predtab>"
   "#"
   "&& reload_completed"
@@ -209,7 +209,7 @@
     arm_split_compare_and_swap (operands);
     DONE;
   }
-  [(set_attr "arch" "32,v8mb,v8mb,v8mb")])
+  [(set_attr "arch" "32,v8mb,v8mb")])
 
 (define_mode_attr cas_cmp_operand
   [(SI "arm_add_operand") (DI "cmpdi_operand")])
@@ -219,19 +219,19 @@
 ;; Constraints of this pattern must be at least as strict as those of the
 ;; cbranchsi operations in thumb1.md and aim to be as permissive.
 (define_insn_and_split "@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1"
-  [(set (match_operand:CCSI 0 "cc_register_operand" "=&c,&l,&l,&l")	;; bool out
+  [(set (match_operand:CCSI 0 "cc_register_operand" "=&c,&l,&l")	;; bool out
 	(unspec_volatile:CCSI [(const_int 0)] VUNSPEC_ATOMIC_CAS))
-   (set (match_operand:SIDI 1 "s_register_operand" "=&r,&l,&0,&l*h")	;; val out
-	(match_operand:SIDI 2 "mem_noofs_operand" "+Ua,Ua,Ua,Ua"))	;; memory
+   (set (match_operand:SIDI 1 "s_register_operand" "=&r,&l,&l*h")	;; val out
+	(match_operand:SIDI 2 "mem_noofs_operand" "+Ua,Ua,Ua"))	;; memory
    (set (match_dup 2)
 	(unspec_volatile:SIDI
-	  [(match_operand:SIDI 3 "<SIDI:cas_cmp_operand>" "<SIDI:cas_cmp_str>,lIL*h,J,*r") ;; expect
-	   (match_operand:SIDI 4 "s_register_operand" "r,r,r,r")	;; desired
+	  [(match_operand:SIDI 3 "<SIDI:cas_cmp_operand>" "<SIDI:cas_cmp_str>,lILJ*h,*r") ;; expect
+	   (match_operand:SIDI 4 "s_register_operand" "r,r,r")	;; desired
 	   (match_operand:SI 5 "const_int_operand")		;; is_weak
 	   (match_operand:SI 6 "const_int_operand")		;; mod_s
 	   (match_operand:SI 7 "const_int_operand")]		;; mod_f
 	  VUNSPEC_ATOMIC_CAS))
-   (clobber (match_scratch:SI 8 "=&r,X,X,X"))]
+   (clobber (match_scratch:SI 8 "=&r,X,X"))]
   "<SIDI:sync_predtab>"
   "#"
   "&& reload_completed"
@@ -240,7 +240,7 @@
     arm_split_compare_and_swap (operands);
     DONE;
   }
-  [(set_attr "arch" "32,v8mb,v8mb,v8mb")])
+  [(set_attr "arch" "32,v8mb,v8mb")])
 
 (define_insn_and_split "atomic_exchange<mode>"
   [(set (match_operand:QHSD 0 "s_register_operand" "=&r,&r")	;; output
