@@ -73,6 +73,13 @@ template<typename CT>
     return true;
   }
 
+#ifndef __cpp_lib_constexpr_string
+# error Feature-test macro for constexpr char_traits is missing
+#elif __cpp_lib_constexpr_string < 201611
+# error Feature-test macro for constexpr char_traits has the wrong value
+#endif
+
+// We also provide this non-standard macro for P0426R1.
 #ifndef __cpp_lib_constexpr_char_traits
 # error Feature-test macro for constexpr char_traits is missing
 #elif __cpp_lib_constexpr_char_traits != 201611
