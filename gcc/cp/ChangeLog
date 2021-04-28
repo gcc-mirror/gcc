@@ -1,3 +1,38 @@
+2021-04-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89565
+	PR c++/93383
+	PR c++/95291
+	PR c++/99200
+	PR c++/99683
+	* pt.c (do_class_deduction): Punt if the initializer is
+	type-dependent.
+
+2021-04-27  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100161
+	* pt.c (tsubst_copy_and_build) <case PLUS_EXPR>: Test op0 and
+	op1 separately for value- or type-dependence.
+
+2021-04-27  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2021-04-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/96380
+	* parser.c (cp_parser_enum_specifier): Don't allow defining
+	types in enum-base.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* module.cc: Remove #error that triggers if DEV-PHASE is empty.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.

@@ -1,3 +1,14 @@
+2021-04-27  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100290
+	* include/std/ranges (join_view::_Iterator::operator++): Correct
+	the return type of the lambda to avoid returning a copy of
+	_M_parent->_M_inner.
+	* testsuite/std/ranges/adaptors/join.cc (test10): New test.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.

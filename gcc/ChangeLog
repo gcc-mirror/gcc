@@ -1,3 +1,61 @@
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100200
+	* config/aarch64/aarch64.c (aarch64_print_operand): Cast -UINTVAL
+	back to HOST_WIDE_INT.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100200
+	* config/aarch64/predicates.md (aarch64_sub_immediate,
+	aarch64_plus_immediate): Use -UINTVAL instead of -INTVAL.
+	* config/aarch64/aarch64.md (casesi, rotl<mode>3): Likewise.
+	* config/aarch64/aarch64.c (aarch64_print_operand,
+	aarch64_split_atomic_op, aarch64_expand_subvti): Likewise.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/100239
+	* tree-vect-generic.c (lower_vec_perm): Don't accept constant
+	permutations with all indices from the first zero element as vec_shl.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100254
+	* cfgcleanup.c (outgoing_edges_match): Check REG_EH_REGION on
+	last1 and last2 insns rather than BB_END (bb1) and BB_END (bb2) insns.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100255
+	* vmsdbgout.c (ASM_OUTPUT_DEBUG_STRING, vmsdbgout_begin_block,
+	vmsdbgout_end_block, lookup_filename, vmsdbgout_source_line): Remove
+	register keywords.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100148
+	* cprop.c (constprop_register): Use next_nondebug_insn instead of
+	NEXT_INSN.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.
