@@ -1456,7 +1456,7 @@ package body Sem_Ch5 is
          if Is_Entity_Name (Exp) then
             Ent := Entity (Exp);
 
-            if Is_Assignable (Ent) then
+            if Is_Object (Ent) then
                if List_Length (Choices) = 1
                  and then Nkind (First (Choices)) in N_Subexpr
                  and then Compile_Time_Known_Value (First (Choices))
@@ -1475,7 +1475,7 @@ package body Sem_Ch5 is
             end if;
          end if;
 
-         --  Case where expression is not an entity name of a variable
+         --  Case where expression is not an entity name of an object
 
          Analyze_Statements (Statements (Alternative));
       end Process_Statements;

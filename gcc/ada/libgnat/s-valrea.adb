@@ -46,7 +46,7 @@ package body System.Val_Real is
    --  If the mantissa of the floating-point type is almost as large as the
    --  unsigned type, we do not have enough space for an extra digit in the
    --  unsigned type so we handle the extra digit separately, at the cost of
-   --  a potential roundoff error.
+   --  a bit more work in Integer_to_Real.
 
    Precision_Limit : constant Uns :=
      (if Need_Extra then 2**Num'Machine_Mantissa - 1 else 2**Uns'Size - 1);
@@ -76,6 +76,10 @@ package body System.Val_Real is
       7  => 5836,  8 => 5461,  9 => 5168, 10 => 4932, 11 => 4736,
       12 => 4570, 13 => 4427, 14 => 4303, 15 => 4193, 16 => 4095);
 
+   function Fast2Sum (A, B : Num; Err : in out Num) return Num;
+   --  This is the classical Fast2Sum function assuming round to nearest,
+   --  with the error accumulated into Err.
+
    function Integer_to_Real
      (Str   : String;
       Val   : Uns;
@@ -84,6 +88,25 @@ package body System.Val_Real is
       Extra : Unsigned;
       Minus : Boolean) return Num;
    --  Convert the real value from integer to real representation
+
+   --------------
+   -- Fast2Sum --
+   --------------
+
+   function Fast2Sum (A, B : Num; Err : in out Num) return Num is
+      S, Z : Num;
+
+   begin
+      pragma Assert (abs (A) >= abs (B));
+
+      S := A + B;
+      Z := S - A;
+      Z := B - Z;
+
+      Err := Err + Z;
+
+      return S;
+   end Fast2Sum;
 
    ---------------------
    -- Integer_to_Real --
@@ -110,8 +133,6 @@ package body System.Val_Real is
                   else  raise Program_Error);
       --  Maximum exponent of the base that can fit in Num
 
-      B : constant Num := Num (Base);
-
       R_Val : Num;
       S     : Integer := Scale;
 
@@ -129,12 +150,53 @@ package body System.Val_Real is
 
       R_Val := Num (Val);
 
-      --  Take into account the extra digit, if need be. In this case, the
-      --  three operands are exact, so using an FMA would be ideal.
+      --  Take into account the extra digit, i.e. do the two computations
+
+      --    (1)  R_Val := R_Val * Num (B) + Num (Extra)
+      --    (2)  S := S - 1
+
+      --  In the first, the three operands are exact, so using an FMA would
+      --  be ideal, but we are most likely running on the x87 FPU, hence we
+      --  may not have one. That is why we turn the multiplication into an
+      --  iterated addition with exact error handling, so that we can do a
+      --  single rounding at the end.
 
       if Need_Extra and then Extra > 0 then
-         R_Val := R_Val * B + Num (Extra);
-         S := S - 1;
+         declare
+            B : Unsigned := Base;
+
+            Acc : Num := 0.0;
+            Err : Num := 0.0;
+            Fac : Num := R_Val;
+
+         begin
+            loop
+               --  If B is odd, add one factor. Note that the accumulator is
+               --  never larger than the factor at this point (it is in fact
+               --  never larger than the factor minus the initial value).
+
+               if B rem 2 /= 0 then
+                  Acc := (if Acc = 0.0 then Fac else Fast2Sum (Fac, Acc, Err));
+                  exit when B = 1;
+               end if;
+
+               --  Now B is (morally) even, halve it and double the factor,
+               --  which is always an exact operation.
+
+               B := B / 2;
+               Fac := Fac * 2.0;
+            end loop;
+
+            --  Add Extra to the error, which are both small integers
+
+            Err := Err + Num (Extra);
+
+            --  Acc + Err is the exact result before rounding
+
+            R_Val := Acc + Err;
+
+            S := S - 1;
+         end;
       end if;
 
       --  Compute the final value
@@ -173,7 +235,9 @@ package body System.Val_Real is
 
             when 10 =>
                declare
-                  Powten : constant array (0 .. Maxpow) of Num;
+                  subtype Pow_Num is Num range 1.0 .. Num'Last;
+
+                  Powten : constant array (0 .. Maxpow) of Pow_Num;
                   pragma Import (Ada, Powten);
                   for Powten'Address use Powten_Address;
 
@@ -205,17 +269,23 @@ package body System.Val_Real is
             --  an artificial underflow.
 
             when others =>
-               if S > 0 then
-                  R_Val := R_Val * B ** S;
+               declare
+                  B : constant Num := Num (Base);
 
-               else
-                  if S < -Maxexp then
-                     R_Val := R_Val / B ** Maxexp;
-                     S := S + Maxexp;
+               begin
+
+                  if S > 0 then
+                     R_Val := R_Val * B ** S;
+
+                  else
+                     if S < -Maxexp then
+                        R_Val := R_Val / B ** Maxexp;
+                        S := S + Maxexp;
+                     end if;
+
+                     R_Val := R_Val / B ** (-S);
                   end if;
-
-                  R_Val := R_Val / B ** (-S);
-               end if;
+               end;
          end case;
       end if;
 

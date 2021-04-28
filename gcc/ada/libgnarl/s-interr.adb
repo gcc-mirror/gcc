@@ -473,7 +473,7 @@ package body System.Interrupts is
    ---------------------------------
 
    procedure Install_Restricted_Handlers
-     (Prio     : Any_Priority;
+     (Prio     : Interrupt_Priority;
       Handlers : New_Handler_Array)
    is
       pragma Unreferenced (Prio);

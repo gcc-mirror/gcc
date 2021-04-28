@@ -6059,12 +6059,13 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
 	  /* A pure function in the Ada sense which takes an access parameter
 	     may modify memory through it and thus need be considered neither
-	     const nor pure in the GCC sense.  Likewise it if takes a by-ref
-	     In Out or Out parameter.  But if it takes a by-ref In parameter,
-	     then it may only read memory through it and can be considered
-	     pure in the GCC sense.  */
+	     const nor pure in the GCC sense, unless it's access-to-function.
+	     Likewise it if takes a by-ref In Out or Out parameter.  But if it
+	     takes a by-ref In parameter, then it may only read memory through
+	     it and can be considered pure in the GCC sense.  */
 	  if ((const_flag || pure_flag)
-	      && (POINTER_TYPE_P (gnu_param_type)
+	      && ((POINTER_TYPE_P (gnu_param_type)
+		   && TREE_CODE (TREE_TYPE (gnu_param_type)) != FUNCTION_TYPE)
 		  || TYPE_IS_FAT_POINTER_P (gnu_param_type)))
 	    {
 	      const_flag = false;

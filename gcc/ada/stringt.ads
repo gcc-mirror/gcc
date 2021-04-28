@@ -56,7 +56,7 @@ package Stringt is
    --------------------------------------
 
    procedure Initialize;
-   --  Initializes the strings table for a new compilation.
+   --  Initializes the strings table for a new compilation
 
    procedure Lock;
    --  Lock internal tables before calling back end

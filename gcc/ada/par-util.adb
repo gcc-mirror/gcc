@@ -254,7 +254,7 @@ package body Util is
       then
          return Mark;
       else
-         Error_Msg ("subtype mark expected", Sloc (Mark));
+         Error_Msg_N ("subtype mark expected", Mark);
          return Error;
       end if;
    end Check_Subtype_Mark;

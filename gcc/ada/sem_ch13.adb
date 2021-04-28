@@ -2500,10 +2500,7 @@ package body Sem_Ch13 is
 
             begin
                if Ada_Version < Ada_2020 then
-                  Error_Msg_N
-                    ("aspect % is an Ada 202x feature", Aspect);
-                  Error_Msg_N ("\compile with -gnat2020", Aspect);
-
+                  Error_Msg_Ada_2020_Feature ("aspect %", Sloc (Aspect));
                   return;
                end if;
 
@@ -2594,8 +2591,9 @@ package body Sem_Ch13 is
 
                   for Asp in Pre_Post_Aspects loop
                      if Has_Aspect (E, Asp) then
+                        Error_Msg_Name_1 := Aspect_Names (Asp);
                         Error_Msg_N
-                          ("this aspect is not allowed for a static "
+                          ("aspect % is not allowed for a static "
                            & "expression function",
                            Find_Aspect (E, Asp));
 
@@ -2609,25 +2607,23 @@ package body Sem_Ch13 is
                   --  component type C, a similar rule applies to C."
                end if;
 
-               --  Preanalyze the expression (if any) when the aspect resides
-               --  in a generic unit. (Is this generic-related code necessary
-               --  for this aspect? It's modeled on what's done for aspect
-               --  Disable_Controlled. ???)
+               --  When the expression is present, it must be static. If it
+               --  evaluates to True, the expression function is treated as
+               --  a static function. Otherwise the aspect appears without
+               --  an expression and defaults to True.
 
-               if Inside_A_Generic then
-                  if Present (Expr) then
+               if Present (Expr) then
+                  --  Preanalyze the expression when the aspect resides in a
+                  --  generic unit. (Is this generic-related code necessary
+                  --  for this aspect? It's modeled on what's done for aspect
+                  --  Disable_Controlled. ???)
+
+                  if Inside_A_Generic then
                      Preanalyze_And_Resolve (Expr, Any_Boolean);
-                  end if;
 
-               --  Otherwise the aspect resides in a nongeneric context
+                  --  Otherwise the aspect resides in a nongeneric context
 
-               else
-                  --  When the expression statically evaluates to True, the
-                  --  expression function is treated as a static function.
-                  --  Otherwise the aspect appears without an expression and
-                  --  defaults to True.
-
-                  if Present (Expr) then
+                  else
                      Analyze_And_Resolve (Expr, Any_Boolean);
 
                      --  Error if the boolean expression is not static
@@ -4147,8 +4143,8 @@ package body Sem_Ch13 is
                         --  Must not be parenthesized
 
                         if Paren_Count (Expr) /= 0 then
-                           Error_Msg -- CODEFIX
-                             ("redundant parentheses", First_Sloc (Expr));
+                           Error_Msg_F -- CODEFIX
+                             ("redundant parentheses", Expr);
                         end if;
 
                         --  List of arguments is list of aggregate expressions
@@ -4442,8 +4438,8 @@ package body Sem_Ch13 is
                   --  parentheses).
 
                   if Paren_Count (Expr) /= 0 then
-                     Error_Msg -- CODEFIX
-                       ("redundant parentheses", First_Sloc (Expr));
+                     Error_Msg_F -- CODEFIX
+                       ("redundant parentheses", Expr);
                      goto Continue;
                   end if;
 
@@ -4576,11 +4572,7 @@ package body Sem_Ch13 is
                   --  Ada 202x (AI12-0363): Full_Access_Only
 
                   elsif A_Id = Aspect_Full_Access_Only then
-                     if Ada_Version < Ada_2020 then
-                        Error_Msg_N
-                          ("aspect % is an Ada 202x feature", Aspect);
-                        Error_Msg_N ("\compile with -gnat2020", Aspect);
-                     end if;
+                     Error_Msg_Ada_2020_Feature ("aspect %", Sloc (Aspect));
 
                   --  Ada 202x (AI12-0075): static expression functions
 
@@ -4860,11 +4852,11 @@ package body Sem_Ch13 is
                      Error_Msg_Name_1 := Aspect_Names (A_Id);
                      Error_Msg_Sloc := Sloc (Inherited_Aspect);
 
-                     Error_Msg
+                     Error_Msg_N
                        ("overriding aspect specification for "
                           & "nonoverridable aspect % does not confirm "
                           & "aspect specification inherited from #",
-                        Sloc (Aspect));
+                        Aspect);
                   end if;
                end;
             end if;
@@ -7909,9 +7901,8 @@ package body Sem_Ch13 is
       --  Check that the expression is a proper aggregate (no parentheses)
 
       elsif Paren_Count (Aggr) /= 0 then
-         Error_Msg
-           ("extra parentheses surrounding aggregate not allowed",
-            First_Sloc (Aggr));
+         Error_Msg_F
+           ("extra parentheses surrounding aggregate not allowed", Aggr);
          return;
 
       --  All tests passed, so set rep clause in place
@@ -11802,6 +11793,8 @@ package body Sem_Ch13 is
                end if;
             end;
          end Check_Component_List;
+
+         --  Local variables
 
          Sbit : Uint;
          --  Starting bit for call to Check_Component_List. Zero for an

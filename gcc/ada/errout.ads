@@ -703,10 +703,15 @@ package Errout is
    procedure Error_Msg
      (Msg : String; Flag_Location : Source_Ptr);
    procedure Error_Msg
+     (Msg : String; Flag_Span : Source_Span);
+   procedure Error_Msg
      (Msg : String; Flag_Location : Source_Ptr; N : Node_Id);
+   procedure Error_Msg
+     (Msg : String; Flag_Span : Source_Span; N : Node_Id);
    --  Output a message at specified location. Can be called from the parser
    --  or the semantic analyzer. If N is set, points to the relevant node for
-   --  this message.
+   --  this message. The version with a span is preferred whenever possible,
+   --  in other cases the version with a location can still be used.
 
    procedure Error_Msg
      (Msg                    : String;
@@ -782,8 +787,13 @@ package Errout is
       N             : Node_Or_Entity_Id;
       E             : Node_Or_Entity_Id;
       Flag_Location : Source_Ptr);
+   procedure Error_Msg_NEL
+     (Msg       : String;
+      N         : Node_Or_Entity_Id;
+      E         : Node_Or_Entity_Id;
+      Flag_Span : Source_Span);
    --  Exactly the same as Error_Msg_NE, except that the flag is placed at
-   --  the specified Flag_Location instead of at Sloc (N).
+   --  the specified Flag_Location/Flag_Span instead of at Sloc (N).
 
    procedure Error_Msg_NW
      (Eflag : Boolean;
@@ -801,12 +811,17 @@ package Errout is
    --  the given text. This text may contain insertion characters in the
    --  usual manner, and need not be the same length as the original text.
 
+   procedure First_And_Last_Nodes
+     (C                     : Node_Id;
+      First_Node, Last_Node : out Node_Id);
+   --  Given a construct C, finds the first and last node in the construct,
+   --  i.e. the ones with the lowest and highest Sloc value. This is useful in
+   --  placing error msgs. Note that this procedure uses Original_Node to look
+   --  at the original source tree, since that's what we want for placing an
+   --  error message flag in the right place.
+
    function First_Node (C : Node_Id) return Node_Id;
-   --  Given a construct C, finds the first node in the construct, i.e. the one
-   --  with the lowest Sloc value. This is useful in placing error msgs. Note
-   --  that this procedure uses Original_Node to look at the original source
-   --  tree, since that's what we want for placing an error message flag in
-   --  the right place.
+   --  Return the first output of First_And_Last_Nodes
 
    function First_Sloc (N : Node_Id) return Source_Ptr;
    --  Given the node for an expression, return a source pointer value that
@@ -816,6 +831,15 @@ package Errout is
 
    function Get_Ignore_Errors return Boolean;
    --  Return True if all error calls are ignored.
+
+   function Last_Node (C : Node_Id) return Node_Id;
+   --  Return the last output of First_And_Last_Nodes
+
+   function Last_Sloc (N : Node_Id) return Source_Ptr;
+   --  Given the node for an expression, return a source pointer value that
+   --  points to the end of the last token in the expression. In the case
+   --  where the expression is parenthesized, an attempt is made to include
+   --  the parentheses (i.e. to return the location of the final paren).
 
    procedure Purge_Messages (From : Source_Ptr; To : Source_Ptr)
      renames Erroutc.Purge_Messages;

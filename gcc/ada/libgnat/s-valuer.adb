@@ -128,6 +128,8 @@ package body System.Value_R is
       Extra : in out Char_As_Digit;
       Base  : Unsigned)
    is
+      pragma Assert (Base in 2 .. 16);
+
       B : constant Uns := Uns (Base);
 
    begin

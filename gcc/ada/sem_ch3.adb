@@ -840,13 +840,6 @@ package body Sem_Ch3 is
       --  the corresponding semantic routine
 
       if Present (Access_To_Subprogram_Definition (N)) then
-
-         --  Compiler runtime units are compiled in Ada 2005 mode when building
-         --  the runtime library but must also be compilable in Ada 95 mode
-         --  (when bootstrapping the compiler).
-
-         Check_Compiler_Unit ("anonymous access to subprogram", N);
-
          Access_Subprogram_Declaration
            (T_Name => Anon_Type,
             T_Def  => Access_To_Subprogram_Definition (N));
@@ -1312,6 +1305,8 @@ package body Sem_Ch3 is
       Set_Can_Never_Be_Null (T_Name, Null_Exclusion_Present (T_Def));
 
       Check_Restriction (No_Access_Subprograms, T_Def);
+
+      Create_Extra_Formals (Desig_Type);
    end Access_Subprogram_Declaration;
 
    ----------------------------
@@ -1580,9 +1575,8 @@ package body Sem_Ch3 is
 
    begin
       if not RTE_Available (RE_Interface_Tag) then
-         Error_Msg
-           ("(Ada 2005) interface types not supported by this run-time!",
-            Sloc (N));
+         Error_Msg_N
+           ("(Ada 2005) interface types not supported by this run-time!", N);
          return;
       end if;
 
@@ -4164,27 +4158,10 @@ package body Sem_Ch3 is
          Set_Related_Array_Object (Base_Type (T), Id);
       end if;
 
-      --  Special checks for protected objects not at library level
+      --  Check for protected objects not at library level
 
       if Has_Protected (T) and then not Is_Library_Level_Entity (Id) then
          Check_Restriction (No_Local_Protected_Objects, Id);
-
-         --  Protected objects with interrupt handlers must be at library level
-
-         --  Ada 2005: This test is not needed (and the corresponding clause
-         --  in the RM is removed) because accessibility checks are sufficient
-         --  to make handlers not at the library level illegal.
-
-         --  AI05-0303: The AI is in fact a binding interpretation, and thus
-         --  applies to the '95 version of the language as well.
-
-         if Is_Protected_Type (T)
-           and then Has_Interrupt_Handler (T)
-           and then Ada_Version < Ada_95
-         then
-            Error_Msg_N
-              ("interrupt object can only be declared at library level", Id);
-         end if;
       end if;
 
       --  Check for violation of No_Local_Timing_Events

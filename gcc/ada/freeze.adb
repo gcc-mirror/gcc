@@ -3644,8 +3644,8 @@ package body Freeze is
                  and then not Freezing_Library_Level_Tagged_Type
                then
                   Error_Msg_Node_1 := F_Type;
-                  Error_Msg
-                    ("type & must be fully defined before this point", Loc);
+                  Error_Msg_N
+                    ("type & must be fully defined before this point", N);
                end if;
             end if;
 

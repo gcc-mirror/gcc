@@ -85,7 +85,7 @@ package Sem_Type is
    --  with the appropriate use clause. The global variable Candidate_Type is
    --  set in Add_One_Interp whenever an interpretation might be legal for an
    --  operator if the type were directly visible. This variable is used in
-   --  sem_ch4 when no legal interpretation is found.
+   --  Sem_Ch4 when no legal interpretation is found.
 
    Candidate_Type : Entity_Id;
 
@@ -94,7 +94,7 @@ package Sem_Type is
    -----------------
 
    procedure Init_Interp_Tables;
-   --  Invoked by gnatf when processing multiple files
+   --  Initialize data structures for overload resolution
 
    procedure Collect_Interps (N : Node_Id);
    --  Invoked when the name N has more than one visible interpretation. This
@@ -267,10 +267,6 @@ package Sem_Type is
 
    procedure Write_Interp (It : Interp);
    --  Debugging procedure to display an Interp
-
-   procedure Write_Interp_Ref (Map_Ptr : Int);
-   --  Debugging procedure to display entry in Interp_Map. Would not be needed
-   --  if it were possible to debug instantiations of Table.
 
    procedure Write_Overloads (N : Node_Id);
    --  Debugging procedure to output info on possibly overloaded entities for

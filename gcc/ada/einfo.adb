@@ -1120,7 +1120,9 @@ package body Einfo is
 
    function Discriminant_Constraint (Id : E) return L is
    begin
-      pragma Assert (Is_Composite_Type (Id) and then Has_Discriminants (Id));
+      pragma Assert
+        (Is_Composite_Type (Id)
+          and then (Has_Discriminants (Id) or else Is_Constrained (Id)));
       return Elist21 (Id);
    end Discriminant_Constraint;
 

@@ -562,7 +562,7 @@ namespace ranges
 	if (__count <= 0)
 	  return {__first, __first};
 
-	auto __value_comp = [&] <typename _Rp> (_Rp&& __arg) {
+	auto __value_comp = [&] <typename _Rp> (_Rp&& __arg) -> bool {
 	    return std::__invoke(__pred, std::forward<_Rp>(__arg), __value);
 	};
 	if (__count == 1)
@@ -805,8 +805,8 @@ namespace ranges
 
 	for (auto __scan = __first1; __scan != __last1; ++__scan)
 	  {
-	    auto __proj_scan = std::__invoke(__proj1, *__scan);
-	    auto __comp_scan = [&] <typename _Tp> (_Tp&& __arg) {
+	    auto&& __proj_scan = std::__invoke(__proj1, *__scan);
+	    auto __comp_scan = [&] <typename _Tp> (_Tp&& __arg) -> bool {
 	      return std::__invoke(__pred, __proj_scan,
 				   std::forward<_Tp>(__arg));
 	    };
@@ -1256,7 +1256,7 @@ namespace ranges
       operator()(_Iter __first, _Sent __last,
 		 const _Tp& __value, _Proj __proj = {}) const
       {
-	auto __pred = [&] (auto&& __arg) {
+	auto __pred = [&] (auto&& __arg) -> bool {
 	  return std::forward<decltype(__arg)>(__arg) == __value;
 	};
 	return ranges::remove_if(__first, __last,
@@ -2537,11 +2537,11 @@ namespace ranges
 	else
 	  {
 	    if (__first == __last)
-	      return {std::move(__first), std::move(__first)};
+	      return {__first, __first};
 
 	    while (std::__invoke(__pred, std::__invoke(__proj, *__first)))
 	      if (++__first == __last)
-		return {std::move(__first), std::move(__first)};
+		return {__first, __first};
 
 	    auto __next = __first;
 	    while (++__next != __last)
@@ -3118,7 +3118,7 @@ namespace ranges
       operator()(const _Tp& __a, const _Tp& __b,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	if (std::__invoke(std::move(__comp),
+	if (std::__invoke(__comp,
 			  std::__invoke(__proj, __b),
 			  std::__invoke(__proj, __a)))
 	  return __b;
@@ -3172,7 +3172,7 @@ namespace ranges
       operator()(const _Tp& __a, const _Tp& __b,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	if (std::__invoke(std::move(__comp),
+	if (std::__invoke(__comp,
 			  std::__invoke(__proj, __a),
 			  std::__invoke(__proj, __b)))
 	  return __b;
@@ -3272,7 +3272,7 @@ namespace ranges
       operator()(const _Tp& __a, const _Tp& __b,
 		 _Comp __comp = {}, _Proj __proj = {}) const
       {
-	if (std::__invoke(std::move(__comp),
+	if (std::__invoke(__comp,
 			  std::__invoke(__proj, __b),
 			  std::__invoke(__proj, __a)))
 	  return {__b, __a};

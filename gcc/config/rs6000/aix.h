@@ -280,3 +280,9 @@
 #define RS6000_USE_DWARF_NUMBERING
 
 #define TARGET_PRECOMPUTE_TLS_P rs6000_aix_precompute_tls_p
+
+/* Replace -m64 with -maix64 and -m32 with -maix32.  */
+#undef SUBTARGET_DRIVER_SELF_SPECS
+#define SUBTARGET_DRIVER_SELF_SPECS	\
+"%{m64:-maix64} %<m64",			\
+"%{m32:-maix32} %<m32"

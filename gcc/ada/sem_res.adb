@@ -5036,6 +5036,41 @@ package body Sem_Res is
                end if;
             end if;
 
+            --  (AI12-0397): The target of a subprogram call that occurs within
+            --  the expression of an Default_Initial_Condition aspect and has
+            --  an actual that is the current instance of the type must be
+            --  either a primitive of the type or a class-wide subprogram,
+            --  because the type of the current instance in such an aspect is
+            --  considered to be a notional formal derived type whose only
+            --  operations correspond to the primitives of the enclosing type.
+            --  Nonprimitives can be called, but the current instance must be
+            --  converted rather than passed directly. Note that a current
+            --  instance of a type with DIC will occur as a reference to an
+            --  in-mode formal of an enclosing DIC procedure or partial DIC
+            --  procedure. (It seems that this check should perhaps also apply
+            --  to calls within Type_Invariant'Class, but not Type_Invariant,
+            --  aspects???)
+
+            if Nkind (A) = N_Identifier
+              and then Ekind (Entity (A)) = E_In_Parameter
+
+              and then Is_Subprogram (Scope (Entity (A)))
+              and then Is_DIC_Procedure (Scope (Entity (A)))
+
+              --  We check Comes_From_Source to exclude inherited primitives
+              --  from being flagged, because such subprograms turn out to not
+              --  always have the Is_Primitive flag set. ???
+
+              and then Comes_From_Source (Nam)
+
+              and then not Is_Primitive (Nam)
+              and then not Is_Class_Wide_Type (Etype (F))
+            then
+               Error_Msg_NE
+                 ("call to nonprimitive & with current instance not allowed " &
+                  "for aspect", A, Nam);
+            end if;
+
             Next_Actual (A);
 
          --  Case where actual is not present
@@ -7494,6 +7529,7 @@ package body Sem_Res is
             Node := First (Actions (N));
             while Present (Node) loop
                if Nkind (Node) = N_Object_Declaration
+                 and then Is_Type (Etype (Defining_Identifier (Node)))
                  and then Requires_Transient_Scope
                             (Etype (Defining_Identifier (Node)))
                then

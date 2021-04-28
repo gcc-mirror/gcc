@@ -3830,6 +3830,11 @@ package body Sem_Eval is
    -----------------------------
 
    procedure Eval_Selected_Component (N : Node_Id) is
+      Node : Node_Id;
+      Comp : Node_Id;
+      C    : Node_Id;
+      Nam  : Name_Id;
+
    begin
       --  If an attribute reference or a LHS, nothing to do.
       --  Also do not fold if N is an [in] out subprogram parameter.
@@ -3839,7 +3844,34 @@ package body Sem_Eval is
         and then Is_LHS (N) = No
         and then not Is_Actual_Out_Or_In_Out_Parameter (N)
       then
-         Fold (N);
+         --  Simplify a selected_component on an aggregate by extracting
+         --  the field directly.
+
+         Node := Unqualify (Prefix (N));
+
+         if Nkind (Node) = N_Aggregate
+           and then Compile_Time_Known_Aggregate (Node)
+         then
+            Comp := First (Component_Associations (Node));
+            Nam  := Chars (Selector_Name (N));
+
+            while Present (Comp) loop
+               C := First (Choices (Comp));
+
+               while Present (C) loop
+                  if Chars (C) = Nam then
+                     Rewrite (N, Relocate_Node (Expression (Comp)));
+                     return;
+                  end if;
+
+                  Next (C);
+               end loop;
+
+               Next (Comp);
+            end loop;
+         else
+            Fold (N);
+         end if;
       end if;
    end Eval_Selected_Component;
 

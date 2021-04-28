@@ -112,7 +112,7 @@ struct GTY (()) parm_attr_d {
 
 typedef struct parm_attr_d *parm_attr;
 
-
+/* Structure used to record information for a function.  */
 struct GTY(()) language_function {
   vec<parm_attr, va_gc> *parm_attr_cache;
   bitmap named_ret_val;
@@ -194,9 +194,9 @@ struct GTY(()) range_check_info_d {
 
 typedef struct range_check_info_d *range_check_info;
 
-
 /* Structure used to record information for a loop.  */
 struct GTY(()) loop_info_d {
+  tree fndecl;
   tree stmt;
   tree loop_var;
   tree low_bound;
@@ -205,10 +205,10 @@ struct GTY(()) loop_info_d {
   tree omp_construct_clauses;
   enum tree_code omp_code;
   vec<range_check_info, va_gc> *checks;
+  vec<tree, va_gc> *invariants;
 };
 
 typedef struct loop_info_d *loop_info;
-
 
 /* Stack of loop_info structures associated with LOOP_STMT nodes.  */
 static GTY(()) vec<loop_info, va_gc> *gnu_loop_stack;
@@ -2768,13 +2768,27 @@ find_loop_for (tree expr, tree *disp, bool *neg_p)
   if (TREE_CODE (var) != VAR_DECL)
     return NULL;
 
-  if (decl_function_context (var) != current_function_decl)
-    return NULL;
-
-  gcc_assert (vec_safe_length (gnu_loop_stack) > 0);
+  gcc_checking_assert (vec_safe_length (gnu_loop_stack) > 0);
 
   FOR_EACH_VEC_ELT_REVERSE (*gnu_loop_stack, i, iter)
-    if (var == iter->loop_var)
+    if (iter->loop_var == var && iter->fndecl == current_function_decl)
+      break;
+
+  return iter;
+}
+
+/* Return the innermost enclosing loop in the current function.  */
+
+static struct loop_info_d *
+find_loop (void)
+{
+  struct loop_info_d *iter = NULL;
+  unsigned int i;
+
+  gcc_checking_assert (vec_safe_length (gnu_loop_stack) > 0);
+
+  FOR_EACH_VEC_ELT_REVERSE (*gnu_loop_stack, i, iter)
+    if (iter->fndecl == current_function_decl)
       break;
 
   return iter;
@@ -2924,26 +2938,30 @@ independent_iterations_p (tree stmt_list)
   return true;
 }
 
-/* Helper for Loop_Statement_to_gnu, to translate the body of a loop not
-   subject to any sort of parallelization directive or restriction, designated
-   by GNAT_NODE.
-
-   We expect the top of gnu_loop_stack to hold a pointer to the loop info
-   setup for the translation, which holds a pointer to the initial gnu loop
-   stmt node.  We return the new gnu loop statement to use.
-
-   We might also set *GNU_COND_EXPR_P to request a variant of the translation
-   scheme in Loop_Statement_to_gnu.  */
+/* Subroutine of gnat_to_gnu to translate gnat_node, an N_Loop_Statement,
+   to a GCC tree, which is returned.  */
 
 static tree
-Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
+Loop_Statement_to_gnu (Node_Id gnat_node)
 {
   const Node_Id gnat_iter_scheme = Iteration_Scheme (gnat_node);
-  struct loop_info_d *const gnu_loop_info = gnu_loop_stack->last ();
-  tree gnu_loop_stmt = gnu_loop_info->stmt;
-  tree gnu_loop_label = LOOP_STMT_LABEL (gnu_loop_stmt);
-  tree gnu_cond_expr = *gnu_cond_expr_p;
-  tree gnu_low = NULL_TREE, gnu_high = NULL_TREE;
+  struct loop_info_d *gnu_loop_info = ggc_cleared_alloc<loop_info_d> ();
+  tree gnu_loop_stmt = build4 (LOOP_STMT, void_type_node, NULL_TREE,
+			       NULL_TREE, NULL_TREE, NULL_TREE);
+  tree gnu_loop_label = create_artificial_label (input_location);
+  tree gnu_cond_expr = NULL_TREE, gnu_low = NULL_TREE, gnu_high = NULL_TREE;
+  tree gnu_result;
+
+  /* Push the loop_info structure associated with the LOOP_STMT.  */
+  gnu_loop_info->fndecl = current_function_decl;
+  gnu_loop_info->stmt = gnu_loop_stmt;
+  vec_safe_push (gnu_loop_stack, gnu_loop_info);
+
+  /* Set location information for statement and end label.  */
+  set_expr_location_from_node (gnu_loop_stmt, gnat_node);
+  Sloc_to_locus (Sloc (End_Label (gnat_node)),
+		 &DECL_SOURCE_LOCATION (gnu_loop_label));
+  LOOP_STMT_LABEL (gnu_loop_stmt) = gnu_loop_label;
 
   /* Set the condition under which the loop must keep going.  If we have an
      explicit condition, use it to set the location information throughout
@@ -3277,7 +3295,16 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
 		}
 	}
 
-      /* Second, if loop vectorization is enabled and the iterations of the
+      /* Second, if we have recorded invariants to be hoisted, emit them.  */
+      if (vec_safe_length (gnu_loop_info->invariants) > 0)
+	{
+	  tree *iter;
+	  unsigned int i;
+	  FOR_EACH_VEC_ELT (*gnu_loop_info->invariants, i, iter)
+	    add_stmt_with_node_force (*iter, gnat_node);
+	}
+
+      /* Third, if loop vectorization is enabled and the iterations of the
 	 loop can easily be proved as independent, mark the loop.  */
       if (optimize >= 3
 	  && independent_iterations_p (LOOP_STMT_BODY (gnu_loop_stmt)))
@@ -3287,40 +3314,6 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
       gnat_poplevel ();
       gnu_loop_stmt = end_stmt_group ();
     }
-
-  *gnu_cond_expr_p = gnu_cond_expr;
-
-  return gnu_loop_stmt;
-}
-
-/* Subroutine of gnat_to_gnu to translate gnat_node, an N_Loop_Statement,
-   to a GCC tree, which is returned.  */
-
-static tree
-Loop_Statement_to_gnu (Node_Id gnat_node)
-{
-  struct loop_info_d *gnu_loop_info = ggc_cleared_alloc<loop_info_d> ();
-
-  tree gnu_loop_stmt = build4 (LOOP_STMT, void_type_node, NULL_TREE,
-			       NULL_TREE, NULL_TREE, NULL_TREE);
-  tree gnu_cond_expr = NULL_TREE;
-  tree gnu_loop_label = create_artificial_label (input_location);
-  tree gnu_result;
-
-  /* Push the loop_info structure associated with the LOOP_STMT.  */
-  vec_safe_push (gnu_loop_stack, gnu_loop_info);
-
-  /* Set location information for statement and end label.  */
-  set_expr_location_from_node (gnu_loop_stmt, gnat_node);
-  Sloc_to_locus (Sloc (End_Label (gnat_node)),
-		 &DECL_SOURCE_LOCATION (gnu_loop_label));
-  LOOP_STMT_LABEL (gnu_loop_stmt) = gnu_loop_label;
-
-  /* Save the statement for later reuse.  */
-  gnu_loop_info->stmt = gnu_loop_stmt;
-
-  /* Perform the core loop body translation.  */
-  gnu_loop_stmt = Regular_Loop_to_gnu (gnat_node, &gnu_cond_expr);
 
   /* If we have an outer COND_EXPR, that's our result and this loop is its
      "true" statement.  Otherwise, the result is the LOOP_STMT.  */
@@ -4384,6 +4377,69 @@ create_init_temporary (const char *prefix, tree gnu_init, tree *gnu_init_stmt,
   return gnu_temp;
 }
 
+/* Return true if TYPE is an array of scalar type.  */
+
+static bool
+is_array_of_scalar_type (tree type)
+{
+  if (TREE_CODE (type) != ARRAY_TYPE)
+    return false;
+
+  type = TREE_TYPE (type);
+
+  return !AGGREGATE_TYPE_P (type) && !POINTER_TYPE_P (type);
+}
+
+/* Helper function for walk_tree, used by return_slot_opt_for_pure_call_p.  */
+
+static tree
+find_decls_r (tree *tp, int *walk_subtrees, void *data)
+{
+  bitmap decls = (bitmap) data;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
+  else if (DECL_P (*tp))
+    bitmap_set_bit (decls, DECL_UID (*tp));
+
+  return NULL_TREE;
+}
+
+/* Return whether the assignment TARGET = CALL can be subject to the return
+   slot optimization, under the assumption that the called function be pure
+   in the Ada sense and return an array of scalar type.  */
+
+static bool
+return_slot_opt_for_pure_call_p (tree target, tree call)
+{
+  /* Check that the target is a DECL.  */
+  if (!DECL_P (target))
+    return false;
+
+  const bitmap decls = BITMAP_GGC_ALLOC ();
+  call_expr_arg_iterator iter;
+  tree arg;
+
+  /* Check that all the arguments have either a scalar type (we assume that
+     this means by-copy passing mechanism) or array of scalar type.  */
+  FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
+    {
+      tree arg_type = TREE_TYPE (arg);
+      if (TREE_CODE (arg_type) == REFERENCE_TYPE)
+	arg_type = TREE_TYPE (arg_type);
+
+      if (is_array_of_scalar_type (arg_type))
+	walk_tree_without_duplicates (&arg, find_decls_r, decls);
+
+      else if (AGGREGATE_TYPE_P (arg_type) || POINTER_TYPE_P (arg_type))
+	return false;
+    }
+
+  /* Check that the target is not referenced by the non-scalar arguments.  */
+  return !bitmap_bit_p (decls, DECL_UID (target));
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, either an N_Function_Call
    or an N_Procedure_Call_Statement, to a GCC tree, which is returned.
    GNU_RESULT_TYPE_P is a pointer to where we should place the result type.
@@ -4508,15 +4564,16 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  because we need to preserve the return value before copying back the
 	  parameters.
 
-       2. There is no target and the call is made for neither an object, nor a
-	  renaming declaration, nor a return statement, nor an allocator, and
-	  the return type has variable size because in this case the gimplifier
-	  cannot create the temporary, or more generally is an aggregate type,
-	  because the gimplifier would create the temporary in the outermost
-	  scope instead of locally.  But there is an exception for an allocator
-	  of an unconstrained record type with default discriminant because we
-	  allocate the actual size in this case, unlike the other 3 cases, so
-	  we need a temporary to fetch the discriminant and we create it here.
+       2. There is no target and the call is made for neither the declaration
+	  of an object (regular or renaming), nor a return statement, nor an
+	  allocator, nor an aggregate, and the return type has variable size
+	  because in this case the gimplifier cannot create the temporary, or
+	  more generally is an aggregate type, because the gimplifier would
+	  create the temporary in the outermost scope instead of locally here.
+	  But there is an exception for an allocator of unconstrained record
+	  type with default discriminant because we allocate the actual size
+	  in this case, unlike in the other cases, so we need a temporary to
+	  fetch the discriminant and we create it here.
 
        3. There is a target and it is a slice or an array with fixed size,
 	  and the return type has variable size, because the gimplifier
@@ -4542,6 +4599,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      && (!(Nkind (Parent (gnat_node)) == N_Qualified_Expression
 		    && Nkind (Parent (Parent (gnat_node))) == N_Allocator)
 		  || type_is_padding_self_referential (gnu_result_type))
+	      && Nkind (Parent (gnat_node)) != N_Aggregate
 	      && AGGREGATE_TYPE_P (gnu_result_type)
 	      && !TYPE_IS_FAT_POINTER_P (gnu_result_type))
 	  || (gnu_target
@@ -4758,7 +4816,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	 may have suppressed a conversion to the Etype of the actual earlier,
 	 since the parent is a procedure call, so put it back here.  Note that
 	 we might have a dummy type here if the actual is the dereference of a
-	 pointer to it, but that's OK if the formal is passed by reference.  */
+	 pointer to it, but that's OK when the formal is passed by reference.
+	 We also do not put back a conversion between an actual and a formal
+	 that are unconstrained array types to avoid creating local bounds.  */
       tree gnu_actual_type = get_unpadded_type (Etype (gnat_actual));
       if (TYPE_IS_DUMMY_P (gnu_actual_type))
 	gcc_assert (is_true_formal_parm && DECL_BY_REF_P (gnu_formal));
@@ -4766,6 +4826,11 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	       && Nkind (gnat_actual) == N_Unchecked_Type_Conversion)
 	gnu_actual = unchecked_convert (gnu_actual_type, gnu_actual,
 				        No_Truncation (gnat_actual));
+      else if ((TREE_CODE (TREE_TYPE (gnu_actual)) == UNCONSTRAINED_ARRAY_TYPE
+		|| (TREE_CODE (TREE_TYPE (gnu_actual)) == RECORD_TYPE
+		    && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (gnu_actual))))
+	       && TREE_CODE (gnu_formal_type) == UNCONSTRAINED_ARRAY_TYPE)
+	;
       else
 	gnu_actual = convert (gnu_actual_type, gnu_actual);
 
@@ -5160,6 +5225,17 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	     That's what has been done historically.  */
 	  if (return_type_with_variable_size_p (gnu_result_type))
 	    op_code = INIT_EXPR;
+
+	  /* If this is a call to a pure function returning an array of scalar
+	     type, try to apply the return slot optimization.  */
+	  else if ((TYPE_READONLY (gnu_subprog_type)
+		    || TYPE_RESTRICT (gnu_subprog_type))
+		   && is_array_of_scalar_type (gnu_result_type)
+		   && TYPE_MODE (gnu_result_type) == BLKmode
+		   && aggregate_value_p (gnu_result_type, gnu_subprog_type)
+		   && return_slot_opt_for_pure_call_p (gnu_target, gnu_call))
+	    op_code = INIT_EXPR;
+
 	  else
 	    op_code = MODIFY_EXPR;
 
@@ -6731,6 +6807,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	else
 	  {
 	    tree gnu_field = gnat_to_gnu_field_decl (gnat_field);
+	    tree gnu_offset;
+	    struct loop_info_d *loop;
 
 	    gnu_result
 	      = build_component_ref (gnu_prefix, gnu_field,
@@ -6738,6 +6816,29 @@ gnat_to_gnu (Node_Id gnat_node)
 				      == N_Attribute_Reference)
 				     && lvalue_required_for_attribute_p
 					(Parent (gnat_node)));
+
+	    /* If optimization is enabled and we are inside a loop, we try to
+	       hoist nonconstant but invariant offset computations outside of
+	       the loop, since they very likely contain loads that could turn
+	       out to be hard to move if they end up in active EH regions.  */
+	    if (optimize
+		&& inside_loop_p ()
+		&& TREE_CODE (gnu_result) == COMPONENT_REF
+		&& (gnu_offset = component_ref_field_offset (gnu_result))
+		&& !TREE_CONSTANT (gnu_offset)
+		&& (gnu_offset = gnat_invariant_expr (gnu_offset))
+		&& (loop = find_loop ()))
+	      {
+		tree invariant
+		  = build1 (SAVE_EXPR, TREE_TYPE (gnu_offset), gnu_offset);
+		vec_safe_push (loop->invariants, invariant);
+		tree field = TREE_OPERAND (gnu_result, 1);
+		tree factor
+		  = size_int (DECL_OFFSET_ALIGN (field) / BITS_PER_UNIT);
+		/* Divide the offset by its alignment.  */
+		TREE_OPERAND (gnu_result, 2)
+		  = size_binop (EXACT_DIV_EXPR, invariant, factor);
+	      }
 	  }
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
@@ -8738,6 +8839,31 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	    else
 	      op = inner;
 	  }
+
+      return GS_UNHANDLED;
+
+    case CALL_EXPR:
+      /* If we are passing a constant fat pointer CONSTRUCTOR, make sure it is
+	 put into static memory; this performs a restricted version of constant
+	 propagation on fat pointers in calls.  But do not do it for strings to
+	 avoid blocking concatenation in the caller when it is inlined.  */
+      for (int i = 0; i < call_expr_nargs (expr); i++)
+	{
+	  tree arg = *(CALL_EXPR_ARGP (expr) + i);
+
+	  if (TREE_CODE (arg) == CONSTRUCTOR
+	      && TREE_CONSTANT (arg)
+	      && TYPE_IS_FAT_POINTER_P (TREE_TYPE (arg)))
+	    {
+	      tree t = CONSTRUCTOR_ELT (arg, 0)->value;
+	      if (TREE_CODE (t) == NOP_EXPR)
+		t = TREE_OPERAND (t, 0);
+	      if (TREE_CODE (t) == ADDR_EXPR)
+		t = TREE_OPERAND (t, 0);
+	      if (TREE_CODE (t) != STRING_CST)
+		*(CALL_EXPR_ARGP (expr) + i) = tree_output_constant_def (arg);
+	    }
+	}
 
       return GS_UNHANDLED;
 

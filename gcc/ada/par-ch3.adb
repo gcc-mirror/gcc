@@ -1379,9 +1379,9 @@ package body Ch3 is
       procedure No_List is
       begin
          if Num_Idents > 1 then
-            Error_Msg
+            Error_Msg_N
               ("identifier list not allowed for RENAMES",
-               Sloc (Idents (2)));
+               Idents (2));
          end if;
 
          List_OK := False;

@@ -677,8 +677,6 @@ package body Sem_Case is
       --------------------
 
       procedure Missing_Choice (Value1 : Uint; Value2 : Uint) is
-         Msg_Sloc : constant Source_Ptr := Sloc (Case_Node);
-
       begin
          --  AI05-0188 : within an instance the non-others choices do not have
          --  to belong to the actual subtype.
@@ -704,10 +702,10 @@ package body Sem_Case is
          if Value1 = Value2 then
             if Is_Integer_Type (Bounds_Type) then
                Error_Msg_Uint_1 := Value1;
-               Error_Msg ("missing case value: ^!", Msg_Sloc);
+               Error_Msg_N ("missing case value: ^!", Case_Node);
             else
                Error_Msg_Name_1 := Choice_Image (Value1, Bounds_Type);
-               Error_Msg ("missing case value: %!", Msg_Sloc);
+               Error_Msg_N ("missing case value: %!", Case_Node);
             end if;
 
          --  More than one choice value, so print range of values
@@ -716,11 +714,11 @@ package body Sem_Case is
             if Is_Integer_Type (Bounds_Type) then
                Error_Msg_Uint_1 := Value1;
                Error_Msg_Uint_2 := Value2;
-               Error_Msg ("missing case values: ^ .. ^!", Msg_Sloc);
+               Error_Msg_N ("missing case values: ^ .. ^!", Case_Node);
             else
                Error_Msg_Name_1 := Choice_Image (Value1, Bounds_Type);
                Error_Msg_Name_2 := Choice_Image (Value2, Bounds_Type);
-               Error_Msg ("missing case values: % .. %!", Msg_Sloc);
+               Error_Msg_N ("missing case values: % .. %!", Case_Node);
             end if;
          end if;
       end Missing_Choice;

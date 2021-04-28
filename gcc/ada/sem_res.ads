@@ -31,7 +31,7 @@ with Types; use Types;
 
 package Sem_Res is
 
-   --  As described in Sem_Ch4, the type resolution proceeds in two phases.
+   --  As described in Sem_Type, the type resolution proceeds in two phases.
    --  The first phase is a bottom up pass that is achieved during the
    --  recursive traversal performed by the Analyze procedures. This phase
    --  determines unambiguous types, and collects sets of possible types

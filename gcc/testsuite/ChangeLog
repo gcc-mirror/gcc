@@ -1,3 +1,111 @@
+2021-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92145
+	* g++.dg/cpp0x/depr-copy3.C: New test.
+
+2021-04-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88580
+	* g++.dg/cpp0x/variadic182.C: New test.
+
+2021-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/100284
+	* gcc.target/aarch64/sve/pr81003.c: New test.
+
+2021-04-27  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/100272
+	* g++.dg/ext/flexary13.C: Remove malformed directives.
+
+2021-04-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/100106
+	* gcc.c-torture/compile/pr100106.c: New testcase.
+
+2021-04-27  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99977
+	* gcc.target/arm/pr99977.c: New test.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/100239
+	* gcc.dg/pr100239.c: New test.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100254
+	* g++.dg/opt/pr100254.C: New test.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99912
+	* gcc.dg/tree-ssa/ldist-33.c: Disable PRE and LIM.
+	* gcc.dg/tree-ssa/pr96789.c: Adjust dump file scanned.
+	* gcc.dg/tree-ssa/ssa-dse-28.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dse-29.c: Likewise.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95527
+	* gcc.dg/tree-ssa/pr95527-2.c: New test.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96696
+	* gcc.target/i386/pr96696.c: New test.
+
+2021-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100270
+	* gcc.target/aarch64/sve/acle/general-c/pr100270_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Change
+	expected error message when subtracting pointers to different
+	vector types.  Expect warnings when mixing them elsewhere.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c: Remove
+	XFAILs.  Tweak error messages for some cases.
+
+2021-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/simd/ssra.c: Use +nosve
+	* gcc.target/aarch64/simd/usra.c: Likewise.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100051
+	* gcc.dg/tree-ssa/ssa-fre-92.c: New testcase.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/100272
+	* gcc.dg/tree-ssa/predcom-1.c: Re-enable PRE and fix
+	malformed dg directive.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/100272
+	* g++.dg/diagnostic/ptrtomem1.C: Fix dg directives.
+	* g++.dg/ipa/pr45572-2.C: Likewise.
+	* g++.dg/template/spec26.C: Likewise.
+	* gcc.dg/pr20126.c: Likewise.
+	* gcc.dg/tree-ssa/pr20739.c: Likewise.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100278
+	* gcc.dg/tree-ssa/pr100278.c: New testcase.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99405
+	* gcc.target/i386/pr99405.c: New test.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99776
+	* gcc.dg/tree-ssa/ssa-fre-91.c: New testcase.
+
 2021-04-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/100209
