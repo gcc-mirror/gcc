@@ -1111,18 +1111,13 @@ private
    --  time stamps, but may have a different representation than C's time_t.
    --  This type needs to match the declaration of OS_Time in adaint.h.
 
-   --  Add pragma Inline statements for comparison operations on OS_Time. It
-   --  would actually be nice to use pragma Import (Intrinsic) here, but this
-   --  was not properly supported till GNAT 3.15a, so that would cause
-   --  bootstrap path problems. To be changed later ???
-
    Invalid_Time : constant OS_Time := -1;
    --  This value should match the return value from __gnat_file_time_*
 
-   pragma Inline ("<");
-   pragma Inline (">");
-   pragma Inline ("<=");
-   pragma Inline (">=");
+   pragma Import (Intrinsic, "<");
+   pragma Import (Intrinsic, ">");
+   pragma Import (Intrinsic, "<=");
+   pragma Import (Intrinsic, ">=");
    pragma Inline (To_C);
    pragma Inline (To_Ada);
 
