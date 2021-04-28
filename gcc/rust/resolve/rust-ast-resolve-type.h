@@ -265,6 +265,12 @@ public:
 		       "generic param redefined multiple times");
 	rust_error_at (locus, "was defined here");
       });
+
+    // if it has a type lets resolve it
+    if (param.has_type ())
+      {
+	ResolveType::go (param.get_type ().get (), param.get_node_id ());
+      }
   }
 
 private:
