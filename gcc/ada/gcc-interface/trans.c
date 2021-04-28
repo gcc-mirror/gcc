@@ -4816,7 +4816,9 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	 may have suppressed a conversion to the Etype of the actual earlier,
 	 since the parent is a procedure call, so put it back here.  Note that
 	 we might have a dummy type here if the actual is the dereference of a
-	 pointer to it, but that's OK if the formal is passed by reference.  */
+	 pointer to it, but that's OK when the formal is passed by reference.
+	 We also do not put back a conversion between an actual and a formal
+	 that are unconstrained array types to avoid creating local bounds.  */
       tree gnu_actual_type = get_unpadded_type (Etype (gnat_actual));
       if (TYPE_IS_DUMMY_P (gnu_actual_type))
 	gcc_assert (is_true_formal_parm && DECL_BY_REF_P (gnu_formal));
@@ -4824,6 +4826,11 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	       && Nkind (gnat_actual) == N_Unchecked_Type_Conversion)
 	gnu_actual = unchecked_convert (gnu_actual_type, gnu_actual,
 				        No_Truncation (gnat_actual));
+      else if ((TREE_CODE (TREE_TYPE (gnu_actual)) == UNCONSTRAINED_ARRAY_TYPE
+		|| (TREE_CODE (TREE_TYPE (gnu_actual)) == RECORD_TYPE
+		    && TYPE_CONTAINS_TEMPLATE_P (TREE_TYPE (gnu_actual))))
+	       && TREE_CODE (gnu_formal_type) == UNCONSTRAINED_ARRAY_TYPE)
+	;
       else
 	gnu_actual = convert (gnu_actual_type, gnu_actual);
 
@@ -8832,6 +8839,31 @@ gnat_gimplify_expr (tree *expr_p, gimple_seq *pre_p,
 	    else
 	      op = inner;
 	  }
+
+      return GS_UNHANDLED;
+
+    case CALL_EXPR:
+      /* If we are passing a constant fat pointer CONSTRUCTOR, make sure it is
+	 put into static memory; this performs a restricted version of constant
+	 propagation on fat pointers in calls.  But do not do it for strings to
+	 avoid blocking concatenation in the caller when it is inlined.  */
+      for (int i = 0; i < call_expr_nargs (expr); i++)
+	{
+	  tree arg = *(CALL_EXPR_ARGP (expr) + i);
+
+	  if (TREE_CODE (arg) == CONSTRUCTOR
+	      && TREE_CONSTANT (arg)
+	      && TYPE_IS_FAT_POINTER_P (TREE_TYPE (arg)))
+	    {
+	      tree t = CONSTRUCTOR_ELT (arg, 0)->value;
+	      if (TREE_CODE (t) == NOP_EXPR)
+		t = TREE_OPERAND (t, 0);
+	      if (TREE_CODE (t) == ADDR_EXPR)
+		t = TREE_OPERAND (t, 0);
+	      if (TREE_CODE (t) != STRING_CST)
+		*(CALL_EXPR_ARGP (expr) + i) = tree_output_constant_def (arg);
+	    }
+	}
 
       return GS_UNHANDLED;
 
