@@ -379,6 +379,18 @@ public:
 
   std::string get_name () const override final { return as_string (); }
 
+  bool contains_type_parameters () const override final
+  {
+    for (auto &f : fields)
+      {
+	if (f.get_tyty ()->contains_type_parameters ())
+	  return true;
+      }
+    return false;
+  }
+
+  TupleType *handle_substitions (SubstitutionArgumentMappings mappings);
+
 private:
   std::vector<TyVar> fields;
 };

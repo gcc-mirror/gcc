@@ -154,7 +154,10 @@ public:
   }
 
   // these don't support generic arguments but might contain a type param
-  void visit (TyTy::TupleType &) override { gcc_unreachable (); }
+  void visit (TyTy::TupleType &type) override
+  {
+    resolved = type.handle_substitions (mappings);
+  }
 
   void visit (TyTy::ReferenceType &type) override
   {

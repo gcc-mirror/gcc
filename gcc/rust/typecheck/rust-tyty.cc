@@ -540,6 +540,29 @@ TupleType::clone ()
 			get_combined_refs ());
 }
 
+TupleType *
+TupleType::handle_substitions (SubstitutionArgumentMappings mappings)
+{
+  auto mappings_table = Analysis::Mappings::get ();
+
+  TupleType *tuple = static_cast<TupleType *> (clone ());
+  tuple->set_ty_ref (mappings_table->get_next_hir_id ());
+
+  for (size_t i = 0; i < tuple->fields.size (); i++)
+    {
+      TyVar &field = fields.at (i);
+      if (field.get_tyty ()->contains_type_parameters ())
+	{
+	  BaseType *concrete
+	    = Resolver::SubstMapperInternal::Resolve (field.get_tyty (),
+						      mappings);
+	  tuple->fields[i] = TyVar (concrete->get_ty_ref ());
+	}
+    }
+
+  return tuple;
+}
+
 void
 FnType::accept_vis (TyVisitor &vis)
 {
