@@ -260,6 +260,7 @@ gfc_match_omp_variable_list (const char *str, gfc_omp_namelist **list,
 	case MATCH_YES:
 	  gfc_expr *expr;
 	  expr = NULL;
+	  gfc_gobble_whitespace ();
 	  if ((allow_sections && gfc_peek_ascii_char () == '(')
 	      || (allow_derived && gfc_peek_ascii_char () == '%'))
 	    {
