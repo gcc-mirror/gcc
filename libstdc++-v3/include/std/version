@@ -126,6 +126,7 @@
 #define __cpp_lib_chrono 201611
 #define __cpp_lib_clamp 201603
 #define __cpp_lib_constexpr_char_traits 201611
+#define __cpp_lib_constexpr_string 201611L
 #define __cpp_lib_enable_shared_from_this 201603
 #define __cpp_lib_execution 201902L // FIXME: should be 201603L
 #define __cpp_lib_filesystem 201703
