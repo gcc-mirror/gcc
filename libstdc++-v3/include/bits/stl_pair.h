@@ -128,34 +128,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      is_convertible<_U2&&, _T2>>::value;
       }
 
-      template <bool __implicit, typename _U1, typename _U2>
-      static constexpr bool _CopyMovePair()
-      {
-	using __do_converts = __and_<is_convertible<const _U1&, _T1>,
-				  is_convertible<_U2&&, _T2>>;
-	using __converts = typename conditional<__implicit,
-				       __do_converts,
-				       __not_<__do_converts>>::type;
-	return __and_<is_constructible<_T1, const _U1&>,
-		      is_constructible<_T2, _U2&&>,
-		      __converts
-		      >::value;
-      }
 
       template <bool __implicit, typename _U1, typename _U2>
-      static constexpr bool _MoveCopyPair()
+      static constexpr bool _DeprConsPair()
       {
 	using __do_converts = __and_<is_convertible<_U1&&, _T1>,
-				  is_convertible<const _U2&, _T2>>;
+				     is_convertible<_U2&&, _T2>>;
 	using __converts = typename conditional<__implicit,
-				       __do_converts,
-				       __not_<__do_converts>>::type;
+						__do_converts,
+						__not_<__do_converts>>::type;
 	return __and_<is_constructible<_T1, _U1&&>,
-		      is_constructible<_T2, const _U2&&>,
+		      is_constructible<_T2, _U2&&>,
 		      __converts
-		      >::value;
+		     >::value;
       }
-  };
+    };
 
   template <typename _T1, typename _T2>
     struct _PCC<false, _T1, _T2>
@@ -183,7 +170,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	return false;
       }
-  };
+    };
 #endif // C++11
 
   template<typename _U1, typename _U2> class __pair_base
@@ -217,22 +204,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _T1 first;                 ///< The first member
       _T2 second;                ///< The second member
 
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 265.  std::pair::pair() effects overly restrictive
+#if __cplusplus >= 201103L
+      // C++11 (and later) implementation.
+
       /** The default constructor creates @c first and @c second using their
        *  respective default constructors.  */
-#if __cplusplus >= 201103L
       template <typename _U1 = _T1,
                 typename _U2 = _T2,
                 typename enable_if<__and_<
                                      __is_implicitly_default_constructible<_U1>,
                                      __is_implicitly_default_constructible<_U2>>
                                    ::value, bool>::type = true>
-#endif
-      _GLIBCXX_CONSTEXPR pair()
+      constexpr pair()
       : first(), second() { }
 
-#if __cplusplus >= 201103L
       template <typename _U1 = _T1,
                 typename _U2 = _T2,
                 typename enable_if<__and_<
@@ -244,13 +229,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                    ::value, bool>::type = false>
       explicit constexpr pair()
       : first(), second() { }
-#endif
 
-#if __cplusplus < 201103L
-      /// Two objects may be passed to a @c pair constructor to be copied.
-      pair(const _T1& __a, const _T2& __b)
-      : first(__a), second(__b) { }
-#else
       // Shortcut for constraining the templates that don't take pairs.
       /// @cond undocumented
       using _PCCP = _PCC<true, _T1, _T2>;
@@ -275,14 +254,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                          bool>::type=false>
       explicit constexpr pair(const _T1& __a, const _T2& __b)
       : first(__a), second(__b) { }
-#endif
 
-#if __cplusplus < 201103L
-      /// There is also a templated constructor to convert from other pairs.
-      template<typename _U1, typename _U2>
-	pair(const pair<_U1, _U2>& __p)
-	: first(__p.first), second(__p.second) { }
-#else
       // Shortcut for constraining the templates that take pairs.
       /// @cond undocumented
       template <typename _U1, typename _U2>
@@ -308,40 +280,68 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                          bool>::type=false>
 	explicit constexpr pair(const pair<_U1, _U2>& __p)
 	: first(__p.first), second(__p.second) { }
-#endif
 
-#if __cplusplus >= 201103L
       constexpr pair(const pair&) = default;	///< Copy constructor
       constexpr pair(pair&&) = default;		///< Move constructor
 
-      // DR 811.
-      template<typename _U1, typename
-	       enable_if<_PCCP::template
-			   _MoveCopyPair<true, _U1, _T2>(),
-                         bool>::type=true>
-       constexpr pair(_U1&& __x, const _T2& __y)
-       : first(std::forward<_U1>(__x)), second(__y) { }
+#if _GLIBCXX_USE_DEPRECATED
+    private:
+      /// @cond undocumented
 
-      template<typename _U1, typename
-	       enable_if<_PCCP::template
-			   _MoveCopyPair<false, _U1, _T2>(),
-                         bool>::type=false>
-       explicit constexpr pair(_U1&& __x, const _T2& __y)
-       : first(std::forward<_U1>(__x)), second(__y) { }
+      // A type which can be constructed from literal zero, but not nullptr
+      struct __null_ptr_constant
+      {
+	__null_ptr_constant(int __null_ptr_constant::*) { }
+	template<typename _Tp,
+		 typename = __enable_if_t<is_null_pointer<_Tp>::value>>
+	__null_ptr_constant(_Tp) = delete;
+      };
 
-      template<typename _U2, typename
-	       enable_if<_PCCP::template
-			   _CopyMovePair<true, _T1, _U2>(),
-                         bool>::type=true>
-       constexpr pair(const _T1& __x, _U2&& __y)
-       : first(__x), second(std::forward<_U2>(__y)) { }
+      // True if type _Up is one of _Tp& or const _Tp&
+      template<typename _Up, typename _Tp>
+	using __is_lvalue_of
+	  = __or_<is_same<_Up, const _Tp&>, is_same<_Up, _Tp&>>;
 
-      template<typename _U2, typename
-	       enable_if<_PCCP::template
-			   _CopyMovePair<false, _T1, _U2>(),
-                         bool>::type=false>
-       explicit pair(const _T1& __x, _U2&& __y)
-       : first(__x), second(std::forward<_U2>(__y)) { }
+      /// @endcond
+    public:
+
+      // Deprecated extensions to DR 811.
+      template<typename _U1,
+	       __enable_if_t<!__is_lvalue_of<_U1, _T1>::value
+			     && _PCCP::template
+			       _DeprConsPair<true, _U1, nullptr_t>(),
+			     bool> = true>
+       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
+       constexpr pair(_U1&& __x, __null_ptr_constant)
+       : first(std::forward<_U1>(__x)), second(nullptr) { }
+
+      template<typename _U1,
+	       __enable_if_t<!__is_lvalue_of<_U1, _T1>::value
+			     && _PCCP::template
+			       _DeprConsPair<false, _U1, nullptr_t>(),
+			     bool> = false>
+       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
+       explicit constexpr pair(_U1&& __x, __null_ptr_constant)
+       : first(std::forward<_U1>(__x)), second(nullptr) { }
+
+      template<typename _U2,
+	       __enable_if_t<!__is_lvalue_of<_U2, _T2>::value
+			     && _PCCP::template
+			       _DeprConsPair<true, nullptr_t, _U2>(),
+			     bool> = true>
+       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
+       constexpr pair(__null_ptr_constant, _U2&& __y)
+       : first(nullptr), second(std::forward<_U2>(__y)) { }
+
+      template<typename _U2,
+	       __enable_if_t<!__is_lvalue_of<_U2, _T2>::value
+			     && _PCCP::template
+			       _DeprConsPair<false, nullptr_t, _U2>(),
+			     bool> = false>
+       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
+       explicit pair(__null_ptr_constant, _U2&& __y)
+       : first(nullptr), second(std::forward<_U2>(__y)) { }
+#endif // _GLIBCXX_USE_DEPRECATED
 
       template<typename _U1, typename _U2, typename
 	       enable_if<_PCCP::template
@@ -451,6 +451,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX20_CONSTEXPR
         pair(tuple<_Args1...>&, tuple<_Args2...>&,
 	     _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>);
+#else
+      // C++03 implementation
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 265.  std::pair::pair() effects overly restrictive
+      /** The default constructor creates @c first and @c second using their
+       *  respective default constructors.  */
+      pair() : first(), second() { }
+
+      /// Two objects may be passed to a `pair` constructor to be copied.
+      pair(const _T1& __a, const _T2& __b)
+      : first(__a), second(__b) { }
+
+      /// Templated constructor to convert from other pairs.
+      template<typename _U1, typename _U2>
+	pair(const pair<_U1, _U2>& __p)
+	: first(__p.first), second(__p.second) { }
 #endif // C++11
     };
 

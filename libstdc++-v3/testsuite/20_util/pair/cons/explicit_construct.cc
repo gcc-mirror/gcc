@@ -126,10 +126,10 @@ struct ExplicitMoveOnly
   explicit ExplicitMoveOnly(MoveOnly&&) {}
 };
 
-std::pair<int*, ExplicitMoveOnly> v14{0, MoveOnly{}};
-std::pair<ExplicitMoveOnly, int*> v15{MoveOnly{}, 0};
+std::pair<int*, ExplicitMoveOnly> v14{nullptr, MoveOnly{}};
+std::pair<ExplicitMoveOnly, int*> v15{MoveOnly{}, nullptr};
 
 std::pair<int*, ExplicitMoveOnly> v16 =
-  {0, MoveOnly{}}; // { dg-error "could not convert" }
+  {nullptr, MoveOnly{}}; // { dg-error "could not convert" }
 std::pair<ExplicitMoveOnly, int*> v17 =
-  {MoveOnly{}, 0}; // { dg-error "could not convert" }
+  {MoveOnly{}, nullptr}; // { dg-error "could not convert" }
