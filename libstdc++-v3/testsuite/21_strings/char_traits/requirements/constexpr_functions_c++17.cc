@@ -73,12 +73,17 @@ template<typename CT>
     return true;
   }
 
+#ifndef __cpp_lib_constexpr_string
+# error Feature-test macro for constexpr char_traits is missing
+#elif __cpp_lib_constexpr_string < (__cplusplus == 201703 ? 201611 : 201811)
+# error Feature-test macro for constexpr char_traits has the wrong value
+#endif
+
+// We also provide this non-standard macro for P0426R1 (and P1032R1 in C++20).
 #ifndef __cpp_lib_constexpr_char_traits
 # error Feature-test macro for constexpr char_traits is missing
-#elif __cpp_lib_constexpr_char_traits < 201611
+#elif __cpp_lib_constexpr_char_traits != (__cplusplus == 201703 ? 201611 : 201811)
 # error Feature-test macro for constexpr char_traits has the wrong value
-#elif __cpp_lib_constexpr_char_traits > 201611 && __cplusplus == 201703
-# error Feature-test macro for constexpr char_traits has wrong value for C++17
 #endif
 
 static_assert( test_assign<std::char_traits<char>>() );
