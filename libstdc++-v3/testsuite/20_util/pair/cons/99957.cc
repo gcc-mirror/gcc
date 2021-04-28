@@ -1,5 +1,5 @@
 // { dg-options "-Wdeprecated" }
-// { dg-do compile { target c++11 } }
+// { dg-do compile { target { c++11 && { ! c++20 } } } }
 
 #include <utility>
 

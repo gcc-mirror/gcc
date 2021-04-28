@@ -83,12 +83,12 @@ void f7(std::pair<long, long>) {}
 
 std::pair<ExplicitDefault, int> f8()
 {
-  return {}; // { dg-error "could not convert" }
+  return {}; // { dg-error "convert" }
 }
 
 std::pair<ExplicitDefaultDefault, int> f9()
 {
-  return {}; // { dg-error "could not convert" }
+  return {}; // { dg-error "convert" }
 }
 
 void f10(std::pair<ExplicitDefault, int>) {}
@@ -107,8 +107,8 @@ void test_arg_passing()
   f7({1,2});
   f7(std::pair<int, int>{});
   f7(std::pair<long, long>{});
-  f10({}); // { dg-error "could not convert" }
-  f11({}); // { dg-error "could not convert" }
+  f10({}); // { dg-error "convert" }
+  f11({}); // { dg-error "convert" }
   f10(std::pair<ExplicitDefault, int>{});
   f11(std::pair<ExplicitDefaultDefault, int>{});
 }
