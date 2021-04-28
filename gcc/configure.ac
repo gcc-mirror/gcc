@@ -1139,6 +1139,11 @@ else
     [Define this to enable support for offloading.])
 fi
 
+if test "x$enable_offload_defaulted" = xyes; then
+  AC_DEFINE(OFFLOAD_DEFAULTED, 1,
+    [Define to 1 to if -foffload is defaulted])
+fi
+
 AC_ARG_WITH(multilib-list,
 [AS_HELP_STRING([--with-multilib-list], [select multilibs (AArch64, SH and x86-64 only)])],
 :,

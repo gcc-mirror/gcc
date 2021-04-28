@@ -221,6 +221,11 @@ if test x$libgomp_offloaded_only = xyes; then
             [Define to 1 if building libgomp for an accelerator-only target.])
 fi
 
+if test "x$enable_offload_defaulted" = xyes; then
+  AC_DEFINE(OFFLOAD_DEFAULTED, 1,
+    [Define to 1 to if -foffload is defaulted])
+fi
+
 AC_CHECK_SIZEOF([void *])
 
 m4_include([plugin/configfrag.ac])
