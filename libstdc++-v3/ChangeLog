@@ -1,3 +1,62 @@
+2021-04-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100290
+	* include/std/ranges (join_view::_Iterator::operator++): Correct
+	the return type of the lambda to avoid returning a copy of
+	_M_parent->_M_inner.
+	* testsuite/std/ranges/adaptors/join.cc (test10): New test.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Revert:
+	2021-04-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100182
+	* testsuite/29_atomics/atomic_float/1.cc: Add dg-xfail-run-if for
+	ia32.
+	* testsuite/29_atomics/atomic_float/wait_notify.cc: Add dg-skip-if for
+	ia32.
+
+2021-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/internet (address_v6::bytes_type): Adjust
+	formatting.
+	(basic_endpoint): Define _M_is_v6() to put all checks for
+	AF_INET6 in one place.
+	(basic_endpoint::resize): Simplify.
+	(operator==(const tcp&, const tcp&)): Add constexpr and noexcept.
+	(operator!=(const tcp&, const tcp&)): Likewise.
+	(operator==(const udp&, const udp&)): Likewise.
+	(operator!=(const udp&, const udp&)): Likewise.
+	* testsuite/experimental/net/internet/tcp.cc: New test.
+	* testsuite/experimental/net/internet/udp.cc: New test.
+
+2021-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100286
+	* include/experimental/internet (resolver_errc, resolver_category())
+	(make_error_code, make_error_condition): Define unconditionally,
+	only make enumerators and use of gai_strerror depend on the
+	availability of <netdb.h>.
+	(address_v4::to_string): Use correct constant for string length.
+	(address_v4::to_string, address_v6::to_string): Define
+	unconditionally, throw if unsupported.
+	(make_address_v4, make_address_v6): Define unconditionally.
+	Return an error if unsupported.
+	(tcp, udp, v6_only, unicast::hops, multicast::*): Define
+	conditionally,
+	* testsuite/experimental/net/internet/socket/opt.cc: Check for
+	<netinet/in.h> and <netinet/tcp.h> before using types from
+	namespace net::ip.
+
+2021-04-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100285
+	* include/experimental/internet (resolver_base::flags):
+	Define overloaded operators as hidden friends.
+	* include/experimental/socket (socket_base::message_flags):
+	Likewise.
+
 2021-04-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/experimental/internet (tcp::no_delay, v6_only)

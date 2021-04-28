@@ -1,3 +1,7 @@
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 10 and GCC 11.
+
 2021-04-22  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config-list.mk: Remove rs6000-ibm-aix6.1.

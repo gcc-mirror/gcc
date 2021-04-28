@@ -1,3 +1,16 @@
+2021-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92145
+	* class.c (classtype_has_depr_implicit_copy): Check DECL_CONTEXT
+	of operator=.
+
+2021-04-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88580
+	* pt.c (tsubst_initializer_list): Correctly handle the case
+	where an argument inside a base initializer pack expansion is
+	itself a pack expansion.
+
 2021-04-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/100209

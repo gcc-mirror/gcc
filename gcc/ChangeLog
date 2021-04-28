@@ -1,3 +1,190 @@
+2021-04-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix.h (SUBTARGET_DRIVER_SELF_SPECS): New.
+	* config/rs6000/aix64.opt (m64): New.
+	(m32): New.
+
+2021-04-27  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/vax/vax.c (print_operand_address, vax_address_cost_1)
+	(index_term_p): Handle ASHIFT too.
+
+2021-04-27  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/vax/builtins.md (jbb<ccss>i<mode>): Remove operand #3.
+	(sync_lock_test_and_set<mode>): Adjust accordingly.
+	(sync_lock_release<mode>): Likewise.
+
+2021-04-27  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/vax/vax-protos.h (adjacent_operands_p): Remove
+	prototype.
+	* config/vax/vax.c (adjacent_operands_p): Remove.
+
+2021-04-27  Maciej W. Rozycki  <macro@linux-mips.org>
+
+	* ifcvt.c (dead_or_predicable) [!IFCVT_MODIFY_TESTS]: Fall
+	through to the non-conditional execution case if getting the
+	condition for conditional execution has failed.
+
+2021-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/100284
+	* gimple.c (gimple_could_trap_p_1): Remove VEC_COND_EXPR test.
+	* tree-eh.c (operation_could_trap_p): Handle VEC_COND_EXPR rather
+	than asserting on it.
+
+2021-04-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_aix_precompute_tls_p): Protect
+	with TARGET_AIX_OS.
+
+2021-04-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/94177
+	* calls.c (precompute_register_parameters): Additionally test
+	targetm.precompute_tls_p to pre-compute argument.
+	* config/rs6000/aix.h (TARGET_PRECOMPUTE_TLS_P): Define.
+	* config/rs6000/rs6000.c (rs6000_aix_precompute_tls_p): New.
+	* target.def (precompute_tls_p): New.
+	* doc/tm.texi.in (TARGET_PRECOMPUTE_TLS_P): Add hook documentation.
+	* doc/tm.texi: Regenerated.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100200
+	* config/aarch64/aarch64.c (aarch64_print_operand): Cast -UINTVAL
+	back to HOST_WIDE_INT.
+
+2021-04-27  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/100106
+	* simplify-rtx.c (simplify_context::simplify_subreg): Check the
+	memory alignment for the outer mode.
+
+2021-04-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/90773
+	* expr.c (op_by_pieces_d::get_usable_mode): New member function.
+	(op_by_pieces_d::run): Cange a while loop to a do-while loop.
+
+2021-04-27  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99977
+	* config/arm/arm.c (arm_split_compare_and_swap): Fix up codegen
+	with negative immediates: ensure we expand cbranchsi4_scratch
+	correctly and ensure we satisfy its constraints.
+	* config/arm/sync.md
+	(@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1): Don't
+	attempt to tie two output operands together with constraints;
+	collapse two alternatives.
+	(@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1): Likewise.
+	* config/arm/thumb1.md (cbranchsi4_neg_late): New.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100200
+	* config/aarch64/predicates.md (aarch64_sub_immediate,
+	aarch64_plus_immediate): Use -UINTVAL instead of -INTVAL.
+	* config/aarch64/aarch64.md (casesi, rotl<mode>3): Likewise.
+	* config/aarch64/aarch64.c (aarch64_print_operand,
+	aarch64_split_atomic_op, aarch64_expand_subvti): Likewise.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/100239
+	* tree-vect-generic.c (lower_vec_perm): Don't accept constant
+	permutations with all indices from the first zero element as vec_shl.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100254
+	* cfgcleanup.c (outgoing_edges_match): Check REG_EH_REGION on
+	last1 and last2 insns rather than BB_END (bb1) and BB_END (bb2) insns.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99912
+	* passes.def: Add comment about new TODO_remove_unused_locals.
+	* tree-stdarg.c (pass_data_stdarg): Run TODO_remove_unused_locals
+	at start.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99912
+	* passes.def (pass_all_optimizations): Add pass_dse before
+	the first pass_dce, move the first pass_dse before the
+	pass_dce following pass_pre.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/95527
+	* generic-match-head.c: Include tm.h.
+	* gimple-match-head.c: Include tm.h.
+	* match.pd (CLZ == INTEGER_CST): Don't use
+	#ifdef CLZ_DEFINED_VALUE_AT_ZERO, only test CLZ_DEFINED_VALUE_AT_ZERO
+	if clz == CFN_CLZ.  Add missing val declaration.
+	(CTZ cmp CST): New simplifications.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/96696
+	* expr.c (expand_expr_divmod): New function.
+	(expand_expr_real_2) <case TRUNC_DIV_EXPR>: Use it for truncations and
+	divisions.  Formatting fixes.
+	<case MULT_EXPR>: Optimize x / y * y as x - x % y if the latter is
+	cheaper.
+
+2021-04-27  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/99951
+	* ipa-param-manipulation.c (ipa_param_adjustments::modify_call):
+	If removing a call statement LHS SSA name, release it.
+
+2021-04-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100236
+	* config/arm/arm.c (THUMB2_WORK_REGS): Check PIC_OFFSET_TABLE_REGNUM
+	is valid before including it in the mask.
+
+2021-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100270
+	* config/aarch64/aarch64.c (aarch64_comp_type_attributes): Handle
+	SVE attributes.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100051
+	* tree-ssa-alias.c (indirect_ref_may_alias_decl_p): Add
+	disambiguator based on access size vs. decl size.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100278
+	* tree-ssa-pre.c (compute_avail): Give up when we cannot
+	adjust TBAA beacuse of mismatching bases.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/99405
+	* config/i386/i386.md (*<insn><mode>3_mask, *<insn><mode>3_mask_1):
+	For any_rotate define_insn_split and following splitters, use
+	SWI iterator instead of SWI48.
+
+2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99776
+	* match.pd (bit_field_ref (ctor)): Relax element extract
+	type compatibility checks.
+
+2021-04-27  Cui,Lili  <lili.cui@intel.com>
+
+	* common/config/i386/i386-common.c (processor_names):
+	Sync processor_names with processor_type.
+	* config/i386/i386-options.c (processor_cost_table):
+	Sync processor_cost_table with processor_type.
+
 2021-04-26  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-range.cc (irange::irange_set_1bit_anti_range): Add assert.
