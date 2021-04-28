@@ -1,3 +1,11 @@
+2021-04-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-04-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100154
+	* gfortran.dg/pr100154.f90: New test.
+
 2021-04-26  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/98952
