@@ -4377,6 +4377,69 @@ create_init_temporary (const char *prefix, tree gnu_init, tree *gnu_init_stmt,
   return gnu_temp;
 }
 
+/* Return true if TYPE is an array of scalar type.  */
+
+static bool
+is_array_of_scalar_type (tree type)
+{
+  if (TREE_CODE (type) != ARRAY_TYPE)
+    return false;
+
+  type = TREE_TYPE (type);
+
+  return !AGGREGATE_TYPE_P (type) && !POINTER_TYPE_P (type);
+}
+
+/* Helper function for walk_tree, used by return_slot_opt_for_pure_call_p.  */
+
+static tree
+find_decls_r (tree *tp, int *walk_subtrees, void *data)
+{
+  bitmap decls = (bitmap) data;
+
+  if (TYPE_P (*tp))
+    *walk_subtrees = 0;
+
+  else if (DECL_P (*tp))
+    bitmap_set_bit (decls, DECL_UID (*tp));
+
+  return NULL_TREE;
+}
+
+/* Return whether the assignment TARGET = CALL can be subject to the return
+   slot optimization, under the assumption that the called function be pure
+   in the Ada sense and return an array of scalar type.  */
+
+static bool
+return_slot_opt_for_pure_call_p (tree target, tree call)
+{
+  /* Check that the target is a DECL.  */
+  if (!DECL_P (target))
+    return false;
+
+  const bitmap decls = BITMAP_GGC_ALLOC ();
+  call_expr_arg_iterator iter;
+  tree arg;
+
+  /* Check that all the arguments have either a scalar type (we assume that
+     this means by-copy passing mechanism) or array of scalar type.  */
+  FOR_EACH_CALL_EXPR_ARG (arg, iter, call)
+    {
+      tree arg_type = TREE_TYPE (arg);
+      if (TREE_CODE (arg_type) == REFERENCE_TYPE)
+	arg_type = TREE_TYPE (arg_type);
+
+      if (is_array_of_scalar_type (arg_type))
+	walk_tree_without_duplicates (&arg, find_decls_r, decls);
+
+      else if (AGGREGATE_TYPE_P (arg_type) || POINTER_TYPE_P (arg_type))
+	return false;
+    }
+
+  /* Check that the target is not referenced by the non-scalar arguments.  */
+  return !bitmap_bit_p (decls, DECL_UID (target));
+}
+
 /* Subroutine of gnat_to_gnu to translate gnat_node, either an N_Function_Call
    or an N_Procedure_Call_Statement, to a GCC tree, which is returned.
    GNU_RESULT_TYPE_P is a pointer to where we should place the result type.
@@ -4501,15 +4564,16 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  because we need to preserve the return value before copying back the
 	  parameters.
 
-       2. There is no target and the call is made for neither an object, nor a
-	  renaming declaration, nor a return statement, nor an allocator, and
-	  the return type has variable size because in this case the gimplifier
-	  cannot create the temporary, or more generally is an aggregate type,
-	  because the gimplifier would create the temporary in the outermost
-	  scope instead of locally.  But there is an exception for an allocator
-	  of an unconstrained record type with default discriminant because we
-	  allocate the actual size in this case, unlike the other 3 cases, so
-	  we need a temporary to fetch the discriminant and we create it here.
+       2. There is no target and the call is made for neither the declaration
+	  of an object (regular or renaming), nor a return statement, nor an
+	  allocator, nor an aggregate, and the return type has variable size
+	  because in this case the gimplifier cannot create the temporary, or
+	  more generally is an aggregate type, because the gimplifier would
+	  create the temporary in the outermost scope instead of locally here.
+	  But there is an exception for an allocator of unconstrained record
+	  type with default discriminant because we allocate the actual size
+	  in this case, unlike in the other cases, so we need a temporary to
+	  fetch the discriminant and we create it here.
 
        3. There is a target and it is a slice or an array with fixed size,
 	  and the return type has variable size, because the gimplifier
@@ -4535,6 +4599,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      && (!(Nkind (Parent (gnat_node)) == N_Qualified_Expression
 		    && Nkind (Parent (Parent (gnat_node))) == N_Allocator)
 		  || type_is_padding_self_referential (gnu_result_type))
+	      && Nkind (Parent (gnat_node)) != N_Aggregate
 	      && AGGREGATE_TYPE_P (gnu_result_type)
 	      && !TYPE_IS_FAT_POINTER_P (gnu_result_type))
 	  || (gnu_target
@@ -5153,6 +5218,17 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	     That's what has been done historically.  */
 	  if (return_type_with_variable_size_p (gnu_result_type))
 	    op_code = INIT_EXPR;
+
+	  /* If this is a call to a pure function returning an array of scalar
+	     type, try to apply the return slot optimization.  */
+	  else if ((TYPE_READONLY (gnu_subprog_type)
+		    || TYPE_RESTRICT (gnu_subprog_type))
+		   && is_array_of_scalar_type (gnu_result_type)
+		   && TYPE_MODE (gnu_result_type) == BLKmode
+		   && aggregate_value_p (gnu_result_type, gnu_subprog_type)
+		   && return_slot_opt_for_pure_call_p (gnu_target, gnu_call))
+	    op_code = INIT_EXPR;
+
 	  else
 	    op_code = MODIFY_EXPR;
 
