@@ -1,3 +1,14 @@
+2021-04-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/98952
+	* config/rs6000/tramp.S (__trampoline_setup, elfv1 #ifdef): Fix
+	trampoline size comparison in 32-bit by reversing test and
+	combining load immediate with compare.  Fix backported from trunk
+	change on 4/23, 886b6c1e8af502b69e3f318b9830b73b88215878.
+	(__trampoline_setup, elfv2 #ifdef): Fix trampoline size comparison
+	in 32-bit by reversing test and combining load immediate with
+	compare.
+
 2021-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

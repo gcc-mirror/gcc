@@ -1,3 +1,17 @@
+2021-04-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-04-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100154
+	* gfortran.dg/pr100154.f90: New test.
+
+2021-04-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/98952
+	* gcc.target/powerpc/pr98952.c: New test.  Test backported from
+	trunk change on 4/23, 886b6c1e8af502b69e3f318b9830b73b88215878.
+
 2021-04-26  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
