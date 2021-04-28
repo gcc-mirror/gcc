@@ -164,6 +164,14 @@ package System.OS_Lib is
    --  component parts to be interpreted in the local time zone, and returns
    --  an OS_Time. Returns Invalid_Time if the creation fails.
 
+   ------------------
+   -- Time_t Stuff --
+   ------------------
+
+   --  Note: Do not use time_t in the compiler and host based tools,
+   --  instead use OS_Time. These 3 declarations are indended for use only
+   --  by consumers of the GNAT.OS_Lib renaming of this package.
+
    subtype time_t is Long_Integer;
    --  C time_t type of the time representation
 

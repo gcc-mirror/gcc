@@ -1347,13 +1347,13 @@ package body System.OS_Lib is
       Second : out Second_Type)
    is
       procedure To_GM_Time
-        (P_Time_T : Address;
-         P_Year   : Address;
-         P_Month  : Address;
-         P_Day    : Address;
-         P_Hours  : Address;
-         P_Mins   : Address;
-         P_Secs   : Address);
+        (P_OS_Time : Address;
+         P_Year    : Address;
+         P_Month   : Address;
+         P_Day     : Address;
+         P_Hours   : Address;
+         P_Mins    : Address;
+         P_Secs    : Address);
       pragma Import (C, To_GM_Time, "__gnat_to_gm_time");
 
       T  : OS_Time := Date;
@@ -1385,13 +1385,13 @@ package body System.OS_Lib is
       Locked_Processing : begin
          SSL.Lock_Task.all;
          To_GM_Time
-           (P_Time_T => T'Address,
-            P_Year   => Y'Address,
-            P_Month  => Mo'Address,
-            P_Day    => D'Address,
-            P_Hours  => H'Address,
-            P_Mins   => Mn'Address,
-            P_Secs   => S'Address);
+           (P_OS_Time => T'Address,
+            P_Year    => Y'Address,
+            P_Month   => Mo'Address,
+            P_Day     => D'Address,
+            P_Hours   => H'Address,
+            P_Mins    => Mn'Address,
+            P_Secs    => S'Address);
          SSL.Unlock_Task.all;
 
       exception
@@ -1429,26 +1429,26 @@ package body System.OS_Lib is
       Second : Second_Type) return OS_Time
    is
       procedure To_OS_Time
-        (P_Time_T : Address;
-         P_Year   : Integer;
-         P_Month  : Integer;
-         P_Day    : Integer;
-         P_Hours  : Integer;
-         P_Mins   : Integer;
-         P_Secs   : Integer);
+        (P_OS_Time : Address;
+         P_Year    : Integer;
+         P_Month   : Integer;
+         P_Day     : Integer;
+         P_Hours   : Integer;
+         P_Mins    : Integer;
+         P_Secs    : Integer);
       pragma Import (C, To_OS_Time, "__gnat_to_os_time");
 
       Result : OS_Time;
 
    begin
       To_OS_Time
-        (P_Time_T => Result'Address,
-         P_Year   => Year - 1900,
-         P_Month  => Month - 1,
-         P_Day    => Day,
-         P_Hours  => Hour,
-         P_Mins   => Minute,
-         P_Secs   => Second);
+        (P_OS_Time => Result'Address,
+         P_Year    => Year - 1900,
+         P_Month   => Month - 1,
+         P_Day     => Day,
+         P_Hours   => Hour,
+         P_Mins    => Minute,
+         P_Secs    => Second);
       return Result;
    end GM_Time_Of;
 
