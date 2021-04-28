@@ -1,6 +1,6 @@
 /* PR rtl-optimization/89676 */
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -mno-stv" } */
+/* { dg-options "-O2 -mno-stv -fomit-frame-pointer" } */
 
 unsigned long long
 foo (unsigned long long i)
