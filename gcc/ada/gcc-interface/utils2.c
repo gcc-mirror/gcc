@@ -2946,6 +2946,17 @@ gnat_invariant_expr (tree expr)
   if (TREE_CONSTANT (expr))
     return fold_convert (type, expr);
 
+  /* Deal with aligning patterns.  */
+  if (TREE_CODE (expr) == BIT_AND_EXPR
+      && TREE_CONSTANT (TREE_OPERAND (expr, 1)))
+    {
+      tree op0 = gnat_invariant_expr (TREE_OPERAND (expr, 0));
+      if (op0)
+	return fold_build2 (BIT_AND_EXPR, type, op0, TREE_OPERAND (expr, 1));
+      else
+	return NULL_TREE;
+    }
+
   /* Deal with addition or subtraction of constants.  */
   if (is_simple_additive_expression (expr, &add, &cst, &minus_p))
     {

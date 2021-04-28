@@ -112,7 +112,7 @@ struct GTY (()) parm_attr_d {
 
 typedef struct parm_attr_d *parm_attr;
 
-
+/* Structure used to record information for a function.  */
 struct GTY(()) language_function {
   vec<parm_attr, va_gc> *parm_attr_cache;
   bitmap named_ret_val;
@@ -194,9 +194,9 @@ struct GTY(()) range_check_info_d {
 
 typedef struct range_check_info_d *range_check_info;
 
-
 /* Structure used to record information for a loop.  */
 struct GTY(()) loop_info_d {
+  tree fndecl;
   tree stmt;
   tree loop_var;
   tree low_bound;
@@ -205,10 +205,10 @@ struct GTY(()) loop_info_d {
   tree omp_construct_clauses;
   enum tree_code omp_code;
   vec<range_check_info, va_gc> *checks;
+  vec<tree, va_gc> *invariants;
 };
 
 typedef struct loop_info_d *loop_info;
-
 
 /* Stack of loop_info structures associated with LOOP_STMT nodes.  */
 static GTY(()) vec<loop_info, va_gc> *gnu_loop_stack;
@@ -2768,13 +2768,27 @@ find_loop_for (tree expr, tree *disp, bool *neg_p)
   if (TREE_CODE (var) != VAR_DECL)
     return NULL;
 
-  if (decl_function_context (var) != current_function_decl)
-    return NULL;
-
-  gcc_assert (vec_safe_length (gnu_loop_stack) > 0);
+  gcc_checking_assert (vec_safe_length (gnu_loop_stack) > 0);
 
   FOR_EACH_VEC_ELT_REVERSE (*gnu_loop_stack, i, iter)
-    if (var == iter->loop_var)
+    if (iter->loop_var == var && iter->fndecl == current_function_decl)
+      break;
+
+  return iter;
+}
+
+/* Return the innermost enclosing loop in the current function.  */
+
+static struct loop_info_d *
+find_loop (void)
+{
+  struct loop_info_d *iter = NULL;
+  unsigned int i;
+
+  gcc_checking_assert (vec_safe_length (gnu_loop_stack) > 0);
+
+  FOR_EACH_VEC_ELT_REVERSE (*gnu_loop_stack, i, iter)
+    if (iter->fndecl == current_function_decl)
       break;
 
   return iter;
@@ -2924,26 +2938,30 @@ independent_iterations_p (tree stmt_list)
   return true;
 }
 
-/* Helper for Loop_Statement_to_gnu, to translate the body of a loop not
-   subject to any sort of parallelization directive or restriction, designated
-   by GNAT_NODE.
-
-   We expect the top of gnu_loop_stack to hold a pointer to the loop info
-   setup for the translation, which holds a pointer to the initial gnu loop
-   stmt node.  We return the new gnu loop statement to use.
-
-   We might also set *GNU_COND_EXPR_P to request a variant of the translation
-   scheme in Loop_Statement_to_gnu.  */
+/* Subroutine of gnat_to_gnu to translate gnat_node, an N_Loop_Statement,
+   to a GCC tree, which is returned.  */
 
 static tree
-Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
+Loop_Statement_to_gnu (Node_Id gnat_node)
 {
   const Node_Id gnat_iter_scheme = Iteration_Scheme (gnat_node);
-  struct loop_info_d *const gnu_loop_info = gnu_loop_stack->last ();
-  tree gnu_loop_stmt = gnu_loop_info->stmt;
-  tree gnu_loop_label = LOOP_STMT_LABEL (gnu_loop_stmt);
-  tree gnu_cond_expr = *gnu_cond_expr_p;
-  tree gnu_low = NULL_TREE, gnu_high = NULL_TREE;
+  struct loop_info_d *gnu_loop_info = ggc_cleared_alloc<loop_info_d> ();
+  tree gnu_loop_stmt = build4 (LOOP_STMT, void_type_node, NULL_TREE,
+			       NULL_TREE, NULL_TREE, NULL_TREE);
+  tree gnu_loop_label = create_artificial_label (input_location);
+  tree gnu_cond_expr = NULL_TREE, gnu_low = NULL_TREE, gnu_high = NULL_TREE;
+  tree gnu_result;
+
+  /* Push the loop_info structure associated with the LOOP_STMT.  */
+  gnu_loop_info->fndecl = current_function_decl;
+  gnu_loop_info->stmt = gnu_loop_stmt;
+  vec_safe_push (gnu_loop_stack, gnu_loop_info);
+
+  /* Set location information for statement and end label.  */
+  set_expr_location_from_node (gnu_loop_stmt, gnat_node);
+  Sloc_to_locus (Sloc (End_Label (gnat_node)),
+		 &DECL_SOURCE_LOCATION (gnu_loop_label));
+  LOOP_STMT_LABEL (gnu_loop_stmt) = gnu_loop_label;
 
   /* Set the condition under which the loop must keep going.  If we have an
      explicit condition, use it to set the location information throughout
@@ -3277,7 +3295,16 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
 		}
 	}
 
-      /* Second, if loop vectorization is enabled and the iterations of the
+      /* Second, if we have recorded invariants to be hoisted, emit them.  */
+      if (vec_safe_length (gnu_loop_info->invariants) > 0)
+	{
+	  tree *iter;
+	  unsigned int i;
+	  FOR_EACH_VEC_ELT (*gnu_loop_info->invariants, i, iter)
+	    add_stmt_with_node_force (*iter, gnat_node);
+	}
+
+      /* Third, if loop vectorization is enabled and the iterations of the
 	 loop can easily be proved as independent, mark the loop.  */
       if (optimize >= 3
 	  && independent_iterations_p (LOOP_STMT_BODY (gnu_loop_stmt)))
@@ -3287,40 +3314,6 @@ Regular_Loop_to_gnu (Node_Id gnat_node, tree *gnu_cond_expr_p)
       gnat_poplevel ();
       gnu_loop_stmt = end_stmt_group ();
     }
-
-  *gnu_cond_expr_p = gnu_cond_expr;
-
-  return gnu_loop_stmt;
-}
-
-/* Subroutine of gnat_to_gnu to translate gnat_node, an N_Loop_Statement,
-   to a GCC tree, which is returned.  */
-
-static tree
-Loop_Statement_to_gnu (Node_Id gnat_node)
-{
-  struct loop_info_d *gnu_loop_info = ggc_cleared_alloc<loop_info_d> ();
-
-  tree gnu_loop_stmt = build4 (LOOP_STMT, void_type_node, NULL_TREE,
-			       NULL_TREE, NULL_TREE, NULL_TREE);
-  tree gnu_cond_expr = NULL_TREE;
-  tree gnu_loop_label = create_artificial_label (input_location);
-  tree gnu_result;
-
-  /* Push the loop_info structure associated with the LOOP_STMT.  */
-  vec_safe_push (gnu_loop_stack, gnu_loop_info);
-
-  /* Set location information for statement and end label.  */
-  set_expr_location_from_node (gnu_loop_stmt, gnat_node);
-  Sloc_to_locus (Sloc (End_Label (gnat_node)),
-		 &DECL_SOURCE_LOCATION (gnu_loop_label));
-  LOOP_STMT_LABEL (gnu_loop_stmt) = gnu_loop_label;
-
-  /* Save the statement for later reuse.  */
-  gnu_loop_info->stmt = gnu_loop_stmt;
-
-  /* Perform the core loop body translation.  */
-  gnu_loop_stmt = Regular_Loop_to_gnu (gnat_node, &gnu_cond_expr);
 
   /* If we have an outer COND_EXPR, that's our result and this loop is its
      "true" statement.  Otherwise, the result is the LOOP_STMT.  */
@@ -6731,6 +6724,8 @@ gnat_to_gnu (Node_Id gnat_node)
 	else
 	  {
 	    tree gnu_field = gnat_to_gnu_field_decl (gnat_field);
+	    tree gnu_offset;
+	    struct loop_info_d *loop;
 
 	    gnu_result
 	      = build_component_ref (gnu_prefix, gnu_field,
@@ -6738,6 +6733,29 @@ gnat_to_gnu (Node_Id gnat_node)
 				      == N_Attribute_Reference)
 				     && lvalue_required_for_attribute_p
 					(Parent (gnat_node)));
+
+	    /* If optimization is enabled and we are inside a loop, we try to
+	       hoist nonconstant but invariant offset computations outside of
+	       the loop, since they very likely contain loads that could turn
+	       out to be hard to move if they end up in active EH regions.  */
+	    if (optimize
+		&& inside_loop_p ()
+		&& TREE_CODE (gnu_result) == COMPONENT_REF
+		&& (gnu_offset = component_ref_field_offset (gnu_result))
+		&& !TREE_CONSTANT (gnu_offset)
+		&& (gnu_offset = gnat_invariant_expr (gnu_offset))
+		&& (loop = find_loop ()))
+	      {
+		tree invariant
+		  = build1 (SAVE_EXPR, TREE_TYPE (gnu_offset), gnu_offset);
+		vec_safe_push (loop->invariants, invariant);
+		tree field = TREE_OPERAND (gnu_result, 1);
+		tree factor
+		  = size_int (DECL_OFFSET_ALIGN (field) / BITS_PER_UNIT);
+		/* Divide the offset by its alignment.  */
+		TREE_OPERAND (gnu_result, 2)
+		  = size_binop (EXACT_DIV_EXPR, invariant, factor);
+	      }
 	  }
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
