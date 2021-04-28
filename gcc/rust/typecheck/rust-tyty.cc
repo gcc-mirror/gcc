@@ -452,7 +452,8 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	    field->get_field_type ()->set_ty_ref (argt->get_ref ());
 	  }
       }
-    else if (fty->has_subsititions_defined ())
+    else if (fty->has_subsititions_defined ()
+	     || fty->contains_type_parameters ())
       {
 	BaseType *concrete
 	  = Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
@@ -539,6 +540,29 @@ TupleType::clone ()
 			get_combined_refs ());
 }
 
+TupleType *
+TupleType::handle_substitions (SubstitutionArgumentMappings mappings)
+{
+  auto mappings_table = Analysis::Mappings::get ();
+
+  TupleType *tuple = static_cast<TupleType *> (clone ());
+  tuple->set_ty_ref (mappings_table->get_next_hir_id ());
+
+  for (size_t i = 0; i < tuple->fields.size (); i++)
+    {
+      TyVar &field = fields.at (i);
+      if (field.get_tyty ()->contains_type_parameters ())
+	{
+	  BaseType *concrete
+	    = Resolver::SubstMapperInternal::Resolve (field.get_tyty (),
+						      mappings);
+	  tuple->fields[i] = TyVar (concrete->get_ty_ref ());
+	}
+    }
+
+  return tuple;
+}
+
 void
 FnType::accept_vis (TyVisitor &vis)
 {
@@ -558,7 +582,7 @@ FnType::as_string () const
     }
 
   std::string ret_str = type->as_string ();
-  return "fn (" + params_str + ") -> " + ret_str;
+  return "fn" + subst_as_string () + " (" + params_str + ") -> " + ret_str;
 }
 
 BaseType *
@@ -667,7 +691,8 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	  fty->set_ty_ref (argt->get_ref ());
 	}
     }
-  else if (fty->has_subsititions_defined ())
+  else if (fty->needs_generic_substitutions ()
+	   || fty->contains_type_parameters ())
     {
       BaseType *concrete
 	= Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
@@ -688,6 +713,7 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
   for (auto &param : fn->get_params ())
     {
       auto fty = param.second;
+
       bool is_param_ty = fty->get_kind () == TypeKind::PARAM;
       if (is_param_ty)
 	{
@@ -718,7 +744,8 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 	      fty->set_ty_ref (argt->get_ref ());
 	    }
 	}
-      else if (fty->has_subsititions_defined ())
+      else if (fty->has_subsititions_defined ()
+	       || fty->contains_type_parameters ())
 	{
 	  BaseType *concrete
 	    = Resolver::SubstMapperInternal::Resolve (fty, subst_mappings);
@@ -1210,6 +1237,22 @@ ReferenceType::clone ()
 			    get_combined_refs ());
 }
 
+ReferenceType *
+ReferenceType::handle_substitions (SubstitutionArgumentMappings mappings)
+{
+  auto mappings_table = Analysis::Mappings::get ();
+
+  ReferenceType *ref = static_cast<ReferenceType *> (clone ());
+  ref->set_ty_ref (mappings_table->get_next_hir_id ());
+
+  // might be &T or &ADT so this needs to be recursive
+  auto base = ref->get_base ();
+  BaseType *concrete = Resolver::SubstMapperInternal::Resolve (base, mappings);
+  ref->base = TyVar (concrete->get_ty_ref ());
+
+  return ref;
+}
+
 void
 ParamType::accept_vis (TyVisitor &vis)
 {
@@ -1287,6 +1330,20 @@ ParamType::is_equal (const BaseType &other) const
     return BaseType::is_equal (other);
 
   return resolve ()->is_equal (other);
+}
+
+ParamType *
+ParamType::handle_substitions (SubstitutionArgumentMappings mappings)
+{
+  ParamType *p = static_cast<ParamType *> (clone ());
+
+  SubstitutionArg arg = SubstitutionArg::error ();
+  bool ok = mappings.get_argument_for_symbol (this, &arg);
+  rust_assert (ok);
+
+  p->set_ty_ref (arg.get_tyty ()->get_ref ());
+
+  return p;
 }
 
 BaseType *
