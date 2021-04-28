@@ -243,6 +243,8 @@ expand_GOMP_SIMT_ENTER_ALLOC (internal_fn, gcall *stmt)
   create_input_operand (&ops[2], align, Pmode);
   gcc_assert (targetm.have_omp_simt_enter ());
   expand_insn (targetm.code_for_omp_simt_enter, 3, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* Deallocate per-lane storage and leave non-uniform execution region.  */
@@ -300,6 +302,8 @@ expand_GOMP_SIMT_LAST_LANE (internal_fn, gcall *stmt)
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_last_lane ());
   expand_insn (targetm.code_for_omp_simt_last_lane, 2, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* Non-transparent predicate used in SIMT lowering of OpenMP "ordered".  */
@@ -319,6 +323,8 @@ expand_GOMP_SIMT_ORDERED_PRED (internal_fn, gcall *stmt)
   create_input_operand (&ops[1], ctr, mode);
   gcc_assert (targetm.have_omp_simt_ordered ());
   expand_insn (targetm.code_for_omp_simt_ordered, 2, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* "Or" boolean reduction across SIMT lanes: return non-zero in all lanes if
@@ -339,6 +345,8 @@ expand_GOMP_SIMT_VOTE_ANY (internal_fn, gcall *stmt)
   create_input_operand (&ops[1], cond, mode);
   gcc_assert (targetm.have_omp_simt_vote_any ());
   expand_insn (targetm.code_for_omp_simt_vote_any, 2, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* Exchange between SIMT lanes with a "butterfly" pattern: source lane index
@@ -361,6 +369,8 @@ expand_GOMP_SIMT_XCHG_BFLY (internal_fn, gcall *stmt)
   create_input_operand (&ops[2], idx, SImode);
   gcc_assert (targetm.have_omp_simt_xchg_bfly ());
   expand_insn (targetm.code_for_omp_simt_xchg_bfly, 3, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* Exchange between SIMT lanes according to given source lane index.  */
@@ -382,6 +392,8 @@ expand_GOMP_SIMT_XCHG_IDX (internal_fn, gcall *stmt)
   create_input_operand (&ops[2], idx, SImode);
   gcc_assert (targetm.have_omp_simt_xchg_idx ());
   expand_insn (targetm.code_for_omp_simt_xchg_idx, 3, ops);
+  if (!rtx_equal_p (target, ops[0].value))
+    emit_move_insn (target, ops[0].value);
 }
 
 /* This should get expanded in adjust_simduid_builtins.  */
