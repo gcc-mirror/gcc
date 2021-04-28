@@ -174,20 +174,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 235 No specification of default ctor for reverse_iterator
       // 1012. reverse_iterator default ctor should value initialize
       _GLIBCXX17_CONSTEXPR
-      reverse_iterator() : current() { }
+      reverse_iterator()
+      _GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator()))
+      : current()
+      { }
 
       /**
        *  This %iterator will move in the opposite direction that @p x does.
       */
       explicit _GLIBCXX17_CONSTEXPR
-      reverse_iterator(iterator_type __x) : current(__x) { }
+      reverse_iterator(iterator_type __x)
+      _GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator(__x)))
+      : current(__x)
+      { }
 
       /**
        *  The copy constructor is normal.
       */
       _GLIBCXX17_CONSTEXPR
       reverse_iterator(const reverse_iterator& __x)
-      : current(__x.current) { }
+      _GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator(__x.current)))
+      : current(__x.current)
+      { }
 
 #if __cplusplus >= 201103L
       reverse_iterator& operator=(const reverse_iterator&) = default;
@@ -203,7 +211,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	_GLIBCXX17_CONSTEXPR
         reverse_iterator(const reverse_iterator<_Iter>& __x)
-	: current(__x.current) { }
+	_GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator(__x.current)))
+	: current(__x.current)
+	{ }
 
 #if __cplusplus >= 201103L
       template<typename _Iter>
@@ -214,6 +224,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_GLIBCXX17_CONSTEXPR
 	reverse_iterator&
 	operator=(const reverse_iterator<_Iter>& __x)
+	_GLIBCXX_NOEXCEPT_IF(noexcept(current = __x.current))
 	{
 	  current = __x.current;
 	  return *this;
@@ -226,6 +237,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_NODISCARD
       _GLIBCXX17_CONSTEXPR iterator_type
       base() const
+      _GLIBCXX_NOEXCEPT_IF(noexcept(_Iterator(current)))
       { return current; }
 
       /**
