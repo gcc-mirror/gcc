@@ -2934,6 +2934,11 @@ package body Sem_Res is
                      else
                         UI_Image (Norm_Num (Expr_Value_R (Expr)), Decimal);
                         Start_String;
+
+                        if UR_Is_Negative (Expr_Value_R (Expr)) then
+                           Store_String_Chars ("-");
+                        end if;
+
                         Store_String_Chars
                           (UI_Image_Buffer (1 .. UI_Image_Length));
                         Param1 := Make_String_Literal (Loc, End_String);
