@@ -30,7 +30,7 @@ Target Report Var(TARGET_PLT) Init(1)
 When generating -fpic code, allow the use of PLTs. Ignored for fno-pic.
 
 mabi=
-Target Report RejectNegative Joined Enum(abi_type) Var(riscv_abi) Init(ABI_ILP32)
+Target Report RejectNegative Joined Enum(abi_type) Var(riscv_abi) Init(ABI_ILP32) Negative(mabi=)
 Specify integer and floating-point calling convention.
 
 mpreferred-stack-boundary=
@@ -71,7 +71,7 @@ Target Report Mask(DIV)
 Use hardware instructions for integer division.
 
 march=
-Target Report RejectNegative Joined
+Target Report RejectNegative Joined Negative(march=)
 -march=	Generate code for given RISC-V ISA (e.g. RV64IM).  ISA strings must be
 lower-case.
 
