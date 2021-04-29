@@ -18,7 +18,7 @@ main ()
 #define N 10
 
 #pragma acc kernels
-  for (int i = 0; i < N; i++) /* { dg-message "note: beginning 'parloops' part in OpenACC 'kernels' region" } */
+  for (int i = 0; i < N; i++) /* { dg-optimized "assigned OpenACC seq loop parallelism" } */
     ;
 
   return 0;
