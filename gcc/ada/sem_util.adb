@@ -5708,6 +5708,13 @@ package body Sem_Util is
                if Ekind (State_Id) = E_Constant then
                   null;
 
+               --  Overlays do not contribute to package state
+
+               elsif Ekind (State_Id) = E_Variable
+                 and then Present (Ultimate_Overlaid_Entity (State_Id))
+               then
+                  null;
+
                --  Generate an error message of the form:
 
                --    body of package ... has unused hidden states
@@ -29311,6 +29318,39 @@ package body Sem_Util is
          return Empty;
       end if;
    end Type_Without_Stream_Operation;
+
+   ------------------------------
+   -- Ultimate_Overlaid_Entity --
+   ------------------------------
+
+   function Ultimate_Overlaid_Entity (E : Entity_Id) return Entity_Id is
+      Address : Node_Id;
+      Alias   : Entity_Id := E;
+      Offset  : Boolean;
+
+   begin
+      --  Currently this routine is only called for stand-alone objects that
+      --  have been analysed, since the analysis of the Address aspect is often
+      --  delayed.
+
+      pragma Assert (Ekind (E) in E_Constant | E_Variable);
+
+      loop
+         Address := Address_Clause (Alias);
+         if Present (Address) then
+            Find_Overlaid_Entity (Address, Alias, Offset);
+            if Present (Alias) then
+               null;
+            else
+               return Empty;
+            end if;
+         elsif Alias = E then
+            return Empty;
+         else
+            return Alias;
+         end if;
+      end loop;
+   end Ultimate_Overlaid_Entity;
 
    ---------------------
    -- Ultimate_Prefix --

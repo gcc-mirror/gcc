@@ -1139,6 +1139,17 @@ package body Sem_Prag is
                              (State_Id => Item_Id,
                               Ref      => Item);
                         end if;
+
+                     elsif Ekind (Item_Id) in E_Constant | E_Variable
+                       and then Present (Ultimate_Overlaid_Entity (Item_Id))
+                     then
+                        SPARK_Msg_NE
+                          ("overlaying object & cannot appear in Depends",
+                           Item, Item_Id);
+                        SPARK_Msg_NE
+                          ("\use the overlaid object & instead",
+                           Item, Ultimate_Overlaid_Entity (Item_Id));
+                        return;
                      end if;
 
                      --  When the item renames an entire object, replace the
@@ -2387,6 +2398,17 @@ package body Sem_Prag is
                elsif Is_Formal_Object (Item_Id) then
                   null;
 
+               elsif Ekind (Item_Id) in E_Constant | E_Variable
+                 and then Present (Ultimate_Overlaid_Entity (Item_Id))
+               then
+                  SPARK_Msg_NE
+                    ("overlaying object & cannot appear in Global",
+                     Item, Item_Id);
+                  SPARK_Msg_NE
+                    ("\use the overlaid object & instead",
+                     Item, Ultimate_Overlaid_Entity (Item_Id));
+                  return;
+
                --  The only legal references are those to abstract states,
                --  objects and various kinds of constants (SPARK RM 6.1.4(4)).
 
@@ -2984,6 +3006,16 @@ package body Sem_Prag is
                if Item_Id = Any_Id then
                   null;
 
+               elsif Ekind (Item_Id) in E_Constant | E_Variable
+                 and then Present (Ultimate_Overlaid_Entity (Item_Id))
+               then
+                  SPARK_Msg_NE
+                    ("overlaying object & cannot appear in Initializes",
+                     Item, Item_Id);
+                  SPARK_Msg_NE
+                    ("\use the overlaid object & instead",
+                     Item, Ultimate_Overlaid_Entity (Item_Id));
+
                --  The state or variable must be declared in the visible
                --  declarations of the package (SPARK RM 7.1.5(7)).
 
@@ -3124,6 +3156,18 @@ package body Sem_Prag is
                               & "state of package %", Input, Input_Id);
                            return;
                         end if;
+                     end if;
+
+                     if Ekind (Input_Id) in E_Constant | E_Variable
+                       and then Present (Ultimate_Overlaid_Entity (Input_Id))
+                     then
+                        SPARK_Msg_NE
+                          ("overlaying object & cannot appear in Initializes",
+                           Input, Input_Id);
+                        SPARK_Msg_NE
+                          ("\use the overlaid object & instead",
+                           Input, Ultimate_Overlaid_Entity (Input_Id));
+                        return;
                      end if;
 
                      --  Detect a duplicate use of the same input item
