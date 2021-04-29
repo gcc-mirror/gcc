@@ -98,7 +98,7 @@ foo (int g[3][10], int h[4][8], int i[2][10], int j[][9],
     bar (&j2[0][0]);
   #pragma acc parallel copy(q[1:2])
     ;
-  #pragma acc parallel copy(q[3:5][:10]) /* { dg-error "array section is not contiguous" } */
+  #pragma acc parallel copy(q[3:5][:10])
     ;
   #pragma acc parallel copy(r[3:][2:1][1:2])
     ;
