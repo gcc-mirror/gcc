@@ -20946,7 +20946,7 @@ ix86_min_insn_size (rtx_insn *insn)
     return 2;
 }
 
-#ifdef ASM_OUTPUT_MAX_SKIP_PAD
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
 
 /* AMD K8 core mispredicts jumps when there are more than 3 jumps in 16 byte
    window.  */
@@ -21274,7 +21274,7 @@ ix86_reorg (void)
 	ix86_pad_short_function ();
       else if (TARGET_PAD_RETURNS)
 	ix86_pad_returns ();
-#ifdef ASM_OUTPUT_MAX_SKIP_PAD
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
       if (TARGET_FOUR_JUMP_LIMIT)
 	ix86_avoid_jump_mispredicts ();
 #endif
