@@ -107,6 +107,12 @@ public:
   GenericArgsBinding &operator= (GenericArgsBinding &&other) = default;
 
   std::string as_string () const;
+
+  Identifier get_identifier () const { return identifier; }
+
+  std::unique_ptr<Type> &get_type () { return type; }
+
+  Location get_locus () const { return locus; }
 };
 
 // Generic arguments allowed in each path expression segment - inline?

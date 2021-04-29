@@ -444,6 +444,8 @@ public:
     return p->resolve ()->get_kind () == TypeKind::PARAM;
   }
 
+  Location get_param_locus () const { return generic->get_locus_slow (); }
+
 private:
   std::unique_ptr<HIR::GenericParam> &generic;
   ParamType *param;

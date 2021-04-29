@@ -314,10 +314,25 @@ ASTLoweringBase::lower_path_expr_seg (AST::PathExprSegment &s)
 			  : HIR::GenericArgs::create_empty ());
 }
 
+HIR::GenericArgsBinding
+ASTLoweringBase::lower_binding (AST::GenericArgsBinding &binding)
+{
+  HIR::Type *lowered_type
+    = ASTLoweringType::translate (binding.get_type ().get ());
+  return HIR::GenericArgsBinding (binding.get_identifier (),
+				  std::unique_ptr<HIR::Type> (lowered_type),
+				  binding.get_locus ());
+}
+
 HIR::GenericArgs
 ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
 {
-  std::vector<HIR::GenericArgsBinding> binding_args; // TODO
+  std::vector<HIR::GenericArgsBinding> binding_args;
+  for (auto &binding : args.get_binding_args ())
+    {
+      HIR::GenericArgsBinding b = lower_binding (binding);
+      binding_args.push_back (std::move (b));
+    }
 
   std::vector<HIR::Lifetime> lifetime_args;
   for (auto &lifetime : args.get_lifetime_args ())

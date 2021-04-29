@@ -124,6 +124,10 @@ public:
     rust_assert (type != nullptr);
     return type;
   }
+
+  Location get_locus () const { return locus; }
+
+  Identifier get_identifier () const { return identifier; }
 };
 
 // Generic arguments allowed in each path expression segment - inline?

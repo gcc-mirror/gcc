@@ -213,15 +213,21 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 {
   if (args.get_binding_args ().size () > 0)
     {
-      rust_error_at (args.get_locus (),
-		     "associated type bindings are not allowed here");
+      RichLocation r (args.get_locus ());
+      for (auto &binding : args.get_binding_args ())
+	r.add_range (binding.get_locus ());
+
+      rust_error_at (r, "associated type bindings are not allowed here");
       return SubstitutionArgumentMappings::error ();
     }
 
   if (args.get_type_args ().size () > substitutions.size ())
     {
+      RichLocation r (args.get_locus ());
+      r.add_range (substitutions.front ().get_param_locus ());
+
       rust_error_at (
-	args.get_locus (),
+	r,
 	"generic item takes at most %lu type arguments but %lu were supplied",
 	substitutions.size (), args.get_type_args ().size ());
       return SubstitutionArgumentMappings::error ();
@@ -229,8 +235,11 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 
   if (args.get_type_args ().size () < substitutions.size ())
     {
+      RichLocation r (args.get_locus ());
+      r.add_range (substitutions.front ().get_param_locus ());
+
       rust_error_at (
-	args.get_locus (),
+	r,
 	"generic item takes at least %lu type arguments but %lu were supplied",
 	substitutions.size (), args.get_type_args ().size ());
       return SubstitutionArgumentMappings::error ();
