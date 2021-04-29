@@ -1,3 +1,10 @@
+2021-04-29  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/kernels-decompose-2.c (main): Update expected
+	messages.
+	* gfortran.dg/goacc/kernels-decompose-2.f95 (main): Update expected
+	messages.
+
 2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/note-parallelism-1-kernels-conditional-loop-independent_seq.c:
