@@ -11939,6 +11939,7 @@ package body Sem_Util is
                   elsif Is_Entity_Name (Expr)
                     and then Known_Alignment (Entity (Expr))
                   then
+                     Offs := Uint_0;
                      ExpA := Alignment (Entity (Expr));
 
                   --  Otherwise, we can use the alignment of the type of Expr
@@ -11961,9 +11962,9 @@ package body Sem_Util is
                      Set_Result (Known_Incompatible);
                   end if;
 
-                  --  If Expr is not a piece of a larger object, see if size
-                  --  is given. If so, check that it is not too small for the
-                  --  required alignment.
+                  --  If Expr is a component or an entire object with a known
+                  --  alignment, then we are fine. Otherwise, if its size is
+                  --  known, it must be big enough for the required alignment.
 
                   if Offs /= No_Uint then
                      null;
@@ -11982,7 +11983,7 @@ package body Sem_Util is
                   end if;
 
                   --  If we got a size, see if it is a multiple of the Obj
-                  --  alignment, if not, then the alignment cannot be
+                  --  alignment; if not, then the alignment cannot be
                   --  acceptable, since the size is always a multiple of the
                   --  alignment.
 
