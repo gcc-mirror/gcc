@@ -1,3 +1,14 @@
+2021-04-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_variable_list): Gobble whitespace before
+	checking whether a '%' or parenthesis-open follows as next character.
+
+2021-04-28  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/82376
+	* trans-expr.c (gfc_conv_procedure_call): Evaluate function result
+	and then pass a pointer.
+
 2021-04-26  Thomas Schwinge  <thomas@codesourcery.com>
 	    Nathan Sidwell  <nathan@codesourcery.com>
 	    Tom de Vries  <vries@codesourcery.com>

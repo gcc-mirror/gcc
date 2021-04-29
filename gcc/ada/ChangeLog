@@ -1,3 +1,301 @@
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb, sem_util.adb: Fix style.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* nlists.ads (List_Length): Adapt comment to match the
+	behaviour.
+
+2021-04-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_eval.adb (Eval_Selected_Component): Only consider compile
+	time known aggregates.
+
+2021-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-fatgen.adb: Add use clause for Interfaces.Unsigned_16
+	and Interfaces.Unsigned_32.
+	(Small16): New constant.
+	(Small32): Likewise.
+	(Small64): Likewise.
+	(Small80): Likewise.
+	(Pred): Declare a local overlay for Small and return it negated
+	for zero if the type does not support denormalized numbers.
+	(Succ): Likewise, but return it directly.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Formal_Is_Used_Once): Refine type of the counter
+	variable; remove redundant assignment.
+
+2021-04-28  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnarl/s-interr.adb (Install_Restricted_Handlers): Change
+	Prio parameter to type Interrupt_Priority.
+	* libgnarl/s-interr.ads (Install_Restricted_Handlers): Likewise.
+	* libgnarl/s-interr__dummy.adb (Install_Restricted_Handlers):
+	Likewise.
+	* libgnarl/s-interr__hwint.adb (Install_Restricted_Handlers):
+	Likewise.
+	* libgnarl/s-interr__sigaction.adb (Install_Restricted_Handlers):
+	Likewise.
+	* libgnarl/s-interr__vxworks.adb (Install_Restricted_Handlers):
+	Likewise.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_type.ads (Write_Interp_Ref): Removed; no longer needed.
+	* sem_type.adb (Headers): Removed; now the hash table is
+	directly in the Interp_Map alone.
+	(Interp_Map): Now an instance of the GNAT.HTable.Simple_HTable.
+	(Last_Overloaded): New variable to emulate Interp_Map.Last.
+	(Add_One_Interp): Adapt to new data structure.
+	(Get_First_Interp): Likewise.
+	(Hash): Likewise.
+	(Init_Interp_Tables): Likewise.
+	(New_Interps): Likewise.
+	(Save_Interps): Likewise; handle O_N variable like in
+	Get_First_Interp.
+	(Write_Interp_Ref): Removed; no longer needed.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Do_Reset_Calls): Now an instance of Traverse_Proc.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Static): Reuse
+	Error_Msg_Ada_2020_Feature for aspect Static.
+	(Analyze_One_Aspect): Likewise for aspect Full_Access.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Static): Refactor to have a
+	single check for the expression being present; adapt comments.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Static): Use aspect name in the
+	error message.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Eval_Selected_Component): Simplify with
+	Unqualify.
+
+2021-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valrea.adb (Fast2Sum): New function.
+	(Integer_to_Real): Use it in an iterated addition with exact
+	error handling for the case where an extra digit is needed.
+	Move local variable now only used in the exponentiation case.
+
+2021-04-28  Yannick Moy  <moy@adacore.com>
+
+	* errout.adb: (Error_Msg_Internal): Use span instead of
+	location.
+	(Error_Msg, Error_Msg_NEL): Add versions with span parameter.
+	(Error_Msg_F, Error_Msg_FE, Error_Msg_N, Error_Msg_NE,
+	Error_Msg_NW): Retrieve span from node.
+	(First_Node): Use the new First_And_Last_Nodes.
+	(First_And_Last_Nodes): Expand on previous First_Node. Apply to
+	other nodes than expressions.
+	(First_Sloc): Protect against inconsistent locations.
+	(Last_Node): New function based on First_And_Last_Nodes.
+	(Last_Sloc): New function similar to First_Sloc.
+	(Output_Messages): Update output when -gnatdF is used. Use
+	character ~ for making the span visible, similar to what is done
+	in GCC and Clang.
+	* errout.ads (Error_Msg, Error_Msg_NEL): Add versions with span
+	parameter.
+	(First_And_Last_Nodes, Last_Node, Last_Sloc): New subprograms.
+	* erroutc.adb: Adapt to Sptr field being a span.
+	* erroutc.ads (Error_Msg_Object): Change field Sptr from
+	location to span.
+	* errutil.adb: Adapt to Sptr field being a span.
+	* freeze.adb: Use Errout reporting procedures for nodes to get
+	spans.
+	* par-ch3.adb: Likewise.
+	* par-prag.adb: Likewise.
+	* par-util.adb: Likewise.
+	* sem_case.adb: Likewise.
+	* sem_ch13.adb: Likewise.
+	* sem_ch3.adb: Likewise.
+	* sem_prag.adb: Likewise.
+	* types.ads: (Source_Span): New type for spans.
+	(To_Span): Basic constructors for spans.
+
+2021-04-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.adb (Discriminant_Constraint): Refine assertion.
+
+2021-04-28  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_util.adb (Add_Own_DIC): Suppress expansion of a DIC pragma
+	when the pragma occurs for an abstract type, since that could
+	lead to a call to an abstract function, and such DIC checks can
+	never be performed for abstract types in any case.
+	* sem_disp.adb (Check_Dispatching_Context): Suppress the check
+	for illegal calls to abstract subprograms when the call occurs
+	within a Default_Initial_Condition aspect and the call is passed
+	the current instance as an actual.
+	(Has_Controlling_Current_Instance_Actual): New function to test
+	a call to see if it has any actuals given by direct references
+	to a current instance of a type
+	* sem_res.adb (Resolve_Actuals): Issue an error for a call
+	within a DIC aspect to a nonprimitive subprogram with an actual
+	given by the name of the DIC type's current instance (which will
+	show up as a reference to the formal parameter of a DIC
+	procedure).
+
+2021-04-28  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Expand_Record_Extension): Set Parent_Subtype on
+	the type extension when within a generic unit, even though
+	expansion is disabled, to allow for proper resolution of
+	selected components inherited from an ancestor.
+
+2021-04-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aux.adb (Is_Limited_Type): Fix logic to check Is_Type
+	before assuming Ent is a typo.
+	* sem_ch4.adb (Analyze_Expression_With_Actions): Update
+	comments, minor reformatting.
+	* sem_res.adb (Resolve_Declare_Expression): Add protection
+	against no type.
+
+2021-04-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb: Fix typo in comment.
+	* sem_ch3.adb (Access_Subprogram_Declaration): Add missing call
+	to Create_Extra_Formals. Remove obsolete bootstrap check.
+	* sem_eval.adb (Eval_Selected_Component): Simplify a
+	selected_component on an aggregate.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* fmap.ads (Reset_Tables): Remove outdated references to
+	GNSA/ASIS.
+	* sem_eval.ads (Initialize): Likewise.
+	* sem_type.adb (Headers): Remove initialization at elaboration.
+	* sem_type.ads (Init_Interp_Tables): Remove outdated reference
+	to gnatf.
+	* stringt.ads (Initialize): Fix style in comment.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.ads: Update reference in comment.
+	* sem_type.ads: Fix casing in a name of a unit.
+
+2021-04-28  Yannick Moy  <moy@adacore.com>
+
+	* ghost.adb (Check_Ghost_Context): Add continuation message when
+	in predicate.
+
+2021-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-valrea.adb (Integer_to_Real): Use a subtype of Num
+	for the component type of the table of powers of ten.
+	* libgnat/s-valuer.adb (Round_Extra): Add assertion on Base.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Case_Statement): Extend optimization to
+	all objects; fix typo in comment.
+
+2021-04-28  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch9.adb (Build_Barrier_Function): Refine type of a
+	protected type entity.
+	(Is_Pure_Barrier): Fix style.
+
+2021-04-28  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb (Simple_Init_Defaulted_Type): Simplify the code,
+	and always use OK_Convert_To, rather than Unchecked_Convert_To
+	and Convert_To.
+
+2021-04-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Remove dead code.
+	* ali.ads, ali.adb (Scan_ALI): Remove unused parameters.
+	Remove unused code related to Xref lines.
+	(Get_Typeref): Removed, no longer used.
+
+2021-04-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_attr.adb (Build_Array_VS_Func, Build_Record_VS_Func,
+	Expand_N_Attribute_Reference): Use Get_Fullest_View instead of
+	Validated_View.
+	(Build_Record_VS_Func): Adjust to keep using Validated_View.
+	(Expand_N_Attribute_Reference) [Valid]: Use
+	Small_Integer_Type_For to allow for more compile time
+	evaluations.
+	* sem_util.adb (Cannot_Raise_Constraint_Error): Add more precise
+	support for N_Indexed_Component and fix support for
+	N_Selected_Component which wasn't completely safe.
+	(List_Cannot_Raise_CE): New.
+	* libgnat/i-cobol.adb (Valid_Packed): Simplify test to address
+	new GNAT warning.
+
+2021-04-28  Arnaud Charlet  <charlet@adacore.com>
+
+	* .gitignore: New.
+	* doc/share/conf.py: Add Python 3 compatibility.
+	* doc/share/gnat.sty: Add missing file.
+
+2021-04-28  Richard Wai  <richard@annexi-strayline.com>
+
+	* libgnat/a-cohase.ads (Cursor): Synchronize comments for the Cursor
+	type definition to be consistent with identical definitions in other
+	container packages. Add additional comments regarding the importance of
+	maintaining the "Position" component for predefined equality.
+	* libgnat/a-cohama.ads (Cursor): Likewise.
+	* libgnat/a-cihama.ads (Cursor): Likewise.
+	* libgnat/a-cohase.adb (Find, Insert): Ensure that Cursor objects
+	always have their "Position" component set to ensure predefined
+	equality works as required.
+	* libgnat/a-cohama.adb (Find, Insert): Likewise.
+	* libgnat/a-cihama.adb (Find, Insert): Likewise.
+
+2021-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_subprog_type): Do not demote a
+	const or pure function because of a parameter whose type is pointer
+	to function.
+	* gcc-interface/trans.c (Call_to_gnu): Do not put back a conversion
+	between an actual and a formal that are unconstrained array types.
+	(gnat_gimplify_expr) <CALL_EXPR>: New case.
+	* gcc-interface/utils2.c (build_binary_op): Do not use |= operator.
+	(gnat_stabilize_reference_1): Likewise.
+	(gnat_rewrite_reference): Likewise.
+	(build_unary_op): Do not clear existing TREE_CONSTANT on the result.
+	(gnat_build_constructor): Also accept the address of a constant
+	CONSTRUCTOR as constant element.
+
+2021-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (is_array_of_scalar_type): New predicate.
+	(find_decls_r): New function.
+	(return_slot_opt_for_pure_call_p): New predicate.
+	(Call_to_gnu): Do not create a temporary for the return value if the
+	parent node is an aggregate.  If there is a target, try to apply the
+	return slot optimization to regular calls to pure functions returning
+	an array of scalar type.
+
+2021-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (language_function): Add comment.
+	(loop_info_d): Add fndecl and invariants fields.
+	(find_loop_for): Test fndecl instead of the context of var.
+	(find_loop): New function.
+	(Regular_Loop_to_gnu): Fold back into...
+	(Loop_Statement_to_gnu): ...this.  Emit invariants on entry, if any.
+	(gnat_to_gnu) <N_Selected_Component>: Record nonconstant invariant
+	offset computations in loops when optimization is enabled.
+	* gcc-interface/utils2.c (gnat_invariant_expr): Handle BIT_AND_EXPR.
+
 2021-04-20  Martin Liska  <mliska@suse.cz>
 
 	* gnatvsn.ads: Bump Library_Version to 12.

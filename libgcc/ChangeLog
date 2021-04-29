@@ -1,3 +1,12 @@
+2021-04-28  Patrick McGehearty  <patrick.mcgehearty@oracle.com>
+
+	* libgcc2.c (XMTYPE, XCTYPE, RBIG, RMIN, RMIN2, RMINSCAL, RMAX2):
+	Define.
+	(__divsc3, __divdc3, __divxc3, __divtc3): Improve complex divide.
+	* config/rs6000/_divkc3.c (RBIG, RMIN, RMIN2, RMINSCAL, RMAX2):
+	Define.
+	(__divkc3): Improve complex divide.
+
 2021-04-23  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/98952

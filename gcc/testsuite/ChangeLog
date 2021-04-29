@@ -1,3 +1,45 @@
+2021-04-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/map-5.f90: New test.
+
+2021-04-28  Patrick McGehearty  <patrick.mcgehearty@oracle.com>
+
+	* gcc.c-torture/execute/ieee/cdivchkd.c: New test.
+	* gcc.c-torture/execute/ieee/cdivchkf.c: Likewise.
+	* gcc.c-torture/execute/ieee/cdivchkld.c: Likewise.
+
+2021-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr89676.c: Add -fomit-frame-pointer.
+
+2021-04-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/debug/dwarf2/inline5.c: Adjust pattern to avoid
+	mismatch when asm comments start with "/ ".
+
+2021-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100305
+	* gcc.c-torture/compile/pr100305.c: New test.
+
+2021-04-28  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/82376
+	* gfortran.dg/PR82376.f90: New test.
+
+2021-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100292
+	* gcc.dg/pr100292.c: New testcase.
+
+2021-04-28  Richard Wai  <richard@annexi-strayline.com>
+
+	* gnat.dg/containers2.adb: New test.
+
+2021-04-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt93.ads, gnat.dg/opt93.adb: New test.
+
 2021-04-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92145
