@@ -146,6 +146,10 @@ ASM_MISA_SPEC
 #define MIN_UNITS_PER_WORD 4
 #endif
 
+/* Allows SImode op in builtin overflow pattern, see internal-fn.c.  */
+#undef TARGET_MIN_ARITHMETIC_PRECISION
+#define TARGET_MIN_ARITHMETIC_PRECISION riscv_min_arithmetic_precision
+
 /* The `Q' extension is not yet supported.  */
 #define UNITS_PER_FP_REG (TARGET_DOUBLE_FLOAT ? 8 : 4)
 
