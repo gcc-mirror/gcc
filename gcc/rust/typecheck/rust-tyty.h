@@ -432,6 +432,8 @@ public:
 
   const HIR::TypeParam &get_generic_param () { return generic; };
 
+  // this is used for the backend to override the HirId ref of the param to
+  // what the concrete type is for the rest of the context
   void override_context ();
 
   bool needs_substitution () const
