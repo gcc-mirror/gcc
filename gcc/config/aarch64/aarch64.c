@@ -4736,7 +4736,7 @@ aarch64_mov128_immediate (rtx imm)
 static unsigned int
 aarch64_add_offset_1_temporaries (HOST_WIDE_INT offset)
 {
-  return abs_hwi (offset) < 0x1000000 ? 0 : 1;
+  return absu_hwi (offset) < 0x1000000 ? 0 : 1;
 }
 
 /* A subroutine of aarch64_add_offset.  Set DEST to SRC + OFFSET for
