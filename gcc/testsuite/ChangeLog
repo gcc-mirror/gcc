@@ -1,3 +1,13 @@
+2021-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2021-04-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* gcc.target/i386/pr100182.c: New test.
+	* gcc.target/i386/pr71245-1.c (dg-final): Xfail scan-assembler-not.
+	* gcc.target/i386/pr71245-2.c (dg-final): Ditto.
+
 2021-04-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
