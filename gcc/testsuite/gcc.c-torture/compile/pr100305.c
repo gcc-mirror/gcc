@@ -1,4 +1,4 @@
-/* { dg-options "-O" } */
+/* PR target/100305 */
 
 typedef double v2df __attribute__((vector_size(16)));
 
