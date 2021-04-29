@@ -1,3 +1,48 @@
+2021-04-28  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	Backported from master:
+	2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	* config/bpf/bpf.h (ASM_OUTPUT_ALIGNED_BSS): Use .type and .lcomm.
+
+2021-04-28  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	Backported from master:
+	2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	* config/bpf/bpf.h (FUNCTION_BOUNDARY): Set to 64.
+
+2021-04-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-04-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100236
+	* config/arm/arm.c (THUMB2_WORK_REGS): Check PIC_OFFSET_TABLE_REGNUM
+	is valid before including it in the mask.
+
+2021-04-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* config/i386/sync.md (FILD_ATOMIC/FIST_ATOMIC FP load peephole2):
+	Copy operand 3 to operand 4.  Use sse_reg_operand
+	as operand 3 predicate.
+	(FILD_ATOMIC/FIST_ATOMIC FP load peephole2 with mem blockage): Ditto.
+	(LDX_ATOMIC/STX_ATOMIC FP load peephole2): Ditto.
+	(LDX_ATOMIC/LDX_ATOMIC FP load peephole2 with mem blockage): Ditto.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2):
+	Copy operand 1 to operand 0.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2 with mem blockage): Ditto.
+	(LDX_ATOMIC/STX_ATOMIC FP store peephole2): Ditto.
+	(LDX_ATOMIC/LDX_ATOMIC FP store peephole2 with mem blockage): Ditto.
+
+2021-04-28  Cui,Lili  <lili.cui@intel.com>
+
+	* common/config/i386/i386-common.c (processor_names):
+	Sync processor_names with processor_type.
+	* config/i386/i386-options.c (processor_cost_table):
+	Sync processor_cost_table with processor_type.
+
 2021-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
