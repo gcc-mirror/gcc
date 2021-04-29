@@ -55,7 +55,7 @@ main ()
 
 #pragma acc kernels loop /* { dg-line l_loop_i[incr c_loop_i] } */
   /* { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i } */
-  /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
+  /* { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
   for (int i = 0; i < N; i++)
     b[i] = a[N - i - 1];
 
@@ -63,13 +63,13 @@ main ()
   {
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
     /* { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i } */
-    /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; i++)
       b[i] = a[N - i - 1];
 
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
     /* { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i } */
-    /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; i++)
       c[i] = a[i] * b[i];
 
@@ -77,7 +77,7 @@ main ()
 
 #pragma acc loop /* { dg-line l_loop_i[incr c_loop_i] } */
     /* { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i } */
-    /* { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
+    /* { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i } */
     for (int i = 0; i < N; i++)
       c[i] += a[i];
 
@@ -116,7 +116,7 @@ main ()
 	b[j] = f_w (c[j]);
   }
 
-#pragma acc kernels
+#pragma acc kernels /* { dg-warning "region contains gang partitioned code but is not gang partitioned" } */
   {
     y = f_g (a[5]); /* { dg-line l_part[incr c_part] } */
     /*TODO If such a construct is placed in its own part (like it is, here), can't this actually use gang paralelism, instead of "gang-single"?

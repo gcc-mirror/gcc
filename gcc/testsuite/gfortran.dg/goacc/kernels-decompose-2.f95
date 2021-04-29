@@ -50,7 +50,7 @@ program main
 
   !$acc kernels loop ! { dg-line l_loop_i[incr c_loop_i] }
   ! { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
   do i = 1, N
      b(i) = a(N - i + 1)
   end do
@@ -58,14 +58,14 @@ program main
   !$acc kernels
   !$acc loop ! { dg-line l_loop_i[incr c_loop_i] }
   ! { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
   do i = 1, N
      b(i) = a(N - i + 1)
   end do
 
   !$acc loop ! { dg-line l_loop_i[incr c_loop_i] }
   ! { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
   do i = 1, N
      c(i) = a(i) * b(i)
   end do
@@ -74,7 +74,7 @@ program main
 
   !$acc loop ! { dg-line l_loop_i[incr c_loop_i] }
   ! { dg-message "note: forwarded loop nest in OpenACC 'kernels' region to 'parloops' for analysis" "" { target *-*-* } l_loop_i$c_loop_i }
-  ! { dg-optimized "assigned OpenACC seq loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
+  ! { dg-optimized "assigned OpenACC gang loop parallelism" "" { target *-*-* } l_loop_i$c_loop_i }
   do i = 1, N
      c(i) = c(i) + a(i)
   end do
