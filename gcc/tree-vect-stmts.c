@@ -8166,6 +8166,7 @@ vectorizable_store (vec_info *vinfo,
 		  && TREE_CODE (dataref_ptr) == SSA_NAME)
 		set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
 					misalign);
+	      align = least_bit_hwi (misalign | align);
 
 	      if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 		{
@@ -8187,7 +8188,6 @@ vectorizable_store (vec_info *vinfo,
 	      /* Arguments are ready.  Create the new vector stmt.  */
 	      if (final_mask)
 		{
-		  align = least_bit_hwi (misalign | align);
 		  tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		  gcall *call
 		    = gimple_build_call_internal (IFN_MASK_STORE, 4,
@@ -8202,7 +8202,6 @@ vectorizable_store (vec_info *vinfo,
 		  tree final_len
 		    = vect_get_loop_len (loop_vinfo, loop_lens,
 					 vec_num * ncopies, vec_num * j + i);
-		  align = least_bit_hwi (misalign | align);
 		  tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		  machine_mode vmode = TYPE_MODE (vectype);
 		  opt_machine_mode new_ovmode
@@ -8241,14 +8240,10 @@ vectorizable_store (vec_info *vinfo,
 					  : build_int_cst (ref_type, 0));
 		  if (aligned_access_p (first_dr_info))
 		    ;
-		  else if (DR_MISALIGNMENT (first_dr_info) == -1)
-		    TREE_TYPE (data_ref)
-		      = build_aligned_type (TREE_TYPE (data_ref),
-					    align * BITS_PER_UNIT);
 		  else
 		    TREE_TYPE (data_ref)
 		      = build_aligned_type (TREE_TYPE (data_ref),
-					    TYPE_ALIGN (elem_type));
+					    align * BITS_PER_UNIT);
 		  vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
 		  new_stmt = gimple_build_assign (data_ref, vec_oprnd);
 		  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
@@ -9452,10 +9447,10 @@ vectorizable_load (vec_info *vinfo,
 			&& TREE_CODE (dataref_ptr) == SSA_NAME)
 		      set_ptr_info_alignment (get_ptr_info (dataref_ptr),
 					      align, misalign);
+		    align = least_bit_hwi (misalign | align);
 
 		    if (final_mask)
 		      {
-			align = least_bit_hwi (misalign | align);
 			tree ptr = build_int_cst (ref_type,
 						  align * BITS_PER_UNIT);
 			gcall *call
@@ -9472,7 +9467,6 @@ vectorizable_load (vec_info *vinfo,
 			  = vect_get_loop_len (loop_vinfo, loop_lens,
 					       vec_num * ncopies,
 					       vec_num * j + i);
-			align = least_bit_hwi (misalign | align);
 			tree ptr = build_int_cst (ref_type,
 						  align * BITS_PER_UNIT);
 			gcall *call
@@ -9548,14 +9542,10 @@ vectorizable_load (vec_info *vinfo,
 			  = fold_build2 (MEM_REF, ltype, dataref_ptr, offset);
 			if (alignment_support_scheme == dr_aligned)
 			  ;
-			else if (DR_MISALIGNMENT (first_dr_info) == -1)
-			  TREE_TYPE (data_ref)
-			    = build_aligned_type (TREE_TYPE (data_ref),
-						  align * BITS_PER_UNIT);
 			else
 			  TREE_TYPE (data_ref)
 			    = build_aligned_type (TREE_TYPE (data_ref),
-						  TYPE_ALIGN (elem_type));
+						  align * BITS_PER_UNIT);
 			if (ltype != vectype)
 			  {
 			    vect_copy_ref_info (data_ref,
