@@ -6527,7 +6527,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
   bool allocate_seen = false;
-  bool detach_seen = false;
+  tree detach_seen = NULL_TREE;
   bool mergeable_seen = false;
 
   bitmap_obstack_initialize (NULL);
@@ -7578,7 +7578,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    type);
 		  remove = true;
 		}
-	      detach_seen = true;
+	      detach_seen = c;
 	      cxx_mark_addressable (t);
 	    }
 	  break;
@@ -8548,7 +8548,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE)
-	  && OMP_CLAUSE_DECL (c) == t)
+	  && OMP_CLAUSE_DECL (c) == OMP_CLAUSE_DECL (detach_seen))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "the event handle of a %<detach%> clause "
