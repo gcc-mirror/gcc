@@ -202,6 +202,12 @@ typedef uint64_t gcov_type_unsigned;
 #define GCOV_LOCKED 0
 #endif
 
+#if defined (HOST_HAS_LK_LOCK)
+#define GCOV_LOCKED_WITH_LOCKING 1
+#else
+#define GCOV_LOCKED_WITH_LOCKING 0
+#endif
+
 #define ATTRIBUTE_HIDDEN
 
 #endif /* !IN_LIBGCOV */

@@ -36,9 +36,14 @@ void __gcov_init (struct gcov_info *p __attribute__ ((unused))) {}
 #else /* inhibit_libc */
 
 #include <string.h>
+
 #if GCOV_LOCKED
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/stat.h>
+#elif GCOV_LOCKED_WITH_LOCKING
+#include <fcntl.h>
+#include <sys/locking.h>
 #include <sys/stat.h>
 #endif
 

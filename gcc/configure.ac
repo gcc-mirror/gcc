@@ -1257,7 +1257,7 @@ AC_HEADER_SYS_WAIT
 AC_HEADER_TIOCGWINSZ
 AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h iconv.h \
 		 fcntl.h ftw.h unistd.h sys/file.h sys/time.h sys/mman.h \
-		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
+		 sys/resource.h sys/param.h sys/times.h sys/stat.h sys/locking.h \
 		 direct.h malloc.h langinfo.h ldfcn.h locale.h wchar.h)
 
 # Check for thread headers.
@@ -1709,6 +1709,19 @@ connect (fd, (sockaddr *)&in6, sizeof (in6));]])],
 if test $ac_cv_af_inet6 = yes; then
   AC_DEFINE(HAVE_AF_INET6, 1,
   [Define if AF_INET6 supported.])
+fi
+
+# Check if _LK_LOCK is supported by _locking
+AC_CACHE_CHECK(for _LK_LOCK, ac_cv_lk_lock, [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <io.h>
+#include <sys/locking.h>]], [[
+  int fd;
+  return _locking (fd, _LK_LOCK, 0);]])],
+[ac_cv_lk_lock=yes],[ac_cv_lk_lock=no])])
+if test $ac_cv_lk_lock = yes; then
+  AC_DEFINE(HOST_HAS_LK_LOCK, 1,
+  [Define if _LK_LOC supported by _locking.])
 fi
 
 # Restore CFLAGS, CXXFLAGS from before the gcc_AC_NEED_DECLARATIONS tests.

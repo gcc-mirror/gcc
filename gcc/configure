@@ -9075,7 +9075,7 @@ fi
 
 for ac_header in limits.h stddef.h string.h strings.h stdlib.h time.h iconv.h \
 		 fcntl.h ftw.h unistd.h sys/file.h sys/time.h sys/mman.h \
-		 sys/resource.h sys/param.h sys/times.h sys/stat.h \
+		 sys/resource.h sys/param.h sys/times.h sys/stat.h sys/locking.h \
 		 direct.h malloc.h langinfo.h ldfcn.h locale.h wchar.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
@@ -12305,6 +12305,43 @@ $as_echo "$ac_cv_af_inet6" >&6; }
 if test $ac_cv_af_inet6 = yes; then
 
 $as_echo "#define HAVE_AF_INET6 1" >>confdefs.h
+
+fi
+
+# Check if _LK_LOCK is supported by _locking
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for _LK_LOCK" >&5
+$as_echo_n "checking for _LK_LOCK... " >&6; }
+if ${ac_cv_lk_lock+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <io.h>
+#include <sys/locking.h>
+int
+main ()
+{
+
+  int fd;
+  return _locking (fd, _LK_LOCK, 0);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  ac_cv_lk_lock=yes
+else
+  ac_cv_lk_lock=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lk_lock" >&5
+$as_echo "$ac_cv_lk_lock" >&6; }
+if test $ac_cv_lk_lock = yes; then
+
+$as_echo "#define HOST_HAS_LK_LOCK 1" >>confdefs.h
 
 fi
 
@@ -19398,7 +19435,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19401 "configure"
+#line 19438 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -19504,7 +19541,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 19507 "configure"
+#line 19544 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
