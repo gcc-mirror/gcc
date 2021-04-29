@@ -398,8 +398,7 @@ private:
 class SubstitutionParamMapping
 {
 public:
-  SubstitutionParamMapping (std::unique_ptr<HIR::GenericParam> &generic,
-			    ParamType *param)
+  SubstitutionParamMapping (const HIR::TypeParam &generic, ParamType *param)
 
     : generic (generic), param (param)
   {}
@@ -431,7 +430,7 @@ public:
 
   const ParamType *get_param_ty () const { return param; }
 
-  std::unique_ptr<HIR::GenericParam> &get_generic_param () { return generic; };
+  const HIR::TypeParam &get_generic_param () { return generic; };
 
   void override_context ();
 
@@ -444,10 +443,12 @@ public:
     return p->resolve ()->get_kind () == TypeKind::PARAM;
   }
 
-  Location get_param_locus () const { return generic->get_locus_slow (); }
+  Location get_param_locus () const { return generic.get_locus (); }
+
+  bool param_has_default_ty () const { return generic.has_type (); }
 
 private:
-  std::unique_ptr<HIR::GenericParam> &generic;
+  const HIR::TypeParam &generic;
   ParamType *param;
 };
 

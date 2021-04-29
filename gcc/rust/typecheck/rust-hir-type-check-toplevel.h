@@ -59,8 +59,8 @@ public:
 	      = TypeResolveGenericParam::Resolve (generic_param.get ());
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    substitutions.push_back (
-	      TyTy::SubstitutionParamMapping (generic_param, param_type));
+	    substitutions.push_back (TyTy::SubstitutionParamMapping (
+	      static_cast<HIR::TypeParam &> (*generic_param), param_type));
 	  }
       }
 
@@ -99,8 +99,8 @@ public:
 	      = TypeResolveGenericParam::Resolve (generic_param.get ());
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    substitutions.push_back (
-	      TyTy::SubstitutionParamMapping (generic_param, param_type));
+	    substitutions.push_back (TyTy::SubstitutionParamMapping (
+	      static_cast<HIR::TypeParam &> (*generic_param), param_type));
 	  }
       }
 
@@ -156,8 +156,8 @@ public:
 	      = TypeResolveGenericParam::Resolve (generic_param.get ());
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    substitutions.push_back (
-	      TyTy::SubstitutionParamMapping (generic_param, param_type));
+	    substitutions.push_back (TyTy::SubstitutionParamMapping (
+	      static_cast<HIR::TypeParam &> (*generic_param), param_type));
 	  }
       }
 
@@ -209,8 +209,8 @@ public:
 	      = TypeResolveGenericParam::Resolve (generic_param.get ());
 	    context->insert_type (generic_param->get_mappings (), param_type);
 
-	    substitutions.push_back (
-	      TyTy::SubstitutionParamMapping (generic_param, param_type));
+	    substitutions.push_back (TyTy::SubstitutionParamMapping (
+	      static_cast<HIR::TypeParam &> (*generic_param), param_type));
 	  }
       }
 

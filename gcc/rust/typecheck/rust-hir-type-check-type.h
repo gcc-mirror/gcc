@@ -209,8 +209,7 @@ private:
       {
 	std::string sym = mapping.get_param_ty ()->get_symbol ();
 	param_tys.insert (sym);
-	param_location_map[sym]
-	  = mapping.get_generic_param ()->get_locus_slow ();
+	param_location_map[sym] = mapping.get_generic_param ().get_locus ();
       }
 
     std::set<std::string> args;
