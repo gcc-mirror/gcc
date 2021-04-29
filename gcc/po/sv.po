@@ -25,10 +25,10 @@
 # thunk			snutt
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 11.1-b20210321\n"
+"Project-Id-Version: gcc 11.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-04-20 18:19+0000\n"
-"PO-Revision-Date: 2021-04-12 18:31+0200\n"
+"PO-Revision-Date: 2021-04-29 21:46+0200\n"
 "Last-Translator: Göran Uddeborg <goeran@uddeborg.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -6335,10 +6335,8 @@ msgstr "Varna när indenteringen av koden inte avspeglar blockstrukturen."
 msgid "Warn for deallocation calls with arguments returned from mismatched allocation functions."
 msgstr "Varna för avallokeringsanrop med argument returnerade från allokeringsfunktioner som inte passar ihop."
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99883
 #: c-family/c.opt:803
-#, fuzzy, no-c-format
-#| msgid "Warn for mismatches between calls to operator new or delete and the corrsponding call to the allocation or deallocation function."
+#, no-c-format
 msgid "Warn for mismatches between calls to operator new or delete and the corresponding call to the allocation or deallocation function."
 msgstr "Varna för anrop som inte stämmer överens mellan anrop till operatorn new eller delete och det motsvarande anropet till allokerings- eller avallokeringsfunktionen."
 
@@ -8020,10 +8018,9 @@ msgid "-fversion=<level|ident>\tCompile in version code >= <level> or identified
 msgstr "-fversion=<nivå|ident>\tKompilera in versionskod ≥ <nivå> eller identifierad av <ident>."
 
 #: d/lang.opt:326
-#, fuzzy, no-c-format
-#| msgid "Emit implicit instantiations of templates."
+#, no-c-format
 msgid "Emit template instantiations as weak symbols."
-msgstr "Skapa implicita instansieringar av mallar."
+msgstr "Skapa mallinstansieringar som svaga symboler."
 
 #: d/lang.opt:346
 #, no-c-format
@@ -19081,7 +19078,7 @@ msgstr "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|
 #: params.opt:162
 #, no-c-format
 msgid "Maximum depth of logical expression evaluation ranger will look through when evaluating outgoing edge ranges."
-msgstr ""
+msgstr "Maximalt djup på beräkningsintervallare av logiska uttryck kommer att titta igenom vid beräkning av utgående bågintervall."
 
 #: params.opt:167
 #, no-c-format
@@ -19846,10 +19843,9 @@ msgid "If -ftree-vectorize is used, the minimal loop bound of a loop to be consi
 msgstr "Om -ftree-vectorize används, den minimala slinggränsen på en slinga för att den skall övervägas för vektorisering."
 
 #: params.opt:787
-#, fuzzy, no-c-format
-#| msgid "-fopenacc-kernels=[decompose|parloops]\tSpecify mode of OpenACC 'kernels' constructs handling."
+#, no-c-format
 msgid "--param=openacc-kernels=[decompose|parloops]\tSpecify mode of OpenACC 'kernels' constructs handling."
-msgstr "-fopenacc-kernels=[decompose|parloops]\tAnge läge för hantering av OpenACC ”kernels”-kontruktioner."
+msgstr "--param=openacc-kernels=[decompose|parloops]\tAnge läge för hantering av OpenACC ”kernels”-kontruktioner."
 
 #: params.opt:800
 #, no-c-format
@@ -33863,10 +33859,9 @@ msgid "embedded NUL in CFString literal"
 msgstr "inbäddad NUL i CFString-litteral"
 
 #: config/host-darwin.c:65
-#, fuzzy, gcc-internal-format
-#| msgid "could not unmap %<pch_address_space%> %m"
+#, gcc-internal-format
 msgid "could not unmap %<pch_address_space%>: %m"
-msgstr "det gick inte att avmappa %<pch_address_space%> %m"
+msgstr "det gick inte att avmappa %<pch_address_space%>: %m"
 
 #: config/sol2-c.c:91 config/sol2-c.c:107
 #, gcc-internal-format
@@ -34979,8 +34974,7 @@ msgid "target CPU does not support unaligned accesses"
 msgstr "målprocessorn stödjer inte ojusterade åtkomster"
 
 #: config/arm/arm.c:3244
-#, fuzzy, gcc-internal-format
-#| msgid "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch"
+#, gcc-internal-format
 msgid "switch %<-mcpu=%s%> conflicts with switch %<-march=%s%>"
 msgstr "flaggan %<-mcpu=%s%> står i konflikt med flaggan %<-march=%s%>"
 
@@ -35085,10 +35079,9 @@ msgid "ARMv8-M Security Extensions incompatible with selected FPU"
 msgstr "ARMv8-M Security Extensions är inkompatibelt med den valda FPU:n"
 
 #: config/arm/arm.c:3864
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mfloat-abi=hard%>: selected processor lacks an FPU"
+#, gcc-internal-format
 msgid "%<-mfloat-abi=hard%>: selected architecture lacks an FPU"
-msgstr "%<-mfloat-abi=hard%>: den valda processorn saknar en FPU"
+msgstr "%<-mfloat-abi=hard%>: den valda arkitekturen saknar en FPU"
 
 #: config/arm/arm.c:3872
 #, gcc-internal-format
@@ -38921,10 +38914,9 @@ msgid "the layout of aggregates containing vectors with %d-byte alignment has ch
 msgstr "layouten av aggregat som innehåller vektorer med %d-bytejustering har ändrats i GCC 5"
 
 #: config/rs6000/rs6000.c:10675
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is an opaque type, and you can't set it to other values."
+#, gcc-internal-format
 msgid "%qs is an opaque type, and you cannot set it to other values"
-msgstr "%qs är en ogenomskinlig typ, och det går inte att sätta den till andra värden."
+msgstr "%qs är en ogenomskinlig typ, och det går inte att sätta den till andra värden"
 
 #: config/rs6000/rs6000.c:17794
 #, gcc-internal-format
@@ -38952,8 +38944,7 @@ msgid "use of %<complex%> in AltiVec types is invalid"
 msgstr "användning av %<complex%> i AltiVec-typer är ogiltigt"
 
 #: config/rs6000/rs6000.c:20172
-#, fuzzy, gcc-internal-format
-#| msgid "use of decimal floating point types in AltiVec types is invalid"
+#, gcc-internal-format
 msgid "use of decimal floating-point types in AltiVec types is invalid"
 msgstr "användning av decimala flyttalstyper i AltiVec-typer är ogiltigt"
 
@@ -39262,10 +39253,9 @@ msgid "constant argument %d for builtin %qF is out of range for target type"
 msgstr "det konstanta argumentet %d till den inbyggda %qF är utanför intervallet för måltypen"
 
 #: config/s390/s390.c:762
-#, fuzzy, gcc-internal-format
-#| msgid "constant argument %d for builtin %qF is out of range (0..%wu)"
+#, gcc-internal-format
 msgid "constant argument %d for builtin %qF is invalid (%s)"
-msgstr "det konstanta argumentet %d till den inbyggda %qF ligger utanför intervallet (0..%wu)"
+msgstr "det konstanta argumentet %d till den inbyggda %qF är ogiltigt (%s)"
 
 #: config/s390/s390.c:766
 #, gcc-internal-format
@@ -39807,10 +39797,9 @@ msgid "STABS debugging information for Ada is obsolete and not supported anymore
 msgstr "STABS-felsökningsinformation för Ada är föråldrat och stödjs inte längre"
 
 #: ada/gcc-interface/trans.c:332
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "STOP code at %C contains too many digits"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s contains too many lines"
-msgstr "STOP-kod vid %C innehåller för många siffror"
+msgstr "%s innehåller för många rader"
 
 #: ada/gcc-interface/trans.c:1642
 #, gcc-internal-format
@@ -45883,10 +45872,8 @@ msgid "cannot bind rvalue reference of type %qH to lvalue of type %qI"
 msgstr "kan inte binda r-värdesreferens av typen %qH till ett l-värde av typ %qI"
 
 #: cp/call.c:7906
-#, fuzzy
-#| msgid "cannot bind non-const lvalue reference of type %qH to an rvalue of type %qI"
 msgid "cannot bind non-const lvalue reference of type %qH to a value of type %qI"
-msgstr "kan inte binda icke-const-l-värde av typen %qH till ett r-värde av typ %qI"
+msgstr "kan inte binda icke-const-l-värde av typen %qH till ett värde av typ %qI"
 
 #: cp/call.c:7911
 msgid "cannot bind non-const lvalue reference of type %qH to an rvalue of type %qI"
@@ -48216,10 +48203,9 @@ msgid "%qD used without template arguments"
 msgstr "%qD använd utan mallargument"
 
 #: cp/decl.c:4061
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a function template"
+#, gcc-internal-format
 msgid "%qD is a function, not a type"
-msgstr "%qD är inte en funktionsmall"
+msgstr "%qD är en funktion, inte en typ"
 
 #: cp/decl.c:4072
 #, gcc-internal-format
@@ -48812,7 +48798,7 @@ msgstr "medan %qT dekomponeras till %E element"
 #: cp/decl.c:8640
 #, gcc-internal-format
 msgid "%<std::tuple_element<%u, %T>::type%> is %<void%>"
-msgstr ""
+msgstr "%<std::tuple_element<%u, %T>::type%> är %<void%>"
 
 #: cp/decl.c:8646
 #, gcc-internal-format
@@ -49135,10 +49121,9 @@ msgid "a non-template variable cannot be %<concept%>"
 msgstr "en icke-mallvariabel variabel kan inte vara %<concept%>"
 
 #: cp/decl.c:10371
-#, fuzzy, gcc-internal-format
-#| msgid "deduction guide %qD must be declared at namespace scope"
+#, gcc-internal-format
 msgid "concept must be defined at namespace scope"
-msgstr "härledningsguiden %qD måste deklareras med namnrymdsräckvidd"
+msgstr "koncept måste definieras med namnrymdsräckvidd"
 
 #: cp/decl.c:10378
 #, gcc-internal-format
@@ -52957,10 +52942,9 @@ msgid "types may not be defined within %<__builtin_offsetof%>"
 msgstr "typer får inte definieras i %<__builtin_offsetof%>"
 
 #: cp/parser.c:10809
-#, fuzzy, gcc-internal-format
-#| msgid "definition of %q#T inside template parameter list"
+#, gcc-internal-format
 msgid "lambda-expression in template parameter type"
-msgstr "definition av %q#T inuti mallparameterlista"
+msgstr "lambda-uttryck i mallparametertyp"
 
 #: cp/parser.c:10819
 #, gcc-internal-format
@@ -57812,10 +57796,9 @@ msgid "converting from %qH to %qI"
 msgstr "konvertering från %qH till %qI"
 
 #: cp/typeck.c:7963
-#, fuzzy, gcc-internal-format
-#| msgid "invalid cast of an rvalue expression of type %qT to type %qT"
+#, gcc-internal-format
 msgid "invalid cast of a prvalue expression of type %qT to type %qT"
-msgstr "ogiltig typkonvertering av ett rvärdeuttryck av typ %qT till typ %qT"
+msgstr "ogiltig typkonvertering av ett pr-värdeuttryck av typ %qT till typ %qT"
 
 #: cp/typeck.c:8033
 msgid "cast from %qH to %qI loses precision"
@@ -58482,10 +58465,9 @@ msgid "cannot be declared to be a function"
 msgstr "kan inte deklareras till att vara en funktion"
 
 #: d/dmd/dsymbolsem.c:418
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "no definition of struct %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "no definition of struct `%s`"
-msgstr "ingen definition av struct %s"
+msgstr "ingen definition av struct ”%s”"
 
 #: d/dmd/dsymbolsem.c:434
 #, gcc-internal-format
@@ -58631,10 +58613,9 @@ msgid "char 0x%04x not allowed in mangled name"
 msgstr "tecknet 0x%04x är inte tillåtet i manglade namn"
 
 #: d/dmd/dsymbolsem.c:1465
-#, fuzzy, gcc-internal-format
-#| msgid "no arguments"
+#, gcc-internal-format
 msgid "takes no argument"
-msgstr "inga argument"
+msgstr "tar inga argument"
 
 #: d/dmd/dsymbolsem.c:1526
 #, gcc-internal-format
@@ -58748,12 +58729,12 @@ msgstr "det går inte att vara både slutlig och abstrakt"
 #: d/dmd/dsymbolsem.c:2829
 #, gcc-internal-format, gfc-internal-format
 msgid "`pragma(%s)` functions must be `extern(C) %s %s([parameters...], const(char)*, ...)` not `%s`"
-msgstr ""
+msgstr "”pragma(%s)”-funktioner måste vara ”extern(C) %s %s([parameter…], const(char)*, ...)” inte ”%s”"
 
 #: d/dmd/dsymbolsem.c:2835
 #, gcc-internal-format, gfc-internal-format
 msgid "`pragma(%s)` functions must be `extern(C) %s %s([parameters...], const(char)*, va_list)`"
-msgstr ""
+msgstr "”pragma(%s)”-funktioner måste vara ”extern(C) %s %s([parameter…], const(char)*, va_list)”"
 
 #: d/dmd/dsymbolsem.c:2851
 #, gcc-internal-format, gfc-internal-format
@@ -59029,16 +59010,14 @@ msgid "cannot call super() implicitly because it is annotated with @disable"
 msgstr "kan inte anropa super() implicit för att den är annoterad med @disable"
 
 #: d/dmd/semantic3.c:862
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "has no return statement, but is expected to return a value of type %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "has no `return` statement, but is expected to return a value of type `%s`"
-msgstr "har ingen retursats, men förväntas returnera ett värde av typen %s"
+msgstr "har ingen ”return”-sats, men förväntas returnera ett värde av typen ”%s”"
 
 #: d/dmd/semantic3.c:864
-#, fuzzy, gcc-internal-format
-#| msgid "no return exp; or assert(0); at end of function"
+#, gcc-internal-format
 msgid "no `return exp;` or `assert(0);` at end of function"
-msgstr "inget returuttryck; eller assert(0); vid slutet av funktionen"
+msgstr "inget ”return uttr;” eller ”assert(0);” vid slutet av funktionen"
 
 #: d/dmd/semantic3.c:1171
 #, gcc-internal-format, gfc-internal-format
@@ -72545,10 +72524,8 @@ msgstr "Inte konfigurerad med %<--enable-gather-detailed-mem-stats%>."
 msgid "%<-fwpa%> and %<-fltrans%> are mutually exclusive"
 msgstr "%<-fwpa%> och %<-fltrans%> är ömsesidigt uteslutande"
 
-# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=99883
 #: lto/lto-lang.c:898
-#, fuzzy, gcc-internal-format
-#| msgid "%<-flinker-output=rel%> and %<-fltrans%> are mutually exclussive"
+#, gcc-internal-format
 msgid "%<-flinker-output=rel%> and %<-fltrans%> are mutually exclusive"
 msgstr "%<-flinker-output=rel%> och %<-fltrans%> är ömsesidigt uteslutande"
 
@@ -73903,6 +73880,3 @@ msgstr "okänd initieringsprioritet för vtable-verifiering %qs"
 #, gcc-internal-format
 msgid "unknown evrp mode %qs"
 msgstr "okänt evrp-läge %qs"
-
-#~ msgid "cannot deduce template arguments for %qT from %<()%>"
-#~ msgstr "kan inte härleda mallargument för %qT från %<()%>"
