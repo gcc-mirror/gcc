@@ -1,3 +1,9 @@
+2021-04-28  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* configure.ac (--enable-offload-defaulted): New.
+	* configure: Regenerate.
+
 2021-04-23  David Faust  <david.faust@oracle.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

@@ -1430,8 +1430,14 @@ package body Errout is
       E             : Node_Or_Entity_Id;
       Flag_Location : Source_Ptr)
    is
+      Fst, Lst : Node_Id;
    begin
-      Error_Msg_NEL (Msg, N, E, To_Span (Flag_Location));
+      First_And_Last_Nodes (N, Fst, Lst);
+      Error_Msg_NEL
+        (Msg, N, E,
+         To_Span (Ptr   => Flag_Location,
+                  First => Source_Ptr'Min (Flag_Location, First_Sloc (Fst)),
+                  Last  => Source_Ptr'Max (Flag_Location, Last_Sloc (Lst))));
    end Error_Msg_NEL;
 
    procedure Error_Msg_NEL
@@ -1757,7 +1763,7 @@ package body Errout is
            and then Get_Source_File_Index (Loc) = Sfile
          then
             Latest := Norig;
-            Lloc     := Loc;
+            Lloc   := Loc;
          end if;
 
          return OK_Orig;
@@ -1782,6 +1788,8 @@ package body Errout is
                        | N_Pragma
                        | N_Use_Type_Clause
                        | N_With_Clause
+                       | N_Attribute_Definition_Clause
+                       | N_Subtype_Indication
       then
          Earliest := Orig;
          Eloc := Loc;
@@ -2063,7 +2071,9 @@ package body Errout is
       procedure Write_Max_Errors;
       --  Write message if max errors reached
 
-      procedure Write_Source_Code_Lines (Span : Source_Span);
+      procedure Write_Source_Code_Lines
+        (Span     : Source_Span;
+         SGR_Span : String);
       --  Write the source code line corresponding to Span, as follows when
       --  Span in on one line:
       --
@@ -2087,6 +2097,9 @@ package body Errout is
       --       |                             ^ here
       --
       --  where the caret on the line points to location Span.Ptr
+      --
+      --  SGR_Span is the SGR string to start the section of code in the span,
+      --  that should be closed with SGR_Reset.
 
       -------------------------
       -- Write_Error_Summary --
@@ -2282,12 +2295,38 @@ package body Errout is
       -- Write_Source_Code_Lines --
       -----------------------------
 
-      procedure Write_Source_Code_Lines (Span : Source_Span) is
+      procedure Write_Source_Code_Lines
+        (Span     : Source_Span;
+         SGR_Span : String)
+      is
+         function Get_Line_End
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr) return Source_Ptr;
+         --  Get the source location for the end of the line in Buf for Loc
+
+         function Get_Line_Start
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr) return Source_Ptr;
+         --  Get the source location for the start of the line in Buf for Loc
 
          function Image (X : Positive; Width : Positive) return String;
          --  Output number X over Width characters, with whitespace padding.
          --  Only output the low-order Width digits of X, if X is larger than
          --  Width digits.
+
+         procedure Write_Buffer
+           (Buf   : Source_Buffer_Ptr;
+            First : Source_Ptr;
+            Last  : Source_Ptr);
+         --  Output the characters from First to Last position in Buf, using
+         --  Write_Buffer_Char.
+
+         procedure Write_Buffer_Char
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr);
+         --  Output the characters at position Loc in Buf, translating ASCII.HT
+         --  in a suitable number of spaces so that the output is not modified
+         --  by starting in a different column that 1.
 
          procedure Write_Line_Marker
            (Num   : Pos;
@@ -2296,6 +2335,44 @@ package body Errout is
          --  Output the line number Num over Width characters, with possibly
          --  a Mark to denote the line with the main location when reporting
          --  a span over multiple lines.
+
+         ------------------
+         -- Get_Line_End --
+         ------------------
+
+         function Get_Line_End
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr) return Source_Ptr
+         is
+            Cur_Loc : Source_Ptr := Loc;
+         begin
+            while Cur_Loc <= Buf'Last
+              and then Buf (Cur_Loc) /= ASCII.LF
+            loop
+               Cur_Loc := Cur_Loc + 1;
+            end loop;
+
+            return Cur_Loc;
+         end Get_Line_End;
+
+         --------------------
+         -- Get_Line_Start --
+         --------------------
+
+         function Get_Line_Start
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr) return Source_Ptr
+         is
+            Cur_Loc : Source_Ptr := Loc;
+         begin
+            while Cur_Loc > Buf'First
+              and then Buf (Cur_Loc - 1) /= ASCII.LF
+            loop
+               Cur_Loc := Cur_Loc - 1;
+            end loop;
+
+            return Cur_Loc;
+         end Get_Line_Start;
 
          -----------
          -- Image --
@@ -2316,6 +2393,50 @@ package body Errout is
 
             return Str;
          end Image;
+
+         ------------------
+         -- Write_Buffer --
+         ------------------
+
+         procedure Write_Buffer
+           (Buf   : Source_Buffer_Ptr;
+            First : Source_Ptr;
+            Last  : Source_Ptr)
+         is
+         begin
+            for Loc in First .. Last loop
+               Write_Buffer_Char (Buf, Loc);
+            end loop;
+         end Write_Buffer;
+
+         -----------------------
+         -- Write_Buffer_Char --
+         -----------------------
+
+         procedure Write_Buffer_Char
+           (Buf : Source_Buffer_Ptr;
+            Loc : Source_Ptr)
+         is
+         begin
+            --  If the character ASCII.HT is not the last one in the file,
+            --  output as many spaces as the character represents in the
+            --  original source file.
+
+            if Buf (Loc) = ASCII.HT
+              and then Loc < Buf'Last
+            then
+               for X in Get_Column_Number (Loc) ..
+                        Get_Column_Number (Loc + 1) - 1
+               loop
+                  Write_Char (' ');
+               end loop;
+
+            --  Otherwise output the character itself
+
+            else
+               Write_Char (Buf (Loc));
+            end if;
+         end Write_Buffer_Char;
 
          -----------------------
          -- Write_Line_Marker --
@@ -2360,42 +2481,85 @@ package body Errout is
          if Loc >= First_Source_Ptr then
             Buf := Source_Text (Get_Source_File_Index (Loc));
 
-            --  First line of the span with actual source code
+            --  First line of the span with actual source code. We retrieve
+            --  the beginning of the line instead of relying on Col_Fst, as
+            --  ASCII.HT characters change column numbers by possibly more
+            --  than one.
 
             Write_Line_Marker
               (Cur_Line,
                Line_Fst /= Line_Lst and then Cur_Line = Line,
                Width);
-            Write_Str
-              (String (Buf (Fst - Source_Ptr (Col_Fst) + 1  .. Fst - 1)));
+            Write_Buffer (Buf, Get_Line_Start (Buf, Cur_Loc), Cur_Loc - 1);
 
-            --  Output all the lines in the span
+            --  Output the first/caret/last lines of the span, as well as
+            --  lines that are directly above/below the caret if they complete
+            --  the gap with first/last lines, otherwise use ... to denote
+            --  intermediate lines.
 
-            while Cur_Loc <= Buf'Last
-              and then Cur_Loc < Lst
-            loop
-               Write_Char (Buf (Cur_Loc));
-               Cur_Loc := Cur_Loc + 1;
+            --  If the span is on one line and not a simple source location,
+            --  color it appropriately.
 
-               if Buf (Cur_Loc - 1) = ASCII.LF then
-                  Cur_Line := Cur_Line + 1;
-                  Write_Line_Marker
-                    (Cur_Line,
-                     Line_Fst /= Line_Lst and then Cur_Line = Line,
-                     Width);
-               end if;
-            end loop;
+            if Line_Fst = Line_Lst
+              and then Col_Fst /= Col_Lst
+            then
+               Write_Str (SGR_Span);
+            end if;
+
+            declare
+               function Do_Write_Line (Cur_Line : Pos) return Boolean is
+                  (Cur_Line in Line_Fst | Line | Line_Lst
+                     or else
+                   (Cur_Line = Line_Fst + 1 and then Cur_Line = Line - 1)
+                     or else
+                   (Cur_Line = Line + 1 and then Cur_Line = Line_Lst - 1));
+            begin
+               while Cur_Loc <= Buf'Last
+                 and then Cur_Loc <= Lst
+               loop
+                  if Do_Write_Line (Cur_Line) then
+                     Write_Buffer_Char (Buf, Cur_Loc);
+                  end if;
+
+                  Cur_Loc := Cur_Loc + 1;
+
+                  if Buf (Cur_Loc - 1) = ASCII.LF then
+                     Cur_Line := Cur_Line + 1;
+
+                     --  Output ... for skipped lines
+
+                     if (Cur_Line = Line
+                          and then not Do_Write_Line (Cur_Line - 1))
+                       or else
+                        (Cur_Line = Line + 1
+                          and then not Do_Write_Line (Cur_Line))
+                     then
+                        Write_Str ((1 .. Width - 3 => ' ') & "... | ...");
+                        Write_Eol;
+                     end if;
+
+                     --  Display the line marker if the line should be
+                     --  displayed.
+
+                     if Do_Write_Line (Cur_Line) then
+                        Write_Line_Marker
+                          (Cur_Line,
+                           Line_Fst /= Line_Lst and then Cur_Line = Line,
+                           Width);
+                     end if;
+                  end if;
+               end loop;
+            end;
+
+            if Line_Fst = Line_Lst
+              and then Col_Fst /= Col_Lst
+            then
+               Write_Str (SGR_Reset);
+            end if;
 
             --  Output the rest of the last line of the span
 
-            while Cur_Loc <= Buf'Last
-              and then Buf (Cur_Loc) /= ASCII.LF
-            loop
-               Write_Char (Buf (Cur_Loc));
-               Cur_Loc := Cur_Loc + 1;
-            end loop;
-
-            Write_Eol;
+            Write_Buffer (Buf, Cur_Loc, Get_Line_End (Buf, Cur_Loc));
 
             --  If the span is on one line, output a second line with caret
             --  sign pointing to location Loc
@@ -2404,6 +2568,9 @@ package body Errout is
                Write_Str (String'(1 .. Width => ' '));
                Write_Str (" |");
                Write_Str (String'(1 .. Col_Fst - 1 => ' '));
+
+               Write_Str (SGR_Span);
+
                Write_Str (String'(Col_Fst .. Col - 1 => '~'));
                Write_Str ("^");
                Write_Str (String'(Col + 1 .. Col_Lst => '~'));
@@ -2414,6 +2581,8 @@ package body Errout is
                if Col_Fst = Col_Lst then
                   Write_Str (" here");
                end if;
+
+               Write_Str (SGR_Reset);
 
                Write_Eol;
             end if;
@@ -2473,6 +2642,8 @@ package body Errout is
                end if;
 
                if Use_Prefix then
+                  Write_Str (SGR_Locus);
+
                   if Full_Path_Name_For_Brief_Errors then
                      Write_Name (Full_Ref_Name (Errors.Table (E).Sfile));
                   else
@@ -2491,6 +2662,8 @@ package body Errout is
 
                   Write_Int (Int (Errors.Table (E).Col));
                   Write_Str (": ");
+
+                  Write_Str (SGR_Reset);
                end if;
 
                Output_Msg_Text (E);
@@ -2510,12 +2683,23 @@ package body Errout is
                           Errors.Table (E).Insertion_Sloc;
                      begin
                         if Loc /= No_Location then
-                           Write_Source_Code_Lines (To_Span (Loc));
+                           Write_Source_Code_Lines
+                             (To_Span (Loc), SGR_Span => SGR_Note);
                         end if;
                      end;
 
                   else
-                     Write_Source_Code_Lines (Errors.Table (E).Sptr);
+                     declare
+                        SGR_Span : constant String :=
+                          (if Errors.Table (E).Info then SGR_Note
+                           elsif Errors.Table (E).Warn
+                             and then not Errors.Table (E).Warn_Err
+                           then SGR_Warning
+                           else SGR_Error);
+                     begin
+                        Write_Source_Code_Lines
+                          (Errors.Table (E).Sptr, SGR_Span);
+                     end;
                   end if;
                end if;
             end if;

@@ -1860,7 +1860,7 @@ package body Exp_Util is
          --  procedures can never be called in any case, so not generating the
          --  check at all is OK).
 
-         if not Is_Abstract_Type (DIC_Typ) then
+         if not Is_Abstract_Type (DIC_Typ) or else GNATprove_Mode then
             Add_DIC_Check
               (DIC_Prag => DIC_Prag,
                DIC_Expr => Expr,

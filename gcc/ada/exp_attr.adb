@@ -4598,13 +4598,7 @@ package body Exp_Attr is
       ----------------------------------
 
       when Attribute_Max_Size_In_Storage_Elements => declare
-         Typ  : constant Entity_Id := Etype (N);
-         Attr : Node_Id;
-         Atyp : Entity_Id;
-
-         Conversion_Added : Boolean := False;
-         --  A flag which tracks whether the original attribute has been
-         --  wrapped inside a type conversion.
+         Typ : constant Entity_Id := Etype (N);
 
       begin
          --  If the prefix is X'Class, we transform it into a direct reference
@@ -4618,40 +4612,22 @@ package body Exp_Attr is
             return;
          end if;
 
-         Apply_Universal_Integer_Attribute_Checks (N);
-
-         --  The universal integer check may sometimes add a type conversion,
-         --  retrieve the original attribute reference from the expression.
-
-         Attr := N;
-
-         if Nkind (Attr) = N_Type_Conversion then
-            Attr := Expression (Attr);
-            Conversion_Added := True;
-         end if;
-
-         pragma Assert (Nkind (Attr) = N_Attribute_Reference);
-
          --  Heap-allocated controlled objects contain two extra pointers which
          --  are not part of the actual type. Transform the attribute reference
          --  into a runtime expression to add the size of the hidden header.
 
-         if Needs_Finalization (Ptyp)
-           and then not Header_Size_Added (Attr)
-         then
-            Set_Header_Size_Added (Attr);
-
-            Atyp := Etype (Attr);
+         if Needs_Finalization (Ptyp) and then not Header_Size_Added (N) then
+            Set_Header_Size_Added (N);
 
             --  Generate:
             --    P'Max_Size_In_Storage_Elements +
-            --      Atyp (Header_Size_With_Padding (Ptyp'Alignment))
+            --      Typ (Header_Size_With_Padding (Ptyp'Alignment))
 
-            Rewrite (Attr,
+            Rewrite (N,
               Make_Op_Add (Loc,
-                Left_Opnd  => Relocate_Node (Attr),
+                Left_Opnd  => Relocate_Node (N),
                 Right_Opnd =>
-                  Convert_To (Atyp,
+                  Convert_To (Typ,
                     Make_Function_Call (Loc,
                       Name                   =>
                         New_Occurrence_Of
@@ -4663,16 +4639,13 @@ package body Exp_Attr is
                             New_Occurrence_Of (Ptyp, Loc),
                           Attribute_Name => Name_Alignment))))));
 
-            Analyze_And_Resolve (Attr, Atyp);
-
-            --  Add a conversion to the target type
-
-            if not Conversion_Added then
-               Convert_To_And_Rewrite (Typ, Attr);
-            end if;
-
+            Analyze_And_Resolve (N, Typ);
             return;
          end if;
+
+         --  In the other cases apply the required checks
+
+         Apply_Universal_Integer_Attribute_Checks (N);
       end;
 
       --------------------

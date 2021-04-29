@@ -2239,6 +2239,14 @@ specifying paths @var{path1}, @dots{}, @var{pathN}.
     --enable-offload-targets=x86_64-intelmicemul-linux-gnu=/path/to/x86_64/compiler,nvptx-none
 @end smallexample
 
+@item --enable-offload-defaulted
+
+Tell GCC that configured but not installed offload compilers and libgomp
+plugins are silently ignored.  Useful for distribution compilers where
+those are in separate optional packages and where the presence or absence
+of those optional packages should determine the actual supported offloading
+target set rather than the GCC configure-time selection.
+
 @item --with-hsa-runtime=@var{pathname}
 @itemx --with-hsa-runtime-include=@var{pathname}
 @itemx --with-hsa-runtime-lib=@var{pathname}

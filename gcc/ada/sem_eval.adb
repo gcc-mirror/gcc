@@ -142,6 +142,16 @@ package body Sem_Eval is
    -- Local Subprograms --
    -----------------------
 
+   procedure Check_Non_Static_Context_For_Overflow
+     (N      : Node_Id;
+      Stat   : Boolean;
+      Result : Uint);
+   --  For a signed integer type, check non-static overflow in Result when
+   --  Stat is False. This applies also inside inlined code, where the static
+   --  property may be an effect of the inlining, which should not be allowed
+   --  to remove run-time checks (whether during compilation, or even more
+   --  crucially in the special inlining-for-proof in GNATprove mode).
+
    function Choice_Matches
      (Expr   : Node_Id;
       Choice : Node_Id) return Match_Result;
@@ -648,6 +658,34 @@ package body Sem_Eval is
          end if;
       end if;
    end Check_Non_Static_Context;
+
+   -------------------------------------------
+   -- Check_Non_Static_Context_For_Overflow --
+   -------------------------------------------
+
+   procedure Check_Non_Static_Context_For_Overflow
+     (N      : Node_Id;
+      Stat   : Boolean;
+      Result : Uint)
+   is
+   begin
+      if (not Stat or else In_Inlined_Body)
+        and then Is_Signed_Integer_Type (Etype (N))
+      then
+         declare
+            BT : constant Entity_Id := Base_Type (Etype (N));
+            Lo : constant Uint := Expr_Value (Type_Low_Bound (BT));
+            Hi : constant Uint := Expr_Value (Type_High_Bound (BT));
+         begin
+            if Result < Lo or else Result > Hi then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "value not in range of }??",
+                  CE_Overflow_Check_Failed,
+                  Ent => BT);
+            end if;
+         end;
+      end if;
+   end Check_Non_Static_Context_For_Overflow;
 
    ---------------------------------
    -- Check_String_Literal_Length --
@@ -2143,24 +2181,9 @@ package body Sem_Eval is
 
             if Is_Modular_Integer_Type (Ltype) then
                Result := Result mod Modulus (Ltype);
-
-               --  For a signed integer type, check non-static overflow
-
-            elsif (not Stat) and then Is_Signed_Integer_Type (Ltype) then
-               declare
-                  BT : constant Entity_Id := Base_Type (Ltype);
-                  Lo : constant Uint := Expr_Value (Type_Low_Bound (BT));
-                  Hi : constant Uint := Expr_Value (Type_High_Bound (BT));
-               begin
-                  if Result < Lo or else Result > Hi then
-                     Apply_Compile_Time_Constraint_Error
-                       (N, "value not in range of }??",
-                        CE_Overflow_Check_Failed,
-                        Ent => BT);
-                     return;
-                  end if;
-               end;
             end if;
+
+            Check_Non_Static_Context_For_Overflow (N, Stat, Result);
 
             --  If we get here we can fold the result
 
@@ -3201,6 +3224,8 @@ package body Sem_Eval is
                   if Is_Modular_Integer_Type (Etype (N)) then
                      Result := Result mod Modulus (Etype (N));
                   end if;
+
+                  Check_Non_Static_Context_For_Overflow (N, Stat, Result);
 
                   Fold_Uint (N, Result, Stat);
                end if;
@@ -4374,6 +4399,8 @@ package body Sem_Eval is
                pragma Assert (Nkind (N) = N_Op_Abs);
                Result := abs Rint;
             end if;
+
+            Check_Non_Static_Context_For_Overflow (N, Stat, Result);
 
             Fold_Uint (N, Result, Stat);
          end;

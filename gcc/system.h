@@ -360,6 +360,10 @@ extern int errno;
 # endif
 #endif
 
+#ifdef HAVE_SYS_LOCKING_H
+# include <sys/locking.h>
+#endif
+
 #ifndef SEEK_SET
 # define SEEK_SET 0
 # define SEEK_CUR 1

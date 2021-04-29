@@ -1,3 +1,251 @@
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Modify comment to
+	make consistent with updated RTL pattern.
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>qmovn<mode>):
+	Implement using ss_truncate and us_truncate rather than
+	unspecs.
+	* config/aarch64/iterators.md: Remove redundant unspecs and
+	iterator: UNSPEC_[SU]QXTN and SUQMOVN respectively.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_acle.h (__attribute__): Make intrinsic
+	attributes consistent with those defined in arm_neon.h.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/arm_fp16.h (__attribute__): Make intrinsic
+	attributes consistent with those defined in arm_neon.h.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add
+	float_trunc_rodd builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_float_trunc_rodd_df):
+	Define.
+	(aarch64_float_trunc_rodd_lo_v2sf): Define.
+	(aarch64_float_trunc_rodd_hi_v4sf_le): Define.
+	(aarch64_float_trunc_rodd_hi_v4sf_be): Define.
+	(aarch64_float_trunc_rodd_hi_v4sf): Define.
+	* config/aarch64/arm_neon.h (vcvtx_f32_f64): Use RTL builtin
+	instead of inline asm.
+	(vcvtx_high_f32_f64): Likewise.
+	(vcvtxd_f32_f64): Likewise.
+	* config/aarch64/iterators.md: Add FCVTXN unspec.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add tbx1 builtin
+	generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_tbx1<mode>):
+	Define.
+	* config/aarch64/arm_neon.h (vqtbx1_s8): USE RTL builtin
+	instead of inline asm.
+	(vqtbx1_u8): Likewise.
+	(vqtbx1_p8): Likewise.
+	(vqtbx1q_s8): Likewise.
+	(vqtbx1q_u8): Likewise.
+	(vqtbx1q_p8): Likewise.
+	(vtbx2_s8): Likewise.
+	(vtbx2_u8): Likewise.
+	(vtbx2_p8): Likewise.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add tbl1 builtin
+	generator macros.
+	* config/aarch64/arm_neon.h (vqtbl1_p8): Use RTL builtin
+	instead of inline asm.
+	(vqtbl1_s8): Likewise.
+	(vqtbl1_u8): Likewise.
+	(vqtbl1q_p8): Likewise.
+	(vqtbl1q_s8): Likewise.
+	(vqtbl1q_u8): Likewise.
+	(vtbl1_s8): Likewise.
+	(vtbl1_u8): Likewise.
+	(vtbl1_p8): Likewise.
+	(vtbl2_s8): Likewise.
+	(vtbl2_u8): Likewise.
+	(vtbl2_p8): Likewise.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add polynomial
+	ssri_n buitin generator macro.
+	* config/aarch64/arm_neon.h (vsri_n_p8): Use RTL builtin
+	instead of inline asm.
+	(vsri_n_p16): Likewise.
+	(vsri_n_p64): Likewise.
+	(vsriq_n_p8): Likewise.
+	(vsriq_n_p16): Likewise.
+	(vsriq_n_p64): Likewise.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Use VALLP mode
+	iterator for polynomial ssli_n builtin generator macro.
+	* config/aarch64/arm_neon.h (vsli_n_p8): Use RTL builtin
+	instead of inline asm.
+	(vsli_n_p16): Likewise.
+	(vsliq_n_p8): Likewise.
+	(vsliq_n_p16): Likewise.
+	* config/aarch64/iterators.md: Define VALLP mode iterator.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Use VDQV_L
+	iterator to generate [su]adalp RTL builtins.
+	* config/aarch64/aarch64-simd.md: Use VDQV_L iterator in
+	[su]adalp RTL pattern.
+	* config/aarch64/arm_neon.h (vpadal_s32): Use RTL builtin
+	instead of inline asm.
+	(vpadal_u32): Likewise.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add [su]addlp
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_<su>addlp<mode>):
+	Define.
+	* config/aarch64/arm_neon.h (vpaddl_s8): Use RTL builtin
+	instead of inline asm.
+	(vpaddl_s16): Likewise.
+	(vpaddl_s32): Likewise.
+	(vpaddl_u8): Likewise.
+	(vpaddl_u16): Likewise.
+	(vpaddl_u32): Likewise.
+	(vpaddlq_s8): Likewise.
+	(vpaddlq_s16): Likewise.
+	(vpaddlq_s32): Likewise.
+	(vpaddlq_u8): Likewise.
+	(vpaddlq_u16): Likewise.
+	(vpaddlq_u32): Liwewise.
+	* config/aarch64/iterators.md: Define [SU]ADDLP unspecs with
+	appropriate attributes.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Use VDQ_I iterator
+	for aarch64_addp<mode> builtin macro generator.
+	* config/aarch64/aarch64-simd.md: Use VDQ_I iterator in
+	aarch64_addp<mode> RTL pattern.
+	* config/aarch64/arm_neon.h (vpaddq_s8): Use RTL builtin
+	instead of inline asm.
+	(vpaddq_s16): Likewise.
+	(vpaddq_s32): Likewise.
+	(vpaddq_s64): Likewise.
+	(vpaddq_u8): Likewise.
+	(vpaddq_u16): Likewise.
+	(vpaddq_u32): Likewise.
+	(vpaddq_u64): Likewise.
+
+2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add sq[r]dmulh_n
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_sq<r>dmulh_n<mode>):
+	Define.
+	* config/aarch64/arm_neon.h (vqdmulh_n_s16): Use RTL builtin
+	instead of inline asm.
+	(vqdmulh_n_s32): Likewise.
+	(vqdmulhq_n_s16): Likewise.
+	(vqdmulhq_n_s32): Likewise.
+	(vqrdmulh_n_s16): Likewise.
+	(vqrdmulh_n_s32): Likewise.
+	(vqrdmulhq_n_s16): Likewise.
+	(vqrdmulhq_n_s32): Likewise.
+
+2021-04-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* doc/install.texi (--enable-offload-defaulted): Document.
+
+2021-04-28  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* config/avr/avr-dimode.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add new patterns to match output of
+	the splitters.
+	* config/avr/avr-fixed.md: Likewise.
+	* config/avr/avr.c (cc_reg_rtx): New.
+	(avr_parallel_insn_from_insns): Adjust insn count
+	for removal of set of cc0.
+	(avr_is_casesi_sequence): Likewise.
+	(avr_casei_sequence_check_operands): Likewise.
+	(avr_optimize_casesi): Likewise. Also insert
+	new insns after jump_insn.
+	(avr_pass_casesi::avr_rest_of_handle_casesi): Adjust
+	for removal of set of cc0.
+	(avr_init_expanders): Initialize cc_reg_rtx.
+	(avr_regno_reg_class): Handle REG_CC.
+	(cond_string): Remove usage of CC_OVERFLOW_UNUSABLE.
+	(avr_notice_update_cc): Remove function.
+	(ret_cond_branch): Remove usage of CC_OVERFLOW_UNUSABLE.
+	(compare_condition): Adjust for PARALLEL with
+	REG_CC clobber.
+	(out_shift_with_cnt): Likewise.
+	(ashlhi3_out): Likewise.
+	(ashrhi3_out): Likewise.
+	(lshrhi3_out): Likewise.
+	(avr_class_max_nregs): Return single reg for REG_CC.
+	(avr_compare_pattern): Check for REG_CC instead
+	of cc0_rtx.
+	(avr_reorg_remove_redundant_compare): Likewise.
+	(avr_reorg):Adjust for PARALLEL with REG_CC clobber.
+	(avr_hard_regno_nregs): Return single reg for REG_CC.
+	(avr_hard_regno_mode_ok): Allow only CCmode for REG_CC.
+	(avr_md_asm_adjust): Clobber REG_CC.
+	(TARGET_HARD_REGNO_NREGS): Define.
+	(TARGET_CLASS_MAX_NREGS): Define.
+	(TARGET_MD_ASM_ADJUST): Define.
+	* config/avr/avr.h (FIRST_PSEUDO_REGISTER): Adjust
+	for REG_CC.
+	(enum reg_class): Add CC_REG class.
+	(NOTICE_UPDATE_CC): Remove.
+	(CC_OVERFLOW_UNUSABLE): Remove.
+	(CC_NO_CARRY): Remove.
+	* config/avr/avr.md: Turn existing patterns into
+	define_insn_and_split style patterns where the splitter
+	adds a clobber of the condition code register.  Drop "cc"
+	attribute.  Add new patterns to match output of
+	the splitters.
+	(sez): Remove unused pattern.
+
+2021-04-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100311
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Only allow VPR to be
+	used in HImode.
+
+2021-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100305
+	* config/aarch64/constraints.md (Utq): Require the address to
+	be valid for both the element mode and for V2DImode.
+
+2021-04-28  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* configure.ac (OFFLOAD_DEFAULTED): AC_DEFINE if offload-defaulted.
+	* gcc.c (process_command): New variable.
+	(driver::maybe_putenv_OFFLOAD_TARGETS): If OFFLOAD_DEFAULTED,
+	set it if -foffload is defaulted.
+	* lto-wrapper.c (OFFLOAD_TARGET_DEFAULT_ENV): Define.
+	(compile_offload_image): If OFFLOAD_DEFAULTED and
+	OFFLOAD_TARGET_DEFAULT is in the environment, don't fail
+	if corresponding mkoffload can't be found.
+	(compile_images_for_offload_targets): Likewise.  Free and clear
+	offload_names if no valid offload is found.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+
+2021-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100292
+	* tree-vect-generic.c (expand_vector_condition): Do not fold
+	the comparisons.
+
 2021-04-27  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/aix.h (SUBTARGET_DRIVER_SELF_SPECS): New.

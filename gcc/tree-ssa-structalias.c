@@ -1195,6 +1195,22 @@ add_graph_edge (constraint_graph_t graph, unsigned int to,
 
       if (!graph->succs[from])
 	graph->succs[from] = BITMAP_ALLOC (&pta_obstack);
+
+      /* The graph solving process does not avoid "triangles", thus
+	 there can be multiple paths from a node to another involving
+	 intermediate other nodes.  That causes extra copying which is
+	 most difficult to avoid when the intermediate node is ESCAPED
+	 because there are no edges added from ESCAPED.  Avoid
+	 adding the direct edge FROM -> TO when we have FROM -> ESCAPED
+	 and TO contains ESCAPED.
+	 ???  Note this is only a heuristic, it does not prevent the
+	 situation from occuring.  The heuristic helps PR38474 and
+	 PR99912 significantly.  */
+      if (to < FIRST_REF_NODE
+	  && bitmap_bit_p (graph->succs[from], find (escaped_id))
+	  && bitmap_bit_p (get_varinfo (find (to))->solution, escaped_id))
+	return false;
+
       if (bitmap_set_bit (graph->succs[from], to))
 	{
 	  r = true;

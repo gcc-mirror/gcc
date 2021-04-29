@@ -137,6 +137,8 @@ gcov_open (const char *name, int mode)
   s_flock.l_start = 0;
   s_flock.l_len = 0; /* Until EOF.  */
   s_flock.l_pid = getpid ();
+#elif GCOV_LOCKED_WITH_LOCKING
+  int fd;
 #endif
 
   gcov_nonruntime_assert (!gcov_var.file);
@@ -167,6 +169,34 @@ gcov_open (const char *name, int mode)
 
   while (fcntl (fd, F_SETLKW, &s_flock) && errno == EINTR)
     continue;
+
+  gcov_var.file = fdopen (fd, (mode > 0) ? "rb" : "r+b");
+
+  if (!gcov_var.file)
+    {
+      close (fd);
+      return 0;
+    }
+#elif GCOV_LOCKED_WITH_LOCKING
+  if (mode > 0)
+    {
+      /* pass mode (ignored) for compatibility */
+      fd = open (name, O_RDONLY | O_BINARY, S_IRUSR | S_IWUSR);
+    }
+  else
+     {
+       /* Truncate if force new mode.  */
+       fd = open (name, O_RDWR | O_BINARY | O_CREAT | (mode < 0 ? O_TRUNC : 0),
+		  0666);
+    }
+  if (fd < 0)
+    return 0;
+
+  if (_locking (fd, _LK_LOCK, LONG_MAX) < 0)
+    {
+      close (fd);
+      return 0;
+    }
 
   gcov_var.file = fdopen (fd, (mode > 0) ? "rb" : "r+b");
 

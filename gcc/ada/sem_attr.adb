@@ -1466,7 +1466,11 @@ package body Sem_Attr is
 
          procedure Check_Image_Type (Image_Type : Entity_Id) is
          begin
+            --  Image_Type may be empty in case of another error detected,
+            --  or if an N_Raise_xxx_Error node is a parent of N.
+
             if Ada_Version < Ada_2020
+              and then Present (Image_Type)
               and then not Is_Scalar_Type (Image_Type)
             then
                Error_Msg_Ada_2020_Feature ("nonscalar ''Image", Sloc (P));
@@ -5678,7 +5682,7 @@ package body Sem_Attr is
                   null;
                else
                   Error_Msg_NE
-                    ("cannot apply Reduce to object of type$", N, Typ);
+                    ("cannot apply Reduce to object of type&", N, Typ);
                end if;
 
             elsif Present (Expressions (Stream))
@@ -9103,11 +9107,13 @@ package body Sem_Attr is
       -- Machine --
       -------------
 
+      --  We use the same rounding mode as the one used for RM 4.9(38)
+
       when Attribute_Machine =>
          Fold_Ureal
            (N,
             Eval_Fat.Machine
-              (P_Base_Type, Expr_Value_R (E1), Eval_Fat.Round, N),
+              (P_Base_Type, Expr_Value_R (E1), Eval_Fat.Round_Even, N),
             Static);
 
       ------------------

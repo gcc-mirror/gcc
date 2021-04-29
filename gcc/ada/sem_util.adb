@@ -2380,6 +2380,14 @@ package body Sem_Util is
 
       Analyze (Subtyp_Decl, Suppress => All_Checks);
 
+      --  In addition, inhibit the generation of predicate functions for
+      --  this subtype, because its declaration is not in a declarative
+      --  list, and no predicates apply to the aggregate itself, but only
+      --  to the object to which it may be assigned.
+
+      Set_Has_Dynamic_Predicate_Aspect (Def_Id, False);
+      Set_Has_Predicates (Def_Id, False);
+
       Set_Etype (N, Def_Id);
    end Build_Constrained_Itype;
 

@@ -261,7 +261,11 @@ package body System.Value_R is
                      Scale := Scale - 1;
 
                   else
+                     Extra := 0;
                      Precision_Limit_Reached := True;
+                     if Round and then J = Trailing_Zeros then
+                        Round_Extra (Digit, Value, Scale, Extra, Base);
+                     end if;
                      exit;
                   end if;
                end loop;
@@ -274,11 +278,16 @@ package body System.Value_R is
 
                Temp := Value * Uns (Base) + Uns (Digit);
 
+               --  Precision_Limit_Reached may have been set above
+
+               if Precision_Limit_Reached then
+                  null;
+
                --  Check if Temp is larger than Precision_Limit, taking into
                --  account that Temp may wrap around when Precision_Limit is
                --  equal to the largest integer.
 
-               if Value <= Umax
+               elsif Value <= Umax
                  or else (Value <= UmaxB
                            and then ((Precision_Limit < Uns'Last
                                        and then Temp <= Precision_Limit)

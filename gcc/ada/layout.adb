@@ -368,7 +368,7 @@ package body Layout is
 
             if not Known_Esize (E) then
                declare
-                  S : Int := 8;
+                  S : Pos := 8;
 
                begin
                   loop
@@ -381,7 +381,7 @@ package body Layout is
                      --  If the RM_Size is greater than System_Max_Integer_Size
                      --  (happens only when strange values are specified by the
                      --  user), then Esize is simply a copy of RM_Size, it will
-                     --  be further refined later on).
+                     --  be further refined later on.
 
                      elsif S = System_Max_Integer_Size then
                         Set_Esize (E, RM_Size (E));

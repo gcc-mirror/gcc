@@ -1,3 +1,7 @@
+2021-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* module.cc: Remove #error that triggers if DEV-PHASE is empty.
+
 2021-04-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/92145

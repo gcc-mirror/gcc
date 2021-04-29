@@ -819,6 +819,12 @@ procedure Gnat1drv is
            Ttypes.Standard_Long_Long_Integer_Size;
       end if;
 
+      --  Forcefully use a 32-bit Duration with only 32-bit integer types
+
+      if Ttypes.System_Max_Integer_Size < 64 then
+         Targparm.Duration_32_Bits_On_Target := True;
+      end if;
+
       --  Finally capture adjusted value of Suppress_Options as the initial
       --  value for Scope_Suppress, which will be modified as we move from
       --  scope to scope (by Suppress/Unsuppress/Overflow_Checks pragmas).

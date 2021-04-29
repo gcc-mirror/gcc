@@ -108,8 +108,10 @@ BDESC_VERIFYS (IX86_BUILTIN__BDESC_PCMPISTR_FIRST,
 	       IX86_BUILTIN__BDESC_PCMPESTR_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_SPECIAL_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_PCMPISTR_LAST, 1);
-BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS_FIRST,
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_PURE_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_SPECIAL_ARGS_LAST, 1);
+BDESC_VERIFYS (IX86_BUILTIN__BDESC_ARGS_FIRST,
+	       IX86_BUILTIN__BDESC_PURE_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_ROUND_ARGS_FIRST,
 	       IX86_BUILTIN__BDESC_ARGS_LAST, 1);
 BDESC_VERIFYS (IX86_BUILTIN__BDESC_MULTI_ARG_FIRST,
@@ -527,7 +529,23 @@ ix86_init_mmx_sse_builtins (void)
 		 IX86_BUILTIN__BDESC_SPECIAL_ARGS_FIRST,
 		 ARRAY_SIZE (bdesc_special_args) - 1);
 
-  /* Add all builtins with variable number of operands.  */
+  /* Add all pure builtins with variable number of operands.  */
+  for (i = 0, d = bdesc_pure_args;
+       i < ARRAY_SIZE (bdesc_pure_args);
+       i++, d++)
+    {
+      BDESC_VERIFY (d->code, IX86_BUILTIN__BDESC_PURE_ARGS_FIRST, i);
+      if (d->name == 0)
+	continue;
+
+      ftype = (enum ix86_builtin_func_type) d->flag;
+      def_builtin_pure (d->mask, d->mask2, d->name, ftype, d->code);
+    }
+  BDESC_VERIFYS (IX86_BUILTIN__BDESC_PURE_ARGS_LAST,
+		 IX86_BUILTIN__BDESC_PURE_ARGS_FIRST,
+		 ARRAY_SIZE (bdesc_pure_args) - 1);
+
+  /* Add all const builtins with variable number of operands.  */
   for (i = 0, d = bdesc_args;
        i < ARRAY_SIZE (bdesc_args);
        i++, d++)

@@ -243,6 +243,7 @@ package body Sem_Prag is
    --    Constant_After_Elaboration
    --    Effective_Reads
    --    Effective_Writers
+   --    No_Caching
    --    Part_Of
    --  Find the first source declaration or statement found while traversing
    --  the previous node chain starting from pragma Prag. If flag Do_Checks is
@@ -30474,6 +30475,16 @@ package body Sem_Prag is
       Stmt : Node_Id;
 
    begin
+      --  If the pragma comes from an aspect on a compilation unit that is a
+      --  package instance, then return the original package instantiation
+      --  node.
+
+      if Nkind (Parent (Prag)) = N_Compilation_Unit_Aux then
+         return
+           Get_Unit_Instantiation_Node
+             (Defining_Entity (Unit (Enclosing_Comp_Unit_Node (Prag))));
+      end if;
+
       Stmt := Prev (Prag);
       while Present (Stmt) loop
 

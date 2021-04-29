@@ -1,3 +1,13 @@
+2021-04-28  Jakub Jelinek  <jakub@redhat.com>
+	    Tobias Burnus  <tobias@codesourcery.com>
+
+	* configure.ac (OFFLOAD_DEFAULTED): AC_DEFINE if offload-defaulted.
+	* target.c (gomp_load_plugin_for_device): If set and if a plugin
+	can't be dlopened, silently assume it has no devices.
+	* Makefile.in: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+
 2021-04-26  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.oacc-fortran/par-reduction-2-1.f:

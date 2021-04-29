@@ -4588,6 +4588,8 @@ If you don't define this, a reasonable default is used.
 
 @hook TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 
+@hook TARGET_OVERLAP_OP_BY_PIECES_P
+
 @hook TARGET_COMPARE_BY_PIECES_BRANCH_RATIO
 
 @defmac MOVE_MAX_PIECES

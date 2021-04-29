@@ -4528,6 +4528,7 @@ extern tree build_vector_type (tree, poly_int64);
 extern tree build_truth_vector_type_for_mode (poly_uint64, machine_mode);
 extern tree build_opaque_vector_type (tree, poly_int64);
 extern tree build_index_type (tree);
+extern tree build_array_type_1 (tree, tree, bool, bool, bool);
 extern tree build_array_type (tree, tree, bool = false);
 extern tree build_nonshared_array_type (tree, tree);
 extern tree build_array_type_nelts (tree, poly_uint64);

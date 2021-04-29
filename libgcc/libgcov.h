@@ -89,6 +89,12 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 #define GCOV_LOCKED 0
 #endif
 
+#if defined (__MSVCRT__)
+#define GCOV_LOCKED_WITH_LOCKING 1
+#else
+#define GCOV_LOCKED_WITH_LOCKING 0
+#endif
+
 #ifndef GCOV_SUPPORTS_ATOMIC
 /* Detect whether target can support atomic update of profilers.  */
 #if __SIZEOF_LONG_LONG__ == 4 && __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
@@ -133,10 +139,17 @@ typedef unsigned gcov_type_unsigned __attribute__ ((mode (QI)));
 typedef unsigned gcov_unsigned_t;
 typedef unsigned gcov_position_t;
 /* gcov_type is typedef'd elsewhere for the compiler */
+
 #if defined (HOST_HAS_F_SETLKW)
 #define GCOV_LOCKED 1
 #else
 #define GCOV_LOCKED 0
+#endif
+
+#if defined (HOST_HAS_LK_LOCK)
+#define GCOV_LOCKED_WITH_LOCKING 1
+#else
+#define GCOV_LOCKED_WITH_LOCKING 0
 #endif
 
 /* Some Macros specific to gcov-tool.  */

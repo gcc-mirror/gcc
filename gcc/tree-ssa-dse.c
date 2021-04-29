@@ -963,15 +963,24 @@ public:
   dse_dom_walker (cdi_direction direction)
     : dom_walker (direction),
     m_live_bytes (param_dse_max_object_size),
-    m_byte_tracking_enabled (false) {}
+    m_byte_tracking_enabled (false),
+    m_need_cfg_cleanup (false) {}
 
   virtual edge before_dom_children (basic_block);
+  unsigned todo () const;
 
 private:
   auto_sbitmap m_live_bytes;
   bool m_byte_tracking_enabled;
+  bool m_need_cfg_cleanup;
   void dse_optimize_stmt (gimple_stmt_iterator *);
 };
+
+unsigned
+dse_dom_walker::todo () const
+{
+  return m_need_cfg_cleanup ? TODO_cleanup_cfg : 0;
+}
 
 /* Delete a dead call at GSI, which is mem* call of some kind.  */
 static void
@@ -1048,11 +1057,6 @@ void
 dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
-
-  /* If this statement has no virtual defs, then there is nothing
-     to do.  */
-  if (!gimple_vdef (stmt))
-    return;
 
   /* Don't return early on *this_2(D) ={v} {CLOBBER}.  */
   if (gimple_has_volatile_ops (stmt)
@@ -1180,12 +1184,53 @@ dse_dom_walker::before_dom_children (basic_block bb)
 
   for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
     {
-      dse_optimize_stmt (&gsi);
+      gimple *stmt = gsi_stmt (gsi);
+
+      if (gimple_vdef (stmt))
+	dse_optimize_stmt (&gsi);
+      else if (def_operand_p def_p = single_ssa_def_operand (stmt, SSA_OP_DEF))
+	{
+	  /* When we remove dead stores make sure to also delete trivially
+	     dead SSA defs.  */
+	  if (has_zero_uses (DEF_FROM_PTR (def_p))
+	      && !gimple_has_side_effects (stmt))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "  Deleted trivially dead stmt: ");
+		  print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+		  fprintf (dump_file, "\n");
+		}
+	      if (gsi_remove (&gsi, true) && need_eh_cleanup)
+		bitmap_set_bit (need_eh_cleanup, bb->index);
+	      release_defs (stmt);
+	    }
+	}
       if (gsi_end_p (gsi))
 	gsi = gsi_last_bb (bb);
       else
 	gsi_prev (&gsi);
     }
+  bool removed_phi = false;
+  for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);)
+    {
+      gphi *phi = si.phi ();
+      if (has_zero_uses (gimple_phi_result (phi)))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "  Deleted trivially dead PHI: ");
+	      print_gimple_stmt (dump_file, phi, 0, dump_flags);
+	      fprintf (dump_file, "\n");
+	    }
+	  remove_phi_node (&si, true);
+	  removed_phi = true;
+	}
+      else
+	gsi_next (&si);
+    }
+  if (removed_phi && gimple_seq_empty_p (phi_nodes (bb)))
+    m_need_cfg_cleanup = true;
   return NULL;
 }
 
@@ -1234,21 +1279,23 @@ pass_dse::execute (function *fun)
 
   /* Dead store elimination is fundamentally a walk of the post-dominator
      tree and a backwards walk of statements within each block.  */
-  dse_dom_walker (CDI_POST_DOMINATORS).walk (fun->cfg->x_exit_block_ptr);
+  dse_dom_walker walker (CDI_POST_DOMINATORS);
+  walker.walk (fun->cfg->x_exit_block_ptr);
+  free_dominance_info (CDI_POST_DOMINATORS);
+
+  unsigned todo = walker.todo ();
 
   /* Removal of stores may make some EH edges dead.  Purge such edges from
      the CFG as needed.  */
   if (!bitmap_empty_p (need_eh_cleanup))
     {
       gimple_purge_all_dead_eh_edges (need_eh_cleanup);
-      cleanup_tree_cfg ();
+      todo |= TODO_cleanup_cfg;
     }
 
   BITMAP_FREE (need_eh_cleanup);
 
-  /* For now, just wipe the post-dominator information.  */
-  free_dominance_info (CDI_POST_DOMINATORS);
-  return 0;
+  return todo;
 }
 
 } // anon namespace

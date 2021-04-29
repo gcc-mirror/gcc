@@ -13240,6 +13240,14 @@ rdseed_step:
 					       target);
     }
 
+  if (fcode >= IX86_BUILTIN__BDESC_PURE_ARGS_FIRST
+      && fcode <= IX86_BUILTIN__BDESC_PURE_ARGS_LAST)
+    {
+      i = fcode - IX86_BUILTIN__BDESC_PURE_ARGS_FIRST;
+      return ix86_expand_special_args_builtin (bdesc_pure_args + i, exp,
+					       target);
+    }
+
   if (fcode >= IX86_BUILTIN__BDESC_ARGS_FIRST
       && fcode <= IX86_BUILTIN__BDESC_ARGS_LAST)
     {

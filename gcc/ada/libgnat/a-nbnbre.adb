@@ -593,13 +593,6 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
       end;
    end From_String;
 
-   function From_String
-     (Numerator, Denominator : String) return Valid_Big_Real is
-   begin
-      return Big_Integers.From_String (Numerator) /
-        Big_Integers.From_String (Denominator);
-   end From_String;
-
    --------------------------
    -- From_Quotient_String --
    --------------------------

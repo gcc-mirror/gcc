@@ -759,6 +759,7 @@ package body Sem_Ch8 is
       Dec           : Node_Id;
       T             : Entity_Id;
       T2            : Entity_Id;
+      Q             : Node_Id;
 
       procedure Check_Constrained_Object;
       --  If the nominal type is unconstrained but the renamed object is
@@ -1074,17 +1075,55 @@ package body Sem_Ch8 is
          --  Check against AI12-0401 here before Resolve may rewrite Nam and
          --  potentially generate spurious warnings.
 
+         --   In the case where the object_name is a qualified_expression with
+         --   a nominal subtype T and whose expression is a name that denotes
+         --   an object Q:
+         --    * if T is an elementary subtype, then:
+         --      * Q shall be a constant other than a dereference of an access
+         --        type; or
+         --      * the nominal subtype of Q shall be statically compatible with
+         --        T; or
+         --      * T shall statically match the base subtype of its type if
+         --        scalar, or the first subtype of its type if an access type.
+         --    * if T is a composite subtype, then Q shall be known to be
+         --      constrained or T shall statically match the first subtype of
+         --      its type.
+
          if Nkind (Nam) = N_Qualified_Expression
-           and then Is_Variable (Expression (Nam))
-           and then not
-             (Subtypes_Statically_Match (T, Etype (Expression (Nam)))
-                or else
-              Subtypes_Statically_Match (Base_Type (T), Etype (Nam)))
+           and then Is_Object_Reference (Expression (Nam))
          then
-            Error_Msg_N
-              ("subtype of renamed qualified expression does not " &
-               "statically match", N);
-            return;
+            Q := Expression (Nam);
+
+            if (Is_Elementary_Type (T)
+                  and then
+                not ((not Is_Variable (Q)
+                       and then Nkind (Q) /= N_Explicit_Dereference)
+                      or else Subtypes_Statically_Compatible (Etype (Q), T)
+                      or else (Is_Scalar_Type (T)
+                                and then Subtypes_Statically_Match
+                                           (T, Base_Type (T)))
+                      or else (Is_Access_Type (T)
+                                and then Subtypes_Statically_Match
+                                           (T, First_Subtype (T)))))
+              or else (Is_Composite_Type (T)
+                         and then
+
+                       --  If Q is an aggregate, Is_Constrained may not be set
+                       --  yet and its type may not be resolved yet.
+                       --  This doesn't quite correspond to the complex notion
+                       --  of "known to be constrained" but this is good enough
+                       --  for a rule which is in any case too complex.
+
+                       not (Is_Constrained (Etype (Q))
+                             or else Nkind (Q) = N_Aggregate
+                             or else Subtypes_Statically_Match
+                                       (T, First_Subtype (T))))
+            then
+               Error_Msg_N
+                 ("subtype of renamed qualified expression does not " &
+                  "statically match", N);
+               return;
+            end if;
          end if;
 
          Resolve (Nam, T);
@@ -7893,16 +7932,18 @@ package body Sem_Ch8 is
                         Set_Entity (N, Any_Type);
                         return;
 
-                     --  ??? This test is temporarily disabled (always
-                     --  False) because it causes an unwanted warning on
-                     --  GNAT sources (built with -gnatg, which includes
-                     --  Warn_On_Obsolescent_ Feature). Once this issue
-                     --  is cleared in the sources, it can be enabled.
+                     else
+                        if Restriction_Check_Required (No_Obsolescent_Features)
+                        then
+                           Check_Restriction
+                             (No_Obsolescent_Features, Prefix (N));
+                        end if;
 
-                     elsif Warn_On_Obsolescent_Feature and then False then
-                        Error_Msg_N
-                          ("applying ''Class to an untagged incomplete type"
-                           & " is an obsolescent feature (RM J.11)?r?", N);
+                        if Warn_On_Obsolescent_Feature then
+                           Error_Msg_N
+                             ("applying ''Class to an untagged incomplete type"
+                              & " is an obsolescent feature (RM J.11)?r?", N);
+                        end if;
                      end if;
                   end if;
 
@@ -8087,25 +8128,14 @@ package body Sem_Ch8 is
                if Ekind (Base_Type (T_Name)) = E_Task_Type then
 
                   --  In Ada 2005, a task name can be used in an access
-                  --  definition within its own body. It cannot be used
-                  --  in the discriminant part of the task declaration,
-                  --  nor anywhere else in the declaration because entries
-                  --  cannot have access parameters.
+                  --  definition within its own body.
 
                   if Ada_Version >= Ada_2005
                     and then Nkind (Parent (N)) = N_Access_Definition
                   then
                      Set_Entity (N, T_Name);
                      Set_Etype  (N, T_Name);
-
-                     if Has_Completion (T_Name) then
-                        return;
-
-                     else
-                        Error_Msg_N
-                          ("task type cannot be used as type mark " &
-                           "within its own declaration", N);
-                     end if;
+                     return;
 
                   else
                      Error_Msg_N

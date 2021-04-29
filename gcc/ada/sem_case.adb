@@ -531,20 +531,23 @@ package body Sem_Case is
                  and then Compile_Time_Known_Value (C)
                  and then Expr_Value (C) = Lo
                then
-                  Error_Msg_N ("duplication of choice value: &#!", C);
+                  Error_Msg_N
+                    ("duplication of choice value: &#!", Original_Node (C));
 
                --  Not that special case, so just output the integer value
 
                else
                   Error_Msg_Uint_1 := Lo;
-                  Error_Msg_N ("duplication of choice value: ^#!", C);
+                  Error_Msg_N
+                    ("duplication of choice value: ^#!", Original_Node (C));
                end if;
 
             --  Enumeration type
 
             else
                Error_Msg_Name_1 := Choice_Image (Lo, Bounds_Type);
-               Error_Msg_N ("duplication of choice value: %#!", C);
+               Error_Msg_N
+                 ("duplication of choice value: %#!", Original_Node (C));
             end if;
 
          --  More than one choice value, so print range of values
@@ -577,7 +580,9 @@ package body Sem_Case is
                else
                   Error_Msg_Uint_1 := Lo;
                   Error_Msg_Uint_2 := Hi;
-                  Error_Msg_N ("duplication of choice values: ^ .. ^#!", C);
+                  Error_Msg_N
+                    ("duplication of choice values: ^ .. ^#!",
+                     Original_Node (C));
                end if;
 
             --  Enumeration type
@@ -585,7 +590,8 @@ package body Sem_Case is
             else
                Error_Msg_Name_1 := Choice_Image (Lo, Bounds_Type);
                Error_Msg_Name_2 := Choice_Image (Hi, Bounds_Type);
-               Error_Msg_N ("duplication of choice values: % .. %#!", C);
+               Error_Msg_N
+                 ("duplication of choice values: % .. %#!", Original_Node (C));
             end if;
          end if;
       end Dup_Choice;
@@ -1521,6 +1527,7 @@ package body Sem_Case is
                then
                   C := New_Copy (P);
                   Set_Sloc (C, Sloc (Choice));
+                  Set_Original_Node (C, Choice);
 
                   if Expr_Value (Low_Bound (C)) < Expr_Value (Lo) then
                      Set_Low_Bound (C, Lo);

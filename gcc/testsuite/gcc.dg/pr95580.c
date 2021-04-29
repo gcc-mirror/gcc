@@ -1,6 +1,6 @@
 /* PR c/95580 */
 /* { dg-do compile } */
-/* { dg-options "-O1 -W -fno-tree-dce" } */
+/* { dg-options "-O1 -W -fno-tree-dce -fno-tree-dse" } */
 
 void bar (void);
 

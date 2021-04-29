@@ -172,6 +172,10 @@ package body Exp_Ch4 is
    --  routine is to find the real type by looking up the tree. We also
    --  determine if the operation must be rounded.
 
+   function Get_Size_For_Range (Lo, Hi : Uint) return Uint;
+   --  Return the size of a small signed integer type covering Lo .. Hi, the
+   --  main goal being to return a size lower than that of standard types.
+
    function Has_Inferable_Discriminants (N : Node_Id) return Boolean;
    --  Ada 2005 (AI-216): A view of an Unchecked_Union object has inferable
    --  discriminants if it has a constrained nominal type, unless the object
@@ -2253,9 +2257,6 @@ package body Exp_Ch4 is
       LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
       --  Entity for Long_Long_Integer'Base
 
-      Check : constant Overflow_Mode_Type := Overflow_Check_Mode;
-      --  Current overflow checking mode
-
       procedure Set_True;
       procedure Set_False;
       --  These procedures rewrite N with an occurrence of Standard_True or
@@ -2284,17 +2285,6 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_Compare_Minimize_Eliminate_Overflow
 
    begin
-      --  Nothing to do unless we have a comparison operator with operands
-      --  that are signed integer types, and we are operating in either
-      --  MINIMIZED or ELIMINATED overflow checking mode.
-
-      if Nkind (N) not in N_Op_Compare
-        or else Check not in Minimized_Or_Eliminated
-        or else not Is_Signed_Integer_Type (Etype (Left_Opnd (N)))
-      then
-         return;
-      end if;
-
       --  OK, this is the case we are interested in. First step is to process
       --  our operands using the Minimize_Eliminate circuitry which applies
       --  this processing to the two operand subtrees.
@@ -6425,8 +6415,7 @@ package body Exp_Ch4 is
       --  type, then expand with a separate procedure. Note the use of the
       --  flag No_Minimize_Eliminate to prevent infinite recursion.
 
-      if Overflow_Check_Mode in Minimized_Or_Eliminated
-        and then Is_Signed_Integer_Type (Ltyp)
+      if Minimized_Eliminated_Overflow_Check (Left_Opnd  (N))
         and then not No_Minimize_Eliminate (N)
       then
          Expand_Membership_Minimize_Eliminate_Overflow (N);
@@ -8343,7 +8332,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Left_Opnd (N)) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Eq then
          return;
@@ -9201,7 +9192,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Op1) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Ge then
          return;
@@ -9250,7 +9243,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Op1) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Gt then
          return;
@@ -9299,7 +9294,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Op1) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Le then
          return;
@@ -9348,7 +9345,9 @@ package body Exp_Ch4 is
       --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if that
       --  means we no longer have a comparison operation, we are all done.
 
-      Expand_Compare_Minimize_Eliminate_Overflow (N);
+      if Minimized_Eliminated_Overflow_Check (Op1) then
+         Expand_Compare_Minimize_Eliminate_Overflow (N);
+      end if;
 
       if Nkind (N) /= N_Op_Lt then
          return;
@@ -9942,7 +9941,9 @@ package body Exp_Ch4 is
          --  Deal with overflow checks in MINIMIZED/ELIMINATED mode and if
          --  means we no longer have a /= operation, we are all done.
 
-         Expand_Compare_Minimize_Eliminate_Overflow (N);
+         if Minimized_Eliminated_Overflow_Check (Left_Opnd (N)) then
+            Expand_Compare_Minimize_Eliminate_Overflow (N);
+         end if;
 
          if Nkind (N) /= N_Op_Ne then
             return;
@@ -12273,6 +12274,41 @@ package body Exp_Ch4 is
          end;
       end if;
 
+      --  If the conversion is from Universal_Integer and requires an overflow
+      --  check, try to do an intermediate conversion to a narrower type first
+      --  without overflow check, in order to avoid doing the overflow check
+      --  in Universal_Integer, which can be a very large type.
+
+      if Operand_Type = Universal_Integer and then Do_Overflow_Check (N) then
+         declare
+            Lo, Hi, Siz : Uint;
+            OK          : Boolean;
+            Typ         : Entity_Id;
+
+         begin
+            Determine_Range (Operand, OK, Lo, Hi, Assume_Valid => True);
+
+            if OK then
+               Siz := Get_Size_For_Range (Lo, Hi);
+
+               --  We use the base type instead of the first subtype because
+               --  overflow checks are done in the base type, so this avoids
+               --  the need for useless conversions.
+
+               if Siz < System_Max_Integer_Size then
+                  Typ := Etype (Integer_Type_For (Siz, Uns => False));
+
+                  Convert_To_And_Rewrite (Typ, Operand);
+                  Analyze_And_Resolve
+                    (Operand, Typ, Suppress => Overflow_Check);
+
+                  Analyze_And_Resolve (N, Target_Type);
+                  goto Done;
+               end if;
+            end if;
+         end;
+      end if;
+
       --  Do validity check if validity checking operands
 
       if Validity_Checks_On and Validity_Check_Operands then
@@ -13331,6 +13367,54 @@ package body Exp_Ch4 is
       end if;
    end Fixup_Universal_Fixed_Operation;
 
+   ------------------------
+   -- Get_Size_For_Range --
+   ------------------------
+
+   function Get_Size_For_Range (Lo, Hi : Uint) return Uint is
+
+      function Is_OK_For_Range (Siz : Uint) return Boolean;
+      --  Return True if a signed integer with given size can cover Lo .. Hi
+
+      --------------------------
+      -- Is_OK_For_Range --
+      --------------------------
+
+      function Is_OK_For_Range (Siz : Uint) return Boolean is
+         B : constant Uint := Uint_2 ** (Siz - 1);
+
+      begin
+         --  Test B = 2 ** (size - 1) (can accommodate -B .. +(B - 1))
+
+         return Lo >= -B and then Hi >= -B and then Lo < B and then Hi < B;
+      end Is_OK_For_Range;
+
+   begin
+      --  This is (almost always) the size of Integer
+
+      if Is_OK_For_Range (Uint_32) then
+         return Uint_32;
+
+      --  Check 63
+
+      elsif Is_OK_For_Range (Uint_63) then
+         return Uint_63;
+
+      --  This is (almost always) the size of Long_Long_Integer
+
+      elsif Is_OK_For_Range (Uint_64) then
+         return Uint_64;
+
+      --  Check 127
+
+      elsif Is_OK_For_Range (Uint_127) then
+         return Uint_127;
+
+      else
+         return Uint_128;
+      end if;
+   end Get_Size_For_Range;
+
    ---------------------------------
    -- Has_Inferable_Discriminants --
    ---------------------------------
@@ -14114,9 +14198,15 @@ package body Exp_Ch4 is
 
    function Minimized_Eliminated_Overflow_Check (N : Node_Id) return Boolean is
    begin
+      --  The MINIMIZED mode operates in Long_Long_Integer so we cannot use it
+      --  if the type of the expression is already larger.
+
       return
         Is_Signed_Integer_Type (Etype (N))
-          and then Overflow_Check_Mode in Minimized_Or_Eliminated;
+          and then Overflow_Check_Mode in Minimized_Or_Eliminated
+          and then not (Overflow_Check_Mode = Minimized
+                         and then
+                        Esize (Etype (N)) > Standard_Long_Long_Integer_Size);
    end Minimized_Eliminated_Overflow_Check;
 
    ----------------------------
@@ -14131,58 +14221,6 @@ package body Exp_Ch4 is
       R      : constant Node_Id   := Right_Opnd (N);
       Typ    : constant Entity_Id := Etype (R);
       Tsiz   : constant Uint      := RM_Size (Typ);
-
-      function Get_Size_For_Range (Lo, Hi : Uint) return Uint;
-      --  Return the size of a small signed integer type covering Lo .. Hi.
-      --  The important thing is to return a size lower than that of Typ.
-
-      ------------------------
-      -- Get_Size_For_Range --
-      ------------------------
-
-      function Get_Size_For_Range (Lo, Hi : Uint) return Uint is
-
-         function Is_OK_For_Range (Siz : Uint) return Boolean;
-         --  Return True if a signed integer with given size can cover Lo .. Hi
-
-         --------------------------
-         -- Is_OK_For_Range --
-         --------------------------
-
-         function Is_OK_For_Range (Siz : Uint) return Boolean is
-            B : constant Uint := Uint_2 ** (Siz - 1);
-
-         begin
-            --  Test B = 2 ** (size - 1) (can accommodate -B .. +(B - 1))
-
-            return Lo >= -B and then Hi >= -B and then Lo < B and then Hi < B;
-         end Is_OK_For_Range;
-
-      begin
-         --  This is (almost always) the size of Integer
-
-         if Is_OK_For_Range (Uint_32) then
-            return Uint_32;
-
-         --  If the size of Typ is 64 then check 63
-
-         elsif Tsiz = Uint_64 and then Is_OK_For_Range (Uint_63) then
-            return Uint_63;
-
-         --  This is (almost always) the size of Long_Long_Integer
-
-         elsif Is_OK_For_Range (Uint_64) then
-            return Uint_64;
-
-         --  If the size of Typ is 128 then check 127
-
-         elsif Tsiz = Uint_128 and then Is_OK_For_Range (Uint_127) then
-            return Uint_127;
-
-         else
-            return Uint_128;
-         end if;
-      end Get_Size_For_Range;
 
       --  Local variables
 

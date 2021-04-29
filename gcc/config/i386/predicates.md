@@ -1352,16 +1352,17 @@
   enum rtx_code code = GET_CODE (op);
 
   if (inmode == CCFPmode)
-    {
-      if (!ix86_trivial_fp_comparison_operator (op, mode))
-	return false;
-      code = ix86_fp_compare_code_to_integer (code);
-    }
+    code = ix86_fp_compare_code_to_integer (code);
+
   /* i387 supports just limited amount of conditional codes.  */
   switch (code)
     {
-    case LTU: case GTU: case LEU: case GEU:
-      if (inmode == CCmode || inmode == CCFPmode || inmode == CCCmode)
+    case GEU: case LTU:
+      if (inmode == CCCmode || inmode == CCGZmode)
+	return true;
+      /* FALLTHRU */
+    case GTU: case LEU:
+      if (inmode == CCmode || inmode == CCFPmode)
 	return true;
       return false;
     case ORDERED: case UNORDERED:
@@ -1418,11 +1419,11 @@
 	return true;
       return false;
     case GEU: case LTU:
-      if (inmode == CCGZmode)
+      if (inmode == CCCmode || inmode == CCGZmode)
 	return true;
       /* FALLTHRU */
     case GTU: case LEU:
-      if (inmode == CCmode || inmode == CCCmode || inmode == CCGZmode)
+      if (inmode == CCmode)
 	return true;
       return false;
     case ORDERED: case UNORDERED:
@@ -1441,20 +1442,14 @@
 ;; Return true if OP is a valid comparison operator
 ;; testing carry flag to be set.
 (define_predicate "ix86_carry_flag_operator"
-  (match_code "ltu,lt,unlt,gtu,gt,ungt,le,unle,ge,unge,ltgt,uneq")
+  (match_code "ltu,unlt")
 {
   machine_mode inmode = GET_MODE (XEXP (op, 0));
   enum rtx_code code = GET_CODE (op);
 
   if (inmode == CCFPmode)
-    {
-      if (!ix86_trivial_fp_comparison_operator (op, mode))
-	return false;
-      code = ix86_fp_compare_code_to_integer (code);
-    }
-  else if (inmode == CCCmode)
-   return code == LTU || code == GTU;
-  else if (inmode != CCmode)
+    code = ix86_fp_compare_code_to_integer (code);
+  else if (inmode != CCmode && inmode != CCCmode && inmode != CCGZmode)
     return false;
 
   return code == LTU;

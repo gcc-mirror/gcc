@@ -5514,17 +5514,20 @@ public:
   ipcp_modif_dom_walker (struct ipa_func_body_info *fbi,
 			 vec<ipa_param_descriptor, va_gc> *descs,
 			 struct ipa_agg_replacement_value *av,
-			 bool *sc, bool *cc)
+			 bool *sc)
     : dom_walker (CDI_DOMINATORS), m_fbi (fbi), m_descriptors (descs),
-      m_aggval (av), m_something_changed (sc), m_cfg_changed (cc) {}
+      m_aggval (av), m_something_changed (sc) {}
 
   virtual edge before_dom_children (basic_block);
+  bool cleanup_eh ()
+    { return gimple_purge_all_dead_eh_edges (m_need_eh_cleanup); }
 
 private:
   struct ipa_func_body_info *m_fbi;
   vec<ipa_param_descriptor, va_gc> *m_descriptors;
   struct ipa_agg_replacement_value *m_aggval;
-  bool *m_something_changed, *m_cfg_changed;
+  bool *m_something_changed;
+  auto_bitmap m_need_eh_cleanup;
 };
 
 edge
@@ -5616,9 +5619,8 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 	}
 
       *m_something_changed = true;
-      if (maybe_clean_eh_stmt (stmt)
-	  && gimple_purge_dead_eh_edges (gimple_bb (stmt)))
-	*m_cfg_changed = true;
+      if (maybe_clean_eh_stmt (stmt))
+	bitmap_set_bit (m_need_eh_cleanup, bb->index);
     }
   return NULL;
 }
@@ -5876,7 +5878,7 @@ ipcp_transform_function (struct cgraph_node *node)
   struct ipa_func_body_info fbi;
   struct ipa_agg_replacement_value *aggval;
   int param_count;
-  bool cfg_changed = false, something_changed = false;
+  bool something_changed = false;
 
   gcc_checking_assert (cfun);
   gcc_checking_assert (current_function_decl);
@@ -5907,15 +5909,16 @@ ipcp_transform_function (struct cgraph_node *node)
   vec_safe_grow_cleared (descriptors, param_count, true);
   ipa_populate_param_decls (node, *descriptors);
   calculate_dominance_info (CDI_DOMINATORS);
-  ipcp_modif_dom_walker (&fbi, descriptors, aggval, &something_changed,
-			 &cfg_changed).walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  ipcp_modif_dom_walker walker (&fbi, descriptors, aggval, &something_changed);
+  walker.walk (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+  free_dominance_info (CDI_DOMINATORS);
+  bool cfg_changed = walker.cleanup_eh ();
 
   int i;
   struct ipa_bb_info *bi;
   FOR_EACH_VEC_ELT (fbi.bb_infos, i, bi)
     free_ipa_bb_info (bi);
   fbi.bb_infos.release ();
-  free_dominance_info (CDI_DOMINATORS);
 
   ipcp_transformation *s = ipcp_transformation_sum->get (node);
   s->agg_values = NULL;

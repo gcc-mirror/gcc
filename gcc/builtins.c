@@ -128,7 +128,6 @@ static rtx expand_builtin_va_copy (tree);
 static rtx inline_expand_builtin_bytecmp (tree, rtx);
 static rtx expand_builtin_strcmp (tree, rtx);
 static rtx expand_builtin_strncmp (tree, rtx, machine_mode);
-static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 static rtx expand_builtin_memchr (tree, rtx);
 static rtx expand_builtin_memcpy (tree, rtx);
 static rtx expand_builtin_memory_copy_args (tree dest, tree src, tree len,
@@ -145,7 +144,6 @@ static rtx expand_builtin_stpcpy (tree, rtx, machine_mode);
 static rtx expand_builtin_stpncpy (tree, rtx);
 static rtx expand_builtin_strncat (tree, rtx);
 static rtx expand_builtin_strncpy (tree, rtx);
-static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, scalar_int_mode);
 static rtx expand_builtin_memset (tree, rtx, machine_mode);
 static rtx expand_builtin_memset_args (tree, tree, tree, rtx, machine_mode, tree);
 static rtx expand_builtin_bzero (tree);
@@ -3860,7 +3858,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
    a target constant.  */
 
 static rtx
-builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
+builtin_memcpy_read_str (void *data, void *, HOST_WIDE_INT offset,
 			 scalar_int_mode mode)
 {
   /* The REPresentation pointed to by DATA need not be a nul-terminated
@@ -6373,7 +6371,7 @@ expand_builtin_stpncpy (tree exp, rtx)
    constant.  */
 
 rtx
-builtin_strncpy_read_str (void *data, HOST_WIDE_INT offset,
+builtin_strncpy_read_str (void *data, void *, HOST_WIDE_INT offset,
 			  scalar_int_mode mode)
 {
   const char *str = (const char *) data;
@@ -6584,12 +6582,22 @@ expand_builtin_strncpy (tree exp, rtx target)
 
 /* Callback routine for store_by_pieces.  Read GET_MODE_BITSIZE (MODE)
    bytes from constant string DATA + OFFSET and return it as target
-   constant.  */
+   constant.  If PREV isn't nullptr, it has the RTL info from the
+   previous iteration.  */
 
 rtx
-builtin_memset_read_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
+builtin_memset_read_str (void *data, void *prevp,
+			 HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
 			 scalar_int_mode mode)
 {
+  by_pieces_prev *prev = (by_pieces_prev *) prevp;
+  if (prev != nullptr && prev->data != nullptr)
+    {
+      /* Use the previous data in the same mode.  */
+      if (prev->mode == mode)
+	return prev->data;
+    }
+
   const char *c = (const char *) data;
   char *p = XALLOCAVEC (char, GET_MODE_SIZE (mode));
 
@@ -6601,15 +6609,27 @@ builtin_memset_read_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
 /* Callback routine for store_by_pieces.  Return the RTL of a register
    containing GET_MODE_SIZE (MODE) consecutive copies of the unsigned
    char value given in the RTL register data.  For example, if mode is
-   4 bytes wide, return the RTL for 0x01010101*data.  */
+   4 bytes wide, return the RTL for 0x01010101*data.  If PREV isn't
+   nullptr, it has the RTL info from the previous iteration.  */
 
 static rtx
-builtin_memset_gen_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
+builtin_memset_gen_str (void *data, void *prevp,
+			HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
 			scalar_int_mode mode)
 {
   rtx target, coeff;
   size_t size;
   char *p;
+
+  by_pieces_prev *prev = (by_pieces_prev *) prevp;
+  if (prev != nullptr && prev->data != nullptr)
+    {
+      /* Use the previous data in the same mode.  */
+      if (prev->mode == mode)
+	return prev->data;
+
+      return simplify_gen_subreg (mode, prev->data, prev->mode, 0);
+    }
 
   size = GET_MODE_SIZE (mode);
   if (size == 1)
