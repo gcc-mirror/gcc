@@ -25173,6 +25173,10 @@ aarch64_comp_type_attributes (const_tree type1, const_tree type2)
     return 0;
   if (!check_attr ("Advanced SIMD type"))
     return 0;
+  if (!check_attr ("SVE type"))
+    return 0;
+  if (!check_attr ("SVE sizeless type"))
+    return 0;
   return 1;
 }
 
