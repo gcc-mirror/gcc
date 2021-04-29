@@ -97,10 +97,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 11.1-b20210321\n"
+"Project-Id-Version: gcc 11.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-04-20 18:19+0000\n"
-"PO-Revision-Date: 2021-03-25 13:27+0100\n"
+"PO-Revision-Date: 2021-04-29 11:08+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -6403,8 +6403,7 @@ msgid "Warn for deallocation calls with arguments returned from mismatched alloc
 msgstr "Avertir à propos d'appels de désallocation avec des arguments retournés par des fonctions d'allocation non correspondantes."
 
 #: c-family/c.opt:803
-#, fuzzy, no-c-format
-#| msgid "Warn for mismatches between calls to operator new or delete and the corrsponding call to the allocation or deallocation function."
+#, no-c-format
 msgid "Warn for mismatches between calls to operator new or delete and the corresponding call to the allocation or deallocation function."
 msgstr "Avertir à propos de désaccords entre les appels à l'opérateur « new » ou « delete » et l'appel correspondant à la fonction d'allocation ou de désallocation."
 
@@ -8087,10 +8086,9 @@ msgid "-fversion=<level|ident>\tCompile in version code >= <level> or identified
 msgstr "-fversion=<niveau|ident>\tCompiler en code version >= <niveau> ou identifié par <ident>."
 
 #: d/lang.opt:326
-#, fuzzy, no-c-format
-#| msgid "Emit implicit instantiations of templates."
+#, no-c-format
 msgid "Emit template instantiations as weak symbols."
-msgstr "Produire des instanciations implicites pour les patrons."
+msgstr "Produire des instanciations de patron en tant que symboles faibles."
 
 #: d/lang.opt:346
 #, no-c-format
@@ -19158,7 +19156,7 @@ msgstr "--param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|
 #: params.opt:162
 #, no-c-format
 msgid "Maximum depth of logical expression evaluation ranger will look through when evaluating outgoing edge ranges."
-msgstr ""
+msgstr "La profondeur maximale de l'évaluation d'expressions logiques qui sera examinée en évaluant les portées des arrêtes sortantes."
 
 #: params.opt:167
 #, no-c-format
@@ -19922,10 +19920,9 @@ msgid "If -ftree-vectorize is used, the minimal loop bound of a loop to be consi
 msgstr "Si -ftree-vectorize est utilisé, la limite minimale de boucle d'une boucle prise en compte pour la vectorisation."
 
 #: params.opt:787
-#, fuzzy, no-c-format
-#| msgid "-fopenacc-kernels=[decompose|parloops]\tSpecify mode of OpenACC 'kernels' constructs handling."
+#, no-c-format
 msgid "--param=openacc-kernels=[decompose|parloops]\tSpecify mode of OpenACC 'kernels' constructs handling."
-msgstr "-fopenacc-kernels=[decompose|parloops]\tSpécifier le mode de gestion des constructions « kernels » OpenACC."
+msgstr "--param=openacc-kernels=[decompose|parloops]\tSpécifier le mode de gestion des constructions « kernels » OpenACC."
 
 #: params.opt:800
 #, no-c-format
@@ -33967,10 +33964,9 @@ msgid "embedded NUL in CFString literal"
 msgstr "NUL inclus dans une CFString littérale"
 
 #: config/host-darwin.c:65
-#, fuzzy, gcc-internal-format
-#| msgid "could not unmap %<pch_address_space%> %m"
+#, gcc-internal-format
 msgid "could not unmap %<pch_address_space%>: %m"
-msgstr "ne peut délier la mémoire %<pch_address_space%> %m"
+msgstr "ne peut délier la mémoire %<pch_address_space%> : %m"
 
 #: config/sol2-c.c:91 config/sol2-c.c:107
 #, gcc-internal-format
@@ -35083,8 +35079,7 @@ msgid "target CPU does not support unaligned accesses"
 msgstr "le processeur cible ne supporte pas les accès non alignés"
 
 #: config/arm/arm.c:3244
-#, fuzzy, gcc-internal-format
-#| msgid "switch %<-mcpu=%s%> conflicts with %<-march=%s%> switch"
+#, gcc-internal-format
 msgid "switch %<-mcpu=%s%> conflicts with switch %<-march=%s%>"
 msgstr "l'option %<-mcpu=%s%> est en conflit avec l'option %<-march=%s%>"
 
@@ -35189,10 +35184,9 @@ msgid "ARMv8-M Security Extensions incompatible with selected FPU"
 msgstr "Les extensions de sécurité ARMv8-M sont incompatibles avec le FPU sélectionné"
 
 #: config/arm/arm.c:3864
-#, fuzzy, gcc-internal-format
-#| msgid "%<-mfloat-abi=hard%>: selected processor lacks an FPU"
+#, gcc-internal-format
 msgid "%<-mfloat-abi=hard%>: selected architecture lacks an FPU"
-msgstr "%<-mfloat-abi=hard%>: le processeur sélectionné n'a pas de FPU"
+msgstr "%<-mfloat-abi=hard%>: l'architecture sélectionnée n'a pas de FPU"
 
 #: config/arm/arm.c:3872
 #, gcc-internal-format
@@ -39021,10 +39015,9 @@ msgid "the layout of aggregates containing vectors with %d-byte alignment has ch
 msgstr "l'agencement des agrégats contenant des vecteurs alignés sur %d octets a changé avec GCC 5"
 
 #: config/rs6000/rs6000.c:10675
-#, fuzzy, gcc-internal-format
-#| msgid "%qs is an opaque type, and you can't set it to other values."
+#, gcc-internal-format
 msgid "%qs is an opaque type, and you cannot set it to other values"
-msgstr "%qs est un type opaque et vous ne pouvez pas le remplacer avec d'autres valeurs."
+msgstr "%qs est un type opaque et vous ne pouvez pas le remplacer avec d'autres valeurs"
 
 #: config/rs6000/rs6000.c:17794
 #, gcc-internal-format
@@ -39052,8 +39045,7 @@ msgid "use of %<complex%> in AltiVec types is invalid"
 msgstr "l'utilisation de %<complex%> dans les types AltiVec est invalide"
 
 #: config/rs6000/rs6000.c:20172
-#, fuzzy, gcc-internal-format
-#| msgid "use of decimal floating point types in AltiVec types is invalid"
+#, gcc-internal-format
 msgid "use of decimal floating-point types in AltiVec types is invalid"
 msgstr "l'utilisation de types décimaux en virgule flottante dans les types AltiVec est invalide"
 
@@ -39362,10 +39354,9 @@ msgid "constant argument %d for builtin %qF is out of range for target type"
 msgstr "l'argument constant %d de la fonction interne %qF est hors limite pour le type cible"
 
 #: config/s390/s390.c:762
-#, fuzzy, gcc-internal-format
-#| msgid "constant argument %d for builtin %qF is out of range ("
+#, gcc-internal-format
 msgid "constant argument %d for builtin %qF is invalid (%s)"
-msgstr "l'argument constant %d de la fonction interne %qF est hors limite ("
+msgstr "l'argument constant %d de la fonction interne %qF est invalide (%s)"
 
 #: config/s390/s390.c:766
 #, gcc-internal-format
@@ -39903,10 +39894,9 @@ msgid "STABS debugging information for Ada is obsolete and not supported anymore
 msgstr "les informations de débogage STABS de Ada sont obsolètes et ne sont plus supportées"
 
 #: ada/gcc-interface/trans.c:332
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "STOP code at %C contains too many digits"
+#, gcc-internal-format, gfc-internal-format
 msgid "%s contains too many lines"
-msgstr "Le code de STOP à %C contient trop de chiffres"
+msgstr "%s contient trop de lignes"
 
 #: ada/gcc-interface/trans.c:1642
 #, gcc-internal-format
@@ -45981,10 +45971,8 @@ msgid "cannot bind rvalue reference of type %qH to lvalue of type %qI"
 msgstr "impossible de lier la référence d'une r-valeur de type %qH à une l-valeur de type %qI"
 
 #: cp/call.c:7906
-#, fuzzy
-#| msgid "cannot bind non-const lvalue reference of type %qH to an rvalue of type %qI"
 msgid "cannot bind non-const lvalue reference of type %qH to a value of type %qI"
-msgstr "impossible de lier la référence d'une l-valeur non constante de type %qH à une r-valeur de type %qI"
+msgstr "impossible de lier la référence d'une l-valeur non constante de type %qH à une valeur de type %qI"
 
 #: cp/call.c:7911
 msgid "cannot bind non-const lvalue reference of type %qH to an rvalue of type %qI"
@@ -48314,10 +48302,9 @@ msgid "%qD used without template arguments"
 msgstr "%qD utilisé sans arguments du patron"
 
 #: cp/decl.c:4061
-#, fuzzy, gcc-internal-format
-#| msgid "%qD is not a function template"
+#, gcc-internal-format
 msgid "%qD is a function, not a type"
-msgstr "%qD n'est pas un patron de fonction"
+msgstr "%qD est une fonction, pas un type"
 
 #: cp/decl.c:4072
 #, gcc-internal-format
@@ -48911,7 +48898,7 @@ msgstr "alors que %qT se décompose en %E éléments"
 #: cp/decl.c:8640
 #, gcc-internal-format
 msgid "%<std::tuple_element<%u, %T>::type%> is %<void%>"
-msgstr ""
+msgstr "%<std::tuple_element<%u, %T>::type%> est %<void%>"
 
 #: cp/decl.c:8646
 #, gcc-internal-format
@@ -49234,10 +49221,9 @@ msgid "a non-template variable cannot be %<concept%>"
 msgstr "une variable qui n'est pas un patron ne peut pas avoir %<concept%>"
 
 #: cp/decl.c:10371
-#, fuzzy, gcc-internal-format
-#| msgid "deduction guide %qD must be declared at namespace scope"
+#, gcc-internal-format
 msgid "concept must be defined at namespace scope"
-msgstr "le guide de déduction %qD doit être déclaré au niveau de l'espace de noms"
+msgstr "le concept doit être défini au niveau de l'espace de noms"
 
 #: cp/decl.c:10378
 #, gcc-internal-format
@@ -53058,10 +53044,9 @@ msgid "types may not be defined within %<__builtin_offsetof%>"
 msgstr "des types ne peuvent pas être définis dans %<__builtin_offsetof%>"
 
 #: cp/parser.c:10809
-#, fuzzy, gcc-internal-format
-#| msgid "lambda-expression in template-argument"
+#, gcc-internal-format
 msgid "lambda-expression in template parameter type"
-msgstr "expression lambda dans l'argument du patron"
+msgstr "expression lambda dans le type du paramètre du patron"
 
 #: cp/parser.c:10819
 #, gcc-internal-format
@@ -57915,10 +57900,9 @@ msgid "converting from %qH to %qI"
 msgstr "conversion de %qH vers %qI"
 
 #: cp/typeck.c:7963
-#, fuzzy, gcc-internal-format
-#| msgid "invalid cast of an rvalue expression of type %qT to type %qT"
+#, gcc-internal-format
 msgid "invalid cast of a prvalue expression of type %qT to type %qT"
-msgstr "transtypage invalide d'une expression r-valeur du type %qT vers le type %qT"
+msgstr "transtypage invalide d'une expression pr-valeur du type %qT vers le type %qT"
 
 #: cp/typeck.c:8033
 msgid "cast from %qH to %qI loses precision"
@@ -58585,10 +58569,9 @@ msgid "cannot be declared to be a function"
 msgstr "ne peut pas être déclaré comme étant une fonction"
 
 #: d/dmd/dsymbolsem.c:418
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "no definition of struct %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "no definition of struct `%s`"
-msgstr "pas de définition de struct %s"
+msgstr "pas de définition de la structure « %s »"
 
 #: d/dmd/dsymbolsem.c:434
 #, gcc-internal-format
@@ -58734,10 +58717,9 @@ msgid "char 0x%04x not allowed in mangled name"
 msgstr "le caractères 0x%04x n'est pas permis dans le nom décoré"
 
 #: d/dmd/dsymbolsem.c:1465
-#, fuzzy, gcc-internal-format
-#| msgid "no arguments"
+#, gcc-internal-format
 msgid "takes no argument"
-msgstr "pas d'argument"
+msgstr "ne prend pas d'argument"
 
 #: d/dmd/dsymbolsem.c:1526
 #, gcc-internal-format
@@ -58851,12 +58833,12 @@ msgstr "ne peut être, à la fois, final et abstract"
 #: d/dmd/dsymbolsem.c:2829
 #, gcc-internal-format, gfc-internal-format
 msgid "`pragma(%s)` functions must be `extern(C) %s %s([parameters...], const(char)*, ...)` not `%s`"
-msgstr ""
+msgstr "les fonctions « oragma(%s) » doivent être « extern(C) %s %s([paramètres…], const(char)*, …) » pas « %s »"
 
 #: d/dmd/dsymbolsem.c:2835
 #, gcc-internal-format, gfc-internal-format
 msgid "`pragma(%s)` functions must be `extern(C) %s %s([parameters...], const(char)*, va_list)`"
-msgstr ""
+msgstr "les fonctions « pargma(%s » doivent être « extern(C) %s %s([paramètres…], const(char)*n va_list) »"
 
 #: d/dmd/dsymbolsem.c:2851
 #, gcc-internal-format, gfc-internal-format
@@ -59132,16 +59114,14 @@ msgid "cannot call super() implicitly because it is annotated with @disable"
 msgstr "impossible d'appeler super() implicitement car il est annoté avec @disable"
 
 #: d/dmd/semantic3.c:862
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "has no return statement, but is expected to return a value of type %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "has no `return` statement, but is expected to return a value of type `%s`"
-msgstr "n'a pas d'instruction de retour mais une valeur de retour de type %s est attendue"
+msgstr "n'a pas d'instruction de retour mais une valeur de retour de type « %s » est attendue"
 
 #: d/dmd/semantic3.c:864
-#, fuzzy, gcc-internal-format
-#| msgid "no return exp; or assert(0); at end of function"
+#, gcc-internal-format
 msgid "no `return exp;` or `assert(0);` at end of function"
-msgstr "pas d'expression de retour ou de assert(0) à la fin de la fonction"
+msgstr "pas de « return exp; » ni de « assert(0); » à la fin de la fonction"
 
 #: d/dmd/semantic3.c:1171
 #, gcc-internal-format, gfc-internal-format
@@ -72666,8 +72646,7 @@ msgid "%<-fwpa%> and %<-fltrans%> are mutually exclusive"
 msgstr "%<-fwpa%> et %<-fltrans%> sont mutuellement exclusifs"
 
 #: lto/lto-lang.c:898
-#, fuzzy, gcc-internal-format
-#| msgid "%<-flinker-output=rel%> and %<-fltrans%> are mutually exclussive"
+#, gcc-internal-format
 msgid "%<-flinker-output=rel%> and %<-fltrans%> are mutually exclusive"
 msgstr "%<-flinker-output=rel%> et %<-fltrans%> sont mutuellement exclusifs"
 
