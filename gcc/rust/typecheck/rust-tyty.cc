@@ -211,16 +211,32 @@ SubstitutionParamMapping::override_context ()
 SubstitutionArgumentMappings
 SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 {
-  if (args.get_type_args ().size () != substitutions.size ())
+  if (args.get_binding_args ().size () > 0)
     {
       rust_error_at (args.get_locus (),
-		     "Invalid number of generic arguments to generic type");
+		     "associated type bindings are not allowed here");
+      return SubstitutionArgumentMappings::error ();
+    }
+
+  if (args.get_type_args ().size () > substitutions.size ())
+    {
+      rust_error_at (
+	args.get_locus (),
+	"generic item takes at most %lu type arguments but %lu were supplied",
+	substitutions.size (), args.get_type_args ().size ());
+      return SubstitutionArgumentMappings::error ();
+    }
+
+  if (args.get_type_args ().size () < substitutions.size ())
+    {
+      rust_error_at (
+	args.get_locus (),
+	"generic item takes at least %lu type arguments but %lu were supplied",
+	substitutions.size (), args.get_type_args ().size ());
       return SubstitutionArgumentMappings::error ();
     }
 
   std::vector<SubstitutionArg> mappings;
-
-  // FIXME does not support binding yet
   for (auto &arg : args.get_type_args ())
     {
       BaseType *resolved = Resolver::TypeCheckType::Resolve (arg.get ());

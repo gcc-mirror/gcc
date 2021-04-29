@@ -1,7 +1,7 @@
 struct Foo<A>(A);
 
 impl Foo {
-    // { dg-error "Invalid number of generic arguments to generic type" "" { target { *-*-* } } .-1 }
+    // { dg-error "generic item takes at least 1 type arguments but 0 were supplied" "" { target { *-*-* } } .-1 }
     fn test() -> i32 {
         123
     }
