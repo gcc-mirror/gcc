@@ -275,13 +275,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-stboha$(objext) \
   a-stfiha$(objext) \
   a-stmaco$(objext) \
-  a-stobbu$(objext) \
-  a-stobfi$(objext) \
   a-storio$(objext) \
-  a-stoubu$(objext) \
-  a-stoufi$(objext) \
-  a-stoufo$(objext) \
-  a-stouut$(objext) \
   a-strbou$(objext) \
   a-stream$(objext) \
   a-strsto$(objext) \
@@ -295,7 +289,6 @@ GNATRTL_NONTASKING_OBJS= \
   a-strsup$(objext) \
   a-strunb$(objext) \
   a-ststio$(objext) \
-  a-stteou$(objext) \
   a-sttebu$(objext) \
   a-stbuun$(objext) \
   a-stbubo$(objext) \
