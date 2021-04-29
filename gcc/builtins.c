@@ -6628,7 +6628,9 @@ builtin_memset_gen_str (void *data, void *prevp,
       if (prev->mode == mode)
 	return prev->data;
 
-      return simplify_gen_subreg (mode, prev->data, prev->mode, 0);
+      target = simplify_gen_subreg (mode, prev->data, prev->mode, 0);
+      if (target != nullptr)
+	return target;
     }
 
   size = GET_MODE_SIZE (mode);
