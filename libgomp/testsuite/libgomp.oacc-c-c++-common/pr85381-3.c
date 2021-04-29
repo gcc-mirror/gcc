@@ -1,6 +1,6 @@
 /* { dg-do run { target openacc_nvidia_accel_selected } }
    { dg-skip-if "" { *-*-* } { "*" } { "-O2" } } */
-/* { dg-additional-options "-foffload=-fdump-rtl-mach" } */
+/* { dg-additional-options "-foffload=-fdump-rtl-mach -w" } */
 
 int a;
 #pragma acc declare create(a)

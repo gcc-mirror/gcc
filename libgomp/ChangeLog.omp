@@ -1,3 +1,8 @@
+2021-04-29  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr85381-3.c: Surpress warnings.
+	* testsuite/libgomp.oacc-c-c++-common/static-variable-1.c: Likewise.
+
 2021-04-22  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

@@ -9,6 +9,7 @@
    variables" (only visible to members of the GitHub OpenACC organization).
 */
 
+/* { dg-additional-options "-w" } */
 
 #undef NDEBUG
 #include <assert.h>
