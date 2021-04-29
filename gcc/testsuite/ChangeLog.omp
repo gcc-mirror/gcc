@@ -1,5 +1,10 @@
 2021-04-29  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
+	* c-c++-common/goacc/data-clause-1.c (foo): Remove expected message.
+	* g++.dg/goacc/data-clause-1.C (foo): Remove expected message.
+
+2021-04-29  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
 	* c-c++-common/goacc/kernels-decompose-2.c (main): Update expected
 	messages.
 	* gfortran.dg/goacc/kernels-decompose-2.f95 (main): Update expected
