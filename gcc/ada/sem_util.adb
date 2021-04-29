@@ -15691,6 +15691,15 @@ package body Sem_Util is
            --  statement is aliased if its type is immutably limited.
 
            or else (Is_Return_Object (E)
+                     and then Is_Limited_View (Etype (E)))
+
+           --  The current instance of a limited type is aliased, so
+           --  we want to allow uses of T'Access in the init proc for
+           --  a limited type T. However, we don't want to mark the formal
+           --  parameter as being aliased since that could impact callers.
+
+           or else (Is_Formal (E)
+                     and then Chars (E) = Name_uInit
                      and then Is_Limited_View (Etype (E)));
 
       elsif Nkind (Obj) = N_Selected_Component then
@@ -18838,7 +18847,9 @@ package body Sem_Util is
       --  This is because the parser always checks that prefixes of attributes
       --  are named.
 
-      return not (Is_Entity_Name (Prefix) and then Is_Type (Entity (Prefix)));
+      return not (Is_Entity_Name (Prefix)
+                  and then Is_Type (Entity (Prefix))
+                  and then not Is_Current_Instance (Prefix));
    end Is_Object_Image;
 
    -------------------------
