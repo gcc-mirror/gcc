@@ -1,3 +1,30 @@
+2021-04-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2021-04-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* config/i386/sync.md (FILD_ATOMIC/FIST_ATOMIC FP load peephole2):
+	Copy operand 3 to operand 4.  Use sse_reg_operand
+	as operand 3 predicate.
+	(FILD_ATOMIC/FIST_ATOMIC FP load peephole2 with mem blockage): Ditto.
+	(LDX_ATOMIC/STX_ATOMIC FP load peephole2): Ditto.
+	(LDX_ATOMIC/LDX_ATOMIC FP load peephole2 with mem blockage): Ditto.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2):
+	Copy operand 1 to operand 0.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2 with mem blockage): Ditto.
+	(LDX_ATOMIC/STX_ATOMIC FP store peephole2): Ditto.
+	(LDX_ATOMIC/LDX_ATOMIC FP store peephole2 with mem blockage): Ditto.
+
+2021-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99954
+	* tree-loop-distribution.c: Include tree-affine.h.
+	(generate_memcpy_builtin): Try using tree-affine to prove
+	non-overlap.
+	(loop_distribution::classify_builtin_ldst): Always classify
+	as PKIND_MEMMOVE.
+
 2021-04-25  Richard Sandiford  <richard.sandiford@arm.com>
 
 	Backported from master:
