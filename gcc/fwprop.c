@@ -606,7 +606,8 @@ try_fwprop_subst (use_info *use, set_info *def,
   if (def_insn->bb () != use_insn->bb ())
     {
       src_uses = crtl->ssa->make_uses_available (attempt, src_uses,
-						 use_insn->bb ());
+						 use_insn->bb (),
+						 use_insn->is_debug_insn ());
       if (!src_uses.is_valid ())
 	return false;
     }
