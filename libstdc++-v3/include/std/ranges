@@ -246,6 +246,9 @@ namespace ranges
       [[no_unique_address]] __detail::__box<_Tp> _M_value;
     };
 
+  template<typename _Tp>
+    single_view(_Tp) -> single_view<_Tp>;
+
   namespace __detail
   {
     template<typename _Wp>
@@ -597,7 +600,7 @@ namespace views
     template<typename _Tp>
       constexpr auto
       operator()(_Tp&& __e) const
-      { return single_view{std::forward<_Tp>(__e)}; }
+      { return single_view<decay_t<_Tp>>(std::forward<_Tp>(__e)); }
   };
 
   inline constexpr _Single single{};
@@ -607,12 +610,12 @@ namespace views
     template<typename _Tp>
       constexpr auto
       operator()(_Tp&& __e) const
-      { return iota_view{std::forward<_Tp>(__e)}; }
+      { return iota_view(std::forward<_Tp>(__e)); }
 
     template<typename _Tp, typename _Up>
       constexpr auto
       operator()(_Tp&& __e, _Up&& __f) const
-      { return iota_view{std::forward<_Tp>(__e), std::forward<_Up>(__f)}; }
+      { return iota_view(std::forward<_Tp>(__e), std::forward<_Up>(__f)); }
   };
 
   inline constexpr _Iota iota{};
@@ -1336,7 +1339,7 @@ namespace views::__adaptor
     {
       template<typename _Range, typename _Pred>
 	concept __can_filter_view
-	  = requires { filter_view{std::declval<_Range>(), std::declval<_Pred>()}; };
+	  = requires { filter_view(std::declval<_Range>(), std::declval<_Pred>()); };
     } // namespace __detail
 
     struct _Filter : __adaptor::_RangeAdaptor<_Filter>
@@ -1346,7 +1349,7 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(_Range&& __r, _Pred&& __p) const
 	{
-	  return filter_view{std::forward<_Range>(__r), std::forward<_Pred>(__p)};
+	  return filter_view(std::forward<_Range>(__r), std::forward<_Pred>(__p));
 	}
 
       using _RangeAdaptor<_Filter>::operator();
@@ -1717,7 +1720,7 @@ namespace views::__adaptor
     {
       template<typename _Range, typename _Fp>
 	concept __can_transform_view
-	  = requires { transform_view{std::declval<_Range>(), std::declval<_Fp>()}; };
+	  = requires { transform_view(std::declval<_Range>(), std::declval<_Fp>()); };
     } // namespace __detail
 
     struct _Transform : __adaptor::_RangeAdaptor<_Transform>
@@ -1727,7 +1730,7 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(_Range&& __r, _Fp&& __f) const
 	{
-	  return transform_view{std::forward<_Range>(__r), std::forward<_Fp>(__f)};
+	  return transform_view(std::forward<_Range>(__r), std::forward<_Fp>(__f));
 	}
 
       using _RangeAdaptor<_Transform>::operator();
@@ -1813,11 +1816,11 @@ namespace views::__adaptor
 	    else
 	      {
 		auto __sz = size();
-		return counted_iterator{ranges::begin(_M_base), __sz};
+		return counted_iterator(ranges::begin(_M_base), __sz);
 	      }
 	  }
 	else
-	  return counted_iterator{ranges::begin(_M_base), _M_count};
+	  return counted_iterator(ranges::begin(_M_base), _M_count);
       }
 
       constexpr auto
@@ -1830,11 +1833,11 @@ namespace views::__adaptor
 	    else
 	      {
 		auto __sz = size();
-		return counted_iterator{ranges::begin(_M_base), __sz};
+		return counted_iterator(ranges::begin(_M_base), __sz);
 	      }
 	  }
 	else
-	  return counted_iterator{ranges::begin(_M_base), _M_count};
+	  return counted_iterator(ranges::begin(_M_base), _M_count);
       }
 
       constexpr auto
@@ -1897,7 +1900,7 @@ namespace views::__adaptor
     {
       template<typename _Range, typename _Tp>
 	concept __can_take_view
-	  = requires { take_view{std::declval<_Range>(), std::declval<_Tp>()}; };
+	  = requires { take_view(std::declval<_Range>(), std::declval<_Tp>()); };
     } // namespace __detail
 
     struct _Take : __adaptor::_RangeAdaptor<_Take>
@@ -1907,7 +1910,7 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(_Range&& __r, _Tp&& __n) const
 	{
-	  return take_view{std::forward<_Range>(__r), std::forward<_Tp>(__n)};
+	  return take_view(std::forward<_Range>(__r), std::forward<_Tp>(__n));
 	}
 
       using _RangeAdaptor<_Take>::operator();
@@ -2016,7 +2019,7 @@ namespace views::__adaptor
     {
       template<typename _Range, typename _Pred>
 	concept __can_take_while_view
-	  = requires { take_while_view{std::declval<_Range>(), std::declval<_Pred>()}; };
+	  = requires { take_while_view(std::declval<_Range>(), std::declval<_Pred>()); };
     } // namespace __detail
 
     struct _TakeWhile : __adaptor::_RangeAdaptor<_TakeWhile>
@@ -2026,7 +2029,7 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(_Range&& __r, _Pred&& __p) const
 	{
-	  return take_while_view{std::forward<_Range>(__r), std::forward<_Pred>(__p)};
+	  return take_while_view(std::forward<_Range>(__r), std::forward<_Pred>(__p));
 	}
 
       using _RangeAdaptor<_TakeWhile>::operator();
@@ -2135,7 +2138,7 @@ namespace views::__adaptor
     {
       template<typename _Range, typename _Tp>
 	concept __can_drop_view
-	  = requires { drop_view{std::declval<_Range>(), std::declval<_Tp>()}; };
+	  = requires { drop_view(std::declval<_Range>(), std::declval<_Tp>()); };
     } // namespace __detail
 
     struct _Drop : __adaptor::_RangeAdaptor<_Drop>
@@ -2145,7 +2148,7 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(_Range&& __r, _Tp&& __n) const
 	{
-	  return drop_view{std::forward<_Range>(__r), std::forward<_Tp>(__n)};
+	  return drop_view(std::forward<_Range>(__r), std::forward<_Tp>(__n));
 	}
 
       using _RangeAdaptor<_Drop>::operator();
@@ -2217,7 +2220,7 @@ namespace views::__adaptor
     {
       template<typename _Range, typename _Pred>
 	concept __can_drop_while_view
-	  = requires { drop_while_view{std::declval<_Range>(), std::declval<_Pred>()}; };
+	  = requires { drop_while_view(std::declval<_Range>(), std::declval<_Pred>()); };
     } // namespace __detail
 
     struct _DropWhile : __adaptor::_RangeAdaptor<_DropWhile>
@@ -2227,8 +2230,8 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(_Range&& __r, _Pred&& __p) const
 	{
-	  return drop_while_view{std::forward<_Range>(__r),
-				 std::forward<_Pred>(__p)};
+	  return drop_while_view(std::forward<_Range>(__r),
+				 std::forward<_Pred>(__p));
 	}
 
       using _RangeAdaptor<_DropWhile>::operator();
@@ -2948,7 +2951,7 @@ namespace views::__adaptor
 	  && constructible_from<_Pattern, single_view<range_value_t<_Range>>>
 	constexpr
 	split_view(_Range&& __r, range_value_t<_Range> __e)
-	  : _M_pattern(std::move(__e)),
+	  : _M_pattern(views::single(std::move(__e))),
 	    _M_base(views::all(std::forward<_Range>(__r)))
 	{ }
 
@@ -3012,7 +3015,7 @@ namespace views::__adaptor
     {
       template<typename _Range, typename _Pattern>
 	concept __can_split_view
-	  = requires { split_view{std::declval<_Range>(), std::declval<_Pattern>()}; };
+	  = requires { split_view(std::declval<_Range>(), std::declval<_Pattern>()); };
     } // namespace __detail
 
     struct _Split : __adaptor::_RangeAdaptor<_Split>
@@ -3022,7 +3025,7 @@ namespace views::__adaptor
 	constexpr auto
 	operator()(_Range&& __r, _Pattern&& __f) const
 	{
-	  return split_view{std::forward<_Range>(__r), std::forward<_Pattern>(__f)};
+	  return split_view(std::forward<_Range>(__r), std::forward<_Pattern>(__f));
 	}
 
       using _RangeAdaptor<_Split>::operator();
@@ -3041,10 +3044,10 @@ namespace views::__adaptor
       operator()(_Iter __i, iter_difference_t<_Iter> __n) const
       {
 	if constexpr (random_access_iterator<_Iter>)
-	  return subrange{__i, __i + __n};
+	  return subrange(__i, __i + __n);
 	else
-	  return subrange{counted_iterator{std::move(__i), __n},
-			  default_sentinel};
+	  return subrange(counted_iterator(std::move(__i), __n),
+			  default_sentinel);
       }
     };
 
