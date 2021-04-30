@@ -2,6 +2,7 @@
    construct containing straight-line code.  */
 
 /* { dg-additional-options "-fopt-info-note-optimized-omp" } */
+/* { dg-additional-options "-Wopenacc-parallelism" } */
 
 //TODO update accordingly
 /* See also "../../gfortran.dg/goacc/note-parallelism.f90".  */

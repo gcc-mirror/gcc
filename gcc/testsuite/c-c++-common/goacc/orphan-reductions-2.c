@@ -1,6 +1,8 @@
 /* Verify that the error message for gang reduction on orphaned OpenACC loops
    is not reported for non-orphaned loops. */
 
+/* { dg-additional-options "-Wopenacc-parallelism" } */
+
 #include <assert.h>
 
 int

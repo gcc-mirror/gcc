@@ -1,6 +1,8 @@
 ! Verify that the error message for gang reductions on orphaned OpenACC loops
 ! is not reported for non-orphaned loops.
 
+! { dg-additional-options "-Wopenacc-parallelism" }
+
 subroutine kernels
   implicit none
 
