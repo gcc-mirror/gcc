@@ -16209,11 +16209,9 @@ package body Sem_Util is
 
    function Is_Concurrent_Interface (T : Entity_Id) return Boolean is
    begin
-      return Is_Interface (T)
-        and then
-          (Is_Protected_Interface (T)
-            or else Is_Synchronized_Interface (T)
-            or else Is_Task_Interface (T));
+      return Is_Protected_Interface (T)
+        or else Is_Synchronized_Interface (T)
+        or else Is_Task_Interface (T);
    end Is_Concurrent_Interface;
 
    -----------------------
