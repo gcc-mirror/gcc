@@ -4147,6 +4147,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_LEGITIMATE_CONSTANT_P
 
+@hook TARGET_PRECOMPUTE_TLS_P
+
 @hook TARGET_DELEGITIMIZE_ADDRESS
 
 @hook TARGET_CONST_NOT_OK_FOR_DEBUG_P

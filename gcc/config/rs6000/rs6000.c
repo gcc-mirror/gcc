@@ -9612,7 +9612,8 @@ rs6000_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
       && SYMBOL_REF_TLS_MODEL (XEXP (XEXP (x, 0), 0)) != 0)
     return true;
 
-  /* Do not place an ELF TLS symbol in the constant pool.  */
+  /* Allow AIX TOC TLS symbols in the constant pool,
+     but not ELF TLS symbols.  */
   return TARGET_ELF && tls_referenced_p (x);
 }
 
@@ -25373,6 +25374,20 @@ rs6000_legitimate_constant_p (machine_mode mode, rtx x)
 
   return true;
 }
+
+#if TARGET_AIX_OS
+/* Implement TARGET_PRECOMPUTE_TLS_P.
+
+   On the AIX, TLS symbols are in the TOC, which is maintained in the
+   constant pool.  AIX TOC TLS symbols need to be pre-computed, but
+   must be considered legitimate constants.  */
+
+static bool
+rs6000_aix_precompute_tls_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
+{
+  return tls_referenced_p (x);
+}
+#endif
 
 
 /* Return TRUE iff the sequence ending in LAST sets the static chain.  */
