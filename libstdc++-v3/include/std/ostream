@@ -704,77 +704,52 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return __os.flush(); }
 
 #if __cplusplus >= 201103L
-  template<typename _Ch, typename _Up>
-    basic_ostream<_Ch, _Up>&
-    __is_convertible_to_basic_ostream_test(basic_ostream<_Ch, _Up>*);
+  // C++11 27.7.3.9 Rvalue stream insertion [ostream.rvalue]
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 1203. More useful rvalue stream insertion
 
-  template<typename _Tp, typename = void>
-    struct __is_convertible_to_basic_ostream_impl
-    {
-      using __ostream_type = void;
-    };
-
+  // SFINAE helper to check constraints for operator<<(Ostream&&, const T&).
+  // If Ostream is publicly and unambiguously derived from ios_base, then
+  // __rval_streamable<Ostream>() is equivalent to declval<Ostream&>().
+  // Otherwise, it results in a substitution failure. Specifically, it will
+  // fail if Ostream is an lvalue reference or the same type as ios_base.
+  // Use concepts if possible because they're cheaper to evaluate.
+#if __cpp_lib_concepts
   template<typename _Tp>
-    using __do_is_convertible_to_basic_ostream_impl =
-    decltype(__is_convertible_to_basic_ostream_test
-	     (declval<typename remove_reference<_Tp>::type*>()));
+    requires (!is_same_v<_Tp, ios_base>)
+      && requires (_Tp* __t, ios_base* __b) { __b = __t; }
+    _Tp&
+    __rval_streamable();
+#else
+  template<typename _Tp,
+	   typename = _Require<__not_<__is_one_of<_Tp, _Tp&, ios_base>>>>
+    _Tp&
+    __rval_streamable(ios_base* = (_Tp*)nullptr);
+#endif
 
-  template<typename _Tp>
-    struct __is_convertible_to_basic_ostream_impl
-    <_Tp,
-     __void_t<__do_is_convertible_to_basic_ostream_impl<_Tp>>>
-    {
-      using __ostream_type =
-	__do_is_convertible_to_basic_ostream_impl<_Tp>;
-    };
-
-  template<typename _Tp>
-    struct __is_convertible_to_basic_ostream
-    : __is_convertible_to_basic_ostream_impl<_Tp>
-    {
-    public:
-      using type = __not_<is_void<
-        typename __is_convertible_to_basic_ostream_impl<_Tp>::__ostream_type>>;
-      constexpr static bool value = type::value;
-    };
-
-  template<typename _Ostream, typename _Tp, typename = void>
-    struct __is_insertable : false_type {};
-
-  template<typename _Ostream, typename _Tp>
-    struct __is_insertable<_Ostream, _Tp,
-			   __void_t<decltype(declval<_Ostream&>()
-					     << declval<const _Tp&>())>>
-				    : true_type {};
-
-  template<typename _Ostream>
-    using __rvalue_ostream_type =
-      typename __is_convertible_to_basic_ostream<
-	_Ostream>::__ostream_type;
+  // SFINAE helper to check constraints for operator<<(Ostream&&, const T&).
+  // If the constraints are satisfied, it is an alias for Ostream&&.
+  template<typename _Os, typename _Tp,
+	   typename = decltype(std::__rval_streamable<_Os>()
+				 << std::declval<const _Tp&>())>
+    using __rvalue_stream_insertion_t = _Os&&;
 
   /**
    *  @brief  Generic inserter for rvalue stream
    *  @param  __os  An input stream.
    *  @param  __x  A reference to the object being inserted.
-   *  @return  os
+   *  @return  __os
    *
    *  This is just a forwarding function to allow insertion to
    *  rvalue streams since they won't bind to the inserter functions
    *  that take an lvalue reference.
   */
   template<typename _Ostream, typename _Tp>
-    inline
-    typename enable_if<__and_<__not_<is_lvalue_reference<_Ostream>>,
-			      __is_convertible_to_basic_ostream<_Ostream>,
-			      __is_insertable<
-				__rvalue_ostream_type<_Ostream>,
-				const _Tp&>>::value,
-		       __rvalue_ostream_type<_Ostream>>::type
+    inline __rvalue_stream_insertion_t<_Ostream, _Tp>
     operator<<(_Ostream&& __os, const _Tp& __x)
     {
-      __rvalue_ostream_type<_Ostream> __ret_os = __os;
-      __ret_os << __x;
-      return __ret_os;
+      __os << __x;
+      return std::move(__os);
     }
 
 #if __cplusplus > 201703L && _GLIBCXX_USE_CXX11_ABI

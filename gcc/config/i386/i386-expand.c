@@ -2658,6 +2658,14 @@ ix86_expand_int_compare (enum rtx_code code, rtx op0, rtx op1)
   machine_mode cmpmode;
   rtx tmp, flags;
 
+  /* Swap operands to emit carry flag comparison.  */
+  if ((code == GTU || code == LEU)
+      && nonimmediate_operand (op1, VOIDmode))
+    {
+      std::swap (op0, op1);
+      code = swap_condition (code);
+    }
+
   cmpmode = SELECT_CC_MODE (code, op0, op1);
   flags = gen_rtx_REG (cmpmode, FLAGS_REG);
 

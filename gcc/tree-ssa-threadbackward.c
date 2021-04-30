@@ -37,35 +37,80 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-vectorizer.h"
 
+// Path registry for the backwards threader.  After all paths have been
+// registered with register_path(), thread_through_all_blocks() is called
+// to modify the CFG.
+
+class back_threader_registry
+{
+public:
+  back_threader_registry (int max_allowable_paths);
+  ~back_threader_registry ();
+  bool register_path (const vec<basic_block> &, edge taken);
+  bool thread_through_all_blocks ();
+
+private:
+  vec<vec<basic_block>> m_all_paths;
+  jump_thread_path_registry m_lowlevel_registry;
+  const int m_max_allowable_paths;
+  int m_threaded_paths;
+};
+
+// Class to abstract the profitability code for the backwards threader.
+
+class back_threader_profitability
+{
+public:
+  back_threader_profitability (bool speed_p)
+    : m_speed_p (speed_p)
+  { }
+  bool profitable_path_p (const vec<basic_block> &, tree name, edge taken,
+			  bool *irreducible_loop = NULL);
+
+private:
+  const bool m_speed_p;
+};
+
 class thread_jumps
 {
- public:
-  void find_jump_threads_backwards (basic_block bb, bool speed_p);
- private:
-  edge profitable_jump_thread_path (basic_block bbi, tree name, tree arg,
-				    bool *creates_irreducible_loop);
-  void convert_and_register_current_path (edge taken_edge);
-  void register_jump_thread_path_if_profitable (tree name, tree arg,
-						basic_block def_bb);
-  void handle_assignment (gimple *stmt, tree name, basic_block def_bb);
-  void handle_phi (gphi *phi, tree name, basic_block def_bb);
+public:
+  thread_jumps (bool speed_p = true)
+    : m_profit (speed_p), m_registry (param_max_fsm_thread_paths)
+  { }
+  void find_jump_threads_backwards (basic_block bb);
+  bool thread_through_all_blocks ();
+
+private:
+  void maybe_register_path (const vec<basic_block> &m_path,
+			    tree name,
+			    edge taken_edge);
+  edge find_taken_edge (const vec<basic_block> &path, tree arg);
+  void handle_assignment (gimple *stmt, basic_block def_bb);
+  void handle_phi (gphi *phi, basic_block def_bb);
   void fsm_find_control_statement_thread_paths (tree name);
   bool check_subpath_and_update_thread_path (basic_block last_bb,
 					     basic_block new_bb,
 					     int *next_path_length);
 
-  /* Maximum number of BBs we are allowed to thread.  */
-  int m_max_threaded_paths;
   /* Hash to keep track of seen bbs.  */
   hash_set<basic_block> m_visited_bbs;
   /* Current path we're analyzing.  */
   auto_vec<basic_block> m_path;
   /* Tracks if we have recursed through a loop PHI node.  */
   bool m_seen_loop_phi;
-  /* Indicate that we could increase code size to improve the
-     code path.  */
-  bool m_speed_p;
+
+  tree m_name;
+  back_threader_profitability m_profit;
+  back_threader_registry m_registry;
 };
+
+// Perform the actual jump threading for the all queued paths.
+
+bool
+thread_jumps::thread_through_all_blocks ()
+{
+  return m_registry.thread_through_all_blocks ();
+}
 
 /* Simple helper to get the last statement from BB, which is assumed
    to be a control statement.   Return NULL if the last statement is
@@ -123,61 +168,64 @@ fsm_find_thread_path (basic_block start_bb, basic_block end_bb,
   return false;
 }
 
-/* Examine jump threading path PATH to which we want to add BBI.
+back_threader_registry::back_threader_registry (int max_allowable_paths)
+  : m_max_allowable_paths (max_allowable_paths)
+{
+  m_all_paths.create (5);
+  m_threaded_paths = 0;
+}
 
-   If the resulting path is profitable to thread, then return the
-   final taken edge from the path, NULL otherwise.
+back_threader_registry::~back_threader_registry ()
+{
+  m_all_paths.release ();
+}
+
+bool
+back_threader_registry::thread_through_all_blocks ()
+{
+  return m_lowlevel_registry.thread_through_all_blocks (true);
+}
+
+/* Examine jump threading path PATH and return TRUE if it is profitable to
+   thread it, otherwise return FALSE.
 
    NAME is the SSA_NAME of the variable we found to have a constant
-   value on PATH.  ARG is the constant value of NAME on that path.
+   value on PATH.  If unknown, SSA_NAME is NULL.
 
-   BBI will be appended to PATH when we have a profitable jump
-   threading path.  Callers are responsible for removing BBI from PATH
-   in that case.  */
+   If the taken edge out of the path is known ahead of time it is passed in
+   TAKEN_EDGE, otherwise it is NULL.
 
-edge
-thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
-					   tree arg,
-					   bool *creates_irreducible_loop)
+   CREATES_IRREDUCIBLE_LOOP, if non-null is set to TRUE if threading this path
+   would create an irreducible loop.  */
+
+bool
+back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
+						tree name,
+						edge taken_edge,
+						bool *creates_irreducible_loop)
 {
-  /* Note BBI is not in the path yet, hence the +1 in the test below
-     to make sure BBI is accounted for in the path length test.  */
+  gcc_checking_assert (!m_path.is_empty ());
 
-  /* We can get a length of 0 here when the statement that
-     makes a conditional generate a compile-time constant
-     result is in the same block as the conditional.
+  /* We can an empty path here (excluding the DEF block) when the
+     statement that makes a conditional generate a compile-time
+     constant result is in the same block as the conditional.
 
      That's not really a jump threading opportunity, but instead is
      simple cprop & simplification.  We could handle it here if we
      wanted by wiring up all the incoming edges.  If we run this
      early in IPA, that might be worth doing.   For now we just
      reject that case.  */
-  if (m_path.is_empty ())
-      return NULL;
+  if (m_path.length () <= 1)
+      return false;
 
-  if (m_path.length () + 1
-      > (unsigned) param_max_fsm_thread_length)
+  if (m_path.length () > (unsigned) param_max_fsm_thread_length)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "FSM jump-thread path not considered: "
+	fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
 		 "the number of basic blocks on the path "
 		 "exceeds PARAM_MAX_FSM_THREAD_LENGTH.\n");
-      return NULL;
+      return false;
     }
-
-  if (m_max_threaded_paths <= 0)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "FSM jump-thread path not considered: "
-		 "the number of previously recorded FSM paths to "
-		 "thread exceeds PARAM_MAX_FSM_THREAD_PATHS.\n");
-      return NULL;
-    }
-
-  /* Add BBI to the path.
-     From this point onward, if we decide we the path is not profitable
-     to thread, we must remove BBI from the path.  */
-  m_path.safe_push (bbi);
 
   int n_insns = 0;
   gimple_stmt_iterator gsi;
@@ -246,6 +294,8 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
 		     SSA_NAMEs, then we do not have enough information
 		     to consider them associated.  */
 		  if (dst != name
+		      && name
+		      && TREE_CODE (name) == SSA_NAME
 		      && (SSA_NAME_VAR (dst) != SSA_NAME_VAR (name)
 			  || !SSA_NAME_VAR (dst))
 		      && !virtual_operand_p (dst))
@@ -266,10 +316,7 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
 	      gimple *stmt = gsi_stmt (gsi);
 	      if (gimple_call_internal_p (stmt, IFN_UNIQUE)
 		  || gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
-		{
-		  m_path.pop ();
-		  return NULL;
-		}
+		return false;
 	      /* Do not count empty statements and labels.  */
 	      if (gimple_code (stmt) != GIMPLE_NOP
 		  && !(gimple_code (stmt) == GIMPLE_ASSIGN
@@ -320,6 +367,123 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
 	     "  Overall: %i insns\n",
 	     stmt_insns, n_insns);
 
+  if (creates_irreducible_loop)
+    {
+      /* If this path threaded through the loop latch back into the
+	 same loop and the destination does not dominate the loop
+	 latch, then this thread would create an irreducible loop.  */
+      *creates_irreducible_loop = false;
+      if (taken_edge
+	  && threaded_through_latch
+	  && loop == taken_edge->dest->loop_father
+	  && (determine_bb_domination_status (loop, taken_edge->dest)
+	      == DOMST_NONDOMINATING))
+	*creates_irreducible_loop = true;
+    }
+
+  if (path_crosses_loops)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
+		 "the path crosses loops.\n");
+      return false;
+    }
+
+  /* Threading is profitable if the path duplicated is hot but also
+     in a case we separate cold path from hot path and permit optimization
+     of the hot path later.  Be on the agressive side here. In some testcases,
+     as in PR 78407 this leads to noticeable improvements.  */
+  if (m_speed_p
+      && ((taken_edge && optimize_edge_for_speed_p (taken_edge))
+	  || contains_hot_bb))
+    {
+      if (n_insns >= param_max_fsm_thread_path_insns)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
+		     "the number of instructions on the path "
+		     "exceeds PARAM_MAX_FSM_THREAD_PATH_INSNS.\n");
+	  return false;
+	}
+    }
+  else if (!m_speed_p && n_insns > 1)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
+		 "duplication of %i insns is needed and optimizing for size.\n",
+		 n_insns);
+      return false;
+    }
+
+  /* We avoid creating irreducible inner loops unless we thread through
+     a multiway branch, in which case we have deemed it worth losing
+     other loop optimizations later.
+
+     We also consider it worth creating an irreducible inner loop if
+     the number of copied statement is low relative to the length of
+     the path -- in that case there's little the traditional loop
+     optimizer would have done anyway, so an irreducible loop is not
+     so bad.  */
+  if (!threaded_multiway_branch
+      && creates_irreducible_loop
+      && *creates_irreducible_loop
+      && (n_insns * (unsigned) param_fsm_scale_path_stmts
+	  > (m_path.length () *
+	     (unsigned) param_fsm_scale_path_blocks)))
+
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  FAIL: FSM would create irreducible loop without threading "
+		 "multiway branch.\n");
+      return false;
+    }
+
+  /* If this path does not thread through the loop latch, then we are
+     using the FSM threader to find old style jump threads.  This
+     is good, except the FSM threader does not re-use an existing
+     threading path to reduce code duplication.
+
+     So for that case, drastically reduce the number of statements
+     we are allowed to copy.  */
+  if (!(threaded_through_latch && threaded_multiway_branch)
+      && (n_insns * param_fsm_scale_path_stmts
+	  >= param_max_jump_thread_duplication_stmts))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  FAIL: FSM did not thread around loop and would copy too "
+		 "many statements.\n");
+      return false;
+    }
+
+  /* When there is a multi-way branch on the path, then threading can
+     explode the CFG due to duplicating the edges for that multi-way
+     branch.  So like above, only allow a multi-way branch on the path
+     if we actually thread a multi-way branch.  */
+  if (!threaded_multiway_branch && multiway_branch_in_path)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "  FAIL: FSM Thread through multiway branch without threading "
+		 "a multiway branch.\n");
+      return false;
+    }
+  return true;
+}
+
+/* Return the taken edge out of a path, assuming that the underlying assignment
+   or PHI SSA resolves to ARG.  */
+
+edge
+thread_jumps::find_taken_edge (const vec<basic_block> &path, tree arg)
+{
+  if (TREE_CODE_CLASS (TREE_CODE (arg)) != tcc_constant)
+    return NULL;
+
+  gcc_checking_assert (!path.is_empty ());
+  gimple *stmt = get_gimple_control_stmt (m_path[0]);
+
   /* We have found a constant value for ARG.  For GIMPLE_SWITCH
      and GIMPLE_GOTO, we use it as-is.  However, for a GIMPLE_COND
      we need to substitute, fold and simplify so we can determine
@@ -338,128 +502,32 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
      latch, then this thread would create an irreducible loop.
 
      We have to know the outgoing edge to figure this out.  */
-  edge taken_edge = find_taken_edge (m_path[0], arg);
-
-  /* There are cases where we may not be able to extract the
-     taken edge.  For example, a computed goto to an absolute
-     address.  Handle those cases gracefully.  */
-  if (taken_edge == NULL)
-    {
-      m_path.pop ();
-      return NULL;
-    }
-
-  *creates_irreducible_loop = false;
-  if (threaded_through_latch
-      && loop == taken_edge->dest->loop_father
-      && (determine_bb_domination_status (loop, taken_edge->dest)
-	  == DOMST_NONDOMINATING))
-    *creates_irreducible_loop = true;
-
-  if (path_crosses_loops)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "FSM jump-thread path not considered: "
-		 "the path crosses loops.\n");
-      m_path.pop ();
-      return NULL;
-    }
-
-  /* Threading is profitable if the path duplicated is hot but also
-     in a case we separate cold path from hot path and permit optimization
-     of the hot path later.  Be on the agressive side here. In some testcases,
-     as in PR 78407 this leads to noticeable improvements.  */
-  if (m_speed_p && (optimize_edge_for_speed_p (taken_edge) || contains_hot_bb))
-    {
-      if (n_insns >= param_max_fsm_thread_path_insns)
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "FSM jump-thread path not considered: "
-		     "the number of instructions on the path "
-		     "exceeds PARAM_MAX_FSM_THREAD_PATH_INSNS.\n");
-	  m_path.pop ();
-	  return NULL;
-	}
-    }
-  else if (n_insns > 1)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "FSM jump-thread path not considered: "
-		 "duplication of %i insns is needed and optimizing for size.\n",
-		 n_insns);
-      m_path.pop ();
-      return NULL;
-    }
-
-  /* We avoid creating irreducible inner loops unless we thread through
-     a multiway branch, in which case we have deemed it worth losing
-     other loop optimizations later.
-
-     We also consider it worth creating an irreducible inner loop if
-     the number of copied statement is low relative to the length of
-     the path -- in that case there's little the traditional loop
-     optimizer would have done anyway, so an irreducible loop is not
-     so bad.  */
-  if (!threaded_multiway_branch && *creates_irreducible_loop
-      && (n_insns * (unsigned) param_fsm_scale_path_stmts
-	  > (m_path.length () *
-	     (unsigned) param_fsm_scale_path_blocks)))
-
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "FSM would create irreducible loop without threading "
-		 "multiway branch.\n");
-      m_path.pop ();
-      return NULL;
-    }
-
-
-  /* If this path does not thread through the loop latch, then we are
-     using the FSM threader to find old style jump threads.  This
-     is good, except the FSM threader does not re-use an existing
-     threading path to reduce code duplication.
-
-     So for that case, drastically reduce the number of statements
-     we are allowed to copy.  */
-  if (!(threaded_through_latch && threaded_multiway_branch)
-      && (n_insns * param_fsm_scale_path_stmts
-	  >= param_max_jump_thread_duplication_stmts))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "FSM did not thread around loop and would copy too "
-		 "many statements.\n");
-      m_path.pop ();
-      return NULL;
-    }
-
-  /* When there is a multi-way branch on the path, then threading can
-     explode the CFG due to duplicating the edges for that multi-way
-     branch.  So like above, only allow a multi-way branch on the path
-     if we actually thread a multi-way branch.  */
-  if (!threaded_multiway_branch && multiway_branch_in_path)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file,
-		 "FSM Thread through multiway branch without threading "
-		 "a multiway branch.\n");
-      m_path.pop ();
-      return NULL;
-    }
-  return taken_edge;
+  return ::find_taken_edge (m_path[0], arg);
 }
 
 /* The current path PATH is a vector of blocks forming a jump threading
    path in reverse order.  TAKEN_EDGE is the edge taken from path[0].
 
    Convert the current path into the form used by register_jump_thread and
-   register it.   */
+   register it.
 
-void
-thread_jumps::convert_and_register_current_path (edge taken_edge)
+   Return TRUE if successful or FALSE otherwise.  */
+
+bool
+back_threader_registry::register_path (const vec<basic_block> &m_path,
+				       edge taken_edge)
 {
-  vec<jump_thread_edge *> *jump_thread_path = new vec<jump_thread_edge *> ();
+  if (m_threaded_paths > m_max_allowable_paths)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "  FAIL: FSM jump-thread path not considered: "
+		 "the number of previously recorded FSM paths to "
+		 "thread exceeds PARAM_MAX_FSM_THREAD_PATHS.\n");
+      return false;
+    }
+
+  vec<jump_thread_edge *> *jump_thread_path
+    = m_lowlevel_registry.allocate_thread_path ();
 
   /* Record the edges between the blocks in PATH.  */
   for (unsigned int j = 0; j + 1 < m_path.length (); j++)
@@ -469,17 +537,20 @@ thread_jumps::convert_and_register_current_path (edge taken_edge)
 
       edge e = find_edge (bb1, bb2);
       gcc_assert (e);
-      jump_thread_edge *x = new jump_thread_edge (e, EDGE_FSM_THREAD);
+      jump_thread_edge *x
+	= m_lowlevel_registry.allocate_thread_edge (e, EDGE_FSM_THREAD);
       jump_thread_path->safe_push (x);
     }
 
   /* Add the edge taken when the control variable has value ARG.  */
   jump_thread_edge *x
-    = new jump_thread_edge (taken_edge, EDGE_NO_COPY_SRC_BLOCK);
+    = m_lowlevel_registry.allocate_thread_edge (taken_edge,
+						EDGE_NO_COPY_SRC_BLOCK);
   jump_thread_path->safe_push (x);
 
-  register_jump_thread (jump_thread_path);
-  --m_max_threaded_paths;
+  m_lowlevel_registry.register_jump_thread (jump_thread_path);
+  ++m_threaded_paths;
+  return true;
 }
 
 /* While following a chain of SSA_NAME definitions, we jumped from a
@@ -547,19 +618,17 @@ thread_jumps::check_subpath_and_update_thread_path (basic_block last_bb,
    DEF_BB is the basic block that ultimately defines the constant.  */
 
 void
-thread_jumps::register_jump_thread_path_if_profitable (tree name, tree arg,
-						       basic_block def_bb)
+thread_jumps::maybe_register_path (const vec<basic_block> &m_path,
+				   tree name,
+				   edge taken_edge)
 {
-  if (TREE_CODE_CLASS (TREE_CODE (arg)) != tcc_constant)
-    return;
-
   bool irreducible = false;
-  edge taken_edge = profitable_jump_thread_path (def_bb, name, arg,
-						 &irreducible);
-  if (taken_edge)
+  bool profitable = m_profit.profitable_path_p (m_path, name, taken_edge,
+						&irreducible);
+  if (profitable)
     {
-      convert_and_register_current_path (taken_edge);
-      m_path.pop ();
+      if (!m_registry.register_path (m_path, taken_edge))
+	return;
 
       if (irreducible)
 	vect_free_loop_info_assumptions (m_path[0]->loop_father);
@@ -574,7 +643,7 @@ thread_jumps::register_jump_thread_path_if_profitable (tree name, tree arg,
    NAME having a constant value.  */
 
 void
-thread_jumps::handle_phi (gphi *phi, tree name, basic_block def_bb)
+thread_jumps::handle_phi (gphi *phi, basic_block def_bb)
 {
   /* Iterate over the arguments of PHI.  */
   for (unsigned int i = 0; i < gimple_phi_num_args (phi); i++)
@@ -597,7 +666,11 @@ thread_jumps::handle_phi (gphi *phi, tree name, basic_block def_bb)
 	  continue;
 	}
 
-      register_jump_thread_path_if_profitable (name, arg, bbi);
+      m_path.safe_push (bbi);
+      edge taken_edge = find_taken_edge (m_path, arg);
+      if (taken_edge)
+	maybe_register_path (m_path, m_name, taken_edge);
+      m_path.pop ();
     }
 }
 
@@ -639,25 +712,23 @@ handle_assignment_p (gimple *stmt)
    NAME having a constant value.  */
 
 void
-thread_jumps::handle_assignment (gimple *stmt, tree name, basic_block def_bb)
+thread_jumps::handle_assignment (gimple *stmt, basic_block def_bb)
 {
   tree arg = gimple_assign_rhs1 (stmt);
 
   if (TREE_CODE (arg) == SSA_NAME)
     fsm_find_control_statement_thread_paths (arg);
-
   else
     {
-      /* register_jump_thread_path_if_profitable will push the current
-	 block onto the path.  But the path will always have the current
-	 block at this point.  So we can just pop it.  */
-      m_path.pop ();
-
-      register_jump_thread_path_if_profitable (name, arg, def_bb);
-
-      /* And put the current block back onto the path so that the
-	 state of the stack is unchanged when we leave.  */
-      m_path.safe_push (def_bb);
+      if (CHECKING_P)
+	{
+	  gcc_assert (!m_path.is_empty ());
+	  basic_block top = m_path[m_path.length () - 1];
+	  gcc_assert (top == def_bb);
+	}
+      edge taken_edge = find_taken_edge (m_path, arg);
+      if (taken_edge)
+	maybe_register_path (m_path, m_name, taken_edge);
     }
 }
 
@@ -727,9 +798,9 @@ thread_jumps::fsm_find_control_statement_thread_paths (tree name)
   gcc_assert (m_path.last () == def_bb);
 
   if (gimple_code (def_stmt) == GIMPLE_PHI)
-    handle_phi (as_a <gphi *> (def_stmt), name, def_bb);
+    handle_phi (as_a <gphi *> (def_stmt), def_bb);
   else if (gimple_code (def_stmt) == GIMPLE_ASSIGN)
-    handle_assignment (def_stmt, name, def_bb);
+    handle_assignment (def_stmt, def_bb);
 
   /* Remove all the nodes that we added from NEXT_PATH.  */
   if (next_path_length)
@@ -745,8 +816,8 @@ thread_jumps::fsm_find_control_statement_thread_paths (tree name)
    code path.  */
 
 void
-thread_jumps::find_jump_threads_backwards (basic_block bb, bool speed_p)
-{     
+thread_jumps::find_jump_threads_backwards (basic_block bb)
+{
   gimple *stmt = get_gimple_control_stmt (bb);
   if (!stmt)
     return;
@@ -774,8 +845,7 @@ thread_jumps::find_jump_threads_backwards (basic_block bb, bool speed_p)
   m_path.safe_push (bb);
   m_visited_bbs.empty ();
   m_seen_loop_phi = false;
-  m_speed_p = speed_p;
-  m_max_threaded_paths = param_max_fsm_thread_paths;
+  m_name = name;
 
   fsm_find_control_statement_thread_paths (name);
 }
@@ -825,9 +895,9 @@ pass_thread_jumps::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       if (EDGE_COUNT (bb->succs) > 1)
-	threader.find_jump_threads_backwards (bb, true);
+	threader.find_jump_threads_backwards (bb);
     }
-  bool changed = thread_through_all_blocks (true);
+  bool changed = threader.thread_through_all_blocks ();
 
   loop_optimizer_finalize ();
   return changed ? TODO_cleanup_cfg : 0;
@@ -881,14 +951,14 @@ pass_early_thread_jumps::execute (function *fun)
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
   /* Try to thread each block with more than one successor.  */
-  thread_jumps threader;
+  thread_jumps threader (/*speed_p=*/false);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
       if (EDGE_COUNT (bb->succs) > 1)
-	threader.find_jump_threads_backwards (bb, false);
+	threader.find_jump_threads_backwards (bb);
     }
-  thread_through_all_blocks (true);
+  threader.thread_through_all_blocks ();
 
   loop_optimizer_finalize ();
   return 0;

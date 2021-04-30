@@ -1,3 +1,95 @@
+2021-04-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/82359
+	* g++.dg/cpp1y/digit-sep-line.C,
+	g++.dg/cpp1y/digit-sep-line-neg.C: New tests.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/lookup/using-decl1.C: New test.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97974
+	* g++.old-deja/g++.law/union4.C: Add expected diagnostic.
+
+2021-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/68942
+	* g++.dg/template/koenig12.C: New test.
+
+2021-04-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/94102
+	* g++.dg/cpp1z/class-deduction87.C: New test.
+
+2021-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/100303
+	* g++.dg/torture/pr100303.C: New file.
+
+2021-04-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/90773
+	* g++.dg/pr90773-1.h: New test.
+	* g++.dg/pr90773-1a.C: Likewise.
+	* g++.dg/pr90773-1b.C: Likewise.
+	* g++.dg/pr90773-1c.C: Likewise.
+	* g++.dg/pr90773-1d.C: Likewise.
+	* gcc.target/i386/pr90773-1.c: Likewise.
+	* gcc.target/i386/pr90773-2.c: Likewise.
+	* gcc.target/i386/pr90773-3.c: Likewise.
+	* gcc.target/i386/pr90773-4.c: Likewise.
+	* gcc.target/i386/pr90773-5.c: Likewise.
+	* gcc.target/i386/pr90773-6.c: Likewise.
+	* gcc.target/i386/pr90773-7.c: Likewise.
+	* gcc.target/i386/pr90773-8.c: Likewise.
+	* gcc.target/i386/pr90773-9.c: Likewise.
+	* gcc.target/i386/pr90773-10.c: Likewise.
+	* gcc.target/i386/pr90773-11.c: Likewise.
+	* gcc.target/i386/pr90773-12.c: Likewise.
+	* gcc.target/i386/pr90773-13.c: Likewise.
+	* gcc.target/i386/pr90773-14.c: Likewise.
+
+2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100253
+	* g++.dg/pr100253.C: New testcase.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100305
+	* gcc.c-torture/compile/pr100305.c: Remove dg-options.  Add PR line.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100302
+	* gcc.target/aarch64/sve/pr100302.c: New test.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100319
+	* c-c++-common/gomp/task-detach-3.c: New test.
+
+2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99912
+	* gcc.dg/pr95580.c: Disable DSE.
+	* gcc.dg/Wrestrict-8.c: Place a use after each memcpy.
+	* c-c++-common/ubsan/overflow-negate-3.c: Make asms volatile
+	to prevent them from being removed.
+	* c-c++-common/ubsan/overflow-sub-4.c: Likewise.
+
+2021-04-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100250
+	* gcc.dg/uninit-pr100250.c: New test.
+
+2021-04-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-unproto-1.c, gcc.dg/c11-unproto-2.c,
+	gcc.dg/c2x-unproto-1.c, gcc.dg/c2x-unproto-2.c: New tests.
+
 2021-04-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/map-5.f90: New test.

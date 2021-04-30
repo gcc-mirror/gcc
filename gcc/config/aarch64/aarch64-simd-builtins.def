@@ -46,6 +46,8 @@
   BUILTIN_VDC (COMBINE, combine, 0, AUTO_FP)
   VAR1 (COMBINEP, combine, 0, NONE, di)
   BUILTIN_VB (BINOP, pmul, 0, NONE)
+  VAR1 (BINOP, pmull, 0, NONE, v8qi)
+  VAR1 (BINOP, pmull_hi, 0, NONE, v16qi)
   BUILTIN_VHSDF_HSDF (BINOP, fmulx, 0, FP)
   BUILTIN_VHSDF_DF (UNOP, sqrt, 2, FP)
   BUILTIN_VDQ_I (BINOP, addp, 0, NONE)
@@ -665,6 +667,15 @@
   /* Implemented by fnma<mode>4.  */
   BUILTIN_VHSDF (TERNOP, fnma, 4, FP)
   VAR1 (TERNOP, fnma, 4, FP, hf)
+
+  BUILTIN_VDQF_DF (TERNOP, float_mla, 0, FP)
+  BUILTIN_VDQF_DF (TERNOP, float_mls, 0, FP)
+  BUILTIN_VDQSF (TERNOP, float_mla_n, 0, FP)
+  BUILTIN_VDQSF (TERNOP, float_mls_n, 0, FP)
+  BUILTIN_VDQSF (QUADOP_LANE, float_mla_lane, 0, FP)
+  BUILTIN_VDQSF (QUADOP_LANE, float_mls_lane, 0, FP)
+  BUILTIN_VDQSF (QUADOP_LANE, float_mla_laneq, 0, FP)
+  BUILTIN_VDQSF (QUADOP_LANE, float_mls_laneq, 0, FP)
 
   /* Implemented by aarch64_simd_bsl<mode>.  */
   BUILTIN_VDQQH (BSL_P, simd_bsl, 0, NONE)

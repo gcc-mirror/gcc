@@ -20057,13 +20057,16 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	    }
 	  else if (GET_CODE (XEXP (x, 0)) == PLUS)
 	    {
+	      rtx op = XEXP (XEXP (x, 0), 0);
+
 	      /* Add with carry, ignore the cost of adding a carry flag.  */
-	      if (ix86_carry_flag_operator (XEXP (XEXP (x, 0), 0), mode))
+	      if (ix86_carry_flag_operator (op, mode)
+		  || ix86_carry_flag_unset_operator (op, mode))
 		*total = cost->add;
 	      else
 		{
 		  *total = cost->lea;
-		  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+		  *total += rtx_cost (op, mode,
 				      outer_code, opno, speed);
 		}
 
@@ -20081,7 +20084,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	  && GET_CODE (XEXP (x, 0)) == MINUS
-	  && ix86_carry_flag_operator (XEXP (XEXP (x, 0), 1), mode))
+	  && (ix86_carry_flag_operator (XEXP (XEXP (x, 0), 1), mode)
+	      || ix86_carry_flag_unset_operator (XEXP (XEXP (x, 0), 1), mode)))
 	{
 	  *total = cost->add;
 	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode,
@@ -20946,7 +20950,7 @@ ix86_min_insn_size (rtx_insn *insn)
     return 2;
 }
 
-#ifdef ASM_OUTPUT_MAX_SKIP_PAD
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
 
 /* AMD K8 core mispredicts jumps when there are more than 3 jumps in 16 byte
    window.  */
@@ -21274,7 +21278,7 @@ ix86_reorg (void)
 	ix86_pad_short_function ();
       else if (TARGET_PAD_RETURNS)
 	ix86_pad_returns ();
-#ifdef ASM_OUTPUT_MAX_SKIP_PAD
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
       if (TARGET_FOUR_JUMP_LIMIT)
 	ix86_avoid_jump_mispredicts ();
 #endif

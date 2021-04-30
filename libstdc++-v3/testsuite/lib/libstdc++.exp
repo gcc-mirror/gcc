@@ -1331,6 +1331,14 @@ proc check_effective_target_ieee-floats { } {
     }]
 }
 
+# Return 1 if Networking TS net::ip features are available.
+proc check_effective_target_net_ts_ip { } {
+    return [check_v3_target_prop_cached et_net_ts_ip {
+	set cond "__has_include(<netinet/in.h>)"
+	return [v3_check_preprocessor_condition net_ts_ip $cond]
+    }]
+}
+
 set additional_prunes ""
 
 if { [info exists env(GCC_RUNTEST_PARALLELIZE_DIR)] \

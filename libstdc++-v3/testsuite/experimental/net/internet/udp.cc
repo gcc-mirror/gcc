@@ -1,9 +1,9 @@
 // { dg-do compile { target c++14 } }
+// { dg-require-effective-target net_ts_ip }
 
 #include <experimental/internet>
 #include <type_traits>
 
-#if __has_include(<netinet/in.h>)
 using namespace std;
 using std::experimental::net::ip::udp;
 using std::experimental::net::ip::basic_endpoint;
@@ -40,4 +40,3 @@ test01()
   static_assert( udp::v4().protocol() == IPPROTO_UDP, "" );
   static_assert( udp::v6().protocol() == IPPROTO_UDP, "" );
 }
-#endif

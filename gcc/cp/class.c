@@ -3023,7 +3023,7 @@ warn_hidden (tree t)
 /* Recursive helper for finish_struct_anon.  */
 
 static void
-finish_struct_anon_r (tree field, bool complain)
+finish_struct_anon_r (tree field)
 {
   for (tree elt = TYPE_FIELDS (TREE_TYPE (field)); elt; elt = DECL_CHAIN (elt))
     {
@@ -3038,34 +3038,6 @@ finish_struct_anon_r (tree field, bool complain)
 	  && (!DECL_IMPLICIT_TYPEDEF_P (elt)
 	      || TYPE_UNNAMED_P (TREE_TYPE (elt))))
 	continue;
-
-      if (complain
-	  && (TREE_CODE (elt) != FIELD_DECL
-	      || (TREE_PRIVATE (elt) || TREE_PROTECTED (elt))))
-	{
-	  /* We already complained about static data members in
-	     finish_static_data_member_decl.  */
-	  if (!VAR_P (elt))
-	    {
-	      auto_diagnostic_group d;
-	      if (permerror (DECL_SOURCE_LOCATION (elt),
-			     TREE_CODE (TREE_TYPE (field)) == UNION_TYPE
-			     ? "%q#D invalid; an anonymous union may "
-			     "only have public non-static data members"
-			     : "%q#D invalid; an anonymous struct may "
-			     "only have public non-static data members", elt))
-		{
-		  static bool hint;
-		  if (flag_permissive && !hint)
-		    {
-		      hint = true;
-		      inform (DECL_SOURCE_LOCATION (elt),
-			      "this flexibility is deprecated and will be "
-			      "removed");
-		    }
-		}
-	    }
-	}
 
       TREE_PRIVATE (elt) = TREE_PRIVATE (field);
       TREE_PROTECTED (elt) = TREE_PROTECTED (field);
@@ -3084,7 +3056,7 @@ finish_struct_anon_r (tree field, bool complain)
 	 int j=A().i;  */
       if (DECL_NAME (elt) == NULL_TREE
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (elt)))
-	finish_struct_anon_r (elt, /*complain=*/false);
+	finish_struct_anon_r (elt);
     }
 }
 
@@ -3103,7 +3075,7 @@ finish_struct_anon (tree t)
 
       if (DECL_NAME (field) == NULL_TREE
 	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	finish_struct_anon_r (field, /*complain=*/true);
+	finish_struct_anon_r (field);
     }
 }
 
@@ -3342,7 +3314,7 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	bool is_friend = DECL_CONTEXT (space) != t;
 	if (is_friend)
 	  do_friend (NULL_TREE, DECL_NAME (eq), eq,
-		     NULL_TREE, NO_SPECIAL, true);
+		     NO_SPECIAL, true);
 	else
 	  {
 	    add_method (t, eq, false);

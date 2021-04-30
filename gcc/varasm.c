@@ -1340,6 +1340,12 @@ use_blocks_for_decl_p (tree decl)
 {
   struct symtab_node *snode;
 
+  /* Don't create object blocks if each DECL is placed into a separate
+     section because that will uselessly create a section anchor for
+     each DECL.  */
+  if (flag_data_sections)
+    return false;
+
   /* Only data DECLs can be placed into object blocks.  */
   if (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
     return false;

@@ -5005,12 +5005,47 @@ fixup_anonymous_aggr (tree t)
   TYPE_HAS_COPY_ASSIGN (t) = 0;
   TYPE_HAS_CONST_COPY_ASSIGN (t) = 0;
 
-  /* Splice the implicitly generated functions out of TYPE_FIELDS.  */
+  /* Splice the implicitly generated functions out of TYPE_FIELDS and diagnose
+     invalid members.  */
   for (tree probe, *prev_p = &TYPE_FIELDS (t); (probe = *prev_p);)
-    if (TREE_CODE (probe) == FUNCTION_DECL && DECL_ARTIFICIAL (probe))
-      *prev_p = DECL_CHAIN (probe);
-    else
-      prev_p = &DECL_CHAIN (probe);
+    {
+      if (TREE_CODE (probe) == FUNCTION_DECL && DECL_ARTIFICIAL (probe))
+	*prev_p = DECL_CHAIN (probe);
+      else
+	prev_p = &DECL_CHAIN (probe);
+
+      if (DECL_ARTIFICIAL (probe)
+	  && (!DECL_IMPLICIT_TYPEDEF_P (probe)
+	      || TYPE_ANON_P (TREE_TYPE (probe))))
+	continue;
+
+      if (TREE_CODE (probe) != FIELD_DECL
+	  || (TREE_PRIVATE (probe) || TREE_PROTECTED (probe)))
+	{
+	  /* We already complained about static data members in
+	     finish_static_data_member_decl.  */
+	  if (!VAR_P (probe))
+	    {
+	      auto_diagnostic_group d;
+	      if (permerror (DECL_SOURCE_LOCATION (probe),
+			     TREE_CODE (t) == UNION_TYPE
+			     ? "%q#D invalid; an anonymous union may "
+			     "only have public non-static data members"
+			     : "%q#D invalid; an anonymous struct may "
+			     "only have public non-static data members", probe))
+		{
+		  static bool hint;
+		  if (flag_permissive && !hint)
+		    {
+		      hint = true;
+		      inform (DECL_SOURCE_LOCATION (probe),
+			      "this flexibility is deprecated and will be "
+			      "removed");
+		    }
+		}
+	    }
+	}
+      }
 
   /* Splice all functions out of CLASSTYPE_MEMBER_VEC.  */
   vec<tree,va_gc>* vec = CLASSTYPE_MEMBER_VEC (t);
@@ -13723,8 +13758,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 
 		decl = do_friend (ctype, unqualified_id, decl,
-				  *attrlist, flags,
-				  funcdef_flag);
+				  flags, funcdef_flag);
 		return decl;
 	      }
 	    else

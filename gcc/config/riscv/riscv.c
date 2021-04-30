@@ -351,6 +351,14 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
   { "size", generic, &optimize_size_tune_info },
 };
 
+/* Implement TARGET_MIN_ARITHMETIC_PRECISION.  */
+
+static unsigned int
+riscv_min_arithmetic_precision (void)
+{
+  return 32;
+}
+
 /* Return the riscv_tune_info entry for the given name string.  */
 
 static const struct riscv_tune_info *

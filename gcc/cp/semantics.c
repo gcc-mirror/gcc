@@ -3177,9 +3177,13 @@ finish_compound_literal (tree type, tree compound_literal,
     }
 
   /* Represent other compound literals with TARGET_EXPR so we produce
-     an lvalue, but can elide copies.  */
+     a prvalue, and can elide copies.  */
   if (!VECTOR_TYPE_P (type))
-    compound_literal = get_target_expr_sfinae (compound_literal, complain);
+    {
+      /* The CONSTRUCTOR is now an initializer, not a compound literal.  */
+      TREE_HAS_CONSTRUCTOR (compound_literal) = false;
+      compound_literal = get_target_expr_sfinae (compound_literal, complain);
+    }
 
   return compound_literal;
 }
@@ -4093,12 +4097,6 @@ finish_id_expression_1 (tree id_expression,
 
 	  cp_warn_deprecated_use_scopes (scope);
 
-	  /* In a constant-expression context, turn off cp_unevaluated_operand
-	     so finish_non_static_data_member will complain (93314).  */
-	  auto eval = make_temp_override (cp_unevaluated_operand);
-	  if (integral_constant_expression_p && TREE_CODE (decl) == FIELD_DECL)
-	    cp_unevaluated_operand = 0;
-
 	  if (TYPE_P (scope))
 	    decl = finish_qualified_id_expr (scope,
 					     decl,
@@ -4112,10 +4110,6 @@ finish_id_expression_1 (tree id_expression,
 	}
       else if (TREE_CODE (decl) == FIELD_DECL)
 	{
-	  auto eval = make_temp_override (cp_unevaluated_operand);
-	  if (integral_constant_expression_p)
-	    cp_unevaluated_operand = 0;
-
 	  /* Since SCOPE is NULL here, this is an unqualified name.
 	     Access checking has been performed during name lookup
 	     already.  Turn off checking to avoid duplicate errors.  */

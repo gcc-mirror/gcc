@@ -64,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 292. effects of a.copyfmt (a)
-      if (this != &__rhs)
+      if (this != std::__addressof(__rhs))
 	{
 	  // Per 27.1.1, do not call imbue, yet must trash all caches
 	  // associated with imbue()

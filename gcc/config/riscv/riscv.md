@@ -467,6 +467,81 @@
   [(set_attr "type" "arith")
    (set_attr "mode" "DI")])
 
+(define_expand "addv<mode>4"
+  [(set (match_operand:GPR           0 "register_operand" "=r,r")
+	(plus:GPR (match_operand:GPR 1 "register_operand" " r,r")
+		  (match_operand:GPR 2 "arith_operand"    " r,I")))
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  if (TARGET_64BIT && <MODE>mode == SImode)
+    {
+      rtx t3 = gen_reg_rtx (DImode);
+      rtx t4 = gen_reg_rtx (DImode);
+      rtx t5 = gen_reg_rtx (DImode);
+      rtx t6 = gen_reg_rtx (DImode);
+
+      emit_insn (gen_addsi3 (operands[0], operands[1], operands[2]));
+      if (GET_CODE (operands[1]) != CONST_INT)
+	emit_insn (gen_extend_insn (t4, operands[1], DImode, SImode, 0));
+      else
+	t4 = operands[1];
+      if (GET_CODE (operands[2]) != CONST_INT)
+	emit_insn (gen_extend_insn (t5, operands[2], DImode, SImode, 0));
+      else
+	t5 = operands[2];
+      emit_insn (gen_adddi3 (t3, t4, t5));
+      emit_insn (gen_extend_insn (t6, operands[0], DImode, SImode, 0));
+
+      riscv_expand_conditional_branch (operands[3], NE, t6, t3);
+    }
+  else
+    {
+      rtx t3 = gen_reg_rtx (<MODE>mode);
+      rtx t4 = gen_reg_rtx (<MODE>mode);
+
+      emit_insn (gen_add3_insn (operands[0], operands[1], operands[2]));
+      rtx cmp1 = gen_rtx_LT (<MODE>mode, operands[2], const0_rtx);
+      emit_insn (gen_cstore<mode>4 (t3, cmp1, operands[2], const0_rtx));
+      rtx cmp2 = gen_rtx_LT (<MODE>mode, operands[0], operands[1]);
+
+      emit_insn (gen_cstore<mode>4 (t4, cmp2, operands[0], operands[1]));
+      riscv_expand_conditional_branch (operands[3], NE, t3, t4);
+    }
+  DONE;
+})
+
+(define_expand "uaddv<mode>4"
+  [(set (match_operand:GPR           0 "register_operand" "=r,r")
+	(plus:GPR (match_operand:GPR 1 "register_operand" " r,r")
+		  (match_operand:GPR 2 "arith_operand"    " r,I")))
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  if (TARGET_64BIT && <MODE>mode == SImode)
+    {
+      rtx t3 = gen_reg_rtx (DImode);
+      rtx t4 = gen_reg_rtx (DImode);
+
+      if (GET_CODE (operands[1]) != CONST_INT)
+	emit_insn (gen_extend_insn (t3, operands[1], DImode, SImode, 0));
+      else
+	t3 = operands[1];
+      emit_insn (gen_addsi3 (operands[0], operands[1], operands[2]));
+      emit_insn (gen_extend_insn (t4, operands[0], DImode, SImode, 0));
+
+      riscv_expand_conditional_branch (operands[3], LTU, t4, t3);
+    }
+  else
+    {
+      emit_insn (gen_add3_insn (operands[0], operands[1], operands[2]));
+      riscv_expand_conditional_branch (operands[3], LTU, operands[0],
+				       operands[1]);
+    }
+
+  DONE;
+})
+
 (define_insn "*addsi3_extended"
   [(set (match_operand:DI               0 "register_operand" "=r,r")
 	(sign_extend:DI
@@ -522,6 +597,85 @@
   { return TARGET_64BIT ? "subw\t%0,%z1,%2" : "sub\t%0,%z1,%2"; }
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
+
+(define_expand "subv<mode>4"
+  [(set (match_operand:GPR            0 "register_operand" "= r")
+	(minus:GPR (match_operand:GPR 1 "reg_or_0_operand" " rJ")
+		   (match_operand:GPR 2 "register_operand" "  r")))
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  if (TARGET_64BIT && <MODE>mode == SImode)
+    {
+      rtx t3 = gen_reg_rtx (DImode);
+      rtx t4 = gen_reg_rtx (DImode);
+      rtx t5 = gen_reg_rtx (DImode);
+      rtx t6 = gen_reg_rtx (DImode);
+
+      emit_insn (gen_subsi3 (operands[0], operands[1], operands[2]));
+      if (GET_CODE (operands[1]) != CONST_INT)
+	emit_insn (gen_extend_insn (t4, operands[1], DImode, SImode, 0));
+      else
+	t4 = operands[1];
+      if (GET_CODE (operands[2]) != CONST_INT)
+	emit_insn (gen_extend_insn (t5, operands[2], DImode, SImode, 0));
+      else
+	t5 = operands[2];
+      emit_insn (gen_subdi3 (t3, t4, t5));
+      emit_insn (gen_extend_insn (t6, operands[0], DImode, SImode, 0));
+
+      riscv_expand_conditional_branch (operands[3], NE, t6, t3);
+    }
+  else
+    {
+      rtx t3 = gen_reg_rtx (<MODE>mode);
+      rtx t4 = gen_reg_rtx (<MODE>mode);
+
+      emit_insn (gen_sub3_insn (operands[0], operands[1], operands[2]));
+
+      rtx cmp1 = gen_rtx_LT (<MODE>mode, operands[2], const0_rtx);
+      emit_insn (gen_cstore<mode>4 (t3, cmp1, operands[2], const0_rtx));
+
+      rtx cmp2 = gen_rtx_LT (<MODE>mode, operands[1], operands[0]);
+      emit_insn (gen_cstore<mode>4 (t4, cmp2, operands[1], operands[0]));
+
+      riscv_expand_conditional_branch (operands[3], NE, t3, t4);
+    }
+
+  DONE;
+})
+
+(define_expand "usubv<mode>4"
+  [(set (match_operand:GPR            0 "register_operand" "= r")
+	(minus:GPR (match_operand:GPR 1 "reg_or_0_operand" " rJ")
+		   (match_operand:GPR 2 "register_operand" "  r")))
+   (label_ref (match_operand 3 "" ""))]
+  ""
+{
+  if (TARGET_64BIT && <MODE>mode == SImode)
+    {
+      rtx t3 = gen_reg_rtx (DImode);
+      rtx t4 = gen_reg_rtx (DImode);
+
+      if (GET_CODE (operands[1]) != CONST_INT)
+	emit_insn (gen_extend_insn (t3, operands[1], DImode, SImode, 0));
+      else
+	t3 = operands[1];
+      emit_insn (gen_subsi3 (operands[0], operands[1], operands[2]));
+      emit_insn (gen_extend_insn (t4, operands[0], DImode, SImode, 0));
+
+      riscv_expand_conditional_branch (operands[3], LTU, t3, t4);
+    }
+  else
+    {
+      emit_insn (gen_sub3_insn (operands[0], operands[1], operands[2]));
+      riscv_expand_conditional_branch (operands[3], LTU, operands[1],
+				       operands[0]);
+    }
+
+  DONE;
+})
+
 
 (define_insn "*subsi3_extended"
   [(set (match_operand:DI               0 "register_operand" "= r")
@@ -613,6 +767,97 @@
   "mul\t%0,%1,%2"
   [(set_attr "type" "imul")
    (set_attr "mode" "DI")])
+
+(define_expand "mulv<mode>4"
+  [(set (match_operand:GPR           0 "register_operand" "=r")
+	(mult:GPR (match_operand:GPR 1 "register_operand" " r")
+		  (match_operand:GPR 2 "register_operand" " r")))
+   (label_ref (match_operand 3 "" ""))]
+  "TARGET_MUL"
+{
+  if (TARGET_64BIT && <MODE>mode == SImode)
+    {
+      rtx t3 = gen_reg_rtx (DImode);
+      rtx t4 = gen_reg_rtx (DImode);
+      rtx t5 = gen_reg_rtx (DImode);
+      rtx t6 = gen_reg_rtx (DImode);
+
+      if (GET_CODE (operands[1]) != CONST_INT)
+	emit_insn (gen_extend_insn (t4, operands[1], DImode, SImode, 0));
+      else
+	t4 = operands[1];
+      if (GET_CODE (operands[2]) != CONST_INT)
+	emit_insn (gen_extend_insn (t5, operands[2], DImode, SImode, 0));
+      else
+	t5 = operands[2];
+      emit_insn (gen_muldi3 (t3, t4, t5));
+
+      emit_move_insn (operands[0], gen_lowpart (SImode, t3));
+      emit_insn (gen_extend_insn (t6, operands[0], DImode, SImode, 0));
+
+      riscv_expand_conditional_branch (operands[3], NE, t6, t3);
+    }
+  else
+    {
+      rtx hp = gen_reg_rtx (<MODE>mode);
+      rtx lp = gen_reg_rtx (<MODE>mode);
+
+      emit_insn (gen_mul<mode>3_highpart (hp, operands[1], operands[2]));
+      emit_insn (gen_mul<mode>3 (operands[0], operands[1], operands[2]));
+      emit_insn (gen_ashr<mode>3 (lp, operands[0],
+				  GEN_INT (BITS_PER_WORD - 1)));
+
+      riscv_expand_conditional_branch (operands[3], NE, hp, lp);
+    }
+
+  DONE;
+})
+
+(define_expand "umulv<mode>4"
+  [(set (match_operand:GPR           0 "register_operand" "=r")
+	(mult:GPR (match_operand:GPR 1 "register_operand" " r")
+		  (match_operand:GPR 2 "register_operand" " r")))
+   (label_ref (match_operand 3 "" ""))]
+  "TARGET_MUL"
+{
+  if (TARGET_64BIT && <MODE>mode == SImode)
+    {
+      rtx t3 = gen_reg_rtx (DImode);
+      rtx t4 = gen_reg_rtx (DImode);
+      rtx t5 = gen_reg_rtx (DImode);
+      rtx t6 = gen_reg_rtx (DImode);
+      rtx t7 = gen_reg_rtx (DImode);
+      rtx t8 = gen_reg_rtx (DImode);
+
+      if (GET_CODE (operands[1]) != CONST_INT)
+	emit_insn (gen_extend_insn (t3, operands[1], DImode, SImode, 0));
+      else
+	t3 = operands[1];
+      if (GET_CODE (operands[2]) != CONST_INT)
+	emit_insn (gen_extend_insn (t4, operands[2], DImode, SImode, 0));
+      else
+	t4 = operands[2];
+
+      emit_insn (gen_ashldi3 (t5, t3, GEN_INT (32)));
+      emit_insn (gen_ashldi3 (t6, t4, GEN_INT (32)));
+      emit_insn (gen_umuldi3_highpart (t7, t5, t6));
+      emit_move_insn (operands[0], gen_lowpart (SImode, t7));
+      emit_insn (gen_lshrdi3 (t8, t7, GEN_INT (32)));
+
+      riscv_expand_conditional_branch (operands[3], NE, t8, const0_rtx);
+    }
+  else
+    {
+      rtx hp = gen_reg_rtx (<MODE>mode);
+
+      emit_insn (gen_umul<mode>3_highpart (hp, operands[1], operands[2]));
+      emit_insn (gen_mul<mode>3 (operands[0], operands[1], operands[2]));
+
+      riscv_expand_conditional_branch (operands[3], NE, hp, const0_rtx);
+    }
+
+  DONE;
+})
 
 (define_insn "*mulsi3_extended"
   [(set (match_operand:DI              0 "register_operand" "=r")

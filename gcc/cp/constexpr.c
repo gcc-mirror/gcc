@@ -4734,28 +4734,17 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 {
   tree optype = TREE_TYPE (op);
   unsigned HOST_WIDE_INT const_nunits;
-  if (off == 0)
-    {
-      if (similar_type_p (optype, type))
-	return op;
-      /* Also handle conversion to an empty base class, which
-	 is represented with a NOP_EXPR.  */
-      /* *(foo *)&complexfoo => __real__ complexfoo */
-      else if (TREE_CODE (optype) == COMPLEX_TYPE
-	       && similar_type_p (type, TREE_TYPE (optype)))
-	return build1_loc (loc, REALPART_EXPR, type, op);
-    }
-  /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
+  if (off == 0 && similar_type_p (optype, type))
+    return op;
   else if (TREE_CODE (optype) == COMPLEX_TYPE
-	   && similar_type_p (type, TREE_TYPE (optype))
-	   && tree_to_uhwi (TYPE_SIZE_UNIT (type)) == off)
-    return build1_loc (loc, IMAGPART_EXPR, type, op);
-  if (is_empty_class (type)
-      && CLASS_TYPE_P (optype)
-      && DERIVED_FROM_P (type, optype))
+	   && similar_type_p (type, TREE_TYPE (optype)))
     {
-      *empty_base = true;
-      return op;
+      /* *(foo *)&complexfoo => __real__ complexfoo */
+      if (off == 0)
+	return build1_loc (loc, REALPART_EXPR, type, op);
+      /* ((foo*)&complexfoo)[1] => __imag__ complexfoo */
+      else if (tree_to_uhwi (TYPE_SIZE_UNIT (type)) == off)
+	return build1_loc (loc, IMAGPART_EXPR, type, op);
     }
   /* ((foo*)&vectorfoo)[x] => BIT_FIELD_REF<vectorfoo,...> */
   else if (VECTOR_TYPE_P (optype)
@@ -4834,6 +4823,15 @@ cxx_fold_indirect_ref_1 (const constexpr_ctx *ctx, location_t loc, tree type,
 		  return ret;
 	      }
 	  }
+      /* Also handle conversion to an empty base class, which
+	 is represented with a NOP_EXPR.  */
+      if (is_empty_class (type)
+	  && CLASS_TYPE_P (optype)
+	  && DERIVED_FROM_P (type, optype))
+	{
+	  *empty_base = true;
+	  return op;
+	}
     }
 
   return NULL_TREE;

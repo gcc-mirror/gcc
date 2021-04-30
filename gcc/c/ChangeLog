@@ -1,3 +1,10 @@
+2021-04-29  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-typeck.c (function_types_compatible_p): For C2X, treat
+	unprototyped function as compatible with non-variadic prototyped
+	function even if some argument types are changed by the default
+	argument promotions.
+
 2021-04-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c/99420
