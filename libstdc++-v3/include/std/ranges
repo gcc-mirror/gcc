@@ -2241,10 +2241,68 @@ namespace views::__adaptor
     inline constexpr _DropWhile drop_while;
   } // namespace views
 
+  namespace __detail
+  {
+    template<typename _Tp>
+      struct __non_propagating_cache
+      {
+	// When _Tp is not an object type (e.g. is a reference type), we make
+	// __non_propagating_cache<_Tp> empty rather than ill-formed so that
+	// users can easily conditionally declare data members with this type
+	// (such as join_view::_M_inner).
+      };
+
+    template<typename _Tp>
+      requires is_object_v<_Tp>
+      struct __non_propagating_cache<_Tp> : private _Optional_base<_Tp>
+      {
+	__non_propagating_cache() = default;
+
+	constexpr
+	__non_propagating_cache(const __non_propagating_cache&) noexcept
+	{ }
+
+	constexpr
+	__non_propagating_cache(__non_propagating_cache&& __other) noexcept
+	{ __other._M_reset(); }
+
+	constexpr __non_propagating_cache&
+	operator=(const __non_propagating_cache& __other) noexcept
+	{
+	  if (std::__addressof(__other) != this)
+	    this->_M_reset();
+	  return *this;
+	}
+
+	constexpr __non_propagating_cache&
+	operator=(__non_propagating_cache&& __other) noexcept
+	{
+	  this->_M_reset();
+	  __other._M_reset();
+	  return *this;
+	}
+
+	constexpr _Tp&
+	operator*() noexcept
+	{ return this->_M_get(); }
+
+	template<typename _Iter>
+	  _Tp&
+	  _M_emplace_deref(const _Iter& __i)
+	  {
+	    this->_M_reset();
+	    // Using _Optional_base::_M_construct to initialize from '*__i'
+	    // would incur an extra move due to the indirection, so we instead
+	    // use placement new directly.
+	    ::new ((void *) std::__addressof(this->_M_payload._M_payload)) _Tp(*__i);
+	    this->_M_payload._M_engaged = true;
+	    return this->_M_get();
+	  }
+      };
+  }
+
   template<input_range _Vp>
     requires view<_Vp> && input_range<range_reference_t<_Vp>>
-      && (is_reference_v<range_reference_t<_Vp>>
-	  || view<range_value_t<_Vp>>)
     class join_view : public view_interface<join_view<_Vp>>
     {
     private:
@@ -2310,17 +2368,16 @@ namespace views::__adaptor
 	  constexpr void
 	  _M_satisfy()
 	  {
-	    auto __update_inner = [this] (range_reference_t<_Base> __x) -> auto&
-	    {
+	    auto __update_inner = [this] (const iterator_t<_Base>& __x) -> auto&& {
 	      if constexpr (_S_ref_is_glvalue)
-		return __x;
+		return *__x;
 	      else
-		return (_M_parent->_M_inner = views::all(std::move(__x)));
+		return _M_parent->_M_inner._M_emplace_deref(__x);
 	    };
 
 	    for (; _M_outer != ranges::end(_M_parent->_M_base); ++_M_outer)
 	      {
-		auto& __inner = __update_inner(*_M_outer);
+		auto&& __inner = __update_inner(_M_outer);
 		_M_inner = ranges::begin(__inner);
 		if (_M_inner != ranges::end(__inner))
 		  return;
@@ -2396,7 +2453,7 @@ namespace views::__adaptor
 	      if constexpr (_S_ref_is_glvalue)
 		return *_M_outer;
 	      else
-		return _M_parent->_M_inner;
+		return *_M_parent->_M_inner;
 	    }();
 	    if (++_M_inner == ranges::end(__inner_range))
 	      {
@@ -2507,10 +2564,8 @@ namespace views::__adaptor
 	  friend _Sentinel<!_Const>;
 	};
 
-      // XXX: _M_inner is "present only when !is_reference_v<_InnerRange>"
       [[no_unique_address]]
-	__detail::__maybe_present_t<!is_reference_v<_InnerRange>,
-				    views::all_t<_InnerRange>> _M_inner;
+	__detail::__non_propagating_cache<remove_cv_t<_InnerRange>> _M_inner;
       _Vp _M_base = _Vp();
 
     public:

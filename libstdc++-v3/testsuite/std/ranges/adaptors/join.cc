@@ -19,6 +19,7 @@
 // { dg-do run { target c++2a } }
 
 #include <algorithm>
+#include <array>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -170,6 +171,28 @@ test10()
   VERIFY( ranges::next(v.begin()) == v.end() );
 }
 
+void
+test11()
+{
+  // Verify P2328 changes.
+  int r[] = {1, 2, 3};
+  auto v = r
+    | views::transform([] (int n) { return std::vector{{n, -n}}; })
+    | views::join;
+  VERIFY( ranges::equal(v, (int[]){1, -1, 2, -2, 3, -3}) );
+
+  struct S {
+    S() = default;
+    S(const S&) = delete;
+    S(S&&) = delete;
+  };
+  auto w = r
+    | views::transform([] (int) { return std::array<S, 2>{}; })
+    | views::join;
+  for (auto& i : w)
+    ;
+}
+
 int
 main()
 {
@@ -183,4 +206,5 @@ main()
   test08();
   test09();
   test10();
+  test11();
 }
