@@ -271,6 +271,20 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	  rust_assert (param.param_has_default_ty ());
 
 	  BaseType *resolved = param.get_default_ty ();
+	  if (resolved->get_kind () == TypeKind::ERROR)
+	    return SubstitutionArgumentMappings::error ();
+
+	  // this resolved default might already contain default parameters
+	  if (resolved->contains_type_parameters ())
+	    {
+	      SubstitutionArgumentMappings intermediate (mappings,
+							 args.get_locus ());
+	      resolved = Resolver::SubstMapperInternal::Resolve (resolved,
+								 intermediate);
+	      if (resolved->get_kind () == TypeKind::ERROR)
+		return SubstitutionArgumentMappings::error ();
+	    }
+
 	  SubstitutionArg subst_arg (&param, resolved);
 	  mappings.push_back (std::move (subst_arg));
 	}
