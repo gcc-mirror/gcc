@@ -58,16 +58,7 @@ struct X { };
 std::ostream& operator<<(std::ostream& os, const X&) { return os; }
 std::istream& operator>>(std::istream& is, X&&) { return is; }
 
-struct O : std::ostream { };
-
-void operator<<(O&, X) = delete;
-
-struct I : std::istream { };
-
-void operator>>(I&, X) = delete;
-
 // PR libstdc++/65543
-// PR libstdc++/80675
 // PR libstdc++/80940
 int main()
 {
@@ -82,6 +73,4 @@ int main()
   MyStream2 stream2{};
   stream2 << "aaa";
   stream2 >> msi;
-  O{} << X{};
-  I{} >> X{};
 }

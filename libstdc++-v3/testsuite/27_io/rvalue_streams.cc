@@ -25,8 +25,6 @@ void
 test01()
 {
   int i = 1742;
-  // This usage isn't supported by the current draft.
-  // std::string result = (std::ostringstream() << i).str();
   std::ostringstream() << i;
   std::string result ("1742");
   int i2;
@@ -45,10 +43,10 @@ test02()
 {
   X x;
   std::istringstream is;
-  auto& ref1 = (std::move(is) >> x);
+  auto&& ref1 = (std::move(is) >> x);
   VERIFY( &ref1 == &is );
   VERIFY( x.as_rvalue == false );
-  auto& ref2 = (std::move(is) >> std::move(x));
+  auto&& ref2 = (std::move(is) >> std::move(x));
   VERIFY( &ref2 == &is );
   VERIFY( x.as_rvalue == true );
 
@@ -57,6 +55,71 @@ test02()
   std::istringstream("x") >> &arr[0];
 #endif
   std::istringstream("x") >> arr;
+  VERIFY( std::string(arr) == "x" );
+}
+
+// LWG 1203 More useful rvalue stream insertion
+void
+test03()
+{
+  int i = 1203;
+  std::string result = (std::ostringstream() << "i = " << i).str();
+  VERIFY( result == "i = 1203" );
+
+  std::ostringstream os;
+  std::ostringstream&& ros = std::move(os) << result;
+  VERIFY( &ros == &os );
+  VERIFY( ros.str() == result );
+
+  std::stringstream ss;
+  std::stringstream&& rss = std::move(ss) << result;
+  VERIFY( &rss == &ss );
+  VERIFY( rss.str() == result );
+
+  std::istringstream is("first second third");
+  std::istringstream&& ris = std::move(is) >> result;
+  VERIFY( &ris == &is );
+  VERIFY( result == "first" );
+
+  std::stringstream ss2("fourth fifth sixth");
+  std::stringstream&& rss2 = std::move(ss2) >> result;
+  VERIFY( &rss2 == &ss2 );
+  VERIFY( result == "fourth" );
+}
+
+struct A { friend void operator<<(std::ios_base&, A) { } };
+
+struct O : private std::ios_base { friend void operator<<(O&, int) { } };
+
+template<typename Ostream, typename T, typename = void>
+  struct is_insertable
+  : std::false_type
+  { };
+
+template<typename> using void_t = void;
+
+template<typename Ostream, typename T>
+  using insert_result
+    = decltype(std::declval<Ostream>() << std::declval<const T&>());
+
+template<typename Ostream, typename T>
+  struct is_insertable<Ostream, T, void_t<insert_result<Ostream, T>>>
+  : std::true_type
+  { };
+
+// LWG 1203 negative tests
+void
+test04()
+{
+  static_assert( is_insertable<std::ios_base&, A>::value,
+      "valid using the friend operator<<" );
+  static_assert( !is_insertable<std::ios_base&&, A>::value,
+      "ill-formed because ios_base is not derived from ios_base" );
+
+  static_assert( is_insertable<O&, int>::value,
+      "valid using the friend operator<<" );
+  static_assert( !is_insertable<O&&, int>::value,
+      "ill-formed because O is not publicly derived from ios_base" );
 }
 
 int
@@ -64,5 +127,6 @@ main()
 {
   test01();
   test02();
-  return 0;
+  test03();
+  test04();
 }

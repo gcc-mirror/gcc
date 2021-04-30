@@ -21,6 +21,22 @@
 
 #include <sstream>
 
+template<typename Ostream, typename T, typename = void>
+  struct is_insertable
+  : std::false_type
+  { };
+
+template<typename> using void_t = void;
+
+template<typename Ostream, typename T>
+  using insert_result
+    = decltype(std::declval<Ostream>() << std::declval<const T&>());
+
+template<typename Ostream, typename T>
+  struct is_insertable<Ostream, T, void_t<insert_result<Ostream, T>>>
+  : std::true_type
+  { };
+
 struct X {};
 std::wostream& operator<<(std::wostream&, const X&) = delete;
 
@@ -30,20 +46,6 @@ std::wostream& operator<<(std::wostream&& os, const Y&) {return os;}
 
 struct Z{};
 
-template <class T>
-auto f(T&&) -> decltype(void(std::declval<std::wostream&>()
-			     << std::declval<T&&>()),
-			std::true_type());
-
-std::false_type f(...);
-
-template <class T>
-auto g(T&&) -> decltype(void(std::declval<std::wostream&&>()
-			     << std::declval<T&&>()),
-			std::true_type());
-
-std::false_type g(...);
-
 void test01()
 {
   Y y;
@@ -52,42 +54,18 @@ void test01()
   os << Y();
   std::wostringstream() << y;
   std::wostringstream() << Y();
-  static_assert(!std::__is_insertable<std::wostream&, X&>::value, "");
-  static_assert(!std::__is_insertable<std::wostream&&, X&>::value, "");
-  static_assert(!std::__is_insertable<std::wostream&, X&&>::value, "");
-  static_assert(!std::__is_insertable<std::wostream&&, X&&>::value, "");
-  static_assert(std::__is_insertable<std::wostream&, Y&>::value, "");
-  static_assert(std::__is_insertable<std::wostream&&, Y&&>::value, "");
-  static_assert(std::__is_insertable<std::wostream&, Y&>::value, "");
-  static_assert(std::__is_insertable<std::wostream&&, Y&&>::value, "");
-  static_assert(!std::__is_insertable<std::wostream&, Z&>::value, "");
-  static_assert(!std::__is_insertable<std::wostream&&, Z&>::value, "");
-  static_assert(!std::__is_insertable<std::wostream&, Z&&>::value, "");
-  static_assert(!std::__is_insertable<std::wostream&&, Z&&>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<X&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<X&&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Y&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Y&&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Z&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(f(std::declval<Z&&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<X&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<X&&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Y&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Y&&>())),
-		std::true_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Z&>())),
-		std::false_type>::value, "");
-  static_assert(std::is_same<decltype(g(std::declval<Z&&>())),
-		std::false_type>::value, "");
+  static_assert(!is_insertable<std::wostream&, X&>::value, "");
+  static_assert(!is_insertable<std::wostream&&, X&>::value, "");
+  static_assert(!is_insertable<std::wostream&, X&&>::value, "");
+  static_assert(!is_insertable<std::wostream&&, X&&>::value, "");
+  static_assert(is_insertable<std::wostream&, Y&>::value, "");
+  static_assert(is_insertable<std::wostream&&, Y&&>::value, "");
+  static_assert(is_insertable<std::wostream&, Y&>::value, "");
+  static_assert(is_insertable<std::wostream&&, Y&&>::value, "");
+  static_assert(!is_insertable<std::wostream&, Z&>::value, "");
+  static_assert(!is_insertable<std::wostream&&, Z&>::value, "");
+  static_assert(!is_insertable<std::wostream&, Z&&>::value, "");
+  static_assert(!is_insertable<std::wostream&&, Z&&>::value, "");
 }
 
 int main()
