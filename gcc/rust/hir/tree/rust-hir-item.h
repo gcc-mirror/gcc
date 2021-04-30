@@ -111,6 +111,12 @@ public:
 
   Identifier get_type_representation () const { return type_representation; }
 
+  std::unique_ptr<Type> &get_type ()
+  {
+    rust_assert (type != nullptr);
+    return type;
+  }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TypeParam *clone_generic_param_impl () const override
