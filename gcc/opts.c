@@ -126,6 +126,14 @@ debug_set_names (uint32_t w_symbols)
   return df_set_names;
 }
 
+/* Return TRUE iff dwarf2 debug info is enabled.  */
+
+bool
+dwarf_debuginfo_p ()
+{
+  return (write_symbols & DWARF2_DEBUG);
+}
+
 /* Parse the -femit-struct-debug-detailed option value
    and set the flag variables. */
 

@@ -21588,7 +21588,7 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
     {
       if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
 	xcoffout_declare_function (file, decl, buffer);
-      else if (write_symbols == DWARF2_DEBUG)
+      else if (dwarf_debuginfo_p ())
 	{
 	  name = (*targetm.strip_name_encoding) (name);
 	  fprintf (file, "\t.function .%s,.%s,2,0\n", name, name);
@@ -23747,7 +23747,7 @@ rs6000_dbx_register_number (unsigned int regno, unsigned int format)
 {
   /* On some platforms, we use the standard DWARF register
      numbering for .debug_info and .debug_frame.  */
-  if ((format == 0 && write_symbols == DWARF2_DEBUG) || format == 1)
+  if ((format == 0 && dwarf_debuginfo_p ()) || format == 1)
     {
 #ifdef RS6000_USE_DWARF_NUMBERING
       if (regno <= 31)

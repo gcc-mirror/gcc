@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"		/* init_return_column_size */
 #include "output.h"		/* asm_out_file */
 #include "debug.h"		/* dwarf2out_do_frame, dwarf2out_do_cfi_asm */
-
+#include "flags.h"		/* dwarf_debuginfo_p */
 
 /* ??? Poison these here until it can be done generically.  They've been
    totally replaced in this file; make sure it stays that way.  */
@@ -2289,8 +2289,7 @@ cfi_label_required_p (dw_cfi_ref cfi)
 
   if (dwarf_version == 2
       && debug_info_level > DINFO_LEVEL_TERSE
-      && (write_symbols == DWARF2_DEBUG
-	  || write_symbols == VMS_AND_DWARF2_DEBUG))
+      && dwarf_debuginfo_p ())
     {
       switch (cfi->dw_cfi_opc)
 	{
@@ -3557,9 +3556,9 @@ bool
 dwarf2out_do_frame (void)
 {
   /* We want to emit correct CFA location expressions or lists, so we
-     have to return true if we're going to output debug info, even if
+     have to return true if we're going to generate debug info, even if
      we're not going to output frame or unwind info.  */
-  if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
+  if (dwarf_debuginfo_p ())
     return true;
 
   if (saved_do_cfi_asm > 0)

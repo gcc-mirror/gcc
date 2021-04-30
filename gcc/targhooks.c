@@ -2062,7 +2062,7 @@ default_debug_unwind_info (void)
 
   /* Otherwise, only turn it on if dwarf2 debugging is enabled.  */
 #ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
+  if (dwarf_debuginfo_p ())
     return UI_DWARF2;
 #endif
 

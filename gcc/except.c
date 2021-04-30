@@ -144,6 +144,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "builtins.h"
 #include "tree-hash-traits.h"
+#include "flags.h"
 
 static GTY(()) int call_site_base;
 

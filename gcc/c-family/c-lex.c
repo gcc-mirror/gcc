@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "c-pragma.h"
 #include "debug.h"
+#include "flags.h"
 #include "file-prefix-map.h" /* remap_macro_filename()  */
 #include "langhooks.h"
 #include "attribs.h"
@@ -87,8 +88,7 @@ init_c_lex (void)
 
   /* Set the debug callbacks if we can use them.  */
   if ((debug_info_level == DINFO_LEVEL_VERBOSE
-       && (write_symbols == DWARF2_DEBUG
-	   || write_symbols == VMS_AND_DWARF2_DEBUG))
+       && dwarf_debuginfo_p ())
       || flag_dump_go_spec != NULL)
     {
       cb->define = cb_define;

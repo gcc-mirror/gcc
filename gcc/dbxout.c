@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "expr.h"
 #include "file-prefix-map.h" /* remap_debug_filename()  */
+#include "flags.h"
 
 #ifdef XCOFF_DEBUGGING_INFO
 #include "xcoffout.h"
