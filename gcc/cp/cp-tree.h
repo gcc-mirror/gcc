@@ -6763,6 +6763,7 @@ extern tree grokbitfield (const cp_declarator *, cp_decl_specifier_seq *,
 			  tree, tree, tree);
 extern tree splice_template_attributes		(tree *, tree);
 extern bool any_dependent_type_attributes_p	(tree);
+extern bool any_non_type_attribute_p		(tree);
 extern tree cp_reconstruct_complex_type		(tree, tree);
 extern bool attributes_naming_typedef_ok	(tree);
 extern void cplus_decl_attributes		(tree *, tree, int);
