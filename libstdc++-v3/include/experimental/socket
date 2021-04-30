@@ -622,6 +622,7 @@ inline namespace v1
 	void
 	set_option(const _SettableSocketOption& __option, error_code& __ec)
 	{
+# ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  int __result = ::setsockopt(_M_sockfd, __option.level(_M_protocol),
 				      __option.name(_M_protocol),
 				      __option.data(_M_protocol),
@@ -630,12 +631,16 @@ inline namespace v1
 	    __ec.assign(errno, generic_category());
 	  else
 	    __ec.clear();
+#else
+	  __ec = std::make_error_code(std::errc::not_supported);
+#endif
 	}
 
       template<typename _GettableSocketOption>
 	void
 	get_option(_GettableSocketOption& __option, error_code& __ec) const
 	{
+# ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  int __result = ::getsockopt(_M_sockfd, __option.level(_M_protocol),
 				      __option.name(_M_protocol),
 				      __option.data(_M_protocol),
@@ -644,6 +649,9 @@ inline namespace v1
 	    __ec.assign(errno, generic_category());
 	  else
 	    __ec.clear();
+#else
+	  __ec = std::make_error_code(std::errc::not_supported);
+#endif
 	}
 
       template<typename _IoControlCommand>
