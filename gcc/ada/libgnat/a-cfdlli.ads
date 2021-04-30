@@ -387,6 +387,53 @@ is
                 Model (Container),
                 P.Get (Positions (Container), Position));
 
+   function At_End (E : access constant List) return access constant List
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function At_End
+     (E : access constant Element_Type) return access constant Element_Type
+   is (E)
+   with Ghost,
+     Annotate => (GNATprove, At_End_Borrow);
+
+   function Constant_Reference
+     (Container : aliased List;
+      Position  : Cursor) return not null access constant Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container, Position),
+     Post   =>
+       Constant_Reference'Result.all =
+         Element (Model (Container), P.Get (Positions (Container), Position));
+
+   function Reference
+     (Container : not null access List;
+      Position  : Cursor) return not null access Element_Type
+   with
+     Global => null,
+     Pre    => Has_Element (Container.all, Position),
+     Post   =>
+      Length (Container.all) = Length (At_End (Container).all)
+
+         --  Cursors are preserved
+
+         and Positions (Container.all) = Positions (At_End (Container).all)
+
+         --  Container will have Result.all at position Position
+
+         and At_End (Reference'Result).all =
+           Element (Model (At_End (Container).all),
+                    P.Get (Positions (At_End (Container).all), Position))
+
+         --  All other elements are preserved
+
+         and M.Equal_Except
+               (Model (Container.all),
+                Model (At_End (Container).all),
+                P.Get (Positions (At_End (Container).all), Position));
+
    procedure Move (Target : in out List; Source : in out List) with
      Global => null,
      Pre    => Target.Capacity >= Length (Source),
@@ -1609,7 +1656,7 @@ private
    type Node_Type is record
       Prev    : Count_Type'Base := -1;
       Next    : Count_Type;
-      Element : Element_Type;
+      Element : aliased Element_Type;
    end record;
 
    function "=" (L, R : Node_Type) return Boolean is abstract;
