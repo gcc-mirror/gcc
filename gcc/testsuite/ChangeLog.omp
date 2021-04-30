@@ -1,3 +1,10 @@
+2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* c-c++-common/goacc/note-parallelism-1-kernels-straight-line.c: Add
+	-Wopenacc-parallelism option.
+	* c-c++-common/goacc/orphan-reductions-2.c: Likewise.
+	* gfortran.dg/goacc/orphan-reductions-2.f90: Likewise.
+
 2021-04-29  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/data-clause-1.c (foo): Remove expected message.
