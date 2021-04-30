@@ -1,4 +1,5 @@
 // { dg-do run { target c++14 } }
+// { dg-require-effective-target net_ts_ip }
 
 #include <experimental/internet>
 #include <testsuite_common_types.h>
