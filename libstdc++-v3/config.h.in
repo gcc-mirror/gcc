@@ -153,15 +153,6 @@
 /* Define to 1 if you have the <ieeefp.h> header file. */
 #undef HAVE_IEEEFP_H
 
-/* Define if int64_t is available in <stdint.h>. */
-#undef HAVE_INT64_T
-
-/* Define if int64_t is a long. */
-#undef HAVE_INT64_T_LONG
-
-/* Define if int64_t is a long long. */
-#undef HAVE_INT64_T_LONG_LONG
-
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
