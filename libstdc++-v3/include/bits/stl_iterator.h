@@ -1813,7 +1813,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       const iter_value_t<_It>*
-      operator->() const
+      operator->() const noexcept
       { return std::__addressof(_M_keep); }
     };
 
@@ -1828,7 +1828,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       const iter_value_t<_It>&
-      operator*() const
+      operator*() const noexcept
       { return _M_keep; }
     };
 
