@@ -52,7 +52,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-#define __cpp_lib_constexpr_string 201611L
+#if __cplusplus >= 201703L
+// Support P0426R1 changes to char_traits in C++17.
+# define __cpp_lib_constexpr_string 201611L
+#endif
 
 #if _GLIBCXX_USE_CXX11_ABI
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
