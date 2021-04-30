@@ -1,3 +1,11 @@
+2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	Backported from master:
+	2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100232
+	* testsuite/libgomp.c/target-43.c: New file.
+
 2021-04-27  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

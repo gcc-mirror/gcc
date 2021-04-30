@@ -1,3 +1,55 @@
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100305
+	* gcc.c-torture/compile/pr100305.c: Remove dg-options.  Add PR line.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100302
+	* gcc.target/aarch64/sve/pr100302.c: New test.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100319
+	* c-c++-common/gomp/task-detach-3.c: New test.
+
+2021-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100305
+	* gcc.c-torture/compile/pr100305.c: New test.
+
+2021-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100270
+	* gcc.target/aarch64/sve/acle/general-c/pr100270_1.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c: Change
+	expected error message when subtracting pointers to different
+	vector types.  Expect warnings when mixing them elsewhere.
+	* gcc.target/aarch64/sve/acle/general/attributes_7.c: Remove
+	XFAILs.  Tweak error messages for some cases.
+
+2021-04-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-04-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/map-5.f90: New test.
+
 2021-04-28  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/100182

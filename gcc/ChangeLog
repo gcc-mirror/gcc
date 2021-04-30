@@ -1,3 +1,50 @@
+2021-04-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-04-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100311
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Only allow VPR to be
+	used in HImode.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100302
+	* config/aarch64/aarch64.c (aarch64_add_offset_1_temporaries): Use
+	absu_hwi instead of abs_hwi.
+
+2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	Backported from master:
+	2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100232
+	* internal-fn.c (expand_GOMP_SIMT_ENTER_ALLOC)
+	(expand_GOMP_SIMT_LAST_LANE, expand_GOMP_SIMT_ORDERED_PRED)
+	(expand_GOMP_SIMT_VOTE_ANY, expand_GOMP_SIMT_XCHG_BFLY)
+	(expand_GOMP_SIMT_XCHG_IDX): Ensure target is assigned to.
+
+2021-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100305
+	* config/aarch64/constraints.md (Utq): Require the address to
+	be valid for both the element mode and for V2DImode.
+
+2021-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100270
+	* config/aarch64/aarch64.c (aarch64_comp_type_attributes): Handle
+	SVE attributes.
+
 2021-04-28  YiFei Zhu  <zhuyifei1999@gmail.com>
 
 	Backported from master:

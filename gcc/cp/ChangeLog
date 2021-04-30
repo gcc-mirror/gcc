@@ -1,3 +1,12 @@
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100319
+	* semantics.c (finish_omp_clauses): Fix up check that variable
+	mentioned in detach clause doesn't appear in data-sharing clauses.
+
 2021-04-27  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
