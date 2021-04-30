@@ -449,6 +449,12 @@ public:
 
   bool param_has_default_ty () const { return generic.has_type (); }
 
+  BaseType *get_default_ty () const
+  {
+    TyVar var (generic.get_type_mappings ().get_hirid ());
+    return var.get_tyty ();
+  }
+
 private:
   const HIR::TypeParam &generic;
   ParamType *param;
@@ -643,12 +649,26 @@ public:
     return used_arguments;
   }
 
+  // this is the count of type params that are not substituted fuly
   size_t num_required_substitutions () const
   {
     size_t n = 0;
     for (auto &p : substitutions)
       {
 	if (p.needs_substitution ())
+	  n++;
+      }
+    return n;
+  }
+
+  // this is the count of type params that need substituted taking into account
+  // possible defaults
+  size_t min_required_substitutions () const
+  {
+    size_t n = 0;
+    for (auto &p : substitutions)
+      {
+	if (p.needs_substitution () && !p.param_has_default_ty ())
 	  n++;
       }
     return n;

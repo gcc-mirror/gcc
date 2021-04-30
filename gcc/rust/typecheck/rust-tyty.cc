@@ -233,7 +233,7 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       return SubstitutionArgumentMappings::error ();
     }
 
-  if (args.get_type_args ().size () < substitutions.size ())
+  if (args.get_type_args ().size () < min_required_substitutions ())
     {
       RichLocation r (args.get_locus ());
       r.add_range (substitutions.front ().get_param_locus ());
@@ -258,6 +258,22 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       SubstitutionArg subst_arg (&substitutions.at (mappings.size ()),
 				 resolved);
       mappings.push_back (std::move (subst_arg));
+    }
+
+  // we must need to fill out defaults
+  size_t left_over
+    = num_required_substitutions () - min_required_substitutions ();
+  if (left_over > 0)
+    {
+      for (size_t offs = mappings.size (); offs < substitutions.size (); offs++)
+	{
+	  SubstitutionParamMapping &param = substitutions.at (offs);
+	  rust_assert (param.param_has_default_ty ());
+
+	  BaseType *resolved = param.get_default_ty ();
+	  SubstitutionArg subst_arg (&param, resolved);
+	  mappings.push_back (std::move (subst_arg));
+	}
     }
 
   return SubstitutionArgumentMappings (mappings, args.get_locus ());

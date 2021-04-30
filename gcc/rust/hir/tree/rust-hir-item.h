@@ -117,6 +117,12 @@ public:
     return type;
   }
 
+  Analysis::NodeMapping get_type_mappings () const
+  {
+    rust_assert (type != nullptr);
+    return type->get_mappings ();
+  }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TypeParam *clone_generic_param_impl () const override
