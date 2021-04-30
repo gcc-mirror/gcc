@@ -129,7 +129,7 @@ void check_integer_sockopt()
 
 void test_option_types()
 {
-#if __has_include(<socket.h>)
+#if __has_include(<sys/socket.h>)
   check_boolean_sockopt<S::broadcast>();
 
   check_boolean_sockopt<S::debug>();
@@ -174,7 +174,7 @@ void test_option_types()
 
 void test_constants()
 {
-#if __has_include(<socket.h>)
+#if __has_include(<sys/socket.h>)
   static_assert( is_enum<S::shutdown_type>::value, "" );
   static_assert( S::shutdown_receive != S::shutdown_send, "" );
   static_assert( S::shutdown_receive != S::shutdown_both, "" );
