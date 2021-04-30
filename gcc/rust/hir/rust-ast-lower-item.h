@@ -349,6 +349,29 @@ public:
       {
 	generic_params
 	  = lower_generic_params (impl_block.get_generic_params ());
+
+	for (auto &generic_param : generic_params)
+	  {
+	    switch (generic_param->get_kind ())
+	      {
+		case HIR::GenericParam::GenericKind::TYPE: {
+		  const HIR::TypeParam &t
+		    = static_cast<const HIR::TypeParam &> (*generic_param);
+
+		  if (t.has_type ())
+		    {
+		      // see https://github.com/rust-lang/rust/issues/36887
+		      rust_error_at (
+			t.get_locus (),
+			"defaults for type parameters are not allowed here");
+		    }
+		}
+		break;
+
+	      default:
+		break;
+	      }
+	  }
       }
 
     HIR::Type *trait_type
