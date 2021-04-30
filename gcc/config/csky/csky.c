@@ -608,9 +608,6 @@ csky_default_logical_op_non_short_circuit (void)
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P csky_modes_tieable_p
 
-#undef TARGET_CAN_CHANGE_MODE_CLASS
-#define TARGET_CAN_CHANGE_MODE_CLASS csky_can_change_mode_class
-
 #undef	TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE csky_conditional_register_usage
 
@@ -2368,19 +2365,6 @@ csky_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   return !(TARGET_HARD_FLOAT
 	   && mode1 != mode2
 	   && (mode1 == DFmode || mode2 == DFmode));
-}
-
-/* Implement TARGET_CAN_CHANGE_MODE_CLASS.
-   V_REG registers can't do subreg as all values are reformatted to
-   internal precision.  */
-
-static bool
-csky_can_change_mode_class (machine_mode from,
-			    machine_mode to,
-			    reg_class_t rclass)
-{
-  return (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
-	  || !reg_classes_intersect_p (V_REGS, rclass));
 }
 
 /* Implement TARGET_CLASS_LIKELY_SPILLED_P.
