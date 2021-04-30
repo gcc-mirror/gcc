@@ -620,18 +620,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The newly-created string contains the exact contents of @a __str.
        *  @a __str is a valid, but unspecified string.
        */
-      basic_string(basic_string&& __str)
+      basic_string(basic_string&& __str) noexcept
 #if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
-      noexcept // FIXME C++11: should always be noexcept.
-#endif
       : _M_dataplus(std::move(__str._M_dataplus))
       {
-#if _GLIBCXX_FULLY_DYNAMIC_STRING == 0
 	__str._M_data(_S_empty_rep()._M_refdata());
-#else
-	__str._M_data(_S_construct(size_type(), _CharT(), get_allocator()));
-#endif
       }
+#else
+      : _M_dataplus(__str._M_rep())
+      {
+	// Rather than allocate an empty string for the rvalue string,
+	// just share ownership with it by incrementing the reference count.
+	// If the rvalue string was "leaked" then it was the unique owner,
+	// so need an extra increment to indicate shared ownership.
+	if (_M_rep()->_M_is_leaked())
+	  __gnu_cxx::__atomic_add_dispatch(&_M_rep()->_M_refcount, 2);
+	else
+	  __gnu_cxx::__atomic_add_dispatch(&_M_rep()->_M_refcount, 1);
+      }
+#endif
 
       /**
        *  @brief  Construct string from an initializer %list.
