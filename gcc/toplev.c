@@ -1461,9 +1461,12 @@ process_options (void)
     debug_hooks = &dwarf2_lineno_debug_hooks;
 #endif
   else
-    error_at (UNKNOWN_LOCATION,
-	      "target system does not support the %qs debug format",
-	      debug_type_names[write_symbols]);
+    {
+      gcc_assert (debug_set_count (write_symbols) <= 1);
+      error_at (UNKNOWN_LOCATION,
+		"target system does not support the %qs debug format",
+		debug_type_names[debug_set_to_format (write_symbols)]);
+    }
 
   /* We know which debug output will be used so we can set flag_var_tracking
      and flag_var_tracking_uninit if the user has not specified them.  */
