@@ -7008,7 +7008,8 @@ package body Sem_Ch6 is
 
       elsif Is_Limited_Type (R_Type)
         and then not Is_Interface (R_Type)
-        and then Comes_From_Source (N)
+        and then not (Nkind (N) = N_Simple_Return_Statement
+                      and then Comes_From_Extended_Return_Statement (N))
         and then not In_Instance_Body
         and then not OK_For_Limited_Init_In_05 (R_Type, Expr)
       then
