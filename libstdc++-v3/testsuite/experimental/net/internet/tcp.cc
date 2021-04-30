@@ -1,9 +1,9 @@
 // { dg-do compile { target c++14 } }
+// { dg-require-effective-target net_ts_ip }
 
 #include <experimental/internet>
 #include <type_traits>
 
-#if __has_include(<netinet/in.h>)
 using namespace std;
 using std::experimental::net::ip::tcp;
 using std::experimental::net::ip::basic_endpoint;
@@ -42,4 +42,3 @@ test01()
   static_assert( tcp::v4().protocol() == IPPROTO_TCP, "" );
   static_assert( tcp::v6().protocol() == IPPROTO_TCP, "" );
 }
-#endif

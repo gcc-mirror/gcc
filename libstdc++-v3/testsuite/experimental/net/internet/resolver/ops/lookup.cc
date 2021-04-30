@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++14 } }
+// { dg-require-effective-target net_ts_ip }
 // { dg-add-options net_ts }
 
 #include <experimental/internet>
@@ -26,8 +27,6 @@ using namespace std::experimental::net;
 void
 test01()
 {
-  bool test __attribute__((unused)) = false;
-
   std::error_code ec;
   io_context ctx;
   ip::tcp::resolver resolv(ctx);
@@ -44,8 +43,6 @@ test01()
 void
 test02()
 {
-  bool test __attribute__((unused)) = false;
-
   std::error_code ec;
   io_context ctx;
   ip::tcp::resolver resolv(ctx);
@@ -83,8 +80,6 @@ test02()
 void
 test03()
 {
-  bool test __attribute__((unused)) = false;
-
   std::error_code ec;
   io_context ctx;
   ip::tcp::resolver resolv(ctx);
