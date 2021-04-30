@@ -746,7 +746,7 @@ static unsigned int
 alignment_for_piecewise_move (unsigned int max_pieces, unsigned int align)
 {
   scalar_int_mode tmode
-    = int_mode_for_size (max_pieces * BITS_PER_UNIT, 1).require ();
+    = int_mode_for_size (max_pieces * BITS_PER_UNIT, 0).require ();
 
   if (align >= GET_MODE_ALIGNMENT (tmode))
     align = GET_MODE_ALIGNMENT (tmode);
