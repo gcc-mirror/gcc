@@ -280,3 +280,8 @@
 /* Use standard DWARF numbering for DWARF debugging information.  */
 #define RS6000_USE_DWARF_NUMBERING
 
+/* Replace -m64 with -maix64 and -m32 with -maix32.  */
+#undef SUBTARGET_DRIVER_SELF_SPECS
+#define SUBTARGET_DRIVER_SELF_SPECS	\
+"%{m64:-maix64} %<m64",			\
+"%{m32:-maix32} %<m32"
