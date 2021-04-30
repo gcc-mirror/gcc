@@ -2898,7 +2898,7 @@ namespace views::__adaptor
 	  constexpr decltype(auto)
 	  operator++(int)
 	  {
-	    if constexpr (forward_range<_Vp>)
+	    if constexpr (forward_range<_Base>)
 	      {
 		auto __tmp = *this;
 		++*this;
