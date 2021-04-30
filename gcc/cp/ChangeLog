@@ -1,3 +1,56 @@
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_fold_indirect_ref_1): Only set *empty_base if we
+	don't find a field.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51344
+	* decl2.c (grokfield): Call cplus_decl_attributes for friend.
+	(save_template_attributes): Use chainon.
+	* friend.c (do_friend): Remove attrlist parm.
+	* cp-tree.h (do_friend): Adjust.
+	* class.c (add_implicitly_declared_members): Adjust.
+	* decl.c (grokdeclarator): Adjust.
+	* pt.c (apply_late_template_attributes): Optimize.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97974
+	* class.c (finish_struct_anon_r): Drop complain parm.
+	Remove non-field diagnostic.
+	(finish_struct_anon): Adjust.
+	* decl.c (fixup_anonymous_aggr): Move non-field diagnostic here.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (cp_evaluated): Add reset parm to constructor.
+	* parser.c (cp_parser_constant_expression): Change
+	allow_non_constant_p to int.  Use cp_evaluated.
+	(cp_parser_initializer_clause): Pass 2 to allow_non_constant_p.
+	* semantics.c (finish_id_expression_1): Don't mess with
+	cp_unevaluated_operand here.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h: Clarify comments.
+	* pt.c (get_template_parm_object): Add assert.
+	* semantics.c (finish_compound_literal): Clear TREE_HAS_CONSTRUCTOR.
+	* tree.c (zero_init_expr_p): Check TREE_HAS_CONSTRUCTOR.
+	* typeck2.c (store_init_value): Likewise.
+
+2021-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/68942
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: When KOENIG_P,
+	set tf_conv during the initial substitution into the function.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100319
+	* semantics.c (finish_omp_clauses): Fix up check that variable
+	mentioned in detach clause doesn't appear in data-sharing clauses.
+
 2021-04-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* module.cc: Remove #error that triggers if DEV-PHASE is empty.

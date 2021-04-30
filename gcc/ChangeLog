@@ -1,3 +1,233 @@
+2021-04-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* config.gcc: Merged x86 and x86_64 cpu_type-setting cases.
+
+2021-04-29  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/i386/i386.h (ASM_OUTPUT_MAX_SKIP_PAD): Rename to...
+	(ASM_OUTPUT_MAX_SKIP_ALIGN): ... this.  Enclose in do/while(0).
+	* config/i386/i386.c: Adjust.
+	* config/i386/i386.md: Adjust.
+	* config/i386/darwin.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Drop.
+	* config/i386/dragonfly.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/freebsd.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/gas.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/gnu-user.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/iamcu.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/lynx.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/netbsd-elf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/openbsdelf.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	* config/i386/x86-64.h (ASM_OUTPUT_MAX_SKIP_ALIGN): Likewise.
+	(ASM_OUTPUT_MAX_SKIP_PAD): Likewise.
+
+2021-04-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_int_compare):
+	Swap operands of GTU and LEU comparison to emit carry flag comparison.
+	* config/i386/i386.md (*add<mode>3_carry_0): Change insn
+	predicate to allow more combine opportunities with memory operands.
+	(*sub<mode>3_carry_0): Ditto.
+
+2021-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR rtl-optimization/100303
+	* rtl-ssa/accesses.cc (function_info::make_use_available): Take a
+	boolean that indicates whether the use will only be used in
+	debug instructions.  Treat it in the same way that existing
+	cross-EBB debug references would be handled if so.
+	(function_info::make_uses_available): Likewise.
+	* rtl-ssa/functions.h (function_info::make_uses_available): Update
+	prototype accordingly.
+	(function_info::make_uses_available): Likewise.
+	* fwprop.c (try_fwprop_subst): Update call accordingly.
+
+2021-04-29  Jeff Law  <jlaw@tachyum.com>
+
+	* config/nios2/nios2-protos.h (nios2_fpu_insn_enabled): Move outside
+	of RTX_CODE guard.
+
+2021-04-29  Uroš Bizjak  <ubizjak@gmail.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR target/100312
+	* config/i386/i386-builtin.def (IX86_BUILTIN_MASKLOADPD)
+	(IX86_BUILTIN_MASKLOADPS, IX86_BUILTIN_MASKLOADPD256)
+	(IX86_BUILTIN_MASKLOADPS256, IX86_BUILTIN_MASKLOADD)
+	(IX86_BUILTIN_MASKLOADQ, IX86_BUILTIN_MASKLOADD256)
+	(IX86_BUILTIN_MASKLOADQ256): Move from SPECIAL_ARGS
+	to PURE_ARGS category.
+	* config/i386/i386-builtins.c (ix86_init_mmx_sse_builtins):
+	Handle PURE_ARGS category.
+	* config/i386/i386-expand.c (ix86_expand_builtin): Ditto.
+
+2021-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac: Check for the presence of sys/locking.h header and
+	for whether _LK_LOCK is supported by _locking.
+	* configure: Regenerate.
+	* config.in: Likewise.
+	* gcov-io.h: Define GCOV_LOCKED_WITH_LOCKING if HOST_HAS_LK_LOCK.
+	* gcov-io.c (gcov_open): Add support for GCOV_LOCKED_WITH_LOCKING.
+	* system.h: Include <sys/locking.h> if HAVE_SYS_LOCKING_H.
+
+2021-04-29  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (fcmov_comparison_operator):
+	Do not check for trivial FP comparison operator.
+	<case GEU, case LTU>: Allow CCGZmode.
+	<case GTU, case LEU>: Do not allow CCCmode.
+	(ix86_comparison_operator) <case GTU, case LEU>: Allow only CCmode.
+	(ix86_carry_flag_operator): Match only LTU and UNLT code.
+	Do not check for trivial FP comparison operator.  Allow CCGZmode.
+
+2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	* omp-expand.c (expand_omp_simd): Add step_orig, and replace uses of
+	fd->loop.step by either step or orig_step.
+
+2021-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (gen_load_pcrel_sym): Delete.
+	(load_got_register): Do the PIC dance here.
+	(sparc_legitimize_tls_address): Simplify.
+	(sparc_emit_probe_stack_range): Likewise.
+	(sparc32_initialize_trampoline): Likewise.
+	(sparc64_initialize_trampoline): Likewise.
+	* config/sparc/sparc.md (load_pcrel_sym<P:mode>): Add @ marker.
+	(probe_stack_range<P:mode>): Likewise.
+	(flush<P:mode>): Likewise.
+	(tgd_hi22<P:mode>): Likewise.
+	(tgd_lo10<P:mode>): Likewise.
+	(tgd_add<P:mode>): Likewise.
+	(tgd_call<P:mode>): Likewise.
+	(tldm_hi22<P:mode>): Likewise.
+	(tldm_lo10<P:mode>): Likewise.
+	(tldm_add<P:mode>): Likewise.
+	(tldm_call<P:mode>): Likewise.
+	(tldo_hix22<P:mode>): Likewise.
+	(tldo_lox10<P:mode>): Likewise.
+	(tldo_add<P:mode>): Likewise.
+	(tie_hi22<P:mode>): Likewise.
+	(tie_lo10<P:mode>): Likewise.
+	(tie_add<P:mode>): Likewise.
+	(tle_hix22<P:mode>): Likewise.
+	(tle_lox10<P:mode>): Likewise.
+	(stack_protect_setsi): Rename to...
+	(stack_protect_set32): ...this.
+	(stack_protect_setdi): Rename to...
+	(stack_protect_set64): ...this.
+	(stack_protect_set): Adjust calls to above.
+	(stack_protect_testsi): Rename to...
+	(stack_protect_test32): ...this.
+	(stack_protect_testdi): Rename to...
+	(stack_protect_test64): ...this.
+	(stack_protect_test): Adjust calls to above.
+
+2021-04-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/90773
+	* builtins.c (builtin_memcpy_read_str): Add a dummy argument.
+	(builtin_strncpy_read_str): Likewise.
+	(builtin_memset_read_str): Add an argument for the previous RTL
+	information and generate the new RTL from the previous RTL info.
+	(builtin_memset_gen_str): Likewise.
+	* builtins.h (builtin_strncpy_read_str): Update the prototype.
+	(builtin_memset_read_str): Likewise.
+	* expr.c (by_pieces_ninsns): If targetm.overlap_op_by_pieces_p()
+	returns true, round up size and alignment to the widest integer
+	mode for maximum size.
+	(pieces_addr::adjust): Add a pointer to by_pieces_prev argument
+	and pass it to m_constfn.
+	(op_by_pieces_d): Add m_push and m_overlap_op_by_pieces.
+	(op_by_pieces_d::op_by_pieces_d): Add a bool argument to
+	initialize m_push.  Initialize m_overlap_op_by_pieces with
+	targetm.overlap_op_by_pieces_p ().
+	(op_by_pieces_d::run): Pass the previous RTL information to
+	pieces_addr::adjust and generate overlapping operations if
+	m_overlap_op_by_pieces is true.
+	(PUSHG_P): New.
+	(move_by_pieces_d::move_by_pieces_d): Updated for op_by_pieces_d
+	change.
+	(store_by_pieces_d::store_by_pieces_d): Updated for op_by_pieces_d
+	change.
+	(can_store_by_pieces): Use by_pieces_constfn on constfun.
+	(store_by_pieces): Use by_pieces_constfn on constfun.  Updated
+	for op_by_pieces_d change.
+	(clear_by_pieces_1): Add a dummy argument.
+	(clear_by_pieces): Updated for op_by_pieces_d change.
+	(compare_by_pieces_d::compare_by_pieces_d): Likewise.
+	(string_cst_read_str): Add a dummy argument.
+	* expr.h (by_pieces_constfn): Add a dummy argument.
+	(by_pieces_prev): New.
+	* target.def (overlap_op_by_pieces_p): New target hook.
+	* config/i386/i386.c (TARGET_OVERLAP_OP_BY_PIECES_P): New.
+	* doc/tm.texi.in: Add TARGET_OVERLAP_OP_BY_PIECES_P.
+	* doc/tm.texi: Regenerated.
+
+2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100253
+	* tree-vect-stmts.c (vectorizable_load): Do not assume
+	element alignment when DR_MISALIGNMENT is -1.
+	(vectorizable_store): Likewise.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100302
+	* config/aarch64/aarch64.c (aarch64_add_offset_1_temporaries): Use
+	absu_hwi instead of abs_hwi.
+
+2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/38474
+	* tree-ssa-structalias.c (add_graph_edge): Avoid direct
+	forwarding when indirect forwarding through ESCAPED
+	alread happens.
+
+2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100232
+	* internal-fn.c (expand_GOMP_SIMT_ENTER_ALLOC)
+	(expand_GOMP_SIMT_LAST_LANE, expand_GOMP_SIMT_ORDERED_PRED)
+	(expand_GOMP_SIMT_VOTE_ANY, expand_GOMP_SIMT_XCHG_BFLY)
+	(expand_GOMP_SIMT_XCHG_IDX): Ensure target is assigned to.
+
+2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99912
+	* tree-ssa-dse.c (dse_dom_walker::m_need_cfg_cleanup): New.
+	(dse_dom_walker::todo): Likewise.
+	(dse_dom_walker::dse_optimize_stmt): Move VDEF check to the
+	caller.
+	(dse_dom_walker::before_dom_children): Remove trivially
+	dead SSA defs and schedule CFG cleanup if we removed all
+	PHIs in a block.
+	(pass_dse::execute): Get TODO as computed by the DOM walker
+	and return it.  Wipe dominator info earlier.
+
+2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100308
+	* ipa-prop.c (ipcp_modif_dom_walker::before_dom_children):
+	Track blocks to cleanup EH in new m_need_eh_cleanup.
+	(ipcp_modif_dom_walker::cleanup_eh): New.
+	(ipcp_transform_function): Release dominator info before
+	doing EH cleanup.
+
+2021-04-29  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100250
+	* attribs.c (attr_access::array_as_string): Avoid dereferencing
+	a pointer when it's null.
+
+2021-04-29  Martin Sebor  <msebor@redhat.com>
+
+	* Makefile.in (OBJS): Add ipa-free-lang-data.o.
+	* ipa-free-lang-data.cc: New file.
+	* tree.c: Move pass free_lang_data to file above.
+	 (build_array_type_1): Declare extern.
+	* tree.h (build_array_type_1): Declare.
+
 2021-04-28  Jonathan Wright  <jonathan.wright@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def: Modify comment to

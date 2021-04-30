@@ -1,3 +1,9 @@
+2021-04-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgcov.h: For the target, define GCOV_LOCKED_WITH_LOCKING
+	if __MSVCRT__ and, for the host, define it if HOST_HAS_LK_LOCK.
+	* libgcov-driver.c: Add directives if GCOV_LOCKED_WITH_LOCKING.
+
 2021-04-28  Patrick McGehearty  <patrick.mcgehearty@oracle.com>
 
 	* libgcc2.c (XMTYPE, XCTYPE, RBIG, RMIN, RMIN2, RMINSCAL, RMAX2):

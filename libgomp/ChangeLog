@@ -1,3 +1,12 @@
+2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.c/pr81778.c: New test.
+
+2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100232
+	* testsuite/libgomp.c/target-43.c: New file.
+
 2021-04-28  Jakub Jelinek  <jakub@redhat.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 
