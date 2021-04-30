@@ -1455,6 +1455,22 @@
   return code == LTU;
 })
 
+;; Return true if OP is a valid comparison operator
+;; testing carry flag to be unset.
+(define_predicate "ix86_carry_flag_unset_operator"
+  (match_code "geu,ge")
+{
+  machine_mode inmode = GET_MODE (XEXP (op, 0));
+  enum rtx_code code = GET_CODE (op);
+
+  if (inmode == CCFPmode)
+    code = ix86_fp_compare_code_to_integer (code);
+  else if (inmode != CCmode && inmode != CCCmode && inmode != CCGZmode)
+    return false;
+
+  return code == GEU;
+})
+
 ;; Return true if this comparison only requires testing one flag bit.
 (define_predicate "ix86_trivial_fp_comparison_operator"
   (match_code "gt,ge,unlt,unle,uneq,ltgt,ordered,unordered"))

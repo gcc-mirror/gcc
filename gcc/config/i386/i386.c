@@ -20057,13 +20057,16 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	    }
 	  else if (GET_CODE (XEXP (x, 0)) == PLUS)
 	    {
+	      rtx op = XEXP (XEXP (x, 0), 0);
+
 	      /* Add with carry, ignore the cost of adding a carry flag.  */
-	      if (ix86_carry_flag_operator (XEXP (XEXP (x, 0), 0), mode))
+	      if (ix86_carry_flag_operator (op, mode)
+		  || ix86_carry_flag_unset_operator (op, mode))
 		*total = cost->add;
 	      else
 		{
 		  *total = cost->lea;
-		  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+		  *total += rtx_cost (op, mode,
 				      outer_code, opno, speed);
 		}
 
@@ -20081,7 +20084,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	  && GET_CODE (XEXP (x, 0)) == MINUS
-	  && ix86_carry_flag_operator (XEXP (XEXP (x, 0), 1), mode))
+	  && (ix86_carry_flag_operator (XEXP (XEXP (x, 0), 1), mode)
+	      || ix86_carry_flag_unset_operator (XEXP (XEXP (x, 0), 1), mode)))
 	{
 	  *total = cost->add;
 	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode,
