@@ -2433,10 +2433,13 @@ package body Sem_Prag is
                      SPARK_Msg_N ("\use its constituents instead", Item);
                      return;
 
-                  --  An external state cannot appear as a global item of a
-                  --  nonvolatile function (SPARK RM 7.1.3(8)).
+                  --  An external state which has Async_Writers or
+                  --  Effective_Reads enabled cannot appear as a global item
+                  --  of a nonvolatile function (SPARK RM 7.1.3(8)).
 
                   elsif Is_External_State (Item_Id)
+                    and then (Async_Writers_Enabled (Item_Id)
+                               or else Effective_Reads_Enabled (Item_Id))
                     and then Ekind (Spec_Id) in E_Function | E_Generic_Function
                     and then not Is_Volatile_Function (Spec_Id)
                   then
