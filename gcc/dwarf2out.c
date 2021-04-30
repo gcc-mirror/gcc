@@ -27715,11 +27715,8 @@ dwarf2out_inline_entry (tree block)
   if (cur_line_info_table)
     ied->view = cur_line_info_table->view;
 
-  char label[MAX_ARTIFICIAL_LABEL_BYTES];
-
-  ASM_GENERATE_INTERNAL_LABEL (label, BLOCK_INLINE_ENTRY_LABEL,
-			       BLOCK_NUMBER (block));
-  ASM_OUTPUT_LABEL (asm_out_file, label);
+  ASM_OUTPUT_DEBUG_LABEL (asm_out_file, BLOCK_INLINE_ENTRY_LABEL,
+			  BLOCK_NUMBER (block));
 }
 
 /* Called from finalize_size_functions for size functions so that their body
