@@ -209,8 +209,7 @@ private:
       {
 	std::string sym = mapping.get_param_ty ()->get_symbol ();
 	param_tys.insert (sym);
-	param_location_map[sym]
-	  = mapping.get_generic_param ()->get_locus_slow ();
+	param_location_map[sym] = mapping.get_generic_param ().get_locus ();
       }
 
     std::set<std::string> args;
@@ -254,6 +253,11 @@ public:
 
   void visit (HIR::TypeParam &param) override
   {
+    TyTy::BaseType *default_ty_param = nullptr;
+    if (param.has_type ())
+      {
+	default_ty_param = TypeCheckType::Resolve (param.get_type ().get ());
+      }
     resolved = new TyTy::ParamType (param.get_type_representation (),
 				    param.get_mappings ().get_hirid (), param);
   }

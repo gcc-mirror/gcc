@@ -398,8 +398,7 @@ private:
 class SubstitutionParamMapping
 {
 public:
-  SubstitutionParamMapping (std::unique_ptr<HIR::GenericParam> &generic,
-			    ParamType *param)
+  SubstitutionParamMapping (const HIR::TypeParam &generic, ParamType *param)
 
     : generic (generic), param (param)
   {}
@@ -431,8 +430,10 @@ public:
 
   const ParamType *get_param_ty () const { return param; }
 
-  std::unique_ptr<HIR::GenericParam> &get_generic_param () { return generic; };
+  const HIR::TypeParam &get_generic_param () { return generic; };
 
+  // this is used for the backend to override the HirId ref of the param to
+  // what the concrete type is for the rest of the context
   void override_context ();
 
   bool needs_substitution () const
@@ -444,8 +445,18 @@ public:
     return p->resolve ()->get_kind () == TypeKind::PARAM;
   }
 
+  Location get_param_locus () const { return generic.get_locus (); }
+
+  bool param_has_default_ty () const { return generic.has_type (); }
+
+  BaseType *get_default_ty () const
+  {
+    TyVar var (generic.get_type_mappings ().get_hirid ());
+    return var.get_tyty ();
+  }
+
 private:
-  std::unique_ptr<HIR::GenericParam> &generic;
+  const HIR::TypeParam &generic;
   ParamType *param;
 };
 
@@ -638,12 +649,26 @@ public:
     return used_arguments;
   }
 
+  // this is the count of type params that are not substituted fuly
   size_t num_required_substitutions () const
   {
     size_t n = 0;
     for (auto &p : substitutions)
       {
 	if (p.needs_substitution ())
+	  n++;
+      }
+    return n;
+  }
+
+  // this is the count of type params that need substituted taking into account
+  // possible defaults
+  size_t min_required_substitutions () const
+  {
+    size_t n = 0;
+    for (auto &p : substitutions)
+      {
+	if (p.needs_substitution () && !p.param_has_default_ty ())
 	  n++;
       }
     return n;

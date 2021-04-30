@@ -1106,6 +1106,15 @@ class GenericParam
 public:
   virtual ~GenericParam () {}
 
+  enum GenericKind
+  {
+    TYPE,
+    LIFETIME,
+
+    // CONST generic parameter not yet handled
+    // CONST,
+  };
+
   // Unique pointer custom clone function
   std::unique_ptr<GenericParam> clone_generic_param () const
   {
@@ -1120,13 +1129,19 @@ public:
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
+  enum GenericKind get_kind () const { return kind; }
+
 protected:
   // Clone function implementation as pure virtual method
   virtual GenericParam *clone_generic_param_impl () const = 0;
 
-  GenericParam (Analysis::NodeMapping mapping) : mappings (mapping) {}
-
   Analysis::NodeMapping mappings;
+
+  enum GenericKind kind;
+
+  GenericParam (Analysis::NodeMapping mapping, enum GenericKind kind = TYPE)
+    : mappings (mapping), kind (kind)
+  {}
 };
 
 // A lifetime generic parameter (as opposed to a type generic parameter)
@@ -1145,6 +1160,8 @@ class LifetimeParam : public GenericParam
   Location locus;
 
 public:
+  Lifetime get_lifetime () { return lifetime; }
+
   // Returns whether the lifetime param has any lifetime bounds.
   bool has_lifetime_bounds () const { return !lifetime_bounds.empty (); }
 
@@ -1160,7 +1177,8 @@ public:
 		 std::vector<Lifetime> lifetime_bounds
 		 = std::vector<Lifetime> (),
 		 Attribute outer_attr = Attribute::create_empty ())
-    : GenericParam (mappings), lifetime (std::move (lifetime)),
+    : GenericParam (mappings, GenericKind::LIFETIME),
+      lifetime (std::move (lifetime)),
       lifetime_bounds (std::move (lifetime_bounds)),
       outer_attr (std::move (outer_attr)), locus (locus)
   {}
@@ -1169,9 +1187,9 @@ public:
 
   // Copy constructor with clone
   LifetimeParam (LifetimeParam const &other)
-    : GenericParam (other.mappings), lifetime (other.lifetime),
-      lifetime_bounds (other.lifetime_bounds), outer_attr (other.outer_attr),
-      locus (other.locus)
+    : GenericParam (other.mappings, GenericKind::LIFETIME),
+      lifetime (other.lifetime), lifetime_bounds (other.lifetime_bounds),
+      outer_attr (other.outer_attr), locus (other.locus)
   {}
 
   // Overloaded assignment operator to clone attribute

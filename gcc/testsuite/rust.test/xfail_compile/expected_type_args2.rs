@@ -2,5 +2,5 @@ struct Foo<A>(A);
 
 fn main() {
     let a: Foo = Foo::<i32>(123);
-    // { dg-error "Invalid number of generic arguments to generic type" "" { target { *-*-* } } .-1 }
+    // { dg-error "generic item takes at least 1 type arguments but 0 were supplied" "" { target { *-*-* } } .-1 }
 }

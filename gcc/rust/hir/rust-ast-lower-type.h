@@ -265,6 +265,34 @@ public:
     return resolver.translated;
   }
 
+  void visit (AST::LifetimeParam &param) override
+  {
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+    HIR::Lifetime::LifetimeType ltt;
+
+    switch (param.get_lifetime ().get_lifetime_type ())
+      {
+      case AST::Lifetime::LifetimeType::NAMED:
+	ltt = HIR::Lifetime::LifetimeType::NAMED;
+	break;
+      case AST::Lifetime::LifetimeType::STATIC:
+	ltt = HIR::Lifetime::LifetimeType::STATIC;
+	break;
+      case AST::Lifetime::LifetimeType::WILDCARD:
+	ltt = HIR::Lifetime::LifetimeType::WILDCARD;
+	break;
+      }
+
+    HIR::Lifetime lt (mapping, ltt, param.get_lifetime ().get_lifetime_name (),
+		      param.get_lifetime ().get_locus ());
+
+    translated = new HIR::LifetimeParam (mapping, lt, param.get_locus (),
+					 std::vector<Lifetime> ());
+  }
+
   void visit (AST::TypeParam &param) override
   {
     HIR::Attribute outer_attr = HIR::Attribute::create_empty ();

@@ -252,6 +252,12 @@ public:
     return resolver.resolved_node;
   };
 
+  void visit (AST::LifetimeParam &param) override
+  {
+    // For now do not do anything and accept everything.
+    ok = true;
+  }
+
   void visit (AST::TypeParam &param) override
   {
     ok = true;
