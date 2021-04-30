@@ -58,7 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     swap(basic_string& __s) _GLIBCXX_NOEXCEPT
     {
-      if (this == &__s)
+      if (this == std::__addressof(__s))
 	return;
 
       _Alloc_traits::_S_on_swap(_M_get_allocator(), __s._M_get_allocator());
@@ -254,7 +254,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     _M_assign(const basic_string& __str)
     {
-      if (this != &__str)
+      if (this != std::__addressof(__str))
 	{
 	  const size_type __rsize = __str.length();
 	  const size_type __capacity = capacity();
