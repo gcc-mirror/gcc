@@ -1569,6 +1569,10 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P rs6000_scalar_mode_supported_p
 
+#undef TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P
+#define TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P \
+  rs6000_libgcc_floating_mode_supported_p
+
 #undef TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P rs6000_vector_mode_supported_p
 
@@ -23824,6 +23828,31 @@ rs6000_scalar_mode_supported_p (scalar_mode mode)
     return true;
   else
     return default_scalar_mode_supported_p (mode);
+}
+
+/* Target hook for libgcc_floating_mode_supported_p.  */
+
+static bool
+rs6000_libgcc_floating_mode_supported_p (scalar_float_mode mode)
+{
+  switch (mode)
+    {
+    case E_SFmode:
+    case E_DFmode:
+    case E_TFmode:
+      return true;
+
+      /* We only return true for KFmode if IEEE 128-bit types are supported, and
+	 if long double does not use the IEEE 128-bit format.  If long double
+	 uses the IEEE 128-bit format, it will use TFmode and not KFmode.
+	 Because the code will not use KFmode in that case, there will be aborts
+	 because it can't find KFmode in the Floatn types.  */
+    case E_KFmode:
+      return TARGET_FLOAT128_TYPE && !TARGET_IEEEQUAD;
+
+    default:
+      return false;
+    }
 }
 
 /* Target hook for vector_mode_supported_p.  */
