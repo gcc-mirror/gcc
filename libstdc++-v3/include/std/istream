@@ -953,80 +953,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ws(basic_istream<_CharT, _Traits>& __is);
 
 #if __cplusplus >= 201103L
-  template<typename _Ch, typename _Up>
-    basic_istream<_Ch, _Up>&
-    __is_convertible_to_basic_istream_test(basic_istream<_Ch, _Up>*);
-
-  template<typename _Tp, typename = void>
-    struct __is_convertible_to_basic_istream_impl
-    {
-      using __istream_type = void;
-    };
-
-  template<typename _Tp>
-    using __do_is_convertible_to_basic_istream_impl =
-    decltype(__is_convertible_to_basic_istream_test
-	     (declval<typename remove_reference<_Tp>::type*>()));
-
-  template<typename _Tp>
-    struct __is_convertible_to_basic_istream_impl
-    <_Tp,
-     __void_t<__do_is_convertible_to_basic_istream_impl<_Tp>>>
-    {
-      using __istream_type =
-	__do_is_convertible_to_basic_istream_impl<_Tp>;
-    };
-
-  template<typename _Tp>
-    struct __is_convertible_to_basic_istream
-    : __is_convertible_to_basic_istream_impl<_Tp>
-    {
-    public:
-      using type = __not_<is_void<
-        typename __is_convertible_to_basic_istream_impl<_Tp>::__istream_type>>;
-      constexpr static bool value = type::value;
-    };
-
-  template<typename _Istream, typename _Tp, typename = void>
-    struct __is_extractable : false_type {};
-
-  template<typename _Istream, typename _Tp>
-    struct __is_extractable<_Istream, _Tp,
-			    __void_t<decltype(declval<_Istream&>()
-					      >> declval<_Tp>())>>
-    : true_type {};
-
-  template<typename _Istream>
-    using __rvalue_istream_type =
-      typename __is_convertible_to_basic_istream<
-	_Istream>::__istream_type;
-
-  // [27.7.1.6] Rvalue stream extraction
+  // C++11 27.7.2.6 Rvalue stream extraction [istream.rvalue]
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2328. Rvalue stream extraction should use perfect forwarding
+  // 1203. More useful rvalue stream insertion
+
+  // SFINAE helper to check constraints for operator>>(Istream&&, T&&).
+  // If the constraints are satisfied, it is an alias for Istream&&.
+  template<typename _Is, typename _Tp,
+	   typename = decltype(std::__rval_streamable<_Is>()
+				 >> std::declval<_Tp>())>
+    using __rvalue_stream_extraction_t = _Is&&;
+
   /**
    *  @brief  Generic extractor for rvalue stream
    *  @param  __is  An input stream.
    *  @param  __x  A reference to the extraction target.
-   *  @return  is
+   *  @return  __is
    *
    *  This is just a forwarding function to allow extraction from
    *  rvalue streams since they won't bind to the extractor functions
    *  that take an lvalue reference.
   */
   template<typename _Istream, typename _Tp>
-    inline
-    typename enable_if<__and_<__not_<is_lvalue_reference<_Istream>>,
-			      __is_convertible_to_basic_istream<_Istream>,
-			      __is_extractable<
-				__rvalue_istream_type<_Istream>,
-				_Tp&&>>::value,
-		       __rvalue_istream_type<_Istream>>::type
+    inline __rvalue_stream_extraction_t<_Istream, _Tp>
     operator>>(_Istream&& __is, _Tp&& __x)
     {
-      __rvalue_istream_type<_Istream> __ret_is = __is;
-      __ret_is >> std::forward<_Tp>(__x);
-      return __ret_is;
+      __is >> std::forward<_Tp>(__x);
+      return std::move(__is);
     }
 #endif // C++11
 
