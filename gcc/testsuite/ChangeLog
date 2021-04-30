@@ -1,3 +1,11 @@
+2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99954
+	* gcc.dg/torture/pr99954.c: New testcase.
+
 2021-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

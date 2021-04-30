@@ -1,3 +1,15 @@
+2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/99954
+	* tree-loop-distribution.c: Include tree-affine.h.
+	(generate_memcpy_builtin): Try using tree-affine to prove
+	non-overlap.
+	(loop_distribution::classify_builtin_ldst): Always classify
+	as PKIND_MEMMOVE.
+
 2021-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
