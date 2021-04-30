@@ -1,3 +1,12 @@
+2021-04-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-04-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100311
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Only allow VPR to be
+	used in HImode.
+
 2021-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

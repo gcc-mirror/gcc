@@ -1,3 +1,11 @@
+2021-04-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-04-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_variable_list): Gobble whitespace before
+	checking whether a '%' or parenthesis-open follows as next character.
+
 2021-04-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
