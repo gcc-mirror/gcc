@@ -25,15 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef DARWIN_X86
 #define DARWIN_X86 1
 
-#ifdef IN_LIBGCC2
-#undef TARGET_64BIT
-#ifdef __x86_64__
-#define TARGET_64BIT 1
-#else
-#define TARGET_64BIT 0
-#endif
-#endif
-
 /* WORKAROUND pr80556:
    For x86_64 Darwin10 and later, the unwinder is in libunwind (redirected
    from libSystem).  This doesn't use the keymgr (see keymgr.c) and therefore
@@ -44,11 +35,15 @@ along with GCC; see the file COPYING3.  If not see
    even when static-libgcc is specified.  We put libSystem first so that
    unwinder symbols are satisfied from there.
    We default to 64b for single-arch builds, so apply this unconditionally. */
+#ifndef PR80556_WORKAROUND
+#define PR80556_WORKAROUND \
+" %:version-compare(>= 10.6 mmacosx-version-min= -lSystem) "
+#endif
 #undef REAL_LIBGCC_SPEC
 #define REAL_LIBGCC_SPEC						   \
-   "%{static-libgcc|static: 						   \
-       %:version-compare(>= 10.6 mmacosx-version-min= -lSystem)		   \
-       -lgcc_eh -lgcc;							   \
+   "%{static-libgcc|static: "						   \
+       PR80556_WORKAROUND						   \
+      " -lgcc_eh -lgcc;							   \
       shared-libgcc|fexceptions|fgnu-runtime:				   \
        %:version-compare(!> 10.5 mmacosx-version-min= -lgcc_s.10.4)	   \
        %:version-compare(>< 10.5 10.6 mmacosx-version-min= -lgcc_s.10.5)   \
@@ -142,8 +137,11 @@ along with GCC; see the file COPYING3.  If not see
    %{mpc64:crtprec64.o%s} \
    %{mpc80:crtprec80.o%s}" TM_DESTRUCTOR
 
+#ifndef DARWIN_ARCH_SPEC
 /* We default to x86_64 for single-arch builds, bi-arch overrides.  */
 #define DARWIN_ARCH_SPEC "x86_64"
+#define DARWIN_SUBARCH_SPEC DARWIN_ARCH_SPEC
+#endif
 
 #undef SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS                                   \
