@@ -1,3 +1,24 @@
+2021-04-30  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR c++/98032
+	* g++.dg/pr98032.C: New testcase.
+
+2021-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95719
+	* g++.dg/tree-ssa/final4.C: New test.
+
+2021-04-30  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	Backported from master:
+	2019-11-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/92608
+	* gcc.dg/torture/pr92608.c: New test.
+
 2021-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

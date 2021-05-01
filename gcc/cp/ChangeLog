@@ -1,3 +1,9 @@
+2021-04-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95719
+	* call.c (build_over_call): Look up the overrider in base_binfo.
+	* class.c (lookup_vfn_in_binfo): Look through BINFO_PRIMARY_P.
+
 2021-04-21  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

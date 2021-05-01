@@ -1,3 +1,18 @@
+2021-04-30  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	Backported from master:
+	2019-11-21  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/92608
+	* tree-ssa-loop-unswitch.c (find_loop_guard): Use safe_dyn_cast instead
+	of dyn_cast.
+
+2021-04-30  James Clarke  <jrtc27@jrtc27.com>
+
+	PR bootstrap/87338
+	* dwarf2out.c (dwarf2out_inline_entry): Use ASM_OUTPUT_DEBUG_LABEL
+	instead of ASM_GENERATE_INTERNAL_LABEL and ASM_OUTPUT_LABEL.
+
 2021-04-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
