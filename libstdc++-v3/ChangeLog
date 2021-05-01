@@ -1,3 +1,13 @@
+2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__cpp_lib_constexpr_string):
+	Only define for C++17 and later.
+	* include/std/version (__cpp_lib_semaphore): Fix condition
+	to match the one in <semaphore>.
+
 2021-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
