@@ -1,3 +1,12 @@
+2021-04-30  James Clarke  <jrtc27@jrtc27.com>
+
+	Backported from master:
+	2021-04-30  James Clarke  <jrtc27@jrtc27.com>
+
+	PR bootstrap/87338
+	* dwarf2out.c (dwarf2out_inline_entry): Use ASM_OUTPUT_DEBUG_LABEL
+	instead of ASM_GENERATE_INTERNAL_LABEL and ASM_OUTPUT_LABEL.
+
 2021-04-29  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

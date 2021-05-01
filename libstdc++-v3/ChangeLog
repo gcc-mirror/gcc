@@ -1,3 +1,11 @@
+2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__cpp_lib_constexpr_string):
+	Only define for C++17 and later.
+
 2021-04-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
