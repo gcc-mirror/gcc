@@ -1,3 +1,31 @@
+2021-04-30  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmla_float_not_fused.c:
+	New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vmls_float_not_fused.c:
+	New test.
+
+2021-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR c++/98032
+	* g++.dg/pr98032.C: New testcase.
+
+2021-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96513
+	* gcc.dg/torture/pr96513.c: New testcase.
+
+2021-04-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98060
+	* gcc.target/i386/pr98060.c: New test.
+
+2021-04-30  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/100225
+	PR rtl-optimization/84878
+	* gcc.dg/pr100225.c: New test.
+
 2021-04-29  Joseph Myers  <joseph@codesourcery.com>
 
 	PR preprocessor/82359

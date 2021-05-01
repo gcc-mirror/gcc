@@ -1,3 +1,144 @@
+2021-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__non_propating_cache): Define
+	as per P2328.
+	(join_view): Remove constraints on the value and reference types
+	of the wrapped iterator type as per P2328.
+	(join_view::_Iterator::_M_satisfy): Adjust as per P2328.
+	(join_view::_Iterator::operator++): Likewise.
+	(join_view::_M_inner): Use __non_propating_cache as per P2328.
+	Remove now-redundant use of __maybe_present_t.
+	* testsuite/std/ranges/adaptors/join.cc: Include <array>.
+	(test10): New test.
+
+2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (__cpp_lib_constexpr_string):
+	Only define for C++17 and later.
+	* include/std/version (__cpp_lib_semaphore): Fix condition
+	to match the one in <semaphore>.
+
+2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_INT64_T): Delete.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Do not use GLIBCXX_CHECK_INT64_T.
+	* include/bits/postypes.h: Remove include of <stdint.h> and
+	definition/undefinition of the __STDC_LIMIT_MACROS and
+	__STDC_CONSTANT_MACROS macros.
+	(streamoff): Use __INT64_TYPE__ if defined.
+
+2021-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (split_view::_InnerIter::operator++):
+	Depend on _Base instead of _Vp directly, as per LWG 3532.
+
+2021-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_util.h (subrange::subrange): Avoid
+	list-initialization in delegating constructor.
+	* include/std/ranges (single_view): Replace implicit guide
+	with explicit deduction guide that decays its argument.
+	(_Single::operator()): Avoid CTAD when constructing the
+	single_view object.
+	(_Iota::operator()): Avoid list-initialization.
+	(__detail::__can_filter_view, _Filter::operator()): Likewise.
+	(__detail::__can_transform_view, _Transform::operator()): Likewise.
+	(take_view::begin): Likewise.
+	(__detail::__can_take_view, _Take::operator()): Likewise.
+	(__detail::__can_take_while_view, _TakeWhile::operator()): Likewise.
+	(__detail::__can_drop_view, _Drop::operator()): Likewise.
+	(__detail::__can_drop_while_view, _DropWhile::operator()): Likewise.
+	(split_view::split_view): Use views::single when initializing
+	_M_pattern.
+	(__detail::__can_split_view, _Split::operator()): Avoid
+	list-initialization.
+	(_Counted::operator()): Likewise.
+	* testsuite/std/ranges/p2367.cc: New test.
+
+2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60497
+	* include/bits/basic_ios.tcc (basic_ios::copyfmt): use
+	std::addressof.
+	* include/bits/basic_string.tcc (basic_string::swap)
+	(basic_string::assign): Likewise.
+	* include/bits/deque.tcc (deque::operator=(const deque&)):
+	Likewise.
+	* include/bits/stl_tree.h (_Rb_tree::operator=(const * _Rb_tree&)):
+	Likewise.
+	* include/bits/vector.tcc (vector::operator=(const vector&)):
+	Likewise.
+
+2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/istream (operator>>(Istream&&, x&)): Simplify, as
+	per LWG 1203.
+	* include/std/ostream (operator<<(Ostream&&, const x&)):
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/char/lwg2499_neg.cc:
+	Adjust dg-error pattern.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/lwg2499_neg.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/4.cc: Define
+	is_extractable trait to replace std::__is_extractable. Make it
+	work with rvalue streams as well as lvalues, to replace f() and
+	g() helper functions.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/6.cc:
+	Define is_insertable trait to replace std::__is_insertable. Make
+	it work with rvalue streams as well as lvalues, to replace f()
+	and g() helper functions.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/6.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/io/dr2989.cc: Prune additional
+	errors from new constraints.
+	* testsuite/27_io/rvalue_streams-2.cc: Remove PR 80675 checks,
+	which are no longer expected to compile.
+	* testsuite/27_io/rvalue_streams.cc: Adjust existing test.
+	Verify LWG 1203 changes.
+
+2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100285
+	* include/experimental/socket (__basic_socket_impl::set_option)
+	(__basic_socket_impl::get_option) [!_GLIBCXX_HAVE_SYS_SOCKET_H]:
+	Just set error code.
+	* testsuite/experimental/net/socket/socket_base.cc: CHeck
+	for <sys/socket.h> not <socket.h>.
+
+2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100180
+	PR libstdc++/100286
+	PR libstdc++/100351
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc:
+	Use new effective-target keyword.
+	* testsuite/experimental/net/internet/address/v4/cons.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/creation.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/members.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v6/members.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/base.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/socket/opt.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/tcp.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/udp.cc:
+	Likewise.
+	* testsuite/lib/libstdc++.exp (check_effective_target_net_ts_ip):
+	New proc to check net_ts_ip et.
+
 2021-04-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/97930

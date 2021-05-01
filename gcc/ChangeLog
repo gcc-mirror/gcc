@@ -1,3 +1,282 @@
+2021-04-30  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add
+	float_ml[as][q]_laneq builtin generator macros.
+	* config/aarch64/aarch64-simd.md (mul_laneq<mode>3): Define.
+	(aarch64_float_mla_laneq<mode>): Define.
+	(aarch64_float_mls_laneq<mode>): Define.
+	* config/aarch64/arm_neon.h (vmla_laneq_f32): Use RTL builtin
+	instead of GCC vector extensions.
+	(vmlaq_laneq_f32): Likewise.
+	(vmls_laneq_f32): Likewise.
+	(vmlsq_laneq_f32): Likewise.
+
+2021-04-30  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add
+	float_ml[as]_lane builtin generator macros.
+	* config/aarch64/aarch64-simd.md (*aarch64_mul3_elt<mode>):
+	Rename to...
+	(mul_lane<mode>3): This, and re-order arguments.
+	(aarch64_float_mla_lane<mode>): Define.
+	(aarch64_float_mls_lane<mode>): Define.
+	* config/aarch64/arm_neon.h (vmla_lane_f32): Use RTL builtin
+	instead of GCC vector extensions.
+	(vmlaq_lane_f32): Likewise.
+	(vmls_lane_f32): Likewise.
+	(vmlsq_lane_f32): Likewise.
+
+2021-04-30  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add float_ml[as]
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_float_mla<mode>):
+	Define.
+	(aarch64_float_mls<mode>): Define.
+	* config/aarch64/arm_neon.h (vmla_f32): Use RTL builtin
+	instead of relying on GCC vector extensions.
+	(vmla_f64): Likewise.
+	(vmlaq_f32): Likewise.
+	(vmlaq_f64): Likewise.
+	(vmls_f32): Likewise.
+	(vmls_f64): Likewise.
+	(vmlsq_f32): Likewise.
+	(vmlsq_f64): Likewise.
+	* config/aarch64/iterators.md: Define VDQF_DF mode iterator.
+
+2021-04-30  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add
+	float_ml[as]_n_builtin generator macros.
+	* config/aarch64/aarch64-simd.md (*aarch64_mul3_elt_from_dup<mode>):
+	Rename to...
+	(mul_n<mode>3): This, and re-order arguments.
+	(aarch64_float_mla_n<mode>): Define.
+	(aarch64_float_mls_n<mode>): Define.
+	* config/aarch64/arm_neon.h (vmla_n_f32): Use RTL builtin
+	instead of inline asm.
+	(vmlaq_n_f32): Likewise.
+	(vmls_n_f32): Likewise.
+	(vmlsq_n_f32): Likewise.
+
+2021-04-30  Jonathan Wright  <joanthan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Add pmull[2]
+	builtin generator macros.
+	* config/aarch64/aarch64-simd.md (aarch64_pmullv8qi): Define.
+	(aarch64_pmull_hiv16qi_insn): Define.
+	(aarch64_pmull_hiv16qi): Define.
+	* config/aarch64/arm_neon.h (vmull_high_p8): Use RTL builtin
+	instead of inline asm.
+	(vmull_p8): Likewise.
+
+2021-04-30  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* config/avr/avr.md: Adjust peepholes to match and
+	generate parallels with clobber of REG_CC.
+	(mov<mode>_insn): Rename to mov<mode>_insn_split.
+	(*mov<mode>_insn): Rename to mov<mode>_insn.
+
+2021-04-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* varasm.c (use_blocks_for_decl_p): Don't use section anchors
+	for VAR_DECLs if -fdata-sections enabled.
+
+2021-04-30  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR bootstrap/100327
+	* config/rs6000/rs6000.c
+	(TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P): Define.
+	(rs6000_libgcc_floating_mode_supported_p): New target hook.
+
+2021-04-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (class thread_jumps): Split out code
+	from here...
+	(class back_threader_registry): ...to here...
+	(class back_threader_profitability): ...and here...
+	(thread_jumps::thread_through_all_blocks): Remove argument.
+	(back_threader_registry::back_threader_registry): New.
+	(back_threader_registry::~back_threader_registry): New.
+	(back_threader_registry::thread_through_all_blocks): New.
+	(thread_jumps::profitable_jump_thread_path): Move from here...
+	(back_threader_profitability::profitable_path_p): ...to here.
+	(thread_jumps::find_taken_edge): New.
+	(thread_jumps::convert_and_register_current_path): Move...
+	(back_threader_registry::register_path): ...to here.
+	(thread_jumps::register_jump_thread_path_if_profitable): Move...
+	(thread_jumps::maybe_register_path): ...to here.
+	(thread_jumps::handle_phi): Call find_taken_edge and
+	maybe_register_path.
+	(thread_jumps::handle_assignment): Same.
+	(thread_jumps::fsm_find_control_statement_thread_paths): Remove
+	tree argument to handle_phi and handle_assignment.
+	(thread_jumps::find_jump_threads_backwards): Set m_name.  Remove
+	set of m_speed_p and m_max_threaded_paths.
+	(pass_thread_jumps::execute): Remove second argument from
+	find_jump_threads_backwards.
+	(pass_early_thread_jumps::execute): Same.
+
+2021-04-30  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-dom.c (class dom_jump_threader_simplifier): New.
+	(class dom_opt_dom_walker): Initialize some class variables.
+	(pass_dominator::execute): Pass evrp_range_analyzer and
+	dom_jump_threader_simplifier to dom_opt_dom_walker.
+	Adjust for some functions moving into classes.
+	(simplify_stmt_for_jump_threading): Adjust and move to...
+	(jump_threader_simplifier::simplify): ...here.
+	(dom_opt_dom_walker::before_dom_children): Adjust for
+	m_evrp_range_analyzer.
+	(dom_opt_dom_walker::after_dom_children): Remove x_vr_values hack.
+	(test_for_singularity): Place in dom_opt_dom_walker class.
+	(dom_opt_dom_walker::optimize_stmt): The argument
+	evrp_range_analyzer is now a class field.
+	* tree-ssa-threadbackward.c (class thread_jumps): Add m_registry.
+	(thread_jumps::thread_through_all_blocks): New.
+	(thread_jumps::convert_and_register_current_path): Use m_registry.
+	(pass_thread_jumps::execute): Adjust for thread_through_all_blocks
+	being in the threader class.
+	(pass_early_thread_jumps::execute): Same.
+	* tree-ssa-threadedge.c (threadedge_initialize_values): Move...
+	(jump_threader::jump_threader): ...here.
+	(threadedge_finalize_values): Move...
+	(jump_threader::~jump_threader): ...here.
+	(jump_threader::remove_jump_threads_including): New.
+	(jump_threader::thread_through_all_blocks): New.
+	(record_temporary_equivalences_from_phis): Move...
+	(jump_threader::record_temporary_equivalences_from_phis): ...here.
+	(record_temporary_equivalences_from_stmts_at_dest): Move...
+	(jump_threader::record_temporary_equivalences_from_stmts_at_dest):
+	Here...
+	(simplify_control_stmt_condition_1): Move to jump_threader class.
+	(simplify_control_stmt_condition): Move...
+	(jump_threader::simplify_control_stmt_condition): ...here.
+	(thread_around_empty_blocks): Move...
+	(jump_threader::thread_around_empty_blocks): ...here.
+	(thread_through_normal_block): Move...
+	(jump_threader::thread_through_normal_block): ...here.
+	(thread_across_edge): Move...
+	(jump_threader::thread_across_edge): ...here.
+	(thread_outgoing_edges): Move...
+	(jump_threader::thread_outgoing_edges): ...here.
+	* tree-ssa-threadedge.h: Move externally facing functings...
+	(class jump_threader): ...here...
+	(class jump_threader_simplifier): ...and here.
+	* tree-ssa-threadupdate.c (struct redirection_data): Remove comment.
+	(jump_thread_path_allocator::jump_thread_path_allocator): New.
+	(jump_thread_path_allocator::~jump_thread_path_allocator): New.
+	(jump_thread_path_allocator::allocate_thread_edge): New.
+	(jump_thread_path_allocator::allocate_thread_path): New.
+	(jump_thread_path_registry::jump_thread_path_registry): New.
+	(jump_thread_path_registry::~jump_thread_path_registry): New.
+	(jump_thread_path_registry::allocate_thread_edge): New.
+	(jump_thread_path_registry::allocate_thread_path): New.
+	(dump_jump_thread_path): Make extern.
+	(debug (const vec<jump_thread_edge *> &path)): New.
+	(struct removed_edges): Move to tree-ssa-threadupdate.h.
+	(struct thread_stats_d): Remove.
+	(remove_ctrl_stmt_and_useless_edges): Make static.
+	(lookup_redirection_data): Move...
+	(jump_thread_path_registry::lookup_redirection_data): ...here.
+	(ssa_redirect_edges): Make static.
+	(thread_block_1): Move...
+	(jump_thread_path_registry::thread_block_1): ...here.
+	(thread_block): Move...
+	(jump_thread_path_registry::thread_block): ...here.
+	(thread_through_loop_header):  Move...
+	(jump_thread_path_registry::thread_through_loop_header): ...here.
+	(mark_threaded_blocks): Move...
+	(jump_thread_path_registry::mark_threaded_blocks): ...here.
+	(debug_path): Move...
+	(jump_thread_path_registry::debug_path): ...here.
+	(debug_all_paths): Move...
+	(jump_thread_path_registry::dump): ..here.
+	(rewire_first_differing_edge): Move...
+	(jump_thread_path_registry::rewire_first_differing_edge): ...here.
+	(adjust_paths_after_duplication): Move...
+	(jump_thread_path_registry::adjust_paths_after_duplication): ...here.
+	(duplicate_thread_path): Move...
+	(jump_thread_path_registry::duplicate_thread_path): ..here.
+	(remove_jump_threads_including): Move...
+	(jump_thread_path_registry::remove_jump_threads_including): ...here.
+	(thread_through_all_blocks): Move to...
+	(jump_thread_path_registry::thread_through_all_blocks): ...here.
+	(delete_jump_thread_path): Remove.
+	(register_jump_thread): Move...
+	(jump_thread_path_registry::register_jump_thread): ...here.
+	* tree-ssa-threadupdate.h: Move externally facing functions...
+	(class jump_thread_path_allocator): ...here...
+	(class jump_thread_path_registry): ...and here.
+	(thread_through_all_blocks): Remove.
+	(struct removed_edges): New.
+	(register_jump_thread): Remove.
+	(remove_jump_threads_including): Remove.
+	(delete_jump_thread_path): Remove.
+	(remove_ctrl_stmt_and_useless_edges): Remove.
+	(free_dom_edge_info): New prototype.
+	* tree-vrp.c: Remove x_vr_values hack.
+	(class vrp_jump_threader_simplifier): New.
+	(vrp_jump_threader_simplifier::simplify): New.
+	(vrp_jump_threader::vrp_jump_threader): Adjust method signature.
+	Remove m_dummy_cond.
+	Instantiate m_simplifier and m_threader.
+	(vrp_jump_threader::thread_through_all_blocks): New.
+	(vrp_jump_threader::simplify_stmt): Remove.
+	(vrp_jump_threader::after_dom_children): Do not set m_dummy_cond.
+	Remove x_vr_values hack.
+	(execute_vrp): Adjust for thread_through_all_blocks being in a
+	class.
+
+2021-04-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* genflags.c (gen_insn): Print failed expansion string.
+
+2021-04-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	* expr.c (alignment_for_piecewise_move): Call mode_for_size
+	without limit to MAX_FIXED_MODE_SIZE.
+
+2021-04-30  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/90773
+	* builtins.c (builtin_memset_gen_str): Don't use return from
+	simplify_gen_subreg.
+
+2021-04-30  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98060
+	* config/i386/i386.md (*add<mode>3_carry_0r): New insn pattern.
+	(*addsi3_carry_zext_0r): Ditto.
+	(*sub<mode>3_carry_0): Ditto.
+	(*subsi3_carry_zext_0r): Ditto.
+	* config/i386/predicates.md (ix86_carry_flag_unset_operator):
+	New predicate.
+	* config/i386/i386.c (ix86_rtx_costs) <case PLUS, case MINUS>:
+	Also consider ix86_carry_flag_unset_operator to calculate
+	the cost of adc/sbb insn.
+
+2021-04-30  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/100225
+	PR rtl-optimization/84878
+	* modulo-sched.c (sms_schedule): Use note_stores to skip loops
+	where we have an instruction which touches (writes) any hard
+	register from df->regular_block_artificial_uses set.
+	Allow not-single-set instruction only right before basic block
+	tail.
+
+2021-04-30  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* config/riscv/riscv.opt (march=,mabi=): Negative itself.
+
+2021-04-30  LevyHsu  <admin@levyhsu.com>
+
+	* config/riscv/riscv.c (riscv_min_arithmetic_precision): New.
+	* config/riscv/riscv.h (TARGET_MIN_ARITHMETIC_PRECISION): New.
+	* config/riscv/riscv.md (addv<mode>4, uaddv<mode>4): New.
+	(subv<mode>4, usubv<mode>4, mulv<mode>4, umulv<mode>4): New.
+
 2021-04-29  Alexandre Oliva  <oliva@adacore.com>
 
 	* config.gcc: Merged x86 and x86_64 cpu_type-setting cases.
