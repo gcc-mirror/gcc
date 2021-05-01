@@ -4585,6 +4585,17 @@ package body Sem_Ch6 is
             then
                Conformant := True;
 
+            --  Finally, a body generated for an expression function copies
+            --  the profile of the function and no check is needed either.
+            --  If the body is the completion of a previous function
+            --  declared elsewhere, the conformance check is required.
+
+            elsif Nkind (N) = N_Subprogram_Body
+              and then Was_Expression_Function (N)
+              and then Sloc (Spec_Id) = Sloc (Body_Id)
+            then
+               Conformant := True;
+
             else
                Check_Conformance
                  (Body_Id, Spec_Id,
