@@ -1,3 +1,16 @@
+2021-04-30  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR c++/98032
+	* g++.dg/pr98032.C: New testcase.
+
+2021-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96513
+	* gcc.dg/torture/pr96513.c: New testcase.
+
 2021-04-29  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

@@ -1,3 +1,19 @@
+2021-04-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from master:
+	2021-04-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix.h (SUBTARGET_DRIVER_SELF_SPECS): New.
+	* config/rs6000/aix64.opt (m64): New.
+	(m32): New.
+
+2021-04-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96513
+	* tree-vect-slp.c (struct vdhs_data): New.
+	(vect_detect_hybrid_slp): New walker.
+	(vect_detect_hybrid_slp): Rewrite.
+
 2021-04-29  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
