@@ -1,3 +1,24 @@
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-minversion-link.c: Allow for Darwin19 (macOS 10.15)
+	and Darwin20 (macOS 11.0).
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-08-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/torture/fp-int-convert-timode-3.c: XFAIL run.
+	* gcc.dg/torture/fp-int-convert-timode-4.c: Likewise.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/darwin-version-1.c: Use -mmacosx-version-min= 10.8
+	for system versions 10.14 and 10.15.
+
 2021-04-30  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

@@ -1,3 +1,95 @@
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+	    Jakub Jelinek   <jakub@redhat.com>
+
+	PR target/97865
+	* configure: Regenerate.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-12-23  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (validate_macosx_version_min): Allow
+	MACOSX_DEPLOYMENT_TARGET=11.
+	(darwin_default_min_version): Adjust warning spelling to avoid
+	an apostrophe.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-12-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-driver.c (darwin_find_version_from_kernel):
+	Compute the minor OS version from the minor kernel version.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-c.c: Allow for Darwin20 to correspond to macOS 11.
+	* config/darwin-driver.c: Likewise.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/host-darwin.c: Align pch_address_space to 16384.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-03-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/44107
+	PR target/48097
+	* config/darwin-protos.h (darwin_should_restore_cfa_state): New.
+	* config/darwin.c (darwin_should_restore_cfa_state): New.
+	* config/darwin.h (TARGET_ASM_SHOULD_RESTORE_CFA_STATE): New.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in: Document TARGET_ASM_SHOULD_RESTORE_CFA_STATE.
+	* dwarf2cfi.c (connect_traces): If the target requests, restore
+	the CFA expression after a DW_CFA_restore.
+	* target.def (TARGET_ASM_SHOULD_RESTORE_CFA_STATE): New hook.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2021-04-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (machopic_legitimize_pic_address): Check
+	that the current pic register is one of the hard reg set
+	before setting liveness.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-11-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin-c.c (struct f_align_stack): Rename
+	to type from align_stack to f_align_stack.
+	(push_field_alignment): Likewise.
+	(pop_field_alignment): Likewise.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backported from master:
+	2020-09-07  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c (darwin_libc_has_function): Report sincos
+	available from 10.9.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.c: Lookup Objective C metadata and force indirection
+	for IVAR refs.
+
+2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h (ASM_GENERATE_INTERNAL_LABEL):
+	Make ubsan_{data,type},ASAN symbols linker-visible.
+
 2021-04-30  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	Backported from master:
