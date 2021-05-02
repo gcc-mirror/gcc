@@ -117,13 +117,13 @@ async_io (void *arg)
 		{
 		case AIO_WRITE_DONE:
 		  NOTE ("Finalizing write");
-		  st_write_done_worker (au->pdt);
+		  st_write_done_worker (au->pdt, false);
 		  UNLOCK (&au->io_lock);
 		  break;
 
 		case AIO_READ_DONE:
 		  NOTE ("Finalizing read");
-		  st_read_done_worker (au->pdt);
+		  st_read_done_worker (au->pdt, false);
 		  UNLOCK (&au->io_lock);
 		  break;
 
