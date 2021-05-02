@@ -1,3 +1,11 @@
+2021-05-01  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	Backported from master:
+	2021-04-27  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/vax/vax.c (print_operand_address, vax_address_cost_1)
+	(index_term_p): Handle ASHIFT too.
+
 2021-04-30  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backported from master:
