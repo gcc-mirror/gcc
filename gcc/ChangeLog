@@ -1,3 +1,15 @@
+2021-05-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (DEFINE_INT_RANGE_GC_STUBS): Remove.
+	(gt_pch_nx (int_range<1> *&)): New.
+	(gt_ggc_mx (int_range<1> *&)): New.
+	* value-range.h (class irange): Add GTY support for
+	the base class.
+
+2021-05-01  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* doc/options.texi (Negative): Change either or to both and.
+
 2021-04-30  Jonathan Wright  <jonathan.wright@arm.com>
 
 	* config/aarch64/aarch64-simd-builtins.def: Add
