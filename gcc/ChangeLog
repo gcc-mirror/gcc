@@ -1,3 +1,45 @@
+2021-05-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	* varasm.c (compute_reloc_for_var): Split out from...
+	(get_variable_section): Use it.
+	* output.h (compute_reloc_for_var): Declare.
+	* config/rs6000/rs6000-protos.h
+	(rs6000_xcoff_asm_output_aligned_decl_common): Change alignment to
+	unsigned int.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address_aix):
+	Don't append storage mapping class to symbol.
+	(rs6000_xcoff_asm_named_section): Add BS and UL mapping classes.
+	Don't convert TLS BSS to common.
+	(rs6000_xcoff_unique_section): Don't fall back to select_secton.
+	(rs6000_xcoff_section_type_flags): Add SECTION_BSS if DECL is
+	bss_initializer.
+	(rs6000_xcoff_asm_globalize_decl_name): Don't strip storage
+	mapping class.
+	(rs6000_xcoff_asm_output_aligned_decl_common): Align is unsigned int.
+	If align is 0 from TLS class, use the same rules as varasm.c
+	If not common, switch to BSS section manually.
+	If common, emit appropriate comm or lcomm directive.
+	(rs6000_xcoff_encode_section_info): Add logic to append all
+	storage mapping classes.
+	(rs6000_asm_weaken_decl): Adjust for qualname symbols.
+	* config/rs6000/xcoff.h (ASM_OUTPUT_ALIGNED_DECL_LOCAL): Use
+	rs6000_xcoff_asm_output_aligned_decl_common.
+	(ASM_OUTPUT_ALIGNED_DECL_LOCAL): Use
+	rs6000_xcoff_asm_output_aligned_decl_common.
+	(ASM_OUTPUT_TLS_COMMON): Use
+	rs6000_xcoff_asm_output_aligned_decl_common.
+
+2021-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100375
+	* config/nvptx/nvptx.c (nvptx_sese_pseudo): Use nullptr instead of 0
+	as first argument of pseudo_node_t constructors.
+
+2021-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100336
+	* config/i386/t-i386 (TM_H): Add $(srcdir)/config/i386/i386-isa.def.
+
 2021-05-01  Aldy Hernandez  <aldyh@redhat.com>
 
 	* value-range.cc (DEFINE_INT_RANGE_GC_STUBS): Remove.

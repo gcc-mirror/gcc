@@ -1,3 +1,8 @@
+2021-05-03  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/ctype.xml: Move unix.org reference to https.
+	* doc/html/manual/facets.html: Regenerate.
+
 2021-04-30  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/ranges (__detail::__non_propating_cache): Define
