@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
+#include "tree-eh.h"
 
 /* This file implements dead store elimination.
 
@@ -1193,7 +1194,8 @@ dse_dom_walker::before_dom_children (basic_block bb)
 	  /* When we remove dead stores make sure to also delete trivially
 	     dead SSA defs.  */
 	  if (has_zero_uses (DEF_FROM_PTR (def_p))
-	      && !gimple_has_side_effects (stmt))
+	      && !gimple_has_side_effects (stmt)
+	      && !stmt_unremovable_because_of_non_call_eh_p (cfun, stmt))
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		{
