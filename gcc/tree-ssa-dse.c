@@ -799,7 +799,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	return DSE_STORE_LIVE;
 
       auto_vec<gimple *, 10> defs;
-      gimple *phi_def = NULL;
+      gimple *first_phi_def = NULL;
+      gimple *last_phi_def = NULL;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
 	  /* Limit stmt walking.  */
@@ -825,7 +826,9 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 				 SSA_NAME_VERSION (PHI_RESULT (use_stmt))))
 		{
 		  defs.safe_push (use_stmt);
-		  phi_def = use_stmt;
+		  if (!first_phi_def)
+		    first_phi_def = use_stmt;
+		  last_phi_def = use_stmt;
 		}
 	    }
 	  /* If the statement is a use the store is not dead.  */
@@ -889,6 +892,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	  gimple *def = defs[i];
 	  gimple *use_stmt;
 	  use_operand_p use_p;
+	  tree vdef = (gimple_code (def) == GIMPLE_PHI
+		       ? gimple_phi_result (def) : gimple_vdef (def));
 	  /* If the path to check starts with a kill we do not need to
 	     process it further.
 	     ???  With byte tracking we need only kill the bytes currently
@@ -901,8 +906,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	    }
 	  /* If the path ends here we do not need to process it further.
 	     This for example happens with calls to noreturn functions.  */
-	  else if (gimple_code (def) != GIMPLE_PHI
-		   && has_zero_uses (gimple_vdef (def)))
+	  else if (has_zero_uses (vdef))
 	    {
 	      /* But if the store is to global memory it is definitely
 		 not dead.  */
@@ -912,12 +916,13 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	    }
 	  /* In addition to kills we can remove defs whose only use
 	     is another def in defs.  That can only ever be PHIs of which
-	     we track a single for simplicity reasons (we fail for multiple
-	     PHIs anyways).  We can also ignore defs that feed only into
+	     we track two for simplicity reasons, the first and last in
+	     {first,last}_phi_def (we fail for multiple PHIs anyways).
+	     We can also ignore defs that feed only into
 	     already visited PHIs.  */
-	  else if (gimple_code (def) != GIMPLE_PHI
-		   && single_imm_use (gimple_vdef (def), &use_p, &use_stmt)
-		   && (use_stmt == phi_def
+	  else if (single_imm_use (vdef, &use_p, &use_stmt)
+		   && (use_stmt == first_phi_def
+		       || use_stmt == last_phi_def
 		       || (gimple_code (use_stmt) == GIMPLE_PHI
 			   && bitmap_bit_p (visited,
 					    SSA_NAME_VERSION
