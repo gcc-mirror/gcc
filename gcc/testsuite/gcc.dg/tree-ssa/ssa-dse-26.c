@@ -31,8 +31,8 @@ constraint_equal (struct constraint a, struct constraint b)
 }
 
 /* Most targets should be using this test.  */
-/* { dg-final { scan-tree-dump-times "Deleted dead store: x = " 1 "dse1" { target { ! { tic6x-*-* mmix-knuth-mmixware cr16*-*-* xstormy16*-*-* or1k*-*-* lm32*-*-* bfin*-*-* rx*-*-* } } } } } */
-/* { dg-final { scan-tree-dump-times "Deleted dead store: y = " 1 "dse1" { target { ! { tic6x-*-* mmix-knuth-mmixware cr16*-*-* xstormy16*-*-* or1k*-*-* bfin*-*-* lm32*-*-* rx*-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: x = " 1 "dse1" { target { ! { tic6x-*-* mmix-knuth-mmixware cr16*-*-* xstormy16*-*-* or1k*-*-* lm32*-*-* bfin*-*-* m32r*-*-* nds32le-elf rx*-*-* } } } } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: y = " 1 "dse1" { target { ! { tic6x-*-* mmix-knuth-mmixware cr16*-*-* xstormy16*-*-* or1k*-*-* bfin*-*-* lm32*-*-* m32r*-*-* nds32le-elf rx*-*-* } } } } } */
 
 /* The c6x port generates significantly different gimple which
    changes the SRA and DSE decisions.   Verify we remove all
@@ -43,5 +43,5 @@ constraint_equal (struct constraint a, struct constraint b)
 /* { dg-final { scan-tree-dump-times "Deleted dead store: y::. = " 1 "dse1" { target mmix-knuth-mmixware } } } */
 
 /* And more special cases
-/* { dg-final { scan-tree-dump-times "Deleted dead store: x = " 2 "dse1" { target cr16*-*-* xstormy16*-*-* or1k*-*-* bfin*-*-* lm32*-*-* rx*-*-* } } } */
-/* { dg-final { scan-tree-dump-times "Deleted dead store: y = " 2 "dse1" { target cr16*-*-* xstormy16*-*-* or1k*-*-* bfin*-*-* lm32*-*-* rx*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: x = " 2 "dse1" { target cr16*-*-* xstormy16*-*-* or1k*-*-* bfin*-*-* lm32*-*-* m32r*-*-* nds32le-elf rx*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "Deleted dead store: y = " 2 "dse1" { target cr16*-*-* xstormy16*-*-* or1k*-*-* bfin*-*-* lm32*-*-* m32r*-*-* nds32le-elf rx*-*-* } } } */
