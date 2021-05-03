@@ -11022,6 +11022,12 @@ package body Sem_Ch6 is
          F_Typ  : Entity_Id;
          B_Typ  : Entity_Id;
 
+         procedure Add_Or_Replace_Untagged_Primitive (Typ : Entity_Id);
+         --  Either add the new subprogram to the list of primitives for
+         --  untagged type Typ, or if it overrides a primitive of Typ, then
+         --  replace the overridden primitive in Typ's primitives list with
+         --  the new subprogram.
+
          function Visible_Part_Type (T : Entity_Id) return Boolean;
          --  Returns true if T is declared in the visible part of the current
          --  package scope; otherwise returns false. Assumes that T is declared
@@ -11034,6 +11040,63 @@ package body Sem_Ch6 is
          --  that if a primitive function with a controlling result is declared
          --  in a private part, then it must override a function declared in
          --  the visible part.
+
+         ---------------------------------------
+         -- Add_Or_Replace_Untagged_Primitive --
+         ---------------------------------------
+
+         procedure Add_Or_Replace_Untagged_Primitive (Typ : Entity_Id) is
+            Replaced_Overridden_Subp : Boolean := False;
+
+         begin
+            pragma Assert (not Is_Tagged_Type (Typ));
+
+            --  Anonymous access types don't have a primitives list. Normally
+            --  such types wouldn't make it here, but the case of anonymous
+            --  access-to-subprogram types can.
+
+            if not Is_Anonymous_Access_Type (Typ) then
+
+               --  If S overrides a subprogram that's a primitive of
+               --  the formal's type, then replace the overridden
+               --  subprogram with the new subprogram in the type's
+               --  list of primitives.
+
+               if Is_Overriding then
+                  pragma Assert (Present (Overridden_Subp)
+                    and then Overridden_Subp = E);  -- Added for now
+
+                  declare
+                     Prim_Ops : constant Elist_Id :=
+                       Primitive_Operations (Typ);
+                     Elmt     : Elmt_Id;
+                  begin
+                     if Present (Prim_Ops) then
+                        Elmt := First_Elmt (Prim_Ops);
+
+                        while Present (Elmt)
+                          and then Node (Elmt) /= Overridden_Subp
+                        loop
+                           Next_Elmt (Elmt);
+                        end loop;
+
+                        if Present (Elmt) then
+                           Replace_Elmt (Elmt, S);
+                           Replaced_Overridden_Subp := True;
+                        end if;
+                     end if;
+                  end;
+               end if;
+
+               --  If the new subprogram did not override an operation
+               --  of the formal's type, then add it to the primitives
+               --  list of the type.
+
+               if not Replaced_Overridden_Subp then
+                  Append_Unique_Elmt (S, Primitive_Operations (Typ));
+               end if;
+            end if;
+         end Add_Or_Replace_Untagged_Primitive;
 
          ------------------------------
          -- Check_Private_Overriding --
@@ -11213,7 +11276,17 @@ package body Sem_Ch6 is
          Is_Primitive := False;
 
          if not Comes_From_Source (S) then
-            null;
+
+            --  Add an inherited primitive for an untagged derived type to
+            --  Derived_Type's list of primitives. Tagged primitives are dealt
+            --  with in Check_Dispatching_Operation.
+
+            if Present (Derived_Type)
+              and then Extensions_Allowed
+              and then not Is_Tagged_Type (Derived_Type)
+            then
+               Append_Unique_Elmt (S, Primitive_Operations (Derived_Type));
+            end if;
 
          --  If subprogram is at library level, it is not primitive operation
 
@@ -11242,8 +11315,18 @@ package body Sem_Ch6 is
                   Is_Primitive := True;
                   Set_Has_Primitive_Operations (B_Typ);
                   Set_Is_Primitive (S);
-                  Check_Private_Overriding (B_Typ);
 
+                  --  Add a primitive for an untagged type to B_Typ's list
+                  --  of primitives. Tagged primitives are dealt with in
+                  --  Check_Dispatching_Operation.
+
+                  if Extensions_Allowed
+                    and then not Is_Tagged_Type (B_Typ)
+                  then
+                     Add_Or_Replace_Untagged_Primitive (B_Typ);
+                  end if;
+
+                  Check_Private_Overriding (B_Typ);
                   --  The Ghost policy in effect at the point of declaration
                   --  or a tagged type and a primitive operation must match
                   --  (SPARK RM 6.9(16)).
@@ -11275,6 +11358,17 @@ package body Sem_Ch6 is
                   Is_Primitive := True;
                   Set_Is_Primitive (S);
                   Set_Has_Primitive_Operations (B_Typ);
+
+                  --  Add a primitive for an untagged type to B_Typ's list
+                  --  of primitives. Tagged primitives are dealt with in
+                  --  Check_Dispatching_Operation.
+
+                  if Extensions_Allowed
+                    and then not Is_Tagged_Type (B_Typ)
+                  then
+                     Add_Or_Replace_Untagged_Primitive (B_Typ);
+                  end if;
+
                   Check_Private_Overriding (B_Typ);
 
                   --  The Ghost policy in effect at the point of declaration

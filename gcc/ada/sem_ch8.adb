@@ -7588,10 +7588,16 @@ package body Sem_Ch8 is
             P_Type := Implicitly_Designated_Type (P_Type);
          end if;
 
-         --  First check for components of a record object (not the
-         --  result of a call, which is handled below).
+         --  First check for components of a record object (not the result of
+         --  a call, which is handled below). This also covers the case where
+         --  where the extension feature that supports the prefixed form of
+         --  calls for primitives of untagged types is enabled (excluding
+         --  concurrent cases, which are handled further below).
 
-         if Has_Components (P_Type)
+         if Is_Type (P_Type)
+           and then (Has_Components (P_Type)
+                      or else (Extensions_Allowed
+                                and then not Is_Concurrent_Type (P_Type)))
            and then not Is_Overloadable (P_Name)
            and then not Is_Type (P_Name)
          then

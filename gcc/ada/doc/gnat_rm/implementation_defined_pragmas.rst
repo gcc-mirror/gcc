@@ -2362,6 +2362,23 @@ of GNAT specific extensions are recognized as follows:
   knows the lower bound of unconstrained array formals when the formal's
   subtype has index ranges with static fixed lower bounds.
 
+* Prefixed-view notation for calls to primitive subprograms of untagged types
+
+  Since Ada 2005, calls to primitive subprograms of a tagged type that
+  have a "prefixed view" (see RM 4.1.3(9.2)) have been allowed to be
+  written using the form of a selected_component, with the first actual
+  parameter given as the prefix and the name of the subprogram as a
+  selector. This prefixed-view notation for calls is extended so as to
+  also allow such syntax for calls to primitive subprograms of untagged
+  types. The primitives of an untagged type T that have a prefixed view
+  are those where the first formal parameter of the subprogram either
+  is of type T or is an anonymous access parameter whose designated type
+  is T. For a type that has a component that happens to have the same
+  simple name as one of the type's primitive subprograms, where the
+  component is visible at the point of a selected_component using that
+  name, preference is given to the component in a selected_component
+  (as is currently the case for tagged types with such component names).
+
 .. _Pragma-Extensions_Visible:
 
 Pragma Extensions_Visible

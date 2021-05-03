@@ -3261,6 +3261,40 @@ package body Sem_Ch3 is
          return;
       end if;
 
+      --  Set the primitives list of the full type and its base type when
+      --  needed. T may be E_Void in cases of earlier errors, and in that
+      --  case we bypass this.
+
+      if Ekind (T) /= E_Void
+        and then not Present (Direct_Primitive_Operations (T))
+      then
+         if Etype (T) = T then
+            Set_Direct_Primitive_Operations (T, New_Elmt_List);
+
+         --  If Etype of T is the base type (as opposed to a parent type) and
+         --  already has an associated list of primitive operations, then set
+         --  T's primitive list to the base type's list. Otherwise, create a
+         --  new empty primitives list and share the list between T and its
+         --  base type. The lists need to be shared in common between the two.
+
+         elsif Etype (T) = Base_Type (T) then
+
+            if not Present (Direct_Primitive_Operations (Base_Type (T))) then
+               Set_Direct_Primitive_Operations
+                 (Base_Type (T), New_Elmt_List);
+            end if;
+
+            Set_Direct_Primitive_Operations
+              (T, Direct_Primitive_Operations (Base_Type (T)));
+
+         --  Case where the Etype is a parent type, so we need a new primitives
+         --  list for T.
+
+         else
+            Set_Direct_Primitive_Operations (T, New_Elmt_List);
+         end if;
+      end if;
+
       --  Some common processing for all types
 
       Set_Depends_On_Private (T, Has_Private_Component (T));
@@ -5704,6 +5738,14 @@ package body Sem_Ch3 is
          --  declared entity inherits predicates from the parent.
 
          Inherit_Predicate_Flags (Id, T);
+      end if;
+
+      --  When prefixed calls are enabled for untagged types, the subtype
+      --  shares the primitive operations of its base type.
+
+      if Extensions_Allowed then
+         Set_Direct_Primitive_Operations
+           (Id, Direct_Primitive_Operations (Base_Type (T)));
       end if;
 
       if Etype (Id) = Any_Type then
@@ -9507,6 +9549,13 @@ package body Sem_Ch3 is
          end;
       end if;
 
+      --  When prefixed-call syntax is allowed for untagged types, initialize
+      --  the list of primitive operations to an empty list.
+
+      if Extensions_Allowed and then not Is_Tagged then
+         Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
+      end if;
+
       --  Set fields for tagged types
 
       if Is_Tagged then
@@ -9983,6 +10032,28 @@ package body Sem_Ch3 is
 
       if Etype (Derived_Type) = Any_Type then
          return;
+      end if;
+
+      --  If not already set, initialize the derived type's list of primitive
+      --  operations to an empty element list.
+
+      if not Present (Direct_Primitive_Operations (Derived_Type)) then
+         Set_Direct_Primitive_Operations (Derived_Type, New_Elmt_List);
+
+         --  If Etype of the derived type is the base type (as opposed to
+         --  a parent type) and doesn't have an associated list of primitive
+         --  operations, then set the base type's primitive list to the
+         --  derived type's list. The lists need to be shared in common
+         --  between the two.
+
+         if Etype (Derived_Type) = Base_Type (Derived_Type)
+           and then
+             not Present (Direct_Primitive_Operations (Etype (Derived_Type)))
+         then
+            Set_Direct_Primitive_Operations
+              (Etype (Derived_Type),
+               Direct_Primitive_Operations (Derived_Type));
+         end if;
       end if;
 
       --  Set delayed freeze and then derive subprograms, we need to do this
@@ -21011,48 +21082,48 @@ package body Sem_Ch3 is
          end loop;
       end;
 
-      --  If the private view was tagged, copy the new primitive operations
-      --  from the private view to the full view.
+      declare
+         Disp_Typ  : Entity_Id;
+         Full_List : Elist_Id;
+         Prim      : Entity_Id;
+         Prim_Elmt : Elmt_Id;
+         Priv_List : Elist_Id;
 
-      if Is_Tagged_Type (Full_T) then
-         declare
-            Disp_Typ  : Entity_Id;
-            Full_List : Elist_Id;
-            Prim      : Entity_Id;
-            Prim_Elmt : Elmt_Id;
-            Priv_List : Elist_Id;
+         function Contains
+           (E : Entity_Id;
+            L : Elist_Id) return Boolean;
+         --  Determine whether list L contains element E
 
-            function Contains
-              (E : Entity_Id;
-               L : Elist_Id) return Boolean;
-            --  Determine whether list L contains element E
+         --------------
+         -- Contains --
+         --------------
 
-            --------------
-            -- Contains --
-            --------------
-
-            function Contains
-              (E : Entity_Id;
-               L : Elist_Id) return Boolean
-            is
-               List_Elmt : Elmt_Id;
-
-            begin
-               List_Elmt := First_Elmt (L);
-               while Present (List_Elmt) loop
-                  if Node (List_Elmt) = E then
-                     return True;
-                  end if;
-
-                  Next_Elmt (List_Elmt);
-               end loop;
-
-               return False;
-            end Contains;
-
-         --  Start of processing
+         function Contains
+           (E : Entity_Id;
+            L : Elist_Id) return Boolean
+         is
+            List_Elmt : Elmt_Id;
 
          begin
+            List_Elmt := First_Elmt (L);
+            while Present (List_Elmt) loop
+               if Node (List_Elmt) = E then
+                  return True;
+               end if;
+
+               Next_Elmt (List_Elmt);
+            end loop;
+
+            return False;
+         end Contains;
+
+      --  Start of processing
+
+      begin
+         --  If the private view was tagged, copy the new primitive operations
+         --  from the private view to the full view.
+
+         if Is_Tagged_Type (Full_T) then
             if Is_Tagged_Type (Priv_T) then
                Priv_List := Primitive_Operations (Priv_T);
                Prim_Elmt := First_Elmt (Priv_List);
@@ -21186,8 +21257,23 @@ package body Sem_Ch3 is
 
                Propagate_Concurrent_Flags (Class_Wide_Type (Priv_T), Full_T);
             end if;
-         end;
-      end if;
+
+         --  For untagged types, copy the primitives across from the private
+         --  view to the full view (when extensions are allowed), for support
+         --  of prefixed calls (when extensions are enabled).
+
+         elsif Extensions_Allowed then
+            Priv_List := Primitive_Operations (Priv_T);
+            Prim_Elmt := First_Elmt (Priv_List);
+
+            Full_List := Primitive_Operations (Full_T);
+            while Present (Prim_Elmt) loop
+               Prim := Node (Prim_Elmt);
+               Append_Elmt (Prim, Full_List);
+               Next_Elmt (Prim_Elmt);
+            end loop;
+         end if;
+      end;
 
       --  Ada 2005 AI 161: Check preelaborable initialization consistency
 
