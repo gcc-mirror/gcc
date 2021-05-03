@@ -4385,6 +4385,19 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
 		sctx->max_vf = lower_bound (sctx->max_vf, safe_len);
 	    }
 	}
+      if (sctx->is_simt && !known_eq (sctx->max_vf, 1U))
+	{
+	  for (tree c = gimple_omp_for_clauses (ctx->stmt); c;
+	       c = OMP_CLAUSE_CHAIN (c))
+	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		&& OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
+	      {
+		/* UDR reductions are not supported yet for SIMT, disable
+		   SIMT.  */
+		sctx->max_vf = 1;
+		break;
+	      }
+	}
       if (maybe_gt (sctx->max_vf, 1U))
 	{
 	  sctx->idx = create_tmp_var (unsigned_type_node);
