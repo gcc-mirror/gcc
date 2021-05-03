@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2233,7 +2233,7 @@ package body Sem_Res is
                   then
                      Is_Remote := False;
                      Error_Msg_N
-                       ("prefix must statically denote a remote subprogram ",
+                       ("prefix must statically denote a remote subprogram",
                         N);
                   end if;
 
@@ -2344,8 +2344,7 @@ package body Sem_Res is
 
                if Ada_Version >= Ada_2005
                  and then It.Typ = Typ
-                 and then Typ /= Universal_Integer
-                 and then Typ /= Universal_Real
+                 and then not Is_Universal_Numeric_Type (Typ)
                  and then Present (It.Abstract_Op)
                then
                   if Debug_Flag_V then
@@ -5731,14 +5730,12 @@ package body Sem_Res is
          if not Is_Overloaded (N) then
             T := Etype (N);
             return Base_Type (T) = Base_Type (Standard_Integer)
-              or else T = Universal_Integer
-              or else T = Universal_Real;
+              or else Is_Universal_Numeric_Type (T);
          else
             Get_First_Interp (N, Index, It);
             while Present (It.Typ) loop
                if Base_Type (It.Typ) = Base_Type (Standard_Integer)
-                 or else It.Typ = Universal_Integer
-                 or else It.Typ = Universal_Real
+                 or else Is_Universal_Numeric_Type (It.Typ)
                then
                   return True;
                end if;
@@ -5773,8 +5770,7 @@ package body Sem_Res is
 
          elsif Universal_Interpretation (N) = Universal_Real
            and then (T = Base_Type (Standard_Integer)
-                      or else T = Universal_Integer
-                      or else T = Universal_Real)
+                      or else Is_Universal_Numeric_Type (T))
          then
             --  A universal real can appear in a fixed-type context. We resolve
             --  the literal with that context, even though this might raise an
@@ -5907,9 +5903,7 @@ package body Sem_Res is
 
       procedure Set_Operand_Type (N : Node_Id) is
       begin
-         if Etype (N) = Universal_Integer
-           or else Etype (N) = Universal_Real
-         then
+         if Is_Universal_Numeric_Type (Etype (N)) then
             Set_Etype (N, T);
          end if;
       end Set_Operand_Type;
@@ -5934,7 +5928,7 @@ package body Sem_Res is
       --  Set the type of the node to its universal interpretation because
       --  legality checks on an exponentiation operand need the context.
 
-      elsif (B_Typ = Universal_Integer or else B_Typ = Universal_Real)
+      elsif Is_Universal_Numeric_Type (B_Typ)
         and then Present (Universal_Interpretation (L))
         and then Present (Universal_Interpretation (R))
       then
@@ -6047,9 +6041,9 @@ package body Sem_Res is
          end if;
 
       else
-         if (TL = Universal_Integer or else TL = Universal_Real)
+         if Is_Universal_Numeric_Type (TL)
                and then
-            (TR = Universal_Integer or else TR = Universal_Real)
+            Is_Universal_Numeric_Type (TR)
          then
             Check_For_Visible_Operator (N, B_Typ);
          end if;
@@ -9792,10 +9786,7 @@ package body Sem_Res is
          goto SM_Exit;
 
       elsif not Is_Overloaded (R)
-        and then
-          (Etype (R) = Universal_Integer
-             or else
-           Etype (R) = Universal_Real)
+        and then Is_Universal_Numeric_Type (Etype (R))
         and then Is_Overloaded (L)
       then
          T := Etype (R);
@@ -10237,9 +10228,7 @@ package body Sem_Res is
          return;
       end if;
 
-      if Etype (Left_Opnd (N)) = Universal_Integer
-        or else Etype (Left_Opnd (N)) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (Left_Opnd (N))) then
          Check_For_Visible_Operator (N, B_Typ);
       end if;
 
@@ -12081,10 +12070,7 @@ package body Sem_Res is
 
       --  Deal with universal cases
 
-      if Etype (R) = Universal_Integer
-           or else
-         Etype (R) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (R)) then
          Check_For_Visible_Operator (N, B_Typ);
       end if;
 

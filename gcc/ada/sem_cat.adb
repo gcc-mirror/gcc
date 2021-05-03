@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -275,7 +275,7 @@ package body Sem_Cat is
            and then Is_Preelaborated (Depended_Entity)
          then
             Error_Msg_NE
-              ("<<must use private with clause for preelaborated unit& ",
+              ("<<must use private with clause for preelaborated unit&",
                N, Depended_Entity);
 
          --  Subunit case
@@ -296,18 +296,16 @@ package body Sem_Cat is
          --  Add further explanation for Pure/Preelaborate common cases
 
          if Unit_Category = Pure then
-            Error_Msg_NE
-              ("\<<pure unit cannot depend on non-pure unit",
-               N, Depended_Entity);
+            Error_Msg_N
+              ("\<<pure unit cannot depend on non-pure unit", N);
 
          elsif Is_Preelaborated (Unit_Entity)
            and then not Is_Preelaborated (Depended_Entity)
            and then not Is_Pure (Depended_Entity)
          then
-            Error_Msg_NE
+            Error_Msg_N
               ("\<<preelaborated unit cannot depend on "
-               & "non-preelaborated unit",
-               N, Depended_Entity);
+               & "non-preelaborated unit", N);
          end if;
       end if;
    end Check_Categorization_Dependencies;

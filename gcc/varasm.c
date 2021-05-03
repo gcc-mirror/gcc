@@ -1202,6 +1202,25 @@ get_variable_align (tree decl)
   return align;
 }
 
+/* Compute reloc for get_variable_section.  The return value
+   is a mask for which bit 1 indicates a global relocation, and bit 0
+   indicates a local relocation.  */
+
+int
+compute_reloc_for_var (tree decl)
+{
+  int reloc;
+
+  if (DECL_INITIAL (decl) == error_mark_node)
+    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
+  else if (DECL_INITIAL (decl))
+    reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
+  else
+    reloc = 0;
+
+  return reloc;
+}
+
 /* Return the section into which the given VAR_DECL or CONST_DECL
    should be placed.  PREFER_NOSWITCH_P is true if a noswitch
    section should be used wherever possible.  */
@@ -1239,12 +1258,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 	return comm_section;
     }
 
-  if (DECL_INITIAL (decl) == error_mark_node)
-    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
-  else if (DECL_INITIAL (decl))
-    reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
-  else
-    reloc = 0;
+  reloc = compute_reloc_for_var (decl);
 
   resolve_unique_section (decl, reloc, flag_data_sections);
   if (IN_NAMED_SECTION (decl))
@@ -7252,7 +7266,8 @@ compute_reloc_for_rtx_1 (const_rtx x)
 
 /* Like compute_reloc_for_constant, except for an RTX.  The return value
    is a mask for which bit 1 indicates a global relocation, and bit 0
-   indicates a local relocation.  */
+   indicates a local relocation.  Used by default_select_rtx_section
+   and default_elf_select_rtx_section.  */
 
 static int
 compute_reloc_for_rtx (const_rtx x)

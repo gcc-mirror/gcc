@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1522,7 +1522,7 @@ package body Sem_Ch9 is
 
       if Nkind (Call) = N_Explicit_Dereference then
          Error_Msg_N
-           ("entry call or dispatching primitive of interface required ", N);
+           ("entry call or dispatching primitive of interface required", N);
       end if;
 
       if Is_Non_Empty_List (Statements (N)) then
@@ -2619,7 +2619,7 @@ package body Sem_Ch9 is
                    (Nkind (Delay_Statement (Alt)) = N_Delay_Relative_Statement)
                then
                   Error_Msg_N
-                    ("delay_until and delay_relative alternatives ", Alt);
+                    ("delay_until and delay_relative alternatives", Alt);
                   Error_Msg_N
                     ("\cannot appear in the same selective_wait", Alt);
                end if;
@@ -3677,7 +3677,7 @@ package body Sem_Ch9 is
 
          elsif Nkind (Trigger) = N_Explicit_Dereference then
             Error_Msg_N
-              ("entry call or dispatching primitive of interface required ",
+              ("entry call or dispatching primitive of interface required",
                 Trigger);
          end if;
       end if;

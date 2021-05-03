@@ -1,3 +1,7 @@
+2021-04-30  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* testsuite/libgomp.oacc-c-c++-common/atomic_capture-3.c: New test.
+
 2021-04-29  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.c/pr81778.c: New test.

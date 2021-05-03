@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4743,7 +4743,7 @@ package body Sem_Aggr is
          then
             Error_Msg_NE
               ("aggregate not available for type& whose ancestor "
-               & "has unknown discriminants ", N, Typ);
+               & "has unknown discriminants", N, Typ);
          end if;
 
          if Has_Unknown_Discriminants (Typ)
@@ -5031,7 +5031,7 @@ package body Sem_Aggr is
 
          if Present (Get_Value (Component, Component_Associations (N))) then
             Error_Msg_NE
-              ("more than one value supplied for Component &", N, Component);
+              ("more than one value supplied for component &", N, Component);
          end if;
 
          Next (Positional_Expr);

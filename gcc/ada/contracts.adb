@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2015-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2367,6 +2367,10 @@ package body Contracts is
          --  postconditions until finalization has been performed when cleanup
          --  actions are present.
 
+         --  NOTE: This flag could be made into a predicate since we should be
+         --  able at compile time to recognize when finalization and cleanup
+         --  actions occur, but in practice this is not possible ???
+
          --  Generate:
          --
          --    Postcond_Enabled : Boolean := True;
@@ -2405,16 +2409,16 @@ package body Contracts is
          --  the postconditions: this would cause confusing debug info to be
          --  produced, interfering with coverage-analysis tools.
 
-         --  Also, wrap the postcondition checks in a conditional which can be
-         --  used to delay their evaluation when clean-up actions are present.
+         --  NOTE: Coverage-analysis and static-analysis tools rely on the
+         --  postconditions procedure being free of internally generated code
+         --  since some of these tools, like CodePeer, treat _postconditions
+         --  as original source.
 
          --  Generate:
          --
          --    procedure _postconditions is
          --    begin
-         --       if Postcond_Enabled and then Return_Success_For_Postcond then
-         --          [Stmts];
-         --       end if;
+         --       [Stmts];
          --    end;
 
          Proc_Bod :=
@@ -2425,19 +2429,7 @@ package body Contracts is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  End_Label  => Make_Identifier (Loc, Chars (Proc_Id)),
-                 Statements => New_List (
-                   Make_If_Statement (Loc,
-                     Condition      =>
-                       Make_And_Then (Loc,
-                         Left_Opnd  =>
-                           New_Occurrence_Of
-                             (Defining_Identifier
-                               (Postcond_Enabled_Decl), Loc),
-                         Right_Opnd =>
-                           New_Occurrence_Of
-                             (Defining_Identifier
-                               (Return_Success_Decl), Loc)),
-                      Then_Statements => Stmts))));
+                 Statements => Stmts));
          Insert_After_And_Analyze (Last_Decl, Proc_Bod);
 
       end Build_Postconditions_Procedure;

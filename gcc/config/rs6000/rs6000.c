@@ -9311,29 +9311,12 @@ rs6000_got_sym (void)
 static rtx
 rs6000_legitimize_tls_address_aix (rtx addr, enum tls_model model)
 {
-  rtx sym, mem, tocref, tlsreg, tmpreg, dest, tlsaddr;
+  rtx sym, mem, tocref, tlsreg, tmpreg, dest;
   const char *name;
   char *tlsname;
 
-  name = XSTR (addr, 0);
-  /* Append TLS CSECT qualifier, unless the symbol already is qualified
-     or the symbol will be in TLS private data section.  */
-  if (name[strlen (name) - 1] != ']'
-      && (TREE_PUBLIC (SYMBOL_REF_DECL (addr))
-	  || bss_initializer_p (SYMBOL_REF_DECL (addr))))
-    {
-      tlsname = XALLOCAVEC (char, strlen (name) + 4);
-      strcpy (tlsname, name);
-      strcat (tlsname,
-	      bss_initializer_p (SYMBOL_REF_DECL (addr)) ? "[UL]" : "[TL]");
-      tlsaddr = copy_rtx (addr);
-      XSTR (tlsaddr, 0) = ggc_strdup (tlsname);
-    }
-  else
-    tlsaddr = addr;
-
   /* Place addr into TOC constant pool.  */
-  sym = force_const_mem (GET_MODE (tlsaddr), tlsaddr);
+  sym = force_const_mem (GET_MODE (addr), addr);
 
   /* Output the TOC entry and create the MEM referencing the value.  */
   if (constant_pool_expr_p (XEXP (sym, 0))
@@ -21238,10 +21221,11 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
 				tree decl ATTRIBUTE_UNUSED)
 {
   int smclass;
-  static const char * const suffix[5] = { "PR", "RO", "RW", "TL", "XO" };
+  static const char * const suffix[7]
+    = { "PR", "RO", "RW", "BS", "TL", "UL", "XO" };
 
   if (flags & SECTION_EXCLUDE)
-    smclass = 4;
+    smclass = 6;
   else if (flags & SECTION_DEBUG)
     {
       fprintf (asm_out_file, "\t.dwsect %s\n", name);
@@ -21250,9 +21234,19 @@ rs6000_xcoff_asm_named_section (const char *name, unsigned int flags,
   else if (flags & SECTION_CODE)
     smclass = 0;
   else if (flags & SECTION_TLS)
-    smclass = 3;
+    {
+      if (flags & SECTION_BSS)
+	smclass = 5;
+      else
+	smclass = 4;
+    }
   else if (flags & SECTION_WRITE)
-    smclass = 2;
+    {
+      if (flags & SECTION_BSS)
+	smclass = 3;
+      else
+	smclass = 2;
+    }
   else
     smclass = 1;
 
@@ -21291,11 +21285,7 @@ rs6000_xcoff_select_section (tree decl, int reloc,
       if (TREE_CODE (decl) == VAR_DECL && DECL_THREAD_LOCAL_P (decl))
 	{
 	  if (bss_initializer_p (decl))
-	    {
-	      /* Convert to COMMON to emit in BSS.  */
-	      DECL_COMMON (decl) = 1;
-	      return tls_comm_section;
-	    }
+	    return tls_comm_section;
 	  else if (TREE_PUBLIC (decl))
 	    return tls_data_section;
 	  else
@@ -21314,17 +21304,6 @@ static void
 rs6000_xcoff_unique_section (tree decl, int reloc ATTRIBUTE_UNUSED)
 {
   const char *name;
-
-  /* Use select_section for private data and uninitialized data with
-     alignment <= BIGGEST_ALIGNMENT.  */
-  if (!TREE_PUBLIC (decl)
-      || DECL_COMMON (decl)
-      || (DECL_INITIAL (decl) == NULL_TREE
-	  && DECL_ALIGN (decl) <= BIGGEST_ALIGNMENT)
-      || DECL_INITIAL (decl) == error_mark_node
-      || (flag_zero_initialized_in_bss
-	  && initializer_zerop (DECL_INITIAL (decl))))
-    return;
 
   name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
   name = (*targetm.strip_name_encoding) (name);
@@ -21369,6 +21348,9 @@ rs6000_xcoff_section_type_flags (tree decl, const char *name, int reloc)
 {
   unsigned int align;
   unsigned int flags = default_section_type_flags (decl, name, reloc);
+
+  if (decl && DECL_P (decl) && VAR_P (decl) && bss_initializer_p (decl))
+    flags |= SECTION_BSS;
 
   /* Align to at least UNIT size.  */
   if ((flags & SECTION_CODE) != 0 || !decl || !DECL_P (decl))
@@ -21632,7 +21614,7 @@ rs6000_xcoff_asm_globalize_decl_name (FILE *stream, tree decl)
 {
   const char *name = XSTR (XEXP (DECL_RTL (decl), 0), 0);
   fputs (GLOBAL_ASM_OP, stream);
-  RS6000_OUTPUT_BASENAME (stream, name);
+  assemble_name (stream, name);
 #ifdef HAVE_GAS_HIDDEN
   fputs (rs6000_xcoff_visibility (decl), stream);
 #endif
@@ -21647,27 +21629,50 @@ rs6000_xcoff_asm_output_aligned_decl_common (FILE *stream,
 					     tree decl ATTRIBUTE_UNUSED,
 					     const char *name,
 					     unsigned HOST_WIDE_INT size,
-					     unsigned HOST_WIDE_INT align)
+					     unsigned int align)
 {
-  unsigned HOST_WIDE_INT align2 = 2;
+  unsigned int align2 = 2;
+
+  if (align == 0)
+    align = DATA_ABI_ALIGNMENT (TREE_TYPE (decl), DECL_ALIGN (decl));
 
   if (align > 32)
     align2 = floor_log2 (align / BITS_PER_UNIT);
   else if (size > 4)
     align2 = 3;
 
-  fputs (COMMON_ASM_OP, stream);
-  RS6000_OUTPUT_BASENAME (stream, name);
+  if (! DECL_COMMON (decl))
+    {
+      /* Forget section.  */
+      in_section = NULL;
 
-  fprintf (stream,
-	   "," HOST_WIDE_INT_PRINT_UNSIGNED "," HOST_WIDE_INT_PRINT_UNSIGNED,
-	   size, align2);
+      /* Globalize TLS BSS.  */
+      if (TREE_PUBLIC (decl) && DECL_THREAD_LOCAL_P (decl))
+	fprintf (stream, "\t.globl %s\n", name);
+
+      /* Switch to section and skip space.  */
+      fprintf (stream, "\t.csect %s,%u\n", name, align2);
+      ASM_DECLARE_OBJECT_NAME (stream, name, decl);
+      ASM_OUTPUT_SKIP (stream, size ? size : 1);
+      return;
+    }
+
+  if (TREE_PUBLIC (decl))
+    {
+      fprintf (stream,
+	       "\t.comm %s," HOST_WIDE_INT_PRINT_UNSIGNED ",%u" ,
+	       name, size, align2);
 
 #ifdef HAVE_GAS_HIDDEN
-  if (decl != NULL)
-    fputs (rs6000_xcoff_visibility (decl), stream);
+      if (decl != NULL)
+	fputs (rs6000_xcoff_visibility (decl), stream);
 #endif
-  putc ('\n', stream);
+      putc ('\n', stream);
+    }
+  else
+      fprintf (stream,
+	       "\t.lcomm %s," HOST_WIDE_INT_PRINT_UNSIGNED ",%s,%u\n",
+	       (*targetm.strip_name_encoding) (name), size, name, align2);
 }
 
 /* This macro produces the initial definition of a object (variable) name.
@@ -21733,19 +21738,50 @@ rs6000_xcoff_encode_section_info (tree decl, rtx rtl, int first)
 
   SYMBOL_REF_FLAGS (symbol) = flags;
 
-  /* Append mapping class to extern decls.  */
   symname = XSTR (symbol, 0);
-  if (decl /* sync condition with assemble_external () */
-      && DECL_P (decl) && DECL_EXTERNAL (decl) && TREE_PUBLIC (decl)
-      && ((TREE_CODE (decl) == VAR_DECL && !DECL_THREAD_LOCAL_P (decl))
-	  || TREE_CODE (decl) == FUNCTION_DECL)
+
+  /* Append CSECT mapping class, unless the symbol already is qualified.  */
+  if (decl
+      && DECL_P (decl)
+      && VAR_OR_FUNCTION_DECL_P (decl)
+      && lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) == NULL_TREE
       && symname[strlen (symname) - 1] != ']')
     {
-      char *newname = (char *) alloca (strlen (symname) + 5);
-      strcpy (newname, symname);
-      strcat (newname, (TREE_CODE (decl) == FUNCTION_DECL
-			? "[DS]" : "[UA]"));
-      XSTR (symbol, 0) = ggc_strdup (newname);
+      const char *smclass = NULL;
+
+      if (TREE_CODE (decl) == FUNCTION_DECL)
+	{
+	  if (DECL_EXTERNAL (decl))
+	    smclass = "[DS]";
+	}
+      else if (DECL_THREAD_LOCAL_P (decl))
+	{
+	  if (bss_initializer_p (decl))
+	    smclass = "[UL]";
+	  else if (flag_data_sections)
+	    smclass = "[TL]";
+	}
+      else if (DECL_EXTERNAL (decl))
+	smclass = "[UA]";
+      else if (bss_initializer_p (decl))
+	smclass = "[BS]";
+      else if (flag_data_sections)
+	{
+	  /* This must exactly match the logic of select section.  */
+	  if (decl_readonly_section (decl, compute_reloc_for_var (decl)))
+	    smclass = "[RO]";
+	  else
+	    smclass = "[RW]";
+	}
+
+      if (smclass != NULL)
+	{
+	  char *newname = XALLOCAVEC (char, strlen (symname) + 5);
+
+	  strcpy (newname, symname);
+	  strcat (newname, smclass);
+	  XSTR (symbol, 0) = ggc_strdup (newname);
+	}
     }
 }
 #endif /* HAVE_AS_TLS */
@@ -21756,11 +21792,11 @@ rs6000_asm_weaken_decl (FILE *stream, tree decl,
 			const char *name, const char *val)
 {
   fputs ("\t.weak\t", stream);
-  RS6000_OUTPUT_BASENAME (stream, name);
+  assemble_name (stream, name);
   if (decl && TREE_CODE (decl) == FUNCTION_DECL
       && DEFAULT_ABI == ABI_AIX && DOT_SYMBOLS)
     {
-      if (TARGET_XCOFF)						
+      if (TARGET_XCOFF && name[strlen (name) - 1] != ']')
 	fputs ("[DS]", stream);
 #if TARGET_XCOFF && HAVE_GAS_HIDDEN
       if (TARGET_XCOFF)

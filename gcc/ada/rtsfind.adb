@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1795,14 +1795,12 @@ package body Rtsfind is
    -------------------------
 
    procedure SPARK_Implicit_Load (E : RE_Id) is
-      Unused : Entity_Id;
-
    begin
       pragma Assert (GNATprove_Mode);
 
       --  Force loading of a predefined unit
 
-      Unused := RTE (E);
+      Discard_Node (RTE (E));
    end SPARK_Implicit_Load;
 
 end Rtsfind;

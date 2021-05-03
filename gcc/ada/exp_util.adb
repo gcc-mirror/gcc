@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -834,7 +834,7 @@ package body Exp_Util is
       --  Optimize the case where we are using the default Global_Pool_Object,
       --  and we don't need the heavy finalization machinery.
 
-      elsif Pool_Id = RTE (RE_Global_Pool_Object)
+      elsif Is_RTE (Pool_Id, RE_Global_Pool_Object)
         and then not Needs_Finalization (Desig_Typ)
       then
          return;
@@ -9081,7 +9081,7 @@ package body Exp_Util is
         Is_Class_Wide_Type (Etype (Obj_Id))
           and then Present (Expr)
           and then Nkind (Expr) = N_Unchecked_Type_Conversion
-          and then Etype (Expression (Expr)) = RTE (RE_Tag);
+          and then Is_RTE (Etype (Expression (Expr)), RE_Tag);
    end Is_Tag_To_Class_Wide_Conversion;
 
    --------------------------------

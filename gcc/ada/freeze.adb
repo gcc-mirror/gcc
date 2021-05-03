@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -3749,8 +3749,8 @@ package body Freeze is
 
                Error_Msg_NE ("?x?type of argument& is unconstrained array",
                   Warn_Node, Formal);
-               Error_Msg_NE ("?x?foreign caller must pass bounds explicitly",
-                  Warn_Node, Formal);
+               Error_Msg_N ("\?x?foreign caller must pass bounds explicitly",
+                  Warn_Node);
                Error_Msg_Qual_Level := 0;
             end if;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6921,7 +6921,7 @@ package body Sem_Prag is
                         Set_Is_Overloaded (Name, False);
                      else
                         Error_Pragma_Arg
-                          ("ambiguous handler name for pragma% ", Arg);
+                          ("ambiguous handler name for pragma%", Arg);
                      end if;
                   end if;
 
@@ -10934,10 +10934,6 @@ package body Sem_Prag is
             end if;
          end if;
 
-         if Warn_On_Export_Import and then Is_Type (E) then
-            Error_Msg_NE ("exporting a type has no effect?x?", Arg, E);
-         end if;
-
          if Warn_On_Export_Import and Inside_A_Generic then
             Error_Msg_NE
               ("all instances of& will have the same external name?x?",
@@ -14725,6 +14721,8 @@ package body Sem_Prag is
                end if;
 
                if Nkind (N) = N_Aggregate
+                 and then not Null_Record_Present (N)
+                 and then No (Component_Associations (N))
                  and then List_Length (Expressions (N)) = 3
                then
                   Expr := First (Expressions (N));
@@ -14746,7 +14744,7 @@ package body Sem_Prag is
             Shared_Memory    : Node_Id;
             Stream           : Node_Id;
 
-            --  Start of processing for CUDA_Execute
+         --  Start of processing for CUDA_Execute
 
          begin
             GNAT_Pragma;
@@ -14755,7 +14753,7 @@ package body Sem_Prag is
 
             Analyze_And_Resolve (Kernel_Call);
             if Nkind (Kernel_Call) /= N_Function_Call
-               or else Etype (Kernel_Call) /= Standard_Void_Type
+              or else Etype (Kernel_Call) /= Standard_Void_Type
             then
                --  In `pragma CUDA_Execute (Kernel_Call (...), ...)`,
                --  GNAT sees Kernel_Call as an N_Function_Call since
@@ -14796,7 +14794,7 @@ package body Sem_Prag is
          -- CUDA_Global --
          -----------------
 
-         --  pragma CUDA_Global (IDENTIFIER);
+         --  pragma CUDA_Global ([Entity =>] IDENTIFIER);
 
          when Pragma_CUDA_Global => CUDA_Global : declare
             Arg_Node    : Node_Id;
@@ -14804,8 +14802,7 @@ package body Sem_Prag is
             Pack_Id     : Entity_Id;
          begin
             GNAT_Pragma;
-            Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments (1);
+            Check_Arg_Count (1);
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Arg_Is_Local_Name (Arg1);
 
@@ -30688,13 +30685,18 @@ package body Sem_Prag is
       elsif Nkind (Context) = N_Entry_Body then
          return Context;
 
-      --  The pragma appears inside the statements of a subprogram body. This
-      --  placement is the result of subprogram contract expansion.
+      --  The pragma appears inside the statements of a subprogram body at
+      --  some nested level.
 
       elsif Is_Statement (Context)
         and then Present (Enclosing_HSS (Context))
       then
          return Parent (Enclosing_HSS (Context));
+
+      --  The pragma appears directly in the statements of a subprogram body
+
+      elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
+         return Parent (Context);
 
       --  The pragma appears inside the declarative part of a package body
 

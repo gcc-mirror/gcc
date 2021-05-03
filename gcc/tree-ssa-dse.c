@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-dfa.h"
-#include "domwalk.h"
 #include "tree-cfgcleanup.h"
 #include "alias.h"
 #include "tree-ssa-loop.h"
@@ -39,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
+#include "tree-eh.h"
+#include "cfganal.h"
 
 /* This file implements dead store elimination.
 
@@ -798,7 +799,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	return DSE_STORE_LIVE;
 
       auto_vec<gimple *, 10> defs;
-      gimple *phi_def = NULL;
+      gimple *first_phi_def = NULL;
+      gimple *last_phi_def = NULL;
       FOR_EACH_IMM_USE_STMT (use_stmt, ui, defvar)
 	{
 	  /* Limit stmt walking.  */
@@ -824,7 +826,9 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 				 SSA_NAME_VERSION (PHI_RESULT (use_stmt))))
 		{
 		  defs.safe_push (use_stmt);
-		  phi_def = use_stmt;
+		  if (!first_phi_def)
+		    first_phi_def = use_stmt;
+		  last_phi_def = use_stmt;
 		}
 	    }
 	  /* If the statement is a use the store is not dead.  */
@@ -888,6 +892,8 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	  gimple *def = defs[i];
 	  gimple *use_stmt;
 	  use_operand_p use_p;
+	  tree vdef = (gimple_code (def) == GIMPLE_PHI
+		       ? gimple_phi_result (def) : gimple_vdef (def));
 	  /* If the path to check starts with a kill we do not need to
 	     process it further.
 	     ???  With byte tracking we need only kill the bytes currently
@@ -900,8 +906,7 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	    }
 	  /* If the path ends here we do not need to process it further.
 	     This for example happens with calls to noreturn functions.  */
-	  else if (gimple_code (def) != GIMPLE_PHI
-		   && has_zero_uses (gimple_vdef (def)))
+	  else if (has_zero_uses (vdef))
 	    {
 	      /* But if the store is to global memory it is definitely
 		 not dead.  */
@@ -911,12 +916,13 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
 	    }
 	  /* In addition to kills we can remove defs whose only use
 	     is another def in defs.  That can only ever be PHIs of which
-	     we track a single for simplicity reasons (we fail for multiple
-	     PHIs anyways).  We can also ignore defs that feed only into
+	     we track two for simplicity reasons, the first and last in
+	     {first,last}_phi_def (we fail for multiple PHIs anyways).
+	     We can also ignore defs that feed only into
 	     already visited PHIs.  */
-	  else if (gimple_code (def) != GIMPLE_PHI
-		   && single_imm_use (gimple_vdef (def), &use_p, &use_stmt)
-		   && (use_stmt == phi_def
+	  else if (single_imm_use (vdef, &use_p, &use_stmt)
+		   && (use_stmt == first_phi_def
+		       || use_stmt == last_phi_def
 		       || (gimple_code (use_stmt) == GIMPLE_PHI
 			   && bitmap_bit_p (visited,
 					    SSA_NAME_VERSION
@@ -956,31 +962,6 @@ dse_classify_store (ao_ref *ref, gimple *stmt,
   while (1);
 }
 
-
-class dse_dom_walker : public dom_walker
-{
-public:
-  dse_dom_walker (cdi_direction direction)
-    : dom_walker (direction),
-    m_live_bytes (param_dse_max_object_size),
-    m_byte_tracking_enabled (false),
-    m_need_cfg_cleanup (false) {}
-
-  virtual edge before_dom_children (basic_block);
-  unsigned todo () const;
-
-private:
-  auto_sbitmap m_live_bytes;
-  bool m_byte_tracking_enabled;
-  bool m_need_cfg_cleanup;
-  void dse_optimize_stmt (gimple_stmt_iterator *);
-};
-
-unsigned
-dse_dom_walker::todo () const
-{
-  return m_need_cfg_cleanup ? TODO_cleanup_cfg : 0;
-}
 
 /* Delete a dead call at GSI, which is mem* call of some kind.  */
 static void
@@ -1053,8 +1034,8 @@ delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type
    is used precisely once by a later store to the same location which
    post dominates the first store, then the first store is dead.  */
 
-void
-dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
+static void
+dse_optimize_stmt (gimple_stmt_iterator *gsi, sbitmap live_bytes)
 {
   gimple *stmt = gsi_stmt (*gsi);
 
@@ -1103,17 +1084,17 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	      dse_optimize_redundant_stores (stmt);
 
 	    enum dse_store_status store_status;
-	    m_byte_tracking_enabled
-	      = setup_live_bytes_from_ref (&ref, m_live_bytes);
+	    bool byte_tracking_enabled
+	      = setup_live_bytes_from_ref (&ref, live_bytes);
 	    store_status = dse_classify_store (&ref, stmt,
-					       m_byte_tracking_enabled,
-					       m_live_bytes);
+					       byte_tracking_enabled,
+					       live_bytes);
 	    if (store_status == DSE_STORE_LIVE)
 	      return;
 
 	    if (store_status == DSE_STORE_MAYBE_PARTIAL_DEAD)
 	      {
-		maybe_trim_memstar_call (&ref, m_live_bytes, stmt);
+		maybe_trim_memstar_call (&ref, live_bytes, stmt);
 		return;
 	      }
 
@@ -1149,18 +1130,18 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 	;
       else
 	{
-	  m_byte_tracking_enabled
-	    = setup_live_bytes_from_ref (&ref, m_live_bytes);
+	  bool byte_tracking_enabled
+	    = setup_live_bytes_from_ref (&ref, live_bytes);
 	  enum dse_store_status store_status;
 	  store_status = dse_classify_store (&ref, stmt,
-					     m_byte_tracking_enabled,
-					     m_live_bytes, &by_clobber_p);
+					     byte_tracking_enabled,
+					     live_bytes, &by_clobber_p);
 	  if (store_status == DSE_STORE_LIVE)
 	    return;
 
 	  if (store_status == DSE_STORE_MAYBE_PARTIAL_DEAD)
 	    {
-	      maybe_trim_partially_dead_store (&ref, m_live_bytes, stmt);
+	      maybe_trim_partially_dead_store (&ref, live_bytes, stmt);
 	      return;
 	    }
 	}
@@ -1175,63 +1156,6 @@ dse_dom_walker::dse_optimize_stmt (gimple_stmt_iterator *gsi)
 
       delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup);
     }
-}
-
-edge
-dse_dom_walker::before_dom_children (basic_block bb)
-{
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
-    {
-      gimple *stmt = gsi_stmt (gsi);
-
-      if (gimple_vdef (stmt))
-	dse_optimize_stmt (&gsi);
-      else if (def_operand_p def_p = single_ssa_def_operand (stmt, SSA_OP_DEF))
-	{
-	  /* When we remove dead stores make sure to also delete trivially
-	     dead SSA defs.  */
-	  if (has_zero_uses (DEF_FROM_PTR (def_p))
-	      && !gimple_has_side_effects (stmt))
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "  Deleted trivially dead stmt: ");
-		  print_gimple_stmt (dump_file, stmt, 0, dump_flags);
-		  fprintf (dump_file, "\n");
-		}
-	      if (gsi_remove (&gsi, true) && need_eh_cleanup)
-		bitmap_set_bit (need_eh_cleanup, bb->index);
-	      release_defs (stmt);
-	    }
-	}
-      if (gsi_end_p (gsi))
-	gsi = gsi_last_bb (bb);
-      else
-	gsi_prev (&gsi);
-    }
-  bool removed_phi = false;
-  for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);)
-    {
-      gphi *phi = si.phi ();
-      if (has_zero_uses (gimple_phi_result (phi)))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "  Deleted trivially dead PHI: ");
-	      print_gimple_stmt (dump_file, phi, 0, dump_flags);
-	      fprintf (dump_file, "\n");
-	    }
-	  remove_phi_node (&si, true);
-	  removed_phi = true;
-	}
-      else
-	gsi_next (&si);
-    }
-  if (removed_phi && gimple_seq_empty_p (phi_nodes (bb)))
-    m_need_cfg_cleanup = true;
-  return NULL;
 }
 
 namespace {
@@ -1266,24 +1190,75 @@ public:
 unsigned int
 pass_dse::execute (function *fun)
 {
+  unsigned todo = 0;
   need_eh_cleanup = BITMAP_ALLOC (NULL);
+  auto_sbitmap live_bytes (param_dse_max_object_size);
 
   renumber_gimple_stmt_uids (cfun);
 
-  /* We might consider making this a property of each pass so that it
-     can be [re]computed on an as-needed basis.  Particularly since
-     this pass could be seen as an extension of DCE which needs post
-     dominators.  */
-  calculate_dominance_info (CDI_POST_DOMINATORS);
   calculate_dominance_info (CDI_DOMINATORS);
 
-  /* Dead store elimination is fundamentally a walk of the post-dominator
-     tree and a backwards walk of statements within each block.  */
-  dse_dom_walker walker (CDI_POST_DOMINATORS);
-  walker.walk (fun->cfg->x_exit_block_ptr);
-  free_dominance_info (CDI_POST_DOMINATORS);
+  /* Dead store elimination is fundamentally a reverse program order walk.  */
+  int *rpo = XNEWVEC (int, n_basic_blocks_for_fn (fun) - NUM_FIXED_BLOCKS);
+  int n = pre_and_rev_post_order_compute_fn (fun, NULL, rpo, false);
+  for (int i = n; i != 0; --i)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (fun, rpo[i-1]);
+      gimple_stmt_iterator gsi;
 
-  unsigned todo = walker.todo ();
+      for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi);)
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+
+	  if (gimple_vdef (stmt))
+	    dse_optimize_stmt (&gsi, live_bytes);
+	  else if (def_operand_p
+		     def_p = single_ssa_def_operand (stmt, SSA_OP_DEF))
+	    {
+	      /* When we remove dead stores make sure to also delete trivially
+		 dead SSA defs.  */
+	      if (has_zero_uses (DEF_FROM_PTR (def_p))
+		  && !gimple_has_side_effects (stmt)
+		  && !stmt_unremovable_because_of_non_call_eh_p (cfun, stmt))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "  Deleted trivially dead stmt: ");
+		      print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+		      fprintf (dump_file, "\n");
+		    }
+		  if (gsi_remove (&gsi, true) && need_eh_cleanup)
+		    bitmap_set_bit (need_eh_cleanup, bb->index);
+		  release_defs (stmt);
+		}
+	    }
+	  if (gsi_end_p (gsi))
+	    gsi = gsi_last_bb (bb);
+	  else
+	    gsi_prev (&gsi);
+	}
+      bool removed_phi = false;
+      for (gphi_iterator si = gsi_start_phis (bb); !gsi_end_p (si);)
+	{
+	  gphi *phi = si.phi ();
+	  if (has_zero_uses (gimple_phi_result (phi)))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "  Deleted trivially dead PHI: ");
+		  print_gimple_stmt (dump_file, phi, 0, dump_flags);
+		  fprintf (dump_file, "\n");
+		}
+	      remove_phi_node (&si, true);
+	      removed_phi = true;
+	    }
+	  else
+	    gsi_next (&si);
+	}
+      if (removed_phi && gimple_seq_empty_p (phi_nodes (bb)))
+	todo |= TODO_cleanup_cfg;
+    }
+  free (rpo);
 
   /* Removal of stores may make some EH edges dead.  Purge such edges from
      the CFG as needed.  */

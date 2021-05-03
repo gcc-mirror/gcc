@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -7430,9 +7430,7 @@ package body Sem_Ch13 is
             --    type Q is access Float;
             --    for Q'Storage_Size use T'Storage_Size; -- incorrect
 
-            if RTE_Available (RE_Stack_Bounded_Pool)
-              and then Base_Type (T) = RTE (RE_Stack_Bounded_Pool)
-            then
+            if Is_RTE (Base_Type (T), RE_Stack_Bounded_Pool) then
                Error_Msg_N ("non-shareable internal Pool", Expr);
                return;
             end if;
@@ -7722,7 +7720,7 @@ package body Sem_Ch13 is
 
       if Etype (Expression (N)) = Any_Type then
          return;
-      elsif Etype (Expression (N)) /= RTE (RE_Asm_Insn) then
+      elsif not Is_RTE (Etype (Expression (N)), RE_Asm_Insn) then
          Error_Msg_N ("incorrect type for code statement", N);
          return;
       end if;
@@ -9976,17 +9974,29 @@ package body Sem_Ch13 is
    --  Start of processing for Build_Predicate_Functions
 
    begin
-      --  Return if already built or if type does not have predicates
+      --  Return if already built, if type does not have predicates,
+      --  or if type is a constructed subtype that will inherit a
+      --  predicate function from its ancestor. In a generic context
+      --  the predicated parent may not have a predicate function yet
+      --  but we don't want to build a new one for the subtype. This can
+      --  happen in an instance body which is nested within a generic
+      --  unit, in which case Within_A_Generic may be false, SId is
+      --  Empty, but uses of Typ will receive a predicate check in a
+      --  context where expansion and tests are enabled.
 
       SId := Predicate_Function (Typ);
       if not Has_Predicates (Typ)
         or else (Present (SId) and then Has_Completion (SId))
+        or else
+          (Is_Itype (Typ)
+           and then not Comes_From_Source (Typ)
+           and then Present (Predicated_Parent (Typ)))
       then
          return;
 
         --  Do not generate predicate bodies within a generic unit. The
         --  expressions have been analyzed already, and the bodies play
-        --  no role if not within an executable unit. However, if a statc
+        --  no role if not within an executable unit. However, if a static
         --  predicate is present it must be processed for legality checks
         --  such as case coverage in an expression.
 
@@ -14902,7 +14912,7 @@ package body Sem_Ch13 is
             Find_Direct_Name (N);
             Set_Entity (N, Empty);
 
-         --  The name is component association needs no resolution.
+         --  The name is component association needs no resolution
 
          elsif Nkind (N) = N_Component_Association then
             Dummy := Resolve_Name (Expression (N));
@@ -14924,10 +14934,6 @@ package body Sem_Ch13 is
    --  Start of processing for Resolve_Aspect_Expressions
 
    begin
-      if No (ASN) then
-         return;
-      end if;
-
       while Present (ASN) loop
          if Nkind (ASN) = N_Aspect_Specification and then Entity (ASN) = E then
             declare
@@ -14964,16 +14970,12 @@ package body Sem_Ch13 is
                      --  discriminants of the type.
 
                      if No (Predicate_Function (E)) then
-                        declare
-                           FDecl : constant Node_Id :=
-                                     Build_Predicate_Function_Declaration (E);
-                           pragma Unreferenced (FDecl);
+                        Discard_Node
+                          (Build_Predicate_Function_Declaration (E));
 
-                        begin
-                           Push_Type (E);
-                           Resolve_Aspect_Expression (Expr);
-                           Pop_Type (E);
-                        end;
+                        Push_Type (E);
+                        Resolve_Aspect_Expression (Expr);
+                        Pop_Type (E);
                      end if;
 
                   when Pre_Post_Aspects =>

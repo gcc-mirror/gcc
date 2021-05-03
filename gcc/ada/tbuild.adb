@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,6 +35,7 @@ with Opt;      use Opt;
 with Restrict; use Restrict;
 with Rident;   use Rident;
 with Sem_Aux;  use Sem_Aux;
+with Sem_Util; use Sem_Util;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
@@ -348,14 +349,42 @@ package body Tbuild is
       Has_Created_Identifier : Boolean := False;
       End_Label              : Node_Id := Empty) return Node_Id
    is
+      P                  : Node_Id;
+      Check_Restrictions : Boolean := True;
    begin
-      Check_Restriction (No_Implicit_Loops, Node);
+      --  Do not check restrictions if the implicit loop statement is part
+      --  of a dead branch: False and then ...
+      --  This will occur in particular as part of the expansion of pragma
+      --  Assert when assertions are disabled.
 
-      if Present (Iteration_Scheme)
-        and then Nkind (Iteration_Scheme) /= N_Iterator_Specification
-        and then Present (Condition (Iteration_Scheme))
-      then
-         Check_Restriction (No_Implicit_Conditionals, Node);
+      P := Parent (Node);
+      while Present (P) loop
+         if Nkind (P) = N_And_Then then
+            if Nkind (Left_Opnd (P)) = N_Identifier
+              and then Entity (Left_Opnd (P)) = Standard_False
+            then
+               Check_Restrictions := False;
+               exit;
+            end if;
+
+         --  Prevent the search from going too far
+
+         elsif Is_Body_Or_Package_Declaration (P) then
+            exit;
+         end if;
+
+         P := Parent (P);
+      end loop;
+
+      if Check_Restrictions then
+         Check_Restriction (No_Implicit_Loops, Node);
+
+         if Present (Iteration_Scheme)
+           and then Nkind (Iteration_Scheme) /= N_Iterator_Specification
+           and then Present (Condition (Iteration_Scheme))
+         then
+            Check_Restriction (No_Implicit_Conditionals, Node);
+         end if;
       end if;
 
       return Make_Loop_Statement (Sloc (Node),

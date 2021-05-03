@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4348,8 +4348,7 @@ package body Sem_Ch4 is
               or else
             Covers (T1 => T2, T2 => T1)
          then
-            if T1 = Universal_Integer
-              or else T1 = Universal_Real
+            if Is_Universal_Numeric_Type (T1)
               or else T1 = Any_Character
             then
                Add_One_Interp (N, Base_Type (T2), Base_Type (T2));
@@ -4419,7 +4418,7 @@ package body Sem_Ch4 is
          --  If result is Any_Type, then we did not find a compatible pair
 
          if Etype (N) = Any_Type then
-            Error_Msg_N ("incompatible types in range ", N);
+            Error_Msg_N ("incompatible types in range", N);
          end if;
       end if;
 
@@ -5975,7 +5974,7 @@ package body Sem_Ch4 is
 
       function Specific_Type (T1, T2 : Entity_Id) return Entity_Id is
       begin
-         if T1 = Universal_Integer or else T1 = Universal_Real then
+         if Is_Universal_Numeric_Type (T1) then
             return Base_Type (T2);
          else
             return Base_Type (T1);
@@ -10215,6 +10214,16 @@ package body Sem_Ch4 is
                Report     => True,
                Success    => Success,
                Skip_First => True);
+
+            --  The error may hot have been reported yet for overloaded
+            --  prefixed calls, depending on the non-matching candidate,
+            --  in which case provide a concise error now.
+
+            if Serious_Errors_Detected = 0 then
+               Error_Msg_NE
+                 ("cannot resolve prefixed call to primitive operation of&",
+                   N, Entity (Obj));
+            end if;
          end if;
 
          --  No need for further errors

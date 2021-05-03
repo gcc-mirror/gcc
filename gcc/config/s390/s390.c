@@ -16754,6 +16754,23 @@ f_constraint_p (const char *constraint)
   return seen_f_p && !seen_v_p;
 }
 
+/* Return TRUE iff X is a hard floating-point (and not a vector) register.  */
+
+static bool
+s390_hard_fp_reg_p (rtx x)
+{
+  if (!(REG_P (x) && HARD_REGISTER_P (x) && REG_ATTRS (x)))
+    return false;
+
+  tree decl = REG_EXPR (x);
+  if (!(HAS_DECL_ASSEMBLER_NAME_P (decl) && DECL_ASSEMBLER_NAME_SET_P (decl)))
+    return false;
+
+  const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+
+  return name[0] == '*' && name[1] == 'f';
+}
+
 /* Implement TARGET_MD_ASM_ADJUST hook in order to fix up "f"
    constraints when long doubles are stored in vector registers.  */
 
@@ -16787,9 +16804,24 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
       gcc_assert (allows_reg);
       gcc_assert (!is_inout);
       /* Copy output value from a FPR pair into a vector register.  */
-      rtx fprx2 = gen_reg_rtx (FPRX2mode);
+      rtx fprx2;
       push_to_sequence2 (after_md_seq, after_md_end);
-      emit_insn (gen_fprx2_to_tf (outputs[i], fprx2));
+      if (s390_hard_fp_reg_p (outputs[i]))
+	{
+	  fprx2 = gen_rtx_REG (FPRX2mode, REGNO (outputs[i]));
+	  /* The first half is already at the correct location, copy only the
+	   * second one.  Use the UNSPEC pattern instead of the SUBREG one,
+	   * since s390_can_change_mode_class() rejects
+	   * (subreg:DF (reg:TF %fN) 8) and thus subreg validation fails.  */
+	  rtx v1 = gen_rtx_REG (V2DFmode, REGNO (outputs[i]));
+	  rtx v3 = gen_rtx_REG (V2DFmode, REGNO (outputs[i]) + 1);
+	  emit_insn (gen_vec_permiv2df (v1, v1, v3, const0_rtx));
+	}
+      else
+	{
+	  fprx2 = gen_reg_rtx (FPRX2mode);
+	  emit_insn (gen_fprx2_to_tf (outputs[i], fprx2));
+	}
       after_md_seq = get_insns ();
       after_md_end = get_last_insn ();
       end_sequence ();
@@ -16813,8 +16845,20 @@ s390_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &inputs,
 	continue;
       gcc_assert (allows_reg);
       /* Copy input value from a vector register into a FPR pair.  */
-      rtx fprx2 = gen_reg_rtx (FPRX2mode);
-      emit_insn (gen_tf_to_fprx2 (fprx2, inputs[i]));
+      rtx fprx2;
+      if (s390_hard_fp_reg_p (inputs[i]))
+	{
+	  fprx2 = gen_rtx_REG (FPRX2mode, REGNO (inputs[i]));
+	  /* Copy only the second half.  */
+	  rtx v1 = gen_rtx_REG (V2DFmode, REGNO (inputs[i]) + 1);
+	  rtx v2 = gen_rtx_REG (V2DFmode, REGNO (inputs[i]));
+	  emit_insn (gen_vec_permiv2df (v1, v2, v1, GEN_INT (3)));
+	}
+      else
+	{
+	  fprx2 = gen_reg_rtx (FPRX2mode);
+	  emit_insn (gen_tf_to_fprx2 (fprx2, inputs[i]));
+	}
       inputs[i] = fprx2;
       input_modes[i] = FPRX2mode;
     }

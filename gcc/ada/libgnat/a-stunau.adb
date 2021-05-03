@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,11 +52,17 @@ package body Ada.Strings.Unbounded.Aux is
    -- Set_String --
    ----------------
 
-   procedure Set_String (UP : in out Unbounded_String; S : String_Access) is
+   procedure Set_String
+     (U      : out Unbounded_String;
+      Length : Positive;
+      Set    : not null access procedure (S : out String))
+   is
+      Old : String_Access := U.Reference;
    begin
-      Finalize (UP);
-      UP.Reference := S;
-      UP.Last := UP.Reference'Length;
+      U.Last := Length;
+      U.Reference := new String (1 .. Length);
+      Set (U.Reference.all);
+      Free (Old);
    end Set_String;
 
 end Ada.Strings.Unbounded.Aux;

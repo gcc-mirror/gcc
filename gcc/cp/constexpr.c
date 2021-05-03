@@ -6745,8 +6745,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	/* [expr.const]: a conversion from type cv void* to a pointer-to-object
 	   type cannot be part of a core constant expression as a resolution to
 	   DR 1312.  */
-	if (integer_zerop (op) /* FIXME: Remove in GCC 12.  */
-	    && TYPE_PTROB_P (type)
+	if (TYPE_PTROB_P (type)
 	    && TYPE_PTR_P (TREE_TYPE (op))
 	    && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (op)))
 	    /* Inside a call to std::construct_at or to

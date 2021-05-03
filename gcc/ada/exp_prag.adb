@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -771,7 +771,7 @@ package body Exp_Prag is
       function Get_Nth_Arg_Type
          (Subprogram : Entity_Id;
           N          : Positive) return Entity_Id;
-      --  Returns the type of the Nth argument of Subprogram.
+      --  Returns the type of the Nth argument of Subprogram
 
       function To_Addresses (Elmts : Elist_Id) return List_Id;
       --  Returns a new list containing each element of Elmts wrapped in an
@@ -821,9 +821,9 @@ package body Exp_Prag is
          Init_Val : Node_Id) return Node_Id
       is
          --  Expressions for each component of the returned Dim3
-         Dim_X    : Node_Id;
-         Dim_Y    : Node_Id;
-         Dim_Z    : Node_Id;
+         Dim_X : Node_Id;
+         Dim_Y : Node_Id;
+         Dim_Z : Node_Id;
 
          --  Type of CUDA.Internal.Dim3 - inferred from
          --  RE_Push_Call_Configuration to avoid needing changes in GNAT when
@@ -835,12 +835,13 @@ package body Exp_Prag is
          First_Component  : Entity_Id := First_Entity (RTE (RE_Dim3));
          Second_Component : Entity_Id := Next_Entity (First_Component);
          Third_Component  : Entity_Id := Next_Entity (Second_Component);
+
       begin
 
-         --  Sem_prag.adb ensured that Init_Val is either a Dim3, an
-         --  aggregate of three Any_Integers or Any_Integer.
+         --  Sem_prag.adb ensured that Init_Val is either a Dim3, an aggregate
+         --  of three Any_Integers or Any_Integer.
 
-         --  If Init_Val is a Dim3, use each of its components.
+         --  If Init_Val is a Dim3, use each of its components
 
          if Etype (Init_Val) = RTE (RE_Dim3) then
             Dim_X := Make_Selected_Component (Loc,
@@ -862,7 +863,7 @@ package body Exp_Prag is
                Dim_Y := Next (Dim_X);
                Dim_Z := Next (Dim_Y);
 
-            --  Otherwise, we know it is an integer and the rest defaults to 1.
+            --  Otherwise, we know it is an integer and the rest defaults to 1
 
             else
                Dim_X := Init_Val;
@@ -1011,14 +1012,13 @@ package body Exp_Prag is
             Default_Val => Make_Null (Loc));
       end Build_Stream_Declaration;
 
-      ------------------------
-      -- Etype_Or_Dim3  --
-      ------------------------
+      -------------------
+      -- Etype_Or_Dim3 --
+      -------------------
 
       function Etype_Or_Dim3 (N : Node_Id) return Node_Id is
       begin
-         if Nkind (N) = N_Aggregate and then Is_Composite_Type (Etype (N))
-         then
+         if Nkind (N) = N_Aggregate and then Is_Composite_Type (Etype (N)) then
             return New_Occurrence_Of (RTE (RE_Dim3), Sloc (N));
          end if;
 
@@ -1036,7 +1036,7 @@ package body Exp_Prag is
          Argument : Entity_Id := First_Entity (Subprogram);
       begin
          for J in 2 .. N loop
-            Argument := Next_Entity (Argument);
+            Next_Entity (Argument);
          end loop;
 
          return Etype (Argument);
@@ -1098,8 +1098,7 @@ package body Exp_Prag is
         Object_Definition   => Etype_Or_Dim3 (Block_Dimensions),
         Expression          => Block_Dimensions);
 
-      --  List holding the entities of the copies of Procedure_Call's
-      --  arguments.
+      --  List holding the entities of the copies of Procedure_Call's arguments
 
       Kernel_Arg_Copies : constant Elist_Id := New_Elmt_List;
 
@@ -1114,7 +1113,7 @@ package body Exp_Prag is
       Pop_Call           : Node_Id;
       Push_Call          : Node_Id;
 
-      --  Declaration of all temporaries required for CUDA API Calls.
+      --  Declaration of all temporaries required for CUDA API Calls
 
       Blk_Decls  : constant List_Id := New_List;
 

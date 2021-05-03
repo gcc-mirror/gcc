@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1862,7 +1862,7 @@ package body Sem_Ch8 is
       Old_S := Find_Renamed_Entity (N, Selector_Name (Nam), New_S);
 
       if Old_S = Any_Id then
-         Error_Msg_N (" no subprogram or entry matches specification",  N);
+         Error_Msg_N ("no subprogram or entry matches specification",  N);
       else
          if Is_Body then
             Check_Subtype_Conformant (New_S, Old_S, N);
@@ -3577,7 +3577,7 @@ package body Sem_Ch8 is
                end if;
 
                if Original_Subprogram (Old_S) = Rename_Spec then
-                  Error_Msg_N ("unfrozen subprogram cannot rename itself ", N);
+                  Error_Msg_N ("unfrozen subprogram cannot rename itself", N);
                else
                   Check_Formal_Subprogram_Conformance (New_S, Old_S, Spec);
                end if;
@@ -4443,7 +4443,7 @@ package body Sem_Ch8 is
 
       if not Configurable_Run_Time_Mode
         and then not Present (Corresponding_Formal_Spec (N))
-        and then Etype (Nam) /= RTE (RE_AST_Handler)
+        and then not Is_RTE (Etype (Nam), RE_AST_Handler)
       then
          declare
             P : constant Node_Id := Prefix (Nam);
@@ -7508,15 +7508,9 @@ package body Sem_Ch8 is
                   --  dispatch table wrappers. Required to avoid generating
                   --  elaboration code with HI runtimes.
 
-                  elsif RTU_Loaded (Ada_Tags)
-                    and then
-                      ((RTE_Available (RE_Dispatch_Table_Wrapper)
-                         and then Scope (Selector) =
-                                     RTE (RE_Dispatch_Table_Wrapper))
-                        or else
-                          (RTE_Available (RE_No_Dispatch_Table_Wrapper)
-                            and then Scope (Selector) =
-                                     RTE (RE_No_Dispatch_Table_Wrapper)))
+                  elsif Is_RTE (Scope (Selector), RE_Dispatch_Table_Wrapper)
+                    or else
+                      Is_RTE (Scope (Selector), RE_No_Dispatch_Table_Wrapper)
                   then
                      C_Etype := Empty;
                   else

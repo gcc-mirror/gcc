@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -5700,7 +5700,7 @@ package body Exp_Aggr is
       function Safe_Left_Hand_Side (N : Node_Id) return Boolean;
       --  In addition to Maybe_In_Place_OK, in order for an aggregate to be
       --  built directly into the target of the assignment it must be free
-      --  of side effects.
+      --  of side effects. N is the LHS of an assignment.
 
       ----------------------------
       -- Build_Constrained_Type --
@@ -6661,9 +6661,13 @@ package body Exp_Aggr is
          Set_Expansion_Delayed (N);
          return;
 
-      --  In the remaining cases the aggregate is the RHS of an assignment
+      --  In the remaining cases the aggregate appears in the RHS of an
+      --  assignment, which may be part of the expansion of an object
+      --  delaration. If the aggregate is an actual in a call, itself
+      --  possibly in a RHS, building it in the target is not possible.
 
       elsif Maybe_In_Place_OK
+        and then Nkind (Parent_Node) not in N_Subprogram_Call
         and then Safe_Left_Hand_Side (Name (Parent_Node))
       then
          Tmp := Name (Parent_Node);
@@ -8619,7 +8623,7 @@ package body Exp_Aggr is
       --  Aggregates are not supported for nonstandard rep clauses, since they
       --  may lead to extra padding fields in CCG.
 
-      if Ekind (Etype (N)) in Record_Kind
+      if Is_Record_Type (Etype (N))
         and then Has_Non_Standard_Rep (Etype (N))
       then
          return False;
@@ -8674,30 +8678,25 @@ package body Exp_Aggr is
    begin
       return Building_Static_Dispatch_Tables
         and then Tagged_Type_Expansion
-        and then RTU_Loaded (Ada_Tags)
 
          --  Avoid circularity when rebuilding the compiler
 
-        and then Cunit_Entity (Get_Source_Unit (N)) /= RTU_Entity (Ada_Tags)
-        and then (Typ = RTE (RE_Dispatch_Table_Wrapper)
+        and then not Is_RTU (Cunit_Entity (Get_Source_Unit (N)), Ada_Tags)
+        and then (Is_RTE (Typ, RE_Dispatch_Table_Wrapper)
                     or else
-                  Typ = RTE (RE_Address_Array)
+                  Is_RTE (Typ, RE_Address_Array)
                     or else
-                  Typ = RTE (RE_Type_Specific_Data)
+                  Is_RTE (Typ, RE_Type_Specific_Data)
                     or else
-                  Typ = RTE (RE_Tag_Table)
+                  Is_RTE (Typ, RE_Tag_Table)
                     or else
-                  (RTE_Available (RE_Object_Specific_Data)
-                     and then Typ = RTE (RE_Object_Specific_Data))
+                  Is_RTE (Typ, RE_Object_Specific_Data)
                     or else
-                  (RTE_Available (RE_Interface_Data)
-                     and then Typ = RTE (RE_Interface_Data))
+                  Is_RTE (Typ, RE_Interface_Data)
                     or else
-                  (RTE_Available (RE_Interfaces_Array)
-                     and then Typ = RTE (RE_Interfaces_Array))
+                  Is_RTE (Typ, RE_Interfaces_Array)
                     or else
-                  (RTE_Available (RE_Interface_Data_Element)
-                     and then Typ = RTE (RE_Interface_Data_Element)));
+                  Is_RTE (Typ, RE_Interface_Data_Element));
    end Is_Static_Dispatch_Table_Aggregate;
 
    -----------------------------
@@ -8801,8 +8800,6 @@ package body Exp_Aggr is
      (N            : Node_Id;
       Default_Size : Nat := 5000) return Nat
    is
-      Typ : constant Entity_Id := Etype (N);
-
       function Use_Small_Size (N : Node_Id) return Boolean;
       --  True if we should return a very small size, which means large
       --  aggregates will be implemented as a loop when possible (potentially
@@ -8811,6 +8808,10 @@ package body Exp_Aggr is
       function Aggr_Context (N : Node_Id) return Node_Id;
       --  Return the context in which the aggregate appears, not counting
       --  qualified expressions and similar.
+
+      ------------------
+      -- Aggr_Context --
+      ------------------
 
       function Aggr_Context (N : Node_Id) return Node_Id is
          Result : Node_Id := Parent (N);
@@ -8828,6 +8829,10 @@ package body Exp_Aggr is
 
          return Result;
       end Aggr_Context;
+
+      --------------------
+      -- Use_Small_Size --
+      --------------------
 
       function Use_Small_Size (N : Node_Id) return Boolean is
          C : constant Node_Id := Aggr_Context (N);
@@ -8859,11 +8864,15 @@ package body Exp_Aggr is
          end case;
       end Use_Small_Size;
 
+      --  Local variables
+
+      Typ : constant Entity_Id := Etype (N);
+
    --  Start of processing for Max_Aggregate_Size
 
    begin
-      --  We use a small limit in CodePeer mode where we favor loops
-      --  instead of thousands of single assignments (from large aggregates).
+      --  We use a small limit in CodePeer mode where we favor loops instead of
+      --  thousands of single assignments (from large aggregates).
 
       --  We also increase the limit to 2**24 (about 16 million) if
       --  Restrictions (No_Elaboration_Code) or Restrictions

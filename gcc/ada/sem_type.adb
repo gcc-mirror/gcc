@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1853,8 +1853,7 @@ package body Sem_Type is
             begin
                Get_First_Interp (N, I, It);
                while Present (It.Typ) loop
-                  if (It.Typ = Universal_Integer
-                       or else It.Typ = Universal_Real)
+                  if Is_Universal_Numeric_Type (It.Typ)
                     and then (Typ = Any_Type or else Covers (Typ, It.Typ))
                   then
                      return It;
@@ -2284,7 +2283,7 @@ package body Sem_Type is
                --  apply preference rule.
 
                if TR /= Any_Type then
-                  if (T = Universal_Integer or else T = Universal_Real)
+                  if Is_Universal_Numeric_Type (T)
                     and then It.Typ = T
                   then
                      TR := It.Typ;

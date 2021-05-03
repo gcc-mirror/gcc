@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1995-2020, AdaCore                     --
+--                     Copyright (C) 1995-2021, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -40,38 +40,4 @@
 
 with System.Case_Util;
 
-package GNAT.Case_Util is
-   pragma Pure;
-   pragma Elaborate_Body;
-   --  The elaborate body is because we have a dummy body to deal with
-   --  bootstrap path problems (we used to have a real body, and now we don't
-   --  need it any more, but the bootstrap requires that we have a dummy body,
-   --  since otherwise the old body gets picked up.
-
-   --  Note: all the following functions handle the full Latin-1 set
-
-   function To_Upper (A : Character) return Character
-     renames System.Case_Util.To_Upper;
-   --  Converts A to upper case if it is a lower case letter, otherwise
-   --  returns the input argument unchanged.
-
-   procedure To_Upper (A : in out String)
-     renames System.Case_Util.To_Upper;
-   --  Folds all characters of string A to upper case
-
-   function To_Lower (A : Character) return Character
-     renames System.Case_Util.To_Lower;
-   --  Converts A to lower case if it is an upper case letter, otherwise
-   --  returns the input argument unchanged.
-
-   procedure To_Lower (A : in out String)
-     renames System.Case_Util.To_Lower;
-   --  Folds all characters of string A to lower case
-
-   procedure To_Mixed (A : in out String)
-     renames System.Case_Util.To_Mixed;
-   --  Converts A to mixed case (i.e. lower case, except for initial
-   --  character and any character after an underscore, which are
-   --  converted to upper case.
-
-end GNAT.Case_Util;
+package GNAT.Case_Util renames System.Case_Util;

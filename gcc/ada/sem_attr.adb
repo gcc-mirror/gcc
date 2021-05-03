@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -905,9 +905,9 @@ package body Sem_Attr is
             --  a tagged type cleans constant indications from its scope).
 
             elsif Nkind (Parent (N)) = N_Unchecked_Type_Conversion
-              and then (Etype (Parent (N)) = RTE (RE_Prim_Ptr)
+              and then (Is_RTE (Etype (Parent (N)), RE_Prim_Ptr)
                           or else
-                        Etype (Parent (N)) = RTE (RE_Size_Ptr))
+                        Is_RTE (Etype (Parent (N)), RE_Size_Ptr))
               and then Is_Dispatching_Operation
                          (Directly_Designated_Type (Etype (N)))
             then
@@ -2298,20 +2298,15 @@ package body Sem_Attr is
       begin
          if Is_Entity_Name (P) then
             declare
-               K : constant Entity_Kind := Ekind (Entity (P));
-               T : constant Entity_Id   := Etype (Entity (P));
-
+               E : constant Entity_Id := Entity (P);
             begin
-               if K in Subprogram_Kind
-                 or else K in Task_Kind
-                 or else K in Protected_Kind
-                 or else K = E_Package
-                 or else K in Generic_Unit_Kind
-                 or else (K = E_Variable
-                            and then
-                              (Is_Task_Type (T)
-                                 or else
-                               Is_Protected_Type (T)))
+               if Ekind (E) in E_Protected_Type
+                             | E_Task_Type
+                             | Entry_Kind
+                             | Generic_Unit_Kind
+                             | Subprogram_Kind
+                             | E_Package
+                 or else Is_Single_Concurrent_Object (E)
                then
                   return;
                end if;
@@ -2391,7 +2386,7 @@ package body Sem_Attr is
          --  root type of a class-wide type is the corresponding type (e.g.
          --  X for X'Class, and we really want to go to the root.)
 
-         if Root_Type (Root_Type (Etype (E1))) /= RTE (RE_Sink) then
+         if not Is_RTE (Root_Type (Root_Type (Etype (E1))), RE_Sink) then
             Error_Attr
               ("expected Ada.Strings.Text_Output.Sink''Class", E1);
          end if;
@@ -2561,8 +2556,8 @@ package body Sem_Attr is
          --  X for X'Class, and we really want to go to the root.)
 
          if not Is_Access_Type (Etyp)
-           or else Root_Type (Root_Type (Designated_Type (Etyp))) /=
-                     RTE (RE_Root_Stream_Type)
+           or else not Is_RTE (Root_Type (Root_Type (Designated_Type (Etyp))),
+                               RE_Root_Stream_Type)
          then
             Error_Attr
               ("expected access to Ada.Streams.Root_Stream_Type''Class", E1);
@@ -5381,7 +5376,7 @@ package body Sem_Attr is
            or else (Is_Access_Type (Etype (P))
                       and then Is_Protected_Type (Designated_Type (Etype (P))))
          then
-            Resolve (P, Etype (P));
+            Resolve (P);
          else
             Error_Attr_P ("prefix of % attribute must be a protected object");
          end if;
@@ -10720,9 +10715,7 @@ package body Sem_Attr is
 
       --  If attribute was universal type, reset to actual type
 
-      if Etype (N) = Universal_Integer
-        or else Etype (N) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (N)) then
          Set_Etype (N, Typ);
       end if;
 

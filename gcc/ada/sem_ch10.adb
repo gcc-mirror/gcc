@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1561,9 +1561,9 @@ package body Sem_Ch10 is
                                  Error_Msg_N
                                    ("simultaneous visibility of limited and "
                                     & "unlimited views not allowed", Item);
-                                 Error_Msg_NE
+                                 Error_Msg_N
                                    ("\unlimited view visible through context "
-                                    & "clause #", Item, It);
+                                    & "clause #", Item);
                                  exit;
 
                               elsif Nkind (Unit_Name) = N_Identifier then
@@ -3832,7 +3832,7 @@ package body Sem_Ch10 is
 
                   if E2 = WEnt then
                      Error_Msg_N
-                       ("unlimited view visible through use clause ", W);
+                       ("unlimited view visible through use clause", W);
                      return;
                   end if;
                end if;

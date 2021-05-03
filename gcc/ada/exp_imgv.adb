@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1140,7 +1140,7 @@ package body Exp_Imgv is
       --  There is a better way, test RTE_Available ???
 
       if No_Run_Time_Mode
-        and then Rtyp = RTE (RE_Integer_Address)
+        and then Is_RTE (Rtyp, RE_Integer_Address)
         and then RTU_Loaded (Ada_Tags)
         and then Cunit_Entity (Current_Sem_Unit)
                    = Body_Entity (RTU_Entity (Ada_Tags))

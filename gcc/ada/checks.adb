@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -552,9 +552,7 @@ package body Checks is
 
       if Tagged_Type_Expansion
         and then Present (Etype (P))
-        and then RTU_Loaded (Ada_Tags)
-        and then RTE_Available (RE_Offset_To_Top_Ptr)
-        and then Etype (P) = RTE (RE_Offset_To_Top_Ptr)
+        and then Is_RTE (Etype (P), RE_Offset_To_Top_Ptr)
       then
          return;
       end if;

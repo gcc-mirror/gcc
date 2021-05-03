@@ -1347,10 +1347,10 @@ handle_using_decl (tree using_decl, tree t)
 
   /* Make type T see field decl FDECL with access ACCESS.  */
   if (flist)
-    for (ovl_iterator iter (flist); iter; ++iter)
+    for (tree f : ovl_range (flist))
       {
-	add_method (t, *iter, true);
-	alter_access (t, *iter, access);
+	add_method (t, f, true);
+	alter_access (t, f, access);
       }
   else if (USING_DECL_UNRELATED_P (using_decl))
     {
@@ -2259,18 +2259,20 @@ maybe_warn_about_overly_private_class (tree t)
       if (!TYPE_HAS_COPY_CTOR (t))
 	nonprivate_ctor = true;
       else
-	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t));
-	     !nonprivate_ctor && iter; ++iter)
-	  if (TREE_PRIVATE (*iter))
+	for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (t)))
+	  if (TREE_PRIVATE (fn))
 	    continue;
-	  else if (copy_fn_p (*iter) || move_fn_p (*iter))
+	  else if (copy_fn_p (fn) || move_fn_p (fn))
 	    /* Ideally, we wouldn't count any constructor that takes
 	       an argument of the class type as a parameter, because
 	       such things cannot be used to construct an instance of
 	       the class unless you already have one.  */
-	    copy_or_move = *iter;
+	    copy_or_move = fn;
 	  else
-	    nonprivate_ctor = true;
+	    {
+	      nonprivate_ctor = true;
+	      break;
+	    }
 
       if (!nonprivate_ctor)
 	{
@@ -2876,10 +2878,8 @@ get_basefndecls (tree name, tree t, vec<tree> *base_fndecls)
   bool found_decls = false;
 
   /* Find virtual functions in T with the indicated NAME.  */
-  for (ovl_iterator iter (get_class_binding (t, name)); iter; ++iter)
+  for (tree method : ovl_range (get_class_binding (t, name)))
     {
-      tree method = *iter;
-
       if (TREE_CODE (method) == FUNCTION_DECL && DECL_VINDEX (method))
 	{
 	  base_fndecls->safe_push (method);
@@ -2988,9 +2988,8 @@ warn_hidden (tree t)
 	  continue;
 
 	/* Remove any overridden functions.  */
-	for (ovl_iterator iter (fns); iter; ++iter)
+	for (tree fndecl : ovl_range (fns))
 	  {
-	    tree fndecl = *iter;
 	    if (TREE_CODE (fndecl) == FUNCTION_DECL
 		&& DECL_VINDEX (fndecl))
 	      {
@@ -3334,8 +3333,8 @@ add_implicitly_declared_members (tree t, tree* access_decls,
 	  tree ctor_list = decl;
 	  location_t loc = input_location;
 	  input_location = DECL_SOURCE_LOCATION (using_decl);
-	  for (ovl_iterator iter (ctor_list); iter; ++iter)
-	    one_inherited_ctor (*iter, t, using_decl);
+	  for (tree fn : ovl_range (ctor_list))
+	    one_inherited_ctor (fn, t, using_decl);
 	  *access_decls = TREE_CHAIN (*access_decls);
 	  input_location = loc;
 	}
@@ -4751,9 +4750,8 @@ check_methods (tree t)
 	TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t) = true;
     }
 
-  for (ovl_iterator i (CLASSTYPE_CONSTRUCTORS (t)); i; ++i)
+  for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (t)))
     {
-      tree fn = *i;
       if (!user_provided_p (fn))
 	/* Might be trivial.  */;
       else if (copy_fn_p (fn))
@@ -4762,10 +4760,8 @@ check_methods (tree t)
 	TYPE_HAS_COMPLEX_MOVE_CTOR (t) = true;
     }
 
-  for (ovl_iterator i (get_class_binding_direct (t, assign_op_identifier));
-       i; ++i)
+  for (tree fn : ovl_range (get_class_binding_direct (t, assign_op_identifier)))
     {
-      tree fn = *i;
       if (!user_provided_p (fn))
 	/* Might be trivial.  */;
       else if (copy_fn_p (fn))
@@ -5107,8 +5103,8 @@ clone_constructors_and_destructors (tree t)
 {
   /* We do not need to propagate the usingness to the clone, at this
      point that is not needed.  */
-  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
-    clone_cdtor (*iter, /*update_methods=*/true);
+  for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (t)))
+    clone_cdtor (fn, /*update_methods=*/true);
 
   if (tree dtor = CLASSTYPE_DESTRUCTOR (t))
     clone_cdtor (dtor, /*update_methods=*/true);
@@ -5283,9 +5279,8 @@ type_has_user_nondefault_constructor (tree t)
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
     return false;
 
-  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
+  for (tree fn : ovl_range (CLASSTYPE_CONSTRUCTORS (t)))
     {
-      tree fn = *iter;
       if (user_provided_p (fn)
 	  && (TREE_CODE (fn) == TEMPLATE_DECL
 	      || (skip_artificial_parms_for (fn, DECL_ARGUMENTS (fn))

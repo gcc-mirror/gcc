@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2150,7 +2150,7 @@ package body Exp_Attr is
                --  the node with the type imposed by the context.
 
                if Nkind (Parent (N)) = N_Unchecked_Type_Conversion
-                 and then Etype (Parent (N)) = RTE (RE_Prim_Ptr)
+                 and then Is_RTE (Etype (Parent (N)), RE_Prim_Ptr)
                then
                   Set_Etype (N, RTE (RE_Prim_Ptr));
 

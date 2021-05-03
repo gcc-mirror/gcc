@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4363,10 +4363,7 @@ package body Sem_Eval is
          return;
       end if;
 
-      if Etype (Right) = Universal_Integer
-           or else
-         Etype (Right) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (Right)) then
          Otype := Find_Universal_Operator_Type (N);
       end if;
 
@@ -6104,7 +6101,9 @@ package body Sem_Eval is
          --  No message if we are dealing with System.Priority values in
          --  CodePeer mode where the target runtime may have more priorities.
 
-         elsif not CodePeer_Mode or else Etype (N) /= RTE (RE_Priority) then
+         elsif not CodePeer_Mode
+           or else not Is_RTE (Etype (N), RE_Priority)
+         then
             --  Determine if the out-of-range violation constitutes a warning
             --  or an error based on context, according to RM 4.9 (34/3).
 
@@ -7241,7 +7240,7 @@ package body Sem_Eval is
 
       --  Universal types have no range limits, so always in range
 
-      elsif Typ = Universal_Integer or else Typ = Universal_Real then
+      elsif Is_Universal_Numeric_Type (Typ) then
          return In_Range;
 
       --  Never known if not scalar type. Don't know if this can actually

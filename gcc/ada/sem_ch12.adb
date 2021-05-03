@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -4283,7 +4283,7 @@ package body Sem_Ch12 is
         and then Chars (Act_Decl_Id) = Chars (Prefix (Gen_Id))
       then
          Error_Msg_N
-           ("& is hidden within declaration of instance ", Prefix (Gen_Id));
+           ("& is hidden within declaration of instance", Prefix (Gen_Id));
       end if;
 
       Set_Entity (Gen_Id, Gen_Unit);
@@ -13828,9 +13828,9 @@ package body Sem_Ch12 is
                Actual_Discr := First_Discriminant (Act_T);
                while Formal_Discr /= Empty loop
                   if Actual_Discr = Empty then
-                     Error_Msg_NE
+                     Error_Msg_N
                        ("discriminants on actual do not match formal",
-                        Actual, Gen_T);
+                        Actual);
                      Abandon_Instantiation (Actual);
                   end if;
 
@@ -13851,18 +13851,18 @@ package body Sem_Ch12 is
                   elsif Base_Type (Formal_Subt) /=
                           Base_Type (Etype (Actual_Discr))
                   then
-                     Error_Msg_NE
+                     Error_Msg_N
                        ("types of actual discriminants must match formal",
-                        Actual, Gen_T);
+                        Actual);
                      Abandon_Instantiation (Actual);
 
                   elsif not Subtypes_Statically_Match
                               (Formal_Subt, Etype (Actual_Discr))
                     and then Ada_Version >= Ada_95
                   then
-                     Error_Msg_NE
+                     Error_Msg_N
                        ("subtypes of actual discriminants must match formal",
-                        Actual, Gen_T);
+                        Actual);
                      Abandon_Instantiation (Actual);
                   end if;
 

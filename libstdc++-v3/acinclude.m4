@@ -475,63 +475,6 @@ AC_DEFUN([GLIBCXX_CHECK_WRITEV], [
 
 
 dnl
-dnl Check whether int64_t is available in <stdint.h>, and define HAVE_INT64_T.
-dnl Also check whether int64_t is actually a typedef to long or long long.
-dnl
-AC_DEFUN([GLIBCXX_CHECK_INT64_T], [
-
-  AC_LANG_SAVE
-  AC_LANG_CPLUSPLUS
-
-  AC_MSG_CHECKING([for int64_t])
-  AC_CACHE_VAL(glibcxx_cv_INT64_T, [
-    AC_TRY_COMPILE(
-      [#include <stdint.h>],
-      [int64_t var;],
-      [glibcxx_cv_INT64_T=yes],
-      [glibcxx_cv_INT64_T=no])
-  ])
-
-  if test $glibcxx_cv_INT64_T = yes; then
-    AC_DEFINE(HAVE_INT64_T, 1, [Define if int64_t is available in <stdint.h>.])
-    AC_MSG_RESULT($glibcxx_cv_INT64_T)
-
-    AC_MSG_CHECKING([for int64_t as long])
-    AC_CACHE_VAL(glibcxx_cv_int64_t_long, [
-      AC_TRY_COMPILE(
-	[#include <stdint.h>
-	template<typename, typename> struct same { enum { value = -1 }; };
-	template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
-	int array[same<int64_t, long>::value];], [],
-	[glibcxx_cv_int64_t_long=yes], [glibcxx_cv_int64_t_long=no])
-    ])
-
-    if test $glibcxx_cv_int64_t_long = yes; then
-      AC_DEFINE(HAVE_INT64_T_LONG, 1, [Define if int64_t is a long.])
-      AC_MSG_RESULT($glibcxx_cv_int64_t_long)
-    fi
-
-    AC_MSG_CHECKING([for int64_t as long long])
-    AC_CACHE_VAL(glibcxx_cv_int64_t_long_long, [
-      AC_TRY_COMPILE(
-	[#include <stdint.h>
-	template<typename, typename> struct same { enum { value = -1 }; };
-	template<typename Tp> struct same<Tp, Tp> { enum { value = 1 }; };
-	int array[same<int64_t, long long>::value];], [],
-	[glibcxx_cv_int64_t_long_long=yes], [glibcxx_cv_int64_t_long_long=no])
-    ])
-
-    if test $glibcxx_cv_int64_t_long_long = yes; then
-      AC_DEFINE(HAVE_INT64_T_LONG_LONG, 1, [Define if int64_t is a long long.])
-      AC_MSG_RESULT($glibcxx_cv_int64_t_long_long)
-    fi
-  fi
-
-  AC_LANG_RESTORE
-])
-
-
-dnl
 dnl Check whether LFS support is available.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_LFS], [

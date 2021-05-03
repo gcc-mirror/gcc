@@ -41,7 +41,7 @@ enum value_range_kind
 //
 // This is the base class without any storage.
 
-class irange
+class GTY((user)) irange
 {
   friend class irange_allocator;
 public:
@@ -126,6 +126,10 @@ protected:
   void copy_legacy_to_multi_range (const irange &);
 
 private:
+  friend void gt_ggc_mx (irange *);
+  friend void gt_pch_nx (irange *);
+  friend void gt_pch_nx (irange *, gt_pointer_operator, void *);
+
   void irange_set_1bit_anti_range (tree, tree);
   bool varying_compatible_p () const;
 
@@ -155,11 +159,10 @@ private:
   template <unsigned X> friend void gt_pch_nx (int_range<X> *);
   template <unsigned X> friend void gt_pch_nx (int_range<X> *,
 					       gt_pointer_operator, void *);
-  // ?? hash-traits.h has its own extern for these, which is causing
-  // them to never be picked up by the templates.  For now, define
-  // elsewhere.
-  //template<unsigned X> friend void gt_ggc_mx (int_range<X> *&);
-  //template<unsigned X> friend void gt_pch_nx (int_range<X> *&);
+
+  // ?? These stubs are for ipa-prop.c which use a value_range in a
+  // hash_traits.  hash-traits.h defines an extern of gt_ggc_mx (T &)
+  // instead of picking up the gt_ggc_mx (T *) version.
   friend void gt_ggc_mx (int_range<1> *&);
   friend void gt_pch_nx (int_range<1> *&);
 
@@ -335,37 +338,55 @@ range_includes_zero_p (const irange *vr)
   return vr->may_contain_p (build_zero_cst (vr->type ()));
 }
 
+inline void
+gt_ggc_mx (irange *x)
+{
+  for (unsigned i = 0; i < x->m_num_ranges; ++i)
+    {
+      gt_ggc_mx (x->m_base[i * 2]);
+      gt_ggc_mx (x->m_base[i * 2 + 1]);
+    }
+}
+
+inline void
+gt_pch_nx (irange *x)
+{
+  for (unsigned i = 0; i < x->m_num_ranges; ++i)
+    {
+      gt_pch_nx (x->m_base[i * 2]);
+      gt_pch_nx (x->m_base[i * 2 + 1]);
+    }
+}
+
+inline void
+gt_pch_nx (irange *x, gt_pointer_operator op, void *cookie)
+{
+  for (unsigned i = 0; i < x->m_num_ranges; ++i)
+    {
+      op (&x->m_base[i * 2], cookie);
+      op (&x->m_base[i * 2 + 1], cookie);
+    }
+}
+
 template<unsigned N>
 inline void
 gt_ggc_mx (int_range<N> *x)
 {
-  for (unsigned i = 0; i < N; ++i)
-    {
-      gt_ggc_mx (x->m_ranges[i * 2]);
-      gt_ggc_mx (x->m_ranges[i * 2 + 1]);
-    }
+  gt_ggc_mx ((irange *) x);
 }
 
 template<unsigned N>
 inline void
 gt_pch_nx (int_range<N> *x)
 {
-  for (unsigned i = 0; i < N; ++i)
-    {
-      gt_pch_nx (x->m_ranges[i * 2]);
-      gt_pch_nx (x->m_ranges[i * 2 + 1]);
-    }
+  gt_pch_nx ((irange *) x);
 }
 
 template<unsigned N>
 inline void
 gt_pch_nx (int_range<N> *x, gt_pointer_operator op, void *cookie)
 {
-  for (unsigned i = 0; i < N; ++i)
-    {
-      op (&x->m_ranges[i * 2], cookie);
-      op (&x->m_ranges[i * 2 + 1], cookie);
-    }
+  gt_pch_nx ((irange *) x, op, cookie);
 }
 
 // Constructors for irange

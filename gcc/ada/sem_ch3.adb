@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1777,7 +1777,7 @@ package body Sem_Ch3 is
                      elsif not Comes_From_Source (Prim) then
                         Error_Msg_NE
                           ("&inherits non-conforming preconditions and must "
-                           & "be overridden (RM 6.1.1 (10-16)",
+                           & "be overridden (RM 6.1.1 (10-16))",
                            Parent (Tagged_Type), Prim);
                      end if;
                   end if;
@@ -3569,10 +3569,7 @@ package body Sem_Ch3 is
                if T = Any_Type then
                   T := It.Typ;
 
-               elsif It.Typ = Universal_Real
-                       or else
-                     It.Typ = Universal_Integer
-               then
+               elsif Is_Universal_Numeric_Type (It.Typ) then
                   --  Choose universal interpretation over any other
 
                   T := It.Typ;
@@ -4500,7 +4497,7 @@ package body Sem_Ch3 is
 
             elsif Is_Class_Wide_Type (T) then
                Error_Msg_N
-                 ("initialization required in class-wide declaration ", N);
+                 ("initialization required in class-wide declaration", N);
 
             else
                Error_Msg_N
@@ -5088,7 +5085,7 @@ package body Sem_Ch3 is
 
       elsif not Is_Tagged_Type (Parent_Type) then
          Error_Msg_N
-           ("parent of type extension must be a tagged type ", Indic);
+           ("parent of type extension must be a tagged type", Indic);
          goto Leave;
 
       elsif Ekind (Parent_Type) in E_Void | E_Incomplete_Type then
@@ -17448,10 +17445,10 @@ package body Sem_Ch3 is
               and then Nkind (N) = N_Private_Type_Declaration
             then
                Error_Msg_NE
-                 ("declaration of private } must be a tagged type ", Id, Prev);
+                 ("declaration of private } must be a tagged type", Id, Prev);
             else
                Error_Msg_NE
-                 ("full declaration of } must be a tagged type ", Id, Prev);
+                 ("full declaration of } must be a tagged type", Id, Prev);
             end if;
 
          else
@@ -17459,10 +17456,10 @@ package body Sem_Ch3 is
               and then Nkind (N) = N_Private_Type_Declaration
             then
                Error_Msg_NE
-                 ("declaration of private } must be a tagged type ", Prev, Id);
+                 ("declaration of private } must be a tagged type", Prev, Id);
             else
                Error_Msg_NE
-                 ("full declaration of } must be a tagged type ", Prev, Id);
+                 ("full declaration of } must be a tagged type", Prev, Id);
             end if;
          end if;
       end Tag_Mismatch;
@@ -19359,7 +19356,7 @@ package body Sem_Ch3 is
 
       else
          if not Is_Entity_Name (N) or else not Is_Type (Entity (N)) then
-            Error_Msg_N ("invalid subtype mark in discrete range ", N);
+            Error_Msg_N ("invalid subtype mark in discrete range", N);
             Set_Etype (N, Any_Integer);
             return;
 

@@ -817,11 +817,6 @@ class ovl_iterator {
   {
   }
 
- private:
-  /* Do not duplicate.  */
-  ovl_iterator &operator= (const ovl_iterator &);
-  ovl_iterator (const ovl_iterator &);
-
  public:
   operator bool () const
   {
@@ -840,6 +835,10 @@ class ovl_iterator {
     gcc_checking_assert (allow_inner || TREE_CODE (fn) != OVERLOAD);
 
     return fn;
+  }
+  bool operator== (const ovl_iterator &o) const
+  {
+    return ovl == o.ovl;
   }
   tree get_using () const
   {
@@ -903,6 +902,19 @@ class ovl_iterator {
   static tree reveal_node (tree ovl, tree node);
 };
 
+/* Treat a tree as a range of ovl_iterator, e.g.
+   for (tree f : ovl_range (fns)) { ... }  */
+
+class ovl_range
+{
+  tree t;
+  bool allow;
+public:
+  explicit ovl_range (tree t, bool allow = false): t(t), allow(allow) { }
+  ovl_iterator begin() { return ovl_iterator (t, allow); }
+  ovl_iterator end() { return ovl_iterator (NULL_TREE, allow); }
+};
+
 /* Iterator over a (potentially) 2 dimensional overload, which is
    produced by name lookup.  */
 
@@ -933,6 +945,18 @@ class lkp_iterator : public ovl_iterator {
 
     return *this;
   }
+};
+
+/* Treat a tree as a range of lkp_iterator, e.g.
+   for (tree f : lkp_range (fns)) { ... }  */
+
+class lkp_range
+{
+  tree t;
+public:
+  lkp_range (tree t): t(t) { }
+  lkp_iterator begin() { return lkp_iterator (t); }
+  lkp_iterator end() { return lkp_iterator (NULL_TREE); }
 };
 
 /* hash traits for declarations.  Hashes potential overload sets via

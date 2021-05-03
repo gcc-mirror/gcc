@@ -9737,7 +9737,14 @@ grokfndecl (tree ctype,
 		      && (processing_template_decl
 			  > template_class_depth (ctx)));
       if (memtmpl)
-        tmpl_reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
+	{
+	  if (!current_template_parms)
+	    /* If there are no template parameters, something must have
+	       gone wrong.  */
+	    gcc_assert (seen_error ());
+	  else
+	    tmpl_reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
+	}
       tree ci = build_constraints (tmpl_reqs, decl_reqs);
       if (concept_p && ci)
         {

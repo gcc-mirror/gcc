@@ -1,3 +1,16 @@
+2021-05-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (class ovl_iterator): Allow copying.  Add op==.
+	(class ovl_range, class lkp_range): New.
+	* call.c (build_op_call_1, add_candidates): Use them.
+	(build_op_delete_call, has_trivial_copy_assign_p): Likewise.
+	(has_trivial_copy_p): Likewise.
+	* class.c (handle_using_decl, get_basefndecls): Likewise.
+	(maybe_warn_about_overly_private_class): Likewise.
+	(warn_hidden, add_implicitly_declared_members): Likewise.
+	(check_methods, clone_constructors_and_destructors): Likewise.
+	(type_has_user_nondefault_constructor): Likewise.
+
 2021-04-29  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (cxx_fold_indirect_ref_1): Only set *empty_base if we

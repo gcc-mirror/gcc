@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -6246,7 +6246,8 @@ package body Exp_Ch6 is
             --  has contract assertions that need to be verified on exit.
 
             --  Also, mark the successful return to signal that postconditions
-            --  need to be evaluated when finalization occurs.
+            --  need to be evaluated when finalization occurs by setting
+            --  Return_Success_For_Postcond to be True.
 
             if Ekind (Spec_Id) = E_Procedure
               and then Present (Postconditions_Proc (Spec_Id))
@@ -6254,19 +6255,30 @@ package body Exp_Ch6 is
                --  Generate:
                --
                --    Return_Success_For_Postcond := True;
-               --    _postconditions;
+               --    if Postcond_Enabled then
+               --       _postconditions;
+               --    end if;
 
                Insert_Action (Stmt,
                  Make_Assignment_Statement (Loc,
                    Name       =>
                      New_Occurrence_Of
-                      (Get_Return_Success_For_Postcond (Spec_Id), Loc),
+                       (Get_Return_Success_For_Postcond (Spec_Id), Loc),
                    Expression => New_Occurrence_Of (Standard_True, Loc)));
 
+               --  Wrap the call to _postconditions within a test of the
+               --  Postcond_Enabled flag to delay postcondition evaluation
+               --  until after finalization when required.
+
                Insert_Action (Stmt,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name =>
-                     New_Occurrence_Of (Postconditions_Proc (Spec_Id), Loc)));
+                 Make_If_Statement (Loc,
+                   Condition       =>
+                     New_Occurrence_Of (Get_Postcond_Enabled (Spec_Id), Loc),
+                   Then_Statements => New_List (
+                     Make_Procedure_Call_Statement (Loc,
+                       Name =>
+                         New_Occurrence_Of
+                           (Postconditions_Proc (Spec_Id), Loc)))));
             end if;
 
             --  Ada 2020 (AI12-0279): append the call to 'Yield unless this is
@@ -6699,7 +6711,9 @@ package body Exp_Ch6 is
          --  Generate:
          --
          --    Return_Success_For_Postcond := True;
-         --    _postconditions;
+         --    if Postcond_Enabled then
+         --       _postconditions;
+         --    end if;
 
          Insert_Action (N,
            Make_Assignment_Statement (Loc,
@@ -6708,9 +6722,19 @@ package body Exp_Ch6 is
                 (Get_Return_Success_For_Postcond (Scope_Id), Loc),
              Expression => New_Occurrence_Of (Standard_True, Loc)));
 
+         --  Wrap the call to _postconditions within a test of the
+         --  Postcond_Enabled flag to delay postcondition evaluation until
+         --  after finalization when required.
+
          Insert_Action (N,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (Postconditions_Proc (Scope_Id), Loc)));
+           Make_If_Statement (Loc,
+             Condition       =>
+               New_Occurrence_Of (Get_Postcond_Enabled (Scope_Id), Loc),
+             Then_Statements => New_List (
+               Make_Procedure_Call_Statement (Loc,
+                 Name =>
+                   New_Occurrence_Of
+                     (Postconditions_Proc (Scope_Id), Loc)))));
       end if;
 
       --  Ada 2020 (AI12-0279)
@@ -7621,6 +7645,9 @@ package body Exp_Ch6 is
          --  Generate:
          --
          --    Return_Success_For_Postcond := True;
+         --    if Postcond_Enabled then
+         --       _Postconditions ([exp]);
+         --    end if;
 
          Insert_Action (Exp,
            Make_Assignment_Statement (Loc,
@@ -7629,13 +7656,20 @@ package body Exp_Ch6 is
                 (Get_Return_Success_For_Postcond (Scope_Id), Loc),
              Expression => New_Occurrence_Of (Standard_True, Loc)));
 
-         --  Generate call to _Postconditions
+         --  Wrap the call to _postconditions within a test of the
+         --  Postcond_Enabled flag to delay postcondition evaluation until
+         --  after finalization when required.
 
          Insert_Action (Exp,
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (Postconditions_Proc (Scope_Id), Loc),
-             Parameter_Associations => New_List (New_Copy_Tree (Exp))));
+           Make_If_Statement (Loc,
+             Condition       =>
+               New_Occurrence_Of (Get_Postcond_Enabled (Scope_Id), Loc),
+             Then_Statements => New_List (
+               Make_Procedure_Call_Statement (Loc,
+                 Name                   =>
+                   New_Occurrence_Of
+                     (Postconditions_Proc (Scope_Id), Loc),
+                 Parameter_Associations => New_List (New_Copy_Tree (Exp))))));
       end if;
 
       --  Ada 2005 (AI-251): If this return statement corresponds with an
@@ -9976,8 +10010,6 @@ package body Exp_Ch6 is
          elsif Nkind (Expr) = N_Function_Call
            and then Nkind (Name (Expr)) in N_Has_Entity
            and then Present (Entity (Name (Expr)))
-           and then RTU_Loaded (Ada_Tags)
-           and then RTE_Available (RE_Displace)
            and then Is_RTE (Entity (Name (Expr)), RE_Displace)
          then
             Has_Pointer_Displacement := True;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1523,6 +1523,17 @@ package body Sem_Warn is
                         --  uninitialized component to get a better message.
 
                      elsif Nkind (Parent (UR)) = N_Selected_Component then
+                        --  Suppress possibly superfluous warning if component
+                        --  is known to exist and is partially initialized.
+
+                        if not Has_Discriminants (Etype (E1))
+                          and then
+                            Is_Partially_Initialized_Type
+                              (Etype (Parent (UR)), False)
+                        then
+                           goto Continue;
+                        end if;
+
                         Error_Msg_Node_2 := Selector_Name (Parent (UR));
 
                         if not Comes_From_Source (Parent (UR)) then

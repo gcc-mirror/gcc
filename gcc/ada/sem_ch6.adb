@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1770,13 +1770,13 @@ package body Sem_Ch6 is
       if Kind = E_Generic_Procedure
         and then Nkind (Spec) /= N_Procedure_Specification
       then
-         Error_Msg_N ("invalid body for generic procedure ", Body_Id);
+         Error_Msg_N ("invalid body for generic procedure", Body_Id);
          return;
 
       elsif Kind = E_Generic_Function
         and then Nkind (Spec) /= N_Function_Specification
       then
-         Error_Msg_N ("invalid body for generic function ", Body_Id);
+         Error_Msg_N ("invalid body for generic function", Body_Id);
          return;
       end if;
 
@@ -2328,7 +2328,7 @@ package body Sem_Ch6 is
          if Present (Actuals) then
             Analyze_Call_And_Resolve;
          else
-            Error_Msg_N ("missing explicit dereference in call ", N);
+            Error_Msg_N ("missing explicit dereference in call", N);
          end if;
 
       --  If not an access to subprogram, then the prefix must resolve to the
@@ -4061,7 +4061,7 @@ package body Sem_Ch6 is
               and then Operator_Matches_Spec (Spec_Id, Spec_Id)
             then
                Error_Msg_NE
-                 ("subprogram& overrides predefined operator ",
+                 ("subprogram& overrides predefined operator",
                     Body_Spec, Spec_Id);
 
             --  Overriding indicators aren't allowed for protected subprogram
@@ -7307,7 +7307,7 @@ package body Sem_Ch6 is
 
             elsif Can_Override_Operator (Subp) then
                Error_Msg_NE
-                 ("subprogram& overrides predefined operator ", Spec, Subp);
+                 ("subprogram& overrides predefined operator", Spec, Subp);
             end if;
 
          elsif Must_Override (Spec) then

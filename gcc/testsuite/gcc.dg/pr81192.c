@@ -1,4 +1,4 @@
-/* { dg-options "-Os -fdump-tree-pre-details -fdisable-tree-evrp" } */
+/* { dg-options "-Os -fdump-tree-pre-details -fdisable-tree-evrp -fno-tree-dse" } */
 
 /* Disable tree-evrp because the new version of evrp sees
 <bb 3> :
@@ -15,6 +15,8 @@ EVRP now recognizes a constant can be propagated into the 3->5 edge and
 produces
   # iftmp.2_12 = PHI <2147483647(3), iftmp.2_11(4)> 
 which causes the situation being tested to dissapear before we get to PRE.  */
+
+/* Likewise disable DSE which also elides the tail merging "opportunity".  */
 
 #if __SIZEOF_INT__ == 2
 #define unsigned __UINT32_TYPE__

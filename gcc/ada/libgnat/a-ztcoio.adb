@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,8 +36,6 @@ with System.Val_LFlt; use System.Val_LFlt;
 with System.Val_LLF;  use System.Val_LLF;
 with System.WCh_Con;  use System.WCh_Con;
 with System.WCh_WtS;  use System.WCh_WtS;
-
-with Ada.Unchecked_Conversion;
 
 package body Ada.Wide_Wide_Text_IO.Complex_IO is
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2380,14 +2380,6 @@ package body Sem_Util is
 
       Analyze (Subtyp_Decl, Suppress => All_Checks);
 
-      --  In addition, inhibit the generation of predicate functions for
-      --  this subtype, because its declaration is not in a declarative
-      --  list, and no predicates apply to the aggregate itself, but only
-      --  to the object to which it may be assigned.
-
-      Set_Has_Dynamic_Predicate_Aspect (Def_Id, False);
-      Set_Has_Predicates (Def_Id, False);
-
       Set_Etype (N, Def_Id);
    end Build_Constrained_Itype;
 
@@ -4709,10 +4701,6 @@ package body Sem_Util is
       --  and post-state. Prag is a [refined] postcondition or a contract-cases
       --  pragma. Result_Seen is set when the pragma mentions attribute 'Result
 
-      function Has_In_Out_Parameter (Subp_Id : Entity_Id) return Boolean;
-      --  Determine whether subprogram Subp_Id contains at least one IN OUT
-      --  formal parameter.
-
       -------------------------------------------
       -- Check_Result_And_Post_State_In_Pragma --
       -------------------------------------------
@@ -5101,28 +5089,6 @@ package body Sem_Util is
          end if;
       end Check_Result_And_Post_State_In_Pragma;
 
-      --------------------------
-      -- Has_In_Out_Parameter --
-      --------------------------
-
-      function Has_In_Out_Parameter (Subp_Id : Entity_Id) return Boolean is
-         Formal : Entity_Id;
-
-      begin
-         --  Traverse the formals looking for an IN OUT parameter
-
-         Formal := First_Formal (Subp_Id);
-         while Present (Formal) loop
-            if Ekind (Formal) = E_In_Out_Parameter then
-               return True;
-            end if;
-
-            Next_Formal (Formal);
-         end loop;
-
-         return False;
-      end Has_In_Out_Parameter;
-
       --  Local variables
 
       Items        : constant Node_Id := Contract (Subp_Id);
@@ -5202,10 +5168,10 @@ package body Sem_Util is
          null;
 
       --  Regardless of whether the function has postconditions or contract
-      --  cases, or whether they mention attribute 'Result, an IN OUT formal
+      --  cases, or whether they mention attribute 'Result, an [IN] OUT formal
       --  parameter is always treated as a result.
 
-      elsif Has_In_Out_Parameter (Spec_Id) then
+      elsif Has_Out_Or_In_Out_Parameter (Spec_Id) then
          null;
 
       --  The function has both a postcondition and contract cases and they do
@@ -6472,7 +6438,7 @@ package body Sem_Util is
             --  appear in the target-specific extension to System.
 
             if No (Id)
-              and then B_Scope = RTU_Entity (System)
+              and then Is_RTU (B_Scope, System)
               and then Present_System_Aux
             then
                B_Scope := System_Aux_Id;
@@ -14363,6 +14329,17 @@ package body Sem_Util is
             when N_Function_Call =>
                if not In_Function_Call then
                   In_Function_Call := True;
+
+                  --  When the function return type has implicit dereference
+                  --  specified we know it cannot directly contribute to the
+                  --  return value.
+
+                  if Present (Etype (Par))
+                    and then Has_Implicit_Dereference
+                               (Get_Full_View (Etype (Par)))
+                  then
+                     return False;
+                  end if;
                else
                   return False;
                end if;
@@ -16920,8 +16897,8 @@ package body Sem_Util is
         Nkind (E) = N_Function_Call
           and then not Configurable_Run_Time_Mode
           and then Nkind (Original_Node (E)) = N_Attribute_Reference
-          and then (Entity (Name (E)) = RTE (RE_Get_Ceiling)
-                     or else Entity (Name (E)) = RTE (RO_PE_Get_Ceiling));
+          and then (Is_RTE (Entity (Name (E)), RE_Get_Ceiling)
+                     or else Is_RTE (Entity (Name (E)), RO_PE_Get_Ceiling));
    end Is_Expanded_Priority_Attribute;
 
    ----------------------------
@@ -29212,9 +29189,7 @@ package body Sem_Util is
       if Nkind (Opnd) = N_Defining_Identifier
         or else not Is_Overloaded (Opnd)
       then
-         if Etype (Opnd) = Universal_Integer
-           or else Etype (Opnd) = Universal_Real
-         then
+         if Is_Universal_Numeric_Type (Etype (Opnd)) then
             return Etype (Opnd);
          else
             return Empty;
@@ -29223,9 +29198,7 @@ package body Sem_Util is
       else
          Get_First_Interp (Opnd, Index, It);
          while Present (It.Typ) loop
-            if It.Typ = Universal_Integer
-              or else It.Typ = Universal_Real
-            then
+            if Is_Universal_Numeric_Type (It.Typ) then
                return It.Typ;
             end if;
 

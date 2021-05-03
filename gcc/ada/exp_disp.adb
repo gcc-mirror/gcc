@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,9 +161,8 @@ package body Exp_Disp is
       --  This capability of dispatching directly by tag is also needed by the
       --  implementation of AI-260 (for the generic dispatching constructors).
 
-      if Ctrl_Typ = RTE (RE_Tag)
-        or else (RTE_Available (RE_Interface_Tag)
-                  and then Ctrl_Typ = RTE (RE_Interface_Tag))
+      if Is_RTE (Ctrl_Typ, RE_Tag)
+        or else Is_RTE (Ctrl_Typ, RE_Interface_Tag)
       then
          CW_Typ := Class_Wide_Type (Find_Dispatching_Type (Subp));
 
@@ -527,8 +526,7 @@ package body Exp_Disp is
              and then Is_Tag (Entity (Selector_Name (Expr))))
            or else
            (Nkind (Expr) = N_Function_Call
-             and then RTE_Available (RE_Displace)
-             and then Entity (Name (Expr)) = RTE (RE_Displace))));
+             and then Is_RTE (Entity (Name (Expr)), RE_Displace))));
 
       Anon_Type := Create_Itype (E_Anonymous_Access_Type, Expr);
       Set_Directly_Designated_Type (Anon_Type, Typ);
@@ -939,9 +937,8 @@ package body Exp_Disp is
       --  This capability of dispatching directly by tag is also needed by the
       --  implementation of AI-260 (for the generic dispatching constructors).
 
-      if Ctrl_Typ = RTE (RE_Tag)
-        or else (RTE_Available (RE_Interface_Tag)
-                  and then Ctrl_Typ = RTE (RE_Interface_Tag))
+      if Is_RTE (Ctrl_Typ, RE_Tag)
+        or else Is_RTE (Ctrl_Typ, RE_Interface_Tag)
       then
          CW_Typ := Class_Wide_Type (Find_Dispatching_Type (Subp));
 
@@ -1124,9 +1121,8 @@ package body Exp_Disp is
       --  interface class-wide type then use it directly. Otherwise, the tag
       --  must be extracted from the controlling object.
 
-      if Ctrl_Typ = RTE (RE_Tag)
-        or else (RTE_Available (RE_Interface_Tag)
-                  and then Ctrl_Typ = RTE (RE_Interface_Tag))
+      if Is_RTE (Ctrl_Typ, RE_Tag)
+        or else Is_RTE (Ctrl_Typ, RE_Interface_Tag)
       then
          Controlling_Tag := Duplicate_Subexpr (Ctrl_Arg);
 
@@ -1138,11 +1134,9 @@ package body Exp_Disp is
 
       elsif Nkind (Ctrl_Arg) = N_Unchecked_Type_Conversion
         and then
-          (Etype (Expression (Ctrl_Arg)) = RTE (RE_Tag)
+          (Is_RTE (Etype (Expression (Ctrl_Arg)), RE_Tag)
             or else
-              (RTE_Available (RE_Interface_Tag)
-                and then
-                  Etype (Expression (Ctrl_Arg)) = RTE (RE_Interface_Tag)))
+           Is_RTE (Etype (Expression (Ctrl_Arg)), RE_Interface_Tag))
       then
          Controlling_Tag := Duplicate_Subexpr (Expression (Ctrl_Arg));
 
@@ -4011,7 +4005,7 @@ package body Exp_Disp is
                Error_Msg_NE
                  ("\which is a component of untagged type& in the profile "
                   & "of primitive & of type % that is frozen by the "
-                  & "declaration ", N, Typ);
+                  & "declaration", N, Typ);
             end if;
          end if;
       end Check_Premature_Freezing;
@@ -8692,7 +8686,7 @@ package body Exp_Disp is
          --  with an abstract interface type
 
          if Present (DTC_Entity (Prim)) then
-            if Etype (DTC_Entity (Prim)) = RTE (RE_Tag) then
+            if Is_RTE (Etype (DTC_Entity (Prim)), RE_Tag) then
                Write_Str ("[P] ");
             else
                Write_Str ("[s] ");
