@@ -82,8 +82,8 @@ int plugin_is_GPL_compatible;
 
 
 
-static int ATTRIBUTE_UNUSED
-check_symbol_mask[GCC_CP_SYMBOL_MASK >= GCC_CP_SYMBOL_END ? 1 : -1];
+static_assert (GCC_CP_SYMBOL_MASK >= GCC_CP_SYMBOL_END,
+	       "GCC_CP_SYMBOL_MASK >= GCC_CP_SYMBOL_END");
 
 // This is put into the lang hooks when the plugin starts.
 
