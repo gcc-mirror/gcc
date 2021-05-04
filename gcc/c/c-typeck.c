@@ -14119,6 +14119,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		case PLUS_EXPR:
 		case MULT_EXPR:
 		case MINUS_EXPR:
+		case TRUTH_ANDIF_EXPR:
+		case TRUTH_ORIF_EXPR:
 		  break;
 		case MIN_EXPR:
 		  if (TREE_CODE (type) == COMPLEX_TYPE)
@@ -14136,14 +14138,6 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  break;
 		case BIT_IOR_EXPR:
 		  r_name = "|";
-		  break;
-		case TRUTH_ANDIF_EXPR:
-		  if (FLOAT_TYPE_P (type))
-		    r_name = "&&";
-		  break;
-		case TRUTH_ORIF_EXPR:
-		  if (FLOAT_TYPE_P (type))
-		    r_name = "||";
 		  break;
 		default:
 		  gcc_unreachable ();
