@@ -11557,7 +11557,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 
       base_off = wioff.to_uhwi ();
       unsigned HOST_WIDE_INT fieldoff = 0;
-      init = fold_ctor_reference (NULL_TREE, init, base_off, 0, array,
+      init = fold_ctor_reference (TREE_TYPE (arg), init, base_off, 0, array,
 				  &fieldoff);
       HOST_WIDE_INT cstoff;
       if (!base_off.is_constant (&cstoff))
