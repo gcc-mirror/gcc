@@ -48,7 +48,6 @@ class libcp1_connection;
 struct libcp1 : public gcc_cp_context
 {
   libcp1 (const gcc_base_vtable *, const gcc_cp_fe_vtable *);
-  ~libcp1 ();
 
   // A convenience function to print something.
   void print (const char *str)
@@ -56,7 +55,7 @@ struct libcp1 : public gcc_cp_context
     this->print_function (this->print_datum, str);
   }
 
-  libcp1_connection *connection;
+  std::unique_ptr<libcp1_connection> connection;
 
   gcc_cp_oracle_function *binding_oracle;
   gcc_cp_symbol_address_function *address_oracle;
@@ -86,7 +85,9 @@ struct libcp1 : public gcc_cp_context
     virtual ~compiler ()
     {
     }
-  } *compilerp;
+  };
+
+  std::unique_ptr<compiler> compilerp;
 
   /* Compiler to set by set_triplet_regexp.  */
   class compiler_triplet_regexp : public compiler
@@ -143,8 +144,7 @@ public:
 
 libcp1::libcp1 (const gcc_base_vtable *v,
 		  const gcc_cp_fe_vtable *cv)
-  : connection (NULL),
-    binding_oracle (NULL),
+  : binding_oracle (NULL),
     address_oracle (NULL),
     oracle_datum (NULL),
     print_function (NULL),
@@ -156,12 +156,6 @@ libcp1::libcp1 (const gcc_base_vtable *v,
 {
   base.ops = v;
   cp_ops = cv;
-}
-
-libcp1::~libcp1 ()
-{
-  delete connection;
-  delete compilerp;
 }
 
 
@@ -243,7 +237,7 @@ R rpc (struct gcc_cp_context *s, Arg... rest)
   libcp1 *self = (libcp1 *) s;
   R result;
 
-  if (!cc1_plugin::call (self->connection, NAME, &result, rest...))
+  if (!cc1_plugin::call (self->connection.get (), NAME, &result, rest...))
     return 0;
   return result;
 }
@@ -403,8 +397,8 @@ libcp1_set_triplet_regexp (struct gcc_base_context *s,
 {
   libcp1 *self = (libcp1 *) s;
 
-  delete self->compilerp;
-  self->compilerp = new libcp1::compiler_triplet_regexp (self, triplet_regexp);
+  self->compilerp.reset (new libcp1::compiler_triplet_regexp (self,
+							      triplet_regexp));
   return NULL;
 }
 
@@ -414,9 +408,8 @@ libcp1_set_driver_filename (struct gcc_base_context *s,
 {
   libcp1 *self = (libcp1 *) s;
 
-  delete self->compilerp;
-  self->compilerp = new libcp1::compiler_driver_filename (self,
-							  driver_filename);
+  self->compilerp.reset (new libcp1::compiler_driver_filename (self,
+							       driver_filename));
   return NULL;
 }
 
@@ -487,7 +480,8 @@ fork_exec (libcp1 *self, char **argv, int spair_fds[2], int stderr_fds[2])
 
       cc1_plugin::status result = cc1_plugin::FAIL;
       if (self->connection->send ('H')
-	  && ::cc1_plugin::marshall (self->connection, GCC_CP_FE_VERSION_0))
+	  && ::cc1_plugin::marshall (self->connection.get (),
+				     GCC_CP_FE_VERSION_0))
 	result = self->connection->wait_for_query ();
 
       close (spair_fds[0]);
@@ -550,7 +544,7 @@ libcp1_compile (struct gcc_base_context *s,
   if (self->verbose)
     self->args.push_back ("-v");
 
-  self->connection = new libcp1_connection (fds[0], stderr_fds[0], self);
+  self->connection.reset (new libcp1_connection (fds[0], stderr_fds[0], self));
 
   cc1_plugin::callback_ftype *fun
     = cc1_plugin::callback<int,
