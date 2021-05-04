@@ -210,90 +210,17 @@ set_callbacks (struct gcc_c_context *s,
   self->oracle_datum = datum;
 }
 
-// Instances of these rpc<> template functions are installed into the
+// Instances of this rpc<> template function are installed into the
 // "c_vtable".  These functions are parameterized by type and method
 // name and forward the call via the connection.
 
-template<typename R, const char *&NAME>
-R rpc (struct gcc_c_context *s)
+template<typename R, const char *&NAME, typename... Arg>
+R rpc (struct gcc_c_context *s, Arg... rest)
 {
   libcc1 *self = (libcc1 *) s;
   R result;
 
-  if (!cc1_plugin::call (self->connection, NAME, &result))
-    return 0;
-  return result;
-}
-
-template<typename R, const char *&NAME, typename A>
-R rpc (struct gcc_c_context *s, A arg)
-{
-  libcc1 *self = (libcc1 *) s;
-  R result;
-
-  if (!cc1_plugin::call (self->connection, NAME, &result, arg))
-    return 0;
-  return result;
-}
-
-template<typename R, const char *&NAME, typename A1, typename A2>
-R rpc (struct gcc_c_context *s, A1 arg1, A2 arg2)
-{
-  libcc1 *self = (libcc1 *) s;
-  R result;
-
-  if (!cc1_plugin::call (self->connection, NAME, &result, arg1, arg2))
-    return 0;
-  return result;
-}
-
-template<typename R, const char *&NAME, typename A1, typename A2, typename A3>
-R rpc (struct gcc_c_context *s, A1 arg1, A2 arg2, A3 arg3)
-{
-  libcc1 *self = (libcc1 *) s;
-  R result;
-
-  if (!cc1_plugin::call (self->connection, NAME, &result, arg1, arg2, arg3))
-    return 0;
-  return result;
-}
-
-template<typename R, const char *&NAME, typename A1, typename A2, typename A3,
-	 typename A4>
-R rpc (struct gcc_c_context *s, A1 arg1, A2 arg2, A3 arg3, A4 arg4)
-{
-  libcc1 *self = (libcc1 *) s;
-  R result;
-
-  if (!cc1_plugin::call (self->connection, NAME, &result, arg1, arg2, arg3,
-			 arg4))
-    return 0;
-  return result;
-}
-
-template<typename R, const char *&NAME, typename A1, typename A2, typename A3,
-	 typename A4, typename A5>
-R rpc (struct gcc_c_context *s, A1 arg1, A2 arg2, A3 arg3, A4 arg4, A5 arg5)
-{
-  libcc1 *self = (libcc1 *) s;
-  R result;
-
-  if (!cc1_plugin::call (self->connection, NAME, &result, arg1, arg2, arg3,
-			 arg4, arg5))
-    return 0;
-  return result;
-}
-
-template<typename R, const char *&NAME, typename A1, typename A2, typename A3,
-	 typename A4, typename A5, typename A6, typename A7>
-R rpc (struct gcc_c_context *s, A1 arg1, A2 arg2, A3 arg3, A4 arg4, A5 arg5,
-       A6 arg6, A7 arg7)
-{
-  libcc1 *self = (libcc1 *) s;
-  R result;
-
-  if (!cc1_plugin::call (self->connection, NAME, &result, arg1, arg2, arg3,
-			 arg4, arg5, arg6, arg7))
+  if (!cc1_plugin::call (self->connection, NAME, &result, rest...))
     return 0;
   return result;
 }
