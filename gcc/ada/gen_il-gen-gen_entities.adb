@@ -238,7 +238,9 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Warnings_Off_Used_Unreferenced, Flag),
         Sm (Was_Hidden, Flag)));
 
-   Cc (E_Void, Entity_Kind,
+   Ab (Void_Or_Type_Kind, Entity_Kind);
+
+   Cc (E_Void, Void_Or_Type_Kind,
        --  The initial Ekind value for a newly created entity. Also used as the
        --  Ekind for Standard_Void_Type, a type entity in Standard used as a
        --  dummy type for the return type of a procedure (the reason we create
@@ -300,7 +302,9 @@ begin -- Gen_IL.Gen.Gen_Entities
    --  but not getters; the Ekind is modified before any such getters are
    --  called.
 
-   Ab (Object_Kind, Entity_Kind,
+   Ab (Exception_Or_Object_Kind, Entity_Kind);
+
+   Ab (Object_Kind, Exception_Or_Object_Kind,
        (Sm (Current_Value, Node_Id),
         Sm (Renamed_Or_Alias, Node_Id)));
 
@@ -452,7 +456,7 @@ begin -- Gen_IL.Gen.Gen_Entities
    Cc (E_Named_Real, Named_Kind);
    --  Named numbers created by a number declaration with a real value
 
-   Ab (Type_Kind, Entity_Kind,
+   Ab (Type_Kind, Void_Or_Type_Kind,
        (Sm (Alignment, Uint),
         Sm (Associated_Node_For_Itype, Node_Id),
         Sm (Can_Use_Internal_Rep, Flag, Base_Type_Only,
@@ -1177,7 +1181,7 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  for the body of a protected entry family.
        (Sm (Entry_Index_Constant, Node_Id)));
 
-   Cc (E_Exception, Entity_Kind,
+   Cc (E_Exception, Exception_Or_Object_Kind,
        --  An exception created by an exception declaration. The exception
        --  itself uses E_Exception for the Ekind, the implicit type that is
        --  created to represent its type uses the Ekind E_Exception_Type.
