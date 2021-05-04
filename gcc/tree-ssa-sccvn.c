@@ -6362,7 +6362,7 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
       gimple_stmt_iterator prev = *gsi;
       gsi_prev (&prev);
-      if (fold_stmt (gsi))
+      if (fold_stmt (gsi, follow_all_ssa_edges))
 	{
 	  /* fold_stmt may have created new stmts inbetween
 	     the previous stmt and the folded stmt.  Mark
