@@ -232,10 +232,10 @@ namespace cc1_plugin
 #endif /* GCC_CP_INTERFACE_H */
 
   // There are two kinds of template functions here: "call" and
-  // "callback".  They are each repeated multiple times to handle
-  // different numbers of arguments.  (This would be improved with
-  // C++11, though applying a call is still tricky until C++14 can be
-  // used.)
+  // "callback".  "call" is implemented with variadic templates, but
+  // "callback" is repeated multiple times to handle different numbers
+  // of arguments.  (This could be improved with C++17 and
+  // std::apply.)
 
   // The "call" template is used for making a remote procedure call.
   // It starts a query ('Q') packet, marshalls its arguments, waits
@@ -248,15 +248,17 @@ namespace cc1_plugin
   // arguments, passes them to the wrapped function, and finally
   // marshalls a reply packet.
 
-  template<typename R>
+  template<typename R, typename... Arg>
   status
-  call (connection *conn, const char *method, R *result)
+  call (connection *conn, const char *method, R *result, Arg... args)
   {
     if (!conn->send ('Q'))
       return FAIL;
     if (!marshall (conn, method))
       return FAIL;
-    if (!marshall (conn, 0))
+    if (!marshall (conn, (int) sizeof... (Arg)))
+      return FAIL;
+    if (!marshall (conn, args...))
       return FAIL;
     if (!conn->wait_for_result ())
       return FAIL;
@@ -279,25 +281,6 @@ namespace cc1_plugin
     return marshall (conn, result);
   }
 
-  template<typename R, typename A>
-  status
-  call (connection *conn, const char *method, R *result, A arg)
-  {
-    if (!conn->send ('Q'))
-      return FAIL;
-    if (!marshall (conn, method))
-      return FAIL;
-    if (!marshall (conn, 1))
-      return FAIL;
-    if (!marshall (conn, arg))
-      return FAIL;
-    if (!conn->wait_for_result ())
-      return FAIL;
-    if (!unmarshall (conn, result))
-      return FAIL;
-    return OK;
-  }
-
   template<typename R, typename A, R (*func) (connection *, A)>
   status
   callback (connection *conn)
@@ -313,27 +296,6 @@ namespace cc1_plugin
     if (!conn->send ('R'))
       return FAIL;
     return marshall (conn, result);
-  }
-
-  template<typename R, typename A1, typename A2>
-  status
-  call (connection *conn, const char *method, R *result, A1 arg1, A2 arg2)
-  {
-    if (!conn->send ('Q'))
-      return FAIL;
-    if (!marshall (conn, method))
-      return FAIL;
-    if (!marshall (conn, 2))
-      return FAIL;
-    if (!marshall (conn, arg1))
-      return FAIL;
-    if (!marshall (conn, arg2))
-      return FAIL;
-    if (!conn->wait_for_result ())
-      return FAIL;
-    if (!unmarshall (conn, result))
-      return FAIL;
-    return OK;
   }
 
   template<typename R, typename A1, typename A2, R (*func) (connection *,
@@ -355,30 +317,6 @@ namespace cc1_plugin
     if (!conn->send ('R'))
       return FAIL;
     return marshall (conn, result);
-  }
-
-  template<typename R, typename A1, typename A2, typename A3>
-  status
-  call (connection *conn, const char *method, R *result, A1 arg1, A2 arg2,
-	A3 arg3)
-  {
-    if (!conn->send ('Q'))
-      return FAIL;
-    if (!marshall (conn, method))
-      return FAIL;
-    if (!marshall (conn, 3))
-      return FAIL;
-    if (!marshall (conn, arg1))
-      return FAIL;
-    if (!marshall (conn, arg2))
-      return FAIL;
-    if (!marshall (conn, arg3))
-      return FAIL;
-    if (!conn->wait_for_result ())
-      return FAIL;
-    if (!unmarshall (conn, result))
-      return FAIL;
-    return OK;
   }
 
   template<typename R, typename A1, typename A2, typename A3,
@@ -403,32 +341,6 @@ namespace cc1_plugin
     if (!conn->send ('R'))
       return FAIL;
     return marshall (conn, result);
-  }
-
-  template<typename R, typename A1, typename A2, typename A3, typename A4>
-  status
-  call (connection *conn, const char *method, R *result, A1 arg1, A2 arg2,
-	A3 arg3, A4 arg4)
-  {
-    if (!conn->send ('Q'))
-      return FAIL;
-    if (!marshall (conn, method))
-      return FAIL;
-    if (!marshall (conn, 4))
-      return FAIL;
-    if (!marshall (conn, arg1))
-      return FAIL;
-    if (!marshall (conn, arg2))
-      return FAIL;
-    if (!marshall (conn, arg3))
-      return FAIL;
-    if (!marshall (conn, arg4))
-      return FAIL;
-    if (!conn->wait_for_result ())
-      return FAIL;
-    if (!unmarshall (conn, result))
-      return FAIL;
-    return OK;
   }
 
   template<typename R, typename A1, typename A2, typename A3, typename A4,
@@ -459,35 +371,6 @@ namespace cc1_plugin
   }
 
   template<typename R, typename A1, typename A2, typename A3, typename A4,
-	   typename A5>
-  status
-  call (connection *conn, const char *method, R *result, A1 arg1, A2 arg2,
-	A3 arg3, A4 arg4, A5 arg5)
-  {
-    if (!conn->send ('Q'))
-      return FAIL;
-    if (!marshall (conn, method))
-      return FAIL;
-    if (!marshall (conn, 5))
-      return FAIL;
-    if (!marshall (conn, arg1))
-      return FAIL;
-    if (!marshall (conn, arg2))
-      return FAIL;
-    if (!marshall (conn, arg3))
-      return FAIL;
-    if (!marshall (conn, arg4))
-      return FAIL;
-    if (!marshall (conn, arg5))
-      return FAIL;
-    if (!conn->wait_for_result ())
-      return FAIL;
-    if (!unmarshall (conn, result))
-      return FAIL;
-    return OK;
-  }
-
-  template<typename R, typename A1, typename A2, typename A3, typename A4,
 	   typename A5, R (*func) (connection *, A1, A2, A3, A4, A5)>
   status
   callback (connection *conn)
@@ -515,39 +398,6 @@ namespace cc1_plugin
     if (!conn->send ('R'))
       return FAIL;
     return marshall (conn, result);
-  }
-
-  template<typename R, typename A1, typename A2, typename A3, typename A4,
-	   typename A5, typename A6, typename A7>
-  status
-  call (connection *conn, const char *method, R *result, A1 arg1, A2 arg2,
-	A3 arg3, A4 arg4, A5 arg5, A6 arg6, A7 arg7)
-  {
-    if (!conn->send ('Q'))
-      return FAIL;
-    if (!marshall (conn, method))
-      return FAIL;
-    if (!marshall (conn, 7))
-      return FAIL;
-    if (!marshall (conn, arg1))
-      return FAIL;
-    if (!marshall (conn, arg2))
-      return FAIL;
-    if (!marshall (conn, arg3))
-      return FAIL;
-    if (!marshall (conn, arg4))
-      return FAIL;
-    if (!marshall (conn, arg5))
-      return FAIL;
-    if (!marshall (conn, arg6))
-      return FAIL;
-    if (!marshall (conn, arg7))
-      return FAIL;
-    if (!conn->wait_for_result ())
-      return FAIL;
-    if (!unmarshall (conn, result))
-      return FAIL;
-    return OK;
   }
 
   template<typename R, typename A1, typename A2, typename A3, typename A4,

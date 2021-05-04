@@ -52,6 +52,14 @@ namespace cc1_plugin
   status unmarshall_array_start (connection *, char, size_t *);
   status unmarshall_array_elmts (connection *, size_t, void *);
 
+  // An "empty" marshall call -- used to handle the base case for some
+  // variadic templates.
+  static inline
+  status marshall (connection *)
+  {
+    return OK;
+  }
+
   // A template function that can handle marshalling various integer
   // objects to the connection.
   template<typename T>
@@ -103,6 +111,14 @@ namespace cc1_plugin
   // resulting array must be freed by the caller, using 'delete[]' on
   // the elements, and 'delete' on the array object itself.
   status unmarshall (connection *, struct gcc_type_array **);
+
+  template<typename T1, typename T2, typename... Arg>
+  status marshall (connection *c, T1 arg1, T2 arg2, Arg... rest)
+  {
+    if (!marshall (c, arg1))
+      return FAIL;
+    return marshall (c, arg2, rest...);
+  }
 };
 
 #endif // CC1_PLUGIN_MARSHALL_HH
