@@ -70,6 +70,8 @@
 #include "marshall-cp.hh"
 #include "rpc.hh"
 
+#include <vector>
+
 #ifdef __GNUC__
 #pragma GCC visibility push(default)
 #endif
@@ -1980,24 +1982,21 @@ plugin_build_function_type (cc1_plugin::connection *self,
 			    const struct gcc_type_array *argument_types_in,
 			    int is_varargs)
 {
-  tree *argument_types;
   tree return_type = convert_in (return_type_in);
   tree result;
 
-  argument_types = new tree[argument_types_in->n_elements];
+  std::vector<tree> argument_types (argument_types_in->n_elements);
   for (int i = 0; i < argument_types_in->n_elements; ++i)
     argument_types[i] = convert_in (argument_types_in->elements[i]);
 
   if (is_varargs)
     result = build_varargs_function_type_array (return_type,
 						argument_types_in->n_elements,
-						argument_types);
+						argument_types.data ());
   else
     result = build_function_type_array (return_type,
 					argument_types_in->n_elements,
-					argument_types);
-
-  delete[] argument_types;
+					argument_types.data ());
 
   plugin_context *ctx = static_cast<plugin_context *> (self);
   return convert_out (ctx->preserve (result));
