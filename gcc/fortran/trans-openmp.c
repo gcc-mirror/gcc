@@ -4964,8 +4964,8 @@ gfc_trans_omp_depobj (gfc_code *code)
 	    ? code->ext.omp_clauses->depobj_update : n->u.depend_op)
       {
       case OMP_DEPEND_IN: k = GOMP_DEPEND_IN; break;
-      case OMP_DEPEND_OUT: k = GOMP_DEPEND_IN; break;
-      case OMP_DEPEND_INOUT: k = GOMP_DEPEND_IN; break;
+      case OMP_DEPEND_OUT: k = GOMP_DEPEND_OUT; break;
+      case OMP_DEPEND_INOUT: k = GOMP_DEPEND_INOUT; break;
       case OMP_DEPEND_MUTEXINOUTSET: k = GOMP_DEPEND_MUTEXINOUTSET; break;
       default: gcc_unreachable ();
       }
