@@ -235,17 +235,14 @@ plugin_context::plugin_context (int fd)
 void
 plugin_context::mark ()
 {
-  for (hash_table<decl_addr_hasher>::iterator it = address_map.begin ();
-       it != address_map.end ();
-       ++it)
+  for (const auto &item : address_map)
     {
-      ggc_mark ((*it)->decl);
-      ggc_mark ((*it)->address);
+      ggc_mark (item->decl);
+      ggc_mark (item->address);
     }
 
-  for (hash_table< nofree_ptr_hash<tree_node> >::iterator
-	 it = preserved.begin (); it != preserved.end (); ++it)
-    ggc_mark (&*it);
+  for (const auto &item : preserved)
+    ggc_mark (&item);
 }
 
 static void
