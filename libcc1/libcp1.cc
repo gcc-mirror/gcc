@@ -166,23 +166,18 @@ void
 libcp1::add_callbacks ()
 {
   cc1_plugin::callback_ftype *fun
-    = cc1_plugin::callback<int,
-			   enum gcc_cp_oracle_request,
-			   const char *,
-			   cp_call_binding_oracle>;
+    = cc1_plugin::invoker<int, enum gcc_cp_oracle_request,
+			  const char *>::invoke<cp_call_binding_oracle>;
   connection->add_callback ("binding_oracle", fun);
 
-  fun = cc1_plugin::callback<gcc_address,
-			     const char *,
-			     cp_call_symbol_address>;
+  fun = cc1_plugin::invoker<gcc_address,
+			    const char *>::invoke<cp_call_symbol_address>;
   connection->add_callback ("address_oracle", fun);
 
-  fun = cc1_plugin::callback<int,
-			     cp_call_enter_scope>;
+  fun = cc1_plugin::invoker<int>::invoke<cp_call_enter_scope>;
   connection->add_callback ("enter_scope", fun);
 
-  fun = cc1_plugin::callback<int,
-			     cp_call_leave_scope>;
+  fun = cc1_plugin::invoker<int>::invoke<cp_call_leave_scope>;
   connection->add_callback ("leave_scope", fun);
 }
 

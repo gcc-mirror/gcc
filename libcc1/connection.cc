@@ -129,7 +129,7 @@ cc1_plugin::connection::do_wait (bool want_result)
 		  return FAIL;
 
 		callback_ftype *callback
-		  = m_callbacks.find_callback (method_name);
+		  = m_callbacks.find_callback (method_name.get ());
 		// The call to CALLBACK is where we may end up in a
 		// reentrant call.
 		if (callback == NULL || !callback (this))

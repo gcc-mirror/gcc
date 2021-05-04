@@ -43,7 +43,7 @@ namespace cc1_plugin
     argument_wrapper (const argument_wrapper &) = delete;
     argument_wrapper &operator= (const argument_wrapper &) = delete;
 
-    operator T () const { return m_object; }
+    T get () const { return m_object; }
 
     status unmarshall (connection *conn)
     {
@@ -68,7 +68,7 @@ namespace cc1_plugin
 
     typedef typename std::remove_const<T>::type type;
 
-    operator const type * () const
+    const type *get () const
     {
       return m_object.get ();
     }
@@ -88,17 +88,14 @@ namespace cc1_plugin
   };
 
   // There are two kinds of template functions here: "call" and
-  // "callback".  "call" is implemented with variadic templates, but
-  // "callback" is repeated multiple times to handle different numbers
-  // of arguments.  (This could be improved with C++17 and
-  // std::apply.)
+  // "invoker".
 
   // The "call" template is used for making a remote procedure call.
   // It starts a query ('Q') packet, marshalls its arguments, waits
   // for a result, and finally reads and returns the result via an
   // "out" parameter.
 
-  // The "callback" template is used when receiving a remote procedure
+  // The "invoker" template is used when receiving a remote procedure
   // call.  This template function is suitable for use with the
   // "callbacks" and "connection" classes.  It decodes incoming
   // arguments, passes them to the wrapped function, and finally
@@ -123,175 +120,71 @@ namespace cc1_plugin
     return OK;
   }
 
-  template<typename R, R (*func) (connection *)>
-  status
-  callback (connection *conn)
+  // The base case -- just return OK.
+  template<int I, typename... T>
+  typename std::enable_if<I == sizeof... (T), status>::type
+  unmarshall (connection *, std::tuple<T...> &)
   {
-    R result;
-
-    if (!unmarshall_check (conn, 0))
-      return FAIL;
-    result = func (conn);
-    if (!conn->send ('R'))
-      return FAIL;
-    return marshall (conn, result);
+    return OK;
   }
 
-  template<typename R, typename A, R (*func) (connection *, A)>
-  status
-  callback (connection *conn)
+  // Unmarshall this argument, then unmarshall all subsequent args.
+  template<int I, typename... T>
+  typename std::enable_if<I < sizeof... (T), status>::type
+  unmarshall (connection *conn, std::tuple<T...> &value)
   {
-    argument_wrapper<A> arg;
-    R result;
-
-    if (!unmarshall_check (conn, 1))
+    if (!std::get<I> (value).unmarshall (conn))
       return FAIL;
-    if (!arg.unmarshall (conn))
-      return FAIL;
-    result = func (conn, arg);
-    if (!conn->send ('R'))
-      return FAIL;
-    return marshall (conn, result);
+    return unmarshall<I + 1, T...> (conn, value);
   }
 
-  template<typename R, typename A1, typename A2, R (*func) (connection *,
-							    A1, A2)>
-  status
-  callback (connection *conn)
+  // Wrap a static function that is suitable for use as a callback.
+  // This is a template function inside a template class to work
+  // around limitations with multiple variadic packs.
+  template<typename R, typename... Arg>
+  class invoker
   {
-    argument_wrapper<A1> arg1;
-    argument_wrapper<A2> arg2;
-    R result;
+    // Base case -- we can call the function.
+    template<int I, R func (connection *, Arg...), typename... T>
+    static typename std::enable_if<I == sizeof... (Arg), R>::type
+    call (connection *conn, const std::tuple<argument_wrapper<Arg>...> &,
+	  T... args)
+    {
+      return func (conn, args...);
+    }
 
-    if (!unmarshall_check (conn, 2))
-      return FAIL;
-    if (!arg1.unmarshall (conn))
-      return FAIL;
-    if (!arg2.unmarshall (conn))
-      return FAIL;
-    result = func (conn, arg1, arg2);
-    if (!conn->send ('R'))
-      return FAIL;
-    return marshall (conn, result);
-  }
+    // Unpack one argument and continue the recursion.
+    template<int I, R func (connection *, Arg...), typename... T>
+    static typename std::enable_if<I < sizeof... (Arg), R>::type
+    call (connection *conn, const std::tuple<argument_wrapper<Arg>...> &value,
+	  T... args)
+    {
+      return call<I + 1, func> (conn, value, args...,
+				std::get<I> (value).get ());
+    }
 
-  template<typename R, typename A1, typename A2, typename A3,
-	   R (*func) (connection *, A1, A2, A3)>
-  status
-  callback (connection *conn)
-  {
-    argument_wrapper<A1> arg1;
-    argument_wrapper<A2> arg2;
-    argument_wrapper<A3> arg3;
-    R result;
+  public:
 
-    if (!unmarshall_check (conn, 3))
-      return FAIL;
-    if (!arg1.unmarshall (conn))
-      return FAIL;
-    if (!arg2.unmarshall (conn))
-      return FAIL;
-    if (!arg3.unmarshall (conn))
-      return FAIL;
-    result = func (conn, arg1, arg2, arg3);
-    if (!conn->send ('R'))
-      return FAIL;
-    return marshall (conn, result);
-  }
+    // A callback function that reads arguments from the connection,
+    // calls the wrapped function, and then sends the result back on
+    // the connection.
+    template<R func (connection *, Arg...)>
+    static status
+    invoke (connection *conn)
+    {
+      if (!unmarshall_check (conn, sizeof... (Arg)))
+	return FAIL;
+      std::tuple<argument_wrapper<Arg>...> wrapped;
+      if (!unmarshall<0> (conn, wrapped))
+	return FAIL;
 
-  template<typename R, typename A1, typename A2, typename A3, typename A4,
-	   R (*func) (connection *, A1, A2, A3, A4)>
-  status
-  callback (connection *conn)
-  {
-    argument_wrapper<A1> arg1;
-    argument_wrapper<A2> arg2;
-    argument_wrapper<A3> arg3;
-    argument_wrapper<A4> arg4;
-    R result;
+      R result = call<0, func> (conn, wrapped);
 
-    if (!unmarshall_check (conn, 4))
-      return FAIL;
-    if (!arg1.unmarshall (conn))
-      return FAIL;
-    if (!arg2.unmarshall (conn))
-      return FAIL;
-    if (!arg3.unmarshall (conn))
-      return FAIL;
-    if (!arg4.unmarshall (conn))
-      return FAIL;
-    result = func (conn, arg1, arg2, arg3, arg4);
-    if (!conn->send ('R'))
-      return FAIL;
-    return marshall (conn, result);
-  }
-
-  template<typename R, typename A1, typename A2, typename A3, typename A4,
-	   typename A5, R (*func) (connection *, A1, A2, A3, A4, A5)>
-  status
-  callback (connection *conn)
-  {
-    argument_wrapper<A1> arg1;
-    argument_wrapper<A2> arg2;
-    argument_wrapper<A3> arg3;
-    argument_wrapper<A4> arg4;
-    argument_wrapper<A5> arg5;
-    R result;
-
-    if (!unmarshall_check (conn, 5))
-      return FAIL;
-    if (!arg1.unmarshall (conn))
-      return FAIL;
-    if (!arg2.unmarshall (conn))
-      return FAIL;
-    if (!arg3.unmarshall (conn))
-      return FAIL;
-    if (!arg4.unmarshall (conn))
-      return FAIL;
-    if (!arg5.unmarshall (conn))
-      return FAIL;
-    result = func (conn, arg1, arg2, arg3, arg4, arg5);
-    if (!conn->send ('R'))
-      return FAIL;
-    return marshall (conn, result);
-  }
-
-  template<typename R, typename A1, typename A2, typename A3, typename A4,
-	   typename A5, typename A6, typename A7,
-	   R (*func) (connection *, A1, A2, A3, A4, A5, A6, A7)>
-  status
-  callback (connection *conn)
-  {
-    argument_wrapper<A1> arg1;
-    argument_wrapper<A2> arg2;
-    argument_wrapper<A3> arg3;
-    argument_wrapper<A4> arg4;
-    argument_wrapper<A5> arg5;
-    argument_wrapper<A6> arg6;
-    argument_wrapper<A7> arg7;
-    R result;
-
-    if (!unmarshall_check (conn, 7))
-      return FAIL;
-    if (!arg1.unmarshall (conn))
-      return FAIL;
-    if (!arg2.unmarshall (conn))
-      return FAIL;
-    if (!arg3.unmarshall (conn))
-      return FAIL;
-    if (!arg4.unmarshall (conn))
-      return FAIL;
-    if (!arg5.unmarshall (conn))
-      return FAIL;
-    if (!arg6.unmarshall (conn))
-      return FAIL;
-    if (!arg7.unmarshall (conn))
-      return FAIL;
-    result = func (conn, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
-    if (!conn->send ('R'))
-      return FAIL;
-    return marshall (conn, result);
-  }
+      if (!conn->send ('R'))
+	return FAIL;
+      return marshall (conn, result);
+    }
+  };
 };
 
 #endif // CC1_PLUGIN_RPC_HH

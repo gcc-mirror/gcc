@@ -143,15 +143,13 @@ void
 libcc1::add_callbacks ()
 {
   cc1_plugin::callback_ftype *fun
-    = cc1_plugin::callback<int,
-			   enum gcc_c_oracle_request,
-			   const char *,
-			   c_call_binding_oracle>;
+    = cc1_plugin::invoker<int,
+			  enum gcc_c_oracle_request,
+			  const char *>::invoke<c_call_binding_oracle>;
   connection->add_callback ("binding_oracle", fun);
 
-  fun = cc1_plugin::callback<gcc_address,
-			     const char *,
-			     c_call_symbol_address>;
+  fun = cc1_plugin::invoker<gcc_address,
+			    const char *>::invoke<c_call_symbol_address>;
   connection->add_callback ("address_oracle", fun);
 }
 

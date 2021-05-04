@@ -3509,46 +3509,46 @@ plugin_init (struct plugin_name_args *plugin_info,
 #define GCC_METHOD0(R, N)			\
   {						\
     cc1_plugin::callback_ftype *fun		\
-      = cc1_plugin::callback<R, plugin_ ## N>;	\
+      = cc1_plugin::invoker<R>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);	\
   }
 #define GCC_METHOD1(R, N, A)				\
   {							\
     cc1_plugin::callback_ftype *fun			\
-      = cc1_plugin::callback<R, A, plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);		\
   }
 #define GCC_METHOD2(R, N, A, B)				\
   {							\
     cc1_plugin::callback_ftype *fun			\
-      = cc1_plugin::callback<R, A, B, plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A, B>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);		\
   }
 #define GCC_METHOD3(R, N, A, B, C)			\
   {							\
     cc1_plugin::callback_ftype *fun			\
-      = cc1_plugin::callback<R, A, B, C, plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A, B, C>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);		\
   }
 #define GCC_METHOD4(R, N, A, B, C, D)		\
   {						\
     cc1_plugin::callback_ftype *fun		\
-      = cc1_plugin::callback<R, A, B, C, D,	\
-			     plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A, B, C,		\
+			    D>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);	\
   }
 #define GCC_METHOD5(R, N, A, B, C, D, E)	\
   {						\
     cc1_plugin::callback_ftype *fun		\
-      = cc1_plugin::callback<R, A, B, C, D, E,	\
-			     plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A, B, C,		\
+			    D, E>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);	\
   }
 #define GCC_METHOD7(R, N, A, B, C, D, E, F, G)		\
   {							\
     cc1_plugin::callback_ftype *fun			\
-      = cc1_plugin::callback<R, A, B, C, D, E, F, G,	\
-			     plugin_ ## N>;		\
+      = cc1_plugin::invoker<R, A, B, C,			\
+			    D, E, F, G>::invoke<plugin_ ## N>;		\
     current_context->add_callback (# N, fun);		\
   }
 
