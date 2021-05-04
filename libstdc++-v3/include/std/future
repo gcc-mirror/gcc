@@ -533,26 +533,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         };
 
       template<typename _Res, typename _Arg>
+	__attribute__((__always_inline__))
         static _Setter<_Res, _Arg&&>
-        __setter(promise<_Res>* __prom, _Arg&& __arg)
+        __setter(promise<_Res>* __prom, _Arg&& __arg) noexcept
         {
-	  _S_check(__prom->_M_future);
           return _Setter<_Res, _Arg&&>{ __prom, std::__addressof(__arg) };
         }
 
       template<typename _Res>
+	__attribute__((__always_inline__))
         static _Setter<_Res, __exception_ptr_tag>
-        __setter(exception_ptr& __ex, promise<_Res>* __prom)
+        __setter(exception_ptr& __ex, promise<_Res>* __prom) noexcept
         {
-	  _S_check(__prom->_M_future);
           return _Setter<_Res, __exception_ptr_tag>{ __prom, &__ex };
         }
 
       template<typename _Res>
+	__attribute__((__always_inline__))
 	static _Setter<_Res, void>
-	__setter(promise<_Res>* __prom)
+	__setter(promise<_Res>* __prom) noexcept
 	{
-	  _S_check(__prom->_M_future);
 	  return _Setter<_Res, void>{ __prom };
 	}
 
@@ -1118,35 +1118,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Setting the result
       void
       set_value(const _Res& __r)
-      { _M_future->_M_set_result(_State::__setter(this, __r)); }
+      { _M_state()._M_set_result(_State::__setter(this, __r)); }
 
       void
       set_value(_Res&& __r)
-      { _M_future->_M_set_result(_State::__setter(this, std::move(__r))); }
+      { _M_state()._M_set_result(_State::__setter(this, std::move(__r))); }
 
       void
       set_exception(exception_ptr __p)
-      { _M_future->_M_set_result(_State::__setter(__p, this)); }
+      { _M_state()._M_set_result(_State::__setter(__p, this)); }
 
       void
       set_value_at_thread_exit(const _Res& __r)
       {
-	_M_future->_M_set_delayed_result(_State::__setter(this, __r),
+	_M_state()._M_set_delayed_result(_State::__setter(this, __r),
 					 _M_future);
       }
 
       void
       set_value_at_thread_exit(_Res&& __r)
       {
-	_M_future->_M_set_delayed_result(
+	_M_state()._M_set_delayed_result(
 	    _State::__setter(this, std::move(__r)), _M_future);
       }
 
       void
       set_exception_at_thread_exit(exception_ptr __p)
       {
-	_M_future->_M_set_delayed_result(_State::__setter(__p, this),
+	_M_state()._M_set_delayed_result(_State::__setter(__p, this),
 					 _M_future);
+      }
+
+    private:
+      _State&
+      _M_state()
+      {
+	__future_base::_State_base::_S_check(_M_future);
+	return *_M_future;
       }
     };
 
@@ -1229,24 +1237,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Setting the result
       void
       set_value(_Res& __r)
-      { _M_future->_M_set_result(_State::__setter(this, __r)); }
+      { _M_state()._M_set_result(_State::__setter(this, __r)); }
 
       void
       set_exception(exception_ptr __p)
-      { _M_future->_M_set_result(_State::__setter(__p, this)); }
+      { _M_state()._M_set_result(_State::__setter(__p, this)); }
 
       void
       set_value_at_thread_exit(_Res& __r)
       {
-	_M_future->_M_set_delayed_result(_State::__setter(this, __r),
+	_M_state()._M_set_delayed_result(_State::__setter(this, __r),
 					 _M_future);
       }
 
       void
       set_exception_at_thread_exit(exception_ptr __p)
       {
-	_M_future->_M_set_delayed_result(_State::__setter(__p, this),
+	_M_state()._M_set_delayed_result(_State::__setter(__p, this),
 					 _M_future);
+      }
+
+    private:
+      _State&
+      _M_state()
+      {
+	__future_base::_State_base::_S_check(_M_future);
+	return *_M_future;
       }
     };
 
@@ -1321,21 +1337,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Setting the result
       void
       set_value()
-      { _M_future->_M_set_result(_State::__setter(this)); }
+      { _M_state()._M_set_result(_State::__setter(this)); }
 
       void
       set_exception(exception_ptr __p)
-      { _M_future->_M_set_result(_State::__setter(__p, this)); }
+      { _M_state()._M_set_result(_State::__setter(__p, this)); }
 
       void
       set_value_at_thread_exit()
-      { _M_future->_M_set_delayed_result(_State::__setter(this), _M_future); }
+      { _M_state()._M_set_delayed_result(_State::__setter(this), _M_future); }
 
       void
       set_exception_at_thread_exit(exception_ptr __p)
       {
-	_M_future->_M_set_delayed_result(_State::__setter(__p, this),
+	_M_state()._M_set_delayed_result(_State::__setter(__p, this),
 					 _M_future);
+      }
+
+    private:
+      _State&
+      _M_state()
+      {
+	__future_base::_State_base::_S_check(_M_future);
+	return *_M_future;
       }
     };
 

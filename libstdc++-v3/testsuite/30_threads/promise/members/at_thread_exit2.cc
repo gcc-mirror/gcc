@@ -119,7 +119,6 @@ void test02()
 void test03()
 {
   std::promise<void> p1;
-  int i = 0;
   p1.set_value();
   try {
     p1.set_value_at_thread_exit();
