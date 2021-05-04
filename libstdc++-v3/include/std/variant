@@ -485,6 +485,12 @@ namespace __variant
       {
 	if constexpr (__variant::__never_valueless<_Types...>())
 	  return true;
+	// It would be nice if we could just return true for -fno-exceptions.
+	// It's possible (but inadvisable) that a std::variant could become
+	// valueless in a translation unit compiled with -fexceptions and then
+	// be passed to functions compiled with -fno-exceptions. We would need
+	// some #ifdef _GLIBCXX_NO_EXCEPTIONS_GLOBALLY property to elide all
+	// checks for valueless_by_exception().
 	return this->_M_index != static_cast<__index_type>(variant_npos);
       }
 
@@ -1754,12 +1760,89 @@ namespace __variant
     constexpr decltype(auto)
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
-      constexpr auto& __vtable = __detail::__variant::__gen_vtable<
-	_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
+      // Get the silly case of visiting no variants out of the way first.
+      if constexpr (sizeof...(_Variants) == 0)
+	return std::forward<_Visitor>(__visitor)();
+      else
+	{
+	  constexpr size_t __max = 11; // "These go to eleven."
 
-      auto __func_ptr = __vtable._M_access(__variants.index()...);
-      return (*__func_ptr)(std::forward<_Visitor>(__visitor),
-			   std::forward<_Variants>(__variants)...);
+	  // The type of the first variant in the pack.
+	  using _V0
+	    = typename __detail::__variant::_Nth_type<0, _Variants...>::type;
+	  // The number of alternatives in that first variant.
+	  constexpr auto __n = variant_size_v<remove_reference_t<_V0>>;
+
+	  if constexpr (sizeof...(_Variants) > 1 || __n > __max)
+	    {
+	      // Use a jump table for the general case.
+	      constexpr auto& __vtable = __detail::__variant::__gen_vtable<
+		_Result_type, _Visitor&&, _Variants&&...>::_S_vtable;
+
+	      auto __func_ptr = __vtable._M_access(__variants.index()...);
+	      return (*__func_ptr)(std::forward<_Visitor>(__visitor),
+				   std::forward<_Variants>(__variants)...);
+	    }
+	  else // We have a single variant with a small number of alternatives.
+	    {
+	      // A name for the first variant in the pack.
+	      _V0& __v0
+		= [](_V0& __v, ...) -> _V0& { return __v; }(__variants...);
+
+	      using __detail::__variant::_Multi_array;
+	      using __detail::__variant::__gen_vtable_impl;
+	      using _Ma = _Multi_array<_Result_type (*)(_Visitor&&, _V0&&)>;
+
+#ifdef _GLIBCXX_DEBUG
+# define _GLIBCXX_VISIT_UNREACHABLE __builtin_trap
+#else
+# define _GLIBCXX_VISIT_UNREACHABLE __builtin_unreachable
+#endif
+
+#define _GLIBCXX_VISIT_CASE(N)						\
+  case N:								\
+  {									\
+    if constexpr (N < __n)						\
+      {									\
+	return __gen_vtable_impl<_Ma, index_sequence<N>>::		\
+	  __visit_invoke(std::forward<_Visitor>(__visitor),		\
+			 std::forward<_V0>(__v0));		\
+      }									\
+    else _GLIBCXX_VISIT_UNREACHABLE();					\
+  }
+
+	      switch (__v0.index())
+		{
+		  _GLIBCXX_VISIT_CASE(0)
+		  _GLIBCXX_VISIT_CASE(1)
+		  _GLIBCXX_VISIT_CASE(2)
+		  _GLIBCXX_VISIT_CASE(3)
+		  _GLIBCXX_VISIT_CASE(4)
+		  _GLIBCXX_VISIT_CASE(5)
+		  _GLIBCXX_VISIT_CASE(6)
+		  _GLIBCXX_VISIT_CASE(7)
+		  _GLIBCXX_VISIT_CASE(8)
+		  _GLIBCXX_VISIT_CASE(9)
+		  _GLIBCXX_VISIT_CASE(10)
+		case variant_npos:
+		  using __detail::__variant::__variant_idx_cookie;
+		  using __detail::__variant::__variant_cookie;
+		  if constexpr (is_same_v<_Result_type, __variant_idx_cookie>
+				|| is_same_v<_Result_type, __variant_cookie>)
+		    {
+		      return __gen_vtable_impl<_Ma, index_sequence<-1>>::
+			__visit_invoke(std::forward<_Visitor>(__visitor),
+				       std::forward<_V0>(__v0));
+		    }
+		  else
+		    _GLIBCXX_VISIT_UNREACHABLE();
+		default:
+		  _GLIBCXX_VISIT_UNREACHABLE();
+		}
+#undef _GLIBCXX_VISIT_CASE
+#undef _GLIBCXX_VISIT_UNREACHABLE
+	    }
+	}
     }
   /// @endcond
 
