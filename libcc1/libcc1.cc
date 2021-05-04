@@ -28,18 +28,15 @@ along with GCC; see the file COPYING3.  If not see
 #include <errno.h>
 #include <sys/stat.h>
 #include <stdlib.h>
-#include <sstream>
 #include "marshall.hh"
 #include "rpc.hh"
 #include "connection.hh"
 #include "names.hh"
 #include "callbacks.hh"
 #include "libiberty.h"
-#include "xregex.h"
-#include "findcomp.hh"
 #include "compiler-name.hh"
-#include "intl.h"
 #include "gcc-c-interface.h"
+#include "compiler.hh"
 
 struct libcc1;
 
@@ -71,54 +68,7 @@ struct libcc1 : public gcc_c_context
   /* Non-zero as an equivalent to gcc driver option "-v".  */
   bool verbose;
 
-  /* Compiler to set by set_triplet_regexp or set_driver_filename.  */
-  class compiler
-  {
-  protected:
-    libcc1 *self_;
-  public:
-    compiler (libcc1 *self) : self_ (self)
-    {
-    }
-    virtual char *find (std::string &compiler) const;
-    virtual ~compiler ()
-    {
-    }
-  };
-
-  std::unique_ptr<compiler> compilerp;
-
-  /* Compiler to set by set_triplet_regexp.  */
-  class compiler_triplet_regexp : public compiler
-  {
-  private:
-    std::string triplet_regexp_;
-  public:
-    char *find (std::string &compiler) const override;
-    compiler_triplet_regexp (libcc1 *self, std::string triplet_regexp)
-      : compiler (self), triplet_regexp_ (triplet_regexp)
-    {
-    }
-    virtual ~compiler_triplet_regexp ()
-    {
-    }
-  };
-
-  /* Compiler to set by set_driver_filename.  */
-  class compiler_driver_filename : public compiler
-  {
-  private:
-    std::string driver_filename_;
-  public:
-    char *find (std::string &compiler) const override;
-    compiler_driver_filename (libcc1 *self, std::string driver_filename)
-      : compiler (self), driver_filename_ (driver_filename)
-    {
-    }
-    virtual ~compiler_driver_filename ()
-    {
-    }
-  };
+  std::unique_ptr<cc1_plugin::compiler> compilerp;
 };
 
 // A local subclass of connection that holds a back-pointer to the
@@ -151,7 +101,7 @@ libcc1::libcc1 (const gcc_base_vtable *v,
     args (),
     source_file (),
     verbose (false),
-    compilerp (new libcc1::compiler (this))
+    compilerp (new cc1_plugin::compiler (verbose))
 {
   base.ops = v;
   c_ops = cv;
@@ -252,101 +202,14 @@ static const struct gcc_c_fe_vtable c_vtable =
 
 
 
-// Construct an appropriate regexp to match the compiler name.
-static std::string
-make_regexp (const char *triplet_regexp, const char *compiler)
-{
-  std::stringstream buf;
-
-  buf << "^" << triplet_regexp << "-";
-
-  // Quote the compiler name in case it has something funny in it.
-  for (const char *p = compiler; *p; ++p)
-    {
-      switch (*p)
-	{
-	case '.':
-	case '^':
-	case '$':
-	case '*':
-	case '+':
-	case '?':
-	case '(':
-	case ')':
-	case '[':
-	case '{':
-	case '\\':
-	case '|':
-	  buf << '\\';
-	  break;
-	}
-      buf << *p;
-    }
-  buf << "$";
-
-  return buf.str ();
-}
-
 static void
 libcc1_set_verbose (struct gcc_base_context *s, int /* bool */ verbose)
 {
   libcc1 *self = (libcc1 *) s;
 
   self->verbose = verbose != 0;
-}
-
-char *
-libcc1::compiler::find (std::string &compiler ATTRIBUTE_UNUSED) const
-{
-  return xstrdup (_("Compiler has not been specified"));
-}
-
-char *
-libcc1::compiler_triplet_regexp::find (std::string &compiler) const
-{
-  std::string rx = make_regexp (triplet_regexp_.c_str (), C_COMPILER_NAME);
-  if (self_->verbose)
-    fprintf (stderr, _("searching for compiler matching regex %s\n"),
-	     rx.c_str());
-  regex_t triplet;
-  int code = regcomp (&triplet, rx.c_str (), REG_EXTENDED | REG_NOSUB);
-  if (code != 0)
-    {
-      size_t len = regerror (code, &triplet, NULL, 0);
-      char err[len];
-
-      regerror (code, &triplet, err, len);
-
-      return concat ("Could not compile regexp \"",
-		     rx.c_str (),
-		     "\": ",
-		     err,
-		     (char *) NULL);
-    }
-
-  if (!find_compiler (triplet, &compiler))
-    {
-      regfree (&triplet);
-      return concat ("Could not find a compiler matching \"",
-		     rx.c_str (),
-		     "\"",
-		     (char *) NULL);
-    }
-  regfree (&triplet);
-  if (self_->verbose)
-    fprintf (stderr, _("found compiler %s\n"), compiler.c_str());
-  return NULL;
-}
-
-char *
-libcc1::compiler_driver_filename::find (std::string &compiler) const
-{
-  // Simulate fnotice by fprintf.
-  if (self_->verbose)
-    fprintf (stderr, _("using explicit compiler filename %s\n"),
-	     driver_filename_.c_str());
-  compiler = driver_filename_;
-  return NULL;
+  if (self->compilerp != nullptr)
+    self->compilerp->set_verbose (self->verbose);
 }
 
 static char *
@@ -356,7 +219,7 @@ libcc1_set_arguments (struct gcc_base_context *s,
   libcc1 *self = (libcc1 *) s;
 
   std::string compiler;
-  char *errmsg = self->compilerp->find (compiler);
+  char *errmsg = self->compilerp->find (C_COMPILER_NAME, compiler);
   if (errmsg != NULL)
     return errmsg;
 
@@ -374,8 +237,9 @@ libcc1_set_triplet_regexp (struct gcc_base_context *s,
 {
   libcc1 *self = (libcc1 *) s;
 
-  self->compilerp.reset (new libcc1::compiler_triplet_regexp (self,
-							      triplet_regexp));
+  self->compilerp.reset
+    (new cc1_plugin::compiler_triplet_regexp (self->verbose,
+					      triplet_regexp));
   return NULL;
 }
 
@@ -385,8 +249,9 @@ libcc1_set_driver_filename (struct gcc_base_context *s,
 {
   libcc1 *self = (libcc1 *) s;
 
-  self->compilerp.reset (new libcc1::compiler_driver_filename (self,
-							       driver_filename));
+  self->compilerp.reset
+    (new cc1_plugin::compiler_driver_filename (self->verbose,
+					       driver_filename));
   return NULL;
 }
 

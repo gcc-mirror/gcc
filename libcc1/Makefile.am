@@ -75,7 +75,7 @@ libcp1plugin_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 libcc1_la_LDFLAGS = -module -export-symbols $(srcdir)/libcc1.sym
 libcc1_la_SOURCES = findcomp.cc libcc1.cc libcp1.cc \
-		names.cc names.hh $(shared_source) \
+		compiler.cc compiler.hh names.cc names.hh $(shared_source) \
 		$(marshall_c_source) $(marshall_cxx_source)
 libcc1_la_LIBADD = $(libiberty)
 libcc1_la_DEPENDENCIES = $(libiberty_dep)
