@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "status.hh"
 #include "connection.hh"
-#include <memory>
+#include "deleter.hh"
 
 namespace cc1_plugin
 {
@@ -55,64 +55,6 @@ namespace cc1_plugin
     T m_object;
   };
 
-  // Any pointer type requires a deleter object that knows how to
-  // clean up.  These are used in multiple places.
-  template<typename T> struct deleter;
-
-  template<>
-  struct deleter<char>
-  {
-    void operator() (char *s)
-    {
-      delete[] s;
-    }
-  };
-
-  template<>
-  struct deleter<gcc_type_array>
-  {
-    void operator() (gcc_type_array *p)
-    {
-      delete[] p->elements;
-      delete p;
-    }
-  };
-
-#ifdef GCC_CP_INTERFACE_H
-  template<>
-  struct deleter<gcc_vbase_array>
-  {
-    void operator() (gcc_vbase_array *p)
-    {
-      delete[] p->flags;
-      delete[] p->elements;
-      delete p;
-    }
-  };
-
-  template<>
-  struct deleter<gcc_cp_template_args>
-  {
-    void operator() (gcc_cp_template_args *p)
-    {
-      delete[] p->elements;
-      delete[] p->kinds;
-      delete p;
-    }
-  };
-
-  template<>
-  struct deleter<gcc_cp_function_args>
-  {
-    void operator() (gcc_cp_function_args *p)
-    {
-      delete[] p->elements;
-      delete p;
-    }
-  };
-
-#endif // GCC_CP_INTERFACE_H
-
   // Specialization for any kind of pointer.
   template<typename T>
   class argument_wrapper<T *>
@@ -142,7 +84,7 @@ namespace cc1_plugin
 
   private:
 
-    std::unique_ptr<type, deleter<type>> m_object;
+    unique_ptr<type> m_object;
   };
 
   // There are two kinds of template functions here: "call" and
