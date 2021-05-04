@@ -42,15 +42,19 @@ along with GCC; see the file COPYING3.  If not see
 // The C compiler context that we hand back to our caller.
 struct libcc1 : public cc1_plugin::base_gdb_plugin<gcc_c_context>
 {
-  libcc1 (const gcc_base_vtable *, const gcc_c_fe_vtable *);
+  explicit libcc1 (const gcc_c_fe_vtable *);
+
+  void add_callbacks () override;
 
   gcc_c_oracle_function *binding_oracle = nullptr;
   gcc_c_symbol_address_function *address_oracle = nullptr;
   void *oracle_datum = nullptr;
 };
 
-libcc1::libcc1 (const gcc_base_vtable *v, const gcc_c_fe_vtable *cv)
-  : cc1_plugin::base_gdb_plugin<gcc_c_context> (v)
+libcc1::libcc1 (const gcc_c_fe_vtable *cv)
+  : cc1_plugin::base_gdb_plugin<gcc_c_context> ("libcc1plugin",
+						C_COMPILER_NAME,
+						GCC_C_FE_VERSION_1)
 {
   c_ops = cv;
 }
@@ -135,243 +139,21 @@ static const struct gcc_c_fe_vtable c_vtable =
 
 
 
-static void
-libcc1_set_verbose (struct gcc_base_context *s, int /* bool */ verbose)
+void
+libcc1::add_callbacks ()
 {
-  libcc1 *self = (libcc1 *) s;
-
-  self->set_verbose (verbose != 0);
-}
-
-static char *
-libcc1_set_arguments (struct gcc_base_context *s,
-		      int argc, char **argv)
-{
-  libcc1 *self = (libcc1 *) s;
-
-  std::string compiler;
-  char *errmsg = self->compilerp->find (C_COMPILER_NAME, compiler);
-  if (errmsg != NULL)
-    return errmsg;
-
-  self->args.push_back (compiler);
-
-  for (int i = 0; i < argc; ++i)
-    self->args.push_back (argv[i]);
-
-  return NULL;
-}
-
-static char *
-libcc1_set_triplet_regexp (struct gcc_base_context *s,
-			   const char *triplet_regexp)
-{
-  libcc1 *self = (libcc1 *) s;
-
-  self->compilerp.reset
-    (new cc1_plugin::compiler_triplet_regexp (self->verbose,
-					      triplet_regexp));
-  return NULL;
-}
-
-static char *
-libcc1_set_driver_filename (struct gcc_base_context *s,
-			    const char *driver_filename)
-{
-  libcc1 *self = (libcc1 *) s;
-
-  self->compilerp.reset
-    (new cc1_plugin::compiler_driver_filename (self->verbose,
-					       driver_filename));
-  return NULL;
-}
-
-static char *
-libcc1_set_arguments_v0 (struct gcc_base_context *s,
-			 const char *triplet_regexp,
-			 int argc, char **argv)
-{
-  char *errmsg = libcc1_set_triplet_regexp (s, triplet_regexp);
-  if (errmsg != NULL)
-    return errmsg;
-
-  return libcc1_set_arguments (s, argc, argv);
-}
-
-static void
-libcc1_set_source_file (struct gcc_base_context *s,
-			const char *file)
-{
-  libcc1 *self = (libcc1 *) s;
-
-  self->source_file = file;
-}
-
-static void
-libcc1_set_print_callback (struct gcc_base_context *s,
-			   void (*print_function) (void *datum,
-						   const char *message),
-			   void *datum)
-{
-  libcc1 *self = (libcc1 *) s;
-
-  self->print_function = print_function;
-  self->print_datum = datum;
-}
-
-static int
-fork_exec (libcc1 *self, char **argv, int spair_fds[2], int stderr_fds[2])
-{
-  pid_t child_pid = fork ();
-
-  if (child_pid == -1)
-    {
-      close (spair_fds[0]);
-      close (spair_fds[1]);
-      close (stderr_fds[0]);
-      close (stderr_fds[1]);
-      return 0;
-    }
-
-  if (child_pid == 0)
-    {
-      // Child.
-      dup2 (stderr_fds[1], 1);
-      dup2 (stderr_fds[1], 2);
-      close (stderr_fds[0]);
-      close (stderr_fds[1]);
-      close (spair_fds[0]);
-
-      execvp (argv[0], argv);
-      _exit (127);
-    }
-  else
-    {
-      // Parent.
-      close (spair_fds[1]);
-      close (stderr_fds[1]);
-
-      cc1_plugin::status result = cc1_plugin::FAIL;
-      if (self->connection->send ('H')
-	  && ::cc1_plugin::marshall (self->connection.get (),
-				     GCC_C_FE_VERSION_1))
-	result = self->connection->wait_for_query ();
-
-      close (spair_fds[0]);
-      close (stderr_fds[0]);
-
-      while (true)
-	{
-	  int status;
-
-	  if (waitpid (child_pid, &status, 0) == -1)
-	    {
-	      if (errno != EINTR)
-		return 0;
-	    }
-
-	  if (!WIFEXITED (status) || WEXITSTATUS (status) != 0)
-	    return 0;
-	  break;
-	}
-
-      if (!result)
-	return 0;
-      return 1;
-    }
-}
-
-static int
-libcc1_compile (struct gcc_base_context *s,
-		const char *filename)
-{
-  libcc1 *self = (libcc1 *) s;
-
-  int fds[2];
-  if (socketpair (AF_UNIX, SOCK_STREAM, 0, fds) != 0)
-    {
-      self->print ("could not create socketpair\n");
-      return 0;
-    }
-
-  int stderr_fds[2];
-  if (pipe (stderr_fds) != 0)
-    {
-      self->print ("could not create pipe\n");
-      close (fds[0]);
-      close (fds[1]);
-      return 0;
-    }
-
-  self->args.push_back ("-fplugin=libcc1plugin");
-  char buf[100];
-  if (snprintf (buf, sizeof (buf), "-fplugin-arg-libcc1plugin-fd=%d", fds[1])
-      >= (long) sizeof (buf))
-    abort ();
-  self->args.push_back (buf);
-
-  self->args.push_back (self->source_file);
-  self->args.push_back ("-c");
-  self->args.push_back ("-o");
-  self->args.push_back (filename);
-  if (self->verbose)
-    self->args.push_back ("-v");
-
-  self->set_connection (fds[0], stderr_fds[0]);
-
   cc1_plugin::callback_ftype *fun
     = cc1_plugin::callback<int,
 			   enum gcc_c_oracle_request,
 			   const char *,
 			   c_call_binding_oracle>;
-  self->connection->add_callback ("binding_oracle", fun);
+  connection->add_callback ("binding_oracle", fun);
 
   fun = cc1_plugin::callback<gcc_address,
 			     const char *,
 			     c_call_symbol_address>;
-  self->connection->add_callback ("address_oracle", fun);
-
-  char **argv = new (std::nothrow) char *[self->args.size () + 1];
-  if (argv == NULL)
-    return 0;
-
-  for (unsigned int i = 0; i < self->args.size (); ++i)
-    argv[i] = const_cast<char *> (self->args[i].c_str ());
-  argv[self->args.size ()] = NULL;
-
-  return fork_exec (self, argv, fds, stderr_fds);
+  connection->add_callback ("address_oracle", fun);
 }
-
-static int
-libcc1_compile_v0 (struct gcc_base_context *s, const char *filename,
-		   int verbose)
-{
-  libcc1_set_verbose (s, verbose);
-  return libcc1_compile (s, filename);
-}
-
-static void
-libcc1_destroy (struct gcc_base_context *s)
-{
-  libcc1 *self = (libcc1 *) s;
-
-  delete self;
-}
-
-static const struct gcc_base_vtable vtable =
-{
-  GCC_FE_VERSION_1,
-  libcc1_set_arguments_v0,
-  libcc1_set_source_file,
-  libcc1_set_print_callback,
-  libcc1_compile_v0,
-  libcc1_destroy,
-  libcc1_set_verbose,
-  libcc1_compile,
-  libcc1_set_arguments,
-  libcc1_set_triplet_regexp,
-  libcc1_set_driver_filename,
-};
 
 extern "C" gcc_c_fe_context_function gcc_c_fe_context;
 
@@ -388,5 +170,5 @@ gcc_c_fe_context (enum gcc_base_api_version base_version,
       || (c_version != GCC_C_FE_VERSION_0 && c_version != GCC_C_FE_VERSION_1))
     return NULL;
 
-  return new libcc1 (&vtable, &c_vtable);
+  return new libcc1 (&c_vtable);
 }
