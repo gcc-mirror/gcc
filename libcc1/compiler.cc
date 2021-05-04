@@ -28,7 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 
 // Construct an appropriate regexp to match the compiler name.
 static std::string
-make_regexp (const char *triplet_regexp, const char *compiler)
+make_regexp (const std::string &triplet_regexp, const char *compiler)
 {
   std::stringstream buf;
 
@@ -71,7 +71,7 @@ char *
 cc1_plugin::compiler_triplet_regexp::find (const char *base,
 					   std::string &compiler) const
 {
-  std::string rx = make_regexp (triplet_regexp_.c_str (), base);
+  std::string rx = make_regexp (triplet_regexp_, base);
   if (verbose)
     fprintf (stderr, _("searching for compiler matching regex %s\n"),
 	     rx.c_str());
