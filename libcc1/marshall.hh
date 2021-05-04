@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef CC1_PLUGIN_MARSHALL_HH
 #define CC1_PLUGIN_MARSHALL_HH
 
+#include <type_traits>
+
 #include "status.hh"
 #include "gcc-interface.h"
 
@@ -59,17 +61,31 @@ namespace cc1_plugin
   }
 
   // A template function that can handle unmarshalling various integer
-  // objects from the connection.  Note that this can't be
-  // instantiated for enum types.  Note also that there's no way at
-  // the protocol level to distinguish different int types.
+  // objects from the connection.  Note that there's no way at the
+  // protocol level to distinguish different int types.
   template<typename T>
-  status unmarshall (connection *conn, T *scalar)
+  status unmarshall (connection *conn, T *scalar,
+		     typename std::enable_if<std::is_integral<T>::value, T>::type * = 0)
   {
     protocol_int result;
 
     if (!unmarshall_intlike (conn, &result))
       return FAIL;
-    *scalar = result;
+    *scalar = (T) result;
+    return OK;
+  }
+
+  // A template function that can handle unmarshalling various enum
+  // objects from the connection.
+  template<typename T>
+  status unmarshall (connection *conn, T *e_val,
+		     typename std::enable_if<std::is_enum<T>::value, T>::type * = 0)
+  {
+    protocol_int result;
+
+    if (!unmarshall_intlike (conn, &result))
+      return FAIL;
+    *e_val = (T) result;
     return OK;
   }
 

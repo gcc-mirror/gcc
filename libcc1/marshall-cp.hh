@@ -25,46 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace cc1_plugin
 {
-  status
-  unmarshall (connection *conn, enum gcc_cp_symbol_kind *result)
-  {
-    protocol_int p;
-    if (!unmarshall_intlike (conn, &p))
-      return FAIL;
-    *result = (enum gcc_cp_symbol_kind) p;
-    return OK;
-  }
-
-  status
-  unmarshall (connection *conn, enum gcc_cp_oracle_request *result)
-  {
-    protocol_int p;
-    if (!unmarshall_intlike (conn, &p))
-      return FAIL;
-    *result = (enum gcc_cp_oracle_request) p;
-    return OK;
-  }
-
-  status
-  unmarshall (connection *conn, enum gcc_cp_qualifiers *result)
-  {
-    protocol_int p;
-    if (!unmarshall_intlike (conn, &p))
-      return FAIL;
-    *result = (enum gcc_cp_qualifiers) p;
-    return OK;
-  }
-
-  status
-  unmarshall (connection *conn, enum gcc_cp_ref_qualifiers *result)
-  {
-    protocol_int p;
-    if (!unmarshall_intlike (conn, &p))
-      return FAIL;
-    *result = (enum gcc_cp_ref_qualifiers) p;
-    return OK;
-  }
-
   // Send a gcc_vbase_array marker followed by the array.
   status
   marshall (connection *conn, const gcc_vbase_array *a)

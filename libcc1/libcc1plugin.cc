@@ -63,8 +63,9 @@
 
 #include "callbacks.hh"
 #include "connection.hh"
-#include "marshall-c.hh"
+#include "marshall.hh"
 #include "rpc.hh"
+#include "gcc-c-interface.h"
 
 #ifdef __GNUC__
 #pragma GCC visibility push(default)

@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <sys/stat.h>
 #include <stdlib.h>
 #include <sstream>
-#include "marshall-c.hh"
+#include "marshall.hh"
 #include "rpc.hh"
 #include "connection.hh"
 #include "names.hh"
@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "findcomp.hh"
 #include "compiler-name.hh"
 #include "intl.h"
+#include "gcc-c-interface.h"
 
 struct libcc1;
 
