@@ -48,6 +48,9 @@ namespace cc1_plugin
 
     virtual ~connection () = default;
 
+    connection (const connection &) = delete;
+    connection &operator= (const connection &) = delete;
+
     // Send a single character.  This is used to introduce various
     // higher-level protocol elements.
     status send (char c);
@@ -94,10 +97,6 @@ namespace cc1_plugin
     }
 
   private:
-
-    // Declared but not defined, to prevent use.
-    connection (const connection &);
-    connection &operator= (const connection &);
 
     // Helper function for the wait_* methods.
     status do_wait (bool);

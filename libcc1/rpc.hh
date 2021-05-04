@@ -39,6 +39,9 @@ namespace cc1_plugin
     argument_wrapper () { }
     ~argument_wrapper () { }
 
+    argument_wrapper (const argument_wrapper &) = delete;
+    argument_wrapper &operator= (const argument_wrapper &) = delete;
+
     operator T () const { return m_object; }
 
     status unmarshall (connection *conn)
@@ -49,10 +52,6 @@ namespace cc1_plugin
   private:
 
     T m_object;
-
-    // No copying or assignment allowed.
-    argument_wrapper (const argument_wrapper &);
-    argument_wrapper &operator= (const argument_wrapper &);
   };
 
   // Specialization for any kind of pointer.  This is declared but not
@@ -72,6 +71,9 @@ namespace cc1_plugin
       delete[] m_object;
     }
 
+    argument_wrapper (const argument_wrapper &) = delete;
+    argument_wrapper &operator= (const argument_wrapper &) = delete;
+
     operator const char * () const
     {
       return m_object;
@@ -85,10 +87,6 @@ namespace cc1_plugin
   private:
 
     char *m_object;
-
-    // No copying or assignment allowed.
-    argument_wrapper (const argument_wrapper &);
-    argument_wrapper &operator= (const argument_wrapper &);
   };
 
   // Specialization for gcc_type_array.
@@ -106,6 +104,9 @@ namespace cc1_plugin
       delete m_object;
     }
 
+    argument_wrapper (const argument_wrapper &) = delete;
+    argument_wrapper &operator= (const argument_wrapper &) = delete;
+
     operator const gcc_type_array * () const
     {
       return m_object;
@@ -119,10 +120,6 @@ namespace cc1_plugin
   private:
 
     gcc_type_array *m_object;
-
-    // No copying or assignment allowed.
-    argument_wrapper (const argument_wrapper &);
-    argument_wrapper &operator= (const argument_wrapper &);
   };
 
 #ifdef GCC_CP_INTERFACE_H
@@ -144,6 +141,9 @@ namespace cc1_plugin
       delete m_object;
     }
 
+    argument_wrapper (const argument_wrapper &) = delete;
+    argument_wrapper &operator= (const argument_wrapper &) = delete;
+
     operator const gcc_vbase_array * () const
     {
       return m_object;
@@ -157,10 +157,6 @@ namespace cc1_plugin
   private:
 
     gcc_vbase_array *m_object;
-
-    // No copying or assignment allowed.
-    argument_wrapper (const argument_wrapper &);
-    argument_wrapper &operator= (const argument_wrapper &);
   };
 
   // Specialization for gcc_cp_template_args.
@@ -181,6 +177,9 @@ namespace cc1_plugin
       delete m_object;
     }
 
+    argument_wrapper (const argument_wrapper &) = delete;
+    argument_wrapper &operator= (const argument_wrapper &) = delete;
+
     operator const gcc_cp_template_args * () const
     {
       return m_object;
@@ -194,10 +193,6 @@ namespace cc1_plugin
   private:
 
     gcc_cp_template_args *m_object;
-
-    // No copying or assignment allowed.
-    argument_wrapper (const argument_wrapper &);
-    argument_wrapper &operator= (const argument_wrapper &);
   };
 
   // Specialization for gcc_cp_function_args.
@@ -217,6 +212,9 @@ namespace cc1_plugin
       delete m_object;
     }
 
+    argument_wrapper (const argument_wrapper &) = delete;
+    argument_wrapper &operator= (const argument_wrapper &) = delete;
+
     operator const gcc_cp_function_args * () const
     {
       return m_object;
@@ -230,10 +228,6 @@ namespace cc1_plugin
   private:
 
     gcc_cp_function_args *m_object;
-
-    // No copying or assignment allowed.
-    argument_wrapper (const argument_wrapper &);
-    argument_wrapper &operator= (const argument_wrapper &);
   };
 #endif /* GCC_CP_INTERFACE_H */
 
