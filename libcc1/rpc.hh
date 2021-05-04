@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "status.hh"
 #include "connection.hh"
+#include <memory>
 
 namespace cc1_plugin
 {
@@ -54,182 +55,95 @@ namespace cc1_plugin
     T m_object;
   };
 
-  // Specialization for any kind of pointer.  This is declared but not
-  // defined to avoid bugs if a new pointer type is introduced into
-  // the API.  Instead you will just get a compilation error.
-  template<typename T>
-  class argument_wrapper<const T *>;
+  // Any pointer type requires a deleter object that knows how to
+  // clean up.  These are used in multiple places.
+  template<typename T> struct deleter;
 
-  // Specialization for string types.
   template<>
-  class argument_wrapper<const char *>
+  struct deleter<char>
   {
-  public:
-    argument_wrapper () : m_object (NULL) { }
-    ~argument_wrapper ()
+    void operator() (char *s)
     {
-      delete[] m_object;
+      delete[] s;
     }
-
-    argument_wrapper (const argument_wrapper &) = delete;
-    argument_wrapper &operator= (const argument_wrapper &) = delete;
-
-    operator const char * () const
-    {
-      return m_object;
-    }
-
-    status unmarshall (connection *conn)
-    {
-      return ::cc1_plugin::unmarshall (conn, &m_object);
-    }
-
-  private:
-
-    char *m_object;
   };
 
-  // Specialization for gcc_type_array.
   template<>
-  class argument_wrapper<const gcc_type_array *>
+  struct deleter<gcc_type_array>
   {
-  public:
-    argument_wrapper () : m_object (NULL) { }
-    ~argument_wrapper ()
+    void operator() (gcc_type_array *p)
     {
-      // It would be nicer if gcc_type_array could have a destructor.
-      // But, it is in code shared with gdb and cannot.
-      if (m_object != NULL)
-	delete[] m_object->elements;
-      delete m_object;
+      delete[] p->elements;
+      delete p;
     }
-
-    argument_wrapper (const argument_wrapper &) = delete;
-    argument_wrapper &operator= (const argument_wrapper &) = delete;
-
-    operator const gcc_type_array * () const
-    {
-      return m_object;
-    }
-
-    status unmarshall (connection *conn)
-    {
-      return ::cc1_plugin::unmarshall (conn, &m_object);
-    }
-
-  private:
-
-    gcc_type_array *m_object;
   };
 
 #ifdef GCC_CP_INTERFACE_H
-  // Specialization for gcc_vbase_array.
   template<>
-  class argument_wrapper<const gcc_vbase_array *>
+  struct deleter<gcc_vbase_array>
+  {
+    void operator() (gcc_vbase_array *p)
+    {
+      delete[] p->flags;
+      delete[] p->elements;
+      delete p;
+    }
+  };
+
+  template<>
+  struct deleter<gcc_cp_template_args>
+  {
+    void operator() (gcc_cp_template_args *p)
+    {
+      delete[] p->elements;
+      delete[] p->kinds;
+      delete p;
+    }
+  };
+
+  template<>
+  struct deleter<gcc_cp_function_args>
+  {
+    void operator() (gcc_cp_function_args *p)
+    {
+      delete[] p->elements;
+      delete p;
+    }
+  };
+
+#endif // GCC_CP_INTERFACE_H
+
+  // Specialization for any kind of pointer.
+  template<typename T>
+  class argument_wrapper<T *>
   {
   public:
-    argument_wrapper () : m_object (NULL) { }
-    ~argument_wrapper ()
-    {
-      // It would be nicer if gcc_type_array could have a destructor.
-      // But, it is in code shared with gdb and cannot.
-      if (m_object != NULL)
-	{
-	  delete[] m_object->flags;
-	  delete[] m_object->elements;
-	}
-      delete m_object;
-    }
+    argument_wrapper () = default;
+    ~argument_wrapper () = default;
 
     argument_wrapper (const argument_wrapper &) = delete;
     argument_wrapper &operator= (const argument_wrapper &) = delete;
 
-    operator const gcc_vbase_array * () const
+    typedef typename std::remove_const<T>::type type;
+
+    operator const type * () const
     {
-      return m_object;
+      return m_object.get ();
     }
 
     status unmarshall (connection *conn)
     {
-      return ::cc1_plugin::unmarshall (conn, &m_object);
+      type *ptr;
+      if (!::cc1_plugin::unmarshall (conn, &ptr))
+	return FAIL;
+      m_object.reset (ptr);
+      return OK;
     }
 
   private:
 
-    gcc_vbase_array *m_object;
+    std::unique_ptr<type, deleter<type>> m_object;
   };
-
-  // Specialization for gcc_cp_template_args.
-  template<>
-  class argument_wrapper<const gcc_cp_template_args *>
-  {
-  public:
-    argument_wrapper () : m_object (NULL) { }
-    ~argument_wrapper ()
-    {
-      // It would be nicer if gcc_type_array could have a destructor.
-      // But, it is in code shared with gdb and cannot.
-      if (m_object != NULL)
-	{
-	  delete[] m_object->elements;
-	  delete[] m_object->kinds;
-	}
-      delete m_object;
-    }
-
-    argument_wrapper (const argument_wrapper &) = delete;
-    argument_wrapper &operator= (const argument_wrapper &) = delete;
-
-    operator const gcc_cp_template_args * () const
-    {
-      return m_object;
-    }
-
-    status unmarshall (connection *conn)
-    {
-      return ::cc1_plugin::unmarshall (conn, &m_object);
-    }
-
-  private:
-
-    gcc_cp_template_args *m_object;
-  };
-
-  // Specialization for gcc_cp_function_args.
-  template<>
-  class argument_wrapper<const gcc_cp_function_args *>
-  {
-  public:
-    argument_wrapper () : m_object (NULL) { }
-    ~argument_wrapper ()
-    {
-      // It would be nicer if gcc_type_array could have a destructor.
-      // But, it is in code shared with gdb and cannot.
-      if (m_object != NULL)
-	{
-	  delete[] m_object->elements;
-	}
-      delete m_object;
-    }
-
-    argument_wrapper (const argument_wrapper &) = delete;
-    argument_wrapper &operator= (const argument_wrapper &) = delete;
-
-    operator const gcc_cp_function_args * () const
-    {
-      return m_object;
-    }
-
-    status unmarshall (connection *conn)
-    {
-      return ::cc1_plugin::unmarshall (conn, &m_object);
-    }
-
-  private:
-
-    gcc_cp_function_args *m_object;
-  };
-#endif /* GCC_CP_INTERFACE_H */
 
   // There are two kinds of template functions here: "call" and
   // "callback".  "call" is implemented with variadic templates, but
