@@ -6743,7 +6743,7 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
 			    &valc, align, true))
     return false;
 
-  rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode);
+  rtx (*constfun) (void *, void *, HOST_WIDE_INT, scalar_int_mode);
   void *constfundata;
   if (val)
     {
