@@ -22,5 +22,5 @@ main ()
   __builtin_s390_vrepf (s,  4); /* { dg-error "constant argument 2 for builtin '__builtin_s390_vrepf' is out of range \\(0..3\\)" } */
   __builtin_s390_vrepg (d,  2); /* { dg-error "constant argument 2 for builtin '__builtin_s390_vrepg' is out of range \\(0..1\\)" } */
 
-  __builtin_s390_vpdi (d, d, 2); /* { dg-error "constant argument 3 for builtin '__builtin_s390_vpdi' is invalid \\(0, 1, 4, 5\\)" } */
+  __builtin_s390_vpdi (d, d, 4); /* { dg-error "constant argument 3 for builtin '__builtin_s390_vpdi' is out of range \\(0..3\\)" } */
 }
