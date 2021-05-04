@@ -93,7 +93,7 @@ struct libcc1 : public gcc_c_context
   private:
     std::string triplet_regexp_;
   public:
-    virtual char *find (std::string &compiler) const;
+    char *find (std::string &compiler) const override;
     compiler_triplet_regexp (libcc1 *self, std::string triplet_regexp)
       : compiler (self), triplet_regexp_ (triplet_regexp)
     {
@@ -109,7 +109,7 @@ struct libcc1 : public gcc_c_context
   private:
     std::string driver_filename_;
   public:
-    virtual char *find (std::string &compiler) const;
+    char *find (std::string &compiler) const override;
     compiler_driver_filename (libcc1 *self, std::string driver_filename)
       : compiler (self), driver_filename_ (driver_filename)
     {
@@ -132,7 +132,7 @@ public:
   {
   }
 
-  virtual void print (const char *buf)
+  void print (const char *buf) override
   {
     back_ptr->print (buf);
   }
