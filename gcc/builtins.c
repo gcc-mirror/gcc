@@ -6667,6 +6667,166 @@ expand_builtin_memset (tree exp, rtx target, machine_mode mode)
   return expand_builtin_memset_args (dest, val, len, target, mode, exp);
 }
 
+/* Try to store VAL (or, if NULL_RTX, VALC) in LEN bytes starting at TO.
+   Return TRUE if successful, FALSE otherwise.  TO is assumed to be
+   aligned at an ALIGN-bits boundary.  LEN must be a multiple of
+   1<<CTZ_LEN between MIN_LEN and MAX_LEN.
+
+   The strategy is to issue one store_by_pieces for each power of two,
+   from most to least significant, guarded by a test on whether there
+   are at least that many bytes left to copy in LEN.
+
+   ??? Should we skip some powers of two in favor of loops?  Maybe start
+   at the max of TO/LEN/word alignment, at least when optimizing for
+   size, instead of ensuring O(log len) dynamic compares?  */
+
+bool
+try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
+			      unsigned HOST_WIDE_INT min_len,
+			      unsigned HOST_WIDE_INT max_len,
+			      rtx val, char valc, unsigned int align)
+{
+  int max_bits = floor_log2 (max_len);
+  int min_bits = floor_log2 (min_len);
+  int sctz_len = ctz_len;
+
+  gcc_checking_assert (sctz_len >= 0);
+
+  if (val)
+    valc = 1;
+
+  /* Bits more significant than TST_BITS are part of the shared prefix
+     in the binary representation of both min_len and max_len.  Since
+     they're identical, we don't need to test them in the loop.  */
+  int tst_bits = (max_bits != min_bits ? max_bits
+		  : floor_log2 (max_len ^ min_len));
+
+  /* Check whether it's profitable to start by storing a fixed BLKSIZE
+     bytes, to lower max_bits.  In the unlikely case of a constant LEN
+     (implied by identical MAX_LEN and MIN_LEN), we want to issue a
+     single store_by_pieces, but otherwise, select the minimum multiple
+     of the ALIGN (in bytes) and of the MCD of the possible LENs, that
+     brings MAX_LEN below TST_BITS, if that's lower than min_len.  */
+  unsigned HOST_WIDE_INT blksize;
+  if (max_len > min_len)
+    {
+      unsigned HOST_WIDE_INT alrng = MAX (HOST_WIDE_INT_1U << ctz_len,
+					  align / BITS_PER_UNIT);
+      blksize = max_len - (HOST_WIDE_INT_1U << tst_bits) + alrng;
+      blksize &= ~(alrng - 1);
+    }
+  else if (max_len == min_len)
+    blksize = max_len;
+  else
+    gcc_unreachable ();
+  if (min_len >= blksize)
+    {
+      min_len -= blksize;
+      min_bits = floor_log2 (min_len);
+      max_len -= blksize;
+      max_bits = floor_log2 (max_len);
+
+      tst_bits = (max_bits != min_bits ? max_bits
+		 : floor_log2 (max_len ^ min_len));
+    }
+  else
+    blksize = 0;
+
+  /* Check that we can use store by pieces for the maximum store count
+     we may issue (initial fixed-size block, plus conditional
+     power-of-two-sized from max_bits to ctz_len.  */
+  unsigned HOST_WIDE_INT xlenest = blksize;
+  if (max_bits >= 0)
+    xlenest += ((HOST_WIDE_INT_1U << max_bits) * 2
+		- (HOST_WIDE_INT_1U << ctz_len));
+  if (!can_store_by_pieces (xlenest, builtin_memset_read_str,
+			    &valc, align, true))
+    return false;
+
+  rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode);
+  void *constfundata;
+  if (val)
+    {
+      constfun = builtin_memset_gen_str;
+      constfundata = val = force_reg (TYPE_MODE (unsigned_char_type_node),
+				      val);
+    }
+  else
+    {
+      constfun = builtin_memset_read_str;
+      constfundata = &valc;
+    }
+
+  rtx ptr = copy_addr_to_reg (convert_to_mode (ptr_mode, XEXP (to, 0), 0));
+  rtx rem = copy_to_mode_reg (ptr_mode, convert_to_mode (ptr_mode, len, 0));
+  to = replace_equiv_address (to, ptr);
+  set_mem_align (to, align);
+
+  if (blksize)
+    {
+      to = store_by_pieces (to, blksize,
+			    constfun, constfundata,
+			    align, true,
+			    max_len != 0 ? RETURN_END : RETURN_BEGIN);
+      if (max_len == 0)
+	return true;
+
+      /* Adjust PTR, TO and REM.  Since TO's address is likely
+	 PTR+offset, we have to replace it.  */
+      emit_move_insn (ptr, XEXP (to, 0));
+      to = replace_equiv_address (to, ptr);
+      emit_move_insn (rem, plus_constant (ptr_mode, rem, -blksize));
+    }
+
+  /* Iterate over power-of-two block sizes from the maximum length to
+     the least significant bit possibly set in the length.  */
+  for (int i = max_bits; i >= sctz_len; i--)
+    {
+      rtx_code_label *label = NULL;
+      blksize = HOST_WIDE_INT_1U << i;
+
+      /* If we're past the bits shared between min_ and max_len, expand
+	 a test on the dynamic length, comparing it with the
+	 BLKSIZE.  */
+      if (i <= tst_bits)
+	{
+	  label = gen_label_rtx ();
+	  emit_cmp_and_jump_insns (rem, GEN_INT (blksize), LT, NULL,
+				   ptr_mode, 1, label,
+				   profile_probability::even ());
+	}
+      /* If we are at a bit that is in the prefix shared by min_ and
+	 max_len, skip this BLKSIZE if the bit is clear.  */
+      else if ((max_len & blksize) == 0)
+	continue;
+
+      /* Issue a store of BLKSIZE bytes.  */
+      to = store_by_pieces (to, blksize,
+			    constfun, constfundata,
+			    align, true,
+			    i != sctz_len ? RETURN_END : RETURN_BEGIN);
+
+      /* Adjust REM and PTR, unless this is the last iteration.  */
+      if (i != sctz_len)
+	{
+	  emit_move_insn (ptr, XEXP (to, 0));
+	  to = replace_equiv_address (to, ptr);
+	  emit_move_insn (rem, plus_constant (ptr_mode, rem, -blksize));
+	}
+
+      if (label)
+	{
+	  emit_label (label);
+
+	  /* Given conditional stores, the offset can no longer be
+	     known, so clear it.  */
+	  clear_mem_offset (to);
+	}
+    }
+
+  return true;
+}
+
 /* Helper function to do the actual work for expand_builtin_memset.  The
    arguments to the builtin_memset call DEST, VAL, and LEN are broken out
    so that this can also be called without constructing an actual CALL_EXPR.
@@ -6721,7 +6881,8 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   dest_mem = get_memory_rtx (dest, len);
   val_mode = TYPE_MODE (unsigned_char_type_node);
 
-  if (TREE_CODE (val) != INTEGER_CST)
+  if (TREE_CODE (val) != INTEGER_CST
+      || target_char_cast (val, &c))
     {
       rtx val_rtx;
 
@@ -6745,16 +6906,18 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
       else if (!set_storage_via_setmem (dest_mem, len_rtx, val_rtx,
 					dest_align, expected_align,
 					expected_size, min_size, max_size,
-					probable_max_size))
+					probable_max_size)
+	       && !try_store_by_multiple_pieces (dest_mem, len_rtx,
+						 tree_ctz (len),
+						 min_size, max_size,
+						 val_rtx, 0,
+						 dest_align))
 	goto do_libcall;
 
       dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
       dest_mem = convert_memory_address (ptr_mode, dest_mem);
       return dest_mem;
     }
-
-  if (target_char_cast (val, &c))
-    goto do_libcall;
 
   if (c)
     {
@@ -6769,7 +6932,12 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
 					gen_int_mode (c, val_mode),
 					dest_align, expected_align,
 					expected_size, min_size, max_size,
-					probable_max_size))
+					probable_max_size)
+	       && !try_store_by_multiple_pieces (dest_mem, len_rtx,
+						 tree_ctz (len),
+						 min_size, max_size,
+						 NULL_RTX, c,
+						 dest_align))
 	goto do_libcall;
 
       dest_mem = force_operand (XEXP (dest_mem, 0), NULL_RTX);
@@ -6783,7 +6951,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
 				   ? BLOCK_OP_TAILCALL : BLOCK_OP_NORMAL,
 				   expected_align, expected_size,
 				   min_size, max_size,
-				   probable_max_size);
+				   probable_max_size, tree_ctz (len));
 
   if (dest_addr == 0)
     {
