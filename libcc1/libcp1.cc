@@ -391,7 +391,7 @@ libcp1_destroy (struct gcc_base_context *s)
 
 static const struct gcc_base_vtable vtable =
 {
-  GCC_FE_VERSION_0,
+  GCC_FE_VERSION_1,
   libcp1_set_arguments_v0,
   libcp1_set_source_file,
   libcp1_set_print_callback,
