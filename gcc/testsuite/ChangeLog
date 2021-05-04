@@ -1,3 +1,8 @@
+2021-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/91914
+	* gcc.dg/strlenopt-79.c: New test.
+
 2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
