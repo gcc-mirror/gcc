@@ -37,73 +37,21 @@ along with GCC; see the file COPYING3.  If not see
 #include "compiler-name.hh"
 #include "gcc-c-interface.h"
 #include "compiler.hh"
-
-struct libcc1;
-
-class libcc1_connection;
+#include "gdbctx.hh"
 
 // The C compiler context that we hand back to our caller.
-struct libcc1 : public gcc_c_context
+struct libcc1 : public cc1_plugin::base_gdb_plugin<gcc_c_context>
 {
   libcc1 (const gcc_base_vtable *, const gcc_c_fe_vtable *);
 
-  // A convenience function to print something.
-  void print (const char *str)
-  {
-    this->print_function (this->print_datum, str);
-  }
-
-  std::unique_ptr<libcc1_connection> connection;
-
-  gcc_c_oracle_function *binding_oracle;
-  gcc_c_symbol_address_function *address_oracle;
-  void *oracle_datum;
-
-  void (*print_function) (void *datum, const char *message);
-  void *print_datum;
-
-  std::vector<std::string> args;
-  std::string source_file;
-
-  /* Non-zero as an equivalent to gcc driver option "-v".  */
-  bool verbose;
-
-  std::unique_ptr<cc1_plugin::compiler> compilerp;
+  gcc_c_oracle_function *binding_oracle = nullptr;
+  gcc_c_symbol_address_function *address_oracle = nullptr;
+  void *oracle_datum = nullptr;
 };
 
-// A local subclass of connection that holds a back-pointer to the
-// gcc_c_context object that we provide to our caller.
-class libcc1_connection : public cc1_plugin::connection
+libcc1::libcc1 (const gcc_base_vtable *v, const gcc_c_fe_vtable *cv)
+  : cc1_plugin::base_gdb_plugin<gcc_c_context> (v)
 {
-public:
-
-  libcc1_connection (int fd, int aux_fd, libcc1 *b)
-    : connection (fd, aux_fd),
-      back_ptr (b)
-  {
-  }
-
-  void print (const char *buf) override
-  {
-    back_ptr->print (buf);
-  }
-
-  libcc1 *back_ptr;
-};
-
-libcc1::libcc1 (const gcc_base_vtable *v,
-		const gcc_c_fe_vtable *cv)
-  : binding_oracle (NULL),
-    address_oracle (NULL),
-    oracle_datum (NULL),
-    print_function (NULL),
-    print_datum (NULL),
-    args (),
-    source_file (),
-    verbose (false),
-    compilerp (new cc1_plugin::compiler (verbose))
-{
-  base.ops = v;
   c_ops = cv;
 }
 
@@ -122,7 +70,7 @@ namespace {
 			 enum gcc_c_oracle_request request,
 			 const char *identifier)
   {
-    libcc1 *self = ((libcc1_connection *) conn)->back_ptr;
+    libcc1 *self = (libcc1 *) (((libcc1::local_connection *) conn)->back_ptr);
 
     self->binding_oracle (self->oracle_datum, self, request, identifier);
     return 1;
@@ -133,7 +81,7 @@ namespace {
   gcc_address
   c_call_symbol_address (cc1_plugin::connection *conn, const char *identifier)
   {
-    libcc1 *self = ((libcc1_connection *) conn)->back_ptr;
+    libcc1 *self = (libcc1 *) (((libcc1::local_connection *) conn)->back_ptr);
 
     return self->address_oracle (self->oracle_datum, self, identifier);
   }
@@ -154,40 +102,25 @@ set_callbacks (struct gcc_c_context *s,
   self->oracle_datum = datum;
 }
 
-// Instances of this rpc<> template function are installed into the
-// "c_vtable".  These functions are parameterized by type and method
-// name and forward the call via the connection.
-
-template<typename R, const char *&NAME, typename... Arg>
-R rpc (struct gcc_c_context *s, Arg... rest)
-{
-  libcc1 *self = (libcc1 *) s;
-  R result;
-
-  if (!cc1_plugin::call (self->connection.get (), NAME, &result, rest...))
-    return 0;
-  return result;
-}
-
 static const struct gcc_c_fe_vtable c_vtable =
 {
   GCC_C_FE_VERSION_0,
   set_callbacks,
 
 #define GCC_METHOD0(R, N) \
-  rpc<R, cc1_plugin::c::N>,
+  cc1_plugin::rpc<gcc_c_context, R, cc1_plugin::c::N>,
 #define GCC_METHOD1(R, N, A) \
-  rpc<R, cc1_plugin::c::N, A>,
+  cc1_plugin::rpc<gcc_c_context, R, cc1_plugin::c::N, A>,
 #define GCC_METHOD2(R, N, A, B) \
-  rpc<R, cc1_plugin::c::N, A, B>,
+  cc1_plugin::rpc<gcc_c_context, R, cc1_plugin::c::N, A, B>,
 #define GCC_METHOD3(R, N, A, B, C) \
-  rpc<R, cc1_plugin::c::N, A, B, C>,
+  cc1_plugin::rpc<gcc_c_context, R, cc1_plugin::c::N, A, B, C>,
 #define GCC_METHOD4(R, N, A, B, C, D) \
-  rpc<R, cc1_plugin::c::N, A, B, C, D>,
+  cc1_plugin::rpc<gcc_c_context, R, cc1_plugin::c::N, A, B, C, D>,
 #define GCC_METHOD5(R, N, A, B, C, D, E) \
-  rpc<R, cc1_plugin::c::N, A, B, C, D, E>,
+  cc1_plugin::rpc<gcc_c_context, R, cc1_plugin::c::N, A, B, C, D, E>,
 #define GCC_METHOD7(R, N, A, B, C, D, E, F, G) \
-  rpc<R, cc1_plugin::c::N, A, B, C, D, E, F, G>,
+  cc1_plugin::rpc<gcc_c_context, R, cc1_plugin::c::N, A, B, C, D, E, F, G>,
 
 #include "gcc-c-fe.def"
 
@@ -207,9 +140,7 @@ libcc1_set_verbose (struct gcc_base_context *s, int /* bool */ verbose)
 {
   libcc1 *self = (libcc1 *) s;
 
-  self->verbose = verbose != 0;
-  if (self->compilerp != nullptr)
-    self->compilerp->set_verbose (self->verbose);
+  self->set_verbose (verbose != 0);
 }
 
 static char *
@@ -386,7 +317,7 @@ libcc1_compile (struct gcc_base_context *s,
   if (self->verbose)
     self->args.push_back ("-v");
 
-  self->connection.reset (new libcc1_connection (fds[0], stderr_fds[0], self));
+  self->set_connection (fds[0], stderr_fds[0]);
 
   cc1_plugin::callback_ftype *fun
     = cc1_plugin::callback<int,
