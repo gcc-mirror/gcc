@@ -27,7 +27,7 @@ void test02()
   iterator_type it01;
   iterator_type it02;
 
-  // Sanity check non-member operators and functions can be instantiated. 
+  // Sanity check non-member operators and functions can be instantiated.
   it01 == it02;
   it01 != it02;
   it01 < it02;
@@ -35,11 +35,11 @@ void test02()
   it01 > it02;
   it01 >= it02;
   it01 - it02;
-  5 + it02;
+  0 + it02;
 }
 
-int main() 
-{ 
+int main()
+{
   test02();
   return 0;
 }

@@ -35,6 +35,6 @@ test01()
   static_assert(std::is_trivial<trivial_rvalstruct>::value, "");
 
   trivial_rvalstruct a[1], b[1];
-  std::move_backward(a, a + 1, b);
+  std::move_backward(a, a + 1, b + 1);
 }
 // { dg-prune-output "use of deleted" }
