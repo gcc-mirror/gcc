@@ -1039,6 +1039,14 @@ namespace __variant
 			      std::index_sequence<__indices...>>
     : _Base_dedup<__indices, __poison_hash<remove_const_t<_Types>>>... { };
 
+  template<size_t _Np, typename _Variant>
+    using __get_t = decltype(std::get<_Np>(std::declval<_Variant>()));
+
+  // Return type of std::visit.
+  template<typename _Visitor, typename... _Variants>
+    using __visit_result_t
+      = invoke_result_t<_Visitor, __get_t<0, _Variants>...>;
+
 } // namespace __variant
 } // namespace __detail
 
@@ -1191,7 +1199,8 @@ namespace __variant
 #undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
   template<typename _Visitor, typename... _Variants>
-    constexpr decltype(auto) visit(_Visitor&&, _Variants&&...);
+    constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
+    visit(_Visitor&&, _Variants&&...);
 
   template<typename... _Types>
     inline enable_if_t<(is_move_constructible_v<_Types> && ...)
@@ -1638,7 +1647,7 @@ namespace __variant
     __do_visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
       using _Deduced_type = std::invoke_result<_Visitor,
-	decltype(std::get<0>(std::declval<_Variants>()))...>;
+	__detail::__variant::__get_t<0, _Variants>...>;
 
       using _Result_type = typename std::conditional_t<__use_index,
 	__detail::__variant::__variant_idx_cookie,
@@ -1654,14 +1663,14 @@ namespace __variant
     }
 
   template<typename _Visitor, typename... _Variants>
-    constexpr decltype(auto)
+    constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
       if ((__variants.valueless_by_exception() || ...))
 	__throw_bad_variant_access("Unexpected index");
 
-      return __do_visit(std::forward<_Visitor>(__visitor),
-			std::forward<_Variants>(__variants)...);
+      return std::__do_visit(std::forward<_Visitor>(__visitor),
+			     std::forward<_Variants>(__variants)...);
     }
 
 #if __cplusplus > 201703L
