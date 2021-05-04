@@ -1063,6 +1063,25 @@ namespace __variant
 			      std::index_sequence<__indices...>>
     : _Base_dedup<__indices, __poison_hash<remove_const_t<_Types>>>... { };
 
+  template<size_t _Np, typename _Variant>
+    using __get_t = decltype(std::get<_Np>(std::declval<_Variant>()));
+
+  // Return type of std::visit.
+  template<typename _Visitor, typename... _Variants>
+    using __visit_result_t
+      = invoke_result_t<_Visitor, __get_t<0, _Variants>...>;
+
+  template<typename _Tp, typename... _Types>
+    constexpr inline bool __same_types = (is_same_v<_Tp, _Types> && ...);
+
+  template <typename _Visitor, typename _Variant, size_t... _Idxs>
+    constexpr bool __check_visitor_results(std::index_sequence<_Idxs...>)
+    {
+      return __same_types<
+	invoke_result_t<_Visitor, __get_t<_Idxs, _Variant>>...
+	>;
+    }
+
 } // namespace __variant
 } // namespace __detail
 
@@ -1248,7 +1267,8 @@ namespace __variant
 #endif
 
   template<typename _Visitor, typename... _Variants>
-    constexpr decltype(auto) visit(_Visitor&&, _Variants&&...);
+    constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
+    visit(_Visitor&&, _Variants&&...);
 
   template<typename... _Types>
     inline enable_if_t<(is_move_constructible_v<_Types> && ...)
@@ -1715,41 +1735,21 @@ namespace __variant
 			   std::forward<_Variants>(__variants)...);
     }
 
-  template<typename _Tp, typename... _Types>
-     constexpr inline bool __same_types = (is_same_v<_Tp, _Types> && ...);
-
-  template <size_t _Idx, typename _Visitor, typename _Variant>
-    decltype(auto)
-    __check_visitor_result(_Visitor&& __vis, _Variant&& __variant)
-    {
-      return std::__invoke(std::forward<_Visitor>(__vis),
-			   std::get<_Idx>(std::forward<_Variant>(__variant)));
-    }
-
-  template <typename _Visitor, typename _Variant, size_t... _Idxs>
-    constexpr bool __check_visitor_results(std::index_sequence<_Idxs...>)
-    {
-      return __same_types<decltype(__check_visitor_result<_Idxs>(
-	std::declval<_Visitor>(),
-	std::declval<_Variant>()))...>;
-    }
-
-
   template<typename _Visitor, typename... _Variants>
-    constexpr decltype(auto)
+    constexpr __detail::__variant::__visit_result_t<_Visitor, _Variants...>
     visit(_Visitor&& __visitor, _Variants&&... __variants)
     {
       if ((__variants.valueless_by_exception() || ...))
 	__throw_bad_variant_access("std::visit: variant is valueless");
 
-      using _Result_type = std::invoke_result_t<_Visitor,
-	decltype(std::get<0>(std::declval<_Variants>()))...>;
+      using _Result_type
+	= __detail::__variant::__visit_result_t<_Visitor, _Variants...>;
 
       using _Tag = __detail::__variant::__deduce_visit_result<_Result_type>;
 
       if constexpr (sizeof...(_Variants) == 1)
 	{
-	  constexpr bool __visit_rettypes_match =
+	  constexpr bool __visit_rettypes_match = __detail::__variant::
 	    __check_visitor_results<_Visitor, _Variants...>(
 	      std::make_index_sequence<
 	        std::variant_size<remove_reference_t<_Variants>...>::value>());
