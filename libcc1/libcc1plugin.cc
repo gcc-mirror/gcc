@@ -66,87 +66,11 @@
 #include "marshall.hh"
 #include "rpc.hh"
 #include "gcc-c-interface.h"
+#include "context.hh"
 
 #include <vector>
 
-#ifdef __GNUC__
-#pragma GCC visibility push(default)
-#endif
-int plugin_is_GPL_compatible;
-#ifdef __GNUC__
-#pragma GCC visibility pop
-#endif
-
-
-
-// This is put into the lang hooks when the plugin starts.
-
-static void
-plugin_print_error_function (diagnostic_context *context, const char *file,
-			     diagnostic_info *diagnostic)
-{
-  if (current_function_decl != NULL_TREE
-      && DECL_NAME (current_function_decl) != NULL_TREE
-      && strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),
-		 GCC_FE_WRAPPER_FUNCTION) == 0)
-    return;
-  lhd_print_error_function (context, file, diagnostic);
-}
-
-
-
-static unsigned long long
-convert_out (tree t)
-{
-  return (unsigned long long) (uintptr_t) t;
-}
-
-static tree
-convert_in (unsigned long long v)
-{
-  return (tree) (uintptr_t) v;
-}
-
-
-
-struct decl_addr_value
-{
-  tree decl;
-  tree address;
-};
-
-struct decl_addr_hasher : free_ptr_hash<decl_addr_value>
-{
-  static inline hashval_t hash (const decl_addr_value *);
-  static inline bool equal (const decl_addr_value *, const decl_addr_value *);
-};
-
-inline hashval_t
-decl_addr_hasher::hash (const decl_addr_value *e)
-{
-  return IDENTIFIER_HASH_VALUE (DECL_NAME (e->decl));
-}
-
-inline bool
-decl_addr_hasher::equal (const decl_addr_value *p1, const decl_addr_value *p2)
-{
-  return p1->decl == p2->decl;
-}
-
-
-
-struct string_hasher : nofree_ptr_hash<const char>
-{
-  static inline hashval_t hash (const char *s)
-  {
-    return htab_hash_string (s);
-  }
-
-  static inline bool equal (const char *p1, const char *p2)
-  {
-    return strcmp (p1, p2) == 0;
-  }
-};
+using namespace cc1_plugin;
 
 
 
@@ -165,85 +89,6 @@ pushdecl_safe (tree decl)
 }
 
 
-
-struct plugin_context : public cc1_plugin::connection
-{
-  plugin_context (int fd);
-
-  // Map decls to addresses.
-  hash_table<decl_addr_hasher> address_map;
-
-  // A collection of trees that are preserved for the GC.
-  hash_table< nofree_ptr_hash<tree_node> > preserved;
-
-  // File name cache.
-  hash_table<string_hasher> file_names;
-
-  // Perform GC marking.
-  void mark ();
-
-  // Preserve a tree during the plugin's operation.
-  tree preserve (tree t)
-  {
-    tree_node **slot = preserved.find_slot (t, INSERT);
-    *slot = t;
-    return t;
-  }
-
-  location_t get_location_t (const char *filename,
-			     unsigned int line_number)
-  {
-    if (filename == NULL)
-      return UNKNOWN_LOCATION;
-
-    filename = intern_filename (filename);
-    linemap_add (line_table, LC_ENTER, false, filename, line_number);
-    location_t loc = linemap_line_start (line_table, line_number, 0);
-    linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-    return loc;
-  }
-
-private:
-
-  // Add a file name to FILE_NAMES and return the canonical copy.
-  const char *intern_filename (const char *filename)
-  {
-    const char **slot = file_names.find_slot (filename, INSERT);
-    if (*slot == NULL)
-      {
-	/* The file name must live as long as the line map, which
-	   effectively means as long as this compilation.  So, we copy
-	   the string here but never free it.  */
-	*slot = xstrdup (filename);
-      }
-    return *slot;
-  }
-};
-
-static plugin_context *current_context;
-
-
-
-plugin_context::plugin_context (int fd)
-  : cc1_plugin::connection (fd),
-    address_map (30),
-    preserved (30),
-    file_names (30)
-{
-}
-
-void
-plugin_context::mark ()
-{
-  for (const auto &item : address_map)
-    {
-      ggc_mark (item->decl);
-      ggc_mark (item->address);
-    }
-
-  for (const auto &item : preserved)
-    ggc_mark (&item);
-}
 
 static void
 plugin_binding_oracle (enum c_oracle_request kind, tree identifier)
@@ -899,15 +744,6 @@ plugin_error (cc1_plugin::connection *,
 
 
 
-// Perform GC marking.
-
-static void
-gc_mark (void *, void *)
-{
-  if (current_context != NULL)
-    current_context->mark ();
-}
-
 #ifdef __GNUC__
 #pragma GCC visibility push(default)
 #endif
@@ -916,46 +752,12 @@ int
 plugin_init (struct plugin_name_args *plugin_info,
 	     struct plugin_gcc_version *)
 {
-  long fd = -1;
-  for (int i = 0; i < plugin_info->argc; ++i)
-    {
-      if (strcmp (plugin_info->argv[i].key, "fd") == 0)
-	{
-	  char *tail;
-	  errno = 0;
-	  fd = strtol (plugin_info->argv[i].value, &tail, 0);
-	  if (*tail != '\0' || errno != 0)
-	    fatal_error (input_location,
-			 "%s: invalid file descriptor argument to plugin",
-			 plugin_info->base_name);
-	  break;
-	}
-    }
-  if (fd == -1)
-    fatal_error (input_location,
-		 "%s: required plugin argument %<fd%> is missing",
-		 plugin_info->base_name);
-
-  current_context = new plugin_context (fd);
-
-  // Handshake.
-  cc1_plugin::protocol_int version;
-  if (!current_context->require ('H')
-      || ! ::cc1_plugin::unmarshall (current_context, &version))
-    fatal_error (input_location,
-		 "%s: handshake failed", plugin_info->base_name);
-  if (version != GCC_C_FE_VERSION_1)
-    fatal_error (input_location,
-		 "%s: unknown version in handshake", plugin_info->base_name);
+  generic_plugin_init (plugin_info, GCC_C_FE_VERSION_1);
 
   register_callback (plugin_info->base_name, PLUGIN_PRAGMAS,
 		     plugin_init_extra_pragmas, NULL);
   register_callback (plugin_info->base_name, PLUGIN_PRE_GENERICIZE,
 		     rewrite_decls_to_addresses, NULL);
-  register_callback (plugin_info->base_name, PLUGIN_GGC_MARKING,
-		     gc_mark, NULL);
-
-  lang_hooks.print_error_function = plugin_print_error_function;
 
 #define GCC_METHOD0(R, N)			\
   {						\
