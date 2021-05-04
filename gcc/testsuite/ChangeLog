@@ -1,3 +1,11 @@
+2021-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100362
+	* g++.dg/cpp1y/lambda-generic-100362.C: New test.
+
 2021-04-30  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
