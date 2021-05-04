@@ -734,10 +734,13 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
 {
   if (O_UIMM_P (op_flags))
     {
-      unsigned HOST_WIDE_INT bitwidths[] = { 1, 2, 3, 4, 5, 8, 12, 16, 32, 4,  4 };
-      unsigned HOST_WIDE_INT bitmasks[]  = { 0, 0, 0, 0, 0, 0,  0,  0,  0, 5, 12 };
+      unsigned HOST_WIDE_INT bitwidths[] = { 1, 2, 3, 4, 5, 8, 12, 16, 32, 4 };
+      unsigned HOST_WIDE_INT bitmasks[]  = { 0, 0, 0, 0, 0, 0,  0,  0,  0, 12 };
       unsigned HOST_WIDE_INT bitwidth = bitwidths[op_flags - O_U1];
       unsigned HOST_WIDE_INT bitmask = bitmasks[op_flags - O_U1];
+
+      gcc_assert(ARRAY_SIZE(bitwidths) == (O_M12 - O_U1 + 1));
+      gcc_assert(ARRAY_SIZE(bitmasks) == (O_M12 - O_U1 + 1));
 
       if (!tree_fits_uhwi_p (arg)
 	  || tree_to_uhwi (arg) > (HOST_WIDE_INT_1U << bitwidth) - 1
