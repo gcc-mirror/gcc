@@ -27,15 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "connection.hh"
 #include "rpc.hh"
 
-cc1_plugin::connection::~connection ()
-{
-}
-
-void
-cc1_plugin::connection::print (const char *)
-{
-}
-
 cc1_plugin::status
 cc1_plugin::connection::send (char c)
 {

@@ -46,7 +46,7 @@ namespace cc1_plugin
     {
     }
 
-    virtual ~connection ();
+    virtual ~connection () = default;
 
     // Send a single character.  This is used to introduce various
     // higher-level protocol elements.
@@ -89,7 +89,9 @@ namespace cc1_plugin
       m_callbacks.add_callback (name, func);
     }
 
-    virtual void print (const char *);
+    virtual void print (const char *)
+    {
+    }
 
   private:
 
