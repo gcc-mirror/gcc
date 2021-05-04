@@ -308,15 +308,11 @@ namespace cc1_plugin
 
       self->add_callbacks ();
 
-      char **argv = new (std::nothrow) char *[self->args.size () + 1];
-      if (argv == NULL)
-	return 0;
-
+      std::vector<char *> argv (self->args.size () + 1);
       for (unsigned int i = 0; i < self->args.size (); ++i)
 	argv[i] = const_cast<char *> (self->args[i].c_str ());
-      argv[self->args.size ()] = NULL;
 
-      return self->fork_exec (argv, fds, stderr_fds);
+      return self->fork_exec (argv.data (), fds, stderr_fds);
     }
 
     static int
