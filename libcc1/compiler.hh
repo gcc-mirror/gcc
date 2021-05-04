@@ -58,7 +58,7 @@ namespace cc1_plugin
 
     char *find (const char *base, std::string &compiler) const override;
 
-    compiler_triplet_regexp (bool v, std::string triplet_regexp)
+    compiler_triplet_regexp (bool v, const char *triplet_regexp)
       : compiler (v), triplet_regexp_ (triplet_regexp)
     {
     }
@@ -72,7 +72,7 @@ namespace cc1_plugin
   public:
     char *find (const char *base, std::string &compiler) const override;
 
-    compiler_driver_filename (bool v, std::string driver_filename)
+    compiler_driver_filename (bool v, const char *driver_filename)
       : compiler (v), driver_filename_ (driver_filename)
     {
     }
