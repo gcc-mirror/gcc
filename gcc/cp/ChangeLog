@@ -1,3 +1,28 @@
+2021-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100362
+	* parser.c (cp_parser_class_head): Reinstate calls to pushclass
+	and popclass when parsing the base-clause that were removed in
+	r11-6815.
+
+2021-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/68942
+	PR c++/100344
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: Set tf_conv
+	only when the callee is a FUNCTION_DECL.
+
+2021-05-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100055
+	* decl.c (grokfndecl): Check current_template_parms.
+
+2021-05-03  Marek Polacek  <polacek@redhat.com>
+
+	DR 1312
+	* constexpr.c (cxx_eval_constant_expression): Don't check
+	integer_zerop.
+
 2021-05-01  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (class ovl_iterator): Allow copying.  Add op==.

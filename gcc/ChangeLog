@@ -1,3 +1,41 @@
+2021-05-03  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100321
+	* omp-low.c (lower_rec_input_clauses): Disable SIMT for user-defined
+	reduction.
+
+2021-05-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dse.c (dse_classify_store): Track two PHI defs.
+
+2021-05-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dse.c: Do not include domwalk.h but cfganal.h.
+	(dse_dom_walker): Remove.
+	(dse_dom_walker::dse_optimize_stmt): Rename...
+	(dse_optimize_stmt): ... to this, pass in live_bytes sbitmap.
+	(dse_dom_walker::before_dom_children): Inline ...
+	(pass_dse::execute): ... here.  Perform a reverse program
+	order walk.
+
+2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/99703
+	* configure: Regenerated.
+
+2021-05-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/100217
+	* config/s390/s390.c (s390_hard_fp_reg_p): New function.
+	(s390_md_asm_adjust): Handle hard registers.
+
+2021-05-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/100382
+	* tree-ssa-dse.c: Include tree-eh.h.
+	(dse_dom_walker::before_dom_children): Don't remove stmts if
+	stmt_unremovable_because_of_non_call_eh_p is true.
+
 2021-05-02  David Edelsohn  <dje.gcc@gmail.com>
 
 	* varasm.c (compute_reloc_for_var): Split out from...
