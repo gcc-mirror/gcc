@@ -174,6 +174,8 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
   bool cfgchanged = false;
   hash_set<tree> *nontrap = 0;
 
+  calculate_dominance_info (CDI_DOMINATORS);
+
   if (do_store_elim)
     /* Calculate the set of non-trapping memory accesses.  */
     nontrap = get_non_trapping ();
@@ -2438,9 +2440,6 @@ get_non_trapping (void)
 {
   nt_call_phase = 0;
   hash_set<tree> *nontrap = new hash_set<tree>;
-  /* We're going to do a dominator walk, so ensure that we have
-     dominance information.  */
-  calculate_dominance_info (CDI_DOMINATORS);
 
   nontrapping_dom_walker (CDI_DOMINATORS, nontrap)
     .walk (cfun->cfg->x_entry_block_ptr);
