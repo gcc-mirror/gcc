@@ -14480,8 +14480,8 @@ target_char_cst_p (tree t, char *p)
 }
 
 /* Return true if the builtin DECL is implemented in a standard library.
-   Otherwise returns false which doesn't guarantee it is not (thus the list of
-   handled builtins below may be incomplete).  */
+   Otherwise return false which doesn't guarantee it is not (thus the list
+   of handled builtins below may be incomplete).  */
 
 bool
 builtin_with_linkage_p (tree decl)
@@ -14560,6 +14560,14 @@ builtin_with_linkage_p (tree decl)
       CASE_FLT_FN (BUILT_IN_TRUNC):
       CASE_FLT_FN_FLOATN_NX (BUILT_IN_TRUNC):
 	return true;
+
+      case BUILT_IN_STPCPY:
+      case BUILT_IN_STPNCPY:
+	/* stpcpy is both referenced in libiberty's pex-win32.c and provided
+	   by libiberty's stpcpy.c for MinGW targets so we need to return true
+	   in order to be able to build libiberty in LTO mode for them.  */
+	return true;
+
       default:
 	break;
     }

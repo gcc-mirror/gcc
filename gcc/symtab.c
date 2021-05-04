@@ -2526,10 +2526,7 @@ symtab_node::output_to_lto_symbol_table_p (void)
 	 in libraries so make sure to output references into the symbol table to
 	 make those libraries referenced.  Note this is incomplete handling for
 	 now and only covers math functions.  */
-      if (builtin_with_linkage_p (decl))
-	return true;
-      else
-	return false;
+      return builtin_with_linkage_p (decl);
     }
 
   /* We have real symbol that should be in symbol table.  However try to trim

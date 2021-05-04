@@ -7049,11 +7049,11 @@ else
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-int *p;
+extern int $v [];
 int
 main ()
 {
-extern int $v []; p = $v;
+if ($v [0]) return 1;
   ;
   return 0;
 }
