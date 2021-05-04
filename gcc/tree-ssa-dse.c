@@ -1219,6 +1219,7 @@ pass_dse::execute (function *fun)
 		 dead SSA defs.  */
 	      if (has_zero_uses (DEF_FROM_PTR (def_p))
 		  && !gimple_has_side_effects (stmt)
+		  && !is_ctrl_altering_stmt (stmt)
 		  && !stmt_unremovable_because_of_non_call_eh_p (cfun, stmt))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))

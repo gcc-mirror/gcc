@@ -13974,7 +13974,7 @@ package body Sem_Res is
       then
          Conversion_Error_N ("target type must be general access type!", N);
          Conversion_Error_NE -- CODEFIX
-            ("add ALL to }!", N, Target_Type);
+            ("\add ALL to }!", N, Target_Type);
          return False;
 
       --  Here we have a real conversion error

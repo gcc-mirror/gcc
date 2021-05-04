@@ -786,7 +786,7 @@ package body Xref_Lib is
       --  line and column in the dependent unit number Eun. For this we need
       --  to parse the ali file again because the parent entity is not in
       --  the declaration table if it did not match the search pattern.
-      --  If the symbol is not found, we return "???".
+      --  If the symbol is not found, we return (1 .. 3 => '?').
 
       procedure Skip_To_Matching_Closing_Bracket;
       --  When Ptr points to an opening square bracket, moves it to the

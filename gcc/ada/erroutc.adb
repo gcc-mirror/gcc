@@ -51,11 +51,6 @@ package body Erroutc is
    -- Local Subprograms --
    -----------------------
 
-   function Matches (S : String; P : String) return Boolean;
-   --  Returns true if the String S matches the pattern P, which can contain
-   --  wildcard chars (*). The entire pattern must match the entire string.
-   --  Case is ignored in the comparison (so X matches x).
-
    function Sloc_In_Range (Loc, Start, Stop : Source_Ptr) return Boolean;
    --  Return whether Loc is in the range Start .. Stop, taking instantiation
    --  locations of Loc into account. This is useful for suppressing warnings

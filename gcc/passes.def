@@ -336,8 +336,9 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
       /* Threading can leave many const/copy propagations in the IL.
-	 Clean them up.  */
-      NEXT_PASS (pass_copy_prop);
+	 Clean them up.  Instead of just copy_prop, we use ccp to
+	 compute alignment and nonzero bits.  */
+      NEXT_PASS (pass_ccp, true /* nonzero_p */);
       NEXT_PASS (pass_warn_restrict);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_cd_dce, true /* update_address_taken_p */);

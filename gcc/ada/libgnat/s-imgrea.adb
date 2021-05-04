@@ -31,10 +31,14 @@
 
 with System.Img_LLU;    use System.Img_LLU;
 with System.Img_Uns;    use System.Img_Uns;
+with System.Img_Util;   use System.Img_Util;
 with System.Powten_LLF; use System.Powten_LLF;
+
 with System.Float_Control;
 
 package body System.Img_Real is
+
+   subtype LLU is Long_Long_Unsigned;
 
    --  The following defines the maximum number of digits that we can convert
    --  accurately. This is limited by the precision of Long_Long_Float, and
@@ -46,18 +50,13 @@ package body System.Img_Real is
    --  implementations, and at worst, the only loss is for some precision
    --  in very high precision floating-point output.
 
-   --  Note that in the following, the "-2" accounts for the sign and one
+   --  Note that in the following, the "-2" accounts for the space and one
    --  extra digit, since we need the maximum number of 9's that can be
    --  represented, e.g. for the 64-bit case, Long_Long_Unsigned'Width is
    --  21, since the maximum value (approx 1.8E+19) has 20 digits, but the
    --  maximum number of 9's that can be represented is only 19.
 
-   Maxdigs : constant :=
-               Natural'Min
-                 (Long_Long_Unsigned'Width - 2, Long_Long_Float'Digits);
-
-   Unsdigs : constant := Unsigned'Width - 2;
-   --  Number of digits that can be converted using type Unsigned
+   Maxdigs : constant := Natural'Min (LLU'Width - 2, Long_Long_Float'Digits);
 
    Maxscaling : constant := 5000;
    --  Max decimal scaling required during conversion of floating-point
@@ -69,7 +68,8 @@ package body System.Img_Real is
    --  enough room for scaling such values
 
    function Is_Negative (V : Long_Long_Float) return Boolean;
-   pragma Import (Intrinsic, Is_Negative);
+   --  Return True if V is negative for the purpose of the output, i.e. return
+   --  True for negative zeros only if Signed_Zeros is True.
 
    --------------------------
    -- Image_Floating_Point --
@@ -86,14 +86,12 @@ package body System.Img_Real is
    begin
       --  Decide whether a blank should be prepended before the call to
       --  Set_Image_Real. We generate a blank for positive values, and
-      --  also for positive zeroes. For negative zeroes, we generate a
+      --  also for positive zeros. For negative zeros, we generate a
       --  blank only if Signed_Zeros is False (the RM only permits the
       --  output of -0.0 when Signed_Zeros is True). We do not generate
       --  a blank for positive infinity, since we output an explicit +.
 
-      if (not Is_Negative (V) and then V <= Long_Long_Float'Last)
-        or else (not Long_Long_Float'Signed_Zeros and then V = -0.0)
-      then
+      if not Is_Negative (V) and then V <= Long_Long_Float'Last then
          pragma Annotate (CodePeer, False_Positive, "condition predetermined",
                           "CodePeer analysis ignores NaN and Inf values");
          pragma Assert (S'Last > 1);
@@ -133,68 +131,59 @@ package body System.Img_Real is
       Set_Image_Real (V, S, P, 1, Aft, 0);
    end Image_Ordinary_Fixed_Point;
 
+   -----------------
+   -- Is_Negative --
+   -----------------
+
+   function Is_Negative (V : Long_Long_Float) return Boolean is
+   begin
+      if V < 0.0 then
+         return True;
+
+      elsif V > 0.0 then
+         return False;
+
+      elsif not Long_Long_Float'Signed_Zeros then
+         return False;
+
+      else
+         return Long_Long_Float'Copy_Sign (1.0, V) < 0.0;
+      end if;
+   end Is_Negative;
+
    --------------------
    -- Set_Image_Real --
    --------------------
 
    procedure Set_Image_Real
      (V    : Long_Long_Float;
-      S    : out String;
+      S    : in out String;
       P    : in out Natural;
       Fore : Natural;
       Aft  : Natural;
       Exp  : Natural)
    is
       NFrac : constant Natural := Natural'Max (Aft, 1);
-      Minus : Boolean;
-      X     : Long_Long_Float;
-      Scale : Integer;
-      Expon : Integer;
+      --  Number of digits after the decimal point
 
-      Digs : String (1 .. Max_Real_Image_Length);
-      --  Array used to hold digits of converted integer value. This is a large
-      --  enough buffer to accommodate ludicrous Fore/Aft/Exp combinations.
+      Digs : String (1 .. 3 + Maxdigs);
+      --  Array used to hold digits of converted integer value
 
       Ndigs : Natural;
       --  Number of digits stored in Digs (and also subscript of last digit)
 
+      Scale : Integer := 0;
+      --  Exponent such that the result is Digs (1 .. NDigs) * 10**(-Scale)
+
+      X : Long_Long_Float;
+      --  Current absolute value of the input after scaling
+
       procedure Adjust_Scale (S : Natural);
       --  Adjusts the value in X by multiplying or dividing by a power of
-      --  ten so that it is in the range 10**(S-1) <= X < 10**S. Includes
-      --  adding 0.5 to round the result, readjusting if the rounding causes
-      --  the result to wander out of the range. Scale is adjusted to reflect
-      --  the power of ten used to divide the result (i.e. one is added to
-      --  the scale value for each division by 10.0, or one is subtracted
-      --  for each multiplication by 10.0).
-
-      procedure Convert_Integer;
-      --  Takes the value in X, outputs integer digits into Digs. On return,
-      --  Ndigs is set to the number of digits stored. The digits are stored
-      --  in Digs (1 .. Ndigs),
-
-      procedure Set (C : Character);
-      --  Sets character C in output buffer
-
-      procedure Set_Blanks_And_Sign (N : Integer);
-      --  Sets leading blanks and minus sign if needed. N is the number of
-      --  positions to be filled (a minus sign is output even if N is zero
-      --  or negative, but for a positive value, if N is non-positive, then
-      --  the call has no effect).
-
-      procedure Set_Digs (S, E : Natural);
-      --  Set digits S through E from Digs buffer. No effect if S > E
-
-      procedure Set_Special_Fill (N : Natural);
-      --  After outputting +Inf, -Inf or NaN, this routine fills out the
-      --  rest of the field with * characters. The argument is the number
-      --  of characters output so far (either 3 or 4)
-
-      procedure Set_Zeros (N : Integer);
-      --  Set N zeros, no effect if N is negative
-
-      pragma Inline (Set);
-      pragma Inline (Set_Digs);
-      pragma Inline (Set_Zeros);
+      --  ten so that it is in the range 10**(S-1) <= X < 10**S. Scale is
+      --  adjusted to reflect the power of ten used to divide the result,
+      --  i.e. one is added to the scale value for each multiplication by
+      --  10.0 and one is subtracted for each division by 10.0.
 
       ------------------
       -- Adjust_Scale --
@@ -216,9 +205,9 @@ package body System.Img_Real is
 
             loop
                XP := X * Powten (Maxpow);
-               exit when XP >= Powten (S - 1) or else Scale < -Maxscaling;
+               exit when XP >= Powten (S - 1) or else Scale > Maxscaling;
                X := XP;
-               Scale := Scale - Maxpow;
+               Scale := Scale + Maxpow;
             end loop;
 
             --  The following exception is only raised in case of erroneous
@@ -227,7 +216,7 @@ package body System.Img_Real is
             --  when a system which is supposed to be IEEE-compliant, but
             --  has been reconfigured to flush denormals to zero.
 
-            if Scale < -Maxscaling then
+            if Scale > Maxscaling then
                raise Constraint_Error;
             end if;
 
@@ -275,7 +264,7 @@ package body System.Img_Real is
             end loop;
 
             X := XP;
-            Scale := Scale - Mid;
+            Scale := Scale + Mid;
 
          --  Cases where scaling down is required
 
@@ -288,9 +277,9 @@ package body System.Img_Real is
 
             loop
                XP := X / Powten (Maxpow);
-               exit when XP < Powten (S) or else Scale > Maxscaling;
+               exit when XP < Powten (S) or else Scale < -Maxscaling;
                X := XP;
-               Scale := Scale + Maxpow;
+               Scale := Scale - Maxpow;
             end loop;
 
             --  The following exception is only raised in case of erroneous
@@ -299,7 +288,7 @@ package body System.Img_Real is
             --  when a system which is supposed to be IEEE-compliant, but
             --  has been reconfigured to flush denormals to zero.
 
-            if Scale > Maxscaling then
+            if Scale < -Maxscaling then
                raise Constraint_Error;
             end if;
 
@@ -341,140 +330,14 @@ package body System.Img_Real is
             end loop;
 
             X := XP;
-            Scale := Scale + Mid;
+            Scale := Scale - Mid;
 
          --  Here we are already scaled right
 
          else
             null;
          end if;
-
-         --  Round, readjusting scale if needed. Note that if a readjustment
-         --  occurs, then it is never necessary to round again, because there
-         --  is no possibility of such a second rounding causing a change.
-
-         X := X + 0.5;
-
-         if X >= Powten (S) then
-            X := X / 10.0;
-            Scale := Scale + 1;
-         end if;
-
       end Adjust_Scale;
-
-      ---------------------
-      -- Convert_Integer --
-      ---------------------
-
-      procedure Convert_Integer is
-      begin
-         --  Use Unsigned routine if possible, since on many machines it will
-         --  be significantly more efficient than the Long_Long_Unsigned one.
-
-         if X < Powten (Unsdigs) then
-            pragma Assert (X in 0.0 .. Long_Long_Float (Unsigned'Last));
-            Ndigs := 0;
-            Set_Image_Unsigned
-              (Unsigned (Long_Long_Float'Truncation (X)),
-               Digs, Ndigs);
-
-         --  But if we want more digits than fit in Unsigned, we have to use
-         --  the Long_Long_Unsigned routine after all.
-
-         else
-            pragma Assert (X < Powten (Maxdigs));
-            pragma Assert
-              (X in 0.0 .. Long_Long_Float (Long_Long_Unsigned'Last));
-
-            Ndigs := 0;
-            Set_Image_Long_Long_Unsigned
-              (Long_Long_Unsigned (Long_Long_Float'Truncation (X)),
-               Digs, Ndigs);
-         end if;
-      end Convert_Integer;
-
-      ---------
-      -- Set --
-      ---------
-
-      procedure Set (C : Character) is
-      begin
-         pragma Assert (P in S'First - 1 .. S'Last - 1);
-         --  No check is done as documented in the header: updating P to point
-         --  to the last character stored, the caller promises that the buffer
-         --  is large enough and no check is made for this. Constraint_Error
-         --  will not necessarily be raised if this requirement is violated,
-         --  since it is perfectly valid to compile this unit with checks off.
-         P := P + 1;
-         S (P) := C;
-      end Set;
-
-      -------------------------
-      -- Set_Blanks_And_Sign --
-      -------------------------
-
-      procedure Set_Blanks_And_Sign (N : Integer) is
-      begin
-         if Minus then
-            for J in 1 .. N - 1 loop
-               Set (' ');
-            end loop;
-
-            Set ('-');
-
-         else
-            for J in 1 .. N loop
-               Set (' ');
-            end loop;
-         end if;
-      end Set_Blanks_And_Sign;
-
-      --------------
-      -- Set_Digs --
-      --------------
-
-      procedure Set_Digs (S, E : Natural) is
-      begin
-         pragma Assert (S >= Digs'First and E <= Digs'Last);
-         --  S and E should be in the Digs array range
-         for J in S .. E loop
-            Set (Digs (J));
-         end loop;
-      end Set_Digs;
-
-      ----------------------
-      -- Set_Special_Fill --
-      ----------------------
-
-      procedure Set_Special_Fill (N : Natural) is
-         F : Natural;
-
-      begin
-         pragma Assert ((Fore + Aft - N + 1) in Natural);
-         --  Fore + Aft - N + 1 should be in the Natural range
-         F := Fore + 1 + Aft - N;
-
-         if Exp /= 0 then
-            pragma Assert (F + Exp + 1 <= Natural'Last);
-            --  F + Exp + 1 should be in the Natural range
-            F := F + Exp + 1;
-         end if;
-
-         for J in 1 .. F loop
-            Set ('*');
-         end loop;
-      end Set_Special_Fill;
-
-      ---------------
-      -- Set_Zeros --
-      ---------------
-
-      procedure Set_Zeros (N : Integer) is
-      begin
-         for J in 1 .. N loop
-            Set ('0');
-         end loop;
-      end Set_Zeros;
 
    --  Start of processing for Set_Image_Real
 
@@ -486,9 +349,7 @@ package body System.Img_Real is
 
       System.Float_Control.Reset;
 
-      Scale := 0;
-
-      --  Deal with invalid values first,
+      --  Deal with invalid values first
 
       if not V'Valid then
 
@@ -500,218 +361,86 @@ package body System.Img_Real is
          --  converting to infinity or some other value, or causing an
          --  exception to be raised is fine.
 
-         --  If the following test succeeds, then we definitely have
-         --  an infinite value, so we print Inf.
+         --  If the following two tests succeed, then we definitely have
+         --  an infinite value, so we print +Inf or -Inf.
 
          if V > Long_Long_Float'Last then
             pragma Annotate (CodePeer, False_Positive, "dead code",
                              "CodePeer analysis ignores NaN and Inf values");
             pragma Annotate (CodePeer, False_Positive, "test always true",
                              "CodePeer analysis ignores NaN and Inf values");
-            Set ('+');
-            Set ('I');
-            Set ('n');
-            Set ('f');
-            Set_Special_Fill (4);
-         --  In all other cases we print NaN
+
+            Set_Floating_Invalid_Value (Infinity, S, P, Fore, Aft, Exp);
 
          elsif V < Long_Long_Float'First then
-            Set ('-');
-            Set ('I');
-            Set ('n');
-            Set ('f');
-            Set_Special_Fill (4);
+            Set_Floating_Invalid_Value (Minus_Infinity, S, P, Fore, Aft, Exp);
+
+         --  In all other cases we print NaN
+
          else
-            Set ('N');
-            Set ('a');
-            Set ('N');
-            Set_Special_Fill (3);
+            Set_Floating_Invalid_Value (Not_A_Number, S, P, Fore, Aft, Exp);
          end if;
 
          return;
       end if;
 
-      --  Positive values
+      --  Set the first character like Image
 
-      if V > 0.0 then
-         X := V;
-         Minus := False;
+      Digs (1) := (if Is_Negative (V) then '-' else ' ');
+      Ndigs := 1;
 
-      --  Negative values
+      X := abs (V);
 
-      elsif V < 0.0 then
-         X := -V;
-         Minus := True;
+      --  If X is zero, we are done
 
-      --  Zero values
+      if X = 0.0 then
+         Digs (2) := '0';
+         Ndigs := 2;
 
-      elsif V = 0.0 then
-         if Long_Long_Float'Signed_Zeros and then Is_Negative (V) then
-            Minus := True;
-         else
-            Minus := False;
-         end if;
-
-         Set_Blanks_And_Sign (Fore - 1);
-         Set ('0');
-         Set ('.');
-         Set_Zeros (NFrac);
-
-         if Exp /= 0 then
-            Set ('E');
-            Set ('+');
-            Set_Zeros (Natural'Max (1, Exp - 1));
-         end if;
-
-         return;
+      --  Otherwise, scale X and convert it to an integer
 
       else
-         --  It should not be possible for a NaN to end up here.
-         --  Either the 'Valid test has failed, or we have some form
-         --  of erroneous execution. Raise Constraint_Error instead of
-         --  attempting to go ahead printing the value.
+         --  In exponent notation, we need exactly NFrac + 1 digits and always
+         --  round the last one.
 
-         raise Constraint_Error;
-      end if;
+         if Exp > 0 then
+            Adjust_Scale (Natural'Min (NFrac + 1, Maxdigs));
+            X := X + 0.5;
 
-      --  X and Minus are set here, and X is known to be a valid,
-      --  non-zero floating-point number.
-
-      --  Case of non-zero value with Exp = 0
-
-      if Exp = 0 then
-
-         --  First step is to multiply by 10 ** Nfrac to get an integer
-         --  value to be output, an then add 0.5 to round the result.
-
-         declare
-            NF : Natural := NFrac;
-
-         begin
-            loop
-               --  If we are larger than Powten (Maxdigs) now, then
-               --  we have too many significant digits, and we have
-               --  not even finished multiplying by NFrac (NF shows
-               --  the number of unaccounted-for digits).
-
-               if X >= Powten (Maxdigs) then
-
-                  --  In this situation, we only to generate a reasonable
-                  --  number of significant digits, and then zeroes after.
-                  --  So first we rescale to get:
-
-                  --    10 ** (Maxdigs - 1) <= X < 10 ** Maxdigs
-
-                  --  and then convert the resulting integer
-
-                  Adjust_Scale (Maxdigs);
-                  Convert_Integer;
-
-                  --  If that caused rescaling, then add zeros to the end
-                  --  of the number to account for this scaling. Also add
-                  --  zeroes to account for the undone multiplications
-
-                  for J in 1 .. Scale + NF loop
-                     Ndigs := Ndigs + 1;
-                     pragma Assert (Ndigs <= Digs'Last);
-                     Digs (Ndigs) := '0';
-                  end loop;
-
-                  exit;
-
-               --  If multiplication is complete, then convert the resulting
-               --  integer after rounding (note that X is non-negative)
-
-               elsif NF = 0 then
-                  X := X + 0.5;
-                  Convert_Integer;
-                  exit;
-
-               --  Otherwise we can go ahead with the multiplication. If it
-               --  can be done in one step, then do it in one step.
-
-               elsif NF < Maxpow then
-                  X := X * Powten (NF);
-                  NF := 0;
-
-               --  If it cannot be done in one step, then do partial scaling
-
-               else
-                  X := X * Powten (Maxpow);
-                  NF := NF - Maxpow;
-               end if;
-            end loop;
-         end;
-
-         --  If number of available digits is less or equal to NFrac,
-         --  then we need an extra zero before the decimal point.
-
-         if Ndigs <= NFrac then
-            Set_Blanks_And_Sign (Fore - 1);
-            Set ('0');
-            Set ('.');
-            Set_Zeros (NFrac - Ndigs);
-            Set_Digs (1, Ndigs);
-
-         --  Normal case with some digits before the decimal point
-
-         else
-            Set_Blanks_And_Sign (Fore - (Ndigs - NFrac));
-            Set_Digs (1, Ndigs - NFrac);
-            Set ('.');
-            Set_Digs (Ndigs - NFrac + 1, Ndigs);
-         end if;
-
-      --  Case of non-zero value with non-zero Exp value
-
-      else
-         --  If NFrac is less than Maxdigs, then all the fraction digits are
-         --  significant, so we can scale the resulting integer accordingly.
-
-         if NFrac < Maxdigs then
-            Adjust_Scale (NFrac + 1);
-            Convert_Integer;
-
-         --  Otherwise, we get the maximum number of digits available
+         --  In straight notation, we compute the maximum number of digits and
+         --  compare how many of them will be put after the decimal point with
+         --  Nfrac, in order to find out whether we need to round the last one
+         --  here or whether the rounding is performed by Set_Decimal_Digits.
 
          else
             Adjust_Scale (Maxdigs);
-            Convert_Integer;
-
-            for J in 1 .. NFrac - Maxdigs + 1 loop
-               Ndigs := Ndigs + 1;
-               pragma Assert (Ndigs <= Digs'Last);
-               Digs (Ndigs) := '0';
-               Scale := Scale - 1;
-            end loop;
+            if Scale <= NFrac then
+               X := X + 0.5;
+            end if;
          end if;
 
-         Set_Blanks_And_Sign (Fore - 1);
-         Set (Digs (1));
-         Set ('.');
-         Set_Digs (2, Ndigs);
+         --  Use Unsigned routine if possible, since on 32-bit machines it will
+         --  be significantly more efficient than the Long_Long_Unsigned one.
 
-         --  The exponent is the scaling factor adjusted for the digits
-         --  that we output after the decimal point, since these were
-         --  included in the scaled digits that we output.
+         if X <= Long_Long_Float (Unsigned'Last) then
+            declare
+               I : constant Unsigned :=
+                     Unsigned (Long_Long_Float'Truncation (X));
+            begin
+               Set_Image_Unsigned (I, Digs, Ndigs);
+            end;
 
-         Expon := Scale + NFrac;
-
-         Set ('E');
-         Ndigs := 0;
-
-         if Expon >= 0 then
-            Set ('+');
-            Set_Image_Unsigned (Unsigned (Expon), Digs, Ndigs);
-         else
-            Set ('-');
-            Set_Image_Unsigned (Unsigned (-Expon), Digs, Ndigs);
+         else pragma Assert (X <= Long_Long_Float (LLU'Last));
+            declare
+               I : constant LLU :=
+                     LLU (Long_Long_Float'Truncation (X));
+            begin
+               Set_Image_Long_Long_Unsigned (I, Digs, Ndigs);
+            end;
          end if;
-
-         Set_Zeros (Exp - Ndigs - 1);
-         Set_Digs (1, Ndigs);
       end if;
 
+      Set_Decimal_Digits (Digs, Ndigs, S, P, Scale, Fore, Aft, Exp);
    end Set_Image_Real;
 
 end System.Img_Real;

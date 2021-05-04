@@ -3352,8 +3352,6 @@ extern rtx_insn *next_real_nondebug_insn (rtx);
 extern rtx_insn *prev_active_insn (rtx_insn *);
 extern rtx_insn *next_active_insn (rtx_insn *);
 extern int active_insn_p (const rtx_insn *);
-extern rtx_insn *next_cc0_user (rtx_insn *);
-extern rtx_insn *prev_cc0_setter (rtx_insn *);
 
 /* In emit-rtl.c  */
 extern int insn_line (const rtx_insn *);
@@ -3790,7 +3788,6 @@ extern GTY(()) rtx const_tiny_rtx[4][(int) MAX_MACHINE_MODE];
 #define CONSTM1_RTX(MODE) (const_tiny_rtx[3][(int) (MODE)])
 
 extern GTY(()) rtx pc_rtx;
-extern GTY(()) rtx cc0_rtx;
 extern GTY(()) rtx ret_rtx;
 extern GTY(()) rtx simple_return_rtx;
 extern GTY(()) rtx_insn *invalid_insn_rtx;
@@ -4126,8 +4123,6 @@ extern int simplejump_p (const rtx_insn *);
 extern int returnjump_p (const rtx_insn *);
 extern int eh_returnjump_p (rtx_insn *);
 extern int onlyjump_p (const rtx_insn *);
-extern int only_sets_cc0_p (const_rtx);
-extern int sets_cc0_p (const_rtx);
 extern int invert_jump_1 (rtx_jump_insn *, rtx);
 extern int invert_jump (rtx_jump_insn *, rtx, int);
 extern int rtx_renumbered_equal_p (const_rtx, const_rtx);

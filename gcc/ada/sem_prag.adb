@@ -718,9 +718,7 @@ package body Sem_Prag is
          elsif Ekind (Item_Id) = E_Constant then
             Add_Str_To_Name_Buffer ("constant");
 
-         elsif Ekind (Item_Id) in
-                 E_Generic_In_Out_Parameter | E_Generic_In_Parameter
-         then
+         elsif Is_Formal_Object (Item_Id) then
             Add_Str_To_Name_Buffer ("generic parameter");
 
          elsif Is_Formal (Item_Id) then
@@ -1283,17 +1281,22 @@ package body Sem_Prag is
            (Item_Is_Input  : out Boolean;
             Item_Is_Output : out Boolean)
          is
-            --  A constant or IN parameter of access-to-variable type should be
+            --  A constant or an IN parameter of a procedure or a protected
+            --  entry, if it is of an access-to-variable type, should be
             --  handled like a variable, as the underlying memory pointed-to
             --  can be modified. Use Adjusted_Kind to do this adjustment.
 
             Adjusted_Kind : Entity_Kind := Ekind (Item_Id);
 
          begin
-            if Ekind (Item_Id) in E_Constant
-                                | E_Generic_In_Parameter
-                                | E_In_Parameter
+            if (Ekind (Item_Id) in E_Constant | E_Generic_In_Parameter
+                  or else
+                  (Ekind (Item_Id) = E_In_Parameter
+                     and then Ekind (Scope (Item_Id))
+                                not in E_Function | E_Generic_Function))
               and then Is_Access_Variable (Etype (Item_Id))
+              and then Ekind (Spec_Id) not in E_Function
+                                            | E_Generic_Function
             then
                Adjusted_Kind := E_Variable;
             end if;
@@ -1477,8 +1480,6 @@ package body Sem_Prag is
            (Item_Is_Input  : Boolean;
             Item_Is_Output : Boolean)
          is
-            Error_Msg : Name_Id;
-
          begin
             Name_Len := 0;
 
@@ -1491,8 +1492,7 @@ package body Sem_Prag is
                Add_Str_To_Name_Buffer
                  (" & cannot appear in dependence relation");
 
-               Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+               SPARK_Msg_NE (To_String (Global_Name_Buffer), Item, Item_Id);
 
                Error_Msg_Name_1 := Chars (Spec_Id);
                SPARK_Msg_NE
@@ -1521,8 +1521,8 @@ package body Sem_Prag is
                end if;
 
                Add_Str_To_Name_Buffer (" in dependence relation");
-               Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+
+               SPARK_Msg_NE (To_String (Global_Name_Buffer), Item, Item_Id);
             end if;
          end Role_Error;
 
@@ -1574,8 +1574,6 @@ package body Sem_Prag is
          -----------------
 
          procedure Usage_Error (Item_Id : Entity_Id) is
-            Error_Msg : Name_Id;
-
          begin
             --  Input case
 
@@ -1593,8 +1591,7 @@ package body Sem_Prag is
                   Add_Str_To_Name_Buffer
                     (" & is missing from input dependence list");
 
-                  Error_Msg := Name_Find;
-                  SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
+                  SPARK_Msg_NE (To_String (Global_Name_Buffer), N, Item_Id);
                   SPARK_Msg_NE
                     ("\add `null ='> &` dependency to ignore this input",
                      N, Item_Id);
@@ -1609,8 +1606,7 @@ package body Sem_Prag is
                Add_Str_To_Name_Buffer
                  (" & is missing from output dependence list");
 
-               Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
+               SPARK_Msg_NE (To_String (Global_Name_Buffer), N, Item_Id);
             end if;
          end Usage_Error;
 
@@ -2457,17 +2453,31 @@ package body Sem_Prag is
 
                --  Constant related checks
 
-               elsif Ekind (Item_Id) = E_Constant
-                 and then not Is_Access_Type (Etype (Item_Id))
-               then
+               elsif Ekind (Item_Id) = E_Constant then
 
-                  --  Unless it is of an access type, a constant is a read-only
-                  --  item, therefore it cannot act as an output.
+                  --  Constant is a read-only item, therefore it cannot act as
+                  --  an output.
 
                   if Global_Mode in Name_In_Out | Name_Output then
-                     SPARK_Msg_NE
-                       ("constant & cannot act as output", Item, Item_Id);
-                     return;
+
+                     --  Constant of a access-to-variable type is a read-write
+                     --  item in procedures, generic procedures, protected
+                     --  entries and tasks.
+
+                     if Is_Access_Variable (Etype (Item_Id))
+                       and then (Ekind (Spec_Id) in E_Entry
+                                                  | E_Entry_Family
+                                                  | E_Procedure
+                                                  | E_Generic_Procedure
+                                                  | E_Task_Type
+                                 or else Is_Single_Task_Object (Spec_Id))
+                     then
+                        null;
+                     else
+                        SPARK_Msg_NE
+                          ("constant & cannot act as output", Item, Item_Id);
+                        return;
+                     end if;
                   end if;
 
                --  Loop parameter related checks
@@ -2634,13 +2644,9 @@ package body Sem_Prag is
                   Context := Anonymous_Object (Context);
                end if;
 
-               if (Is_Subprogram (Context)
-                     or else Ekind (Context) = E_Task_Type
-                     or else Is_Single_Task_Object (Context))
-                 and then
-                  (Present (Get_Pragma (Context, Pragma_Global))
-                     or else
-                   Present (Get_Pragma (Context, Pragma_Refined_Global)))
+               if Is_Subprogram_Or_Entry (Context)
+                 or else Ekind (Context) = E_Task_Type
+                 or else Is_Single_Task_Object (Context)
                then
                   Collect_Subprogram_Inputs_Outputs
                     (Subp_Id      => Context,
@@ -2649,8 +2655,8 @@ package body Sem_Prag is
                      Global_Seen  => Dummy);
 
                   --  The item is classified as In_Out or Output but appears as
-                  --  an Input in an enclosing subprogram or task unit (SPARK
-                  --  RM 6.1.4(12)).
+                  --  an Input or a formal parameter of mode IN in an enclosing
+                  --  subprogram or task unit (SPARK RM 6.1.4(13)).
 
                   if Appears_In (Inputs, Item_Id)
                     and then not Appears_In (Outputs, Item_Id)
@@ -2659,7 +2665,7 @@ package body Sem_Prag is
                        ("global item & cannot have mode In_Out or Output",
                         Item, Item_Id);
 
-                     if Is_Subprogram (Context) then
+                     if Is_Subprogram_Or_Entry (Context) then
                         SPARK_Msg_NE
                           (Fix_Msg (Subp_Id, "\item already appears as input "
                            & "of subprogram &"), Item, Context);
@@ -3095,9 +3101,7 @@ package body Sem_Prag is
                         --  it is allowed for an initialization item to depend
                         --  on an input item.
 
-                        if Ekind (Input_Id) in E_Generic_In_Out_Parameter
-                                             | E_Generic_In_Parameter
-                        then
+                        if Is_Formal_Object (Input_Id) then
                            null;
 
                         elsif Ekind (Input_Id) in E_Constant | E_Variable
@@ -30242,19 +30246,9 @@ package body Sem_Prag is
 
          --  Process all formal parameters
 
-         Formal := First_Entity (Spec_Id);
+         Formal := First_Formal (Spec_Id);
          while Present (Formal) loop
             if Ekind (Formal) in E_In_Out_Parameter | E_In_Parameter then
-
-               --  IN parameters can act as output when the related type is
-               --  access-to-variable.
-
-               if Ekind (Formal) = E_In_Parameter
-                 and then Is_Access_Variable (Etype (Formal))
-               then
-                  Append_New_Elmt (Formal, Subp_Outputs);
-               end if;
-
                Append_New_Elmt (Formal, Subp_Inputs);
             end if;
 
@@ -30272,7 +30266,18 @@ package body Sem_Prag is
                end if;
             end if;
 
-            Next_Entity (Formal);
+            --  IN parameters of procedures and protected entries can act as
+            --  outputs when the related type is access-to-variable.
+
+            if Ekind (Formal) = E_In_Parameter
+              and then Ekind (Spec_Id) not in E_Function
+                                            | E_Generic_Function
+              and then Is_Access_Variable (Etype (Formal))
+            then
+               Append_New_Elmt (Formal, Subp_Outputs);
+            end if;
+
+            Next_Formal (Formal);
          end loop;
 
       --  Otherwise the input denotes a task type, a task body, or the

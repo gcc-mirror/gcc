@@ -1547,6 +1547,11 @@ package body Exp_Ch7 is
       --  Create the spec and body of the finalizer and insert them in the
       --  proper place in the tree depending on the context.
 
+      function New_Finalizer_Name
+        (Spec_Id : Node_Id; For_Spec : Boolean) return Name_Id;
+      --  Create a fully qualified name of a package spec or body finalizer.
+      --  The generated name is of the form: xx__yy__finalize_[spec|body].
+
       procedure Process_Declarations
         (Decls      : List_Id;
          Preprocess : Boolean := False;
@@ -1554,7 +1559,8 @@ package body Exp_Ch7 is
       --  Inspect a list of declarations or statements which may contain
       --  objects that need finalization. When flag Preprocess is set, the
       --  routine will simply count the total number of controlled objects in
-      --  Decls. Flag Top_Level denotes whether the processing is done for
+      --  Decls and set Counter_Val accordingly. Top_Level is only relevant
+      --  when Preprocess is set and if True, the processing is performed for
       --  objects in nested package declarations or instances.
 
       procedure Process_Object_Declaration
@@ -1689,66 +1695,12 @@ package body Exp_Ch7 is
       ----------------------
 
       procedure Create_Finalizer is
-         function New_Finalizer_Name return Name_Id;
-         --  Create a fully qualified name of a package spec or body finalizer.
-         --  The generated name is of the form: xx__yy__finalize_[spec|body].
-
-         ------------------------
-         -- New_Finalizer_Name --
-         ------------------------
-
-         function New_Finalizer_Name return Name_Id is
-            procedure New_Finalizer_Name (Id : Entity_Id);
-            --  Place "__<name-of-Id>" in the name buffer. If the identifier
-            --  has a non-standard scope, process the scope first.
-
-            ------------------------
-            -- New_Finalizer_Name --
-            ------------------------
-
-            procedure New_Finalizer_Name (Id : Entity_Id) is
-            begin
-               if Scope (Id) = Standard_Standard then
-                  Get_Name_String (Chars (Id));
-
-               else
-                  New_Finalizer_Name (Scope (Id));
-                  Add_Str_To_Name_Buffer ("__");
-                  Add_Str_To_Name_Buffer (Get_Name_String (Chars (Id)));
-               end if;
-            end New_Finalizer_Name;
-
-         --  Start of processing for New_Finalizer_Name
-
-         begin
-            --  Create the fully qualified name of the enclosing scope
-
-            New_Finalizer_Name (Spec_Id);
-
-            --  Generate:
-            --    __finalize_[spec|body]
-
-            Add_Str_To_Name_Buffer ("__finalize_");
-
-            if For_Package_Spec then
-               Add_Str_To_Name_Buffer ("spec");
-            else
-               Add_Str_To_Name_Buffer ("body");
-            end if;
-
-            return Name_Find;
-         end New_Finalizer_Name;
-
-         --  Local variables
-
          Body_Id    : Entity_Id;
          Fin_Body   : Node_Id;
          Fin_Spec   : Node_Id;
          Jump_Block : Node_Id;
          Label      : Node_Id;
          Label_Id   : Entity_Id;
-
-      --  Start of processing for Create_Finalizer
 
       begin
          --  Step 1: Creation of the finalizer name
@@ -1760,7 +1712,8 @@ package body Exp_Ch7 is
          --    xx__yy__finalize_[spec|body]
 
          if For_Package then
-            Fin_Id := Make_Defining_Identifier (Loc, New_Finalizer_Name);
+            Fin_Id := Make_Defining_Identifier
+                        (Loc, New_Finalizer_Name (Spec_Id, For_Package_Spec));
             Set_Has_Qualified_Name       (Fin_Id);
             Set_Has_Fully_Qualified_Name (Fin_Id);
 
@@ -1836,10 +1789,22 @@ package body Exp_Ch7 is
                Make_Procedure_Specification (Loc,
                  Defining_Unit_Name => Fin_Id));
 
+         if For_Package then
+            Set_Is_Exported (Fin_Id);
+            Set_Interface_Name (Fin_Id,
+              Make_String_Literal (Loc,
+                Strval => Get_Name_String (Chars (Fin_Id))));
+         end if;
+
          --  Step 3: Creation of the finalizer body
 
-         if Has_Ctrl_Objs then
+        --  Has_Ctrl_Objs might be set because of a generic package body having
+        --  controlled objects. In this case, Jump_Alts may be empty and no
+        --  case nor goto statements are needed.
 
+         if Has_Ctrl_Objs
+           and then not Is_Empty_List (Jump_Alts)
+         then
             --  Add L0, the default destination to the jump block
 
             Label_Id := Make_Identifier (Loc, New_External_Name ('L', 0));
@@ -2160,6 +2125,54 @@ package body Exp_Ch7 is
 
          Set_Is_Checked_Ghost_Entity (Fin_Id, False);
       end Create_Finalizer;
+
+      ------------------------
+      -- New_Finalizer_Name --
+      ------------------------
+
+      function New_Finalizer_Name
+        (Spec_Id : Node_Id; For_Spec : Boolean) return Name_Id
+      is
+         procedure New_Finalizer_Name (Id : Entity_Id);
+         --  Place "__<name-of-Id>" in the name buffer. If the identifier
+         --  has a non-standard scope, process the scope first.
+
+         ------------------------
+         -- New_Finalizer_Name --
+         ------------------------
+
+         procedure New_Finalizer_Name (Id : Entity_Id) is
+         begin
+            if Scope (Id) = Standard_Standard then
+               Get_Name_String (Chars (Id));
+
+            else
+               New_Finalizer_Name (Scope (Id));
+               Add_Str_To_Name_Buffer ("__");
+               Get_Name_String_And_Append (Chars (Id));
+            end if;
+         end New_Finalizer_Name;
+
+      --  Start of processing for New_Finalizer_Name
+
+      begin
+         --  Create the fully qualified name of the enclosing scope
+
+         New_Finalizer_Name (Spec_Id);
+
+         --  Generate:
+         --    __finalize_[spec|body]
+
+         Add_Str_To_Name_Buffer ("__finalize_");
+
+         if For_Spec then
+            Add_Str_To_Name_Buffer ("spec");
+         else
+            Add_Str_To_Name_Buffer ("body");
+         end if;
+
+         return Name_Find;
+      end New_Finalizer_Name;
 
       --------------------------
       -- Process_Declarations --
@@ -2540,6 +2553,73 @@ package body Exp_Ch7 is
                   end if;
                end if;
 
+               --  Call the xxx__finalize_body procedure of a library level
+               --  package instantiation if the body contains finalization
+               --  statements.
+
+               if Present (Generic_Parent (Spec))
+                 and then Is_Library_Level_Entity (Pack_Id)
+                 and then Present (Body_Entity (Generic_Parent (Spec)))
+               then
+                  if Preprocess then
+                     declare
+                        P : Node_Id;
+                     begin
+                        P := Parent (Body_Entity (Generic_Parent (Spec)));
+                        while Present (P)
+                          and then Nkind (P) /= N_Package_Body
+                        loop
+                           P := Parent (P);
+                        end loop;
+
+                        if Present (P) then
+                           Old_Counter_Val := Counter_Val;
+                           Process_Declarations (Declarations (P), Preprocess);
+
+                           --  Note that we are processing the generic body
+                           --  template and not the actually instantiation
+                           --  (which is generated too late for us to process
+                           --  it), so there is no need to update in particular
+                           --  to update Last_Top_Level_Ctrl_Construct here.
+
+                           if Counter_Val > Old_Counter_Val then
+                              Counter_Val := Old_Counter_Val;
+                              Set_Has_Controlled_Component (Pack_Id);
+                           end if;
+                        end if;
+                     end;
+
+                  elsif Has_Controlled_Component (Pack_Id) then
+
+                     --  We import the xxx__finalize_body routine since the
+                     --  generic body will be instantiated later.
+
+                     declare
+                        Id : constant Node_Id :=
+                          Make_Defining_Identifier (Loc,
+                            New_Finalizer_Name (Defining_Unit_Name (Spec),
+                              For_Spec => False));
+
+                     begin
+                        Set_Has_Qualified_Name       (Id);
+                        Set_Has_Fully_Qualified_Name (Id);
+                        Set_Is_Imported              (Id);
+                        Set_Has_Completion           (Id);
+                        Set_Interface_Name (Id,
+                          Make_String_Literal (Loc,
+                            Strval => Get_Name_String (Chars (Id))));
+
+                        Append_New_To (Finalizer_Stmts,
+                          Make_Subprogram_Declaration (Loc,
+                            Make_Procedure_Specification (Loc,
+                              Defining_Unit_Name => Id)));
+                        Append_To (Finalizer_Stmts,
+                          Make_Procedure_Call_Statement (Loc,
+                            Name => New_Occurrence_Of (Id, Loc)));
+                     end;
+                  end if;
+               end if;
+
             --  Nested package bodies, avoid generics
 
             elsif Nkind (Decl) = N_Package_Body then
@@ -2550,8 +2630,7 @@ package body Exp_Ch7 is
                if Is_Ignored_Ghost_Entity (Defining_Entity (Decl)) then
                   null;
 
-               elsif Ekind (Corresponding_Spec (Decl)) /=
-                       E_Generic_Package
+               elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package
                then
                   Old_Counter_Val := Counter_Val;
                   Process_Declarations (Declarations (Decl), Preprocess);
@@ -3041,6 +3120,8 @@ package body Exp_Ch7 is
             --  Otherwise the initialization calls follow the related object
 
             else
+               pragma Assert (Present (Stmt));
+
                Stmt_2 := Next_Suitable_Statement (Stmt);
 
                --  Check for an optional call to Deep_Initialize which may
@@ -3542,6 +3623,14 @@ package body Exp_Ch7 is
             or else Scope_Depth_Value (Spec_Id) /= Uint_1
             or else (Is_Generic_Instance (Spec_Id)
                       and then Package_Instantiation (Spec_Id) /= N))
+
+         --  Still need to process package body instantiations which may
+         --  contain objects requiring finalization.
+
+        and then not
+          (For_Package_Body
+            and then Is_Library_Level_Entity (Spec_Id)
+            and then Is_Generic_Instance (Spec_Id))
       then
          return;
       end if;
@@ -3623,7 +3712,7 @@ package body Exp_Ch7 is
 
       --  Step 3: Finalizer creation
 
-      if Acts_As_Clean or else Has_Ctrl_Objs or else Has_Tagged_Types then
+      if Acts_As_Clean or Has_Ctrl_Objs or Has_Tagged_Types then
          Create_Finalizer;
       end if;
    end Build_Finalizer_Helper;

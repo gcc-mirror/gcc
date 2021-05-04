@@ -1,5 +1,5 @@
-/* { dg-skip-if "" { arm*-*-* } } */
 /* { dg-do compile } */
+/* { dg-skip-if "" { arm*-*-* } } */
 /* { dg-options "-O3" } */
 
 

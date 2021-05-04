@@ -1993,8 +1993,6 @@ m68k_output_btst (rtx countop, rtx dataop, rtx_code code, int signpos)
 	     count == 0 followed by bcc/bcs are also possible, but need
 	     m68k-specific CC_Z_IN_NOT_V and CC_Z_IN_NOT_C flags. */
 	}
-
-      cc_status.flags = CC_NOT_NEGATIVE;
     }
   output_asm_insn ("btst %0,%1", ops);
   return code;

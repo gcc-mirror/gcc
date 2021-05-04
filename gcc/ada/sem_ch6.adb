@@ -10713,8 +10713,8 @@ package body Sem_Ch6 is
                            exit;
                         end if;
 
-                        Next_Entity (P_Formal);
-                        Next_Entity (N_Formal);
+                        Next_Formal (P_Formal);
+                        Next_Formal (N_Formal);
                      end loop;
 
                      --  Found a matching primitive operation belonging to the

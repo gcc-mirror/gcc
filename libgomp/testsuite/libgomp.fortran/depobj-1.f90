@@ -28,20 +28,20 @@ contains
   end
 
   subroutine dep2
-    integer, pointer :: x
     integer(omp_depend_kind) :: d1, d2
     pointer :: d1
-    allocate(d1, x)
-    call dep2i(d1, d2, x)
+    allocate(d1)
+    call dep2i(d1, d2)
     deallocate(d1)
   contains
-   subroutine dep2i(d1, d2, x)
+   subroutine dep2i(d1, d2)
     integer(omp_depend_kind) :: d1
     integer(omp_depend_kind), optional :: d2
-    integer, pointer, optional :: x
     pointer :: d1
     !$omp parallel
       !$omp single
+        block
+        integer :: x
         x = 1
         !$omp depobj (d1) depend(out: x)
         !$omp depobj (d2) depend (in:x)
@@ -56,15 +56,17 @@ contains
         !$omp taskwait
         !$omp depobj(d1)destroy
         !$omp depobj(d2) destroy
+        end block
      !$omp end single
    !$omp end parallel
   end
   end
 
   subroutine dep3
-    integer :: x
     integer(omp_depend_kind) :: d(2)
     !$omp parallel
+      block
+      integer :: x
       x = 1
       !$omp single
         !$omp depobj(d(1)) depend(out:x)
@@ -77,6 +79,7 @@ contains
             stop 3
         !$omp end task
       !$omp end single
+      end block
     !$omp end parallel
     !$omp depobj(d(1)) destroy
     !$omp depobj(d(2)) destroy

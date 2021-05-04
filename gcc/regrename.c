@@ -1456,7 +1456,6 @@ scan_rtx (rtx_insn *insn, rtx *loc, enum reg_class cl, enum scan_actions action,
     CASE_CONST_ANY:
     case SYMBOL_REF:
     case LABEL_REF:
-    case CC0:
     case PC:
       return;
 

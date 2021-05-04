@@ -2004,7 +2004,6 @@ package Rtsfind is
      RE_Bits_1,                          -- System.Unsigned_Types
      RE_Bits_2,                          -- System.Unsigned_Types
      RE_Bits_4,                          -- System.Unsigned_Types
-     RE_Float_Unsigned,                  -- System.Unsigned_Types
      RE_Long_Long_Unsigned,              -- System.Unsigned_Types
      RE_Long_Long_Long_Unsigned,         -- System.Unsigned_Types
      RE_Packed_Byte,                     -- System.Unsigned_Types
@@ -3684,7 +3683,6 @@ package Rtsfind is
      RE_Bits_1                           => System_Unsigned_Types,
      RE_Bits_2                           => System_Unsigned_Types,
      RE_Bits_4                           => System_Unsigned_Types,
-     RE_Float_Unsigned                   => System_Unsigned_Types,
      RE_Long_Long_Unsigned               => System_Unsigned_Types,
      RE_Long_Long_Long_Unsigned          => System_Unsigned_Types,
      RE_Packed_Byte                      => System_Unsigned_Types,

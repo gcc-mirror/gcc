@@ -54,7 +54,6 @@ with Snames;   use Snames;
 with Stand;    use Stand;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
-with Urealp;   use Urealp;
 
 package body Exp_Intr is
 
@@ -65,9 +64,6 @@ package body Exp_Intr is
    procedure Expand_Binary_Operator_Call (N : Node_Id);
    --  Expand a call to an intrinsic arithmetic operator when the operand
    --  types or sizes are not identical.
-
-   procedure Expand_Is_Negative (N : Node_Id);
-   --  Expand a call to the intrinsic Is_Negative function
 
    procedure Expand_Dispatching_Constructor_Call (N : Node_Id);
    --  Expand a call to an instantiation of Generic_Dispatching_Constructor
@@ -636,9 +632,6 @@ package body Exp_Intr is
       then
          Expand_Import_Call (N);
 
-      elsif Nam = Name_Is_Negative then
-         Expand_Is_Negative (N);
-
       elsif Nam = Name_Rotate_Left then
          Expand_Shift (N, E, N_Op_Rotate_Left);
 
@@ -695,58 +688,6 @@ package body Exp_Intr is
          null;
       end if;
    end Expand_Intrinsic_Call;
-
-   ------------------------
-   -- Expand_Is_Negative --
-   ------------------------
-
-   procedure Expand_Is_Negative (N : Node_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
-      Opnd  : constant Node_Id    := Relocate_Node (First_Actual (N));
-
-   begin
-
-      --  We replace the function call by the following expression
-
-      --    if Opnd < 0.0 then
-      --       True
-      --    else
-      --       if Opnd > 0.0 then
-      --          False;
-      --       else
-      --          Float_Unsigned!(Float (Opnd)) /= 0
-      --       end if;
-      --    end if;
-
-      Rewrite (N,
-        Make_If_Expression (Loc,
-          Expressions => New_List (
-            Make_Op_Lt (Loc,
-              Left_Opnd  => Duplicate_Subexpr (Opnd),
-              Right_Opnd => Make_Real_Literal (Loc, Ureal_0)),
-
-            New_Occurrence_Of (Standard_True, Loc),
-
-            Make_If_Expression (Loc,
-             Expressions => New_List (
-               Make_Op_Gt (Loc,
-                 Left_Opnd  => Duplicate_Subexpr_No_Checks (Opnd),
-                 Right_Opnd => Make_Real_Literal (Loc, Ureal_0)),
-
-               New_Occurrence_Of (Standard_False, Loc),
-
-                Make_Op_Ne (Loc,
-                  Left_Opnd =>
-                    Unchecked_Convert_To
-                      (RTE (RE_Float_Unsigned),
-                       Convert_To
-                         (Standard_Float,
-                          Duplicate_Subexpr_No_Checks (Opnd))),
-                  Right_Opnd =>
-                    Make_Integer_Literal (Loc, 0)))))));
-
-      Analyze_And_Resolve (N, Standard_Boolean);
-   end Expand_Is_Negative;
 
    ------------------
    -- Expand_Shift --

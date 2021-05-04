@@ -3150,7 +3150,8 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
 		     unsigned int expected_align, HOST_WIDE_INT expected_size,
 		     unsigned HOST_WIDE_INT min_size,
 		     unsigned HOST_WIDE_INT max_size,
-		     unsigned HOST_WIDE_INT probable_max_size)
+		     unsigned HOST_WIDE_INT probable_max_size,
+		     unsigned ctz_size)
 {
   machine_mode mode = GET_MODE (object);
   unsigned int align;
@@ -3197,6 +3198,10 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
 				   expected_align, expected_size,
 				   min_size, max_size, probable_max_size))
     ;
+  else if (try_store_by_multiple_pieces (object, size, ctz_size,
+					 min_size, max_size,
+					 NULL_RTX, 0, align))
+    ;
   else if (ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (object)))
     return set_storage_via_libcall (object, size, const0_rtx,
 				    method == BLOCK_OP_TAILCALL);
@@ -3214,7 +3219,7 @@ clear_storage (rtx object, rtx size, enum block_op_methods method)
     min = max = UINTVAL (size);
   else
     max = GET_MODE_MASK (GET_MODE (size));
-  return clear_storage_hints (object, size, method, 0, -1, min, max, max);
+  return clear_storage_hints (object, size, method, 0, -1, min, max, max, 0);
 }
 
 

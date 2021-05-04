@@ -3085,7 +3085,6 @@ equiv_init_movable_p (rtx x, int regno)
     case SET:
       return equiv_init_movable_p (SET_SRC (x), regno);
 
-    case CC0:
     case CLOBBER:
       return 0;
 
@@ -3170,7 +3169,6 @@ memref_referenced_p (rtx memref, rtx x, bool read_p)
     case SYMBOL_REF:
     CASE_CONST_ANY:
     case PC:
-    case CC0:
     case HIGH:
     case LO_SUM:
       return false;
@@ -4448,9 +4446,6 @@ rtx_moveable_p (rtx *loc, enum op_type type)
     case PC:
       return type == OP_IN;
 
-    case CC0:
-      return false;
-
     case REG:
       if (x == frame_pointer_rtx)
 	return true;
@@ -4741,13 +4736,6 @@ find_moveable_pseudos (void)
 			   ? " (no unique first use)" : "");
 		continue;
 	      }
-	    if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (closest_use)))
-	      {
-		if (dump_file)
-		  fprintf (dump_file, "Reg %d: closest user uses cc0\n",
-			   regno);
-		continue;
-	      }
 
 	    bitmap_set_bit (interesting, regno);
 	    /* If we get here, we know closest_use is a non-NULL insn
@@ -4822,8 +4810,7 @@ find_moveable_pseudos (void)
 	  if (!bitmap_bit_p (def_bb_transp, regno))
 	    {
 	      if (bitmap_bit_p (def_bb_moveable, regno)
-		  && !control_flow_insn_p (use_insn)
-		  && (!HAVE_cc0 || !sets_cc0_p (use_insn)))
+		  && !control_flow_insn_p (use_insn))
 		{
 		  if (modified_between_p (DF_REF_REG (use), def_insn, use_insn))
 		    {

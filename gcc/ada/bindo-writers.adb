@@ -1689,8 +1689,8 @@ package body Bindo.Writers is
          if Contains (Set, Source) then
             return;
 
-         --  Nothing to do for internal source files unless switch -Ra (???) is
-         --  in effect.
+         --  Nothing to do for internal source files unless switch -Ra is in
+         --  effect.
 
          elsif Is_Internal_File_Name (Source)
            and then not List_Closure_All

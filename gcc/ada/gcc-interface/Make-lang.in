@@ -471,6 +471,7 @@ GNAT_ADA_OBJS =	\
  ada/stylesw.o	\
  ada/switch-c.o	\
  ada/switch.o	\
+ ada/gcc-interface/a-assert.o	\
  ada/gcc-interface/system.o	\
  ada/table.o	\
  ada/targparm.o	\
@@ -629,6 +630,7 @@ GNATBIND_OBJS = \
  ada/stylesw.o    \
  ada/switch-b.o   \
  ada/switch.o     \
+ ada/gcc-interface/a-assert.o	\
  ada/gcc-interface/system.o     \
  ada/table.o      \
  ada/targext.o    \

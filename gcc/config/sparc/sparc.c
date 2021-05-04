@@ -8809,7 +8809,6 @@ epilogue_renumber (rtx *where, int test)
 	*where = gen_rtx_REG (GET_MODE (*where), OUTGOING_REGNO (REGNO(*where)));
       /* fallthrough */
     case SCRATCH:
-    case CC0:
     case PC:
     case CONST_INT:
     case CONST_WIDE_INT:

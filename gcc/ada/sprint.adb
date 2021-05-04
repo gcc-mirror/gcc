@@ -3132,11 +3132,6 @@ package body Sprint is
 
             Write_Char (';');
 
-         --  Don't we want to print more detail???
-
-         --  Doc of this extended syntax belongs in sinfo.ads and/or
-         --  sprint.ads ???
-
          when N_SCIL_Dispatch_Table_Tag_Init =>
             Write_Indent_Str ("[N_SCIL_Dispatch_Table_Tag_Init]");
 
@@ -4578,7 +4573,8 @@ package body Sprint is
                         Write_Str (");");
                      end;
 
-                  --  For all other Itypes, print ??? (fill in later)
+                  --  For all other Itypes, print a triple ? (fill in later
+                  --  if needed).
 
                   when others =>
                      Write_Header (True);

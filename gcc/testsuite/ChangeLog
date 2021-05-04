@@ -1,3 +1,73 @@
+2021-05-03  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vmla_float_not_fused.c:
+	Fix dg directives order.
+	* gcc.target/aarch64/advsimd-intrinsics/vmls_float_not_fused.c:
+	Likewise.
+
+2021-05-03  Jeff Law  <jlaw@tachyum.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Fix expected output for nds32le
+	and m32r.
+
+2021-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100362
+	* g++.dg/cpp1y/lambda-generic-100362.C: New test.
+
+2021-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/68942
+	PR c++/100344
+	* g++.dg/template/call8.C: New test.
+	* g++.dg/template/koenig12a.C: New test.
+
+2021-05-03  Jeff Law  <jlaw@tachyum.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Fix expected output for bfin and lm32.
+
+2021-05-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100055
+	* g++.dg/concepts/diagnostic18.C: New test.
+
+2021-05-03  Marek Polacek  <polacek@redhat.com>
+
+	DR 1312
+	* g++.dg/cpp0x/constexpr-cast2.C: Remove XFAILs.
+
+2021-05-03  Jeff Law  <jlaw@tachyum.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Fix xstormy selector.
+
+2021-05-03  Jeff Law  <jlaw@tachyum.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Update expected output for rx too.
+
+2021-05-03  Jeff Law  <jlaw@tachyum.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Update expected output for or1k too.
+
+2021-05-03  Jeff Law  <jlaw@tachyum.com>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Update expected output for
+	cr16 and xstormy16 targets.
+
+2021-05-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dse-42.c: New testcase.
+	* gcc.dg/pr81192.c: Disable DSE.
+
+2021-05-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dse-41.c: New testcase.
+
+2021-05-03  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/100217
+	* gcc.target/s390/vector/long-double-asm-in-out-hard-fp-reg.c: New test.
+	* gcc.target/s390/vector/long-double-asm-inout-hard-fp-reg.c: New test.
+
 2021-05-02  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/ext/visibility/fvisibility-inlines-hidden-4.C: Expect [BS]

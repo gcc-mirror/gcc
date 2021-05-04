@@ -13682,8 +13682,8 @@ package body Sem_Ch12 is
                                     exit;
                                  end if;
 
-                                 Next_Entity (Anc_Formal);
-                                 Next_Entity (Act_Formal);
+                                 Next_Formal (Anc_Formal);
+                                 Next_Formal (Act_Formal);
                               end loop;
 
                               --  If we traversed through all of the formals

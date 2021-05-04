@@ -1896,7 +1896,7 @@ Alphabetical List of All Switches
 .. index:: -gnati  (gcc)
 
 :switch:`-gnati{c}`
-  Identifier character set (``c`` = 1/2/3/4/8/9/p/f/n/w).
+  Identifier character set (``c`` = 1/2/3/4/5/9/p/8/f/n/w).
   For details of the possible selections for ``c``,
   see :ref:`Character_Set_Control`.
 

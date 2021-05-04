@@ -442,7 +442,7 @@ package Namet is
    --  The following routines operate on Global_Name_Buffer. New code should
    --  use the routines above, and declare Bounded_Strings as local
    --  variables. Existing code can be improved incrementally by removing calls
-   --  to the following. ???If we eliminate all of these, we can remove
+   --  to the following. If we eliminate all of these, we can remove
    --  Global_Name_Buffer. But be sure to look at namet.h first.
 
    --  To see what these do, look at the bodies. They are all trivially defined

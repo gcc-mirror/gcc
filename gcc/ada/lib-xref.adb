@@ -1277,18 +1277,8 @@ package body Lib.Xref is
       Formal : Entity_Id;
 
    begin
-      if Is_Generic_Subprogram (E) then
-         Formal := First_Entity (E);
-
-         while Present (Formal)
-           and then not Is_Formal (Formal)
-         loop
-            Next_Entity (Formal);
-         end loop;
-
-      elsif Ekind (E) in Access_Subprogram_Kind then
+      if Is_Access_Subprogram_Type (E) then
          Formal := First_Formal (Designated_Type (E));
-
       else
          Formal := First_Formal (E);
       end if;

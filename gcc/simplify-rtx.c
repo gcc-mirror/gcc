@@ -2713,15 +2713,12 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  rtx xop00 = XEXP (op0, 0);
 	  rtx xop10 = XEXP (op1, 0);
 
-	  if (GET_CODE (xop00) == CC0 && GET_CODE (xop10) == CC0)
-	      return xop00;
-
-	    if (REG_P (xop00) && REG_P (xop10)
-		&& REGNO (xop00) == REGNO (xop10)
-		&& GET_MODE (xop00) == mode
-		&& GET_MODE (xop10) == mode
-		&& GET_MODE_CLASS (mode) == MODE_CC)
-	      return xop00;
+	  if (REG_P (xop00) && REG_P (xop10)
+	      && REGNO (xop00) == REGNO (xop10)
+	      && GET_MODE (xop00) == mode
+	      && GET_MODE (xop10) == mode
+	      && GET_MODE_CLASS (mode) == MODE_CC)
+	    return xop00;
 	}
       break;
 
@@ -5374,8 +5371,7 @@ simplify_context::simplify_relational_operation (rtx_code code,
     return simplify_gen_relational (code, mode, VOIDmode,
 				    XEXP (op0, 0), XEXP (op0, 1));
 
-  if (GET_MODE_CLASS (cmp_mode) == MODE_CC
-      || CC0_P (op0))
+  if (GET_MODE_CLASS (cmp_mode) == MODE_CC)
     return NULL_RTX;
 
   trueop0 = avoid_constant_pool_reference (op0);
@@ -5742,7 +5738,7 @@ simplify_const_relational_operation (enum rtx_code code,
 
   /* We can't simplify MODE_CC values since we don't know what the
      actual comparison is.  */
-  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC || CC0_P (op0))
+  if (GET_MODE_CLASS (GET_MODE (op0)) == MODE_CC)
     return 0;
 
   /* Make sure the constant is second.  */

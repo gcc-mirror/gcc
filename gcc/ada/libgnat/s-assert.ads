@@ -38,9 +38,11 @@
 
 pragma Compiler_Unit_Warning;
 
+with Ada.Assertions;
+
 package System.Assertions is
 
-   Assert_Failure : exception;
+   Assert_Failure : exception renames Ada.Assertions.Assertion_Error;
    --  Exception raised when assertion fails
 
    procedure Raise_Assert_Failure (Msg : String);

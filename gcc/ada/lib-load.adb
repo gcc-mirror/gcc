@@ -85,7 +85,7 @@ package body Lib.Load is
 
       --  Note: for the following we should really generalize and consult the
       --  file name pattern data, but for now we just deal with the common
-      --  naming cases, which is probably good enough in practice ???
+      --  naming cases, which is good enough in practice.
 
       --  Change .adb to .ads
 
@@ -424,7 +424,7 @@ package body Lib.Load is
       --  it is part of the main extended source, otherwise reset them.
 
       --  Note: it's a bit odd but PMES is False for subunits, which is why
-      --  we have the OR here. Should be investigated some time???
+      --  we have the OR here.
 
       if PMES or Subunit then
          Restore_Config_Cunit_Boolean_Restrictions;
@@ -478,7 +478,7 @@ package body Lib.Load is
             --  installing the context. The implicit with is on this entity,
             --  not on the package it renames. This is somewhat redundant given
             --  the with_clause just created, but it simplifies subsequent
-            --  expansion of the current with_clause. Optimizable ???
+            --  expansion of the current with_clause.
 
             if Nkind (Error_Node) = N_With_Clause
               and then Nkind (Name (Error_Node)) = N_Selected_Component

@@ -952,6 +952,11 @@ package body Errout is
    --  Start of processing for Error_Msg_Internal
 
    begin
+      --  Detect common mistake of prefixing or suffing the message with a
+      --  space character.
+
+      pragma Assert (Msg (Msg'First) /= ' ' and then Msg (Msg'Last) /= ' ');
+
       if Raise_Exception_On_Error /= 0 then
          raise Error_Msg_Exception;
       end if;
@@ -1820,10 +1825,6 @@ package body Errout is
       F := First_Node (N);
       S := Sloc (F);
 
-      --  ??? Protect against inconsistency in locations, by returning S
-      --  immediately if not in the expected range, rather than failing with
-      --  a Constraint_Error when accessing Source_Text(SI)(S)
-
       if S not in SF .. SL then
          return S;
       end if;
@@ -1938,10 +1939,6 @@ package body Errout is
    begin
       F := Last_Node (N);
       S := Sloc (F);
-
-      --  ??? Protect against inconsistency in locations, by returning S
-      --  immediately if not in the expected range, rather than failing with
-      --  a Constraint_Error when accessing Source_Text(SI)(S)
 
       if S not in SF .. SL then
          return S;

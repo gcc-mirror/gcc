@@ -27,7 +27,6 @@
 --  to build Windows DLL
 
 with GNAT.OS_Lib;
---  Should have USE here ???
 
 package MDLL is
 

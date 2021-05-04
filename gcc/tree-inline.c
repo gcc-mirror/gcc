@@ -152,30 +152,6 @@ insert_decl_map (copy_body_data *id, tree key, tree value)
     id->decl_map->put (value, value);
 }
 
-/* Insert a tree->tree mapping for ID.  This is only used for
-   variables.  */
-
-static void
-insert_debug_decl_map (copy_body_data *id, tree key, tree value)
-{
-  if (!gimple_in_ssa_p (id->src_cfun))
-    return;
-
-  if (!opt_for_fn (id->dst_fn, flag_var_tracking_assignments))
-    return;
-
-  if (!target_for_debug_bind (key))
-    return;
-
-  gcc_assert (TREE_CODE (key) == PARM_DECL);
-  gcc_assert (VAR_P (value));
-
-  if (!id->debug_map)
-    id->debug_map = new hash_map<tree, tree>;
-
-  id->debug_map->put (key, value);
-}
-
 /* If nonzero, we're remapping the contents of inlined debug
    statements.  If negative, an error has occurred, such as a
    reference to a variable that isn't available in the inlined
@@ -3190,7 +3166,8 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
   else
     gcc_unreachable ();
 
-  if (TREE_CODE (t) == PARM_DECL && id->debug_map
+  if (TREE_CODE (t) == PARM_DECL
+      && id->debug_map
       && (n = id->debug_map->get (t)))
     {
       gcc_assert (VAR_P (*n));
@@ -3460,16 +3437,18 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
      value.  */
   if (TREE_READONLY (p)
       && !TREE_ADDRESSABLE (p)
-      && value && !TREE_SIDE_EFFECTS (value)
+      && value
+      && !TREE_SIDE_EFFECTS (value)
       && !def)
     {
-      /* We may produce non-gimple trees by adding NOPs or introduce
-	 invalid sharing when operand is not really constant.
-	 It is not big deal to prohibit constant propagation here as
-	 we will constant propagate in DOM1 pass anyway.  */
-      if (is_gimple_min_invariant (value)
-	  && useless_type_conversion_p (TREE_TYPE (p),
-						 TREE_TYPE (value))
+      /* We may produce non-gimple trees by adding NOPs or introduce invalid
+	 sharing when the value is not constant or DECL.  And we need to make
+	 sure that it cannot be modified from another path in the callee.  */
+      if ((is_gimple_min_invariant (value)
+	   || (DECL_P (value) && TREE_READONLY (value))
+	   || (auto_var_in_fn_p (value, id->src_fn)
+	       && !TREE_ADDRESSABLE (value)))
+	  && useless_type_conversion_p (TREE_TYPE (p), TREE_TYPE (value))
 	  /* We have to be very careful about ADDR_EXPR.  Make sure
 	     the base variable isn't a local variable of the inlined
 	     function, e.g., when doing recursive inlining, direct or
@@ -3478,7 +3457,9 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	  && ! self_inlining_addr_expr (value, fn))
 	{
 	  insert_decl_map (id, p, value);
-	  insert_debug_decl_map (id, p, var);
+	  if (!id->debug_map)
+	    id->debug_map = new hash_map<tree, tree>;
+	  id->debug_map->put (p, var);
 	  return insert_init_debug_bind (id, bb, var, value, NULL);
 	}
     }
@@ -5128,8 +5109,13 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
     for (tree p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
       if (!TREE_THIS_VOLATILE (p))
 	{
+	  /* The value associated with P is a local temporary only if
+	     there is no value associated with P in the debug map.  */
 	  tree *varp = id->decl_map->get (p);
-	  if (varp && VAR_P (*varp) && !is_gimple_reg (*varp))
+	  if (varp
+	      && VAR_P (*varp)
+	      && !is_gimple_reg (*varp)
+	      && !(id->debug_map && id->debug_map->get (p)))
 	    {
 	      tree clobber = build_clobber (TREE_TYPE (*varp));
 	      gimple *clobber_stmt;

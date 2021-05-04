@@ -3996,7 +3996,7 @@ filling in a single size corresponding to each hard register;\n\
    at by the second argument should be set to -1.  */
 DEFHOOK
 (fixed_condition_code_regs,
- "On targets which do not use @code{(cc0)}, and which use a hard\n\
+ "On targets which use a hard\n\
 register rather than a pseudo-register to hold condition codes, the\n\
 regular CSE passes are often not able to identify cases in which the\n\
 hard register is set to a common value.  Use this hook to enable a\n\

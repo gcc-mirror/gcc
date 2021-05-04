@@ -4294,13 +4294,6 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
           > COSTS_N_INSNS (1)))
     y = force_reg (mode, y);
 
-#if HAVE_cc0
-  /* Make sure if we have a canonical comparison.  The RTL
-     documentation states that canonical comparisons are required only
-     for targets which have cc0.  */
-  gcc_assert (!CONSTANT_P (x) || CONSTANT_P (y));
-#endif
-
   /* Don't let both operands fail to indicate the mode.  */
   if (GET_MODE (x) == VOIDmode && GET_MODE (y) == VOIDmode)
     x = force_reg (mode, x);

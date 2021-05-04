@@ -99,7 +99,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct _Select_uint_least_t<__s, 2>
       { typedef unsigned long long type; };
 
-#ifdef _GLIBCXX_USE_INT128
+#if __SIZEOF_INT128__ > __SIZEOF_LONG_LONG__
     template<int __s>
       struct _Select_uint_least_t<__s, 1>
       { typedef unsigned __int128 type; };

@@ -817,7 +817,7 @@ package body CStand is
 
       B_Node := New_Node (N_Character_Literal, Stloc);
       Set_Is_Static_Expression (B_Node);
-      Set_Chars                (B_Node, No_Name);    --  ???
+      Set_Chars                (B_Node, No_Name);
       Set_Char_Literal_Value   (B_Node, Uint_0);
       Set_Entity               (B_Node, Empty);
       Set_Etype                (B_Node, Standard_Wide_Character);
@@ -827,7 +827,7 @@ package body CStand is
 
       B_Node := New_Node (N_Character_Literal, Stloc);
       Set_Is_Static_Expression (B_Node);
-      Set_Chars                (B_Node, No_Name);    --  ???
+      Set_Chars                (B_Node, No_Name);
       Set_Char_Literal_Value   (B_Node, UI_From_Int (16#FFFF#));
       Set_Entity               (B_Node, Empty);
       Set_Etype                (B_Node, Standard_Wide_Character);
@@ -866,7 +866,7 @@ package body CStand is
 
       B_Node := New_Node (N_Character_Literal, Stloc);
       Set_Is_Static_Expression (B_Node);
-      Set_Chars                (B_Node, No_Name);    --  ???
+      Set_Chars                (B_Node, No_Name);
       Set_Char_Literal_Value   (B_Node, Uint_0);
       Set_Entity               (B_Node, Empty);
       Set_Etype                (B_Node, Standard_Wide_Wide_Character);
@@ -876,7 +876,7 @@ package body CStand is
 
       B_Node := New_Node (N_Character_Literal, Stloc);
       Set_Is_Static_Expression (B_Node);
-      Set_Chars                (B_Node, No_Name);    --  ???
+      Set_Chars                (B_Node, No_Name);
       Set_Char_Literal_Value   (B_Node, UI_From_Int (16#7FFF_FFFF#));
       Set_Entity               (B_Node, Empty);
       Set_Etype                (B_Node, Standard_Wide_Wide_Character);
