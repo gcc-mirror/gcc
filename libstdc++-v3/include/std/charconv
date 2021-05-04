@@ -94,7 +94,7 @@ namespace __detail
     struct __to_chars_unsigned_type : __make_unsigned_selector_base
     {
       using _UInts = _List<unsigned int, unsigned long, unsigned long long
-#if _GLIBCXX_USE_INT128
+#if __SIZEOF_INT128__ > __SIZEOF_LONG_LONG__
 	, unsigned __int128
 #endif
 	>;

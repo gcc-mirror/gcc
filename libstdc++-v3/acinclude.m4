@@ -3049,15 +3049,14 @@ EOF
 ])
 
 dnl
-dnl Check for GNU 128-bit integer and floating point types.
+dnl Check for GNU 128-bit floating point type.
 dnl
-dnl Note: also checks that the types aren't standard types.
+dnl Note: also checks that the type isn't a standard types.
 dnl
 dnl Defines:
-dnl  _GLIBCXX_USE_INT128
 dnl  ENABLE_FLOAT128
 dnl
-AC_DEFUN([GLIBCXX_ENABLE_INT128_FLOAT128], [
+AC_DEFUN([GLIBCXX_ENABLE_FLOAT128], [
 
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
@@ -3065,34 +3064,7 @@ AC_DEFUN([GLIBCXX_ENABLE_INT128_FLOAT128], [
   # Fake what AC_TRY_COMPILE does, without linking as this is
   # unnecessary for this test.
 
-    cat > conftest.$ac_ext << EOF
-[#]line __oline__ "configure"
-template<typename T1, typename T2>
-  struct same
-  { typedef T2 type; };
-
-template<typename T>
-  struct same<T, T>;
-
-int main()
-{
-  typename same<long, __int128>::type                i1;
-  typename same<long long, __int128>::type           i2;
-}
-EOF
-
-    AC_MSG_CHECKING([for __int128])
-    if AC_TRY_EVAL(ac_compile); then
-      AC_DEFINE(_GLIBCXX_USE_INT128, 1,
-      [Define if __int128 is supported on this host.])
-      enable_int128=yes
-    else
-      enable_int128=no
-    fi
-    AC_MSG_RESULT($enable_int128)
-    rm -f conftest*
-
-    cat > conftest.$ac_ext << EOF
+  cat > conftest.$ac_ext << EOF
 [#]line __oline__ "configure"
 template<typename T1, typename T2>
   struct same
