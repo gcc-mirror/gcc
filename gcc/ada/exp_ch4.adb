@@ -12748,7 +12748,16 @@ package body Exp_Ch4 is
       --  guard is necessary to prevent infinite recursions when we generate
       --  internal conversions for the purpose of checking predicates.
 
-      if Predicate_Enabled (Target_Type)
+      --  A view conversion of a tagged object is an object and can appear
+      --  in an assignment context, in which case no predicate check applies
+      --  to the now-dead value.
+
+      if Nkind (Parent (N)) = N_Assignment_Statement
+        and then N = Name (Parent (N))
+      then
+         null;
+
+      elsif Predicate_Enabled (Target_Type)
         and then Target_Type /= Operand_Type
         and then Comes_From_Source (N)
       then
