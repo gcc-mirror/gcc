@@ -586,7 +586,7 @@ namespace ranges
 	    == __detail::__is_signed_integer_like<_Bound>))
     iota_view(_Winc, _Bound) -> iota_view<_Winc, _Bound>;
 
-  template<weakly_incrementable _Winc, semiregular _Bound>
+  template<typename _Winc, typename _Bound>
     inline constexpr bool
       enable_borrowed_range<iota_view<_Winc, _Bound>> = true;
 

@@ -381,8 +381,7 @@ namespace ranges
 	return __r.end();
     }
 
-  template<input_or_output_iterator _It, sentinel_for<_It> _Sent,
-	   subrange_kind _Kind>
+  template<typename _It, typename _Sent, subrange_kind _Kind>
     inline constexpr bool
       enable_borrowed_range<subrange<_It, _Sent, _Kind>> = true;
 
