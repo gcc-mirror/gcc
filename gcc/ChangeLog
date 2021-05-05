@@ -1,3 +1,12 @@
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100375
+	* config/nvptx/nvptx.c (nvptx_sese_pseudo): Use nullptr instead of 0
+	as first argument of pseudo_node_t constructors.
+
 2021-05-01  Maciej W. Rozycki  <macro@orcam.me.uk>
 
 	Backported from master:

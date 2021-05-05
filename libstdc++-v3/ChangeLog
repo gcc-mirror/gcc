@@ -1,3 +1,11 @@
+2021-05-04  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (split_view::_InnerIter::operator++):
+	Depend on _Base instead of _Vp directly, as per LWG 3532.
+
 2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
