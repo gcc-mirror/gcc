@@ -8,15 +8,13 @@ procedure Debug17 (Number_Of_Bits : Natural) is
 
    type Bitinfos_T is array (Natural range 1 .. Number_Of_Bits) of Float;
 
-   type Inner_Record_T is
-      record
-         Bitinfos : Bitinfos_T := (others => 1.5);
-         Check1 : Integer := 1983;
-         Check2 : Integer := 1995;
-         Flag : Boolean := False;
-         Check3 : Integer := 2005;
-
-      end record;
+   type Inner_Record_T is record
+      Bitinfos : Bitinfos_T := (others => 1.5);
+      Check1 : Integer := 1983;
+      Check2 : Integer := 1995;
+      Flag : Boolean := False;
+      Check3 : Integer := 2005;
+   end record;
 
    Rfield : Inner_Record_T;
 
