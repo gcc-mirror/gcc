@@ -1,3 +1,16 @@
+2021-05-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* tree.h (OMP_CLAUSE_MAP_IMPLICIT_P): New access macro for 'implicit'
+	bit, using 'base.deprecated_flag' field of tree_node.
+	* tree-pretty-print.c (dump_omp_clause): Add support for printing
+	implicit attribute in tree dumping.
+	* gimplify.c (gimplify_adjust_omp_clauses_1):
+	Set OMP_CLAUSE_MAP_IMPLICIT_P to 1 if map clause is implicitly created.
+	(gimplify_adjust_omp_clauses): Adjust place of adding implicitly created
+	clauses, from simple append, to starting of list, after non-map clauses.
+	* omp-low.c (lower_omp_target): Add GOMP_MAP_IMPLICIT bits into kind
+	values passed to libgomp for implicit maps.
+
 2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

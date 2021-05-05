@@ -510,7 +510,7 @@ static inline void
 gomp_map_vars_existing (struct gomp_device_descr *devicep,
 			struct goacc_asyncqueue *aq, splay_tree_key oldn,
 			splay_tree_key newn, struct target_var_desc *tgt_var,
-			unsigned char kind, bool always_to_flag,
+			unsigned char kind, bool always_to_flag, bool implicit,
 			struct gomp_coalesce_buf *cbuf,
 			htab_t *refcount_set)
 {
@@ -522,11 +522,22 @@ gomp_map_vars_existing (struct gomp_device_descr *devicep,
   tgt_var->always_copy_from = GOMP_MAP_ALWAYS_FROM_P (kind);
   tgt_var->is_attach = false;
   tgt_var->offset = newn->host_start - oldn->host_start;
-  tgt_var->length = newn->host_end - newn->host_start;
+
+  /* For implicit maps, old contained in new is valid.  */
+  bool implicit_subset = (implicit
+			  && newn->host_start <= oldn->host_start
+			  && oldn->host_end <= newn->host_end);
+  if (implicit_subset)
+    tgt_var->length = oldn->host_end - oldn->host_start;
+  else
+    tgt_var->length = newn->host_end - newn->host_start;
 
   if ((kind & GOMP_MAP_FLAG_FORCE)
-      || oldn->host_start > newn->host_start
-      || oldn->host_end < newn->host_end)
+      /* For implicit maps, old contained in new is valid.  */
+      || !(implicit_subset
+	   /* Otherwise, new contained inside old is considered valid.  */
+	   || (oldn->host_start <= newn->host_start
+	       && newn->host_end <= oldn->host_end)))
     {
       gomp_mutex_unlock (&devicep->lock);
       gomp_fatal ("Trying to map into device [%p..%p) object when "
@@ -536,11 +547,17 @@ gomp_map_vars_existing (struct gomp_device_descr *devicep,
     }
 
   if (GOMP_MAP_ALWAYS_TO_P (kind) || always_to_flag)
-    gomp_copy_host2dev (devicep, aq,
-			(void *) (oldn->tgt->tgt_start + oldn->tgt_offset
-				  + newn->host_start - oldn->host_start),
-			(void *) newn->host_start,
-			newn->host_end - newn->host_start, false, cbuf);
+    {
+      /* Implicit + always should not happen. If this does occur, below
+	 address/length adjustment is a TODO.  */
+      assert (!implicit_subset);
+
+      gomp_copy_host2dev (devicep, aq,
+			  (void *) (oldn->tgt->tgt_start + oldn->tgt_offset
+				    + newn->host_start - oldn->host_start),
+			  (void *) newn->host_start,
+			  newn->host_end - newn->host_start, false, cbuf);
+    }
 
   gomp_increment_refcount (oldn, refcount_set);
 }
@@ -548,8 +565,24 @@ gomp_map_vars_existing (struct gomp_device_descr *devicep,
 static int
 get_kind (bool short_mapkind, void *kinds, int idx)
 {
-  return short_mapkind ? ((unsigned short *) kinds)[idx]
-		       : ((unsigned char *) kinds)[idx];
+  int val = (short_mapkind
+	     ? ((unsigned short *) kinds)[idx]
+	     : ((unsigned char *) kinds)[idx]);
+
+  if (GOMP_MAP_IMPLICIT_P (val))
+    val &= ~GOMP_MAP_IMPLICIT;
+  return val;
+}
+
+
+static bool
+get_implicit (bool short_mapkind, void *kinds, int idx)
+{
+  int val = (short_mapkind
+	     ? ((unsigned short *) kinds)[idx]
+	     : ((unsigned char *) kinds)[idx]);
+
+  return GOMP_MAP_IMPLICIT_P (val);
 }
 
 static void
@@ -612,6 +645,7 @@ gomp_map_fields_existing (struct target_mem_desc *tgt,
   struct splay_tree_s *mem_map = &devicep->mem_map;
   struct splay_tree_key_s cur_node;
   int kind;
+  bool implicit;
   const bool short_mapkind = true;
   const int typemask = short_mapkind ? 0xff : 0x7;
 
@@ -619,12 +653,14 @@ gomp_map_fields_existing (struct target_mem_desc *tgt,
   cur_node.host_end = cur_node.host_start + sizes[i];
   splay_tree_key n2 = splay_tree_lookup (mem_map, &cur_node);
   kind = get_kind (short_mapkind, kinds, i);
+  implicit = get_implicit (short_mapkind, kinds, i);
   if (n2
       && n2->tgt == n->tgt
       && n2->host_start - n->host_start == n2->tgt_offset - n->tgt_offset)
     {
       gomp_map_vars_existing (devicep, aq, n2, &cur_node, &tgt->list[i],
-			      kind & typemask, false, cbuf, refcount_set);
+			      kind & typemask, false, implicit, cbuf,
+			      refcount_set);
       return;
     }
   if (sizes[i] == 0)
@@ -640,7 +676,8 @@ gomp_map_fields_existing (struct target_mem_desc *tgt,
 		 == n2->tgt_offset - n->tgt_offset)
 	    {
 	      gomp_map_vars_existing (devicep, aq, n2, &cur_node, &tgt->list[i],
-				      kind & typemask, false, cbuf, refcount_set);
+				      kind & typemask, false, implicit, cbuf,
+				      refcount_set);
 	      return;
 	    }
 	}
@@ -652,7 +689,8 @@ gomp_map_fields_existing (struct target_mem_desc *tgt,
 	  && n2->host_start - n->host_start == n2->tgt_offset - n->tgt_offset)
 	{
 	  gomp_map_vars_existing (devicep, aq, n2, &cur_node, &tgt->list[i],
-				  kind & typemask, false, cbuf, refcount_set);
+				  kind & typemask, false, implicit, cbuf,
+				  refcount_set);
 	  return;
 	}
     }
@@ -898,6 +936,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
   for (i = 0; i < mapnum; i++)
     {
       int kind = get_kind (short_mapkind, kinds, i);
+      bool implicit = get_implicit (short_mapkind, kinds, i);
       if (hostaddrs[i] == NULL
 	  || (kind & typemask) == GOMP_MAP_FIRSTPRIVATE_INT)
 	{
@@ -1104,8 +1143,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		}
 	    }
 	  gomp_map_vars_existing (devicep, aq, n, &cur_node, &tgt->list[i],
-				  kind & typemask, always_to_cnt > 0, NULL,
-				  refcount_set);
+				  kind & typemask, always_to_cnt > 0, implicit,
+				  NULL, refcount_set);
 	  i += always_to_cnt;
 	}
       else
@@ -1182,7 +1221,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		{
 		  assert (n->refcount != REFCOUNT_LINK);
 		  gomp_map_vars_existing (devicep, aq, n, &cur_node, row_desc,
-					  kind & typemask, false,
+					  kind & typemask, false, false,
 					  /* TODO: cbuf? */ NULL, refcount_set);
 		}
 	      else
@@ -1312,6 +1351,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	else if (tgt->list[i].key == NULL)
 	  {
 	    int kind = get_kind (short_mapkind, kinds, i);
+	    bool implicit = get_implicit (short_mapkind, kinds, i);
 	    if (hostaddrs[i] == NULL)
 	      continue;
 	    switch (kind & typemask)
@@ -1483,7 +1523,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	    splay_tree_key n = splay_tree_lookup (mem_map, k);
 	    if (n && n->refcount != REFCOUNT_LINK)
 	      gomp_map_vars_existing (devicep, aq, n, k, &tgt->list[i],
-				      kind & typemask, false, cbufp,
+				      kind & typemask, false, implicit, cbufp,
 				      refcount_set);
 	    else
 	      {
@@ -1702,7 +1742,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    {
 		      assert (k->refcount != REFCOUNT_LINK);
 		      gomp_map_vars_existing (devicep, aq, k, &cur_node, row_desc,
-					      kind & typemask, false,
+					      kind & typemask, false, false,
 					      cbufp, refcount_set);
 		    }
 		  else

@@ -1,3 +1,23 @@
+2021-05-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* c-c++-common/gomp/target-implicit-map-1.c: New test.
+	* c-c++-common/goacc/combined-reduction.c: Adjust scan test pattern.
+	* c-c++-common/goacc/firstprivate-mappings-1.c: Likewise.
+	* c-c++-common/goacc/mdc-1.c: Likewise.
+	* c-c++-common/goacc/reduction-1.c: Likewise.
+	* c-c++-common/goacc/reduction-2.c: Likewise.
+	* c-c++-common/goacc/reduction-3.c: Likewise.
+	* c-c++-common/goacc/reduction-4.c: Likewise.
+	* c-c++-common/goacc/reduction-8.c: Likewise.
+	* g++.dg/goacc/firstprivate-mappings-1.C: Likewise.
+	* g++.dg/gomp/target-lambda-1.C: Likewise.
+	* g++.dg/gomp/target-this-3.C: Likewise.
+	* g++.dg/gomp/target-this-4.C: Likewise.
+	* gfortran.dg/goacc/common-block-3.f90: Likewise.
+	* gfortran.dg/goacc/loop-tree-1.f90: Likewise.
+	* gfortran.dg/goacc/private-explicit-kernels-1.f95: Likewise.
+	* gfortran.dg/goacc/private-predetermined-kernels-1.f95: Likewise.
+
 2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/note-parallelism-1-kernels-straight-line.c: Add

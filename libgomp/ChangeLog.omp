@@ -1,3 +1,15 @@
+2021-05-05  Chung-Lin Tang  <cltang@codesourcery.com>
+
+	* target.c (gomp_map_vars_existing): Add 'bool implicit' parameter, add
+	implicit map handling to allow a "superset" existing map as valid case.
+	(get_kind): Adjust to filter out GOMP_MAP_IMPLICIT bits in return value.
+	(get_implicit): New function to extract implicit status.
+	(gomp_map_fields_existing): Adjust arguments in calls to
+	gomp_map_vars_existing, and add uses of get_implicit.
+	(gomp_map_vars_internal): Likewise.
+
+	* testsuite/libgomp.c-c++-common/target-implicit-map-1.c: New test.
+
 2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline
