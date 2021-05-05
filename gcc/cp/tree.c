@@ -940,7 +940,12 @@ rvalue (tree expr)
   /* We need to do this for rvalue refs as well to get the right answer
      from decltype; see c++/36628.  */
   if (!processing_template_decl && glvalue_p (expr))
-    expr = build1 (NON_LVALUE_EXPR, type, expr);
+    {
+      /* But don't use this function for class lvalues; use move (to treat an
+	 lvalue as an xvalue) or force_rvalue (to make a prvalue copy).  */
+      gcc_checking_assert (!CLASS_TYPE_P (type));
+      expr = build1 (NON_LVALUE_EXPR, type, expr);
+    }
   else if (type != TREE_TYPE (expr))
     expr = build_nop (type, expr);
 
