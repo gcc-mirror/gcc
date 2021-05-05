@@ -2588,6 +2588,19 @@
   [(set_attr "type" "neon_tst<q>")]
 )
 
+(define_insn "neon_vtst_combine<mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+        (plus:VDQIW
+	  (eq:VDQIW
+	    (and:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")
+		       (match_operand:VDQIW 2 "s_register_operand" "w"))
+	    (match_operand:VDQIW 3 "zero_operand" "i"))
+	  (match_operand:VDQIW 4 "minus_one_operand" "i")))]
+  "TARGET_NEON"
+  "vtst.<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
+  [(set_attr "type" "neon_tst<q>")]
+)
+
 (define_insn "neon_vabd<sup><mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
         (unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
