@@ -18658,8 +18658,20 @@ loc_list_from_tree_1 (tree loc, int want_address,
 
     case RESULT_DECL:
       if (DECL_HAS_VALUE_EXPR_P (loc))
-	return loc_list_from_tree_1 (DECL_VALUE_EXPR (loc),
-				     want_address, context);
+	{
+	  tree value_expr = DECL_VALUE_EXPR (loc);
+
+	  /* Non-local frame structures are DECL_IGNORED_P variables so we need
+	     to wait until they get an RTX in order to reference them.  */
+	  if (early_dwarf
+	      && TREE_CODE (value_expr) == COMPONENT_REF
+	      && VAR_P (TREE_OPERAND (value_expr, 0))
+	      && DECL_NONLOCAL_FRAME (TREE_OPERAND (value_expr, 0)))
+	    ;
+	  else
+	    return loc_list_from_tree_1 (value_expr, want_address, context);
+	}
+
       /* FALLTHRU */
 
     case FUNCTION_DECL:
