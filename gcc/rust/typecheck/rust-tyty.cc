@@ -52,7 +52,7 @@ TyVar::get_tyty () const
 }
 
 TyVar
-TyVar::get_implicit_infer_var ()
+TyVar::get_implicit_infer_var (Location locus)
 {
   auto mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
@@ -64,6 +64,8 @@ TyVar::get_implicit_infer_var ()
 					       infer->get_ref (),
 					       UNKNOWN_LOCAL_DEFID),
 			infer);
+  mappings->insert_location (mappings->get_current_crate (), infer->get_ref (),
+			     locus);
   return TyVar (infer->get_ref ());
 }
 

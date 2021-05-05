@@ -696,6 +696,7 @@ public:
   void visit (HIR::ArrayExpr &expr) override
   {
     HIR::ArrayElems *elements = expr.get_internal_elements ();
+    root_array_expr_locus = expr.get_locus ();
 
     elements->accept_vis (*this);
     if (infered_array_elems == nullptr)
@@ -717,7 +718,8 @@ public:
       return true;
     });
 
-    infered_array_elems = TyTy::TyVar::get_implicit_infer_var ().get_tyty ();
+    infered_array_elems
+      = TyTy::TyVar::get_implicit_infer_var (root_array_expr_locus).get_tyty ();
 
     for (auto &type : types)
       {
@@ -1152,6 +1154,7 @@ private:
      Stores the type of array elements, if `expr` is ArrayExpr. */
   TyTy::BaseType *infered_array_elems;
   Bexpression *folded_array_capacity;
+  Location root_array_expr_locus;
 
   bool inside_loop;
 }; // namespace Resolver
