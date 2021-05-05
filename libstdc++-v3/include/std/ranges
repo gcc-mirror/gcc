@@ -1581,12 +1581,6 @@ namespace views::__adaptor
 	      return *__i;
 	  }
 
-	  friend constexpr void
-	  iter_swap(const _Iterator& __x, const _Iterator& __y)
-	    noexcept(noexcept(ranges::iter_swap(__x._M_current, __y._M_current)))
-	    requires indirectly_swappable<_Base_iter>
-	  { return ranges::iter_swap(__x._M_current, __y._M_current); }
-
 	  friend _Iterator<!_Const>;
 	  template<bool> friend struct _Sentinel;
 	};
@@ -2520,6 +2514,7 @@ namespace views::__adaptor
 	  friend constexpr void
 	  iter_swap(const _Iterator& __x, const _Iterator& __y)
 	    noexcept(noexcept(ranges::iter_swap(__x._M_inner, __y._M_inner)))
+	    requires indirectly_swappable<_Inner_iter>
 	  { return ranges::iter_swap(__x._M_inner, __y._M_inner); }
 
 	  friend _Iterator<!_Const>;
