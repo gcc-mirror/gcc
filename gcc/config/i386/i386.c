@@ -15284,6 +15284,7 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case E_V16SImode:
     case E_V8SImode:
     case E_V4SImode:
+    case E_V2SImode:
     case E_V8DImode:
     case E_V4DImode:
     case E_V2DImode:
@@ -15334,6 +15335,7 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     case E_V8SFmode:
     case E_V4SFmode:
     case E_V2SFmode:
+    case E_V2SImode:
       vec_mode = mode;
       imode = SImode;
       break;

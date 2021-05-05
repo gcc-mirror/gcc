@@ -52,6 +52,7 @@
 
 ;; Mix-n-match
 (define_mode_iterator MMXMODE12 [V8QI V4HI])
+(define_mode_iterator MMXMODE14 [V8QI V2SI])
 (define_mode_iterator MMXMODE24 [V4HI V2SI])
 (define_mode_iterator MMXMODE248 [V4HI V2SI V1DI])
 
@@ -1417,6 +1418,31 @@
    (set_attr "type" "mmxmul,ssemul,ssemul")
    (set_attr "mode" "DI,TI,TI")])
 
+(define_expand "<code><mode>3"
+  [(set (match_operand:MMXMODE14 0 "register_operand")
+        (smaxmin:MMXMODE14
+	  (match_operand:MMXMODE14 1 "register_operand")
+	  (match_operand:MMXMODE14 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+
+(define_insn "*mmx_<code><mode>3"
+  [(set (match_operand:MMXMODE14 0 "register_operand" "=Yr,*x,Yv")
+	(smaxmin:MMXMODE14
+	  (match_operand:MMXMODE14 1 "register_operand" "%0,0,Yv")
+	  (match_operand:MMXMODE14 2 "register_operand" "Yr,*x,Yv")))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1
+   && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+  "@
+   p<maxmin_int><mmxvecsize>\t{%2, %0|%0, %2}
+   p<maxmin_int><mmxvecsize>\t{%2, %0|%0, %2}
+   vp<maxmin_int><mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1,1,*")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "TI")])
+
 (define_expand "mmx_<code>v4hi3"
   [(set (match_operand:V4HI 0 "register_operand")
         (smaxmin:V4HI
@@ -1450,6 +1476,31 @@
    (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxadd,sseiadd,sseiadd")
    (set_attr "mode" "DI,TI,TI")])
+
+(define_expand "<code><mode>3"
+  [(set (match_operand:MMXMODE24 0 "register_operand")
+        (umaxmin:MMXMODE24
+	  (match_operand:MMXMODE24 1 "register_operand")
+	  (match_operand:MMXMODE24 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+
+(define_insn "*mmx_<code><mode>3"
+  [(set (match_operand:MMXMODE24 0 "register_operand" "=Yr,*x,Yv")
+	(umaxmin:MMXMODE24
+	  (match_operand:MMXMODE24 1 "register_operand" "%0,0,Yv")
+	  (match_operand:MMXMODE24 2 "register_operand" "Yr,*x,Yv")))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1
+   && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
+  "@
+   p<maxmin_int><mmxvecsize>\t{%2, %0|%0, %2}
+   p<maxmin_int><mmxvecsize>\t{%2, %0|%0, %2}
+   vp<maxmin_int><mmxvecsize>\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1,1,*")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "TI")])
 
 (define_expand "mmx_<code>v8qi3"
   [(set (match_operand:V8QI 0 "register_operand")
@@ -1581,6 +1632,73 @@
    (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxcmp,ssecmp,ssecmp")
    (set_attr "mode" "DI,TI,TI")])
+
+(define_expand "vec_cmp<mode><mode>"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(match_operator:MMXMODEI 1 ""
+	  [(match_operand:MMXMODEI 2 "register_operand")
+	   (match_operand:MMXMODEI 3 "register_operand")]))]
+  "TARGET_MMX_WITH_SSE"
+{
+  bool ok = ix86_expand_int_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vec_cmpu<mode><mode>"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(match_operator:MMXMODEI 1 ""
+	  [(match_operand:MMXMODEI 2 "register_operand")
+	   (match_operand:MMXMODEI 3 "register_operand")]))]
+  "TARGET_MMX_WITH_SSE"
+{
+  bool ok = ix86_expand_int_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcond<mode><mode>"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(if_then_else:MMXMODEI
+	  (match_operator 3 ""
+	    [(match_operand:MMXMODEI 4 "register_operand")
+	     (match_operand:MMXMODEI 5 "register_operand")])
+	  (match_operand:MMXMODEI 1)
+	  (match_operand:MMXMODEI 2)))]
+  "TARGET_MMX_WITH_SSE"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcondu<mode><mode>"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(if_then_else:MMXMODEI
+	  (match_operator 3 ""
+	    [(match_operand:MMXMODEI 4 "register_operand")
+	     (match_operand:MMXMODEI 5 "register_operand")])
+	  (match_operand:MMXMODEI 1)
+	  (match_operand:MMXMODEI 2)))]
+  "TARGET_MMX_WITH_SSE"
+{
+  bool ok = ix86_expand_int_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcond_mask_<mode><mode>"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(vec_merge:MMXMODEI
+	  (match_operand:MMXMODEI 1 "register_operand")
+	  (match_operand:MMXMODEI 2 "register_operand")
+	  (match_operand:MMXMODEI 3 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
+{
+  ix86_expand_sse_movcc (operands[0], operands[3],
+			 operands[1], operands[2]);
+  DONE;
+})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
