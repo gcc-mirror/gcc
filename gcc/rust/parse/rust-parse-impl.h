@@ -11457,7 +11457,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr_with_block (
 {
   auto expr = parse_expr_with_block (std::move (outer_attrs));
   if (expr == nullptr)
-	  return ExprOrStmt::create_error();
+    return ExprOrStmt::create_error ();
 
   auto tok = lexer.peek_token ();
 
