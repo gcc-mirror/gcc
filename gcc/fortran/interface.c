@@ -3248,10 +3248,13 @@ gfc_compare_actual_formal (gfc_actual_arglist **ap, gfc_formal_arglist *formal,
 	  && f->sym->attr.flavor != FL_PROCEDURE)
 	{
 	  if (a->expr->ts.type == BT_CHARACTER && !f->sym->as && where)
-	    gfc_warning (0, "Character length of actual argument shorter "
-			 "than of dummy argument %qs (%lu/%lu) at %L",
-			 f->sym->name, actual_size, formal_size,
-			 &a->expr->where);
+	    {
+	      gfc_warning (0, "Character length of actual argument shorter "
+			   "than of dummy argument %qs (%lu/%lu) at %L",
+			   f->sym->name, actual_size, formal_size,
+			   &a->expr->where);
+	      goto skip_size_check;
+	    }
           else if (where)
 	    {
 	      /* Emit a warning for -std=legacy and an error otherwise. */
