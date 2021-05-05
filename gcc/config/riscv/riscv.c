@@ -3258,10 +3258,7 @@ riscv_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
 
   /* Emit the loop condition.  */
   test = gen_rtx_NE (VOIDmode, src_reg, final_src);
-  if (Pmode == DImode)
-    emit_jump_insn (gen_cbranchdi4 (test, src_reg, final_src, label));
-  else
-    emit_jump_insn (gen_cbranchsi4 (test, src_reg, final_src, label));
+  emit_jump_insn (gen_cbranch4 (Pmode, test, src_reg, final_src, label));
 
   /* Mop up any left-over bytes.  */
   if (leftover)
