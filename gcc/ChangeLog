@@ -1,3 +1,155 @@
+2021-05-04  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000-call.c (rs6000_output_mi_thunk): Use
+	get_fnname_from_decl for name of thunk.
+	* config/rs6000/rs6000.c (rs6000_declare_alias): Use assemble_name
+	and ASM_OUTPUT_LABEL.
+	(rs6000_xcoff_declare_function_name): Use assemble_name and
+	ASM_OUTPUT_LABEL.
+	(rs6000_xcoff_declare_object_name): Use ASM_OUTPUT_LABEL.
+	(rs6000_xcoff_encode_section_info): Don't add mapping class
+	for aliases.  Always add [DS] mapping class to primary
+	FUNCTION_DECL.
+	(rs6000_asm_weaken_decl): Don't explicitly add [DS].
+
+2021-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100307
+	* builtins.c (compute_objsize_r): Clear base0 for pointers.
+
+2021-05-04  Jeff Law  <jlaw@tachyum.com>
+
+	* config/bfin/bfin.h (NOTICE_UPDATE_CC): Remove.
+
+2021-05-04  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* caller-save.c: Remove CC0.
+	* cfgcleanup.c: Remove CC0.
+	* cfgrtl.c: Remove CC0.
+	* combine.c: Remove CC0.
+	* compare-elim.c: Remove CC0.
+	* conditions.h: Remove CC0.
+	* config/h8300/h8300.h: Remove CC0.
+	* config/h8300/h8300-protos.h: Remove CC0.
+	* config/h8300/peepholes.md: Remove CC0.
+	* config/i386/x86-tune-sched.c: Remove CC0.
+	* config/m68k/m68k.c: Remove CC0.
+	* config/rl78/rl78.c: Remove CC0.
+	* config/sparc/sparc.c: Remove CC0.
+	* config/xtensa/xtensa.c: Remove CC0.
+	(gen_conditional_move):  Use pc_rtx instead of cc0_rtx in a piece of
+	RTL where that is used as a placeholder only.
+	* cprop.c: Remove CC0.
+	* cse.c: Remove CC0.
+	* cselib.c: Remove CC0.
+	* df-problems.c: Remove CC0.
+	* df-scan.c: Remove CC0.
+	* doc/md.texi: Remove CC0.  Adjust an example.
+	* doc/rtl.texi: Remove CC0.  Adjust an example.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Remove CC0.
+	* emit-rtl.c: Remove CC0.
+	* final.c: Remove CC0.
+	* fwprop.c: Remove CC0.
+	* gcse-common.c: Remove CC0.
+	* gcse.c: Remove CC0.
+	* genattrtab.c: Remove CC0.
+	* genconfig.c: Remove CC0.
+	* genemit.c: Remove CC0.
+	* genextract.c: Remove CC0.
+	* gengenrtl.c: Remove CC0.
+	* genrecog.c: Remove CC0.
+	* haifa-sched.c: Remove CC0.
+	* ifcvt.c: Remove CC0.
+	* ira-costs.c: Remove CC0.
+	* ira.c: Remove CC0.
+	* jump.c: Remove CC0.
+	* loop-invariant.c: Remove CC0.
+	* lra-constraints.c: Remove CC0.
+	* lra-eliminations.c: Remove CC0.
+	* optabs.c: Remove CC0.
+	* postreload-gcse.c: Remove CC0.
+	* postreload.c: Remove CC0.
+	* print-rtl.c: Remove CC0.
+	* read-rtl-function.c: Remove CC0.
+	* reg-notes.def: Remove CC0.
+	* reg-stack.c: Remove CC0.
+	* reginfo.c: Remove CC0.
+	* regrename.c: Remove CC0.
+	* reload.c: Remove CC0.
+	* reload1.c: Remove CC0.
+	* reorg.c: Remove CC0.
+	* resource.c: Remove CC0.
+	* rtl.c: Remove CC0.
+	* rtl.def: Remove CC0.
+	* rtl.h: Remove CC0.
+	* rtlanal.c: Remove CC0.
+	* sched-deps.c: Remove CC0.
+	* sched-rgn.c: Remove CC0.
+	* shrink-wrap.c: Remove CC0.
+	* simplify-rtx.c: Remove CC0.
+	* system.h: Remove CC0.  Poison NOTICE_UPDATE_CC, CC_STATUS_MDEP_INIT,
+	CC_STATUS_MDEP, and CC_STATUS.
+	* target.def: Remove CC0.
+	* valtrack.c: Remove CC0.
+	* var-tracking.c: Remove CC0.
+
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100414
+	* tree-ssa-phiopt.c (get_non_trapping): Do not compute dominance
+	info here.
+	(tree_ssa_phiopt_worker): But unconditionally here.
+
+2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (lower_rec_input_clauses, lower_reduction_clauses): Handle
+	&& and || with floating-point and complex arguments.
+
+2021-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.c (insert_debug_decl_map): Delete.
+	(copy_debug_stmt): Minor tweak.
+	(setup_one_parameter): Do not use a variable if the value is either
+	a read-only DECL or a non-addressable local variable in the caller.
+	In this case, insert the debug-only variable in the map manually.
+	(expand_call_inline): Do not generate a CLOBBER for these values.
+	* tree-inline.h (debug_map): Minor tweak.
+
+2021-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* builtins.c (builtin_with_linkage_p): Return true for stp[n]cpy.
+	* symtab.c (symtab_node::output_to_lto_symbol_table_p): Tidy up.
+
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100329
+	* tree-ssa-reassoc.c (can_reassociate_p): Do not reassociate
+	asm goto defs.
+	(insert_stmt_after): Assert we're not running into asm goto.
+
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100398
+	* tree-ssa-dse.c (pass_dse::execute): Preserve control
+	altering stmts.
+
+2021-05-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* builtins.c (try_store_by_multiple_pieces): Fix constfun's prototype.
+
+2021-05-04  Alexandre Oliva  <oliva@adacore.com>
+
+	* builtins.c (try_store_by_multiple_pieces): New.
+	(expand_builtin_memset_args): Use it.  If target_char_cast
+	fails, proceed as for non-constant val.  Pass len's ctz to...
+	* expr.c (clear_storage_hints): ... this.  Try store by
+	multiple pieces after setmem.
+	(clear_storage): Adjust.
+	* expr.h (clear_storage_hints): Likewise.
+	(try_store_by_multiple_pieces): Declare.
+	* passes.def: Replace the last copy_prop with ccp.
+
 2021-05-03  Tom de Vries  <tdevries@suse.de>
 
 	PR target/100321

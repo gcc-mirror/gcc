@@ -1,3 +1,287 @@
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb: Remove qualification of arbitrary calls to
+	Sinfo.Expressions and Sinfo.Parameter_Associations.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (Expr_Name): Simplify with functional variant of
+	UI_Image.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (To_Mixed): Removed.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (List_Name_Count): Change type from Integer to
+	Natural.
+
+2021-05-04  Yannick Moy  <moy@adacore.com>
+
+	* pprint.adb (Expression_Image): Special case for
+	expression-with-actions.
+
+2021-05-04  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Remove the non-optimization.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref.adb (Generate_Reference_To_Formals): Remove dedicated
+	branch for generic subprograms (they are now handled together
+	with non-generic subprograms in the ELSE branch); replace a
+	low-level Ekind membership test with a high-level call to
+	Is_Access_Subprogram_Type.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Check_Abstract_Primitives): Match First_Formal
+	with Next_Formal.
+	* sem_ch6.adb (Is_Non_Overriding_Operation): Likewise.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Collect_Global_Item): Iterate directly over
+	formals.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.ads (Collect_Subprogram_Inputs_Outputs): Update
+	comment; this routine is no longer used by GNATprove.
+	* sem_prag.adb (Find_Role): The IN parameter is on output only
+	when it belongs to non-function; also, the otherwise constant
+	object can only be written by a non-function.
+	(Collect_Global_Item): The IN parameter can only be written when
+	it belongs to non-function; also, unnest this check to make it
+	easier to read.
+
+2021-05-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-assert.ads (Assert_Failure): Now a renaming of
+	Assertion_Error.
+	* libgnat/a-assert.ads (Assertion_Error): Now a first class
+	citizen.  Remove dependency on System.Assertions.
+	* gcc-interface/a-assert.ads, gcc-interface/a-assert.adb: New.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS, GNATBIND_OBJS): Add
+	a-assert.o from gcc-interface.
+
+2021-05-04  Yannick Moy  <moy@adacore.com>
+
+	* erroutc.adb (Matches): Move spec...
+	* erroutc.ads (Matches): ...here.
+
+2021-05-04  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Force error marker in
+	GNATprove mode.
+
+2021-05-04  Bob Duff  <duff@adacore.com>
+
+	* binde.adb: No need for ??? marks in Binde, because it is
+	superseded by Bindo.
+	* bindo-writers.adb (Write_Unit_Closure): Verified that -Ra
+	works.
+	* exp_ch4.adb, sinfo.ads (Expand_N_Type_Conversion): Rules for
+	conversions passed to gigi are documented in sinfo.ads.
+	(Expand_N_Unchecked_Type_Conversion): Comment is a duplicate of
+	one in sinfo.ads.
+	(Expand_N_In): Robert already added sufficient comments years
+	after the ??? comment was inserted.
+	(Expand_Membership_Minimize_Eliminate_Overflow): I don't see any
+	reason why Stand should export Long_Long_Integer'Base -- it
+	doesn't export any other base types.
+	(Size_In_Storage_Elements): We are doing an allocator, so we
+	don't care about sizes in bits.
+	(Expand_N_Allocator): PolyORB isn't going to be significantly
+	improved, so we're not going to mess with remote access to
+	class-wide types.
+	(Optimize_Return_Stmt): It's not important to optimize return
+	statements in predicate functions -- there are many
+	more-important optimizations we could do. Keep part of the
+	comment without "???", to clarify why the "and then ...".
+	(User_Defined_Primitive_Equality_Op): The optimization doesn't
+	seem important enough.
+	(Expand_N_Unchecked_Type_Conversion): Refactor to use
+	Expand_N_Unchecked_Expression.
+	(Make_Array_Comparison_Op): This seems like a case of "it it's
+	not broken, don't fix it". Too much risk of causing bugs.
+	* debug_a.adb: Remove ??? comments asking why Current_Error_Node
+	is maintained unconditionally, and add a comment explaining why.
+	* errout.adb: These kinds of minor bugs do indeed exist, but
+	we're never going to get around to fixing them "properly", so we
+	need this code for robustness.
+	* gnatchop.adb (Read_File): Document when read can fail.
+	* gnatdll.adb (Parse_Command_Line): Nobody is complaining about
+	these arbitrary limits, so no need to use Table. Increase the
+	limits just in case.  It is clear from the names what they are
+	limits on.
+	* gnatlink.adb: Add needed comments.
+	(Delete): An existing comment makes clear it's intentional, and
+	it's been like that since 1996.
+	(Process_Args): Improve comments.
+	(Search_Library_Path): Refactoring to avoid deep nesting.
+	* inline.adb (Build_Body_To_Inline): Probably won't get around
+	to doing that optimization.
+	(Is_Unit_Subprogram): No, this should not be moved to Sem_Aux,
+	because it is too specialized to this context.
+	(Do_Reset): No comment is needed here; it's clear from the
+	comment on Reset_Dispatching_Calls. Do_Reset is an artificial
+	subprogram; if we had proper iterators, it would just be an if
+	statement in the loop.
+	(Rewrite_Function_Call): Probably won't get around to doing that
+	optimization.
+	* layout.adb (Layout_Type): The gigi comment doesn't need to be
+	a ??? comment, and it's been that way since 2000.  The
+	limitation to scalars will likely never be investigated, and
+	it's been that way since 2009.
+	* lib.adb (Check_Same_Extended_Unit): This doesn't look like
+	something that needs fixing; it looks like a permanent
+	workaround.
+	* lib-load.adb (Change_Main_Unit_To_Spec): It is good enough in
+	practice.
+	(Load_Unit): Nobody will ever get around to investigating the
+	obscure PMES oddity, and the optimization is not worth the
+	trouble.
+	* live.adb: It's not worth documenting this. It is used only
+	with a debug switch. Nobody who has done significant work on it
+	is still around, so it would require substantial investigation.
+	* mdll.ads: I see no reason for USE.
+	* namet.ads: Routines are obsolete, but they're not going
+	anywhere anytime soon (too much work, and surprisingly delicate
+	because of dependences on global variables).
+	* osint.ads: Minor.
+	* osint.adb: Improve comments.
+	(Full_Lib_File_Name): Use Smart_Find_File.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_prag.adb, sem_prag.adb: Replace low-level Ekind membership
+	tests with a high-level call to Is_Formal_Object.
+
+2021-05-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* cstand.adb, sprint.adb, switch-c.adb, xr_tabls.ads,
+	xr_tabls.adb, xref_lib.adb: Address ??? comments.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Analyze_Global_Item): Take subprogram kind into
+	account when accepting or rejecting a constant of an
+	access-to-variable type as a global Output/In_Out; do this check
+	inside an ELSIF branch to avoid unnecessary evaluation of the
+	subsequent condition.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Role_Error, Usage_Error): Replace calls to
+	Name_Find and Get_Name_String with a call to To_String.
+
+2021-05-04  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Build_Siz_Exp): new function, subsidiary of
+	Expand_Container_Aggregate, to create an expression to be used
+	in the dynamic allocation of a container with a single container
+	element association.
+	(Add_Range): Handle static bounds of ranges over enumerations.
+	(Expand_Container_Aggregate): Add declaration for size
+	expression when needed, and use it in container object
+	declaration for container.
+
+2021-05-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer_Helper.New_Finalizer_Name):
+	Unnest so that it can be reused.
+	(Build_Finalizer_Helper.Process_Declarations): Call the
+	xxx__finalize_body procedure of a package instantiation in case
+	it contains finalization statements.  Code clean ups.
+	(Build_Finalizer_Helper.Create_Finalizer): Export and set an
+	Interface_Name for library level finalizers since these may be
+	imported now.
+	(Build_Finalizer_Helper): Need to process library level package
+	body instantiations which may contain objects requiring
+	finalization.
+	* libgnat/s-finmas.ads: Fix typo.
+
+2021-05-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* checks.adb (Append_Range_Checks, Apply_Selected_Length_Checks,
+	Determine_Range, Insert_Range_Checks,
+	Install_Null_Excluding_Check, Selected_Length_Checks,
+	Selected_Range_Checks): Address ??? comments and code cleanups.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Check_Mode_Restriction_In_Enclosing_Context):
+	Apply the rule even with no explicit Global contract (and remove
+	a dead condition for Refined_Global).
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Check_Mode_Restriction_In_Enclosing_Context):
+	Extend check to protected entries.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_prag.adb (Check_Mode_Restriction_In_Enclosing_Context):
+	Fix reference to SPARK RM rule number.
+
+2021-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_intr.adb: Remove with/use clauses for Urealp.
+	(Expand_Is_Negative): Delete.
+	(Expand_Intrinsic_Call): Do not call it.
+	* rtsfind.ads (RE_Id): Remove RE_Float_Unsigned.
+	(RE_Unit_Table): Remove entry for RE_Float_Unsigned.
+	* snames.ads-tmpl (Name_Is_Negative): Delete.
+	* libgnat/s-imgrea.ads (Set_Image_Real): Fix mode of S parameter.
+	* libgnat/s-imgrea.adb: Add with/use clauses for System.Img_Util.
+	(LLU): New subtype.
+	(Maxdigs): Use it.
+	(Is_Negative): Reimplement.
+	(Image_Floating_Point): Simplify.
+	(Set_Image_Real): Fix mode of S parameter.  Remove the low-level
+	processing on characters.  Flip the sign of the Scale variable.
+	Compute the maximum number of digits for the straight notation.
+	Call Set_Decimal_Digits at the end to do the final formatting.
+	* libgnat/s-imguti.ads (Floating_Invalid_Value): New type.
+	(Set_Floating_Invalid_Value): New procedure.
+	* libgnat/s-imguti.adb (Set_Floating_Invalid_Value): Implement it
+	based on existing code from Set_Image_Real.
+	* libgnat/s-unstyp.ads (Float_Unsigned): Delete.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* csets.adb (Initialize): Refactor into CASE statement; raise
+	exception on unsupported code of character set (it will be
+	gently rejected earlier when scanning command line switches).
+	* switch-b.adb (Scan_Binder_Switches): Refactor into a
+	membership expression; add missing '9' choice; reorder as
+	described by GNAT UG, section 4.3.11.
+	* switch-c.adb (Scan_Front_End_Switches): Refactor into a
+	membership expression and reorder as above.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(gnatic): Mention '5' as an allowed value for "c".
+	* gnat_ugn.texi: Regenerate.
+
+2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
+
+	* errout.adb (Error_Msg_Internal): Add assertion to prevent
+	style mistakes reappearing in the future.
+
+2021-05-04  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Tagged_Membership): Remove wrong condition that
+	is not consistent with the documentation of this subprogram.
+
+2021-05-04  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Valid_Conversion): Make message a continuation.
+
+2021-05-04  Arnaud Charlet  <charlet@adacore.com>
+
+	* styleg.adb: Address ??? comments.
+
 2021-05-03  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnat/a-stunau.ads, libgnat/a-stunau.adb,

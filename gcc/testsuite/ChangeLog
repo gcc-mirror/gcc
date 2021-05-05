@@ -1,3 +1,52 @@
+2021-05-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100307
+	* g++.dg/warn/Wplacement-new-size-9.C: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-26.c: New test.
+
+2021-05-04  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wvla-parameter-3.c: Use unique strings in directive names.
+
+2021-05-04  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wvla-parameter-2.c: Use unique strings in directive names.
+
+2021-05-04  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/oscbreak-1.c: Compile with -O1
+	-fschedule-insns
+
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100414
+	* gcc.dg/pr100414.c: New testcase.
+
+2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.dg/gomp/clause-1.c: Use 'reduction(&:..)' instead of '...(&&:..)'.
+
+2021-05-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt94.adb: New file.
+	* gnat.dg/opt94_pkg.adb: New file.
+	* gnat.dg/opt94_pkg.ads: New file.
+
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dse-26.c: Skip on !lp64 targets,
+	simplify dump scanning down to one case.
+
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100329
+	* gcc.dg/torture/pr100329.c: New testcase.
+
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100398
+	* gcc.dg/torture/pr100398.c: New testcase.
+
 2021-05-03  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/aarch64/advsimd-intrinsics/vmla_float_not_fused.c:
