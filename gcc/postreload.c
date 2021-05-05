@@ -1700,7 +1700,8 @@ move2add_valid_value_p (int regno, scalar_int_mode mode)
     {
       scalar_int_mode old_mode;
       if (!is_a <scalar_int_mode> (reg_mode[regno], &old_mode)
-	  || !MODES_OK_FOR_MOVE2ADD (mode, old_mode))
+	  || !MODES_OK_FOR_MOVE2ADD (mode, old_mode)
+	  || !REG_CAN_CHANGE_MODE_P (regno, old_mode, mode))
 	return false;
       /* The value loaded into regno in reg_mode[regno] is also valid in
 	 mode after truncation only if (REG:mode regno) is the lowpart of
