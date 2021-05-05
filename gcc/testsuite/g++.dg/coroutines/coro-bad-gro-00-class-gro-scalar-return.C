@@ -37,7 +37,7 @@ my_coro (std::coroutine_handle<>& h)
 {
   PRINT ("coro1: about to return");
   co_return;
-} // { dg-error {'struct Thing' used where a 'int' was expected} }
+} // { dg-error {cannot convert 'Thing' to 'int' in return} }
 
 int main ()
 {
