@@ -573,7 +573,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Ab (N_Declaration, Node_Kind);
    --  Note: this includes all constructs normally thought of as declarations
-   --  except those which are separately grouped as later declarations.
+   --  except those that are separately grouped in N_Later_Decl_Item.
 
    Cc (N_Component_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
@@ -1342,7 +1342,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Defining_Identifier, Node_Id),
         Sy (Discrete_Subtype_Definition, Node_Id, Default_Empty)));
 
-   Cc (N_Exception_Declaration, Node_Kind,
+   Cc (N_Exception_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
         Sm (Expression, Node_Id),
         Sm (More_Ids, Flag),
