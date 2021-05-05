@@ -1,3 +1,49 @@
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100375
+	* config/nvptx/nvptx.c (nvptx_sese_pseudo): Use NULL instead of 0
+	as first argument of pseudo_node_t constructors.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100302
+	* config/aarch64/aarch64.c (aarch64_add_offset_1_temporaries): Use
+	absu_hwi instead of abs_hwi.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100254
+	* cfgcleanup.c (outgoing_edges_match): Check REG_EH_REGION on
+	last1 and last2 insns rather than BB_END (bb1) and BB_END (bb2) insns.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100255
+	* vmsdbgout.c (ASM_OUTPUT_DEBUG_STRING, vmsdbgout_begin_block,
+	vmsdbgout_end_block, lookup_filename, vmsdbgout_source_line): Remove
+	register keywords.
+
+2021-05-04  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-04-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/100230
+	* early-remat.c (early_remat::sort_candidates): Use delete[]
+	instead of delete for array allocated with new[].
+
 2021-04-30  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backported from master:

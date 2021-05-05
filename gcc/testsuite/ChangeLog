@@ -1,3 +1,11 @@
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100254
+	* g++.dg/opt/pr100254.C: New test.
+
 2021-04-30  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
