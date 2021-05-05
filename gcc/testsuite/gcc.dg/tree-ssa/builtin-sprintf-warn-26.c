@@ -22,17 +22,17 @@ void nowarn_4m3 ()
 void warn_2m1 ()
 {
   char *p = a + 2;
-  sprintf (p - 1, "%i", 123);   // { dg-warning "-Wformat-overflow" "pr100325" { xfail *-*-* } }
+  sprintf (p - 1, "%i", 123);   // { dg-warning "-Wformat-overflow" "pr100325" }
 }
 
 void warn_3m1 ()
 {
   char *p = a + 3;
-  sprintf (p - 1, "%i", 12);    // { dg-warning "-Wformat-overflow" "pr100325" { xfail *-*-* } }
+  sprintf (p - 1, "%i", 12);    // { dg-warning "-Wformat-overflow" "pr100325" }
 }
 
 void warn_4m1 ()
 {
   char *p = a + 4;
-  sprintf (p - 1, "%i", 1);     // { dg-warning "-Wformat-overflow" "pr100325" { xfail *-*-* } }
+  sprintf (p - 1, "%i", 1);     // { dg-warning "-Wformat-overflow" "pr100325" }
 }
