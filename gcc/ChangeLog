@@ -1,3 +1,86 @@
+2021-05-04  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-04-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/100230
+	* early-remat.c (early_remat::sort_candidates): Use delete[]
+	instead of delete for array allocated with new[].
+
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100053
+	* tree-ssa-sccvn.c (vn_nary_op_get_predicated_value): Do
+	not use optimistic dominance queries for backedges to validate
+	predicated values.
+	(dominated_by_p_w_unex): Add parameter to ignore executable
+	state on backedges.
+	(rpo_elim::eliminate_avail): Adjust.
+
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-29  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/98144
+	* df.h (df_mir_bb_info): Add con_visited member.
+	* df-problems.c (df_mir_alloc): Initialize con_visited,
+	do not fully populate IN and OUT.
+	(df_mir_reset): Likewise.
+	(df_mir_confluence_0): Set con_visited.
+	(df_mir_confluence_n): Properly handle implicitely
+	fully populated IN and OUT as designated by con_visited
+	and update con_visited accordingly.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100375
+	* config/nvptx/nvptx.c (nvptx_sese_pseudo): Use NULL instead of 0
+	as first argument of pseudo_node_t constructors.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100302
+	* config/aarch64/aarch64.c (aarch64_add_offset_1_temporaries): Use
+	absu_hwi instead of abs_hwi.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100254
+	* cfgcleanup.c (outgoing_edges_match): Check REG_EH_REGION on
+	last1 and last2 insns rather than BB_END (bb1) and BB_END (bb2) insns.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100255
+	* vmsdbgout.c (ASM_OUTPUT_DEBUG_STRING, vmsdbgout_begin_block,
+	vmsdbgout_end_block, lookup_filename, vmsdbgout_source_line): Remove
+	register keywords.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100148
+	* cprop.c (constprop_register): Use next_nondebug_insn instead of
+	NEXT_INSN.
+
 2021-05-04  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/91914

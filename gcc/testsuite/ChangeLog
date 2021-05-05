@@ -1,3 +1,28 @@
+2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100053
+	* gcc.dg/torture/pr100053.c: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-93.c: Likewise.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100254
+	* g++.dg/opt/pr100254.C: New test.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100148
+	* g++.dg/opt/pr100148.C: New test.
+
 2021-05-04  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/91914
