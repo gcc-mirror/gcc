@@ -100,8 +100,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Metaprogramming helper types.
 
-  template<bool, typename, typename>
-    struct conditional;
+  template<bool>
+    struct __conditional
+    {
+      template<typename _Tp, typename>
+	using type = _Tp;
+    };
+
+  template<>
+    struct __conditional<false>
+    {
+      template<typename, typename _Up>
+	using type = _Up;
+    };
+
+  // More efficient version of std::conditional_t for internal use (and C++11)
+  template<bool _Cond, typename _If, typename _Else>
+    using __conditional_t
+      = typename __conditional<_Cond>::template type<_If, _Else>;
 
   /// @cond undocumented
   template <typename _Type>
@@ -126,12 +142,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _B1, typename _B2>
     struct __or_<_B1, _B2>
-    : public conditional<_B1::value, _B1, _B2>::type
+    : public __conditional_t<_B1::value, _B1, _B2>
     { };
 
   template<typename _B1, typename _B2, typename _B3, typename... _Bn>
     struct __or_<_B1, _B2, _B3, _Bn...>
-    : public conditional<_B1::value, _B1, __or_<_B2, _B3, _Bn...>>::type
+    : public __conditional_t<_B1::value, _B1, __or_<_B2, _B3, _Bn...>>
     { };
 
   template<typename...>
@@ -149,12 +165,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _B1, typename _B2>
     struct __and_<_B1, _B2>
-    : public conditional<_B1::value, _B2, _B1>::type
+    : public __conditional_t<_B1::value, _B2, _B1>
     { };
 
   template<typename _B1, typename _B2, typename _B3, typename... _Bn>
     struct __and_<_B1, _B2, _B3, _Bn...>
-    : public conditional<_B1::value, __and_<_B2, _B3, _Bn...>, _B1>::type
+    : public __conditional_t<_B1::value, __and_<_B2, _B3, _Bn...>, _B1>
     { };
 
   template<typename _Pp>
@@ -2491,11 +2507,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef __remove_cvref_t<_Arg> _Argval;
       typedef _Res _Class::* _MemPtr;
-      typedef typename conditional<__or_<is_same<_Argval, _Class>,
+      typedef typename __conditional_t<__or_<is_same<_Argval, _Class>,
         is_base_of<_Class, _Argval>>::value,
         __result_of_memobj_ref<_MemPtr, _Arg>,
         __result_of_memobj_deref<_MemPtr, _Arg>
-      >::type::type type;
+      >::type type;
     };
 
   template<typename _MemPtr, typename _Arg, typename... _Args>
@@ -2506,10 +2522,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       typedef typename remove_reference<_Arg>::type _Argval;
       typedef _Res _Class::* _MemPtr;
-      typedef typename conditional<is_base_of<_Class, _Argval>::value,
+      typedef typename __conditional_t<is_base_of<_Class, _Argval>::value,
         __result_of_memfun_ref<_MemPtr, _Arg, _Args...>,
         __result_of_memfun_deref<_MemPtr, _Arg, _Args...>
-      >::type::type type;
+      >::type type;
     };
 
   // _GLIBCXX_RESOLVE_LIB_DEFECTS

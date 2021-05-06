@@ -102,9 +102,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct _Manager_external; // creates contained object on the heap
 
     template<typename _Tp>
-      using _Manager = conditional_t<_Internal<_Tp>::value,
-				     _Manager_internal<_Tp>,
-				     _Manager_external<_Tp>>;
+      using _Manager = __conditional_t<_Internal<_Tp>::value,
+				       _Manager_internal<_Tp>,
+				       _Manager_external<_Tp>>;
 
     template<typename _Tp, typename _VTp = decay_t<_Tp>>
       using _Decay_if_not_any = enable_if_t<!is_same_v<_VTp, any>, _VTp>;

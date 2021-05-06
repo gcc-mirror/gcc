@@ -86,10 +86,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     struct __uses_alloc<true, _Tp, _Alloc, _Args...>
-    : conditional<
+    : __conditional_t<
         is_constructible<_Tp, allocator_arg_t, const _Alloc&, _Args...>::value,
         __uses_alloc1<_Alloc>,
-       	__uses_alloc2<_Alloc>>::type
+       	__uses_alloc2<_Alloc>>
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2586. Wrong value category used in scoped_allocator_adaptor::construct
@@ -131,10 +131,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<template<typename...> class _Predicate,
 	   typename _Tp, typename _Alloc, typename... _Args>
     struct __is_uses_allocator_predicate
-    : conditional<uses_allocator<_Tp, _Alloc>::value,
+    : __conditional_t<uses_allocator<_Tp, _Alloc>::value,
       __or_<_Predicate<_Tp, allocator_arg_t, _Alloc, _Args...>,
 	    _Predicate<_Tp, _Args..., _Alloc>>,
-      _Predicate<_Tp, _Args...>>::type { };
+      _Predicate<_Tp, _Args...>> { };
 
   template<typename _Tp, typename _Alloc, typename... _Args>
     struct __is_uses_allocator_constructible

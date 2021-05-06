@@ -675,9 +675,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return;
 
 	  using _Ptr = typename unique_ptr<_Tp, _Del>::pointer;
-	  using _Del2 = typename conditional<is_reference<_Del>::value,
+	  using _Del2 = __conditional_t<is_reference<_Del>::value,
 	      reference_wrapper<typename remove_reference<_Del>::type>,
-	      _Del>::type;
+	      _Del>;
 	  using _Sp_cd_type
 	    = _Sp_counted_deleter<_Ptr, _Del2, allocator<void>, _Lp>;
 	  using _Alloc = allocator<_Sp_cd_type>;

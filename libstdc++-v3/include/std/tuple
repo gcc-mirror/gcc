@@ -66,8 +66,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Use the Empty Base-class Optimization for empty, non-final types.
   template<typename _Tp>
     using __empty_not_final
-    = typename conditional<__is_final(_Tp), false_type,
-			   __is_empty_non_tuple<_Tp>>::type;
+    = __conditional_t<__is_final(_Tp), false_type,
+		      __is_empty_non_tuple<_Tp>>;
 
   template<size_t _Idx, typename _Head,
 	   bool = __empty_not_final<_Head>::value>
@@ -905,9 +905,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX20_CONSTEXPR
       tuple&
-      operator=(typename conditional<__assignable<const _Elements&...>(),
-				     const tuple&,
-				     const __nonesuch&>::type __in)
+      operator=(__conditional_t<__assignable<const _Elements&...>(),
+				const tuple&,
+				const __nonesuch&> __in)
       noexcept(__nothrow_assignable<const _Elements&...>())
       {
 	this->_M_assign(__in);
@@ -916,9 +916,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX20_CONSTEXPR
       tuple&
-      operator=(typename conditional<__assignable<_Elements...>(),
-				     tuple&&,
-				     __nonesuch&&>::type __in)
+      operator=(__conditional_t<__assignable<_Elements...>(),
+				tuple&&,
+				__nonesuch&&> __in)
       noexcept(__nothrow_assignable<_Elements...>())
       {
 	this->_M_assign(std::move(__in));
@@ -1274,9 +1274,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX20_CONSTEXPR
       tuple&
-      operator=(typename conditional<__assignable<const _T1&, const _T2&>(),
-				     const tuple&,
-				     const __nonesuch&>::type __in)
+      operator=(__conditional_t<__assignable<const _T1&, const _T2&>(),
+				const tuple&,
+				const __nonesuch&> __in)
       noexcept(__nothrow_assignable<const _T1&, const _T2&>())
       {
 	this->_M_assign(__in);
@@ -1285,9 +1285,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _GLIBCXX20_CONSTEXPR
       tuple&
-      operator=(typename conditional<__assignable<_T1, _T2>(),
-				     tuple&&,
-				     __nonesuch&&>::type __in)
+      operator=(__conditional_t<__assignable<_T1, _T2>(),
+				tuple&&,
+				__nonesuch&&> __in)
       noexcept(__nothrow_assignable<_T1, _T2>())
       {
 	this->_M_assign(std::move(__in));

@@ -485,17 +485,17 @@ namespace __detail
 
     private:
       // Currently we only use the cache for char
-      typedef typename std::is_same<_CharT, char>::type _UseCache;
+      using _UseCache = typename std::is_same<_CharT, char>::type;
 
       static constexpr size_t
       _S_cache_size =
 	1ul << (sizeof(_CharT) * __CHAR_BIT__ * int(_UseCache::value));
 
       struct _Dummy { };
-      typedef typename std::conditional<_UseCache::value,
-					std::bitset<_S_cache_size>,
-					_Dummy>::type _CacheT;
-      typedef typename std::make_unsigned<_CharT>::type _UnsignedCharT;
+      using _CacheT = std::__conditional_t<_UseCache::value,
+					   std::bitset<_S_cache_size>,
+					   _Dummy>;
+      using _UnsignedCharT = typename std::make_unsigned<_CharT>::type;
 
       bool
       _M_apply(_CharT __ch, false_type) const;

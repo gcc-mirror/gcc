@@ -1117,9 +1117,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
            typename _Val = typename iterator_traits<_RAIter>::value_type,
 	   typename _Diff = typename iterator_traits<_RAIter>::difference_type>
     using __boyer_moore_base_t
-      = conditional_t<__is_byte_like<_Val, _Pred>::value,
-		      __boyer_moore_array_base<_Diff, 256, _Pred>,
-		      __boyer_moore_map_base<_Val, _Diff, _Hash, _Pred>>;
+      = __conditional_t<__is_byte_like<_Val, _Pred>::value,
+			__boyer_moore_array_base<_Diff, 256, _Pred>,
+			__boyer_moore_map_base<_Val, _Diff, _Hash, _Pred>>;
 
   template<typename _RAIter, typename _Hash
 	     = hash<typename iterator_traits<_RAIter>::value_type>,

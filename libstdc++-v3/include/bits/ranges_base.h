@@ -907,9 +907,9 @@ namespace ranges
   };
 
   template<range _Range>
-    using borrowed_iterator_t = conditional_t<borrowed_range<_Range>,
-					     iterator_t<_Range>,
-					     dangling>;
+    using borrowed_iterator_t = __conditional_t<borrowed_range<_Range>,
+						iterator_t<_Range>,
+						dangling>;
 
 } // namespace ranges
 _GLIBCXX_END_NAMESPACE_VERSION

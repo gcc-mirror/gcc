@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // otherwise use _Otherwise.
     template<typename _Cat, typename _Limit, typename _Otherwise = _Cat>
       using __clamp_iter_cat
-	= conditional_t<derived_from<_Cat, _Limit>, _Limit, _Otherwise>;
+	= __conditional_t<derived_from<_Cat, _Limit>, _Limit, _Otherwise>;
   }
 #endif
 
@@ -155,9 +155,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename __traits_type::reference		reference;
 #else
       using iterator_concept
-	= conditional_t<random_access_iterator<_Iterator>,
-			random_access_iterator_tag,
-			bidirectional_iterator_tag>;
+	= __conditional_t<random_access_iterator<_Iterator>,
+			  random_access_iterator_tag,
+			  bidirectional_iterator_tag>;
       using iterator_category
 	= __detail::__clamp_iter_cat<typename __traits_type::iterator_category,
 				     random_access_iterator_tag>;
@@ -1455,9 +1455,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Iterator					pointer;
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2106. move_iterator wrapping iterators returning prvalues
-      typedef typename conditional<is_reference<__base_ref>::value,
-			 typename remove_reference<__base_ref>::type&&,
-			 __base_ref>::type		reference;
+      using reference
+	= __conditional_t<is_reference<__base_ref>::value,
+			  typename remove_reference<__base_ref>::type&&,
+			  __base_ref>;
 #endif
 
       _GLIBCXX17_CONSTEXPR
@@ -1762,9 +1763,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return move_iterator<_Iterator>(std::move(__i)); }
 
   template<typename _Iterator, typename _ReturnType
-    = typename conditional<__move_if_noexcept_cond
+    = __conditional_t<__move_if_noexcept_cond
       <typename iterator_traits<_Iterator>::value_type>::value,
-                _Iterator, move_iterator<_Iterator>>::type>
+		_Iterator, move_iterator<_Iterator>>>
     inline _GLIBCXX17_CONSTEXPR _ReturnType
     __make_move_if_noexcept_iterator(_Iterator __i)
     { return _ReturnType(__i); }
@@ -1772,8 +1773,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Overload for pointers that matches std::move_if_noexcept more closely,
   // returning a constant iterator when we don't want to move.
   template<typename _Tp, typename _ReturnType
-    = typename conditional<__move_if_noexcept_cond<_Tp>::value,
-			   const _Tp*, move_iterator<_Tp*>>::type>
+    = __conditional_t<__move_if_noexcept_cond<_Tp>::value,
+		      const _Tp*, move_iterator<_Tp*>>>
     inline _GLIBCXX17_CONSTEXPR _ReturnType
     __make_move_if_noexcept_iterator(_Tp* __i)
     { return _ReturnType(__i); }
@@ -2178,8 +2179,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
     public:
-      using iterator_concept = conditional_t<forward_iterator<_It>,
-	    forward_iterator_tag, input_iterator_tag>;
+      using iterator_concept = __conditional_t<forward_iterator<_It>,
+					       forward_iterator_tag,
+					       input_iterator_tag>;
       using iterator_category = decltype(_S_iter_cat());
       using value_type = iter_value_t<_It>;
       using difference_type = iter_difference_t<_It>;
@@ -2459,9 +2461,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     requires same_as<__detail::__iter_traits<_It>, iterator_traits<_It>>
     struct iterator_traits<counted_iterator<_It>> : iterator_traits<_It>
     {
-      using pointer = conditional_t<contiguous_iterator<_It>,
-				    add_pointer_t<iter_reference_t<_It>>,
-				    void>;
+      using pointer = __conditional_t<contiguous_iterator<_It>,
+				      add_pointer_t<iter_reference_t<_It>>,
+				      void>;
     };
 #endif // C++20
 

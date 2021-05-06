@@ -1096,7 +1096,7 @@ namespace __variant
       typename _AsV = decltype(__variant::__as(std::declval<_Variant>())),
       typename _Tp = variant_alternative_t<_Np, remove_reference_t<_AsV>>>
     using __get_t
-      = conditional_t<is_lvalue_reference_v<_Variant>, _Tp&, _Tp&&>;
+      = __conditional_t<is_lvalue_reference_v<_Variant>, _Tp&, _Tp&&>;
 
   // Return type of std::visit.
   template<typename _Visitor, typename... _Variants>

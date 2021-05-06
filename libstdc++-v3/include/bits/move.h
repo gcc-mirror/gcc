@@ -120,8 +120,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _Tp>
     _GLIBCXX_NODISCARD
-    constexpr typename
-    conditional<__move_if_noexcept_cond<_Tp>::value, const _Tp&, _Tp&&>::type
+    constexpr
+    __conditional_t<__move_if_noexcept_cond<_Tp>::value, const _Tp&, _Tp&&>
     move_if_noexcept(_Tp& __x) noexcept
     { return std::move(__x); }
 
