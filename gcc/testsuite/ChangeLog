@@ -1,3 +1,11 @@
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/98786
+	* gcc.dg/torture/pr98786.c: New testcase.
+
 2021-05-04  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
