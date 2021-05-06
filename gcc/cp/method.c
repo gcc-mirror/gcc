@@ -1793,7 +1793,7 @@ build_stub_type (tree type, int quals, bool rvalue)
 /* Build a dummy glvalue from dereferencing a dummy reference of type
    REFTYPE.  */
 
-static tree
+tree
 build_stub_object (tree reftype)
 {
   if (!TYPE_REF_P (reftype))

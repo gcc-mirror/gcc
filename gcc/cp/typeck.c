@@ -5931,6 +5931,8 @@ cp_build_binary_op (const op_location_t &location,
 
   if (!processing_template_decl)
     {
+      if (resultcode == SPACESHIP_EXPR)
+	result = get_target_expr_sfinae (result, complain);
       op0 = cp_fully_fold (op0);
       /* Only consider the second argument if the first isn't overflowed.  */
       if (!CONSTANT_CLASS_P (op0) || TREE_OVERFLOW_P (op0))

@@ -4175,7 +4175,8 @@ member_p (const_tree decl)
 }
 
 /* Create a placeholder for member access where we don't actually have an
-   object that the access is against.  */
+   object that the access is against.  For a general declval<T> equivalent,
+   use build_stub_object instead.  */
 
 tree
 build_dummy_object (tree type)
