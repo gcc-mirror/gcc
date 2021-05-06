@@ -565,7 +565,7 @@ namespace __detail
       while (__first != __last)
 	{
 	  unsigned char __c = *__first;
-	  if (std::isdigit(static_cast<unsigned char>(__c)))
+	  if (std::isdigit(__c))
 	    __c -= '0';
 	  else
 	    {
