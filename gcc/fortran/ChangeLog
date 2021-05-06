@@ -1,3 +1,14 @@
+2021-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100274
+	* interface.c (gfc_compare_actual_formal): Continue checks after
+	emitting warning for argument length mismatch.
+	* trans-expr.c (gfc_conv_procedure_call): Check for NULL pointer
+	dereference.
+
 2021-04-27  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
