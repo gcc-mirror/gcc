@@ -1362,11 +1362,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       base() const
       { return _M_current; }
 #else
-      constexpr iterator_type
-      base() const &
-#if __cpp_lib_concepts
-	requires copy_constructible<iterator_type>
-#endif
+      constexpr const iterator_type&
+      base() const & noexcept
       { return _M_current; }
 
       constexpr iterator_type
@@ -2094,10 +2091,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return *this;
 	}
 
-      constexpr _It
-      base() const &
-      noexcept(is_nothrow_copy_constructible_v<_It>)
-      requires copy_constructible<_It>
+      constexpr const _It&
+      base() const & noexcept
       { return _M_current; }
 
       constexpr _It
