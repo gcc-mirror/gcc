@@ -1,3 +1,404 @@
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Fix expansion of
+	attributes Input and Output for unchecked unions.
+	* sem_case.ads: Fix typo "disriminant" and refill comment.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb, exp_ch9.adb, sem_ch3.adb: Reuse
+	Has_Defaulted_Discriminants.
+	* sem_ch4.adb (Analyze_Allocator): Reuse
+	Has_Defaulted_Discriminants (after reordering conjuncts); remove
+	redundant IF statement, whose condition is implied by
+	Has_Defaulted_Discriminants.
+	* sem_util.adb (Has_Defaulted_Discriminants): Has_Discriminants
+	implies that the First_Discriminant is present.
+	(Is_Fully_Initialized_Type): Reuse Has_Defaulted_Discriminants.
+
+2021-05-05  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Add condition to check for
+	expanded actuals and remove dead code.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Has_Unconstrained_UU_Component): Rewrite to
+	follow the Ada RM grammar.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (User_Defined_Primitive_Equality_Op): Refine type
+	of a local variable.
+	* exp_dbug.adb (Scope_Contains): Refine all types from Node_Id
+	to Entity_Id; rename parameters to match those of the
+	Scope_Within routine (which is similar but not the same); also,
+	simplify an OR ELSE into a membership test.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Component_Is_Unconstrained_UU): Detect both
+	qualified and unqualified names of unchecked union components.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Variant_Is_Unconstrained_UU): Remove redundant
+	check for empty list.
+	* exp_disp.adb (Find_Entry_Index): Simplify by removing
+	redundant check and counting from zero; fix type of a local
+	variable.
+	* sem_ch12.adb (Save_Global_Descendant): Remove an unnecessary
+	special-case for empty lists.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb (Apply_Accessibility_Check): Skip a statically
+	true condition in expanded raise statement.
+
+2021-05-05  Bob Duff  <duff@adacore.com>
+
+	* libgnat/s-os_lib.adb (Missed_Drive_Letter): Simplify the code.
+
+2021-05-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assignment): Do not emit the warning that
+	a previous value of the target object is useless if the
+	right-hand side of the assignment includes target names.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_imgv.adb: Add with/use clauses for Targparm.
+	(Build_Enumeration_Image_Tables): Set type of Threshold to Nat and
+	initialize it to Nat'Last if the type is local and the target does
+	not support descriptors.  Adjust Threshold_For_Size similarly.
+	(Expand_Value_Attribute): Minor tweaks.
+
+2021-05-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_ch7.adb (Expand_N_Package_Body): Add CUDA init call.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Remove CUDA init
+	call.
+
+2021-05-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* par-ch5.adb (P_Condition): Check if expression is declare
+	expression.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* make.adb (Make): Use GNAT.Ctrl_C.Install_Handler instead of a
+	custom imported procedure.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_imgv.adb (Is_User_Defined_Enumeration_Type): Delete.
+	(Expand_Image_Attribute): Move inline expansion into normal flow of
+	control, move down declarations and remove superfluous processing.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/g-alleve.adb (Bit_Operation): Now a not-null type.
+	* libgnat/g-sechas.adb (Fill_Buffer_Access): Likewise.
+	* libgnat/s-dwalin.adb (Callback): Likewise.
+
+2021-05-05  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* exp_util.adb (Is_Possibly_Unaligned_Object): Remove commented
+	code.
+
+2021-05-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Find_Type_Of_Object):  When In_Spec_Expression is
+	set and the object declaration generates a subtype indication,
+	build the corresponding subtype declaration and place it in tree
+	without the use of Insert_Actions, which is disabled in this
+	context.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* debug.adb (d_x): Document extended usage.
+	* exp_imgv.adb (Expand_Standard_Boolean_Image): New procedure.
+	(Expand_Image_Attribute): Call it to expand in line the attribute
+	for standard boolean by default.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* debug.adb (d_x): Document new usage.
+	* exp_imgv.adb (Expand_User_Defined_Enumeration_Image): Add Typ
+	parameter and use it throughout the processing.
+	(Expand_Image_Attribute): Retrieve the underlying type of the
+	prefix and use the inline expansion for user-defined enumeration
+	types with a literal string by default.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-dorepr.adb (Split): Declare a per-size temporary.
+	Add pragma Annotate.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch4.adb, sem_ch13.adb, sem_eval.adb, sem_res.adb: Remove
+	redundant calls to UI_From_Int.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_imgv.ads (Build_Enumeration_Image_Tables): Adjust comment.
+	* exp_imgv.adb (Build_Enumeration_Image_Tables): Add the
+	declaration nodes of the 4 tables to the declaration list of the
+	function body.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-imagen, s-imen16,
+	s-imen32, s-imenu8, s-pehage, s-valuen, s-vaen16, s-vaen32 and
+	s-vaenu8.  Remove s-imenne, s-imgenu and s-valenu.
+	* debug.adb (d_h): Document new usage.
+	* einfo.ads (Lit_Hash): New attribute for enumeration types.
+	(Set_Lit_Hash): Declare.
+	* einfo.adb (Lit_Hash): New function.
+	(Set_Lit_Hash): New procedure.
+	(Write_Field21_Name): Print Lit_Hash for Enumeration_Kind.
+	* exp_imgv.ads (Build_Enumeration_Image_Tables): Fix description
+	and document the hash function and its tables.
+	* exp_imgv.adb: Add with/use clauses for Debug.  Add with clause
+	for System.Perfect_Hash_Generators.
+	(Append_Table_To): New helper routine.
+	(Build_Enumeration_Image_Tables): Call it to build the tables.
+	In the main unit, register the literals with the hash generator.
+	If they are sufficiently many and -gnatd_h is not passed, generate
+	a perfect hash function and its tables; otherwise, generate a dummy
+	hash function.  For the other units, generate only the declaration.
+	In all cases, set Lit_Hash to the entity of the function, if any.
+	(Expand_Value_Attribute): Pass the 'Unrestricted_Access of Lit_Hash,
+	if any, as third argument to the Value_Enumeration_NN function.
+	* gnat1drv.adb (Adjust_Global_Switches): force simpler implementation
+	of 'Value in CodePeer_Mode.
+	* lib.ads (Synchronize_Serial_Number): Add SN parameter.
+	* lib.adb (Synchronize_Serial_Number): Assert that it is larger than
+	the serial number of the current unit and set the latter to it only
+	in this case.
+	* rtsfind.ads (RTU_Id): Add System_Img_Enum_8, System_Img_Enum_16,
+	System_Img_Enum_32, System_Val_Enum_8, System_Val_Enum_16 and
+	System_Val_Enum_32.  Remove System_Img_Enum, System_Img_Enum_New
+	and System_Val_Enum.
+	* sem_attr.adb (Analyze_Access_Attribute): Do not flag a compiler
+	generated Unrestricted_Access attribute as illegal in a declare
+	expression.
+	(RE_Unit_Table): Adjust to above changes.
+	* libgnat/g-heasor.ads: Add pragma Compiler_Unit_Warning.
+	* libgnat/g-table.ads: Likewise.
+	* libgnat/g-pehage.ads: Add with clause and local renaming for
+	System.Perfect_Hash_Generators.
+	(Optimization): Turn into derived type.
+	(Verbose): Turn into renaming.
+	(Too_Many_Tries): Likewise.
+	(Table_Name): Move to System.Perfect_Hash_Generators.
+	(Define): Likewise.
+	(Value): Likewise.
+	* libgnat/g-pehage.adb: Remove with clause for Ada.Directories,
+	GNAT.Heap_Sort_G and GNAT.Table.  Move bulk of implementation
+	to System.Perfect_Hash_Generators, only keep the output part.
+	* libgnat/s-imagen.ads: New generic unit.
+	* libgnat/s-imagen.adb: New body.
+	* libgnat/s-imen16.ads: New unit.
+	* libgnat/s-imen32.ads: Likewise.
+	* libgnat/s-imenu8.ads: Likewise.
+	* libgnat/s-imenne.ads: Adjust description.
+	* libgnat/s-imgenu.ads: Delete.
+	* libgnat/s-imgenu.adb: Likewise.
+	* libgnat/s-pehage.ads: New unit from GNAT.Perfect_Hash_Generators.
+	* libgnat/s-pehage.adb: New body from GNAT.Perfect_Hash_Generators.
+	* libgnat/s-valuen.ads: New generic unit.
+	* libgnat/s-valuen.adb: New body.
+	* libgnat/s-vaen16.ads: New unit.
+	* libgnat/s-vaen32.ads: Likewise.
+	* libgnat/s-vaenu8.ads: Likewise.
+	* libgnat/s-valenu.ads: Delete.
+	* libgnat/s-valenu.adb: Likewise.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS): Add s-pehage.o.
+	(GNATBIND_OBJS): Remove s-imgenu.o.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.ads (Apply_Compile_Time_Constraint_Error): Remove
+	parameter Rep from the function spec and "and if the flag Rep is
+	set" from the comment.
+	* sem_util.adb (Apply_Compile_Time_Constraint_Error): Remove
+	parameter Rep.
+
+2021-05-05  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb (Resolve_Indexed_Aggregate): For indexed
+	aggregates with component associations verify that if there is
+	more than one component association then all the choices are
+	static, that the set of choices define a continuous sequence of
+	values, and that if loop specfications appear, they do not
+	include iterator filters or key expressions.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-dourea, s-imager,
+	s-imgflt, s-imglfl and s-imgllf.
+	(LIBGNAT_TARGET_PAIRS) [PowerPC/VxWorks]: Use s-dorepr__fma.adb.
+	(LIBGNAT_TARGET_PAIRS) [PowerPC/VxWorksAE]: Likewise.
+	(LIBGNAT_TARGET_PAIRS) [Aarch64/VxWorks]: Likewise.
+	(LIBGNAT_TARGET_PAIRS) [Aarch64/QNX]: Likewise.
+	(LIBGNAT_TARGET_PAIRS) [Aarch64/FreeBSD]: Likewise.
+	(LIBGNAT_TARGET_PAIRS) [PowerPC/Linux]: Likewise.
+	(LIBGNAT_TARGET_PAIRS) [Aarch64/Linux]: Likewise.
+	(LIBGNAT_TARGET_PAIRS) [IA-64/Linux]: Likewise.
+	(LIBGNAT_TARGET_PAIRS) [IA-64/HP-UX]: Likewise.
+	(LIBGNAT_TARGET_PAIRS) [RISC-V/Linux]: Likewise.
+	(LIBGNAT_TARGET_PAIRS) [PowerPC/Darwin]: Likewise.
+	* exp_attr.adb (Expand_N_Attribute_Reference) [Attribute_Fore]: Use
+	Fixed suffix and Long_Float type.
+	* exp_imgv.adb (Expand_Image_Attribute): For floating-point types,
+	use the routine of the corresponding root type.  For ordinary fixed
+	point types, use Fixed suffix and Long_Float type.
+	(Expand_Value_Attribute): Revert latest change for Long_Long_Float.
+	* gcc-interface/Make-lang.in (GNAT_ADA_OBJS): Remove libgnat units
+	g-hesora.o and s-imgenu.o, add g-heasor.o, g-table.o and s-pehage.o.
+	(GNATBIND_OBJS): Remove libgnat unit s-imgenu.o.
+	* rtsfind.ads (RTU_Id): Add System_Img_Flt, System_Img_LFlt and
+	System_Img_LLF.  Remove System_Img_Real.
+	(RE_Id): Rename RE_Fore_Real to RE_Fore_Fixed.  Add RE_Image_Float,
+	RE_Image_Long_Float and RE_Image_Long_Long_Float.  Rename
+	RE_Image_Ordinary_Fixed_Point to RE_Image_Fixed.
+	(RE_Unit_Table): Adjust to above changes.
+	* libgnat/a-nbnbre.adb (Fixed_Conversions): Use Long_Float instead
+	of Long_Long_Float.
+	* libgnat/a-textio.ads (Field): Remove obsolete comment.
+	* libgnat/a-ticoau.ads (Aux): Adjust ancestor package.
+	* libgnat/a-ticoau.adb: Remove with/use clause for System.Img_Real.
+	(Puts): Call Aux.Set_Image instead of Set_Image_Real.
+	* libgnat/a-ticoio.adb: Add with/use clauses for System.Img_Flt,
+	System.Img_LFlt and System.Img_LLF.
+	(Scalar_Float): Add third actual parameter.
+	(Scalar_Long_Float): Likewise.
+	(Scalar_Long_Long_Float): Likewise.
+	* libgnat/a-tifiio.adb: Add with/use clauses for System.Img_LFlt
+	and System.Val_LFlt.  Remove the one for System.Val_LLF.  Replace
+	Long_Long_Float with Long_Float throughout.
+	* libgnat/a-tifiio__128.adb: Likewise.
+	* libgnat/a-tiflau.ads: Add Set_Image formal parameter.
+	* libgnat/a-tiflau.adb: Add with/use clause for System.Img_Util,
+	remove the one for System.Img_Real.
+	(Put): Call Set_Image instead of Set_Image_Real.
+	(Puts): Likewise.
+	* libgnat/a-tiflio.adb: Add with/use clause for System.Img_Flt,
+	System.Img_LFlt and System.Img_LLF.
+	(Aux_Float): Add third actual parameter.
+	(Aux_Long_Float): Likewise.
+	(Aux_Long_Long_Float): Likewise.
+	* libgnat/a-witeio.ads (Field): Remove obsolete comment.
+	* libgnat/a-wtcoau.ads (Aux): Adjust ancestor package.
+	* libgnat/a-wtcoau.adb: Remove with/use clause for System.Img_Real.
+	(Puts): Call Aux.Set_Image instead of Set_Image_Real.
+	* libgnat/a-wtcoio.adb: Add with/use clauses for System.Img_Flt,
+	System.Img_LFlt and System.Img_LLF.
+	(Scalar_Float): Add third actual parameter.
+	(Scalar_Long_Float): Likewise.
+	(Scalar_Long_Long_Float): Likewise.
+	* libgnat/a-wtfiio.adb: Add with/use clauses for System.Img_LFlt
+	and System.Val_LFlt.  Remove the one for System.Val_LLF.  Replace
+	Long_Long_Float with Long_Float throughout.
+	* libgnat/a-wtfiio__128.adb: Likewise.
+	* libgnat/a-wtflau.ads: Add Set_Image formal parameter.
+	* libgnat/a-wtflau.adb: Add with/use clause for System.Img_Util,
+	remove the one for System.Img_Real.
+	(Put): Call Set_Image instead of Set_Image_Real.
+	(Puts): Likewise.
+	* libgnat/a-wtflio.adb: Add with/use clause for System.Img_Flt,
+	System.Img_LFlt and System.Img_LLF.
+	(Aux_Float): Add third actual parameter.
+	(Aux_Long_Float): Likewise.
+	(Aux_Long_Long_Float): Likewise.
+	* libgnat/a-ztexio.ads (Field): Remove obsolete comment.
+	* libgnat/a-ztcoau.ads (Aux): Adjust ancestor package.
+	* libgnat/a-ztcoau.adb: Remove with/use clause for System.Img_Real.
+	(Puts): Call Aux.Set_Image instead of Set_Image_Real.
+	* libgnat/a-ztcoio.adb: Add with/use clauses for System.Img_Flt,
+	System.Img_LFlt and System.Img_LLF.
+	(Scalar_Float): Add third actual parameter.
+	(Scalar_Long_Float): Likewise.
+	(Scalar_Long_Long_Float): Likewise.
+	* libgnat/a-ztfiio.adb: Add with/use clauses for System.Img_LFlt
+	and System.Val_LFlt.  Remove the one for System.Val_LLF.  Replace
+	Long_Long_Float with Long_Float throughout.
+	* libgnat/a-ztfiio__128.adb: Likewise.
+	* libgnat/a-ztflau.ads: Add Set_Image formal parameter.
+	* libgnat/a-ztflau.adb: Add with/use clause for System.Img_Util,
+	remove the one for System.Img_Real.
+	(Put): Call Set_Image instead of Set_Image_Real.
+	(Puts): Likewise.
+	* libgnat/a-ztflio.adb: Add with/use clause for System.Img_Flt,
+	System.Img_LFlt and System.Img_LLF.
+	(Aux_Float): Add third actual parameter.
+	(Aux_Long_Float): Likewise.
+	(Aux_Long_Long_Float): Likewise.
+	* libgnat/s-dorepr.adb: New file.
+	* libgnat/s-dorepr__fma.adb: Likewise.
+	* libgnat/s-dourea.ads: Likewise.
+	* libgnat/s-dourea.adb: Likewise.
+	* libgnat/s-forrea.ads (Fore_Real): Rename into...
+	(Fore_Fixed): ...this and take Long_Float parameters.
+	* libgnat/s-forrea.adb (Fore_Real): Likewise.
+	(Fore_Fixed): Likewise.
+	* libgnat/s-imgrea.ads: Move to...
+	(Set_Image_Real): Turn into mere renaming.
+	* libgnat/s-imager.ads: ...here.
+	(Image_Ordinary_Fixed_Point): Turn into...
+	(Image_Fixed_Point): ...this.
+	* libgnat/s-imgrea.adb: Add pragma No_Body.  Move to...
+	* libgnat/s-imager.adb: ...here.
+	(Image_Ordinary_Fixed_Point): Turn into...
+	(Image_Fixed_Point): ...this.
+	(Is_Negative): Replace Long_Long_Float with Num.
+	(Set_Image_Real): Likewise.  Use Double_T instead of single Num
+	throughout the algorithm.
+	* libgnat/s-imgflt.ads: New file.
+	* libgnat/s-imglfl.ads: Likewise.
+	* libgnat/s-imgllf.ads: Likewise.
+	* libgnat/s-imagef.ads: Adjust comment.
+	* libgnat/s-imguti.ads (Max_Real_Image_Length): New named number.
+	* libgnat/s-powflt.ads (Maxpow): Adjust.
+	(Powten): Turn into an exact table of double Float.
+	* libgnat/s-powlfl.ads (Maxpow): Adjust.
+	(Powten): Turn into an exact table of double Long_Float.
+	* libgnat/s-powllf.ads (Maxpow): Adjust.
+	(Powten): Turn into an exact table of double Long_Long_Float.
+	* libgnat/s-valrea.ads: Change order of formal parameters.
+	* libgnat/s-valrea.adb: Add with clause for System.Double_Real.
+	(Double_Real): New instantiation.
+	(Fast2Sum): Delete.
+	(Large_Powten): New function.
+	(Integer_to_Real): Use Quick_Two_Sum instead of Fast2Sum.  Convert
+	the value to Double_T.  Do the scaling in Double_T for base 10.
+	* libgnat/s-valflt.ads: Remove with/use clasue for Interfaces,
+	add it for System.Unsigned_Types.  Use Unsigned.
+	* libgnat/s-vallfl.ads: Remove with/use clasue for Interfaces,
+	add it for System.Unsigned_Types.  Use Long_Unsigned.
+	* libgnat/s-valllf.ads: Remove with/use clasue for Interfaces,
+	add it for System.Unsigned_Types.  Use Long_Long_Unsigned.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_eval.adb (Eval_Arithmetic_Op): Call
+	Set_Raises_Constraint_Error on real division by zero just like
+	it is called for integer division by zero earlier in this
+	routine.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* freeze.adb (Build_Renamed_Body): Simplify IF and WHILE
+	statements with the same condition.
+
+2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
+
+	* pprint.adb (Expr_Name): Introduce local constants to make the
+	code more readable and avoid repeated calls to Next to reach the
+	ELSE part of an if-expression.
+
 2021-05-04  Piotr Trojanek  <trojanek@adacore.com>
 
 	* pprint.adb: Remove qualification of arbitrary calls to

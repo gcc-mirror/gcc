@@ -1,3 +1,99 @@
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/100402
+	* config/i386/i386.c (ix86_compute_frame_layout): For a SEH target,
+	always return the establisher frame for __builtin_frame_address (0).
+
+2021-05-05  Ivan Sorokin  <vanyacpp@gmail.com>
+
+	PR target/91400
+	* config/i386/i386-builtins.c (ix86_cpu_model_type_node): New.
+	(ix86_cpu_model_var): Likewise.
+	(ix86_cpu_features2_type_node): Likewise.
+	(ix86_cpu_features2_var): Likewise.
+	(fold_builtin_cpu): Cache __cpu_model and __cpu_features2 with
+	their types.
+
+2021-05-05  Martin Sebor  <msebor@redhat.com>
+
+	* passes.def (pass_warn_printf): Run after SSA.
+
+2021-05-05  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/arm/neon.md (neon_vtst_combine<mode>): New pattern.
+	* config/arm/predicates.md (minus_one_operand): New predicate.
+
+2021-05-05  Jeff Law  <jlaw@tachyum.com>
+
+	* config/avr/avr.md: Remove references to CC_STATUS_INIT.
+
+2021-05-05  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR rtl-optimization/100263
+	* postreload.c (move2add_valid_value_p): Ensure register can
+	change mode.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/100411
+	* cfgcleanup.c (try_crossjump_to_edge): Also skip end of prologue
+	and beginning of function markers.
+
+2021-05-05  Jeff Law  <jlaw@tachyum.com>
+
+	* config/cr16/cr16.h (NOTICE_UPDATE_CC): Remove.
+	* config/cr16/cr16.c (notice_update_cc): Remove.
+	* config/cr16/cr16-protos.h (notice_update_cc): Remove.
+
+2021-05-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98218
+	* config/i386/i386-expand.c (ix86_expand_int_sse_cmp):
+	Handle V8QI, V4HI and V2SI modes.
+	* config/i386/i386.c (ix86_build_const_vector): Handle V2SImode.
+	(ix86_build_signbit_mask): Ditto.
+	* config/i386/mmx.md (MMXMODE14): New mode iterator.
+	(<smaxmin:code><MMXMODE14:mode>3): New expander.
+	(*mmx_<smaxmin:code><MMXMODE14:mode>3): New insn pattern.
+	(<umaxmin:code><MMXMODE24:mode>3): New expander.
+	(*mmx_<umaxmin:code><MMXMODE24:mode>3): New insn pattern.
+	(vec_cmp<MMXMODEI:mode><MMXMODEI:mode>): New expander.
+	(vec_cmpu<MMXMODEI:mode><MMXMODEI:mode>): Ditto.
+	(vcond<MMXMODEI:mode><MMXMODEI:mode>): Ditto.
+	(vcondu<MMXMODEI:mode><MMXMODEI:mode>): Ditto.
+	(vcond_mask_<MMXMODEI:mode><MMXMODEI:mode>): Ditto.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (loc_list_from_tree_1) <DECL>: During early DWARF, do
+	not expand the VALUE_EXPR of variables put in the non-local frame.
+	* gimplify.c (gimplify_type_sizes) <RECORD_TYPE>: If the type is not
+	to be ignored for debug info, ensure its variable offsets are not.
+
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79333
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_stmt):
+	Fold stmt following SSA edges.
+
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100394
+	* calls.c (expand_call): Preserve possibly throwing calls.
+	* cfgexpand.c (expand_call_stmt): When a call can throw signal
+	RTL expansion there are side-effects.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Simplify,
+	mark all possibly throwing stmts necessary unless we can elide
+	dead EH.
+	* tree-ssa-dse.c (pass_dse::execute): Preserve exceptions unless
+	-fdelete-dead-exceptions.
+	* tree.h (DECL_PURE_P): Add note about exceptions.
+
+2021-05-05  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/i386/vxworks.h (DBX_REGISTER_NUMBER): Make it
+	unconditional.
+
 2021-05-04  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000-call.c (rs6000_output_mi_thunk): Use

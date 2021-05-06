@@ -1,3 +1,42 @@
+2021-05-05  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_util.h (enable_borrowed_range<subrange>):
+	Remove constraints on this partial specialization.
+	* include/std/ranges (enable_borrowed_range<iota_view>):
+	Likewise.
+
+2021-05-05  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (transform_view::_Iterator::iter_swap):
+	Remove as per LWG 3520.
+	(join_view::_Iterator::iter_swap): Add indirectly_swappable
+	constraint as per LWG 3517.
+
+2021-05-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/invoke/3.cc: Check feature
+	test macro.
+	* testsuite/20_util/function_objects/invoke/version.cc: New test.
+
+2021-05-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__from_chars_alnum): Pass unsigned
+	char to std::isdigit.
+
+2021-05-05  Corentin Gay  <gay@adacore.com>
+
+	* acinclude.m4: Add VxWorks-specific case for the
+	configuration of ctypes.
+	* configure: Regenerate.
+	* config/locale/vxworks/ctype_members.cc: Add VxWorks-specific
+	version.
+	* config/os/vxworks/ctype_base.h: Adjust for VxWorks7+.
+	* config/os/vxworks/ctype_configure_char.cc: Likewise.
+	* config/os/vxworks/ctype_inline.h: Likewise.
+	* testsuite/28_regex/traits/char/isctype.cc: Defines
+	NEWLINE_IN_CLASS_BLANK if the target is VxWorks.
+	* testsuite/28_regex/traits/wchar_t/isctype.cc: Likewise.
+
 2021-05-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/future (promise::set_value): Check for existence

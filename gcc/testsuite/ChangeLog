@@ -1,3 +1,67 @@
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20210505-1.c: New test.
+
+2021-05-05  Ivan Sorokin  <vanyacpp@gmail.com>
+
+	PR target/91400
+	* gcc.target/i386/pr91400-1.c: New test.
+	* gcc.target/i386/pr91400-2.c: Likewise.
+
+2021-05-05  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-26.c: New test.
+
+2021-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100274
+	* gfortran.dg/argument_checking_25.f90: New test.
+
+2021-05-05  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98218
+	* gcc.target/i386/pr98218-1.c: New test.
+	* gcc.target/i386/pr98218-1a.c: Ditto.
+	* gcc.target/i386/pr98218-2.c: Ditto.
+	* gcc.target/i386/pr98218-2a.c: Ditto.
+	* gcc.target/i386/pr98218-3.c: Ditto.
+	* gcc.target/i386/pr98218-3a.c: Ditto.
+	* gcc.dg/vect/vect-bool-cmp.c (dg-final):
+	Scan vect tree dump for "LOOP VECTORIZED", not VECTORIZED.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/debug17.adb: Minor tweak.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/debug8.adb: Minor tweak.
+	* gnat.dg/debug11.adb: Likewise.
+	* gnat.dg/debug16.adb: Likewise.
+	* gnat.dg/debug17.adb: New test.
+	* gnat.dg/specs/debug1.ads: Minor tweak.
+
+2021-05-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/vect/slp-21.c: Add s390.
+
+2021-05-05  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR testsuite/100422
+	* g++.dg/gomp/clause-3.C: Use 'reduction(&:..)' instead of '...(&&:..)'.
+
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79333
+	* gcc.dg/tree-ssa/ssa-fre-94.c: New testcase.
+	* gcc.dg/graphite/fuse-1.c: Adjust.
+	* gcc.dg/pr43864-4.c: Likewise.
+
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100394
+	* g++.dg/torture/pr100382.C: New testcase.
+
 2021-05-04  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/100307
