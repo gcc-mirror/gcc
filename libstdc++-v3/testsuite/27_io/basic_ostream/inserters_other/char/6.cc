@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 27.6.2.5.3 basic_ostream manipulator inserters
+// C++11 27.7.3.9 Rvalue stream insertion [ostream.rvalue]
 
 #include <sstream>
 
