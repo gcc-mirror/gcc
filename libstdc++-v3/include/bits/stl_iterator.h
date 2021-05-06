@@ -1022,6 +1022,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       typedef std::iterator_traits<_Iterator>		__traits_type;
 
+#if __cplusplus >= 201103L
+      template<typename _Iter>
+	using __convertible_from
+	  = std::__enable_if_t<std::is_convertible<_Iter, _Iterator>::value>;
+#endif
+
     public:
       typedef _Iterator					iterator_type;
       typedef typename __traits_type::iterator_category iterator_category;
@@ -1042,12 +1048,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_current(__i) { }
 
       // Allow iterator to const_iterator conversion
+#if __cplusplus >= 201103L
+      template<typename _Iter, typename = __convertible_from<_Iter>>
+	_GLIBCXX20_CONSTEXPR
+	__normal_iterator(const __normal_iterator<_Iter, _Container>& __i)
+	noexcept
+#else
+      // N.B. _Container::pointer is not actually in container requirements,
+      // but is present in std::vector and std::basic_string.
       template<typename _Iter>
-        _GLIBCXX20_CONSTEXPR
         __normal_iterator(const __normal_iterator<_Iter,
 			  typename __enable_if<
-      	       (std::__are_same<_Iter, typename _Container::pointer>::__value),
-		      _Container>::__type>& __i) _GLIBCXX_NOEXCEPT
+	       (std::__are_same<_Iter, typename _Container::pointer>::__value),
+		      _Container>::__type>& __i)
+#endif
         : _M_current(__i.base()) { }
 
       // Forward iterator requirements
