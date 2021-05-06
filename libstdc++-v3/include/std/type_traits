@@ -3223,12 +3223,21 @@ template <typename _From, typename _To>
   /// Remove references and cv-qualifiers.
   template<typename _Tp>
     struct remove_cvref
-    {
-      using type = __remove_cvref_t<_Tp>;
-    };
+    : remove_cv<_Tp>
+    { };
 
   template<typename _Tp>
-    using remove_cvref_t = __remove_cvref_t<_Tp>;
+    struct remove_cvref<_Tp&>
+    : remove_cv<_Tp>
+    { };
+
+  template<typename _Tp>
+    struct remove_cvref<_Tp&&>
+    : remove_cv<_Tp>
+    { };
+
+  template<typename _Tp>
+    using remove_cvref_t = typename remove_cvref<_Tp>::type;
 
 #define __cpp_lib_type_identity 201806L
   /// Identity metafunction.
