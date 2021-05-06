@@ -1,3 +1,13 @@
+2021-05-05  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-05  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (transform_view::_Iterator::iter_swap):
+	Remove as per LWG 3520.
+	(join_view::_Iterator::iter_swap): Add indirectly_swappable
+	constraint as per LWG 3517.
+
 2021-05-04  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
