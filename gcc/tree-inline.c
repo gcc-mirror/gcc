@@ -6367,6 +6367,8 @@ tree_function_versioning (tree old_decl, tree new_decl,
       tree resdecl_repl = copy_result_decl_to_var (DECL_RESULT (old_decl),
 						   &id);
       declare_inline_vars (NULL, resdecl_repl);
+      if (DECL_BY_REFERENCE (DECL_RESULT (old_decl)))
+	resdecl_repl = build_fold_addr_expr (resdecl_repl);
       insert_decl_map (&id, DECL_RESULT (old_decl), resdecl_repl);
 
       DECL_RESULT (new_decl)
