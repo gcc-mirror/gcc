@@ -57,23 +57,23 @@ static bool conditional_replacement (basic_block, basic_block,
 static gphi *factor_out_conditional_conversion (edge, edge, gphi *, tree, tree,
 						gimple *);
 static int value_replacement (basic_block, basic_block,
-			      edge, edge, gimple *, tree, tree);
+			      edge, edge, gphi *, tree, tree);
 static bool minmax_replacement (basic_block, basic_block,
-				edge, edge, gimple *, tree, tree);
+				edge, edge, gphi *, tree, tree);
 static bool abs_replacement (basic_block, basic_block,
-			     edge, edge, gimple *, tree, tree);
+			     edge, edge, gphi *, tree, tree);
 static bool xor_replacement (basic_block, basic_block,
-			     edge, edge, gimple *, tree, tree);
+			     edge, edge, gphi *, tree, tree);
 static bool spaceship_replacement (basic_block, basic_block,
 				   edge, edge, gphi *, tree, tree);
 static bool cond_removal_in_popcount_clz_ctz_pattern (basic_block, basic_block,
-						      edge, edge, gimple *,
+						      edge, edge, gphi *,
 						      tree, tree);
 static bool cond_store_replacement (basic_block, basic_block, edge, edge,
 				    hash_set<tree> *);
 static bool cond_if_else_store_replacement (basic_block, basic_block, basic_block);
 static hash_set<tree> * get_non_trapping ();
-static void replace_phi_edge_with_variable (basic_block, edge, gimple *, tree);
+static void replace_phi_edge_with_variable (basic_block, edge, gphi *, tree);
 static void hoist_adjacent_loads (basic_block, basic_block,
 				  basic_block, basic_block);
 static bool gate_hoist_loads (void);
@@ -389,7 +389,7 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 
 static void
 replace_phi_edge_with_variable (basic_block cond_block,
-				edge e, gimple *phi, tree new_tree)
+				edge e, gphi *phi, tree new_tree)
 {
   basic_block bb = gimple_bb (phi);
   basic_block block_to_remove;
@@ -1113,8 +1113,7 @@ absorbing_element_p (tree_code code, tree arg, bool right, tree rval)
 
 static int
 value_replacement (basic_block cond_bb, basic_block middle_bb,
-		   edge e0, edge e1, gimple *phi,
-		   tree arg0, tree arg1)
+		   edge e0, edge e1, gphi *phi, tree arg0, tree arg1)
 {
   gimple_stmt_iterator gsi;
   gimple *cond;
@@ -1422,8 +1421,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 
 static bool
 minmax_replacement (basic_block cond_bb, basic_block middle_bb,
-		    edge e0, edge e1, gimple *phi,
-		    tree arg0, tree arg1)
+		    edge e0, edge e1, gphi *phi, tree arg0, tree arg1)
 {
   tree result;
   edge true_edge, false_edge;
@@ -2267,7 +2265,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 static bool
 cond_removal_in_popcount_clz_ctz_pattern (basic_block cond_bb,
 					  basic_block middle_bb,
-					  edge e1, edge e2, gimple *phi,
+					  edge e1, edge e2, gphi *phi,
 					  tree arg0, tree arg1)
 {
   gimple *cond;
@@ -2425,7 +2423,7 @@ cond_removal_in_popcount_clz_ctz_pattern (basic_block cond_bb,
 static bool
 abs_replacement (basic_block cond_bb, basic_block middle_bb,
 		 edge e0 ATTRIBUTE_UNUSED, edge e1,
-		 gimple *phi, tree arg0, tree arg1)
+		 gphi *phi, tree arg0, tree arg1)
 {
   tree result;
   gassign *new_stmt;
@@ -2549,7 +2547,7 @@ abs_replacement (basic_block cond_bb, basic_block middle_bb,
 static bool
 xor_replacement (basic_block cond_bb, basic_block middle_bb,
 		 edge e0 ATTRIBUTE_UNUSED, edge e1,
-		 gimple *phi, tree arg0, tree arg1)
+		 gphi *phi, tree arg0, tree arg1)
 {
   if (!INTEGRAL_TYPE_P (TREE_TYPE (arg1)))
     return false;
