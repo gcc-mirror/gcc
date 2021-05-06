@@ -589,7 +589,6 @@ split_loop (class loop *loop1)
 					   profile_probability::always (),
 					   true);
 	gcc_assert (loop2);
-	update_ssa (TODO_update_ssa);
 
 	edge new_e = connect_loops (loop1, loop2);
 	connect_loop_phis (loop1, loop2, new_e);
@@ -621,13 +620,12 @@ split_loop (class loop *loop1)
 
 	free_original_copy_tables ();
 
-	/* We destroyed LCSSA form above.  Eventually we might be able
-	   to fix it on the fly, for now simply punt and use the helper.  */
-	rewrite_into_loop_closed_ssa_1 (NULL, 0, SSA_OP_USE, loop1);
-
 	changed = true;
 	if (dump_file && (dump_flags & TDF_DETAILS))
 	  fprintf (dump_file, ";; Loop split.\n");
+
+	if (dump_enabled_p ())
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, guard_stmt, "loop split\n");
 
 	/* Only deal with the first opportunity.  */
 	break;
@@ -1532,16 +1530,12 @@ do_split_loop_on_cond (struct loop *loop1, edge invar_branch)
   to_loop1->flags |= true_invar ? EDGE_FALSE_VALUE : EDGE_TRUE_VALUE;
   to_loop2->flags |= true_invar ? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE;
 
-  update_ssa (TODO_update_ssa);
-
   /* Due to introduction of a control flow edge from loop1 latch to loop2
      pre-header, we should update PHIs in loop2 to reflect this connection
      between loop1 and loop2.  */
   connect_loop_phis (loop1, loop2, to_loop2);
 
   free_original_copy_tables ();
-
-  rewrite_into_loop_closed_ssa_1 (NULL, 0, SSA_OP_USE, loop1);
 
   return true;
 }
@@ -1644,7 +1638,10 @@ tree_ssa_split_loops (void)
   free_dominance_info (CDI_POST_DOMINATORS);
 
   if (changed)
-    return TODO_cleanup_cfg;
+    {
+      rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+      return TODO_cleanup_cfg;
+    }
   return 0;
 }
 
