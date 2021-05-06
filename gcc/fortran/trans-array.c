@@ -6525,7 +6525,14 @@ gfc_trans_g77_array (gfc_symbol * sym, gfc_wrapped_block * block)
   /* Set the pointer itself if we aren't using the parameter directly.  */
   if (TREE_CODE (parm) != PARM_DECL)
     {
-      tmp = convert (TREE_TYPE (parm), GFC_DECL_SAVED_DESCRIPTOR (parm));
+      tmp = GFC_DECL_SAVED_DESCRIPTOR (parm);
+      if (sym->ts.type == BT_CLASS)
+	{
+	  tmp = build_fold_indirect_ref_loc (input_location, tmp);
+	  tmp = gfc_class_data_get (tmp);
+	  tmp = gfc_conv_descriptor_data_get (tmp);
+	}
+      tmp = convert (TREE_TYPE (parm), tmp);
       gfc_add_modify (&init, parm, tmp);
     }
   stmt = gfc_finish_block (&init);
@@ -6627,7 +6634,8 @@ gfc_trans_dummy_array_bias (gfc_symbol * sym, tree tmpdesc,
       && VAR_P (sym->ts.u.cl->backend_decl))
     gfc_conv_string_length (sym->ts.u.cl, NULL, &init);
 
-  checkparm = (as->type == AS_EXPLICIT
+  /* TODO: Fix the exclusion of class arrays from extent checking.  */
+  checkparm = (as->type == AS_EXPLICIT && !is_classarray
 	       && (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS));
 
   no_repack = !(GFC_DECL_PACKED_ARRAY (tmpdesc)
