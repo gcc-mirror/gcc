@@ -1,4 +1,4 @@
-// { dg-error "unresolved type" "" { target { *-*-* } } 0 }
+// { dg-error "unresolved type" "" { target *-*-* } 0 }
 
 struct Foo<A = i321>(A);
 // { dg-error "failed to resolve TypePath: i321" "" { target *-*-* } .-1 }

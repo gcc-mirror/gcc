@@ -8,5 +8,5 @@ impl<T> Foo<T> {
 
 fn main() {
     let a = Foo::test();
-    // { dg-error "type annotations needed" "" { target { *-*-* } } .-1 }
+    // { dg-error "type annotations needed" "" { target *-*-* } .-1 }
 }

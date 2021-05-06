@@ -1,6 +1,6 @@
 // Current errors are too noisy to match specific ones.
-// { dg-error "failed to resolve TypePath: T" "" { target { *-*-* } } 0 }
-// { dg-error "unresolved type" "" { target { *-*-* } } 0 }
+// { dg-error "failed to resolve TypePath: T" "" { target *-*-* } 0 }
+// { dg-error "unresolved type" "" { target *-*-* } 0 }
 
 struct GenericStruct<T>(T, usize);
 

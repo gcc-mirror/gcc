@@ -4,7 +4,7 @@ struct Foo<A> {
 }
 
 impl Foo<isize> {
-    fn test() -> i32 { // {dg-error "possible candidate" } 
+    fn test() -> i32 { // { dg-error "possible candidate" "TODO" { xfail *-*-* } }
         123
     }
 
@@ -14,7 +14,7 @@ impl Foo<isize> {
 }
 
 impl Foo<f32> {
-    fn test() -> i32 { // {dg-error "possible candidate" }
+    fn test() -> i32 { // { dg-error "possible candidate" "TODO" { xfail *-*-* } }
         123
     }
 

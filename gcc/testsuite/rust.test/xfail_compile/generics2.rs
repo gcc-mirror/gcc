@@ -1,4 +1,4 @@
-// { dg-error "expected .i32. got .i8." "" { target { *-*-* } } 0 }
+// { dg-error "expected .i32. got .i8." "" { target *-*-* } 0 }
 
 struct GenericStruct<T>(T, usize);
 
