@@ -1,4 +1,4 @@
--- { dg-do compile }
+-- { dg-do compile { target lp64 } }
 -- { dg-options "-O2 -fdump-tree-optimized" }
 
 package body Opt93 is
