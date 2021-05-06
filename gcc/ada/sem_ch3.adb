@@ -13971,9 +13971,7 @@ package body Sem_Ch3 is
           (Has_Unknown_Discriminants (T)
             or else
               (not Has_Discriminants (T)
-                and then Has_Discriminants (Full_View (T))
-                and then Present (Discriminant_Default_Value
-                           (First_Discriminant (Full_View (T))))))
+                and then Has_Defaulted_Discriminants (Full_View (T))))
       then
          T := Full_View (T);
          E := Full_View (E);
@@ -14173,8 +14171,6 @@ package body Sem_Ch3 is
       then
          --  A Range attribute will be transformed into N_Range by Resolve
 
-         Analyze (S);
-         Set_Etype (S, T);
          R := S;
 
          Process_Range_Expr_In_Decl (R, T);
@@ -17827,6 +17823,44 @@ package body Sem_Ch3 is
 
          T := Make_Defining_Identifier (Sloc (P), Nam);
 
+         --  If In_Spec_Expression, for example within a pre/postcondition,
+         --  provide enough information for use of the subtype without
+         --  depending on full analysis and freezing, which will happen when
+         --  building the correspondiing subprogram.
+
+         if In_Spec_Expression then
+            Analyze (Subtype_Mark (Obj_Def));
+
+            declare
+               Base_T : constant Entity_Id := Entity (Subtype_Mark (Obj_Def));
+               Decl   : constant Node_Id :=
+                 Make_Subtype_Declaration (Sloc (P),
+                   Defining_Identifier => T,
+                   Subtype_Indication  => Relocate_Node (Obj_Def));
+            begin
+               Set_Etype  (T, Base_T);
+               Set_Ekind  (T, Subtype_Kind (Ekind (Base_T)));
+               Set_Parent (T, Obj_Def);
+
+               if Ekind (T) = E_Array_Subtype then
+                  Set_First_Index (T, First_Index (Base_T));
+                  Set_Is_Constrained (T);
+
+               elsif Ekind (T) = E_Record_Subtype then
+                  Set_First_Entity (T, First_Entity (Base_T));
+                  Set_Has_Discriminants (T, Has_Discriminants (Base_T));
+                  Set_Is_Constrained (T);
+               end if;
+
+               Insert_Before (Related_Nod, Decl);
+            end;
+
+            return T;
+         end if;
+
+         --  When generating code, insert subtype declaration ahead of
+         --  declaration that generated it.
+
          Insert_Action (Obj_Def,
            Make_Subtype_Declaration (Sloc (P),
              Defining_Identifier => T,
@@ -20767,9 +20801,7 @@ package body Sem_Ch3 is
 
       if not Has_Unknown_Discriminants (Priv_T)
         and then not Has_Discriminants (Priv_T)
-        and then Has_Discriminants (Full_T)
-        and then
-          Present (Discriminant_Default_Value (First_Discriminant (Full_T)))
+        and then Has_Defaulted_Discriminants (Full_T)
       then
          Set_Has_Constrained_Partial_View (Full_T);
          Set_Has_Constrained_Partial_View (Priv_T);

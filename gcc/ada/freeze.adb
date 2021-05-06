@@ -478,12 +478,10 @@ package body Freeze is
          Actuals := No_List;
       end if;
 
-      if Present (Formal) then
-         while Present (Formal) loop
-            Append (New_Occurrence_Of (Formal, Loc), Actuals);
-            Next_Formal (Formal);
-         end loop;
-      end if;
+      while Present (Formal) loop
+         Append (New_Occurrence_Of (Formal, Loc), Actuals);
+         Next_Formal (Formal);
+      end loop;
 
       --  If the renamed entity is an entry, inherit its profile. For other
       --  renamings as bodies, both profiles must be subtype conformant, so it
@@ -6849,10 +6847,9 @@ package body Freeze is
             begin
                Comp := First_Component (E);
                while Present (Comp) loop
-                  Typ  := Etype (Comp);
+                  Typ := Etype (Comp);
 
-                  if Ekind (Comp) = E_Component
-                    and then Is_Access_Type (Typ)
+                  if Is_Access_Type (Typ)
                     and then Scope (Typ) /= E
                     and then Base_Type (Designated_Type (Typ)) = E
                     and then Is_Itype (Designated_Type (Typ))

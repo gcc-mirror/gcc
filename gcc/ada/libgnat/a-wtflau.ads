@@ -45,6 +45,14 @@ private generic
       Ptr : not null access Integer;
       Max : Integer) return Num;
 
+   with procedure Set_Image
+     (V    : Num;
+      S    : in out String;
+      P    : in out Natural;
+      Fore : Natural;
+      Aft  : Natural;
+      Exp  : Natural);
+
 package Ada.Wide_Text_IO.Float_Aux is
 
    procedure Get

@@ -188,6 +188,7 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    vmsdbgout_end_block,
    vmsdbgout_ignore_block,
    vmsdbgout_source_line,
+   debug_nothing_int_int_charstar, /* set_ignored_loc */
    vmsdbgout_begin_prologue,
    vmsdbgout_end_prologue,
    vmsdbgout_begin_epilogue,

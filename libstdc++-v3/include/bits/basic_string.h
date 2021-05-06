@@ -531,7 +531,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #endif
       basic_string(const _CharT* __s, const _Alloc& __a = _Alloc())
       : _M_dataplus(_M_local_data(), __a)
-      { _M_construct(__s, __s ? __s + traits_type::length(__s) : __s+npos); }
+      {
+	const _CharT* __end = __s ? __s + traits_type::length(__s)
+	  // We just need a non-null pointer here to get an exception:
+	  : reinterpret_cast<const _CharT*>(__alignof__(_CharT));
+	_M_construct(__s, __end, random_access_iterator_tag());
+      }
 
       /**
        *  @brief  Construct string as multiple characters.

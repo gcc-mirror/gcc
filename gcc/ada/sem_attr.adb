@@ -318,14 +318,20 @@ package body Sem_Attr is
       procedure Check_E2;
       --  Check that two attribute arguments are present
 
-      procedure Check_Enum_Image;
-      --  If the prefix type of 'Image is an enumeration type, set all its
-      --  literals as referenced, since the image function could possibly end
-      --  up referencing any of the literals indirectly. Same for Enum_Val.
-      --  Set the flag only if the reference is in the main code unit. Same
-      --  restriction when resolving 'Value; otherwise an improperly set
-      --  reference when analyzing an inlined body will lose a proper
-      --  warning on a useless with_clause.
+      procedure Check_Enum_Image (Check_Enumeration_Maps : Boolean := False);
+      --  Common processing for the Image and Value family of attributes,
+      --  including their Wide and Wide_Wide versions, Enum_Val and Img.
+      --
+      --  If the prefix type of an attribute is an enumeration type, set all
+      --  its literals as referenced, since the attribute function can
+      --  indirectly reference any of the literals. Set the referenced flag
+      --  only if the attribute is in the main code unit; otherwise an
+      --  improperly set reference when analyzing an inlined body will lose a
+      --  proper warning on a useless with_clause.
+      --
+      --  If Check_Enumeration_Maps is True, then the attribute expansion
+      --  requires enumeration maps, so check whether restriction
+      --  No_Enumeration_Maps is active.
 
       procedure Check_First_Last_Valid;
       --  Perform all checks for First_Valid and Last_Valid attributes
@@ -834,10 +840,13 @@ package body Sem_Attr is
 
       begin
          --  Access and Unchecked_Access are illegal in declare_expressions,
-         --  according to the RM. We also make the GNAT-specific
-         --  Unrestricted_Access attribute illegal.
+         --  according to the RM. We also make the GNAT Unrestricted_Access
+         --  attribute illegal if it comes from source.
 
-         if In_Declare_Expr > 0 then
+         if In_Declare_Expr > 0
+           and then (Attr_Id /= Attribute_Unrestricted_Access
+                      or else Comes_From_Source (N))
+         then
             Error_Attr ("% attribute cannot occur in a declare_expression", N);
          end if;
 
@@ -1464,6 +1473,10 @@ package body Sem_Attr is
          --  Check that Image_Type is legal as the type of a prefix of 'Image.
          --  Legality depends on the Ada language version.
 
+         ----------------------
+         -- Check_Image_Type --
+         ----------------------
+
          procedure Check_Image_Type (Image_Type : Entity_Id) is
          begin
             --  Image_Type may be empty in case of another error detected,
@@ -1490,7 +1503,7 @@ package body Sem_Attr is
             Set_Etype (N, Str_Typ);
             Check_Image_Type (Etype (P));
 
-            if Attr_Id /= Attribute_Img and then Ada_Version < Ada_2012 then
+            if Attr_Id /= Attribute_Img then
                Error_Msg_Ada_2012_Feature ("|Object''Image", Sloc (P));
             end if;
          else
@@ -1520,7 +1533,7 @@ package body Sem_Attr is
             Validate_Non_Static_Attribute_Function_Call;
          end if;
 
-         Check_Enum_Image;
+         Check_Enum_Image (Check_Enumeration_Maps => True);
 
          --  Check restriction No_Fixed_IO. Note the check of Comes_From_Source
          --  to avoid giving a duplicate message for when Image attributes
@@ -1955,10 +1968,22 @@ package body Sem_Attr is
       -- Check_Enum_Image --
       ----------------------
 
-      procedure Check_Enum_Image is
+      procedure Check_Enum_Image (Check_Enumeration_Maps : Boolean := False) is
          Lit : Entity_Id;
 
       begin
+         --  Ensure that Check_Enumeration_Maps parameter is set precisely for
+         --  attributes whose implementation requires enumeration maps.
+
+         pragma Assert
+           (Check_Enumeration_Maps = (Attr_Id in Attribute_Image
+                                               | Attribute_Img
+                                               | Attribute_Value
+                                               | Attribute_Wide_Image
+                                               | Attribute_Wide_Value
+                                               | Attribute_Wide_Wide_Image
+                                               | Attribute_Wide_Wide_Value));
+
          --  When an enumeration type appears in an attribute reference, all
          --  literals of the type are marked as referenced. This must only be
          --  done if the attribute reference appears in the current source.
@@ -1968,6 +1993,10 @@ package body Sem_Attr is
          if Is_Enumeration_Type (P_Base_Type)
            and then In_Extended_Main_Code_Unit (N)
          then
+            if Check_Enumeration_Maps then
+               Check_Restriction (No_Enumeration_Maps, N);
+            end if;
+
             Lit := First_Literal (P_Base_Type);
             while Present (Lit) loop
                Set_Referenced (Lit);
@@ -7109,33 +7138,7 @@ package body Sem_Attr is
       =>
          Check_E1;
          Check_Scalar_Type;
-
-         --  Case of enumeration type
-
-         --  When an enumeration type appears in an attribute reference, all
-         --  literals of the type are marked as referenced. This must only be
-         --  done if the attribute reference appears in the current source.
-         --  Otherwise the information on references may differ between a
-         --  normal compilation and one that performs inlining.
-
-         if Is_Enumeration_Type (P_Type)
-           and then In_Extended_Main_Code_Unit (N)
-         then
-            Check_Restriction (No_Enumeration_Maps, N);
-
-            --  Mark all enumeration literals as referenced, since the use of
-            --  the Value attribute can implicitly reference any of the
-            --  literals of the enumeration base type.
-
-            declare
-               Ent : Entity_Id := First_Literal (P_Base_Type);
-            begin
-               while Present (Ent) loop
-                  Set_Referenced (Ent);
-                  Next_Literal (Ent);
-               end loop;
-            end;
-         end if;
+         Check_Enum_Image (Check_Enumeration_Maps => True);
 
          --  Set Etype before resolving expression because expansion of
          --  expression may require enclosing type. Note that the type

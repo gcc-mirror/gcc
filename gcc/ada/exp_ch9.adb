@@ -13972,9 +13972,7 @@ package body Exp_Ch9 is
    begin
       return Scope (Base_Index) = Standard_Standard
         and then Base_Index = Base_Type (Standard_Integer)
-        and then Has_Discriminants (Conctyp)
-        and then
-          Present (Discriminant_Default_Value (First_Discriminant (Conctyp)))
+        and then Has_Defaulted_Discriminants (Conctyp)
         and then
           (Denotes_Discriminant (Lo, True)
              or else

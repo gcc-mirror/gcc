@@ -19,11 +19,10 @@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 gcc_build_dir = ../gcc
 AM_CPPFLAGS = -I $(srcdir)/../include -I $(srcdir)/../libgcc \
-	-I $(gcc_build_dir) -I$(srcdir)/../gcc $($@_CPPFLAGS) $(GMPINC)
-CPPFLAGS_FOR_C_FAMILY = -I $(srcdir)/../gcc/c-family \
-	-I $(srcdir)/../libcpp/include
-CPPFLAGS_FOR_C = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/c
-CPPFLAGS_FOR_CXX = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/cp
+	-I $(gcc_build_dir) -I$(srcdir)/../gcc $($@_CPPFLAGS) $(GMPINC) \
+	-I $(srcdir)/../gcc/c-family -I $(srcdir)/../libcpp/include
+CPPFLAGS_FOR_C = -I $(srcdir)/../gcc/c
+CPPFLAGS_FOR_CXX = -I $(srcdir)/../gcc/cp
 AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility) $(CET_HOST_FLAGS)
 if DARWIN_DYNAMIC_LOOKUP
 AM_CXXFLAGS += -Wl,-undefined,dynamic_lookup
@@ -55,7 +54,8 @@ marshall_c_source = marshall-c.hh
 marshall_cxx_source = marshall-cp.hh
 
 libcc1plugin_la_LDFLAGS = -module -export-symbols $(srcdir)/libcc1plugin.sym
-libcc1plugin_la_SOURCES = libcc1plugin.cc $(shared_source) $(marshall_c_source)
+libcc1plugin_la_SOURCES = libcc1plugin.cc context.cc context.hh \
+	$(shared_source) $(marshall_c_source)
 libcc1plugin.lo_CPPFLAGS = $(CPPFLAGS_FOR_C)
 libcc1plugin_la_LIBADD = $(libiberty)
 libcc1plugin_la_DEPENDENCIES = $(libiberty_dep)
@@ -64,7 +64,8 @@ libcc1plugin_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(CXXFLAGS) $(libcc1plugin_la_LDFLAGS) $(LTLDFLAGS) -o $@
 
 libcp1plugin_la_LDFLAGS = -module -export-symbols $(srcdir)/libcp1plugin.sym
-libcp1plugin_la_SOURCES = libcp1plugin.cc $(shared_source) $(marshall_cxx_source)
+libcp1plugin_la_SOURCES = libcp1plugin.cc context.cc context.hh \
+	$(shared_source) $(marshall_cxx_source)
 libcp1plugin.lo_CPPFLAGS = $(CPPFLAGS_FOR_CXX)
 libcp1plugin_la_LIBADD = $(libiberty)
 libcp1plugin_la_DEPENDENCIES = $(libiberty_dep)
@@ -75,7 +76,7 @@ libcp1plugin_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 libcc1_la_LDFLAGS = -module -export-symbols $(srcdir)/libcc1.sym
 libcc1_la_SOURCES = findcomp.cc libcc1.cc libcp1.cc \
-		names.cc names.hh $(shared_source) \
+		compiler.cc compiler.hh names.cc names.hh $(shared_source) \
 		$(marshall_c_source) $(marshall_cxx_source)
 libcc1_la_LIBADD = $(libiberty)
 libcc1_la_DEPENDENCIES = $(libiberty_dep)

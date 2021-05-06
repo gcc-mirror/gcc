@@ -144,16 +144,16 @@ am__installdirs = "$(DESTDIR)$(cc1libdir)" "$(DESTDIR)$(plugindir)"
 LTLIBRARIES = $(cc1lib_LTLIBRARIES) $(plugin_LTLIBRARIES)
 am__objects_1 = callbacks.lo connection.lo marshall.lo
 am__objects_2 =
-am_libcc1_la_OBJECTS = findcomp.lo libcc1.lo libcp1.lo names.lo \
-	$(am__objects_1) $(am__objects_2) $(am__objects_2)
+am_libcc1_la_OBJECTS = findcomp.lo libcc1.lo libcp1.lo compiler.lo \
+	names.lo $(am__objects_1) $(am__objects_2) $(am__objects_2)
 libcc1_la_OBJECTS = $(am_libcc1_la_OBJECTS)
 @ENABLE_PLUGIN_TRUE@am_libcc1_la_rpath = -rpath $(cc1libdir)
-am_libcc1plugin_la_OBJECTS = libcc1plugin.lo $(am__objects_1) \
-	$(am__objects_2)
+am_libcc1plugin_la_OBJECTS = libcc1plugin.lo context.lo \
+	$(am__objects_1) $(am__objects_2)
 libcc1plugin_la_OBJECTS = $(am_libcc1plugin_la_OBJECTS)
 @ENABLE_PLUGIN_TRUE@am_libcc1plugin_la_rpath = -rpath $(plugindir)
-am_libcp1plugin_la_OBJECTS = libcp1plugin.lo $(am__objects_1) \
-	$(am__objects_2)
+am_libcp1plugin_la_OBJECTS = libcp1plugin.lo context.lo \
+	$(am__objects_1) $(am__objects_2)
 libcp1plugin_la_OBJECTS = $(am_libcp1plugin_la_OBJECTS)
 @ENABLE_PLUGIN_TRUE@am_libcp1plugin_la_rpath = -rpath $(plugindir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -379,13 +379,11 @@ visibility = @visibility@
 ACLOCAL_AMFLAGS = -I .. -I ../config
 gcc_build_dir = ../gcc
 AM_CPPFLAGS = -I $(srcdir)/../include -I $(srcdir)/../libgcc \
-	-I $(gcc_build_dir) -I$(srcdir)/../gcc $($@_CPPFLAGS) $(GMPINC)
+	-I $(gcc_build_dir) -I$(srcdir)/../gcc $($@_CPPFLAGS) $(GMPINC) \
+	-I $(srcdir)/../gcc/c-family -I $(srcdir)/../libcpp/include
 
-CPPFLAGS_FOR_C_FAMILY = -I $(srcdir)/../gcc/c-family \
-	-I $(srcdir)/../libcpp/include
-
-CPPFLAGS_FOR_C = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/c
-CPPFLAGS_FOR_CXX = $(CPPFLAGS_FOR_C_FAMILY) -I $(srcdir)/../gcc/cp
+CPPFLAGS_FOR_C = -I $(srcdir)/../gcc/c
+CPPFLAGS_FOR_CXX = -I $(srcdir)/../gcc/cp
 AM_CXXFLAGS = $(WARN_FLAGS) $(WERROR) $(visibility) $(CET_HOST_FLAGS) \
 	$(am__append_1)
 # Can be simplified when libiberty becomes a normal convenience library.
@@ -408,7 +406,9 @@ shared_source = callbacks.cc callbacks.hh connection.cc connection.hh \
 marshall_c_source = marshall-c.hh
 marshall_cxx_source = marshall-cp.hh
 libcc1plugin_la_LDFLAGS = -module -export-symbols $(srcdir)/libcc1plugin.sym
-libcc1plugin_la_SOURCES = libcc1plugin.cc $(shared_source) $(marshall_c_source)
+libcc1plugin_la_SOURCES = libcc1plugin.cc context.cc context.hh \
+	$(shared_source) $(marshall_c_source)
+
 libcc1plugin.lo_CPPFLAGS = $(CPPFLAGS_FOR_C)
 libcc1plugin_la_LIBADD = $(libiberty)
 libcc1plugin_la_DEPENDENCIES = $(libiberty_dep)
@@ -417,7 +417,9 @@ libcc1plugin_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(CXXFLAGS) $(libcc1plugin_la_LDFLAGS) $(LTLDFLAGS) -o $@
 
 libcp1plugin_la_LDFLAGS = -module -export-symbols $(srcdir)/libcp1plugin.sym
-libcp1plugin_la_SOURCES = libcp1plugin.cc $(shared_source) $(marshall_cxx_source)
+libcp1plugin_la_SOURCES = libcp1plugin.cc context.cc context.hh \
+	$(shared_source) $(marshall_cxx_source)
+
 libcp1plugin.lo_CPPFLAGS = $(CPPFLAGS_FOR_CXX)
 libcp1plugin_la_LIBADD = $(libiberty)
 libcp1plugin_la_DEPENDENCIES = $(libiberty_dep)
@@ -428,7 +430,7 @@ libcp1plugin_la_LINK = $(LIBTOOL) --tag=CXX $(AM_LIBTOOLFLAGS) \
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
 libcc1_la_LDFLAGS = -module -export-symbols $(srcdir)/libcc1.sym
 libcc1_la_SOURCES = findcomp.cc libcc1.cc libcp1.cc \
-		names.cc names.hh $(shared_source) \
+		compiler.cc compiler.hh names.cc names.hh $(shared_source) \
 		$(marshall_c_source) $(marshall_cxx_source)
 
 libcc1_la_LIBADD = $(libiberty)
@@ -577,7 +579,9 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/callbacks.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/compiler.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/connection.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/context.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/findcomp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcc1.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libcc1plugin.Plo@am__quote@

@@ -21468,7 +21468,7 @@ rs6000_declare_alias (struct symtab_node *n, void *d)
 	      putc ('\n', data->file);
 	    }
 	  fputs ("\t.globl ", data->file);
-	  RS6000_OUTPUT_BASENAME (data->file, buffer);
+	  assemble_name (data->file, buffer);
 	  putc ('\n', data->file);
 	}
 #ifdef ASM_WEAKEN_DECL
@@ -21491,13 +21491,12 @@ rs6000_declare_alias (struct symtab_node *n, void *d)
 	  putc ('\n', data->file);
 	}
       fputs ("\t.lglobl ", data->file);
-      RS6000_OUTPUT_BASENAME (data->file, buffer);
+      assemble_name (data->file, buffer);
       putc ('\n', data->file);
     }
   if (data->function_descriptor)
-    fputs (".", data->file);
-  RS6000_OUTPUT_BASENAME (data->file, buffer);
-  fputs (":\n", data->file);
+    putc ('.', data->file);
+  ASM_OUTPUT_LABEL (data->file, buffer);
   return false;
 }
 
@@ -21574,21 +21573,24 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
       RS6000_OUTPUT_BASENAME (file, buffer);
       putc ('\n', file);
     }
+
   fputs ("\t.csect ", file);
-  RS6000_OUTPUT_BASENAME (file, buffer);
-  fputs (TARGET_32BIT ? "[DS]\n" : "[DS],3\n", file);
-  RS6000_OUTPUT_BASENAME (file, buffer);
-  fputs (":\n", file);
+  assemble_name (file, buffer);
+  fputs (TARGET_32BIT ? "\n" : ",3\n", file);
+
+  ASM_OUTPUT_LABEL (file, buffer);
+
   symtab_node::get (decl)->call_for_symbol_and_aliases (rs6000_declare_alias,
 							&data, true);
   fputs (TARGET_32BIT ? "\t.long ." : "\t.llong .", file);
   RS6000_OUTPUT_BASENAME (file, buffer);
   fputs (", TOC[tc0], 0\n", file);
+
   in_section = NULL;
   switch_to_section (function_section (decl));
   putc ('.', file);
-  RS6000_OUTPUT_BASENAME (file, buffer);
-  fputs (":\n", file);
+  ASM_OUTPUT_LABEL (file, buffer);
+
   data.function_descriptor = true;
   symtab_node::get (decl)->call_for_symbol_and_aliases (rs6000_declare_alias,
 							&data, true);
@@ -21683,8 +21685,7 @@ void
 rs6000_xcoff_declare_object_name (FILE *file, const char *name, tree decl)
 {
   struct declare_alias_data data = {file, false};
-  RS6000_OUTPUT_BASENAME (file, name);
-  fputs (":\n", file);
+  ASM_OUTPUT_LABEL (file, name);
   symtab_node::get_create (decl)->call_for_symbol_and_aliases (rs6000_declare_alias,
 							       &data, true);
 }
@@ -21740,20 +21741,19 @@ rs6000_xcoff_encode_section_info (tree decl, rtx rtl, int first)
 
   symname = XSTR (symbol, 0);
 
-  /* Append CSECT mapping class, unless the symbol already is qualified.  */
+  /* Append CSECT mapping class, unless the symbol already is qualified.
+     Aliases are implemented as labels, so the symbol name should not add
+     a mapping class.  */
   if (decl
       && DECL_P (decl)
       && VAR_OR_FUNCTION_DECL_P (decl)
-      && lookup_attribute ("alias", DECL_ATTRIBUTES (decl)) == NULL_TREE
+      && symtab_node::get (decl)->alias == 0
       && symname[strlen (symname) - 1] != ']')
     {
       const char *smclass = NULL;
 
       if (TREE_CODE (decl) == FUNCTION_DECL)
-	{
-	  if (DECL_EXTERNAL (decl))
-	    smclass = "[DS]";
-	}
+	smclass = "[DS]";
       else if (DECL_THREAD_LOCAL_P (decl))
 	{
 	  if (bss_initializer_p (decl))
@@ -21796,8 +21796,6 @@ rs6000_asm_weaken_decl (FILE *stream, tree decl,
   if (decl && TREE_CODE (decl) == FUNCTION_DECL
       && DEFAULT_ABI == ABI_AIX && DOT_SYMBOLS)
     {
-      if (TARGET_XCOFF && name[strlen (name) - 1] != ']')
-	fputs ("[DS]", stream);
 #if TARGET_XCOFF && HAVE_GAS_HIDDEN
       if (TARGET_XCOFF)
 	fputs (rs6000_xcoff_visibility (decl), stream);
@@ -21810,6 +21808,7 @@ rs6000_asm_weaken_decl (FILE *stream, tree decl,
     fputs (rs6000_xcoff_visibility (decl), stream);
 #endif
   fputc ('\n', stream);
+
   if (val)
     {
 #ifdef ASM_OUTPUT_DEF

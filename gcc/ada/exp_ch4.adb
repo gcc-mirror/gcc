@@ -737,8 +737,7 @@ package body Exp_Ch4 is
 
             Append_To (Stmts,
               Make_Raise_Program_Error (Loc,
-                Condition => New_Occurrence_Of (Standard_True, Loc),
-                Reason    => PE_Accessibility_Check_Failed));
+                Reason => PE_Accessibility_Check_Failed));
 
             --  Step 2: Create the accessibility comparison
 
@@ -4262,7 +4261,7 @@ package body Exp_Ch4 is
             --  larger type for the operands, to prevent spurious constraint
             --  errors on large legal literals of the type.
 
-            if Modulus (Etype (N)) > UI_From_Int (Int (Integer'Last)) then
+            if Modulus (Etype (N)) > Int (Integer'Last) then
                Target_Type := Standard_Long_Long_Integer;
             else
                Target_Type := Standard_Integer;
@@ -5916,9 +5915,14 @@ package body Exp_Ch4 is
    --  Start of processing for Expand_N_If_Expression
 
    begin
-      --  Check for MINIMIZED/ELIMINATED overflow mode
+      --  Check for MINIMIZED/ELIMINATED overflow mode.
+      --  Apply_Arithmetic_Overflow_Check will not deal with Then/Else_Actions
+      --  so skip this step if any actions are present.
 
-      if Minimized_Eliminated_Overflow_Check (N) then
+      if Minimized_Eliminated_Overflow_Check (N)
+        and then No (Then_Actions (N))
+        and then No (Else_Actions (N))
+      then
          Apply_Arithmetic_Overflow_Check (N);
          return;
       end if;
@@ -8083,7 +8087,7 @@ package body Exp_Ch4 is
       function User_Defined_Primitive_Equality_Op
         (Typ : Entity_Id) return Entity_Id
       is
-         Enclosing_Scope : constant Node_Id := Scope (Typ);
+         Enclosing_Scope : constant Entity_Id := Scope (Typ);
          E : Entity_Id;
       begin
          for Private_Entities in Boolean loop
@@ -8120,138 +8124,124 @@ package body Exp_Ch4 is
       function Has_Unconstrained_UU_Component
         (Typ : Entity_Id) return Boolean
       is
-         Tdef  : constant Node_Id :=
-                   Type_Definition (Declaration_Node (Base_Type (Typ)));
-         Clist : Node_Id;
-         Vpart : Node_Id;
+         function Unconstrained_UU_In_Component_Declaration
+           (N : Node_Id) return Boolean;
 
-         function Component_Is_Unconstrained_UU
-           (Comp : Node_Id) return Boolean;
-         --  Determines whether the subtype of the component is an
-         --  unconstrained Unchecked_Union.
+         function Unconstrained_UU_In_Component_Items
+           (L : List_Id) return Boolean;
 
-         function Variant_Is_Unconstrained_UU
-           (Variant : Node_Id) return Boolean;
-         --  Determines whether a component of the variant has an unconstrained
-         --  Unchecked_Union subtype.
+         function Unconstrained_UU_In_Component_List
+           (N : Node_Id) return Boolean;
 
-         -----------------------------------
-         -- Component_Is_Unconstrained_UU --
-         -----------------------------------
+         function Unconstrained_UU_In_Variant_Part
+           (N : Node_Id) return Boolean;
+         --  A family of routines that determine whether a particular construct
+         --  of a record type definition contains a subcomponent of an
+         --  unchecked union type whose nominal subtype is unconstrained.
+         --
+         --  Individual routines correspond to the production rules of the Ada
+         --  grammar, as described in the Ada RM (P).
 
-         function Component_Is_Unconstrained_UU
-           (Comp : Node_Id) return Boolean
+         -----------------------------------------------
+         -- Unconstrained_UU_In_Component_Declaration --
+         -----------------------------------------------
+
+         function Unconstrained_UU_In_Component_Declaration
+           (N : Node_Id) return Boolean
          is
+            pragma Assert (Nkind (N) = N_Component_Declaration);
+
+            Sindic : constant Node_Id :=
+                       Subtype_Indication (Component_Definition (N));
          begin
-            if Nkind (Comp) /= N_Component_Declaration then
-               return False;
-            end if;
+            --  Unconstrained nominal type. In the case of a constraint
+            --  present, the node kind would have been N_Subtype_Indication.
 
-            declare
-               Sindic : constant Node_Id :=
-                          Subtype_Indication (Component_Definition (Comp));
+            return Nkind (Sindic) in N_Expanded_Name | N_Identifier
+              and then Is_Unchecked_Union (Base_Type (Etype (Sindic)));
+         end Unconstrained_UU_In_Component_Declaration;
 
-            begin
-               --  Unconstrained nominal type. In the case of a constraint
-               --  present, the node kind would have been N_Subtype_Indication.
+         -----------------------------------------
+         -- Unconstrained_UU_In_Component_Items --
+         -----------------------------------------
 
-               if Nkind (Sindic) = N_Identifier then
-                  return Is_Unchecked_Union (Base_Type (Etype (Sindic)));
+         function Unconstrained_UU_In_Component_Items
+           (L : List_Id) return Boolean
+         is
+            N : Node_Id := First (L);
+         begin
+            while Present (N) loop
+               if Nkind (N) = N_Component_Declaration
+                 and then Unconstrained_UU_In_Component_Declaration (N)
+               then
+                  return True;
                end if;
 
-               return False;
-            end;
-         end Component_Is_Unconstrained_UU;
-
-         ---------------------------------
-         -- Variant_Is_Unconstrained_UU --
-         ---------------------------------
-
-         function Variant_Is_Unconstrained_UU
-           (Variant : Node_Id) return Boolean
-         is
-            Clist : constant Node_Id := Component_List (Variant);
-
-         begin
-            if Is_Empty_List (Component_Items (Clist)) then
-               return False;
-            end if;
-
-            --  We only need to test one component
-
-            declare
-               Comp : Node_Id := First (Component_Items (Clist));
-
-            begin
-               while Present (Comp) loop
-                  if Component_Is_Unconstrained_UU (Comp) then
-                     return True;
-                  end if;
-
-                  Next (Comp);
-               end loop;
-            end;
-
-            --  None of the components withing the variant were of
-            --  unconstrained Unchecked_Union type.
+               Next (N);
+            end loop;
 
             return False;
-         end Variant_Is_Unconstrained_UU;
+         end Unconstrained_UU_In_Component_Items;
+
+         ----------------------------------------
+         -- Unconstrained_UU_In_Component_List --
+         ----------------------------------------
+
+         function Unconstrained_UU_In_Component_List
+           (N : Node_Id) return Boolean
+         is
+            pragma Assert (Nkind (N) = N_Component_List);
+
+            Optional_Variant_Part : Node_Id;
+         begin
+            if Unconstrained_UU_In_Component_Items (Component_Items (N)) then
+               return True;
+            end if;
+
+            Optional_Variant_Part := Variant_Part (N);
+
+            return
+              Present (Optional_Variant_Part)
+              and then
+                Unconstrained_UU_In_Variant_Part (Optional_Variant_Part);
+         end Unconstrained_UU_In_Component_List;
+
+         --------------------------------------
+         -- Unconstrained_UU_In_Variant_Part --
+         --------------------------------------
+
+         function Unconstrained_UU_In_Variant_Part
+           (N : Node_Id) return Boolean
+         is
+            pragma Assert (Nkind (N) = N_Variant_Part);
+
+            Variant : Node_Id := First (Variants (N));
+         begin
+            loop
+               if Unconstrained_UU_In_Component_List (Component_List (Variant))
+               then
+                  return True;
+               end if;
+
+               Next (Variant);
+               exit when No (Variant);
+            end loop;
+
+            return False;
+         end Unconstrained_UU_In_Variant_Part;
+
+         Typ_Def : constant Node_Id :=
+           Type_Definition (Declaration_Node (Base_Type (Typ)));
+
+         Optional_Component_List : constant Node_Id :=
+           Component_List (Typ_Def);
 
       --  Start of processing for Has_Unconstrained_UU_Component
 
       begin
-         if Null_Present (Tdef) then
-            return False;
-         end if;
-
-         Clist := Component_List (Tdef);
-         Vpart := Variant_Part (Clist);
-
-         --  Inspect available components
-
-         if Present (Component_Items (Clist)) then
-            declare
-               Comp : Node_Id := First (Component_Items (Clist));
-
-            begin
-               while Present (Comp) loop
-
-                  --  One component is sufficient
-
-                  if Component_Is_Unconstrained_UU (Comp) then
-                     return True;
-                  end if;
-
-                  Next (Comp);
-               end loop;
-            end;
-         end if;
-
-         --  Inspect available components withing variants
-
-         if Present (Vpart) then
-            declare
-               Variant : Node_Id := First (Variants (Vpart));
-
-            begin
-               while Present (Variant) loop
-
-                  --  One component within a variant is sufficient
-
-                  if Variant_Is_Unconstrained_UU (Variant) then
-                     return True;
-                  end if;
-
-                  Next (Variant);
-               end loop;
-            end;
-         end if;
-
-         --  Neither the available components, nor the components inside the
-         --  variant parts were of an unconstrained Unchecked_Union subtype.
-
-         return False;
+         return Present (Optional_Component_List)
+           and then
+             Unconstrained_UU_In_Component_List (Optional_Component_List);
       end Has_Unconstrained_UU_Component;
 
       --  Local variables
@@ -9096,15 +9086,12 @@ package body Exp_Ch4 is
       --  overflow), and if there is an infinity generated and a range check
       --  is required, the check will fail anyway.
 
-      --  Historical note: we used to convert everything to Long_Long_Float
-      --  and call a single common routine, but this had the undesirable effect
-      --  of giving different results for small static exponent values and the
-      --  same dynamic values.
-
       else
          pragma Assert (Is_Floating_Point_Type (Rtyp));
 
-         if Rtyp = Standard_Float then
+         --  Short_Float and Float are the same type for GNAT
+
+         if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
             Etyp := Standard_Float;
             Rent := RE_Exn_Float;
 

@@ -2,11 +2,11 @@
 --                                                                          --
 --                         GNAT COMPILER COMPONENTS                         --
 --                                                                          --
---                      S Y S T E M . V A L _ E N U M                       --
+--                       S Y S T E M . V A L U E _ N                        --
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
+--             Copyright (C) 2021, Free Software Foundation, Inc.           --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -33,25 +33,30 @@ with Ada.Unchecked_Conversion;
 
 with System.Val_Util; use System.Val_Util;
 
-package body System.Val_Enum is
+package body System.Value_N is
 
-   -------------------------
-   -- Value_Enumeration_8 --
-   -------------------------
+   -----------------------
+   -- Value_Enumeration --
+   -----------------------
 
-   function Value_Enumeration_8
+   function Value_Enumeration
      (Names   : String;
       Indexes : System.Address;
+      Hash    : Hash_Function_Ptr;
       Num     : Natural;
       Str     : String)
       return    Natural
    is
       F : Natural;
       L : Natural;
+      H : Natural;
       S : String (Str'Range) := Str;
 
-      type Natural_8 is range 0 .. 2 ** 7 - 1;
-      type Index_Table is array (Natural) of Natural_8;
+      subtype Names_Index is
+        Index_Type range Index_Type (Names'First)
+                          .. Index_Type (Names'Last) + 1;
+      subtype Index is Natural range Natural'First .. Names'Length;
+      type Index_Table is array (Index) of Names_Index;
       type Index_Table_Ptr is access Index_Table;
 
       function To_Index_Table_Ptr is
@@ -59,97 +64,37 @@ package body System.Val_Enum is
 
       IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
 
-   begin
-      Normalize_String (S, F, L);
-
-      for J in 0 .. Num loop
-         if Names
-           (Natural (IndexesT (J)) ..
-            Natural (IndexesT (J + 1)) - 1) = S (F .. L)
-         then
-            return J;
-         end if;
-      end loop;
-
-      Bad_Value (Str);
-   end Value_Enumeration_8;
-
-   --------------------------
-   -- Value_Enumeration_16 --
-   --------------------------
-
-   function Value_Enumeration_16
-     (Names   : String;
-      Indexes : System.Address;
-      Num     : Natural;
-      Str     : String)
-      return    Natural
-   is
-      F : Natural;
-      L : Natural;
-      S : String (Str'Range) := Str;
-
-      type Natural_16 is range 0 .. 2 ** 15 - 1;
-      type Index_Table is array (Natural) of Natural_16;
-      type Index_Table_Ptr is access Index_Table;
-
-      function To_Index_Table_Ptr is
-        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
-
-      IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
+      pragma Assert (Num + 1 in IndexesT'Range);
 
    begin
       Normalize_String (S, F, L);
 
-      for J in 0 .. Num loop
+      --  If we have a valid hash value, do a single lookup
+
+      H := (if Hash /= null then Hash.all (S (F .. L)) else Natural'Last);
+
+      if H /= Natural'Last then
          if Names
-           (Natural (IndexesT (J)) ..
-            Natural (IndexesT (J + 1)) - 1) = S (F .. L)
+           (Natural (IndexesT (H)) ..
+            Natural (IndexesT (H + 1)) - 1) = S (F .. L)
          then
-            return J;
+            return H;
          end if;
-      end loop;
+
+      --  Otherwise do a linear search
+
+      else
+         for J in 0 .. Num loop
+            if Names
+              (Natural (IndexesT (J)) ..
+               Natural (IndexesT (J + 1)) - 1) = S (F .. L)
+            then
+               return J;
+            end if;
+         end loop;
+      end if;
 
       Bad_Value (Str);
-   end Value_Enumeration_16;
+   end Value_Enumeration;
 
-   --------------------------
-   -- Value_Enumeration_32 --
-   --------------------------
-
-   function Value_Enumeration_32
-     (Names   : String;
-      Indexes : System.Address;
-      Num     : Natural;
-      Str     : String)
-      return    Natural
-   is
-      F : Natural;
-      L : Natural;
-      S : String (Str'Range) := Str;
-
-      type Natural_32 is range 0 .. 2 ** 31 - 1;
-      type Index_Table is array (Natural) of Natural_32;
-      type Index_Table_Ptr is access Index_Table;
-
-      function To_Index_Table_Ptr is
-        new Ada.Unchecked_Conversion (System.Address, Index_Table_Ptr);
-
-      IndexesT : constant Index_Table_Ptr := To_Index_Table_Ptr (Indexes);
-
-   begin
-      Normalize_String (S, F, L);
-
-      for J in 0 .. Num loop
-         if Names
-           (Natural (IndexesT (J)) ..
-            Natural (IndexesT (J + 1)) - 1) = S (F .. L)
-         then
-            return J;
-         end if;
-      end loop;
-
-      Bad_Value (Str);
-   end Value_Enumeration_32;
-
-end System.Val_Enum;
+end System.Value_N;

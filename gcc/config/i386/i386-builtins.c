@@ -2103,6 +2103,11 @@ make_var_decl (tree type, const char *name)
   return new_decl;
 }
 
+static GTY(()) tree ix86_cpu_model_type_node;
+static GTY(()) tree ix86_cpu_model_var;
+static GTY(()) tree ix86_cpu_features2_type_node;
+static GTY(()) tree ix86_cpu_features2_var;
+
 /* FNDECL is a __builtin_cpu_is or a __builtin_cpu_supports call that is folded
    into an integer defined in libgcc/config/i386/cpuinfo.c */
 
@@ -2114,12 +2119,16 @@ fold_builtin_cpu (tree fndecl, tree *args)
     = (enum ix86_builtins) DECL_MD_FUNCTION_CODE (fndecl);
   tree param_string_cst = NULL;
 
-  tree __processor_model_type = build_processor_model_struct ();
-  tree __cpu_model_var = make_var_decl (__processor_model_type,
-					"__cpu_model");
-
-
-  varpool_node::add (__cpu_model_var);
+  if (ix86_cpu_model_var == nullptr)
+    {
+      /* Build a single __cpu_model variable for all references to
+	 __cpu_model so that GIMPLE level optimizers can CSE the loads
+	 of __cpu_model and optimize bit-operations properly.  */
+      ix86_cpu_model_type_node = build_processor_model_struct ();
+      ix86_cpu_model_var = make_var_decl (ix86_cpu_model_type_node,
+					  "__cpu_model");
+      varpool_node::add (ix86_cpu_model_var);
+    }
 
   gcc_assert ((args != NULL) && (*args != NULL));
 
@@ -2160,7 +2169,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	  return integer_zero_node;
 	}
 
-      field = TYPE_FIELDS (__processor_model_type);
+      field = TYPE_FIELDS (ix86_cpu_model_type_node);
       field_val = processor_alias_table[i].model;
 
       /* CPU types are stored in the next field.  */
@@ -2179,7 +2188,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	}
 
       /* Get the appropriate field in __cpu_model.  */
-      ref = build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+      ref = build3 (COMPONENT_REF, TREE_TYPE (field), ix86_cpu_model_var,
 		    field, NULL_TREE);
 
       /* Check the value.  */
@@ -2212,13 +2221,22 @@ fold_builtin_cpu (tree fndecl, tree *args)
 
       if (isa_names_table[i].feature >= 32)
 	{
-	  tree index_type
-	    = build_index_type (size_int (SIZE_OF_CPU_FEATURES));
-	  tree type = build_array_type (unsigned_type_node, index_type);
-	  tree __cpu_features2_var = make_var_decl (type,
-						    "__cpu_features2");
+	  if (ix86_cpu_features2_var == nullptr)
+	    {
+	      /* Build a single __cpu_features2 variable for all
+		 references to __cpu_features2 so that GIMPLE level
+		 optimizers can CSE the loads of __cpu_features2 and
+		 optimize bit-operations properly.  */
+	      tree index_type
+		= build_index_type (size_int (SIZE_OF_CPU_FEATURES));
+	      ix86_cpu_features2_type_node
+		= build_array_type (unsigned_type_node, index_type);
+	      ix86_cpu_features2_var
+		= make_var_decl (ix86_cpu_features2_type_node,
+				 "__cpu_features2");
+	      varpool_node::add (ix86_cpu_features2_var);
+	    }
 
-	  varpool_node::add (__cpu_features2_var);
 	  for (unsigned int j = 0; j < SIZE_OF_CPU_FEATURES; j++)
 	    if (isa_names_table[i].feature < (32 + 32 + j * 32))
 	      {
@@ -2226,7 +2244,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
 				    - (32 + j * 32)));
 		tree index = size_int (j);
 		array_elt = build4 (ARRAY_REF, unsigned_type_node,
-				    __cpu_features2_var,
+				    ix86_cpu_features2_var,
 				    index, NULL_TREE, NULL_TREE);
 		/* Return __cpu_features2[index] & field_val  */
 		final = build2 (BIT_AND_EXPR, unsigned_type_node,
@@ -2237,13 +2255,13 @@ fold_builtin_cpu (tree fndecl, tree *args)
 	      }
 	}
 
-      field = TYPE_FIELDS (__processor_model_type);
+      field = TYPE_FIELDS (ix86_cpu_model_type_node);
       /* Get the last field, which is __cpu_features.  */
       while (DECL_CHAIN (field))
         field = DECL_CHAIN (field);
 
       /* Get the appropriate field: __cpu_model.__cpu_features  */
-      ref = build3 (COMPONENT_REF, TREE_TYPE (field), __cpu_model_var,
+      ref = build3 (COMPONENT_REF, TREE_TYPE (field), ix86_cpu_model_var,
 		    field, NULL_TREE);
 
       /* Access the 0th element of __cpu_features array.  */

@@ -7668,7 +7668,6 @@
   {
     const char *op;
     int jump_mode;
-    CC_STATUS_INIT;
     if (test_hard_reg_class (ADDW_REGS, operands[0]))
       output_asm_insn ("sbiw %0,1" CR_TAB
                        "sbc %C0,__zero_reg__" CR_TAB
@@ -7713,7 +7712,6 @@
   {
     const char *op;
     int jump_mode;
-    CC_STATUS_INIT;
     if (test_hard_reg_class (ADDW_REGS, operands[0]))
       output_asm_insn ("sbiw %0,1", operands);
     else
@@ -7756,7 +7754,6 @@
   {
     const char *op;
     int jump_mode;
-    CC_STATUS_INIT;
     if (test_hard_reg_class (ADDW_REGS, operands[0]))
       output_asm_insn ("sbiw %0,1", operands);
     else
@@ -7799,7 +7796,6 @@
   {
     const char *op;
     int jump_mode;
-    CC_STATUS_INIT;
     output_asm_insn ("ldi %3,1"   CR_TAB
                      "sub %A0,%3" CR_TAB
                      "sbc %B0,__zero_reg__", operands);

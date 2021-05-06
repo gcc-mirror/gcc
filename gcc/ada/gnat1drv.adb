@@ -423,6 +423,12 @@ procedure Gnat1drv is
          if Warning_Mode = Suppress then
             Debug_Flag_MM := True;
          end if;
+
+         --  The implementation of 'Value that uses a perfect hash function
+         --  is significantly more complex and harder to initialize than the
+         --  old implementation. Deactivate it for CodePeer.
+
+         Debug_Flag_Underscore_H := True;
       end if;
 
       --  Enable some individual switches that are implied by relaxed RM
@@ -627,13 +633,9 @@ procedure Gnat1drv is
       end if;
 
       --  Set and check exception mechanism. This is only meaningful when
-      --  compiling, and in particular not meaningful for special modes used
-      --  for program analysis rather than compilation: CodePeer mode and
-      --  GNATprove mode.
+      --  generating code.
 
-      if Operating_Mode = Generate_Code
-        and then not (CodePeer_Mode or GNATprove_Mode)
-      then
+      if Operating_Mode = Generate_Code then
          case Targparm.Frontend_Exceptions_On_Target is
             when True =>
                case Targparm.ZCX_By_Default_On_Target is

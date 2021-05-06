@@ -46,6 +46,8 @@
 --  Note: GNAT.Heap_Sort replaces and obsoletes GNAT.Heap_Sort_A, which is
 --  retained in the GNAT library for backwards compatibility.
 
+pragma Compiler_Unit_Warning;
+
 package GNAT.Heap_Sort is
    pragma Pure;
 

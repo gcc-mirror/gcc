@@ -1,3 +1,8 @@
+2021-05-04  Nick Clifton  <nickc@redhat.com>
+
+	* configure.ac (AC_PROG_CC): Replace with AC_PROG_CC_C99.
+	* configure: Regenerate.
+
 2021-04-28  Jakub Jelinek  <jakub@redhat.com>
 	    Tobias Burnus  <tobias@codesourcery.com>
 

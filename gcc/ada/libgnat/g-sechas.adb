@@ -38,7 +38,7 @@ package body GNAT.Secure_Hashes is
                  "0123456789abcdef";
 
    type Fill_Buffer_Access is
-     access procedure
+     not null access procedure
        (M     : in out Message_State;
         SEA   : Stream_Element_Array;
         First : Stream_Element_Offset;

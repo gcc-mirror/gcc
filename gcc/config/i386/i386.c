@@ -6672,12 +6672,29 @@ ix86_compute_frame_layout (void)
 	 area, see the SEH code in config/i386/winnt.c for the rationale.  */
       frame->hard_frame_pointer_offset = frame->sse_reg_save_offset;
 
-      /* If we can leave the frame pointer where it is, do so.  Also, return
+      /* If we can leave the frame pointer where it is, do so; however return
 	 the establisher frame for __builtin_frame_address (0) or else if the
-	 frame overflows the SEH maximum frame size.  */
+	 frame overflows the SEH maximum frame size.
+
+	 Note that the value returned by __builtin_frame_address (0) is quite
+	 constrained, because setjmp is piggybacked on the SEH machinery with
+	 recent versions of MinGW:
+
+	  #    elif defined(__SEH__)
+	  #     if defined(__aarch64__) || defined(_ARM64_)
+	  #      define setjmp(BUF) _setjmp((BUF), __builtin_sponentry())
+	  #     elif (__MINGW_GCC_VERSION < 40702)
+	  #      define setjmp(BUF) _setjmp((BUF), mingw_getsp())
+	  #     else
+	  #      define setjmp(BUF) _setjmp((BUF), __builtin_frame_address (0))
+	  #     endif
+
+	 and the second argument passed to _setjmp, if not null, is forwarded
+	 to the TargetFrame parameter of RtlUnwindEx by longjmp (after it has
+	 built an ExceptionRecord on the fly describing the setjmp buffer).  */
       const HOST_WIDE_INT diff
 	= frame->stack_pointer_offset - frame->hard_frame_pointer_offset;
-      if (diff <= 255)
+      if (diff <= 255 && !crtl->accesses_prior_frames)
 	{
 	  /* The resulting diff will be a multiple of 16 lower than 255,
 	     i.e. at most 240 as required by the unwind data structure.  */
@@ -15284,6 +15301,7 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case E_V16SImode:
     case E_V8SImode:
     case E_V4SImode:
+    case E_V2SImode:
     case E_V8DImode:
     case E_V4DImode:
     case E_V2DImode:
@@ -15334,6 +15352,7 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     case E_V8SFmode:
     case E_V4SFmode:
     case E_V2SFmode:
+    case E_V2SImode:
       vec_mode = mode;
       imode = SImode;
       break;

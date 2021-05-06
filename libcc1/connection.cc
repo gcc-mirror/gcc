@@ -27,15 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "connection.hh"
 #include "rpc.hh"
 
-cc1_plugin::connection::~connection ()
-{
-}
-
-void
-cc1_plugin::connection::print (const char *)
-{
-}
-
 cc1_plugin::status
 cc1_plugin::connection::send (char c)
 {
@@ -138,7 +129,7 @@ cc1_plugin::connection::do_wait (bool want_result)
 		  return FAIL;
 
 		callback_ftype *callback
-		  = m_callbacks.find_callback (method_name);
+		  = m_callbacks.find_callback (method_name.get ());
 		// The call to CALLBACK is where we may end up in a
 		// reentrant call.
 		if (callback == NULL || !callback (this))

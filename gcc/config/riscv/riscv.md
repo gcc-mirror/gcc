@@ -2153,7 +2153,7 @@
 		      (label_ref (match_operand 1))
 		      (pc)))])
 
-(define_expand "cbranch<mode>4"
+(define_expand "@cbranch<mode>4"
   [(set (pc)
 	(if_then_else (match_operator 0 "comparison_operator"
 		      [(match_operand:BR 1 "register_operand")
@@ -2167,7 +2167,7 @@
   DONE;
 })
 
-(define_expand "cbranch<mode>4"
+(define_expand "@cbranch<mode>4"
   [(set (pc)
 	(if_then_else (match_operator 0 "fp_branch_comparison"
 		       [(match_operand:ANYF 1 "register_operand")
@@ -2829,12 +2829,8 @@
 					        operands[0],
 					        operands[1]));
 
-  if (mode == DImode)
-    emit_jump_insn (gen_cbranchdi4 (gen_rtx_EQ (VOIDmode, result, const0_rtx),
-				    result, const0_rtx, operands[2]));
-  else
-    emit_jump_insn (gen_cbranchsi4 (gen_rtx_EQ (VOIDmode, result, const0_rtx),
-				    result, const0_rtx, operands[2]));
+  rtx cond = gen_rtx_EQ (VOIDmode, result, const0_rtx);
+  emit_jump_insn (gen_cbranch4 (mode, cond, result, const0_rtx, operands[2]));
 
   DONE;
 })

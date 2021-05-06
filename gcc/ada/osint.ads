@@ -772,7 +772,7 @@ private
    procedure Write_Info (Info : String);
    --  Implements Write_Binder_Info, Write_Debug_Info, and Write_Library_Info
 
-   procedure Write_With_Check (A : Address; N  : Integer);
+   procedure Write_With_Check (A : Address; N : Integer);
    --  Writes N bytes from buffer starting at address A to file whose FD is
    --  stored in Output_FD, and whose file name is stored as a File_Name_Type
    --  in Output_File_Name. A check is made for disk full, and if this is

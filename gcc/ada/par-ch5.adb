@@ -1299,17 +1299,16 @@ package body Ch5 is
 
          return Cond;
 
-      --  Otherwise check for redundant parentheses
-
-      --  If the condition is a conditional or a quantified expression, it is
-      --  parenthesized in the context of a condition, because of a separate
-      --  syntax rule.
+      --  Otherwise check for redundant parentheses but do not emit messages
+      --  about expressions that require parentheses (e.g. conditional,
+      --  quantified or declaration expressions).
 
       else
          if Style_Check
            and then
              Paren_Count (Cond) >
                (if Nkind (Cond) in N_Case_Expression
+                                 | N_Expression_With_Actions
                                  | N_If_Expression
                                  | N_Quantified_Expression
                 then 1

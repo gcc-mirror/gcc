@@ -180,6 +180,7 @@ package body Einfo is
    --    Corresponding_Record_Component  Node21
    --    Default_Expr_Function           Node21
    --    Discriminant_Constraint         Elist21
+   --    Lit_Hash                        Node21
    --    Interface_Name                  Node21
    --    Original_Array_Type             Node21
    --    Small_Value                     Ureal21
@@ -2835,6 +2836,12 @@ package body Einfo is
         (Is_Object (Id) or else Is_Subprogram (Id) or else Is_Type (Id));
       return Node33 (Id);
    end Linker_Section_Pragma;
+
+   function Lit_Hash (Id : E) return E is
+   begin
+      pragma Assert (Is_Enumeration_Type (Id));
+      return Node21 (Id);
+   end Lit_Hash;
 
    function Lit_Indexes (Id : E) return E is
    begin
@@ -6102,6 +6109,12 @@ package body Einfo is
         (Is_Object (Id) or else Is_Subprogram (Id) or else Is_Type (Id));
       Set_Node33 (Id, V);
    end Set_Linker_Section_Pragma;
+
+   procedure Set_Lit_Hash (Id : E; V : E) is
+   begin
+      pragma Assert (Is_Enumeration_Type (Id) and then Root_Type (Id) = Id);
+      Set_Node21 (Id, V);
+   end Set_Lit_Hash;
 
    procedure Set_Lit_Indexes (Id : E; V : E) is
    begin
@@ -10883,6 +10896,9 @@ package body Einfo is
             | E_Variable
          =>
             Write_Str ("Interface_Name");
+
+         when Enumeration_Kind =>
+            Write_Str ("Lit_Hash");
 
          when Array_Kind
             | Modular_Integer_Kind

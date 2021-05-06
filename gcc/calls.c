@@ -3808,6 +3808,7 @@ expand_call (tree exp, rtx target, int ignore)
      side-effects.  */
   if ((flags & (ECF_CONST | ECF_PURE))
       && (!(flags & ECF_LOOPING_CONST_OR_PURE))
+      && (flags & ECF_NOTHROW)
       && (ignore || target == const0_rtx
 	  || TYPE_MODE (rettype) == VOIDmode))
     {

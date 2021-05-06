@@ -5958,6 +5958,21 @@ package body Exp_Aggr is
 
             if Nkind (First (Choice_List (Assoc))) = N_Others_Choice then
                Others_Present (Dim) := True;
+
+               --  An others_clause may be superfluous if previous components
+               --  cover the full given range of a constrained array. In such
+               --  a case an others_clause does not contribute any additional
+               --  components and has not been analyzed. We analyze it now to
+               --  detect type errors in the expression, even though no code
+               --  will be generated for it.
+
+               if Dim = Aggr_Dimension
+                 and then Nkind (Assoc) /= N_Iterated_Component_Association
+                 and then not Analyzed (Expression (Assoc))
+                 and then not Box_Present (Assoc)
+               then
+                  Preanalyze_And_Resolve (Expression (Assoc), Ctyp);
+               end if;
             end if;
          end if;
 

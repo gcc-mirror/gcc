@@ -2980,9 +2980,12 @@ package body Sem_Aggr is
             Index_Type : constant Entity_Id := Etype (Next_Formal (Container));
             Comp_Type  : constant Entity_Id :=
                                  Etype (Next_Formal (Next_Formal (Container)));
-            Comp   : Node_Id;
-            Choice : Node_Id;
+            Comp        : Node_Id;
+            Choice      : Node_Id;
+            Num_Choices : Nat := 0;
 
+            Hi_Val : Uint;
+            Lo_Val : Uint;
          begin
             if Present (Expressions (N)) then
                Comp := First (Expressions (N));
@@ -2999,7 +3002,7 @@ package body Sem_Aggr is
                   return;
                end if;
 
-               Comp := First (Expressions (N));
+               Comp := First (Component_Associations (N));
 
                while Present (Comp) loop
                   if Nkind (Comp) = N_Component_Association then
@@ -3007,6 +3010,7 @@ package body Sem_Aggr is
 
                      while Present (Choice) loop
                         Analyze_And_Resolve (Choice, Index_Type);
+                        Num_Choices := Num_Choices + 1;
                         Next (Choice);
                      end loop;
 
@@ -3018,10 +3022,107 @@ package body Sem_Aggr is
                   then
                      Resolve_Iterated_Association
                        (Comp, Index_Type, Comp_Type);
+                     Num_Choices := Num_Choices + 1;
                   end if;
 
                   Next (Comp);
                end loop;
+
+               --  The component associations in an indexed aggregate
+               --  must denote a contiguous set of static values. We
+               --  build a table of values/ranges and sort it, as is done
+               --  elsewhere for case statements and array aggregates.
+               --  If the aggregate has a single iterated association it
+               --  is allowed to be nonstatic and there is nothing to check.
+
+               if Num_Choices > 1 then
+                  declare
+                     Table     : Case_Table_Type (1 .. Num_Choices);
+                     No_Choice : Pos := 1;
+                     Lo, Hi    : Node_Id;
+
+                  --  Traverse aggregate to determine size of needed table.
+                  --  Verify that bounds are static and that loops have no
+                  --  filters or key expressions.
+
+                  begin
+                     Comp := First (Component_Associations (N));
+                     while Present (Comp) loop
+                        if Nkind (Comp) = N_Iterated_Element_Association then
+                           if Present
+                             (Loop_Parameter_Specification (Comp))
+                           then
+                              if Present (Iterator_Filter
+                                (Loop_Parameter_Specification (Comp)))
+                              then
+                                 Error_Msg_N
+                                   ("iterator filter not allowed " &
+                                     "in indexed aggregate", Comp);
+                                 return;
+
+                              elsif Present (Key_Expression
+                                (Loop_Parameter_Specification (Comp)))
+                              then
+                                 Error_Msg_N
+                                   ("key expression not allowed " &
+                                     "in indexed aggregate", Comp);
+                                 return;
+                              end if;
+                           end if;
+                        else
+                           Choice := First (Choices (Comp));
+
+                           while Present (Choice) loop
+                              Get_Index_Bounds (Choice, Lo, Hi);
+                              Table (No_Choice).Choice := Choice;
+                              Table (No_Choice).Lo := Lo;
+                              Table (No_Choice).Hi := Hi;
+
+                              --  Verify staticness of value or range
+
+                              if not Is_Static_Expression (Lo)
+                                or else not Is_Static_Expression (Hi)
+                              then
+                                 Error_Msg_N
+                                   ("nonstatic expression for index " &
+                                     "for indexed aggregate", Choice);
+                                 return;
+                              end if;
+
+                              No_Choice := No_Choice + 1;
+                              Next (Choice);
+                           end loop;
+                        end if;
+
+                        Next (Comp);
+                     end loop;
+
+                     Sort_Case_Table (Table);
+
+                     for J in 1 .. Num_Choices - 1 loop
+                        Hi_Val := Expr_Value (Table (J).Hi);
+                        Lo_Val := Expr_Value (Table (J + 1).Lo);
+
+                        if Lo_Val = Hi_Val then
+                           Error_Msg_N
+                             ("duplicate index in indexed aggregate",
+                               Table (J + 1).Choice);
+                           exit;
+
+                        elsif Lo_Val < Hi_Val then
+                           Error_Msg_N
+                             ("overlapping indices in indexed aggregate",
+                               Table (J + 1).Choice);
+                           exit;
+
+                        elsif Lo_Val > Hi_Val + 1 then
+                           Error_Msg_N
+                             ("missing index values", Table (J + 1).Choice);
+                           exit;
+                        end if;
+                     end loop;
+                  end;
+               end if;
             end if;
          end;
       end if;

@@ -3658,6 +3658,20 @@ package body Checks is
          Cond := Build_Discriminant_Checks (Expr, Expr_Type);
          Set_Discriminant_Constraint (Expr_Type, Old_Constraints);
 
+         --  Conversion between access types requires that we check for null
+         --  before checking discriminants.
+
+         if Is_Access_Type (Etype (Expr)) then
+            Cond := Make_And_Then (Loc,
+                      Left_Opnd  =>
+                        Make_Op_Ne (Loc,
+                          Left_Opnd  =>
+                            Duplicate_Subexpr_No_Checks
+                              (Expr, Name_Req => True),
+                          Right_Opnd => Make_Null (Loc)),
+                      Right_Opnd => Cond);
+         end if;
+
          Insert_Action (N,
            Make_Raise_Constraint_Error (Loc,
              Condition => Cond,

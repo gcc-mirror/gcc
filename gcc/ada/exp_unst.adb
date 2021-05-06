@@ -527,14 +527,17 @@ package body Exp_Unst is
                   --  Entity name case. Make sure that the entity is declared
                   --  in a subprogram. This may not be the case for a type in a
                   --  loop appearing in a precondition.
-                  --  Exclude explicitly  discriminants (that can appear
-                  --  in bounds of discriminated components).
+                  --  Exclude explicitly discriminants (that can appear
+                  --  in bounds of discriminated components) and enumeration
+                  --  literals.
 
                   if Is_Entity_Name (N) then
                      if Present (Entity (N))
                        and then not Is_Type (Entity (N))
                        and then Present (Enclosing_Subprogram (Entity (N)))
-                       and then Ekind (Entity (N)) /= E_Discriminant
+                       and then
+                         Ekind (Entity (N))
+                           not in E_Discriminant | E_Enumeration_Literal
                      then
                         Note_Uplevel_Ref
                           (E      => Entity (N),

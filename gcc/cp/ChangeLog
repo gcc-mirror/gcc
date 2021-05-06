@@ -1,3 +1,8 @@
+2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* semantics.c (finish_omp_reduction_clause): Accept float + complex
+	for || and && reductions.
+
 2021-05-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/100362

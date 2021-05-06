@@ -5477,9 +5477,7 @@ package body Exp_Ch3 is
               First_Component (Base_Type (Underlying_Type (Etype (Typ))));
             Comp := First_Component (Typ);
             while Present (Comp) loop
-               if Ekind (Comp) = E_Component
-                 and then Chars (Comp) = Chars (Old_Comp)
-               then
+               if Chars (Comp) = Chars (Old_Comp) then
                   Set_Discriminant_Checking_Func
                     (Comp, Discriminant_Checking_Func (Old_Comp));
                end if;
@@ -6153,8 +6151,7 @@ package body Exp_Ch3 is
 
             Comp := First_Component (Full_Type);
             while Present (Comp) loop
-               if Ekind (Comp) = E_Component
-                 and then Present (Expression (Parent (Comp)))
+               if Present (Expression (Parent (Comp)))
                  and then
                    not Is_OK_Static_Expression (Expression (Parent (Comp)))
                then
@@ -6186,9 +6183,7 @@ package body Exp_Ch3 is
 
             Comp := First_Component (Full_Type);
             while Present (Comp) loop
-               if Ekind (Comp) = E_Component
-                 and then Present (Expression (Parent (Comp)))
-               then
+               if Present (Expression (Parent (Comp))) then
                   Append_To (Component_Associations (Aggr),
                     Make_Component_Association (Loc,
                       Choices    => New_List (New_Occurrence_Of (Comp, Loc)),
@@ -9001,11 +8996,10 @@ package body Exp_Ch3 is
                   begin
                      Comp := First_Component (E);
                      while Present (Comp) loop
-                        if Ekind (Comp) = E_Discriminant
-                          or else
-                            (Nkind (Parent (Comp)) = N_Component_Declaration
-                              and then Present (Expression (Parent (Comp))))
-                        then
+                        pragma Assert
+                          (Nkind (Parent (Comp)) = N_Component_Declaration);
+
+                        if Present (Expression (Parent (Comp))) then
                            Warning_Needed := True;
                            exit;
                         end if;

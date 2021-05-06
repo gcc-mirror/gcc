@@ -2556,15 +2556,6 @@ equals_type_number (const void *ty1, const void *ty2)
   return type1->state_number == type2->state_number;
 }
 
-static int
-string_eq (const void *a, const void *b)
-{
-  const char *a0 = (const char *)a;
-  const char *b0 = (const char *)b;
-
-  return (strcmp (a0, b0) == 0);
-}
-
 
 /* The function reading the state, called by main from gengtype.c.  */
 void
@@ -2588,7 +2579,7 @@ read_state (const char *path)
   state_seen_types =
     htab_create (2017, hash_type_number, equals_type_number, NULL);
   state_ident_tab =
-    htab_create (4027, htab_hash_string, string_eq, NULL);
+    htab_create (4027, htab_hash_string, htab_eq_string, NULL);
   read_state_version (version_string);
   read_state_srcdir ();
   read_state_languages ();

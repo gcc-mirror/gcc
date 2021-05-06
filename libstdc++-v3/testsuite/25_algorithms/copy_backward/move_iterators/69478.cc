@@ -35,6 +35,6 @@ test01()
   static_assert(std::is_trivial<trivial_rvalstruct>::value, "");
 
   trivial_rvalstruct a[1], b[1];
-  copy_backward(std::make_move_iterator(a), std::make_move_iterator(a+1), b);
+  copy_backward(std::make_move_iterator(a), std::make_move_iterator(a+1), b+1);
 }
 // { dg-prune-output "use of deleted" }

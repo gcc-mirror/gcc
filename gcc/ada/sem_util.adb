@@ -1412,7 +1412,6 @@ package body Sem_Util is
       Ent    : Entity_Id  := Empty;
       Typ    : Entity_Id  := Empty;
       Loc    : Source_Ptr := No_Location;
-      Rep    : Boolean    := True;
       Warn   : Boolean    := False)
    is
       Stat   : constant Boolean := Is_Static_Expression (N);
@@ -1436,7 +1435,8 @@ package body Sem_Util is
       --  a few cases where a suitable check flag is set for GNATprove to
       --  generate a check message.
 
-      if not Rep or GNATprove_Mode then
+      if GNATprove_Mode then
+         Set_Raises_Constraint_Error (N);
          return;
       end if;
 
@@ -11819,7 +11819,6 @@ package body Sem_Util is
    function Has_Defaulted_Discriminants (Typ : Entity_Id) return Boolean is
    begin
       return Has_Discriminants (Typ)
-       and then Present (First_Discriminant (Typ))
        and then Present (Discriminant_Default_Value
                            (First_Discriminant (Typ)));
    end Has_Defaulted_Discriminants;
@@ -17142,9 +17141,7 @@ package body Sem_Util is
       --  Record types
 
       elsif Is_Record_Type (Typ) then
-         if Has_Discriminants (Typ)
-           and then
-             Present (Discriminant_Default_Value (First_Discriminant (Typ)))
+         if Has_Defaulted_Discriminants (Typ)
            and then Is_Fully_Initialized_Variant (Typ)
          then
             return True;

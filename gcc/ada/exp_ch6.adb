@@ -3473,12 +3473,6 @@ package body Exp_Ch6 is
       Scop          : Entity_Id;
       Subp          : Entity_Id;
 
-      Prev_Orig : Node_Id;
-      --  Original node for an actual, which may have been rewritten. If the
-      --  actual is a function call that has been transformed from a selected
-      --  component, the original node is unanalyzed. Otherwise, it carries
-      --  semantic information used to generate additional actuals.
-
       CW_Interface_Formals_Present : Boolean := False;
 
    --  Start of processing for Expand_Call_Helper
@@ -3739,7 +3733,6 @@ package body Exp_Ch6 is
          --  Prepare to examine current entry
 
          Prev := Actual;
-         Prev_Orig := Original_Node (Prev);
 
          --  Ada 2005 (AI-251): Check if any formal is a class-wide interface
          --  to expand it in a further round.
@@ -3828,63 +3821,6 @@ package body Exp_Ch6 is
          --  Create possible extra actual for accessibility level
 
          if Present (Extra_Accessibility (Formal)) then
-
-            --  Ada 2005 (AI-252): If the actual was rewritten as an Access
-            --  attribute, then the original actual may be an aliased object
-            --  occurring as the prefix in a call using "Object.Operation"
-            --  notation. In that case we must pass the level of the object,
-            --  so Prev_Orig is reset to Prev and the attribute will be
-            --  processed by the code for Access attributes further below.
-
-            if Prev_Orig /= Prev
-              and then Nkind (Prev) = N_Attribute_Reference
-              and then Get_Attribute_Id (Attribute_Name (Prev)) =
-                         Attribute_Access
-              and then Is_Aliased_View (Prev_Orig)
-            then
-               Prev_Orig := Prev;
-
-            --  A class-wide precondition generates a test in which formals of
-            --  the subprogram are replaced by actuals that came from source.
-            --  In that case as well, the accessiblity comes from the actual.
-            --  This is the one case in which there are references to formals
-            --  outside of their subprogram.
-
-            elsif Prev_Orig /= Prev
-              and then Is_Entity_Name (Prev_Orig)
-              and then Present (Entity (Prev_Orig))
-              and then Is_Formal (Entity (Prev_Orig))
-              and then not In_Open_Scopes (Scope (Entity (Prev_Orig)))
-            then
-               Prev_Orig := Prev;
-
-            --  If the actual is a formal of an enclosing subprogram it is
-            --  the right entity, even if it is a rewriting. This happens
-            --  when the call is within an inherited condition or predicate.
-
-            elsif Is_Entity_Name (Actual)
-              and then Is_Formal (Entity (Actual))
-              and then In_Open_Scopes (Scope (Entity (Actual)))
-            then
-               Prev_Orig := Prev;
-
-            --  If the actual is an attribute reference that was expanded
-            --  into a reference to an entity, then get accessibility level
-            --  from that entity. AARM 6.1.1(27.d) says "... the implicit
-            --  constant declaration defines the accessibility level of X'Old".
-
-            elsif Nkind (Prev_Orig) = N_Attribute_Reference
-              and then Attribute_Name (Prev_Orig) in Name_Old | Name_Loop_Entry
-              and then Is_Entity_Name (Prev)
-              and then Present (Entity (Prev))
-              and then Is_Object (Entity (Prev))
-            then
-               Prev_Orig := Prev;
-
-            elsif Nkind (Prev_Orig) = N_Type_Conversion then
-               Prev_Orig := Expression (Prev_Orig);
-            end if;
-
             --  Ada 2005 (AI-251): Thunks must propagate the extra actuals of
             --  accessibility levels.
 
@@ -3928,6 +3864,29 @@ package body Exp_Ch6 is
                          N_If_Expression | N_Case_Expression
             then
                Add_Cond_Expression_Extra_Actual (Formal);
+
+            --  Internal constant generated to remove side effects (normally
+            --  from the expansion of dispatching calls).
+
+            --  First verify the actual is internal
+
+            elsif not Comes_From_Source (Prev)
+              and then Original_Node (Prev) = Prev
+
+              --  Next check that the actual is a constant
+
+              and then Nkind (Prev) = N_Identifier
+              and then Ekind (Entity (Prev)) = E_Constant
+              and then Nkind (Parent (Entity (Prev))) = N_Object_Declaration
+            then
+               --  Generate the accessibility level based on the expression in
+               --  the constant's declaration.
+
+               Add_Extra_Actual
+                 (Expr => Accessibility_Level
+                            (Expr  => Expression (Parent (Entity (Prev))),
+                             Level => Dynamic_Level),
+                  EF   => Extra_Accessibility (Formal));
 
             --  Normal case
 

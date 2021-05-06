@@ -1266,10 +1266,16 @@ package body Lib is
    -- Synchronize_Serial_Number --
    -------------------------------
 
-   procedure Synchronize_Serial_Number is
+   procedure Synchronize_Serial_Number (SN : Nat) is
       TSN : Int renames Units.Table (Current_Sem_Unit).Serial_Number;
    begin
-      TSN := TSN + 1;
+      --  We should not be trying to synchronize downward
+
+      pragma Assert (TSN <= SN);
+
+      if TSN < SN then
+         TSN := SN;
+      end if;
    end Synchronize_Serial_Number;
 
    --------------------

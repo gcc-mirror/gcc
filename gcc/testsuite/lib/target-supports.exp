@@ -3504,7 +3504,9 @@ proc check_effective_target_vect_intfloat_cvt { } {
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget s390*-*-*]
+		 && [check_effective_target_s390_vxe2]) }}]
 }
 
 # Return 1 if the target supports signed double->int conversion
@@ -3521,7 +3523,9 @@ proc check_effective_target_vect_doubleint_cvt { } {
 	    || [istarget aarch64*-*-*]
 	    || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
 	    || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) }}]
+		 && [et-is-effective-target mips_msa])
+	     || ([istarget s390*-*-*]
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports signed int->double conversion
@@ -3538,7 +3542,9 @@ proc check_effective_target_vect_intdouble_cvt { } {
 	     || [istarget aarch64*-*-*]
 	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) }}]
+		 && [et-is-effective-target mips_msa])
+	     || ([istarget s390*-*-*]
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 #Return 1 if we're supporting __int128 for target, 0 otherwise.
@@ -3567,7 +3573,9 @@ proc check_effective_target_vect_uintfloat_cvt { } {
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget s390*-*-*]
+		 && [check_effective_target_s390_vxe2]) }}]
 }
 
 
@@ -3582,7 +3590,9 @@ proc check_effective_target_vect_floatint_cvt { } {
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
-	     || [istarget amdgcn-*-*] }}]
+	     || [istarget amdgcn-*-*]
+	     || ([istarget s390*-*-*]
+		 && [check_effective_target_s390_vxe2]) }}]
 }
 
 # Return 1 if the target supports unsigned float->int conversion
@@ -3595,7 +3605,9 @@ proc check_effective_target_vect_floatuint_cvt { } {
 	    || [is-effective-target arm_neon]
 	    || ([istarget mips*-*-*]
 		&& [et-is-effective-target mips_msa])
-	    || [istarget amdgcn-*-*] }}]
+	    || [istarget amdgcn-*-*]
+	    || ([istarget s390*-*-*]
+		&& [check_effective_target_s390_vxe2]) }}]
 }
 
 # Return 1 if peeling for alignment might be profitable on the target
@@ -9794,7 +9806,10 @@ proc check_vect_support_and_set_flags { } {
 	lappend DEFAULT_VECTCFLAGS "--param" "max-unroll-times=8"
 	lappend DEFAULT_VECTCFLAGS "--param" "max-completely-peeled-insns=200"
 	lappend DEFAULT_VECTCFLAGS "--param" "max-completely-peel-times=16"
-        if [check_effective_target_s390_vxe] {
+        if [check_effective_target_s390_vxe2] {
+	    lappend DEFAULT_VECTCFLAGS "-march=z15" "-mzarch"
+            set dg-do-what-default run
+	} elseif [check_effective_target_s390_vxe] {
 	    lappend DEFAULT_VECTCFLAGS "-march=z14" "-mzarch"
             set dg-do-what-default run
 	} elseif [check_effective_target_s390_vx] {

@@ -32,8 +32,8 @@
 --  This package contains routines for scanning real values for floating point
 --  type Long_Float, for use in Text_IO.Float_IO and the Value attribute.
 
-with Interfaces;
 with System.Powten_LFlt;
+with System.Unsigned_Types;
 with System.Val_Real;
 
 package System.Val_LFlt is
@@ -41,9 +41,9 @@ package System.Val_LFlt is
 
    package Impl is new Val_Real
      (Long_Float,
-      Interfaces.Unsigned_64,
       System.Powten_LFlt.Maxpow,
-      System.Powten_LFlt.Powten'Address);
+      System.Powten_LFlt.Powten'Address,
+      Unsigned_Types.Long_Long_Unsigned);
 
    function Scan_Long_Float
      (Str : String;

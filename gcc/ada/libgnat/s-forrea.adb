@@ -31,12 +31,12 @@
 
 package body System.Fore_Real is
 
-   ---------------
-   -- Fore_Real --
-   ---------------
+   ----------------
+   -- Fore_Fixed --
+   ----------------
 
-   function Fore_Real (Lo, Hi : Long_Long_Float) return Natural is
-      T : Long_Long_Float := Long_Long_Float'Max (abs Lo, abs Hi);
+   function Fore_Fixed (Lo, Hi : Long_Float) return Natural is
+      T : Long_Float := Long_Float'Max (abs Lo, abs Hi);
       F : Natural;
 
    begin
@@ -52,6 +52,6 @@ package body System.Fore_Real is
       end loop;
 
       return F;
-   end Fore_Real;
+   end Fore_Fixed;
 
 end System.Fore_Real;

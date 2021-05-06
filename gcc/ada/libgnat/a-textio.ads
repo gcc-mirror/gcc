@@ -85,9 +85,6 @@ is
    --  Line and page length
 
    subtype Field is Integer range 0 .. 255;
-   --  Note: if for any reason, there is a need to increase this value, then it
-   --  will be necessary to change the corresponding value in System.Img_Real
-   --  in file s-imgrea.adb.
 
    subtype Number_Base is Integer range 2 .. 16;
 

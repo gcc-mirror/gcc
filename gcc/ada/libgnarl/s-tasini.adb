@@ -420,7 +420,7 @@ package body System.Tasking.Initialization is
             when Terminated
                | Unactivated
             =>
-               pragma Assert (False);
+               pragma Assert (Standard.False);
                null;
 
             when Activating
@@ -535,7 +535,7 @@ package body System.Tasking.Initialization is
          C := C.Common.All_Tasks_Link;
       end loop;
 
-      pragma Assert (False);
+      pragma Assert (Standard.False);
    end Remove_From_All_Tasks_List;
 
    ---------------

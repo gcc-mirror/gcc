@@ -1014,7 +1014,7 @@ package body Lib.Writ is
          return;
       end if;
 
-      --  Build sorted source dependency table.
+      --  Build sorted source dependency table
 
       for Unum in Units.First .. Last_Unit loop
          if Cunit_Entity (Unum) = Empty

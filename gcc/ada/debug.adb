@@ -146,7 +146,7 @@ package body Debug is
    --  d_e  Ignore entry calls and requeue statements for elaboration
    --  d_f  Issue info messages related to GNATprove usage
    --  d_g
-   --  d_h
+   --  d_h  Disable the use of (perfect) hash functions for enumeration Value
    --  d_i  Ignore activations and calls to instances for elaboration
    --  d_j  Read JSON files and populate Repinfo tables (opposite of -gnatRjs)
    --  d_k
@@ -162,7 +162,7 @@ package body Debug is
    --  d_u
    --  d_v
    --  d_w
-   --  d_x
+   --  d_x  Disable inline expansion of Image attribute for enumeration types
    --  d_y
    --  d_z  Enable Put_Image on tagged types
 
@@ -971,6 +971,9 @@ package body Debug is
    --       beginners find them confusing. Set automatically by GNATprove when
    --       switch --info is used.
 
+   --  d_h  The compiler does not make use of (perfect) hash functions in the
+   --       implementation of the Value attribute for enumeration types.
+
    --  d_i  The compiler ignores calls and task activations when they target a
    --       subprogram or task type defined in an external instance for both
    --       the static and dynamic elaboration models.
@@ -986,6 +989,9 @@ package body Debug is
    --  d_s  The compiler stops the examination of a task body once it reaches
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
+
+   --  d_x  The compiler does not expand in line the Image attribute for user-
+   --       defined enumeration types and the standard boolean type.
 
    --  d_z  Enable the default Put_Image on tagged types that are not
    --       predefined.

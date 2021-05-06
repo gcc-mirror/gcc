@@ -208,7 +208,7 @@ package body Monotonic is
                      exit Inner;
 
                   when others =>
-                     pragma Assert (False);
+                     pragma Assert (Standard.False);
 
                end case;
 
@@ -292,7 +292,7 @@ package body Monotonic is
                   when 0 | EINTR => null;
 
                   when others =>
-                     pragma Assert (False);
+                     pragma Assert (Standard.False);
 
                end case;
 

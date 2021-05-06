@@ -2564,7 +2564,7 @@ package body Osint is
       --  Read data from the file
 
       declare
-         Actual_Len : Integer := 0;
+         Actual_Len : Integer;
 
          Lo : constant Text_Ptr := 0;
          --  Low bound for allocated text buffer
@@ -3162,7 +3162,7 @@ package body Osint is
    -- Write_With_Check --
    ----------------------
 
-   procedure Write_With_Check (A  : Address; N  : Integer) is
+   procedure Write_With_Check (A : Address; N : Integer) is
       Ignore : Boolean;
    begin
       if N = Write (Output_FD, A, N) then

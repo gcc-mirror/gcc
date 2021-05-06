@@ -315,8 +315,11 @@ package body Exp_Dbug is
       --  output in one of these two forms. The result is prepended to the
       --  name stored in Name_Buffer.
 
-      function Scope_Contains (Sc : Node_Id; Ent : Entity_Id) return Boolean;
-      --  Return whether Ent belong to the Sc scope
+      function Scope_Contains
+        (Outer : Entity_Id;
+         Inner : Entity_Id)
+         return Boolean;
+      --  Return whether Inner belongs to the Outer scope
 
       ----------------------------
       -- Enable_If_Packed_Array --
@@ -344,8 +347,7 @@ package body Exp_Dbug is
 
          elsif Nkind (N) = N_Identifier
            and then Scope_Contains (Scope (Entity (N)), Ent)
-           and then (Ekind (Entity (N)) = E_Constant
-                      or else Ekind (Entity (N)) = E_In_Parameter)
+           and then Ekind (Entity (N)) in E_Constant | E_In_Parameter
          then
             Prepend_String_To_Buffer (Get_Name_String (Chars (Entity (N))));
 
@@ -361,12 +363,16 @@ package body Exp_Dbug is
       -- Scope_Contains --
       --------------------
 
-      function Scope_Contains (Sc : Node_Id; Ent : Entity_Id) return Boolean is
-         Cur : Node_Id := Scope (Ent);
+      function Scope_Contains
+        (Outer : Entity_Id;
+         Inner : Entity_Id)
+         return Boolean
+      is
+         Cur : Entity_Id := Scope (Inner);
 
       begin
          while Present (Cur) loop
-            if Cur = Sc then
+            if Cur = Outer then
                return True;
             end if;
 

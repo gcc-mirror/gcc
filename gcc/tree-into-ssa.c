@@ -1071,8 +1071,6 @@ insert_phi_nodes (bitmap_head *dfs)
   unsigned i;
   var_info *info;
 
-  timevar_push (TV_TREE_INSERT_PHI_NODES);
-
   /* When the gimplifier introduces SSA names it cannot easily avoid
      situations where abnormal edges added by CFG construction break
      the use-def dominance requirement.  For this case rewrite SSA
@@ -1141,8 +1139,6 @@ insert_phi_nodes (bitmap_head *dfs)
       insert_phi_nodes_for (info->var, idf, false);
       BITMAP_FREE (idf);
     }
-
-  timevar_pop (TV_TREE_INSERT_PHI_NODES);
 }
 
 
@@ -2282,9 +2278,6 @@ rewrite_update_dom_walker::after_dom_children (basic_block bb ATTRIBUTE_UNUSED)
 static void
 rewrite_blocks (basic_block entry, enum rewrite_mode what)
 {
-  /* Rewrite all the basic blocks in the program.  */
-  timevar_push (TV_TREE_SSA_REWRITE_BLOCKS);
-
   block_defs_stack.create (10);
 
   /* Recursively walk the dominator tree rewriting each statement in
@@ -2305,8 +2298,6 @@ rewrite_blocks (basic_block entry, enum rewrite_mode what)
     }
 
   block_defs_stack.release ();
-
-  timevar_pop (TV_TREE_SSA_REWRITE_BLOCKS);
 }
 
 class mark_def_dom_walker : public dom_walker
@@ -2402,7 +2393,7 @@ const pass_data pass_data_build_ssa =
   GIMPLE_PASS, /* type */
   "ssa", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
-  TV_TREE_SSA_OTHER, /* tv_id */
+  TV_TREE_INTO_SSA, /* tv_id */
   PROP_cfg, /* properties_required */
   PROP_ssa, /* properties_provided */
   0, /* properties_destroyed */

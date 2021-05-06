@@ -34,6 +34,11 @@
 package System.Img_Util is
    pragma Pure;
 
+   Max_Real_Image_Length : constant := 5200;
+   --  If Exp is set to zero and Aft is set to Text_IO.Field'Last (i.e., 255)
+   --  then Long_Long_Float'Last generates an image whose length is slightly
+   --  less than 5200.
+
    procedure Set_Decimal_Digits
      (Digs  : in out String;
       NDigs : Natural;

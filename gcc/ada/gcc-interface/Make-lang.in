@@ -319,12 +319,13 @@ GNAT_ADA_OBJS =	\
  ada/libgnat/g-byorma.o	\
  ada/libgnat/g-dynhta.o	\
  ada/libgnat/g-graphs.o \
- ada/libgnat/g-hesora.o	\
+ ada/libgnat/g-heasor.o	\
  ada/libgnat/g-htable.o	\
  ada/libgnat/g-lists.o	\
  ada/libgnat/g-sets.o	\
  ada/libgnat/g-spchge.o	\
  ada/libgnat/g-speche.o	\
+ ada/libgnat/g-table.o	\
  ada/libgnat/g-u3spch.o	\
  ada/get_targ.o	\
  ada/ghost.o	\
@@ -380,16 +381,16 @@ GNAT_ADA_OBJS =	\
  ada/libgnat/s-crtl.o	\
  ada/libgnat/s-excdeb.o	\
  ada/libgnat/s-except.o	\
+ ada/libgnat/s-excmac.o	\
  ada/libgnat/s-exctab.o	\
- ada/libgnat/s-excmac.o \
  ada/libgnat/s-htable.o	\
  ada/libgnat/s-imenne.o	\
- ada/libgnat/s-imgenu.o	\
- ada/libgnat/s-imgint.o \
+ ada/libgnat/s-imgint.o	\
  ada/libgnat/s-mastop.o	\
  ada/libgnat/s-memory.o	\
  ada/libgnat/s-os_lib.o	\
  ada/libgnat/s-parame.o	\
+ ada/libgnat/s-pehage.o	\
  ada/libgnat/s-purexc.o	\
  ada/libgnat/s-restri.o	\
  ada/libgnat/s-secsta.o	\
@@ -585,7 +586,6 @@ GNATBIND_OBJS = \
  ada/libgnat/s-exctab.o   \
  ada/libgnat/s-htable.o   \
  ada/libgnat/s-imenne.o   \
- ada/libgnat/s-imgenu.o   \
  ada/libgnat/s-imgint.o   \
  ada/libgnat/s-mastop.o   \
  ada/libgnat/s-memory.o   \

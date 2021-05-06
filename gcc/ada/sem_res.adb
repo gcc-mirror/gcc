@@ -9095,6 +9095,16 @@ package body Sem_Res is
       --  that the context in general allows sliding, while a qualified
       --  expression forces equality of bounds.
 
+      Result_Type  : Entity_Id := Typ;
+      --  So in most cases the type of the If_Expression and of its
+      --  dependent expressions is that of the context. However, if
+      --  the expression is the index of an Indexed_Component, we must
+      --  ensure that a proper index check is applied, rather than a
+      --  range check on the index type (which might be discriminant
+      --  dependent). In this case we resolve with the base type of the
+      --  index type, and the index check is generated in the resolution
+      --  of the indexed_component above.
+
       -----------------
       -- Apply_Check --
       -----------------
@@ -9118,10 +9128,10 @@ package body Sem_Res is
          else
             Rewrite (Expr,
               Make_Qualified_Expression (Loc,
-                Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                Subtype_Mark => New_Occurrence_Of (Result_Type, Loc),
                 Expression   => Relocate_Node (Expr)));
 
-            Analyze_And_Resolve (Expr, Typ);
+            Analyze_And_Resolve (Expr, Result_Type);
          end if;
       end Apply_Check;
 
@@ -9140,6 +9150,12 @@ package body Sem_Res is
          return;
       end if;
 
+      if Nkind (Parent (N)) = N_Indexed_Component
+        or else Nkind (Parent (Parent (N))) = N_Indexed_Component
+      then
+         Result_Type := Base_Type (Typ);
+      end if;
+
       Then_Expr := Next (Condition);
 
       if No (Then_Expr) then
@@ -9149,7 +9165,7 @@ package body Sem_Res is
       Else_Expr := Next (Then_Expr);
 
       Resolve (Condition, Any_Boolean);
-      Resolve (Then_Expr, Typ);
+      Resolve (Then_Expr, Result_Type);
       Apply_Check (Then_Expr);
 
       --  If ELSE expression present, just resolve using the determined type
@@ -9163,7 +9179,7 @@ package body Sem_Res is
             Resolve (Else_Expr, Any_Real);
 
          else
-            Resolve (Else_Expr, Typ);
+            Resolve (Else_Expr, Result_Type);
          end if;
 
          Apply_Check (Else_Expr);
@@ -9187,7 +9203,7 @@ package body Sem_Res is
       elsif Root_Type (Typ) = Standard_Boolean then
          Else_Expr :=
            Convert_To (Typ, New_Occurrence_Of (Standard_True, Sloc (N)));
-         Analyze_And_Resolve (Else_Expr, Typ);
+         Analyze_And_Resolve (Else_Expr, Result_Type);
          Append_To (Expressions (N), Else_Expr);
 
       else
@@ -9195,7 +9211,7 @@ package body Sem_Res is
          Append_To (Expressions (N), Error);
       end if;
 
-      Set_Etype (N, Typ);
+      Set_Etype (N, Result_Type);
 
       if not Error_Posted (N) then
          Eval_If_Expression (N);
@@ -10526,12 +10542,9 @@ package body Sem_Res is
                PL : constant Node_Id := Prefix (Lorig);
                PH : constant Node_Id := Prefix (Horig);
             begin
-               if Is_Entity_Name (PL)
+               return Is_Entity_Name (PL)
                  and then Is_Entity_Name (PH)
-                 and then Entity (PL) = Entity (PH)
-               then
-                  return True;
-               end if;
+                 and then Entity (PL) = Entity (PH);
             end;
          end if;
 
@@ -10600,11 +10613,11 @@ package body Sem_Res is
 
       if Is_Discrete_Type (Typ) and then Expander_Active then
          if Is_OK_Static_Expression (L) then
-            Fold_Uint (L, Expr_Value (L), Is_OK_Static_Expression (L));
+            Fold_Uint (L, Expr_Value (L), Static => True);
          end if;
 
          if Is_OK_Static_Expression (H) then
-            Fold_Uint (H, Expr_Value (H), Is_OK_Static_Expression (H));
+            Fold_Uint (H, Expr_Value (H), Static => True);
          end if;
       end if;
    end Resolve_Range;
@@ -11555,14 +11568,14 @@ package body Sem_Res is
                Comp_Typ_Hi : constant Node_Id :=
                                Type_High_Bound (Component_Type (Typ));
 
-               Char_Val : Uint;
+               Char_Val : Int;
 
             begin
                if Compile_Time_Known_Value (Comp_Typ_Lo)
                  and then Compile_Time_Known_Value (Comp_Typ_Hi)
                then
                   for J in 1 .. Strlen loop
-                     Char_Val := UI_From_Int (Int (Get_String_Char (Str, J)));
+                     Char_Val := Int (Get_String_Char (Str, J));
 
                      if Char_Val < Expr_Value (Comp_Typ_Lo)
                        or else Char_Val > Expr_Value (Comp_Typ_Hi)
@@ -11587,7 +11600,7 @@ package body Sem_Res is
       --  heavy artillery for this situation, but it is hard work to avoid.
 
       declare
-         Lits : constant List_Id    := New_List;
+         Lits : constant List_Id := New_List;
          P    : Source_Ptr := Loc + 1;
          C    : Char_Code;
 

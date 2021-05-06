@@ -109,14 +109,6 @@ macro_hash_del (void *v)
   XDELETE (mhv);
 }
 
-/* For the string hash tables.  */
-
-static int
-string_hash_eq (const void *y1, const void *y2)
-{
-  return strcmp ((const char *) y1, (const char *) y2) == 0;
-}
-
 /* A macro definition.  */
 
 static void
@@ -1374,11 +1366,11 @@ go_finish (const char *filename)
   real_debug_hooks->finish (filename);
 
   container.type_hash = htab_create (100, htab_hash_string,
-                                     string_hash_eq, NULL);
+				     htab_eq_string, NULL);
   container.invalid_hash = htab_create (10, htab_hash_string,
-					string_hash_eq, NULL);
+					htab_eq_string, NULL);
   container.keyword_hash = htab_create (50, htab_hash_string,
-                                        string_hash_eq, NULL);
+					htab_eq_string, NULL);
   obstack_init (&container.type_obstack);
 
   keyword_hash_init (&container);

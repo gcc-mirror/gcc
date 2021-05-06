@@ -165,7 +165,7 @@ package body System.Tasking.Rendezvous is
 
          --  Should never get here ???
 
-         pragma Assert (False);
+         pragma Assert (Standard.False);
          raise Standard'Abort_Signal;
       end if;
 
@@ -236,7 +236,7 @@ package body System.Tasking.Rendezvous is
 
          --  Should never get here ???
 
-         pragma Assert (False);
+         pragma Assert (Standard.False);
          raise Standard'Abort_Signal;
       end if;
 
@@ -646,7 +646,7 @@ package body System.Tasking.Rendezvous is
 
          --  Should never get here ???
 
-         pragma Assert (False);
+         pragma Assert (Standard.False);
          raise Standard'Abort_Signal;
       end if;
 
@@ -1251,7 +1251,7 @@ package body System.Tasking.Rendezvous is
 
          --  Should never get here ???
 
-         pragma Assert (False);
+         pragma Assert (Standard.False);
          raise Standard'Abort_Signal;
       end if;
 
@@ -1400,7 +1400,7 @@ package body System.Tasking.Rendezvous is
 
             --  Should never get here
 
-            pragma Assert (False);
+            pragma Assert (Standard.False);
             null;
       end case;
 

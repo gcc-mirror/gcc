@@ -3133,7 +3133,10 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
   (FUNCTION_DECL_CHECK (NODE)->function_decl.returns_twice_flag)
 
 /* Nonzero in a FUNCTION_DECL means this function should be treated
-   as "pure" function (like const function, but may read global memory).  */
+   as "pure" function (like const function, but may read global memory).
+   Note that being pure or const for a function is orthogonal to being
+   nothrow, i.e. it is valid to have DECL_PURE_P set and TREE_NOTHROW
+   cleared.  */
 #define DECL_PURE_P(NODE) (FUNCTION_DECL_CHECK (NODE)->function_decl.pure_flag)
 
 /* Nonzero only if one of TREE_READONLY or DECL_PURE_P is nonzero AND

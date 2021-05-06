@@ -6125,6 +6125,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      bool add_clobber;
 		      add_clobber = fsym && fsym->attr.intent == INTENT_OUT
 			&& !fsym->attr.allocatable && !fsym->attr.pointer
+			&& e->symtree && e->symtree->n.sym
 			&& !e->symtree->n.sym->attr.dimension
 			&& !e->symtree->n.sym->attr.pointer
 			&& !e->symtree->n.sym->attr.allocatable
@@ -6416,6 +6417,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
 				fsym ? fsym->attr.intent : INTENT_INOUT,
 				fsym && fsym->attr.pointer);
+
+	      else if (e->ts.type == BT_CLASS && CLASS_DATA (e)->as
+		       && CLASS_DATA (e)->as->type == AS_ASSUMED_SIZE
+		       && nodesc_arg && fsym->ts.type == BT_DERIVED)
+		/* An assumed size class actual argument being passed to
+		   a 'no descriptor' formal argument just requires the
+		   data pointer to be passed. For class dummy arguments
+		   this is stored in the symbol backend decl..  */
+		parmse.expr = e->symtree->n.sym->backend_decl;
 
 	      else if (gfc_is_class_array_ref (e, NULL)
 		       && fsym && fsym->ts.type == BT_DERIVED)
