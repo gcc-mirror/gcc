@@ -44,6 +44,10 @@
 #define DIRS_EQ(A, B) (!filename_cmp ((A)->canonical_name, (B)->canonical_name))
 #endif
 
+#ifndef HOST_STAT_FOR_64BIT_INODES
+#define HOST_STAT_FOR_64BIT_INODES stat
+#endif
+
 static const char dir_separator_str[] = { DIR_SEPARATOR, 0 };
 
 static void add_env_var_paths (const char *, incpath_kind);
@@ -246,7 +250,7 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 		   int verbose)
 {
   struct cpp_dir **pcur, *tmp, *cur;
-  struct stat st;
+  struct HOST_STAT_FOR_64BIT_INODES st;
 
   for (pcur = &head; *pcur; )
     {
@@ -254,7 +258,7 @@ remove_duplicates (cpp_reader *pfile, struct cpp_dir *head,
 
       cur = *pcur;
 
-      if (stat (cur->name, &st))
+      if (HOST_STAT_FOR_64BIT_INODES (cur->name, &st))
 	{
 	  /* Dirs that don't exist or have denied permissions are 
 	     silently ignored, unless verbose.  */
