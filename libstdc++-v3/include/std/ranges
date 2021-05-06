@@ -1182,9 +1182,8 @@ namespace views::__adaptor
 	    _M_parent(__parent)
 	{ }
 
-	constexpr _Vp_iter
-	base() const &
-	  requires copyable<_Vp_iter>
+	constexpr const _Vp_iter&
+	base() const & noexcept
 	{ return _M_current; }
 
 	constexpr _Vp_iter
@@ -1450,9 +1449,8 @@ namespace views::__adaptor
 	    : _M_current(std::move(__i._M_current)), _M_parent(__i._M_parent)
 	  { }
 
-	  constexpr _Base_iter
-	  base() const &
-	    requires copyable<_Base_iter>
+	  constexpr const _Base_iter&
+	  base() const & noexcept
 	  { return _M_current; }
 
 	  constexpr _Base_iter
@@ -3386,8 +3384,8 @@ namespace views::__adaptor
 	: _M_base(std::move(base))
       { }
 
-      constexpr _Vp
-      base() const& requires copy_constructible<_Vp>
+      constexpr const _Vp&
+      base() const & noexcept
       { return _M_base; }
 
       constexpr _Vp
