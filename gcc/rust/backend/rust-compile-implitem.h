@@ -112,15 +112,17 @@ public:
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
-    std::string fn_identifier
-      = self->get_name () + "_" + function.get_function_name ();
 
     // if its the main fn or pub visibility mark its as DECL_PUBLIC
     // please see https://github.com/Rust-GCC/gccrs/pull/137
     if (function.has_visibility ())
       flags |= Backend::function_is_visible;
 
-    std::string asm_name = fn_identifier;
+    std::string fn_identifier
+      = self->get_name () + "_" + function.get_function_name ();
+    std::string asm_name
+      = ctx->mangle_impl_item (self, function.get_function_name ());
+
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, function.get_locus ());
@@ -291,15 +293,17 @@ public:
     ::Btype *compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
 
     unsigned int flags = 0;
-    std::string fn_identifier
-      = self->get_name () + "_" + method.get_method_name ();
 
     // if its the main fn or pub visibility mark its as DECL_PUBLIC
     // please see https://github.com/Rust-GCC/gccrs/pull/137
     if (method.has_visibility ())
       flags |= Backend::function_is_visible;
 
-    std::string asm_name = fn_identifier;
+    std::string fn_identifier
+      = self->get_name () + "_" + method.get_method_name ();
+    std::string asm_name
+      = ctx->mangle_impl_item (self, method.get_method_name ());
+
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, method.get_locus ());
