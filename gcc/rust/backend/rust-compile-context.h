@@ -66,7 +66,7 @@ public:
   bool lookup_compiled_types (HirId id, ::Btype **type,
 			      const TyTy::BaseType *ref = nullptr)
   {
-    if (ref != nullptr && ref->has_subsititions_defined ())
+    if (ref != nullptr)
       {
 	for (auto it = mono.begin (); it != mono.end (); it++)
 	  {
@@ -393,7 +393,8 @@ public:
 	return;
       }
 
-    bool ok = ctx->lookup_compiled_types (type.get_ty_ref (), &translated);
+    bool ok
+      = ctx->lookup_compiled_types (type.get_ty_ref (), &translated, &type);
     if (ok)
       return;
 
@@ -402,8 +403,7 @@ public:
     for (size_t i = 0; i < type.num_fields (); i++)
       {
 	TyTy::BaseType *field = type.get_field (i);
-	Btype *compiled_field_ty
-	  = TyTyCompile::compile (ctx->get_backend (), field);
+	Btype *compiled_field_ty = TyTyResolveCompile::compile (ctx, field);
 
 	Backend::Btyped_identifier f (std::to_string (i), compiled_field_ty,
 				      ctx->get_mappings ()->lookup_location (
@@ -418,7 +418,7 @@ public:
 					   type.get_ty_ref ()));
 
     ctx->push_type (named_struct);
-    ctx->insert_compiled_type (type.get_ty_ref (), named_struct);
+    ctx->insert_compiled_type (type.get_ty_ref (), named_struct, &type);
     translated = named_struct;
   }
 
