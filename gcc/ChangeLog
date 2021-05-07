@@ -1,3 +1,117 @@
+2021-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-sra.c (ipa_sra_dump_all_summaries): Dump edge summaries even
+	when there is no function summary.
+	(ipa_sra_summarize_function): produce edge summaries even when
+	bailing out early.
+
+2021-05-06  Tom Tromey  <tom@tromey.com>
+
+	* godump.c (string_hash_eq): Remove.
+	(go_finish): Use htab_eq_string.
+
+2021-05-06  Tom Tromey  <tom@tromey.com>
+
+	* gengtype-state.c (read_state): Use htab_eq_string.
+	(string_eq): Remove.
+
+2021-05-06  Tom Tromey  <tom@tromey.com>
+
+	* gensupport.c (htab_eq_string): Remove.
+
+2021-05-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR ipa/97937
+	* debug.h (gcc_debug_hooks): Add set_ignored_loc function pointer.
+	* dwarf2out.h (dw_fde_node::ignored_debug): New data item.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Add dummy
+	set_ignored_loc callbacks.
+	* debug.c (do_nothing_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* dwarf2out.c (text_section_used, cold_text_section_used): Remove.
+	(in_text_section_p, last_text_label, last_cold_label,
+	switch_text_ranges, switch_cold_ranges): New data items.
+	(dwarf2out_note_section_used): Remove.
+	(dwarf2out_begin_prologue): Set fde->ignored_debug and
+	in_text_section_p.
+	(mark_ignored_debug_section): New helper function.
+	(dwarf2out_end_epilogue, dwarf2out_switch_text_section): Call
+	mark_ignored_debug_section.
+	(dwarf2_debug_hooks): Use dwarf2out_set_ignored_loc.
+	(dwarf2_lineno_debug_hooks): Use dummy for set_ignored_loc.
+	(size_of_aranges): Adjust formula for multi-part text ranges size.
+	(output_aranges): Output multi-part text ranges.
+	(dwarf2out_set_ignored_loc): New callback function.
+	(dwarf2out_finish): Output multi-part text ranges.
+	(dwarf2out_c_finalize): Clear new data items.
+	* final.c (final_start_function_1): Call set_ignored_loc callback.
+	(final_scan_insn_1): Likewise.
+	* ggc-page.c (gt_ggc_mx): New helper function.
+	* stringpool.c (gt_pch_nx): Likewise.
+
+2021-05-06  Richard Biener  <rguenther@suse.de>
+
+	* timevar.def (TV_TREE_INSERT_PHI_NODES): Remove.
+	(TV_TREE_SSA_REWRITE_BLOCKS): Likewise.
+	(TV_TREE_INTO_SSA): New.
+	* tree-into-ssa.c (insert_phi_nodes): Do not account separately.
+	(rewrite_blocks): Likewise.
+	(pass_data_build_ssa): Account to TV_TREE_INTO_SSA.
+
+2021-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssa-phiopt.c (value_replacement, minmax_replacement,
+	abs_replacement, xor_replacement,
+	cond_removal_in_popcount_clz_ctz_pattern,
+	replace_phi_edge_with_variable): Change type of phi argument from
+	gimple * to gphi *.
+
+2021-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-split.c (split_loop): Delay updating SSA form.
+	Output an opt-info message.
+	(do_split_loop_on_cond): Likewise.
+	(tree_ssa_split_loops): Update SSA form here.
+
+2021-05-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (tree_function_versioning): Fix DECL_BY_REFERENCE
+	return variable removal.
+
+2021-05-06  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* config/s390/s390-builtins.def (O_M5, O1_M5, ...): Remove unused macros.
+	(s390_vec_permi_s64, s390_vec_permi_b64, s390_vec_permi_u64)
+	(s390_vec_permi_dbl, s390_vpdi): Use the O3_U2 type for the immediate
+	operand.
+	* config/s390/s390.c (s390_const_operand_ok): Remove unused
+	values.
+
+2021-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	* tree-ssa-phiopt.c (tree_ssa_phiopt_worker): Call
+	spaceship_replacement.
+	(cond_only_block_p, spaceship_replacement): New functions.
+
+2021-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100373
+	* tree-emutls.c (gen_emutls_addr): Pass in whether we're
+	dealing with a debug use and only query existing addresses
+	if so.
+	(lower_emutls_1): Avoid splitting out addresses for debug
+	stmts, reset the debug stmt when we fail to find existing
+	lowered addresses.
+	(lower_emutls_phi_arg): Set wi.stmt.
+
+2021-05-06  Christoph Muellner  <cmuellner@gcc.gnu.org>
+
+	PR target/100266
+	* config/riscv/riscv.c (riscv_block_move_loop): Use cbranch helper.
+	* config/riscv/riscv.md (cbranch<mode>4): Generate helpers.
+	(stack_protect_test): Use cbranch helper.
+
 2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/100402

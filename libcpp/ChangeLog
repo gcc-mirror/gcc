@@ -1,3 +1,12 @@
+2021-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c++/83873
+	PR preprocessor/97604
+	* lex.c (lex_number): Reject adjacent digit separators here.  Do
+	not allow digit separators before '.' or an exponent with sign.
+	* expr.c (cpp_classify_number): Do not check for adjacent digit
+	separators here.
+
 2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/99703

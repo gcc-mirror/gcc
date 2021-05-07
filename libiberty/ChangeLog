@@ -1,3 +1,7 @@
+2021-05-06  Tom Tromey  <tom@tromey.com>
+
+	* hashtab.c (htab_eq_string): New function.
+
 2021-05-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Make test for variables more robust.

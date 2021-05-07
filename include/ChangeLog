@@ -1,3 +1,7 @@
+2021-05-06  Tom Tromey  <tom@tromey.com>
+
+	* hashtab.h (htab_eq_string): Declare.
+
 2021-03-31  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/88115
