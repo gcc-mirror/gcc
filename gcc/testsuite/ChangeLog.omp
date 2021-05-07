@@ -1,3 +1,8 @@
+2021-05-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/firstprivate-mappings-1.c: Fix up for C,
+	non-LP64.
+
 2021-05-05  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* c-c++-common/gomp/target-implicit-map-1.c: New test.
