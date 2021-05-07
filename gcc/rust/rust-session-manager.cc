@@ -70,6 +70,10 @@ const char *kHIRDumpFile = "gccrs.hir.dump";
 const char *kHIRTypeResolutionDumpFile = "gccrs.type-resolution.dump";
 const char *kTargetOptionsDumpFile = "gccrs.target-options.dump";
 
+// FIME in the imports/visibility milestone - this needs to be command line
+// option
+const std::string kDefaultCrateName = "TestCrate";
+
 // Implicitly enable a target_feature (and recursively enable dependencies).
 void
 Session::implicitly_enable_feature (std::string feature_name)
@@ -445,6 +449,10 @@ Session::enable_dump (std::string arg)
 void
 Session::parse_files (int num_files, const char **files)
 {
+  auto mappings = Analysis::Mappings::get ();
+  CrateNum crate_num = mappings->setup_crate_mappings (kDefaultCrateName);
+  mappings->set_current_crate (crate_num);
+
   for (int i = 0; i < num_files; i++)
     {
       printf ("Attempting to parse file: %s\n", files[i]);

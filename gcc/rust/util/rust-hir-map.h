@@ -83,7 +83,26 @@ public:
 
   CrateNum get_next_crate_num ();
   void set_current_crate (CrateNum crateNum);
-  CrateNum get_current_crate ();
+  CrateNum get_current_crate () const;
+  CrateNum setup_crate_mappings (std::string crate_name);
+
+  bool get_crate_name (CrateNum crate_num, std::string &name) const
+  {
+    auto it = crate_names.find (crate_num);
+    if (it == crate_names.end ())
+      return false;
+
+    name.assign (it->second);
+    return true;
+  }
+
+  std::string get_current_crate_name () const
+  {
+    std::string name;
+    bool ok = get_crate_name (get_current_crate (), name);
+    rust_assert (ok);
+    return name;
+  }
 
   NodeId get_next_node_id () { return get_next_node_id (get_current_crate ()); }
   NodeId get_next_node_id (CrateNum crateNum);
@@ -212,6 +231,9 @@ private:
 
   // all hirid nodes
   std::map<CrateNum, std::set<HirId> > hirNodesWithinCrate;
+
+  // crate names
+  std::map<CrateNum, std::string> crate_names;
 };
 
 } // namespace Analysis

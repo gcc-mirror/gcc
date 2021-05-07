@@ -107,7 +107,7 @@ Mappings::get ()
 {
   static std::unique_ptr<Mappings> instance;
   if (!instance)
-    instance = std::move (std::unique_ptr<Mappings> (new Mappings ()));
+    instance = std::unique_ptr<Mappings> (new Mappings ());
 
   return instance.get ();
 }
@@ -125,18 +125,23 @@ Mappings::set_current_crate (CrateNum crateNum)
 }
 
 CrateNum
-Mappings::get_current_crate ()
+Mappings::setup_crate_mappings (std::string crate_name)
 {
-  // HACK
-  if (hirIdIter.find (currentCrateNum) == hirIdIter.end ())
-    {
-      hirIdIter[currentCrateNum] = UNKNOWN_HIRID;
-      nodeIdIter[currentCrateNum] = UNKNOWN_NODEID;
-      localIdIter[currentCrateNum] = UNKNOWN_LOCAL_DEFID;
-      nodeIdToHirMappings[currentCrateNum] = {};
-      locations[currentCrateNum] = {};
-    }
+  CrateNum crate_num = get_next_crate_num ();
 
+  hirIdIter[crate_num] = UNKNOWN_HIRID;
+  nodeIdIter[crate_num] = UNKNOWN_NODEID;
+  localIdIter[crate_num] = UNKNOWN_LOCAL_DEFID;
+  nodeIdToHirMappings[crate_num] = {};
+  locations[crate_num] = {};
+  crate_names[crate_num] = crate_name;
+
+  return crate_num;
+}
+
+CrateNum
+Mappings::get_current_crate () const
+{
   return currentCrateNum;
 }
 
