@@ -361,7 +361,7 @@ gcn_scalar_mode_supported_p (scalar_mode mode)
 	  || mode == HImode /* || mode == HFmode  */
 	  || mode == SImode || mode == SFmode
 	  || mode == DImode || mode == DFmode
-	  || mode == TImode);
+	  /*|| mode == TImode*/); /* TI is used for back-end purposes only.  */
 }
 
 /* Implement TARGET_CLASS_MAX_NREGS.
