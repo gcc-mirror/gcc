@@ -23,11 +23,12 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;   use Atree;
-with Debug;   use Debug;
-with Sinfo;   use Sinfo;
-with Sinput;  use Sinput;
-with Output;  use Output;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinput;         use Sinput;
+with Output;         use Output;
 
 package body Debug_A is
 

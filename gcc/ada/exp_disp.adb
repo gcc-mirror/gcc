@@ -23,48 +23,52 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Expander; use Expander;
-with Exp_Atag; use Exp_Atag;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_CG;   use Exp_CG;
-with Exp_Dbug; use Exp_Dbug;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Itypes;   use Itypes;
-with Layout;   use Layout;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with SCIL_LL;  use SCIL_LL;
-with Tbuild;   use Tbuild;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Exp_Atag;       use Exp_Atag;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_CG;         use Exp_CG;
+with Exp_Dbug;       use Exp_Dbug;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Itypes;         use Itypes;
+with Layout;         use Layout;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with SCIL_LL;        use SCIL_LL;
+with Tbuild;         use Tbuild;
 
 package body Exp_Disp is
 
@@ -2243,7 +2247,7 @@ package body Exp_Disp is
       --  with GNATcoverage, as that tool relies on it to identify
       --  thunks and exclude them from source coverage analysis.
 
-      Set_Ekind (Thunk_Id, Ekind (Prim));
+      Mutate_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
       Set_Needs_Debug_Info (Thunk_Id, Needs_Debug_Info (Target));
@@ -4093,7 +4097,10 @@ package body Exp_Disp is
             Count := Count + 1;
          end loop;
 
-         pragma Assert (Related_Type (Node (Elmt)) = Typ);
+         --  Related_Type (Node (Elmt)) should be equal to Typ here, but we
+         --  can't assert that, because it is sometimes false in illegal
+         --  programs. We can't check Serious_Errors_Detected, because the
+         --  errors have not yet been detected.
 
          Get_External_Name (Node (Elmt));
          Set_Interface_Name (DT,
@@ -4143,18 +4150,18 @@ package body Exp_Disp is
          --  dispatch tables.
 
          if not Building_Static_DT (Typ) then
-            Set_Ekind (Predef_Prims, E_Variable);
-            Set_Ekind (Iface_DT, E_Variable);
+            Mutate_Ekind (Predef_Prims, E_Variable);
+            Mutate_Ekind (Iface_DT, E_Variable);
 
          --  Statically allocated dispatch tables and related entities are
          --  constants.
 
          else
-            Set_Ekind (Predef_Prims, E_Constant);
+            Mutate_Ekind (Predef_Prims, E_Constant);
             Set_Is_Statically_Allocated (Predef_Prims);
             Set_Is_True_Constant (Predef_Prims);
 
-            Set_Ekind (Iface_DT, E_Constant);
+            Mutate_Ekind (Iface_DT, E_Constant);
             Set_Is_Statically_Allocated (Iface_DT);
             Set_Is_True_Constant (Iface_DT);
          end if;
@@ -4694,8 +4701,8 @@ package body Exp_Disp is
 
       Discard_Names : constant Boolean :=
                         Present (No_Tagged_Streams_Pragma (Typ))
-                          and then (Global_Discard_Names
-                                     or else Einfo.Discard_Names (Typ));
+                          and then
+        (Global_Discard_Names or else Einfo.Entities.Discard_Names (Typ));
 
       --  The following name entries are used by Make_DT to generate a number
       --  of entities related to a tagged type. These entities may be generated
@@ -4891,7 +4898,7 @@ package body Exp_Disp is
             --  objects by making them volatile.
 
             Set_Is_Imported      (Dummy_Object);
-            Set_Ekind            (Dummy_Object, E_Constant);
+            Mutate_Ekind         (Dummy_Object, E_Constant);
             Set_Is_True_Constant (Dummy_Object);
             Set_Related_Type     (Dummy_Object, Typ);
 
@@ -6891,7 +6898,7 @@ package body Exp_Disp is
 
       begin
          Set_Is_Imported  (DT);
-         Set_Ekind        (DT, E_Constant);
+         Mutate_Ekind     (DT, E_Constant);
          Set_Related_Type (DT, Typ);
 
          --  The scope must be set now to call Get_External_Name
@@ -7002,7 +7009,7 @@ package body Exp_Disp is
 
       --  Minimum decoration
 
-      Set_Ekind        (DT_Ptr, E_Variable);
+      Mutate_Ekind     (DT_Ptr, E_Variable);
       Set_Related_Type (DT_Ptr, Typ);
 
       --  Notify back end that the types are associated with a dispatch table
@@ -7156,7 +7163,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'P'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Interface_Tag));
-               Set_Ekind (Iface_DT_Ptr, E_Variable);
+               Mutate_Ekind (Iface_DT_Ptr, E_Variable);
                Set_Is_Tag (Iface_DT_Ptr);
 
                Set_Has_Thunks (Iface_DT_Ptr);
@@ -7205,7 +7212,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'P'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Interface_Tag));
-               Set_Ekind (Iface_DT_Ptr, E_Constant);
+               Mutate_Ekind (Iface_DT_Ptr, E_Constant);
                Set_Is_Tag (Iface_DT_Ptr);
                Set_Has_Thunks (Iface_DT_Ptr);
                Set_Is_Statically_Allocated (Iface_DT_Ptr,
@@ -7243,7 +7250,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'Y'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Address));
-               Set_Ekind (Iface_DT_Ptr, E_Constant);
+               Mutate_Ekind (Iface_DT_Ptr, E_Constant);
                Set_Is_Tag (Iface_DT_Ptr);
                Set_Has_Thunks (Iface_DT_Ptr);
                Set_Is_Statically_Allocated (Iface_DT_Ptr,
@@ -7260,7 +7267,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'D'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Interface_Tag));
-               Set_Ekind (Iface_DT_Ptr, E_Constant);
+               Mutate_Ekind (Iface_DT_Ptr, E_Constant);
                Set_Is_Tag (Iface_DT_Ptr);
                Set_Is_Statically_Allocated (Iface_DT_Ptr,
                  Is_Library_Level_Tagged_Type (Typ));
@@ -7275,7 +7282,7 @@ package body Exp_Disp is
                  Make_Defining_Identifier (Loc,
                    Chars => New_External_Name (Typ_Name, 'Z'));
                Set_Etype (Iface_DT_Ptr, RTE (RE_Address));
-               Set_Ekind (Iface_DT_Ptr, E_Constant);
+               Mutate_Ekind (Iface_DT_Ptr, E_Constant);
                Set_Is_Tag (Iface_DT_Ptr);
                Set_Is_Statically_Allocated (Iface_DT_Ptr,
                  Is_Library_Level_Tagged_Type (Typ));
@@ -7385,9 +7392,9 @@ package body Exp_Disp is
       end if;
 
       if Is_CPP_Class (Root_Type (Typ)) then
-         Set_Ekind (DT_Ptr, E_Variable);
+         Mutate_Ekind (DT_Ptr, E_Variable);
       else
-         Set_Ekind (DT_Ptr, E_Constant);
+         Mutate_Ekind (DT_Ptr, E_Constant);
       end if;
 
       Set_Is_Tag       (DT_Ptr);

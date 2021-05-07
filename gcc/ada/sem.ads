@@ -202,7 +202,6 @@
 --  called Preanalyze_And_Resolve and is in Sem_Res.
 
 with Alloc;
-with Einfo;  use Einfo;
 with Opt;    use Opt;
 with Table;
 with Types;  use Types;

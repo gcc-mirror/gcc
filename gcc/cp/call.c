@@ -12177,7 +12177,7 @@ can_convert (tree to, tree from, tsubst_flags_t complain)
   /* implicit_conversion only considers user-defined conversions
      if it has an expression for the call argument list.  */
   if (CLASS_TYPE_P (from) || CLASS_TYPE_P (to))
-    arg = build1 (CAST_EXPR, from, NULL_TREE);
+    arg = build_stub_object (from);
   return can_convert_arg (to, from, arg, LOOKUP_IMPLICIT, complain);
 }
 

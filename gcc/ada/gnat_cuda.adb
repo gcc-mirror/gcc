@@ -25,20 +25,20 @@
 
 --  This package defines CUDA-specific datastructures and functions.
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Elists;   use Elists;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Rtsfind;  use Rtsfind;
-with Sinfo;    use Sinfo;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Sem;      use Sem;
-with Sem_Util; use Sem_Util;
-with Snames;   use Snames;
+with Debug;          use Debug;
+with Elists;         use Elists;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Rtsfind;        use Rtsfind;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Sem;            use Sem;
+with Sem_Util;       use Sem_Util;
+with Snames;         use Snames;
 
 with GNAT.HTable;
 

@@ -62,7 +62,7 @@ package body Ada.Strings.Text_Output.Basic_Files is
    is
    begin
       return Create_From_FD
-        (OS.Create_File (Name, Fmode => OS.Text),
+        (OS.Create_File (Name, Fmode => OS.Binary),
          Indent_Amount, Chunk_Length);
    end Create_File;
 
@@ -73,7 +73,7 @@ package body Ada.Strings.Text_Output.Basic_Files is
    is
    begin
       return Create_From_FD
-        (OS.Create_New_File (Name, Fmode => OS.Text),
+        (OS.Create_New_File (Name, Fmode => OS.Binary),
          Indent_Amount, Chunk_Length);
    end Create_New_File;
 

@@ -23,30 +23,34 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Exp_Util; use Exp_Util;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Exp_Util;       use Exp_Util;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
 with Opt;
-with Output;   use Output;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Mech; use Sem_Mech;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Output;         use Output;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Exp_Unst is
 
@@ -187,7 +191,7 @@ package body Exp_Unst is
 
    begin
       Typ := Make_Temporary (Loc, 'S');
-      Set_Ekind (Typ, E_General_Access_Type);
+      Mutate_Ekind (Typ, E_General_Access_Type);
       Set_Etype (Typ, Typ);
       Set_Scope (Typ, Scop);
       Set_Directly_Designated_Type (Typ, Etype (E));
@@ -1788,7 +1792,7 @@ package body Exp_Unst is
                      --  Decorate the new formal entity
 
                      Set_Scope                (Form, STJ.Ent);
-                     Set_Ekind                (Form, E_In_Parameter);
+                     Mutate_Ekind             (Form, E_In_Parameter);
                      Set_Etype                (Form, STJE.ARECnPT);
                      Set_Mechanism            (Form, By_Copy);
                      Set_Never_Set_In_Source  (Form, True);

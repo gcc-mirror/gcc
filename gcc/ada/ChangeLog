@@ -1,3 +1,199 @@
+2021-05-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Build_Class_Wide_Check): Extending the
+	functionality of this routine to climb to the ancestors
+	searching for the enclosing overridden dispatching primitive
+	that has a class-wide precondition to generate the check.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch3.adb (Constraint_Index): Remove redundant problematic
+	analysis.
+
+2021-05-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_unst.adb (Note_Uplevel_Bound): Exclude
+	E_Enumeration_Literal.
+
+2021-05-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch4.adb (Expand_N_If_Expression):
+	Apply_Arithmetic_Overflow_Check will not deal with
+	Then/Else_Actions so skip minimizing overflow checks if any
+	actions are present.
+
+2021-05-06  Boris Yakobowski  <yakobowski@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Simplify logic.
+
+2021-05-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/i-c.ads (bool): New type.
+	* libgnat/i-cexten.ads, libgnat/i-cexten__128.ads (bool): Now
+	a subtype of Interfaces.C.bool.
+	* libgnarl/s-interr__vxworks.adb (Interrupt_Manager): Qualify
+	False.
+	* libgnarl/s-interr.adb, libgnarl/s-interr__hwint.adb,
+	libgnarl/s-tasini.adb, libgnarl/s-tasren.adb,
+	libgnarl/s-tassta.adb, libgnarl/s-tpobmu.adb,
+	libgnarl/s-tpobop.adb, libgnarl/s-tpopmo.adb: Replace
+	Assert (False) by Assert (Standard.False).
+
+2021-05-06  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* make.adb (Compute_Executable): Document parameter.
+
+2021-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-fatgen.adb (Scaling): Use single handling of
+	underflow.  Add pragma Annotate.
+
+2021-05-06  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_eval.adb (Is_OK_Static_Subtype): Call Is_Static_Subtype,
+	remove redundant checks.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_res.adb (First_Last_Ref): Simplify "if [condition] then
+	return True" in "return [condition]".
+	(Resolve_Range): Remove calls appearing in IF condition from the
+	THEN statements.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_case.adb (Missing_Choice): Fix typo in comment.
+	(Lit_Of): Simplify with Make_Character_Literal.
+	(Check_Choices): Remove extra spaces in parameter
+	specifications.
+	* sem_case.ads: Same reformatting.
+
+2021-05-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): If the expression in an
+	Others_Clause has not been analyzed because previous analysis of
+	the enclosing aggregate showed the clause to be ineffective i.e.
+	cover a null range, analyze it now to detect a possible type
+	illegality.
+
+2021-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-fatgen.adb (Scaling): Fix off-by-one bug for underflow.
+
+2021-05-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch6.adb (Is_Inline_Pragma): Protect against N not being a
+	list member in both branches.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/a-cofove.adb (Insert_Space): Remove hardcoded pragma
+	Warnings.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch4.adb (Analyze_Selected_Component): Remove explicit call
+	to Set_Raises_Constraint_Error on statically missing component.
+	* sem_eval.adb (Eval_Arithmetic_Op): Likewise for static
+	divisions by integer and real zeros.
+	* sem_util.adb (Apply_Compile_Time_Constraint_Error): Call
+	Set_Raises_Constraint_Error before exiting early in GNATprove
+	mode.
+
+2021-05-06  Justin Squirek  <squirek@adacore.com>
+
+	* checks.adb (Make_Discriminant_Constraint_Check): Add check for
+	null when the type being converted is an access type.
+
+2021-05-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_pakd.adb (Expand_Packed_Eq): Fix handling of PATs.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* osint.adb (Read_Library_Info_From_Full): Cleanup unused
+	initial value.
+
+2021-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_characteristics.rst (3.5.7):
+	Mention the IEEE standard explicitly.  Use current format names.
+	Document assumed rounding mode and new features of I/O support.
+	* gnat_rm.texi: Regenerate.
+
+2021-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* init.c (__gnat_init_float): Use full version on Linux too.
+
+2021-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/s-fatgen.adb (Valid): Do a bit comparison with 0.0
+	when denormalized numbers are not supported.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Check_Enum_Image): Reword comment; add
+	Check_Enumeration_Maps parameter.  Now this routine combines
+	both referencing enumeration literals and checking restriction
+	No_Enumeration_Maps, if required.
+	(Analyze_Attribute): Remove duplicated code and instead call
+	Check_Enum_Image.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Analyze_Image_Attribute): Remove redundant
+	condition; add a missing header box.
+
+2021-05-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: Add
+	mention of underscore and fix grammar error in doc for -gnatd.
+	* gnat_ugn.texi: Regenerate.
+
+2021-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (GNATRTL_NONTASKING_OBJS): Add s-exponr, s-exnflt
+	and s-exnlfl.
+	* exp_ch4.adb (Expand_N_Op_Expon): Use RE_Exn_Float for Short_Float.
+	* rtsfind.ads (RTU_Id): Add System_Exn_Flt and System_Exn_LFlt.
+	(RE_Id): Adjust entries for RE_Exn_Float and RE_Exn_Long_Float.
+	(RE_Unit_Table): Likewise.
+	* libgnat/s-exnflt.ads: New file.
+	* libgnat/s-exnlfl.ads: Likewise.
+	* libgnat/s-exnllf.ads: Change to mere instantiation.
+	* libgnat/s-exnllf.adb: Move implementation to...
+	* libgnat/s-exponr.ads: New generic unit.
+	* libgnat/s-exponr.adb: ...here and also make it generic.
+	(Expon): Do the computation in double precision internally.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-writ.adb, osint.adb, osint.ads: Cleanup.
+
+2021-05-06  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Remove excessive
+	condition.
+	(Expand_N_Object_Declaration): Likewise.
+	(Build_Equivalent_Aggregate): Likewise.
+	(Initialization_Warning): Likewise; change another excessive
+	condition into assertion.
+	* freeze.adb (Freeze_Entity): Remove excessive condition.
+
+2021-05-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_If_Expression): If the context of the
+	expression is an indexed_component, resolve the expression and
+	its dependent_expressions with the base type of the index, to
+	ensure that an index check is generated when resolving the
+	enclosing indexxed_component, and avoid an improper use of
+	discriminants out of scope, when the index type is
+	discriminant-dependent.
+
+2021-05-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* einfo.ads, exp_prag.adb, exp_util.adb: Fix typos.
+
 2021-05-05  Piotr Trojanek  <trojanek@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference): Fix expansion of

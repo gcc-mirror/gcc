@@ -78,7 +78,7 @@ package body Ada.Strings.Text_Output.Buffers is
       S.Cur_Chunk.Next :=
         Text_Output.Chunk_Access (Chunk_Access'(new Chunk (S.Chunk_Length)));
       S.Cur_Chunk := S.Cur_Chunk.Next;
-      S.Num_Extra_Chunks := @ + 1;
+      S.Num_Extra_Chunks := S.Num_Extra_Chunks + 1;
       S.Last := 0;
    end Full_Method;
 

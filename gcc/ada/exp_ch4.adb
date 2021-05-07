@@ -23,55 +23,59 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Aggr; use Exp_Aggr;
-with Exp_Atag; use Exp_Atag;
-with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch9;  use Exp_Ch9;
-with Exp_Disp; use Exp_Disp;
-with Exp_Fixd; use Exp_Fixd;
-with Exp_Intr; use Exp_Intr;
-with Exp_Pakd; use Exp_Pakd;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Inline;   use Inline;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Par_SCO;  use Par_SCO;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with SCIL_LL;  use SCIL_LL;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
-with Validsw;  use Validsw;
-with Warnsw;   use Warnsw;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Aggr;       use Exp_Aggr;
+with Exp_Atag;       use Exp_Atag;
+with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch9;        use Exp_Ch9;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Fixd;       use Exp_Fixd;
+with Exp_Intr;       use Exp_Intr;
+with Exp_Pakd;       use Exp_Pakd;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Inline;         use Inline;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Par_SCO;        use Par_SCO;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with SCIL_LL;        use SCIL_LL;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
+with Validsw;        use Validsw;
+with Warnsw;         use Warnsw;
 
 package body Exp_Ch4 is
 
@@ -175,17 +179,6 @@ package body Exp_Ch4 is
    function Get_Size_For_Range (Lo, Hi : Uint) return Uint;
    --  Return the size of a small signed integer type covering Lo .. Hi, the
    --  main goal being to return a size lower than that of standard types.
-
-   function Has_Inferable_Discriminants (N : Node_Id) return Boolean;
-   --  Ada 2005 (AI-216): A view of an Unchecked_Union object has inferable
-   --  discriminants if it has a constrained nominal type, unless the object
-   --  is a component of an enclosing Unchecked_Union object that is subject
-   --  to a per-object constraint and the enclosing object lacks inferable
-   --  discriminants.
-   --
-   --  An expression of an Unchecked_Union type has inferable discriminants
-   --  if it is either a name of an object with inferable discriminants or a
-   --  qualified expression whose subtype mark denotes a constrained subtype.
 
    procedure Insert_Dereference_Action (N : Node_Id);
    --  N is an expression whose type is an access. When the type of the
@@ -8154,11 +8147,16 @@ package body Exp_Ch4 is
             Sindic : constant Node_Id :=
                        Subtype_Indication (Component_Definition (N));
          begin
-            --  Unconstrained nominal type. In the case of a constraint
-            --  present, the node kind would have been N_Subtype_Indication.
+            --  If the component declaration includes a subtype indication
+            --  it is not an unchecked_union. Otherwise verify that it carries
+            --  the Unchecked_Union flag and is either a record or a private
+            --  type. A Record_Subtype declared elsewhere does not qualify,
+            --  even if its parent type carries the flag.
 
             return Nkind (Sindic) in N_Expanded_Name | N_Identifier
-              and then Is_Unchecked_Union (Base_Type (Etype (Sindic)));
+              and then Is_Unchecked_Union (Base_Type (Etype (Sindic)))
+              and then (Ekind (Entity (Sindic)) in
+                         E_Private_Type | E_Record_Type);
          end Unconstrained_UU_In_Component_Declaration;
 
          -----------------------------------------
@@ -13357,84 +13355,6 @@ package body Exp_Ch4 is
          return Uint_128;
       end if;
    end Get_Size_For_Range;
-
-   ---------------------------------
-   -- Has_Inferable_Discriminants --
-   ---------------------------------
-
-   function Has_Inferable_Discriminants (N : Node_Id) return Boolean is
-
-      function Prefix_Is_Formal_Parameter (N : Node_Id) return Boolean;
-      --  Determines whether the left-most prefix of a selected component is a
-      --  formal parameter in a subprogram. Assumes N is a selected component.
-
-      --------------------------------
-      -- Prefix_Is_Formal_Parameter --
-      --------------------------------
-
-      function Prefix_Is_Formal_Parameter (N : Node_Id) return Boolean is
-         Sel_Comp : Node_Id;
-
-      begin
-         --  Move to the left-most prefix by climbing up the tree
-
-         Sel_Comp := N;
-         while Present (Parent (Sel_Comp))
-           and then Nkind (Parent (Sel_Comp)) = N_Selected_Component
-         loop
-            Sel_Comp := Parent (Sel_Comp);
-         end loop;
-
-         return Is_Formal (Entity (Prefix (Sel_Comp)));
-      end Prefix_Is_Formal_Parameter;
-
-   --  Start of processing for Has_Inferable_Discriminants
-
-   begin
-      --  For selected components, the subtype of the selector must be a
-      --  constrained Unchecked_Union. If the component is subject to a
-      --  per-object constraint, then the enclosing object must have inferable
-      --  discriminants.
-
-      if Nkind (N) = N_Selected_Component then
-         if Has_Per_Object_Constraint (Entity (Selector_Name (N))) then
-
-            --  A small hack. If we have a per-object constrained selected
-            --  component of a formal parameter, return True since we do not
-            --  know the actual parameter association yet.
-
-            if Prefix_Is_Formal_Parameter (N) then
-               return True;
-
-            --  Otherwise, check the enclosing object and the selector
-
-            else
-               return Has_Inferable_Discriminants (Prefix (N))
-                 and then Has_Inferable_Discriminants (Selector_Name (N));
-            end if;
-
-         --  The call to Has_Inferable_Discriminants will determine whether
-         --  the selector has a constrained Unchecked_Union nominal type.
-
-         else
-            return Has_Inferable_Discriminants (Selector_Name (N));
-         end if;
-
-      --  A qualified expression has inferable discriminants if its subtype
-      --  mark is a constrained Unchecked_Union subtype.
-
-      elsif Nkind (N) = N_Qualified_Expression then
-         return Is_Unchecked_Union (Etype (Subtype_Mark (N)))
-           and then Is_Constrained (Etype (Subtype_Mark (N)));
-
-      --  For all other names, it is sufficient to have a constrained
-      --  Unchecked_Union nominal subtype.
-
-      else
-         return Is_Unchecked_Union (Base_Type (Etype (N)))
-           and then Is_Constrained (Etype (N));
-      end if;
-   end Has_Inferable_Discriminants;
 
    -------------------------------
    -- Insert_Dereference_Action --

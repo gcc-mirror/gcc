@@ -23,55 +23,59 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Exp_Aggr; use Exp_Aggr;
-with Exp_Atag; use Exp_Atag;
-with Exp_Ch4;  use Exp_Ch4;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch9;  use Exp_Ch9;
-with Exp_Dbug; use Exp_Dbug;
-with Exp_Disp; use Exp_Disp;
-with Exp_Dist; use Exp_Dist;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Exp_Aggr;       use Exp_Aggr;
+with Exp_Atag;       use Exp_Atag;
+with Exp_Ch4;        use Exp_Ch4;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch9;        use Exp_Ch9;
+with Exp_Dbug;       use Exp_Dbug;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Dist;       use Exp_Dist;
 with Exp_Put_Image;
-with Exp_Smem; use Exp_Smem;
-with Exp_Strm; use Exp_Strm;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Attr; use Sem_Attr;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Mech; use Sem_Mech;
-with Sem_Res;  use Sem_Res;
-with Sem_SCIL; use Sem_SCIL;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Stand;    use Stand;
-with Snames;   use Snames;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Validsw;  use Validsw;
+with Exp_Smem;       use Exp_Smem;
+with Exp_Strm;       use Exp_Strm;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Attr;       use Sem_Attr;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_SCIL;       use Sem_SCIL;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Stand;          use Stand;
+with Snames;         use Snames;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Validsw;        use Validsw;
 
 package body Exp_Ch3 is
 
@@ -881,7 +885,7 @@ package body Exp_Ch3 is
                Make_Handled_Sequence_Of_Statements (Loc,
                  Statements => Body_Stmts)));
 
-         Set_Ekind          (Proc_Id, E_Procedure);
+         Mutate_Ekind       (Proc_Id, E_Procedure);
          Set_Is_Public      (Proc_Id, Is_Public (A_Type));
          Set_Is_Internal    (Proc_Id);
          Set_Has_Completion (Proc_Id);
@@ -1076,7 +1080,7 @@ package body Exp_Ch3 is
              Statements => New_List (
                Build_Case_Statement (Case_Id, Variant))));
 
-         Set_Ekind       (Func_Id, E_Function);
+         Mutate_Ekind    (Func_Id, E_Function);
          Set_Mechanism   (Func_Id, Default_Mechanism);
          Set_Is_Inlined  (Func_Id, True);
          Set_Is_Pure     (Func_Id, True);
@@ -2372,7 +2376,7 @@ package body Exp_Ch3 is
                                 New_Occurrence_Of (Iface_Comp, Loc)),
                           Attribute_Name => Name_Position))))));
 
-            Set_Ekind       (Func_Id, E_Function);
+            Mutate_Ekind    (Func_Id, E_Function);
             Set_Mechanism   (Func_Id, Default_Mechanism);
             Set_Is_Internal (Func_Id, True);
 
@@ -2487,7 +2491,7 @@ package body Exp_Ch3 is
            Make_Defining_Identifier (Loc,
              Chars => Make_TSS_Name (Rec_Type, TSS_CPP_Init_Proc));
 
-         Set_Ekind       (Proc_Id, E_Procedure);
+         Mutate_Ekind    (Proc_Id, E_Procedure);
          Set_Is_Internal (Proc_Id);
 
          Set_Defining_Unit_Name (Proc_Spec_Node, Proc_Id);
@@ -2541,7 +2545,7 @@ package body Exp_Ch3 is
       begin
          Body_Stmts := New_List;
          Body_Node := New_Node (N_Subprogram_Body, Loc);
-         Set_Ekind (Proc_Id, E_Procedure);
+         Mutate_Ekind (Proc_Id, E_Procedure);
 
          Proc_Spec_Node := New_Node (N_Procedure_Specification, Loc);
          Set_Defining_Unit_Name (Proc_Spec_Node, Proc_Id);
@@ -7272,10 +7276,10 @@ package body Exp_Ch3 is
                      Link_Entities (New_Id, Next_Entity (Def_Id));
                      Link_Entities (Def_Id, Next_Temp);
 
-                     Set_Chars   (Defining_Identifier (N), Chars   (Def_Id));
+                     Set_Chars (Defining_Identifier (N), Chars (Def_Id));
                      Set_Homonym (Defining_Identifier (N), Homonym (Def_Id));
-                     Set_Ekind   (Defining_Identifier (N), Ekind   (Def_Id));
-                     Set_Sloc    (Defining_Identifier (N), Sloc    (Def_Id));
+                     Mutate_Ekind (Defining_Identifier (N), Ekind (Def_Id));
+                     Set_Sloc (Defining_Identifier (N), Sloc (Def_Id));
 
                      Set_Comes_From_Source (Def_Id, False);
 
@@ -7532,7 +7536,7 @@ package body Exp_Ch3 is
             Level_Expr : Node_Id;
 
          begin
-            Set_Ekind (Level, Ekind (Def_Id));
+            Mutate_Ekind (Level, Ekind (Def_Id));
             Set_Etype (Level, Standard_Natural);
             Set_Scope (Level, Scope (Def_Id));
 
@@ -9702,7 +9706,7 @@ package body Exp_Ch3 is
             --  primitive operations list. We add the minimum decoration needed
             --  to override interface primitives.
 
-            Set_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
+            Mutate_Ekind (Defining_Unit_Name (Func_Spec), E_Function);
 
             Override_Dispatching_Operation
               (Tag_Typ, Subp, New_Op => Defining_Unit_Name (Func_Spec),

@@ -23,24 +23,28 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Sem;      use Sem;
-with Sem_Attr; use Sem_Attr;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Dist; use Sem_Dist;
-with Sem_Eval; use Sem_Eval;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Sem;            use Sem;
+with Sem_Attr;       use Sem_Attr;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
 
 package body Sem_Cat is
 

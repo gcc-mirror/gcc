@@ -23,65 +23,69 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Debug_A;  use Debug_A;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Expander; use Expander;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Disp; use Exp_Disp;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Inline;   use Inline;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Output;   use Output;
-with Par_SCO;  use Par_SCO;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aggr; use Sem_Aggr;
-with Sem_Attr; use Sem_Attr;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch4;  use Sem_Ch4;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Elab; use Sem_Elab;
-with Sem_Elim; use Sem_Elim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Intr; use Sem_Intr;
-with Sem_Mech; use Sem_Mech;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Sinfo.CN; use Sinfo.CN;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Style;    use Style;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Debug_A;        use Debug_A;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Inline;         use Inline;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Output;         use Output;
+with Par_SCO;        use Par_SCO;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aggr;       use Sem_Aggr;
+with Sem_Attr;       use Sem_Attr;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch4;        use Sem_Ch4;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Elim;       use Sem_Elim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Intr;       use Sem_Intr;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinfo.CN;       use Sinfo.CN;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Style;          use Style;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
 
 package body Sem_Res is
 
@@ -1285,8 +1289,10 @@ package body Sem_Res is
          Check_Parameterless_Call (Explicit_Actual_Parameter (N));
 
       elsif Nkind (N) = N_Operator_Symbol then
-         Change_Operator_Symbol_To_String_Literal (N);
+         Set_Etype (N, Empty);
+         Set_Entity (N, Empty);
          Set_Is_Overloaded (N, False);
+         Change_Operator_Symbol_To_String_Literal (N);
          Set_Etype (N, Any_String);
       end if;
    end Check_Parameterless_Call;
@@ -3748,24 +3754,43 @@ package body Sem_Res is
             Id : Entity_Id;
 
          begin
-            --  Do not consider nested function calls because they have already
-            --  been processed during their own resolution.
+            case Nkind (N) is
 
-            if Nkind (N) = N_Function_Call then
-               return Skip;
+               --  Do not consider object name appearing in the prefix of
+               --  attribute Address as a read.
 
-            elsif Is_Entity_Name (N) and then Present (Entity (N)) then
-               Id := Entity (N);
+               when N_Attribute_Reference =>
 
-               if Is_Object (Id)
-                 and then Is_Effectively_Volatile_For_Reading (Id)
-               then
-                  Error_Msg_N
-                    ("volatile object cannot appear in this context (SPARK "
-                     & "RM 7.1.3(10))", N);
+                  --  Prefix of attribute Address denotes an object, program
+                  --  unit, or label; none of them needs to be flagged here.
+
+                  if Attribute_Name (N) = Name_Address then
+                     return Skip;
+                  end if;
+
+               --  Do not consider nested function calls because they have
+               --  already been processed during their own resolution.
+
+               when N_Function_Call =>
                   return Skip;
-               end if;
-            end if;
+
+               when N_Identifier | N_Expanded_Name =>
+                  Id := Entity (N);
+
+                  if Present (Id)
+                    and then Is_Object (Id)
+                    and then Is_Effectively_Volatile_For_Reading (Id)
+                  then
+                     Error_Msg_N
+                       ("volatile object cannot appear in this context"
+                        & " (SPARK RM 7.1.3(10))", N);
+                  end if;
+
+                  return Skip;
+
+               when others =>
+                  null;
+            end case;
 
             return OK;
          end Flag_Object;
@@ -4785,7 +4810,7 @@ package body Sem_Res is
                   Error_Msg_N
                     ("\which is passed by reference (RM C.6(12))", A);
 
-               elsif Is_Volatile_Object (A)
+               elsif Is_Volatile_Object_Ref (A)
                  and then not Is_Volatile (Etype (F))
                then
                   Error_Msg_NE
@@ -4794,7 +4819,7 @@ package body Sem_Res is
                   Error_Msg_N
                     ("\which is passed by reference (RM C.6(12))", A);
 
-               elsif Is_Volatile_Full_Access_Object (A)
+               elsif Is_Volatile_Full_Access_Object_Ref (A)
                  and then not Is_Volatile_Full_Access (Etype (F))
                then
                   Error_Msg_NE
@@ -12089,6 +12114,28 @@ package body Sem_Res is
 
       Set_Etype (N, B_Typ);
       Resolve (R, B_Typ);
+
+      --  Generate warning for negative literal of a modular type, unless it is
+      --  enclosed directly in a type qualification or a type conversion, as it
+      --  is likely not what the user intended. We don't issue the warning for
+      --  the common use of -1 to denote OxFFFF_FFFF...
+
+      if Warn_On_Suspicious_Modulus_Value
+        and then Nkind (N) = N_Op_Minus
+        and then Nkind (R) = N_Integer_Literal
+        and then Is_Modular_Integer_Type (B_Typ)
+        and then Nkind (Parent (N)) not in N_Qualified_Expression
+                                         | N_Type_Conversion
+        and then Expr_Value (R) > Uint_1
+      then
+         Error_Msg_N
+           ("?M?negative literal of modular type is in fact positive", N);
+         Error_Msg_Uint_1 := (-Expr_Value (R)) mod Modulus (B_Typ);
+         Error_Msg_Uint_2 := Expr_Value (R);
+         Error_Msg_N ("\do you really mean^ when writing -^ '?", N);
+         Error_Msg_N
+           ("\if you do, use qualification to avoid this warning", N);
+      end if;
 
       --  Generate warning for expressions like abs (x mod 2)
 

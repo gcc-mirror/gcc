@@ -272,6 +272,8 @@ GNAT_ADA_OBJS =	\
  ada/cstand.o	\
  ada/debug.o	\
  ada/debug_a.o	\
+ ada/einfo-entities.o \
+ ada/einfo-utils.o \
  ada/einfo.o	\
  ada/elists.o	\
  ada/err_vars.o	\
@@ -424,6 +426,7 @@ GNAT_ADA_OBJS =	\
  ada/scng.o	\
  ada/scos.o	\
  ada/sdefault.o	\
+ ada/seinfo.o \
  ada/sem.o	\
  ada/sem_aggr.o	\
  ada/sem_attr.o	\
@@ -459,6 +462,8 @@ GNAT_ADA_OBJS =	\
  ada/sem_warn.o	\
  ada/set_targ.o \
  ada/sinfo-cn.o	\
+ ada/sinfo-nodes.o \
+ ada/sinfo-utils.o \
  ada/sinfo.o	\
  ada/sinput-d.o	\
  ada/sinput-l.o	\
@@ -478,7 +483,6 @@ GNAT_ADA_OBJS =	\
  ada/targparm.o	\
  ada/tbuild.o	\
  ada/treepr.o	\
- ada/treeprs.o	\
  ada/ttypes.o	\
  ada/types.o	\
  ada/uintp.o	\
@@ -526,6 +530,8 @@ GNATBIND_OBJS = \
  ada/csets.o      \
  ada/cstreams.o   \
  ada/debug.o      \
+ ada/einfo-entities.o \
+ ada/einfo-utils.o \
  ada/einfo.o      \
  ada/elists.o     \
  ada/env.o        \
@@ -618,7 +624,10 @@ GNATBIND_OBJS = \
  ada/scng.o       \
  ada/sdefault.o   \
  ada/seh_init.o   \
+ ada/seinfo.o \
  ada/sem_aux.o    \
+ ada/sinfo-nodes.o \
+ ada/sinfo-utils.o \
  ada/sinfo.o      \
  ada/sinput-c.o   \
  ada/sinput.o     \
@@ -879,7 +888,7 @@ ada.mostlyclean:
 	-$(RM) ada/*$(objext) ada/*.ali ada/b_gnat*.ads ada/b_gnat*.adb
 	-$(RM) ada/*$(objext).gnatd.n
 	-$(RM) ada/*$(coverageexts)
-	-$(RM) ada/sdefault.adb ada/stamp-sdefault ada/stamp-snames
+	-$(RM) ada/stamp-sdefault ada/stamp-snames ada/stamp-gen_il
 	-$(RMDIR) ada/tools
 	-$(RMDIR) ada/libgnat
 	-$(RM) gnatbind$(exeext) gnat1$(exeext)
@@ -907,7 +916,6 @@ ada.maintainer-clean:
 	-$(RM) ada/einfo.h
 	-$(RM) ada/nmake.adb
 	-$(RM) ada/nmake.ads
-	-$(RM) ada/treeprs.ads
 	-$(RM) ada/snames.ads ada/snames.adb ada/snames.h
 
 # Stage hooks:
@@ -1033,11 +1041,6 @@ ada/b_gnatb.o : ada/b_gnatb.adb
 
 include $(srcdir)/ada/Make-generated.in
 
-update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
-	ada/nmake.ads
-	$(RM) $(addprefix $(srcdir)/ada/,$(notdir $^))
-	$(CP) $^ $(srcdir)/ada
-
 ada/sdefault.o : ada/libgnat/ada.ads ada/libgnat/a-except.ads ada/libgnat/a-unccon.ads \
    ada/libgnat/a-uncdea.ads ada/alloc.ads ada/debug.ads ada/hostparm.ads ada/namet.ads \
    ada/opt.ads ada/osint.ads ada/output.ads ada/sdefault.ads ada/sdefault.adb \
@@ -1099,13 +1102,23 @@ ada/mdll-fil.o : ada/mdll-fil.adb ada/mdll.ads ada/mdll-fil.ads
 ada/mdll-utl.o : ada/mdll-utl.adb ada/mdll.ads ada/mdll-utl.ads ada/sdefault.ads ada/types.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 
-ada_generated_files = ada/sinfo.h ada/einfo.h ada/nmake.adb ada/nmake.ads \
-		      ada/treeprs.ads ada/snames.ads ada/snames.adb ada/snames.h \
-		      ada/generated/gnatvsn.ads
+# All generated files.  Perhaps we should build all of these in the same
+# subdirectory, and get rid of ada/bldtools.
+ADA_GENERATED_FILES = ada/sinfo.h ada/einfo.h ada/nmake.adb ada/nmake.ads \
+		      ada/snames.ads ada/snames.adb ada/snames.h \
+		      ada/generated/gnatvsn.ads \
+		      ada/seinfo.ads \
+		      ada/seinfo_tables.ads ada/seinfo_tables.adb \
+		      ada/sinfo-nodes.ads ada/sinfo-nodes.adb \
+		      ada/einfo-entities.ads ada/einfo-entities.adb
+
+# Only used to manually trigger the creation of the generated files.
+.PHONY:
+ada_generated_files: $(ADA_GENERATED_FILES)
 
 # When building from scratch we don't have dependency files, the only thing
 # we need to ensure is that the generated files are created first.
-$(GNAT1_OBJS) $(GNATBIND_OBJS): | $(ada_generated_files)
+$(GNAT1_OBJS) $(GNATBIND_OBJS): | $(ADA_GENERATED_FILES)
 
 # Manually include the auto-generated dependencies for the Ada host objects.
 ADA_DEPFILES = $(foreach obj,$(GNAT1_ADA_OBJS) $(GNATBIND_OBJS),\

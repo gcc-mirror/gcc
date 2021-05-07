@@ -23,49 +23,53 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Expander; use Expander;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Namet.Sp; use Namet.Sp;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch5;  use Sem_Ch5;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sem_Type; use Sem_Type;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stringt;  use Stringt;
-with Stand;    use Stand;
-with Style;    use Style;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Namet.Sp;       use Namet.Sp;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch5;        use Sem_Ch5;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sem_Type;       use Sem_Type;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stringt;        use Stringt;
+with Stand;          use Stand;
+with Style;          use Style;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Uintp;          use Uintp;
 
 package body Sem_Aggr is
 
@@ -1677,7 +1681,7 @@ package body Sem_Aggr is
 
          Enter_Name (Id);
          Set_Etype (Id, Index_Typ);
-         Set_Ekind (Id, E_Variable);
+         Mutate_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
 
          --  Analyze  expression without expansion, to verify legality.
@@ -2859,7 +2863,7 @@ package body Sem_Aggr is
             Set_Etype (Id, Key_Type);
          end if;
 
-         Set_Ekind (Id, E_Variable);
+         Mutate_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
          Set_Referenced (Id);
 
@@ -3199,7 +3203,7 @@ package body Sem_Aggr is
 
                if No (Scope (Id)) then
                   Set_Etype (Id, Index_Type);
-                  Set_Ekind (Id, E_Variable);
+                  Mutate_Ekind (Id, E_Variable);
                   Set_Scope (Id, Ent);
                end if;
                Enter_Name (Id);

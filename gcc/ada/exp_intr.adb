@@ -23,37 +23,41 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Expander; use Expander;
-with Exp_Atag; use Exp_Atag;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Code; use Exp_Code;
-with Exp_Fixd; use Exp_Fixd;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Inline;   use Inline;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Expander;       use Expander;
+with Exp_Atag;       use Exp_Atag;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch11;       use Exp_Ch11;
+with Exp_Code;       use Exp_Code;
+with Exp_Fixd;       use Exp_Fixd;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Inline;         use Inline;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Exp_Intr is
 
@@ -517,7 +521,7 @@ package body Exp_Intr is
             if No (Choice_Parameter (P)) then
                E := Make_Temporary (Loc, 'E');
                Set_Choice_Parameter (P, E);
-               Set_Ekind (E, E_Variable);
+               Mutate_Ekind (E, E_Variable);
                Set_Etype (E, RTE (RE_Exception_Occurrence));
                Set_Scope (E, Current_Scope);
             end if;

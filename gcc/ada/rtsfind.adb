@@ -23,35 +23,39 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Csets;    use Csets;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Csets;          use Csets;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
 with Exp_Dist;
-with Fname;    use Fname;
-with Fname.UF; use Fname.UF;
-with Ghost;    use Ghost;
-with Lib;      use Lib;
-with Lib.Load; use Lib.Load;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Output;   use Output;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Dist; use Sem_Dist;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Stand;    use Stand;
-with Snames;   use Snames;
-with Tbuild;   use Tbuild;
-with Uname;    use Uname;
+with Fname;          use Fname;
+with Fname.UF;       use Fname.UF;
+with Ghost;          use Ghost;
+with Lib;            use Lib;
+with Lib.Load;       use Lib.Load;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Output;         use Output;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Stand;          use Stand;
+with Snames;         use Snames;
+with Tbuild;         use Tbuild;
+with Uname;          use Uname;
 
 package body Rtsfind is
 

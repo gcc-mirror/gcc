@@ -4389,14 +4389,28 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
 	{
 	  for (tree c = gimple_omp_for_clauses (ctx->stmt); c;
 	       c = OMP_CLAUSE_CHAIN (c))
-	    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
-		&& OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
-	      {
-		/* UDR reductions are not supported yet for SIMT, disable
-		   SIMT.  */
-		sctx->max_vf = 1;
-		break;
+	    {
+	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION)
+		continue;
+
+	      if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c))
+		{
+		  /* UDR reductions are not supported yet for SIMT, disable
+		     SIMT.  */
+		  sctx->max_vf = 1;
+		  break;
+		}
+
+	      if (truth_value_p (OMP_CLAUSE_REDUCTION_CODE (c))
+		  && !INTEGRAL_TYPE_P (TREE_TYPE (new_var)))
+		{
+		  /* Doing boolean operations on non-integral types is
+		     for conformance only, it's not worth supporting this
+		     for SIMT.  */
+		  sctx->max_vf = 1;
+		  break;
 	      }
+	    }
 	}
       if (maybe_gt (sctx->max_vf, 1U))
 	{

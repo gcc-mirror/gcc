@@ -1700,6 +1700,37 @@
   DONE;
 })
 
+(define_insn "mmx_pblendvb"
+  [(set (match_operand:V8QI 0 "register_operand" "=Yr,*x,x")
+	(unspec:V8QI
+	  [(match_operand:V8QI 1 "register_operand" "0,0,x")
+	   (match_operand:V8QI 2 "register_operand" "Yr,*x,x")
+	   (match_operand:V8QI 3 "register_operand" "Yz,Yz,x")]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "@
+   pblendvb\t{%3, %2, %0|%0, %2, %3}
+   pblendvb\t{%3, %2, %0|%0, %2, %3}
+   vpblendvb\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "*,*,1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector")
+   (set_attr "mode" "TI")])
+
+;; XOP parallel XMM conditional moves
+(define_insn "*xop_pcmov_<mode>"
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=x")
+        (if_then_else:MMXMODEI
+          (match_operand:MMXMODEI 3 "register_operand" "x")
+          (match_operand:MMXMODEI 1 "register_operand" "x")
+          (match_operand:MMXMODEI 2 "register_operand" "x")))]
+  "TARGET_XOP && TARGET_MMX_WITH_SSE"
+  "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "sse4arg")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel integral logical operations

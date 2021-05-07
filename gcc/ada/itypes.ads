@@ -25,9 +25,10 @@
 
 --  This package contains declarations for handling of implicit types
 
-with Einfo;    use Einfo;
-with Sem_Util; use Sem_Util;
-with Types;    use Types;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Sem_Util;       use Sem_Util;
+with Types;          use Types;
 
 package Itypes is
 

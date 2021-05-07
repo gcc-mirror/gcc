@@ -1,3 +1,65 @@
+2021-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c++/83873
+	PR preprocessor/97604
+	* g++.dg/cpp1y/digit-sep-neg-2.C,
+	g++.dg/cpp1y/digit-sep-pp-number.C: New tests.
+	* g++.dg/cpp1y/digit-sep-line-neg.C, g++.dg/cpp1y/digit-sep-neg.C:
+	Adjust expected messages.
+
+2021-05-06  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/ipa/ipa-sra-1.c (main): Revert change done by
+	05193687dde, make the argv again pointer to an array.
+
+2021-05-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt93.adb: Compile only for LP64 targets.
+
+2021-05-06  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* lib/target-supports.exp: Add s390 checks for vect conversions.
+
+2021-05-06  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/vect/pr56541.c: Add vect_floatint_cvt.
+
+2021-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/46691
+	PR fortran/99819
+	* gfortran.dg/class_dummy_6.f90: New test.
+	* gfortran.dg/class_dummy_7.f90: New test.
+
+2021-05-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR testsuite/100355
+	* gcc.c-torture/execute/ieee/cdivchkld.x: New.
+
+2021-05-06  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* gcc.target/s390/zvector/imm-range-error-1.c: Fix test for
+	__builtin_s390_vpdi.
+	* gcc.target/s390/zvector/vec-permi.c: New test for builtin
+	vec_permi.
+
+2021-05-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	* gcc.dg/pr94589-1.c: New test.
+	* gcc.dg/pr94589-2.c: New test.
+	* gcc.dg/pr94589-3.c: New test.
+	* gcc.dg/pr94589-4.c: New test.
+	* g++.dg/opt/pr94589-1.C: New test.
+	* g++.dg/opt/pr94589-2.C: New test.
+	* g++.dg/opt/pr94589-3.C: New test.
+	* g++.dg/opt/pr94589-4.C: New test.
+
+2021-05-06  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100373
+	* gcc.dg/pr100373.c: New testcase.
+
 2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20210505-1.c: New test.

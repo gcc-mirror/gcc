@@ -23,57 +23,61 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;     use Atree;
-with Aspects;   use Aspects;
-with Checks;    use Checks;
-with Contracts; use Contracts;
-with Debug;     use Debug;
-with Einfo;     use Einfo;
-with Errout;    use Errout;
-with Elists;    use Elists;
-with Expander;  use Expander;
-with Exp_Aggr;  use Exp_Aggr;
-with Exp_Atag;  use Exp_Atag;
-with Exp_Ch3;   use Exp_Ch3;
-with Exp_Ch7;   use Exp_Ch7;
-with Exp_Ch9;   use Exp_Ch9;
-with Exp_Dbug;  use Exp_Dbug;
-with Exp_Disp;  use Exp_Disp;
-with Exp_Dist;  use Exp_Dist;
-with Exp_Intr;  use Exp_Intr;
-with Exp_Pakd;  use Exp_Pakd;
-with Exp_Tss;   use Exp_Tss;
-with Exp_Util;  use Exp_Util;
-with Freeze;    use Freeze;
-with Inline;    use Inline;
-with Itypes;    use Itypes;
-with Lib;       use Lib;
-with Namet;     use Namet;
-with Nlists;    use Nlists;
-with Nmake;     use Nmake;
-with Opt;       use Opt;
-with Restrict;  use Restrict;
-with Rident;    use Rident;
-with Rtsfind;   use Rtsfind;
-with Sem;       use Sem;
-with Sem_Aux;   use Sem_Aux;
-with Sem_Ch6;   use Sem_Ch6;
-with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch13;  use Sem_Ch13;
-with Sem_Dim;   use Sem_Dim;
-with Sem_Disp;  use Sem_Disp;
-with Sem_Dist;  use Sem_Dist;
-with Sem_Eval;  use Sem_Eval;
-with Sem_Mech;  use Sem_Mech;
-with Sem_Res;   use Sem_Res;
-with Sem_SCIL;  use Sem_SCIL;
-with Sem_Util;  use Sem_Util;
-with Sinfo;     use Sinfo;
-with Snames;    use Snames;
-with Stand;     use Stand;
-with Tbuild;    use Tbuild;
-with Uintp;     use Uintp;
-with Validsw;   use Validsw;
+with Atree;          use Atree;
+with Aspects;        use Aspects;
+with Checks;         use Checks;
+with Contracts;      use Contracts;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Elists;         use Elists;
+with Expander;       use Expander;
+with Exp_Aggr;       use Exp_Aggr;
+with Exp_Atag;       use Exp_Atag;
+with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch9;        use Exp_Ch9;
+with Exp_Dbug;       use Exp_Dbug;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Intr;       use Exp_Intr;
+with Exp_Pakd;       use Exp_Pakd;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Inline;         use Inline;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_SCIL;       use Sem_SCIL;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Validsw;        use Validsw;
 
 package body Exp_Ch6 is
 
@@ -2209,7 +2213,7 @@ package body Exp_Ch6 is
 
          --  Check for volatility mismatch
 
-         if Is_Volatile_Object (Actual) and then not Is_Volatile (E_Formal)
+         if Is_Volatile_Object_Ref (Actual) and then not Is_Volatile (E_Formal)
          then
             if Comes_From_Source (N) then
                Error_Msg_N
@@ -5123,7 +5127,7 @@ package body Exp_Ch6 is
                --  Perform minor decoration in order to set the master and the
                --  storage pool attributes.
 
-               Set_Ekind                   (Ptr_Typ, E_Access_Type);
+               Mutate_Ekind                (Ptr_Typ, E_Access_Type);
                Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
                Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
 
@@ -7341,7 +7345,7 @@ package body Exp_Ch6 is
                Temp       : Entity_Id;
 
             begin
-               Set_Ekind (Acc_Typ, E_Access_Type);
+               Mutate_Ekind (Acc_Typ, E_Access_Type);
 
                Set_Associated_Storage_Pool (Acc_Typ, RTE (RE_SS_Pool));
 

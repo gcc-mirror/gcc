@@ -434,7 +434,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
   gcc_assert (!is_type
 	      || Known_Esize (gnat_entity)
 	      || Has_Size_Clause (gnat_entity)
-	      || (!IN (kind, Numeric_Kind)
+	      || (!Is_In_Numeric_Kind (kind)
 		  && !IN (kind, Enumeration_Kind)
 		  && (!IN (kind, Access_Kind)
 		      || kind == E_Access_Protected_Subprogram_Type
@@ -443,7 +443,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		      || type_annotate_only)));
 
   /* The RM size must be specified for all discrete and fixed-point types.  */
-  gcc_assert (!(IN (kind, Discrete_Or_Fixed_Point_Kind)
+  gcc_assert (!(Is_In_Discrete_Or_Fixed_Point_Kind (kind)
 		&& Unknown_RM_Size (gnat_entity)));
 
   /* If we get here, it means we have not yet done anything with this entity.
@@ -736,16 +736,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	if (foreign && Is_Descendant_Of_Address (Underlying_Type (gnat_type)))
 	  gnu_type = ptr_type_node;
 	else
-	  {
-	    gnu_type = gnat_to_gnu_type (gnat_type);
-
-	    /* If this is a standard exception definition, use the standard
-	       exception type.  This is necessary to make sure that imported
-	       and exported views of exceptions are merged in LTO mode.  */
-	    if (TREE_CODE (TYPE_NAME (gnu_type)) == TYPE_DECL
-		&& DECL_NAME (TYPE_NAME (gnu_type)) == exception_data_name_id)
-	      gnu_type = except_type_node;
-	  }
+	  gnu_type = gnat_to_gnu_type (gnat_type);
 
 	/* For a debug renaming declaration, build a debug-only entity.  */
 	if (Present (Debug_Renaming_Link (gnat_entity)))
@@ -3404,21 +3395,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* Fill in locations of fields.  */
 	annotate_rep (gnat_entity, gnu_type);
-
-	/* If this is a record type associated with an exception definition,
-	   equate its fields to those of the standard exception type.  This
-	   will make it possible to convert between them.  */
-	if (gnu_entity_name == exception_data_name_id)
-	  {
-	    tree gnu_std_field;
-	    for (gnu_field = TYPE_FIELDS (gnu_type),
-		 gnu_std_field = TYPE_FIELDS (except_type_node);
-		 gnu_field;
-		 gnu_field = DECL_CHAIN (gnu_field),
-		 gnu_std_field = DECL_CHAIN (gnu_std_field))
-	      SET_DECL_ORIGINAL_FIELD_TO_FIELD (gnu_field, gnu_std_field);
-	    gcc_assert (!gnu_std_field);
-	  }
       }
       break;
 
@@ -4568,7 +4544,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* Similarly, if this is a record type or subtype at global level, call
 	 elaborate_expression_2 on any field position.  Skip any fields that
 	 we haven't made trees for to avoid problems with class-wide types.  */
-      if (IN (kind, Record_Kind) && global_bindings_p ())
+      if (Is_In_Record_Kind (kind) && global_bindings_p ())
 	for (gnat_temp = First_Entity (gnat_entity); Present (gnat_temp);
 	     gnat_temp = Next_Entity (gnat_temp))
 	  if (Ekind (gnat_temp) == E_Component && present_gnu_tree (gnat_temp))
@@ -7126,6 +7102,14 @@ gnat_to_gnu_field (Entity_Id gnat_field, tree gnu_record_type, int packed,
   tree gnu_field, gnu_size, gnu_pos;
   bool is_bitfield;
 
+  /* Force the type of the Not_Handled_By_Others field to be that of the
+     field in struct Exception_Data declared in raise.h instead of using
+     the declared boolean type.  We need to do that because there is no
+     easy way to make use of a C compatible boolean type for the latter.  */
+  if (gnu_field_id == not_handled_by_others_name_id
+      && gnu_field_type == boolean_type_node)
+    gnu_field_type = char_type_node;
+
   /* The qualifier to be used in messages.  */
   if (is_aliased)
     field_s = "aliased&";
@@ -7675,7 +7659,7 @@ typedef struct vinfo
    will be the single field of GNU_RECORD_TYPE and the GCC nodes for the
    discriminants will be on GNU_FIELD_LIST.  The other call to this function
    is a recursive call for the component list of a variant and, in this case,
-   GNU_FIELD_LIST is empty.
+   GNU_FIELD_LIST is empty.  Note that GNAT_COMPONENT_LIST may be Empty.
 
    PACKED is 1 if this is for a packed record or -1 if this is for a record
    with Component_Alignment of Storage_Unit.
@@ -7731,7 +7715,8 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
   /* For each component referenced in a component declaration create a GCC
      field and add it to the list, skipping pragmas in the GNAT list.  */
   gnu_last = tree_last (gnu_field_list);
-  if (Present (Component_Items (gnat_component_list)))
+  if (Present (gnat_component_list)
+      && (Present (Component_Items (gnat_component_list))))
     for (gnat_component_decl
 	   = First_Non_Pragma (Component_Items (gnat_component_list));
 	 Present (gnat_component_decl);
@@ -7788,7 +7773,10 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
       }
 
   /* At the end of the component list there may be a variant part.  */
-  gnat_variant_part = Variant_Part (gnat_component_list);
+  if (Present (gnat_component_list))
+    gnat_variant_part = Variant_Part (gnat_component_list);
+  else
+    gnat_variant_part = Empty;
 
   /* We create a QUAL_UNION_TYPE for the variant part since the variants are
      mutually exclusive and should go in the same memory.  To do this we need

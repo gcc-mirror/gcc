@@ -3424,7 +3424,10 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   with no size clause. The guess in both cases is that 2**x was intended
   rather than x. In addition expressions of the form 2*x for small x
   generate a warning (the almost certainly accurate guess being that
-  2**x was intended). The default is that these warnings are given.
+  2**x was intended). This switch also activates warnings for negative
+  literal values of a modular type, which are interpreted as large positive
+  integers after wrap-around. The default is that these warnings are given.
+
 
 
 .. index:: -gnatw.M  (gcc)

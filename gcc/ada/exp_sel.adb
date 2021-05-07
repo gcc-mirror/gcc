@@ -23,15 +23,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Einfo;   use Einfo;
-with Nlists;  use Nlists;
-with Nmake;   use Nmake;
-with Opt;     use Opt;
-with Rtsfind; use Rtsfind;
-with Sinfo;   use Sinfo;
-with Snames;  use Snames;
-with Stand;   use Stand;
-with Tbuild;  use Tbuild;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Rtsfind;        use Rtsfind;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Tbuild;         use Tbuild;
 
 package body Exp_Sel is
 

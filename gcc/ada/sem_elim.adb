@@ -23,25 +23,28 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Prag; use Sem_Prag;
-with Sem_Util; use Sem_Util;
-with Sinput;   use Sinput;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Util;       use Sem_Util;
+with Sinput;         use Sinput;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
 with Table;
 
-with GNAT.HTable; use GNAT.HTable;
+with GNAT.HTable;    use GNAT.HTable;
 
 package body Sem_Elim is
 

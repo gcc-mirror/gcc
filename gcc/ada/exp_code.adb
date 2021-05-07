@@ -23,22 +23,26 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Rtsfind;  use Rtsfind;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Eval; use Sem_Eval;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Rtsfind;        use Rtsfind;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
 
 package body Exp_Code is
 

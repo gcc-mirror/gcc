@@ -23,44 +23,48 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Util; use Exp_Util;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Namet.Sp; use Namet.Sp;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Case; use Sem_Case;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Util;       use Exp_Util;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Namet.Sp;       use Namet.Sp;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Case;       use Sem_Case;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Sem_Ch4 is
 
@@ -1461,8 +1465,6 @@ package body Sem_Ch4 is
          else
             Remove_Abstract_Operations (N);
          end if;
-
-         End_Interp_List;
       end if;
 
       --  Check the accessibility level for actuals for explicitly aliased
@@ -2790,8 +2792,6 @@ package body Sem_Ch4 is
             Error_Msg_N ("no legal interpretation for indexed component", N);
             Set_Is_Overloaded (N, False);
          end if;
-
-         End_Interp_List;
       end Process_Overloaded_Indexed_Component;
 
    --  Start of processing for Analyze_Indexed_Component_Form
@@ -5295,7 +5295,7 @@ package body Sem_Ch4 is
                   Set_Parent (Par, Parent (Parent (N)));
 
                   if Try_Object_Operation
-                       (Sinfo.Name (Par), CW_Test_Only => True)
+                       (Sinfo.Nodes.Name (Par), CW_Test_Only => True)
                   then
                      return;
                   end if;

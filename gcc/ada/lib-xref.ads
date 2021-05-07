@@ -26,7 +26,7 @@
 --  This package contains for collecting and outputting cross-reference
 --  information.
 
-with Einfo;       use Einfo;
+with Einfo.Entities; use Einfo.Entities;
 with SPARK_Xrefs;
 
 package Lib.Xref is

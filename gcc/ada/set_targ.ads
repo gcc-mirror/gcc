@@ -36,7 +36,6 @@
 --  of Wide_Character_Type uses twice the size of a C char, instead of the
 --  size of wchar_t, since this corresponds to expected Ada usage.
 
-with Einfo; use Einfo;
 with Stand; use Stand;
 with Types; use Types;
 

@@ -91,6 +91,9 @@ package body Exception_Propagation is
 
    use Exception_Traces;
 
+   type bool is new Boolean;
+   pragma Convention (C, bool);
+
    Foreign_Exception : aliased System.Standard_Library.Exception_Data;
    pragma Import (Ada, Foreign_Exception,
                   "system__exceptions__foreign_exception");
@@ -277,9 +280,8 @@ package body Exception_Propagation is
    --  painful and error prone. These subprograms could be moved to a more
    --  widely visible location if need be.
 
-   function Is_Handled_By_Others (E : Exception_Data_Ptr) return Boolean;
+   function Is_Handled_By_Others (E : Exception_Data_Ptr) return bool;
    pragma Export (C, Is_Handled_By_Others, "__gnat_is_handled_by_others");
-   pragma Warnings (Off, Is_Handled_By_Others);
 
    function Language_For (E : Exception_Data_Ptr) return Character;
    pragma Export (C, Language_For, "__gnat_language_for");
@@ -685,9 +687,7 @@ package body Exception_Propagation is
    -- Foreign_Data_For --
    ----------------------
 
-   function Foreign_Data_For
-     (E : SSL.Exception_Data_Ptr) return Address
-   is
+   function Foreign_Data_For (E : Exception_Data_Ptr) return Address is
    begin
       return E.Foreign_Data;
    end Foreign_Data_For;
@@ -696,16 +696,16 @@ package body Exception_Propagation is
    -- Is_Handled_By_Others --
    --------------------------
 
-   function Is_Handled_By_Others (E : SSL.Exception_Data_Ptr) return Boolean is
+   function Is_Handled_By_Others (E : Exception_Data_Ptr) return bool is
    begin
-      return not E.all.Not_Handled_By_Others;
+      return not bool (E.all.Not_Handled_By_Others);
    end Is_Handled_By_Others;
 
    ------------------
    -- Language_For --
    ------------------
 
-   function Language_For (E : SSL.Exception_Data_Ptr) return Character is
+   function Language_For (E : Exception_Data_Ptr) return Character is
    begin
       return E.all.Lang;
    end Language_For;

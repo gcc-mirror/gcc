@@ -23,13 +23,16 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Einfo;   use Einfo;
-with Nlists;  use Nlists;
-with Rtsfind; use Rtsfind;
-with Sem_Aux; use Sem_Aux;
-with Sinfo;   use Sinfo;
-with Stand;   use Stand;
-with SCIL_LL; use SCIL_LL;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Nlists;         use Nlists;
+with Rtsfind;        use Rtsfind;
+with Sem_Aux;        use Sem_Aux;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Stand;          use Stand;
+with SCIL_LL;        use SCIL_LL;
 
 package body Sem_SCIL is
 

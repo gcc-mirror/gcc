@@ -23,31 +23,35 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Debug;          use Debug;
 with Exp_Put_Image;
-with Exp_Util; use Exp_Util;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Rtsfind;  use Rtsfind;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
+with Exp_Util;       use Exp_Util;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Rtsfind;        use Rtsfind;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
 
 with System.Perfect_Hash_Generators;
 
@@ -256,7 +260,7 @@ package body Exp_Imgv is
          H_Id :=
            Make_Defining_Identifier (Loc,
              Chars => New_External_Name (Chars (E), 'H'));
-         Set_Ekind       (H_Id, E_Function);
+         Mutate_Ekind    (H_Id, E_Function);
          Set_Is_Internal (H_Id);
 
          if not Debug_Generated_Code then

@@ -23,23 +23,26 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Aspects;  use Aspects;
-with Csets;    use Csets;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Lib;      use Lib;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Util; use Sem_Util;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Urealp;   use Urealp;
+with Atree;          use Atree;
+with Aspects;        use Aspects;
+with Csets;          use Csets;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Sem_Aux;        use Sem_Aux;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sem_Util;       use Sem_Util;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Urealp;         use Urealp;
 
 package body Tbuild is
 

@@ -23,17 +23,19 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Dim;  use Sem_Dim;
-with Sinfo;    use Sinfo;
-with Stand;    use Stand;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Utils;    use Einfo.Utils;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Dim;        use Sem_Dim;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Stand;          use Stand;
+with Uintp;          use Uintp;
 
 package body Sem_Ch2 is
 

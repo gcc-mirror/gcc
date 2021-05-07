@@ -23,52 +23,56 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Exp_Atag; use Exp_Atag;
-with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch9;  use Exp_Ch9;
-with Exp_Dist; use Exp_Dist;
-with Exp_Imgv; use Exp_Imgv;
-with Exp_Pakd; use Exp_Pakd;
-with Exp_Strm; use Exp_Strm;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Exp_Atag;       use Exp_Atag;
+with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch9;        use Exp_Ch9;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Imgv;       use Exp_Imgv;
+with Exp_Pakd;       use Exp_Pakd;
+with Exp_Strm;       use Exp_Strm;
 with Exp_Put_Image;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Expander; use Expander;
-with Freeze;   use Freeze;
-with Gnatvsn;  use Gnatvsn;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
-with Uname;    use Uname;
-with Urealp;   use Urealp;
-with Validsw;  use Validsw;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Expander;       use Expander;
+with Freeze;         use Freeze;
+with Gnatvsn;        use Gnatvsn;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Uintp;          use Uintp;
+with Uname;          use Uname;
+with Urealp;         use Urealp;
+with Validsw;        use Validsw;
 
 package body Exp_Attr is
 
@@ -385,7 +389,7 @@ package body Exp_Attr is
       --       Stmts
       --    end Func_Id;
 
-      Set_Ekind       (Func_Id, E_Function);
+      Mutate_Ekind    (Func_Id, E_Function);
       Set_Is_Internal (Func_Id);
       Set_Is_Pure     (Func_Id);
 
@@ -828,7 +832,7 @@ package body Exp_Attr is
       --       Stmts
       --    end Func_Id;
 
-      Set_Ekind       (Func_Id, E_Function);
+      Mutate_Ekind    (Func_Id, E_Function);
       Set_Is_Internal (Func_Id);
       Set_Is_Pure     (Func_Id);
 
@@ -4834,7 +4838,7 @@ package body Exp_Attr is
          --  Set the entity kind now in order to mark the temporary as a
          --  handler of attribute 'Old's prefix.
 
-         Set_Ekind (Temp, E_Constant);
+         Mutate_Ekind (Temp, E_Constant);
          Set_Stores_Attribute_Old_Prefix (Temp);
 
          --  Push the scope of the related subprogram where _Postcondition
@@ -7330,7 +7334,7 @@ package body Exp_Attr is
                P    : Node_Id := Pref;
 
             begin
-               --  If the prefix has an entity, use the Esize from this entity
+               --  If the prefix is an object, use the Esize from this object
                --  to handle in a more user friendly way the case of objects
                --  or components with a large Size aspect: if a Size aspect is
                --  specified, we want to read a scalar value as large as the
@@ -7343,6 +7347,7 @@ package body Exp_Attr is
 
                if Nkind (P) in N_Has_Entity
                  and then Present (Entity (P))
+                 and then Is_Object (Entity (P))
                  and then Esize (Entity (P)) /= Uint_0
                then
                   if Esize (Entity (P)) <= System_Max_Integer_Size then

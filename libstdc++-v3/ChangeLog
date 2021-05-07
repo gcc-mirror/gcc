@@ -1,3 +1,42 @@
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algobase.h (__copy_move, __copy_move_backward):
+	Improve static_assert messages.
+	* testsuite/25_algorithms/copy/58982.cc: Adjust expected output.
+	* testsuite/25_algorithms/copy_n/58982.cc: Likewise.
+
+2021-05-06  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (filter_view::_Iterator::base): Make the
+	const& overload unconstrained and return a const reference as
+	per LWG 3533.  Make unconditionally noexcept.
+	(transform_view::_Iterator::base): Likewise.
+	(elements_view::_Iterator::base): Likewise.
+
+2021-05-06  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/stl_iterator.h (move_iterator::base): Make the
+	const& overload unconstrained and return a const reference as
+	per LWG 3391.  Make unconditionally noexcept.
+	(counted_iterator::base): Likewise.
+	* testsuite/24_iterators/move_iterator/lwg3391.cc: New test.
+	* testsuite/24_iterators/move_iterator/move_only.cc: Adjust
+	has_member_base concept to decay-copy the result of base().
+
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (remove_cvref_t): Define in terms of
+	remove_cvref.
+	* testsuite/20_util/remove_cvref/value.cc: Check alias.
+
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Revert:
+	2021-05-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__from_chars_alnum): Pass unsigned
+	char to std::isdigit.
+
 2021-05-05  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_util.h (enable_borrowed_range<subrange>):

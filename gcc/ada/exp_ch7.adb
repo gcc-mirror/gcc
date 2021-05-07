@@ -27,44 +27,48 @@
 --    - controlled types
 --    - transient scopes
 
-with Atree;     use Atree;
-with Contracts; use Contracts;
-with Debug;     use Debug;
-with Einfo;     use Einfo;
-with Elists;    use Elists;
-with Errout;    use Errout;
-with Exp_Ch6;   use Exp_Ch6;
-with Exp_Ch9;   use Exp_Ch9;
-with Exp_Ch11;  use Exp_Ch11;
-with Exp_Dbug;  use Exp_Dbug;
-with Exp_Dist;  use Exp_Dist;
-with Exp_Disp;  use Exp_Disp;
-with Exp_Prag;  use Exp_Prag;
-with Exp_Tss;   use Exp_Tss;
-with Exp_Util;  use Exp_Util;
-with Freeze;    use Freeze;
-with GNAT_CUDA; use GNAT_CUDA;
-with Lib;       use Lib;
-with Nlists;    use Nlists;
-with Nmake;     use Nmake;
-with Opt;       use Opt;
-with Output;    use Output;
-with Restrict;  use Restrict;
-with Rident;    use Rident;
-with Rtsfind;   use Rtsfind;
-with Sinfo;     use Sinfo;
-with Sem;       use Sem;
-with Sem_Aux;   use Sem_Aux;
-with Sem_Ch3;   use Sem_Ch3;
-with Sem_Ch7;   use Sem_Ch7;
-with Sem_Ch8;   use Sem_Ch8;
-with Sem_Res;   use Sem_Res;
-with Sem_Util;  use Sem_Util;
-with Snames;    use Snames;
-with Stand;     use Stand;
-with Tbuild;    use Tbuild;
-with Ttypes;    use Ttypes;
-with Uintp;     use Uintp;
+with Atree;          use Atree;
+with Contracts;      use Contracts;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch9;        use Exp_Ch9;
+with Exp_Ch11;       use Exp_Ch11;
+with Exp_Dbug;       use Exp_Dbug;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Prag;       use Exp_Prag;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with GNAT_CUDA;      use GNAT_CUDA;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Uintp;          use Uintp;
 
 package body Exp_Ch7 is
 
@@ -2806,7 +2810,7 @@ package body Exp_Ch7 is
             --  Perform minor decoration in order to set the master and the
             --  storage pool attributes.
 
-            Set_Ekind (Ptr_Typ, E_Access_Type);
+            Mutate_Ekind (Ptr_Typ, E_Access_Type);
             Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
             Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
 

@@ -78,7 +78,7 @@
 extern "C" {
 #endif
 
-extern void __gnat_raise_program_error (const char *, int);
+extern void __gnat_raise_program_error (const void *, int);
 
 /* Addresses of exception data blocks for predefined exceptions.  Tasking_Error
    is not used in this unit, and the abort signal is only used on IRIX.
@@ -89,16 +89,15 @@ extern struct Exception_Data program_error;
 extern struct Exception_Data storage_error;
 
 /* For the Cert run time we use the regular raise exception routine because
-   Raise_From_Signal_Handler is not available.  */
+   __gnat_raise_from_signal_handler is not available.  */
 #ifdef CERT
-#define Raise_From_Signal_Handler \
-                      __gnat_raise_exception
-extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
+#define Raise_From_Signal_Handler __gnat_raise_exception
 #else
-#define Raise_From_Signal_Handler \
-                      ada__exceptions__raise_from_signal_handler
-extern void Raise_From_Signal_Handler (struct Exception_Data *, const char *);
+#define Raise_From_Signal_Handler __gnat_raise_from_signal_handler
 #endif
+
+extern void Raise_From_Signal_Handler (struct Exception_Data *, const void *)
+  ATTRIBUTE_NORETURN;
 
 /* Global values computed by the binder.  Note that these variables are
    declared here, not in the binder file, to avoid having unresolved

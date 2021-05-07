@@ -53,6 +53,7 @@ package Exp_Code is
    --  with subsequent calls to Clobber_Get_Next.
 
    function Clobber_Get_Next return System.Address;
+   pragma Convention (C, Clobber_Get_Next);
    --  Can only be called after a previous call to Clobber_Setup. The
    --  returned value is a pointer to a null terminated (C format) string
    --  for the next register argument. Null_Address is returned when there

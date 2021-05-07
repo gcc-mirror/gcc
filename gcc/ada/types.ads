@@ -312,8 +312,7 @@ package Types is
    --  The tree Id values start at zero, because we use zero for Empty (to
    --  allow a zero test for Empty).
 
-   Node_High_Bound : constant :=
-     (if Standard'Address_Size = 32 then 299_999_999 else 1_999_999_999);
+   Node_High_Bound : constant := 1_999_999_999;
 
    Elist_Low_Bound : constant := -199_999_999;
    --  The Elist_Id values are subscripts into an array of elist headers which
@@ -387,7 +386,7 @@ package Types is
    --  the special values Empty and Error are subscripts into this table.
    --  See package Atree for further details.
 
-   type Node_Id is range Node_Low_Bound .. Node_High_Bound;
+   type Node_Id is range Node_Low_Bound .. Node_High_Bound with Size => 32;
    --  Type used to identify nodes in the tree
 
    subtype Entity_Id is Node_Id;
@@ -436,7 +435,7 @@ package Types is
    --  attempt to apply list operations to No_List will cause a (detected)
    --  error.
 
-   type List_Id is range List_Low_Bound .. List_High_Bound;
+   type List_Id is range List_Low_Bound .. List_High_Bound with Size => 32;
    --  Type used to identify a node list
 
    No_List : constant List_Id := List_High_Bound;
@@ -461,7 +460,7 @@ package Types is
    --  of the tree, allowing nodes to be members of more than one such list
    --  (see package Elists for further details).
 
-   type Elist_Id is range Elist_Low_Bound .. Elist_High_Bound;
+   type Elist_Id is range Elist_Low_Bound .. Elist_High_Bound with Size => 32;
    --  Type used to identify an element list (Elist header table subscript)
 
    No_Elist : constant Elist_Id := Elist_Low_Bound;
@@ -491,7 +490,8 @@ package Types is
    --  String_Id values are used to identify entries in the strings table. They
    --  are subscripts into the Strings table defined in package Stringt.
 
-   type String_Id is range Strings_Low_Bound .. Strings_High_Bound;
+   type String_Id is range Strings_Low_Bound .. Strings_High_Bound
+     with Size => 32;
    --  Type used to identify entries in the strings table
 
    No_String : constant String_Id := Strings_Low_Bound;
@@ -817,6 +817,38 @@ package Types is
    --  then Default_C_Record_Mechanism is set to 32, and the meaning is to use
    --  By_Reference if the size is greater than 32, and By_Copy otherwise.
 
+   ---------------------------------
+   -- Component_Alignment Control --
+   ---------------------------------
+
+   --  There are four types of alignment possible for array and record
+   --  types, and a field in the type entities contains a value of the
+   --  following type indicating which alignment choice applies. For full
+   --  details of the meaning of these alignment types, see description
+   --  of the Component_Alignment pragma.
+
+   type Component_Alignment_Kind is (
+      Calign_Default,          -- default alignment
+      Calign_Component_Size,   -- natural alignment for component size
+      Calign_Component_Size_4, -- natural for size <= 4, 4 for size >= 4
+      Calign_Storage_Unit);    -- all components byte aligned
+
+   -----------------------------------
+   -- Floating Point Representation --
+   -----------------------------------
+
+   type Float_Rep_Kind is (
+      IEEE_Binary,  -- IEEE 754p conforming binary format
+      AAMP);        -- AAMP format
+
+   ----------------------------
+   -- Small_Paren_Count_Type --
+   ----------------------------
+
+   --  See Paren_Count in Atree for documentation
+
+   subtype Small_Paren_Count_Type is Nat range 0 .. 3;
+
    ------------------------------
    -- Run-Time Exception Codes --
    ------------------------------
@@ -898,6 +930,7 @@ package Types is
       SE_Object_Too_Large,               -- 35
       PE_Stream_Operation_Not_Allowed,   -- 36
       PE_Build_In_Place_Mismatch);       -- 37
+   pragma Convention (C, RT_Exception_Code);
 
    Last_Reason_Code : constant :=
      RT_Exception_Code'Pos (RT_Exception_Code'Last);
@@ -947,5 +980,22 @@ package Types is
               SE_Explicit_Raise                 => SE_Reason,
               SE_Infinite_Recursion             => SE_Reason,
               SE_Object_Too_Large               => SE_Reason);
+
+   --  Types for field offsets/sizes used in Seinfo, Sinfo.Nodes and
+   --  Einfo.Entities:
+
+   type Field_Offset is new Nat;
+   --  Offset of a node field, in units of the size of the field, which is
+   --  always a power of 2.
+
+   subtype Field_Size_In_Bits is Field_Offset with Predicate =>
+     Field_Size_In_Bits in 1 | 2 | 4 | 8 | 32;
+
+   subtype Opt_Field_Offset is Field_Offset'Base range -1 .. Field_Offset'Last;
+   No_Field_Offset : constant Opt_Field_Offset := Opt_Field_Offset'First;
+
+   type Offset_Array_Index is new Nat;
+   type Offset_Array is
+     array (Offset_Array_Index range <>) of Opt_Field_Offset;
 
 end Types;

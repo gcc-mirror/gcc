@@ -23,53 +23,56 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Casing;   use Casing;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Erroutc;  use Erroutc;
-with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
-with Freeze;   use Freeze;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet.Sp; use Namet.Sp;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Attr; use Sem_Attr;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Disp; use Sem_Disp;
-with Sem_Elab; use Sem_Elab;
-with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Warn; use Sem_Warn;
-with Sem_Type; use Sem_Type;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Stand;    use Stand;
+with Casing;         use Casing;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Erroutc;        use Erroutc;
+with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch11;       use Exp_Ch11;
+with Exp_Util;       use Exp_Util;
+with Fname;          use Fname;
+with Freeze;         use Freeze;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet.Sp;       use Namet.Sp;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Attr;       use Sem_Attr;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Res;        use Sem_Res;
+with Sem_Warn;       use Sem_Warn;
+with Sem_Type;       use Sem_Type;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Stand;          use Stand;
 with Style;
-with Stringt;  use Stringt;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uname;    use Uname;
+with Stringt;        use Stringt;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Uname;          use Uname;
 
 with GNAT.Heap_Sort_G;
-with GNAT.HTable; use GNAT.HTable;
+with GNAT.HTable;    use GNAT.HTable;
 
 package body Sem_Util is
 
@@ -269,14 +272,12 @@ package body Sem_Util is
       --  Construct an integer literal representing an accessibility level
       --  with its type set to Natural.
 
-      function Innermost_Master_Scope_Depth
-        (N : Node_Id) return Uint;
+      function Innermost_Master_Scope_Depth (N : Node_Id) return Uint;
       --  Returns the scope depth of the given node's innermost
       --  enclosing dynamic scope (effectively the accessibility
       --  level of the innermost enclosing master).
 
-      function Function_Call_Or_Allocator_Level
-        (N : Node_Id) return Node_Id;
+      function Function_Call_Or_Allocator_Level (N : Node_Id) return Node_Id;
       --  Centralized processing of subprogram calls which may appear in
       --  prefix notation.
 
@@ -284,10 +285,9 @@ package body Sem_Util is
       -- Innermost_Master_Scope_Depth --
       ----------------------------------
 
-      function Innermost_Master_Scope_Depth
-        (N : Node_Id) return Uint
-      is
+      function Innermost_Master_Scope_Depth (N : Node_Id) return Uint is
          Encl_Scop           : Entity_Id;
+         Ent                 : Entity_Id;
          Node_Par            : Node_Id := Parent (N);
          Master_Lvl_Modifier : Int     := 0;
 
@@ -301,12 +301,10 @@ package body Sem_Util is
          --  among other things. These cases are detected properly ???
 
          while Present (Node_Par) loop
+            Ent := Defining_Entity_Or_Empty (Node_Par);
 
-            if Present (Defining_Entity
-                         (Node_Par, Empty_On_Errors => True))
-            then
-               Encl_Scop := Nearest_Dynamic_Scope
-                              (Defining_Entity (Node_Par));
+            if Present (Ent) then
+               Encl_Scop := Nearest_Dynamic_Scope (Ent);
 
                --  Ignore transient scopes made during expansion
 
@@ -6476,7 +6474,6 @@ package body Sem_Util is
                      Remove (Op_List, Node (Second));
 
                   else
-                     pragma Assert (False);
                      raise Program_Error;
                   end if;
                end if;
@@ -6653,6 +6650,99 @@ package body Sem_Util is
 
       return N;
    end Compile_Time_Constraint_Error;
+
+   --------------------------------
+   -- Collect_Types_In_Hierarchy --
+   --------------------------------
+
+   function Collect_Types_In_Hierarchy
+     (Typ                : Entity_Id;
+      Examine_Components : Boolean := False) return Elist_Id
+   is
+      Results : Elist_Id;
+
+      procedure Process_Type (Typ : Entity_Id);
+      --  Collect type Typ if it satisfies function Predicate. Do so for its
+      --  parent type, base type, progenitor types, and any component types.
+
+      ------------------
+      -- Process_Type --
+      ------------------
+
+      procedure Process_Type (Typ : Entity_Id) is
+         Comp       : Entity_Id;
+         Iface_Elmt : Elmt_Id;
+
+      begin
+         if not Is_Type (Typ) or else Error_Posted (Typ) then
+            return;
+         end if;
+
+         --  Collect the current type if it satisfies the predicate
+
+         if Predicate (Typ) then
+            Append_Elmt (Typ, Results);
+         end if;
+
+         --  Process component types
+
+         if Examine_Components then
+
+            --  Examine components and discriminants
+
+            if Is_Concurrent_Type (Typ)
+              or else Is_Incomplete_Or_Private_Type (Typ)
+              or else Is_Record_Type (Typ)
+              or else Has_Discriminants (Typ)
+            then
+               Comp := First_Component_Or_Discriminant (Typ);
+
+               while Present (Comp) loop
+                  Process_Type (Etype (Comp));
+
+                  Next_Component_Or_Discriminant (Comp);
+               end loop;
+
+            --  Examine array components
+
+            elsif Ekind (Typ) = E_Array_Type then
+               Process_Type (Component_Type (Typ));
+            end if;
+         end if;
+
+         --  Examine parent type
+
+         if Etype (Typ) /= Typ then
+            Process_Type (Etype (Typ));
+         end if;
+
+         --  Examine base type
+
+         if Base_Type (Typ) /= Typ then
+            Process_Type (Base_Type (Typ));
+         end if;
+
+         --  Examine interfaces
+
+         if Is_Record_Type (Typ)
+           and then Present (Interfaces (Typ))
+         then
+            Iface_Elmt := First_Elmt (Interfaces (Typ));
+            while Present (Iface_Elmt) loop
+               Process_Type (Node (Iface_Elmt));
+
+               Next_Elmt (Iface_Elmt);
+            end loop;
+         end if;
+      end Process_Type;
+
+   --  Start of processing for Collect_Types_In_Hierarchy
+
+   begin
+      Results := New_Elmt_List;
+      Process_Type (Typ);
+      return Results;
+   end Collect_Types_In_Hierarchy;
 
    -----------------------
    -- Conditional_Delay --
@@ -6983,10 +7073,23 @@ package body Sem_Util is
    -- Defining_Entity --
    ---------------------
 
-   function Defining_Entity
-     (N               : Node_Id;
-      Empty_On_Errors : Boolean := False) return Entity_Id
-   is
+   function Defining_Entity (N : Node_Id) return Entity_Id is
+      Ent : constant Entity_Id := Defining_Entity_Or_Empty (N);
+
+   begin
+      if Present (Ent) then
+         return Ent;
+
+      else
+         raise Program_Error;
+      end if;
+   end Defining_Entity;
+
+   ------------------------------
+   -- Defining_Entity_Or_Empty --
+   ------------------------------
+
+   function Defining_Entity_Or_Empty (N : Node_Id) return Entity_Id is
    begin
       case Nkind (N) is
          when N_Abstract_Subprogram_Declaration
@@ -7085,13 +7188,9 @@ package body Sem_Util is
             return Entity (Identifier (N));
 
          when others =>
-            if Empty_On_Errors then
-               return Empty;
-            end if;
-
-            raise Program_Error;
+            return Empty;
       end case;
-   end Defining_Entity;
+   end Defining_Entity_Or_Empty;
 
    --------------------------
    -- Denotes_Discriminant --
@@ -8454,7 +8553,7 @@ package body Sem_Util is
       --  will be detected. Any_Type insures that no cascaded errors will occur
 
       else
-         Set_Ekind (Def_Id, E_Void);
+         Mutate_Ekind (Def_Id, E_Void);
          Set_Etype (Def_Id, Any_Type);
       end if;
 
@@ -12435,6 +12534,84 @@ package body Sem_Util is
       return False;
    end Has_Fully_Default_Initializing_DIC_Pragma;
 
+   ---------------------------------
+   -- Has_Inferable_Discriminants --
+   ---------------------------------
+
+   function Has_Inferable_Discriminants (N : Node_Id) return Boolean is
+
+      function Prefix_Is_Formal_Parameter (N : Node_Id) return Boolean;
+      --  Determines whether the left-most prefix of a selected component is a
+      --  formal parameter in a subprogram. Assumes N is a selected component.
+
+      --------------------------------
+      -- Prefix_Is_Formal_Parameter --
+      --------------------------------
+
+      function Prefix_Is_Formal_Parameter (N : Node_Id) return Boolean is
+         Sel_Comp : Node_Id;
+
+      begin
+         --  Move to the left-most prefix by climbing up the tree
+
+         Sel_Comp := N;
+         while Present (Parent (Sel_Comp))
+           and then Nkind (Parent (Sel_Comp)) = N_Selected_Component
+         loop
+            Sel_Comp := Parent (Sel_Comp);
+         end loop;
+
+         return Is_Formal (Entity (Prefix (Sel_Comp)));
+      end Prefix_Is_Formal_Parameter;
+
+   --  Start of processing for Has_Inferable_Discriminants
+
+   begin
+      --  For selected components, the subtype of the selector must be a
+      --  constrained Unchecked_Union. If the component is subject to a
+      --  per-object constraint, then the enclosing object must have inferable
+      --  discriminants.
+
+      if Nkind (N) = N_Selected_Component then
+         if Has_Per_Object_Constraint (Entity (Selector_Name (N))) then
+
+            --  A small hack. If we have a per-object constrained selected
+            --  component of a formal parameter, return True since we do not
+            --  know the actual parameter association yet.
+
+            if Prefix_Is_Formal_Parameter (N) then
+               return True;
+
+            --  Otherwise, check the enclosing object and the selector
+
+            else
+               return Has_Inferable_Discriminants (Prefix (N))
+                 and then Has_Inferable_Discriminants (Selector_Name (N));
+            end if;
+
+         --  The call to Has_Inferable_Discriminants will determine whether
+         --  the selector has a constrained Unchecked_Union nominal type.
+
+         else
+            return Has_Inferable_Discriminants (Selector_Name (N));
+         end if;
+
+      --  A qualified expression has inferable discriminants if its subtype
+      --  mark is a constrained Unchecked_Union subtype.
+
+      elsif Nkind (N) = N_Qualified_Expression then
+         return Is_Unchecked_Union (Etype (Subtype_Mark (N)))
+           and then Is_Constrained (Etype (Subtype_Mark (N)));
+
+      --  For all other names, it is sufficient to have a constrained
+      --  Unchecked_Union nominal subtype.
+
+      else
+         return Is_Unchecked_Union (Base_Type (Etype (N)))
+           and then Is_Constrained (Etype (N));
+      end if;
+   end Has_Inferable_Discriminants;
+
    --------------------
    -- Has_Infinities --
    --------------------
@@ -13697,7 +13874,7 @@ package body Sem_Util is
       elsif Is_Record_Type (Typ) then
          Comp := First_Component (Typ);
          while Present (Comp) loop
-            if Is_Volatile_Object (Comp) then
+            if Is_Volatile_Object_Ref (Comp) then
                return True;
             end if;
 
@@ -14868,8 +15045,6 @@ package body Sem_Util is
 
             Get_Next_Interp (I, It);
          end loop;
-
-         End_Interp_List;
 
       else
          --  Prefix is unambiguous: mark the original prefix (which might
@@ -17052,7 +17227,8 @@ package body Sem_Util is
 
    function Is_Full_Access_Object (N : Node_Id) return Boolean is
    begin
-      return Is_Atomic_Object (N) or else Is_Volatile_Full_Access_Object (N);
+      return Is_Atomic_Object (N)
+        or else Is_Volatile_Full_Access_Object_Ref (N);
    end Is_Full_Access_Object;
 
    -------------------------------
@@ -20782,11 +20958,11 @@ package body Sem_Util is
         and then Scope (Scope (Scope (Root))) = Standard_Standard;
    end Is_Visibly_Controlled;
 
-   --------------------------------------
-   --  Is_Volatile_Full_Access_Object  --
-   --------------------------------------
+   ----------------------------------------
+   -- Is_Volatile_Full_Access_Object_Ref --
+   ----------------------------------------
 
-   function Is_Volatile_Full_Access_Object (N : Node_Id) return Boolean is
+   function Is_Volatile_Full_Access_Object_Ref (N : Node_Id) return Boolean is
       function Is_VFA_Object_Entity (Id : Entity_Id) return Boolean;
       --  Determine whether arbitrary entity Id denotes an object that is
       --  Volatile_Full_Access.
@@ -20804,7 +20980,7 @@ package body Sem_Util is
                        Is_Volatile_Full_Access (Etype (Id)));
       end Is_VFA_Object_Entity;
 
-   --  Start of processing for Is_Volatile_Full_Access_Object
+   --  Start of processing for Is_Volatile_Full_Access_Object_Ref
 
    begin
       if Is_Entity_Name (N) then
@@ -20819,7 +20995,7 @@ package body Sem_Util is
       else
          return False;
       end if;
-   end Is_Volatile_Full_Access_Object;
+   end Is_Volatile_Full_Access_Object_Ref;
 
    --------------------------
    -- Is_Volatile_Function --
@@ -20851,11 +21027,11 @@ package body Sem_Util is
       end if;
    end Is_Volatile_Function;
 
-   ------------------------
-   -- Is_Volatile_Object --
-   ------------------------
+   ----------------------------
+   -- Is_Volatile_Object_Ref --
+   ----------------------------
 
-   function Is_Volatile_Object (N : Node_Id) return Boolean is
+   function Is_Volatile_Object_Ref (N : Node_Id) return Boolean is
       function Is_Volatile_Object_Entity (Id : Entity_Id) return Boolean;
       --  Determine whether arbitrary entity Id denotes an object that is
       --  Volatile.
@@ -20901,7 +21077,7 @@ package body Sem_Util is
          then
             return True;
 
-         elsif Is_Volatile_Object (P) then
+         elsif Is_Volatile_Object_Ref (P) then
             return True;
 
          else
@@ -20909,7 +21085,7 @@ package body Sem_Util is
          end if;
       end Prefix_Has_Volatile_Components;
 
-   --  Start of processing for Is_Volatile_Object
+   --  Start of processing for Is_Volatile_Object_Ref
 
    begin
       if Is_Entity_Name (N) then
@@ -20928,7 +21104,7 @@ package body Sem_Util is
       else
          return False;
       end if;
-   end Is_Volatile_Object;
+   end Is_Volatile_Object_Ref;
 
    -----------------------------
    -- Iterate_Call_Parameters --
@@ -22727,9 +22903,6 @@ package body Sem_Util is
       --  This routine performs low-level tree manipulations and needs access
       --  to the internals of the tree.
 
-      use Atree.Unchecked_Access;
-      use Atree_Private_Part;
-
       EWA_Level : Nat := 0;
       --  This counter keeps track of how many N_Expression_With_Actions nodes
       --  are encountered during a depth-first traversal of the subtree. These
@@ -22881,6 +23054,7 @@ package body Sem_Util is
       --  valid syntactic fields. Par_Nod is the expected parent of the
       --  syntactic field. Flag Semantic should be set when the input is a
       --  semantic field.
+      --  ????So it's visiting sem fields twice?
 
       procedure Visit_Itype (Itype : Entity_Id);
       --  Visit itype Itype. This action may create a new entity for Itype and
@@ -23271,6 +23445,25 @@ package body Sem_Util is
       function Copy_Node_With_Replacement (N : Node_Id) return Node_Id is
          Result : Node_Id;
 
+         function Transform (U : Union_Id) return Union_Id;
+         --  Copies one field, replacing N with Result
+
+         ---------------
+         -- Transform --
+         ---------------
+
+         function Transform (U : Union_Id) return Union_Id is
+         begin
+            return Copy_Field_With_Replacement
+                     (Field   => U,
+                      Old_Par => N,
+                      New_Par => Result);
+         end Transform;
+
+         procedure Walk is new Walk_Sinfo_Fields_Pairwise (Transform);
+
+      --  Start of processing for Copy_Node_With_Replacement
+
       begin
          --  Assume that the node must be returned unchanged
 
@@ -23281,35 +23474,7 @@ package body Sem_Util is
 
             Result := New_Copy (N);
 
-            Set_Field1 (Result,
-              Copy_Field_With_Replacement
-                (Field   => Field1 (Result),
-                 Old_Par => N,
-                 New_Par => Result));
-
-            Set_Field2 (Result,
-              Copy_Field_With_Replacement
-                (Field   => Field2 (Result),
-                 Old_Par => N,
-                 New_Par => Result));
-
-            Set_Field3 (Result,
-              Copy_Field_With_Replacement
-                (Field   => Field3 (Result),
-                 Old_Par => N,
-                 New_Par => Result));
-
-            Set_Field4 (Result,
-              Copy_Field_With_Replacement
-                (Field   => Field4 (Result),
-                 Old_Par => N,
-                 New_Par => Result));
-
-            Set_Field5 (Result,
-              Copy_Field_With_Replacement
-                (Field   => Field5 (Result),
-                 Old_Par => N,
-                 New_Par => Result));
+            Walk (Result, Result);
 
             --  Update the Comes_From_Source and Sloc attributes of the node
             --  in case the caller has supplied new values.
@@ -23449,7 +23614,7 @@ package body Sem_Util is
          --  A new source location defaults the Comes_From_Source attribute
 
          if New_Sloc /= No_Location then
-            Set_Comes_From_Source (N, Default_Node.Comes_From_Source);
+            Set_Comes_From_Source (N, Get_Comes_From_Source_Default);
             Set_Sloc              (N, New_Sloc);
          end if;
       end Update_CFS_Sloc;
@@ -24056,25 +24221,17 @@ package body Sem_Util is
             EWA_Inner_Scope_Level := EWA_Inner_Scope_Level + 1;
          end if;
 
-         Visit_Field
-          (Field   => Field1 (N),
-           Par_Nod => N);
+         declare
+            procedure Action (U : Union_Id);
+            procedure Action (U : Union_Id) is
+            begin
+               Visit_Field (Field => U, Par_Nod => N);
+            end Action;
 
-         Visit_Field
-          (Field   => Field2 (N),
-           Par_Nod => N);
-
-         Visit_Field
-          (Field   => Field3 (N),
-           Par_Nod => N);
-
-         Visit_Field
-          (Field   => Field4 (N),
-           Par_Nod => N);
-
-         Visit_Field
-          (Field   => Field5 (N),
-           Par_Nod => N);
+            procedure Walk is new Walk_Sinfo_Fields (Action);
+         begin
+            Walk (N);
+         end;
 
          if EWA_Level > 0
            and then Nkind (N) in N_Block_Statement
@@ -24284,7 +24441,7 @@ package body Sem_Util is
                 (Chars (Related_Id), Suffix, Suffix_Index, Prefix));
 
    begin
-      Set_Ekind          (N, Kind);
+      Mutate_Ekind       (N, Kind);
       Set_Is_Internal    (N, True);
       Append_Entity      (N, Scope_Id);
       Set_Public_Status  (N);
@@ -24309,7 +24466,7 @@ package body Sem_Util is
       N : constant Entity_Id := Make_Temporary (Sloc_Value, Id_Char);
 
    begin
-      Set_Ekind       (N, Kind);
+      Mutate_Ekind    (N, Kind);
       Set_Is_Internal (N, True);
       Append_Entity   (N, Scope_Id);
 
@@ -26008,14 +26165,16 @@ package body Sem_Util is
          Partial_DIC_Proc := Partial_DIC_Procedure (From_Typ);
 
          --  The setting of the attributes is intentionally conservative. This
-         --  prevents accidental clobbering of enabled attributes.
+         --  prevents accidental clobbering of enabled attributes. We need to
+         --  call Base_Type twice, because it is sometimes not set to an actual
+         --  base type.
 
          if Has_Inherited_DIC (From_Typ) then
-            Set_Has_Inherited_DIC (Typ);
+            Set_Has_Inherited_DIC (Base_Type (Base_Type (Typ)));
          end if;
 
          if Has_Own_DIC (From_Typ) then
-            Set_Has_Own_DIC (Typ);
+            Set_Has_Own_DIC (Base_Type (Base_Type (Typ)));
          end if;
 
          if Present (DIC_Proc) and then No (DIC_Procedure (Typ)) then
@@ -27162,66 +27321,6 @@ package body Sem_Util is
 
       return False;
    end Scope_Within_Or_Same;
-
-   --------------------
-   -- Set_Convention --
-   --------------------
-
-   procedure Set_Convention (E : Entity_Id; Val : Snames.Convention_Id) is
-   begin
-      Basic_Set_Convention (E, Val);
-
-      if Is_Type (E)
-        and then Is_Access_Subprogram_Type (Base_Type (E))
-        and then Has_Foreign_Convention (E)
-      then
-         Set_Can_Use_Internal_Rep (E, False);
-      end if;
-
-      --  If E is an object, including a component, and the type of E is an
-      --  anonymous access type with no convention set, then also set the
-      --  convention of the anonymous access type. We do not do this for
-      --  anonymous protected types, since protected types always have the
-      --  default convention.
-
-      if Present (Etype (E))
-        and then (Is_Object (E)
-
-                   --  Allow E_Void (happens for pragma Convention appearing
-                   --  in the middle of a record applying to a component)
-
-                   or else Ekind (E) = E_Void)
-      then
-         declare
-            Typ : constant Entity_Id := Etype (E);
-
-         begin
-            if Ekind (Typ) in E_Anonymous_Access_Type
-                            | E_Anonymous_Access_Subprogram_Type
-              and then not Has_Convention_Pragma (Typ)
-            then
-               Basic_Set_Convention (Typ, Val);
-               Set_Has_Convention_Pragma (Typ);
-
-               --  And for the access subprogram type, deal similarly with the
-               --  designated E_Subprogram_Type, which is always internal.
-
-               if Ekind (Typ) = E_Anonymous_Access_Subprogram_Type then
-                  declare
-                     Dtype : constant Entity_Id := Designated_Type (Typ);
-                  begin
-                     if Ekind (Dtype) = E_Subprogram_Type
-                       and then not Has_Convention_Pragma (Dtype)
-                     then
-                        Basic_Set_Convention (Dtype, Val);
-                        Set_Has_Convention_Pragma (Dtype);
-                     end if;
-                  end;
-               end if;
-            end if;
-         end;
-      end if;
-   end Set_Convention;
 
    ------------------------
    -- Set_Current_Entity --
@@ -31143,9 +31242,9 @@ package body Sem_Util is
                       (Loc, Access_Type_Id,
                        Type_Definition => Access_Type_Def);
             begin
-               Set_Ekind (Temp_Id, E_Variable);
+               Mutate_Ekind (Temp_Id, E_Variable);
                Set_Etype (Temp_Id, Access_Type_Id);
-               Set_Ekind (Access_Type_Id, E_Access_Type);
+               Mutate_Ekind (Access_Type_Id, E_Access_Type);
 
                if Append_Decls_In_Reverse_Order then
                   Append_Item (Temp_Decl, Is_Eval_Stmt => False);

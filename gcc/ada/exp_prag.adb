@@ -23,38 +23,42 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Util; use Exp_Util;
-with Expander; use Expander;
-with Inline;   use Inline;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Prag; use Sem_Prag;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stringt;  use Stringt;
-with Stand;    use Stand;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Validsw;  use Validsw;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Ch11;       use Exp_Ch11;
+with Exp_Util;       use Exp_Util;
+with Expander;       use Expander;
+with Inline;         use Inline;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stringt;        use Stringt;
+with Stand;          use Stand;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Validsw;        use Validsw;
 
 package body Exp_Prag is
 
@@ -1566,7 +1570,7 @@ package body Exp_Prag is
                   --  effects). Assign prefix value to temp on Eval_Statement
                   --  list, so assignment will be executed conditionally.
 
-                  Set_Ekind (Temp, E_Variable);
+                  Mutate_Ekind (Temp, E_Variable);
                   Set_Suppress_Initialization (Temp);
                   Analyze (Decl);
 
@@ -2035,7 +2039,7 @@ package body Exp_Prag is
                     Expression => Relocate_Node (Rtti_Name))))));
 
             Rewrite (Expression (Foreign_Data),
-              Unchecked_Convert_To (Standard_A_Char,
+              OK_Convert_To (Standard_Address,
                 Make_Attribute_Reference (Loc,
                   Prefix         => Make_Identifier (Loc, Chars (Dum)),
                   Attribute_Name => Name_Address)));
@@ -2268,7 +2272,7 @@ package body Exp_Prag is
         Make_Defining_Identifier (Loc,
           Chars => New_External_Name (Chars (Pack_Id), "Initial_Condition"));
 
-      Set_Ekind                          (Proc_Id, E_Procedure);
+      Mutate_Ekind                       (Proc_Id, E_Procedure);
       Set_Is_Initial_Condition_Procedure (Proc_Id);
 
       --  Generate:

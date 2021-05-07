@@ -26,12 +26,14 @@
 pragma Style_Checks (All_Checks);
 --  Subprograms not all in alpha order
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Opt;      use Opt;
-with Output;   use Output;
-with Scans;    use Scans;
-with Widechar; use Widechar;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Opt;            use Opt;
+with Output;         use Output;
+with Scans;          use Scans;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Widechar;       use Widechar;
 
 with GNAT.Byte_Order_Mark; use GNAT.Byte_Order_Mark;
 

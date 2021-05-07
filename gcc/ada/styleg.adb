@@ -27,16 +27,18 @@
 --  checking rules. For documentation of these rules, see comments on the
 --  individual procedures.
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Csets;    use Csets;
-with Einfo;    use Einfo;
-with Err_Vars; use Err_Vars;
-with Opt;      use Opt;
-with Scans;    use Scans;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Stylesw;  use Stylesw;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Csets;          use Csets;
+with Einfo;          use Einfo;
+with Einfo.Utils;    use Einfo.Utils;
+with Err_Vars;       use Err_Vars;
+with Opt;            use Opt;
+with Scans;          use Scans;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinput;         use Sinput;
+with Stylesw;        use Stylesw;
 
 package body Styleg is
 

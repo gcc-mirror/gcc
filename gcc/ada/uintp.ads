@@ -531,10 +531,10 @@ private
    --  used for converting from one to the other are defined.
 
    type Uint_Entry is record
-      Length : Pos;
+      Length : aliased Pos;
       --  Length of entry in Udigits table in digits (i.e. in words)
 
-      Loc : Int;
+      Loc : aliased Int;
       --  Starting location in Udigits table of this Uint value
    end record;
 

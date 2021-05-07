@@ -26,10 +26,11 @@
 --  This package contains various utility procedures to assist in building
 --  specific types of tree nodes.
 
-with Namet; use Namet;
-with Sinfo; use Sinfo;
-with Types; use Types;
-with Uintp; use Uintp;
+with Namet;          use Namet;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Types;          use Types;
+with Uintp;          use Uintp;
 
 package Tbuild is
 

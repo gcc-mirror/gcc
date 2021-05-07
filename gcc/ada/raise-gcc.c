@@ -542,17 +542,17 @@ typedef struct
   /* ABI header, maximally aligned. */
 } _GNAT_Exception;
 
-/* The two constants below are specific ttype identifiers for special
+/* The three constants below are specific ttype identifiers for special
    exception ids.  Their type should match what a-exexpr exports.  */
 
-extern const int __gnat_others_value;
-#define GNAT_OTHERS      ((_Unwind_Ptr) &__gnat_others_value)
+extern char __gnat_others_value;
+#define GNAT_OTHERS ((Exception_Id) &__gnat_others_value)
 
-extern const int __gnat_all_others_value;
-#define GNAT_ALL_OTHERS  ((_Unwind_Ptr) &__gnat_all_others_value)
+extern char __gnat_all_others_value;
+#define GNAT_ALL_OTHERS ((Exception_Id) &__gnat_all_others_value)
 
-extern const int __gnat_unhandled_others_value;
-#define GNAT_UNHANDLED_OTHERS  ((_Unwind_Ptr) &__gnat_unhandled_others_value)
+extern char __gnat_unhandled_others_value;
+#define GNAT_UNHANDLED_OTHERS ((Exception_Id) &__gnat_unhandled_others_value)
 
 /* Describe the useful region data associated with an unwind context.  */
 
@@ -902,12 +902,10 @@ get_call_site_action_for (_Unwind_Ptr ip,
 #define Foreign_Data_For      __gnat_foreign_data_for
 #define EID_For               __gnat_eid_for
 
-extern bool Is_Handled_By_Others (_Unwind_Ptr eid);
-extern char Language_For (_Unwind_Ptr eid);
-
-extern void *Foreign_Data_For (_Unwind_Ptr eid);
-
-extern Exception_Id EID_For (_GNAT_Exception * e);
+extern bool Is_Handled_By_Others (Exception_Id eid);
+extern char Language_For         (Exception_Id eid);
+extern void *Foreign_Data_For    (Exception_Id eid);
+extern Exception_Id EID_For      (_GNAT_Exception *e);
 
 #define Foreign_Exception system__exceptions__foreign_exception
 extern struct Exception_Data Foreign_Exception;
@@ -928,7 +926,7 @@ exception_class_eq (const _GNAT_Exception *except,
 /* Return how CHOICE matches PROPAGATED_EXCEPTION.  */
 
 static enum action_kind
-is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
+is_handled_by (Exception_Id choice, _GNAT_Exception *propagated_exception)
 {
   /* All others choice match everything.  */
   if (choice == GNAT_ALL_OTHERS)
@@ -937,14 +935,10 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
   /* GNAT exception occurrence.  */
   if (exception_class_eq (propagated_exception, GNAT_EXCEPTION_CLASS))
     {
-      /* Pointer to the GNAT exception data corresponding to the propagated
-         occurrence.  */
-      _Unwind_Ptr E = (_Unwind_Ptr) EID_For (propagated_exception);
-
       if (choice == GNAT_UNHANDLED_OTHERS)
 	return unhandler;
 
-      E = (_Unwind_Ptr) EID_For (propagated_exception);
+      Exception_Id E = EID_For (propagated_exception);
 
       /* Base matching rules: An exception data (id) matches itself, "when
          all_others" matches anything and "when others" matches anything
@@ -960,7 +954,7 @@ is_handled_by (_Unwind_Ptr choice, _GNAT_Exception *propagated_exception)
   if (choice == GNAT_ALL_OTHERS
       || choice == GNAT_OTHERS
 #ifndef CERT
-      || choice == (_Unwind_Ptr) &Foreign_Exception
+      || choice == &Foreign_Exception
 #endif
       )
     return handler;
@@ -1057,25 +1051,25 @@ get_action_description_for (_Unwind_Ptr ip,
 	  /* Positive filters are for regular handlers.  */
 	  else if (ar_filter > 0)
 	    {
-              /* Do not catch an exception if the _UA_FORCE_UNWIND flag is
-                 passed (to follow the ABI).  */
-              if (!(uw_phase & _UA_FORCE_UNWIND))
-                {
+	      /* Do not catch an exception if the _UA_FORCE_UNWIND flag is
+		 passed (to follow the ABI).  */
+	      if (!(uw_phase & _UA_FORCE_UNWIND))
+		{
 		  enum action_kind act;
 
-                  /* See if the filter we have is for an exception which
-                     matches the one we are propagating.  */
-                  _Unwind_Ptr choice =
-		    get_ttype_entry_for (region, ar_filter);
+		  /* See if the filter we have is for an exception which
+		     matches the one we are propagating.  */
+		  Exception_Id choice
+		    = (Exception_Id) get_ttype_entry_for (region, ar_filter);
 
 		  act = is_handled_by (choice, gnat_exception);
-                  if (act != nothing)
-                    {
+		  if (act != nothing)
+		    {
 		      action->kind = act;
-                      action->ttype_filter = ar_filter;
-                      return;
-                    }
-                }
+		      action->ttype_filter = ar_filter;
+		      return;
+		    }
+		}
 	    }
 
 	  /* Negative filter values are for C++ exception specifications.

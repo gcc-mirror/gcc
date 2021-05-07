@@ -23,46 +23,50 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Eval_Fat; use Eval_Fat;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Ch4;  use Exp_Ch4;
-with Exp_Pakd; use Exp_Pakd;
-with Exp_Util; use Exp_Util;
-with Expander; use Expander;
-with Freeze;   use Freeze;
-with Lib;      use Lib;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Mech; use Sem_Mech;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Sprint;   use Sprint;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Validsw;  use Validsw;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Eval_Fat;       use Eval_Fat;
+with Exp_Ch11;       use Exp_Ch11;
+with Exp_Ch4;        use Exp_Ch4;
+with Exp_Pakd;       use Exp_Pakd;
+with Exp_Util;       use Exp_Util;
+with Expander;       use Expander;
+with Freeze;         use Freeze;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Sprint;         use Sprint;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Validsw;        use Validsw;
 
 package body Checks is
 
@@ -8154,7 +8158,7 @@ package body Checks is
             --  cause our object declaration to remain unanalyzed we must do
             --  some manual decoration.
 
-            Set_Ekind (Var_Id, E_Variable);
+            Mutate_Ekind (Var_Id, E_Variable);
             Set_Etype (Var_Id, Typ);
 
             Insert_Action (Exp,
@@ -9295,7 +9299,6 @@ package body Checks is
 
                      Append_To (New_Alts,
                        Make_Case_Expression_Alternative (Sloc (Alt),
-                         Actions          => No_List,
                          Discrete_Choices => Discrete_Choices (Alt),
                          Expression       => New_Exp));
 

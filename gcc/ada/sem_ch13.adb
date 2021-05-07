@@ -23,53 +23,57 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Disp; use Exp_Disp;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Par_SCO;  use Par_SCO;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Case; use Sem_Case;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Par_SCO;        use Par_SCO;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Case;       use Sem_Case;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
 with Table;
-with Targparm; use Targparm;
-with Ttypes;   use Ttypes;
-with Tbuild;   use Tbuild;
-with Urealp;   use Urealp;
-with Warnsw;   use Warnsw;
+with Targparm;       use Targparm;
+with Ttypes;         use Ttypes;
+with Tbuild;         use Tbuild;
+with Urealp;         use Urealp;
+with Warnsw;         use Warnsw;
 
 with GNAT.Heap_Sort_G;
 
@@ -1816,6 +1820,13 @@ package body Sem_Ch13 is
       Aspect := First (L);
       Aspect_Loop : while Present (Aspect) loop
          Analyze_One_Aspect : declare
+
+            Aspect_Exit : exception;
+            --  This exception is used to exit aspect processing completely. It
+            --  is used when an error is detected, and no further processing is
+            --  required. It is also used if an earlier error has left the tree
+            --  in a state where the aspect should not be processed.
+
             Expr : constant Node_Id    := Expression (Aspect);
             Id   : constant Node_Id    := Identifier (Aspect);
             Loc  : constant Source_Ptr := Sloc (Aspect);
@@ -1853,6 +1864,17 @@ package body Sem_Ch13 is
 
             procedure Analyze_Aspect_Static;
             --  Ada 202x (AI12-0075): Perform analysis of aspect Static
+
+            procedure Check_Expr_Is_OK_Static_Expression
+              (Expr : Node_Id;
+               Typ  : Entity_Id := Empty);
+            --  Check the specified expression Expr to make sure that it is a
+            --  static expression of the given type (i.e. it will be analyzed
+            --  and resolved using this type, which can be any valid argument
+            --  to Resolve, e.g. Any_Integer is OK). If not, give an error
+            --  and raise Aspect_Exit. If Typ is left Empty, then any static
+            --  expression is allowed. Includes checking that the expression
+            --  does not raise Constraint_Error.
 
             function Make_Aitem_Pragma
               (Pragma_Argument_Associations : List_Id;
@@ -2711,6 +2733,42 @@ package body Sem_Ch13 is
                end if;
             end Analyze_Aspect_Yield;
 
+            ----------------------------------------
+            -- Check_Expr_Is_OK_Static_Expression --
+            ----------------------------------------
+
+            procedure Check_Expr_Is_OK_Static_Expression
+              (Expr : Node_Id;
+               Typ  : Entity_Id := Empty)
+            is
+            begin
+               if Present (Typ) then
+                  Analyze_And_Resolve (Expr, Typ);
+               else
+                  Analyze_And_Resolve (Expr);
+               end if;
+
+               --  An expression cannot be considered static if its resolution
+               --  failed or if it's erroneous. Stop the analysis of the
+               --  related aspect.
+
+               if Etype (Expr) = Any_Type or else Error_Posted (Expr) then
+                  raise Aspect_Exit;
+
+               elsif Is_OK_Static_Expression (Expr) then
+                  return;
+
+               --  Finally, we have a real error
+
+               else
+                  Error_Msg_Name_1 := Nam;
+                  Flag_Non_Static_Expr
+                    ("entity for aspect% must be a static expression",
+                     Expr);
+                  raise Aspect_Exit;
+               end if;
+            end Check_Expr_Is_OK_Static_Expression;
+
             -----------------------
             -- Make_Aitem_Pragma --
             -----------------------
@@ -2874,7 +2932,10 @@ package body Sem_Ch13 is
                --  versions of the language. Allowed for them only for
                --  shared variable control aspects.
 
-               if Nkind (N) = N_Formal_Type_Declaration then
+               --  Original node is used in case expansion rewrote the node -
+               --  as is the case with generic derived types.
+
+               if Nkind (Original_Node (N)) = N_Formal_Type_Declaration then
                   if Ada_Version < Ada_2020 then
                      Error_Msg_N
                        ("aspect % not allowed for formal type declaration",
@@ -3883,6 +3944,32 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
+               --  No_Controlled_Parts
+
+               when Aspect_No_Controlled_Parts =>
+
+                  --  Check appropriate type argument
+
+                  if not Is_Type (E) then
+                     Error_Msg_N
+                       ("aspect % can only be applied to types", E);
+                  end if;
+
+                  --  Disallow subtypes
+
+                  if Nkind (Declaration_Node (E)) = N_Subtype_Declaration then
+                     Error_Msg_N
+                       ("aspect % cannot be applied to subtypes", E);
+                  end if;
+
+                  --  Resolve the expression to a boolean
+
+                  if Present (Expr) then
+                     Check_Expr_Is_OK_Static_Expression (Expr, Any_Boolean);
+                  end if;
+
+                  goto Continue;
+
                --  Obsolescent
 
                when Aspect_Obsolescent => declare
@@ -4860,6 +4947,8 @@ package body Sem_Ch13 is
                   end if;
                end;
             end if;
+         exception
+            when Aspect_Exit => null;
          end Analyze_One_Aspect;
 
          Next (Aspect);
@@ -10127,7 +10216,7 @@ package body Sem_Ch13 is
             FBody : Node_Id;
 
          begin
-            Set_Ekind (SIdB, E_Function);
+            Mutate_Ekind (SIdB, E_Function);
             Set_Is_Predicate_Function (SIdB);
 
             --  Build function body
@@ -10261,7 +10350,7 @@ package body Sem_Ch13 is
 
                --  Build function declaration
 
-               Set_Ekind (SId, E_Function);
+               Mutate_Ekind (SId, E_Function);
                Set_Is_Predicate_Function_M (SId);
                Set_Predicate_Function_M (Typ, SId);
 
@@ -10476,7 +10565,7 @@ package body Sem_Ch13 is
         Make_Defining_Identifier (Loc,
           Chars => New_External_Name (Chars (Typ), "Predicate"));
 
-      Set_Ekind (Func_Id, E_Function);
+      Mutate_Ekind (Func_Id, E_Function);
       Set_Etype (Func_Id, Standard_Boolean);
       Set_Is_Internal (Func_Id);
       Set_Is_Predicate_Function (Func_Id);
@@ -10996,6 +11085,7 @@ package body Sem_Ch13 is
             | Aspect_Max_Entry_Queue_Length
             | Aspect_Max_Queue_Length
             | Aspect_No_Caching
+            | Aspect_No_Controlled_Parts
             | Aspect_Obsolescent
             | Aspect_Part_Of
             | Aspect_Post

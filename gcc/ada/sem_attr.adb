@@ -25,61 +25,65 @@
 
 with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
 with Eval_Fat;
-with Exp_Dist; use Exp_Dist;
-with Exp_Util; use Exp_Util;
-with Expander; use Expander;
-with Freeze;   use Freeze;
-with Gnatvsn;  use Gnatvsn;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Util;       use Exp_Util;
+with Expander;       use Expander;
+with Freeze;         use Freeze;
+with Gnatvsn;        use Gnatvsn;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
 with Sdefault;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch10; use Sem_Ch10;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Dist; use Sem_Dist;
-with Sem_Elab; use Sem_Elab;
-with Sem_Elim; use Sem_Elim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch10;       use Sem_Ch10;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Elim;       use Sem_Elim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
 with Sem_Warn;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
 with System;
-with Stringt;  use Stringt;
+with Stringt;        use Stringt;
 with Style;
-with Stylesw;  use Stylesw;
-with Targparm; use Targparm;
-with Ttypes;   use Ttypes;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Uname;    use Uname;
-with Urealp;   use Urealp;
+with Stylesw;        use Stylesw;
+with Targparm;       use Targparm;
+with Ttypes;         use Ttypes;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Uname;          use Uname;
+with Urealp;         use Urealp;
 
-with System.CRC32; use System.CRC32;
+with System.CRC32;   use System.CRC32;
 
 package body Sem_Attr is
 
@@ -11477,14 +11481,14 @@ package body Sem_Attr is
                     ("access to atomic object cannot yield access-to-" &
                      "non-atomic type", P);
 
-               elsif Is_Volatile_Object (P)
+               elsif Is_Volatile_Object_Ref (P)
                  and then not Is_Volatile (Designated_Type (Typ))
                then
                   Error_Msg_F
                     ("access to volatile object cannot yield access-to-" &
                      "non-volatile type", P);
 
-               elsif Is_Volatile_Full_Access_Object (P)
+               elsif Is_Volatile_Full_Access_Object_Ref (P)
                  and then not Is_Volatile_Full_Access (Designated_Type (Typ))
                then
                   Error_Msg_F

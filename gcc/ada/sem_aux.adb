@@ -23,13 +23,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;  use Atree;
-with Einfo;  use Einfo;
-with Nlists; use Nlists;
-with Sinfo;  use Sinfo;
-with Snames; use Snames;
-with Stand;  use Stand;
-with Uintp;  use Uintp;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Nlists;         use Nlists;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Uintp;          use Uintp;
 
 package body Sem_Aux is
 

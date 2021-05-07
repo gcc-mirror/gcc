@@ -23,15 +23,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Einfo;    use Einfo;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Einfo;          use Einfo;
+with Einfo.Utils;    use Einfo.Utils;
 with Hostparm;
-with Lib;      use Lib;
-with Nlists;   use Nlists;
-with Output;   use Output;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Output;         use Output;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
 
 package body Uname is
 

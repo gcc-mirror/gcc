@@ -23,31 +23,35 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Exp_Code; use Exp_Code;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Par_SCO;  use Par_SCO;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Exp_Code;       use Exp_Code;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Par_SCO;        use Par_SCO;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Sem_Warn is
 
@@ -2308,7 +2312,7 @@ package body Sem_Warn is
 
          procedure Check_Inner_Package (Pack : Entity_Id) is
             E  : Entity_Id;
-            Un : constant Node_Id := Sinfo.Unit (Cnode);
+            Un : constant Node_Id := Sinfo.Nodes.Unit (Cnode);
 
             function Check_Use_Clause (N : Node_Id) return Traverse_Result;
             --  If N is a use_clause for Pack, emit warning

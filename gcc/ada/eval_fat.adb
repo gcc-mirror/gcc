@@ -23,10 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Opt;      use Opt;
-with Sem_Util; use Sem_Util;
+with Einfo;          use Einfo;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Opt;            use Opt;
+with Sem_Util;       use Sem_Util;
 
 package body Eval_Fat is
 

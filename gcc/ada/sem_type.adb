@@ -23,34 +23,38 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
 with Alloc;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Nlists;   use Nlists;
-with Errout;   use Errout;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Output;   use Output;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Util; use Sem_Util;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Nlists;         use Nlists;
+with Errout;         use Errout;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Output;         use Output;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Util;       use Sem_Util;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
 with Table;
-with Treepr;   use Treepr;
-with Uintp;    use Uintp;
+with Treepr;         use Treepr;
+with Uintp;          use Uintp;
 
-with GNAT.HTable; use GNAT.HTable;
+with GNAT.HTable;    use GNAT.HTable;
 
 package body Sem_Type is
 
@@ -239,6 +243,13 @@ package body Sem_Type is
          Get_First_Interp (N, I, It);
          while Present (It.Nam) loop
 
+            --  Avoid making duplicate entries in overloads
+
+            if Name = It.Nam
+              and then Base_Type (It.Typ) = Base_Type (T)
+            then
+               return;
+
             --  A user-defined subprogram hides another declared at an outer
             --  level, or one that is use-visible. So return if previous
             --  definition hides new one (which is either in an outer
@@ -248,7 +259,7 @@ package body Sem_Type is
             --  If this is a universal operation, retain the operator in case
             --  preference rule applies.
 
-            if (((Ekind (Name) = E_Function or else Ekind (Name) = E_Procedure)
+            elsif ((Ekind (Name) in E_Function | E_Procedure
                    and then Ekind (Name) = Ekind (It.Nam))
                  or else (Ekind (Name) = E_Operator
                            and then Ekind (It.Nam) = E_Function))
@@ -291,13 +302,6 @@ package body Sem_Type is
                   All_Interp.Table (I).Nam := Name;
                   return;
                end if;
-
-            --  Avoid making duplicate entries in overloads
-
-            elsif Name = It.Nam
-              and then Base_Type (It.Typ) = Base_Type (T)
-            then
-               return;
 
             --  Otherwise keep going
 
@@ -2226,16 +2230,6 @@ package body Sem_Type is
          end if;
       end if;
    end Disambiguate;
-
-   ---------------------
-   -- End_Interp_List --
-   ---------------------
-
-   procedure End_Interp_List is
-   begin
-      All_Interp.Table (All_Interp.Last) := No_Interp;
-      All_Interp.Increment_Last;
-   end End_Interp_List;
 
    -------------------------
    -- Entity_Matches_Spec --

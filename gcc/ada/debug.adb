@@ -112,7 +112,7 @@ package body Debug is
    --  d.y  Disable implicit pragma Elaborate_All on task bodies
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
-   --  d.A  Print Atree statistics
+   --  d.A
    --  d.B  Generate a bug box on abort_statement
    --  d.C  Generate concatenation call, do not generate inline code
    --  d.D  Disable errors on use of overriding keyword in Ada 95 mode
@@ -125,7 +125,7 @@ package body Debug is
    --  d.K  Do not reject components in extensions overlapping with parent
    --  d.L  Depend on back end for limited types in if and case expressions
    --  d.M  Relaxed RM semantics
-   --  d.N  Add node to all entities
+   --  d.N
    --  d.O  Dump internal SCO tables
    --  d.P  Previous (non-optimized) handling of length comparisons
    --  d.Q  Previous (incomplete) style check for binary operators
@@ -160,7 +160,7 @@ package body Debug is
    --  d_s  Stop elaboration checks on synchronous suspension
    --  d_t
    --  d_u
-   --  d_v
+   --  d_v  Enable additional checks and debug printouts in Atree
    --  d_w
    --  d_x  Disable inline expansion of Image attribute for enumeration types
    --  d_y
@@ -830,8 +830,6 @@ package body Debug is
    --       handling of Inline_Always by the front end on such targets. For the
    --       targets that do not use the GCC back end, this switch is ignored.
 
-   --  d.A  Print Atree statistics
-
    --  d.B  Generate a bug box when we see an abort_statement, even though
    --       there is no bug. Useful for testing Comperr.Compiler_Abort: write
    --       some code containing an abort_statement, and compile it with
@@ -899,10 +897,6 @@ package body Debug is
 
    --  d.M  Relaxed RM semantics. This flag sets Opt.Relaxed_RM_Semantics
    --       See Opt.Relaxed_RM_Semantics for more details.
-
-   --  d.N  Enlarge entities by one node (but don't attempt to use this extra
-   --       node for storage of any flags or fields). This can be used to do
-   --       experiments on the impact of increasing entity sizes.
 
    --  d.O  Dump internal SCO tables. Before outputting the SCO information to
    --       the ALI file, the internal SCO tables (SCO_Table/SCO_Unit_Table)
@@ -989,6 +983,8 @@ package body Debug is
    --  d_s  The compiler stops the examination of a task body once it reaches
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
+
+   --  d_v  Enable additional checks and debug printouts in Atree
 
    --  d_x  The compiler does not expand in line the Image attribute for user-
    --       defined enumeration types and the standard boolean type.

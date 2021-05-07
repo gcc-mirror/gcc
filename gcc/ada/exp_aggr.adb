@@ -23,49 +23,53 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Expander; use Expander;
-with Exp_Util; use Exp_Util;
-with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch9;  use Exp_Ch9;
-with Exp_Disp; use Exp_Disp;
-with Exp_Tss;  use Exp_Tss;
-with Freeze;   use Freeze;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Ttypes;   use Ttypes;
-with Sem;      use Sem;
-with Sem_Aggr; use Sem_Aggr;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Eval; use Sem_Eval;
-with Sem_Mech; use Sem_Mech;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Exp_Util;       use Exp_Util;
+with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch9;        use Exp_Ch9;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Tss;        use Exp_Tss;
+with Freeze;         use Freeze;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Ttypes;         use Ttypes;
+with Sem;            use Sem;
+with Sem_Aggr;       use Sem_Aggr;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
 
 package body Exp_Aggr is
 
@@ -6648,7 +6652,7 @@ package body Exp_Aggr is
          --  aggregate. If the declaration has a subtype mark, use it,
          --  otherwise use the itype of the aggregate.
 
-         Set_Ekind (Tmp, E_Variable);
+         Mutate_Ekind (Tmp, E_Variable);
 
          if not Is_Constrained (Typ) then
             Build_Constrained_Type (Positional => False);
@@ -9472,7 +9476,7 @@ package body Exp_Aggr is
       --    type Res_Typ is access all Comp_Typ;
 
       Res_Typ := Make_Temporary (Loc, 'A');
-      Set_Ekind (Res_Typ, E_General_Access_Type);
+      Mutate_Ekind (Res_Typ, E_General_Access_Type);
       Set_Directly_Designated_Type (Res_Typ, Comp_Typ);
 
       Add_Item
@@ -9492,7 +9496,7 @@ package body Exp_Aggr is
       --  its lifetime is bounded by the current array or record component.
 
       Res_Id := Make_Temporary (Loc, 'R');
-      Set_Ekind (Res_Id, E_Constant);
+      Mutate_Ekind (Res_Id, E_Constant);
       Set_Etype (Res_Id, Res_Typ);
 
       --  Mark the transient object as successfully processed to avoid double

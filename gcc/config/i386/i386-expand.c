@@ -3490,7 +3490,11 @@ static bool
 ix86_use_mask_cmp_p (machine_mode mode, machine_mode cmp_mode,
 		     rtx op_true, rtx op_false)
 {
-  if (GET_MODE_SIZE (mode) == 64)
+  int vector_size = GET_MODE_SIZE (mode);
+
+  if (vector_size < 16)
+    return false;
+  else if (vector_size == 64)
     return true;
 
   /* When op_true is NULL, op_false must be NULL, or vice versa.  */
@@ -3696,6 +3700,19 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	{
 	  gen = gen_sse4_1_blendvsd;
 	  op_true = force_reg (mode, op_true);
+	}
+      break;
+    case E_V8QImode:
+    case E_V4HImode:
+    case E_V2SImode:
+      if (TARGET_SSE4_1)
+	{
+	  gen = gen_mmx_pblendvb;
+	  if (mode != V8QImode)
+	    d = gen_reg_rtx (V8QImode);
+	  op_false = gen_lowpart (V8QImode, op_false);
+	  op_true = gen_lowpart (V8QImode, op_true);
+	  cmp = gen_lowpart (V8QImode, cmp);
 	}
       break;
     case E_V16QImode:

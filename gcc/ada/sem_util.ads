@@ -25,16 +25,17 @@
 
 --  Package containing utility procedures used throughout the semantics
 
-with Aspects; use Aspects;
-with Atree;   use Atree;
-with Einfo;   use Einfo;
-with Exp_Tss; use Exp_Tss;
-with Namet;   use Namet;
-with Opt;     use Opt;
-with Snames;  use Snames;
-with Types;   use Types;
-with Uintp;   use Uintp;
-with Urealp;  use Urealp;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Exp_Tss;        use Exp_Tss;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Snames;         use Snames;
+with Types;          use Types;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
 
 package Sem_Util is
 
@@ -581,6 +582,18 @@ package Sem_Util is
    --  emitted immediately after the main message (and before output of any
    --  message indicating that Constraint_Error will be raised).
 
+   generic
+      with function Predicate (Typ : Entity_Id) return Boolean;
+   function Collect_Types_In_Hierarchy
+     (Typ                : Entity_Id;
+      Examine_Components : Boolean := False) return Elist_Id;
+   --  Inspect the ancestor and progenitor types of Typ and Typ itself -
+   --  collecting those for which function Predicate is True. The resulting
+   --  list is ordered in a type-to-ultimate-ancestor fashion.
+
+   --  When Examine_Components is True, components types in the hierarchy also
+   --  get collected.
+
    procedure Conditional_Delay (New_Ent, Old_Ent : Entity_Id);
    --  Sets the Has_Delayed_Freeze flag of New_Ent if the Delayed_Freeze flag
    --  of Old_Ent is set and Old_Ent has not yet been Frozen (i.e. Is_Frozen is
@@ -650,9 +663,7 @@ package Sem_Util is
    --  in the case of a descendant of a generic formal type (returns Int'Last
    --  instead of 0).
 
-   function Defining_Entity
-     (N               : Node_Id;
-      Empty_On_Errors : Boolean := False) return Entity_Id;
+   function Defining_Entity (N : Node_Id) return Entity_Id;
    --  Given a declaration N, returns the associated defining entity. If the
    --  declaration has a specification, the entity is obtained from the
    --  specification. If the declaration has a defining unit name, then the
@@ -663,18 +674,12 @@ package Sem_Util is
    --  local entities declared during loop expansion. These entities need
    --  debugging information, generated through Qualify_Entity_Names, and
    --  the loop declaration must be placed in the table Name_Qualify_Units.
-   --
-   --  Set flag Empty_On_Errors to change the behavior of this routine as
-   --  follows:
-   --
-   --    * True  - A declaration that lacks a defining entity returns Empty.
-   --      A node that does not allow for a defining entity returns Empty.
-   --
-   --    * False - A declaration that lacks a defining entity is given a new
-   --      internally generated entity which is subsequently returned. A node
-   --      that does not allow for a defining entity raises Program_Error
 
    --  WARNING: There is a matching C declaration of this subprogram in fe.h
+
+   function Defining_Entity_Or_Empty (N : Node_Id) return Entity_Id;
+   --  This is equivalent to Defining_Entity but it returns Empty for nodes
+   --  without an entity instead of raising Program_Error.
 
    function Denotes_Discriminant
      (N                : Node_Id;
@@ -1387,6 +1392,17 @@ package Sem_Util is
      (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ has a suitable Default_Initial_Condition
    --  pragma which provides the full default initialization of the type.
+
+   function Has_Inferable_Discriminants (N : Node_Id) return Boolean;
+   --  Ada 2005 (AI-216): A view of an Unchecked_Union object has inferable
+   --  discriminants if it has a constrained nominal type, unless the object
+   --  is a component of an enclosing Unchecked_Union object that is subject
+   --  to a per-object constraint and the enclosing object lacks inferable
+   --  discriminants.
+   --
+   --  An expression of an Unchecked_Union type has inferable discriminants
+   --  if it is either a name of an object with inferable discriminants or a
+   --  qualified expression whose subtype mark denotes a constrained subtype.
 
    function Has_Infinities (E : Entity_Id) return Boolean;
    --  Determines if the range of the floating-point type E includes
@@ -2373,7 +2389,7 @@ package Sem_Util is
    --  Initialize/Adjust/Finalize subprogram does not override the inherited
    --  one.
 
-   function Is_Volatile_Full_Access_Object (N : Node_Id) return Boolean;
+   function Is_Volatile_Full_Access_Object_Ref (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to an object
    --  which is Volatile_Full_Access.
 
@@ -2382,7 +2398,7 @@ package Sem_Util is
    --  pragma Volatile_Function. Protected functions are treated as volatile
    --  (SPARK RM 7.1.2).
 
-   function Is_Volatile_Object (N : Node_Id) return Boolean;
+   function Is_Volatile_Object_Ref (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N denotes a reference to a volatile
    --  object as per RM C.6(8). Note that the test here is for something that
    --  is actually declared as volatile, not for an object that gets treated
@@ -3002,13 +3018,6 @@ package Sem_Util is
    --  Determine whether scope Inner appears within scope Outer or both denote
    --  the same scope. Note that scopes are partially ordered, so Scope_Within
    --  (A, B) and Scope_Within (B, A) may both return False.
-
-   procedure Set_Convention (E : Entity_Id; Val : Convention_Id);
-   --  Same as Basic_Set_Convention, but with an extra check for access types.
-   --  In particular, if E is an access-to-subprogram type, and Val is a
-   --  foreign convention, then we set Can_Use_Internal_Rep to False on E.
-   --  Also, if the Etype of E is set and is an anonymous access type with
-   --  no convention set, this anonymous type inherits the convention of E.
 
    procedure Set_Current_Entity (E : Entity_Id);
    pragma Inline (Set_Current_Entity);

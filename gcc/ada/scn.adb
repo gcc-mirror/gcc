@@ -23,16 +23,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Csets;    use Csets;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Scans;    use Scans;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Csets;          use Csets;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Scans;          use Scans;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinput;         use Sinput;
+with Uintp;          use Uintp;
 
 package body Scn is
 
