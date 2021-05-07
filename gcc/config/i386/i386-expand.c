@@ -3702,6 +3702,19 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	  op_true = force_reg (mode, op_true);
 	}
       break;
+    case E_V8QImode:
+    case E_V4HImode:
+    case E_V2SImode:
+      if (TARGET_SSE4_1)
+	{
+	  gen = gen_mmx_pblendvb;
+	  if (mode != V8QImode)
+	    d = gen_reg_rtx (V8QImode);
+	  op_false = gen_lowpart (V8QImode, op_false);
+	  op_true = gen_lowpart (V8QImode, op_true);
+	  cmp = gen_lowpart (V8QImode, cmp);
+	}
+      break;
     case E_V16QImode:
     case E_V8HImode:
     case E_V4SImode:
