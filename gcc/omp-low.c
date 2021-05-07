@@ -3016,11 +3016,12 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 
   /* No nesting of non-OpenACC STMT (that is, an OpenMP one, or a GOMP builtin)
      inside an OpenACC CTX.  */
-  if (!(is_gimple_omp (stmt)
-	&& is_gimple_omp_oacc (stmt))
-      /* Except for atomic codes that we share with OpenMP.  */
-      && !(gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
-	   || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE))
+  if (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
+      || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE)
+    /* ..., except for the atomic codes that OpenACC shares with OpenMP.  */
+    ;
+  else if (!(is_gimple_omp (stmt)
+	     && is_gimple_omp_oacc (stmt)))
     {
       if (oacc_get_fn_attrib (cfun->decl) != NULL)
 	{

@@ -6501,6 +6501,14 @@ is_gimple_omp_oacc (const gimple *stmt)
   gcc_assert (is_gimple_omp (stmt));
   switch (gimple_code (stmt))
     {
+    case GIMPLE_OMP_ATOMIC_LOAD:
+    case GIMPLE_OMP_ATOMIC_STORE:
+    case GIMPLE_OMP_CONTINUE:
+    case GIMPLE_OMP_RETURN:
+      /* Codes shared between OpenACC and OpenMP cannot be used to disambiguate
+	 the two.  */
+      gcc_unreachable ();
+
     case GIMPLE_OMP_FOR:
       switch (gimple_omp_for_kind (stmt))
 	{
