@@ -1,3 +1,111 @@
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-04-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/istream (operator>>(Istream&&, x&)): Simplify, as
+	per LWG 1203.
+	* include/std/ostream (operator<<(Ostream&&, const x&)):
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/char/lwg2499_neg.cc:
+	Adjust dg-error pattern.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/lwg2499_neg.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/4.cc: Define
+	is_extractable trait to replace std::__is_extractable. Make it
+	work with rvalue streams as well as lvalues, to replace f() and
+	g() helper functions.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/6.cc:
+	Define is_insertable trait to replace std::__is_insertable. Make
+	it work with rvalue streams as well as lvalues, to replace f()
+	and g() helper functions.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/6.cc:
+	Likewise.
+	* testsuite/27_io/filesystem/path/io/dr2989.cc: Prune additional
+	errors from new constraints.
+	* testsuite/27_io/rvalue_streams-2.cc: Remove PR 80675 checks,
+	which are no longer expected to compile.
+	* testsuite/27_io/rvalue_streams.cc: Adjust existing test.
+	Verify LWG 1203 changes.
+
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/function_objects/invoke/3.cc: Check feature
+	test macro.
+	* testsuite/20_util/function_objects/invoke/version.cc: New test.
+
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/future (promise::set_value): Check for existence
+	of shared state before dereferncing it.
+	(promise::set_exception, promise::set_value_at_thread_exit)
+	(promise::set_exception_at_thread_exit): Likewise.
+	(promise<R&>::set_value, promise<R&>::set_exception)
+	(promise<R&>::set_value_at_thread_exit)
+	(promise<R&>::set_exception_at_thread_exit): Likewise.
+	(promise<void>::set_value, promise<void>::set_exception)
+	(promise<void>::set_value_at_thread_exit)
+	(promise<void>::set_exception_at_thread_exit): Likewise.
+	* testsuite/30_threads/promise/members/at_thread_exit2.cc:
+	Remove unused variable.
+
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string(const CharT*, const A&)):
+	Do not do arithmetic on null pointer.
+
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/pb_ds/detail/cc_hash_table_map_/cc_ht_map_.hpp
+	(find_key_pointer(key_const_reference, false_type))
+	(find_key_pointer(key_const_reference, true_type)): Do not
+	dereference null pointer.
+
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/from_chars/3.cc: Use unsigned type to avoid
+	overflow.
+	* testsuite/24_iterators/reverse_iterator/2.cc: Do not add
+	non-zero value to null pointer.
+	* testsuite/25_algorithms/copy_backward/move_iterators/69478.cc:
+	Use past-the-end iterator for result.
+	* testsuite/25_algorithms/move_backward/69478.cc: Likewise.
+	* testsuite/25_algorithms/move_backward/93872.cc: Likewise.
+
+2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100384
+	* include/std/variant (__get_t): New alias template yielding the
+	return type of std::get<N> on a variant.
+	(__visit_result_t): New alias template yielding the result of
+	std::visit.
+	(__same_types): Move into namespace __detail::__variant.
+	(__check_visitor_results): Likewise. Use __invoke_result_t and
+	__get_t.
+	(__check_visitor_result): Remove.
+	(visit): Use __visit_result_t for return type.
+	* testsuite/20_util/variant/100384.cc: New test.
+
 2021-05-05  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

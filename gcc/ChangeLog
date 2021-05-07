@@ -1,3 +1,34 @@
+2021-05-06  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	Backported from master:
+	2021-05-06  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* config/s390/s390-builtins.def (O_M5, O1_M5, ...): Remove unused macros.
+	(s390_vec_permi_s64, s390_vec_permi_b64, s390_vec_permi_u64)
+	(s390_vec_permi_dbl, s390_vpdi): Use the O3_U2 type for the immediate
+	operand.
+	* config/s390/s390.c (s390_const_operand_ok): Remove unused
+	values.
+
+2021-05-06  Roman Zhuykov  <zhroma@ispras.ru>
+
+	Backported from master:
+	2021-04-30  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/100225
+	PR rtl-optimization/84878
+	* modulo-sched.c (sms_schedule): Use note_stores to skip loops
+	where we have an instruction which touches (writes) any hard
+	register from df->regular_block_artificial_uses set.
+	Allow not-single-set instruction only right before basic block
+	tail.
+
+2021-05-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/100217
+	* config/s390/s390.c (s390_hard_fp_reg_p): New function.
+	(s390_md_asm_adjust): Handle hard registers.
+
 2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/100402

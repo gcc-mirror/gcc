@@ -1,3 +1,28 @@
+2021-05-06  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	Backported from master:
+	2021-05-06  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* gcc.target/s390/zvector/imm-range-error-1.c: Fix test for
+	__builtin_s390_vpdi.
+	* gcc.target/s390/zvector/vec-permi.c: New test for builtin
+	vec_permi.
+
+2021-05-06  Roman Zhuykov  <zhroma@ispras.ru>
+
+	Backported from master:
+	2021-04-30  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/100225
+	PR rtl-optimization/84878
+	* gcc.dg/pr100225.c: New test.
+
+2021-05-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/100217
+	* gcc.target/s390/vector/long-double-asm-in-out-hard-fp-reg.c: New test.
+	* gcc.target/s390/vector/long-double-asm-inout-hard-fp-reg.c: New test.
+
 2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20210505-1.c: New test.

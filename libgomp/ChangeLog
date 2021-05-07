@@ -1,3 +1,10 @@
+2021-05-06  Roman Zhuykov  <zhroma@ispras.ru>
+
+	Backported from master:
+	2021-04-30  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* testsuite/libgomp.oacc-c-c++-common/atomic_capture-3.c: New test.
+
 2021-04-29  Tom de Vries  <tdevries@suse.de>
 
 	Backported from master:
