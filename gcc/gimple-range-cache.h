@@ -51,7 +51,6 @@ public:
   ~block_range_cache ();
 
   void set_bb_range (tree name, const basic_block bb, const irange &r);
-  void set_bb_varying (tree name, const basic_block bb);
   bool get_bb_range (irange &r, tree name, const basic_block bb);
   bool bb_range_p (tree name, const basic_block bb);
 
