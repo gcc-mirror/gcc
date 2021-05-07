@@ -1,3 +1,8 @@
+2021-05-07  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/firstprivate-mappings-1.c: Fix up for C,
+	non-LP64.
+
 2021-04-11  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	Backport from mainline
