@@ -1903,6 +1903,11 @@ package body Ch6 is
             end if;
 
             Restore_Scan_State (Scan_State); -- to identifier
+
+         elsif Token = Tok_When then
+            Error_Msg_GNAT_Extension ("return when statement");
+
+            Result := Return_When;
          end if;
 
          return Result;
