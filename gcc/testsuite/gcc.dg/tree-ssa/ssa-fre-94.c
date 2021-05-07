@@ -1,5 +1,6 @@
 /* PR tree-optimization/79333 */
 /* { dg-do compile } */
+/* { dg-require-effective-target c99_runtime } */
 /* { dg-options "-O -ffinite-math-only -fdump-tree-fre1" } */
 
 extern __inline __attribute__ ((__always_inline__,__gnu_inline__))
