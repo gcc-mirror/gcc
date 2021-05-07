@@ -3485,6 +3485,7 @@ cpp_avoid_paste (cpp_reader *pfile, const cpp_token *token1,
     case CPP_DEREF:	return c == '*';
     case CPP_DOT:	return c == '.' || c == '%' || b == CPP_NUMBER;
     case CPP_HASH:	return c == '#' || c == '%'; /* Digraph form.  */
+    case CPP_PRAGMA:
     case CPP_NAME:	return ((b == CPP_NUMBER
 				 && name_p (pfile, &token2->val.str))
 				|| b == CPP_NAME
