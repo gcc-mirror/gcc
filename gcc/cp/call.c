@@ -12478,6 +12478,8 @@ set_up_extended_ref_temp (tree decl, tree expr, vec<tree, va_gc> **cleanups,
      VAR.  */
   if (TREE_CODE (expr) != TARGET_EXPR)
     expr = get_target_expr (expr);
+  else if (TREE_ADDRESSABLE (expr))
+    TREE_ADDRESSABLE (var) = 1;
 
   if (TREE_CODE (decl) == FIELD_DECL
       && extra_warnings && !TREE_NO_WARNING (decl))
