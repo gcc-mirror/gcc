@@ -1,6 +1,6 @@
 ! { dg-do run }
 !
-! Test the fix for PR46691 - enable class assumed size arrays
+! Test the fix for PR46991 - enable class assumed size arrays
 !
 ! Reported by Tobias Burnus  <burnus@gcc.gnu.org>
 ! from http://j3-fortran.org/pipermail/j3/2010-December/004084.html
