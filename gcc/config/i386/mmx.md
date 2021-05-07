@@ -1700,6 +1700,17 @@
   DONE;
 })
 
+;; XOP parallel XMM conditional moves
+(define_insn "*xop_pcmov_<mode>"
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=x")
+        (if_then_else:MMXMODEI
+          (match_operand:MMXMODEI 3 "register_operand" "x")
+          (match_operand:MMXMODEI 1 "register_operand" "x")
+          (match_operand:MMXMODEI 2 "register_operand" "x")))]
+  "TARGET_XOP && TARGET_MMX_WITH_SSE"
+  "vpcmov\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "type" "sse4arg")])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Parallel integral logical operations
