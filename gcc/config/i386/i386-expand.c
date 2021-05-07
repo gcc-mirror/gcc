@@ -3490,7 +3490,11 @@ static bool
 ix86_use_mask_cmp_p (machine_mode mode, machine_mode cmp_mode,
 		     rtx op_true, rtx op_false)
 {
-  if (GET_MODE_SIZE (mode) == 64)
+  int vector_size = GET_MODE_SIZE (mode);
+
+  if (vector_size < 16)
+    return false;
+  else if (vector_size == 64)
     return true;
 
   /* When op_true is NULL, op_false must be NULL, or vice versa.  */
