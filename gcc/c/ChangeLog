@@ -1,3 +1,8 @@
+2021-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-typeck.c (build_unary_op) <ADDR_EXPR>: Do not issue an error
+	on the address of a pointer field in a record with reverse SSO.
+
 2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-typeck.c (c_finish_omp_clauses): Accept float + complex

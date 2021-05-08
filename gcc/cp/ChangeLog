@@ -1,3 +1,22 @@
+2021-05-07  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (rvalue): Assert expr is not a class lvalue.
+
+2021-05-07  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (build_stub_object): Declare.
+	* method.c (build_stub_object): No longer static.
+	* call.c (can_convert): Use it.
+	* tree.c (build_dummy_object): Adjust comment.
+	* typeck.c (cp_build_binary_op): Wrap SPACESHIP_EXPR in a
+	TARGET_EXPR.
+
+2021-05-07  Jason Merrill  <jason@redhat.com>
+
+	* coroutines.cc (build_co_await): Don't call 'rvalue'.
+	(flatten_await_stmt): Simplify initialization.
+	(morph_fn_to_coro): Change 'rvalue' to 'move'.  Simplify.
+
 2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* semantics.c (finish_omp_reduction_clause): Accept float + complex

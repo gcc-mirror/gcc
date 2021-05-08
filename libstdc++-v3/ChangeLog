@@ -1,3 +1,24 @@
+2021-05-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/istream (__rvalue_stream_extraction_t): Replace
+	use of __rval_streamable.
+	* include/std/ostream (__rvalue_stream_insertion_t): Likewise.
+	(__rval_streamable): Remove.
+	(_Require_derived_from_ios_base, __derived_from_ios_base): New
+	helper for checking constraints.
+	* testsuite/27_io/basic_istream/extractors_other/char/4.cc: Fix
+	reference to the wrong subclause of the standard.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/6.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/6.cc:
+	Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/99692.cc:
+	New test.
+	* testsuite/27_io/filesystem/path/io/dr2989.cc: Adjust pruned
+	errors.
+
 2021-05-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_algobase.h (__copy_move, __copy_move_backward):

@@ -1,3 +1,36 @@
+2021-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/debug18.adb: New test.
+
+2021-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-12.c: New test.
+
+2021-05-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/coroutines/coro-bad-gro-00-class-gro-scalar-return.C:
+	Adjust diagnostic.
+
+2021-05-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR tree-optimization/79333
+	* gcc.dg/tree-ssa/ssa-fre-94.c: Require c99_runtime.
+
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/100450
+	* c-c++-common/gomp/pr100450.c: New test.
+
+2021-05-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100445
+	* gcc.target/i386/pr100445-1.c: New test.
+
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100445
+	* gcc.target/i386/pr100445.c: New test.
+
 2021-05-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c++/83873

@@ -1,3 +1,8 @@
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/100450
+	* lex.c (cpp_avoid_paste): Handle token1 CPP_PRAGMA like CPP_NAME.
+
 2021-05-06  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c++/83873
