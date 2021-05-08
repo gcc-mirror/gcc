@@ -8420,8 +8420,11 @@ package Sinfo is
       --  An unchecked type conversion node represents the semantic action
       --  corresponding to a call to an instantiation of Unchecked_Conversion.
       --  It is generated as a result of actual use of Unchecked_Conversion
-      --  and also the expander generates unchecked type conversion nodes
-      --  directly for expansion of complex semantic actions.
+      --  and also by the expander.
+
+      --  Unchecked type conversion nodes should normally be created by calling
+      --  Tbuild.Unchecked_Convert_To, rather than by directly calling
+      --  Nmake.Make_Unchecked_Type_Conversion.
 
       --  Note: an unchecked type conversion is a variable as far as the
       --  semantics are concerned, which is convenient for the expander.

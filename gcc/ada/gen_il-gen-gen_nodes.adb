@@ -31,7 +31,8 @@ procedure Gen_IL.Gen.Gen_Nodes is
       renames Create_Abstract_Node_Type;
    procedure Cc -- Short for "ConCrete"
      (T : Concrete_Node; Parent : Abstract_Type;
-      Fields : Field_Sequence := No_Fields)
+      Fields : Field_Sequence := No_Fields;
+      Nmake_Assert : String := "")
       renames Create_Concrete_Node_Type;
 
    function Sy -- Short for "Syntactic"
@@ -562,7 +563,12 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Subtype_Mark, Node_Id, Default_Empty),
         Sy (Expression, Node_Id, Default_Empty),
         Sm (Kill_Range_Check, Flag),
-        Sm (No_Truncation, Flag)));
+        Sm (No_Truncation, Flag)),
+       Nmake_Assert => "True or else Nkind (Expression) /= N_Unchecked_Type_Conversion");
+--       Nmake_Assert => "Nkind (Expression) /= N_Unchecked_Type_Conversion");
+   --  Assert that we don't have unchecked conversions of unchecked
+   --  conversions; if Expression might be an unchecked conversion,
+   --  then Tbuild.Unchecked_Convert_To should be used.
 
    Cc (N_Subtype_Indication, N_Has_Etype,
        (Sy (Subtype_Mark, Node_Id, Default_Empty),

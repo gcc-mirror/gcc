@@ -29,14 +29,12 @@ with Csets;          use Csets;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
-with Elists;         use Elists;
 with Lib;            use Lib;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
 with Opt;            use Opt;
 with Restrict;       use Restrict;
 with Rident;         use Rident;
-with Sem_Aux;        use Sem_Aux;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sem_Util;       use Sem_Util;
 with Snames;         use Snames;
@@ -117,6 +115,7 @@ package body Tbuild is
    ----------------
 
    function Convert_To (Typ : Entity_Id; Expr : Node_Id) return Node_Id is
+      pragma Assert (Is_Type (Typ));
       Result : Node_Id;
 
    begin
@@ -184,32 +183,6 @@ package body Tbuild is
       Set_Must_Be_Byte_Aligned (N, True);
       return N;
    end Make_Byte_Aligned_Attribute_Reference;
-
-   --------------------
-   -- Make_DT_Access --
-   --------------------
-
-   function Make_DT_Access
-     (Loc : Source_Ptr;
-      Rec : Node_Id;
-      Typ : Entity_Id) return Node_Id
-   is
-      Full_Type : Entity_Id := Typ;
-
-   begin
-      if Is_Private_Type (Typ) then
-         Full_Type := Underlying_Type (Typ);
-      end if;
-
-      return
-        Unchecked_Convert_To (
-          New_Occurrence_Of
-            (Etype (Node (First_Elmt (Access_Disp_Table (Full_Type)))), Loc),
-          Make_Selected_Component (Loc,
-            Prefix => New_Copy (Rec),
-            Selector_Name =>
-              New_Occurrence_Of (First_Tag_Component (Full_Type), Loc)));
-   end Make_DT_Access;
 
    ------------------------
    -- Make_Float_Literal --
@@ -906,26 +879,34 @@ package body Tbuild is
      (Typ  : Entity_Id;
       Expr : Node_Id) return Node_Id
    is
+      pragma Assert (Ekind (Typ) in E_Void | Type_Kind);
+      --  We don't really want to allow E_Void here, but existing code passes
+      --  it.
+
       Loc         : constant Source_Ptr := Sloc (Expr);
       Result      : Node_Id;
-      Expr_Parent : Node_Id;
 
    begin
       --  If the expression is already of the correct type, then nothing
-      --  to do, except for relocating the node in case this is required.
+      --  to do, except for relocating the node
 
       if Present (Etype (Expr))
-        and then (Base_Type (Etype (Expr)) = Typ
-                   or else Etype (Expr) = Typ)
+        and then (Base_Type (Etype (Expr)) = Typ or else Etype (Expr) = Typ)
       then
          return Relocate_Node (Expr);
 
-      --  Case where the expression is itself an unchecked conversion to
-      --  the same type, and we can thus eliminate the outer conversion.
+      --  Case where the expression is already an unchecked conversion. We
+      --  replace the type being converted to, to avoid creating an unchecked
+      --  conversion of an unchecked conversion. Extra unchecked conversions
+      --  make the .dg output less readable. We can't do this in cases
+      --  involving bitfields, because the sizes might not match. The
+      --  Is_Composite_Type checks avoid such cases.
 
       elsif Nkind (Expr) = N_Unchecked_Type_Conversion
-        and then Entity (Subtype_Mark (Expr)) = Typ
+        and then Is_Composite_Type (Etype (Expr))
+        and then Is_Composite_Type (Typ)
       then
+         Set_Subtype_Mark (Expr, New_Occurrence_Of (Typ, Loc));
          Result := Relocate_Node (Expr);
 
       elsif Nkind (Expr) = N_Null
@@ -938,18 +919,10 @@ package body Tbuild is
       --  All other cases
 
       else
-         --  Capture the parent of the expression before relocating it and
-         --  creating the conversion, so the conversion's parent can be set
-         --  to the original parent below.
-
-         Expr_Parent := Parent (Expr);
-
          Result :=
            Make_Unchecked_Type_Conversion (Loc,
              Subtype_Mark => New_Occurrence_Of (Typ, Loc),
              Expression   => Relocate_Node (Expr));
-
-         Set_Parent (Result, Expr_Parent);
       end if;
 
       Set_Etype (Result, Typ);

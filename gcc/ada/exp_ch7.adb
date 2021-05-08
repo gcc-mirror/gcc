@@ -9344,7 +9344,7 @@ package body Exp_Ch7 is
             Dope_Id : Entity_Id;
 
          begin
-            --  Ensure that Ptr_Typ a thin pointer, generate:
+            --  Ensure that Ptr_Typ is a thin pointer; generate:
             --    for Ptr_Typ'Size use System.Address'Size;
 
             Append_To (Decls,
