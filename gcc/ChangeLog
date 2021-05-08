@@ -1,3 +1,20 @@
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87839
+	* config/aarch64/atomics.md (aarch64_compare_and_swap<mode>): Use
+	rIJ constraint for aarch64_plus_operand rather than rn.
+
+2021-05-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99037
+	PR target/100441
+	* config/aarch64/aarch64-simd.md (move_lo_quad_internal_<mode>): Use
+	aarch64_simd_or_scalar_imm_zero to match zeroes.  Remove pattern
+	matching const_int 0.
+	(move_lo_quad_internal_be_<mode>): Likewise.
+	(move_lo_quad_<mode>): Update for the above.
+	* config/aarch64/iterators.md (VQ_2E): Delete.
+
 2021-05-06  Roman Zhuykov  <zhroma@ispras.ru>
 
 	Backported from master:

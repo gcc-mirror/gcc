@@ -1,3 +1,26 @@
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87839
+	* gcc.target/aarch64/pr87839.c: New test.
+
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/100450
+	* c-c++-common/gomp/pr100450.c: New test.
+
+2021-05-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99808
+	* gcc.target/aarch64/pr99808.c: Use ULL constant suffix.
+
+2021-05-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR target/99808
+	* gcc.target/aarch64/pr99808.c: New test.
+
 2021-05-06  Roman Zhuykov  <zhroma@ispras.ru>
 
 	Backported from master:
