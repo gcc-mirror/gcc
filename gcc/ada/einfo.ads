@@ -1931,8 +1931,6 @@ package Einfo is
 --       that clients should generally not test this flag directly, but instead
 --       use function Has_Unreferenced.
 
---  ??? this real description was clobbered
-
 --    Has_Pragma_Unreferenced_Objects
 --       Defined in all entities. Set if a valid pragma Unused applies to an
 --       entity, indicating that warnings should be given if the entity is

@@ -689,11 +689,9 @@ package Sinfo is
 
    --  The following flag fields appear in various nodes:
 
-   --    Do_Accessibility_Check
    --    Do_Discriminant_Check
    --    Do_Length_Check
    --    Do_Storage_Check
-   --    Do_Tag_Check
 
    --  These flags are used in some specific cases by the front end, either
    --  during semantic analysis or during expansion, and cannot be expected
@@ -1012,7 +1010,7 @@ package Sinfo is
    --    Present in N_Raise_Expression nodes that appear in the body of the
    --    special predicateM function used to test a predicate in the context
    --    of a membership test, where raise expression results in returning a
-   --    value of False rather than raising an exception.???obsolete flag
+   --    value of False rather than raising an exception.
 
    --  Corresponding_Aspect
    --    Present in N_Pragma node. Used to point back to the source aspect from
@@ -1095,11 +1093,6 @@ package Sinfo is
    --    This flag is present in N_Full_Type_Declaration nodes. It is set when
    --    discriminant checking functions are constructed. The purpose is to
    --    avoid attempting to set these functions more than once.
-
-   --  Do_Accessibility_Check
-   --    This flag is set on N_Parameter_Specification nodes to indicate
-   --    that an accessibility check is required for the parameter. It is
-   --    not yet decided who takes care of this check???.
 
    --  Do_Discriminant_Check
    --    This flag is set on N_Selected_Component nodes to indicate that a
@@ -1184,13 +1177,6 @@ package Sinfo is
    --    The N_Allocator case is handled by the routine that expands the call
    --    to the runtime routine. The N_Subprogram_Body case is handled by the
    --    backend, and all the semantics does is set the flag.
-
-   --  Do_Tag_Check
-   --    This flag is set on an N_Assignment_Statement, N_Function_Call,
-   --    N_Procedure_Call_Statement, N_Type_Conversion,
-   --    N_Simple_Return_Statement, or N_Extended_Return_Statement
-   --    node to indicate that the tag check can be suppressed. It is not
-   --    yet decided how this flag is used???.
 
    --  Elaborate_Present
    --    This flag is set in the N_With_Clause node to indicate that pragma
@@ -4740,7 +4726,6 @@ package Sinfo is
       --  Do_Discriminant_Check
       --  Do_Length_Check
       --  Float_Truncate
-      --  Do_Tag_Check
       --  Conversion_OK
       --  Do_Overflow_Check
       --  Rounded_Result
@@ -4913,7 +4898,6 @@ package Sinfo is
       --  No_Ctrl_Actions
       --  Has_Target_Names
       --  Is_Elaboration_Code
-      --  Do_Tag_Check
       --  Componentwise_Assignment
       --  Suppress_Assignment_Checks
 
@@ -5436,7 +5420,6 @@ package Sinfo is
       --  Null_Exclusion_Present
       --  Parameter_Type subtype mark or access definition
       --  Expression (set to Empty if no default expression present)
-      --  Do_Accessibility_Check
       --  More_Ids (set to False if no more identifiers in list)
       --  Prev_Ids (set to False if no previous identifiers in list)
       --  Default_Expression
@@ -5505,7 +5488,6 @@ package Sinfo is
       --  Is_SPARK_Mode_On_Node
       --  Is_Elaboration_Warnings_OK_Node
       --  No_Elaboration_Check
-      --  Do_Tag_Check
       --  Is_Known_Guaranteed_ABE
       --  plus fields for expression
 
@@ -5539,7 +5521,6 @@ package Sinfo is
       --  Is_Elaboration_Warnings_OK_Node
       --  No_Elaboration_Check
       --  Is_Expanded_Build_In_Place_Call
-      --  Do_Tag_Check
       --  No_Side_Effect_Removal
       --  Is_Known_Guaranteed_ABE
       --  plus fields for expression
@@ -5602,7 +5583,6 @@ package Sinfo is
       --  Expression (set to Empty if no expression present)
       --  Storage_Pool
       --  Procedure_To_Call
-      --  Do_Tag_Check
       --  By_Ref
       --  Comes_From_Extended_Return_Statement
 
@@ -5618,7 +5598,6 @@ package Sinfo is
       --  Handled_Statement_Sequence (set to Empty if not present)
       --  Storage_Pool
       --  Procedure_To_Call
-      --  Do_Tag_Check
       --  By_Ref
 
       --  Note: Return_Statement_Entity points to an E_Return_Statement.

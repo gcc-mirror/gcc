@@ -2113,9 +2113,8 @@ package Sem_Util is
    --  limited view must be treated in the same way.
 
    function Is_Local_Variable_Reference (Expr : Node_Id) return Boolean;
-   --  Determines whether Expr is a reference to a variable or IN OUT mode
-   --  parameter of the current enclosing subprogram.
-   --  Why are OUT parameters not considered here ???
+   --  Determines whether Expr is a reference to a variable or formal parameter
+   --  of mode OUT or IN OUT of the current enclosing subprogram.
 
    function Is_Master (N : Node_Id) return Boolean;
    --  Determine if the given node N constitutes a finalization master
@@ -2902,9 +2901,9 @@ package Sem_Util is
    procedure Propagate_Concurrent_Flags
      (Typ      : Entity_Id;
       Comp_Typ : Entity_Id);
-   --  Set Has_Task, Has_Protected and Has_Timing_Event on Typ when the flags
-   --  are set on Comp_Typ. This follows the definition of these flags which
-   --  are set (recursively) on any composite type which has a component marked
+   --  Set Has_Task, Has_Protected, and Has_Timing_Event on Typ when the flags
+   --  are set on Comp_Typ. This follows the definition of these flags, which
+   --  are set (recursively) on any composite type that has a component marked
    --  by one of these flags. This procedure can only set flags for Typ, and
    --  never clear them. Comp_Typ is the type of a component or a parent.
 
@@ -2917,14 +2916,14 @@ package Sem_Util is
    procedure Propagate_Invariant_Attributes
      (Typ      : Entity_Id;
       From_Typ : Entity_Id);
-   --  Inherit all invariant-related attributes form type From_Typ. Typ is the
+   --  Inherit all invariant-related attributes from type From_Typ. Typ is the
    --  destination type.
 
    procedure Propagate_Predicate_Attributes
      (Typ      : Entity_Id;
       From_Typ : Entity_Id);
-   --  Inherit some predicate-related attributes form type From_Typ. Typ is the
-   --  destination type. Probably to be completed with more attributes???
+   --  Inherit predicate functions and Has_Predicates flag from type From_Typ.
+   --  Typ is the destination type.
 
    procedure Record_Possible_Part_Of_Reference
      (Var_Id : Entity_Id;

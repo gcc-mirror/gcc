@@ -390,7 +390,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Ab (N_Subprogram_Call, N_Subexpr,
        (Sm (Controlling_Argument, Node_Id),
-        Sm (Do_Tag_Check, Flag),
         Sm (First_Named_Actual, Node_Id),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
         Sm (Is_Elaboration_Warnings_OK_Node, Flag),
@@ -553,7 +552,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Do_Discriminant_Check, Flag),
         Sm (Do_Length_Check, Flag),
         Sm (Do_Overflow_Check, Flag),
-        Sm (Do_Tag_Check, Flag),
         Sm (Float_Truncate, Flag),
         Sm (Rounded_Result, Flag)));
 
@@ -949,7 +947,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Componentwise_Assignment, Flag),
         Sm (Do_Discriminant_Check, Flag),
         Sm (Do_Length_Check, Flag),
-        Sm (Do_Tag_Check, Flag),
         Sm (Forwards_OK, Flag),
         Sm (Has_Target_Names, Flag),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
@@ -1056,7 +1053,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Expression, Node_Id, Default_Empty),
         Sm (By_Ref, Flag),
         Sm (Comes_From_Extended_Return_Statement, Flag),
-        Sm (Do_Tag_Check, Flag),
         Sm (Procedure_To_Call, Node_Id),
         Sm (Return_Statement_Entity, Node_Id),
         Sm (Storage_Pool, Node_Id)));
@@ -1065,7 +1061,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Return_Object_Declarations, List_Id),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
         Sm (By_Ref, Flag),
-        Sm (Do_Tag_Check, Flag),
         Sm (Procedure_To_Call, Node_Id),
         Sm (Return_Statement_Entity, Node_Id),
         Sm (Storage_Pool, Node_Id)));
@@ -1487,7 +1482,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Parameter_Type, Node_Id),
         Sy (Expression, Node_Id, Default_Empty),
         Sm (Default_Expression, Node_Id),
-        Sm (Do_Accessibility_Check, Flag),
         Sm (More_Ids, Flag),
         Sm (Prev_Ids, Flag)));
 

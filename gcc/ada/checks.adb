@@ -9766,9 +9766,6 @@ package body Checks is
             when N_Attribute_Reference =>
                Set_Do_Overflow_Check (N, False);
 
-            when N_Function_Call =>
-               Set_Do_Tag_Check (N, False);
-
             when N_Op =>
                Set_Do_Overflow_Check (N, False);
 
@@ -9804,7 +9801,6 @@ package body Checks is
 
             when N_Type_Conversion =>
                Set_Do_Length_Check   (N, False);
-               Set_Do_Tag_Check      (N, False);
                Set_Do_Overflow_Check (N, False);
 
             when others =>

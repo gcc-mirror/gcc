@@ -243,8 +243,7 @@ package Sem_Type is
    --  in the signature of an inherited operation must carry the derived type.
 
    function Is_Subtype_Of (T1 : Entity_Id; T2 : Entity_Id) return Boolean;
-   --  Checks whether T1 is any subtype of T2 directly or indirectly. Applies
-   --  only to scalar subtypes???
+   --  Checks whether T1 is any subtype of T2 directly or indirectly
 
    function Operator_Matches_Spec (Op, New_S : Entity_Id) return Boolean;
    --  Used to resolve subprograms renaming operators, and calls to user

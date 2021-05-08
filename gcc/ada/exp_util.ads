@@ -162,7 +162,7 @@ package Exp_Util is
    --
    --  Implementation limitation: Assoc_Node must be a statement. We can
    --  generalize to expressions if there is a need but this is tricky to
-   --  implement because of short-circuits (among other things).???
+   --  implement because of short-circuits (among other things).
 
    procedure Insert_Declaration (N : Node_Id; Decl : Node_Id);
    --  N must be a subexpression (Nkind in N_Subexpr). This is similar to
