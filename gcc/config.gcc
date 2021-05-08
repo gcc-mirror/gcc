@@ -451,7 +451,7 @@ loongarch*-*-*)
 	extra_headers="larchintrin.h"
 	extra_objs="loongarch-c.o loongarch-builtins.o"
 	extra_options="${extra_options} g.opt fused-madd.opt loongarch/loongarch-tables.opt"
-  ;;
+	;;
 nds32*)
 	cpu_type=nds32
 	extra_headers="nds32_intrinsic.h nds32_isr.h nds32_init.inc"
@@ -4935,6 +4935,36 @@ case "${target}" in
 	loongarch*-*-*)
 		supported_defaults="abi arch float fpu tune fix-loongson3-llsc"
 
+		case ${with_arch} in
+		loongarch | loongarch64)
+			# OK
+			default_loongarch_arch=loongarch64
+			;;
+		"")
+			# fallback
+			default_loongarch_arch=loongarch64
+			;;
+		*)
+			echo "Unknown arch given in --with-arch=$with_arch, available choices are: loongarch64" 1>&2
+			exit 1
+			;;
+		esac
+
+		case ${with_abi} in
+		lp64 | lp32)
+			# OK
+			default_loongarch_abi=$with_abi
+			;;
+		"")
+			# fallback
+			default_loongarch_abi=lp64
+			;;
+		*)
+			echo "Unknown ABI given in --with-abi=$with_abi, available choices are: lp32 lp64" 1>&2
+			exit 1
+			;;
+		esac
+
 		case ${with_float} in
 		"" | soft | hard)
 			# OK
@@ -5419,14 +5449,8 @@ case ${target} in
 		;;
 
 	loongarch*-*-*)
-		if test x$with_arch != x; then
-			default_loongarch_arch=$with_arch
-		fi
-		if test x$with_abi != x; then
-			default_loongarch_abi=$with_abi
-		fi
 		case ${default_loongarch_arch} in
-		    loongarch | loongarch64) tm_defines="$tm_defines LARCH_ISA_DEFAULT=0" ;;
+		    loongarch64) tm_defines="$tm_defines LARCH_ISA_DEFAULT=0" ;;
 		esac
 		case ${default_loongarch_abi} in
 		    lp64)   tm_defines="$tm_defines LARCH_ABI_DEFAULT=ABILP64" ;;
