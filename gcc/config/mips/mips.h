@@ -915,7 +915,8 @@ struct mips_cpu_info {
   {"mips-plt", "%{!mplt:%{!mno-plt:-m%(VALUE)}}" }, \
   {"synci", "%{!msynci:%{!mno-synci:-m%(VALUE)}}" },			\
   {"lxc1-sxc1", "%{!mlxc1-sxc1:%{!mno-lxc1-sxc1:-m%(VALUE)}}" }, \
-  {"madd4", "%{!mmadd4:%{!mno-madd4:-m%(VALUE)}}" } \
+  {"madd4", "%{!mmadd4:%{!mno-madd4:-m%(VALUE)}}" }, \
+  {"compact-branches", "%{!mcompact-branches=*:-mcompact-branches=%(VALUE)}" } \
 
 /* A spec that infers the:
    -mnan=2008 setting from a -mips argument,
