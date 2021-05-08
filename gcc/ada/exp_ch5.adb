@@ -4077,7 +4077,6 @@ package body Exp_Ch5 is
                     Make_Defining_Identifier (Loc,
                       Chars => New_External_Name (Chars (Element), 'C'));
       Elmt_Decl : Node_Id;
-      Elmt_Ref  : Node_Id;
 
       Element_Op : constant Entity_Id :=
                      Get_Iterable_Type_Primitive (Container_Typ, Name_Element);
@@ -4088,19 +4087,10 @@ package body Exp_Ch5 is
 
    begin
       --  For an element iterator, the Element aspect must be present,
-      --  (this is checked during analysis) and the expansion takes the form:
+      --  (this is checked during analysis).
 
-      --    Cursor : Cursor_Type := First (Container);
-      --    Elmt : Element_Type;
-      --    while Has_Element (Cursor, Container) loop
-      --       Elmt := Element (Container, Cursor);
-      --          <original loop statements>
-      --       Cursor := Next (Container, Cursor);
-      --    end loop;
-
-      --   However this expansion is not legal if the element is indefinite.
-      --   In that case we create a block to hold a variable declaration
-      --   initialized with a call to Element, and generate:
+      --  We create a block to hold a variable declaration initialized with
+      --  a call to Element, and generate:
 
       --    Cursor : Cursor_Type := First (Container);
       --    while Has_Element (Cursor, Container) loop
@@ -4132,48 +4122,20 @@ package body Exp_Ch5 is
           Defining_Identifier => Element,
           Object_Definition   => New_Occurrence_Of (Etype (Element_Op), Loc));
 
-      if not Is_Constrained (Etype (Element_Op)) then
-         Set_Expression (Elmt_Decl,
-           Make_Function_Call (Loc,
-             Name                   => New_Occurrence_Of (Element_Op, Loc),
-             Parameter_Associations => New_List (
-               Convert_To_Iterable_Type (Container, Loc),
-               New_Occurrence_Of (Cursor, Loc))));
+      Set_Expression (Elmt_Decl,
+        Make_Function_Call (Loc,
+          Name                   => New_Occurrence_Of (Element_Op, Loc),
+          Parameter_Associations => New_List (
+            Convert_To_Iterable_Type (Container, Loc),
+            New_Occurrence_Of (Cursor, Loc))));
 
-         Set_Statements (New_Loop,
-           New_List
-             (Make_Block_Statement (Loc,
-                Declarations => New_List (Elmt_Decl),
-                Handled_Statement_Sequence =>
-                  Make_Handled_Sequence_Of_Statements (Loc,
-                    Statements => Stats))));
-
-      else
-         Elmt_Ref :=
-           Make_Assignment_Statement (Loc,
-             Name       => New_Occurrence_Of (Element, Loc),
-             Expression =>
-               Make_Function_Call (Loc,
-                 Name                   => New_Occurrence_Of (Element_Op, Loc),
-                 Parameter_Associations => New_List (
-                   Convert_To_Iterable_Type (Container, Loc),
-                   New_Occurrence_Of (Cursor, Loc))));
-
-         Prepend (Elmt_Ref, Stats);
-
-         --  The element is assignable in the expanded code
-
-         Set_Assignment_OK (Name (Elmt_Ref));
-
-         --  The loop is rewritten as a block, to hold the element declaration
-
-         New_Loop :=
-           Make_Block_Statement (Loc,
-             Declarations               => New_List (Elmt_Decl),
+      Set_Statements (New_Loop,
+        New_List
+          (Make_Block_Statement (Loc,
+             Declarations => New_List (Elmt_Decl),
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
-                 Statements => New_List (New_Loop)));
-      end if;
+                 Statements => Stats))));
 
       --  The element is only modified in expanded code, so it appears as
       --  unassigned to the warning machinery. We must suppress this spurious
