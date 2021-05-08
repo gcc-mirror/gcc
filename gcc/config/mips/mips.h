@@ -120,11 +120,9 @@ struct mips_cpu_info {
 #define TARGET_RTP_PIC (TARGET_VXWORKS_RTP && flag_pic)
 
 /* Compact branches must not be used if the user either selects the
-   'never' policy or the 'optimal' policy on a core that lacks
+   'never' policy or the 'optimal' / 'always' policy on a core that lacks
    compact branch instructions.  */
-#define TARGET_CB_NEVER (mips_cb == MIPS_CB_NEVER	\
-			 || (mips_cb == MIPS_CB_OPTIMAL \
-			     && !ISA_HAS_COMPACT_BRANCHES))
+#define TARGET_CB_NEVER (mips_cb == MIPS_CB_NEVER || !ISA_HAS_COMPACT_BRANCHES)
 
 /* Compact branches may be used if the user either selects the
    'always' policy or the 'optimal' policy on a core that supports
@@ -134,10 +132,11 @@ struct mips_cpu_info {
 			     && ISA_HAS_COMPACT_BRANCHES))
 
 /* Compact branches must always be generated if the user selects
-   the 'always' policy or the 'optimal' policy om a core that
-   lacks delay slot branch instructions.  */
-#define TARGET_CB_ALWAYS (mips_cb == MIPS_CB_ALWAYS	\
-			 || (mips_cb == MIPS_CB_OPTIMAL \
+   the 'always' policy on a core support compact branches,
+   or the 'optimal' policy on a core that lacks delay slot branch instructions.  */
+#define TARGET_CB_ALWAYS ((mips_cb == MIPS_CB_ALWAYS	  \
+			     && ISA_HAS_COMPACT_BRANCHES) \
+			 || (mips_cb == MIPS_CB_OPTIMAL   \
 			     && !ISA_HAS_DELAY_SLOTS))
 
 /* Special handling for JRC that exists in microMIPSR3 as well as R6
@@ -677,6 +676,13 @@ struct mips_cpu_info {
 	builtin_define ("__mips_no_lxc1_sxc1");				\
       if (!ISA_HAS_UNFUSED_MADD4 && !ISA_HAS_FUSED_MADD4)		\
 	builtin_define ("__mips_no_madd4");				\
+									\
+      if (TARGET_CB_NEVER)						\
+	builtin_define ("__mips_compact_branches_never");		\
+      else if (TARGET_CB_ALWAYS)					\
+	builtin_define ("__mips_compact_branches_always");		\
+      else 								\
+	builtin_define ("__mips_compact_branches_optimal");		\
     }									\
   while (0)
 

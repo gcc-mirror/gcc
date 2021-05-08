@@ -20277,13 +20277,7 @@ mips_option_override (void)
       target_flags |= MASK_ODD_SPREG;
     }
 
-  if (!ISA_HAS_COMPACT_BRANCHES && mips_cb == MIPS_CB_ALWAYS)
-    {
-      error ("unsupported combination: %qs%s %s",
-	      mips_arch_info->name, TARGET_MICROMIPS ? " -mmicromips" : "",
-	      "-mcompact-branches=always");
-    }
-  else if (!ISA_HAS_DELAY_SLOTS && mips_cb == MIPS_CB_NEVER)
+  if (!ISA_HAS_DELAY_SLOTS && mips_cb == MIPS_CB_NEVER)
     {
       error ("unsupported combination: %qs%s %s",
 	      mips_arch_info->name, TARGET_MICROMIPS ? " -mmicromips" : "",
