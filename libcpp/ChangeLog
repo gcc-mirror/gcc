@@ -1,3 +1,11 @@
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/100450
+	* lex.c (cpp_avoid_paste): Handle token1 CPP_PRAGMA like CPP_NAME.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.
