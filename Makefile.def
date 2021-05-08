@@ -540,6 +540,7 @@ dependencies = { module=install-strip-sid; on=install-strip-tcl; };
 dependencies = { module=install-sid; on=install-tk; };
 dependencies = { module=install-strip-sid; on=install-strip-tk; };
 
+dependencies = { module=configure-sim; on=all-gnulib; };
 dependencies = { module=configure-sim; on=configure-intl; };
 dependencies = { module=all-sim; on=all-intl; };
 dependencies = { module=all-sim; on=all-libiberty; };
