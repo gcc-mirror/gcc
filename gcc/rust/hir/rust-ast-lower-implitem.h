@@ -86,7 +86,6 @@ public:
   void visit (AST::Function &function) override
   {
     // ignore for now and leave empty
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     std::vector<HIR::Attribute> outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
@@ -95,6 +94,11 @@ public:
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     // need
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (function.has_generics ())
+      {
+	generic_params = lower_generic_params (function.get_generic_params ());
+      }
     Identifier function_name = function.get_function_name ();
     Location locus = function.get_locus ();
 
@@ -165,7 +169,6 @@ public:
   void visit (AST::Method &method) override
   {
     // ignore for now and leave empty
-    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     std::vector<HIR::Attribute> outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
@@ -174,6 +177,11 @@ public:
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     // need
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (method.has_generics ())
+      {
+	generic_params = lower_generic_params (method.get_generic_params ());
+      }
     Identifier method_name = method.get_method_name ();
     Location locus = method.get_locus ();
 
