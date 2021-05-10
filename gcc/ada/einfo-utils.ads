@@ -141,6 +141,53 @@ package Einfo.Utils is
    function Is_Task_Type                        (Id : E) return B;
    function Is_Type                             (Id : E) return B;
 
+   pragma Inline (Is_Access_Object_Type);
+   pragma Inline (Is_Access_Type);
+   pragma Inline (Is_Access_Protected_Subprogram_Type);
+   pragma Inline (Is_Access_Subprogram_Type);
+   pragma Inline (Is_Aggregate_Type);
+   pragma Inline (Is_Anonymous_Access_Type);
+   pragma Inline (Is_Array_Type);
+   pragma Inline (Is_Assignable);
+   pragma Inline (Is_Class_Wide_Type);
+   pragma Inline (Is_Composite_Type);
+   pragma Inline (Is_Concurrent_Body);
+   pragma Inline (Is_Concurrent_Type);
+   pragma Inline (Is_Decimal_Fixed_Point_Type);
+   pragma Inline (Is_Digits_Type);
+   pragma Inline (Is_Discrete_Type);
+   pragma Inline (Is_Elementary_Type);
+   pragma Inline (Is_Entry);
+   pragma Inline (Is_Enumeration_Type);
+   pragma Inline (Is_Fixed_Point_Type);
+   pragma Inline (Is_Floating_Point_Type);
+   pragma Inline (Is_Formal);
+   pragma Inline (Is_Formal_Object);
+   pragma Inline (Is_Generic_Subprogram);
+   pragma Inline (Is_Generic_Unit);
+   pragma Inline (Is_Ghost_Entity);
+   pragma Inline (Is_Incomplete_Or_Private_Type);
+   pragma Inline (Is_Incomplete_Type);
+   pragma Inline (Is_Integer_Type);
+   pragma Inline (Is_Modular_Integer_Type);
+   pragma Inline (Is_Named_Access_Type);
+   pragma Inline (Is_Named_Number);
+   pragma Inline (Is_Numeric_Type);
+   pragma Inline (Is_Object);
+   pragma Inline (Is_Ordinary_Fixed_Point_Type);
+   pragma Inline (Is_Overloadable);
+   pragma Inline (Is_Private_Type);
+   pragma Inline (Is_Protected_Type);
+   pragma Inline (Is_Real_Type);
+   pragma Inline (Is_Record_Type);
+   pragma Inline (Is_Scalar_Type);
+   pragma Inline (Is_Signed_Integer_Type);
+   pragma Inline (Is_Subprogram);
+   pragma Inline (Is_Subprogram_Or_Entry);
+   pragma Inline (Is_Subprogram_Or_Generic_Subprogram);
+   pragma Inline (Is_Task_Type);
+   pragma Inline (Is_Type);
+
    -------------------------------------
    -- Synthesized Attribute Functions --
    -------------------------------------
@@ -234,6 +281,34 @@ package Einfo.Utils is
    function Type_Low_Bound                      (Id : E) return N;
    function Underlying_Type                     (Id : E) return E;
 
+   pragma Inline (Address_Clause);
+   pragma Inline (Alignment_Clause);
+   pragma Inline (Base_Type);
+   pragma Inline (Has_Foreign_Convention);
+   pragma Inline (Has_Non_Limited_View);
+   pragma Inline (Is_Base_Type);
+   pragma Inline (Is_Boolean_Type);
+   pragma Inline (Is_Constant_Object);
+   pragma Inline (Is_Controlled);
+   pragma Inline (Is_Discriminal);
+   pragma Inline (Is_Finalizer);
+   pragma Inline (Is_Full_Access);
+   pragma Inline (Is_Null_State);
+   pragma Inline (Is_Package_Or_Generic_Package);
+   pragma Inline (Is_Packed_Array);
+   pragma Inline (Is_Prival);
+   pragma Inline (Is_Protected_Component);
+   pragma Inline (Is_Protected_Record_Type);
+   pragma Inline (Is_String_Type);
+   pragma Inline (Is_Task_Record_Type);
+   pragma Inline (Is_Wrapper_Package);
+   pragma Inline (Scope_Depth);
+   pragma Inline (Scope_Depth_Set);
+   pragma Inline (Size_Clause);
+   pragma Inline (Stream_Size_Clause);
+   pragma Inline (Type_High_Bound);
+   pragma Inline (Type_Low_Bound);
+
    ----------------------------------------------
    -- Type Representation Attribute Predicates --
    ----------------------------------------------
@@ -296,6 +371,32 @@ package Einfo.Utils is
    function Unknown_Normalized_Position           (E : Entity_Id) return B;
    function Unknown_Normalized_Position_Max       (E : Entity_Id) return B;
    function Unknown_RM_Size                       (E : Entity_Id) return B;
+
+   pragma Inline (Known_Alignment);
+   pragma Inline (Known_Component_Bit_Offset);
+   pragma Inline (Known_Component_Size);
+   pragma Inline (Known_Esize);
+   pragma Inline (Known_Normalized_First_Bit);
+   pragma Inline (Known_Normalized_Position);
+   pragma Inline (Known_Normalized_Position_Max);
+   pragma Inline (Known_RM_Size);
+
+   pragma Inline (Known_Static_Component_Bit_Offset);
+   pragma Inline (Known_Static_Component_Size);
+   pragma Inline (Known_Static_Esize);
+   pragma Inline (Known_Static_Normalized_First_Bit);
+   pragma Inline (Known_Static_Normalized_Position);
+   pragma Inline (Known_Static_Normalized_Position_Max);
+   pragma Inline (Known_Static_RM_Size);
+
+   pragma Inline (Unknown_Alignment);
+   pragma Inline (Unknown_Component_Bit_Offset);
+   pragma Inline (Unknown_Component_Size);
+   pragma Inline (Unknown_Esize);
+   pragma Inline (Unknown_Normalized_First_Bit);
+   pragma Inline (Unknown_Normalized_Position);
+   pragma Inline (Unknown_Normalized_Position_Max);
+   pragma Inline (Unknown_RM_Size);
 
    ---------------------------------------------------
    -- Access to Subprograms in Subprograms_For_Type --
@@ -366,6 +467,16 @@ package Einfo.Utils is
    procedure Init_Normalized_Position      (Id : E);
    procedure Init_Normalized_Position_Max  (Id : E);
    procedure Init_RM_Size                  (Id : E);
+
+   pragma Inline (Init_Alignment);
+   pragma Inline (Init_Component_Bit_Offset);
+   pragma Inline (Init_Component_Size);
+   pragma Inline (Init_Digits_Value);
+   pragma Inline (Init_Esize);
+   pragma Inline (Init_Normalized_First_Bit);
+   pragma Inline (Init_Normalized_Position);
+   pragma Inline (Init_Normalized_Position_Max);
+   pragma Inline (Init_RM_Size);
 
    procedure Init_Component_Location (Id : E);
    --  Initializes all fields describing the location of a component
@@ -597,86 +708,13 @@ package Einfo.Utils is
    --  Also, if the Etype of E is set and is an anonymous access type with
    --  no convention set, this anonymous type inherits the convention of E.
 
+   pragma Inline (Is_Entity_Name);
+
    ----------------------------------
    -- Debugging Output Subprograms --
    ----------------------------------
 
    procedure Write_Entity_Info (Id : Entity_Id; Prefix : String);
    --  A debugging procedure to write out information about an entity
-
-   --  ????Make sure the Inlines from Einfo were fully copied here.
-   --  ????
-   --  The following Inline pragmas are *not* read by XEINFO when building the
-   --  C version of this interface automatically (so the C version will end up
-   --  making out of line calls). The pragma scan in XEINFO will be terminated
-   --  on encountering the END XEINFO INLINES line. We inline things here which
-   --  are small, but not of the canonical attribute access/set format that can
-   --  be handled by XEINFO.
-
-   pragma Inline (Address_Clause);
-   pragma Inline (Alignment_Clause);
-   pragma Inline (Base_Type);
-
-   pragma Inline (Has_Foreign_Convention);
-   pragma Inline (Has_Non_Limited_View);
-   pragma Inline (Is_Base_Type);
-   pragma Inline (Is_Boolean_Type);
-   pragma Inline (Is_Constant_Object);
-   pragma Inline (Is_Controlled);
-   pragma Inline (Is_Discriminal);
-   pragma Inline (Is_Entity_Name);
-   pragma Inline (Is_Finalizer);
-   pragma Inline (Is_Full_Access);
-   pragma Inline (Is_Null_State);
-   pragma Inline (Is_Package_Or_Generic_Package);
-   pragma Inline (Is_Packed_Array);
-   pragma Inline (Is_Prival);
-   pragma Inline (Is_Protected_Component);
-   pragma Inline (Is_Protected_Record_Type);
-   pragma Inline (Is_String_Type);
-   pragma Inline (Is_Task_Record_Type);
-   pragma Inline (Is_Wrapper_Package);
-   pragma Inline (Scope_Depth);
-   pragma Inline (Scope_Depth_Set);
-   pragma Inline (Size_Clause);
-   pragma Inline (Stream_Size_Clause);
-   pragma Inline (Type_High_Bound);
-   pragma Inline (Type_Low_Bound);
-
-   pragma Inline (Known_Alignment);
-   pragma Inline (Known_Component_Bit_Offset);
-   pragma Inline (Known_Component_Size);
-   pragma Inline (Known_Esize);
-   pragma Inline (Known_Normalized_First_Bit);
-   pragma Inline (Known_Normalized_Position);
-   pragma Inline (Known_Normalized_Position_Max);
-   pragma Inline (Known_RM_Size);
-
-   pragma Inline (Known_Static_Component_Bit_Offset);
-   pragma Inline (Known_Static_Component_Size);
-   pragma Inline (Known_Static_Esize);
-   pragma Inline (Known_Static_Normalized_First_Bit);
-   pragma Inline (Known_Static_Normalized_Position);
-   pragma Inline (Known_Static_Normalized_Position_Max);
-   pragma Inline (Known_Static_RM_Size);
-
-   pragma Inline (Unknown_Alignment);
-   pragma Inline (Unknown_Component_Bit_Offset);
-   pragma Inline (Unknown_Component_Size);
-   pragma Inline (Unknown_Esize);
-   pragma Inline (Unknown_Normalized_First_Bit);
-   pragma Inline (Unknown_Normalized_Position);
-   pragma Inline (Unknown_Normalized_Position_Max);
-   pragma Inline (Unknown_RM_Size);
-
-   pragma Inline (Init_Alignment);
-   pragma Inline (Init_Component_Bit_Offset);
-   pragma Inline (Init_Component_Size);
-   pragma Inline (Init_Digits_Value);
-   pragma Inline (Init_Esize);
-   pragma Inline (Init_Normalized_First_Bit);
-   pragma Inline (Init_Normalized_Position);
-   pragma Inline (Init_Normalized_Position_Max);
-   pragma Inline (Init_RM_Size);
 
 end Einfo.Utils;
