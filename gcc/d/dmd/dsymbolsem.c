@@ -4880,8 +4880,11 @@ static void aliasInstanceSemantic(TemplateInstance *tempinst, Scope *sc, Templat
 
     TemplateTypeParameter *ttp = (*tempdecl->parameters)[0]->isTemplateTypeParameter();
     Type *ta = isType(tempinst->tdtypes[0]);
-    Declaration *d = new AliasDeclaration(tempinst->loc, ttp->ident, ta->addMod(tempdecl->onemember->isAliasDeclaration()->type->mod));
-    d->storage_class |= STCtemplateparameter;
+    AliasDeclaration *ad = tempdecl->onemember->isAliasDeclaration();
+
+    // Note: qualifiers can be in both 'ad.type.mod' and 'ad.storage_class'
+    Declaration *d = new AliasDeclaration(tempinst->loc, ttp->ident, ta->addMod(ad->type->mod));
+    d->storage_class |= STCtemplateparameter | ad->storage_class;
     dsymbolSemantic(d, sc);
 
     paramscope->pop();
