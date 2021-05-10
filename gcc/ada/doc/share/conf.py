@@ -20,7 +20,9 @@ DOCS = {
     'gnat_rm': {
         'title': 'GNAT Reference Manual'},
     'gnat_ugn': {
-        'title': 'GNAT User\'s Guide for Native Platforms'}}
+        'title': 'GNAT User\'s Guide for Native Platforms'},
+    'gnat-style': {
+        'title': 'GNAT Coding Style: A Guide for GNAT Developers'}}
 
 # Then retrieve the source directory
 root_source_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
