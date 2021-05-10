@@ -115,8 +115,7 @@ Get_8_Bit_Field (Node_Id N, Field_Offset Offset)
 INLINE unsigned int
 Get_32_Bit_Field (Node_Id N, Field_Offset Offset)
 {
-  const Field_Offset L = 1;
-  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
+  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset);
   return slot;
 }
 
@@ -124,8 +123,7 @@ INLINE unsigned int
 Get_32_Bit_Field_With_Default (Node_Id N, Field_Offset Offset,
 			       unsigned int Default_Value)
 {
-  const Field_Offset L = 1;
-  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset / L);
+  any_slot slot = *(Slots_Ptr + Node_Offsets_Ptr[N] + Offset);
   return slot == Empty ? Default_Value : slot;
 }
 
