@@ -1193,6 +1193,8 @@ extern char rname56[], rname57[], rname58[], rname59[];
 
 #define ADDITIONAL_REGISTER_NAMES		\
 {						\
+  {"r26",    26},				\
+  {"r27",    27},				\
   {"ilink",  29},				\
   {"r29",    29},				\
   {"r30",    30},				\
