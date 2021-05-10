@@ -3546,3 +3546,32 @@ index 5ad82db1def..53b15f32516 100644
 @@ -1 +1,2 @@
  
 +
+
+=== 0001-OpenMP-Fix-SIMT ===
+From 33b647956caa977d1ae489f9baed9cef70b4f382 Mon Sep 17 00:00:00 2001
+From: Tobias Burnus <tobias@codesourcery.com>
+Date: Fri, 7 May 2021 12:11:51 +0200
+Subject: [PATCH] OpenMP: Fix SIMT for complex/float reduction with && and ||
+
+libgomp/ChangeLog:
+
+	* testsuite/libgomp.c-c++-common/reduction-5.c: New test, testing
+	complex/floating-point || + && reduction with 'omp target'.
+	* testsuite/libgomp.c-c++-common/reduction-5.c: Likewise.
+---
+diff --git a/libgomp/testsuite/libgomp.c-c++-common/reduction-5.c b/libgomp/testsuite/libgomp.c-c++-common/reduction-5.c
+new file mode 100644
+index 00000000000..21540512e23
+--- /dev/null
++++ b/libgomp/testsuite/libgomp.c-c++-common/reduction-5.c
+@@ -0,0 +1,1 @@
++
+diff --git a/libgomp/testsuite/libgomp.c-c++-common/reduction-6.c b/libgomp/testsuite/libgomp.c-c++-common/reduction-6.c
+new file mode 100644
+index 00000000000..21540512e23
+--- /dev/null
++++ b/libgomp/testsuite/libgomp.c-c++-common/reduction-6.c
+@@ -0,0 +1,1 @@
++
+-- 
+2.25.1

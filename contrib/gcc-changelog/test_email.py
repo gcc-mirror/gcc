@@ -424,3 +424,7 @@ class TestGccChangelog(unittest.TestCase):
     def test_long_filenames(self):
         email = self.from_patch_glob('0001-long-filenames')
         assert not email.errors
+
+    def test_multi_same_file(self):
+        email = self.from_patch_glob('0001-OpenMP-Fix-SIMT')
+        assert email.errors[0].message == 'same file specified multiple times'
