@@ -22527,10 +22527,13 @@ rs6000_ira_change_pseudo_allocno_class (int regno ATTRIBUTE_UNUSED,
 	 of allocno class.  */
       if (best_class == BASE_REGS)
 	return GENERAL_REGS;
-      if (TARGET_VSX
-	  && (best_class == FLOAT_REGS || best_class == ALTIVEC_REGS))
+      if (TARGET_VSX && best_class == FLOAT_REGS)
 	return VSX_REGS;
       return best_class;
+
+    case VSX_REGS:
+      if (best_class == ALTIVEC_REGS)
+	return ALTIVEC_REGS;
 
     default:
       break;
@@ -23649,12 +23652,12 @@ rs6000_compute_pressure_classes (enum reg_class *pressure_classes)
 
   n = 0;
   pressure_classes[n++] = GENERAL_REGS;
+  if (TARGET_ALTIVEC)
+    pressure_classes[n++] = ALTIVEC_REGS;
   if (TARGET_VSX)
     pressure_classes[n++] = VSX_REGS;
   else
     {
-      if (TARGET_ALTIVEC)
-	pressure_classes[n++] = ALTIVEC_REGS;
       if (TARGET_HARD_FLOAT)
 	pressure_classes[n++] = FLOAT_REGS;
     }
