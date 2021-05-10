@@ -22,7 +22,7 @@ struct A
       d -= that.d;
       return *this;
     }
-};
+} __attribute__((aligned(__BIGGEST_ALIGNMENT__)));
 
 void test(A& x, A const& y1, A const& y2)
 {
