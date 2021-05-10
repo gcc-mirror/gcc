@@ -14952,7 +14952,17 @@ package body Exp_Ch4 is
       --       Hook := null;
       --    end if;
 
+      --  Note that the value returned by Find_Hook_Context may be an
+      --  operator node, which is not a list member. We must locate in the
+      --  tree the proper node after which to inwert the finaliation code.
+
       else
+         while not Is_List_Member (Fin_Context) loop
+            Fin_Context := Parent (Fin_Context);
+         end loop;
+
+         pragma Assert (Present (Fin_Context));
+
          Insert_Action_After (Fin_Context,
            Make_Implicit_If_Statement (Obj_Decl,
              Condition =>
