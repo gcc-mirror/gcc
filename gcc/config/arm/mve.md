@@ -811,17 +811,30 @@
    (set_attr "length""8")])
 
 ;;
-;; [vcmpneq_])
+;; [vcmpneq_, vcmpcsq_, vcmpeqq_, vcmpgeq_, vcmpgtq_, vcmphiq_, vcmpleq_, vcmpltq_])
 ;;
-(define_insn "mve_vcmpneq_<mode>"
+(define_insn "mve_vcmp<mve_cmp_op>q_<mode>"
   [
    (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCMPNEQ))
+	(MVE_COMPARISONS:HI (match_operand:MVE_2 1 "s_register_operand" "w")
+		    (match_operand:MVE_2 2 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
-  "vcmp.i%#<V_sz_elem>  ne, %q1, %q2"
+  "vcmp.<mve_cmp_type>%#<V_sz_elem>  <mve_cmp_op>, %q1, %q2"
+  [(set_attr "type" "mve_move")
+])
+
+;;
+;; [vcmpcsq_n_, vcmpeqq_n_, vcmpgeq_n_, vcmpgtq_n_, vcmphiq_n_, vcmpleq_n_, vcmpltq_n_, vcmpneq_n_])
+;;
+(define_insn "mve_vcmp<mve_cmp_op>q_n_<mode>"
+  [
+   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
+	(MVE_COMPARISONS:HI (match_operand:MVE_2 1 "s_register_operand" "w")
+		    (match_operand:<V_elem> 2 "s_register_operand" "r")))
+  ]
+  "TARGET_HAVE_MVE"
+  "vcmp.<mve_cmp_type>%#<V_sz_elem>	<mve_cmp_op>, %q1, %2"
   [(set_attr "type" "mve_move")
 ])
 
@@ -978,231 +991,6 @@
 	  VCADD))]
   "TARGET_HAVE_MVE && !BYTES_BIG_ENDIAN"
 )
-
-;;
-;; [vcmpcsq_n_])
-;;
-(define_insn "mve_vcmpcsq_n_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VCMPCSQ_N_U))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.u%#<V_sz_elem>	cs, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpcsq_])
-;;
-(define_insn "mve_vcmpcsq_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCMPCSQ_U))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.u%#<V_sz_elem>	cs, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpeqq_n_])
-;;
-(define_insn "mve_vcmpeqq_n_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VCMPEQQ_N))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.i%#<V_sz_elem>	eq, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpeqq_])
-;;
-(define_insn "mve_vcmpeqq_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCMPEQQ))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.i%#<V_sz_elem>	eq, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpgeq_n_])
-;;
-(define_insn "mve_vcmpgeq_n_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VCMPGEQ_N_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.s%#<V_sz_elem>	ge, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpgeq_])
-;;
-(define_insn "mve_vcmpgeq_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCMPGEQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.s%#<V_sz_elem>	ge, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpgtq_n_])
-;;
-(define_insn "mve_vcmpgtq_n_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VCMPGTQ_N_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.s%#<V_sz_elem>	gt, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpgtq_])
-;;
-(define_insn "mve_vcmpgtq_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCMPGTQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.s%#<V_sz_elem>	gt, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmphiq_n_])
-;;
-(define_insn "mve_vcmphiq_n_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VCMPHIQ_N_U))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.u%#<V_sz_elem>	hi, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmphiq_])
-;;
-(define_insn "mve_vcmphiq_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCMPHIQ_U))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.u%#<V_sz_elem>	hi, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpleq_n_])
-;;
-(define_insn "mve_vcmpleq_n_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VCMPLEQ_N_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.s%#<V_sz_elem>	le, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpleq_])
-;;
-(define_insn "mve_vcmpleq_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCMPLEQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.s%#<V_sz_elem>	le, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpltq_n_])
-;;
-(define_insn "mve_vcmpltq_n_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VCMPLTQ_N_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.s%#<V_sz_elem>	lt, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpltq_])
-;;
-(define_insn "mve_vcmpltq_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:MVE_2 2 "s_register_operand" "w")]
-	 VCMPLTQ_S))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.s%#<V_sz_elem>	lt, %q1, %q2"
-  [(set_attr "type" "mve_move")
-])
-
-;;
-;; [vcmpneq_n_])
-;;
-(define_insn "mve_vcmpneq_n_<mode>"
-  [
-   (set (match_operand:HI 0 "vpr_register_operand" "=Up")
-	(unspec:HI [(match_operand:MVE_2 1 "s_register_operand" "w")
-		    (match_operand:<V_elem> 2 "s_register_operand" "r")]
-	 VCMPNEQ_N))
-  ]
-  "TARGET_HAVE_MVE"
-  "vcmp.i%#<V_sz_elem>	ne, %q1, %2"
-  [(set_attr "type" "mve_move")
-])
 
 ;;
 ;; [veorq_u, veorq_s])

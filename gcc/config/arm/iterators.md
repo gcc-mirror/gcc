@@ -285,6 +285,8 @@
 
 ;; Comparisons for vc<cmp>
 (define_code_iterator COMPARISONS [eq gt ge le lt])
+;; Comparisons for MVE
+(define_code_iterator MVE_COMPARISONS [eq ge geu gt gtu le lt ne])
 
 ;; A list of ...
 (define_code_iterator IOR_XOR [ior xor])
@@ -336,7 +338,13 @@
 (define_code_attr cmp_op [(eq "eq") (gt "gt") (ge "ge") (lt "lt") (le "le")
                           (gtu "gt") (geu "ge")])
 
+(define_code_attr mve_cmp_op [(eq "eq") (gt "gt") (ge "ge") (lt "lt") (le "le")
+                              (gtu "hi") (geu "cs") (ne "ne")])
+
 (define_code_attr cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")])
+
+(define_code_attr mve_cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")
+                                (gtu "u") (geu "u") (ne "i")])
 
 (define_code_attr vfml_op [(plus "a") (minus "s")])
 
