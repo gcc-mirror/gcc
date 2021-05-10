@@ -255,11 +255,68 @@ public:
 	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver_tyty);
 	if (adt->has_substitutions () && fn->needs_substitution ())
 	  {
-	    rust_assert (adt->was_substituted ());
-	    auto used_args_in_prev_segment = GetUsedSubstArgs::From (adt);
-	    lookup
-	      = SubstMapperInternal::Resolve (fn, used_args_in_prev_segment);
+	    // consider the case where we have:
+	    //
+	    // struct Foo<X,Y>(X,Y);
+	    //
+	    // impl<T> Foo<T, i32> {
+	    //   fn test<X>(self, a:X) -> (T,X) { (self.0, a) }
+	    // }
+	    //
+	    // In this case we end up with an fn type of:
+	    //
+	    // fn <T,X> test(self:Foo<T,i32>, a:X) -> (T,X)
+	    //
+	    // This means the instance or self we are calling this method for
+	    // will be substituted such that we can get the inherited type
+	    // arguments but then need to use the turbo fish if available or
+	    // infer the remaining arguments. Luckily rust does not allow for
+	    // default types GenericParams on impl blocks since these must
+	    // always be at the end of the list
+
+	    auto s = fn->get_self_type ();
+	    rust_assert (s->can_eq (adt));
+	    rust_assert (s->get_kind () == TyTy::TypeKind::ADT);
+	    TyTy::ADTType *self_adt = static_cast<TyTy::ADTType *> (s);
+
+	    // we need to grab the Self substitutions as the inherit type
+	    // parameters for this
+	    if (self_adt->needs_substitution ())
+	      {
+		rust_assert (adt->was_substituted ());
+
+		TyTy::SubstitutionArgumentMappings used_args_in_prev_segment
+		  = GetUsedSubstArgs::From (adt);
+
+		TyTy::SubstitutionArgumentMappings inherit_type_args
+		  = self_adt->solve_mappings_from_receiver_for_self (
+		    used_args_in_prev_segment);
+
+		// there may or may not be inherited type arguments
+		if (!inherit_type_args.is_error ())
+		  {
+		    // need to apply the inherited type arguments to the
+		    // function
+		    lookup = fn->handle_substitions (inherit_type_args);
+		  }
+	      }
 	  }
+      }
+
+    // apply any remaining generic arguments
+    if (expr.get_method_name ().has_generic_args ())
+      {
+	HIR::GenericArgs &args = expr.get_method_name ().get_generic_args ();
+	lookup
+	  = SubstMapper::Resolve (lookup, expr.get_method_name ().get_locus (),
+				  &args);
+	if (lookup->get_kind () == TyTy::TypeKind::ERROR)
+	  return;
+      }
+    else if (lookup->needs_generic_substitutions ())
+      {
+	lookup = SubstMapper::InferSubst (lookup,
+					  expr.get_method_name ().get_locus ());
       }
 
     TyTy::BaseType *function_ret_tyty

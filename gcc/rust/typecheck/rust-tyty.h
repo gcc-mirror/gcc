@@ -698,6 +698,21 @@ public:
   SubstitutionArgumentMappings
   adjust_mappings_for_this (SubstitutionArgumentMappings &mappings);
 
+  // struct Foo<A, B>(A, B);
+  //
+  // impl<T> Foo<T, f32>;
+  //     -> fn test<X>(self, a: X) -> X
+  //
+  // We might invoke this via:
+  //
+  // a = Foo(123, 456f32);
+  // b = a.test::<bool>(false);
+  //
+  // we need to figure out relevant generic arguemts for self to apply to the
+  // fntype
+  SubstitutionArgumentMappings solve_mappings_from_receiver_for_self (
+    SubstitutionArgumentMappings &mappings);
+
   BaseType *infer_substitions (Location locus)
   {
     std::vector<SubstitutionArg> args;

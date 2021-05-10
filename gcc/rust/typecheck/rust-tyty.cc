@@ -247,6 +247,9 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
       return SubstitutionArgumentMappings::error ();
     }
 
+  // for inherited arguments
+  size_t offs = used_arguments.size ();
+
   std::vector<SubstitutionArg> mappings;
   for (auto &arg : args.get_type_args ())
     {
@@ -257,8 +260,8 @@ SubstitutionRef::get_mappings_from_generic_args (HIR::GenericArgs &args)
 	  return SubstitutionArgumentMappings::error ();
 	}
 
-      SubstitutionArg subst_arg (&substitutions.at (mappings.size ()),
-				 resolved);
+      SubstitutionArg subst_arg (&substitutions.at (offs), resolved);
+      offs++;
       mappings.push_back (std::move (subst_arg));
     }
 
@@ -339,6 +342,31 @@ SubstitutionRef::adjust_mappings_for_this (
 
       SubstitutionArg adjusted (&subst, arg.get_tyty ());
       resolved_mappings.push_back (std::move (adjusted));
+    }
+
+  return SubstitutionArgumentMappings (resolved_mappings,
+				       mappings.get_locus ());
+}
+
+// this function assumes that the mappings being passed are for the same type as
+// this new substitution reference so ordering matters here
+SubstitutionArgumentMappings
+SubstitutionRef::solve_mappings_from_receiver_for_self (
+  SubstitutionArgumentMappings &mappings)
+{
+  std::vector<SubstitutionArg> resolved_mappings;
+
+  rust_assert (mappings.size () == get_num_substitutions ());
+  for (size_t i = 0; i < get_num_substitutions (); i++)
+    {
+      SubstitutionParamMapping &param_mapping = substitutions.at (i);
+      SubstitutionArg &arg = mappings.get_mappings ().at (i);
+
+      if (param_mapping.needs_substitution ())
+	{
+	  SubstitutionArg adjusted (&param_mapping, arg.get_tyty ());
+	  resolved_mappings.push_back (std::move (adjusted));
+	}
     }
 
   return SubstitutionArgumentMappings (resolved_mappings,
@@ -457,13 +485,6 @@ ADTType::clone ()
 ADTType *
 ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
-  if (subst_mappings.size () != get_num_substitutions ())
-    {
-      rust_error_at (subst_mappings.get_locus (),
-		     "invalid number of generic arguments to generic ADT type");
-      return nullptr;
-    }
-
   ADTType *adt = static_cast<ADTType *> (clone ());
   adt->set_ty_ref (mappings->get_next_hir_id ());
   adt->used_arguments = subst_mappings;
@@ -473,8 +494,8 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
       SubstitutionArg arg = SubstitutionArg::error ();
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
-      rust_assert (ok);
-      sub.fill_param_ty (arg.get_tyty ());
+      if (ok)
+	sub.fill_param_ty (arg.get_tyty ());
     }
 
   adt->iterate_fields ([&] (StructFieldType *field) mutable -> bool {
@@ -486,27 +507,22 @@ ADTType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 
 	SubstitutionArg arg = SubstitutionArg::error ();
 	bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
-	if (!ok)
+	if (ok)
 	  {
-	    rust_error_at (subst_mappings.get_locus (),
-			   "Failed to resolve parameter type: %s",
-			   p->as_string ().c_str ());
-	    return false;
-	  }
+	    auto argt = arg.get_tyty ();
+	    bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
+	    bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
 
-	auto argt = arg.get_tyty ();
-	bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
-	bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
-
-	if (arg_is_param || arg_is_concrete)
-	  {
-	    auto new_field = argt->clone ();
-	    new_field->set_ref (fty->get_ref ());
-	    field->set_field_type (new_field);
-	  }
-	else
-	  {
-	    field->get_field_type ()->set_ty_ref (argt->get_ref ());
+	    if (arg_is_param || arg_is_concrete)
+	      {
+		auto new_field = argt->clone ();
+		new_field->set_ref (fty->get_ref ());
+		field->set_field_type (new_field);
+	      }
+	    else
+	      {
+		field->get_field_type ()->set_ty_ref (argt->get_ref ());
+	      }
 	  }
       }
     else if (fty->has_subsititions_defined ()
@@ -695,14 +711,6 @@ FnType::clone ()
 FnType *
 FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 {
-  if (subst_mappings.size () != get_num_substitutions ())
-    {
-      rust_error_at (
-	subst_mappings.get_locus (),
-	"invalid number of generic arguments to generic Function type");
-      return nullptr;
-    }
-
   FnType *fn = static_cast<FnType *> (clone ());
   fn->set_ty_ref (mappings->get_next_hir_id ());
   fn->used_arguments = subst_mappings;
@@ -713,8 +721,8 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 
       bool ok
 	= subst_mappings.get_argument_for_symbol (sub.get_param_ty (), &arg);
-      rust_assert (ok);
-      sub.fill_param_ty (arg.get_tyty ());
+      if (ok)
+	sub.fill_param_ty (arg.get_tyty ());
     }
 
   auto fty = fn->get_return_type ();
@@ -725,27 +733,22 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 
       SubstitutionArg arg = SubstitutionArg::error ();
       bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
-      if (!ok)
+      if (ok)
 	{
-	  rust_error_at (subst_mappings.get_locus (),
-			 "Failed to resolve parameter type: %s",
-			 p->as_string ().c_str ());
-	  return nullptr;
-	}
+	  auto argt = arg.get_tyty ();
+	  bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
+	  bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
 
-      auto argt = arg.get_tyty ();
-      bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
-      bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
-
-      if (arg_is_param || arg_is_concrete)
-	{
-	  auto new_field = argt->clone ();
-	  new_field->set_ref (fty->get_ref ());
-	  fn->type = new_field;
-	}
-      else
-	{
-	  fty->set_ty_ref (argt->get_ref ());
+	  if (arg_is_param || arg_is_concrete)
+	    {
+	      auto new_field = argt->clone ();
+	      new_field->set_ref (fty->get_ref ());
+	      fn->type = new_field;
+	    }
+	  else
+	    {
+	      fty->set_ty_ref (argt->get_ref ());
+	    }
 	}
     }
   else if (fty->needs_generic_substitutions ()
@@ -778,27 +781,22 @@ FnType::handle_substitions (SubstitutionArgumentMappings subst_mappings)
 
 	  SubstitutionArg arg = SubstitutionArg::error ();
 	  bool ok = subst_mappings.get_argument_for_symbol (p, &arg);
-	  if (!ok)
+	  if (ok)
 	    {
-	      rust_error_at (subst_mappings.get_locus (),
-			     "Failed to resolve parameter type: %s",
-			     p->as_string ().c_str ());
-	      return nullptr;
-	    }
+	      auto argt = arg.get_tyty ();
+	      bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
+	      bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
 
-	  auto argt = arg.get_tyty ();
-	  bool arg_is_param = argt->get_kind () == TyTy::TypeKind::PARAM;
-	  bool arg_is_concrete = argt->get_kind () != TyTy::TypeKind::INFER;
-
-	  if (arg_is_param || arg_is_concrete)
-	    {
-	      auto new_field = argt->clone ();
-	      new_field->set_ref (fty->get_ref ());
-	      param.second = new_field;
-	    }
-	  else
-	    {
-	      fty->set_ty_ref (argt->get_ref ());
+	      if (arg_is_param || arg_is_concrete)
+		{
+		  auto new_field = argt->clone ();
+		  new_field->set_ref (fty->get_ref ());
+		  param.second = new_field;
+		}
+	      else
+		{
+		  fty->set_ty_ref (argt->get_ref ());
+		}
 	    }
 	}
       else if (fty->has_subsititions_defined ()
@@ -1396,9 +1394,8 @@ ParamType::handle_substitions (SubstitutionArgumentMappings mappings)
 
   SubstitutionArg arg = SubstitutionArg::error ();
   bool ok = mappings.get_argument_for_symbol (this, &arg);
-  rust_assert (ok);
-
-  p->set_ty_ref (arg.get_tyty ()->get_ref ());
+  if (ok)
+    p->set_ty_ref (arg.get_tyty ()->get_ref ());
 
   return p;
 }
