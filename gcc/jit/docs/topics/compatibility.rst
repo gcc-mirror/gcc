@@ -302,3 +302,23 @@ thread-local storage model of a variable:
 section of a variable:
 
   * :func:`gcc_jit_lvalue_set_link_section`
+
+.. _LIBGCCJIT_ABI_20:
+
+``LIBGCCJIT_ABI_20``
+-----------------------
+``LIBGCCJIT_ABI_20`` covers the addition of sized integer types, including
+128-bit integers and helper functions for types:
+
+  * :func:`gcc_jit_compatible_types`
+  * :func:`gcc_jit_type_get_size`
+  * :c:macro:`GCC_JIT_TYPE_UINT8_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT16_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT32_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT64_T`
+  * :c:macro:`GCC_JIT_TYPE_UINT128_T`
+  * :c:macro:`GCC_JIT_TYPE_INT8_T`
+  * :c:macro:`GCC_JIT_TYPE_INT16_T`
+  * :c:macro:`GCC_JIT_TYPE_INT32_T`
+  * :c:macro:`GCC_JIT_TYPE_INT64_T`
+  * :c:macro:`GCC_JIT_TYPE_INT128_T`

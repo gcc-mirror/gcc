@@ -574,8 +574,19 @@ enum gcc_jit_types
   /* Complex numbers.  */
   GCC_JIT_TYPE_COMPLEX_FLOAT,
   GCC_JIT_TYPE_COMPLEX_DOUBLE,
-  GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE
+  GCC_JIT_TYPE_COMPLEX_LONG_DOUBLE,
 
+  /* Sized integer types.  */
+  GCC_JIT_TYPE_UINT8_T,
+  GCC_JIT_TYPE_UINT16_T,
+  GCC_JIT_TYPE_UINT32_T,
+  GCC_JIT_TYPE_UINT64_T,
+  GCC_JIT_TYPE_UINT128_T,
+  GCC_JIT_TYPE_INT8_T,
+  GCC_JIT_TYPE_INT16_T,
+  GCC_JIT_TYPE_INT32_T,
+  GCC_JIT_TYPE_INT64_T,
+  GCC_JIT_TYPE_INT128_T
 };
 
 extern gcc_jit_type *
@@ -600,6 +611,15 @@ gcc_jit_type_get_const (gcc_jit_type *type);
 /* Given type "T", get type "volatile T".  */
 extern gcc_jit_type *
 gcc_jit_type_get_volatile (gcc_jit_type *type);
+
+/* Given types LTYPE and RTYPE, return non-zero if they are compatible.  */
+extern int
+gcc_jit_compatible_types (gcc_jit_type *ltype,
+			  gcc_jit_type *rtype);
+
+/* Given type "T", get its size.  */
+extern ssize_t
+gcc_jit_type_get_size (gcc_jit_type *type);
 
 /* Given type "T", get type "T[N]" (for a constant N).  */
 extern gcc_jit_type *
