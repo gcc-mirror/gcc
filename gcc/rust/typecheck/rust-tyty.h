@@ -693,10 +693,18 @@ public:
   BaseType *infer_substitions (Location locus)
   {
     std::vector<SubstitutionArg> args;
-    for (auto &sub : get_substs ())
+    for (auto &p : get_substs ())
       {
-	TyVar infer_var = TyVar::get_implicit_infer_var (locus);
-	args.push_back (SubstitutionArg (&sub, infer_var.get_tyty ()));
+	if (p.needs_substitution ())
+	  {
+	    TyVar infer_var = TyVar::get_implicit_infer_var (locus);
+	    args.push_back (SubstitutionArg (&p, infer_var.get_tyty ()));
+	  }
+	else
+	  {
+	    args.push_back (
+	      SubstitutionArg (&p, p.get_param_ty ()->resolve ()));
+	  }
       }
 
     SubstitutionArgumentMappings infer_arguments (std::move (args), locus);
