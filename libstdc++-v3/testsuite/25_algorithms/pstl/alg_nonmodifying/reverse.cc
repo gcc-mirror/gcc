@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// { dg-options "-std=gnu++17 -ltbb" }
+// { dg-options "-ltbb" }
 // { dg-do run { target c++17 } }
 // { dg-timeout-factor 3 }
 // { dg-require-effective-target tbb-backend }
