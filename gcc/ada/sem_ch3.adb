@@ -5779,7 +5779,16 @@ package body Sem_Ch3 is
           ((In_Instance and then not Comes_From_Source (N))
              or else No (Aspect_Specifications (N)))
       then
-         Set_Subprograms_For_Type (Id, Subprograms_For_Type (T));
+         --  Inherit Subprograms_For_Type from the full view, if present
+
+         if Present (Full_View (T))
+           and then Subprograms_For_Type (Full_View (T)) /= No_Elist
+         then
+            Set_Subprograms_For_Type
+              (Id, Subprograms_For_Type (Full_View (T)));
+         else
+            Set_Subprograms_For_Type (Id, Subprograms_For_Type (T));
+         end if;
 
          --  If the current declaration created both a private and a full view,
          --  then propagate Predicate_Function to the latter as well.
