@@ -3707,6 +3707,8 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     case E_V2SImode:
       if (TARGET_SSE4_1)
 	{
+	  op_true = force_reg (mode, op_true);
+
 	  gen = gen_mmx_pblendvb;
 	  if (mode != V8QImode)
 	    d = gen_reg_rtx (V8QImode);
