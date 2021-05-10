@@ -53,7 +53,7 @@ package body Gnatvsn is
    --  version.c using the zero-based convention of the C language.
    --  The size is not the real one, which does not matter since we will
    --  check for the nul character in Gnat_Version_String.
-   pragma Import (C, Version_String, "version_string");
+   pragma Import (C, Version_String, "gnat_version_string");
 
    -------------------------
    -- Gnat_Version_String --

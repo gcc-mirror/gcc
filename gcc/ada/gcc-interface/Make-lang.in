@@ -247,7 +247,8 @@ GNAT1_C_OBJS = ada/adadecode.o ada/adaint.o ada/argv.o ada/cio.o \
  ada/cstreams.o ada/env.o ada/init.o ada/initialize.o ada/raise.o \
  ada/raise-gcc.o \
  ada/seh_init.o ada/targext.o ada/cuintp.o ada/decl.o ada/rtfinal.o \
- ada/rtinit.o ada/misc.o ada/utils.o ada/utils2.o ada/trans.o ada/targtyps.o
+ ada/rtinit.o ada/misc.o ada/utils.o ada/utils2.o ada/trans.o ada/targtyps.o \
+ ada/version.o
 
 # Object files from Ada sources that are used by gnat1
 GNAT_ADA_OBJS =	\
@@ -648,6 +649,7 @@ GNATBIND_OBJS = \
  ada/uintp.o      \
  ada/uname.o      \
  ada/urealp.o     \
+ ada/version.o    \
  ada/widechar.o
 
 # Language-independent object files.
