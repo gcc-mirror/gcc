@@ -819,23 +819,24 @@ private:
 class FnType : public BaseType, public SubstitutionRef
 {
 public:
-  FnType (HirId ref, std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
+  FnType (HirId ref, bool is_method,
+	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::FNDEF, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      params (std::move (params)), type (type)
+      params (std::move (params)), type (type), is_method_flag (is_method)
   {}
 
-  FnType (HirId ref, HirId ty_ref,
+  FnType (HirId ref, HirId ty_ref, bool is_method,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::FNDEF, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      params (params), type (type)
+      params (params), type (type), is_method_flag (is_method)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -850,6 +851,22 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   size_t num_params () const { return params.size (); }
+
+  bool is_method () const
+  {
+    if (num_params () == 0)
+      return false;
+
+    return is_method_flag;
+  }
+
+  // get the Self type for the method
+  BaseType *get_self_type () const
+  {
+    rust_assert (is_method ());
+    // FIXME this will need updated when we support coercion for & mut self etc
+    return get_params ().at (0).second;
+  }
 
   std::vector<std::pair<HIR::Pattern *, BaseType *> > &get_params ()
   {
@@ -893,6 +910,7 @@ public:
 private:
   std::vector<std::pair<HIR::Pattern *, BaseType *> > params;
   BaseType *type;
+  bool is_method_flag;
 };
 
 class FnPtr : public BaseType

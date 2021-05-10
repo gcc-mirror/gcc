@@ -687,9 +687,9 @@ FnType::clone ()
     cloned_params.push_back (
       std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
 
-  return new FnType (get_ref (), get_ty_ref (), std::move (cloned_params),
-		     get_return_type ()->clone (), clone_substs (),
-		     get_combined_refs ());
+  return new FnType (get_ref (), get_ty_ref (), is_method_flag,
+		     std::move (cloned_params), get_return_type ()->clone (),
+		     clone_substs (), get_combined_refs ());
 }
 
 FnType *
