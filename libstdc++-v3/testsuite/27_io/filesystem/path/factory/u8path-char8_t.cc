@@ -15,7 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17 -fchar8_t" }
+// { dg-options "-fchar8_t" }
 // { dg-do run { target c++17 } }
 
 #include <filesystem>
