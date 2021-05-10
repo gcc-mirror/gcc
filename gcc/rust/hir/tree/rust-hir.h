@@ -1295,6 +1295,8 @@ public:
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
   virtual Analysis::NodeMapping get_impl_mappings () const = 0;
+
+  virtual Location get_impl_locus () const = 0;
 };
 
 // Abstract base class for items used in a trait impl

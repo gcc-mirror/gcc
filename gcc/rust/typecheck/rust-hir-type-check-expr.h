@@ -24,7 +24,6 @@
 #include "rust-tyty.h"
 #include "rust-tyty-call.h"
 #include "rust-hir-type-check-struct-field.h"
-#include "rust-hir-method-resolve.h"
 #include "rust-hir-path-probe.h"
 #include "rust-substitution-mapper.h"
 #include "rust-hir-const-fold.h"
@@ -221,43 +220,45 @@ public:
 		       "failed to resolve the PathExprSegment to any Method");
 	return;
       }
-
-    // filter all methods
-    auto possible_methods = MethodResolution::Probe (candidates);
-    if (possible_methods.size () == 0)
-      {
-	rust_error_at (expr.get_method_name ().get_locus (),
-		       "no method named %s found in scope",
-		       expr.get_method_name ().as_string ().c_str ());
-	return;
-      }
-    else if (possible_methods.size () > 1)
+    else if (candidates.size () > 1)
       {
 	ReportMultipleCandidateError::Report (
-	  possible_methods, expr.get_method_name ().get_segment (),
+	  candidates, expr.get_method_name ().get_segment (),
 	  expr.get_method_name ().get_locus ());
 	return;
       }
 
-    auto resolved_candidate = possible_methods.at (0);
+    auto resolved_candidate = candidates.at (0);
     HIR::InherentImplItem *resolved_method = resolved_candidate.impl_item;
     TyTy::BaseType *lookup_tyty = resolved_candidate.ty;
 
-    TyTy::BaseType *lookup = lookup_tyty;
-    if (lookup_tyty->get_kind () == TyTy::TypeKind::FNDEF)
+    if (lookup_tyty->get_kind () != TyTy::TypeKind::FNDEF)
       {
-	TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
-	if (receiver_tyty->get_kind () == TyTy::TypeKind::ADT)
+	RichLocation r (expr.get_method_name ().get_locus ());
+	r.add_range (resolved_method->get_impl_locus ());
+	rust_error_at (r, "associated impl item is not a method");
+	return;
+      }
+
+    TyTy::BaseType *lookup = lookup_tyty;
+    TyTy::FnType *fn = static_cast<TyTy::FnType *> (lookup);
+    if (!fn->is_method ())
+      {
+	RichLocation r (expr.get_method_name ().get_locus ());
+	r.add_range (resolved_method->get_impl_locus ());
+	rust_error_at (r, "associated function is not a method");
+	return;
+      }
+
+    if (receiver_tyty->get_kind () == TyTy::TypeKind::ADT)
+      {
+	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver_tyty);
+	if (adt->has_substitutions () && fn->needs_substitution ())
 	  {
-	    TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (receiver_tyty);
-	    if (adt->has_substitutions () && fn->needs_substitution ())
-	      {
-		rust_assert (adt->was_substituted ());
-		auto used_args_in_prev_segment = GetUsedSubstArgs::From (adt);
-		lookup
-		  = SubstMapperInternal::Resolve (fn,
-						  used_args_in_prev_segment);
-	      }
+	    rust_assert (adt->was_substituted ());
+	    auto used_args_in_prev_segment = GetUsedSubstArgs::From (adt);
+	    lookup
+	      = SubstMapperInternal::Resolve (fn, used_args_in_prev_segment);
 	  }
       }
 
