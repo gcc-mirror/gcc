@@ -1382,7 +1382,7 @@
 (define_expand "movmisalignv2hi"
  [(set (match_operand:V2HI 0 "general_operand" "")
        (match_operand:V2HI 1 "general_operand" ""))]
- ""
+ "unaligned_access"
  "{
    if (prepare_move_operands (operands, V2HImode))
      DONE;
@@ -1441,7 +1441,7 @@
 (define_expand "movmisalign<mode>"
  [(set (match_operand:VWH 0 "general_operand" "")
        (match_operand:VWH 1 "general_operand" ""))]
- ""
+ "unaligned_access"
  "{
    if (prepare_move_operands (operands, <MODE>mode))
      DONE;
