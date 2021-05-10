@@ -76,6 +76,16 @@ Standard types
    :c:data:`GCC_JIT_TYPE_UNSIGNED_LONG`        C's ``unsigned long``
    :c:data:`GCC_JIT_TYPE_LONG_LONG`            C99's ``long long`` (signed)
    :c:data:`GCC_JIT_TYPE_UNSIGNED_LONG_LONG`   C99's ``unsigned long long``
+   :c:data:`GCC_JIT_TYPE_UINT8_T`              C99's ``uint8_t``
+   :c:data:`GCC_JIT_TYPE_UINT16_T`             C99's ``uint16_t``
+   :c:data:`GCC_JIT_TYPE_UINT32_T`             C99's ``uint32_t``
+   :c:data:`GCC_JIT_TYPE_UINT64_T`             C99's ``uint64_t``
+   :c:data:`GCC_JIT_TYPE_UINT128_T`            C99's ``__uint128_t``
+   :c:data:`GCC_JIT_TYPE_INT8_T`               C99's ``int8_t``
+   :c:data:`GCC_JIT_TYPE_INT16_T`              C99's ``int16_t``
+   :c:data:`GCC_JIT_TYPE_INT32_T`              C99's ``int32_t``
+   :c:data:`GCC_JIT_TYPE_INT64_T`              C99's ``int64_t``
+   :c:data:`GCC_JIT_TYPE_INT128_T`             C99's ``__int128_t``
    :c:data:`GCC_JIT_TYPE_FLOAT`
    :c:data:`GCC_JIT_TYPE_DOUBLE`
    :c:data:`GCC_JIT_TYPE_LONG_DOUBLE`

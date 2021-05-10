@@ -237,6 +237,27 @@ get_tree_node_for_type (enum gcc_jit_types type_)
     case GCC_JIT_TYPE_UNSIGNED_INT:
       return unsigned_type_node;
 
+    case GCC_JIT_TYPE_UINT8_T:
+      return unsigned_intQI_type_node;
+    case GCC_JIT_TYPE_UINT16_T:
+      return uint16_type_node;
+    case GCC_JIT_TYPE_UINT32_T:
+      return uint32_type_node;
+    case GCC_JIT_TYPE_UINT64_T:
+      return uint64_type_node;
+    case GCC_JIT_TYPE_UINT128_T:
+      return uint128_type_node;
+    case GCC_JIT_TYPE_INT8_T:
+      return intQI_type_node;
+    case GCC_JIT_TYPE_INT16_T:
+      return intHI_type_node;
+    case GCC_JIT_TYPE_INT32_T:
+      return intSI_type_node;
+    case GCC_JIT_TYPE_INT64_T:
+      return intDI_type_node;
+    case GCC_JIT_TYPE_INT128_T:
+      return intTI_type_node;
+
     case GCC_JIT_TYPE_LONG:
       return long_integer_type_node;
     case GCC_JIT_TYPE_UNSIGNED_LONG:
