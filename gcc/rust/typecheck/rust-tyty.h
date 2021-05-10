@@ -638,8 +638,16 @@ public:
 
   bool needs_substitution () const
   {
-    return has_substitutions ()
-	   && (used_arguments.is_error () || !used_arguments.is_concrete ());
+    if (!has_substitutions ())
+      return false;
+
+    if (used_arguments.is_error ())
+      return true;
+
+    if (used_arguments.size () != get_num_substitutions ())
+      return true;
+
+    return !used_arguments.is_concrete ();
   }
 
   bool was_substituted () const { return !needs_substitution (); }
