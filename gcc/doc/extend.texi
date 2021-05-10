@@ -14709,12 +14709,12 @@ sleep  @var{a}
 @end example
 @end deftypefn
 
-@deftypefn {Built-in Function}  void __builtin_arc_sr (unsigned int @var{auxr}, unsigned int @var{val})
-The first argument, @var{auxv}, is the address of an auxiliary
-register, the second argument, @var{val}, is a compile time constant
-to be written to the register.  Generates:
+@deftypefn {Built-in Function}  void __builtin_arc_sr (unsigned int @var{val}, unsigned int @var{auxr})
+The first argument, @var{val}, is a compile time constant to be
+written to the register, the second argument, @var{auxr}, is the
+address of an auxiliary register.  Generates:
 @example
-sr  @var{auxr}, [@var{val}]
+sr  @var{val}, [@var{auxr}]
 @end example
 @end deftypefn
 
