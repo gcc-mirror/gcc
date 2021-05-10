@@ -23,6 +23,7 @@
 #include "rust-ast-full.h"
 #include "rust-ast-resolve-struct-expr-field.h"
 #include "rust-ast-verify-assignee.h"
+#include "rust-ast-resolve-type.h"
 
 namespace Rust {
 namespace Resolver {
@@ -92,6 +93,13 @@ public:
   void visit (AST::MethodCallExpr &expr) override
   {
     ResolveExpr::go (expr.get_receiver_expr ().get (), expr.get_node_id ());
+
+    if (expr.get_method_name ().has_generic_args ())
+      {
+	AST::GenericArgs &args = expr.get_method_name ().get_generic_args ();
+	ResolveTypeToCanonicalPath::type_resolve_generic_args (args);
+      }
+
     expr.iterate_params ([&] (AST::Expr *p) mutable -> bool {
       ResolveExpr::go (p, expr.get_node_id ());
       return true;
