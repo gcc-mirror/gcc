@@ -358,10 +358,8 @@ range_true_and_false (tree type)
 
 enum bool_range_state { BRS_FALSE, BRS_TRUE, BRS_EMPTY, BRS_FULL };
 
-// Return the summary information about boolean range LHS.  Return an
-// "interesting" range in R.  For EMPTY or FULL, return the equivalent
-// range for TYPE, for BRS_TRUE and BRS false, return the negation of
-// the bool range.
+// Return the summary information about boolean range LHS.  If EMPTY/FULL,
+// return the equivalent range for TYPE in R; if FALSE/TRUE, do nothing.
 
 static bool_range_state
 get_bool_state (irange &r, const irange &lhs, tree val_type)
@@ -383,6 +381,7 @@ get_bool_state (irange &r, const irange &lhs, tree val_type)
       r.set_varying (val_type);
       return BRS_FULL;
     }
+
   return BRS_TRUE;
 }
 
@@ -538,7 +537,7 @@ operator_not_equal::op1_range (irange &r, tree type,
       break;
 
     case BRS_FALSE:
-      // If its true, the result is the same as OP2.
+      // If it's false, the result is the same as OP2.
       r = op2;
       break;
 
@@ -2643,7 +2642,7 @@ operator_bitwise_xor::op1_range (irange &r, tree type,
 	  r = op2;
 	  break;
 	default:
-	  gcc_unreachable ();
+	  break;
 	}
       return true;
     }
