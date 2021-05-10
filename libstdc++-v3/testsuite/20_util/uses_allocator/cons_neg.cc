@@ -45,3 +45,4 @@ void test01()
 }
 // { dg-error "failed: .* uses_allocator is true" "" { target *-*-* } 0 }
 // { dg-error "no matching function for call" "" { target c++2a } 0 }
+// { dg-prune-output "in 'constexpr' expansion" }
