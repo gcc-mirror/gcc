@@ -367,8 +367,8 @@ package body Uname is
          Node := Declaration_Node (Entity (Node));
       end if;
 
-      if Nkind (Node) = N_Package_Specification
-        or else Nkind (Node) in N_Subprogram_Specification
+      if Nkind (Node) in N_Package_Specification
+                       | N_Subprogram_Specification
       then
          Node := Parent (Node);
       end if;

@@ -396,14 +396,14 @@ package body Lib.Load is
    ---------------
 
    function Load_Unit
-     (Load_Name         : Unit_Name_Type;
-      Required          : Boolean;
-      Error_Node        : Node_Id;
-      Subunit           : Boolean;
-      Corr_Body         : Unit_Number_Type := No_Unit;
-      Renamings         : Boolean          := False;
-      With_Node         : Node_Id          := Empty;
-      PMES              : Boolean          := False) return Unit_Number_Type
+     (Load_Name  : Unit_Name_Type;
+      Required   : Boolean;
+      Error_Node : Node_Id;
+      Subunit    : Boolean;
+      Corr_Body  : Unit_Number_Type := No_Unit;
+      Renamings  : Boolean          := False;
+      With_Node  : Node_Id          := Empty;
+      PMES       : Boolean          := False) return Unit_Number_Type
    is
       Calling_Unit : Unit_Number_Type;
       Uname_Actual : Unit_Name_Type;
