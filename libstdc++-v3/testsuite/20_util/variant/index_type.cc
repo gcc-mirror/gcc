@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target { ilp32 || lp64 } } }
 // { dg-require-effective-target c++17 }
 
