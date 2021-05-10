@@ -19,8 +19,9 @@
 import difflib
 import os
 import re
+import sys
 
-changelog_locations = {
+default_changelog_locations = {
     'c++tools',
     'config',
     'contrib',
@@ -287,7 +288,7 @@ class GitInfo:
 
 
 class GitCommit:
-    def __init__(self, info, strict=True, commit_to_info_hook=None):
+    def __init__(self, info, strict=True, commit_to_info_hook=None, ref_name=None):
         self.original_info = info
         self.info = info
         self.message = None
@@ -300,6 +301,7 @@ class GitCommit:
         self.cherry_pick_commit = None
         self.revert_commit = None
         self.commit_to_info_hook = commit_to_info_hook
+        self.init_changelog_locations(ref_name)
 
         # Skip Update copyright years commits
         if self.info.lines and self.info.lines[0] == 'Update copyright years.':
@@ -361,15 +363,14 @@ class GitCommit:
         else:
             return False
 
-    @classmethod
-    def find_changelog_location(cls, name):
+    def find_changelog_location(self, name):
         if name.startswith('\t'):
             name = name[1:]
         if name.endswith(':'):
             name = name[:-1]
         if name.endswith('/'):
             name = name[:-1]
-        return name if name in changelog_locations else None
+        return name if name in self.changelog_locations else None
 
     @classmethod
     def format_git_author(cls, author):
@@ -388,6 +389,17 @@ class GitCommit:
                 modified_files.append((parts[1], 'D'))
                 modified_files.append((parts[2], 'A'))
         return modified_files
+
+    def init_changelog_locations(self, ref_name):
+        self.changelog_locations = list(default_changelog_locations)
+        if ref_name:
+            version = sys.maxsize
+            if ref_name.startswith('refs/heads/releases/gcc-'):
+                version = int(ref_name.split('-')[-1])
+            if version >= 12:
+                # HSA and BRIG were removed in GCC 12
+                self.changelog_locations.remove('gcc/brig')
+                self.changelog_locations.remove('libhsail-rt')
 
     def parse_lines(self, all_are_ignored):
         body = self.info.lines
@@ -586,7 +598,7 @@ class GitCommit:
                 for file in entry.files:
                     location = self.get_file_changelog_location(file)
                     if (location == ''
-                       or (location and location in changelog_locations)):
+                       or (location and location in self.changelog_locations)):
                         if changelog and changelog != location:
                             msg = 'could not deduce ChangeLog file, ' \
                                   'not unique location'
@@ -606,11 +618,10 @@ class GitCommit:
                 return True
         return False
 
-    @classmethod
-    def get_changelog_by_path(cls, path):
+    def get_changelog_by_path(self, path):
         components = path.split('/')
         while components:
-            if '/'.join(components) in changelog_locations:
+            if '/'.join(components) in self.changelog_locations:
                 break
             components = components[:-1]
         return '/'.join(components)
