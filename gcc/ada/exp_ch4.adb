@@ -14952,9 +14952,9 @@ package body Exp_Ch4 is
       --       Hook := null;
       --    end if;
 
-      --  Note that the value returned by Find_Hook_Context may be an
-      --  operator node, which is not a list member. We must locate in the
-      --  tree the proper node after which to inwert the finaliation code.
+      --  Note that the value returned by Find_Hook_Context may be an operator
+      --  node, which is not a list member. We must locate the proper node in
+      --  in the tree after which to insert the finalization code.
 
       else
          while not Is_List_Member (Fin_Context) loop
