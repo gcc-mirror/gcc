@@ -312,9 +312,8 @@ is_file_using_fn_p (tree fndecl)
 
   /* Also support variants of these names prefixed with "_IO_".  */
   const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
-  if (strncmp (name, "_IO_", 4) == 0)
-    if (fs.contains_name_p (name + 4))
-      return true;
+  if (startswith (name, "_IO_") && fs.contains_name_p (name + 4))
+    return true;
 
   return false;
 }

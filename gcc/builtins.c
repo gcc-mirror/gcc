@@ -738,13 +738,9 @@ pointer_query::flush_cache ()
 static bool
 is_builtin_name (const char *name)
 {
-  if (strncmp (name, "__builtin_", 10) == 0)
-    return true;
-  if (strncmp (name, "__sync_", 7) == 0)
-    return true;
-  if (strncmp (name, "__atomic_", 9) == 0)
-    return true;
-  return false;
+  return (startswith (name, "__builtin_")
+	  || startswith (name, "__sync_")
+	  || startswith (name, "__atomic_"));
 }
 
 /* Return true if NODE should be considered for inline expansion regardless
@@ -6775,9 +6771,10 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
 
       /* Adjust PTR, TO and REM.  Since TO's address is likely
 	 PTR+offset, we have to replace it.  */
-      emit_move_insn (ptr, XEXP (to, 0));
+      emit_move_insn (ptr, force_operand (XEXP (to, 0), NULL_RTX));
       to = replace_equiv_address (to, ptr);
-      emit_move_insn (rem, plus_constant (ptr_mode, rem, -blksize));
+      rtx rem_minus_blksize = plus_constant (ptr_mode, rem, -blksize);
+      emit_move_insn (rem, force_operand (rem_minus_blksize, NULL_RTX));
     }
 
   /* Iterate over power-of-two block sizes from the maximum length to
@@ -6811,9 +6808,10 @@ try_store_by_multiple_pieces (rtx to, rtx len, unsigned int ctz_len,
       /* Adjust REM and PTR, unless this is the last iteration.  */
       if (i != sctz_len)
 	{
-	  emit_move_insn (ptr, XEXP (to, 0));
+	  emit_move_insn (ptr, force_operand (XEXP (to, 0), NULL_RTX));
 	  to = replace_equiv_address (to, ptr);
-	  emit_move_insn (rem, plus_constant (ptr_mode, rem, -blksize));
+	  rtx rem_minus_blksize = plus_constant (ptr_mode, rem, -blksize);
+	  emit_move_insn (rem, force_operand (rem_minus_blksize, NULL_RTX));
 	}
 
       if (label)

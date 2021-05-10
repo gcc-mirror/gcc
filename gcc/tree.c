@@ -8583,7 +8583,7 @@ get_file_function_name (const char *type)
      We also assign sub_I and sub_D sufixes to constructors called from
      the global static constructors.  These are always local.  */
   else if (((type[0] == 'I' || type[0] == 'D') && targetm.have_ctors_dtors)
-	   || (strncmp (type, "sub_", 4) == 0
+	   || (startswith (type, "sub_")
 	       && (type[4] == 'I' || type[4] == 'D')))
     {
       const char *file = main_input_filename;

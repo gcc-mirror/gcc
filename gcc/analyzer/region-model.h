@@ -414,11 +414,6 @@ class region_model
   region_model (region_model_manager *mgr);
   region_model (const region_model &other);
   ~region_model ();
-
-#if 0//__cplusplus >= 201103
-  region_model (region_model &&other);
-#endif
-
   region_model &operator= (const region_model &other);
 
   bool operator== (const region_model &other) const;

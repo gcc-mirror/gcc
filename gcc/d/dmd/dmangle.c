@@ -673,7 +673,7 @@ public:
                 cd == ClassDeclaration::object ||
                 cd == Type::typeinfoclass ||
                 cd == Module::moduleinfo ||
-                strncmp(cd->ident->toChars(), "TypeInfo_", 9) == 0)
+                startswith (cd->ident->toChars(), "TypeInfo_"))
             {
                 // Don't mangle parent
                 ad->parent = NULL;

@@ -523,6 +523,7 @@ compile_file (void)
 
       /* This must be at the end before unwind and debug info.
 	 Some target ports emit PIC setup thunks here.  */
+      insn_locations_init ();
       targetm.asm_out.code_end ();
 
       /* Do dbx symbols.  */

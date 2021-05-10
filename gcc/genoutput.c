@@ -841,7 +841,7 @@ validate_optab_operands (class data *d)
     return;
 
   /* Miscellaneous tests.  */
-  if (strncmp (d->name, "cstore", 6) == 0
+  if (startswith (d->name, "cstore")
       && d->name[strlen (d->name) - 1] == '4'
       && d->operand[0].mode == VOIDmode)
     {

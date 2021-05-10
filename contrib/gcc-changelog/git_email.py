@@ -72,10 +72,23 @@ class GitEmail(GitCommit):
                          commit_to_info_hook=lambda x: None)
 
 
-# With zero arguments, process every patch file in the ./patches directory.
-# With one argument, process the named patch file.
-# Patch files must be in 'git format-patch' format.
+def show_help():
+    print("""usage: git_email.py [--help] [patch file ...]
+
+Check git ChangeLog format of a patch
+
+With zero arguments, process every patch file in the
+./patches directory.
+With one argument, process the named patch file.
+
+Patch files must be in 'git format-patch' format.""")
+    sys.exit(0)
+
+
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and (sys.argv[1] == '-h' or sys.argv[1] == '--help'):
+        show_help()
+
     if len(sys.argv) == 1:
         allfiles = []
         for root, _dirs, files in os.walk('patches'):

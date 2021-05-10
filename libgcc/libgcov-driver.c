@@ -201,7 +201,7 @@ gcov_version (struct gcov_info *ptr, gcov_unsigned_t version,
   if (version != GCOV_VERSION)
     {
       char v[4], e[4];
-      char version_string[128], expected_string[128];
+      char ver_string[128], expected_string[128];
 
       GCOV_UNSIGNED2STRING (v, version);
       GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
@@ -210,7 +210,7 @@ gcov_version (struct gcov_info *ptr, gcov_unsigned_t version,
 		  "got %s (%.4s)\n",
 		  filename? filename : ptr->filename,
 		  gcov_version_string (expected_string, e), e,
-		  gcov_version_string (version_string, v), v);
+		  gcov_version_string (ver_string, v), v);
       return 0;
     }
   return 1;

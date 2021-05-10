@@ -200,7 +200,7 @@ class Error:
     def __repr__(self):
         s = self.message
         if self.line:
-            s += ':"%s"' % self.line
+            s += ': "%s"' % self.line
         return s
 
 
@@ -629,7 +629,12 @@ class GitCommit:
             assert not entry.folder.endswith('/')
             for file in entry.files:
                 if not self.is_changelog_filename(file):
-                    mentioned_files.add(os.path.join(entry.folder, file))
+                    item = os.path.join(entry.folder, file)
+                    if item in mentioned_files:
+                        msg = 'same file specified multiple times'
+                        self.errors.append(Error(msg, file))
+                    else:
+                        mentioned_files.add(item)
             for pattern in entry.file_patterns:
                 mentioned_patterns.append(os.path.join(entry.folder, pattern))
 

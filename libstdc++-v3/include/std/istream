@@ -958,12 +958,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // 2328. Rvalue stream extraction should use perfect forwarding
   // 1203. More useful rvalue stream insertion
 
-  // SFINAE helper to check constraints for operator>>(Istream&&, T&&).
-  // If the constraints are satisfied, it is an alias for Istream&&.
-  template<typename _Is, typename _Tp,
-	   typename = decltype(std::__rval_streamable<_Is>()
-				 >> std::declval<_Tp>())>
+#if __cpp_lib_concepts
+  template<typename _Is, typename _Tp>
+    requires __derived_from_ios_base<_Is>
+      && requires (_Is& __is, _Tp&& __t) { __is >> std::forward<_Tp>(__t); }
     using __rvalue_stream_extraction_t = _Is&&;
+#else
+  template<typename _Is, typename _Tp,
+	   typename = _Require_derived_from_ios_base<_Is>,
+	   typename = decltype(std::declval<_Is&>() >> std::declval<_Tp>())>
+    using __rvalue_stream_extraction_t = _Is&&;
+#endif
 
   /**
    *  @brief  Generic extractor for rvalue stream

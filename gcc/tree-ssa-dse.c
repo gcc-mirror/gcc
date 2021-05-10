@@ -140,10 +140,13 @@ initialize_ao_ref_for_dse (gimple *stmt, ao_ref *write)
 	  break;
 	}
     }
-  else if (is_gimple_assign (stmt))
+  else if (tree lhs = gimple_get_lhs (stmt))
     {
-      ao_ref_init (write, gimple_assign_lhs (stmt));
-      return true;
+      if (TREE_CODE (lhs) != SSA_NAME)
+	{
+	  ao_ref_init (write, lhs);
+	  return true;
+	}
     }
   return false;
 }
@@ -1035,7 +1038,7 @@ delete_dead_or_redundant_assignment (gimple_stmt_iterator *gsi, const char *type
    post dominates the first store, then the first store is dead.  */
 
 static void
-dse_optimize_stmt (gimple_stmt_iterator *gsi, sbitmap live_bytes)
+dse_optimize_stmt (function *fun, gimple_stmt_iterator *gsi, sbitmap live_bytes)
 {
   gimple *stmt = gsi_stmt (*gsi);
 
@@ -1113,49 +1116,69 @@ dse_optimize_stmt (gimple_stmt_iterator *gsi, sbitmap live_bytes)
 	}
     }
 
-  if (is_gimple_assign (stmt))
+  bool by_clobber_p = false;
+
+  /* Check if this statement stores zero to a memory location,
+     and if there is a subsequent store of zero to the same
+     memory location.  If so, remove the subsequent store.  */
+  if (gimple_assign_single_p (stmt)
+      && initializer_zerop (gimple_assign_rhs1 (stmt)))
+    dse_optimize_redundant_stores (stmt);
+
+  /* Self-assignments are zombies.  */
+  if (is_gimple_assign (stmt)
+      && operand_equal_p (gimple_assign_rhs1 (stmt),
+			  gimple_assign_lhs (stmt), 0))
+    ;
+  else
     {
-      bool by_clobber_p = false;
-
-      /* Check if this statement stores zero to a memory location,
-	 and if there is a subsequent store of zero to the same
-	 memory location.  If so, remove the subsequent store.  */
-      if (gimple_assign_single_p (stmt)
-	  && initializer_zerop (gimple_assign_rhs1 (stmt)))
-	dse_optimize_redundant_stores (stmt);
-
-      /* Self-assignments are zombies.  */
-      if (operand_equal_p (gimple_assign_rhs1 (stmt),
-			   gimple_assign_lhs (stmt), 0))
-	;
-      else
-	{
-	  bool byte_tracking_enabled
-	    = setup_live_bytes_from_ref (&ref, live_bytes);
-	  enum dse_store_status store_status;
-	  store_status = dse_classify_store (&ref, stmt,
-					     byte_tracking_enabled,
-					     live_bytes, &by_clobber_p);
-	  if (store_status == DSE_STORE_LIVE)
-	    return;
-
-	  if (store_status == DSE_STORE_MAYBE_PARTIAL_DEAD)
-	    {
-	      maybe_trim_partially_dead_store (&ref, live_bytes, stmt);
-	      return;
-	    }
-	}
-
-      /* Now we know that use_stmt kills the LHS of stmt.  */
-
-      /* But only remove *this_2(D) ={v} {CLOBBER} if killed by
-	 another clobber stmt.  */
-      if (gimple_clobber_p (stmt)
-	  && !by_clobber_p)
+      bool byte_tracking_enabled
+	  = setup_live_bytes_from_ref (&ref, live_bytes);
+      enum dse_store_status store_status;
+      store_status = dse_classify_store (&ref, stmt,
+					 byte_tracking_enabled,
+					 live_bytes, &by_clobber_p);
+      if (store_status == DSE_STORE_LIVE)
 	return;
 
-      delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup);
+      if (store_status == DSE_STORE_MAYBE_PARTIAL_DEAD)
+	{
+	  maybe_trim_partially_dead_store (&ref, live_bytes, stmt);
+	  return;
+	}
     }
+
+  /* Now we know that use_stmt kills the LHS of stmt.  */
+
+  /* But only remove *this_2(D) ={v} {CLOBBER} if killed by
+     another clobber stmt.  */
+  if (gimple_clobber_p (stmt)
+      && !by_clobber_p)
+    return;
+
+  if (is_gimple_call (stmt)
+      && (gimple_has_side_effects (stmt)
+	  || (stmt_could_throw_p (fun, stmt)
+	      && !fun->can_delete_dead_exceptions)))
+    {
+      /* Make sure we do not remove a return slot we cannot reconstruct
+	 later.  */
+      if (gimple_call_return_slot_opt_p (as_a <gcall *>(stmt))
+	  && (TREE_ADDRESSABLE (TREE_TYPE (gimple_call_fntype (stmt)))
+	      || !poly_int_tree_p
+		    (TYPE_SIZE (TREE_TYPE (gimple_call_fntype (stmt))))))
+	return;
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "  Deleted dead store in call LHS: ");
+	  print_gimple_stmt (dump_file, stmt, 0, dump_flags);
+	  fprintf (dump_file, "\n");
+	}
+      gimple_call_set_lhs (stmt, NULL_TREE);
+      update_stmt (stmt);
+    }
+  else
+    delete_dead_or_redundant_assignment (gsi, "dead", need_eh_cleanup);
 }
 
 namespace {
@@ -1194,7 +1217,7 @@ pass_dse::execute (function *fun)
   need_eh_cleanup = BITMAP_ALLOC (NULL);
   auto_sbitmap live_bytes (param_dse_max_object_size);
 
-  renumber_gimple_stmt_uids (cfun);
+  renumber_gimple_stmt_uids (fun);
 
   calculate_dominance_info (CDI_DOMINATORS);
 
@@ -1211,7 +1234,7 @@ pass_dse::execute (function *fun)
 	  gimple *stmt = gsi_stmt (gsi);
 
 	  if (gimple_vdef (stmt))
-	    dse_optimize_stmt (&gsi, live_bytes);
+	    dse_optimize_stmt (fun, &gsi, live_bytes);
 	  else if (def_operand_p
 		     def_p = single_ssa_def_operand (stmt, SSA_OP_DEF))
 	    {

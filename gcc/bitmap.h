@@ -951,10 +951,8 @@ class auto_bitmap
   // Prevent making a copy that references our bitmap.
   auto_bitmap (const auto_bitmap &);
   auto_bitmap &operator = (const auto_bitmap &);
-#if __cplusplus >= 201103L
   auto_bitmap (auto_bitmap &&);
   auto_bitmap &operator = (auto_bitmap &&);
-#endif
 
   bitmap_head m_bits;
 };

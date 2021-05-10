@@ -6881,7 +6881,7 @@ Expression *evaluateIfBuiltin(UnionExp *pue, InterState *istate, Loc loc,
         const char *id = fd->ident->toChars();
         size_t idlen = strlen(id);
         if (nargs == 2 && (idlen == 10 || idlen == 11) &&
-            !strncmp(id, "_aApply", 7))
+            startswith (id, "_aApply"))
         {
             // Functions from aApply.d and aApplyR.d in the runtime
             bool rvs = (idlen == 11);   // true if foreach_reverse

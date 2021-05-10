@@ -2899,7 +2899,7 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
   class ipa_edge_args *args;
   if (ipa_node_params_sum
       && !callee_edge->call_stmt_cannot_inline_p
-      && (args = IPA_EDGE_REF (callee_edge)) != NULL)
+      && (args = ipa_edge_args_sum->get (callee_edge)) != NULL)
     {
       int i, count = ipa_get_cs_argument_count (args);
       class ipa_node_params *caller_parms_info, *callee_pi;
@@ -2909,10 +2909,11 @@ compute_parm_map (cgraph_edge *callee_edge, vec<modref_parm_map> *parm_map)
 	 = callee_edge->callee->function_or_virtual_thunk_symbol
 			      (NULL, callee_edge->caller);
 
-      caller_parms_info = IPA_NODE_REF (callee_edge->caller->inlined_to
-					? callee_edge->caller->inlined_to
-					: callee_edge->caller);
-      callee_pi = IPA_NODE_REF (callee);
+      caller_parms_info
+	= ipa_node_params_sum->get (callee_edge->caller->inlined_to
+				    ? callee_edge->caller->inlined_to
+				    : callee_edge->caller);
+      callee_pi = ipa_node_params_sum->get (callee);
 
       (*parm_map).safe_grow_cleared (count, true);
 
@@ -3240,8 +3241,8 @@ get_access_for_fnspec (cgraph_edge *e, attr_fnspec &fnspec,
     {
       cgraph_node *node = e->caller->inlined_to
 			  ? e->caller->inlined_to : e->caller;
-      class ipa_node_params *caller_parms_info = IPA_NODE_REF (node);
-      class ipa_edge_args *args = IPA_EDGE_REF (e);
+      ipa_node_params *caller_parms_info = ipa_node_params_sum->get (node);
+      ipa_edge_args *args = ipa_edge_args_sum->get (e);
       struct ipa_jump_func *jf = ipa_get_ith_jump_func (args, size_arg);
 
       if (jf)

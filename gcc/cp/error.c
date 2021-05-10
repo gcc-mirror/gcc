@@ -1138,7 +1138,7 @@ dump_decl_name (cxx_pretty_printer *pp, tree t, int flags)
     }
 
   const char *str = IDENTIFIER_POINTER (t);
-  if (!strncmp (str, "_ZGR", 4))
+  if (startswith (str, "_ZGR"))
     {
       pp_cxx_ws_string (pp, "<temporary>");
       return;

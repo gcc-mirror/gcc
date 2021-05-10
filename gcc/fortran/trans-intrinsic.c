@@ -10062,27 +10062,27 @@ gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
 {
   const char *name = expr->value.function.name;
 
-  if (gfc_str_startswith (name, "_gfortran_ieee_is_nan"))
+  if (startswith (name, "_gfortran_ieee_is_nan"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISNAN, 1);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_is_finite"))
+  else if (startswith (name, "_gfortran_ieee_is_finite"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISFINITE, 1);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_unordered"))
+  else if (startswith (name, "_gfortran_ieee_unordered"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISUNORDERED, 2);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_is_normal"))
+  else if (startswith (name, "_gfortran_ieee_is_normal"))
     conv_intrinsic_ieee_is_normal (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_is_negative"))
+  else if (startswith (name, "_gfortran_ieee_is_negative"))
     conv_intrinsic_ieee_is_negative (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_copy_sign"))
+  else if (startswith (name, "_gfortran_ieee_copy_sign"))
     conv_intrinsic_ieee_copy_sign (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_scalb"))
+  else if (startswith (name, "_gfortran_ieee_scalb"))
     conv_intrinsic_ieee_scalb (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_next_after"))
+  else if (startswith (name, "_gfortran_ieee_next_after"))
     conv_intrinsic_ieee_next_after (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_rem"))
+  else if (startswith (name, "_gfortran_ieee_rem"))
     conv_intrinsic_ieee_rem (se, expr);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_logb"))
+  else if (startswith (name, "_gfortran_ieee_logb"))
     conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_LOGB);
-  else if (gfc_str_startswith (name, "_gfortran_ieee_rint"))
+  else if (startswith (name, "_gfortran_ieee_rint"))
     conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_RINT);
   else
     /* It is not among the functions we translate directly.  We return

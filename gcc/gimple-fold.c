@@ -245,7 +245,9 @@ canonicalize_constructor_val (tree cval, tree from_decl)
       if (TREE_TYPE (base) == error_mark_node)
 	return NULL_TREE;
       if (VAR_P (base))
-	TREE_ADDRESSABLE (base) = 1;
+	/* ???  We should be able to assert that TREE_ADDRESSABLE is set,
+	   but since the use can be in a debug stmt we can't.  */
+	;
       else if (TREE_CODE (base) == FUNCTION_DECL)
 	{
 	  /* Make sure we create a cgraph node for functions we'll reference.

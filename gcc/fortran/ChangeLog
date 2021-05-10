@@ -1,6 +1,6 @@
 2021-05-06  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/46691
+	PR fortran/46991
 	PR fortran/99819
 	* class.c (gfc_build_class_symbol): Remove the error that
 	disables assumed size class arrays. Class array types that are

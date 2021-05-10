@@ -10275,7 +10275,7 @@ objc_string_ref_type_p (tree strp)
   return (tmv
 	  && TREE_CODE (tmv) == IDENTIFIER_NODE
 	  && IDENTIFIER_POINTER (tmv)
-	  && !strncmp (IDENTIFIER_POINTER (tmv), "NSString", 8));
+	  && startswith (IDENTIFIER_POINTER (tmv), "NSString"));
 }
 
 /* At present the behavior of this is undefined and it does nothing.  */

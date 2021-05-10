@@ -708,31 +708,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 1203. More useful rvalue stream insertion
 
-  // SFINAE helper to check constraints for operator<<(Ostream&&, const T&).
-  // If Ostream is publicly and unambiguously derived from ios_base, then
-  // __rval_streamable<Ostream>() is equivalent to declval<Ostream&>().
-  // Otherwise, it results in a substitution failure. Specifically, it will
-  // fail if Ostream is an lvalue reference or the same type as ios_base.
-  // Use concepts if possible because they're cheaper to evaluate.
 #if __cpp_lib_concepts
+  // Use concepts if possible because they're cheaper to evaluate.
   template<typename _Tp>
-    requires (!is_same_v<_Tp, ios_base>)
-      && requires (_Tp* __t, ios_base* __b) { __b = __t; }
-    _Tp&
-    __rval_streamable();
-#else
-  template<typename _Tp,
-	   typename = _Require<__not_<__is_one_of<_Tp, _Tp&, ios_base>>>>
-    _Tp&
-    __rval_streamable(ios_base* = (_Tp*)nullptr);
-#endif
+    concept __derived_from_ios_base = is_class_v<_Tp>
+      && (!is_same_v<_Tp, ios_base>)
+      && requires (_Tp* __t, ios_base* __b) { __b = __t; };
 
-  // SFINAE helper to check constraints for operator<<(Ostream&&, const T&).
-  // If the constraints are satisfied, it is an alias for Ostream&&.
-  template<typename _Os, typename _Tp,
-	   typename = decltype(std::__rval_streamable<_Os>()
-				 << std::declval<const _Tp&>())>
+  template<typename _Os, typename _Tp>
+    requires __derived_from_ios_base<_Os>
+      && requires (_Os& __os, const _Tp& __t) { __os << __t; }
     using __rvalue_stream_insertion_t = _Os&&;
+#else
+  template<typename _Tp>
+    using _Require_derived_from_ios_base
+      = _Require<is_class<_Tp>, __not_<is_same<_Tp, ios_base>>,
+		 is_convertible<typename add_pointer<_Tp>::type, ios_base*>>;
+
+  template<typename _Os, typename _Tp,
+	   typename = _Require_derived_from_ios_base<_Os>,
+	   typename
+	     = decltype(std::declval<_Os&>() << std::declval<const _Tp&>())>
+    using __rvalue_stream_insertion_t = _Os&&;
+#endif
 
   /**
    *  @brief  Generic inserter for rvalue stream

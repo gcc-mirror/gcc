@@ -2689,7 +2689,7 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
   // Mod 0 is undefined.
   if (wi_zero_p (type, rh_lb, rh_ub))
     {
-      r.set_varying (type);
+      r.set_undefined ();
       return;
     }
 

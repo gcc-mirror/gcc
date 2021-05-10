@@ -5532,7 +5532,7 @@ is_cxx (const_tree decl)
     {
       const_tree context = get_ultimate_context (decl);
       if (context && TRANSLATION_UNIT_LANGUAGE (context))
-	return strncmp (TRANSLATION_UNIT_LANGUAGE (context), "GNU C++", 7) == 0;
+	return startswith (TRANSLATION_UNIT_LANGUAGE (context), "GNU C++");
     }
   return is_cxx ();
 }
@@ -21313,8 +21313,6 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr,
 
 /* Add subscript info to TYPE_DIE, describing an array TYPE, collapsing
    possibly nested array subscripts in a flat sequence if COLLAPSE_P is true.
-   Note that the block of subscript information for an array type also
-   includes information about the element type of the given array type.
 
    This function reuses previously set type and bound information if
    available.  */
@@ -21322,9 +21320,21 @@ add_bound_info (dw_die_ref subrange_die, enum dwarf_attribute bound_attr,
 static void
 add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
 {
-  unsigned dimension_number;
-  tree lower, upper;
   dw_die_ref child = type_die->die_child;
+  struct array_descr_info info;
+  int dimension_number;
+
+  if (lang_hooks.types.get_array_descr_info)
+    {
+      memset (&info, 0, sizeof (info));
+      if (lang_hooks.types.get_array_descr_info (type, &info))
+	/* Fortran sometimes emits array types with no dimension.  */
+	gcc_assert (info.ndimensions >= 0
+		    && info.ndimensions
+		       <= DWARF2OUT_ARRAY_DESCR_INFO_MAX_DIMEN);
+    }
+  else
+    info.ndimensions = 0;
 
   for (dimension_number = 0;
        TREE_CODE (type) == ARRAY_TYPE && (dimension_number == 0 || collapse_p);
@@ -21372,25 +21382,21 @@ add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
       if (domain)
 	{
 	  /* We have an array type with specified bounds.  */
-	  lower = TYPE_MIN_VALUE (domain);
-	  upper = TYPE_MAX_VALUE (domain);
+	  tree lower = TYPE_MIN_VALUE (domain);
+	  tree upper = TYPE_MAX_VALUE (domain);
+	  tree index_type = TREE_TYPE (domain);
+
+	  if (dimension_number <= info.ndimensions - 1)
+	    {
+	      lower = info.dimen[dimension_number].lower_bound;
+	      upper = info.dimen[dimension_number].upper_bound;
+	      index_type = info.dimen[dimension_number].bounds_type;
+	    }
 
 	  /* Define the index type.  */
-	  if (TREE_TYPE (domain)
-	      && !get_AT (subrange_die, DW_AT_type))
-	    {
-	      /* ??? This is probably an Ada unnamed subrange type.  Ignore the
-		 TREE_TYPE field.  We can't emit debug info for this
-		 because it is an unnamed integral type.  */
-	      if (TREE_CODE (domain) == INTEGER_TYPE
-		  && TYPE_NAME (domain) == NULL_TREE
-		  && TREE_CODE (TREE_TYPE (domain)) == INTEGER_TYPE
-		  && TYPE_NAME (TREE_TYPE (domain)) == NULL_TREE)
-		;
-	      else
-		add_type_attribute (subrange_die, TREE_TYPE (domain),
-				    TYPE_UNQUALIFIED, false, type_die);
-	    }
+	  if (index_type && !get_AT (subrange_die, DW_AT_type))
+	    add_type_attribute (subrange_die, index_type, TYPE_UNQUALIFIED,
+				false, type_die);
 
 	  /* ??? If upper is NULL, the array has unspecified length,
 	     but it does have a lower bound.  This happens with Fortran
@@ -21399,8 +21405,9 @@ add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
 	     to produce useful results, go ahead and output the lower
 	     bound solo, and hope the debugger can cope.  */
 
-	  if (!get_AT (subrange_die, DW_AT_lower_bound))
+	  if (lower && !get_AT (subrange_die, DW_AT_lower_bound))
 	    add_bound_info (subrange_die, DW_AT_lower_bound, lower, NULL);
+
 	  if (!get_AT (subrange_die, DW_AT_upper_bound)
 	      && !get_AT (subrange_die, DW_AT_count))
 	    {
@@ -22129,6 +22136,7 @@ decl_start_label (tree decl)
 /* For variable-length arrays that have been previously generated, but
    may be incomplete due to missing subscript info, fill the subscript
    info.  Return TRUE if this is one of those cases.  */
+
 static bool
 fill_variable_array_bounds (tree type)
 {
@@ -24838,8 +24846,8 @@ gen_compile_unit_die (const char *filename)
 	    common_lang = TRANSLATION_UNIT_LANGUAGE (t);
 	  else if (strcmp (common_lang, TRANSLATION_UNIT_LANGUAGE (t)) == 0)
 	    ;
-	  else if (strncmp (common_lang, "GNU C", 5) == 0
-		    && strncmp (TRANSLATION_UNIT_LANGUAGE (t), "GNU C", 5) == 0)
+	  else if (startswith (common_lang, "GNU C")
+		    && startswith (TRANSLATION_UNIT_LANGUAGE (t), "GNU C"))
 	    /* Mixing C and C++ is ok, use C++ in that case.  */
 	    common_lang = highest_c_language (common_lang,
 					      TRANSLATION_UNIT_LANGUAGE (t));
@@ -24856,7 +24864,7 @@ gen_compile_unit_die (const char *filename)
     }
 
   language = DW_LANG_C;
-  if (strncmp (language_string, "GNU C", 5) == 0
+  if (startswith (language_string, "GNU C")
       && ISDIGIT (language_string[5]))
     {
       language = DW_LANG_C89;
@@ -24872,7 +24880,7 @@ gen_compile_unit_die (const char *filename)
 	      language = DW_LANG_C11;
 	}
     }
-  else if (strncmp (language_string, "GNU C++", 7) == 0)
+  else if (startswith (language_string, "GNU C++"))
     {
       language = DW_LANG_C_plus_plus;
       if (dwarf_version >= 5 /* || !dwarf_strict */)
@@ -24894,7 +24902,7 @@ gen_compile_unit_die (const char *filename)
     {
       if (strcmp (language_string, "GNU Ada") == 0)
 	language = DW_LANG_Ada95;
-      else if (strncmp (language_string, "GNU Fortran", 11) == 0)
+      else if (startswith (language_string, "GNU Fortran"))
 	{
 	  language = DW_LANG_Fortran95;
 	  if (dwarf_version >= 5 /* || !dwarf_strict */)
@@ -24918,7 +24926,7 @@ gen_compile_unit_die (const char *filename)
 	}
     }
   /* Use a degraded Fortran setting in strict DWARF2 so is_fortran works.  */
-  else if (strncmp (language_string, "GNU Fortran", 11) == 0)
+  else if (startswith (language_string, "GNU Fortran"))
     language = DW_LANG_Fortran90;
   /* Likewise for Ada.  */
   else if (strcmp (language_string, "GNU Ada") == 0)

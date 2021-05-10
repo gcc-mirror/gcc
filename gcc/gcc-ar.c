@@ -140,7 +140,7 @@ main (int ac, char **av)
 
   /* Not using getopt for now.  */
   for (i = 0; i < ac; i++)
-      if (!strncmp (av[i], "-B", 2))
+      if (startswith (av[i], "-B"))
 	{
 	  const char *arg = av[i] + 2;
 	  const char *end;

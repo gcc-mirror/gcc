@@ -23,7 +23,8 @@ from git_repository import parse_git_revisions
 parser = argparse.ArgumentParser(description='Check git ChangeLog format '
                                  'of a commit')
 parser.add_argument('revisions', default='HEAD', nargs='?',
-                    help='Git revisions (e.g. hash~5..hash or just hash)')
+                    help='Git revisions (e.g. hash~5..hash or just hash) - '
+                    'if not specified: HEAD')
 parser.add_argument('-g', '--git-path', default='.',
                     help='Path to git repository')
 parser.add_argument('-p', '--print-changelog', action='store_true',

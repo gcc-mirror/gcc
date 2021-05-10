@@ -901,7 +901,7 @@ lhd_finalize_early_debug (void)
 bool
 lang_GNU_C (void)
 {
-  return (strncmp (lang_hooks.name, "GNU C", 5) == 0
+  return (startswith (lang_hooks.name, "GNU C")
 	  && (lang_hooks.name[5] == '\0' || ISDIGIT (lang_hooks.name[5])));
 }
 
@@ -910,7 +910,7 @@ lang_GNU_C (void)
 bool
 lang_GNU_CXX (void)
 {
-  return strncmp (lang_hooks.name, "GNU C++", 7) == 0;
+  return startswith (lang_hooks.name, "GNU C++");
 }
 
 /* Returns true if the current lang_hooks represents the GNU Fortran frontend.  */
@@ -918,7 +918,7 @@ lang_GNU_CXX (void)
 bool
 lang_GNU_Fortran (void)
 {
-  return strncmp (lang_hooks.name, "GNU Fortran", 11) == 0;
+  return startswith (lang_hooks.name, "GNU Fortran");
 }
 
 /* Returns true if the current lang_hooks represents the GNU Objective-C
@@ -927,5 +927,5 @@ lang_GNU_Fortran (void)
 bool
 lang_GNU_OBJC (void)
 {
-  return strncmp (lang_hooks.name, "GNU Objective-C", 15) == 0;
+  return startswith (lang_hooks.name, "GNU Objective-C");
 }

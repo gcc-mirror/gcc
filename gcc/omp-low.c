@@ -3786,7 +3786,7 @@ omp_runtime_api_call (const_tree fndecl)
     return false;
 
   const char *name = IDENTIFIER_POINTER (declname);
-  if (strncmp (name, "omp_", 4) != 0)
+  if (!startswith (name, "omp_"))
     return false;
 
   static const char *omp_runtime_apis[] =

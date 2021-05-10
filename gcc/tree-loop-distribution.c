@@ -3203,6 +3203,16 @@ find_seed_stmts_for_distribution (class loop *loop, vec<gimple *> *work_list)
   /* Initialize the worklist with stmts we seed the partitions with.  */
   for (unsigned i = 0; i < loop->num_nodes; ++i)
     {
+      /* In irreducible sub-regions we don't know how to redirect
+	 conditions, so fail.  See PR100492.  */
+      if (bbs[i]->flags & BB_IRREDUCIBLE_LOOP)
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, "loop %d contains an irreducible region.\n",
+		     loop->num);
+	  work_list->truncate (0);
+	  break;
+	}
       for (gphi_iterator gsi = gsi_start_phis (bbs[i]);
 	   !gsi_end_p (gsi); gsi_next (&gsi))
 	{

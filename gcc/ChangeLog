@@ -1,3 +1,115 @@
+2021-05-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	Revert:
+	2021-05-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_scalar_mode_supported_p): Disable TImode.
+
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Stubbs  <amd@codesourcery.com>
+
+	PR target/100418
+	* builtins.c (try_store_by_multiple_pieces): Use force_operand for
+	emit_move_insn operands.
+
+2021-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (expand_gimple_basic_block): Do not inherit a current
+	location for the outgoing edges of an empty block.
+	* dwarf2out.c (add_subscript_info): Retrieve the bounds and index
+	type by means of the get_array_descr_info langhook, if it is set and
+	returns true.  Remove obsolete code dealing with unnamed subtypes.
+
+2021-05-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ssa_block_ranges): Virtualize.
+	(sbr_vector): Renamed from ssa_block_cache.
+	(sbr_vector::sbr_vector): Allocate from obstack abd initialize.
+	(ssa_block_ranges::~ssa_block_ranges): Remove.
+	(sbr_vector::set_bb_range): Use varying and undefined cached values.
+	(ssa_block_ranges::set_bb_varying): Remove.
+	(sbr_vector::get_bb_range): Adjust assert.
+	(sbr_vector::bb_range_p): Adjust assert.
+	(~block_range_cache): No freeing loop required.
+	(block_range_cache::get_block_ranges): Remove.
+	(block_range_cache::set_bb_range): Inline get_block_ranges.
+	(block_range_cache::set_bb_varying): Remove.
+	* gimple-range-cache.h (set_bb_varying): Remove prototype.
+	* value-range.h (irange_allocator::get_memory): New.
+
+2021-05-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (non_null_ref::non_null_deref_p): Search
+	dominator tree is available and requested.
+	(ranger_cache::ssa_range_in_bb): Don't search dom tree here.
+	(ranger_cache::fill_block_cache): Don't search dom tree here either.
+	* gimple-range-cache.h (non_null_deref_p): Add dom_search param.
+
+2021-05-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::range_on_exit): Handle block with
+	only PHI nodes better.
+
+2021-05-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-edge.h (gimple_outgoing_range): Rename from
+	outgoing_range.
+	(gcond_edge_range): Export prototype.
+	* gimple-range-edge.cc (gcond_edge_range): New.
+	(gimple_outgoing_range::edge_range_p): Use gcond_edge_range.
+	* gimple-range-gori.h (gori_compute): Use gimple_outgoing_range.
+
+2021-05-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-edge.cc (outgoing_range::calc_switch_ranges): Compute
+	default range into a temp and allocate only what is needed.
+
+2021-05-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_trunc_mod::wi_fold): x % 0 is UNDEFINED.
+
+2021-05-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.h (gimple_range_global): Pick up parameter initial
+	values, and use-before defined locals are UNDEFINED.
+
+2021-05-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/extend.texi (scalar_storage_order): Mention effect on pointer
+	and vector fields.
+	* tree.h (reverse_storage_order_for_component_p): Return false if
+	the type is a pointer.
+
+2021-05-07  Andrew Stubbs  <ams@codesourcery.com>
+
+	* config/gcn/gcn.c (gcn_scalar_mode_supported_p): Disable TImode.
+
+2021-05-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98218
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc):
+	Handle V8QI, V4HI and V2SI modes.
+	* config/i386/mmx.md (mmx_pblendvb): New insn pattern.
+	* config/i386/sse.md (unspec): Move UNSPEC_BLENDV ...
+	* config/i386/i386.md (unspec): ... here.
+
+2021-05-07  Tobias Burnus  <tobias@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* omp-low.c (lower_rec_simd_input_clauses): Set max_vf = 1 if
+	a truth_value_p reduction variable is nonintegral.
+
+2021-05-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100445
+	* config/i386/i386-expand.c (ix86_use_mask_cmp_p):
+	Return false for mode sizes < 16.
+
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100445
+	* config/i386/mmx.md (*xop_pcmov_<mode>): New define_insn.
+
 2021-05-06  Martin Jambor  <mjambor@suse.cz>
 
 	* ipa-sra.c (ipa_sra_dump_all_summaries): Dump edge summaries even
