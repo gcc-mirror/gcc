@@ -33,3 +33,4 @@ void foo(std::iostream& s) {
   s >> p; // { dg-error "no match" }
 }
 // { dg-prune-output "no type .*enable_if" }
+// { dg-prune-output "template constraint failure" }
