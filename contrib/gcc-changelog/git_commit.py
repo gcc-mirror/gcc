@@ -288,7 +288,7 @@ class GitInfo:
 
 
 class GitCommit:
-    def __init__(self, info, strict=True, commit_to_info_hook=None, ref_name=None):
+    def __init__(self, info, commit_to_info_hook=None, ref_name=None):
         self.original_info = info
         self.info = info
         self.message = None
@@ -325,7 +325,7 @@ class GitCommit:
         if len(project_files) == len(self.info.modified_files):
             # All modified files are only MISC files
             return
-        elif project_files and strict:
+        elif project_files:
             self.errors.append(Error('ChangeLog, DATESTAMP, BASE-VER and '
                                      'DEV-PHASE updates should be done '
                                      'separately from normal commits'))

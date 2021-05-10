@@ -68,13 +68,6 @@ xxxx-xx-xx  Claudiu Zissulescu  <claziss@synopsys.com>
  create mode 100644 gcc/testsuite/gcc.target/arc/uncached-7.c
  create mode 100644 gcc/testsuite/gcc.target/arc/uncached-8.c
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 91dfcd71a4b..2cc61d68cf3 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/config/arc/arc.c b/gcc/config/arc/arc.c
 index 22475f2732e..e1a865f02e6 100644
 --- a/gcc/config/arc/arc.c
@@ -86,13 +79,6 @@ diff --git a/gcc/config/arc/arc.md b/gcc/config/arc/arc.md
 index cf7aa8d83c9..46cb254ed28 100644
 --- a/gcc/config/arc/arc.md
 +++ b/gcc/config/arc/arc.md
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 16ddef07516..991934272e0 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -199,20 +185,6 @@ without any data fields.
  4 files changed, 36 insertions(+)
  create mode 100644 gcc/testsuite/g++.dg/tree-ssa/pr93667.C
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 77c2a9ad810..6b53f9a2f07 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 9b4fe11a6f6..8033fa0a3bb 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/testsuite/g++.dg/tree-ssa/pr93667.C b/gcc/testsuite/g++.dg/tree-ssa/pr93667.C
 new file mode 100644
 index 00000000000..d875f53d9ec
@@ -275,20 +247,6 @@ Subject: [PATCH 0413/2034] SRA: Total scalarization after access propagation
  5 files changed, 537 insertions(+), 184 deletions(-)
  create mode 100644 gcc/testsuite/gcc.dg/tree-ssa/pr92706-2.c
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 16247a59304..61da54df346 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 05518848829..38758207989 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/testsuite/gcc.dg/guality/pr59776.c b/gcc/testsuite/gcc.dg/guality/pr59776.c
 index 382abb622bb..6c1c8165b70 100644
 --- a/gcc/testsuite/gcc.dg/guality/pr59776.c
@@ -333,24 +291,10 @@ Subject: [PATCH 0334/2034] Do not generate a unique fnname for resolver.
  gcc/testsuite/gcc.target/i386/pr81213.c |  4 ++--
  4 files changed, 19 insertions(+), 17 deletions(-)
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 45075840824..59806baa757 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/config/i386/i386-features.c b/gcc/config/i386/i386-features.c
 index e580b26b995..b49e6f8d408 100644
 --- a/gcc/config/i386/i386-features.c
 +++ b/gcc/config/i386/i386-features.c
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 2de060843d9..22a37dd1ab2 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -396,24 +340,10 @@ Co-Authored-By: Jakub Jelinek <jakub@redhat.com>
  8 files changed, 142 insertions(+), 22 deletions(-)
  create mode 100644 gcc/testsuite/g++.dg/pr94314-4.C
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 74dbeeb44c6..9e499ec9c86 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/cgraphclones.c b/gcc/cgraphclones.c
 index c73b8f810f0..8f541a28b6e 100644
 --- a/gcc/cgraphclones.c
 +++ b/gcc/cgraphclones.c
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 756f1d759e6..94d2312022d 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -492,13 +422,6 @@ https://gcc.gnu.org/ml/gcc-patches/2020-01/msg00809.html
  3 files changed, 24 insertions(+), 5 deletions(-)
  create mode 100644 gcc/testsuite/g++.dg/template/pr90916.C
 
-diff --git a/gcc/cp/ChangeLog b/gcc/cp/ChangeLog
-index 004ce0fdcdf..3cc7c48b490 100644
---- a/gcc/cp/ChangeLog
-+++ b/gcc/cp/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/cp/pt.c b/gcc/cp/pt.c
 index fa82ecad233..4fdc74f9ca8 100644
 --- a/gcc/cp/pt.c
@@ -539,13 +462,6 @@ not broken, but this is both safer and satisfies static analysis.
  libgomp/plugin/plugin-gcn.c | 8 ++++++++
  2 files changed, 17 insertions(+)
 
-diff --git a/libgomp/ChangeLog b/libgomp/ChangeLog
-index c524abbbfb6..ee1764d4ae3 100644
---- a/libgomp/ChangeLog
-+++ b/libgomp/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/libgomp/plugin/plugin-gcn.c b/libgomp/plugin/plugin-gcn.c
 index dc72c90962c..4c6a4c03b6e 100644
 --- a/libgomp/plugin/plugin-gcn.c
@@ -578,13 +494,6 @@ ChangeLog:
  gcc/tree-into-ssa.c | 59 ++++++++++++++++++++++++++++++++++++---------
  2 files changed, 55 insertions(+), 12 deletions(-)
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 8c17e5992d2..262f0d6506f 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/tree-into-ssa.c b/gcc/tree-into-ssa.c
 index c27bf2ce121..6528acac31a 100644
 --- a/gcc/tree-into-ssa.c
@@ -683,24 +592,10 @@ just the C-family ones that defined a forwarding macro.
  17 files changed, 146 insertions(+), 95 deletions(-)
  create mode 100644 gcc/testsuite/g++.dg/cpp/pr80005.C
 
-diff --git a/gcc/c-family/ChangeLog b/gcc/c-family/ChangeLog
-index 09ba2c8b40f..fdddb98a74d 100644
---- a/gcc/c-family/ChangeLog
-+++ b/gcc/c-family/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/c-family/c-cppbuiltin.c b/gcc/c-family/c-cppbuiltin.c
 index a6308921dc9..70a12055e27 100644
 --- a/gcc/c-family/c-cppbuiltin.c
 +++ b/gcc/c-family/c-cppbuiltin.c
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index a526e32ac89..67d5f2e9e28 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -729,13 +624,6 @@ diff --git a/gcc/testsuite/g++.dg/cpp2a/feat-cxx2a.C b/gcc/testsuite/g++.dg/cpp2
 index dd15cd6af3c..82fd602f9f1 100644
 --- a/gcc/testsuite/g++.dg/cpp2a/feat-cxx2a.C
 +++ b/gcc/testsuite/g++.dg/cpp2a/feat-cxx2a.C
-@@ -1 +1,2 @@
-
-+
-diff --git a/libcpp/ChangeLog b/libcpp/ChangeLog
-index 3249b93fe88..27a841bbdce 100644
---- a/libcpp/ChangeLog
-+++ b/libcpp/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -825,13 +713,6 @@ Subject: [PATCH 0004/2034] tree-opt: Fix bootstrap failure in
  gcc/tree-ssa-forwprop.c | 6 +++---
  2 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index a195863212e..f7df07343d1 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/tree-ssa-forwprop.c b/gcc/tree-ssa-forwprop.c
 index aac31d02b6c..56c470f6ecf 100644
 --- a/gcc/tree-ssa-forwprop.c
@@ -898,13 +779,6 @@ Subject: [PATCH 0735/2034] PR 87488: Add --with-diagnostics-urls configuration
  gcc/pretty-print.h     |   5 +-
  11 files changed, 328 insertions(+), 26 deletions(-)
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index e6eb6ab4c21..22f990a3088 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/config.in b/gcc/config.in
 index 48292861842..01fb18dbbb5 100644
 --- a/gcc/config.in
@@ -1000,13 +874,6 @@ gcc/ChangeLog
  gcc/cfgloopanal.c | 5 ++++-
  2 files changed, 9 insertions(+), 1 deletion(-)
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 07e5bebe909..f3301b16464 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/cfgloopanal.c b/gcc/cfgloopanal.c
 index 392b1c337c4..0b33e8272a7 100644
 --- a/gcc/cfgloopanal.c
@@ -1073,13 +940,6 @@ Subject: [PATCH 0735/2034] PR 87488: Add --with-diagnostics-urls configuration
  gcc/pretty-print.h     |   5 +-
  11 files changed, 328 insertions(+), 26 deletions(-)
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index e6eb6ab4c21..22f990a3088 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/config.in b/gcc/config.in
 index 48292861842..01fb18dbbb5 100644
 --- a/gcc/config.in
@@ -1187,24 +1047,10 @@ co-authored-by: John Miller2 <jm2@example.com>
  8 files changed, 142 insertions(+), 22 deletions(-)
  create mode 100644 gcc/testsuite/g++.dg/pr94314-4.C
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 74dbeeb44c6..9e499ec9c86 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/cgraphclones.c b/gcc/cgraphclones.c
 index c73b8f810f0..8f541a28b6e 100644
 --- a/gcc/cgraphclones.c
 +++ b/gcc/cgraphclones.c
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 756f1d759e6..94d2312022d 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -1299,24 +1145,10 @@ if it isn't a REG or SUBREG of REG.
  4 files changed, 51 insertions(+), 19 deletions(-)
  create mode 100644 gcc/testsuite/gcc.dg/pr94291.c
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index a1ab9fb4ef3..12803e90b0a 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/combine.c b/gcc/combine.c
 index 58366a6d331..cff76cd3303 100644
 --- a/gcc/combine.c
 +++ b/gcc/combine.c
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 71b5a14bcbe..3cbf891d58d 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -1390,13 +1222,6 @@ index e85a8e8813e..fb776ba5a0e 100644
 @@ -1 +1,2 @@
 
 +
-diff --git a/gcc/c-family/ChangeLog b/gcc/c-family/ChangeLog
-index c429b49e68c..69ea1fdc4f3 100644
---- a/gcc/c-family/ChangeLog
-+++ b/gcc/c-family/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/c-family/c-attribs.c b/gcc/c-family/c-attribs.c
 index ac936d5bbbb..a101312c581 100644
 --- a/gcc/c-family/c-attribs.c
@@ -1432,10 +1257,122 @@ index c212a1a57dc..3dccef39701 100644
 @@ -1 +1,2 @@
 
 +
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 176aa117904..185f9ea725e 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
+diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
+new file mode 100644
+index 00000000000..f60bf46cfe3
+--- /dev/null
++++ b/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c
+new file mode 100644
+index 00000000000..90f88c78be7
+--- /dev/null
++++ b/gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c
+new file mode 100644
+index 00000000000..4490e5c15ca
+--- /dev/null
++++ b/gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c
+@@ -0,0 +1 @@
++
+diff --git a/gcc/varasm.c b/gcc/varasm.c
+index 271a67abf56..f062e48071f 100644
+--- a/gcc/varasm.c
++++ b/gcc/varasm.c
+@@ -1 +1,2 @@
+
++
+-- 
+2.26.2
+
+=== 0002-Add-patch_area_size-and-patch_area_entry-to-crtl.patch ===
+From 6607bdd99994c834f92fce924abdaea3405f62dc Mon Sep 17 00:00:00 2001
+From: "H.J. Lu" <hjl.tools@gmail.com>
+Date: Fri, 1 May 2020 21:03:10 -0700
+Subject: [PATCH] Add patch_area_size and patch_area_entry to crtl
+
+Currently patchable area is at the wrong place.  It is placed immediately
+after function label and before .cfi_startproc.  A backend should be able
+to add a pseudo patchable area instruction durectly into RTL.  This patch
+adds patch_area_size and patch_area_entry to crtl so that the patchable
+area info is available in RTL passes.
+
+It also limits patch_area_size and patch_area_entry to 65535, which is
+a reasonable maximum size for patchable area.
+
+gcc/
+
+	PR target/93492
+	* cfgexpand.c (pass_expand::execute): Set crtl->patch_area_size
+	and crtl->patch_area_entry.
+	* emit-rtl.h (rtl_data): Add patch_area_size and patch_area_entry.
+	* opts.c (common_handle_option): Limit
+	function_entry_patch_area_size and function_entry_patch_area_start
+	to USHRT_MAX.  Fix a typo in error message.
+	* varasm.c (assemble_start_function): Use crtl->patch_area_size
+	and crtl->patch_area_entry.
+	* doc/invoke.texi: Document the maximum value for
+	-fpatchable-function-entry.
+
+gcc/c-family/
+
+	PR target/12345
+	* c-attribs.c (handle_patchable_function_entry_attribute): Limit
+	value to USHRT_MAX (65535).
+
+---
+ gcc/ChangeLog                                 | 14 ++++++++
+ gcc/c-family/ChangeLog                        |  6 ++++
+ gcc/c-family/c-attribs.c                      |  9 +++++
+ gcc/cfgexpand.c                               | 33 +++++++++++++++++++
+ gcc/doc/invoke.texi                           |  1 +
+ gcc/emit-rtl.h                                |  6 ++++
+ gcc/opts.c                                    |  4 ++-
+ gcc/testsuite/ChangeLog                       |  7 ++++
+ .../patchable_function_entry-error-1.c        |  9 +++++
+ .../patchable_function_entry-error-2.c        |  9 +++++
+ .../patchable_function_entry-error-3.c        | 17 ++++++++++
+ gcc/varasm.c                                  | 30 ++---------------
+ 12 files changed, 116 insertions(+), 29 deletions(-)
+ create mode 100644 gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
+ create mode 100644 gcc/testsuite/c-c++-common/patchable_function_entry-error-2.c
+ create mode 100644 gcc/testsuite/c-c++-common/patchable_function_entry-error-3.c
+
+diff --git a/gcc/c-family/c-attribs.c b/gcc/c-family/c-attribs.c
+index ac936d5bbbb..a101312c581 100644
+--- a/gcc/c-family/c-attribs.c
++++ b/gcc/c-family/c-attribs.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/cfgexpand.c b/gcc/cfgexpand.c
+index a7ec77d5c85..86efa22bf60 100644
+--- a/gcc/cfgexpand.c
++++ b/gcc/cfgexpand.c
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/doc/invoke.texi b/gcc/doc/invoke.texi
+index 527d362533a..767d1f07801 100644
+--- a/gcc/doc/invoke.texi
++++ b/gcc/doc/invoke.texi
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/emit-rtl.h b/gcc/emit-rtl.h
+index a878efe3cf7..3d6565c8a30 100644
+--- a/gcc/emit-rtl.h
++++ b/gcc/emit-rtl.h
+@@ -1 +1,2 @@
+
++
+diff --git a/gcc/opts.c b/gcc/opts.c
+index c212a1a57dc..3dccef39701 100644
+--- a/gcc/opts.c
++++ b/gcc/opts.c
 @@ -1 +1,2 @@
 
 +
@@ -1497,13 +1434,6 @@ gcc/cp/ChangeLog
  3 files changed, 40 insertions(+), 18 deletions(-)
  create mode 100644 gcc/testsuite/g++.dg/cpp2a/lambda-generic-variadic20.C
 
-diff --git a/gcc/cp/ChangeLog b/gcc/cp/ChangeLog
-index 640e4948130..4b6691a77f0 100644
---- a/gcc/cp/ChangeLog
-+++ b/gcc/cp/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/cp/pt.c b/gcc/cp/pt.c
 index 7bf249cee5c..2fe7b66707c 100644
 --- a/gcc/cp/pt.c
@@ -1539,13 +1469,6 @@ concepts.
  3 files changed, 11 insertions(+)
  create mode 100644 gcc/testsuite/g++.dg/concepts/fn-concept3.C
 
-diff --git a/gcc/cp/ChangeLog b/gcc/cp/ChangeLog
-index 59646c70fa4..4729e3d331d 100644
---- a/gcc/cp/ChangeLog
-+++ b/gcc/cp/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/cp/except.c b/gcc/cp/except.c
 index e073bd4d2bc..55b4b6af442 100644
 --- a/gcc/cp/except.c
@@ -1573,13 +1496,6 @@ Subject: [PATCH 0129/2034] Add PR number to change log
  gcc/ChangeLog | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 6c6d586ca75..49ca5f92dec 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 -- 
 2.26.1
 
@@ -1616,13 +1532,6 @@ gcc/testsuite/
  6 files changed, 132 insertions(+)
  create mode 100644 gcc/testsuite/gcc.target/aarch64/movk_2.c
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index efbbbf08225..cea8ffee99c 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/config/aarch64/aarch64-protos.h b/gcc/config/aarch64/aarch64-protos.h
 index 24cc65a383a..d29975a8921 100644
 --- a/gcc/config/aarch64/aarch64-protos.h
@@ -1641,13 +1550,6 @@ diff --git a/gcc/config/aarch64/aarch64.md b/gcc/config/aarch64/aarch64.md
 index 90eebce85c0..9c1f17d0f85 100644
 --- a/gcc/config/aarch64/aarch64.md
 +++ b/gcc/config/aarch64/aarch64.md
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 601bc336290..cdb26581b9c 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -1836,24 +1738,10 @@ already).
  gcc/testsuite/g++.dg/tree-ssa/pr27830.C |  2 ++
  4 files changed, 47 insertions(+), 5 deletions(-)
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 06f7eda0033..93c3076eb86 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/config/rs6000/rs6000-call.c b/gcc/config/rs6000/rs6000-call.c
 index e08621ace27..a9ae7ab70ca 100644
 --- a/gcc/config/rs6000/rs6000-call.c
 +++ b/gcc/config/rs6000/rs6000-call.c
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 684e408c1a5..245c1512c76 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -1969,13 +1857,6 @@ index c212a1a57dc..3dccef39701 100644
 @@ -1 +1,2 @@
 
 +
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 176aa117904..185f9ea725e 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c b/gcc/testsuite/c-c++-common/patchable_function_entry-error-1.c
 new file mode 100644
 index 00000000000..f60bf46cfe3
@@ -2082,13 +1963,6 @@ Subject: [PATCH 0004/2034] tree-opt: Fix bootstrap failure in
  gcc/tree-ssa-forwprop.c | 6 +++---
  2 files changed, 12 insertions(+), 3 deletions(-)
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index a195863212e..f7df07343d1 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/tree-ssa-forwprop.c b/gcc/tree-ssa-forwprop.c
 index aac31d02b6c..56c470f6ecf 100644
 --- a/gcc/tree-ssa-forwprop.c
@@ -2125,13 +1999,6 @@ gcc/testsuite/ChangeLog:
  3 files changed, 89 insertions(+), 7 deletions(-)
  create mode 100644 gcc/testsuite/g++.dg/ext/is_constructible4.C
 
-diff --git a/gcc/cp/ChangeLog b/gcc/cp/ChangeLog
-index 3ca5d7a11b4..c37e461bcc5 100644
---- a/gcc/cp/ChangeLog
-+++ b/gcc/cp/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/cp/pt.c b/gcc/cp/pt.c
 index 9bb8cc13e5f..872f8ff8f52 100644
 --- a/gcc/cp/pt.c
@@ -2210,24 +2077,10 @@ Subject: [PATCH 0043/2034] Compare TREE_ADDRESSABLE and TYPE_MODE when ODR
  create mode 100644 gcc/testsuite/g++.dg/lto/odr-8_0.C
  create mode 100644 gcc/testsuite/g++.dg/lto/odr-8_1.C
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 38165123654..33ca91a6467 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/ipa-devirt.c b/gcc/ipa-devirt.c
 index f0031957375..b609a77701d 100644
 --- a/gcc/ipa-devirt.c
 +++ b/gcc/ipa-devirt.c
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 8e3b9105188..dc42601794b 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -2302,13 +2155,6 @@ gcc/testsuite/ChangeLog:
  create mode 100755 gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-3.c
  create mode 100755 gcc/testsuite/gcc.target/aarch64/advsimd-intrinsics/vdot-3-4.c
 
-diff --git a/gcc/ChangeLog b/gcc/ChangeLog
-index 9a949980699..49dcecb6777 100644
---- a/gcc/ChangeLog
-+++ b/gcc/ChangeLog
-@@ -1 +1,2 @@
-
-+
 diff --git a/gcc/config/aarch64/aarch64-builtins.c b/gcc/config/aarch64/aarch64-builtins.c
 index f0e0461b7f0..f50c4857e1c 100644
 --- a/gcc/config/aarch64/aarch64-builtins.c
@@ -2341,13 +2187,6 @@ diff --git a/gcc/config/aarch64/iterators.md b/gcc/config/aarch64/iterators.md
 index b9843b83c5f..83720d9802a 100644
 --- a/gcc/config/aarch64/iterators.md
 +++ b/gcc/config/aarch64/iterators.md
-@@ -1 +1,2 @@
-
-+
-diff --git a/gcc/testsuite/ChangeLog b/gcc/testsuite/ChangeLog
-index 0d8aa6063a7..8b01aa06a40 100644
---- a/gcc/testsuite/ChangeLog
-+++ b/gcc/testsuite/ChangeLog
 @@ -1 +1,2 @@
 
 +
@@ -3408,14 +3247,6 @@ Subject: [PATCH] Fix a changelog.
  gcc/ChangeLog-2020 | 1 +
  1 file changed, 1 insertion(+)
 
-diff --git a/gcc/ChangeLog-2020 b/gcc/ChangeLog-2020
-index 6553720acad..2c170ef014a 100644
---- a/gcc/ChangeLog-2020
-+++ b/gcc/ChangeLog-2020
-@@ -1 +1,2 @@
- 
-+
- 
 -- 
 2.29.2
 === 0001-Add-macro.patch ===
