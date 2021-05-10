@@ -1445,6 +1445,12 @@ do { \
 */
 #define SHIFT_COUNT_TRUNCATED 1
 
+/* Defines if the CLZ result is undefined or has a useful value.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 31, 2)
+
+/* Defines if the CTZ result is undefined or has a useful value.  */
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 31, 2)
+
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
 #define STORE_FLAG_VALUE 1
