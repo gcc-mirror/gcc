@@ -3032,6 +3032,10 @@ CFLAGS-build/genversion.o += -DBASEVER=$(BASEVER_s) -DDATESTAMP=$(DATESTAMP_s) \
 
 build/genversion.o: genversion.c $(BCONFIG_H) $(SYSTEM_H)
 
+build/genversion$(build_exeext): build/genversion.o
+	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) \
+		build/genversion.o -o $@
+
 version.h: s-version; @true
 s-version: build/genversion$(build_exeext)
 	build/genversion$(build_exeext) > tmp-version.h
