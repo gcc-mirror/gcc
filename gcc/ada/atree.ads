@@ -653,7 +653,12 @@ package Atree is
       Slot_Size : constant := 32;
       type Slot is mod 2**Slot_Size;
       for Slot'Size use Slot_Size;
-      pragma Provide_Shift_Operators (Slot);
+
+      function Shift_Left (S : Slot; V : Natural) return Slot;
+      pragma Import (Intrinsic, Shift_Left);
+
+      function Shift_Right (S : Slot; V : Natural) return Slot;
+      pragma Import (Intrinsic, Shift_Right);
 
       type Field_1_Bit  is mod 2**1;
       type Field_2_Bit  is mod 2**2;
