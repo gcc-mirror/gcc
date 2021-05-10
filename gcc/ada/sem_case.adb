@@ -2908,7 +2908,7 @@ package body Sem_Case is
             begin
                if Has_Predicates (Subtyp) then
                   Error_Msg_N
-                     ("subtype of case selector (or subcomponent thereof)" &
+                     ("subtype of case selector (or subcomponent thereof) " &
                       "has predicate", N);
                elsif Is_Discrete_Type (Subtyp) then
                   if not Is_Static_Subtype (Subtyp) then
@@ -2938,7 +2938,7 @@ package body Sem_Case is
                elsif Is_Record_Type (Subtyp) then
                   if Has_Discriminants (Subtyp) then
                      Error_Msg_N
-                        ("type of case selector (or subcomponent thereof)" &
+                        ("type of case selector (or subcomponent thereof) " &
                          "is discriminated", N);
                   else
                      declare
