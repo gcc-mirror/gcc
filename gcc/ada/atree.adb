@@ -2293,14 +2293,15 @@ package body Atree is
       Locked := False;
    end Unlock_Nodes;
 
+   ----------------
+   -- Zero_Slots --
+   ----------------
+
    Zero : constant Slot := 0;
 
    procedure Zero_Slots (F, L : Node_Offset) is
    begin
       Slots.Table (F .. L) := (others => Zero);
-      --  Note that Zero.Field_Size is not stored, because Slot is an
-      --  Unchecked_Union. Hopefully, the compiler can generate efficient code
-      --  for this.
    end Zero_Slots;
 
    procedure Zero_Slots (N : Node_Or_Entity_Id) is
