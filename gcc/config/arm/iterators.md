@@ -287,6 +287,7 @@
 (define_code_iterator COMPARISONS [eq gt ge le lt])
 ;; Comparisons for MVE
 (define_code_iterator MVE_COMPARISONS [eq ge geu gt gtu le lt ne])
+(define_code_iterator MVE_FP_COMPARISONS [eq ge gt le lt ne])
 
 ;; A list of ...
 (define_code_iterator IOR_XOR [ior xor])
