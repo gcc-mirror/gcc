@@ -1395,8 +1395,19 @@
 (define_mode_attr V_addsub_suffix [(V2HI "2h") (V2SI "")])
 
 ;;all vectors
-(define_mode_iterator VCT [V2HI V4HI V2SI])
+(define_mode_iterator VCT [(V2HI "TARGET_PLUS_DMPY")
+			   (V4HI "TARGET_PLUS_QMACW")
+			   (V2SI "TARGET_PLUS_QMACW")])
 (define_mode_attr V_suffix [(V2HI "2h") (V4HI "4h") (V2SI "2")])
+
+(define_code_iterator EMUVEC [(mult "TARGET_MPYW")
+			      (div "TARGET_DIVREM")
+			      smax smin])
+
+(define_code_attr voptab [(mult "mul")
+			  (div "div")
+			  (smin "smin")
+			  (smax "smax")])
 
 ;; Widening operations.
 (define_code_iterator SE [sign_extend zero_extend])
@@ -1805,7 +1816,7 @@
 		  (SE:V2SI (vec_select:V2HI
 			    (match_operand:V4HI 2 "even_register_operand")
 			    (parallel [(const_int 2) (const_int 3)])))))]
-  "TARGET_PLUS_MACD"
+  "TARGET_PLUS_QMACW"
   {
      emit_insn (gen_arc_vec_<V_US>mult_hi_v4hi (operands[0],
 						operands[1],
@@ -2011,3 +2022,100 @@
    (set_attr "type" "multi")
    (set_attr "predicable" "yes,no")
    (set_attr "cond" "canuse,nocond")])
+
+;; Emulated vector instructions.
+(define_insn_and_split "<voptab>v2si3"
+  [(set (match_operand:V2SI 0 "register_operand" "=r")
+	(EMUVEC:V2SI (match_operand:V2SI 1 "register_operand" "r")
+		     (match_operand:V2SI 2 "nonmemory_operand" "ri")))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+   rtx high_dest = gen_highpart (SImode, operands[0]);
+   rtx low_dest = gen_lowpart (SImode, operands[0]);
+   rtx high_op1 = gen_highpart (SImode, operands[1]);
+   rtx low_op1 = gen_lowpart (SImode, operands[1]);
+   rtx high_op2 = gen_highpart (SImode, operands[2]);
+   rtx low_op2 = gen_lowpart (SImode, operands[2]);
+   emit_insn (gen_<voptab>si3 (low_dest, low_op1, low_op2));
+   emit_insn (gen_<voptab>si3 (high_dest, high_op1, high_op2));
+   DONE;
+  }
+  [(set_attr "length" "12")
+   (set_attr "type" "multi")])
+
+(define_expand "neg<mode>2"
+  [(set (match_operand:VCT 0 "register_operand")
+	(neg:VCT (match_operand:VCT 1 "register_operand")))]
+  "TARGET_PLUS_DMPY"
+  "")
+
+(define_insn "*neg<mode>2"
+  [(set (match_operand:VCT 0 "register_operand" "=r")
+	(neg:VCT (match_operand:VCT 1 "register_operand" "r")))]
+  "TARGET_PLUS_DMPY"
+  "vsub<V_suffix)>\\t%0,0,%1"
+  [(set_attr "length" "8")
+   (set_attr "type" "multi")])
+
+(define_insn "reduc_plus_scal_v4hi"
+  [(set (match_operand:HI 0 "even_register_operand" "=r")
+	(unspec:HI [(match_operand:V4HI 1 "even_register_operand" "r")]
+		   UNSPEC_ARC_QMPYH))
+   (clobber (reg:DI ARCV2_ACC))]
+  "TARGET_PLUS_QMACW"
+  "qmpyh\\t%0,%1,1"
+  [(set_attr "length" "4")
+   (set_attr "type" "multi")])
+
+(define_insn "reduc_plus_scal_v2si"
+  [(set (match_operand:SI 0 "even_register_operand" "=r")
+	(unspec:SI [(match_operand:V2SI 1 "even_register_operand" "r")]
+		   UNSPEC_ARC_DMPYWH))
+   (clobber (reg:DI ARCV2_ACC))]
+  "TARGET_PLUS_DMPY"
+  "dmpywh\\t%0,%1,1"
+  [(set_attr "length" "4")
+   (set_attr "type" "multi")])
+
+(define_insn_and_split "vec_duplicatev2si"
+  [(set (match_operand:V2SI 0 "register_operand" "=r")
+	(vec_duplicate:V2SI
+	 (match_operand:SI 1 "nonmemory_operand" "ri")))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+   rtx high_dest = gen_highpart (SImode, operands[0]);
+   rtx low_dest = gen_lowpart (SImode, operands[0]);
+   emit_move_insn (high_dest, operands[1]);
+   emit_move_insn (low_dest, operands[1]);
+   DONE;
+  }
+  [(set_attr "length" "8")
+   (set_attr "type" "multi")])
+
+(define_insn_and_split "vec_duplicatev4hi"
+  [(set (match_operand:V4HI 0 "register_operand" "=r")
+	(vec_duplicate:V4HI
+	 (match_operand:HI 1 "nonmemory_operand" "ri")))]
+  "TARGET_BARREL_SHIFTER"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+   rtx high_dest = gen_highpart (SImode, operands[0]);
+   rtx low_dest = gen_lowpart (SImode, operands[0]);
+   rtx tmp = gen_lowpart (SImode, operands[1]);
+   emit_insn (gen_rtx_SET (high_dest,
+			   gen_rtx_ASHIFT (SImode, tmp, GEN_INT (16))));
+   emit_insn (gen_rtx_SET (low_dest,
+			   gen_rtx_IOR (SImode, high_dest, tmp)));
+   emit_move_insn (high_dest, low_dest);
+   DONE;
+  }
+  [(set_attr "length" "12")
+   (set_attr "type" "multi")])
