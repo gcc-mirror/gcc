@@ -73,8 +73,7 @@ class GitEmail(GitCommit):
 
 
 def show_help():
-    print("""
-usage: git_email.py [--help] [patch file ...]
+    print("""usage: git_email.py [--help] [patch file ...]
 
 Check git ChangeLog format of a patch
 
@@ -82,8 +81,7 @@ With zero arguments, process every patch file in the
 ./patches directory.
 With one argument, process the named patch file.
 
-Patch files must be in 'git format-patch' format.
-""")
+Patch files must be in 'git format-patch' format.""")
     sys.exit(0)
 
 
