@@ -413,5 +413,73 @@ HIRCompileBase::compile_function_body (
     }
 }
 
+// Mr Mangle time
+
+static const std::string kMangledSymbolPrefix = "_ZN";
+static const std::string kMangledSymbolDelim = "E";
+static const std::string kMangledGenericDelim = "$C$";
+static const std::string kMangledSubstBegin = "$LT$";
+static const std::string kMangledSubstEnd = "$GT$";
+
+static std::string
+mangle_name (const std::string &name)
+{
+  return std::to_string (name.size ()) + name;
+}
+
+static std::string
+dummy_hash ()
+{
+  return "h0123456789abcdef";
+}
+
+static std::string
+mangle_self (const TyTy::BaseType *self)
+{
+  if (self->get_kind () != TyTy::TypeKind::ADT)
+    return mangle_name (self->get_name ());
+
+  const TyTy::ADTType *s = static_cast<const TyTy::ADTType *> (self);
+  std::string buf = s->get_identifier ();
+
+  if (s->has_subsititions_defined ())
+    {
+      buf += kMangledSubstBegin;
+
+      const std::vector<TyTy::SubstitutionParamMapping> &params
+	= s->get_substs ();
+      for (size_t i = 0; i < params.size (); i++)
+	{
+	  const TyTy::SubstitutionParamMapping &sub = params.at (i);
+	  buf += sub.as_string ();
+
+	  if ((i + 1) < params.size ())
+	    buf += kMangledGenericDelim;
+	}
+
+      buf += kMangledSubstEnd;
+    }
+
+  return mangle_name (buf);
+}
+
+std::string
+Context::mangle_item (const std::string &name) const
+{
+  const std::string &crate_name = mappings->get_current_crate_name ();
+  return kMangledSymbolPrefix + mangle_name (crate_name) + mangle_name (name)
+	 + mangle_name (dummy_hash ()) + kMangledSymbolDelim;
+}
+
+std::string
+Context::mangle_impl_item (const TyTy::BaseType *self,
+			   const std::string &name) const
+{
+  const std::string &crate_name = mappings->get_current_crate_name ();
+  return kMangledSymbolPrefix + mangle_name (crate_name) + mangle_self (self)
+	 + mangle_name (name) + mangle_name (dummy_hash ())
+	 + kMangledSymbolDelim;
+}
+
 } // namespace Compile
 } // namespace Rust

@@ -618,6 +618,11 @@ public:
 
   std::vector<SubstitutionParamMapping> &get_substs () { return substitutions; }
 
+  const std::vector<SubstitutionParamMapping> &get_substs () const
+  {
+    return substitutions;
+  }
+
   std::vector<SubstitutionParamMapping> clone_substs ()
   {
     std::vector<SubstitutionParamMapping> clone;

@@ -53,8 +53,7 @@ public:
     Bexpression *value = CompileExpr::Compile (var.get_expr (), ctx);
 
     std::string name = var.get_identifier ();
-    // FIXME need name mangling
-    std::string asm_name = "__" + var.get_identifier ();
+    std::string asm_name = ctx->mangle_item (name);
 
     bool is_external = false;
     bool is_hidden = false;
@@ -147,21 +146,11 @@ public:
 
     std::string ir_symbol_name = function.get_function_name ();
     std::string asm_name = function.get_function_name ();
-    if (!is_main_fn)
-      {
-	// FIXME need name mangling
-	if (concrete == nullptr)
-	  asm_name = "__" + function.get_function_name ();
-	else
-	  {
-	    ir_symbol_name
-	      = function.get_function_name () + fntype->subst_as_string ();
 
-	    asm_name = "__" + function.get_function_name ();
-	    for (auto &sub : fntype->get_substs ())
-	      asm_name += "G" + sub.as_string ();
-	  }
-      }
+    // we don't mangle the main fn since we haven't implemented the main shim
+    // yet
+    if (!is_main_fn)
+      asm_name = ctx->mangle_item (ir_symbol_name);
 
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,
