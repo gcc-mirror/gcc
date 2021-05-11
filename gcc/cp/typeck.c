@@ -8114,7 +8114,7 @@ build_reinterpret_cast_1 (location_t loc, tree type, tree expr,
 		    "pointer-to-object is conditionally-supported");
       return build_nop_reinterpret (type, expr);
     }
-  else if (gnu_vector_type_p (type))
+  else if (gnu_vector_type_p (type) && scalarish_type_p (intype))
     return convert_to_vector (type, rvalue (expr));
   else if (gnu_vector_type_p (intype)
 	   && INTEGRAL_OR_ENUMERATION_TYPE_P (type))
