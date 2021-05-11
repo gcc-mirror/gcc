@@ -51,20 +51,32 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 
   /* If parallel or taskgroup has been cancelled, don't start new tasks.  */
   if (team && gomp_team_barrier_cancelled (&team->barrier))
-    return;
+    {
+    early_return:
+      if ((flags & (GOMP_TASK_FLAG_NOGROUP | GOMP_TASK_FLAG_REDUCTION))
+	  == GOMP_TASK_FLAG_REDUCTION)
+	{
+	  struct gomp_data_head { TYPE t1, t2; uintptr_t *ptr; };
+	  uintptr_t *ptr = ((struct gomp_data_head *) data)->ptr;
+	  /* Tell callers GOMP_taskgroup_reduction_register has not been
+	     called.  */
+	  ptr[2] = 0;
+	}
+      return;
+    }
 
 #ifdef TYPE_is_long
   TYPE s = step;
   if (step > 0)
     {
       if (start >= end)
-	return;
+	goto early_return;
       s--;
     }
   else
     {
       if (start <= end)
-	return;
+	goto early_return;
       s++;
     }
   UTYPE n = (end - start + s) / step;
@@ -73,13 +85,13 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
   if (flags & GOMP_TASK_FLAG_UP)
     {
       if (start >= end)
-	return;
+	goto early_return;
       n = (end - start + step - 1) / step;
     }
   else
     {
       if (start <= end)
-	return;
+	goto early_return;
       n = (start - end - step - 1) / -step;
     }
 #endif
