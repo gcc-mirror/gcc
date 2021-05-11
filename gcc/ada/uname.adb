@@ -47,15 +47,18 @@ package body Uname is
    -------------------
 
    function Get_Body_Name (N : Unit_Name_Type) return Unit_Name_Type is
+      Buffer : Bounded_String;
    begin
-      Get_Name_String (N);
+      Append (Buffer, N);
 
-      pragma Assert (Name_Len > 2
-                       and then Name_Buffer (Name_Len - 1) = '%'
-                       and then Name_Buffer (Name_Len) = 's');
+      pragma Assert
+        (Buffer.Length > 2
+         and then Buffer.Chars (Buffer.Length - 1) = '%'
+         and then Buffer.Chars (Buffer.Length) = 's');
 
-      Name_Buffer (Name_Len) := 'b';
-      return Name_Find;
+      Buffer.Chars (Buffer.Length) := 'b';
+
+      return Name_Find (Buffer);
    end Get_Body_Name;
 
    -----------------------------------
@@ -111,19 +114,19 @@ package body Uname is
    --------------------------
 
    function Get_Parent_Body_Name (N : Unit_Name_Type) return Unit_Name_Type is
+      Buffer : Bounded_String;
    begin
-      Get_Name_String (N);
+      Append (Buffer, N);
 
-      while Name_Buffer (Name_Len) /= '.' loop
-         pragma Assert (Name_Len > 1); -- not a child or subunit name
-         Name_Len := Name_Len - 1;
+      while Buffer.Chars (Buffer.Length) /= '.' loop
+         pragma Assert (Buffer.Length > 1); -- not a child or subunit name
+         Buffer.Length := Buffer.Length - 1;
       end loop;
 
-      Name_Buffer (Name_Len) := '%';
-      Name_Len := Name_Len + 1;
-      Name_Buffer (Name_Len) := 'b';
-      return Name_Find;
+      Buffer.Chars (Buffer.Length) := '%';
+      Append (Buffer, 'b');
 
+      return Name_Find (Buffer);
    end Get_Parent_Body_Name;
 
    --------------------------
@@ -131,22 +134,22 @@ package body Uname is
    --------------------------
 
    function Get_Parent_Spec_Name (N : Unit_Name_Type) return Unit_Name_Type is
+      Buffer : Bounded_String;
    begin
-      Get_Name_String (N);
+      Append (Buffer, N);
 
-      while Name_Buffer (Name_Len) /= '.' loop
-         if Name_Len = 1 then
+      while Buffer.Chars (Buffer.Length) /= '.' loop
+         if Buffer.Length = 1 then
             return No_Unit_Name;
          else
-            Name_Len := Name_Len - 1;
+            Buffer.Length := Buffer.Length - 1;
          end if;
       end loop;
 
-      Name_Buffer (Name_Len) := '%';
-      Name_Len := Name_Len + 1;
-      Name_Buffer (Name_Len) := 's';
-      return Name_Find;
+      Buffer.Chars (Buffer.Length) := '%';
+      Append (Buffer, 's');
 
+      return Name_Find (Buffer);
    end Get_Parent_Spec_Name;
 
    -------------------
@@ -154,15 +157,18 @@ package body Uname is
    -------------------
 
    function Get_Spec_Name (N : Unit_Name_Type) return Unit_Name_Type is
+      Buffer : Bounded_String;
    begin
-      Get_Name_String (N);
+      Append (Buffer, N);
 
-      pragma Assert (Name_Len > 2
-                       and then Name_Buffer (Name_Len - 1) = '%'
-                       and then Name_Buffer (Name_Len) = 'b');
+      pragma Assert
+        (Buffer.Length > 2
+         and then Buffer.Chars (Buffer.Length - 1) = '%'
+         and then Buffer.Chars (Buffer.Length) = 'b');
 
-      Name_Buffer (Name_Len) := 's';
-      return Name_Find;
+      Buffer.Chars (Buffer.Length) := 's';
+
+      return Name_Find (Buffer);
    end Get_Spec_Name;
 
    -------------------
@@ -489,11 +495,12 @@ package body Uname is
    ------------------
 
    function Is_Body_Name (N : Unit_Name_Type) return Boolean is
+      Buffer : Bounded_String;
    begin
-      Get_Name_String (N);
-      return Name_Len > 2
-        and then Name_Buffer (Name_Len - 1) = '%'
-        and then Name_Buffer (Name_Len) = 'b';
+      Append (Buffer, N);
+      return Buffer.Length > 2
+        and then Buffer.Chars (Buffer.Length - 1) = '%'
+        and then Buffer.Chars (Buffer.Length) = 'b';
    end Is_Body_Name;
 
    -------------------
@@ -501,17 +508,16 @@ package body Uname is
    -------------------
 
    function Is_Child_Name (N : Unit_Name_Type) return Boolean is
-      J : Natural;
+      Buffer : Bounded_String;
 
    begin
-      Get_Name_String (N);
-      J := Name_Len;
+      Append (Buffer, N);
 
-      while Name_Buffer (J) /= '.' loop
-         if J = 1 then
+      while Buffer.Chars (Buffer.Length) /= '.' loop
+         if Buffer.Length = 1 then
             return False; -- not a child or subunit name
          else
-            J := J - 1;
+            Buffer.Length := Buffer.Length - 1;
          end if;
       end loop;
 
@@ -589,11 +595,12 @@ package body Uname is
    ------------------
 
    function Is_Spec_Name (N : Unit_Name_Type) return Boolean is
+      Buffer : Bounded_String;
    begin
-      Get_Name_String (N);
-      return Name_Len > 2
-        and then Name_Buffer (Name_Len - 1) = '%'
-        and then Name_Buffer (Name_Len) = 's';
+      Append (Buffer, N);
+      return Buffer.Length > 2
+        and then Buffer.Chars (Buffer.Length - 1) = '%'
+        and then Buffer.Chars (Buffer.Length) = 's';
    end Is_Spec_Name;
 
    -----------------------
@@ -601,12 +608,11 @@ package body Uname is
    -----------------------
 
    function Name_To_Unit_Name (N : Name_Id) return Unit_Name_Type is
+      Buffer : Bounded_String;
    begin
-      Get_Name_String (N);
-      Name_Buffer (Name_Len + 1) := '%';
-      Name_Buffer (Name_Len + 2) := 's';
-      Name_Len := Name_Len + 2;
-      return Name_Find;
+      Append (Buffer, N);
+      Append (Buffer, "%s");
+      return Name_Find (Buffer);
    end Name_To_Unit_Name;
 
    ---------------
