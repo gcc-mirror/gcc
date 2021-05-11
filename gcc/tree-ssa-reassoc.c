@@ -593,6 +593,36 @@ add_repeat_to_ops_vec (vec<operand_entry *> *ops, tree op,
   reassociate_stats.pows_encountered++;
 }
 
+/* Returns true if we can associate the SSA def OP.  */
+
+static bool
+can_reassociate_op_p (tree op)
+{
+  if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+    return false;
+  /* Make sure asm goto outputs do not participate in reassociation since
+     we have no way to find an insertion place after asm goto.  */
+  if (TREE_CODE (op) == SSA_NAME
+      && gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_ASM
+      && gimple_asm_nlabels (as_a <gasm *> (SSA_NAME_DEF_STMT (op))) != 0)
+    return false;
+  return true;
+}
+
+/* Returns true if we can reassociate operations of TYPE.
+   That is for integral or non-saturating fixed-point types, and for
+   floating point type when associative-math is enabled.  */
+
+static bool
+can_reassociate_type_p (tree type)
+{
+  if ((ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
+      || NON_SAT_FIXED_POINT_TYPE_P (type)
+      || (flag_associative_math && FLOAT_TYPE_P (type)))
+    return true;
+  return false;
+}
+
 /* Return true if STMT is reassociable operation containing a binary
    operation with tree code CODE, and is inside LOOP.  */
 
@@ -613,12 +643,8 @@ is_reassociable_op (gimple *stmt, enum tree_code code, class loop *loop)
     {
       tree rhs1 = gimple_assign_rhs1 (stmt);
       tree rhs2 = gimple_assign_rhs2 (stmt);
-      if (TREE_CODE (rhs1) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs1))
-	return false;
-      if (rhs2
-	  && TREE_CODE (rhs2) == SSA_NAME
-	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs2))
+      if (!can_reassociate_op_p (rhs1)
+	  || (rhs2 && !can_reassociate_op_p (rhs2)))
 	return false;
       return true;
     }
@@ -5887,29 +5913,6 @@ repropagate_negates (void)
     }
 }
 
-/* Returns true if OP is of a type for which we can do reassociation.
-   That is for integral or non-saturating fixed-point types, and for
-   floating point type when associative-math is enabled.  */
-
-static bool
-can_reassociate_p (tree op)
-{
-  tree type = TREE_TYPE (op);
-  if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
-    return false;
-  /* Make sure asm goto outputs do not participate in reassociation since
-     we have no way to find an insertion place after asm goto.  */
-  if (TREE_CODE (op) == SSA_NAME
-      && gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_ASM
-      && gimple_asm_nlabels (as_a <gasm *> (SSA_NAME_DEF_STMT (op))) != 0)
-    return false;
-  if ((ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
-      || NON_SAT_FIXED_POINT_TYPE_P (type)
-      || (flag_associative_math && FLOAT_TYPE_P (type)))
-    return true;
-  return false;
-}
-
 /* Break up subtract operations in block BB.
 
    We do this top down because we don't know whether the subtract is
@@ -5942,14 +5945,15 @@ break_up_subtract_bb (basic_block bb)
       gimple_set_uid (stmt, uid++);
 
       if (!is_gimple_assign (stmt)
-	  || !can_reassociate_p (gimple_assign_lhs (stmt)))
+	  || !can_reassociate_type_p (TREE_TYPE (gimple_assign_lhs (stmt)))
+	  || !can_reassociate_op_p (gimple_assign_lhs (stmt)))
 	continue;
 
       /* Look for simple gimple subtract operations.  */
       if (gimple_assign_rhs_code (stmt) == MINUS_EXPR)
 	{
-	  if (!can_reassociate_p (gimple_assign_rhs1 (stmt))
-	      || !can_reassociate_p (gimple_assign_rhs2 (stmt)))
+	  if (!can_reassociate_op_p (gimple_assign_rhs1 (stmt))
+	      || !can_reassociate_op_p (gimple_assign_rhs2 (stmt)))
 	    continue;
 
 	  /* Check for a subtract used only in an addition.  If this
@@ -5960,7 +5964,7 @@ break_up_subtract_bb (basic_block bb)
 	    break_up_subtract (stmt, &gsi);
 	}
       else if (gimple_assign_rhs_code (stmt) == NEGATE_EXPR
-	       && can_reassociate_p (gimple_assign_rhs1 (stmt)))
+	       && can_reassociate_op_p (gimple_assign_rhs1 (stmt)))
 	plus_negates.safe_push (gimple_assign_lhs (stmt));
     }
   for (son = first_dom_son (CDI_DOMINATORS, bb);
@@ -6553,14 +6557,14 @@ reassociate_bb (basic_block bb)
 
 	  /* For non-bit or min/max operations we can't associate
 	     all types.  Verify that here.  */
-	  if (rhs_code != BIT_IOR_EXPR
-	      && rhs_code != BIT_AND_EXPR
-	      && rhs_code != BIT_XOR_EXPR
-	      && rhs_code != MIN_EXPR
-	      && rhs_code != MAX_EXPR
-	      && (!can_reassociate_p (lhs)
-		  || !can_reassociate_p (rhs1)
-		  || !can_reassociate_p (rhs2)))
+	  if ((rhs_code != BIT_IOR_EXPR
+	       && rhs_code != BIT_AND_EXPR
+	       && rhs_code != BIT_XOR_EXPR
+	       && rhs_code != MIN_EXPR
+	       && rhs_code != MAX_EXPR
+	       && !can_reassociate_type_p (TREE_TYPE (lhs)))
+	      || !can_reassociate_op_p (rhs1)
+	      || !can_reassociate_op_p (rhs2))
 	    continue;
 
 	  if (associative_tree_code (rhs_code))
