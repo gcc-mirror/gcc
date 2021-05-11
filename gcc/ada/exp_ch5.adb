@@ -3384,9 +3384,17 @@ package body Exp_Ch5 is
               and then Is_Discrete_Type (Etype (Pattern))
               and then Compile_Time_Known_Value (Pattern)
             then
-               return Make_Op_Eq (Loc,
-                        Object,
-                        Make_Integer_Literal (Loc, Expr_Value (Pattern)));
+               declare
+                  Val : Node_Id;
+               begin
+                  if Is_Enumeration_Type (Etype (Pattern)) then
+                     Val := Get_Enum_Lit_From_Pos
+                              (Etype (Pattern), Expr_Value (Pattern), Loc);
+                  else
+                     Val := Make_Integer_Literal (Loc, Expr_Value (Pattern));
+                  end if;
+                  return Make_Op_Eq (Loc, Object, Val);
+               end;
             end if;
 
             case Nkind (Pattern) is
