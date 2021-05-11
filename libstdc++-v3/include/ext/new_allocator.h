@@ -42,7 +42,7 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
-   *  @brief  An allocator that uses global new, as per [20.4].
+   *  @brief  An allocator that uses global new, as per C++03 [20.4.1].
    *  @ingroup allocators
    *
    *  This is precisely the allocator defined in the C++ Standard.
@@ -102,6 +102,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_NODISCARD _Tp*
       allocate(size_type __n, const void* = static_cast<const void*>(0))
       {
+#if __cplusplus >= 201103L
+	 // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	 // 3308. std::allocator<void>().allocate(n)
+	 static_assert(sizeof(_Tp) != 0, "cannot allocate incomplete types");
+#endif
+
 	if (__n > this->_M_max_size())
 	  std::__throw_bad_alloc();
 

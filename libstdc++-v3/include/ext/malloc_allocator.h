@@ -99,9 +99,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // NB: __n is permitted to be 0.  The C++ standard says nothing
       // about what the return value is when __n == 0.
-      _Tp*
+      _GLIBCXX_NODISCARD _Tp*
       allocate(size_type __n, const void* = 0)
       {
+#if __cplusplus >= 201103L
+	 // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	 // 3308. std::allocator<void>().allocate(n)
+	 static_assert(sizeof(_Tp) != 0, "cannot allocate incomplete types");
+#endif
+
 	if (__n > this->_M_max_size())
 	  std::__throw_bad_alloc();
 
