@@ -5238,6 +5238,8 @@ typedef struct _rs6000_cost_data
   /* For each vectorized loop, this var holds TRUE iff a non-memory vector
      instruction is needed by the vectorization.  */
   bool vect_nonmem;
+  /* Indicates this is costing for the scalar version of a loop or block.  */
+  bool costing_for_scalar;
 } rs6000_cost_data;
 
 /* Test for likely overcommitment of vector hardware resources.  If a
@@ -5258,6 +5260,12 @@ rs6000_density_test (rs6000_cost_data *data)
   loop_vec_info loop_vinfo = loop_vec_info_for_loop (data->loop_info);
   int vec_cost = data->cost[vect_body], not_vec_cost = 0;
   int i, density_pct;
+
+  /* This density test only cares about the cost of vector version of the
+     loop, so immediately return if we are passed costing for the scalar
+     version (namely computing single scalar iteration cost).  */
+  if (data->costing_for_scalar)
+    return;
 
   for (i = 0; i < nbbs; i++)
     {
@@ -5296,7 +5304,7 @@ rs6000_density_test (rs6000_cost_data *data)
 /* Implement targetm.vectorize.init_cost.  */
 
 static void *
-rs6000_init_cost (struct loop *loop_info, bool)
+rs6000_init_cost (struct loop *loop_info, bool costing_for_scalar)
 {
   rs6000_cost_data *data = XNEW (struct _rs6000_cost_data);
   data->loop_info = loop_info;
@@ -5304,6 +5312,7 @@ rs6000_init_cost (struct loop *loop_info, bool)
   data->cost[vect_body]     = 0;
   data->cost[vect_epilogue] = 0;
   data->vect_nonmem = false;
+  data->costing_for_scalar = costing_for_scalar;
   return data;
 }
 
