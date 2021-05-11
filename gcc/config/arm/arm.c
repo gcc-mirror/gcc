@@ -18765,10 +18765,14 @@ cmse_nonsecure_call_inline_register_clear (void)
 		  imm = gen_int_mode (- lazy_store_stack_frame_size, SImode);
 		  add_insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
 						    stack_pointer_rtx, imm));
-		  arm_add_cfa_adjust_cfa_note (add_insn,
-					       - lazy_store_stack_frame_size,
-					       stack_pointer_rtx,
-					       stack_pointer_rtx);
+		  /* If we have the frame pointer, then it will be the
+		     CFA reg.  Otherwise, the stack pointer is the CFA
+		     reg, so we need to emit a CFA adjust.  */
+		  if (!frame_pointer_needed)
+		    arm_add_cfa_adjust_cfa_note (add_insn,
+						 - lazy_store_stack_frame_size,
+						 stack_pointer_rtx,
+						 stack_pointer_rtx);
 		  emit_insn (gen_lazy_store_multiple_insn (stack_pointer_rtx));
 		}
 	      /* Save VFP callee-saved registers.  */
@@ -18806,10 +18810,11 @@ cmse_nonsecure_call_inline_register_clear (void)
 		  rtx_insn *add_insn =
 		    emit_insn (gen_addsi3 (stack_pointer_rtx,
 					   stack_pointer_rtx, imm));
-		  arm_add_cfa_adjust_cfa_note (add_insn,
-					       lazy_store_stack_frame_size,
-					       stack_pointer_rtx,
-					       stack_pointer_rtx);
+		  if (!frame_pointer_needed)
+		    arm_add_cfa_adjust_cfa_note (add_insn,
+						 lazy_store_stack_frame_size,
+						 stack_pointer_rtx,
+						 stack_pointer_rtx);
 		}
 	      /* Restore VFP callee-saved registers.  */
 	      else
