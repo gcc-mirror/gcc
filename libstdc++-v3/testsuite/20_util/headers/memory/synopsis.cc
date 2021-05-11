@@ -20,6 +20,12 @@
 
 #include <memory>
 
+#if __cplusplus >= 201103L
+# define NOTHROW noexcept
+#else
+# define NOTHROW
+#endif
+
 namespace std {
   //  lib.default.allocator, the default allocator:
   template <class T> class allocator;
@@ -40,7 +46,7 @@ namespace std {
 
   //  lib.temporary.buffer, temporary buffers:
   template <class T>
-  pair<T*,ptrdiff_t> get_temporary_buffer(ptrdiff_t n);
+  pair<T*,ptrdiff_t> get_temporary_buffer(ptrdiff_t n) NOTHROW;
   template <class T>
   void return_temporary_buffer(T* p);
 

@@ -1,5 +1,5 @@
-// FIXME: This should use { target { ! c++20 } }
-// { dg-do compile }
+// FIXME: This should use { target { c++11 && { ! c++20 } } }
+// { dg-do compile { target { c++11 } } }
 
 #include <memory>
 
