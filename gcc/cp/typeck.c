@@ -7274,7 +7274,11 @@ build_x_compound_expr (location_t loc, tree op1, tree op2,
     {
       if (type_dependent_expression_p (op1)
 	  || type_dependent_expression_p (op2))
-	return build_min_nt_loc (loc, COMPOUND_EXPR, op1, op2);
+	{
+	  result = build_min_nt_loc (loc, COMPOUND_EXPR, op1, op2);
+	  maybe_save_operator_binding (result);
+	  return result;
+	}
       op1 = build_non_dependent_expr (op1);
       op2 = build_non_dependent_expr (op2);
     }
@@ -8938,7 +8942,6 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
   tree orig_lhs = lhs;
   tree orig_rhs = rhs;
   tree overload = NULL_TREE;
-  tree op = build_nt (modifycode, NULL_TREE, NULL_TREE);
 
   if (lhs == error_mark_node || rhs == error_mark_node)
     return cp_expr (error_mark_node, loc);
@@ -8948,9 +8951,12 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
       if (modifycode == NOP_EXPR
 	  || type_dependent_expression_p (lhs)
 	  || type_dependent_expression_p (rhs))
-        return build_min_nt_loc (loc, MODOP_EXPR, lhs,
-				 build_min_nt_loc (loc, modifycode, NULL_TREE,
-						   NULL_TREE), rhs);
+	{
+	  tree op = build_min_nt_loc (loc, modifycode, NULL_TREE, NULL_TREE);
+	  tree rval = build_min_nt_loc (loc, MODOP_EXPR, lhs, op, rhs);
+	  maybe_save_operator_binding (rval);
+	  return rval;
+	}
 
       lhs = build_non_dependent_expr (lhs);
       rhs = build_non_dependent_expr (rhs);
@@ -8958,6 +8964,7 @@ build_x_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 
   if (modifycode != NOP_EXPR)
     {
+      tree op = build_nt (modifycode, NULL_TREE, NULL_TREE);
       tree rval = build_new_op (loc, MODIFY_EXPR, LOOKUP_NORMAL,
 				lhs, rhs, op, &overload, complain);
       if (rval)
