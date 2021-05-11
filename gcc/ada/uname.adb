@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,15 +23,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Einfo;    use Einfo;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Einfo;          use Einfo;
+with Einfo.Utils;    use Einfo.Utils;
 with Hostparm;
-with Lib;      use Lib;
-with Nlists;   use Nlists;
-with Output;   use Output;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Output;         use Output;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
 
 package body Uname is
 

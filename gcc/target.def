@@ -2004,9 +2004,11 @@ DEFHOOK
  "allocates three unsigned integers for accumulating costs for the prologue, "
  "body, and epilogue of the loop or basic block.  If @var{loop_info} is "
  "non-NULL, it identifies the loop being vectorized; otherwise a single block "
- "is being vectorized.",
+ "is being vectorized.  If @var{costing_for_scalar} is true, it indicates the "
+ "current cost model is for the scalar version of a loop or block; otherwise "
+ "it is for the vector version.",
  void *,
- (class loop *loop_info),
+ (class loop *loop_info, bool costing_for_scalar),
  default_init_cost)
 
 /* Target function to record N statements of the given kind using the
@@ -2714,6 +2716,18 @@ DEFHOOK
 The default definition returns true.",
  bool, (machine_mode mode, rtx x),
  hook_bool_mode_rtx_true)
+
+/* True if X is a TLS operand whose value should be pre-computed.  */
+DEFHOOK
+(precompute_tls_p,
+ "This hook returns true if @var{x} is a TLS operand on the target\n\
+machine that should be pre-computed when used as the argument in a call.\n\
+You can assume that @var{x} satisfies @code{CONSTANT_P}, so you need not \n\
+check this.\n\
+\n\
+The default definition returns false.",
+ bool, (machine_mode mode, rtx x),
+ hook_bool_mode_rtx_false)
 
 /* True if the constant X cannot be placed in the constant pool.  */
 DEFHOOK
@@ -3631,6 +3645,15 @@ move would be greater than that of a library call.",
  default_use_by_pieces_infrastructure_p)
 
 DEFHOOK
+(overlap_op_by_pieces_p,
+ "This target hook should return true if when the @code{by_pieces}\n\
+infrastructure is used, an offset adjusted unaligned memory operation\n\
+in the smallest integer mode for the last piece operation of a memory\n\
+region can be generated to avoid doing more than one smaller operations.",
+ bool, (void),
+ hook_bool_void_false)
+
+DEFHOOK
 (compare_by_pieces_branch_ratio,
  "When expanding a block comparison in MODE, gcc can try to reduce the\n\
 number of branches at the expense of more memory operations.  This hook\n\
@@ -3975,7 +3998,7 @@ filling in a single size corresponding to each hard register;\n\
    at by the second argument should be set to -1.  */
 DEFHOOK
 (fixed_condition_code_regs,
- "On targets which do not use @code{(cc0)}, and which use a hard\n\
+ "On targets which use a hard\n\
 register rather than a pseudo-register to hold condition codes, the\n\
 regular CSE passes are often not able to identify cases in which the\n\
 hard register is set to a common value.  Use this hook to enable a\n\

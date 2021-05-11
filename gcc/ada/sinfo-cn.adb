@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,27 +30,54 @@
 --  general manner, but in some specific cases, the fields of related nodes
 --  have been deliberately layed out in a manner that permits such alteration.
 
-with Atree;    use Atree;
-with Snames;   use Snames;
+with Atree;          use Atree;
+with Snames;         use Snames;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
 
 package body Sinfo.CN is
 
-   use Atree.Unchecked_Access;
-   --  This package is one of the few packages which is allowed to make direct
-   --  references to tree nodes (since it is in the business of providing a
-   --  higher level of tree access which other clients are expected to use and
-   --  which implements checks).
+   procedure Assert_Expression_Fields_Zero (N : Node_Id);
+   --  Asserts that all fields documented in Sinfo as "plus fields for
+   --  expression" have their initial zero value. Note that N_Operator_Symbol
+   --  is not documented as having "plus fields for expression", but it is in
+   --  N_Subexpr, so it does.
+   --  ????This is redundant with Check_Vanishing_Fields in Atree.
+
+   -----------------------------------
+   -- Assert_Expression_Fields_Zero --
+   -----------------------------------
+
+   procedure Assert_Expression_Fields_Zero (N : Node_Id) is
+   begin
+      pragma Assert (Paren_Count (N) = 0);
+      pragma Assert (No (Etype (N)));
+      pragma Assert (not Is_Overloaded (N));
+      pragma Assert (not Is_Static_Expression (N));
+      pragma Assert (not Raises_Constraint_Error (N));
+      pragma Assert (not Must_Not_Freeze (N));
+      pragma Assert (not Do_Range_Check (N));
+      pragma Assert (not Has_Dynamic_Length_Check (N));
+      pragma Assert (not Assignment_OK (N));
+      pragma Assert (not Is_Controlling_Actual (N));
+   end Assert_Expression_Fields_Zero;
 
    ------------------------------------------------------------
    -- Change_Character_Literal_To_Defining_Character_Literal --
    ------------------------------------------------------------
 
    procedure Change_Character_Literal_To_Defining_Character_Literal
-     (N : in out Node_Id)
+     (N : Node_Id)
    is
    begin
-      Set_Nkind (N, N_Defining_Character_Literal);
-      N := Extend_Node (N);
+      Reinit_Field_To_Zero (N, Char_Literal_Value);
+--  ????pragma Assert (No (Node2 (N))); -- Char_Literal_Value is Uint2 out of r
+      pragma Assert (No (Entity (N)));
+      pragma Assert (No (Associated_Node (N)));
+      pragma Assert (not Has_Private_View (N));
+      Assert_Expression_Fields_Zero (N);
+
+      Extend_Node (N);
    end Change_Character_Literal_To_Defining_Character_Literal;
 
    ------------------------------------
@@ -62,17 +89,27 @@ package body Sinfo.CN is
       Set_Do_Overflow_Check (N, False);
       Set_Do_Tag_Check (N, False);
       Set_Do_Length_Check (N, False);
-      Set_Nkind (N, N_Unchecked_Type_Conversion);
+      Mutate_Nkind (N, N_Unchecked_Type_Conversion);
    end Change_Conversion_To_Unchecked;
 
    ----------------------------------------------
    -- Change_Identifier_To_Defining_Identifier --
    ----------------------------------------------
 
-   procedure Change_Identifier_To_Defining_Identifier (N : in out Node_Id) is
+   procedure Change_Identifier_To_Defining_Identifier (N : Node_Id) is
    begin
-      Set_Nkind (N, N_Defining_Identifier);
-      N := Extend_Node (N);
+      pragma Assert (No (Entity (N)));
+      pragma Assert (No (Associated_Node (N)));
+      pragma Assert (No (Original_Discriminant (N)));
+      pragma Assert (not Is_Elaboration_Checks_OK_Node (N));
+      pragma Assert (not Is_SPARK_Mode_On_Node (N));
+      pragma Assert (not Is_Elaboration_Warnings_OK_Node (N));
+      pragma Assert (not Has_Private_View (N));
+      pragma Assert (not Redundant_Use (N));
+      pragma Assert (not Atomic_Sync_Required (N));
+      Assert_Expression_Fields_Zero (N);
+
+      Extend_Node (N);
    end Change_Identifier_To_Defining_Identifier;
 
    ---------------------------------------------
@@ -132,12 +169,18 @@ package body Sinfo.CN is
    --------------------------------------------------------
 
    procedure Change_Operator_Symbol_To_Defining_Operator_Symbol
-     (N : in out Node_Id)
+     (N : Node_Id)
    is
    begin
-      Set_Nkind (N, N_Defining_Operator_Symbol);
-      Set_Node2 (N, Empty); -- Clear unused Str2 field
-      N := Extend_Node (N);
+      Reinit_Field_To_Zero (N, Strval);
+--  ????pragma Assert (No (Node3 (N))); -- Strval is Str3, 0 is out of range
+      pragma Assert (No (Entity (N)));
+      pragma Assert (No (Associated_Node (N)));
+      pragma Assert (No (Etype (N)));
+      pragma Assert (not Has_Private_View (N));
+      Assert_Expression_Fields_Zero (N);
+
+      Extend_Node (N);
    end Change_Operator_Symbol_To_Defining_Operator_Symbol;
 
    ----------------------------------------------
@@ -146,8 +189,15 @@ package body Sinfo.CN is
 
    procedure Change_Operator_Symbol_To_String_Literal (N : Node_Id) is
    begin
-      Set_Nkind (N, N_String_Literal);
-      Set_Node1 (N, Empty); -- clear Name1 field
+      Reinit_Field_To_Zero (N, Chars);
+      Set_Entity (N, Empty);
+--  ????pragma Assert (No (Node1 (N))); -- Chars is Name1 out of range
+      pragma Assert (No (Entity (N)));
+      pragma Assert (No (Associated_Node (N)));
+      pragma Assert (No (Etype (N)));
+      pragma Assert (not Has_Private_View (N));
+
+      Mutate_Nkind (N, N_String_Literal);
    end Change_Operator_Symbol_To_String_Literal;
 
    ------------------------------------------------
@@ -156,7 +206,7 @@ package body Sinfo.CN is
 
    procedure Change_Selected_Component_To_Expanded_Name (N : Node_Id) is
    begin
-      Set_Nkind (N, N_Expanded_Name);
+      Mutate_Nkind (N, N_Expanded_Name);
       Set_Chars (N, Chars (Selector_Name (N)));
    end Change_Selected_Component_To_Expanded_Name;
 

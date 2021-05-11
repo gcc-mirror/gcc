@@ -694,13 +694,11 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
 	  error_at (info->loc, "mode mismatch in set: %smode vs %smode",
 		    GET_MODE_NAME (dmode), GET_MODE_NAME (smode));
 
-	/* If only one of the operands is VOIDmode, and PC or CC0 is
-	   not involved, it's probably a mistake.  */
+	/* If only one of the operands is VOIDmode, and PC is not involved,
+	   it's probably a mistake.  */
 	else if (dmode != smode
 		 && GET_CODE (dest) != PC
-		 && GET_CODE (dest) != CC0
 		 && GET_CODE (src) != PC
-		 && GET_CODE (src) != CC0
 		 && !CONST_INT_P (src)
 		 && !CONST_WIDE_INT_P (src)
 		 && GET_CODE (src) != CALL)

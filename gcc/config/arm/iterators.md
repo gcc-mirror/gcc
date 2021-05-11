@@ -285,6 +285,9 @@
 
 ;; Comparisons for vc<cmp>
 (define_code_iterator COMPARISONS [eq gt ge le lt])
+;; Comparisons for MVE
+(define_code_iterator MVE_COMPARISONS [eq ge geu gt gtu le lt ne])
+(define_code_iterator MVE_FP_COMPARISONS [eq ge gt le lt ne])
 
 ;; A list of ...
 (define_code_iterator IOR_XOR [ior xor])
@@ -336,7 +339,13 @@
 (define_code_attr cmp_op [(eq "eq") (gt "gt") (ge "ge") (lt "lt") (le "le")
                           (gtu "gt") (geu "ge")])
 
+(define_code_attr mve_cmp_op [(eq "eq") (gt "gt") (ge "ge") (lt "lt") (le "le")
+                              (gtu "hi") (geu "cs") (ne "ne")])
+
 (define_code_attr cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")])
+
+(define_code_attr mve_cmp_type [(eq "i") (gt "s") (ge "s") (lt "s") (le "s")
+                                (gtu "u") (geu "u") (ne "i")])
 
 (define_code_attr vfml_op [(plus "a") (minus "s")])
 
@@ -1279,13 +1288,12 @@
 		       (VCREATEQ_U "u") (VCREATEQ_S "s") (VSHRQ_N_S "s")
 		       (VSHRQ_N_U "u") (VCVTQ_N_FROM_F_S "s") (VSHLQ_U "u")
 		       (VCVTQ_N_FROM_F_U "u") (VADDLVQ_P_S "s") (VSHLQ_S "s")
-		       (VADDLVQ_P_U "u") (VCMPNEQ_U "u") (VCMPNEQ_S "s")
+		       (VADDLVQ_P_U "u") (VCMPNEQ_S "s")
 		       (VABDQ_M_S "s") (VABDQ_M_U "u") (VABDQ_S "s")
 		       (VABDQ_U "u") (VADDQ_N_S "s") (VADDQ_N_U "u")
 		       (VADDVQ_P_S "s")	(VADDVQ_P_U "u") (VBRSRQ_N_S "s")
-		       (VBRSRQ_N_U "u") (VCMPEQQ_S "s") (VCMPEQQ_U "u")
-		       (VCMPEQQ_N_S "s") (VCMPEQQ_N_U "u") (VCMPNEQ_N_S "s")
-		       (VCMPNEQ_N_U "u")
+		       (VBRSRQ_N_U "u") (VCMPEQQ_S "s")
+		       (VCMPEQQ_N_S "s") (VCMPNEQ_N_S "s")
 		       (VHADDQ_N_S "s") (VHADDQ_N_U "u") (VHADDQ_S "s")
 		       (VHADDQ_U "u") (VHSUBQ_N_S "s")	(VHSUBQ_N_U "u")
 		       (VHSUBQ_S "s") (VMAXQ_S "s") (VMAXQ_U "u") (VHSUBQ_U "u")
@@ -1541,16 +1549,16 @@
 (define_int_iterator VSHRQ_N [VSHRQ_N_S VSHRQ_N_U])
 (define_int_iterator VCVTQ_N_FROM_F [VCVTQ_N_FROM_F_S VCVTQ_N_FROM_F_U])
 (define_int_iterator VADDLVQ_P [VADDLVQ_P_S VADDLVQ_P_U])
-(define_int_iterator VCMPNEQ [VCMPNEQ_U VCMPNEQ_S])
+(define_int_iterator VCMPNEQ [VCMPNEQ_S])
 (define_int_iterator VSHLQ [VSHLQ_S VSHLQ_U])
 (define_int_iterator VABDQ [VABDQ_S VABDQ_U])
 (define_int_iterator VADDQ_N [VADDQ_N_S VADDQ_N_U])
 (define_int_iterator VADDVAQ [VADDVAQ_S VADDVAQ_U])
 (define_int_iterator VADDVQ_P [VADDVQ_P_U VADDVQ_P_S])
 (define_int_iterator VBRSRQ_N [VBRSRQ_N_U VBRSRQ_N_S])
-(define_int_iterator VCMPEQQ [VCMPEQQ_U VCMPEQQ_S])
-(define_int_iterator VCMPEQQ_N [VCMPEQQ_N_S VCMPEQQ_N_U])
-(define_int_iterator VCMPNEQ_N [VCMPNEQ_N_U VCMPNEQ_N_S])
+(define_int_iterator VCMPEQQ [VCMPEQQ_S])
+(define_int_iterator VCMPEQQ_N [VCMPEQQ_N_S])
+(define_int_iterator VCMPNEQ_N [VCMPNEQ_N_S])
 (define_int_iterator VHADDQ [VHADDQ_S VHADDQ_U])
 (define_int_iterator VHADDQ_N [VHADDQ_N_U VHADDQ_N_S])
 (define_int_iterator VHSUBQ [VHSUBQ_S VHSUBQ_U])

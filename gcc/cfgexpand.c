@@ -2795,7 +2795,10 @@ expand_call_stmt (gcall *stmt)
       CALL_EXPR_ARG (exp, i) = arg;
     }
 
-  if (gimple_has_side_effects (stmt))
+  if (gimple_has_side_effects (stmt)
+      /* ???  Downstream in expand_expr_real_1 we assume that expressions
+	 w/o side-effects do not throw so work around this here.  */
+      || stmt_could_throw_p (cfun, stmt))
     TREE_SIDE_EFFECTS (exp) = 1;
 
   if (gimple_call_nothrow_p (stmt))
@@ -6053,7 +6056,7 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
   /* Expand implicit goto and convert goto_locus.  */
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      if (e->goto_locus != UNKNOWN_LOCATION)
+      if (e->goto_locus != UNKNOWN_LOCATION || !stmt)
 	set_curr_insn_location (e->goto_locus);
       if ((e->flags & EDGE_FALLTHRU) && e->dest != bb->next_bb)
 	{

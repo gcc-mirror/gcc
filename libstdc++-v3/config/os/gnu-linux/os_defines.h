@@ -33,7 +33,7 @@
 // System-specific #define, typedefs, corrections, etc, go here.  This
 // file will come before all others.
 
-// This keeps isanum, et al from being propagated as macros.
+// This keeps isalnum, et al from being propagated as macros.
 #define __NO_CTYPE 1
 
 #include <features.h>

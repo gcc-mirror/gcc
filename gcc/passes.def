@@ -45,7 +45,6 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_warn_function_return);
   NEXT_PASS (pass_coroutine_early_expand_ifns);
   NEXT_PASS (pass_expand_omp);
-  NEXT_PASS (pass_warn_printf);
   NEXT_PASS (pass_walloca, /*strict_mode_p=*/true);
   NEXT_PASS (pass_build_cgraph_edges);
   TERMINATE_PASS_LIST (all_lowering_passes)
@@ -58,6 +57,7 @@ along with GCC; see the file COPYING3.  If not see
   PUSH_INSERT_PASSES_WITHIN (pass_build_ssa_passes)
       NEXT_PASS (pass_fixup_cfg);
       NEXT_PASS (pass_build_ssa);
+      NEXT_PASS (pass_warn_printf);
       NEXT_PASS (pass_warn_nonnull_compare);
       NEXT_PASS (pass_early_warn_uninitialized);
       NEXT_PASS (pass_ubsan);
@@ -210,7 +210,11 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_merge_phi);
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, true /* warn_array_bounds_p */);
+      NEXT_PASS (pass_dse);
       NEXT_PASS (pass_dce);
+      /* pass_stdarg is always run and at this point we execute
+         TODO_remove_unused_locals to prune CLOBBERs of dead
+	 variables which are otherwise a churn on alias walkings.  */
       NEXT_PASS (pass_stdarg);
       NEXT_PASS (pass_call_cdce);
       NEXT_PASS (pass_cselim);
@@ -236,7 +240,6 @@ along with GCC; see the file COPYING3.  If not see
       /* Identify paths that should never be executed in a conforming
 	 program and isolate those paths.  */
       NEXT_PASS (pass_isolate_erroneous_paths);
-      NEXT_PASS (pass_dse);
       NEXT_PASS (pass_reassoc, true /* insert_powi_p */);
       NEXT_PASS (pass_dce);
       NEXT_PASS (pass_forwprop);
@@ -254,6 +257,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_sancov);
       NEXT_PASS (pass_asan);
       NEXT_PASS (pass_tsan);
+      NEXT_PASS (pass_dse);
       NEXT_PASS (pass_dce);
       /* Pass group that runs when 1) enabled, 2) there are loops
 	 in the function.  Make sure to run pass_fix_loops before
@@ -332,8 +336,9 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_thread_jumps);
       NEXT_PASS (pass_vrp, false /* warn_array_bounds_p */);
       /* Threading can leave many const/copy propagations in the IL.
-	 Clean them up.  */
-      NEXT_PASS (pass_copy_prop);
+	 Clean them up.  Instead of just copy_prop, we use ccp to
+	 compute alignment and nonzero bits.  */
+      NEXT_PASS (pass_ccp, true /* nonzero_p */);
       NEXT_PASS (pass_warn_restrict);
       NEXT_PASS (pass_dse);
       NEXT_PASS (pass_cd_dce, true /* update_address_taken_p */);

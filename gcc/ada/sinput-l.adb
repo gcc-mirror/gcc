@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,26 +24,29 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Fname;    use Fname;
-with Lib;      use Lib;
-with Opt;      use Opt;
-with Osint;    use Osint;
-with Output;   use Output;
-with Prep;     use Prep;
-with Prepcomp; use Prepcomp;
-with Scans;    use Scans;
-with Scn;      use Scn;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with System;   use System;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Fname;          use Fname;
+with Lib;            use Lib;
+with Opt;            use Opt;
+with Osint;          use Osint;
+with Output;         use Output;
+with Prep;           use Prep;
+with Prepcomp;       use Prepcomp;
+with Scans;          use Scans;
+with Scn;            use Scn;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Snames;         use Snames;
+with System;         use System;
 
-with System.OS_Lib; use System.OS_Lib;
+with System.OS_Lib;  use System.OS_Lib;
 
 package body Sinput.L is
 

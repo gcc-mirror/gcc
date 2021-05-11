@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,29 +23,37 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Checks;   use Checks;
-with Einfo;    use Einfo;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Debug;          use Debug;
 with Exp_Put_Image;
-with Exp_Util; use Exp_Util;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Rtsfind;  use Rtsfind;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
-with Urealp;   use Urealp;
+with Exp_Util;       use Exp_Util;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Rtsfind;        use Rtsfind;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
+
+with System.Perfect_Hash_Generators;
 
 package body Exp_Imgv is
 
@@ -65,20 +73,92 @@ package body Exp_Imgv is
    ------------------------------------
 
    procedure Build_Enumeration_Image_Tables (E : Entity_Id; N : Node_Id) is
-      Loc : constant Source_Ptr := Sloc (E);
+      Loc          : constant Source_Ptr := Sloc (E);
+      In_Main_Unit : constant Boolean    := In_Extended_Main_Code_Unit (Loc);
 
+      Act  : List_Id;
       Eind : Entity_Id;
       Estr : Entity_Id;
+      H_Id : Entity_Id;
+      H_OK : Boolean;
+      H_Sp : Node_Id;
       Ind  : List_Id;
       Ityp : Node_Id;
       Len  : Nat;
       Lit  : Entity_Id;
       Nlit : Nat;
+      S_Id : Entity_Id;
+      S_N  : Nat;
       Str  : String_Id;
+
+      package SPHG renames System.Perfect_Hash_Generators;
 
       Saved_SSO : constant Character := Opt.Default_SSO;
       --  Used to save the current scalar storage order during the generation
       --  of the literal lookup table.
+
+      Serial_Number_Budget : constant := 50;
+      --  We may want to compute a perfect hash function for use by the Value
+      --  attribute. However computing this function is costly and, therefore,
+      --  cannot be done when compiling every unit where the enumeration type
+      --  is referenced, so we do it only when compiling the unit where it is
+      --  declared. This means that we may need to control the internal serial
+      --  numbers of this unit, or else we would risk generating public symbols
+      --  with mismatched names later on. The strategy for this is to allocate
+      --  a fixed budget of serial numbers to be spent from a specified point
+      --  until the end of the processing and to make sure that it is always
+      --  exactly spent on all possible paths from this point.
+
+      Threshold : constant Nat :=
+        (if Is_Library_Level_Entity (E)
+           or else not Always_Compatible_Rep_On_Target
+         then 3
+         else Nat'Last);
+      --  Threshold above which we want to generate the hash function in the
+      --  default case. We avoid doing it if this would cause a trampoline to
+      --  be generated because the type is local and descriptors are not used.
+
+      Threshold_For_Size : constant Nat := Nat'Max (Threshold, 9);
+      --  But the function and its tables take a bit of space so the threshold
+      --  is raised when compiling for size.
+
+      procedure Append_Table_To
+        (L    : List_Id;
+         E    : Entity_Id;
+         UB   : Nat;
+         Ctyp : Entity_Id;
+         V    : List_Id);
+      --  Append to L the declaration of E as a constant array of range 0 .. UB
+      --  and component type Ctyp with initial value V.
+
+      ---------------------
+      -- Append_Table_To --
+      ---------------------
+
+      procedure Append_Table_To
+        (L    : List_Id;
+         E    : Entity_Id;
+         UB   : Nat;
+         Ctyp : Entity_Id;
+         V    : List_Id)
+      is
+      begin
+         Append_To (L,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => E,
+             Constant_Present    => True,
+             Object_Definition   =>
+               Make_Constrained_Array_Definition (Loc,
+                 Discrete_Subtype_Definitions => New_List (
+                   Make_Range (Loc,
+                     Low_Bound  => Make_Integer_Literal (Loc, 0),
+                     High_Bound => Make_Integer_Literal (Loc, UB))),
+                 Component_Definition =>
+                   Make_Component_Definition (Loc,
+                     Aliased_Present    => False,
+                     Subtype_Indication => New_Occurrence_Of (Ctyp, Loc))),
+             Expression          => Make_Aggregate (Loc, Expressions => V)));
+      end Append_Table_To;
 
    begin
       --  Nothing to do for types other than a root enumeration type
@@ -99,10 +179,10 @@ package body Exp_Imgv is
       Lit := First_Literal (E);
       Len := 1;
       Nlit := 0;
+      H_OK := False;
 
       loop
-         Append_To (Ind,
-           Make_Integer_Literal (Loc, UI_From_Int (Len)));
+         Append_To (Ind, Make_Integer_Literal (Loc, UI_From_Int (Len)));
 
          exit when No (Lit);
          Nlit := Nlit + 1;
@@ -114,6 +194,9 @@ package body Exp_Imgv is
          end if;
 
          Store_String_Chars (Name_Buffer (1 .. Name_Len));
+         if In_Main_Unit then
+            SPHG.Insert (Name_Buffer (1 .. Name_Len));
+         end if;
          Len := Len + Int (Name_Len);
          Next_Literal (Lit);
       end loop;
@@ -148,7 +231,7 @@ package body Exp_Imgv is
 
       --  Generate literal table
 
-      Insert_Actions (N,
+      Act :=
         New_List (
           Make_Object_Declaration (Loc,
             Defining_Identifier => Estr,
@@ -157,27 +240,432 @@ package body Exp_Imgv is
               New_Occurrence_Of (Standard_String, Loc),
             Expression          =>
               Make_String_Literal (Loc,
-                Strval => Str)),
+                Strval => Str)));
 
-          Make_Object_Declaration (Loc,
-            Defining_Identifier => Eind,
-            Constant_Present    => True,
+      --  Generate index table
 
-            Object_Definition =>
-              Make_Constrained_Array_Definition (Loc,
-                Discrete_Subtype_Definitions => New_List (
-                  Make_Range (Loc,
-                    Low_Bound  => Make_Integer_Literal (Loc, 0),
-                    High_Bound => Make_Integer_Literal (Loc, Nlit))),
-                Component_Definition =>
-                  Make_Component_Definition (Loc,
-                    Aliased_Present    => False,
-                    Subtype_Indication => New_Occurrence_Of (Ityp, Loc))),
+      Append_Table_To (Act, Eind, Nlit, Ityp, Ind);
 
-            Expression          =>
-              Make_Aggregate (Loc,
-                Expressions => Ind))),
-        Suppress => All_Checks);
+      --  If the number of literals is not greater than Threshold, then we are
+      --  done. Otherwise we compute a (perfect) hash function for use by the
+      --  Value attribute.
+
+      if Nlit > Threshold then
+         --  We start to count serial numbers from here
+
+         S_N := Increment_Serial_Number;
+
+         --  Generate specification of hash function
+
+         H_Id :=
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Chars (E), 'H'));
+         Mutate_Ekind    (H_Id, E_Function);
+         Set_Is_Internal (H_Id);
+
+         if not Debug_Generated_Code then
+            Set_Debug_Info_Off (H_Id);
+         end if;
+
+         Set_Lit_Hash (E, H_Id);
+
+         S_Id := Make_Temporary (Loc, 'S');
+
+         H_Sp := Make_Function_Specification (Loc,
+           Defining_Unit_Name       => H_Id,
+           Parameter_Specifications => New_List (
+             Make_Parameter_Specification (Loc,
+               Defining_Identifier => S_Id,
+               Parameter_Type      =>
+                 New_Occurrence_Of (Standard_String, Loc))),
+           Result_Definition       =>
+             New_Occurrence_Of (Standard_Natural, Loc));
+
+         --  If the unit where the type is declared is the main unit, and the
+         --  number of literals is greater than Threshold_For_Size when we are
+         --  optimizing for size, and -gnatd_h is not specified, try to compute
+         --  the hash function.
+
+         if In_Main_Unit
+           and then (Optimize_Size = 0 or else Nlit > Threshold_For_Size)
+           and then not Debug_Flag_Underscore_H
+         then
+            declare
+               LB : constant Positive := 2 * Positive (Nlit) + 1;
+               UB : constant Positive := LB + 24;
+
+            begin
+               --  Try at most 25 * 4 times to compute the hash function before
+               --  giving up and using a linear search for the Value attribute.
+
+               for V in LB .. UB loop
+                  begin
+                     SPHG.Initialize (4321, V, SPHG.Memory_Space, Tries => 4);
+                     SPHG.Compute ("");
+                     H_OK := True;
+                     exit;
+                  exception
+                     when SPHG.Too_Many_Tries => null;
+                  end;
+               end loop;
+            end;
+         end if;
+
+         --  If the hash function has been successfully computed, 4 more tables
+         --  named P, T1, T2 and G are needed. The hash function is of the form
+
+         --     function Hash (S : String) return Natural is
+         --        xxxP  : constant array (0 .. X) of Natural    = [...];
+         --        xxxT1 : constant array (0 .. Y) of Index_Type = [...];
+         --        xxxT2 : constant array (0 .. Y) of Index_Type = [...];
+         --        xxxG  : constant array (0 .. Z) of Index_Type = [...];
+
+         --        F    : constant Natural := S'First - 1;
+         --        L    : constant Natural := S'Length;
+         --        A, B : Natural := 0;
+         --        J    : Natural;
+
+         --     begin
+         --        for K in P'Range loop
+         --           exit when L < P (K);
+         --           J := Character'Pos (S (P (K) + F));
+         --           A := (A + Natural (T1 (K) * J)) mod N;
+         --           B := (B + Natural (T2 (K) * J)) mod N;
+         --        end loop;
+
+         --        return (Natural (G (A)) + Natural (G (B))) mod M;
+         --     end Hash;
+
+         --  where N is the length of G and M the number of literals. Note that
+         --  we declare the tables inside the function for two reasons: first,
+         --  their analysis creates array subtypes and thus their concatenation
+         --  operators which are homonyms of the concatenation operator and may
+         --  change the homonym number of user operators declared in the scope;
+         --  second, the code generator can fold the values in the tables when
+         --  they are small and avoid emitting them in the final object code.
+
+         if H_OK then
+            declare
+               Siz, L1, L2 : Natural;
+               I           : Int;
+
+               Pos,  T1,  T2,  G  : List_Id;
+               EPos, ET1, ET2, EG : Entity_Id;
+
+               F, L, A, B, J, K : Entity_Id;
+               Body_Decls       : List_Id;
+               Body_Stmts       : List_Id;
+               Loop_Stmts       : List_Id;
+
+            begin
+               Body_Decls := New_List;
+
+               --  Generate position table
+
+               SPHG.Define (SPHG.Character_Position, Siz, L1, L2);
+               Pos := New_List;
+               for J in 0 .. L1 - 1 loop
+                  I := Int (SPHG.Value (SPHG.Character_Position, J));
+                  Append_To (Pos, Make_Integer_Literal (Loc, UI_From_Int (I)));
+               end loop;
+
+               EPos :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (E), 'P'));
+
+               Append_Table_To
+                 (Body_Decls, EPos, Nat (L1 - 1), Standard_Natural, Pos);
+
+               --  Generate function table 1
+
+               SPHG.Define (SPHG.Function_Table_1, Siz, L1, L2);
+               T1 := New_List;
+               for J in 0 .. L1 - 1 loop
+                  I := Int (SPHG.Value (SPHG.Function_Table_1, J));
+                  Append_To (T1, Make_Integer_Literal (Loc, UI_From_Int (I)));
+               end loop;
+
+               ET1 :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (E), "T1"));
+
+               Ityp :=
+                 Small_Integer_Type_For (UI_From_Int (Int (Siz)), Uns => True);
+               Append_Table_To (Body_Decls, ET1, Nat (L1 - 1), Ityp, T1);
+
+               --  Generate function table 2
+
+               SPHG.Define (SPHG.Function_Table_2, Siz, L1, L2);
+               T2 := New_List;
+               for J in 0 .. L1 - 1 loop
+                  I := Int (SPHG.Value (SPHG.Function_Table_2, J));
+                  Append_To (T2, Make_Integer_Literal (Loc, UI_From_Int (I)));
+               end loop;
+
+               ET2 :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (E), "T2"));
+
+               Ityp :=
+                 Small_Integer_Type_For (UI_From_Int (Int (Siz)), Uns => True);
+               Append_Table_To (Body_Decls, ET2, Nat (L1 - 1), Ityp, T2);
+
+               --  Generate graph table
+
+               SPHG.Define (SPHG.Graph_Table, Siz, L1, L2);
+               G := New_List;
+               for J in 0 .. L1 - 1 loop
+                  I := Int (SPHG.Value (SPHG.Graph_Table, J));
+                  Append_To (G, Make_Integer_Literal (Loc, UI_From_Int (I)));
+               end loop;
+
+               EG :=
+                 Make_Defining_Identifier (Loc,
+                   Chars => New_External_Name (Chars (E), 'G'));
+
+               Ityp :=
+                 Small_Integer_Type_For (UI_From_Int (Int (Siz)), Uns => True);
+               Append_Table_To (Body_Decls, EG, Nat (L1 - 1), Ityp, G);
+
+               F := Make_Temporary (Loc, 'F');
+
+               Append_To (Body_Decls,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => F,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc),
+                   Expression          =>
+                     Make_Op_Subtract (Loc,
+                       Left_Opnd  =>
+                         Make_Attribute_Reference (Loc,
+                           Prefix => New_Occurrence_Of (S_Id, Loc),
+                           Attribute_Name => Name_First),
+                       Right_Opnd =>
+                         Make_Integer_Literal (Loc, 1))));
+
+               L := Make_Temporary (Loc, 'L');
+
+               Append_To (Body_Decls,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => L,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc),
+                   Expression          =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (S_Id, Loc),
+                       Attribute_Name => Name_Length)));
+
+               A := Make_Temporary (Loc, 'A');
+
+               Append_To (Body_Decls,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => A,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc),
+                   Expression          => Make_Integer_Literal (Loc, 0)));
+
+               B := Make_Temporary (Loc, 'B');
+
+               Append_To (Body_Decls,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => B,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc),
+                   Expression          => Make_Integer_Literal (Loc, 0)));
+
+               J := Make_Temporary (Loc, 'J');
+
+               Append_To (Body_Decls,
+                 Make_Object_Declaration (Loc,
+                   Defining_Identifier => J,
+                   Object_Definition   =>
+                     New_Occurrence_Of (Standard_Natural, Loc)));
+
+               K := Make_Temporary (Loc, 'K');
+
+               --  Generate exit when L < P (K);
+
+               Loop_Stmts := New_List (
+                 Make_Exit_Statement (Loc,
+                   Condition =>
+                     Make_Op_Lt (Loc,
+                       Left_Opnd  => New_Occurrence_Of (L, Loc),
+                       Right_Opnd =>
+                         Make_Indexed_Component (Loc,
+                           Prefix      => New_Occurrence_Of (EPos, Loc),
+                           Expressions => New_List (
+                             New_Occurrence_Of (K, Loc))))));
+
+               --  Generate J := Character'Pos (S (P (K) + F));
+
+               Append_To (Loop_Stmts,
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (J, Loc),
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         New_Occurrence_Of (Standard_Character, Loc),
+                       Attribute_Name => Name_Pos,
+                       Expressions    => New_List (
+                         Make_Indexed_Component (Loc,
+                           Prefix      => New_Occurrence_Of (S_Id, Loc),
+                           Expressions => New_List (
+                              Make_Op_Add (Loc,
+                                Left_Opnd  =>
+                                  Make_Indexed_Component (Loc,
+                                    Prefix      =>
+                                      New_Occurrence_Of (EPos, Loc),
+                                  Expressions => New_List (
+                                    New_Occurrence_Of (K, Loc))),
+                                Right_Opnd =>
+                                  New_Occurrence_Of (F, Loc))))))));
+
+               --  Generate A := (A + Natural (T1 (K) * J)) mod N;
+
+               Append_To (Loop_Stmts,
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (A, Loc),
+                   Expression =>
+                     Make_Op_Mod (Loc,
+                       Left_Opnd  =>
+                          Make_Op_Add (Loc,
+                            Left_Opnd  => New_Occurrence_Of (A, Loc),
+                            Right_Opnd =>
+                              Make_Op_Multiply (Loc,
+                                Left_Opnd  =>
+                                  Convert_To (Standard_Natural,
+                                     Make_Indexed_Component (Loc,
+                                       Prefix      =>
+                                         New_Occurrence_Of (ET1, Loc),
+                                       Expressions => New_List (
+                                         New_Occurrence_Of (K, Loc)))),
+                                Right_Opnd => New_Occurrence_Of (J, Loc))),
+                       Right_Opnd => Make_Integer_Literal (Loc, Int (L1)))));
+
+               --  Generate B := (B + Natural (T2 (K) * J)) mod N;
+
+               Append_To (Loop_Stmts,
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (B, Loc),
+                   Expression =>
+                     Make_Op_Mod (Loc,
+                       Left_Opnd  =>
+                          Make_Op_Add (Loc,
+                            Left_Opnd  => New_Occurrence_Of (B, Loc),
+                            Right_Opnd =>
+                              Make_Op_Multiply (Loc,
+                                Left_Opnd  =>
+                                  Convert_To (Standard_Natural,
+                                     Make_Indexed_Component (Loc,
+                                       Prefix      =>
+                                         New_Occurrence_Of (ET2, Loc),
+                                       Expressions => New_List (
+                                         New_Occurrence_Of (K, Loc)))),
+                                Right_Opnd => New_Occurrence_Of (J, Loc))),
+                       Right_Opnd => Make_Integer_Literal (Loc, Int (L1)))));
+
+            --  Generate loop
+
+               Body_Stmts := New_List (
+                 Make_Implicit_Loop_Statement (N,
+                   Iteration_Scheme =>
+                     Make_Iteration_Scheme (Loc,
+                       Loop_Parameter_Specification =>
+                         Make_Loop_Parameter_Specification (Loc,
+                           Defining_Identifier         => K,
+                           Discrete_Subtype_Definition =>
+                             Make_Attribute_Reference (Loc,
+                               Prefix         =>
+                                 New_Occurrence_Of (EPos, Loc),
+                               Attribute_Name => Name_Range))),
+                   Statements       => Loop_Stmts));
+
+               --  Generate return (Natural (G (A)) + Natural (G (B))) mod M;
+
+               Append_To (Body_Stmts,
+                 Make_Simple_Return_Statement (Loc,
+                   Expression =>
+                     Make_Op_Mod (Loc,
+                       Left_Opnd  =>
+                         Make_Op_Add (Loc,
+                           Left_Opnd  =>
+                             Convert_To (Standard_Natural,
+                               Make_Indexed_Component (Loc,
+                                 Prefix      =>
+                                   New_Occurrence_Of (EG, Loc),
+                                 Expressions => New_List (
+                                   New_Occurrence_Of (A, Loc)))),
+                           Right_Opnd =>
+                             Convert_To (Standard_Natural,
+                               Make_Indexed_Component (Loc,
+                                 Prefix      =>
+                                   New_Occurrence_Of (EG, Loc),
+                                 Expressions => New_List (
+                                   New_Occurrence_Of (B, Loc))))),
+                       Right_Opnd => Make_Integer_Literal (Loc, Nlit))));
+
+               --  Generate final body
+
+               Append_To (Act,
+                 Make_Subprogram_Body (Loc,
+                   Specification => H_Sp,
+                   Declarations => Body_Decls,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc, Body_Stmts)));
+            end;
+
+         --  If we chose not to or did not manage to compute the hash function,
+         --  we need to build a dummy function always returning Natural'Last
+         --  because other units reference it if they use the Value attribute.
+
+         elsif In_Main_Unit then
+            declare
+               Body_Stmts : List_Id;
+
+            begin
+               --  Generate return Natural'Last
+
+               Body_Stmts := New_List (
+                 Make_Simple_Return_Statement (Loc,
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         =>
+                         New_Occurrence_Of (Standard_Natural, Loc),
+                       Attribute_Name => Name_Last)));
+
+               --  Generate body
+
+               Append_To (Act,
+                 Make_Subprogram_Body (Loc,
+                   Specification => H_Sp,
+                   Declarations => Empty_List,
+                   Handled_Statement_Sequence =>
+                     Make_Handled_Sequence_Of_Statements (Loc, Body_Stmts)));
+            end;
+
+         --  For the other units, just declare the function
+
+         else
+            Append_To (Act,
+              Make_Subprogram_Declaration (Loc, Specification => H_Sp));
+         end if;
+
+      else
+         Set_Lit_Hash (E, Empty);
+      end if;
+
+      if In_Main_Unit then
+         System.Perfect_Hash_Generators.Finalize;
+      end if;
+
+      Insert_Actions (N, Act, Suppress => All_Checks);
+
+      --  This is where we check that our budget of serial numbers has been
+      --  entirely spent, see the declaration of Serial_Number_Budget above.
+
+      if Nlit > Threshold then
+         Synchronize_Serial_Number (S_N + Serial_Number_Budget);
+      end if;
 
       --  Reset the scalar storage order to the saved value
 
@@ -233,7 +721,7 @@ package body Exp_Imgv is
 
    --    For floating-point types
    --      xx = Floating_Point
-   --      tv = Long_Long_Float (Expr)
+   --      tv = [Long_[Long_]]Float (Expr)
    --      pm = typ'Digits (typ = subtype of expression)
 
    --    For decimal fixed-point types
@@ -250,8 +738,8 @@ package body Exp_Imgv is
    --           typ'Aft
 
    --    For other ordinary fixed-point types
-   --      xx = Ordinary_Fixed_Point
-   --      tv = Long_Long_Float (Expr)
+   --      xx = Fixed
+   --      tv = Long_Float (Expr)
    --      pm = typ'Aft (typ = subtype of expression)
 
    --  For enumeration types other than those declared in package Standard
@@ -277,26 +765,124 @@ package body Exp_Imgv is
       Expr  : constant Node_Id    := Relocate_Node (First (Exprs));
       Pref  : constant Node_Id    := Prefix (N);
 
-      procedure Expand_User_Defined_Enumeration_Image;
+      procedure Expand_Standard_Boolean_Image;
+      --  Expand attribute 'Image in Standard.Boolean, avoiding string copy
+
+      procedure Expand_User_Defined_Enumeration_Image (Typ : Entity_Id);
       --  Expand attribute 'Image in user-defined enumeration types, avoiding
       --  string copy.
 
-      function Is_User_Defined_Enumeration_Type
-        (Typ : Entity_Id) return Boolean;
-      --  Return True if Typ is a user-defined enumeration type
+      -----------------------------------
+      -- Expand_Standard_Boolean_Image --
+      -----------------------------------
+
+      procedure Expand_Standard_Boolean_Image is
+         Ins_List : constant List_Id   := New_List;
+         S1_Id    : constant Entity_Id := Make_Temporary (Loc, 'S');
+         T_Id     : constant Entity_Id := Make_Temporary (Loc, 'T');
+         F_Id     : constant Entity_Id := Make_Temporary (Loc, 'F');
+         V_Id     : constant Entity_Id := Make_Temporary (Loc, 'V');
+
+      begin
+         --  We use a single 5-character string subtype throughout so that the
+         --  subtype of the string if-expression is constrained and, therefore,
+         --  does not force the creation of a temporary during analysis.
+
+         --  Generate:
+         --    subtype S1 is String (1 .. 5);
+
+         Append_To (Ins_List,
+           Make_Subtype_Declaration (Loc,
+             Defining_Identifier => S1_Id,
+             Subtype_Indication  =>
+               Make_Subtype_Indication (Loc,
+                 Subtype_Mark =>
+                   New_Occurrence_Of (Standard_String, Loc),
+                 Constraint   =>
+                   Make_Index_Or_Discriminant_Constraint (Loc,
+                     Constraints => New_List (
+                       Make_Range (Loc,
+                         Low_Bound  => Make_Integer_Literal (Loc, 1),
+                         High_Bound => Make_Integer_Literal (Loc, 5)))))));
+
+         --  Generate:
+         --    T : constant String (1 .. 5) := "TRUE ";
+
+         Start_String;
+         Store_String_Chars ("TRUE ");
+
+         Append_To (Ins_List,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => T_Id,
+             Object_Definition   =>
+               New_Occurrence_Of (S1_Id, Loc),
+             Constant_Present    => True,
+             Expression          => Make_String_Literal (Loc, End_String)));
+
+         --  Generate:
+         --    F : constant String (1 .. 5) := "FALSE";
+
+         Start_String;
+         Store_String_Chars ("FALSE");
+
+         Append_To (Ins_List,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => F_Id,
+             Object_Definition   =>
+               New_Occurrence_Of (S1_Id, Loc),
+             Constant_Present    => True,
+             Expression          => Make_String_Literal (Loc, End_String)));
+
+         --  Generate:
+         --    V : String (1 .. 5) renames (if Expr then T else F);
+
+         Append_To (Ins_List,
+           Make_Object_Renaming_Declaration (Loc,
+             Defining_Identifier => V_Id,
+             Subtype_Mark        =>
+               New_Occurrence_Of (S1_Id, Loc),
+             Name                =>
+               Make_If_Expression (Loc,
+                 Expressions => New_List (
+                   Duplicate_Subexpr (Expr),
+                   New_Occurrence_Of (T_Id, Loc),
+                   New_Occurrence_Of (F_Id, Loc)))));
+
+         --  Insert all the above declarations before N. We suppress checks
+         --  because everything is in range at this stage.
+
+         Insert_Actions (N, Ins_List, Suppress => All_Checks);
+
+         --  Final step is to rewrite the expression as a slice:
+         --  V (1 .. (if Expr then 4 else 5)) and analyze, again with no
+         --  checks, since we are sure that everything is OK.
+
+         Rewrite (N,
+           Make_Slice (Loc,
+              Prefix         => New_Occurrence_Of (V_Id, Loc),
+              Discrete_Range =>
+                Make_Range (Loc,
+                  Low_Bound  => Make_Integer_Literal (Loc, 1),
+                  High_Bound =>
+                    Make_If_Expression (Loc,
+                      Expressions => New_List (
+                        Duplicate_Subexpr (Expr),
+                        Make_Integer_Literal (Loc, 4),
+                        Make_Integer_Literal (Loc, 5))))));
+
+         Analyze_And_Resolve (N, Standard_String, Suppress => All_Checks);
+      end Expand_Standard_Boolean_Image;
 
       -------------------------------------------
       -- Expand_User_Defined_Enumeration_Image --
       -------------------------------------------
 
-      procedure Expand_User_Defined_Enumeration_Image is
+      procedure Expand_User_Defined_Enumeration_Image (Typ : Entity_Id) is
          Ins_List : constant List_Id   := New_List;
          P1_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
          P2_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
          P3_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
          P4_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
-         Ptyp     : constant Entity_Id := Entity (Pref);
-         Rtyp     : constant Entity_Id := Root_Type (Ptyp);
          S1_Id    : constant Entity_Id := Make_Temporary (Loc, 'S');
 
       begin
@@ -308,7 +894,7 @@ package body Exp_Imgv is
          end if;
 
          --  Generate:
-         --    P1 : constant Natural := Pos;
+         --    P1 : constant Natural := Typ'Pos (Typ?(Expr));
 
          Append_To (Ins_List,
            Make_Object_Declaration (Loc,
@@ -320,8 +906,8 @@ package body Exp_Imgv is
                Convert_To (Standard_Natural,
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Pos,
-                   Prefix         => New_Occurrence_Of (Ptyp, Loc),
-                   Expressions    => New_List (Expr)))));
+                   Prefix         => New_Occurrence_Of (Typ, Loc),
+                   Expressions    => New_List (OK_Convert_To (Typ, Expr))))));
 
          --  Compute the index of the string start, generating:
          --    P2 : constant Natural := call_put_enumN (P1);
@@ -336,7 +922,7 @@ package body Exp_Imgv is
                Convert_To (Standard_Natural,
                  Make_Indexed_Component (Loc,
                    Prefix      =>
-                     New_Occurrence_Of (Lit_Indexes (Rtyp), Loc),
+                     New_Occurrence_Of (Lit_Indexes (Typ), Loc),
                    Expressions =>
                      New_List (New_Occurrence_Of (P1_Id, Loc))))));
 
@@ -360,7 +946,7 @@ package body Exp_Imgv is
                   Convert_To (Standard_Natural,
                     Make_Indexed_Component (Loc,
                       Prefix      =>
-                        New_Occurrence_Of (Lit_Indexes (Rtyp), Loc),
+                        New_Occurrence_Of (Lit_Indexes (Typ), Loc),
                       Expressions =>
                         New_List (Add_Node)))));
          end;
@@ -383,7 +969,7 @@ package body Exp_Imgv is
                 Name                =>
                   Make_Slice (Loc,
                     Prefix         =>
-                      New_Occurrence_Of (Lit_Strings (Rtyp), Loc),
+                      New_Occurrence_Of (Lit_Strings (Typ), Loc),
                     Discrete_Range =>
                       Make_Range (Loc,
                         Low_Bound  => New_Occurrence_Of (P2_Id, Loc),
@@ -391,7 +977,7 @@ package body Exp_Imgv is
          end;
 
          --  Generate:
-         --    subtype S1 is string (1 .. P3 - P2);
+         --    subtype S1 is String (1 .. P3 - P2);
 
          declare
             HB : constant Node_Id := New_Op_Node (N_Op_Subtract, Loc);
@@ -426,20 +1012,6 @@ package body Exp_Imgv is
          Analyze_And_Resolve (N, Standard_String);
       end Expand_User_Defined_Enumeration_Image;
 
-      --------------------------------------
-      -- Is_User_Defined_Enumeration_Type --
-      --------------------------------------
-
-      function Is_User_Defined_Enumeration_Type
-        (Typ : Entity_Id) return Boolean is
-      begin
-         return Ekind (Typ) = E_Enumeration_Type
-           and then Typ /= Standard_Boolean
-           and then Typ /= Standard_Character
-           and then Typ /= Standard_Wide_Character
-           and then Typ /= Standard_Wide_Wide_Character;
-      end Is_User_Defined_Enumeration_Type;
-
       --  Local variables
 
       Enum_Case : Boolean;
@@ -467,59 +1039,19 @@ package body Exp_Imgv is
          return;
       end if;
 
-      Ptyp := Entity (Pref);
+      Ptyp := Underlying_Type (Entity (Pref));
 
       --  Ada 2020 allows 'Image on private types, so fetch the underlying
       --  type to obtain the structure of the type. We use the base type,
-      --  not the root type, to handle properly derived types, but we use
-      --  the root type for enumeration types, because the literal map is
-      --  attached to the root. Should be inherited ???
+      --  not the root type for discrete types, to handle properly derived
+      --  types, but we use the root type for enumeration types, because the
+      --  literal map is attached to the root. Should be inherited ???
 
-      if Is_Enumeration_Type (Ptyp) then
+      if Is_Real_Type (Ptyp) or else Is_Enumeration_Type (Ptyp) then
          Rtyp := Underlying_Type (Root_Type (Ptyp));
       else
          Rtyp := Underlying_Type (Base_Type (Ptyp));
       end if;
-
-      --  Enable speed-optimized expansion of user-defined enumeration types
-      --  if we are compiling with optimizations enabled and enumeration type
-      --  literals are generated. Otherwise the call will be expanded into a
-      --  call to the runtime library.
-
-      if Optimization_Level > 0
-        and then not Global_Discard_Names
-        and then Is_User_Defined_Enumeration_Type (Rtyp)
-      then
-         Expand_User_Defined_Enumeration_Image;
-         return;
-      end if;
-
-      --  Build declarations of Snn and Pnn to be inserted
-
-      Ins_List := New_List (
-
-         --  Snn : String (1 .. typ'Width);
-
-         Make_Object_Declaration (Loc,
-            Defining_Identifier => Snn,
-            Object_Definition   =>
-              Make_Subtype_Indication (Loc,
-                Subtype_Mark => New_Occurrence_Of (Standard_String, Loc),
-                Constraint   =>
-                  Make_Index_Or_Discriminant_Constraint (Loc,
-                    Constraints => New_List (
-                      Make_Range (Loc,
-                        Low_Bound  => Make_Integer_Literal (Loc, 1),
-                        High_Bound =>
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => New_Occurrence_Of (Rtyp, Loc),
-                            Attribute_Name => Name_Width)))))),
-
-         --  Pnn : Natural;
-
-         Make_Object_Declaration (Loc,
-           Defining_Identifier => Pnn,
-           Object_Definition   => New_Occurrence_Of (Standard_Natural, Loc)));
 
       --  Set Imid (RE_Id of procedure to call), and Tent, target for the
       --  type conversion of the first argument for all possibilities.
@@ -535,8 +1067,17 @@ package body Exp_Imgv is
          return;
 
       elsif Rtyp = Standard_Boolean then
-         Imid := RE_Image_Boolean;
-         Tent := Rtyp;
+         --  Use inline expansion if the -gnatd_x switch is not passed to the
+         --  compiler. Otherwise expand into a call to the runtime.
+
+         if not Debug_Flag_Underscore_X then
+            Expand_Standard_Boolean_Image;
+            return;
+
+         else
+            Imid := RE_Image_Boolean;
+            Tent := Rtyp;
+         end if;
 
       --  For standard character, we have to select the version which handles
       --  soft hyphen correctly, based on the version of Ada in use (this is
@@ -631,14 +1172,26 @@ package body Exp_Imgv is
                Imid := RE_Image_Fixed128;
                Tent := RTE (RE_Integer_128);
             else
-               Imid := RE_Image_Ordinary_Fixed_Point;
-               Tent := Standard_Long_Long_Float;
+               Imid := RE_Image_Fixed;
+               Tent := Standard_Long_Float;
             end if;
          end;
 
       elsif Is_Floating_Point_Type (Rtyp) then
-         Imid := RE_Image_Floating_Point;
-         Tent := Standard_Long_Long_Float;
+         --  Short_Float and Float are the same type for GNAT
+
+         if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
+            Imid := RE_Image_Float;
+            Tent := Standard_Float;
+
+         elsif Rtyp = Standard_Long_Float then
+            Imid := RE_Image_Long_Float;
+            Tent := Standard_Long_Float;
+
+         else
+            Imid := RE_Image_Long_Long_Float;
+            Tent := Standard_Long_Long_Float;
+         end if;
 
       --  Only other possibility is user-defined enumeration type
 
@@ -666,9 +1219,14 @@ package body Exp_Imgv is
             Analyze_And_Resolve (N, Standard_String);
             return;
 
-         else
-            --  Here for enumeration type case
+         --  Use inline expansion if the -gnatd_x switch is not passed to the
+         --  compiler. Otherwise expand into a call to the runtime.
 
+         elsif not Debug_Flag_Underscore_X then
+            Expand_User_Defined_Enumeration_Image (Rtyp);
+            return;
+
+         else
             Ttyp := Component_Type (Etype (Lit_Indexes (Rtyp)));
 
             if Ttyp = Standard_Integer_8 then
@@ -695,25 +1253,11 @@ package body Exp_Imgv is
       --  Build first argument for call
 
       if Enum_Case then
-         declare
-            T : Entity_Id;
-         begin
-            --  In Ada 2020 we need the underlying type here, because 'Image is
-            --  allowed on private types. We have already checked the version
-            --  when resolving the attribute.
-
-            if Is_Private_Type (Ptyp) then
-               T := Rtyp;
-            else
-               T := Ptyp;
-            end if;
-
-            Arg_List := New_List (
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Pos,
-                Prefix         => New_Occurrence_Of (T, Loc),
-                Expressions    => New_List (Expr)));
-         end;
+         Arg_List := New_List (
+           Make_Attribute_Reference (Loc,
+             Attribute_Name => Name_Pos,
+             Prefix         => New_Occurrence_Of (Ptyp, Loc),
+             Expressions    => New_List (Expr)));
 
       --  AI12-0020: Ada 2020 allows 'Image for all types, including private
       --  types. If the full type is not a fixed-point type, then it is enough
@@ -725,6 +1269,7 @@ package body Exp_Imgv is
       else
          declare
             Conv : Node_Id;
+
          begin
             if Is_Private_Type (Etype (Expr)) then
                if Is_Fixed_Point_Type (Rtyp) then
@@ -739,6 +1284,33 @@ package body Exp_Imgv is
             Arg_List := New_List (Conv);
          end;
       end if;
+
+      --  Build declarations of Snn and Pnn to be inserted
+
+      Ins_List := New_List (
+
+         --  Snn : String (1 .. typ'Width);
+
+         Make_Object_Declaration (Loc,
+            Defining_Identifier => Snn,
+            Object_Definition   =>
+              Make_Subtype_Indication (Loc,
+                Subtype_Mark => New_Occurrence_Of (Standard_String, Loc),
+                Constraint   =>
+                  Make_Index_Or_Discriminant_Constraint (Loc,
+                    Constraints => New_List (
+                      Make_Range (Loc,
+                        Low_Bound  => Make_Integer_Literal (Loc, 1),
+                        High_Bound =>
+                          Make_Attribute_Reference (Loc,
+                            Prefix         => New_Occurrence_Of (Rtyp, Loc),
+                            Attribute_Name => Name_Width)))))),
+
+         --  Pnn : Natural;
+
+         Make_Object_Declaration (Loc,
+           Defining_Identifier => Pnn,
+           Object_Definition   => New_Occurrence_Of (Standard_Natural, Loc)));
 
       --  Append Snn, Pnn arguments
 
@@ -787,7 +1359,7 @@ package body Exp_Imgv is
       --  and also set to do literal conversion.
 
       elsif Is_Ordinary_Fixed_Point_Type (Rtyp) then
-         if Imid /= RE_Image_Ordinary_Fixed_Point then
+         if Imid /= RE_Image_Fixed then
             Set_Conversion_OK (First (Arg_List));
 
             Append_To (Arg_List,
@@ -886,12 +1458,16 @@ package body Exp_Imgv is
 
    --    btyp?(Value_Decimal{32,64,128} (X, typ'Scale));
 
-   --  For the most common ordinary fixed-point types
+   --  For the most common ordinary fixed-point types, it expands into
 
    --    btyp?(Value_Fixed{32,64,128} (X, numerator of S, denominator of S));
    --    where S = typ'Small
 
-   --  For Wide_[Wide_]Character types, typ'Value (X) expands into:
+   --  For other ordinary fixed-point types, it expands into
+
+   --    btyp (Value_Long_Float (X))
+
+   --  For Wide_[Wide_]Character types, typ'Value (X) expands into
 
    --    btyp (Value_xx (X, EM))
 
@@ -900,15 +1476,17 @@ package body Exp_Imgv is
    --  For enumeration types other than those derived from types Boolean,
    --  Character, Wide_[Wide_]Character in Standard, typ'Value (X) expands to:
 
-   --    Enum'Val (Value_Enumeration_NN (typS, typI'Address, Num, X))
+   --    Enum'Val
+   --      (Value_Enumeration_NN
+   --        (typS, typN'Address, typH'Unrestricted_Access, Num, X))
 
-   --  where typS and typI and the Lit_Strings and Lit_Indexes entities
-   --  from T's root type entity, and Num is Enum'Pos (Enum'Last). The
-   --  Value_Enumeration_NN function will search the tables looking for
+   --  where typS, typN and typH are the Lit_Strings, Lit_Indexes and Lit_Hash
+   --  entities from T's root type entity, and Num is Enum'Pos (Enum'Last).
+   --  The Value_Enumeration_NN function will search the tables looking for
    --  X and return the position number in the table if found which is
    --  used to provide the result of 'Value (using Enum'Val). If the
    --  value is not found Constraint_Error is raised. The suffix _NN
-   --  depends on the element type of typI.
+   --  depends on the element type of typN.
 
    procedure Expand_Value_Attribute (N : Node_Id) is
       Loc   : constant Source_Ptr := Sloc (N);
@@ -916,13 +1494,17 @@ package body Exp_Imgv is
       Btyp  : constant Entity_Id  := Base_Type (Typ);
       Rtyp  : constant Entity_Id  := Root_Type (Typ);
       Exprs : constant List_Id    := Expressions (N);
-      Vid   : RE_Id;
       Args  : List_Id;
       Func  : RE_Id;
       Ttyp  : Entity_Id;
+      Vid   : RE_Id;
 
    begin
       Args := Exprs;
+
+      --  Fall through for all cases except user-defined enumeration type
+      --  and decimal types, with Vid set to the Id of the entity for the
+      --  Value routine and Args set to the list of parameters for the call.
 
       if Rtyp = Standard_Character then
          Vid := RE_Value_Character;
@@ -1036,21 +1618,11 @@ package body Exp_Imgv is
          if Rtyp = Standard_Short_Float or else Rtyp = Standard_Float then
             Vid := RE_Value_Float;
 
-         --  If Long_Float and Long_Long_Float are the same type, then use the
-         --  implementation of the former, which is faster and more accurate.
-
-         elsif Rtyp = Standard_Long_Float
-           or else (Rtyp = Standard_Long_Long_Float
-                     and then
-                    Standard_Long_Long_Float_Size = Standard_Long_Float_Size)
-         then
+         elsif Rtyp = Standard_Long_Float then
             Vid := RE_Value_Long_Float;
 
-         elsif Rtyp = Standard_Long_Long_Float then
-            Vid := RE_Value_Long_Long_Float;
-
          else
-            raise Program_Error;
+            Vid := RE_Value_Long_Long_Float;
          end if;
 
       --  Only other possibility is user-defined enumeration type
@@ -1077,10 +1649,11 @@ package body Exp_Imgv is
 
             Analyze_And_Resolve (N, Btyp);
 
-         --  Here for normal case where we have enumeration tables, this
-         --  is where we build
+         --  Normal case where we have enumeration tables, build
 
-         --    T'Val (Value_Enumeration_NN (typS, typI'Address, Num, X))
+         --   T'Val
+         --     (Value_Enumeration_NN
+         --       (typS, typN'Address, typH'Unrestricted_Access, Num, X))
 
          else
             Ttyp := Component_Type (Etype (Lit_Indexes (Rtyp)));
@@ -1101,6 +1674,15 @@ package body Exp_Imgv is
                   Make_Attribute_Reference (Loc,
                     Prefix => New_Occurrence_Of (Rtyp, Loc),
                     Attribute_Name => Name_Last))));
+
+            if Present (Lit_Hash (Rtyp)) then
+               Prepend_To (Args,
+                 Make_Attribute_Reference (Loc,
+                   Prefix => New_Occurrence_Of (Lit_Hash (Rtyp), Loc),
+                   Attribute_Name => Name_Unrestricted_Access));
+            else
+               Prepend_To (Args, Make_Null (Loc));
+            end if;
 
             Prepend_To (Args,
               Make_Attribute_Reference (Loc,
@@ -1126,10 +1708,6 @@ package body Exp_Imgv is
          return;
       end if;
 
-      --  Fall through for all cases except user-defined enumeration type
-      --  and decimal types, with Vid set to the Id of the entity for the
-      --  Value routine and Args set to the list of parameters for the call.
-
       --  Compiling package Ada.Tags under No_Run_Time_Mode we disable the
       --  expansion of the attribute into the function call statement to avoid
       --  generating spurious errors caused by the use of Integer_Address'Value
@@ -1140,7 +1718,7 @@ package body Exp_Imgv is
       --  There is a better way, test RTE_Available ???
 
       if No_Run_Time_Mode
-        and then Rtyp = RTE (RE_Integer_Address)
+        and then Is_RTE (Rtyp, RE_Integer_Address)
         and then RTU_Loaded (Ada_Tags)
         and then Cunit_Entity (Current_Sem_Unit)
                    = Body_Entity (RTU_Entity (Ada_Tags))

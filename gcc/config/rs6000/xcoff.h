@@ -104,6 +104,8 @@
 #define TARGET_ENCODE_SECTION_INFO rs6000_xcoff_encode_section_info
 #endif
 #define ASM_OUTPUT_ALIGNED_DECL_COMMON  rs6000_xcoff_asm_output_aligned_decl_common
+#define ASM_OUTPUT_ALIGNED_DECL_LOCAL  rs6000_xcoff_asm_output_aligned_decl_common
+#define ASM_OUTPUT_ALIGNED_BSS  rs6000_xcoff_asm_output_aligned_decl_common
 
 /* FP save and restore routines.  */
 #define	SAVE_FP_PREFIX "._savef"
@@ -218,48 +220,12 @@
    to define a global common symbol.  */
 
 #define COMMON_ASM_OP "\t.comm "
-
-/* This says how to output an assembler line
-   to define a local common symbol.
-   The assembler in AIX 6.1 and later supports an alignment argument.
-   For earlier releases of AIX, we try to maintain
-   alignment after preceding TOC section if it was aligned
-   for 64-bit mode.  */
-
 #define LOCAL_COMMON_ASM_OP "\t.lcomm "
 
-#if TARGET_AIX_VERSION >= 61
-#define ASM_OUTPUT_ALIGNED_LOCAL(FILE, NAME, SIZE, ALIGN)	\
-  do { fputs (LOCAL_COMMON_ASM_OP, (FILE));			\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));			\
-       if ((ALIGN) > 32)					\
-	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%s%u_,%u\n",	\
-		  (SIZE), xcoff_bss_section_name,			\
-		  floor_log2 ((ALIGN) / BITS_PER_UNIT),			\
-		  floor_log2 ((ALIGN) / BITS_PER_UNIT));		\
-       else if ((SIZE) > 4)					\
-	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%s3_,3\n",	\
-		  (SIZE), xcoff_bss_section_name);		\
-       else							\
-	 fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%s,2\n",	\
-		  (SIZE), xcoff_bss_section_name);		\
-     } while (0)
-#endif
-
-#define ASM_OUTPUT_LOCAL(FILE, NAME, SIZE, ROUNDED)	\
-  do { fputs (LOCAL_COMMON_ASM_OP, (FILE));		\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), "," HOST_WIDE_INT_PRINT_UNSIGNED",%s\n", \
-		(TARGET_32BIT ? (SIZE) : (ROUNDED)),	\
-		xcoff_bss_section_name);		\
-     } while (0)
-
 #ifdef HAVE_AS_TLS
-#define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)	\
-  do { fputs (COMMON_ASM_OP, (FILE));			\
-       RS6000_OUTPUT_BASENAME ((FILE), (NAME));		\
-       fprintf ((FILE), "[UL]," HOST_WIDE_INT_PRINT_UNSIGNED"\n", \
-       (SIZE));						\
+#define ASM_OUTPUT_TLS_COMMON(FILE, DECL, NAME, SIZE)   \
+  do { \
+       rs6000_xcoff_asm_output_aligned_decl_common ((FILE), (DECL), (NAME), (SIZE), 0); \
   } while (0)
 #endif
 

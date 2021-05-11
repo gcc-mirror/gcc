@@ -6,6 +6,9 @@
 ! { dg-additional-options "-fdump-tree-ompexp" }
 ! { dg-additional-options "-fdump-tree-oaccdevlow" }
 
+! { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+! aspects of that functionality.
+
 program main
   implicit none
   integer, parameter :: n = 1024
@@ -15,6 +18,9 @@ program main
   call setup(a, b)
 
   !$acc serial loop copyin (a(0:n-1), b(0:n-1)) copyout (c(0:n-1)) ! { dg-message "optimized: assigned OpenACC gang vector loop parallelism" }
+  ! { dg-bogus "\[Ww\]arning: region contains gang partitioned code but is not gang partitioned" "TODO 'serial'" { xfail *-*-* } .-1 }
+  ! { dg-bogus "\[Ww\]arning: region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } .-2 }
+  ! { dg-bogus "\[Ww\]arning: region contains vector partitioned code but is not vector partitioned" "TODO 'serial'" { xfail *-*-* } .-3 }
   do i = 0, n - 1
      c(i) = a(i) + b(i)
   end do

@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "optabs-tree.h"
 #include "tree-eh.h"
 #include "dbgcnt.h"
+#include "tm.h"
 
 /* Forward declarations of the private auto-generated matchers.
    They expect valueized operands in canonical order and do not
@@ -147,10 +148,10 @@ maybe_resimplify_conditional_op (gimple_seq *seq, gimple_match_op *res_op,
       tree_code op_code = (tree_code) res_op->code;
       bool op_could_trap;
 
-      /* COND_EXPR and VEC_COND_EXPR will trap if, and only if, the condition
+      /* COND_EXPR will trap if, and only if, the condition
 	 traps and hence we have to check this.  For all other operations, we
 	 don't need to consider the operands.  */
-      if (op_code == COND_EXPR || op_code == VEC_COND_EXPR)
+      if (op_code == COND_EXPR)
 	op_could_trap = generic_expr_could_trap_p (res_op->ops[0]);
       else
 	op_could_trap = operation_could_trap_p ((tree_code) res_op->code,
@@ -961,10 +962,9 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 	    {
 	      bool valueized = false;
 	      tree rhs1 = gimple_assign_rhs1 (stmt);
-	      /* If this is a [VEC_]COND_EXPR first try to simplify an
+	      /* If this is a COND_EXPR first try to simplify an
 		 embedded GENERIC condition.  */
-	      if (code == COND_EXPR
-		  || code == VEC_COND_EXPR)
+	      if (code == COND_EXPR)
 		{
 		  if (COMPARISON_CLASS_P (rhs1))
 		    {

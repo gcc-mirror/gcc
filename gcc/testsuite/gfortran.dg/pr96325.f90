@@ -15,7 +15,7 @@
    type(t2) :: t
    integer :: a
 
-   a = t%r1%foo(1)     { dg-error "is not an inquiry reference" }
+   a = t%r1%foo(1) ! { dg-error "is not an inquiry reference" }
    if (a == 42) stop
 
    end

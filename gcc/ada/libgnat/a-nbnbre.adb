@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---             Copyright (C) 2019-2020, Free Software Foundation, Inc.      --
+--             Copyright (C) 2019-2021, Free Software Foundation, Inc.      --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -307,7 +307,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
 
    package body Fixed_Conversions is
 
-      package Float_Aux is new Float_Conversions (Long_Long_Float);
+      package Float_Aux is new Float_Conversions (Long_Float);
 
       subtype LLLI is Long_Long_Long_Integer;
       subtype LLLU is Long_Long_Long_Unsigned;
@@ -316,7 +316,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
                     Num'Small_Numerator > LLLU'Last
                       or else Num'Small_Denominator > LLLU'Last;
       --  True if the Small is too large for Long_Long_Long_Unsigned, in which
-      --  case we convert to/from Long_Long_Float as an intermediate step.
+      --  case we convert to/from Long_Float as an intermediate step.
 
       package Conv_I is new Big_Integers.Signed_Conversions (LLLI);
       package Conv_U is new Big_Integers.Unsigned_Conversions (LLLU);
@@ -334,7 +334,7 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
 
       begin
          if Too_Large then
-            return Float_Aux.To_Big_Real (Long_Long_Float (Arg));
+            return Float_Aux.To_Big_Real (Long_Float (Arg));
          end if;
 
          N := Conv_U.To_Big_Integer (Num'Small_Numerator);
@@ -591,13 +591,6 @@ package body Ada.Numerics.Big_Numbers.Big_Reals is
          Normalize (Result);
          return Result;
       end;
-   end From_String;
-
-   function From_String
-     (Numerator, Denominator : String) return Valid_Big_Real is
-   begin
-      return Big_Integers.From_String (Numerator) /
-        Big_Integers.From_String (Denominator);
    end From_String;
 
    --------------------------

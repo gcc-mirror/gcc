@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,20 +32,19 @@
 
 package Sinfo.CN is
 
-   procedure Change_Identifier_To_Defining_Identifier (N : in out Node_Id);
+   procedure Change_Identifier_To_Defining_Identifier (N : Node_Id);
    --  N must refer to a node of type N_Identifier. This node is modified to
    --  be of type N_Defining_Identifier. The scanner always returns identifiers
    --  as N_Identifier. The parser then uses this routine to change the node
    --  to be a defining identifier where the context demands it. This routine
-   --  also allocates the necessary extension node. Note that this procedure
-   --  may (but is not required to) change the Id of the node in question.
+   --  also allocates the necessary extension node.
 
    procedure Change_Character_Literal_To_Defining_Character_Literal
-     (N : in out Node_Id);
+     (N : Node_Id);
    --  Similar processing for a character literal
 
    procedure Change_Operator_Symbol_To_Defining_Operator_Symbol
-     (N : in out Node_Id);
+     (N : Node_Id);
    --  Similar processing for an operator symbol
 
    procedure Change_Conversion_To_Unchecked (N : Node_Id);

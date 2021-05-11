@@ -1609,8 +1609,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
 		  if (name[0] == '_'
 		      && name[1] == '_'
-		      && (strncmp (name + 2, "builtin_",
-				   strlen ("builtin_")) == 0
+		      && (startswith (name + 2, "builtin_")
 			  || (len = strlen (name)) <= strlen ("___chk")
 			  || memcmp (name + len - strlen ("_chk"),
 				     "_chk", strlen ("_chk") + 1) != 0))
@@ -4828,7 +4827,7 @@ cxx_builtin_function (tree decl)
     /* In the user's namespace, it must be declared before use.  */
     hiding = true;
   else if (IDENTIFIER_LENGTH (id) > strlen ("___chk")
-	   && 0 != strncmp (name + 2, "builtin_", strlen ("builtin_"))
+	   && !startswith (name + 2, "builtin_")
 	   && 0 == memcmp (name + IDENTIFIER_LENGTH (id) - strlen ("_chk"),
 			   "_chk", strlen ("_chk") + 1))
     /* Treat __*_chk fortification functions as anticipated as well,
@@ -5005,12 +5004,47 @@ fixup_anonymous_aggr (tree t)
   TYPE_HAS_COPY_ASSIGN (t) = 0;
   TYPE_HAS_CONST_COPY_ASSIGN (t) = 0;
 
-  /* Splice the implicitly generated functions out of TYPE_FIELDS.  */
+  /* Splice the implicitly generated functions out of TYPE_FIELDS and diagnose
+     invalid members.  */
   for (tree probe, *prev_p = &TYPE_FIELDS (t); (probe = *prev_p);)
-    if (TREE_CODE (probe) == FUNCTION_DECL && DECL_ARTIFICIAL (probe))
-      *prev_p = DECL_CHAIN (probe);
-    else
-      prev_p = &DECL_CHAIN (probe);
+    {
+      if (TREE_CODE (probe) == FUNCTION_DECL && DECL_ARTIFICIAL (probe))
+	*prev_p = DECL_CHAIN (probe);
+      else
+	prev_p = &DECL_CHAIN (probe);
+
+      if (DECL_ARTIFICIAL (probe)
+	  && (!DECL_IMPLICIT_TYPEDEF_P (probe)
+	      || TYPE_ANON_P (TREE_TYPE (probe))))
+	continue;
+
+      if (TREE_CODE (probe) != FIELD_DECL
+	  || (TREE_PRIVATE (probe) || TREE_PROTECTED (probe)))
+	{
+	  /* We already complained about static data members in
+	     finish_static_data_member_decl.  */
+	  if (!VAR_P (probe))
+	    {
+	      auto_diagnostic_group d;
+	      if (permerror (DECL_SOURCE_LOCATION (probe),
+			     TREE_CODE (t) == UNION_TYPE
+			     ? "%q#D invalid; an anonymous union may "
+			     "only have public non-static data members"
+			     : "%q#D invalid; an anonymous struct may "
+			     "only have public non-static data members", probe))
+		{
+		  static bool hint;
+		  if (flag_permissive && !hint)
+		    {
+		      hint = true;
+		      inform (DECL_SOURCE_LOCATION (probe),
+			      "this flexibility is deprecated and will be "
+			      "removed");
+		    }
+		}
+	    }
+	}
+      }
 
   /* Splice all functions out of CLASSTYPE_MEMBER_VEC.  */
   vec<tree,va_gc>* vec = CLASSTYPE_MEMBER_VEC (t);
@@ -6191,7 +6225,13 @@ is_direct_enum_init (tree type, tree init)
       && ENUM_FIXED_UNDERLYING_TYPE_P (type)
       && TREE_CODE (init) == CONSTRUCTOR
       && CONSTRUCTOR_IS_DIRECT_INIT (init)
-      && CONSTRUCTOR_NELTS (init) == 1)
+      && CONSTRUCTOR_NELTS (init) == 1
+      /* DR 2374: The single element needs to be implicitly
+	 convertible to the underlying type of the enum.  */
+      && can_convert_arg (ENUM_UNDERLYING_TYPE (type),
+			  TREE_TYPE (CONSTRUCTOR_ELT (init, 0)->value),
+			  CONSTRUCTOR_ELT (init, 0)->value,
+			  LOOKUP_IMPLICIT, tf_none))
     return true;
   return false;
 }
@@ -7565,9 +7605,9 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	  return true;
 	}
       if (fndecl_built_in_p (variant)
-	  && (strncmp (varname, "__builtin_", strlen ("__builtin_")) == 0
-	      || strncmp (varname, "__sync_", strlen ("__sync_")) == 0
-	      || strncmp (varname, "__atomic_", strlen ("__atomic_")) == 0))
+	  && (startswith (varname, "__builtin_")
+	      || startswith (varname, "__sync_")
+	      || startswith (varname, "__atomic_")))
 	{
 	  error_at (varid_loc, "variant %qD is a built-in", variant);
 	  return true;
@@ -9696,7 +9736,14 @@ grokfndecl (tree ctype,
 		      && (processing_template_decl
 			  > template_class_depth (ctx)));
       if (memtmpl)
-        tmpl_reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
+	{
+	  if (!current_template_parms)
+	    /* If there are no template parameters, something must have
+	       gone wrong.  */
+	    gcc_assert (seen_error ());
+	  else
+	    tmpl_reqs = TEMPLATE_PARMS_CONSTRAINTS (current_template_parms);
+	}
       tree ci = build_constraints (tmpl_reqs, decl_reqs);
       if (concept_p && ci)
         {
@@ -9833,8 +9880,8 @@ grokfndecl (tree ctype,
 	  || (IDENTIFIER_LENGTH (declarator) > 10
 	      && IDENTIFIER_POINTER (declarator)[0] == '_'
 	      && IDENTIFIER_POINTER (declarator)[1] == '_'
-	      && strncmp (IDENTIFIER_POINTER (declarator)+2,
-			  "builtin_", 8) == 0)
+	      && startswith (IDENTIFIER_POINTER (declarator) + 2,
+			     "builtin_"))
 	  || (targetcm.cxx_implicit_extern_c
 	      && (targetcm.cxx_implicit_extern_c
 		  (IDENTIFIER_POINTER (declarator))))))
@@ -12262,7 +12309,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  int attr_flags;
 
 	  attr_flags = 0;
-	  if (declarator == NULL || declarator->kind == cdk_id)
+	  if (declarator->kind == cdk_id)
 	    attr_flags |= (int) ATTR_FLAG_DECL_NEXT;
 	  if (declarator->kind == cdk_function)
 	    attr_flags |= (int) ATTR_FLAG_FUNCTION_NEXT;
@@ -13717,8 +13764,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  }
 
 		decl = do_friend (ctype, unqualified_id, decl,
-				  *attrlist, flags,
-				  funcdef_flag);
+				  flags, funcdef_flag);
 		return decl;
 	      }
 	    else

@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fbounds-check -ffrontend-optimize" }
-! { dg-shouldfail "Fortran runtime error: Incorrect extent in argument B in MATMUL intrnisic for dimension 2: is 1, should be 2" }
+! { dg-shouldfail "Fortran runtime error: Incorrect extent in argument B in MATMUL intrinsic for dimension 2: is 1, should be 2" }
 module x
   implicit none
 contains

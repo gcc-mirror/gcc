@@ -1500,27 +1500,6 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
   if (in != 0 && in != *inloc)
     rld[i].nocombine = 1;
 
-#if 0
-  /* This was replaced by changes in find_reloads_address_1 and the new
-     function inc_for_reload, which go with a new meaning of reload_inc.  */
-
-  /* If this is an IN/OUT reload in an insn that sets the CC,
-     it must be for an autoincrement.  It doesn't work to store
-     the incremented value after the insn because that would clobber the CC.
-     So we must do the increment of the value reloaded from,
-     increment it, store it back, then decrement again.  */
-  if (out != 0 && sets_cc0_p (PATTERN (this_insn)))
-    {
-      out = 0;
-      rld[i].out = 0;
-      rld[i].inc = find_inc_amount (PATTERN (this_insn), in);
-      /* If we did not find a nonzero amount-to-increment-by,
-	 that contradicts the belief that IN is being incremented
-	 in an address in this insn.  */
-      gcc_assert (rld[i].inc != 0);
-    }
-#endif
-
   /* If we will replace IN and OUT with the reload-reg,
      record where they are located so that substitution need
      not do a tree walk.  */
@@ -2696,15 +2675,8 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	}
     }
 
-  /* JUMP_INSNs and CALL_INSNs are not allowed to have any output reloads;
-     neither are insns that SET cc0.  Insns that use CC0 are not allowed
-     to have any input reloads.  */
+  /* JUMP_INSNs and CALL_INSNs are not allowed to have any output reloads.  */
   if (JUMP_P (insn) || CALL_P (insn))
-    no_output_reloads = 1;
-
-  if (HAVE_cc0 && reg_referenced_p (cc0_rtx, PATTERN (insn)))
-    no_input_reloads = 1;
-  if (HAVE_cc0 && reg_set_p (cc0_rtx, PATTERN (insn)))
     no_output_reloads = 1;
 
   /* The eliminated forms of any secondary memory locations are per-insn, so
@@ -4585,15 +4557,6 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	    rld[j].in = 0;
 	  }
 
-  /* If we made any reloads for addresses, see if they violate a
-     "no input reloads" requirement for this insn.  But loads that we
-     do after the insn (such as for output addresses) are fine.  */
-  if (HAVE_cc0 && no_input_reloads)
-    for (i = 0; i < n_reloads; i++)
-      gcc_assert (rld[i].in == 0
-		  || rld[i].when_needed == RELOAD_FOR_OUTADDR_ADDRESS
-		  || rld[i].when_needed == RELOAD_FOR_OUTPUT_ADDRESS);
-
   /* Compute reload_mode and reload_nregs.  */
   for (i = 0; i < n_reloads; i++)
     {
@@ -5323,7 +5286,6 @@ subst_reg_equivs (rtx ad, rtx_insn *insn)
     case SYMBOL_REF:
     case LABEL_REF:
     case PC:
-    case CC0:
       return ad;
 
     case REG:
@@ -5862,7 +5824,7 @@ find_reloads_address_1 (machine_mode mode, addr_space_t as,
 	      /* If we can output the register afterwards, do so, this
 		 saves the extra update.
 		 We can do so if we have an INSN - i.e. no JUMP_INSN nor
-		 CALL_INSN - and it does not set CC0.
+		 CALL_INSN.
 		 But don't do this if we cannot directly address the
 		 memory location, since this will make it harder to
 		 reuse address reloads, and increases register pressure.
@@ -5872,9 +5834,6 @@ find_reloads_address_1 (machine_mode mode, addr_space_t as,
 			   : reg_equiv_mem (regno));
 	      enum insn_code icode = optab_handler (add_optab, GET_MODE (x));
 	      if (insn && NONJUMP_INSN_P (insn)
-#if HAVE_cc0
-		  && ! sets_cc0_p (PATTERN (insn))
-#endif
 		  && (regno < FIRST_PSEUDO_REGISTER
 		      || (equiv
 			  && memory_operand (equiv, GET_MODE (equiv))
@@ -6621,8 +6580,7 @@ reg_overlap_mentioned_for_reload_p (rtx x, rtx in)
     }
   else if (MEM_P (x))
     return refers_to_mem_for_reload_p (in);
-  else if (GET_CODE (x) == SCRATCH || GET_CODE (x) == PC
-	   || GET_CODE (x) == CC0)
+  else if (GET_CODE (x) == SCRATCH || GET_CODE (x) == PC)
     return reg_mentioned_p (x, in);
   else
     {

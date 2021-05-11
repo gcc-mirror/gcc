@@ -256,12 +256,13 @@ stamp-latex-doxygen: ${doxygen_outdir}/latex
 # look at refman.log and see if TeX's memory is exhausted. Symptoms
 # include asking a wizard to enlarge capacity. If this is the case,
 # find texmf.cnf and add a zero for pool_size, string_vacancies,
-# max_strings, and pool_free values.
+# max_strings, and pool_free values. A much simpler workaround is to install
+# lualatex and set LATEX_CMD_NAME = lualatex in the doxygen user.cfg file.
 # Errors like "File `foo.sty' not found" mean a TeX package is missing.
 stamp-pdf-doxygen: stamp-latex-doxygen ${doxygen_outdir}/pdf
 	-(cd ${doxygen_outdir}/latex && $(MAKE) -i pdf;)
-	echo "Generating doxygen pdf file...";
-	if [ -f ${doxygen_pdf} ]; then \
+	@echo "Generating doxygen pdf file...";
+	@if [ -f ${doxygen_pdf} ]; then \
 	  mv ${doxygen_pdf} ${api_pdf} ; \
 	  echo ":: PDF file is ${api_pdf}"; \
 	else \

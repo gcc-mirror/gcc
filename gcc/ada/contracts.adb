@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2015-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2015-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,35 +23,39 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Prag; use Exp_Prag;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Disp; use Sem_Disp;
-with Sem_Prag; use Sem_Prag;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Prag;       use Exp_Prag;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
 
 package body Contracts is
 
@@ -1576,7 +1580,7 @@ package body Contracts is
       --  in its visible declarations.
 
       if Nkind (Templ) = N_Generic_Package_Declaration then
-         Set_Ekind (Templ_Id, E_Generic_Package);
+         Mutate_Ekind (Templ_Id, E_Generic_Package);
 
          if Present (Visible_Declarations (Specification (Templ))) then
             Decl := First (Visible_Declarations (Specification (Templ)));
@@ -1586,7 +1590,7 @@ package body Contracts is
       --  declarations.
 
       elsif Nkind (Templ) = N_Package_Body then
-         Set_Ekind (Templ_Id, E_Package_Body);
+         Mutate_Ekind (Templ_Id, E_Package_Body);
 
          if Present (Declarations (Templ)) then
             Decl := First (Declarations (Templ));
@@ -1596,9 +1600,9 @@ package body Contracts is
 
       elsif Nkind (Templ) = N_Generic_Subprogram_Declaration then
          if Nkind (Specification (Templ)) = N_Function_Specification then
-            Set_Ekind (Templ_Id, E_Generic_Function);
+            Mutate_Ekind (Templ_Id, E_Generic_Function);
          else
-            Set_Ekind (Templ_Id, E_Generic_Procedure);
+            Mutate_Ekind (Templ_Id, E_Generic_Procedure);
          end if;
 
          --  When the generic subprogram acts as a compilation unit, inspect
@@ -1622,7 +1626,7 @@ package body Contracts is
       --  its declarations.
 
       elsif Nkind (Templ) = N_Subprogram_Body then
-         Set_Ekind (Templ_Id, E_Subprogram_Body);
+         Mutate_Ekind (Templ_Id, E_Subprogram_Body);
 
          if Present (Declarations (Templ)) then
             Decl := First (Declarations (Templ));
@@ -2367,6 +2371,10 @@ package body Contracts is
          --  postconditions until finalization has been performed when cleanup
          --  actions are present.
 
+         --  NOTE: This flag could be made into a predicate since we should be
+         --  able at compile time to recognize when finalization and cleanup
+         --  actions occur, but in practice this is not possible ???
+
          --  Generate:
          --
          --    Postcond_Enabled : Boolean := True;
@@ -2405,16 +2413,16 @@ package body Contracts is
          --  the postconditions: this would cause confusing debug info to be
          --  produced, interfering with coverage-analysis tools.
 
-         --  Also, wrap the postcondition checks in a conditional which can be
-         --  used to delay their evaluation when clean-up actions are present.
+         --  NOTE: Coverage-analysis and static-analysis tools rely on the
+         --  postconditions procedure being free of internally generated code
+         --  since some of these tools, like CodePeer, treat _postconditions
+         --  as original source.
 
          --  Generate:
          --
          --    procedure _postconditions is
          --    begin
-         --       if Postcond_Enabled and then Return_Success_For_Postcond then
-         --          [Stmts];
-         --       end if;
+         --       [Stmts];
          --    end;
 
          Proc_Bod :=
@@ -2425,19 +2433,7 @@ package body Contracts is
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
                  End_Label  => Make_Identifier (Loc, Chars (Proc_Id)),
-                 Statements => New_List (
-                   Make_If_Statement (Loc,
-                     Condition      =>
-                       Make_And_Then (Loc,
-                         Left_Opnd  =>
-                           New_Occurrence_Of
-                             (Defining_Identifier
-                               (Postcond_Enabled_Decl), Loc),
-                         Right_Opnd =>
-                           New_Occurrence_Of
-                             (Defining_Identifier
-                               (Return_Success_Decl), Loc)),
-                      Then_Statements => Stmts))));
+                 Statements => Stmts));
          Insert_After_And_Analyze (Last_Decl, Proc_Bod);
 
       end Build_Postconditions_Procedure;

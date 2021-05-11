@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,52 +23,56 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;   use Aspects;
-with Atree;     use Atree;
-with Contracts; use Contracts;
-with Debug;     use Debug;
-with Einfo;     use Einfo;
-with Errout;    use Errout;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Contracts;      use Contracts;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
 with Exp_Put_Image;
-with Exp_Util;  use Exp_Util;
-with Elists;    use Elists;
-with Fname;     use Fname;
-with Fname.UF;  use Fname.UF;
-with Freeze;    use Freeze;
-with Impunit;   use Impunit;
-with Inline;    use Inline;
-with Lib;       use Lib;
-with Lib.Load;  use Lib.Load;
-with Lib.Xref;  use Lib.Xref;
-with Namet;     use Namet;
-with Nlists;    use Nlists;
-with Nmake;     use Nmake;
-with Opt;       use Opt;
-with Output;    use Output;
-with Par_SCO;   use Par_SCO;
-with Restrict;  use Restrict;
-with Rident;    use Rident;
-with Rtsfind;   use Rtsfind;
-with Sem;       use Sem;
-with Sem_Aux;   use Sem_Aux;
-with Sem_Ch3;   use Sem_Ch3;
-with Sem_Ch6;   use Sem_Ch6;
-with Sem_Ch7;   use Sem_Ch7;
-with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch13;  use Sem_Ch13;
-with Sem_Dist;  use Sem_Dist;
-with Sem_Prag;  use Sem_Prag;
-with Sem_Util;  use Sem_Util;
-with Sem_Warn;  use Sem_Warn;
-with Stand;     use Stand;
-with Sinfo;     use Sinfo;
-with Sinfo.CN;  use Sinfo.CN;
-with Sinput;    use Sinput;
-with Snames;    use Snames;
-with Style;     use Style;
-with Stylesw;   use Stylesw;
-with Tbuild;    use Tbuild;
-with Uname;     use Uname;
+with Exp_Util;       use Exp_Util;
+with Elists;         use Elists;
+with Fname;          use Fname;
+with Fname.UF;       use Fname.UF;
+with Freeze;         use Freeze;
+with Impunit;        use Impunit;
+with Inline;         use Inline;
+with Lib;            use Lib;
+with Lib.Load;       use Lib.Load;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Par_SCO;        use Par_SCO;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinfo.CN;       use Sinfo.CN;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Style;          use Style;
+with Stylesw;        use Stylesw;
+with Tbuild;         use Tbuild;
+with Uname;          use Uname;
 
 package body Sem_Ch10 is
 
@@ -1561,9 +1565,9 @@ package body Sem_Ch10 is
                                  Error_Msg_N
                                    ("simultaneous visibility of limited and "
                                     & "unlimited views not allowed", Item);
-                                 Error_Msg_NE
+                                 Error_Msg_N
                                    ("\unlimited view visible through context "
-                                    & "clause #", Item, It);
+                                    & "clause #", Item);
                                  exit;
 
                               elsif Nkind (Unit_Name) = N_Identifier then
@@ -1643,7 +1647,7 @@ package body Sem_Ch10 is
          --  when we load the proper body.
 
          Set_Scope (Id, Current_Scope);
-         Set_Ekind (Id, E_Package_Body);
+         Mutate_Ekind (Id, E_Package_Body);
          Set_Etype (Id, Standard_Void_Type);
 
          if Has_Aspects (N) then
@@ -1985,7 +1989,7 @@ package body Sem_Ch10 is
          Opts := Save_Config_Switches;
 
          Set_Scope (Id, Current_Scope);
-         Set_Ekind (Id, E_Protected_Body);
+         Mutate_Ekind (Id, E_Protected_Body);
          Set_Etype (Id, Standard_Void_Type);
 
          if Has_Aspects (N) then
@@ -2433,8 +2437,10 @@ package body Sem_Ch10 is
 
       --  The syntax rules require a proper body for a subprogram subunit
 
-      if Nkind (Proper_Body (Sinfo.Unit (N))) = N_Subprogram_Declaration then
-         if Null_Present (Specification (Proper_Body (Sinfo.Unit (N)))) then
+      if Nkind (Proper_Body (Sinfo.Nodes.Unit (N))) = N_Subprogram_Declaration
+      then
+         if Null_Present (Specification (Proper_Body (Sinfo.Nodes.Unit (N))))
+         then
             Error_Msg_N
               ("null procedure not allowed as subunit",
                Proper_Body (Unit (N)));
@@ -2494,7 +2500,7 @@ package body Sem_Ch10 is
 
       else
          Set_Scope (Id, Current_Scope);
-         Set_Ekind (Id, E_Task_Body);
+         Mutate_Ekind (Id, E_Task_Body);
          Set_Etype (Id, Standard_Void_Type);
 
          if Has_Aspects (N) then
@@ -3832,7 +3838,7 @@ package body Sem_Ch10 is
 
                   if E2 = WEnt then
                      Error_Msg_N
-                       ("unlimited view visible through use clause ", W);
+                       ("unlimited view visible through use clause", W);
                      return;
                   end if;
                end if;
@@ -4114,7 +4120,8 @@ package body Sem_Ch10 is
                      Set_Subtype_Indication (Decl,
                        New_Occurrence_Of (Non_Lim_View, Sloc (Def_Id)));
                      Set_Etype (Def_Id, Non_Lim_View);
-                     Set_Ekind (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
+                     Mutate_Ekind
+                       (Def_Id, Subtype_Kind (Ekind (Non_Lim_View)));
                      Set_Analyzed (Decl, False);
 
                      --  Reanalyze the declaration, suppressing the call to
@@ -4980,7 +4987,7 @@ package body Sem_Ch10 is
 
             --  Minimum decoration
 
-            Set_Ekind (P, E_Package);
+            Mutate_Ekind (P, E_Package);
             Set_Etype (P, Standard_Void_Type);
             Set_Scope (P, Standard_Standard);
             Set_Is_Visible_Lib_Unit (P);
@@ -5732,9 +5739,9 @@ package body Sem_Ch10 is
          --  The abstract view of a variable is a state, not another variable
 
          if Ekind (Ent) = E_Variable then
-            Set_Ekind (Shadow, E_Abstract_State);
+            Mutate_Ekind (Shadow, E_Abstract_State);
          else
-            Set_Ekind (Shadow, Ekind (Ent));
+            Mutate_Ekind (Shadow, Ekind (Ent));
          end if;
 
          Set_Is_Internal       (Shadow);
@@ -5779,7 +5786,7 @@ package body Sem_Ch10 is
 
       procedure Decorate_Package (Ent : Entity_Id; Scop : Entity_Id) is
       begin
-         Set_Ekind (Ent, E_Package);
+         Mutate_Ekind (Ent, E_Package);
          Set_Etype (Ent, Standard_Void_Type);
          Set_Scope (Ent, Scop);
       end Decorate_Package;
@@ -5790,7 +5797,7 @@ package body Sem_Ch10 is
 
       procedure Decorate_State (Ent : Entity_Id; Scop : Entity_Id) is
       begin
-         Set_Ekind               (Ent, E_Abstract_State);
+         Mutate_Ekind            (Ent, E_Abstract_State);
          Set_Etype               (Ent, Standard_Void_Type);
          Set_Scope               (Ent, Scop);
          Set_Encapsulating_State (Ent, Empty);
@@ -5812,7 +5819,7 @@ package body Sem_Ch10 is
          --  An unanalyzed type or a shadow entity of a type is treated as an
          --  incomplete type, and carries the corresponding attributes.
 
-         Set_Ekind              (Ent, E_Incomplete_Type);
+         Mutate_Ekind           (Ent, E_Incomplete_Type);
          Set_Etype              (Ent, Ent);
          Set_Full_View          (Ent, Empty);
          Set_Is_First_Subtype   (Ent);
@@ -5848,7 +5855,7 @@ package body Sem_Ch10 is
 
             Set_Parent (CW_Typ, Parent (Ent));
 
-            Set_Ekind                     (CW_Typ, E_Class_Wide_Type);
+            Mutate_Ekind                  (CW_Typ, E_Class_Wide_Type);
             Set_Class_Wide_Type           (CW_Typ, CW_Typ);
             Set_Etype                     (CW_Typ, Ent);
             Set_Equivalent_Type           (CW_Typ, Empty);
@@ -5868,7 +5875,7 @@ package body Sem_Ch10 is
 
       procedure Decorate_Variable (Ent : Entity_Id; Scop : Entity_Id) is
       begin
-         Set_Ekind (Ent, E_Variable);
+         Mutate_Ekind (Ent, E_Variable);
          Set_Etype (Ent, Standard_Void_Type);
          Set_Scope (Ent, Scop);
       end Decorate_Variable;
@@ -6223,7 +6230,7 @@ package body Sem_Ch10 is
       --  must be minimally decorated. This ensures that the checks on unused
       --  with clauses also process limieted withs.
 
-      Set_Ekind (Pack, E_Package);
+      Mutate_Ekind (Pack, E_Package);
       Set_Etype (Pack, Standard_Void_Type);
 
       if Is_Entity_Name (Nam) then
@@ -6245,7 +6252,7 @@ package body Sem_Ch10 is
       --  incomplete view of all types and packages declared within.
 
       Shadow_Pack := Make_Temporary (Sloc (N), 'Z');
-      Set_Ekind        (Shadow_Pack, E_Package);
+      Mutate_Ekind     (Shadow_Pack, E_Package);
       Set_Is_Internal  (Shadow_Pack);
       Set_Limited_View (Pack, Shadow_Pack);
 

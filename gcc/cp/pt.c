@@ -6994,7 +6994,7 @@ bool
 template_parm_object_p (const_tree t)
 {
   return (TREE_CODE (t) == VAR_DECL && DECL_ARTIFICIAL (t) && DECL_NAME (t)
-	  && !strncmp (IDENTIFIER_POINTER (DECL_NAME (t)), "_ZTA", 4));
+	  && startswith (IDENTIFIER_POINTER (DECL_NAME (t)), "_ZTA"));
 }
 
 /* Subroutine of convert_nontype_argument, to check whether EXPR, as an
@@ -7157,7 +7157,7 @@ get_template_parm_object (tree expr, tsubst_flags_t complain)
     return error_mark_node;
 
   /* This is no longer a compound literal.  */
-  TREE_HAS_CONSTRUCTOR (expr) = 0;
+  gcc_assert (!TREE_HAS_CONSTRUCTOR (expr));
 
   tree name = mangle_template_parm_object (expr);
   tree decl = get_global_binding (name);
@@ -11659,7 +11659,6 @@ static bool
 apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 				tree args, tsubst_flags_t complain, tree in_decl)
 {
-  tree last_dep = NULL_TREE;
   tree t;
   tree *p;
 
@@ -11685,39 +11684,35 @@ apply_late_template_attributes (tree *decl_p, tree attributes, int attr_flags,
 	p = &TREE_CHAIN (*p);
     }
 
+  /* save_template_attributes puts the dependent attributes at the beginning of
+     the list; find the non-dependent ones.  */
   for (t = attributes; t; t = TREE_CHAIN (t))
-    if (ATTR_IS_DEPENDENT (t))
-      {
-	last_dep = t;
-	attributes = copy_list (attributes);
-	break;
-      }
+    if (!ATTR_IS_DEPENDENT (t))
+      break;
+  tree nondep = t;
 
-  *p = attributes;
-  if (last_dep)
+  /* Apply any non-dependent attributes.  */
+  *p = nondep;
+
+  /* And then any dependent ones.  */
+  tree late_attrs = NULL_TREE;
+  tree *q = &late_attrs;
+  for (t = attributes; t != nondep; t = TREE_CHAIN (t))
     {
-      tree late_attrs = NULL_TREE;
-      tree *q = &late_attrs;
-
-      for (; *p; )
+      *q = tsubst_attribute (t, decl_p, args, complain, in_decl);
+      if (*q == error_mark_node)
+	return false;
+      if (*q == t)
 	{
-	  t = *p;
-	  if (ATTR_IS_DEPENDENT (t))
-	    {
-	      *q = tsubst_attribute (t, decl_p, args, complain, in_decl);
-	      if (*q == error_mark_node)
-		return false;
-	      *p = TREE_CHAIN (t);
-	      TREE_CHAIN (t) = NULL_TREE;
-	      while (*q)
-		q = &TREE_CHAIN (*q);
-	    }
-	  else
-	    p = &TREE_CHAIN (t);
+	  *q = copy_node (t);
+	  TREE_CHAIN (*q) = NULL_TREE;
 	}
-
-      cplus_decl_attributes (decl_p, late_attrs, attr_flags);
+      while (*q)
+	q = &TREE_CHAIN (*q);
     }
+
+  cplus_decl_attributes (decl_p, late_attrs, attr_flags);
+
   return true;
 }
 
@@ -13208,6 +13203,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       else
 	result = tsubst (pattern, args, complain, in_decl);
       result = make_pack_expansion (result, complain);
+      PACK_EXPANSION_LOCAL_P (result) = PACK_EXPANSION_LOCAL_P (t);
+      PACK_EXPANSION_SIZEOF_P (result) = PACK_EXPANSION_SIZEOF_P (t);
       if (PACK_EXPANSION_AUTO_P (t))
 	{
 	  /* This is a fake auto... pack expansion created in add_capture with
@@ -19906,15 +19903,21 @@ tsubst_copy_and_build (tree t,
     case MEMBER_REF:
     case DOTSTAR_EXPR:
       {
-	/* If T was type-dependent, suppress warnings that depend on the range
-	   of the types involved.  */
-	++processing_template_decl;
-	const bool was_dep = (potential_constant_expression (t)
-			      ? value_dependent_expression_p (t)
-			      : type_dependent_expression_p (t));
-	--processing_template_decl;
-	tree op0 = RECUR (TREE_OPERAND (t, 0));
-	tree op1 = RECUR (TREE_OPERAND (t, 1));
+	/* If either OP0 or OP1 was value- or type-dependent, suppress
+	   warnings that depend on the range of the types involved.  */
+	tree op0 = TREE_OPERAND (t, 0);
+	tree op1 = TREE_OPERAND (t, 1);
+	auto dep_p = [](tree t) {
+	  ++processing_template_decl;
+	  bool r = (potential_constant_expression (t)
+		    ? value_dependent_expression_p (t)
+		    : type_dependent_expression_p (t));
+	  --processing_template_decl;
+	  return r;
+	};
+	const bool was_dep = dep_p (op0) || dep_p (op1);
+	op0 = RECUR (op0);
+	op1 = RECUR (op1);
 
 	warning_sentinel s1(warn_type_limits, was_dep);
 	warning_sentinel s2(warn_div_by_zero, was_dep);
@@ -20226,7 +20229,13 @@ tsubst_copy_and_build (tree t,
 	      /* Avoid error about taking the address of a constructor.  */
 	      function = TREE_OPERAND (function, 0);
 
-	    function = tsubst_copy_and_build (function, args, complain,
+	    tsubst_flags_t subcomplain = complain;
+	    if (koenig_p && TREE_CODE (function) == FUNCTION_DECL)
+	      /* When KOENIG_P, we don't want to mark_used the callee before
+		 augmenting the overload set via ADL, so during this initial
+		 substitution we disable mark_used by setting tf_conv (68942).  */
+	      subcomplain |= tf_conv;
+	    function = tsubst_copy_and_build (function, args, subcomplain,
 					      in_decl,
 					      !qualified_p,
 					      integral_constant_expression_p);
@@ -26383,9 +26392,16 @@ tsubst_initializer_list (tree t, tree argvec)
 		  tree expanded_exprs;
 
 		  /* Expand the argument.  */
-		  SET_PACK_EXPANSION_PATTERN (expr, TREE_VALUE (arg));
+		  tree value;
+		  if (TREE_CODE (TREE_VALUE (arg)) == EXPR_PACK_EXPANSION)
+		    value = TREE_VALUE (arg);
+		  else
+		    {
+		      value = expr;
+		      SET_PACK_EXPANSION_PATTERN (value, TREE_VALUE (arg));
+		    }
 		  expanded_exprs
-		    = tsubst_pack_expansion (expr, argvec,
+		    = tsubst_pack_expansion (value, argvec,
 					     tf_warning_or_error,
 					     NULL_TREE);
 		  if (expanded_exprs == error_mark_node)
@@ -26394,12 +26410,17 @@ tsubst_initializer_list (tree t, tree argvec)
 		  /* Prepend each of the expanded expressions to the
 		     corresponding TREE_LIST in EXPANDED_ARGUMENTS.  */
 		  for (i = 0; i < len; i++)
-		    {
-		      TREE_VEC_ELT (expanded_arguments, i) =
-			tree_cons (NULL_TREE,
-				   TREE_VEC_ELT (expanded_exprs, i),
-				   TREE_VEC_ELT (expanded_arguments, i));
-		    }
+		    if (TREE_CODE (TREE_VALUE (arg)) == EXPR_PACK_EXPANSION)
+		      for (int j = 0; j < TREE_VEC_LENGTH (expanded_exprs); j++)
+			TREE_VEC_ELT (expanded_arguments, i)
+			  = tree_cons (NULL_TREE,
+				       TREE_VEC_ELT (expanded_exprs, j),
+				       TREE_VEC_ELT (expanded_arguments, i));
+		    else
+		      TREE_VEC_ELT (expanded_arguments, i)
+			= tree_cons (NULL_TREE,
+				     TREE_VEC_ELT (expanded_exprs, i),
+				     TREE_VEC_ELT (expanded_arguments, i));
 		}
 	      in_base_initializer = 0;
 
@@ -28474,8 +28495,7 @@ dguide_name_p (tree name)
 {
   return (TREE_CODE (name) == IDENTIFIER_NODE
 	  && TREE_TYPE (name)
-	  && !strncmp (IDENTIFIER_POINTER (name), dguide_base,
-		       strlen (dguide_base)));
+	  && startswith (IDENTIFIER_POINTER (name), dguide_base));
 }
 
 /* True if FN is a deduction guide.  */
@@ -29361,6 +29381,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 	       "with %<-std=c++20%> or %<-std=gnu++20%>");
       return error_mark_node;
     }
+
+  /* Wait until the initializer is non-dependent.  */
+  if (type_dependent_expression_p (init))
+    return ptype;
 
   tree type = TREE_TYPE (tmpl);
 

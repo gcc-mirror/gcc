@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -61,6 +61,7 @@ with Ada.Directories;
 with Ada.Exceptions;   use Ada.Exceptions;
 
 with GNAT.Command_Line;         use GNAT.Command_Line;
+with GNAT.Ctrl_C;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
@@ -76,15 +77,7 @@ package body Make is
    --  is not always explicit and considering it is important when -f and -a
    --  are used.
 
-   type Sigint_Handler is access procedure;
-   pragma Convention (C, Sigint_Handler);
-
-   procedure Install_Int_Handler (Handler : Sigint_Handler);
-   pragma Import (C, Install_Int_Handler, "__gnat_install_int_handler");
-   --  Called by Gnatmake to install the SIGINT handler below
-
    procedure Sigint_Intercepted;
-   pragma Convention (C, Sigint_Intercepted);
    pragma No_Return (Sigint_Intercepted);
    --  Called when the program is interrupted by Ctrl-C to delete the
    --  temporary mapping files and configuration pragmas files.
@@ -406,7 +399,10 @@ package body Make is
       Non_Std_Executable : out Boolean);
    --  Parse the linker switches and project file to compute the name of the
    --  executable to generate.
-   --  ??? What is the meaning of Non_Std_Executable
+   --
+   --  When the platform expects a specific extension for the generated binary,
+   --  there is a chance that the linker might not use the right name for the
+   --  it. Non_Std_Executable is set to True in this case.
 
    procedure Compilation_Phase
      (Main_Source_File           : File_Name_Type;
@@ -3322,7 +3318,7 @@ package body Make is
       pragma Warnings (Off, Discard);
 
    begin
-      Install_Int_Handler (Sigint_Intercepted'Access);
+      GNAT.Ctrl_C.Install_Handler (Sigint_Intercepted'Access);
 
       Do_Compile_Step := True;
       Do_Bind_Step    := True;

@@ -13,9 +13,3 @@ int f()
   using AR = const int[];
   return AR{ 1,42,3,4,5,6,7,8,9,0 }[5];
 }
-
-int g()
-{
-  std::initializer_list<int> a = {1,42,3};
-  return a.begin()[0];
-}

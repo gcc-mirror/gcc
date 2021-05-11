@@ -1772,9 +1772,6 @@ insert_prologue_epilogue_for_components (sbitmap components)
 void
 try_shrink_wrapping_separate (basic_block first_bb)
 {
-  if (HAVE_cc0)
-    return;
-
   if (!(SHRINK_WRAPPING_ENABLED
 	&& flag_shrink_wrap_separate
 	&& optimize_function_for_speed_p (cfun)

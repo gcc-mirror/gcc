@@ -746,7 +746,7 @@ static unsigned int
 alignment_for_piecewise_move (unsigned int max_pieces, unsigned int align)
 {
   scalar_int_mode tmode
-    = int_mode_for_size (max_pieces * BITS_PER_UNIT, 1).require ();
+    = int_mode_for_size (max_pieces * BITS_PER_UNIT, 0).require ();
 
   if (align >= GET_MODE_ALIGNMENT (tmode))
     align = GET_MODE_ALIGNMENT (tmode);
@@ -815,12 +815,27 @@ by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 		  unsigned int max_size, by_pieces_operation op)
 {
   unsigned HOST_WIDE_INT n_insns = 0;
+  scalar_int_mode mode;
+
+  if (targetm.overlap_op_by_pieces_p () && op != COMPARE_BY_PIECES)
+    {
+      /* NB: Round up L and ALIGN to the widest integer mode for
+	 MAX_SIZE.  */
+      mode = widest_int_mode_for_size (max_size);
+      if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
+	{
+	  unsigned HOST_WIDE_INT up = ROUND_UP (l, GET_MODE_SIZE (mode));
+	  if (up > l)
+	    l = up;
+	  align = GET_MODE_ALIGNMENT (mode);
+	}
+    }
 
   align = alignment_for_piecewise_move (MOVE_MAX_PIECES, align);
 
   while (max_size > 1 && l > 0)
     {
-      scalar_int_mode mode = widest_int_mode_for_size (max_size);
+      mode = widest_int_mode_for_size (max_size);
       enum insn_code icode;
 
       unsigned int modesize = GET_MODE_SIZE (mode);
@@ -888,7 +903,8 @@ class pieces_addr
   void *m_cfndata;
 public:
   pieces_addr (rtx, bool, by_pieces_constfn, void *);
-  rtx adjust (scalar_int_mode, HOST_WIDE_INT);
+  rtx adjust (scalar_int_mode, HOST_WIDE_INT,
+	      by_pieces_prev * = nullptr);
   void increment_address (HOST_WIDE_INT);
   void maybe_predec (HOST_WIDE_INT);
   void maybe_postinc (HOST_WIDE_INT);
@@ -990,10 +1006,12 @@ pieces_addr::decide_autoinc (machine_mode ARG_UNUSED (mode), bool reverse,
    but we still modify the MEM's properties.  */
 
 rtx
-pieces_addr::adjust (scalar_int_mode mode, HOST_WIDE_INT offset)
+pieces_addr::adjust (scalar_int_mode mode, HOST_WIDE_INT offset,
+		     by_pieces_prev *prev)
 {
   if (m_constfn)
-    return m_constfn (m_cfndata, offset, mode);
+    /* Pass the previous data to m_constfn.  */
+    return m_constfn (m_cfndata, prev, offset, mode);
   if (m_obj == NULL_RTX)
     return NULL_RTX;
   if (m_auto)
@@ -1041,6 +1059,9 @@ pieces_addr::maybe_postinc (HOST_WIDE_INT size)
 
 class op_by_pieces_d
 {
+ private:
+  scalar_int_mode get_usable_mode (scalar_int_mode mode, unsigned int);
+
  protected:
   pieces_addr m_to, m_from;
   unsigned HOST_WIDE_INT m_len;
@@ -1048,6 +1069,10 @@ class op_by_pieces_d
   unsigned int m_align;
   unsigned int m_max_size;
   bool m_reverse;
+  /* True if this is a stack push.  */
+  bool m_push;
+  /* True if targetm.overlap_op_by_pieces_p () returns true.  */
+  bool m_overlap_op_by_pieces;
 
   /* Virtual functions, overriden by derived classes for the specific
      operation.  */
@@ -1059,7 +1084,7 @@ class op_by_pieces_d
 
  public:
   op_by_pieces_d (rtx, bool, rtx, bool, by_pieces_constfn, void *,
-		  unsigned HOST_WIDE_INT, unsigned int);
+		  unsigned HOST_WIDE_INT, unsigned int, bool);
   void run ();
 };
 
@@ -1074,10 +1099,11 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
 				by_pieces_constfn from_cfn,
 				void *from_cfn_data,
 				unsigned HOST_WIDE_INT len,
-				unsigned int align)
+				unsigned int align, bool push)
   : m_to (to, to_load, NULL, NULL),
     m_from (from, from_load, from_cfn, from_cfn_data),
-    m_len (len), m_max_size (MOVE_MAX_PIECES + 1)
+    m_len (len), m_max_size (MOVE_MAX_PIECES + 1),
+    m_push (push)
 {
   int toi = m_to.get_addr_inc ();
   int fromi = m_from.get_addr_inc ();
@@ -1106,6 +1132,27 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
 
   align = alignment_for_piecewise_move (MOVE_MAX_PIECES, align);
   m_align = align;
+
+  m_overlap_op_by_pieces = targetm.overlap_op_by_pieces_p ();
+}
+
+/* This function returns the largest usable integer mode for LEN bytes
+   whose size is no bigger than size of MODE.  */
+
+scalar_int_mode
+op_by_pieces_d::get_usable_mode (scalar_int_mode mode, unsigned int len)
+{
+  unsigned int size;
+  do
+    {
+      size = GET_MODE_SIZE (mode);
+      if (len >= size && prepare_mode (mode, m_align))
+	break;
+      /* NB: widest_int_mode_for_size checks SIZE > 1.  */
+      mode = widest_int_mode_for_size (size);
+    }
+  while (1);
+  return mode;
 }
 
 /* This function contains the main loop used for expanding a block
@@ -1116,42 +1163,80 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
 void
 op_by_pieces_d::run ()
 {
-  while (m_max_size > 1 && m_len > 0)
+  if (m_len == 0)
+    return;
+
+  /* NB: widest_int_mode_for_size checks M_MAX_SIZE > 1.  */
+  scalar_int_mode mode = widest_int_mode_for_size (m_max_size);
+  mode = get_usable_mode (mode, m_len);
+
+  by_pieces_prev to_prev = { nullptr, mode };
+  by_pieces_prev from_prev = { nullptr, mode };
+
+  do
     {
-      scalar_int_mode mode = widest_int_mode_for_size (m_max_size);
+      unsigned int size = GET_MODE_SIZE (mode);
+      rtx to1 = NULL_RTX, from1;
 
-      if (prepare_mode (mode, m_align))
+      while (m_len >= size)
 	{
-	  unsigned int size = GET_MODE_SIZE (mode);
-	  rtx to1 = NULL_RTX, from1;
+	  if (m_reverse)
+	    m_offset -= size;
 
-	  while (m_len >= size)
-	    {
-	      if (m_reverse)
-		m_offset -= size;
+	  to1 = m_to.adjust (mode, m_offset, &to_prev);
+	  to_prev.data = to1;
+	  to_prev.mode = mode;
+	  from1 = m_from.adjust (mode, m_offset, &from_prev);
+	  from_prev.data = from1;
+	  from_prev.mode = mode;
 
-	      to1 = m_to.adjust (mode, m_offset);
-	      from1 = m_from.adjust (mode, m_offset);
+	  m_to.maybe_predec (-(HOST_WIDE_INT)size);
+	  m_from.maybe_predec (-(HOST_WIDE_INT)size);
 
-	      m_to.maybe_predec (-(HOST_WIDE_INT)size);
-	      m_from.maybe_predec (-(HOST_WIDE_INT)size);
+	  generate (to1, from1, mode);
 
-	      generate (to1, from1, mode);
+	  m_to.maybe_postinc (size);
+	  m_from.maybe_postinc (size);
 
-	      m_to.maybe_postinc (size);
-	      m_from.maybe_postinc (size);
+	  if (!m_reverse)
+	    m_offset += size;
 
-	      if (!m_reverse)
-		m_offset += size;
-
-	      m_len -= size;
-	    }
-
-	  finish_mode (mode);
+	  m_len -= size;
 	}
 
-      m_max_size = GET_MODE_SIZE (mode);
+      finish_mode (mode);
+
+      if (m_len == 0)
+	return;
+
+      if (!m_push && m_overlap_op_by_pieces)
+	{
+	  /* NB: Generate overlapping operations if it is not a stack
+	     push since stack push must not overlap.  Get the smallest
+	     integer mode for M_LEN bytes.  */
+	  mode = smallest_int_mode_for_size (m_len * BITS_PER_UNIT);
+	  mode = get_usable_mode (mode, GET_MODE_SIZE (mode));
+	  int gap = GET_MODE_SIZE (mode) - m_len;
+	  if (gap > 0)
+	    {
+	      /* If size of MODE > M_LEN, generate the last operation
+		 in MODE for the remaining bytes with ovelapping memory
+		 from the previois operation.  */
+	      if (m_reverse)
+		m_offset += gap;
+	      else
+		m_offset -= gap;
+	      m_len += gap;
+	    }
+	}
+      else
+	{
+	  /* NB: widest_int_mode_for_size checks SIZE > 1.  */
+	  mode = widest_int_mode_for_size (size);
+	  mode = get_usable_mode (mode, m_len);
+	}
     }
+  while (1);
 
   /* The code above should have handled everything.  */
   gcc_assert (!m_len);
@@ -1159,6 +1244,12 @@ op_by_pieces_d::run ()
 
 /* Derived class from op_by_pieces_d, providing support for block move
    operations.  */
+
+#ifdef PUSH_ROUNDING
+#define PUSHG_P(to)  ((to) == nullptr)
+#else
+#define PUSHG_P(to)  false
+#endif
 
 class move_by_pieces_d : public op_by_pieces_d
 {
@@ -1169,7 +1260,8 @@ class move_by_pieces_d : public op_by_pieces_d
  public:
   move_by_pieces_d (rtx to, rtx from, unsigned HOST_WIDE_INT len,
 		    unsigned int align)
-    : op_by_pieces_d (to, false, from, true, NULL, NULL, len, align)
+    : op_by_pieces_d (to, false, from, true, NULL, NULL, len, align,
+		      PUSHG_P (to))
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1264,7 +1356,8 @@ class store_by_pieces_d : public op_by_pieces_d
  public:
   store_by_pieces_d (rtx to, by_pieces_constfn cfn, void *cfn_data,
 		     unsigned HOST_WIDE_INT len, unsigned int align)
-    : op_by_pieces_d (to, false, NULL_RTX, true, cfn, cfn_data, len, align)
+    : op_by_pieces_d (to, false, NULL_RTX, true, cfn, cfn_data, len,
+		      align, false)
   {
   }
   rtx finish_retmode (memop_ret);
@@ -1319,7 +1412,7 @@ store_by_pieces_d::finish_retmode (memop_ret retmode)
 
 int
 can_store_by_pieces (unsigned HOST_WIDE_INT len,
-		     rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode),
+		     by_pieces_constfn constfun,
 		     void *constfundata, unsigned int align, bool memsetp)
 {
   unsigned HOST_WIDE_INT l;
@@ -1366,7 +1459,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
 		  if (reverse)
 		    offset -= size;
 
-		  cst = (*constfun) (constfundata, offset, mode);
+		  cst = (*constfun) (constfundata, nullptr, offset, mode);
 		  if (!targetm.legitimate_constant_p (mode, cst))
 		    return 0;
 
@@ -1396,7 +1489,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
 
 rtx
 store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
-		 rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode),
+		 by_pieces_constfn constfun,
 		 void *constfundata, unsigned int align, bool memsetp,
 		 memop_ret retmode)
 {
@@ -1424,7 +1517,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
    Return const0_rtx unconditionally.  */
 
 static rtx
-clear_by_pieces_1 (void *, HOST_WIDE_INT, scalar_int_mode)
+clear_by_pieces_1 (void *, void *, HOST_WIDE_INT, scalar_int_mode)
 {
   return const0_rtx;
 }
@@ -1460,7 +1553,8 @@ class compare_by_pieces_d : public op_by_pieces_d
   compare_by_pieces_d (rtx op0, rtx op1, by_pieces_constfn op1_cfn,
 		       void *op1_cfn_data, HOST_WIDE_INT len, int align,
 		       rtx_code_label *fail_label)
-    : op_by_pieces_d (op0, true, op1, true, op1_cfn, op1_cfn_data, len, align)
+    : op_by_pieces_d (op0, true, op1, true, op1_cfn, op1_cfn_data, len,
+		      align, false)
   {
     m_fail_label = fail_label;
   }
@@ -3056,7 +3150,8 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
 		     unsigned int expected_align, HOST_WIDE_INT expected_size,
 		     unsigned HOST_WIDE_INT min_size,
 		     unsigned HOST_WIDE_INT max_size,
-		     unsigned HOST_WIDE_INT probable_max_size)
+		     unsigned HOST_WIDE_INT probable_max_size,
+		     unsigned ctz_size)
 {
   machine_mode mode = GET_MODE (object);
   unsigned int align;
@@ -3103,6 +3198,10 @@ clear_storage_hints (rtx object, rtx size, enum block_op_methods method,
 				   expected_align, expected_size,
 				   min_size, max_size, probable_max_size))
     ;
+  else if (try_store_by_multiple_pieces (object, size, ctz_size,
+					 min_size, max_size,
+					 NULL_RTX, 0, align))
+    ;
   else if (ADDR_SPACE_GENERIC_P (MEM_ADDR_SPACE (object)))
     return set_storage_via_libcall (object, size, const0_rtx,
 				    method == BLOCK_OP_TAILCALL);
@@ -3120,7 +3219,7 @@ clear_storage (rtx object, rtx size, enum block_op_methods method)
     min = max = UINTVAL (size);
   else
     max = GET_MODE_MASK (GET_MODE (size));
-  return clear_storage_hints (object, size, method, 0, -1, min, max, max);
+  return clear_storage_hints (object, size, method, 0, -1, min, max, max, 0);
 }
 
 
@@ -5646,7 +5745,8 @@ emit_storent_insn (rtx to, rtx from)
 /* Helper function for store_expr storing of STRING_CST.  */
 
 static rtx
-string_cst_read_str (void *data, HOST_WIDE_INT offset, scalar_int_mode mode)
+string_cst_read_str (void *data, void *, HOST_WIDE_INT offset,
+		     scalar_int_mode mode)
 {
   tree str = (tree) data;
 
@@ -7019,7 +7119,9 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	/* Compute the size of the elements in the CTOR.  It differs
 	   from the size of the vector type elements only when the
 	   CTOR elements are vectors themselves.  */
-	tree val_type = TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value);
+	tree val_type = (CONSTRUCTOR_NELTS (exp) != 0
+			 ? TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value)
+			 : elttype);
 	if (VECTOR_TYPE_P (val_type))
 	  bitsize = tree_to_uhwi (TYPE_SIZE (val_type));
 	else
@@ -8662,6 +8764,56 @@ expand_misaligned_mem_ref (rtx temp, machine_mode mode, int unsignedp,
   return temp;
 }
 
+/* Helper function of expand_expr_2, expand a division or modulo.
+   op0 and op1 should be already expanded treeop0 and treeop1, using
+   expand_operands.  */
+
+static rtx
+expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
+		    tree treeop1, rtx op0, rtx op1, rtx target, int unsignedp)
+{
+  bool mod_p = (code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR
+		|| code == CEIL_MOD_EXPR || code == ROUND_MOD_EXPR);
+  if (SCALAR_INT_MODE_P (mode)
+      && optimize >= 2
+      && get_range_pos_neg (treeop0) == 1
+      && get_range_pos_neg (treeop1) == 1)
+    {
+      /* If both arguments are known to be positive when interpreted
+	 as signed, we can expand it as both signed and unsigned
+	 division or modulo.  Choose the cheaper sequence in that case.  */
+      bool speed_p = optimize_insn_for_speed_p ();
+      do_pending_stack_adjust ();
+      start_sequence ();
+      rtx uns_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 1);
+      rtx_insn *uns_insns = get_insns ();
+      end_sequence ();
+      start_sequence ();
+      rtx sgn_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 0);
+      rtx_insn *sgn_insns = get_insns ();
+      end_sequence ();
+      unsigned uns_cost = seq_cost (uns_insns, speed_p);
+      unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+
+      /* If costs are the same then use as tie breaker the other other
+	 factor.  */
+      if (uns_cost == sgn_cost)
+	{
+	  uns_cost = seq_cost (uns_insns, !speed_p);
+	  sgn_cost = seq_cost (sgn_insns, !speed_p);
+	}
+
+      if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
+	{
+	  emit_insn (uns_insns);
+	  return uns_ret;
+	}
+      emit_insn (sgn_insns);
+      return sgn_ret;
+    }
+  return expand_divmod (mod_p, code, mode, op0, op1, target, unsignedp);
+}
+
 rtx
 expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    enum expand_modifier modifier)
@@ -9199,13 +9351,77 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  if (!REG_P (op0))
 	    op0 = copy_to_mode_reg (mode, op0);
 
-	  return REDUCE_BIT_FIELD (gen_rtx_MULT (mode, op0,
-			       gen_int_mode (tree_to_shwi (exp1),
-					     TYPE_MODE (TREE_TYPE (exp1)))));
+	  op1 = gen_int_mode (tree_to_shwi (exp1),
+			      TYPE_MODE (TREE_TYPE (exp1)));
+	  return REDUCE_BIT_FIELD (gen_rtx_MULT (mode, op0, op1));
 	}
 
       if (modifier == EXPAND_STACK_PARM)
 	target = 0;
+
+      if (SCALAR_INT_MODE_P (mode) && optimize >= 2)
+	{
+	  gimple *def_stmt0 = get_def_for_expr (treeop0, TRUNC_DIV_EXPR);
+	  gimple *def_stmt1 = get_def_for_expr (treeop1, TRUNC_DIV_EXPR);
+	  if (def_stmt0
+	      && !operand_equal_p (treeop1, gimple_assign_rhs2 (def_stmt0), 0))
+	    def_stmt0 = NULL;
+	  if (def_stmt1
+	      && !operand_equal_p (treeop0, gimple_assign_rhs2 (def_stmt1), 0))
+	    def_stmt1 = NULL;
+
+	  if (def_stmt0 || def_stmt1)
+	    {
+	      /* X / Y * Y can be expanded as X - X % Y too.
+		 Choose the cheaper sequence of those two.  */
+	      if (def_stmt0)
+		treeop0 = gimple_assign_rhs1 (def_stmt0);
+	      else
+		{
+		  treeop1 = treeop0;
+		  treeop0 = gimple_assign_rhs1 (def_stmt1);
+		}
+	      expand_operands (treeop0, treeop1, subtarget, &op0, &op1,
+			       EXPAND_NORMAL);
+	      bool speed_p = optimize_insn_for_speed_p ();
+	      do_pending_stack_adjust ();
+	      start_sequence ();
+	      rtx divmul_ret
+		= expand_expr_divmod (TRUNC_DIV_EXPR, mode, treeop0, treeop1,
+				      op0, op1, NULL_RTX, unsignedp);
+	      divmul_ret = expand_mult (mode, divmul_ret, op1, target,
+					unsignedp);
+	      rtx_insn *divmul_insns = get_insns ();
+	      end_sequence ();
+	      start_sequence ();
+	      rtx modsub_ret
+		= expand_expr_divmod (TRUNC_MOD_EXPR, mode, treeop0, treeop1,
+				      op0, op1, NULL_RTX, unsignedp);
+	      this_optab = optab_for_tree_code (MINUS_EXPR, type,
+						optab_default);
+	      modsub_ret = expand_binop (mode, this_optab, op0, modsub_ret,
+					 target, unsignedp, OPTAB_LIB_WIDEN);
+	      rtx_insn *modsub_insns = get_insns ();
+	      end_sequence ();
+	      unsigned divmul_cost = seq_cost (divmul_insns, speed_p);
+	      unsigned modsub_cost = seq_cost (modsub_insns, speed_p);
+	      /* If costs are the same then use as tie breaker the other other
+		 factor.  */
+	      if (divmul_cost == modsub_cost)
+		{
+		  divmul_cost = seq_cost (divmul_insns, !speed_p);
+		  modsub_cost = seq_cost (modsub_insns, !speed_p);
+		}
+
+	      if (divmul_cost <= modsub_cost)
+		{
+		  emit_insn (divmul_insns);
+		  return REDUCE_BIT_FIELD (divmul_ret);
+		}
+	      emit_insn (modsub_insns);
+	      return REDUCE_BIT_FIELD (modsub_ret);
+	    }
+	}
 
       expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
       return REDUCE_BIT_FIELD (expand_mult (mode, op0, op1, target, unsignedp));
@@ -9220,61 +9436,21 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case CEIL_DIV_EXPR:
     case ROUND_DIV_EXPR:
     case EXACT_DIV_EXPR:
-     {
-       /* If this is a fixed-point operation, then we cannot use the code
-	  below because "expand_divmod" doesn't support sat/no-sat fixed-point
-	  divisions.   */
-       if (ALL_FIXED_POINT_MODE_P (mode))
-	 goto binop;
+      /* If this is a fixed-point operation, then we cannot use the code
+	 below because "expand_divmod" doesn't support sat/no-sat fixed-point
+	 divisions.   */
+      if (ALL_FIXED_POINT_MODE_P (mode))
+	goto binop;
 
-       if (modifier == EXPAND_STACK_PARM)
-	 target = 0;
-       /* Possible optimization: compute the dividend with EXPAND_SUM
-	  then if the divisor is constant can optimize the case
-	  where some terms of the dividend have coeffs divisible by it.  */
-       expand_operands (treeop0, treeop1,
-			subtarget, &op0, &op1, EXPAND_NORMAL);
-       bool mod_p = code == TRUNC_MOD_EXPR || code == FLOOR_MOD_EXPR
-		    || code == CEIL_MOD_EXPR || code == ROUND_MOD_EXPR;
-       if (SCALAR_INT_MODE_P (mode)
-	   && optimize >= 2
-	   && get_range_pos_neg (treeop0) == 1
-	   && get_range_pos_neg (treeop1) == 1)
-	 {
-	   /* If both arguments are known to be positive when interpreted
-	      as signed, we can expand it as both signed and unsigned
-	      division or modulo.  Choose the cheaper sequence in that case.  */
-	   bool speed_p = optimize_insn_for_speed_p ();
-	   do_pending_stack_adjust ();
-	   start_sequence ();
-	   rtx uns_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 1);
-	   rtx_insn *uns_insns = get_insns ();
-	   end_sequence ();
-	   start_sequence ();
-	   rtx sgn_ret = expand_divmod (mod_p, code, mode, op0, op1, target, 0);
-	   rtx_insn *sgn_insns = get_insns ();
-	   end_sequence ();
-	   unsigned uns_cost = seq_cost (uns_insns, speed_p);
-	   unsigned sgn_cost = seq_cost (sgn_insns, speed_p);
+      if (modifier == EXPAND_STACK_PARM)
+	target = 0;
+      /* Possible optimization: compute the dividend with EXPAND_SUM
+	 then if the divisor is constant can optimize the case
+	 where some terms of the dividend have coeffs divisible by it.  */
+      expand_operands (treeop0, treeop1, subtarget, &op0, &op1, EXPAND_NORMAL);
+      return expand_expr_divmod (code, mode, treeop0, treeop1, op0, op1,
+				 target, unsignedp);
 
-	   /* If costs are the same then use as tie breaker the other
-	      other factor.  */
-	   if (uns_cost == sgn_cost)
-	     {
-		uns_cost = seq_cost (uns_insns, !speed_p);
-		sgn_cost = seq_cost (sgn_insns, !speed_p);
-	     }
-
-	   if (uns_cost < sgn_cost || (uns_cost == sgn_cost && unsignedp))
-	     {
-	       emit_insn (uns_insns);
-	       return uns_ret;
-	     }
-	   emit_insn (sgn_insns);
-	   return sgn_ret;
-	 }
-       return expand_divmod (mod_p, code, mode, op0, op1, target, unsignedp);
-     }
     case RDIV_EXPR:
       goto binop;
 

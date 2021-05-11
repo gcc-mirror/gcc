@@ -8,11 +8,11 @@ main ()
 {
   int x = INT_MIN;
   int y;
-  asm ("" : "+g" (x));
+  __asm__ volatile ("" : "+g" (x));
   y = -(-x);
-  asm ("" : "+g" (y));
+  __asm__ volatile ("" : "+g" (y));
   y = -(-INT_MIN);
-  asm ("" : "+g" (y));
+  __asm__ volatile ("" : "+g" (y));
 }
 
 /* { dg-output "negation of -2147483648 cannot be represented in type 'int'\[^\n\r]*; cast to an unsigned type to negate this value to itself\[^\n\r]*(\n|\r\n|\r)" } */

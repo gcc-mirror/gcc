@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "loop-unroll.h"
+#include "hard-reg-set.h"
 
 #ifdef INSN_SCHEDULING
 
@@ -1356,6 +1357,7 @@ sms_schedule (void)
   basic_block condition_bb = NULL;
   edge latch_edge;
   HOST_WIDE_INT trip_count, max_trip_count;
+  HARD_REG_SET prohibited_regs;
 
   loop_optimizer_init (LOOPS_HAVE_PREHEADERS
 		       | LOOPS_HAVE_RECORDED_EXITS);
@@ -1384,6 +1386,8 @@ sms_schedule (void)
   /* Allocate memory to hold the DDG array one entry for each loop.
      We use loop->num as index into this array.  */
   g_arr = XCNEWVEC (ddg_ptr, number_of_loops (cfun));
+
+  REG_SET_TO_HARD_REG_SET (prohibited_regs, &df->regular_block_artificial_uses);
 
   if (dump_file)
   {
@@ -1469,23 +1473,31 @@ sms_schedule (void)
       }
 
       /* Don't handle BBs with calls or barriers
-	 or !single_set with the exception of instructions that include
-	 count_reg---these instructions are part of the control part
-	 that do-loop recognizes.
+	 or !single_set with the exception of do-loop control part insns.
          ??? Should handle insns defining subregs.  */
-     for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
-      {
-         rtx set;
+      for (insn = head; insn != NEXT_INSN (tail); insn = NEXT_INSN (insn))
+	{
+	  if (INSN_P (insn))
+	    {
+	      HARD_REG_SET regs;
+	      CLEAR_HARD_REG_SET (regs);
+	      note_stores (insn, record_hard_reg_sets, &regs);
+	      if (hard_reg_set_intersect_p (regs, prohibited_regs))
+		break;
+	    }
 
-        if (CALL_P (insn)
-            || BARRIER_P (insn)
-            || (NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
-                && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE
-                && !reg_mentioned_p (count_reg, insn))
-            || (INSN_P (insn) && (set = single_set (insn))
-                && GET_CODE (SET_DEST (set)) == SUBREG))
-        break;
-      }
+	  if (CALL_P (insn)
+	      || BARRIER_P (insn)
+	      || (INSN_P (insn) && single_set (insn)
+		  && GET_CODE (SET_DEST (single_set (insn))) == SUBREG)
+	      /* Not a single set.  */
+	      || (NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
+		  && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE
+		  /* But non-single-set allowed in one special case.  */
+		  && (insn != prev_nondebug_insn (tail)
+		      || !reg_mentioned_p (count_reg, insn))))
+	    break;
+	}
 
       if (insn != NEXT_INSN (tail))
 	{
@@ -1495,11 +1507,13 @@ sms_schedule (void)
 		fprintf (dump_file, "SMS loop-with-call\n");
 	      else if (BARRIER_P (insn))
 		fprintf (dump_file, "SMS loop-with-barrier\n");
-              else if ((NONDEBUG_INSN_P (insn) && !JUMP_P (insn)
-                && !single_set (insn) && GET_CODE (PATTERN (insn)) != USE))
-                fprintf (dump_file, "SMS loop-with-not-single-set\n");
-              else
-               fprintf (dump_file, "SMS loop with subreg in lhs\n");
+	      else if (INSN_P (insn) && single_set (insn)
+		       && GET_CODE (SET_DEST (single_set (insn))) == SUBREG)
+		fprintf (dump_file, "SMS loop with subreg in lhs\n");
+	      else
+		fprintf (dump_file,
+			 "SMS loop-with-not-single-set-or-prohibited-reg\n");
+
 	      print_rtl_single (dump_file, insn);
 	    }
 

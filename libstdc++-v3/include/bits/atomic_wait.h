@@ -226,9 +226,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       void
-      _M_notify(const __platform_wait_t* __addr, bool __all) noexcept
+      _M_notify(const __platform_wait_t* __addr, bool __all, bool __bare) noexcept
       {
-	if (!_M_waiting())
+	if (!(__bare || _M_waiting()))
 	  return;
 
 #ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
@@ -304,11 +304,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 
 	void
-	_M_notify(bool __all)
+	_M_notify(bool __all, bool __bare = false)
 	{
 	  if (_M_addr == &_M_w._M_ver)
 	    __atomic_fetch_add(_M_addr, 1, __ATOMIC_ACQ_REL);
-	  _M_w._M_notify(_M_addr, __all);
+	  _M_w._M_notify(_M_addr, __all, __bare);
 	}
 
 	template<typename _Up, typename _ValFn,
@@ -452,7 +452,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __atomic_notify_address(const _Tp* __addr, bool __all) noexcept
     {
       __detail::__bare_wait __w(__addr);
-      __w._M_notify(__all);
+      __w._M_notify(__all, true);
     }
 
   // This call is to be used by atomic types which track contention externally
@@ -464,7 +464,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __detail::__platform_notify(__addr, __all);
 #else
     __detail::__bare_wait __w(__addr);
-    __w._M_notify(__all);
+    __w._M_notify(__all, true);
 #endif
   }
 _GLIBCXX_END_NAMESPACE_VERSION

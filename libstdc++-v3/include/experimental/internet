@@ -52,7 +52,7 @@
 # include <arpa/inet.h>		// inet_ntop
 #endif
 #ifdef _GLIBCXX_HAVE_NETINET_IN_H
-# include <netinet/in.h>	// IPPROTO_IP
+# include <netinet/in.h>	// IPPROTO_IP, IPPROTO_IPV6, in_addr, in6_addr
 #endif
 #ifdef _GLIBCXX_HAVE_NETINET_TCP_H
 # include <netinet/tcp.h>	// TCP_NODELAY
@@ -72,20 +72,20 @@ inline namespace v1
 {
 namespace ip
 {
-
   /** @addtogroup networking-ts
    *  @{
    */
 
-#ifdef _GLIBCXX_HAVE_NETDB_H
   /** Error codes for resolver errors.
    * @{
    */
 
   enum class resolver_errc : int {
+#ifdef _GLIBCXX_HAVE_NETDB_H
     host_not_found = EAI_NONAME,
     host_not_found_try_again = EAI_AGAIN,
     service_not_found = EAI_SERVICE
+#endif
   };
 
   /// Error category for resolver errors.
@@ -94,21 +94,26 @@ namespace ip
     struct __cat : error_category
     {
       const char* name() const noexcept { return "resolver"; }
-      std::string message(int __e) const { return ::gai_strerror(__e); }
+      std::string message(int __e) const {
+#ifdef _GLIBCXX_HAVE_NETDB_H
+	  return ::gai_strerror(__e);
+#else
+	  return "name resolution requires <netdb.h>";
+#endif
+      }
       virtual void __message(int) { } // TODO dual ABI XXX
     };
     static __cat __c;
     return __c;
   }
 
-  error_code make_error_code(resolver_errc __e) noexcept
+  inline error_code make_error_code(resolver_errc __e) noexcept
   { return error_code(static_cast<int>(__e), resolver_category()); }
 
-  error_condition make_error_condition(resolver_errc __e) noexcept
+  inline error_condition make_error_condition(resolver_errc __e) noexcept
   { return error_condition(static_cast<int>(__e), resolver_category()); }
 
   /// @}
-#endif
 
   using port_type = uint_least16_t;	///< Type used for port numbers.
   using scope_id_type = uint_least32_t;	///< Type used for IPv6 scope IDs.
@@ -118,6 +123,16 @@ namespace ip
     using __string_with
       = enable_if_t<std::is_same<typename _Alloc::value_type, char>::value,
 		    std::basic_string<char, std::char_traits<char>, _Alloc>>;
+
+  constexpr errc
+  __unsupported_err() noexcept
+  {
+#if defined EAFNOSUPPORT
+    return std::errc::address_family_not_supported;
+#else
+    return std::errc::operation_not_supported;
+#endif
+  }
 
   /** Tag indicating conversion between IPv4 and IPv4-mapped IPv6 addresses.
    * @{
@@ -197,20 +212,22 @@ namespace ip
     constexpr uint_type
     to_uint() const noexcept { return _S_ntoh_32(_M_addr); }
 
-#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     template<typename _Allocator = allocator<char>>
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
 	__string_with<_Allocator> __str(__a);
-	__str.resize(INET6_ADDRSTRLEN);
+	__str.resize(INET_ADDRSTRLEN);
 	if (inet_ntop(AF_INET, &_M_addr, &__str.front(), __str.size()))
 	  __str.erase(__str.find('\0'));
 	else
 	  __str.resize(0);
 	return __str;
-      }
+#else
+	std::__throw_system_error((int)__unsupported_err());
 #endif
+      }
 
     // static members:
     static constexpr address_v4 any() noexcept { return address_v4{}; }
@@ -256,8 +273,11 @@ namespace ip
     // types:
     struct bytes_type : array<unsigned char, 16>
     {
-      template<typename... _Tp> explicit constexpr bytes_type(_Tp... __t)
-	: array<unsigned char, 16>{{static_cast<unsigned char>(__t)...}} { }
+      template<typename... _Tp>
+	explicit constexpr
+	bytes_type(_Tp... __t)
+	: array<unsigned char, 16>{{static_cast<unsigned char>(__t)...}}
+	{ }
     };
 
     // constructors:
@@ -338,11 +358,11 @@ namespace ip
 
     constexpr bytes_type to_bytes() const noexcept { return _M_bytes; }
 
-#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     template<typename _Allocator = allocator<char>>
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
       {
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
 	__string_with<_Allocator> __str(__a);
 	__str.resize(INET6_ADDRSTRLEN + (_M_scope_id ? 11 : 0));
 	char* const __p = &__str.front();
@@ -364,8 +384,10 @@ namespace ip
 	else
 	  __str.resize(0);
 	return __str;
-      }
+#else
+	std::__throw_system_error((int)__unsupported_err());
 #endif
+      }
 
     // static members:
 
@@ -650,6 +672,7 @@ namespace ip
   inline address_v4
   make_address_v4(const char* __str, error_code& __ec) noexcept
   {
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     address_v4 __a;
     const int __res = ::inet_pton(AF_INET, __str, &__a._M_addr);
     if (__res == 1)
@@ -661,6 +684,9 @@ namespace ip
       __ec = std::make_error_code(std::errc::invalid_argument);
     else
       __ec.assign(errno, generic_category());
+#else
+    __ec = std::make_error_code(__unsupported_err());
+#endif
     return {};
   }
 
@@ -718,8 +744,9 @@ namespace ip
   inline address_v6
   __make_address_v6(const char* __addr, const char* __scope, error_code& __ec)
   {
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     address_v6::bytes_type __b;
-    int __res = ::inet_pton(AF_INET6, __addr, __b.data());
+    const int __res = ::inet_pton(AF_INET6, __addr, __b.data());
     if (__res == 1)
       {
 	__ec.clear();
@@ -741,6 +768,9 @@ namespace ip
       __ec = std::make_error_code(std::errc::invalid_argument);
     else
       __ec.assign(errno, generic_category());
+#else
+    __ec = std::make_error_code(__unsupported_err());
+#endif
     return {};
   }
 
@@ -1334,7 +1364,7 @@ namespace ip
   make_network_v4(const address_v4& __a, int __prefix_len)
   { return network_v4{__a, __prefix_len}; }
 
-  network_v4
+  inline network_v4
   make_network_v4(const address_v4& __a, const address_v4& __mask)
   { return network_v4{ __a, __mask }; }
 
@@ -1449,15 +1479,14 @@ namespace ip
       // members:
       constexpr protocol_type protocol() const noexcept
       {
-	return _M_data._M_v4.sin_family == AF_INET6
-	  ? protocol_type::v6() : protocol_type::v4();
+	return _M_is_v6() ? protocol_type::v6() : protocol_type::v4();
       }
 
       constexpr ip::address
       address() const noexcept
       {
 	ip::address __addr;
-	if (protocol().family() == AF_INET6)
+	if (_M_is_v6())
 	  {
 	    __builtin_memcpy(&__addr._M_v6._M_bytes,
 			     _M_data._M_v6.sin6_addr.s6_addr, 16);
@@ -1498,18 +1527,16 @@ namespace ip
       { _M_data._M_v4.sin_port = address_v4::_S_hton_16(__port_num); }
 
       void* data() noexcept { return &_M_data; }
+
       const void* data() const noexcept { return &_M_data; }
+
       constexpr size_t size() const noexcept
-      {
-	return protocol().family() == AF_INET6
-	  ? sizeof(sockaddr_in6) : sizeof(sockaddr_in);
-      }
+      { return _M_is_v6() ? sizeof(sockaddr_in6) : sizeof(sockaddr_in); }
 
       void
       resize(size_t __s)
       {
-	if ((protocol().family() == AF_INET6 && __s != sizeof(sockaddr_in6))
-	    || (protocol().family() == AF_INET && __s != sizeof(sockaddr_in)))
+	if (__s != size())
 	  __throw_length_error("net::ip::basic_endpoint::resize");
       }
 
@@ -1521,6 +1548,9 @@ namespace ip
 	sockaddr_in	_M_v4;
 	sockaddr_in6	_M_v6;
       } _M_data;
+
+      constexpr bool _M_is_v6() const noexcept
+      { return _M_data._M_v4.sin_family == AF_INET6; }
     };
 
   /** basic_endpoint comparisons
@@ -1649,62 +1679,51 @@ namespace ip
   class resolver_base
   {
   public:
-    enum flags : int
-    {
-      __flags_passive			= AI_PASSIVE,
-      __flags_canonical_name		= AI_CANONNAME,
-      __flags_numeric_host		= AI_NUMERICHOST,
+    enum flags : int { };
+    static constexpr flags passive		= (flags)AI_PASSIVE;
+    static constexpr flags canonical_name	= (flags)AI_CANONNAME;
+    static constexpr flags numeric_host		= (flags)AI_NUMERICHOST;
 #ifdef AI_NUMERICSERV
-      __flags_numeric_service		= AI_NUMERICSERV,
+    static constexpr flags numeric_service	= (flags)AI_NUMERICSERV;
 #endif
-      __flags_v4_mapped			= AI_V4MAPPED,
-      __flags_all_matching		= AI_ALL,
-      __flags_address_configured	= AI_ADDRCONFIG
-    };
-    static constexpr flags passive		= __flags_passive;
-    static constexpr flags canonical_name	= __flags_canonical_name;
-    static constexpr flags numeric_host		= __flags_numeric_host;
-#ifdef AI_NUMERICSERV
-    static constexpr flags numeric_service	= __flags_numeric_service;
-#endif
-    static constexpr flags v4_mapped		= __flags_v4_mapped;
-    static constexpr flags all_matching		= __flags_all_matching;
-    static constexpr flags address_configured	= __flags_address_configured;
+    static constexpr flags v4_mapped		= (flags)AI_V4MAPPED;
+    static constexpr flags all_matching		= (flags)AI_ALL;
+    static constexpr flags address_configured	= (flags)AI_ADDRCONFIG;
+
+    friend constexpr flags
+    operator&(flags __f1, flags __f2) noexcept
+    { return flags( int(__f1) & int(__f2) ); }
+
+    friend constexpr flags
+    operator|(flags __f1, flags __f2) noexcept
+    { return flags( int(__f1) | int(__f2) ); }
+
+    friend constexpr flags
+    operator^(flags __f1, flags __f2) noexcept
+    { return flags( int(__f1) ^ int(__f2) ); }
+
+    friend constexpr flags
+    operator~(flags __f) noexcept
+    { return flags( ~int(__f) ); }
+
+    friend constexpr flags&
+    operator&=(flags& __f1, flags __f2) noexcept
+    { return __f1 = (__f1 & __f2); }
+
+    friend constexpr flags&
+    operator|=(flags& __f1, flags __f2) noexcept
+    { return __f1 = (__f1 | __f2); }
+
+    friend constexpr flags&
+    operator^=(flags& __f1, flags __f2) noexcept
+    { return __f1 = (__f1 ^ __f2); }
 
   protected:
     resolver_base() = default;
     ~resolver_base() = default;
   };
 
-  constexpr resolver_base::flags
-  operator&(resolver_base::flags __f1, resolver_base::flags __f2)
-  { return resolver_base::flags( int(__f1) & int(__f2) ); }
-
-  constexpr resolver_base::flags
-  operator|(resolver_base::flags __f1, resolver_base::flags __f2)
-  { return resolver_base::flags( int(__f1) | int(__f2) ); }
-
-  constexpr resolver_base::flags
-  operator^(resolver_base::flags __f1, resolver_base::flags __f2)
-  { return resolver_base::flags( int(__f1) ^ int(__f2) ); }
-
-  constexpr resolver_base::flags
-  operator~(resolver_base::flags __f)
-  { return resolver_base::flags( ~int(__f) ); }
-
-  inline resolver_base::flags&
-  operator&=(resolver_base::flags& __f1, resolver_base::flags __f2)
-  { return __f1 = (__f1 & __f2); }
-
-  inline resolver_base::flags&
-  operator|=(resolver_base::flags& __f1, resolver_base::flags __f2)
-  { return __f1 = (__f1 | __f2); }
-
-  inline resolver_base::flags&
-  operator^=(resolver_base::flags& __f1, resolver_base::flags __f2)
-  { return __f1 = (__f1 ^ __f2); }
-
-  // TODO define resolver_base::flags static constants for C++14 mode
+  // TODO define resolver_base::flags static constants in .so for C++14 mode
 
   /// @}
 
@@ -2073,6 +2092,7 @@ namespace ip
 
   /// @}
 
+#ifdef IPPROTO_TCP
   /// The TCP byte-stream protocol.
   class tcp
   {
@@ -2084,11 +2104,12 @@ namespace ip
     using acceptor = basic_socket_acceptor<tcp>; ///< A TCP acceptor.
     using iostream = basic_socket_iostream<tcp>; /// A TCP iostream.
 
-#ifdef _GLIBCXX_HAVE_NETINET_TCP_H
+#ifdef TCP_NODELAY
     /// Disable coalescing of small segments (i.e. the Nagle algorithm).
     struct no_delay : __sockopt_crtp<no_delay, bool>
     {
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
       static const int _S_level = IPPROTO_TCP;
       static const int _S_name = TCP_NODELAY;
@@ -2118,16 +2139,18 @@ namespace ip
    * @{
    */
 
-  inline bool
-  operator==(const tcp& __a, const tcp& __b)
+  constexpr bool
+  operator==(const tcp& __a, const tcp& __b) noexcept
   { return __a.family() == __b.family(); }
 
-  inline bool
-  operator!=(const tcp& __a, const tcp& __b)
+  constexpr bool
+  operator!=(const tcp& __a, const tcp& __b) noexcept
   { return !(__a == __b); }
 
   /// @}
+#endif // IPPROTO_TCP
 
+#ifdef IPPROTO_UDP
   /// The UDP datagram protocol.
   class udp
   {
@@ -2157,21 +2180,28 @@ namespace ip
    * @{
    */
 
-  bool
-  operator==(const udp& __a, const udp& __b)
+  constexpr bool
+  operator==(const udp& __a, const udp& __b) noexcept
   { return __a.family() == __b.family(); }
 
-  inline bool
-  operator!=(const udp& __a, const udp& __b)
+  constexpr bool
+  operator!=(const udp& __a, const udp& __b) noexcept
   { return !(__a == __b); }
 
   /// @}
+#endif // IPPROTO_UDP
+
+#if defined IPPROTO_IP && defined IPPROTO_IPV6
 
   /// Restrict a socket created for an IPv6 protocol to IPv6 only.
-  struct v6_only : __sockopt_crtp<v6_only, bool>
+  class v6_only : public __sockopt_crtp<v6_only, bool>
   {
+  public:
     using __sockopt_crtp::__sockopt_crtp;
+    using __sockopt_crtp::operator=;
 
+  private:
+    friend __sockopt_crtp<v6_only, bool>;
     static const int _S_level = IPPROTO_IPV6;
     static const int _S_name = IPV6_V6ONLY;
   };
@@ -2179,9 +2209,11 @@ namespace ip
   namespace unicast
   {
     /// Set the default number of hops (TTL) for outbound datagrams.
-    struct hops : __sockopt_crtp<hops>
+    class hops : public __sockopt_crtp<hops>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
       template<typename _Protocol>
 	int
@@ -2197,17 +2229,34 @@ namespace ip
 
   namespace multicast
   {
-    /// Request that a socket joins a multicast group.
-    struct join_group
+    class __mcastopt
     {
+    public:
       explicit
-      join_group(const address&);
+      __mcastopt(const address& __grp) noexcept
+      : __mcastopt(__grp.is_v4() ? __mcastopt(__grp.to_v4()) : __mcastopt(__grp.to_v6()))
+      { }
 
       explicit
-      join_group(const address_v4&, const address_v4& = address_v4::any());
+      __mcastopt(const address_v4& __grp,
+		 const address_v4& __iface = address_v4::any()) noexcept
+      {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	_M_v4.imr_multiaddr.s_addr = __grp.to_uint();
+	_M_v4.imr_interface.s_addr = __iface.to_uint();
+#else
+	_M_v4.imr_multiaddr.s_addr = __builtin_bswap32(__grp.to_uint());
+	_M_v4.imr_interface.s_addr = __builtin_bswap32(__iface.to_uint());
+#endif
+      }
 
       explicit
-      join_group(const address_v6&, unsigned int = 0);
+      __mcastopt(const address_v6& __grp, unsigned int __iface = 0) noexcept
+      {
+	const auto __addr = __grp.to_bytes();
+	__builtin_memcpy(_M_v6.ipv6mr_multiaddr.s6_addr, __addr.data(), 16);
+	_M_v6.ipv6mr_interface = __iface;
+      }
 
       template<typename _Protocol>
 	int
@@ -2215,112 +2264,76 @@ namespace ip
 	{ return __p.family() == AF_INET6 ? IPPROTO_IPV6 : IPPROTO_IP; }
 
       template<typename _Protocol>
-	int
-	name(const _Protocol& __p) const noexcept
-	{
-	  return __p.family() == AF_INET6
-	    ? IPV6_JOIN_GROUP : IP_ADD_MEMBERSHIP;
-	}
-      template<typename _Protocol>
-	void*
-	data(const _Protocol&) noexcept
-	{ return std::addressof(_M_value); }
-
-      template<typename _Protocol>
 	const void*
-	data(const _Protocol&) const noexcept
-	{ return std::addressof(_M_value); }
+	data(const _Protocol& __p) const noexcept
+	{ return __p.family() == AF_INET6 ? &_M_v6 : &_M_v4; }
 
       template<typename _Protocol>
 	size_t
 	size(const _Protocol& __p) const noexcept
-	{
-	  return __p.family() == AF_INET6
-	    ? sizeof(_M_value._M_v6) : sizeof(_M_value._M_v4);
-	}
+	{ return __p.family() == AF_INET6 ? sizeof(_M_v6) : sizeof(_M_v4); }
+
+    private:
+      ipv6_mreq _M_v6 = {};
+      ip_mreq _M_v4 = {};
+    };
+
+    /// Request that a socket joins a multicast group.
+    class join_group : private __mcastopt
+    {
+    public:
+      using __mcastopt::__mcastopt;
+      using __mcastopt::level;
+      using __mcastopt::data;
+      using __mcastopt::size;
 
       template<typename _Protocol>
-	void
-	resize(const _Protocol& __p, size_t __s)
+	int
+	name(const _Protocol& __p) const noexcept
 	{
-	  if (__s != size(__p))
-	    __throw_length_error("invalid value for socket option resize");
+	  if (__p.family() == AF_INET6)
+	    return IPV6_JOIN_GROUP;
+	  return IP_ADD_MEMBERSHIP;
 	}
-
-    protected:
-      union
-      {
-	ipv6_mreq _M_v6;
-	ip_mreq _M_v4;
-      } _M_value;
     };
 
     /// Request that a socket leaves a multicast group.
-    struct leave_group
+    class leave_group : private __mcastopt
     {
-      explicit
-      leave_group(const address&);
-
-      explicit
-      leave_group(const address_v4&, const address_v4& = address_v4::any());
-
-      explicit
-      leave_group(const address_v6&, unsigned int = 0);
-
-      template<typename _Protocol>
-	int
-	level(const _Protocol& __p) const noexcept
-	{ return __p.family() == AF_INET6 ? IPPROTO_IPV6 : IPPROTO_IP; }
+    public:
+      using __mcastopt::__mcastopt;
+      using __mcastopt::level;
+      using __mcastopt::data;
+      using __mcastopt::size;
 
       template<typename _Protocol>
 	int
 	name(const _Protocol& __p) const noexcept
 	{
-	  return __p.family() == AF_INET6
-	    ? IPV6_LEAVE_GROUP : IP_DROP_MEMBERSHIP;
+	  if (__p.family() == AF_INET6)
+	    return IPV6_LEAVE_GROUP;
+	  return IP_DROP_MEMBERSHIP;
 	}
-      template<typename _Protocol>
-	void*
-	data(const _Protocol&) noexcept
-	{ return std::addressof(_M_value); }
-
-      template<typename _Protocol>
-	const void*
-	data(const _Protocol&) const noexcept
-	{ return std::addressof(_M_value); }
-
-      template<typename _Protocol>
-	size_t
-	size(const _Protocol& __p) const noexcept
-	{
-	  return __p.family() == AF_INET6
-	    ? sizeof(_M_value._M_v6) : sizeof(_M_value._M_v4);
-	}
-
-      template<typename _Protocol>
-	void
-	resize(const _Protocol& __p, size_t __s)
-	{
-	  if (__s != size(__p))
-	    __throw_length_error("invalid value for socket option resize");
-	}
-
-    protected:
-      union
-      {
-	ipv6_mreq _M_v6;
-	ip_mreq _M_v4;
-      } _M_value;
     };
 
     /// Specify the network interface for outgoing multicast datagrams.
     class outbound_interface
     {
+    public:
       explicit
-      outbound_interface(const address_v4&);
+      outbound_interface(const address_v4& __v4) noexcept
+      {
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+	_M_v4.s_addr = __v4.to_uint();
+#else
+	_M_v4.s_addr = __builtin_bswap32(__v4.to_uint());
+#endif
+      }
 
       explicit
-      outbound_interface(unsigned int);
+      outbound_interface(unsigned int __v6) noexcept
+      : _M_v4(), _M_v6(__v6)
+      { }
 
       template<typename _Protocol>
 	int
@@ -2337,28 +2350,25 @@ namespace ip
 
       template<typename _Protocol>
 	const void*
-	data(const _Protocol&) const noexcept
-	{ return std::addressof(_M_value); }
+	data(const _Protocol& __p) const noexcept
+	{ return __p.family() == AF_INET6 ? &_M_v6 : &_M_v4; }
 
       template<typename _Protocol>
 	size_t
 	size(const _Protocol& __p) const noexcept
-	{
-	  return __p.family() == AF_INET6
-	    ? sizeof(_M_value._M_v6) : sizeof(_M_value._M_v4);
-	}
+	{ return __p.family() == AF_INET6 ? sizeof(_M_v6) : sizeof(_M_v4); }
 
-    protected:
-      union {
-	unsigned _M_v6;
-	in_addr _M_v4;
-      } _M_value;
+    private:
+      in_addr _M_v4;
+      unsigned _M_v6 = 0;
     };
 
     /// Set the default number of hops (TTL) for outbound datagrams.
-    struct hops : __sockopt_crtp<hops>
+    class hops : public __sockopt_crtp<hops>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
       template<typename _Protocol>
 	int
@@ -2375,9 +2385,11 @@ namespace ip
     };
 
     /// Set whether datagrams are delivered back to the local application.
-    struct enable_loopback : __sockopt_crtp<enable_loopback>
+    class enable_loopback : public __sockopt_crtp<enable_loopback, bool>
     {
+    public:
       using __sockopt_crtp::__sockopt_crtp;
+      using __sockopt_crtp::operator=;
 
       template<typename _Protocol>
 	int
@@ -2394,6 +2406,8 @@ namespace ip
     };
 
   } // namespace multicast
+
+#endif // IPPROTO_IP && IPPROTO_IPV6
 
   /// @}
 

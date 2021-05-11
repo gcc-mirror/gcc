@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Dec 11, 2020
+GNAT Reference Manual , Apr 12, 2021
 
 AdaCore
 
@@ -10306,7 +10306,7 @@ compatible with older Ada compilers, including notably DEC Ada.
 @geindex Default_Bit_Order
 
 @code{Standard'Default_Bit_Order} (@code{Standard} is the only
-permissible prefix), provides the value @code{System.Default_Bit_Order}
+allowed prefix), provides the value @code{System.Default_Bit_Order}
 as a @code{Pos} value (0 for @code{High_Order_First}, 1 for
 @code{Low_Order_First}).  This is used to construct the definition of
 @code{Default_Bit_Order} in package @code{System}.
@@ -10323,7 +10323,7 @@ as a @code{Pos} value (0 for @code{High_Order_First}, 1 for
 @geindex Default_Scalar_Storage_Order
 
 @code{Standard'Default_Scalar_Storage_Order} (@code{Standard} is the only
-permissible prefix), provides the current value of the default scalar storage
+allowed prefix), provides the current value of the default scalar storage
 order (as specified using pragma @code{Default_Scalar_Storage_Order}, or
 equal to @code{Default_Bit_Order} if unspecified) as a
 @code{System.Bit_Order} value. This is a static attribute.
@@ -10868,7 +10868,7 @@ this attribute.
 @geindex Maximum_Alignment
 
 @code{Standard'Maximum_Alignment} (@code{Standard} is the only
-permissible prefix) provides the maximum useful alignment value for the
+allowed prefix) provides the maximum useful alignment value for the
 target.  This is a static value that can be used to specify the alignment
 for an object, guaranteeing that it is properly aligned in all
 cases.
@@ -10880,7 +10880,7 @@ cases.
 
 @geindex Max_Integer_Size
 
-@code{Standard'Max_Integer_Size} (@code{Standard} is the only permissible
+@code{Standard'Max_Integer_Size} (@code{Standard} is the only allowed
 prefix) provides the size of the largest supported integer type for
 the target. The result is a static constant.
 
@@ -11433,7 +11433,7 @@ with coprime factors (i.e. as an irreducible fraction).
 
 @geindex Storage_Unit
 
-@code{Standard'Storage_Unit} (@code{Standard} is the only permissible
+@code{Standard'Storage_Unit} (@code{Standard} is the only allowed
 prefix) provides the same value as @code{System.Storage_Unit}.
 
 @node Attribute Stub_Type,Attribute System_Allocator_Alignment,Attribute Storage_Unit,Implementation Defined Attributes
@@ -11471,7 +11471,7 @@ an implicit dependency on this unit.
 @geindex System_Allocator_Alignment
 
 @code{Standard'System_Allocator_Alignment} (@code{Standard} is the only
-permissible prefix) provides the observable guaranted to be honored by
+allowed prefix) provides the observable guaranted to be honored by
 the system allocator (malloc). This is a static value that can be used
 in user storage pools based on malloc either to reject allocation
 with alignment too large or to enable a realignment circuitry if the
@@ -11484,7 +11484,7 @@ alignment request is larger than this value.
 
 @geindex Target_Name
 
-@code{Standard'Target_Name} (@code{Standard} is the only permissible
+@code{Standard'Target_Name} (@code{Standard} is the only allowed
 prefix) provides a static string value that identifies the target
 for the current compilation. For GCC implementations, this is the
 standard gcc target name without the terminating slash (for
@@ -11498,7 +11498,7 @@ example, GNAT 5.0 on windows yields "i586-pc-mingw32msv").
 @geindex To_Address
 
 The @code{System'To_Address}
-(@code{System} is the only permissible prefix)
+(@code{System} is the only allowed prefix)
 denotes a function identical to
 @code{System.Storage_Elements.To_Address} except that
 it is a static attribute.  This means that if its argument is
@@ -11960,7 +11960,7 @@ but, unlike @code{Size}, may be set for non-first subtypes.
 
 @geindex Wchar_T_Size
 
-@code{Standard'Wchar_T_Size} (@code{Standard} is the only permissible
+@code{Standard'Wchar_T_Size} (@code{Standard} is the only allowed
 prefix) provides the size in bits of the C @code{wchar_t} type
 primarily for constructing the definition of this type in
 package @code{Interfaces.C}. The result is a static constant.
@@ -11972,7 +11972,7 @@ package @code{Interfaces.C}. The result is a static constant.
 
 @geindex Word_Size
 
-@code{Standard'Word_Size} (@code{Standard} is the only permissible
+@code{Standard'Word_Size} (@code{Standard} is the only allowed
 prefix) provides the value @code{System.Word_Size}. The result is
 a static constant.
 
@@ -15667,7 +15667,8 @@ There are no nonstandard real types.
 are supported for floating point types.  See 3.5.7(7)."
 @end itemize
 
-The precision and range is as defined by the IEEE standard.
+The precision and range are defined by the IEEE Standard for Floating-Point
+Arithmetic (IEEE 754-2019).
 
 
 @itemize *
@@ -15678,7 +15679,7 @@ The precision and range is as defined by the IEEE standard.
 @end itemize
 
 
-@multitable {xxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
+@multitable {xxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} 
 @headitem
 
 Type
@@ -15693,7 +15694,7 @@ Representation
 
 @tab
 
-32 bit IEEE short
+IEEE Binary32 (Single)
 
 @item
 
@@ -15701,7 +15702,7 @@ Representation
 
 @tab
 
-(Short) 32 bit IEEE short
+IEEE Binary32 (Single)
 
 @item
 
@@ -15709,7 +15710,7 @@ Representation
 
 @tab
 
-64 bit IEEE long
+IEEE Binary64 (Double)
 
 @item
 
@@ -15717,10 +15718,18 @@ Representation
 
 @tab
 
-64 bit IEEE long (80 bit IEEE long on x86 processors)
+IEEE Binary64 (Double) on non-x86 architectures
+IEEE 80-bit Extended on x86 architecture
 
 @end multitable
 
+
+The default rounding mode specified by the IEEE 754 Standard is assumed for
+static computations, i.e. round to nearest, ties to even. The input routines
+yield correctly rounded values for Short_Float, Float and Long_Float at least.
+The output routines can compute up to twice as many exact digits as the value
+of @code{T'Digits} for any type, for example 30 digits for Long_Float; if more
+digits are requested, zeros are printed.
 
 
 @itemize *

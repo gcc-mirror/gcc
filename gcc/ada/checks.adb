@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,46 +23,50 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Eval_Fat; use Eval_Fat;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Ch4;  use Exp_Ch4;
-with Exp_Pakd; use Exp_Pakd;
-with Exp_Util; use Exp_Util;
-with Expander; use Expander;
-with Freeze;   use Freeze;
-with Lib;      use Lib;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Mech; use Sem_Mech;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Sprint;   use Sprint;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Validsw;  use Validsw;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Eval_Fat;       use Eval_Fat;
+with Exp_Ch11;       use Exp_Ch11;
+with Exp_Ch4;        use Exp_Ch4;
+with Exp_Pakd;       use Exp_Pakd;
+with Exp_Util;       use Exp_Util;
+with Expander;       use Expander;
+with Freeze;         use Freeze;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Sprint;         use Sprint;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Validsw;        use Validsw;
 
 package body Checks is
 
@@ -500,9 +504,9 @@ package body Checks is
                     not Range_Checks_Suppressed (Suppress_Typ);
 
    begin
-      --  For now we just return if Checks_On is false, however this should be
+      --  For now we just return if Checks_On is false, however this could be
       --  enhanced to check for an always True value in the condition and to
-      --  generate a compilation warning???
+      --  generate a compilation warning.
 
       if not Checks_On then
          return;
@@ -552,9 +556,7 @@ package body Checks is
 
       if Tagged_Type_Expansion
         and then Present (Etype (P))
-        and then RTU_Loaded (Ada_Tags)
-        and then RTE_Available (RE_Offset_To_Top_Ptr)
-        and then Etype (P) = RTE (RE_Offset_To_Top_Ptr)
+        and then Is_RTE (Etype (P), RE_Offset_To_Top_Ptr)
       then
          return;
       end if;
@@ -3461,9 +3463,6 @@ package body Checks is
             end if;
          end if;
 
-         --  If the item is a conditional raise of constraint error, then have
-         --  a look at what check is being performed and ???
-
          if Nkind (R_Cno) = N_Raise_Constraint_Error
            and then Present (Condition (R_Cno))
          then
@@ -3574,6 +3573,116 @@ package body Checks is
       --  Note: if Etype (Expr) is a private type without discriminants, its
       --  full view might have discriminants with defaults, so we need the
       --  full view here to retrieve the constraints.
+
+      procedure Make_Discriminant_Constraint_Check
+        (Target_Type : Entity_Id;
+         Expr_Type   : Entity_Id);
+      --  Generate a discriminant check based on the target type and expression
+      --  type for Expr.
+
+      ----------------------------------------
+      -- Make_Discriminant_Constraint_Check --
+      ----------------------------------------
+
+      procedure Make_Discriminant_Constraint_Check
+        (Target_Type : Entity_Id;
+         Expr_Type   : Entity_Id)
+      is
+         Loc         : constant Source_Ptr := Sloc (N);
+         Cond        : Node_Id;
+         Constraint  : Elmt_Id;
+         Discr_Value : Node_Id;
+         Discr       : Entity_Id;
+
+         New_Constraints : constant Elist_Id := New_Elmt_List;
+         Old_Constraints : constant Elist_Id :=
+           Discriminant_Constraint (Expr_Type);
+
+      begin
+         --  Build an actual discriminant constraint list using the stored
+         --  constraint, to verify that the expression of the parent type
+         --  satisfies the constraints imposed by the (unconstrained) derived
+         --  type. This applies to value conversions, not to view conversions
+         --  of tagged types.
+
+         Constraint := First_Elmt (Stored_Constraint (Target_Type));
+         while Present (Constraint) loop
+            Discr_Value := Node (Constraint);
+
+            if Is_Entity_Name (Discr_Value)
+              and then Ekind (Entity (Discr_Value)) = E_Discriminant
+            then
+               Discr := Corresponding_Discriminant (Entity (Discr_Value));
+
+               if Present (Discr)
+                 and then Scope (Discr) = Base_Type (Expr_Type)
+               then
+                  --  Parent is constrained by new discriminant. Obtain
+                  --  Value of original discriminant in expression. If the
+                  --  new discriminant has been used to constrain more than
+                  --  one of the stored discriminants, this will provide the
+                  --  required consistency check.
+
+                  Append_Elmt
+                    (Make_Selected_Component (Loc,
+                       Prefix        =>
+                         Duplicate_Subexpr_No_Checks
+                           (Expr, Name_Req => True),
+                       Selector_Name =>
+                         Make_Identifier (Loc, Chars (Discr))),
+                     New_Constraints);
+
+               else
+                  --  Discriminant of more remote ancestor ???
+
+                  return;
+               end if;
+
+            --  Derived type definition has an explicit value for this
+            --  stored discriminant.
+
+            else
+               Append_Elmt
+                 (Duplicate_Subexpr_No_Checks (Discr_Value),
+                  New_Constraints);
+            end if;
+
+            Next_Elmt (Constraint);
+         end loop;
+
+         --  Use the unconstrained expression type to retrieve the
+         --  discriminants of the parent, and apply momentarily the
+         --  discriminant constraint synthesized above.
+
+         --  Note: We use Expr_Type instead of Target_Type since the number of
+         --  actual discriminants may be different due to the presence of
+         --  stored discriminants and cause Build_Discriminant_Checks to fail.
+
+         Set_Discriminant_Constraint (Expr_Type, New_Constraints);
+         Cond := Build_Discriminant_Checks (Expr, Expr_Type);
+         Set_Discriminant_Constraint (Expr_Type, Old_Constraints);
+
+         --  Conversion between access types requires that we check for null
+         --  before checking discriminants.
+
+         if Is_Access_Type (Etype (Expr)) then
+            Cond := Make_And_Then (Loc,
+                      Left_Opnd  =>
+                        Make_Op_Ne (Loc,
+                          Left_Opnd  =>
+                            Duplicate_Subexpr_No_Checks
+                              (Expr, Name_Req => True),
+                          Right_Opnd => Make_Null (Loc)),
+                      Right_Opnd => Cond);
+         end if;
+
+         Insert_Action (N,
+           Make_Raise_Constraint_Error (Loc,
+             Condition => Cond,
+             Reason    => CE_Discriminant_Check_Failed));
+      end Make_Discriminant_Constraint_Check;
+
+   --  Start of processing for Apply_Type_Conversion_Checks
 
    begin
       if Inside_A_Generic then
@@ -3704,6 +3813,33 @@ package body Checks is
             end if;
          end;
 
+      --  Generate discriminant constraint checks for access types on the
+      --  designated target type's stored constraints.
+
+      --  Do we need to generate subtype predicate checks here as well ???
+
+      elsif Comes_From_Source (N)
+        and then Ekind (Target_Type) = E_General_Access_Type
+
+        --  Check that both of the designated types have known discriminants,
+        --  and that such checks on the target type are not suppressed.
+
+        and then Has_Discriminants (Directly_Designated_Type (Target_Type))
+        and then Has_Discriminants (Directly_Designated_Type (Expr_Type))
+        and then not Discriminant_Checks_Suppressed
+                       (Directly_Designated_Type (Target_Type))
+
+        --  Verify the designated type of the target has stored constraints
+
+        and then Present
+                   (Stored_Constraint (Directly_Designated_Type (Target_Type)))
+      then
+         Make_Discriminant_Constraint_Check
+           (Target_Type => Directly_Designated_Type (Target_Type),
+            Expr_Type   => Directly_Designated_Type (Expr_Type));
+
+      --  Create discriminant checks for the Target_Type's stored constraints
+
       elsif Comes_From_Source (N)
         and then not Discriminant_Checks_Suppressed (Target_Type)
         and then Is_Record_Type (Target_Type)
@@ -3712,83 +3848,7 @@ package body Checks is
         and then not Is_Constrained (Target_Type)
         and then Present (Stored_Constraint (Target_Type))
       then
-         --  An unconstrained derived type may have inherited discriminant.
-         --  Build an actual discriminant constraint list using the stored
-         --  constraint, to verify that the expression of the parent type
-         --  satisfies the constraints imposed by the (unconstrained) derived
-         --  type. This applies to value conversions, not to view conversions
-         --  of tagged types.
-
-         declare
-            Loc         : constant Source_Ptr := Sloc (N);
-            Cond        : Node_Id;
-            Constraint  : Elmt_Id;
-            Discr_Value : Node_Id;
-            Discr       : Entity_Id;
-
-            New_Constraints : constant Elist_Id := New_Elmt_List;
-            Old_Constraints : constant Elist_Id :=
-              Discriminant_Constraint (Expr_Type);
-
-         begin
-            Constraint := First_Elmt (Stored_Constraint (Target_Type));
-            while Present (Constraint) loop
-               Discr_Value := Node (Constraint);
-
-               if Is_Entity_Name (Discr_Value)
-                 and then Ekind (Entity (Discr_Value)) = E_Discriminant
-               then
-                  Discr := Corresponding_Discriminant (Entity (Discr_Value));
-
-                  if Present (Discr)
-                    and then Scope (Discr) = Base_Type (Expr_Type)
-                  then
-                     --  Parent is constrained by new discriminant. Obtain
-                     --  Value of original discriminant in expression. If the
-                     --  new discriminant has been used to constrain more than
-                     --  one of the stored discriminants, this will provide the
-                     --  required consistency check.
-
-                     Append_Elmt
-                       (Make_Selected_Component (Loc,
-                          Prefix        =>
-                            Duplicate_Subexpr_No_Checks
-                              (Expr, Name_Req => True),
-                          Selector_Name =>
-                            Make_Identifier (Loc, Chars (Discr))),
-                        New_Constraints);
-
-                  else
-                     --  Discriminant of more remote ancestor ???
-
-                     return;
-                  end if;
-
-               --  Derived type definition has an explicit value for this
-               --  stored discriminant.
-
-               else
-                  Append_Elmt
-                    (Duplicate_Subexpr_No_Checks (Discr_Value),
-                     New_Constraints);
-               end if;
-
-               Next_Elmt (Constraint);
-            end loop;
-
-            --  Use the unconstrained expression type to retrieve the
-            --  discriminants of the parent, and apply momentarily the
-            --  discriminant constraint synthesized above.
-
-            Set_Discriminant_Constraint (Expr_Type, New_Constraints);
-            Cond := Build_Discriminant_Checks (Expr, Expr_Type);
-            Set_Discriminant_Constraint (Expr_Type, Old_Constraints);
-
-            Insert_Action (N,
-              Make_Raise_Constraint_Error (Loc,
-                Condition => Cond,
-                Reason    => CE_Discriminant_Check_Failed));
-         end;
+         Make_Discriminant_Constraint_Check (Target_Type, Expr_Type);
 
       --  For arrays, checks are set now, but conversions are applied during
       --  expansion, to take into accounts changes of representation. The
@@ -5350,8 +5410,7 @@ package body Checks is
                      OK1 := True;
                   end;
 
-               --  No special handling for other attributes
-               --  Probably more opportunities exist here???
+               --  No special handling for other attributes for now
 
                when others =>
                   OK1 := False;
@@ -7941,7 +8000,7 @@ package body Checks is
    begin
       --  For now we just return if Checks_On is false, however this should be
       --  enhanced to check for an always True value in the condition and to
-      --  generate a compilation warning???
+      --  generate a compilation warning.
 
       if not Expander_Active or not Checks_On then
          return;
@@ -8099,7 +8158,7 @@ package body Checks is
             --  cause our object declaration to remain unanalyzed we must do
             --  some manual decoration.
 
-            Set_Ekind (Var_Id, E_Variable);
+            Mutate_Ekind (Var_Id, E_Variable);
             Set_Etype (Var_Id, Typ);
 
             Insert_Action (Exp,
@@ -8467,22 +8526,6 @@ package body Checks is
       --  already performed at the caller side.
 
       if Is_Thunk (Current_Scope) then
-         return;
-      end if;
-
-      --  No check needed for the Get_Current_Excep.all.all idiom generated by
-      --  the expander within exception handlers, since we know that the value
-      --  can never be null.
-
-      --  Is this really the right way to do this? Normally we generate such
-      --  code in the expander with checks off, and that's how we suppress this
-      --  kind of junk check ???
-
-      if Nkind (N) = N_Function_Call
-        and then Nkind (Name (N)) = N_Explicit_Dereference
-        and then Nkind (Prefix (Name (N))) = N_Identifier
-        and then Is_RTE (Entity (Prefix (Name (N))), RE_Get_Current_Excep)
-      then
          return;
       end if;
 
@@ -9256,7 +9299,6 @@ package body Checks is
 
                      Append_To (New_Alts,
                        Make_Case_Expression_Alternative (Sloc (Alt),
-                         Actions          => No_List,
                          Discrete_Choices => Discrete_Choices (Alt),
                          Expression       => New_Exp));
 
@@ -9776,8 +9818,10 @@ package body Checks is
       --  Adds the action given to Ret_Result if N is non-Empty
 
       function Get_E_Length (E : Entity_Id; Indx : Nat) return Node_Id;
+      --  Return E'Length (Indx)
+
       function Get_N_Length (N : Node_Id; Indx : Nat) return Node_Id;
-      --  Comments required ???
+      --  Return N'Length (Indx)
 
       function Same_Bounds (L : Node_Id; R : Node_Id) return Boolean;
       --  True for equal literals and for nodes that denote the same constant
@@ -9813,8 +9857,10 @@ package body Checks is
       begin
          if Present (N) then
 
-            --  For now, ignore attempt to place more than two checks ???
-            --  This is really worrisome, are we really discarding checks ???
+            --  We do not support inserting more than 2 checks on the same
+            --  node. If this happens it means we have already added an
+            --  unconditional raise, so we can skip the other checks safely
+            --  since N will always raise an exception.
 
             if Num_Checks = 2 then
                return;
@@ -10384,7 +10430,10 @@ package body Checks is
       begin
          if Present (N) then
 
-            --  For now, ignore attempt to place more than 2 checks ???
+            --  We do not support inserting more than 2 checks on the same
+            --  node. If this happens it means we have already added an
+            --  unconditional raise, so we can skip the other checks safely
+            --  since N will always raise an exception.
 
             if Num_Checks = 2 then
                return;
@@ -10614,6 +10663,13 @@ package body Checks is
                    Get_E_First_Or_Last (Loc, Typ, Indx, Name_Last)));
       end Range_N_Cond;
 
+      function "<" (Left, Right : Node_Id) return Boolean
+      is (if Is_Floating_Point_Type (S_Typ)
+          then Expr_Value_R (Left) < Expr_Value_R (Right)
+          else Expr_Value   (Left) < Expr_Value   (Right));
+      --  Convenience comparison function of integer or floating point
+      --  values.
+
    --  Start of processing for Selected_Range_Checks
 
    begin
@@ -10684,14 +10740,14 @@ package body Checks is
             Known_T_LB : constant Boolean := Compile_Time_Known_Value (T_LB);
             Known_T_HB : constant Boolean := Compile_Time_Known_Value (T_HB);
 
-            LB         : Node_Id := Low_Bound (Expr);
-            HB         : Node_Id := High_Bound (Expr);
-            Known_LB   : Boolean := False;
-            Known_HB   : Boolean := False;
+            LB          : Node_Id := Low_Bound (Expr);
+            HB          : Node_Id := High_Bound (Expr);
+            Known_LB    : Boolean := False;
+            Known_HB    : Boolean := False;
+            Check_Added : Boolean := False;
 
-            Null_Range     : Boolean;
-            Out_Of_Range_L : Boolean;
-            Out_Of_Range_H : Boolean;
+            Out_Of_Range_L : Boolean := False;
+            Out_Of_Range_H : Boolean := False;
 
          begin
             --  Compute what is known at compile time
@@ -10724,60 +10780,45 @@ package body Checks is
                end if;
             end if;
 
-            --  Check for case where everything is static and we can do the
-            --  check at compile time. This is skipped if we have an access
-            --  type, since the access value may be null.
+            --  Check for the simple cases where we can do the check at
+            --  compile time. This is skipped if we have an access type, since
+            --  the access value may be null.
 
-            --  ??? This code can be improved since you only need to know that
-            --  the two respective bounds (LB & T_LB or HB & T_HB) are known at
-            --  compile time to emit pertinent messages.
+            if not Do_Access and then Not_Null_Range (LB, HB) then
+               if Known_LB then
+                  if Known_T_LB then
+                     Out_Of_Range_L := LB < T_LB;
+                  end if;
 
-            if Known_T_LB and Known_T_HB and Known_LB and Known_HB
-              and not Do_Access
-            then
-               --  Floating-point case
+                  if Known_T_HB and not Out_Of_Range_L then
+                     Out_Of_Range_L := T_HB < LB;
+                  end if;
 
-               if Is_Floating_Point_Type (S_Typ) then
-                  Null_Range := Expr_Value_R (HB) < Expr_Value_R (LB);
-                  Out_Of_Range_L :=
-                    (Expr_Value_R (LB) < Expr_Value_R (T_LB))
-                      or else
-                    (Expr_Value_R (LB) > Expr_Value_R (T_HB));
-
-                  Out_Of_Range_H :=
-                    (Expr_Value_R (HB) > Expr_Value_R (T_HB))
-                      or else
-                    (Expr_Value_R (HB) < Expr_Value_R (T_LB));
-
-               --  Fixed or discrete type case
-
-               else
-                  Null_Range := Expr_Value (HB) < Expr_Value (LB);
-                  Out_Of_Range_L :=
-                    (Expr_Value (LB) < Expr_Value (T_LB))
-                      or else
-                    (Expr_Value (LB) > Expr_Value (T_HB));
-
-                  Out_Of_Range_H :=
-                    (Expr_Value (HB) > Expr_Value (T_HB))
-                      or else
-                    (Expr_Value (HB) < Expr_Value (T_LB));
-               end if;
-
-               if not Null_Range then
                   if Out_Of_Range_L then
                      if No (Warn_Node) then
                         Add_Check
                           (Compile_Time_Constraint_Error
                              (Low_Bound (Expr),
                               "static value out of range of}??", T_Typ));
+                        Check_Added := True;
 
                      else
                         Add_Check
                           (Compile_Time_Constraint_Error
                             (Wnode,
                              "static range out of bounds of}??", T_Typ));
+                        Check_Added := True;
                      end if;
+                  end if;
+               end if;
+
+               if Known_HB then
+                  if Known_T_HB then
+                     Out_Of_Range_H := T_HB < HB;
+                  end if;
+
+                  if Known_T_LB and not Out_Of_Range_H then
+                     Out_Of_Range_H := HB < T_LB;
                   end if;
 
                   if Out_Of_Range_H then
@@ -10786,17 +10827,29 @@ package body Checks is
                           (Compile_Time_Constraint_Error
                              (High_Bound (Expr),
                               "static value out of range of}??", T_Typ));
+                        Check_Added := True;
 
                      else
                         Add_Check
                           (Compile_Time_Constraint_Error
                              (Wnode,
                               "static range out of bounds of}??", T_Typ));
+                        Check_Added := True;
                      end if;
                   end if;
                end if;
+            end if;
 
-            else
+            --  Check for the case where not everything is static
+
+            if not Check_Added
+              and then
+                (Do_Access
+                  or else not Known_T_LB
+                  or else not Known_LB
+                  or else not Known_T_HB
+                  or else not Known_HB)
+            then
                declare
                   LB : Node_Id := Low_Bound (Expr);
                   HB : Node_Id := High_Bound (Expr);
@@ -10863,8 +10916,8 @@ package body Checks is
       elsif Is_Scalar_Type (S_Typ) then
 
          --  This somewhat duplicates what Apply_Scalar_Range_Check does,
-         --  except the above simply sets a flag in the node and lets
-         --  gigi generate the check base on the Etype of the expression.
+         --  except the above simply sets a flag in the node and lets the
+         --  check be generated based on the Etype of the expression.
          --  Sometimes, however we want to do a dynamic check against an
          --  arbitrary target type, so we do that here.
 
@@ -10878,56 +10931,24 @@ package body Checks is
          --  expression. As usual, skip this for access types
 
          elsif Compile_Time_Known_Value (Expr) and then not Do_Access then
-            declare
-               LB : constant Node_Id := Type_Low_Bound (T_Typ);
-               UB : constant Node_Id := Type_High_Bound (T_Typ);
+            if Is_Out_Of_Range (Expr, T_Typ) then
 
-               Out_Of_Range  : Boolean;
-               Static_Bounds : constant Boolean :=
-                 Compile_Time_Known_Value (LB)
-                 and Compile_Time_Known_Value (UB);
+               --  Bounds of the type are static and the literal is out of
+               --  range so output a warning message.
 
-            begin
-               --  Following range tests should use Sem_Eval routine ???
-
-               if Static_Bounds then
-                  if Is_Floating_Point_Type (S_Typ) then
-                     Out_Of_Range :=
-                       (Expr_Value_R (Expr) < Expr_Value_R (LB))
-                         or else
-                       (Expr_Value_R (Expr) > Expr_Value_R (UB));
-
-                  --  Fixed or discrete type
-
-                  else
-                     Out_Of_Range :=
-                       Expr_Value (Expr) < Expr_Value (LB)
-                         or else
-                       Expr_Value (Expr) > Expr_Value (UB);
-                  end if;
-
-                  --  Bounds of the type are static and the literal is out of
-                  --  range so output a warning message.
-
-                  if Out_Of_Range then
-                     if No (Warn_Node) then
-                        Add_Check
-                          (Compile_Time_Constraint_Error
-                             (Expr,
-                              "static value out of range of}??", T_Typ));
-
-                     else
-                        Add_Check
-                          (Compile_Time_Constraint_Error
-                             (Wnode,
-                              "static value out of range of}??", T_Typ));
-                     end if;
-                  end if;
+               if No (Warn_Node) then
+                  Add_Check
+                    (Compile_Time_Constraint_Error
+                       (Expr, "static value out of range of}??", T_Typ));
 
                else
-                  Cond := Discrete_Expr_Cond (Expr, T_Typ);
+                  Add_Check
+                    (Compile_Time_Constraint_Error
+                       (Wnode, "static value out of range of}??", T_Typ));
                end if;
-            end;
+            else
+               Cond := Discrete_Expr_Cond (Expr, T_Typ);
+            end if;
 
          --  Here for the case of a non-static expression, we need a runtime
          --  check unless the source type range is guaranteed to be in the

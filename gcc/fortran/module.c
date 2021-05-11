@@ -5029,7 +5029,7 @@ load_omp_udrs (void)
       mio_pool_string (&name);
       gfc_clear_ts (&ts);
       mio_typespec (&ts);
-      if (gfc_str_startswith (name, "operator "))
+      if (startswith (name, "operator "))
 	{
 	  const char *p = name + sizeof ("operator ") - 1;
 	  if (strcmp (p, "+") == 0)
@@ -5477,8 +5477,8 @@ read_module (void)
 
 	  /* Exception: Always import vtabs & vtypes.  */
 	  if (p == NULL && name[0] == '_'
-	      && (gfc_str_startswith (name, "__vtab_")
-		  || gfc_str_startswith (name, "__vtype_")))
+	      && (startswith (name, "__vtab_")
+		  || startswith (name, "__vtype_")))
 	    p = name;
 
 	  /* Skip symtree nodes not in an ONLY clause, unless there
@@ -5563,8 +5563,8 @@ read_module (void)
 		sym->attr.use_rename = 1;
 
 	      if (name[0] != '_'
-		  || (!gfc_str_startswith (name, "__vtab_")
-		      && !gfc_str_startswith (name, "__vtype_")))
+		  || (!startswith (name, "__vtab_")
+		      && !startswith (name, "__vtype_")))
 		sym->attr.use_only = only_flag;
 
 	      /* Store the symtree pointing to this symbol.  */

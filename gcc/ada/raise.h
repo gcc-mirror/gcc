@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -40,9 +40,9 @@ struct Exception_Data
   char Not_Handled_By_Others;
   char Lang;
   int Name_Length;
-  char *Full_Name;
-  char *Htable_Ptr;
-  void *Foreign_Data;
+  __UINTPTR_TYPE__ Full_Name;
+  void *HTable_Ptr;
+  __UINTPTR_TYPE__ Foreign_Data;
   void (*Raise_Hook)(void);
 };
 

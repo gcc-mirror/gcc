@@ -351,6 +351,14 @@ static const struct riscv_tune_info riscv_tune_info_table[] = {
   { "size", generic, &optimize_size_tune_info },
 };
 
+/* Implement TARGET_MIN_ARITHMETIC_PRECISION.  */
+
+static unsigned int
+riscv_min_arithmetic_precision (void)
+{
+  return 32;
+}
+
 /* Return the riscv_tune_info entry for the given name string.  */
 
 static const struct riscv_tune_info *
@@ -3250,10 +3258,7 @@ riscv_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
 
   /* Emit the loop condition.  */
   test = gen_rtx_NE (VOIDmode, src_reg, final_src);
-  if (Pmode == DImode)
-    emit_jump_insn (gen_cbranchdi4 (test, src_reg, final_src, label));
-  else
-    emit_jump_insn (gen_cbranchsi4 (test, src_reg, final_src, label));
+  emit_jump_insn (gen_cbranch4 (Pmode, test, src_reg, final_src, label));
 
   /* Mop up any left-over bytes.  */
   if (leftover)

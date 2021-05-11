@@ -108,7 +108,7 @@ private:
 					    const irange &lhs, tree name);
 
   class gori_map *m_gori_map;
-  outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
+  gimple_outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
 };
 
 

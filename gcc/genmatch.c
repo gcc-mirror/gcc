@@ -605,10 +605,10 @@ get_operator (const char *id, bool allow_null = false)
       for (unsigned int i = 0; id2[i]; ++i)
 	id2[i] = TOUPPER (id2[i]);
     }
-  else if (all_upper && strncmp (id, "IFN_", 4) == 0)
+  else if (all_upper && startswith (id, "IFN_"))
     /* Try CFN_ instead of IFN_.  */
     id2 = ACONCAT (("CFN_", id + 4, NULL));
-  else if (all_upper && strncmp (id, "BUILT_IN_", 9) == 0)
+  else if (all_upper && startswith (id, "BUILT_IN_"))
     /* Try prepending CFN_.  */
     id2 = ACONCAT (("CFN_", id, NULL));
   else
@@ -1210,7 +1210,7 @@ lower_opt (simplify *s, vec<simplify *>& simplifiers)
     }
 }
 
-/* Lower the compare operand of COND_EXPRs and VEC_COND_EXPRs to a
+/* Lower the compare operand of COND_EXPRs to a
    GENERIC and a GIMPLE variant.  */
 
 static vec<operand *>
@@ -1257,8 +1257,7 @@ lower_cond (operand *o)
       /* If this is a COND with a captured expression or an
          expression with two operands then also match a GENERIC
 	 form on the compare.  */
-      if ((*e->operation == COND_EXPR
-	   || *e->operation == VEC_COND_EXPR)
+      if (*e->operation == COND_EXPR
 	  && ((is_a <capture *> (e->ops[0])
 	       && as_a <capture *> (e->ops[0])->what
 	       && is_a <expr *> (as_a <capture *> (e->ops[0])->what)
@@ -1296,7 +1295,7 @@ lower_cond (operand *o)
   return ro;
 }
 
-/* Lower the compare operand of COND_EXPRs and VEC_COND_EXPRs to a
+/* Lower the compare operand of COND_EXPRs to a
    GENERIC and a GIMPLE variant.  */
 
 static void
@@ -2132,9 +2131,7 @@ capture_info::capture_info (simplify *s, operand *result, bool gimple_)
 		(i != 0 && *e->operation == COND_EXPR)
 		|| *e->operation == TRUTH_ANDIF_EXPR
 		|| *e->operation == TRUTH_ORIF_EXPR,
-		i == 0
-		&& (*e->operation == COND_EXPR
-		    || *e->operation == VEC_COND_EXPR));
+		i == 0 && *e->operation == COND_EXPR);
 
   walk_result (s->result, false, result);
 }
@@ -2197,8 +2194,7 @@ capture_info::walk_match (operand *o, unsigned toplevel_arg,
 		   || *e->operation == TRUTH_ORIF_EXPR)
 	    cond_p = true;
 	  if (i == 0
-	      && (*e->operation == COND_EXPR
-		  || *e->operation == VEC_COND_EXPR))
+	      && *e->operation == COND_EXPR)
 	    expr_cond_p = true;
 	  walk_match (e->ops[i], toplevel_arg, cond_p, expr_cond_p);
 	}
@@ -2391,7 +2387,7 @@ get_operand_type (id_base *op, unsigned pos,
   else if (*op == COND_EXPR
 	   && pos == 0)
     return "boolean_type_node";
-  else if (strncmp (op->id, "CFN_COND_", 9) == 0)
+  else if (startswith (op->id, "CFN_COND_"))
     {
       /* IFN_COND_* operands 1 and later by default have the same type
 	 as the result.  The type of operand 0 needs to be specified
@@ -2464,7 +2460,7 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
     }
   else if (*opr == COND_EXPR
 	   || *opr == VEC_COND_EXPR
-	   || strncmp (opr->id, "CFN_COND_", 9) == 0)
+	   || startswith (opr->id, "CFN_COND_"))
     {
       /* Conditions are of the same type as their first alternative.  */
       snprintf (optype, sizeof (optype), "TREE_TYPE (_o%d[1])", depth);
@@ -2494,8 +2490,7 @@ expr::gen_transform (FILE *f, int indent, const char *dest, bool gimple,
 			    i == 0 ? NULL : op0type);
       ops[i]->gen_transform (f, indent, dest1, gimple, depth + 1, optype1,
 			     cinfo, indexes,
-			     (*opr == COND_EXPR
-			      || *opr == VEC_COND_EXPR) && i == 0 ? 1 : 2);
+			     *opr == COND_EXPR && i == 0 ? 1 : 2);
     }
 
   const char *opr_name;
@@ -3417,8 +3412,7 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 		 into COND_EXPRs.  */
 	      int cond_handling = 0;
 	      if (!is_predicate)
-		cond_handling = ((*opr == COND_EXPR
-				  || *opr == VEC_COND_EXPR) && j == 0) ? 1 : 2;
+		cond_handling = (*opr == COND_EXPR && j == 0) ? 1 : 2;
 	      e->ops[j]->gen_transform (f, indent, dest, true, 1, optype,
 					&cinfo, indexes, cond_handling);
 	    }

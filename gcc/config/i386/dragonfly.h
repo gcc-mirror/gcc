@@ -61,23 +61,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define SUBTARGET_EXTRA_SPECS \
   { "dfbsd_dynamic_linker", DFBSD_DYNAMIC_LINKER }
 
-/* A C statement to output to the stdio stream FILE an assembler
-   command to advance the location counter to a multiple of 1<<LOG
-   bytes if it is within MAX_SKIP bytes.
-
-   This is used to align code labels according to Intel recommendations.  */
-
-#ifdef HAVE_GAS_MAX_SKIP_P2ALIGN
-#undef  ASM_OUTPUT_MAX_SKIP_ALIGN
-#define ASM_OUTPUT_MAX_SKIP_ALIGN(FILE, LOG, MAX_SKIP)			\
-  if ((LOG) != 0) {							\
-    if ((MAX_SKIP) == 0 || (MAX_SKIP) >= (1 << (LOG)) - 1)		\
-      fprintf ((FILE), "\t.p2align %d\n", (LOG));			\
-    else								\
-      fprintf ((FILE), "\t.p2align %d,,%d\n", (LOG), (MAX_SKIP));	\
-  }
-#endif
-
 /* Don't default to pcc-struct-return, we want to retain compatibility with
    older gcc versions AND pcc-struct-return is nonreentrant.
    (even though the SVR4 ABI for the i386 says that records and unions are

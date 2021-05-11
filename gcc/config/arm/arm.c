@@ -1051,9 +1051,13 @@ const char *fp_sysreg_names[NB_FP_SYSREGS] = {
 #define ARM_LSL_NAME "lsl"
 #define streq(string1, string2) (strcmp (string1, string2) == 0)
 
-#define THUMB2_WORK_REGS (0xff & ~(  (1 << THUMB_HARD_FRAME_POINTER_REGNUM) \
-				   | (1 << SP_REGNUM) | (1 << PC_REGNUM) \
-				   | (1 << PIC_OFFSET_TABLE_REGNUM)))
+#define THUMB2_WORK_REGS					\
+  (0xff & ~((1 << THUMB_HARD_FRAME_POINTER_REGNUM)		\
+	    | (1 << SP_REGNUM)					\
+	    | (1 << PC_REGNUM)					\
+	    | (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM	\
+	       ? (1 << PIC_OFFSET_TABLE_REGNUM)			\
+	       : 0)))
 
 /* Initialization code.  */
 
@@ -18770,10 +18774,14 @@ cmse_nonsecure_call_inline_register_clear (void)
 		  imm = gen_int_mode (- lazy_store_stack_frame_size, SImode);
 		  add_insn = emit_insn (gen_addsi3 (stack_pointer_rtx,
 						    stack_pointer_rtx, imm));
-		  arm_add_cfa_adjust_cfa_note (add_insn,
-					       - lazy_store_stack_frame_size,
-					       stack_pointer_rtx,
-					       stack_pointer_rtx);
+		  /* If we have the frame pointer, then it will be the
+		     CFA reg.  Otherwise, the stack pointer is the CFA
+		     reg, so we need to emit a CFA adjust.  */
+		  if (!frame_pointer_needed)
+		    arm_add_cfa_adjust_cfa_note (add_insn,
+						 - lazy_store_stack_frame_size,
+						 stack_pointer_rtx,
+						 stack_pointer_rtx);
 		  emit_insn (gen_lazy_store_multiple_insn (stack_pointer_rtx));
 		}
 	      /* Save VFP callee-saved registers.  */
@@ -18811,10 +18819,11 @@ cmse_nonsecure_call_inline_register_clear (void)
 		  rtx_insn *add_insn =
 		    emit_insn (gen_addsi3 (stack_pointer_rtx,
 					   stack_pointer_rtx, imm));
-		  arm_add_cfa_adjust_cfa_note (add_insn,
-					       lazy_store_stack_frame_size,
-					       stack_pointer_rtx,
-					       stack_pointer_rtx);
+		  if (!frame_pointer_needed)
+		    arm_add_cfa_adjust_cfa_note (add_insn,
+						 lazy_store_stack_frame_size,
+						 stack_pointer_rtx,
+						 stack_pointer_rtx);
 		}
 	      /* Restore VFP callee-saved registers.  */
 	      else
@@ -25265,7 +25274,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return false;
 
   if (IS_VPR_REGNUM (regno))
-    return true;
+    return mode == HImode;
 
   if (TARGET_THUMB1)
     /* For the Thumb we only allow values bigger than SImode in
@@ -30739,13 +30748,31 @@ arm_split_compare_and_swap (rtx operands[])
     }
   else
     {
-      emit_move_insn (neg_bval, const1_rtx);
       cond = gen_rtx_NE (VOIDmode, rval, oldval);
       if (thumb1_cmpneg_operand (oldval, SImode))
-	emit_unlikely_jump (gen_cbranchsi4_scratch (neg_bval, rval, oldval,
-						    label2, cond));
+	{
+	  rtx src = rval;
+	  if (!satisfies_constraint_L (oldval))
+	    {
+	      gcc_assert (satisfies_constraint_J (oldval));
+
+	      /* For such immediates, ADDS needs the source and destination regs
+		 to be the same.
+
+		 Normally this would be handled by RA, but this is all happening
+		 after RA.  */
+	      emit_move_insn (neg_bval, rval);
+	      src = neg_bval;
+	    }
+
+	  emit_unlikely_jump (gen_cbranchsi4_neg_late (neg_bval, src, oldval,
+						       label2, cond));
+	}
       else
-	emit_unlikely_jump (gen_cbranchsi4_insn (cond, rval, oldval, label2));
+	{
+	  emit_move_insn (neg_bval, const1_rtx);
+	  emit_unlikely_jump (gen_cbranchsi4_insn (cond, rval, oldval, label2));
+	}
     }
 
   arm_emit_store_exclusive (mode, neg_bval, mem, newval, use_release);

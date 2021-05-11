@@ -1058,7 +1058,6 @@ configure-target:  \
     maybe-configure-target-libgfortran \
     maybe-configure-target-libobjc \
     maybe-configure-target-libgo \
-    maybe-configure-target-libhsail-rt \
     maybe-configure-target-libphobos \
     maybe-configure-target-libtermcap \
     maybe-configure-target-winsup \
@@ -1231,7 +1230,6 @@ all-target: maybe-all-target-libquadmath
 all-target: maybe-all-target-libgfortran
 all-target: maybe-all-target-libobjc
 all-target: maybe-all-target-libgo
-all-target: maybe-all-target-libhsail-rt
 all-target: maybe-all-target-libphobos
 all-target: maybe-all-target-libtermcap
 all-target: maybe-all-target-winsup
@@ -1329,7 +1327,6 @@ info-target: maybe-info-target-libquadmath
 info-target: maybe-info-target-libgfortran
 info-target: maybe-info-target-libobjc
 info-target: maybe-info-target-libgo
-info-target: maybe-info-target-libhsail-rt
 info-target: maybe-info-target-libphobos
 info-target: maybe-info-target-libtermcap
 info-target: maybe-info-target-winsup
@@ -1420,7 +1417,6 @@ dvi-target: maybe-dvi-target-libquadmath
 dvi-target: maybe-dvi-target-libgfortran
 dvi-target: maybe-dvi-target-libobjc
 dvi-target: maybe-dvi-target-libgo
-dvi-target: maybe-dvi-target-libhsail-rt
 dvi-target: maybe-dvi-target-libphobos
 dvi-target: maybe-dvi-target-libtermcap
 dvi-target: maybe-dvi-target-winsup
@@ -1511,7 +1507,6 @@ pdf-target: maybe-pdf-target-libquadmath
 pdf-target: maybe-pdf-target-libgfortran
 pdf-target: maybe-pdf-target-libobjc
 pdf-target: maybe-pdf-target-libgo
-pdf-target: maybe-pdf-target-libhsail-rt
 pdf-target: maybe-pdf-target-libphobos
 pdf-target: maybe-pdf-target-libtermcap
 pdf-target: maybe-pdf-target-winsup
@@ -1602,7 +1597,6 @@ html-target: maybe-html-target-libquadmath
 html-target: maybe-html-target-libgfortran
 html-target: maybe-html-target-libobjc
 html-target: maybe-html-target-libgo
-html-target: maybe-html-target-libhsail-rt
 html-target: maybe-html-target-libphobos
 html-target: maybe-html-target-libtermcap
 html-target: maybe-html-target-winsup
@@ -1693,7 +1687,6 @@ TAGS-target: maybe-TAGS-target-libquadmath
 TAGS-target: maybe-TAGS-target-libgfortran
 TAGS-target: maybe-TAGS-target-libobjc
 TAGS-target: maybe-TAGS-target-libgo
-TAGS-target: maybe-TAGS-target-libhsail-rt
 TAGS-target: maybe-TAGS-target-libphobos
 TAGS-target: maybe-TAGS-target-libtermcap
 TAGS-target: maybe-TAGS-target-winsup
@@ -1784,7 +1777,6 @@ install-info-target: maybe-install-info-target-libquadmath
 install-info-target: maybe-install-info-target-libgfortran
 install-info-target: maybe-install-info-target-libobjc
 install-info-target: maybe-install-info-target-libgo
-install-info-target: maybe-install-info-target-libhsail-rt
 install-info-target: maybe-install-info-target-libphobos
 install-info-target: maybe-install-info-target-libtermcap
 install-info-target: maybe-install-info-target-winsup
@@ -1875,7 +1867,6 @@ install-pdf-target: maybe-install-pdf-target-libquadmath
 install-pdf-target: maybe-install-pdf-target-libgfortran
 install-pdf-target: maybe-install-pdf-target-libobjc
 install-pdf-target: maybe-install-pdf-target-libgo
-install-pdf-target: maybe-install-pdf-target-libhsail-rt
 install-pdf-target: maybe-install-pdf-target-libphobos
 install-pdf-target: maybe-install-pdf-target-libtermcap
 install-pdf-target: maybe-install-pdf-target-winsup
@@ -1966,7 +1957,6 @@ install-html-target: maybe-install-html-target-libquadmath
 install-html-target: maybe-install-html-target-libgfortran
 install-html-target: maybe-install-html-target-libobjc
 install-html-target: maybe-install-html-target-libgo
-install-html-target: maybe-install-html-target-libhsail-rt
 install-html-target: maybe-install-html-target-libphobos
 install-html-target: maybe-install-html-target-libtermcap
 install-html-target: maybe-install-html-target-winsup
@@ -2057,7 +2047,6 @@ installcheck-target: maybe-installcheck-target-libquadmath
 installcheck-target: maybe-installcheck-target-libgfortran
 installcheck-target: maybe-installcheck-target-libobjc
 installcheck-target: maybe-installcheck-target-libgo
-installcheck-target: maybe-installcheck-target-libhsail-rt
 installcheck-target: maybe-installcheck-target-libphobos
 installcheck-target: maybe-installcheck-target-libtermcap
 installcheck-target: maybe-installcheck-target-winsup
@@ -2148,7 +2137,6 @@ mostlyclean-target: maybe-mostlyclean-target-libquadmath
 mostlyclean-target: maybe-mostlyclean-target-libgfortran
 mostlyclean-target: maybe-mostlyclean-target-libobjc
 mostlyclean-target: maybe-mostlyclean-target-libgo
-mostlyclean-target: maybe-mostlyclean-target-libhsail-rt
 mostlyclean-target: maybe-mostlyclean-target-libphobos
 mostlyclean-target: maybe-mostlyclean-target-libtermcap
 mostlyclean-target: maybe-mostlyclean-target-winsup
@@ -2239,7 +2227,6 @@ clean-target: maybe-clean-target-libquadmath
 clean-target: maybe-clean-target-libgfortran
 clean-target: maybe-clean-target-libobjc
 clean-target: maybe-clean-target-libgo
-clean-target: maybe-clean-target-libhsail-rt
 clean-target: maybe-clean-target-libphobos
 clean-target: maybe-clean-target-libtermcap
 clean-target: maybe-clean-target-winsup
@@ -2330,7 +2317,6 @@ distclean-target: maybe-distclean-target-libquadmath
 distclean-target: maybe-distclean-target-libgfortran
 distclean-target: maybe-distclean-target-libobjc
 distclean-target: maybe-distclean-target-libgo
-distclean-target: maybe-distclean-target-libhsail-rt
 distclean-target: maybe-distclean-target-libphobos
 distclean-target: maybe-distclean-target-libtermcap
 distclean-target: maybe-distclean-target-winsup
@@ -2421,7 +2407,6 @@ maintainer-clean-target: maybe-maintainer-clean-target-libquadmath
 maintainer-clean-target: maybe-maintainer-clean-target-libgfortran
 maintainer-clean-target: maybe-maintainer-clean-target-libobjc
 maintainer-clean-target: maybe-maintainer-clean-target-libgo
-maintainer-clean-target: maybe-maintainer-clean-target-libhsail-rt
 maintainer-clean-target: maybe-maintainer-clean-target-libphobos
 maintainer-clean-target: maybe-maintainer-clean-target-libtermcap
 maintainer-clean-target: maybe-maintainer-clean-target-winsup
@@ -2568,7 +2553,6 @@ check-target:  \
     maybe-check-target-libgfortran \
     maybe-check-target-libobjc \
     maybe-check-target-libgo \
-    maybe-check-target-libhsail-rt \
     maybe-check-target-libphobos \
     maybe-check-target-libtermcap \
     maybe-check-target-winsup \
@@ -2761,7 +2745,6 @@ install-target:  \
     maybe-install-target-libgfortran \
     maybe-install-target-libobjc \
     maybe-install-target-libgo \
-    maybe-install-target-libhsail-rt \
     maybe-install-target-libphobos \
     maybe-install-target-libtermcap \
     maybe-install-target-winsup \
@@ -2872,7 +2855,6 @@ install-strip-target:  \
     maybe-install-strip-target-libgfortran \
     maybe-install-strip-target-libobjc \
     maybe-install-strip-target-libgo \
-    maybe-install-strip-target-libhsail-rt \
     maybe-install-strip-target-libphobos \
     maybe-install-strip-target-libtermcap \
     maybe-install-strip-target-winsup \
@@ -50752,464 +50734,6 @@ maintainer-clean-target-libgo:
 
 
 
-.PHONY: configure-target-libhsail-rt maybe-configure-target-libhsail-rt
-maybe-configure-target-libhsail-rt:
-@if gcc-bootstrap
-configure-target-libhsail-rt: stage_current
-@endif gcc-bootstrap
-@if target-libhsail-rt
-maybe-configure-target-libhsail-rt: configure-target-libhsail-rt
-configure-target-libhsail-rt: 
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	echo "Checking multilib configuration for libhsail-rt..."; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libhsail-rt; \
-	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp 2> /dev/null; \
-	if test -r $(TARGET_SUBDIR)/libhsail-rt/multilib.out; then \
-	  if cmp -s $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp $(TARGET_SUBDIR)/libhsail-rt/multilib.out; then \
-	    rm -f $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp; \
-	  else \
-	    rm -f $(TARGET_SUBDIR)/libhsail-rt/Makefile; \
-	    mv $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp $(TARGET_SUBDIR)/libhsail-rt/multilib.out; \
-	  fi; \
-	else \
-	  mv $(TARGET_SUBDIR)/libhsail-rt/multilib.tmp $(TARGET_SUBDIR)/libhsail-rt/multilib.out; \
-	fi; \
-	test ! -f $(TARGET_SUBDIR)/libhsail-rt/Makefile || exit 0; \
-	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libhsail-rt; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	echo Configuring in $(TARGET_SUBDIR)/libhsail-rt; \
-	cd "$(TARGET_SUBDIR)/libhsail-rt" || exit 1; \
-	case $(srcdir) in \
-	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
-	  *) topdir=`echo $(TARGET_SUBDIR)/libhsail-rt/ | \
-		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
-	esac; \
-	module_srcdir=libhsail-rt; \
-	rm -f no-such-file || : ; \
-	CONFIG_SITE=no-such-file $(SHELL) \
-	  $$s/$$module_srcdir/configure \
-	  --srcdir=$${topdir}/$$module_srcdir \
-	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
-	  --target=${target_alias}  \
-	  || exit 1
-@endif target-libhsail-rt
-
-
-
-
-
-.PHONY: all-target-libhsail-rt maybe-all-target-libhsail-rt
-maybe-all-target-libhsail-rt:
-@if gcc-bootstrap
-all-target-libhsail-rt: stage_current
-@endif gcc-bootstrap
-@if target-libhsail-rt
-TARGET-target-libhsail-rt=all
-maybe-all-target-libhsail-rt: all-target-libhsail-rt
-all-target-libhsail-rt: configure-target-libhsail-rt
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS)  \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
-		$(TARGET-target-libhsail-rt))
-@endif target-libhsail-rt
-
-
-
-
-
-.PHONY: check-target-libhsail-rt maybe-check-target-libhsail-rt
-maybe-check-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-check-target-libhsail-rt: check-target-libhsail-rt
-
-check-target-libhsail-rt:
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
-
-@endif target-libhsail-rt
-
-.PHONY: install-target-libhsail-rt maybe-install-target-libhsail-rt
-maybe-install-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-install-target-libhsail-rt: install-target-libhsail-rt
-
-install-target-libhsail-rt: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
-
-@endif target-libhsail-rt
-
-.PHONY: install-strip-target-libhsail-rt maybe-install-strip-target-libhsail-rt
-maybe-install-strip-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-install-strip-target-libhsail-rt: install-strip-target-libhsail-rt
-
-install-strip-target-libhsail-rt: installdirs
-	@: $(MAKE); $(unstage)
-	@r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
-
-@endif target-libhsail-rt
-
-# Other targets (info, dvi, pdf, etc.)
-
-.PHONY: maybe-info-target-libhsail-rt info-target-libhsail-rt
-maybe-info-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-info-target-libhsail-rt: info-target-libhsail-rt
-
-info-target-libhsail-rt: \
-    configure-target-libhsail-rt 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing info in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           info) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-dvi-target-libhsail-rt dvi-target-libhsail-rt
-maybe-dvi-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-dvi-target-libhsail-rt: dvi-target-libhsail-rt
-
-dvi-target-libhsail-rt: \
-    configure-target-libhsail-rt 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing dvi in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           dvi) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-pdf-target-libhsail-rt pdf-target-libhsail-rt
-maybe-pdf-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-pdf-target-libhsail-rt: pdf-target-libhsail-rt
-
-pdf-target-libhsail-rt: \
-    configure-target-libhsail-rt 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing pdf in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           pdf) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-html-target-libhsail-rt html-target-libhsail-rt
-maybe-html-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-html-target-libhsail-rt: html-target-libhsail-rt
-
-html-target-libhsail-rt: \
-    configure-target-libhsail-rt 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing html in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           html) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-TAGS-target-libhsail-rt TAGS-target-libhsail-rt
-maybe-TAGS-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-TAGS-target-libhsail-rt: TAGS-target-libhsail-rt
-
-TAGS-target-libhsail-rt: \
-    configure-target-libhsail-rt 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing TAGS in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           TAGS) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-install-info-target-libhsail-rt install-info-target-libhsail-rt
-maybe-install-info-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-install-info-target-libhsail-rt: install-info-target-libhsail-rt
-
-install-info-target-libhsail-rt: \
-    configure-target-libhsail-rt \
-    info-target-libhsail-rt 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-info in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-info) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-install-pdf-target-libhsail-rt install-pdf-target-libhsail-rt
-maybe-install-pdf-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-install-pdf-target-libhsail-rt: install-pdf-target-libhsail-rt
-
-install-pdf-target-libhsail-rt: \
-    configure-target-libhsail-rt \
-    pdf-target-libhsail-rt 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-pdf in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-pdf) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-install-html-target-libhsail-rt install-html-target-libhsail-rt
-maybe-install-html-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-install-html-target-libhsail-rt: install-html-target-libhsail-rt
-
-install-html-target-libhsail-rt: \
-    configure-target-libhsail-rt \
-    html-target-libhsail-rt 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing install-html in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           install-html) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-installcheck-target-libhsail-rt installcheck-target-libhsail-rt
-maybe-installcheck-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-installcheck-target-libhsail-rt: installcheck-target-libhsail-rt
-
-installcheck-target-libhsail-rt: \
-    configure-target-libhsail-rt 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing installcheck in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           installcheck) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-mostlyclean-target-libhsail-rt mostlyclean-target-libhsail-rt
-maybe-mostlyclean-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-mostlyclean-target-libhsail-rt: mostlyclean-target-libhsail-rt
-
-mostlyclean-target-libhsail-rt: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           mostlyclean) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-clean-target-libhsail-rt clean-target-libhsail-rt
-maybe-clean-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-clean-target-libhsail-rt: clean-target-libhsail-rt
-
-clean-target-libhsail-rt: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing clean in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           clean) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-distclean-target-libhsail-rt distclean-target-libhsail-rt
-maybe-distclean-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-distclean-target-libhsail-rt: distclean-target-libhsail-rt
-
-distclean-target-libhsail-rt: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing distclean in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           distclean) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-.PHONY: maybe-maintainer-clean-target-libhsail-rt maintainer-clean-target-libhsail-rt
-maybe-maintainer-clean-target-libhsail-rt:
-@if target-libhsail-rt
-maybe-maintainer-clean-target-libhsail-rt: maintainer-clean-target-libhsail-rt
-
-maintainer-clean-target-libhsail-rt: 
-	@: $(MAKE); $(unstage)
-	@[ -f $(TARGET_SUBDIR)/libhsail-rt/Makefile ] || exit 0; \
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(NORMAL_TARGET_EXPORTS) \
-	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libhsail-rt"; \
-	for flag in $(EXTRA_TARGET_FLAGS); do \
-	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
-	done; \
-	(cd $(TARGET_SUBDIR)/libhsail-rt && \
-	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
-	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
-	          "RANLIB=$${RANLIB}" \
-	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
-	           maintainer-clean) \
-	  || exit 1
-
-@endif target-libhsail-rt
-
-
-
-
-
 .PHONY: configure-target-libphobos maybe-configure-target-libphobos
 maybe-configure-target-libphobos:
 @if gcc-bootstrap
@@ -57045,14 +56569,6 @@ check-gcc-go:
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-go);
 check-go: check-gcc-go check-target-libgo check-gotools
 
-.PHONY: check-gcc-brig check-brig
-check-gcc-brig:
-	r=`${PWD_COMMAND}`; export r; \
-	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	$(HOST_EXPORTS) \
-	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-brig);
-check-brig: check-gcc-brig check-target-libhsail-rt
-
 .PHONY: check-gcc-d check-d
 check-gcc-d:
 	r=`${PWD_COMMAND}`; export r; \
@@ -60464,7 +59980,6 @@ configure-target-libquadmath: stage_last
 configure-target-libgfortran: stage_last
 configure-target-libobjc: stage_last
 configure-target-libgo: stage_last
-configure-target-libhsail-rt: stage_last
 configure-target-libphobos: stage_last
 configure-target-libtermcap: stage_last
 configure-target-winsup: stage_last
@@ -60499,7 +60014,6 @@ configure-target-libquadmath: maybe-all-gcc
 configure-target-libgfortran: maybe-all-gcc
 configure-target-libobjc: maybe-all-gcc
 configure-target-libgo: maybe-all-gcc
-configure-target-libhsail-rt: maybe-all-gcc
 configure-target-libphobos: maybe-all-gcc
 configure-target-libtermcap: maybe-all-gcc
 configure-target-winsup: maybe-all-gcc
@@ -61794,7 +61308,6 @@ configure-target-libquadmath: maybe-all-target-libgcc
 configure-target-libgfortran: maybe-all-target-libgcc
 configure-target-libobjc: maybe-all-target-libgcc
 configure-target-libgo: maybe-all-target-libgcc
-configure-target-libhsail-rt: maybe-all-target-libgcc
 configure-target-libphobos: maybe-all-target-libgcc
 configure-target-libtermcap: maybe-all-target-libgcc
 configure-target-winsup: maybe-all-target-libgcc
@@ -61831,8 +61344,6 @@ configure-target-libgfortran: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libobjc: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libgo: maybe-all-target-newlib maybe-all-target-libgloss
-
-configure-target-libhsail-rt: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libphobos: maybe-all-target-newlib maybe-all-target-libgloss
 

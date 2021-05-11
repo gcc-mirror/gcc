@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,11 +29,11 @@
 with Namet; use Namet;
 with Types; use Types;
 
-with System;                  use System;
+with System; use System;
 
 pragma Warnings (Off);
 --  This package is used also by gnatcoll
-with System.OS_Lib;           use System.OS_Lib;
+with System.OS_Lib; use System.OS_Lib;
 pragma Warnings (On);
 
 with System.Storage_Elements;
@@ -772,7 +772,7 @@ private
    procedure Write_Info (Info : String);
    --  Implements Write_Binder_Info, Write_Debug_Info, and Write_Library_Info
 
-   procedure Write_With_Check (A : Address; N  : Integer);
+   procedure Write_With_Check (A : Address; N : Integer);
    --  Writes N bytes from buffer starting at address A to file whose FD is
    --  stored in Output_FD, and whose file name is stored as a File_Name_Type
    --  in Output_File_Name. A check is made for disk full, and if this is

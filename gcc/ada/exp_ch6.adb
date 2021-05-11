@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,57 +23,61 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;     use Atree;
-with Aspects;   use Aspects;
-with Checks;    use Checks;
-with Contracts; use Contracts;
-with Debug;     use Debug;
-with Einfo;     use Einfo;
-with Errout;    use Errout;
-with Elists;    use Elists;
-with Expander;  use Expander;
-with Exp_Aggr;  use Exp_Aggr;
-with Exp_Atag;  use Exp_Atag;
-with Exp_Ch3;   use Exp_Ch3;
-with Exp_Ch7;   use Exp_Ch7;
-with Exp_Ch9;   use Exp_Ch9;
-with Exp_Dbug;  use Exp_Dbug;
-with Exp_Disp;  use Exp_Disp;
-with Exp_Dist;  use Exp_Dist;
-with Exp_Intr;  use Exp_Intr;
-with Exp_Pakd;  use Exp_Pakd;
-with Exp_Tss;   use Exp_Tss;
-with Exp_Util;  use Exp_Util;
-with Freeze;    use Freeze;
-with Inline;    use Inline;
-with Itypes;    use Itypes;
-with Lib;       use Lib;
-with Namet;     use Namet;
-with Nlists;    use Nlists;
-with Nmake;     use Nmake;
-with Opt;       use Opt;
-with Restrict;  use Restrict;
-with Rident;    use Rident;
-with Rtsfind;   use Rtsfind;
-with Sem;       use Sem;
-with Sem_Aux;   use Sem_Aux;
-with Sem_Ch6;   use Sem_Ch6;
-with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch13;  use Sem_Ch13;
-with Sem_Dim;   use Sem_Dim;
-with Sem_Disp;  use Sem_Disp;
-with Sem_Dist;  use Sem_Dist;
-with Sem_Eval;  use Sem_Eval;
-with Sem_Mech;  use Sem_Mech;
-with Sem_Res;   use Sem_Res;
-with Sem_SCIL;  use Sem_SCIL;
-with Sem_Util;  use Sem_Util;
-with Sinfo;     use Sinfo;
-with Snames;    use Snames;
-with Stand;     use Stand;
-with Tbuild;    use Tbuild;
-with Uintp;     use Uintp;
-with Validsw;   use Validsw;
+with Atree;          use Atree;
+with Aspects;        use Aspects;
+with Checks;         use Checks;
+with Contracts;      use Contracts;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Elists;         use Elists;
+with Expander;       use Expander;
+with Exp_Aggr;       use Exp_Aggr;
+with Exp_Atag;       use Exp_Atag;
+with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch9;        use Exp_Ch9;
+with Exp_Dbug;       use Exp_Dbug;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Intr;       use Exp_Intr;
+with Exp_Pakd;       use Exp_Pakd;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Inline;         use Inline;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_SCIL;       use Sem_SCIL;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Validsw;        use Validsw;
 
 package body Exp_Ch6 is
 
@@ -2209,7 +2213,7 @@ package body Exp_Ch6 is
 
          --  Check for volatility mismatch
 
-         if Is_Volatile_Object (Actual) and then not Is_Volatile (E_Formal)
+         if Is_Volatile_Object_Ref (Actual) and then not Is_Volatile (E_Formal)
          then
             if Comes_From_Source (N) then
                Error_Msg_N
@@ -3473,12 +3477,6 @@ package body Exp_Ch6 is
       Scop          : Entity_Id;
       Subp          : Entity_Id;
 
-      Prev_Orig : Node_Id;
-      --  Original node for an actual, which may have been rewritten. If the
-      --  actual is a function call that has been transformed from a selected
-      --  component, the original node is unanalyzed. Otherwise, it carries
-      --  semantic information used to generate additional actuals.
-
       CW_Interface_Formals_Present : Boolean := False;
 
    --  Start of processing for Expand_Call_Helper
@@ -3739,7 +3737,6 @@ package body Exp_Ch6 is
          --  Prepare to examine current entry
 
          Prev := Actual;
-         Prev_Orig := Original_Node (Prev);
 
          --  Ada 2005 (AI-251): Check if any formal is a class-wide interface
          --  to expand it in a further round.
@@ -3801,7 +3798,7 @@ package body Exp_Ch6 is
                   --  is internally generated code that manipulates addresses,
                   --  e.g. when building interface tables. No check should
                   --  occur in this case, and the discriminated object is not
-                  --  directly a hand.
+                  --  directly at hand.
 
                   if not Comes_From_Source (Actual)
                     and then Nkind (Actual) = N_Unchecked_Type_Conversion
@@ -3828,63 +3825,6 @@ package body Exp_Ch6 is
          --  Create possible extra actual for accessibility level
 
          if Present (Extra_Accessibility (Formal)) then
-
-            --  Ada 2005 (AI-252): If the actual was rewritten as an Access
-            --  attribute, then the original actual may be an aliased object
-            --  occurring as the prefix in a call using "Object.Operation"
-            --  notation. In that case we must pass the level of the object,
-            --  so Prev_Orig is reset to Prev and the attribute will be
-            --  processed by the code for Access attributes further below.
-
-            if Prev_Orig /= Prev
-              and then Nkind (Prev) = N_Attribute_Reference
-              and then Get_Attribute_Id (Attribute_Name (Prev)) =
-                         Attribute_Access
-              and then Is_Aliased_View (Prev_Orig)
-            then
-               Prev_Orig := Prev;
-
-            --  A class-wide precondition generates a test in which formals of
-            --  the subprogram are replaced by actuals that came from source.
-            --  In that case as well, the accessiblity comes from the actual.
-            --  This is the one case in which there are references to formals
-            --  outside of their subprogram.
-
-            elsif Prev_Orig /= Prev
-              and then Is_Entity_Name (Prev_Orig)
-              and then Present (Entity (Prev_Orig))
-              and then Is_Formal (Entity (Prev_Orig))
-              and then not In_Open_Scopes (Scope (Entity (Prev_Orig)))
-            then
-               Prev_Orig := Prev;
-
-            --  If the actual is a formal of an enclosing subprogram it is
-            --  the right entity, even if it is a rewriting. This happens
-            --  when the call is within an inherited condition or predicate.
-
-            elsif Is_Entity_Name (Actual)
-              and then Is_Formal (Entity (Actual))
-              and then In_Open_Scopes (Scope (Entity (Actual)))
-            then
-               Prev_Orig := Prev;
-
-            --  If the actual is an attribute reference that was expanded
-            --  into a reference to an entity, then get accessibility level
-            --  from that entity. AARM 6.1.1(27.d) says "... the implicit
-            --  constant declaration defines the accessibility level of X'Old".
-
-            elsif Nkind (Prev_Orig) = N_Attribute_Reference
-              and then Attribute_Name (Prev_Orig) in Name_Old | Name_Loop_Entry
-              and then Is_Entity_Name (Prev)
-              and then Present (Entity (Prev))
-              and then Is_Object (Entity (Prev))
-            then
-               Prev_Orig := Prev;
-
-            elsif Nkind (Prev_Orig) = N_Type_Conversion then
-               Prev_Orig := Expression (Prev_Orig);
-            end if;
-
             --  Ada 2005 (AI-251): Thunks must propagate the extra actuals of
             --  accessibility levels.
 
@@ -3928,6 +3868,29 @@ package body Exp_Ch6 is
                          N_If_Expression | N_Case_Expression
             then
                Add_Cond_Expression_Extra_Actual (Formal);
+
+            --  Internal constant generated to remove side effects (normally
+            --  from the expansion of dispatching calls).
+
+            --  First verify the actual is internal
+
+            elsif not Comes_From_Source (Prev)
+              and then Original_Node (Prev) = Prev
+
+              --  Next check that the actual is a constant
+
+              and then Nkind (Prev) = N_Identifier
+              and then Ekind (Entity (Prev)) = E_Constant
+              and then Nkind (Parent (Entity (Prev))) = N_Object_Declaration
+            then
+               --  Generate the accessibility level based on the expression in
+               --  the constant's declaration.
+
+               Add_Extra_Actual
+                 (Expr => Accessibility_Level
+                            (Expr  => Expression (Parent (Entity (Prev))),
+                             Level => Dynamic_Level),
+                  EF   => Extra_Accessibility (Formal));
 
             --  Normal case
 
@@ -5164,7 +5127,7 @@ package body Exp_Ch6 is
                --  Perform minor decoration in order to set the master and the
                --  storage pool attributes.
 
-               Set_Ekind                   (Ptr_Typ, E_Access_Type);
+               Mutate_Ekind                (Ptr_Typ, E_Access_Type);
                Set_Finalization_Master     (Ptr_Typ, Fin_Mas_Id);
                Set_Associated_Storage_Pool (Ptr_Typ, Pool_Id);
 
@@ -6246,7 +6209,8 @@ package body Exp_Ch6 is
             --  has contract assertions that need to be verified on exit.
 
             --  Also, mark the successful return to signal that postconditions
-            --  need to be evaluated when finalization occurs.
+            --  need to be evaluated when finalization occurs by setting
+            --  Return_Success_For_Postcond to be True.
 
             if Ekind (Spec_Id) = E_Procedure
               and then Present (Postconditions_Proc (Spec_Id))
@@ -6254,19 +6218,30 @@ package body Exp_Ch6 is
                --  Generate:
                --
                --    Return_Success_For_Postcond := True;
-               --    _postconditions;
+               --    if Postcond_Enabled then
+               --       _postconditions;
+               --    end if;
 
                Insert_Action (Stmt,
                  Make_Assignment_Statement (Loc,
                    Name       =>
                      New_Occurrence_Of
-                      (Get_Return_Success_For_Postcond (Spec_Id), Loc),
+                       (Get_Return_Success_For_Postcond (Spec_Id), Loc),
                    Expression => New_Occurrence_Of (Standard_True, Loc)));
 
+               --  Wrap the call to _postconditions within a test of the
+               --  Postcond_Enabled flag to delay postcondition evaluation
+               --  until after finalization when required.
+
                Insert_Action (Stmt,
-                 Make_Procedure_Call_Statement (Loc,
-                   Name =>
-                     New_Occurrence_Of (Postconditions_Proc (Spec_Id), Loc)));
+                 Make_If_Statement (Loc,
+                   Condition       =>
+                     New_Occurrence_Of (Get_Postcond_Enabled (Spec_Id), Loc),
+                   Then_Statements => New_List (
+                     Make_Procedure_Call_Statement (Loc,
+                       Name =>
+                         New_Occurrence_Of
+                           (Postconditions_Proc (Spec_Id), Loc)))));
             end if;
 
             --  Ada 2020 (AI12-0279): append the call to 'Yield unless this is
@@ -6699,7 +6674,9 @@ package body Exp_Ch6 is
          --  Generate:
          --
          --    Return_Success_For_Postcond := True;
-         --    _postconditions;
+         --    if Postcond_Enabled then
+         --       _postconditions;
+         --    end if;
 
          Insert_Action (N,
            Make_Assignment_Statement (Loc,
@@ -6708,9 +6685,19 @@ package body Exp_Ch6 is
                 (Get_Return_Success_For_Postcond (Scope_Id), Loc),
              Expression => New_Occurrence_Of (Standard_True, Loc)));
 
+         --  Wrap the call to _postconditions within a test of the
+         --  Postcond_Enabled flag to delay postcondition evaluation until
+         --  after finalization when required.
+
          Insert_Action (N,
-           Make_Procedure_Call_Statement (Loc,
-             Name => New_Occurrence_Of (Postconditions_Proc (Scope_Id), Loc)));
+           Make_If_Statement (Loc,
+             Condition       =>
+               New_Occurrence_Of (Get_Postcond_Enabled (Scope_Id), Loc),
+             Then_Statements => New_List (
+               Make_Procedure_Call_Statement (Loc,
+                 Name =>
+                   New_Occurrence_Of
+                     (Postconditions_Proc (Scope_Id), Loc)))));
       end if;
 
       --  Ada 2020 (AI12-0279)
@@ -7358,7 +7345,7 @@ package body Exp_Ch6 is
                Temp       : Entity_Id;
 
             begin
-               Set_Ekind (Acc_Typ, E_Access_Type);
+               Mutate_Ekind (Acc_Typ, E_Access_Type);
 
                Set_Associated_Storage_Pool (Acc_Typ, RTE (RE_SS_Pool));
 
@@ -7621,6 +7608,9 @@ package body Exp_Ch6 is
          --  Generate:
          --
          --    Return_Success_For_Postcond := True;
+         --    if Postcond_Enabled then
+         --       _Postconditions ([exp]);
+         --    end if;
 
          Insert_Action (Exp,
            Make_Assignment_Statement (Loc,
@@ -7629,13 +7619,20 @@ package body Exp_Ch6 is
                 (Get_Return_Success_For_Postcond (Scope_Id), Loc),
              Expression => New_Occurrence_Of (Standard_True, Loc)));
 
-         --  Generate call to _Postconditions
+         --  Wrap the call to _postconditions within a test of the
+         --  Postcond_Enabled flag to delay postcondition evaluation until
+         --  after finalization when required.
 
          Insert_Action (Exp,
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (Postconditions_Proc (Scope_Id), Loc),
-             Parameter_Associations => New_List (New_Copy_Tree (Exp))));
+           Make_If_Statement (Loc,
+             Condition       =>
+               New_Occurrence_Of (Get_Postcond_Enabled (Scope_Id), Loc),
+             Then_Statements => New_List (
+               Make_Procedure_Call_Statement (Loc,
+                 Name                   =>
+                   New_Occurrence_Of
+                     (Postconditions_Proc (Scope_Id), Loc),
+                 Parameter_Associations => New_List (New_Copy_Tree (Exp))))));
       end if;
 
       --  Ada 2005 (AI-251): If this return statement corresponds with an
@@ -9976,8 +9973,6 @@ package body Exp_Ch6 is
          elsif Nkind (Expr) = N_Function_Call
            and then Nkind (Name (Expr)) in N_Has_Entity
            and then Present (Entity (Name (Expr)))
-           and then RTU_Loaded (Ada_Tags)
-           and then RTE_Available (RE_Displace)
            and then Is_RTE (Entity (Name (Expr)), RE_Displace)
          then
             Has_Pointer_Displacement := True;

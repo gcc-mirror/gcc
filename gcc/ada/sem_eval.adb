@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,39 +23,43 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Eval_Fat; use Eval_Fat;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Par_SCO;  use Par_SCO;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Elab; use Sem_Elab;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sem_Type; use Sem_Type;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Eval_Fat;       use Eval_Fat;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Par_SCO;        use Par_SCO;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sem_Type;       use Sem_Type;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
 
 package body Sem_Eval is
 
@@ -141,6 +145,16 @@ package body Sem_Eval is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Check_Non_Static_Context_For_Overflow
+     (N      : Node_Id;
+      Stat   : Boolean;
+      Result : Uint);
+   --  For a signed integer type, check non-static overflow in Result when
+   --  Stat is False. This applies also inside inlined code, where the static
+   --  property may be an effect of the inlining, which should not be allowed
+   --  to remove run-time checks (whether during compilation, or even more
+   --  crucially in the special inlining-for-proof in GNATprove mode).
 
    function Choice_Matches
      (Expr   : Node_Id;
@@ -648,6 +662,34 @@ package body Sem_Eval is
          end if;
       end if;
    end Check_Non_Static_Context;
+
+   -------------------------------------------
+   -- Check_Non_Static_Context_For_Overflow --
+   -------------------------------------------
+
+   procedure Check_Non_Static_Context_For_Overflow
+     (N      : Node_Id;
+      Stat   : Boolean;
+      Result : Uint)
+   is
+   begin
+      if (not Stat or else In_Inlined_Body)
+        and then Is_Signed_Integer_Type (Etype (N))
+      then
+         declare
+            BT : constant Entity_Id := Base_Type (Etype (N));
+            Lo : constant Uint := Expr_Value (Type_Low_Bound (BT));
+            Hi : constant Uint := Expr_Value (Type_High_Bound (BT));
+         begin
+            if Result < Lo or else Result > Hi then
+               Apply_Compile_Time_Constraint_Error
+                 (N, "value not in range of }??",
+                  CE_Overflow_Check_Failed,
+                  Ent => BT);
+            end if;
+         end;
+      end if;
+   end Check_Non_Static_Context_For_Overflow;
 
    ---------------------------------
    -- Check_String_Literal_Length --
@@ -2086,7 +2128,6 @@ package body Sem_Eval is
                      Apply_Compile_Time_Constraint_Error
                        (N, "division by zero", CE_Divide_By_Zero,
                         Warn => not Stat or SPARK_Mode = On);
-                     Set_Raises_Constraint_Error (N);
                      return;
 
                   --  Otherwise we can do the division
@@ -2143,24 +2184,9 @@ package body Sem_Eval is
 
             if Is_Modular_Integer_Type (Ltype) then
                Result := Result mod Modulus (Ltype);
-
-               --  For a signed integer type, check non-static overflow
-
-            elsif (not Stat) and then Is_Signed_Integer_Type (Ltype) then
-               declare
-                  BT : constant Entity_Id := Base_Type (Ltype);
-                  Lo : constant Uint := Expr_Value (Type_Low_Bound (BT));
-                  Hi : constant Uint := Expr_Value (Type_High_Bound (BT));
-               begin
-                  if Result < Lo or else Result > Hi then
-                     Apply_Compile_Time_Constraint_Error
-                       (N, "value not in range of }??",
-                        CE_Overflow_Check_Failed,
-                        Ent => BT);
-                     return;
-                  end if;
-               end;
             end if;
+
+            Check_Non_Static_Context_For_Overflow (N, Stat, Result);
 
             --  If we get here we can fold the result
 
@@ -3202,6 +3228,8 @@ package body Sem_Eval is
                      Result := Result mod Modulus (Etype (N));
                   end if;
 
+                  Check_Non_Static_Context_For_Overflow (N, Stat, Result);
+
                   Fold_Uint (N, Result, Stat);
                end if;
             end;
@@ -3830,6 +3858,11 @@ package body Sem_Eval is
    -----------------------------
 
    procedure Eval_Selected_Component (N : Node_Id) is
+      Node : Node_Id;
+      Comp : Node_Id;
+      C    : Node_Id;
+      Nam  : Name_Id;
+
    begin
       --  If an attribute reference or a LHS, nothing to do.
       --  Also do not fold if N is an [in] out subprogram parameter.
@@ -3839,7 +3872,34 @@ package body Sem_Eval is
         and then Is_LHS (N) = No
         and then not Is_Actual_Out_Or_In_Out_Parameter (N)
       then
-         Fold (N);
+         --  Simplify a selected_component on an aggregate by extracting
+         --  the field directly.
+
+         Node := Unqualify (Prefix (N));
+
+         if Nkind (Node) = N_Aggregate
+           and then Compile_Time_Known_Aggregate (Node)
+         then
+            Comp := First (Component_Associations (Node));
+            Nam  := Chars (Selector_Name (N));
+
+            while Present (Comp) loop
+               C := First (Choices (Comp));
+
+               while Present (C) loop
+                  if Chars (C) = Nam then
+                     Rewrite (N, Relocate_Node (Expression (Comp)));
+                     return;
+                  end if;
+
+                  Next (C);
+               end loop;
+
+               Next (Comp);
+            end loop;
+         else
+            Fold (N);
+         end if;
       end if;
    end Eval_Selected_Component;
 
@@ -4079,7 +4139,7 @@ package body Sem_Eval is
 
          Len := String_Length (Strval (N));
 
-         if UI_From_Int (Len) > String_Type_Len (Bas) then
+         if Len > String_Type_Len (Bas) then
 
             --  Issue message. Note that this message is a warning if the
             --  string literal is not marked as static (happens in some cases
@@ -4306,10 +4366,7 @@ package body Sem_Eval is
          return;
       end if;
 
-      if Etype (Right) = Universal_Integer
-           or else
-         Etype (Right) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (Right)) then
          Otype := Find_Universal_Operator_Type (N);
       end if;
 
@@ -4342,6 +4399,8 @@ package body Sem_Eval is
                pragma Assert (Nkind (N) = N_Op_Abs);
                Result := abs Rint;
             end if;
+
+            Check_Non_Static_Context_For_Overflow (N, Stat, Result);
 
             Fold_Uint (N, Result, Stat);
          end;
@@ -4928,7 +4987,7 @@ package body Sem_Eval is
          end if;
       end Check_Elab_Call;
 
-      Modulus : Uint;
+      Modulus, Val : Uint;
 
    begin
       if Compile_Time_Known_Value (Left)
@@ -4939,23 +4998,25 @@ package body Sem_Eval is
          if Op = N_Op_Shift_Left then
             Check_Elab_Call;
 
-            declare
-               Modulus : Uint;
-            begin
-               if Is_Modular_Integer_Type (Typ) then
-                  Modulus := Einfo.Modulus (Typ);
-               else
-                  Modulus := Uint_2 ** RM_Size (Typ);
-               end if;
+            if Is_Modular_Integer_Type (Typ) then
+               Modulus := Einfo.Entities.Modulus (Typ);
+            else
+               Modulus := Uint_2 ** RM_Size (Typ);
+            end if;
 
-               --  Fold Shift_Left (X, Y) by computing (X * 2**Y) rem modulus
+            --  Fold Shift_Left (X, Y) by computing
+            --  (X * 2**Y) rem modulus [- Modulus]
 
-               Fold_Uint
-                 (N,
-                  (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
-                    rem Modulus,
-                  Static => Static);
-            end;
+            Val := (Expr_Value (Left) * (Uint_2 ** Expr_Value (Right)))
+                     rem Modulus;
+
+            if Is_Modular_Integer_Type (Typ)
+              or else Val < Modulus / Uint_2
+            then
+               Fold_Uint (N, Val, Static => Static);
+            else
+               Fold_Uint (N, Val - Modulus, Static => Static);
+            end if;
 
          elsif Op = N_Op_Shift_Right then
             Check_Elab_Call;
@@ -4966,7 +5027,7 @@ package body Sem_Eval is
                Fold_Uint (N, Expr_Value (Left), Static => Static);
             else
                if Is_Modular_Integer_Type (Typ) then
-                  Modulus := Einfo.Modulus (Typ);
+                  Modulus := Einfo.Entities.Modulus (Typ);
                else
                   Modulus := Uint_2 ** RM_Size (Typ);
                end if;
@@ -4987,10 +5048,10 @@ package body Sem_Eval is
             Check_Elab_Call;
 
             declare
-               Two_Y   : constant Uint := Uint_2 ** Expr_Value (Right);
+               Two_Y : constant Uint := Uint_2 ** Expr_Value (Right);
             begin
                if Is_Modular_Integer_Type (Typ) then
-                  Modulus := Einfo.Modulus (Typ);
+                  Modulus := Einfo.Entities.Modulus (Typ);
                else
                   Modulus := Uint_2 ** RM_Size (Typ);
                end if;
@@ -5494,23 +5555,16 @@ package body Sem_Eval is
          return False;
       end if;
 
-      Anc_Subt := Ancestor_Subtype (Typ);
+      --  Then, check if the subtype is strictly static. This takes care of
+      --  checking for generics and predicates.
 
-      if Anc_Subt = Empty then
-         Anc_Subt := Base_T;
+      if not Is_Static_Subtype (Typ) then
+         return False;
       end if;
-
-      if Is_Generic_Type (Root_Type (Base_T))
-        or else Is_Generic_Actual_Type (Base_T)
-      then
-         return False;
-
-      elsif Has_Dynamic_Predicate_Aspect (Typ) then
-         return False;
 
       --  String types
 
-      elsif Is_String_Type (Typ) then
+      if Is_String_Type (Typ) then
          return
            Ekind (Typ) = E_String_Literal_Subtype
              or else
@@ -5524,6 +5578,12 @@ package body Sem_Eval is
             return True;
 
          else
+            Anc_Subt := Ancestor_Subtype (Typ);
+
+            if No (Anc_Subt) then
+               Anc_Subt := Base_T;
+            end if;
+
             --  Scalar_Range (Typ) might be an N_Subtype_Indication, so use
             --  Get_Type_{Low,High}_Bound.
 
@@ -6045,7 +6105,9 @@ package body Sem_Eval is
          --  No message if we are dealing with System.Priority values in
          --  CodePeer mode where the target runtime may have more priorities.
 
-         elsif not CodePeer_Mode or else Etype (N) /= RTE (RE_Priority) then
+         elsif not CodePeer_Mode
+           or else not Is_RTE (Etype (N), RE_Priority)
+         then
             --  Determine if the out-of-range violation constitutes a warning
             --  or an error based on context, according to RM 4.9 (34/3).
 
@@ -7182,7 +7244,7 @@ package body Sem_Eval is
 
       --  Universal types have no range limits, so always in range
 
-      elsif Typ = Universal_Integer or else Typ = Universal_Real then
+      elsif Is_Universal_Numeric_Type (Typ) then
          return In_Range;
 
       --  Never known if not scalar type. Don't know if this can actually

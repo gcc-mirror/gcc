@@ -89,9 +89,9 @@ all::g++-mapper-server$(exeext)
 
 MAPPER.O := server.o resolver.o
 CODYLIB = ../libcody/libcody.a
-CXXINC += -I$(srcdir)/../libcody -I$(srcdir)/../include -I$(srcdir)/../gcc -I.
+CXXINC += -I$(srcdir)/../libcody -I$(srcdir)/../include -I$(srcdir)/../gcc -I. -I../gcc
 g++-mapper-server$(exeext): $(MAPPER.O) $(CODYLIB)
-	+$(CXX) $(LDFLAGS) $(PIEFLAG) -o $@ $^ $(VERSION.O) $(LIBIBERTY) $(NETLIBS)
+	+$(CXX) $(LDFLAGS) $(PIEFLAG) -o $@ $^ $(LIBIBERTY) $(NETLIBS)
 
 # copy to gcc dir so tests there can run
 all::../gcc/g++-mapper-server$(exeext)

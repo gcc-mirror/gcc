@@ -38,7 +38,6 @@
 #include "stringpool.h"
 
 #include "gcc-interface.h"
-#include "hash-set.h"
 #include "machmode.h"
 #include "vec.h"
 #include "double-int.h"
@@ -69,172 +68,18 @@
 #include "connection.hh"
 #include "marshall-cp.hh"
 #include "rpc.hh"
+#include "context.hh"
 
-#ifdef __GNUC__
-#pragma GCC visibility push(default)
-#endif
-int plugin_is_GPL_compatible;
-#ifdef __GNUC__
-#pragma GCC visibility pop
-#endif
+#include <vector>
+
+using namespace cc1_plugin;
 
 
 
-static int ATTRIBUTE_UNUSED
-check_symbol_mask[GCC_CP_SYMBOL_MASK >= GCC_CP_SYMBOL_END ? 1 : -1];
-
-// This is put into the lang hooks when the plugin starts.
-
-static void
-plugin_print_error_function (diagnostic_context *context, const char *file,
-			     diagnostic_info *diagnostic)
-{
-  if (current_function_decl != NULL_TREE
-      && DECL_NAME (current_function_decl) != NULL_TREE
-      && strcmp (IDENTIFIER_POINTER (DECL_NAME (current_function_decl)),
-		 GCC_FE_WRAPPER_FUNCTION) == 0)
-    return;
-  lhd_print_error_function (context, file, diagnostic);
-}
+static_assert (GCC_CP_SYMBOL_MASK >= GCC_CP_SYMBOL_END,
+	       "GCC_CP_SYMBOL_MASK >= GCC_CP_SYMBOL_END");
 
 
-
-static unsigned long long
-convert_out (tree t)
-{
-  return (unsigned long long) (uintptr_t) t;
-}
-
-static tree
-convert_in (unsigned long long v)
-{
-  return (tree) (uintptr_t) v;
-}
-
-
-
-struct decl_addr_value
-{
-  tree decl;
-  tree address;
-};
-
-struct decl_addr_hasher : free_ptr_hash<decl_addr_value>
-{
-  static inline hashval_t hash (const decl_addr_value *);
-  static inline bool equal (const decl_addr_value *, const decl_addr_value *);
-};
-
-inline hashval_t
-decl_addr_hasher::hash (const decl_addr_value *e)
-{
-  return DECL_UID (e->decl);
-}
-
-inline bool
-decl_addr_hasher::equal (const decl_addr_value *p1, const decl_addr_value *p2)
-{
-  return p1->decl == p2->decl;
-}
-
-
-
-struct string_hasher : nofree_ptr_hash<const char>
-{
-  static inline hashval_t hash (const char *s)
-  {
-    return htab_hash_string (s);
-  }
-
-  static inline bool equal (const char *p1, const char *p2)
-  {
-    return strcmp (p1, p2) == 0;
-  }
-};
-
-
-
-struct plugin_context : public cc1_plugin::connection
-{
-  plugin_context (int fd);
-
-  // Map decls to addresses.
-  hash_table<decl_addr_hasher> address_map;
-
-  // A collection of trees that are preserved for the GC.
-  hash_table< nofree_ptr_hash<tree_node> > preserved;
-
-  // File name cache.
-  hash_table<string_hasher> file_names;
-
-  // Perform GC marking.
-  void mark ();
-
-  // Preserve a tree during the plugin's operation.
-  tree preserve (tree t)
-  {
-    tree_node **slot = preserved.find_slot (t, INSERT);
-    *slot = t;
-    return t;
-  }
-
-  location_t get_location_t (const char *filename,
-			     unsigned int line_number)
-  {
-    if (filename == NULL)
-      return UNKNOWN_LOCATION;
-
-    filename = intern_filename (filename);
-    linemap_add (line_table, LC_ENTER, false, filename, line_number);
-    location_t loc = linemap_line_start (line_table, line_number, 0);
-    linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-    return loc;
-  }
-
-private:
-
-  // Add a file name to FILE_NAMES and return the canonical copy.
-  const char *intern_filename (const char *filename)
-  {
-    const char **slot = file_names.find_slot (filename, INSERT);
-    if (*slot == NULL)
-      {
-	/* The file name must live as long as the line map, which
-	   effectively means as long as this compilation.  So, we copy
-	   the string here but never free it.  */
-	*slot = xstrdup (filename);
-      }
-    return *slot;
-  }
-};
-
-static plugin_context *current_context;
-
-
-
-plugin_context::plugin_context (int fd)
-  : cc1_plugin::connection (fd),
-    address_map (30),
-    preserved (30),
-    file_names (30)
-{
-}
-
-void
-plugin_context::mark ()
-{
-  for (hash_table<decl_addr_hasher>::iterator it = address_map.begin ();
-       it != address_map.end ();
-       ++it)
-    {
-      ggc_mark ((*it)->decl);
-      ggc_mark ((*it)->address);
-    }
-
-  for (hash_table< nofree_ptr_hash<tree_node> >::iterator
-	 it = preserved.begin (); it != preserved.end (); ++it)
-    ggc_mark (&*it);
-}
 
 static void
 plugin_binding_oracle (enum cp_oracle_request kind, tree identifier)
@@ -1980,24 +1825,21 @@ plugin_build_function_type (cc1_plugin::connection *self,
 			    const struct gcc_type_array *argument_types_in,
 			    int is_varargs)
 {
-  tree *argument_types;
   tree return_type = convert_in (return_type_in);
   tree result;
 
-  argument_types = new tree[argument_types_in->n_elements];
+  std::vector<tree> argument_types (argument_types_in->n_elements);
   for (int i = 0; i < argument_types_in->n_elements; ++i)
     argument_types[i] = convert_in (argument_types_in->elements[i]);
 
   if (is_varargs)
     result = build_varargs_function_type_array (return_type,
 						argument_types_in->n_elements,
-						argument_types);
+						argument_types.data ());
   else
     result = build_function_type_array (return_type,
 					argument_types_in->n_elements,
-					argument_types);
-
-  delete[] argument_types;
+					argument_types.data ());
 
   plugin_context *ctx = static_cast<plugin_context *> (self);
   return convert_out (ctx->preserve (result));
@@ -3649,15 +3491,6 @@ plugin_add_static_assert (cc1_plugin::connection *self,
 
 
 
-// Perform GC marking.
-
-static void
-gc_mark (void *, void *)
-{
-  if (current_context != NULL)
-    current_context->mark ();
-}
-
 #ifdef __GNUC__
 #pragma GCC visibility push(default)
 #endif
@@ -3666,90 +3499,56 @@ int
 plugin_init (struct plugin_name_args *plugin_info,
 	     struct plugin_gcc_version *)
 {
-  long fd = -1;
-  for (int i = 0; i < plugin_info->argc; ++i)
-    {
-      if (strcmp (plugin_info->argv[i].key, "fd") == 0)
-	{
-	  char *tail;
-	  errno = 0;
-	  fd = strtol (plugin_info->argv[i].value, &tail, 0);
-	  if (*tail != '\0' || errno != 0)
-	    fatal_error (input_location,
-			 "%s: invalid file descriptor argument to plugin",
-			 plugin_info->base_name);
-	  break;
-	}
-    }
-  if (fd == -1)
-    fatal_error (input_location,
-		 "%s: required plugin argument %<fd%> is missing",
-		 plugin_info->base_name);
-
-  current_context = new plugin_context (fd);
-
-  // Handshake.
-  cc1_plugin::protocol_int version;
-  if (!current_context->require ('H')
-      || ! ::cc1_plugin::unmarshall (current_context, &version))
-    fatal_error (input_location,
-		 "%s: handshake failed", plugin_info->base_name);
-  if (version != GCC_CP_FE_VERSION_0)
-    fatal_error (input_location,
-		 "%s: unknown version in handshake", plugin_info->base_name);
+  generic_plugin_init (plugin_info, GCC_CP_FE_VERSION_0);
 
   register_callback (plugin_info->base_name, PLUGIN_PRAGMAS,
 		     plugin_init_extra_pragmas, NULL);
   register_callback (plugin_info->base_name, PLUGIN_PRE_GENERICIZE,
 		     rewrite_decls_to_addresses, NULL);
-  register_callback (plugin_info->base_name, PLUGIN_GGC_MARKING,
-		     gc_mark, NULL);
-
-  lang_hooks.print_error_function = plugin_print_error_function;
 
 #define GCC_METHOD0(R, N)			\
   {						\
     cc1_plugin::callback_ftype *fun		\
-      = cc1_plugin::callback<R, plugin_ ## N>;	\
+      = cc1_plugin::invoker<R>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);	\
   }
 #define GCC_METHOD1(R, N, A)				\
   {							\
     cc1_plugin::callback_ftype *fun			\
-      = cc1_plugin::callback<R, A, plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);		\
   }
 #define GCC_METHOD2(R, N, A, B)				\
   {							\
     cc1_plugin::callback_ftype *fun			\
-      = cc1_plugin::callback<R, A, B, plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A, B>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);		\
   }
 #define GCC_METHOD3(R, N, A, B, C)			\
   {							\
     cc1_plugin::callback_ftype *fun			\
-      = cc1_plugin::callback<R, A, B, C, plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A, B, C>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);		\
   }
 #define GCC_METHOD4(R, N, A, B, C, D)		\
   {						\
     cc1_plugin::callback_ftype *fun		\
-      = cc1_plugin::callback<R, A, B, C, D,	\
-			     plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A, B, C,		\
+			    D>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);	\
   }
 #define GCC_METHOD5(R, N, A, B, C, D, E)	\
   {						\
     cc1_plugin::callback_ftype *fun		\
-      = cc1_plugin::callback<R, A, B, C, D, E,	\
-			     plugin_ ## N>;	\
+      = cc1_plugin::invoker<R, A, B, C,		\
+			    D, E>::invoke<plugin_ ## N>;	\
     current_context->add_callback (# N, fun);	\
   }
 #define GCC_METHOD7(R, N, A, B, C, D, E, F, G)		\
   {							\
     cc1_plugin::callback_ftype *fun			\
-      = cc1_plugin::callback<R, A, B, C, D, E, F, G,	\
-			     plugin_ ## N>;		\
+      = cc1_plugin::invoker<R, A, B, C,			\
+			    D, E, F, G>::invoke<plugin_ ## N>;		\
     current_context->add_callback (# N, fun);		\
   }
 

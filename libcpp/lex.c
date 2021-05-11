@@ -1548,18 +1548,28 @@ lex_number (cpp_reader *pfile, cpp_string *number,
   base = pfile->buffer->cur - 1;
   do
     {
+      const uchar *adj_digit_sep = NULL;
       cur = pfile->buffer->cur;
 
       /* N.B. ISIDNUM does not include $.  */
-      while (ISIDNUM (*cur) || *cur == '.' || DIGIT_SEP (*cur)
-	     || VALID_SIGN (*cur, cur[-1]))
+      while (ISIDNUM (*cur)
+	     || (*cur == '.' && !DIGIT_SEP (cur[-1]))
+	     || DIGIT_SEP (*cur)
+	     || (VALID_SIGN (*cur, cur[-1]) && !DIGIT_SEP (cur[-2])))
 	{
 	  NORMALIZE_STATE_UPDATE_IDNUM (nst, *cur);
+	  /* Adjacent digit separators do not form part of the pp-number syntax.
+	     However, they can safely be diagnosed here as an error, since '' is
+	     not a valid preprocessing token.  */
+	  if (DIGIT_SEP (*cur) && DIGIT_SEP (cur[-1]) && !adj_digit_sep)
+	    adj_digit_sep = cur;
 	  cur++;
 	}
       /* A number can't end with a digit separator.  */
       while (cur > pfile->buffer->cur && DIGIT_SEP (cur[-1]))
 	--cur;
+      if (adj_digit_sep && adj_digit_sep < cur)
+	cpp_error (pfile, CPP_DL_ERROR, "adjacent digit separators");
 
       pfile->buffer->cur = cur;
     }
@@ -3709,6 +3719,7 @@ cpp_avoid_paste (cpp_reader *pfile, const cpp_token *token1,
     case CPP_DEREF:	return c == '*';
     case CPP_DOT:	return c == '.' || c == '%' || b == CPP_NUMBER;
     case CPP_HASH:	return c == '#' || c == '%'; /* Digraph form.  */
+    case CPP_PRAGMA:
     case CPP_NAME:	return ((b == CPP_NUMBER
 				 && name_p (pfile, &token2->val.str))
 				|| b == CPP_NAME

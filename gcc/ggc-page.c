@@ -1518,6 +1518,12 @@ gt_ggc_mx (const char *& x)
 }
 
 void
+gt_ggc_mx (char *& x)
+{
+  gt_ggc_m_S (x);
+}
+
+void
 gt_ggc_mx (unsigned char *& x)
 {
   gt_ggc_m_S (x);

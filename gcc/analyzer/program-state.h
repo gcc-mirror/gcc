@@ -192,11 +192,7 @@ public:
   program_state (const extrinsic_state &ext_state);
   program_state (const program_state &other);
   program_state& operator= (const program_state &other);
-
-#if __cplusplus >= 201103
   program_state (program_state &&other);
-#endif
-
   ~program_state ();
 
   hashval_t hash () const;

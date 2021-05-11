@@ -8433,7 +8433,7 @@ arc_reorg (void)
 
       if (!INSN_ADDRESSES_SET_P())
 	  fatal_error (input_location,
-		       "insn addresses not set after shorten_branches");
+		       "insn addresses not set after shorten branches");
 
       for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
 	{

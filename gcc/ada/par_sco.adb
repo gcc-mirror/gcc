@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2009-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,26 +23,28 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Errout;   use Errout;
-with Lib;      use Lib;
-with Lib.Util; use Lib.Util;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Output;   use Output;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Errout;         use Errout;
+with Lib;            use Lib;
+with Lib.Util;       use Lib.Util;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Output;         use Output;
 with Put_SCOs;
-with SCOs;     use SCOs;
-with Sem;      use Sem;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
+with SCOs;           use SCOs;
+with Sem;            use Sem;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
 with Table;
 
-with GNAT.HTable;      use GNAT.HTable;
+with GNAT.HTable;    use GNAT.HTable;
 with GNAT.Heap_Sort_G;
 
 package body Par_SCO is
@@ -1422,7 +1424,7 @@ package body Par_SCO is
       --  Dominance information for the current basic block
 
       Current_Test : Node_Id;
-      --  Conditional node (N_If_Statement or N_Elsiif being processed
+      --  Conditional node (N_If_Statement or N_Elsif being processed)
 
       N : Node_Id;
 

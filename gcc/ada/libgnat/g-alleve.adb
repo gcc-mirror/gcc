@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                         (Soft Binding Version)                           --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -258,7 +258,7 @@ package body GNAT.Altivec.Low_Level_Vectors is
       pragma Convention (LL_Altivec, vspltisx);
 
       type Bit_Operation is
-        access function
+        not null access function
         (Value  : Component_Type;
          Amount : Natural) return Component_Type;
 

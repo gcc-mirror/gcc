@@ -67,6 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "target-globals.h"
 #include "gimple-iterator.h"
+#include "gimple-fold.h"
 #include "tree-vectorizer.h"
 #include "shrink-wrap.h"
 #include "builtins.h"
@@ -6671,12 +6672,29 @@ ix86_compute_frame_layout (void)
 	 area, see the SEH code in config/i386/winnt.c for the rationale.  */
       frame->hard_frame_pointer_offset = frame->sse_reg_save_offset;
 
-      /* If we can leave the frame pointer where it is, do so.  Also, return
+      /* If we can leave the frame pointer where it is, do so; however return
 	 the establisher frame for __builtin_frame_address (0) or else if the
-	 frame overflows the SEH maximum frame size.  */
+	 frame overflows the SEH maximum frame size.
+
+	 Note that the value returned by __builtin_frame_address (0) is quite
+	 constrained, because setjmp is piggybacked on the SEH machinery with
+	 recent versions of MinGW:
+
+	  #    elif defined(__SEH__)
+	  #     if defined(__aarch64__) || defined(_ARM64_)
+	  #      define setjmp(BUF) _setjmp((BUF), __builtin_sponentry())
+	  #     elif (__MINGW_GCC_VERSION < 40702)
+	  #      define setjmp(BUF) _setjmp((BUF), mingw_getsp())
+	  #     else
+	  #      define setjmp(BUF) _setjmp((BUF), __builtin_frame_address (0))
+	  #     endif
+
+	 and the second argument passed to _setjmp, if not null, is forwarded
+	 to the TargetFrame parameter of RtlUnwindEx by longjmp (after it has
+	 built an ExceptionRecord on the fly describing the setjmp buffer).  */
       const HOST_WIDE_INT diff
 	= frame->stack_pointer_offset - frame->hard_frame_pointer_offset;
-      if (diff <= 255)
+      if (diff <= 255 && !crtl->accesses_prior_frames)
 	{
 	  /* The resulting diff will be a multiple of 16 lower than 255,
 	     i.e. at most 240 as required by the unwind data structure.  */
@@ -15283,6 +15301,7 @@ ix86_build_const_vector (machine_mode mode, bool vect, rtx value)
     case E_V16SImode:
     case E_V8SImode:
     case E_V4SImode:
+    case E_V2SImode:
     case E_V8DImode:
     case E_V4DImode:
     case E_V2DImode:
@@ -15333,6 +15352,7 @@ ix86_build_signbit_mask (machine_mode mode, bool vect, bool invert)
     case E_V8SFmode:
     case E_V4SFmode:
     case E_V2SFmode:
+    case E_V2SImode:
       vec_mode = mode;
       imode = SImode;
       break;
@@ -17865,6 +17885,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   tree decl = NULL_TREE;
   tree arg0, arg1, arg2;
   enum rtx_code rcode;
+  enum tree_code tcode;
   unsigned HOST_WIDE_INT count;
   bool is_vshift;
 
@@ -17945,6 +17966,48 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  return true;
 	}
       break;
+
+    case IX86_BUILTIN_PCMPEQB128:
+    case IX86_BUILTIN_PCMPEQW128:
+    case IX86_BUILTIN_PCMPEQD128:
+    case IX86_BUILTIN_PCMPEQQ:
+    case IX86_BUILTIN_PCMPEQB256:
+    case IX86_BUILTIN_PCMPEQW256:
+    case IX86_BUILTIN_PCMPEQD256:
+    case IX86_BUILTIN_PCMPEQQ256:
+      tcode = EQ_EXPR;
+      goto do_cmp;
+
+    case IX86_BUILTIN_PCMPGTB128:
+    case IX86_BUILTIN_PCMPGTW128:
+    case IX86_BUILTIN_PCMPGTD128:
+    case IX86_BUILTIN_PCMPGTQ:
+    case IX86_BUILTIN_PCMPGTB256:
+    case IX86_BUILTIN_PCMPGTW256:
+    case IX86_BUILTIN_PCMPGTD256:
+    case IX86_BUILTIN_PCMPGTQ256:
+      tcode = GT_EXPR;
+
+    do_cmp:
+      gcc_assert (n_args == 2);
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      {
+	location_t loc = gimple_location (stmt);
+	tree type = TREE_TYPE (arg0);
+	tree zero_vec = build_zero_cst (type);
+	tree minus_one_vec = build_minus_one_cst (type);
+	tree cmp_type = truth_type_for (type);
+	gimple_seq stmts = NULL;
+	tree cmp = gimple_build (&stmts, tcode, cmp_type, arg0, arg1);
+	gsi_insert_before (gsi, stmts, GSI_SAME_STMT);
+	gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
+					 VEC_COND_EXPR, cmp,
+					 minus_one_vec, zero_vec);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, false);
+      }
+      return true;
 
     case IX86_BUILTIN_PSLLD:
     case IX86_BUILTIN_PSLLD128:
@@ -20013,13 +20076,16 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	    }
 	  else if (GET_CODE (XEXP (x, 0)) == PLUS)
 	    {
+	      rtx op = XEXP (XEXP (x, 0), 0);
+
 	      /* Add with carry, ignore the cost of adding a carry flag.  */
-	      if (ix86_carry_flag_operator (XEXP (XEXP (x, 0), 0), mode))
+	      if (ix86_carry_flag_operator (op, mode)
+		  || ix86_carry_flag_unset_operator (op, mode))
 		*total = cost->add;
 	      else
 		{
 		  *total = cost->lea;
-		  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode,
+		  *total += rtx_cost (op, mode,
 				      outer_code, opno, speed);
 		}
 
@@ -20037,7 +20103,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       if (GET_MODE_CLASS (mode) == MODE_INT
 	  && GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	  && GET_CODE (XEXP (x, 0)) == MINUS
-	  && ix86_carry_flag_operator (XEXP (XEXP (x, 0), 1), mode))
+	  && (ix86_carry_flag_operator (XEXP (XEXP (x, 0), 1), mode)
+	      || ix86_carry_flag_unset_operator (XEXP (XEXP (x, 0), 1), mode)))
 	{
 	  *total = cost->add;
 	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode,
@@ -20902,7 +20969,7 @@ ix86_min_insn_size (rtx_insn *insn)
     return 2;
 }
 
-#ifdef ASM_OUTPUT_MAX_SKIP_PAD
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
 
 /* AMD K8 core mispredicts jumps when there are more than 3 jumps in 16 byte
    window.  */
@@ -21230,7 +21297,7 @@ ix86_reorg (void)
 	ix86_pad_short_function ();
       else if (TARGET_PAD_RETURNS)
 	ix86_pad_returns ();
-#ifdef ASM_OUTPUT_MAX_SKIP_PAD
+#ifdef ASM_OUTPUT_MAX_SKIP_ALIGN
       if (TARGET_FOUR_JUMP_LIMIT)
 	ix86_avoid_jump_mispredicts ();
 #endif
@@ -22222,7 +22289,7 @@ ix86_noce_conversion_profitable_p (rtx_insn *seq, struct noce_if_info *if_info)
 /* Implement targetm.vectorize.init_cost.  */
 
 static void *
-ix86_init_cost (class loop *)
+ix86_init_cost (class loop *, bool)
 {
   unsigned *cost = XNEWVEC (unsigned, 3);
   cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;
@@ -23493,6 +23560,9 @@ ix86_run_selftests (void)
 #define TARGET_RTX_COSTS ix86_rtx_costs
 #undef TARGET_ADDRESS_COST
 #define TARGET_ADDRESS_COST ix86_address_cost
+
+#undef TARGET_OVERLAP_OP_BY_PIECES_P
+#define TARGET_OVERLAP_OP_BY_PIECES_P hook_bool_void_true
 
 #undef TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM FLAGS_REG

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -556,8 +556,7 @@ package Sem_Eval is
    --  messages must always point to the same location as the parent message.
 
    procedure Initialize;
-   --  Initializes the internal data structures. Must be called before each
-   --  separate main program unit (e.g. in a GNSA/ASIS context).
+   --  Initializes the internal data structures
 
 private
    --  The Eval routines are all marked inline, since they are called once

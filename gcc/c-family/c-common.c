@@ -4670,7 +4670,7 @@ static bool builtin_function_disabled_p (const char *);
 void
 disable_builtin_function (const char *name)
 {
-  if (strncmp (name, "__builtin_", strlen ("__builtin_")) == 0)
+  if (startswith (name, "__builtin_"))
     error ("cannot disable built-in function %qs", name);
   else
     {
@@ -4718,8 +4718,7 @@ def_builtin_1 (enum built_in_function fncode,
     return;
 
   gcc_assert ((!both_p && !fallback_p)
-	      || !strncmp (name, "__builtin_",
-			   strlen ("__builtin_")));
+	      || startswith (name, "__builtin_"));
 
   libname = name + strlen ("__builtin_");
   decl = add_builtin_function (name, fntype, fncode, fnclass,

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020, Free Software Foundation, Inc.            --
+--            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,7 +57,7 @@ package body Ada.Strings.Text_Output.Utils is
 
    procedure Put_Octet (S : in out Sink'Class; Item : Character) is
    begin
-      S.Last := @ + 1;
+      S.Last := S.Last + 1;
       S.Cur_Chunk.Chars (S.Last) := Item;
       pragma Assert (S.Chunk_Length = S.Cur_Chunk.Chars'Length);
       if S.Last = S.Chunk_Length then
@@ -75,7 +75,7 @@ package body Ada.Strings.Text_Output.Utils is
       if S.Column = 1 then
          Tab_To_Column (S, S.Indentation + 1);
       end if;
-      S.Column := @ + 1;
+      S.Column := S.Column + 1;
    end Adjust_Column;
 
    procedure Put_7bit (S : in out Sink'Class; Item : Character_7) is
@@ -196,7 +196,7 @@ package body Ada.Strings.Text_Output.Utils is
             Line_Start := Index + 1;
          end if;
 
-         Index := @ + 1;
+         Index := Index + 1;
       end loop;
 
       if Index > Line_Start then

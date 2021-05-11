@@ -237,7 +237,6 @@ walk_rtx (md_rtx_info *info, rtx x, class accum_extract *acc)
   switch (code)
     {
     case PC:
-    case CC0:
     case CONST_INT:
     case SYMBOL_REF:
       return;

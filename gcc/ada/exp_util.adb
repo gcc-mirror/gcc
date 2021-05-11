@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,46 +23,49 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Aggr; use Exp_Aggr;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch11; use Exp_Ch11;
-with Ghost;    use Ghost;
-with Inline;   use Inline;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Disp; use Sem_Disp;
-with Sem_Elab; use Sem_Elab;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Validsw;  use Validsw;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Aggr;       use Exp_Aggr;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch11;       use Exp_Ch11;
+with Ghost;          use Ghost;
+with Inline;         use Inline;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Validsw;        use Validsw;
 
 with GNAT.HTable;
 package body Exp_Util is
@@ -834,7 +837,7 @@ package body Exp_Util is
       --  Optimize the case where we are using the default Global_Pool_Object,
       --  and we don't need the heavy finalization machinery.
 
-      elsif Pool_Id = RTE (RE_Global_Pool_Object)
+      elsif Is_RTE (Pool_Id, RE_Global_Pool_Object)
         and then not Needs_Finalization (Desig_Typ)
       then
          return;
@@ -1327,6 +1330,7 @@ package body Exp_Util is
                  and then Is_Primitive_Wrapper (New_E)
                  and then Is_Primitive_Wrapper (Subp)
                  and then Scope (Subp) = Scope (New_E)
+                 and then Chars (Pragma_Identifier (Prag)) = Name_Precondition
                then
                   Error_Msg_Node_2 := Wrapped_Entity (Subp);
                   Error_Msg_NE
@@ -1854,12 +1858,18 @@ package body Exp_Util is
          end if;
 
          --  Once the DIC assertion expression is fully processed, add a check
-         --  to the statements of the DIC procedure.
+         --  to the statements of the DIC procedure (unless the type is an
+         --  abstract type, in which case we don't want the possibility of
+         --  generating a call to an abstract function of the type; such DIC
+         --  procedures can never be called in any case, so not generating the
+         --  check at all is OK).
 
-         Add_DIC_Check
-           (DIC_Prag => DIC_Prag,
-            DIC_Expr => Expr,
-            Stmts    => Stmts);
+         if not Is_Abstract_Type (DIC_Typ) or else GNATprove_Mode then
+            Add_DIC_Check
+              (DIC_Prag => DIC_Prag,
+               DIC_Expr => Expr,
+               Stmts    => Stmts);
+         end if;
       end Add_Own_DIC;
 
       ---------------------
@@ -2180,7 +2190,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the body is not analyzed
 
-      Set_Ekind        (Proc_Body_Id, E_Subprogram_Body);
+      Mutate_Ekind     (Proc_Body_Id, E_Subprogram_Body);
       Set_Etype        (Proc_Body_Id, Standard_Void_Type);
       Set_Scope        (Proc_Body_Id, Current_Scope);
       Set_SPARK_Pragma (Proc_Body_Id, SPARK_Pragma (Proc_Id));
@@ -2347,7 +2357,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind                  (Proc_Id, E_Procedure);
+      Mutate_Ekind               (Proc_Id, E_Procedure);
       Set_Etype                  (Proc_Id, Standard_Void_Type);
       Set_Is_DIC_Procedure       (Proc_Id);
       Set_Scope                  (Proc_Id, Current_Scope);
@@ -2399,7 +2409,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind (Obj_Id, E_In_Parameter);
+      Mutate_Ekind (Obj_Id, E_In_Parameter);
       Set_Etype (Obj_Id, Work_Typ);
       Set_Scope (Obj_Id, Proc_Id);
 
@@ -3669,7 +3679,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the body is not analyzed
 
-      Set_Ekind (Proc_Body_Id, E_Subprogram_Body);
+      Mutate_Ekind (Proc_Body_Id, E_Subprogram_Body);
       Set_Etype (Proc_Body_Id, Standard_Void_Type);
       Set_Scope (Proc_Body_Id, Current_Scope);
 
@@ -3807,7 +3817,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind (Proc_Id, E_Procedure);
+      Mutate_Ekind (Proc_Id, E_Procedure);
       Set_Etype (Proc_Id, Standard_Void_Type);
       Set_Scope (Proc_Id, Current_Scope);
 
@@ -3893,7 +3903,7 @@ package body Exp_Util is
 
       --  Perform minor decoration in case the declaration is not analyzed
 
-      Set_Ekind (Obj_Id, E_In_Parameter);
+      Mutate_Ekind (Obj_Id, E_In_Parameter);
       Set_Etype (Obj_Id, Obj_Typ);
       Set_Scope (Obj_Id, Proc_Id);
 
@@ -4697,7 +4707,7 @@ package body Exp_Util is
       --    type Ptr_Typ is access all Desig_Typ;
 
       Ptr_Typ := Make_Temporary (Loc, 'A');
-      Set_Ekind (Ptr_Typ, E_General_Access_Type);
+      Mutate_Ekind (Ptr_Typ, E_General_Access_Type);
       Set_Directly_Designated_Type (Ptr_Typ, Desig_Typ);
 
       Ptr_Decl :=
@@ -4714,7 +4724,7 @@ package body Exp_Util is
       --    Hook : Ptr_Typ := null;
 
       Hook_Id := Make_Temporary (Loc, 'T');
-      Set_Ekind (Hook_Id, E_Variable);
+      Mutate_Ekind (Hook_Id, E_Variable);
       Set_Etype (Hook_Id, Ptr_Typ);
 
       Hook_Decl :=
@@ -8727,26 +8737,6 @@ package body Exp_Util is
                end if;
             end if;
 
-            --  The following code is historical, it used to be present but it
-            --  is too cautious, because the front-end does not know the proper
-            --  default alignments for the target. Also, if the alignment is
-            --  not known, the front end can't know in any case. If a copy is
-            --  needed, the back-end will take care of it. This whole section
-            --  including this comment can be removed later ???
-
-            --  If the component reference is for a record that has a specified
-            --  alignment, and we either know it is too small, or cannot tell,
-            --  then the component may be unaligned.
-
-            --  What is the following commented out code ???
-
-            --  if Known_Alignment (Etype (P))
-            --    and then Alignment (Etype (P)) < Ttypes.Maximum_Alignment
-            --    and then M > Alignment (Etype (P))
-            --  then
-            --     return True;
-            --  end if;
-
             --  Case of component clause present which may specify an
             --  unaligned position.
 
@@ -9075,7 +9065,7 @@ package body Exp_Util is
         Is_Class_Wide_Type (Etype (Obj_Id))
           and then Present (Expr)
           and then Nkind (Expr) = N_Unchecked_Type_Conversion
-          and then Etype (Expression (Expr)) = RTE (RE_Tag);
+          and then Is_RTE (Etype (Expression (Expr)), RE_Tag);
    end Is_Tag_To_Class_Wide_Conversion;
 
    --------------------------------
@@ -9196,7 +9186,7 @@ package body Exp_Util is
 
       --  True if object reference with volatile type
 
-      elsif Is_Volatile_Object (N) then
+      elsif Is_Volatile_Object_Ref (N) then
          return True;
 
       --  True if reference to volatile entity
@@ -9505,7 +9495,7 @@ package body Exp_Util is
       --  end Equiv_T;
 
       Equiv_Type := Make_Temporary (Loc, 'T');
-      Set_Ekind (Equiv_Type, E_Record_Type);
+      Mutate_Ekind (Equiv_Type, E_Record_Type);
       Set_Parent_Subtype (Equiv_Type, Constr_Root);
 
       --  Set Is_Class_Wide_Equivalent_Type very early to trigger the special
@@ -9997,7 +9987,7 @@ package body Exp_Util is
 
          --  Define the dummy private subtype
 
-         Set_Ekind          (Priv_Subtyp, Subtype_Kind (Ekind (Unc_Typ)));
+         Mutate_Ekind       (Priv_Subtyp, Subtype_Kind (Ekind (Unc_Typ)));
          Set_Etype          (Priv_Subtyp, Base_Type (Unc_Typ));
          Set_Scope          (Priv_Subtyp, Full_Subtyp);
          Set_Is_Constrained (Priv_Subtyp);
@@ -10923,7 +10913,7 @@ package body Exp_Util is
 
       Set_Associated_Node_For_Itype (Res, N);
       Set_Comes_From_Source         (Res, False);
-      Set_Ekind                     (Res, E_Class_Wide_Subtype);
+      Mutate_Ekind                  (Res, E_Class_Wide_Subtype);
       Set_Etype                     (Res, Base_Type (CW_Typ));
       Set_Freeze_Node               (Res, Empty);
       Set_Is_Frozen                 (Res, False);
@@ -11343,7 +11333,7 @@ package body Exp_Util is
 
       Init_Call : Node_Id;
 
-   --  Start of processing for Find_Init_Call
+   --  Start of processing for Remove_Init_Call
 
    begin
       if Present (Initialization_Statements (Var)) then
@@ -11395,8 +11385,29 @@ package body Exp_Util is
       end if;
 
       if Present (Init_Call) then
+         --  If restrictions have forbidden Aborts, the initialization call
+         --  for objects that require deep initialization has not been wrapped
+         --  into the following block (see Exp_Ch3, Default_Initialize_Object)
+         --  so if present remove it as well, and include the IP call in it,
+         --  in the rare case the caller may need to simply displace the
+         --  initialization, as is done for a later address specification.
+
+         if Nkind (Next (Init_Call)) = N_Block_Statement
+           and then Is_Initialization_Block (Next (Init_Call))
+         then
+            declare
+               IP_Call : constant Node_Id := Init_Call;
+            begin
+               Init_Call := Next (IP_Call);
+               Remove (IP_Call);
+               Prepend (IP_Call,
+                 Statements (Handled_Statement_Sequence (Init_Call)));
+            end;
+         end if;
+
          Remove (Init_Call);
       end if;
+
       return Init_Call;
    end Remove_Init_Call;
 
@@ -12195,15 +12206,28 @@ package body Exp_Util is
                if Nkind (Context) in N_Subprogram_Call
                  and then No (Type_Map.Get (Entity (Name (Context))))
                then
-                  New_Ref :=
-                    Convert_To (Type_Of_Formal (Context, Old_Ref), New_Ref);
+                  declare
+                     --  We need to use the Original_Node of the callee, in
+                     --  case it was already modified. Note that we are using
+                     --  Traverse_Proc to walk the tree, and it is defined to
+                     --  walk subtrees in an arbitrary order.
 
-                  --  Do not process the generated type conversion because
-                  --  both the parent type and the derived type are in the
-                  --  Type_Map table. This will clobber the type conversion
-                  --  by resetting its subtype mark.
+                     Callee : constant Entity_Id :=
+                       Entity (Original_Node (Name (Context)));
+                  begin
+                     if No (Type_Map.Get (Callee)) then
+                        New_Ref :=
+                          Convert_To
+                            (Type_Of_Formal (Context, Old_Ref), New_Ref);
 
-                  Result := Skip;
+                        --  Do not process the generated type conversion
+                        --  because both the parent type and the derived type
+                        --  are in the Type_Map table. This will clobber the
+                        --  type conversion by resetting its subtype mark.
+
+                        Result := Skip;
+                     end if;
+                  end;
                end if;
 
             --  Otherwise there is nothing to replace

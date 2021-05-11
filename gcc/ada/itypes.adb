@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,12 +23,13 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Sem;      use Sem;
-with Sinfo;    use Sinfo;
-with Stand;    use Stand;
-with Targparm; use Targparm;
-with Uintp;    use Uintp;
+with Einfo.Utils;    use Einfo.Utils;
+with Sem;            use Sem;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Stand;          use Stand;
+with Targparm;       use Targparm;
+with Uintp;          use Uintp;
 
 package body Itypes is
 

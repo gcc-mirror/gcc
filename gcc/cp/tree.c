@@ -940,7 +940,12 @@ rvalue (tree expr)
   /* We need to do this for rvalue refs as well to get the right answer
      from decltype; see c++/36628.  */
   if (!processing_template_decl && glvalue_p (expr))
-    expr = build1 (NON_LVALUE_EXPR, type, expr);
+    {
+      /* But don't use this function for class lvalues; use move (to treat an
+	 lvalue as an xvalue) or force_rvalue (to make a prvalue copy).  */
+      gcc_checking_assert (!CLASS_TYPE_P (type));
+      expr = build1 (NON_LVALUE_EXPR, type, expr);
+    }
   else if (type != TREE_TYPE (expr))
     expr = build_nop (type, expr);
 
@@ -4175,7 +4180,8 @@ member_p (const_tree decl)
 }
 
 /* Create a placeholder for member access where we don't actually have an
-   object that the access is against.  */
+   object that the access is against.  For a general declval<T> equivalent,
+   use build_stub_object instead.  */
 
 tree
 build_dummy_object (tree type)
@@ -4684,13 +4690,9 @@ zero_init_expr_p (tree t)
     return null_member_pointer_value_p (t);
   if (TREE_CODE (t) == CONSTRUCTOR)
     {
-      if (CONSTRUCTOR_IS_DEPENDENT (t)
+      if (COMPOUND_LITERAL_P (t)
 	  || BRACE_ENCLOSED_INITIALIZER_P (t))
-	/* Undigested, conversions might change the zeroness.
-
-	   Other COMPOUND_LITERAL_P in template context are also undigested,
-	   but there isn't currently a way to distinguish between them and
-	   COMPOUND_LITERAL_P from non-template context that are digested.  */
+	/* Undigested, conversions might change the zeroness.  */
 	return false;
       for (constructor_elt &elt : CONSTRUCTOR_ELTS (t))
 	{

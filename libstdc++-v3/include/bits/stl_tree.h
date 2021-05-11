@@ -1729,7 +1729,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>::
     operator=(const _Rb_tree& __x)
     {
-      if (this != &__x)
+      if (this != std::__addressof(__x))
 	{
 	  // Note that _Key may be a constant type.
 #if __cplusplus >= 201103L

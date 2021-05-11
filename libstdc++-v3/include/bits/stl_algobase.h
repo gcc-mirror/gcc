@@ -424,7 +424,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					   is_move_assignable<_Tp>,
 					   is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( __assignable::type::value, "type is not assignable" );
+	  static_assert( __assignable::type::value, "type must be assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)
@@ -735,7 +735,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 					   is_move_assignable<_Tp>,
 					   is_copy_assignable<_Tp>>;
 	  // trivial types can have deleted assignment
-	  static_assert( __assignable::type::value, "type is not assignable" );
+	  static_assert( __assignable::type::value, "type must be assignable" );
 #endif
 	  const ptrdiff_t _Num = __last - __first;
 	  if (_Num)

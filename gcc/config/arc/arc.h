@@ -1193,6 +1193,8 @@ extern char rname56[], rname57[], rname58[], rname59[];
 
 #define ADDITIONAL_REGISTER_NAMES		\
 {						\
+  {"r26",    26},				\
+  {"r27",    27},				\
   {"ilink",  29},				\
   {"r29",    29},				\
   {"r30",    30},				\
@@ -1442,6 +1444,12 @@ do { \
    low-order few bits.
 */
 #define SHIFT_COUNT_TRUNCATED 1
+
+/* Defines if the CLZ result is undefined or has a useful value.  */
+#define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 31, 2)
+
+/* Defines if the CTZ result is undefined or has a useful value.  */
+#define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 31, 2)
 
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */

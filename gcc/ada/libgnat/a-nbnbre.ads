@@ -21,7 +21,7 @@ package Ada.Numerics.Big_Numbers.Big_Reals
   with Preelaborate
 is
    type Big_Real is private with
-     Real_Literal => From_String,
+     Real_Literal => From_Universal_Image,
      Put_Image    => Put_Image;
 
    function Is_Valid (Arg : Big_Real) return Boolean
@@ -122,8 +122,13 @@ is
 
    function From_String (Arg : String) return Valid_Big_Real
      with Global => null;
-   function From_String (Numerator, Denominator : String) return Valid_Big_Real
-     with Global => null;
+
+   function From_Universal_Image (Arg : String) return Valid_Big_Real
+     renames From_String;
+   function From_Universal_Image (Num, Den : String) return Valid_Big_Real is
+     (Big_Integers.From_Universal_Image (Num) /
+      Big_Integers.From_Universal_Image (Den))
+      with Global => null;
 
    function To_Quotient_String (Arg : Big_Real) return String is
      (Big_Integers.To_String (Numerator (Arg)) & " / "

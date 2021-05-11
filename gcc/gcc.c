@@ -319,6 +319,12 @@ static const char *spec_host_machine = DEFAULT_REAL_TARGET_MACHINE;
 
 static char *offload_targets = NULL;
 
+#if OFFLOAD_DEFAULTED
+/* Set to true if -foffload has not been used and offload_targets
+   is set to the configured in default.  */
+static bool offload_targets_default;
+#endif
+
 /* Nonzero if cross-compiling.
    When -b is used, the value comes from the `specs' file.  */
 
@@ -1900,7 +1906,7 @@ init_spec (void)
        when given the proper command line arguments.  */
     while (*p)
       {
-	if (in_sep && *p == '-' && strncmp (p, "-lgcc", 5) == 0)
+	if (in_sep && *p == '-' && startswith (p, "-lgcc"))
 	  {
 	    init_gcc_specs (&obstack,
 			    "-lgcc_s"
@@ -1923,7 +1929,7 @@ init_spec (void)
 	    p += 5;
 	    in_sep = 0;
 	  }
-	else if (in_sep && *p == 'l' && strncmp (p, "libgcc.a%s", 10) == 0)
+	else if (in_sep && *p == 'l' && startswith (p, "libgcc.a%s"))
 	  {
 	    /* Ug.  We don't know shared library extensions.  Hope that
 	       systems that use this form don't do shared libraries.  */
@@ -2378,7 +2384,7 @@ read_specs (const char *filename, bool main_p, bool user_p)
 	  /* Skip '\n'.  */
 	  p++;
 
-	  if (!strncmp (p1, "%include", sizeof ("%include") - 1)
+	  if (startswith (p1, "%include")
 	      && (p1[sizeof "%include" - 1] == ' '
 		  || p1[sizeof "%include" - 1] == '\t'))
 	    {
@@ -2399,7 +2405,7 @@ read_specs (const char *filename, bool main_p, bool user_p)
 	      read_specs (new_filename ? new_filename : p1, false, user_p);
 	      continue;
 	    }
-	  else if (!strncmp (p1, "%include_noerr", sizeof "%include_noerr" - 1)
+	  else if (startswith (p1, "%include_noerr")
 		   && (p1[sizeof "%include_noerr" - 1] == ' '
 		       || p1[sizeof "%include_noerr" - 1] == '\t'))
 	    {
@@ -2423,7 +2429,7 @@ read_specs (const char *filename, bool main_p, bool user_p)
 		fnotice (stderr, "could not find specs file %s\n", p1);
 	      continue;
 	    }
-	  else if (!strncmp (p1, "%rename", sizeof "%rename" - 1)
+	  else if (startswith (p1, "%rename")
 		   && (p1[sizeof "%rename" - 1] == ' '
 		       || p1[sizeof "%rename" - 1] == '\t'))
 	    {
@@ -3496,7 +3502,7 @@ execute (void)
 		&& WEXITSTATUS (status) == ICE_EXIT_CODE
 		&& i == 0
 		&& (p = strrchr (commands[0].argv[0], DIR_SEPARATOR))
-		&& ! strncmp (p + 1, "cc1", 3))
+		&& startswith (p + 1, "cc1"))
 	      try_generate_repro (commands[0].argv);
 	    if (WEXITSTATUS (status) > greatest_status)
 	      greatest_status = WEXITSTATUS (status);
@@ -4828,7 +4834,12 @@ process_command (unsigned int decoded_options_count,
   /* If the user didn't specify any, default to all configured offload
      targets.  */
   if (ENABLE_OFFLOADING && offload_targets == NULL)
-    handle_foffload_option (OFFLOAD_TARGETS);
+    {
+      handle_foffload_option (OFFLOAD_TARGETS);
+#if OFFLOAD_DEFAULTED
+      offload_targets_default = true;
+#endif
+    }
 
   if (output_file
       && strcmp (output_file, "-") != 0
@@ -7324,7 +7335,7 @@ check_live_switch (int switchnum, int prefix_length)
       break;
 
     case 'W':  case 'f':  case 'm': case 'g':
-      if (! strncmp (name + 1, "no-", 3))
+      if (startswith (name + 1, "no-"))
 	{
 	  /* We have Xno-YYY, search for XYYY.  */
 	  for (i = switchnum + 1; i < n_switches; i++)
@@ -8484,6 +8495,10 @@ driver::maybe_putenv_OFFLOAD_TARGETS () const
       obstack_grow (&collect_obstack, offload_targets,
 		    strlen (offload_targets) + 1);
       xputenv (XOBFINISH (&collect_obstack, char *));
+#if OFFLOAD_DEFAULTED
+      if (offload_targets_default)
+	xputenv ("OFFLOAD_TARGET_DEFAULT=1");
+#endif
     }
 
   free (offload_targets);

@@ -1271,8 +1271,7 @@ accumulator.  The default format is ``64.64''.
 ``Condition Code'' mode represents the value of a condition code, which
 is a machine-specific set of bits used to represent the result of a
 comparison operation.  Other machine-specific modes may also be used for
-the condition code.  These modes are not used on machines that use
-@code{cc0} (@pxref{Condition Code}).
+the condition code.  (@pxref{Condition Code}).
 
 @findex BLKmode
 @item BLKmode
@@ -2324,60 +2323,17 @@ the reload pass.
 @code{scratch} is usually present inside a @code{clobber} operation
 (@pxref{Side Effects}).
 
-@findex cc0
-@cindex condition code register
-@item (cc0)
-This refers to the machine's condition code register.  It has no
-operands and may not have a machine mode.  There are two ways to use it:
-
-@itemize @bullet
-@item
-To stand for a complete set of condition code flags.  This is best on
-most machines, where each comparison sets the entire series of flags.
-
-With this technique, @code{(cc0)} may be validly used in only two
-contexts: as the destination of an assignment (in test and compare
-instructions) and in comparison operators comparing against zero
-(@code{const_int} with value zero; that is to say, @code{const0_rtx}).
-
-@item
-To stand for a single flag that is the result of a single condition.
-This is useful on machines that have only a single flag bit, and in
-which comparison instructions must specify the condition to test.
-
-With this technique, @code{(cc0)} may be validly used in only two
-contexts: as the destination of an assignment (in test and compare
-instructions) where the source is a comparison operator, and as the
-first operand of @code{if_then_else} (in a conditional branch).
-@end itemize
-
-@findex cc0_rtx
-There is only one expression object of code @code{cc0}; it is the
-value of the variable @code{cc0_rtx}.  Any attempt to create an
-expression of code @code{cc0} will return @code{cc0_rtx}.
-
-Instructions can set the condition code implicitly.  On many machines,
-nearly all instructions set the condition code based on the value that
-they compute or store.  It is not necessary to record these actions
-explicitly in the RTL because the machine description includes a
-prescription for recognizing the instructions that do so (by means of
-the macro @code{NOTICE_UPDATE_CC}).  @xref{Condition Code}.  Only
-instructions whose sole purpose is to set the condition code, and
-instructions that use the condition code, need mention @code{(cc0)}.
-
 On some machines, the condition code register is given a register number
-and a @code{reg} is used instead of @code{(cc0)}.  This is usually the
-preferable approach if only a small subset of instructions modify the
-condition code.  Other machines store condition codes in general
+and a @code{reg} is used.
+Other machines store condition codes in general
 registers; in such cases a pseudo register should be used.
 
 Some machines, such as the SPARC and RS/6000, have two sets of
 arithmetic instructions, one that sets and one that does not set the
 condition code.  This is best handled by normally generating the
 instruction that does not set the condition code, and making a pattern
-that both performs the arithmetic and sets the condition code register
-(which would not be @code{(cc0)} in this case).  For examples, search
-for @samp{addcc} and @samp{andcc} in @file{sparc.md}.
+that both performs the arithmetic and sets the condition code register.
+For examples, search for @samp{addcc} and @samp{andcc} in @file{sparc.md}.
 
 @findex pc
 @item (pc)
@@ -2495,14 +2451,13 @@ Of course, machines cannot really subtract with infinite precision.
 However, they can pretend to do so when only the sign of the result will
 be used, which is the case when the result is stored in the condition
 code.  And that is the @emph{only} way this kind of expression may
-validly be used: as a value to be stored in the condition codes, either
-@code{(cc0)} or a register.  @xref{Comparisons}.
+validly be used: as a value to be stored in the condition codes, in a
+register.  @xref{Comparisons}.
 
 The mode @var{m} is not related to the modes of @var{x} and @var{y}, but
-instead is the mode of the condition code value.  If @code{(cc0)} is
-used, it is @code{VOIDmode}.  Otherwise it is some mode in class
+instead is the mode of the condition code value.  It is some mode in class
 @code{MODE_CC}, often @code{CCmode}.  @xref{Condition Code}.  If @var{m}
-is @code{VOIDmode} or @code{CCmode}, the operation returns sufficient
+is @code{CCmode}, the operation returns sufficient
 information (in an unspecified format) so that any comparison operator
 can be applied to the result of the @code{COMPARE} operation.  For other
 modes in class @code{MODE_CC}, the operation only returns a subset of
@@ -2797,26 +2752,17 @@ of the data being compared.  If the comparison operation is being tested
 @code{VOIDmode}.
 
 @cindex condition codes
-There are two ways that comparison operations may be used.  The
-comparison operators may be used to compare the condition codes
-@code{(cc0)} against zero, as in @code{(eq (cc0) (const_int 0))}.  Such
-a construct actually refers to the result of the preceding instruction
-in which the condition codes were set.  The instruction setting the
-condition code must be adjacent to the instruction using the condition
-code; only @code{note} insns may separate them.
-
-Alternatively, a comparison operation may directly compare two data
+A comparison operation compares two data
 objects.  The mode of the comparison is determined by the operands; they
 must both be valid for a common machine mode.  A comparison with both
 operands constant would be invalid as the machine mode could not be
 deduced from it, but such a comparison should never exist in RTL due to
 constant folding.
 
-In the example above, if @code{(cc0)} were last set to
-@code{(compare @var{x} @var{y})}, the comparison operation is
-identical to @code{(eq @var{x} @var{y})}.  Usually only one style
+Usually only one style
 of comparisons is supported on a particular machine, but the combine
-pass will try to merge the operations to produce the @code{eq} shown
+pass will try to merge operations to produce code like
+@code{(eq @var{x} @var{y})},
 in case it exists in the context of the particular insn involved.
 
 Inequality comparisons come in two flavors, signed and unsigned.  Thus,
@@ -3168,7 +3114,7 @@ Represents the action of storing the value of @var{x} into the place
 represented by @var{lval}.  @var{lval} must be an expression
 representing a place that can be stored in: @code{reg} (or @code{subreg},
 @code{strict_low_part} or @code{zero_extract}), @code{mem}, @code{pc},
-@code{parallel}, or @code{cc0}.
+or @code{parallel}.
 
 If @var{lval} is a @code{reg}, @code{subreg} or @code{mem}, it has a
 machine mode; then @var{x} must be valid for that mode.
@@ -3191,13 +3137,6 @@ the bit-field (a memory or register reference) specified by the
 bit-field is not changed.  Note that @code{sign_extract} cannot
 appear in @var{lval}.
 
-If @var{lval} is @code{(cc0)}, it has no machine mode, and @var{x} may
-be either a @code{compare} expression or a value that may have any mode.
-The latter case represents a ``test'' instruction.  The expression
-@code{(set (cc0) (reg:@var{m} @var{n}))} is equivalent to
-@code{(set (cc0) (compare (reg:@var{m} @var{n}) (const_int 0)))}.
-Use the former expression to save space during the compilation.
-
 If @var{lval} is a @code{parallel}, it is used to represent the case of
 a function returning a structure in multiple registers.  Each element
 of the @code{parallel} is an @code{expr_list} whose first operand is a
@@ -3219,7 +3158,7 @@ does not jump) and the other of the two must be a @code{label_ref}
 @code{mem}; these unusual patterns are used to represent jumps through
 branch tables.
 
-If @var{lval} is neither @code{(cc0)} nor @code{(pc)}, the mode of
+If @var{lval} is not @code{(pc)}, the mode of
 @var{lval} must not be @code{VOIDmode} and the mode of @var{x} must be
 valid for the mode of @var{lval}.
 
@@ -3402,9 +3341,9 @@ For example, people sometimes attempt to represent a jump-if-zero
 instruction this way:
 
 @smallexample
-(parallel [(set (cc0) (reg:SI 34))
+(parallel [(set (reg:CC CC_REG) (reg:SI 34))
            (set (pc) (if_then_else
-                        (eq (cc0) (const_int 0))
+                        (eq (reg:CC CC_REG) (const_int 0))
                         (label_ref @dots{})
                         (pc)))])
 @end smallexample
@@ -3421,8 +3360,6 @@ whose elements are the operands needed to output the resulting
 assembler code---often @code{reg}, @code{mem} or constant expressions.
 This would not be well-formed RTL at any other stage in compilation,
 but it is OK then because no further optimization remains to be done.
-However, the definition of the macro @code{NOTICE_UPDATE_CC}, if
-any, must deal with such insns if you define any peephole optimizations.
 
 @findex cond_exec
 @item (cond_exec [@var{cond} @var{expr}])
@@ -4101,14 +4038,6 @@ In the debugging output, this field is printed as a number followed by
 a symbolic representation that locates the pattern in the @file{md}
 file as some small positive or negative offset from a named pattern.
 
-@findex LOG_LINKS
-@item LOG_LINKS (@var{i})
-A list (chain of @code{insn_list} expressions) giving information about
-dependencies between instructions within a basic block.  Neither a jump
-nor a label may come between the related insns.  These are only used by
-the schedulers and by combine.  This is a deprecated data structure.
-Def-use and use-def chains are now preferred.
-
 @findex REG_NOTES
 @item REG_NOTES (@var{i})
 A list (chain of @code{expr_list}, @code{insn_list} and @code{int_list}
@@ -4116,23 +4045,9 @@ expressions) giving miscellaneous information about the insn.  It is often
 information pertaining to the registers used in this insn.
 @end table
 
-The @code{LOG_LINKS} field of an insn is a chain of @code{insn_list}
-expressions.  Each of these has two operands: the first is an insn,
-and the second is another @code{insn_list} expression (the next one in
-the chain).  The last @code{insn_list} in the chain has a null pointer
-as second operand.  The significant thing about the chain is which
-insns appear in it (as first operands of @code{insn_list}
-expressions).  Their order is not significant.
-
-This list is originally set up by the flow analysis pass; it is a null
-pointer until then.  Flow only adds links for those data dependencies
-which can be used for instruction combination.  For each insn, the flow
-analysis pass adds a link to insns which store into registers values
-that are used for the first time in this insn.
-
-The @code{REG_NOTES} field of an insn is a chain similar to the
-@code{LOG_LINKS} field but it includes @code{expr_list} and @code{int_list}
-expressions in addition to @code{insn_list} expressions.  There are several
+The @code{REG_NOTES} field of an insn is a chain that includes
+@code{expr_list} and @code{int_list} expressions as well as @code{insn_list}
+expressions.  There are several
 kinds of register notes, which are distinguished by the machine mode, which
 in a register note is really understood as being an @code{enum reg_note}.
 The first operand @var{op} of the note is data whose meaning depends on
@@ -4147,8 +4062,7 @@ register note.  Its counterpart, the macro @code{PUT_REG_NOTE_KIND
 
 Register notes are of three classes: They may say something about an
 input to an insn, they may say something about an output of an insn, or
-they may create a linkage between two insns.  There are also a set
-of values that are only used in @code{LOG_LINKS}.
+they may create a linkage between two insns.
 
 These register notes annotate inputs to an insn:
 
@@ -4288,26 +4202,6 @@ need only check for @code{REG_EQUIV} notes.
 These notes describe linkages between insns.  They occur in pairs: one
 insn has one of a pair of notes that points to a second insn, which has
 the inverse note pointing back to the first insn.
-
-@table @code
-@findex REG_CC_SETTER
-@findex REG_CC_USER
-@item REG_CC_SETTER
-@itemx REG_CC_USER
-On machines that use @code{cc0}, the insns which set and use @code{cc0}
-set and use @code{cc0} are adjacent.  However, when branch delay slot
-filling is done, this may no longer be true.  In this case a
-@code{REG_CC_USER} note will be placed on the insn setting @code{cc0} to
-point to the insn using @code{cc0} and a @code{REG_CC_SETTER} note will
-be placed on the insn using @code{cc0} to point to the insn setting
-@code{cc0}.
-@end table
-
-These values are only used in the @code{LOG_LINKS} field, and indicate
-the type of dependency that each link represents.  Links which indicate
-a data dependence (a read after write dependence) do not use any code,
-they simply have mode @code{VOIDmode}, and are printed without any
-descriptive text.
 
 @table @code
 @findex REG_DEP_TRUE
@@ -5271,10 +5165,6 @@ are shared.
 @cindex @code{pc}, RTL sharing
 @item
 There is only one @code{pc} expression.
-
-@cindex @code{cc0}, RTL sharing
-@item
-There is only one @code{cc0} expression.
 
 @cindex @code{const_double}, RTL sharing
 @item

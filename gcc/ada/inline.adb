@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,39 +24,43 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Expander; use Expander;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Fname;    use Fname;
-with Fname.UF; use Fname.UF;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Output;   use Output;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch10; use Sem_Ch10;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Fname;          use Fname;
+with Fname.UF;       use Fname.UF;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Output;         use Output;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch10;       use Sem_Ch10;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
 with Table;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Uname;    use Uname;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Uname;          use Uname;
 
 with GNAT.HTable;
 
@@ -1451,7 +1455,7 @@ package body Inline is
            --  Skip inlining if the function returns an unconstrained type
            --  using an extended return statement, since this part of the
            --  new inlining model is not yet supported by the current
-           --  implementation. ???
+           --  implementation.
 
            or else (Returns_Unconstrained_Type (Spec_Id)
                      and then Has_Extended_Return)
@@ -1469,7 +1473,7 @@ package body Inline is
       end if;
 
       Set_Body_To_Inline (Decl, Original_Body);
-      Set_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
+      Mutate_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
       Set_Is_Inlined (Spec_Id);
    end Build_Body_To_Inline;
 
@@ -1531,7 +1535,6 @@ package body Inline is
 
       function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
       --  Return True if subprogram Id defines a compilation unit
-      --  Shouldn't this be in Sem_Aux???
 
       function In_Package_Spec (Id : Entity_Id) return Boolean;
       --  Return True if subprogram Id is defined in the package specification,
@@ -2161,10 +2164,7 @@ package body Inline is
                Body_To_Inline :=
                  Copy_Generic_Node (N, Empty, Instantiating => True);
             else
-               --  ??? Shouldn't this use New_Copy_Tree? What about global
-               --  references captured in the body to inline?
-
-               Body_To_Inline := Copy_Separate_Tree (N);
+               Body_To_Inline := New_Copy_Tree (N);
             end if;
 
             --  Remove aspects/pragmas that have no meaning in an inlined body
@@ -2251,7 +2251,7 @@ package body Inline is
 
          pragma Assert (No (Body_To_Inline (Decl)));
          Set_Body_To_Inline (Decl, Original_Body);
-         Set_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
+         Mutate_Ekind (Defining_Entity (Original_Body), Ekind (Spec_Id));
       end Build_Body_To_Inline;
 
       --------------------------------
@@ -2827,7 +2827,7 @@ package body Inline is
       -------------------------
 
       function Formal_Is_Used_Once (Formal : Entity_Id) return Boolean is
-         Use_Counter : Int := 0;
+         Use_Counter : Nat := 0;
 
          function Count_Uses (N : Node_Id) return Traverse_Result;
          --  Traverse the tree and count the uses of the formal parameter.
@@ -2856,13 +2856,10 @@ package body Inline is
             then
                Use_Counter := Use_Counter + 1;
 
+               --  If this is a second use then abandon the traversal
+
                if Use_Counter > 1 then
-
-                  --  Denote more than one use and abandon the traversal
-
-                  Use_Counter := 2;
                   return Abandon;
-
                end if;
             end if;
 
@@ -3557,7 +3554,6 @@ package body Inline is
       procedure Reset_Dispatching_Calls (N : Node_Id) is
 
          function Do_Reset (N : Node_Id) return Traverse_Result;
-         --  Comment required ???
 
          --------------
          -- Do_Reset --
@@ -3578,17 +3574,10 @@ package body Inline is
             return OK;
          end Do_Reset;
 
-         function Do_Reset_Calls is new Traverse_Func (Do_Reset);
-
-         --  Local variables
-
-         Dummy : constant Traverse_Result := Do_Reset_Calls (N);
-         pragma Unreferenced (Dummy);
-
-         --  Start of processing for Reset_Dispatching_Calls
+         procedure Do_Reset_Calls is new Traverse_Proc (Do_Reset);
 
       begin
-         null;
+         Do_Reset_Calls (N);
       end Reset_Dispatching_Calls;
 
       ---------------------------
@@ -3630,7 +3619,6 @@ package body Inline is
 
          --  If the context is an assignment, and the left-hand side is free of
          --  side-effects, the replacement is also safe.
-         --  Can this be generalized further???
 
          elsif Nkind (Parent (N)) = N_Assignment_Statement
            and then

@@ -600,7 +600,7 @@ timer::validate_phases (FILE *fp) const
       if (!tv->used)
 	continue;
 
-      if (strncmp (tv->name, phase_prefix, sizeof phase_prefix - 1) == 0)
+      if (startswith (tv->name, phase_prefix))
 	{
 	  phase_user += tv->elapsed.user;
 	  phase_sys += tv->elapsed.sys;

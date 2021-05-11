@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1528,7 +1528,7 @@ package Opt is
    Table_Factor : Int := 1;
    --  GNAT
    --  Factor by which all initial table sizes set in Alloc are multiplied.
-   --  Used in Table to calculate initial table sizes (the initial table size
+   --  Used in Table to calculate initial table sizes. The initial table size
    --  is the value in Alloc, used as the Table_Initial parameter value,
    --  multiplied by the factor given here. The default value is used if no
    --  -gnatT switch appears.
@@ -1885,8 +1885,9 @@ package Opt is
 
    Warn_On_Suspicious_Modulus_Value : Boolean := True;
    --  GNAT
-   --  Set to True to generate warnings for suspicious modulus values. The
-   --  default is that this warning is enabled. Modified by -gnatw.m/.M.
+   --  Set to True to generate warnings for suspicious modulus values, as well
+   --  as negative literals of a modular type. The default is that this warning
+   --  is enabled. Modified by -gnatw.m/.M.
 
    Warn_On_Unchecked_Conversion : Boolean := True;
    --  GNAT

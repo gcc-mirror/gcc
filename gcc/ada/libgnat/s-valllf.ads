@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020, Free Software Foundation, Inc.            --
+--            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,8 @@
 --  This package contains routines for scanning real values for floating point
 --  type Long_Long_Float, for use in Text_IO.Float_IO and the Value attribute.
 
-with Interfaces;
 with System.Powten_LLF;
+with System.Unsigned_Types;
 with System.Val_Real;
 
 package System.Val_LLF is
@@ -41,9 +41,9 @@ package System.Val_LLF is
 
    package Impl is new Val_Real
      (Long_Long_Float,
-      Interfaces.Unsigned_64,
       System.Powten_LLF.Maxpow,
-      System.Powten_LLF.Powten'Address);
+      System.Powten_LLF.Powten'Address,
+      System.Unsigned_Types.Long_Long_Unsigned);
 
    function Scan_Long_Long_Float
      (Str : String;

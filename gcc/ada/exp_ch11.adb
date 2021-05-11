@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,33 +23,37 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Intr; use Exp_Intr;
-with Exp_Util; use Exp_Util;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Intr;       use Exp_Intr;
+with Exp_Util;       use Exp_Util;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Exp_Ch11 is
 
@@ -1242,16 +1246,13 @@ package body Exp_Ch11 is
           Prefix         => New_Occurrence_Of (Ex_Id, Loc),
           Attribute_Name => Name_Length));
 
-      --  Full_Name component: Standard.A_Char!(Nam'Address)
-
-      --  The unchecked conversion causes capacity issues for CodePeer in some
-      --  cases and is never useful, so we set the Full_Name component to null
-      --  instead for CodePeer.
+      --  Full_Name component: Standard_Address?(Nam'Address)
+      --  or 0 if CodePeer_Mode
 
       if CodePeer_Mode then
-         Append_To (L, Make_Null (Loc));
+         Append_To (L, Make_Integer_Literal (Loc, Uint_0));
       else
-         Append_To (L, Unchecked_Convert_To (Standard_A_Char,
+         Append_To (L, OK_Convert_To (Standard_Address,
            Make_Attribute_Reference (Loc,
              Prefix         => New_Occurrence_Of (Ex_Id, Loc),
              Attribute_Name => Name_Address)));
@@ -1261,9 +1262,9 @@ package body Exp_Ch11 is
 
       Append_To (L, Make_Null (Loc));
 
-      --  Foreign_Data component: null
+      --  Foreign_Data component: null address
 
-      Append_To (L, Make_Null (Loc));
+      Append_To (L, Make_Integer_Literal (Loc, Uint_0));
 
       --  Raise_Hook component: null
 
@@ -1700,7 +1701,7 @@ package body Exp_Ch11 is
          if No (Choice_Parameter (Ehand)) then
             E := Make_Temporary (Loc, 'E');
             Set_Choice_Parameter (Ehand, E);
-            Set_Ekind (E, E_Variable);
+            Mutate_Ekind (E, E_Variable);
             Set_Etype (E, RTE (RE_Exception_Occurrence));
             Set_Scope (E, Current_Scope);
          end if;

@@ -199,14 +199,6 @@ mark_operand_necessary (tree op)
 static void
 mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 {
-  /* With non-call exceptions, we have to assume that all statements could
-     throw.  If a statement could throw, it can be deemed necessary.  */
-  if (stmt_unremovable_because_of_non_call_eh_p (cfun, stmt))
-    {
-      mark_stmt_necessary (stmt, true);
-      return;
-    }
-
   /* Statements that are implicitly live.  Most function calls, asm
      and return statements are required.  Labels and GIMPLE_BIND nodes
      are kept because they are control flow, and we have no way of
@@ -250,14 +242,6 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    && DECL_IS_REPLACEABLE_OPERATOR_NEW_P (callee))
 	  return;
 
-	/* Most, but not all function calls are required.  Function calls that
-	   produce no result and have no side effects (i.e. const pure
-	   functions) are unnecessary.  */
-	if (gimple_has_side_effects (stmt))
-	  {
-	    mark_stmt_necessary (stmt, true);
-	    return;
-	  }
 	/* IFN_GOACC_LOOP calls are necessary in that they are used to
 	   represent parameter (i.e. step, bound) of a lowered OpenACC
 	   partitioned loop.  But this kind of partitioned loop might not
@@ -269,8 +253,6 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
 	    mark_stmt_necessary (stmt, true);
 	    return;
 	  }
-	if (!gimple_call_lhs (stmt))
-	  return;
 	break;
       }
 
@@ -312,19 +294,24 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
   /* If the statement has volatile operands, it needs to be preserved.
      Same for statements that can alter control flow in unpredictable
      ways.  */
-  if (gimple_has_volatile_ops (stmt) || is_ctrl_altering_stmt (stmt))
+  if (gimple_has_side_effects (stmt) || is_ctrl_altering_stmt (stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;
     }
 
-  if (stmt_may_clobber_global_p (stmt))
+  /* If a statement could throw, it can be deemed necessary unless we
+     are allowed to remove dead EH.  Test this after checking for
+     new/delete operators since we always elide their EH.  */
+  if (!cfun->can_delete_dead_exceptions
+      && stmt_could_throw_p (cfun, stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;
     }
 
-  if (gimple_vdef (stmt) && keep_all_vdefs_p ())
+  if ((gimple_vdef (stmt) && keep_all_vdefs_p ())
+      || stmt_may_clobber_global_p (stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;
@@ -1274,8 +1261,7 @@ maybe_optimize_arith_overflow (gimple_stmt_iterator *gsi,
       fprintf (dump_file, "\n");
     }
 
-  if (!update_call_from_tree (gsi, result))
-    gimplify_and_update_call_from_tree (gsi, result);
+  gimplify_and_update_call_from_tree (gsi, result);
 }
 
 /* Eliminate unnecessary statements. Any instruction not marked as necessary

@@ -1449,12 +1449,6 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx_insn **f1,
       i2 = PREV_INSN (i2);
     }
 
-  /* Don't allow the insn after a compare to be shared by
-     cross-jumping unless the compare is also shared.  */
-  if (HAVE_cc0 && ninsns && reg_mentioned_p (cc0_rtx, last1)
-      && ! sets_cc0_p (last1))
-    last1 = afterlast1, last2 = afterlast2, last_dir = afterlast_dir, ninsns--;
-
   /* Include preceding notes and labels in the cross-jump.  One,
      this may bring us to the head of the blocks as requested above.
      Two, it keeps line number notes as matched as may be.  */
@@ -1570,12 +1564,6 @@ flow_find_head_matching_sequence (basic_block bb1, basic_block bb2, rtx_insn **f
       i1 = NEXT_INSN (i1);
       i2 = NEXT_INSN (i2);
     }
-
-  /* Don't allow a compare to be shared by cross-jumping unless the insn
-     after the compare is also shared.  */
-  if (HAVE_cc0 && ninsns && reg_mentioned_p (cc0_rtx, last1)
-      && sets_cc0_p (last1))
-    last1 = beforelast1, last2 = beforelast2, ninsns--;
 
   if (ninsns)
     {
@@ -1885,8 +1873,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 
   /* Ensure the same EH region.  */
   {
-    rtx n1 = find_reg_note (BB_END (bb1), REG_EH_REGION, 0);
-    rtx n2 = find_reg_note (BB_END (bb2), REG_EH_REGION, 0);
+    rtx n1 = find_reg_note (last1, REG_EH_REGION, 0);
+    rtx n2 = find_reg_note (last2, REG_EH_REGION, 0);
 
     if (!n1 && n2)
       return false;
@@ -2157,7 +2145,11 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   if (NOTE_INSN_BASIC_BLOCK_P (newpos1))
     newpos1 = NEXT_INSN (newpos1);
 
-  while (DEBUG_INSN_P (newpos1))
+  /* Skip also prologue and function markers.  */
+  while (DEBUG_INSN_P (newpos1)
+	 || (NOTE_P (newpos1)
+	     && (NOTE_KIND (newpos1) == NOTE_INSN_PROLOGUE_END
+		 || NOTE_KIND (newpos1) == NOTE_INSN_FUNCTION_BEG)))
     newpos1 = NEXT_INSN (newpos1);
 
   redirect_from = split_block (src1, PREV_INSN (newpos1))->src;
@@ -2340,12 +2332,7 @@ try_head_merge_bb (basic_block bb)
 
   cond = get_condition (jump, &move_before, true, false);
   if (cond == NULL_RTX)
-    {
-      if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, jump))
-	move_before = prev_nonnote_nondebug_insn (jump);
-      else
-	move_before = jump;
-    }
+    move_before = jump;
 
   for (ix = 0; ix < nedges; ix++)
     if (EDGE_SUCC (bb, ix)->dest == EXIT_BLOCK_PTR_FOR_FN (cfun))
@@ -2505,12 +2492,7 @@ try_head_merge_bb (basic_block bb)
       jump = BB_END (final_dest_bb);
       cond = get_condition (jump, &move_before, true, false);
       if (cond == NULL_RTX)
-	{
-	  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, jump))
-	    move_before = prev_nonnote_nondebug_insn (jump);
-	  else
-	    move_before = jump;
-	}
+	move_before = jump;
     }
 
   do
@@ -2526,11 +2508,6 @@ try_head_merge_bb (basic_block bb)
 
 	  /* Try again, using a different insertion point.  */
 	  move_before = jump;
-
-	  /* Don't try moving before a cc0 user, as that may invalidate
-	     the cc0.  */
-	  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, jump))
-	    break;
 
 	  continue;
 	}
@@ -2584,11 +2561,6 @@ try_head_merge_bb (basic_block bb)
 
 	  /* For the unmerged insns, try a different insertion point.  */
 	  move_before = jump;
-
-	  /* Don't try moving before a cc0 user, as that may invalidate
-	     the cc0.  */
-	  if (HAVE_cc0 && reg_mentioned_p (cc0_rtx, jump))
-	    break;
 
 	  for (ix = 0; ix < nedges; ix++)
 	    currptr[ix] = headptr[ix] = nextptr[ix];

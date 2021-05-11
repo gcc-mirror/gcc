@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -38,9 +38,11 @@
 
 pragma Compiler_Unit_Warning;
 
+with Ada.Assertions;
+
 package System.Assertions is
 
-   Assert_Failure : exception;
+   Assert_Failure : exception renames Ada.Assertions.Assertion_Error;
    --  Exception raised when assertion fails
 
    procedure Raise_Assert_Failure (Msg : String);

@@ -2816,7 +2816,6 @@ df_uses_record (class df_collection_rec *collection_rec,
     case CONST:
     CASE_CONST_ANY:
     case PC:
-    case CC0:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:
       return;
@@ -2902,7 +2901,6 @@ df_uses_record (class df_collection_rec *collection_rec,
 	    case PARALLEL:
 	    case SCRATCH:
 	    case PC:
-	    case CC0:
 		break;
 	    case MEM:
 	      df_uses_record (collection_rec, &XEXP (dst, 0),

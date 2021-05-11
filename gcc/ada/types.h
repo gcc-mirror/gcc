@@ -6,7 +6,7 @@
  *                                                                          *
  *                              C Header File                               *
  *                                                                          *
- *          Copyright (C) 1992-2020, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2021, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -122,7 +122,7 @@ typedef Char *Text_Buffer_Ptr;
 typedef Int Line_Number_Type;
 
 /* Column number type, used for storing all column numbers.  */
-typedef Int Column_Number_Type;
+typedef Short Column_Number_Type;
 
 /* Type used to store text of a source file.  */
 typedef Text_Buffer Source_Buffer;
@@ -360,46 +360,75 @@ typedef Int Mechanism_Type;
 #define By_Short_Descriptor_NCA  (-18)
 #define By_Short_Descriptor_Last (-18)
 
-/* Definitions of Reason codes for Raise_xxx_Error nodes */
-#define CE_Access_Check_Failed              0
-#define CE_Access_Parameter_Is_Null         1
-#define CE_Discriminant_Check_Failed        2
-#define CE_Divide_By_Zero                   3
-#define CE_Explicit_Raise                   4
-#define CE_Index_Check_Failed               5
-#define CE_Invalid_Data                     6
-#define CE_Length_Check_Failed              7
-#define CE_Null_Exception_Id                8
-#define CE_Null_Not_Allowed                 9
-#define CE_Overflow_Check_Failed           10
-#define CE_Partition_Check_Failed          11
-#define CE_Range_Check_Failed              12
-#define CE_Tag_Check_Failed                13
+typedef char Component_Alignment_Kind;
+#define Calign_Default           0
+#define Calign_Component_Size    1
+#define Calign_Component_Size_4  2
+#define Calign_Storage_Unit      3
 
-#define PE_Access_Before_Elaboration       14
-#define PE_Accessibility_Check_Failed      15
-#define PE_Address_Of_Intrinsic            16
-#define PE_Aliased_Parameters              17
-#define PE_All_Guards_Closed               18
-#define PE_Bad_Predicated_Generic_Type     19
-#define PE_Build_In_Place_Mismatch         37
-#define PE_Current_Task_In_Entry_Body      20
-#define PE_Duplicated_Entry_Address        21
-#define PE_Explicit_Raise                  22
-#define PE_Finalize_Raised_Exception       23
-#define PE_Implicit_Return                 24
-#define PE_Misaligned_Address_Value        25
-#define PE_Missing_Return                  26
-#define PE_Non_Transportable_Actual        31
-#define PE_Overlaid_Controlled_Object      27
-#define PE_Potentially_Blocking_Operation  28
-#define PE_Stream_Operation_Not_Allowed    36
-#define PE_Stubbed_Subprogram_Called       29
-#define PE_Unchecked_Union_Restriction     30
+typedef char Float_Rep_Kind;
+#define IEEE_Binary              0
+#define AAMP                     1
 
-#define SE_Empty_Storage_Pool              32
-#define SE_Explicit_Raise                  33
-#define SE_Infinite_Recursion              34
-#define SE_Object_Too_Large                35
+typedef Nat Small_Paren_Count_Type;
 
-#define LAST_REASON_CODE                   37
+typedef Nat Field_Offset;
+
+typedef unsigned int any_slot;
+
+#define Slot_Size (sizeof (any_slot) * 8)
+
+/* Slots are 32 bits (for now, but we might want to make that 64).
+   The first bootstrap stage uses -std=gnu++98, so we cannot use
+   static_assert in that case.  */
+#if __cplusplus >= 201402L
+static_assert (Slot_Size == 32);
+#endif
+
+/* Definitions of Reason codes for Raise_xxx_Error nodes.  */
+enum RT_Exception_Code
+{
+  CE_Access_Check_Failed            = 0,
+  CE_Access_Parameter_Is_Null       = 1,
+  CE_Discriminant_Check_Failed      = 2,
+  CE_Divide_By_Zero                 = 3,
+  CE_Explicit_Raise                 = 4,
+  CE_Index_Check_Failed             = 5,
+  CE_Invalid_Data                   = 6,
+  CE_Length_Check_Failed            = 7,
+  CE_Null_Exception_Id              = 8,
+  CE_Null_Not_Allowed               = 9,
+
+  CE_Overflow_Check_Failed          = 10,
+  CE_Partition_Check_Failed         = 11,
+  CE_Range_Check_Failed             = 12,
+  CE_Tag_Check_Failed               = 13,
+  PE_Access_Before_Elaboratio       = 14,
+  PE_Accessibility_Check_Failed     = 15,
+  PE_Address_Of_Intrinsic           = 16,
+  PE_Aliased_Parameters             = 17,
+  PE_All_Guards_Closed              = 18,
+  PE_Bad_Predicated_Generic_Type    = 19,
+
+  PE_Current_Task_In_Entry_Body     = 20,
+  PE_Duplicated_Entry_Address       = 21,
+  PE_Explicit_Raise                 = 22,
+  PE_Finalize_Raised_Exception      = 23,
+  PE_Implicit_Return                = 24,
+  PE_Misaligned_Address_Value       = 25,
+  PE_Missing_Return                 = 26,
+  PE_Overlaid_Controlled_Object     = 27,
+  PE_Potentially_Blocking_Operation = 28,
+  PE_Stubbed_Subprogram_Called      = 29,
+
+  PE_Unchecked_Union_Restriction    = 30,
+  PE_Non_Transportable_Actual       = 31,
+  SE_Empty_Storage_Pool             = 32,
+  SE_Explicit_Raise                 = 33,
+  SE_Infinite_Recursion             = 34,
+  SE_Object_Too_Large               = 35,
+  PE_Stream_Operation_Not_Allowed   = 36,
+  PE_Build_In_Place_Mismatch        = 37
+};
+
+#define LAST_REASON_CODE 37

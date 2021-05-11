@@ -1,5 +1,4 @@
 // FreeBSD wants warning clean system headers:
-// { dg-options "-std=gnu++17" }
 // { dg-additional-options "-Wall -Wsystem-headers" { target *-*-freebsd* *-*-dragonfly* } }
 // { dg-do compile { target c++17 } }
 

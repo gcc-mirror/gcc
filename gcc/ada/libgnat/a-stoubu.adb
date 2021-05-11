@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020, Free Software Foundation, Inc.            --
+--            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -78,7 +78,7 @@ package body Ada.Strings.Text_Output.Buffers is
       S.Cur_Chunk.Next :=
         Text_Output.Chunk_Access (Chunk_Access'(new Chunk (S.Chunk_Length)));
       S.Cur_Chunk := S.Cur_Chunk.Next;
-      S.Num_Extra_Chunks := @ + 1;
+      S.Num_Extra_Chunks := S.Num_Extra_Chunks + 1;
       S.Last := 0;
    end Full_Method;
 

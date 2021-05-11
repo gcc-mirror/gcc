@@ -12369,7 +12369,7 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	/* Convert result back to the lhs type.  */
 	res = gimple_build (&stmts, VIEW_CONVERT_EXPR, TREE_TYPE (lhs), res);
 	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	update_call_from_tree (gsi, res);
+	replace_call_with_value (gsi, res);
 	return true;
       }
     /* Vector loads.  */
@@ -15077,7 +15077,7 @@ rs6000_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
 			HOST_WIDE_INT delta, HOST_WIDE_INT vcall_offset,
 			tree function)
 {
-  const char *fnname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk_fndecl));
+  const char *fnname = get_fnname_from_decl (thunk_fndecl);
   rtx this_rtx, funexp;
   rtx_insn *insn;
 

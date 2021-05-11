@@ -2394,7 +2394,6 @@ process_scan_results (cgraph_node *node, struct function *fun,
 	    if (!pdoms_calculated)
 	      {
 		gcc_checking_assert (cfun);
-		add_noreturn_fake_exit_edges ();
 		connect_infinite_loops_to_exit ();
 		calculate_dominance_info (CDI_POST_DOMINATORS);
 		pdoms_calculated = true;
@@ -2796,27 +2795,27 @@ ipa_sra_dump_all_summaries (FILE *f)
 
       isra_func_summary *ifs = func_sums->get (node);
       if (!ifs)
-	{
-	  fprintf (f, "  Function does not have any associated IPA-SRA "
-		   "summary\n");
-	  continue;
-	}
-      if (!ifs->m_candidate)
-	{
-	  fprintf (f, "  Not a candidate function\n");
-	  continue;
-	}
-      if (ifs->m_returns_value)
-	  fprintf (f, "  Returns value\n");
-      if (vec_safe_is_empty (ifs->m_parameters))
-	fprintf (f, "  No parameter information. \n");
+	fprintf (f, "  Function does not have any associated IPA-SRA "
+		 "summary\n");
       else
-	for (unsigned i = 0; i < ifs->m_parameters->length (); ++i)
-	  {
-	    fprintf (f, "  Descriptor for parameter %i:\n", i);
-	    dump_isra_param_descriptor (f, &(*ifs->m_parameters)[i]);
-	  }
-      fprintf (f, "\n");
+	{
+	  if (!ifs->m_candidate)
+	    {
+	      fprintf (f, "  Not a candidate function\n");
+	      continue;
+	    }
+	  if (ifs->m_returns_value)
+	    fprintf (f, "  Returns value\n");
+	  if (vec_safe_is_empty (ifs->m_parameters))
+	    fprintf (f, "  No parameter information. \n");
+	  else
+	    for (unsigned i = 0; i < ifs->m_parameters->length (); ++i)
+	      {
+		fprintf (f, "  Descriptor for parameter %i:\n", i);
+		dump_isra_param_descriptor (f, &(*ifs->m_parameters)[i]);
+	      }
+	  fprintf (f, "\n");
+	}
 
       struct cgraph_edge *cs;
       for (cs = node->callees; cs; cs = cs->next_callee)
@@ -4064,7 +4063,10 @@ ipa_sra_summarize_function (cgraph_node *node)
     fprintf (dump_file, "Creating summary for %s/%i:\n", node->name (),
 	     node->order);
   if (!ipa_sra_preliminary_function_checks (node))
-    return;
+    {
+      isra_analyze_all_outgoing_calls (node);
+      return;
+    }
   gcc_obstack_init (&gensum_obstack);
   isra_func_summary *ifs = func_sums->get_create (node);
   ifs->m_candidate = true;

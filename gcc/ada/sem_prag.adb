@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,67 +29,71 @@
 --  to complete the syntax checks. Certain pragmas are handled partially or
 --  completely by the parser (see Par.Prag for further details).
 
-with Aspects;   use Aspects;
-with Atree;     use Atree;
-with Casing;    use Casing;
-with Checks;    use Checks;
-with Contracts; use Contracts;
-with Csets;     use Csets;
-with Debug;     use Debug;
-with Einfo;     use Einfo;
-with Elists;    use Elists;
-with Errout;    use Errout;
-with Exp_Dist;  use Exp_Dist;
-with Exp_Util;  use Exp_Util;
-with Expander;  use Expander;
-with Freeze;    use Freeze;
-with Ghost;     use Ghost;
-with GNAT_CUDA; use GNAT_CUDA;
-with Gnatvsn;   use Gnatvsn;
-with Lib;       use Lib;
-with Lib.Writ;  use Lib.Writ;
-with Lib.Xref;  use Lib.Xref;
-with Namet.Sp;  use Namet.Sp;
-with Nlists;    use Nlists;
-with Nmake;     use Nmake;
-with Output;    use Output;
-with Par_SCO;   use Par_SCO;
-with Restrict;  use Restrict;
-with Rident;    use Rident;
-with Rtsfind;   use Rtsfind;
-with Sem;       use Sem;
-with Sem_Aux;   use Sem_Aux;
-with Sem_Ch3;   use Sem_Ch3;
-with Sem_Ch6;   use Sem_Ch6;
-with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch12;  use Sem_Ch12;
-with Sem_Ch13;  use Sem_Ch13;
-with Sem_Disp;  use Sem_Disp;
-with Sem_Dist;  use Sem_Dist;
-with Sem_Elab;  use Sem_Elab;
-with Sem_Elim;  use Sem_Elim;
-with Sem_Eval;  use Sem_Eval;
-with Sem_Intr;  use Sem_Intr;
-with Sem_Mech;  use Sem_Mech;
-with Sem_Res;   use Sem_Res;
-with Sem_Type;  use Sem_Type;
-with Sem_Util;  use Sem_Util;
-with Sem_Warn;  use Sem_Warn;
-with Stand;     use Stand;
-with Sinfo;     use Sinfo;
-with Sinfo.CN;  use Sinfo.CN;
-with Sinput;    use Sinput;
-with Stringt;   use Stringt;
-with Stylesw;   use Stylesw;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Checks;         use Checks;
+with Contracts;      use Contracts;
+with Csets;          use Csets;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Util;       use Exp_Util;
+with Expander;       use Expander;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with GNAT_CUDA;      use GNAT_CUDA;
+with Gnatvsn;        use Gnatvsn;
+with Lib;            use Lib;
+with Lib.Writ;       use Lib.Writ;
+with Lib.Xref;       use Lib.Xref;
+with Namet.Sp;       use Namet.Sp;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Output;         use Output;
+with Par_SCO;        use Par_SCO;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Elim;       use Sem_Elim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Intr;       use Sem_Intr;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinfo.CN;       use Sinfo.CN;
+with Sinput;         use Sinput;
+with Stringt;        use Stringt;
+with Stylesw;        use Stylesw;
 with Table;
-with Targparm;  use Targparm;
-with Tbuild;    use Tbuild;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
 with Ttypes;
-with Uintp;     use Uintp;
-with Uname;     use Uname;
-with Urealp;    use Urealp;
-with Validsw;   use Validsw;
-with Warnsw;    use Warnsw;
+with Uintp;          use Uintp;
+with Uname;          use Uname;
+with Urealp;         use Urealp;
+with Validsw;        use Validsw;
+with Warnsw;         use Warnsw;
 
 with System.Case_Util;
 
@@ -243,6 +247,7 @@ package body Sem_Prag is
    --    Constant_After_Elaboration
    --    Effective_Reads
    --    Effective_Writers
+   --    No_Caching
    --    Part_Of
    --  Find the first source declaration or statement found while traversing
    --  the previous node chain starting from pragma Prag. If flag Do_Checks is
@@ -566,8 +571,8 @@ package body Sem_Prag is
          --  Check that the expression is a proper aggregate (no parentheses)
 
          if Paren_Count (CCases) /= 0 then
-            Error_Msg -- CODEFIX
-              ("redundant parentheses", First_Sloc (CCases));
+            Error_Msg_F -- CODEFIX
+              ("redundant parentheses", CCases);
          end if;
 
          --  Ensure that the formal parameters are visible when analyzing all
@@ -717,9 +722,7 @@ package body Sem_Prag is
          elsif Ekind (Item_Id) = E_Constant then
             Add_Str_To_Name_Buffer ("constant");
 
-         elsif Ekind (Item_Id) in
-                 E_Generic_In_Out_Parameter | E_Generic_In_Parameter
-         then
+         elsif Is_Formal_Object (Item_Id) then
             Add_Str_To_Name_Buffer ("generic parameter");
 
          elsif Is_Formal (Item_Id) then
@@ -1282,17 +1285,22 @@ package body Sem_Prag is
            (Item_Is_Input  : out Boolean;
             Item_Is_Output : out Boolean)
          is
-            --  A constant or IN parameter of access-to-variable type should be
+            --  A constant or an IN parameter of a procedure or a protected
+            --  entry, if it is of an access-to-variable type, should be
             --  handled like a variable, as the underlying memory pointed-to
             --  can be modified. Use Adjusted_Kind to do this adjustment.
 
             Adjusted_Kind : Entity_Kind := Ekind (Item_Id);
 
          begin
-            if Ekind (Item_Id) in E_Constant
-                                | E_Generic_In_Parameter
-                                | E_In_Parameter
+            if (Ekind (Item_Id) in E_Constant | E_Generic_In_Parameter
+                  or else
+                  (Ekind (Item_Id) = E_In_Parameter
+                     and then Ekind (Scope (Item_Id))
+                                not in E_Function | E_Generic_Function))
               and then Is_Access_Variable (Etype (Item_Id))
+              and then Ekind (Spec_Id) not in E_Function
+                                            | E_Generic_Function
             then
                Adjusted_Kind := E_Variable;
             end if;
@@ -1476,8 +1484,6 @@ package body Sem_Prag is
            (Item_Is_Input  : Boolean;
             Item_Is_Output : Boolean)
          is
-            Error_Msg : Name_Id;
-
          begin
             Name_Len := 0;
 
@@ -1490,8 +1496,7 @@ package body Sem_Prag is
                Add_Str_To_Name_Buffer
                  (" & cannot appear in dependence relation");
 
-               Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+               SPARK_Msg_NE (To_String (Global_Name_Buffer), Item, Item_Id);
 
                Error_Msg_Name_1 := Chars (Spec_Id);
                SPARK_Msg_NE
@@ -1520,8 +1525,8 @@ package body Sem_Prag is
                end if;
 
                Add_Str_To_Name_Buffer (" in dependence relation");
-               Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), Item, Item_Id);
+
+               SPARK_Msg_NE (To_String (Global_Name_Buffer), Item, Item_Id);
             end if;
          end Role_Error;
 
@@ -1573,8 +1578,6 @@ package body Sem_Prag is
          -----------------
 
          procedure Usage_Error (Item_Id : Entity_Id) is
-            Error_Msg : Name_Id;
-
          begin
             --  Input case
 
@@ -1592,8 +1595,7 @@ package body Sem_Prag is
                   Add_Str_To_Name_Buffer
                     (" & is missing from input dependence list");
 
-                  Error_Msg := Name_Find;
-                  SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
+                  SPARK_Msg_NE (To_String (Global_Name_Buffer), N, Item_Id);
                   SPARK_Msg_NE
                     ("\add `null ='> &` dependency to ignore this input",
                      N, Item_Id);
@@ -1608,8 +1610,7 @@ package body Sem_Prag is
                Add_Str_To_Name_Buffer
                  (" & is missing from output dependence list");
 
-               Error_Msg := Name_Find;
-               SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
+               SPARK_Msg_NE (To_String (Global_Name_Buffer), N, Item_Id);
             end if;
          end Usage_Error;
 
@@ -2456,17 +2457,31 @@ package body Sem_Prag is
 
                --  Constant related checks
 
-               elsif Ekind (Item_Id) = E_Constant
-                 and then not Is_Access_Type (Etype (Item_Id))
-               then
+               elsif Ekind (Item_Id) = E_Constant then
 
-                  --  Unless it is of an access type, a constant is a read-only
-                  --  item, therefore it cannot act as an output.
+                  --  Constant is a read-only item, therefore it cannot act as
+                  --  an output.
 
                   if Global_Mode in Name_In_Out | Name_Output then
-                     SPARK_Msg_NE
-                       ("constant & cannot act as output", Item, Item_Id);
-                     return;
+
+                     --  Constant of a access-to-variable type is a read-write
+                     --  item in procedures, generic procedures, protected
+                     --  entries and tasks.
+
+                     if Is_Access_Variable (Etype (Item_Id))
+                       and then (Ekind (Spec_Id) in E_Entry
+                                                  | E_Entry_Family
+                                                  | E_Procedure
+                                                  | E_Generic_Procedure
+                                                  | E_Task_Type
+                                 or else Is_Single_Task_Object (Spec_Id))
+                     then
+                        null;
+                     else
+                        SPARK_Msg_NE
+                          ("constant & cannot act as output", Item, Item_Id);
+                        return;
+                     end if;
                   end if;
 
                --  Loop parameter related checks
@@ -2633,13 +2648,9 @@ package body Sem_Prag is
                   Context := Anonymous_Object (Context);
                end if;
 
-               if (Is_Subprogram (Context)
-                     or else Ekind (Context) = E_Task_Type
-                     or else Is_Single_Task_Object (Context))
-                 and then
-                  (Present (Get_Pragma (Context, Pragma_Global))
-                     or else
-                   Present (Get_Pragma (Context, Pragma_Refined_Global)))
+               if Is_Subprogram_Or_Entry (Context)
+                 or else Ekind (Context) = E_Task_Type
+                 or else Is_Single_Task_Object (Context)
                then
                   Collect_Subprogram_Inputs_Outputs
                     (Subp_Id      => Context,
@@ -2648,8 +2659,8 @@ package body Sem_Prag is
                      Global_Seen  => Dummy);
 
                   --  The item is classified as In_Out or Output but appears as
-                  --  an Input in an enclosing subprogram or task unit (SPARK
-                  --  RM 6.1.4(12)).
+                  --  an Input or a formal parameter of mode IN in an enclosing
+                  --  subprogram or task unit (SPARK RM 6.1.4(13)).
 
                   if Appears_In (Inputs, Item_Id)
                     and then not Appears_In (Outputs, Item_Id)
@@ -2658,7 +2669,7 @@ package body Sem_Prag is
                        ("global item & cannot have mode In_Out or Output",
                         Item, Item_Id);
 
-                     if Is_Subprogram (Context) then
+                     if Is_Subprogram_Or_Entry (Context) then
                         SPARK_Msg_NE
                           (Fix_Msg (Subp_Id, "\item already appears as input "
                            & "of subprogram &"), Item, Context);
@@ -3094,9 +3105,7 @@ package body Sem_Prag is
                         --  it is allowed for an initialization item to depend
                         --  on an input item.
 
-                        if Ekind (Input_Id) in E_Generic_In_Out_Parameter
-                                             | E_Generic_In_Parameter
-                        then
+                        if Is_Formal_Object (Input_Id) then
                            null;
 
                         elsif Ekind (Input_Id) in E_Constant | E_Variable
@@ -6920,7 +6929,7 @@ package body Sem_Prag is
                         Set_Is_Overloaded (Name, False);
                      else
                         Error_Pragma_Arg
-                          ("ambiguous handler name for pragma% ", Arg);
+                          ("ambiguous handler name for pragma%", Arg);
                      end if;
                   end if;
 
@@ -10933,10 +10942,6 @@ package body Sem_Prag is
             end if;
          end if;
 
-         if Warn_On_Export_Import and then Is_Type (E) then
-            Error_Msg_NE ("exporting a type has no effect?x?", Arg, E);
-         end if;
-
          if Warn_On_Export_Import and Inside_A_Generic then
             Error_Msg_NE
               ("all instances of& will have the same external name?x?",
@@ -11973,7 +11978,7 @@ package body Sem_Prag is
 
                   Set_Comes_From_Source   (State_Id, not Is_Null);
                   Set_Parent              (State_Id, State);
-                  Set_Ekind               (State_Id, E_Abstract_State);
+                  Mutate_Ekind            (State_Id, E_Abstract_State);
                   Set_Etype               (State_Id, Standard_Void_Type);
                   Set_Encapsulating_State (State_Id, Empty);
 
@@ -14724,6 +14729,8 @@ package body Sem_Prag is
                end if;
 
                if Nkind (N) = N_Aggregate
+                 and then not Null_Record_Present (N)
+                 and then No (Component_Associations (N))
                  and then List_Length (Expressions (N)) = 3
                then
                   Expr := First (Expressions (N));
@@ -14745,7 +14752,7 @@ package body Sem_Prag is
             Shared_Memory    : Node_Id;
             Stream           : Node_Id;
 
-            --  Start of processing for CUDA_Execute
+         --  Start of processing for CUDA_Execute
 
          begin
             GNAT_Pragma;
@@ -14754,7 +14761,7 @@ package body Sem_Prag is
 
             Analyze_And_Resolve (Kernel_Call);
             if Nkind (Kernel_Call) /= N_Function_Call
-               or else Etype (Kernel_Call) /= Standard_Void_Type
+              or else Etype (Kernel_Call) /= Standard_Void_Type
             then
                --  In `pragma CUDA_Execute (Kernel_Call (...), ...)`,
                --  GNAT sees Kernel_Call as an N_Function_Call since
@@ -14795,7 +14802,7 @@ package body Sem_Prag is
          -- CUDA_Global --
          -----------------
 
-         --  pragma CUDA_Global (IDENTIFIER);
+         --  pragma CUDA_Global ([Entity =>] IDENTIFIER);
 
          when Pragma_CUDA_Global => CUDA_Global : declare
             Arg_Node    : Node_Id;
@@ -14803,8 +14810,7 @@ package body Sem_Prag is
             Pack_Id     : Entity_Id;
          begin
             GNAT_Pragma;
-            Check_At_Least_N_Arguments (1);
-            Check_At_Most_N_Arguments (1);
+            Check_Arg_Count (1);
             Check_Optional_Identifier (Arg1, Name_Entity);
             Check_Arg_Is_Local_Name (Arg1);
 
@@ -15041,9 +15047,8 @@ package body Sem_Prag is
             else
                --  All other cases: diagnose error
 
-               Error_Msg
-                 ("argument of pragma ""Debug"" is not procedure call",
-                  Sloc (Call));
+               Error_Msg_N
+                 ("argument of pragma ""Debug"" is not procedure call", Call);
                return;
             end if;
 
@@ -16097,7 +16102,8 @@ package body Sem_Prag is
                begin
                   Set_Is_Exported    (Id2, Is_Exported          (Def_Id));
                   Set_First_Rep_Item (Id2, First_Rep_Item       (Def_Id));
-                  Set_Interface_Name (Id2, Einfo.Interface_Name (Def_Id));
+                  Set_Interface_Name
+                    (Id2, Einfo.Entities.Interface_Name (Def_Id));
                end;
             end if;
          end Export;
@@ -25632,9 +25638,9 @@ package body Sem_Prag is
                               Set_Specific_Warning_On (Loc, Message, Err);
 
                               if Err then
-                                 Error_Msg
+                                 Error_Msg_N
                                    ("??pragma Warnings On with no matching "
-                                    & "Warnings Off", Loc);
+                                    & "Warnings Off", N);
                               end if;
                            end if;
                         end;
@@ -29206,8 +29212,8 @@ package body Sem_Prag is
          --  Check that the expression is a proper aggregate (no parentheses)
 
          if Paren_Count (Variants) /= 0 then
-            Error_Msg -- CODEFIX
-              ("redundant parentheses", First_Sloc (Variants));
+            Error_Msg_F -- CODEFIX
+              ("redundant parentheses", Variants);
          end if;
 
          --  Ensure that the formal parameters are visible when analyzing all
@@ -30245,19 +30251,9 @@ package body Sem_Prag is
 
          --  Process all formal parameters
 
-         Formal := First_Entity (Spec_Id);
+         Formal := First_Formal (Spec_Id);
          while Present (Formal) loop
             if Ekind (Formal) in E_In_Out_Parameter | E_In_Parameter then
-
-               --  IN parameters can act as output when the related type is
-               --  access-to-variable.
-
-               if Ekind (Formal) = E_In_Parameter
-                 and then Is_Access_Variable (Etype (Formal))
-               then
-                  Append_New_Elmt (Formal, Subp_Outputs);
-               end if;
-
                Append_New_Elmt (Formal, Subp_Inputs);
             end if;
 
@@ -30275,7 +30271,18 @@ package body Sem_Prag is
                end if;
             end if;
 
-            Next_Entity (Formal);
+            --  IN parameters of procedures and protected entries can act as
+            --  outputs when the related type is access-to-variable.
+
+            if Ekind (Formal) = E_In_Parameter
+              and then Ekind (Spec_Id) not in E_Function
+                                            | E_Generic_Function
+              and then Is_Access_Variable (Etype (Formal))
+            then
+               Append_New_Elmt (Formal, Subp_Outputs);
+            end if;
+
+            Next_Formal (Formal);
          end loop;
 
       --  Otherwise the input denotes a task type, a task body, or the
@@ -30475,6 +30482,16 @@ package body Sem_Prag is
       Stmt : Node_Id;
 
    begin
+      --  If the pragma comes from an aspect on a compilation unit that is a
+      --  package instance, then return the original package instantiation
+      --  node.
+
+      if Nkind (Parent (Prag)) = N_Compilation_Unit_Aux then
+         return
+           Get_Unit_Instantiation_Node
+             (Defining_Entity (Unit (Enclosing_Comp_Unit_Node (Prag))));
+      end if;
+
       Stmt := Prev (Prag);
       while Present (Stmt) loop
 
@@ -30678,13 +30695,18 @@ package body Sem_Prag is
       elsif Nkind (Context) = N_Entry_Body then
          return Context;
 
-      --  The pragma appears inside the statements of a subprogram body. This
-      --  placement is the result of subprogram contract expansion.
+      --  The pragma appears inside the statements of a subprogram body at
+      --  some nested level.
 
       elsif Is_Statement (Context)
         and then Present (Enclosing_HSS (Context))
       then
          return Parent (Enclosing_HSS (Context));
+
+      --  The pragma appears directly in the statements of a subprogram body
+
+      elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
+         return Parent (Context);
 
       --  The pragma appears inside the declarative part of a package body
 

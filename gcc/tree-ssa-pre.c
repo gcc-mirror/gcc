@@ -4038,11 +4038,10 @@ compute_avail (void)
 		      enum tree_code code = gimple_assign_rhs_code (stmt);
 		      vn_nary_op_t nary;
 
-		      /* COND_EXPR and VEC_COND_EXPR are awkward in
-			 that they contain an embedded complex expression.
-			 Don't even try to shove those through PRE.  */
-		      if (code == COND_EXPR
-			  || code == VEC_COND_EXPR)
+		      /* COND_EXPR is awkward in that it contains an
+			 embedded complex expression.
+			 Don't even try to shove it through PRE.  */
+		      if (code == COND_EXPR)
 			continue;
 
 		      vn_nary_op_lookup_stmt (stmt, &nary);
@@ -4152,6 +4151,16 @@ compute_avail (void)
 		      if (ref->set == set
 			  || alias_set_subset_of (set, ref->set))
 			;
+		      else if (ref1->opcode != ref2->opcode
+			       || (ref1->opcode != MEM_REF
+				   && ref1->opcode != TARGET_MEM_REF))
+			{
+			  /* With mismatching base opcodes or bases
+			     other than MEM_REF or TARGET_MEM_REF we
+			     can't do any easy TBAA adjustment.  */
+			  operands.release ();
+			  continue;
+			}
 		      else if (alias_set_subset_of (ref->set, set))
 			{
 			  ref->set = set;

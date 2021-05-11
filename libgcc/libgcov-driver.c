@@ -36,9 +36,14 @@ void __gcov_init (struct gcov_info *p __attribute__ ((unused))) {}
 #else /* inhibit_libc */
 
 #include <string.h>
+
 #if GCOV_LOCKED
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/stat.h>
+#elif GCOV_LOCKED_WITH_LOCKING
+#include <fcntl.h>
+#include <sys/locking.h>
 #include <sys/stat.h>
 #endif
 
@@ -196,7 +201,7 @@ gcov_version (struct gcov_info *ptr, gcov_unsigned_t version,
   if (version != GCOV_VERSION)
     {
       char v[4], e[4];
-      char version_string[128], expected_string[128];
+      char ver_string[128], expected_string[128];
 
       GCOV_UNSIGNED2STRING (v, version);
       GCOV_UNSIGNED2STRING (e, GCOV_VERSION);
@@ -205,7 +210,7 @@ gcov_version (struct gcov_info *ptr, gcov_unsigned_t version,
 		  "got %s (%.4s)\n",
 		  filename? filename : ptr->filename,
 		  gcov_version_string (expected_string, e), e,
-		  gcov_version_string (version_string, v), v);
+		  gcov_version_string (ver_string, v), v);
       return 0;
     }
   return 1;

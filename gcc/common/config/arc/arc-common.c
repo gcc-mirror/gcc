@@ -84,7 +84,7 @@ arc_handle_option (struct gcc_options *opts,
 	 our caller, so comparing arc_cpu with PROCESSOR_NONE is pointless.  */
 
       if (mcpu_seen != PROCESSOR_NONE && mcpu_seen != value)
-	warning_at (loc, 0, "multiple %<-mcpu=%> options specified.");
+	warning_at (loc, 0, "multiple %<-mcpu=%> options specified");
       mcpu_seen = value;
       break;
 

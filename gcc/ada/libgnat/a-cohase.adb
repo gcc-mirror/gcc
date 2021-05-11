@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -605,13 +605,13 @@ is
    is
       HT   : Hash_Table_Type renames Container'Unrestricted_Access.HT;
       Node : constant Node_Access := Element_Keys.Find (HT, Item);
-
    begin
       if Node = null then
          return No_Element;
       end if;
 
-      return Cursor'(Container'Unrestricted_Access, Node, Hash_Type'Last);
+      return Cursor'
+        (Container'Unrestricted_Access, Node, HT_Ops.Index (HT, Node));
    end Find;
 
    --------------------
@@ -763,9 +763,11 @@ is
       Position  : out Cursor;
       Inserted  : out Boolean)
    is
+      HT : Hash_Table_Type renames Container'Unrestricted_Access.HT;
    begin
       Insert (Container.HT, New_Item, Position.Node, Inserted);
       Position.Container := Container'Unchecked_Access;
+      Position.Position := HT_Ops.Index (HT, Position.Node);
    end Insert;
 
    procedure Insert
@@ -1998,7 +2000,7 @@ is
             return No_Element;
          else
             return Cursor'
-              (Container'Unrestricted_Access, Node, Hash_Type'Last);
+              (Container'Unrestricted_Access, Node, HT_Ops.Index (HT, Node));
          end if;
       end Find;
 

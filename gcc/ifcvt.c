@@ -3458,7 +3458,6 @@ noce_process_if_block (struct noce_if_info *if_info)
   /* First look for multiple SETS.  */
   if (!else_bb
       && HAVE_conditional_move
-      && !HAVE_cc0
       && bb_ok_for_noce_convert_multiple_sets (then_bb))
     {
       if (noce_convert_multiple_sets (if_info))
@@ -5193,7 +5192,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 
       cond = cond_exec_get_condition (jump);
       if (! cond)
-	return FALSE;
+	goto nce;
 
       rtx note = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
       profile_probability prob_val

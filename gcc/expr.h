@@ -107,7 +107,15 @@ enum block_op_methods
   BLOCK_OP_NO_LIBCALL_RET
 };
 
-typedef rtx (*by_pieces_constfn) (void *, HOST_WIDE_INT, scalar_int_mode);
+typedef rtx (*by_pieces_constfn) (void *, void *, HOST_WIDE_INT,
+				  scalar_int_mode);
+
+/* The second pointer passed to by_pieces_constfn.  */
+struct by_pieces_prev
+{
+  rtx data;
+  scalar_int_mode mode;
+};
 
 extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);
 extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
@@ -193,7 +201,8 @@ extern rtx clear_storage_hints (rtx, rtx, enum block_op_methods,
 			        unsigned int, HOST_WIDE_INT,
 				unsigned HOST_WIDE_INT,
 				unsigned HOST_WIDE_INT,
-				unsigned HOST_WIDE_INT);
+				unsigned HOST_WIDE_INT,
+				unsigned);
 /* The same, but always output an library call.  */
 extern rtx set_storage_via_libcall (rtx, rtx, rtx, bool = false);
 
@@ -223,6 +232,16 @@ extern int can_store_by_pieces (unsigned HOST_WIDE_INT,
    Returns TO + LEN.  */
 extern rtx store_by_pieces (rtx, unsigned HOST_WIDE_INT, by_pieces_constfn,
 			    void *, unsigned int, bool, memop_ret);
+
+/* If can_store_by_pieces passes for worst-case values near MAX_LEN, call
+   store_by_pieces within conditionals so as to handle variable LEN efficiently,
+   storing VAL, if non-NULL_RTX, or valc instead.  */
+extern bool try_store_by_multiple_pieces (rtx to, rtx len,
+					  unsigned int ctz_len,
+					  unsigned HOST_WIDE_INT min_len,
+					  unsigned HOST_WIDE_INT max_len,
+					  rtx val, char valc,
+					  unsigned int align);
 
 /* Emit insns to set X from Y.  */
 extern rtx_insn *emit_move_insn (rtx, rtx);

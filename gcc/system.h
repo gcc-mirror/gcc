@@ -360,6 +360,10 @@ extern int errno;
 # endif
 #endif
 
+#ifdef HAVE_SYS_LOCKING_H
+# include <sys/locking.h>
+#endif
+
 #ifndef SEEK_SET
 # define SEEK_SET 0
 # define SEEK_CUR 1
@@ -1065,7 +1069,8 @@ extern void fancy_abort (const char *, int, const char *)
 	LIBGCC2_LONG_DOUBLE_TYPE_SIZE STRUCT_VALUE			   \
 	EH_FRAME_IN_DATA_SECTION TARGET_FLT_EVAL_METHOD_NON_DEFAULT	   \
 	JCR_SECTION_NAME TARGET_USE_JCR_SECTION SDB_DEBUGGING_INFO	   \
-	SDB_DEBUG NO_IMPLICIT_EXTERN_C
+	SDB_DEBUG NO_IMPLICIT_EXTERN_C NOTICE_UPDATE_CC			   \
+	CC_STATUS_MDEP_INIT CC_STATUS_MDEP CC_STATUS
 
 /* Hooks that are no longer used.  */
  #pragma GCC poison LANG_HOOKS_FUNCTION_MARK LANG_HOOKS_FUNCTION_FREE	\
@@ -1290,5 +1295,13 @@ void gcc_stablesort (void *, size_t, size_t,
 #undef NULL
 #define NULL nullptr
 #endif
+
+/* Return true if STR string starts with PREFIX.  */
+
+static inline bool
+startswith (const char *str, const char *prefix)
+{
+  return strncmp (str, prefix, strlen (prefix)) == 0;
+}
 
 #endif /* ! GCC_SYSTEM_H */

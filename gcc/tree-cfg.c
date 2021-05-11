@@ -7530,7 +7530,7 @@ fold_loop_internal_call (gimple *g, tree value)
   gimple *use_stmt;
   gimple_stmt_iterator gsi = gsi_for_stmt (g);
 
-  update_call_from_tree (&gsi, value);
+  replace_call_with_value (&gsi, value);
   FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
     {
       FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
@@ -9196,49 +9196,6 @@ insert_cond_bb (basic_block bb, gimple *stmt, gimple *cond,
     add_bb_to_loop (new_bb, bb->loop_father);
 
   return new_bb;
-}
-
-/* Build a ternary operation and gimplify it.  Emit code before GSI.
-   Return the gimple_val holding the result.  */
-
-tree
-gimplify_build3 (gimple_stmt_iterator *gsi, enum tree_code code,
-		 tree type, tree a, tree b, tree c)
-{
-  tree ret;
-  location_t loc = gimple_location (gsi_stmt (*gsi));
-
-  ret = fold_build3_loc (loc, code, type, a, b, c);
-  return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
-                                   GSI_SAME_STMT);
-}
-
-/* Build a binary operation and gimplify it.  Emit code before GSI.
-   Return the gimple_val holding the result.  */
-
-tree
-gimplify_build2 (gimple_stmt_iterator *gsi, enum tree_code code,
-		 tree type, tree a, tree b)
-{
-  tree ret;
-
-  ret = fold_build2_loc (gimple_location (gsi_stmt (*gsi)), code, type, a, b);
-  return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
-                                   GSI_SAME_STMT);
-}
-
-/* Build a unary operation and gimplify it.  Emit code before GSI.
-   Return the gimple_val holding the result.  */
-
-tree
-gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
-		 tree a)
-{
-  tree ret;
-
-  ret = fold_build1_loc (gimple_location (gsi_stmt (*gsi)), code, type, a);
-  return force_gimple_operand_gsi (gsi, ret, true, NULL, true,
-                                   GSI_SAME_STMT);
 }
 
 

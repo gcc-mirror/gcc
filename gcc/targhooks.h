@@ -117,7 +117,7 @@ extern opt_machine_mode default_vectorize_related_mode (machine_mode,
 							poly_uint64);
 extern opt_machine_mode default_get_mask_mode (machine_mode);
 extern bool default_empty_mask_is_expensive (unsigned);
-extern void *default_init_cost (class loop *);
+extern void *default_init_cost (class loop *, bool);
 extern unsigned default_add_stmt_cost (class vec_info *, void *, int,
 				       enum vect_cost_for_stmt,
 				       class _stmt_vec_info *, tree, int,

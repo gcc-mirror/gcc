@@ -394,13 +394,13 @@ struct lower_emutls_data
    Append any new computation statements required to D->SEQ.  */
 
 static tree
-gen_emutls_addr (tree decl, struct lower_emutls_data *d)
+gen_emutls_addr (tree decl, struct lower_emutls_data *d, bool for_debug)
 {
   /* Compute the address of the TLS variable with help from runtime.  */
   tls_var_data *data = tls_map->get (varpool_node::get (decl));
   tree addr = data->access;
 
-  if (addr == NULL)
+  if (addr == NULL && !for_debug)
     {
       varpool_node *cvar;
       tree cdecl;
@@ -480,7 +480,7 @@ lower_emutls_1 (tree *ptr, int *walk_subtrees, void *cb_data)
 	    *ptr = t = unshare_expr (t);
 
 	  /* If we're allowed more than just is_gimple_val, continue.  */
-	  if (!wi->val_only)
+	  if (!wi->val_only || is_gimple_debug (wi->stmt))
 	    {
 	      *walk_subtrees = 1;
 	      return NULL_TREE;
@@ -536,7 +536,15 @@ lower_emutls_1 (tree *ptr, int *walk_subtrees, void *cb_data)
       return NULL_TREE;
     }
 
-  addr = gen_emutls_addr (t, d);
+  addr = gen_emutls_addr (t, d, is_gimple_debug (wi->stmt));
+  if (!addr)
+    {
+      gimple_debug_bind_reset_value (wi->stmt);
+      update_stmt (wi->stmt);
+      wi->changed = false;
+      /* Stop walking operands.  */
+      return error_mark_node;
+    }
   if (is_addr)
     {
       /* Replace "&var" with "addr" in the statement.  */
@@ -590,6 +598,7 @@ lower_emutls_phi_arg (gphi *phi, unsigned int i,
   memset (&wi, 0, sizeof (wi));
   wi.info = d;
   wi.val_only = true;
+  wi.stmt = phi;
   walk_tree (&pd->def, lower_emutls_1, &wi, NULL);
 
   /* For normal statements, we let update_stmt do its job.  But for phi

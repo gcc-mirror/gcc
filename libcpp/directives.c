@@ -922,12 +922,19 @@ strtolinenum (const uchar *str, size_t len, linenum_type *nump, bool *wrapped)
   linenum_type reg = 0;
 
   uchar c;
+  bool seen_digit_sep = false;
   *wrapped = false;
   while (len--)
     {
       c = *str++;
+      if (!seen_digit_sep && c == '\'' && len)
+	{
+	  seen_digit_sep = true;
+	  continue;
+	}
       if (!ISDIGIT (c))
 	return true;
+      seen_digit_sep = false;
       if (reg > ((linenum_type) -1) / 10)
 	*wrapped = true;
       reg *= 10;

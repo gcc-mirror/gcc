@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -228,6 +228,8 @@ package Rtsfind is
       System_Exception_Table,
       System_Exceptions_Debug,
       System_Exn_Int,
+      System_Exn_Flt,
+      System_Exn_LFlt,
       System_Exn_LLF,
       System_Exn_LLI,
       System_Exn_LLLI,
@@ -259,18 +261,21 @@ package Rtsfind is
       System_Img_Decimal_32,
       System_Img_Decimal_64,
       System_Img_Decimal_128,
-      System_Img_Enum,
-      System_Img_Enum_New,
+      System_Img_Enum_8,
+      System_Img_Enum_16,
+      System_Img_Enum_32,
       System_Img_Fixed_32,
       System_Img_Fixed_64,
       System_Img_Fixed_128,
+      System_Img_Flt,
       System_Img_Int,
+      System_Img_LFlt,
+      System_Img_LLF,
       System_Img_LLI,
       System_Img_LLLI,
       System_Img_LLU,
       System_Img_LLLU,
       System_Img_Name,
-      System_Img_Real,
       System_Img_Uns,
       System_Img_WChar,
       System_Interrupts,
@@ -428,7 +433,9 @@ package Rtsfind is
       System_Val_Decimal_32,
       System_Val_Decimal_64,
       System_Val_Decimal_128,
-      System_Val_Enum,
+      System_Val_Enum_8,
+      System_Val_Enum_16,
+      System_Val_Enum_32,
       System_Val_Fixed_32,
       System_Val_Fixed_64,
       System_Val_Fixed_128,
@@ -901,8 +908,10 @@ package Rtsfind is
 
      RE_Exn_Integer,                     -- System.Exn_Int
 
-     RE_Exn_Float,                       -- System.Exn_LLF
-     RE_Exn_Long_Float,                  -- System.Exn_LLF
+     RE_Exn_Float,                       -- System.Exn_Flt
+
+     RE_Exn_Long_Float,                  -- System.Exn_LFlt
+
      RE_Exn_Long_Long_Float,             -- System.Exn_LLF
 
      RE_Exn_Long_Long_Integer,           -- System.Exn_LLI
@@ -956,13 +965,13 @@ package Rtsfind is
 
      RE_Fore_Decimal128,                 -- System.Fore_Decimal_128
 
+     RE_Fore_Fixed,                      -- System.Fore_Real
+
      RE_Fore_Fixed32,                    -- System.Fore_Fixed_32
 
      RE_Fore_Fixed64,                    -- System.Fore_Fixed_64
 
      RE_Fore_Fixed128,                   -- System.Fore_Fixed_128
-
-     RE_Fore_Real,                       -- System.Fore_Real
 
      RE_Image_Boolean,                   -- System.Img_Bool
 
@@ -979,7 +988,13 @@ package Rtsfind is
      RE_Image_Enumeration_16,            -- System.Img_Enum_New
      RE_Image_Enumeration_32,            -- System.Img_Enum_New
 
+     RE_Image_Float,                     -- System_Img_Flt
+
      RE_Image_Integer,                   -- System.Img_Int
+
+     RE_Image_Long_Float,                -- System_Img_LFlt
+
+     RE_Image_Long_Long_Float,           -- System_Img_LLF
 
      RE_Image_Long_Long_Integer,         -- System.Img_LLI
 
@@ -989,12 +1004,13 @@ package Rtsfind is
 
      RE_Image_Long_Long_Long_Unsigned,   -- System.Img_LLLU
 
-     RE_Image_Fixed32,                   -- System.Img_Fixed_32
-     RE_Image_Fixed64,                   -- System.Img_Fixed_64
-     RE_Image_Fixed128,                  -- System.Img_Fixed_128
+     RE_Image_Fixed,                     -- System.Img_LFlt
 
-     RE_Image_Ordinary_Fixed_Point,      -- System.Img_Real
-     RE_Image_Floating_Point,            -- System.Img_Real
+     RE_Image_Fixed32,                   -- System.Img_Fixed_32
+
+     RE_Image_Fixed64,                   -- System.Img_Fixed_64
+
+     RE_Image_Fixed128,                  -- System.Img_Fixed_128
 
      RE_Image_Unsigned,                  -- System.Img_Uns
 
@@ -2004,7 +2020,6 @@ package Rtsfind is
      RE_Bits_1,                          -- System.Unsigned_Types
      RE_Bits_2,                          -- System.Unsigned_Types
      RE_Bits_4,                          -- System.Unsigned_Types
-     RE_Float_Unsigned,                  -- System.Unsigned_Types
      RE_Long_Long_Unsigned,              -- System.Unsigned_Types
      RE_Long_Long_Long_Unsigned,         -- System.Unsigned_Types
      RE_Packed_Byte,                     -- System.Unsigned_Types
@@ -2581,8 +2596,10 @@ package Rtsfind is
 
      RE_Exn_Integer                      => System_Exn_Int,
 
-     RE_Exn_Float                        => System_Exn_LLF,
-     RE_Exn_Long_Float                   => System_Exn_LLF,
+     RE_Exn_Float                        => System_Exn_Flt,
+
+     RE_Exn_Long_Float                   => System_Exn_LFlt,
+
      RE_Exn_Long_Long_Float              => System_Exn_LLF,
 
      RE_Exn_Long_Long_Integer            => System_Exn_LLI,
@@ -2636,13 +2653,13 @@ package Rtsfind is
 
      RE_Fore_Decimal128                  => System_Fore_Decimal_128,
 
+     RE_Fore_Fixed                       => System_Fore_Real,
+
      RE_Fore_Fixed32                     => System_Fore_Fixed_32,
 
      RE_Fore_Fixed64                     => System_Fore_Fixed_64,
 
      RE_Fore_Fixed128                    => System_Fore_Fixed_128,
-
-     RE_Fore_Real                        => System_Fore_Real,
 
      RE_Image_Boolean                    => System_Img_Bool,
 
@@ -2655,11 +2672,19 @@ package Rtsfind is
 
      RE_Image_Decimal128                 => System_Img_Decimal_128,
 
-     RE_Image_Enumeration_8              => System_Img_Enum_New,
-     RE_Image_Enumeration_16             => System_Img_Enum_New,
-     RE_Image_Enumeration_32             => System_Img_Enum_New,
+     RE_Image_Enumeration_8              => System_Img_Enum_8,
+
+     RE_Image_Enumeration_16             => System_Img_Enum_16,
+
+     RE_Image_Enumeration_32             => System_Img_Enum_32,
+
+     RE_Image_Float                      => System_Img_Flt,
 
      RE_Image_Integer                    => System_Img_Int,
+
+     RE_Image_Long_Float                 => System_Img_LFlt,
+
+     RE_Image_Long_Long_Float            => System_Img_LLF,
 
      RE_Image_Long_Long_Integer          => System_Img_LLI,
 
@@ -2669,12 +2694,13 @@ package Rtsfind is
 
      RE_Image_Long_Long_Long_Unsigned    => System_Img_LLLU,
 
-     RE_Image_Fixed32                    => System_Img_Fixed_32,
-     RE_Image_Fixed64                    => System_Img_Fixed_64,
-     RE_Image_Fixed128                   => System_Img_Fixed_128,
+     RE_Image_Fixed                      => System_Img_LFlt,
 
-     RE_Image_Ordinary_Fixed_Point       => System_Img_Real,
-     RE_Image_Floating_Point             => System_Img_Real,
+     RE_Image_Fixed32                    => System_Img_Fixed_32,
+
+     RE_Image_Fixed64                    => System_Img_Fixed_64,
+
+     RE_Image_Fixed128                   => System_Img_Fixed_128,
 
      RE_Image_Unsigned                   => System_Img_Uns,
 
@@ -3684,7 +3710,6 @@ package Rtsfind is
      RE_Bits_1                           => System_Unsigned_Types,
      RE_Bits_2                           => System_Unsigned_Types,
      RE_Bits_4                           => System_Unsigned_Types,
-     RE_Float_Unsigned                   => System_Unsigned_Types,
      RE_Long_Long_Unsigned               => System_Unsigned_Types,
      RE_Long_Long_Long_Unsigned          => System_Unsigned_Types,
      RE_Packed_Byte                      => System_Unsigned_Types,
@@ -3706,9 +3731,11 @@ package Rtsfind is
 
      RE_Value_Decimal128                 => System_Val_Decimal_128,
 
-     RE_Value_Enumeration_8              => System_Val_Enum,
-     RE_Value_Enumeration_16             => System_Val_Enum,
-     RE_Value_Enumeration_32             => System_Val_Enum,
+     RE_Value_Enumeration_8              => System_Val_Enum_8,
+
+     RE_Value_Enumeration_16             => System_Val_Enum_16,
+
+     RE_Value_Enumeration_32             => System_Val_Enum_32,
 
      RE_Value_Fixed32                    => System_Val_Fixed_32,
 

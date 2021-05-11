@@ -11,6 +11,6 @@ foo (uint64x2_t * addr)
 }
 
 /* { dg-final { scan-assembler "vldrd.64\tq\[0-9\]+, \\\[q\[0-9\]+, #\[0-9\]+\\\]!" } } */
-/* { dg-final { scan-assembler-times "vldr.64" 1 } } */
-/* { dg-final { scan-assembler-times "vstr.64" 1 } } */
+/* { dg-final { scan-assembler-times "vldrw.u32" 1 } } */
+/* { dg-final { scan-assembler-times "vstrw.32" 1 } } */
 /* { dg-final { scan-assembler-not "__ARM_undef" } } */

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2000-2020, Free Software Foundation, Inc.        --
+--           Copyright (C) 2000-2021, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,14 +23,14 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Errout;   use Errout;
-with Sinfo;    use Sinfo;
-with Fname.UF; use Fname.UF;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Opt;      use Opt;
-with Uname;    use Uname;
+with Errout;         use Errout;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Fname.UF;       use Fname.UF;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Opt;            use Opt;
+with Uname;          use Uname;
 
 --  Note: this package body is used by GNAT Studio and GNATBench to supply a
 --  list of entries for help on available library routines.

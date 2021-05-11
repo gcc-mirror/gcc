@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1995-2020, AdaCore                     --
+--                     Copyright (C) 1995-2021, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2158,8 +2158,10 @@ package body System.OS_Lib is
          return On_Windows
            and then not Is_With_Drive (Name)
            and then (Name'Length < 2 -- not \\name case
-                     or else Name (Name'First .. Name'First + 1)
-                             /= Directory_Separator & Directory_Separator);
+                     or else Name (Name'First)
+                             /= Directory_Separator
+                     or else Name (Name'First + 1)
+                             /= Directory_Separator);
       end Missed_Drive_Letter;
 
       -----------------

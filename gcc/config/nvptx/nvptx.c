@@ -3682,9 +3682,9 @@ nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
   edge e;
   edge_iterator ei;
   int hi_back = depth;
-  pseudo_node_t node_back (0, depth);
+  pseudo_node_t node_back (nullptr, depth);
   int hi_child = depth;
-  pseudo_node_t node_child (0, depth);
+  pseudo_node_t node_child (nullptr, depth);
   basic_block child = NULL;
   unsigned num_children = 0;
   int usd = -dir * sese->dir;
@@ -3751,7 +3751,7 @@ nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
       else
 	{ /* Fallen off graph, backlink to entry node.  */
 	  hi_back = 0;
-	  node_back = pseudo_node_t (0, 0);
+	  node_back = pseudo_node_t (nullptr, 0);
 	}
     }
 
@@ -3772,7 +3772,7 @@ nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
       else
 	{
 	  /* back edge to entry node */
-	  sese->push (pseudo_node_t (0, 0));
+	  sese->push (pseudo_node_t (nullptr, 0));
 	}
     }
   
@@ -3781,7 +3781,7 @@ nvptx_sese_pseudo (basic_block me, bb_sese *sese, int depth, int dir,
   if (!sese->brackets.length () || !edges || !edges->length ())
     {
       hi_back = 0;
-      node_back = pseudo_node_t (0, 0);
+      node_back = pseudo_node_t (nullptr, 0);
       sese->push (node_back);
     }
 

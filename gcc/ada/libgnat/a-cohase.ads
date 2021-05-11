@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -537,8 +537,22 @@ private
 
    type Cursor is record
       Container : Set_Access;
+      --  Access to this cursor's container
+
       Node      : Node_Access;
+      --  Access to the node pointed to by this cursor
+
       Position  : Hash_Type := Hash_Type'Last;
+      --  Position of the node in the buckets of the container. If this is
+      --  equal to Hash_Type'Last, then it will not be used. Position is
+      --  not requried by the implementation, but improves the efficiency
+      --  of various operations.
+      --
+      --  However, this value must be maintained so that the predefined
+      --  equality operation acts as required by RM A.18.7-17/2, which
+      --  states: "The predefined "=" operator for type Cursor returns True
+      --  if both cursors are No_Element, or designate the same element
+      --  in the same container."
    end record;
 
    procedure Write

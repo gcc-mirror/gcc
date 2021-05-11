@@ -114,6 +114,8 @@ struct GTY(()) dw_fde_node {
      hard frame pointer register should be emitted only on the latter
      instruction.  */
   unsigned rule18 : 1;
+  /* True if this function is to be ignored by debugger.  */
+  unsigned ignored_debug : 1;
 };
 
 

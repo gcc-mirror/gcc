@@ -463,7 +463,7 @@ Runtime::name_to_code(const std::string& name)
       // The names in the table have "runtime." prefix. We may be
       // called with a name without the prefix. Try matching
       // without the prefix as well.
-      if (strncmp(runtime_function_name, "runtime.", 8) == 0
+      if (startswith(runtime_function_name, "runtime.")
           && strcmp(runtime_function_name + 8, name.c_str()) == 0)
         code = static_cast<Runtime::Function>(i);
     }

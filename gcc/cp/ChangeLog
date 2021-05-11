@@ -1,3 +1,215 @@
+2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100464
+	PR c++/100468
+	* call.c (set_up_extended_ref_temp): Mark the temporary
+	addressable if the TARGET_EXPR was.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (duplicate_decls): Use startswith
+	function instead of strncmp.
+	(cxx_builtin_function): Likewise.
+	(omp_declare_variant_finalize_one): Likewise.
+	(grokfndecl): Likewise.
+	* error.c (dump_decl_name): Likewise.
+	* mangle.c (find_decomp_unqualified_name): Likewise.
+	(write_guarded_var_name): Likewise.
+	(decl_tls_wrapper_p): Likewise.
+	* parser.c (cp_parser_simple_type_specifier): Likewise.
+	(cp_parser_tx_qualifier_opt): Likewise.
+	* pt.c (template_parm_object_p): Likewise.
+	(dguide_name_p): Likewise.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	PR c++/99616
+	* decl.c (grokdeclarator): Remove redundant NULL check.
+
+2021-05-07  Jason Merrill  <jason@redhat.com>
+
+	* tree.c (rvalue): Assert expr is not a class lvalue.
+
+2021-05-07  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (build_stub_object): Declare.
+	* method.c (build_stub_object): No longer static.
+	* call.c (can_convert): Use it.
+	* tree.c (build_dummy_object): Adjust comment.
+	* typeck.c (cp_build_binary_op): Wrap SPACESHIP_EXPR in a
+	TARGET_EXPR.
+
+2021-05-07  Jason Merrill  <jason@redhat.com>
+
+	* coroutines.cc (build_co_await): Don't call 'rvalue'.
+	(flatten_await_stmt): Simplify initialization.
+	(morph_fn_to_coro): Change 'rvalue' to 'move'.  Simplify.
+
+2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* semantics.c (finish_omp_reduction_clause): Accept float + complex
+	for || and && reductions.
+
+2021-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100362
+	* parser.c (cp_parser_class_head): Reinstate calls to pushclass
+	and popclass when parsing the base-clause that were removed in
+	r11-6815.
+
+2021-05-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/68942
+	PR c++/100344
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: Set tf_conv
+	only when the callee is a FUNCTION_DECL.
+
+2021-05-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100055
+	* decl.c (grokfndecl): Check current_template_parms.
+
+2021-05-03  Marek Polacek  <polacek@redhat.com>
+
+	DR 1312
+	* constexpr.c (cxx_eval_constant_expression): Don't check
+	integer_zerop.
+
+2021-05-01  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (class ovl_iterator): Allow copying.  Add op==.
+	(class ovl_range, class lkp_range): New.
+	* call.c (build_op_call_1, add_candidates): Use them.
+	(build_op_delete_call, has_trivial_copy_assign_p): Likewise.
+	(has_trivial_copy_p): Likewise.
+	* class.c (handle_using_decl, get_basefndecls): Likewise.
+	(maybe_warn_about_overly_private_class): Likewise.
+	(warn_hidden, add_implicitly_declared_members): Likewise.
+	(check_methods, clone_constructors_and_destructors): Likewise.
+	(type_has_user_nondefault_constructor): Likewise.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (cxx_fold_indirect_ref_1): Only set *empty_base if we
+	don't find a field.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/51344
+	* decl2.c (grokfield): Call cplus_decl_attributes for friend.
+	(save_template_attributes): Use chainon.
+	* friend.c (do_friend): Remove attrlist parm.
+	* cp-tree.h (do_friend): Adjust.
+	* class.c (add_implicitly_declared_members): Adjust.
+	* decl.c (grokdeclarator): Adjust.
+	* pt.c (apply_late_template_attributes): Optimize.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97974
+	* class.c (finish_struct_anon_r): Drop complain parm.
+	Remove non-field diagnostic.
+	(finish_struct_anon): Adjust.
+	* decl.c (fixup_anonymous_aggr): Move non-field diagnostic here.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (cp_evaluated): Add reset parm to constructor.
+	* parser.c (cp_parser_constant_expression): Change
+	allow_non_constant_p to int.  Use cp_evaluated.
+	(cp_parser_initializer_clause): Pass 2 to allow_non_constant_p.
+	* semantics.c (finish_id_expression_1): Don't mess with
+	cp_unevaluated_operand here.
+
+2021-04-29  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h: Clarify comments.
+	* pt.c (get_template_parm_object): Add assert.
+	* semantics.c (finish_compound_literal): Clear TREE_HAS_CONSTRUCTOR.
+	* tree.c (zero_init_expr_p): Check TREE_HAS_CONSTRUCTOR.
+	* typeck2.c (store_init_value): Likewise.
+
+2021-04-29  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/68942
+	* pt.c (tsubst_copy_and_build) <case CALL_EXPR>: When KOENIG_P,
+	set tf_conv during the initial substitution into the function.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100319
+	* semantics.c (finish_omp_clauses): Fix up check that variable
+	mentioned in detach clause doesn't appear in data-sharing clauses.
+
+2021-04-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* module.cc: Remove #error that triggers if DEV-PHASE is empty.
+
+2021-04-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92145
+	* class.c (classtype_has_depr_implicit_copy): Check DECL_CONTEXT
+	of operator=.
+
+2021-04-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/88580
+	* pt.c (tsubst_initializer_list): Correctly handle the case
+	where an argument inside a base initializer pack expansion is
+	itself a pack expansion.
+
+2021-04-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100209
+	* constexpr.c (cxx_fold_indirect_ref): Try to canonicalize the
+	object/offset pair for a POINTER_PLUS_EXPR of a COMPONENT_REF
+	with a negative offset into one whose offset is nonnegative
+	before calling cxx_fold_indirect_ref_1.
+
+2021-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/89565
+	PR c++/93383
+	PR c++/95291
+	PR c++/99200
+	PR c++/99683
+	* pt.c (do_class_deduction): Punt if the initializer is
+	type-dependent.
+
+2021-04-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/87709
+	* parser.c (cp_parser_type_id_1): If we see a template
+	placeholder, first try simulating an error before issuing
+	a real error.
+
+2021-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/98767
+	* cxx-pretty-print.c (pp_cxx_parameter_declaration_clause):
+	Adjust parameter list loop to iterate over 'types' instead of
+	'args'.  Output the trailing '...' for a variadic function.
+	Remove PARM_DECL support.
+	(pp_cxx_requires_expr): Pretty print the parameter list directly
+	instead of going through pp_cxx_parameter_declaration_clause.
+
+2021-04-23  Patrick Palka  <ppalka@redhat.com>
+
+	DR 2374
+	* decl.c (is_direct_enum_init): Check the implicit
+	convertibility requirement added by CWG 2374.
+
+2021-04-23  Martin Liska  <mliska@suse.cz>
+
+	* cp-tree.h (STATIC_ASSERT): Prefer static assert.
+	* lex.c (init_operators): Remove run-time check.
+
+2021-04-22  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100161
+	* pt.c (tsubst_copy_and_build) <case PLUS_EXPR>: Test op0 and
+	op1 separately for value- or type-dependence.
+
 2021-04-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/96380

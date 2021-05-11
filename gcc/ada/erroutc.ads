@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -197,7 +197,7 @@ package Erroutc is
       --  refers to a template, always references the original template
       --  not an instantiation copy.
 
-      Sptr : Source_Ptr;
+      Sptr : Source_Span;
       --  Flag pointer. In the case of an error that refers to a template,
       --  always references the original template, not an instantiation copy.
       --  This value is the actual place in the source that the error message
@@ -390,6 +390,66 @@ package Erroutc is
    --  find such an On entry, we cancel the indication of it being the
    --  configuration case. This seems to handle all cases we run into ok.
 
+   -------------------
+   -- Color Control --
+   -------------------
+
+   Use_SGR_Control : Boolean := False;
+   --  Set to True for enabling colored output. This should only be done when
+   --  outputting messages to a terminal that supports it.
+
+   --  Colors in messages output to a terminal are controlled using SGR
+   --  (Select Graphic Rendition).
+
+   Color_Separator  : constant String := ";";
+   Color_None       : constant String := "00";
+   Color_Bold       : constant String := "01";
+   Color_Underscore : constant String := "04";
+   Color_Blink      : constant String := "05";
+   Color_Reverse    : constant String := "07";
+   Color_Fg_Black   : constant String := "30";
+   Color_Fg_Red     : constant String := "31";
+   Color_Fg_Green   : constant String := "32";
+   Color_Fg_Yellow  : constant String := "33";
+   Color_Fg_Blue    : constant String := "34";
+   Color_Fg_Magenta : constant String := "35";
+   Color_Fg_Cyan    : constant String := "36";
+   Color_Fg_White   : constant String := "37";
+   Color_Bg_Black   : constant String := "40";
+   Color_Bg_Red     : constant String := "41";
+   Color_Bg_Green   : constant String := "42";
+   Color_Bg_Yellow  : constant String := "43";
+   Color_Bg_Blue    : constant String := "44";
+   Color_Bg_Magenta : constant String := "45";
+   Color_Bg_Cyan    : constant String := "46";
+   Color_Bg_White   : constant String := "47";
+
+   SGR_Start        : constant String := ASCII.ESC & "[";
+   SGR_End          : constant String := "m" & ASCII.ESC & "[K";
+
+   function SGR_Seq (Str : String) return String is
+     (if Use_SGR_Control then SGR_Start & Str & SGR_End else "");
+   --  Return the SGR control string for the commands in Str. It returns the
+   --  empty string if Use_SGR_Control is False, so that we can insert this
+   --  string unconditionally.
+
+   function SGR_Reset return String is (SGR_Seq (""));
+   --  This ends the current section of colored output
+
+   --  We're using the same colors as gcc/g++ for errors/warnings/notes/locus.
+   --  More colors are defined in gcc/g++ for other features of diagnostic
+   --  messages (e.g. inline types, fixit) and could be used in GNAT in the
+   --  future. The following functions start a section of colored output.
+
+   function SGR_Error return String is
+     (SGR_Seq (Color_Bold & Color_Separator & Color_Fg_Red));
+   function SGR_Warning return String is
+     (SGR_Seq (Color_Bold & Color_Separator & Color_Fg_Magenta));
+   function SGR_Note return String is
+     (SGR_Seq (Color_Bold & Color_Separator & Color_Fg_Cyan));
+   function SGR_Locus return String is
+     (SGR_Seq (Color_Bold));
+
    -----------------
    -- Subprograms --
    -----------------
@@ -435,6 +495,11 @@ package Erroutc is
    function Get_Warning_Tag (Id : Error_Msg_Id) return String;
    --  Given an error message ID, return tag showing warning message class, or
    --  the null string if this option is not enabled or this is not a warning.
+
+   function Matches (S : String; P : String) return Boolean;
+   --  Returns true if the String S matches the pattern P, which can contain
+   --  wildcard chars (*). The entire pattern must match the entire string.
+   --  Case is ignored in the comparison (so X matches x).
 
    procedure Output_Error_Msgs (E : in out Error_Msg_Id);
    --  Output source line, error flag, and text of stored error message and all

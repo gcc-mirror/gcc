@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,60 +23,64 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;   use Aspects;
-with Atree;     use Atree;
-with Contracts; use Contracts;
-with Einfo;     use Einfo;
-with Elists;    use Elists;
-with Errout;    use Errout;
-with Expander;  use Expander;
-with Fname;     use Fname;
-with Fname.UF;  use Fname.UF;
-with Freeze;    use Freeze;
-with Ghost;     use Ghost;
-with Itypes;    use Itypes;
-with Lib;       use Lib;
-with Lib.Load;  use Lib.Load;
-with Lib.Xref;  use Lib.Xref;
-with Nlists;    use Nlists;
-with Namet;     use Namet;
-with Nmake;     use Nmake;
-with Opt;       use Opt;
-with Rident;    use Rident;
-with Restrict;  use Restrict;
-with Rtsfind;   use Rtsfind;
-with Sem;       use Sem;
-with Sem_Aux;   use Sem_Aux;
-with Sem_Cat;   use Sem_Cat;
-with Sem_Ch3;   use Sem_Ch3;
-with Sem_Ch6;   use Sem_Ch6;
-with Sem_Ch7;   use Sem_Ch7;
-with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch10;  use Sem_Ch10;
-with Sem_Ch13;  use Sem_Ch13;
-with Sem_Dim;   use Sem_Dim;
-with Sem_Disp;  use Sem_Disp;
-with Sem_Elab;  use Sem_Elab;
-with Sem_Elim;  use Sem_Elim;
-with Sem_Eval;  use Sem_Eval;
-with Sem_Prag;  use Sem_Prag;
-with Sem_Res;   use Sem_Res;
-with Sem_Type;  use Sem_Type;
-with Sem_Util;  use Sem_Util;
-with Sem_Warn;  use Sem_Warn;
-with Stand;     use Stand;
-with Sinfo;     use Sinfo;
-with Sinfo.CN;  use Sinfo.CN;
-with Sinput;    use Sinput;
-with Sinput.L;  use Sinput.L;
-with Snames;    use Snames;
-with Stringt;   use Stringt;
-with Uname;     use Uname;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Contracts;      use Contracts;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Fname;          use Fname;
+with Fname.UF;       use Fname.UF;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Load;       use Lib.Load;
+with Lib.Xref;       use Lib.Xref;
+with Nlists;         use Nlists;
+with Namet;          use Namet;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Rident;         use Rident;
+with Restrict;       use Restrict;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch10;       use Sem_Ch10;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Elim;       use Sem_Elim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinfo.CN;       use Sinfo.CN;
+with Sinput;         use Sinput;
+with Sinput.L;       use Sinput.L;
+with Snames;         use Snames;
+with Stringt;        use Stringt;
+with Uname;          use Uname;
 with Table;
-with Tbuild;    use Tbuild;
-with Uintp;     use Uintp;
-with Urealp;    use Urealp;
-with Warnsw;    use Warnsw;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
+with Warnsw;         use Warnsw;
 
 with GNAT.HTable;
 
@@ -2347,7 +2351,7 @@ package body Sem_Ch12 is
       Set_Is_Generic_Type (Base);
       Set_Parent          (Base, Parent (Def));
 
-      Set_Ekind          (T, E_Decimal_Fixed_Point_Subtype);
+      Mutate_Ekind       (T, E_Decimal_Fixed_Point_Subtype);
       Set_Etype          (T, Base);
       Set_Size_Info      (T, Int_Base);
       Set_RM_Size        (T, RM_Size (Int_Base));
@@ -2469,7 +2473,7 @@ package body Sem_Ch12 is
 
    begin
       Enter_Name          (T);
-      Set_Ekind           (T, E_Enumeration_Subtype);
+      Mutate_Ekind        (T, E_Enumeration_Subtype);
       Set_Etype           (T, Base);
       Init_Size           (T, 8);
       Init_Alignment      (T);
@@ -2498,7 +2502,7 @@ package body Sem_Ch12 is
           Low_Bound  => Lo,
           High_Bound => Hi));
 
-      Set_Ekind           (Base, E_Enumeration_Type);
+      Mutate_Ekind        (Base, E_Enumeration_Type);
       Set_Etype           (Base, Base);
       Init_Size           (Base, 8);
       Init_Alignment      (Base);
@@ -2524,7 +2528,7 @@ package body Sem_Ch12 is
       --  the generic itself.
 
       Enter_Name (T);
-      Set_Ekind          (T, E_Floating_Point_Subtype);
+      Mutate_Ekind       (T, E_Floating_Point_Subtype);
       Set_Etype          (T, Base);
       Set_Size_Info      (T,              (Standard_Float));
       Set_RM_Size        (T, RM_Size      (Standard_Float));
@@ -2576,8 +2580,8 @@ package body Sem_Ch12 is
       --  signed integer types, and have the same attributes.
 
       Analyze_Formal_Signed_Integer_Type (T, Def);
-      Set_Ekind (T, E_Modular_Integer_Subtype);
-      Set_Ekind (Etype (T), E_Modular_Integer_Type);
+      Mutate_Ekind (T, E_Modular_Integer_Subtype);
+      Mutate_Ekind (Etype (T), E_Modular_Integer_Type);
 
    end Analyze_Formal_Modular_Type;
 
@@ -2674,7 +2678,7 @@ package body Sem_Ch12 is
             end if;
          end if;
 
-         Set_Ekind (Id, K);
+         Mutate_Ekind (Id, K);
          Set_Etype (Id, T);
 
       --  Case of generic IN OUT parameter
@@ -2684,7 +2688,7 @@ package body Sem_Ch12 is
          --  subtype, as is done for subprogram formals. In this fashion, all
          --  its uses can refer to specific bounds.
 
-         Set_Ekind (Id, K);
+         Mutate_Ekind (Id, K);
          Set_Etype (Id, T);
 
          if (Is_Array_Type (T) and then not Is_Constrained (T))
@@ -2737,7 +2741,7 @@ package body Sem_Ch12 is
       --  will never be used, since all properties of the type are non-static.
 
       Enter_Name (T);
-      Set_Ekind            (T, E_Ordinary_Fixed_Point_Subtype);
+      Mutate_Ekind         (T, E_Ordinary_Fixed_Point_Subtype);
       Set_Etype            (T, Base);
       Set_Size_Info        (T, Standard_Integer);
       Set_RM_Size          (T, RM_Size (Standard_Integer));
@@ -3013,8 +3017,8 @@ package body Sem_Ch12 is
       exception
          when Instantiation_Error =>
             Enter_Name (Formal);
-            Set_Ekind  (Formal, E_Variable);
-            Set_Etype  (Formal, Any_Type);
+            Mutate_Ekind (Formal, E_Variable);
+            Set_Etype (Formal, Any_Type);
             Restore_Hidden_Primitives (Vis_Prims_List);
 
             if Parent_Installed then
@@ -3031,8 +3035,8 @@ package body Sem_Ch12 is
       Set_Is_Generic_Instance (Formal);
 
       Enter_Name (Formal);
-      Set_Ekind  (Formal, E_Package);
-      Set_Etype  (Formal, Standard_Void_Type);
+      Mutate_Ekind (Formal, E_Package);
+      Set_Etype (Formal, Standard_Void_Type);
       Set_Inner_Instances (Formal, New_Elmt_List);
 
       --  It is unclear that any aspects can apply to a formal package
@@ -3090,7 +3094,7 @@ package body Sem_Ch12 is
 
          Renaming_In_Par :=
            Make_Defining_Identifier (Loc, Chars (Gen_Unit));
-         Set_Ekind (Renaming_In_Par, E_Package);
+         Mutate_Ekind (Renaming_In_Par, E_Package);
          Set_Etype (Renaming_In_Par, Standard_Void_Type);
          Set_Scope (Renaming_In_Par, Parent_Instance);
          Set_Parent (Renaming_In_Par, Parent (Formal));
@@ -3159,7 +3163,7 @@ package body Sem_Ch12 is
 
       --  Add semantic information to the original defining identifier.
 
-      Set_Ekind (Pack_Id, E_Package);
+      Mutate_Ekind (Pack_Id, E_Package);
       Set_Etype (Pack_Id, Standard_Void_Type);
       Set_Scope (Pack_Id, Scope (Formal));
       Set_Has_Completion (Pack_Id, True);
@@ -3203,7 +3207,7 @@ package body Sem_Ch12 is
    is
    begin
       Enter_Name (T);
-      Set_Ekind (T, E_Incomplete_Type);
+      Mutate_Ekind (T, E_Incomplete_Type);
       Set_Etype (T, T);
       Set_Private_Dependents (T, New_Elmt_List);
 
@@ -3231,7 +3235,7 @@ package body Sem_Ch12 is
    begin
       Enter_Name (T);
 
-      Set_Ekind          (T, E_Signed_Integer_Subtype);
+      Mutate_Ekind       (T, E_Signed_Integer_Subtype);
       Set_Etype          (T, Base);
       Set_Size_Info      (T, Standard_Integer);
       Set_RM_Size        (T, RM_Size (Standard_Integer));
@@ -3689,8 +3693,8 @@ package body Sem_Ch12 is
       Start_Generic;
 
       Enter_Name (Id);
-      Set_Ekind  (Id, E_Generic_Package);
-      Set_Etype  (Id, Standard_Void_Type);
+      Mutate_Ekind (Id, E_Generic_Package);
+      Set_Etype (Id, Standard_Void_Type);
 
       --  Set SPARK_Mode from context
 
@@ -3866,9 +3870,9 @@ package body Sem_Ch12 is
       Analyze_Generic_Formal_Part (N);
 
       if Nkind (Spec) = N_Function_Specification then
-         Set_Ekind (Id, E_Generic_Function);
+         Mutate_Ekind (Id, E_Generic_Function);
       else
-         Set_Ekind (Id, E_Generic_Procedure);
+         Mutate_Ekind (Id, E_Generic_Procedure);
       end if;
 
       --  Set SPARK_Mode from context
@@ -4185,7 +4189,7 @@ package body Sem_Ch12 is
       end if;
 
       Generate_Definition (Act_Decl_Id);
-      Set_Ekind (Act_Decl_Id, E_Package);
+      Mutate_Ekind (Act_Decl_Id, E_Package);
 
       --  Initialize list of incomplete actuals before analysis
 
@@ -4283,7 +4287,7 @@ package body Sem_Ch12 is
         and then Chars (Act_Decl_Id) = Chars (Prefix (Gen_Id))
       then
          Error_Msg_N
-           ("& is hidden within declaration of instance ", Prefix (Gen_Id));
+           ("& is hidden within declaration of instance", Prefix (Gen_Id));
       end if;
 
       Set_Entity (Gen_Id, Gen_Unit);
@@ -4312,7 +4316,7 @@ package body Sem_Ch12 is
          goto Leave;
 
       else
-         Set_Ekind (Inst_Id, E_Package);
+         Mutate_Ekind (Inst_Id, E_Package);
          Set_Scope (Inst_Id, Current_Scope);
 
          --  If the context of the instance is subject to SPARK_Mode "off" or
@@ -5659,7 +5663,7 @@ package body Sem_Ch12 is
          Error_Msg_NE ("instantiation of & within itself", N, Gen_Unit);
 
       else
-         Set_Ekind (Inst_Id, K);
+         Mutate_Ekind (Inst_Id, K);
          Set_Scope (Inst_Id, Current_Scope);
 
          Set_Entity (Gen_Id, Gen_Unit);
@@ -6051,7 +6055,7 @@ package body Sem_Ch12 is
       Func_Name := New_Occurrence_Of (Actual_Subp, Loc);
 
       Func := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
-      Set_Ekind (Func, E_Function);
+      Mutate_Ekind (Func, E_Function);
       Set_Is_Generic_Actual_Subprogram (Func);
 
       Actuals := New_List;
@@ -6136,7 +6140,7 @@ package body Sem_Ch12 is
       R  := New_Occurrence_Of (F2, Loc);
 
       Func := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
-      Set_Ekind (Func, E_Function);
+      Mutate_Ekind (Func, E_Function);
       Set_Is_Generic_Actual_Subprogram (Func);
 
       Spec :=
@@ -6251,7 +6255,7 @@ package body Sem_Ch12 is
    begin
 
       Subp := Make_Defining_Identifier (Loc, Chars (Formal_Subp));
-      Set_Ekind (Subp, Ekind (Formal_Subp));
+      Mutate_Ekind (Subp, Ekind (Formal_Subp));
       Set_Is_Generic_Actual_Subprogram (Subp);
 
       Profile := Parameter_Specifications (
@@ -7872,16 +7876,10 @@ package body Sem_Ch12 is
       ----------------------
 
       procedure Copy_Descendants is
-         use Atree.Unchecked_Access;
-         --  This code section is part of the implementation of an untyped
-         --  tree traversal, so it needs direct access to node fields.
-
+         procedure Walk is new
+           Walk_Sinfo_Fields_Pairwise (Copy_Generic_Descendant);
       begin
-         Set_Field1 (New_N, Copy_Generic_Descendant (Field1 (N)));
-         Set_Field2 (New_N, Copy_Generic_Descendant (Field2 (N)));
-         Set_Field3 (New_N, Copy_Generic_Descendant (Field3 (N)));
-         Set_Field4 (New_N, Copy_Generic_Descendant (Field4 (N)));
-         Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
+         Walk (New_N, N);
       end Copy_Descendants;
 
       -----------------------------
@@ -8481,18 +8479,33 @@ package body Sem_Ch12 is
 
          --  Do not copy the associated node, which points to the generic copy
          --  of the aggregate.
+         --  ????We ought to be able to get rid of all the Union_Id conversions
 
-         declare
-            use Atree.Unchecked_Access;
-            --  This code section is part of the implementation of an untyped
-            --  tree traversal, so it needs direct access to node fields.
+         if Nkind (N) = N_Aggregate then
+            Set_Aggregate_Bounds
+              (New_N,
+               Node_Id (Copy_Generic_Descendant
+                          (Union_Id (Aggregate_Bounds (N)))));
 
-         begin
-            Set_Field1 (New_N, Copy_Generic_Descendant (Field1 (N)));
-            Set_Field2 (New_N, Copy_Generic_Descendant (Field2 (N)));
-            Set_Field3 (New_N, Copy_Generic_Descendant (Field3 (N)));
-            Set_Field5 (New_N, Copy_Generic_Descendant (Field5 (N)));
-         end;
+         elsif Nkind (N) = N_Extension_Aggregate then
+            Set_Ancestor_Part
+              (New_N,
+               Node_Id (Copy_Generic_Descendant
+                          (Union_Id (Ancestor_Part (N)))));
+
+         else
+            pragma Assert (False);
+         end if;
+
+         Set_Expressions
+           (New_N,
+            List_Id (Copy_Generic_Descendant (Union_Id (Expressions (N)))));
+         Set_Component_Associations
+           (New_N,
+            List_Id (Copy_Generic_Descendant
+                       (Union_Id (Component_Associations (N)))));
+         Set_Etype
+           (New_N, Node_Id (Copy_Generic_Descendant (Union_Id (Etype (N)))));
 
       --  Allocators do not have an identifier denoting the access type, so we
       --  must locate it through the expression to check whether the views are
@@ -10872,7 +10885,7 @@ package body Sem_Ch12 is
 
             begin
                Set_Is_Internal (I_Pack);
-               Set_Ekind (I_Pack, E_Package);
+               Mutate_Ekind (I_Pack, E_Package);
                Set_Hidden_In_Formal_Instance (I_Pack, Hidden_Formals);
 
                Append_To (Decls,
@@ -11009,7 +11022,7 @@ package body Sem_Ch12 is
          New_Subp := Make_Defining_Identifier (Loc, Chars (Formal_Sub));
       end if;
 
-      Set_Ekind (New_Subp, Ekind (Analyzed_S));
+      Mutate_Ekind (New_Subp, Ekind (Analyzed_S));
       Set_Is_Generic_Actual_Subprogram (New_Subp);
       Set_Defining_Unit_Name (New_Spec, New_Subp);
 
@@ -11403,14 +11416,15 @@ package body Sem_Ch12 is
                Actual, Gen_Obj);
             Error_Msg_N ("\with atomic object actual (RM C.6(12))", Actual);
 
-         elsif Is_Volatile_Object (Actual) and then not Is_Volatile (Orig_Ftyp)
+         elsif Is_Volatile_Object_Ref (Actual)
+           and then not Is_Volatile (Orig_Ftyp)
          then
             Error_Msg_NE
               ("cannot instantiate nonvolatile formal & of mode in out",
                Actual, Gen_Obj);
             Error_Msg_N ("\with volatile object actual (RM C.6(12))", Actual);
 
-         elsif Is_Volatile_Full_Access_Object (Actual)
+         elsif Is_Volatile_Full_Access_Object_Ref (Actual)
            and then not Is_Volatile_Full_Access (Orig_Ftyp)
          then
             Error_Msg_NE
@@ -13682,8 +13696,8 @@ package body Sem_Ch12 is
                                     exit;
                                  end if;
 
-                                 Next_Entity (Anc_Formal);
-                                 Next_Entity (Act_Formal);
+                                 Next_Formal (Anc_Formal);
+                                 Next_Formal (Act_Formal);
                               end loop;
 
                               --  If we traversed through all of the formals
@@ -13828,9 +13842,9 @@ package body Sem_Ch12 is
                Actual_Discr := First_Discriminant (Act_T);
                while Formal_Discr /= Empty loop
                   if Actual_Discr = Empty then
-                     Error_Msg_NE
+                     Error_Msg_N
                        ("discriminants on actual do not match formal",
-                        Actual, Gen_T);
+                        Actual);
                      Abandon_Instantiation (Actual);
                   end if;
 
@@ -13851,18 +13865,18 @@ package body Sem_Ch12 is
                   elsif Base_Type (Formal_Subt) /=
                           Base_Type (Etype (Actual_Discr))
                   then
-                     Error_Msg_NE
+                     Error_Msg_N
                        ("types of actual discriminants must match formal",
-                        Actual, Gen_T);
+                        Actual);
                      Abandon_Instantiation (Actual);
 
                   elsif not Subtypes_Statically_Match
                               (Formal_Subt, Etype (Actual_Discr))
                     and then Ada_Version >= Ada_95
                   then
-                     Error_Msg_NE
+                     Error_Msg_N
                        ("subtypes of actual discriminants must match formal",
-                        Actual, Gen_T);
+                        Actual);
                      Abandon_Instantiation (Actual);
                   end if;
 
@@ -14200,7 +14214,7 @@ package body Sem_Ch12 is
       --  the local subtype must be treated as such.
 
       if From_Limited_With (Act_T) then
-         Set_Ekind (Subt, E_Incomplete_Subtype);
+         Mutate_Ekind (Subt, E_Incomplete_Subtype);
          Set_From_Limited_With (Subt);
       end if;
 
@@ -14259,9 +14273,9 @@ package body Sem_Ch12 is
             Append_To (Decl_Nodes, Corr_Decl);
 
             if Ekind (Act_T) = E_Task_Type then
-               Set_Ekind (Subt, E_Task_Subtype);
+               Mutate_Ekind (Subt, E_Task_Subtype);
             else
-               Set_Ekind (Subt, E_Protected_Subtype);
+               Mutate_Ekind (Subt, E_Protected_Subtype);
             end if;
 
             Set_Corresponding_Record_Type (Subt, Corr_Rec);
@@ -15608,6 +15622,11 @@ package body Sem_Ch12 is
          elsif E = Standard_Standard then
             return True;
 
+         --  E should be an entity, but it is not always
+
+         elsif Nkind (E) not in N_Entity then -- ????
+            return False;
+
          elsif Is_Child_Unit (E)
            and then (Is_Instance_Node (Parent (N2))
                       or else (Nkind (Parent (N2)) = N_Expanded_Name
@@ -16169,16 +16188,11 @@ package body Sem_Ch12 is
             pragma Assert (D /= Union_Id (No_List));
             --  Because No_List = Empty, which is in Node_Range above
 
-            if Is_Empty_List (List_Id (D)) then
-               null;
-
-            else
-               N1 := First (List_Id (D));
-               while Present (N1) loop
-                  Save_References (N1);
-                  Next (N1);
-               end loop;
-            end if;
+            N1 := First (List_Id (D));
+            while Present (N1) loop
+               Save_References (N1);
+               Next (N1);
+            end loop;
 
          --  Element list or other non-node field, nothing to do
 
@@ -16280,10 +16294,6 @@ package body Sem_Ch12 is
             Qual  : Node_Id   := Empty;
             Typ   : Entity_Id := Empty;
 
-            use Atree.Unchecked_Access;
-            --  This code section is part of implementing an untyped tree
-            --  traversal, so it needs direct access to node fields.
-
          begin
             N2 := Get_Associated_Node (N);
 
@@ -16346,10 +16356,19 @@ package body Sem_Ch12 is
                end if;
             end if;
 
-            Save_Global_Descendant (Field1 (N));
-            Save_Global_Descendant (Field2 (N));
-            Save_Global_Descendant (Field3 (N));
-            Save_Global_Descendant (Field5 (N));
+            if Nkind (N) = N_Aggregate then
+               Save_Global_Descendant (Union_Id (Aggregate_Bounds (N)));
+
+            elsif Nkind (N) = N_Extension_Aggregate then
+               Save_Global_Descendant (Union_Id (Ancestor_Part (N)));
+
+            else
+               pragma Assert (False);
+            end if;
+
+            Save_Global_Descendant (Union_Id (Expressions (N)));
+            Save_Global_Descendant (Union_Id (Component_Associations (N)));
+            Save_Global_Descendant (Union_Id (Etype (N)));
 
             if Present (Qual) then
                Rewrite (N, Qual);
@@ -16377,16 +16396,9 @@ package body Sem_Ch12 is
          ------------------------------------
 
          procedure Save_References_In_Descendants (N : Node_Id) is
-            use Atree.Unchecked_Access;
-            --  This code section is part of implementing an untyped tree
-            --  traversal, so it needs direct access to node fields.
-
+            procedure Walk is new Walk_Sinfo_Fields (Save_Global_Descendant);
          begin
-            Save_Global_Descendant (Field1 (N));
-            Save_Global_Descendant (Field2 (N));
-            Save_Global_Descendant (Field3 (N));
-            Save_Global_Descendant (Field4 (N));
-            Save_Global_Descendant (Field5 (N));
+            Walk (N);
          end Save_References_In_Descendants;
 
          -----------------------------------
@@ -16591,10 +16603,6 @@ package body Sem_Ch12 is
             Context : Node_Id;
             Do_Save : Boolean := True;
 
-            use Atree.Unchecked_Access;
-            --  This code section is part of implementing an untyped tree
-            --  traversal, so it needs direct access to node fields.
-
          begin
             --  Do not save global references in pragmas generated from aspects
             --  because the pragmas will be regenerated at instantiation time.
@@ -16626,14 +16634,12 @@ package body Sem_Ch12 is
 
             --  For all other cases, save all global references within the
             --  descendants, but skip the following semantic fields:
-
-            --    Field1 - Next_Pragma
-            --    Field3 - Corresponding_Aspect
-            --    Field5 - Next_Rep_Item
+            --  Next_Pragma, Corresponding_Aspect, Next_Rep_Item.
 
             if Do_Save then
-               Save_Global_Descendant (Field2 (Prag));
-               Save_Global_Descendant (Field4 (Prag));
+               Save_Global_Descendant
+                 (Union_Id (Pragma_Argument_Associations (N)));
+               Save_Global_Descendant (Union_Id (Pragma_Identifier (N)));
             end if;
          end Save_References_In_Pragma;
 

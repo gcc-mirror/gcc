@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,61 +25,65 @@
 
 with Ada.Characters.Latin_1; use Ada.Characters.Latin_1;
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
 with Eval_Fat;
-with Exp_Dist; use Exp_Dist;
-with Exp_Util; use Exp_Util;
-with Expander; use Expander;
-with Freeze;   use Freeze;
-with Gnatvsn;  use Gnatvsn;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
+with Exp_Dist;       use Exp_Dist;
+with Exp_Util;       use Exp_Util;
+with Expander;       use Expander;
+with Freeze;         use Freeze;
+with Gnatvsn;        use Gnatvsn;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
 with Sdefault;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch10; use Sem_Ch10;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Dist; use Sem_Dist;
-with Sem_Elab; use Sem_Elab;
-with Sem_Elim; use Sem_Elim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch10;       use Sem_Ch10;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Elim;       use Sem_Elim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
 with Sem_Warn;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
 with System;
-with Stringt;  use Stringt;
+with Stringt;        use Stringt;
 with Style;
-with Stylesw;  use Stylesw;
-with Targparm; use Targparm;
-with Ttypes;   use Ttypes;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Uname;    use Uname;
-with Urealp;   use Urealp;
+with Stylesw;        use Stylesw;
+with Targparm;       use Targparm;
+with Ttypes;         use Ttypes;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Uname;          use Uname;
+with Urealp;         use Urealp;
 
-with System.CRC32; use System.CRC32;
+with System.CRC32;   use System.CRC32;
 
 package body Sem_Attr is
 
@@ -318,14 +322,20 @@ package body Sem_Attr is
       procedure Check_E2;
       --  Check that two attribute arguments are present
 
-      procedure Check_Enum_Image;
-      --  If the prefix type of 'Image is an enumeration type, set all its
-      --  literals as referenced, since the image function could possibly end
-      --  up referencing any of the literals indirectly. Same for Enum_Val.
-      --  Set the flag only if the reference is in the main code unit. Same
-      --  restriction when resolving 'Value; otherwise an improperly set
-      --  reference when analyzing an inlined body will lose a proper
-      --  warning on a useless with_clause.
+      procedure Check_Enum_Image (Check_Enumeration_Maps : Boolean := False);
+      --  Common processing for the Image and Value family of attributes,
+      --  including their Wide and Wide_Wide versions, Enum_Val and Img.
+      --
+      --  If the prefix type of an attribute is an enumeration type, set all
+      --  its literals as referenced, since the attribute function can
+      --  indirectly reference any of the literals. Set the referenced flag
+      --  only if the attribute is in the main code unit; otherwise an
+      --  improperly set reference when analyzing an inlined body will lose a
+      --  proper warning on a useless with_clause.
+      --
+      --  If Check_Enumeration_Maps is True, then the attribute expansion
+      --  requires enumeration maps, so check whether restriction
+      --  No_Enumeration_Maps is active.
 
       procedure Check_First_Last_Valid;
       --  Perform all checks for First_Valid and Last_Valid attributes
@@ -834,10 +844,13 @@ package body Sem_Attr is
 
       begin
          --  Access and Unchecked_Access are illegal in declare_expressions,
-         --  according to the RM. We also make the GNAT-specific
-         --  Unrestricted_Access attribute illegal.
+         --  according to the RM. We also make the GNAT Unrestricted_Access
+         --  attribute illegal if it comes from source.
 
-         if In_Declare_Expr > 0 then
+         if In_Declare_Expr > 0
+           and then (Attr_Id /= Attribute_Unrestricted_Access
+                      or else Comes_From_Source (N))
+         then
             Error_Attr ("% attribute cannot occur in a declare_expression", N);
          end if;
 
@@ -905,9 +918,9 @@ package body Sem_Attr is
             --  a tagged type cleans constant indications from its scope).
 
             elsif Nkind (Parent (N)) = N_Unchecked_Type_Conversion
-              and then (Etype (Parent (N)) = RTE (RE_Prim_Ptr)
+              and then (Is_RTE (Etype (Parent (N)), RE_Prim_Ptr)
                           or else
-                        Etype (Parent (N)) = RTE (RE_Size_Ptr))
+                        Is_RTE (Etype (Parent (N)), RE_Size_Ptr))
               and then Is_Dispatching_Operation
                          (Directly_Designated_Type (Etype (N)))
             then
@@ -1464,9 +1477,17 @@ package body Sem_Attr is
          --  Check that Image_Type is legal as the type of a prefix of 'Image.
          --  Legality depends on the Ada language version.
 
+         ----------------------
+         -- Check_Image_Type --
+         ----------------------
+
          procedure Check_Image_Type (Image_Type : Entity_Id) is
          begin
+            --  Image_Type may be empty in case of another error detected,
+            --  or if an N_Raise_xxx_Error node is a parent of N.
+
             if Ada_Version < Ada_2020
+              and then Present (Image_Type)
               and then not Is_Scalar_Type (Image_Type)
             then
                Error_Msg_Ada_2020_Feature ("nonscalar ''Image", Sloc (P));
@@ -1486,7 +1507,7 @@ package body Sem_Attr is
             Set_Etype (N, Str_Typ);
             Check_Image_Type (Etype (P));
 
-            if Attr_Id /= Attribute_Img and then Ada_Version < Ada_2012 then
+            if Attr_Id /= Attribute_Img then
                Error_Msg_Ada_2012_Feature ("|Object''Image", Sloc (P));
             end if;
          else
@@ -1516,7 +1537,7 @@ package body Sem_Attr is
             Validate_Non_Static_Attribute_Function_Call;
          end if;
 
-         Check_Enum_Image;
+         Check_Enum_Image (Check_Enumeration_Maps => True);
 
          --  Check restriction No_Fixed_IO. Note the check of Comes_From_Source
          --  to avoid giving a duplicate message for when Image attributes
@@ -1951,10 +1972,22 @@ package body Sem_Attr is
       -- Check_Enum_Image --
       ----------------------
 
-      procedure Check_Enum_Image is
+      procedure Check_Enum_Image (Check_Enumeration_Maps : Boolean := False) is
          Lit : Entity_Id;
 
       begin
+         --  Ensure that Check_Enumeration_Maps parameter is set precisely for
+         --  attributes whose implementation requires enumeration maps.
+
+         pragma Assert
+           (Check_Enumeration_Maps = (Attr_Id in Attribute_Image
+                                               | Attribute_Img
+                                               | Attribute_Value
+                                               | Attribute_Wide_Image
+                                               | Attribute_Wide_Value
+                                               | Attribute_Wide_Wide_Image
+                                               | Attribute_Wide_Wide_Value));
+
          --  When an enumeration type appears in an attribute reference, all
          --  literals of the type are marked as referenced. This must only be
          --  done if the attribute reference appears in the current source.
@@ -1964,6 +1997,10 @@ package body Sem_Attr is
          if Is_Enumeration_Type (P_Base_Type)
            and then In_Extended_Main_Code_Unit (N)
          then
+            if Check_Enumeration_Maps then
+               Check_Restriction (No_Enumeration_Maps, N);
+            end if;
+
             Lit := First_Literal (P_Base_Type);
             while Present (Lit) loop
                Set_Referenced (Lit);
@@ -2294,20 +2331,15 @@ package body Sem_Attr is
       begin
          if Is_Entity_Name (P) then
             declare
-               K : constant Entity_Kind := Ekind (Entity (P));
-               T : constant Entity_Id   := Etype (Entity (P));
-
+               E : constant Entity_Id := Entity (P);
             begin
-               if K in Subprogram_Kind
-                 or else K in Task_Kind
-                 or else K in Protected_Kind
-                 or else K = E_Package
-                 or else K in Generic_Unit_Kind
-                 or else (K = E_Variable
-                            and then
-                              (Is_Task_Type (T)
-                                 or else
-                               Is_Protected_Type (T)))
+               if Ekind (E) in E_Protected_Type
+                             | E_Task_Type
+                             | Entry_Kind
+                             | Generic_Unit_Kind
+                             | Subprogram_Kind
+                             | E_Package
+                 or else Is_Single_Concurrent_Object (E)
                then
                   return;
                end if;
@@ -2387,7 +2419,7 @@ package body Sem_Attr is
          --  root type of a class-wide type is the corresponding type (e.g.
          --  X for X'Class, and we really want to go to the root.)
 
-         if Root_Type (Root_Type (Etype (E1))) /= RTE (RE_Sink) then
+         if not Is_RTE (Root_Type (Root_Type (Etype (E1))), RE_Sink) then
             Error_Attr
               ("expected Ada.Strings.Text_Output.Sink''Class", E1);
          end if;
@@ -2557,8 +2589,8 @@ package body Sem_Attr is
          --  X for X'Class, and we really want to go to the root.)
 
          if not Is_Access_Type (Etyp)
-           or else Root_Type (Root_Type (Designated_Type (Etyp))) /=
-                     RTE (RE_Root_Stream_Type)
+           or else not Is_RTE (Root_Type (Root_Type (Designated_Type (Etyp))),
+                               RE_Root_Stream_Type)
          then
             Error_Attr
               ("expected access to Ada.Streams.Root_Stream_Type''Class", E1);
@@ -5377,7 +5409,7 @@ package body Sem_Attr is
            or else (Is_Access_Type (Etype (P))
                       and then Is_Protected_Type (Designated_Type (Etype (P))))
          then
-            Resolve (P, Etype (P));
+            Resolve (P);
          else
             Error_Attr_P ("prefix of % attribute must be a protected object");
          end if;
@@ -5678,7 +5710,7 @@ package body Sem_Attr is
                   null;
                else
                   Error_Msg_NE
-                    ("cannot apply Reduce to object of type$", N, Typ);
+                    ("cannot apply Reduce to object of type&", N, Typ);
                end if;
 
             elsif Present (Expressions (Stream))
@@ -7110,33 +7142,7 @@ package body Sem_Attr is
       =>
          Check_E1;
          Check_Scalar_Type;
-
-         --  Case of enumeration type
-
-         --  When an enumeration type appears in an attribute reference, all
-         --  literals of the type are marked as referenced. This must only be
-         --  done if the attribute reference appears in the current source.
-         --  Otherwise the information on references may differ between a
-         --  normal compilation and one that performs inlining.
-
-         if Is_Enumeration_Type (P_Type)
-           and then In_Extended_Main_Code_Unit (N)
-         then
-            Check_Restriction (No_Enumeration_Maps, N);
-
-            --  Mark all enumeration literals as referenced, since the use of
-            --  the Value attribute can implicitly reference any of the
-            --  literals of the enumeration base type.
-
-            declare
-               Ent : Entity_Id := First_Literal (P_Base_Type);
-            begin
-               while Present (Ent) loop
-                  Set_Referenced (Ent);
-                  Next_Literal (Ent);
-               end loop;
-            end;
-         end if;
+         Check_Enum_Image (Check_Enumeration_Maps => True);
 
          --  Set Etype before resolving expression because expansion of
          --  expression may require enclosing type. Note that the type
@@ -9103,11 +9109,13 @@ package body Sem_Attr is
       -- Machine --
       -------------
 
+      --  We use the same rounding mode as the one used for RM 4.9(38)
+
       when Attribute_Machine =>
          Fold_Ureal
            (N,
             Eval_Fat.Machine
-              (P_Base_Type, Expr_Value_R (E1), Eval_Fat.Round, N),
+              (P_Base_Type, Expr_Value_R (E1), Eval_Fat.Round_Even, N),
             Static);
 
       ------------------
@@ -10714,9 +10722,7 @@ package body Sem_Attr is
 
       --  If attribute was universal type, reset to actual type
 
-      if Etype (N) = Universal_Integer
-        or else Etype (N) = Universal_Real
-      then
+      if Is_Universal_Numeric_Type (Etype (N)) then
          Set_Etype (N, Typ);
       end if;
 
@@ -11475,14 +11481,14 @@ package body Sem_Attr is
                     ("access to atomic object cannot yield access-to-" &
                      "non-atomic type", P);
 
-               elsif Is_Volatile_Object (P)
+               elsif Is_Volatile_Object_Ref (P)
                  and then not Is_Volatile (Designated_Type (Typ))
                then
                   Error_Msg_F
                     ("access to volatile object cannot yield access-to-" &
                      "non-volatile type", P);
 
-               elsif Is_Volatile_Full_Access_Object (P)
+               elsif Is_Volatile_Full_Access_Object_Ref (P)
                  and then not Is_Volatile_Full_Access (Designated_Type (Typ))
                then
                   Error_Msg_F

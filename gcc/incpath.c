@@ -330,7 +330,7 @@ add_sysroot_to_chain (const char *sysroot, int chain)
 	{
 	  if (p->name[0] == '=')
 	    p->name = concat (sysroot, p->name + 1, NULL);
-	  if (strncmp (p->name, "$SYSROOT", strlen ("$SYSROOT")) == 0)
+	  if (startswith (p->name, "$SYSROOT"))
 	    p->name = concat (sysroot, p->name + strlen ("$SYSROOT"), NULL);
 	}
     }

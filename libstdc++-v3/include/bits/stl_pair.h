@@ -92,6 +92,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<size_t...>
     struct _Index_tuple;
 
+#if ! __cpp_lib_concepts
   // Concept utility functions, reused in conditionally-explicit
   // constructors.
   // See PR 70437, don't look at is_constructible or
@@ -128,34 +129,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      is_convertible<_U2&&, _T2>>::value;
       }
 
-      template <bool __implicit, typename _U1, typename _U2>
-      static constexpr bool _CopyMovePair()
-      {
-	using __do_converts = __and_<is_convertible<const _U1&, _T1>,
-				  is_convertible<_U2&&, _T2>>;
-	using __converts = typename conditional<__implicit,
-				       __do_converts,
-				       __not_<__do_converts>>::type;
-	return __and_<is_constructible<_T1, const _U1&>,
-		      is_constructible<_T2, _U2&&>,
-		      __converts
-		      >::value;
-      }
 
       template <bool __implicit, typename _U1, typename _U2>
-      static constexpr bool _MoveCopyPair()
+      static constexpr bool _DeprConsPair()
       {
 	using __do_converts = __and_<is_convertible<_U1&&, _T1>,
-				  is_convertible<const _U2&, _T2>>;
+				     is_convertible<_U2&&, _T2>>;
 	using __converts = typename conditional<__implicit,
-				       __do_converts,
-				       __not_<__do_converts>>::type;
+						__do_converts,
+						__not_<__do_converts>>::type;
 	return __and_<is_constructible<_T1, _U1&&>,
-		      is_constructible<_T2, const _U2&&>,
+		      is_constructible<_T2, _U2&&>,
 		      __converts
-		      >::value;
+		     >::value;
       }
-  };
+    };
 
   template <typename _T1, typename _T2>
     struct _PCC<false, _T1, _T2>
@@ -183,12 +171,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	return false;
       }
-  };
+    };
+#endif // lib concepts
 #endif // C++11
 
   template<typename _U1, typename _U2> class __pair_base
   {
-#if __cplusplus >= 201103L
+#if __cplusplus >= 201103L && ! __cpp_lib_concepts
     template<typename _T1, typename _T2> friend struct pair;
     __pair_base() = default;
     ~__pair_base() = default;
@@ -209,7 +198,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _T1, typename _T2>
     struct pair
-    : private __pair_base<_T1, _T2>
+    : public __pair_base<_T1, _T2>
     {
       typedef _T1 first_type;    ///< The type of the `first` member
       typedef _T2 second_type;   ///< The type of the `second` member
@@ -217,22 +206,199 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _T1 first;                 ///< The first member
       _T2 second;                ///< The second member
 
-      // _GLIBCXX_RESOLVE_LIB_DEFECTS
-      // 265.  std::pair::pair() effects overly restrictive
+#if __cplusplus >= 201103L
+      constexpr pair(const pair&) = default;	///< Copy constructor
+      constexpr pair(pair&&) = default;		///< Move constructor
+
+      template<typename... _Args1, typename... _Args2>
+	_GLIBCXX20_CONSTEXPR
+	pair(piecewise_construct_t, tuple<_Args1...>, tuple<_Args2...>);
+
+      /// Swap the first members and then the second members.
+      _GLIBCXX20_CONSTEXPR void
+      swap(pair& __p)
+      noexcept(__and_<__is_nothrow_swappable<_T1>,
+		      __is_nothrow_swappable<_T2>>::value)
+      {
+	using std::swap;
+	swap(first, __p.first);
+	swap(second, __p.second);
+      }
+
+    private:
+      template<typename... _Args1, size_t... _Indexes1,
+	       typename... _Args2, size_t... _Indexes2>
+	_GLIBCXX20_CONSTEXPR
+	pair(tuple<_Args1...>&, tuple<_Args2...>&,
+	     _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>);
+    public:
+
+#if __cpp_lib_concepts
+      // C++20 implementation using concepts, explicit(bool), fully constexpr.
+
+      /// Default constructor
+      constexpr
+      explicit(__not_<__and_<__is_implicitly_default_constructible<_T1>,
+			     __is_implicitly_default_constructible<_T2>>>())
+      pair()
+      requires is_default_constructible_v<_T1>
+	       && is_default_constructible_v<_T2>
+      : first(), second()
+      { }
+
+    private:
+
+      /// @cond undocumented
+      template<typename _U1, typename _U2>
+	static constexpr bool
+	_S_constructible()
+	{
+	  if constexpr (is_constructible_v<_T1, _U1>)
+	    return is_constructible_v<_T2, _U2>;
+	  return false;
+	}
+
+      template<typename _U1, typename _U2>
+	static constexpr bool
+	_S_nothrow_constructible()
+	{
+	  if constexpr (is_nothrow_constructible_v<_T1, _U1>)
+	    return is_nothrow_constructible_v<_T2, _U2>;
+	  return false;
+	}
+
+      template<typename _U1, typename _U2>
+	static constexpr bool
+	_S_convertible()
+	{
+	  if constexpr (is_convertible_v<_U1, _T1>)
+	    return is_convertible_v<_U2, _T2>;
+	  return false;
+	}
+      /// @endcond
+
+    public:
+
+      /// Constructor accepting lvalues of `first_type` and `second_type`
+      constexpr explicit(!_S_convertible<const _T1&, const _T2&>())
+      pair(const _T1& __x, const _T2& __y)
+      noexcept(_S_nothrow_constructible<const _T1&, const _T2&>())
+      requires (_S_constructible<const _T1&, const _T2&>())
+      : first(__x), second(__y)
+      { }
+
+      /// Constructor accepting two values of arbitrary types
+      template<typename _U1, typename _U2>
+	requires (_S_constructible<_U1, _U2>())
+	constexpr explicit(!_S_convertible<_U1, _U2>())
+	pair(_U1&& __x, _U2&& __y)
+	noexcept(_S_nothrow_constructible<_U1, _U2>())
+	: first(std::forward<_U1>(__x)), second(std::forward<_U2>(__y))
+	{ }
+
+      /// Converting constructor from a `pair<U1, U2>` lvalue
+      template<typename _U1, typename _U2>
+	requires (_S_constructible<const _U1&, const _U2&>())
+	constexpr explicit(!_S_convertible<const _U1&, const _U2&>())
+	pair(const pair<_U1, _U2>& __p)
+	noexcept(_S_nothrow_constructible<const _U1&, const _U2&>())
+	: first(__p.first), second(__p.second)
+	{ }
+
+      /// Converting constructor from a `pair<U1, U2>` rvalue
+      template<typename _U1, typename _U2>
+	requires (_S_constructible<_U1, _U2>())
+	constexpr explicit(!_S_convertible<_U1, _U2>())
+	pair(pair<_U1, _U2>&& __p)
+	noexcept(_S_nothrow_constructible<_U1, _U2>())
+	: first(std::forward<_U1>(__p.first)),
+	  second(std::forward<_U2>(__p.second))
+	{ }
+
+  private:
+      /// @cond undocumented
+      template<typename _U1, typename _U2>
+	static constexpr bool
+	_S_assignable()
+	{
+	  if constexpr (is_assignable_v<_T1&, _U1>)
+	    return is_assignable_v<_T2&, _U2>;
+	  return false;
+	}
+
+      template<typename _U1, typename _U2>
+	static constexpr bool
+	_S_nothrow_assignable()
+	{
+	  if constexpr (is_nothrow_assignable_v<_T1&, _U1>)
+	    return is_nothrow_assignable_v<_T2&, _U2>;
+	  return false;
+	}
+      /// @endcond
+
+  public:
+
+      pair& operator=(const pair&) = delete;
+
+      /// Copy assignment operator
+      constexpr pair&
+      operator=(const pair& __p)
+      noexcept(_S_nothrow_assignable<const _T1&, const _T2&>())
+      requires (_S_assignable<const _T1&, const _T2&>())
+      {
+	first = __p.first;
+	second = __p.second;
+	return *this;
+      }
+
+      /// Move assignment operator
+      constexpr pair&
+      operator=(pair&& __p)
+      noexcept(_S_nothrow_assignable<_T1, _T2>())
+      requires (_S_assignable<_T1, _T2>())
+      {
+	first = std::forward<first_type>(__p.first);
+	second = std::forward<second_type>(__p.second);
+	return *this;
+      }
+
+      /// Converting assignment from a `pair<U1, U2>` lvalue
+      template<typename _U1, typename _U2>
+	constexpr pair&
+	operator=(const pair<_U1, _U2>& __p)
+	noexcept(_S_nothrow_assignable<const _U1&, const _U2&>())
+	requires (_S_assignable<const _U1&, const _U2&>())
+	{
+	  first = __p.first;
+	  second = __p.second;
+	  return *this;
+	}
+
+      /// Converting assignment from a `pair<U1, U2>` rvalue
+      template<typename _U1, typename _U2>
+	constexpr pair&
+	operator=(pair<_U1, _U2>&& __p)
+	noexcept(_S_nothrow_assignable<_U1, _U2>())
+	requires (_S_assignable<_U1, _U2>())
+	{
+	  first = std::forward<_U1>(__p.first);
+	  second = std::forward<_U2>(__p.second);
+	  return *this;
+	}
+#else
+      // C++11/14/17 implementation using enable_if, partially constexpr.
+
       /** The default constructor creates @c first and @c second using their
        *  respective default constructors.  */
-#if __cplusplus >= 201103L
       template <typename _U1 = _T1,
                 typename _U2 = _T2,
                 typename enable_if<__and_<
                                      __is_implicitly_default_constructible<_U1>,
                                      __is_implicitly_default_constructible<_U2>>
                                    ::value, bool>::type = true>
-#endif
-      _GLIBCXX_CONSTEXPR pair()
+      constexpr pair()
       : first(), second() { }
 
-#if __cplusplus >= 201103L
       template <typename _U1 = _T1,
                 typename _U2 = _T2,
                 typename enable_if<__and_<
@@ -244,13 +410,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                    ::value, bool>::type = false>
       explicit constexpr pair()
       : first(), second() { }
-#endif
 
-#if __cplusplus < 201103L
-      /// Two objects may be passed to a @c pair constructor to be copied.
-      pair(const _T1& __a, const _T2& __b)
-      : first(__a), second(__b) { }
-#else
       // Shortcut for constraining the templates that don't take pairs.
       /// @cond undocumented
       using _PCCP = _PCC<true, _T1, _T2>;
@@ -275,14 +435,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                          bool>::type=false>
       explicit constexpr pair(const _T1& __a, const _T2& __b)
       : first(__a), second(__b) { }
-#endif
 
-#if __cplusplus < 201103L
-      /// There is also a templated constructor to convert from other pairs.
-      template<typename _U1, typename _U2>
-	pair(const pair<_U1, _U2>& __p)
-	: first(__p.first), second(__p.second) { }
-#else
       // Shortcut for constraining the templates that take pairs.
       /// @cond undocumented
       template <typename _U1, typename _U2>
@@ -308,40 +461,65 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                          bool>::type=false>
 	explicit constexpr pair(const pair<_U1, _U2>& __p)
 	: first(__p.first), second(__p.second) { }
+
+#if _GLIBCXX_USE_DEPRECATED
+    private:
+      /// @cond undocumented
+
+      // A type which can be constructed from literal zero, but not nullptr
+      struct __null_ptr_constant
+      {
+	__null_ptr_constant(int __null_ptr_constant::*) { }
+	template<typename _Tp,
+		 typename = __enable_if_t<is_null_pointer<_Tp>::value>>
+	__null_ptr_constant(_Tp) = delete;
+      };
+
+      // True if type _Up is one of _Tp& or const _Tp&
+      template<typename _Up, typename _Tp>
+	using __is_lvalue_of
+	  = __or_<is_same<_Up, const _Tp&>, is_same<_Up, _Tp&>>;
+
+      /// @endcond
+    public:
+
+      // Deprecated extensions to DR 811.
+      template<typename _U1,
+	       __enable_if_t<!__is_lvalue_of<_U1, _T1>::value
+			     && _PCCP::template
+			       _DeprConsPair<true, _U1, nullptr_t>(),
+			     bool> = true>
+       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
+       constexpr pair(_U1&& __x, __null_ptr_constant)
+       : first(std::forward<_U1>(__x)), second(nullptr) { }
+
+      template<typename _U1,
+	       __enable_if_t<!__is_lvalue_of<_U1, _T1>::value
+			     && _PCCP::template
+			       _DeprConsPair<false, _U1, nullptr_t>(),
+			     bool> = false>
+       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
+       explicit constexpr pair(_U1&& __x, __null_ptr_constant)
+       : first(std::forward<_U1>(__x)), second(nullptr) { }
+
+      template<typename _U2,
+	       __enable_if_t<!__is_lvalue_of<_U2, _T2>::value
+			     && _PCCP::template
+			       _DeprConsPair<true, nullptr_t, _U2>(),
+			     bool> = true>
+       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
+       constexpr pair(__null_ptr_constant, _U2&& __y)
+       : first(nullptr), second(std::forward<_U2>(__y)) { }
+
+      template<typename _U2,
+	       __enable_if_t<!__is_lvalue_of<_U2, _T2>::value
+			     && _PCCP::template
+			       _DeprConsPair<false, nullptr_t, _U2>(),
+			     bool> = false>
+       _GLIBCXX_DEPRECATED_SUGGEST("nullptr")
+       explicit pair(__null_ptr_constant, _U2&& __y)
+       : first(nullptr), second(std::forward<_U2>(__y)) { }
 #endif
-
-#if __cplusplus >= 201103L
-      constexpr pair(const pair&) = default;	///< Copy constructor
-      constexpr pair(pair&&) = default;		///< Move constructor
-
-      // DR 811.
-      template<typename _U1, typename
-	       enable_if<_PCCP::template
-			   _MoveCopyPair<true, _U1, _T2>(),
-                         bool>::type=true>
-       constexpr pair(_U1&& __x, const _T2& __y)
-       : first(std::forward<_U1>(__x)), second(__y) { }
-
-      template<typename _U1, typename
-	       enable_if<_PCCP::template
-			   _MoveCopyPair<false, _U1, _T2>(),
-                         bool>::type=false>
-       explicit constexpr pair(_U1&& __x, const _T2& __y)
-       : first(std::forward<_U1>(__x)), second(__y) { }
-
-      template<typename _U2, typename
-	       enable_if<_PCCP::template
-			   _CopyMovePair<true, _T1, _U2>(),
-                         bool>::type=true>
-       constexpr pair(const _T1& __x, _U2&& __y)
-       : first(__x), second(std::forward<_U2>(__y)) { }
-
-      template<typename _U2, typename
-	       enable_if<_PCCP::template
-			   _CopyMovePair<false, _T1, _U2>(),
-                         bool>::type=false>
-       explicit pair(const _T1& __x, _U2&& __y)
-       : first(__x), second(std::forward<_U2>(__y)) { }
 
       template<typename _U1, typename _U2, typename
 	       enable_if<_PCCP::template
@@ -382,11 +560,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: first(std::forward<_U1>(__p.first)),
 	  second(std::forward<_U2>(__p.second)) { }
 
-      template<typename... _Args1, typename... _Args2>
-	_GLIBCXX20_CONSTEXPR
-        pair(piecewise_construct_t, tuple<_Args1...>, tuple<_Args2...>);
-
-      _GLIBCXX20_CONSTEXPR pair&
+      pair&
       operator=(typename conditional<
 		__and_<is_copy_assignable<_T1>,
 		       is_copy_assignable<_T2>>::value,
@@ -397,7 +571,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
-      _GLIBCXX20_CONSTEXPR pair&
+      pair&
       operator=(typename conditional<
 		__and_<is_move_assignable<_T1>,
 		       is_move_assignable<_T2>>::value,
@@ -411,7 +585,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<typename _U1, typename _U2>
-	_GLIBCXX20_CONSTEXPR
 	typename enable_if<__and_<is_assignable<_T1&, const _U1&>,
 				  is_assignable<_T2&, const _U2&>>::value,
 			   pair&>::type
@@ -423,7 +596,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename _U1, typename _U2>
-	_GLIBCXX20_CONSTEXPR
 	typename enable_if<__and_<is_assignable<_T1&, _U1&&>,
 				  is_assignable<_T2&, _U2&&>>::value,
 			   pair&>::type
@@ -433,24 +605,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  second = std::forward<_U2>(__p.second);
 	  return *this;
 	}
+#endif // lib concepts
+#else
+      // C++03 implementation
 
-      /// Swap the first members and then the second members.
-      _GLIBCXX20_CONSTEXPR void
-      swap(pair& __p)
-      noexcept(__and_<__is_nothrow_swappable<_T1>,
-                      __is_nothrow_swappable<_T2>>::value)
-      {
-	using std::swap;
-	swap(first, __p.first);
-	swap(second, __p.second);
-      }
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 265.  std::pair::pair() effects overly restrictive
+      /** The default constructor creates @c first and @c second using their
+       *  respective default constructors.  */
+      pair() : first(), second() { }
 
-    private:
-      template<typename... _Args1, size_t... _Indexes1,
-	       typename... _Args2, size_t... _Indexes2>
-	_GLIBCXX20_CONSTEXPR
-        pair(tuple<_Args1...>&, tuple<_Args2...>&,
-	     _Index_tuple<_Indexes1...>, _Index_tuple<_Indexes2...>);
+      /// Two objects may be passed to a `pair` constructor to be copied.
+      pair(const _T1& __a, const _T2& __b)
+      : first(__a), second(__b) { }
+
+      /// Templated constructor to convert from other pairs.
+      template<typename _U1, typename _U2>
+	pair(const pair<_U1, _U2>& __p)
+	: first(__p.first), second(__p.second) { }
 #endif // C++11
     };
 

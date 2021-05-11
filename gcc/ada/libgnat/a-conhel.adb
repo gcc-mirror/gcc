@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---           Copyright (C) 2015-2020, Free Software Foundation, Inc.        --
+--           Copyright (C) 2015-2021, Free Software Foundation, Inc.        --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -122,17 +122,20 @@ package body Ada.Containers.Helpers is
 
       procedure TC_Check (T_Counts : Tamper_Counts) is
       begin
-         if T_Check and then T_Counts.Busy > 0 then
-            raise Program_Error with
-              "attempt to tamper with cursors";
+         if T_Check then
+            if T_Counts.Busy > 0 then
+               raise Program_Error with
+                 "attempt to tamper with cursors";
+            end if;
+
+            --  The lock status (which monitors "element tampering") always
+            --  implies that the busy status (which monitors "cursor
+            --  tampering") is set too; this is a representation invariant.
+            --  Thus if the busy count is zero, then the lock count
+            --  must also be zero.
+
+            pragma Assert (T_Counts.Lock = 0);
          end if;
-
-         --  The lock status (which monitors "element tampering") always
-         --  implies that the busy status (which monitors "cursor tampering")
-         --  is set too; this is a representation invariant. Thus if the busy
-         --  bit is not set, then the lock bit must not be set either.
-
-         pragma Assert (T_Counts.Lock = 0);
       end TC_Check;
 
       --------------

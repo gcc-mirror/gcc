@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,20 +25,20 @@
 
 --  This package defines CUDA-specific datastructures and functions.
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Elists;   use Elists;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Rtsfind;  use Rtsfind;
-with Sinfo;    use Sinfo;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Sem;      use Sem;
-with Sem_Util; use Sem_Util;
-with Snames;   use Snames;
+with Debug;          use Debug;
+with Elists;         use Elists;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Rtsfind;        use Rtsfind;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Sem;            use Sem;
+with Sem_Util;       use Sem_Util;
+with Snames;         use Snames;
 
 with GNAT.HTable;
 
@@ -68,8 +68,8 @@ package body GNAT_CUDA is
 
    function Get_CUDA_Kernels (Pack_Id : Entity_Id) return Elist_Id;
    --  Returns an Elist of all procedures marked with pragma CUDA_Global that
-   --  are declared within package body Pack_Body. Returns No_Elist if
-   --  Pack_Id does not contain such procedures.
+   --  are declared within package body Pack_Body. Returns No_Elist if Pack_Id
+   --  does not contain such procedures.
 
    procedure Set_CUDA_Kernels
      (Pack_Id : Entity_Id;
@@ -249,7 +249,7 @@ package body GNAT_CUDA is
          --  function.
 
          New_Stmt : Node_Id;
-         --  Temporary variable to hold the various newly-created nodes.
+         --  Temporary variable to hold the various newly-created nodes
 
          Kernel_Elmt : Elmt_Id;
          Kernel_Id   : Entity_Id;
@@ -266,8 +266,7 @@ package body GNAT_CUDA is
          while Present (Kernel_Elmt) loop
             Kernel_Id := Node (Kernel_Elmt);
 
-            New_Stmt :=
-              Build_Kernel_Name_Declaration (Kernel_Id);
+            New_Stmt := Build_Kernel_Name_Declaration (Kernel_Id);
             Append (New_Stmt, Pack_Decls);
             Analyze (New_Stmt);
 
@@ -366,7 +365,7 @@ package body GNAT_CUDA is
                Make_Aggregate (Loc,
                  Expressions => New_List (
                    Make_Integer_Literal (Loc, UI_From_Int (16#466243b1#)),
-                   Make_Integer_Literal (Loc, UI_From_Int (1)),
+                   Make_Integer_Literal (Loc, Uint_1),
                    Make_Attribute_Reference (Loc,
                      Prefix         => New_Occurrence_Of (Bin_Id, Loc),
                      Attribute_Name => Name_Address),
@@ -452,39 +451,39 @@ package body GNAT_CUDA is
       is
          Args : constant List_Id := New_List;
       begin
-         --  First argument: the handle of the fat binary.
+         --  First argument: the handle of the fat binary
 
          Append (New_Occurrence_Of (Bin, Loc), Args);
 
-         --  Second argument: the host address of the function that is
-         --  marked with CUDA_Global.
+         --  Second argument: the host address of the function that is marked
+         --  with CUDA_Global.
 
          Append_To (Args,
            Make_Attribute_Reference (Loc,
              Prefix         => New_Occurrence_Of (Kernel, Loc),
              Attribute_Name => Name_Address));
 
-         --  Third argument, the name of the function on the host.
+         --  Third argument, the name of the function on the host
 
          Append (New_Occurrence_Of (Kernel_Name, Loc), Args);
 
-         --  Fourth argument, the name of the function on the device.
+         --  Fourth argument, the name of the function on the device
 
          Append (New_Occurrence_Of (Kernel_Name, Loc), Args);
 
          --  Fith argument: -1. Meaning unknown - this has been copied from
          --  LLVM.
 
-         Append (Make_Integer_Literal (Loc, UI_From_Int (-1)), Args);
+         Append (Make_Integer_Literal (Loc, Uint_Minus_1), Args);
 
-         --  Args 6, 7, 8, 9, 10: Null pointers. Again, meaning unknown.
+         --  Args 6, 7, 8, 9, 10: Null pointers. Again, meaning unknown
 
-         for Arg_Count in 1 .. 5 loop
+         for Arg_Count in 6 .. 10 loop
             Append_To (Args, New_Occurrence_Of (RTE (RE_Null_Address), Loc));
          end loop;
 
-         --  Build the call to CUDARegisterFunction, passing the argument
-         --  list we just built.
+         --  Build the call to CUDARegisterFunction, passing the argument list
+         --  we just built.
 
          return
            Make_Procedure_Call_Statement (Loc,
@@ -498,21 +497,21 @@ package body GNAT_CUDA is
       Loc : constant Source_Ptr := Sloc (N);
 
       Spec_Id : constant Node_Id := Corresponding_Spec (N);
-      --  The specification of the package we're adding a cuda init func to.
+      --  The specification of the package we're adding a cuda init func to
 
       Pack_Decls : constant List_Id := Declarations (N);
 
       CUDA_Node_List : constant Elist_Id := Get_CUDA_Kernels (Spec_Id);
-      --  CUDA nodes that belong to the package.
+      --  CUDA nodes that belong to the package
 
       CUDA_Init_Func : Entity_Id;
-      --  Entity of the cuda init func.
+      --  Entity of the cuda init func
 
       Fat_Binary : Entity_Id;
-      --  Entity of the fat binary of N. Bound to said fat binary by a pragma.
+      --  Entity of the fat binary of N. Bound to said fat binary by a pragma
 
       Fat_Binary_Handle : Entity_Id;
-      --  Entity of the result of passing the fat binary wrapper to.
+      --  Entity of the result of passing the fat binary wrapper to
       --  CUDA.Register_Fat_Binary.
 
       Fat_Binary_Wrapper : Entity_Id;

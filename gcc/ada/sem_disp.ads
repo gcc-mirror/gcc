@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -57,11 +57,15 @@ package Sem_Disp is
    procedure Check_Operation_From_Incomplete_Type
      (Subp : Entity_Id;
       Typ  : Entity_Id);
-   --  If a primitive operation was defined for the incomplete view of the
-   --  type, and the full type declaration is a derived type definition,
-   --  the operation may override an inherited one.
-   --  Need more description here, what are the parameters, and what does
-   --  this call actually do???
+   --  If a primitive subprogram Subp was defined for the incomplete view of
+   --  Typ, and the full type declaration is a derived type, then Subp may
+   --  override a subprogram inherited from the parent type. In that case,
+   --  the inherited subprogram will have been hidden by the current one at
+   --  the point of the type derivation, so it does not appear in the list
+   --  of primitive operations of the type, and this procedure inserts the
+   --  overriding subprogram in the the full type's list of primitives by
+   --  iterating over the list for the parent type. If instead Subp is a new
+   --  primitive, then it's simply appended to the primitive list.
 
    procedure Check_Operation_From_Private_View (Subp, Old_Subp : Entity_Id);
    --  No action performed if Subp is not an alias of a dispatching operation.
@@ -172,11 +176,10 @@ package Sem_Disp is
    --  function. The caller checks that Tagged_Type is indeed a tagged type.
 
    procedure Propagate_Tag (Control : Node_Id; Actual : Node_Id);
-   --  If a function call is tag-indeterminate, its controlling argument is
-   --  found in the context: either an enclosing call, or the left-hand side
-   --  of the enclosing assignment statement. The tag must be propagated
-   --  recursively to the tag-indeterminate actuals of the call.
-   --  Need clear description of the parameters Control and Actual, especially
-   --  since the comments above refer to actuals in the plural ???
+   --  If a function call given by Actual is tag-indeterminate, its controlling
+   --  argument is found in the context, given by Control: either from an
+   --  operand of an enclosing call, or the left-hand side of the enclosing
+   --  assignment statement. The tag of Control will be propagated recursively
+   --  to Actual and to its tag-indeterminate operands, if any.
 
 end Sem_Disp;

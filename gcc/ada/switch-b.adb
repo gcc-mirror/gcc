@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -369,13 +369,7 @@ package body Switch.B is
             Ptr := Ptr + 1;
             C := Switch_Chars (Ptr);
 
-            if C in '1' .. '5'
-              or else C = '8'
-              or else C = 'p'
-              or else C = 'f'
-              or else C = 'n'
-              or else C = 'w'
-            then
+            if C in '1' .. '5' | '9' | 'p' | '8' | 'f' | 'n' | 'w' then
                Identifier_Character_Set := C;
                Ptr := Ptr + 1;
             else

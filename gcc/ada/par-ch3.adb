@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,7 +27,7 @@ pragma Style_Checks (All_Checks);
 --  Turn off subprogram body ordering check. Subprograms are in order
 --  by RM section rather than alphabetical.
 
-with Sinfo.CN; use Sinfo.CN;
+with Sinfo.CN;       use Sinfo.CN;
 
 separate (Par)
 
@@ -1379,9 +1379,9 @@ package body Ch3 is
       procedure No_List is
       begin
          if Num_Idents > 1 then
-            Error_Msg
+            Error_Msg_N
               ("identifier list not allowed for RENAMES",
-               Sloc (Idents (2)));
+               Idents (2));
          end if;
 
          List_OK := False;

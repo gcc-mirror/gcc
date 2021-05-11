@@ -221,9 +221,7 @@ public:
      predicate in each predicate argument register.  This means that
      we need at least 12 pieces.  */
   static const unsigned int MAX_PIECES = NUM_FP_ARG_REGS + NUM_PR_ARG_REGS;
-#if __cplusplus >= 201103L
   static_assert (MAX_PIECES >= 8, "Need to store at least 8 predicates");
-#endif
 
   /* Describes one piece of a PST.  Each piece is one of:
 
@@ -4736,7 +4734,7 @@ aarch64_mov128_immediate (rtx imm)
 static unsigned int
 aarch64_add_offset_1_temporaries (HOST_WIDE_INT offset)
 {
-  return abs_hwi (offset) < 0x1000000 ? 0 : 1;
+  return absu_hwi (offset) < 0x1000000 ? 0 : 1;
 }
 
 /* A subroutine of aarch64_add_offset.  Set DEST to SRC + OFFSET for
@@ -10778,7 +10776,7 @@ aarch64_print_operand (FILE *f, rtx x, int code)
 	}
 
       if (GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_INT)
-	asm_fprintf (f, "%wd", -INTVAL (elt));
+	asm_fprintf (f, "%wd", (HOST_WIDE_INT) -UINTVAL (elt));
       else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_VECTOR_FLOAT
 	       && aarch64_print_vector_float_operand (f, x, true))
 	;
@@ -14390,7 +14388,7 @@ struct aarch64_vector_costs
 
 /* Implement TARGET_VECTORIZE_INIT_COST.  */
 void *
-aarch64_init_cost (class loop *)
+aarch64_init_cost (class loop *, bool)
 {
   return new aarch64_vector_costs;
 }
@@ -21598,7 +21596,7 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
     case MINUS:
       if (CONST_INT_P (value))
 	{
-	  value = GEN_INT (-INTVAL (value));
+	  value = GEN_INT (-UINTVAL (value));
 	  code = PLUS;
 	}
       /* Fall through.  */
@@ -23514,7 +23512,7 @@ aarch64_expand_subvti (rtx op0, rtx low_dest, rtx low_in1,
     {
       if (aarch64_plus_immediate (low_in2, DImode))
 	emit_insn (gen_subdi3_compare1_imm (low_dest, low_in1, low_in2,
-					    GEN_INT (-INTVAL (low_in2))));
+					    GEN_INT (-UINTVAL (low_in2))));
       else
 	{
 	  low_in2 = force_reg (DImode, low_in2);
@@ -25172,6 +25170,10 @@ aarch64_comp_type_attributes (const_tree type1, const_tree type2)
   if (!check_attr ("aarch64_vector_pcs"))
     return 0;
   if (!check_attr ("Advanced SIMD type"))
+    return 0;
+  if (!check_attr ("SVE type"))
+    return 0;
+  if (!check_attr ("SVE sizeless type"))
     return 0;
   return 1;
 }

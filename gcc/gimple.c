@@ -2158,8 +2158,8 @@ gimple_could_trap_p_1 (gimple *s, bool include_mem, bool include_stores)
     case GIMPLE_ASSIGN:
       op = gimple_assign_rhs_code (s);
 
-      /* For COND_EXPR and VEC_COND_EXPR only the condition may trap.  */
-      if (op == COND_EXPR || op == VEC_COND_EXPR)
+      /* For COND_EXPR only the condition may trap.  */
+      if (op == COND_EXPR)
 	return tree_could_trap_p (gimple_assign_rhs1 (s));
 
       /* For comparisons we need to check rhs operand types instead of rhs type

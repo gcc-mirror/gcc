@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -25,47 +25,49 @@
 
 with System.Strings; use System.Strings;
 
-with Atree;    use Atree;
+with Atree;          use Atree;
 with Checks;
 with CStand;
-with Debug;    use Debug;
+with Debug;          use Debug;
 with Elists;
 with Exp_Dbug;
 with Exp_Unst;
 with Fmap;
 with Fname.UF;
-with Ghost;    use Ghost;
-with Inline;   use Inline;
-with Lib;      use Lib;
-with Lib.Load; use Lib.Load;
+with Ghost;          use Ghost;
+with Inline;         use Inline;
+with Lib;            use Lib;
+with Lib.Load;       use Lib.Load;
 with Lib.Xref;
-with Live;     use Live;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
+with Live;           use Live;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
 with Osint;
 with Par;
 with Prep;
 with Prepcomp;
-with Restrict; use Restrict;
-with Rident;   use Rident;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
 with Rtsfind;
-with Snames;   use Snames;
+with Snames;         use Snames;
 with Sprint;
-with Scn;      use Scn;
-with Sem;      use Sem;
+with Scn;            use Scn;
+with Sem;            use Sem;
 with Sem_Aux;
 with Sem_Ch8;
 with Sem_SCIL;
-with Sem_Elab; use Sem_Elab;
-with Sem_Prag; use Sem_Prag;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Prag;       use Sem_Prag;
 with Sem_Warn;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Sinput.L; use Sinput.L;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Sinput.L;       use Sinput.L;
 with SCIL_LL;
-with Tbuild;   use Tbuild;
-with Types;    use Types;
+with Tbuild;         use Tbuild;
+with Types;          use Types;
 with VAST;
 
 procedure Frontend is

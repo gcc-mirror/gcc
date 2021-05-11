@@ -1073,47 +1073,4 @@ DEF_GCC_BUILTIN (BUILT_IN_LINE, "LINE", BT_FN_INT, ATTR_NOTHROW_LEAF_LIST)
 /* Coroutine builtins.  */
 #include "coroutine-builtins.def"
 
-/* Do not expose the BRIG builtins by default gcc-wide, but only privately in
-   the BRIG FE as long as there are no references for them in the middle end
-   or any of the upstream backends.  */
-
-#ifndef DEF_HSAIL_BUILTIN
-#define DEF_HSAIL_BUILTIN(ENUM, HSAIL_OPCODE, HSAIL_TYPE, NAME, TYPE, ATTRS) \
-  DEF_BUILTIN_STUB (ENUM, "__builtin_" NAME)
-#endif
-
-/* HSAIL atomic builtins do not have separate identifying opcodes.  */
-
-#ifndef DEF_HSAIL_ATOMIC_BUILTIN
-#define DEF_HSAIL_ATOMIC_BUILTIN(ENUM, ATOMIC_OPCODE, HSAIL_TYPE, NAME, \
-	TYPE, ATTRS) \
-  DEF_BUILTIN_STUB (ENUM, "__builtin_" NAME)
-#endif
-
-/* HSAIL saturating arithmetics builtins.  */
-
-#ifndef DEF_HSAIL_SAT_BUILTIN
-#define DEF_HSAIL_SAT_BUILTIN(ENUM, BRIG_OPCODE, HSAIL_TYPE, NAME, \
-	TYPE, ATTRS) \
-  DEF_BUILTIN_STUB (ENUM, "__builtin_" NAME)
-#endif
-
-/* HSAIL builtins used internally by the frontend.  */
-
-#ifndef DEF_HSAIL_INTR_BUILTIN
-#define DEF_HSAIL_INTR_BUILTIN(ENUM, NAME, TYPE, ATTRS) \
-  DEF_BUILTIN_STUB (ENUM, "__builtin_" NAME)
-#endif
-
-/* HSAIL saturated conversions.  */
-
-#ifndef DEF_HSAIL_CVT_ZEROI_SAT_BUILTIN
-#define DEF_HSAIL_CVT_ZEROI_SAT_BUILTIN(ENUM, HSAIL_DEST_TYPE, HSAIL_SRC_TYPE, \
-  NAME, TYPE, ATTRS) \
-  DEF_BUILTIN_STUB (ENUM, "__builtin_" NAME)
-#endif
-
-/* HSAIL/BRIG frontend builtins.  */
-#include "brig-builtins.def"
-
 #undef DEF_BUILTIN

@@ -1,3 +1,206 @@
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* compiler.cc (make_regexp): Take const std::string.
+	(cc1_plugin::compiler_triplet_regexp::find): Update.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	PR c/94669
+	* compiler.hh (compiler_driver_filename): Take const char *.
+	(compiler_triplet_regexp): Likewise.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* rpc.hh (argument_wrapper) <get>: Replace cast operator.
+	(argument_wrapper<T *>) <get>: Likewise.
+	(unmarshall): Add std::tuple overloads.
+	(callback): Remove.
+	(class invoker): New.
+	* libcp1plugin.cc (plugin_init): Update.
+	* libcp1.cc (libcp1::add_callbacks): Update.
+	* libcc1plugin.cc (plugin_init): Update.
+	* libcc1.cc (libcc1::add_callbacks): Update.
+	* connection.cc (cc1_plugin::connection::do_wait): Update.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* gdbctx.hh (do_compile): Use std::vector.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1.cc (libcp1): Change parameters.  Update.
+	(libcp1_set_verbose, libcp1_set_arguments)
+	(libcp1_set_triplet_regexp, libcp1_set_driver_filename)
+	(libcp1_set_source_file, libcp1_set_print_callback, fork_exec)
+	(libcp1_compile, libcp1_destroy, vtable): Remove.
+	(libcp1::add_callbacks): New method, extracted from
+	libcp1_compile.
+	(gcc_c_fe_context): Update.
+	* libcc1.cc (libcc1): Change parameters.  Update.
+	(libcc1_set_verbose, libcc1_set_arguments)
+	(libcc1_set_triplet_regexp, libcc1_set_driver_filename)
+	(libcc1_set_source_file, libcc1_set_print_callback, fork_exec)
+	(libcc1_compile, libcc1_destroy, vtable): Remove.
+	(libcc1::add_callbacks): New method, extracted from
+	libcc1_compile.
+	(gcc_c_fe_context): Update.
+	* gdbctx.hh (base_gdb_plugin): Change parameters.
+	(~base_gdb_plugin): New.
+	<add_callbacks>: New virtual method.
+	<plugin_name, fe_version, compiler_name, vtable>: New members.
+	(get_self, do_set_verbose, do_set_arguments)
+	(do_set_triplet_regexp, do_set_driver_filename)
+	(do_set_arguments_v0, do_set_source_file, do_set_print_callback)
+	(fork_exec, do_compile, do_compile_v0, do_destroy): New methods.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1.cc (vtable): Use GCC_FE_VERSION_1.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1.cc (struct libcp1): Derive from base_gdb_plugin.  Remove
+	shared code.
+	(class libcp1_connection): Remove.
+	(rpc): Remove.
+	(libcp1_set_verbose, libcp1_compile): Update.
+	(cp_call_binding_oracle, cp_call_symbol_address)
+	(cp_call_enter_scope, cp_call_leave_scope): Update.
+	* libcc1.cc (struct libcc1): Derive from base_gdb_plugin.  Remove
+	shared code.
+	(class libcc1_connection): Remove.
+	(c_call_binding_oracle, c_call_symbol_address): Update.
+	(rpc): Remove.
+	(libcc1_set_verbose, libcc1_compile): Update.
+	* gdbctx.hh: New file.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcc1plugin.cc: Move code to context.cc.
+	* libcp1plugin.cc: Move code to context.cc.
+	* context.hh: New file.
+	* context.cc: New file.
+	* Makefile.in: Rebuild.
+	* Makefile.am (AM_CPPFLAGS): Add more gcc flags.
+	(CPPFLAGS_FOR_C, CPPFLAGS_FOR_CXX): Update.
+	(libcc1plugin_la_SOURCES): Add context.hh, context.cc.
+	(libcp1plugin_la_SOURCES): Likewise.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1plugin.cc: Use static assert.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1plugin.cc (plugin_context::mark): Use foreach.
+	* libcc1plugin.cc (plugin_context::mark): Use foreach.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1.cc (compiler, compiler_triplet_regexp)
+	(compiler_driver_filename): Remove.
+	(libcp1::libcp1): Update.
+	(make_regexp, libcp1::compiler::find)
+	(libcp1::compiler_triplet_regexp::find)
+	(libcp1::compiler_driver_filename::find): Remove.
+	(libcp1_set_verbose, libcp1_set_arguments)
+	(libcp1_set_triplet_regexp, libcp1_set_driver_filename): Update.
+	* libcc1.cc (compiler, compiler_triplet_regexp)
+	(compiler_driver_filename): Remove.
+	(libcc1::libcc1): Update.
+	(make_regexp, libcc1::compiler::find)
+	(libcc1::compiler_triplet_regexp::find)
+	(libcc1::compiler_driver_filename::find): Remove.
+	(libcc1_set_verbose, libcc1_set_arguments)
+	(libcc1_set_triplet_regexp, libcc1_set_driver_filename): Update.
+	* compiler.cc: New file.
+	* compiler.hh: New file.
+	* Makefile.in: Rebuild.
+	* Makefile.am (libcc1_la_SOURCES): Add compiler.hh, compiler.cc.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1.cc (struct libcp1) <connection, compilerp>: Use
+	unique_ptr.
+	(~libcp1): Remove.
+	(libcp1_compile, libcp1_set_triplet_regexp)
+	(libcp1_set_driver_filename): Update.
+	* libcc1.cc (struct libcc1) <connection, compilerp>: Use
+	unique_ptr.
+	(~libcc1): Remove.
+	(libcc1_set_triplet_regexp, libcc1_set_driver_filename)
+	(libcc1_compile): Update.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* rpc.hh (deleter): Move template and some specializations to
+	deleter.hh.
+	(argument_wrapper<const T *>): Use cc1_plugin::unique_ptr.
+	* marshall.cc (cc1_plugin::unmarshall): Use
+	cc1_plugin::unique_ptr.
+	* marshall-cp.hh (deleter): New specializations.
+	(unmarshall): Use cc1_plugin::unique_ptr.
+	* deleter.hh: New file.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* rpc.hh (struct deleter): New template class and
+	specializations.
+	(argument_wrapper): Remove specializations.  Add specialization
+	for any pointer type.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1plugin.cc (plugin_build_function_type): Use std::vector.
+	* libcc1plugin.cc (plugin_build_function_type): Use std::vector.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1.cc (rpc): Use variadic template.  Remove overloads.
+	* libcc1.cc (rpc): Use variadic template.  Remove overloads.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* rpc.hh (call): Use variadic template.  Remove overloads.
+	* marshall.hh (marshall): Add base overload.  Use variadic
+	template.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* rpc.hh (argument_wrapper): Use delete for copy constructor.
+	* connection.hh (class connection): Use delete for copy
+	constructor.
+	* callbacks.hh (class callbacks): Use delete for copy constructor.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* connection.hh (~connection): Use default.
+	(print): Inline.
+	* connection.cc (cc1_plugin::connection::~connection)
+	(cc1_plugin::connection::print): Remove definitions.
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* libcp1.cc (class compiler_triplet_regexp)
+	(class compiler_driver_filename, class libcp1_connection): Use
+	"override".
+	* libcc1.cc (class compiler_triplet_regexp)
+	(class compiler_driver_filename, class libcc1_connection): Use
+	"override".
+
+2021-05-05  Tom Tromey  <tom@tromey.com>
+
+	* marshall.hh (cc1_plugin::unmarshall): Use type traits.
+	* marshall-cp.hh (cc1_plugin::unmarshall): Remove overloads.
+	* marshall-c.hh: Remove.
+	* libcc1plugin.cc: Update includes.
+	* libcc1.cc: Update includes.
+
+2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/99703
+	* configure: Regenerated.
+
 2021-01-05  Samuel Thibault  <samuel.thibault@ens-lyon.org>
 
 	* configure: Re-generate.

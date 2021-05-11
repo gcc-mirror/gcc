@@ -1,3 +1,7 @@
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Include also ../gcc folder.
+
 2021-04-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* resolver.h: Do not include std headers directly when

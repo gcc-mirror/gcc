@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,23 +24,27 @@
 ------------------------------------------------------------------------------
 
 with Alloc;
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Disp; use Sem_Disp;
-with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
 with Table;
 
 package body Ghost is
@@ -158,6 +162,9 @@ package body Ghost is
       function Is_OK_Ghost_Context (Context : Node_Id) return Boolean;
       --  Determine whether node Context denotes a Ghost-friendly context where
       --  a Ghost entity can safely reside (SPARK RM 6.9(10)).
+
+      function In_Aspect_Or_Pragma_Predicate (N : Node_Id) return Boolean;
+      --  Return True iff N is enclosed in an aspect or pragma Predicate
 
       -------------------------
       -- Is_OK_Ghost_Context --
@@ -540,6 +547,40 @@ package body Ghost is
          end if;
       end Check_Ghost_Policy;
 
+      -----------------------------------
+      -- In_Aspect_Or_Pragma_Predicate --
+      -----------------------------------
+
+      function In_Aspect_Or_Pragma_Predicate (N : Node_Id) return Boolean is
+         Par : Node_Id := N;
+      begin
+         while Present (Par) loop
+            if Nkind (Par) = N_Pragma
+              and then Get_Pragma_Id (Par) = Pragma_Predicate
+            then
+               return True;
+
+            elsif Nkind (Par) = N_Aspect_Specification
+              and then Same_Aspect (Get_Aspect_Id (Par), Aspect_Predicate)
+            then
+               return True;
+
+            --  Stop the search when it's clear it cannot be inside an aspect
+            --  or pragma.
+
+            elsif Is_Declaration (Par)
+              or else Is_Statement (Par)
+              or else Is_Body (Par)
+            then
+               return False;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return False;
+      end In_Aspect_Or_Pragma_Predicate;
+
    --  Start of processing for Check_Ghost_Context
 
    begin
@@ -555,6 +596,19 @@ package body Ghost is
 
       else
          Error_Msg_N ("ghost entity cannot appear in this context", Ghost_Ref);
+
+         --  When the Ghost entity appears in a pragma Predicate, explain the
+         --  reason for this being illegal, and suggest a fix instead.
+
+         if In_Aspect_Or_Pragma_Predicate (Ghost_Ref) then
+            Error_Msg_N
+              ("\as predicates are checked in membership tests, "
+               & "the type and its predicate must be both ghost",
+               Ghost_Ref);
+            Error_Msg_N
+              ("\either make the type ghost "
+               & "or use a type invariant on a private type", Ghost_Ref);
+         end if;
       end if;
    end Check_Ghost_Context;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,37 +23,37 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;     use Atree;
-with Back_End;  use Back_End;
+with Atree;          use Atree;
+with Back_End;       use Back_End;
 with Checks;
 with Comperr;
 with Csets;
-with Debug;     use Debug;
+with Debug;          use Debug;
 with Elists;
-with Errout;    use Errout;
+with Errout;         use Errout;
 with Exp_CG;
 with Fmap;
-with Fname;     use Fname;
-with Fname.UF;  use Fname.UF;
+with Fname;          use Fname;
+with Fname.UF;       use Fname.UF;
 with Frontend;
-with Ghost;     use Ghost;
-with Gnatvsn;   use Gnatvsn;
+with Ghost;          use Ghost;
+with Gnatvsn;        use Gnatvsn;
 with Inline;
-with Lib;       use Lib;
-with Lib.Writ;  use Lib.Writ;
+with Lib;            use Lib;
+with Lib.Writ;       use Lib.Writ;
 with Lib.Xref;
-with Namet;     use Namet;
+with Namet;          use Namet;
 with Nlists;
-with Opt;       use Opt;
-with Osint;     use Osint;
-with Osint.C;   use Osint.C;
-with Output;    use Output;
+with Opt;            use Opt;
+with Osint;          use Osint;
+with Osint.C;        use Osint.C;
+with Output;         use Output;
 with Par_SCO;
 with Prepcomp;
 with Repinfo;
 with Repinfo.Input;
 with Restrict;
-with Rident;    use Rident;
+with Rident;         use Rident;
 with Rtsfind;
 with SCOs;
 with Sem;
@@ -65,24 +65,26 @@ with Sem_Eval;
 with Sem_Prag;
 with Sem_Type;
 with Set_Targ;
-with Sinfo;     use Sinfo;
-with Sinput;    use Sinput;
-with Sinput.L;  use Sinput.L;
-with Snames;    use Snames;
-with Sprint;    use Sprint;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Sinput.L;       use Sinput.L;
+with Snames;         use Snames;
+with Sprint;         use Sprint;
 with Stringt;
-with Stylesw;   use Stylesw;
-with Targparm;  use Targparm;
+with Stylesw;        use Stylesw;
+with Targparm;       use Targparm;
 with Tbuild;
-with Treepr;    use Treepr;
+with Treepr;         use Treepr;
 with Ttypes;
-with Types;     use Types;
+with Types;          use Types;
 with Uintp;
-with Uname;     use Uname;
+with Uname;          use Uname;
 with Urealp;
 with Usage;
-with Validsw;   use Validsw;
-with Warnsw;    use Warnsw;
+with Validsw;        use Validsw;
+with Warnsw;         use Warnsw;
 
 with System.Assertions;
 with System.OS_Lib;
@@ -423,6 +425,12 @@ procedure Gnat1drv is
          if Warning_Mode = Suppress then
             Debug_Flag_MM := True;
          end if;
+
+         --  The implementation of 'Value that uses a perfect hash function
+         --  is significantly more complex and harder to initialize than the
+         --  old implementation. Deactivate it for CodePeer.
+
+         Debug_Flag_Underscore_H := True;
       end if;
 
       --  Enable some individual switches that are implied by relaxed RM
@@ -565,6 +573,10 @@ procedure Gnat1drv is
 
          Tagged_Type_Expansion := False;
 
+         --  Force the use of "error:" prefix for error messages
+
+         Unique_Error_Tag := True;
+
          --  Detect that the runtime library support for floating-point numbers
          --  may not be compatible with SPARK analysis of IEEE-754 floats.
 
@@ -600,12 +612,6 @@ procedure Gnat1drv is
          Ttypes.Target_Strict_Alignment := True;
       end if;
 
-      --  Increase size of allocated entities if debug flag -gnatd.N is set
-
-      if Debug_Flag_Dot_NN then
-         Atree.Num_Extension_Nodes := Atree.Num_Extension_Nodes + 1;
-      end if;
-
       --  Disable static allocation of dispatch tables if -gnatd.t is enabled.
       --  The front end's layout phase currently treats types that have
       --  discriminant-dependent arrays as not being static even when a
@@ -623,13 +629,9 @@ procedure Gnat1drv is
       end if;
 
       --  Set and check exception mechanism. This is only meaningful when
-      --  compiling, and in particular not meaningful for special modes used
-      --  for program analysis rather than compilation: CodePeer mode and
-      --  GNATprove mode.
+      --  generating code.
 
-      if Operating_Mode = Generate_Code
-        and then not (CodePeer_Mode or GNATprove_Mode)
-      then
+      if Operating_Mode = Generate_Code then
          case Targparm.Frontend_Exceptions_On_Target is
             when True =>
                case Targparm.ZCX_By_Default_On_Target is
@@ -817,6 +819,12 @@ procedure Gnat1drv is
            Ttypes.Standard_Long_Long_Integer_Size;
          Ttypes.System_Max_Binary_Modulus_Power :=
            Ttypes.Standard_Long_Long_Integer_Size;
+      end if;
+
+      --  Forcefully use a 32-bit Duration with only 32-bit integer types
+
+      if Ttypes.System_Max_Integer_Size < 64 then
+         Targparm.Duration_32_Bits_On_Target := True;
       end if;
 
       --  Finally capture adjusted value of Suppress_Options as the initial
@@ -1080,10 +1088,6 @@ begin
 
       --  Lib.Initialize needs to be called before Scan_Compiler_Arguments,
       --  because it initializes a table filled by Scan_Compiler_Arguments.
-
-      --  Atree.Initialize needs to be called after Scan_Compiler_Arguments,
-      --  because the value specified by the -gnaten switch is used by
-      --  Atree.Initialize.
 
       Osint.Initialize;
       Fmap.Reset_Tables;
@@ -1707,10 +1711,6 @@ begin
    end;
 
    <<End_Of_Program>>
-
-   if Debug_Flag_Dot_AA then
-      Atree.Print_Statistics;
-   end if;
 
 --  The outer exception handler handles an unrecoverable error
 

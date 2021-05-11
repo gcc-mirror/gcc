@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,43 +23,47 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Exp_Aggr; use Exp_Aggr;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Dbug; use Exp_Dbug;
-with Exp_Pakd; use Exp_Pakd;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Inline;   use Inline;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sinfo;    use Sinfo;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Validsw;  use Validsw;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Exp_Aggr;       use Exp_Aggr;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch11;       use Exp_Ch11;
+with Exp_Dbug;       use Exp_Dbug;
+with Exp_Pakd;       use Exp_Pakd;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Inline;         use Inline;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Validsw;        use Validsw;
 
 package body Exp_Ch5 is
 
@@ -3403,7 +3407,7 @@ package body Exp_Ch5 is
 
       Analyze (Init_Decl);
       Init_Name := Defining_Identifier (Init_Decl);
-      Set_Ekind (Init_Name, E_Loop_Parameter);
+      Mutate_Ekind (Init_Name, E_Loop_Parameter);
 
       --  The cursor was marked as a loop parameter to prevent user assignments
       --  to it, however this renders the advancement step illegal as it is not
@@ -3479,7 +3483,7 @@ package body Exp_Ch5 is
         (N, Container, Cursor, Init, Advance, New_Loop);
       Append_To (Stats, Advance);
 
-      Set_Ekind (Cursor, E_Variable);
+      Mutate_Ekind (Cursor, E_Variable);
       Insert_Action (N, Init);
 
       --  The loop parameter is declared by an object declaration, but within
@@ -3788,62 +3792,58 @@ package body Exp_Ch5 is
 
       --     return not (expression);
 
-      --  Only do these optimizations if we are at least at -O1 level and
-      --  do not do them if control flow optimizations are suppressed.
+      --  Do these optimizations only for internally generated code and only
+      --  when -fpreserve-control-flow isn't set, to preserve the original
+      --  source control flow.
 
-      if Optimization_Level > 0
+      if not Comes_From_Source (N)
         and then not Opt.Suppress_Control_Flow_Optimizations
+        and then Nkind (N) = N_If_Statement
+        and then No (Elsif_Parts (N))
+        and then Present (Else_Statements (N))
+        and then List_Length (Then_Statements (N)) = 1
+        and then List_Length (Else_Statements (N)) = 1
       then
-         if Nkind (N) = N_If_Statement
-           and then No (Elsif_Parts (N))
-           and then Present (Else_Statements (N))
-           and then List_Length (Then_Statements (N)) = 1
-           and then List_Length (Else_Statements (N)) = 1
-         then
-            declare
-               Then_Stm : constant Node_Id := First (Then_Statements (N));
-               Else_Stm : constant Node_Id := First (Else_Statements (N));
+         declare
+            Then_Stm : constant Node_Id := First (Then_Statements (N));
+            Else_Stm : constant Node_Id := First (Else_Statements (N));
 
-            begin
-               if Nkind (Then_Stm) = N_Simple_Return_Statement
+            Then_Expr : Node_Id;
+            Else_Expr : Node_Id;
+
+         begin
+            if Nkind (Then_Stm) = N_Simple_Return_Statement
+                 and then
+               Nkind (Else_Stm) = N_Simple_Return_Statement
+            then
+               Then_Expr := Expression (Then_Stm);
+               Else_Expr := Expression (Else_Stm);
+
+               if Nkind (Then_Expr) in N_Expanded_Name | N_Identifier
                     and then
-                  Nkind (Else_Stm) = N_Simple_Return_Statement
+                  Nkind (Else_Expr) in N_Expanded_Name | N_Identifier
                then
-                  declare
-                     Then_Expr : constant Node_Id := Expression (Then_Stm);
-                     Else_Expr : constant Node_Id := Expression (Else_Stm);
+                  if Entity (Then_Expr) = Standard_True
+                    and then Entity (Else_Expr) = Standard_False
+                  then
+                     Rewrite (N,
+                       Make_Simple_Return_Statement (Loc,
+                         Expression => Relocate_Node (Condition (N))));
+                     Analyze (N);
 
-                  begin
-                     if Nkind (Then_Expr) in N_Expanded_Name | N_Identifier
-                          and then
-                        Nkind (Else_Expr) in N_Expanded_Name | N_Identifier
-                     then
-                        if Entity (Then_Expr) = Standard_True
-                          and then Entity (Else_Expr) = Standard_False
-                        then
-                           Rewrite (N,
-                             Make_Simple_Return_Statement (Loc,
-                               Expression => Relocate_Node (Condition (N))));
-                           Analyze (N);
-                           return;
-
-                        elsif Entity (Then_Expr) = Standard_False
-                          and then Entity (Else_Expr) = Standard_True
-                        then
-                           Rewrite (N,
-                             Make_Simple_Return_Statement (Loc,
-                               Expression =>
-                                 Make_Op_Not (Loc,
-                                   Right_Opnd =>
-                                     Relocate_Node (Condition (N)))));
-                           Analyze (N);
-                           return;
-                        end if;
-                     end if;
-                  end;
+                  elsif Entity (Then_Expr) = Standard_False
+                    and then Entity (Else_Expr) = Standard_True
+                  then
+                     Rewrite (N,
+                       Make_Simple_Return_Statement (Loc,
+                         Expression =>
+                           Make_Op_Not (Loc,
+                             Right_Opnd => Relocate_Node (Condition (N)))));
+                     Analyze (N);
+                  end if;
                end if;
-            end;
-         end if;
+            end if;
+         end;
       end if;
    end Expand_N_If_Statement;
 
@@ -4484,7 +4484,7 @@ package body Exp_Ch5 is
                      (Container_Typ, Aspect_Variable_Indexing))
               or else not Is_Variable (Original_Node (Container))
             then
-               Set_Ekind (Id, E_Constant);
+               Mutate_Ekind (Id, E_Constant);
             end if;
 
             Prepend_To (Stats, Decl);
@@ -4620,7 +4620,7 @@ package body Exp_Ch5 is
          Set_Assignment_OK (Cursor_Decl);
 
          Insert_Action (N, Cursor_Decl);
-         Set_Ekind (Cursor, Id_Kind);
+         Mutate_Ekind (Cursor, Id_Kind);
       end;
 
       --  If the range of iteration is given by a function call that returns
@@ -5081,7 +5081,7 @@ package body Exp_Ch5 is
             --  identifier, since there may be references in the loop body.
 
             Set_Analyzed (Loop_Id, False);
-            Set_Ekind    (Loop_Id, E_Variable);
+            Mutate_Ekind (Loop_Id, E_Variable);
 
             --  In most loops the loop variable is assigned in various
             --  alternatives in the body. However, in the rare case when

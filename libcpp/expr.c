@@ -582,11 +582,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	    max_digit = c;
 	}
       else if (DIGIT_SEP (c))
-	{
-	  if (seen_digit_sep)
-	    SYNTAX_ERROR_AT (virtual_location, "adjacent digit separators");
-	  seen_digit_sep = true;
-	}
+	seen_digit_sep = true;
       else if (c == '.')
 	{
 	  if (seen_digit_sep || DIGIT_SEP (*str))

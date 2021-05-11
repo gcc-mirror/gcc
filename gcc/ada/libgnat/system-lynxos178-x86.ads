@@ -7,7 +7,7 @@
 --                                 S p e c                                  --
 --                         (LynxOS-178 X86 Version)                         --
 --                                                                          --
---          Copyright (C) 2009-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --

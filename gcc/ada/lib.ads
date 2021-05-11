@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -741,13 +741,13 @@ package Lib is
    --  This procedure is called to register a pragma N for which a notes
    --  entry is required.
 
-   procedure Synchronize_Serial_Number;
+   procedure Synchronize_Serial_Number (SN : Nat);
    --  This function increments the Serial_Number field for the current unit
-   --  but does not return the incremented value. This is used when there
-   --  is a situation where one path of control increments a serial number
-   --  (using Increment_Serial_Number), and the other path does not and it is
-   --  important to keep the serial numbers synchronized in the two cases (e.g.
-   --  when the references in a package and a client must be kept consistent).
+   --  up to SN if it is initially lower and does nothing otherwise. This is
+   --  used in situations where one path of control increments serial numbers
+   --  and the other path does not and it is important to keep serial numbers
+   --  synchronized in the two cases (e.g. when the references in a package
+   --  and a client must be kept consistent).
 
    procedure Unlock;
    --  Unlock internal tables, in cases where the back end needs to modify them

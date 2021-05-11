@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -158,7 +158,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    procedure Check_Arg_Count (Required : Int) is
    begin
       if Arg_Count /= Required then
-         Error_Msg ("wrong number of arguments for pragma%", Pragma_Sloc);
+         Error_Msg_N ("wrong number of arguments for pragma%", Pragma_Node);
          raise Error_Resync;
       end if;
    end Check_Arg_Count;
@@ -177,7 +177,7 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
          Error_Msg_Name_2 := Name_On;
          Error_Msg_Name_3 := Name_Off;
 
-         Error_Msg ("argument for pragma% must be% or%", Sloc (Argx));
+         Error_Msg_N ("argument for pragma% must be% or%", Argx);
          raise Error_Resync;
       end if;
    end Check_Arg_Is_On_Or_Off;
@@ -189,9 +189,9 @@ function Prag (Pragma_Node : Node_Id; Semi : Source_Ptr) return Node_Id is
    procedure Check_Arg_Is_String_Literal (Arg : Node_Id) is
    begin
       if Nkind (Expression (Arg)) /= N_String_Literal then
-         Error_Msg
+         Error_Msg_N
            ("argument for pragma% must be string literal",
-             Sloc (Expression (Arg)));
+            Expression (Arg));
          raise Error_Resync;
       end if;
    end Check_Arg_Is_String_Literal;
@@ -466,7 +466,7 @@ begin
          A := Expression (Arg1);
 
          if Nkind (A) /= N_Identifier then
-            Error_Msg ("incorrect argument for pragma %", Sloc (A));
+            Error_Msg_N ("incorrect argument for pragma %", A);
          else
             Set_Name_Table_Boolean3 (Chars (A), True);
          end if;
@@ -718,9 +718,9 @@ begin
          begin
             if Prag_Id = Pragma_Source_File_Name then
                if Project_File_In_Use = In_Use then
-                  Error_Msg
+                  Error_Msg_N
                     ("pragma Source_File_Name cannot be used " &
-                     "with a project file", Pragma_Sloc);
+                     "with a project file", Pragma_Node);
 
                else
                   Project_File_In_Use := Not_In_Use;
@@ -728,9 +728,9 @@ begin
 
             else
                if Project_File_In_Use = Not_In_Use then
-                  Error_Msg
+                  Error_Msg_N
                     ("pragma Source_File_Name_Project should only be used " &
-                     "with a project file", Pragma_Sloc);
+                     "with a project file", Pragma_Node);
                else
                   Project_File_In_Use := In_Use;
                end if;
@@ -773,9 +773,9 @@ begin
                     or else Intval (Expr) > 999
                     or else Intval (Expr) <= 0
                   then
-                     Error_Msg
+                     Error_Msg_N
                        ("pragma% index must be integer literal" &
-                        " in range 1 .. 999", Sloc (Expr));
+                        " in range 1 .. 999", Expr);
                      raise Error_Resync;
                   else
                      Index := UI_To_Int (Intval (Expr));
@@ -908,8 +908,8 @@ begin
            and then Num_SRef_Pragmas (Current_Source_File) = 0
            and then Operating_Mode /= Check_Syntax
          then
-            Error_Msg -- CODEFIX
-              ("first % pragma must be first line of file", Pragma_Sloc);
+            Error_Msg_N -- CODEFIX
+              ("first % pragma must be first line of file", Pragma_Node);
             raise Error_Resync;
          end if;
 
@@ -917,9 +917,9 @@ begin
 
          if Arg_Count = 1 then
             if Num_SRef_Pragmas (Current_Source_File) = 0 then
-               Error_Msg
+               Error_Msg_N
                  ("file name required for first % pragma in file",
-                  Pragma_Sloc);
+                  Pragma_Node);
                raise Error_Resync;
             else
                Fname := No_File;
@@ -934,17 +934,17 @@ begin
 
             if Num_SRef_Pragmas (Current_Source_File) > 0 then
                if Fname /= Full_Ref_Name (Current_Source_File) then
-                  Error_Msg
-                    ("file name must be same in all % pragmas", Pragma_Sloc);
+                  Error_Msg_N
+                    ("file name must be same in all % pragmas", Pragma_Node);
                   raise Error_Resync;
                end if;
             end if;
          end if;
 
          if Nkind (Expression (Arg1)) /= N_Integer_Literal then
-            Error_Msg
+            Error_Msg_N
               ("argument for pragma% must be integer literal",
-                Sloc (Expression (Arg1)));
+               Expression (Arg1));
             raise Error_Resync;
 
          --  OK, this source reference pragma is effective, however, we
@@ -1059,7 +1059,7 @@ begin
             end if;
 
             if not OK then
-               Error_Msg ("incorrect argument for pragma%", Sloc (A));
+               Error_Msg_N ("incorrect argument for pragma%", A);
                raise Error_Resync;
             end if;
          end if;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,55 +23,59 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Disp; use Exp_Disp;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Ghost;    use Ghost;
-with Impunit;  use Impunit;
-with Lib;      use Lib;
-with Lib.Load; use Lib.Load;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Namet.Sp; use Namet.Sp;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch4;  use Sem_Ch4;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch10; use Sem_Ch10;
-with Sem_Ch12; use Sem_Ch12;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Elab; use Sem_Elab;
-with Sem_Eval; use Sem_Eval;
-with Sem_Prag; use Sem_Prag;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sem_Type; use Sem_Type;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Sinfo.CN; use Sinfo.CN;
-with Snames;   use Snames;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Impunit;        use Impunit;
+with Lib;            use Lib;
+with Lib.Load;       use Lib.Load;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Namet.Sp;       use Namet.Sp;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch4;        use Sem_Ch4;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch10;       use Sem_Ch10;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sem_Type;       use Sem_Type;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinfo.CN;       use Sinfo.CN;
+with Snames;         use Snames;
 with Style;
 with Table;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Sem_Ch8 is
 
@@ -568,7 +572,7 @@ package body Sem_Ch8 is
       Enter_Name (Id);
       Analyze (Nam);
 
-      Set_Ekind   (Id, E_Exception);
+      Mutate_Ekind   (Id, E_Exception);
       Set_Etype   (Id, Standard_Exception_Type);
       Set_Is_Pure (Id, Is_Pure (Current_Scope));
 
@@ -697,7 +701,7 @@ package body Sem_Ch8 is
       end if;
 
       Enter_Name (New_P);
-      Set_Ekind (New_P, K);
+      Mutate_Ekind (New_P, K);
 
       if Etype (Old_P) = Any_Type then
          null;
@@ -759,6 +763,7 @@ package body Sem_Ch8 is
       Dec           : Node_Id;
       T             : Entity_Id;
       T2            : Entity_Id;
+      Q             : Node_Id;
 
       procedure Check_Constrained_Object;
       --  If the nominal type is unconstrained but the renamed object is
@@ -979,7 +984,7 @@ package body Sem_Ch8 is
                   Error_Msg_N
                     ("object name or value expected in renaming", Nam);
 
-                  Set_Ekind (Id, E_Variable);
+                  Mutate_Ekind (Id, E_Variable);
                   Set_Etype (Id, Any_Type);
 
                   return;
@@ -1027,7 +1032,7 @@ package body Sem_Ch8 is
                      Error_Msg_N
                        ("object name or value expected in renaming", Nam);
 
-                     Set_Ekind (Id, E_Variable);
+                     Mutate_Ekind (Id, E_Variable);
                      Set_Etype (Id, Any_Type);
 
                      return;
@@ -1074,17 +1079,55 @@ package body Sem_Ch8 is
          --  Check against AI12-0401 here before Resolve may rewrite Nam and
          --  potentially generate spurious warnings.
 
+         --   In the case where the object_name is a qualified_expression with
+         --   a nominal subtype T and whose expression is a name that denotes
+         --   an object Q:
+         --    * if T is an elementary subtype, then:
+         --      * Q shall be a constant other than a dereference of an access
+         --        type; or
+         --      * the nominal subtype of Q shall be statically compatible with
+         --        T; or
+         --      * T shall statically match the base subtype of its type if
+         --        scalar, or the first subtype of its type if an access type.
+         --    * if T is a composite subtype, then Q shall be known to be
+         --      constrained or T shall statically match the first subtype of
+         --      its type.
+
          if Nkind (Nam) = N_Qualified_Expression
-           and then Is_Variable (Expression (Nam))
-           and then not
-             (Subtypes_Statically_Match (T, Etype (Expression (Nam)))
-                or else
-              Subtypes_Statically_Match (Base_Type (T), Etype (Nam)))
+           and then Is_Object_Reference (Expression (Nam))
          then
-            Error_Msg_N
-              ("subtype of renamed qualified expression does not " &
-               "statically match", N);
-            return;
+            Q := Expression (Nam);
+
+            if (Is_Elementary_Type (T)
+                  and then
+                not ((not Is_Variable (Q)
+                       and then Nkind (Q) /= N_Explicit_Dereference)
+                      or else Subtypes_Statically_Compatible (Etype (Q), T)
+                      or else (Is_Scalar_Type (T)
+                                and then Subtypes_Statically_Match
+                                           (T, Base_Type (T)))
+                      or else (Is_Access_Type (T)
+                                and then Subtypes_Statically_Match
+                                           (T, First_Subtype (T)))))
+              or else (Is_Composite_Type (T)
+                         and then
+
+                       --  If Q is an aggregate, Is_Constrained may not be set
+                       --  yet and its type may not be resolved yet.
+                       --  This doesn't quite correspond to the complex notion
+                       --  of "known to be constrained" but this is good enough
+                       --  for a rule which is in any case too complex.
+
+                       not (Is_Constrained (Etype (Q))
+                             or else Nkind (Q) = N_Aggregate
+                             or else Subtypes_Statically_Match
+                                       (T, First_Subtype (T))))
+            then
+               Error_Msg_N
+                 ("subtype of renamed qualified expression does not " &
+                  "statically match", N);
+               return;
+            end if;
          end if;
 
          Resolve (Nam, T);
@@ -1102,7 +1145,7 @@ package body Sem_Ch8 is
            and then Comes_From_Source (N)
          then
             Set_Etype (Id, T);
-            Set_Ekind (Id, E_Constant);
+            Mutate_Ekind (Id, E_Constant);
             Rewrite (N,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Id,
@@ -1415,12 +1458,8 @@ package body Sem_Ch8 is
       --  want to change it to a variable.
 
       if Ekind (Id) /= E_Constant then
-         Set_Ekind (Id, E_Variable);
+         Mutate_Ekind (Id, E_Variable);
       end if;
-
-      --  Initialize the object size and alignment. Note that we used to call
-      --  Init_Size_Align here, but that's wrong for objects which have only
-      --  an Esize, not an RM_Size field.
 
       Init_Object_Size_Align (Id);
 
@@ -1497,7 +1536,7 @@ package body Sem_Ch8 is
       Set_Etype (Id, T2);
 
       if not Is_Variable (Nam) then
-         Set_Ekind               (Id, E_Constant);
+         Mutate_Ekind            (Id, E_Constant);
          Set_Never_Set_In_Source (Id, True);
          Set_Is_True_Constant    (Id, True);
       end if;
@@ -1506,10 +1545,11 @@ package body Sem_Ch8 is
       --  renamed object is atomic, independent, volatile or VFA. These flags
       --  are set on the renamed object in the RM legality sense.
 
-      Set_Is_Atomic               (Id, Is_Atomic_Object (Nam));
-      Set_Is_Independent          (Id, Is_Independent_Object (Nam));
-      Set_Is_Volatile             (Id, Is_Volatile_Object (Nam));
-      Set_Is_Volatile_Full_Access (Id, Is_Volatile_Full_Access_Object (Nam));
+      Set_Is_Atomic (Id, Is_Atomic_Object (Nam));
+      Set_Is_Independent (Id, Is_Independent_Object (Nam));
+      Set_Is_Volatile (Id, Is_Volatile_Object_Ref (Nam));
+      Set_Is_Volatile_Full_Access
+        (Id, Is_Volatile_Full_Access_Object_Ref (Nam));
 
       --  Treat as volatile if we just set the Volatile flag
 
@@ -1592,7 +1632,7 @@ package body Sem_Ch8 is
 
          --  Set basic attributes to minimize cascaded errors
 
-         Set_Ekind (New_P, E_Package);
+         Mutate_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
 
       elsif Present (Renamed_Entity (Old_P))
@@ -1607,7 +1647,7 @@ package body Sem_Ch8 is
 
          --  Set basic attributes to minimize cascaded errors
 
-         Set_Ekind (New_P, E_Package);
+         Mutate_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
 
       --  Here for OK package renaming
@@ -1617,7 +1657,7 @@ package body Sem_Ch8 is
          --  entity. The simplest implementation is to have both packages share
          --  the entity list.
 
-         Set_Ekind (New_P, E_Package);
+         Mutate_Ekind (New_P, E_Package);
          Set_Etype (New_P, Standard_Void_Type);
 
          if Present (Renamed_Object (Old_P)) then
@@ -1823,7 +1863,7 @@ package body Sem_Ch8 is
       Old_S := Find_Renamed_Entity (N, Selector_Name (Nam), New_S);
 
       if Old_S = Any_Id then
-         Error_Msg_N (" no subprogram or entry matches specification",  N);
+         Error_Msg_N ("no subprogram or entry matches specification",  N);
       else
          if Is_Body then
             Check_Subtype_Conformant (New_S, Old_S, N);
@@ -3238,7 +3278,10 @@ package body Sem_Ch8 is
          --  constructed later at the freeze point, so indicate that the
          --  completion has not been seen yet.
 
-         Set_Ekind (New_S, E_Subprogram_Body);
+         Reinit_Field_To_Zero (New_S, Has_Out_Or_In_Out_Parameter);
+         Reinit_Field_To_Zero (New_S, Needs_No_Actuals,
+           Old_Ekind => (E_Function | E_Procedure => True, others => False));
+         Mutate_Ekind (New_S, E_Subprogram_Body);
          New_S := Rename_Spec;
          Set_Has_Completion (Rename_Spec, False);
 
@@ -3538,7 +3581,7 @@ package body Sem_Ch8 is
                end if;
 
                if Original_Subprogram (Old_S) = Rename_Spec then
-                  Error_Msg_N ("unfrozen subprogram cannot rename itself ", N);
+                  Error_Msg_N ("unfrozen subprogram cannot rename itself", N);
                else
                   Check_Formal_Subprogram_Conformance (New_S, Old_S, Spec);
                end if;
@@ -4404,7 +4447,7 @@ package body Sem_Ch8 is
 
       if not Configurable_Run_Time_Mode
         and then not Present (Corresponding_Formal_Spec (N))
-        and then Etype (Nam) /= RTE (RE_AST_Handler)
+        and then not Is_RTE (Etype (Nam), RE_AST_Handler)
       then
          declare
             P : constant Node_Id := Prefix (Nam);
@@ -6790,7 +6833,17 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      Change_Selected_Component_To_Expanded_Name (N);
+      case Nkind (N) is
+         when N_Selected_Component =>
+            Reinit_Field_To_Zero (N, Is_Prefixed_Call);
+            Change_Selected_Component_To_Expanded_Name (N);
+
+         when N_Expanded_Name =>
+            null;
+
+         when others =>
+            pragma Assert (False);
+      end case;
 
       --  Preserve relevant elaboration-related attributes of the context which
       --  are no longer available or very expensive to recompute once analysis,
@@ -7469,15 +7522,9 @@ package body Sem_Ch8 is
                   --  dispatch table wrappers. Required to avoid generating
                   --  elaboration code with HI runtimes.
 
-                  elsif RTU_Loaded (Ada_Tags)
-                    and then
-                      ((RTE_Available (RE_Dispatch_Table_Wrapper)
-                         and then Scope (Selector) =
-                                     RTE (RE_Dispatch_Table_Wrapper))
-                        or else
-                          (RTE_Available (RE_No_Dispatch_Table_Wrapper)
-                            and then Scope (Selector) =
-                                     RTE (RE_No_Dispatch_Table_Wrapper)))
+                  elsif Is_RTE (Scope (Selector), RE_Dispatch_Table_Wrapper)
+                    or else
+                      Is_RTE (Scope (Selector), RE_No_Dispatch_Table_Wrapper)
                   then
                      C_Etype := Empty;
                   else
@@ -7893,16 +7940,18 @@ package body Sem_Ch8 is
                         Set_Entity (N, Any_Type);
                         return;
 
-                     --  ??? This test is temporarily disabled (always
-                     --  False) because it causes an unwanted warning on
-                     --  GNAT sources (built with -gnatg, which includes
-                     --  Warn_On_Obsolescent_ Feature). Once this issue
-                     --  is cleared in the sources, it can be enabled.
+                     else
+                        if Restriction_Check_Required (No_Obsolescent_Features)
+                        then
+                           Check_Restriction
+                             (No_Obsolescent_Features, Prefix (N));
+                        end if;
 
-                     elsif Warn_On_Obsolescent_Feature and then False then
-                        Error_Msg_N
-                          ("applying ''Class to an untagged incomplete type"
-                           & " is an obsolescent feature (RM J.11)?r?", N);
+                        if Warn_On_Obsolescent_Feature then
+                           Error_Msg_N
+                             ("applying ''Class to an untagged incomplete type"
+                              & " is an obsolescent feature (RM J.11)?r?", N);
+                        end if;
                      end if;
                   end if;
 
@@ -8087,25 +8136,14 @@ package body Sem_Ch8 is
                if Ekind (Base_Type (T_Name)) = E_Task_Type then
 
                   --  In Ada 2005, a task name can be used in an access
-                  --  definition within its own body. It cannot be used
-                  --  in the discriminant part of the task declaration,
-                  --  nor anywhere else in the declaration because entries
-                  --  cannot have access parameters.
+                  --  definition within its own body.
 
                   if Ada_Version >= Ada_2005
                     and then Nkind (Parent (N)) = N_Access_Definition
                   then
                      Set_Entity (N, T_Name);
                      Set_Etype  (N, T_Name);
-
-                     if Has_Completion (T_Name) then
-                        return;
-
-                     else
-                        Error_Msg_N
-                          ("task type cannot be used as type mark " &
-                           "within its own declaration", N);
-                     end if;
+                     return;
 
                   else
                      Error_Msg_N

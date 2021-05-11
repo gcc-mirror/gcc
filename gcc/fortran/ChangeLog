@@ -1,3 +1,98 @@
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* decl.c (variable_decl): Use startswith
+	function instead of strncmp.
+	(gfc_match_end): Likewise.
+	* gfortran.h (gfc_str_startswith): Likewise.
+	* module.c (load_omp_udrs): Likewise.
+	(read_module): Likewise.
+	* options.c (gfc_handle_runtime_check_option): Likewise.
+	* primary.c (match_arg_list_function): Likewise.
+	* trans-decl.c (gfc_get_symbol_decl): Likewise.
+	* trans-expr.c (gfc_conv_procedure_call): Likewise.
+	* trans-intrinsic.c (gfc_conv_ieee_arithmetic_function): Likewise.
+
+2021-05-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/46991
+	PR fortran/99819
+	* class.c (gfc_build_class_symbol): Remove the error that
+	disables assumed size class arrays. Class array types that are
+	not deferred shape or assumed rank are given a unique name and
+	placed in the procedure namespace.
+	* trans-array.c (gfc_trans_g77_array): Obtain the data pointer
+	for class arrays.
+	(gfc_trans_dummy_array_bias): Suppress the runtime error for
+	extent violations in explicit shape class arrays because it
+	always fails.
+	* trans-expr.c (gfc_conv_procedure_call): Handle assumed size
+	class actual arguments passed to non-descriptor formal args by
+	using the data pointer, stored as the symbol's backend decl.
+
+2021-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100274
+	* interface.c (gfc_compare_actual_formal): Continue checks after
+	emitting warning for argument length mismatch.
+	* trans-expr.c (gfc_conv_procedure_call): Check for NULL pointer
+	dereference.
+
+2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR testsuite/100397
+	* trans-openmp.c (gfc_trans_omp_depobj): Fix pasto in enum values.
+
+2021-04-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_variable_list): Gobble whitespace before
+	checking whether a '%' or parenthesis-open follows as next character.
+
+2021-04-28  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/82376
+	* trans-expr.c (gfc_conv_procedure_call): Evaluate function result
+	and then pass a pointer.
+
+2021-04-26  Thomas Schwinge  <thomas@codesourcery.com>
+	    Nathan Sidwell  <nathan@codesourcery.com>
+	    Tom de Vries  <vries@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* lang.opt (Wopenacc-parallelism): New.
+
+2021-04-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100154
+	* check.c (variable_check): Allow function reference having a data
+	pointer result.
+	(arg_strlen_is_zero): New function.
+	(gfc_check_fgetputc_sub): Add static check of character and status
+	arguments.
+	(gfc_check_fgetput_sub): Likewise.
+	* intrinsic.c (add_subroutines): Fix argument name for the
+	character argument to intrinsic subroutines fget[c], fput[c].
+
+2021-04-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100218
+	* expr.c (gfc_check_vardef_context): Extend check to allow pointer
+	from a function reference.
+
+2021-04-22  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100159
+	PR testsuite/100192
+	* frontend-passes.c (optimize_expr): Fix typos and missing comments.
+
+2021-04-22  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR fortran/96983
+	* trans-intrinsic.c (build_round_expr): If int type is larger than
+	long long, do the round and convert to the integer type.  Do not
+	try to find a floating point type the exact size of the integer
+	type.
+
 2021-04-21  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_namelist): Handle depobj + mutexinoutset

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,38 +23,43 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;     use Atree;
-with Debug;     use Debug;
-with Debug_A;   use Debug_A;
-with Elists;    use Elists;
-with Exp_SPARK; use Exp_SPARK;
-with Expander;  use Expander;
-with Ghost;     use Ghost;
-with Lib;       use Lib;
-with Lib.Load;  use Lib.Load;
-with Nlists;    use Nlists;
-with Output;    use Output;
-with Restrict;  use Restrict;
-with Sem_Attr;  use Sem_Attr;
-with Sem_Ch2;   use Sem_Ch2;
-with Sem_Ch3;   use Sem_Ch3;
-with Sem_Ch4;   use Sem_Ch4;
-with Sem_Ch5;   use Sem_Ch5;
-with Sem_Ch6;   use Sem_Ch6;
-with Sem_Ch7;   use Sem_Ch7;
-with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch9;   use Sem_Ch9;
-with Sem_Ch10;  use Sem_Ch10;
-with Sem_Ch11;  use Sem_Ch11;
-with Sem_Ch12;  use Sem_Ch12;
-with Sem_Ch13;  use Sem_Ch13;
-with Sem_Prag;  use Sem_Prag;
-with Sem_Util;  use Sem_Util;
-with Sinfo;     use Sinfo;
-with Stand;     use Stand;
-with Stylesw;   use Stylesw;
-with Uintp;     use Uintp;
-with Uname;     use Uname;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Debug_A;        use Debug_A;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Exp_SPARK;      use Exp_SPARK;
+with Expander;       use Expander;
+with Ghost;          use Ghost;
+with Lib;            use Lib;
+with Lib.Load;       use Lib.Load;
+with Nlists;         use Nlists;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Sem_Attr;       use Sem_Attr;
+with Sem_Ch2;        use Sem_Ch2;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch4;        use Sem_Ch4;
+with Sem_Ch5;        use Sem_Ch5;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch9;        use Sem_Ch9;
+with Sem_Ch10;       use Sem_Ch10;
+with Sem_Ch11;       use Sem_Ch11;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Stand;          use Stand;
+with Stylesw;        use Stylesw;
+with Uintp;          use Uintp;
+with Uname;          use Uname;
 
 with Unchecked_Deallocation;
 

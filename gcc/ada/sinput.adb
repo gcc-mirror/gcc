@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -26,12 +26,14 @@
 pragma Style_Checks (All_Checks);
 --  Subprograms not all in alpha order
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Opt;      use Opt;
-with Output;   use Output;
-with Scans;    use Scans;
-with Widechar; use Widechar;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Opt;            use Opt;
+with Output;         use Output;
+with Scans;          use Scans;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Widechar;       use Widechar;
 
 with GNAT.Byte_Order_Mark; use GNAT.Byte_Order_Mark;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,43 +23,47 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with ALI;      use ALI;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Expander; use Expander;
-with Lib;      use Lib;
-with Lib.Load; use Lib.Load;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch7;  use Sem_Ch7;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Disp; use Sem_Disp;
-with Sem_Prag; use Sem_Prag;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
+with ALI;            use ALI;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Ch11;       use Exp_Ch11;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Expander;       use Expander;
+with Lib;            use Lib;
+with Lib.Load;       use Lib.Load;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch7;        use Sem_Ch7;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
 with Table;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Uname;    use Uname;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Uname;          use Uname;
 
 with GNAT;                 use GNAT;
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
@@ -11883,7 +11887,7 @@ package body Sem_Elab is
          --  Partially decorate the elaboration procedure because it will not
          --  be insertred into the tree and analyzed.
 
-         Set_Ekind (Proc_Id, E_Procedure);
+         Mutate_Ekind (Proc_Id, E_Procedure);
          Set_Etype (Proc_Id, Standard_Void_Type);
          Set_Scope (Proc_Id, Unique_Entity (Main_Unit_Entity));
 
@@ -12008,7 +12012,7 @@ package body Sem_Elab is
          --  it will not be inserted into the tree and analyzed.
 
          Task_Obj := Make_Temporary (Loc, 'T');
-         Set_Ekind (Task_Obj, E_Variable);
+         Mutate_Ekind (Task_Obj, E_Variable);
          Set_Etype (Task_Obj, Task_Typ);
 
          --  Associate the dummy task object with the activation call
@@ -15121,7 +15125,7 @@ package body Sem_Elab is
          Inst_Rep : Scenario_Rep_Id;
          In_State : Processing_In_State);
       pragma Inline (Process_SPARK_Instantiation);
-      --  Verify that instanciation Inst does not precede the generic body it
+      --  Verify that instantiation Inst does not precede the generic body it
       --  instantiates (SPARK RM 7.7(6)). Inst_Rep is the representation of the
       --  instantiation. In_State is the current state of the Processing phase.
 

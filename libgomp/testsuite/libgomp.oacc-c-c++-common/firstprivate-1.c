@@ -1,3 +1,6 @@
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 #include  <openacc.h>
 
 
@@ -117,6 +120,8 @@ void t4 ()
     arr[i] = 3;
 
 #pragma acc parallel firstprivate(x) copy(arr) num_gangs(32) num_workers(8) vector_length(32)
+  /* { dg-warning "region is worker partitioned but does not contain worker partitioned code" "" { target *-*-* } .-1 } */
+  /* { dg-warning "region is vector partitioned but does not contain vector partitioned code" "" { target *-*-* } .-2 } */
   {
 #pragma acc loop gang
     for (i = 0; i < 32; i++)

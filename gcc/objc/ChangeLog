@@ -1,3 +1,10 @@
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* objc-act.c (objc_string_ref_type_p): Use startswith
+	function instead of strncmp.
+	* objc-encoding.c (encode_type): Likewise.
+	* objc-next-runtime-abi-02.c (has_load_impl): Likewise.
+
 2020-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/97911

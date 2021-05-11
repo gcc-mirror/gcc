@@ -1,5 +1,5 @@
 # Makefile.rtl for GNU Ada Compiler (GNAT).
-#   Copyright (C) 2003-2020, Free Software Foundation, Inc.
+#   Copyright (C) 2003-2021, Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -575,6 +575,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-dlmkio$(objext) \
   s-dlmopr$(objext) \
   s-dmotpr$(objext) \
+  s-dourea$(objext) \
   s-dsaser$(objext) \
   s-elaall$(objext) \
   s-excdeb$(objext) \
@@ -582,6 +583,8 @@ GNATRTL_NONTASKING_OBJS= \
   s-exctab$(objext) \
   s-exctra$(objext) \
   s-exnint$(objext) \
+  s-exnflt$(objext) \
+  s-exnlfl$(objext) \
   s-exnllf$(objext) \
   s-exnlli$(objext) \
   s-expint$(objext) \
@@ -589,6 +592,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-expllu$(objext) \
   s-expmod$(objext) \
   s-exponn$(objext) \
+  s-exponr$(objext) \
   s-expont$(objext) \
   s-exponu$(objext) \
   s-expuns$(objext) \
@@ -618,18 +622,24 @@ GNATRTL_NONTASKING_OBJS= \
   s-imaged$(objext) \
   s-imagef$(objext) \
   s-imagei$(objext) \
+  s-imagen$(objext) \
+  s-imager$(objext) \
   s-imageu$(objext) \
   s-imagew$(objext) \
   s-imde32$(objext) \
   s-imde64$(objext) \
-  s-imenne$(objext) \
+  s-imen16$(objext) \
+  s-imen32$(objext) \
+  s-imenu8$(objext) \
   s-imfi32$(objext) \
   s-imfi64$(objext) \
   s-imgbiu$(objext) \
   s-imgboo$(objext) \
   s-imgcha$(objext) \
-  s-imgenu$(objext) \
+  s-imgflt$(objext) \
   s-imgint$(objext) \
+  s-imglfl$(objext) \
+  s-imgllf$(objext) \
   s-imgllb$(objext) \
   s-imglli$(objext) \
   s-imgllu$(objext) \
@@ -709,6 +719,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-pack63$(objext) \
   s-parame$(objext) \
   s-parint$(objext) \
+  s-pehage$(objext) \
   s-pooglo$(objext) \
   s-pooloc$(objext) \
   s-poosiz$(objext) \
@@ -754,9 +765,11 @@ GNATRTL_NONTASKING_OBJS= \
   s-valcha$(objext) \
   s-vade32$(objext) \
   s-vade64$(objext) \
+  s-vaen16$(objext) \
+  s-vaen32$(objext) \
+  s-vaenu8$(objext) \
   s-vafi32$(objext) \
   s-vafi64$(objext) \
-  s-valenu$(objext) \
   s-valflt$(objext) \
   s-valint$(objext) \
   s-vallfl$(objext) \
@@ -767,6 +780,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-valued$(objext) \
   s-valuef$(objext) \
   s-valuei$(objext) \
+  s-valuen$(objext) \
   s-valuer$(objext) \
   s-valueu$(objext) \
   s-valuns$(objext) \
@@ -1069,6 +1083,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7% vxworks7spe
   a-naliop.ads<libgnat/a-naliop__nolibm.ads \
   a-nuaufl.ads<libgnat/a-nuaufl__wraplf.ads \
   a-nashfl.ads<libgnat/a-nashfl__wraplf.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
   s-intman.adb<libgnarl/s-intman__vxworks.adb \
@@ -1202,6 +1217,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae vxworksaespe,$(target_cpu) $(t
   a-nuaufl.ads<libgnat/a-nuaufl__wraplf.ads \
   a-nashfl.ads<libgnat/a-nashfl__wraplf.ads \
   g-io.adb<hie/g-io__vxworks-cert.adb \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__vxworks.adb \
   s-interr.adb<libgnarl/s-interr__vxworks.adb \
   s-intman.ads<libgnarl/s-intman__vxworks.ads \
@@ -1218,9 +1234,9 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworksae vxworksaespe,$(target_cpu) $(t
   s-vxwext.adb<libgnarl/s-vxwext__noints.adb \
   s-vxwext.ads<libgnarl/s-vxwext__vthreads.ads \
   s-vxwork.ads<libgnarl/s-vxwork__ppc.ads \
-  system.ads<libgnat/system-vxworks-$(ARCH_STR)-vthread.ads \
   $(ATOMICS_TARGET_PAIRS) \
-  $(ATOMICS_BUILTINS_TARGET_PAIRS)
+  $(ATOMICS_BUILTINS_TARGET_PAIRS) \
+  system.ads<libgnat/system-vxworks-$(ARCH_STR)-vthread.ads
 
   EH_MECHANISM=-gcc
 
@@ -1490,7 +1506,8 @@ ifeq ($(strip $(filter-out aarch64 arm% coff wrs vx%,$(target_cpu) $(target_vend
     EH_MECHANISM=-gcc
     SIGTRAMP_OBJ=sigtramp-vxworks.o
     LIBGNAT_TARGET_PAIRS += $(GNATRTL_128BIT_PAIRS) \
-      a-nallfl.ads<libgnat/a-nallfl__wraplf.ads
+      a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
+      s-dorepr.adb<libgnat/s-dorepr__fma.adb
     EXTRA_GNATRTL_NONTASKING_OBJS += $(GNATRTL_128BIT_OBJS)
   else
     ifeq ($(strip $(filter-out arm%, $(target_cpu))),)
@@ -1611,6 +1628,7 @@ ifeq ($(strip $(filter-out aarch64 %qnx,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__qnx.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__qnx.adb \
   s-osinte.adb<libgnarl/s-osinte__qnx.adb \
@@ -1878,6 +1896,7 @@ ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__freebsd.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-mudido.adb<libgnarl/s-mudido__affinity.adb \
@@ -2342,6 +2361,7 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   a-synbar.adb<libgnarl/a-synbar__posix.adb \
   a-synbar.ads<libgnarl/a-synbar__posix.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux.ads \
@@ -2425,6 +2445,7 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
   a-synbar.adb<libgnarl/a-synbar__posix.adb \
   a-synbar.ads<libgnarl/a-synbar__posix.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux.ads \
@@ -2584,6 +2605,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   a-nuauco.ads<libgnat/a-nuauco__x86.ads \
   a-synbar.adb<libgnarl/a-synbar__posix.adb \
   a-synbar.ads<libgnarl/a-synbar__posix.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux.ads \
@@ -2620,6 +2642,7 @@ endif
 ifeq ($(strip $(filter-out ia64% hp hpux%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__hpux.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-osinte.adb<libgnarl/s-osinte__posix.adb \
@@ -2761,6 +2784,7 @@ ifeq ($(strip $(filter-out riscv% linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam__linux.ads \
   a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
+  s-dorepr.adb<libgnat/s-dorepr__fma.adb \
   s-inmaop.adb<libgnarl/s-inmaop__posix.adb \
   s-intman.adb<libgnarl/s-intman__posix.adb \
   s-linux.ads<libgnarl/s-linux__riscv.ads \
@@ -2890,6 +2914,7 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
     LIBGNAT_TARGET_PAIRS += \
       a-nallfl.ads<libgnat/a-nallfl__wraplf.ads \
       s-intman.adb<libgnarl/s-intman__susv3.adb \
+      s-dorepr.adb<libgnat/s-dorepr__fma.adb \
       s-osprim.adb<libgnat/s-osprim__darwin.adb \
       $(ATOMICS_TARGET_PAIRS) \
       $(ATOMICS_BUILTINS_TARGET_PAIRS) \
@@ -2967,7 +2992,7 @@ GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
 ADA_INCLUDE_SRCS =\
  libgnat/ada.ads libgnat/calendar.ads libgnat/directio.ads libgnat/gnat.ads libgnat/interfac.ads libgnat/ioexcept.ads \
  libgnat/machcode.ads libgnat/text_io.ads libgnat/unchconv.ads libgnat/unchdeal.ads \
- libgnat/sequenio.ads libgnat/system.ads libgnat/memtrack.adb \
+ libgnat/sequenio.ads libgnat/memtrack.adb \
  libgna*/*.gpr \
  libgnat/a-[a-o]*.adb libgnat/a-[a-o]*.ads \
  libgnat/a-[p-z]*.adb libgnat/a-[p-z]*.ads \
@@ -2987,21 +3012,10 @@ ADA_EXCLUDE_SRCS =\
   g-altive.ads g-alveop.adb g-alveop.ads g-alvety.ads g-alvevi.ads \
   g-intpri.ads g-regist.adb g-regist.ads g-sse.ads    g-ssvety.ads \
   i-vxinco.adb i-vxinco.ads i-vxwoio.adb i-vxwoio.ads i-vxwork.ads \
-  s-bb.ads     s-bbbosu.ads s-bbcaco.ads s-bbcppr.ads s-bbexti.adb \
-  s-bbexti.ads s-bbinte.adb s-bbinte.ads s-bbprot.adb s-bbprot.ads \
-  s-bbsle3.ads s-bbsuer.ads s-bbsule.ads s-bbthqu.adb s-bbthqu.ads \
-  s-bbthre.adb s-bbthre.ads s-bbtiev.adb s-bbtiev.ads s-bbtime.adb \
-  s-bbtime.ads s-bcprmu.adb s-bcprmu.ads s-btstch.adb s-btstch.ads \
-  s-gcc.adb    s-gcc.ads    s-gccdiv.adb s-gccdiv.ads \
-  s-gccshi.adb s-gccshi.ads \
-  s-init.ads   s-init.adb   s-linux.ads  s-macres.ads \
-  s-memcom.adb s-memcom.ads s-memmov.adb s-memmov.ads s-memset.adb \
-  s-memset.ads s-mufalo.adb s-mufalo.ads s-musplo.adb s-musplo.ads \
-  s-sam4.ads   s-sopco3.adb s-sopco3.ads s-sopco4.adb s-sopco4.ads \
-  s-sopco5.adb s-sopco5.ads s-stchop.ads s-stchop.adb s-stm32.ads \
+  s-linux.ads  s-vxwext.adb s-vxwext.ads s-win32.ads  s-winext.ads \
+  s-sopco3.adb s-sopco3.ads s-sopco4.adb s-sopco4.ads \
+  s-sopco5.adb s-sopco5.ads s-stchop.ads s-stchop.adb \
   s-strcom.adb s-strcom.ads s-thread.ads \
-  s-vxwext.adb s-vxwext.ads \
-  s-win32.ads  s-winext.ads
 
 # ADA_EXCLUDE_SRCS without the sources used by the target
 ADA_EXCLUDE_FILES=$(filter-out \

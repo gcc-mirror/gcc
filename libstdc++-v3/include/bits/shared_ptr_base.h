@@ -684,8 +684,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using _Alloc_traits = allocator_traits<_Alloc>;
 	  _Alloc __a;
 	  _Sp_cd_type* __mem = _Alloc_traits::allocate(__a, 1);
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 3548. shared_ptr construction from unique_ptr should move
+	  // (not copy) the deleter
 	  _Alloc_traits::construct(__a, __mem, __r.release(),
-				   __r.get_deleter());  // non-throwing
+				   std::forward<_Del>(__r.get_deleter()));
 	  _M_pi = __mem;
 	}
 
@@ -1070,9 +1073,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Constraint for construction from unique_ptr:
       template<typename _Yp, typename _Del, typename _Res = void,
 	       typename _Ptr = typename unique_ptr<_Yp, _Del>::pointer>
-	using _UniqCompatible = typename enable_if<__and_<
-	  __sp_compatible_with<_Yp*, _Tp*>, is_convertible<_Ptr, element_type*>
-	  >::value, _Res>::type;
+	using _UniqCompatible = __enable_if_t<__and_<
+	  __sp_compatible_with<_Yp*, _Tp*>,
+	  is_convertible<_Ptr, element_type*>,
+	  is_move_constructible<_Del>
+	  >::value, _Res>;
 
       // Constraint for assignment from unique_ptr:
       template<typename _Yp, typename _Del>
@@ -1831,6 +1836,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline __shared_ptr<_Tp, _Lp>
     __allocate_shared(const _Alloc& __a, _Args&&... __args)
     {
+      static_assert(!is_array<_Tp>::value, "make_shared<T[]> not supported");
+
       return __shared_ptr<_Tp, _Lp>(_Sp_alloc_shared_tag<_Alloc>{__a},
 				    std::forward<_Args>(__args)...);
     }

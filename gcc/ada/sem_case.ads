@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1996-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -44,8 +44,8 @@
 --    till the freeze point in this case.
 
 --    3. Set the Others_Discrete_Choices list for an others choice. This is
---    used in various ways, e.g. to construct the disriminant checking function
---    for the case of a variant with an others choice.
+--    used in various ways, e.g. to construct the discriminant checking
+--    function for the case of a variant with an others choice.
 
 --    4. In the case of static predicates, we need to expand out choices that
 --    correspond to the predicate for the back end. This expansion destroys
@@ -125,10 +125,10 @@ package Sem_Case is
    package Generic_Check_Choices is
 
       procedure Check_Choices
-        (N                        : Node_Id;
-         Alternatives             : List_Id;
-         Subtyp                   : Entity_Id;
-         Others_Present           : out Boolean);
+        (N              : Node_Id;
+         Alternatives   : List_Id;
+         Subtyp         : Entity_Id;
+         Others_Present : out Boolean);
       --  From a case expression, case statement, or record variant N, this
       --  routine analyzes the corresponding list of discrete choices which
       --  appear in each element of the list Alternatives (for the variant

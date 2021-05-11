@@ -1002,7 +1002,8 @@ precompute_register_parameters (int num_actuals, struct arg_data *args,
 	/* If the value is a non-legitimate constant, force it into a
 	   pseudo now.  TLS symbols sometimes need a call to resolve.  */
 	if (CONSTANT_P (args[i].value)
-	    && !targetm.legitimate_constant_p (args[i].mode, args[i].value))
+	    && (!targetm.legitimate_constant_p (args[i].mode, args[i].value)
+		|| targetm.precompute_tls_p (args[i].mode, args[i].value)))
 	  args[i].value = force_reg (args[i].mode, args[i].value);
 
 	/* If we're going to have to load the value by parts, pull the
@@ -3807,6 +3808,7 @@ expand_call (tree exp, rtx target, int ignore)
      side-effects.  */
   if ((flags & (ECF_CONST | ECF_PURE))
       && (!(flags & ECF_LOOPING_CONST_OR_PURE))
+      && (flags & ECF_NOTHROW)
       && (ignore || target == const0_rtx
 	  || TYPE_MODE (rettype) == VOIDmode))
     {

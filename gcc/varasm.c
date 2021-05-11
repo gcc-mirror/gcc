@@ -792,7 +792,7 @@ default_function_rodata_section (tree decl, bool relocatable)
       /* For .gnu.linkonce.t.foo we want to use .gnu.linkonce.r.foo or
 	 .gnu.linkonce.d.rel.ro.local.foo if the jump table is relocatable.  */
       else if (DECL_COMDAT_GROUP (decl)
-	       && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
+	       && startswith (name, ".gnu.linkonce.t."))
 	{
 	  size_t len;
 	  char *rname;
@@ -817,7 +817,7 @@ default_function_rodata_section (tree decl, bool relocatable)
 	}
       /* For .text.foo we want to use .rodata.foo.  */
       else if (flag_function_sections && flag_data_sections
-	       && strncmp (name, ".text.", 6) == 0)
+	       && startswith (name, ".text."))
 	{
 	  size_t len = strlen (name) + 1;
 	  char *rname = (char *) alloca (len + strlen (sname) - 5);
@@ -1202,6 +1202,25 @@ get_variable_align (tree decl)
   return align;
 }
 
+/* Compute reloc for get_variable_section.  The return value
+   is a mask for which bit 1 indicates a global relocation, and bit 0
+   indicates a local relocation.  */
+
+int
+compute_reloc_for_var (tree decl)
+{
+  int reloc;
+
+  if (DECL_INITIAL (decl) == error_mark_node)
+    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
+  else if (DECL_INITIAL (decl))
+    reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
+  else
+    reloc = 0;
+
+  return reloc;
+}
+
 /* Return the section into which the given VAR_DECL or CONST_DECL
    should be placed.  PREFER_NOSWITCH_P is true if a noswitch
    section should be used wherever possible.  */
@@ -1239,12 +1258,7 @@ get_variable_section (tree decl, bool prefer_noswitch_p)
 	return comm_section;
     }
 
-  if (DECL_INITIAL (decl) == error_mark_node)
-    reloc = contains_pointers_p (TREE_TYPE (decl)) ? 3 : 0;
-  else if (DECL_INITIAL (decl))
-    reloc = compute_reloc_for_constant (DECL_INITIAL (decl));
-  else
-    reloc = 0;
+  reloc = compute_reloc_for_var (decl);
 
   resolve_unique_section (decl, reloc, flag_data_sections);
   if (IN_NAMED_SECTION (decl))
@@ -1339,6 +1353,12 @@ static bool
 use_blocks_for_decl_p (tree decl)
 {
   struct symtab_node *snode;
+
+  /* Don't create object blocks if each DECL is placed into a separate
+     section because that will uselessly create a section anchor for
+     each DECL.  */
+  if (flag_data_sections)
+    return false;
 
   /* Only data DECLs can be placed into object blocks.  */
   if (!VAR_P (decl) && TREE_CODE (decl) != CONST_DECL)
@@ -2489,7 +2509,7 @@ incorporeal_function_p (tree decl)
       name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
       /* Atomic or sync builtins which have survived this far will be
 	 resolved externally and therefore are not incorporeal.  */
-      if (strncmp (name, "__builtin_", 10) == 0)
+      if (startswith (name, "__builtin_"))
 	return true;
     }
   return false;
@@ -6717,22 +6737,22 @@ default_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_TLS | SECTION_WRITE;
 
   if (strcmp (name, ".bss") == 0
-      || strncmp (name, ".bss.", 5) == 0
-      || strncmp (name, ".gnu.linkonce.b.", 16) == 0
+      || startswith (name, ".bss.")
+      || startswith (name, ".gnu.linkonce.b.")
       || strcmp (name, ".persistent.bss") == 0
       || strcmp (name, ".sbss") == 0
-      || strncmp (name, ".sbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
+      || startswith (name, ".sbss.")
+      || startswith (name, ".gnu.linkonce.sb."))
     flags |= SECTION_BSS;
 
   if (strcmp (name, ".tdata") == 0
-      || strncmp (name, ".tdata.", 7) == 0
-      || strncmp (name, ".gnu.linkonce.td.", 17) == 0)
+      || startswith (name, ".tdata.")
+      || startswith (name, ".gnu.linkonce.td."))
     flags |= SECTION_TLS;
 
   if (strcmp (name, ".tbss") == 0
-      || strncmp (name, ".tbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.tb.", 17) == 0)
+      || startswith (name, ".tbss.")
+      || startswith (name, ".gnu.linkonce.tb."))
     flags |= SECTION_TLS | SECTION_BSS;
 
   if (strcmp (name, ".noinit") == 0)
@@ -7246,7 +7266,8 @@ compute_reloc_for_rtx_1 (const_rtx x)
 
 /* Like compute_reloc_for_constant, except for an RTX.  The return value
    is a mask for which bit 1 indicates a global relocation, and bit 0
-   indicates a local relocation.  */
+   indicates a local relocation.  Used by default_select_rtx_section
+   and default_elf_select_rtx_section.  */
 
 static int
 compute_reloc_for_rtx (const_rtx x)

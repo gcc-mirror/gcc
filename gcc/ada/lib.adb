@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -27,18 +27,20 @@ pragma Style_Checks (All_Checks);
 --  Subprogram ordering not enforced in this unit
 --  (because of some logical groupings).
 
-with Atree;    use Atree;
-with Csets;    use Csets;
-with Einfo;    use Einfo;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Output;   use Output;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Stand;    use Stand;
-with Stringt;  use Stringt;
-with Uname;    use Uname;
-with Widechar; use Widechar;
+with Atree;          use Atree;
+with Csets;          use Csets;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Output;         use Output;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinput;         use Sinput;
+with Stand;          use Stand;
+with Stringt;        use Stringt;
+with Uname;          use Uname;
+with Widechar;       use Widechar;
 
 package body Lib is
 
@@ -509,8 +511,8 @@ package body Lib is
 
          if Counter > Max_Iterations then
 
-            --  ??? Not quite right, but return a value to be able to generate
-            --  SCIL files and hope for the best.
+            --  In CodePeer_Mode, return a value to be able to generate SCIL
+            --  files and hope for the best.
 
             if CodePeer_Mode then
                return No;
@@ -1266,10 +1268,16 @@ package body Lib is
    -- Synchronize_Serial_Number --
    -------------------------------
 
-   procedure Synchronize_Serial_Number is
+   procedure Synchronize_Serial_Number (SN : Nat) is
       TSN : Int renames Units.Table (Current_Sem_Unit).Serial_Number;
    begin
-      TSN := TSN + 1;
+      --  We should not be trying to synchronize downward
+
+      pragma Assert (TSN <= SN);
+
+      if TSN < SN then
+         TSN := SN;
+      end if;
    end Synchronize_Serial_Number;
 
    --------------------

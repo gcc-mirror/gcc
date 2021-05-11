@@ -1786,21 +1786,21 @@ match_arg_list_function (gfc_actual_arglist *result)
       switch (name[0])
 	{
 	case 'l':
-	  if (gfc_str_startswith (name, "loc"))
+	  if (startswith (name, "loc"))
 	    {
 	      result->name = "%LOC";
 	      break;
 	    }
 	  /* FALLTHRU */
 	case 'r':
-	  if (gfc_str_startswith (name, "ref"))
+	  if (startswith (name, "ref"))
 	    {
 	      result->name = "%REF";
 	      break;
 	    }
 	  /* FALLTHRU */
 	case 'v':
-	  if (gfc_str_startswith (name, "val"))
+	  if (startswith (name, "val"))
 	    {
 	      result->name = "%VAL";
 	      break;

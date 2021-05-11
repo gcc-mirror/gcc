@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,33 +23,35 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Casing;   use Casing;
-with Debug;    use Debug;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Fname;    use Fname;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Namet.Sp; use Namet.Sp;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Par_SCO;  use Par_SCO;
-with Restrict; use Restrict;
-with Scans;    use Scans;
-with Scn;      use Scn;
-with Sem_Util; use Sem_Util;
-with Sinput;   use Sinput;
-with Sinput.L; use Sinput.L;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Casing;         use Casing;
+with Debug;          use Debug;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Fname;          use Fname;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Namet.Sp;       use Namet.Sp;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Par_SCO;        use Par_SCO;
+with Restrict;       use Restrict;
+with Scans;          use Scans;
+with Scn;            use Scn;
+with Sem_Util;       use Sem_Util;
+with Sinput;         use Sinput;
+with Sinput.L;       use Sinput.L;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
 with Style;
-with Stylesw;  use Stylesw;
+with Stylesw;        use Stylesw;
 with Table;
-with Tbuild;   use Tbuild;
+with Tbuild;         use Tbuild;
 
 ---------
 -- Par --

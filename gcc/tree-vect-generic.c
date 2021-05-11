@@ -41,7 +41,52 @@ along with GCC; see the file COPYING3.  If not see
 #include "vec-perm-indices.h"
 #include "insn-config.h"
 #include "tree-ssa-dce.h"
+#include "gimple-fold.h"
+#include "gimple-match.h"
 #include "recog.h"		/* FIXME: for insn_data */
+
+
+/* Build a ternary operation and gimplify it.  Emit code before GSI.
+   Return the gimple_val holding the result.  */
+
+static tree
+gimplify_build3 (gimple_stmt_iterator *gsi, enum tree_code code,
+		 tree type, tree a, tree b, tree c)
+{
+  location_t loc = gimple_location (gsi_stmt (*gsi));
+  gimple_seq stmts = NULL;
+  tree ret = gimple_build (&stmts, loc, code, type, a, b, c);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  return ret;
+}
+
+/* Build a binary operation and gimplify it.  Emit code before GSI.
+   Return the gimple_val holding the result.  */
+
+static tree
+gimplify_build2 (gimple_stmt_iterator *gsi, enum tree_code code,
+		 tree type, tree a, tree b)
+{
+  location_t loc = gimple_location (gsi_stmt (*gsi));
+  gimple_seq stmts = NULL;
+  tree ret = gimple_build (&stmts, loc, code, type, a, b);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  return ret;
+}
+
+/* Build a unary operation and gimplify it.  Emit code before GSI.
+   Return the gimple_val holding the result.  */
+
+static tree
+gimplify_build1 (gimple_stmt_iterator *gsi, enum tree_code code, tree type,
+		 tree a)
+{
+  location_t loc = gimple_location (gsi_stmt (*gsi));
+  gimple_seq stmts = NULL;
+  tree ret = gimple_build (&stmts, loc, code, type, a);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  return ret;
+}
 
 
 static void expand_vector_operations_1 (gimple_stmt_iterator *, bitmap);
@@ -122,23 +167,25 @@ typedef tree (*elem_op_func) (gimple_stmt_iterator *,
 			      tree, tree, tree, tree, tree, enum tree_code,
 			      tree);
 
+/* Extract the vector element of type TYPE at BITPOS with BITSIZE from T
+   and return it.  */
+
 tree
 tree_vec_extract (gimple_stmt_iterator *gsi, tree type,
 		  tree t, tree bitsize, tree bitpos)
 {
-  if (TREE_CODE (t) == SSA_NAME)
-    {
-      gimple *def_stmt = SSA_NAME_DEF_STMT (t);
-      if (is_gimple_assign (def_stmt)
-	  && (gimple_assign_rhs_code (def_stmt) == VECTOR_CST
-	      || (bitpos
-		  && gimple_assign_rhs_code (def_stmt) == CONSTRUCTOR)))
-	t = gimple_assign_rhs1 (def_stmt);
-    }
-  if (bitpos)
-    return gimplify_build3 (gsi, BIT_FIELD_REF, type, t, bitsize, bitpos);
-  else
-    return gimplify_build1 (gsi, VIEW_CONVERT_EXPR, type, t);
+  /* We're using the resimplify API and maybe_push_res_to_seq to
+     simplify the BIT_FIELD_REF but restrict the simplification to
+     a single stmt while at the same time following SSA edges for
+     simplification with already emitted CTORs.  */
+  gimple_match_op opr;
+  opr.set_op (BIT_FIELD_REF, type, t, bitsize, bitpos);
+  opr.resimplify (NULL, follow_all_ssa_edges);
+  gimple_seq stmts = NULL;
+  tree res = maybe_push_res_to_seq (&opr, &stmts);
+  gcc_assert (res);
+  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  return res;
 }
 
 static tree
@@ -327,7 +374,8 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
       scalar_int_mode mode
 	= int_mode_for_size (tree_to_uhwi (TYPE_SIZE (type)), 0).require ();
       compute_type = lang_hooks.types.type_for_mode (mode, 1);
-      result = f (gsi, compute_type, a, b, NULL_TREE, NULL_TREE, code, type);
+      result = f (gsi, compute_type, a, b, bitsize_zero_node,
+		  TYPE_SIZE (compute_type), code, type);
       warning_at (loc, OPT_Wvector_operation_performance,
 	          "vector operation will be expanded with a "
 		  "single scalar operation");
@@ -1068,15 +1116,15 @@ expand_vector_condition (gimple_stmt_iterator *gsi, bitmap dce_ssa_names)
 				       comp_width, comp_index);
 	  tree aa2 = tree_vec_extract (gsi, comp_inner_type, a2,
 				       comp_width, comp_index);
-	  aa = fold_build2 (code, cond_type, aa1, aa2);
+	  aa = build2 (code, cond_type, aa1, aa2);
 	}
       else if (a_is_scalar_bitmask)
 	{
 	  wide_int w = wi::set_bit_in_zero (i, TYPE_PRECISION (TREE_TYPE (a)));
 	  result = gimplify_build2 (gsi, BIT_AND_EXPR, TREE_TYPE (a),
 				    a, wide_int_to_tree (TREE_TYPE (a), w));
-	  aa = fold_build2 (NE_EXPR, boolean_type_node, result,
-			    build_zero_cst (TREE_TYPE (a)));
+	  aa = build2 (NE_EXPR, boolean_type_node, result,
+		       build_zero_cst (TREE_TYPE (a)));
 	}
       else
 	aa = tree_vec_extract (gsi, cond_type, a, width, index);
@@ -1515,7 +1563,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 					      elements + i - first)
 		     : maybe_ge (poly_uint64 (indices[i]), elements))
 	      break;
-	  if (i == elements)
+	  if (first && i == elements)
 	    {
 	      gimple_assign_set_rhs3 (stmt, mask);
 	      update_stmt (stmt);

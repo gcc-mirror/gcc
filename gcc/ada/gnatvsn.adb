@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -48,12 +48,11 @@ package body Gnatvsn is
    end Gnat_Free_Software;
 
    type char_array is array (Natural range <>) of aliased Character;
-   Version_String : char_array (0 .. Ver_Len_Max - 1);
-   --  Import the C string defined in the (language-independent) source file
-   --  version.c using the zero-based convention of the C language.
-   --  The size is not the real one, which does not matter since we will
-   --  check for the nul character in Gnat_Version_String.
-   pragma Import (C, Version_String, "version_string");
+   C_Version_String : char_array (0 .. Ver_Len_Max - 1);
+   pragma Import (C, C_Version_String, "gnat_version_string");
+   --  Import the C string defined in the source file version.c using the
+   --  zero-based convention of the C language.  The size is not the real
+   --  one, which does not matter since we will check for the nul character.
 
    -------------------------
    -- Gnat_Version_String --
@@ -64,9 +63,9 @@ package body Gnatvsn is
       Pos : Natural := 0;
    begin
       loop
-         exit when Version_String (Pos) = ASCII.NUL;
+         exit when C_Version_String (Pos) = ASCII.NUL;
 
-         S (Pos + 1) := Version_String (Pos);
+         S (Pos + 1) := C_Version_String (Pos);
          Pos := Pos + 1;
 
          exit when Pos = Ver_Len_Max;

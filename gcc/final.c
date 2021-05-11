@@ -93,7 +93,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbxout.h"
 #endif
 
-/* Most ports that aren't using cc0 don't need to define CC_STATUS_INIT.
+/* Most ports don't need to define CC_STATUS_INIT.
    So define a null default for it to save conditionalization later.  */
 #ifndef CC_STATUS_INIT
 #define CC_STATUS_INIT
@@ -175,17 +175,6 @@ static rtx last_ignored_compare = 0;
 
 static int insn_counter = 0;
 
-/* This variable contains machine-dependent flags (defined in tm.h)
-   set and examined by output routines
-   that describe how to interpret the condition codes properly.  */
-
-CC_STATUS cc_status;
-
-/* During output of an insn, this contains a copy of cc_status
-   from before the insn.  */
-
-CC_STATUS cc_prev_status;
-
 /* Number of unmatched NOTE_INSN_BLOCK_BEG notes we have seen.  */
 
 static int block_depth;
@@ -225,9 +214,6 @@ static tree get_mem_expr_from_op (rtx, int *);
 static void output_asm_operand_names (rtx *, int *, int);
 #ifdef LEAF_REGISTERS
 static void leaf_renumber_regs (rtx_insn *);
-#endif
-#if HAVE_cc0
-static int alter_cond (rtx);
 #endif
 static int align_fuzz (rtx, rtx, int, unsigned);
 static void collect_fn_hard_reg_usage (void);
@@ -1738,6 +1724,9 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
   if (!dwarf2_debug_info_emitted_p (current_function_decl))
     dwarf2out_begin_prologue (0, 0, NULL);
 
+  if (DECL_IGNORED_P (current_function_decl) && last_linenum && last_filename)
+    debug_hooks->set_ignored_loc (last_linenum, last_columnnum, last_filename);
+
 #ifdef LEAF_REG_REMAP
   if (crtl->uses_only_leaf_regs)
     leaf_renumber_regs (first);
@@ -1962,21 +1951,6 @@ final_1 (rtx_insn *first, FILE *file, int seen, int optimize_p)
 
   last_ignored_compare = 0;
 
-  if (HAVE_cc0)
-    for (insn = first; insn; insn = NEXT_INSN (insn))
-      {
-	/* If CC tracking across branches is enabled, record the insn which
-	   jumps to each branch only reached from one place.  */
-	if (optimize_p && JUMP_P (insn))
-	  {
-	    rtx lab = JUMP_LABEL (insn);
-	    if (lab && LABEL_P (lab) && LABEL_NUSES (lab) == 1)
-	      {
-		LABEL_REFS (lab) = insn;
-	      }
-	  }
-      }
-
   init_recog ();
 
   CC_STATUS_INIT;
@@ -2187,9 +2161,6 @@ static rtx_insn *
 final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		   int nopeepholes ATTRIBUTE_UNUSED, int *seen)
 {
-#if HAVE_cc0
-  rtx set;
-#endif
   rtx_insn *next;
   rtx_jump_table_data *table;
 
@@ -2219,6 +2190,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	  in_cold_section_p = !in_cold_section_p;
 
+	  gcc_checking_assert (in_cold_section_p);
 	  if (in_cold_section_p)
 	    cold_function_name
 	      = clone_function_name (current_function_decl, "cold");
@@ -2232,6 +2204,10 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    }
 	  else if (!DECL_IGNORED_P (current_function_decl))
 	    debug_hooks->switch_text_section ();
+	  if (DECL_IGNORED_P (current_function_decl) && last_linenum
+	      && last_filename)
+	    debug_hooks->set_ignored_loc (last_linenum, last_columnnum,
+					  last_filename);
 
 	  switch_to_section (current_function_section ());
 	  targetm.asm_out.function_switched_text_sections (asm_out_file,
@@ -2562,23 +2538,6 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    || GET_CODE (body) == CLOBBER)
 	  break;
 
-#if HAVE_cc0
-	{
-	  /* If there is a REG_CC_SETTER note on this insn, it means that
-	     the setting of the condition code was done in the delay slot
-	     of the insn that branched here.  So recover the cc status
-	     from the insn that set it.  */
-
-	  rtx note = find_reg_note (insn, REG_CC_SETTER, NULL_RTX);
-	  if (note)
-	    {
-	      rtx_insn *other = as_a <rtx_insn *> (XEXP (note, 0));
-	      NOTICE_UPDATE_CC (PATTERN (other), other);
-	      cc_prev_status = cc_status;
-	    }
-	}
-#endif
-
 	/* Detect insns that are really jump-tables
 	   and output them as such.  */
 
@@ -2798,182 +2757,6 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
 	body = PATTERN (insn);
 
-#if HAVE_cc0
-	set = single_set (insn);
-
-	/* Check for redundant test and compare instructions
-	   (when the condition codes are already set up as desired).
-	   This is done only when optimizing; if not optimizing,
-	   it should be possible for the user to alter a variable
-	   with the debugger in between statements
-	   and the next statement should reexamine the variable
-	   to compute the condition codes.  */
-
-	if (optimize_p)
-	  {
-	    if (set
-		&& GET_CODE (SET_DEST (set)) == CC0
-		&& insn != last_ignored_compare)
-	      {
-		rtx src1, src2;
-		if (GET_CODE (SET_SRC (set)) == SUBREG)
-		  SET_SRC (set) = alter_subreg (&SET_SRC (set), true);
-
-		src1 = SET_SRC (set);
-		src2 = NULL_RTX;
-		if (GET_CODE (SET_SRC (set)) == COMPARE)
-		  {
-		    if (GET_CODE (XEXP (SET_SRC (set), 0)) == SUBREG)
-		      XEXP (SET_SRC (set), 0)
-			= alter_subreg (&XEXP (SET_SRC (set), 0), true);
-		    if (GET_CODE (XEXP (SET_SRC (set), 1)) == SUBREG)
-		      XEXP (SET_SRC (set), 1)
-			= alter_subreg (&XEXP (SET_SRC (set), 1), true);
-		    if (XEXP (SET_SRC (set), 1)
-			== CONST0_RTX (GET_MODE (XEXP (SET_SRC (set), 0))))
-		      src2 = XEXP (SET_SRC (set), 0);
-		  }
-		if ((cc_status.value1 != 0
-		     && rtx_equal_p (src1, cc_status.value1))
-		    || (cc_status.value2 != 0
-			&& rtx_equal_p (src1, cc_status.value2))
-		    || (src2 != 0 && cc_status.value1 != 0
-		        && rtx_equal_p (src2, cc_status.value1))
-		    || (src2 != 0 && cc_status.value2 != 0
-			&& rtx_equal_p (src2, cc_status.value2)))
-		  {
-		    /* Don't delete insn if it has an addressing side-effect.  */
-		    if (! FIND_REG_INC_NOTE (insn, NULL_RTX)
-			/* or if anything in it is volatile.  */
-			&& ! volatile_refs_p (PATTERN (insn)))
-		      {
-			/* We don't really delete the insn; just ignore it.  */
-			last_ignored_compare = insn;
-			break;
-		      }
-		  }
-	      }
-	  }
-
-	/* If this is a conditional branch, maybe modify it
-	   if the cc's are in a nonstandard state
-	   so that it accomplishes the same thing that it would
-	   do straightforwardly if the cc's were set up normally.  */
-
-	if (cc_status.flags != 0
-	    && JUMP_P (insn)
-	    && GET_CODE (body) == SET
-	    && SET_DEST (body) == pc_rtx
-	    && GET_CODE (SET_SRC (body)) == IF_THEN_ELSE
-	    && COMPARISON_P (XEXP (SET_SRC (body), 0))
-	    && XEXP (XEXP (SET_SRC (body), 0), 0) == cc0_rtx)
-	  {
-	    /* This function may alter the contents of its argument
-	       and clear some of the cc_status.flags bits.
-	       It may also return 1 meaning condition now always true
-	       or -1 meaning condition now always false
-	       or 2 meaning condition nontrivial but altered.  */
-	    int result = alter_cond (XEXP (SET_SRC (body), 0));
-	    /* If condition now has fixed value, replace the IF_THEN_ELSE
-	       with its then-operand or its else-operand.  */
-	    if (result == 1)
-	      SET_SRC (body) = XEXP (SET_SRC (body), 1);
-	    if (result == -1)
-	      SET_SRC (body) = XEXP (SET_SRC (body), 2);
-
-	    /* The jump is now either unconditional or a no-op.
-	       If it has become a no-op, don't try to output it.
-	       (It would not be recognized.)  */
-	    if (SET_SRC (body) == pc_rtx)
-	      {
-	        delete_insn (insn);
-		break;
-	      }
-	    else if (ANY_RETURN_P (SET_SRC (body)))
-	      /* Replace (set (pc) (return)) with (return).  */
-	      PATTERN (insn) = body = SET_SRC (body);
-
-	    /* Rerecognize the instruction if it has changed.  */
-	    if (result != 0)
-	      INSN_CODE (insn) = -1;
-	  }
-
-	/* If this is a conditional trap, maybe modify it if the cc's
-	   are in a nonstandard state so that it accomplishes the same
-	   thing that it would do straightforwardly if the cc's were
-	   set up normally.  */
-	if (cc_status.flags != 0
-	    && NONJUMP_INSN_P (insn)
-	    && GET_CODE (body) == TRAP_IF
-	    && COMPARISON_P (TRAP_CONDITION (body))
-	    && XEXP (TRAP_CONDITION (body), 0) == cc0_rtx)
-	  {
-	    /* This function may alter the contents of its argument
-	       and clear some of the cc_status.flags bits.
-	       It may also return 1 meaning condition now always true
-	       or -1 meaning condition now always false
-	       or 2 meaning condition nontrivial but altered.  */
-	    int result = alter_cond (TRAP_CONDITION (body));
-
-	    /* If TRAP_CONDITION has become always false, delete the
-	       instruction.  */
-	    if (result == -1)
-	      {
-		delete_insn (insn);
-		break;
-	      }
-
-	    /* If TRAP_CONDITION has become always true, replace
-	       TRAP_CONDITION with const_true_rtx.  */
-	    if (result == 1)
-	      TRAP_CONDITION (body) = const_true_rtx;
-
-	    /* Rerecognize the instruction if it has changed.  */
-	    if (result != 0)
-	      INSN_CODE (insn) = -1;
-	  }
-
-	/* Make same adjustments to instructions that examine the
-	   condition codes without jumping and instructions that
-	   handle conditional moves (if this machine has either one).  */
-
-	if (cc_status.flags != 0
-	    && set != 0)
-	  {
-	    rtx cond_rtx, then_rtx, else_rtx;
-
-	    if (!JUMP_P (insn)
-		&& GET_CODE (SET_SRC (set)) == IF_THEN_ELSE)
-	      {
-		cond_rtx = XEXP (SET_SRC (set), 0);
-		then_rtx = XEXP (SET_SRC (set), 1);
-		else_rtx = XEXP (SET_SRC (set), 2);
-	      }
-	    else
-	      {
-		cond_rtx = SET_SRC (set);
-		then_rtx = const_true_rtx;
-		else_rtx = const0_rtx;
-	      }
-
-	    if (COMPARISON_P (cond_rtx)
-		&& XEXP (cond_rtx, 0) == cc0_rtx)
-	      {
-		int result;
-		result = alter_cond (cond_rtx);
-		if (result == 1)
-		  validate_change (insn, &SET_SRC (set), then_rtx, 0);
-		else if (result == -1)
-		  validate_change (insn, &SET_SRC (set), else_rtx, 0);
-		else if (result == 2)
-		  INSN_CODE (insn) = -1;
-		if (SET_DEST (set) == SET_SRC (set))
-		  delete_insn (insn);
-	      }
-	  }
-
-#endif
-
 	/* Do machine-specific peephole optimizations if desired.  */
 
 	if (HAVE_peephole && optimize_p && !flag_no_peephole && !nopeepholes)
@@ -3040,17 +2823,6 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	if (targetm.have_conditional_execution ()
 	    && GET_CODE (PATTERN (insn)) == COND_EXEC)
 	  current_insn_predicate = COND_EXEC_TEST (PATTERN (insn));
-
-#if HAVE_cc0
-	cc_prev_status = cc_status;
-
-	/* Update `cc_status' for this instruction.
-	   The instruction's output routine may change it further.
-	   If the output routine for a jump insn needs to depend
-	   on the cc status, it should look at cc_prev_status.  */
-
-	NOTICE_UPDATE_CC (body, insn);
-#endif
 
 	current_output_insn = debug_insn = insn;
 
@@ -3442,167 +3214,6 @@ walk_alter_subreg (rtx *xp, bool *changed)
 
   return *xp;
 }
-
-#if HAVE_cc0
-
-/* Given BODY, the body of a jump instruction, alter the jump condition
-   as required by the bits that are set in cc_status.flags.
-   Not all of the bits there can be handled at this level in all cases.
-
-   The value is normally 0.
-   1 means that the condition has become always true.
-   -1 means that the condition has become always false.
-   2 means that COND has been altered.  */
-
-static int
-alter_cond (rtx cond)
-{
-  int value = 0;
-
-  if (cc_status.flags & CC_REVERSED)
-    {
-      value = 2;
-      PUT_CODE (cond, swap_condition (GET_CODE (cond)));
-    }
-
-  if (cc_status.flags & CC_INVERTED)
-    {
-      value = 2;
-      PUT_CODE (cond, reverse_condition (GET_CODE (cond)));
-    }
-
-  if (cc_status.flags & CC_NOT_POSITIVE)
-    switch (GET_CODE (cond))
-      {
-      case LE:
-      case LEU:
-      case GEU:
-	/* Jump becomes unconditional.  */
-	return 1;
-
-      case GT:
-      case GTU:
-      case LTU:
-	/* Jump becomes no-op.  */
-	return -1;
-
-      case GE:
-	PUT_CODE (cond, EQ);
-	value = 2;
-	break;
-
-      case LT:
-	PUT_CODE (cond, NE);
-	value = 2;
-	break;
-
-      default:
-	break;
-      }
-
-  if (cc_status.flags & CC_NOT_NEGATIVE)
-    switch (GET_CODE (cond))
-      {
-      case GE:
-      case GEU:
-	/* Jump becomes unconditional.  */
-	return 1;
-
-      case LT:
-      case LTU:
-	/* Jump becomes no-op.  */
-	return -1;
-
-      case LE:
-      case LEU:
-	PUT_CODE (cond, EQ);
-	value = 2;
-	break;
-
-      case GT:
-      case GTU:
-	PUT_CODE (cond, NE);
-	value = 2;
-	break;
-
-      default:
-	break;
-      }
-
-  if (cc_status.flags & CC_NO_OVERFLOW)
-    switch (GET_CODE (cond))
-      {
-      case GEU:
-	/* Jump becomes unconditional.  */
-	return 1;
-
-      case LEU:
-	PUT_CODE (cond, EQ);
-	value = 2;
-	break;
-
-      case GTU:
-	PUT_CODE (cond, NE);
-	value = 2;
-	break;
-
-      case LTU:
-	/* Jump becomes no-op.  */
-	return -1;
-
-      default:
-	break;
-      }
-
-  if (cc_status.flags & (CC_Z_IN_NOT_N | CC_Z_IN_N))
-    switch (GET_CODE (cond))
-      {
-      default:
-	gcc_unreachable ();
-
-      case NE:
-	PUT_CODE (cond, cc_status.flags & CC_Z_IN_N ? GE : LT);
-	value = 2;
-	break;
-
-      case EQ:
-	PUT_CODE (cond, cc_status.flags & CC_Z_IN_N ? LT : GE);
-	value = 2;
-	break;
-      }
-
-  if (cc_status.flags & CC_NOT_SIGNED)
-    /* The flags are valid if signed condition operators are converted
-       to unsigned.  */
-    switch (GET_CODE (cond))
-      {
-      case LE:
-	PUT_CODE (cond, LEU);
-	value = 2;
-	break;
-
-      case LT:
-	PUT_CODE (cond, LTU);
-	value = 2;
-	break;
-
-      case GT:
-	PUT_CODE (cond, GTU);
-	value = 2;
-	break;
-
-      case GE:
-	PUT_CODE (cond, GEU);
-	value = 2;
-	break;
-
-      default:
-	break;
-      }
-
-  return value;
-}
-#endif
 
 /* Report inconsistency between the assembler template and the operands.
    In an `asm', it's the user's fault; otherwise, the compiler's fault.  */

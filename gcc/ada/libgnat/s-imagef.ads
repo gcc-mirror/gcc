@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---            Copyright (C) 2020, Free Software Foundation, Inc.            --
+--            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,7 +60,7 @@ package System.Image_F is
    --  For0 and Aft0 are the values of the Fore and Aft attributes for the
    --  fixed point type whose mantissa type is Int and whose small is Num/Den.
    --  This function is used only for fixed point whose Small is an integer or
-   --  its reciprocal (see package System.Img_Real for the handling of other
+   --  its reciprocal (see package System.Image_R for the handling of other
    --  ordinary fixed-point types). The caller guarantees that S is long enough
    --  to hold the result and has a lower bound of 1.
 

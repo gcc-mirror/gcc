@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -68,10 +68,7 @@ package Fmap is
    --  mapping file whose file name is File_Name.
 
    procedure Reset_Tables;
-   --  Initialize all the internal data structures. This procedure is used
-   --  when several compilations are performed by the same process (by GNSA
-   --  for ASIS, for example) to remove any existing mappings from a previous
-   --  compilation.
+   --  Initialize all the internal data structures
 
    procedure Add_Forbidden_File_Name (Name : File_Name_Type);
    --  Indicate that a source file name is forbidden. This is used when there

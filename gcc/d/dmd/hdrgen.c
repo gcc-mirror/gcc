@@ -3212,7 +3212,7 @@ public:
         }
         else if (p->type->ty == Tident &&
                  strlen(((TypeIdentifier *)p->type)->ident->toChars()) > 3 &&
-                 strncmp(((TypeIdentifier *)p->type)->ident->toChars(), "__T", 3) == 0)
+                 startswith (((TypeIdentifier *)p->type)->ident->toChars(), "__T"))
         {
             // print parameter name, instead of undetermined type parameter
             buf->writestring(p->ident->toChars());

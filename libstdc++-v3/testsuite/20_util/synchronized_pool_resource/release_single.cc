@@ -16,7 +16,6 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run }
-// { dg-options "-std=gnu++17" }
 // { dg-require-effective-target c++17 }
 // { dg-require-gthreads "" }
 

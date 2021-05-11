@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,49 +23,53 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Checks;   use Checks;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Expander; use Expander;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Namet.Sp; use Namet.Sp;
-with Nmake;    use Nmake;
-with Nlists;   use Nlists;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch5;  use Sem_Ch5;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sem_Type; use Sem_Type;
-with Sem_Warn; use Sem_Warn;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stringt;  use Stringt;
-with Stand;    use Stand;
-with Style;    use Style;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Ttypes;   use Ttypes;
-with Uintp;    use Uintp;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Namet.Sp;       use Namet.Sp;
+with Nmake;          use Nmake;
+with Nlists;         use Nlists;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch5;        use Sem_Ch5;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sem_Type;       use Sem_Type;
+with Sem_Warn;       use Sem_Warn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stringt;        use Stringt;
+with Stand;          use Stand;
+with Style;          use Style;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Ttypes;         use Ttypes;
+with Uintp;          use Uintp;
 
 package body Sem_Aggr is
 
@@ -1677,7 +1681,7 @@ package body Sem_Aggr is
 
          Enter_Name (Id);
          Set_Etype (Id, Index_Typ);
-         Set_Ekind (Id, E_Variable);
+         Mutate_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
 
          --  Analyze  expression without expansion, to verify legality.
@@ -2859,7 +2863,7 @@ package body Sem_Aggr is
             Set_Etype (Id, Key_Type);
          end if;
 
-         Set_Ekind (Id, E_Variable);
+         Mutate_Ekind (Id, E_Variable);
          Set_Scope (Id, Ent);
          Set_Referenced (Id);
 
@@ -2980,9 +2984,12 @@ package body Sem_Aggr is
             Index_Type : constant Entity_Id := Etype (Next_Formal (Container));
             Comp_Type  : constant Entity_Id :=
                                  Etype (Next_Formal (Next_Formal (Container)));
-            Comp   : Node_Id;
-            Choice : Node_Id;
+            Comp        : Node_Id;
+            Choice      : Node_Id;
+            Num_Choices : Nat := 0;
 
+            Hi_Val : Uint;
+            Lo_Val : Uint;
          begin
             if Present (Expressions (N)) then
                Comp := First (Expressions (N));
@@ -2999,7 +3006,7 @@ package body Sem_Aggr is
                   return;
                end if;
 
-               Comp := First (Expressions (N));
+               Comp := First (Component_Associations (N));
 
                while Present (Comp) loop
                   if Nkind (Comp) = N_Component_Association then
@@ -3007,6 +3014,7 @@ package body Sem_Aggr is
 
                      while Present (Choice) loop
                         Analyze_And_Resolve (Choice, Index_Type);
+                        Num_Choices := Num_Choices + 1;
                         Next (Choice);
                      end loop;
 
@@ -3018,10 +3026,107 @@ package body Sem_Aggr is
                   then
                      Resolve_Iterated_Association
                        (Comp, Index_Type, Comp_Type);
+                     Num_Choices := Num_Choices + 1;
                   end if;
 
                   Next (Comp);
                end loop;
+
+               --  The component associations in an indexed aggregate
+               --  must denote a contiguous set of static values. We
+               --  build a table of values/ranges and sort it, as is done
+               --  elsewhere for case statements and array aggregates.
+               --  If the aggregate has a single iterated association it
+               --  is allowed to be nonstatic and there is nothing to check.
+
+               if Num_Choices > 1 then
+                  declare
+                     Table     : Case_Table_Type (1 .. Num_Choices);
+                     No_Choice : Pos := 1;
+                     Lo, Hi    : Node_Id;
+
+                  --  Traverse aggregate to determine size of needed table.
+                  --  Verify that bounds are static and that loops have no
+                  --  filters or key expressions.
+
+                  begin
+                     Comp := First (Component_Associations (N));
+                     while Present (Comp) loop
+                        if Nkind (Comp) = N_Iterated_Element_Association then
+                           if Present
+                             (Loop_Parameter_Specification (Comp))
+                           then
+                              if Present (Iterator_Filter
+                                (Loop_Parameter_Specification (Comp)))
+                              then
+                                 Error_Msg_N
+                                   ("iterator filter not allowed " &
+                                     "in indexed aggregate", Comp);
+                                 return;
+
+                              elsif Present (Key_Expression
+                                (Loop_Parameter_Specification (Comp)))
+                              then
+                                 Error_Msg_N
+                                   ("key expression not allowed " &
+                                     "in indexed aggregate", Comp);
+                                 return;
+                              end if;
+                           end if;
+                        else
+                           Choice := First (Choices (Comp));
+
+                           while Present (Choice) loop
+                              Get_Index_Bounds (Choice, Lo, Hi);
+                              Table (No_Choice).Choice := Choice;
+                              Table (No_Choice).Lo := Lo;
+                              Table (No_Choice).Hi := Hi;
+
+                              --  Verify staticness of value or range
+
+                              if not Is_Static_Expression (Lo)
+                                or else not Is_Static_Expression (Hi)
+                              then
+                                 Error_Msg_N
+                                   ("nonstatic expression for index " &
+                                     "for indexed aggregate", Choice);
+                                 return;
+                              end if;
+
+                              No_Choice := No_Choice + 1;
+                              Next (Choice);
+                           end loop;
+                        end if;
+
+                        Next (Comp);
+                     end loop;
+
+                     Sort_Case_Table (Table);
+
+                     for J in 1 .. Num_Choices - 1 loop
+                        Hi_Val := Expr_Value (Table (J).Hi);
+                        Lo_Val := Expr_Value (Table (J + 1).Lo);
+
+                        if Lo_Val = Hi_Val then
+                           Error_Msg_N
+                             ("duplicate index in indexed aggregate",
+                               Table (J + 1).Choice);
+                           exit;
+
+                        elsif Lo_Val < Hi_Val then
+                           Error_Msg_N
+                             ("overlapping indices in indexed aggregate",
+                               Table (J + 1).Choice);
+                           exit;
+
+                        elsif Lo_Val > Hi_Val + 1 then
+                           Error_Msg_N
+                             ("missing index values", Table (J + 1).Choice);
+                           exit;
+                        end if;
+                     end loop;
+                  end;
+               end if;
             end if;
          end;
       end if;
@@ -3098,7 +3203,7 @@ package body Sem_Aggr is
 
                if No (Scope (Id)) then
                   Set_Etype (Id, Index_Type);
-                  Set_Ekind (Id, E_Variable);
+                  Mutate_Ekind (Id, E_Variable);
                   Set_Scope (Id, Ent);
                end if;
                Enter_Name (Id);
@@ -4743,7 +4848,7 @@ package body Sem_Aggr is
          then
             Error_Msg_NE
               ("aggregate not available for type& whose ancestor "
-               & "has unknown discriminants ", N, Typ);
+               & "has unknown discriminants", N, Typ);
          end if;
 
          if Has_Unknown_Discriminants (Typ)
@@ -5031,7 +5136,7 @@ package body Sem_Aggr is
 
          if Present (Get_Value (Component, Component_Associations (N))) then
             Error_Msg_NE
-              ("more than one value supplied for Component &", N, Component);
+              ("more than one value supplied for component &", N, Component);
          end if;
 
          Next (Positional_Expr);

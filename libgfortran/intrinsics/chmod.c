@@ -71,7 +71,10 @@ chmod_internal (char *file, char *mode, gfc_charlen_type mode_len)
 #ifndef __MINGW32__
   bool is_dir;
 #endif
-  mode_t mode_mask, file_mode, new_mode;
+#ifdef HAVE_UMASK
+  mode_t mode_mask;
+#endif
+  mode_t file_mode, new_mode;
   struct stat stat_buf;
 
   if (mode_len == 0)

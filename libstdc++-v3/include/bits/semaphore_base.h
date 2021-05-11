@@ -39,8 +39,10 @@
 #endif // __cpp_lib_atomic_wait
 
 #ifdef _GLIBCXX_HAVE_POSIX_SEMAPHORE
-# include <limits.h>
-# include <semaphore.h>
+# include <exception>	// std::terminate
+# include <cerrno>	// errno, EINTR, EAGAIN etc.
+# include <limits.h>	// SEM_VALUE_MAX
+# include <semaphore.h>	// sem_t, sem_init, sem_wait, sem_post etc.
 #endif
 
 #include <chrono>
@@ -263,14 +265,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 #endif // __cpp_lib_atomic_wait
 
-// Note: the _GLIBCXX_REQUIRE_POSIX_SEMAPHORE macro can be used to force the
+// Note: the _GLIBCXX_USE_POSIX_SEMAPHORE macro can be used to force the
 // use of Posix semaphores (sem_t). Doing so however, alters the ABI.
-#if defined __cpp_lib_atomic_wait && !_GLIBCXX_REQUIRE_POSIX_SEMAPHORE
+#if defined __cpp_lib_atomic_wait && !_GLIBCXX_USE_POSIX_SEMAPHORE
   using __semaphore_impl = __atomic_semaphore;
 #elif _GLIBCXX_HAVE_POSIX_SEMAPHORE
   using __semaphore_impl = __platform_semaphore;
-#else
-#  error "No suitable semaphore implementation available"
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

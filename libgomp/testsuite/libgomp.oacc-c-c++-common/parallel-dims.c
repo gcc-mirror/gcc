@@ -1,6 +1,9 @@
 /* OpenACC parallelism dimensions clauses: num_gangs, num_workers,
    vector_length.  */
 
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
+
 /* See also '../libgomp.oacc-fortran/parallel-dims.f90'.  */
 
 #include <limits.h>
@@ -105,6 +108,7 @@ int main ()
     gangs_max = workers_max = vectors_max = INT_MIN;
 #pragma acc parallel copy (gangs_actual) \
   num_gangs (GANGS) /* { dg-warning "'num_gangs' value must be positive" "" { target c++ } } */
+    /* { dg-warning "region contains gang partitioned code but is not gang partitioned" "" { target *-*-* } .-2 } */
     {
       /* We're actually executing with num_gangs (1).  */
       gangs_actual = 1;
@@ -134,6 +138,7 @@ int main ()
     gangs_max = workers_max = vectors_max = INT_MIN;
 #pragma acc parallel copy (workers_actual) \
   num_workers (WORKERS) /* { dg-warning "'num_workers' value must be positive" "" { target c++ } } */
+    /* { dg-warning "region contains worker partitioned code but is not worker partitioned" "" { target *-*-* } .-2 } */
     {
       /* We're actually executing with num_workers (1).  */
       workers_actual = 1;
@@ -163,6 +168,7 @@ int main ()
     gangs_max = workers_max = vectors_max = INT_MIN;
 #pragma acc parallel copy (vectors_actual) /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */ \
   vector_length (VECTORS) /* { dg-warning "'vector_length' value must be positive" "" { target c++ } } */
+    /* { dg-warning "region contains vector partitioned code but is not vector partitioned" "" { target *-*-* } .-2 } */
     {
       /* We're actually executing with vector_length (1), just the GCC nvptx
 	 back end enforces vector_length (32).  */
@@ -208,6 +214,7 @@ int main ()
 #pragma acc parallel copy (gangs_actual) \
   reduction (min: gangs_min, workers_min, vectors_min) reduction (max: gangs_max, workers_max, vectors_max) \
   num_gangs (gangs)
+    /* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-3 } */
     {
       if (acc_on_device (acc_device_host))
 	{
@@ -617,6 +624,9 @@ int main ()
     gangs_max = workers_max = vectors_max = INT_MIN;
 #pragma acc serial copy (vectors_actual) /* { dg-warning "using vector_length \\(32\\), ignoring 1" "" { target openacc_nvidia_accel_selected } } */ \
   copy (gangs_min, gangs_max, workers_min, workers_max, vectors_min, vectors_max)
+    /* { dg-bogus "warning: region contains gang partitioned code but is not gang partitioned" "TODO 'serial'" { xfail *-*-* } .-2 }
+       { dg-bogus "warning: region contains worker partitioned code but is not worker partitioned" "TODO 'serial'" { xfail *-*-* } .-3 }
+       { dg-bogus "warning: region contains vector partitioned code but is not vector partitioned" "TODO 'serial'" { xfail *-*-* } .-4 } */
     {
       if (acc_on_device (acc_device_nvidia))
 	{

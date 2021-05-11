@@ -130,6 +130,18 @@ fi
 if test x$may_have_cet = xyes; then
   if test x$cross_compiling = xno; then
     AC_TRY_RUN([
+int
+main ()
+{
+  asm ("endbr32");
+  return 0;
+}
+    ],
+    [have_multi_byte_nop=yes],
+    [have_multi_byte_nop=no])
+    have_cet=no
+    if test x$have_multi_byte_nop = xyes; then
+      AC_TRY_RUN([
 static void
 foo (void)
 {
@@ -155,9 +167,10 @@ main ()
   bar ();
   return 0;
 }
-    ],
-    [have_cet=no],
-    [have_cet=yes])
+      ],
+      [have_cet=no],
+      [have_cet=yes])
+    fi
     if test x$enable_cet = xno -a x$have_cet = xyes; then
       AC_MSG_ERROR([Intel CET must be enabled on Intel CET enabled host])
     fi

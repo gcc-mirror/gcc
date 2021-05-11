@@ -243,7 +243,7 @@ extern void rs6000_xcoff_declare_object_name (FILE *, const char *, tree);
 extern void rs6000_xcoff_asm_output_aligned_decl_common (FILE *, tree,
 							 const char *,
 							 unsigned HOST_WIDE_INT,
-							 unsigned HOST_WIDE_INT);
+							 unsigned int);
 extern void rs6000_elf_declare_function_name (FILE *, const char *, tree);
 extern bool rs6000_elf_in_small_data_p (const_tree);
 

@@ -606,7 +606,8 @@ try_fwprop_subst (use_info *use, set_info *def,
   if (def_insn->bb () != use_insn->bb ())
     {
       src_uses = crtl->ssa->make_uses_available (attempt, src_uses,
-						 use_insn->bb ());
+						 use_insn->bb (),
+						 use_insn->is_debug_insn ());
       if (!src_uses.is_valid ())
 	return false;
     }
@@ -783,7 +784,7 @@ forward_propagate_and_simplify (use_info *use, set_info *def,
   if (need_single_set && !use_set)
     return false;
 
-  /* Do not propagate into PC, CC0, etc.
+  /* Do not propagate into PC etc.
 
      ??? This too seems unnecessary.  The current code should work correctly
      without it, including cases where jumps become unconditional.  */

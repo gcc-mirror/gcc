@@ -353,7 +353,6 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
     case SYMBOL_REF:
     case CODE_LABEL:
     case PC:
-    case CC0:
     case ASM_INPUT:
     case ADDR_VEC:
     case ADDR_DIFF_VEC:

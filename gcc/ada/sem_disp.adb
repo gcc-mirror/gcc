@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,37 +23,41 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Elists;   use Elists;
-with Einfo;    use Einfo;
-with Exp_Disp; use Exp_Disp;
-with Exp_Util; use Exp_Util;
-with Exp_Ch7;  use Exp_Ch7;
-with Exp_Tss;  use Exp_Tss;
-with Errout;   use Errout;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Eval; use Sem_Eval;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Snames;   use Snames;
-with Sinfo;    use Sinfo;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Warnsw;   use Warnsw;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Elists;         use Elists;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Exp_Disp;       use Exp_Disp;
+with Exp_Util;       use Exp_Util;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Tss;        use Exp_Tss;
+with Errout;         use Errout;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Snames;         use Snames;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Warnsw;         use Warnsw;
 
 package body Sem_Disp is
 
@@ -517,6 +521,12 @@ package body Sem_Disp is
          procedure Abstract_Context_Error;
          --  Error for abstract call dispatching on result is not dispatching
 
+         function Has_Controlling_Current_Instance_Actual_In_DIC
+           (Call : Node_Id) return Boolean;
+         --  Return True if the subprogram call Call has a controlling actual
+         --  given directly by a current instance referenced within a DIC
+         --  aspect.
+
          ----------------------------
          -- Abstract_Context_Error --
          ----------------------------
@@ -535,6 +545,44 @@ package body Sem_Disp is
                  ("call to abstract procedure must be dispatching", N);
             end if;
          end Abstract_Context_Error;
+
+         ----------------------------------------
+         -- Has_Current_Instance_Actual_In_DIC --
+         ----------------------------------------
+
+         function Has_Controlling_Current_Instance_Actual_In_DIC
+           (Call : Node_Id) return Boolean
+         is
+            A : Node_Id;
+            F : Entity_Id;
+         begin
+            F := First_Formal (Subp_Entity);
+            A := First_Actual (Call);
+
+            while Present (F) loop
+
+               --  Return True if the actual denotes a current instance (which
+               --  will be represented by an in-mode formal of the enclosing
+               --  DIC_Procedure) passed to a controlling formal. We don't have
+               --  to worry about controlling access formals here, because its
+               --  illegal to apply Access (etc.) attributes to a current
+               --  instance within an aspect (by AI12-0068).
+
+               if Is_Controlling_Formal (F)
+                 and then Nkind (A) = N_Identifier
+                 and then Ekind (Entity (A)) = E_In_Parameter
+                 and then Is_Subprogram (Scope (Entity (A)))
+                 and then Is_DIC_Procedure (Scope (Entity (A)))
+               then
+                  return True;
+               end if;
+
+               Next_Formal (F);
+               Next_Actual (A);
+            end loop;
+
+            return False;
+         end Has_Controlling_Current_Instance_Actual_In_DIC;
 
          --  Local variables
 
@@ -588,6 +636,20 @@ package body Sem_Disp is
                   or else
                     (Nkind (Parent (Scop)) = N_Procedure_Specification
                       and then Null_Present (Parent (Scop))))
+            then
+               null;
+
+            --  Similarly to the dispensation for postconditions, a call to
+            --  an abstract function within a Default_Initial_Condition aspect
+            --  can be legal when passed a current instance of the type. Such
+            --  a call will be effectively mapped to a call to a primitive of
+            --  a descendant type (see AI12-0397, as well as AI12-0170), so
+            --  doesn't need to be dispatching. We test for being within a DIC
+            --  procedure, since that's where the call will be analyzed.
+
+            elsif Is_Subprogram (Scop)
+              and then Is_DIC_Procedure (Scop)
+              and then Has_Controlling_Current_Instance_Actual_In_DIC (Call)
             then
                null;
 

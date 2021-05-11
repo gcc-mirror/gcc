@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2014-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2014-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,30 +23,34 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Exp_Util; use Exp_Util;
-with Lib;      use Lib;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Exp_Util;       use Exp_Util;
+with Lib;            use Lib;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
 with Opt;
-with Output;   use Output;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Mech; use Sem_Mech;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Output;         use Output;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Exp_Unst is
 
@@ -187,7 +191,7 @@ package body Exp_Unst is
 
    begin
       Typ := Make_Temporary (Loc, 'S');
-      Set_Ekind (Typ, E_General_Access_Type);
+      Mutate_Ekind (Typ, E_General_Access_Type);
       Set_Etype (Typ, Typ);
       Set_Scope (Typ, Scop);
       Set_Directly_Designated_Type (Typ, Etype (E));
@@ -527,14 +531,17 @@ package body Exp_Unst is
                   --  Entity name case. Make sure that the entity is declared
                   --  in a subprogram. This may not be the case for a type in a
                   --  loop appearing in a precondition.
-                  --  Exclude explicitly  discriminants (that can appear
-                  --  in bounds of discriminated components).
+                  --  Exclude explicitly discriminants (that can appear
+                  --  in bounds of discriminated components) and enumeration
+                  --  literals.
 
                   if Is_Entity_Name (N) then
                      if Present (Entity (N))
                        and then not Is_Type (Entity (N))
                        and then Present (Enclosing_Subprogram (Entity (N)))
-                       and then Ekind (Entity (N)) /= E_Discriminant
+                       and then
+                         Ekind (Entity (N))
+                           not in E_Discriminant | E_Enumeration_Literal
                      then
                         Note_Uplevel_Ref
                           (E      => Entity (N),
@@ -1785,7 +1792,7 @@ package body Exp_Unst is
                      --  Decorate the new formal entity
 
                      Set_Scope                (Form, STJ.Ent);
-                     Set_Ekind                (Form, E_In_Parameter);
+                     Mutate_Ekind             (Form, E_In_Parameter);
                      Set_Etype                (Form, STJE.ARECnPT);
                      Set_Mechanism            (Form, By_Copy);
                      Set_Never_Set_In_Source  (Form, True);

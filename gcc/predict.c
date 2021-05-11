@@ -3106,7 +3106,6 @@ tree_estimate_probability (bool dry_run)
 {
   basic_block bb;
 
-  add_noreturn_fake_exit_edges ();
   connect_infinite_loops_to_exit ();
   /* We use loop_niter_by_eval, which requires that the loops have
      preheaders.  */
@@ -4096,8 +4095,6 @@ pass_profile::execute (function *fun)
   if (dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (dump_file, NULL, 0);
 
-  mark_irreducible_loops ();
-
   nb_loops = number_of_loops (fun);
   if (nb_loops > 1)
     scev_initialize ();
@@ -4291,7 +4288,6 @@ rebuild_frequencies (void)
   if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
     {
       loop_optimizer_init (0);
-      add_noreturn_fake_exit_edges ();
       mark_irreducible_loops ();
       connect_infinite_loops_to_exit ();
       estimate_bb_frequencies (true);
@@ -4319,8 +4315,6 @@ report_predictor_hitrates (void)
   loop_optimizer_init (LOOPS_NORMAL);
   if (dump_file && (dump_flags & TDF_DETAILS))
     flow_loops_dump (dump_file, NULL, 0);
-
-  mark_irreducible_loops ();
 
   nb_loops = number_of_loops (cfun);
   if (nb_loops > 1)

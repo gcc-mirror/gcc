@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1991-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1991-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -207,7 +207,7 @@ package body Errutil is
             Next                => No_Error_Msg,
             Prev                => No_Error_Msg,
             Sfile               => Get_Source_File_Index (Sptr),
-            Sptr                => Sptr,
+            Sptr                => To_Span (Sptr),
             Optr                => Optr,
             Insertion_Sloc      => No_Location,
             Line                => Get_Physical_Line_Number (Sptr),
@@ -234,7 +234,7 @@ package body Errutil is
            Errors.Table (Cur_Msg).Sfile < Errors.Table (Next_Msg).Sfile;
 
          if Errors.Table (Cur_Msg).Sfile = Errors.Table (Next_Msg).Sfile then
-            exit when Sptr < Errors.Table (Next_Msg).Sptr;
+            exit when Sptr < Errors.Table (Next_Msg).Sptr.Ptr;
          end if;
 
          Prev_Msg := Next_Msg;

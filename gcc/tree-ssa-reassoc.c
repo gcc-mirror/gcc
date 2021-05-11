@@ -1446,6 +1446,10 @@ insert_stmt_after (gimple *stmt, gimple *insert_point)
       gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
       return;
     }
+  else if (gimple_code (insert_point) == GIMPLE_ASM)
+    /* We have no idea where to insert - it depends on where the
+       uses will be placed.  */
+    gcc_unreachable ();
   else
     /* We assume INSERT_POINT is a SSA_NAME_DEF_STMT of some SSA_NAME,
        thus if it must end a basic block, it should be a call that can
@@ -5892,6 +5896,12 @@ can_reassociate_p (tree op)
 {
   tree type = TREE_TYPE (op);
   if (TREE_CODE (op) == SSA_NAME && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op))
+    return false;
+  /* Make sure asm goto outputs do not participate in reassociation since
+     we have no way to find an insertion place after asm goto.  */
+  if (TREE_CODE (op) == SSA_NAME
+      && gimple_code (SSA_NAME_DEF_STMT (op)) == GIMPLE_ASM
+      && gimple_asm_nlabels (as_a <gasm *> (SSA_NAME_DEF_STMT (op))) != 0)
     return false;
   if ((ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_WRAPS (type))
       || NON_SAT_FIXED_POINT_TYPE_P (type)

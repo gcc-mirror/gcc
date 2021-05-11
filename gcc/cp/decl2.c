@@ -974,7 +974,11 @@ grokfield (const cp_declarator *declarator,
   if ((TREE_CODE (value) == FUNCTION_DECL
        || TREE_CODE (value) == TEMPLATE_DECL)
       && DECL_CONTEXT (value) != current_class_type)
-    return value;
+    {
+      if (attrlist)
+	cplus_decl_attributes (&value, attrlist, 0);
+      return value;
+    }
 
   /* Need to set this before push_template_decl.  */
   if (VAR_P (value))
@@ -1278,9 +1282,9 @@ save_template_attributes (tree *attr_p, tree *decl_p, int flags)
 
   tree old_attrs = *q;
 
-  /* Merge the late attributes at the beginning with the attribute
+  /* Place the late attributes at the beginning of the attribute
      list.  */
-  late_attrs = merge_attributes (late_attrs, *q);
+  late_attrs = chainon (late_attrs, *q);
   if (*q != late_attrs
       && !DECL_P (*decl_p)
       && !(flags & ATTR_FLAG_TYPE_IN_PLACE))

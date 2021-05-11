@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2013-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2013-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,6 @@
 --  of Wide_Character_Type uses twice the size of a C char, instead of the
 --  size of wchar_t, since this corresponds to expected Ada usage.
 
-with Einfo; use Einfo;
 with Stand; use Stand;
 with Types; use Types;
 

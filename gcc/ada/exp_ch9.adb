@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,49 +23,53 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Aspects;  use Aspects;
-with Checks;   use Checks;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Ch3;  use Exp_Ch3;
-with Exp_Ch6;  use Exp_Ch6;
-with Exp_Ch11; use Exp_Ch11;
-with Exp_Dbug; use Exp_Dbug;
-with Exp_Sel;  use Exp_Sel;
-with Exp_Smem; use Exp_Smem;
-with Exp_Tss;  use Exp_Tss;
-with Exp_Util; use Exp_Util;
-with Freeze;   use Freeze;
+with Atree;          use Atree;
+with Aspects;        use Aspects;
+with Checks;         use Checks;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch11;       use Exp_Ch11;
+with Exp_Dbug;       use Exp_Dbug;
+with Exp_Sel;        use Exp_Sel;
+with Exp_Smem;       use Exp_Smem;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
 with Hostparm;
-with Itypes;   use Itypes;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Rtsfind;  use Rtsfind;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Ch5;  use Sem_Ch5;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Ch9;  use Sem_Ch9;
-with Sem_Ch11; use Sem_Ch11;
-with Sem_Ch13; use Sem_Ch13;
-with Sem_Elab; use Sem_Elab;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Targparm; use Targparm;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
-with Validsw;  use Validsw;
+with Itypes;         use Itypes;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Ch5;        use Sem_Ch5;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch9;        use Sem_Ch9;
+with Sem_Ch11;       use Sem_Ch11;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Elab;       use Sem_Elab;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Targparm;       use Targparm;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Validsw;        use Validsw;
 
 package body Exp_Ch9 is
 
@@ -120,7 +124,7 @@ package body Exp_Ch9 is
    function Build_Barrier_Function
      (N   : Node_Id;
       Ent : Entity_Id;
-      Pid : Node_Id) return Node_Id;
+      Pid : Entity_Id) return Node_Id;
    --  Build the function body returning the value of the barrier expression
    --  for the specified entry body.
 
@@ -735,9 +739,9 @@ package body Exp_Ch9 is
          Set_Debug_Info_Needed (New_F);
 
          if Ekind (Formal) = E_In_Parameter then
-            Set_Ekind (New_F, E_Constant);
+            Mutate_Ekind (New_F, E_Constant);
          else
-            Set_Ekind (New_F, E_Variable);
+            Mutate_Ekind (New_F, E_Variable);
             Set_Extra_Constrained (New_F, Extra_Constrained (Formal));
          end if;
 
@@ -1052,7 +1056,7 @@ package body Exp_Ch9 is
    function Build_Barrier_Function
      (N   : Node_Id;
       Ent : Entity_Id;
-      Pid : Node_Id) return Node_Id
+      Pid : Entity_Id) return Node_Id
    is
       Ent_Formals : constant Node_Id    := Entry_Body_Formal_Part (N);
       Cond        : constant Node_Id    := Condition (Ent_Formals);
@@ -1589,7 +1593,7 @@ package body Exp_Ch9 is
 
    begin
       Set_Corresponding_Record_Type     (Ctyp, Rec_Ent);
-      Set_Ekind                         (Rec_Ent, E_Record_Type);
+      Mutate_Ekind                      (Rec_Ent, E_Record_Type);
       Set_Has_Delayed_Freeze            (Rec_Ent, Has_Delayed_Freeze (Ctyp));
       Set_Is_Concurrent_Record_Type     (Rec_Ent, True);
       Set_Corresponding_Concurrent_Type (Rec_Ent, Ctyp);
@@ -2449,9 +2453,9 @@ package body Exp_Ch9 is
          --  Sem_Ch6.Override_Dispatching_Operation.
 
          if Ekind (Subp_Id) = E_Function then
-            Set_Ekind (Wrapper_Id, E_Function);
+            Mutate_Ekind (Wrapper_Id, E_Function);
          else
-            Set_Ekind (Wrapper_Id, E_Procedure);
+            Mutate_Ekind (Wrapper_Id, E_Procedure);
          end if;
 
          Set_Is_Primitive_Wrapper (Wrapper_Id);
@@ -3775,10 +3779,6 @@ package body Exp_Ch9 is
                raise Program_Error;
          end case;
 
-         --  Establish link between subprogram body entity and source entry
-
-         Set_Corresponding_Protected_Entry (Bod_Id, Ent);
-
          --  Create body of entry procedure. The renaming declarations are
          --  placed ahead of the block that contains the actual entry body.
 
@@ -3811,6 +3811,10 @@ package body Exp_Ch9 is
                              Name =>
                                New_Occurrence_Of
                                  (RTE (RE_Get_GNAT_Exception), Loc)))))))));
+
+         --  Establish link between subprogram body and source entry body
+
+         Set_Corresponding_Entry_Body (Proc_Body, N);
 
          Reset_Scopes_To (Proc_Body, Protected_Body_Subprogram (Ent));
          return Proc_Body;
@@ -3889,7 +3893,7 @@ package body Exp_Ch9 is
 
          if Unprotected then
             Set_Protected_Formal (Formal, Defining_Identifier (New_Param));
-            Set_Ekind (Defining_Identifier (New_Param), Ekind (Formal));
+            Mutate_Ekind (Defining_Identifier (New_Param), Ekind (Formal));
          end if;
 
          Append (New_Param, New_Plist);
@@ -3960,14 +3964,14 @@ package body Exp_Ch9 is
       --  Sem_Ch4.Names_Match).
 
       if Mode = Dispatching_Mode then
-         Set_Ekind (New_Id, Ekind (Def_Id));
+         Mutate_Ekind (New_Id, Ekind (Def_Id));
          Set_Original_Protected_Subprogram (New_Id, Def_Id);
       end if;
 
       --  Link the protected or unprotected version to the original subprogram
       --  it emulates.
 
-      Set_Ekind (New_Id, Ekind (Def_Id));
+      Mutate_Ekind (New_Id, Ekind (Def_Id));
       Set_Protected_Subprogram (New_Id, Def_Id);
 
       --  The unprotected operation carries the user code, and debugging
@@ -6003,9 +6007,9 @@ package body Exp_Ch9 is
                   Set_Debug_Info_Needed (New_F);
 
                   if Ekind (Formal) = E_In_Parameter then
-                     Set_Ekind (New_F, E_Constant);
+                     Mutate_Ekind (New_F, E_Constant);
                   else
-                     Set_Ekind (New_F, E_Variable);
+                     Mutate_Ekind (New_F, E_Variable);
                      Set_Extra_Constrained (New_F, Extra_Constrained (Formal));
                   end if;
 
@@ -6322,8 +6326,8 @@ package body Exp_Ch9 is
                end if;
 
             when N_Short_Circuit
-              | N_If_Expression
-              | N_Case_Expression
+               | N_If_Expression
+               | N_Case_Expression
             =>
                return OK;
 
@@ -6689,7 +6693,7 @@ package body Exp_Ch9 is
          --  statement if any to initialize the declarations of the block.
 
          Blkent := Make_Temporary (Loc, 'A');
-         Set_Ekind (Blkent, E_Block);
+         Mutate_Ekind (Blkent, E_Block);
          Set_Etype (Blkent, Standard_Void_Type);
          Set_Scope (Blkent, Current_Scope);
 
@@ -10881,7 +10885,7 @@ package body Exp_Ch9 is
 
             --  Link the acceptor to the original receiving entry
 
-            Set_Ekind           (PB_Ent, E_Procedure);
+            Mutate_Ekind        (PB_Ent, E_Procedure);
             Set_Receiving_Entry (PB_Ent, Eent);
 
             if Comes_From_Source (Alt) then
@@ -13816,9 +13820,9 @@ package body Exp_Ch9 is
                      --  Minimal decoration
 
                      if Ekind (Spec_Id) = E_Function then
-                        Set_Ekind (Decl_Id, E_Constant);
+                        Mutate_Ekind (Decl_Id, E_Constant);
                      else
-                        Set_Ekind (Decl_Id, E_Variable);
+                        Mutate_Ekind (Decl_Id, E_Variable);
                      end if;
 
                      Set_Prival         (Comp_Id, Decl_Id);
@@ -13868,7 +13872,7 @@ package body Exp_Ch9 is
          begin
             --  Minimal decoration
 
-            Set_Ekind                (Index_Con, E_Constant);
+            Mutate_Ekind             (Index_Con, E_Constant);
             Set_Entry_Index_Constant (Index, Index_Con);
             Set_Discriminal_Link     (Index_Con, Index);
 
@@ -13972,9 +13976,7 @@ package body Exp_Ch9 is
    begin
       return Scope (Base_Index) = Standard_Standard
         and then Base_Index = Base_Type (Standard_Integer)
-        and then Has_Discriminants (Conctyp)
-        and then
-          Present (Discriminant_Default_Value (First_Discriminant (Conctyp)))
+        and then Has_Defaulted_Discriminants (Conctyp)
         and then
           (Denotes_Discriminant (Lo, True)
              or else
@@ -15142,7 +15144,7 @@ package body Exp_Ch9 is
               Make_Defining_Identifier (Sloc (D),
                 Chars => New_External_Name (Chars (D), 'D'));
 
-            Set_Ekind (D_Minal, E_Constant);
+            Mutate_Ekind (D_Minal, E_Constant);
             Set_Etype (D_Minal, Etype (D));
             Set_Scope (D_Minal, Pdef);
             Set_Discriminal (D, D_Minal);

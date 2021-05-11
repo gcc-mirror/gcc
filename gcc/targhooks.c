@@ -1373,7 +1373,8 @@ default_empty_mask_is_expensive (unsigned ifn)
    array of three unsigned ints, set it to zero, and return its address.  */
 
 void *
-default_init_cost (class loop *loop_info ATTRIBUTE_UNUSED)
+default_init_cost (class loop *loop_info ATTRIBUTE_UNUSED,
+		   bool costing_for_scalar ATTRIBUTE_UNUSED)
 {
   unsigned *cost = XNEWVEC (unsigned, 3);
   cost[vect_prologue] = cost[vect_body] = cost[vect_epilogue] = 0;

@@ -1242,7 +1242,10 @@ function_info::insert_temp_clobber (obstack_watermark &watermark,
 }
 
 // A subroutine of make_uses_available.  Try to make USE's definition
-// available at the head of BB.  On success:
+// available at the head of BB.  WILL_BE_DEBUG_USE is true if the
+// definition will be used only in debug instructions.
+//
+// On success:
 //
 // - If the use would have the same def () as USE, return USE.
 //
@@ -1254,7 +1257,8 @@ function_info::insert_temp_clobber (obstack_watermark &watermark,
 //
 // Return null on failure.
 use_info *
-function_info::make_use_available (use_info *use, bb_info *bb)
+function_info::make_use_available (use_info *use, bb_info *bb,
+				   bool will_be_debug_use)
 {
   set_info *def = use->def ();
   if (!def)
@@ -1270,7 +1274,7 @@ function_info::make_use_available (use_info *use, bb_info *bb)
       && single_pred (cfg_bb) == use_bb->cfg_bb ()
       && remains_available_on_exit (def, use_bb))
     {
-      if (def->ebb () == bb->ebb ())
+      if (def->ebb () == bb->ebb () || will_be_debug_use)
 	return use;
 
       resource_info resource = use->resource ();
@@ -1314,7 +1318,8 @@ function_info::make_use_available (use_info *use, bb_info *bb)
 // See the comment above the declaration.
 use_array
 function_info::make_uses_available (obstack_watermark &watermark,
-				    use_array uses, bb_info *bb)
+				    use_array uses, bb_info *bb,
+				    bool will_be_debug_uses)
 {
   unsigned int num_uses = uses.size ();
   if (num_uses == 0)
@@ -1323,7 +1328,7 @@ function_info::make_uses_available (obstack_watermark &watermark,
   auto **new_uses = XOBNEWVEC (watermark, access_info *, num_uses);
   for (unsigned int i = 0; i < num_uses; ++i)
     {
-      use_info *use = make_use_available (uses[i], bb);
+      use_info *use = make_use_available (uses[i], bb, will_be_debug_uses);
       if (!use)
 	return use_array (access_array::invalid ());
       new_uses[i] = use;

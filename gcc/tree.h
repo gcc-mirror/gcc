@@ -3133,7 +3133,10 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
   (FUNCTION_DECL_CHECK (NODE)->function_decl.returns_twice_flag)
 
 /* Nonzero in a FUNCTION_DECL means this function should be treated
-   as "pure" function (like const function, but may read global memory).  */
+   as "pure" function (like const function, but may read global memory).
+   Note that being pure or const for a function is orthogonal to being
+   nothrow, i.e. it is valid to have DECL_PURE_P set and TREE_NOTHROW
+   cleared.  */
 #define DECL_PURE_P(NODE) (FUNCTION_DECL_CHECK (NODE)->function_decl.pure_flag)
 
 /* Nonzero only if one of TREE_READONLY or DECL_PURE_P is nonzero AND
@@ -4528,6 +4531,7 @@ extern tree build_vector_type (tree, poly_int64);
 extern tree build_truth_vector_type_for_mode (poly_uint64, machine_mode);
 extern tree build_opaque_vector_type (tree, poly_int64);
 extern tree build_index_type (tree);
+extern tree build_array_type_1 (tree, tree, bool, bool, bool);
 extern tree build_array_type (tree, tree, bool = false);
 extern tree build_nonshared_array_type (tree, tree);
 extern tree build_array_type_nelts (tree, poly_uint64);
@@ -4985,7 +4989,9 @@ static inline bool
 reverse_storage_order_for_component_p (tree t)
 {
   /* The storage order only applies to scalar components.  */
-  if (AGGREGATE_TYPE_P (TREE_TYPE (t)) || VECTOR_TYPE_P (TREE_TYPE (t)))
+  if (AGGREGATE_TYPE_P (TREE_TYPE (t))
+      || POINTER_TYPE_P (TREE_TYPE (t))
+      || VECTOR_TYPE_P (TREE_TYPE (t)))
     return false;
 
   if (TREE_CODE (t) == REALPART_EXPR || TREE_CODE (t) == IMAGPART_EXPR)

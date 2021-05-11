@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -254,7 +254,7 @@ package body Util is
       then
          return Mark;
       else
-         Error_Msg ("subtype mark expected", Sloc (Mark));
+         Error_Msg_N ("subtype mark expected", Mark);
          return Error;
       end if;
    end Check_Subtype_Mark;

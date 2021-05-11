@@ -7,7 +7,7 @@
 static inline void
 f1 (int x, int y)
 {
-  asm volatile (NOP);	/* { dg-final { gdb-test .+1 "x" "2" } } */
+  asm volatile (NOP);	/* { dg-final { gdb-test .+1 "x" "2" { xfail { aarch64*-*-* && { any-opts "-Os" } } } } } */
   asm volatile (NOP);	/* { dg-final { gdb-test . "y" "0" } } */
 }
 

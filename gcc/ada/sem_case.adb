@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,24 +23,28 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Namet;    use Namet;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Util; use Sem_Util;
-with Sem_Type; use Sem_Type;
-with Snames;   use Snames;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Errout;         use Errout;
+with Namet;          use Namet;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sem_Type;       use Sem_Type;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 with Ada.Unchecked_Deallocation;
 
@@ -531,20 +535,23 @@ package body Sem_Case is
                  and then Compile_Time_Known_Value (C)
                  and then Expr_Value (C) = Lo
                then
-                  Error_Msg_N ("duplication of choice value: &#!", C);
+                  Error_Msg_N
+                    ("duplication of choice value: &#!", Original_Node (C));
 
                --  Not that special case, so just output the integer value
 
                else
                   Error_Msg_Uint_1 := Lo;
-                  Error_Msg_N ("duplication of choice value: ^#!", C);
+                  Error_Msg_N
+                    ("duplication of choice value: ^#!", Original_Node (C));
                end if;
 
             --  Enumeration type
 
             else
                Error_Msg_Name_1 := Choice_Image (Lo, Bounds_Type);
-               Error_Msg_N ("duplication of choice value: %#!", C);
+               Error_Msg_N
+                 ("duplication of choice value: %#!", Original_Node (C));
             end if;
 
          --  More than one choice value, so print range of values
@@ -577,7 +584,9 @@ package body Sem_Case is
                else
                   Error_Msg_Uint_1 := Lo;
                   Error_Msg_Uint_2 := Hi;
-                  Error_Msg_N ("duplication of choice values: ^ .. ^#!", C);
+                  Error_Msg_N
+                    ("duplication of choice values: ^ .. ^#!",
+                     Original_Node (C));
                end if;
 
             --  Enumeration type
@@ -585,7 +594,8 @@ package body Sem_Case is
             else
                Error_Msg_Name_1 := Choice_Image (Lo, Bounds_Type);
                Error_Msg_Name_2 := Choice_Image (Hi, Bounds_Type);
-               Error_Msg_N ("duplication of choice values: % .. %#!", C);
+               Error_Msg_N
+                 ("duplication of choice values: % .. %#!", Original_Node (C));
             end if;
          end if;
       end Dup_Choice;
@@ -677,8 +687,6 @@ package body Sem_Case is
       --------------------
 
       procedure Missing_Choice (Value1 : Uint; Value2 : Uint) is
-         Msg_Sloc : constant Source_Ptr := Sloc (Case_Node);
-
       begin
          --  AI05-0188 : within an instance the non-others choices do not have
          --  to belong to the actual subtype.
@@ -692,7 +700,7 @@ package body Sem_Case is
          elsif Value1 > Value2 then
             return;
 
-         --  If predicate is already known to be violated, do no check for
+         --  If predicate is already known to be violated, do not check for
          --  coverage error, to prevent cascaded messages.
 
          elsif Predicate_Error then
@@ -704,10 +712,10 @@ package body Sem_Case is
          if Value1 = Value2 then
             if Is_Integer_Type (Bounds_Type) then
                Error_Msg_Uint_1 := Value1;
-               Error_Msg ("missing case value: ^!", Msg_Sloc);
+               Error_Msg_N ("missing case value: ^!", Case_Node);
             else
                Error_Msg_Name_1 := Choice_Image (Value1, Bounds_Type);
-               Error_Msg ("missing case value: %!", Msg_Sloc);
+               Error_Msg_N ("missing case value: %!", Case_Node);
             end if;
 
          --  More than one choice value, so print range of values
@@ -716,11 +724,11 @@ package body Sem_Case is
             if Is_Integer_Type (Bounds_Type) then
                Error_Msg_Uint_1 := Value1;
                Error_Msg_Uint_2 := Value2;
-               Error_Msg ("missing case values: ^ .. ^!", Msg_Sloc);
+               Error_Msg_N ("missing case values: ^ .. ^!", Case_Node);
             else
                Error_Msg_Name_1 := Choice_Image (Value1, Bounds_Type);
                Error_Msg_Name_2 := Choice_Image (Value2, Bounds_Type);
-               Error_Msg ("missing case values: % .. %!", Msg_Sloc);
+               Error_Msg_N ("missing case values: % .. %!", Case_Node);
             end if;
          end if;
       end Missing_Choice;
@@ -1065,9 +1073,10 @@ package body Sem_Case is
 
          if Is_Standard_Character_Type (Choice_Type) then
             Set_Character_Literal_Name (Char_Code (UI_To_Int (Value)));
-            Lit := New_Node (N_Character_Literal, Loc);
-            Set_Chars (Lit, Name_Find);
-            Set_Char_Literal_Value (Lit, Value);
+            Lit :=
+              Make_Character_Literal (Loc,
+                Chars              => Name_Find,
+                Char_Literal_Value => Value);
             Set_Etype (Lit, Choice_Type);
             Set_Is_Static_Expression (Lit, True);
             return Lit;
@@ -1315,10 +1324,10 @@ package body Sem_Case is
       -------------------
 
       procedure Check_Choices
-        (N                        : Node_Id;
-         Alternatives             : List_Id;
-         Subtyp                   : Entity_Id;
-         Others_Present           : out Boolean)
+        (N              : Node_Id;
+         Alternatives   : List_Id;
+         Subtyp         : Entity_Id;
+         Others_Present : out Boolean)
       is
          E : Entity_Id;
 
@@ -1523,6 +1532,7 @@ package body Sem_Case is
                then
                   C := New_Copy (P);
                   Set_Sloc (C, Sloc (Choice));
+                  Set_Original_Node (C, Choice);
 
                   if Expr_Value (Low_Bound (C)) < Expr_Value (Lo) then
                      Set_Low_Bound (C, Lo);

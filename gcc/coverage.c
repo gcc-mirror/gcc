@@ -488,9 +488,9 @@ coverage_checksum_string (unsigned chksum, const char *string)
   for (i = 0; string[i]; i++)
     {
       int offset = 0;
-      if (!strncmp (string + i, "_GLOBAL__N_", 11))
+      if (startswith (string + i, "_GLOBAL__N_"))
       offset = 11;
-      if (!strncmp (string + i, "_GLOBAL__", 9))
+      if (startswith (string + i, "_GLOBAL__"))
       offset = 9;
 
       /* C++ namespaces do have scheme:
@@ -1256,8 +1256,7 @@ coverage_init (const char *filename)
 	  filename = concat (getpwd (), separator, filename, NULL);
 	  if (profile_prefix_path)
 	    {
-	      if (!strncmp (filename, profile_prefix_path,
-			    strlen (profile_prefix_path)))
+	      if (startswith (filename, profile_prefix_path))
 		{
 		  filename += strlen (profile_prefix_path);
 		  while (*filename == *separator)

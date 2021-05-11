@@ -818,6 +818,12 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
   /* Handle aggregate NSDMI in non-constant initializers, too.  */
   value = replace_placeholders (value, decl);
 
+  /* A COMPOUND_LITERAL_P CONSTRUCTOR is the syntactic form; by the time we get
+     here it should have been digested into an actual value for the type.  */
+  gcc_checking_assert (TREE_CODE (value) != CONSTRUCTOR
+		       || processing_template_decl
+		       || !TREE_HAS_CONSTRUCTOR (value));
+
   /* If the initializer is not a constant, fill in DECL_INITIAL with
      the bits that are constant, and then return an expression that
      will perform the dynamic initialization.  */

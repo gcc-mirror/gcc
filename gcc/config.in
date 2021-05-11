@@ -1919,6 +1919,12 @@
 #endif
 
 
+/* Define to 1 if you have the <sys/locking.h> header file. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_SYS_LOCKING_H
+#endif
+
+
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SYS_MMAN_H
@@ -2092,6 +2098,12 @@
 #endif
 
 
+/* Define if _LK_LOC supported by _locking. */
+#ifndef USED_FOR_TARGET
+#undef HOST_HAS_LK_LOCK
+#endif
+
+
 /* Define if O_CLOEXEC supported by fcntl. */
 #ifndef USED_FOR_TARGET
 #undef HOST_HAS_O_CLOEXEC
@@ -2187,6 +2199,12 @@
 /* Define if host mkdir takes a single argument. */
 #ifndef USED_FOR_TARGET
 #undef MKDIR_TAKES_ONE_ARG
+#endif
+
+
+/* Define to 1 to if -foffload is defaulted */
+#ifndef USED_FOR_TARGET
+#undef OFFLOAD_DEFAULTED
 #endif
 
 

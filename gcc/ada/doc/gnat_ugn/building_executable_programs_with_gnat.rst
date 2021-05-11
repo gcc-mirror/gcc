@@ -1463,9 +1463,9 @@ Alphabetical List of All Switches
 
 :switch:`-gnatd`
   Specify debug options for the compiler. The string of characters after
-  the :switch:`-gnatd` specify the specific debug options. The possible
-  characters are 0-9, a-z, A-Z, optionally preceded by a dot. See
-  compiler source file :file:`debug.adb` for details of the implemented
+  the :switch:`-gnatd` specifies the specific debug options. The possible
+  characters are 0-9, a-z, A-Z, optionally preceded by a dot or underscore.
+  See compiler source file :file:`debug.adb` for details of the implemented
   debug options. Certain debug options are relevant to applications
   programmers, and these are documented at appropriate points in this
   users guide.
@@ -1896,7 +1896,7 @@ Alphabetical List of All Switches
 .. index:: -gnati  (gcc)
 
 :switch:`-gnati{c}`
-  Identifier character set (``c`` = 1/2/3/4/8/9/p/f/n/w).
+  Identifier character set (``c`` = 1/2/3/4/5/9/p/8/f/n/w).
   For details of the possible selections for ``c``,
   see :ref:`Character_Set_Control`.
 
@@ -3424,7 +3424,10 @@ of the pragma in the :title:`GNAT_Reference_manual`).
   with no size clause. The guess in both cases is that 2**x was intended
   rather than x. In addition expressions of the form 2*x for small x
   generate a warning (the almost certainly accurate guess being that
-  2**x was intended). The default is that these warnings are given.
+  2**x was intended). This switch also activates warnings for negative
+  literal values of a modular type, which are interpreted as large positive
+  integers after wrap-around. The default is that these warnings are given.
+
 
 
 .. index:: -gnatw.M  (gcc)

@@ -24,7 +24,7 @@ ox (struct bovid cow)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char *argv[])
 {
   struct bovid cow;
 

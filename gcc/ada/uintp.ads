@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -531,10 +531,10 @@ private
    --  used for converting from one to the other are defined.
 
    type Uint_Entry is record
-      Length : Pos;
+      Length : aliased Pos;
       --  Length of entry in Udigits table in digits (i.e. in words)
 
-      Loc : Int;
+      Loc : aliased Int;
       --  Starting location in Udigits table of this Uint value
    end record;
 

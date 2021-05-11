@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2010-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -868,11 +868,7 @@ is
             --  less than 0, so it is safe to compute the following sum without
             --  fear of overflow.
 
-            pragma Warnings
-              (Off, "value not in range of type ""T"" defined at line 4");
             Index := No_Index + Index_Type'Base (Count_Type'Last);
-            pragma Warnings
-              (On, "value not in range of type ""T"" defined at line 4");
 
             if Index <= Index_Type'Last then
 

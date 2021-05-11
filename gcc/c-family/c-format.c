@@ -3097,7 +3097,7 @@ check_tokens (const token_t *tokens, unsigned ntoks,
       /* Allow this ugly warning for the time being.  */
       if (toklen == 2
 	  && format_chars - orig_format_chars > 6
-	  && !strncmp (format_chars - 7, " count >= width of ", 19))
+	  && startswith (format_chars - 7, " count >= width of "))
 	return format_chars + 10;
 
       /* The token is a type if it ends in an alphabetic character.  */
@@ -3127,7 +3127,7 @@ check_tokens (const token_t *tokens, unsigned ntoks,
   /* Diagnose unquoted __attribute__.  Consider any parenthesized
      argument to the attribute to avoid redundant warnings for
      the double parentheses that might follow.  */
-  if (!strncmp (format_chars, "__attribute", sizeof "__attribute" - 1))
+  if (startswith (format_chars, "__attribute"))
     {
       unsigned nchars = sizeof "__attribute" - 1;
       while ('_' == format_chars[nchars])
@@ -3178,9 +3178,9 @@ check_tokens (const token_t *tokens, unsigned ntoks,
   /* Diagnose unquoted built-ins.  */
   if (format_chars[0] == '_'
       && format_chars[1] == '_'
-      && (!strncmp (format_chars + 2, "atomic", sizeof "atomic" - 1)
-	  || !strncmp (format_chars + 2, "builtin", sizeof "builtin" - 1)
-	  || !strncmp (format_chars + 2, "sync", sizeof "sync" - 1)))
+      && (startswith (format_chars + 2, "atomic")
+	  || startswith (format_chars + 2, "builtin")
+	  || startswith (format_chars + 2, "sync")))
     {
       format_warning_substr (format_string_loc, format_string_cst,
 			     fmtchrpos, fmtchrpos + wlen, opt,
@@ -3267,7 +3267,7 @@ check_plain (location_t format_string_loc, tree format_string_cst,
   if (*format_chars == '%')
     {
       /* Diagnose %<%s%> and suggest using %qs instead.  */
-      if (!strncmp (format_chars, "%<%s%>", 6))
+      if (startswith (format_chars, "%<%s%>"))
 	format_warning_substr (format_string_loc, format_string_cst,
 			       fmtchrpos, fmtchrpos + 6, opt,
 			       "quoted %qs directive in format; "
@@ -3593,7 +3593,7 @@ check_plain (location_t format_string_loc, tree format_string_cst,
 
       if (nchars == 1)
 	{
-	  if (!strncmp (format_chars, "\"%s\"", 4))
+	  if (startswith (format_chars, "\"%s\""))
 	    {
 	      if (format_warning_substr (format_string_loc, format_string_cst,
 					 fmtchrpos, fmtchrpos + 4, opt,
@@ -3621,7 +3621,7 @@ check_plain (location_t format_string_loc, tree format_string_cst,
 	      && format_chars[0] == '(')
 	    ;   /* Text beginning in an open parenthesis.  */
 	  else if (nchars == 3
-	      && !strncmp (format_chars, "...", 3)
+	      && startswith (format_chars, "...")
 	      && format_chars[3])
 	    ;   /* Text beginning in an ellipsis.  */
 	  else
@@ -3663,7 +3663,7 @@ check_plain (location_t format_string_loc, tree format_string_cst,
 		   a period at the end of a capitalized sentence.  */
 	  else if (nchars == 3
 		   && format_chars - orig_format_chars > 0
-		   && !strncmp (format_chars, "...", 3))
+		   && startswith (format_chars, "..."))
 	    ;   /* Text ending in the ellipsis.  */
 	  else
 	    format_warning_substr (format_string_loc, format_string_cst,
@@ -5104,7 +5104,7 @@ convert_format_name_to_system_name (const char *attr_name)
   int i;
 
   if (attr_name == NULL || *attr_name == 0
-      || strncmp (attr_name, "gcc_", 4) == 0)
+      || startswith (attr_name, "gcc_"))
     return attr_name;
 #ifdef TARGET_OVERRIDES_FORMAT_INIT
   TARGET_OVERRIDES_FORMAT_INIT ();

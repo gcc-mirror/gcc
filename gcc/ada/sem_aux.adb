@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,13 +23,17 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;  use Atree;
-with Einfo;  use Einfo;
-with Nlists; use Nlists;
-with Sinfo;  use Sinfo;
-with Snames; use Snames;
-with Stand;  use Stand;
-with Uintp;  use Uintp;
+with Atree;          use Atree;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Nlists;         use Nlists;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Stand;          use Stand;
+with Uintp;          use Uintp;
 
 package body Sem_Aux is
 
@@ -1072,14 +1076,18 @@ package body Sem_Aux is
    ---------------------
 
    function Is_Limited_Type (Ent : Entity_Id) return Boolean is
-      Btype : constant E := Base_Type (Ent);
-      Rtype : constant E := Root_Type (Btype);
+      Btype : Entity_Id;
+      Rtype : Entity_Id;
 
    begin
       if not Is_Type (Ent) then
          return False;
+      end if;
 
-      elsif Ekind (Btype) = E_Limited_Private_Type
+      Btype := Base_Type (Ent);
+      Rtype := Root_Type (Btype);
+
+      if Ekind (Btype) = E_Limited_Private_Type
         or else Is_Limited_Composite (Btype)
       then
          return True;

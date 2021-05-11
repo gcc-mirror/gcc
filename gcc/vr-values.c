@@ -182,7 +182,7 @@ vr_values::range_of_expr (irange &r, tree expr, gimple *stmt)
 
   if (const value_range *vr = get_value_range (expr, stmt))
     {
-      if (vr->undefined_p () || vr->varying_p () || vr->constant_p ())
+      if (vr->undefined_p () || vr->constant_p ())
 	r = *vr;
       else
 	{

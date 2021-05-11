@@ -131,7 +131,7 @@ static void c_parser_gimple_expr_list (gimple_parser &, vec<tree> *);
 static bool
 c_parser_gimple_parse_bb_spec (tree val, int *index)
 {
-  if (strncmp (IDENTIFIER_POINTER (val), "__BB", 4) != 0)
+  if (!startswith (IDENTIFIER_POINTER (val), "__BB"))
     return false;
   for (const char *p = IDENTIFIER_POINTER (val) + 4; *p; ++p)
     if (!ISDIGIT (*p))

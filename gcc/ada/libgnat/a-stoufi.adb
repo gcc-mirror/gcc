@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---            Copyright (C) 2020, Free Software Foundation, Inc.            --
+--            Copyright (C) 2020-2021, Free Software Foundation, Inc.       --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -46,7 +46,7 @@ package body Ada.Strings.Text_Output.Files is
    is
    begin
       if FD = OS.Invalid_FD then
-         raise Program_Error with OS.Errno_Message;
+         raise Program_Error;
       end if;
       return Result : File (Chunk_Length) do
          Result.Indent_Amount := Indent_Amount;
@@ -62,7 +62,7 @@ package body Ada.Strings.Text_Output.Files is
    is
    begin
       return Create_From_FD
-        (OS.Create_File (Name, Fmode => OS.Text),
+        (OS.Create_File (Name, Fmode => OS.Binary),
          Indent_Amount, Chunk_Length);
    end Create_File;
 
@@ -73,7 +73,7 @@ package body Ada.Strings.Text_Output.Files is
    is
    begin
       return Create_From_FD
-        (OS.Create_New_File (Name, Fmode => OS.Text),
+        (OS.Create_New_File (Name, Fmode => OS.Binary),
          Indent_Amount, Chunk_Length);
    end Create_New_File;
 
@@ -90,7 +90,7 @@ package body Ada.Strings.Text_Output.Files is
       if S.FD not in OS.Standout | OS.Standerr then -- Don't close these
          OS.Close (S.FD, Status);
          if not Status then
-            raise Program_Error with OS.Errno_Message;
+            raise Program_Error;
          end if;
       end if;
    end Close;
@@ -103,7 +103,7 @@ package body Ada.Strings.Text_Output.Files is
         OS.Write (S.FD, S.Cur_Chunk.Chars'Address, S.Last);
    begin
       if Res /= S.Last then
-         raise Program_Error with OS.Errno_Message;
+         raise Program_Error;
       end if;
       S.Last := 0;
    end Flush_Method;

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -145,6 +145,7 @@ package Snames is
    Name_Exclusive_Functions            : constant Name_Id := N + $;
    Name_Full_Access_Only               : constant Name_Id := N + $;
    Name_Integer_Literal                : constant Name_Id := N + $;
+   Name_No_Controlled_Parts            : constant Name_Id := N + $;
    Name_Real_Literal                   : constant Name_Id := N + $;
    Name_Relaxed_Initialization         : constant Name_Id := N + $;
    Name_Stable_Properties              : constant Name_Id := N + $;
@@ -1333,7 +1334,6 @@ package Snames is
    Name_Import_Address                   : constant Name_Id := N + $;
    Name_Import_Largest_Value             : constant Name_Id := N + $;
    Name_Import_Value                     : constant Name_Id := N + $;
-   Name_Is_Negative                      : constant Name_Id := N + $;
    Name_Line                             : constant Name_Id := N + $;
    Name_Rotate_Left                      : constant Name_Id := N + $;
    Name_Rotate_Right                     : constant Name_Id := N + $;

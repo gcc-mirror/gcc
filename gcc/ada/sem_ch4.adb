@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,44 +23,48 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;  use Aspects;
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Elists;   use Elists;
-with Errout;   use Errout;
-with Exp_Util; use Exp_Util;
-with Itypes;   use Itypes;
-with Lib;      use Lib;
-with Lib.Xref; use Lib.Xref;
-with Namet;    use Namet;
-with Namet.Sp; use Namet.Sp;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Output;   use Output;
-with Restrict; use Restrict;
-with Rident;   use Rident;
-with Sem;      use Sem;
-with Sem_Aux;  use Sem_Aux;
-with Sem_Case; use Sem_Case;
-with Sem_Cat;  use Sem_Cat;
-with Sem_Ch3;  use Sem_Ch3;
-with Sem_Ch6;  use Sem_Ch6;
-with Sem_Ch8;  use Sem_Ch8;
-with Sem_Dim;  use Sem_Dim;
-with Sem_Disp; use Sem_Disp;
-with Sem_Dist; use Sem_Dist;
-with Sem_Eval; use Sem_Eval;
-with Sem_Res;  use Sem_Res;
-with Sem_Type; use Sem_Type;
-with Sem_Util; use Sem_Util;
-with Sem_Warn; use Sem_Warn;
-with Stand;    use Stand;
-with Sinfo;    use Sinfo;
-with Snames;   use Snames;
-with Tbuild;   use Tbuild;
-with Uintp;    use Uintp;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Exp_Util;       use Exp_Util;
+with Itypes;         use Itypes;
+with Lib;            use Lib;
+with Lib.Xref;       use Lib.Xref;
+with Namet;          use Namet;
+with Namet.Sp;       use Namet.Sp;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rident;         use Rident;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Case;       use Sem_Case;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch6;        use Sem_Ch6;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Res;        use Sem_Res;
+with Sem_Type;       use Sem_Type;
+with Sem_Util;       use Sem_Util;
+with Sem_Warn;       use Sem_Warn;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Snames;         use Snames;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
 
 package body Sem_Ch4 is
 
@@ -599,12 +603,8 @@ package body Sem_Ch4 is
                Type_Id := Entity (E);
 
                if Is_Tagged_Type (Type_Id)
-                 and then Has_Discriminants (Type_Id)
+                 and then Has_Defaulted_Discriminants (Type_Id)
                  and then not Is_Constrained (Type_Id)
-                 and then
-                   Present
-                     (Discriminant_Default_Value
-                       (First_Discriminant (Type_Id)))
                then
                   declare
                      Constr : constant List_Id    := New_List;
@@ -612,19 +612,17 @@ package body Sem_Ch4 is
                      Discr  : Entity_Id := First_Discriminant (Type_Id);
 
                   begin
-                     if Present (Discriminant_Default_Value (Discr)) then
-                        while Present (Discr) loop
-                           Append (Discriminant_Default_Value (Discr), Constr);
-                           Next_Discriminant (Discr);
-                        end loop;
+                     while Present (Discr) loop
+                        Append (Discriminant_Default_Value (Discr), Constr);
+                        Next_Discriminant (Discr);
+                     end loop;
 
-                        Rewrite (E,
-                          Make_Subtype_Indication (Loc,
-                            Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
-                            Constraint   =>
-                              Make_Index_Or_Discriminant_Constraint (Loc,
-                                Constraints => Constr)));
-                     end if;
+                     Rewrite (E,
+                       Make_Subtype_Indication (Loc,
+                         Subtype_Mark => New_Occurrence_Of (Type_Id, Loc),
+                         Constraint   =>
+                           Make_Index_Or_Discriminant_Constraint (Loc,
+                             Constraints => Constr)));
                   end;
                end if;
             end if;
@@ -1467,8 +1465,6 @@ package body Sem_Ch4 is
          else
             Remove_Abstract_Operations (N);
          end if;
-
-         End_Interp_List;
       end if;
 
       --  Check the accessibility level for actuals for explicitly aliased
@@ -2278,9 +2274,12 @@ package body Sem_Ch4 is
    procedure Analyze_Expression_With_Actions (N : Node_Id) is
 
       procedure Check_Action_OK (A : Node_Id);
-      --  Check that the action is something that is allows as a declare_item
-      --  of a declare_expression, except the checks are suppressed for
-      --  generated code.
+      --  Check that the action A is allowed as a declare_item of a declare
+      --  expression if N and A come from source.
+
+      ---------------------
+      -- Check_Action_OK --
+      ---------------------
 
       procedure Check_Action_OK (A : Node_Id) is
       begin
@@ -2324,7 +2323,7 @@ package body Sem_Ch4 is
          Error_Msg_N ("object renaming or constant declaration expected", A);
       end Check_Action_OK;
 
-      A : Node_Id;
+      A        : Node_Id;
       EWA_Scop : Entity_Id;
 
    --  Start of processing for Analyze_Expression_With_Actions
@@ -2793,8 +2792,6 @@ package body Sem_Ch4 is
             Error_Msg_N ("no legal interpretation for indexed component", N);
             Set_Is_Overloaded (N, False);
          end if;
-
-         End_Interp_List;
       end Process_Overloaded_Indexed_Component;
 
    --  Start of processing for Analyze_Indexed_Component_Form
@@ -4345,8 +4342,7 @@ package body Sem_Ch4 is
               or else
             Covers (T1 => T2, T2 => T1)
          then
-            if T1 = Universal_Integer
-              or else T1 = Universal_Real
+            if Is_Universal_Numeric_Type (T1)
               or else T1 = Any_Character
             then
                Add_One_Interp (N, Base_Type (T2), Base_Type (T2));
@@ -4416,7 +4412,7 @@ package body Sem_Ch4 is
          --  If result is Any_Type, then we did not find a compatible pair
 
          if Etype (N) = Any_Type then
-            Error_Msg_N ("incompatible types in range ", N);
+            Error_Msg_N ("incompatible types in range", N);
          end if;
       end if;
 
@@ -5299,7 +5295,7 @@ package body Sem_Ch4 is
                   Set_Parent (Par, Parent (Parent (N)));
 
                   if Try_Object_Operation
-                       (Sinfo.Name (Par), CW_Test_Only => True)
+                       (Sinfo.Nodes.Name (Par), CW_Test_Only => True)
                   then
                      return;
                   end if;
@@ -5456,8 +5452,6 @@ package body Sem_Ch4 is
                        (N, "component not present in }??",
                         CE_Discriminant_Check_Failed,
                         Ent => Prefix_Type);
-
-                     Set_Raises_Constraint_Error (N);
                      return;
                   end if;
 
@@ -5972,7 +5966,7 @@ package body Sem_Ch4 is
 
       function Specific_Type (T1, T2 : Entity_Id) return Entity_Id is
       begin
-         if T1 = Universal_Integer or else T1 = Universal_Real then
+         if Is_Universal_Numeric_Type (T1) then
             return Base_Type (T2);
          else
             return Base_Type (T1);
@@ -10212,6 +10206,16 @@ package body Sem_Ch4 is
                Report     => True,
                Success    => Success,
                Skip_First => True);
+
+            --  The error may hot have been reported yet for overloaded
+            --  prefixed calls, depending on the non-matching candidate,
+            --  in which case provide a concise error now.
+
+            if Serious_Errors_Detected = 0 then
+               Error_Msg_NE
+                 ("cannot resolve prefixed call to primitive operation of&",
+                   N, Entity (Obj));
+            end if;
          end if;
 
          --  No need for further errors

@@ -1,5 +1,5 @@
-/* { dg-do run } */
-/* { dg-additional-options "-w" } */
+/* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
+   aspects of that functionality.  */
 
 #include <stdlib.h>
 #include <openacc.h>
@@ -16,6 +16,7 @@ main ()
 #pragma acc data copy (dummy)
   {
 #pragma acc parallel num_gangs (N) reduction (+:s1) copy(s1)
+    /* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-1 } */
     {
       s1++;
     }
@@ -36,6 +37,7 @@ main ()
   s2 = 0;
 
 #pragma acc parallel num_gangs (10) reduction (+:s1, s2) copy(s1, s2)
+  /* { dg-bogus "warning: region is gang partitioned but does not contain gang partitioned code" "TODO 'reduction'" { xfail *-*-* } .-1 } */
   {
     s1++;
     s2 += N;

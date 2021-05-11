@@ -1,3 +1,27 @@
+2021-05-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/100450
+	* lex.c (cpp_avoid_paste): Handle token1 CPP_PRAGMA like CPP_NAME.
+
+2021-05-06  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c++/83873
+	PR preprocessor/97604
+	* lex.c (lex_number): Reject adjacent digit separators here.  Do
+	not allow digit separators before '.' or an exponent with sign.
+	* expr.c (cpp_classify_number): Do not check for adjacent digit
+	separators here.
+
+2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR bootstrap/99703
+	* configure: Regenerated.
+
+2021-04-29  Joseph Myers  <joseph@codesourcery.com>
+
+	PR preprocessor/82359
+	* directives.c (strtolinenum): Handle digit separators.
+
 2021-04-19  Richard Biener  <rguenther@suse.de>
 
 	PR preprocessor/100142

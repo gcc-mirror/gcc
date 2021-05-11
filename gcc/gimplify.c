@@ -15141,10 +15141,14 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 void
 gimplify_type_sizes (tree type, gimple_seq *list_p)
 {
-  tree field, t;
-
   if (type == NULL || type == error_mark_node)
     return;
+
+  const bool ignored_p
+    = TYPE_NAME (type)
+      && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
+      && DECL_IGNORED_P (TYPE_NAME (type));
+  tree t;
 
   /* We first do the main variant, then copy into any other variants.  */
   type = TYPE_MAIN_VARIANT (type);
@@ -15179,9 +15183,7 @@ gimplify_type_sizes (tree type, gimple_seq *list_p)
       /* Ensure VLA bounds aren't removed, for -O0 they should be variables
 	 with assigned stack slots, for -O1+ -g they should be tracked
 	 by VTA.  */
-      if (!(TYPE_NAME (type)
-	    && TREE_CODE (TYPE_NAME (type)) == TYPE_DECL
-	    && DECL_IGNORED_P (TYPE_NAME (type)))
+      if (!ignored_p
 	  && TYPE_DOMAIN (type)
 	  && INTEGRAL_TYPE_P (TYPE_DOMAIN (type)))
 	{
@@ -15197,10 +15199,16 @@ gimplify_type_sizes (tree type, gimple_seq *list_p)
     case RECORD_TYPE:
     case UNION_TYPE:
     case QUAL_UNION_TYPE:
-      for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+      for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
 	    gimplify_one_sizepos (&DECL_FIELD_OFFSET (field), list_p);
+	    /* Likewise, ensure variable offsets aren't removed.  */
+	    if (!ignored_p
+		&& (t = DECL_FIELD_OFFSET (field))
+		&& VAR_P (t)
+		&& DECL_ARTIFICIAL (t))
+	      DECL_IGNORED_P (t) = 0;
 	    gimplify_one_sizepos (&DECL_SIZE (field), list_p);
 	    gimplify_one_sizepos (&DECL_SIZE_UNIT (field), list_p);
 	    gimplify_type_sizes (TREE_TYPE (field), list_p);

@@ -1455,9 +1455,9 @@ int vect_get_stmt_cost (enum vect_cost_for_stmt type_of_cost)
 /* Alias targetm.vectorize.init_cost.  */
 
 static inline void *
-init_cost (class loop *loop_info)
+init_cost (class loop *loop_info, bool costing_for_scalar)
 {
-  return targetm.vectorize.init_cost (loop_info);
+  return targetm.vectorize.init_cost (loop_info, costing_for_scalar);
 }
 
 extern void dump_stmt_cost (FILE *, void *, int, enum vect_cost_for_stmt,

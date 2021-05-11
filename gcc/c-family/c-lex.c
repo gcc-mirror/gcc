@@ -1001,7 +1001,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
     }
 
   copy = (char *) alloca (copylen + 1);
-  if (cxx_dialect > cxx11)
+  if (c_dialect_cxx () ? cxx_dialect > cxx11 : flag_isoc2x)
     {
       size_t maxlen = 0;
       for (size_t i = 0; i < copylen; ++i)

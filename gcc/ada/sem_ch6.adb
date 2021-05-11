@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,70 +23,74 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Aspects;   use Aspects;
-with Atree;     use Atree;
-with Checks;    use Checks;
-with Contracts; use Contracts;
-with Debug;     use Debug;
-with Einfo;     use Einfo;
-with Elists;    use Elists;
-with Errout;    use Errout;
-with Expander;  use Expander;
-with Exp_Ch3;   use Exp_Ch3;
-with Exp_Ch6;   use Exp_Ch6;
-with Exp_Ch7;   use Exp_Ch7;
-with Exp_Ch9;   use Exp_Ch9;
-with Exp_Dbug;  use Exp_Dbug;
-with Exp_Tss;   use Exp_Tss;
-with Exp_Util;  use Exp_Util;
-with Freeze;    use Freeze;
-with Ghost;     use Ghost;
-with Inline;    use Inline;
-with Itypes;    use Itypes;
-with Lib.Xref;  use Lib.Xref;
-with Layout;    use Layout;
-with Namet;     use Namet;
-with Lib;       use Lib;
-with Nlists;    use Nlists;
-with Nmake;     use Nmake;
-with Opt;       use Opt;
-with Output;    use Output;
-with Restrict;  use Restrict;
-with Rtsfind;   use Rtsfind;
-with Sem;       use Sem;
-with Sem_Aux;   use Sem_Aux;
-with Sem_Cat;   use Sem_Cat;
-with Sem_Ch3;   use Sem_Ch3;
-with Sem_Ch4;   use Sem_Ch4;
-with Sem_Ch5;   use Sem_Ch5;
-with Sem_Ch8;   use Sem_Ch8;
-with Sem_Ch9;   use Sem_Ch9;
-with Sem_Ch10;  use Sem_Ch10;
-with Sem_Ch12;  use Sem_Ch12;
-with Sem_Ch13;  use Sem_Ch13;
-with Sem_Dim;   use Sem_Dim;
-with Sem_Disp;  use Sem_Disp;
-with Sem_Dist;  use Sem_Dist;
-with Sem_Elim;  use Sem_Elim;
-with Sem_Eval;  use Sem_Eval;
-with Sem_Mech;  use Sem_Mech;
-with Sem_Prag;  use Sem_Prag;
-with Sem_Res;   use Sem_Res;
-with Sem_Util;  use Sem_Util;
-with Sem_Type;  use Sem_Type;
-with Sem_Warn;  use Sem_Warn;
-with Sinput;    use Sinput;
-with Stand;     use Stand;
-with Sinfo;     use Sinfo;
-with Sinfo.CN;  use Sinfo.CN;
-with Snames;    use Snames;
-with Stringt;   use Stringt;
+with Aspects;        use Aspects;
+with Atree;          use Atree;
+with Checks;         use Checks;
+with Contracts;      use Contracts;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Einfo.Utils;    use Einfo.Utils;
+with Elists;         use Elists;
+with Errout;         use Errout;
+with Expander;       use Expander;
+with Exp_Ch3;        use Exp_Ch3;
+with Exp_Ch6;        use Exp_Ch6;
+with Exp_Ch7;        use Exp_Ch7;
+with Exp_Ch9;        use Exp_Ch9;
+with Exp_Dbug;       use Exp_Dbug;
+with Exp_Tss;        use Exp_Tss;
+with Exp_Util;       use Exp_Util;
+with Freeze;         use Freeze;
+with Ghost;          use Ghost;
+with Inline;         use Inline;
+with Itypes;         use Itypes;
+with Lib.Xref;       use Lib.Xref;
+with Layout;         use Layout;
+with Namet;          use Namet;
+with Lib;            use Lib;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Output;         use Output;
+with Restrict;       use Restrict;
+with Rtsfind;        use Rtsfind;
+with Sem;            use Sem;
+with Sem_Aux;        use Sem_Aux;
+with Sem_Cat;        use Sem_Cat;
+with Sem_Ch3;        use Sem_Ch3;
+with Sem_Ch4;        use Sem_Ch4;
+with Sem_Ch5;        use Sem_Ch5;
+with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch9;        use Sem_Ch9;
+with Sem_Ch10;       use Sem_Ch10;
+with Sem_Ch12;       use Sem_Ch12;
+with Sem_Ch13;       use Sem_Ch13;
+with Sem_Dim;        use Sem_Dim;
+with Sem_Disp;       use Sem_Disp;
+with Sem_Dist;       use Sem_Dist;
+with Sem_Elim;       use Sem_Elim;
+with Sem_Eval;       use Sem_Eval;
+with Sem_Mech;       use Sem_Mech;
+with Sem_Prag;       use Sem_Prag;
+with Sem_Res;        use Sem_Res;
+with Sem_Util;       use Sem_Util;
+with Sem_Type;       use Sem_Type;
+with Sem_Warn;       use Sem_Warn;
+with Sinput;         use Sinput;
+with Stand;          use Stand;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinfo.CN;       use Sinfo.CN;
+with Snames;         use Snames;
+with Stringt;        use Stringt;
 with Style;
-with Stylesw;   use Stylesw;
-with Tbuild;    use Tbuild;
-with Uintp;     use Uintp;
-with Urealp;    use Urealp;
-with Validsw;   use Validsw;
+with Stylesw;        use Stylesw;
+with Tbuild;         use Tbuild;
+with Uintp;          use Uintp;
+with Urealp;         use Urealp;
+with Validsw;        use Validsw;
 
 package body Sem_Ch6 is
 
@@ -1770,13 +1774,13 @@ package body Sem_Ch6 is
       if Kind = E_Generic_Procedure
         and then Nkind (Spec) /= N_Procedure_Specification
       then
-         Error_Msg_N ("invalid body for generic procedure ", Body_Id);
+         Error_Msg_N ("invalid body for generic procedure", Body_Id);
          return;
 
       elsif Kind = E_Generic_Function
         and then Nkind (Spec) /= N_Function_Specification
       then
-         Error_Msg_N ("invalid body for generic function ", Body_Id);
+         Error_Msg_N ("invalid body for generic function", Body_Id);
          return;
       end if;
 
@@ -1792,7 +1796,7 @@ package body Sem_Ch6 is
       end if;
 
       if Nkind (N) = N_Subprogram_Body_Stub then
-         Set_Ekind (Defining_Entity (Specification (N)), Kind);
+         Mutate_Ekind (Defining_Entity (Specification (N)), Kind);
       else
          Set_Corresponding_Spec (N, Gen_Id);
       end if;
@@ -1843,8 +1847,13 @@ package body Sem_Ch6 is
 
          --  Visible generic entity is callable within its own body
 
-         Set_Ekind          (Gen_Id,  Ekind (Body_Id));
-         Set_Ekind          (Body_Id, E_Subprogram_Body);
+         Mutate_Ekind       (Gen_Id,  Ekind (Body_Id));
+         Reinit_Field_To_Zero (Body_Id, Has_Out_Or_In_Out_Parameter,
+           Old_Ekind =>
+             (E_Function | E_Procedure |
+                E_Generic_Function | E_Generic_Procedure => True,
+              others => False));
+         Mutate_Ekind       (Body_Id, E_Subprogram_Body);
          Set_Convention     (Body_Id, Convention (Gen_Id));
          Set_Is_Obsolescent (Body_Id, Is_Obsolescent (Gen_Id));
          Set_Scope          (Body_Id, Scope (Gen_Id));
@@ -1855,8 +1864,8 @@ package body Sem_Ch6 is
 
             --  No body to analyze, so restore state of generic unit
 
-            Set_Ekind (Gen_Id, Kind);
-            Set_Ekind (Body_Id, Kind);
+            Mutate_Ekind (Gen_Id, Kind);
+            Mutate_Ekind (Body_Id, Kind);
 
             if Present (First_Ent) then
                Set_First_Entity (Gen_Id, First_Ent);
@@ -1920,7 +1929,9 @@ package body Sem_Ch6 is
 
       --  Outside of its body, unit is generic again
 
-      Set_Ekind (Gen_Id, Kind);
+      Reinit_Field_To_Zero (Gen_Id, Has_Nested_Subprogram,
+        Old_Ekind => (E_Function | E_Procedure => True, others => False));
+      Mutate_Ekind (Gen_Id, Kind);
       Generate_Reference (Gen_Id, Body_Id, 'b', Set_Ref => False);
 
       if Style_Check then
@@ -2015,7 +2026,7 @@ package body Sem_Ch6 is
 
       if Present (Prev) and then Is_Generic_Subprogram (Prev) then
          Insert_Before (N, Null_Body);
-         Set_Ekind (Defining_Entity (N), Ekind (Prev));
+         Mutate_Ekind (Defining_Entity (N), Ekind (Prev));
 
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze_Generic_Subprogram_Body (Null_Body, Prev);
@@ -2328,7 +2339,7 @@ package body Sem_Ch6 is
          if Present (Actuals) then
             Analyze_Call_And_Resolve;
          else
-            Error_Msg_N ("missing explicit dereference in call ", N);
+            Error_Msg_N ("missing explicit dereference in call", N);
          end if;
 
       --  If not an access to subprogram, then the prefix must resolve to the
@@ -3416,15 +3427,13 @@ package body Sem_Ch6 is
             Prag := Empty;
          end if;
 
-         if Present (Prag) then
+         if Present (Prag) and then Is_List_Member (N) then
             if Present (Spec_Id) then
-               if Is_List_Member (N)
-                 and then Is_List_Member (Unit_Declaration_Node (Spec_Id))
+               if Is_List_Member (Unit_Declaration_Node (Spec_Id))
                  and then In_Same_List (N, Unit_Declaration_Node (Spec_Id))
                then
                   Analyze (Prag);
                end if;
-
             else
                --  Create a subprogram declaration, to make treatment uniform.
                --  Make the sloc of the subprogram name that of the entity in
@@ -4061,7 +4070,7 @@ package body Sem_Ch6 is
               and then Operator_Matches_Spec (Spec_Id, Spec_Id)
             then
                Error_Msg_NE
-                 ("subprogram& overrides predefined operator ",
+                 ("subprogram& overrides predefined operator",
                     Body_Spec, Spec_Id);
 
             --  Overriding indicators aren't allowed for protected subprogram
@@ -4601,7 +4610,19 @@ package body Sem_Ch6 is
             Reference_Body_Formals (Spec_Id, Body_Id);
          end if;
 
-         Set_Ekind (Body_Id, E_Subprogram_Body);
+         Reinit_Field_To_Zero (Body_Id, Has_Out_Or_In_Out_Parameter);
+         Reinit_Field_To_Zero (Body_Id, Needs_No_Actuals,
+           Old_Ekind => (E_Function | E_Procedure => True, others => False));
+         Reinit_Field_To_Zero (Body_Id, Is_Predicate_Function,
+           Old_Ekind => (E_Function | E_Procedure => True, others => False));
+         Reinit_Field_To_Zero (Body_Id, Protected_Subprogram,
+           Old_Ekind => (E_Function | E_Procedure => True, others => False));
+
+         if Ekind (Body_Id) = E_Procedure then
+            Reinit_Field_To_Zero (Body_Id, Receiving_Entry);
+         end if;
+
+         Mutate_Ekind (Body_Id, E_Subprogram_Body);
 
          if Nkind (N) = N_Subprogram_Body_Stub then
             Set_Corresponding_Spec_Of_Stub (N, Spec_Id);
@@ -5766,10 +5787,10 @@ package body Sem_Ch6 is
       end if;
 
       if Nkind (N) = N_Function_Specification then
-         Set_Ekind (Designator, E_Function);
+         Mutate_Ekind (Designator, E_Function);
          Set_Mechanism (Designator, Default_Mechanism);
       else
-         Set_Ekind (Designator, E_Procedure);
+         Mutate_Ekind (Designator, E_Procedure);
          Set_Etype (Designator, Standard_Void_Type);
       end if;
 
@@ -7307,7 +7328,7 @@ package body Sem_Ch6 is
 
             elsif Can_Override_Operator (Subp) then
                Error_Msg_NE
-                 ("subprogram& overrides predefined operator ", Spec, Subp);
+                 ("subprogram& overrides predefined operator", Spec, Subp);
             end if;
 
          elsif Must_Override (Spec) then
@@ -8775,7 +8796,7 @@ package body Sem_Ch6 is
             return Empty;
          end if;
 
-         Set_Ekind           (EF, E_In_Parameter);
+         Mutate_Ekind        (EF, E_In_Parameter);
          Set_Actual_Subtype  (EF, Typ);
          Set_Etype           (EF, Typ);
          Set_Scope           (EF, Scope);
@@ -10713,8 +10734,8 @@ package body Sem_Ch6 is
                            exit;
                         end if;
 
-                        Next_Entity (P_Formal);
-                        Next_Entity (N_Formal);
+                        Next_Formal (P_Formal);
+                        Next_Formal (N_Formal);
                      end loop;
 
                      --  Found a matching primitive operation belonging to the
@@ -12963,30 +12984,30 @@ package body Sem_Ch6 is
                end if;
 
                if In_Present (Spec) then
-                  Set_Ekind (Formal_Id, E_In_Out_Parameter);
+                  Mutate_Ekind (Formal_Id, E_In_Out_Parameter);
                else
-                  Set_Ekind (Formal_Id, E_Out_Parameter);
+                  Mutate_Ekind (Formal_Id, E_Out_Parameter);
                end if;
 
             --  But not in earlier versions of Ada
 
             else
                Error_Msg_N ("functions can only have IN parameters", Spec);
-               Set_Ekind (Formal_Id, E_In_Parameter);
+               Mutate_Ekind (Formal_Id, E_In_Parameter);
             end if;
 
          elsif In_Present (Spec) then
-            Set_Ekind (Formal_Id, E_In_Out_Parameter);
+            Mutate_Ekind (Formal_Id, E_In_Out_Parameter);
 
          else
-            Set_Ekind               (Formal_Id, E_Out_Parameter);
+            Mutate_Ekind            (Formal_Id, E_Out_Parameter);
             Set_Never_Set_In_Source (Formal_Id, True);
             Set_Is_True_Constant    (Formal_Id, False);
             Set_Current_Value       (Formal_Id, Empty);
          end if;
 
       else
-         Set_Ekind (Formal_Id, E_In_Parameter);
+         Mutate_Ekind (Formal_Id, E_In_Parameter);
       end if;
 
       --  Set Is_Known_Non_Null for access parameters since the language

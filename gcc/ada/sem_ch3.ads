@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -69,8 +69,10 @@ package Sem_Ch3 is
    --  interface primitives with the tagged type primitives that cover them.
 
    procedure Analyze_Declarations (L : List_Id);
-   --  Called to analyze a list of declarations (in what context ???). Also
-   --  performs necessary freezing actions (more description needed ???)
+   --  Called to analyze a list of declarations. Also performs necessary
+   --  freezing actions (such as freezing remaining unfrozen entities at
+   --  the end of declarative parts), resolves usage names in aspects, and
+   --  analyzes contracts that require delay until after freezing is done.
 
    procedure Analyze_Interface_Declaration (T : Entity_Id; Def : Node_Id);
    --  Analyze an interface declaration or a formal interface declaration
@@ -169,9 +171,10 @@ package Sem_Ch3 is
      (Discriminant       : Entity_Id;
       Typ_For_Constraint : Entity_Id;
       Constraint         : Elist_Id) return Node_Id;
-   --  ??? MORE DOCUMENTATION
-   --  Given a discriminant somewhere in the Typ_For_Constraint tree and a
-   --  Constraint, return the value of that discriminant.
+   --  Given a discriminant Discriminant occurring somewhere up the derivation
+   --  tree from Typ_For_Constraint and a Constraint, return the expression
+   --  corresponding to that discriminant in the constraint that specifies its
+   --  value.
 
    function Is_Null_Extension (T : Entity_Id) return Boolean;
    --  Returns True if the tagged type T has an N_Full_Type_Declaration that

@@ -48,9 +48,10 @@ non_null_ref::~non_null_ref ()
 
 // Return true if NAME has a non-null dereference in block bb.  If this is the
 // first query for NAME, calculate the summary first.
+// If SEARCH_DOM is true, the search the dominator tree as well.
 
 bool
-non_null_ref::non_null_deref_p (tree name, basic_block bb)
+non_null_ref::non_null_deref_p (tree name, basic_block bb, bool search_dom)
 {
   if (!POINTER_TYPE_P (TREE_TYPE (name)))
     return false;
@@ -59,7 +60,24 @@ non_null_ref::non_null_deref_p (tree name, basic_block bb)
   if (!m_nn[v])
     process_name (name);
 
-  return bitmap_bit_p (m_nn[v], bb->index);
+  if (bitmap_bit_p (m_nn[v], bb->index))
+    return true;
+
+  // See if any dominator has set non-zero.
+  if (search_dom && dom_info_available_p (CDI_DOMINATORS))
+    {
+      // Search back to the Def block, or the top, whichever is closer.
+      basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+      basic_block def_dom = def_bb
+			    ? get_immediate_dominator (CDI_DOMINATORS, def_bb)
+			    : NULL;
+      for ( ;
+	    bb && bb != def_dom;
+	    bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+	if (bitmap_bit_p (m_nn[v], bb->index))
+	  return true;
+    }
+  return false;
 }
 
 // Allocate an populate the bitmap for NAME.  An ON bit for a block
@@ -107,103 +125,18 @@ non_null_ref::process_name (tree name)
 
 // -------------------------------------------------------------------------
 
-// This class implements a cache of ranges indexed by basic block.  It
-// represents all that is known about an SSA_NAME on entry to each
-// block.  It caches a range-for-type varying range so it doesn't need
-// to be reformed all the time.  If a range is ever always associated
-// with a type, we can use that instead.  Whenever varying is being
-// set for a block, the cache simply points to this cached one rather
-// than create a new one each time.
+// This class represents the API into a cache of ranges for an SSA_NAME.
+// Routines must be implemented to set, get, and query if a value is set.
 
 class ssa_block_ranges
 {
 public:
-  ssa_block_ranges (tree t, irange_allocator *allocator);
-  ~ssa_block_ranges ();
-
-  void set_bb_range (const basic_block bb, const irange &r);
-  void set_bb_varying (const basic_block bb);
-  bool get_bb_range (irange &r, const basic_block bb);
-  bool bb_range_p (const basic_block bb);
+  virtual void set_bb_range (const basic_block bb, const irange &r) = 0;
+  virtual bool get_bb_range (irange &r, const basic_block bb) = 0;
+  virtual bool bb_range_p (const basic_block bb) = 0;
 
   void dump(FILE *f);
-private:
-  vec<irange *> m_tab;
-  irange *m_type_range;
-  tree m_type;
-  irange_allocator *m_irange_allocator;
 };
-
-
-// Initialize a block cache for an ssa_name of type T.
-
-ssa_block_ranges::ssa_block_ranges (tree t, irange_allocator *allocator)
-{
-  gcc_checking_assert (TYPE_P (t));
-  m_type = t;
-  m_irange_allocator = allocator;
-
-  m_tab.create (0);
-  m_tab.safe_grow_cleared (last_basic_block_for_fn (cfun));
-
-  // Create the cached type range.
-  m_type_range = m_irange_allocator->allocate (2);
-  m_type_range->set_varying (t);
-
-  m_tab[ENTRY_BLOCK_PTR_FOR_FN (cfun)->index] = m_type_range;
-}
-
-// Destruct block range.
-
-ssa_block_ranges::~ssa_block_ranges ()
-{
-  m_tab.release ();
-}
-
-// Set the range for block BB to be R.
-
-void
-ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  irange *m = m_irange_allocator->allocate (r);
-  m_tab[bb->index] = m;
-}
-
-// Set the range for block BB to the range for the type.
-
-void
-ssa_block_ranges::set_bb_varying (const basic_block bb)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  m_tab[bb->index] = m_type_range;
-}
-
-// Return the range associated with block BB in R.  Return false if
-// there is no range.
-
-bool
-ssa_block_ranges::get_bb_range (irange &r, const basic_block bb)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  irange *m = m_tab[bb->index];
-  if (m)
-    {
-      r = *m;
-      return true;
-    }
-  return false;
-}
-
-// Return true if a range is present.
-
-bool
-ssa_block_ranges::bb_range_p (const basic_block bb)
-{
-  gcc_checking_assert ((unsigned) bb->index < m_tab.length ());
-  return m_tab[bb->index] != NULL;
-}
-
 
 // Print the list of known ranges for file F in a nice format.
 
@@ -222,6 +155,85 @@ ssa_block_ranges::dump (FILE *f)
       }
 }
 
+// This class implements the range cache as a linear vector, indexed by BB.
+// It caches a varying and undefined range which are used instead of
+// allocating new ones each time.
+
+class sbr_vector : public ssa_block_ranges
+{
+public:
+  sbr_vector (tree t, irange_allocator *allocator);
+
+  virtual void set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const basic_block bb) OVERRIDE;
+protected:
+  irange **m_tab;	// Non growing vector.
+  int m_tab_size;
+  int_range<2> m_varying;
+  int_range<2> m_undefined;
+  tree m_type;
+  irange_allocator *m_irange_allocator;
+};
+
+
+// Initialize a block cache for an ssa_name of type T.
+
+sbr_vector::sbr_vector (tree t, irange_allocator *allocator)
+{
+  gcc_checking_assert (TYPE_P (t));
+  m_type = t;
+  m_irange_allocator = allocator;
+  m_tab_size = last_basic_block_for_fn (cfun) + 1;
+  m_tab = (irange **)allocator->get_memory (m_tab_size * sizeof (irange *));
+  memset (m_tab, 0, m_tab_size * sizeof (irange *));
+
+  // Create the cached type range.
+  m_varying.set_varying (t);
+  m_undefined.set_undefined ();
+}
+
+// Set the range for block BB to be R.
+
+void
+sbr_vector::set_bb_range (const basic_block bb, const irange &r)
+{
+  irange *m;
+  gcc_checking_assert (bb->index < m_tab_size);
+  if (r.varying_p ())
+    m = &m_varying;
+  else if (r.undefined_p ())
+    m = &m_undefined;
+  else
+    m = m_irange_allocator->allocate (r);
+  m_tab[bb->index] = m;
+}
+
+// Return the range associated with block BB in R.  Return false if
+// there is no range.
+
+bool
+sbr_vector::get_bb_range (irange &r, const basic_block bb)
+{
+  gcc_checking_assert (bb->index < m_tab_size);
+  irange *m = m_tab[bb->index];
+  if (m)
+    {
+      r = *m;
+      return true;
+    }
+  return false;
+}
+
+// Return true if a range is present.
+
+bool
+sbr_vector::bb_range_p (const basic_block bb)
+{
+  gcc_checking_assert (bb->index < m_tab_size);
+  return m_tab[bb->index] != NULL;
+}
+
 // -------------------------------------------------------------------------
 
 // Initialize the block cache.
@@ -237,38 +249,36 @@ block_range_cache::block_range_cache ()
 
 block_range_cache::~block_range_cache ()
 {
-  unsigned x;
-  for (x = 0; x < m_ssa_ranges.length (); ++x)
-    {
-      if (m_ssa_ranges[x])
-	delete m_ssa_ranges[x];
-    }
   delete m_irange_allocator;
   // Release the vector itself.
   m_ssa_ranges.release ();
 }
 
-// Return a reference to the ssa_block_cache for NAME.  If it has not been
-// accessed yet, allocate it first.
+// Set the range for NAME on entry to block BB to R.
+// If it has not been // accessed yet, allocate it first.
 
-ssa_block_ranges &
-block_range_cache::get_block_ranges (tree name)
+void
+block_range_cache::set_bb_range (tree name, const basic_block bb,
+				 const irange &r)
 {
   unsigned v = SSA_NAME_VERSION (name);
   if (v >= m_ssa_ranges.length ())
     m_ssa_ranges.safe_grow_cleared (num_ssa_names + 1);
 
   if (!m_ssa_ranges[v])
-    m_ssa_ranges[v] = new ssa_block_ranges (TREE_TYPE (name),
+    {
+      void *r = m_irange_allocator->get_memory (sizeof (sbr_vector));
+      m_ssa_ranges[v] = new (r) sbr_vector (TREE_TYPE (name),
 					    m_irange_allocator);
-  return *(m_ssa_ranges[v]);
+    }
+  m_ssa_ranges[v]->set_bb_range (bb, r);
 }
 
 
 // Return a pointer to the ssa_block_cache for NAME.  If it has not been
 // accessed yet, return NULL.
 
-ssa_block_ranges *
+inline ssa_block_ranges *
 block_range_cache::query_block_ranges (tree name)
 {
   unsigned v = SSA_NAME_VERSION (name);
@@ -277,22 +287,7 @@ block_range_cache::query_block_ranges (tree name)
   return m_ssa_ranges[v];
 }
 
-// Set the range for NAME on entry to block BB to R.
 
-void
-block_range_cache::set_bb_range (tree name, const basic_block bb,
-				 const irange &r)
-{
-  return get_block_ranges (name).set_bb_range (bb, r);
-}
-
-// Set the range for NAME on entry to block BB to varying.
-
-void
-block_range_cache::set_bb_varying (tree name, const basic_block bb)
-{
-  return get_block_ranges (name).set_bb_varying (bb);
-}
 
 // Return the range for NAME on entry to BB in R.  Return true if there
 // is one.
@@ -800,7 +795,7 @@ ranger_cache::ssa_range_in_bb (irange &r, tree name, basic_block bb)
   // Check if pointers have any non-null dereferences.  Non-call
   // exceptions mean we could throw in the middle of the block, so just
   // punt for now on those.
-  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb) &&
+  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
       !cfun->can_throw_non_call_exceptions)
     r = range_nonzero (TREE_TYPE (name));
 }
@@ -1066,7 +1061,8 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 
 	  // Regardless of whether we have visited pred or not, if the
 	  // pred has a non-null reference, revisit this block.
-	  if (m_non_null.non_null_deref_p (name, pred))
+	  // Don't search the DOM tree.
+	  if (m_non_null.non_null_deref_p (name, pred, false))
 	    {
 	      if (DEBUG_RANGE_CACHE)
 		fprintf (dump_file, "nonnull: update ");

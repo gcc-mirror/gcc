@@ -950,18 +950,11 @@ build_co_await (location_t loc, tree a, suspend_point_kind suspend_kind)
       e_proxy = o;
       o = NULL_TREE; /* The var is already present.  */
     }
-  else if (type_build_ctor_call (o_type))
-    {
-      e_proxy = get_awaitable_var (suspend_kind, o_type);
-      releasing_vec arg (make_tree_vector_single (rvalue (o)));
-      o = build_special_member_call (e_proxy, complete_ctor_identifier,
-				     &arg, o_type, LOOKUP_NORMAL,
-				     tf_warning_or_error);
-    }
   else
     {
       e_proxy = get_awaitable_var (suspend_kind, o_type);
-      o = build2 (INIT_EXPR, o_type, e_proxy, rvalue (o));
+      o = cp_build_modify_expr (loc, e_proxy, INIT_EXPR, o,
+				tf_warning_or_error);
     }
 
   /* I suppose we could check that this is contextually convertible to bool.  */
@@ -2989,15 +2982,8 @@ flatten_await_stmt (var_nest_node *n, hash_set<tree> *promoted,
 	  gcc_checking_assert (!already_present);
 	  tree inner = TREE_OPERAND (init, 1);
 	  gcc_checking_assert (TREE_CODE (inner) != COND_EXPR);
-	  if (type_build_ctor_call (var_type))
-	    {
-	      releasing_vec p_in (make_tree_vector_single (init));
-	      init = build_special_member_call (var, complete_ctor_identifier,
-						&p_in, var_type, LOOKUP_NORMAL,
-						tf_warning_or_error);
-	    }
-	  else
-	    init = build2 (INIT_EXPR, var_type, var, init);
+	  init = cp_build_modify_expr (input_location, var, INIT_EXPR, init,
+				       tf_warning_or_error);
 	  /* Simplify for the case that we have an init containing the temp
 	     alone.  */
 	  if (t == n->init && n->var == NULL_TREE)
@@ -4862,43 +4848,19 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 	      vec_safe_push (promise_args, this_ref);
 	    }
 	  else if (parm.rv_ref)
-	    vec_safe_push (promise_args, rvalue(fld_idx));
+	    vec_safe_push (promise_args, move (fld_idx));
 	  else
 	    vec_safe_push (promise_args, fld_idx);
 
 	  if (parm.rv_ref || parm.pt_ref)
 	    /* Initialise the frame reference field directly.  */
-	    r = build_modify_expr (fn_start, TREE_OPERAND (fld_idx, 0),
-				   parm.frame_type, INIT_EXPR,
-				   DECL_SOURCE_LOCATION (arg), arg,
-				   DECL_ARG_TYPE (arg));
-	  else if (type_build_ctor_call (parm.frame_type))
-	    {
-	      vec<tree, va_gc> *p_in;
-	      if (CLASS_TYPE_P (parm.frame_type)
-		  && classtype_has_non_deleted_move_ctor (parm.frame_type))
-		p_in = make_tree_vector_single (move (arg));
-	      else if (lvalue_p (arg))
-		p_in = make_tree_vector_single (rvalue (arg));
-	      else
-		p_in = make_tree_vector_single (arg);
-	      /* Construct in place or move as relevant.  */
-	      r = build_special_member_call (fld_idx, complete_ctor_identifier,
-					     &p_in, parm.frame_type,
-					     LOOKUP_NORMAL,
-					     tf_warning_or_error);
-	      release_tree_vector (p_in);
-	    }
+	    r = cp_build_modify_expr (fn_start, TREE_OPERAND (fld_idx, 0),
+				      INIT_EXPR, arg, tf_warning_or_error);
 	  else
 	    {
-	      if (!same_type_p (parm.frame_type, DECL_ARG_TYPE (arg)))
-		r = build1_loc (DECL_SOURCE_LOCATION (arg), CONVERT_EXPR,
-				parm.frame_type, arg);
-	      else
-		r = arg;
-	      r = build_modify_expr (fn_start, fld_idx, parm.frame_type,
-				     INIT_EXPR, DECL_SOURCE_LOCATION (arg), r,
-				     TREE_TYPE (r));
+	      r = forward_parm (arg);
+	      r = cp_build_modify_expr (fn_start, fld_idx, INIT_EXPR, r,
+					tf_warning_or_error);
 	    }
 	  finish_expr_stmt (r);
 	  if (!parm.trivial_dtor)
@@ -5044,16 +5006,8 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
       DECL_IGNORED_P (gro) = true;
       add_decl_expr (gro);
       gro_bind_vars = gro;
-      if (type_build_ctor_call (gro_type))
-	{
-	  vec<tree, va_gc> *arg = make_tree_vector_single (get_ro);
-	  r = build_special_member_call (gro, complete_ctor_identifier,
-					 &arg, gro_type, LOOKUP_NORMAL,
-					 tf_warning_or_error);
-	  release_tree_vector (arg);
-	}
-      else
-	r = build2_loc (fn_start, INIT_EXPR, gro_type, gro, get_ro);
+      r = cp_build_modify_expr (input_location, gro, INIT_EXPR, get_ro,
+				tf_warning_or_error);
       /* The constructed object might require a cleanup.  */
       if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (gro_type))
 	{
@@ -5111,37 +5065,26 @@ morph_fn_to_coro (tree orig, tree *resumer, tree *destroyer)
 
   if (same_type_p (gro_type, fn_return_type))
     r = gro_is_void_p ? NULL_TREE : DECL_RESULT (orig);
+  else if (!gro_is_void_p)
+    /* check_return_expr will automatically return gro as an rvalue via
+       treat_lvalue_as_rvalue_p.  */
+    r = gro;
+  else if (CLASS_TYPE_P (fn_return_type))
+    {
+      /* For class type return objects, we can attempt to construct,
+	 even if the gro is void. ??? Citation ??? c++/100476  */
+      r = build_special_member_call (NULL_TREE,
+				     complete_ctor_identifier, NULL,
+				     fn_return_type, LOOKUP_NORMAL,
+				     tf_warning_or_error);
+      r = build_cplus_new (fn_return_type, r, tf_warning_or_error);
+    }
   else
     {
-      if (CLASS_TYPE_P (fn_return_type))
-	{
-	  /* For class type return objects, we can attempt to construct,
-	     even if the gro is void.  */
-	  vec<tree, va_gc> *args = NULL;
-	  vec<tree, va_gc> **arglist = NULL;
-	  if (!gro_is_void_p)
-	    {
-	      args = make_tree_vector_single (rvalue (gro));
-	      arglist = &args;
-	    }
-	  r = build_special_member_call (NULL_TREE,
-					 complete_ctor_identifier, arglist,
-					 fn_return_type, LOOKUP_NORMAL,
-					 tf_warning_or_error);
-	  r = build_cplus_new (fn_return_type, r, tf_warning_or_error);
-	  if (args)
-	    release_tree_vector (args);
-	}
-      else if (gro_is_void_p)
-	{
-	  /* We can't initialize a non-class return value from void.  */
-	  error_at (input_location, "cannot initialize a return object of type"
-		    " %qT with an rvalue of type %<void%>", fn_return_type);
-	  r = error_mark_node;
-	}
-      else
-	r = build1_loc (input_location, CONVERT_EXPR,
-			fn_return_type, rvalue (gro));
+      /* We can't initialize a non-class return value from void.  */
+      error_at (input_location, "cannot initialize a return object of type"
+		" %qT with an rvalue of type %<void%>", fn_return_type);
+      r = error_mark_node;
     }
 
   finish_return_stmt (r);

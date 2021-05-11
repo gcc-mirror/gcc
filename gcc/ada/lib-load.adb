@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2020, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2021, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,27 +23,30 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Atree;    use Atree;
-with Debug;    use Debug;
-with Einfo;    use Einfo;
-with Errout;   use Errout;
-with Fname;    use Fname;
-with Fname.UF; use Fname.UF;
-with Nlists;   use Nlists;
-with Nmake;    use Nmake;
-with Opt;      use Opt;
-with Osint;    use Osint;
-with Osint.C;  use Osint.C;
-with Output;   use Output;
+with Atree;          use Atree;
+with Debug;          use Debug;
+with Einfo;          use Einfo;
+with Einfo.Entities; use Einfo.Entities;
+with Errout;         use Errout;
+with Fname;          use Fname;
+with Fname.UF;       use Fname.UF;
+with Nlists;         use Nlists;
+with Nmake;          use Nmake;
+with Opt;            use Opt;
+with Osint;          use Osint;
+with Osint.C;        use Osint.C;
+with Output;         use Output;
 with Par;
-with Restrict; use Restrict;
-with Scn;      use Scn;
-with Sinfo;    use Sinfo;
-with Sinput;   use Sinput;
-with Sinput.L; use Sinput.L;
-with Stand;    use Stand;
-with Tbuild;   use Tbuild;
-with Uname;    use Uname;
+with Restrict;       use Restrict;
+with Scn;            use Scn;
+with Sinfo;          use Sinfo;
+with Sinfo.Nodes;    use Sinfo.Nodes;
+with Sinfo.Utils;    use Sinfo.Utils;
+with Sinput;         use Sinput;
+with Sinput.L;       use Sinput.L;
+with Stand;          use Stand;
+with Tbuild;         use Tbuild;
+with Uname;          use Uname;
 
 package body Lib.Load is
 
@@ -85,7 +88,7 @@ package body Lib.Load is
 
       --  Note: for the following we should really generalize and consult the
       --  file name pattern data, but for now we just deal with the common
-      --  naming cases, which is probably good enough in practice ???
+      --  naming cases, which is good enough in practice.
 
       --  Change .adb to .ads
 
@@ -424,7 +427,7 @@ package body Lib.Load is
       --  it is part of the main extended source, otherwise reset them.
 
       --  Note: it's a bit odd but PMES is False for subunits, which is why
-      --  we have the OR here. Should be investigated some time???
+      --  we have the OR here.
 
       if PMES or Subunit then
          Restore_Config_Cunit_Boolean_Restrictions;
@@ -478,7 +481,7 @@ package body Lib.Load is
             --  installing the context. The implicit with is on this entity,
             --  not on the package it renames. This is somewhat redundant given
             --  the with_clause just created, but it simplifies subsequent
-            --  expansion of the current with_clause. Optimizable ???
+            --  expansion of the current with_clause.
 
             if Nkind (Error_Node) = N_With_Clause
               and then Nkind (Name (Error_Node)) = N_Selected_Component

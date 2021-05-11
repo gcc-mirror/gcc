@@ -1,6 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-timeout-factor 2 }
 // { dg-additional-options "-DNEWLINE_IN_CLASS_BLANK" { target newlib } }
+// { dg-additional-options "-DNEWLINE_IN_CLASS_BLANK" { target *-vxworks*-* } }
 
 // Copyright (C) 2010-2021 Free Software Foundation, Inc.
 //
