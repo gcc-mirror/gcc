@@ -1688,7 +1688,9 @@ ipa_param_body_adjustments::modify_call_stmt (gcall **stmt_p)
       if (tree lhs = gimple_call_lhs (stmt))
 	{
 	  modify_expression (&lhs, false);
-	  gimple_call_set_lhs (new_stmt, lhs);
+	  /* Avoid adjusting SSA_NAME_DEF_STMT of a SSA lhs, SSA names
+	     have not yet been remapped.  */
+	  *gimple_call_lhs_ptr (new_stmt) = lhs;
 	}
       *stmt_p = new_stmt;
       return true;
