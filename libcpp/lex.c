@@ -3725,6 +3725,7 @@ cpp_avoid_paste (cpp_reader *pfile, const cpp_token *token1,
 				|| b == CPP_NAME
 				|| b == CPP_CHAR || b == CPP_STRING); /* L */
     case CPP_NUMBER:	return (b == CPP_NUMBER || b == CPP_NAME
+				|| b == CPP_CHAR
 				|| c == '.' || c == '+' || c == '-');
 				      /* UCNs */
     case CPP_OTHER:	return ((token1->val.str.text[0] == '\\'
