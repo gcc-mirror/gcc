@@ -177,13 +177,8 @@ package body Uname is
 
    function Get_Unit_Name (N : Node_Id) return Unit_Name_Type is
 
-      Unit_Name_Buffer : String (1 .. Hostparm.Max_Name_Length);
-      --  Buffer used to build name of unit. Note that we cannot use the
-      --  Name_Buffer in package Name_Table because we use it to read
-      --  component names.
-
-      Unit_Name_Length : Natural := 0;
-      --  Length of name stored in Unit_Name_Buffer
+      Unit_Name_Buffer : Bounded_String;
+      --  Buffer used to build name of unit
 
       Node : Node_Id;
       --  Program unit node
@@ -206,9 +201,7 @@ package body Uname is
 
       procedure Add_Char (C : Character) is
       begin
-         --  Should really check for max length exceeded here???
-         Unit_Name_Length := Unit_Name_Length + 1;
-         Unit_Name_Buffer (Unit_Name_Length) := C;
+         Append (Unit_Name_Buffer, C);
       end Add_Char;
 
       --------------
@@ -217,11 +210,7 @@ package body Uname is
 
       procedure Add_Name (Name : Name_Id) is
       begin
-         Get_Name_String (Name);
-
-         for J in 1 .. Name_Len loop
-            Add_Char (Name_Buffer (J));
-         end loop;
+         Append (Unit_Name_Buffer, Name);
       end Add_Name;
 
       -------------------
@@ -414,11 +403,7 @@ package body Uname is
             raise Program_Error;
       end case;
 
-      Name_Buffer (1 .. Unit_Name_Length) :=
-        Unit_Name_Buffer (1 .. Unit_Name_Length);
-      Name_Len := Unit_Name_Length;
-      return Name_Find;
-
+      return Name_Find (Unit_Name_Buffer);
    end Get_Unit_Name;
 
    --------------------------
