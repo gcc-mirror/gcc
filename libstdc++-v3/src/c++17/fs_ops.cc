@@ -353,7 +353,7 @@ fs::copy(const path& from, const path& to, copy_options options,
     }
   if (is_other(f) || is_other(t))
     {
-      ec = std::make_error_code(std::errc::not_supported);
+      ec = std::make_error_code(std::errc::invalid_argument);
       return;
     }
   if (is_directory(f) && is_regular_file(t))
@@ -412,7 +412,7 @@ fs::copy(const path& from, const path& to, copy_options options,
   else
     ec.clear();
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 }
 
@@ -435,7 +435,7 @@ fs::copy_file(const path& from, const path& to, copy_options options,
   return do_copy_file(from.c_str(), to.c_str(), copy_file_options(options),
 		      nullptr, nullptr, ec);
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
   return false;
 #endif
 }
@@ -583,7 +583,7 @@ namespace
 	created = true;
       }
 #else
-    ec = std::make_error_code(std::errc::not_supported);
+    ec = std::make_error_code(std::errc::function_not_supported);
 #endif
     return created;
   }
@@ -631,7 +631,7 @@ fs::create_directory(const path& p, const path& attributes,
     }
   return create_dir(p, static_cast<perms>(st.st_mode), ec);
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_function_not_supported);
   return false;
 #endif
 }
@@ -652,7 +652,7 @@ fs::create_directory_symlink(const path& to, const path& new_symlink,
 			     error_code& ec) noexcept
 {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #else
   create_symlink(to, new_symlink, ec);
 #endif
@@ -684,7 +684,7 @@ fs::create_hard_link(const path& to, const path& new_hard_link,
   else
     ec = __last_system_error();
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 }
 
@@ -708,7 +708,7 @@ fs::create_symlink(const path& to, const path& new_symlink,
   else
     ec.clear();
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 }
 
@@ -776,7 +776,7 @@ fs::current_path(error_code& ec)
     }
 #endif  // __GLIBC__
 #else   // _GLIBCXX_HAVE_UNISTD_H
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
   return p;
 }
@@ -799,7 +799,7 @@ fs::current_path(const path& p, error_code& ec) noexcept
   else
     ec.clear();
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 }
 
@@ -839,7 +839,7 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
     {
       if (is_other(s1) && is_other(s2))
 	{
-	  ec = std::make_error_code(std::errc::not_supported);
+	  ec = std::__unsupported();
 	  return false;
 	}
       ec.clear();
@@ -897,7 +897,7 @@ fs::equivalent(const path& p1, const path& p2, error_code& ec) noexcept
     ec.clear();
   return false;
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
   return false;
 }
@@ -928,7 +928,7 @@ namespace
       ec.clear();
       return f(st);
 #else
-      ec = std::make_error_code(std::errc::not_supported);
+      ec = std::make_error_code(std::errc::function_not_supported);
       return deflt;
 #endif
     }
@@ -953,10 +953,10 @@ fs::file_size(const path& p, error_code& ec) noexcept
       if (s.type == file_type::directory)
 	ec = std::make_error_code(std::errc::is_a_directory);
       else
-	ec = std::make_error_code(std::errc::not_supported);
+	ec = std::__unsupported();
     }
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
   return -1;
 }
@@ -978,7 +978,7 @@ fs::hard_link_count(const path& p, error_code& ec) noexcept
   return do_stat(p, ec, std::mem_fn(&stat_type::st_nlink),
 		 static_cast<uintmax_t>(-1));
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
   return static_cast<uintmax_t>(-1);
 #endif
 }
@@ -1026,7 +1026,7 @@ fs::last_write_time(const path& p, error_code& ec) noexcept
 		 },
 		 file_time_type::min());
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
   return file_time_type::min();
 #endif
 }
@@ -1072,7 +1072,7 @@ fs::last_write_time(const path& p,
   else
     ec.clear();
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
 }
 
@@ -1121,7 +1121,7 @@ fs::permissions(const path& p, perms prms, perm_options opts,
     err = errno;
 #else
   if (nofollow && is_symlink(st))
-    ec = std::make_error_code(std::errc::not_supported);
+    ec = std::__unsupported();
   else if (posix::chmod(p.c_str(), static_cast<posix::mode_t>(prms)))
     err = errno;
 #endif
@@ -1206,7 +1206,7 @@ fs::path fs::read_symlink(const path& p, error_code& ec)
     }
   while (true);
 #else
-  ec = std::make_error_code(std::errc::not_supported);
+  ec = std::make_error_code(std::errc::function_not_supported);
 #endif
   return result;
 }
@@ -1434,7 +1434,7 @@ fs::resize_file(const path& p, uintmax_t size)
 void
 fs::resize_file(const path& p, uintmax_t size, error_code& ec) noexcept
 {
-  if (size > static_cast<uintmax_t>(std::numeric_limits<off_t>::max()))
+  if (size > static_cast<uintmax_t>(std::numeric_limits<posix::off_t>::max()))
     ec.assign(EINVAL, std::generic_category());
   else if (posix::truncate(p.c_str(), size))
     ec.assign(errno, std::generic_category());
