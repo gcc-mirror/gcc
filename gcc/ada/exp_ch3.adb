@@ -10334,7 +10334,14 @@ package body Exp_Ch3 is
 
       --  Spec of Put_Image
 
-      if Enable_Put_Image (Tag_Typ) then
+      if (not No_Run_Time_Mode)
+         and then RTE_Available (RE_Root_Buffer_Type)
+      then
+         --  No_Run_Time_Mode implies that the declaration of Tag_Typ
+         --  (like any tagged type) will be rejected. Given this, avoid
+         --  cascading errors associated with the Tag_Typ's TSS_Put_Image
+         --  procedure.
+
          Append_To (Res, Predef_Spec_Or_Body (Loc,
            Tag_Typ => Tag_Typ,
            Name    => Make_TSS_Name (Tag_Typ, TSS_Put_Image),
@@ -10936,8 +10943,9 @@ package body Exp_Ch3 is
 
       --  Body of Put_Image
 
-      if Enable_Put_Image (Tag_Typ)
-        and then No (TSS (Tag_Typ, TSS_Put_Image))
+      if No (TSS (Tag_Typ, TSS_Put_Image))
+         and then (not No_Run_Time_Mode)
+         and then RTE_Available (RE_Root_Buffer_Type)
       then
          Build_Record_Put_Image_Procedure (Loc, Tag_Typ, Decl, Ent);
          Append_To (Res, Decl);

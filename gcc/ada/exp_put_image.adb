@@ -26,7 +26,6 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Csets;          use Csets;
-with Debug;          use Debug;
 with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
@@ -45,14 +44,12 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stand;
+with Stringt;        use Stringt;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Uintp;          use Uintp;
 
 package body Exp_Put_Image is
-
-   Tagged_Put_Image_Enabled : Boolean renames Debug_Flag_Underscore_Z;
-   --  Temporary until we resolve mixing Ada 2012 and 2022 code
 
    -----------------------
    -- Local Subprograms --
@@ -531,6 +528,7 @@ package body Exp_Put_Image is
       Pnam : out Entity_Id)
    is
       Btyp : constant Entity_Id := Base_Type (Typ);
+      pragma Assert (not Is_Class_Wide_Type (Btyp));
       pragma Assert (not Is_Unchecked_Union (Btyp));
 
       First_Time : Boolean := True;
@@ -789,7 +787,31 @@ package body Exp_Put_Image is
    --  Start of processing for Build_Record_Put_Image_Procedure
 
    begin
-      if Is_Null_Record_Type (Btyp, Ignore_Privacy => True) then
+      if (Ada_Version < Ada_2022)
+        or else not Enable_Put_Image (Btyp)
+      then
+         --  generate a very simple Put_Image implementation
+
+         if Is_RTE (Typ, RE_Root_Buffer_Type) then
+            --  Avoid introducing a cyclic dependency between
+            --  Ada.Strings.Text_Buffers and System.Put_Images.
+
+            Append_To (Stms,
+              Make_Raise_Program_Error (Loc,
+              Reason => PE_Explicit_Raise));
+         else
+            Append_To (Stms,
+              Make_Procedure_Call_Statement (Loc,
+                Name => New_Occurrence_Of (RTE (RE_Put_Image_Unknown), Loc),
+                Parameter_Associations => New_List
+                  (Make_Identifier (Loc, Name_S),
+                   Make_String_Literal (Loc,
+                     To_String (Fully_Qualified_Name_String (Btyp))))));
+         end if;
+      elsif Is_Null_Record_Type (Btyp, Ignore_Privacy => True) then
+
+         --  Interface types take this path.
+
          Append_To (Stms,
            Make_Procedure_Call_Statement (Loc,
              Name => New_Occurrence_Of (RTE (RE_Put_UTF_8), Loc),
@@ -908,41 +930,28 @@ package body Exp_Put_Image is
 
    function Enable_Put_Image (Typ : Entity_Id) return Boolean is
    begin
+      --  If this function returns False for a non-scalar type Typ, then
+      --    a) calls to Typ'Image will result in calls to
+      --       System.Put_Images.Put_Image_Unknown to generate the image.
+      --    b) If Typ is a tagged type, then similarly the implementation
+      --       of Typ's Put_Image procedure will call Put_Image_Unknown
+      --       and will ignore its formal parameter of type Typ.
+      --       Note that Typ will still have a Put_Image procedure
+      --       in this case, albeit one with a simplified implementation.
+      --
       --  The name "Sink" here is a short nickname for
       --  "Ada.Strings.Text_Buffers.Root_Buffer_Type".
-
-      --  There's a bit of a chicken&egg problem. The compiler is likely to
-      --  have trouble if we refer to the Put_Image of Sink itself, because
-      --  Sink is part of the parameter profile:
-      --
-      --     function Sink'Put_Image (S : in out Sink'Class; V : T);
-      --
-      --  Likewise, the Ada.Strings.Buffer package, where Sink is
-      --  declared, depends on various other packages, so if we refer to
-      --  Put_Image of types declared in those other packages, we could create
-      --  cyclic dependencies. Therefore, we disable Put_Image for some
-      --  types. It's not clear exactly what types should be disabled. Scalar
-      --  types are OK, even if predefined, because calls to Put_Image of
-      --  scalar types are expanded inline. We certainly want to be able to use
-      --  Integer'Put_Image, for example.
-
-      --  ???Temporarily disable to work around bugs:
       --
       --  Put_Image does not work for Remote_Types. We check the containing
       --  package, rather than the type itself, because we want to include
       --  types in the private part of a Remote_Types package.
-      --
-      --  Put_Image on tagged types triggers some bugs.
 
-      if Ada_Version < Ada_2022
-        or else Is_Remote_Types (Scope (Typ))
+      if Is_Remote_Types (Scope (Typ))
+        or else Is_Remote_Call_Interface (Typ)
         or else (Is_Tagged_Type (Typ) and then In_Predefined_Unit (Typ))
-        or else (Is_Tagged_Type (Typ) and then not Tagged_Put_Image_Enabled)
       then
          return False;
       end if;
-
-      --  End of workarounds.
 
       --  No sense in generating code for Put_Image if there are errors. This
       --  avoids certain cascade errors.
@@ -1192,8 +1201,6 @@ package body Exp_Put_Image is
       --  Don't do it if type Root_Buffer_Type is unavailable in the runtime.
 
       if not In_Predefined_Unit (Compilation_Unit)
-        and then Ada_Version >= Ada_2022
-        and then Tagged_Put_Image_Enabled
         and then Tagged_Seen
         and then not No_Run_Time_Mode
         and then RTE_Available (RE_Root_Buffer_Type)
