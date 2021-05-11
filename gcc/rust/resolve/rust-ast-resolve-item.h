@@ -200,14 +200,22 @@ public:
 
   void visit (AST::Method &method) override
   {
-    if (method.has_return_type ())
-      ResolveType::go (method.get_return_type ().get (), method.get_node_id ());
-
     NodeId scope_node_id = method.get_node_id ();
     resolver->get_name_scope ().push (scope_node_id);
     resolver->get_type_scope ().push (scope_node_id);
+    resolver->get_label_scope ().push (scope_node_id);
     resolver->push_new_name_rib (resolver->get_name_scope ().peek ());
     resolver->push_new_type_rib (resolver->get_type_scope ().peek ());
+    resolver->push_new_label_rib (resolver->get_type_scope ().peek ());
+
+    if (method.has_generics ())
+      {
+	for (auto &generic : method.get_generic_params ())
+	  ResolveGenericParam::go (generic.get (), method.get_node_id ());
+      }
+
+    if (method.has_return_type ())
+      ResolveType::go (method.get_return_type ().get (), method.get_node_id ());
 
     // self turns into (self: Self) as a function param
     AST::SelfParam &self_param = method.get_self_param ();
@@ -248,6 +256,7 @@ public:
 
     resolver->get_name_scope ().pop ();
     resolver->get_type_scope ().pop ();
+    resolver->get_label_scope ().pop ();
   }
 
 private:

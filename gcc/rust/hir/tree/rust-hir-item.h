@@ -745,6 +745,8 @@ public:
 
   Location get_locus () const { return locus; }
 
+  Location get_impl_locus () const final { return get_locus (); }
+
   std::unique_ptr<BlockExpr> &get_function_body () { return function_body; }
   const std::unique_ptr<BlockExpr> &get_function_body () const
   {
@@ -1365,6 +1367,8 @@ public:
   Function &operator= (Function &&other) = default;
 
   Location get_locus () const { return locus; }
+
+  Location get_impl_locus () const final { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
 
@@ -2265,6 +2269,8 @@ public:
   bool is_unnamed () const { return identifier == std::string ("_"); }
 
   Location get_locus () const { return locus; }
+
+  Location get_impl_locus () const final { return get_locus (); }
 
   void accept_vis (HIRVisitor &vis) override;
 

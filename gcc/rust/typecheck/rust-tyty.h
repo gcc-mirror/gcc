@@ -638,8 +638,16 @@ public:
 
   bool needs_substitution () const
   {
-    return has_substitutions ()
-	   && (used_arguments.is_error () || !used_arguments.is_concrete ());
+    if (!has_substitutions ())
+      return false;
+
+    if (used_arguments.is_error ())
+      return true;
+
+    if (used_arguments.size () != get_num_substitutions ())
+      return true;
+
+    return !used_arguments.is_concrete ();
   }
 
   bool was_substituted () const { return !needs_substitution (); }
@@ -690,13 +698,36 @@ public:
   SubstitutionArgumentMappings
   adjust_mappings_for_this (SubstitutionArgumentMappings &mappings);
 
+  // struct Foo<A, B>(A, B);
+  //
+  // impl<T> Foo<T, f32>;
+  //     -> fn test<X>(self, a: X) -> X
+  //
+  // We might invoke this via:
+  //
+  // a = Foo(123, 456f32);
+  // b = a.test::<bool>(false);
+  //
+  // we need to figure out relevant generic arguemts for self to apply to the
+  // fntype
+  SubstitutionArgumentMappings solve_mappings_from_receiver_for_self (
+    SubstitutionArgumentMappings &mappings);
+
   BaseType *infer_substitions (Location locus)
   {
     std::vector<SubstitutionArg> args;
-    for (auto &sub : get_substs ())
+    for (auto &p : get_substs ())
       {
-	TyVar infer_var = TyVar::get_implicit_infer_var (locus);
-	args.push_back (SubstitutionArg (&sub, infer_var.get_tyty ()));
+	if (p.needs_substitution ())
+	  {
+	    TyVar infer_var = TyVar::get_implicit_infer_var (locus);
+	    args.push_back (SubstitutionArg (&p, infer_var.get_tyty ()));
+	  }
+	else
+	  {
+	    args.push_back (
+	      SubstitutionArg (&p, p.get_param_ty ()->resolve ()));
+	  }
       }
 
     SubstitutionArgumentMappings infer_arguments (std::move (args), locus);
@@ -819,23 +850,24 @@ private:
 class FnType : public BaseType, public SubstitutionRef
 {
 public:
-  FnType (HirId ref, std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
+  FnType (HirId ref, bool is_method,
+	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::FNDEF, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      params (std::move (params)), type (type)
+      params (std::move (params)), type (type), is_method_flag (is_method)
   {}
 
-  FnType (HirId ref, HirId ty_ref,
+  FnType (HirId ref, HirId ty_ref, bool is_method,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::FNDEF, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      params (params), type (type)
+      params (params), type (type), is_method_flag (is_method)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -850,6 +882,22 @@ public:
   bool is_equal (const BaseType &other) const override;
 
   size_t num_params () const { return params.size (); }
+
+  bool is_method () const
+  {
+    if (num_params () == 0)
+      return false;
+
+    return is_method_flag;
+  }
+
+  // get the Self type for the method
+  BaseType *get_self_type () const
+  {
+    rust_assert (is_method ());
+    // FIXME this will need updated when we support coercion for & mut self etc
+    return get_params ().at (0).second;
+  }
 
   std::vector<std::pair<HIR::Pattern *, BaseType *> > &get_params ()
   {
@@ -893,6 +941,7 @@ public:
 private:
   std::vector<std::pair<HIR::Pattern *, BaseType *> > params;
   BaseType *type;
+  bool is_method_flag;
 };
 
 class FnPtr : public BaseType
