@@ -8037,11 +8037,7 @@ package body Sem_Util is
          Current_Node := Parent (Current_Node);
       end loop;
 
-      if Nkind (Current_Node) /= N_Compilation_Unit then
-         return Empty;
-      else
-         return Current_Node;
-      end if;
+      return Current_Node;
    end Enclosing_Comp_Unit_Node;
 
    --------------------------
