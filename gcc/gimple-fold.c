@@ -311,27 +311,28 @@ get_symbol_constant_value (tree sym)
 static tree
 maybe_fold_reference (tree expr)
 {
-  tree result;
+  tree result = NULL_TREE;
 
   if ((TREE_CODE (expr) == VIEW_CONVERT_EXPR
        || TREE_CODE (expr) == REALPART_EXPR
        || TREE_CODE (expr) == IMAGPART_EXPR)
       && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
-    return fold_unary_loc (EXPR_LOCATION (expr),
-			   TREE_CODE (expr),
-			   TREE_TYPE (expr),
-			   TREE_OPERAND (expr, 0));
-  else if (TREE_CODE (expr) == BIT_FIELD_REF
-	   && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
-    return fold_ternary_loc (EXPR_LOCATION (expr),
+    result = fold_unary_loc (EXPR_LOCATION (expr),
 			     TREE_CODE (expr),
 			     TREE_TYPE (expr),
-			     TREE_OPERAND (expr, 0),
-			     TREE_OPERAND (expr, 1),
-			     TREE_OPERAND (expr, 2));
+			     TREE_OPERAND (expr, 0));
+  else if (TREE_CODE (expr) == BIT_FIELD_REF
+	   && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
+    result = fold_ternary_loc (EXPR_LOCATION (expr),
+			       TREE_CODE (expr),
+			       TREE_TYPE (expr),
+			       TREE_OPERAND (expr, 0),
+			       TREE_OPERAND (expr, 1),
+			       TREE_OPERAND (expr, 2));
+  else
+    result = fold_const_aggregate_ref (expr);
 
-  if ((result = fold_const_aggregate_ref (expr))
-      && is_gimple_min_invariant (result))
+  if (result && is_gimple_min_invariant (result))
     return result;
 
   return NULL_TREE;
