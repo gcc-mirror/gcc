@@ -141,10 +141,6 @@ libgomp/testsuite/Makefile.in: libgomp/testsuite/Makefile.am libgomp/aclocal.m4
 libgomp/configure.ac: libgomp/plugin/configfrag.ac
 libgomp/configure: libgomp/configure.ac libgomp/aclocal.m4
 libgomp/config.h.in: libgomp/configure.ac libgomp/aclocal.m4
-libhsail-rt/aclocal.m4: libhsail-rt/configure.ac
-libhsail-rt/Makefile.in: libhsail-rt/Makefile.am libhsail-rt/aclocal.m4
-libhsail-rt/configure: libhsail-rt/configure.ac libhsail-rt/aclocal.m4
-libhsail-rt/target-config.h.in: libhsail-rt/configure.ac libhsail-rt/aclocal.m4
 libitm/aclocal.m4: libitm/configure.ac libitm/acinclude.m4
 libitm/Makefile.in: libitm/Makefile.am libitm/aclocal.m4
 libitm/testsuite/Makefile.in: libitm/testsuite/Makefile.am libitm/aclocal.m4

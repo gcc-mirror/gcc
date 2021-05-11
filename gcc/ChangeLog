@@ -1,3 +1,375 @@
+2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* range-op.cc (get_bool_state): Adjust head comment.
+	(operator_not_equal::op1_range): Fix comment.
+	(operator_bitwise_xor::op1_range): Remove call to gcc_unreachable.
+
+2021-05-10  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100425
+	PR middle-end/100510
+	* gimple-ssa-warn-alloca.c (pass_walloca::firast_time_p): Rename...
+	(pass_walloca::xlimit_certain_p): ...to this.
+	(pass_walloca::gate): Execute for any kind of handled warning.
+	(pass_walloca::execute): Avoid issuing "maybe" and "unbounded"
+	warnings when xlimit_certain_p is set.
+
+2021-05-10  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_ira_change_pseudo_allocno_class):
+	Return ALTIVEC_REGS if that is best_class.
+	(rs6000_compute_pressure_classes): Add ALTIVEC_REGS.
+
+2021-05-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.h (CPP_SPEC): Remove error message about
+	-mfloat-abi.
+
+2021-05-10  Martin Jambor  <mjambor@suse.cz>
+
+	* ipa-prop.h (IPA_NODE_REF): Removed.
+	(IPA_NODE_REF_GET_CREATE): Likewise.
+	(IPA_EDGE_REF): Likewise.
+	(IPA_EDGE_REF_GET_CREATE): Likewise.
+	(IS_VALID_JUMP_FUNC_INDEX): Likewise.
+	* ipa-cp.c (print_all_lattices): Replaced IPA_NODE_REF with a direct
+	use of ipa_node_params_sum.
+	(ipcp_versionable_function_p): Likewise.
+	(push_node_to_stack): Likewise.
+	(pop_node_from_stack): Likewise.
+	(set_single_call_flag): Replaced two IPA_NODE_REF with one single
+	direct use of ipa_node_params_sum.
+	(initialize_node_lattices): Replaced IPA_NODE_REF with a direct use of
+	ipa_node_params_sum.
+	(ipa_context_from_jfunc): Replaced IPA_EDGE_REF with a direct use of
+	ipa_edge_args_sum.
+	(ipcp_verify_propagated_values): Replaced IPA_NODE_REF with a direct
+	use of ipa_node_params_sum.
+	(self_recursively_generated_p): Likewise.
+	(propagate_scalar_across_jump_function): Likewise.
+	(propagate_context_across_jump_function): Replaced IPA_EDGE_REF with a
+	direct use of ipa_edge_args_sum, moved the lookup after the early
+	exit.  Replaced IPA_NODE_REF with a direct use of ipa_node_params_sum.
+	(propagate_bits_across_jump_function): Replaced IPA_NODE_REF with
+	direct uses of ipa_node_params_sum.
+	(propagate_vr_across_jump_function): Likewise.
+	(propagate_aggregate_lattice): Likewise.
+	(propagate_aggs_across_jump_function): Likewise.
+	(propagate_constants_across_call): Likewise, also replaced
+	IPA_EDGE_REF with a direct use of ipa_edge_args_sum.
+	(good_cloning_opportunity_p): Replaced IPA_NODE_REF with a direct use
+	of ipa_node_params_sum.
+	(estimate_local_effects): Likewise.
+	(add_all_node_vals_to_toposort): Likewise.
+	(propagate_constants_topo): Likewise.
+	(ipcp_propagate_stage): Likewise.
+	(ipcp_discover_new_direct_edges): Likewise.
+	(calls_same_node_or_its_all_contexts_clone_p): Likewise.
+	(cgraph_edge_brings_value_p): Likewise (in both overloaded functions).
+	(get_info_about_necessary_edges): Likewise.
+	(want_remove_some_param_p): Likewise.
+	(create_specialized_node): Likewise.
+	(self_recursive_pass_through_p): Likewise.
+	(self_recursive_agg_pass_through_p): Likewise.
+	(find_more_scalar_values_for_callers_subset): Likewise and also
+	replaced IPA_EDGE_REF with direct uses of ipa_edge_args_sum, in one
+	case replacing two of those with a single query.
+	(find_more_contexts_for_caller_subset): Likewise for the
+	ipa_polymorphic_call_context overload.
+	(intersect_aggregates_with_edge): Replaced IPA_EDGE_REF with a direct
+	use of ipa_edge_args_sum.  Replaced IPA_NODE_REF with direct uses of
+	ipa_node_params_sum.
+	(find_aggregate_values_for_callers_subset): Likewise, also reusing
+	results of ipa_edge_args_sum->get.
+	(cgraph_edge_brings_all_scalars_for_node): Replaced IPA_NODE_REF with
+	direct uses of ipa_node_params_sum, replaced IPA_EDGE_REF with a
+	direct use of ipa_edge_args_sum.
+	(cgraph_edge_brings_all_agg_vals_for_node): Likewise, moved node
+	summary query after the early exit and reused the result later.
+	(decide_about_value): Replaced IPA_NODE_REF with a direct use of
+	ipa_node_params_sum.
+	(decide_whether_version_node): Likewise.  Removed re-querying for
+	summaries after cloning.
+	(spread_undeadness): Replaced IPA_NODE_REF with a direct use of
+	ipa_node_params_sum.
+	(has_undead_caller_from_outside_scc_p): Likewise, reusing results of
+	some queries.
+	(identify_dead_nodes): Likewise.
+	(ipcp_store_bits_results): Replaced IPA_NODE_REF with direct uses of
+	ipa_node_params_sum.
+	(ipcp_store_vr_results): Likewise.
+	* ipa-fnsummary.c (evaluate_properties_for_edge): Likewise.
+	(ipa_fn_summary_t::duplicate): Likewise.
+	(analyze_function_body): Likewise.
+	(estimate_calls_size_and_time): Likewise.
+	(ipa_cached_call_context::duplicate_from): Likewise.
+	(ipa_call_context::equal_to): Likewise.
+	(remap_edge_params): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	(inline_read_section): Likewise.
+	* ipa-icf.c (sem_function::param_used_p): Likewise.
+	* ipa-modref.c (compute_parm_map): Likewise.
+	(compute_parm_map): Replaced IPA_EDGE_REF with a direct use of
+	ipa_edge_args_sum.
+	(get_access_for_fnspec): Replaced IPA_NODE_REF with a direct use of
+	ipa_node_params_sum and replaced IPA_EDGE_REF with a direct use of
+	ipa_edge_args_sum.
+	* ipa-profile.c (check_argument_count): Likewise.
+	* ipa-prop.c (ipa_alloc_node_params): Replaced IPA_NODE_REF_GET_CREATE
+	with a direct use of ipa_node_params_sum.
+	(ipa_initialize_node_params): Likewise.
+	(ipa_print_node_jump_functions_for_edge): Replaced IPA_EDGE_REF with a
+	direct use of ipa_edge_args_sum and reused the query result.
+	(ipa_compute_jump_functions_for_edge): Replaced IPA_NODE_REF with a
+	direct use of ipa_node_params_sum and replaced IPA_EDGE_REF with a
+	direct use of ipa_edge_args_sum.
+	(ipa_note_param_call): Replaced IPA_NODE_REF with a direct use of
+	ipa_node_params_sum and reused the result of the query.
+	(ipa_analyze_node): Likewise.
+	(ipa_analyze_controlled_uses): Replaced IPA_NODE_REF with a direct use
+	of ipa_node_params_sum.
+	(update_jump_functions_after_inlining): Replaced IPA_EDGE_REF with
+	direct uses of ipa_edge_args_sum.
+	(update_indirect_edges_after_inlining): Replaced IPA_NODE_REF with
+	direct uses of ipa_node_params_sum and replaced IPA_EDGE_REF with a
+	direct use of ipa_edge_args_sum.  Removed superficial re-querying the
+	top edge summary.
+	(propagate_controlled_uses): Replaced IPA_NODE_REF with direct uses of
+	ipa_node_params_sum and replaced IPA_EDGE_REF with a direct use of
+	ipa_edge_args_sum.
+	(ipa_propagate_indirect_call_infos): Replaced IPA_EDGE_REF with a
+	direct use of ipa_edge_args_sum.
+	(ipa_edge_args_sum_t::duplicate): Replaced IPA_NODE_REF with a direct
+	use of ipa_node_params_sum.
+	(ipa_print_node_params): Likewise.
+	(ipa_write_node_info): Likewise and also replaced IPA_EDGE_REF with
+	direct uses of ipa_edge_args_sum.
+	(ipa_read_edge_info): Replaced IPA_EDGE_REF with a direct use of
+	ipa_edge_args_sum.
+	(ipa_read_node_info): Replaced IPA_NODE_REF with a direct use of
+	ipa_node_params_sum.
+	(ipa_prop_write_jump_functions): Likewise.  Move variable node to the
+	scopes where it is used.
+
+2021-05-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc)
+	<case E_V2SImode>: Force op_true to register.
+
+2021-05-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (MVE_FP_COMPARISONS): New.
+	* config/arm/mve.md (mve_vcmp<mve_cmp_op>q_f<mode>)
+	(mve_vcmp<mve_cmp_op>q_n_f<mode>): New, merge all vcmp_*f*
+	patterns.
+	(mve_vcmpeqq_f<mode>, mve_vcmpeqq_n_f<mode>, mve_vcmpgeq_f<mode>)
+	(mve_vcmpgeq_n_f<mode>, mve_vcmpgtq_f<mode>)
+	(mve_vcmpgtq_n_f<mode>, mve_vcmpleq_f<mode>)
+	(mve_vcmpleq_n_f<mode>, mve_vcmpltq_f<mode>)
+	(mve_vcmpltq_n_f<mode>, mve_vcmpneq_f<mode>)
+	(mve_vcmpneq_n_f<mode>): Remove.
+	* config/arm/unspecs.md (VCMPEQQ_F, VCMPEQQ_N_F, VCMPGEQ_F)
+	(VCMPGEQ_N_F, VCMPGTQ_F, VCMPGTQ_N_F, VCMPLEQ_F, VCMPLEQ_N_F)
+	(VCMPLTQ_F, VCMPLTQ_N_F, VCMPNEQ_F, VCMPNEQ_N_F): Remove.
+
+2021-05-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (MVE_COMPARISONS): New.
+	(mve_cmp_op): New.
+	(mve_cmp_type): New.
+	* config/arm/mve.md (mve_vcmp<mve_cmp_op>q_<mode>): New, merge all
+	mve_vcmp patterns.
+	(mve_vcmpneq_<mode>, mve_vcmpcsq_n_<mode>, mve_vcmpcsq_<mode>)
+	(mve_vcmpeqq_n_<mode>, mve_vcmpeqq_<mode>, mve_vcmpgeq_n_<mode>)
+	(mve_vcmpgeq_<mode>, mve_vcmpgtq_n_<mode>, mve_vcmpgtq_<mode>)
+	(mve_vcmphiq_n_<mode>, mve_vcmphiq_<mode>, mve_vcmpleq_n_<mode>)
+	(mve_vcmpleq_<mode>, mve_vcmpltq_n_<mode>, mve_vcmpltq_<mode>)
+	(mve_vcmpneq_n_<mode>, mve_vcmpltq_n_<mode>, mve_vcmpltq_<mode>)
+	(mve_vcmpneq_n_<mode>): Remove.
+
+2021-05-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_mve.h (__arm_vcmp*): Remove 's' suffix.
+	* config/arm/arm_mve_builtins.def (vcmp*): Remove 's' suffix.
+	* config/arm/mve.md (mve_vcmp*): Remove 's' suffix in pattern
+	names.
+
+2021-05-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_mve_builtins.def (vcmpneq_u): Remove.
+	(vcmpneq_n_u): Likewise.
+	(vcmpeqq_u,): Likewise.
+	(vcmpeqq_n_u): Likewise.
+	* config/arm/iterators.md (supf): Remove VCMPNEQ_U, VCMPEQQ_U,
+	VCMPEQQ_N_U and VCMPNEQ_N_U.
+	* config/arm/mve.md (mve_vcmpneq): Remove <supf> iteration.
+	(mve_vcmpeqq_n): Likewise.
+	(mve_vcmpeqq): Likewise.
+	(mve_vcmpneq_n): Likewise.
+
+2021-05-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_mve.h (__arm_vcmpeq*u*, __arm_vcmpne*u*): Call
+	the 's' version of the builtin.
+
+2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100492
+	* tree-loop-distribution.c (find_seed_stmts_for_distribution):
+	Find nothing when the loop contains an irreducible region.
+
+2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100464
+	PR c++/100468
+	* gimple-fold.c (canonicalize_constructor_val): Do not set
+	TREE_ADDRESSABLE.
+
+2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100434
+	* tree-ssa-dse.c (initialize_ao_ref_for_dse): Handle
+	call LHS.
+	(dse_optimize_stmt): Handle call LHS by dropping the
+	LHS or the whole call if it doesn't have other
+	side-effects.
+	(pass_dse::execute): Adjust.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Add missing genversion rule.
+
+2021-05-10  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99960
+	* config/arm/mve.md (*mve_mov<mode>): Simplify output code. Use
+	vldrw.u32 and vstrw.32 for V2D[IF]mode loads and stores.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* builtins.c (is_builtin_name): Use startswith
+	function instead of strncmp.
+	* collect2.c (main): Likewise.
+	(has_lto_section): Likewise.
+	(scan_libraries): Likewise.
+	* coverage.c (coverage_checksum_string): Likewise.
+	(coverage_init): Likewise.
+	* dwarf2out.c (is_cxx): Likewise.
+	(gen_compile_unit_die): Likewise.
+	* gcc-ar.c (main): Likewise.
+	* gcc.c (init_spec): Likewise.
+	(read_specs): Likewise.
+	(execute): Likewise.
+	(check_live_switch): Likewise.
+	* genattrtab.c (write_attr_case): Likewise.
+	(IS_ATTR_GROUP): Likewise.
+	* gencfn-macros.c (main): Likewise.
+	* gengtype.c (type_for_name): Likewise.
+	(gen_rtx_next): Likewise.
+	(get_file_langdir): Likewise.
+	(write_local): Likewise.
+	* genmatch.c (get_operator): Likewise.
+	(get_operand_type): Likewise.
+	(expr::gen_transform): Likewise.
+	* genoutput.c (validate_optab_operands): Likewise.
+	* incpath.c (add_sysroot_to_chain): Likewise.
+	* langhooks.c (lang_GNU_C): Likewise.
+	(lang_GNU_CXX): Likewise.
+	(lang_GNU_Fortran): Likewise.
+	(lang_GNU_OBJC): Likewise.
+	* lto-wrapper.c (run_gcc): Likewise.
+	* omp-general.c (omp_max_simt_vf): Likewise.
+	* omp-low.c (omp_runtime_api_call): Likewise.
+	* opts-common.c (parse_options_from_collect_gcc_options): Likewise.
+	* read-rtl-function.c (function_reader::read_rtx_operand_r): Likewise.
+	* real.c (real_from_string): Likewise.
+	* selftest.c (assert_str_startswith): Likewise.
+	* timevar.c (timer::validate_phases): Likewise.
+	* tree.c (get_file_function_name): Likewise.
+	* ubsan.c (ubsan_use_new_style_p): Likewise.
+	* varasm.c (default_function_rodata_section): Likewise.
+	(incorporeal_function_p): Likewise.
+	(default_section_type_flags): Likewise.
+	* system.h (startswith): Define startswith.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* bitmap.h (class auto_bitmap): Remove
+	__cplusplus >= 201103.
+	* config/aarch64/aarch64.c: Likewise.
+	* gimple-ssa-store-merging.c (store_immediate_info::store_immediate_info):
+	Likewise.
+	* sbitmap.h: Likewise.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Rename gcov-iov to genversion and depend
+	on version.h (instead of gcov-iov.h).
+	* gcov-io.h: Include version.h instread of gcov-iov.h.
+	* gengtype-state.c (read_state_version): Likewise.
+	* gcov-iov.c: Moved to...
+	* genversion.c: ...here.
+	* lto-streamer.h (LTO_major_version): Define it with
+	GCC_major_version.
+	* version.c: Removed.
+	* version.h: Removed.
+
+2021-05-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (UNSPEC_ARC_DMPYWH): Define.
+	* config/arc/simdext.md (VCT): Add predicates for iterator
+	elements.
+	(EMUVEC): Define.
+	(voptab): Likewise.
+	(vec_widen_<V_US>mult_hi_v4hi): Change pattern predicate.
+	(<voptab>v2si3): New patterns.
+	(neg): Likewise.
+	(reduc_plus_scal_v4hi): Likewise.
+	(reduc_plus_scal_v2si): Likewise.
+	(vec_duplicatev2si): Likewise.
+	(vec_duplicatev4hi): Likewise.
+
+2021-05-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/simdext.md: Format and cleanup file.
+
+2021-05-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/simdext.md (movmisalignv2hi): Allow misaligned access
+	only when munaligned-access option is on.
+	(movmisalign<mode>): Likewise.
+
+2021-05-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* common/config/arc/arc-common.c (arc_handle_option): Remove dot
+	from string.
+	* config/arc/arc.c (arc_reorg): Remove underscore from string.
+
+2021-05-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (CLZ_DEFINED_VALUE_AT_ZERO): Define.
+	(CTZ_DEFINED_VALUE_AT_ZERO): Likewise.
+	* config/arc/arc.md (clrsbsi2): Cleanup pattern.
+	(norm_f): Likewise.
+	(ffs): Likewise.
+	(ffs_f): Likewise.
+	(clzsi2): Use fls instruction when available.
+	(arc_clzsi2): Likewise.
+
+2021-05-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.h (ADDITIONAL_REGISTER_NAMES): Add r26 and r27.
+
+2021-05-10  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* doc/extend.texi (__builtin_arc_sr): Swap arguments.
+
+2021-05-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/100467
+	* toplev.c (compile_file): Call insn_locations_init before
+	targetm.asm_out.code_end.
+
 2021-05-07  Andrew Stubbs  <ams@codesourcery.com>
 
 	Revert:

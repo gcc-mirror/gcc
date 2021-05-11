@@ -1,3 +1,73 @@
+2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/opt5.ads: New test.
+	* gnat.dg/specs/opt5_pkg.ads: New helper.
+
+2021-05-10  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100425
+	PR middle-end/100510
+	* c-c++-common/Walloca-larger-than.C: New test.
+	* gcc.dg/Walloca-larger-than-4.c: New test.
+	* gcc.dg/Wvla-larger-than-5.c: New test.
+	* gcc.dg/pr79972.c: Remove unexpected warning directive.
+
+2021-05-10  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: Adjust counts.
+	* gcc.target/powerpc/vec-rlmi-rlnm.c: Likewise.
+
+2021-05-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vmul-scalar-1.c: New.
+
+2021-05-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vsub-scalar-1.c: New test.
+
+2021-05-10  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR tree-optimization/42587
+	* gcc.dg/optimize-bswapsi-6.c: New test.
+
+2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/100452
+	* g++.dg/vect/slp-pr99971.cc: Align data.
+
+2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100492
+	* gcc.dg/torture/pr100492.c: New testcase.
+
+2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100464
+	PR c++/100468
+	* gcc.dg/pr100464.c: New testcase.
+	* g++.dg/tree-ssa/array-temp1.C: Adjust.
+
+2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100434
+	* gcc.dg/tree-ssa/ssa-dse-43.c: New testcase.
+
+2021-05-10  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99960
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_s64.c:
+	Update now that we're (correctly) using full 128-bit vector
+	loads/stores.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_z_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_z_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int1.c:
+	Likewise.
+
 2021-05-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/46991

@@ -1,3 +1,40 @@
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_email.py: Remove newlines when --help
+	is used.
+
+2021-05-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_check_commit.py (__Main__): State in --help
+	the default value for 'revisions'.
+	* gcc-changelog/git_email.py (show_help): Add.
+	(__main__): Handle -h and --help.
+
+2021-05-10  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (Error.__repr__): Add space after the colon.
+	(GitCommit.check_mentioned_files): Check whether the same file has been
+	specified multiple times.
+	* gcc-changelog/test_email.py (TestGccChangelog.test_multi_same_file): New.
+	* gcc-changelog/test_patches.txt (0001-OpenMP-Fix-SIMT): New test.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	Revert:
+	2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Remove components that will be
+	removed.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc_update: Start using reload.c instead of version.c.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Remove components that will be
+	removed.
+
 2021-04-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* gennews (files): Add files for GCC 10 and GCC 11.

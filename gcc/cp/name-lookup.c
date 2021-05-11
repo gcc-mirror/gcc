@@ -9116,7 +9116,7 @@ static const char *const op_bind_attrname = "operator bindings";
 void
 maybe_save_operator_binding (tree e)
 {
-  /* This is only useful in a generic lambda.  */
+  /* This is only useful in a template.  */
   if (!processing_template_decl)
     return;
 
@@ -9124,13 +9124,12 @@ maybe_save_operator_binding (tree e)
   if (!cfn)
     return;
 
-  /* Do this for lambdas and code that will emit a CMI.  In a module's
-     GMF we don't yet know whether there will be a CMI.  */
-  if (!module_has_cmi_p () && !global_purview_p () && !current_lambda_expr())
-     return;
-
-  tree fnname = ovl_op_identifier (false, TREE_CODE (e));
-  if (!fnname)
+  tree fnname;
+  if(TREE_CODE (e) == MODOP_EXPR)
+    fnname = ovl_op_identifier (true, TREE_CODE (TREE_OPERAND (e, 1)));
+  else
+    fnname = ovl_op_identifier (false, TREE_CODE (e));
+  if (!fnname || fnname == assign_op_identifier)
     return;
 
   tree attributes = DECL_ATTRIBUTES (cfn);

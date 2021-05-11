@@ -311,27 +311,28 @@ get_symbol_constant_value (tree sym)
 static tree
 maybe_fold_reference (tree expr)
 {
-  tree result;
+  tree result = NULL_TREE;
 
   if ((TREE_CODE (expr) == VIEW_CONVERT_EXPR
        || TREE_CODE (expr) == REALPART_EXPR
        || TREE_CODE (expr) == IMAGPART_EXPR)
       && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
-    return fold_unary_loc (EXPR_LOCATION (expr),
-			   TREE_CODE (expr),
-			   TREE_TYPE (expr),
-			   TREE_OPERAND (expr, 0));
-  else if (TREE_CODE (expr) == BIT_FIELD_REF
-	   && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
-    return fold_ternary_loc (EXPR_LOCATION (expr),
+    result = fold_unary_loc (EXPR_LOCATION (expr),
 			     TREE_CODE (expr),
 			     TREE_TYPE (expr),
-			     TREE_OPERAND (expr, 0),
-			     TREE_OPERAND (expr, 1),
-			     TREE_OPERAND (expr, 2));
+			     TREE_OPERAND (expr, 0));
+  else if (TREE_CODE (expr) == BIT_FIELD_REF
+	   && CONSTANT_CLASS_P (TREE_OPERAND (expr, 0)))
+    result = fold_ternary_loc (EXPR_LOCATION (expr),
+			       TREE_CODE (expr),
+			       TREE_TYPE (expr),
+			       TREE_OPERAND (expr, 0),
+			       TREE_OPERAND (expr, 1),
+			       TREE_OPERAND (expr, 2));
+  else
+    result = fold_const_aggregate_ref (expr);
 
-  if ((result = fold_const_aggregate_ref (expr))
-      && is_gimple_min_invariant (result))
+  if (result && is_gimple_min_invariant (result))
     return result;
 
   return NULL_TREE;
@@ -547,7 +548,8 @@ fold_gimple_assign (gimple_stmt_iterator *si)
 					   CONSTRUCTOR_ELTS (rhs));
 	  }
 
-	else if (DECL_P (rhs))
+	else if (DECL_P (rhs)
+		 && is_gimple_reg_type (TREE_TYPE (rhs)))
 	  return get_symbol_constant_value (rhs);
       }
       break;
@@ -5445,19 +5447,6 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
   gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
   tree callee;
   bool changed = false;
-  unsigned i;
-
-  /* Fold *& in call arguments.  */
-  for (i = 0; i < gimple_call_num_args (stmt); ++i)
-    if (REFERENCE_CLASS_P (gimple_call_arg (stmt, i)))
-      {
-	tree tmp = maybe_fold_reference (gimple_call_arg (stmt, i));
-	if (tmp)
-	  {
-	    gimple_call_set_arg (stmt, i, tmp);
-	    changed = true;
-	  }
-      }
 
   /* Check for virtual calls that became direct calls.  */
   callee = gimple_call_fn (stmt);
@@ -5559,15 +5548,6 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	{
 	  gimple_call_set_chain (stmt, NULL);
 	  changed = true;
-	}
-      else
-	{
-	  tree tmp = maybe_fold_reference (gimple_call_chain (stmt));
-	  if (tmp)
-	    {
-	      gimple_call_set_chain (stmt, tmp);
-	      changed = true;
-	    }
 	}
     }
 
@@ -6281,43 +6261,6 @@ fold_stmt_1 (gimple_stmt_iterator *gsi, bool inplace, tree (*valueize) (tree))
 
     case GIMPLE_CALL:
       changed |= gimple_fold_call (gsi, inplace);
-      break;
-
-    case GIMPLE_ASM:
-      /* Fold *& in asm operands.  */
-      {
-	gasm *asm_stmt = as_a <gasm *> (stmt);
-	size_t noutputs;
-	const char **oconstraints;
-	const char *constraint;
-	bool allows_mem, allows_reg;
-
-	noutputs = gimple_asm_noutputs (asm_stmt);
-	oconstraints = XALLOCAVEC (const char *, noutputs);
-
-	for (i = 0; i < noutputs; ++i)
-	  {
-	    tree link = gimple_asm_output_op (asm_stmt, i);
-	    oconstraints[i]
-	      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
-	  }
-	for (i = 0; i < gimple_asm_ninputs (asm_stmt); ++i)
-	  {
-	    tree link = gimple_asm_input_op (asm_stmt, i);
-	    tree op = TREE_VALUE (link);
-	    constraint
-	      = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
-	    parse_input_constraint (&constraint, 0, 0, noutputs, 0,
-				    oconstraints, &allows_mem, &allows_reg);
-	    if (REFERENCE_CLASS_P (op)
-		&& (allows_reg || !allows_mem)
-		&& (op = maybe_fold_reference (op)) != NULL_TREE)
-	      {
-		TREE_VALUE (link) = op;
-		changed = true;
-	      }
-	  }
-      }
       break;
 
     case GIMPLE_DEBUG:

@@ -8781,7 +8781,7 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
   tree num_thr_sz = create_tmp_var (size_type_node);
   tree lab1 = create_artificial_label (UNKNOWN_LOCATION);
   tree lab2 = create_artificial_label (UNKNOWN_LOCATION);
-  tree lab3 = NULL_TREE;
+  tree lab3 = NULL_TREE, lab7 = NULL_TREE;
   gimple *g;
   if (code == OMP_FOR || code == OMP_SECTIONS)
     {
@@ -8846,6 +8846,14 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 	      NULL_TREE, NULL_TREE);
   tree data = create_tmp_var (pointer_sized_int_node);
   gimple_seq_add_stmt (end, gimple_build_assign (data, t));
+  if (code == OMP_TASKLOOP)
+    {
+      lab7 = create_artificial_label (UNKNOWN_LOCATION);
+      g = gimple_build_cond (NE_EXPR, data,
+			     build_zero_cst (pointer_sized_int_node),
+			     lab1, lab7);
+      gimple_seq_add_stmt (end, g);
+    }
   gimple_seq_add_stmt (end, gimple_build_label (lab1));
   tree ptr;
   if (TREE_CODE (TYPE_SIZE_UNIT (record_type)) == INTEGER_CST)
@@ -9209,6 +9217,8 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
       g = gimple_build_call (t, 1, build_fold_addr_expr (avar));
     }
   gimple_seq_add_stmt (end, g);
+  if (lab7)
+    gimple_seq_add_stmt (end, gimple_build_label (lab7));
   t = build_constructor (atype, NULL);
   TREE_THIS_VOLATILE (t) = 1;
   gimple_seq_add_stmt (end, gimple_build_assign (avar, t));

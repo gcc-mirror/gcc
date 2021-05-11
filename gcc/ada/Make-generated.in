@@ -15,10 +15,9 @@ fsrcdir := $(shell cd $(srcdir);${PWD_COMMAND})
 GEN_IL_INCLUDES = -I$(fsrcdir)/ada
 GEN_IL_FLAGS = -a -q -g -gnata -j0 -gnat2012 -gnatw.g -gnatyg -gnatU $(GEN_IL_INCLUDES)
 
-.PHONY: do_gen_il
-do_gen_il:
+ada/seinfo_tables.ads ada/seinfo_tables.adb ada/sinfo.h ada/einfo.h ada/nmake.ads ada/nmake.adb ada/seinfo.ads ada/sinfo-nodes.ads ada/sinfo-nodes.adb ada/einfo-entities.ads ada/einfo-entities.adb: ada/stamp-gen_il ; @true
+ada/stamp-gen_il: $(fsrcdir)/ada/gen_il* $(fsrcdir)/ada/libgnat/a-sto*.ad? $(fsrcdir)/ada/libgnat/a-stteou__bootstrap.ads
 	$(MKDIR) ada/gen_il
-	$(MKDIR) ada/generated
 	# Copy recent runtime files needed by gen_il that may not be available
 	# in the base compiler.
 	$(CP) -f $(fsrcdir)/ada/libgnat/a-sto*.ad? ada/gen_il
@@ -27,53 +26,25 @@ do_gen_il:
 	# ignore errors when running gen_il-main due to bootstrap
 	# considerations
 	-cd ada/gen_il ; ./gen_il-main
-
-ada/seinfo_tables.ads: do_gen_il
 	$(fsrcdir)/../move-if-change ada/gen_il/seinfo_tables.ads ada/seinfo_tables.ads
-
-ada/seinfo_tables.adb: do_gen_il
 	$(fsrcdir)/../move-if-change ada/gen_il/seinfo_tables.adb ada/seinfo_tables.adb
+	$(fsrcdir)/../move-if-change ada/gen_il/sinfo.h ada/sinfo.h
+	$(fsrcdir)/../move-if-change ada/gen_il/einfo.h ada/einfo.h
+	$(fsrcdir)/../move-if-change ada/gen_il/nmake.ads ada/nmake.ads
+	$(fsrcdir)/../move-if-change ada/gen_il/nmake.adb ada/nmake.adb
+	$(fsrcdir)/../move-if-change ada/gen_il/seinfo.ads ada/seinfo.ads
+	$(fsrcdir)/../move-if-change ada/gen_il/sinfo-nodes.ads ada/sinfo-nodes.ads
+	$(fsrcdir)/../move-if-change ada/gen_il/sinfo-nodes.adb ada/sinfo-nodes.adb
+	$(fsrcdir)/../move-if-change ada/gen_il/einfo-entities.ads ada/einfo-entities.ads
+	$(fsrcdir)/../move-if-change ada/gen_il/einfo-entities.adb ada/einfo-entities.adb
+	touch ada/stamp-gen_il
 
 # We need -gnatX to compile seinfo_tables, because it uses extensions. This
 # target is not currently used when building gnat, because these extensions
 # would cause bootstrapping with older compilers to fail. You can call it by
 # hand, as a sanity check that these files are legal.
 ada/seinfo_tables.o: ada/seinfo_tables.ads ada/seinfo_tables.adb
-	cd ada ; time gnatmake $(GEN_IL_INCLUDES) seinfo_tables.adb -gnatU -gnatX
-
-ada/sinfo.h: do_gen_il
-	$(fsrcdir)/../move-if-change ada/gen_il/sinfo.h ada/sinfo.h
-
-ada/einfo.h: do_gen_il
-	$(fsrcdir)/../move-if-change ada/gen_il/einfo.h ada/einfo.h
-
-ada/nmake.ads: do_gen_il
-	$(fsrcdir)/../move-if-change ada/gen_il/nmake.ads ada/nmake.ads
-	$(CP) ada/nmake.ads ada/generated
-
-ada/nmake.adb: do_gen_il
-	$(fsrcdir)/../move-if-change ada/gen_il/nmake.adb ada/nmake.adb
-	$(CP) ada/nmake.adb ada/generated
-
-ada/seinfo.ads: do_gen_il
-	$(fsrcdir)/../move-if-change ada/gen_il/seinfo.ads ada/seinfo.ads
-	$(CP) ada/seinfo.ads ada/generated
-
-ada/sinfo-nodes.ads: do_gen_il
-	$(fsrcdir)/../move-if-change ada/gen_il/sinfo-nodes.ads ada/sinfo-nodes.ads
-	$(CP) ada/sinfo-nodes.ads ada/generated
-
-ada/sinfo-nodes.adb: do_gen_il
-	$(fsrcdir)/../move-if-change ada/gen_il/sinfo-nodes.adb ada/sinfo-nodes.adb
-	$(CP) ada/sinfo-nodes.adb ada/generated
-
-ada/einfo-entities.ads: do_gen_il
-	$(fsrcdir)/../move-if-change ada/gen_il/einfo-entities.ads ada/einfo-entities.ads
-	$(CP) ada/einfo-entities.ads ada/generated
-
-ada/einfo-entities.adb: do_gen_il
-	$(fsrcdir)/../move-if-change ada/gen_il/einfo-entities.adb ada/einfo-entities.adb
-	$(CP) ada/einfo-entities.adb ada/generated
+	cd ada ; gnatmake $(GEN_IL_INCLUDES) seinfo_tables.adb -gnatU -gnatX
 
 ada/snames.h ada/snames.ads ada/snames.adb : ada/stamp-snames ; @true
 ada/stamp-snames : ada/snames.ads-tmpl ada/snames.adb-tmpl ada/snames.h-tmpl ada/xsnamest.adb ada/xutil.ads ada/xutil.adb
@@ -87,7 +58,7 @@ ada/stamp-snames : ada/snames.ads-tmpl ada/snames.adb-tmpl ada/snames.h-tmpl ada
 	touch ada/stamp-snames
 
 ada/sdefault.adb: ada/stamp-sdefault ; @true
-ada/stamp-sdefault : $(srcdir)/version.c Makefile
+ada/stamp-sdefault : $(srcdir)/ada/version.c Makefile
 	$(ECHO) "pragma Style_Checks (Off);" >tmp-sdefault.adb
 	$(ECHO) "with Osint; use Osint;" >>tmp-sdefault.adb
 	$(ECHO) "package body Sdefault is" >>tmp-sdefault.adb

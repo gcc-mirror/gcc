@@ -1,3 +1,54 @@
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/100506
+	* Make-generated.in: Replace version.c with ada/version.c.
+	* gcc-interface/Make-lang.in: Add version.o to GNAT1_C_OBJS.
+	Add version.o to GNAT_ADA_OBJS and GNATBIND_OBJS.
+	* gcc-interface/Makefile.in: Add version.o to TOOLS_LIBS.
+	* gnatvsn.adb: Start using a new C symbol gnat_version_string.
+	* version.c: New file.
+
+2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo-utils.ads (Classification Attributes): Add pragma Inline.
+	(Synthesized Attribute Functions): Move pragma Inline around.
+	(Type Representation Attribute Predicates): Likewise.
+	(Field Initialization Routines): Likewise.
+	(Miscellaneous Subprogram): Likewise.
+
+2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.ads (Slot): Remove pragma Provide_Shift_Operators.
+	(Shift_Left): New intrinsic function.
+	(Shift_Right): Likewise.
+	* atree.adb (Get_1_Bit_Val): Use Natural instead of Integer.
+	(Get_2_Bit_Val): Likewise.
+	(Get_4_Bit_Val): Likewise.
+	(Get_8_Bit_Val): Likewise.
+	(Set_1_Bit_Val): Likewise.
+	(Set_2_Bit_Val): Likewise.
+	(Set_4_Bit_Val): Likewise.
+	(Set_8_Bit_Val): Likewise.
+
+2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.adb (Zero_Slots): Remove obsolete comment and add header.
+
+2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* atree.h (Get_32_Bit_Field): Tidy up.
+	(Get_32_Bit_Field_With_Default): Likewise.
+
+2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Make-generated.in (do_gen_il): Replace with...
+	(ada/stamp-gen_il): ...this.  Do not copy files into generated/.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/utils.c (def_builtin_1): Use startswith
+	function instead of strncmp.
+
 2021-05-07  Piotr Trojanek  <trojanek@adacore.com>
 
 	* einfo-utils.adb (Is_Access_Object_Type): Use

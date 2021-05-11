@@ -1,3 +1,16 @@
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* sm-file.cc (is_file_using_fn_p): Use startswith
+	function instead of strncmp.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* program-state.cc (program_state::operator=): Remove
+	__cplusplus >= 201103.
+	(program_state::program_state): Likewise.
+	* program-state.h: Likewise.
+	* region-model.h (class region_model): Remove dead code.
+
 2021-04-24  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/100244

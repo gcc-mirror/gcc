@@ -1,3 +1,14 @@
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.c (print_destructor): Use startswith
+	function instead of strncmp.
+	(dump_ada_declaration): Likewise.
+	* c-common.c (disable_builtin_function): Likewise.
+	(def_builtin_1): Likewise.
+	* c-format.c (check_tokens): Likewise.
+	(check_plain): Likewise.
+	(convert_format_name_to_system_name): Likewise.
+
 2021-04-28  Patrick McGehearty  <patrick.mcgehearty@oracle.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Add supporting macros for new

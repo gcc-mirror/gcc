@@ -719,51 +719,35 @@
 )
 
 (define_insn "mul_lane<mode>3"
- [(set (match_operand:VMUL 0 "register_operand" "=w")
-       (mult:VMUL
-	 (vec_duplicate:VMUL
+ [(set (match_operand:VMULD 0 "register_operand" "=w")
+       (mult:VMULD
+	 (vec_duplicate:VMULD
 	   (vec_select:<VEL>
-	     (match_operand:VMUL 2 "register_operand" "<h_con>")
+	     (match_operand:<VCOND> 2 "register_operand" "<h_con>")
 	     (parallel [(match_operand:SI 3 "immediate_operand" "i")])))
-	 (match_operand:VMUL 1 "register_operand" "w")))]
+	 (match_operand:VMULD 1 "register_operand" "w")))]
   "TARGET_SIMD"
   {
-    operands[3] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[3]));
+    operands[3] = aarch64_endian_lane_rtx (<VCOND>mode, INTVAL (operands[3]));
     return "<f>mul\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]";
   }
   [(set_attr "type" "neon<fp>_mul_<stype>_scalar<q>")]
 )
 
 (define_insn "mul_laneq<mode>3"
-  [(set (match_operand:VDQSF 0 "register_operand" "=w")
-	(mult:VDQSF
-	  (vec_duplicate:VDQSF
-	    (vec_select:<VEL>
-	      (match_operand:V4SF 2 "register_operand" "w")
-	      (parallel [(match_operand:SI 3 "immediate_operand" "i")])))
-	  (match_operand:VDQSF 1 "register_operand" "w")))]
-  "TARGET_SIMD"
-  {
-    operands[3] = aarch64_endian_lane_rtx (V4SFmode, INTVAL (operands[3]));
-    return "fmul\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]";
-  }
-  [(set_attr "type" "neon_fp_mul_s_scalar<q>")]
-)
-
-(define_insn "*aarch64_mul3_elt_<vswap_width_name><mode>"
-  [(set (match_operand:VMUL_CHANGE_NLANES 0 "register_operand" "=w")
-     (mult:VMUL_CHANGE_NLANES
-       (vec_duplicate:VMUL_CHANGE_NLANES
+  [(set (match_operand:VMUL 0 "register_operand" "=w")
+     (mult:VMUL
+       (vec_duplicate:VMUL
 	  (vec_select:<VEL>
-	    (match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
-	    (parallel [(match_operand:SI 2 "immediate_operand")])))
-      (match_operand:VMUL_CHANGE_NLANES 3 "register_operand" "w")))]
+	    (match_operand:<VCONQ> 2 "register_operand" "<h_con>")
+	    (parallel [(match_operand:SI 3 "immediate_operand")])))
+      (match_operand:VMUL 1 "register_operand" "w")))]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode, INTVAL (operands[2]));
-    return "<f>mul\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
+    operands[3] = aarch64_endian_lane_rtx (<VCONQ>mode, INTVAL (operands[3]));
+    return "<f>mul\\t%0.<Vtype>, %1.<Vtype>, %2.<Vetype>[%3]";
   }
-  [(set_attr "type" "neon<fp>_mul_<Vetype>_scalar<q>")]
+  [(set_attr "type" "neon<fp>_mul_<stype>_scalar<q>")]
 )
 
 (define_insn "mul_n<mode>3"

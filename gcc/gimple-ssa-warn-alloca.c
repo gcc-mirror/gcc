@@ -56,31 +56,30 @@ class pass_walloca : public gimple_opt_pass
 {
 public:
   pass_walloca (gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_walloca, ctxt), first_time_p (false)
+    : gimple_opt_pass(pass_data_walloca, ctxt), xlimit_certain_p (false)
   {}
   opt_pass *clone () { return new pass_walloca (m_ctxt); }
   void set_pass_param (unsigned int n, bool param)
     {
       gcc_assert (n == 0);
-      first_time_p = param;
+      // Set to true to enable only warnings for alloca calls that
+      // are certainly in excess of the limit.  This includes calls
+      // with constant arguments but excludes those in ranges (that
+      // can only be determined by range analysis) as well as
+      // the "may be too large" kind.
+      xlimit_certain_p = param;
     }
   virtual bool gate (function *);
   virtual unsigned int execute (function *);
 
  private:
   // Set to TRUE the first time we run this pass on a function.
-  bool first_time_p;
+  bool xlimit_certain_p;
 };
 
 bool
 pass_walloca::gate (function *fun ATTRIBUTE_UNUSED)
 {
-  // The first time this pass is called, it is called before
-  // optimizations have been run and range information is unavailable,
-  // so we can only perform strict alloca checking.
-  if (first_time_p)
-    return warn_alloca != 0;
-
   // Warning is disabled when its size limit is greater than PTRDIFF_MAX
   // for the target maximum, which makes the limit negative since when
   // represented in signed HOST_WIDE_INT.
@@ -317,6 +316,9 @@ pass_walloca::execute (function *fun)
 	      break;
 	    case ALLOCA_BOUND_MAYBE_LARGE:
 	      {
+		if (xlimit_certain_p)
+		  break;
+
 		auto_diagnostic_group d;
 		if (warning_at (loc, wcode,
 				(is_vla
@@ -354,6 +356,9 @@ pass_walloca::execute (function *fun)
 	      }
 	      break;
 	    case ALLOCA_UNBOUNDED:
+	      if (xlimit_certain_p)
+		break;
+
 	      warning_at (loc, wcode,
 			  (is_vla
 			   ? G_("%Gunbounded use of variable-length array")

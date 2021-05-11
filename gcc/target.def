@@ -2004,9 +2004,11 @@ DEFHOOK
  "allocates three unsigned integers for accumulating costs for the prologue, "
  "body, and epilogue of the loop or basic block.  If @var{loop_info} is "
  "non-NULL, it identifies the loop being vectorized; otherwise a single block "
- "is being vectorized.",
+ "is being vectorized.  If @var{costing_for_scalar} is true, it indicates the "
+ "current cost model is for the scalar version of a loop or block; otherwise "
+ "it is for the vector version.",
  void *,
- (class loop *loop_info),
+ (class loop *loop_info, bool costing_for_scalar),
  default_init_cost)
 
 /* Target function to record N statements of the given kind using the

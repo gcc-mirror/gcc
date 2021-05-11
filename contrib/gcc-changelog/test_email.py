@@ -62,17 +62,17 @@ class TestGccChangelog(unittest.TestCase):
             assert t.endswith('.patch')
             os.remove(t)
 
-    def get_git_email(self, filename, strict=False):
+    def get_git_email(self, filename):
         with tempfile.NamedTemporaryFile(mode='w+', suffix='.patch',
                                          delete=False) as f:
             f.write('\n'.join(self.patches[filename]))
             self.temps.append(f.name)
-        return GitEmail(f.name, strict)
+        return GitEmail(f.name)
 
-    def from_patch_glob(self, name, strict=False):
+    def from_patch_glob(self, name):
         files = [f for f in self.patches.keys() if f.startswith(name)]
         assert len(files) == 1
-        return self.get_git_email(files[0], strict)
+        return self.get_git_email(files[0])
 
     def test_simple_patch_format(self):
         email = self.get_git_email('0577-aarch64-Add-an-and.patch')
@@ -247,7 +247,7 @@ class TestGccChangelog(unittest.TestCase):
         assert email.changelog_entries[1].prs == []
 
     def test_multiple_prs_not_added(self):
-        email = self.from_patch_glob('0001-Add-patch_are')
+        email = self.from_patch_glob('0002-Add-patch_are')
         assert not email.errors
         assert email.changelog_entries[0].prs == ['PR target/93492']
         assert email.changelog_entries[1].prs == ['PR target/12345']
@@ -255,18 +255,17 @@ class TestGccChangelog(unittest.TestCase):
         assert email.changelog_entries[2].folder == 'gcc/testsuite'
 
     def test_strict_mode(self):
-        email = self.from_patch_glob('0001-Add-patch_are',
-                                     True)
+        email = self.from_patch_glob('0001-Add-patch_are')
         msg = 'ChangeLog, DATESTAMP, BASE-VER and DEV-PHASE updates should ' \
               'be done separately from normal commits'
         assert email.errors[0].message == msg
 
     def test_strict_mode_normal_patch(self):
-        email = self.get_git_email('0001-Just-test-it.patch', True)
+        email = self.get_git_email('0001-Just-test-it.patch')
         assert not email.errors
 
     def test_strict_mode_datestamp_only(self):
-        email = self.get_git_email('0002-Bump-date.patch', True)
+        email = self.get_git_email('0002-Bump-date.patch')
         assert not email.errors
 
     def test_wrong_changelog_entry(self):
@@ -418,7 +417,7 @@ class TestGccChangelog(unittest.TestCase):
         assert email.errors[0].message == 'bad parentheses wrapping'
 
     def test_changelog_removal(self):
-        email = self.from_patch_glob('0001-ChangeLog-removal.patch', strict=True)
+        email = self.from_patch_glob('0001-ChangeLog-removal.patch')
         assert not email.errors
 
     def test_long_filenames(self):

@@ -564,7 +564,7 @@ package body Atree is
          pragma Debug (Validate_Node_And_Offset (N, Offset / L));
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
-         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
+         V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
          return Field_1_Bit (Shift_Right (S, V) and 1);
       end Get_1_Bit_Val;
@@ -577,7 +577,7 @@ package body Atree is
          pragma Debug (Validate_Node_And_Offset (N, Offset / L));
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
-         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
+         V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
          return Field_2_Bit (Shift_Right (S, V) and 3);
       end Get_2_Bit_Val;
@@ -590,7 +590,7 @@ package body Atree is
          pragma Debug (Validate_Node_And_Offset (N, Offset / L));
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
-         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
+         V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
          return Field_4_Bit (Shift_Right (S, V) and 15);
       end Get_4_Bit_Val;
@@ -603,7 +603,7 @@ package body Atree is
          pragma Debug (Validate_Node_And_Offset (N, Offset / L));
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
-         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
+         V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
          return Field_8_Bit (Shift_Right (S, V) and 255);
       end Get_8_Bit_Val;
@@ -626,7 +626,7 @@ package body Atree is
          pragma Debug (Validate_Node_And_Offset_Write (N, Offset / L));
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
-         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
+         V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
          S := (S and not Shift_Left (1, V)) or Shift_Left (Slot (Val), V);
       end Set_1_Bit_Val;
@@ -639,7 +639,7 @@ package body Atree is
          pragma Debug (Validate_Node_And_Offset_Write (N, Offset / L));
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
-         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
+         V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
          S := (S and not Shift_Left (3, V)) or Shift_Left (Slot (Val), V);
       end Set_2_Bit_Val;
@@ -652,7 +652,7 @@ package body Atree is
          pragma Debug (Validate_Node_And_Offset_Write (N, Offset / L));
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
-         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
+         V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
          S := (S and not Shift_Left (15, V)) or Shift_Left (Slot (Val), V);
       end Set_4_Bit_Val;
@@ -665,7 +665,7 @@ package body Atree is
          pragma Debug (Validate_Node_And_Offset_Write (N, Offset / L));
 
          S : Slot renames Slots.Table (Node_Offsets.Table (N) + Offset / L);
-         V : constant Integer := Integer ((Offset mod L) * (Slot_Size / L));
+         V : constant Natural := Natural ((Offset mod L) * (Slot_Size / L));
       begin
          S := (S and not Shift_Left (255, V)) or Shift_Left (Slot (Val), V);
       end Set_8_Bit_Val;
@@ -2293,14 +2293,15 @@ package body Atree is
       Locked := False;
    end Unlock_Nodes;
 
+   ----------------
+   -- Zero_Slots --
+   ----------------
+
    Zero : constant Slot := 0;
 
    procedure Zero_Slots (F, L : Node_Offset) is
    begin
       Slots.Table (F .. L) := (others => Zero);
-      --  Note that Zero.Field_Size is not stored, because Slot is an
-      --  Unchecked_Union. Hopefully, the compiler can generate efficient code
-      --  for this.
    end Zero_Slots;
 
    procedure Zero_Slots (N : Node_Or_Entity_Id) is
