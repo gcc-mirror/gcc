@@ -3690,7 +3690,9 @@ vect_detect_hybrid_slp (loop_vec_info loop_vinfo)
 /* Initialize a bb_vec_info struct for the statements in BBS basic blocks.  */
 
 _bb_vec_info::_bb_vec_info (vec<basic_block> _bbs, vec_info_shared *shared)
-  : vec_info (vec_info::bb, init_cost (NULL), shared), bbs (_bbs), roots (vNULL)
+  : vec_info (vec_info::bb, init_cost (NULL, false), shared),
+    bbs (_bbs),
+    roots (vNULL)
 {
   for (unsigned i = 0; i < bbs.length (); ++i)
     {
@@ -4530,7 +4532,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
 	  continue;
 	}
 
-      void *scalar_target_cost_data = init_cost (NULL);
+      void *scalar_target_cost_data = init_cost (NULL, true);
       do
 	{
 	  add_stmt_cost (bb_vinfo, scalar_target_cost_data,
@@ -4544,7 +4546,7 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       destroy_cost_data (scalar_target_cost_data);
 
       /* Complete the target-specific vector cost calculation.  */
-      void *vect_target_cost_data = init_cost (NULL);
+      void *vect_target_cost_data = init_cost (NULL, false);
       do
 	{
 	  add_stmt_cost (bb_vinfo, vect_target_cost_data,

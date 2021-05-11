@@ -14388,7 +14388,7 @@ struct aarch64_vector_costs
 
 /* Implement TARGET_VECTORIZE_INIT_COST.  */
 void *
-aarch64_init_cost (class loop *)
+aarch64_init_cost (class loop *, bool)
 {
   return new aarch64_vector_costs;
 }
