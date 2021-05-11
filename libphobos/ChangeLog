@@ -1,3 +1,10 @@
+2021-05-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-05-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/std/process.d (searchPathFor): Change visibility to package.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.
