@@ -1,3 +1,12 @@
+2021-05-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2021-04-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/100108
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Do not consider
+	OPTION_MASK_ISEL.
+
 2021-05-06  Roman Zhuykov  <zhroma@ispras.ru>
 
 	Backported from master:
