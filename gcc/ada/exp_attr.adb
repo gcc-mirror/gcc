@@ -117,8 +117,7 @@ package body Exp_Attr is
    procedure Compile_Stream_Body_In_Scope
      (N     : Node_Id;
       Decl  : Node_Id;
-      Arr   : Entity_Id;
-      Check : Boolean);
+      Arr   : Entity_Id);
    --  The body for a stream subprogram may be generated outside of the scope
    --  of the type. If the type is fully private, it may depend on the full
    --  view of other types (e.g. indexes) that are currently private as well.
@@ -867,8 +866,7 @@ package body Exp_Attr is
    procedure Compile_Stream_Body_In_Scope
      (N     : Node_Id;
       Decl  : Node_Id;
-      Arr   : Entity_Id;
-      Check : Boolean)
+      Arr   : Entity_Id)
    is
       C_Type  : constant Entity_Id := Base_Type (Component_Type (Arr));
       Curr    : constant Entity_Id := Current_Scope;
@@ -922,11 +920,7 @@ package body Exp_Attr is
          Install := False;
       end if;
 
-      if Check then
-         Insert_Action (N, Decl);
-      else
-         Insert_Action (N, Decl, Suppress => All_Checks);
-      end if;
+      Insert_Action (N, Decl);
 
       if Install then
 
@@ -4128,7 +4122,7 @@ package body Exp_Attr is
 
             elsif Is_Array_Type (U_Type) then
                Build_Array_Input_Function (Loc, U_Type, Decl, Fname);
-               Compile_Stream_Body_In_Scope (N, Decl, U_Type, Check => False);
+               Compile_Stream_Body_In_Scope (N, Decl, U_Type);
 
             --  Dispatching case with class-wide type
 
@@ -5238,7 +5232,7 @@ package body Exp_Attr is
 
             elsif Is_Array_Type (U_Type) then
                Build_Array_Output_Procedure (Loc, U_Type, Decl, Pname);
-               Compile_Stream_Body_In_Scope (N, Decl, U_Type, Check => False);
+               Compile_Stream_Body_In_Scope (N, Decl, U_Type);
 
             --  Class-wide case, first output external tag, then dispatch
             --  to the appropriate primitive Output function (RM 13.13.2(31)).
@@ -6090,7 +6084,7 @@ package body Exp_Attr is
 
             elsif Is_Array_Type (U_Type) then
                Build_Array_Read_Procedure (N, U_Type, Decl, Pname);
-               Compile_Stream_Body_In_Scope (N, Decl, U_Type, Check => False);
+               Compile_Stream_Body_In_Scope (N, Decl, U_Type);
 
             --  Tagged type case, use the primitive Read function. Note that
             --  this will dispatch in the class-wide case which is what we want
@@ -6129,11 +6123,7 @@ package body Exp_Attr is
                     (Loc, Full_Base (U_Type), Decl, Pname);
                end if;
 
-               --  Suppress checks, uninitialized or otherwise invalid
-               --  data does not cause constraint errors to be raised for
-               --  a complete record read.
-
-               Insert_Action (N, Decl, All_Checks);
+               Insert_Action (N, Decl);
             end if;
          end if;
 
@@ -7718,7 +7708,7 @@ package body Exp_Attr is
 
             elsif Is_Array_Type (U_Type) then
                Build_Array_Write_Procedure (N, U_Type, Decl, Pname);
-               Compile_Stream_Body_In_Scope (N, Decl, U_Type, Check => False);
+               Compile_Stream_Body_In_Scope (N, Decl, U_Type);
 
             --  Tagged type case, use the primitive Write function. Note that
             --  this will dispatch in the class-wide case which is what we want
