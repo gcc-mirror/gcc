@@ -13186,6 +13186,8 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       else
 	result = tsubst (pattern, args, complain, in_decl);
       result = make_pack_expansion (result, complain);
+      PACK_EXPANSION_LOCAL_P (result) = PACK_EXPANSION_LOCAL_P (t);
+      PACK_EXPANSION_SIZEOF_P (result) = PACK_EXPANSION_SIZEOF_P (t);
       if (PACK_EXPANSION_AUTO_P (t))
 	{
 	  /* This is a fake auto... pack expansion created in add_capture with

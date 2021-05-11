@@ -2748,6 +2748,7 @@ tsubst_constraint (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   /* We also don't want to evaluate concept-checks when substituting the
      constraint-expressions of a declaration.  */
   processing_constraint_expression_sentinel s;
+  cp_unevaluated u;
   tree expr = tsubst_expr (t, args, complain, in_decl, false);
   return expr;
 }
@@ -3006,7 +3007,10 @@ satisfy_atom (tree t, tree args, sat_info info)
 
   /* Compute the value of the constraint.  */
   if (info.noisy ())
-    result = cxx_constant_value (result);
+    {
+      iloc_sentinel ils (EXPR_LOCATION (result));
+      result = cxx_constant_value (result);
+    }
   else
     {
       result = maybe_constant_value (result, NULL_TREE,
