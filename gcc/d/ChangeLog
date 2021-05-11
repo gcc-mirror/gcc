@@ -1,3 +1,16 @@
+2021-05-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/MERGE: Merge upstream dmd b7d146c4c.
+
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* d-builtins.cc (do_build_builtin_fn): Use startswith
+	function instead of strncmp.
+	* dmd/dinterpret.c (evaluateIfBuiltin): Likewise.
+	* dmd/dmangle.c: Likewise.
+	* dmd/hdrgen.c: Likewise.
+	* dmd/identifier.c (Identifier::toHChars2): Likewise.
+
 2021-04-19  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/98457

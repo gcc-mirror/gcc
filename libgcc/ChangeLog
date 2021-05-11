@@ -1,3 +1,8 @@
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (gcov_version): Use different name that does
+	not clash with newly introduced macro.
+
 2021-04-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgcov.h: For the target, define GCOV_LOCKED_WITH_LOCKING

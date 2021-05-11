@@ -1,3 +1,21 @@
+2021-05-10  Martin Liska  <mliska@suse.cz>
+
+	* lto-plugin.c (LTO_SEGMENT_NAME): Remove.
+	(LTO_SYMTAB_PREFIX): Likewise.
+	(LTO_SYMTAB_PREFIX_LEN): Likewise.
+	(LTO_SYMTAB_EXT_PREFIX): Likewise.
+	(LTO_SYMTAB_EXT_PREFIX_LEN): Likewise.
+	(LTO_LTO_PREFIX): Likewise.
+	(LTO_LTO_PREFIX_LEN): Likewise.
+	(OFFLOAD_SECTION): Likewise.
+	(OFFLOAD_SECTION_LEN): Likewise.
+	(startswith): New function.
+	(all_symbols_read_handler): Use it.
+	(process_symtab): Likewise.
+	(process_symtab_extension): Likewise.
+	(process_offload_section): Likewise.
+	(process_option): Likewise.
+
 2021-05-03  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR bootstrap/99703
