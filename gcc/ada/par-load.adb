@@ -234,8 +234,7 @@ begin
          Error_Msg ("\\found unit $!", Loc);
       end if;
 
-      --  In both cases, remove the unit if it is the last unit (which it
-      --  normally (always?) will be) so that it is out of the way later.
+      --  In both cases, remove the unit so that it is out of the way later
 
       Remove_Unit (Cur_Unum);
    end if;

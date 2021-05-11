@@ -1174,10 +1174,9 @@ package body Lib is
 
    procedure Remove_Unit (U : Unit_Number_Type) is
    begin
-      if U = Units.Last then
-         Unit_Names.Set (Unit_Name (U), No_Unit);
-         Units.Decrement_Last;
-      end if;
+      pragma Assert (U = Units.Last);
+      Unit_Names.Set (Unit_Name (U), No_Unit);
+      Units.Decrement_Last;
    end Remove_Unit;
 
    ----------------------------------
