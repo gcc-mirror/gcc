@@ -2,10 +2,11 @@
 
 	PR bootstrap/100506
 	* Make-generated.in: Replace version.c with ada/version.c.
-	* gcc-interface/Make-lang.in: Add version.o to GNAT1_C_OBJS.
-	Add version.o to GNAT_ADA_OBJS and GNATBIND_OBJS.
-	* gcc-interface/Makefile.in: Add version.o to TOOLS_LIBS.
-	* gnatvsn.adb: Start using a new C symbol gnat_version_string.
+	* gcc-interface/Make-lang.in: Add version.o to GNAT1_C_OBJS and
+	GNATBIND_OBJS.
+	* gcc-interface/Makefile.in: Replace version.c with ada/version.c.
+	Add version.o to TOOLS_LIBS.
+	* gnatvsn.adb: Replace version_string with gnat_version_string.
 	* version.c: New file.
 
 2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
