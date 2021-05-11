@@ -9558,9 +9558,13 @@ package body Sem_Ch4 is
 
          --  Extension feature: Calls with prefixed views are also supported
          --  for untagged types, so skip the early return when extensions are
-         --  enabled.
+         --  enabled, unless the type doesn't have a primitive operations list
+         --  (such as in the case of predefined types).
 
-         if (not Is_Tagged_Type (Obj_Type) and then not Extensions_Allowed)
+         if (not Is_Tagged_Type (Obj_Type)
+              and then
+                (not Extensions_Allowed
+                  or else not Present (Primitive_Operations (Obj_Type))))
            or else Is_Incomplete_Type (Obj_Type)
          then
             Obj_Type := Prev_Obj_Type;
