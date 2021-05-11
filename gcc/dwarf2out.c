@@ -31956,6 +31956,7 @@ dwarf2out_finish (const char *filename)
             add_AT_addr (main_comp_unit_die, DW_AT_entry_pc, const0_rtx, true);
 
 	  add_ranges (NULL);
+	  have_multiple_function_sections = true;
 	}
     }
 
