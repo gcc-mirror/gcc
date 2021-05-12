@@ -19801,6 +19801,7 @@ tsubst_copy_and_build (tree t,
 
 	warning_sentinel s(warn_useless_cast);
 	warning_sentinel s2(warn_ignored_qualifiers);
+	warning_sentinel s3(warn_int_in_bool_context);
 	switch (TREE_CODE (t))
 	  {
 	  case CAST_EXPR:
