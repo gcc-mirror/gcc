@@ -78,7 +78,7 @@ repo = Repo(args.git_path)
 origin = repo.remotes['origin']
 
 
-def update_current_branch():
+def update_current_branch(ref_name):
     commit = repo.head.commit
     commit_count = 1
     while commit:
@@ -101,7 +101,7 @@ def update_current_branch():
         if len(head.parents) == 2:
             head = head.parents[1]
         commits = parse_git_revisions(args.git_path, '%s..%s'
-                                      % (commit.hexsha, head.hexsha))
+                                      % (commit.hexsha, head.hexsha), ref_name)
         commits = [c for c in commits if c.info.hexsha not in IGNORED_COMMITS]
         for git_commit in reversed(commits):
             prepend_to_changelog_files(repo, args.git_path, git_commit,
@@ -145,6 +145,6 @@ else:
             branch.checkout()
             origin.pull(rebase=True)
             print('branch pulled and checked out')
-            update_current_branch()
+            update_current_branch(name)
             assert not repo.index.diff(None)
             print('branch is done\n', flush=True)
