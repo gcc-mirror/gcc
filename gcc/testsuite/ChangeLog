@@ -1,3 +1,8 @@
+2021-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99988
+	* gcc.target/aarch64/pr99988.c: New test.
+
 2021-05-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
