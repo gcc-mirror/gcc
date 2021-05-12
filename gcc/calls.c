@@ -2112,6 +2112,11 @@ maybe_warn_rdwr_sizes (rdwr_map *rwm, tree fndecl, tree fntype, tree exp)
 	}
       else
 	{
+	  /* If the size cannot be determined clear it to keep it from
+	     being taken as real (and excessive).  */
+	  if (objsize && integer_all_onesp (objsize))
+	    objsize = NULL_TREE;
+
 	  /* For read-only and read-write attributes also set the source
 	     size.  */
 	  srcsize = objsize;
