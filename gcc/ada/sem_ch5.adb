@@ -3377,6 +3377,32 @@ package body Sem_Ch5 is
                        ("\loop executes zero times or raises "
                         & "Constraint_Error??", Bad_Bound);
                   end if;
+
+                  if Compile_Time_Compare (LLo, LHi, Assume_Valid => False)
+                    = GT
+                  then
+                     Error_Msg_N ("??constrained range is null",
+                       Constraint (DS));
+
+                     --  Additional constraints on modular types can be
+                     --  confusing, add more information.
+
+                     if Ekind (Etype (DS)) = E_Modular_Integer_Subtype then
+                        Error_Msg_Uint_1 := Intval (LLo);
+                        Error_Msg_Uint_2 := Intval (LHi);
+                        Error_Msg_NE ("\iterator has modular type &, " &
+                          "so the loop has bounds ^ ..^",
+                          Constraint (DS),
+                          Subtype_Mark (DS));
+                     end if;
+
+                     Set_Is_Null_Loop (Loop_Nod);
+                     Null_Range := True;
+
+                     --  Suppress other warnigns about the body of the loop, as
+                     --  it will never execute.
+                     Set_Suppress_Loop_Warnings (Loop_Nod);
+                  end if;
                end;
             end if;
 
