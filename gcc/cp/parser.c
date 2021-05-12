@@ -37859,40 +37859,90 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
    map-kind:
      alloc | to | from | tofrom | release | delete
 
-   map ( always [,] map-kind: variable-list ) */
+   map ( always [,] map-kind: variable-list )
+
+   OpenMP 5.0:
+   map ( [map-type-modifier[,] ...] map-kind: variable-list )
+
+   map-type-modifier:
+     always | close */
 
 static tree
 cp_parser_omp_clause_map (cp_parser *parser, tree list)
 {
   tree nlist, c;
   enum gomp_map_kind kind = GOMP_MAP_TOFROM;
-  bool always = false;
 
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
 
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  int pos = 1;
+  int map_kind_pos = 0;
+  while (cp_lexer_peek_nth_token (parser->lexer, pos)->type == CPP_NAME
+	 || cp_lexer_peek_nth_token (parser->lexer, pos)->keyword == RID_DELETE)
     {
-      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
-      const char *p = IDENTIFIER_POINTER (id);
+      if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type == CPP_COLON)
+	{
+	  map_kind_pos = pos;
+	  break;
+	}
 
+      if (cp_lexer_peek_nth_token (parser->lexer, pos + 1)->type == CPP_COMMA)
+	pos++;
+      pos++;
+    }
+
+  bool always_modifier = false;
+  bool close_modifier = false;
+  for (int pos = 1; pos < map_kind_pos; ++pos)
+    {
+      cp_token *tok = cp_lexer_peek_token (parser->lexer);
+      if (tok->type == CPP_COMMA)
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+
+      const char *p = IDENTIFIER_POINTER (tok->u.value);
       if (strcmp ("always", p) == 0)
 	{
-	  int nth = 2;
-	  if (cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_COMMA)
-	    nth++;
-	  if ((cp_lexer_peek_nth_token (parser->lexer, nth)->type == CPP_NAME
-	       || (cp_lexer_peek_nth_token (parser->lexer, nth)->keyword
-		   == RID_DELETE))
-	      && (cp_lexer_peek_nth_token (parser->lexer, nth + 1)->type
-		  == CPP_COLON))
+	  if (always_modifier)
 	    {
-	      always = true;
-	      cp_lexer_consume_token (parser->lexer);
-	      if (nth == 3)
-		cp_lexer_consume_token (parser->lexer);
+	      cp_parser_error (parser, "too many %<always%> modifiers");
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      return list;
 	    }
+	  always_modifier = true;
 	}
+      else if (strcmp ("close", p) == 0)
+	{
+	  if (close_modifier)
+	    {
+	      cp_parser_error (parser, "too many %<close%> modifiers");
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      return list;
+	    }
+	  close_modifier = true;
+	}
+      else
+	{
+	  cp_parser_error (parser, "%<#pragma omp target%> with "
+				   "modifier other than %<always%> or %<close%>"
+				   "on %<map%> clause");
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
+	  return list;
+	}
+
+	cp_lexer_consume_token (parser->lexer);
     }
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
@@ -37904,11 +37954,11 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list)
       if (strcmp ("alloc", p) == 0)
 	kind = GOMP_MAP_ALLOC;
       else if (strcmp ("to", p) == 0)
-	kind = always ? GOMP_MAP_ALWAYS_TO : GOMP_MAP_TO;
+	kind = always_modifier ? GOMP_MAP_ALWAYS_TO : GOMP_MAP_TO;
       else if (strcmp ("from", p) == 0)
-	kind = always ? GOMP_MAP_ALWAYS_FROM : GOMP_MAP_FROM;
+	kind = always_modifier ? GOMP_MAP_ALWAYS_FROM : GOMP_MAP_FROM;
       else if (strcmp ("tofrom", p) == 0)
-	kind = always ? GOMP_MAP_ALWAYS_TOFROM : GOMP_MAP_TOFROM;
+	kind = always_modifier ? GOMP_MAP_ALWAYS_TOFROM : GOMP_MAP_TOFROM;
       else if (strcmp ("release", p) == 0)
 	kind = GOMP_MAP_RELEASE;
       else
