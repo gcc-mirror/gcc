@@ -1,3 +1,10 @@
+2021-05-11  Geng Qi  <gengqi@linux.alibaba.com>
+
+	Backported from master:
+	2021-04-30  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* config/riscv/riscv.opt (march=,mabi=): Negative itself.
+
 2021-05-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backported from master:
