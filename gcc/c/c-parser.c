@@ -15643,54 +15643,83 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
    map-kind:
      alloc | to | from | tofrom | release | delete
 
-   map ( always [,] map-kind: variable-list ) */
+   map ( always [,] map-kind: variable-list )
+
+   OpenMP 5.0:
+   map ( [map-type-modifier[,] ...] map-kind: variable-list )
+
+   map-type-modifier:
+     always | close */
 
 static tree
 c_parser_omp_clause_map (c_parser *parser, tree list)
 {
   location_t clause_loc = c_parser_peek_token (parser)->location;
   enum gomp_map_kind kind = GOMP_MAP_TOFROM;
-  int always = 0;
-  enum c_id_kind always_id_kind = C_ID_NONE;
-  location_t always_loc = UNKNOWN_LOCATION;
-  tree always_id = NULL_TREE;
   tree nl, c;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
 
-  if (c_parser_next_token_is (parser, CPP_NAME))
+  int pos = 1;
+  int map_kind_pos = 0;
+  while (c_parser_peek_nth_token_raw (parser, pos)->type == CPP_NAME)
+    {
+      if (c_parser_peek_nth_token_raw (parser, pos + 1)->type == CPP_COLON)
+	{
+	  map_kind_pos = pos;
+	  break;
+	}
+
+      if (c_parser_peek_nth_token_raw (parser, pos + 1)->type == CPP_COMMA)
+	pos++;
+      pos++;
+    }
+
+  int always_modifier = 0;
+  int close_modifier = 0;
+  for (int pos = 1; pos < map_kind_pos; ++pos)
     {
       c_token *tok = c_parser_peek_token (parser);
+
+      if (tok->type == CPP_COMMA)
+	{
+	  c_parser_consume_token (parser);
+	  continue;
+	}
+
       const char *p = IDENTIFIER_POINTER (tok->value);
-      always_id_kind = tok->id_kind;
-      always_loc = tok->location;
-      always_id = tok->value;
       if (strcmp ("always", p) == 0)
 	{
-	  c_token *sectok = c_parser_peek_2nd_token (parser);
-	  if (sectok->type == CPP_COMMA)
+	  if (always_modifier)
 	    {
-	      c_parser_consume_token (parser);
-	      c_parser_consume_token (parser);
-	      always = 2;
+	      c_parser_error (parser, "too many %<always%> modifiers");
+	      parens.skip_until_found_close (parser);
+	      return list;
 	    }
-	  else if (sectok->type == CPP_NAME)
-	    {
-	      p = IDENTIFIER_POINTER (sectok->value);
-	      if (strcmp ("alloc", p) == 0
-		  || strcmp ("to", p) == 0
-		  || strcmp ("from", p) == 0
-		  || strcmp ("tofrom", p) == 0
-		  || strcmp ("release", p) == 0
-		  || strcmp ("delete", p) == 0)
-		{
-		  c_parser_consume_token (parser);
-		  always = 1;
-		}
-	    }
+	  always_modifier++;
 	}
+      else if (strcmp ("close", p) == 0)
+	{
+	  if (close_modifier)
+	    {
+	      c_parser_error (parser, "too many %<close%> modifiers");
+	      parens.skip_until_found_close (parser);
+	      return list;
+	    }
+	  close_modifier++;
+	}
+      else
+	{
+	  c_parser_error (parser, "%<#pragma omp target%> with "
+				  "modifier other than %<always%> or %<close%>"
+				  "on %<map%> clause");
+	  parens.skip_until_found_close (parser);
+	  return list;
+	}
+
+	c_parser_consume_token (parser);
     }
 
   if (c_parser_next_token_is (parser, CPP_NAME)
@@ -15700,11 +15729,11 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
       if (strcmp ("alloc", p) == 0)
 	kind = GOMP_MAP_ALLOC;
       else if (strcmp ("to", p) == 0)
-	kind = always ? GOMP_MAP_ALWAYS_TO : GOMP_MAP_TO;
+	kind = always_modifier ? GOMP_MAP_ALWAYS_TO : GOMP_MAP_TO;
       else if (strcmp ("from", p) == 0)
-	kind = always ? GOMP_MAP_ALWAYS_FROM : GOMP_MAP_FROM;
+	kind = always_modifier ? GOMP_MAP_ALWAYS_FROM : GOMP_MAP_FROM;
       else if (strcmp ("tofrom", p) == 0)
-	kind = always ? GOMP_MAP_ALWAYS_TOFROM : GOMP_MAP_TOFROM;
+	kind = always_modifier ? GOMP_MAP_ALWAYS_TOFROM : GOMP_MAP_TOFROM;
       else if (strcmp ("release", p) == 0)
 	kind = GOMP_MAP_RELEASE;
       else if (strcmp ("delete", p) == 0)
@@ -15718,35 +15747,6 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
 	}
       c_parser_consume_token (parser);
       c_parser_consume_token (parser);
-    }
-  else if (always)
-    {
-      if (always_id_kind != C_ID_ID)
-	{
-	  c_parser_error (parser, "expected identifier");
-	  parens.skip_until_found_close (parser);
-	  return list;
-	}
-
-      tree t = lookup_name (always_id);
-      if (t == NULL_TREE)
-	{
-	  undeclared_variable (always_loc, always_id);
-	  t = error_mark_node;
-	}
-      if (t != error_mark_node)
-	{
-	  tree u = build_omp_clause (clause_loc, OMP_CLAUSE_MAP);
-	  OMP_CLAUSE_DECL (u) = t;
-	  OMP_CLAUSE_CHAIN (u) = list;
-	  OMP_CLAUSE_SET_MAP_KIND (u, kind);
-	  list = u;
-	}
-      if (always == 1)
-	{
-	  parens.skip_until_found_close (parser);
-	  return list;
-	}
     }
 
   nl = c_parser_omp_variable_list (parser, clause_loc, OMP_CLAUSE_MAP, list);

@@ -3680,6 +3680,13 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 
   switch (mode)
     {
+    case E_V2SFmode:
+      if (TARGET_SSE4_1)
+	{
+	  gen = gen_mmx_blendvps;
+	  op_true = force_reg (mode, op_true);
+	}
+      break;
     case E_V4SFmode:
       if (TARGET_SSE4_1)
 	gen = gen_sse4_1_blendvps;

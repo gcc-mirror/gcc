@@ -49,6 +49,7 @@
 
 ;; All 8-byte vector modes handled by MMX
 (define_mode_iterator MMXMODE [V8QI V4HI V2SI V1DI V2SF])
+(define_mode_iterator MMXMODE124 [V8QI V4HI V2SI V2SF])
 
 ;; Mix-n-match
 (define_mode_iterator MMXMODE12 [V8QI V4HI])
@@ -56,11 +57,21 @@
 (define_mode_iterator MMXMODE24 [V4HI V2SI])
 (define_mode_iterator MMXMODE248 [V4HI V2SI V1DI])
 
+;; All V2S* modes
+(define_mode_iterator V2FI [V2SF V2SI])
+
 ;; Mapping from integer vector mode to mnemonic suffix
 (define_mode_attr mmxvecsize [(V8QI "b") (V4HI "w") (V2SI "d") (V1DI "q")])
 
 (define_mode_attr mmxdoublemode
   [(V8QI "V8HI") (V4HI "V4SI")])
+
+;; Mapping of vector float modes to an integer mode of the same size
+(define_mode_attr mmxintvecmode
+  [(V2SF "V2SI") (V2SI "V2SI") (V4HI "V4HI") (V8QI "V8QI")])
+
+(define_mode_attr mmxintvecmodelower
+  [(V2SF "v2si") (V2SI "v2si") (V4HI "v4hi") (V8QI "v8qi")])
 
 (define_mode_attr Yv_Yw
   [(V8QI "Yw") (V4HI "Yw") (V2SI "Yv") (V1DI "Yv") (V2SF "Yv")])
@@ -713,6 +724,85 @@
   [(set_attr "type" "mmxcmp")
    (set_attr "prefix_extra" "1")
    (set_attr "mode" "V2SF")])
+
+(define_insn "*mmx_maskcmpv2sf3_comm"
+  [(set (match_operand:V2SF 0 "register_operand" "=x,x")
+	(match_operator:V2SF 3 "sse_comparison_operator"
+	  [(match_operand:V2SF 1 "register_operand" "%0,x")
+	   (match_operand:V2SF 2 "register_operand" "x,x")]))]
+  "TARGET_MMX_WITH_SSE
+   && GET_RTX_CLASS (GET_CODE (operands[3])) == RTX_COMM_COMPARE"
+  "@
+   cmp%D3ps\t{%2, %0|%0, %2}
+   vcmp%D3ps\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "ssecmp")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "V4SF")])
+
+(define_insn "*mmx_maskcmpv2sf3"
+  [(set (match_operand:V2SF 0 "register_operand" "=x,x")
+	(match_operator:V2SF 3 "sse_comparison_operator"
+	  [(match_operand:V2SF 1 "register_operand" "0,x")
+	   (match_operand:V2SF 2 "register_operand" "x,x")]))]
+  "TARGET_MMX_WITH_SSE"
+  "@
+   cmp%D3ps\t{%2, %0|%0, %2}
+   vcmp%D3ps\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "ssecmp")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "V4SF")])
+
+(define_expand "vec_cmpv2sfv2si"
+  [(set (match_operand:V2SI 0 "register_operand")
+	(match_operator:V2SI 1 ""
+	  [(match_operand:V2SF 2 "register_operand")
+	   (match_operand:V2SF 3 "register_operand")]))]
+  "TARGET_MMX_WITH_SSE"
+{
+  bool ok = ix86_expand_fp_vec_cmp (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_expand "vcond<mode>v2sf"
+  [(set (match_operand:V2FI 0 "register_operand")
+	(if_then_else:V2FI
+	  (match_operator 3 ""
+	    [(match_operand:V2SF 4 "register_operand")
+	     (match_operand:V2SF 5 "register_operand")])
+	  (match_operand:V2FI 1)
+	  (match_operand:V2FI 2)))]
+  "TARGET_MMX_WITH_SSE"
+{
+  bool ok = ix86_expand_fp_vcond (operands);
+  gcc_assert (ok);
+  DONE;
+})
+
+(define_insn "mmx_blendvps"
+  [(set (match_operand:V2SF 0 "register_operand" "=Yr,*x,x")
+	(unspec:V2SF
+	  [(match_operand:V2SF 1 "register_operand" "0,0,x")
+	   (match_operand:V2SF 2 "register_operand" "Yr,*x,x")
+	   (match_operand:V2SF 3 "register_operand" "Yz,Yz,x")]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
+  "@
+   blendvps\t{%3, %2, %0|%0, %2, %3}
+   blendvps\t{%3, %2, %0|%0, %2, %3}
+   vblendvps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector")
+   (set_attr "mode" "V4SF")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -1657,42 +1747,46 @@
   DONE;
 })
 
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:MMXMODEI 0 "register_operand")
-	(if_then_else:MMXMODEI
+(define_expand "vcond<MMXMODE124:mode><MMXMODEI:mode>"
+  [(set (match_operand:MMXMODE124 0 "register_operand")
+	(if_then_else:MMXMODE124
 	  (match_operator 3 ""
 	    [(match_operand:MMXMODEI 4 "register_operand")
 	     (match_operand:MMXMODEI 5 "register_operand")])
-	  (match_operand:MMXMODEI 1)
-	  (match_operand:MMXMODEI 2)))]
-  "TARGET_MMX_WITH_SSE"
+	  (match_operand:MMXMODE124 1)
+	  (match_operand:MMXMODE124 2)))]
+  "TARGET_MMX_WITH_SSE
+   && (GET_MODE_NUNITS (<MMXMODE124:MODE>mode)
+       == GET_MODE_NUNITS (<MMXMODEI:MODE>mode))"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
   DONE;
 })
 
-(define_expand "vcondu<mode><mode>"
-  [(set (match_operand:MMXMODEI 0 "register_operand")
-	(if_then_else:MMXMODEI
+(define_expand "vcondu<MMXMODE124:mode><MMXMODEI:mode>"
+  [(set (match_operand:MMXMODE124 0 "register_operand")
+	(if_then_else:MMXMODE124
 	  (match_operator 3 ""
 	    [(match_operand:MMXMODEI 4 "register_operand")
 	     (match_operand:MMXMODEI 5 "register_operand")])
-	  (match_operand:MMXMODEI 1)
-	  (match_operand:MMXMODEI 2)))]
-  "TARGET_MMX_WITH_SSE"
+	  (match_operand:MMXMODE124 1)
+	  (match_operand:MMXMODE124 2)))]
+  "TARGET_MMX_WITH_SSE
+   && (GET_MODE_NUNITS (<MMXMODE124:MODE>mode)
+       == GET_MODE_NUNITS (<MMXMODEI:MODE>mode))"
 {
   bool ok = ix86_expand_int_vcond (operands);
   gcc_assert (ok);
   DONE;
 })
 
-(define_expand "vcond_mask_<mode><mode>"
-  [(set (match_operand:MMXMODEI 0 "register_operand")
-	(vec_merge:MMXMODEI
-	  (match_operand:MMXMODEI 1 "register_operand")
-	  (match_operand:MMXMODEI 2 "register_operand")
-	  (match_operand:MMXMODEI 3 "register_operand")))]
+(define_expand "vcond_mask_<mode><mmxintvecmodelower>"
+  [(set (match_operand:MMXMODE124 0 "register_operand")
+	(vec_merge:MMXMODE124
+	  (match_operand:MMXMODE124 1 "register_operand")
+	  (match_operand:MMXMODE124 2 "register_operand")
+	  (match_operand:<mmxintvecmode> 3 "register_operand")))]
   "TARGET_MMX_WITH_SSE"
 {
   ix86_expand_sse_movcc (operands[0], operands[3],

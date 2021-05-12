@@ -1,3 +1,36 @@
+2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	* src/c++17/ryu/LOCAL_PATCHES: Update.
+	* src/c++17/ryu/ryu_generic_128.h: Remove extern "C".
+	Remove declarations for never-defined functions.
+	* testsuite/20_util/to_chars/4.cc: New test.
+
+2021-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/headers/memory/synopsis.cc: Define C++98
+	alternative for macro.
+	* testsuite/20_util/shared_ptr/creation/99006.cc: Add effective
+	target keyword.
+	* testsuite/25_algorithms/copy/debug/99402.cc: Avoid C++11
+	syntax.
+
+2021-05-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h (allocator<void>) [C++20]: Add
+	missing noexcept to constructor. Restore missing POCMA and
+	is_always_equal_traits.
+	[C++17]: Make construct and destroy members private and
+	declare allocator_traits as a friend.
+	* include/bits/memoryfwd.h (allocator_traits): Declare.
+	* include/ext/malloc_allocator.h (malloc_allocator::allocate):
+	Add nodiscard attribute. Add static assertion for LWG 3307.
+	* include/ext/new_allocator.h (new_allocator::allocate): Add
+	static assertion for LWG 3307.
+	* testsuite/20_util/allocator/void.cc: Check that converting
+	constructor is noexcept. Check for propagation traits and
+	size_type and difference_type. Check that pointer and
+	const_pointer are gone in C++20.
+
 2021-05-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/stop_token: Remove TODO comment.

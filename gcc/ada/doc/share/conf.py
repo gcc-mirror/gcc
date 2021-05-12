@@ -18,9 +18,9 @@ import latex_elements
 
 DOCS = {
     'gnat_rm': {
-        'title': u'GNAT Reference Manual'},
+        'title': 'GNAT Reference Manual'},
     'gnat_ugn': {
-        'title': u'GNAT User\'s Guide for Native Platforms'}}
+        'title': 'GNAT User\'s Guide for Native Platforms'}}
 
 # Then retrieve the source directory
 root_source_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -28,17 +28,17 @@ gnatvsn_spec = os.path.join(root_source_dir, '..', 'gnatvsn.ads')
 basever = os.path.join(root_source_dir, '..', '..', 'BASE-VER')
 texi_fsf = True  # Set to False when FSF doc is switched to sphinx by default
 
-with open(gnatvsn_spec, 'rb') as fd:
+with open(gnatvsn_spec, 'r') as fd:
     gnatvsn_content = fd.read()
 
 
 def get_copyright():
-    return u'2008-%s, Free Software Foundation' % time.strftime('%Y')
+    return '2008-%s, Free Software Foundation' % time.strftime('%Y')
 
 
 def get_gnat_version():
-    m = re.search(br'Gnat_Static_Version_String : ' +
-                  br'constant String := "([^\(\)]+)\(.*\)?";',
+    m = re.search(r'Gnat_Static_Version_String : ' +
+                  r'constant String := "([^\(\)]+)\(.*\)?";',
                   gnatvsn_content)
     if m:
         return m.group(1).strip().decode()
@@ -57,12 +57,12 @@ def get_gnat_version():
 
 
 def get_gnat_build_type():
-    m = re.search(br'Build_Type : constant Gnat_Build_Type := (.+);',
+    m = re.search(r'Build_Type : constant Gnat_Build_Type := (.+);',
                   gnatvsn_content)
     if m:
-        return {b'Gnatpro': 'PRO',
-                b'FSF': 'FSF',
-                b'GPL': 'GPL'}[m.group(1).strip()]
+        return {'Gnatpro': 'PRO',
+                'FSF': 'FSF',
+                'GPL': 'GPL'}[m.group(1).strip()]
     else:
         print('cannot compute GNAT build type')
         sys.exit(1)
@@ -119,8 +119,8 @@ copyright_macros = {
     'date': time.strftime("%b %d, %Y"),
     'edition': 'GNAT %s Edition' % 'Pro' if get_gnat_build_type() == 'PRO'
                else 'GPL',
-    'name': u'GNU Ada',
-    'tool': u'GNAT',
+    'name': 'GNU Ada',
+    'tool': 'GNAT',
     'version': version}
 
 latex_elements = {
@@ -134,11 +134,11 @@ latex_elements = {
     'tableofcontents': latex_elements.TOC % copyright_macros}
 
 latex_documents = [
-    (master_doc, '%s.tex' % doc_name, project, u'AdaCore', 'manual')]
+    (master_doc, '%s.tex' % doc_name, project, 'AdaCore', 'manual')]
 
 texinfo_documents = [
     (master_doc, doc_name, project,
-     u'AdaCore', doc_name, doc_name, '')]
+     'AdaCore', doc_name, doc_name, '')]
 
 
 def setup(app):

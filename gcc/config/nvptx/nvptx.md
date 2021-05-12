@@ -1452,14 +1452,24 @@
 		 (match_operand:SI 3 "const_int_operand" "n")]
 		  UNSPEC_SHUFFLE))]
   ""
-  "%.\\tshfl%S3.b32\\t%0, %1, %2, 31;")
+  {
+    if (TARGET_PTX_6_3)
+      return "%.\\tshfl.sync%S3.b32\\t%0, %1, %2, 31, 0xffffffff;";
+    else
+      return "%.\\tshfl%S3.b32\\t%0, %1, %2, 31;";
+  })
 
 (define_insn "nvptx_vote_ballot"
   [(set (match_operand:SI 0 "nvptx_register_operand" "=R")
 	(unspec:SI [(match_operand:BI 1 "nvptx_register_operand" "R")]
 		   UNSPEC_VOTE_BALLOT))]
   ""
-  "%.\\tvote.ballot.b32\\t%0, %1;")
+  {
+    if (TARGET_PTX_6_3)
+      return "%.\\tvote.sync.ballot.b32\\t%0, %1, 0xffffffff;";
+    else
+      return "%.\\tvote.ballot.b32\\t%0, %1;";
+  })
 
 ;; Patterns for OpenMP SIMD-via-SIMT lowering
 

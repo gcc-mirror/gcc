@@ -1,3 +1,102 @@
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100508
+	* gcc.dg/gomp/pr100508.c: New test.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/94589
+	* gcc.dg/tree-ssa/pr94589-1.c: New test.
+
+2021-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98218
+	* g++.target/i386/pr98218-1.C: Ditto.
+	* gcc.target/i386/pr98218-4.c: New test.
+	* gcc.target/i386/pr98218-1.c: Correct PR number.
+	* gcc.target/i386/pr98218-1a.c: Ditto.
+	* gcc.target/i386/pr98218-2.c: Ditto.
+	* gcc.target/i386/pr98218-2a.c: Ditto.
+	* gcc.target/i386/pr98218-3.c: Ditto.
+	* gcc.target/i386/pr98218-3a.c: Ditto.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/c11-elifdef-1.c, gcc.dg/cpp/c2x-elifdef-1.c,
+	gcc.dg/cpp/c2x-elifdef-2.c: New tests.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/cpp1y/digit-sep-paste.C, gcc.dg/c2x-digit-separators-3.c:
+	New tests.
+
+2021-05-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/guality/pr43077-1.c: Align types of output and input
+	operands by lifting immediates to type long.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-digit-separators-1.c,
+	gcc.dg/c2x-digit-separators-1.c, gcc.dg/c2x-digit-separators-2.c:
+	New tests.
+
+2021-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100517
+	* g++.dg/ext/vector41.C: New test.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.dg/goacc/pr78027.f90: Remove -Wno-hsa option.
+	* brig.dg/README: Removed.
+	* brig.dg/dg.exp: Removed.
+	* brig.dg/test/gimple/alloca.hsail: Removed.
+	* brig.dg/test/gimple/atomics.hsail: Removed.
+	* brig.dg/test/gimple/branches.hsail: Removed.
+	* brig.dg/test/gimple/fbarrier.hsail: Removed.
+	* brig.dg/test/gimple/function_calls.hsail: Removed.
+	* brig.dg/test/gimple/internal-casts.hsail: Removed.
+	* brig.dg/test/gimple/kernarg.hsail: Removed.
+	* brig.dg/test/gimple/mem.hsail: Removed.
+	* brig.dg/test/gimple/mulhi.hsail: Removed.
+	* brig.dg/test/gimple/packed.hsail: Removed.
+	* brig.dg/test/gimple/priv-array-offset-access.hsail: Removed.
+	* brig.dg/test/gimple/smoke_test.hsail: Removed.
+	* brig.dg/test/gimple/variables.hsail: Removed.
+	* brig.dg/test/gimple/vector.hsail: Removed.
+	* lib/brig-dg.exp: Removed.
+	* lib/brig.exp: Removed.
+
+2021-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99725
+	* gcc.target/arm/cmse/pr99725.c: New test.
+
+2021-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/fmul_lane_1.c: New test.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100509
+	* gcc.dg/pr100509.c: New testcase.
+
+2021-05-11  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/risbg-ll-3.c: Change match pattern.
+
+2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/51577
+	* g++.dg/lookup/operator-3.C: New test.
+
+2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100138
+	* g++.dg/cpp2a/concepts-ctad4.C: New test.
+
 2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/opt5.ads: New test.

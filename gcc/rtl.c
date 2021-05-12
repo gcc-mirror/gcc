@@ -158,9 +158,12 @@ static size_t rtvec_alloc_sizes;
    Store the length, and initialize all elements to zero.  */
 
 rtvec
-rtvec_alloc (int n)
+rtvec_alloc (size_t n)
 {
   rtvec rt;
+
+  /* rtvec_def.num_elem is an int.  */
+  gcc_assert (n < INT_MAX);
 
   rt = ggc_alloc_rtvec_sized (n);
   /* Clear out the vector.  */

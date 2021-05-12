@@ -571,8 +571,7 @@ package Atree is
      (N : Entity_Id; Field : Entity_Field) return Boolean;
    --  True if the field value is the initial zero value
 
-   procedure Mutate_Nkind
-     (N : Node_Id; Val : Node_Kind) with Inline;
+   procedure Mutate_Nkind (N : Node_Id; Val : Node_Kind) with Inline;
    --  There is no Set_Nkind in Sinfo.Nodes. We use this instead. This is here,
    --  and has a different name, because it does some extra checking. Nkind is
    --  like a discriminant, in that it controls which fields exist, and that

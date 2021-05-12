@@ -2976,7 +2976,7 @@ extern rtx rtx_alloc_stat_v (RTX_CODE MEM_STAT_DECL, int);
 	       (sizeof (struct hwivec_def)			\
 		+ ((NWORDS)-1) * sizeof (HOST_WIDE_INT)))	\
 
-extern rtvec rtvec_alloc (int);
+extern rtvec rtvec_alloc (size_t);
 extern rtvec shallow_copy_rtvec (rtvec);
 extern bool shared_const_p (const_rtx);
 extern rtx copy_rtx (rtx);

@@ -4764,6 +4764,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp:c (bit_xor:c @0 @1) @0)
   (cmp @1 { build_zero_cst (TREE_TYPE (@1)); }))
 
+#if GIMPLE
+ /* (X & Y) == X becomes (X & ~Y) == 0.  */
+ (simplify
+  (cmp:c (bit_and:c @0 @1) @0)
+  (cmp (bit_and @0 (bit_not! @1)) { build_zero_cst (TREE_TYPE (@0)); }))
+
+ /* (X | Y) == Y becomes (X & ~Y) == 0.  */
+ (simplify
+  (cmp:c (bit_ior:c @0 @1) @1)
+  (cmp (bit_and @0 (bit_not! @1)) { build_zero_cst (TREE_TYPE (@0)); }))
+#endif
+
  /* (X ^ C1) op C2 can be rewritten as X op (C1 ^ C2).  */
  (simplify
   (cmp (convert?@3 (bit_xor @0 INTEGER_CST@1)) INTEGER_CST@2)
