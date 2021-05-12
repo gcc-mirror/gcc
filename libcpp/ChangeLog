@@ -1,3 +1,27 @@
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (struct cpp_options): Add elifdef.
+	* init.c (struct lang_flags): Add elifdef.
+	(lang_defaults): Update to include elifdef initializers.
+	(cpp_set_lang): Set elifdef for pfile based on language.
+	* directives.c (STDC2X, ELIFDEF): New macros.
+	(EXTENSION): Increase value to 3.
+	(DIRECTIVE_TABLE): Add #elifdef and #elifndef.
+	(_cpp_handle_directive): Do not treat ELIFDEF directives as
+	directives for language versions without the #elifdef feature.
+	(do_elif): Handle #elifdef and #elifndef.
+	(do_elifdef, do_elifndef): New functions.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* lex.c (cpp_avoid_paste): Do not allow pasting CPP_NUMBER with
+	CPP_CHAR.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* init.c (lang_defaults): Enable digit separators for GNUC2X and
+	STDC2X.
+
 2021-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/100450

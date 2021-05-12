@@ -1,3 +1,11 @@
+2021-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100471
+	* taskloop.c (GOMP_taskloop): If GOMP_TASK_FLAG_REDUCTION and not
+	GOMP_TASK_FLAG_NOGROUP, when doing early return clear the task
+	reduction pointer.
+	* testsuite/libgomp.c/task-reduction-4.c: New test.
+
 2021-05-07  Tobias Burnus  <tobias@codesourcery.com>
 	    Tom de Vries  <tdevries@suse.de>
 

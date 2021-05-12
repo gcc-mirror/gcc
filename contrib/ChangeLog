@@ -1,3 +1,30 @@
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Simplify needle lookup.
+	* gcc-changelog/git_update_version.py: Pass ref_name to
+	parse_git_revisions.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc_update: Remove libhsail-rt folder.
+	* update-copyright.py: Likewise.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_check_commit.py: Remove --non-strict-mode.
+	* gcc-changelog/git_commit.py: Remove strict mode.
+	* gcc-changelog/git_email.py: Likewise.
+	* gcc-changelog/git_repository.py: Likewise.
+	* gcc-changelog/test_email.py: Likewise.
+	* gcc-changelog/test_patches.txt: Update patches so that they
+	don't contain a ChangeLog file changes.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Remove ChangeLog locations
+	based on ref_name.
+	* gcc-changelog/git_repository.py: Likewise.
+
 2021-05-10  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_email.py: Remove newlines when --help

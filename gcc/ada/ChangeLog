@@ -1,3 +1,21 @@
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* doc/share/conf.py: Do not use binary mode.
+	Do not use u' literals as Python3 uses unicode by default.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/ada-tree.h (BUILT_IN_LIKELY): Use builtins
+	from COROUTINES.
+	(BUILT_IN_UNLIKELY): Likewise.
+
+2021-05-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnatvsn.adb (Version_String): Rename to...
+	(C_Version_String): ...this.
+	(Gnat_Version_String): Adjust to above renaming.
+	* version.c : Fix formatting glitches.
+
 2021-05-10  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/100506

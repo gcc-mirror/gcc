@@ -1,3 +1,7 @@
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-lex.c (interpret_float): Handle digit separators for C2X.
+
 2021-05-10  Martin Liska  <mliska@suse.cz>
 
 	* c-ada-spec.c (print_destructor): Use startswith

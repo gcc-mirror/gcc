@@ -1,3 +1,205 @@
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100547
+	* rtl.h (rtvec_alloc): Make argument size_t.
+	* rtl.c (rtvec_alloc): Verify the count is less than INT_MAX.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100508
+	* cfgexpand.c (expand_debug_expr): For DEBUG_EXPR_DECL with vector
+	type, don't reuse DECL_RTL if it has different mode, instead force
+	creation of a new DEBUG_EXPR.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/94589
+	* match.pd ((X & Y) == X -> (X & ~Y) == 0,
+	(X | Y) == Y -> (X & ~Y) == 0): New GIMPLE simplifications.
+
+2021-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98218
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc): Handle V2SF mode.
+	* config/i386/mmx.md (MMXMODE124): New mode iterator.
+	(V2FI): Ditto.
+	(mmxintvecmode): New mode attribute.
+	(mmxintvecmodelower): Ditto.
+	(*mmx_maskcmpv2sf3_comm): New insn pattern.
+	(*mmx_maskcmpv2sf3): Ditto.
+	(vec_cmpv2sfv2si): New expander.
+	(vcond<V2FI:mode>v2si): Ditto.
+	(mmx_vlendvps): New insn pattern.
+	(vcond<MMXMODE124:mode><MMXMODEI:mode>): Also handle V2SFmode.
+	(vcondu<MMXMODE124:mode><MMXMODEI:mode>): Ditto.
+	(vcond_mask_<mode><mmxintvecmodelower>): Ditto.
+
+2021-05-11  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/21433
+	* expr.c (expand_expr_real_1): Replace unreachable code with an assert.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (gimple_fold_call): Do not call
+	maybe_fold_reference on call arguments or the static chain.
+	(fold_stmt_1): Do not call maybe_fold_reference on GIMPLE_ASM
+	inputs.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* builtins.def (DEF_HSAIL_BUILTIN): Remove.
+	(DEF_HSAIL_ATOMIC_BUILTIN): Likewise.
+	(DEF_HSAIL_SAT_BUILTIN): Likewise.
+	(DEF_HSAIL_INTR_BUILTIN): Likewise.
+	(DEF_HSAIL_CVT_ZEROI_SAT_BUILTIN): Likewise.
+	* doc/frontends.texi: Remove BRIG.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/standards.texi: Likewise.
+	* brig-builtins.def: Removed.
+	* brig/ChangeLog: Removed.
+	* brig/Make-lang.in: Removed.
+	* brig/brig-builtins.h: Removed.
+	* brig/brig-c.h: Removed.
+	* brig/brig-lang.c: Removed.
+	* brig/brigfrontend/brig-arg-block-handler.cc: Removed.
+	* brig/brigfrontend/brig-atomic-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-basic-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-branch-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-cmp-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-code-entry-handler.cc: Removed.
+	* brig/brigfrontend/brig-code-entry-handler.h: Removed.
+	* brig/brigfrontend/brig-comment-handler.cc: Removed.
+	* brig/brigfrontend/brig-control-handler.cc: Removed.
+	* brig/brigfrontend/brig-copy-move-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-cvt-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-fbarrier-handler.cc: Removed.
+	* brig/brigfrontend/brig-function-handler.cc: Removed.
+	* brig/brigfrontend/brig-function.cc: Removed.
+	* brig/brigfrontend/brig-function.h: Removed.
+	* brig/brigfrontend/brig-inst-mod-handler.cc: Removed.
+	* brig/brigfrontend/brig-label-handler.cc: Removed.
+	* brig/brigfrontend/brig-lane-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-machine.c: Removed.
+	* brig/brigfrontend/brig-machine.h: Removed.
+	* brig/brigfrontend/brig-mem-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-module-handler.cc: Removed.
+	* brig/brigfrontend/brig-queue-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-seg-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-signal-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-to-generic.cc: Removed.
+	* brig/brigfrontend/brig-to-generic.h: Removed.
+	* brig/brigfrontend/brig-util.cc: Removed.
+	* brig/brigfrontend/brig-util.h: Removed.
+	* brig/brigfrontend/brig-variable-handler.cc: Removed.
+	* brig/brigfrontend/hsa-brig-format.h: Removed.
+	* brig/brigfrontend/phsa.h: Removed.
+	* brig/brigspec.c: Removed.
+	* brig/config-lang.in: Removed.
+	* brig/gccbrig.texi: Removed.
+	* brig/lang-specs.h: Removed.
+	* brig/lang.opt: Removed.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100513
+	* ipa-param-manipulation.c
+	(ipa_param_body_adjustments::modify_call_stmt): Avoid
+	altering SSA_NAME_DEF_STMT by adjusting the calls LHS
+	via gimple_call_lhs_ptr.
+
+2021-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99725
+	* config/arm/arm.c (cmse_nonsecure_call_inline_register_clear):
+	Avoid emitting CFA adjusts on the sp if we have the fp.
+
+2021-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (VMUL_CHANGE_NLANES): Delete.
+	(VMULD): New iterator.
+	(VCOND): Handle V4HF and V8HF.
+	(VCONQ): Fix entry for V2SF.
+	* config/aarch64/aarch64-simd.md (mul_lane<mode>3): Use VMULD
+	instead of VMUL.  Use a 64-bit vector mode for the indexed operand.
+	(*aarch64_mul3_elt_<vswap_width_name><mode>): Merge with...
+	(mul_laneq<mode>3): ...this define_insn.  Use VMUL instead of VDQSF.
+	Use a 128-bit vector mode for the indexed operand.  Use stype for
+	the scheduling type.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (maybe_fold_reference): Only return
+	is_gimple_min_invariant values.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100509
+	* gimple-fold.c (fold_gimple_assign): Only call
+	get_symbol_constant_value on register type symbols.
+
+2021-05-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Joe Ramsay   <joe.ramsay@arm.com>
+
+	PR target/100419
+	* config/arm/arm_mve.h (__arm_vstrwq_scatter_offset): Fix wrong arguments.
+	(__arm_vcmpneq): Remove duplicate definition.
+	(__arm_vstrwq_scatter_offset_p): Likewise.
+	(__arm_vmaxq_x): Likewise.
+	(__arm_vmlsdavaq): Likewise.
+	(__arm_vmlsdavaxq): Likewise.
+	(__arm_vmlsdavq_p): Likewise.
+	(__arm_vmlsdavxq_p): Likewise.
+	(__arm_vrmlaldavhaq): Likewise.
+	(__arm_vstrbq_p): Likewise.
+	(__arm_vstrbq_scatter_offset): Likewise.
+	(__arm_vstrbq_scatter_offset_p): Likewise.
+	(__arm_vstrdq_scatter_offset): Likewise.
+	(__arm_vstrdq_scatter_offset_p): Likewise.
+	(__arm_vstrdq_scatter_shifted_offset): Likewise.
+	(__arm_vstrdq_scatter_shifted_offset_p): Likewise.
+
+2021-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100471
+	* omp-low.c (lower_omp_task_reductions): For OMP_TASKLOOP, if data
+	is 0, bypass the reduction loop including
+	GOMP_taskgroup_reduction_unregister call.
+
+2021-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (struct rs6000_cost_data): New member
+	costing_for_scalar.
+	(rs6000_density_test): Early return if costing_for_scalar is true.
+	(rs6000_init_cost): Init costing_for_scalar of rs6000_cost_data.
+
+2021-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* doc/tm.texi: Regenerated.
+	* target.def (init_cost): Add new parameter costing_for_scalar.
+	* targhooks.c (default_init_cost): Adjust for new parameter.
+	* targhooks.h (default_init_cost): Likewise.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Likewise.
+	(vect_compute_single_scalar_iteration_cost): Likewise.
+	(vect_analyze_loop_2): Likewise.
+	* tree-vect-slp.c (_bb_vec_info::_bb_vec_info): Likewise.
+	(vect_bb_vectorization_profitable_p): Likewise.
+	* tree-vectorizer.h (init_cost): Likewise.
+	* config/aarch64/aarch64.c (aarch64_init_cost): Likewise.
+	* config/i386/i386.c (ix86_init_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_cost): Likewise.
+
+2021-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_vect_nonmem): Renamed to
+	vect_nonmem and moved into...
+	(struct rs6000_cost_data): ...here.
+	(rs6000_init_cost): Use vect_nonmem of cost_data instead.
+	(rs6000_add_stmt_cost): Likewise.
+	(rs6000_finish_cost): Likewise.
+
 2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* range-op.cc (get_bool_state): Adjust head comment.

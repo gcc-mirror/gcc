@@ -1,3 +1,41 @@
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Remove entries for removed
+	components (HSA, BRIG, libhsail-rt).
+	Move Pekka to Write After Approval.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.def: Remove libhsail-rt.
+	* Makefile.in: Likewise.
+	* configure.ac: Likewise.
+	* configure: Regenerate.
+	* libhsail-rt/ChangeLog: Removed.
+	* libhsail-rt/Makefile.am: Removed.
+	* libhsail-rt/Makefile.in: Removed.
+	* libhsail-rt/README: Removed.
+	* libhsail-rt/aclocal.m4: Removed.
+	* libhsail-rt/configure: Removed.
+	* libhsail-rt/configure.ac: Removed.
+	* libhsail-rt/configure.tgt: Removed.
+	* libhsail-rt/include/internal/fibers.h: Removed.
+	* libhsail-rt/include/internal/phsa-queue-interface.h: Removed.
+	* libhsail-rt/include/internal/phsa-rt.h: Removed.
+	* libhsail-rt/include/internal/workitems.h: Removed.
+	* libhsail-rt/rt/arithmetic.c: Removed.
+	* libhsail-rt/rt/atomics.c: Removed.
+	* libhsail-rt/rt/bitstring.c: Removed.
+	* libhsail-rt/rt/fbarrier.c: Removed.
+	* libhsail-rt/rt/fibers.c: Removed.
+	* libhsail-rt/rt/fp16.c: Removed.
+	* libhsail-rt/rt/misc.c: Removed.
+	* libhsail-rt/rt/multimedia.c: Removed.
+	* libhsail-rt/rt/queue.c: Removed.
+	* libhsail-rt/rt/sat_arithmetic.c: Removed.
+	* libhsail-rt/rt/segment.c: Removed.
+	* libhsail-rt/rt/workitems.c: Removed.
+	* libhsail-rt/target-config.h.in: Removed.
+
 2021-05-04  Nick Clifton  <nickc@redhat.com>
 
 	* configure.ac (AC_PROG_CC): Replace with AC_PROG_CC_C99.
