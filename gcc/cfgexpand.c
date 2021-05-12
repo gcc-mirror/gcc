@@ -4512,7 +4512,12 @@ expand_debug_expr (tree exp)
       op0 = DECL_RTL_IF_SET (exp);
 
       if (op0)
-	return op0;
+	{
+	  if (GET_MODE (op0) != mode)
+	    gcc_assert (VECTOR_TYPE_P (TREE_TYPE (exp)));
+	  else
+	    return op0;
+	}
 
       op0 = gen_rtx_DEBUG_EXPR (mode);
       DEBUG_EXPR_TREE_DECL (op0) = exp;
