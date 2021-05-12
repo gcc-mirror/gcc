@@ -1390,10 +1390,22 @@ ParamType::resolve () const
 bool
 ParamType::is_equal (const BaseType &other) const
 {
-  if (!can_resolve ())
-    return BaseType::is_equal (other);
+  if (get_kind () != other.get_kind ())
+    {
+      if (!can_resolve ())
+	return false;
 
-  return resolve ()->is_equal (other);
+      return resolve ()->is_equal (other);
+    }
+
+  auto other2 = static_cast<const ParamType &> (other);
+  if (can_resolve () != other2.can_resolve ())
+    return false;
+
+  if (can_resolve ())
+    return resolve ()->can_eq (other2.resolve ());
+
+  return get_symbol ().compare (other2.get_symbol ()) == 0;
 }
 
 ParamType *
