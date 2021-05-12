@@ -682,6 +682,15 @@ FnType::is_equal (const BaseType &other) const
   if (!get_return_type ()->is_equal (*other2.get_return_type ()))
     return false;
 
+  if (has_subsititions_defined () != other2.has_subsititions_defined ())
+    return false;
+
+  if (has_subsititions_defined ())
+    {
+      if (get_num_substitutions () != other2.get_num_substitutions ())
+	return false;
+    }
+
   if (num_params () != other2.num_params ())
     return false;
 
