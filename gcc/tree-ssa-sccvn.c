@@ -3690,7 +3690,8 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
   /* Iterate to the single executable bb2 successor.  */
   edge succe = NULL;
   FOR_EACH_EDGE (e, ei, bb2->succs)
-    if (e->flags & EDGE_EXECUTABLE)
+    if ((e->flags & EDGE_EXECUTABLE)
+	|| (!allow_back && (e->flags & EDGE_DFS_BACK)))
       {
 	if (succe)
 	  {
@@ -3708,7 +3709,8 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
 	{
 	  FOR_EACH_EDGE (e, ei, succe->dest->preds)
 	    if (e != succe
-		&& (e->flags & EDGE_EXECUTABLE))
+		&& ((e->flags & EDGE_EXECUTABLE)
+		    || (!allow_back && (e->flags & EDGE_DFS_BACK))))
 	      {
 		succe = NULL;
 		break;
