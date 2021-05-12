@@ -159,6 +159,9 @@ proc lto_prune_warns { text } {
     regsub -all "(^|\n)\[ \t\]*\[\(\]file \[^\n\]* value=\[^\n\]*; file \[^\n\]* value=\[^\n\]*\[)\];" $text "" text
     regsub -all "(^|\n)\[ \t\]*\[^\n\]* definition taken" $text "" text
 
+    # Ignore missing jobserver for tests that do more than 1 LTRANS unit
+    regsub -all "(^|\n)\[^\n\]*: warning: using serial compilation of \[^\n\]*" $text "" text
+
     # Ignore informational notes.
     regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text
 
