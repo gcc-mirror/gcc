@@ -7499,7 +7499,8 @@ case $target in
       # cross build. are target headers available?
       # carefully coerce the build-system compiler to use target headers
       saved_CXXFLAGS="$CXXFLAGS"
-      CROSS_TEST_CXXFLAGS="-nostdinc ${XGCC_FLAGS_FOR_TARGET//-B/-idirafter/}"
+      fixed_XGCC_FLAGS_FOR_TARGET=`echo "$XGCC_FLAGS_FOR_TARGET" | sed 's/-B/-idirafter/g'`
+      CROSS_TEST_CXXFLAGS="-nostdinc $fixed_XGCC_FLAGS_FOR_TARGET"
       CXXFLAGS="$CROSS_TEST_CXXFLAGS"
       AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #include <math.h>
