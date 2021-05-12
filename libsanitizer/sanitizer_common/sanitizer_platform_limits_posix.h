@@ -83,7 +83,7 @@ const unsigned struct_kernel_stat64_sz = 104;
 #elif defined(__mips__)
 const unsigned struct_kernel_stat_sz = SANITIZER_ANDROID
                                            ? FIRST_32_SECOND_64(104, 128)
-                                           : FIRST_32_SECOND_64(144, 216);
+                                           : FIRST_32_SECOND_64(160, 216);
 const unsigned struct_kernel_stat64_sz = 104;
 #elif defined(__s390__) && !defined(__s390x__)
 const unsigned struct_kernel_stat_sz = 64;
@@ -443,6 +443,8 @@ struct __sanitizer_cmsghdr {
   int cmsg_type;
 };
 #else
+// In POSIX, int msg_iovlen; socklen_t msg_controllen; socklen_t cmsg_len; but
+// many implementations don't conform to the standard.
 struct __sanitizer_msghdr {
   void *msg_name;
   unsigned msg_namelen;
