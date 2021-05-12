@@ -679,6 +679,9 @@ FnType::is_equal (const BaseType &other) const
     return false;
 
   auto other2 = static_cast<const FnType &> (other);
+  if (get_identifier ().compare (other2.get_identifier ()) != 0)
+    return false;
+
   if (!get_return_type ()->is_equal (*other2.get_return_type ()))
     return false;
 
@@ -712,9 +715,10 @@ FnType::clone ()
     cloned_params.push_back (
       std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
 
-  return new FnType (get_ref (), get_ty_ref (), is_method_flag,
-		     std::move (cloned_params), get_return_type ()->clone (),
-		     clone_substs (), get_combined_refs ());
+  return new FnType (get_ref (), get_ty_ref (), get_identifier (),
+		     is_method_flag, std::move (cloned_params),
+		     get_return_type ()->clone (), clone_substs (),
+		     get_combined_refs ());
 }
 
 FnType *

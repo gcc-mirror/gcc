@@ -855,24 +855,26 @@ private:
 class FnType : public BaseType, public SubstitutionRef
 {
 public:
-  FnType (HirId ref, bool is_method,
+  FnType (HirId ref, std::string identifier, bool is_method,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::FNDEF, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      params (std::move (params)), type (type), is_method_flag (is_method)
+      params (std::move (params)), type (type), is_method_flag (is_method),
+      identifier (identifier)
   {}
 
-  FnType (HirId ref, HirId ty_ref, bool is_method,
+  FnType (HirId ref, HirId ty_ref, std::string identifier, bool is_method,
 	  std::vector<std::pair<HIR::Pattern *, BaseType *> > params,
 	  BaseType *type, std::vector<SubstitutionParamMapping> subst_refs,
 	  std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::FNDEF, refs),
       SubstitutionRef (std::move (subst_refs),
 		       SubstitutionArgumentMappings::error ()),
-      params (params), type (type), is_method_flag (is_method)
+      params (params), type (type), is_method_flag (is_method),
+      identifier (identifier)
   {}
 
   void accept_vis (TyVisitor &vis) override;
@@ -880,6 +882,8 @@ public:
   std::string as_string () const override;
 
   std::string get_name () const override final { return as_string (); }
+
+  std::string get_identifier () const { return identifier; }
 
   BaseType *unify (BaseType *other) override;
   bool can_eq (BaseType *other) override;
@@ -947,6 +951,7 @@ private:
   std::vector<std::pair<HIR::Pattern *, BaseType *> > params;
   BaseType *type;
   bool is_method_flag;
+  std::string identifier;
 };
 
 class FnPtr : public BaseType
