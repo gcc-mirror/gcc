@@ -4768,7 +4768,18 @@ cpp_directive_only_process (cpp_reader *pfile,
 	}
 
       if (buffer->rlimit > base && !pfile->state.skipping)
-	cb (pfile, CPP_DO_print, data, line_count, base, buffer->rlimit - base);
+	{
+	  const unsigned char *limit = buffer->rlimit;
+	  /* If the file was not newline terminated, add rlimit, which is
+	     guaranteed to point to a newline, to the end of our range.  */
+	  if (limit[-1] != '\n')
+	    {
+	      limit++;
+	      CPP_INCREMENT_LINE (pfile, 0);
+	      line_count++;
+	    }
+	  cb (pfile, CPP_DO_print, data, line_count, base, limit - base);
+	}
 
       _cpp_pop_buffer (pfile);
     }
