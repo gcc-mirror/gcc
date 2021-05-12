@@ -737,7 +737,7 @@ range_of_builtin_call (range_query &query, irange &r, gcall *call)
 
       query.range_of_expr (r, arg, call);
       // From clz of minimum we can compute result maximum.
-      if (r.constant_p ())
+      if (r.constant_p () && !r.varying_p ())
 	{
 	  int newmaxi = prec - 1 - wi::floor_log2 (r.lower_bound ());
 	  // Argument is unsigned, so do nothing if it is [0, ...] range.
