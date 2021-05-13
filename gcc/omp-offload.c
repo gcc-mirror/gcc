@@ -583,7 +583,6 @@ oacc_xform_loop (gcall *call)
   bool chunking = false, striding = true;
   unsigned outer_mask = mask & (~mask + 1); // Outermost partitioning
   unsigned inner_mask = mask & ~outer_mask; // Inner partitioning (if any)
-  bool vec_tiles = true;
   tree vf_by_vectorizer = NULL_TREE;
 
   /* Skip lowering if return value of IFN_GOACC_LOOP call is not used.  */

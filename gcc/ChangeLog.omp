@@ -1,3 +1,7 @@
+2021-05-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* omp-offload.c (oacc_xform_loop): Remove vec_tiles.
+
 2021-05-05  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* tree.h (OMP_CLAUSE_MAP_IMPLICIT_P): New access macro for 'implicit'
