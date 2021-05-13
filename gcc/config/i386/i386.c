@@ -18000,8 +18000,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree cmp_type = truth_type_for (type);
 	gimple_seq stmts = NULL;
 	tree cmp = gimple_build (&stmts, tcode, cmp_type, arg0, arg1);
-	gsi_insert_before (gsi, stmts, GSI_SAME_STMT);
-	gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	gimple* g = gimple_build_assign (gimple_call_lhs (stmt),
 					 VEC_COND_EXPR, cmp,
 					 minus_one_vec, zero_vec);
 	gimple_set_location (g, loc);
