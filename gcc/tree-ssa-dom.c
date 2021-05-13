@@ -649,7 +649,6 @@ private:
 
   void test_for_singularity (gimple *, avail_exprs_stack *);
 
-  dom_jump_threader_simplifier *m_simplifier;
   jump_threader *m_threader;
   evrp_range_analyzer *m_evrp_range_analyzer;
 };
