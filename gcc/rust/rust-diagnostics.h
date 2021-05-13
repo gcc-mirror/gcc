@@ -114,10 +114,13 @@ struct Error
 	 ...) /*RUST_ATTRIBUTE_GCC_DIAG (2, 3)*/ RUST_ATTRIBUTE_GCC_DIAG (3, 4);
 
   // Irreversibly emits the error as an error.
-  void emit_error () const { rust_error_at (locus, message.c_str ()); }
+  void emit_error () const { rust_error_at (locus, "%s", message.c_str ()); }
 
   // Irreversibly emits the error as a fatal error.
-  void emit_fatal_error () const { rust_fatal_error (locus, message.c_str ()); }
+  void emit_fatal_error () const
+  {
+    rust_fatal_error (locus, "%s", message.c_str ());
+  }
 };
 } // namespace Rust
 
