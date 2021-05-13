@@ -1,3 +1,32 @@
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100566
+	* tree-ssa-sccvn.c (dominated_by_p_w_unex): Properly handle
+	allow_back for all edge queries.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100508
+	* cfgexpand.c (expand_debug_expr): For DEBUG_EXPR_DECL with vector
+	type, don't reuse DECL_RTL if it has different mode, instead force
+	creation of a new DEBUG_EXPR.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100471
+	* omp-low.c (lower_omp_task_reductions): For OMP_TASKLOOP, if data
+	is 0, bypass the reduction loop including
+	GOMP_taskgroup_reduction_unregister call.
+
 2021-05-12  Geng Qi  <gengqi@linux.alibaba.com>
 
 	Backported from master:

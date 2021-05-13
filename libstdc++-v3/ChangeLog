@@ -1,3 +1,29 @@
+2021-05-12  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_util.h (subrange::subrange): Avoid
+	list-initialization in delegating constructor.
+	* include/std/ranges (single_view): Replace implicit guide
+	with explicit deduction guide that decays its argument.
+	(_Single::operator()): Avoid CTAD when constructing the
+	single_view object.
+	(_Iota::operator()): Avoid list-initialization.
+	(__detail::__can_filter_view, _Filter::operator()): Likewise.
+	(__detail::__can_transform_view, _Transform::operator()): Likewise.
+	(take_view::begin): Likewise.
+	(__detail::__can_take_view, _Take::operator()): Likewise.
+	(__detail::__can_take_while_view, _TakeWhile::operator()): Likewise.
+	(__detail::__can_drop_view, _Drop::operator()): Likewise.
+	(__detail::__can_drop_while_view, _DropWhile::operator()): Likewise.
+	(split_view::split_view): Use views::single when initializing
+	_M_pattern.
+	(__detail::__can_split_view, _Split::operator()): Avoid
+	list-initialization.
+	(_Counted::operator()): Likewise.
+	* testsuite/std/ranges/p2367.cc: New test.
+
 2021-05-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
