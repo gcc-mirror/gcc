@@ -1,3 +1,10 @@
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/100392
+	* lex.c (cpp_directive_only_process): If buffer doesn't end with '\n',
+	add buffer->rlimit[0] character to the printed range and
+	CPP_INCREMENT_LINE and increment line_count.
+
 2021-05-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (struct cpp_options): Add elifdef.

@@ -1,3 +1,15 @@
+2021-05-12  Bob Duff  <duff@adacore.com>
+
+	PR ada/100564
+	* atree.adb (Change_Node): Do not call Zero_Slots on a Node_Id
+	when the Nkind has not yet been set; call the other Zero_Slots
+	that takes a range of slot offsets.  Call the new Mutate_Kind
+	that takes an Old_Size, for the same reason -- the size cannot
+	be computed without the Nkind.
+	(Mutate_Nkind): New function that allows specifying the Old_Size.
+	(Size_In_Slots): Assert that the Nkind has proper (nonzero) value.
+	* atree.ads: Minor reformatting.
+
 2021-05-12  Martin Liska  <mliska@suse.cz>
 
 	* doc/share/conf.py: Do not use binary mode.
