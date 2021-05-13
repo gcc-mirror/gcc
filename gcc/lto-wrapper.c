@@ -189,6 +189,37 @@ find_option (vec<cl_decoded_option> &options, cl_decoded_option *option)
   return find_option (options, option->opt_index);
 }
 
+/* Merge -flto FOPTION into vector of DECODED_OPTIONS.  */
+
+static void
+merge_flto_options (vec<cl_decoded_option> &decoded_options,
+		    cl_decoded_option *foption)
+{
+  int existing_opt = find_option (decoded_options, foption);
+  if (existing_opt == -1)
+    decoded_options.safe_push (*foption);
+  else
+    {
+      if (strcmp (foption->arg, decoded_options[existing_opt].arg) != 0)
+	{
+	  /* -flto=auto is preferred.  */
+	  if (strcmp (decoded_options[existing_opt].arg, "auto") == 0)
+	    ;
+	  else if (strcmp (foption->arg, "auto") == 0
+		   || strcmp (foption->arg, "jobserver") == 0)
+	    decoded_options[existing_opt].arg = foption->arg;
+	  else if (strcmp (decoded_options[existing_opt].arg,
+			   "jobserver") != 0)
+	    {
+	      int n = atoi (foption->arg);
+	      int original_n = atoi (decoded_options[existing_opt].arg);
+	      if (n > original_n)
+		decoded_options[existing_opt].arg = foption->arg;
+	    }
+	}
+    }
+}
+
 /* Try to merge and complain about options FDECODED_OPTIONS when applied
    ontop of DECODED_OPTIONS.  */
 
@@ -427,28 +458,7 @@ merge_and_complain (vec<cl_decoded_option> decoded_options,
 	  break;
 
 	case OPT_flto_:
-	  if (existing_opt == -1)
-	    decoded_options.safe_push (*foption);
-	  else
-	    {
-	      if (strcmp (foption->arg, decoded_options[existing_opt].arg) != 0)
-		{
-		  /* -flto=auto is preferred.  */
-		  if (strcmp (decoded_options[existing_opt].arg, "auto") == 0)
-		    ;
-		  else if (strcmp (foption->arg, "auto") == 0
-			   || strcmp (foption->arg, "jobserver") == 0)
-		    decoded_options[existing_opt].arg = foption->arg;
-		  else if (strcmp (decoded_options[existing_opt].arg,
-				   "jobserver") != 0)
-		    {
-		      int n = atoi (foption->arg);
-		      int original_n = atoi (decoded_options[existing_opt].arg);
-		      if (n > original_n)
-			decoded_options[existing_opt].arg = foption->arg;
-		    }
-		}
-	    }
+	  merge_flto_options (decoded_options, foption);
 	  break;
 	}
     }
@@ -1515,37 +1525,6 @@ run_gcc (unsigned argc, char *argv[])
   append_compiler_options (&argv_obstack, fdecoded_options);
   append_linker_options (&argv_obstack, decoded_options);
 
-  /* Process LTO-related options on merged options.  */
-  for (j = 1; j < fdecoded_options.length (); ++j)
-    {
-      cl_decoded_option *option = &fdecoded_options[j];
-      switch (option->opt_index)
-	{
-	case OPT_flto_:
-	  if (strcmp (option->arg, "jobserver") == 0)
-	    {
-	      parallel = 1;
-	      jobserver = 1;
-	    }
-	  else if (strcmp (option->arg, "auto") == 0)
-	    {
-	      parallel = 1;
-	      auto_parallel = 1;
-	    }
-	  else
-	    {
-	      parallel = atoi (option->arg);
-	      if (parallel <= 1)
-		parallel = 0;
-	    }
-	  /* Fallthru.  */
-
-	case OPT_flto:
-	  lto_mode = LTO_MODE_WHOPR;
-	  break;
-	}
-    }
-
   /* Scan linker driver arguments for things that are of relevance to us.  */
   for (j = 1; j < decoded_options.length (); ++j)
     {
@@ -1574,6 +1553,8 @@ run_gcc (unsigned argc, char *argv[])
 	  break;
 
 	case OPT_flto_:
+	  /* Merge linker -flto= option with what we have in IL files.  */
+	  merge_flto_options (fdecoded_options, option);
 	  if (strcmp (option->arg, "jobserver") == 0)
 	    jobserver_requested = true;
 	  break;
@@ -1592,6 +1573,37 @@ run_gcc (unsigned argc, char *argv[])
 	  break;
 
 	default:
+	  break;
+	}
+    }
+
+  /* Process LTO-related options on merged options.  */
+  for (j = 1; j < fdecoded_options.length (); ++j)
+    {
+      cl_decoded_option *option = &fdecoded_options[j];
+      switch (option->opt_index)
+	{
+	case OPT_flto_:
+	  if (strcmp (option->arg, "jobserver") == 0)
+	    {
+	      parallel = 1;
+	      jobserver = 1;
+	    }
+	  else if (strcmp (option->arg, "auto") == 0)
+	    {
+	      parallel = 1;
+	      auto_parallel = 1;
+	    }
+	  else
+	    {
+	      parallel = atoi (option->arg);
+	      if (parallel <= 1)
+		parallel = 0;
+	    }
+	  /* Fallthru.  */
+
+	case OPT_flto:
+	  lto_mode = LTO_MODE_WHOPR;
 	  break;
 	}
     }
