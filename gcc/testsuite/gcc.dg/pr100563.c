@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Og" } */
+/* { dg-options "-Og -Wno-pointer-to-int-cast" } */
 unsigned long long e(void);
 void f(int);
 void a() {
