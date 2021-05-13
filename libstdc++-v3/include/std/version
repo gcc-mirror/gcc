@@ -281,6 +281,7 @@
 
 #if __cplusplus > 202002L
 // c++2b
+#define __cpp_lib_adaptor_iterator_pair_constructor 202100L
 #define __cpp_lib_invoke_r 202106L
 #define __cpp_lib_is_scoped_enum 202011L
 #define __cpp_lib_string_contains 202011L

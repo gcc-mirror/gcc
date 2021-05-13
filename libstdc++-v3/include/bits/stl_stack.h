@@ -170,6 +170,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       stack(_Sequence&& __c)
       : c(std::move(__c)) { }
 
+#if __cplusplus > 202002L
+#define __cpp_lib_adaptor_iterator_pair_constructor 202100L
+
+      template<typename _InputIterator,
+	       typename = _RequireInputIter<_InputIterator>>
+	stack(_InputIterator __first, _InputIterator __last)
+	: c(__first, __last) { }
+#endif
+
+
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	explicit
 	stack(const _Alloc& __a)
@@ -190,6 +200,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc, typename _Requires = _Uses<_Alloc>>
 	stack(stack&& __q, const _Alloc& __a)
 	: c(std::move(__q.c), __a) { }
+
+#if __cplusplus > 202002L
+      template<typename _InputIterator, typename _Alloc,
+	       typename = _RequireInputIter<_InputIterator>,
+	       typename = _Uses<_Alloc>>
+	stack(_InputIterator __first, _InputIterator __last, const _Alloc& __a)
+	: c(__first, __last, __a) { }
+#endif
 #endif
 
       /**
@@ -303,6 +321,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename = _RequireAllocator<_Allocator>>
     stack(_Container, _Allocator)
     -> stack<typename _Container::value_type, _Container>;
+
+#ifdef __cpp_lib_adaptor_iterator_pair_constructor
+  template<typename _InputIterator, typename _Allocator,
+	   typename _ValT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename = _RequireInputIter<_InputIterator>>
+    stack(_InputIterator, _InputIterator) -> stack<_ValT>;
+
+  template<typename _InputIterator, typename _Allocator,
+	   typename _ValT
+	     = typename iterator_traits<_InputIterator>::value_type,
+	   typename = _RequireInputIter<_InputIterator>,
+	   typename = _RequireAllocator<_Allocator>>
+    stack(_InputIterator, _InputIterator, _Allocator)
+    -> stack<_ValT, deque<_ValT, _Allocator>>;
+#endif
 #endif
 
   /**
