@@ -1650,6 +1650,9 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
   init = initial_condition_in_loop_num (chrec, loop->num);
   step = evolution_part_in_loop_num (chrec, loop->num);
 
+  if (!init || !step)
+    return false;
+
   /* If INIT is an SSA with a singleton range, set INIT to said
      singleton, otherwise leave INIT alone.  */
   if (TREE_CODE (init) == SSA_NAME)
