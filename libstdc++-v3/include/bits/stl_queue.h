@@ -626,6 +626,49 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  c.insert(c.end(), __first, __last);
 	  std::make_heap(c.begin(), c.end(), comp);
 	}
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3506. Missing allocator-extended constructors for priority_queue
+      template<typename _InputIterator, typename _Alloc,
+	       typename = std::_RequireInputIter<_InputIterator>,
+	       typename _Requires = _Uses<_Alloc>>
+	priority_queue(_InputIterator __first, _InputIterator __last,
+		       const _Alloc& __alloc)
+	: c(__first, __last, __alloc), comp()
+	{ std::make_heap(c.begin(), c.end(), comp); }
+
+      template<typename _InputIterator, typename _Alloc,
+	       typename = std::_RequireInputIter<_InputIterator>,
+	       typename _Requires = _Uses<_Alloc>>
+	priority_queue(_InputIterator __first, _InputIterator __last,
+		       const _Compare& __x, const _Alloc& __alloc)
+	: c(__first, __last, __alloc), comp(__x)
+	{ std::make_heap(c.begin(), c.end(), comp); }
+
+      template<typename _InputIterator, typename _Alloc,
+	       typename = std::_RequireInputIter<_InputIterator>,
+	       typename _Requires = _Uses<_Alloc>>
+	priority_queue(_InputIterator __first, _InputIterator __last,
+		       const _Compare& __x, const _Sequence& __s,
+		       const _Alloc& __alloc)
+	: c(__s, __alloc), comp(__x)
+	{
+	  __glibcxx_requires_valid_range(__first, __last);
+	  c.insert(c.end(), __first, __last);
+	  std::make_heap(c.begin(), c.end(), comp);
+	}
+
+      template<typename _InputIterator, typename _Alloc,
+	       typename _Requires = _Uses<_Alloc>>
+	priority_queue(_InputIterator __first, _InputIterator __last,
+		       const _Compare& __x, _Sequence&& __s,
+		       const _Alloc& __alloc)
+	: c(std::move(__s), __alloc), comp(__x)
+	{
+	  __glibcxx_requires_valid_range(__first, __last);
+	  c.insert(c.end(), __first, __last);
+	  std::make_heap(c.begin(), c.end(), comp);
+	}
 #endif
 
       /**
