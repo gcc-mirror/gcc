@@ -595,12 +595,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #else
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3529. priority_queue(first, last) should construct c with (first, last)
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
+	priority_queue(_InputIterator __first, _InputIterator __last,
+		       const _Compare& __x = _Compare())
+	: c(__first, __last), comp(__x)
+	{ std::make_heap(c.begin(), c.end(), comp); }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3522. Missing requirement on InputIterator template parameter
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 	priority_queue(_InputIterator __first, _InputIterator __last,
-		       const _Compare& __x,
-		       const _Sequence& __s)
+		       const _Compare& __x, const _Sequence& __s)
 	: c(__s), comp(__x)
 	{
 	  __glibcxx_requires_valid_range(__first, __last);
@@ -611,8 +619,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _InputIterator,
 	       typename = std::_RequireInputIter<_InputIterator>>
 	priority_queue(_InputIterator __first, _InputIterator __last,
-		       const _Compare& __x = _Compare(),
-		       _Sequence&& __s = _Sequence())
+		       const _Compare& __x, _Sequence&& __s)
 	: c(std::move(__s)), comp(__x)
 	{
 	  __glibcxx_requires_valid_range(__first, __last);
