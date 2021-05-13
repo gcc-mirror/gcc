@@ -1001,6 +1001,13 @@ default_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 {
   gcc_assert (!hard_reg_set_empty_p (need_zeroed_hardregs));
 
+  HARD_REG_SET failed;
+  CLEAR_HARD_REG_SET (failed);
+  bool progress = false;
+
+  /* First, try to zero each register in need_zeroed_hardregs by
+     loading a zero into it, taking note of any failures in
+     FAILED.  */
   for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (TEST_HARD_REG_BIT (need_zeroed_hardregs, regno))
       {
@@ -1010,16 +1017,88 @@ default_zero_call_used_regs (HARD_REG_SET need_zeroed_hardregs)
 	rtx_insn *insn = emit_move_insn (regno_reg_rtx[regno], zero);
 	if (!valid_insn_p (insn))
 	  {
-	    static bool issued_error;
-	    if (!issued_error)
-	      {
-		issued_error = true;
-		sorry ("%qs not supported on this target",
-			"-fzero-call-used-regs");
-	      }
+	    SET_HARD_REG_BIT (failed, regno);
 	    delete_insns_since (last_insn);
 	  }
+	else
+	  progress = true;
       }
+
+  /* Now retry with copies from zeroed registers, as long as we've
+     made some PROGRESS, and registers remain to be zeroed in
+     FAILED.  */
+  while (progress && !hard_reg_set_empty_p (failed))
+    {
+      HARD_REG_SET retrying = failed;
+
+      CLEAR_HARD_REG_SET (failed);
+      progress = false;
+
+      for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
+	if (TEST_HARD_REG_BIT (retrying, regno))
+	  {
+	    machine_mode mode = GET_MODE (regno_reg_rtx[regno]);
+	    bool success = false;
+	    /* Look for a source.  */
+	    for (unsigned int src = 0; src < FIRST_PSEUDO_REGISTER; src++)
+	      {
+		/* If SRC hasn't been zeroed (yet?), skip it.  */
+		if (! TEST_HARD_REG_BIT (need_zeroed_hardregs, src))
+		  continue;
+		if (TEST_HARD_REG_BIT (retrying, src))
+		  continue;
+
+		/* Check that SRC can hold MODE, and that any other
+		   registers needed to hold MODE in SRC have also been
+		   zeroed.  */
+		if (!targetm.hard_regno_mode_ok (src, mode))
+		  continue;
+		unsigned n = targetm.hard_regno_nregs (src, mode);
+		bool ok = true;
+		for (unsigned i = 1; ok && i < n; i++)
+		  ok = (TEST_HARD_REG_BIT (need_zeroed_hardregs, src + i)
+			&& !TEST_HARD_REG_BIT (retrying, src + i));
+		if (!ok)
+		  continue;
+
+		/* SRC is usable, try to copy from it.  */
+		rtx_insn *last_insn = get_last_insn ();
+		rtx zsrc = gen_rtx_REG (mode, src);
+		rtx_insn *insn = emit_move_insn (regno_reg_rtx[regno], zsrc);
+		if (!valid_insn_p (insn))
+		  /* It didn't work, remove any inserts.  We'll look
+		     for another SRC.  */
+		  delete_insns_since (last_insn);
+		else
+		  {
+		    /* We're done for REGNO.  */
+		    success = true;
+		    break;
+		  }
+	      }
+
+	    /* If nothing worked for REGNO this round, marked it to be
+	       retried if we get another round.  */
+	    if (!success)
+	      SET_HARD_REG_BIT (failed, regno);
+	    else
+	      /* Take note so as to enable another round if needed.  */
+	      progress = true;
+	  }
+    }
+
+  /* If any register remained, report it.  */
+  if (!progress)
+    {
+      static bool issued_error;
+      if (!issued_error)
+	{
+	  issued_error = true;
+	  sorry ("%qs not supported on this target",
+		 "-fzero-call-used-regs");
+	}
+    }
+
   return need_zeroed_hardregs;
 }
 
