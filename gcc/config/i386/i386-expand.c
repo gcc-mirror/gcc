@@ -18662,6 +18662,242 @@ expand_vec_perm_vperm2f128_vblend (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* A subroutine of ix86_expand_vec_perm_const_1.  Try to implement
+   a two vector permutation using two single vector permutations and
+   {,v}{,p}unpckl{ps,pd,bw,wd,dq}.  If two_insn, succeed only if one
+   of dfirst or dsecond is identity permutation.  */
+
+static bool
+expand_vec_perm_2perm_interleave (struct expand_vec_perm_d *d, bool two_insn)
+{
+  unsigned i, nelt = d->nelt, nelt2 = nelt / 2, lane = nelt;
+  struct expand_vec_perm_d dfirst, dsecond, dfinal;
+  bool ident1 = true, ident2 = true;
+
+  if (d->one_operand_p)
+    return false;
+
+  if (GET_MODE_SIZE (d->vmode) == 16)
+    {
+      if (!TARGET_SSE)
+	return false;
+      if (d->vmode != V4SFmode && d->vmode != V2DFmode && !TARGET_SSE2)
+	return false;
+    }
+  else if (GET_MODE_SIZE (d->vmode) == 32)
+    {
+      if (!TARGET_AVX)
+	return false;
+      if (d->vmode != V8SFmode && d->vmode != V4DFmode && !TARGET_AVX2)
+	return false;
+      lane = nelt2;
+    }
+  else
+    return false;
+
+  for (i = 1; i < nelt; i++)
+    if ((d->perm[i] >= nelt) != ((d->perm[0] >= nelt) ^ (i & 1)))
+      return false;
+
+  dfirst = *d;
+  dsecond = *d;
+  dfinal = *d;
+  dfirst.op1 = dfirst.op0;
+  dfirst.one_operand_p = true;
+  dsecond.op0 = dsecond.op1;
+  dsecond.one_operand_p = true;
+
+  for (i = 0; i < nelt; i++)
+    if (d->perm[i] >= nelt)
+      {
+	dsecond.perm[i / 2 + (i >= lane ? lane / 2 : 0)] = d->perm[i] - nelt;
+	if (d->perm[i] - nelt != i / 2 + (i >= lane ? lane / 2 : 0))
+	  ident2 = false;
+	dsecond.perm[i / 2 + (i >= lane ? lane : lane / 2)]
+	  = d->perm[i] - nelt;
+      }
+    else
+      {
+	dfirst.perm[i / 2 + (i >= lane ? lane / 2 : 0)] = d->perm[i];
+	if (d->perm[i] != i / 2 + (i >= lane ? lane / 2 : 0))
+	  ident1 = false;
+	dfirst.perm[i / 2 + (i >= lane ? lane : lane / 2)] = d->perm[i];
+      }
+
+  if (two_insn && !ident1 && !ident2)
+    return false;
+
+  if (!d->testing_p)
+    {
+      if (!ident1)
+	dfinal.op0 = dfirst.target = gen_reg_rtx (d->vmode);
+      if (!ident2)
+	dfinal.op1 = dsecond.target = gen_reg_rtx (d->vmode);
+      if (d->perm[0] >= nelt)
+	std::swap (dfinal.op0, dfinal.op1);
+    }
+
+  bool ok;
+  rtx_insn *seq1 = NULL, *seq2 = NULL;
+
+  if (!ident1)
+    {
+      start_sequence ();
+      ok = expand_vec_perm_1 (&dfirst);
+      seq1 = get_insns ();
+      end_sequence ();
+
+      if (!ok)
+	return false;
+    }
+
+  if (!ident2)
+    {
+      start_sequence ();
+      ok = expand_vec_perm_1 (&dsecond);
+      seq2 = get_insns ();
+      end_sequence ();
+
+      if (!ok)
+	return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  for (i = 0; i < nelt; i++)
+    {
+      dfinal.perm[i] = i / 2;
+      if (i >= lane)
+	dfinal.perm[i] += lane / 2;
+      if ((i & 1) != 0)
+	dfinal.perm[i] += nelt;
+    }
+  emit_insn (seq1);
+  emit_insn (seq2);
+  ok = expand_vselect_vconcat (dfinal.target, dfinal.op0, dfinal.op1,
+			       dfinal.perm, dfinal.nelt, false);
+  gcc_assert (ok);
+  return true;
+}
+
+/* A subroutine of ix86_expand_vec_perm_const_1.  Try to simplify
+   the permutation using two single vector permutations and the SSE4_1 pblendv
+   instruction.  If two_insn, succeed only if one of dfirst or dsecond is
+   identity permutation.  */
+
+static bool
+expand_vec_perm_2perm_pblendv (struct expand_vec_perm_d *d, bool two_insn)
+{
+  unsigned i, nelt = d->nelt;
+  struct expand_vec_perm_d dfirst, dsecond, dfinal;
+  machine_mode vmode = d->vmode;
+  bool ident1 = true, ident2 = true;
+
+  /* Use the same checks as in expand_vec_perm_blend.  */
+  if (d->one_operand_p)
+    return false;
+  if (TARGET_AVX2 && GET_MODE_SIZE (vmode) == 32)
+    ;
+  else if (TARGET_AVX && (vmode == V4DFmode || vmode == V8SFmode))
+    ;
+  else if (TARGET_SSE4_1 && GET_MODE_SIZE (vmode) == 16)
+    ;
+  else
+    return false;
+
+  dfirst = *d;
+  dsecond = *d;
+  dfinal = *d;
+  dfirst.op1 = dfirst.op0;
+  dfirst.one_operand_p = true;
+  dsecond.op0 = dsecond.op1;
+  dsecond.one_operand_p = true;
+
+  for (i = 0; i < nelt; ++i)
+    if (d->perm[i] >= nelt)
+      {
+	dfirst.perm[i] = 0xff;
+	dsecond.perm[i] = d->perm[i] - nelt;
+	if (d->perm[i] != i + nelt)
+	  ident2 = false;
+      }
+    else
+      {
+	dsecond.perm[i] = 0xff;
+	dfirst.perm[i] = d->perm[i];
+	if (d->perm[i] != i)
+	  ident1 = false;
+      }
+
+  if (two_insn && !ident1 && !ident2)
+    return false;
+
+  /* For now.  Ideally treat 0xff as a wildcard.  */
+  for (i = 0; i < nelt; ++i)
+    if (dfirst.perm[i] == 0xff)
+      {
+	if (GET_MODE_SIZE (vmode) == 32
+	    && dfirst.perm[i ^ (nelt / 2)] != 0xff)
+	  dfirst.perm[i] = dfirst.perm[i ^ (nelt / 2)] ^ (nelt / 2);
+	else
+	  dfirst.perm[i] = i;
+      }
+    else
+      {
+	if (GET_MODE_SIZE (vmode) == 32
+	    && dsecond.perm[i ^ (nelt / 2)] != 0xff)
+	  dsecond.perm[i] = dsecond.perm[i ^ (nelt / 2)] ^ (nelt / 2);
+	else
+	  dsecond.perm[i] = i;
+      }
+
+  if (!d->testing_p)
+    {
+      if (!ident1)
+	dfinal.op0 = dfirst.target = gen_reg_rtx (d->vmode);
+      if (!ident2)
+	dfinal.op1 = dsecond.target = gen_reg_rtx (d->vmode);
+    }
+
+  bool ok;
+  rtx_insn *seq1 = NULL, *seq2 = NULL;
+
+  if (!ident1)
+    {
+      start_sequence ();
+      ok = expand_vec_perm_1 (&dfirst);
+      seq1 = get_insns ();
+      end_sequence ();
+
+      if (!ok)
+	return false;
+    }
+
+  if (!ident2)
+    {
+      start_sequence ();
+      ok = expand_vec_perm_1 (&dsecond);
+      seq2 = get_insns ();
+      end_sequence ();
+
+      if (!ok)
+	return false;
+    }
+
+  if (d->testing_p)
+    return true;
+
+  for (i = 0; i < nelt; ++i)
+    dfinal.perm[i] = (d->perm[i] >= nelt ? i + nelt : i);
+
+  emit_insn (seq1);
+  emit_insn (seq2);
+  ok = expand_vec_perm_blend (&dfinal);
+  gcc_assert (ok);
+  return true;
+}
+
 /* A subroutine of ix86_expand_vec_perm_const_1.  Implement a V4DF
    permutation using two vperm2f128, followed by a vshufpd insn blending
    the two vectors together.  */
@@ -19773,6 +20009,12 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   if (expand_vec_perm_pblendv (d))
     return true;
 
+  if (expand_vec_perm_2perm_interleave (d, true))
+    return true;
+
+  if (expand_vec_perm_2perm_pblendv (d, true))
+    return true;
+
   /* Try sequences of three instructions.  */
 
   if (expand_vec_perm_even_odd_pack (d))
@@ -19788,6 +20030,12 @@ ix86_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
     return true;
 
   if (expand_vec_perm_vperm2f128_vblend (d))
+    return true;
+
+  if (expand_vec_perm_2perm_interleave (d, false))
+    return true;
+
+  if (expand_vec_perm_2perm_pblendv (d, false))
     return true;
 
   /* Try sequences of four instructions.  */
