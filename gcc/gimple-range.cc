@@ -960,32 +960,29 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
 
       src.get_operand (r, arg);
       // From clz of minimum we can compute result maximum.
-      if (r.constant_p () && !r.varying_p ())
+      if (!r.undefined_p ())
 	{
-	  int newmaxi = prec - 1 - wi::floor_log2 (r.lower_bound ());
-	  // Argument is unsigned, so do nothing if it is [0, ...] range.
-	  if (newmaxi != prec)
+	  // From clz of minimum we can compute result maximum.
+	  if (wi::gt_p (r.lower_bound (), 0, TYPE_SIGN (r.type ())))
+	    {
+	      maxi = prec - 1 - wi::floor_log2 (r.lower_bound ());
+	      if (mini == -2)
+		mini = 0;
+	    }
+	  else if (!range_includes_zero_p (&r))
 	    {
 	      mini = 0;
-	      maxi = newmaxi;
+	      maxi = prec - 1;
 	    }
-	}
-      else if (!range_includes_zero_p (&r))
-	{
-	  maxi = prec - 1;
-	  mini = 0;
-	}
-      if (mini == -2)
-	break;
-      // From clz of maximum we can compute result minimum.
-      if (r.constant_p ())
-	{
-	  int newmini = prec - 1 - wi::floor_log2 (r.upper_bound ());
-	  if (newmini == prec)
+	  if (mini == -2)
+	    break;
+	  // From clz of maximum we can compute result minimum.
+	  wide_int max = r.upper_bound ();
+	  int newmini = prec - 1 - wi::floor_log2 (max);
+	  if (max == 0)
 	    {
-	      // Argument range is [0, 0].  If CLZ_DEFINED_VALUE_AT_ZERO
-	      // is 2 with VALUE of prec, return [prec, prec], otherwise
-	      // ignore the range.
+	      // If CLZ_DEFINED_VALUE_AT_ZERO is 2 with VALUE of prec,
+	      // return [prec, prec], otherwise ignore the range.
 	      if (maxi == prec)
 		mini = prec;
 	    }
@@ -1026,7 +1023,8 @@ fold_using_range::range_of_builtin_call (irange &r, gcall *call,
       src.get_operand (r, arg);
       if (!r.undefined_p ())
 	{
-	  if (r.lower_bound () != 0)
+	  // If arg is non-zero, then use [0, prec - 1].
+	  if (!range_includes_zero_p (&r))
 	    {
 	      mini = 0;
 	      maxi = prec - 1;
