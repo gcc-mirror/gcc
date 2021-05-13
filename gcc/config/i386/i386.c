@@ -19732,6 +19732,7 @@ ix86_division_cost (const struct processor_costs *cost,
 
 static int
 ix86_shift_rotate_cost (const struct processor_costs *cost,
+			enum rtx_code code,
 			enum machine_mode mode, bool constant_op1,
 			HOST_WIDE_INT op1_val,
 			bool speed,
@@ -19768,6 +19769,19 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 	    }
 	  else if (TARGET_SSSE3)
 	    count = 7;
+	  return ix86_vec_cost (mode, cost->sse_op * count);
+	}
+      /* V*DImode arithmetic right shift is emulated.  */
+      else if (code == ASHIFTRT
+	       && (mode == V2DImode || mode == V4DImode)
+	       && !TARGET_XOP
+	       && !TARGET_AVX512VL)
+	{
+	  int count = 4;
+	  if (constant_op1 && op1_val == 63 && TARGET_SSE4_2)
+	    count = 2;
+	  else if (constant_op1)
+	    count = 3;
 	  return ix86_vec_cost (mode, cost->sse_op * count);
 	}
       else
@@ -19939,13 +19953,15 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
     case LSHIFTRT:
     case ROTATERT:
       bool skip_op0, skip_op1;
-      *total = ix86_shift_rotate_cost (cost, mode, CONSTANT_P (XEXP (x, 1)),
+      *total = ix86_shift_rotate_cost (cost, code, mode,
+				       CONSTANT_P (XEXP (x, 1)),
 				       CONST_INT_P (XEXP (x, 1))
 					 ? INTVAL (XEXP (x, 1)) : -1,
 				       speed,
 				       GET_CODE (XEXP (x, 1)) == AND,
 				       SUBREG_P (XEXP (x, 1))
-				       && GET_CODE (XEXP (XEXP (x, 1), 0)) == AND,
+				       && GET_CODE (XEXP (XEXP (x, 1),
+							  0)) == AND,
 				       &skip_op0, &skip_op1);
       if (skip_op0 || skip_op1)
 	{
@@ -22383,11 +22399,16 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	case LROTATE_EXPR:
 	case RROTATE_EXPR:
 	  {
+	    tree op1 = gimple_assign_rhs1 (stmt_info->stmt);
 	    tree op2 = gimple_assign_rhs2 (stmt_info->stmt);
 	    stmt_cost = ix86_shift_rotate_cost
-			   (ix86_cost, mode,
+			   (ix86_cost,
+			    (subcode == RSHIFT_EXPR
+			     && !TYPE_UNSIGNED (TREE_TYPE (op1)))
+			    ? ASHIFTRT : LSHIFTRT, mode,
 		            TREE_CODE (op2) == INTEGER_CST,
-			    cst_and_fits_in_hwi (op2) ? int_cst_value (op2) : -1,
+			    cst_and_fits_in_hwi (op2)
+			    ? int_cst_value (op2) : -1,
 		            true, false, false, NULL, NULL);
 	  }
 	  break;

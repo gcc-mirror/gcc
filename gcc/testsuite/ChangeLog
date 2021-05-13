@@ -1,3 +1,54 @@
+2021-05-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100571
+	* gcc.dg/Wstringop-overflow-67.c: New test.
+
+2021-05-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c/100521
+	* gcc.dg/pr100521.c: New file.
+
+2021-05-12  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Wint-in-bool-context-2.C: New test.
+
+2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/map-6.c: New test.
+	* c-c++-common/gomp/map-7.c: New test.
+
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100566
+	* gcc.dg/torture/pr100566.c: New testcase.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/100392
+	* gcc.dg/cpp/pr100392.c: New test.
+	* gcc.dg/cpp/pr100392.h: New file.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* lib/lto.exp: When running tests without jobserver, one can see
+	the following warning for tests that use 1to1 partitioning.
+
+2021-05-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/99908
+	* gcc.target/i386/avx2-pr99908.c: New test.
+	* gcc.target/i386/sse4_1-pr99908.c: New test.
+
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100519
+	* gcc.dg/torture/pr100519.c: New testcase.
+
+2021-05-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR debug/100515
+	* gcc.dg/debug/dwarf2/pr100515.c: New testcase.
+
 2021-05-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/100508

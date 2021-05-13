@@ -1,3 +1,13 @@
+2021-05-12  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (tsubst_copy_and_build): Add warn_int_in_bool_context
+	sentinel.
+
+2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_map): Support map-type-modifier
+	'close'.
+
 2021-05-11  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100517

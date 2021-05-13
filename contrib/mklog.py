@@ -169,13 +169,19 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False):
     if fill_pr_titles:
         out += get_pr_titles(prs)
 
+    # print list of PR entries before ChangeLog entries
+    if prs:
+        if not out:
+            out += '\n'
+        for pr in prs:
+            out += '\t%s\n' % pr
+        out += '\n'
+
     # sort ChangeLog so that 'testsuite' is at the end
     for changelog in sorted(changelog_list, key=lambda x: 'testsuite' in x):
         files = changelogs[changelog]
         out += '%s:\n' % os.path.join(changelog, 'ChangeLog')
         out += '\n'
-        for pr in prs:
-            out += '\t%s\n' % pr
         # new and deleted files should be at the end
         for file in sorted(files, key=sort_changelog_files):
             assert file.path.startswith(changelog)

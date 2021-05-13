@@ -1535,6 +1535,38 @@
   (and (match_code "mem")
        (match_test "MEM_ALIGN (op) < GET_MODE_BITSIZE (mode)")))
 
+;; Return true if OP is a parallel for an mov{d,q,dqa,ps,pd} vec_select,
+;; where one of the two operands of the vec_concat is const0_operand.
+(define_predicate "movq_parallel"
+  (match_code "parallel")
+{
+  unsigned nelt = XVECLEN (op, 0);
+  unsigned nelt2 = nelt >> 1;
+  unsigned i;
+
+  if (nelt < 2)
+    return false;
+
+  /* Validate that all of the elements are constants,
+     lower halves of permute are lower halves of the first operand,
+     upper halves of permute come from any of the second operand.  */
+  for (i = 0; i < nelt; ++i)
+    {
+      rtx er = XVECEXP (op, 0, i);
+      unsigned HOST_WIDE_INT ei;
+
+      if (!CONST_INT_P (er))
+	return 0;
+      ei = INTVAL (er);
+      if (i < nelt2 && ei != i)
+	return 0;
+      if (i >= nelt2 && (ei < nelt || ei >= nelt << 1))
+	return 0;
+    }
+
+  return 1;
+})
+
 ;; Return true if OP is a vzeroall operation, known to be a PARALLEL.
 (define_predicate "vzeroall_operation"
   (match_code "parallel")

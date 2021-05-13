@@ -1,3 +1,8 @@
+2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-parser.c (c_parser_omp_clause_map): Support map-type-modifier
+	'close'.
+
 2021-05-10  Martin Liska  <mliska@suse.cz>
 
 	* c-aux-info.c (affix_data_type): Use startswith

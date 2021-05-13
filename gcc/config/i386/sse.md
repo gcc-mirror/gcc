@@ -811,19 +811,22 @@
 
 ;; Mapping of vector modes to a vector mode of double size
 (define_mode_attr ssedoublevecmode
-  [(V32QI "V64QI") (V16HI "V32HI") (V8SI "V16SI") (V4DI "V8DI")
+  [(V64QI "V128QI") (V32HI "V64HI") (V16SI "V32SI") (V8DI "V16DI")
+   (V32QI "V64QI") (V16HI "V32HI") (V8SI "V16SI") (V4DI "V8DI")
    (V16QI "V32QI") (V8HI "V16HI") (V4SI "V8SI") (V2DI "V4DI")
+   (V16SF "V32SF") (V8DF "V16DF")
    (V8SF "V16SF") (V4DF "V8DF")
    (V4SF "V8SF") (V2DF "V4DF")])
 
 ;; Mapping of vector modes to a vector mode of half size
+;; instead of V1DI/V1DF, DI/DF are used for V2DI/V2DF although they are scalar.
 (define_mode_attr ssehalfvecmode
   [(V64QI "V32QI") (V32HI "V16HI") (V16SI "V8SI") (V8DI "V4DI") (V4TI "V2TI")
    (V32QI "V16QI") (V16HI  "V8HI") (V8SI  "V4SI") (V4DI "V2DI")
-   (V16QI  "V8QI") (V8HI   "V4HI") (V4SI  "V2SI")
+   (V16QI  "V8QI") (V8HI   "V4HI") (V4SI  "V2SI") (V2DI "DI")
    (V16SF "V8SF") (V8DF "V4DF")
    (V8SF  "V4SF") (V4DF "V2DF")
-   (V4SF  "V2SF")])
+   (V4SF  "V2SF") (V2DF "DF")])
 
 (define_mode_attr ssehalfvecmodelower
   [(V64QI "v32qi") (V32HI "v16hi") (V16SI "v8si") (V8DI "v4di") (V4TI "v2ti")
@@ -12465,7 +12468,7 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "ashr<mode>3<mask_name>"
+(define_insn "<mask_codefor>ashr<mode>3<mask_name>"
   [(set (match_operand:VI248_AVX512BW_AVX512VL 0 "register_operand" "=v,v")
 	(ashiftrt:VI248_AVX512BW_AVX512VL
 	  (match_operand:VI248_AVX512BW_AVX512VL 1 "nonimmediate_operand" "v,vm")
@@ -12478,6 +12481,126 @@
        (const_string "1")
        (const_string "0")))
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_expand "ashr<mode>3"
+  [(set (match_operand:VI248_AVX512BW 0 "register_operand")
+	(ashiftrt:VI248_AVX512BW
+	  (match_operand:VI248_AVX512BW 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_AVX512F")
+
+(define_expand "ashrv4di3"
+  [(set (match_operand:V4DI 0 "register_operand")
+	(ashiftrt:V4DI
+	  (match_operand:V4DI 1 "nonimmediate_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_AVX2"
+{
+  if (!TARGET_AVX512VL)
+    {
+      if (CONST_INT_P (operands[2]) && UINTVAL (operands[2]) >= 63)
+	{
+	  rtx zero = force_reg (V4DImode, CONST0_RTX (V4DImode));
+	  emit_insn (gen_avx2_gtv4di3 (operands[0], zero, operands[1]));
+	  DONE;
+	}
+      if (operands[2] == const0_rtx)
+	{
+	  emit_move_insn (operands[0], operands[1]);
+	  DONE;
+	}
+      operands[1] = force_reg (V4DImode, operands[1]);
+      if (CONST_INT_P (operands[2]))
+	{
+	  vec_perm_builder sel (8, 8, 1);
+	  sel.quick_grow (8);
+	  rtx arg0, arg1;
+	  rtx op1 = lowpart_subreg (V8SImode, operands[1], V4DImode);
+	  rtx target = gen_reg_rtx (V8SImode);
+	  if (INTVAL (operands[2]) > 32)
+	    {
+	      arg0 = gen_reg_rtx (V8SImode);
+	      arg1 = gen_reg_rtx (V8SImode);
+	      emit_insn (gen_ashrv8si3 (arg1, op1, GEN_INT (31)));
+	      emit_insn (gen_ashrv8si3 (arg0, op1,
+					GEN_INT (INTVAL (operands[2]) - 32)));
+	      sel[0] = 1;
+	      sel[1] = 9;
+	      sel[2] = 3;
+	      sel[3] = 11;
+	      sel[4] = 5;
+	      sel[5] = 13;
+	      sel[6] = 7;
+	      sel[7] = 15;
+	    }
+	  else if (INTVAL (operands[2]) == 32)
+	    {
+	      arg0 = op1;
+	      arg1 = gen_reg_rtx (V8SImode);
+	      emit_insn (gen_ashrv8si3 (arg1, op1, GEN_INT (31)));
+	      sel[0] = 1;
+	      sel[1] = 9;
+	      sel[2] = 3;
+	      sel[3] = 11;
+	      sel[4] = 5;
+	      sel[5] = 13;
+	      sel[6] = 7;
+	      sel[7] = 15;
+	    }
+	  else
+	    {
+	      arg0 = gen_reg_rtx (V4DImode);
+	      arg1 = gen_reg_rtx (V8SImode);
+	      emit_insn (gen_lshrv4di3 (arg0, operands[1], operands[2]));
+	      emit_insn (gen_ashrv8si3 (arg1, op1, operands[2]));
+	      arg0 = lowpart_subreg (V8SImode, arg0, V4DImode);
+	      sel[0] = 0;
+	      sel[1] = 9;
+	      sel[2] = 2;
+	      sel[3] = 11;
+	      sel[4] = 4;
+	      sel[5] = 13;
+	      sel[6] = 6;
+	      sel[7] = 15;
+	    }
+	  vec_perm_indices indices (sel, 2, 8);
+	  bool ok = targetm.vectorize.vec_perm_const (V8SImode, target,
+						      arg0, arg1, indices);
+	  gcc_assert (ok);
+	  emit_move_insn (operands[0],
+			  lowpart_subreg (V4DImode, target, V8SImode));
+	  DONE;
+	}
+
+      rtx zero = force_reg (V4DImode, CONST0_RTX (V4DImode));
+      rtx zero_or_all_ones = gen_reg_rtx (V4DImode);
+      emit_insn (gen_avx2_gtv4di3 (zero_or_all_ones, zero, operands[1]));
+      rtx lshr_res = gen_reg_rtx (V4DImode);
+      emit_insn (gen_lshrv4di3 (lshr_res, operands[1], operands[2]));
+      rtx ashl_res = gen_reg_rtx (V4DImode);
+      rtx amount;
+      if (TARGET_64BIT)
+	{
+	  amount = gen_reg_rtx (DImode);
+	  emit_insn (gen_subdi3 (amount, force_reg (DImode, GEN_INT (64)),
+				 operands[2]));
+	}
+      else
+	{
+	  rtx temp = gen_reg_rtx (SImode);
+	  emit_insn (gen_subsi3 (temp, force_reg (SImode, GEN_INT (64)),
+				 lowpart_subreg (SImode, operands[2],
+						 DImode)));
+	  amount = gen_reg_rtx (V4SImode);
+	  emit_insn (gen_vec_setv4si_0 (amount, CONST0_RTX (V4SImode),
+					temp));
+	}
+      amount = lowpart_subreg (DImode, amount, GET_MODE (amount));
+      emit_insn (gen_ashlv4di3 (ashl_res, zero_or_all_ones, amount));
+      emit_insn (gen_iorv4di3 (operands[0], lshr_res, ashl_res));
+      DONE;
+    }
+})
 
 (define_insn "<mask_codefor><insn><mode>3<mask_name>"
   [(set (match_operand:VI248_AVX512BW_2 0 "register_operand" "=v,v")
@@ -15939,11 +16062,11 @@
    (set_attr "prefix" "orig,maybe_evex,orig,orig,maybe_evex")
    (set_attr "mode" "TI,TI,V4SF,V2SF,V2SF")])
 
-(define_insn "*vec_concatv4si_0"
-  [(set (match_operand:V4SI 0 "register_operand"       "=v,x")
-	(vec_concat:V4SI
-	  (match_operand:V2SI 1 "nonimmediate_operand" "vm,?!*y")
-	  (match_operand:V2SI 2 "const0_operand"       " C,C")))]
+(define_insn "*vec_concat<mode>_0"
+  [(set (match_operand:VI124_128 0 "register_operand"       "=v,x")
+	(vec_concat:VI124_128
+	  (match_operand:<ssehalfvecmode> 1 "nonimmediate_operand" "vm,?!*y")
+	  (match_operand:<ssehalfvecmode> 2 "const0_operand"       " C,C")))]
   "TARGET_SSE2"
   "@
    %vmovq\t{%1, %0|%0, %1}
@@ -20326,10 +20449,132 @@
 	(ashiftrt:V2DI
 	  (match_operand:V2DI 1 "register_operand")
 	  (match_operand:DI 2 "nonmemory_operand")))]
-  "TARGET_XOP || TARGET_AVX512VL"
+  "TARGET_SSE2"
 {
   if (!TARGET_AVX512VL)
     {
+      if (TARGET_SSE4_2
+	  && CONST_INT_P (operands[2])
+	  && UINTVAL (operands[2]) >= 63)
+	{
+	  rtx zero = force_reg (V2DImode, CONST0_RTX (V2DImode));
+	  emit_insn (gen_sse4_2_gtv2di3 (operands[0], zero, operands[1]));
+	  DONE;
+	}
+      if (operands[2] == const0_rtx)
+	{
+	  emit_move_insn (operands[0], operands[1]);
+	  DONE;
+	}
+      if (CONST_INT_P (operands[2])
+	  && (!TARGET_XOP || UINTVAL (operands[2]) >= 63))
+	{
+	  vec_perm_builder sel (4, 4, 1);
+	  sel.quick_grow (4);
+	  rtx arg0, arg1;
+	  rtx op1 = lowpart_subreg (V4SImode, operands[1], V2DImode);
+	  rtx target = gen_reg_rtx (V4SImode);
+	  if (UINTVAL (operands[2]) >= 63)
+	    {
+	      arg0 = arg1 = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_ashrv4si3 (arg0, op1, GEN_INT (31)));
+	      sel[0] = 1;
+	      sel[1] = 1;
+	      sel[2] = 3;
+	      sel[3] = 3;
+	    }
+	  else if (INTVAL (operands[2]) > 32)
+	    {
+	      arg0 = gen_reg_rtx (V4SImode);
+	      arg1 = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_ashrv4si3 (arg1, op1, GEN_INT (31)));
+	      emit_insn (gen_ashrv4si3 (arg0, op1,
+					GEN_INT (INTVAL (operands[2]) - 32)));
+	      sel[0] = 1;
+	      sel[1] = 5;
+	      sel[2] = 3;
+	      sel[3] = 7;
+	    }
+	  else if (INTVAL (operands[2]) == 32)
+	    {
+	      arg0 = op1;
+	      arg1 = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_ashrv4si3 (arg1, op1, GEN_INT (31)));
+	      sel[0] = 1;
+	      sel[1] = 5;
+	      sel[2] = 3;
+	      sel[3] = 7;
+	    }
+	  else
+	    {
+	      arg0 = gen_reg_rtx (V2DImode);
+	      arg1 = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_lshrv2di3 (arg0, operands[1], operands[2]));
+	      emit_insn (gen_ashrv4si3 (arg1, op1, operands[2]));
+	      arg0 = lowpart_subreg (V4SImode, arg0, V2DImode);
+	      sel[0] = 0;
+	      sel[1] = 5;
+	      sel[2] = 2;
+	      sel[3] = 7;
+	    }
+	  vec_perm_indices indices (sel, arg0 != arg1 ? 2 : 1, 4);
+	  bool ok = targetm.vectorize.vec_perm_const (V4SImode, target,
+						      arg0, arg1, indices);
+	  gcc_assert (ok);
+	  emit_move_insn (operands[0],
+			  lowpart_subreg (V2DImode, target, V4SImode));
+	  DONE;
+	}
+      if (!TARGET_XOP)
+	{
+	  rtx zero = force_reg (V2DImode, CONST0_RTX (V2DImode));
+	  rtx zero_or_all_ones;
+	  if (TARGET_SSE4_2)
+	    {
+	      zero_or_all_ones = gen_reg_rtx (V2DImode);
+	      emit_insn (gen_sse4_2_gtv2di3 (zero_or_all_ones, zero,
+					     operands[1]));
+	    }
+	  else
+	    {
+	      rtx temp = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_ashrv4si3 (temp, lowpart_subreg (V4SImode,
+							      operands[1],
+							      V2DImode),
+					GEN_INT (31)));
+	      zero_or_all_ones = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_sse2_pshufd_1 (zero_or_all_ones, temp,
+					    const1_rtx, const1_rtx,
+					    GEN_INT (3), GEN_INT (3)));
+	      zero_or_all_ones = lowpart_subreg (V2DImode, zero_or_all_ones,
+						 V4SImode);
+	    }
+	  rtx lshr_res = gen_reg_rtx (V2DImode);
+	  emit_insn (gen_lshrv2di3 (lshr_res, operands[1], operands[2]));
+	  rtx ashl_res = gen_reg_rtx (V2DImode);
+	  rtx amount;
+	  if (TARGET_64BIT)
+	    {
+	      amount = gen_reg_rtx (DImode);
+	      emit_insn (gen_subdi3 (amount, force_reg (DImode, GEN_INT (64)),
+				     operands[2]));
+	    }
+	  else
+	    {
+	      rtx temp = gen_reg_rtx (SImode);
+	      emit_insn (gen_subsi3 (temp, force_reg (SImode, GEN_INT (64)),
+				     lowpart_subreg (SImode, operands[2],
+						     DImode)));
+	      amount = gen_reg_rtx (V4SImode);
+	      emit_insn (gen_vec_setv4si_0 (amount, CONST0_RTX (V4SImode),
+					    temp));
+	    }
+	  amount = lowpart_subreg (DImode, amount, GET_MODE (amount));
+	  emit_insn (gen_ashlv2di3 (ashl_res, zero_or_all_ones, amount));
+	  emit_insn (gen_iorv2di3 (operands[0], lshr_res, ashl_res));
+	  DONE;
+	}
+
       rtx reg = gen_reg_rtx (V2DImode);
       rtx par;
       bool negate = false;
@@ -22157,6 +22402,24 @@
    (set_attr "length_immediate" "1,1,*,*")
    (set_attr "prefix" "maybe_evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn_and_split "*vec_concat<mode>_0_1"
+  [(set (match_operand:V 0 "register_operand")
+	(vec_select:V
+	  (vec_concat:<ssedoublevecmode>
+	    (match_operand:V 1 "nonimmediate_operand")
+	    (match_operand:V 2 "const0_operand"))
+	  (match_parallel 3 "movq_parallel"
+	    [(match_operand 4 "const_int_operand")])))]
+  "ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_concat:V (match_dup 1) (match_dup 5)))]
+{
+  operands[1] = gen_lowpart (<ssehalfvecmode>mode, operands[1]);
+  operands[5] = CONST0_RTX (<ssehalfvecmode>mode);
+})
 
 (define_insn "vcvtph2ps<mask_name>"
   [(set (match_operand:V4SF 0 "register_operand" "=v")

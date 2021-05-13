@@ -1,3 +1,96 @@
+2021-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* targhooks.c (default_zero_call_used_regs): Retry using
+	successfully-zeroed registers as sources.
+
+2021-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (finish_taskreg_scan): Use the proper detach decl.
+
+2021-05-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c/100521
+	* gimple-range.cc (range_of_builtin_call): Skip out on
+	  processing __builtin_clz when varying.
+
+2021-05-12  Tom de Vries  <tdevries@suse.de>
+
+	PR target/96005
+	* config/nvptx/nvptx-opts.h (enum ptx_version): New enum.
+	* config/nvptx/nvptx.c (nvptx_file_start): Print .version according
+	to ptx_version_option.
+	* config/nvptx/nvptx.h (TARGET_PTX_6_3): Define.
+	* config/nvptx/nvptx.md (define_insn "nvptx_shuffle<mode>")
+	(define_insn "nvptx_vote_ballot"): Use sync variant for
+	TARGET_PTX_6_3.
+	* config/nvptx/nvptx.opt (ptx_version): Add enum.
+	(mptx): Add option.
+	* doc/invoke.texi (Nvidia PTX Options): Add mptx item.
+
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100566
+	* tree-ssa-sccvn.c (dominated_by_p_w_unex): Properly handle
+	allow_back for all edge queries.
+
+2021-05-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/99908
+	* config/i386/sse.md (<sse4_1_avx2>_pblendvb): Add
+	splitters for pblendvb of NOT mask register.
+
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100519
+	* tree-ssa-reassoc.c (can_associate_p): Split into...
+	(can_associate_op_p): ... this
+	(can_associate_type_p): ... and this.
+	(is_reassociable_op): Call can_associate_op_p.
+	(break_up_subtract_bb): Call the appropriate predicates.
+	(reassociate_bb): Likewise.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (merge_and_complain): Merge -flto=arg options.
+	(run_gcc): Use -flto argument detection for merged
+	fdecoded_options.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (print_lto_docs_link): New function.
+	(run_gcc): Print warning about missing job server detection
+	after we know NR of partitions. Do the same for -flto{,=1}.
+	* opts.c (get_option_html_page): Support -flto option.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (get_options_from_collect_gcc_options): Change
+	return type.
+	(append_option): Remove.
+	(find_option): Rework to use the vector type.
+	(remove_option): Remove.
+	(merge_and_complain): Use vectors for cl_decoded_option data
+	type arguments.
+	(append_compiler_options): Likewise.
+	(append_diag_options): Likewise.
+	(append_linker_options): Likewise.
+	(append_offload_options): Likewise.
+	(compile_offload_image): Likewise.
+	(compile_images_for_offload_targets): Likewise.
+	(find_and_merge_options): Likewise.
+	(run_gcc): Likewise.
+
+2021-05-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR debug/100515
+	* dwarf2out.c (dwarf2out_finish): Set
+	have_multiple_function_sections with multi-range text_section.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/100560
+	* Makefile.in: Remove version.h from linker command line.
+
 2021-05-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/100547

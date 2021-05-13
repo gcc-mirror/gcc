@@ -19,10 +19,23 @@
 # error "This operating system is not supported"
 #endif
 
+// Get __GLIBC__ on a glibc platform. Exclude Android: features.h includes C
+// function declarations into a .S file which doesn't compile.
+// https://crbug.com/1162741
+#if __has_include(<features.h>) && !defined(__ANDROID__)
+#include <features.h>
+#endif
+
 #if defined(__linux__)
 # define SANITIZER_LINUX   1
 #else
 # define SANITIZER_LINUX   0
+#endif
+
+#if defined(__GLIBC__)
+# define SANITIZER_GLIBC   1
+#else
+# define SANITIZER_GLIBC   0
 #endif
 
 #if defined(__FreeBSD__)
@@ -46,6 +59,11 @@
 #if defined(__APPLE__)
 # define SANITIZER_MAC     1
 # include <TargetConditionals.h>
+# if TARGET_OS_OSX
+#  define SANITIZER_OSX    1
+# else
+#  define SANITIZER_OSX    0
+# endif
 # if TARGET_OS_IPHONE
 #  define SANITIZER_IOS    1
 # else
@@ -60,6 +78,7 @@
 # define SANITIZER_MAC     0
 # define SANITIZER_IOS     0
 # define SANITIZER_IOSSIM  0
+# define SANITIZER_OSX     0
 #endif
 
 #if defined(__APPLE__) && TARGET_OS_IPHONE && TARGET_OS_WATCH
@@ -247,8 +266,12 @@
 #define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 38)
 #elif defined(__aarch64__)
 # if SANITIZER_MAC
-// Darwin iOS/ARM64 has a 36-bit VMA, 64GiB VM
-#  define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 36)
+#  if SANITIZER_OSX || SANITIZER_IOSSIM
+#   define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 47)
+#  else
+    // Darwin iOS/ARM64 has a 36-bit VMA, 64GiB VM
+#   define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 36)
+#  endif
 # else
 #  define SANITIZER_MMAP_RANGE_SIZE FIRST_32_SECOND_64(1ULL << 32, 1ULL << 48)
 # endif

@@ -31,7 +31,7 @@ namespace __sanitizer {
 void ReportErrorSummary(const char *error_type, const AddressInfo &info,
                         const char *alt_tool_name) {
   if (!common_flags()->print_summary) return;
-  InternalScopedString buff(kMaxSummaryLength);
+  InternalScopedString buff;
   buff.append("%s ", error_type);
   RenderFrame(&buff, "%L %F", 0, info.address, &info,
               common_flags()->symbolize_vs_style,
@@ -150,7 +150,7 @@ static void PrintMemoryByte(InternalScopedString *str, const char *before,
 static void MaybeDumpInstructionBytes(uptr pc) {
   if (!common_flags()->dump_instruction_bytes || (pc < GetPageSizeCached()))
     return;
-  InternalScopedString str(1024);
+  InternalScopedString str;
   str.append("First 16 instruction bytes at pc: ");
   if (IsAccessibleMemoryRange(pc, 16)) {
     for (int i = 0; i < 16; ++i) {
@@ -211,7 +211,7 @@ static void ReportDeadlySignalImpl(const SignalContext &sig, u32 tid,
     Report("The signal is caused by a %s memory access.\n", access_type);
     if (!sig.is_true_faulting_addr)
       Report("Hint: this fault was caused by a dereference of a high value "
-             "address (see register values below).  Dissassemble the provided "
+             "address (see register values below).  Disassemble the provided "
              "pc to learn which register was used.\n");
     else if (sig.addr < GetPageSizeCached())
       Report("Hint: address points to the zero page.\n");
