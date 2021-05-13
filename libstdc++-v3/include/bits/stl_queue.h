@@ -594,7 +594,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::make_heap(c.begin(), c.end(), comp);
 	}
 #else
-      template<typename _InputIterator>
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3522. Missing requirement on InputIterator template parameter
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
 	priority_queue(_InputIterator __first, _InputIterator __last,
 		       const _Compare& __x,
 		       const _Sequence& __s)
@@ -605,7 +608,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::make_heap(c.begin(), c.end(), comp);
 	}
 
-      template<typename _InputIterator>
+      template<typename _InputIterator,
+	       typename = std::_RequireInputIter<_InputIterator>>
 	priority_queue(_InputIterator __first, _InputIterator __last,
 		       const _Compare& __x = _Compare(),
 		       _Sequence&& __s = _Sequence())
