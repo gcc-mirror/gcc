@@ -66,17 +66,6 @@ public:
     if (!compile_fns)
       return;
 
-    // items can be forward compiled which means we may not need to invoke this
-    // code
-    Bfunction *lookup = nullptr;
-    if (ctx->lookup_function_decl (function.get_mappings ().get_hirid (),
-				   &lookup))
-      {
-	// has this been added to the list then it must be finished
-	if (ctx->function_completed (lookup))
-	  return;
-      }
-
     TyTy::BaseType *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (function.get_mappings ().get_hirid (),
 					 &fntype_tyty))
@@ -86,26 +75,41 @@ public:
 	return;
       }
 
-    if (fntype_tyty->get_kind () != TyTy::TypeKind::FNDEF)
-      {
-	rust_error_at (function.get_locus (), "invalid TyTy for function item");
-	return;
-      }
-
+    rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
     TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
     if (fntype->has_subsititions_defined ())
       {
-	// we cant do anything for this only when it is used
+	// we cant do anything for this only when it is used and a concrete type
+	// is given
 	if (concrete == nullptr)
 	  return;
 	else
 	  {
 	    rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
 	    fntype = static_cast<TyTy::FnType *> (concrete);
-
-	    // override the Hir Lookups for the substituions in this context
-	    fntype->override_context ();
 	  }
+      }
+
+    // items can be forward compiled which means we may not need to invoke this
+    // code. We might also have already compiled this generic function as well.
+    Bfunction *lookup = nullptr;
+    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup, fntype))
+      {
+	// has this been added to the list then it must be finished
+	if (ctx->function_completed (lookup))
+	  {
+	    Bfunction *dummy = nullptr;
+	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
+	      ctx->insert_function_decl (fntype->get_ty_ref (), lookup, fntype);
+
+	    return;
+	  }
+      }
+
+    if (fntype->has_subsititions_defined ())
+      {
+	// override the Hir Lookups for the substituions in this context
+	fntype->override_context ();
       }
 
     // convert to the actual function type
@@ -126,7 +130,7 @@ public:
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, function.get_locus ());
-    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl);
+    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl, fntype);
 
     // setup the params
     TyTy::BaseType *tyret = fntype->get_return_type ();
@@ -247,17 +251,6 @@ public:
     if (!compile_fns)
       return;
 
-    // items can be forward compiled which means we may not need to invoke this
-    // code
-    Bfunction *lookup = nullptr;
-    if (ctx->lookup_function_decl (method.get_mappings ().get_hirid (),
-				   &lookup))
-      {
-	// has this been added to the list then it must be finished
-	if (ctx->function_completed (lookup))
-	  return;
-      }
-
     TyTy::BaseType *fntype_tyty;
     if (!ctx->get_tyctx ()->lookup_type (method.get_mappings ().get_hirid (),
 					 &fntype_tyty))
@@ -267,26 +260,41 @@ public:
 	return;
       }
 
-    if (fntype_tyty->get_kind () != TyTy::TypeKind::FNDEF)
-      {
-	rust_error_at (method.get_locus (), "invalid TyTy for function item");
-	return;
-      }
-
+    rust_assert (fntype_tyty->get_kind () == TyTy::TypeKind::FNDEF);
     TyTy::FnType *fntype = static_cast<TyTy::FnType *> (fntype_tyty);
     if (fntype->has_subsititions_defined ())
       {
-	// we cant do anything for this only when it is used
+	// we cant do anything for this only when it is used and a concrete type
+	// is given
 	if (concrete == nullptr)
 	  return;
 	else
 	  {
 	    rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
 	    fntype = static_cast<TyTy::FnType *> (concrete);
-
-	    // override the Hir Lookups for the substituions in this context
-	    fntype->override_context ();
 	  }
+      }
+
+    // items can be forward compiled which means we may not need to invoke this
+    // code. We might also have already compiled this generic function as well.
+    Bfunction *lookup = nullptr;
+    if (ctx->lookup_function_decl (fntype->get_ty_ref (), &lookup, fntype))
+      {
+	// has this been added to the list then it must be finished
+	if (ctx->function_completed (lookup))
+	  {
+	    Bfunction *dummy = nullptr;
+	    if (!ctx->lookup_function_decl (fntype->get_ty_ref (), &dummy))
+	      ctx->insert_function_decl (fntype->get_ty_ref (), lookup, fntype);
+
+	    return;
+	  }
+      }
+
+    if (fntype->has_subsititions_defined ())
+      {
+	// override the Hir Lookups for the substituions in this context
+	fntype->override_context ();
       }
 
     // convert to the actual function type
@@ -307,7 +315,7 @@ public:
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
 				       asm_name, flags, method.get_locus ());
-    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl);
+    ctx->insert_function_decl (fntype->get_ty_ref (), fndecl, fntype);
 
     // setup the params
     TyTy::BaseType *tyret = fntype->get_return_type ();

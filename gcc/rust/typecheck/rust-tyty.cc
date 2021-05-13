@@ -679,8 +679,20 @@ FnType::is_equal (const BaseType &other) const
     return false;
 
   auto other2 = static_cast<const FnType &> (other);
+  if (get_identifier ().compare (other2.get_identifier ()) != 0)
+    return false;
+
   if (!get_return_type ()->is_equal (*other2.get_return_type ()))
     return false;
+
+  if (has_subsititions_defined () != other2.has_subsititions_defined ())
+    return false;
+
+  if (has_subsititions_defined ())
+    {
+      if (get_num_substitutions () != other2.get_num_substitutions ())
+	return false;
+    }
 
   if (num_params () != other2.num_params ())
     return false;
@@ -703,9 +715,10 @@ FnType::clone ()
     cloned_params.push_back (
       std::pair<HIR::Pattern *, BaseType *> (p.first, p.second->clone ()));
 
-  return new FnType (get_ref (), get_ty_ref (), is_method_flag,
-		     std::move (cloned_params), get_return_type ()->clone (),
-		     clone_substs (), get_combined_refs ());
+  return new FnType (get_ref (), get_ty_ref (), get_identifier (),
+		     is_method_flag, std::move (cloned_params),
+		     get_return_type ()->clone (), clone_substs (),
+		     get_combined_refs ());
 }
 
 FnType *
@@ -1381,10 +1394,22 @@ ParamType::resolve () const
 bool
 ParamType::is_equal (const BaseType &other) const
 {
-  if (!can_resolve ())
-    return BaseType::is_equal (other);
+  if (get_kind () != other.get_kind ())
+    {
+      if (!can_resolve ())
+	return false;
 
-  return resolve ()->is_equal (other);
+      return resolve ()->is_equal (other);
+    }
+
+  auto other2 = static_cast<const ParamType &> (other);
+  if (can_resolve () != other2.can_resolve ())
+    return false;
+
+  if (can_resolve ())
+    return resolve ()->can_eq (other2.resolve ());
+
+  return get_symbol ().compare (other2.get_symbol ()) == 0;
 }
 
 ParamType *

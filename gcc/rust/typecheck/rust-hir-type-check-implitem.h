@@ -112,7 +112,8 @@ public:
       }
 
     auto fnType = new TyTy::FnType (function.get_mappings ().get_hirid (),
-				    false, std::move (params), ret_type,
+				    function.get_function_name (), false,
+				    std::move (params), ret_type,
 				    std::move (substitutions));
     context->insert_type (function.get_mappings (), fnType);
   }
@@ -189,9 +190,10 @@ public:
 	context->insert_type (param.get_mappings (), param_tyty);
       }
 
-    auto fnType = new TyTy::FnType (method.get_mappings ().get_hirid (), true,
-				    std::move (params), ret_type,
-				    std::move (substitutions));
+    auto fnType
+      = new TyTy::FnType (method.get_mappings ().get_hirid (),
+			  method.get_method_name (), true, std::move (params),
+			  ret_type, std::move (substitutions));
     context->insert_type (method.get_mappings (), fnType);
   }
 

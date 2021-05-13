@@ -157,13 +157,38 @@ public:
     return true;
   }
 
-  void insert_function_decl (HirId id, ::Bfunction *fn)
+  void insert_function_decl (HirId id, ::Bfunction *fn,
+			     const TyTy::BaseType *ref)
   {
+    rust_assert (compiled_fn_map.find (id) == compiled_fn_map.end ());
     compiled_fn_map[id] = fn;
+    if (ref != nullptr)
+      {
+	std::pair<HirId, ::Bfunction *> elem (id, fn);
+	mono_fns[ref] = std::move (elem);
+      }
   }
 
-  bool lookup_function_decl (HirId id, ::Bfunction **fn)
+  bool lookup_function_decl (HirId id, ::Bfunction **fn,
+			     const TyTy::BaseType *ref = nullptr)
   {
+    // for for any monomorphized fns
+    if (ref != nullptr)
+      {
+	for (auto it = mono_fns.begin (); it != mono_fns.end (); it++)
+	  {
+	    std::pair<HirId, ::Bfunction *> &val = it->second;
+	    const TyTy::BaseType *r = it->first;
+	    if (ref->is_equal (*r))
+	      {
+		*fn = val.second;
+
+		return true;
+	      }
+	  }
+	return false;
+      }
+
     auto it = compiled_fn_map.find (id);
     if (it == compiled_fn_map.end ())
       return false;
@@ -282,6 +307,7 @@ private:
   std::vector< ::Bvariable *> loop_value_stack;
   std::vector< ::Blabel *> loop_begin_labels;
   std::map<const TyTy::BaseType *, std::pair<HirId, ::Btype *> > mono;
+  std::map<const TyTy::BaseType *, std::pair<HirId, ::Bfunction *> > mono_fns;
 
   // To GCC middle-end
   std::vector< ::Btype *> type_decls;
