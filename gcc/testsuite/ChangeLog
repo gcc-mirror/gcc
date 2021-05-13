@@ -1,3 +1,11 @@
+2021-05-12  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99988
+	* gcc.target/aarch64/pr99988.c: New test.
+
 2021-05-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
