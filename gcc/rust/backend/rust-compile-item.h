@@ -53,7 +53,7 @@ public:
     Bexpression *value = CompileExpr::Compile (var.get_expr (), ctx);
 
     std::string name = var.get_identifier ();
-    std::string asm_name = ctx->mangle_item (name);
+    std::string asm_name = ctx->mangle_item (resolved_type, name);
 
     bool is_external = false;
     bool is_hidden = false;
@@ -154,7 +154,7 @@ public:
     // we don't mangle the main fn since we haven't implemented the main shim
     // yet
     if (!is_main_fn)
-      asm_name = ctx->mangle_item (ir_symbol_name);
+      asm_name = ctx->mangle_item (fntype, ir_symbol_name);
 
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, ir_symbol_name,

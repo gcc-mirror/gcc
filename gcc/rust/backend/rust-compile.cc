@@ -20,6 +20,7 @@
 #include "rust-compile-item.h"
 #include "rust-compile-expr.h"
 #include "rust-compile-struct-field-expr.h"
+#include "fnv-hash.h"
 
 namespace Rust {
 namespace Compile {
@@ -427,10 +428,23 @@ mangle_name (const std::string &name)
   return std::to_string (name.size ()) + name;
 }
 
+// rustc uses a sip128 hash for legacy mangling, but an fnv 128 was quicker to
+// implement for now
 static std::string
-dummy_hash ()
+legacy_hash (const std::string &fingerprint)
 {
-  return "h0123456789abcdef";
+  Hash::FNV128 hasher;
+  hasher.write ((const unsigned char *) fingerprint.c_str (),
+		fingerprint.size ());
+
+  uint64_t hi, lo;
+  hasher.sum (&hi, &lo);
+
+  char hex[16 + 1];
+  memset (hex, 0, sizeof hex);
+  snprintf (hex, sizeof hex, "%08lx%08lx", lo, hi);
+
+  return "h" + std::string (hex, sizeof (hex) - 1);
 }
 
 static std::string
@@ -464,21 +478,28 @@ mangle_self (const TyTy::BaseType *self)
 }
 
 std::string
-Context::mangle_item (const std::string &name) const
+Context::mangle_item (const TyTy::BaseType *ty, const std::string &name) const
 {
   const std::string &crate_name = mappings->get_current_crate_name ();
+
+  const std::string hash = legacy_hash (ty->as_string ());
+  const std::string hash_sig = mangle_name (hash);
+
   return kMangledSymbolPrefix + mangle_name (crate_name) + mangle_name (name)
-	 + mangle_name (dummy_hash ()) + kMangledSymbolDelim;
+	 + hash_sig + kMangledSymbolDelim;
 }
 
 std::string
-Context::mangle_impl_item (const TyTy::BaseType *self,
+Context::mangle_impl_item (const TyTy::BaseType *self, const TyTy::BaseType *ty,
 			   const std::string &name) const
 {
   const std::string &crate_name = mappings->get_current_crate_name ();
+
+  const std::string hash = legacy_hash (ty->as_string ());
+  const std::string hash_sig = mangle_name (hash);
+
   return kMangledSymbolPrefix + mangle_name (crate_name) + mangle_self (self)
-	 + mangle_name (name) + mangle_name (dummy_hash ())
-	 + kMangledSymbolDelim;
+	 + mangle_name (name) + hash_sig + kMangledSymbolDelim;
 }
 
 } // namespace Compile
