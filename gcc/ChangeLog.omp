@@ -1,3 +1,12 @@
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	* omp-expand.c (expand_omp_simd): Add step_orig, and replace uses of
+	fd->loop.step by either step or orig_step.
+	Backported from master:
+
 2021-05-13  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-offload.c (oacc_xform_loop): Remove vec_tiles.
