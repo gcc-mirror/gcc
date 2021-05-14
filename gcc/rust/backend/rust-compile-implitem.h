@@ -125,7 +125,7 @@ public:
     std::string fn_identifier
       = self->get_name () + "_" + function.get_function_name ();
     std::string asm_name
-      = ctx->mangle_impl_item (self, function.get_function_name ());
+      = ctx->mangle_impl_item (self, fntype, function.get_function_name ());
 
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
@@ -310,7 +310,7 @@ public:
     std::string fn_identifier
       = self->get_name () + "_" + method.get_method_name ();
     std::string asm_name
-      = ctx->mangle_impl_item (self, method.get_method_name ());
+      = ctx->mangle_impl_item (self, fntype, method.get_method_name ());
 
     Bfunction *fndecl
       = ctx->get_backend ()->function (compiled_fn_type, fn_identifier,
