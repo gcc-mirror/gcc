@@ -1,3 +1,7 @@
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/map-6.c: Remove two dg-error.
+
 2021-04-30  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* c-c++-common/goacc/note-parallelism-1-kernels-straight-line.c: Add
