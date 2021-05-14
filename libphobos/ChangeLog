@@ -1,3 +1,13 @@
+2021-05-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-05-13  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* libdruntime/core/sys/dragonflybsd/dlfcn.d: Update static assert.
+	* libdruntime/core/sys/freebsd/dlfcn.d: Likewise.
+	* libdruntime/core/sys/netbsd/dlfcn.d: Likewise.
+	* libdruntime/core/sys/posix/dlfcn.d: Replace 'in' with 'const scope'.
+
 2021-05-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
