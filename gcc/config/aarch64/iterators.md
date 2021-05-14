@@ -282,6 +282,9 @@
 ;; Scalar 64-bit container: 16, 32-bit integer modes
 (define_mode_iterator SD_HSI [HI SI])
 
+;; Scalar 64-bit container: 16-bit, 32-bit and 64-bit integer modes.
+(define_mode_iterator SD_HSDI [HI SI DI])
+
 ;; Advanced SIMD 64-bit container: 16, 32-bit integer modes.
 (define_mode_iterator VQ_HSI [V8HI V4SI])
 
