@@ -1,3 +1,56 @@
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100471
+	* taskloop.c (GOMP_taskloop): If GOMP_TASK_FLAG_REDUCTION and not
+	GOMP_TASK_FLAG_NOGROUP, when doing early return clear the task
+	reduction pointer.
+	* testsuite/libgomp.c/task-reduction-4.c: New test.
+
+2021-05-06  Roman Zhuykov  <zhroma@ispras.ru>
+
+	Backported from master:
+	2021-04-30  Roman Zhuykov  <zhroma@ispras.ru>
+
+	* testsuite/libgomp.oacc-c-c++-common/atomic_capture-3.c: New test.
+
+2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	Backported from master:
+	2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100232
+	* testsuite/libgomp.c/target-43.c: New file.
+
+2021-04-27  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-04-21  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp (offload_target_to_openacc_device_type):
+	New, based on check_effective_target_offload_target_nvptx.
+	(check_effective_target_offload_target_nvptx): Call it.
+	(check_effective_target_offload_target_amdgcn): New.
+	* testsuite/libgomp.c-c++-common/function-not-offloaded.c:
+	Require target offload_target_nvptx || offload_target_amdgcn.
+	* testsuite/libgomp.c-c++-common/variable-not-offloaded.c: Likewise.
+	* testsuite/libgomp.c/pr86416-1.c: Likewise.
+	* testsuite/libgomp.c/pr86416-2.c: Likewise.
+
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
+2021-04-22  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-22  Richard Biener  <rguenther@suse.de>
+
+	* testsuite/libgomp.c-c++-common/reduction-16.c: Use -latomic
+	only on nvptx-none.
+
 2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/declare-vla-kernels-decompose-ice-1.c:

@@ -160,7 +160,7 @@ Enum(evrp_mode) String(debug) Value(EVRP_MODE_DEBUG)
 -param=ranger-logical-depth=
 Common Joined UInteger Var(param_ranger_logical_depth) Init(6) IntegerRange(1, 999) Param Optimization
 Maximum depth of logical expression evaluation ranger will look through when
-evaluting outgoing edge ranges.
+evaluating outgoing edge ranges.
 
 -param=fsm-maximum-phi-arguments=
 Common Joined UInteger Var(param_fsm_maximum_phi_arguments) Init(100) IntegerRange(1, 999999) Param Optimization

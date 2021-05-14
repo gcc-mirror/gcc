@@ -87,16 +87,13 @@ static if (__BSD_VISIBLE)
     }
 }
 
-private template __externC(RT, P...)
-{
-    alias __externC = extern(C) RT function(P) nothrow @nogc;
-}
-
 /* XSI functions first. */
-static assert(is(typeof(&dlclose) == __externC!(int, void*)));
-static assert(is(typeof(&dlerror) == __externC!(char*)));
-static assert(is(typeof(&dlopen)  == __externC!(void*, const char*, int)));
-static assert(is(typeof(&dlsym)   == __externC!(void*, void*, const char*)));
+extern(C) {
+    static assert(is(typeof(&dlclose) == int function(void*)));
+    static assert(is(typeof(&dlerror) == char* function()));
+    static assert(is(typeof(&dlopen)  == void* function(const scope char*, int)));
+    static assert(is(typeof(&dlsym)   == void* function(void*, const scope char*)));
+}
 
 static if (__BSD_VISIBLE)
 {

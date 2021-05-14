@@ -1885,8 +1885,8 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 
   /* Ensure the same EH region.  */
   {
-    rtx n1 = find_reg_note (BB_END (bb1), REG_EH_REGION, 0);
-    rtx n2 = find_reg_note (BB_END (bb2), REG_EH_REGION, 0);
+    rtx n1 = find_reg_note (last1, REG_EH_REGION, 0);
+    rtx n2 = find_reg_note (last2, REG_EH_REGION, 0);
 
     if (!n1 && n2)
       return false;
@@ -2157,7 +2157,11 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   if (NOTE_INSN_BASIC_BLOCK_P (newpos1))
     newpos1 = NEXT_INSN (newpos1);
 
-  while (DEBUG_INSN_P (newpos1))
+  /* Skip also prologue and function markers.  */
+  while (DEBUG_INSN_P (newpos1)
+	 || (NOTE_P (newpos1)
+	     && (NOTE_KIND (newpos1) == NOTE_INSN_PROLOGUE_END
+		 || NOTE_KIND (newpos1) == NOTE_INSN_FUNCTION_BEG)))
     newpos1 = NEXT_INSN (newpos1);
 
   redirect_from = split_block (src1, PREV_INSN (newpos1))->src;

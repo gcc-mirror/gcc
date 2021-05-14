@@ -1,3 +1,57 @@
+2021-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-05-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100274
+	* interface.c (gfc_compare_actual_formal): Continue checks after
+	emitting warning for argument length mismatch.
+	* trans-expr.c (gfc_conv_procedure_call): Check for NULL pointer
+	dereference.
+
+2021-04-29  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-04-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_variable_list): Gobble whitespace before
+	checking whether a '%' or parenthesis-open follows as next character.
+
+2021-04-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-04-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100218
+	* expr.c (gfc_check_vardef_context): Extend check to allow pointer
+	from a function reference.
+
+2021-04-27  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-04-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100154
+	* check.c (variable_check): Allow function reference having a data
+	pointer result.
+	(arg_strlen_is_zero): New function.
+	(gfc_check_fgetputc_sub): Add static check of character and status
+	arguments.
+	(gfc_check_fgetput_sub): Likewise.
+	* intrinsic.c (add_subroutines): Fix argument name for the
+	character argument to intrinsic subroutines fget[c], fput[c].
+
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
+2021-04-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/100110
+	* trans-decl.c (gfc_get_symbol_decl): Replace test for host
+	association with a check that the current and symbol namespaces
+	are the same.
+
 2021-04-19  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lang.opt (fopenacc-kernels=): Remove.

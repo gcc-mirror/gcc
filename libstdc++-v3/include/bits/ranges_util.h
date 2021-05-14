@@ -251,7 +251,7 @@ namespace ranges
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
 	subrange(_Rng&& __r) requires (!_S_store_size)
-	: subrange{ranges::begin(__r), ranges::end(__r)}
+	: subrange(ranges::begin(__r), ranges::end(__r))
 	{ }
 
       template<borrowed_range _Rng>

@@ -19906,15 +19906,21 @@ tsubst_copy_and_build (tree t,
     case MEMBER_REF:
     case DOTSTAR_EXPR:
       {
-	/* If T was type-dependent, suppress warnings that depend on the range
-	   of the types involved.  */
-	++processing_template_decl;
-	const bool was_dep = (potential_constant_expression (t)
-			      ? value_dependent_expression_p (t)
-			      : type_dependent_expression_p (t));
-	--processing_template_decl;
-	tree op0 = RECUR (TREE_OPERAND (t, 0));
-	tree op1 = RECUR (TREE_OPERAND (t, 1));
+	/* If either OP0 or OP1 was value- or type-dependent, suppress
+	   warnings that depend on the range of the types involved.  */
+	tree op0 = TREE_OPERAND (t, 0);
+	tree op1 = TREE_OPERAND (t, 1);
+	auto dep_p = [](tree t) {
+	  ++processing_template_decl;
+	  bool r = (potential_constant_expression (t)
+		    ? value_dependent_expression_p (t)
+		    : type_dependent_expression_p (t));
+	  --processing_template_decl;
+	  return r;
+	};
+	const bool was_dep = dep_p (op0) || dep_p (op1);
+	op0 = RECUR (op0);
+	op1 = RECUR (op1);
 
 	warning_sentinel s1(warn_type_limits, was_dep);
 	warning_sentinel s2(warn_div_by_zero, was_dep);
@@ -29361,6 +29367,10 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
 	       "with %<-std=c++20%> or %<-std=gnu++20%>");
       return error_mark_node;
     }
+
+  /* Wait until the initializer is non-dependent.  */
+  if (type_dependent_expression_p (init))
+    return ptype;
 
   tree type = TREE_TYPE (tmpl);
 

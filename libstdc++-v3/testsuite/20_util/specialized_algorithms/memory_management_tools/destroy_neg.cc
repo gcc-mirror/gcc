@@ -15,7 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 #include <memory>
@@ -48,3 +47,5 @@ test02()
 }
 
 // { dg-error "value type is destructible" "" { target *-*-* } 0 }
+// { dg-error "use of deleted function" "" { target c++20 } 0 }
+// { dg-error "is private within this context" "" { target c++20 } 0 }

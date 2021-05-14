@@ -1,3 +1,7 @@
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
 2021-03-03  Ian Lance Taylor  <iant@golang.org>
 
 	* dwarf.c (read_line_program): Don't special case file 0.

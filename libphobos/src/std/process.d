@@ -887,7 +887,7 @@ version (Windows) @system unittest
 // Searches the PATH variable for the given executable file,
 // (checking that it is in fact executable).
 version (Posix)
-private string searchPathFor(in char[] executable)
+package(std) string searchPathFor(in char[] executable)
     @trusted //TODO: @safe nothrow
 {
     import std.algorithm.iteration : splitter;

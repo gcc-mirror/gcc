@@ -333,12 +333,12 @@ print_operand_address (FILE * file, rtx addr)
 
     case PLUS:
       /* There can be either two or three things added here.  One must be a
-	 REG.  One can be either a REG or a MULT of a REG and an appropriate
-	 constant, and the third can only be a constant or a MEM.
+	 REG.  One can be either a REG or a MULT/ASHIFT of a REG and an
+	 appropriate constant, and the third can only be a constant or a MEM.
 
 	 We get these two or three things and put the constant or MEM in
-	 OFFSET, the MULT or REG in IREG, and the REG in BREG.  If we have
-	 a register and can't tell yet if it is a base or index register,
+	 OFFSET, the MULT/ASHIFT or REG in IREG, and the REG in BREG.  If we
+	 have a register and can't tell yet if it is a base or index register,
 	 put it into REG1.  */
 
       reg1 = 0; ireg = 0; breg = 0; offset = 0;
@@ -355,12 +355,14 @@ print_operand_address (FILE * file, rtx addr)
 	  offset = XEXP (addr, 1);
 	  addr = XEXP (addr, 0);
 	}
-      else if (GET_CODE (XEXP (addr, 1)) == MULT)
+      else if (GET_CODE (XEXP (addr, 1)) == MULT
+	       || GET_CODE (XEXP (addr, 1)) == ASHIFT)
 	{
 	  ireg = XEXP (addr, 1);
 	  addr = XEXP (addr, 0);
 	}
-      else if (GET_CODE (XEXP (addr, 0)) == MULT)
+      else if (GET_CODE (XEXP (addr, 0)) == MULT
+	       || GET_CODE (XEXP (addr, 0)) == ASHIFT)
 	{
 	  ireg = XEXP (addr, 0);
 	  addr = XEXP (addr, 1);
@@ -385,7 +387,7 @@ print_operand_address (FILE * file, rtx addr)
 	  else
 	    reg1 = addr;
 	}
-      else if (GET_CODE (addr) == MULT)
+      else if (GET_CODE (addr) == MULT || GET_CODE (addr) == ASHIFT)
 	ireg = addr;
       else
 	{
@@ -416,7 +418,8 @@ print_operand_address (FILE * file, rtx addr)
 	    }
 	  else
 	    {
-	      gcc_assert (GET_CODE (XEXP (addr, 0)) == MULT);
+	      gcc_assert (GET_CODE (XEXP (addr, 0)) == MULT
+			  || GET_CODE (XEXP (addr, 0)) == ASHIFT);
 	      gcc_assert (!ireg);
 	      ireg = XEXP (addr, 0);
 	    }
@@ -447,7 +450,8 @@ print_operand_address (FILE * file, rtx addr)
 	    }
 	  else
 	    {
-	      gcc_assert (GET_CODE (XEXP (addr, 1)) == MULT);
+	      gcc_assert (GET_CODE (XEXP (addr, 1)) == MULT
+			  || GET_CODE (XEXP (addr, 1)) == ASHIFT);
 	      gcc_assert (!ireg);
 	      ireg = XEXP (addr, 1);
 	    }
@@ -506,7 +510,7 @@ print_operand_address (FILE * file, rtx addr)
 
       if (ireg != 0)
 	{
-	  if (GET_CODE (ireg) == MULT)
+	  if (GET_CODE (ireg) == MULT || GET_CODE (ireg) == ASHIFT)
 	    ireg = XEXP (ireg, 0);
 	  gcc_assert (REG_P (ireg));
 	  fprintf (file, "[%s]", reg_names[REGNO (ireg)]);
@@ -707,6 +711,7 @@ vax_address_cost_1 (rtx addr)
       reg = 1;
       break;
     case MULT:
+    case ASHIFT:
       indexed = 1;	/* 2 on VAX 2 */
       break;
     case CONST_INT:
@@ -1824,23 +1829,26 @@ static bool
 index_term_p (rtx prod, machine_mode mode, bool strict)
 {
   rtx xfoo0, xfoo1;
+  bool log_p;
 
   if (GET_MODE_SIZE (mode) == 1)
     return BASE_REGISTER_P (prod, strict);
 
-  if (GET_CODE (prod) != MULT || GET_MODE_SIZE (mode) > 8)
+  if ((GET_CODE (prod) != MULT && GET_CODE (prod) != ASHIFT)
+      || GET_MODE_SIZE (mode) > 8)
     return false;
 
+  log_p = GET_CODE (prod) == ASHIFT;
   xfoo0 = XEXP (prod, 0);
   xfoo1 = XEXP (prod, 1);
 
   if (CONST_INT_P (xfoo0)
-      && INTVAL (xfoo0) == (int)GET_MODE_SIZE (mode)
+      && GET_MODE_SIZE (mode) == (log_p ? 1 << INTVAL (xfoo0) : INTVAL (xfoo0))
       && INDEX_REGISTER_P (xfoo1, strict))
     return true;
 
   if (CONST_INT_P (xfoo1)
-      && INTVAL (xfoo1) == (int)GET_MODE_SIZE (mode)
+      && GET_MODE_SIZE (mode) == (log_p ? 1 << INTVAL (xfoo1) : INTVAL (xfoo1))
       && INDEX_REGISTER_P (xfoo0, strict))
     return true;
 

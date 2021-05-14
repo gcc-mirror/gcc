@@ -1,3 +1,13 @@
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
+2021-04-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/99360
+	* exp_ch6.adb (Might_Have_Tasks): Return False when the type is the
+	class-wide type of a predefined iterator type.
+
 2021-04-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init): Set default range bits to 0.

@@ -26,9 +26,9 @@
 void
 test01(std::istream& in, char* pc, signed char* sc, unsigned char* uc)
 {
-  in >> pc; // { dg-error "here" }
-  in >> sc; // { dg-error "here" }
-  in >> uc; // { dg-error "here" }
+  in >> pc; // { dg-error "no match" }
+  in >> sc; // { dg-error "no match" }
+  in >> uc; // { dg-error "no match" }
 }
 
 struct CT : std::char_traits<char> { };
@@ -37,9 +37,9 @@ void
 test02(std::basic_istream<char, CT>& in, char* pc, signed char* sc,
        unsigned char* uc)
 {
-  in >> pc; // { dg-error "here" }
-  in >> sc; // { dg-error "here" }
-  in >> uc; // { dg-error "here" }
+  in >> pc; // { dg-error "no match" }
+  in >> sc; // { dg-error "no match" }
+  in >> uc; // { dg-error "no match" }
 }
 
 // { dg-excess-errors "" }

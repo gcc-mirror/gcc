@@ -9616,7 +9616,15 @@ package body Exp_Ch6 is
         and then not No_Run_Time_Mode
         and then (Has_Task (Typ)
                     or else (Is_Class_Wide_Type (Typ)
-                               and then Is_Limited_Record (Typ)));
+                               and then Is_Limited_Record (Typ)))
+
+        --  Predefined iterator types do not contain tasks, even when
+        --  class-wide.
+
+        and then not (In_Predefined_Unit (Typ)
+                        and then Chars (Typ) in
+                          Name_Find ("Tforward_iteratorC") |
+                          Name_Find ("Treversible_iteratorC"));
    end Might_Have_Tasks;
 
    ----------------------------

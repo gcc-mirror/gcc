@@ -747,7 +747,8 @@
 	   constant can be represented in SImode, this is important
 	   for the corner case where operand[1] is INT_MIN.  */
 
-	operands[1] = GEN_INT (trunc_int_for_mode (-INTVAL (operands[1]), SImode));
+	operands[1]
+	  = GEN_INT (trunc_int_for_mode (-UINTVAL (operands[1]), SImode));
 
 	if (!(*insn_data[CODE_FOR_addsi3].operand[2].predicate)
 	      (operands[1], SImode))
@@ -5008,7 +5009,7 @@
     /* (SZ - cnt) % SZ == -cnt % SZ */
     if (CONST_INT_P (operands[2]))
       {
-        operands[2] = GEN_INT ((-INTVAL (operands[2]))
+        operands[2] = GEN_INT ((-UINTVAL (operands[2]))
 			       & (GET_MODE_BITSIZE (<MODE>mode) - 1));
         if (operands[2] == const0_rtx)
           {

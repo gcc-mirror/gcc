@@ -73,6 +73,7 @@ namespace std
     struct incrementable_traits<counted_iterator<I>>;
 
   template<input_iterator I>
+    requires same_as<__detail::__iter_traits<I>, iterator_traits<I>>
     struct iterator_traits<counted_iterator<I>>;
 
   struct unreachable_sentinel_t;

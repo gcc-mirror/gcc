@@ -131,6 +131,7 @@
 #define __cpp_lib_clamp 201603
 #if __cplusplus == 201703L // N.B. updated value in C++20
 # define __cpp_lib_constexpr_char_traits 201611L
+# define __cpp_lib_constexpr_string 201611L
 #endif
 #define __cpp_lib_enable_shared_from_this 201603
 #define __cpp_lib_execution 201902L // FIXME: should be 201603L
@@ -161,7 +162,9 @@
 #endif
 #define __cpp_lib_shared_ptr_weak_type 201606
 #define __cpp_lib_string_view 201803L
-// #define __cpp_lib_to_chars 201611L
+#if _GLIBCXX_HAVE_USELOCALE
+# define __cpp_lib_to_chars 201611L
+#endif
 #define __cpp_lib_unordered_map_try_emplace 201411
 #define __cpp_lib_variant 201606L
 #endif
@@ -217,6 +220,7 @@
 #define __cpp_lib_constexpr_iterator 201811L
 #define __cpp_lib_constexpr_memory 201811L
 #define __cpp_lib_constexpr_numeric 201911L
+#define __cpp_lib_constexpr_string 201811L
 #define __cpp_lib_constexpr_string_view 201811L
 #define __cpp_lib_constexpr_tuple 201811L
 #define __cpp_lib_constexpr_utility 201811L
@@ -237,7 +241,7 @@
 #if __cpp_lib_concepts
 # define __cpp_lib_ranges 201911L
 #endif
-#if __cpp_lib_atomic_wait
+#if __cpp_lib_atomic_wait || _GLIBCXX_HAVE_POSIX_SEMAPHORE
 # define __cpp_lib_semaphore 201907L
 #endif
 #define __cpp_lib_shift 201806L

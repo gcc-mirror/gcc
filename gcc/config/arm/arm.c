@@ -1051,9 +1051,13 @@ const char *fp_sysreg_names[NB_FP_SYSREGS] = {
 #define ARM_LSL_NAME "lsl"
 #define streq(string1, string2) (strcmp (string1, string2) == 0)
 
-#define THUMB2_WORK_REGS (0xff & ~(  (1 << THUMB_HARD_FRAME_POINTER_REGNUM) \
-				   | (1 << SP_REGNUM) | (1 << PC_REGNUM) \
-				   | (1 << PIC_OFFSET_TABLE_REGNUM)))
+#define THUMB2_WORK_REGS					\
+  (0xff & ~((1 << THUMB_HARD_FRAME_POINTER_REGNUM)		\
+	    | (1 << SP_REGNUM)					\
+	    | (1 << PC_REGNUM)					\
+	    | (PIC_OFFSET_TABLE_REGNUM != INVALID_REGNUM	\
+	       ? (1 << PIC_OFFSET_TABLE_REGNUM)			\
+	       : 0)))
 
 /* Initialization code.  */
 
@@ -5559,9 +5563,20 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 			return;
 		      *op1 = GEN_INT (i + 1);
 		      *code = *code == GT ? GE : LT;
-		      return;
 		    }
-		  break;
+		  else
+		    {
+		      /* GT maxval is always false, LE maxval is always true.
+			 We can't fold that away here as we must make a
+			 comparison, but we can fold them to comparisons
+			 with the same result that can be handled:
+			   op0 GT maxval -> op0 LT minval
+			   op0 LE maxval -> op0 GE minval
+			 where minval = (-maxval - 1).  */
+		      *op1 = GEN_INT (-maxval - 1);
+		      *code = *code == GT ? LT : GE;
+		    }
+		  return;
 
 		case GTU:
 		case LEU:
@@ -5574,9 +5589,19 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 			return;
 		      *op1 = GEN_INT (i + 1);
 		      *code = *code == GTU ? GEU : LTU;
-		      return;
 		    }
-		  break;
+		  else
+		    {
+		      /* GTU ~0 is always false, LEU ~0 is always true.
+			 We can't fold that away here as we must make a
+			 comparison, but we can fold them to comparisons
+			 with the same result that can be handled:
+			   op0 GTU ~0 -> op0 LTU 0
+			   op0 LEU ~0 -> op0 GEU 0.  */
+		      *op1 = const0_rtx;
+		      *code = *code == GTU ? LTU : GEU;
+		    }
+		  return;
 
 		default:
 		  gcc_unreachable ();
@@ -25265,7 +25290,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return false;
 
   if (IS_VPR_REGNUM (regno))
-    return true;
+    return mode == HImode;
 
   if (TARGET_THUMB1)
     /* For the Thumb we only allow values bigger than SImode in

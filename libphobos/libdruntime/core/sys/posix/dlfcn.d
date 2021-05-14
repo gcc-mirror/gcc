@@ -158,8 +158,8 @@ else version (FreeBSD)
 
     int   dlclose(void*);
     char* dlerror();
-    void* dlopen(in char*, int);
-    void* dlsym(void*, in char*);
+    void* dlopen(const scope char*, int);
+    void* dlsym(void*, const scope char*);
     int   dladdr(const(void)* addr, Dl_info* info);
 
     struct Dl_info

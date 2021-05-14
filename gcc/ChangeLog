@@ -1,3 +1,366 @@
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100566
+	* tree-ssa-sccvn.c (dominated_by_p_w_unex): Properly handle
+	allow_back for all edge queries.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100508
+	* cfgexpand.c (expand_debug_expr): For DEBUG_EXPR_DECL with vector
+	type, don't reuse DECL_RTL if it has different mode, instead force
+	creation of a new DEBUG_EXPR.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100471
+	* omp-low.c (lower_omp_task_reductions): For OMP_TASKLOOP, if data
+	is 0, bypass the reduction loop including
+	GOMP_taskgroup_reduction_unregister call.
+
+2021-05-12  Geng Qi  <gengqi@linux.alibaba.com>
+
+	Backported from master:
+	2021-04-30  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* config/riscv/riscv.opt (march=,mabi=): Negative itself.
+
+2021-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99988
+	* config/aarch64/aarch64-bti-insert.c (aarch64_bti_j_insn_p): New.
+	(rest_of_insert_bti): Avoid inserting duplicate bti j insns for
+	jump table targets.
+
+2021-05-06  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	Backported from master:
+	2021-05-06  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	* config/s390/s390-builtins.def (O_M5, O1_M5, ...): Remove unused macros.
+	(s390_vec_permi_s64, s390_vec_permi_b64, s390_vec_permi_u64)
+	(s390_vec_permi_dbl, s390_vpdi): Use the O3_U2 type for the immediate
+	operand.
+	* config/s390/s390.c (s390_const_operand_ok): Remove unused
+	values.
+
+2021-05-06  Roman Zhuykov  <zhroma@ispras.ru>
+
+	Backported from master:
+	2021-04-30  Roman Zhuykov  <zhroma@ispras.ru>
+
+	PR rtl-optimization/100225
+	PR rtl-optimization/84878
+	* modulo-sched.c (sms_schedule): Use note_stores to skip loops
+	where we have an instruction which touches (writes) any hard
+	register from df->regular_block_artificial_uses set.
+	Allow not-single-set instruction only right before basic block
+	tail.
+
+2021-05-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/100217
+	* config/s390/s390.c (s390_hard_fp_reg_p): New function.
+	(s390_md_asm_adjust): Handle hard registers.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/100402
+	* config/i386/i386.c (ix86_compute_frame_layout): For a SEH target,
+	always return the establisher frame for __builtin_frame_address (0).
+
+2021-05-05  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	Backported from master:
+	2021-05-05  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	PR rtl-optimization/100263
+	* postreload.c (move2add_valid_value_p): Ensure register can
+	change mode.
+
+2021-05-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/100411
+	* cfgcleanup.c (try_crossjump_to_edge): Also skip end of prologue
+	and beginning of function markers.
+
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100253
+	* tree-vect-stmts.c (vectorizable_load): Do not assume
+	element alignment when DR_MISALIGNMENT is -1.
+	(vectorizable_store): Likewise.
+
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100278
+	* tree-ssa-pre.c (compute_avail): Give up when we cannot
+	adjust TBAA beacuse of mismatching bases.
+
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-04-29  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100308
+	* ipa-prop.c (ipcp_modif_dom_walker::before_dom_children):
+	Track blocks to cleanup EH in new m_need_eh_cleanup.
+	(ipcp_modif_dom_walker::cleanup_eh): New.
+	(ipcp_transform_function): Release dominator info before
+	doing EH cleanup.
+
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100414
+	* tree-ssa-phiopt.c (get_non_trapping): Do not compute dominance
+	info here.
+	(tree_ssa_phiopt_worker): But unconditionally here.
+
+2021-05-05  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100329
+	* tree-ssa-reassoc.c (can_reassociate_p): Do not reassociate
+	asm goto defs.
+	(insert_stmt_after): Assert we're not running into asm goto.
+
+2021-05-04  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100375
+	* config/nvptx/nvptx.c (nvptx_sese_pseudo): Use nullptr instead of 0
+	as first argument of pseudo_node_t constructors.
+
+2021-05-01  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	Backported from master:
+	2021-04-27  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/vax/vax.c (print_operand_address, vax_address_cost_1)
+	(index_term_p): Handle ASHIFT too.
+
+2021-04-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from master:
+	2021-04-27  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix.h (SUBTARGET_DRIVER_SELF_SPECS): New.
+	* config/rs6000/aix64.opt (m64): New.
+	(m32): New.
+
+2021-04-30  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-04-23  Alex Coplan  <alex.coplan@arm.com>
+
+	PR rtl-optimization/100230
+	* early-remat.c (early_remat::sort_candidates): Use delete[]
+	instead of delete for array allocated with new[].
+
+2021-04-29  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-04-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100311
+	* config/arm/arm.c (arm_hard_regno_mode_ok): Only allow VPR to be
+	used in HImode.
+
+2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100302
+	* config/aarch64/aarch64.c (aarch64_add_offset_1_temporaries): Use
+	absu_hwi instead of abs_hwi.
+
+2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	Backported from master:
+	2021-04-29  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100232
+	* internal-fn.c (expand_GOMP_SIMT_ENTER_ALLOC)
+	(expand_GOMP_SIMT_LAST_LANE, expand_GOMP_SIMT_ORDERED_PRED)
+	(expand_GOMP_SIMT_VOTE_ANY, expand_GOMP_SIMT_XCHG_BFLY)
+	(expand_GOMP_SIMT_XCHG_IDX): Ensure target is assigned to.
+
+2021-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100305
+	* config/aarch64/constraints.md (Utq): Require the address to
+	be valid for both the element mode and for V2DImode.
+
+2021-04-29  Richard Sandiford  <richard.sandiford@arm.com>
+
+	Backported from master:
+	2021-04-27  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR target/100270
+	* config/aarch64/aarch64.c (aarch64_comp_type_attributes): Handle
+	SVE attributes.
+
+2021-04-28  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	Backported from master:
+	2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	* config/bpf/bpf.h (ASM_OUTPUT_ALIGNED_BSS): Use .type and .lcomm.
+
+2021-04-28  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	Backported from master:
+	2021-04-23  YiFei Zhu  <zhuyifei1999@gmail.com>
+
+	* config/bpf/bpf.h (FUNCTION_BOUNDARY): Set to 64.
+
+2021-04-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-04-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100236
+	* config/arm/arm.c (THUMB2_WORK_REGS): Check PIC_OFFSET_TABLE_REGNUM
+	is valid before including it in the mask.
+
+2021-04-28  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100182
+	* config/i386/sync.md (FILD_ATOMIC/FIST_ATOMIC FP load peephole2):
+	Copy operand 3 to operand 4.  Use sse_reg_operand
+	as operand 3 predicate.
+	(FILD_ATOMIC/FIST_ATOMIC FP load peephole2 with mem blockage): Ditto.
+	(LDX_ATOMIC/STX_ATOMIC FP load peephole2): Ditto.
+	(LDX_ATOMIC/LDX_ATOMIC FP load peephole2 with mem blockage): Ditto.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2):
+	Copy operand 1 to operand 0.
+	(FILD_ATOMIC/FIST_ATOMIC FP store peephole2 with mem blockage): Ditto.
+	(LDX_ATOMIC/STX_ATOMIC FP store peephole2): Ditto.
+	(LDX_ATOMIC/LDX_ATOMIC FP store peephole2 with mem blockage): Ditto.
+
+2021-04-28  Cui,Lili  <lili.cui@intel.com>
+
+	* common/config/i386/i386-common.c (processor_names):
+	Sync processor_names with processor_type.
+	* config/i386/i386-options.c (processor_cost_table):
+	Sync processor_cost_table with processor_type.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100200
+	* config/aarch64/aarch64.c (aarch64_print_operand): Cast -UINTVAL
+	back to HOST_WIDE_INT.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100200
+	* config/aarch64/predicates.md (aarch64_sub_immediate,
+	aarch64_plus_immediate): Use -UINTVAL instead of -INTVAL.
+	* config/aarch64/aarch64.md (casesi, rotl<mode>3): Likewise.
+	* config/aarch64/aarch64.c (aarch64_print_operand,
+	aarch64_split_atomic_op, aarch64_expand_subvti): Likewise.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/100239
+	* tree-vect-generic.c (lower_vec_perm): Don't accept constant
+	permutations with all indices from the first zero element as vec_shl.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100254
+	* cfgcleanup.c (outgoing_edges_match): Check REG_EH_REGION on
+	last1 and last2 insns rather than BB_END (bb1) and BB_END (bb2) insns.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100255
+	* vmsdbgout.c (ASM_OUTPUT_DEBUG_STRING, vmsdbgout_begin_block,
+	vmsdbgout_end_block, lookup_filename, vmsdbgout_source_line): Remove
+	register keywords.
+
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100148
+	* cprop.c (constprop_register): Use next_nondebug_insn instead of
+	NEXT_INSN.
+
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
+2021-04-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backported from master:
+	2021-04-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/100108
+	* config/rs6000/rs6000.c (rs6000_machine_from_flags): Do not consider
+	OPTION_MASK_ISEL.
+
+2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	* lto-streamer.h (LTO_major_version): Bump to 11.
+
+2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Fix typo.
+	* params.opt: Likewise.
+
+2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-04-20  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document new param.
+
 2021-04-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/100081

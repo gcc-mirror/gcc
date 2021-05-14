@@ -1,3 +1,14 @@
+2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-04-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gennews (files): Add files for GCC 10 and GCC 11.
+
+2021-04-27  Release Manager
+
+	* GCC 11.1.0 released.
+
 2021-04-12  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Do not allow space in long lines.

@@ -1,4 +1,3 @@
-// { dg-options "-std=gnu++17" }
 //
 // Copyright (C) 2015-2021 Free Software Foundation, Inc.
 //

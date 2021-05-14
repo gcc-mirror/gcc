@@ -19947,6 +19947,10 @@ cp_parser_enum_specifier (cp_parser* parser)
       /* Consume the `:'.  */
       cp_lexer_consume_token (parser->lexer);
 
+      auto tdf
+	= make_temp_override (parser->type_definition_forbidden_message,
+			      G_("types may not be defined in enum-base"));
+
       /* Parse the type-specifier-seq.  */
       cp_parser_type_specifier_seq (parser, CP_PARSER_FLAGS_NONE,
 				    /*is_declaration=*/false,
@@ -25681,7 +25685,13 @@ cp_parser_class_head (cp_parser* parser,
      until the entire list has been seen, as per [class.access.general].  */
   push_deferring_access_checks (dk_deferred);
   if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
-    bases = cp_parser_base_clause (parser);
+    {
+      if (type)
+	pushclass (type);
+      bases = cp_parser_base_clause (parser);
+      if (type)
+	popclass ();
+    }
   else
     bases = NULL_TREE;
 

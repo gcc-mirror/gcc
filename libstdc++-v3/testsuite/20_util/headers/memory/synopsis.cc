@@ -22,6 +22,8 @@
 
 #if __cplusplus >= 201103L
 # define NOTHROW noexcept
+#else
+# define NOTHROW
 #endif
 
 namespace std {
