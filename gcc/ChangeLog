@@ -53,7 +53,7 @@
 	sizes < 16 to a register when constructing vpcmov pattern.
 	* config/i386/mmx.md (*xop_pcmov_<mode>): Use MMXMODE124 mode.
 
-2021-05-13  marxin  <mliska@suse.cz>
+2021-05-13  Martin Liska  <mliska@suse.cz>
 
 	* gcov-io.c (gcov_write_block): Remove.
 	(gcov_write_words): Likewise.

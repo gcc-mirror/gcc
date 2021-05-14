@@ -2,7 +2,7 @@
 
 	* config/pru/mpyll.S (__pruabi_mpyll): Place into own section.
 
-2021-05-13  marxin  <mliska@suse.cz>
+2021-05-13  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver.c: Fix GNU coding style.
 
