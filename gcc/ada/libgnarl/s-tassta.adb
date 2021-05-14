@@ -910,11 +910,11 @@ package body System.Tasking.Stages is
       Self_Id : constant Task_Id := Self;
 
    begin
+      Initialization.Task_Lock (Self_Id);
+
       if T.Common.State = Terminated then
 
          --  It is not safe to call Abort_Defer or Write_Lock at this stage
-
-         Initialization.Task_Lock (Self_Id);
 
          Lock_RTS;
          Initialization.Finalize_Attributes (T);
@@ -930,6 +930,7 @@ package body System.Tasking.Stages is
          --  upon termination.
 
          T.Free_On_Termination := True;
+         Initialization.Task_Unlock (Self_Id);
       end if;
    end Free_Task;
 
