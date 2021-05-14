@@ -1,6 +1,16 @@
 2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+
+	2021-05-07  Tobias Burnus  <tobias@codesourcery.com>
+		    Tom de Vries  <tdevries@suse.de>
+
+	* omp-low.c (lower_rec_simd_input_clauses): Set max_vf = 1 if
+	a truth_value_p reduction variable is nonintegral.
+
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* omp-low.c (lower_rec_input_clauses, lower_reduction_clauses): Handle
