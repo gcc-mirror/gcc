@@ -10802,6 +10802,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_PARALLEL:
 	case EXEC_OMP_PARALLEL_DO:
 	case EXEC_OMP_PARALLEL_DO_SIMD:
+	case EXEC_OMP_PARALLEL_MASTER:
 	case EXEC_OMP_PARALLEL_SECTIONS:
 	case EXEC_OMP_PARALLEL_WORKSHARE:
 	case EXEC_OMP_SECTIONS:
@@ -11763,6 +11764,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_PARALLEL_MASTER:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
@@ -12243,6 +12245,7 @@ start:
 	case EXEC_OMP_PARALLEL:
 	case EXEC_OMP_PARALLEL_DO:
 	case EXEC_OMP_PARALLEL_DO_SIMD:
+	case EXEC_OMP_PARALLEL_MASTER:
 	case EXEC_OMP_PARALLEL_SECTIONS:
 	case EXEC_OMP_PARALLEL_WORKSHARE:
 	  omp_workshare_save = omp_workshare_flag;

@@ -230,6 +230,7 @@ gfc_free_statement (gfc_code *p)
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_SCAN:

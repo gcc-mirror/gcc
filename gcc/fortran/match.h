@@ -174,6 +174,7 @@ match gfc_match_omp_ordered_depend (void);
 match gfc_match_omp_parallel (void);
 match gfc_match_omp_parallel_do (void);
 match gfc_match_omp_parallel_do_simd (void);
+match gfc_match_omp_parallel_master (void);
 match gfc_match_omp_parallel_sections (void);
 match gfc_match_omp_parallel_workshare (void);
 match gfc_match_omp_requires (void);

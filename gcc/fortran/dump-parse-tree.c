@@ -1856,6 +1856,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL: name = "PARALLEL"; break;
     case EXEC_OMP_PARALLEL_DO: name = "PARALLEL DO"; break;
     case EXEC_OMP_PARALLEL_DO_SIMD: name = "PARALLEL DO SIMD"; break;
+    case EXEC_OMP_PARALLEL_MASTER: name = "PARALLEL MASTER"; break;
     case EXEC_OMP_PARALLEL_SECTIONS: name = "PARALLEL SECTIONS"; break;
     case EXEC_OMP_PARALLEL_WORKSHARE: name = "PARALLEL WORKSHARE"; break;
     case EXEC_OMP_SCAN: name = "SCAN"; break;
@@ -1927,6 +1928,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_SCAN:
@@ -3139,6 +3141,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_SCAN:
