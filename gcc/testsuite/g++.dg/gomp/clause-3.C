@@ -56,7 +56,7 @@ foo (int x)
     ;
 #pragma omp p reduction (|:d) // { dg-error "user defined reduction not found for" }
     ;
-#pragma omp p reduction (&&:d) // { dg-error "user defined reduction not found for" }
+#pragma omp p reduction (&:d) // { dg-error "user defined reduction not found for" }
     ;
 #pragma omp p copyin (d) // { dg-error "must be 'threadprivate'" }
     ;
