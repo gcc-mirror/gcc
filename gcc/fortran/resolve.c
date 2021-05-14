@@ -16038,7 +16038,8 @@ resolve_symbol (gfc_symbol *sym)
       && !(sym->ns->save_all && !sym->attr.automatic)
       && sym->module == NULL
       && (sym->ns->proc_name == NULL
-	  || sym->ns->proc_name->attr.flavor != FL_MODULE))
+	  || (sym->ns->proc_name->attr.flavor != FL_MODULE
+	      && !sym->ns->proc_name->attr.is_main_program)))
     gfc_error ("Threadprivate at %L isn't SAVEd", &sym->declared_at);
 
   /* Check omp declare target restrictions.  */
@@ -16049,7 +16050,8 @@ resolve_symbol (gfc_symbol *sym)
       && (!sym->attr.in_common
 	  && sym->module == NULL
 	  && (sym->ns->proc_name == NULL
-	      || sym->ns->proc_name->attr.flavor != FL_MODULE)))
+	      || (sym->ns->proc_name->attr.flavor != FL_MODULE
+		  && !sym->ns->proc_name->attr.is_main_program))))
     gfc_error ("!$OMP DECLARE TARGET variable %qs at %L isn't SAVEd",
 	       sym->name, &sym->declared_at);
 
