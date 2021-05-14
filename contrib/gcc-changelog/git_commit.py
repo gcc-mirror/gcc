@@ -409,7 +409,8 @@ class GitCommit:
                 continue
             if (changelog_regex.match(b) or self.find_changelog_location(b)
                     or star_prefix_regex.match(b) or pr_regex.match(b)
-                    or dr_regex.match(b) or author_line_regex.match(b)):
+                    or dr_regex.match(b) or author_line_regex.match(b)
+                    or b.lower().startswith(CO_AUTHORED_BY_PREFIX)):
                 self.changes = body[i:]
                 return
         if not all_are_ignored:

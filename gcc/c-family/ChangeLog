@@ -1,3 +1,9 @@
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/100504
+	* c-attribs.c (handle_target_clones_attribute): Expect a string
+	argument to target_clone argument.
+
 2021-05-11  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-lex.c (interpret_float): Handle digit separators for C2X.

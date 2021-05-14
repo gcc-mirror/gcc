@@ -15146,6 +15146,16 @@ cp_parser_decl_specifier_seq (cp_parser* parser,
       if (!found_decl_spec)
 	break;
 
+      if (decl_specs->std_attributes)
+	{
+	  error_at (decl_specs->locations[ds_std_attribute],
+		    "standard attributes in middle of decl-specifiers");
+	  inform (decl_specs->locations[ds_std_attribute],
+		  "standard attributes must precede the decl-specifiers to "
+		  "apply to the declaration, or follow them to apply to "
+		  "the type");
+	}
+
       decl_specs->any_specifiers_p = true;
       /* After we see one decl-specifier, further decl-specifiers are
 	 always optional.  */
@@ -19764,11 +19774,15 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	       && ! processing_explicit_instantiation)
 	warning (OPT_Wattributes,
 		 "attributes ignored on template instantiation");
+      else if (is_friend && attributes)
+	error ("attribute appertains to a friend declaration that is not "
+	       "a definition");
       else if (is_declaration && cp_parser_declares_only_class_p (parser))
 	cplus_decl_attributes (&type, attributes, (int) ATTR_FLAG_TYPE_IN_PLACE);
       else
 	warning (OPT_Wattributes,
-		 "attributes ignored on elaborated-type-specifier that is not a forward declaration");
+		 "attributes ignored on elaborated-type-specifier that is "
+		 "not a forward declaration");
     }
 
   if (tag_type == enum_type)
@@ -26054,6 +26068,13 @@ cp_parser_member_declaration (cp_parser* parser)
 		 error_at (decl_spec_token_start->location,
 			   "friend declaration does not name a class or "
 			   "function");
+	       /* Give an error if an attribute cannot appear here, as per
+		  [dcl.attr.grammar]/5.  But not when declares_class_or_enum:
+		  we ignore attributes in elaborated-type-specifiers.  */
+	       else if (!declares_class_or_enum && decl_specifiers.attributes)
+		 error_at (decl_spec_token_start->location,
+			   "attribute appertains to a friend declaration "
+			   "that is not a definition");
 	       else
 		 make_friend_class (current_class_type, type,
 				    /*complain=*/true);

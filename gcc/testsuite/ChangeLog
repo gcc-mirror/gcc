@@ -1,3 +1,96 @@
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93100
+	PR middle-end/98583
+	* g++.dg/warn/uninit-pr93100.C: New test.
+	* gcc.dg/uninit-pr93100.c: New test.
+	* gcc.dg/uninit-pr98583.c: New test.
+
+2021-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/100453
+	* gcc.dg/tree-ssa/pr100453.c: New test.
+
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	* g++.dg/pr100574.C: Use size_t as operator new argument type.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/100504
+	* gcc.target/i386/pr100504.c: New test.
+
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100550
+	* gcc.dg/Wvla-parameter-9.c: New test.
+
+2021-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-1.c: New test.
+	* c-c++-common/gomp/pr99928-2.c: New test.
+	* c-c++-common/gomp/pr99928-3.c: New test.
+	* c-c++-common/gomp/pr99928-4.c: New test.
+	* c-c++-common/gomp/pr99928-5.c: New test.
+	* c-c++-common/gomp/pr99928-6.c: New test.
+	* c-c++-common/gomp/pr99928-7.c: New test.
+	* c-c++-common/gomp/pr99928-8.c: New test.
+	* c-c++-common/gomp/pr99928-9.c: New test.
+	* c-c++-common/gomp/pr99928-10.c: New test.
+	* c-c++-common/gomp/pr99928-11.c: New test.
+
+2021-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100563
+	* gcc.dg/pr100563.c (dg-options): Add -wno-pointer-to-int-cast.
+
+2021-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/pr100563.c: New test.
+
+2021-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98856
+	* gcc.target/i386/sse2-psraq-1.c: New test.
+	* gcc.target/i386/sse4_2-psraq-1.c: New test.
+	* gcc.target/i386/avx-psraq-1.c: New test.
+	* gcc.target/i386/avx2-psraq-1.c: New test.
+	* gcc.target/i386/avx-pr82370.c: Adjust expected number of vpsrad
+	instructions.
+	* gcc.target/i386/avx2-pr82370.c: Likewise.
+	* gcc.target/i386/avx512f-pr82370.c: Likewise.
+	* gcc.target/i386/avx512bw-pr82370.c: Likewise.
+	* gcc.dg/torture/vshuf-4.inc: Add two further permutations.
+	* gcc.dg/torture/vshuf-8.inc: Likewise.
+
+2021-05-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100581
+	* g++.target/i386/pr100581.C: New test.
+
+2021-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/100569
+	* gnat.dg/lto21.adb: Prune new LTO warning.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100569
+	* gcc.dg/atomic/c11-atomic-exec-2.c: Prune new LTO warning.
+	* gcc.dg/torture/pr94947-1.c: Likewise.
+
+2021-05-13  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-pr94680.c: Fix typo in testcase.
+
+2021-05-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/94680
+	* gcc.target/i386/avx-pr94680.c: New test.
+	* gcc.target/i386/avx512f-pr94680.c: New test.
+	* gcc.target/i386/sse2-pr94680.c: New test.
+
 2021-05-12  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/100571

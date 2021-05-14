@@ -1,3 +1,11 @@
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100569
+	* testsuite/libgomp.c/omp-nested-3.c: Prune new LTO warning.
+	* testsuite/libgomp.c/pr46032-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-clauses-kernels-ipa-pta.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-clauses-parallel-ipa-pta.c: Likewise.
+
 2021-05-12  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.c-c++-common/task-detach-12.c: New test.

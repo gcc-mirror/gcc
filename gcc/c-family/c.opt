@@ -592,7 +592,7 @@ C ObjC RejectNegative Warning Alias(Werror=, implicit-function-declaration)
 This switch is deprecated; use -Werror=implicit-function-declaration instead.
 
 Wexceptions
-C++ ObjC++ Var(warn_exceptions) Init(1)
+C++ ObjC++ Var(warn_exceptions) Init(1) Warning
 Warn when an exception handler is shadowed by another handler.
 
 Wextra
@@ -1741,7 +1741,7 @@ C++ ObjC Var(flag_module_version_ignore) Integer
 ; undocumented, Very dangerous, but occasionally useful
 
 Winvalid-imported-macros
-C++ ObjC++ Var(warn_imported_macros)
+C++ ObjC++ Var(warn_imported_macros) Warning
 Warn about macros that have conflicting header units definitions.
 
 flang-info-include-translate

@@ -209,6 +209,16 @@ check_defs (ao_ref *ref, tree vdef, void *data_)
 {
   check_defs_data *data = (check_defs_data *)data_;
   gimple *def_stmt = SSA_NAME_DEF_STMT (vdef);
+
+  /* The ASAN_MARK intrinsic doesn't modify the variable.  */
+  if (is_gimple_call (def_stmt)
+      && gimple_call_internal_p (def_stmt, IFN_ASAN_MARK))
+    return false;
+
+  /* End of VLA scope is not a kill.  */
+  if (gimple_call_builtin_p (def_stmt, BUILT_IN_STACK_RESTORE))
+    return false;
+
   /* If this is a clobber then if it is not a kill walk past it.  */
   if (gimple_clobber_p (def_stmt))
     {
@@ -216,6 +226,7 @@ check_defs (ao_ref *ref, tree vdef, void *data_)
 	return true;
       return false;
     }
+
   /* Found a may-def on this path.  */
   data->found_may_defs = true;
   return true;

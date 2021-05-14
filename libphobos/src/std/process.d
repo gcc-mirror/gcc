@@ -2581,6 +2581,7 @@ private auto executeImpl(alias pipeFunc, Cmd, ExtraPipeFuncArgs...)(
 
     ReturnType!executeShell r;
     auto tmpname = uniqueTempPath;
+    scope(exit) if (exists(tmpname)) remove(tmpname);
     auto t = stderr;
     // Open a new scope to minimize code ran with stderr redirected.
     {

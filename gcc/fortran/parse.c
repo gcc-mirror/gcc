@@ -925,6 +925,8 @@ decode_omp_directive (void)
       matchs ("end parallel do simd", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_DO_SIMD);
       matcho ("end parallel do", gfc_match_omp_eos_error, ST_OMP_END_PARALLEL_DO);
+      matcho ("end parallel master", gfc_match_omp_eos_error,
+	      ST_OMP_END_PARALLEL_MASTER);
       matcho ("end parallel sections", gfc_match_omp_eos_error,
 	      ST_OMP_END_PARALLEL_SECTIONS);
       matcho ("end parallel workshare", gfc_match_omp_eos_error,
@@ -990,6 +992,8 @@ decode_omp_directive (void)
       matchs ("parallel do simd", gfc_match_omp_parallel_do_simd,
 	      ST_OMP_PARALLEL_DO_SIMD);
       matcho ("parallel do", gfc_match_omp_parallel_do, ST_OMP_PARALLEL_DO);
+      matcho ("parallel master", gfc_match_omp_parallel_master,
+	      ST_OMP_PARALLEL_MASTER);
       matcho ("parallel sections", gfc_match_omp_parallel_sections,
 	      ST_OMP_PARALLEL_SECTIONS);
       matcho ("parallel workshare", gfc_match_omp_parallel_workshare,
@@ -1605,7 +1609,7 @@ next_statement (void)
 #define case_exec_markers case ST_DO: case ST_FORALL_BLOCK: \
   case ST_IF_BLOCK: case ST_BLOCK: case ST_ASSOCIATE: \
   case ST_WHERE_BLOCK: case ST_SELECT_CASE: case ST_SELECT_TYPE: \
-  case ST_SELECT_RANK: case ST_OMP_PARALLEL: \
+  case ST_SELECT_RANK: case ST_OMP_PARALLEL: case ST_OMP_PARALLEL_MASTER: \
   case ST_OMP_PARALLEL_SECTIONS: case ST_OMP_SECTIONS: case ST_OMP_ORDERED: \
   case ST_OMP_CRITICAL: case ST_OMP_MASTER: case ST_OMP_SINGLE: \
   case ST_OMP_DO: case ST_OMP_PARALLEL_DO: case ST_OMP_ATOMIC: \
@@ -2349,6 +2353,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_END_PARALLEL_DO_SIMD:
       p = "!$OMP END PARALLEL DO SIMD";
       break;
+    case ST_OMP_END_PARALLEL_MASTER:
+      p = "!$OMP END PARALLEL MASTER";
+      break;
     case ST_OMP_END_PARALLEL_SECTIONS:
       p = "!$OMP END PARALLEL SECTIONS";
       break;
@@ -2442,6 +2449,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_PARALLEL_DO_SIMD:
       p = "!$OMP PARALLEL DO SIMD";
+      break;
+    case ST_OMP_PARALLEL_MASTER:
+      p = "!$OMP PARALLEL MASTER";
       break;
     case ST_OMP_PARALLEL_SECTIONS:
       p = "!$OMP PARALLEL SECTIONS";
@@ -5255,6 +5265,9 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     case ST_OMP_PARALLEL:
       omp_end_st = ST_OMP_END_PARALLEL;
       break;
+    case ST_OMP_PARALLEL_MASTER:
+      omp_end_st = ST_OMP_END_PARALLEL_MASTER;
+      break;
     case ST_OMP_PARALLEL_SECTIONS:
       omp_end_st = ST_OMP_END_PARALLEL_SECTIONS;
       break;
@@ -5379,6 +5392,7 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
 		  break;
 
 		case ST_OMP_PARALLEL:
+		case ST_OMP_PARALLEL_MASTER:
 		case ST_OMP_PARALLEL_SECTIONS:
 		  parse_omp_structured_block (st, false);
 		  break;
@@ -5580,6 +5594,7 @@ parse_executable (gfc_statement st)
 	  break;
 
 	case ST_OMP_PARALLEL:
+	case ST_OMP_PARALLEL_MASTER:
 	case ST_OMP_PARALLEL_SECTIONS:
 	case ST_OMP_SECTIONS:
 	case ST_OMP_ORDERED:

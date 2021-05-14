@@ -10802,6 +10802,7 @@ gfc_resolve_blocks (gfc_code *b, gfc_namespace *ns)
 	case EXEC_OMP_PARALLEL:
 	case EXEC_OMP_PARALLEL_DO:
 	case EXEC_OMP_PARALLEL_DO_SIMD:
+	case EXEC_OMP_PARALLEL_MASTER:
 	case EXEC_OMP_PARALLEL_SECTIONS:
 	case EXEC_OMP_PARALLEL_WORKSHARE:
 	case EXEC_OMP_SECTIONS:
@@ -11763,6 +11764,7 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
 	    case EXEC_OMP_PARALLEL_DO_SIMD:
+	    case EXEC_OMP_PARALLEL_MASTER:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 	    case EXEC_OMP_TARGET_PARALLEL:
 	    case EXEC_OMP_TARGET_PARALLEL_DO:
@@ -12243,6 +12245,7 @@ start:
 	case EXEC_OMP_PARALLEL:
 	case EXEC_OMP_PARALLEL_DO:
 	case EXEC_OMP_PARALLEL_DO_SIMD:
+	case EXEC_OMP_PARALLEL_MASTER:
 	case EXEC_OMP_PARALLEL_SECTIONS:
 	case EXEC_OMP_PARALLEL_WORKSHARE:
 	  omp_workshare_save = omp_workshare_flag;
@@ -16039,7 +16042,8 @@ resolve_symbol (gfc_symbol *sym)
       && !(sym->ns->save_all && !sym->attr.automatic)
       && sym->module == NULL
       && (sym->ns->proc_name == NULL
-	  || sym->ns->proc_name->attr.flavor != FL_MODULE))
+	  || (sym->ns->proc_name->attr.flavor != FL_MODULE
+	      && !sym->ns->proc_name->attr.is_main_program)))
     gfc_error ("Threadprivate at %L isn't SAVEd", &sym->declared_at);
 
   /* Check omp declare target restrictions.  */
@@ -16050,7 +16054,8 @@ resolve_symbol (gfc_symbol *sym)
       && (!sym->attr.in_common
 	  && sym->module == NULL
 	  && (sym->ns->proc_name == NULL
-	      || sym->ns->proc_name->attr.flavor != FL_MODULE)))
+	      || (sym->ns->proc_name->attr.flavor != FL_MODULE
+		  && !sym->ns->proc_name->attr.is_main_program))))
     gfc_error ("!$OMP DECLARE TARGET variable %qs at %L isn't SAVEd",
 	       sym->name, &sym->declared_at);
 
