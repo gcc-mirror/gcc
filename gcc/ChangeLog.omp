@@ -1,6 +1,15 @@
 2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-05-03  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100321
+	* omp-low.c (lower_rec_input_clauses): Disable SIMT for user-defined
+	reduction.
+
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-04-29  Tom de Vries  <tdevries@suse.de>
 
 	* omp-expand.c (expand_omp_simd): Add step_orig, and replace uses of

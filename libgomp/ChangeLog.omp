@@ -1,6 +1,14 @@
 2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-05-03  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100321
+	* testsuite/libgomp.c/target-44.c: New test.
+
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-04-29  Tom de Vries  <tdevries@suse.de>
 
 	* testsuite/libgomp.c/pr81778.c: New test.
