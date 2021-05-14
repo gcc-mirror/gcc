@@ -1,3 +1,7 @@
+2021-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/pr100563.c: New test.
+
 2021-05-12  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/100571

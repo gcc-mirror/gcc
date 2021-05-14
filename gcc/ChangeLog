@@ -1,3 +1,34 @@
+2021-05-13  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2021-05-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+		    Joe Ramsay   <joe.ramsay@arm.com>
+
+	PR target/100419
+	* config/arm/arm_mve.h (__arm_vstrwq_scatter_offset): Fix wrong arguments.
+	(__arm_vcmpneq): Remove duplicate definition.
+	(__arm_vstrwq_scatter_offset_p): Likewise.
+	(__arm_vmaxq_x): Likewise.
+	(__arm_vmlsdavaq): Likewise.
+	(__arm_vmlsdavaxq): Likewise.
+	(__arm_vmlsdavq_p): Likewise.
+	(__arm_vmlsdavxq_p): Likewise.
+	(__arm_vrmlaldavhaq): Likewise.
+	(__arm_vstrbq_p): Likewise.
+	(__arm_vstrbq_scatter_offset): Likewise.
+	(__arm_vstrbq_scatter_offset_p): Likewise.
+	(__arm_vstrdq_scatter_offset): Likewise.
+	(__arm_vstrdq_scatter_offset_p): Likewise.
+	(__arm_vstrdq_scatter_shifted_offset): Likewise.
+	(__arm_vstrdq_scatter_shifted_offset_p): Likewise.
+
+2021-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100563
+	* config/arm/arm.c (arm_canonicalize_comparison): Correctly
+	canonicalize DImode inequality comparisons against the
+	maximum integral value.
+
 2021-05-12  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/100571
