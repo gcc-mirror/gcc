@@ -1,7 +1,23 @@
 2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-05-12  Tom de Vries  <tdevries@suse.de>
 
+	PR target/96005
+	* config/nvptx/nvptx-opts.h (enum ptx_version): New enum.
+	* config/nvptx/nvptx.c (nvptx_file_start): Print .version according
+	to ptx_version_option.
+	* config/nvptx/nvptx.h (TARGET_PTX_6_3): Define.
+	* config/nvptx/nvptx.md (define_insn "nvptx_shuffle<mode>")
+	(define_insn "nvptx_vote_ballot"): Use sync variant for
+	TARGET_PTX_6_3.
+	* config/nvptx/nvptx.opt (ptx_version): Add enum.
+	(mptx): Add option.
+	* doc/invoke.texi (Nvidia PTX Options): Add mptx item.
+
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-05-07  Tobias Burnus  <tobias@codesourcery.com>
 		    Tom de Vries  <tdevries@suse.de>
 

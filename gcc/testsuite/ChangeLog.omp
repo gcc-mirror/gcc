@@ -1,6 +1,14 @@
 2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/map-6.c: New test.
+	* c-c++-common/gomp/map-7.c: New test.
+
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-05-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR testsuite/100422

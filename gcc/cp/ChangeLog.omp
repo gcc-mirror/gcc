@@ -1,6 +1,14 @@
 2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_map): Support map-type-modifier
+	'close'.
+
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	* semantics.c (finish_omp_reduction_clause): Accept float + complex
