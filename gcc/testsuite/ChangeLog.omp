@@ -1,3 +1,10 @@
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc.dg/gomp/clause-1.c: Use 'reduction(&:..)' instead of '...(&&:..)'.
+
 2021-05-07  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* c-c++-common/goacc/firstprivate-mappings-1.c: Fix up for C,

@@ -6091,6 +6091,8 @@ finish_omp_reduction_clause (tree c, enum c_omp_region_type ort,
       case PLUS_EXPR:
       case MULT_EXPR:
       case MINUS_EXPR:
+      case TRUTH_ANDIF_EXPR:
+      case TRUTH_ORIF_EXPR:
 	predefined = true;
 	break;
       case MIN_EXPR:
@@ -6103,12 +6105,6 @@ finish_omp_reduction_clause (tree c, enum c_omp_region_type ort,
       case BIT_IOR_EXPR:
       case BIT_XOR_EXPR:
 	if (FLOAT_TYPE_P (type) || TREE_CODE (type) == COMPLEX_TYPE)
-	  break;
-	predefined = true;
-	break;
-      case TRUTH_ANDIF_EXPR:
-      case TRUTH_ORIF_EXPR:
-	if (FLOAT_TYPE_P (type))
 	  break;
 	predefined = true;
 	break;
