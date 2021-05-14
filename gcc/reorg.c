@@ -2375,6 +2375,16 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
       if (! insn_references_resource_p (trial, &set, true)
 	  && ! insn_sets_resource_p (trial, filter_flags ? &fset : &set, true)
 	  && ! insn_sets_resource_p (trial, &needed, true)
+	  /* If we're handling sets to the flags register specially, we
+	     only allow an insn into a delay-slot, if it either:
+	     - doesn't set the flags register,
+	     - the "set" of the flags register isn't used (clobbered),
+	     - insns between the delay-slot insn and the trial-insn
+	     as accounted in "set", have not affected the flags register.  */
+	  && (! filter_flags
+	      || ! insn_sets_resource_p (trial, &flags_res, true)
+	      || find_regno_note (trial, REG_UNUSED, targetm.flags_regnum)
+	      || ! TEST_HARD_REG_BIT (set.regs, targetm.flags_regnum))
 	  && ! can_throw_internal (trial))
 	{
 	  rtx_insn *prior_insn;
