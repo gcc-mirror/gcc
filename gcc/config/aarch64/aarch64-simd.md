@@ -4859,7 +4859,7 @@
 	(vec_concat:<VNARROWQ2>
 	  (match_operand:<VNARROWQ> 1 "register_operand" "0")
 	  (unspec:<VNARROWQ>
-	    [(match_operand:VQN 2 "register_operand" "w")] UNSPEC_SQXTUN2)))]
+	    [(match_operand:VQN 2 "register_operand" "w")] UNSPEC_SQXTUN)))]
   "TARGET_SIMD && !BYTES_BIG_ENDIAN"
   "sqxtun2\\t%0.<V2ntype>, %2.<Vtype>"
    [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
@@ -4869,7 +4869,7 @@
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
 	(vec_concat:<VNARROWQ2>
 	  (unspec:<VNARROWQ>
-	    [(match_operand:VQN 2 "register_operand" "w")] UNSPEC_SQXTUN2)
+	    [(match_operand:VQN 2 "register_operand" "w")] UNSPEC_SQXTUN)
 	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "sqxtun2\\t%0.<V2ntype>, %2.<Vtype>"
@@ -4880,7 +4880,7 @@
   [(match_operand:<VNARROWQ2> 0 "register_operand")
    (match_operand:<VNARROWQ> 1 "register_operand")
    (unspec:<VNARROWQ>
-     [(match_operand:VQN 2 "register_operand")] UNSPEC_SQXTUN2)]
+     [(match_operand:VQN 2 "register_operand")] UNSPEC_SQXTUN)]
   "TARGET_SIMD"
   {
     if (BYTES_BIG_ENDIAN)
