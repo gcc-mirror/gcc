@@ -8,6 +8,7 @@ in the git commit message.
 
 Here is a checklist to help you with your PR.
 
+- \[ ] GCC code require copyright assignment: https://gcc.gnu.org/contribute.html
 - \[ ] Read contributing guidlines
 - \[ ] `make check-rust` passes locally
 - \[ ] Run `clang-format`
