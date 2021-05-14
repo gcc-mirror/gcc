@@ -1,3 +1,102 @@
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100574
+	* builtins.c (access_ref::get_ref): Improve detection of PHIs with
+	all null arguments.
+
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93100
+	PR middle-end/98583
+	* tree-ssa-uninit.c (check_defs): Exclude intrinsic functions that
+	don't modify referenced objects.
+
+2021-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/100453
+	* tree-sra.c (sra_modify_assign): All const base accesses do not
+	need refreshing, not just those from decl_pool.
+	(sra_modify_assign): Do not refresh into a const base decl.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-dom.c: Remove m_simplifier.
+
+2021-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100563
+	* config/arm/arm.c (arm_canonicalize_comparison): Correctly
+	canonicalize DImode inequality comparisons against the
+	maximum integral value.
+
+2021-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98856
+	* config/i386/i386.c (ix86_shift_rotate_cost): Add CODE argument.
+	Expect V2DI and V4DI arithmetic right shifts to be emulated.
+	(ix86_rtx_costs, ix86_add_stmt_cost): Adjust ix86_shift_rotate_cost
+	caller.
+	* config/i386/i386-expand.c (expand_vec_perm_2perm_interleave,
+	expand_vec_perm_2perm_pblendv): New functions.
+	(ix86_expand_vec_perm_const_1): Use them.
+	* config/i386/sse.md (ashr<mode>3<mask_name>): Rename to ...
+	(<mask_codefor>ashr<mode>3<mask_name>): ... this.
+	(ashr<mode>3): New define_expand with VI248_AVX512BW iterator.
+	(ashrv4di3): New define_expand.
+	(ashrv2di3): Change condition to TARGET_SSE2, handle !TARGET_XOP
+	and !TARGET_AVX512VL expansion.
+
+2021-05-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100581
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc): Force mode
+	sizes < 16 to a register when constructing vpcmov pattern.
+	* config/i386/mmx.md (*xop_pcmov_<mode>): Use MMXMODE124 mode.
+
+2021-05-13  marxin  <mliska@suse.cz>
+
+	* gcov-io.c (gcov_write_block): Remove.
+	(gcov_write_words): Likewise.
+	(gcov_read_words): Re-implement using gcov_read_bytes.
+	(gcov_allocate): Remove.
+	(GCOV_BLOCK_SIZE): Likewise.
+	(struct gcov_var): Remove most of the fields.
+	(gcov_position): Implement with ftell.
+	(gcov_rewrite): Remove setting of start and offset fields.
+	(from_file): Re-format.
+	(gcov_open): Remove setbuf call. It should not be needed.
+	(gcov_close): Remove internal buffer handling.
+	(gcov_magic): Use __builtin_bswap32.
+	(gcov_write_counter): Use directly gcov_write_unsigned.
+	(gcov_write_string): Use direct fwrite and do not round
+	to 4 bytes.
+	(gcov_seek): Use directly fseek.
+	(gcov_write_tag): Use gcov_write_unsigned directly.
+	(gcov_write_length): Likewise.
+	(gcov_write_tag_length): Likewise.
+	(gcov_read_bytes): Use directly fread.
+	(gcov_read_unsigned): Use gcov_read_words.
+	(gcov_read_counter): Likewise.
+	(gcov_read_string): Use gcov_read_bytes.
+	* gcov-io.h (GCOV_WORD_SIZE): Adjust to reflect
+	that size is not in bytes, but words (4B).
+	(GCOV_TAG_FUNCTION_LENGTH): Likewise.
+	(GCOV_TAG_ARCS_LENGTH): Likewise.
+	(GCOV_TAG_ARCS_NUM): Likewise.
+	(GCOV_TAG_COUNTER_LENGTH): Likewise.
+	(GCOV_TAG_COUNTER_NUM): Likewise.
+	(GCOV_TAG_SUMMARY_LENGTH): Likewise.
+
+2021-05-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/94680
+	* config/i386/sse.md (ssedoublevecmode): Add attribute for
+	V64QI/V32HI/V16SI/V4DI.
+	(ssehalfvecmode): Add attribute for V2DI/V2DF.
+	(*vec_concatv4si_0): Extend to VI124_128.
+	(*vec_concat<mode>_0): New pre-reload splitter.
+	* config/i386/predicates.md (movq_parallel): New predicate.
+
 2021-05-13  Alexandre Oliva  <oliva@adacore.com>
 
 	* targhooks.c (default_zero_call_used_regs): Retry using

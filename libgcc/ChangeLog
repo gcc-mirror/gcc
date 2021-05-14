@@ -1,3 +1,11 @@
+2021-05-13  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/mpyll.S (__pruabi_mpyll): Place into own section.
+
+2021-05-13  marxin  <mliska@suse.cz>
+
+	* libgcov-driver.c: Fix GNU coding style.
+
 2021-05-10  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver.c (gcov_version): Use different name that does

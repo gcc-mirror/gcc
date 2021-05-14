@@ -1,3 +1,8 @@
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100550
+	* c-decl.c (get_parm_array_spec): Avoid erroneous VLA bounds.
+
 2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* c-parser.c (c_parser_omp_clause_map): Support map-type-modifier

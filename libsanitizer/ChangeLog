@@ -1,3 +1,19 @@
+2021-05-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* LOCAL_PATCHES: Add Darwin patch for __builtin_os_log_format.
+
+2021-05-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* sanitizer_common/sanitizer_mac.cpp : Check for the
+	availability of __builtin_os_log_format before trying to
+	include a header depending on it.
+	(OS_LOG_DEFAULT): New.
+	(os_log_error): Define to a fall-back using an older API.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update to the corresponding revision.
+
 2021-04-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/100114
