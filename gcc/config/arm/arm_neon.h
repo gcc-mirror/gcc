@@ -2919,112 +2919,112 @@ __extension__ extern __inline uint8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_s8 (int8x8_t __a, int8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vtstv8qi (__a, __b);
+  return (uint8x8_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_s16 (int16x4_t __a, int16x4_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vtstv4hi (__a, __b);
+  return (uint16x4_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_s32 (int32x2_t __a, int32x2_t __b)
 {
-  return (uint32x2_t)__builtin_neon_vtstv2si (__a, __b);
+  return (uint32x2_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_u8 (uint8x8_t __a, uint8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vtstv8qi ((int8x8_t) __a, (int8x8_t) __b);
+  return (uint8x8_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_u16 (uint16x4_t __a, uint16x4_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vtstv4hi ((int16x4_t) __a, (int16x4_t) __b);
+  return (uint16x4_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint32x2_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_u32 (uint32x2_t __a, uint32x2_t __b)
 {
-  return (uint32x2_t)__builtin_neon_vtstv2si ((int32x2_t) __a, (int32x2_t) __b);
+  return (uint32x2_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint8x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_p8 (poly8x8_t __a, poly8x8_t __b)
 {
-  return (uint8x8_t)__builtin_neon_vtstv8qi ((int8x8_t) __a, (int8x8_t) __b);
+  return (uint8x8_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint16x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtst_p16 (poly16x4_t __a, poly16x4_t __b)
 {
-  return (uint16x4_t)__builtin_neon_vtstv4hi ((int16x4_t) __a, (int16x4_t) __b);
+  return (uint16x4_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_s8 (int8x16_t __a, int8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vtstv16qi (__a, __b);
+  return (uint8x16_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_s16 (int16x8_t __a, int16x8_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vtstv8hi (__a, __b);
+  return (uint16x8_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_s32 (int32x4_t __a, int32x4_t __b)
 {
-  return (uint32x4_t)__builtin_neon_vtstv4si (__a, __b);
+  return (uint32x4_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_u8 (uint8x16_t __a, uint8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vtstv16qi ((int8x16_t) __a, (int8x16_t) __b);
+  return (uint8x16_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_u16 (uint16x8_t __a, uint16x8_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vtstv8hi ((int16x8_t) __a, (int16x8_t) __b);
+  return (uint16x8_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint32x4_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_u32 (uint32x4_t __a, uint32x4_t __b)
 {
-  return (uint32x4_t)__builtin_neon_vtstv4si ((int32x4_t) __a, (int32x4_t) __b);
+  return (uint32x4_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint8x16_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_p8 (poly8x16_t __a, poly8x16_t __b)
 {
-  return (uint8x16_t)__builtin_neon_vtstv16qi ((int8x16_t) __a, (int8x16_t) __b);
+  return (uint8x16_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline uint16x8_t
 __attribute__  ((__always_inline__, __gnu_inline__, __artificial__))
 vtstq_p16 (poly16x8_t __a, poly16x8_t __b)
 {
-  return (uint16x8_t)__builtin_neon_vtstv8hi ((int16x8_t) __a, (int16x8_t) __b);
+  return (uint16x8_t) ((__a & __b) != 0);
 }
 
 __extension__ extern __inline int8x8_t
