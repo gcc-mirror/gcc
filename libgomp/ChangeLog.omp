@@ -1,3 +1,12 @@
+2021-05-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from mainline
+	2021-05-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* task.c (omp_fulfill_event): Call gomp_team_barrier_set_task_pending
+	if new tasks generated.
+	* testsuite/libgomp.c-c++-common/task-detach-13.c: New.
+
 2021-05-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
