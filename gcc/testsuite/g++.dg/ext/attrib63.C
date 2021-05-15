@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-psabi" }
 
 #define vector __attribute__((vector_size(16)))
 class A {
