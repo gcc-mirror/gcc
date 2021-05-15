@@ -1,3 +1,24 @@
+2021-05-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95870
+	* pt.c (enclosing_instantiation_of): Just compare
+	DECL_SOURCE_LOCATION.
+	(regenerate_decl_from_template): Copy DECL_SOURCE_LOCATION.
+
+2021-05-14  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/99032
+	* cp-tree.h (any_non_type_attribute_p): Declare.
+	* decl.c (grokdeclarator): Diagnose when an attribute appertains to
+	a friend declaration that is not a definition.
+	* decl2.c (any_non_type_attribute_p): New.
+	* parser.c (cp_parser_decl_specifier_seq): Diagnose standard attributes
+	in the middle of decl-specifiers.
+	(cp_parser_elaborated_type_specifier): Diagnose when an attribute
+	appertains to a friend declaration that is not a definition.
+	(cp_parser_member_declaration): Likewise.
+
 2021-05-12  Marek Polacek  <polacek@redhat.com>
 
 	* pt.c (tsubst_copy_and_build): Add warn_int_in_bool_context

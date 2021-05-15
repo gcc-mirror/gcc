@@ -1,3 +1,9 @@
+2021-05-14  Martin Liska  <mliska@suse.cz>
+
+	* doc/Makefile: Add gnat-style target.
+	* doc/share/conf.py: Likewise.
+	* doc/gnat-style.rst: New file.
+
 2021-05-12  Bob Duff  <duff@adacore.com>
 
 	PR ada/100564

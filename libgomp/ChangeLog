@@ -1,3 +1,7 @@
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/parallel-master.f90: New test.
+
 2021-05-13  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/100569

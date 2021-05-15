@@ -1,3 +1,58 @@
+2021-05-14  Jason Merrill  <jason@redhat.com>
+
+	* intl.h: Add comments.
+
+2021-05-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_sqdml<SBINQOPS:as>l2_lane<mode>_internal): Split into...
+	(aarch64_sqdmlsl2_lane<mode>_internal): ... This...
+	(aarch64_sqdmlal2_lane<mode>_internal): ... And this.
+	(aarch64_sqdml<SBINQOPS:as>l2_laneq<mode>_internal): Split into ...
+	(aarch64_sqdmlsl2_laneq<mode>_internal): ... This...
+	(aarch64_sqdmlal2_laneq<mode>_internal): ... And this.
+	(aarch64_sqdml<SBINQOPS:as>l2_n<mode>_internal): Split into...
+	(aarch64_sqdmlsl2_n<mode>_internal): ... This...
+	(aarch64_sqdmlal2_n<mode>_internal): ... And this.
+
+2021-05-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h (vtst_s8): Replace call to vtst builtin with it's
+	boolean logic equivalent.
+	(vtst_s16): Likewise.
+	(vtst_s32): Likewise.
+	(vtst_u8): Likewise.
+	(vtst_u16): Likewise.
+	(vtst_u32): Likewise.
+	(vtst_p8): Likewise.
+	(vtst_p16): Likewise.
+	(vtstq_s8): Likewise.
+	(vtstq_s16): Likewise.
+	(vtstq_s32): Likewise.
+	(vtstq_u8): Likewise.
+	(vtstq_u16): Likewise.
+	(vtstq_u32): Likewise.
+	(vtstq_p8): Likewise.
+	(vtstq_p16): Likewise.
+	* config/arm/arm_neon_builtins.def: Remove entry for vtst.
+	* config/arm/neon.md (neon_vtst<mode>): Remove pattern.
+
+2021-05-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_sqdmlal2<mode>): Merge into...
+	(aarch64_sqdml<SBINQOPS:as>l2<mode>): ... This.
+	(aarch64_sqdmlsl2<mode>): Delete.
+	(aarch64_sqdmlal2_lane<mode>): Merge this...
+	(aarch64_sqdmlsl2_lane<mode>): ... And this...
+	(aarch64_sqdml<SBINQOPS:as>l2_lane<mode>): ... Into this.
+	(aarch64_sqdmlal2_laneq<mode>): Merge this...
+	(aarch64_sqdmlsl2_laneq<mode>): ... And this...
+	(aarch64_sqdml<SBINQOPS:as>l2_laneq<mode>): ... Into this.
+	(aarch64_sqdmlal2_n<mode>): Merge this...
+	(aarch64_sqdmlsl2_n<mode>): ... And this...
+	(aarch64_sqdml<SBINQOPS:as>l2_n<mode>): ... Into this.
+
 2021-05-13  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/100574

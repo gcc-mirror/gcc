@@ -1,3 +1,45 @@
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/parallel-master-1.f90: New test.
+	* gfortran.dg/gomp/parallel-master-2.f90: New test.
+
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/implicit-save.f90: New test.
+
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95226
+	* g++.dg/cpp1y/pr95226.C: New test.
+
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94616
+	* g++.dg/cpp0x/pr94616.C: New test.
+
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90019
+	* g++.dg/cpp0x/sfinae68.C: New test.
+
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1y/pr88872.C: New test.
+
+2021-05-14  Michael de Lang  <kingoipo@gmail.com>
+
+	* g++.dg/tsan/pthread_cond_clockwait.C: New test.
+
+2021-05-14  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/99032
+	* g++.dg/cpp0x/friend7.C: New test.
+	* g++.dg/cpp0x/gen-attrs-4.C: Add dg-error.
+	* g++.dg/cpp0x/gen-attrs-39-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-74.C: New test.
+	* g++.dg/ext/attrib63.C: New test.
+
 2021-05-13  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/93100
