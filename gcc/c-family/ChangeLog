@@ -1,3 +1,10 @@
+2021-05-14  Martin Liska  <mliska@suse.cz>
+
+	Backported from master:
+	2021-05-14  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Add Warning keyword for 2 options.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.
