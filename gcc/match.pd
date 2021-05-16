@@ -4840,7 +4840,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (cond
   (ne (bit_and @0 integer_pow2p@1) integer_zerop)
   INTEGER_CST@2 integer_zerop)
- (if (integer_pow2p (@2))
+ (if (!POINTER_TYPE_P (type) && integer_pow2p (@2))
   (with {
      int shift = (wi::exact_log2 (wi::to_wide (@2))
 		  - wi::exact_log2 (wi::to_wide (@1)));
