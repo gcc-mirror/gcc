@@ -1256,6 +1256,7 @@ package body Lib.Writ is
          if Units.Table (Unit).Generate_Code or else Unit = Main_Unit then
             if not Has_No_Elaboration_Code (Cunit (Unit)) then
                Main_Restrictions.Violated (No_Elaboration_Code) := True;
+               exit;
             end if;
          end if;
       end loop;
