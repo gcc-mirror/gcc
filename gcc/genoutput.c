@@ -757,6 +757,7 @@ validate_insn_alternatives (class data *d)
 	int which_alternative = 0;
 	int alternative_count_unsure = 0;
 	bool seen_write = false;
+	bool alt_mismatch = false;
 
 	for (p = d->operand[start].constraint; (c = *p); p += len)
 	  {
@@ -813,8 +814,19 @@ validate_insn_alternatives (class data *d)
 	    if (n == 0)
 	      n = d->operand[start].n_alternatives;
 	    else if (n != d->operand[start].n_alternatives)
-	      error_at (d->loc, "wrong number of alternatives in operand %d",
-			start);
+	      {
+		if (!alt_mismatch)
+		  {
+		    alt_mismatch = true;
+		    error_at (d->loc,
+			      "alternative number mismatch: "
+			      "operand %d has %d, operand %d has %d",
+			      0, n, start, d->operand[start].n_alternatives);
+		  }
+		else
+		  error_at (d->loc, "operand %d has %d alternatives",
+		    start, d->operand[start].n_alternatives);
+	      }
 	  }
       }
 
