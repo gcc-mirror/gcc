@@ -1719,7 +1719,8 @@ defer_stack_allocation (tree var, bool toplevel)
 */
 
 static poly_uint64
-expand_one_var (tree var, bool toplevel, bool really_expand)
+expand_one_var (tree var, bool toplevel, bool really_expand,
+		bitmap forced_stack_var = NULL)
 {
   unsigned int align = BITS_PER_UNIT;
   tree origvar = var;
@@ -1797,7 +1798,9 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
 	    expand_one_error_var (var);
 	}
     }
-  else if (use_register_for_decl (var))
+  else if (use_register_for_decl (var)
+	   && (!forced_stack_var
+	       || !bitmap_bit_p (forced_stack_var, DECL_UID (var))))
     {
       if (really_expand)
         expand_one_register_var (origvar);
@@ -1842,7 +1845,7 @@ expand_one_var (tree var, bool toplevel, bool really_expand)
    TOPLEVEL is true if this is the outermost BLOCK.  */
 
 static void
-expand_used_vars_for_block (tree block, bool toplevel)
+expand_used_vars_for_block (tree block, bool toplevel, bitmap forced_stack_vars)
 {
   tree t;
 
@@ -1851,11 +1854,11 @@ expand_used_vars_for_block (tree block, bool toplevel)
     if (TREE_USED (t)
         && ((!VAR_P (t) && TREE_CODE (t) != RESULT_DECL)
 	    || !DECL_NONSHAREABLE (t)))
-      expand_one_var (t, toplevel, true);
+      expand_one_var (t, toplevel, true, forced_stack_vars);
 
   /* Expand all variables at containing levels.  */
   for (t = BLOCK_SUBBLOCKS (block); t ; t = BLOCK_CHAIN (t))
-    expand_used_vars_for_block (t, false);
+    expand_used_vars_for_block (t, false, forced_stack_vars);
 }
 
 /* A subroutine of expand_used_vars.  Walk down through the BLOCK tree
@@ -2139,7 +2142,7 @@ stack_protect_return_slot_p ()
 /* Expand all variables used in the function.  */
 
 static rtx_insn *
-expand_used_vars (void)
+expand_used_vars (bitmap forced_stack_vars)
 {
   tree var, outer_block = DECL_INITIAL (current_function_decl);
   auto_vec<tree> maybe_local_decls;
@@ -2216,7 +2219,7 @@ expand_used_vars (void)
       TREE_USED (var) = 1;
 
       if (expand_now)
-	expand_one_var (var, true, true);
+	expand_one_var (var, true, true, forced_stack_vars);
 
     next:
       if (DECL_ARTIFICIAL (var) && !DECL_IGNORED_P (var))
@@ -2251,7 +2254,7 @@ expand_used_vars (void)
 
   /* At this point, all variables within the block tree with TREE_USED
      set are actually used by the optimized function.  Lay them out.  */
-  expand_used_vars_for_block (outer_block, true);
+  expand_used_vars_for_block (outer_block, true, forced_stack_vars);
 
   tree attribs = DECL_ATTRIBUTES (current_function_decl);
   if (stack_vars_num > 0)
@@ -6241,9 +6244,10 @@ construct_exit_block (void)
 
 static tree
 discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
-				   void *data ATTRIBUTE_UNUSED)
+				   void *data)
 {
   tree t = *tp;
+  bitmap forced_stack_vars = (bitmap)((walk_stmt_info *)data)->info;
 
   if (IS_TYPE_OR_DECL_P (t))
     *walk_subtrees = 0;
@@ -6267,8 +6271,9 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
 	{
 	  t = get_base_address (t);
 	  if (t && DECL_P (t)
-              && DECL_MODE (t) != BLKmode)
-	    TREE_ADDRESSABLE (t) = 1;
+	      && DECL_MODE (t) != BLKmode
+	      && !TREE_ADDRESSABLE (t))
+	    bitmap_set_bit (forced_stack_vars, DECL_UID (t));
 	}
 
       *walk_subtrees = 0;
@@ -6283,9 +6288,10 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
       tree base = get_base_address (t);
       if (base
 	  && DECL_P (base)
+	  && !TREE_ADDRESSABLE (base)
 	  && DECL_MODE (base) != BLKmode
 	  && GET_MODE_SIZE (DECL_MODE (base)).is_constant ())
-	TREE_ADDRESSABLE (base) = 1;
+	bitmap_set_bit (forced_stack_vars, DECL_UID (base));
       *walk_subtrees = 0;
     }
 
@@ -6298,7 +6304,7 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
    suitable for raw bits processing (like XFmode on i?86).  */
 
 static void
-avoid_type_punning_on_regs (tree t)
+avoid_type_punning_on_regs (tree t, bitmap forced_stack_vars)
 {
   machine_mode access_mode = TYPE_MODE (TREE_TYPE (t));
   if (access_mode != BLKmode
@@ -6312,7 +6318,7 @@ avoid_type_punning_on_regs (tree t)
 		   GET_MODE_BITSIZE (GET_MODE_INNER (DECL_MODE (base))))
       /* Double check in the expensive way we really would get a pseudo.  */
       && use_register_for_decl (base))
-    TREE_ADDRESSABLE (base) = 1;
+    bitmap_set_bit (forced_stack_vars, DECL_UID (base));
 }
 
 /* RTL expansion is not able to compile array references with variable
@@ -6321,38 +6327,49 @@ avoid_type_punning_on_regs (tree t)
    scenario.  */
 
 static void
-discover_nonconstant_array_refs (void)
+discover_nonconstant_array_refs (bitmap forced_stack_vars)
 {
   basic_block bb;
   gimple_stmt_iterator gsi;
 
+  walk_stmt_info wi = {};
+  wi.info = forced_stack_vars;
   FOR_EACH_BB_FN (bb, cfun)
     for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple *stmt = gsi_stmt (gsi);
 	if (!is_gimple_debug (stmt))
 	  {
-	    walk_gimple_op (stmt, discover_nonconstant_array_refs_r, NULL);
+	    walk_gimple_op (stmt, discover_nonconstant_array_refs_r, &wi);
 	    gcall *call = dyn_cast <gcall *> (stmt);
 	    if (call && gimple_call_internal_p (call))
-	      switch (gimple_call_internal_fn (call))
-		{
-		case IFN_LOAD_LANES:
-		  /* The source must be a MEM.  */
-		  mark_addressable (gimple_call_arg (call, 0));
-		  break;
-		case IFN_STORE_LANES:
-		  /* The destination must be a MEM.  */
-		  mark_addressable (gimple_call_lhs (call));
-		  break;
-		default:
-		  break;
-		}
+	      {
+		tree cand = NULL_TREE;
+		switch (gimple_call_internal_fn (call))
+		  {
+		  case IFN_LOAD_LANES:
+		    /* The source must be a MEM.  */
+		    cand = gimple_call_arg (call, 0);
+		    break;
+		  case IFN_STORE_LANES:
+		    /* The destination must be a MEM.  */
+		    cand = gimple_call_lhs (call);
+		    break;
+		  default:
+		    break;
+		  }
+		if (cand)
+		  cand = get_base_address (cand);
+		if (cand
+		    && DECL_P (cand)
+		    && use_register_for_decl (cand))
+		  bitmap_set_bit (forced_stack_vars, DECL_UID (cand));
+	      }
 	    if (gimple_vdef (stmt))
 	      {
 		tree t = gimple_get_lhs (stmt);
 		if (t && REFERENCE_CLASS_P (t))
-		  avoid_type_punning_on_regs (t);
+		  avoid_type_punning_on_regs (t, forced_stack_vars);
 	      }
 	  }
       }
@@ -6553,7 +6570,8 @@ pass_expand::execute (function *fun)
     }
 
   /* Mark arrays indexed with non-constant indices with TREE_ADDRESSABLE.  */
-  discover_nonconstant_array_refs ();
+  auto_bitmap forced_stack_vars;
+  discover_nonconstant_array_refs (forced_stack_vars);
 
   /* Make sure all values used by the optimization passes have sane
      defaults.  */
@@ -6601,7 +6619,7 @@ pass_expand::execute (function *fun)
   timevar_push (TV_VAR_EXPAND);
   start_sequence ();
 
-  var_ret_seq = expand_used_vars ();
+  var_ret_seq = expand_used_vars (forced_stack_vars);
 
   var_seq = get_insns ();
   end_sequence ();
@@ -6621,8 +6639,33 @@ pass_expand::execute (function *fun)
 		 (int) param_ssp_buffer_size);
     }
 
+  /* Temporarily mark PARM_DECLs and RESULT_DECLs we need to expand to
+     memory addressable so expand_function_start can emit the required
+     copies.  */
+  auto_vec<tree, 16> marked_parms;
+  for (tree parm = DECL_ARGUMENTS (current_function_decl); parm;
+       parm = DECL_CHAIN (parm))
+    if (!TREE_ADDRESSABLE (parm)
+	&& bitmap_bit_p (forced_stack_vars, DECL_UID (parm)))
+      {
+	TREE_ADDRESSABLE (parm) = 1;
+	marked_parms.safe_push (parm);
+      }
+  if (DECL_RESULT (current_function_decl)
+      && !TREE_ADDRESSABLE (DECL_RESULT (current_function_decl))
+      && bitmap_bit_p (forced_stack_vars,
+		       DECL_UID (DECL_RESULT (current_function_decl))))
+    {
+      TREE_ADDRESSABLE (DECL_RESULT (current_function_decl)) = 1;
+      marked_parms.safe_push (DECL_RESULT (current_function_decl));
+    }
+
   /* Set up parameters and prepare for return, for the function.  */
   expand_function_start (current_function_decl);
+
+  /* Clear TREE_ADDRESSABLE again.  */
+  while (!marked_parms.is_empty ())
+    TREE_ADDRESSABLE (marked_parms.pop ()) = 0;
 
   /* If we emitted any instructions for setting up the variables,
      emit them before the FUNCTION_START note.  */
