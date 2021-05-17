@@ -3314,7 +3314,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 loop.texi generic.texi gimple.texi plugins.texi optinfo.texi   \
 	 match-and-simplify.texi analyzer.texi ux.texi poly-int.texi
 
-TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
+TEXI_GCCINSTALL_FILES = install.texi fdl.texi		\
 	 gcc-common.texi gcc-vers.texi
 
 TEXI_CPPINT_FILES = cppinternals.texi gcc-common.texi gcc-vers.texi

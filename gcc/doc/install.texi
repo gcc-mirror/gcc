@@ -36,9 +36,6 @@
 @ifset binarieshtml
 @settitle Installing GCC: Binaries
 @end ifset
-@ifset oldhtml
-@settitle Installing GCC: Old documentation
-@end ifset
 @ifset gfdlhtml
 @settitle Installing GCC: GNU Free Documentation License
 @end ifset
@@ -62,7 +59,6 @@
 @set testhtml
 @set finalinstallhtml
 @set binarieshtml
-@set oldhtml
 @set gfdlhtml
 @end ifnothtml
 
@@ -119,8 +115,6 @@ Free Documentation License}''.
 
 * Specific::        Host/target specific installation notes for GCC.
 * Binaries::        Where to get pre-compiled binaries.
-
-* Old::             Old installation documentation.
 
 * GNU Free Documentation License:: How you can copy and share this manual.
 * Concept Index::   This index has two entries.
@@ -3446,7 +3440,7 @@ links to GNU Fortran binaries for several platforms.
 @c ***Specific****************************************************************
 @ifnothtml
 @comment node-name,     next,          previous, up
-@node    Specific, Old, Binaries, Top
+@node    Specific, GNU Free Documentation License, Binaries, Top
 @end ifnothtml
 @ifset specifichtml
 @ifnothtml
@@ -5131,18 +5125,6 @@ inlines, vtables and template instantiations will be discarded
 automatically.
 
 
-@html
-<hr />
-<p>
-@end html
-@ifhtml
-@uref{./index.html,,Return to the GCC Installation page}
-@end ifhtml
-@end ifset
-
-@c ***Old documentation******************************************************
-@ifset oldhtml
-@include install-old.texi
 @html
 <hr />
 <p>
