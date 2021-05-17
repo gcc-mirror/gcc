@@ -737,6 +737,7 @@ gfc_finish_var_decl (tree decl, gfc_symbol * sym)
   /* Keep variables larger than max-stack-var-size off stack.  */
   if (!(sym->ns->proc_name && sym->ns->proc_name->attr.recursive)
       && !sym->attr.automatic
+      && sym->attr.save != SAVE_EXPLICIT
       && INTEGER_CST_P (DECL_SIZE_UNIT (decl))
       && !gfc_can_put_var_on_stack (DECL_SIZE_UNIT (decl))
 	 /* Put variable length auto array pointers always into stack.  */
