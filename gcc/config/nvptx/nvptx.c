@@ -2444,6 +2444,53 @@ nvptx_output_mov_insn (rtx dst, rtx src)
   return "%.\tcvt%t0%t1\t%0, %1;";
 }
 
+/* Output a pre/post barrier for MEM_OPERAND according to MEMMODEL.  */
+
+static void
+nvptx_output_barrier (rtx *mem_operand, int memmodel, bool pre_p)
+{
+  bool post_p = !pre_p;
+
+  switch (memmodel)
+    {
+    case MEMMODEL_RELAXED:
+      return;
+    case MEMMODEL_CONSUME:
+    case MEMMODEL_ACQUIRE:
+    case MEMMODEL_SYNC_ACQUIRE:
+      if (post_p)
+	break;
+      return;
+    case MEMMODEL_RELEASE:
+    case MEMMODEL_SYNC_RELEASE:
+      if (pre_p)
+	break;
+      return;
+    case MEMMODEL_ACQ_REL:
+    case MEMMODEL_SEQ_CST:
+    case MEMMODEL_SYNC_SEQ_CST:
+      if (pre_p || post_p)
+	break;
+      return;
+    default:
+      gcc_unreachable ();
+    }
+
+  output_asm_insn ("%.\tmembar%B0;", mem_operand);
+}
+
+const char *
+nvptx_output_atomic_insn (const char *asm_template, rtx *operands, int mem_pos,
+			  int memmodel_pos)
+{
+  nvptx_output_barrier (&operands[mem_pos], INTVAL (operands[memmodel_pos]),
+			true);
+  output_asm_insn (asm_template, operands);
+  nvptx_output_barrier (&operands[mem_pos], INTVAL (operands[memmodel_pos]),
+			false);
+  return "";
+}
+
 static void nvptx_print_operand (FILE *, rtx, int);
 
 /* Output INSN, which is a call to CALLEE with result RESULT.  For ptx, this
@@ -2660,6 +2707,36 @@ nvptx_print_operand (FILE *file, rtx x, int code)
 
   switch (code)
     {
+    case 'B':
+      if (SYMBOL_REF_P (XEXP (x, 0)))
+	switch (SYMBOL_DATA_AREA (XEXP (x, 0)))
+	  {
+	  case DATA_AREA_GENERIC:
+	    /* Assume worst-case: global.  */
+	    gcc_fallthrough (); /* FALLTHROUGH.  */
+	  case DATA_AREA_GLOBAL:
+	    break;
+	  case DATA_AREA_SHARED:
+	    fputs (".cta", file);
+	    return;
+	  case DATA_AREA_LOCAL:
+	  case DATA_AREA_CONST:
+	  case DATA_AREA_PARAM:
+	  default:
+	    gcc_unreachable ();
+	  }
+
+      /* There are 2 cases where membar.sys differs from membar.gl:
+	 - host accesses global memory (f.i. systemwide atomics)
+	 - 2 or more devices are setup in peer-to-peer mode, and one
+	   peer can access global memory of other peer.
+	 Neither are currently supported by openMP/OpenACC on nvptx, but
+	 that could change, so we default to membar.sys.  We could support
+	 this more optimally by adding DATA_AREA_SYS and then emitting
+	 .gl for DATA_AREA_GLOBAL and .sys for DATA_AREA_SYS.  */
+      fputs (".sys", file);
+      return;
+
     case 'A':
       x = XEXP (x, 0);
       gcc_fallthrough (); /* FALLTHROUGH. */
