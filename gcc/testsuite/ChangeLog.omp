@@ -1,3 +1,11 @@
+2021-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/parallel-master-1.f90: New test.
+	* gfortran.dg/gomp/parallel-master-2.f90: New test.
+
 2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

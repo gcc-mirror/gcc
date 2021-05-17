@@ -1,7 +1,13 @@
+2021-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/parallel-master.f90: New test.
+
 2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
-
 	2021-05-07  Tobias Burnus  <tobias@codesourcery.com>
 		    Tom de Vries  <tdevries@suse.de>
 	* testsuite/libgomp.c-c++-common/reduction-5.c: New test, testing

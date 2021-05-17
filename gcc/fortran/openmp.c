@@ -3782,6 +3782,13 @@ gfc_match_omp_parallel_do_simd (void)
 
 
 match
+gfc_match_omp_parallel_master (void)
+{
+  return match_omp (EXEC_OMP_PARALLEL_MASTER, OMP_PARALLEL_CLAUSES);
+}
+
+
+match
 gfc_match_omp_parallel_sections (void)
 {
   return match_omp (EXEC_OMP_PARALLEL_SECTIONS,
@@ -4846,6 +4853,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 
 	    case EXEC_OMP_PARALLEL:
 	    case EXEC_OMP_PARALLEL_DO:
+	    case EXEC_OMP_PARALLEL_MASTER:
 	    case EXEC_OMP_PARALLEL_SECTIONS:
 	    case EXEC_OMP_PARALLEL_WORKSHARE:
 	    case EXEC_OMP_DISTRIBUTE_PARALLEL_DO:
@@ -6833,6 +6841,8 @@ omp_code_to_statement (gfc_code *code)
     {
     case EXEC_OMP_PARALLEL:
       return ST_OMP_PARALLEL;
+    case EXEC_OMP_PARALLEL_MASTER:
+      return ST_OMP_PARALLEL_MASTER;
     case EXEC_OMP_PARALLEL_SECTIONS:
       return ST_OMP_PARALLEL_SECTIONS;
     case EXEC_OMP_SECTIONS:
@@ -7361,6 +7371,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_CANCEL:
     case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_PARALLEL:
+    case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_SECTIONS:
     case EXEC_OMP_SINGLE:
