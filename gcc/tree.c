@@ -12550,13 +12550,11 @@ array_at_struct_end_p (tree ref)
       || ! TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
     return true;
 
-  if (TREE_CODE (ref) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR)
-    ref = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
-
   /* If the reference is based on a declared entity, the size of the array
      is constrained by its given domain.  (Do not trust commons PR/69368).  */
-  if (DECL_P (ref)
+  ref = get_base_address (ref);
+  if (ref
+      && DECL_P (ref)
       && !(flag_unconstrained_commons
 	   && VAR_P (ref) && DECL_COMMON (ref))
       && DECL_SIZE_UNIT (ref)
