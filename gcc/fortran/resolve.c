@@ -11938,6 +11938,12 @@ start:
 
 	  if (resolve_ordinary_assign (code, ns))
 	    {
+	      if (omp_workshare_flag)
+		{
+		  gfc_error ("Expected intrinsic assignment in OMP WORKSHARE "
+			     "at %L", &code->loc);
+		  break;
+		}
 	      if (code->op == EXEC_COMPCALL)
 		goto compcall;
 	      else
