@@ -3008,10 +3008,7 @@ package body Inline is
             if Nkind (A) = N_Type_Conversion
               and then Ekind (F) /= E_In_Parameter
             then
-               New_A :=
-                 Make_Unchecked_Type_Conversion (Loc,
-                   Subtype_Mark => New_Occurrence_Of (Etype (F), Loc),
-                   Expression   => Relocate_Node (Expression (A)));
+               New_A := Unchecked_Convert_To (Etype (F), Expression (A));
 
             --  In GNATprove mode, keep the most precise type of the actual for
             --  the temporary variable, when the formal type is unconstrained.

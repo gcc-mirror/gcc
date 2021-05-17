@@ -1467,9 +1467,7 @@ package body Exp_Util is
         Make_Procedure_Call_Statement (Loc,
           Name                   => New_Occurrence_Of (Proc_Id, Loc),
           Parameter_Associations => New_List (
-            Make_Unchecked_Type_Conversion (Loc,
-              Subtype_Mark => New_Occurrence_Of (Formal_Typ, Loc),
-              Expression   => Obj_Name)));
+            Unchecked_Convert_To (Formal_Typ, Obj_Name)));
    end Build_DIC_Call;
 
    ------------------------------

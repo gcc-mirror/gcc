@@ -8422,7 +8422,7 @@ package Sinfo is
       --  It is generated as a result of actual use of Unchecked_Conversion
       --  and also by the expander.
 
-      --  Unchecked type conversion nodes should normally be created by calling
+      --  Unchecked type conversion nodes should be created by calling
       --  Tbuild.Unchecked_Convert_To, rather than by directly calling
       --  Nmake.Make_Unchecked_Type_Conversion.
 

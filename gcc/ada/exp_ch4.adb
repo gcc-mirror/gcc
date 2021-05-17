@@ -11992,9 +11992,8 @@ package body Exp_Ch4 is
                --  unchecked conversion to the target fixed-point type.
 
                Conv :=
-                 Make_Unchecked_Type_Conversion (Loc,
-                   Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                   Expression   => New_Occurrence_Of (Expr_Id, Loc));
+                 Unchecked_Convert_To
+                   (Target_Type, New_Occurrence_Of (Expr_Id, Loc));
             end;
 
          --  All other conversions
@@ -12515,10 +12514,7 @@ package body Exp_Ch4 is
                   Conv : Node_Id;
                begin
                   Make_Tag_Check (Class_Wide_Type (Actual_Targ_Typ));
-                  Conv :=
-                    Make_Unchecked_Type_Conversion (Loc,
-                      Subtype_Mark => New_Occurrence_Of (Target_Type, Loc),
-                      Expression   => Relocate_Node (Expression (N)));
+                  Conv := Unchecked_Convert_To (Target_Type, Expression (N));
                   Rewrite (N, Conv);
                   Analyze_And_Resolve (N, Target_Type);
                end;
