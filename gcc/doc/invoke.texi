@@ -1240,7 +1240,8 @@ See RS/6000 and PowerPC Options.
 -mgnu-attribute  -mno-gnu-attribute @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} -mprefixed -mno-prefixed @gol
--mpcrel -mno-pcrel -mmma -mno-mmma}
+-mpcrel -mno-pcrel -mmma -mno-mmma -mrop-protect -mno-rop-protect @gol
+-mprivileged -mno-privileged}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -26284,6 +26285,12 @@ Generate code for given the specified PTX ISA (e.g.@: @samp{sm_35}).  ISA
 strings must be lower-case.  Valid ISA strings include @samp{sm_30} and
 @samp{sm_35}.  The default ISA is sm_35.
 
+@item -mptx=@var{version-string}
+@opindex mptx
+Generate code for given the specified PTX version (e.g.@: @samp{6.3}).
+Valid version strings include @samp{3.1} and @samp{6.3}.  The default PTX
+version is 3.1.
+
 @item -mmainkernel
 @opindex mmainkernel
 Link in code for a __main kernel.  This is for stand-alone instead of
@@ -27023,7 +27030,8 @@ following options:
 -mmulhw  -mdlmzb  -mmfpgpr  -mvsx @gol
 -mcrypto  -mhtm  -mpower8-fusion  -mpower8-vector @gol
 -mquad-memory  -mquad-memory-atomic  -mfloat128 @gol
--mfloat128-hardware -mprefixed -mpcrel -mmma}
+-mfloat128-hardware -mprefixed -mpcrel -mmma @gol
+-mrop-protect}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -28027,6 +28035,20 @@ store instructions when the option @option{-mcpu=future} is used.
 @opindex mno-mma
 Generate (do not generate) the MMA instructions when the option
 @option{-mcpu=future} is used.
+
+@item -mrop-protect
+@itemx -mno-rop-protect
+@opindex mrop-protect
+@opindex mno-rop-protect
+Generate (do not generate) ROP protection instructions when the target
+processor supports them.  Currently this option disables the shrink-wrap
+optimization (@option{-fshrink-wrap}).
+
+@item -mprivileged
+@itemx -mno-privileged
+@opindex mprivileged
+@opindex mno-privileged
+Generate (do not generate) code that will run in privileged state.
 
 @item -mblock-ops-unaligned-vsx
 @itemx -mno-block-ops-unaligned-vsx

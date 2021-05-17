@@ -1,4 +1,4 @@
-/* PR target/98522 */
+/* PR target/98218 */
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-options "-O2 -msse2" } */
 

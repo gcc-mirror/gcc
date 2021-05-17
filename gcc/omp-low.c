@@ -2460,7 +2460,7 @@ finish_taskreg_scan (omp_context *ctx)
 	  TYPE_FIELDS (ctx->record_type) = field;
 	  if (ctx->srecord_type)
 	    {
-	      field = lookup_sfield (OMP_CLAUSE_DECL (detach_clause), ctx);
+	      field = lookup_sfield (OMP_CLAUSE_DECL (c), ctx);
 	      p = &TYPE_FIELDS (ctx->srecord_type);
 	      while (*p)
 		if (*p == field)

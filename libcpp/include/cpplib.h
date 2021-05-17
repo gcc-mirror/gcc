@@ -497,6 +497,9 @@ struct cpp_options
   /* Nonzero for the '::' token.  */
   unsigned char scope;
 
+  /* Nonzero for the '#elifdef' and '#elifndef' directives.  */
+  unsigned char elifdef;
+
   /* Nonzero means tokenize C++20 module directives.  */
   unsigned char module_directives;
 

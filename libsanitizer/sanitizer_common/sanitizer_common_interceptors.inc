@@ -239,7 +239,7 @@ extern const short *_tolower_tab_;
     COMMON_INTERCEPT_FUNCTION(fn)
 #endif
 
-#ifdef __GLIBC__
+#if SANITIZER_GLIBC
 // If we could not find the versioned symbol, fall back to an unversioned
 // lookup. This is needed to work around a GLibc bug that causes dlsym
 // with RTLD_NEXT to return the oldest versioned symbol.
@@ -2195,6 +2195,7 @@ INTERCEPTOR(int, clock_gettime, u32 clk_id, void *tp) {
   }
   return res;
 }
+#if SANITIZER_GLIBC
 namespace __sanitizer {
 extern "C" {
 int real_clock_gettime(u32 clk_id, void *tp) {
@@ -2204,6 +2205,7 @@ int real_clock_gettime(u32 clk_id, void *tp) {
 }
 }  // extern "C"
 }  // namespace __sanitizer
+#endif
 INTERCEPTOR(int, clock_settime, u32 clk_id, const void *tp) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, clock_settime, clk_id, tp);
@@ -3355,7 +3357,7 @@ INTERCEPTOR(char *, setlocale, int category, char *locale) {
     COMMON_INTERCEPTOR_READ_RANGE(ctx, locale, REAL(strlen)(locale) + 1);
   char *res = REAL(setlocale)(category, locale);
   if (res) {
-    COMMON_INTERCEPTOR_WRITE_RANGE(ctx, res, REAL(strlen)(res) + 1);
+    COMMON_INTERCEPTOR_INITIALIZE_RANGE(res, REAL(strlen)(res) + 1);
     unpoison_ctype_arrays(ctx);
   }
   return res;
@@ -4030,7 +4032,7 @@ INTERCEPTOR(int, sigwait, __sanitizer_sigset_t *set, int *sig) {
   // FIXME: under ASan the call below may write to freed memory and corrupt
   // its metadata. See
   // https://github.com/google/sanitizers/issues/321.
-  int res = REAL(sigwait)(set, sig);
+  int res = COMMON_INTERCEPTOR_BLOCK_REAL(sigwait)(set, sig);
   if (!res && sig) COMMON_INTERCEPTOR_WRITE_RANGE(ctx, sig, sizeof(*sig));
   return res;
 }
@@ -4047,7 +4049,7 @@ INTERCEPTOR(int, sigwaitinfo, __sanitizer_sigset_t *set, void *info) {
   // FIXME: under ASan the call below may write to freed memory and corrupt
   // its metadata. See
   // https://github.com/google/sanitizers/issues/321.
-  int res = REAL(sigwaitinfo)(set, info);
+  int res = COMMON_INTERCEPTOR_BLOCK_REAL(sigwaitinfo)(set, info);
   if (res > 0 && info) COMMON_INTERCEPTOR_WRITE_RANGE(ctx, info, siginfo_t_sz);
   return res;
 }
@@ -4066,7 +4068,7 @@ INTERCEPTOR(int, sigtimedwait, __sanitizer_sigset_t *set, void *info,
   // FIXME: under ASan the call below may write to freed memory and corrupt
   // its metadata. See
   // https://github.com/google/sanitizers/issues/321.
-  int res = REAL(sigtimedwait)(set, info, timeout);
+  int res = COMMON_INTERCEPTOR_BLOCK_REAL(sigtimedwait)(set, info, timeout);
   if (res > 0 && info) COMMON_INTERCEPTOR_WRITE_RANGE(ctx, info, siginfo_t_sz);
   return res;
 }
@@ -5995,6 +5997,9 @@ void unpoison_file(__sanitizer_FILE *fp) {
   if (fp->_IO_read_base && fp->_IO_read_base < fp->_IO_read_end)
     COMMON_INTERCEPTOR_INITIALIZE_RANGE(fp->_IO_read_base,
                                         fp->_IO_read_end - fp->_IO_read_base);
+  if (fp->_IO_write_base && fp->_IO_write_base < fp->_IO_write_end)
+    COMMON_INTERCEPTOR_INITIALIZE_RANGE(fp->_IO_write_base,
+                                        fp->_IO_write_end - fp->_IO_write_base);
 #endif
 #endif  // SANITIZER_HAS_STRUCT_FILE
 }
@@ -6221,6 +6226,8 @@ INTERCEPTOR(void, _obstack_newchunk, __sanitizer_obstack *obstack, int length) {
 INTERCEPTOR(int, fflush, __sanitizer_FILE *fp) {
   void *ctx;
   COMMON_INTERCEPTOR_ENTER(ctx, fflush, fp);
+  if (fp)
+    unpoison_file(fp);
   int res = REAL(fflush)(fp);
   // FIXME: handle fp == NULL
   if (fp) {
@@ -6240,6 +6247,8 @@ INTERCEPTOR(int, fclose, __sanitizer_FILE *fp) {
   COMMON_INTERCEPTOR_ENTER(ctx, fclose, fp);
   COMMON_INTERCEPTOR_FILE_CLOSE(ctx, fp);
   const FileMetadata *m = GetInterceptorMetadata(fp);
+  if (fp)
+    unpoison_file(fp);
   int res = REAL(fclose)(fp);
   if (m) {
     COMMON_INTERCEPTOR_INITIALIZE_RANGE(*m->addr, *m->size);

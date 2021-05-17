@@ -2942,10 +2942,10 @@ build/genmatch$(build_exeext) : $(BUILD_CPPLIB) \
 
 # These programs are not linked with the MD reader.
 build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \
-              build/gengtype-state.o version.h build/errors.o
+              build/gengtype-state.o build/errors.o
 
 gengtype$(exeext) : gengtype.o gengtype-lex.o gengtype-parse.o \
-              gengtype-state.o version.h errors.o $(LIBDEPS)
+              gengtype-state.o errors.o $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
 	    $(filter-out ($LIBDEPS), $^) $(LIBS)
 

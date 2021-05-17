@@ -1,8 +1,8 @@
 /* { dg-do compile } */
-/* { dg-require-effective-target arm_fp_ok } */
-/* { dg-skip-if "need fp instructions" { *-*-* } { "-mfloat-abi=soft" } { "" } } */
 /* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
-/* { dg-options "-march=armv7-a -O1" } */
+/* { dg-options "-march=armv7-a+fp -mfpu=auto -O1" } */
+/* Do not require arm_ok effective target to avoid skipping on arm-eabi with
+   default configure options.  */
 /* { dg-add-options arm_fp } */
 
 

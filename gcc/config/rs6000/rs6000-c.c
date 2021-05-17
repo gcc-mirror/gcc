@@ -602,6 +602,9 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
   /* Whether pc-relative code is being generated.  */
   if ((flags & OPTION_MASK_PCREL) != 0)
     rs6000_define_or_undefine_macro (define_p, "__PCREL__");
+  /* Tell the user -mrop-protect is in play.  */
+  if (rs6000_rop_protect)
+    rs6000_define_or_undefine_macro (define_p, "__ROP_PROTECT__");
 }
 
 void

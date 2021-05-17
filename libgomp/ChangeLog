@@ -1,3 +1,28 @@
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.fortran/parallel-master.f90: New test.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100569
+	* testsuite/libgomp.c/omp-nested-3.c: Prune new LTO warning.
+	* testsuite/libgomp.c/pr46032-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-clauses-kernels-ipa-pta.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/data-clauses-parallel-ipa-pta.c: Likewise.
+
+2021-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/task-detach-12.c: New test.
+	* testsuite/libgomp.fortran/task-detach-12.f90: New test.
+
+2021-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100471
+	* taskloop.c (GOMP_taskloop): If GOMP_TASK_FLAG_REDUCTION and not
+	GOMP_TASK_FLAG_NOGROUP, when doing early return clear the task
+	reduction pointer.
+	* testsuite/libgomp.c/task-reduction-4.c: New test.
+
 2021-05-07  Tobias Burnus  <tobias@codesourcery.com>
 	    Tom de Vries  <tdevries@suse.de>
 

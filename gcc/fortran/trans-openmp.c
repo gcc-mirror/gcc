@@ -5554,6 +5554,28 @@ gfc_trans_omp_parallel_do_simd (gfc_code *code, stmtblock_t *pblock,
 }
 
 static tree
+gfc_trans_omp_parallel_master (gfc_code *code)
+{
+  stmtblock_t block;
+  tree stmt, omp_clauses;
+
+  gfc_start_block (&block);
+  omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
+				       code->loc);
+  pushlevel ();
+  stmt = gfc_trans_omp_master (code);
+  if (TREE_CODE (stmt) != BIND_EXPR)
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
+  else
+    poplevel (0, 0);
+  stmt = build2_loc (gfc_get_location (&code->loc), OMP_PARALLEL,
+		     void_type_node, stmt, omp_clauses);
+  OMP_PARALLEL_COMBINED (stmt) = 1;
+  gfc_add_expr_to_block (&block, stmt);
+  return gfc_finish_block (&block);
+}
+
+static tree
 gfc_trans_omp_parallel_sections (gfc_code *code)
 {
   stmtblock_t block;
@@ -6092,6 +6114,7 @@ gfc_trans_omp_workshare (gfc_code *code, gfc_omp_clauses *clauses)
 
 	case EXEC_OMP_PARALLEL:
 	case EXEC_OMP_PARALLEL_DO:
+	case EXEC_OMP_PARALLEL_MASTER:
 	case EXEC_OMP_PARALLEL_SECTIONS:
 	case EXEC_OMP_PARALLEL_WORKSHARE:
 	case EXEC_OMP_CRITICAL:
@@ -6273,6 +6296,8 @@ gfc_trans_omp_directive (gfc_code *code)
       return gfc_trans_omp_parallel_do (code, NULL, NULL);
     case EXEC_OMP_PARALLEL_DO_SIMD:
       return gfc_trans_omp_parallel_do_simd (code, NULL, NULL);
+    case EXEC_OMP_PARALLEL_MASTER:
+      return gfc_trans_omp_parallel_master (code);
     case EXEC_OMP_PARALLEL_SECTIONS:
       return gfc_trans_omp_parallel_sections (code);
     case EXEC_OMP_PARALLEL_WORKSHARE:

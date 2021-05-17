@@ -619,3 +619,11 @@ Generate (do not generate) MMA instructions.
 
 mrelative-jumptables
 Target Undocumented Var(rs6000_relative_jumptables) Init(1) Save
+
+mrop-protect
+Target Var(rs6000_rop_protect) Init(0)
+Enable instructions that guard against return-oriented programming attacks.
+
+mprivileged
+Target Var(rs6000_privileged) Init(0)
+Generate code that will run in privileged state.

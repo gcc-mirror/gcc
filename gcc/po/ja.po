@@ -19,10 +19,10 @@
 # Hiroshi Takekawa <sian@big.or.jp>, <sian.ht@gmail.com>, 2020, 2021
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 11.1-b20210207\n"
+"Project-Id-Version: gcc 11.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2021-04-20 18:19+0000\n"
-"PO-Revision-Date: 2021-02-10 19:45+0900\n"
+"PO-Revision-Date: 2021-05-11 22:47+0900\n"
 "Last-Translator: Hiroshi Takekawa <sian@big.or.jp>\n"
 "Language-Team: Japanese <translation-team-ja@lists.sourceforge.net>\n"
 "Language: ja\n"
@@ -512,10 +512,6 @@ msgid ""
 "                           'none' means revert to the default behavior of\n"
 "                           guessing the language based on the file's extension.\n"
 msgstr ""
-"  -x <language>            これ以降入力するファイルの言語を指定する。\n"
-"                           指定可能な言語は: c c++ assembler none\n"
-"                           'none' が指定されるとデフォルトのふるまいである\n"
-"                           拡張子から言語を推測する。\n"
 
 #: gcc.c:3798
 #, c-format
@@ -908,14 +904,14 @@ msgid "  -p, --preserve-paths            Preserve all pathname components\n"
 msgstr "  -p, --preserve-paths            すべてのパス名要素を保護する\n"
 
 #: gcov.c:944
-#, fuzzy, c-format
+#, c-format
 msgid "  -q, --use-hotness-colors        Emit perf-like colored output for hot lines\n"
-msgstr "  -n, --no-output                 出力ファイルを作成しない\n"
+msgstr "  -q, --use-hotness-colors        perf のように hot line に色をつける\n"
 
 #: gcov.c:945
-#, fuzzy, c-format
+#, c-format
 msgid "  -r, --relative-only             Only show data for relative sources\n"
-msgstr "  -a, --all-blocks                各基本ブロックに関する情報を表示する\n"
+msgstr "  -r, --relative-only             相対ソースのデータのみ表示する\n"
 
 #: gcov.c:946
 #, c-format
@@ -1498,9 +1494,8 @@ msgid "function not considered for inlining"
 msgstr "inline に出来ると見なされていない関数です"
 
 #: cif-code.def:43
-#, fuzzy
 msgid "caller is not optimized"
-msgstr "%qE は初期化されていません"
+msgstr "caller は最適化されていません"
 
 #: cif-code.def:47
 msgid "function body not available"
@@ -1596,9 +1591,8 @@ msgid "callee refers to comdat-local symbols"
 msgstr ""
 
 #: cif-code.def:134
-#, fuzzy
 msgid "sanitizer function attribute mismatch"
-msgstr "関数属性が合いません"
+msgstr "sanitizer関数属性が合いません"
 
 #: cif-code.def:139
 msgid "function has external linkage when the user requests only inlining static for live patching"
@@ -1993,14 +1987,12 @@ msgid "invalid address mode"
 msgstr "無効なアドレスモードです"
 
 #: config/aarch64/aarch64.c:25211 config/arm/arm.c:33660
-#, fuzzy
 msgid "invalid conversion from type %<bfloat16_t%>"
-msgstr "%<__fpreg%> からの無効な変換です"
+msgstr "%<bfloat16_t%> からの無効な変換です"
 
 #: config/aarch64/aarch64.c:25213 config/arm/arm.c:33662
-#, fuzzy
 msgid "invalid conversion to type %<bfloat16_t%>"
-msgstr "無効なバージョン番号形式"
+msgstr "%<bfloat16_t%> への無効な変換です"
 
 #: config/aarch64/aarch64.c:25228 config/aarch64/aarch64.c:25244
 #: config/arm/arm.c:33677 config/arm/arm.c:33693
@@ -2008,9 +2000,8 @@ msgid "operation not permitted on type %<bfloat16_t%>"
 msgstr ""
 
 #: config/aarch64/aarch64.c:25252
-#, fuzzy
 msgid "cannot combine GNU and SVE vectors in a binary operation"
-msgstr "二進演算内で無効な被演算子です"
+msgstr "GNU と SVE ベクタの二項演算はできません"
 
 #: config/alpha/alpha.c:5076 config/i386/i386.c:13227
 #: config/rs6000/rs6000.c:14147 config/sparc/sparc.c:9323
@@ -2233,9 +2224,8 @@ msgid "operands to %T/%t must be reg + const_int:"
 msgstr "出力被演算子 %d は %<&%> 制約を使用しなければいけません"
 
 #: config/avr/avr.c:2863 config/avr/avr.c:2930
-#, fuzzy
 msgid "bad address, not an I/O address:"
-msgstr "誤ったアドレスです。(reg+disp) ではありません:"
+msgstr "誤ったアドレスです。I/O アドレスではありません:"
 
 #: config/avr/avr.c:2872
 msgid "bad address, not a constant:"
@@ -2304,9 +2294,8 @@ msgid "structure field"
 msgstr "構造体フィールド"
 
 #: config/avr/avr.c:10039
-#, fuzzy
 msgid "return type of function"
-msgstr "`%s' の宣言は関数の配列"
+msgstr "関数の戻り値の型"
 
 #: config/avr/avr.c:10044
 msgid "pointer"
@@ -2567,9 +2556,9 @@ msgid "operand %%xn code invalid for QImode"
 msgstr "被演算子は条件コードではありません。無効な被演算子コード 'Y' です"
 
 #: config/gcn/gcn.c:6171
-#, fuzzy, c-format
+#, c-format
 msgid "invalid fp constant"
-msgstr "無効な命令:"
+msgstr "無効な浮動小数点定数です"
 
 #: config/h8300/h8300.c:1565 config/h8300/h8300.c:1573
 #: config/h8300/h8300.c:1581 config/h8300/h8300.c:1589
@@ -2584,9 +2573,9 @@ msgid "invalid UNSPEC as operand"
 msgstr "被演算子として無効な UNSPEC です"
 
 #: config/i386/i386.c:12591
-#, fuzzy, c-format
+#, c-format
 msgid "invalid use of register '%s'"
-msgstr "%<restrict%> の誤った使用法です"
+msgstr "'%s' の誤った用法です"
 
 #: config/i386/i386.c:12596
 #, fuzzy, c-format
@@ -2673,9 +2662,9 @@ msgid "unknown insn mode"
 msgstr "不明な命令モード"
 
 #: config/i386/djgpp.h:143
-#, fuzzy, c-format
+#, c-format
 msgid "-f%s ignored (not supported for DJGPP)\n"
-msgstr "Unicos/Mk 用としては -f%s は無視されました (サポートされていません)"
+msgstr "-f%s は (DJGPP ではサポートされていないので) 無視されました\n"
 
 #: config/ia64/ia64.c:5459
 #, c-format
@@ -2874,14 +2863,14 @@ msgid "invalid zero extract"
 msgstr "%<restrict%> の誤った使用法です"
 
 #: config/or1k/or1k.c:1116 config/or1k/or1k.c:1124
-#, fuzzy, c-format
+#, c-format
 msgid "invalid relocation"
-msgstr "無効な %%d 被演算子です"
+msgstr "無効な再配置です"
 
 #: config/or1k/or1k.c:1218
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%H value"
-msgstr "無効な %%J 値"
+msgstr "無効な %%H 値"
 
 #: config/or1k/or1k.c:1231 config/xtensa/xtensa.c:2473
 #, c-format
@@ -2919,14 +2908,14 @@ msgid "unsupported operand %s for code '%c'"
 msgstr "コード '%c' に対する無効な被演算子です"
 
 #: config/pru/pru.c:1870
-#, fuzzy, c-format
+#, c-format
 msgid "unexpected text address:"
-msgstr "アドレス内の予期しない副作用"
+msgstr "予期しないテキストアドレス:"
 
 #: config/pru/pru.c:1889
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported constant address:"
-msgstr "サポートされていない組み合わせです: %s"
+msgstr "サポートされていない定数アドレス:"
 
 #: config/pru/pru.c:1950
 #, fuzzy, c-format
@@ -2991,7 +2980,7 @@ msgid "Bad 128-bit move"
 msgstr "誤った 128 ビット move"
 
 #: config/rs6000/rs6000.c:13589
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%A value"
 msgstr "無効な %%A 値"
 
@@ -3001,7 +2990,7 @@ msgid "invalid %%D value"
 msgstr "無効な %%D 値です"
 
 #: config/rs6000/rs6000.c:13613
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%e value"
 msgstr "無効な %%e 値"
 
@@ -3051,7 +3040,7 @@ msgid "invalid %%q value"
 msgstr "無効な %%q 値です"
 
 #: config/rs6000/rs6000.c:13858
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%t value"
 msgstr "無効な %%t 値"
 
@@ -3081,9 +3070,9 @@ msgid "invalid %%x value"
 msgstr "無効な %%x 値です"
 
 #: config/rs6000/rs6000.c:14025
-#, fuzzy, c-format
+#, c-format
 msgid "invalid %%z value"
-msgstr "無効な %%J 値"
+msgstr "無効な %%z 値"
 
 #: config/rs6000/rs6000.c:14094
 #, c-format
@@ -3114,14 +3103,12 @@ msgid "Bad GPR fusion"
 msgstr ""
 
 #: config/rs6000/rs6000.c:27776
-#, fuzzy
 msgid "invalid conversion from type %<__vector_quad%>"
-msgstr "%<__fpreg%> からの無効な変換です"
+msgstr "%<__vector_quad%> からの無効な変換です"
 
 #: config/rs6000/rs6000.c:27778
-#, fuzzy
 msgid "invalid conversion to type %<__vector_quad%>"
-msgstr "無効なバージョン番号形式"
+msgstr "%<__vector_quad%> への無効な変換です"
 
 #: config/rs6000/rs6000.c:27780
 #, fuzzy
@@ -58665,8 +58652,9 @@ msgstr "クラス名が予期されます"
 
 #: d/dmd/dsymbolsem.c:1372
 #, fuzzy, gcc-internal-format
+#| msgid "unexpected text address:"
 msgid "function name expected for start address"
-msgstr "アドレス内の予期しない副作用"
+msgstr "予期しないテキストアドレス:"
 
 #: d/dmd/dsymbolsem.c:1387
 #, gcc-internal-format, gfc-internal-format

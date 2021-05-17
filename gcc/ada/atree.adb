@@ -216,6 +216,13 @@ package body Atree is
    --  cannot be used to modify an already-initialized Nkind field. See also
    --  Mutate_Nkind.
 
+   procedure Mutate_Nkind
+     (N : Node_Id; Val : Node_Kind; Old_Size : Field_Offset);
+   --  Called by the other Mutate_Nkind to do all the work. This is needed
+   --  because the call in Change_Node, which calls this one directly, happens
+   --  after zeroing N's slots, which destroys its Nkind, which prevents us
+   --  from properly computing Old_Size.
+
    package Field_Checking is
       function Field_Present
         (Kind : Node_Kind; Field : Node_Field) return Boolean;
@@ -868,9 +875,8 @@ package body Atree is
    end Init_Nkind;
 
    procedure Mutate_Nkind
-     (N : Node_Id; Val : Node_Kind)
+     (N : Node_Id; Val : Node_Kind; Old_Size : Field_Offset)
    is
-      Old_Size : constant Field_Offset := Size_In_Slots (N);
       New_Size : constant Field_Offset := Size_In_Slots_To_Alloc (Val);
 
       All_Node_Offsets : Node_Offsets.Table_Type renames
@@ -903,6 +909,11 @@ package body Atree is
 
       Set_Nkind_Type (N, Nkind_Offset, Val);
       pragma Debug (Validate_Node_Write (N));
+   end Mutate_Nkind;
+
+   procedure Mutate_Nkind (N : Node_Id; Val : Node_Kind) is
+   begin
+      Mutate_Nkind (N, Val, Old_Size => Size_In_Slots (N));
    end Mutate_Nkind;
 
    Ekind_Offset : constant Field_Offset :=
@@ -998,13 +1009,19 @@ package body Atree is
       end if;
 
       if New_Size > Old_Size then
-         pragma Debug (Zero_Slots (N));
-         Node_Offsets.Table (N) := Alloc_Slots (New_Size);
+         declare
+            New_Offset : constant Field_Offset := Alloc_Slots (New_Size);
+         begin
+            pragma Debug (Zero_Slots (N));
+            Node_Offsets.Table (N) := New_Offset;
+            Zero_Slots (New_Offset, New_Offset + New_Size - 1);
+         end;
+
+      else
+         Zero_Slots (N);
       end if;
 
-      Zero_Slots (N);
-
-      Mutate_Nkind (N, New_Kind);
+      Mutate_Nkind (N, New_Kind, Old_Size);
 
       Set_Sloc (N, Save_Sloc);
       Set_In_List (N, Save_In_List);
@@ -2125,6 +2142,7 @@ package body Atree is
 
    function Size_In_Slots (N : Node_Or_Entity_Id) return Field_Offset is
    begin
+      pragma Assert (Nkind (N) /= N_Unused_At_Start);
       return
         (if Nkind (N) in N_Entity then Einfo.Entities.Max_Entity_Size
          else Sinfo.Nodes.Size (Nkind (N)));

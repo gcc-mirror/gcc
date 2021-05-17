@@ -14,7 +14,7 @@ ALLSPHINXOPTS   = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) \
 		  -c $(SOURCEDIR)/share \
 		  -d $(BUILDDIR)/$*/doctrees \
 		  $(SOURCEDIR)
-DOC_LIST=gnat_rm gnat_ugn
+DOC_LIST=gnat_rm gnat_ugn gnat-style
 FMT_LIST=html pdf txt info
 
 .PHONY: help clean

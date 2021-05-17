@@ -1416,93 +1416,6 @@
   [(set_attr "type" "neon_qsub<q>")]
 )
 
-(define_expand "vec_cmp<mode><v_cmp_result>"
-  [(set (match_operand:<V_cmp_result> 0 "s_register_operand")
-	(match_operator:<V_cmp_result> 1 "comparison_operator"
-	  [(match_operand:VDQW 2 "s_register_operand")
-	   (match_operand:VDQW 3 "reg_or_zero_operand")]))]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
-{
-  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
-			     operands[2], operands[3], false);
-  DONE;
-})
-
-(define_expand "vec_cmpu<mode><mode>"
-  [(set (match_operand:VDQIW 0 "s_register_operand")
-	(match_operator:VDQIW 1 "comparison_operator"
-	  [(match_operand:VDQIW 2 "s_register_operand")
-	   (match_operand:VDQIW 3 "reg_or_zero_operand")]))]
-  "TARGET_NEON"
-{
-  arm_expand_vector_compare (operands[0], GET_CODE (operands[1]),
-			     operands[2], operands[3], false);
-  DONE;
-})
-
-;; Conditional instructions.  These are comparisons with conditional moves for
-;; vectors.  They perform the assignment:
-;;   
-;;     Vop0 = (Vop4 <op3> Vop5) ? Vop1 : Vop2;
-;;
-;; where op3 is <, <=, ==, !=, >= or >.  Operations are performed
-;; element-wise.
-
-(define_expand "vcond<mode><mode>"
-  [(set (match_operand:VDQW 0 "s_register_operand")
-	(if_then_else:VDQW
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VDQW 4 "s_register_operand")
-	     (match_operand:VDQW 5 "reg_or_zero_operand")])
-	  (match_operand:VDQW 1 "s_register_operand")
-	  (match_operand:VDQW 2 "s_register_operand")))]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
-{
-  arm_expand_vcond (operands, <V_cmp_result>mode);
-  DONE;
-})
-
-(define_expand "vcond<V_cvtto><mode>"
-  [(set (match_operand:<V_CVTTO> 0 "s_register_operand")
-	(if_then_else:<V_CVTTO>
-	  (match_operator 3 "comparison_operator"
-	    [(match_operand:V32 4 "s_register_operand")
-	     (match_operand:V32 5 "reg_or_zero_operand")])
-	  (match_operand:<V_CVTTO> 1 "s_register_operand")
-	  (match_operand:<V_CVTTO> 2 "s_register_operand")))]
-  "TARGET_NEON && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
-{
-  arm_expand_vcond (operands, <V_cmp_result>mode);
-  DONE;
-})
-
-(define_expand "vcondu<mode><v_cmp_result>"
-  [(set (match_operand:VDQW 0 "s_register_operand")
-	(if_then_else:VDQW
-	  (match_operator 3 "arm_comparison_operator"
-	    [(match_operand:<V_cmp_result> 4 "s_register_operand")
-	     (match_operand:<V_cmp_result> 5 "reg_or_zero_operand")])
-	  (match_operand:VDQW 1 "s_register_operand")
-	  (match_operand:VDQW 2 "s_register_operand")))]
-  "TARGET_NEON"
-{
-  arm_expand_vcond (operands, <V_cmp_result>mode);
-  DONE;
-})
-
-(define_expand "vcond_mask_<mode><v_cmp_result>"
-  [(set (match_operand:VDQW 0 "s_register_operand")
-	(if_then_else:VDQW
-	  (match_operand:<V_cmp_result> 3 "s_register_operand")
-	  (match_operand:VDQW 1 "s_register_operand")
-	  (match_operand:VDQW 2 "s_register_operand")))]
-  "TARGET_NEON"
-{
-  emit_insn (gen_neon_vbsl<mode> (operands[0], operands[3], operands[1],
-				  operands[2]));
-  DONE;
-})
-
 ;; Patterns for builtins.
 
 ; good for plain vadd, vaddq.
@@ -2577,16 +2490,6 @@
 					CONST0_RTX (<MODE>mode)));
   DONE;
 })
-
-(define_insn "neon_vtst<mode>"
-  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
-        (unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
-		       (match_operand:VDQIW 2 "s_register_operand" "w")]
-		      UNSPEC_VTST))]
-  "TARGET_NEON"
-  "vtst.<V_sz_elem>\t%<V_reg>0, %<V_reg>1, %<V_reg>2"
-  [(set_attr "type" "neon_tst<q>")]
-)
 
 (define_insn "neon_vtst_combine<mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")

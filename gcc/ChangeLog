@@ -1,3 +1,506 @@
+2021-05-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.h (CPP_SPEC): Remove error message about
+	-mlittle-endian/-mbig-endian conflict.
+
+2021-05-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__ROP_PROTECT__ if -mrop-protect is selected.
+
+2021-05-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-internal.h (rs6000_stack): Add
+	rop_hash_save_offset and rop_hash_size.
+	* config/rs6000/rs6000-logue.c (rs6000_stack_info): Compute
+	rop_hash_size and rop_hash_save_offset.
+	(debug_stack_info): Dump rop_hash_save_offset and rop_hash_size.
+	(rs6000_emit_prologue): Emit hashst[p] in prologue.
+	(rs6000_emit_epilogue): Emit hashchk[p] in epilogue.
+	* config/rs6000/rs6000.md (unspec): Add UNSPEC_HASHST and
+	UNSPEC_HASHCHK.
+	(hashst): New define_insn.
+	(hashchk): Likewise.
+
+2021-05-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Disable shrink wrap when inserting ROP-protect instructions.
+	* config/rs6000/rs6000.opt (mrop-protect): New option.
+	(mprivileged): Likewise.
+	* doc/invoke.texi: Document mrop-protect and mprivileged.
+
+2021-05-15  Hans-Peter Nilsson  <hp@axis.com>
+
+	* reorg.c (fill_slots_from_thread): Reinstate code typoed out in
+	"Remove CC0".
+
+2021-05-15  Martin Jambor  <mjambor@suse.cz>
+
+	Revert:
+	2021-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/100453
+	* tree-sra.c (sra_modify_assign): All const base accesses do not
+	need refreshing, not just those from decl_pool.
+	(sra_modify_assign): Do not refresh into a const base decl.
+
+2021-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100342
+	* regcprop.c (copy_value): When copying a source reg in a wider
+	mode than it has recorded for the value, adjust recorded destination
+	mode too or punt if !REG_CAN_CHANGE_MODE_P.
+
+2021-05-14  Jason Merrill  <jason@redhat.com>
+
+	* intl.h: Add comments.
+
+2021-05-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_sqdml<SBINQOPS:as>l2_lane<mode>_internal): Split into...
+	(aarch64_sqdmlsl2_lane<mode>_internal): ... This...
+	(aarch64_sqdmlal2_lane<mode>_internal): ... And this.
+	(aarch64_sqdml<SBINQOPS:as>l2_laneq<mode>_internal): Split into ...
+	(aarch64_sqdmlsl2_laneq<mode>_internal): ... This...
+	(aarch64_sqdmlal2_laneq<mode>_internal): ... And this.
+	(aarch64_sqdml<SBINQOPS:as>l2_n<mode>_internal): Split into...
+	(aarch64_sqdmlsl2_n<mode>_internal): ... This...
+	(aarch64_sqdmlal2_n<mode>_internal): ... And this.
+
+2021-05-14  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR target/66791
+	* config/arm/arm_neon.h (vtst_s8): Replace call to vtst builtin with it's
+	boolean logic equivalent.
+	(vtst_s16): Likewise.
+	(vtst_s32): Likewise.
+	(vtst_u8): Likewise.
+	(vtst_u16): Likewise.
+	(vtst_u32): Likewise.
+	(vtst_p8): Likewise.
+	(vtst_p16): Likewise.
+	(vtstq_s8): Likewise.
+	(vtstq_s16): Likewise.
+	(vtstq_s32): Likewise.
+	(vtstq_u8): Likewise.
+	(vtstq_u16): Likewise.
+	(vtstq_u32): Likewise.
+	(vtstq_p8): Likewise.
+	(vtstq_p16): Likewise.
+	* config/arm/arm_neon_builtins.def: Remove entry for vtst.
+	* config/arm/neon.md (neon_vtst<mode>): Remove pattern.
+
+2021-05-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_sqdmlal2<mode>): Merge into...
+	(aarch64_sqdml<SBINQOPS:as>l2<mode>): ... This.
+	(aarch64_sqdmlsl2<mode>): Delete.
+	(aarch64_sqdmlal2_lane<mode>): Merge this...
+	(aarch64_sqdmlsl2_lane<mode>): ... And this...
+	(aarch64_sqdml<SBINQOPS:as>l2_lane<mode>): ... Into this.
+	(aarch64_sqdmlal2_laneq<mode>): Merge this...
+	(aarch64_sqdmlsl2_laneq<mode>): ... And this...
+	(aarch64_sqdml<SBINQOPS:as>l2_laneq<mode>): ... Into this.
+	(aarch64_sqdmlal2_n<mode>): Merge this...
+	(aarch64_sqdmlsl2_n<mode>): ... And this...
+	(aarch64_sqdml<SBINQOPS:as>l2_n<mode>): ... Into this.
+
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100574
+	* builtins.c (access_ref::get_ref): Improve detection of PHIs with
+	all null arguments.
+
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93100
+	PR middle-end/98583
+	* tree-ssa-uninit.c (check_defs): Exclude intrinsic functions that
+	don't modify referenced objects.
+
+2021-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/100453
+	* tree-sra.c (sra_modify_assign): All const base accesses do not
+	need refreshing, not just those from decl_pool.
+	(sra_modify_assign): Do not refresh into a const base decl.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	* tree-ssa-dom.c: Remove m_simplifier.
+
+2021-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100563
+	* config/arm/arm.c (arm_canonicalize_comparison): Correctly
+	canonicalize DImode inequality comparisons against the
+	maximum integral value.
+
+2021-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98856
+	* config/i386/i386.c (ix86_shift_rotate_cost): Add CODE argument.
+	Expect V2DI and V4DI arithmetic right shifts to be emulated.
+	(ix86_rtx_costs, ix86_add_stmt_cost): Adjust ix86_shift_rotate_cost
+	caller.
+	* config/i386/i386-expand.c (expand_vec_perm_2perm_interleave,
+	expand_vec_perm_2perm_pblendv): New functions.
+	(ix86_expand_vec_perm_const_1): Use them.
+	* config/i386/sse.md (ashr<mode>3<mask_name>): Rename to ...
+	(<mask_codefor>ashr<mode>3<mask_name>): ... this.
+	(ashr<mode>3): New define_expand with VI248_AVX512BW iterator.
+	(ashrv4di3): New define_expand.
+	(ashrv2di3): Change condition to TARGET_SSE2, handle !TARGET_XOP
+	and !TARGET_AVX512VL expansion.
+
+2021-05-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100581
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc): Force mode
+	sizes < 16 to a register when constructing vpcmov pattern.
+	* config/i386/mmx.md (*xop_pcmov_<mode>): Use MMXMODE124 mode.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	* gcov-io.c (gcov_write_block): Remove.
+	(gcov_write_words): Likewise.
+	(gcov_read_words): Re-implement using gcov_read_bytes.
+	(gcov_allocate): Remove.
+	(GCOV_BLOCK_SIZE): Likewise.
+	(struct gcov_var): Remove most of the fields.
+	(gcov_position): Implement with ftell.
+	(gcov_rewrite): Remove setting of start and offset fields.
+	(from_file): Re-format.
+	(gcov_open): Remove setbuf call. It should not be needed.
+	(gcov_close): Remove internal buffer handling.
+	(gcov_magic): Use __builtin_bswap32.
+	(gcov_write_counter): Use directly gcov_write_unsigned.
+	(gcov_write_string): Use direct fwrite and do not round
+	to 4 bytes.
+	(gcov_seek): Use directly fseek.
+	(gcov_write_tag): Use gcov_write_unsigned directly.
+	(gcov_write_length): Likewise.
+	(gcov_write_tag_length): Likewise.
+	(gcov_read_bytes): Use directly fread.
+	(gcov_read_unsigned): Use gcov_read_words.
+	(gcov_read_counter): Likewise.
+	(gcov_read_string): Use gcov_read_bytes.
+	* gcov-io.h (GCOV_WORD_SIZE): Adjust to reflect
+	that size is not in bytes, but words (4B).
+	(GCOV_TAG_FUNCTION_LENGTH): Likewise.
+	(GCOV_TAG_ARCS_LENGTH): Likewise.
+	(GCOV_TAG_ARCS_NUM): Likewise.
+	(GCOV_TAG_COUNTER_LENGTH): Likewise.
+	(GCOV_TAG_COUNTER_NUM): Likewise.
+	(GCOV_TAG_SUMMARY_LENGTH): Likewise.
+
+2021-05-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/94680
+	* config/i386/sse.md (ssedoublevecmode): Add attribute for
+	V64QI/V32HI/V16SI/V4DI.
+	(ssehalfvecmode): Add attribute for V2DI/V2DF.
+	(*vec_concatv4si_0): Extend to VI124_128.
+	(*vec_concat<mode>_0): New pre-reload splitter.
+	* config/i386/predicates.md (movq_parallel): New predicate.
+
+2021-05-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* targhooks.c (default_zero_call_used_regs): Retry using
+	successfully-zeroed registers as sources.
+
+2021-05-12  Tobias Burnus  <tobias@codesourcery.com>
+
+	* omp-low.c (finish_taskreg_scan): Use the proper detach decl.
+
+2021-05-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c/100521
+	* gimple-range.cc (range_of_builtin_call): Skip out on
+	  processing __builtin_clz when varying.
+
+2021-05-12  Tom de Vries  <tdevries@suse.de>
+
+	PR target/96005
+	* config/nvptx/nvptx-opts.h (enum ptx_version): New enum.
+	* config/nvptx/nvptx.c (nvptx_file_start): Print .version according
+	to ptx_version_option.
+	* config/nvptx/nvptx.h (TARGET_PTX_6_3): Define.
+	* config/nvptx/nvptx.md (define_insn "nvptx_shuffle<mode>")
+	(define_insn "nvptx_vote_ballot"): Use sync variant for
+	TARGET_PTX_6_3.
+	* config/nvptx/nvptx.opt (ptx_version): Add enum.
+	(mptx): Add option.
+	* doc/invoke.texi (Nvidia PTX Options): Add mptx item.
+
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100566
+	* tree-ssa-sccvn.c (dominated_by_p_w_unex): Properly handle
+	allow_back for all edge queries.
+
+2021-05-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/99908
+	* config/i386/sse.md (<sse4_1_avx2>_pblendvb): Add
+	splitters for pblendvb of NOT mask register.
+
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100519
+	* tree-ssa-reassoc.c (can_associate_p): Split into...
+	(can_associate_op_p): ... this
+	(can_associate_type_p): ... and this.
+	(is_reassociable_op): Call can_associate_op_p.
+	(break_up_subtract_bb): Call the appropriate predicates.
+	(reassociate_bb): Likewise.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (merge_and_complain): Merge -flto=arg options.
+	(run_gcc): Use -flto argument detection for merged
+	fdecoded_options.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (print_lto_docs_link): New function.
+	(run_gcc): Print warning about missing job server detection
+	after we know NR of partitions. Do the same for -flto{,=1}.
+	* opts.c (get_option_html_page): Support -flto option.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (get_options_from_collect_gcc_options): Change
+	return type.
+	(append_option): Remove.
+	(find_option): Rework to use the vector type.
+	(remove_option): Remove.
+	(merge_and_complain): Use vectors for cl_decoded_option data
+	type arguments.
+	(append_compiler_options): Likewise.
+	(append_diag_options): Likewise.
+	(append_linker_options): Likewise.
+	(append_offload_options): Likewise.
+	(compile_offload_image): Likewise.
+	(compile_images_for_offload_targets): Likewise.
+	(find_and_merge_options): Likewise.
+	(run_gcc): Likewise.
+
+2021-05-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR debug/100515
+	* dwarf2out.c (dwarf2out_finish): Set
+	have_multiple_function_sections with multi-range text_section.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/100560
+	* Makefile.in: Remove version.h from linker command line.
+
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100547
+	* rtl.h (rtvec_alloc): Make argument size_t.
+	* rtl.c (rtvec_alloc): Verify the count is less than INT_MAX.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100508
+	* cfgexpand.c (expand_debug_expr): For DEBUG_EXPR_DECL with vector
+	type, don't reuse DECL_RTL if it has different mode, instead force
+	creation of a new DEBUG_EXPR.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/94589
+	* match.pd ((X & Y) == X -> (X & ~Y) == 0,
+	(X | Y) == Y -> (X & ~Y) == 0): New GIMPLE simplifications.
+
+2021-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98218
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc): Handle V2SF mode.
+	* config/i386/mmx.md (MMXMODE124): New mode iterator.
+	(V2FI): Ditto.
+	(mmxintvecmode): New mode attribute.
+	(mmxintvecmodelower): Ditto.
+	(*mmx_maskcmpv2sf3_comm): New insn pattern.
+	(*mmx_maskcmpv2sf3): Ditto.
+	(vec_cmpv2sfv2si): New expander.
+	(vcond<V2FI:mode>v2si): Ditto.
+	(mmx_vlendvps): New insn pattern.
+	(vcond<MMXMODE124:mode><MMXMODEI:mode>): Also handle V2SFmode.
+	(vcondu<MMXMODE124:mode><MMXMODEI:mode>): Ditto.
+	(vcond_mask_<mode><mmxintvecmodelower>): Ditto.
+
+2021-05-11  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/21433
+	* expr.c (expand_expr_real_1): Replace unreachable code with an assert.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (gimple_fold_call): Do not call
+	maybe_fold_reference on call arguments or the static chain.
+	(fold_stmt_1): Do not call maybe_fold_reference on GIMPLE_ASM
+	inputs.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* builtins.def (DEF_HSAIL_BUILTIN): Remove.
+	(DEF_HSAIL_ATOMIC_BUILTIN): Likewise.
+	(DEF_HSAIL_SAT_BUILTIN): Likewise.
+	(DEF_HSAIL_INTR_BUILTIN): Likewise.
+	(DEF_HSAIL_CVT_ZEROI_SAT_BUILTIN): Likewise.
+	* doc/frontends.texi: Remove BRIG.
+	* doc/install.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* doc/standards.texi: Likewise.
+	* brig-builtins.def: Removed.
+	* brig/ChangeLog: Removed.
+	* brig/Make-lang.in: Removed.
+	* brig/brig-builtins.h: Removed.
+	* brig/brig-c.h: Removed.
+	* brig/brig-lang.c: Removed.
+	* brig/brigfrontend/brig-arg-block-handler.cc: Removed.
+	* brig/brigfrontend/brig-atomic-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-basic-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-branch-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-cmp-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-code-entry-handler.cc: Removed.
+	* brig/brigfrontend/brig-code-entry-handler.h: Removed.
+	* brig/brigfrontend/brig-comment-handler.cc: Removed.
+	* brig/brigfrontend/brig-control-handler.cc: Removed.
+	* brig/brigfrontend/brig-copy-move-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-cvt-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-fbarrier-handler.cc: Removed.
+	* brig/brigfrontend/brig-function-handler.cc: Removed.
+	* brig/brigfrontend/brig-function.cc: Removed.
+	* brig/brigfrontend/brig-function.h: Removed.
+	* brig/brigfrontend/brig-inst-mod-handler.cc: Removed.
+	* brig/brigfrontend/brig-label-handler.cc: Removed.
+	* brig/brigfrontend/brig-lane-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-machine.c: Removed.
+	* brig/brigfrontend/brig-machine.h: Removed.
+	* brig/brigfrontend/brig-mem-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-module-handler.cc: Removed.
+	* brig/brigfrontend/brig-queue-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-seg-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-signal-inst-handler.cc: Removed.
+	* brig/brigfrontend/brig-to-generic.cc: Removed.
+	* brig/brigfrontend/brig-to-generic.h: Removed.
+	* brig/brigfrontend/brig-util.cc: Removed.
+	* brig/brigfrontend/brig-util.h: Removed.
+	* brig/brigfrontend/brig-variable-handler.cc: Removed.
+	* brig/brigfrontend/hsa-brig-format.h: Removed.
+	* brig/brigfrontend/phsa.h: Removed.
+	* brig/brigspec.c: Removed.
+	* brig/config-lang.in: Removed.
+	* brig/gccbrig.texi: Removed.
+	* brig/lang-specs.h: Removed.
+	* brig/lang.opt: Removed.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100513
+	* ipa-param-manipulation.c
+	(ipa_param_body_adjustments::modify_call_stmt): Avoid
+	altering SSA_NAME_DEF_STMT by adjusting the calls LHS
+	via gimple_call_lhs_ptr.
+
+2021-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99725
+	* config/arm/arm.c (cmse_nonsecure_call_inline_register_clear):
+	Avoid emitting CFA adjusts on the sp if we have the fp.
+
+2021-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* config/aarch64/iterators.md (VMUL_CHANGE_NLANES): Delete.
+	(VMULD): New iterator.
+	(VCOND): Handle V4HF and V8HF.
+	(VCONQ): Fix entry for V2SF.
+	* config/aarch64/aarch64-simd.md (mul_lane<mode>3): Use VMULD
+	instead of VMUL.  Use a 64-bit vector mode for the indexed operand.
+	(*aarch64_mul3_elt_<vswap_width_name><mode>): Merge with...
+	(mul_laneq<mode>3): ...this define_insn.  Use VMUL instead of VDQSF.
+	Use a 128-bit vector mode for the indexed operand.  Use stype for
+	the scheduling type.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-fold.c (maybe_fold_reference): Only return
+	is_gimple_min_invariant values.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100509
+	* gimple-fold.c (fold_gimple_assign): Only call
+	get_symbol_constant_value on register type symbols.
+
+2021-05-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+	    Joe Ramsay   <joe.ramsay@arm.com>
+
+	PR target/100419
+	* config/arm/arm_mve.h (__arm_vstrwq_scatter_offset): Fix wrong arguments.
+	(__arm_vcmpneq): Remove duplicate definition.
+	(__arm_vstrwq_scatter_offset_p): Likewise.
+	(__arm_vmaxq_x): Likewise.
+	(__arm_vmlsdavaq): Likewise.
+	(__arm_vmlsdavaxq): Likewise.
+	(__arm_vmlsdavq_p): Likewise.
+	(__arm_vmlsdavxq_p): Likewise.
+	(__arm_vrmlaldavhaq): Likewise.
+	(__arm_vstrbq_p): Likewise.
+	(__arm_vstrbq_scatter_offset): Likewise.
+	(__arm_vstrbq_scatter_offset_p): Likewise.
+	(__arm_vstrdq_scatter_offset): Likewise.
+	(__arm_vstrdq_scatter_offset_p): Likewise.
+	(__arm_vstrdq_scatter_shifted_offset): Likewise.
+	(__arm_vstrdq_scatter_shifted_offset_p): Likewise.
+
+2021-05-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100471
+	* omp-low.c (lower_omp_task_reductions): For OMP_TASKLOOP, if data
+	is 0, bypass the reduction loop including
+	GOMP_taskgroup_reduction_unregister call.
+
+2021-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (struct rs6000_cost_data): New member
+	costing_for_scalar.
+	(rs6000_density_test): Early return if costing_for_scalar is true.
+	(rs6000_init_cost): Init costing_for_scalar of rs6000_cost_data.
+
+2021-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* doc/tm.texi: Regenerated.
+	* target.def (init_cost): Add new parameter costing_for_scalar.
+	* targhooks.c (default_init_cost): Adjust for new parameter.
+	* targhooks.h (default_init_cost): Likewise.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Likewise.
+	(vect_compute_single_scalar_iteration_cost): Likewise.
+	(vect_analyze_loop_2): Likewise.
+	* tree-vect-slp.c (_bb_vec_info::_bb_vec_info): Likewise.
+	(vect_bb_vectorization_profitable_p): Likewise.
+	* tree-vectorizer.h (init_cost): Likewise.
+	* config/aarch64/aarch64.c (aarch64_init_cost): Likewise.
+	* config/i386/i386.c (ix86_init_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_cost): Likewise.
+
+2021-05-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_vect_nonmem): Renamed to
+	vect_nonmem and moved into...
+	(struct rs6000_cost_data): ...here.
+	(rs6000_init_cost): Use vect_nonmem of cost_data instead.
+	(rs6000_add_stmt_cost): Likewise.
+	(rs6000_finish_cost): Likewise.
+
 2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* range-op.cc (get_bool_state): Adjust head comment.

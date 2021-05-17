@@ -1,3 +1,61 @@
+2021-05-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95870
+	* pt.c (enclosing_instantiation_of): Just compare
+	DECL_SOURCE_LOCATION.
+	(regenerate_decl_from_template): Copy DECL_SOURCE_LOCATION.
+
+2021-05-14  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/99032
+	* cp-tree.h (any_non_type_attribute_p): Declare.
+	* decl.c (grokdeclarator): Diagnose when an attribute appertains to
+	a friend declaration that is not a definition.
+	* decl2.c (any_non_type_attribute_p): New.
+	* parser.c (cp_parser_decl_specifier_seq): Diagnose standard attributes
+	in the middle of decl-specifiers.
+	(cp_parser_elaborated_type_specifier): Diagnose when an attribute
+	appertains to a friend declaration that is not a definition.
+	(cp_parser_member_declaration): Likewise.
+
+2021-05-12  Marek Polacek  <polacek@redhat.com>
+
+	* pt.c (tsubst_copy_and_build): Add warn_int_in_bool_context
+	sentinel.
+
+2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_map): Support map-type-modifier
+	'close'.
+
+2021-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100517
+	* typeck.c (build_reinterpret_cast_1): Check intype on
+	cast to vector.
+
+2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/51577
+	* name-lookup.c (maybe_save_operator_binding): Unconditionally
+	enable for all function templates, not just generic lambdas.
+	Handle compound-assignment operator expressions.
+	* typeck.c (build_x_compound_expr): Call maybe_save_operator_binding
+	in the type-dependent case.
+	(build_x_modify_expr): Likewise.  Move declaration of 'op' closer
+	to its first use.
+
+2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100138
+	* constraint.cc (tsubst_constraint): Set up cp_unevaluated.
+	(satisfy_atom): Set up iloc_sentinel before calling
+	cxx_constant_value.
+	* pt.c (tsubst_pack_expansion): When returning a rebuilt pack
+	expansion, carry over PACK_EXPANSION_LOCAL_P and
+	PACK_EXPANSION_SIZEOF_P from the original pack expansion.
+
 2021-05-10  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/100464

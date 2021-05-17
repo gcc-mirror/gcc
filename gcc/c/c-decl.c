@@ -5856,6 +5856,9 @@ get_parm_array_spec (const struct c_parm *parm, tree attrs)
 	  spec += buf;
 	  break;
 	}
+      else if (!INTEGRAL_TYPE_P (TREE_TYPE (nelts)))
+	/* Avoid invalid NELTS.  */
+	return attrs;
 
       /* Each variable VLA bound is represented by a dollar sign.  */
       spec += "$";

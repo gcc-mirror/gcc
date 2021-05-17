@@ -1,3 +1,322 @@
+2021-05-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ext/attrib63.C: Add -Wno-psabi option.
+
+2021-05-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/warn/uninit-pr93100.C: Require fsantize support.
+
+2021-05-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/unsigned-float.c: Remove arm_fp_ok, adjust
+	dg-options.
+
+2021-05-15  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/rop-1.c: New.
+	* gcc.target/powerpc/rop-2.c: New.
+	* gcc.target/powerpc/rop-3.c: New.
+	* gcc.target/powerpc/rop-4.c: New.
+	* gcc.target/powerpc/rop-5.c: New.
+
+2021-05-15  Martin Jambor  <mjambor@suse.cz>
+
+	Revert:
+	2021-05-15  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/100453
+	* gcc.dg/tree-ssa/pr100453.c: New test.
+
+2021-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100342
+	* gcc.target/i386/pr100342.c: New test.
+
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/parallel-master-1.f90: New test.
+	* gfortran.dg/gomp/parallel-master-2.f90: New test.
+
+2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/implicit-save.f90: New test.
+
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/95226
+	* g++.dg/cpp1y/pr95226.C: New test.
+
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/94616
+	* g++.dg/cpp0x/pr94616.C: New test.
+
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/90019
+	* g++.dg/cpp0x/sfinae68.C: New test.
+
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1y/pr88872.C: New test.
+
+2021-05-14  Michael de Lang  <kingoipo@gmail.com>
+
+	* g++.dg/tsan/pthread_cond_clockwait.C: New test.
+
+2021-05-14  Marek Polacek  <polacek@redhat.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/99032
+	* g++.dg/cpp0x/friend7.C: New test.
+	* g++.dg/cpp0x/gen-attrs-4.C: Add dg-error.
+	* g++.dg/cpp0x/gen-attrs-39-1.C: Likewise.
+	* g++.dg/cpp0x/gen-attrs-74.C: New test.
+	* g++.dg/ext/attrib63.C: New test.
+
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/93100
+	PR middle-end/98583
+	* g++.dg/warn/uninit-pr93100.C: New test.
+	* gcc.dg/uninit-pr93100.c: New test.
+	* gcc.dg/uninit-pr98583.c: New test.
+
+2021-05-13  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/100453
+	* gcc.dg/tree-ssa/pr100453.c: New test.
+
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	* g++.dg/pr100574.C: Use size_t as operator new argument type.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/100504
+	* gcc.target/i386/pr100504.c: New test.
+
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100550
+	* gcc.dg/Wvla-parameter-9.c: New test.
+
+2021-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-1.c: New test.
+	* c-c++-common/gomp/pr99928-2.c: New test.
+	* c-c++-common/gomp/pr99928-3.c: New test.
+	* c-c++-common/gomp/pr99928-4.c: New test.
+	* c-c++-common/gomp/pr99928-5.c: New test.
+	* c-c++-common/gomp/pr99928-6.c: New test.
+	* c-c++-common/gomp/pr99928-7.c: New test.
+	* c-c++-common/gomp/pr99928-8.c: New test.
+	* c-c++-common/gomp/pr99928-9.c: New test.
+	* c-c++-common/gomp/pr99928-10.c: New test.
+	* c-c++-common/gomp/pr99928-11.c: New test.
+
+2021-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100563
+	* gcc.dg/pr100563.c (dg-options): Add -wno-pointer-to-int-cast.
+
+2021-05-13  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.dg/pr100563.c: New test.
+
+2021-05-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/98856
+	* gcc.target/i386/sse2-psraq-1.c: New test.
+	* gcc.target/i386/sse4_2-psraq-1.c: New test.
+	* gcc.target/i386/avx-psraq-1.c: New test.
+	* gcc.target/i386/avx2-psraq-1.c: New test.
+	* gcc.target/i386/avx-pr82370.c: Adjust expected number of vpsrad
+	instructions.
+	* gcc.target/i386/avx2-pr82370.c: Likewise.
+	* gcc.target/i386/avx512f-pr82370.c: Likewise.
+	* gcc.target/i386/avx512bw-pr82370.c: Likewise.
+	* gcc.dg/torture/vshuf-4.inc: Add two further permutations.
+	* gcc.dg/torture/vshuf-8.inc: Likewise.
+
+2021-05-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100581
+	* g++.target/i386/pr100581.C: New test.
+
+2021-05-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/100569
+	* gnat.dg/lto21.adb: Prune new LTO warning.
+
+2021-05-13  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100569
+	* gcc.dg/atomic/c11-atomic-exec-2.c: Prune new LTO warning.
+	* gcc.dg/torture/pr94947-1.c: Likewise.
+
+2021-05-13  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx-pr94680.c: Fix typo in testcase.
+
+2021-05-13  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/94680
+	* gcc.target/i386/avx-pr94680.c: New test.
+	* gcc.target/i386/avx512f-pr94680.c: New test.
+	* gcc.target/i386/sse2-pr94680.c: New test.
+
+2021-05-12  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100571
+	* gcc.dg/Wstringop-overflow-67.c: New test.
+
+2021-05-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR c/100521
+	* gcc.dg/pr100521.c: New file.
+
+2021-05-12  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/warn/Wint-in-bool-context-2.C: New test.
+
+2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* c-c++-common/gomp/map-6.c: New test.
+	* c-c++-common/gomp/map-7.c: New test.
+
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100566
+	* gcc.dg/torture/pr100566.c: New testcase.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/100392
+	* gcc.dg/cpp/pr100392.c: New test.
+	* gcc.dg/cpp/pr100392.h: New file.
+
+2021-05-12  Martin Liska  <mliska@suse.cz>
+
+	* lib/lto.exp: When running tests without jobserver, one can see
+	the following warning for tests that use 1to1 partitioning.
+
+2021-05-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/99908
+	* gcc.target/i386/avx2-pr99908.c: New test.
+	* gcc.target/i386/sse4_1-pr99908.c: New test.
+
+2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100519
+	* gcc.dg/torture/pr100519.c: New testcase.
+
+2021-05-12  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR debug/100515
+	* gcc.dg/debug/dwarf2/pr100515.c: New testcase.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100508
+	* gcc.dg/gomp/pr100508.c: New test.
+
+2021-05-12  Jakub Jelinek  <jakub@redhat.com>
+	    Marc Glisse  <marc.glisse@inria.fr>
+
+	PR tree-optimization/94589
+	* gcc.dg/tree-ssa/pr94589-1.c: New test.
+
+2021-05-12  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/98218
+	* g++.target/i386/pr98218-1.C: Ditto.
+	* gcc.target/i386/pr98218-4.c: New test.
+	* gcc.target/i386/pr98218-1.c: Correct PR number.
+	* gcc.target/i386/pr98218-1a.c: Ditto.
+	* gcc.target/i386/pr98218-2.c: Ditto.
+	* gcc.target/i386/pr98218-2a.c: Ditto.
+	* gcc.target/i386/pr98218-3.c: Ditto.
+	* gcc.target/i386/pr98218-3a.c: Ditto.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/cpp/c11-elifdef-1.c, gcc.dg/cpp/c2x-elifdef-1.c,
+	gcc.dg/cpp/c2x-elifdef-2.c: New tests.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* g++.dg/cpp1y/digit-sep-paste.C, gcc.dg/c2x-digit-separators-3.c:
+	New tests.
+
+2021-05-11  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+
+	* gcc.dg/guality/pr43077-1.c: Align types of output and input
+	operands by lifting immediates to type long.
+
+2021-05-11  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-digit-separators-1.c,
+	gcc.dg/c2x-digit-separators-1.c, gcc.dg/c2x-digit-separators-2.c:
+	New tests.
+
+2021-05-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100517
+	* g++.dg/ext/vector41.C: New test.
+
+2021-05-11  Martin Liska  <mliska@suse.cz>
+
+	* gfortran.dg/goacc/pr78027.f90: Remove -Wno-hsa option.
+	* brig.dg/README: Removed.
+	* brig.dg/dg.exp: Removed.
+	* brig.dg/test/gimple/alloca.hsail: Removed.
+	* brig.dg/test/gimple/atomics.hsail: Removed.
+	* brig.dg/test/gimple/branches.hsail: Removed.
+	* brig.dg/test/gimple/fbarrier.hsail: Removed.
+	* brig.dg/test/gimple/function_calls.hsail: Removed.
+	* brig.dg/test/gimple/internal-casts.hsail: Removed.
+	* brig.dg/test/gimple/kernarg.hsail: Removed.
+	* brig.dg/test/gimple/mem.hsail: Removed.
+	* brig.dg/test/gimple/mulhi.hsail: Removed.
+	* brig.dg/test/gimple/packed.hsail: Removed.
+	* brig.dg/test/gimple/priv-array-offset-access.hsail: Removed.
+	* brig.dg/test/gimple/smoke_test.hsail: Removed.
+	* brig.dg/test/gimple/variables.hsail: Removed.
+	* brig.dg/test/gimple/vector.hsail: Removed.
+	* lib/brig-dg.exp: Removed.
+	* lib/brig.exp: Removed.
+
+2021-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99725
+	* gcc.target/arm/cmse/pr99725.c: New test.
+
+2021-05-11  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* gcc.target/aarch64/fmul_lane_1.c: New test.
+
+2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100509
+	* gcc.dg/pr100509.c: New testcase.
+
+2021-05-11  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/risbg-ll-3.c: Change match pattern.
+
+2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/51577
+	* g++.dg/lookup/operator-3.C: New test.
+
+2021-05-11  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100138
+	* g++.dg/cpp2a/concepts-ctad4.C: New test.
+
 2021-05-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/opt5.ads: New test.

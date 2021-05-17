@@ -394,7 +394,7 @@ class GitCommit:
         self.changelog_locations = list(default_changelog_locations)
         if ref_name:
             version = sys.maxsize
-            if ref_name.startswith('refs/heads/releases/gcc-'):
+            if 'releases/gcc-' in ref_name:
                 version = int(ref_name.split('-')[-1])
             if version >= 12:
                 # HSA and BRIG were removed in GCC 12
@@ -409,7 +409,8 @@ class GitCommit:
                 continue
             if (changelog_regex.match(b) or self.find_changelog_location(b)
                     or star_prefix_regex.match(b) or pr_regex.match(b)
-                    or dr_regex.match(b) or author_line_regex.match(b)):
+                    or dr_regex.match(b) or author_line_regex.match(b)
+                    or b.lower().startswith(CO_AUTHORED_BY_PREFIX)):
                 self.changes = body[i:]
                 return
         if not all_are_ignored:

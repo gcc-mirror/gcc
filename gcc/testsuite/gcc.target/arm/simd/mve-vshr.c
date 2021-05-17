@@ -55,5 +55,12 @@ FUNC_IMM(u, uint, 8, 16, >>, vshrimm)
 
 /* MVE has only 128-bit vectors, so we can vectorize only half of the
    functions above.  */
+/* Vector right shifts use vneg and left shifts.  */
+/* { dg-final { scan-assembler-times {vshl.s[0-9]+\tq[0-9]+, q[0-9]+} 3 } } */
+/* { dg-final { scan-assembler-times {vshl.u[0-9]+\tq[0-9]+, q[0-9]+} 3 } } */
+/* { dg-final { scan-assembler-times {vneg.s[0-9]+  q[0-9]+, q[0-9]+} 6 } } */
+
+
+/* Shift by immediate.  */
 /* { dg-final { scan-assembler-times {vshr.s[0-9]+\tq[0-9]+, q[0-9]+} 3 } } */
 /* { dg-final { scan-assembler-times {vshr.u[0-9]+\tq[0-9]+, q[0-9]+} 3 } } */

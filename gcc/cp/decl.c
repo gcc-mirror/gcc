@@ -13741,6 +13741,11 @@ grokdeclarator (const cp_declarator *declarator,
 
 	if (friendp)
 	  {
+	    if (attrlist && !funcdef_flag
+		/* Hack to allow attributes like vector_size on a friend.  */
+		&& any_non_type_attribute_p (*attrlist))
+	      error_at (id_loc, "attribute appertains to a friend "
+			"declaration that is not a definition");
 	    /* Friends are treated specially.  */
 	    if (ctype == current_class_type)
 	      ;  /* We already issued a permerror.  */

@@ -1,3 +1,7 @@
+2021-05-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* crontab: Stop doing gcc-8 snapshots.
+
 2021-04-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Snapshots from trunk are now GCC 12 related.
