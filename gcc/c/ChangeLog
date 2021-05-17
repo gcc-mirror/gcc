@@ -1,3 +1,8 @@
+2021-05-13  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100550
+	* c-decl.c (get_parm_array_spec): Avoid erroneous VLA bounds.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.
