@@ -1887,7 +1887,8 @@ c_parser_gimple_label (gimple_parser &parser, gimple_seq *seq)
   gcc_assert (c_parser_next_token_is (parser, CPP_COLON));
   c_parser_consume_token (parser);
   tree label = define_label (loc1, name);
-  gimple_seq_add_stmt_without_update (seq, gimple_build_label (label));
+  if (label)
+    gimple_seq_add_stmt_without_update (seq, gimple_build_label (label));
   return;
 }
 
