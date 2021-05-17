@@ -1671,6 +1671,12 @@ package body Freeze is
                --  type declaration that generates inherited operation. For
                --  a null procedure, the declaration implies a null body.
 
+               --  Before insertion, do some minimal decoration of fields
+
+               Mutate_Ekind (New_Id, Ekind (Par_Prim));
+               Set_LSP_Subprogram (New_Id, Par_Prim);
+               Set_Is_Wrapper (New_Id);
+
                if Nkind (New_Spec) = N_Procedure_Specification
                  and then Null_Present (New_Spec)
                then
@@ -1683,12 +1689,6 @@ package body Freeze is
                   New_Body :=
                     Build_Class_Wide_Clone_Call
                       (Loc, Decls, Par_Prim, New_Spec);
-
-                  --  Adding minimum decoration
-
-                  Mutate_Ekind (New_Id, Ekind (Par_Prim));
-                  Set_LSP_Subprogram (New_Id, Par_Prim);
-                  Set_Is_Wrapper (New_Id);
 
                   Insert_List_After_And_Analyze
                     (Par_R, New_List (New_Decl, New_Body));

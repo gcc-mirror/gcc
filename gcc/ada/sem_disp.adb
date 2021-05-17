@@ -612,29 +612,32 @@ package body Sem_Disp is
                Set_Entity (Name (N), Alias (Subp));
                return;
 
-            --  An obscure special case: a null procedure may have a class-
-            --  wide pre/postcondition that includes a call to an abstract
-            --  subp. Calls within the expression may not have been rewritten
-            --  as dispatching calls yet, because the null body appears in
-            --  the current declarative part. The expression will be properly
-            --  rewritten/reanalyzed when the postcondition procedure is built.
+            --  If this is a pre/postcondition for an abstract subprogram,
+            --  it may call another abstract function that is a primitive
+            --  of an abstract type. The call is nondispatching but will be
+            --  legal in overridings of the operation. However, if the call
+            --  is tag-indeterminate we want to continue with with the error
+            --  checking below, as this case is illegal even for abstract
+            --  subprograms (see AI12-0170).
 
-            --  Similarly, if this is a pre/postcondition for an abstract
-            --  subprogram, it may call another abstract function which is
-            --  a primitive of an abstract type. The call is non-dispatching
-            --  but will be legal in overridings of the operation. However,
-            --  if the call is tag-indeterminate we want to continue with
-            --  with the error checking below, as this case is illegal even
-            --  for abstract subprograms (see AI12-0170).
+            --  Similarly, as per AI12-0412, a nonabstract subprogram may
+            --  have a class-wide pre/postcondition that includes a call to
+            --  an abstract primitive of the subprogram's controlling type.
+            --  Certain operations (nondispatching calls, 'Access, use as
+            --  a generic actual) applied to such a nonabstract subprogram
+            --  are illegal in the case where the type is abstract (see
+            --  RM 6.1.1(18.2/5)).
 
-            elsif (Is_Subprogram (Scop)
-                    or else Chars (Scop) = Name_Postcondition)
+            elsif Is_Subprogram (Scop)
+              and then not Is_Tag_Indeterminate (N)
+              and then In_Pre_Post_Condition (Call, Class_Wide_Only => True)
+
+              --  The tagged type associated with the called subprogram must be
+              --  the same as that of the subprogram with a class-wide aspect.
+
+              and then Is_Dispatching_Operation (Scop)
               and then
-                ((Is_Abstract_Subprogram (Scop)
-                   and then not Is_Tag_Indeterminate (N))
-                  or else
-                    (Nkind (Parent (Scop)) = N_Procedure_Specification
-                      and then Null_Present (Parent (Scop))))
+                Find_Dispatching_Type (Subp) = Find_Dispatching_Type (Scop)
             then
                null;
 
@@ -663,7 +666,7 @@ package body Sem_Disp is
                --  provides a tag to make the call dispatching. This requires
                --  the call to be the actual in an enclosing call, and that
                --  actual must be controlling. If the call is an operand of
-               --  equality, the other operand must not ve abstract.
+               --  equality, the other operand must not be abstract.
 
                if not Is_Tagged_Type (Typ)
                  and then not
@@ -970,7 +973,6 @@ package body Sem_Disp is
             end loop;
 
             Check_Dispatching_Context (N);
-            return;
 
          elsif Nkind (Parent (N)) in N_Subexpr then
             Check_Dispatching_Context (N);
@@ -983,6 +985,23 @@ package body Sem_Disp is
          elsif Is_Abstract_Subprogram (Subp_Entity) then
             Check_Dispatching_Context (N);
             return;
+         end if;
+
+         --  If this is a nondispatching call to a nonabstract subprogram
+         --  and the subprogram has any Pre'Class or Post'Class aspects with
+         --  nonstatic values, then report an error. This is specified by
+         --  RM 6.1.1(18.2/5) (by AI12-0412).
+
+         if No (Control)
+           and then not Is_Abstract_Subprogram (Subp_Entity)
+           and then
+             Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post (Subp_Entity)
+         then
+            Error_Msg_N
+              ("nondispatching call to nonabstract subprogram of "
+                & "abstract type with nonstatic class-wide "
+                & "pre/postconditions",
+               N);
          end if;
 
       else

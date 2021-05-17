@@ -13295,6 +13295,44 @@ package body Sem_Util is
           and then Nkind (Node (First_Elmt (Constits))) = N_Null;
    end Has_Null_Refinement;
 
+   ------------------------------------------
+   -- Has_Nonstatic_Class_Wide_Pre_Or_Post --
+   ------------------------------------------
+
+   function Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post
+     (Subp : Entity_Id) return Boolean
+   is
+      Disp_Type  : constant Entity_Id := Find_Dispatching_Type (Subp);
+      Prag       : Node_Id;
+      Pragma_Arg : Node_Id;
+
+   begin
+      if Present (Disp_Type)
+        and then Is_Abstract_Type (Disp_Type)
+        and then Present (Contract (Subp))
+      then
+         Prag := Pre_Post_Conditions (Contract (Subp));
+
+         while Present (Prag) loop
+            if Pragma_Name (Prag) in Name_Precondition | Name_Postcondition
+              and then Class_Present (Prag)
+            then
+               Pragma_Arg :=
+                 Nlists.First
+                   (Pragma_Argument_Associations (Prag));
+
+               if not Is_Static_Expression (Expression (Pragma_Arg)) then
+                  return True;
+               end if;
+            end if;
+
+            Prag := Next_Pragma (Prag);
+         end loop;
+      end if;
+
+      return False;
+   end Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post;
+
    -------------------------------
    -- Has_Overriding_Initialize --
    -------------------------------
@@ -14431,7 +14469,9 @@ package body Sem_Util is
    -- In_Pre_Post_Condition --
    ---------------------------
 
-   function In_Pre_Post_Condition (N : Node_Id) return Boolean is
+   function In_Pre_Post_Condition
+     (N : Node_Id; Class_Wide_Only : Boolean := False) return Boolean
+   is
       Par     : Node_Id;
       Prag    : Node_Id := Empty;
       Prag_Id : Pragma_Id;
@@ -14457,13 +14497,24 @@ package body Sem_Util is
       if Present (Prag) then
          Prag_Id := Get_Pragma_Id (Prag);
 
-         return
-           Prag_Id = Pragma_Post
-             or else Prag_Id = Pragma_Post_Class
-             or else Prag_Id = Pragma_Postcondition
-             or else Prag_Id = Pragma_Pre
-             or else Prag_Id = Pragma_Pre_Class
-             or else Prag_Id = Pragma_Precondition;
+         if Class_Wide_Only then
+            return
+              Prag_Id = Pragma_Post_Class
+                or else Prag_Id = Pragma_Pre_Class
+                or else (Class_Present (Prag)
+                          and then (Prag_Id = Pragma_Post
+                                     or else Prag_Id = Pragma_Postcondition
+                                     or else Prag_Id = Pragma_Pre
+                                     or else Prag_Id = Pragma_Precondition));
+         else
+            return
+              Prag_Id = Pragma_Post
+                or else Prag_Id = Pragma_Post_Class
+                or else Prag_Id = Pragma_Postcondition
+                or else Prag_Id = Pragma_Pre
+                or else Prag_Id = Pragma_Pre_Class
+                or else Prag_Id = Pragma_Precondition;
+         end if;
 
       --  Otherwise the node is not enclosed by a pre/postcondition pragma
 

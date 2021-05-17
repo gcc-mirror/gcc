@@ -3790,15 +3790,31 @@ package body Sem_Ch8 is
             Set_Has_Delayed_Freeze (New_S, False);
             Freeze_Before (N, New_S);
 
-            --  An abstract subprogram is only allowed as an actual in the case
-            --  where the formal subprogram is also abstract.
-
             if (Ekind (Old_S) = E_Procedure or else Ekind (Old_S) = E_Function)
-              and then Is_Abstract_Subprogram (Old_S)
               and then not Is_Abstract_Subprogram (Formal_Spec)
             then
-               Error_Msg_N
-                 ("abstract subprogram not allowed as generic actual", Nam);
+               --  An abstract subprogram is only allowed as an actual in the
+               --  case where the formal subprogram is also abstract.
+
+               if Is_Abstract_Subprogram (Old_S) then
+                  Error_Msg_N
+                    ("abstract subprogram not allowed as generic actual", Nam);
+               end if;
+
+               --  AI12-0412: A primitive of an abstract type with Pre'Class
+               --  or Post'Class aspects specified with nonstatic expressions
+               --  is not allowed as actual for a nonabstract formal subprogram
+               --  (see RM 6.1.1(18.2/5).
+
+               if Is_Dispatching_Operation (Old_S)
+                 and then
+                   Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post (Old_S)
+               then
+                  Error_Msg_N
+                    ("primitive of abstract type with nonstatic class-wide "
+                      & "pre/postconditions not allowed as actual",
+                     Nam);
+               end if;
             end if;
          end if;
 

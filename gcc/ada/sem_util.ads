@@ -1516,6 +1516,12 @@ package Sem_Util is
    --  integer for use in compile-time checking. Note: Level is restricted to
    --  be non-dynamic.
 
+   function Is_Prim_Of_Abst_Type_With_Nonstatic_CW_Pre_Post
+     (Subp : Entity_Id) return Boolean;
+   --  Return True if Subp is a primitive of an abstract type, where the
+   --  primitive has a class-wide pre- or postcondition whose expression
+   --  is nonstatic.
+
    function Has_Overriding_Initialize (T : Entity_Id) return Boolean;
    --  Predicate to determine whether a controlled type has a user-defined
    --  Initialize primitive (and, in Ada 2012, whether that primitive is
@@ -1634,9 +1640,11 @@ package Sem_Util is
    function In_Pragma_Expression (N : Node_Id; Nam : Name_Id) return Boolean;
    --  Returns true if the expression N occurs within a pragma with name Nam
 
-   function In_Pre_Post_Condition (N : Node_Id) return Boolean;
+   function In_Pre_Post_Condition
+     (N : Node_Id; Class_Wide_Only : Boolean := False) return Boolean;
    --  Returns True if node N appears within a pre/postcondition pragma. Note
-   --  the pragma Check equivalents are NOT considered.
+   --  the pragma Check equivalents are NOT considered. If Class_Wide_Only is
+   --  True, then tests for N appearing within a class-wide pre/postcondition.
 
    function In_Quantified_Expression (N : Node_Id) return Boolean;
    --  Returns true if the expression N occurs within a quantified expression
