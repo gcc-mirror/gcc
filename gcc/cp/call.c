@@ -7900,9 +7900,13 @@ convert_like_internal (conversion *convs, tree expr, tree fn, int argnum,
 			      "type %qH to a value of type %qI",
 			      totype, next->type);
 		  }
-		else
+		else if (!CP_TYPE_CONST_P (TREE_TYPE (ref_type)))
 		  error_at (loc, "cannot bind non-const lvalue reference of "
 			    "type %qH to an rvalue of type %qI", totype, extype);
+		else // extype is volatile
+		  error_at (loc, "cannot bind lvalue reference of type "
+			    "%qH to an rvalue of type %qI", totype,
+			    extype);
 	      }
 	    else if (!reference_compatible_p (TREE_TYPE (totype), extype))
 	      {
