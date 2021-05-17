@@ -30959,66 +30959,113 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
    and return true if TARGET contains the inverse.  If !CAN_INVERT,
    always store the result in TARGET, never its inverse.
 
+   If VCOND_MVE, do not emit the vpsel instruction here, let arm_expand_vcond do
+   it with the right destination type to avoid emiting two vpsel, one here and
+   one in arm_expand_vcond.
+
    Note that the handling of floating-point comparisons is not
    IEEE compliant.  */
 
 bool
 arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
-			   bool can_invert)
+			   bool can_invert, bool vcond_mve)
 {
   machine_mode cmp_result_mode = GET_MODE (target);
   machine_mode cmp_mode = GET_MODE (op0);
 
   bool inverted;
-  switch (code)
-    {
-    /* For these we need to compute the inverse of the requested
-       comparison.  */
-    case UNORDERED:
-    case UNLT:
-    case UNLE:
-    case UNGT:
-    case UNGE:
-    case UNEQ:
-    case NE:
-      code = reverse_condition_maybe_unordered (code);
-      if (!can_invert)
-	{
-	  /* Recursively emit the inverted comparison into a temporary
-	     and then store its inverse in TARGET.  This avoids reusing
-	     TARGET (which for integer NE could be one of the inputs).  */
-	  rtx tmp = gen_reg_rtx (cmp_result_mode);
-	  if (arm_expand_vector_compare (tmp, code, op0, op1, true))
-	    gcc_unreachable ();
-	  emit_insn (gen_rtx_SET (target, gen_rtx_NOT (cmp_result_mode, tmp)));
-	  return false;
-	}
-      inverted = true;
-      break;
 
-    default:
+  /* MVE supports more comparisons than Neon.  */
+  if (TARGET_HAVE_MVE)
       inverted = false;
-      break;
-    }
+  else
+    switch (code)
+      {
+	/* For these we need to compute the inverse of the requested
+	   comparison.  */
+      case UNORDERED:
+      case UNLT:
+      case UNLE:
+      case UNGT:
+      case UNGE:
+      case UNEQ:
+      case NE:
+	code = reverse_condition_maybe_unordered (code);
+	if (!can_invert)
+	  {
+	    /* Recursively emit the inverted comparison into a temporary
+	       and then store its inverse in TARGET.  This avoids reusing
+	       TARGET (which for integer NE could be one of the inputs).  */
+	    rtx tmp = gen_reg_rtx (cmp_result_mode);
+	    if (arm_expand_vector_compare (tmp, code, op0, op1, true, vcond_mve))
+	      gcc_unreachable ();
+	    emit_insn (gen_rtx_SET (target, gen_rtx_NOT (cmp_result_mode, tmp)));
+	    return false;
+	  }
+	inverted = true;
+	break;
+
+      default:
+	inverted = false;
+	break;
+      }
 
   switch (code)
     {
-    /* These are natively supported for zero comparisons, but otherwise
-       require the operands to be swapped.  */
+    /* These are natively supported by Neon for zero comparisons, but otherwise
+       require the operands to be swapped. For MVE, we can only compare
+       registers.  */
     case LE:
     case LT:
-      if (op1 != CONST0_RTX (cmp_mode))
-	{
-	  code = swap_condition (code);
-	  std::swap (op0, op1);
-	}
+      if (!TARGET_HAVE_MVE)
+	if (op1 != CONST0_RTX (cmp_mode))
+	  {
+	    code = swap_condition (code);
+	    std::swap (op0, op1);
+	  }
       /* Fall through.  */
 
-    /* These are natively supported for both register and zero operands.  */
+    /* These are natively supported by Neon for both register and zero
+       operands. MVE supports registers only.  */
     case EQ:
     case GE:
     case GT:
-      emit_insn (gen_neon_vc (code, cmp_mode, target, op0, op1));
+    case NE:
+      if (TARGET_HAVE_MVE)
+	{
+	  rtx vpr_p0;
+	  if (vcond_mve)
+	    vpr_p0 = target;
+	  else
+	    vpr_p0 = gen_reg_rtx (HImode);
+
+	  switch (GET_MODE_CLASS (cmp_mode))
+	    {
+	    case MODE_VECTOR_INT:
+	      emit_insn (gen_mve_vcmpq (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
+	      break;
+	    case MODE_VECTOR_FLOAT:
+	      if (TARGET_HAVE_MVE_FLOAT)
+		emit_insn (gen_mve_vcmpq_f (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
+	      else
+		gcc_unreachable ();
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  /* If we are not expanding a vcond, build the result here.  */
+	  if (!vcond_mve)
+	    {
+	      rtx zero = gen_reg_rtx (cmp_result_mode);
+	      rtx one = gen_reg_rtx (cmp_result_mode);
+	      emit_move_insn (zero, CONST0_RTX (cmp_result_mode));
+	      emit_move_insn (one, CONST1_RTX (cmp_result_mode));
+	      emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, target, one, zero, vpr_p0));
+	    }
+	}
+      else
+	emit_insn (gen_neon_vc (code, cmp_mode, target, op0, op1));
       return inverted;
 
     /* These are natively supported for register operands only.
@@ -31026,16 +31073,54 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
        or canonicalized by target-independent code.  */
     case GEU:
     case GTU:
-      emit_insn (gen_neon_vc (code, cmp_mode, target,
-			      op0, force_reg (cmp_mode, op1)));
+      if (TARGET_HAVE_MVE)
+	{
+	  rtx vpr_p0;
+	  if (vcond_mve)
+	    vpr_p0 = target;
+	  else
+	    vpr_p0 = gen_reg_rtx (HImode);
+
+	  emit_insn (gen_mve_vcmpq (code, cmp_mode, vpr_p0, op0, force_reg (cmp_mode, op1)));
+	  if (!vcond_mve)
+	    {
+	      rtx zero = gen_reg_rtx (cmp_result_mode);
+	      rtx one = gen_reg_rtx (cmp_result_mode);
+	      emit_move_insn (zero, CONST0_RTX (cmp_result_mode));
+	      emit_move_insn (one, CONST1_RTX (cmp_result_mode));
+	      emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, target, one, zero, vpr_p0));
+	    }
+	}
+      else
+	emit_insn (gen_neon_vc (code, cmp_mode, target,
+				op0, force_reg (cmp_mode, op1)));
       return inverted;
 
     /* These require the operands to be swapped and likewise do not
        support comparisons with zero.  */
     case LEU:
     case LTU:
-      emit_insn (gen_neon_vc (swap_condition (code), cmp_mode,
-			      target, force_reg (cmp_mode, op1), op0));
+      if (TARGET_HAVE_MVE)
+	{
+	  rtx vpr_p0;
+	  if (vcond_mve)
+	    vpr_p0 = target;
+	  else
+	    vpr_p0 = gen_reg_rtx (HImode);
+
+	  emit_insn (gen_mve_vcmpq (swap_condition (code), cmp_mode, vpr_p0, force_reg (cmp_mode, op1), op0));
+	  if (!vcond_mve)
+	    {
+	      rtx zero = gen_reg_rtx (cmp_result_mode);
+	      rtx one = gen_reg_rtx (cmp_result_mode);
+	      emit_move_insn (zero, CONST0_RTX (cmp_result_mode));
+	      emit_move_insn (one, CONST1_RTX (cmp_result_mode));
+	      emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, target, one, zero, vpr_p0));
+	    }
+	}
+      else
+	emit_insn (gen_neon_vc (swap_condition (code), cmp_mode,
+				target, force_reg (cmp_mode, op1), op0));
       return inverted;
 
     /* These need a combination of two comparisons.  */
@@ -31047,8 +31132,8 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
 	rtx gt_res = gen_reg_rtx (cmp_result_mode);
 	rtx alt_res = gen_reg_rtx (cmp_result_mode);
 	rtx_code alt_code = (code == LTGT ? LT : LE);
-	if (arm_expand_vector_compare (gt_res, GT, op0, op1, true)
-	    || arm_expand_vector_compare (alt_res, alt_code, op0, op1, true))
+	if (arm_expand_vector_compare (gt_res, GT, op0, op1, true, vcond_mve)
+	    || arm_expand_vector_compare (alt_res, alt_code, op0, op1, true, vcond_mve))
 	  gcc_unreachable ();
 	emit_insn (gen_rtx_SET (target, gen_rtx_IOR (cmp_result_mode,
 						     gt_res, alt_res)));
@@ -31066,13 +31151,47 @@ arm_expand_vector_compare (rtx target, rtx_code code, rtx op0, rtx op1,
 void
 arm_expand_vcond (rtx *operands, machine_mode cmp_result_mode)
 {
-  rtx mask = gen_reg_rtx (cmp_result_mode);
+  /* When expanding for MVE, we do not want to emit a (useless) vpsel in
+     arm_expand_vector_compare, and another one here.  */
+  bool vcond_mve=false;
+  rtx mask;
+
+  if (TARGET_HAVE_MVE)
+    {
+      vcond_mve=true;
+      mask = gen_reg_rtx (HImode);
+    }
+  else
+    mask = gen_reg_rtx (cmp_result_mode);
+
   bool inverted = arm_expand_vector_compare (mask, GET_CODE (operands[3]),
-					     operands[4], operands[5], true);
+					     operands[4], operands[5], true, vcond_mve);
   if (inverted)
     std::swap (operands[1], operands[2]);
+  if (TARGET_NEON)
   emit_insn (gen_neon_vbsl (GET_MODE (operands[0]), operands[0],
 			    mask, operands[1], operands[2]));
+  else
+    {
+      machine_mode cmp_mode = GET_MODE (operands[4]);
+      rtx vpr_p0 = mask;
+      rtx zero = gen_reg_rtx (cmp_mode);
+      rtx one = gen_reg_rtx (cmp_mode);
+      emit_move_insn (zero, CONST0_RTX (cmp_mode));
+      emit_move_insn (one, CONST1_RTX (cmp_mode));
+      switch (GET_MODE_CLASS (cmp_mode))
+	{
+	case MODE_VECTOR_INT:
+	  emit_insn (gen_mve_vpselq (VPSELQ_S, cmp_result_mode, operands[0], one, zero, vpr_p0));
+	  break;
+	case MODE_VECTOR_FLOAT:
+	  if (TARGET_HAVE_MVE_FLOAT)
+	    emit_insn (gen_mve_vpselq_f (cmp_mode, operands[0], one, zero, vpr_p0));
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
 }
 
 #define MAX_VECT_LEN 16
