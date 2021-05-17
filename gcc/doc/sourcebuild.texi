@@ -2125,9 +2125,9 @@ ARM Target supports options suitable for accessing the SIMD32 intrinsics from
 @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 
-@item arm_qbit_ok
-@anchor{arm_qbit_ok}
-ARM Target supports options suitable for accessing the Q-bit manipulation
+@item arm_sat_ok
+@anchor{arm_sat_ok}
+ARM Target supports options suitable for accessing the saturation
 intrinsics from @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 
