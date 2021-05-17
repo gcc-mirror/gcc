@@ -1,3 +1,16 @@
+2021-05-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ext/attrib63.C: Add -Wno-psabi option.
+
+2021-05-16  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/warn/uninit-pr93100.C: Require fsantize support.
+
+2021-05-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/unsigned-float.c: Remove arm_fp_ok, adjust
+	dg-options.
+
 2021-05-15  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/rop-1.c: New.

@@ -1,3 +1,8 @@
+2021-05-16  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm.h (CPP_SPEC): Remove error message about
+	-mlittle-endian/-mbig-endian conflict.
+
 2021-05-15  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
