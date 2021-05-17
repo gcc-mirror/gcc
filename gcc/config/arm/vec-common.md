@@ -366,8 +366,8 @@
 (define_expand "vec_cmp<mode><v_cmp_result>"
   [(set (match_operand:<V_cmp_result> 0 "s_register_operand")
 	(match_operator:<V_cmp_result> 1 "comparison_operator"
-	  [(match_operand:VDQW 2 "s_register_operand")
-	   (match_operand:VDQW 3 "reg_or_zero_operand")]))]
+	  [(match_operand:VDQWH 2 "s_register_operand")
+	   (match_operand:VDQWH 3 "reg_or_zero_operand")]))]
   "ARM_HAVE_<MODE>_ARITH
    && !TARGET_REALLY_IWMMXT
    && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
@@ -399,13 +399,13 @@
 ;; element-wise.
 
 (define_expand "vcond<mode><mode>"
-  [(set (match_operand:VDQW 0 "s_register_operand")
-	(if_then_else:VDQW
+  [(set (match_operand:VDQWH 0 "s_register_operand")
+	(if_then_else:VDQWH
 	  (match_operator 3 "comparison_operator"
-	    [(match_operand:VDQW 4 "s_register_operand")
-	     (match_operand:VDQW 5 "reg_or_zero_operand")])
-	  (match_operand:VDQW 1 "s_register_operand")
-	  (match_operand:VDQW 2 "s_register_operand")))]
+	    [(match_operand:VDQWH 4 "s_register_operand")
+	     (match_operand:VDQWH 5 "reg_or_zero_operand")])
+	  (match_operand:VDQWH 1 "s_register_operand")
+	  (match_operand:VDQWH 2 "s_register_operand")))]
   "ARM_HAVE_<MODE>_ARITH
    && !TARGET_REALLY_IWMMXT
    && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
@@ -430,6 +430,22 @@
   DONE;
 })
 
+(define_expand "vcond<VH_cvtto><mode>"
+  [(set (match_operand:<VH_CVTTO> 0 "s_register_operand")
+	(if_then_else:<VH_CVTTO>
+	  (match_operator 3 "comparison_operator"
+	    [(match_operand:V16 4 "s_register_operand")
+	     (match_operand:V16 5 "reg_or_zero_operand")])
+	  (match_operand:<VH_CVTTO> 1 "s_register_operand")
+	  (match_operand:<VH_CVTTO> 2 "s_register_operand")))]
+  "ARM_HAVE_<MODE>_ARITH
+   && !TARGET_REALLY_IWMMXT
+   && (!<Is_float_mode> || flag_unsafe_math_optimizations)"
+{
+  arm_expand_vcond (operands, <V_cmp_result>mode);
+  DONE;
+})
+
 (define_expand "vcondu<mode><v_cmp_result>"
   [(set (match_operand:VDQW 0 "s_register_operand")
 	(if_then_else:VDQW
@@ -446,11 +462,11 @@
 })
 
 (define_expand "vcond_mask_<mode><v_cmp_result>"
-  [(set (match_operand:VDQW 0 "s_register_operand")
-        (if_then_else:VDQW
+  [(set (match_operand:VDQWH 0 "s_register_operand")
+        (if_then_else:VDQWH
           (match_operand:<V_cmp_result> 3 "s_register_operand")
-          (match_operand:VDQW 1 "s_register_operand")
-          (match_operand:VDQW 2 "s_register_operand")))]
+          (match_operand:VDQWH 1 "s_register_operand")
+          (match_operand:VDQWH 2 "s_register_operand")))]
   "ARM_HAVE_<MODE>_ARITH
    && !TARGET_REALLY_IWMMXT
    && (!<Is_float_mode> || flag_unsafe_math_optimizations)"

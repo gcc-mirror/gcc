@@ -231,6 +231,9 @@
 ;; Vector modes for 16-bit floating-point support.
 (define_mode_iterator VH [V8HF V4HF])
 
+;; Modes with 16-bit elements only.
+(define_mode_iterator V16 [V4HI V4HF V8HI V8HF])
+
 ;; 16-bit floating-point vector modes suitable for moving (includes BFmode).
 (define_mode_iterator VHFBF [V8HF V4HF V4BF V8BF])
 
@@ -571,6 +574,8 @@
 ;; (Opposite) mode to convert to/from for vector-half mode conversions.
 (define_mode_attr VH_CVTTO [(V4HI "V4HF") (V4HF "V4HI")
 			    (V8HI "V8HF") (V8HF "V8HI")])
+(define_mode_attr VH_cvtto [(V4HI "v4hf") (V4HF "v4hi")
+			    (V8HI "v8hf") (V8HF "v8hi")])
 
 ;; Define element mode for each vector mode.
 (define_mode_attr V_elem [(V8QI "QI") (V16QI "QI")
@@ -720,6 +725,7 @@
 (define_mode_attr v_cmp_result [(V8QI "v8qi") (V16QI "v16qi")
 				(V4HI "v4hi") (V8HI  "v8hi")
 				(V2SI "v2si") (V4SI  "v4si")
+				(V4HF "v4hi") (V8HF  "v8hi")
 				(DI   "di")   (V2DI  "v2di")
 				(V2SF "v2si") (V4SF  "v4si")])
 
