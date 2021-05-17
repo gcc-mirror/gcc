@@ -116,7 +116,7 @@ namespace __detail
 
   template<typename _Source>
     struct __constructible_from<_Source, void>
-    : decltype(__is_path_src(std::declval<_Source>(), 0))
+    : decltype(__is_path_src(std::declval<const _Source&>(), 0))
     { };
 
   template<typename _Tp1, typename _Tp2 = void>
