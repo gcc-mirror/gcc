@@ -2516,6 +2516,10 @@
 
 (define_int_iterator SVE_LDFF1_LDNF1 [UNSPEC_LDFF1 UNSPEC_LDNF1])
 
+(define_int_iterator SVE_PRED_LOAD [UNSPEC_PRED_X UNSPEC_LD1_SVE])
+
+(define_int_attr pred_load [(UNSPEC_PRED_X "_x") (UNSPEC_LD1_SVE "")])
+
 (define_int_iterator SVE2_U32_UNARY [UNSPEC_URECPE UNSPEC_RSQRTE])
 
 (define_int_iterator SVE2_INT_UNARY_NARROWB [UNSPEC_SQXTNB
