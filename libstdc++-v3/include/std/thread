@@ -219,7 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    static_assert(is_invocable_v<decay_t<_Callable>,
 					 decay_t<_Args>...>,
-			  "std::thread arguments must be invocable after"
+			  "std::jthread arguments must be invocable after"
 			  " conversion to rvalues");
 	    return thread{std::forward<_Callable>(__f),
 			  std::forward<_Args>(__args)...};
