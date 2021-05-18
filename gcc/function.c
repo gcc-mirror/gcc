@@ -4930,6 +4930,9 @@ push_dummy_function (bool with_decl)
       fn_result_decl = build_decl (UNKNOWN_LOCATION, RESULT_DECL,
 					 NULL_TREE, void_type_node);
       DECL_RESULT (fn_decl) = fn_result_decl;
+      DECL_ARTIFICIAL (fn_decl) = 1;
+      tree fn_name = get_identifier (" ");
+      SET_DECL_ASSEMBLER_NAME (fn_decl, fn_name);
     }
   else
     fn_decl = NULL_TREE;
