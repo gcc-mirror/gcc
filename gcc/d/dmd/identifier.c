@@ -73,11 +73,11 @@ const char *Identifier::toHChars2()
     {   p = toChars();
         if (*p == '_')
         {
-            if (startswith(p, "_staticCtor"))
+            if (strncmp(p, "_staticCtor", 11) == 0)
                 p = "static this";
-            else if (startswith(p, "_staticDtor"))
+            else if (strncmp(p, "_staticDtor", 11) == 0)
                 p = "static ~this";
-            else if (startswith(p, "__invariant"))
+            else if (strncmp(p, "__invariant", 11) == 0)
                 p = "invariant";
         }
     }
