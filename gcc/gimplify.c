@@ -8510,14 +8510,18 @@ build_struct_comp_nodes (enum tree_code code, tree grp_start, tree grp_end,
    has array type, else return NULL.  */
 
 static tree
-extract_base_bit_offset (tree base, tree *base_ref, poly_int64 *bitposp,
-			 poly_offset_int *poffsetp, tree *offsetp)
+extract_base_bit_offset (tree base, tree *base_ind, tree *base_ref,
+			 poly_int64 *bitposp, poly_offset_int *poffsetp,
+			 tree *offsetp, bool openmp)
 {
   tree offset;
   poly_int64 bitsize, bitpos;
   machine_mode mode;
   int unsignedp, reversep, volatilep = 0;
   poly_offset_int poffset;
+
+  if (base_ind)
+    *base_ind = NULL_TREE;
 
   if (base_ref)
     *base_ref = NULL_TREE;
@@ -8539,14 +8543,29 @@ extract_base_bit_offset (tree base, tree *base_ref, poly_int64 *bitposp,
   base = get_inner_reference (base, &bitsize, &bitpos, &offset, &mode,
 			      &unsignedp, &reversep, &volatilep);
 
-  tree orig_base = base;
-
+  if (!openmp
+      && (TREE_CODE (base) == INDIRECT_REF
+	  || (TREE_CODE (base) == MEM_REF
+	      && integer_zerop (TREE_OPERAND (base, 1))))
+      && TREE_CODE (TREE_TYPE (TREE_OPERAND (base, 0))) == POINTER_TYPE)
+    {
+      if (base_ind)
+	*base_ind = base;
+      base = TREE_OPERAND (base, 0);
+    }
   if ((TREE_CODE (base) == INDIRECT_REF
        || (TREE_CODE (base) == MEM_REF
 	   && integer_zerop (TREE_OPERAND (base, 1))))
       && DECL_P (TREE_OPERAND (base, 0))
       && TREE_CODE (TREE_TYPE (TREE_OPERAND (base, 0))) == REFERENCE_TYPE)
-    base = TREE_OPERAND (base, 0);
+    {
+      if (base_ref)
+	*base_ref = base;
+      base = TREE_OPERAND (base, 0);
+    }
+
+  if (!openmp)
+    STRIP_NOPS (base);
 
   if (offset && poly_int_tree_p (offset))
     {
@@ -8562,10 +8581,6 @@ extract_base_bit_offset (tree base, tree *base_ref, poly_int64 *bitposp,
   *bitposp = bitpos;
   *poffsetp = poffset;
   *offsetp = offset;
-
-  /* Set *BASE_REF if BASE was a dereferenced reference variable.  */
-  if (base_ref && orig_base != base)
-    *base_ref = orig_base;
 
   return base;
 }
@@ -8591,6 +8606,48 @@ is_or_contains_p (tree expr, tree base_ptr)
 	break;
     }
   return operand_equal_p (expr, base_ptr);
+}
+
+/* Remove COMPONENT_REFS and indirections from EXPR.  */
+
+static tree
+strip_components_and_deref (tree expr)
+{
+  while (TREE_CODE (expr) == COMPONENT_REF
+	 || TREE_CODE (expr) == INDIRECT_REF
+	 || (TREE_CODE (expr) == MEM_REF
+	     && integer_zerop (TREE_OPERAND (expr, 1))))
+    expr = TREE_OPERAND (expr, 0);
+
+  return expr;
+}
+
+/* Return TRUE if EXPR is something we will use as the base of an aggregate
+   access, either:
+
+  - a DECL_P.
+  - a struct component with no indirection ("a.b.c").
+  - a struct component with indirection ("a->b->c").
+*/
+
+static bool
+aggregate_base_p (tree expr)
+{
+  while (TREE_CODE (expr) == COMPONENT_REF
+	 && (DECL_P (TREE_OPERAND (expr, 0))
+	     || (TREE_CODE (TREE_OPERAND (expr, 0)) == COMPONENT_REF)))
+    expr = TREE_OPERAND (expr, 0);
+
+  if (DECL_P (expr))
+    return true;
+
+  if (TREE_CODE (expr) == COMPONENT_REF
+      && (TREE_CODE (TREE_OPERAND (expr, 0)) == INDIRECT_REF
+	  || (TREE_CODE (TREE_OPERAND (expr, 0)) == MEM_REF
+	      && integer_zerop (TREE_OPERAND (TREE_OPERAND (expr, 0), 1)))))
+    return true;
+
+  return false;
 }
 
 /* Implement OpenMP 5.x map ordering rules for target directives. There are
@@ -9058,10 +9115,12 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
 {
   poly_offset_int coffset;
   poly_int64 cbitpos;
-  tree base_ref, tree_coffset;
+  tree base_ind, base_ref, tree_coffset;
+  bool openmp = !(region_type & ORT_ACC);
 
-  tree base = extract_base_bit_offset (OMP_CLAUSE_DECL (c), &base_ref,
-				       &cbitpos, &coffset, &tree_coffset);
+  tree base = extract_base_bit_offset (OMP_CLAUSE_DECL (c), &base_ind,
+				       &base_ref, &cbitpos, &coffset,
+				       &tree_coffset, openmp);
 
   bool do_map_struct = (base == decl && !tree_coffset);
 
@@ -9100,12 +9159,7 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
     return NULL_TREE;
 
   /* Nor for attach_detach for OpenMP.  */
-  if ((code == OMP_TARGET
-       || code == OMP_TARGET_DATA
-       || code == OMP_TARGET_UPDATE
-       || code == OMP_TARGET_ENTER_DATA
-       || code == OMP_TARGET_EXIT_DATA)
-      && attach_detach)
+  if (openmp && attach_detach)
     {
       if (DECL_P (decl))
 	{
@@ -9128,12 +9182,15 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
 
       OMP_CLAUSE_SET_MAP_KIND (l, k);
 
-      if (base_ref)
+      if (!openmp && base_ind)
+	OMP_CLAUSE_DECL (l) = unshare_expr (base_ind);
+      else if (base_ref)
 	OMP_CLAUSE_DECL (l) = unshare_expr (base_ref);
       else
 	{
 	  OMP_CLAUSE_DECL (l) = unshare_expr (decl);
-	  if (!DECL_P (OMP_CLAUSE_DECL (l))
+	  if (openmp
+	      && !DECL_P (OMP_CLAUSE_DECL (l))
 	      && (gimplify_expr (&OMP_CLAUSE_DECL (l), pre_p, NULL,
 				 is_gimple_lvalue, fb_lvalue) == GS_ERROR))
 	    return error_mark_node;
@@ -9189,6 +9246,48 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
 	  OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (l);
 	  OMP_CLAUSE_CHAIN (l) = c2;
 	}
+      else if (!openmp
+	       && (base_ind || base_ref)
+	       && (region_type & ORT_TARGET))
+	{
+	  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c), OMP_CLAUSE_MAP);
+	  enum gomp_map_kind mkind = base_ref ? GOMP_MAP_FIRSTPRIVATE_REFERENCE
+					      : GOMP_MAP_FIRSTPRIVATE_POINTER;
+	  OMP_CLAUSE_SET_MAP_KIND (c2, mkind);
+	  OMP_CLAUSE_SIZE (c2) = size_zero_node;
+	  tree sdecl = strip_components_and_deref (decl);
+	  if (DECL_P (decl)
+	      && (POINTER_TYPE_P (TREE_TYPE (sdecl))
+		  || TREE_CODE (TREE_TYPE (sdecl)) == REFERENCE_TYPE))
+	    {
+	      /* Insert after struct node.  */
+	      OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (l);
+	      OMP_CLAUSE_DECL (c2) = decl;
+	      OMP_CLAUSE_CHAIN (l) = c2;
+	    }
+	  else
+	    {
+	      /* If the ultimate base for this component access is not a
+		 pointer or reference, that means it is a struct component
+		 access itself.  Insert a node to be processed on the next
+		 iteration of our caller's loop, which will subsequently be
+		 turned into a new GOMP_MAP_STRUCT mapping itself.
+
+		 We need to do this else the non-DECL_P base won't be
+		 rewritten correctly in the offloaded region.  */
+	      tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+					  OMP_CLAUSE_MAP);
+	      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FORCE_PRESENT);
+	      OMP_CLAUSE_DECL (c2) = unshare_expr (decl);
+	      OMP_CLAUSE_SIZE (c2) = (DECL_P (decl)
+				      ? DECL_SIZE_UNIT (decl)
+				      : TYPE_SIZE_UNIT (TREE_TYPE (decl)));
+	      tree *next_node = &OMP_CLAUSE_CHAIN (*list_p);
+	      OMP_CLAUSE_CHAIN (c2) = *next_node;
+	      *next_node = c2;
+	      return NULL_TREE;
+	    }
+	}
       *flags = GOVD_MAP | GOVD_EXPLICIT;
       if (GOMP_MAP_ALWAYS_P (OMP_CLAUSE_MAP_KIND (c)) || ptr || attach_detach)
 	*flags |= GOVD_SEEN;
@@ -9197,7 +9296,8 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
 
       /* If this is a *pointer-to-struct expression, make sure a
 	 firstprivate map of the base-pointer exists.  */
-      if (component_ref_p
+      if (openmp
+	  && component_ref_p
 	  && ((TREE_CODE (decl) == MEM_REF
 	       && integer_zerop (TREE_OPERAND (decl, 1)))
 	      || INDIRECT_REF_P (decl))
@@ -9227,10 +9327,12 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
 	n->value |= GOVD_SEEN;
       sc = &OMP_CLAUSE_CHAIN (*osc);
       /* The struct mapping might be immediately followed by a
-	 FIRSTPRIVATE_REFERENCE if it is a reference.  (This added node is
-	 removed in omp-low.c after it has been processed there.)  */
+	 FIRSTPRIVATE_POINTER and/or FIRSTPRIVATE_REFERENCE -- if it's an
+	 indirect access or a reference, or both.  (This added node is removed
+	 in omp-low.c after it has been processed there.)  */
       if (*sc != c
-	  && OMP_CLAUSE_MAP_KIND (*sc) == GOMP_MAP_FIRSTPRIVATE_REFERENCE)
+	  && (OMP_CLAUSE_MAP_KIND (*sc) == GOMP_MAP_FIRSTPRIVATE_POINTER
+	      || OMP_CLAUSE_MAP_KIND (*sc) == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
 	sc = &OMP_CLAUSE_CHAIN (*sc);
       for (; *sc != c; sc = &OMP_CLAUSE_CHAIN (*sc))
 	if ((ptr || attach_detach) && sc == prev_list_p)
@@ -9245,9 +9347,10 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
 	    poly_offset_int offset;
 	    poly_int64 bitpos;
 	    tree tree_offset;
-	    tree base = extract_base_bit_offset (sc_decl, NULL, &bitpos,
-						 &offset, &tree_offset);
-	    if (base != decl)
+	    tree base = extract_base_bit_offset (sc_decl, NULL, NULL,
+						 &bitpos, &offset,
+						 &tree_offset, openmp);
+	    if (!base || !operand_equal_p (base, decl, 0))
 	      break;
 	    if (scp)
 	      continue;
@@ -9368,8 +9471,9 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
 	}
       else if (*sc != c)
 	{
-	  if (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue, fb_lvalue)
-	      == GS_ERROR)
+	  if (openmp
+	      && (gimplify_expr (pd, pre_p, NULL, is_gimple_lvalue, fb_lvalue)
+		  == GS_ERROR))
 	    return error_mark_node;
 	  /* In the non-pointer case, the mapping clause itself is moved into
 	     the correct position in the struct component list, which in this
@@ -9926,10 +10030,43 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      tree indir_base = NULL_TREE;
 	      tree orig_decl = decl;
 	      tree decl_ref = NULL_TREE;
-	      if ((region_type & (ORT_ACC | ORT_TARGET | ORT_TARGET_DATA)) != 0
-		  && TREE_CODE (*pd) == COMPONENT_REF
-		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH
-		  && code != OACC_UPDATE)
+	      if ((region_type & ORT_ACC) && TREE_CODE (decl) == COMPONENT_REF)
+		{
+		  /* Strip off component refs from RHS of e.g. "a->b->c.d.e"
+		     (which would leave "a->b" in that case).  This is intended
+		     to be equivalent to the base finding done by
+		     get_inner_reference.  */
+		  while (TREE_CODE (decl) == COMPONENT_REF
+			 && (DECL_P (TREE_OPERAND (decl, 0))
+			     || (TREE_CODE (TREE_OPERAND (decl, 0))
+				 == COMPONENT_REF)))
+		    decl = TREE_OPERAND (decl, 0);
+
+		  if (TREE_CODE (decl) == COMPONENT_REF)
+		    decl = TREE_OPERAND (decl, 0);
+
+		  /* Strip off RHS from "a->b".  */
+		  if ((TREE_CODE (decl) == INDIRECT_REF
+		       || (TREE_CODE (decl) == MEM_REF
+			   && integer_zerop (TREE_OPERAND (decl, 1))))
+		      && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
+			  == POINTER_TYPE))
+		    decl = TREE_OPERAND (decl, 0);
+
+		  /* Strip off RHS from "a_ref.b" (where a_ref is
+		     reference-typed).  */
+		  if (TREE_CODE (decl) == INDIRECT_REF
+		      && DECL_P (TREE_OPERAND (decl, 0))
+		      && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
+			  == REFERENCE_TYPE))
+		    decl = TREE_OPERAND (decl, 0);
+
+		  STRIP_NOPS (decl);
+		}
+	      else if ((region_type & (ORT_TARGET | ORT_TARGET_DATA)) != 0
+		       && TREE_CODE (*pd) == COMPONENT_REF
+		       && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH
+		       && code != OACC_UPDATE)
 		{
 		  while (TREE_CODE (decl) == COMPONENT_REF)
 		    {
@@ -10032,11 +10169,13 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	      if (code == OACC_UPDATE
 		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
 		OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALWAYS_POINTER);
-	      if ((DECL_P (decl)
-		   || (component_ref_p
-		       && (INDIRECT_REF_P (decl)
-			   || TREE_CODE (decl) == MEM_REF
-			   || TREE_CODE (decl) == ARRAY_REF)))
+	      if ((((region_type & ORT_ACC) && aggregate_base_p (decl))
+		   || (!(region_type & ORT_ACC)
+		       && (DECL_P (decl)
+			   || (component_ref_p
+			       && (INDIRECT_REF_P (decl)
+				   || TREE_CODE (decl) == MEM_REF
+				   || TREE_CODE (decl) == ARRAY_REF)))))
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH
