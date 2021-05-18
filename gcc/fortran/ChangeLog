@@ -1,3 +1,11 @@
+2021-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* resolve.c (resolve_symbol): Handle implicit SAVE of main-program
+	for vars in 'omp threadprivate' and 'omp declare target'.
+
 2021-05-05  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

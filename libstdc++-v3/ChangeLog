@@ -1,3 +1,31 @@
+2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100630
+	* include/experimental/bits/fs_path.h (__is_constructible_from):
+	Test construction from a const lvalue, not an rvalue.
+	* testsuite/27_io/filesystem/path/construct/100630.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/100630.cc:
+	New test.
+
+2021-05-17  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	Backported from master:
+	2021-05-17  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	* include/bits/atomic_wait.h (__waiter::_M_do_wait_v): loop
+	until value change observed.
+	(__waiter_base::_M_laundered): New member.
+	(__waiter_base::_M_notify): Check _M_laundered to determine
+	whether to wake one or all.
+	(__detail::__atomic_compare): Return true if call to
+	__builtin_memcmp() == 0.
+	(__waiter_base::_S_do_spin_v): Adjust predicate.
+	* testsuite/29_atomics/atomic/wait_notify/100334.cc: New
+	test.
+
 2021-05-12  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

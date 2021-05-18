@@ -1,3 +1,18 @@
+2021-05-17  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-04-27  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99977
+	* gcc.target/arm/pr99977.c: New test.
+
+2021-05-17  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/implicit-save.f90: New test.
+
 2021-05-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
