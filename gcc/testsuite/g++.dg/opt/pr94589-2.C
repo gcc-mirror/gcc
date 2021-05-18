@@ -1,8 +1,8 @@
 // PR tree-optimization/94589
 // { dg-do compile { target c++20 } }
 // { dg-options "-O2 -g0 -ffast-math -fdump-tree-optimized" }
-// { dg-final { scan-tree-dump-times "\[ij]_\[0-9]+\\(D\\) (?:<|<=|==|!=|>|>=) \[ij]_\[0-9]+\\(D\\)" 14 "optimized" } }
-// { dg-final { scan-tree-dump-times "i_\[0-9]+\\(D\\) (?:<|<=|==|!=|>|>=) 5\\.0" 14 "optimized" } }
+// { dg-final { scan-tree-dump-times "\[ij]_\[0-9]+\\(D\\) (?:<|<=|==|!=|>|>=) \[ij]_\[0-9]+\\(D\\)" 12 "optimized" } }
+// { dg-final { scan-tree-dump-times "i_\[0-9]+\\(D\\) (?:<|<=|==|!=|>|>=) 5\\.0" 12 "optimized" } }
 
 #include <compare>
 

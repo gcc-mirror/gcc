@@ -826,7 +826,7 @@ main (int argc, char **argv)
   for (int i = 1; i < argc; i++)
     {
 #define STR "-foffload-abi="
-      if (strncmp (argv[i], STR, strlen (STR)) == 0)
+      if (startswith (argv[i], STR))
 	{
 	  if (strcmp (argv[i] + strlen (STR), "lp64") == 0)
 	    offload_abi = OFFLOAD_ABI_LP64;
@@ -995,9 +995,9 @@ main (int argc, char **argv)
       obstack_ptr_grow (&ld_argv_obstack, "-lgomp");
 
       for (int i = 1; i < argc; i++)
-	if (strncmp (argv[i], "-l", 2) == 0
-	    || strncmp (argv[i], "-Wl", 3) == 0
-	    || strncmp (argv[i], "-march", 6) == 0)
+	if (startswith (argv[i], "-l")
+	    || startswith (argv[i], "-Wl")
+	    || startswith (argv[i], "-march"))
 	  obstack_ptr_grow (&ld_argv_obstack, argv[i]);
 
       obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");

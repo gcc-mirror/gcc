@@ -163,7 +163,7 @@ namespace ranges
 	  constexpr explicit
 	  __box(in_place_t, _Args&&... __args)
 	  noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
-	  : _M_value{std::forward<_Args>(__args)...}
+	  : _M_value(std::forward<_Args>(__args)...)
 	  { }
 
 	constexpr bool
@@ -180,11 +180,11 @@ namespace ranges
 
 	constexpr _Tp*
 	operator->() noexcept
-	{ return &_M_value; }
+	{ return std::__addressof(_M_value); }
 
 	constexpr const _Tp*
 	operator->() const noexcept
-	{ return &_M_value; }
+	{ return std::__addressof(_M_value); }
       };
   } // namespace __detail
 
@@ -3228,7 +3228,9 @@ namespace views::__adaptor
     {
     private:
       static constexpr bool _S_needs_cached_begin
-	= !common_range<_Vp> && !random_access_range<_Vp>;
+	= !common_range<_Vp> && !(random_access_range<_Vp>
+				  && sized_sentinel_for<sentinel_t<_Vp>,
+							iterator_t<_Vp>>);
 
       [[no_unique_address]]
 	__detail::__maybe_present_t<_S_needs_cached_begin,
@@ -3634,16 +3636,22 @@ namespace views::__adaptor
 	    requires sized_sentinel_for<iterator_t<_Base>, iterator_t<_Base>>
 	  { return __x._M_current - __y._M_current; }
 
-	  friend _Sentinel<_Const>;
+	  template <bool> friend struct _Sentinel;
 	};
 
       template<bool _Const>
 	struct _Sentinel
 	{
 	private:
-	  constexpr bool
-	  _M_equal(const _Iterator<_Const>& __x) const
-	  { return __x._M_current == _M_end; }
+	  template<bool _Const2>
+	    constexpr bool
+	    _M_equal(const _Iterator<_Const2>& __x) const
+	    { return __x._M_current == _M_end; }
+
+	  template<bool _Const2>
+	    constexpr auto
+	    _M_distance_from(const _Iterator<_Const2>& __i) const
+	    { return _M_end - __i._M_current; }
 
 	  using _Base = elements_view::_Base<_Const>;
 	  sentinel_t<_Base> _M_end = sentinel_t<_Base>();
@@ -3684,9 +3692,9 @@ namespace views::__adaptor
 	  template<bool _Const2,
 		   typename _Base2 = __detail::__maybe_const_t<_Const2, _Vp>>
 	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
-	    friend constexpr range_difference_t<_Base>
+	    friend constexpr range_difference_t<_Base2>
 	    operator-(const _Sentinel& __x, const _Iterator<_Const2>& __y)
-	    { return __x._M_end - __y._M_current; }
+	    { return __x._M_distance_from(__y); }
 
 	  friend _Sentinel<!_Const>;
 	};

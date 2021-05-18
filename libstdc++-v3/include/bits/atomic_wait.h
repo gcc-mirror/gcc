@@ -181,11 +181,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return false;
       }
 
+    // return true if equal
     template<typename _Tp>
       bool __atomic_compare(const _Tp& __a, const _Tp& __b)
       {
 	// TODO make this do the correct padding bit ignoring comparison
-	return __builtin_memcmp(&__a, &__b, sizeof(_Tp)) != 0;
+	return __builtin_memcmp(&__a, &__b, sizeof(_Tp)) == 0;
       }
 
     struct __waiter_pool_base
@@ -300,14 +301,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  explicit __waiter_base(const _Up* __addr) noexcept
 	    : _M_w(_S_for(__addr))
 	    , _M_addr(_S_wait_addr(__addr, &_M_w._M_ver))
-	  {
-	  }
+	  { }
+
+	bool
+	_M_laundered() const
+	{ return _M_addr == &_M_w._M_ver; }
 
 	void
 	_M_notify(bool __all, bool __bare = false)
 	{
-	  if (_M_addr == &_M_w._M_ver)
-	    __atomic_fetch_add(_M_addr, 1, __ATOMIC_ACQ_REL);
+	  if (_M_laundered())
+	    {
+	      __atomic_fetch_add(_M_addr, 1, __ATOMIC_ACQ_REL);
+	      __all = true;
+	    }
 	  _M_w._M_notify(_M_addr, __all, __bare);
 	}
 
@@ -320,7 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       _Spin __spin = _Spin{ })
 	  {
 	    auto const __pred = [=]
-	      { return __detail::__atomic_compare(__old, __vfn()); };
+	      { return !__detail::__atomic_compare(__old, __vfn()); };
 
 	    if constexpr (__platform_wait_uses_type<_Up>)
 	      {
@@ -387,7 +394,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __platform_wait_t __val;
 	    if (__base_type::_M_do_spin_v(__old, __vfn, __val))
 	      return;
-	    __base_type::_M_w._M_do_wait(__base_type::_M_addr, __val);
+
+	    do
+	      {
+		__base_type::_M_w._M_do_wait(__base_type::_M_addr, __val);
+	      }
+	    while (__detail::__atomic_compare(__old, __vfn()));
 	  }
 
 	template<typename _Pred>
@@ -452,7 +464,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __atomic_notify_address(const _Tp* __addr, bool __all) noexcept
     {
       __detail::__bare_wait __w(__addr);
-      __w._M_notify(__all, true);
+      __w._M_notify(__all);
     }
 
   // This call is to be used by atomic types which track contention externally

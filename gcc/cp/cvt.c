@@ -232,7 +232,7 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
     {
       if (TYPE_PRECISION (intype) == POINTER_SIZE)
 	return build1 (CONVERT_EXPR, type, expr);
-      expr = cp_convert (c_common_type_for_size (POINTER_SIZE, 0), expr,
+      expr = cp_convert (c_common_type_for_size (TYPE_PRECISION (type), 0), expr,
 			 complain);
       /* Modes may be different but sizes should be the same.  There
 	 is supposed to be some integral type that is the same width

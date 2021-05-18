@@ -2251,7 +2251,7 @@ static void pdp11_output_ident (const char *ident)
 {
   if (TARGET_DEC_ASM)
     {
-      if (strncmp (ident, "GCC:", 4) != 0)
+      if (!startswith (ident, "GCC:"))
 	fprintf (asm_out_file, "\t.ident\t\"%s\"\n", ident);
     }
   

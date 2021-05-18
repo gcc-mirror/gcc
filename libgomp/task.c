@@ -2460,6 +2460,7 @@ omp_fulfill_event (omp_event_handle_t event)
   if (new_tasks > 0)
     {
       /* Wake up threads to run new tasks.  */
+      gomp_team_barrier_set_task_pending (&team->barrier);
       do_wake = team->nthreads - team->task_running_count;
       if (do_wake > new_tasks)
 	do_wake = new_tasks;

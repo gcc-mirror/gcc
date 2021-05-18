@@ -28169,7 +28169,7 @@ arm_file_start (void)
 	  else
 	    arm_print_asm_arch_directives ();
 	}
-      else if (strncmp (arm_active_target.core_name, "generic", 7) == 0)
+      else if (startswith (arm_active_target.core_name, "generic"))
 	{
 	  asm_fprintf (asm_out_file, "\t.arch %s\n",
 		       arm_active_target.core_name + 8);
@@ -33054,7 +33054,7 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
       else if (!strcmp (q, "general-regs-only"))
 	opts->x_target_flags |= MASK_GENERAL_REGS_ONLY;
 
-      else if (!strncmp (q, "fpu=", 4))
+      else if (startswith (q, "fpu="))
 	{
 	  int fpu_index;
 	  if (! opt_enum_arg_to_value (OPT_mfpu_, q + 4,
@@ -33073,7 +33073,7 @@ arm_valid_target_attribute_rec (tree args, struct gcc_options *opts)
 	    }
 	  opts->x_arm_fpu_index = (enum fpu_type) fpu_index;
 	}
-      else if (!strncmp (q, "arch=", 5))
+      else if (startswith (q, "arch="))
 	{
 	  char *arch = q + 5;
 	  const arch_option *arm_selected_arch
@@ -34105,7 +34105,7 @@ thumb1_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
 		      HARD_REG_SET & /*clobbered_regs*/)
 {
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)
-    if (strncmp (constraints[i], "=@cc", 4) == 0)
+    if (startswith (constraints[i], "=@cc"))
       {
 	sorry ("asm flags not supported in thumb1 mode");
 	break;

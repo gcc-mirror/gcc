@@ -4245,10 +4245,22 @@ type_valid_for_vector_size (tree type, tree atname, tree args,
   if (nunits & (nunits - 1))
     {
       if (error_p)
-	error ("number of components of the vector not a power of two");
+	error ("number of vector components %wu not a power of two", nunits);
       else
 	warning (OPT_Wattributes,
-		 "number of components of the vector not a power of two");
+		 "number of vector components %wu not a power of two", nunits);
+      return NULL_TREE;
+    }
+
+  if (nunits >= (unsigned HOST_WIDE_INT)INT_MAX)
+    {
+      if (error_p)
+	error ("number of vector components %wu exceeds %d",
+	       nunits, INT_MAX - 1);
+      else
+	warning (OPT_Wattributes,
+		 "number of vector components %wu exceeds %d",
+		 nunits, INT_MAX - 1);
       return NULL_TREE;
     }
 

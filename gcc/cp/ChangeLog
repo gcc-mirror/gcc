@@ -1,3 +1,9 @@
+2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/100635
+	* call.c (convert_like_internal): Print different diagnostic if
+	the lvalue reference is const.
+
 2021-05-14  Jason Merrill  <jason@redhat.com>
 
 	PR c++/95870

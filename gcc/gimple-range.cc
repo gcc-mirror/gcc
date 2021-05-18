@@ -1082,11 +1082,6 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   r.intersect (tmp);
   m_cache.set_global_range (name, r);
 
-  // Pointers which resolve to non-zero at the defintion point do not need
-  // tracking in the cache as they will never change.  See PR 98866.
-  if (POINTER_TYPE_P (TREE_TYPE (name)) && r.nonzero_p ())
-    m_cache.set_range_invariant (name);
-
   return true;
 }
 

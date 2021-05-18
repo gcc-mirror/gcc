@@ -614,7 +614,7 @@ main (int argc, char **argv)
   for (int i = 1; i < argc; i++)
     {
 #define STR "-foffload-abi="
-      if (strncmp (argv[i], STR, strlen (STR)) == 0)
+      if (startswith (argv[i], STR))
 	{
 	  if (strcmp (argv[i] + strlen (STR), "lp64") == 0)
 	    offload_abi = OFFLOAD_ABI_LP64;

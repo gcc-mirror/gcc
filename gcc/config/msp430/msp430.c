@@ -122,7 +122,7 @@ msp430_mcu_name (void)
 
       /* The 'i' in the device name symbol for msp430i* devices must be lower
 	 case, to match the expected symbol in msp430.h.  */
-      if (strncmp (target_mcu, "msp430i", 7) == 0)
+      if (startswith (target_mcu, "msp430i"))
 	{
 	  snprintf (mcu_name, sizeof (mcu_name) - 1, "__MSP430i%s__",
 		    target_mcu + 7);
@@ -2466,7 +2466,7 @@ msp430_function_section (tree decl, enum node_frequency freq, bool startup,
 
   const char * prefix = gen_prefix (decl);
   if (prefix == NULL
-      || strncmp (name, prefix, strlen (prefix)) == 0)
+      || startswith (name, prefix))
     return default_function_section (decl, freq, startup, exit);
 
   name = ACONCAT ((prefix, name, NULL));
@@ -2479,11 +2479,11 @@ msp430_function_section (tree decl, enum node_frequency freq, bool startup,
 unsigned int
 msp430_section_type_flags (tree decl, const char * name, int reloc)
 {
-  if (strncmp (name, lower_prefix, strlen (lower_prefix)) == 0)
+  if (startswith (name, lower_prefix))
     name += strlen (lower_prefix);
-  else if (strncmp (name, upper_prefix, strlen (upper_prefix)) == 0)
+  else if (startswith (name, upper_prefix))
     name += strlen (upper_prefix);
-  else if (strncmp (name, either_prefix, strlen (either_prefix)) == 0)
+  else if (startswith (name, either_prefix))
     name += strlen (either_prefix);
 
   return default_section_type_flags (decl, name, reloc);
@@ -3243,8 +3243,7 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
   machine_mode arg0mode = GET_MODE (operands[0]);
   machine_mode arg1mode = GET_MODE (operands[1]);
   machine_mode arg2mode = GET_MODE (operands[2]);
-  int expand_mpy = strncmp (helper_name, "__mspabi_mpy",
-			    sizeof ("__mspabi_mpy") - 1) == 0;
+  int expand_mpy = startswith (helper_name, "__mspabi_mpy");
   /* This function has been used incorrectly if CONST_VARIANTS is TRUE for a
      hwmpy function.  */
   gcc_assert (!(expand_mpy && const_variants));

@@ -10007,11 +10007,11 @@ ia64_in_small_data_p (const_tree exp)
       const char *section = DECL_SECTION_NAME (exp);
 
       if (strcmp (section, ".sdata") == 0
-	  || strncmp (section, ".sdata.", 7) == 0
-	  || strncmp (section, ".gnu.linkonce.s.", 16) == 0
+	  || startswith (section, ".sdata.")
+	  || startswith (section, ".gnu.linkonce.s.")
 	  || strcmp (section, ".sbss") == 0
-	  || strncmp (section, ".sbss.", 6) == 0
-	  || strncmp (section, ".gnu.linkonce.sb.", 17) == 0)
+	  || startswith (section, ".sbss.")
+	  || startswith (section, ".gnu.linkonce.sb."))
 	return true;
     }
   else
@@ -10869,13 +10869,13 @@ ia64_section_type_flags (tree decl, const char *name, int reloc)
   unsigned int flags = 0;
 
   if (strcmp (name, ".sdata") == 0
-      || strncmp (name, ".sdata.", 7) == 0
-      || strncmp (name, ".gnu.linkonce.s.", 16) == 0
-      || strncmp (name, ".sdata2.", 8) == 0
-      || strncmp (name, ".gnu.linkonce.s2.", 17) == 0
+      || startswith (name, ".sdata.")
+      || startswith (name, ".gnu.linkonce.s.")
+      || startswith (name, ".sdata2.")
+      || startswith (name, ".gnu.linkonce.s2.")
       || strcmp (name, ".sbss") == 0
-      || strncmp (name, ".sbss.", 6) == 0
-      || strncmp (name, ".gnu.linkonce.sb.", 17) == 0)
+      || startswith (name, ".sbss.")
+      || startswith (name, ".gnu.linkonce.sb."))
     flags = SECTION_SMALL;
 
   flags |= default_section_type_flags (decl, name, reloc);

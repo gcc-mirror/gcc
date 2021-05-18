@@ -671,6 +671,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT>
     locale::id ctype<_CharT>::id;
 
+  // Incomplete to provide a compile time diagnostics for common misuse
+  // of [locale.convenience] functions with basic_string as a character type.
+  template<typename _CharT, typename _Traits, typename _Alloc>
+    class ctype<basic_string<_CharT, _Traits, _Alloc> >;
+
   /**
    *  @brief  The ctype<char> specialization.
    *  @ingroup locales

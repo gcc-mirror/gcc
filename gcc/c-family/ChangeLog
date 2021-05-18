@@ -1,3 +1,8 @@
+2021-05-17  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* c-common.c (braced_list_to_string): Return CTOR unchanged
+	if host and target character sizes don't match.
+
 2021-05-14  Martin Liska  <mliska@suse.cz>
 
 	* c.opt: Add Warning keyword for 2 options.

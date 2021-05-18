@@ -13143,7 +13143,7 @@ function prologue and epilogue.
 
 @item uninlined-function-time
 Extra time accounted by inliner for function overhead such as time needed to
-execute function prologue and epilogue
+execute function prologue and epilogue.
 
 @item inline-heuristics-hint-percent
 The scale (in percents) applied to @option{inline-insns-single},
@@ -13154,7 +13154,7 @@ very profitable (will enable later optimizations).
 @item uninlined-thunk-insns
 @item uninlined-thunk-time
 Same as @option{--param uninlined-function-insns} and
-@option{--param uninlined-function-time} but applied to function thunks
+@option{--param uninlined-function-time} but applied to function thunks.
 
 @item inline-min-speedup
 When estimated performance improvement of caller + callee runtime exceeds this

@@ -17377,7 +17377,7 @@ aarch64_process_one_target_attr (char *arg_str)
   if (*str_to_check == '+')
     return aarch64_handle_attr_isa_flags (str_to_check);
 
-  if (len > 3 && strncmp (str_to_check, "no-", 3) == 0)
+  if (len > 3 && startswith (str_to_check, "no-"))
     {
       invert = true;
       str_to_check += 3;

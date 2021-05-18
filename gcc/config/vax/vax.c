@@ -1325,10 +1325,10 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	     be shorter (1 opcode byte + 1 addrmode byte + 8 immediate value
 	     bytes .vs. 2 opcode bytes + 2 addrmode bytes + 8 immediate value
 	     value bytes.  */
-	  if ((!strncmp (pattern_lo, "movl", 4)
-	      && !strncmp (pattern_hi, "movl", 4))
-	      || (!strncmp (pattern_lo, "pushl", 5)
-		  && !strncmp (pattern_hi, "pushl", 5)))
+	  if ((startswith (pattern_lo, "movl")
+	      && startswith (pattern_hi, "movl"))
+	      || (startswith (pattern_lo, "pushl")
+		  && startswith (pattern_hi, "pushl")))
 	    return "movq %1,%0";
 
 	  if (MEM_P (operands[0])
