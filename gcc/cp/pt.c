@@ -28803,6 +28803,9 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
     DECL_ABSTRACT_ORIGIN (ded_tmpl) = fn_tmpl;
   if (ci)
     set_constraints (ded_tmpl, ci);
+  /* The artificial deduction guide should have same access as the
+     constructor.  */
+  DECL_CONTEXT (ded_fn) = type;
 
   return ded_tmpl;
 }
