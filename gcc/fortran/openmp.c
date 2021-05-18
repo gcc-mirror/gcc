@@ -6902,7 +6902,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_PARALLEL_DO;
     case EXEC_OMP_PARALLEL_DO_SIMD:
       return ST_OMP_PARALLEL_DO_SIMD;
-
+    case EXEC_OMP_DEPOBJ:
+      return ST_OMP_DEPOBJ;
     default:
       gcc_unreachable ();
     }
