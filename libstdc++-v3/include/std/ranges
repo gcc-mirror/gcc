@@ -3687,7 +3687,7 @@ namespace views::__adaptor
 	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
 	    friend constexpr range_difference_t<_Base2>
 	    operator-(const _Iterator<_Const2>& __x, const _Sentinel& __y)
-	    { return __x._M_current - __y._M_end; }
+	    { return -__y._M_distance_from(__x); }
 
 	  template<bool _Const2,
 		   typename _Base2 = __detail::__maybe_const_t<_Const2, _Vp>>

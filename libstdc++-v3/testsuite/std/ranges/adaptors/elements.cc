@@ -128,7 +128,8 @@ test06()
     | views::keys;
   auto b = r.begin();
   auto e = r.end();
-  e - b;
+  VERIFY( e - b == 42 );
+  VERIFY( b - e == -42 );
 }
 
 void
