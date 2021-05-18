@@ -1,3 +1,118 @@
+2021-05-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/100512
+	* gimple-range-cache.cc (ranger_cache::set_global_range): Mark const
+	and non-zero pointer ranges as invariant.
+	* gimple-range.cc (gimple_ranger::range_of_stmt): Remove pointer
+	processing from here.
+
+2021-05-17  Tom de Vries  <tdevries@suse.de>
+
+	PR target/100497
+	* config/nvptx/nvptx-protos.h (nvptx_output_atomic_insn): Declare
+	* config/nvptx/nvptx.c (nvptx_output_barrier)
+	(nvptx_output_atomic_insn): New function.
+	(nvptx_print_operand): Add support for 'B'.
+	* config/nvptx/nvptx.md: Use nvptx_output_atomic_insn for atomic
+	insns.
+
+2021-05-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/100349
+	* vr-values.c (bounds_of_var_in_loop): Bail if scev returns
+	  NULL.
+
+2021-05-17  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.c (DEFAULT_ARCH): New.
+	(host_detect_local_cpu): Use it.
+
+2021-05-17  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Add 2 missing dots.
+
+2021-05-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	PR bootstrap/100552
+	* configure.ac: Replace pattern substitution with call to sed.
+	* configure: Regenerate.
+
+2021-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100582
+	* tree.c (array_at_struct_end_p): Get to the base of the
+	reference before looking for the underlying decl.
+
+2021-05-17  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* genoutput.c (validate_insn_alternatives) Make "wrong number of
+	alternatives" message more specific, and remove assumption on where
+	the problem is.
+
+2021-05-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (V16): New iterator.
+	(VH_cvtto): New iterator.
+	(v_cmp_result): Added V4HF and V8HF support.
+	* config/arm/vec-common.md (vec_cmp<mode><v_cmp_result>): Use VDQWH.
+	(vcond<mode><mode>): Likewise.
+	(vcond_mask_<mode><v_cmp_result>): Likewise.
+	(vcond<VH_cvtto><mode>): New expander.
+
+2021-05-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-protos.h (arm_expand_vector_compare): Update
+	prototype.
+	* config/arm/arm.c (arm_expand_vector_compare): Add support for
+	MVE.
+	(arm_expand_vcond): Likewise.
+	* config/arm/iterators.md (supf): Remove VCMPNEQ_S, VCMPEQQ_S,
+	VCMPEQQ_N_S, VCMPNEQ_N_S.
+	(VCMPNEQ, VCMPEQQ, VCMPEQQ_N, VCMPNEQ_N): Remove.
+	* config/arm/mve.md (@mve_vcmp<mve_cmp_op>q_<mode>): Add '@' prefix.
+	(@mve_vcmp<mve_cmp_op>q_f<mode>): Likewise.
+	(@mve_vcmp<mve_cmp_op>q_n_f<mode>): Likewise.
+	(@mve_vpselq_<supf><mode>): Likewise.
+	(@mve_vpselq_f<mode>"): Likewise.
+	* config/arm/neon.md (vec_cmp<mode><v_cmp_result): Enable for MVE
+	and move to vec-common.md.
+	(vec_cmpu<mode><mode>): Likewise.
+	(vcond<mode><mode>): Likewise.
+	(vcond<V_cvtto><mode>): Likewise.
+	(vcondu<mode><v_cmp_result>): Likewise.
+	(vcond_mask_<mode><v_cmp_result>): Likewise.
+	* config/arm/unspecs.md (VCMPNEQ_U, VCMPNEQ_S, VCMPEQQ_S)
+	(VCMPEQQ_N_S, VCMPNEQ_N_S, VCMPEQQ_U, CMPEQQ_N_U, VCMPNEQ_N_U)
+	(VCMPGEQ_N_S, VCMPGEQ_S, VCMPGTQ_N_S, VCMPGTQ_S, VCMPLEQ_N_S)
+	(VCMPLEQ_S, VCMPLTQ_N_S, VCMPLTQ_S, VCMPCSQ_N_U, VCMPCSQ_U)
+	(VCMPHIQ_N_U, VCMPHIQ_U): Remove.
+	* config/arm/vec-common.md (vec_cmp<mode><v_cmp_result): Moved
+	from neon.md.
+	(vec_cmpu<mode><mode>): Likewise.
+	(vcond<mode><mode>): Likewise.
+	(vcond<V_cvtto><mode>): Likewise.
+	(vcondu<mode><v_cmp_result>): Likewise.
+	(vcond_mask_<mode><v_cmp_result>): Likewise. Added unsafe math
+	condition.
+
+2021-05-17  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100549
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Use
+	gsi_insert_seq_before instead.
+
+2021-05-17  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (arm_qbit_ok): Rename into...
+	(arm_sat_ok): ...this.
+
+2021-05-17  Martin Liska  <mliska@suse.cz>
+
+	* lto-wrapper.c (merge_flto_options): Factor out a new function.
+	(merge_and_complain): Use it.
+	(run_gcc): Merge also linker command line -flto=foo argument
+	with IL files.
+
 2021-05-16  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* config/arm/arm.h (CPP_SPEC): Remove error message about

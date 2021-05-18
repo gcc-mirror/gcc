@@ -1,3 +1,16 @@
+2021-05-17  Richard Biener  <rguenther@suse.de>
+
+	* download_prerequisites: Update mpfr version to 3.1.6.
+	* prerequisites.md5: Update.
+	* prerequisites.sha512: Likewise.
+
+2021-05-17  Richard Biener  <rguenther@suse.de>
+
+	Revert:
+	2021-05-14  Martin Liska  <mliska@suse.cz>
+
+	* download_prerequisites: Use version 4.1.0.
+
 2021-05-14  Martin Liska  <mliska@suse.cz>
 
 	* download_prerequisites: Use version 4.1.0.

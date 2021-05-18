@@ -1,3 +1,54 @@
+2021-05-17  Thomas Rodgers  <rodgert@twrodgers.com>
+
+	* include/bits/atomic_wait.h (__waiter::_M_do_wait_v): loop
+	until value change observed.
+	(__waiter_base::_M_laundered): New member.
+	(__waiter_base::_M_notify): Check _M_laundered to determine
+	whether to wake one or all.
+	(__detail::__atomic_compare): Return true if call to
+	__builtin_memcmp() == 0.
+	(__waiter_base::_S_do_spin_v): Adjust predicate.
+	* testsuite/29_atomics/atomic/wait_notify/100334.cc: New
+	test.
+
+2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100630
+	* include/experimental/bits/fs_path.h (__is_constructible_from):
+	Test construction from a const lvalue, not an rvalue.
+	* testsuite/27_io/filesystem/path/construct/100630.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/100630.cc:
+	New test.
+
+2021-05-17  Antony Polukhin  <antoshkka@gmail.com>
+
+	PR libstdc++/89728
+	* include/bits/locale_facets.h (ctype<basic_string<C,T,A>>):
+	Declare (but do not define) partial specialization.
+	* testsuite/22_locale/ctype/is/string/89728_neg.cc: New test.
+
+2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/thread (jthread::_S_create): Fix static assert
+	message.
+	* testsuite/30_threads/jthread/95989.cc: Re-enable test.
+	* testsuite/30_threads/jthread/jthread.cc: Do not require
+	pthread effective target.
+	* testsuite/30_threads/jthread/2.cc: Moved to...
+	* testsuite/30_threads/jthread/version.cc: ...here.
+
+2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/Makefile.am: Simplify doxygen recipes and use --latex_cmd.
+	* doc/Makefile.in: Regenerate.
+	* doc/doxygen/user.cfg.in (LATEX_CMD_NAME): Add placeholder
+	value.
+	* scripts/run_doxygen (print_usage): Always print to stdout and
+	do not exit.
+	(fail): New function for exiting on error.
+	(parse_options): Handle --latex_cmd. Do not treat --help the
+	same as errors. Simplify handling of required arguments.
+
 2021-05-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc:

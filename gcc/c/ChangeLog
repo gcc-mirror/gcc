@@ -1,3 +1,9 @@
+2021-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR c/100625
+	* gimple-parser.c (c_parser_gimple_label): Avoid building
+	a GIMPLE label with NULL label decl.
+
 2021-05-13  Martin Sebor  <msebor@redhat.com>
 
 	PR c/100550
