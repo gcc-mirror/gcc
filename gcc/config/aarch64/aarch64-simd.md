@@ -1697,7 +1697,7 @@
 	(truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "xtn\\t%0.<Vntype>, %1.<Vtype>"
-  [(set_attr "type" "neon_shift_imm_narrow_q")]
+  [(set_attr "type" "neon_move_narrow_q")]
 )
 
 (define_insn "aarch64_xtn2<mode>_le"
@@ -1707,7 +1707,7 @@
 	  (truncate:<VNARROWQ> (match_operand:VQN 2 "register_operand" "w"))))]
   "TARGET_SIMD && !BYTES_BIG_ENDIAN"
   "xtn2\t%0.<V2ntype>, %2.<Vtype>"
-  [(set_attr "type" "neon_shift_imm_narrow_q")]
+  [(set_attr "type" "neon_move_narrow_q")]
 )
 
 (define_insn "aarch64_xtn2<mode>_be"
@@ -1717,7 +1717,7 @@
 	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "xtn2\t%0.<V2ntype>, %2.<Vtype>"
-  [(set_attr "type" "neon_shift_imm_narrow_q")]
+  [(set_attr "type" "neon_move_narrow_q")]
 )
 
 (define_expand "aarch64_xtn2<mode>"
@@ -8618,7 +8618,7 @@
 	(truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand" "w")))]
   "TARGET_SIMD"
   "xtn\t%0.<Vntype>, %1.<Vtype>"
-  [(set_attr "type" "neon_shift_imm_narrow_q")]
+  [(set_attr "type" "neon_move_narrow_q")]
 )
 
 (define_insn "aarch64_bfdot<mode>"
