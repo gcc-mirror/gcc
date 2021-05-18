@@ -9871,15 +9871,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		skip_map_struct:
 		  ;
 		}
-	      else if ((code == OACC_ENTER_DATA
-			|| code == OACC_EXIT_DATA
-			|| code == OACC_DATA
-			|| code == OACC_PARALLEL
-			|| code == OACC_KERNELS
-			|| code == OACC_SERIAL
-			|| code == OMP_TARGET_ENTER_DATA
-			|| code == OMP_TARGET_EXIT_DATA)
-		       && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
+	      else if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
 		{
 		  gomp_map_kind k = ((code == OACC_EXIT_DATA
 				      || code == OMP_TARGET_EXIT_DATA)
