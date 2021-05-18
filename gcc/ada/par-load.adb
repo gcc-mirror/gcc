@@ -265,6 +265,12 @@ begin
          --  and this is also where we generate the SCO's for this spec.
 
          if Cur_Unum = Main_Unit then
+
+            --  We generate code for the main unit body, so we need to generate
+            --  code for its spec too.
+
+            Set_Generate_Code (Unum, True);
+
             Main_Unit_Entity := Cunit_Entity (Unum);
 
             if Generate_SCO then

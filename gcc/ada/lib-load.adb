@@ -364,7 +364,7 @@ package body Lib.Load is
             Error_Location         => No_Location,
             Expected_Unit          => No_Unit_Name,
             Fatal_Error            => None,
-            Generate_Code          => False,
+            Generate_Code          => True,
             Has_RACW               => False,
             Filler                 => False,
             Ident_String           => Empty,
@@ -964,13 +964,12 @@ package body Lib.Load is
       Units.Increment_Last;
 
       if In_Main then
-         Units.Table (Units.Last)               := Units.Table (Main_Unit);
-         Units.Table (Units.Last).Cunit         := Library_Unit (N);
-         Units.Table (Units.Last).Generate_Code := True;
+         Units.Table (Units.Last)        := Units.Table (Main_Unit);
+         Units.Table (Units.Last).Cunit  := Library_Unit (N);
          Init_Unit_Name (Units.Last, Unit_Name (Main_Unit));
 
-         Units.Table (Main_Unit).Cunit          := N;
-         Units.Table (Main_Unit).Version        := Source_Checksum (Sind);
+         Units.Table (Main_Unit).Cunit   := N;
+         Units.Table (Main_Unit).Version := Source_Checksum (Sind);
          Init_Unit_Name (Main_Unit,
            Get_Body_Name
              (Unit_Name (Get_Cunit_Unit_Number (Library_Unit (N)))));

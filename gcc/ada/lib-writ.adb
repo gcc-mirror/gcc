@@ -1253,7 +1253,7 @@ package body Lib.Writ is
       --  for which we have generated code
 
       for Unit in Units.First .. Last_Unit loop
-         if Units.Table (Unit).Generate_Code or else Unit = Main_Unit then
+         if Units.Table (Unit).Generate_Code then
             if not Has_No_Elaboration_Code (Cunit (Unit)) then
                Main_Restrictions.Violated (No_Elaboration_Code) := True;
                exit;
