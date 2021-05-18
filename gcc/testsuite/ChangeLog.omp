@@ -1,3 +1,11 @@
+2021-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/100642
+	* gfortran.dg/goacc-gomp/depobj.f90: New test.
+
 2021-05-17  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
