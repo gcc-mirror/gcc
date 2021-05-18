@@ -626,15 +626,10 @@ mark_address_taken (tree ref)
      be referenced using pointer arithmetic.  See PR 21407 and the
      ensuing mailing list discussion.  */
   var = get_base_address (ref);
-  if (var)
-    {
-      if (DECL_P (var))
-	TREE_ADDRESSABLE (var) = 1;
-      else if (TREE_CODE (var) == MEM_REF
-	       && TREE_CODE (TREE_OPERAND (var, 0)) == ADDR_EXPR
-	       && DECL_P (TREE_OPERAND (TREE_OPERAND (var, 0), 0)))
-	TREE_ADDRESSABLE (TREE_OPERAND (TREE_OPERAND (var, 0), 0)) = 1;
-    }
+  if (VAR_P (var)
+      || TREE_CODE (var) == RESULT_DECL
+      || TREE_CODE (var) == PARM_DECL)
+    TREE_ADDRESSABLE (var) = 1;
 }
 
 
