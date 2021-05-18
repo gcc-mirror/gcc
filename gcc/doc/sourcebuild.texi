@@ -2755,6 +2755,10 @@ constant.
 
 @item lgccjit
 Target supports -lgccjit, i.e. libgccjit.so can be linked into jit tests.
+
+@item __OPTIMIZE__
+Optimizations are enabled (@code{__OPTIMIZE__}) per the current
+compiler flags.
 @end table
 
 @subsubsection Local to tests in @code{gcc.target/i386}
