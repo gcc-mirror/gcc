@@ -6793,25 +6793,8 @@ rs6000_function_arg_boundary (machine_mode mode, const_tree type)
       /* "Aggregate" means any AGGREGATE_TYPE except for single-element
          or homogeneous float/vector aggregates here.  We already handled
          vector aggregates above, but still need to check for float here. */
-      bool aggregate_p = (AGGREGATE_TYPE_P (type)
-			  && !SCALAR_FLOAT_MODE_P (elt_mode));
-
-      /* We used to check for BLKmode instead of the above aggregate type
-	 check.  Warn when this results in any difference to the ABI.  */
-      if (aggregate_p != (mode == BLKmode))
-	{
-	  static bool warned;
-	  if (!warned && warn_psabi)
-	    {
-	      warned = true;
-	      inform (input_location,
-		      "the ABI of passing aggregates with %d-byte alignment"
-		      " has changed in GCC 5",
-		      (int) TYPE_ALIGN (type) / BITS_PER_UNIT);
-	    }
-	}
-
-      if (aggregate_p)
+      if (AGGREGATE_TYPE_P (type)
+	  && !SCALAR_FLOAT_MODE_P (elt_mode))
 	return 128;
     }
 
@@ -7805,8 +7788,6 @@ rs6000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 	  if (i < n_elts && align_words + fpr_words < GP_ARG_NUM_REG
 	      && cum->nargs_prototype > 0)
             {
-	      static bool warned;
-
 	      machine_mode rmode = TARGET_32BIT ? SImode : DImode;
 	      int n_words = rs6000_arg_size (mode, type);
 
@@ -7820,14 +7801,6 @@ rs6000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
 		  rvec[k++] = gen_rtx_EXPR_LIST (VOIDmode, r, off);
 		}
 	      while (++align_words < GP_ARG_NUM_REG && --n_words != 0);
-
-	      if (!warned && warn_psabi)
-		{
-		  warned = true;
-		  inform (input_location,
-			  "the ABI of passing homogeneous %<float%> aggregates"
-			  " has changed in GCC 5");
-		}
 	    }
 
 	  return rs6000_finish_function_arg (mode, rvec, k);

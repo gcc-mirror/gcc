@@ -7900,32 +7900,6 @@ rs6000_slow_unaligned_access (machine_mode mode, unsigned int align)
 		      && (int) align < VECTOR_ALIGN (mode)))));
 }
 
-/* Previous GCC releases forced all vector types to have 16-byte alignment.  */
-
-bool
-rs6000_special_adjust_field_align_p (tree type, unsigned int computed)
-{
-  if (TARGET_ALTIVEC && TREE_CODE (type) == VECTOR_TYPE)
-    {
-      if (computed != 128)
-	{
-	  static bool warned;
-	  if (!warned && warn_psabi)
-	    {
-	      warned = true;
-	      inform (input_location,
-		      "the layout of aggregates containing vectors with"
-		      " %d-byte alignment has changed in GCC 5",
-		      computed / BITS_PER_UNIT);
-	    }
-	}
-      /* In current GCC there is no special case.  */
-      return false;
-    }
-
-  return false;
-}
-
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
 
 unsigned int
