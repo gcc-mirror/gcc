@@ -1,3 +1,11 @@
+2021-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100566
+	* gcc.dg/torture/pr100566.c: New testcase.
+
 2021-05-12  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
