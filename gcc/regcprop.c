@@ -808,6 +808,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       /* Detect obviously dead sets (via REG_UNUSED notes) and remove them.  */
       if (set
 	  && !RTX_FRAME_RELATED_P (insn)
+	  && NONJUMP_INSN_P (insn)
 	  && !may_trap_p (set)
 	  && find_reg_note (insn, REG_UNUSED, SET_DEST (set))
 	  && !side_effects_p (SET_SRC (set))
