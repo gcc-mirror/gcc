@@ -3323,13 +3323,6 @@ package body Checks is
 
                      Bad_Value (Warn => SPARK_Mode = On);
 
-                     --  In GNATprove mode, we enable the range check so that
-                     --  GNATprove will issue a message if it cannot be proved.
-
-                     if GNATprove_Mode then
-                        Enable_Range_Check (Expr);
-                     end if;
-
                      return;
                   end if;
 

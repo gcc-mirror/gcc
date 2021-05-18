@@ -6151,13 +6151,6 @@ package body Sem_Res is
                      raise Program_Error;
                end case;
 
-               --  In GNATprove mode, we enable the division check so that
-               --  GNATprove will issue a message if it cannot be proved.
-
-               if GNATprove_Mode then
-                  Activate_Division_Check (N);
-               end if;
-
             --  Otherwise just set the flag to check at run time
 
             else
