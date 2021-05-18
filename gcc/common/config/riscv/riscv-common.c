@@ -518,40 +518,39 @@ riscv_subset_list::parsing_subset_version (const char *ext,
   unsigned version = 0;
   unsigned major = 0;
   unsigned minor = 0;
-  char np;
   *explicit_version_p = false;
 
-  for (; *p; ++p)
-    {
-      if (*p == 'p')
-	{
-	  np = *(p + 1);
+  /* If we got `p`, that means we are still parsing standard extension.  */
+  gcc_assert (std_ext_p || *p != 'p');
 
-	  if (!ISDIGIT (np))
-	    {
-	      /* Might be beginning of `p` extension.  */
-	      if (std_ext_p)
-		{
-		  get_default_version (ext, major_version, minor_version);
-		  return p;
-		}
-	      else
-		{
-		  error_at (m_loc, "%<-march=%s%>: Expect number "
-			    "after %<%dp%>.", m_arch, version);
-		  return NULL;
-		}
-	    }
-
-	  major = version;
-	  major_p = false;
-	  version = 0;
-	}
-      else if (ISDIGIT (*p))
-	version = (version * 10) + (*p - '0');
-      else
-	break;
-    }
+  if (*p != 'p') {
+    for (; *p; ++p)
+      {
+	if (*p == 'p')
+	  {
+	    if (!ISDIGIT (*(p+1)))
+	      {
+		error_at (m_loc, "%<-march=%s%>: Expect number "
+			  "after %<%dp%>.", m_arch, version);
+		return NULL;
+	      }
+	    if (!major_p)
+	      {
+		error_at (m_loc, "%<-march=%s%>: For %<%s%dp%dp?%>, version "
+			  "number with more than 2 level is not supported.",
+			  m_arch, ext, major, version);
+		return NULL;
+	      }
+	    major = version;
+	    major_p = false;
+	    version = 0;
+	  }
+	else if (ISDIGIT (*p))
+	  version = (version * 10) + (*p - '0');
+	else
+	  break;
+      }
+  }
 
   if (major_p)
     major = version;
@@ -643,7 +642,7 @@ riscv_subset_list::parse_std_ext (const char *p)
       return NULL;
     }
 
-  while (*p)
+  while (p != NULL && *p)
     {
       char subset[2] = {0, 0};
 
@@ -770,6 +769,9 @@ riscv_subset_list::parse_multiletter_ext (const char *p,
 	= parsing_subset_version (ext, q, &major_version, &minor_version,
 				  /* std_ext_p= */ false, &explicit_version_p);
       free (ext);
+
+      if (end_of_version == NULL)
+	return NULL;
 
       *q = '\0';
 
