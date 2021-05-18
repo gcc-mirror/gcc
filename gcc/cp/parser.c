@@ -19774,9 +19774,12 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	       && ! processing_explicit_instantiation)
 	warning (OPT_Wattributes,
 		 "attributes ignored on template instantiation");
-      else if (is_friend && attributes)
-	error ("attribute appertains to a friend declaration that is not "
-	       "a definition");
+      else if (is_friend && cxx11_attribute_p (attributes))
+	{
+	  if (warning (OPT_Wattributes, "attribute ignored"))
+	    inform (input_location, "an attribute that appertains to a friend "
+		    "declaration that is not a definition is ignored");
+	}
       else if (is_declaration && cp_parser_declares_only_class_p (parser))
 	cplus_decl_attributes (&type, attributes, (int) ATTR_FLAG_TYPE_IN_PLACE);
       else
@@ -26064,17 +26067,23 @@ cp_parser_member_declaration (cp_parser* parser)
 		   if (type && TREE_CODE (type) == TYPE_DECL)
 		     type = TREE_TYPE (type);
 		 }
+	       /* Warn if an attribute cannot appear here, as per
+		  [dcl.attr.grammar]/5.  But not when declares_class_or_enum:
+		  we ignore attributes in elaborated-type-specifiers.  */
+	       if (!declares_class_or_enum
+		   && cxx11_attribute_p (decl_specifiers.attributes))
+		 {
+		   decl_specifiers.attributes = NULL_TREE;
+		   if (warning_at (decl_spec_token_start->location,
+				   OPT_Wattributes, "attribute ignored"))
+		     inform (decl_spec_token_start->location, "an attribute "
+			     "that appertains to a friend declaration that "
+			     "is not a definition is ignored");
+		 }
 	       if (!type || !TYPE_P (type))
 		 error_at (decl_spec_token_start->location,
 			   "friend declaration does not name a class or "
 			   "function");
-	       /* Give an error if an attribute cannot appear here, as per
-		  [dcl.attr.grammar]/5.  But not when declares_class_or_enum:
-		  we ignore attributes in elaborated-type-specifiers.  */
-	       else if (!declares_class_or_enum && decl_specifiers.attributes)
-		 error_at (decl_spec_token_start->location,
-			   "attribute appertains to a friend declaration "
-			   "that is not a definition");
 	       else
 		 make_friend_class (current_class_type, type,
 				    /*complain=*/true);
