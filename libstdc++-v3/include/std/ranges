@@ -3228,7 +3228,9 @@ namespace views::__adaptor
     {
     private:
       static constexpr bool _S_needs_cached_begin
-	= !common_range<_Vp> && !random_access_range<_Vp>;
+	= !common_range<_Vp> && !(random_access_range<_Vp>
+				  && sized_sentinel_for<sentinel_t<_Vp>,
+							iterator_t<_Vp>>);
 
       [[no_unique_address]]
 	__detail::__maybe_present_t<_S_needs_cached_begin,
