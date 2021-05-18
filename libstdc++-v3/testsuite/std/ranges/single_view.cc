@@ -58,9 +58,25 @@ test03()
   VERIFY(*std::ranges::begin(s3) == 'a');
 }
 
+void
+test04()
+{
+  // PR libstdc++/100475
+  struct A {
+    A() = default;
+    A(int, int) { }
+    A(std::initializer_list<int>) = delete;
+    void operator&() const = delete;
+  };
+  std::ranges::single_view<A> s(std::in_place, 0, 0);
+  s.data();
+  std::as_const(s).data();
+}
+
 int main()
 {
   test01();
   test02();
   test03();
+  test04();
 }
