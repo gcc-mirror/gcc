@@ -433,7 +433,7 @@ get_tinfo_decl_direct (tree type, tree name, int pseudo_ix)
   if (!name)
     name = mangle_typeinfo_for_type (type);
 
-  if (!CLASS_TYPE_P (type))
+  if (!CLASS_TYPE_P (type) || TYPE_TRANSPARENT_AGGR (type))
     d = get_global_binding (name);
 
   if (!d)
