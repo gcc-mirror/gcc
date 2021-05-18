@@ -3036,40 +3036,6 @@ verify_address (tree t, bool verify_addressable)
 }
 
 
-/* Verify if EXPR is either a GIMPLE ID or a GIMPLE indirect reference.
-   Returns true if there is an error, otherwise false.  */
-
-static bool
-verify_types_in_gimple_min_lval (tree expr)
-{
-  tree op;
-
-  if (is_gimple_id (expr))
-    return false;
-
-  if (TREE_CODE (expr) != TARGET_MEM_REF
-      && TREE_CODE (expr) != MEM_REF)
-    {
-      error ("invalid expression for min lvalue");
-      return true;
-    }
-
-  /* TARGET_MEM_REFs are strange beasts.  */
-  if (TREE_CODE (expr) == TARGET_MEM_REF)
-    return false;
-
-  op = TREE_OPERAND (expr, 0);
-  if (!is_gimple_val (op))
-    {
-      error ("invalid operand in indirect reference");
-      debug_generic_stmt (op);
-      return true;
-    }
-  /* Memory references now generally can involve a value conversion.  */
-
-  return false;
-}
-
 /* Verify if EXPR is a valid GIMPLE reference expression.  If
    REQUIRE_LVALUE is true verifies it is an lvalue.  Returns true
    if there is an error, otherwise false.  */
@@ -3307,8 +3273,21 @@ verify_types_in_gimple_reference (tree expr, bool require_lvalue)
       return true;
     }
 
-  return ((require_lvalue || !is_gimple_min_invariant (expr))
-	  && verify_types_in_gimple_min_lval (expr));
+  if (!require_lvalue
+      && (TREE_CODE (expr) == SSA_NAME || is_gimple_min_invariant (expr)))
+    return false;
+
+  if (TREE_CODE (expr) != SSA_NAME && is_gimple_id (expr))
+    return false;
+
+  if (TREE_CODE (expr) != TARGET_MEM_REF
+      && TREE_CODE (expr) != MEM_REF)
+    {
+      error ("invalid expression for min lvalue");
+      return true;
+    }
+
+  return false;
 }
 
 /* Returns true if there is one pointer type in TYPE_POINTER_TO (SRC_OBJ)
@@ -3398,8 +3377,11 @@ verify_gimple_call (gcall *stmt)
 
   tree lhs = gimple_call_lhs (stmt);
   if (lhs
-      && (!is_gimple_lvalue (lhs)
-	  || verify_types_in_gimple_reference (lhs, true)))
+      && (!is_gimple_reg (lhs)
+	  && (!is_gimple_lvalue (lhs)
+	      || verify_types_in_gimple_reference
+		   (TREE_CODE (lhs) == WITH_SIZE_EXPR
+		    ? TREE_OPERAND (lhs, 0) : lhs, true))))
     {
       error ("invalid LHS in gimple call");
       return true;
@@ -3487,6 +3469,13 @@ verify_gimple_call (gcall *stmt)
 	  error ("invalid argument to gimple call");
 	  debug_generic_expr (arg);
 	  return true;
+	}
+      if (!is_gimple_reg (arg))
+	{
+	  if (TREE_CODE (arg) == WITH_SIZE_EXPR)
+	    arg = TREE_OPERAND (arg, 0);
+	  if (verify_types_in_gimple_reference (arg, false))
+	    return true;
 	}
     }
 
@@ -4479,6 +4468,14 @@ verify_gimple_assign_single (gassign *stmt)
       return true;
     }
 
+  if (TREE_CODE (lhs) == WITH_SIZE_EXPR)
+    {
+      error ("%qs LHS in assignment statement",
+	     get_tree_code_name (TREE_CODE (lhs)));
+      debug_generic_expr (lhs);
+      return true;
+    }
+
   if (handled_component_p (lhs)
       || TREE_CODE (lhs) == MEM_REF
       || TREE_CODE (lhs) == TARGET_MEM_REF)
@@ -4669,8 +4666,13 @@ verify_gimple_assign_single (gassign *stmt)
 	}
       break;
 
-    case OBJ_TYPE_REF:
     case WITH_SIZE_EXPR:
+      error ("%qs RHS in assignment statement",
+	     get_tree_code_name (rhs_code));
+      debug_generic_expr (rhs1);
+      return true;
+
+    case OBJ_TYPE_REF:
       /* FIXME.  */
       return res;
 
