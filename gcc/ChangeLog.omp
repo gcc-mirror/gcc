@@ -1,3 +1,9 @@
+2021-06-02  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Simplify condition
+	for changing GOMP_MAP_ATTACH_DETACH to GOMP_MAP_ATTACH or
+	GOMP_MAP_DETACH.
+
 2021-04-07  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* omp-low.cc (is_oacc_parallel_or_serial): Handle
