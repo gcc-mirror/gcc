@@ -1,3 +1,28 @@
+2021-05-17  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-04-27  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99977
+	* config/arm/arm.c (arm_split_compare_and_swap): Fix up codegen
+	with negative immediates: ensure we expand cbranchsi4_scratch
+	correctly and ensure we satisfy its constraints.
+	* config/arm/sync.md
+	(@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1): Don't
+	attempt to tie two output operands together with constraints;
+	collapse two alternatives.
+	(@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1): Likewise.
+	* config/arm/thumb1.md (cbranchsi4_neg_late): New.
+
+2021-05-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	Backported from master:
+	2021-05-17  Marius Hillenbrand  <mhillen@linux.ibm.com>
+
+	PR bootstrap/100552
+	* configure.ac: Replace pattern substitution with call to sed.
+	* configure: Regenerate.
+
 2021-05-13  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
