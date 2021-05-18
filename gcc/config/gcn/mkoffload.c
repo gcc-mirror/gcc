@@ -825,7 +825,8 @@ main (int argc, char **argv)
   bool fpic = false;
   for (int i = 1; i < argc; i++)
     {
-      if (startswith (argv[i], "-foffload-abi="))
+#define STR "-foffload-abi="
+      if (startswith (argv[i], STR))
 	{
 	  if (strcmp (argv[i] + strlen (STR), "lp64") == 0)
 	    offload_abi = OFFLOAD_ABI_LP64;
@@ -835,6 +836,7 @@ main (int argc, char **argv)
 	    fatal_error (input_location,
 			 "unrecognizable argument of option " STR);
 	}
+#undef STR
       else if (strcmp (argv[i], "-fopenmp") == 0)
 	fopenmp = true;
       else if (strcmp (argv[i], "-fopenacc") == 0)
