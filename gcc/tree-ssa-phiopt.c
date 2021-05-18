@@ -1887,8 +1887,9 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 		       edge e0, edge e1, gphi *phi,
 		       tree arg0, tree arg1)
 {
-  if (!INTEGRAL_TYPE_P (TREE_TYPE (PHI_RESULT (phi)))
-      || TYPE_UNSIGNED (TREE_TYPE (PHI_RESULT (phi)))
+  tree phires = PHI_RESULT (phi);
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (phires))
+      || TYPE_UNSIGNED (TREE_TYPE (phires))
       || !tree_fits_shwi_p (arg0)
       || !tree_fits_shwi_p (arg1)
       || !IN_RANGE (tree_to_shwi (arg0), -1, 2)
@@ -1902,12 +1903,32 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 
   use_operand_p use_p;
   gimple *use_stmt;
-  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (PHI_RESULT (phi)))
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (phires))
     return false;
-  if (!single_imm_use (PHI_RESULT (phi), &use_p, &use_stmt))
+  if (!single_imm_use (phires, &use_p, &use_stmt))
     return false;
   enum tree_code cmp;
   tree lhs, rhs;
+  gimple *orig_use_stmt = use_stmt;
+  tree orig_use_lhs = NULL_TREE;
+  int prec = TYPE_PRECISION (TREE_TYPE (phires));
+  if (is_gimple_assign (use_stmt)
+      && gimple_assign_rhs_code (use_stmt) == BIT_AND_EXPR
+      && TREE_CODE (gimple_assign_rhs2 (use_stmt)) == INTEGER_CST
+      && (wi::to_wide (gimple_assign_rhs2 (use_stmt))
+	  == wi::shifted_mask (1, prec - 1, false, prec)))
+    {
+      /* For partial_ordering result operator>= with unspec as second
+	 argument is (res & 1) == res, folded by match.pd into
+	 (res & ~1) == 0.  */
+      orig_use_lhs = gimple_assign_lhs (use_stmt);
+      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (orig_use_lhs))
+	return false;
+      if (EDGE_COUNT (phi_bb->preds) != 4)
+	return false;
+      if (!single_imm_use (orig_use_lhs, &use_p, &use_stmt))
+	return false;
+    }
   if (gimple_code (use_stmt) == GIMPLE_COND)
     {
       cmp = gimple_cond_code (use_stmt);
@@ -1948,10 +1969,19 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
     default:
       return false;
     }
-  if (lhs != PHI_RESULT (phi)
+  if (lhs != (orig_use_lhs ? orig_use_lhs : phires)
       || !tree_fits_shwi_p (rhs)
       || !IN_RANGE (tree_to_shwi (rhs), -1, 1))
     return false;
+  if (orig_use_lhs)
+    {
+      if ((cmp != EQ_EXPR && cmp != NE_EXPR) || !integer_zerop (rhs))
+	return false;
+      /* As for -ffast-math we assume the 2 return to be
+	 impossible, canonicalize (res & ~1) == 0 into
+	 res >= 0 and (res & ~1) != 0 as res < 0.  */
+      cmp = cmp == EQ_EXPR ? GE_EXPR : LT_EXPR;
+    }
 
   if (!empty_block_p (middle_bb))
     return false;
@@ -2092,7 +2122,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 				? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE)) == 0)
     return false;
 
-  /* lhs1 one_cmp rhs1 results in PHI_RESULT (phi) of 1.  */
+  /* lhs1 one_cmp rhs1 results in phires of 1.  */
   enum tree_code one_cmp;
   if ((cmp1 == LT_EXPR)
       ^ (!integer_onep ((e1->flags & EDGE_TRUE_VALUE) ? arg1 : arg0)))
@@ -2185,12 +2215,28 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
       use_operand_p use_p;
       imm_use_iterator iter;
       bool has_debug_uses = false;
-      FOR_EACH_IMM_USE_FAST (use_p, iter, PHI_RESULT (phi))
+      FOR_EACH_IMM_USE_FAST (use_p, iter, phires)
 	{
 	  gimple *use_stmt = USE_STMT (use_p);
+	  if (orig_use_lhs && use_stmt == orig_use_stmt)
+	    continue;
 	  gcc_assert (is_gimple_debug (use_stmt));
 	  has_debug_uses = true;
 	  break;
+	}
+      if (orig_use_lhs)
+	{
+	  if (!has_debug_uses)
+	    FOR_EACH_IMM_USE_FAST (use_p, iter, orig_use_lhs)
+	      {
+		gimple *use_stmt = USE_STMT (use_p);
+		gcc_assert (is_gimple_debug (use_stmt));
+		has_debug_uses = true;
+	      }
+	  gimple_stmt_iterator gsi = gsi_for_stmt (orig_use_stmt);
+	  tree zero = build_zero_cst (TREE_TYPE (orig_use_lhs));
+	  gimple_assign_set_rhs_with_ops (&gsi, INTEGER_CST, zero);
+	  update_stmt (orig_use_stmt);
 	}
 
       if (has_debug_uses)
@@ -2203,7 +2249,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	     Ignore the value of 2, because if NaNs aren't expected,
 	     all floating point numbers should be comparable.  */
 	  gimple_stmt_iterator gsi = gsi_after_labels (gimple_bb (phi));
-	  tree type = TREE_TYPE (PHI_RESULT (phi));
+	  tree type = TREE_TYPE (phires);
 	  tree temp1 = make_node (DEBUG_EXPR_DECL);
 	  DECL_ARTIFICIAL (temp1) = 1;
 	  TREE_TYPE (temp1) = type;
@@ -2221,8 +2267,16 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	  t = build3 (COND_EXPR, type, t, build_zero_cst (type), temp1);
 	  g = gimple_build_debug_bind (temp2, t, phi);
 	  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
-	  replace_uses_by (PHI_RESULT (phi), temp2);
+	  replace_uses_by (phires, temp2);
+	  if (orig_use_lhs)
+	    replace_uses_by (orig_use_lhs, temp2);
 	}
+    }
+
+  if (orig_use_lhs)
+    {
+      gimple_stmt_iterator gsi = gsi_for_stmt (orig_use_stmt);
+      gsi_remove (&gsi, true);
     }
 
   gimple_stmt_iterator psi = gsi_for_stmt (phi);
