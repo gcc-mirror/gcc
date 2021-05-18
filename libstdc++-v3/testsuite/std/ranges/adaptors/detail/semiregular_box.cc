@@ -81,3 +81,21 @@ test01()
   return true;
 }
 static_assert(test01());
+
+template<bool make_semiregular>
+  struct A {
+    A() requires make_semiregular;
+    A(int, int);
+    A(std::initializer_list<int>) = delete;
+  };
+
+void
+test02()
+{
+  // PR libstdc++/100475
+  static_assert(std::semiregular<A<true>>);
+  __box<A<true>> x2(std::in_place, 0, 0);
+
+  static_assert(!std::semiregular<A<false>>);
+  __box<A<false>> x1(std::in_place, 0, 0);
+}

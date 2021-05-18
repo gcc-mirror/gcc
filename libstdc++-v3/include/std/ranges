@@ -163,7 +163,7 @@ namespace ranges
 	  constexpr explicit
 	  __box(in_place_t, _Args&&... __args)
 	  noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
-	  : _M_value{std::forward<_Args>(__args)...}
+	  : _M_value(std::forward<_Args>(__args)...)
 	  { }
 
 	constexpr bool
@@ -180,11 +180,11 @@ namespace ranges
 
 	constexpr _Tp*
 	operator->() noexcept
-	{ return &_M_value; }
+	{ return std::__addressof(_M_value); }
 
 	constexpr const _Tp*
 	operator->() const noexcept
-	{ return &_M_value; }
+	{ return std::__addressof(_M_value); }
       };
   } // namespace __detail
 
