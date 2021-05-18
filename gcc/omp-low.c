@@ -1651,8 +1651,10 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	      if (TREE_CODE (decl) == COMPONENT_REF
 		  || (TREE_CODE (decl) == INDIRECT_REF
 		      && TREE_CODE (TREE_OPERAND (decl, 0)) == COMPONENT_REF
-		      && (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
-			  == REFERENCE_TYPE)))
+		      && (((TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
+			    == REFERENCE_TYPE)
+			   || (TREE_CODE (TREE_TYPE (TREE_OPERAND (decl, 0)))
+			       == POINTER_TYPE)))))
 		break;
 	      if (DECL_SIZE (decl)
 		  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
@@ -13504,6 +13506,7 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		if (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_REFERENCE)
 		  is_ref = false;
 		bool ref_to_array = false;
+		bool ref_to_ptr = false;
 		if (is_ref)
 		  {
 		    type = TREE_TYPE (type);
@@ -13521,6 +13524,12 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    gcc_assert (DECL_P (decl2));
 		    new_var = decl2;
 		    type = TREE_TYPE (new_var);
+		  }
+		else if (TREE_CODE (type) == REFERENCE_TYPE
+			 && TREE_CODE (TREE_TYPE (type)) == POINTER_TYPE)
+		  {
+		    type = TREE_TYPE (type);
+		    ref_to_ptr = true;
 		  }
 		x = build_receiver_ref (prev, false, ctx);
 		x = fold_convert_loc (clause_loc, type, x);
@@ -13544,7 +13553,8 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		if (ref_to_array)
 		  x = fold_convert_loc (clause_loc, TREE_TYPE (new_var), x);
 		gimplify_expr (&x, &new_body, NULL, is_gimple_val, fb_rvalue);
-		if (is_ref && !ref_to_array)
+		if ((is_ref && !ref_to_array)
+		    || ref_to_ptr)
 		  {
 		    tree t = create_tmp_var_raw (type, get_name (var));
 		    gimple_add_tmp_var (t);
