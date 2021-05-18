@@ -115,6 +115,35 @@ test05()
   VERIFY( r2[0] == 1 && r2[1] == 3 );
 }
 
+void
+test06()
+{
+  // PR libstdc++/100631
+  auto r = views::iota(0)
+    | views::filter([](int){ return true; })
+    | views::take(42)
+    | views::reverse
+    | views::transform([](int) { return std::make_pair(42, "hello"); })
+    | views::take(42)
+    | views::keys;
+  auto b = r.begin();
+  auto e = r.end();
+  e - b;
+}
+
+void
+test07()
+{
+  // PR libstdc++/100631 comment #2
+  auto r = views::iota(0)
+    | views::transform([](int) { return std::make_pair(42, "hello"); })
+    | views::keys;
+  auto b = ranges::cbegin(r);
+  auto e = ranges::end(r);
+  b.base() == e.base();
+  b == e;
+}
+
 int
 main()
 {
@@ -123,4 +152,6 @@ main()
   test03();
   test04();
   test05();
+  test06();
+  test07();
 }
