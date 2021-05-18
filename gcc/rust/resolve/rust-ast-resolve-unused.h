@@ -30,7 +30,13 @@ public:
   static void ScanRib (Rib *r)
   {
     r->iterate_decls ([&] (NodeId decl_node_id, Location locus) -> bool {
-      if (!r->have_references_for_node (decl_node_id))
+      CanonicalPath ident = CanonicalPath::create_empty ();
+
+      bool ok = r->lookup_canonical_path (decl_node_id, &ident);
+      rust_assert (ok);
+
+      if (!r->have_references_for_node (decl_node_id)
+	  && ident.get ().at (0) != '_')
 	{
 	  rust_warning_at (locus, 0, "unused name");
 	}
