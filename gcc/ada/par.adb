@@ -1650,14 +1650,12 @@ begin
                      Uname : constant String :=
                                Get_Name_String
                                  (Unit_Name (Current_Source_Unit));
-                     Name  : String (1 .. Uname'Length - 2);
-
-                  begin
+                     Name  : String renames
+                       Uname (Uname'First .. Uname'Last - 2);
                      --  Because Unit_Name includes "%s"/"%b", we need to strip
                      --  the last two characters to get the real unit name.
 
-                     Name := Uname (Uname'First .. Uname'Last - 2);
-
+                  begin
                      if Name = "ada"         or else
                         Name = "interfaces"  or else
                         Name = "system"
