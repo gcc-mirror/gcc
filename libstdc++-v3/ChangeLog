@@ -1,3 +1,22 @@
+2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100630
+	* include/bits/fs_path.h (__is_constructible_from): Test
+	construction from a const lvalue, not an rvalue.
+	* include/experimental/bits/fs_path.h (__is_constructible_from):
+	Likewise.
+	* testsuite/27_io/filesystem/path/construct/100630.cc: New test.
+	* testsuite/experimental/filesystem/path/construct/100630.cc:
+	New test.
+
+2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-03-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (find_type): Use tag attribute
+	instead of unqualified() method.
+
 2021-05-05  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

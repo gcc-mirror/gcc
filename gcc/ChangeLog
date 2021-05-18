@@ -1,3 +1,21 @@
+2021-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/80960
+	* dse.c (check_mem_read_rtx): Call get_addr on the
+	offsetted address.
+
+2021-05-17  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100566
+	* tree-ssa-sccvn.c (dominated_by_p_w_unex): Properly handle
+	allow_back for all edge queries.
+
 2021-05-13  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	Backported from master:
