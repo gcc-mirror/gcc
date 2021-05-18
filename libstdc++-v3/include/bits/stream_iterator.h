@@ -47,8 +47,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _CharT = char,
            typename _Traits = char_traits<_CharT>, typename _Dist = ptrdiff_t>
     class istream_iterator
+#if __cplusplus < 201703L
     : public iterator<input_iterator_tag, _Tp, _Dist, const _Tp*, const _Tp&>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	public:
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category = input_iterator_tag;
+      /// The type "pointed to" by the iterator.
+      using value_type = _Tp;
+      /// Distance between iterators is represented as this type.
+      using difference_type = _Dist;
+      /// This type represents a pointer-to-value_type.
+      using pointer = const _Tp*;
+      /// This type represents a reference-to-value_type.
+      using reference = const _Tp&;
+      // END: Iterator base types
+#endif
+		
     public:
       typedef _CharT                         char_type;
       typedef _Traits                        traits_type;
@@ -174,8 +192,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _CharT = char,
            typename _Traits = char_traits<_CharT> >
     class ostream_iterator
+#if __cplusplus < 201703L
     : public iterator<output_iterator_tag, void, void, void, void>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	public:
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category = output_iterator_tag;
+      /// The type "pointed to" by the iterator.
+      using value_type = void;
+#if __cplusplus == 201703L
+      /// Distance between iterators is represented as this type.
+      using difference_type = void;
+#endif
+      /// This type represents a pointer-to-value_type.
+      using pointer = void;
+      /// This type represents a reference-to-value_type.
+      using reference = void;
+      // END: Iterator base types
+#endif
+		
     public:
       ///@{
       /// Public typedef

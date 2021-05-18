@@ -173,10 +173,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<class _Sequence, std::size_t _Buf_sz = 100>
     class sequence_buffer
+#if __cplusplus < 201703L
     : public std::iterator<std::output_iterator_tag, void, void, void, void>
+#endif
     {
     public:
       typedef typename _Sequence::value_type value_type;
+#if __cplusplus >= 201703L // C++17
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category = std::output_iterator_tag;
+      /// Distance between iterators is represented as this type.
+      using difference_type = void;
+      /// This type represents a pointer-to-value_type.
+      using pointer = void;
+      /// This type represents a reference-to-value_type.
+      using reference = void;
+      // END: Iterator base types
+#endif
     protected:
       _Sequence* _M_prefix;
       value_type _M_buffer[_Buf_sz];
@@ -1054,8 +1068,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   
   template<class _CharT, class _Alloc>
     class _Rope_iterator_base
+#if __cplusplus < 201703L
     : public std::iterator<std::random_access_iterator_tag, _CharT>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	public:
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category = std::random_access_iterator_tag;
+	  /// The type "pointed to" by the iterator.
+      using value_type = _CharT;
+      /// Distance between iterators is represented as this type.
+      using difference_type = ptrdiff_t;
+      /// This type represents a pointer-to-value_type.
+      using pointer = _CharT*;
+      /// This type represents a reference-to-value_type.
+      using reference = _CharT&;
+      // END: Iterator base types
+	private:
+#endif
+		
       friend class rope<_CharT, _Alloc>;
     public:
       typedef _Alloc _allocator_type; // used in _Rope_rotate, VC++ workaround

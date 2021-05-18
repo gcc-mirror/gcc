@@ -48,9 +48,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Provides input iterator semantics for streambufs.
   template<typename _CharT, typename _Traits>
     class istreambuf_iterator
+#if __cplusplus < 201703L
     : public iterator<input_iterator_tag, _CharT, typename _Traits::off_type,
 		      _CharT*, _CharT>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	public:
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category = input_iterator_tag;
+      /// The type "pointed to" by the iterator.
+      using value_type = _CharT;
+      /// Distance between iterators is represented as this type.
+      using difference_type = typename _Traits::off_type;
+#if __cplusplus == 201703L
+      /// This type represents a pointer-to-value_type.
+      using pointer = _CharT*;
+#endif
+      /// This type represents a reference-to-value_type.
+      using reference = _CharT;
+      // END: Iterator base types
+#endif
+		
     public:
       // Types:
       ///@{
@@ -236,8 +256,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Provides output iterator semantics for streambufs.
   template<typename _CharT, typename _Traits>
     class ostreambuf_iterator
+#if __cplusplus < 201703L
     : public iterator<output_iterator_tag, void, void, void, void>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	public:
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category 	= output_iterator_tag;
+      /// The type "pointed to" by the iterator.
+      using value_type 			= void;
+#if __cplusplus == 201703L
+	  /// Distance between iterators is represented as this type.
+      using difference_type 	= void;
+#endif
+      /// This type represents a pointer-to-value_type.
+      using pointer 			= void;
+      /// This type represents a reference-to-value_type.
+      using reference 			= void;
+      // END: Iterator base types
+#endif
+		
     public:
       // Types:
       ///@{

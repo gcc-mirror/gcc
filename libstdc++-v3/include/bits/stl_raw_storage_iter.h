@@ -66,8 +66,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template <class _OutputIterator, class _Tp>
     class raw_storage_iterator
+#if __cplusplus < 201703L
     : public iterator<output_iterator_tag, void, void, void, void>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	public:
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category 	= output_iterator_tag;
+      /// The type "pointed to" by the iterator.
+      using value_type 			= void;
+      /// Distance between iterators is represented as this type.
+      using difference_type 	= void;
+      /// This type represents a pointer-to-value_type.
+      using pointer 			= void;
+      /// This type represents a reference-to-value_type.
+      using reference 			= void;
+      // END: Iterator base types
+#endif
     protected:
       _OutputIterator _M_iter;
 

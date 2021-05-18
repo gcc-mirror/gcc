@@ -140,8 +140,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
   struct _Bit_iterator_base
+#if __cplusplus < 201703L
   : public std::iterator<std::random_access_iterator_tag, bool>
+#endif
   {
+#if __cplusplus >= 201703L // C++17
+	// BEGIN: Iterator base types
+	/// One of the @link iterator_tags tag types@endlink.
+	using iterator_category = std::random_access_iterator_tag;
+	/// The type "pointed to" by the iterator.
+	using value_type 		= bool;
+	/// Distance between iterators is represented as this type.
+	using difference_type 	= ptrdiff_t;
+	/// This type represents a pointer-to-value_type.
+	using pointer 			= bool*;
+    /// This type represents a reference-to-value_type.
+	using reference 		= bool&;
+	// END: Iterator base types
+#endif
+	  
     _Bit_type * _M_p;
     unsigned int _M_offset;
 

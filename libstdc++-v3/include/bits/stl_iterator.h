@@ -125,12 +125,35 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _Iterator>
     class reverse_iterator
+#if __cplusplus < 201703L
     : public iterator<typename iterator_traits<_Iterator>::iterator_category,
 		      typename iterator_traits<_Iterator>::value_type,
 		      typename iterator_traits<_Iterator>::difference_type,
 		      typename iterator_traits<_Iterator>::pointer,
                       typename iterator_traits<_Iterator>::reference>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	protected:
+	  typedef iterator_traits<_Iterator> __traits_type;
+	  
+	public:
+	  // BEGIN: Iterator base types
+#if !__cpp_lib_concepts
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category 	= typename __traits_type::iterator_category;
+#endif
+      /// The type "pointed to" by the iterator.
+      using value_type 			= typename __traits_type::value_type;
+      /// Distance between iterators is represented as this type.
+      using difference_type 	= typename __traits_type::difference_type;
+      /// This type represents a pointer-to-value_type.
+      using pointer 			= typename __traits_type::pointer;
+      /// This type represents a reference-to-value_type.
+      using reference 			= typename __traits_type::reference;
+      // END: Iterator base types
+	private:
+#endif
       template<typename _Iter>
 	friend class reverse_iterator;
 
@@ -144,14 +167,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       _Iterator current;
-
+#if __cplusplus < 201703L
       typedef iterator_traits<_Iterator>		__traits_type;
-
+#endif
     public:
       typedef _Iterator					iterator_type;
-      typedef typename __traits_type::difference_type	difference_type;
+#if __cplusplus < 201703L
+	  typedef typename __traits_type::difference_type	difference_type;
       typedef typename __traits_type::pointer		pointer;
       typedef typename __traits_type::reference		reference;
+#endif
 
 #if __cplusplus > 201703L && __cpp_lib_concepts
       using iterator_concept
@@ -626,8 +651,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _Container>
     class back_insert_iterator
+#if __cplusplus < 201703L
     : public iterator<output_iterator_tag, void, void, void, void>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	public:
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category 	= output_iterator_tag;
+      /// The type "pointed to" by the iterator.
+      using value_type 			= void;
+#if __cplusplus <= 201703L
+      /// Distance between iterators is represented as this type.
+      using difference_type 	= void;
+#endif
+      /// This type represents a pointer-to-value_type.
+      using pointer				= void;
+      /// This type represents a reference-to-value_type.
+      using reference 			= void;
+      // END: Iterator base types
+#endif
+
     protected:
       _Container* container;
 
@@ -729,8 +774,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _Container>
     class front_insert_iterator
+#if __cplusplus < 201703L
     : public iterator<output_iterator_tag, void, void, void, void>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	public:
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category 	= output_iterator_tag;
+      /// The type "pointed to" by the iterator.
+      using value_type 			= void;
+#if __cplusplus <= 201703L
+      /// Distance between iterators is represented as this type.
+      using difference_type 	= void;
+#endif
+      /// This type represents a pointer-to-value_type.
+      using pointer 			= void;
+      /// This type represents a reference-to-value_type.
+      using reference 			= void;
+      // END: Iterator base types
+#endif
+
     protected:
       _Container* container;
 
@@ -836,8 +901,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   */
   template<typename _Container>
     class insert_iterator
+#if __cplusplus < 201703L
     : public iterator<output_iterator_tag, void, void, void, void>
+#endif
     {
+#if __cplusplus >= 201703L // C++17
+	public:
+	  // BEGIN: Iterator base types
+  	  /// One of the @link iterator_tags tag types@endlink.
+      using iterator_category 	= output_iterator_tag;
+      /// The type "pointed to" by the iterator.
+      using value_type 			= void;
+#if __cplusplus <= 201703L || ! defined __cpp_lib_concepts
+      /// Distance between iterators is represented as this type.
+      using difference_type 	= void;
+#endif
+      /// This type represents a pointer-to-value_type.
+      using pointer 			= void;
+      /// This type represents a reference-to-value_type.
+      using reference 			= void;
+      // END: Iterator base types
+#endif
+		
 #if __cplusplus > 201703L && defined __cpp_lib_concepts
       using _Iter = std::__detail::__range_iter_t<_Container>;
 
