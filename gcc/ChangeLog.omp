@@ -1,5 +1,16 @@
 2021-06-02  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (insert_struct_comp_map): Refactor function into...
+	(build_struct_comp_nodes): This new function.  Remove list handling
+	and improve self-documentation.
+	(insert_node_after, move_node_after, move_nodes_after,
+	move_concat_nodes_after): New helper functions.
+	(build_struct_group): New function to build up GOMP_MAP_STRUCT node
+	groups to map struct components. Outlined from...
+	(gimplify_scan_omp_clauses): Here.  Call above function.
+
+2021-06-02  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (extract_base_bit_offset): Unify ARRAY_REF/INDIRECT_REF
 	stripping code in first call/subsequent call cases.
 
