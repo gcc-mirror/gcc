@@ -1649,7 +1649,11 @@
    (set (match_dup 1)
 	(unspec_volatile:SDIM [(const_int 0)] UNSPECV_CAS))]
   ""
-  "%.\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;"
+  {
+    const char *t
+      = "%.\\tatom%A1.cas.b%T0\\t%0, %1, %2, %3;";
+    return nvptx_output_atomic_insn (t, operands, 1, 4);
+  }
   [(set_attr "atomic" "true")])
 
 (define_insn "atomic_exchange<mode>"
@@ -1661,7 +1665,11 @@
    (set (match_dup 1)
 	(match_operand:SDIM 2 "nvptx_nonmemory_operand" "Ri"))]	;; input
   ""
-  "%.\\tatom%A1.exch.b%T0\\t%0, %1, %2;"
+  {
+    const char *t
+      = "%.\tatom%A1.exch.b%T0\t%0, %1, %2;";
+    return nvptx_output_atomic_insn (t, operands, 1, 3);
+  }
   [(set_attr "atomic" "true")])
 
 (define_insn "atomic_fetch_add<mode>"
@@ -1674,7 +1682,11 @@
    (set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
 	(match_dup 1))]
   ""
-  "%.\\tatom%A1.add%t0\\t%0, %1, %2;"
+  {
+    const char *t
+      = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
+    return nvptx_output_atomic_insn (t, operands, 1, 3);
+  }
   [(set_attr "atomic" "true")])
 
 (define_insn "atomic_fetch_addsf"
@@ -1687,7 +1699,11 @@
    (set (match_operand:SF 0 "nvptx_register_operand" "=R")
 	(match_dup 1))]
   ""
-  "%.\\tatom%A1.add%t0\\t%0, %1, %2;"
+  {
+    const char *t
+      = "%.\\tatom%A1.add%t0\\t%0, %1, %2;";
+    return nvptx_output_atomic_insn (t, operands, 1, 3);
+  }
   [(set_attr "atomic" "true")])
 
 (define_code_iterator any_logic [and ior xor])
@@ -1703,7 +1719,12 @@
    (set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
 	(match_dup 1))]
   "<MODE>mode == SImode || TARGET_SM35"
-  "%.\\tatom%A1.b%T0.<logic>\\t%0, %1, %2;"
+  {
+    const char *t
+      = "%.\\tatom%A1.b%T0.<logic>\\t%0, %1, %2;";
+    return nvptx_output_atomic_insn (t, operands, 1, 3);
+  }
+
   [(set_attr "atomic" "true")])
 
 (define_expand "atomic_test_and_set"

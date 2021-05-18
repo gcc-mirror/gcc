@@ -57,5 +57,6 @@ extern const char *nvptx_output_set_softstack (unsigned);
 extern const char *nvptx_output_simt_enter (rtx, rtx, rtx);
 extern const char *nvptx_output_simt_exit (rtx);
 extern const char *nvptx_output_red_partition (rtx, rtx);
+extern const char *nvptx_output_atomic_insn (const char *, rtx *, int, int);
 #endif
 #endif
