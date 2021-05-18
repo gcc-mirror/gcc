@@ -1,5 +1,21 @@
 2021-06-02  Julian Brown  <julian@codesourcery.com>
 
+	* gimplify.cc (extract_base_bit_offset): Add BASE_IND and OPENMP
+	parameters.  Handle pointer-typed indirect references for OpenACC
+	alongside reference-typed ones.
+	(strip_components_and_deref, aggregate_base_p): New functions.
+	(build_struct_group): Add pointer type indirect ref handling,
+	including chained references, for OpenACC.  Also handle references to
+	structs for OpenACC.  Conditionalise bits for OpenMP only where
+	appropriate.
+	(gimplify_scan_omp_clauses): Rework pointer-type indirect structure
+	access handling to work more like the reference-typed handling for
+	OpenACC only.
+	* omp-low.cc (scan_sharing_clauses): Handle pointer-type indirect struct
+	references, and references to pointers to structs also.
+
+2021-06-02  Julian Brown  <julian@codesourcery.com>
+
 	* gimplify.cc (insert_struct_comp_map): Refactor function into...
 	(build_struct_comp_nodes): This new function.  Remove list handling
 	and improve self-documentation.

@@ -1,3 +1,9 @@
+2021-06-02  Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-15.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-16.c: New test.
+	* testsuite/libgomp.oacc-c++/deep-copy-17.C: New test.
+
 2021-03-25  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* target.c (__requires_mask_table, __requires_mask_table_end): Add

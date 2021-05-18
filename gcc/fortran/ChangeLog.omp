@@ -1,3 +1,9 @@
+2021-06-02  Julian Brown  <julian@codesourcery.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Don't create GOMP_MAP_TO_PSET
+	mappings for class metadata, nor GOMP_MAP_POINTER mappings for
+	POINTER_TYPE_P decls.
+
 2021-02-02  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* openmp.cc (gfc_check_omp_requires): Fix REVERSE_OFFLOAD typo.

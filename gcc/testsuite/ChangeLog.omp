@@ -1,3 +1,8 @@
+2021-06-02  Julian Brown  <julian@codesourcery.com>
+
+	* g++.dg/goacc/member-array-acc.C: New test.
+	* g++.dg/gomp/member-array-omp.C: New test.
+
 2021-05-14  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-c++-common/gomp/map-6.c: Remove two dg-error.
