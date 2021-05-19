@@ -1424,6 +1424,7 @@ package body Exp_Dist is
               and then Chars (Current_Primitive) /= Name_uAlignment
               and then not
                 (Is_TSS (Current_Primitive, TSS_Deep_Finalize) or else
+                 Is_TSS (Current_Primitive, TSS_Put_Image)     or else
                  Is_TSS (Current_Primitive, TSS_Stream_Input)  or else
                  Is_TSS (Current_Primitive, TSS_Stream_Output) or else
                  Is_TSS (Current_Primitive, TSS_Stream_Read)   or else
@@ -4211,14 +4212,6 @@ package body Exp_Dist is
          --  Used only for the PolyORB case
 
       begin
-         --  workaround for later failures in Exp_Util.Find_Prim_Op
-         if Is_TSS (Defining_Unit_Name (Spec), TSS_Put_Image) then
-            Append_To (Statements,
-                       Make_Raise_Program_Error (Loc,
-                         Reason => PE_Stream_Operation_Not_Allowed));
-            return;
-         end if;
-
          --  The general form of a calling stub for a given subprogram is:
 
          --    procedure X (...) is P : constant Partition_ID :=
@@ -4734,11 +4727,11 @@ package body Exp_Dist is
          --  Formal parameter for receiving stubs: a descriptor for an incoming
          --  request.
 
-         Decls : List_Id := New_List;
+         Decls : constant List_Id := New_List;
          --  All the parameters will get declared before calling the real
          --  subprograms. Also the out parameters will be declared.
 
-         Statements : List_Id := New_List;
+         Statements : constant List_Id := New_List;
 
          Extra_Formal_Statements : constant List_Id := New_List;
          --  Statements concerning extra formal parameters
@@ -5172,19 +5165,6 @@ package body Exp_Dist is
                  Defining_Identifier => Request_Parameter,
                  Parameter_Type      =>
                    New_Occurrence_Of (RTE (RE_Request_Access), Loc))));
-
-         --  workaround for later failures in Exp_Util.Find_Prim_Op
-         if Is_TSS (Defining_Unit_Name (Specification (Vis_Decl)),
-                    TSS_Put_Image)
-         then
-            --  drop everything on the floor
-            Decls := New_List;
-            Statements := New_List;
-            Excep_Handlers := New_List;
-            Append_To (Statements,
-                       Make_Raise_Program_Error (Loc,
-                         Reason => PE_Stream_Operation_Not_Allowed));
-         end if;
 
          return
            Make_Subprogram_Body (Loc,
