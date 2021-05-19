@@ -1,3 +1,20 @@
+2021-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_offload_target_nvptx): Don't shadow global
+	'offload_targets' variable.
+
+2021-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c-c++-common/reduction-5.c: Restrict
+	'-latomic' to nvptx offloading compilation.
+	* testsuite/libgomp.c-c++-common/reduction-6.c: Likewise.
+
+2021-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.c/target-44.c: Restrict '-latomic' to nvptx
+	offloading compilation.
+
 2021-05-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* task.c (omp_fulfill_event): Call gomp_team_barrier_set_task_pending

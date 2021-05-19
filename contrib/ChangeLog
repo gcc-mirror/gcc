@@ -1,3 +1,7 @@
+2021-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_email.py: Remove use of non-strict mode.
+
 2021-05-17  Richard Biener  <rguenther@suse.de>
 
 	* download_prerequisites: Update mpfr version to 3.1.6.

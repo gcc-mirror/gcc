@@ -1,3 +1,205 @@
+2021-05-18  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/freebsd64.h (ADJUST_FIELD_ALIGN): Remove call to
+	rs6000_special_adjust_field_align_p.
+	* config/rs6000/linux64.h (ADJUST_FIELD_ALIGN): Likewise.
+	* config/rs6000/rs6000-call.c (rs6000_function_arg_boundary):
+	Remove ABI warning.
+	(rs6000_function_arg): Likewise.
+	* config/rs6000/rs6000-protos.h
+	(rs6000_special_adjust_field_align_p): Remove prototype.
+	* config/rs6000/rs6000.c (rs6000_special_adjust_field_align_p):
+	Remove.
+	* config/rs6000/sysv4.h (ADJUST_FIELD_ALIGN): Remove call to
+	rs6000_special_adjust_field_align_p.
+
+2021-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/i386.h (VALID_SSE2_REG_MODE):
+	Add V4QI and V2HI modes.
+	(VALID_INT_MODE_P): Ditto.
+	* config/i386/mmx.md (VI_32): New mode iterator.
+	(mmxvecsize): Handle V4QI and V2HI.
+	(Yv_Yw): Ditto.
+	(mov<VI_32:mode>): New expander.
+	(*mov<mode>_internal): New insn pattern.
+	(movmisalign<VI_32:mode>): New expander.
+	(neg<VI_32:mode>): New expander.
+	(<plusminus:insn><VI_32:mode>3): New expander.
+	(*<plusminus:insn><VI_32:mode>3): New insn pattern.
+	(mulv2hi3): New expander.
+	(*mulv2hi3): New insn pattern.
+	(one_cmpl<VI_32:mode>2): New expander.
+	(*andnot<VI_32:mode>3): New insn pattern.
+	(<any_logic:code><VI_32:mode>3): New expander.
+	(*<any_logic:code><VI_32:mode>3): New insn pattern.
+
+2021-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (<any_extend:insn>v4qiv4di2):
+	Fix a mode mismatch with operand 1.
+
+2021-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100626
+	* config/i386/i386-expand.c (split_double_mode): Return
+	temporary register when simplify_gen_subreg fails with
+	the high half od the paradoxical subreg.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.c (expand_one_var): Pass in forced_stack_var
+	and honor it when expanding.
+	(expand_used_vars_for_block): Pass through forced_stack_var.
+	(expand_used_vars): Likewise.
+	(discover_nonconstant_array_refs_r): Set bits in
+	forced_stack_vars instead of marking vars TREE_ADDRESSABLE.
+	(avoid_type_punning_on_regs): Likewise.
+	(discover_nonconstant_array_refs): Likewise.
+	(pass_expand::execute): Create and pass down forced_stack_var
+	bitmap.  For parameters and returns temporarily set
+	TREE_ADDRESSABLE when expand_function_start.
+
+2021-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/sourcebuild.texi: Document 'dg-note'.
+
+2021-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR other/100598
+	* configure: Regenerate.
+	* configure.ac (BUILD_CFLAG, BUILD_CXXFLAGS): Add $(CFLAGS-$@).
+
+2021-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gimple.h (is_gimple_omp_oacc): Tighten.
+	* omp-low.c (check_omp_nesting_restrictions): Adjust.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-operands.c (mark_address_taken): Simplify.
+
+2021-05-18  Martin Liska  <mliska@suse.cz>
+
+	* config/gcn/mkoffload.c (STR): Redefine.
+	* config/i386/intelmic-mkoffload.c (STR): Likewise.
+	* config/nvptx/mkoffload.c (STR): Likewise.
+
+2021-05-18  Martin Liska  <mliska@suse.cz>
+
+	* common/config/aarch64/aarch64-common.c (aarch64_parse_extension):
+	Use startswith function instead of strncmp.
+	* common/config/bfin/bfin-common.c (bfin_handle_option): Likewise.
+	* common/config/riscv/riscv-common.c (riscv_subset_list::parse): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (parse_type): Likewise.
+	* config/aarch64/aarch64.c (aarch64_process_one_target_attr): Likewise.
+	* config/alpha/alpha.c (alpha_elf_section_type_flags): Likewise.
+	* config/arm/aarch-common.c (arm_md_asm_adjust): Likewise.
+	* config/arm/arm.c (arm_file_start): Likewise.
+	(arm_valid_target_attribute_rec): Likewise.
+	(thumb1_md_asm_adjust): Likewise.
+	* config/arm/driver-arm.c (host_detect_local_cpu): Likewise.
+	* config/avr/avr.c (STR_PREFIX_P): Likewise.
+	(avr_set_current_function): Likewise.
+	(avr_handle_addr_attribute): Likewise.
+	(avr_asm_output_aligned_decl_common): Likewise.
+	(avr_asm_named_section): Likewise.
+	(avr_section_type_flags): Likewise.
+	(avr_asm_select_section): Likewise.
+	* config/c6x/c6x.c (c6x_in_small_data_p): Likewise.
+	(c6x_section_type_flags): Likewise.
+	* config/darwin-c.c (darwin_cfstring_ref_p): Likewise.
+	(darwin_objc_declare_unresolved_class_reference): Likewise.
+	(darwin_objc_declare_class_definition): Likewise.
+	* config/darwin.c (indirect_data): Likewise.
+	(darwin_encode_section_info): Likewise.
+	(darwin_objc2_section): Likewise.
+	(darwin_objc1_section): Likewise.
+	(machopic_select_section): Likewise.
+	(darwin_globalize_label): Likewise.
+	(darwin_label_is_anonymous_local_objc_name): Likewise.
+	(darwin_asm_named_section): Likewise.
+	(darwin_asm_output_dwarf_offset): Likewise.
+	* config/frv/frv.c (frv_string_begins_with): Likewise.
+	(frv_in_small_data_p): Likewise.
+	* config/gcn/mkoffload.c (STR): Likewise.
+	(main): Likewise.
+	* config/i386/i386-builtins.c (get_builtin_code_for_version): Likewise.
+	* config/i386/i386-options.c (ix86_option_override_internal): Likewise.
+	* config/i386/i386.c (x86_64_elf_section_type_flags): Likewise.
+	(ix86_md_asm_adjust): Likewise.
+	* config/i386/intelmic-mkoffload.c (STR): Likewise.
+	* config/i386/winnt.c (i386_pe_asm_named_section): Likewise.
+	(i386_pe_file_end): Likewise.
+	* config/ia64/ia64.c (ia64_in_small_data_p): Likewise.
+	(ia64_section_type_flags): Likewise.
+	* config/mips/driver-native.c (host_detect_local_cpu): Likewise.
+	* config/mips/mips.c (mips_handle_interrupt_attr): Likewise.
+	(mips16_stub_function_p): Likewise.
+	(mips_function_rodata_section): Likewise.
+	* config/msp430/msp430.c (msp430_mcu_name): Likewise.
+	(msp430_function_section): Likewise.
+	(msp430_section_type_flags): Likewise.
+	(msp430_expand_helper): Likewise.
+	* config/nios2/nios2.c (nios2_small_section_name_p): Likewise.
+	(nios2_valid_target_attribute_rec): Likewise.
+	* config/nvptx/mkoffload.c (process): Likewise.
+	(STR): Likewise.
+	* config/pa/som.h: Likewise.
+	* config/pdp11/pdp11.c (pdp11_output_ident): Likewise.
+	* config/riscv/riscv.c (riscv_elf_select_rtx_section): Likewise.
+	* config/rs6000/rs6000.c (VTABLE_NAME_P): Likewise.
+	(rs6000_inner_target_options): Likewise.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu): Likewise.
+	* config/sparc/driver-sparc.c (host_detect_local_cpu): Likewise.
+	* config/vax/vax.c (vax_output_int_move): Likewise.
+	* config/vms/vms-ld.c (startswith): Likewise.
+	(process_args): Likewise.
+	(main): Likewise.
+	* config/vms/vms.c: Likewise.
+
+2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100590
+	* regcprop.c (copyprop_hardreg_forward_1): Only DCE dead sets if
+	they are NONJUMP_INSN_P.
+
+2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100580
+	* function.c (push_dummy_function): Set DECL_ARTIFICIAL and
+	DECL_ASSEMBLER_NAME on the fn_decl.
+
+2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	* tree-ssa-phiopt.c (spaceship_replacement): Pattern match
+	phi result used in (res & ~1) == 0 comparison as res >= 0 as
+	res == 2 would be UB with -ffinite-math-only.
+
+2021-05-18  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: genversion.o should depend on DATESTAMP.
+
+2021-05-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/simdext.md (negv2si2): Remove round bracket.
+
+2021-05-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390-c.c (s390_cpu_cpp_builtins_internal): Define
+	_Bool as macro expanding to _Bool.
+
+2021-05-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR c++/100281
+	* tree.c (build_reference_type_for_mode)
+	(build_pointer_type_for_mode): Pick pointer mode if MODE argument
+	is VOIDmode.
+	(build_reference_type, build_pointer_type): Invoke
+	build_*_type_for_mode with VOIDmode.
+
 2021-05-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/100512

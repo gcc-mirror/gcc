@@ -1,3 +1,97 @@
+2021-05-18  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/ppc64-abi-warn-1.c: Remove.
+	* gcc.target/powerpc/ppc64-abi-warn-2.c: Remove.
+	* gcc.target/powerpc/ppc64-abi-warn-3.c: Remove.
+
+2021-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100205
+	PR c++/99314
+	* g++.dg/cpp0x/decltype-nonstatic1.C: New test.
+
+2021-05-18  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/implicit-delete1.C: New test.
+
+2021-05-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100615
+	* gcc.dg/analyzer/pr100615.c: New test.
+
+2021-05-18  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* gcc.target/i386/pr100637-1b.c: New test.
+	* gcc.target/i386/pr100637-1w.c: Ditto.
+	* gcc.target/i386/pr92658-avx2-2.c: Do not XFAIL scan for pmovsxbq.
+	* gcc.target/i386/pr92658-avx2.c: Do not XFAIL scan for pmovzxbq.
+	* gcc.target/i386/pr92658-avx512vl.c: Do not XFAIL scan for vpmovdb.
+	* gcc.target/i386/pr92658-sse4-2.c: Do not XFAIL scan for
+	pmovsxbd and pmovsxwq.
+	* gcc.target/i386/pr92658-sse4.c: Do not XFAIL scan for
+	pmovzxbd and pmovzxwq.
+
+2021-05-18  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/100642
+	* gfortran.dg/goacc-gomp/depobj.f90: New test.
+
+2021-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/gcc-dg.exp: Implement 'dg-note'.
+	* lib/prune.exp: Likewise.
+	* gcc.dg/vect/nodump-vect-opt-info-2.c: Use 'dg-note', and
+	'dg-prune-output "note: ".
+	* gfortran.dg/goacc/routine-external-level-of-parallelism-2.f: Use
+	'dg-note', match up additional notes, one class of them with
+	XFAILed 'dg-bogus'.
+	* lib/lto.exp: Implement 'dg-lto-note'.
+	* g++.dg/lto/odr-1_0.C: Use 'dg-lto-note', match up additional
+	notes.
+	* g++.dg/lto/odr-1_1.C: Likewise.
+	* g++.dg/lto/odr-2_1.C: Likewise.
+
+2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100590
+	* gcc.dg/pr100590.c: New test.
+
+2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100580
+	* g++.dg/other/pr100580.C: New test.
+
+2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	* g++.dg/opt/pr94589-2.C: Adjust scan-tree-dump count from 14 to 12.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.target/i386/pr100582.c: Adjust for AVX512.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/100522
+	* gcc.dg/gimplefe-error-10.c: New testcase.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/100547
+	* gcc.dg/pr100547.c: New testcase.
+	* gcc.dg/attr-vector_size.c: Adjust.
+
+2021-05-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec-_Bool.c: New test.
+
+2021-05-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR c++/100281
+	* g++.target/s390/pr100281-1.C: New test.
+	* g++.target/s390/pr100281-2.C: New test.
+
 2021-05-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/100512

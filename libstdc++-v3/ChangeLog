@@ -1,3 +1,44 @@
+2021-05-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100631
+	* include/std/ranges (elements_view::_Sentinel::operator-): Use
+	_M_distance_from in the other operator- overload too.
+	* testsuite/std/ranges/adaptors/elements.cc (test06): Augment test.
+
+2021-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/prune.exp: Add note about 'dg-note'.
+
+2021-05-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100475
+	* include/std/ranges (__box::__box): Use non-list-initialization
+	in member initializer list of in-place constructor of the
+	partial specialization for semiregular types.
+	(__box::operator->): Use std::__addressof.
+	* testsuite/std/ranges/adaptors/detail/semiregular_box.cc
+	(test02): New test.
+	* testsuite/std/ranges/single_view.cc (test04): New test.
+
+2021-05-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100621
+	* include/std/ranges (reverse_view::_S_needs_cached_begin):
+	Set to true if the underlying non-common random-access range
+	doesn't have a sized sentinel.
+
+2021-05-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100631
+	* include/std/ranges (elements_view::_Iterator): Also befriend
+	_Sentinel<!_Const>.
+	(elements_view::_Sentinel::_M_equal): Templatize.
+	(elements_view::_Sentinel::_M_distance_from): Split out from ...
+	(elements_view::_Sentinel::operator-): ... here.  Depend on
+	_Base2 instead of _Base in the return type.
+	* testsuite/std/ranges/adaptors/elements.cc (test06, test07):
+	New tests.
+
 2021-05-17  Thomas Rodgers  <rodgert@twrodgers.com>
 
 	* include/bits/atomic_wait.h (__waiter::_M_do_wait_v): loop

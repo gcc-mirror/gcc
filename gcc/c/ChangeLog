@@ -1,3 +1,10 @@
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/100522
+	* gimple-parser.c (c_parser_gimple_postfix_expression_after_primary):
+	Diagnose calls to non-functions.
+	(c_parser_gimple_statement): Diagnose unexpected assignment RHS.
+
 2021-05-17  Richard Biener  <rguenther@suse.de>
 
 	PR c/100625

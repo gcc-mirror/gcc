@@ -1,3 +1,42 @@
+2021-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* class.c (classtype_has_non_deleted_copy_ctor): Remove.
+	* constraint.cc (contains_wildcard_p): Likewise.
+	(get_template_head_requirements): Likewise.
+	(check_constrained_friend): Likewise.
+	(subsumes_constraints): Likewise.
+	* cp-tree.h (classtype_has_non_deleted_copy_ctor): Likewise.
+	(push_void_library_fn): Likewise.
+	(get_pattern_parm): Likewise.
+	(get_template_parms_at_level): Likewise.
+	(lambda_return_type): Likewise.
+	(get_template_head_requirements): Likewise.
+	(check_constrained_friend): Likewise.
+	(subsumes_constraints): Likewise.
+	* decl.c (push_void_library_fn): Likewise.
+	* lambda.c (lambda_return_type): Likewise.
+	* pt.c (get_template_parms_at_level): Likewise.
+	(get_pattern_parm): Likewise.
+
+2021-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100644
+	* call.c (perfect_candidate_p): An implicitly deleted move
+	is not perfect.
+
+2021-05-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR c++/100281
+	* cvt.c (cp_convert_to_pointer): Use the size of the target
+	pointer type.
+	* tree.c (cp_build_reference_type): Call
+	cp_build_reference_type_for_mode with VOIDmode.
+	(cp_build_reference_type_for_mode): Rename from
+	cp_build_reference_type.  Add MODE argument and invoke
+	build_reference_type_for_mode.
+	(strip_typedefs): Use build_pointer_type_for_mode and
+	cp_build_reference_type_for_mode for pointers and references.
+
 2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/100635

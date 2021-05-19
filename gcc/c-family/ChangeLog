@@ -1,3 +1,9 @@
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/100547
+	* c-attribs.c (type_valid_for_vector_size): Reject too large nunits.
+	Reword existing nunit diagnostic.
+
 2021-05-17  Joern Rennecke  <joern.rennecke@embecosm.com>
 
 	* c-common.c (braced_list_to_string): Return CTOR unchanged
