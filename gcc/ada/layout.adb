@@ -270,15 +270,15 @@ package body Layout is
             Desig_Type := Non_Limited_View (Designated_Type (E));
          end if;
 
-         --  If Esize already set (e.g. by a size clause), then nothing further
-         --  to be done here.
+         --  If Esize already set (e.g. by a size or value size clause), then
+         --  nothing further to be done here.
 
          if Known_Esize (E) then
             null;
 
-         --  Access to subprogram is a strange beast, and we let the backend
-         --  figure out what is needed (it may be some kind of fat pointer,
-         --  including the static link for example.
+         --  Access to protected subprogram is a strange beast, and we let the
+         --  backend figure out what is needed (it may be some kind of fat
+         --  pointer, including the static link for example).
 
          elsif Is_Access_Protected_Subprogram_Type (E) then
             null;
