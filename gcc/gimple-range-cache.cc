@@ -384,7 +384,6 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
 ssa_global_cache::ssa_global_cache ()
 {
   m_tab.create (0);
-  m_tab.safe_grow_cleared (num_ssa_names);
   m_irange_allocator = new irange_allocator;
 }
 

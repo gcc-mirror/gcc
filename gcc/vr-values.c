@@ -1819,7 +1819,7 @@ vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
 /* Dump value ranges of all SSA_NAMEs to FILE.  */
 
 void
-vr_values::dump_all_value_ranges (FILE *file)
+vr_values::dump (FILE *file)
 {
   size_t i;
 

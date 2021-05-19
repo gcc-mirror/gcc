@@ -4044,7 +4044,7 @@ vrp_prop::finalize ()
   if (dump_file)
     {
       fprintf (dump_file, "\nValue ranges after VRP:\n\n");
-      m_vr_values->dump_all_value_ranges (dump_file);
+      m_vr_values->dump (dump_file);
       fprintf (dump_file, "\n");
     }
 

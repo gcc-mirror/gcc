@@ -116,7 +116,7 @@ class vr_values : public range_query
   tree op_with_constant_singleton_value_range (tree);
   void adjust_range_with_scev (value_range_equiv *, class loop *,
 			       gimple *, tree);
-  void dump_all_value_ranges (FILE *);
+  virtual void dump (FILE *) OVERRIDE;
 
   void extract_range_for_var_from_comparison_expr (tree, enum tree_code,
 						   tree, tree,

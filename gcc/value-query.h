@@ -95,6 +95,7 @@ public:
   // rewrite all uses of it to the above API.
   virtual const class value_range_equiv *get_value_range (const_tree,
 							  gimple * = NULL);
+  virtual void dump (FILE *);
 
 protected:
   class value_range_equiv *allocate_value_range_equiv ();

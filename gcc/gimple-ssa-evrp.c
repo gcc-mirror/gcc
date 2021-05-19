@@ -60,7 +60,7 @@ public:
     if (dump_file)
       {
 	fprintf (dump_file, "\nValue ranges after Early VRP:\n\n");
-	m_range_analyzer.dump_all_value_ranges (dump_file);
+	m_range_analyzer.dump (dump_file);
 	fprintf (dump_file, "\n");
       }
   }
