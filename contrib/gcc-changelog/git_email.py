@@ -110,7 +110,7 @@ if __name__ == '__main__':
         print()
         print('Successfully parsed: %d/%d' % (success, len(allfiles)))
     else:
-        email = GitEmail(sys.argv[1], False)
+        email = GitEmail(sys.argv[1])
         if email.success:
             print('OK')
             email.print_output()
