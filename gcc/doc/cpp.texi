@@ -2311,11 +2311,13 @@ mechanism based on @code{setjmp} and @code{longjmp} for exception
 handling.
 
 @item __GXX_EXPERIMENTAL_CXX0X__
-This macro is defined when compiling a C++ source file with the option
-@option{-std=c++0x} or @option{-std=gnu++0x}. It indicates that some
-features likely to be included in C++0x are available. Note that these
-features are experimental, and may change or be removed in future
-versions of GCC.
+This macro is defined when compiling a C++ source file with C++11 features
+enabled, i.e., for all C++ language dialects except @option{-std=c++98}
+and @option{-std=gnu++98}. This macro is obsolete, but can be used to
+detect experimental C++0x features in very old versions of GCC. Since
+GCC 4.7.0 the @code{__cplusplus} macro is defined correctly, so most
+code should test @code{__cplusplus >= 201103L} instead of using this
+macro.
 
 @item __GXX_WEAK__
 This macro is defined when compiling a C++ source file.  It has the
