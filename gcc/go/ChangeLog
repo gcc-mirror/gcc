@@ -1,8 +1,3 @@
-2021-05-10  Martin Liska  <mliska@suse.cz>
-
-	* gofrontend/runtime.cc (Runtime::name_to_code): Use startswith
-	function instead of strncmp.
-
 2021-01-28  Ian Lance Taylor  <iant@golang.org>
 
 	* gospec.c (lang_specific_driver): Add -g if no debugging options
