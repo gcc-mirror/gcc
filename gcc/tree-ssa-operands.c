@@ -669,7 +669,9 @@ operands_scanner::get_tmr_operands(tree expr, int flags)
     gimple_set_has_volatile_ops (stmt, true);
 
   /* First record the real operands.  */
-  get_expr_operands (&TMR_BASE (expr), opf_use | (flags & opf_no_vops));
+  get_expr_operands (&TMR_BASE (expr),
+		     opf_non_addressable | opf_use
+		     | (flags & (opf_no_vops|opf_not_non_addressable)));
   get_expr_operands (&TMR_INDEX (expr), opf_use | (flags & opf_no_vops));
   get_expr_operands (&TMR_INDEX2 (expr), opf_use | (flags & opf_no_vops));
 

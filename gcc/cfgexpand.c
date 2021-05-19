@@ -6280,10 +6280,12 @@ discover_nonconstant_array_refs_r (tree * tp, int *walk_subtrees,
     }
   /* References of size POLY_INT_CST to a fixed-size object must go
      through memory.  It's more efficient to force that here than
-     to create temporary slots on the fly.  */
-  else if ((TREE_CODE (t) == MEM_REF || TREE_CODE (t) == TARGET_MEM_REF)
-	   && TYPE_SIZE (TREE_TYPE (t))
-	   && POLY_INT_CST_P (TYPE_SIZE (TREE_TYPE (t))))
+     to create temporary slots on the fly.
+     RTL expansion expectes TARGET_MEM_REF to always address actual memory.  */
+  else if (TREE_CODE (t) == TARGET_MEM_REF
+	   || (TREE_CODE (t) == MEM_REF
+	       && TYPE_SIZE (TREE_TYPE (t))
+	       && POLY_INT_CST_P (TYPE_SIZE (TREE_TYPE (t)))))
     {
       tree base = get_base_address (t);
       if (base
