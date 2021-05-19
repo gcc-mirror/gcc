@@ -12226,7 +12226,11 @@ arm_add_stmt_cost (vec_info *vinfo, void *data, int count,
 	 arbitrary and could potentially be improved with analysis.  */
       if (where == vect_body && stmt_info
 	  && stmt_in_inner_loop_p (vinfo, stmt_info))
-	count *= 50;  /* FIXME.  */
+	{
+	  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
+	  gcc_assert (loop_vinfo);
+	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /* FIXME.  */
+	}
 
       retval = (unsigned) (count * stmt_cost);
       cost[where] += retval;

@@ -836,6 +836,7 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     single_scalar_iteration_cost (0),
     vec_outside_cost (0),
     vec_inside_cost (0),
+    inner_loop_cost_factor (param_vect_inner_loop_cost_factor),
     vectorizable (false),
     can_use_partial_vectors_p (param_vect_partial_vector_usage != 0),
     using_partial_vectors_p (false),
@@ -1237,7 +1238,7 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
   /* FORNOW.  */
   innerloop_iters = 1;
   if (loop->inner)
-    innerloop_iters = 50; /* FIXME */
+    innerloop_iters = LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo);
 
   for (i = 0; i < nbbs; i++)
     {
