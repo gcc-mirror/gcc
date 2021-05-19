@@ -85,6 +85,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "tree-into-ssa.h"
 #include "symtab-clones.h"
+#include "gimple-range.h"
 
 /* Summaries.  */
 fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
@@ -1687,8 +1688,14 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   int bound_limit = opt_for_fn (fbi->node->decl,
 				param_ipa_max_switch_predicate_bounds);
   int bound_count = 0;
-  wide_int vr_wmin, vr_wmax;
-  value_range_kind vr_type = get_range_info (op, &vr_wmin, &vr_wmax);
+  value_range vr;
+
+  get_range_query (cfun)->range_of_expr (vr, op);
+  if (vr.undefined_p ())
+    vr.set_varying (TREE_TYPE (op));
+  value_range_kind vr_type = vr.kind ();
+  wide_int vr_wmin = wi::to_wide (vr.min ());
+  wide_int vr_wmax = wi::to_wide (vr.max ());
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {

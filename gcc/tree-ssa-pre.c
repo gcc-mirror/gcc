@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-dce.h"
 #include "tree-cfgcleanup.h"
 #include "alias.h"
+#include "gimple-range.h"
 
 /* Even though this file is called tree-ssa-pre.c, we actually
    implement a bit more than just PRE here.  All of them piggy-back
@@ -3234,16 +3235,18 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
 	  >= TYPE_PRECISION (TREE_TYPE (expr->u.nary->op[0])))
       && SSA_NAME_RANGE_INFO (expr->u.nary->op[0]))
     {
-      wide_int min, max;
-      if (get_range_info (expr->u.nary->op[0], &min, &max) == VR_RANGE
-	  && !wi::neg_p (min, SIGNED)
-	  && !wi::neg_p (max, SIGNED))
+      value_range r;
+      if (get_range_query (cfun)->range_of_expr (r, expr->u.nary->op[0])
+	  && r.kind () == VR_RANGE
+	  && !wi::neg_p (r.lower_bound (), SIGNED)
+	  && !wi::neg_p (r.upper_bound (), SIGNED))
 	/* Just handle extension and sign-changes of all-positive ranges.  */
-	set_range_info (temp,
-			SSA_NAME_RANGE_TYPE (expr->u.nary->op[0]),
-			wide_int_storage::from (min, TYPE_PRECISION (type),
+	set_range_info (temp, VR_RANGE,
+			wide_int_storage::from (r.lower_bound (),
+						TYPE_PRECISION (type),
 						TYPE_SIGN (type)),
-			wide_int_storage::from (max, TYPE_PRECISION (type),
+			wide_int_storage::from (r.upper_bound (),
+						TYPE_PRECISION (type),
 						TYPE_SIGN (type)));
     }
 

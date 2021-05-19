@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "gimple-fold.h"
 #include "internal-fn.h"
+#include "gimple-range.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
@@ -684,7 +685,15 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
     return false;
 
   wide_int min, max;
-  if (get_range_info (lhs, &min, &max) != VR_RANGE)
+  value_range r;
+  get_range_query (cfun)->range_of_expr (r, lhs);
+
+  if (r.kind () == VR_RANGE)
+    {
+      min = r.lower_bound ();
+      max = r.upper_bound ();
+    }
+  else
     {
       int prec = TYPE_PRECISION (TREE_TYPE (lhs));
       signop sgn = TYPE_SIGN (TREE_TYPE (lhs));

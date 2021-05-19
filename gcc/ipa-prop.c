@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "options.h"
 #include "symtab-clones.h"
 #include "attr-fnspec.h"
+#include "gimple-range.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -2237,6 +2238,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
   gcall *call = cs->call_stmt;
   int n, arg_num = gimple_call_num_args (call);
   bool useful_context = false;
+  value_range vr;
 
   if (arg_num == 0 || args->jump_functions)
     return;
@@ -2274,7 +2276,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      && get_ptr_nonnull (arg))
+	      && get_range_query (cfun)->range_of_expr (vr, arg)
+	      && vr.nonzero_p ())
 	    addr_nonzero = true;
 	  else if (tree_single_nonzero_warnv_p (arg, &strict_overflow))
 	    addr_nonzero = true;
@@ -2289,19 +2292,14 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	}
       else
 	{
-	  wide_int min, max;
-	  value_range_kind kind;
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      && (kind = get_range_info (arg, &min, &max))
-	      && (kind == VR_RANGE || kind == VR_ANTI_RANGE))
+	      && get_range_query (cfun)->range_of_expr (vr, arg)
+	      && !vr.undefined_p ())
 	    {
 	      value_range resvr;
-	      value_range tmpvr (wide_int_to_tree (TREE_TYPE (arg), min),
-				 wide_int_to_tree (TREE_TYPE (arg), max),
-				 kind);
 	      range_fold_unary_expr (&resvr, NOP_EXPR, param_type,
-				     &tmpvr, TREE_TYPE (arg));
+				     &vr, TREE_TYPE (arg));
 	      if (!resvr.undefined_p () && !resvr.varying_p ())
 		ipa_set_jfunc_vr (jfunc, &resvr);
 	      else

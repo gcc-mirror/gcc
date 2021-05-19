@@ -873,7 +873,12 @@ size_must_be_zero_p (tree size)
   value_range valid_range (build_int_cst (type, 0),
 			   wide_int_to_tree (type, ssize_max));
   value_range vr;
-  get_range_info (size, vr);
+  if (cfun)
+    get_range_query (cfun)->range_of_expr (vr, size);
+  else
+    get_global_range_query ()->range_of_expr (vr, size);
+  if (vr.undefined_p ())
+    vr.set_varying (TREE_TYPE (size));
   vr.intersect (&valid_range);
   return vr.zero_p ();
 }

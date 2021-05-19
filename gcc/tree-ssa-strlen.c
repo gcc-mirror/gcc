@@ -196,7 +196,7 @@ static void handle_builtin_stxncpy_strncat (bool, gimple_stmt_iterator *);
 /* Sets MINMAX to either the constant value or the range VAL is in
    and returns either the constant value or VAL on success or null
    when the range couldn't be determined.  Uses RVALS when nonnull
-   to determine the range, otherwise get_range_info.  */
+   to determine the range, otherwise uses global range info.  */
 
 tree
 get_range (tree val, gimple *stmt, wide_int minmax[2],
@@ -211,9 +211,9 @@ get_range (tree val, gimple *stmt, wide_int minmax[2],
   if (TREE_CODE (val) != SSA_NAME)
     return NULL_TREE;
 
+  value_range vr;
   if (rvals && stmt)
     {
-      value_range vr;
       if (!rvals->range_of_expr (vr, val, stmt))
 	return NULL_TREE;
       value_range_kind rng = vr.kind ();
@@ -225,7 +225,15 @@ get_range (tree val, gimple *stmt, wide_int minmax[2],
       return val;
     }
 
-  value_range_kind rng = get_range_info (val, minmax, minmax + 1);
+  // ?? This entire function should use get_range_query or get_global_range_query (),
+  // instead of doing something different for RVALS and global ranges.
+
+  if (!get_global_range_query ()->range_of_expr (vr, val) || vr.undefined_p ())
+    return NULL_TREE;
+
+  minmax[0] = wi::to_wide (vr.min ());
+  minmax[1] = wi::to_wide (vr.max ());
+  value_range_kind rng = vr.kind ();
   if (rng == VR_RANGE)
     /* This may be an inverted range whose MINMAX[1] < MINMAX[0].  */
     return val;
@@ -929,7 +937,17 @@ dump_strlen_info (FILE *fp, gimple *stmt, range_query *rvals)
 			    rng = VR_UNDEFINED;
 			}
 		      else
-			rng = get_range_info (si->nonzero_chars, &min, &max);
+			{
+			  value_range vr;
+			  get_global_range_query ()->range_of_expr (vr,
+							     si->nonzero_chars);
+			  rng = vr.kind ();
+			  if (!vr.undefined_p ())
+			    {
+			      min = wi::to_wide (vr.min ());
+			      max = wi::to_wide (vr.max ());
+			    }
+			}
 
 		      if (rng == VR_RANGE || rng == VR_ANTI_RANGE)
 			{
@@ -1809,18 +1827,17 @@ set_strlen_range (tree lhs, wide_int min, wide_int max,
 	}
       else if (TREE_CODE (bound) == SSA_NAME)
 	{
-	  wide_int minbound, maxbound;
-	  // FIXME: Use range_query instead of global ranges.
-	  value_range_kind rng = get_range_info (bound, &minbound, &maxbound);
-	  if (rng == VR_RANGE)
+	  value_range r;
+	  get_range_query (cfun)->range_of_expr (r, bound);
+	  if (!r.undefined_p ())
 	    {
 	      /* For a bound in a known range, adjust the range determined
 		 above as necessary.  For a bound in some anti-range or
 		 in an unknown range, use the range determined by callers.  */
-	      if (wi::ltu_p (minbound, min))
-		min = minbound;
-	      if (wi::ltu_p (maxbound, max))
-		max = maxbound;
+	      if (wi::ltu_p (r.lower_bound (), min))
+		min = r.lower_bound ();
+	      if (wi::ltu_p (r.upper_bound (), max))
+		max = r.upper_bound ();
 	    }
 	}
     }
@@ -2780,12 +2797,15 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
     return false;
 
   wide_int cntrange[2];
+  value_range r;
+  if (!get_range_query (cfun)->range_of_expr (r, cnt)
+      || r.varying_p ()
+      || r.undefined_p ())
+    return false;
 
-  // FIXME: Use range_query instead of global ranges.
-  enum value_range_kind rng = get_range_info (cnt, cntrange, cntrange + 1);
-  if (rng == VR_RANGE)
-    ;
-  else if (rng == VR_ANTI_RANGE)
+  cntrange[0] = wi::to_wide (r.min ());
+  cntrange[1] = wi::to_wide (r.max ());
+  if (r.kind () == VR_ANTI_RANGE)
     {
       wide_int maxobjsize = wi::to_wide (TYPE_MAX_VALUE (ptrdiff_type_node));
 
@@ -2800,8 +2820,6 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt,
 	  cntrange[0] = wi::zero (TYPE_PRECISION (TREE_TYPE (cnt)));
 	}
     }
-  else
-    return false;
 
   /* Negative value is the constant string length.  If it's less than
      the lower bound there is no truncation.  Avoid calling get_stridx()
@@ -3923,13 +3941,12 @@ get_len_or_size (gimple *stmt, tree arg, int idx,
 	}
       else if (TREE_CODE (si->nonzero_chars) == SSA_NAME)
 	{
-	  wide_int min, max;
-	  // FIXME: Use range_query instead of global ranges.
-	  value_range_kind rng = get_range_info (si->nonzero_chars, &min, &max);
-	  if (rng == VR_RANGE)
+	  value_range r;
+	  get_range_query (cfun)->range_of_expr (r, si->nonzero_chars);
+	  if (r.kind () == VR_RANGE)
 	    {
-	      lenrng[0] = min.to_uhwi ();
-	      lenrng[1] = max.to_uhwi ();
+	      lenrng[0] = r.lower_bound ().to_uhwi ();
+	      lenrng[1] = r.upper_bound ().to_uhwi ();
 	      *nulterm = si->full_string_p;
 	    }
 	}
@@ -5301,17 +5318,13 @@ handle_integral_assign (gimple_stmt_iterator *gsi, bool *cleanup_eh,
 		  /* Reading a character before the final '\0'
 		     character.  Just set the value range to ~[0, 0]
 		     if we don't have anything better.  */
-		  wide_int min, max;
-		  signop sign = TYPE_SIGN (lhs_type);
-		  int prec = TYPE_PRECISION (lhs_type);
-		  // FIXME: Use range_query instead of global ranges.
-		  value_range_kind vr = get_range_info (lhs, &min, &max);
-		  if (vr == VR_VARYING
-		      || (vr == VR_RANGE
-			  && min == wi::min_value (prec, sign)
-			  && max == wi::max_value (prec, sign)))
-		    set_range_info (lhs, VR_ANTI_RANGE,
-				    wi::zero (prec), wi::zero (prec));
+		  value_range r;
+		  if (!get_range_query (cfun)->range_of_expr (r, lhs)
+		      || r.varying_p ())
+		    {
+		      r.set_nonzero (lhs_type);
+		      set_range_info (lhs, r);
+		    }
 		}
 	    }
 	}

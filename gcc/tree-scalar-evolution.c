@@ -3039,17 +3039,26 @@ iv_can_overflow_p (class loop *loop, tree type, tree base, tree step)
   widest_int nit;
   wide_int base_min, base_max, step_min, step_max, type_min, type_max;
   signop sgn = TYPE_SIGN (type);
+  value_range r;
 
   if (integer_zerop (step))
     return false;
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (base))
-      || get_range_info (base, &base_min, &base_max) != VR_RANGE)
+      || !get_range_query (cfun)->range_of_expr (r, base)
+      || r.kind () != VR_RANGE)
     return true;
 
+  base_min = r.lower_bound ();
+  base_max = r.upper_bound ();
+
   if (!INTEGRAL_TYPE_P (TREE_TYPE (step))
-      || get_range_info (step, &step_min, &step_max) != VR_RANGE)
+      || !get_range_query (cfun)->range_of_expr (r, step)
+      || r.kind () != VR_RANGE)
     return true;
+
+  step_min = r.lower_bound ();
+  step_max = r.upper_bound ();
 
   if (!get_max_loop_iterations (loop, &nit))
     return true;

@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "cfgloop.h"
+#include "gimple-range.h"
 
 /* Disable warnings about quoting issues in the pp_xxx calls below
    that (intentionally) don't follow GCC diagnostic conventions.  */
@@ -2263,8 +2264,17 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
       && SSA_NAME_RANGE_INFO (node))
     {
       wide_int min, max, nonzero_bits;
-      value_range_kind range_type = get_range_info (node, &min, &max);
+      value_range r;
 
+      get_global_range_query ()->range_of_expr (r, node);
+      value_range_kind range_type = r.kind ();
+      if (!r.undefined_p ())
+	{
+	  min = wi::to_wide (r.min ());
+	  max = wi::to_wide (r.max ());
+	}
+
+      // FIXME: Use irange::dump() instead.
       if (range_type == VR_VARYING)
 	pp_printf (buffer, "# RANGE VR_VARYING");
       else if (range_type == VR_RANGE || range_type == VR_ANTI_RANGE)

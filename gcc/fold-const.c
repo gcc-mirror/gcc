@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"
 #include "asan.h"
+#include "gimple-range.h"
 
 /* Nonzero if we are folding constants inside an initializer; zero
    otherwise.  */
@@ -10686,7 +10687,12 @@ expr_not_equal_to (tree t, const wide_int &w)
     case SSA_NAME:
       if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	return false;
-      get_range_info (t, vr);
+
+      if (cfun)
+	get_range_query (cfun)->range_of_expr (vr, t);
+      else
+	get_global_range_query ()->range_of_expr (vr, t);
+
       if (!vr.undefined_p ()
 	  && !vr.contains_p (wide_int_to_tree (TREE_TYPE (t), w)))
 	return true;
