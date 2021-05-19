@@ -40922,7 +40922,9 @@ cp_parser_omp_master (cp_parser *parser, cp_token *pragma_tok,
 	  tree body = finish_omp_structured_block (sb);
 	  if (ret == NULL)
 	    return ret;
-	  return c_finish_omp_master (loc, body);
+	  ret = c_finish_omp_master (loc, body);
+	  OMP_MASTER_COMBINED (ret) = 1;
+	  return ret;
 	}
     }
   if (!flag_openmp)  /* flag_openmp_simd  */
@@ -41206,7 +41208,16 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
 				      block);
 	  if (ret == NULL_TREE)
 	    return ret;
-	  OMP_PARALLEL_COMBINED (stmt) = 1;
+	  /* master doesn't have any clauses and during gimplification
+	     isn't represented by a gimplification omp context, so for
+	     #pragma omp parallel master don't set OMP_PARALLEL_COMBINED,
+	     so that
+	     #pragma omp parallel master
+	     #pragma omp taskloop simd lastprivate (x)
+	     isn't confused with
+	     #pragma omp parallel master taskloop simd lastprivate (x)  */
+	  if (OMP_MASTER_COMBINED (ret))
+	    OMP_PARALLEL_COMBINED (stmt) = 1;
 	  return stmt;
 	}
       else if (strcmp (p, "loop") == 0)

@@ -18826,6 +18826,7 @@ c_parser_omp_master (location_t loc, c_parser *parser,
 	  if (ret == NULL_TREE)
 	    return ret;
 	  ret = c_finish_omp_master (loc, block);
+	  OMP_MASTER_COMBINED (ret) = 1;
 	  return ret;
 	}
     }
@@ -19126,7 +19127,16 @@ c_parser_omp_parallel (location_t loc, c_parser *parser,
 					block);
 	  if (ret == NULL)
 	    return ret;
-	  OMP_PARALLEL_COMBINED (stmt) = 1;
+	  /* master doesn't have any clauses and during gimplification
+	     isn't represented by a gimplification omp context, so for
+	     #pragma omp parallel master don't set OMP_PARALLEL_COMBINED,
+	     so that
+	     #pragma omp parallel master
+	     #pragma omp taskloop simd lastprivate (x)
+	     isn't confused with
+	     #pragma omp parallel master taskloop simd lastprivate (x)  */
+	  if (OMP_MASTER_COMBINED (ret))
+	    OMP_PARALLEL_COMBINED (stmt) = 1;
 	  return stmt;
 	}
       else if (strcmp (p, "loop") == 0)
