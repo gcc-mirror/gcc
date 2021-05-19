@@ -924,6 +924,10 @@ bool
 get_object_alignment_1 (tree exp, unsigned int *alignp,
 			unsigned HOST_WIDE_INT *bitposp)
 {
+  /* Strip a WITH_SIZE_EXPR, get_inner_reference doesn't know how to deal
+     with it.  */
+  if (TREE_CODE (exp) == WITH_SIZE_EXPR)
+    exp = TREE_OPERAND (exp, 0);
   return get_object_alignment_2 (exp, alignp, bitposp, false);
 }
 
