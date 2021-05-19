@@ -12825,7 +12825,7 @@ package body Sem_Ch12 is
             Check_Volatility_Compatibility
               (Act_T, A_Gen_T,
                "actual type", "its corresponding formal type",
-               Srcpos_Bearer => Act_T);
+               Srcpos_Bearer => Actual);
          end if;
       end Check_Shared_Variable_Control_Aspects;
 
