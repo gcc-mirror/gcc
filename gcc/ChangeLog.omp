@@ -1,3 +1,15 @@
+2021-05-19  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* tree.h (OMP_MASTER_COMBINED): Define.
+	* gimplify.c (gimplify_scan_omp_clauses): Rewrite lastprivate
+	handling for outer combined/composite constructs to a loop.
+	Handle lastprivate on combined target.
+	(gimplify_expr): Formatting fix.
+
 2021-05-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

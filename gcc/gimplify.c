@@ -8673,75 +8673,48 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	    }
 	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
 	    flags |= GOVD_LASTPRIVATE_CONDITIONAL;
-	  if (outer_ctx
-	      && (outer_ctx->region_type == ORT_COMBINED_PARALLEL
-		  || ((outer_ctx->region_type & ORT_COMBINED_TEAMS)
-		      == ORT_COMBINED_TEAMS))
-	      && splay_tree_lookup (outer_ctx->variables,
-				    (splay_tree_key) decl) == NULL)
+	  struct gimplify_omp_ctx *octx;
+	  for (octx = outer_ctx; octx; octx = octx->outer_context)
 	    {
-	      omp_add_variable (outer_ctx, decl, GOVD_SHARED | GOVD_SEEN);
-	      if (outer_ctx->outer_context)
-		omp_notice_variable (outer_ctx->outer_context, decl, true);
-	    }
-	  else if (outer_ctx
-		   && (outer_ctx->region_type & ORT_TASK) != 0
-		   && outer_ctx->combined_loop
-		   && splay_tree_lookup (outer_ctx->variables,
-					 (splay_tree_key) decl) == NULL)
-	    {
-	      omp_add_variable (outer_ctx, decl, GOVD_LASTPRIVATE | GOVD_SEEN);
-	      if (outer_ctx->outer_context)
-		omp_notice_variable (outer_ctx->outer_context, decl, true);
-	    }
-	  else if (outer_ctx
-		   && (outer_ctx->region_type == ORT_WORKSHARE
-		       || outer_ctx->region_type == ORT_ACC)
-		   && outer_ctx->combined_loop
-		   && splay_tree_lookup (outer_ctx->variables,
-					 (splay_tree_key) decl) == NULL
-		   && !omp_check_private (outer_ctx, decl, false))
-	    {
-	      omp_add_variable (outer_ctx, decl, GOVD_LASTPRIVATE | GOVD_SEEN);
-	      if (outer_ctx->outer_context
-		  && (outer_ctx->outer_context->region_type
-		      == ORT_COMBINED_PARALLEL)
-		  && splay_tree_lookup (outer_ctx->outer_context->variables,
+	      if ((octx->region_type == ORT_COMBINED_PARALLEL
+		   || ((octx->region_type & ORT_COMBINED_TEAMS)
+			== ORT_COMBINED_TEAMS))
+		  && splay_tree_lookup (octx->variables,
 					(splay_tree_key) decl) == NULL)
 		{
-		  struct gimplify_omp_ctx *octx = outer_ctx->outer_context;
 		  omp_add_variable (octx, decl, GOVD_SHARED | GOVD_SEEN);
-		  if (octx->outer_context)
-		    {
-		      octx = octx->outer_context;
-		      if (octx->region_type == ORT_WORKSHARE
-			  && octx->combined_loop
-			  && splay_tree_lookup (octx->variables,
-						(splay_tree_key) decl) == NULL
-			  && !omp_check_private (octx, decl, false))
-			{
-			  omp_add_variable (octx, decl,
-					    GOVD_LASTPRIVATE | GOVD_SEEN);
-			  octx = octx->outer_context;
-			  if (octx
-			      && ((octx->region_type & ORT_COMBINED_TEAMS)
-				  == ORT_COMBINED_TEAMS)
-			      && (splay_tree_lookup (octx->variables,
-						     (splay_tree_key) decl)
-				  == NULL))
-			    {
-			      omp_add_variable (octx, decl,
-						GOVD_SHARED | GOVD_SEEN);
-			      octx = octx->outer_context;
-			    }
-			}
-		      if (octx)
-			omp_notice_variable (octx, decl, true);
-		    }
+		  continue;
 		}
-	      else if (outer_ctx->outer_context)
-		omp_notice_variable (outer_ctx->outer_context, decl, true);
+	      if ((octx->region_type & ORT_TASK) != 0
+		  && octx->combined_loop
+		  && splay_tree_lookup (octx->variables,
+					(splay_tree_key) decl) == NULL)
+		{
+		  omp_add_variable (octx, decl, GOVD_LASTPRIVATE | GOVD_SEEN);
+		  continue;
+		}
+	      if ((octx->region_type == ORT_WORKSHARE
+		   || octx->region_type == ORT_ACC)
+		  && octx->combined_loop
+		  && splay_tree_lookup (octx->variables,
+					(splay_tree_key) decl) == NULL
+		  && !omp_check_private (octx, decl, false))
+		{
+		  omp_add_variable (octx, decl, GOVD_LASTPRIVATE | GOVD_SEEN);
+		  continue;
+		}
+	      if (octx->region_type == ORT_COMBINED_TARGET
+		  && splay_tree_lookup (octx->variables,
+					(splay_tree_key) decl) == NULL)
+		{
+		  omp_add_variable (octx, decl, GOVD_MAP | GOVD_SEEN);
+		  octx = octx->outer_context;
+		  break;
+		}
+	      break;
 	    }
+	  if (octx && octx != outer_ctx)
+	    omp_notice_variable (octx, decl, true);
 	  goto do_add;
 	case OMP_CLAUSE_REDUCTION:
 	  if (OMP_CLAUSE_REDUCTION_TASK (c))
@@ -15078,7 +15051,7 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	        g = gimple_build_omp_section (body);
 	        break;
 	      case OMP_MASTER:
-	        g = gimple_build_omp_master (body);
+		g = gimple_build_omp_master (body);
 		break;
 	      case OMP_ORDERED:
 		g = gimplify_omp_ordered (*expr_p, body);
