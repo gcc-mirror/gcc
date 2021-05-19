@@ -588,19 +588,7 @@ package body Exp_Disp is
          --  Otherwise, count the primitives of the enclosing CPP type
 
          else
-            declare
-               Count : Nat := 0;
-               Elmt  : Elmt_Id;
-
-            begin
-               Elmt := First_Elmt (Primitive_Operations (CPP_Typ));
-               while Present (Elmt) loop
-                  Count := Count + 1;
-                  Next_Elmt (Elmt);
-               end loop;
-
-               return Count;
-            end;
+            return List_Length (Primitive_Operations (CPP_Typ));
          end if;
       end if;
    end CPP_Num_Prims;
