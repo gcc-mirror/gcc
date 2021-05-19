@@ -487,6 +487,48 @@ package body Layout is
          then
             Set_Alignment (E, Alignment (Component_Type (E)));
          end if;
+
+         --  If packing was requested, the one-dimensional array is constrained
+         --  with static bounds, the component size was set explicitly, and
+         --  the alignment is known, we can set (if not set explicitly) the
+         --  RM_Size and the Esize of the array type, as RM_Size is equal to
+         --  (arr'length * arr'component_size) and Esize is the same value
+         --  rounded to the next multiple of arr'alignment. This is not
+         --  applicable to packed arrays that are implemented specially
+         --  in GNAT, i.e. when Packed_Array_Impl_Type is set.
+
+         if Is_Array_Type (E)
+           and then Number_Dimensions (E) = 1
+           and then not Present (Packed_Array_Impl_Type (E))
+           and then Has_Pragma_Pack (E)
+           and then Is_Constrained (E)
+           and then Compile_Time_Known_Bounds (E)
+           and then Known_Component_Size (E)
+           and then Known_Alignment (E)
+         then
+            declare
+               Abits : constant Int := UI_To_Int (Alignment (E)) * SSU;
+               Lo, Hi : Node_Id;
+               Siz : Uint;
+
+            begin
+               Get_Index_Bounds (First_Index (E), Lo, Hi);
+               Siz := (Expr_Value (Hi) - Expr_Value (Lo) + 1)
+                 * Component_Size (E);
+
+               --  Do not overwrite a different value of 'Size specified
+               --  explicitly by the user. In that case, also do not set Esize.
+
+               if Unknown_RM_Size (E) or else RM_Size (E) = Siz then
+                  Set_RM_Size (E, Siz);
+
+                  if Unknown_Esize (E) then
+                     Siz := ((Siz + (Abits - 1)) / Abits) * Abits;
+                     Set_Esize (E, Siz);
+                  end if;
+               end if;
+            end;
+         end if;
       end if;
 
       --  Even if the backend performs the layout, we still do a little in
