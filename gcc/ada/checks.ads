@@ -357,7 +357,7 @@ package Checks is
    --  if so inserts the appropriate run-time check.
 
    procedure Install_Primitive_Elaboration_Check (Subp_Body : Node_Id);
-   --  Insert a check which ensures that subprogram body Subp_Body has been
+   --  Insert a check to ensure that subprogram body Subp_Body has been
    --  properly elaborated. The check is installed only when Subp_Body is the
    --  body of a nonabstract library-level primitive of a tagged type. Further
    --  restrictions may apply, see the body for details.
