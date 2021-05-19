@@ -7469,8 +7469,9 @@ maybe_warn_array_conv (location_t loc, conversion *c, tree expr)
       || TYPE_DOMAIN (type) == NULL_TREE)
     return;
 
-  if (conv_binds_to_array_of_unknown_bound (c))
-    pedwarn (loc, OPT_Wpedantic, "conversions to arrays of unknown bound "
+  if (pedantic && conv_binds_to_array_of_unknown_bound (c))
+    pedwarn (loc, OPT_Wc__20_extensions,
+	     "conversions to arrays of unknown bound "
 	     "are only available with %<-std=c++20%> or %<-std=gnu++20%>");
 }
 

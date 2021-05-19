@@ -11166,7 +11166,7 @@ mark_inline_variable (tree decl, location_t loc)
       inlinep = false;
     }
   else if (cxx_dialect < cxx17)
-    pedwarn (loc, 0, "inline variables are only available "
+    pedwarn (loc, OPT_Wc__17_extensions, "inline variables are only available "
 	     "with %<-std=c++17%> or %<-std=gnu++17%>");
   if (inlinep)
     {
@@ -12002,13 +12002,13 @@ grokdeclarator (const cp_declarator *declarator,
 	  storage_class = sc_none;
 	  staticp = 0;
 	}
-      if (constexpr_p && cxx_dialect < cxx20)
+      if (constexpr_p && pedantic && cxx_dialect < cxx20)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
 	  richloc.add_range (declspecs->locations[ds_constexpr]);
-	  pedwarn (&richloc, OPT_Wpedantic, "member %qD can be declared both "
-		   "%<virtual%> and %<constexpr%> only in %<-std=c++20%> or "
-		   "%<-std=gnu++20%>", dname);
+	  pedwarn (&richloc, OPT_Wc__20_extensions, "member %qD can be "
+		   "declared both %<virtual%> and %<constexpr%> only in "
+		   "%<-std=c++20%> or %<-std=gnu++20%>", dname);
 	}
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
@@ -12096,7 +12096,7 @@ grokdeclarator (const cp_declarator *declarator,
 	error_at (declspecs->locations[ds_consteval], "structured "
 		  "binding declaration cannot be %qs", "consteval");
       if (thread_p && cxx_dialect < cxx20)
-	pedwarn (declspecs->locations[ds_thread], 0,
+	pedwarn (declspecs->locations[ds_thread], OPT_Wc__20_extensions,
 		 "structured binding declaration can be %qs only in "
 		 "%<-std=c++20%> or %<-std=gnu++20%>",
 		 declspecs->gnu_thread_keyword_p
@@ -12118,7 +12118,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  break;
 	case sc_static:
 	  if (cxx_dialect < cxx20)
-	    pedwarn (loc, 0,
+	    pedwarn (loc, OPT_Wc__20_extensions,
 		     "structured binding declaration can be %qs only in "
 		     "%<-std=c++20%> or %<-std=gnu++20%>", "static");
 	  break;
