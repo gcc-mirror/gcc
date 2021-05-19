@@ -1,3 +1,38 @@
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-01-28  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/80960
+	* dse.c (check_mem_read_rtx): Call get_addr on the
+	offsetted address.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96513
+	* tree-vect-slp.c (struct vdhs_data): New.
+	(vect_detect_hybrid_slp): New walker.
+	(vect_detect_hybrid_slp): Rewrite.
+
+2021-05-18  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/96597
+	* tree-ssa-sccvn.c (vn_reference_lookup_call): Add missing
+	initialization of ::punned.
+	(vn_reference_insert): Use consistently false instead of 0.
+	(vn_reference_insert_pieces): Likewise.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88240
+	* tree-ssa-sccvn.h (vn_reference_s::punned): New flag.
+	* tree-ssa-sccvn.c (vn_reference_insert): Initialize punned.
+	(vn_reference_insert_pieces): Likewise.
+	(visit_reference_op_call): Likewise.
+	(visit_reference_op_load): Track whether a ref was punned.
+	* tree-ssa-pre.c (do_hoist_insertion): Refuse to perform hoist
+	insertion on punned floating point loads.
+
 2021-05-17  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

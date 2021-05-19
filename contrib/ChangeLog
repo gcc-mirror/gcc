@@ -1,3 +1,10 @@
+2021-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gcc-changelog/git_email.py: Remove use of non-strict mode.
+
 2021-05-14  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_check_commit.py: Sync from master.

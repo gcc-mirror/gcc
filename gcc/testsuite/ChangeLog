@@ -1,3 +1,13 @@
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/96513
+	* gcc.dg/torture/pr96513.c: New testcase.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88240
+	* gcc.target/i386/pr88240.c: New testcase.
+
 2021-05-17  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
