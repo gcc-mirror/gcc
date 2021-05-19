@@ -512,7 +512,7 @@ negate_expr_p (tree t)
       if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
 	{
 	  tree op1 = TREE_OPERAND (t, 1);
-	  if (wi::to_wide (op1) == TYPE_PRECISION (type) - 1)
+	  if (wi::to_wide (op1) == element_precision (type) - 1)
 	    return true;
 	}
       break;
@@ -705,7 +705,7 @@ fold_negate_expr_1 (location_t loc, tree t)
       if (TREE_CODE (TREE_OPERAND (t, 1)) == INTEGER_CST)
 	{
 	  tree op1 = TREE_OPERAND (t, 1);
-	  if (wi::to_wide (op1) == TYPE_PRECISION (type) - 1)
+	  if (wi::to_wide (op1) == element_precision (type) - 1)
 	    {
 	      tree ntype = TYPE_UNSIGNED (type)
 			   ? signed_type_for (type)
