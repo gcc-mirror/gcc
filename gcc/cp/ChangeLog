@@ -1,3 +1,20 @@
+2021-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100644
+	* call.c (perfect_candidate_p): An implicitly deleted move
+	is not perfect.
+
+2021-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100205
+	PR c++/93314
+	* cp-tree.h (cp_evaluated): Add reset parm to constructor.
+	* parser.c (cp_parser_constant_expression): Change
+	allow_non_constant_p to int.  Use cp_evaluated.
+	(cp_parser_initializer_clause): Pass 2 to allow_non_constant_p.
+	* semantics.c (finish_id_expression_1): Don't mess with
+	cp_unevaluated_operand here.
+
 2021-05-03  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
