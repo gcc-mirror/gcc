@@ -1,4 +1,5 @@
 // { dg-additional-options "-fmodules-ts" }
+// { dg-require-effective-target pthread }
 
 import foo;
 
