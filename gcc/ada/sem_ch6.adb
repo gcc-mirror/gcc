@@ -11018,10 +11018,6 @@ package body Sem_Ch6 is
         (Is_Primitive  : out Boolean;
          Is_Overriding : Boolean := False)
       is
-         Formal : Entity_Id;
-         F_Typ  : Entity_Id;
-         B_Typ  : Entity_Id;
-
          procedure Add_Or_Replace_Untagged_Primitive (Typ : Entity_Id);
          --  Either add the new subprogram to the list of primitives for
          --  untagged type Typ, or if it overrides a primitive of Typ, then
@@ -11269,6 +11265,12 @@ package body Sem_Ch6 is
                return False;
             end if;
          end Visible_Part_Type;
+
+         --  Local variables
+
+         Formal : Entity_Id;
+         F_Typ  : Entity_Id;
+         B_Typ  : Entity_Id;
 
       --  Start of processing for Check_For_Primitive_Subprogram
 
