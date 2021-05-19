@@ -6000,7 +6000,7 @@ package body Exp_Ch3 is
       --  The parent type is private then we need to inherit any TSS operations
       --  from the full view.
 
-      if Ekind (Par_Id) in Private_Kind
+      if Is_Private_Type (Par_Id)
         and then Present (Full_View (Par_Id))
       then
          Par_Id := Base_Type (Full_View (Par_Id));
@@ -6036,7 +6036,7 @@ package body Exp_Ch3 is
             --  If the derived type itself is private with a full view, then
             --  associate the full view with the inherited TSS_Elist as well.
 
-            if Ekind (B_Id) in Private_Kind
+            if Is_Private_Type (B_Id)
               and then Present (Full_View (B_Id))
             then
                Ensure_Freeze_Node (Base_Type (Full_View (B_Id)));

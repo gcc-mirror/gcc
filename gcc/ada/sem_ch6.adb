@@ -8901,7 +8901,7 @@ package body Sem_Ch6 is
             end if;
 
             if not Has_Discriminants (Formal_Type)
-              and then Ekind (Formal_Type) in Private_Kind
+              and then Is_Private_Type (Formal_Type)
               and then Present (Underlying_Type (Formal_Type))
             then
                Formal_Type := Underlying_Type (Formal_Type);
@@ -11253,7 +11253,7 @@ package body Sem_Ch6 is
             --  If the entity is a private type, then it must be declared in a
             --  visible part.
 
-            if Ekind (T) in Private_Kind then
+            if Is_Private_Type (T) then
                return True;
 
             elsif Is_Type (T) and then Has_Private_Declaration (T) then
