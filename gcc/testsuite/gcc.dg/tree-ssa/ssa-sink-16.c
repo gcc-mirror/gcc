@@ -10,5 +10,5 @@ int f(int n)
   return j;
 }
 
-/* { dg-final { scan-tree-dump "Sinking j_. = __builtin_ffs" "sink" } } */
+/* { dg-final { scan-tree-dump "Sinking j_. = __builtin_ffs" "sink1" } } */
 /* { dg-final { scan-tree-dump "return 2;" "optimized" } } */

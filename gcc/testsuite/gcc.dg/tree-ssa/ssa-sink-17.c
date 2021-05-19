@@ -12,4 +12,4 @@ int my_f(int a, int b)
 }
 
 /* We should sink the call to pure_f to the if block.  */
-/* { dg-final { scan-tree-dump "Sinking # VUSE" "sink" } } */
+/* { dg-final { scan-tree-dump "Sinking # VUSE" "sink1" } } */
