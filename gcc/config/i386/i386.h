@@ -1039,10 +1039,12 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    || (MODE) == SImode || (MODE) == DImode				\
    || (MODE) == CQImode || (MODE) == CHImode				\
    || (MODE) == CSImode || (MODE) == CDImode				\
+   || (MODE) == V4QImode || (MODE) == V2HImode				\
    || (TARGET_64BIT							\
        && ((MODE) == TImode || (MODE) == CTImode			\
-	   || (MODE) == TFmode || (MODE) == TCmode))			\
-   || (MODE) == V4QImode || (MODE) == V2HImode)
+	   || (MODE) == TFmode || (MODE) == TCmode			\
+	   || (MODE) == V8QImode || (MODE) == V4HImode			\
+	   || (MODE) == V2SImode)))
 
 /* Return true for modes passed in SSE registers.  */
 #define SSE_REG_MODE_P(MODE)						\
