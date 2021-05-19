@@ -10,7 +10,7 @@
 	  the later daclaration is the same as the linkage specified at
 	  the prior declaration.  If no prior declaration is visible,
 	  or if the prior declaration specifies no linkage, then the
-	  identifer has external linkage.
+	  identifier has external linkage.
 
    This is PR 14366.  */
 

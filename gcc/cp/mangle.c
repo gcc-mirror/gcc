@@ -835,7 +835,7 @@ write_encoding (const tree decl)
     }
 }
 
-/* Interface to substitution and identifer mangling, used by the
+/* Interface to substitution and identifier mangling, used by the
    module name mangler.  */
 
 void
