@@ -1570,14 +1570,18 @@ package body GNAT.Sockets is
             | Send_Timeout
          =>
             if Is_Windows then
-
-               --  Timeout is in milliseconds, actual value is 500 ms +
-               --  returned value (unless it is 0).
-
                if U4 = 0 then
                   Opt.Timeout := 0.0;
+
                else
-                  Opt.Timeout :=  Duration (U4) / 1000 + 0.500;
+                  if Minus_500ms_Windows_Timeout then
+                     --  Timeout is in milliseconds, actual value is 500 ms +
+                     --  returned value (unless it is 0).
+
+                     U4 := U4 + 500;
+                  end if;
+
+                  Opt.Timeout := Duration (U4) / 1000;
                end if;
 
             else
@@ -2724,7 +2728,7 @@ package body GNAT.Sockets is
                Len := U4'Size / 8;
                Add := U4'Address;
 
-               U4 := C.unsigned (Option.Timeout / 0.001);
+               U4 := C.unsigned (Option.Timeout * 1000);
 
                if Option.Timeout > 0.0 and then U4 = 0 then
                   --  Avoid round to zero. Zero timeout mean unlimited
