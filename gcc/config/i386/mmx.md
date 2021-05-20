@@ -78,8 +78,7 @@
   [(V2SF "v2si") (V2SI "v2si") (V4HI "v4hi") (V8QI "v8qi")])
 
 (define_mode_attr Yv_Yw
-  [(V8QI "Yw") (V4QI "Yw") (V4HI "Yw") (V2HI "Yw")
-   (V2SI "Yv") (V1DI "Yv") (V2SF "Yv")])
+  [(V8QI "Yw") (V4HI "Yw") (V2SI "Yv") (V1DI "Yv") (V2SF "Yv")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -1367,10 +1366,10 @@
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*<insn><mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=x,<Yv_Yw>")
+  [(set (match_operand:VI_32 0 "register_operand" "=x,Yw")
         (plusminus:VI_32
-	  (match_operand:VI_32 1 "register_operand" "<comm>0,<Yv_Yw>")
-	  (match_operand:VI_32 2 "register_operand" "x,<Yv_Yw>")))]
+	  (match_operand:VI_32 1 "register_operand" "<comm>0,Yw")
+	  (match_operand:VI_32 2 "register_operand" "x,Yw")))]
   "TARGET_SSE2
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
@@ -1522,6 +1521,51 @@
    (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxmul,ssemul,ssemul")
    (set_attr "mode" "DI,TI,TI")])
+
+(define_expand "<s>mulv4hi3_highpart"
+  [(set (match_operand:V4HI 0 "register_operand")
+	(truncate:V4HI
+	  (lshiftrt:V4SI
+	    (mult:V4SI
+	      (any_extend:V4SI
+		(match_operand:V4HI 1 "register_operand"))
+	      (any_extend:V4SI
+		(match_operand:V4HI 2 "register_operand")))
+	    (const_int 16))))]
+  "TARGET_MMX_WITH_SSE"
+  "ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);")
+
+(define_insn "*<s>mulv2hi3_highpart"
+  [(set (match_operand:V2HI 0 "register_operand" "=x,Yw")
+	(truncate:V2HI
+	  (lshiftrt:V2SI
+	    (mult:V2SI
+	      (any_extend:V2SI
+		(match_operand:V2HI 1 "register_operand" "%0,Yw"))
+	      (any_extend:V2SI
+		(match_operand:V2HI 2 "register_operand" "x,Yw")))
+	    (const_int 16))))]
+  "TARGET_SSE2
+   && ix86_binary_operator_ok (MULT, V2HImode, operands)"
+  "@
+   pmulh<u>w\t{%2, %0|%0, %2}
+   vpmulh<u>w\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "ssemul")
+   (set_attr "mode" "TI")])
+
+(define_expand "<s>mulv2hi3_highpart"
+  [(set (match_operand:V2HI 0 "register_operand")
+	(truncate:V2HI
+	  (lshiftrt:V2SI
+	    (mult:V2SI
+	      (any_extend:V2SI
+		(match_operand:V2HI 1 "register_operand"))
+	      (any_extend:V2SI
+		(match_operand:V2HI 2 "register_operand")))
+	    (const_int 16))))]
+  "TARGET_SSE2"
+  "ix86_fixup_binary_operands_no_copy (MULT, V2HImode, operands);")
 
 (define_expand "mmx_pmaddwd"
   [(set (match_operand:V2SI 0 "register_operand")
@@ -1816,6 +1860,30 @@
 	  (match_operand:MMXMODE24 1 "register_operand")
 	  (match_operand:DI 2 "nonmemory_operand")))]
   "TARGET_MMX_WITH_SSE")
+
+(define_insn "*<insn>v2hi3"
+  [(set (match_operand:V2HI 0 "register_operand" "=x,Yw")
+        (any_shift:V2HI
+	  (match_operand:V2HI 1 "register_operand" "0,Yw")
+	  (match_operand:DI 2 "nonmemory_operand" "xN,YwN")))]
+  "TARGET_SSE2"
+  "@
+   p<vshift>w\t{%2, %0|%0, %2}
+   vp<vshift>w\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseishft")
+   (set (attr "length_immediate")
+     (if_then_else (match_operand 2 "const_int_operand")
+       (const_string "1")
+       (const_string "0")))
+   (set_attr "mode" "TI")])
+
+(define_expand "<insn>v2hi3"
+  [(set (match_operand:V2HI 0 "register_operand")
+        (any_shift:V2HI
+	  (match_operand:V2HI 1 "register_operand")
+	  (match_operand:DI 2 "nonmemory_operand")))]
+  "TARGET_SSE2")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;

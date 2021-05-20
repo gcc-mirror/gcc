@@ -17239,6 +17239,51 @@
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
    (set_attr "mode" "DI,TI,TI")])
 
+(define_expand "smulhrsv2hi3"
+  [(set (match_operand:V2HI 0 "register_operand")
+	(truncate:V2HI
+	  (lshiftrt:V2SI
+	    (plus:V2SI
+	      (lshiftrt:V2SI
+		(mult:V2SI
+		  (sign_extend:V2SI
+		    (match_operand:V2HI 1 "register_operand"))
+		  (sign_extend:V2SI
+		    (match_operand:V2HI 2 "register_operand")))
+		(const_int 14))
+	      (match_dup 3))
+	    (const_int 1))))]
+  "TARGET_SSSE3"
+{
+  operands[3] = CONST1_RTX(V2HImode);
+  ix86_fixup_binary_operands_no_copy (MULT, V2HImode, operands);
+})
+
+(define_insn "*smulhrsv2hi3"
+  [(set (match_operand:V2HI 0 "register_operand" "=x,Yv")
+	(truncate:V2HI
+	  (lshiftrt:V2SI
+	    (plus:V2SI
+	      (lshiftrt:V2SI
+		(mult:V2SI
+		  (sign_extend:V2SI
+		    (match_operand:V2HI 1 "register_operand" "%0,Yv"))
+		  (sign_extend:V2SI
+		    (match_operand:V2HI 2 "register_operand" "x,Yv")))
+		(const_int 14))
+	      (match_operand:V2HI 3 "const1_operand"))
+	    (const_int 1))))]
+  "TARGET_SSSE3
+   && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "@
+   pmulhrsw\t{%2, %0|%0, %2}
+   vpmulhrsw\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseimul")
+   (set_attr "prefix_extra" "1")
+   (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
+   (set_attr "mode" "TI")])
+
 (define_insn "<ssse3_avx2>_pshufb<mode>3<mask_name>"
   [(set (match_operand:VI1_AVX512 0 "register_operand" "=x,<v_Yw>")
 	(unspec:VI1_AVX512
