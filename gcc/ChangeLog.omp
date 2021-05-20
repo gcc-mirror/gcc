@@ -1,3 +1,13 @@
+2021-05-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* gimplify.c (gimplify_scan_omp_clauses) <case OMP_CLAUSE_LINEAR>: For
+	explicit linear clause when combined with target, make it map(tofrom:)
+	instead of no clause or firstprivate.
+
 2021-05-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
