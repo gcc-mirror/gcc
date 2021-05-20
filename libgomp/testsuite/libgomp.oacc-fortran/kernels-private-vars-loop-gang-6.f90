@@ -3,6 +3,12 @@
 
 ! { dg-do run }
 
+! { dg-additional-options "-fopt-info-note-omp" }
+! { dg-additional-options "--param=openacc-privatization=noisy" }
+! { dg-additional-options "-foffload=-fopt-info-note-omp" }
+! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
+! for testing/documenting aspects of that functionality.
+
 program main
   type vec3
      integer x, y, z, attr(13)
@@ -17,6 +23,8 @@ program main
 
   !$acc kernels copy(arr)
   !$acc loop gang(num:32) private(pt)
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+  ! { dg-note {variable 'pt' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-2 }
   do i = 0, 31
      pt%x = i
      pt%y = i * 2
@@ -24,6 +32,7 @@ program main
      pt%attr(5) = i * 6
 
      !$acc loop vector(length:32)
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
      do j = 0, 31
         arr(i * 32 + j) = arr(i * 32 + j) + pt%x + pt%y + pt%z + pt%attr(5);
      end do

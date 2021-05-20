@@ -6680,7 +6680,7 @@ nvptx_truly_noop_truncation (poly_uint64, poly_uint64)
 /* Implement TARGET_GOACC_ADJUST_PRIVATE_DECL.  */
 
 static tree
-nvptx_goacc_adjust_private_decl (tree decl, int level)
+nvptx_goacc_adjust_private_decl (location_t loc, tree decl, int level)
 {
   gcc_checking_assert (!lookup_attribute ("oacc gang-private",
 					  DECL_ATTRIBUTES (decl)));
@@ -6689,14 +6689,12 @@ nvptx_goacc_adjust_private_decl (tree decl, int level)
      declarations.  */
   if (level == GOMP_DIM_GANG)
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "Setting 'oacc gang-private' attribute for decl:");
-	  print_generic_decl (dump_file, decl, TDF_SLIM);
-	  fputc ('\n', dump_file);
-	}
       tree id = get_identifier ("oacc gang-private");
-      DECL_ATTRIBUTES (decl) = tree_cons (id, NULL, DECL_ATTRIBUTES (decl));
+      /* For later diagnostic purposes, pass LOC as VALUE (wrapped as a
+	 TREE).  */
+      tree loc_tree = build_empty_stmt (loc);
+      DECL_ATTRIBUTES (decl)
+	= tree_cons (id, loc_tree, DECL_ATTRIBUTES (decl));
     }
 
   return decl;
@@ -6708,7 +6706,8 @@ static rtx
 nvptx_goacc_expand_var_decl (tree var)
 {
   /* Place "oacc gang-private" variables in shared memory.  */
-  if (lookup_attribute ("oacc gang-private", DECL_ATTRIBUTES (var)))
+  if (tree attr = lookup_attribute ("oacc gang-private",
+				    DECL_ATTRIBUTES (var)))
     {
       gcc_checking_assert (VAR_P (var));
 
@@ -6728,6 +6727,50 @@ nvptx_goacc_expand_var_decl (tree var)
 	  bool existed = gang_private_shared_hmap.put (var, offset);
 	  gcc_checking_assert (!existed);
 	  gang_private_shared_size += tree_to_uhwi (DECL_SIZE_UNIT (var));
+
+	  location_t loc = EXPR_LOCATION (TREE_VALUE (attr));
+#if 0 /* For some reason, this doesn't work.  */
+	  if (dump_enabled_p ())
+	    {
+	      dump_flags_t l_dump_flags
+		= get_openacc_privatization_dump_flags ();
+
+	      const dump_user_location_t d_u_loc
+		= dump_user_location_t::from_location_t (loc);
+/* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+	      dump_printf_loc (l_dump_flags, d_u_loc,
+			       "variable %<%T%> adjusted for OpenACC"
+			       " privatization level: %qs\n",
+			       var, "gang");
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+	    }
+#else /* ..., thus emulate that, good enough for testsuite usage.  */
+	  if (param_openacc_privatization != OPENACC_PRIVATIZATION_QUIET)
+	    inform (loc,
+		    "variable %qD adjusted for OpenACC privatization level:"
+		    " %qs",
+		    var, "gang");
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      /* 'dumpfile.c:dump_loc' */
+	      fprintf (dump_file, "%s:%d:%d: ", LOCATION_FILE (loc),
+		       LOCATION_LINE (loc), LOCATION_COLUMN (loc));
+	      fprintf (dump_file, "%s: ", "note");
+
+	      fprintf (dump_file,
+		       "variable '");
+	      print_generic_expr (dump_file, var, TDF_SLIM);
+	      fprintf (dump_file,
+		       "' adjusted for OpenACC privatization level: '%s'\n",
+		       "gang");
+	    }
+#endif
 	}
       rtx addr = plus_constant (Pmode, gang_private_shared_sym, offset);
       return gen_rtx_MEM (TYPE_MODE (TREE_TYPE (var)), addr);

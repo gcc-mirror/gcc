@@ -2137,6 +2137,15 @@ execute_oacc_device_lower ()
 
 		case IFN_UNIQUE_OACC_PRIVATE:
 		  {
+		    dump_flags_t l_dump_flags
+		      = get_openacc_privatization_dump_flags ();
+
+		    location_t loc = gimple_location (stmt);
+		    if (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION)
+		      loc = DECL_SOURCE_LOCATION (current_function_decl);
+		    const dump_user_location_t d_u_loc
+		      = dump_user_location_t::from_location_t (loc);
+
 		    HOST_WIDE_INT level
 		      = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
 		    gcc_checking_assert (level == -1
@@ -2146,31 +2155,65 @@ execute_oacc_device_lower ()
 			 i < gimple_call_num_args (call);
 			 i++)
 		      {
+			static char const *const axes[] =
+			/* Must be kept in sync with GOMP_DIM enumeration.  */
+			  { "gang", "worker", "vector" };
+
 			tree arg = gimple_call_arg (call, i);
 			gcc_checking_assert (TREE_CODE (arg) == ADDR_EXPR);
 			tree decl = TREE_OPERAND (arg, 0);
-			if (dump_file && (dump_flags & TDF_DETAILS))
+			if (dump_enabled_p ())
+/* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+			  dump_printf_loc (l_dump_flags, d_u_loc,
+					   "variable %<%T%> ought to be"
+					   " adjusted for OpenACC"
+					   " privatization level: %qs\n",
+					   decl,
+					   (level == -1
+					    ? "UNKNOWN" : axes[level]));
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+			bool adjusted;
+			if (level == -1)
+			  adjusted = false;
+			else if (!targetm.goacc.adjust_private_decl)
+			  adjusted = false;
+			else if (level == GOMP_DIM_VECTOR)
 			  {
-			    static char const *const axes[] =
-			      /* Must be kept in sync with GOMP_DIM
-				 enumeration.  */
-			      { "gang", "worker", "vector" };
-			    fprintf (dump_file, "Decl UID %u has %s "
-				     "partitioning:", DECL_UID (decl),
-				     (level == -1 ? "UNKNOWN" : axes[level]));
-			    print_generic_decl (dump_file, decl, TDF_SLIM);
-			    fputc ('\n', dump_file);
+			    /* That's the default behavior.  */
+			    adjusted = true;
 			  }
-			if (level != -1
-			    && targetm.goacc.adjust_private_decl)
+			else
 			  {
 			    tree oldtype = TREE_TYPE (decl);
 			    tree newdecl
-			      = targetm.goacc.adjust_private_decl (decl, level);
-			    if (TREE_TYPE (newdecl) != oldtype
-				|| newdecl != decl)
+			      = targetm.goacc.adjust_private_decl (loc, decl,
+								   level);
+			    adjusted = (TREE_TYPE (newdecl) != oldtype
+					|| newdecl != decl);
+			    if (adjusted)
 			      adjusted_vars.put (decl, newdecl);
 			  }
+			if (adjusted
+			    && dump_enabled_p ())
+/* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+			  dump_printf_loc (l_dump_flags, d_u_loc,
+					   "variable %<%T%> adjusted for"
+					   " OpenACC privatization level:"
+					   " %qs\n",
+					   decl, axes[level]);
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
 		      }
 		    remove = true;
 		  }

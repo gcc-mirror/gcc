@@ -9,6 +9,12 @@
    variables" (only visible to members of the GitHub OpenACC organization).
 */
 
+/* { dg-additional-options "-fopt-info-note-omp" }
+   { dg-additional-options "--param=openacc-privatization=noisy" }
+   { dg-additional-options "-foffload=-fopt-info-note-omp" }
+   { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
+   for testing/documenting aspects of that functionality.  */
+
 /* { dg-additional-options "-Wopenacc-parallelism" } for testing/documenting
    aspects of that functionality.  */
 
@@ -40,6 +46,9 @@ static void t0_c(void)
 #pragma acc parallel \
   reduction(max:num_gangs_actual) \
   reduction(max:result)
+      /* { dg-note {variable 'var' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-3 }
+	 { dg-note {variable 'var' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } .-4 }
+	 { dg-note {variable 'var' adjusted for OpenACC privatization level: 'gang'} "" { target { ! openacc_host_selected } } .-5 } */
       {
 	num_gangs_actual = 1 + __builtin_goacc_parlevel_id(GOMP_DIM_GANG);
 
@@ -134,6 +143,9 @@ static void t1_c(void)
   num_gangs(num_gangs_request) \
   reduction(max:num_gangs_actual) \
   reduction(max:result)
+      /* { dg-note {variable 'var' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-4 }
+	 { dg-note {variable 'var' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } .-5 }
+	 { dg-note {variable 'var' adjusted for OpenACC privatization level: 'gang'} "" { target { ! openacc_host_selected } } .-6 } */
       {
 	num_gangs_actual = 1 + __builtin_goacc_parlevel_id(GOMP_DIM_GANG);
 
@@ -290,6 +302,7 @@ static void t2(void)
 
 #pragma acc data \
   copy(results_1, results_2, results_3)
+  /* { dg-note {variable 'i' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 } */
   {
     for (int i = 0; i < i_limit; ++i)
       {
@@ -304,6 +317,10 @@ static void t2(void)
   present(results_1) \
   num_gangs(num_gangs_request_1) \
   async(1)
+	/* { dg-note {variable 'var' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-4 }
+	   { dg-note {variable 'var' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } .-5 }
+	   { dg-note {variable 'var' adjusted for OpenACC privatization level: 'gang'} "" { target { ! openacc_host_selected } } .-6 } */
+	/* { dg-note {variable 'tmp' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-7 } */
 	{
 	  static int var = var_init_1;
 
@@ -327,6 +344,10 @@ static void t2(void)
   present(results_3) \
   num_gangs(num_gangs_request_3) \
   async(3)
+	/* { dg-note {variable 'var' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-4 }
+	   { dg-note {variable 'var' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } .-5 }
+	   { dg-note {variable 'var' adjusted for OpenACC privatization level: 'gang'} "" { target { ! openacc_host_selected } } .-6 } */
+	/* { dg-note {variable 'tmp' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-7 } */
 	{
 	  static int var = var_init_3;
 
@@ -447,6 +468,9 @@ static void pr84992_1(void)
   int n[1];
   n[0] = 3;
 #pragma acc parallel copy(n)
+  /* { dg-note {variable 'test' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-1 }
+     { dg-note {variable 'test' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } .-2 }
+     { dg-note {variable 'test' adjusted for OpenACC privatization level: 'gang'} "" { target { ! openacc_host_selected } } .-3 } */
   {
     static const int test[] = {1,2,3,4};
     n[0] = test[n[0]];

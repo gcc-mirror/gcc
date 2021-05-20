@@ -795,6 +795,19 @@ Enum(openacc_kernels) String(decompose) Value(OPENACC_KERNELS_DECOMPOSE)
 EnumValue
 Enum(openacc_kernels) String(parloops) Value(OPENACC_KERNELS_PARLOOPS)
 
+-param=openacc-privatization=
+Common Joined Enum(openacc_privatization) Var(param_openacc_privatization) Init(OPENACC_PRIVATIZATION_QUIET) Param
+--param=openacc-privatization=[quiet|noisy]	Specify mode of OpenACC privatization diagnostics.
+
+Enum
+Name(openacc_privatization) Type(enum openacc_privatization)
+
+EnumValue
+Enum(openacc_privatization) String(quiet) Value(OPENACC_PRIVATIZATION_QUIET)
+
+EnumValue
+Enum(openacc_privatization) String(noisy) Value(OPENACC_PRIVATIZATION_NOISY)
+
 -param=parloops-chunk-size=
 Common Joined UInteger Var(param_parloops_chunk_size) Param Optimization
 Chunk size of omp schedule for loops parallelized by parloops.

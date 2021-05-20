@@ -10160,16 +10160,81 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
    sometimes, using shared memory directly would be faster than
    broadcasting.  */
 
-static bool
-oacc_privatization_candidate_p (const tree decl)
+static void
+oacc_privatization_begin_diagnose_var (const dump_flags_t l_dump_flags,
+				       const location_t loc, const tree c,
+				       const tree decl)
 {
+  const dump_user_location_t d_u_loc
+    = dump_user_location_t::from_location_t (loc);
+/* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+  dump_printf_loc (l_dump_flags, d_u_loc,
+		   "variable %<%T%> ", decl);
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+  if (c)
+    dump_printf (l_dump_flags,
+		 "in %qs clause ",
+		 omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+  else
+    dump_printf (l_dump_flags,
+		 "declared in block ");
+}
+
+static bool
+oacc_privatization_candidate_p (const location_t loc, const tree c,
+				const tree decl)
+{
+  dump_flags_t l_dump_flags = get_openacc_privatization_dump_flags ();
+
   bool res = true;
 
   if (res && !VAR_P (decl))
-    res = false;
+    {
+      res = false;
+
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "potentially has improper OpenACC privatization level: %qs\n",
+		       get_tree_code_name (TREE_CODE (decl)));
+	}
+    }
 
   if (res && !TREE_ADDRESSABLE (decl))
-    res = false;
+    {
+      res = false;
+
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "isn%'t candidate for adjusting OpenACC privatization level: %s\n",
+		       "not addressable");
+	}
+    }
+
+  if (res)
+    {
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "is candidate for adjusting OpenACC privatization level\n");
+	}
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      print_generic_decl (dump_file, decl, dump_flags);
+      fprintf (dump_file, "\n");
+    }
 
   return res;
 }
@@ -10185,7 +10250,7 @@ oacc_privatization_scan_clause_chain (omp_context *ctx, tree clauses)
       {
 	tree decl = OMP_CLAUSE_DECL (c);
 
-	if (!oacc_privatization_candidate_p (decl))
+	if (!oacc_privatization_candidate_p (OMP_CLAUSE_LOCATION (c), c, decl))
 	  continue;
 
 	gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));
@@ -10201,7 +10266,7 @@ oacc_privatization_scan_decl_chain (omp_context *ctx, tree decls)
 {
   for (tree decl = decls; decl; decl = DECL_CHAIN (decl))
     {
-      if (!oacc_privatization_candidate_p (decl))
+      if (!oacc_privatization_candidate_p (gimple_location (ctx->stmt), NULL, decl))
 	continue;
 
       gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));

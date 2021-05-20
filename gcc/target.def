@@ -1733,11 +1733,12 @@ OpenACC variable declarations that should be made private to the given\n\
 parallelism level (i.e. @code{GOMP_DIM_GANG}, @code{GOMP_DIM_WORKER} or\n\
 @code{GOMP_DIM_VECTOR}).  A typical use for this hook is to force variable\n\
 declarations at the @code{gang} level to reside in GPU shared memory.\n\
+@var{loc} may be used for diagnostic purposes.\n\
 \n\
 You may also use the @code{TARGET_GOACC_EXPAND_VAR_DECL} hook if the\n\
 adjusted variable declaration needs to be expanded to RTL in a non-standard\n\
 way.",
-tree, (tree var, int level),
+tree, (location_t loc, tree var, int level),
 NULL)
 
 DEFHOOK

@@ -578,7 +578,7 @@ gcn_goacc_adjust_propagation_record (tree record_type, bool sender,
 }
 
 tree
-gcn_goacc_adjust_private_decl (tree var, int level)
+gcn_goacc_adjust_private_decl (location_t, tree var, int level)
 {
   if (level != GOMP_DIM_GANG)
     return var;

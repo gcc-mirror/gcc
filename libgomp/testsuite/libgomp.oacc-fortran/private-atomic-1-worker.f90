@@ -1,17 +1,27 @@
-! Test for worker-private variables
+! 'atomic' access of worker-private variable
 
 ! { dg-do run }
-! { dg-additional-options "-fdump-tree-oaccdevlow-details" }
+
+! { dg-additional-options "-fopt-info-note-omp" }
+! { dg-additional-options "--param=openacc-privatization=noisy" }
+! { dg-additional-options "-foffload=-fopt-info-note-omp" }
+! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
+! for testing/documenting aspects of that functionality.
+
 
 program main
   integer :: w, arr(0:31)
 
   !$acc parallel num_gangs(32) num_workers(32) copyout(arr)
     !$acc loop gang worker private(w)
-! { dg-final { scan-tree-dump-times "Decl UID \[0-9\]+ has worker partitioning:  integer\\(kind=4\\) w;" 1 "oaccdevlow" } } */
+    ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+    ! { dg-note {variable 'w' in 'private' clause is candidate for adjusting OpenACC privatization level} "" { target *-*-* } .-2 }
+    ! { dg-note {variable 'w' ought to be adjusted for OpenACC privatization level: 'worker'} "" { target *-*-* } .-3 }
+    ! { dg-note {variable 'w' adjusted for OpenACC privatization level: 'worker'} "TODO" { target { ! openacc_host_selected } xfail *-*-* } .-4 }
     do j = 0, 31
       w = 0
       !$acc loop seq
+      ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
       do i = 0, 31
         !$acc atomic update
         w = w + 1
