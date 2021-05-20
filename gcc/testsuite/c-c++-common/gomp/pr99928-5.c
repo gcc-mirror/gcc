@@ -52,22 +52,22 @@ bar (void)
   #pragma omp parallel master taskloop simd linear (j05)
   for (j05 = 0; j05 < 64; j05++)
     ;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:j06" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(j06\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:j06" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(j06\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(j06\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
   /* { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(j06\\)" "gimple" } } *//* FIXME.  */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*linear\\(j06:1\\)" "gimple" } } */
   #pragma omp target parallel for simd linear (j06)
   for (j06 = 0; j06 < 64; j06++)
     ;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:j07" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(j07\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:j07" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(j07\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*linear\\(j07:1\\)" "gimple" } } */
   #pragma omp target simd linear (j07)
   for (j07 = 0; j07 < 64; j07++)
     ;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:j08" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(j08\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:j08" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(j08\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*shared\\(j08\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp distribute\[^\n\r]*lastprivate\\(j08\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(j08\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
@@ -76,8 +76,8 @@ bar (void)
   #pragma omp target teams distribute parallel for simd linear (j08)
   for (j08 = 0; j08 < 64; j08++)
     ;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:j09" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(j09\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:j09" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(j09\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*shared\\(j09\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp distribute\[^\n\r]*lastprivate\\(j09\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*linear\\(j09:1\\)" "gimple" } } */

@@ -8884,9 +8884,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  else if (octx
 			   && octx->region_type == ORT_COMBINED_TARGET)
 		    {
-		      flags &= ~GOVD_LASTPRIVATE;
-		      if (flags == GOVD_SEEN)
-			break;
+		      if (flags & GOVD_LASTPRIVATE)
+			flags = GOVD_SEEN | GOVD_MAP;
 		    }
 		  else
 		    break;
