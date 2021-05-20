@@ -1,3 +1,21 @@
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100367
+	PR c++/96299
+	* method.c (genericize_spaceship): Use fold_build2 for scalar
+	operands.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100261
+	* rtti.c (get_tinfo_decl_direct): Check TYPE_TRANSPARENT_AGGR.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100372
+	* tree.c (strip_typedefs): Only look at the pattern of a
+	TYPE_PACK_EXPANSION if it's a type.
+
 2021-05-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100644

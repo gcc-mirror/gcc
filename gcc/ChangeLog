@@ -1,3 +1,38 @@
+2021-05-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define
+	__ROP_PROTECT__ if -mrop-protect is selected.
+
+2021-05-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000-internal.h (rs6000_stack): Add
+	rop_hash_save_offset and rop_hash_size.
+	* config/rs6000/rs6000-logue.c (rs6000_stack_info): Compute
+	rop_hash_size and rop_hash_save_offset.
+	(debug_stack_info): Dump rop_hash_save_offset and rop_hash_size.
+	(rs6000_emit_prologue): Emit hashst[p] in prologue.
+	(rs6000_emit_epilogue): Emit hashchk[p] in epilogue.
+	* config/rs6000/rs6000.md (unspec): Add UNSPEC_HASHST and
+	UNSPEC_HASHCHK.
+	(hashst): New define_insn.
+	(hashchk): Likewise.
+
+2021-05-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Disable shrink wrap when inserting ROP-protect instructions.
+	* config/rs6000/rs6000.opt (mrop-protect): New option.
+	(mprivileged): Likewise.
+	* doc/invoke.texi: Document mrop-protect and mprivileged.
+
+2021-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cpp.texi (Common Predefined Macros): Update documentation
+	for the __GXX_EXPERIMENTAL_CXX0X__ macro.
+
 2021-05-17  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
