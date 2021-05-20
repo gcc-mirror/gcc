@@ -149,6 +149,15 @@ void test06()
   static_assert( std::ranges::range<const V> );
 }
 
+void
+test08()
+{
+  // PR libstdc++/100639
+  auto v = views::iota(1701ll, 3000ll) | views::reverse | views::take(5);
+  for (auto x : v)
+    ;
+}
+
 int
 main()
 {
@@ -158,4 +167,5 @@ main()
   test04();
   test05();
   test06();
+  test08();
 }
