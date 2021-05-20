@@ -1,3 +1,11 @@
+2021-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cpp.texi (Common Predefined Macros): Update documentation
+	for the __GXX_EXPERIMENTAL_CXX0X__ macro.
+
 2021-05-17  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
