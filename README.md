@@ -179,6 +179,8 @@ $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
 
 ## Contributing
 
+If you want to contribute to GCC Rust, you can find more information in [CONTRIBUTING.md](https://github.com/Rust-GCC/gccrs/blob/master/CONTRIBUTING.md).
+
 Please be aware this project is designed to be pushed upstream to GCC when we reach some milestones, and this means we require
 contributions to have copyright assignment in place. Please see https://gcc.gnu.org/contribute.html.
 
