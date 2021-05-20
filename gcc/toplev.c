@@ -1232,6 +1232,7 @@ parse_alignment_opts (void)
 static void
 process_options (void)
 {
+  const char *language_string = lang_hooks.name;
   /* Just in case lang_hooks.post_options ends up calling a debug_hook.
      This can happen with incorrect pre-processed input. */
   debug_hooks = &do_nothing_debug_hooks;
@@ -1415,6 +1416,17 @@ process_options (void)
 	debug_info_level = DINFO_LEVEL_NONE;
     }
 
+  /* CTF is supported for only C at this time.
+     Compiling with -flto results in frontend language of GNU GIMPLE.  */
+  if (!lang_GNU_C ()
+      && ctf_debug_info_level > CTFINFO_LEVEL_NONE)
+    {
+      inform (UNKNOWN_LOCATION,
+	      "CTF debug info requested, but not supported for %qs frontend",
+	      language_string);
+      ctf_debug_info_level = CTFINFO_LEVEL_NONE;
+    }
+
   if (flag_dump_final_insns && !flag_syntax_only && !no_backend)
     {
       FILE *final_output = fopen (flag_dump_final_insns, "w");
@@ -1436,7 +1448,8 @@ process_options (void)
 
   /* A lot of code assumes write_symbols == NO_DEBUG if the debugging
      level is 0.  */
-  if (debug_info_level == DINFO_LEVEL_NONE)
+  if (debug_info_level == DINFO_LEVEL_NONE
+      && ctf_debug_info_level == CTFINFO_LEVEL_NONE)
     write_symbols = NO_DEBUG;
 
   if (write_symbols == NO_DEBUG)
@@ -1450,7 +1463,8 @@ process_options (void)
     debug_hooks = &xcoff_debug_hooks;
 #endif
 #ifdef DWARF2_DEBUGGING_INFO
-  else if (write_symbols == DWARF2_DEBUG)
+  else if (dwarf_debuginfo_p ()
+	   || dwarf_based_debuginfo_p ())
     debug_hooks = &dwarf2_debug_hooks;
 #endif
 #ifdef VMS_DEBUGGING_INFO
@@ -1472,6 +1486,7 @@ process_options (void)
   /* We know which debug output will be used so we can set flag_var_tracking
      and flag_var_tracking_uninit if the user has not specified them.  */
   if (debug_info_level < DINFO_LEVEL_NORMAL
+      || !dwarf_debuginfo_p ()
       || debug_hooks->var_location == do_nothing_debug_hooks.var_location)
     {
       if (flag_var_tracking == 1

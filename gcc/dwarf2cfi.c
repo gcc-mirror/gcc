@@ -3558,7 +3558,7 @@ dwarf2out_do_frame (void)
   /* We want to emit correct CFA location expressions or lists, so we
      have to return true if we're going to generate debug info, even if
      we're not going to output frame or unwind info.  */
-  if (dwarf_debuginfo_p ())
+  if (dwarf_debuginfo_p () || dwarf_based_debuginfo_p ())
     return true;
 
   if (saved_do_cfi_asm > 0)

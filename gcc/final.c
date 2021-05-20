@@ -1429,7 +1429,7 @@ static bool
 dwarf2_debug_info_emitted_p (tree decl)
 {
   /* When DWARF2 debug info is not generated internally.  */
-  if (!dwarf_debuginfo_p ())
+  if (!dwarf_debuginfo_p () && !dwarf_based_debuginfo_p ())
     return false;
 
   if (DECL_IGNORED_P (decl))

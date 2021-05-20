@@ -122,6 +122,11 @@ enum debug_info_levels debug_info_level = DINFO_LEVEL_NONE
 Variable
 bool use_gnu_debug_info_extensions
 
+; Level of CTF debugging information we are producing.  See flag-types.h
+; for the definitions of the different possible levels.
+Variable
+enum ctf_debug_info_levels ctf_debug_info_level = CTFINFO_LEVEL_NONE
+
 ; Original value of maximum field alignment in bytes, specified via
 ; -fpack-struct=<value>.
 Variable
@@ -3182,6 +3187,16 @@ Does nothing.  Preserved for backward compatibility.
 gcolumn-info
 Common Driver Var(debug_column_info,1) Init(1)
 Record DW_AT_decl_column and DW_AT_call_column in DWARF.
+
+; The CTF generation process feeds off DWARF dies.  This option implicitly
+; updates the debug_info_level to DINFO_LEVEL_NORMAL.
+gctf
+Common Driver RejectNegative JoinedOrMissing
+Generate CTF debug information at default level.
+
+gbtf
+Common Driver RejectNegative JoinedOrMissing
+Generate BTF debug information at default level.
 
 gdwarf
 Common Driver JoinedOrMissing Negative(gdwarf-)
