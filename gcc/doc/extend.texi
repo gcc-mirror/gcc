@@ -3415,6 +3415,12 @@ The @code{no_sanitize_undefined} attribute on functions is used
 to inform the compiler that it should not check for undefined behavior
 in the function when compiling with the @option{-fsanitize=undefined} option.
 
+@item no_sanitize_coverage
+@cindex @code{no_sanitize_coverage} function attribute
+The @code{no_sanitize_coverage} attribute on functions is used
+to inform the compiler that it should not do coverage-guided
+fuzzing code instrumentation (@option{-fsanitize-coverage}).
+
 @item no_split_stack
 @cindex @code{no_split_stack} function attribute
 @opindex fsplit-stack

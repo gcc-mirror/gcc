@@ -62,6 +62,8 @@ static tree handle_no_address_safety_analysis_attribute (tree *, tree, tree,
 							 int, bool *);
 static tree handle_no_sanitize_undefined_attribute (tree *, tree, tree, int,
 						    bool *);
+static tree handle_no_sanitize_coverage_attribute (tree *, tree, tree, int,
+						   bool *);
 static tree handle_asan_odr_indicator_attribute (tree *, tree, tree, int,
 						 bool *);
 static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
@@ -449,6 +451,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_no_sanitize_thread_attribute, NULL },
   { "no_sanitize_undefined",  0, 0, true, false, false, false,
 			      handle_no_sanitize_undefined_attribute, NULL },
+  { "no_sanitize_coverage",   0, 0, true, false, false, false,
+			      handle_no_sanitize_coverage_attribute, NULL },
   { "asan odr indicator",     0, 0, true, false, false, false,
 			      handle_asan_odr_indicator_attribute, NULL },
   { "warning",		      1, 1, true,  false, false, false,
@@ -1207,6 +1211,22 @@ handle_no_sanitize_undefined_attribute (tree *node, tree name, tree, int,
   else
     add_no_sanitize_value (*node,
 			   SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT);
+
+  return NULL_TREE;
+}
+
+/* Handle a "no_sanitize_coverage" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_no_sanitize_coverage_attribute (tree *node, tree name, tree, int,
+				       bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
 
   return NULL_TREE;
 }
