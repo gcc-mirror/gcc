@@ -6682,12 +6682,12 @@ nvptx_truly_noop_truncation (poly_uint64, poly_uint64)
 static tree
 nvptx_goacc_adjust_private_decl (tree decl, int level)
 {
-  if (level != GOMP_DIM_GANG)
-    return decl;
+  gcc_checking_assert (!lookup_attribute ("oacc gang-private",
+					  DECL_ATTRIBUTES (decl)));
 
   /* Set "oacc gang-private" attribute for gang-private variable
      declarations.  */
-  if (!lookup_attribute ("oacc gang-private", DECL_ATTRIBUTES (decl)))
+  if (level == GOMP_DIM_GANG)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -6708,9 +6708,10 @@ static rtx
 nvptx_goacc_expand_var_decl (tree var)
 {
   /* Place "oacc gang-private" variables in shared memory.  */
-  if (VAR_P (var)
-      && lookup_attribute ("oacc gang-private", DECL_ATTRIBUTES (var)))
+  if (lookup_attribute ("oacc gang-private", DECL_ATTRIBUTES (var)))
     {
+      gcc_checking_assert (VAR_P (var));
+
       unsigned int offset, *poffset;
       poffset = gang_private_shared_hmap.get (var);
       if (poffset)
