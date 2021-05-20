@@ -11067,7 +11067,8 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   push_gimplify_context ();
 
-  oacc_privatization_scan_clause_chain (ctx, gimple_omp_for_clauses (stmt));
+  if (is_gimple_omp_oacc (ctx->stmt))
+    oacc_privatization_scan_clause_chain (ctx, gimple_omp_for_clauses (stmt));
 
   lower_omp (gimple_omp_for_pre_body_ptr (stmt), ctx);
 
