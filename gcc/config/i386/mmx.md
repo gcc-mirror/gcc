@@ -2055,40 +2055,34 @@
   "operands[2] = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));")
 
 (define_insn "mmx_andnot<mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,r,x,x,v")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x,v")
 	(and:MMXMODEI
-	  (not:MMXMODEI (match_operand:MMXMODEI 1 "register_operand"
-	    "0,r,0,x,v"))
-	  (match_operand:MMXMODEI 2 "register_mmxmem_operand"
-	    "ym,r,x,x,v")))]
+	  (not:MMXMODEI (match_operand:MMXMODEI 1 "register_operand" "0,0,x,v"))
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,x,v")))]
   "TARGET_MMX || TARGET_MMX_WITH_SSE"
   "@
    pandn\t{%2, %0|%0, %2}
-   andn\t{%2, %1, %0|%0, %1, %2}
    pandn\t{%2, %0|%0, %2}
    vpandn\t{%2, %1, %0|%0, %1, %2}
    vpandnd\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "*,x64_bmi,sse2_noavx,avx,avx512vl")
-   (set_attr "mmx_isa" "native,*,*,*,*")
-   (set_attr "type" "mmxadd,bitmanip,sselog,sselog,sselog")
-   (set_attr "btver2_decode" "*,direct,*,*,*")
-   (set_attr "mode" "DI,DI,TI,TI,TI")])
+  [(set_attr "isa" "*,sse2_noavx,avx,avx512vl")
+   (set_attr "mmx_isa" "native,*,*,*")
+   (set_attr "type" "mmxadd,sselog,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI,TI")])
 
 (define_insn "*andnot<mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=r,x,x,v")
+  [(set (match_operand:VI_32 0 "register_operand" "=x,x,v")
 	(and:VI_32
-	  (not:VI_32 (match_operand:VI_32 1 "register_operand" "r,0,x,v"))
-	  (match_operand:VI_32 2 "register_operand" "r,x,x,v")))]
+	  (not:VI_32 (match_operand:VI_32 1 "register_operand" "0,x,v"))
+	  (match_operand:VI_32 2 "register_operand" "x,x,v")))]
   "TARGET_SSE2"
   "@
-   andn\t{%2, %1, %0|%0, %1, %2}
    pandn\t{%2, %0|%0, %2}
    vpandn\t{%2, %1, %0|%0, %1, %2}
    vpandnd\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "bmi,noavx,avx,avx512vl")
-   (set_attr "type" "bitmanip,sselog,sselog,sselog")
-   (set_attr "btver2_decode" "direct,*,*,*")
-   (set_attr "mode" "SI,TI,TI,TI")])
+  [(set_attr "isa" "noavx,avx,avx512vl")
+   (set_attr "type" "sselog")
+   (set_attr "mode" "TI")])
 
 (define_expand "mmx_<code><mode>3"
   [(set (match_operand:MMXMODEI 0 "register_operand")
@@ -2107,22 +2101,21 @@
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*mmx_<code><mode>3"
-  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,r,x,x,v")
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,x,x,v")
         (any_logic:MMXMODEI
-	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "%0,0,0,x,v")
-	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,r,x,x,v")))]
+	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "%0,0,x,v")
+	  (match_operand:MMXMODEI 2 "register_mmxmem_operand" "ym,x,x,v")))]
   "(TARGET_MMX || TARGET_MMX_WITH_SSE)
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
    p<logic>\t{%2, %0|%0, %2}
-   <logic>\t{%2, %0|%0, %2}
    p<logic>\t{%2, %0|%0, %2}
    vp<logic>\t{%2, %1, %0|%0, %1, %2}
    vp<logic>d\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "*,x64,sse2_noavx,avx,avx512vl")
-   (set_attr "mmx_isa" "native,*,*,*,*")
-   (set_attr "type" "mmxadd,alu,sselog,sselog,sselog")
-   (set_attr "mode" "DI,DI,TI,TI,TI")])
+  [(set_attr "isa" "*,sse2_noavx,avx,avx512vl")
+   (set_attr "mmx_isa" "native,*,*,*")
+   (set_attr "type" "mmxadd,sselog,sselog,sselog")
+   (set_attr "mode" "DI,TI,TI,TI")])
 
 (define_expand "<code><mode>3"
   [(set (match_operand:VI_32 0 "register_operand")
@@ -2133,20 +2126,19 @@
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
 
 (define_insn "*<code><mode>3"
-  [(set (match_operand:VI_32 0 "register_operand" "=r,x,x,v")
+  [(set (match_operand:VI_32 0 "register_operand" "=x,x,v")
         (any_logic:VI_32
-	  (match_operand:VI_32 1 "register_operand" "%0,0,x,v")
-	  (match_operand:VI_32 2 "register_operand" "r,x,x,v")))]
+	  (match_operand:VI_32 1 "register_operand" "%0,x,v")
+	  (match_operand:VI_32 2 "register_operand" "x,x,v")))]
   "TARGET_SSE2
    && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)"
   "@
-   <logic>\t{%2, %0|%0, %2}
    p<logic>\t{%2, %0|%0, %2}
    vp<logic>\t{%2, %1, %0|%0, %1, %2}
    vp<logic>d\t{%2, %1, %0|%0, %1, %2}"
-  [(set_attr "isa" "*,noavx,avx,avx512vl")
-   (set_attr "type" "alu,sselog,sselog,sselog")
-   (set_attr "mode" "SI,TI,TI,TI")])
+  [(set_attr "isa" "noavx,avx,avx512vl")
+   (set_attr "type" "sselog")
+   (set_attr "mode" "TI")])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
