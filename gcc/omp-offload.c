@@ -2139,8 +2139,9 @@ execute_oacc_device_lower ()
 		  {
 		    HOST_WIDE_INT level
 		      = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
-		    if (level == -1)
-		      break;
+		    gcc_checking_assert (level == -1
+					 || (level >= 0
+					     && level < GOMP_DIM_MAX));
 		    for (unsigned i = 3;
 			 i < gimple_call_num_args (call);
 			 i++)
@@ -2156,11 +2157,12 @@ execute_oacc_device_lower ()
 			      { "gang", "worker", "vector" };
 			    fprintf (dump_file, "Decl UID %u has %s "
 				     "partitioning:", DECL_UID (decl),
-				     axes[level]);
+				     (level == -1 ? "UNKNOWN" : axes[level]));
 			    print_generic_decl (dump_file, decl, TDF_SLIM);
 			    fputc ('\n', dump_file);
 			  }
-			if (targetm.goacc.adjust_private_decl)
+			if (level != -1
+			    && targetm.goacc.adjust_private_decl)
 			  {
 			    tree oldtype = TREE_TYPE (decl);
 			    tree newdecl
