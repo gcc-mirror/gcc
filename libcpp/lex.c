@@ -4469,8 +4469,9 @@ cpp_directive_only_process (cpp_reader *pfile,
 			break;
 		      }
 		  }
-		cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
-				     "unterminated comment");
+		if (pos < limit || is_block)
+		  cpp_error_with_line (pfile, CPP_DL_ERROR, sloc, 0,
+				       "unterminated comment");
 	      done_comment:
 		lwm = pos;
 		break;
