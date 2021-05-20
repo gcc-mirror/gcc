@@ -4,7 +4,6 @@ fn main() {
 
     // first number in Fibonacci sequence over 10:
     let _fib = loop {
-        // { dg-bogus "unused name" "#361" { xfail *-*-* } .-1 }
         if b > 10 {
             break b;
         }

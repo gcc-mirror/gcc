@@ -9,5 +9,4 @@ fn foo() -> Foo {
 
 fn main() {
     let _f = Foo { a: 10, ..foo() };
-    // { dg-bogus "unused name" "#361" { xfail *-*-* } .-1 }
 }

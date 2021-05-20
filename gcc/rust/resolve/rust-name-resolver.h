@@ -114,6 +114,7 @@ public:
       }
 
     mappings[path] = id;
+    reverse_mappings.insert (std::pair<NodeId, CanonicalPath> (id, path));
     decls_within_rib.insert (std::pair<NodeId, Location> (id, locus));
     references[id] = {};
   }
@@ -128,9 +129,21 @@ public:
     return true;
   }
 
+  bool lookup_canonical_path (const NodeId &id, CanonicalPath *ident)
+  {
+    auto it = reverse_mappings.find (id);
+    if (it == reverse_mappings.end ())
+      return false;
+
+    *ident = it->second;
+    return true;
+  }
+
   void clear_name (const CanonicalPath &ident, NodeId id)
   {
     mappings.erase (ident);
+    reverse_mappings.erase (id);
+
     for (auto &it : decls_within_rib)
       {
 	if (it.first == id)
@@ -194,6 +207,7 @@ private:
   CrateNum crate_num;
   NodeId node_id;
   std::map<CanonicalPath, NodeId> mappings;
+  std::map<NodeId, CanonicalPath> reverse_mappings;
   std::set<std::pair<NodeId, Location> > decls_within_rib;
   std::map<NodeId, std::set<NodeId> > references;
 };
