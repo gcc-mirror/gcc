@@ -3361,9 +3361,7 @@ get_or_insert_ctor_field (tree ctor, tree index, int pos_hint = -1)
     }
   else
     {
-      gcc_assert (TREE_CODE (index) == FIELD_DECL
-		  && (same_type_ignoring_top_level_qualifiers_p
-		      (DECL_CONTEXT (index), TREE_TYPE (ctor))));
+      gcc_assert (TREE_CODE (index) == FIELD_DECL);
 
       /* We must keep the CONSTRUCTOR's ELTS in FIELD order.
 	 Usually we meet initializers in that order, but it is
