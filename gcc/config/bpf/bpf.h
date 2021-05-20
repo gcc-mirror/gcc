@@ -235,17 +235,9 @@ enum reg_class
 
 /**** Debugging Info ****/
 
-/* We cannot support DWARF2 because of the limitations of eBPF.  */
+/* In eBPF it is not possible to unwind frames. Disable CFA.  */
 
-/* elfos.h insists in using DWARF.  Undo that here.  */
-#ifdef DWARF2_DEBUGGING_INFO
-# undef DWARF2_DEBUGGING_INFO
-#endif
-#ifdef PREFERRED_DEBUGGING_TYPE
-# undef PREFERRED_DEBUGGING_TYPE
-#endif
-
-#define DBX_DEBUGGING_INFO
+#define DWARF2_FRAME_INFO 0
 
 /**** Stack Layout and Calling Conventions.  */
 
