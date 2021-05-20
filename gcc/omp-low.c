@@ -10144,6 +10144,36 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
     }
 }
 
+/* OpenACC privatization.
+
+   Or, in other words, *sharing* at the respective OpenACC level of
+   parallelism.
+
+   From a correctness perspective, a non-addressable variable can't be accessed
+   outside the current thread, so it can go in a (faster than shared memory)
+   register -- though that register may need to be broadcast in some
+   circumstances.  A variable can only meaningfully be "shared" across workers
+   or vector lanes if its address is taken, e.g. by a call to an atomic
+   builtin.
+
+   From an optimisation perspective, the answer might be fuzzier: maybe
+   sometimes, using shared memory directly would be faster than
+   broadcasting.  */
+
+static bool
+oacc_privatization_candidate_p (const tree decl)
+{
+  bool res = true;
+
+  if (res && !VAR_P (decl))
+    res = false;
+
+  if (res && !TREE_ADDRESSABLE (decl))
+    res = false;
+
+  return res;
+}
+
 /* Scan CLAUSES for candidates for adjusting OpenACC privatization level in
    CTX.  */
 
@@ -10154,8 +10184,12 @@ oacc_privatization_scan_clause_chain (omp_context *ctx, tree clauses)
     if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE)
       {
 	tree decl = OMP_CLAUSE_DECL (c);
-	if (VAR_P (decl) && TREE_ADDRESSABLE (decl))
-	  ctx->oacc_privatization_candidates.safe_push (decl);
+
+	if (!oacc_privatization_candidate_p (decl))
+	  continue;
+
+	gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));
+	ctx->oacc_privatization_candidates.safe_push (decl);
       }
 }
 
@@ -10166,8 +10200,13 @@ static void
 oacc_privatization_scan_decl_chain (omp_context *ctx, tree decls)
 {
   for (tree decl = decls; decl; decl = DECL_CHAIN (decl))
-    if (VAR_P (decl) && TREE_ADDRESSABLE (decl))
+    {
+      if (!oacc_privatization_candidate_p (decl))
+	continue;
+
+      gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));
       ctx->oacc_privatization_candidates.safe_push (decl);
+    }
 }
 
 /* Callback for walk_gimple_seq.  Find #pragma omp scan statement.  */
