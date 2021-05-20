@@ -99,6 +99,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #ifdef __cpp_lib_jthread
 
+#ifndef __STRICT_ANSI__
+    template<typename _Callable, typename... _Args>
+      constexpr bool __pmf_expects_stop_token = false;
+
+    template<typename _Callable, typename _Obj, typename... _Args>
+      constexpr bool __pmf_expects_stop_token<_Callable, _Obj, _Args...>
+	= __and_<is_member_function_pointer<remove_reference_t<_Callable>>,
+		 is_invocable<_Callable, _Obj, stop_token, _Args...>>::value;
+#endif
+
   /// A thread that can be requested to stop and automatically joined.
   class jthread
   {
@@ -211,6 +221,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static thread
       _S_create(stop_source& __ssrc, _Callable&& __f, _Args&&... __args)
       {
+#ifndef __STRICT_ANSI__
+	if constexpr (__pmf_expects_stop_token<_Callable, _Args...>)
+	  return _S_create_pmf(__ssrc, __f, std::forward<_Args>(__args)...);
+	else
+#endif
 	if constexpr(is_invocable_v<decay_t<_Callable>, stop_token,
 				    decay_t<_Args>...>)
 	  return thread{std::forward<_Callable>(__f), __ssrc.get_token(),
@@ -225,6 +240,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  std::forward<_Args>(__args)...};
 	  }
       }
+
+#ifndef __STRICT_ANSI__
+    template<typename _Callable, typename _Obj, typename... _Args>
+      static thread
+      _S_create_pmf(stop_source& __ssrc, _Callable __f, _Obj&& __obj,
+		    _Args&&... __args)
+      {
+	return thread{__f, std::forward<_Obj>(__obj), __ssrc.get_token(),
+		      std::forward<_Args>(__args)...};
+      }
+#endif
 
     stop_source _M_stop_source;
     thread _M_thread;
