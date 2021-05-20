@@ -6650,6 +6650,8 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
      initialized from that element."  Even if T is an aggregate.  */
   if (cxx_dialect >= cxx11 && (CLASS_TYPE_P (type) || VECTOR_TYPE_P (type))
       && first_initializer_p
+      /* But not if it's a designated init.  */
+      && !d->cur->index
       && d->end - d->cur == 1
       && reference_related_p (type, TREE_TYPE (init)))
     {

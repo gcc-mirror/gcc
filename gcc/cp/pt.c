@@ -29326,7 +29326,8 @@ do_class_deduction (tree ptype, tree tmpl, tree init,
     {
       list_init_p = true;
       try_list_ctor = TYPE_HAS_LIST_CTOR (type);
-      if (try_list_ctor && CONSTRUCTOR_NELTS (init) == 1)
+      if (try_list_ctor && CONSTRUCTOR_NELTS (init) == 1
+	  && !CONSTRUCTOR_IS_DESIGNATED_INIT (init))
 	{
 	  /* As an exception, the first phase in 16.3.1.7 (considering the
 	     initializer list as a single argument) is omitted if the

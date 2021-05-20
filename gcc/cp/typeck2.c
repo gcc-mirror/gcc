@@ -1183,6 +1183,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
      the object is initialized from that element."  */
   if (cxx_dialect >= cxx11
       && BRACE_ENCLOSED_INITIALIZER_P (stripped_init)
+      && !CONSTRUCTOR_IS_DESIGNATED_INIT (stripped_init)
       && CONSTRUCTOR_NELTS (stripped_init) == 1
       && ((CLASS_TYPE_P (type) && !CLASSTYPE_NON_AGGREGATE (type))
 	  || VECTOR_TYPE_P (type)))
