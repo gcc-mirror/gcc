@@ -32,6 +32,7 @@
 #include "tree.h"
 #include "memmodel.h"
 #include "cfghooks.h"
+#include "cfgloop.h"
 #include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
@@ -69,6 +70,7 @@
 #include "gimplify.h"
 #include "gimple.h"
 #include "selftest.h"
+#include "tree-vectorizer.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
