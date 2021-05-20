@@ -2005,6 +2005,13 @@ This macro expands to the name of the main input file, in the form
 of a C string constant.  This is the source file that was specified
 on the command line of the preprocessor or C compiler.
 
+@item __FILE_NAME__
+This macro expands to the basename of the current input file, in the
+form of a C string constant.  This is the last path component by which
+the preprocessor opened the file.  For example, processing
+@code{"/usr/local/include/myheader.h"} would set this
+macro to @code{"myheader.h"}.
+
 @item __INCLUDE_LEVEL__
 This macro expands to a decimal integer constant that represents the
 depth of nesting in include files.  The value of this macro is

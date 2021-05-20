@@ -531,15 +531,21 @@ _cpp_builtin_macro_text (cpp_reader *pfile, cpp_hashnode *node,
       }
       break;
     case BT_FILE:
+    case BT_FILE_NAME:
     case BT_BASE_FILE:
       {
 	unsigned int len;
 	const char *name;
 	uchar *buf;
-	
-	if (node->value.builtin == BT_FILE)
-	  name = linemap_get_expansion_filename (pfile->line_table,
-						 pfile->line_table->highest_line);
+
+	if (node->value.builtin == BT_FILE
+	    || node->value.builtin == BT_FILE_NAME)
+	  {
+	    name = linemap_get_expansion_filename (pfile->line_table,
+						   pfile->line_table->highest_line);
+	    if ((node->value.builtin == BT_FILE_NAME) && name)
+	      name = lbasename (name);
+	  }
 	else
 	  {
 	    name = _cpp_get_file_name (pfile->main_file);

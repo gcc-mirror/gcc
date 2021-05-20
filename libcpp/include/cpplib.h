@@ -886,6 +886,7 @@ enum cpp_builtin_type
   BT_SPECLINE = 0,		/* `__LINE__' */
   BT_DATE,			/* `__DATE__' */
   BT_FILE,			/* `__FILE__' */
+  BT_FILE_NAME,			/* `__FILE_NAME__' */
   BT_BASE_FILE,			/* `__BASE_FILE__' */
   BT_INCLUDE_LEVEL,		/* `__INCLUDE_LEVEL__' */
   BT_TIME,			/* `__TIME__' */
