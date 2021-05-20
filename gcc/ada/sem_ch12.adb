@@ -5796,6 +5796,14 @@ package body Sem_Ch12 is
             Set_SPARK_Mode (Gen_Unit);
          end if;
 
+         --  Need to mark Anon_Id intrinsic before calling
+         --  Analyze_Instance_And_Renamings because this flag may be propagated
+         --  to other nodes.
+
+         if Is_Intrinsic_Subprogram (Gen_Unit) then
+            Set_Is_Intrinsic_Subprogram (Anon_Id);
+         end if;
+
          Analyze_Instance_And_Renamings;
 
          --  Restore SPARK_Mode from the context after analysis of the package
@@ -5817,7 +5825,6 @@ package body Sem_Ch12 is
          --  not within the main unit.
 
          if Is_Intrinsic_Subprogram (Gen_Unit) then
-            Set_Is_Intrinsic_Subprogram (Anon_Id);
             Set_Is_Intrinsic_Subprogram (Act_Decl_Id);
 
             if Chars (Gen_Unit) = Name_Unchecked_Conversion then
