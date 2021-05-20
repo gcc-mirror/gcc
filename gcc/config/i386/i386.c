@@ -17991,21 +17991,24 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
       gcc_assert (n_args == 2);
       arg0 = gimple_call_arg (stmt, 0);
       arg1 = gimple_call_arg (stmt, 1);
-      {
-	location_t loc = gimple_location (stmt);
-	tree type = TREE_TYPE (arg0);
-	tree zero_vec = build_zero_cst (type);
-	tree minus_one_vec = build_minus_one_cst (type);
-	tree cmp_type = truth_type_for (type);
-	gimple_seq stmts = NULL;
-	tree cmp = gimple_build (&stmts, tcode, cmp_type, arg0, arg1);
-	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	gimple* g = gimple_build_assign (gimple_call_lhs (stmt),
-					 VEC_COND_EXPR, cmp,
-					 minus_one_vec, zero_vec);
-	gimple_set_location (g, loc);
-	gsi_replace (gsi, g, false);
-      }
+      if (gimple_call_lhs (stmt))
+	{
+	  location_t loc = gimple_location (stmt);
+	  tree type = TREE_TYPE (arg0);
+	  tree zero_vec = build_zero_cst (type);
+	  tree minus_one_vec = build_minus_one_cst (type);
+	  tree cmp_type = truth_type_for (type);
+	  gimple_seq stmts = NULL;
+	  tree cmp = gimple_build (&stmts, tcode, cmp_type, arg0, arg1);
+	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	  gimple* g = gimple_build_assign (gimple_call_lhs (stmt),
+					   VEC_COND_EXPR, cmp,
+					   minus_one_vec, zero_vec);
+	  gimple_set_location (g, loc);
+	  gsi_replace (gsi, g, false);
+	}
+      else
+	gsi_replace (gsi, gimple_build_nop (), false);
       return true;
 
     case IX86_BUILTIN_PSLLD:
