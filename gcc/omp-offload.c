@@ -2206,6 +2206,26 @@ execute_oacc_device_lower ()
 	  gsi_next (&gsi);
       }
 
+  /* Regarding the OpenACC privatization level, we're currently only looking at
+     making the gang-private level work.  Regarding that, we have the following
+     configurations:
+
+       - GCN offloading: 'targetm.goacc.adjust_private_decl' does the work (in
+	 particular, change 'TREE_TYPE', etc.) and there is no
+	 'targetm.goacc.expand_var_decl'.
+
+       - nvptx offloading: 'targetm.goacc.adjust_private_decl' only sets a
+	 marker and then 'targetm.goacc.expand_var_decl' does the work.
+
+     Eventually (in particular, for worker-private level?), both
+     'targetm.goacc.adjust_private_decl' and 'targetm.goacc.expand_var_decl'
+     may need to do things, but that's currently not meant to be addressed, and
+     thus not fully worked out and implemented, and thus untested.  Hence,
+     'assert' what currently is implemented/tested, only.  */
+
+  if (targetm.goacc.expand_var_decl)
+    gcc_assert (adjusted_vars.is_empty ());
+
   /* Make adjustments to gang-private local variables if required by the
      target, e.g. forcing them into a particular address space.  Afterwards,
      ADDR_EXPR nodes which have adjusted variables as their argument need to
