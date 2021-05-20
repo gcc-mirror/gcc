@@ -161,6 +161,15 @@ test07()
   static_assert(!requires { 0 | reverse; });
 }
 
+void
+test08()
+{
+  // PR libstdc++/100639
+  auto v = views::iota(1701ll, 3000ll) | views::reverse | views::take(5);
+  for (auto x : v)
+    ;
+}
+
 int
 main()
 {
@@ -171,4 +180,5 @@ main()
   test05();
   test06();
   test07();
+  test08();
 }

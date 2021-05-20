@@ -149,11 +149,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       typedef _Iterator					iterator_type;
-      typedef typename __traits_type::difference_type	difference_type;
       typedef typename __traits_type::pointer		pointer;
+#if __cplusplus <= 201703L
+      typedef typename __traits_type::difference_type	difference_type;
       typedef typename __traits_type::reference		reference;
-
-#if __cplusplus > 201703L && __cpp_lib_concepts
+#else
       using iterator_concept
 	= conditional_t<random_access_iterator<_Iterator>,
 			random_access_iterator_tag,
@@ -161,6 +161,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using iterator_category
 	= __detail::__clamp_iter_cat<typename __traits_type::iterator_category,
 				     random_access_iterator_tag>;
+      using value_type = iter_value_t<_Iterator>;
+      using difference_type = iter_difference_t<_Iterator>;
+      using reference = iter_reference_t<_Iterator>;
 #endif
 
       /**
