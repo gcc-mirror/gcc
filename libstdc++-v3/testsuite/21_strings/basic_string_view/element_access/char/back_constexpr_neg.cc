@@ -32,4 +32,4 @@ back()
 static_assert(back() != 'a'); // { dg-error "non-constant condition" }
 
 // { dg-prune-output "in 'constexpr' expansion" }
-// { dg-prune-output "failed_assertion" }
+// { dg-prune-output "unreachable" }
