@@ -1517,19 +1517,6 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 			  || identifier_p (ce->index));
 	      if (ce->index == field || ce->index == DECL_NAME (field))
 		next = ce->value;
-	      else if (ANON_AGGR_TYPE_P (fldtype)
-		       && search_anon_aggr (fldtype,
-					    TREE_CODE (ce->index) == FIELD_DECL
-					    ? DECL_NAME (ce->index)
-					    : ce->index))
-		/* If the element is an anonymous union object and the
-		   initializer list is a designated-initializer-list, the
-		   anonymous union object is initialized by the
-		   designated-initializer-list { D }, where D is the
-		   designated-initializer-clause naming a member of the
-		   anonymous union object.  */
-		next = build_constructor_single (init_list_type_node,
-						 ce->index, ce->value);
 	      else
 		{
 		  ce = NULL;
@@ -1675,19 +1662,6 @@ process_init_constructor_record (tree type, tree init, int nested, int flags,
 
 		  if (ce->index == field || ce->index == DECL_NAME (field))
 		    break;
-		  if (ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-		    {
-		      tree t
-			= search_anon_aggr (TREE_TYPE (field),
-					    TREE_CODE (ce->index) == FIELD_DECL
-					    ? DECL_NAME (ce->index)
-					    : ce->index);
-		      if (t)
-			{
-			  field = t;
-			  break;
-			}
-		    }
 		}
 	    }
 	  if (field)
