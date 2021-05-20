@@ -1502,17 +1502,35 @@ CNS(MSG_Forced_Flags, "")
 CND(TCP_NODELAY, "Do not coalesce packets")
 
 #ifndef TCP_KEEPCNT
+#ifdef __MINGW32__
+/* Windows headers can be too old to have all available constants.
+ * We know this one. */
+# define TCP_KEEPCNT 16
+#else
 # define TCP_KEEPCNT -1
+#endif
 #endif
 CND(TCP_KEEPCNT, "Maximum number of keepalive probes")
 
 #ifndef TCP_KEEPIDLE
+#ifdef __MINGW32__
+/* Windows headers can be too old to have all available constants.
+ * We know this one. */
+# define TCP_KEEPIDLE 3
+#else
 # define TCP_KEEPIDLE -1
+#endif
 #endif
 CND(TCP_KEEPIDLE, "Idle time before TCP starts sending keepalive probes")
 
 #ifndef TCP_KEEPINTVL
+#ifdef __MINGW32__
+/* Windows headers can be too old to have all available constants.
+ * We know this one. */
+# define TCP_KEEPINTVL 17
+#else
 # define TCP_KEEPINTVL -1
+#endif
 #endif
 CND(TCP_KEEPINTVL, "Time between individual keepalive probes")
 
