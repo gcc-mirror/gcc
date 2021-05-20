@@ -1,3 +1,50 @@
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100367
+	PR c++/96299
+	* method.c (genericize_spaceship): Use fold_build2 for scalar
+	operands.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (build_deduction_guide): Treat the implicit deduction guide
+	as a member of the class.
+
+2021-05-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100596
+	* cp-tree.h (any_non_type_attribute_p): Remove.
+	* decl.c (grokdeclarator): Turn an error into a warning and only
+	warn for standard attributes.
+	* decl2.c (any_non_type_attribute_p): Remove.
+	* parser.c (cp_parser_elaborated_type_specifier): Turn an error
+	into a warning and only warn for standard attributes.
+	(cp_parser_member_declaration): Likewise.
+
+2021-05-19  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100658
+	* mangle.c (write_encoding): Fix typos.
+
+2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* parser.c (cp_parser_omp_master): Set OMP_MASTER_COMBINED on
+	master when combined with taskloop.
+	(cp_parser_omp_parallel): Don't set OMP_PARALLEL_COMBINED on
+	parallel master when not combined with taskloop.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100261
+	* rtti.c (get_tinfo_decl_direct): Check TYPE_TRANSPARENT_AGGR.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100372
+	* tree.c (strip_typedefs): Only look at the pattern of a
+	TYPE_PACK_EXPANSION if it's a type.
+
 2021-05-18  Marek Polacek  <polacek@redhat.com>
 
 	* class.c (classtype_has_non_deleted_copy_ctor): Remove.

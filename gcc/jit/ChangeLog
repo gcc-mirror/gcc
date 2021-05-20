@@ -1,3 +1,8 @@
+2021-05-19  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100658
+	* libgccjit.c (gcc_jit_context_new_function): Fix typos.
+
 2021-03-24  Matthias Klose  <doko@ubuntu.com>
 
 	* Make-lang.in (jit.sphinx.html, jit.sphinx.pdf): Use $(mkinstalldirs),

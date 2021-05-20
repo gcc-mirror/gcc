@@ -1,3 +1,182 @@
+2021-05-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (fur_source::get_operand): New.
+	(gimple_range_fold): Delete.
+	(fold_using_range::fold_stmt): Move from gimple_ranger::calc_stmt.
+	(fold_using_range::range_of_range_op): Move from gimple_ranger.
+	(fold_using_range::range_of_address): Ditto.
+	(fold_using_range::range_of_phi): Ditto.
+	(fold_using_range::range_of_call): Ditto.
+	(fold_using_range::range_of_builtin_ubsan_call): Move from
+	range_of_builtin_ubsan_call.
+	(fold_using_range::range_of_builtin_call): Move from
+	range_of_builtin_call.
+	(gimple_ranger::range_of_builtin_call): Delete.
+	(fold_using_range::range_of_cond_expr): Move from gimple_ranger.
+	(gimple_ranger::fold_range_internal): New.
+	(gimple_ranger::range_of_stmt): Use new fold_using_range API.
+	(fold_using_range::range_of_ssa_name_with_loop_info): Move from
+	gimple_ranger.  Improve ranges of SSA_NAMES when possible.
+	* gimple-range.h (gimple_ranger): Remove various range_of routines.
+	(class fur_source): New.
+	(class fold_using_range): New.
+	(fur_source::fur_source): New.
+	(fold_range): New.
+	* vr-values.c (vr_values::extract_range_basic): Use fold_using_range
+	instead of range_of_builtin_call.
+
+2021-05-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/cpp.texi (Common Predefined Macros): Update documentation
+	for the __GXX_EXPERIMENTAL_CXX0X__ macro.
+
+2021-05-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/100333
+	* config/arm/arm.md (nonsecure_call_internal): Always ensure
+	callee's address is in a register.
+
+2021-05-19  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* common/config/riscv/riscv-common.c
+	(riscv_subset_list::parsing_subset_version): Properly parse the letter
+	'p' in '-march'.
+	(riscv_subset_list::parse_std_ext,
+	 riscv_subset_list::parse_multiletter_ext): To handle errors generated
+	in riscv_subset_list::parsing_subset_version.
+
+2021-05-19  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd.md: Use "neon_move_narrow_q"
+	type attribute in patterns generating XTN(2).
+
+2021-05-19  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_simd_vec_pack_trunc_<mode>):
+	Remove as duplicate of...
+	(aarch64_xtn<mode>): This.
+	(aarch64_xtn2<mode>_le): Move position in file.
+	(aarch64_xtn2<mode>_be): Move position in file.
+	(aarch64_xtn2<mode>): Move position in file.
+	(vec_pack_trunc_<mode>): Define as an expander.
+
+2021-05-19  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd-builtins.def: Split builtin
+	generation for aarch64_<sur>q<r>shr<u>n_n<mode> pattern into
+	separate scalar and vector generators.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<sur>q<r>shr<u>n_n<mode>): Define as an expander and
+	split into...
+	(aarch64_<sur>q<r>shr<u>n_n<mode>_insn_le): This and...
+	(aarch64_<sur>q<r>shr<u>n_n<mode>_insn_be): This.
+	* config/aarch64/iterators.md: Define SD_HSDI iterator.
+
+2021-05-19  Jonathn Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd.md: Use UNSPEC_SQXTUN instead
+	of UNSPEC_SQXTUN2.
+	* config/aarch64/iterators.md: Remove UNSPEC_SQXTUN2.
+
+2021-05-19  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur>q<r>shr<u>n2_n<mode>):
+	Implement as an expand emitting a big/little endian
+	instruction pattern.
+	(aarch64_<sur>q<r>shr<u>n2_n<mode>_insn_le): Define.
+	(aarch64_<sur>q<r>shr<u>n2_n<mode>_insn_be): Define.
+
+2021-05-19  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_<sur><addsub>hn2<mode>):
+	Implement as an expand emitting a big/little endian
+	instruction pattern.
+	(aarch64_<sur><addsub>hn2<mode>_insn_le): Define.
+	(aarch64_<sur><addsub>hn2<mode>_insn_be): Define.
+	* config/aarch64/iterators.md: Remove UNSPEC_[R]ADDHN2 and
+	UNSPEC_[R]SUBHN2 unspecs and ADDSUBHN2 iterator.
+
+2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100672
+	* fold-const.c (fold_negate_expr_1): Use element_precision.
+	(negate_expr_p): Likewise.
+
+2021-05-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/iterators.md (SVE_PRED_LOAD): New iterator.
+	(pred_load): New int attribute.
+	* config/aarch64/aarch64-sve.md
+	(aarch64_load_<ANY_EXTEND:optab><SVE_HSDI:mode><SVE_PARTIAL_I:mode>): Use
+	SVE_PRED_LOAD enum iterator and corresponding pred_load attribute.
+	* config/aarch64/aarch64-sve-builtins-base.cc (expand): Update call to
+	code_for_aarch64_load.
+
+2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	* cfgexpand.c (discover_nonconstant_array_refs_r): Make
+	sure TARGET_MEM_REF bases are expanded as memory.
+	* tree-ssa-operands.c (operands_scanner::get_tmr_operands):
+	Do not mark TARGET_MEM_REF bases addressable.
+	* tree-ssa.c (non_rewritable_mem_ref_base): Handle
+	TARGET_MEM_REF bases as never rewritable.
+	* gimple-walk.c (walk_stmt_load_store_addr_ops): Do not
+	walk TARGET_MEM_REF bases as address-takens.
+	* tree-ssa-dce.c (ref_may_be_aliased): Handle TARGET_MEM_REF.
+
+2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	* builtins.c (get_object_alignment_1): Strip outer
+	WITH_SIZE_EXPR.
+	* tree-dfa.c (get_ref_base_and_extent): Handle outer
+	WITH_SIZE_EXPR for size processing and process the
+	containing ref.
+	* tree-ssa-alias.c (ao_ref_base_alias_set): Strip
+	outer WITH_SIZE_EXPR.
+	(ao_ref_base_alias_ptr_type): Likewise.
+	(refs_may_alias_p_2): Allow WITH_SIZE_EXPR in ref->ref
+	and handle that accordingly, stripping it for the
+	core alias workers.
+	* tree.c (get_base_address): Handle WITH_SIZE_EXPR by
+	looking through it instead of returning NULL.
+
+2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100576
+	* builtins.c (check_read_access): Convert bound to size_type_node if
+	non-NULL.
+
+2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (verify_types_in_gimple_min_lval): Inline...
+	(verify_types_in_gimple_reference): ... here.  Sanitize.
+	(verify_gimple_call): Verify references in LHS and arguments.
+	(verify_gimple_assign_single): Reject WITH_SIZE_EXPR.
+
+2021-05-19  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (VALID_INT_MODE_P):
+	Add V8QI, V4HI and V2SI modes for TARGET_64BIT.
+	* config/i386/i386.md (isa): Add x64_bmi.
+	(enabled): Handle x64_bmi.
+	* config/i386/mmx.md (mmx_andnot<MMXMODEI:mode>3):
+	Add alternative using 64bit general registers.
+	(*mmx_<any_logic:code><MMXMODEI:mode>3): Ditto.
+
+2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* tree.h (OMP_MASTER_COMBINED): Define.
+	* gimplify.c (gimplify_scan_omp_clauses): Rewrite lastprivate
+	handling for outer combined/composite constructs to a loop.
+	Handle lastprivate on combined target.
+	(gimplify_expr): Formatting fix.
+
+2021-05-19  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* passes.def: Add sink_code pass before store_merging.
+	* tree-ssa-sink.c (pass_sink_code:clone): New.
+
 2021-05-18  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/freebsd64.h (ADJUST_FIELD_ALIGN): Remove call to

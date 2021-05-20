@@ -1,3 +1,9 @@
+2021-05-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100619
+	* c-attribs.c (build_attr_access_from_parms): Handle arbitrarily many
+	bounds.
+
 2021-05-18  Richard Biener  <rguenther@suse.de>
 
 	PR c/100547

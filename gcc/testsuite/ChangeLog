@@ -1,3 +1,129 @@
+2021-05-19  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100619
+	* gcc.dg/pr100619.c: New test.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100367
+	PR c++/96299
+	* g++.dg/cpp2a/spaceship-fallback1.C: New test.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp1z/class-deduction-access1.C: New test.
+	* g++.dg/cpp1z/class-deduction-access2.C: New test.
+
+2021-05-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100596
+	* g++.dg/cpp0x/friend7.C: Turn a few dg-warnings into dg-errors.
+	Remove dg-errors for GNU attributes.
+	* g++.dg/ext/attrib63.C: Remove dg-error.
+	* g++.dg/cpp0x/friend8.C: New test.
+
+2021-05-19  Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.dg/modules/omp-1_a.C: Check pthread is available.
+	* g++.dg/modules/omp-1_b.C: Ditto.
+	* g++.dg/modules/omp-1_c.C: Ditto.
+	* g++.dg/modules/omp-2_a.C: Ditto.
+	* g++.dg/modules/omp-2_b.C: Ditto.
+
+2021-05-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/100333
+	* gcc.target/arm/cmse/pr100333.c: New test.
+
+2021-05-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99977
+	* gcc.target/arm/pr99977.c: Require arm_arch_v8m_base.
+
+2021-05-19  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* gcc.target/riscv/arch-12.c: New.
+	* gcc.target/riscv/attribute-19.c: New.
+
+2021-05-19  Jonathan Wright  <jonathan.wright@arm.com>
+
+	* gcc.target/aarch64/narrow_high_combine.c: New test.
+
+2021-05-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100672
+	* gcc.dg/torture/pr100672.c: New testcase.
+
+2021-05-19  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100658
+	* gcc.dg/local1.c: Fix typos.
+	* gcc.dg/ucnid-5-utf8.c: Likewise.
+	* gcc.dg/ucnid-5.c: Likewise.
+
+2021-05-19  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/sve/logical_unpacked_and_2.c: Change
+	scan-assembly-times to scan-assembly not for superfluous uxtb.
+	* gcc.target/aarch64/sve/logical_unpacked_and_3.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_and_4.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_and_6.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_and_7.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_2.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_3.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_4.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_6.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_eor_7.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_2.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_3.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_4.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_6.c: Likewise.
+	* gcc.target/aarch64/sve/logical_unpacked_orr_7.c: Likewise.
+	* gcc.target/aarch64/sve/ld1_extend.c: New test.
+
+2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100576
+	* gcc.c-torture/compile/pr100576.c: New test.
+
+2021-05-19  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/tree-ssa/ssa-sink-3.c: Fix test case.
+
+2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-2.c: Remove all xfails.
+	* c-c++-common/gomp/pr99928-12.c: New test.
+
+2021-05-19  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.dg/tree-ssa/ssa-sink-1.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-sink-2.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-3.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-4.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-5.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-6.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-7.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-8.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-9.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-10.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-13.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-14.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-16.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-17.c: Ditto.
+	* gcc.dg/tree-ssa/ssa-sink-18.c: New.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100261
+	* g++.dg/dfp/mangle-6.C: New test.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100372
+	* g++.dg/cpp0x/alias-decl-ttp1.C: New test.
+
 2021-05-18  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/ppc64-abi-warn-1.c: Remove.
