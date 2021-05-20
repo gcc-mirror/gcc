@@ -1,3 +1,32 @@
+2021-05-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	* gcc.target/powerpc/rop-1.c: New.
+	* gcc.target/powerpc/rop-2.c: New.
+	* gcc.target/powerpc/rop-3.c: New.
+	* gcc.target/powerpc/rop-4.c: New.
+	* gcc.target/powerpc/rop-5.c: New.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100367
+	PR c++/96299
+	* g++.dg/cpp2a/spaceship-fallback1.C: New test.
+
+2021-05-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99977
+	* gcc.target/arm/pr99977.c: Require arm_arch_v8m_base.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100261
+	* g++.dg/dfp/mangle-6.C: New test.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100372
+	* g++.dg/cpp0x/alias-decl-ttp1.C: New test.
+
 2021-05-18  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp0x/implicit-delete1.C: New test.
