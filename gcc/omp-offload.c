@@ -2246,7 +2246,8 @@ execute_oacc_device_lower ()
      COMPONENT_REFS, ARRAY_REFS and plain VAR_DECLs are also rewritten to use
      the new decl, adjusting types of appropriate tree nodes as necessary.  */
 
-  if (targetm.goacc.adjust_private_decl)
+  if (targetm.goacc.adjust_private_decl
+      && !adjusted_vars.is_empty ())
     {
       FOR_ALL_BB_FN (bb, cfun)
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
