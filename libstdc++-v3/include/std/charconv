@@ -703,7 +703,8 @@ namespace __detail
 	     chars_format __fmt = chars_format::general) noexcept;
 #endif
 
-#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64
+#if _GLIBCXX_FLOAT_IS_IEEE_BINARY32 && _GLIBCXX_DOUBLE_IS_IEEE_BINARY64 \
+    && __SIZE_WIDTH__ >= 32
   // Floating-point std::to_chars
 
   // Overloads for float.
