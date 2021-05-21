@@ -3721,12 +3721,26 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	{
 	  op_true = force_reg (mode, op_true);
 
-	  gen = gen_mmx_pblendvb;
+	  gen = gen_mmx_pblendvb64;
 	  if (mode != V8QImode)
 	    d = gen_reg_rtx (V8QImode);
 	  op_false = gen_lowpart (V8QImode, op_false);
 	  op_true = gen_lowpart (V8QImode, op_true);
 	  cmp = gen_lowpart (V8QImode, cmp);
+	}
+      break;
+    case E_V4QImode:
+    case E_V2HImode:
+      if (TARGET_SSE4_1)
+	{
+	  op_true = force_reg (mode, op_true);
+
+	  gen = gen_mmx_pblendvb32;
+	  if (mode != V4QImode)
+	    d = gen_reg_rtx (V4QImode);
+	  op_false = gen_lowpart (V4QImode, op_false);
+	  op_true = gen_lowpart (V4QImode, op_true);
+	  cmp = gen_lowpart (V4QImode, cmp);
 	}
       break;
     case E_V16QImode:
@@ -4241,6 +4255,12 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      else if (code == GT && TARGET_SSE4_1)
 		gen = gen_sminv8qi3;
 	      break;
+	    case E_V4QImode:
+	      if (code == GTU && TARGET_SSE2)
+		gen = gen_uminv4qi3;
+	      else if (code == GT && TARGET_SSE4_1)
+		gen = gen_sminv4qi3;
+	      break;
 	    case E_V8HImode:
 	      if (code == GTU && TARGET_SSE4_1)
 		gen = gen_uminv8hi3;
@@ -4252,6 +4272,12 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 		gen = gen_uminv4hi3;
 	      else if (code == GT && TARGET_SSE2)
 		gen = gen_sminv4hi3;
+	      break;
+	    case E_V2HImode:
+	      if (code == GTU && TARGET_SSE4_1)
+		gen = gen_uminv2hi3;
+	      else if (code == GT && TARGET_SSE2)
+		gen = gen_sminv2hi3;
 	      break;
 	    case E_V4SImode:
 	      if (TARGET_SSE4_1)
@@ -4327,8 +4353,10 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	    case E_V16HImode:
 	    case E_V16QImode:
 	    case E_V8QImode:
+	    case E_V4QImode:
 	    case E_V8HImode:
 	    case E_V4HImode:
+	    case E_V2HImode:
 	      /* Perform a parallel unsigned saturating subtraction.  */
 	      x = gen_reg_rtx (mode);
 	      emit_insn (gen_rtx_SET
