@@ -17983,6 +17983,43 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	}
       break;
 
+    case IX86_BUILTIN_PBLENDVB128:
+    case IX86_BUILTIN_PBLENDVB256:
+    case IX86_BUILTIN_BLENDVPS:
+    case IX86_BUILTIN_BLENDVPD:
+    case IX86_BUILTIN_BLENDVPS256:
+    case IX86_BUILTIN_BLENDVPD256:
+      gcc_assert (n_args == 3);
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      arg2 = gimple_call_arg (stmt, 2);
+      if (gimple_call_lhs (stmt))
+	{
+	  location_t loc = gimple_location (stmt);
+	  tree type = TREE_TYPE (arg2);
+	  gimple_seq stmts = NULL;
+	  if (VECTOR_FLOAT_TYPE_P (type))
+	    {
+	      tree itype = GET_MODE_INNER (TYPE_MODE (type)) == E_SFmode
+		? intSI_type_node : intDI_type_node;
+	      type = get_same_sized_vectype (itype, type);
+	      arg2 = gimple_build (&stmts, VIEW_CONVERT_EXPR, type, arg2);
+	    }
+	  tree zero_vec = build_zero_cst (type);
+	  tree cmp_type = truth_type_for (type);
+	  tree cmp = gimple_build (&stmts, LT_EXPR, cmp_type, arg2, zero_vec);
+	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	  gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
+					   VEC_COND_EXPR, cmp,
+					   arg1, arg0);
+	  gimple_set_location (g, loc);
+	  gsi_replace (gsi, g, false);
+	}
+      else
+	gsi_replace (gsi, gimple_build_nop (), false);
+      return true;
+
+
     case IX86_BUILTIN_PCMPEQB128:
     case IX86_BUILTIN_PCMPEQW128:
     case IX86_BUILTIN_PCMPEQD128:

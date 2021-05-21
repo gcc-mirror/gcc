@@ -17898,6 +17898,28 @@
    (set_attr "btver2_decode" "vector,vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn_and_split "*<sse4_1_avx2>_pblendvb_lt_subreg_not"
+  [(set (match_operand:VI1_AVX2 0 "register_operand")
+	(unspec:VI1_AVX2
+	  [(match_operand:VI1_AVX2 2 "vector_operand")
+	   (match_operand:VI1_AVX2 1 "register_operand")
+	   (lt:VI1_AVX2
+	     (subreg:VI1_AVX2
+	       (not (match_operand 3 "register_operand")) 0)
+	     (match_operand:VI1_AVX2 4 "const0_operand"))]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1
+   && GET_MODE_CLASS (GET_MODE (operands[3])) == MODE_VECTOR_INT
+   && GET_MODE_SIZE (GET_MODE (operands[3])) == <MODE_SIZE>
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	 [(match_dup 1) (match_dup 2)
+	  (lt:VI1_AVX2 (match_dup 3) (match_dup 4))] UNSPEC_BLENDV))]
+  "operands[3] = gen_lowpart (<MODE>mode, operands[3]);")
+
 (define_insn "sse4_1_pblendw"
   [(set (match_operand:V8HI 0 "register_operand" "=Yr,*x,x")
 	(vec_merge:V8HI

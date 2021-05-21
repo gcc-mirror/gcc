@@ -52,19 +52,19 @@ generic_psignd128 (__m128w a, __m128w b)
 #error "-msse4.1 should not be set for this test"
 #endif
 
-__m128d sse4_1_blendvpd (__m128d a, __m128d b, __m128d c) __attribute__((__target__("sse4.1")));
-__m128d generic_blendvpd (__m128d a, __m128d b, __m128d c);
+__m128 sse4_1_roundv4sf2 (__m128 a) __attribute__((__target__("sse4.1")));
+__m128 generic_roundv4sf2 (__m128 a);
 
-__m128d
-sse4_1_blendvpd  (__m128d a, __m128d b, __m128d c)
+__m128
+sse4_1_roundv4sf2  (__m128 a)
 {
-  return __builtin_ia32_blendvpd (a, b, c);
+  return __builtin_ia32_roundps_az (a);
 }
 
-__m128d
-generic_blendvpd  (__m128d a, __m128d b, __m128d c)
+__m128
+generic_blendvpd  (__m128 a)
 {
-  return __builtin_ia32_blendvpd (a, b, c);		/* { dg-error "needs isa option" } */
+  return __builtin_ia32_roundps_az (a);		/* { dg-error "needs isa option" } */
 }
 
 #ifdef __SSE4_2__
