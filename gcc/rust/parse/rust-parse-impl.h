@@ -442,7 +442,9 @@ Parser<ManagedTokenSource>::parse_inner_attributes ()
 {
   std::vector<AST::Attribute> inner_attributes;
 
-  while (lexer.peek_token ()->get_id () == HASH)
+  // only try to parse it if it starts with "#!" not only "#"
+  while (lexer.peek_token ()->get_id () == HASH
+	 && lexer.peek_token (1)->get_id () == EXCLAM)
     {
       AST::Attribute inner_attr = parse_inner_attribute ();
 
