@@ -1040,7 +1040,6 @@ struct __sanitizer_cookie_io_functions_t {
 
 #if SANITIZER_LINUX && !SANITIZER_ANDROID
   extern unsigned struct_ax25_parms_struct_sz;
-  extern unsigned struct_cyclades_monitor_sz;
   extern unsigned struct_input_keymap_entry_sz;
   extern unsigned struct_ipx_config_data_sz;
   extern unsigned struct_kbdiacrs_sz;
@@ -1385,15 +1384,6 @@ struct __sanitizer_cookie_io_functions_t {
 #endif  // SANITIZER_LINUX || SANITIZER_FREEBSD
 
 #if SANITIZER_LINUX && !SANITIZER_ANDROID
-  extern unsigned IOCTL_CYGETDEFTHRESH;
-  extern unsigned IOCTL_CYGETDEFTIMEOUT;
-  extern unsigned IOCTL_CYGETMON;
-  extern unsigned IOCTL_CYGETTHRESH;
-  extern unsigned IOCTL_CYGETTIMEOUT;
-  extern unsigned IOCTL_CYSETDEFTHRESH;
-  extern unsigned IOCTL_CYSETDEFTIMEOUT;
-  extern unsigned IOCTL_CYSETTHRESH;
-  extern unsigned IOCTL_CYSETTIMEOUT;
   extern unsigned IOCTL_EQL_EMANCIPATE;
   extern unsigned IOCTL_EQL_ENSLAVE;
   extern unsigned IOCTL_EQL_GETMASTRCFG;
