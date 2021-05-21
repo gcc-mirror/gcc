@@ -1,3 +1,17 @@
+2021-05-20  Alex Coplan  <alex.coplan@arm.com>
+	    Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/99977
+	* config/arm/arm.c (arm_split_compare_and_swap): Fix up codegen
+	with negative immediates: ensure we expand cbranchsi4_scratch
+	correctly and ensure we satisfy its constraints.
+	* config/arm/sync.md
+	(@atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1): Don't
+	attempt to tie two output operands together with constraints;
+	collapse two alternatives.
+	(@atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1): Likewise.
+	* config/arm/thumb1.md (cbranchsi4_neg_late): New.
+
 2021-05-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

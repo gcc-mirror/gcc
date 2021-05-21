@@ -1,3 +1,109 @@
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100489
+	* constexpr.c (get_or_insert_ctor_field): Remove assert.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80456
+	* call.c (build_new_method_call_1): Check again for side-effects
+	with a volatile object.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100054
+	PR c++/90479
+	* init.c (get_nsdmi): Do more context adjustment for local classes.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100032
+	* pt.c (get_underlying_template): Compare TYPE_QUALS.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91933
+	* class.c (build_base_path): Shortcut simple non-pointer case.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99180
+	PR c++/93295
+	PR c++/93867
+	PR c++/99118
+	PR c++/96873
+	* pt.c (alias_ctad_tweaks): Handle failure better.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/41723
+	* parser.c (cp_parser_class_name): Check dependent_scope_p.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/52625
+	* pt.c (maybe_process_partial_specialization): Check
+	DECL_SELF_REFERENCE_P.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/92918
+	* name-lookup.c (push_class_level_binding_1): Do overload a new
+	function with a previous using-declaration.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96673
+	* init.c (get_nsdmi): Don't defer access checking.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99901
+	* decl.c (cp_finish_decl): mark_needed an implicitly inline
+	static data member with an out-of-class redeclaration.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/96311
+	* typeck.c (check_return_expr): Call mark_exp_read in dependent
+	case.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/95870
+	* pt.c (enclosing_instantiation_of): Compare DECL_SOURCE_LOCATION if
+	there is no enclosing non-lambda function.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99201
+	* pt.c (class el_data): Add visited field.
+	(extract_local_specs): Pass it to cp_walk_tree.
+	(extract_locals_r): Walk into the body of a lambda.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/99643
+	* typeck2.c (massage_init_elt): Don't strip TARGET_EXPR.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/90664
+	* cvt.c (can_convert_qual): Check fnptr_conv_p.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91217
+	* pt.c (tsubst_lambda_expr): Skip the body block from
+	DECL_SAVED_TREE.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/97938
+	* cp-tree.h (PACK_EXPANSION_AUTO_P): New.
+	* lambda.c (add_capture): Set it.
+	* pt.c (tsubst_pack_expansion): Handle it.
+
 2021-04-21  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
