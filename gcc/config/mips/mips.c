@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "flags.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1513,14 +1514,14 @@ mips_handle_interrupt_attr (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 	  *no_add_attrs = true;
 	}
       else if (strcmp (TREE_STRING_POINTER (cst), "eic") != 0
-	       && strncmp (TREE_STRING_POINTER (cst), "vector=", 7) != 0)
+	       && !startswith (TREE_STRING_POINTER (cst), "vector="))
 	{
 	  warning (OPT_Wattributes,
 		   "argument to %qE attribute is neither eic, nor "
 		   "vector=<line>", name);
 	  *no_add_attrs = true;
 	}
-      else if (strncmp (TREE_STRING_POINTER (cst), "vector=", 7) == 0)
+      else if (startswith (TREE_STRING_POINTER (cst), "vector="))
 	{
 	  const char *arg = TREE_STRING_POINTER (cst) + 7;
 
@@ -1849,7 +1850,7 @@ static bool
 mips16_stub_function_p (const_rtx x)
 {
   return (GET_CODE (x) == SYMBOL_REF
-	  && strncmp (XSTR (x, 0), "__mips16_", 9) == 0);
+	  && startswith (XSTR (x, 0), "__mips16_"));
 }
 
 /* Return true if function X is a locally-defined and locally-binding
@@ -9323,7 +9324,7 @@ mips_function_rodata_section (tree decl, bool)
   if (decl && DECL_SECTION_NAME (decl))
     {
       const char *name = DECL_SECTION_NAME (decl);
-      if (DECL_COMDAT_GROUP (decl) && strncmp (name, ".gnu.linkonce.t.", 16) == 0)
+      if (DECL_COMDAT_GROUP (decl) && startswith (name, ".gnu.linkonce.t."))
 	{
 	  char *rname = ASTRDUP (name);
 	  rname[14] = 'd';
@@ -9331,7 +9332,7 @@ mips_function_rodata_section (tree decl, bool)
 	}
       else if (flag_function_sections
 	       && flag_data_sections
-	       && strncmp (name, ".text.", 6) == 0)
+	       && startswith (name, ".text."))
 	{
 	  char *rname = ASTRDUP (name);
 	  memcpy (rname + 1, "data", 4);
@@ -9489,7 +9490,7 @@ mips_output_filename (FILE *stream, const char *name)
 {
   /* If we are emitting DWARF-2, let dwarf2out handle the ".file"
      directives.  */
-  if (write_symbols == DWARF2_DEBUG)
+  if (dwarf_debuginfo_p ())
     return;
   else if (mips_output_filename_first_time)
     {

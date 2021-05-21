@@ -4245,10 +4245,22 @@ type_valid_for_vector_size (tree type, tree atname, tree args,
   if (nunits & (nunits - 1))
     {
       if (error_p)
-	error ("number of components of the vector not a power of two");
+	error ("number of vector components %wu not a power of two", nunits);
       else
 	warning (OPT_Wattributes,
-		 "number of components of the vector not a power of two");
+		 "number of vector components %wu not a power of two", nunits);
+      return NULL_TREE;
+    }
+
+  if (nunits >= (unsigned HOST_WIDE_INT)INT_MAX)
+    {
+      if (error_p)
+	error ("number of vector components %wu exceeds %d",
+	       nunits, INT_MAX - 1);
+      else
+	warning (OPT_Wattributes,
+		 "number of vector components %wu exceeds %d",
+		 nunits, INT_MAX - 1);
       return NULL_TREE;
     }
 
@@ -5031,16 +5043,25 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
       /* Create the attribute access string from the arg spec string,
 	 optionally followed by position of the VLA bound argument if
 	 it is one.  */
-      char specbuf[80];
-      int len = snprintf (specbuf, sizeof specbuf, "%c%u%s",
-			  attr_access::mode_chars[access_deferred],
-			  argpos, s);
-      gcc_assert ((size_t) len < sizeof specbuf);
+      {
+	size_t specend = spec.length ();
+	if (!specend)
+	  {
+	    spec = '+';
+	    specend = 1;
+	  }
 
-      if (!spec.length ())
-	spec += '+';
-
-      spec += specbuf;
+	/* Format the access string in place.  */
+	int len = snprintf (NULL, 0, "%c%u%s",
+			    attr_access::mode_chars[access_deferred],
+			    argpos, s);
+	spec.resize (specend + len + 1);
+	sprintf (&spec[specend], "%c%u%s",
+		 attr_access::mode_chars[access_deferred],
+		 argpos, s);
+	/* Trim the trailing NUL.  */
+	spec.resize (specend + len);
+      }
 
       /* The (optional) list of expressions denoting the VLA bounds
 	 N in ARGTYPE <arg>[Ni]...[Nj]...[Nk].  */
@@ -5065,8 +5086,13 @@ build_attr_access_from_parms (tree parms, bool skip_voidptr)
 		{
 		  /* BOUND previously seen in the parameter list.  */
 		  TREE_PURPOSE (vb) = size_int (*psizpos);
-		  sprintf (specbuf, "$%u", *psizpos);
-		  spec += specbuf;
+		  /* Format the position string in place.  */
+		  int len = snprintf (NULL, 0, "$%u", *psizpos);
+		  size_t specend = spec.length ();
+		  spec.resize (specend + len + 1);
+		  sprintf (&spec[specend], "$%u", *psizpos);
+		  /* Trim the trailing NUL.  */
+		  spec.resize (specend + len);
 		}
 	      else
 		{

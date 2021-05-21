@@ -1123,7 +1123,7 @@ public:
   rtx
   expand (function_expander &e) const OVERRIDE
   {
-    insn_code icode = code_for_aarch64_load (extend_rtx_code (),
+    insn_code icode = code_for_aarch64_load (UNSPEC_LD1_SVE, extend_rtx_code (),
 					     e.vector_mode (0),
 					     e.memory_vector_mode ());
     return e.use_contiguous_load_insn (icode);

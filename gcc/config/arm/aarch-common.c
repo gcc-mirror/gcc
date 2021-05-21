@@ -542,7 +542,7 @@ arm_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)
     {
       const char *con = constraints[i];
-      if (strncmp (con, "=@cc", 4) != 0)
+      if (!startswith (con, "=@cc"))
 	continue;
       con += 4;
       if (strchr (con, ',') != NULL)

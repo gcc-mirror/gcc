@@ -4040,6 +4040,10 @@ rs6000_option_override_internal (bool global_init_p)
       && ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY_ATOMIC) == 0))
     rs6000_isa_flags |= OPTION_MASK_QUAD_MEMORY_ATOMIC;
 
+  /* If we are inserting ROP-protect instructions, disable shrink wrap.  */
+  if (rs6000_rop_protect)
+    flag_shrink_wrap = 0;
+
   /* If we can shrink-wrap the TOC register save separately, then use
      -msave-toc-indirect unless explicitly disabled.  */
   if ((rs6000_isa_flags_explicit & OPTION_MASK_SAVE_TOC_INDIRECT) == 0
@@ -5360,7 +5364,11 @@ rs6000_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	 arbitrary and could potentially be improved with analysis.  */
       if (where == vect_body && stmt_info
 	  && stmt_in_inner_loop_p (vinfo, stmt_info))
-	count *= 50;  /* FIXME.  */
+	{
+	  loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
+	  gcc_assert (loop_vinfo);
+	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /* FIXME.  */
+	}
 
       retval = (unsigned) (count * stmt_cost);
       cost_data->cost[where] += retval;
@@ -7894,32 +7902,6 @@ rs6000_slow_unaligned_access (machine_mode mode, unsigned int align)
 	      && ((SCALAR_FLOAT_MODE_NOT_VECTOR_P (mode) && align < 32)
 		  || ((VECTOR_MODE_P (mode) || VECTOR_ALIGNMENT_P (mode))
 		      && (int) align < VECTOR_ALIGN (mode)))));
-}
-
-/* Previous GCC releases forced all vector types to have 16-byte alignment.  */
-
-bool
-rs6000_special_adjust_field_align_p (tree type, unsigned int computed)
-{
-  if (TARGET_ALTIVEC && TREE_CODE (type) == VECTOR_TYPE)
-    {
-      if (computed != 128)
-	{
-	  static bool warned;
-	  if (!warned && warn_psabi)
-	    {
-	      warned = true;
-	      inform (input_location,
-		      "the layout of aggregates containing vectors with"
-		      " %d-byte alignment has changed in GCC 5",
-		      computed / BITS_PER_UNIT);
-	    }
-	}
-      /* In current GCC there is no special case.  */
-      return false;
-    }
-
-  return false;
 }
 
 /* AIX word-aligns FP doubles but doubleword-aligns 64-bit ints.  */
@@ -17201,12 +17183,12 @@ toc_hasher::equal (toc_hash_struct *h1, toc_hash_struct *h2)
    instead, there should be some programmatic way of inquiring as
    to whether or not an object is a vtable.  */
 
-#define VTABLE_NAME_P(NAME)				\
-  (strncmp ("_vt.", name, strlen ("_vt.")) == 0		\
-  || strncmp ("_ZTV", name, strlen ("_ZTV")) == 0	\
-  || strncmp ("_ZTT", name, strlen ("_ZTT")) == 0	\
-  || strncmp ("_ZTI", name, strlen ("_ZTI")) == 0	\
-  || strncmp ("_ZTC", name, strlen ("_ZTC")) == 0)
+#define VTABLE_NAME_P(NAME)	  \
+  (startswith (name, "_vt.")	  \
+  || startswith (name, "_ZTV")	  \
+  || startswith (name, "_ZTT")	  \
+  || startswith (name, "_ZTI")	  \
+  || startswith (name, "_ZTC"))
 
 #ifdef NO_DOLLAR_IN_LABEL
 /* Return a GGC-allocated character string translating dollar signs in
@@ -21606,7 +21588,7 @@ rs6000_xcoff_declare_function_name (FILE *file, const char *name, tree decl)
     {
       if (write_symbols == DBX_DEBUG || write_symbols == XCOFF_DEBUG)
 	xcoffout_declare_function (file, decl, buffer);
-      else if (write_symbols == DWARF2_DEBUG)
+      else if (dwarf_debuginfo_p ())
 	{
 	  name = (*targetm.strip_name_encoding) (name);
 	  fprintf (file, "\t.function .%s,.%s,2,0\n", name, name);
@@ -23765,7 +23747,7 @@ rs6000_dbx_register_number (unsigned int regno, unsigned int format)
 {
   /* On some platforms, we use the standard DWARF register
      numbering for .debug_info and .debug_frame.  */
-  if ((format == 0 && write_symbols == DWARF2_DEBUG) || format == 1)
+  if ((format == 0 && dwarf_debuginfo_p ()) || format == 1)
     {
 #ifdef RS6000_USE_DWARF_NUMBERING
       if (regno <= 31)
@@ -24200,7 +24182,7 @@ rs6000_inner_target_options (tree args, bool attr_p)
 	  const char *cpu_opt = NULL;
 
 	  p = NULL;
-	  if (strncmp (q, "cpu=", 4) == 0)
+	  if (startswith (q, "cpu="))
 	    {
 	      int cpu_index = rs6000_cpu_name_lookup (q+4);
 	      if (cpu_index >= 0)
@@ -24211,7 +24193,7 @@ rs6000_inner_target_options (tree args, bool attr_p)
 		  cpu_opt = q+4;
 		}
 	    }
-	  else if (strncmp (q, "tune=", 5) == 0)
+	  else if (startswith (q, "tune="))
 	    {
 	      int tune_index = rs6000_cpu_name_lookup (q+5);
 	      if (tune_index >= 0)
@@ -24229,7 +24211,7 @@ rs6000_inner_target_options (tree args, bool attr_p)
 	      char *r = q;
 
 	      error_p = true;
-	      if (strncmp (r, "no-", 3) == 0)
+	      if (startswith (r, "no-"))
 		{
 		  invert = true;
 		  r += 3;

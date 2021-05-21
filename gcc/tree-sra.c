@@ -4244,7 +4244,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
       || stmt_ends_bb_p (stmt))
     {
       /* No need to copy into a constant-pool, it comes pre-initialized.  */
-      if (access_has_children_p (racc) && !TREE_READONLY (racc->base))
+      if (access_has_children_p (racc) && !constant_decl_p (racc->base))
 	generate_subtree_copies (racc->first_child, rhs, racc->offset, 0, 0,
 				 gsi, false, false, loc);
       if (access_has_children_p (lacc))
@@ -4333,7 +4333,7 @@ sra_modify_assign (gimple *stmt, gimple_stmt_iterator *gsi)
 	    }
 	  /* Restore the aggregate RHS from its components so the
 	     prevailing aggregate copy does the right thing.  */
-	  if (access_has_children_p (racc) && !TREE_READONLY (racc->base))
+	  if (access_has_children_p (racc))
 	    generate_subtree_copies (racc->first_child, rhs, racc->offset, 0, 0,
 				     gsi, false, false, loc);
 	  /* Re-load the components of the aggregate copy destination.

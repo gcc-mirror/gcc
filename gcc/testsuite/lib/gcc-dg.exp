@@ -1012,6 +1012,8 @@ if { [info procs saved-dg-test] == [list] } {
 	    }
 	    unset save_linenr_varnames
 	}
+
+	initialize_prune_notes
     }
 
     proc dg-test { args } {
@@ -1243,6 +1245,36 @@ proc dg-missed { args } {
     upvar dg-messages dg-messages
 
     process-message saved-dg-warning "missed:" "$args"
+}
+
+# Look for messages with 'note: ' prefixes.
+# In addition to standard compiler diagnostics ('DK_NOTE', 'inform' functions,
+# "for additional details on an error message"),
+# this also includes output from '-fopt-info' for 'MSG_NOTE':
+# a general optimization info.
+# By default, any *excess* notes are pruned, meaning their appearance doesn't
+# trigger *excess errors*.  However, if 'dg-note' is used at least once in a
+# testcase, they're not pruned and instead must *all* be handled explicitly.
+# Thus, if looking for just single instances of messages with 'note: ' prefixes
+# without caring for all of them, use 'dg-message "note: [...]"' instead of
+# 'dg-note', or use 'dg-note' together with 'dg-prune-output "note: "'.
+
+variable prune_notes
+
+proc initialize_prune_notes { } {
+    global prune_notes
+    set prune_notes 1
+}
+
+initialize_prune_notes
+
+proc dg-note { args } {
+    upvar dg-messages dg-messages
+
+    global prune_notes
+    set prune_notes 0
+
+    process-message saved-dg-warning "note:" "$args"
 }
 
 # Check the existence of a gdb in the path, and return true if there

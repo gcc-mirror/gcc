@@ -622,7 +622,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  = create_var_decl (gnu_entity_name, gnu_ext_name, gnu_type,
 			     gnu_expr, true, Is_Public (gnat_entity),
 			     false, false, false, artificial_p,
-			     debug_info_p, NULL, gnat_entity, true);
+			     debug_info_p, NULL, gnat_entity);
       }
       break;
 
@@ -1343,7 +1343,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    || (gnu_size
 		&& !allocatable_size_p (convert (sizetype,
 						 size_binop
-						 (CEIL_DIV_EXPR, gnu_size,
+						 (EXACT_DIV_EXPR, gnu_size,
 						  bitsize_unit_node)),
 					global_bindings_p ()
 					|| !definition
@@ -1392,7 +1392,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
 		    && !valid_constant_size_p (TYPE_SIZE_UNIT (gnu_alloc_type)))
-		  post_error ("?`Storage_Error` will be raised at run time!",
+		  post_error ("??`Storage_Error` will be raised at run time!",
 			      gnat_entity);
 
 		gnu_expr
@@ -1527,7 +1527,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 			     imported_p || !definition, static_flag,
 			     volatile_flag, artificial_p,
 			     debug_info_p && definition, attr_list,
-			     gnat_entity, true);
+			     gnat_entity);
 	DECL_BY_REF_P (gnu_decl) = used_by_ref;
 	DECL_POINTS_TO_READONLY_P (gnu_decl) = used_by_ref && inner_const_flag;
 	DECL_CAN_NEVER_BE_NULL_P (gnu_decl) = Can_Never_Be_Null (gnat_entity);
@@ -2345,11 +2345,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      set_nonaliased_component_on_array_type (tem);
 	  }
 
-	/* If an alignment is specified, use it if valid.  But ignore it
-	   for the original type of packed array types.  If the alignment
-	   was requested with an explicit alignment clause, state so.  */
-	if (No (Packed_Array_Impl_Type (gnat_entity))
-	    && Known_Alignment (gnat_entity))
+	/* If this is a packed type implemented specially, then process the
+	   implementation type so it is elaborated in the proper scope.  */
+	if (Present (Packed_Array_Impl_Type (gnat_entity)))
+	  gnat_to_gnu_entity (Packed_Array_Impl_Type (gnat_entity), NULL_TREE,
+			      false);
+
+	/* Otherwise, if an alignment is specified, use it if valid and, if
+	   the alignment was requested with an explicit clause, state so.  */
+	else if (Known_Alignment (gnat_entity))
 	  {
 	    SET_TYPE_ALIGN (tem,
 			    validate_alignment (Alignment (gnat_entity),
@@ -3522,9 +3526,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		      = create_var_decl (create_concat_name (gnat_entity,
 							     "XVZ"),
 					 NULL_TREE, sizetype, gnu_size_unit,
-					 false, false, false, false, false,
-					 true, debug_info_p,
-					 NULL, gnat_entity);
+					 true, false, false, false, false,
+					 true, true, NULL, gnat_entity, false);
 		}
 
 	      /* Or else, if the subtype is artificial and encodings are not
@@ -4324,7 +4327,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 ratio is greater or equal to the byte/bit ratio.  */
 	      if (tree_fits_uhwi_p (size)
 		  && align >= tree_to_uhwi (size) * BITS_PER_UNIT)
-		post_error_ne ("?suspiciously large alignment specified for&",
+		post_error_ne ("??suspiciously large alignment specified for&",
 			       Expression (Alignment_Clause (gnat_entity)),
 			       gnat_entity);
 	    }
@@ -4451,21 +4454,20 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       if (Unknown_RM_Size (gnat_entity) && TYPE_SIZE (gnu_type))
 	Set_RM_Size (gnat_entity, annotate_value (rm_size (gnu_type)));
 
-      /* If we are at global level, GCC will have applied variable_size to
-	 the type, but that won't have done anything.  So, if it's not
-	 a constant or self-referential, call elaborate_expression_1 to
-	 make a variable for the size rather than calculating it each time.
-	 Handle both the RM size and the actual size.  */
+      /* If we are at global level, GCC applied variable_size to the size but
+	 this has done nothing.  So, if it's not constant or self-referential,
+	 call elaborate_expression_1 to make a variable for it rather than
+	 calculating it each time.  */
       if (TYPE_SIZE (gnu_type)
 	  && !TREE_CONSTANT (TYPE_SIZE (gnu_type))
 	  && !CONTAINS_PLACEHOLDER_P (TYPE_SIZE (gnu_type))
 	  && global_bindings_p ())
 	{
-	  tree size = TYPE_SIZE (gnu_type);
+	  tree orig_size = TYPE_SIZE (gnu_type);
 
 	  TYPE_SIZE (gnu_type)
-	    = elaborate_expression_1 (size, gnat_entity, "SIZE", definition,
-				      false);
+	    = elaborate_expression_1 (TYPE_SIZE (gnu_type), gnat_entity,
+				      "SIZE", definition, false);
 
 	  /* ??? For now, store the size as a multiple of the alignment in
 	     bytes so that we can see the alignment from the tree.  */
@@ -4478,7 +4480,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     may not be marked by the call to create_type_decl below.  */
 	  MARK_VISITED (TYPE_SIZE_UNIT (gnu_type));
 
-	  if (TREE_CODE (gnu_type) == RECORD_TYPE)
+	  /* For a record type, deal with the variant part, if any, and handle
+	     the Ada size as well.  */
+	  if (RECORD_OR_UNION_TYPE_P (gnu_type))
 	    {
 	      tree variant_part = get_variant_part (gnu_type);
 	      tree ada_size = TYPE_ADA_SIZE (gnu_type);
@@ -4531,7 +4535,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		  DECL_SIZE_UNIT (variant_part) = TYPE_SIZE_UNIT (union_type);
 		}
 
-	      if (operand_equal_p (ada_size, size, 0))
+	      if (operand_equal_p (ada_size, orig_size, 0))
 		ada_size = TYPE_SIZE (gnu_type);
 	      else
 		ada_size
@@ -5439,7 +5443,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   input_location = saved_location;
 
   if (mech == By_Copy && (by_ref || by_component_ptr))
-    post_error ("?cannot pass & by copy", gnat_param);
+    post_error ("??cannot pass & by copy", gnat_param);
 
   /* If this is an Out parameter that isn't passed by reference and whose
      type doesn't require the initialization of formals, we don't make a
@@ -5737,16 +5741,16 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   tree gnu_cico_return_type = NULL_TREE;
   tree gnu_cico_field_list = NULL_TREE;
   bool gnu_cico_only_integral_type = true;
-  /* The semantics of "pure" in Ada essentially matches that of "const"
-     or "pure" in GCC.  In particular, both properties are orthogonal
-     to the "nothrow" property if the EH circuitry is explicit in the
-     internal representation of the middle-end.  If we are to completely
-     hide the EH circuitry from it, we need to declare that calls to pure
-     Ada subprograms that can throw have side effects since they can
-     trigger an "abnormal" transfer of control flow; therefore, they can
-     be neither "const" nor "pure" in the GCC sense.  */
-  bool const_flag = (Back_End_Exceptions () && Is_Pure (gnat_subprog));
-  bool pure_flag = false;
+  /* Although the semantics of "pure" units in Ada essentially match those of
+     "const" in GNU C, the semantics of the Is_Pure flag in GNAT do not say
+     anything about access to global memory, that's why it needs to be mapped
+     to "pure" instead of "const" in GNU C.  The property is orthogonal to the
+     "nothrow" property only if the EH circuitry is explicit in the internal
+     representation of the middle-end: if we are to completely hide the EH
+     circuitry from it, we need to declare that calls to pure Ada subprograms
+     that can throw have side effects, since they can trigger an "abnormal"
+     transfer of control; therefore they cannot be "pure" in the GCC sense.  */
+  bool pure_flag = Is_Pure (gnat_subprog) && Back_End_Exceptions ();
   bool return_by_direct_ref_p = false;
   bool return_by_invisi_ref_p = false;
   bool return_unconstrained_p = false;
@@ -5899,14 +5903,14 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
     }
 
   /* A procedure (something that doesn't return anything) shouldn't be
-     considered const since there would be no reason for calling such a
+     considered pure since there would be no reason for calling such a
      subprogram.  Note that procedures with Out (or In Out) parameters
      have already been converted into a function with a return type.
      Similarly, if the function returns an unconstrained type, then the
      function will allocate the return value on the secondary stack and
      thus calls to it cannot be CSE'ed, lest the stack be reclaimed.  */
   if (VOID_TYPE_P (gnu_return_type) || return_unconstrained_p)
-    const_flag = false;
+    pure_flag = false;
 
   /* Loop over the parameters and get their associated GCC tree.  While doing
      this, build a copy-in copy-out structure if we need one.  */
@@ -6034,19 +6038,16 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	  save_gnu_tree (gnat_param, gnu_param, false);
 
 	  /* A pure function in the Ada sense which takes an access parameter
-	     may modify memory through it and thus need be considered neither
-	     const nor pure in the GCC sense, unless it's access-to-function.
-	     Likewise it if takes a by-ref In Out or Out parameter.  But if it
-	     takes a by-ref In parameter, then it may only read memory through
-	     it and can be considered pure in the GCC sense.  */
-	  if ((const_flag || pure_flag)
+	     may modify memory through it and thus cannot be considered pure
+	     in the GCC sense, unless it's access-to-function.  Likewise it if
+	     takes a by-ref In Out or Out parameter.  But if it takes a by-ref
+	     In parameter, then it may only read memory through it and can be
+	     considered pure in the GCC sense.  */
+	  if (pure_flag
 	      && ((POINTER_TYPE_P (gnu_param_type)
 		   && TREE_CODE (TREE_TYPE (gnu_param_type)) != FUNCTION_TYPE)
 		  || TYPE_IS_FAT_POINTER_P (gnu_param_type)))
-	    {
-	      const_flag = false;
-	      pure_flag = DECL_POINTS_TO_READONLY_P (gnu_param);
-	    }
+	    pure_flag = DECL_POINTS_TO_READONLY_P (gnu_param);
 	}
 
       /* If the parameter uses the copy-in copy-out mechanism, allocate a field
@@ -6246,9 +6247,6 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	    }
 	}
 
-      if (const_flag)
-	gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_CONST);
-
       if (pure_flag)
 	gnu_type = change_qualified_type (gnu_type, TYPE_QUAL_RESTRICT);
 
@@ -6273,7 +6271,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
 	      if (!intrin_profiles_compatible_p (&inb))
 		post_error
-		  ("?profile of& doesn''t match the builtin it binds!",
+		  ("??profile of& doesn''t match the builtin it binds!",
 		   gnat_subprog);
 
 	      return gnu_builtin_decl;
@@ -6286,7 +6284,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     on demand without risking false positives with common default sets
 	     of options.  */
 	  if (warn_shadow)
-	    post_error ("?gcc intrinsic not found for&!", gnat_subprog);
+	    post_error ("??gcc intrinsic not found for&!", gnat_subprog);
 	}
     }
 
@@ -6726,12 +6724,12 @@ prepend_attributes (struct attrib **attr_list, Entity_Id gnat_entity)
    if a variable needs to be created and DEFINITION is true if this is done
    for a definition of GNAT_ENTITY.  If NEED_VALUE is true, we need a result;
    otherwise, we are just elaborating the expression for side-effects.  If
-   NEED_DEBUG is true, we need a variable for debugging purposes even if it
-   isn't needed for code generation.  */
+   NEED_FOR_DEBUG is true, we need a variable for debugging purposes even
+   if it isn't needed for code generation.  */
 
 static tree
 elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity, const char *s,
-		      bool definition, bool need_value, bool need_debug)
+		      bool definition, bool need_value, bool need_for_debug)
 {
   tree gnu_expr;
 
@@ -6749,12 +6747,12 @@ elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity, const char *s,
     return NULL_TREE;
 
   /* If it's a static expression, we don't need a variable for debugging.  */
-  if (need_debug && Compile_Time_Known_Value (gnat_expr))
-    need_debug = false;
+  if (need_for_debug && Compile_Time_Known_Value (gnat_expr))
+    need_for_debug = false;
 
   /* Otherwise, convert this tree to its GCC equivalent and elaborate it.  */
   gnu_expr = elaborate_expression_1 (gnat_to_gnu (gnat_expr), gnat_entity, s,
-				     definition, need_debug);
+				     definition, need_for_debug);
 
   /* Save the expression in case we try to elaborate this entity again.  Since
      it's not a DECL, don't check it.  Don't save if it's a discriminant.  */
@@ -6768,7 +6766,7 @@ elaborate_expression (Node_Id gnat_expr, Entity_Id gnat_entity, const char *s,
 
 static tree
 elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
-			bool definition, bool need_debug)
+			bool definition, bool need_for_debug)
 {
   const bool expr_public_p = Is_Public (gnat_entity);
   const bool expr_global_p = expr_public_p || global_bindings_p ();
@@ -6816,38 +6814,42 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 
   /* If the GNAT encodings are not used, we don't need a variable for debug
      info purposes if the expression is a constant or another variable, but
-     we need to be careful because we do not generate debug info for external
+     we must be careful because we do not generate debug info for external
      variables so DECL_IGNORED_P is not stable across units.  */
-  if (need_debug
+  if (need_for_debug
       && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
       && (TREE_CONSTANT (gnu_expr)
 	  || (!expr_public_p
 	      && DECL_P (gnu_expr)
 	      && !DECL_IGNORED_P (gnu_expr))))
-    need_debug = false;
+    need_for_debug = false;
 
   /* Now create it, possibly only for debugging purposes.  */
-  if (use_variable || need_debug)
+  if (use_variable || need_for_debug)
     {
       /* The following variable creation can happen when processing the body
-	 of subprograms that are defined out of the extended main unit and
+	 of subprograms that are defined outside of the extended main unit and
 	 inlined.  In this case, we are not at the global scope, and thus the
 	 new variable must not be tagged "external", as we used to do here as
-	 soon as DEFINITION was false.  */
+	 soon as DEFINITION was false.  And note that we test Needs_Debug_Info
+	 here instead of NEED_FOR_DEBUG because, once the variable is created,
+	 whether or not debug information is generated for it is orthogonal to
+	 the reason why it was created in the first place.  */
       tree gnu_decl
 	= create_var_decl (create_concat_name (gnat_entity, s), NULL_TREE,
 			   TREE_TYPE (gnu_expr), gnu_expr, true,
 			   expr_public_p, !definition && expr_global_p,
-			   expr_global_p, false, true, need_debug,
-			   NULL, gnat_entity);
+			   expr_global_p, false, true,
+			   Needs_Debug_Info (gnat_entity),
+			   NULL, gnat_entity, false);
 
-      /* Using this variable at debug time (if need_debug is true) requires a
-	 proper location.  The back-end will compute a location for this
+      /* Using this variable for debug (if need_for_debug is true) requires
+	 a proper location.  The back-end will compute a location for this
 	 variable only if the variable is used by the generated code.
 	 Returning the variable ensures the caller will use it in generated
 	 code.  Note that there is no need for a location if the debug info
 	 contains an integer constant.  */
-      if (use_variable || (need_debug && !TREE_CONSTANT (gnu_expr)))
+      if (use_variable || (need_for_debug && !TREE_CONSTANT (gnu_expr)))
 	return gnu_decl;
     }
 
@@ -6858,7 +6860,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 
 static tree
 elaborate_expression_2 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
-			bool definition, bool need_debug, unsigned int align)
+			bool definition, bool need_for_debug, unsigned int align)
 {
   tree unit_align = size_int (align / BITS_PER_UNIT);
   return
@@ -6867,7 +6869,7 @@ elaborate_expression_2 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
 						    gnu_expr,
 						    unit_align),
 					gnat_entity, s, definition,
-					need_debug),
+					need_for_debug),
 		unit_align);
 }
 
@@ -7599,20 +7601,20 @@ warn_on_field_placement (tree gnu_field, Node_Id gnat_component_list,
 
   const char *msg1
     = in_variant
-      ? "?variant layout may cause performance issues"
-      : "?record layout may cause performance issues";
+      ? "??variant layout may cause performance issues"
+      : "??record layout may cause performance issues";
   const char *msg2
     = Ekind (gnat_field) == E_Discriminant
-      ? "?discriminant & whose length is not multiple of a byte"
+      ? "??discriminant & whose length is not multiple of a byte"
       : field_has_self_size (gnu_field)
-	? "?component & whose length depends on a discriminant"
+	? "??component & whose length depends on a discriminant"
 	: field_has_variable_size (gnu_field)
-	  ? "?component & whose length is not fixed"
-	  : "?component & whose length is not multiple of a byte";
+	  ? "??component & whose length is not fixed"
+	  : "??component & whose length is not multiple of a byte";
   const char *msg3
     = do_reorder
-      ? "?comes too early and was moved down"
-      : "?comes too early and ought to be moved down";
+      ? "??comes too early and was moved down"
+      : "??comes too early and ought to be moved down";
 
   post_error (msg1, gnat_field);
   post_error_ne (msg2, gnat_field, gnat_field);
@@ -9483,14 +9485,14 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
       if (ada_type == void_type_node
 	  && btin_type != void_type_node)
 	{
-	  post_error ("?Ada arguments list too short!", inb->gnat_entity);
+	  post_error ("??Ada arguments list too short!", inb->gnat_entity);
 	  return false;
 	}
 
       if (btin_type == void_type_node
 	  && ada_type != void_type_node)
 	{
-	  post_error_ne_num ("?Ada arguments list too long ('> ^)!",
+	  post_error_ne_num ("??Ada arguments list too long ('> ^)!",
 			     inb->gnat_entity, inb->gnat_entity, argpos);
 	  return false;
 	}
@@ -9499,7 +9501,7 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
       argpos ++;
       if (intrin_types_incompatible_p (ada_type, btin_type))
 	{
-	  post_error_ne_num ("?intrinsic binding type mismatch on argument ^!",
+	  post_error_ne_num ("??intrinsic binding type mismatch on argument ^!",
 			     inb->gnat_entity, inb->gnat_entity, argpos);
 	  return false;
 	}
@@ -9530,7 +9532,7 @@ intrin_return_compatible_p (intrin_binding_t * inb)
      handles void/void as well.  */
   if (intrin_types_incompatible_p (btin_return_type, ada_return_type))
     {
-      post_error ("?intrinsic binding type mismatch on return value!",
+      post_error ("??intrinsic binding type mismatch on return value!",
 		  inb->gnat_entity);
       return false;
     }

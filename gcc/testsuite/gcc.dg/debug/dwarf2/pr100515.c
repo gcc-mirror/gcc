@@ -1,5 +1,6 @@
 /* PR debug/100515 */
 /* { dg-do compile } */
+/* { dg-require-effective-target fopenmp } */
 /* { dg-options "-g -O2 -fopenmp" } */
 
 void

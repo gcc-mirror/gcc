@@ -15435,7 +15435,10 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	 arbitrary and could potentially be improved with analysis.  */
       if (where == vect_body && stmt_info
 	  && stmt_in_inner_loop_p (vinfo, stmt_info))
-	count *= 50; /*  FIXME  */
+	{
+	  gcc_assert (loop_vinfo);
+	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /*  FIXME  */
+	}
 
       retval = (unsigned) (count * stmt_cost);
       costs->region[where] += retval;
@@ -17377,7 +17380,7 @@ aarch64_process_one_target_attr (char *arg_str)
   if (*str_to_check == '+')
     return aarch64_handle_attr_isa_flags (str_to_check);
 
-  if (len > 3 && strncmp (str_to_check, "no-", 3) == 0)
+  if (len > 3 && startswith (str_to_check, "no-"))
     {
       invert = true;
       str_to_check += 3;

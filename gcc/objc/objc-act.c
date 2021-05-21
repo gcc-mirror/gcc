@@ -3078,7 +3078,7 @@ static void
 synth_module_prologue (void)
 {
   tree type;
-  enum debug_info_type save_write_symbols = write_symbols;
+  uint32_t save_write_symbols = write_symbols;
   const struct gcc_debug_hooks *const save_hooks = debug_hooks;
 
   /* Suppress outputting debug symbols, because

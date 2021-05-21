@@ -4963,16 +4963,6 @@ push_cp_library_fn (enum tree_code operator_code, tree type,
   return fn;
 }
 
-/* Like push_library_fn, but takes a TREE_LIST of parm types rather than
-   a FUNCTION_TYPE.  */
-
-tree
-push_void_library_fn (tree name, tree parmtypes, int ecf_flags)
-{
-  tree type = build_function_type (void_type_node, parmtypes);
-  return push_library_fn (name, type, NULL_TREE, ecf_flags);
-}
-
 /* Like push_library_fn, but also note that this function throws
    and does not return.  Used for __throw_foo and the like.  */
 
@@ -6428,10 +6418,9 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	      /* We already reshaped this.  */
 	      if (field != d->cur->index)
 		{
-		  tree id = DECL_NAME (d->cur->index);
-		  gcc_assert (id);
-		  gcc_checking_assert (d->cur->index
-				       == get_class_binding (type, id));
+		  if (tree id = DECL_NAME (d->cur->index))
+		    gcc_checking_assert (d->cur->index
+					 == get_class_binding (type, id));
 		  field = d->cur->index;
 		}
 	    }
@@ -6451,6 +6440,32 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 		error ("%qT has no non-static data member named %qD", type,
 		       d->cur->index);
 	      return error_mark_node;
+	    }
+
+	  /* If the element is an anonymous union object and the initializer
+	     list is a designated-initializer-list, the anonymous union object
+	     is initialized by the designated-initializer-list { D }, where D
+	     is the designated-initializer-clause naming a member of the
+	     anonymous union object.  */
+	  tree ictx = DECL_CONTEXT (field);
+	  if (!same_type_ignoring_top_level_qualifiers_p (ictx, type))
+	    {
+	      gcc_assert (ANON_AGGR_TYPE_P (ictx));
+	      /* Find the anon aggr that is a direct member of TYPE.  */
+	      while (true)
+		{
+		  tree cctx = TYPE_CONTEXT (ictx);
+		  if (same_type_ignoring_top_level_qualifiers_p (cctx, type))
+		    break;
+		  ictx = cctx;
+		}
+	      /* And then the TYPE member with that anon aggr type.  */
+	      tree aafield = TYPE_FIELDS (type);
+	      for (; aafield; aafield = TREE_CHAIN (aafield))
+		if (TREE_TYPE (aafield) == ictx)
+		  break;
+	      gcc_assert (aafield);
+	      field = aafield;
 	    }
 	}
 
@@ -6635,6 +6650,8 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
      initialized from that element."  Even if T is an aggregate.  */
   if (cxx_dialect >= cxx11 && (CLASS_TYPE_P (type) || VECTOR_TYPE_P (type))
       && first_initializer_p
+      /* But not if it's a designated init.  */
+      && !d->cur->index
       && d->end - d->cur == 1
       && reference_related_p (type, TREE_TYPE (init)))
     {
@@ -11176,7 +11193,7 @@ mark_inline_variable (tree decl, location_t loc)
       inlinep = false;
     }
   else if (cxx_dialect < cxx17)
-    pedwarn (loc, 0, "inline variables are only available "
+    pedwarn (loc, OPT_Wc__17_extensions, "inline variables are only available "
 	     "with %<-std=c++17%> or %<-std=gnu++17%>");
   if (inlinep)
     {
@@ -12012,13 +12029,13 @@ grokdeclarator (const cp_declarator *declarator,
 	  storage_class = sc_none;
 	  staticp = 0;
 	}
-      if (constexpr_p && cxx_dialect < cxx20)
+      if (constexpr_p && pedantic && cxx_dialect < cxx20)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
 	  richloc.add_range (declspecs->locations[ds_constexpr]);
-	  pedwarn (&richloc, OPT_Wpedantic, "member %qD can be declared both "
-		   "%<virtual%> and %<constexpr%> only in %<-std=c++20%> or "
-		   "%<-std=gnu++20%>", dname);
+	  pedwarn (&richloc, OPT_Wc__20_extensions, "member %qD can be "
+		   "declared both %<virtual%> and %<constexpr%> only in "
+		   "%<-std=c++20%> or %<-std=gnu++20%>", dname);
 	}
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
@@ -12106,7 +12123,7 @@ grokdeclarator (const cp_declarator *declarator,
 	error_at (declspecs->locations[ds_consteval], "structured "
 		  "binding declaration cannot be %qs", "consteval");
       if (thread_p && cxx_dialect < cxx20)
-	pedwarn (declspecs->locations[ds_thread], 0,
+	pedwarn (declspecs->locations[ds_thread], OPT_Wc__20_extensions,
 		 "structured binding declaration can be %qs only in "
 		 "%<-std=c++20%> or %<-std=gnu++20%>",
 		 declspecs->gnu_thread_keyword_p
@@ -12128,7 +12145,7 @@ grokdeclarator (const cp_declarator *declarator,
 	  break;
 	case sc_static:
 	  if (cxx_dialect < cxx20)
-	    pedwarn (loc, 0,
+	    pedwarn (loc, OPT_Wc__20_extensions,
 		     "structured binding declaration can be %qs only in "
 		     "%<-std=c++20%> or %<-std=gnu++20%>", "static");
 	  break;
@@ -13741,11 +13758,15 @@ grokdeclarator (const cp_declarator *declarator,
 
 	if (friendp)
 	  {
-	    if (attrlist && !funcdef_flag
-		/* Hack to allow attributes like vector_size on a friend.  */
-		&& any_non_type_attribute_p (*attrlist))
-	      error_at (id_loc, "attribute appertains to a friend "
-			"declaration that is not a definition");
+	    /* Packages tend to use GNU attributes on friends, so we only
+	       warn for standard attributes.  */
+	    if (attrlist && !funcdef_flag && cxx11_attribute_p (*attrlist))
+	      {
+		*attrlist = NULL_TREE;
+		if (warning_at (id_loc, OPT_Wattributes, "attribute ignored"))
+		  inform (id_loc, "an attribute that appertains to a friend "
+			  "declaration that is not a definition is ignored");
+	      }
 	    /* Friends are treated specially.  */
 	    if (ctype == current_class_type)
 	      ;  /* We already issued a permerror.  */

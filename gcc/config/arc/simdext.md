@@ -2056,7 +2056,7 @@
   [(set (match_operand:VCT 0 "register_operand" "=r")
 	(neg:VCT (match_operand:VCT 1 "register_operand" "r")))]
   "TARGET_PLUS_DMPY"
-  "vsub<V_suffix)>\\t%0,0,%1"
+  "vsub<V_suffix>\\t%0,0,%1"
   [(set_attr "length" "8")
    (set_attr "type" "multi")])
 

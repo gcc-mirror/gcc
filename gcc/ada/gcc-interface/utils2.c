@@ -2071,7 +2071,9 @@ build_simple_component_ref (tree record, tree field, bool no_fold)
      need to warn since this will be done on trying to declare the object.  */
   if (TREE_CODE (DECL_FIELD_OFFSET (field)) == INTEGER_CST
       && TREE_OVERFLOW (DECL_FIELD_OFFSET (field)))
-    return NULL_TREE;
+    return build1 (NULL_EXPR, TREE_TYPE (field),
+		   build_call_raise (SE_Object_Too_Large, Empty,
+				     N_Raise_Storage_Error));
 
   ref = build3 (COMPONENT_REF, TREE_TYPE (field), record, field, NULL_TREE);
 
@@ -2105,7 +2107,7 @@ build_simple_component_ref (tree record, tree field, bool no_fold)
   return fold (ref);
 }
 
-/* Likewise, but return NULL_EXPR and generate a Constraint_Error if the
+/* Likewise, but return NULL_EXPR and generate a Program_Error if the
    field is not found in the record.  */
 
 tree
@@ -2115,10 +2117,13 @@ build_component_ref (tree record, tree field, bool no_fold)
   if (ref)
     return ref;
 
-  /* Assume this is an invalid user field so raise Constraint_Error.  */
+  /* The missing field should have been detected in the front-end.  */
+  gigi_checking_assert (false);
+
+  /* Assume this is an invalid user field so raise Program_Error.  */
   return build1 (NULL_EXPR, TREE_TYPE (field),
-		 build_call_raise (CE_Discriminant_Check_Failed, Empty,
-				   N_Raise_Constraint_Error));
+		 build_call_raise (PE_Explicit_Raise, Empty,
+				   N_Raise_Program_Error));
 }
 
 /* Helper for build_call_alloc_dealloc, with arguments to be interpreted

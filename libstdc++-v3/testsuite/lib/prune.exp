@@ -52,6 +52,8 @@ proc libstdc++-dg-prune { system text } {
     regsub -all "(^|\n)\[ \t\]*from \[^\n\]*" $text "" text
 
     # Ignore informational notes.
+    #TODO As this isn't even using 'gcc-dg.exp', cannot consider its
+    # 'variable prune_notes' (for 'dg-note') here.
     regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text
 
     # Ignore errata warning from IA64 assembler.

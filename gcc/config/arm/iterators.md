@@ -231,6 +231,9 @@
 ;; Vector modes for 16-bit floating-point support.
 (define_mode_iterator VH [V8HF V4HF])
 
+;; Modes with 16-bit elements only.
+(define_mode_iterator V16 [V4HI V4HF V8HI V8HF])
+
 ;; 16-bit floating-point vector modes suitable for moving (includes BFmode).
 (define_mode_iterator VHFBF [V8HF V4HF V4BF V8BF])
 
@@ -571,6 +574,8 @@
 ;; (Opposite) mode to convert to/from for vector-half mode conversions.
 (define_mode_attr VH_CVTTO [(V4HI "V4HF") (V4HF "V4HI")
 			    (V8HI "V8HF") (V8HF "V8HI")])
+(define_mode_attr VH_cvtto [(V4HI "v4hf") (V4HF "v4hi")
+			    (V8HI "v8hf") (V8HF "v8hi")])
 
 ;; Define element mode for each vector mode.
 (define_mode_attr V_elem [(V8QI "QI") (V16QI "QI")
@@ -720,6 +725,7 @@
 (define_mode_attr v_cmp_result [(V8QI "v8qi") (V16QI "v16qi")
 				(V4HI "v4hi") (V8HI  "v8hi")
 				(V2SI "v2si") (V4SI  "v4si")
+				(V4HF "v4hi") (V8HF  "v8hi")
 				(DI   "di")   (V2DI  "v2di")
 				(V2SF "v2si") (V4SF  "v4si")])
 
@@ -1288,12 +1294,11 @@
 		       (VCREATEQ_U "u") (VCREATEQ_S "s") (VSHRQ_N_S "s")
 		       (VSHRQ_N_U "u") (VCVTQ_N_FROM_F_S "s") (VSHLQ_U "u")
 		       (VCVTQ_N_FROM_F_U "u") (VADDLVQ_P_S "s") (VSHLQ_S "s")
-		       (VADDLVQ_P_U "u") (VCMPNEQ_S "s")
+		       (VADDLVQ_P_U "u")
 		       (VABDQ_M_S "s") (VABDQ_M_U "u") (VABDQ_S "s")
 		       (VABDQ_U "u") (VADDQ_N_S "s") (VADDQ_N_U "u")
 		       (VADDVQ_P_S "s")	(VADDVQ_P_U "u") (VBRSRQ_N_S "s")
-		       (VBRSRQ_N_U "u") (VCMPEQQ_S "s")
-		       (VCMPEQQ_N_S "s") (VCMPNEQ_N_S "s")
+		       (VBRSRQ_N_U "u")
 		       (VHADDQ_N_S "s") (VHADDQ_N_U "u") (VHADDQ_S "s")
 		       (VHADDQ_U "u") (VHSUBQ_N_S "s")	(VHSUBQ_N_U "u")
 		       (VHSUBQ_S "s") (VMAXQ_S "s") (VMAXQ_U "u") (VHSUBQ_U "u")
@@ -1549,16 +1554,12 @@
 (define_int_iterator VSHRQ_N [VSHRQ_N_S VSHRQ_N_U])
 (define_int_iterator VCVTQ_N_FROM_F [VCVTQ_N_FROM_F_S VCVTQ_N_FROM_F_U])
 (define_int_iterator VADDLVQ_P [VADDLVQ_P_S VADDLVQ_P_U])
-(define_int_iterator VCMPNEQ [VCMPNEQ_S])
 (define_int_iterator VSHLQ [VSHLQ_S VSHLQ_U])
 (define_int_iterator VABDQ [VABDQ_S VABDQ_U])
 (define_int_iterator VADDQ_N [VADDQ_N_S VADDQ_N_U])
 (define_int_iterator VADDVAQ [VADDVAQ_S VADDVAQ_U])
 (define_int_iterator VADDVQ_P [VADDVQ_P_U VADDVQ_P_S])
 (define_int_iterator VBRSRQ_N [VBRSRQ_N_U VBRSRQ_N_S])
-(define_int_iterator VCMPEQQ [VCMPEQQ_S])
-(define_int_iterator VCMPEQQ_N [VCMPEQQ_N_S])
-(define_int_iterator VCMPNEQ_N [VCMPNEQ_N_S])
 (define_int_iterator VHADDQ [VHADDQ_S VHADDQ_U])
 (define_int_iterator VHADDQ_N [VHADDQ_N_U VHADDQ_N_S])
 (define_int_iterator VHSUBQ [VHSUBQ_S VHSUBQ_U])

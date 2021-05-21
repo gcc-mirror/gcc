@@ -784,7 +784,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   tree context = NULL_TREE;
   struct deferred_decl_context_node *deferred_decl_context = NULL;
 
-  /* If explicitely asked to make DECL global or if it's an imported nested
+  /* If explicitly asked to make DECL global or if it's an imported nested
      object, short-circuit the regular Scope-based context computation.  */
   if (!((TREE_PUBLIC (decl) && DECL_EXTERNAL (decl)) || force_global == 1))
     {
@@ -1547,7 +1547,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
   TYPE_SIZE (record) = size ? size : orig_size;
   TYPE_SIZE_UNIT (record)
     = convert (sizetype,
-	       size_binop (CEIL_DIV_EXPR, TYPE_SIZE (record),
+	       size_binop (EXACT_DIV_EXPR, TYPE_SIZE (record),
 			   bitsize_unit_node));
 
   /* If we are changing the alignment and the input type is a record with
@@ -1637,7 +1637,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	    = create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
 			      size_unit, true, global_bindings_p (),
 			      !definition && global_bindings_p (), false,
-			      false, true, true, NULL, gnat_entity);
+			      false, true, true, NULL, gnat_entity, false);
 	  TYPE_SIZE_UNIT (record) = size_unit;
 	}
 
@@ -1721,11 +1721,11 @@ built:
       if (Comes_From_Source (gnat_entity))
 	{
 	  if (is_component_type)
-	    post_error_ne_tree ("component of& padded{ by ^ bits}?",
+	    post_error_ne_tree ("component of& padded{ by ^ bits}??",
 				gnat_entity, gnat_entity,
 				size_diffop (size, orig_size));
 	  else if (Present (gnat_error_node))
-	    post_error_ne_tree ("{^ }bits of & unused?",
+	    post_error_ne_tree ("{^ }bits of & unused??",
 				gnat_error_node, gnat_entity,
 				size_diffop (size, orig_size));
 	}
@@ -1970,7 +1970,6 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 {
   const enum tree_code orig_code = TREE_CODE (record_type);
   const bool had_size = TYPE_SIZE (record_type) != NULL_TREE;
-  const bool had_size_unit = TYPE_SIZE_UNIT (record_type) != NULL_TREE;
   const bool had_align = TYPE_ALIGN (record_type) > 0;
   /* For all-repped records with a size specified, lay the QUAL_UNION_TYPE
      out just like a UNION_TYPE, since the size will be fixed.  */
@@ -1997,9 +1996,6 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
 
       if (!had_size)
 	TYPE_SIZE (record_type) = bitsize_zero_node;
-
-      if (!had_size_unit)
-	TYPE_SIZE_UNIT (record_type) = size_zero_node;
     }
   else
     {
@@ -2155,19 +2151,22 @@ finish_record_type (tree record_type, tree field_list, int rep_level,
   /* We need to set the regular sizes if REP_LEVEL is one.  */
   if (rep_level == 1)
     {
-      /* If this is a padding record, we never want to make the size smaller
-	 than what was specified in it, if any.  */
-      if (TYPE_IS_PADDING_P (record_type) && TYPE_SIZE (record_type))
-	size = TYPE_SIZE (record_type);
-
-      tree size_unit = had_size_unit
-		       ? TYPE_SIZE_UNIT (record_type)
-		       : convert (sizetype,
-				  size_binop (CEIL_DIV_EXPR, size,
-					      bitsize_unit_node));
+      /* We round TYPE_SIZE and TYPE_SIZE_UNIT up to TYPE_ALIGN separately
+	 to avoid having very large masking constants in TYPE_SIZE_UNIT.  */
       const unsigned int align = TYPE_ALIGN (record_type);
 
+      /* If this is a padding record, we never want to make the size smaller
+	 than what was specified in it, if any.  */
+      if (TYPE_IS_PADDING_P (record_type) && had_size)
+	size = TYPE_SIZE (record_type);
+      else
+	size = round_up (size, BITS_PER_UNIT);
+
       TYPE_SIZE (record_type) = variable_size (round_up (size, align));
+
+      tree size_unit
+	= convert (sizetype,
+		   size_binop (EXACT_DIV_EXPR, size, bitsize_unit_node));
       TYPE_SIZE_UNIT (record_type)
 	= variable_size (round_up (size_unit, align / BITS_PER_UNIT));
     }

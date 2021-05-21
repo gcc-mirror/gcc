@@ -877,6 +877,11 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
 	  rhs.value = build3_loc (loc, COND_EXPR, TREE_TYPE (trueval.value),
 				  rhs.value, trueval.value, falseval.value);
 	}
+      if (get_gimple_rhs_class (TREE_CODE (rhs.value)) == GIMPLE_INVALID_RHS)
+	{
+	  c_parser_error (parser, "unexpected RHS for assignment");
+	  return;
+	}
       assign = gimple_build_assign (lhs.value, rhs.value);
       gimple_seq_add_stmt_without_update (seq, assign);
       gimple_set_location (assign, loc);
@@ -1754,6 +1759,12 @@ c_parser_gimple_postfix_expression_after_primary (gimple_parser &parser,
 	      c_parser_gimple_expr_list (parser, &exprlist);
 	    c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 				       "expected %<)%>");
+	    if (!FUNC_OR_METHOD_TYPE_P (TREE_TYPE (expr.value)))
+	      {
+		c_parser_error (parser, "invalid call to non-function");
+		expr.set_error ();
+		break;
+	      }
 	    expr.value = build_call_array_loc
 		(expr_loc, TREE_TYPE (TREE_TYPE (expr.value)),
 		 expr.value, exprlist.length (), exprlist.address ());
@@ -1887,7 +1898,8 @@ c_parser_gimple_label (gimple_parser &parser, gimple_seq *seq)
   gcc_assert (c_parser_next_token_is (parser, CPP_COLON));
   c_parser_consume_token (parser);
   tree label = define_label (loc1, name);
-  gimple_seq_add_stmt_without_update (seq, gimple_build_label (label));
+  if (label)
+    gimple_seq_add_stmt_without_update (seq, gimple_build_label (label));
   return;
 }
 

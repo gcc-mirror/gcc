@@ -226,7 +226,6 @@ address_is_prefixed (rtx addr,
 
 #ifdef TREE_CODE
 extern unsigned int rs6000_data_alignment (tree, unsigned int, enum data_align);
-extern bool rs6000_special_adjust_field_align_p (tree, unsigned int);
 extern unsigned int rs6000_special_adjust_field_align (tree, unsigned int);
 extern unsigned int rs6000_special_round_type_align (tree, unsigned int,
 						     unsigned int);

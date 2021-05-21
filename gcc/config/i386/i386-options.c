@@ -1904,7 +1904,7 @@ ix86_option_override_internal (bool main_args_p,
 
       /* opts->x_ix86_tune_string is set to opts->x_ix86_arch_string
 	 or defaulted.  We need to use a sensible tune option.  */
-      if (!strncmp (opts->x_ix86_tune_string, "x86-64", 6)
+      if (startswith (opts->x_ix86_tune_string, "x86-64")
 	  && (opts->x_ix86_tune_string[6] == '\0'
 	      || (!strcmp (opts->x_ix86_tune_string + 6, "-v2")
 		  || !strcmp (opts->x_ix86_tune_string + 6, "-v3")

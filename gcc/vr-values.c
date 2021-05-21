@@ -1229,7 +1229,7 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 	    return;
 	  break;
 	default:
-	  if (range_of_builtin_call (*this, *vr, as_a<gcall *> (stmt)))
+	  if (fold_range (*vr, stmt, this))
 	    {
 	      /* The original code nuked equivalences every time a
 		 range was found, so do the same here.  */
@@ -1649,6 +1649,9 @@ bounds_of_var_in_loop (tree *min, tree *max, range_query *query,
 
   init = initial_condition_in_loop_num (chrec, loop->num);
   step = evolution_part_in_loop_num (chrec, loop->num);
+
+  if (!init || !step)
+    return false;
 
   /* If INIT is an SSA with a singleton range, set INIT to said
      singleton, otherwise leave INIT alone.  */

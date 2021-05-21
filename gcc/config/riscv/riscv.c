@@ -3593,7 +3593,7 @@ riscv_elf_select_rtx_section (machine_mode mode, rtx x,
 
   if (riscv_size_ok_for_small_data_p (GET_MODE_SIZE (mode)))
     {
-      if (strncmp (s->named.name, ".rodata.cst", strlen (".rodata.cst")) == 0)
+      if (startswith (s->named.name, ".rodata.cst"))
 	{
 	  /* Rename .rodata.cst* to .srodata.cst*. */
 	  char *name = (char *) alloca (strlen (s->named.name) + 2);

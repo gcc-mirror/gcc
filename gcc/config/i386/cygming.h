@@ -82,7 +82,7 @@ along with GCC; see the file COPYING3.  If not see
 #undef DBX_REGISTER_NUMBER
 #define DBX_REGISTER_NUMBER(n)				\
   (TARGET_64BIT ? dbx64_register_map[n]			\
-   : (write_symbols == DWARF2_DEBUG			\
+   : (dwarf_debuginfo_p ()				\
       ? svr4_dbx_register_map[n] : dbx_register_map[n]))
 
 /* Map gcc register number to DWARF 2 CFA column number. For 32 bit

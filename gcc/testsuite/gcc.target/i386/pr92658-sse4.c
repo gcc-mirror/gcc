@@ -61,7 +61,7 @@ bar_u8_u32 (v4si * dst, v16qi src)
   dst[0] = *(v4si *) tem;
 }
 
-/* { dg-final { scan-assembler-times "pmovzxbd" 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "pmovzxbd" 2 } } */
 
 void
 foo_u8_u64 (v2di * dst, v16qi * __restrict src)
@@ -125,7 +125,7 @@ bar_u16_u64 (v2di * dst, v8hi src)
   dst[0] = *(v2di *) tem;
 }
 
-/* { dg-final { scan-assembler-times "pmovzxwq" 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "pmovzxwq" 2 } } */
 
 void
 foo_u32_u64 (v2di * dst, v4si * __restrict src)

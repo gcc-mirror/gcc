@@ -1,3 +1,11 @@
+2021-05-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/100615
+	* sm-malloc.cc: Include "analyzer/function-set.h".
+	(malloc_state_machine::on_stmt): Call unaffected_by_call_p and
+	bail on the functions it recognizes.
+	(malloc_state_machine::unaffected_by_call_p): New.
+
 2021-05-10  Martin Liska  <mliska@suse.cz>
 
 	* sm-file.cc (is_file_using_fn_p): Use startswith

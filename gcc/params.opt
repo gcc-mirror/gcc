@@ -1089,4 +1089,8 @@ Bound on number of runtime checks inserted by the vectorizer's loop versioning f
 Common Joined UInteger Var(param_vect_partial_vector_usage) Init(2) IntegerRange(0, 2) Param Optimization
 Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only for loops whose need to iterate can be removed, 2 means for all loops.  The default value is 2.
 
+-param=vect-inner-loop-cost-factor=
+Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 999999) Param Optimization
+The factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
+
 ; This comment is to ensure we retain the blank line above.

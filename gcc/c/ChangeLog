@@ -1,3 +1,24 @@
+2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-parser.c (c_parser_omp_master): Set OMP_MASTER_COMBINED on
+	master when combined with taskloop.
+	(c_parser_omp_parallel): Don't set OMP_PARALLEL_COMBINED on
+	parallel master when not combined with taskloop.
+
+2021-05-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/100522
+	* gimple-parser.c (c_parser_gimple_postfix_expression_after_primary):
+	Diagnose calls to non-functions.
+	(c_parser_gimple_statement): Diagnose unexpected assignment RHS.
+
+2021-05-17  Richard Biener  <rguenther@suse.de>
+
+	PR c/100625
+	* gimple-parser.c (c_parser_gimple_label): Avoid building
+	a GIMPLE label with NULL label decl.
+
 2021-05-13  Martin Sebor  <msebor@redhat.com>
 
 	PR c/100550

@@ -22,8 +22,27 @@ along with GCC; see the file COPYING3.  If not see
 
 #if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
 
-/* Names of debug_info_type, for error messages.  */
+/* Names of fundamental debug info formats indexed by enum
+   debug_info_type.  */
+
 extern const char *const debug_type_names[];
+
+/* Get enum debug_info_type of the specified debug format, for error messages.
+   Can be used only for individual debug format types.  */
+
+extern enum debug_info_type debug_set_to_format (uint32_t debug_info_set);
+
+/* Get the number of debug formats enabled for output.  */
+
+unsigned int debug_set_count (uint32_t w_symbols);
+
+/* Get the names of the debug formats enabled for output.  */
+
+const char * debug_set_names (uint32_t w_symbols);
+
+/* Return true iff DWARF2 debug info is enabled.  */
+
+extern bool dwarf_debuginfo_p ();
 
 extern void strip_off_ending (char *, int);
 extern int base_of_path (const char *path, const char **base_out);

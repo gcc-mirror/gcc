@@ -1428,7 +1428,8 @@ asm_str_count (const char *templ)
 static bool
 dwarf2_debug_info_emitted_p (tree decl)
 {
-  if (write_symbols != DWARF2_DEBUG && write_symbols != VMS_AND_DWARF2_DEBUG)
+  /* When DWARF2 debug info is not generated internally.  */
+  if (!dwarf_debuginfo_p ())
     return false;
 
   if (DECL_IGNORED_P (decl))
@@ -2306,10 +2307,8 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  break;
 
 	case NOTE_INSN_BLOCK_BEG:
-	  if (debug_info_level == DINFO_LEVEL_NORMAL
-	      || debug_info_level == DINFO_LEVEL_VERBOSE
-	      || write_symbols == DWARF2_DEBUG
-	      || write_symbols == VMS_AND_DWARF2_DEBUG
+	  if (debug_info_level >= DINFO_LEVEL_NORMAL
+	      || dwarf_debuginfo_p ()
 	      || write_symbols == VMS_DEBUG)
 	    {
 	      int n = BLOCK_NUMBER (NOTE_BLOCK (insn));
@@ -2344,10 +2343,8 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	case NOTE_INSN_BLOCK_END:
 	  maybe_output_next_view (seen);
 
-	  if (debug_info_level == DINFO_LEVEL_NORMAL
-	      || debug_info_level == DINFO_LEVEL_VERBOSE
-	      || write_symbols == DWARF2_DEBUG
-	      || write_symbols == VMS_AND_DWARF2_DEBUG
+	  if (debug_info_level >= DINFO_LEVEL_NORMAL
+	      || dwarf_debuginfo_p ()
 	      || write_symbols == VMS_DEBUG)
 	    {
 	      int n = BLOCK_NUMBER (NOTE_BLOCK (insn));

@@ -752,9 +752,8 @@ x86_64_elf_section_type_flags (tree decl, const char *name, int reloc)
     flags |= SECTION_RELRO;
 
   if (strcmp (name, ".lbss") == 0
-      || strncmp (name, ".lbss.", sizeof (".lbss.") - 1) == 0
-      || strncmp (name, ".gnu.linkonce.lb.",
-		  sizeof (".gnu.linkonce.lb.") - 1) == 0)
+      || startswith (name, ".lbss.")
+      || startswith (name, ".gnu.linkonce.lb."))
     flags |= SECTION_BSS;
 
   return flags;
@@ -18000,8 +17999,8 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	tree cmp_type = truth_type_for (type);
 	gimple_seq stmts = NULL;
 	tree cmp = gimple_build (&stmts, tcode, cmp_type, arg0, arg1);
-	gsi_insert_before (gsi, stmts, GSI_SAME_STMT);
-	gimple *g = gimple_build_assign (gimple_call_lhs (stmt),
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	gimple* g = gimple_build_assign (gimple_call_lhs (stmt),
 					 VEC_COND_EXPR, cmp,
 					 minus_one_vec, zero_vec);
 	gimple_set_location (g, loc);
@@ -21500,7 +21499,7 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> & /*inputs*/,
   for (unsigned i = 0, n = outputs.length (); i < n; ++i)
     {
       const char *con = constraints[i];
-      if (strncmp (con, "=@cc", 4) != 0)
+      if (!startswith (con, "=@cc"))
 	continue;
       con += 4;
       if (strchr (con, ',') != NULL)
@@ -22483,7 +22482,11 @@ ix86_add_stmt_cost (class vec_info *vinfo, void *data, int count,
      arbitrary and could potentially be improved with analysis.  */
   if (where == vect_body && stmt_info
       && stmt_in_inner_loop_p (vinfo, stmt_info))
-    count *= 50;  /* FIXME.  */
+    {
+      loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
+      gcc_assert (loop_vinfo);
+      count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /* FIXME.  */
+    }
 
   retval = (unsigned) (count * stmt_cost);
 

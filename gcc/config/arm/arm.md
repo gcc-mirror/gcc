@@ -8580,18 +8580,21 @@
 	      (use (match_operand 2 "" ""))
 	      (clobber (reg:SI LR_REGNUM))])]
   "use_cmse"
-  "
   {
+    rtx addr = XEXP (operands[0], 0);
+    rtx tmp = REG_P (addr) ? addr : force_reg (SImode, addr);
+
     if (!TARGET_HAVE_FPCXT_CMSE)
       {
-	rtx tmp =
-	  copy_to_suggested_reg (XEXP (operands[0], 0),
-				 gen_rtx_REG (SImode, R4_REGNUM),
-				 SImode);
-
-	operands[0] = replace_equiv_address (operands[0], tmp);
+	rtx r4 = gen_rtx_REG (SImode, R4_REGNUM);
+	emit_move_insn (r4, tmp);
+	tmp = r4;
       }
-  }")
+
+    if (tmp != addr)
+      operands[0] = replace_equiv_address (operands[0], tmp);
+  }
+)
 
 (define_insn "*call_reg_armv5"
   [(call (mem:SI (match_operand:SI 0 "s_register_operand" "r"))

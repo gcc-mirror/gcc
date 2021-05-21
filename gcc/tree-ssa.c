@@ -1494,6 +1494,16 @@ non_rewritable_mem_ref_base (tree ref)
       return decl;
     }
 
+  /* We cannot rewrite TARGET_MEM_REFs.  */
+  if (TREE_CODE (base) == TARGET_MEM_REF
+      && TREE_CODE (TREE_OPERAND (base, 0)) == ADDR_EXPR)
+    {
+      tree decl = TREE_OPERAND (TREE_OPERAND (base, 0), 0);
+      if (! DECL_P (decl))
+	return NULL_TREE;
+      return decl;
+    }
+
   return NULL_TREE;
 }
 

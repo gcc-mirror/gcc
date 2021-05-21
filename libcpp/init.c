@@ -405,6 +405,7 @@ static const struct builtin_macro builtin_array[] =
   B("__TIME__",		 BT_TIME,          false),
   B("__DATE__",		 BT_DATE,          false),
   B("__FILE__",		 BT_FILE,          false),
+  B("__FILE_NAME__",	 BT_FILE_NAME,     false),
   B("__BASE_FILE__",	 BT_BASE_FILE,     false),
   B("__LINE__",		 BT_SPECLINE,      true),
   B("__INCLUDE_LEVEL__", BT_INCLUDE_LEVEL, true),

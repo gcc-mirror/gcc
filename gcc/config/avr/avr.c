@@ -63,9 +63,6 @@
 /* Maximal allowed offset for an address in the LD command */
 #define MAX_LD_OFFSET(MODE) (64 - (signed)GET_MODE_SIZE (MODE))
 
-/* Return true if STR starts with PREFIX and false, otherwise.  */
-#define STR_PREFIX_P(STR,PREFIX) (strncmp (STR, PREFIX, strlen (PREFIX)) == 0)
-
 /* The 4 bits starting at SECTION_MACH_DEP are reserved to store the
    address space where data is to be located.
    As the only non-generic address spaces are all located in flash,
@@ -1092,7 +1089,7 @@ avr_set_current_function (tree decl)
          that the name of the function is "__vector_NN" so as to catch
          when the user misspells the vector name.  */
 
-      if (!STR_PREFIX_P (name, "__vector"))
+      if (!startswith (name, "__vector"))
         warning_at (loc, OPT_Wmisspelled_isr, "%qs appears to be a misspelled "
                     "%qs handler, missing %<__vector%> prefix", name, isr);
 #endif // AVR-LibC naming conventions
@@ -9642,7 +9639,7 @@ static tree
 avr_handle_addr_attribute (tree *node, tree name, tree args,
 			   int flags ATTRIBUTE_UNUSED, bool *no_add)
 {
-  bool io_p = (strncmp (IDENTIFIER_POINTER (name), "io", 2) == 0);
+  bool io_p = startswith (IDENTIFIER_POINTER (name), "io");
   location_t loc = DECL_SOURCE_LOCATION (*node);
 
   if (!VAR_P (*node))
@@ -10055,7 +10052,7 @@ avr_asm_output_aligned_decl_common (FILE * stream,
   /* __gnu_lto_slim is just a marker for the linker injected by toplev.c.
      There is no need to trigger __do_clear_bss code for them.  */
 
-  if (!STR_PREFIX_P (name, "__gnu_lto"))
+  if (!startswith (name, "__gnu_lto"))
     avr_need_clear_bss_p = true;
 
   if (local_p)
@@ -10154,7 +10151,7 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
       const char *old_prefix = ".rodata";
       const char *new_prefix = avr_addrspace[as].section_name;
 
-      if (STR_PREFIX_P (name, old_prefix))
+      if (startswith (name, old_prefix))
         {
           const char *sname = ACONCAT ((new_prefix,
                                         name + strlen (old_prefix), NULL));
@@ -10167,19 +10164,19 @@ avr_asm_named_section (const char *name, unsigned int flags, tree decl)
     }
 
   if (!avr_need_copy_data_p)
-    avr_need_copy_data_p = (STR_PREFIX_P (name, ".data")
-                            || STR_PREFIX_P (name, ".gnu.linkonce.d"));
+    avr_need_copy_data_p = (startswith (name, ".data")
+			    || startswith (name, ".gnu.linkonce.d"));
 
   if (!avr_need_copy_data_p
 #if defined HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH
       && avr_arch->flash_pm_offset == 0
 #endif
       )
-    avr_need_copy_data_p = (STR_PREFIX_P (name, ".rodata")
-                            || STR_PREFIX_P (name, ".gnu.linkonce.r"));
+    avr_need_copy_data_p = (startswith (name, ".rodata")
+			    || startswith (name, ".gnu.linkonce.r"));
 
   if (!avr_need_clear_bss_p)
-    avr_need_clear_bss_p = STR_PREFIX_P (name, ".bss");
+    avr_need_clear_bss_p = startswith (name, ".bss");
 
   default_elf_asm_named_section (name, flags, decl);
 }
@@ -10192,7 +10189,7 @@ avr_section_type_flags (tree decl, const char *name, int reloc)
 {
   unsigned int flags = default_section_type_flags (decl, name, reloc);
 
-  if (STR_PREFIX_P (name, ".noinit"))
+  if (startswith (name, ".noinit"))
     {
       if (decl && TREE_CODE (decl) == VAR_DECL
 	  && DECL_INITIAL (decl) == NULL_TREE)
@@ -10402,7 +10399,7 @@ avr_asm_select_section (tree decl, int reloc, unsigned HOST_WIDE_INT align)
           const char * old_prefix = ".rodata";
           const char * new_prefix = avr_addrspace[as].section_name;
 
-          if (STR_PREFIX_P (name, old_prefix))
+	  if (startswith (name, old_prefix))
             {
               const char *sname = ACONCAT ((new_prefix,
                                             name + strlen (old_prefix), NULL));

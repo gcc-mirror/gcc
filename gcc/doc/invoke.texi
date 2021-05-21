@@ -330,7 +330,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
 -Wc11-c2x-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
--Wc++20-compat  @gol
+-Wc++20-compat   @gol
+-Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions  @gol
+-Wno-c++20-extensions  -Wno-c++23-extensions  @gol
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
 -Wchar-subscripts @gol
 -Wclobbered  -Wcomment @gol
@@ -1240,7 +1242,8 @@ See RS/6000 and PowerPC Options.
 -mgnu-attribute  -mno-gnu-attribute @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
 -mstack-protector-guard-offset=@var{offset} -mprefixed -mno-prefixed @gol
--mpcrel -mno-pcrel -mmma -mno-mmma}
+-mpcrel -mno-pcrel -mmma -mno-mmma -mrop-protect -mno-rop-protect @gol
+-mprivileged -mno-privileged}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -8153,6 +8156,41 @@ and ISO C++ 2017.  This warning is enabled by @option{-Wall}.
 Warn about C++ constructs whose meaning differs between ISO C++ 2017
 and ISO C++ 2020.  This warning is enabled by @option{-Wall}.
 
+@item -Wno-c++11-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++11-extensions
+@opindex Wno-c++11-extensions
+Do not warn about C++11 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++11 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
+@item -Wno-c++14-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++14-extensions
+@opindex Wno-c++14-extensions
+Do not warn about C++14 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++14 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
+@item -Wno-c++17-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++17-extensions
+@opindex Wno-c++17-extensions
+Do not warn about C++17 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++17 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
+@item -Wno-c++20-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++20-extensions
+@opindex Wno-c++20-extensions
+Do not warn about C++20 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++20 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
+@item -Wno-c++23-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++23-extensions
+@opindex Wno-c++23-extensions
+Do not warn about C++23 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++23 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
 @item -Wcast-qual
 @opindex Wcast-qual
 @opindex Wno-cast-qual
@@ -13142,7 +13180,7 @@ function prologue and epilogue.
 
 @item uninlined-function-time
 Extra time accounted by inliner for function overhead such as time needed to
-execute function prologue and epilogue
+execute function prologue and epilogue.
 
 @item inline-heuristics-hint-percent
 The scale (in percents) applied to @option{inline-insns-single},
@@ -13153,7 +13191,7 @@ very profitable (will enable later optimizations).
 @item uninlined-thunk-insns
 @item uninlined-thunk-time
 Same as @option{--param uninlined-function-insns} and
-@option{--param uninlined-function-time} but applied to function thunks
+@option{--param uninlined-function-time} but applied to function thunks.
 
 @item inline-min-speedup
 When estimated performance improvement of caller + callee runtime exceeds this
@@ -14224,6 +14262,11 @@ partial vector loads and stores if vectorization removes the need for the
 code to iterate.  2 allows partial vector loads and stores in all loops.
 The parameter only has an effect on targets that support partial
 vector loads and stores.
+
+@item vect-inner-loop-cost-factor
+The factor which the loop vectorizer applies to the cost of statements
+in an inner loop relative to the loop being vectorized.  The default
+value is 50.
 
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
@@ -27029,7 +27072,8 @@ following options:
 -mmulhw  -mdlmzb  -mmfpgpr  -mvsx @gol
 -mcrypto  -mhtm  -mpower8-fusion  -mpower8-vector @gol
 -mquad-memory  -mquad-memory-atomic  -mfloat128 @gol
--mfloat128-hardware -mprefixed -mpcrel -mmma}
+-mfloat128-hardware -mprefixed -mpcrel -mmma @gol
+-mrop-protect}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -28033,6 +28077,20 @@ store instructions when the option @option{-mcpu=future} is used.
 @opindex mno-mma
 Generate (do not generate) the MMA instructions when the option
 @option{-mcpu=future} is used.
+
+@item -mrop-protect
+@itemx -mno-rop-protect
+@opindex mrop-protect
+@opindex mno-rop-protect
+Generate (do not generate) ROP protection instructions when the target
+processor supports them.  Currently this option disables the shrink-wrap
+optimization (@option{-fshrink-wrap}).
+
+@item -mprivileged
+@itemx -mno-privileged
+@opindex mprivileged
+@opindex mno-privileged
+Generate (do not generate) code that will run in privileged state.
 
 @item -mblock-ops-unaligned-vsx
 @itemx -mno-block-ops-unaligned-vsx

@@ -109,7 +109,7 @@ bool exit_after_options
 ; flag-types.h for the definitions of the different possible types of
 ; debugging information.
 Variable
-enum debug_info_type write_symbols = NO_DEBUG
+uint32_t write_symbols = NO_DEBUG
 
 ; Level of debugging information we are producing.  See flag-types.h
 ; for the definitions of the different possible levels.

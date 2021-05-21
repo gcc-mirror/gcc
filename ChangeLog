@@ -1,3 +1,12 @@
+2021-05-18  Mike Frysinger  <vapier@gentoo.org>
+
+	* Makefile.def: Add configure-sim dependency on all-gnulib.
+	* Makefile.in: Regenerated.
+
+2021-05-17  Serge Belyshev  <belyshev@depni.sinp.msu.ru>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2021-05-12  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

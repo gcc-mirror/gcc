@@ -1217,6 +1217,21 @@ If there is no message for that line or if the text of that message is
 not matched by @var{regexp} then the check fails and @var{comment} is
 included in the @code{FAIL} message.
 
+@item @{ dg-note @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] ]] @}
+The line is expected to get a @samp{note} message.
+If there is no message for that line or if the text of that message is
+not matched by @var{regexp} then the check fails and @var{comment} is
+included in the @code{FAIL} message.
+
+By default, any @emph{excess} @samp{note} messages are pruned, meaning
+their appearance doesn't trigger @emph{excess errors}.
+However, if @samp{dg-note} is used at least once in a testcase,
+they're not pruned and instead must @emph{all} be handled explicitly.
+Thus, if looking for just single instances of messages with
+@samp{note: } prefixes without caring for all of them, use
+@samp{dg-message "note: [@dots{}]"} instead of @samp{dg-note}, or use
+@samp{dg-note} together with @samp{dg-prune-output "note: "}.
+
 @item @{ dg-bogus @var{regexp} [@var{comment} [@{ target/xfail @var{selector} @} [@var{line}] ]] @}
 This DejaGnu directive appears on a source line that should not get a
 message matching @var{regexp}, or else specifies the source line
@@ -1227,7 +1242,8 @@ targets.
 @item @{ dg-line @var{linenumvar} @}
 This DejaGnu directive sets the variable @var{linenumvar} to the line number of
 the source line.  The variable @var{linenumvar} can then be used in subsequent
-@code{dg-error}, @code{dg-warning}, @code{dg-message} and @code{dg-bogus}
+@code{dg-error}, @code{dg-warning}, @code{dg-message}, @code{dg-note}
+and @code{dg-bogus}
 directives.  For example:
 
 @smallexample
@@ -1239,7 +1255,9 @@ float a; /* @{ dg-error "conflicting types of" @} */
 @item @{ dg-excess-errors @var{comment} [@{ target/xfail @var{selector} @}] @}
 This DejaGnu directive indicates that the test is expected to fail due
 to compiler messages that are not handled by @samp{dg-error},
-@samp{dg-warning} or @samp{dg-bogus}.  For this directive @samp{xfail}
+@samp{dg-warning}, @code{dg-message}, @samp{dg-note} or
+@samp{dg-bogus}.
+For this directive @samp{xfail}
 has the same effect as @samp{target}.
 
 @item @{ dg-prune-output @var{regexp} @}
@@ -2125,9 +2143,9 @@ ARM Target supports options suitable for accessing the SIMD32 intrinsics from
 @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 
-@item arm_qbit_ok
-@anchor{arm_qbit_ok}
-ARM Target supports options suitable for accessing the Q-bit manipulation
+@item arm_sat_ok
+@anchor{arm_sat_ok}
+ARM Target supports options suitable for accessing the saturation
 intrinsics from @code{arm_acle.h}.
 Some multilibs may be incompatible with these options.
 

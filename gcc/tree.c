@@ -6792,9 +6792,10 @@ operation_no_trapping_overflow (tree type, enum tree_code code)
    constructed by language-dependent code, not here.)  */
 
 /* Construct, lay out and return the type of pointers to TO_TYPE with
-   mode MODE.  If CAN_ALIAS_ALL is TRUE, indicate this type can
-   reference all of memory. If such a type has already been
-   constructed, reuse it.  */
+   mode MODE.  If MODE is VOIDmode, a pointer mode for the address
+   space of TO_TYPE will be picked.  If CAN_ALIAS_ALL is TRUE,
+   indicate this type can reference all of memory. If such a type has
+   already been constructed, reuse it.  */
 
 tree
 build_pointer_type_for_mode (tree to_type, machine_mode mode,
@@ -6805,6 +6806,12 @@ build_pointer_type_for_mode (tree to_type, machine_mode mode,
 
   if (to_type == error_mark_node)
     return error_mark_node;
+
+  if (mode == VOIDmode)
+    {
+      addr_space_t as = TYPE_ADDR_SPACE (to_type);
+      mode = targetm.addr_space.pointer_mode (as);
+    }
 
   /* If the pointed-to type has the may_alias attribute set, force
      a TYPE_REF_CAN_ALIAS_ALL pointer to be generated.  */
@@ -6857,10 +6864,7 @@ build_pointer_type_for_mode (tree to_type, machine_mode mode,
 tree
 build_pointer_type (tree to_type)
 {
-  addr_space_t as = to_type == error_mark_node? ADDR_SPACE_GENERIC
-					      : TYPE_ADDR_SPACE (to_type);
-  machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
-  return build_pointer_type_for_mode (to_type, pointer_mode, false);
+  return build_pointer_type_for_mode (to_type, VOIDmode, false);
 }
 
 /* Same as build_pointer_type_for_mode, but for REFERENCE_TYPE.  */
@@ -6874,6 +6878,12 @@ build_reference_type_for_mode (tree to_type, machine_mode mode,
 
   if (to_type == error_mark_node)
     return error_mark_node;
+
+  if (mode == VOIDmode)
+    {
+      addr_space_t as = TYPE_ADDR_SPACE (to_type);
+      mode = targetm.addr_space.pointer_mode (as);
+    }
 
   /* If the pointed-to type has the may_alias attribute set, force
      a TYPE_REF_CAN_ALIAS_ALL pointer to be generated.  */
@@ -6926,10 +6936,7 @@ build_reference_type_for_mode (tree to_type, machine_mode mode,
 tree
 build_reference_type (tree to_type)
 {
-  addr_space_t as = to_type == error_mark_node? ADDR_SPACE_GENERIC
-					      : TYPE_ADDR_SPACE (to_type);
-  machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
-  return build_reference_type_for_mode (to_type, pointer_mode, false);
+  return build_reference_type_for_mode (to_type, VOIDmode, false);
 }
 
 #define MAX_INT_CACHED_PREC \
@@ -12375,6 +12382,8 @@ drop_tree_overflow (tree t)
 tree
 get_base_address (tree t)
 {
+  if (TREE_CODE (t) == WITH_SIZE_EXPR)
+    t = TREE_OPERAND (t, 0);
   while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
 
@@ -12382,11 +12391,6 @@ get_base_address (tree t)
        || TREE_CODE (t) == TARGET_MEM_REF)
       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
     t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-
-  /* ???  Either the alias oracle or all callers need to properly deal
-     with WITH_SIZE_EXPRs before we can look through those.  */
-  if (TREE_CODE (t) == WITH_SIZE_EXPR)
-    return NULL_TREE;
 
   return t;
 }
@@ -12550,13 +12554,11 @@ array_at_struct_end_p (tree ref)
       || ! TYPE_MAX_VALUE (TYPE_DOMAIN (atype)))
     return true;
 
-  if (TREE_CODE (ref) == MEM_REF
-      && TREE_CODE (TREE_OPERAND (ref, 0)) == ADDR_EXPR)
-    ref = TREE_OPERAND (TREE_OPERAND (ref, 0), 0);
-
   /* If the reference is based on a declared entity, the size of the array
      is constrained by its given domain.  (Do not trust commons PR/69368).  */
-  if (DECL_P (ref)
+  ref = get_base_address (ref);
+  if (ref
+      && DECL_P (ref)
       && !(flag_unconstrained_commons
 	   && VAR_P (ref) && DECL_COMMON (ref))
       && DECL_SIZE_UNIT (ref)

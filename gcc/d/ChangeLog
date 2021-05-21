@@ -1,3 +1,19 @@
+2021-05-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* d-incpath.cc (prefixed_path): Use filename_ncmp instead of strncmp.
+
+2021-05-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* types.cc (TypeVisitor::visit (TypeEnum *)): Use startswith function
+	instead of strncmp.
+
+2021-05-18  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* dmd/dinterpret.c (evaluateIfBuiltin): Revert last change.
+	* dmd/dmangle.c: Likewise.
+	* dmd/hdrgen.c: Likewise.
+	* dmd/identifier.c (Identifier::toHChars2): Likewise.
+
 2021-05-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* dmd/MERGE: Merge upstream dmd b7d146c4c.

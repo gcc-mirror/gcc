@@ -703,8 +703,19 @@ ranger_cache::set_global_range (tree name, const irange &r)
 
       propagate_updated_value (name, bb);
     }
-  // Mark the value as up-to-date.
-  m_temporal->set_timestamp (name);
+  // Constants no longer need to tracked.  Any further refinement has to be
+  // undefined. Propagation works better with constants. PR 100512.
+  // Pointers which resolve to non-zero also do not need
+  // tracking in the cache as they will never change.  See PR 98866.
+  // Otherwise mark the value as up-to-date.
+  if (r.singleton_p ()
+      || (POINTER_TYPE_P (TREE_TYPE (name)) && r.nonzero_p ()))
+    {
+      set_range_invariant (name);
+      m_temporal->set_always_current (name);
+    }
+  else
+    m_temporal->set_timestamp (name);
 }
 
 // Register a dependency on DEP to name.  If the timestamp for DEP is ever

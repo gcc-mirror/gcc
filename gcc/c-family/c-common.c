@@ -9059,6 +9059,12 @@ braced_list_to_string (tree type, tree ctor, bool member)
   if (!member && !tree_fits_uhwi_p (typesize))
     return ctor;
 
+  /* If the target char size differes from the host char size, we'd risk
+     loosing data and getting object sizes wrong by converting to
+     host chars.  */
+  if (TYPE_PRECISION (char_type_node) != CHAR_BIT)
+    return ctor;
+
   /* If the array has an explicit bound, use it to constrain the size
      of the string.  If it doesn't, be sure to create a string that's
      as long as implied by the index of the last zero specified via
