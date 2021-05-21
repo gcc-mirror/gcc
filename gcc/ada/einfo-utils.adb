@@ -2493,15 +2493,15 @@ package body Einfo.Utils is
             return Direct_Primitive_Operations
               (Corresponding_Record_Type (Id));
 
-         --  If expansion is disabled the corresponding record type is absent,
-         --  but if the type has ancestors it may have primitive operations.
-
-         elsif Is_Tagged_Type (Id) then
-            return Direct_Primitive_Operations (Id);
+         --  When expansion is disabled, the corresponding record type is
+         --  absent, but if this is a tagged type with ancestors, or if the
+         --  extension of prefixed calls for untagged types is enabled, then
+         --  it may have associated primitive operations.
 
          else
-            return No_Elist;
+            return Direct_Primitive_Operations (Id);
          end if;
+
       else
          return Direct_Primitive_Operations (Id);
       end if;

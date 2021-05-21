@@ -2031,6 +2031,12 @@ package body Sem_Ch9 is
       Set_Has_Delayed_Freeze (T);
       Set_Stored_Constraint  (T, No_Elist);
 
+      --  Initialize type's primitive operations list, for possible use when
+      --  the extension of prefixed call notation for untagged types is enabled
+      --  (such as by use of -gnatX).
+
+      Set_Direct_Primitive_Operations (T, New_Elmt_List);
+
       --  Mark this type as a protected type for the sake of restrictions,
       --  unless the protected type is declared in a private part of a package
       --  of the runtime. With this exception, the Suspension_Object from
@@ -3151,6 +3157,12 @@ package body Sem_Ch9 is
       Set_Etype              (T, T);
       Set_Has_Delayed_Freeze (T, True);
       Set_Stored_Constraint  (T, No_Elist);
+
+      --  Initialize type's primitive operations list, for possible use when
+      --  the extension of prefixed call notation for untagged types is enabled
+      --  (such as by use of -gnatX).
+
+      Set_Direct_Primitive_Operations (T, New_Elmt_List);
 
       --  Set the SPARK_Mode from the current context (may be overwritten later
       --  with an explicit pragma).
