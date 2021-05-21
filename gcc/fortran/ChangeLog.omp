@@ -1,3 +1,9 @@
+2021-05-21  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	Fortran/OpenMP: Add support for 'close' in map clause
+
+	* openmp.c (gfc_match_omp_clauses): Support map-type-modifier 'close'.
+
 2021-05-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
