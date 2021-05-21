@@ -1,4 +1,11 @@
-! { dg-do run { target { ! openacc_nvidia_accel_selected } } }
+! { dg-do run }
+
+! PR65181 "Support for alloca in nvptx"
+! { dg-excess-errors "lto1, mkoffload and lto-wrapper fatal errors" { target openacc_nvidia_accel_selected } }
+! Aside from restricting this testcase to non-nvptx offloading, and duplicating
+! it with 'dg-do link' for nvptx offloading, there doesn't seem to be a way to
+! XFAIL the "UNRESOLVED: [...] compilation failed to produce executable", or
+! get rid of it, unfortunately.
 
 program main
   implicit none (type, external)
@@ -24,6 +31,7 @@ contains
     !$acc parallel copyout(array)
     array = [(-i, i = 1, nn)]
     !$acc loop gang private(array)
+    ! { dg-message {sorry, unimplemented: target cannot support alloca} PR65181 { target openacc_nvidia_accel_selected } .-1 }
     do i = 1, 10
       array(i) = i
     end do
@@ -37,6 +45,7 @@ contains
     !$acc parallel copyout(array)
     array = [(-2*i, i = 1, size(array))]
     !$acc loop gang private(array)
+    ! { dg-message {sorry, unimplemented: target cannot support alloca} PR65181 { target openacc_nvidia_accel_selected } .-1 }
     do i = 1, 10
       array(i) = 9*i
     end do
@@ -50,6 +59,7 @@ contains
     !$acc parallel copyout(str)
     str = "abcdefghij"
     !$acc loop gang private(str)
+    ! { dg-message {sorry, unimplemented: target cannot support alloca} PR65181 { target openacc_nvidia_accel_selected } .-1 }
     do i = 1, 10
       str(i:i) = achar(ichar('A') + i)
     end do
