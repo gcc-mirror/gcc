@@ -107,7 +107,7 @@ enum rid
   RID_ASM,       RID_TYPEOF,   RID_ALIGNOF,  RID_ATTRIBUTE,  RID_VA_ARG,
   RID_EXTENSION, RID_IMAGPART, RID_REALPART, RID_LABEL,      RID_CHOOSE_EXPR,
   RID_TYPES_COMPATIBLE_P,      RID_BUILTIN_COMPLEX,	     RID_BUILTIN_SHUFFLE,
-  RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
+  RID_BUILTIN_SHUFFLEVECTOR,   RID_BUILTIN_CONVERTVECTOR,   RID_BUILTIN_TGMATH,
   RID_BUILTIN_HAS_ATTRIBUTE,
   RID_DFLOAT32, RID_DFLOAT64, RID_DFLOAT128,
 
@@ -1048,6 +1048,8 @@ extern bool lvalue_p (const_tree);
 extern bool vector_targets_convertible_p (const_tree t1, const_tree t2);
 extern bool vector_types_convertible_p (const_tree t1, const_tree t2, bool emit_lax_note);
 extern tree c_build_vec_perm_expr (location_t, tree, tree, tree, bool = true);
+extern tree c_build_shufflevector (location_t, tree, tree,
+				   vec<tree>, bool = true);
 extern tree c_build_vec_convert (location_t, tree, location_t, tree, bool = true);
 
 extern void init_c_lex (void);

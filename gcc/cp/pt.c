@@ -20397,6 +20397,15 @@ tsubst_copy_and_build (tree t,
 		RETURN (ret);
 	      break;
 
+	    case IFN_SHUFFLEVECTOR:
+	      {
+		ret = build_x_shufflevector (input_location, call_args,
+					     complain);
+		if (ret != error_mark_node)
+		  RETURN (ret);
+		break;
+	      }
+
 	    default:
 	      /* Unsupported internal function with arguments.  */
 	      gcc_unreachable ();

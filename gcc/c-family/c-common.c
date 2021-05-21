@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-spellcheck.h"
 #include "selftest.h"
 #include "debug.h"
+#include "tree-vector-builder.h"
+#include "vec-perm-indices.h"
 
 cpp_reader *parse_in;		/* Declared in c-pragma.h.  */
 
@@ -383,6 +385,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_has_attribute", RID_BUILTIN_HAS_ATTRIBUTE, 0 },
   { "__builtin_launder", RID_BUILTIN_LAUNDER, D_CXXONLY },
   { "__builtin_shuffle", RID_BUILTIN_SHUFFLE, 0 },
+  { "__builtin_shufflevector", RID_BUILTIN_SHUFFLEVECTOR, 0 },
   { "__builtin_tgmath", RID_BUILTIN_TGMATH, D_CONLY },
   { "__builtin_offsetof", RID_OFFSETOF, 0 },
   { "__builtin_types_compatible_p", RID_TYPES_COMPATIBLE_P, D_CONLY },
@@ -1101,6 +1104,142 @@ c_build_vec_perm_expr (location_t loc, tree v0, tree v1, tree mask,
     v1 = v0 = save_expr (v0);
 
   ret = build3_loc (loc, VEC_PERM_EXPR, TREE_TYPE (v0), v0, v1, mask);
+
+  if (!c_dialect_cxx () && !wrap)
+    ret = c_wrap_maybe_const (ret, true);
+
+  return ret;
+}
+
+/* Build a VEC_PERM_EXPR if V0, V1 are not error_mark_nodes
+   and have vector types, V0 has the same element type as V1, and the
+   number of elements the result is that of MASK.  */
+tree
+c_build_shufflevector (location_t loc, tree v0, tree v1, vec<tree> mask,
+		       bool complain)
+{
+  tree ret;
+  bool wrap = true;
+  bool maybe_const = false;
+
+  if (v0 == error_mark_node || v1 == error_mark_node)
+    return error_mark_node;
+
+  if (!gnu_vector_type_p (TREE_TYPE (v0))
+      || !gnu_vector_type_p (TREE_TYPE (v1)))
+    {
+      if (complain)
+	error_at (loc, "%<__builtin_shufflevector%> arguments must be vectors");
+      return error_mark_node;
+    }
+
+  /* ???  In principle one could select a constant part of a variable size
+     vector but things get a bit awkward with trying to support this here.  */
+  unsigned HOST_WIDE_INT v0n, v1n;
+  if (!TYPE_VECTOR_SUBPARTS (TREE_TYPE (v0)).is_constant (&v0n)
+      || !TYPE_VECTOR_SUBPARTS (TREE_TYPE (v1)).is_constant (&v1n))
+    {
+      if (complain)
+	error_at (loc, "%<__builtin_shufflevector%> arguments must be constant"
+		  " size vectors");
+      return error_mark_node;
+    }
+
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (v0)))
+      != TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (v1))))
+    {
+      if (complain)
+	error_at (loc, "%<__builtin_shufflevector%> argument vectors must "
+		  "have the same element type");
+      return error_mark_node;
+    }
+
+  if (!pow2p_hwi (mask.length ()))
+    {
+      if (complain)
+	error_at (loc, "%<__builtin_shufflevector%> must specify a result "
+		  "with a power of two number of elements");
+      return error_mark_node;
+    }
+
+  if (!c_dialect_cxx ())
+    {
+      /* Avoid C_MAYBE_CONST_EXPRs inside VEC_PERM_EXPR.  */
+      v0 = c_fully_fold (v0, false, &maybe_const);
+      wrap &= maybe_const;
+
+      v1 = c_fully_fold (v1, false, &maybe_const);
+      wrap &= maybe_const;
+    }
+
+  unsigned HOST_WIDE_INT maskl = MAX (mask.length (), MAX (v0n, v1n));
+  unsigned HOST_WIDE_INT pad = (v0n < maskl ? maskl - v0n : 0);
+  vec_perm_builder sel (maskl, maskl, 1);
+  unsigned i;
+  for (i = 0; i < mask.length (); ++i)
+    {
+      tree idx = mask[i];
+      if (!tree_fits_shwi_p (idx))
+	{
+	  if (complain)
+	    error_at (loc, "invalid element index %qE to "
+		      "%<__builtin_shufflevector%>", idx);
+	  return error_mark_node;
+	}
+      HOST_WIDE_INT iidx = tree_to_shwi (idx);
+      if (iidx < -1
+	  || (iidx != -1
+	      && (unsigned HOST_WIDE_INT) iidx >= v0n + v1n))
+	{
+	  if (complain)
+	    error_at (loc, "invalid element index %qE to "
+		      "%<__builtin_shufflevector%>", idx);
+	  return error_mark_node;
+	}
+      /* ???  Our VEC_PERM_EXPR does not allow for -1 yet.  */
+      if (iidx == -1)
+	iidx = i;
+      /* ???  Our VEC_PERM_EXPR does not allow different sized inputs,
+	 so pad out a smaller v0.  */
+      else if ((unsigned HOST_WIDE_INT) iidx >= v0n)
+	iidx += pad;
+      sel.quick_push (iidx);
+    }
+  /* ???  VEC_PERM_EXPR does not support a result that is smaller than
+     the inputs, so we have to pad id out.  */
+  for (; i < maskl; ++i)
+    sel.quick_push (i);
+
+  vec_perm_indices indices (sel, 2, maskl);
+
+  tree ret_type = build_vector_type (TREE_TYPE (TREE_TYPE (v0)), maskl);
+  tree mask_type = build_vector_type (build_nonstandard_integer_type
+		(TREE_INT_CST_LOW (TYPE_SIZE (TREE_TYPE (ret_type))), 1),
+		maskl);
+  /* Pad out arguments to the common vector size.  */
+  if (v0n < maskl)
+    {
+      constructor_elt elt = { NULL_TREE, build_zero_cst (TREE_TYPE (v0)) };
+      v0 = build_constructor_single (ret_type, NULL_TREE, v0);
+      for (i = 1; i < maskl / v0n; ++i)
+	vec_safe_push (CONSTRUCTOR_ELTS (v0), elt);
+    }
+  if (v1n < maskl)
+    {
+      constructor_elt elt = { NULL_TREE, build_zero_cst (TREE_TYPE (v1)) };
+      v1 = build_constructor_single (ret_type, NULL_TREE, v1);
+      for (i = 1; i < maskl / v1n; ++i)
+	vec_safe_push (CONSTRUCTOR_ELTS (v1), elt);
+    }
+  ret = build3_loc (loc, VEC_PERM_EXPR, ret_type, v0, v1,
+		    vec_perm_indices_to_tree (mask_type, indices));
+  /* Get the lowpart we are interested in.  */
+  if (mask.length () < maskl)
+    {
+      tree lpartt = build_vector_type (TREE_TYPE (ret_type), mask.length ());
+      ret = build3_loc (loc, BIT_FIELD_REF,
+			lpartt, ret, TYPE_SIZE (lpartt), bitsize_zero_node);
+    }
 
   if (!c_dialect_cxx () && !wrap)
     ret = c_wrap_maybe_const (ret, true);
