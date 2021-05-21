@@ -1637,7 +1637,7 @@ maybe_pad_type (tree type, tree size, unsigned int align,
 	    = create_var_decl (concat_name (name, "XVZ"), NULL_TREE, sizetype,
 			      size_unit, true, global_bindings_p (),
 			      !definition && global_bindings_p (), false,
-			      false, true, true, NULL, gnat_entity);
+			      false, true, true, NULL, gnat_entity, false);
 	  TYPE_SIZE_UNIT (record) = size_unit;
 	}
 
