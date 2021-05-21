@@ -70,11 +70,7 @@ NodeMapping::get_defid () const
 DefId
 NodeMapping::get_defid (CrateNum crate_num, LocalDefId local_defid)
 {
-  DefId val = 0;
-  val |= crate_num;
-  val = val << sizeof (uint32_t);
-  val |= local_defid;
-  return val;
+  return ((uint64_t) crate_num << 32) | local_defid;
 }
 
 std::string
@@ -220,14 +216,14 @@ Mappings::insert_hir_crate (HIR::Crate *crate)
 void
 Mappings::insert_defid_mapping (DefId id, HIR::Item *item)
 {
-  CrateNum crateNum = (id & DEF_ID_CRATE_MASK) >> sizeof (uint32_t);
-  LocalDefId localDefId = id & DEF_ID_LOCAL_DEF_MASK;
+  CrateNum crate_num = (id & DEF_ID_CRATE_MASK) >> 32;
+  LocalDefId local_def_id = id & DEF_ID_LOCAL_DEF_MASK;
 
   rust_assert (lookup_defid (id) == nullptr);
-  rust_assert (lookup_local_defid (crateNum, localDefId) == nullptr);
+  rust_assert (lookup_local_defid (crate_num, local_def_id) == nullptr);
 
   defIdMappings[id] = item;
-  insert_local_defid_mapping (crateNum, localDefId, item);
+  insert_local_defid_mapping (crate_num, local_def_id, item);
 }
 
 HIR::Item *
