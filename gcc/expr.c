@@ -8523,6 +8523,19 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
       return constructor;
     }
 
+  /* If the CTOR is available in static storage and not mostly
+     zeros and we can move it by pieces prefer to do so since
+     that's usually more efficient than performing a series of
+     stores from immediates.  */
+  if (avoid_temp_mem
+      && TREE_STATIC (exp)
+      && TREE_CONSTANT (exp)
+      && tree_fits_uhwi_p (TYPE_SIZE_UNIT (type))
+      && can_move_by_pieces (tree_to_uhwi (TYPE_SIZE_UNIT (type)),
+			     TYPE_ALIGN (type))
+      && ! mostly_zeros_p (exp))
+    return NULL_RTX;
+
   /* Handle calls that pass values in multiple non-contiguous
      locations.  The Irix 6 ABI has examples of this.  */
   if (target == 0 || ! safe_from_p (target, exp, 1)
