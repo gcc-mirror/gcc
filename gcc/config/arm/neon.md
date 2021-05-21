@@ -1161,19 +1161,6 @@
   DONE;
 })
 
-(define_expand "reduc_plus_scal_<mode>"
-  [(match_operand:<V_elem> 0 "nonimmediate_operand")
-   (match_operand:VQ 1 "s_register_operand")]
-  "ARM_HAVE_NEON_<MODE>_ARITH && !BYTES_BIG_ENDIAN"
-{
-  rtx step1 = gen_reg_rtx (<V_HALF>mode);
-
-  emit_insn (gen_quad_halves_plus<mode> (step1, operands[1]));
-  emit_insn (gen_reduc_plus_scal_<V_half> (operands[0], step1));
-
-  DONE;
-})
-
 (define_expand "reduc_plus_scal_v2di"
   [(match_operand:DI 0 "nonimmediate_operand")
    (match_operand:V2DI 1 "s_register_operand")]
