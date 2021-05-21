@@ -1538,6 +1538,11 @@ class auto_suppress_location_wrappers
 #define OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_FIRSTPRIVATE))
 
+/* True on a FIRSTPRIVATE clause with OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT also
+   set if target construct is the only one that accepts the clause.  */
+#define OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_FIRSTPRIVATE))
+
 /* True on a LASTPRIVATE clause if a FIRSTPRIVATE clause for the same
    decl is present in the chain.  */
 #define OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE(NODE) \

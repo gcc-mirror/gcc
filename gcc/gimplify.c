@@ -126,7 +126,10 @@ enum gimplify_omp_var_data
 
   /* Flag for GOVD_MAP: (struct) vars that have pointer attachments for
      fields.  */
-  GOVD_MAP_HAS_ATTACHMENTS = 8388608,
+  GOVD_MAP_HAS_ATTACHMENTS = 0x4000000,
+
+  /* Flag for GOVD_FIRSTPRIVATE: OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT.  */
+  GOVD_FIRSTPRIVATE_IMPLICIT = 0x8000000,
 
   GOVD_DATA_SHARE_CLASS = (GOVD_SHARED | GOVD_PRIVATE | GOVD_FIRSTPRIVATE
 			   | GOVD_LASTPRIVATE | GOVD_REDUCTION | GOVD_LINEAR
@@ -8586,13 +8589,24 @@ omp_lastprivate_for_combined_outer_constructs (struct gimplify_omp_ctx *octx,
 	  omp_add_variable (octx, decl, GOVD_LASTPRIVATE | GOVD_SEEN);
 	  continue;
 	}
-      if (octx->region_type == ORT_COMBINED_TARGET
-	  && splay_tree_lookup (octx->variables,
-				(splay_tree_key) decl) == NULL)
+      if (octx->region_type == ORT_COMBINED_TARGET)
 	{
-	  omp_add_variable (octx, decl, GOVD_MAP | GOVD_SEEN);
-	  octx = octx->outer_context;
-	  break;
+	  splay_tree_node n = splay_tree_lookup (octx->variables,
+						 (splay_tree_key) decl);
+	  if (n == NULL)
+	    {
+	      omp_add_variable (octx, decl, GOVD_MAP | GOVD_SEEN);
+	      octx = octx->outer_context;
+	    }
+	  else if (!implicit_p
+		   && (n->value & GOVD_FIRSTPRIVATE_IMPLICIT))
+	    {
+	      n->value &= ~(GOVD_FIRSTPRIVATE
+			    | GOVD_FIRSTPRIVATE_IMPLICIT
+			    | GOVD_EXPLICIT);
+	      omp_add_variable (octx, decl, GOVD_MAP | GOVD_SEEN);
+	      octx = octx->outer_context;
+	    }
 	}
       break;
     }
@@ -8673,6 +8687,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_FIRSTPRIVATE:
 	  flags = GOVD_FIRSTPRIVATE | GOVD_EXPLICIT;
 	  check_non_private = "firstprivate";
+	  if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c))
+	    {
+	      gcc_assert (code == OMP_TARGET);
+	      flags |= GOVD_FIRSTPRIVATE_IMPLICIT;
+	    }
 	  goto do_add;
 	case OMP_CLAUSE_LASTPRIVATE:
 	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
@@ -10531,6 +10550,18 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 			"%<target%> construct", OMP_CLAUSE_DECL (c));
 	      remove = true;
 	      break;
+	    }
+	  if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c))
+	    {
+	      decl = OMP_CLAUSE_DECL (c);
+	      n = splay_tree_lookup (ctx->variables, (splay_tree_key) decl);
+	      if ((n->value & GOVD_MAP) != 0)
+		{
+		  remove = true;
+		  break;
+		}
+	      OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET (c) = 0;
+	      OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c) = 0;
 	    }
 	  /* FALLTHRU */
 	case OMP_CLAUSE_PRIVATE:

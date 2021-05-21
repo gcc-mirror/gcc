@@ -6519,6 +6519,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool allocate_seen = false;
   tree detach_seen = NULL_TREE;
   bool mergeable_seen = false;
+  bool firstprivate_implicit_moved = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -6843,6 +6844,29 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 
 	case OMP_CLAUSE_FIRSTPRIVATE:
+	  if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
+	      && !firstprivate_implicit_moved)
+	    {
+	      firstprivate_implicit_moved = true;
+	      /* Move firstprivate clauses with
+		 OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT set to the end of
+		 clauses chain.  */
+	      tree cl = NULL, *pc1 = pc, *pc2 = &cl;
+	      while (*pc1)
+		if (OMP_CLAUSE_CODE (*pc1) == OMP_CLAUSE_FIRSTPRIVATE
+		    && OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (*pc1))
+		  {
+		    *pc2 = *pc1;
+		    pc2 = &OMP_CLAUSE_CHAIN (*pc2);
+		    *pc1 = OMP_CLAUSE_CHAIN (*pc1);
+		  }
+		else
+		  pc1 = &OMP_CLAUSE_CHAIN (*pc1);
+	      *pc2 = NULL;
+	      *pc1 = cl;
+	      if (pc1 != pc)
+		continue;
+	    }
 	  t = omp_clause_decl_field (OMP_CLAUSE_DECL (c));
 	  if (t)
 	    omp_note_field_privatization (t, OMP_CLAUSE_DECL (c));
@@ -6884,6 +6908,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (ort == C_ORT_ACC)
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD appears more than once in data clauses", t);
+	      else if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
+		       && !OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET (c))
+		/* Silently drop the clause.  */;
 	      else
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD appears both in data and map clauses", t);
