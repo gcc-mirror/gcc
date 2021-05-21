@@ -1691,13 +1691,11 @@
    (set_attr "type" "mmxmul,ssemul,ssemul")
    (set_attr "mode" "DI,TI,TI")])
 
-(define_expand "<code><mode>3"
-  [(set (match_operand:MMXMODE14 0 "register_operand")
-        (smaxmin:MMXMODE14
-	  (match_operand:MMXMODE14 1 "register_operand")
-	  (match_operand:MMXMODE14 2 "register_operand")))]
-  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
-  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Parallel integral shifts
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "*mmx_<code><mode>3"
   [(set (match_operand:MMXMODE14 0 "register_operand" "=Yr,*x,Yv")
@@ -1725,14 +1723,6 @@
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "ix86_fixup_binary_operands_no_copy (<CODE>, V4HImode, operands);")
 
-(define_expand "<code>v4hi3"
-  [(set (match_operand:V4HI 0 "register_operand")
-        (smaxmin:V4HI
-	  (match_operand:V4HI 1 "register_operand")
-	  (match_operand:V4HI 2 "register_operand")))]
-  "TARGET_MMX_WITH_SSE"
-  "ix86_fixup_binary_operands_no_copy (<CODE>, V4HImode, operands);")
-
 (define_insn "*mmx_<code>v4hi3"
   [(set (match_operand:V4HI 0 "register_operand" "=y,x,Yw")
         (smaxmin:V4HI
@@ -1750,13 +1740,57 @@
    (set_attr "type" "mmxadd,sseiadd,sseiadd")
    (set_attr "mode" "DI,TI,TI")])
 
+(define_mode_iterator SMAXMIN_MMXMODEI
+  [(V8QI "TARGET_SSE4_1") V4HI (V2SI "TARGET_SSE4_1")])
+
 (define_expand "<code><mode>3"
-  [(set (match_operand:MMXMODE24 0 "register_operand")
-        (umaxmin:MMXMODE24
-	  (match_operand:MMXMODE24 1 "register_operand")
-	  (match_operand:MMXMODE24 2 "register_operand")))]
-  "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
+  [(set (match_operand:SMAXMIN_MMXMODEI 0 "register_operand")
+        (smaxmin:SMAXMIN_MMXMODEI
+	  (match_operand:SMAXMIN_MMXMODEI 1 "register_operand")
+	  (match_operand:SMAXMIN_MMXMODEI 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
   "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+
+(define_insn "*<code>v4qi3"
+  [(set (match_operand:V4QI 0 "register_operand" "=Yr,*x,Yv")
+	(smaxmin:V4QI
+	  (match_operand:V4QI 1 "register_operand" "%0,0,Yv")
+	  (match_operand:V4QI 2 "register_operand" "Yr,*x,Yv")))]
+  "TARGET_SSE4_1
+   && ix86_binary_operator_ok (<CODE>, V4QImode, operands)"
+  "@
+   p<maxmin_int>b\t{%2, %0|%0, %2}
+   p<maxmin_int>b\t{%2, %0|%0, %2}
+   vp<maxmin_int>b\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1,1,*")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*<code>v2hi3"
+  [(set (match_operand:V2HI 0 "register_operand" "=x,Yw")
+        (smaxmin:V2HI
+	  (match_operand:V2HI 1 "register_operand" "%0,Yw")
+	  (match_operand:V2HI 2 "register_operand" "x,Yw")))]
+  "TARGET_SSE2
+   && ix86_binary_operator_ok (<CODE>, V2HImode, operands)"
+  "@
+   p<maxmin_int>w\t{%2, %0|%0, %2}
+   vp<maxmin_int>w\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseiadd")
+   (set_attr "mode" "TI")])
+
+(define_mode_iterator SMAXMIN_VI_32 [(V4QI "TARGET_SSE4_1") V2HI])
+
+(define_expand "<code><mode>3"
+  [(set (match_operand:SMAXMIN_VI_32 0 "register_operand")
+        (smaxmin:SMAXMIN_VI_32
+	  (match_operand:SMAXMIN_VI_32 1 "register_operand")
+	  (match_operand:SMAXMIN_VI_32 2 "register_operand")))]
+  "TARGET_SSE2"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, V4HImode, operands);")
 
 (define_insn "*mmx_<code><mode>3"
   [(set (match_operand:MMXMODE24 0 "register_operand" "=Yr,*x,Yv")
@@ -1784,14 +1818,6 @@
    && (TARGET_SSE || TARGET_3DNOW_A)"
   "ix86_fixup_binary_operands_no_copy (<CODE>, V8QImode, operands);")
 
-(define_expand "<code>v8qi3"
-  [(set (match_operand:V8QI 0 "register_operand")
-        (umaxmin:V8QI
-	  (match_operand:V8QI 1 "register_operand")
-	  (match_operand:V8QI 2 "register_operand")))]
-  "TARGET_MMX_WITH_SSE"
-  "ix86_fixup_binary_operands_no_copy (<CODE>, V8QImode, operands);")
-
 (define_insn "*mmx_<code>v8qi3"
   [(set (match_operand:V8QI 0 "register_operand" "=y,x,Yw")
         (umaxmin:V8QI
@@ -1808,6 +1834,97 @@
    (set_attr "mmx_isa" "native,*,*")
    (set_attr "type" "mmxadd,sseiadd,sseiadd")
    (set_attr "mode" "DI,TI,TI")])
+
+(define_mode_iterator UMAXMIN_MMXMODEI
+  [V8QI (V4HI "TARGET_SSE4_1") (V2SI "TARGET_SSE4_1")])
+
+(define_expand "<code><mode>3"
+  [(set (match_operand:UMAXMIN_MMXMODEI 0 "register_operand")
+        (umaxmin:UMAXMIN_MMXMODEI
+	  (match_operand:UMAXMIN_MMXMODEI 1 "register_operand")
+	  (match_operand:UMAXMIN_MMXMODEI 2 "register_operand")))]
+  "TARGET_MMX_WITH_SSE"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);")
+
+(define_insn "*<code>v4qi3"
+  [(set (match_operand:V4QI 0 "register_operand" "=x,Yw")
+        (umaxmin:V4QI
+	  (match_operand:V4QI 1 "register_operand" "%0,Yw")
+	  (match_operand:V4QI 2 "register_operand" "x,Yw")))]
+  "TARGET_SSE2
+   && ix86_binary_operator_ok (<CODE>, V4QImode, operands)"
+  "@
+   p<maxmin_int>b\t{%2, %0|%0, %2}
+   vp<maxmin_int>b\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sseiadd")
+   (set_attr "mode" "TI")])
+
+(define_insn "*<code>v2hi3"
+  [(set (match_operand:V2HI 0 "register_operand" "=Yr,*x,Yv")
+	(umaxmin:V2HI
+	  (match_operand:V2HI 1 "register_operand" "%0,0,Yv")
+	  (match_operand:V2HI 2 "register_operand" "Yr,*x,Yv")))]
+  "TARGET_SSE4_1
+   && ix86_binary_operator_ok (<CODE>, V2HImode, operands)"
+  "@
+   p<maxmin_int>w\t{%2, %0|%0, %2}
+   p<maxmin_int>w\t{%2, %0|%0, %2}
+   vp<maxmin_int>w\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "sseiadd")
+   (set_attr "prefix_extra" "1,1,*")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "mode" "TI")])
+
+(define_mode_iterator UMAXMIN_VI_32 [V4QI (V2HI "TARGET_SSE4_1")])
+
+(define_expand "<code><mode>3"
+  [(set (match_operand:UMAXMIN_VI_32 0 "register_operand")
+        (umaxmin:UMAXMIN_VI_32
+	  (match_operand:UMAXMIN_VI_32 1 "register_operand")
+	  (match_operand:UMAXMIN_VI_32 2 "register_operand")))]
+  "TARGET_SSE2"
+  "ix86_fixup_binary_operands_no_copy (<CODE>, V4HImode, operands);")
+
+(define_insn "ssse3_abs<mode>2"
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=y,Yv")
+	(abs:MMXMODEI
+	  (match_operand:MMXMODEI 1 "register_mmxmem_operand" "ym,Yv")))]
+  "(TARGET_MMX || TARGET_MMX_WITH_SSE) && TARGET_SSSE3"
+  "@
+   pabs<mmxvecsize>\t{%1, %0|%0, %1}
+   %vpabs<mmxvecsize>\t{%1, %0|%0, %1}"
+  [(set_attr "mmx_isa" "native,*")
+   (set_attr "type" "sselog1")
+   (set_attr "prefix_rep" "0")
+   (set_attr "prefix_extra" "1")
+   (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
+   (set_attr "mode" "DI,TI")])
+
+(define_expand "abs<mode>2"
+  [(set (match_operand:MMXMODEI 0 "register_operand")
+	(abs:MMXMODEI
+	  (match_operand:MMXMODEI 1 "register_operand")))]
+  "TARGET_MMX_WITH_SSE && TARGET_SSSE3")
+
+(define_insn "abs<mode>2"
+  [(set (match_operand:VI_32 0 "register_operand" "=Yv")
+	(abs:VI_32
+	  (match_operand:VI_32 1 "register_operand" "Yv")))]
+  "TARGET_SSSE3"
+  "%vpabs<mmxvecsize>\t{%1, %0|%0, %1}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_rep" "0")
+   (set_attr "prefix_extra" "1")
+   (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
+   (set_attr "mode" "TI")])
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Parallel integral shifts
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define_insn "mmx_ashr<mode>3"
   [(set (match_operand:MMXMODE24 0 "register_operand" "=y,x,<Yv_Yw>")
