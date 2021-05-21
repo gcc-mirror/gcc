@@ -2190,6 +2190,7 @@ namespace views::__adaptor
 	if (_M_cached_begin._M_has_value())
 	  return _M_cached_begin._M_get(_M_base);
 
+	__glibcxx_assert(_M_pred.has_value());
 	auto __it = __detail::find_if_not(ranges::begin(_M_base),
 					  ranges::end(_M_base),
 					  std::cref(*_M_pred));
