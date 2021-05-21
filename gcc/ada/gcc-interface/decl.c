@@ -2354,11 +2354,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      set_nonaliased_component_on_array_type (tem);
 	  }
 
-	/* If an alignment is specified, use it if valid.  But ignore it
-	   for the original type of packed array types.  If the alignment
-	   was requested with an explicit alignment clause, state so.  */
-	if (No (Packed_Array_Impl_Type (gnat_entity))
-	    && Known_Alignment (gnat_entity))
+	/* If this is a packed type implemented specially, then process the
+	   implementation type so it is elaborated in the proper scope.  */
+	if (Present (Packed_Array_Impl_Type (gnat_entity)))
+	  gnat_to_gnu_entity (Packed_Array_Impl_Type (gnat_entity), NULL_TREE,
+			      false);
+
+	/* Otherwise, if an alignment is specified, use it if valid and, if
+	   the alignment was requested with an explicit clause, state so.  */
+	else if (Known_Alignment (gnat_entity))
 	  {
 	    SET_TYPE_ALIGN (tem,
 			    validate_alignment (Alignment (gnat_entity),
