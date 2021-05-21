@@ -85,10 +85,8 @@ f (int i, int j, int a)
   /* { dg-note {variable 'ss' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
   /* { dg-note {variable 'func' declared in block potentially has improper OpenACC privatization level: 'function_decl'} "TODO" { target *-*-* } l_loop$c_loop } */
   /* { dg-note {variable 'func2' declared in block potentially has improper OpenACC privatization level: 'function_decl'} "TODO" { target *-*-* } l_loop$c_loop } */
-  /* { dg-note {variable 'ext' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
-     { dg-note {variable 'ext' ought to be adjusted for OpenACC privatization level: 'vector'} "" { target *-*-* } l_loop$c_loop } */
-  /* { dg-note {variable 'sta' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
-     { dg-note {variable 'sta' ought to be adjusted for OpenACC privatization level: 'vector'} "" { target *-*-* } l_loop$c_loop } */
+  /* { dg-note {variable 'ext' declared in block isn't candidate for adjusting OpenACC privatization level: external} "" { target *-*-* } l_loop$c_loop } */
+  /* { dg-note {variable 'sta' declared in block isn't candidate for adjusting OpenACC privatization level: static} "" { target *-*-* } l_loop$c_loop } */
   /* { dg-note {variable 'xx' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop } */
   /* { dg-note {variable 'yy' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
      { dg-note {variable 'yy' ought to be adjusted for OpenACC privatization level: 'vector'} "" { target *-*-* } l_loop$c_loop } */

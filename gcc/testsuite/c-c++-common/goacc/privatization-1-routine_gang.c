@@ -84,10 +84,8 @@ f (int i, int j, int a)
   /* { dg-note {variable 'ss' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "TODO" { xfail *-*-* } l_routine$c_routine } */
   /* { dg-note {variable 'func' declared in block potentially has improper OpenACC privatization level: 'function_decl'} "TODO" { xfail *-*-* } l_routine$c_routine } */
   /* { dg-note {variable 'func2' declared in block potentially has improper OpenACC privatization level: 'function_decl'} "TODO" { xfail *-*-* } l_routine$c_routine } */
-  /* { dg-note {variable 'ext' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { xfail *-*-* } l_routine$c_routine }
-     { dg-note {variable 'ext' ought to be adjusted for OpenACC privatization level: 'gang'} "TODO" { xfail *-*-* } l_routine$c_routine } */
-  /* { dg-note {variable 'sta' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { xfail *-*-* } l_routine$c_routine }
-     { dg-note {variable 'sta' ought to be adjusted for OpenACC privatization level: 'gang'} "TODO" { xfail *-*-* } l_routine$c_routine } */
+  /* { dg-note {variable 'ext' declared in block isn't candidate for adjusting OpenACC privatization level: external} "TODO" { xfail *-*-* } l_routine$c_routine } */
+  /* { dg-note {variable 'sta' declared in block isn't candidate for adjusting OpenACC privatization level: static} "TODO" { xfail *-*-* } l_routine$c_routine } */
   /* { dg-note {variable 'xx' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "TODO" { xfail *-*-* } l_routine$c_routine } */
   /* { dg-note {variable 'yy' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { xfail *-*-* } l_routine$c_routine }
      { dg-note {variable 'yy' ought to be adjusted for OpenACC privatization level: 'gang'} "TODO" { xfail *-*-* } l_routine$c_routine } */

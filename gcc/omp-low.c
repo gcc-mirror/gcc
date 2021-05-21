@@ -10192,6 +10192,9 @@ oacc_privatization_candidate_p (const location_t loc, const tree c,
 {
   dump_flags_t l_dump_flags = get_openacc_privatization_dump_flags ();
 
+  /* There is some differentiation depending on block vs. clause.  */
+  bool block = !c;
+
   bool res = true;
 
   if (res && !VAR_P (decl))
@@ -10204,6 +10207,32 @@ oacc_privatization_candidate_p (const location_t loc, const tree c,
 	  dump_printf (l_dump_flags,
 		       "potentially has improper OpenACC privatization level: %qs\n",
 		       get_tree_code_name (TREE_CODE (decl)));
+	}
+    }
+
+  if (res && block && TREE_STATIC (decl))
+    {
+      res = false;
+
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "isn%'t candidate for adjusting OpenACC privatization level: %s\n",
+		       "static");
+	}
+    }
+
+  if (res && block && DECL_EXTERNAL (decl))
+    {
+      res = false;
+
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "isn%'t candidate for adjusting OpenACC privatization level: %s\n",
+		       "external");
 	}
     }
 

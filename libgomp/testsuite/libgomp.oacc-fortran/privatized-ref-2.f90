@@ -74,9 +74,7 @@ contains
     ! { dg-note {variable 'parm\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'parm\.[0-9]+' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'parm\.[0-9]+' adjusted for OpenACC privatization level: 'gang'} "" { target { ! { openacc_host_selected || openacc_nvidia_accel_selected } } } l_compute$c_compute }
-    ! { dg-note {variable 'A\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'A\.[0-9]+' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } l_compute$c_compute }
-    ! { dg-note {variable 'A\.[0-9]+' adjusted for OpenACC privatization level: 'gang'} "" { target { ! { openacc_host_selected || openacc_nvidia_accel_selected } } } l_compute$c_compute }
+    ! { dg-note {variable 'A\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: static} "" { target *-*-* } l_compute$c_compute }
     array = [(-2*i, i = 1, size(array))]
     !$acc loop gang private(array) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
