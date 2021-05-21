@@ -784,7 +784,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   tree context = NULL_TREE;
   struct deferred_decl_context_node *deferred_decl_context = NULL;
 
-  /* If explicitely asked to make DECL global or if it's an imported nested
+  /* If explicitly asked to make DECL global or if it's an imported nested
      object, short-circuit the regular Scope-based context computation.  */
   if (!((TREE_PUBLIC (decl) && DECL_EXTERNAL (decl)) || force_global == 1))
     {
