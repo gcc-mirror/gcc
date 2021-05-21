@@ -743,6 +743,9 @@ Lexer::build_token ()
 	      TokenPtr raw_ident_ptr = parse_raw_identifier (loc);
 	      if (raw_ident_ptr != nullptr)
 		return raw_ident_ptr;
+	      else
+		continue; /* input got parsed, it just wasn't valid. An error
+			     was produced. */
 	    }
 	  else
 	    {
@@ -1523,11 +1526,9 @@ Lexer::parse_raw_identifier (Location loc)
 
   current_column += 2;
 
-  str += current_char;
-
   bool first_is_underscore = current_char == '_';
 
-  int length = 1;
+  int length = 0;
   current_char = peek_input ();
   // loop through entire name
   while (ISALPHA (current_char) || ISDIGIT (current_char)
