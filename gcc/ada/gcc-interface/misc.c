@@ -752,7 +752,7 @@ gnat_type_max_size (const_tree gnu_type)
 	 type's alignment and return the result in units.  */
       if (tree_fits_uhwi_p (max_ada_size))
 	max_size_unit
-	  = size_binop (CEIL_DIV_EXPR,
+	  = size_binop (EXACT_DIV_EXPR,
 			round_up (max_ada_size, TYPE_ALIGN (gnu_type)),
 			bitsize_unit_node);
     }

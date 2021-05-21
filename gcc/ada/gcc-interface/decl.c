@@ -1343,7 +1343,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    || (gnu_size
 		&& !allocatable_size_p (convert (sizetype,
 						 size_binop
-						 (CEIL_DIV_EXPR, gnu_size,
+						 (EXACT_DIV_EXPR, gnu_size,
 						  bitsize_unit_node)),
 					global_bindings_p ()
 					|| !definition
