@@ -8089,8 +8089,10 @@ gnat_to_gnu (Node_Id gnat_node)
 	if (gnu_return_label_stack->last ())
 	  {
 	    if (gnu_ret_val)
-	      add_stmt (build_binary_op (MODIFY_EXPR, NULL_TREE, gnu_ret_obj,
-					 gnu_ret_val));
+	      add_stmt_with_node (build_binary_op (MODIFY_EXPR,
+						   NULL_TREE, gnu_ret_obj,
+						   gnu_ret_val),
+				  gnat_node);
 
 	    gnu_result = build1 (GOTO_EXPR, void_type_node,
 				 gnu_return_label_stack->last ());
