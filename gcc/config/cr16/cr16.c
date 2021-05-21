@@ -158,6 +158,8 @@ static void cr16_print_operand_address (FILE *, machine_mode, rtx);
 #define TARGET_CLASS_LIKELY_SPILLED_P	cr16_class_likely_spilled_p
 
 /* Passing function arguments.  */
+#undef TARGET_PUSH_ARGUMENT
+#define TARGET_PUSH_ARGUMENT		hook_bool_uint_true
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG 		cr16_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE

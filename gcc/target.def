@@ -4753,6 +4753,20 @@ Most ports do not need to implement anything for this hook.",
  hook_void_void)
 
 DEFHOOK
+(push_argument,
+ "This target hook returns @code{true} if push instructions will be\n\
+used to pass outgoing arguments.  When the push instruction usage is\n\
+optional, @var{npush} is nonzero to indicate the number of bytes to\n\
+push.  Otherwise, @var{npush} is zero.  If the target machine does not\n\
+have a push instruction or push instruction should be avoided,\n\
+@code{false} should be returned.  That directs GCC to use an alternate\n\
+strategy: to allocate the entire argument block and then store the\n\
+arguments into it.  If this target hook may return @code{true},\n\
+@code{PUSH_ROUNDING} must be defined.",
+ bool, (unsigned int npush),
+ default_push_argument)
+
+DEFHOOK
 (strict_argument_naming,
  "Define this hook to return @code{true} if the location where a function\n\
 argument is passed depends on whether or not it is a named argument.\n\

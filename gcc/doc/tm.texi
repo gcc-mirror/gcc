@@ -3900,14 +3900,17 @@ cases of mismatch, it also makes for better code on certain machines.
 The default is to not promote prototypes.
 @end deftypefn
 
-@defmac PUSH_ARGS
-A C expression.  If nonzero, push insns will be used to pass
-outgoing arguments.
-If the target machine does not have a push instruction, set it to zero.
-That directs GCC to use an alternate strategy: to
-allocate the entire argument block and then store the arguments into
-it.  When @code{PUSH_ARGS} is nonzero, @code{PUSH_ROUNDING} must be defined too.
-@end defmac
+@deftypefn {Target Hook} bool TARGET_PUSH_ARGUMENT (unsigned int @var{npush})
+This target hook returns @code{true} if push instructions will be
+used to pass outgoing arguments.  When the push instruction usage is
+optional, @var{npush} is nonzero to indicate the number of bytes to
+push.  Otherwise, @var{npush} is zero.  If the target machine does not
+have a push instruction or push instruction should be avoided,
+@code{false} should be returned.  That directs GCC to use an alternate
+strategy: to allocate the entire argument block and then store the
+arguments into it.  If this target hook may return @code{true},
+@code{PUSH_ROUNDING} must be defined.
+@end deftypefn
 
 @defmac PUSH_ARGS_REVERSED
 A C expression.  If nonzero, function arguments will be evaluated from

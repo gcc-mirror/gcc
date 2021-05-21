@@ -1823,7 +1823,7 @@ block_move_libcall_safe_for_call_parm (void)
   tree fn;
 
   /* If arguments are pushed on the stack, then they're safe.  */
-  if (PUSH_ARGS)
+  if (targetm.calls.push_argument (0))
     return true;
 
   /* If registers go on the stack anyway, any argument is sure to clobber
@@ -4639,11 +4639,19 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
       skip = (reg_parm_stack_space == 0) ? 0 : used;
 
 #ifdef PUSH_ROUNDING
+      /* NB: Let the backend known the number of bytes to push and
+	 decide if push insns should be generated.  */
+      unsigned int push_size;
+      if (CONST_INT_P (size))
+	push_size = INTVAL (size);
+      else
+	push_size = 0;
+
       /* Do it with several push insns if that doesn't take lots of insns
 	 and if there is no difficulty with push insns that skip bytes
 	 on the stack for alignment purposes.  */
       if (args_addr == 0
-	  && PUSH_ARGS
+	  && targetm.calls.push_argument (push_size)
 	  && CONST_INT_P (size)
 	  && skip == 0
 	  && MEM_ALIGN (xinner) >= align
@@ -4848,7 +4856,7 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	anti_adjust_stack (gen_int_mode (extra, Pmode));
 
 #ifdef PUSH_ROUNDING
-      if (args_addr == 0 && PUSH_ARGS)
+      if (args_addr == 0 && targetm.calls.push_argument (0))
 	emit_single_push_insn (mode, x, type);
       else
 #endif
