@@ -6159,7 +6159,12 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	}
     }
   else
-    gnu_result = build1 (NULL_EXPR, *gnu_result_type_p, gnu_result);
+    {
+      /* The condition field must not be present when the node is used as an
+	 expression form.  */
+      gigi_checking_assert (No (gnat_cond));
+      gnu_result = build1 (NULL_EXPR, *gnu_result_type_p, gnu_result);
+    }
 
   return gnu_result;
 }
