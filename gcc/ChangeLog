@@ -1,3 +1,15 @@
+2021-05-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2021-05-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR c++/100281
+	* tree.c (build_reference_type_for_mode)
+	(build_pointer_type_for_mode): Pick pointer mode if MODE argument
+	is VOIDmode.
+	(build_reference_type, build_pointer_type): Invoke
+	build_*_type_for_mode with VOIDmode.
+
 2021-05-19  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Define

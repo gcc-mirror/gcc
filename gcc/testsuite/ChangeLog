@@ -1,3 +1,42 @@
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100489
+	* g++.dg/cpp2a/desig18.C: New test.
+
+2021-05-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backported from master:
+	2021-05-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR c++/100281
+	* g++.target/s390/pr100281-1.C: New test.
+	* g++.target/s390/pr100281-2.C: New test.
+
+2021-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/96488
+	* gnat.dg/unchecked_convert5.adb: Do not run on PowerPC64 LE.
+	* gnat.dg/unchecked_convert6.adb: Likewise.
+
+2021-05-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96983
+	* gfortran.dg/pr96711.f90: Use 2**digit(x) instead of a hard-coded value;
+	add comments regarding what the code does.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100634
+	* g++.dg/cpp2a/nontype-complex1.C: New test.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100659
+	* g++.dg/parse/access13.C: New test.
+
 2021-05-19  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	* gcc.target/powerpc/rop-1.c: New.
