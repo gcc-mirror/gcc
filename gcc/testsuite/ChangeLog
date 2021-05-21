@@ -1,3 +1,9 @@
+2021-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/96488
+	* gnat.dg/unchecked_convert5.adb: Do not run on PowerPC64 LE.
+	* gnat.dg/unchecked_convert6.adb: Likewise.
+
 2021-05-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/96513
