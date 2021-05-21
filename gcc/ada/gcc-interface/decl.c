@@ -1392,7 +1392,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 		if (TREE_CODE (TYPE_SIZE_UNIT (gnu_alloc_type)) == INTEGER_CST
 		    && !valid_constant_size_p (TYPE_SIZE_UNIT (gnu_alloc_type)))
-		  post_error ("?`Storage_Error` will be raised at run time!",
+		  post_error ("??`Storage_Error` will be raised at run time!",
 			      gnat_entity);
 
 		gnu_expr
@@ -4328,7 +4328,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 ratio is greater or equal to the byte/bit ratio.  */
 	      if (tree_fits_uhwi_p (size)
 		  && align >= tree_to_uhwi (size) * BITS_PER_UNIT)
-		post_error_ne ("?suspiciously large alignment specified for&",
+		post_error_ne ("??suspiciously large alignment specified for&",
 			       Expression (Alignment_Clause (gnat_entity)),
 			       gnat_entity);
 	    }
@@ -5443,7 +5443,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   input_location = saved_location;
 
   if (mech == By_Copy && (by_ref || by_component_ptr))
-    post_error ("?cannot pass & by copy", gnat_param);
+    post_error ("??cannot pass & by copy", gnat_param);
 
   /* If this is an Out parameter that isn't passed by reference and whose
      type doesn't require the initialization of formals, we don't make a
@@ -6271,7 +6271,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 
 	      if (!intrin_profiles_compatible_p (&inb))
 		post_error
-		  ("?profile of& doesn''t match the builtin it binds!",
+		  ("??profile of& doesn''t match the builtin it binds!",
 		   gnat_subprog);
 
 	      return gnu_builtin_decl;
@@ -6284,7 +6284,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	     on demand without risking false positives with common default sets
 	     of options.  */
 	  if (warn_shadow)
-	    post_error ("?gcc intrinsic not found for&!", gnat_subprog);
+	    post_error ("??gcc intrinsic not found for&!", gnat_subprog);
 	}
     }
 
@@ -7597,20 +7597,20 @@ warn_on_field_placement (tree gnu_field, Node_Id gnat_component_list,
 
   const char *msg1
     = in_variant
-      ? "?variant layout may cause performance issues"
-      : "?record layout may cause performance issues";
+      ? "??variant layout may cause performance issues"
+      : "??record layout may cause performance issues";
   const char *msg2
     = Ekind (gnat_field) == E_Discriminant
-      ? "?discriminant & whose length is not multiple of a byte"
+      ? "??discriminant & whose length is not multiple of a byte"
       : field_has_self_size (gnu_field)
-	? "?component & whose length depends on a discriminant"
+	? "??component & whose length depends on a discriminant"
 	: field_has_variable_size (gnu_field)
-	  ? "?component & whose length is not fixed"
-	  : "?component & whose length is not multiple of a byte";
+	  ? "??component & whose length is not fixed"
+	  : "??component & whose length is not multiple of a byte";
   const char *msg3
     = do_reorder
-      ? "?comes too early and was moved down"
-      : "?comes too early and ought to be moved down";
+      ? "??comes too early and was moved down"
+      : "??comes too early and ought to be moved down";
 
   post_error (msg1, gnat_field);
   post_error_ne (msg2, gnat_field, gnat_field);
@@ -9481,14 +9481,14 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
       if (ada_type == void_type_node
 	  && btin_type != void_type_node)
 	{
-	  post_error ("?Ada arguments list too short!", inb->gnat_entity);
+	  post_error ("??Ada arguments list too short!", inb->gnat_entity);
 	  return false;
 	}
 
       if (btin_type == void_type_node
 	  && ada_type != void_type_node)
 	{
-	  post_error_ne_num ("?Ada arguments list too long ('> ^)!",
+	  post_error_ne_num ("??Ada arguments list too long ('> ^)!",
 			     inb->gnat_entity, inb->gnat_entity, argpos);
 	  return false;
 	}
@@ -9497,7 +9497,7 @@ intrin_arglists_compatible_p (intrin_binding_t * inb)
       argpos ++;
       if (intrin_types_incompatible_p (ada_type, btin_type))
 	{
-	  post_error_ne_num ("?intrinsic binding type mismatch on argument ^!",
+	  post_error_ne_num ("??intrinsic binding type mismatch on argument ^!",
 			     inb->gnat_entity, inb->gnat_entity, argpos);
 	  return false;
 	}
@@ -9528,7 +9528,7 @@ intrin_return_compatible_p (intrin_binding_t * inb)
      handles void/void as well.  */
   if (intrin_types_incompatible_p (btin_return_type, ada_return_type))
     {
-      post_error ("?intrinsic binding type mismatch on return value!",
+      post_error ("??intrinsic binding type mismatch on return value!",
 		  inb->gnat_entity);
       return false;
     }
