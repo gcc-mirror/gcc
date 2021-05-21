@@ -865,20 +865,18 @@ get_source (location_t start, location_t end)
       if (line.length () < 1)
 	return NULL;
       int s = expstart.column - 1;
-      int l = expend.column - expstart.column + 1;
-      if (line.length () < (size_t)s + l)
+      int l = expend.column - s;
+      if (line.length () < (size_t)expend.column)
 	return NULL;
       return line.subspan (s, l).xstrdup ();
     }
 
-  /* FIXME how should we handle newlines and runs of spaces?  */
-  char buf[1024 + 4]{};
-  char *res = buf;
-  size_t len = 1024;
+  struct obstack buf_obstack;
+  obstack_init (&buf_obstack);
 
   /* Loop through all lines in the range and append each to buf; may trim
      parts of the start and end lines off depending on column values.  */
-  for (int l = expstart.line; len > 0 && l <= expend.line; ++l)
+  for (int l = expstart.line; l <= expend.line; ++l)
     {
       char_span line = location_get_source_line (expstart.file, l);
       if (line.length () < 1 && (l != expstart.line && l != expend.line))
@@ -902,20 +900,14 @@ get_source (location_t start, location_t end)
 	  line = line.subspan (0, expend.column);
 	}
 
-      /* if we've run out of buffer, truncate the line */
-      if (line.length() >= len)
-	line = line.subspan (0, len);
-
-      gcc_assert (line.length () <= len);
-      strncat (res, line.get_buffer (), line.length ());
-      res += line.length ();
-      len -= line.length ();
+      obstack_grow (&buf_obstack, line.get_buffer (), line.length ());
     }
 
-  /* If we ran out of space, add a '...' abbreviation marker. */
-  if (len <= 0)
-    buf[1024] = buf[1025] = buf[1026] = '.';
+  /* Null terminate and finish the buf obstack.  */
+  obstack_1grow (&buf_obstack, 0);
+  const char *buf = (const char *) obstack_finish (&buf_obstack);
 
+  /* TODO should we collapse/trim newlines and runs of spaces?  */
   return xstrdup (buf);
 }
 
