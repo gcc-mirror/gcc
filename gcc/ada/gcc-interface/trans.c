@@ -4471,8 +4471,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
   tree gnu_after_list = NULL_TREE;
   tree gnu_retval = NULL_TREE;
   tree gnu_call, gnu_result;
-  bool went_into_elab_proc = false;
-  bool pushed_binding_level = false;
+  bool went_into_elab_proc;
+  bool pushed_binding_level;
   bool variadic;
   bool by_descriptor;
   Entity_Id gnat_formal;
@@ -4555,6 +4555,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       current_function_decl = get_elaboration_procedure ();
       went_into_elab_proc = true;
     }
+  else
+    went_into_elab_proc = false;
 
   /* First, create the temporary for the return value when:
 
@@ -4624,6 +4626,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       gnat_pushlevel ();
       pushed_binding_level = true;
     }
+  else
+    pushed_binding_level = false;
 
   /* Create the list of the actual parameters as GCC expects it, namely a
      chain of TREE_LIST nodes in which the TREE_VALUE field of each node
@@ -6146,6 +6150,8 @@ Raise_Error_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 	{
 	  if (!gnu_cond)
 	    gnu_cond = gnat_to_gnu (gnat_cond);
+	  if (integer_zerop (gnu_cond))
+	    return alloc_stmt_list ();
 	  gnu_result = build3 (COND_EXPR, void_type_node, gnu_cond, gnu_result,
 			       alloc_stmt_list ());
 	}
@@ -6271,12 +6277,12 @@ tree
 gnat_to_gnu (Node_Id gnat_node)
 {
   const Node_Kind kind = Nkind (gnat_node);
-  bool went_into_elab_proc = false;
   tree gnu_result = error_mark_node; /* Default to no value.  */
   tree gnu_result_type = void_type_node;
   tree gnu_expr, gnu_lhs, gnu_rhs;
   Node_Id gnat_temp;
   atomic_acces_t aa_type;
+  bool went_into_elab_proc;
   bool aa_sync;
 
   /* Save node number for error message and set location information.  */
@@ -6308,32 +6314,18 @@ gnat_to_gnu (Node_Id gnat_node)
 		   build_call_raise (CE_Range_Check_Failed, gnat_node,
 				     N_Raise_Constraint_Error));
 
-  if ((statement_node_p (gnat_node) && kind != N_Null_Statement)
-      || kind == N_Handled_Sequence_Of_Statements
-      || kind == N_Implicit_Label_Declaration)
+  /* If this is a statement and we are at top level, it must be part of the
+     elaboration procedure, so mark us as being in that procedure.  */
+  if ((statement_node_p (gnat_node)
+       || kind == N_Handled_Sequence_Of_Statements
+       || kind == N_Implicit_Label_Declaration)
+      && !current_function_decl)
     {
-      tree current_elab_proc = get_elaboration_procedure ();
-
-      /* If this is a statement and we are at top level, it must be part of
-	 the elaboration procedure, so mark us as being in that procedure.  */
-      if (!current_function_decl)
-	{
-	  current_function_decl = current_elab_proc;
-	  went_into_elab_proc = true;
-	}
-
-      /* If we are in the elaboration procedure, check if we are violating a
-	 No_Elaboration_Code restriction by having a statement there.  Don't
-	 check for a possible No_Elaboration_Code restriction violation on
-	 N_Handled_Sequence_Of_Statements, as we want to signal an error on
-	 every nested real statement instead.  This also avoids triggering
-	 spurious errors on dummy (empty) sequences created by the front-end
-	 for package bodies in some cases.  */
-      if (current_function_decl == current_elab_proc
-	  && kind != N_Handled_Sequence_Of_Statements
-	  && kind != N_Implicit_Label_Declaration)
-	Check_Elaboration_Code_Allowed (gnat_node);
+      current_function_decl = get_elaboration_procedure ();
+      went_into_elab_proc = true;
     }
+  else
+    went_into_elab_proc = false;
 
   switch (kind)
     {
@@ -8235,6 +8227,14 @@ gnat_to_gnu (Node_Id gnat_node)
       gcc_unreachable ();
     }
 
+  /* If we are in the elaboration procedure, check if we are violating the
+     No_Elaboration_Code restriction by having a non-empty statement.  */
+  if (statement_node_p (gnat_node)
+      && !(TREE_CODE (gnu_result) == STATEMENT_LIST
+	   && empty_stmt_list_p (gnu_result))
+      && current_function_decl == get_elaboration_procedure ())
+    Check_Elaboration_Code_Allowed (gnat_node);
+
   /* If we pushed the processing of the elaboration routine, pop it back.  */
   if (went_into_elab_proc)
     current_function_decl = NULL_TREE;
@@ -8423,7 +8423,7 @@ tree
 gnat_to_gnu_external (Node_Id gnat_node)
 {
   const int save_force_global = force_global;
-  bool went_into_elab_proc = false;
+  bool went_into_elab_proc;
 
   /* Force the local context and create a fake scope that we zap
      at the end so declarations will not be stuck either in the
@@ -8433,6 +8433,8 @@ gnat_to_gnu_external (Node_Id gnat_node)
       current_function_decl = get_elaboration_procedure ();
       went_into_elab_proc = true;
     }
+  else
+    went_into_elab_proc = false;
   force_global = 0;
   gnat_pushlevel ();
 
