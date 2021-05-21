@@ -1,3 +1,130 @@
+2021-05-20  Clement Chigot  <clement.chigot@atos.net>
+	    David Edelsohn  <dje.gcc@gmail.com>
+
+	* collect2.c (scan_prog_file): Issue non-fatal warning for
+	non-COFF files.
+
+2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (-Wno-c++11-extensions)
+	(-Wno-c++14-extensions, -Wno-c++17-extensions)
+	(-Wno-c++20-extensions, -Wno-c++23-extensions): Document
+	new options.
+
+2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* config/c6x/c6x.c (c6x_output_file_unwind): Use dwarf_debuginfo_p.
+	* config/darwin.c (darwin_override_options): Likewise.
+	* config/i386/cygming.h (DBX_REGISTER_NUMBER): Likewise.
+	* config/i386/darwin.h (DBX_REGISTER_NUMBER): Likewise.
+	(DWARF2_FRAME_REG_OUT): Likewise.
+	* config/mips/mips.c (mips_output_filename): Likewise.
+	* config/rs6000/rs6000.c (rs6000_xcoff_declare_function_name):
+	Likewise.
+	(rs6000_dbx_register_number): Likewise.
+	* dbxout.c: Include flags.h.
+	* dwarf2cfi.c (cfi_label_required_p): Likewise.
+	(dwarf2out_do_frame): Likewise.
+	* except.c: Include flags.h.
+	* final.c (dwarf2_debug_info_emitted_p): Likewise.
+	(final_scan_insn_1): Likewise.
+	* flags.h (dwarf_debuginfo_p): New function declaration.
+	* opts.c (dwarf_debuginfo_p): New function definition.
+	* targhooks.c (default_debug_unwind_info): Use dwarf_debuginfo_p.
+	* toplev.c (process_options): Likewise.
+
+2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* common.opt: Change type to support bitmasks.
+	* flag-types.h (enum debug_info_type): Rename enumerator constants.
+	(NO_DEBUG): New bitmask.
+	(DBX_DEBUG): Likewise.
+	(DWARF2_DEBUG): Likewise.
+	(XCOFF_DEBUG): Likewise.
+	(VMS_DEBUG): Likewise.
+	(VMS_AND_DWARF2_DEBUG): Likewise.
+	* flags.h (debug_set_to_format): New function declaration.
+	(debug_set_count): Likewise.
+	(debug_set_names): Likewise.
+	* opts.c (debug_type_masks): Array of bitmasks for debug formats.
+	(debug_set_to_format): New function definition.
+	(debug_set_count): Likewise.
+	(debug_set_names): Likewise.
+	(set_debug_level): Update access to debug_type_names.
+	* toplev.c: Likewise.
+
+2021-05-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100684
+	* tree-ssa-ccp.c (pass_post_ipa_warn::execute): Handle C++ lambda.
+
+2021-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100701
+	* config/i386/i386.md (isa): Remove x64_bmi.
+	(enabled): Remove x64_bmi.
+	* config/i386/mmx.md (mmx_andnot<MMXMODEI:mode>3):
+	Remove general register alternative.
+	(*andnot<VI_32:mode>3): Ditto.
+	(*mmx_<any_logic:code><MMXMODEI:mode>3): Ditto.
+	(*<any_logic:code><VI_32:mode>3): Ditto.
+
+2021-05-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/arm/arm.c: Include head files tree-vectorizer.h and
+	cfgloop.h.
+
+2021-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/mmx.md (Yv_Yw): Revert adding V4QI and V2HI modes.
+	(*<plusminus:insn><VI_32:mode>3): Use Yw instad of <Yv_Yw> constrint.
+	(<s>mulv4hi3_highpart): New expander.
+	(*<s>mulv2hi3_highpart): New insn pattern.
+	(<s>mulv2hi3_higpart): New expander.
+	(*<any_shift:insn>v2hi3): New insn pattern.
+	(<any_shift:insn>v2hi3): New expander.
+	* config/i386/sse.md (smulhrsv2hi3): New expander.
+	(*smulhrsv2hi3): New insn pattern.
+
+2021-05-20  Kewen Lin  <linkw@linux.ibm.com>
+
+	* doc/invoke.texi (vect-inner-loop-cost-factor): Document new
+	parameter.
+	* params.opt (vect-inner-loop-cost-factor): New.
+	* targhooks.c (default_add_stmt_cost): Replace hardcoded factor
+	50 with LOOP_VINFO_INNER_LOOP_COST_FACTOR, include head file
+	tree-vectorizer.h and its required ones.
+	* config/aarch64/aarch64.c (aarch64_add_stmt_cost): Replace
+	hardcoded factor 50 with LOOP_VINFO_INNER_LOOP_COST_FACTOR.
+	* config/arm/arm.c (arm_add_stmt_cost): Likewise.
+	* config/i386/i386.c (ix86_add_stmt_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_add_stmt_cost): Likewise.
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost):
+	Likewise.
+	(_loop_vec_info::_loop_vec_info): Init inner_loop_cost_factor.
+	* tree-vectorizer.h (_loop_vec_info): Add inner_loop_cost_factor.
+	(LOOP_VINFO_INNER_LOOP_COST_FACTOR): New macro.
+
+2021-05-20  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Torbjörn Svensson  <torbjorn.svensson@st.com>
+
+	PR c/42579
+	* doc/cpp.texi (Common Predefined Macros): Document __FILE_NAME__.
+
+2021-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* gimplify.c (gimplify_scan_omp_clauses) <case OMP_CLAUSE_LINEAR>: For
+	explicit linear clause when combined with target, make it map(tofrom:)
+	instead of no clause or firstprivate.
+
+2021-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	* match.pd ((X & Y) == X -> (X & ~Y) == 0): Simplify even in presence
+	of integral conversions.
+
 2021-05-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range.cc (fur_source::get_operand): New.

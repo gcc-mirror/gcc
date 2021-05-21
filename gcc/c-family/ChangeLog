@@ -1,3 +1,20 @@
+2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* c.opt (Wc++11-extensions, Wc++14-extensions)
+	(Wc++17-extensions, Wc++20-extensions, Wc++23-extensions): New
+	options.
+
+2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* c-lex.c (init_c_lex): Use dwarf_debuginfo_p.
+
+2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* c-opts.c (c_common_post_options): Adjust access to debug_type_names.
+	* c-pch.c (struct c_pch_validity): Use type uint32_t.
+	(pch_init): Renamed member.
+	(c_common_valid_pch): Adjust access to debug_type_names.
+
 2021-05-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c/100619

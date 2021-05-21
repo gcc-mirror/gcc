@@ -1,3 +1,57 @@
+2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc (__representable_as_double)
+	(__p1_representable_as_double): Add "" to static asserts.
+
+2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100676
+	* include/bits/c++config (__glibcxx_assert_1): Rename to ...
+	(__glibcxx_constexpr_assert): ... this.
+	(__glibcxx_assert_impl): Use __glibcxx_constexpr_assert.
+	(__glibcxx_assert): Define as either __glibcxx_constexpr_assert
+	or __glibcxx_assert_impl.
+	(__glibcxx_assert_2): Remove
+	* include/debug/macros.h (_GLIBCXX_DEBUG_VERIFY_AT_F): Use
+	__glibcxx_constexpr_assert instead of __glibcxx_assert_1.
+	* testsuite/21_strings/basic_string_view/element_access/char/back_constexpr_neg.cc:
+	Adjust expected error.
+	* testsuite/21_strings/basic_string_view/element_access/char/constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_constexpr_neg.cc:
+	Likewise.
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/back_constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/front_constexpr_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/back_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_neg.cc: Likewise.
+
+2021-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100639
+	* include/bits/stl_iterator.h (reverse_iterator::difference_type):
+	In C++20 mode, define in terms of iter_difference_t as per P0896R4.
+	(reverse_iterator::reference): Likewise, but with iter_reference_t.
+	(reverse_iterator::value_type): Likewise, but with iter_value_t.
+	* testsuite/std/ranges/adaptors/reverse.cc (test08): New test.
+	* testsuite/24_iterators/reverse_iterator/100639.cc: New test.
+
+2021-05-20  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	PR libstdc++/100361
+	* include/std/charconv (to_chars): Hide the overloads for
+	floating-point types for 16 bit targets.
+	* src/c++17/floating_to_chars.cc: Don't compile for 16 bit targets.
+	* testsuite/20_util/to_chars/double.cc: Run this test only on
+	size32plus targets.
+	* testsuite/20_util/to_chars/float.cc: Likewise.
+	* testsuite/20_util/to_chars/long_double.cc: Likewise.
+
 2021-05-18  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/100631

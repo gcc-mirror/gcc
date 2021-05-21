@@ -1,3 +1,8 @@
+2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* objc-act.c (synth_module_prologue): Use uint32_t instead of enum
+	debug_info_type.
+
 2021-05-10  Martin Liska  <mliska@suse.cz>
 
 	* objc-act.c (objc_string_ref_type_p): Use startswith

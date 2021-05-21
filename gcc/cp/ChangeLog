@@ -1,3 +1,54 @@
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	* call.c (reference_binding): Check for designator.
+	(implicit_conversion_1, build_special_member_call): Likewise.
+	* decl.c (reshape_init_r): Likewise.
+	* pt.c (do_class_deduction): Likewise.
+	* typeck2.c (digest_init_r): Likewise.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100489
+	* decl.c (reshape_init_class): Handle designator for
+	member of anonymous aggregate here.
+	* typeck2.c (process_init_constructor_record): Not here.
+
+2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* call.c (maybe_warn_array_conv): Use new warning option.
+	* decl.c (mark_inline_variable, grokdeclarator): Likewise.
+	* error.c (maybe_warn_cpp0x): Likewise.
+	* parser.c (cp_parser_primary_expression)
+	(cp_parser_unqualified_id)
+	(cp_parser_pseudo_destructor_name)
+	(cp_parser_lambda_introducer)
+	(cp_parser_lambda_declarator_opt)
+	(cp_parser_selection_statement)
+	(cp_parser_init_statement)
+	(cp_parser_decomposition_declaration)
+	(cp_parser_function_specifier_opt)
+	(cp_parser_static_assert)
+	(cp_parser_namespace_definition)
+	(cp_parser_using_declaration)
+	(cp_parser_asm_definition)
+	(cp_parser_ctor_initializer_opt_and_function_body)
+	(cp_parser_initializer_list)
+	(cp_parser_type_parameter_key)
+	(cp_parser_member_declaration)
+	(cp_parser_try_block)
+	(cp_parser_std_attribute_spec): Likewise.
+	* pt.c (check_template_variable): Likewise.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100634
+	* pt.c (invalid_nontype_parm_type_p): Return true for COMPLEX_TYPE.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100659
+	* cp-tree.h (CONST_DECL_USING_P): Check for null TREE_TYPE.
+
 2021-05-19  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100367

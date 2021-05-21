@@ -1,3 +1,7 @@
+2021-05-20  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clauses): Support map-type-modifier 'close'.
+
 2021-05-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/100642

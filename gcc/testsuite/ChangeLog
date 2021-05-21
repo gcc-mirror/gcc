@@ -1,3 +1,85 @@
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/desig19.C: New test.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100489
+	* g++.dg/cpp2a/desig18.C: New test.
+
+2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* gcc.dg/pch/valid-1.c: Adjust diagnostic message in testcase.
+	* lib/dg-pch.exp: Adjust diagnostic message.
+
+2021-05-20  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100684
+	* g++.dg/warn/Wnonnull13.C: New test.
+	* g++.dg/warn/Wnonnull14.C: New test.
+	* g++.dg/warn/Wnonnull15.C: New test.
+
+2021-05-20  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* g++.dg/modules/omp-1_c.C: Fix testcase.
+
+2021-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100701
+	* gcc.target/i386/pr100701.c: New test.
+
+2021-05-20  Marcel Vollweiler  <marcel@codesourcery.com>
+
+	* gfortran.dg/gomp/map-6.f90: New test.
+	* gfortran.dg/gomp/map-7.f90: New test.
+	* gfortran.dg/gomp/map-8.f90: New test.
+
+2021-05-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR testsuite/96488
+	* gnat.dg/unchecked_convert5.adb: Do not run on PowerPC64 LE.
+	* gnat.dg/unchecked_convert6.adb: Likewise.
+
+2021-05-20  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* gcc.target/i386/pr100637-1w.c (shl, ashr, lshr): New tests.
+
+2021-05-20  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Torbjörn Svensson  <torbjorn.svensson@st.com>
+
+	PR c/42579
+	* c-c++-common/spellcheck-reserved.c: Add tests for __FILE_NAME__.
+	* c-c++-common/cpp/file-name-1.c: New test.
+
+2021-05-20  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/96983
+	* gfortran.dg/pr96711.f90: Use 2**digit(x) instead of a hard-coded value;
+	add comments regarding what the code does.
+
+2021-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-4.c: Remove all xfails.
+	* c-c++-common/gomp/pr99928-5.c: Likewise.
+
+2021-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/100646
+	* gcc.dg/cpp/pr100646-1.c: New test.
+	* gcc.dg/cpp/pr100646-2.c: New test.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100634
+	* g++.dg/cpp2a/nontype-complex1.C: New test.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100659
+	* g++.dg/parse/access13.C: New test.
+
 2021-05-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c/100619
