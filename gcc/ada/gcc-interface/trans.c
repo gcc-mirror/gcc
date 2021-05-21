@@ -4553,6 +4553,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  || (gnu_target
 	      && TREE_CODE (gnu_target) == COMPONENT_REF
 	      && DECL_BIT_FIELD (TREE_OPERAND (gnu_target, 1))
+	      && DECL_SIZE (TREE_OPERAND (gnu_target, 1))
+		 != TYPE_SIZE (TREE_TYPE (gnu_target))
 	      && type_is_padding_self_referential (gnu_result_type))))
     {
       gnu_retval = create_temporary ("R", gnu_result_type);
@@ -8271,7 +8273,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	 much data.  But do not remove it if it is already too small.  */
       if (type_is_padding_self_referential (TREE_TYPE (gnu_result))
 	  && !(TREE_CODE (gnu_result) == COMPONENT_REF
-	       && DECL_BIT_FIELD (TREE_OPERAND (gnu_result, 1))))
+	       && DECL_BIT_FIELD (TREE_OPERAND (gnu_result, 1))
+	       && DECL_SIZE (TREE_OPERAND (gnu_result, 1))
+		  != TYPE_SIZE (TREE_TYPE (gnu_result))))
 	gnu_result = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result))),
 			      gnu_result);
     }
