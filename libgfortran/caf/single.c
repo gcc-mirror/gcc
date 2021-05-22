@@ -3135,3 +3135,13 @@ _gfortran_caf_is_present (caf_token_t token,
     }
   return memptr != NULL;
 }
+
+/* Reference the libraries implementation.  */
+extern void _gfortran_random_init (int32_t, int32_t, int32_t);
+
+void _gfortran_caf_random_init (bool repeatable, bool image_distinct)
+{
+  /* In a single image implementation always forward to the gfortran
+     routine.  */
+  _gfortran_random_init (repeatable, image_distinct, 1);
+}
