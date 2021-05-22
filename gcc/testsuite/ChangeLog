@@ -1,3 +1,7 @@
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/derived_type7.adb, gnat.dg/derived_type7.ads: New test.
+
 2021-05-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100489
