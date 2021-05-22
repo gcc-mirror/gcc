@@ -247,14 +247,14 @@ sub gen_addadd
       if ( $kind eq 'vector' ) {
 	  $vchr = "v";
 	  $op = "vaddudm";
-	  $type = "fuse_vec";
+	  $type = "fused_vector";
 	  $mode = "V2DI";
 	  $pred = "altivec_register_operand";
 	  $constraint = "v";
       } else {
 	  $vchr = "";
 	  $op = "add";
-	  $type = "fuse_arithlog";
+	  $type = "fused_arith_logical";
 	  $mode = "GPR";
 	  $pred = "gpc_reg_operand";
 	  $constraint = "r";

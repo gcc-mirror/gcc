@@ -2673,7 +2673,7 @@
    add %3,%1,%0\;add %3,%3,%2
    add %3,%1,%0\;add %3,%3,%2
    add %4,%1,%0\;add %3,%4,%2"
-  [(set_attr "type" "fuse_arithlog")
+  [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
 
@@ -2691,6 +2691,6 @@
    vaddudm %3,%1,%0\;vaddudm %3,%3,%2
    vaddudm %3,%1,%0\;vaddudm %3,%3,%2
    vaddudm %4,%1,%0\;vaddudm %3,%4,%2"
-  [(set_attr "type" "fuse_vec")
+  [(set_attr "type" "fused_vector")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
