@@ -1,3 +1,11 @@
+2021-05-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR sanitizer/100379
+	* sanitizer_common/sanitizer_common_interceptors_ioctl.inc: Cherry-pick
+	llvm-project revision f7c5351552387bd43f6ca3631016d7f0dfe0f135.
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Likewise.
+	* sanitizer_common/sanitizer_platform_limits_posix.h: Likewise.
+
 2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backported from master:
