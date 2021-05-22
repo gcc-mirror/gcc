@@ -1,3 +1,12 @@
+2021-05-22  Andre Vehreschild  <vehre@gcc.gnu.org>
+	    Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/98301
+	* caf/libcaf.h (_gfortran_caf_random_init): New function.
+	* caf/single.c (_gfortran_caf_random_init): New function.
+	* gfortran.map: Added fndecl.
+	* intrinsics/random_init.f90: Implement random_init.
+
 2021-05-05  Tobias Burnus  <tobias@codesourcery.com>
 
 	* intrinsics/chmod.c (chmod_internal): Only declare mode_mask var
