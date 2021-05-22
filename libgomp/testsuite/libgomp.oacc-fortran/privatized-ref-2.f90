@@ -12,6 +12,8 @@
 ! { dg-additional-options "-foffload=-fopt-info-note-omp" }
 ! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
 ! for testing/documenting aspects of that functionality.
+! Prune a few: uninteresting, and varying depending on GCC configuration (data types):
+! { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} }
 
 ! It's only with Tcl 8.5 (released in 2007) that "the variable 'varName'
 ! passed to 'incr' may be unset, and in that case, it will be set to [...]",
@@ -43,7 +45,6 @@ contains
     integer :: array(nn)
 
     !$acc parallel copyout(array) ! { dg-line l_compute[incr c_compute] }
-    ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'atmp\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'shadow_loopvar\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'offset\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
@@ -65,7 +66,6 @@ contains
     integer :: array(:)
 
     !$acc parallel copyout(array) ! { dg-line l_compute[incr c_compute] }
-    ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'atmp\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'shadow_loopvar\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
     ! { dg-note {variable 'offset\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
@@ -92,8 +92,7 @@ contains
     integer :: i
     character(len=*) :: str
 
-    !$acc parallel copyout(str) ! { dg-line l_compute[incr c_compute] }
-    ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_compute$c_compute }
+    !$acc parallel copyout(str)
     str = "abcdefghij"
     !$acc loop gang private(str) ! { dg-line l_loop[incr c_loop] }
     ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
@@ -101,7 +100,6 @@ contains
     ! { dg-note {variable 'char\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'char\.[0-9]+' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'char\.[0-9]+' adjusted for OpenACC privatization level: 'gang'} "" { target { ! { openacc_host_selected || openacc_nvidia_accel_selected } } } l_loop$c_loop }
-    ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     ! { dg-message {sorry, unimplemented: target cannot support alloca} PR65181 { target openacc_nvidia_accel_selected } l_loop$c_loop }
     do i = 1, 10
       str(i:i) = achar(ichar('A') + i)
@@ -137,7 +135,6 @@ contains
     ! { dg-note {variable 'char\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'char\.[0-9]+' ought to be adjusted for OpenACC privatization level: 'gang'} "" { target *-*-* } l_loop$c_loop }
     ! { dg-note {variable 'char\.[0-9]+' adjusted for OpenACC privatization level: 'gang'} "" { target { ! { openacc_host_selected || openacc_nvidia_accel_selected } } } l_loop$c_loop }
-    ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } l_loop$c_loop }
     do i = 1, 15
       scalar(i:i) = achar(ichar('A') + i)
     end do
