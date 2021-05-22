@@ -1,3 +1,75 @@
+2021-05-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-addadd.c: New file.
+
+2021-05-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-ldcmpi.c: New file.
+	* gcc.target/powerpc/fusion-p10-2logical.c: New file.
+
+2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-3.c: Remove all xfails.
+	* c-c++-common/gomp/pr99928-15.c: New test.
+
+2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-6.c: Remove all xfails.
+	* c-c++-common/gomp/pr99928-13.c: New test.
+	* c-c++-common/gomp/pr99928-14.c: New test.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* c-c++-common/goacc/privatization-1-compute-loop.c: Update.
+	* c-c++-common/goacc/privatization-1-compute.c: Likewise.
+	* c-c++-common/goacc/privatization-1-routine_gang-loop.c:
+	Likewise.
+	* c-c++-common/goacc/privatization-1-routine_gang.c: Likewise.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* c-c++-common/goacc/privatization-1-compute-loop.c: New file.
+	* c-c++-common/goacc/privatization-1-compute.c: Likewise.
+	* c-c++-common/goacc/privatization-1-routine_gang-loop.c:
+	Likewise.
+	* c-c++-common/goacc/privatization-1-routine_gang.c: Likewise.
+	* gfortran.dg/goacc/privatization-1-compute-loop.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-compute.f90: Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang-loop.f90:
+	Likewise.
+	* gfortran.dg/goacc/privatization-1-routine_gang.f90: Likewise.
+	* c-c++-common/goacc-gomp/nesting-1.c: Update.
+	* c-c++-common/goacc/private-reduction-1.c: Likewise.
+	* gfortran.dg/goacc/private-3.f95: Likewise.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lib/target-supports.exp (check_effective_target___OPTIMIZE__):
+	New proc.
+	* gcc.c-torture/compile/ssa-unused-1.c: New file.
+
+2021-05-21  Richard Biener  <rguenther@suse.de>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/pr90773-24.c: New test.
+	* gcc.target/i386/pr90773-25.c: Likewise.
+
+2021-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* g++.target/i386/pr100637-1b.C: New test.
+	* g++.target/i386/pr100637-1w.C: Ditto.
+	* gcc.target/i386/pr100637-2b.c: Ditto.
+	* gcc.target/i386/pr100637-2w.c: Ditto.
+
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/derived_type7.adb, gnat.dg/derived_type7.ads: New test.
+
 2021-05-20  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/cpp2a/desig19.C: New test.
