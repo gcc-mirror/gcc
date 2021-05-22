@@ -4875,6 +4875,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (cmp (bit_and@2 @0 integer_pow2p@1) @1)
   (icmp @2 { build_zero_cst (TREE_TYPE (@0)); })))
 
+(for cmp (ge lt)
+/* x < 0 ? ~y : y into (x >> (prec-1)) ^ y. */
+/* x >= 0 ? ~y : y into ~((x >> (prec-1)) ^ y). */
+ (simplify
+  (cond (cmp @0 integer_zerop) (bit_not @1) @1)
+   (if (INTEGRAL_TYPE_P (type)
+	&& INTEGRAL_TYPE_P (TREE_TYPE (@0))
+        && !TYPE_UNSIGNED (TREE_TYPE (@0))
+        && TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type))
+    (with
+     {
+       tree shifter = build_int_cst (integer_type_node, TYPE_PRECISION (type) - 1);
+     }
+    (if (cmp == LT_EXPR)
+     (bit_xor (convert (rshift @0 {shifter;})) @1)
+     (bit_not (bit_xor (convert (rshift @0 {shifter;})) @1))))))
+/* x < 0 ? y : ~y into ~((x >> (prec-1)) ^ y). */
+/* x >= 0 ? y : ~y into (x >> (prec-1)) ^ y. */
+ (simplify
+  (cond (cmp @0 integer_zerop) @1 (bit_not @1))
+   (if (INTEGRAL_TYPE_P (type)
+	&& INTEGRAL_TYPE_P (TREE_TYPE (@0))
+        && !TYPE_UNSIGNED (TREE_TYPE (@0))
+        && TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type))
+    (with
+     {
+       tree shifter = build_int_cst (integer_type_node, TYPE_PRECISION (type) - 1);
+     }
+    (if (cmp == GE_EXPR)
+     (bit_xor (convert (rshift @0 {shifter;})) @1)
+     (bit_not (bit_xor (convert (rshift @0 {shifter;})) @1)))))))
+
 /* If we have (A & C) != 0 ? D : 0 where C and D are powers of 2,
    convert this into a shift followed by ANDing with D.  */
 (simplify
