@@ -38,7 +38,7 @@ public:
       if (!r->have_references_for_node (decl_node_id)
 	  && ident.get ().at (0) != '_')
 	{
-	  rust_warning_at (locus, 0, "unused name");
+	  rust_warning_at (locus, 0, "unused name '%s'", ident.get ().c_str ());
 	}
       return true;
     });
