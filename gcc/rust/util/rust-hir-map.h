@@ -198,7 +198,7 @@ public:
 private:
   Mappings ();
 
-  CrateNum crateNumItr;
+  CrateNum crateNumItr = 0;
   CrateNum currentCrateNum;
 
   std::map<CrateNum, HirId> hirIdIter;
