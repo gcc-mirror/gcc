@@ -786,6 +786,9 @@ std::string aarch64_get_extension_string_for_isa_flags (uint64_t, uint64_t);
 /* Defined in aarch64-d.c  */
 extern void aarch64_d_target_versions (void);
 
+/* In aarch64-rust.c  */
+extern void aarch64_rust_target_cpu_info (void);
+
 rtl_opt_pass *make_pass_fma_steering (gcc::context *);
 rtl_opt_pass *make_pass_track_speculation (gcc::context *);
 rtl_opt_pass *make_pass_tag_collision_avoidance (gcc::context *);

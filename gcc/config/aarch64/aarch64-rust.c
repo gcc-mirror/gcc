@@ -55,7 +55,7 @@ void aarch64_rust_target_cpu_info(void) {
         rust_add_target_info("target_feature", "rcpc");
     if (TARGET_DOTPROD)
         rust_add_target_info("target_feature", "dotprod");
-    if (AARCH64_ISA_V8_1)
+    if (aarch64_isa_flags & AARCH64_FL_V8_2)
         rust_add_target_info("target_feature", "v8.1a");
     if (AARCH64_ISA_V8_2)
         rust_add_target_info("target_feature", "v8.2a");
