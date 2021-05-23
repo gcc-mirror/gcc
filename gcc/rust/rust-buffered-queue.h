@@ -101,7 +101,7 @@ public:
 	     * reallocation upon resizing */
 
 	    // validate that buffer is large enough now
-	    rust_assert (end + num_queued_items < (int) buffer.size ());
+	    rust_assert (end + num_items_to_read <= (int) buffer.size ());
 	  }
 
 	/* iterate through buffer and invoke operator () on source on values
