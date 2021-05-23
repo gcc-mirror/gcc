@@ -1,3 +1,7 @@
+2021-05-23  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/gimplefe-45.c: New test.
+
 2021-05-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* gcc.target/powerpc/fusion-p10-addadd.c: New file.
