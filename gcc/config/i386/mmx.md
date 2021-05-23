@@ -302,6 +302,39 @@
 	   ]
 	   (symbol_ref "true")))])
 
+;; For TARGET_64BIT we always round up to 8 bytes.
+(define_insn "*push<mode>2_rex64"
+  [(set (match_operand:VI_32 0 "push_operand" "=X,X")
+	(match_operand:VI_32 1 "nonmemory_no_elim_operand" "rC,*v"))]
+  "TARGET_SSE2 && TARGET_64BIT"
+  "@
+   push{q}\t%q1
+   #"
+  [(set_attr "type" "push,multi")
+   (set_attr "mode" "DI")])
+
+(define_insn "*push<mode>2"
+  [(set (match_operand:VI_32 0 "push_operand" "=<,<")
+	(match_operand:VI_32 1 "general_no_elim_operand" "rC*m,*v"))]
+  "TARGET_SSE2 && !TARGET_64BIT"
+  "@
+   push{l}\t%1
+   #"
+  [(set_attr "type" "push,multi")
+   (set_attr "mode" "SI")])
+
+(define_split
+  [(set (match_operand:VI_32 0 "push_operand")
+	(match_operand:VI_32 1 "sse_reg_operand"))]
+  "TARGET_SSE2 && reload_completed"
+  [(set (reg:P SP_REG) (plus:P (reg:P SP_REG) (match_dup 2)))
+    (set (match_dup 0) (match_dup 1))]
+{
+  operands[2] = GEN_INT (-PUSH_ROUNDING (GET_MODE_SIZE (<VI_32:MODE>mode)));
+  /* Preserve memory attributes. */
+  operands[0] = replace_equiv_address (operands[0], stack_pointer_rtx);
+})
+
 (define_expand "movmisalign<mode>"
   [(set (match_operand:VI_32 0 "nonimmediate_operand")
 	(match_operand:VI_32 1 "nonimmediate_operand"))]
