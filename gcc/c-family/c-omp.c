@@ -1877,10 +1877,21 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 		{
 		  /* This must be #pragma omp target simd.  */
 		  s = C_OMP_CLAUSE_SPLIT_TARGET;
+		  OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (clauses) = 1;
+		  OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET (clauses) = 1;
 		  break;
 		}
 	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
 				    OMP_CLAUSE_FIRSTPRIVATE);
+	      /* firstprivate should not be applied to target if it is
+		 also lastprivate or on the combined/composite construct,
+		 or if it is mentioned in map clause.  OMP_CLAUSE_DECLs
+		 may need to go through FE handling though (instantiation,
+		 C++ non-static data members, array section lowering), so
+		 add the clause with OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT and
+		 let *finish_omp_clauses and the gimplifier handle it
+		 right.  */
+	      OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c) = 1;
 	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
 	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
 	      cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = c;

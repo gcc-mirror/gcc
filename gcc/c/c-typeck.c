@@ -13969,6 +13969,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
      has been seen, -2 if mixed inscan/normal reduction diagnosed.  */
   int reduction_seen = 0;
   bool allocate_seen = false;
+  bool firstprivate_implicit_moved = false;
   bool oacc_gang_seen = false;
 
   bitmap_obstack_initialize (NULL);
@@ -14426,6 +14427,29 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 
 	case OMP_CLAUSE_FIRSTPRIVATE:
+	  if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
+	      && !firstprivate_implicit_moved)
+	    {
+	      firstprivate_implicit_moved = true;
+	      /* Move firstprivate clauses with
+		 OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT set to the end of
+		 clauses chain.  */
+	      tree cl = NULL, *pc1 = pc, *pc2 = &cl;
+	      while (*pc1)
+		if (OMP_CLAUSE_CODE (*pc1) == OMP_CLAUSE_FIRSTPRIVATE
+		    && OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (*pc1))
+		  {
+		    *pc2 = *pc1;
+		    pc2 = &OMP_CLAUSE_CHAIN (*pc2);
+		    *pc1 = OMP_CLAUSE_CHAIN (*pc1);
+		  }
+		else
+		  pc1 = &OMP_CLAUSE_CHAIN (*pc1);
+	      *pc2 = NULL;
+	      *pc1 = cl;
+	      if (pc1 != pc)
+		continue;
+	    }
 	  t = OMP_CLAUSE_DECL (c);
 	  need_complete = true;
 	  need_implicitly_determined = true;
@@ -14447,6 +14471,9 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (ort == C_ORT_ACC)
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD appears more than once in data clauses", t);
+	      else if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
+		       && !OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET (c))
+		/* Silently drop the clause.  */;
 	      else
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD appears both in data and map clauses", t);

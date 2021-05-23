@@ -4,6 +4,25 @@
 	2021-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/99928
+	* tree.h (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET): Define.
+	* gimplify.c (enum gimplify_omp_var_data): Fix up
+	GOVD_MAP_HAS_ATTACHMENTS value, add GOVD_FIRSTPRIVATE_IMPLICIT.
+	(omp_lastprivate_for_combined_outer_constructs): If combined target
+	has GOVD_FIRSTPRIVATE_IMPLICIT set for the decl, change it to
+	GOVD_MAP | GOVD_SEEN.
+	(gimplify_scan_omp_clauses): Set GOVD_FIRSTPRIVATE_IMPLICIT for
+	firstprivate clauses with OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT.
+	(gimplify_adjust_omp_clauses): For firstprivate clauses with
+	OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT either clear that bit and
+	OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET too, or remove it and
+	let it be replaced by implicit map clause.
+
+2021-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
 	* gimplify.c (omp_lastprivate_for_combined_outer_constructs): New
 	function.
 	(gimplify_scan_omp_clauses) <case OMP_CLAUSE_LASTPRIVATE>: Use it.

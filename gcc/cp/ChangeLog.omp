@@ -1,3 +1,14 @@
+2021-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* semantics.c (finish_omp_clauses): Move firstprivate clauses with
+	OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT to the end of the chain.  Don't error
+	if a decl is mentioned both in map clause and in such firstprivate
+	clause unless OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET is also set.
+
 2021-05-19  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
