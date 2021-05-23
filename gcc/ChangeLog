@@ -1,3 +1,8 @@
+2021-05-22  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_addadd): Fix incorrect attr types.
+	* config/rs6000/fusion.md: Regenerate file.
+
 2021-05-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/genfusion.pl (gen_addadd): New function.

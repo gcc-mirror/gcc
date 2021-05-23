@@ -1,3 +1,9 @@
+2021-05-22  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR testsuite/90115
+	* testsuite/libgomp.oacc-fortran/privatized-ref-2.f90: Prune
+	uninteresting/varying diagnostics.
+
 2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR middle-end/90115
