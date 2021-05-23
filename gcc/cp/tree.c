@@ -1201,12 +1201,14 @@ vla_type_p (tree t)
   return false;
 }
 
-/* Return a reference type node referring to TO_TYPE.  If RVAL is
+
+/* Return a reference type node of MODE referring to TO_TYPE.  If MODE
+   is VOIDmode the standard pointer mode will be picked.  If RVAL is
    true, return an rvalue reference type, otherwise return an lvalue
    reference type.  If a type node exists, reuse it, otherwise create
    a new one.  */
 tree
-cp_build_reference_type (tree to_type, bool rval)
+cp_build_reference_type_for_mode (tree to_type, machine_mode mode, bool rval)
 {
   tree lvalue_ref, t;
 
@@ -1219,7 +1221,8 @@ cp_build_reference_type (tree to_type, bool rval)
       to_type = TREE_TYPE (to_type);
     }
 
-  lvalue_ref = build_reference_type (to_type);
+  lvalue_ref = build_reference_type_for_mode (to_type, mode, false);
+
   if (!rval)
     return lvalue_ref;
 
@@ -1245,7 +1248,7 @@ cp_build_reference_type (tree to_type, bool rval)
     SET_TYPE_STRUCTURAL_EQUALITY (t);
   else if (TYPE_CANONICAL (to_type) != to_type)
     TYPE_CANONICAL (t) 
-      = cp_build_reference_type (TYPE_CANONICAL (to_type), rval);
+      = cp_build_reference_type_for_mode (TYPE_CANONICAL (to_type), mode, rval);
   else
     TYPE_CANONICAL (t) = t;
 
@@ -1253,6 +1256,16 @@ cp_build_reference_type (tree to_type, bool rval)
 
   return t;
 
+}
+
+/* Return a reference type node referring to TO_TYPE.  If RVAL is
+   true, return an rvalue reference type, otherwise return an lvalue
+   reference type.  If a type node exists, reuse it, otherwise create
+   a new one.  */
+tree
+cp_build_reference_type (tree to_type, bool rval)
+{
+  return cp_build_reference_type_for_mode (to_type, VOIDmode, rval);
 }
 
 /* Returns EXPR cast to rvalue reference type, like std::move.  */
@@ -1556,11 +1569,11 @@ strip_typedefs (tree t, bool *remove_attributes, unsigned int flags)
     {
     case POINTER_TYPE:
       type = strip_typedefs (TREE_TYPE (t), remove_attributes, flags);
-      result = build_pointer_type (type);
+      result = build_pointer_type_for_mode (type, TYPE_MODE (t), false);
       break;
     case REFERENCE_TYPE:
       type = strip_typedefs (TREE_TYPE (t), remove_attributes, flags);
-      result = cp_build_reference_type (type, TYPE_REF_IS_RVALUE (t));
+      result = cp_build_reference_type_for_mode (type, TYPE_MODE (t), TYPE_REF_IS_RVALUE (t));
       break;
     case OFFSET_TYPE:
       t0 = strip_typedefs (TYPE_OFFSET_BASETYPE (t), remove_attributes, flags);
