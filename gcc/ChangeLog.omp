@@ -1,3 +1,14 @@
+2021-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* gimplify.c (omp_lastprivate_for_combined_outer_constructs): New
+	function.
+	(gimplify_scan_omp_clauses) <case OMP_CLAUSE_LASTPRIVATE>: Use it.
+	(gimplify_omp_for): Likewise.
+
 2021-05-20  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

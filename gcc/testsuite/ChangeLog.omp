@@ -1,3 +1,13 @@
+2021-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-6.c: Remove all xfails. 
+	* c-c++-common/gomp/pr99928-13.c: New test.
+	* c-c++-common/gomp/pr99928-14.c: New test.
+
 2021-05-21  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Fortran/OpenMP: Add support for 'close' in map clause
