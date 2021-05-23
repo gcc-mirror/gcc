@@ -643,11 +643,13 @@ Temporary_statement::do_get_backend(Translate_context* context)
     binit = context->backend()->convert_expression(btype, binit,
                                                    this->location());
 
+  unsigned int flags = 0;
+  if (this->is_address_taken_)
+    flags |= Backend::variable_address_is_taken;
   Bstatement* statement;
   this->bvariable_ =
     context->backend()->temporary_variable(bfunction, context->bblock(),
-					   btype, binit,
-					   this->is_address_taken_,
+					   btype, binit, flags,
 					   this->location(), &statement);
   return statement;
 }

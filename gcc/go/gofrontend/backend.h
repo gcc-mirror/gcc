@@ -481,24 +481,51 @@ class Backend
   virtual Bvariable*
   error_variable() = 0;
 
+  // Bit flags to pass to the various methods that return Bvariable*.
+  // Not all flags are meaningful for all methods.
+
+  // Set if the variable's address is taken.  For a local variable
+  // this implies that the address does not escape the function, as
+  // otherwise the variable would be on the heap.
+  static const unsigned int variable_address_is_taken = 1 << 0;
+
+  // Set if the variable is defined in some other package.  Only
+  // meaningful for the global_variable method.  At most one of
+  // is_external, is_hidden, and is_common may be set.
+  static const unsigned int variable_is_external = 1 << 1;
+
+  // Set if the variable is not exported, and as such is only defined
+  // in the current package.  Only meaningful for global_variable,
+  // implicit_variable, and immutable_struct.  At most one of
+  // is_external, is_hidden, and is_common may be set.
+  static const unsigned variable_is_hidden = 1 << 2;
+
+  // Set if the variable should be treated as a common variable:
+  // multiple definitions with different sizes permitted in different
+  // object files, all merged into the largest definition at link
+  // time.  Only meaningful for implicit_variable and immutable_struct.
+  // At most one of is_external, is_hidden, and is_common may be set.
+  static const unsigned int variable_is_common = 1 << 3;
+
+  // Set if the variable should be put into a unique section if
+  // possible; this is intended to permit the linker to garbage
+  // collect the value if it is not referenced.  Only meaningful for
+  // global_variable.
+  static const unsigned int variable_in_unique_section = 1 << 4;
+
+  // Set if the variable should be treated as immutable.  Only
+  // meaningful for implicit_variable.  For example, this is set for
+  // slice initializers if the values must be copied to the heap.
+  static const unsigned int variable_is_constant = 1 << 5;
+
   // Create a global variable. NAME is the package-qualified name of
   // the variable.  ASM_NAME is the encoded identifier for the
   // variable, incorporating the package, and made safe for the
-  // assembler.  BTYPE is the type of the variable.  IS_EXTERNAL is
-  // true if the variable is defined in some other package.  IS_HIDDEN
-  // is true if the variable is not exported (name begins with a lower
-  // case letter).  IN_UNIQUE_SECTION is true if the variable should
-  // be put into a unique section if possible; this is intended to
-  // permit the linker to garbage collect the variable if it is not
-  // referenced.  LOCATION is where the variable was defined.
+  // assembler.  BTYPE is the type of the variable.  FLAGS is the bit
+  // flags defined above.  LOCATION is where the variable was defined.
   virtual Bvariable*
-  global_variable(const std::string& name,
-                  const std::string& asm_name,
-		  Btype* btype,
-		  bool is_external,
-		  bool is_hidden,
-		  bool in_unique_section,
-		  Location location) = 0;
+  global_variable(const std::string& name, const std::string& asm_name,
+		  Btype* btype, unsigned int flags, Location location) = 0;
 
   // A global variable will 1) be initialized to zero, or 2) be
   // initialized to a constant value, or 3) be initialized in the init
@@ -516,42 +543,40 @@ class Backend
   // null, gives the location at which the value of this variable may
   // be found, typically used to create an inner-scope reference to an
   // outer-scope variable, to extend the lifetime of the variable beyond
-  // the inner scope.  IS_ADDRESS_TAKEN is true if the address of this
-  // variable is taken (this implies that the address does not escape
-  // the function, as otherwise the variable would be on the heap).
+  // the inner scope.  FLAGS is the bit flags defined above.
   // LOCATION is where the variable is defined.  For each local variable
   // the frontend will call init_statement to set the initial value.
   virtual Bvariable*
   local_variable(Bfunction* function, const std::string& name, Btype* type,
-		 Bvariable* decl_var, bool is_address_taken, Location location) = 0;
+		 Bvariable* decl_var, unsigned int flags,
+		 Location location) = 0;
 
   // Create a function parameter.  This is an incoming parameter, not
   // a result parameter (result parameters are treated as local
   // variables).  The arguments are as for local_variable.
   virtual Bvariable*
   parameter_variable(Bfunction* function, const std::string& name,
-		     Btype* type, bool is_address_taken,
-		     Location location) = 0;
+		     Btype* type, unsigned int flags, Location location) = 0;
 
   // Create a static chain parameter.  This is the closure parameter.
   virtual Bvariable*
   static_chain_variable(Bfunction* function, const std::string& name,
-		        Btype* type, Location location) = 0;
+		        Btype* type, unsigned int flags,
+			Location location) = 0;
 
   // Create a temporary variable.  A temporary variable has no name,
   // just a type.  We pass in FUNCTION and BLOCK in case they are
   // needed.  If INIT is not NULL, the variable should be initialized
   // to that value.  Otherwise the initial value is irrelevant--the
   // backend does not have to explicitly initialize it to zero.
-  // ADDRESS_IS_TAKEN is true if the programs needs to take the
-  // address of this temporary variable.  LOCATION is the location of
+  // FLAGS is the bit flags defined above.  LOCATION is the location of
   // the statement or expression which requires creating the temporary
   // variable, and may not be very useful.  This function should
   // return a variable which can be referenced later and should set
   // *PSTATEMENT to a statement which initializes the variable.
   virtual Bvariable*
   temporary_variable(Bfunction*, Bblock*, Btype*, Bexpression* init,
-		     bool address_is_taken, Location location,
+		     unsigned int flags, Location location,
 		     Bstatement** pstatement) = 0;
 
   // Create an implicit variable that is compiler-defined.  This is
@@ -566,46 +591,33 @@ class Backend
   //
   // TYPE is the type of the implicit variable.
   //
-  // IS_HIDDEN will be true if the descriptor should only be visible
-  // within the current object.
-  //
-  // IS_CONSTANT is true if the implicit variable should be treated like it is
-  // immutable.  For slice initializers, if the values must be copied to the
-  // heap, the variable IS_CONSTANT.
-  //
-  // IS_COMMON is true if the implicit variable should
-  // be treated as a common variable (multiple definitions with
-  // different sizes permitted in different object files, all merged
-  // into the largest definition at link time); this will be true for
-  // the zero value.  IS_HIDDEN and IS_COMMON will never both be true.
+  // FLAGS is the bit flags defined above.
   //
   // If ALIGNMENT is not zero, it is the desired alignment of the variable.
   virtual Bvariable*
   implicit_variable(const std::string& name, const std::string& asm_name,
-                    Btype* type, bool is_hidden, bool is_constant,
-                    bool is_common, int64_t alignment) = 0;
+                    Btype* type, unsigned int flags, int64_t alignment) = 0;
 
 
   // Set the initial value of a variable created by implicit_variable.
   // This must be called even if there is no initializer, i.e., INIT is NULL.
-  // The NAME, TYPE, IS_HIDDEN, IS_CONSTANT, and IS_COMMON parameters are
-  // the same ones passed to implicit_variable.  INIT will be a composite
-  // literal of type TYPE.  It will not contain any function calls or anything
-  // else that can not be put into a read-only data section.
-  // It may contain the address of variables created by implicit_variable.
+  // The NAME, TYPE, and FLAGS parameters are the same ones passed to
+  // implicit_variable.  INIT will be a composite literal of type
+  // TYPE.  It will not contain any function calls or anything else
+  // that can not be put into a read-only data section.  It may
+  // contain the address of variables created by implicit_variable.
   //
-  // If IS_COMMON is true, INIT will be NULL, and the
+  // If variable_is_common is set in FLAGS, INIT will be NULL, and the
   // variable should be initialized to all zeros.
   virtual void
   implicit_variable_set_init(Bvariable*, const std::string& name, Btype* type,
-			     bool is_hidden, bool is_constant, bool is_common,
-			     Bexpression* init) = 0;
+			     unsigned int flags, Bexpression* init) = 0;
 
   // Create a reference to a named implicit variable defined in some
   // other package.  This will be a variable created by a call to
   // implicit_variable with the same NAME, ASM_NAME and TYPE and with
-  // IS_COMMON passed as false.  This corresponds to an extern global
-  // variable in C.
+  // variable_is_common not set in FLAGS.  This corresponds to an
+  // extern global variable in C.
   virtual Bvariable*
   implicit_variable_reference(const std::string& name,
                               const std::string& asm_name,
@@ -622,15 +634,12 @@ class Backend
   // ASM_NAME is the encoded, assembler-friendly version of NAME, or
   // the empty string if no encoding is needed.
   //
-  // IS_HIDDEN will be true if the descriptor should only be visible
-  // within the current object.
-  //
-  // IS_COMMON is true if NAME may be defined by several packages, and
-  // the linker should merge all such definitions.  If IS_COMMON is
-  // false, NAME should be defined in only one file.  In general
-  // IS_COMMON will be true for the type descriptor of an unnamed type
-  // or a builtin type.  IS_HIDDEN and IS_COMMON will never both be
-  // true.
+  // FLAGS is the bit flags defined above.  The variable_is_common
+  // flag will be set if NAME may be defined by several packages, and
+  // the linker should merge all such definitions.  If the
+  // variable_is_common flag is not set, NAME should be defined in
+  // only one file.  In general variable_is_common will be set for the
+  // type descriptor of an unnamed type or a builtin type.
   //
   // TYPE will be a struct type; the type of the returned expression
   // must be a pointer to this struct type.
@@ -640,28 +649,26 @@ class Backend
   // address.  After calling this the frontend will call
   // immutable_struct_set_init.
   virtual Bvariable*
-  immutable_struct(const std::string& name,
-                   const std::string& asm_name,
-                   bool is_hidden, bool is_common,
-		   Btype* type, Location) = 0;
+  immutable_struct(const std::string& name, const std::string& asm_name,
+		   unsigned int flags, Btype* type, Location) = 0;
 
   // Set the initial value of a variable created by immutable_struct.
-  // The NAME, IS_HIDDEN, IS_COMMON, TYPE, and location parameters are
-  // the same ones passed to immutable_struct.  INITIALIZER will be a
-  // composite literal of type TYPE.  It will not contain any function
-  // calls or anything else that can not be put into a read-only data
-  // section.  It may contain the address of variables created by
+  // The NAME, FLAGS, TYPE, and location parameters are the same ones
+  // passed to immutable_struct.  INITIALIZER will be a composite
+  // literal of type TYPE.  It will not contain any function calls or
+  // anything else that can not be put into a read-only data section.
+  // It may contain the address of variables created by
   // immutable_struct.
   virtual void
   immutable_struct_set_init(Bvariable*, const std::string& name,
-			    bool is_hidden, bool is_common, Btype* type,
+			    unsigned int flags, Btype* type,
 			    Location, Bexpression* initializer) = 0;
 
   // Create a reference to a named immutable initialized data
   // structure defined in some other package.  This will be a
   // structure created by a call to immutable_struct with the same
-  // NAME, ASM_NAME and TYPE and with IS_COMMON passed as false.  This
-  // corresponds to an extern const global variable in C.
+  // NAME, ASM_NAME and TYPE and with variable_is_common not set in
+  // flags.  This corresponds to an extern const global variable in C.
   virtual Bvariable*
   immutable_struct_reference(const std::string& name,
                              const std::string& asm_name,
