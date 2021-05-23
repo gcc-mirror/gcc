@@ -1870,7 +1870,7 @@ Inverse function: @gol
 
 @table @asis
 @item @emph{Description}:
-@code{ATOMIC_ADD(ATOM, VALUE)} atomically adds the value of @var{VAR} to the
+@code{ATOMIC_ADD(ATOM, VALUE)} atomically adds the value of @var{VALUE} to the
 variable @var{ATOM}. When @var{STAT} is present and the invocation was
 successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
@@ -2090,7 +2090,7 @@ end program atomic
 @table @asis
 @item @emph{Description}:
 @code{ATOMIC_FETCH_ADD(ATOM, VALUE, OLD)} atomically stores the value of
-@var{ATOM} in @var{OLD} and adds the value of @var{VAR} to the
+@var{ATOM} in @var{OLD} and adds the value of @var{VALUE} to the
 variable @var{ATOM}. When @var{STAT} is present and the invocation was
 successful, it is assigned the value 0. If it is present and the invocation
 has failed, it is assigned a positive value; in particular, for a coindexed
