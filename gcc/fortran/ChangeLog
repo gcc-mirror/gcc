@@ -1,3 +1,11 @@
+2021-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-23  Tobias Burnus  <tobias@codesourcery.com>
+
+	* intrinsic.texi (ATOMIC_ADD, ATOMIC_FETCH_ADD): Use the
+	proper variable name in the description.
+
 2021-05-18  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
