@@ -1043,6 +1043,67 @@ namespace views::__adaptor
 
   namespace __detail
   {
+    template<typename _Tp>
+      struct __non_propagating_cache
+      {
+	// When _Tp is not an object type (e.g. is a reference type), we make
+	// __non_propagating_cache<_Tp> empty rather than ill-formed so that
+	// users can easily conditionally declare data members with this type
+	// (such as join_view::_M_inner).
+      };
+
+    template<typename _Tp>
+      requires is_object_v<_Tp>
+      struct __non_propagating_cache<_Tp> : protected _Optional_base<_Tp>
+      {
+	__non_propagating_cache() = default;
+
+	constexpr
+	__non_propagating_cache(const __non_propagating_cache&) noexcept
+	{ }
+
+	constexpr
+	__non_propagating_cache(__non_propagating_cache&& __other) noexcept
+	{ __other._M_reset(); }
+
+	constexpr __non_propagating_cache&
+	operator=(const __non_propagating_cache& __other) noexcept
+	{
+	  if (std::__addressof(__other) != this)
+	    this->_M_reset();
+	  return *this;
+	}
+
+	constexpr __non_propagating_cache&
+	operator=(__non_propagating_cache&& __other) noexcept
+	{
+	  this->_M_reset();
+	  __other._M_reset();
+	  return *this;
+	}
+
+	constexpr _Tp&
+	operator*() noexcept
+	{ return this->_M_get(); }
+
+	constexpr const _Tp&
+	operator*() const noexcept
+	{ return this->_M_get(); }
+
+	template<typename _Iter>
+	  _Tp&
+	  _M_emplace_deref(const _Iter& __i)
+	  {
+	    this->_M_reset();
+	    // Using _Optional_base::_M_construct to initialize from '*__i'
+	    // would incur an extra move due to the indirection, so we instead
+	    // use placement new directly.
+	    ::new ((void *) std::__addressof(this->_M_payload._M_payload)) _Tp(*__i);
+	    this->_M_payload._M_engaged = true;
+	    return this->_M_get();
+	  }
+      };
+
     template<range _Range>
       struct _CachedPosition
       {
@@ -1064,27 +1125,26 @@ namespace views::__adaptor
 
     template<forward_range _Range>
       struct _CachedPosition<_Range>
+	: protected __non_propagating_cache<iterator_t<_Range>>
       {
-      private:
-	iterator_t<_Range> _M_iter{};
-
-      public:
 	constexpr bool
 	_M_has_value() const
-	{ return _M_iter != iterator_t<_Range>{}; }
+	{ return this->_M_is_engaged(); }
 
 	constexpr iterator_t<_Range>
 	_M_get(const _Range&) const
 	{
 	  __glibcxx_assert(_M_has_value());
-	  return _M_iter;
+	  return **this;
 	}
 
 	constexpr void
 	_M_set(const _Range&, const iterator_t<_Range>& __it)
 	{
 	  __glibcxx_assert(!_M_has_value());
-	  _M_iter = __it;
+	  std::construct_at(std::__addressof(this->_M_payload._M_payload),
+			    in_place, __it);
+	  this->_M_payload._M_engaged = true;
 	}
       };
 
@@ -1097,6 +1157,27 @@ namespace views::__adaptor
 	range_difference_t<_Range> _M_offset = -1;
 
       public:
+	_CachedPosition() = default;
+
+	constexpr
+	_CachedPosition(const _CachedPosition&) = default;
+
+	constexpr
+	_CachedPosition(_CachedPosition&& __other) noexcept
+	{ *this = std::move(__other); }
+
+	constexpr _CachedPosition&
+	operator=(const _CachedPosition&) = default;
+
+	constexpr _CachedPosition&
+	operator=(_CachedPosition&& __other) noexcept
+	{
+	  // Propagate the cached offset, but invalidate the source.
+	  _M_offset = __other._M_offset;
+	  __other._M_offset = -1;
+	  return *this;
+	}
+
 	constexpr bool
 	_M_has_value() const
 	{ return _M_offset >= 0; }
@@ -2237,66 +2318,6 @@ namespace views::__adaptor
 
     inline constexpr _DropWhile drop_while;
   } // namespace views
-
-  namespace __detail
-  {
-    template<typename _Tp>
-      struct __non_propagating_cache
-      {
-	// When _Tp is not an object type (e.g. is a reference type), we make
-	// __non_propagating_cache<_Tp> empty rather than ill-formed so that
-	// users can easily conditionally declare data members with this type
-	// (such as join_view::_M_inner).
-      };
-
-    template<typename _Tp>
-      requires is_object_v<_Tp>
-      struct __non_propagating_cache<_Tp> : private _Optional_base<_Tp>
-      {
-	__non_propagating_cache() = default;
-
-	constexpr
-	__non_propagating_cache(const __non_propagating_cache&) noexcept
-	{ }
-
-	constexpr
-	__non_propagating_cache(__non_propagating_cache&& __other) noexcept
-	{ __other._M_reset(); }
-
-	constexpr __non_propagating_cache&
-	operator=(const __non_propagating_cache& __other) noexcept
-	{
-	  if (std::__addressof(__other) != this)
-	    this->_M_reset();
-	  return *this;
-	}
-
-	constexpr __non_propagating_cache&
-	operator=(__non_propagating_cache&& __other) noexcept
-	{
-	  this->_M_reset();
-	  __other._M_reset();
-	  return *this;
-	}
-
-	constexpr _Tp&
-	operator*() noexcept
-	{ return this->_M_get(); }
-
-	template<typename _Iter>
-	  _Tp&
-	  _M_emplace_deref(const _Iter& __i)
-	  {
-	    this->_M_reset();
-	    // Using _Optional_base::_M_construct to initialize from '*__i'
-	    // would incur an extra move due to the indirection, so we instead
-	    // use placement new directly.
-	    ::new ((void *) std::__addressof(this->_M_payload._M_payload)) _Tp(*__i);
-	    this->_M_payload._M_engaged = true;
-	    return this->_M_get();
-	  }
-      };
-  }
 
   template<input_range _Vp>
     requires view<_Vp> && input_range<range_reference_t<_Vp>>
