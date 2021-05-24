@@ -410,17 +410,18 @@ package body Sem_Util is
               and then No_Dynamic_Accessibility_Checks_Enabled (N)
               and then Is_Anonymous_Access_Type (Etype (N))
             then
-               --  In the alternative model the level is that of the subprogram
+               --  In the alternative model the level is that of the
+               --  designated type.
 
                if Debug_Flag_Underscore_B then
+                  return Make_Level_Literal (Typ_Access_Level (Etype (N)));
+
+               --  Otherwise the level is that of the subprogram
+
+               else
                   return Make_Level_Literal
                            (Subprogram_Access_Level (Current_Subprogram));
                end if;
-
-               --  Otherwise the level is that of the designated type
-
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (N)));
             end if;
 
             if Nkind (N) = N_Function_Call then
@@ -659,24 +660,22 @@ package body Sem_Util is
                if Allow_Alt_Model
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
                then
-                  --  In the alternative model the level depends on the
-                  --  entity's context.
+                  --  In the alternative model the level is that of the
+                  --  designated type entity's context.
 
                   if Debug_Flag_Underscore_B then
-                     if Is_Formal (E) then
-                        return Make_Level_Literal
-                                 (Subprogram_Access_Level
-                                   (Enclosing_Subprogram (E)));
-                     end if;
+                     return Make_Level_Literal (Typ_Access_Level (Etype (E)));
 
+                  --  Otherwise the level depends on the entity's context
+
+                  elsif Is_Formal (E) then
+                     return Make_Level_Literal
+                              (Subprogram_Access_Level
+                                (Enclosing_Subprogram (E)));
+                  else
                      return Make_Level_Literal
                               (Scope_Depth (Enclosing_Dynamic_Scope (E)));
                   end if;
-
-                  --  Otherwise the level is that of the designated type
-
-                  return Make_Level_Literal
-                           (Typ_Access_Level (Etype (E)));
                end if;
 
                --  Return the dynamic level in the normal case
@@ -701,10 +700,11 @@ package body Sem_Util is
 
             elsif Is_Type (E) then
                --  When restriction No_Dynamic_Accessibility_Checks is active
+               --  along with -gnatd_b.
 
                if Allow_Alt_Model
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then not Debug_Flag_Underscore_B
+                 and then Debug_Flag_Underscore_B
                then
                   return Make_Level_Literal (Typ_Access_Level (E));
                end if;
@@ -799,11 +799,11 @@ package body Sem_Util is
                                         = E_Discriminant)
             then
                --  When restriction No_Dynamic_Accessibility_Checks is active
-               --  the level is that of the designated type.
+               --  and -gnatd_b set, the level is that of the designated type.
 
                if Allow_Alt_Model
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then not Debug_Flag_Underscore_B
+                 and then Debug_Flag_Underscore_B
                then
                   return Make_Level_Literal
                            (Typ_Access_Level (Etype (E)));
@@ -825,11 +825,11 @@ package body Sem_Util is
                          = E_Anonymous_Access_Type
             then
                --  When restriction No_Dynamic_Accessibility_Checks is active
-               --  the level is that of the designated type.
+               --  and -gnatd_b set, the level is that of the designated type.
 
                if Allow_Alt_Model
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
-                 and then not Debug_Flag_Underscore_B
+                 and then Debug_Flag_Underscore_B
                then
                   return Make_Level_Literal
                            (Typ_Access_Level (Etype (E)));
@@ -7212,7 +7212,7 @@ package body Sem_Util is
 
          if Allow_Alt_Model
            and then No_Dynamic_Accessibility_Checks_Enabled (Typ)
-           and then Debug_Flag_Underscore_B
+           and then not Debug_Flag_Underscore_B
          then
             return Type_Access_Level (Typ, Allow_Alt_Model);
          end if;
@@ -29176,16 +29176,16 @@ package body Sem_Util is
             if Allow_Alt_Model
               and then No_Dynamic_Accessibility_Checks_Enabled (Btyp)
             then
-               --  In the normal model, the level of an anonymous access
+               --  In the -gnatd_b model, the level of an anonymous access
                --  type is always that of the designated type.
 
-               if not Debug_Flag_Underscore_B then
+               if Debug_Flag_Underscore_B then
                   return Type_Access_Level
                            (Designated_Type (Btyp), Allow_Alt_Model);
                end if;
 
-               --  Otherwise the secondary model dictates special handling
-               --  depending on the context of the anonymous access type.
+               --  Otherwise take the context of the anonymous access type into
+               --  account.
 
                --  Obtain the defining entity for the internally generated
                --  anonymous access type.

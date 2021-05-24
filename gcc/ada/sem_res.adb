@@ -13738,8 +13738,7 @@ package body Sem_Res is
                     Deepest_Type_Access_Level (Target_Type)
               and then (Nkind (Associated_Node_For_Itype (Opnd_Type)) /=
                          N_Function_Specification
-                        or else Ekind (Target_Type) in
-                                  Anonymous_Access_Kind)
+                        or else Ekind (Target_Type) in Anonymous_Access_Kind)
 
               --  Check we are not in a return value ???
 

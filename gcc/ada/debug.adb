@@ -140,7 +140,7 @@ package body Debug is
    --  d.Z  Do not enable expansion in configurable run-time mode
 
    --  d_a  Stop elaboration checks on accept or select statement
-   --  d_b  Use compatibility model under No_Dynamic_Accessibility_Checks
+   --  d_b  Use designated type model under No_Dynamic_Accessibility_Checks
    --  d_c  CUDA compilation : compile for the host
    --  d_d
    --  d_e  Ignore entry calls and requeue statements for elaboration
@@ -955,6 +955,10 @@ package body Debug is
    --       an accept or select statement for the static elaboration model. The
    --       behavior is similar to that of No_Entry_Calls_In_Elaboration_Code,
    --       but does not penalize actual entry calls in elaboration code.
+
+   --  d_b  When the restriction No_Dynamic_Accessibility_Checks is enabled,
+   --       use the simple "designated type" accessibility model, instead of
+   --       using the implicit level of the anonymous access type declaration.
 
    --  d_e  The compiler ignores simple entry calls, asynchronous transfer of
    --       control, conditional entry calls, timed entry calls, and requeue
