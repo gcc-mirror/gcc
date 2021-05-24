@@ -11,15 +11,10 @@
 @command{lto-dump} is a tool you can use in conjunction with GCC to
 dump link time optimization object files.
 
-@smallexample
-Usage: lto-dump @r{[}@var{OPTION}@r{]} ... @var{objfiles}
-@end smallexample
-
-@command{lto-dump} accepts the following options:
-
 @subsubheading Synopsis
 
-lto-dump [@option{-list}]
+lto-dump
+     [@option{-list}]
      [@option{-demangle}]
      [@option{-defined-only}]
      [@option{-print-value}]
