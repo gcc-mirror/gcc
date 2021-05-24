@@ -24,8 +24,6 @@
 (define_register_constraint "b" "LOW_REGS"  "r0 - r15")
 (define_register_constraint "c" "C_REGS" "C register")
 (define_register_constraint "y" "HILO_REGS" "HI and LO registers")
-(define_register_constraint "l" "LO_REGS" "LO register")
-(define_register_constraint "h" "HI_REGS" "HI register")
 (define_register_constraint "v" "V_REGS" "vector registers")
 (define_register_constraint "z" "SP_REGS" "SP register")
 

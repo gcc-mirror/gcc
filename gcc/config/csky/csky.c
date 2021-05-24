@@ -112,7 +112,7 @@ enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER] =
   /* Reserved.  */
   RESERVE_REGS,
   /* CC,HI,LO registers.  */
-  C_REGS,      HI_REGS,	     LO_REGS,
+  C_REGS,      HILO_REGS,     HILO_REGS,
   /* Reserved.  */
   RESERVE_REGS, RESERVE_REGS, RESERVE_REGS, RESERVE_REGS,
   RESERVE_REGS, RESERVE_REGS, RESERVE_REGS, RESERVE_REGS,
@@ -2477,8 +2477,7 @@ csky_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
   /* We always require a general register when copying anything to
      HI/LO_REGNUM, except when copying an SImode value from HI/LO_REGNUM
      to a general register, or when copying from register 0.  */
-  if ((rclass == HILO_REGS || rclass == LO_REGS || rclass == HI_REGS)
-      && !CSKY_GENERAL_REGNO_P (regno))
+  if (rclass == HILO_REGS && !CSKY_GENERAL_REGNO_P (regno))
     return GENERAL_REGS;
 
   if (rclass == V_REGS && !CSKY_GENERAL_REGNO_P (regno))
@@ -6546,7 +6545,7 @@ csky_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
    || (CLASS) == LOW_REGS)
 
 #define HILO_REG_CLASS_P(CLASS) \
-  ((CLASS) == HI_REGS || (CLASS) == LO_REGS || (CLASS) == HILO_REGS)
+  ((CLASS) == HILO_REGS)
 
 #define V_REG_CLASS_P(CLASS) \
   ((CLASS) == V_REGS)

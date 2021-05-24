@@ -685,8 +685,6 @@ enum reg_class
   LOW_REGS,
   GENERAL_REGS,
   C_REGS,
-  HI_REGS,
-  LO_REGS,
   HILO_REGS,
   V_REGS,
   OTHER_REGS,
@@ -706,8 +704,6 @@ enum reg_class
   "LOW_REGS",		\
   "GENERAL_REGS",	\
   "C_REGS",		\
-  "HI_REGS",		\
-  "LO_REGS",		\
   "HILO_REGS",		\
   "V_REGS",		\
   "OTHER_REGS",		\
@@ -731,10 +727,6 @@ enum reg_class
    0x00000000, 0x00000000, 0x00000000},			/* GENERAL_REGS  */   \
   {0x00000000, 0x00000002, 0x00000000, 0x00000000,			      \
    0x00000000, 0x00000000, 0x00000000},			/* C_REGS	 */   \
-  {0x00000000, 0x00000004, 0x00000000, 0x00000000,			      \
-   0x00000000, 0x00000000, 0x00000000},			/* HI_REG	 */   \
-  {0x00000000, 0x00000008, 0x00000000, 0x00000000,			      \
-   0x00000000, 0x00000000, 0x00000000},			/* LO_REG	 */   \
   {0x00000000, 0x0000000c, 0x00000000, 0x00000000,			      \
    0x00000000, 0x00000000, 0x00000000},			/* HILO_REGS     */   \
   {0x00000000, 0xFFF00000, 0x007FFF8F, 0x00000000,			      \
