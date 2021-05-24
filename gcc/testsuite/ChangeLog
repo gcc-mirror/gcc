@@ -1,3 +1,17 @@
+2021-05-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100722
+	* gcc.target/i386/pr100722.c: New test.
+
+2021-05-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100551
+	* gfortran.dg/pr100551.f90: New test.
+
+2021-05-23  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/gimplefe-45.c: New test.
+
 2021-05-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* gcc.target/powerpc/fusion-p10-addadd.c: New file.

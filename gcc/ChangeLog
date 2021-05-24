@@ -1,3 +1,15 @@
+2021-05-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100722
+	* config/i386/mmx.md (*push<VI_32:mode>2_rex64):
+	New instruction pattern.
+	(*push<VI_32:mode>2): Ditto.
+	(push splitter for SSE registers): New splitter.
+
+2021-05-23  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd ((A & C) != 0 ? D : 0): Limit to non pointer types.
+
 2021-05-22  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/genfusion.pl (gen_addadd): Fix incorrect attr types.
