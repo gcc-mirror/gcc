@@ -50,48 +50,93 @@ TEST(int32_t);
 TEST(uint64_t);
 TEST(int64_t);
   
-/* { dg-final { scan-assembler-times "fuse_nand_rsubf/0"   2 } } */
-/* { dg-final { scan-assembler-times "fuse_nand_rsubf/2"   2 } } */
-/* { dg-final { scan-assembler-times "fuse_nor_rsubf/0"    2 } } */
-/* { dg-final { scan-assembler-times "fuse_nor_rsubf/2"    2 } } */
-/* { dg-final { scan-assembler-times "fuse_add_nand/0"     4 } } */
-/* { dg-final { scan-assembler-times "fuse_add_nor/0"      4 } } */
-/* { dg-final { scan-assembler-times "fuse_add_or/0"       4 } } */
-/* { dg-final { scan-assembler-times "fuse_and_rsubf/0"    4 } } */
-/* { dg-final { scan-assembler-times "fuse_and_subf/0"     4 } } */
-/* { dg-final { scan-assembler-times "fuse_nand_add/0"     4 } } */
-/* { dg-final { scan-assembler-times "fuse_nand_subf/0"    4 } } */
-/* { dg-final { scan-assembler-times "fuse_nor_add/0"      4 } } */
-/* { dg-final { scan-assembler-times "fuse_nor_subf/0"     4 } } */
-/* { dg-final { scan-assembler-times "fuse_or_rsubf/0"     4 } } */
-/* { dg-final { scan-assembler-times "fuse_or_subf/0"      4 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_nand/0"    4 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_nand/1"    4 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_nor/0"     4 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_nor/1"     4 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_or/0"      4 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_or/1"      4 } } */
-/* { dg-final { scan-assembler-times "fuse_and_add/0"      6 } } */
-/* { dg-final { scan-assembler-times "fuse_or_add/0"       6 } } */
-/* { dg-final { scan-assembler-times "fuse_add_and/0"      8 } } */
-/* { dg-final { scan-assembler-times "fuse_add_and/2"      8 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_and/0"     8 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_and/1"     8 } } */
-/* { dg-final { scan-assembler-times "fuse_add_nand/2"    12 } } */
-/* { dg-final { scan-assembler-times "fuse_add_nor/2"     12 } } */
-/* { dg-final { scan-assembler-times "fuse_add_or/2"      12 } } */
-/* { dg-final { scan-assembler-times "fuse_and_rsubf/2"   12 } } */
-/* { dg-final { scan-assembler-times "fuse_and_subf/2"    12 } } */
-/* { dg-final { scan-assembler-times "fuse_nand_add/2"    12 } } */
-/* { dg-final { scan-assembler-times "fuse_nand_subf/2"   12 } } */
-/* { dg-final { scan-assembler-times "fuse_nor_add/2"     12 } } */
-/* { dg-final { scan-assembler-times "fuse_nor_subf/2"    12 } } */
-/* { dg-final { scan-assembler-times "fuse_or_rsubf/2"    12 } } */
-/* { dg-final { scan-assembler-times "fuse_or_subf/2"     12 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_and/2"    16 } } */
-/* { dg-final { scan-assembler-times "fuse_and_add/2"     22 } } */
-/* { dg-final { scan-assembler-times "fuse_or_add/2"      22 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_nand/2"   24 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_nor/2"    24 } } */
-/* { dg-final { scan-assembler-times "fuse_subf_or/2"     24 } } */
+/* { dg-final { scan-assembler-times "fuse_nand_rsubf/0"   2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_rsubf/2"   2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_rsubf/0"    2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_rsubf/2"    2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_nand/0"     4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_nor/0"      4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_or/0"       4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_rsubf/0"    4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_subf/0"     4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_add/0"     4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_subf/0"    4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_add/0"      4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_subf/0"     4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_rsubf/0"     4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_subf/0"      4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nand/0"    4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nand/1"    4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nor/0"     4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nor/1"     4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_or/0"      4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_or/1"      4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_add/0"      6 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_add/0"       6 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_and/0"      8 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_and/2"      8 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_and/0"     8 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_and/1"     8 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_nand/2"    12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_nor/2"     12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_or/2"      12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_rsubf/2"   12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_subf/2"    12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_add/2"    12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_subf/2"   12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_add/2"     12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_subf/2"    12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_rsubf/2"    12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_subf/2"     12 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_and/2"    16 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_add/2"     22 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_add/2"      22 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nand/2"   24 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nor/2"    24 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_or/2"     24 { target lp64 } } } */
+
+/* { dg-final { scan-assembler-times "fuse_nand_rsubf/0"   2 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_rsubf/2"   0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_rsubf/0"    2 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_rsubf/2"    0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_nand/0"     4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_nor/0"      4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_or/0"       4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_rsubf/0"    4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_subf/0"     4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_add/0"     4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_subf/0"    4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_add/0"      4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_subf/0"     4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_rsubf/0"     4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_subf/0"      4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nand/0"    4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nand/1"    4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nor/0"     4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nor/1"     4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_or/0"      4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_or/1"      4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_add/0"      6 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_add/0"       6 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_and/0"      8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_and/2"      4 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_and/0"     8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_and/1"     8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_nand/2"     8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_nor/2"      8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_add_or/2"       8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_rsubf/2"    8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_subf/2"     8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_add/2"     8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nand_subf/2"    8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_add/2"      8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_nor_subf/2"     8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_rsubf/2"     8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_subf/2"      8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_and/2"     8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_and_add/2"     16 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_or_add/2"      16 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nand/2"   16 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_nor/2"    16 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "fuse_subf_or/2"     16 { target ilp32 } } } */
 
