@@ -1,0 +1,2 @@
+/* Float modes.  */
+FLOAT_MODE (HF, 2, ieee_half_format);        /* Half-precision floating point */
