@@ -2680,6 +2680,18 @@ csky_option_override (void)
       TARGET_FDIVDU = 0;
     }
 
+  /* Initialize boolean versions of the architectural flags, for use
+     in the .md file.  */
+
+#undef	CSKY_ISA
+#define CSKY_ISA(IDENT, DESC)						  \
+  {									  \
+    csky_arch_isa_features[CSKY_ISA_FEATURE_GET (IDENT)] =		   \
+      bitmap_bit_p (csky_active_target.isa, CSKY_ISA_FEATURE_GET (IDENT)); \
+  }
+#include "csky_isa.def"
+#undef	CSKY_ISA
+
   /* Extended LRW instructions are enabled by default on CK801, disabled
      otherwise.  */
   if (TARGET_ELRW == -1)
@@ -2751,18 +2763,6 @@ csky_option_override (void)
 		 "-mmultiple-stld", csky_active_target.arch_pp_name);
       TARGET_MULTIPLE_STLD = 0;
     }
-
-  /* Initialize boolean versions of the architectural flags, for use
-     in the .md file.  */
-
-#undef	CSKY_ISA
-#define CSKY_ISA(IDENT, DESC)						  \
-  {									  \
-    csky_arch_isa_features[CSKY_ISA_FEATURE_GET (IDENT)] =		   \
-      bitmap_bit_p (csky_active_target.isa, CSKY_ISA_FEATURE_GET (IDENT)); \
-  }
-#include "csky_isa.def"
-#undef	CSKY_ISA
 
   /* TODO  */
 
