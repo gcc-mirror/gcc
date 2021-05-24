@@ -1,5 +1,5 @@
 // PR c++/97938
-// { dg-do compile { target c++20 } }
+// { dg-do compile { target c++2a } }
 
 template <typename... Args>
 int sink(Args&&... args) { return 2; }
