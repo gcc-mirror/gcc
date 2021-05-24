@@ -6,21 +6,10 @@
 @node lto-dump
 @chapter @command{lto-dump}---Tool for dumping LTO object files.
 
-@menu
-* lto-dump Intro::             Introduction to lto-dump.
-* Invoking lto-dump::          How to use lto-dump.
-@end menu
-
-@node lto-dump Intro
-@section Introduction to @command{lto-dump}
-
 @subsubheading Description
 
 @command{lto-dump} is a tool you can use in conjunction with GCC to
 dump link time optimization object files.
-
-@node Invoking lto-dump
-@section Invoking @command{lto-dump}
 
 @smallexample
 Usage: lto-dump @r{[}@var{OPTION}@r{]} ... @var{objfiles}

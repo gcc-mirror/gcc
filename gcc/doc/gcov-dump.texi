@@ -6,21 +6,10 @@
 @node Gcov-dump
 @chapter @command{gcov-dump}---an Offline Gcda and Gcno Profile Dump Tool
 
-@menu
-* Gcov-dump Intro::             Introduction to gcov-dump.
-* Invoking Gcov-dump::          How to use gcov-dump.
-@end menu
-
-@node Gcov-dump Intro
-@section Introduction to @command{gcov-dump}
-
 @subsubheading Description
 
 @command{gcov-dump} is a tool you can use in conjunction with GCC to
 dump content of gcda and gcno profile files offline.
-
-@node Invoking Gcov-dump
-@section Invoking @command{gcov-dump}
 
 @subsubheading Synopsis
 
