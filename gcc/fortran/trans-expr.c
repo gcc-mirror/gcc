@@ -1561,7 +1561,7 @@ gfc_copy_class_to_class (tree from, tree to, tree nelems, bool unlimited)
 	{
 	  vec_safe_push (args, from_len);
 	  vec_safe_push (args, to_len);
-	  extcopy = build_call_vec (fcn_type, fcn, args);
+	  extcopy = build_call_vec (fcn_type, unshare_expr (fcn), args);
 	  tmp = fold_build2_loc (input_location, GT_EXPR,
 				 logical_type_node, from_len,
 				 build_zero_cst (TREE_TYPE (from_len)));
