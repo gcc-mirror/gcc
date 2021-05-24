@@ -96,6 +96,8 @@ Free Documentation License}''.
 * gccinstall: (gccinstall).    Installing the GNU Compiler Collection.
 @end direntry
 
+@top Introduction
+
 @c Part 3 Titlepage and Copyright
 @titlepage
 @title Installing GCC
