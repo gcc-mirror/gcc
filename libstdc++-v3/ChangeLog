@@ -1,3 +1,18 @@
+2021-05-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100606
+	* include/std/ranges (drop_while_view::begin): Assert the
+	precondition added by LWG 3490.
+
+2021-05-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100690
+	* include/std/ranges (iota_view::_Sentinel::_M_distance_from):
+	Split out this member function from ...
+	(iota_view::_Sentinel::operator-): ... here, for sake of access
+	control.
+	* testsuite/std/ranges/iota/iota_view.cc (test05): New test.
+
 2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/random.tcc (__representable_as_double)

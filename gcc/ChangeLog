@@ -1,3 +1,262 @@
+2021-05-23  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100722
+	* config/i386/mmx.md (*push<VI_32:mode>2_rex64):
+	New instruction pattern.
+	(*push<VI_32:mode>2): Ditto.
+	(push splitter for SSE registers): New splitter.
+
+2021-05-23  Andrew Pinski  <apinski@marvell.com>
+
+	* match.pd ((A & C) != 0 ? D : 0): Limit to non pointer types.
+
+2021-05-22  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_addadd): Fix incorrect attr types.
+	* config/rs6000/fusion.md: Regenerate file.
+
+2021-05-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_addadd): New function.
+	* config/rs6000/fusion.md: Regenerate file.
+	* config/rs6000/rs6000-cpus.def: Add
+	OPTION_MASK_P10_FUSION_2ADD to masks.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Handle default value of OPTION_MASK_P10_FUSION_2ADD.
+	* config/rs6000/rs6000.opt: Add -mpower10-fusion-2add.
+
+2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* tree.h (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET): Define.
+	* gimplify.c (enum gimplify_omp_var_data): Fix up
+	GOVD_MAP_HAS_ATTACHMENTS value, add GOVD_FIRSTPRIVATE_IMPLICIT.
+	(omp_lastprivate_for_combined_outer_constructs): If combined target
+	has GOVD_FIRSTPRIVATE_IMPLICIT set for the decl, change it to
+	GOVD_MAP | GOVD_SEEN.
+	(gimplify_scan_omp_clauses): Set GOVD_FIRSTPRIVATE_IMPLICIT for
+	firstprivate clauses with OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT.
+	(gimplify_adjust_omp_clauses): For firstprivate clauses with
+	OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT either clear that bit and
+	OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET too, or remove it and
+	let it be replaced by implicit map clause.
+
+2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* gimplify.c (omp_lastprivate_for_combined_outer_constructs): New
+	function.
+	(gimplify_scan_omp_clauses) <case OMP_CLAUSE_LASTPRIVATE>: Use it.
+	(gimplify_omp_for): Likewise.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* omp-low.c (oacc_privatization_candidate_p): Reject 'static',
+	'external' in blocks.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* flag-types.h (enum openacc_privatization): New.
+	* params.opt (-param=openacc-privatization): New.
+	* doc/invoke.texi (openacc-privatization): Document it.
+	* omp-general.h (get_openacc_privatization_dump_flags): New
+	function.
+	* omp-low.c (oacc_privatization_candidate_p): Add diagnostics.
+	* omp-offload.c (execute_oacc_device_lower)
+	<IFN_UNIQUE_OACC_PRIVATE>: Re-work diagnostics.
+	* target.def (goacc.adjust_private_decl): Add 'location_t'
+	parameter.
+	* doc/tm.texi: Regenerate.
+	* config/gcn/gcn-protos.h (gcn_goacc_adjust_private_decl): Adjust.
+	* config/gcn/gcn-tree.c (gcn_goacc_adjust_private_decl): Likewise.
+	* config/nvptx/nvptx.c (nvptx_goacc_adjust_private_decl):
+	Likewise.  Preserve it for...
+	(nvptx_goacc_expand_var_decl): ... use here.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* doc/sourcebuild.texi (Other attributes): Document '__OPTIMIZE__'
+	DejaGnu selector.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* omp-low.c (oacc_privatization_candidate_p): New function.
+	(oacc_privatization_scan_clause_chain)
+	(oacc_privatization_scan_decl_chain): Use it.  Also
+	'gcc_checking_assert' that we're not seeing duplicates.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* omp-offload.c (execute_oacc_device_lower): Skip processing if no
+	work to be done.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* omp-offload.c (execute_oacc_device_lower): Explain.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* omp-offload.c (execute_oacc_device_lower)
+	<IFN_UNIQUE_OACC_PRIVATE>: Diagnose and handle for 'level == -1'
+	case, too.
+	* internal-fn.c (expand_UNIQUE): Don't expect
+	'IFN_UNIQUE_OACC_PRIVATE'.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* omp-low.c (lower_omp_for): Don't evaluate OpenMP 'for' clauses.
+
+2021-05-21  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* config/nvptx/nvptx.c (nvptx_goacc_adjust_private_decl)
+	(nvptx_goacc_expand_var_decl): Tighten.
+
+2021-05-21  Julian Brown  <julian@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR middle-end/90115
+	* doc/tm.texi.in (TARGET_GOACC_EXPAND_VAR_DECL)
+	(TARGET_GOACC_ADJUST_PRIVATE_DECL): Add documentation hooks.
+	* doc/tm.texi: Regenerate.
+	* expr.c (expand_expr_real_1): Expand decls using the
+	expand_var_decl OpenACC hook if defined.
+	* internal-fn.c (expand_UNIQUE): Handle IFN_UNIQUE_OACC_PRIVATE.
+	* internal-fn.h (IFN_UNIQUE_CODES): Add OACC_PRIVATE.
+	* omp-low.c (omp_context): Add oacc_privatization_candidates
+	field.
+	(lower_oacc_reductions): Add PRIVATE_MARKER parameter.  Insert
+	before fork.
+	(lower_oacc_head_tail): Add PRIVATE_MARKER parameter.  Modify
+	private marker's gimple call arguments, and pass it to
+	lower_oacc_reductions.
+	(oacc_privatization_scan_clause_chain)
+	(oacc_privatization_scan_decl_chain, lower_oacc_private_marker):
+	New functions.
+	(lower_omp_for, lower_omp_target, lower_omp_1): Use these.
+	* omp-offload.c (convert.h): Include.
+	(oacc_loop_xform_head_tail): Treat private-variable markers like
+	fork/join when transforming head/tail sequences.
+	(struct var_decl_rewrite_info): Add struct.
+	(oacc_rewrite_var_decl, is_sync_builtin_call): New functions.
+	(execute_oacc_device_lower): Support rewriting gang-private
+	variables using target hook, and fix up addr_expr and var_decl
+	nodes afterwards.
+	* target.def (adjust_private_decl, expand_var_decl): New hooks.
+	* config/gcn/gcn-protos.h (gcn_goacc_adjust_gangprivate_decl):
+	Rename to...
+	(gcn_goacc_adjust_private_decl): ...this.
+	* config/gcn/gcn-tree.c (gcn_goacc_adjust_gangprivate_decl):
+	Rename to...
+	(gcn_goacc_adjust_private_decl): ...this. Add LEVEL parameter.
+	* config/gcn/gcn.c (TARGET_GOACC_ADJUST_GANGPRIVATE_DECL): Rename
+	definition using gcn_goacc_adjust_gangprivate_decl...
+	(TARGET_GOACC_ADJUST_PRIVATE_DECL): ...to this, using
+	gcn_goacc_adjust_private_decl.
+	* config/nvptx/nvptx.c (tree-pretty-print.h): Include.
+	(gang_private_shared_size): New global variable.
+	(gang_private_shared_align): Likewise.
+	(gang_private_shared_sym): Likewise.
+	(gang_private_shared_hmap): Likewise.
+	(nvptx_option_override): Initialize these.
+	(nvptx_file_end): Output gang_private_shared_sym.
+	(nvptx_goacc_adjust_private_decl, nvptx_goacc_expand_var_decl):
+	New functions.
+	(nvptx_set_current_function): Clear gang_private_shared_hmap.
+	(TARGET_GOACC_ADJUST_PRIVATE_DECL): Define hook.
+	(TARGET_GOACC_EXPAND_VAR_DECL): Likewise.
+
+2021-05-21  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-modes.def (MAX_BITSIZE_MODE_ANY_INT): Removed.
+
+2021-05-21  Richard Biener  <rguenther@suse.de>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/90773
+	* expr.c (expand_constructor): Elide expand_constructor if
+	move by pieces is preferred.
+
+2021-05-21  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64-builtins.c (aarch64_call_properties):
+	Take a flag and mode value as arguments.
+	(aarch64_modifies_global_state_p): Likewise.
+	(aarch64_reads_global_state_p): Likewise.
+	(aarch64_could_trap_p): Likewise.
+	(aarch64_get_attributes): Likewise.
+	(aarch64_init_simd_builtins): Adjust callsite of above.
+	(aarch64_init_fcmla_laneq_builtins): Use aarch64_get_attributes to get
+	function attributes to apply to builtins.
+	(aarch64_init_crc32_builtins): Likewise.
+	(aarch64_init_builtin_rsqrt): Likewise.
+
+2021-05-21  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (define_attr "type"): Add types for fusion.
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10): Use new fusion types.
+	(gen_2logical): Use new fusion types.
+	* config/rs6000/fusion.md: Regenerate.
+
+2021-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/i386-expand.c (ix86_expand_sse_movcc):
+	Handle V4QI and V2HI modes.
+	(ix86_expand_sse_movcc): Ditto.
+	* config/i386/mmx.md (*<sat_plusminus:insn><VI_32:mode>3):
+	New instruction pattern.
+	(*eq<VI_32:mode>3): Ditto.
+	(*gt<VI_32:mode>3): Ditto.
+	(*xop_pcmov_<VI_32:mode>): Ditto.
+	(mmx_pblendvb32): Ditto.
+	(mmx_pblendvb64): Rename from mmx_pblendvb.
+	(vec_cmp<VI_32:mode><VI_32:mode>): New expander.
+	(vec_cmpu<VI_32:mode><VI_32:mode>): Ditto.
+	(vcond<VI_32:mode><VI_32:mode>): Ditto.
+	(vcondu<VI_32:mode><VI_32:mode>): Ditto.
+	(vcond_mask_<VI_32:mode><VI_32:mode>): Ditto.
+
+2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/94589
+	* tree-ssa-phiopt.c (spaceship_replacement): For integral rhs1 and
+	rhs2, treat x <= 4 equivalently to x < 5 etc.  In cmp1 and cmp2 (if
+	not the same as cmp3) treat <= the same as < and >= the same as >.
+	Don't require that cond2_phi_edge is true edge, instead take
+	false/true edges into account based on cmp1/cmp2 comparison kinds.
+
+2021-05-21  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/mmx.md (SMAXMIN_MMXMODEI): New mode iterator.
+	(<smaxmin:code><SMAXMIN_MMXMODEI:mode>3): Macroize expander
+	from <smaxmin:code>v4hi3> and <smaxmin:code><MMXMODE14:mode>3
+	using SMAXMIN_MMXMODEI mode iterator.
+	(*<smaxmin:code>v4qi3): New insn pattern.
+	(*<smaxmin:code>v2hi3): Ditto.
+	(SMAXMIN_VI_32): New mode iterator.
+	(<smaxmin:code><SMAXMIN_VI_32>mode3): New expander.
+	(UMAXMIN_MMXMODEI): New mode iterator.
+	(<umaxmin:code><UMAXMIN_MMXMODEI:mode>3): Macroize expander
+	from <umaxmin:code>v8qi3> and <umaxmin:code><MMXMODE24:mode>3
+	using UMAXMIN_MMXMODEI mode iterator.
+	(*<umaxmin:code>v4qi3): New insn pattern.
+	(*<umaxmin:code>v2hi3): Ditto.
+	(UMAXMIN_VI_32): New mode iterator.
+	(<umaxmin:code><UMAXMIN_VI_32>mode3): New expander.
+	(abs<VI_32:mode>2): New insn pattern.
+	(ssse3_abs<MMXMODEI:mode>2, abs<MMXMODEI:mode>2): Move from ...
+	* config/i386/sse.md: ... here.
+
 2021-05-20  Clement Chigot  <clement.chigot@atos.net>
 	    David Edelsohn  <dje.gcc@gmail.com>
 

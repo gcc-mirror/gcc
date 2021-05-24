@@ -14425,6 +14425,14 @@ With @option{--param=openacc-kernels=parloops}, OpenACC `kernels'
 constructs are handled by the @samp{parloops} pass, en bloc.
 This is the current default.
 
+@item openacc-privatization
+Specify mode of OpenACC privatization diagnostics for
+@option{-fopt-info-omp-note} and applicable
+@option{-fdump-tree-*-details}.
+With @option{--param=openacc-privatization=quiet}, don't diagnose.
+This is the current default.
+With @option{--param=openacc-privatization=noisy}, do diagnose.
+
 @end table
 
 The following choices of @var{name} are available on AArch64 targets:

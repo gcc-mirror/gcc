@@ -442,6 +442,13 @@ enum openacc_kernels
   OPENACC_KERNELS_PARLOOPS
 };
 
+/* Modes of OpenACC privatization diagnostics.  */
+enum openacc_privatization
+{
+  OPENACC_PRIVATIZATION_QUIET,
+  OPENACC_PRIVATIZATION_NOISY
+};
+
 #endif
 
 #endif /* ! GCC_FLAG_TYPES_H */

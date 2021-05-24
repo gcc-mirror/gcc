@@ -258,7 +258,7 @@ class TestGccChangelog(unittest.TestCase):
         email = self.from_patch_glob('0001-Add-patch_are')
         msg = 'ChangeLog, DATESTAMP, BASE-VER and DEV-PHASE updates should ' \
               'be done separately from normal commits'
-        assert email.errors[0].message == msg
+        assert email.errors[0].message.startswith(msg)
 
     def test_strict_mode_normal_patch(self):
         email = self.get_git_email('0001-Just-test-it.patch')

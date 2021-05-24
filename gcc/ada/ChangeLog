@@ -1,3 +1,82 @@
+2021-05-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gcc-interface/trans.c (Raise_Error_to_gnu): Add an assertion.
+
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (gnat_pushdecl): Fix typo in comment.
+	* gcc-interface/utils2.c (build_simple_component_ref): Build NULL_EXPR
+	if the offset of the field has overflowed.
+	(build_component_ref): Add gigi checking assertion that the reference
+	has been built and replace the discriminant check by a Program_Error.
+
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Named_Integer>: Do
+	not pass default value in call to create_var_decl.
+	<E_Variable>: Likewise.
+	<E_Record_Subtype>: Both pass true for const_flag and false for
+	const_decl_allowed_p in call to create_var_decl.
+	Small tweaks in the generic record type case.
+	(elaborate_expression): Rename need_debug into need_for_debug and
+	adjust throughout.
+	(elaborate_expression_1): Likewise.  Pass Needs_Debug_Info instead
+	of need_for_debug in call to create_var_decl.
+	(elaborate_expression_2): Likewise.
+	* gcc-interface/utils.c (maybe_pad_type): Pass false for
+	const_decl_allowed_p in call to create_var_decl.
+
+2021-05-21  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Replace ? with ??.
+	(gnat_to_gnu_param): Likewise.
+	(gnat_to_gnu_subprog_type): Likewise.
+	(warn_on_field_placement): Likewise.
+	(intrin_arglists_compatible_p): Likewise.
+	* gcc-interface/trans.c (Pragma_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	(validate_unchecked_conversion): Likewise.
+	* gcc-interface/utils.c (maybe_pad_type): Likewise.
+
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Process
+	the implementation type of a packed type implemented specially.
+
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_subprog_type): Always translate
+	the Is_Pure flag into the "pure" attribute of GNU C.
+
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Restrict previous change
+	to bitfields whose size is not equal to the type size.
+	(gnat_to_gnu): Likewise.
+
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Minor tweaks.
+	(gnat_to_gnu_external): Likewise.
+	(Raise_Error_to_gnu): Return an empty statement list if there is a
+	condition and it is always false.
+	(gnat_to_gnu): Do not check for elaboration code a priori during the
+	translation but a posteriori instead.
+
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Simple_Return_Statement>:
+	Put a SLOC on the assignment from the return value to the return
+	object in the copy-in/copy-out case.
+
+2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Replace
+	CEIL_DIV_EXPR with EXACT_DIV_EXPR.
+	* gcc-interface/misc.c (gnat_type_max_size): Likewise.
+	* gcc-interface/utils.c (maybe_pad_type): Likewise.
+	(finish_record_type): Likewise.  And always compute the unit size.
+
 2021-05-14  Martin Liska  <mliska@suse.cz>
 
 	* doc/Makefile: Add gnat-style target.

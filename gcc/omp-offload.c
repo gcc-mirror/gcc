@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "cfgloop.h"
 #include "context.h"
+#include "convert.h"
 
 /* Describe the OpenACC looping structure of a function.  The entire
    function is held in a 'NULL' loop.  */
@@ -1357,7 +1358,9 @@ oacc_loop_xform_head_tail (gcall *from, int level)
 	    = ((enum ifn_unique_kind)
 	       TREE_INT_CST_LOW (gimple_call_arg (stmt, 0)));
 
-	  if (k == IFN_UNIQUE_OACC_FORK || k == IFN_UNIQUE_OACC_JOIN)
+	  if (k == IFN_UNIQUE_OACC_FORK
+	      || k == IFN_UNIQUE_OACC_JOIN
+	      || k == IFN_UNIQUE_OACC_PRIVATE)
 	    *gimple_call_arg_ptr (stmt, 2) = replacement;
 	  else if (k == kind && stmt != from)
 	    break;
@@ -1774,6 +1777,136 @@ default_goacc_reduction (gcall *call)
   gsi_replace_with_seq (&gsi, seq, true);
 }
 
+struct var_decl_rewrite_info
+{
+  gimple *stmt;
+  hash_map<tree, tree> *adjusted_vars;
+  bool avoid_pointer_conversion;
+  bool modified;
+};
+
+/* Helper function for execute_oacc_device_lower.  Rewrite VAR_DECLs (by
+   themselves or wrapped in various other nodes) according to ADJUSTED_VARS in
+   the var_decl_rewrite_info pointed to via DATA.  Used as part of coercing
+   gang-private variables in OpenACC offload regions to reside in GPU shared
+   memory.  */
+
+static tree
+oacc_rewrite_var_decl (tree *tp, int *walk_subtrees, void *data)
+{
+  walk_stmt_info *wi = (walk_stmt_info *) data;
+  var_decl_rewrite_info *info = (var_decl_rewrite_info *) wi->info;
+
+  if (TREE_CODE (*tp) == ADDR_EXPR)
+    {
+      tree arg = TREE_OPERAND (*tp, 0);
+      tree *new_arg = info->adjusted_vars->get (arg);
+
+      if (new_arg)
+	{
+	  if (info->avoid_pointer_conversion)
+	    {
+	      *tp = build_fold_addr_expr (*new_arg);
+	      info->modified = true;
+	      *walk_subtrees = 0;
+	    }
+	  else
+	    {
+	      gimple_stmt_iterator gsi = gsi_for_stmt (info->stmt);
+	      tree repl = build_fold_addr_expr (*new_arg);
+	      gimple *stmt1
+		= gimple_build_assign (make_ssa_name (TREE_TYPE (repl)), repl);
+	      tree conv = convert_to_pointer (TREE_TYPE (*tp),
+					      gimple_assign_lhs (stmt1));
+	      gimple *stmt2
+		= gimple_build_assign (make_ssa_name (TREE_TYPE (*tp)), conv);
+	      gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
+	      gsi_insert_before (&gsi, stmt2, GSI_SAME_STMT);
+	      *tp = gimple_assign_lhs (stmt2);
+	      info->modified = true;
+	      *walk_subtrees = 0;
+	    }
+	}
+    }
+  else if (TREE_CODE (*tp) == COMPONENT_REF || TREE_CODE (*tp) == ARRAY_REF)
+    {
+      tree *base = &TREE_OPERAND (*tp, 0);
+
+      while (TREE_CODE (*base) == COMPONENT_REF
+	     || TREE_CODE (*base) == ARRAY_REF)
+	base = &TREE_OPERAND (*base, 0);
+
+      if (TREE_CODE (*base) != VAR_DECL)
+	return NULL;
+
+      tree *new_decl = info->adjusted_vars->get (*base);
+      if (!new_decl)
+	return NULL;
+
+      int base_quals = TYPE_QUALS (TREE_TYPE (*new_decl));
+      tree field = TREE_OPERAND (*tp, 1);
+
+      /* Adjust the type of the field.  */
+      int field_quals = TYPE_QUALS (TREE_TYPE (field));
+      if (TREE_CODE (field) == FIELD_DECL && field_quals != base_quals)
+	{
+	  tree *field_type = &TREE_TYPE (field);
+	  while (TREE_CODE (*field_type) == ARRAY_TYPE)
+	    field_type = &TREE_TYPE (*field_type);
+	  field_quals |= base_quals;
+	  *field_type = build_qualified_type (*field_type, field_quals);
+	}
+
+      /* Adjust the type of the component ref itself.  */
+      tree comp_type = TREE_TYPE (*tp);
+      int comp_quals = TYPE_QUALS (comp_type);
+      if (TREE_CODE (*tp) == COMPONENT_REF && comp_quals != base_quals)
+	{
+	  comp_quals |= base_quals;
+	  TREE_TYPE (*tp)
+	    = build_qualified_type (comp_type, comp_quals);
+	}
+
+      *base = *new_decl;
+      info->modified = true;
+    }
+  else if (TREE_CODE (*tp) == VAR_DECL)
+    {
+      tree *new_decl = info->adjusted_vars->get (*tp);
+      if (new_decl)
+	{
+	  *tp = *new_decl;
+	  info->modified = true;
+	}
+    }
+
+  return NULL_TREE;
+}
+
+/* Return TRUE if CALL is a call to a builtin atomic/sync operation.  */
+
+static bool
+is_sync_builtin_call (gcall *call)
+{
+  tree callee = gimple_call_fndecl (call);
+
+  if (callee != NULL_TREE
+      && gimple_call_builtin_p (call, BUILT_IN_NORMAL))
+    switch (DECL_FUNCTION_CODE (callee))
+      {
+#undef DEF_SYNC_BUILTIN
+#define DEF_SYNC_BUILTIN(ENUM, NAME, TYPE, ATTRS) case ENUM:
+#include "sync-builtins.def"
+#undef DEF_SYNC_BUILTIN
+	return true;
+
+      default:
+	;
+      }
+
+  return false;
+}
+
 /* Main entry point for oacc transformations which run on the device
    compiler after LTO, so we know what the target device is at this
    point (including the host fallback).  */
@@ -1923,6 +2056,8 @@ execute_oacc_device_lower ()
      dominance information to update SSA.  */
   calculate_dominance_info (CDI_DOMINATORS);
 
+  hash_map<tree, tree> adjusted_vars;
+
   /* Now lower internal loop functions to target-specific code
      sequences.  */
   basic_block bb;
@@ -1999,6 +2134,90 @@ execute_oacc_device_lower ()
 		case IFN_UNIQUE_OACC_TAIL_MARK:
 		  remove = true;
 		  break;
+
+		case IFN_UNIQUE_OACC_PRIVATE:
+		  {
+		    dump_flags_t l_dump_flags
+		      = get_openacc_privatization_dump_flags ();
+
+		    location_t loc = gimple_location (stmt);
+		    if (LOCATION_LOCUS (loc) == UNKNOWN_LOCATION)
+		      loc = DECL_SOURCE_LOCATION (current_function_decl);
+		    const dump_user_location_t d_u_loc
+		      = dump_user_location_t::from_location_t (loc);
+
+		    HOST_WIDE_INT level
+		      = TREE_INT_CST_LOW (gimple_call_arg (call, 2));
+		    gcc_checking_assert (level == -1
+					 || (level >= 0
+					     && level < GOMP_DIM_MAX));
+		    for (unsigned i = 3;
+			 i < gimple_call_num_args (call);
+			 i++)
+		      {
+			static char const *const axes[] =
+			/* Must be kept in sync with GOMP_DIM enumeration.  */
+			  { "gang", "worker", "vector" };
+
+			tree arg = gimple_call_arg (call, i);
+			gcc_checking_assert (TREE_CODE (arg) == ADDR_EXPR);
+			tree decl = TREE_OPERAND (arg, 0);
+			if (dump_enabled_p ())
+/* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+			  dump_printf_loc (l_dump_flags, d_u_loc,
+					   "variable %<%T%> ought to be"
+					   " adjusted for OpenACC"
+					   " privatization level: %qs\n",
+					   decl,
+					   (level == -1
+					    ? "UNKNOWN" : axes[level]));
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+			bool adjusted;
+			if (level == -1)
+			  adjusted = false;
+			else if (!targetm.goacc.adjust_private_decl)
+			  adjusted = false;
+			else if (level == GOMP_DIM_VECTOR)
+			  {
+			    /* That's the default behavior.  */
+			    adjusted = true;
+			  }
+			else
+			  {
+			    tree oldtype = TREE_TYPE (decl);
+			    tree newdecl
+			      = targetm.goacc.adjust_private_decl (loc, decl,
+								   level);
+			    adjusted = (TREE_TYPE (newdecl) != oldtype
+					|| newdecl != decl);
+			    if (adjusted)
+			      adjusted_vars.put (decl, newdecl);
+			  }
+			if (adjusted
+			    && dump_enabled_p ())
+/* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+			  dump_printf_loc (l_dump_flags, d_u_loc,
+					   "variable %<%T%> adjusted for"
+					   " OpenACC privatization level:"
+					   " %qs\n",
+					   decl, axes[level]);
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+		      }
+		    remove = true;
+		  }
+		  break;
 		}
 	      break;
 	    }
@@ -2029,6 +2248,76 @@ execute_oacc_device_lower ()
 	  /* If not rescanning, advance over the call.  */
 	  gsi_next (&gsi);
       }
+
+  /* Regarding the OpenACC privatization level, we're currently only looking at
+     making the gang-private level work.  Regarding that, we have the following
+     configurations:
+
+       - GCN offloading: 'targetm.goacc.adjust_private_decl' does the work (in
+	 particular, change 'TREE_TYPE', etc.) and there is no
+	 'targetm.goacc.expand_var_decl'.
+
+       - nvptx offloading: 'targetm.goacc.adjust_private_decl' only sets a
+	 marker and then 'targetm.goacc.expand_var_decl' does the work.
+
+     Eventually (in particular, for worker-private level?), both
+     'targetm.goacc.adjust_private_decl' and 'targetm.goacc.expand_var_decl'
+     may need to do things, but that's currently not meant to be addressed, and
+     thus not fully worked out and implemented, and thus untested.  Hence,
+     'assert' what currently is implemented/tested, only.  */
+
+  if (targetm.goacc.expand_var_decl)
+    gcc_assert (adjusted_vars.is_empty ());
+
+  /* Make adjustments to gang-private local variables if required by the
+     target, e.g. forcing them into a particular address space.  Afterwards,
+     ADDR_EXPR nodes which have adjusted variables as their argument need to
+     be modified in one of two ways:
+
+       1. They can be recreated, making a pointer to the variable in the new
+	  address space, or
+
+       2. The address of the variable in the new address space can be taken,
+	  converted to the default (original) address space, and the result of
+	  that conversion subsituted in place of the original ADDR_EXPR node.
+
+     Which of these is done depends on the gimple statement being processed.
+     At present atomic operations and inline asms use (1), and everything else
+     uses (2).  At least on AMD GCN, there are atomic operations that work
+     directly in the LDS address space.
+
+     COMPONENT_REFS, ARRAY_REFS and plain VAR_DECLs are also rewritten to use
+     the new decl, adjusting types of appropriate tree nodes as necessary.  */
+
+  if (targetm.goacc.adjust_private_decl
+      && !adjusted_vars.is_empty ())
+    {
+      FOR_ALL_BB_FN (bb, cfun)
+	for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	     !gsi_end_p (gsi);
+	     gsi_next (&gsi))
+	  {
+	    gimple *stmt = gsi_stmt (gsi);
+	    walk_stmt_info wi;
+	    var_decl_rewrite_info info;
+
+	    info.avoid_pointer_conversion
+	      = (is_gimple_call (stmt)
+		 && is_sync_builtin_call (as_a <gcall *> (stmt)))
+		|| gimple_code (stmt) == GIMPLE_ASM;
+	    info.stmt = stmt;
+	    info.modified = false;
+	    info.adjusted_vars = &adjusted_vars;
+
+	    memset (&wi, 0, sizeof (wi));
+	    wi.info = &info;
+
+	    walk_gimple_op (stmt, oacc_rewrite_var_decl, &wi);
+
+	    if (info.modified)
+	      update_stmt (stmt);
+	  }
+    }
 
   free_oacc_loop (loops);
 

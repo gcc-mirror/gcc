@@ -1,3 +1,10 @@
+2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-omp.c (c_omp_split_clauses): Set OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT
+	on firstprivate clause copy going to target construct, and for
+	target simd set also OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET bit.
+
 2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* c.opt (Wc++11-extensions, Wc++14-extensions)

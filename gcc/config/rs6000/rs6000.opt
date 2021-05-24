@@ -502,6 +502,10 @@ mpower10-fusion-2logical
 Target Undocumented Mask(P10_FUSION_2LOGICAL) Var(rs6000_isa_flags)
 Fuse certain integer operations together for better performance on power10.
 
+mpower10-fusion-2add
+Target Undocumented Mask(P10_FUSION_2ADD) Var(rs6000_isa_flags)
+Fuse certain add operations together for better performance on power10.
+
 mcrypto
 Target Mask(CRYPTO) Var(rs6000_isa_flags)
 Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions.
