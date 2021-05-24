@@ -602,6 +602,10 @@ package body Rtsfind is
    subtype System_Descendant is RTU_Id
      range System_Address_Image .. System_Tasking_Stages;
 
+   subtype System_Atomic_Operations_Descendant is System_Descendant
+     range System_Atomic_Operations_Test_And_Set ..
+           System_Atomic_Operations_Test_And_Set;
+
    subtype System_Dim_Descendant is System_Descendant
      range System_Dim_Float_IO .. System_Dim_Integer_IO;
 
@@ -688,6 +692,10 @@ package body Rtsfind is
 
       elsif U_Id in System_Descendant then
          Name_Buffer (7) := '.';
+
+         if U_Id in System_Atomic_Operations_Descendant then
+            Name_Buffer (25) := '.';
+         end if;
 
          if U_Id in System_Dim_Descendant then
             Name_Buffer (11) := '.';

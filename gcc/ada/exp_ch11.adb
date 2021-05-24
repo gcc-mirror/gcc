@@ -1088,10 +1088,19 @@ package body Exp_Ch11 is
 
    --  (protecting test only needed if not at library level)
 
-   --     exceptF : Boolean := True --  static data
+   --     exceptF : aliased System.Atomic_Operations.Test_And_Set.
+   --                         .Test_And_Set_Flag := 0; --  static data
+   --     if not Atomic_Test_And_Set (exceptF) then
+   --        Register_Exception (except'Unrestricted_Access);
+   --     end if;
+
+   --  If a No_Tasking restriction is in effect, or if Test_And_Set_Flag
+   --  is unavailable, then use Boolean instead. In that case, we generate:
+   --
+   --     exceptF : Boolean := True; --  static data
    --     if exceptF then
-   --        exceptF := False;
-   --        Register_Exception (except'Unchecked_Access);
+   --        ExceptF := False;
+   --        Register_Exception (except'Unrestricted_Access);
    --     end if;
 
    procedure Expand_N_Exception_Declaration (N : Node_Id) is
@@ -1275,7 +1284,7 @@ package body Exp_Ch11 is
 
       Force_Static_Allocation_Of_Referenced_Objects (Expression (N));
 
-      --  Register_Exception (except'Unchecked_Access);
+      --  Register_Exception (except'Unrestricted_Access);
 
       if not No_Exception_Handlers_Set
         and then not Restriction_Active (No_Exception_Registration)
@@ -1296,27 +1305,59 @@ package body Exp_Ch11 is
             Flag_Id :=
               Make_Defining_Identifier (Loc,
                 Chars => New_External_Name (Chars (Id), 'F'));
-
-            Insert_Action (N,
-              Make_Object_Declaration (Loc,
-                Defining_Identifier => Flag_Id,
-                Object_Definition   =>
-                  New_Occurrence_Of (Standard_Boolean, Loc),
-                Expression          =>
-                  New_Occurrence_Of (Standard_True, Loc)));
-
             Set_Is_Statically_Allocated (Flag_Id);
 
-            Append_To (L,
-              Make_Assignment_Statement (Loc,
-                Name       => New_Occurrence_Of (Flag_Id, Loc),
-                Expression => New_Occurrence_Of (Standard_False, Loc)));
+            declare
+               Use_Test_And_Set_Flag : constant Boolean :=
+                 (not Global_No_Tasking)
+                 and then RTE_Available (RE_Test_And_Set_Flag);
 
-            Insert_After_And_Analyze (N,
-              Make_Implicit_If_Statement (N,
-                Condition       => New_Occurrence_Of (Flag_Id, Loc),
-                Then_Statements => L));
+               Flag_Decl : Node_Id;
+               Condition : Node_Id;
+            begin
+               if Use_Test_And_Set_Flag then
+                  Flag_Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Flag_Id,
+                      Aliased_Present     => True,
+                      Object_Definition   =>
+                        New_Occurrence_Of (RTE (RE_Test_And_Set_Flag), Loc),
+                      Expression          =>
+                        Make_Integer_Literal (Loc, 0));
+               else
+                  Flag_Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Flag_Id,
+                      Object_Definition   =>
+                        New_Occurrence_Of (Standard_Boolean, Loc),
+                      Expression          =>
+                        New_Occurrence_Of (Standard_True, Loc));
+               end if;
 
+               Insert_Action (N, Flag_Decl);
+
+               if Use_Test_And_Set_Flag then
+                  Condition :=
+                    Make_Op_Not (Loc,
+                      Make_Function_Call (Loc,
+                        Name => New_Occurrence_Of
+                                  (RTE (RE_Atomic_Test_And_Set), Loc),
+                        Parameter_Associations =>
+                          New_List (New_Occurrence_Of (Flag_Id, Loc))));
+               else
+                  Condition := New_Occurrence_Of (Flag_Id, Loc);
+
+                  Append_To (L,
+                    Make_Assignment_Statement (Loc,
+                    Name       => New_Occurrence_Of (Flag_Id, Loc),
+                    Expression => New_Occurrence_Of (Standard_False, Loc)));
+               end if;
+
+               Insert_After_And_Analyze (N,
+                 Make_Implicit_If_Statement (N,
+                   Condition       => Condition,
+                   Then_Statements => L));
+            end;
          else
             Insert_List_After_And_Analyze (N, L);
          end if;
