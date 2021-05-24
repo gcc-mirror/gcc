@@ -1,3 +1,13 @@
+2021-05-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/86470
+	* testsuite/libgomp.fortran/class-firstprivate-1.f90: New test.
+	* testsuite/libgomp.fortran/class-firstprivate-2.f90: New test.
+	* testsuite/libgomp.fortran/class-firstprivate-3.f90: New test.
+
 2021-05-17  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	Backport from mainline

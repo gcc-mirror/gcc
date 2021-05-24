@@ -1,3 +1,15 @@
+2021-05-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-24  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/86470
+	* trans-expr.c (gfc_copy_class_to_class): Add unshare_expr.
+	* trans-openmp.c (gfc_is_polymorphic_nonptr,
+	gfc_is_unlimited_polymorphic_nonptr): New.
+	(gfc_omp_clause_copy_ctor, gfc_omp_clause_dtor): Handle
+	polymorphic scalars.
+
 2021-05-21  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Fortran/OpenMP: Add support for 'close' in map clause
