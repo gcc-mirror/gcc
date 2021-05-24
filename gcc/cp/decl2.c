@@ -1331,20 +1331,6 @@ any_dependent_type_attributes_p (tree attrs)
   return false;
 }
 
-/* True if ATTRS contains any attribute that does not require a type.  */
-
-bool
-any_non_type_attribute_p (tree attrs)
-{
-  for (tree a = attrs; a; a = TREE_CHAIN (a))
-    {
-      const attribute_spec *as = lookup_attribute_spec (get_attribute_name (a));
-      if (as && !as->type_required)
-	return true;
-    }
-  return false;
-}
-
 /* Return true iff ATTRS are acceptable attributes to be applied in-place
    to a typedef which gives a previously unnamed class or enum a name for
    linkage purposes.  */

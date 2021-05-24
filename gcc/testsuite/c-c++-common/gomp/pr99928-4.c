@@ -44,15 +44,15 @@ bar (void)
   #pragma omp parallel master taskloop simd linear (l04)
   for (int i = 0; i < 64; i++)
     l04++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l05" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l05\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l05" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l05\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(l05\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp for\[^\n\r]*linear\\(l05:1\\)" "gimple" } } */
   #pragma omp target parallel for linear (l05)
   for (int i = 0; i < 64; i++)
     l05++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l06" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l06\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l06" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l06\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l06\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l06\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
   /* { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l06\\)" "gimple" } } *//* FIXME.  */
@@ -61,8 +61,8 @@ bar (void)
   #pragma omp target parallel for simd linear (l06)
   for (int i = 0; i < 64; i++)
     l06++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l07" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l07\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l07" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l07\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*linear\\(l07:1\\)" "gimple" } } */
   #pragma omp target simd linear (l07)
   for (int i = 0; i < 64; i++)

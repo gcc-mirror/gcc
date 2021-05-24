@@ -819,6 +819,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *) { return flag_tree_sink != 0; }
   virtual unsigned int execute (function *);
+  opt_pass *clone (void) { return new pass_sink_code (m_ctxt); }
 
 }; // class pass_sink_code
 

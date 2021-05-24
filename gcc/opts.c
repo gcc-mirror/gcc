@@ -37,11 +37,102 @@ along with GCC; see the file COPYING3.  If not see
 
 static void set_Wstrict_aliasing (struct gcc_options *opts, int onoff);
 
-/* Indexed by enum debug_info_type.  */
+/* Names of fundamental debug info formats indexed by enum
+   debug_info_type.  */
+
 const char *const debug_type_names[] =
 {
   "none", "stabs", "dwarf-2", "xcoff", "vms"
 };
+
+/* Bitmasks of fundamental debug info formats indexed by enum
+   debug_info_type.  */
+
+static uint32_t debug_type_masks[] =
+{
+  NO_DEBUG, DBX_DEBUG, DWARF2_DEBUG, XCOFF_DEBUG, VMS_DEBUG
+};
+
+/* Names of the set of debug formats requested by user.  Updated and accessed
+   via debug_set_names.  */
+
+static char df_set_names[sizeof "none stabs dwarf-2 xcoff vms"];
+
+/* Get enum debug_info_type of the specified debug format, for error messages.
+   Can be used only for individual debug format types.  */
+
+enum debug_info_type
+debug_set_to_format (uint32_t debug_info_set)
+{
+  int idx = 0;
+  enum debug_info_type dinfo_type = DINFO_TYPE_NONE;
+  /* Find first set bit.  */
+  if (debug_info_set)
+    idx = exact_log2 (debug_info_set & - debug_info_set);
+  /* Check that only one bit is set, if at all.  This function is meant to be
+     used only for vanilla debug_info_set bitmask values, i.e. for individual
+     debug format types upto DINFO_TYPE_MAX.  */
+  gcc_assert ((debug_info_set & (debug_info_set - 1)) == 0);
+  dinfo_type = (enum debug_info_type)idx;
+  gcc_assert (dinfo_type <= DINFO_TYPE_MAX);
+  return dinfo_type;
+}
+
+/* Get the number of debug formats enabled for output.  */
+
+unsigned int
+debug_set_count (uint32_t w_symbols)
+{
+  unsigned int count = 0;
+  while (w_symbols)
+    {
+      ++ count;
+      w_symbols &= ~ (w_symbols & - w_symbols);
+    }
+  return count;
+}
+
+/* Get the names of the debug formats enabled for output.  */
+
+const char *
+debug_set_names (uint32_t w_symbols)
+{
+  uint32_t df_mask = 0;
+  /* Reset the string to be returned.  */
+  memset (df_set_names, 0, sizeof (df_set_names));
+  /* Get the popcount.  */
+  int num_set_df = debug_set_count (w_symbols);
+  /* Iterate over the debug formats.  Add name string for those enabled.  */
+  for (int i = DINFO_TYPE_NONE; i <= DINFO_TYPE_MAX; i++)
+    {
+      df_mask = debug_type_masks[i];
+      if (w_symbols & df_mask)
+	{
+	  strcat (df_set_names, debug_type_names[i]);
+	  num_set_df--;
+	  if (num_set_df)
+	    strcat (df_set_names, " ");
+	  else
+	    break;
+	}
+      else if (!w_symbols)
+	{
+	  /* No debug formats enabled.  */
+	  gcc_assert (i == DINFO_TYPE_NONE);
+	  strcat (df_set_names, debug_type_names[i]);
+	  break;
+	}
+    }
+  return df_set_names;
+}
+
+/* Return TRUE iff dwarf2 debug info is enabled.  */
+
+bool
+dwarf_debuginfo_p ()
+{
+  return (write_symbols & DWARF2_DEBUG);
+}
 
 /* Parse the -femit-struct-debug-detailed option value
    and set the flag variables. */
@@ -190,7 +281,7 @@ static const char use_diagnosed_msg[] = N_("Uses of this option are diagnosed.")
 
 typedef char *char_p; /* For DEF_VEC_P.  */
 
-static void set_debug_level (enum debug_info_type type, int extended,
+static void set_debug_level (uint32_t dinfo, int extended,
 			     const char *arg, struct gcc_options *opts,
 			     struct gcc_options *opts_set,
 			     location_t loc);
@@ -3027,17 +3118,17 @@ fast_math_flags_struct_set_p (struct cl_optimization *opt)
 }
 
 /* Handle a debug output -g switch for options OPTS
-   (OPTS_SET->x_write_symbols storing whether a debug type was passed
+   (OPTS_SET->x_write_symbols storing whether a debug format was passed
    explicitly), location LOC.  EXTENDED is true or false to support
    extended output (2 is special and means "-ggdb" was given).  */
 static void
-set_debug_level (enum debug_info_type type, int extended, const char *arg,
+set_debug_level (uint32_t dinfo, int extended, const char *arg,
 		 struct gcc_options *opts, struct gcc_options *opts_set,
 		 location_t loc)
 {
   opts->x_use_gnu_debug_info_extensions = extended;
 
-  if (type == NO_DEBUG)
+  if (dinfo == NO_DEBUG)
     {
       if (opts->x_write_symbols == NO_DEBUG)
 	{
@@ -3058,14 +3149,18 @@ set_debug_level (enum debug_info_type type, int extended, const char *arg,
     }
   else
     {
-      /* Does it conflict with an already selected type?  */
+      /* Does it conflict with an already selected debug format?  */
       if (opts_set->x_write_symbols != NO_DEBUG
 	  && opts->x_write_symbols != NO_DEBUG
-	  && type != opts->x_write_symbols)
-	error_at (loc, "debug format %qs conflicts with prior selection",
-		  debug_type_names[type]);
-      opts->x_write_symbols = type;
-      opts_set->x_write_symbols = type;
+	  && dinfo != opts->x_write_symbols)
+	{
+	  gcc_assert (debug_set_count (dinfo) <= 1);
+	  error_at (loc, "debug format %qs conflicts with prior selection",
+		    debug_type_names[debug_set_to_format (dinfo)]);
+	}
+
+      opts->x_write_symbols = dinfo;
+      opts_set->x_write_symbols = dinfo;
     }
 
   /* A debug flag without a level defaults to level 2.

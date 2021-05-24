@@ -11103,3 +11103,13 @@ proc check_effective_target_lra { } {
     return 1
 }
 
+# Test whether optimizations are enabled ('__OPTIMIZE__') per the
+# 'current_compiler_flags' (thus don't cache).
+
+proc check_effective_target___OPTIMIZE__ {} {
+    return [check_no_compiler_messages_nocache __OPTIMIZE__ assembly {
+	#ifndef __OPTIMIZE__
+	# error nein
+	#endif
+    } [current_compiler_flags]]
+}

@@ -1988,8 +1988,16 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 
   gcond *cond1 = as_a <gcond *> (last_stmt (cond_bb));
   enum tree_code cmp1 = gimple_cond_code (cond1);
-  if (cmp1 != LT_EXPR && cmp1 != GT_EXPR)
-    return false;
+  switch (cmp1)
+    {
+    case LT_EXPR:
+    case LE_EXPR:
+    case GT_EXPR:
+    case GE_EXPR:
+      break;
+    default:
+      return false;
+    }
   tree lhs1 = gimple_cond_lhs (cond1);
   tree rhs1 = gimple_cond_rhs (cond1);
   /* The optimization may be unsafe due to NaNs.  */
@@ -2029,7 +2037,42 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
   if (lhs2 == lhs1)
     {
       if (!operand_equal_p (rhs2, rhs1, 0))
-	return false;
+	{
+	  if ((cmp2 == EQ_EXPR || cmp2 == NE_EXPR)
+	      && TREE_CODE (rhs1) == INTEGER_CST
+	      && TREE_CODE (rhs2) == INTEGER_CST)
+	    {
+	      /* For integers, we can have cond2 x == 5
+		 and cond1 x < 5, x <= 4, x <= 5, x < 6,
+		 x > 5, x >= 6, x >= 5 or x > 4.  */
+	      if (tree_int_cst_lt (rhs1, rhs2))
+		{
+		  if (wi::ne_p (wi::to_wide (rhs1) + 1, wi::to_wide (rhs2)))
+		    return false;
+		  if (cmp1 == LE_EXPR)
+		    cmp1 = LT_EXPR;
+		  else if (cmp1 == GT_EXPR)
+		    cmp1 = GE_EXPR;
+		  else
+		    return false;
+		}
+	      else
+		{
+		  gcc_checking_assert (tree_int_cst_lt (rhs2, rhs1));
+		  if (wi::ne_p (wi::to_wide (rhs2) + 1, wi::to_wide (rhs1)))
+		    return false;
+		  if (cmp1 == LT_EXPR)
+		    cmp1 = LE_EXPR;
+		  else if (cmp1 == GE_EXPR)
+		    cmp1 = GT_EXPR;
+		  else
+		    return false;
+		}
+	      rhs1 = rhs2;
+	    }
+	  else
+	    return false;
+	}
     }
   else if (lhs2 == rhs1)
     {
@@ -2061,20 +2104,30 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	       || absu_hwi (tree_to_shwi (arg0)) != 1
 	       || wi::to_widest (arg0) == wi::to_widest (arg1))
 	return false;
-      if (cmp2 != LT_EXPR && cmp2 != GT_EXPR)
-	return false;
+      switch (cmp2)
+	{
+	case LT_EXPR:
+	case LE_EXPR:
+	case GT_EXPR:
+	case GE_EXPR:
+	  break;
+	default:
+	  return false;
+	}
       /* if (x < y) goto phi_bb; else fallthru;
 	 if (x > y) goto phi_bb; else fallthru;
 	 bbx:;
 	 phi_bb:;
 	 is ok, but if x and y are swapped in one of the comparisons,
 	 or the comparisons are the same and operands not swapped,
-	 or second goto phi_bb is not the true edge, it is not.  */
+	 or the true and false edges are swapped, it is not.  */
       if ((lhs2 == lhs1)
-	  ^ (cmp2 == cmp1)
-	  ^ ((e1->flags & EDGE_TRUE_VALUE) != 0))
-	return false;
-      if ((cond2_phi_edge->flags & EDGE_TRUE_VALUE) == 0)
+	  ^ (((cond2_phi_edge->flags
+	       & ((cmp2 == LT_EXPR || cmp2 == LE_EXPR)
+		  ? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE)) != 0)
+	     != ((e1->flags
+		  & ((cmp1 == LT_EXPR || cmp1 == LE_EXPR)
+		     ? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE)) != 0)))
 	return false;
       if (!single_pred_p (cond2_bb) || !cond_only_block_p (cond2_bb))
 	return false;
@@ -2124,7 +2177,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 
   /* lhs1 one_cmp rhs1 results in phires of 1.  */
   enum tree_code one_cmp;
-  if ((cmp1 == LT_EXPR)
+  if ((cmp1 == LT_EXPR || cmp1 == LE_EXPR)
       ^ (!integer_onep ((e1->flags & EDGE_TRUE_VALUE) ? arg1 : arg0)))
     one_cmp = LT_EXPR;
   else

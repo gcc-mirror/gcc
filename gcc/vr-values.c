@@ -1229,7 +1229,7 @@ vr_values::extract_range_basic (value_range_equiv *vr, gimple *stmt)
 	    return;
 	  break;
 	default:
-	  if (range_of_builtin_call (*this, *vr, as_a<gcall *> (stmt)))
+	  if (fold_range (*vr, stmt, this))
 	    {
 	      /* The original code nuked equivalences every time a
 		 range was found, so do the same here.  */

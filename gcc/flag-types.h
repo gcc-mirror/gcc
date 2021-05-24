@@ -24,14 +24,29 @@ along with GCC; see the file COPYING3.  If not see
 
 enum debug_info_type
 {
-  NO_DEBUG,	    /* Write no debug info.  */
-  DBX_DEBUG,	    /* Write BSD .stabs for DBX (using dbxout.c).  */
-  DWARF2_DEBUG,	    /* Write Dwarf v2 debug info (using dwarf2out.c).  */
-  XCOFF_DEBUG,	    /* Write IBM/Xcoff debug info (using dbxout.c).  */
-  VMS_DEBUG,        /* Write VMS debug info (using vmsdbgout.c).  */
-  VMS_AND_DWARF2_DEBUG /* Write VMS debug info (using vmsdbgout.c).
-                          and DWARF v2 debug info (using dwarf2out.c).  */
+  DINFO_TYPE_NONE = 0,		  /* No debug info.  */
+  DINFO_TYPE_DBX = 1,		  /* BSD .stabs for DBX.  */
+  DINFO_TYPE_DWARF2 = 2,	  /* Dwarf v2 debug info.  */
+  DINFO_TYPE_XCOFF = 3,		  /* IBM/Xcoff debug info.  */
+  DINFO_TYPE_VMS = 4,		  /* VMS debug info.  */
+  DINFO_TYPE_MAX = DINFO_TYPE_VMS /* Marker only.  */
 };
+
+#define NO_DEBUG      (0U)
+/* Write DBX debug info (using dbxout.c).  */
+#define DBX_DEBUG     (1U << DINFO_TYPE_DBX)
+/* Write DWARF2 debug info (using dwarf2out.c).  */
+#define DWARF2_DEBUG  (1U << DINFO_TYPE_DWARF2)
+/* Write IBM/XCOFF debug info (using dbxout.c).  */
+#define XCOFF_DEBUG   (1U << DINFO_TYPE_XCOFF)
+/* Write VMS debug info (using vmsdbgout.c).  */
+#define VMS_DEBUG     (1U << DINFO_TYPE_VMS)
+/* Note: Adding new definitions to handle -combination- of debug formats,
+   like VMS_AND_DWARF2_DEBUG is not recommended.  This definition remains
+   here for historical reasons.  */
+/* Write VMS debug info (using vmsdbgout.c) and DWARF v2 debug info (using
+   dwarf2out.c).  */
+#define VMS_AND_DWARF2_DEBUG  ((VMS_DEBUG | DWARF2_DEBUG))
 
 enum debug_info_levels
 {
@@ -425,6 +440,13 @@ enum openacc_kernels
 {
   OPENACC_KERNELS_DECOMPOSE,
   OPENACC_KERNELS_PARLOOPS
+};
+
+/* Modes of OpenACC privatization diagnostics.  */
+enum openacc_privatization
+{
+  OPENACC_PRIVATIZATION_QUIET,
+  OPENACC_PRIVATIZATION_NOISY
 };
 
 #endif

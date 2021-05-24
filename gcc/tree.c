@@ -12382,6 +12382,8 @@ drop_tree_overflow (tree t)
 tree
 get_base_address (tree t)
 {
+  if (TREE_CODE (t) == WITH_SIZE_EXPR)
+    t = TREE_OPERAND (t, 0);
   while (handled_component_p (t))
     t = TREE_OPERAND (t, 0);
 
@@ -12389,11 +12391,6 @@ get_base_address (tree t)
        || TREE_CODE (t) == TARGET_MEM_REF)
       && TREE_CODE (TREE_OPERAND (t, 0)) == ADDR_EXPR)
     t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
-
-  /* ???  Either the alias oracle or all callers need to properly deal
-     with WITH_SIZE_EXPRs before we can look through those.  */
-  if (TREE_CODE (t) == WITH_SIZE_EXPR)
-    return NULL_TREE;
 
   return t;
 }

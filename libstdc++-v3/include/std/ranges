@@ -499,6 +499,10 @@ namespace ranges
 	_M_equal(const _Iterator& __x) const
 	{ return __x._M_value == _M_bound; }
 
+	constexpr auto
+	_M_distance_from(const _Iterator& __x) const
+	{ return _M_bound - __x._M_value; }
+
 	_Bound _M_bound = _Bound();
 
       public:
@@ -515,12 +519,12 @@ namespace ranges
 	friend constexpr iter_difference_t<_Winc>
 	operator-(const _Iterator& __x, const _Sentinel& __y)
 	  requires sized_sentinel_for<_Bound, _Winc>
-	{ return __x._M_value - __y._M_bound; }
+	{ return -__y._M_distance_from(__x); }
 
 	friend constexpr iter_difference_t<_Winc>
 	operator-(const _Sentinel& __x, const _Iterator& __y)
 	  requires sized_sentinel_for<_Bound, _Winc>
-	{ return -(__y - __x); }
+	{ return __x._M_distance_from(__y); }
       };
 
       _Winc _M_value = _Winc();
@@ -2186,6 +2190,7 @@ namespace views::__adaptor
 	if (_M_cached_begin._M_has_value())
 	  return _M_cached_begin._M_get(_M_base);
 
+	__glibcxx_assert(_M_pred.has_value());
 	auto __it = __detail::find_if_not(ranges::begin(_M_base),
 					  ranges::end(_M_base),
 					  std::cref(*_M_pred));
@@ -3687,7 +3692,7 @@ namespace views::__adaptor
 	    requires sized_sentinel_for<sentinel_t<_Base>, iterator_t<_Base2>>
 	    friend constexpr range_difference_t<_Base2>
 	    operator-(const _Iterator<_Const2>& __x, const _Sentinel& __y)
-	    { return __x._M_current - __y._M_end; }
+	    { return -__y._M_distance_from(__x); }
 
 	  template<bool _Const2,
 		   typename _Base2 = __detail::__maybe_const_t<_Const2, _Vp>>

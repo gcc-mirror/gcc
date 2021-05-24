@@ -1,3 +1,148 @@
+2021-05-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* semantics.c (finish_omp_clauses): Move firstprivate clauses with
+	OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT to the end of the chain.  Don't error
+	if a decl is mentioned both in map clause and in such firstprivate
+	clause unless OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET is also set.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	* call.c (reference_binding): Check for designator.
+	(implicit_conversion_1, build_special_member_call): Likewise.
+	* decl.c (reshape_init_r): Likewise.
+	* pt.c (do_class_deduction): Likewise.
+	* typeck2.c (digest_init_r): Likewise.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100489
+	* decl.c (reshape_init_class): Handle designator for
+	member of anonymous aggregate here.
+	* typeck2.c (process_init_constructor_record): Not here.
+
+2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* call.c (maybe_warn_array_conv): Use new warning option.
+	* decl.c (mark_inline_variable, grokdeclarator): Likewise.
+	* error.c (maybe_warn_cpp0x): Likewise.
+	* parser.c (cp_parser_primary_expression)
+	(cp_parser_unqualified_id)
+	(cp_parser_pseudo_destructor_name)
+	(cp_parser_lambda_introducer)
+	(cp_parser_lambda_declarator_opt)
+	(cp_parser_selection_statement)
+	(cp_parser_init_statement)
+	(cp_parser_decomposition_declaration)
+	(cp_parser_function_specifier_opt)
+	(cp_parser_static_assert)
+	(cp_parser_namespace_definition)
+	(cp_parser_using_declaration)
+	(cp_parser_asm_definition)
+	(cp_parser_ctor_initializer_opt_and_function_body)
+	(cp_parser_initializer_list)
+	(cp_parser_type_parameter_key)
+	(cp_parser_member_declaration)
+	(cp_parser_try_block)
+	(cp_parser_std_attribute_spec): Likewise.
+	* pt.c (check_template_variable): Likewise.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100634
+	* pt.c (invalid_nontype_parm_type_p): Return true for COMPLEX_TYPE.
+
+2021-05-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100659
+	* cp-tree.h (CONST_DECL_USING_P): Check for null TREE_TYPE.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100367
+	PR c++/96299
+	* method.c (genericize_spaceship): Use fold_build2 for scalar
+	operands.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (build_deduction_guide): Treat the implicit deduction guide
+	as a member of the class.
+
+2021-05-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100596
+	* cp-tree.h (any_non_type_attribute_p): Remove.
+	* decl.c (grokdeclarator): Turn an error into a warning and only
+	warn for standard attributes.
+	* decl2.c (any_non_type_attribute_p): Remove.
+	* parser.c (cp_parser_elaborated_type_specifier): Turn an error
+	into a warning and only warn for standard attributes.
+	(cp_parser_member_declaration): Likewise.
+
+2021-05-19  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/100658
+	* mangle.c (write_encoding): Fix typos.
+
+2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* parser.c (cp_parser_omp_master): Set OMP_MASTER_COMBINED on
+	master when combined with taskloop.
+	(cp_parser_omp_parallel): Don't set OMP_PARALLEL_COMBINED on
+	parallel master when not combined with taskloop.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100261
+	* rtti.c (get_tinfo_decl_direct): Check TYPE_TRANSPARENT_AGGR.
+
+2021-05-19  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100372
+	* tree.c (strip_typedefs): Only look at the pattern of a
+	TYPE_PACK_EXPANSION if it's a type.
+
+2021-05-18  Marek Polacek  <polacek@redhat.com>
+
+	* class.c (classtype_has_non_deleted_copy_ctor): Remove.
+	* constraint.cc (contains_wildcard_p): Likewise.
+	(get_template_head_requirements): Likewise.
+	(check_constrained_friend): Likewise.
+	(subsumes_constraints): Likewise.
+	* cp-tree.h (classtype_has_non_deleted_copy_ctor): Likewise.
+	(push_void_library_fn): Likewise.
+	(get_pattern_parm): Likewise.
+	(get_template_parms_at_level): Likewise.
+	(lambda_return_type): Likewise.
+	(get_template_head_requirements): Likewise.
+	(check_constrained_friend): Likewise.
+	(subsumes_constraints): Likewise.
+	* decl.c (push_void_library_fn): Likewise.
+	* lambda.c (lambda_return_type): Likewise.
+	* pt.c (get_template_parms_at_level): Likewise.
+	(get_pattern_parm): Likewise.
+
+2021-05-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100644
+	* call.c (perfect_candidate_p): An implicitly deleted move
+	is not perfect.
+
+2021-05-18  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR c++/100281
+	* cvt.c (cp_convert_to_pointer): Use the size of the target
+	pointer type.
+	* tree.c (cp_build_reference_type): Call
+	cp_build_reference_type_for_mode with VOIDmode.
+	(cp_build_reference_type_for_mode): Rename from
+	cp_build_reference_type.  Add MODE argument and invoke
+	build_reference_type_for_mode.
+	(strip_typedefs): Use build_pointer_type_for_mode and
+	cp_build_reference_type_for_mode for pointers and references.
+
 2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/100635

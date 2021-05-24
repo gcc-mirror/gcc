@@ -1,7 +1,13 @@
 ! { dg-do run }
 !
 ! Test if, if_present clauses on host_data construct.
-!
+
+! { dg-additional-options "-fopt-info-all-omp" }
+! { dg-additional-options "--param=openacc-privatization=noisy" }
+! { dg-additional-options "-foffload=-fopt-info-all-omp" }
+! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
+! for testing/documenting aspects of that functionality.
+
 ! Fortran variant of 'libgomp.oacc-c-c++-common/host_data-7.c'.
 !
 program main
@@ -33,11 +39,24 @@ subroutine foo (p2, parr, host_p, host_parr, cond)
 #endif
   
   !$acc data copyin(host_p, host_parr)
+  ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target { ! openacc_host_selected } } .-1 }
+  ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target { ! openacc_host_selected } } .-2 }
+  ! { dg-note {variable 'p\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
+  ! { dg-note {variable 'parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-4 }
+  ! { dg-note {variable 'parm\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target { ! openacc_host_selected } } .-5 }
 #if !ACC_MEM_SHARED
     if (acc_is_present(p, c_sizeof(p))) stop 5
     if (acc_is_present(parr, 1)) stop 6
 #endif
     !$acc host_data use_device(p, parr) if_present
+    ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+    ! { dg-note {variable 'transfer\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
+    ! { dg-note {variable 'host_p\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
+    ! { dg-note {variable 'parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-4 }
+    ! { dg-note {variable 'host_parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-5 }
+    ! { dg-note {variable 'D\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-6 }
+    ! { dg-note {variable 'transfer\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-7 }
+    ! { dg-note {variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-8 }
       ! not mapped yet, so it will be equal to the host pointer.
       if (transfer(c_loc(p), host_p) /= host_p) stop 7
       if (transfer(c_loc(parr), host_parr) /= host_parr) stop 8
@@ -48,6 +67,17 @@ subroutine foo (p2, parr, host_p, host_parr, cond)
 #endif
 
     !$acc data copy(p, parr)
+    ! { dg-note {variable 'p\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+    ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
+    ! { dg-note {variable 'parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
+    ! { dg-note {variable 'transfer\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-4 }
+    ! { dg-note {variable 'host_p\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-5 }
+    ! { dg-note {variable 'host_parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-6 }
+    ! { dg-note {variable 'C\.[0-9]+' declared in block potentially has improper OpenACC privatization level: 'const_decl'} "TODO" { target *-*-* } .-7 }
+    ! { dg-note {variable 'parm\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-8 }
+    ! { dg-note {variable 'D\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-9 }
+    ! { dg-note {variable 'transfer\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-10 }
+    ! { dg-note {variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-11 }
       if (.not. acc_is_present(p, c_sizeof(p))) stop 11
       if (.not. acc_is_present(parr, 1)) stop 12
       ! Not inside a host_data construct, so still the host pointer.
@@ -55,6 +85,14 @@ subroutine foo (p2, parr, host_p, host_parr, cond)
       if (transfer(c_loc(parr), host_parr) /= host_parr) stop 14
       
       !$acc host_data use_device(p, parr)
+      ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+      ! { dg-note {variable 'transfer\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
+      ! { dg-note {variable 'host_p\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
+      ! { dg-note {variable 'parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-4 }
+      ! { dg-note {variable 'host_parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-5 }
+      ! { dg-note {variable 'D\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-6 }
+      ! { dg-note {variable 'transfer\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-7 }
+      ! { dg-note {variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-8 }
 #if ACC_MEM_SHARED
         if (transfer(c_loc(p), host_p) /= host_p) stop 15
         if (transfer(c_loc(parr), host_parr) /= host_parr) stop 16
@@ -66,6 +104,14 @@ subroutine foo (p2, parr, host_p, host_parr, cond)
       !$acc end host_data
 
       !$acc host_data use_device(p, parr) if_present
+        ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+        ! { dg-note {variable 'transfer\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
+        ! { dg-note {variable 'host_p\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
+        ! { dg-note {variable 'parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-4 }
+        ! { dg-note {variable 'host_parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-5 }
+        ! { dg-note {variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-6 }
+        ! { dg-note {variable 'D\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-7 }
+        ! { dg-note {variable 'transfer\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-8 }
 #if ACC_MEM_SHARED
         if (transfer(c_loc(p), host_p) /= host_p) stop 19
         if (transfer(c_loc(parr), host_parr) /= host_parr) stop 20
@@ -77,6 +123,14 @@ subroutine foo (p2, parr, host_p, host_parr, cond)
       !$acc end host_data
 
       !$acc host_data use_device(p, parr) if(cond)
+        ! { dg-note {variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+        ! { dg-note {variable 'transfer\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
+        ! { dg-note {variable 'host_p\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-3 }
+        ! { dg-note {variable 'parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-4 }
+        ! { dg-note {variable 'host_parr\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-5 }
+        ! { dg-note {variable 'parm\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-6 }
+        ! { dg-note {variable 'D\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-7 }
+        ! { dg-note {variable 'transfer\.[0-9]+' declared in block is candidate for adjusting OpenACC privatization level} "TODO" { target *-*-* } .-8 }
 #if ACC_MEM_SHARED
         if (transfer(c_loc(p), host_p) /= host_p) stop 23
         if (transfer(c_loc(parr), host_parr) /= host_parr) stop 24

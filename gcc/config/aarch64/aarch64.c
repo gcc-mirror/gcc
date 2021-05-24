@@ -15435,7 +15435,10 @@ aarch64_add_stmt_cost (class vec_info *vinfo, void *data, int count,
 	 arbitrary and could potentially be improved with analysis.  */
       if (where == vect_body && stmt_info
 	  && stmt_in_inner_loop_p (vinfo, stmt_info))
-	count *= 50; /*  FIXME  */
+	{
+	  gcc_assert (loop_vinfo);
+	  count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo); /*  FIXME  */
+	}
 
       retval = (unsigned) (count * stmt_cost);
       costs->region[where] += retval;

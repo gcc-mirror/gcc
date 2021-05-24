@@ -132,4 +132,17 @@ enum omp_requires {
 
 extern GTY(()) enum omp_requires omp_requires_mask;
 
+static inline dump_flags_t
+get_openacc_privatization_dump_flags ()
+{
+  dump_flags_t l_dump_flags = MSG_NOTE;
+
+  /* For '--param=openacc-privatization=quiet', diagnostics only go to dump
+     files.  */
+  if (param_openacc_privatization == OPENACC_PRIVATIZATION_QUIET)
+    l_dump_flags |= MSG_PRIORITY_INTERNALS;
+
+  return l_dump_flags;
+}
+
 #endif /* GCC_OMP_GENERAL_H */

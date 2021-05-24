@@ -330,7 +330,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
 -Wc11-c2x-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
--Wc++20-compat  @gol
+-Wc++20-compat   @gol
+-Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions  @gol
+-Wno-c++20-extensions  -Wno-c++23-extensions  @gol
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual  @gol
 -Wchar-subscripts @gol
 -Wclobbered  -Wcomment @gol
@@ -8154,6 +8156,41 @@ and ISO C++ 2017.  This warning is enabled by @option{-Wall}.
 Warn about C++ constructs whose meaning differs between ISO C++ 2017
 and ISO C++ 2020.  This warning is enabled by @option{-Wall}.
 
+@item -Wno-c++11-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++11-extensions
+@opindex Wno-c++11-extensions
+Do not warn about C++11 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++11 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
+@item -Wno-c++14-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++14-extensions
+@opindex Wno-c++14-extensions
+Do not warn about C++14 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++14 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
+@item -Wno-c++17-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++17-extensions
+@opindex Wno-c++17-extensions
+Do not warn about C++17 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++17 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
+@item -Wno-c++20-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++20-extensions
+@opindex Wno-c++20-extensions
+Do not warn about C++20 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++20 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
+@item -Wno-c++23-extensions @r{(C++ and Objective-C++ only)}
+@opindex Wc++23-extensions
+@opindex Wno-c++23-extensions
+Do not warn about C++23 constructs in code being compiled using
+an older C++ standard.  Even without this option, some C++23 constructs
+will only be diagnosed if @option{-Wpedantic} is used.
+
 @item -Wcast-qual
 @opindex Wcast-qual
 @opindex Wno-cast-qual
@@ -14226,6 +14263,11 @@ code to iterate.  2 allows partial vector loads and stores in all loops.
 The parameter only has an effect on targets that support partial
 vector loads and stores.
 
+@item vect-inner-loop-cost-factor
+The factor which the loop vectorizer applies to the cost of statements
+in an inner loop relative to the loop being vectorized.  The default
+value is 50.
+
 @item avoid-fma-max-bits
 Maximum number of bits for which we avoid creating FMAs.
 
@@ -14382,6 +14424,14 @@ This is work in progress.
 With @option{--param=openacc-kernels=parloops}, OpenACC `kernels'
 constructs are handled by the @samp{parloops} pass, en bloc.
 This is the current default.
+
+@item openacc-privatization
+Specify mode of OpenACC privatization diagnostics for
+@option{-fopt-info-omp-note} and applicable
+@option{-fdump-tree-*-details}.
+With @option{--param=openacc-privatization=quiet}, don't diagnose.
+This is the current default.
+With @option{--param=openacc-privatization=noisy}, do diagnose.
 
 @end table
 

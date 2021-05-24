@@ -1710,27 +1710,62 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      && gfc_match ("map ( ") == MATCH_YES)
 	    {
 	      locus old_loc2 = gfc_current_locus;
-	      bool always = false;
+	      int always_modifier = 0;
+	      int close_modifier = 0;
+	      locus second_always_locus = old_loc2;
+	      locus second_close_locus = old_loc2;
+
+	      for (;;)
+		{
+		  locus current_locus = gfc_current_locus;
+		  if (gfc_match ("always ") == MATCH_YES)
+		    {
+		      if (always_modifier++ == 1)
+			second_always_locus = current_locus;
+		    }
+		  else if (gfc_match ("close ") == MATCH_YES)
+		    {
+		      if (close_modifier++ == 1)
+			second_close_locus = current_locus;
+		    }
+		  else
+		    break;
+		  gfc_match (", ");
+		}
+
 	      gfc_omp_map_op map_op = OMP_MAP_TOFROM;
-	      if (gfc_match ("always , ") == MATCH_YES)
-		always = true;
 	      if (gfc_match ("alloc : ") == MATCH_YES)
 		map_op = OMP_MAP_ALLOC;
 	      else if (gfc_match ("tofrom : ") == MATCH_YES)
-		map_op = always ? OMP_MAP_ALWAYS_TOFROM : OMP_MAP_TOFROM;
+		map_op = always_modifier ? OMP_MAP_ALWAYS_TOFROM : OMP_MAP_TOFROM;
 	      else if (gfc_match ("to : ") == MATCH_YES)
-		map_op = always ? OMP_MAP_ALWAYS_TO : OMP_MAP_TO;
+		map_op = always_modifier ? OMP_MAP_ALWAYS_TO : OMP_MAP_TO;
 	      else if (gfc_match ("from : ") == MATCH_YES)
-		map_op = always ? OMP_MAP_ALWAYS_FROM : OMP_MAP_FROM;
+		map_op = always_modifier ? OMP_MAP_ALWAYS_FROM : OMP_MAP_FROM;
 	      else if (gfc_match ("release : ") == MATCH_YES)
 		map_op = OMP_MAP_RELEASE;
 	      else if (gfc_match ("delete : ") == MATCH_YES)
 		map_op = OMP_MAP_DELETE;
-	      else if (always)
+	      else
 		{
 		  gfc_current_locus = old_loc2;
-		  always = false;
+		  always_modifier = 0;
+		  close_modifier = 0;
 		}
+
+	      if (always_modifier > 1)
+		{
+		  gfc_error ("too many %<always%> modifiers at %L",
+			     &second_always_locus);
+		  break;
+		}
+	      if (close_modifier > 1)
+		{
+		  gfc_error ("too many %<close%> modifiers at %L",
+			     &second_close_locus);
+		  break;
+		}
+
 	      head = NULL;
 	      if (gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_MAP],
 					       false, NULL, &head,
@@ -1741,8 +1776,8 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    n->u.map_op = map_op;
 		  continue;
 		}
-	      else
-		gfc_current_locus = old_loc;
+	      gfc_current_locus = old_loc;
+	      break;
 	    }
 	  if ((mask & OMP_CLAUSE_MERGEABLE) && !c->mergeable
 	      && gfc_match ("mergeable") == MATCH_YES)
@@ -6902,7 +6937,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_PARALLEL_DO;
     case EXEC_OMP_PARALLEL_DO_SIMD:
       return ST_OMP_PARALLEL_DO_SIMD;
-
+    case EXEC_OMP_DEPOBJ:
+      return ST_OMP_DEPOBJ;
     default:
       gcc_unreachable ();
     }

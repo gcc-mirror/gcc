@@ -795,6 +795,19 @@ Enum(openacc_kernels) String(decompose) Value(OPENACC_KERNELS_DECOMPOSE)
 EnumValue
 Enum(openacc_kernels) String(parloops) Value(OPENACC_KERNELS_PARLOOPS)
 
+-param=openacc-privatization=
+Common Joined Enum(openacc_privatization) Var(param_openacc_privatization) Init(OPENACC_PRIVATIZATION_QUIET) Param
+--param=openacc-privatization=[quiet|noisy]	Specify mode of OpenACC privatization diagnostics.
+
+Enum
+Name(openacc_privatization) Type(enum openacc_privatization)
+
+EnumValue
+Enum(openacc_privatization) String(quiet) Value(OPENACC_PRIVATIZATION_QUIET)
+
+EnumValue
+Enum(openacc_privatization) String(noisy) Value(OPENACC_PRIVATIZATION_NOISY)
+
 -param=parloops-chunk-size=
 Common Joined UInteger Var(param_parloops_chunk_size) Param Optimization
 Chunk size of omp schedule for loops parallelized by parloops.
@@ -1088,5 +1101,9 @@ Bound on number of runtime checks inserted by the vectorizer's loop versioning f
 -param=vect-partial-vector-usage=
 Common Joined UInteger Var(param_vect_partial_vector_usage) Init(2) IntegerRange(0, 2) Param Optimization
 Controls how loop vectorizer uses partial vectors.  0 means never, 1 means only for loops whose need to iterate can be removed, 2 means for all loops.  The default value is 2.
+
+-param=vect-inner-loop-cost-factor=
+Common Joined UInteger Var(param_vect_inner_loop_cost_factor) Init(50) IntegerRange(1, 999999) Param Optimization
+The factor which the loop vectorizer applies to the cost of statements in an inner loop relative to the loop being vectorized.
 
 ; This comment is to ensure we retain the blank line above.

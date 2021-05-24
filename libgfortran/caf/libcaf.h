@@ -261,4 +261,6 @@ void _gfortran_caf_stopped_images (gfc_descriptor_t *,
 
 int _gfortran_caf_is_present (caf_token_t, int, caf_reference_t *);
 
+void _gfortran_caf_random_init (bool, bool);
+
 #endif  /* LIBCAF_H  */

@@ -179,6 +179,9 @@ struct omp_context
   /* Only used for omp target contexts.  True if an OpenMP construct other
      than teams is strictly nested in it.  */
   bool nonteams_nested_p;
+
+  /* Candidates for adjusting OpenACC privatization level.  */
+  vec<tree> oacc_privatization_candidates;
 };
 
 static splay_tree all_contexts;
@@ -3016,11 +3019,12 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 
   /* No nesting of non-OpenACC STMT (that is, an OpenMP one, or a GOMP builtin)
      inside an OpenACC CTX.  */
-  if (!(is_gimple_omp (stmt)
-	&& is_gimple_omp_oacc (stmt))
-      /* Except for atomic codes that we share with OpenMP.  */
-      && !(gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
-	   || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE))
+  if (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
+      || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE)
+    /* ..., except for the atomic codes that OpenACC shares with OpenMP.  */
+    ;
+  else if (!(is_gimple_omp (stmt)
+	     && is_gimple_omp_oacc (stmt)))
     {
       if (oacc_get_fn_attrib (cfun->decl) != NULL)
 	{
@@ -7131,8 +7135,9 @@ lower_lastprivate_clauses (tree clauses, tree predicate, gimple_seq *body_p,
 
 static void
 lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
-		       gcall *fork, gcall *join, gimple_seq *fork_seq,
-		       gimple_seq *join_seq, omp_context *ctx)
+		       gcall *fork, gcall *private_marker, gcall *join,
+		       gimple_seq *fork_seq, gimple_seq *join_seq,
+		       omp_context *ctx)
 {
   gimple_seq before_fork = NULL;
   gimple_seq after_fork = NULL;
@@ -7336,6 +7341,8 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
 
   /* Now stitch things together.  */
   gimple_seq_add_seq (fork_seq, before_fork);
+  if (private_marker)
+    gimple_seq_add_stmt (fork_seq, private_marker);
   if (fork)
     gimple_seq_add_stmt (fork_seq, fork);
   gimple_seq_add_seq (fork_seq, after_fork);
@@ -8115,7 +8122,7 @@ lower_oacc_loop_marker (location_t loc, tree ddvar, bool head,
    HEAD and TAIL.  */
 
 static void
-lower_oacc_head_tail (location_t loc, tree clauses,
+lower_oacc_head_tail (location_t loc, tree clauses, gcall *private_marker,
 		      gimple_seq *head, gimple_seq *tail, omp_context *ctx)
 {
   bool inner = false;
@@ -8123,6 +8130,14 @@ lower_oacc_head_tail (location_t loc, tree clauses,
   gimple_seq_add_stmt (head, gimple_build_assign (ddvar, integer_zero_node));
 
   unsigned count = lower_oacc_head_mark (loc, ddvar, clauses, head, ctx);
+
+  if (private_marker)
+    {
+      gimple_set_location (private_marker, loc);
+      gimple_call_set_lhs (private_marker, ddvar);
+      gimple_call_set_arg (private_marker, 1, ddvar);
+    }
+
   tree fork_kind = build_int_cst (unsigned_type_node, IFN_UNIQUE_OACC_FORK);
   tree join_kind = build_int_cst (unsigned_type_node, IFN_UNIQUE_OACC_JOIN);
 
@@ -8153,7 +8168,8 @@ lower_oacc_head_tail (location_t loc, tree clauses,
 			      &join_seq);
 
       lower_oacc_reductions (loc, clauses, place, inner,
-			     fork, join, &fork_seq, &join_seq,  ctx);
+			     fork, (count == 1) ? private_marker : NULL,
+			     join, &fork_seq, &join_seq,  ctx);
 
       /* Append this level to head. */
       gimple_seq_add_seq (head, fork_seq);
@@ -10128,6 +10144,165 @@ lower_omp_for_lastprivate (struct omp_for_data *fd, gimple_seq *body_p,
     }
 }
 
+/* OpenACC privatization.
+
+   Or, in other words, *sharing* at the respective OpenACC level of
+   parallelism.
+
+   From a correctness perspective, a non-addressable variable can't be accessed
+   outside the current thread, so it can go in a (faster than shared memory)
+   register -- though that register may need to be broadcast in some
+   circumstances.  A variable can only meaningfully be "shared" across workers
+   or vector lanes if its address is taken, e.g. by a call to an atomic
+   builtin.
+
+   From an optimisation perspective, the answer might be fuzzier: maybe
+   sometimes, using shared memory directly would be faster than
+   broadcasting.  */
+
+static void
+oacc_privatization_begin_diagnose_var (const dump_flags_t l_dump_flags,
+				       const location_t loc, const tree c,
+				       const tree decl)
+{
+  const dump_user_location_t d_u_loc
+    = dump_user_location_t::from_location_t (loc);
+/* PR100695 "Format decoder, quoting in 'dump_printf' etc." */
+#if __GNUC__ >= 10
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wformat"
+#endif
+  dump_printf_loc (l_dump_flags, d_u_loc,
+		   "variable %<%T%> ", decl);
+#if __GNUC__ >= 10
+# pragma GCC diagnostic pop
+#endif
+  if (c)
+    dump_printf (l_dump_flags,
+		 "in %qs clause ",
+		 omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+  else
+    dump_printf (l_dump_flags,
+		 "declared in block ");
+}
+
+static bool
+oacc_privatization_candidate_p (const location_t loc, const tree c,
+				const tree decl)
+{
+  dump_flags_t l_dump_flags = get_openacc_privatization_dump_flags ();
+
+  /* There is some differentiation depending on block vs. clause.  */
+  bool block = !c;
+
+  bool res = true;
+
+  if (res && !VAR_P (decl))
+    {
+      res = false;
+
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "potentially has improper OpenACC privatization level: %qs\n",
+		       get_tree_code_name (TREE_CODE (decl)));
+	}
+    }
+
+  if (res && block && TREE_STATIC (decl))
+    {
+      res = false;
+
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "isn%'t candidate for adjusting OpenACC privatization level: %s\n",
+		       "static");
+	}
+    }
+
+  if (res && block && DECL_EXTERNAL (decl))
+    {
+      res = false;
+
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "isn%'t candidate for adjusting OpenACC privatization level: %s\n",
+		       "external");
+	}
+    }
+
+  if (res && !TREE_ADDRESSABLE (decl))
+    {
+      res = false;
+
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "isn%'t candidate for adjusting OpenACC privatization level: %s\n",
+		       "not addressable");
+	}
+    }
+
+  if (res)
+    {
+      if (dump_enabled_p ())
+	{
+	  oacc_privatization_begin_diagnose_var (l_dump_flags, loc, c, decl);
+	  dump_printf (l_dump_flags,
+		       "is candidate for adjusting OpenACC privatization level\n");
+	}
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      print_generic_decl (dump_file, decl, dump_flags);
+      fprintf (dump_file, "\n");
+    }
+
+  return res;
+}
+
+/* Scan CLAUSES for candidates for adjusting OpenACC privatization level in
+   CTX.  */
+
+static void
+oacc_privatization_scan_clause_chain (omp_context *ctx, tree clauses)
+{
+  for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_PRIVATE)
+      {
+	tree decl = OMP_CLAUSE_DECL (c);
+
+	if (!oacc_privatization_candidate_p (OMP_CLAUSE_LOCATION (c), c, decl))
+	  continue;
+
+	gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));
+	ctx->oacc_privatization_candidates.safe_push (decl);
+      }
+}
+
+/* Scan DECLS for candidates for adjusting OpenACC privatization level in
+   CTX.  */
+
+static void
+oacc_privatization_scan_decl_chain (omp_context *ctx, tree decls)
+{
+  for (tree decl = decls; decl; decl = DECL_CHAIN (decl))
+    {
+      if (!oacc_privatization_candidate_p (gimple_location (ctx->stmt), NULL, decl))
+	continue;
+
+      gcc_checking_assert (!ctx->oacc_privatization_candidates.contains (decl));
+      ctx->oacc_privatization_candidates.safe_push (decl);
+    }
+}
+
 /* Callback for walk_gimple_seq.  Find #pragma omp scan statement.  */
 
 static tree
@@ -10957,6 +11132,58 @@ lower_omp_for_scan (gimple_seq *body_p, gimple_seq *dlist, gomp_for *stmt,
   *dlist = new_dlist;
 }
 
+/* Build an internal UNIQUE function with type IFN_UNIQUE_OACC_PRIVATE listing
+   the addresses of variables to be made private at the surrounding
+   parallelism level.  Such functions appear in the gimple code stream in two
+   forms, e.g. for a partitioned loop:
+
+      .data_dep.6 = .UNIQUE (OACC_HEAD_MARK, .data_dep.6, 1, 68);
+      .data_dep.6 = .UNIQUE (OACC_PRIVATE, .data_dep.6, -1, &w);
+      .data_dep.6 = .UNIQUE (OACC_FORK, .data_dep.6, -1);
+      .data_dep.6 = .UNIQUE (OACC_HEAD_MARK, .data_dep.6);
+
+   or alternatively, OACC_PRIVATE can appear at the top level of a parallel,
+   not as part of a HEAD_MARK sequence:
+
+      .UNIQUE (OACC_PRIVATE, 0, 0, &w);
+
+   For such stand-alone appearances, the 3rd argument is always 0, denoting
+   gang partitioning.  */
+
+static gcall *
+lower_oacc_private_marker (omp_context *ctx)
+{
+  if (ctx->oacc_privatization_candidates.length () == 0)
+    return NULL;
+
+  auto_vec<tree, 5> args;
+
+  args.quick_push (build_int_cst (integer_type_node, IFN_UNIQUE_OACC_PRIVATE));
+  args.quick_push (integer_zero_node);
+  args.quick_push (integer_minus_one_node);
+
+  int i;
+  tree decl;
+  FOR_EACH_VEC_ELT (ctx->oacc_privatization_candidates, i, decl)
+    {
+      for (omp_context *thisctx = ctx; thisctx; thisctx = thisctx->outer)
+	{
+	  tree inner_decl = maybe_lookup_decl (decl, thisctx);
+	  if (inner_decl)
+	    {
+	      decl = inner_decl;
+	      break;
+	    }
+	}
+      gcc_checking_assert (decl);
+
+      tree addr = build_fold_addr_expr (decl);
+      args.safe_push (addr);
+    }
+
+  return gimple_build_call_internal_vec (IFN_UNIQUE, args);
+}
+
 /* Lower code for an OMP loop directive.  */
 
 static void
@@ -10972,6 +11199,9 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   size_t i;
 
   push_gimplify_context ();
+
+  if (is_gimple_omp_oacc (ctx->stmt))
+    oacc_privatization_scan_clause_chain (ctx, gimple_omp_for_clauses (stmt));
 
   lower_omp (gimple_omp_for_pre_body_ptr (stmt), ctx);
 
@@ -10991,6 +11221,8 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       gbind *inner_bind
 	= as_a <gbind *> (gimple_seq_first_stmt (omp_for_body));
       tree vars = gimple_bind_vars (inner_bind);
+      if (is_gimple_omp_oacc (ctx->stmt))
+	oacc_privatization_scan_decl_chain (ctx, vars);
       gimple_bind_append_vars (new_stmt, vars);
       /* bind_vars/BLOCK_VARS are being moved to new_stmt/block, don't
 	 keep them on the inner_bind and it's block.  */
@@ -11104,6 +11336,11 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 
   lower_omp (gimple_omp_body_ptr (stmt), ctx);
 
+  gcall *private_marker = NULL;
+  if (is_gimple_omp_oacc (ctx->stmt)
+      && !gimple_seq_empty_p (omp_for_body))
+    private_marker = lower_oacc_private_marker (ctx);
+
   /* Lower the header expressions.  At this point, we can assume that
      the header is of the form:
 
@@ -11158,7 +11395,7 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
   if (is_gimple_omp_oacc (ctx->stmt)
       && !ctx_in_oacc_kernels_region (ctx))
     lower_oacc_head_tail (gimple_location (stmt),
-			  gimple_omp_for_clauses (stmt),
+			  gimple_omp_for_clauses (stmt), private_marker,
 			  &oacc_head, &oacc_tail, ctx);
 
   /* Add OpenACC partitioning and reduction markers just before the loop.  */
@@ -13155,8 +13392,14 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	     them as a dummy GANG loop.  */
 	  tree level = build_int_cst (integer_type_node, GOMP_DIM_GANG);
 
+	  gcall *private_marker = lower_oacc_private_marker (ctx);
+
+	  if (private_marker)
+	    gimple_call_set_arg (private_marker, 2, level);
+
 	  lower_oacc_reductions (gimple_location (ctx->stmt), clauses, level,
-				 false, NULL, NULL, &fork_seq, &join_seq, ctx);
+				 false, NULL, private_marker, NULL, &fork_seq,
+				 &join_seq, ctx);
 	}
 
       gimple_seq_add_seq (&new_body, fork_seq);
@@ -13398,6 +13641,11 @@ lower_omp_1 (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		 ctx);
       break;
     case GIMPLE_BIND:
+      if (ctx && is_gimple_omp_oacc (ctx->stmt))
+	{
+	  tree vars = gimple_bind_vars (as_a <gbind *> (stmt));
+	  oacc_privatization_scan_decl_chain (ctx, vars);
+	}
       lower_omp (gimple_bind_body_ptr (as_a <gbind *> (stmt)), ctx);
       maybe_remove_omp_member_access_dummy_vars (as_a <gbind *> (stmt));
       break;

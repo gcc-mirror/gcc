@@ -90,6 +90,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "asan.h"
 #include "emit-rtl.h"
+#include "gimple.h"
+#include "cfgloop.h"
+#include "tree-vectorizer.h"
 
 bool
 default_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
@@ -1480,7 +1483,11 @@ default_add_stmt_cost (class vec_info *vinfo, void *data, int count,
       arbitrary and could potentially be improved with analysis.  */
   if (where == vect_body && stmt_info
       && stmt_in_inner_loop_p (vinfo, stmt_info))
-    count *= 50;  /* FIXME.  */
+    {
+      loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (vinfo);
+      gcc_assert (loop_vinfo);
+      count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo);
+    }
 
   retval = (unsigned) (count * stmt_cost);
   cost[where] += retval;
@@ -2055,7 +2062,7 @@ default_debug_unwind_info (void)
 
   /* Otherwise, only turn it on if dwarf2 debugging is enabled.  */
 #ifdef DWARF2_DEBUGGING_INFO
-  if (write_symbols == DWARF2_DEBUG || write_symbols == VMS_AND_DWARF2_DEBUG)
+  if (dwarf_debuginfo_p ())
     return UI_DWARF2;
 #endif
 

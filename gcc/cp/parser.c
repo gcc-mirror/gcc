@@ -5577,8 +5577,9 @@ cp_parser_primary_expression (cp_parser *parser,
 	    expr = cp_parser_fold_expression (parser, expr);
 	    if (expr != error_mark_node
 		&& cxx_dialect < cxx17)
-	      pedwarn (input_location, 0, "fold-expressions only available "
-		       "with %<-std=c++17%> or %<-std=gnu++17%>");
+	      pedwarn (input_location, OPT_Wc__17_extensions,
+		       "fold-expressions only available with %<-std=c++17%> "
+		       "or %<-std=gnu++17%>");
 	  }
 	else
 	  /* Let the front end know that this expression was
@@ -6325,7 +6326,7 @@ cp_parser_unqualified_id (cp_parser* parser,
 	if (cp_parser_is_keyword (token, RID_AUTO))
 	  {
 	    if (cxx_dialect < cxx14)
-	      pedwarn (loc, 0,
+	      pedwarn (loc, OPT_Wc__14_extensions,
 		       "%<~auto%> only available with "
 		       "%<-std=c++14%> or %<-std=gnu++14%>");
 	    cp_lexer_consume_token (parser->lexer);
@@ -8353,7 +8354,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
       && !type_dependent_expression_p (object))
     {
       if (cxx_dialect < cxx14)
-	pedwarn (input_location, 0,
+	pedwarn (input_location, OPT_Wc__14_extensions,
 		 "%<~auto%> only available with "
 		 "%<-std=c++14%> or %<-std=gnu++14%>");
       cp_lexer_consume_token (parser->lexer);
@@ -11042,8 +11043,9 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	{
 	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 	  if (cxx_dialect < cxx17)
-	    pedwarn (loc, 0, "%<*this%> capture only available with "
-			     "%<-std=c++17%> or %<-std=gnu++17%>");
+	    pedwarn (loc, OPT_Wc__17_extensions,
+		     "%<*this%> capture only available with "
+		     "%<-std=c++17%> or %<-std=gnu++17%>");
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_lexer_consume_token (parser->lexer);
 	  if (LAMBDA_EXPR_THIS_CAPTURE (lambda_expr))
@@ -11081,7 +11083,8 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	{
 	  ellipsis_loc = cp_lexer_peek_token (parser->lexer)->location;
 	  if (cxx_dialect < cxx20)
-	    pedwarn (ellipsis_loc, 0, "pack init-capture only available with "
+	    pedwarn (ellipsis_loc, OPT_Wc__20_extensions,
+		     "pack init-capture only available with "
 		     "%<-std=c++20%> or %<-std=gnu++20%>");
 	  cp_lexer_consume_token (parser->lexer);
 	  init_pack_expansion = true;
@@ -11122,7 +11125,7 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  bool direct, non_constant;
 	  /* An explicit initializer exists.  */
 	  if (cxx_dialect < cxx14)
-	    pedwarn (input_location, 0,
+	    pedwarn (input_location, OPT_Wc__14_extensions,
 		     "lambda capture initializers "
 		     "only available with %<-std=c++14%> or %<-std=gnu++14%>");
 	  capture_init_expr = cp_parser_initializer (parser, &direct,
@@ -11296,11 +11299,11 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
     {
       if (cxx_dialect < cxx14)
-	pedwarn (parser->lexer->next_token->location, 0,
+	pedwarn (parser->lexer->next_token->location, OPT_Wc__14_extensions,
 		 "lambda templates are only available with "
 		 "%<-std=c++14%> or %<-std=gnu++14%>");
-      else if (cxx_dialect < cxx20)
-	pedwarn (parser->lexer->next_token->location, OPT_Wpedantic,
+      else if (pedantic && cxx_dialect < cxx20)
+	pedwarn (parser->lexer->next_token->location, OPT_Wc__20_extensions,
 		 "lambda templates are only available with "
 		 "%<-std=c++20%> or %<-std=gnu++20%>");
 
@@ -11365,10 +11368,11 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
       /* Default arguments shall not be specified in the
 	 parameter-declaration-clause of a lambda-declarator.  */
-      if (cxx_dialect < cxx14)
+      if (pedantic && cxx_dialect < cxx14)
 	for (tree t = param_list; t; t = TREE_CHAIN (t))
 	  if (TREE_PURPOSE (t) && DECL_P (TREE_VALUE (t)))
-	    pedwarn (DECL_SOURCE_LOCATION (TREE_VALUE (t)), OPT_Wpedantic,
+	    pedwarn (DECL_SOURCE_LOCATION (TREE_VALUE (t)),
+		     OPT_Wc__14_extensions,
 		     "default argument specified for lambda parameter");
 
       parens.require_close (parser);
@@ -11388,7 +11392,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
   if (omitted_parms_loc && lambda_specs.any_specifiers_p)
     {
-      pedwarn (omitted_parms_loc, 0,
+      pedwarn (omitted_parms_loc, OPT_Wc__23_extensions,
 	       "parameter declaration before lambda declaration "
 	       "specifiers only optional with %<-std=c++2b%> or "
 	       "%<-std=gnu++2b%>");
@@ -11407,7 +11411,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   tx_qual = cp_parser_tx_qualifier_opt (parser);
   if (omitted_parms_loc && tx_qual)
     {
-      pedwarn (omitted_parms_loc, 0,
+      pedwarn (omitted_parms_loc, OPT_Wc__23_extensions,
 	       "parameter declaration before lambda transaction "
 	       "qualifier only optional with %<-std=c++2b%> or "
 	       "%<-std=gnu++2b%>");
@@ -11420,7 +11424,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
   if (omitted_parms_loc && exception_spec)
     {
-      pedwarn (omitted_parms_loc, 0,
+      pedwarn (omitted_parms_loc, OPT_Wc__23_extensions,
 	       "parameter declaration before lambda exception "
 	       "specification only optional with %<-std=c++2b%> or "
 	       "%<-std=gnu++2b%>");
@@ -11438,7 +11442,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
     {
       if (omitted_parms_loc)
-	pedwarn (omitted_parms_loc, 0,
+	pedwarn (omitted_parms_loc, OPT_Wc__23_extensions,
 		 "parameter declaration before lambda trailing "
 		 "return type only optional with %<-std=c++2b%> or "
 		 "%<-std=gnu++2b%>");
@@ -12301,8 +12305,9 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	    cx = true;
 	    cp_token *tok = cp_lexer_consume_token (parser->lexer);
 	    if (cxx_dialect < cxx17)
-	      pedwarn (tok->location, 0, "%<if constexpr%> only available "
-		       "with %<-std=c++17%> or %<-std=gnu++17%>");
+	      pedwarn (tok->location, OPT_Wc__17_extensions,
+		       "%<if constexpr%> only available with "
+		       "%<-std=c++17%> or %<-std=gnu++17%>");
 	  }
 
 	/* Look for the `('.  */
@@ -12327,7 +12332,8 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	  {
 	    tree decl;
 	    if (cxx_dialect < cxx17)
-	      pedwarn (cp_lexer_peek_token (parser->lexer)->location, 0,
+	      pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		       OPT_Wc__17_extensions,
 		       "init-statement in selection statements only available "
 		       "with %<-std=c++17%> or %<-std=gnu++17%>");
 	    if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
@@ -13398,7 +13404,8 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
 
 	  if (cxx_dialect < cxx20)
 	    {
-	      pedwarn (cp_lexer_peek_token (parser->lexer)->location, 0,
+	      pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		       OPT_Wc__20_extensions,
 		       "range-based %<for%> loops with initializer only "
 		       "available with %<-std=c++20%> or %<-std=gnu++20%>");
 	      *decl = error_mark_node;
@@ -13422,7 +13429,8 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
 	  cp_lexer_consume_token (parser->lexer);
 	  is_range_for = true;
 	  if (cxx_dialect < cxx11)
-	    pedwarn (cp_lexer_peek_token (parser->lexer)->location, 0,
+	    pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		     OPT_Wc__11_extensions,
 		     "range-based %<for%> loops only available with "
 		     "%<-std=c++11%> or %<-std=gnu++11%>");
 	}
@@ -14665,8 +14673,9 @@ cp_parser_decomposition_declaration (cp_parser *parser,
     }
 
   if (cxx_dialect < cxx17)
-    pedwarn (loc, 0, "structured bindings only available with "
-		     "%<-std=c++17%> or %<-std=gnu++17%>");
+    pedwarn (loc, OPT_Wc__17_extensions,
+	     "structured bindings only available with "
+	     "%<-std=c++17%> or %<-std=gnu++17%>");
 
   tree pushed_scope;
   cp_declarator *declarator = make_declarator (cdk_decomp);
@@ -15261,7 +15270,7 @@ cp_parser_function_specifier_opt (cp_parser* parser,
 	      = G_("types may not be defined in explicit-specifier");
 
 	    if (cxx_dialect < cxx20)
-	      pedwarn (token->location, 0,
+	      pedwarn (token->location, OPT_Wc__20_extensions,
 		       "%<explicit(bool)%> only available with %<-std=c++20%> "
 		       "or %<-std=gnu++20%>");
 
@@ -15428,8 +15437,8 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
 
   if (cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
     {
-      if (cxx_dialect < cxx17)
-	pedwarn (input_location, OPT_Wpedantic,
+      if (pedantic && cxx_dialect < cxx17)
+	pedwarn (input_location, OPT_Wc__17_extensions,
 		 "%<static_assert%> without a message "
 		 "only available with %<-std=c++17%> or %<-std=gnu++17%>");
       /* Eat the ')'  */
@@ -19774,9 +19783,12 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	       && ! processing_explicit_instantiation)
 	warning (OPT_Wattributes,
 		 "attributes ignored on template instantiation");
-      else if (is_friend && attributes)
-	error ("attribute appertains to a friend declaration that is not "
-	       "a definition");
+      else if (is_friend && cxx11_attribute_p (attributes))
+	{
+	  if (warning (OPT_Wattributes, "attribute ignored"))
+	    inform (input_location, "an attribute that appertains to a friend "
+		    "declaration that is not a definition is ignored");
+	}
       else if (is_declaration && cp_parser_declares_only_class_p (parser))
 	cplus_decl_attributes (&type, attributes, (int) ATTR_FLAG_TYPE_IN_PLACE);
       else
@@ -20415,10 +20427,11 @@ cp_parser_namespace_definition (cp_parser* parser)
 							     RID_INLINE);
       if (nested_inline_p && nested_definition_count != 0)
 	{
-	  if (cxx_dialect < cxx20)
+	  if (pedantic && cxx_dialect < cxx20)
 	    pedwarn (cp_lexer_peek_token (parser->lexer)->location,
-		     OPT_Wpedantic, "nested inline namespace definitions only "
-		     "available with %<-std=c++20%> or %<-std=gnu++20%>");
+		     OPT_Wc__20_extensions, "nested inline namespace "
+		     "definitions only available with %<-std=c++20%> or "
+		     "%<-std=gnu++20%>");
 	  cp_lexer_consume_token (parser->lexer);
 	}
 
@@ -20445,8 +20458,8 @@ cp_parser_namespace_definition (cp_parser* parser)
 	  break;
 	}
 
-      if (!nested_definition_count && cxx_dialect < cxx17)
-        pedwarn (input_location, OPT_Wpedantic,
+      if (!nested_definition_count && pedantic && cxx_dialect < cxx17)
+        pedwarn (input_location, OPT_Wc__17_extensions,
 		 "nested namespace definitions only available with "
 		 "%<-std=c++17%> or %<-std=gnu++17%>");
 
@@ -20705,7 +20718,7 @@ cp_parser_using_declaration (cp_parser* parser,
     {
       cp_token *ell = cp_lexer_consume_token (parser->lexer);
       if (cxx_dialect < cxx17)
-	pedwarn (ell->location, 0,
+	pedwarn (ell->location, OPT_Wc__17_extensions,
 		 "pack expansion in using-declaration only available "
 		 "with %<-std=c++17%> or %<-std=gnu++17%>");
       qscope = make_pack_expansion (qscope);
@@ -20738,7 +20751,7 @@ cp_parser_using_declaration (cp_parser* parser,
     {
       cp_token *comma = cp_lexer_consume_token (parser->lexer);
       if (cxx_dialect < cxx17)
-	pedwarn (comma->location, 0,
+	pedwarn (comma->location, OPT_Wc__17_extensions,
 		 "comma-separated list in using-declaration only available "
 		 "with %<-std=c++17%> or %<-std=gnu++17%>");
       goto again;
@@ -21054,9 +21067,10 @@ cp_parser_asm_definition (cp_parser* parser)
      functions.  */
   if (parser->in_function_body
       && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
-      && (cxx_dialect < cxx20))
-    pedwarn (asm_loc, 0, "%<asm%> in %<constexpr%> function only available "
-	     "with %<-std=c++20%> or %<-std=gnu++20%>");
+      && cxx_dialect < cxx20)
+    pedwarn (asm_loc, OPT_Wc__20_extensions, "%<asm%> in %<constexpr%> "
+	     "function only available with %<-std=c++20%> or "
+	     "%<-std=gnu++20%>");
 
   /* Handle the asm-qualifier-list.  */
   location_t volatile_loc = UNKNOWN_LOCATION;
@@ -24128,11 +24142,11 @@ cp_parser_ctor_initializer_opt_and_function_body (cp_parser *parser,
       && cxx_dialect < cxx20)
     {
       if (DECL_CONSTRUCTOR_P (current_function_decl))
-	pedwarn (input_location, 0,
+	pedwarn (input_location, OPT_Wc__20_extensions,
 		 "function-try-block body of %<constexpr%> constructor only "
 		 "available with %<-std=c++20%> or %<-std=gnu++20%>");
       else
-	pedwarn (input_location, 0,
+	pedwarn (input_location, OPT_Wc__20_extensions,
 		 "function-try-block body of %<constexpr%> function only "
 		 "available with %<-std=c++20%> or %<-std=gnu++20%>");
     }
@@ -24455,8 +24469,8 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p,
 	      || (cp_lexer_peek_nth_token (parser->lexer, 3)->type
 		  == CPP_OPEN_BRACE)))
 	{
-	  if (cxx_dialect < cxx20)
-	    pedwarn (loc, OPT_Wpedantic,
+	  if (pedantic && cxx_dialect < cxx20)
+	    pedwarn (loc, OPT_Wc__20_extensions,
 		     "C++ designated initializers only available with "
 		     "%<-std=c++20%> or %<-std=gnu++20%>");
 	  /* Consume the `.'.  */
@@ -25797,10 +25811,11 @@ cp_parser_type_parameter_key (cp_parser* parser)
   if ((tag_type = cp_parser_token_is_type_parameter_key (token)) != none_type)
     {
       cp_lexer_consume_token (parser->lexer);
-      if (pedantic && tag_type == typename_type && cxx_dialect < cxx17)
+      if (pedantic && tag_type == typename_type
+	  && cxx_dialect < cxx17)
 	/* typename is not allowed in a template template parameter
 	   by the standard until C++17.  */
-	pedwarn (token->location, OPT_Wpedantic,
+	pedwarn (token->location, OPT_Wc__17_extensions,
 		 "ISO C++ forbids typename key in template template parameter;"
 		 " use %<-std=c++17%> or %<-std=gnu++17%>");
     }
@@ -26064,17 +26079,23 @@ cp_parser_member_declaration (cp_parser* parser)
 		   if (type && TREE_CODE (type) == TYPE_DECL)
 		     type = TREE_TYPE (type);
 		 }
+	       /* Warn if an attribute cannot appear here, as per
+		  [dcl.attr.grammar]/5.  But not when declares_class_or_enum:
+		  we ignore attributes in elaborated-type-specifiers.  */
+	       if (!declares_class_or_enum
+		   && cxx11_attribute_p (decl_specifiers.attributes))
+		 {
+		   decl_specifiers.attributes = NULL_TREE;
+		   if (warning_at (decl_spec_token_start->location,
+				   OPT_Wattributes, "attribute ignored"))
+		     inform (decl_spec_token_start->location, "an attribute "
+			     "that appertains to a friend declaration that "
+			     "is not a definition is ignored");
+		 }
 	       if (!type || !TYPE_P (type))
 		 error_at (decl_spec_token_start->location,
 			   "friend declaration does not name a class or "
 			   "function");
-	       /* Give an error if an attribute cannot appear here, as per
-		  [dcl.attr.grammar]/5.  But not when declares_class_or_enum:
-		  we ignore attributes in elaborated-type-specifiers.  */
-	       else if (!declares_class_or_enum && decl_specifiers.attributes)
-		 error_at (decl_spec_token_start->location,
-			   "attribute appertains to a friend declaration "
-			   "that is not a definition");
 	       else
 		 make_friend_class (current_class_type, type,
 				    /*complain=*/true);
@@ -26188,7 +26209,7 @@ cp_parser_member_declaration (cp_parser* parser)
 		    = cp_lexer_peek_token (parser->lexer)->location;
 		  if (cxx_dialect < cxx20
 		      && identifier != NULL_TREE)
-		    pedwarn (loc, 0,
+		    pedwarn (loc, OPT_Wc__20_extensions,
 			     "default member initializers for bit-fields "
 			     "only available with %<-std=c++20%> or "
 			     "%<-std=gnu++20%>");
@@ -27149,7 +27170,7 @@ cp_parser_try_block (cp_parser* parser)
   if (parser->in_function_body
       && DECL_DECLARED_CONSTEXPR_P (current_function_decl)
       && cxx_dialect < cxx20)
-    pedwarn (input_location, 0,
+    pedwarn (input_location, OPT_Wc__20_extensions,
 	     "%<try%> in %<constexpr%> function only "
 	     "available with %<-std=c++20%> or %<-std=gnu++20%>");
 
@@ -28108,7 +28129,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 	      && cp_lexer_nth_token_is (parser->lexer, 3, CPP_COLON))
 	    {
 	      if (cxx_dialect < cxx17)
-		pedwarn (input_location, 0,
+		pedwarn (input_location, OPT_Wc__17_extensions,
 			 "attribute using prefix only available "
 			 "with %<-std=c++17%> or %<-std=gnu++17%>");
 
@@ -40922,7 +40943,9 @@ cp_parser_omp_master (cp_parser *parser, cp_token *pragma_tok,
 	  tree body = finish_omp_structured_block (sb);
 	  if (ret == NULL)
 	    return ret;
-	  return c_finish_omp_master (loc, body);
+	  ret = c_finish_omp_master (loc, body);
+	  OMP_MASTER_COMBINED (ret) = 1;
+	  return ret;
 	}
     }
   if (!flag_openmp)  /* flag_openmp_simd  */
@@ -41206,7 +41229,16 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
 				      block);
 	  if (ret == NULL_TREE)
 	    return ret;
-	  OMP_PARALLEL_COMBINED (stmt) = 1;
+	  /* master doesn't have any clauses and during gimplification
+	     isn't represented by a gimplification omp context, so for
+	     #pragma omp parallel master don't set OMP_PARALLEL_COMBINED,
+	     so that
+	     #pragma omp parallel master
+	     #pragma omp taskloop simd lastprivate (x)
+	     isn't confused with
+	     #pragma omp parallel master taskloop simd lastprivate (x)  */
+	  if (OMP_MASTER_COMBINED (ret))
+	    OMP_PARALLEL_COMBINED (stmt) = 1;
 	  return stmt;
 	}
       else if (strcmp (p, "loop") == 0)

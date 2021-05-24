@@ -47,6 +47,31 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "gimple-range.h"
 
+// Evaluate expression EXPR using the source information the class was
+// instantiated with.  Place the result in R, and return TRUE.  If a range
+// cannot be calcluated, return FALSE.
+
+bool
+fur_source::get_operand (irange &r, tree expr)
+{
+  if (!gimple_range_ssa_p (expr))
+    return get_tree_range (r, expr);
+
+  // If no query engine is present, simply get the global value.
+  if (!m_query)
+    {
+       r = gimple_range_global (expr);
+       return true;
+    }
+
+  // First look for a stmt.
+  if (m_stmt)
+    return m_query->range_of_expr (r, expr, m_stmt);
+
+  // Finally must be on an edge.
+  return m_query->range_on_edge (r, m_edge, expr);
+}
+
 
 // Adjust the range for a pointer difference where the operands came
 // from a memchr.
@@ -193,41 +218,9 @@ get_tree_range (irange &r, tree expr)
   return true;
 }
 
-// Fold this unary statement using R1 as operand1's range, returning
-// the result in RES.  Return false if the operation fails.
-
-bool
-gimple_range_fold (irange &res, const gimple *stmt, const irange &r1)
-{
-  gcc_checking_assert (gimple_range_handler (stmt));
-
-  tree type = gimple_expr_type (stmt);
-  // Unary SSA operations require the LHS type as the second range.
-  int_range<2> r2 (type);
-
-  return gimple_range_fold (res, stmt, r1, r2);
-}
-
-// Fold this binary statement using R1 and R2 as the operands ranges,
-// returning the result in RES.  Return false if the operation fails.
-
-bool
-gimple_range_fold (irange &res, const gimple *stmt,
-		   const irange &r1, const irange &r2)
-{
-  gcc_checking_assert (gimple_range_handler (stmt));
-
-  gimple_range_handler (stmt)->fold_range (res, gimple_expr_type (stmt),
-					   r1, r2);
-
-  // If there are any gimple lookups, do those now.
-  gimple_range_adjustment (res, stmt);
-  return true;
-}
-
 // Return the base of the RHS of an assignment.
 
-tree
+static tree
 gimple_range_base_of_assignment (const gimple *stmt)
 {
   gcc_checking_assert (gimple_code (stmt) == GIMPLE_ASSIGN);
@@ -364,20 +357,29 @@ gimple_range_calc_op2 (irange &r, const gimple *stmt,
 // be calculated, return false.
 
 bool
-gimple_ranger::calc_stmt (irange &r, gimple *s, tree name)
+fold_using_range::fold_stmt (irange &r, gimple *s, fur_source &src, tree name)
 {
   bool res = false;
-  // If name is specified, make sure it is an LHS of S.
-  gcc_checking_assert (name ? SSA_NAME_DEF_STMT (name) == s : true);
+  // If name and S are specified, make sure it is an LHS of S.
+  gcc_checking_assert (!name || !gimple_get_lhs (s) ||
+		       name == gimple_get_lhs (s));
+
+  if (!name)
+    name = gimple_get_lhs (s);
+
+  // Process addresses.
+  if (gimple_code (s) == GIMPLE_ASSIGN
+      && gimple_assign_rhs_code (s) == ADDR_EXPR)
+    return range_of_address (r, s, src);
 
   if (gimple_range_handler (s))
-    res = range_of_range_op (r, s);
+    res = range_of_range_op (r, s, src);
   else if (is_a<gphi *>(s))
-    res = range_of_phi (r, as_a<gphi *> (s));
+    res = range_of_phi (r, as_a<gphi *> (s), src);
   else if (is_a<gcall *>(s))
-    res = range_of_call (r, as_a<gcall *> (s));
+    res = range_of_call (r, as_a<gcall *> (s), src);
   else if (is_a<gassign *> (s) && gimple_assign_rhs_code (s) == COND_EXPR)
-    res = range_of_cond_expr (r, as_a<gassign *> (s));
+    res = range_of_cond_expr (r, as_a<gassign *> (s), src);
 
   if (!res)
     {
@@ -414,36 +416,45 @@ gimple_ranger::calc_stmt (irange &r, gimple *s, tree name)
 // If a range cannot be calculated, return false.
 
 bool
-gimple_ranger::range_of_range_op (irange &r, gimple *s)
+fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 {
   int_range_max range1, range2;
-  tree lhs = gimple_get_lhs (s);
   tree type = gimple_expr_type (s);
+  range_operator *handler = gimple_range_handler (s);
+  gcc_checking_assert (handler);
   gcc_checking_assert (irange::supports_type_p (type));
 
+  tree lhs = gimple_get_lhs (s);
   tree op1 = gimple_range_operand1 (s);
   tree op2 = gimple_range_operand2 (s);
 
-  if (lhs)
-    {
-      // Register potential dependencies for stale value tracking.
-      m_cache.register_dependency (lhs, op1);
-      m_cache.register_dependency (lhs, op2);
-    }
-
-  if (gimple_code (s) == GIMPLE_ASSIGN
-      && gimple_assign_rhs_code (s) == ADDR_EXPR)
-    return range_of_address (r, s);
-
-  if (range_of_expr (range1, op1, s))
+  if (src.get_operand (range1, op1))
     {
       if (!op2)
-	return gimple_range_fold (r, s, range1);
-
-      if (range_of_expr (range2, op2, s))
-	return gimple_range_fold (r, s, range1, range2);
+	{
+	  // Fold range, and register any dependency if available.
+	  int_range<2> r2 (type);
+	  handler->fold_range (r, type, range1, r2);
+	  if (lhs && src.m_cache)
+	    src.m_cache->register_dependency (lhs, op1);
+	}
+      else if (src.get_operand (range2, op2))
+	{
+	  // Fold range, and register any dependency if available.
+	  handler->fold_range (r, type, range1, range2);
+	  if (lhs && src.m_cache)
+	    {
+	      src.m_cache->register_dependency (lhs, op1);
+	      src.m_cache->register_dependency (lhs, op2);
+	    }
+	}
+      else
+	r.set_varying (type);
     }
-  r.set_varying (type);
+  else
+    r.set_varying (type);
+  // Make certain range-op adjustments that aren't handled any other way.
+  gimple_range_adjustment (r, s);
   return true;
 }
 
@@ -452,7 +463,7 @@ gimple_ranger::range_of_range_op (irange &r, gimple *s)
 // If a range cannot be calculated, set it to VARYING and return true.
 
 bool
-gimple_ranger::range_of_address (irange &r, gimple *stmt)
+fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
 {
   gcc_checking_assert (gimple_code (stmt) == GIMPLE_ASSIGN);
   gcc_checking_assert (gimple_assign_rhs_code (stmt) == ADDR_EXPR);
@@ -473,8 +484,11 @@ gimple_ranger::range_of_address (irange &r, gimple *stmt)
       && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     {
       tree ssa = TREE_OPERAND (base, 0);
+      tree lhs = gimple_get_lhs (stmt);
+      if (src.m_cache && lhs && gimple_range_ssa_p (ssa))
+	src.m_cache->register_dependency (lhs, ssa);
       gcc_checking_assert (irange::supports_type_p (TREE_TYPE (ssa)));
-      range_of_expr (r, ssa, stmt);
+      src.get_operand (r, ssa);
       range_cast (r, TREE_TYPE (gimple_assign_rhs1 (stmt)));
 
       poly_offset_int off = 0;
@@ -531,7 +545,7 @@ gimple_ranger::range_of_address (irange &r, gimple *stmt)
 // If a range cannot be calculated, return false.
 
 bool
-gimple_ranger::range_of_phi (irange &r, gphi *phi)
+fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
 {
   tree phi_def = gimple_phi_result (phi);
   tree type = TREE_TYPE (phi_def);
@@ -549,9 +563,19 @@ gimple_ranger::range_of_phi (irange &r, gphi *phi)
       edge e = gimple_phi_arg_edge (phi, x);
 
       // Register potential dependencies for stale value tracking.
-      m_cache.register_dependency (phi_def, arg);
+      if (src.m_cache && gimple_range_ssa_p (arg))
+	src.m_cache->register_dependency (phi_def, arg);
 
-      range_on_edge (arg_range, e, arg);
+      // Get the range of the argument on its edge.
+      fur_source e_src (src.m_query, e);
+      e_src.get_operand (arg_range, arg);
+      // If we're recomputing the argument elsewhere, try to refine it.
+      if (src.m_stmt != phi)
+	{
+	  int_range_max tmp;
+	  e_src.get_operand (tmp, arg);
+	  arg_range.intersect (tmp);
+	}
       r.union_ (arg_range);
       // Once the value reaches varying, stop looking.
       if (r.varying_p ())
@@ -565,7 +589,7 @@ gimple_ranger::range_of_phi (irange &r, gphi *phi)
       class loop *l = loop_containing_stmt (phi);
       if (l && loop_outer (l))
         {
-	  range_of_ssa_name_with_loop_info (loop_range, phi_def, l, phi);
+	  range_of_ssa_name_with_loop_info (loop_range, phi_def, l, phi, src);
 	  if (!loop_range.varying_p ())
 	    {
 	      if (dump_file && (dump_flags & TDF_DETAILS))
@@ -590,7 +614,7 @@ gimple_ranger::range_of_phi (irange &r, gphi *phi)
 // If a range cannot be calculated, return false.
 
 bool
-gimple_ranger::range_of_call (irange &r, gcall *call)
+fold_using_range::range_of_call (irange &r, gcall *call, fur_source &src)
 {
   tree type = gimple_call_return_type (call);
   tree lhs = gimple_call_lhs (call);
@@ -599,7 +623,7 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
   if (!irange::supports_type_p (type))
     return false;
 
-  if (range_of_builtin_call (r, call))
+  if (range_of_builtin_call (r, call, src))
     ;
   else if (gimple_stmt_nonnegative_warnv_p (call, &strict_overflow_p))
     r.set (build_int_cst (type, 0), TYPE_MAX_VALUE (type));
@@ -623,9 +647,9 @@ gimple_ranger::range_of_call (irange &r, gcall *call)
 // CODE is the type of ubsan call (PLUS_EXPR, MINUS_EXPR or
 // MULT_EXPR).
 
-static void
-range_of_builtin_ubsan_call (range_query &query, irange &r, gcall *call,
-			     tree_code code)
+void
+fold_using_range::range_of_builtin_ubsan_call (irange &r, gcall *call,
+					       tree_code code, fur_source &src)
 {
   gcc_checking_assert (code == PLUS_EXPR || code == MINUS_EXPR
 		       || code == MULT_EXPR);
@@ -635,8 +659,8 @@ range_of_builtin_ubsan_call (range_query &query, irange &r, gcall *call,
   int_range_max ir0, ir1;
   tree arg0 = gimple_call_arg (call, 0);
   tree arg1 = gimple_call_arg (call, 1);
-  query.range_of_expr (ir0, arg0, call);
-  query.range_of_expr (ir1, arg1, call);
+  src.get_operand (ir0, arg0);
+  src.get_operand (ir1, arg1);
 
   bool saved_flag_wrapv = flag_wrapv;
   // Pretend the arithmetic is wrapping.  If there is any overflow,
@@ -656,7 +680,8 @@ range_of_builtin_ubsan_call (range_query &query, irange &r, gcall *call,
 // TRUE.  Otherwise return FALSE.
 
 bool
-range_of_builtin_call (range_query &query, irange &r, gcall *call)
+fold_using_range::range_of_builtin_call (irange &r, gcall *call,
+					 fur_source &src)
 {
   combined_fn func = gimple_call_combined_fn (call);
   if (func == CFN_LAST)
@@ -677,7 +702,7 @@ range_of_builtin_call (range_query &query, irange &r, gcall *call)
 	  return true;
 	}
       arg = gimple_call_arg (call, 0);
-      if (query.range_of_expr (r, arg, call) && r.singleton_p ())
+      if (src.get_operand (r, arg) && r.singleton_p ())
 	{
 	  r.set (build_one_cst (type), build_one_cst (type));
 	  return true;
@@ -691,7 +716,7 @@ range_of_builtin_call (range_query &query, irange &r, gcall *call)
       prec = TYPE_PRECISION (TREE_TYPE (arg));
       mini = 0;
       maxi = prec;
-      query.range_of_expr (r, arg, call);
+      src.get_operand (r, arg);
       // If arg is non-zero, then ffs or popcount are non-zero.
       if (!range_includes_zero_p (&r))
 	mini = 1;
@@ -735,7 +760,7 @@ range_of_builtin_call (range_query &query, irange &r, gcall *call)
 	    }
 	}
 
-      query.range_of_expr (r, arg, call);
+      src.get_operand (r, arg);
       // From clz of minimum we can compute result maximum.
       if (r.constant_p () && !r.varying_p ())
 	{
@@ -800,7 +825,7 @@ range_of_builtin_call (range_query &query, irange &r, gcall *call)
 		mini = -2;
 	    }
 	}
-      query.range_of_expr (r, arg, call);
+      src.get_operand (r, arg);
       if (!r.undefined_p ())
 	{
 	  if (r.lower_bound () != 0)
@@ -838,13 +863,13 @@ range_of_builtin_call (range_query &query, irange &r, gcall *call)
       r.set (build_int_cst (type, 0), build_int_cst (type, prec - 1));
       return true;
     case CFN_UBSAN_CHECK_ADD:
-      range_of_builtin_ubsan_call (query, r, call, PLUS_EXPR);
+      range_of_builtin_ubsan_call (r, call, PLUS_EXPR, src);
       return true;
     case CFN_UBSAN_CHECK_SUB:
-      range_of_builtin_ubsan_call (query, r, call, MINUS_EXPR);
+      range_of_builtin_ubsan_call (r, call, MINUS_EXPR, src);
       return true;
     case CFN_UBSAN_CHECK_MUL:
-      range_of_builtin_ubsan_call (query, r, call, MULT_EXPR);
+      range_of_builtin_ubsan_call (r, call, MULT_EXPR, src);
       return true;
 
     case CFN_GOACC_DIM_SIZE:
@@ -894,17 +919,11 @@ range_of_builtin_call (range_query &query, irange &r, gcall *call)
 }
 
 
-bool
-gimple_ranger::range_of_builtin_call (irange &r, gcall *call)
-{
-  return ::range_of_builtin_call (*this, r, call);
-}
-
 // Calculate a range for COND_EXPR statement S and return it in R.
 // If a range cannot be calculated, return false.
 
 bool
-gimple_ranger::range_of_cond_expr  (irange &r, gassign *s)
+fold_using_range::range_of_cond_expr  (irange &r, gassign *s, fur_source &src)
 {
   int_range_max cond_range, range1, range2;
   tree cond = gimple_assign_rhs1 (s);
@@ -917,9 +936,9 @@ gimple_ranger::range_of_cond_expr  (irange &r, gassign *s)
   if (!irange::supports_type_p (TREE_TYPE (op1)))
     return false;
 
-  range_of_expr (cond_range, cond, s);
-  range_of_expr (range1, op1, s);
-  range_of_expr (range2, op2, s);
+  src.get_operand (cond_range, cond);
+  src.get_operand (range1, op1);
+  src.get_operand (range2, op2);
 
   // If the condition is known, choose the appropriate expression.
   if (cond_range.singleton_p ())
@@ -1047,6 +1066,16 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
   return true;
 }
 
+// fold_range wrapper for range_of_stmt to use as an internal client.
+
+bool
+gimple_ranger::fold_range_internal (irange &r, gimple *s, tree name)
+{
+  fold_using_range f;
+  fur_source src (this, &m_cache, NULL, s);
+  return f.fold_stmt (r, s, src, name);
+}
+
 // Calculate a range for statement S and return it in R.  If NAME is
 // provided it represents the SSA_NAME on the LHS of the statement.
 // It is only required if there is more than one lhs/output.  Check
@@ -1063,7 +1092,7 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 
   // If no name, simply call the base routine.
   if (!name)
-    return calc_stmt (r, s, NULL_TREE);
+    return fold_range_internal (r, s, NULL_TREE);
 
   if (!gimple_range_ssa_p (name))
     return false;
@@ -1074,7 +1103,7 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 
   // Otherwise calculate a new value.
   int_range_max tmp;
-  calc_stmt (tmp, s, name);
+  fold_range_internal (tmp, s, name);
 
   // Combine the new value with the old value.  This is required because
   // the way value propagation works, when the IL changes on the fly we
@@ -1216,20 +1245,32 @@ gimple_ranger::dump (FILE *f)
 // If SCEV has any information about phi node NAME, return it as a range in R.
 
 void
-gimple_ranger::range_of_ssa_name_with_loop_info (irange &r, tree name,
-						 class loop *l, gphi *phi)
+fold_using_range::range_of_ssa_name_with_loop_info (irange &r, tree name,
+						    class loop *l, gphi *phi,
+						    fur_source &src)
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
   tree min, max, type = TREE_TYPE (name);
-  if (bounds_of_var_in_loop (&min, &max, this, l, phi, name))
+  if (bounds_of_var_in_loop (&min, &max, src.m_query, l, phi, name))
     {
-      // ?? We could do better here.  Since MIN/MAX can only be an
-      // SSA, SSA +- INTEGER_CST, or INTEGER_CST, we could easily call
-      // the ranger and solve anything not an integer.
       if (TREE_CODE (min) != INTEGER_CST)
-	min = vrp_val_min (type);
+	{
+	  if (src.m_query
+	      && src.m_query->range_of_expr (r, min, phi)
+	      && !r.undefined_p ())
+	    min = wide_int_to_tree (type, r.lower_bound ());
+	  else
+	    min = vrp_val_min (type);
+	}
       if (TREE_CODE (max) != INTEGER_CST)
-	max = vrp_val_max (type);
+	{
+	  if (src.m_query
+	      && src.m_query->range_of_expr (r, max, phi)
+	      && !r.undefined_p ())
+	    max = wide_int_to_tree (type, r.upper_bound ());
+	  else
+	    max = vrp_val_max (type);
+	}
       r.set (min, max);
     }
   else

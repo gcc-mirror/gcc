@@ -1,3 +1,113 @@
+2021-05-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100606
+	* include/std/ranges (drop_while_view::begin): Assert the
+	precondition added by LWG 3490.
+
+2021-05-21  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100690
+	* include/std/ranges (iota_view::_Sentinel::_M_distance_from):
+	Split out this member function from ...
+	(iota_view::_Sentinel::operator-): ... here, for sake of access
+	control.
+	* testsuite/std/ranges/iota/iota_view.cc (test05): New test.
+
+2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc (__representable_as_double)
+	(__p1_representable_as_double): Add "" to static asserts.
+
+2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100676
+	* include/bits/c++config (__glibcxx_assert_1): Rename to ...
+	(__glibcxx_constexpr_assert): ... this.
+	(__glibcxx_assert_impl): Use __glibcxx_constexpr_assert.
+	(__glibcxx_assert): Define as either __glibcxx_constexpr_assert
+	or __glibcxx_assert_impl.
+	(__glibcxx_assert_2): Remove
+	* include/debug/macros.h (_GLIBCXX_DEBUG_VERIFY_AT_F): Use
+	__glibcxx_constexpr_assert instead of __glibcxx_assert_1.
+	* testsuite/21_strings/basic_string_view/element_access/char/back_constexpr_neg.cc:
+	Adjust expected error.
+	* testsuite/21_strings/basic_string_view/element_access/char/constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/char/front_constexpr_neg.cc:
+	Likewise.
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/back_constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/constexpr_neg.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/element_access/wchar_t/front_constexpr_neg.cc:
+	Likewise.
+	* testsuite/23_containers/span/back_neg.cc: Likewise.
+	* testsuite/23_containers/span/front_neg.cc: Likewise.
+	* testsuite/23_containers/span/index_op_neg.cc: Likewise.
+
+2021-05-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100639
+	* include/bits/stl_iterator.h (reverse_iterator::difference_type):
+	In C++20 mode, define in terms of iter_difference_t as per P0896R4.
+	(reverse_iterator::reference): Likewise, but with iter_reference_t.
+	(reverse_iterator::value_type): Likewise, but with iter_value_t.
+	* testsuite/std/ranges/adaptors/reverse.cc (test08): New test.
+	* testsuite/24_iterators/reverse_iterator/100639.cc: New test.
+
+2021-05-20  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	PR libstdc++/100361
+	* include/std/charconv (to_chars): Hide the overloads for
+	floating-point types for 16 bit targets.
+	* src/c++17/floating_to_chars.cc: Don't compile for 16 bit targets.
+	* testsuite/20_util/to_chars/double.cc: Run this test only on
+	size32plus targets.
+	* testsuite/20_util/to_chars/float.cc: Likewise.
+	* testsuite/20_util/to_chars/long_double.cc: Likewise.
+
+2021-05-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100631
+	* include/std/ranges (elements_view::_Sentinel::operator-): Use
+	_M_distance_from in the other operator- overload too.
+	* testsuite/std/ranges/adaptors/elements.cc (test06): Augment test.
+
+2021-05-18  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/prune.exp: Add note about 'dg-note'.
+
+2021-05-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100475
+	* include/std/ranges (__box::__box): Use non-list-initialization
+	in member initializer list of in-place constructor of the
+	partial specialization for semiregular types.
+	(__box::operator->): Use std::__addressof.
+	* testsuite/std/ranges/adaptors/detail/semiregular_box.cc
+	(test02): New test.
+	* testsuite/std/ranges/single_view.cc (test04): New test.
+
+2021-05-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100621
+	* include/std/ranges (reverse_view::_S_needs_cached_begin):
+	Set to true if the underlying non-common random-access range
+	doesn't have a sized sentinel.
+
+2021-05-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100631
+	* include/std/ranges (elements_view::_Iterator): Also befriend
+	_Sentinel<!_Const>.
+	(elements_view::_Sentinel::_M_equal): Templatize.
+	(elements_view::_Sentinel::_M_distance_from): Split out from ...
+	(elements_view::_Sentinel::operator-): ... here.  Depend on
+	_Base2 instead of _Base in the return type.
+	* testsuite/std/ranges/adaptors/elements.cc (test06, test07):
+	New tests.
+
 2021-05-17  Thomas Rodgers  <rodgert@twrodgers.com>
 
 	* include/bits/atomic_wait.h (__waiter::_M_do_wait_v): loop

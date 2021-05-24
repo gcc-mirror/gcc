@@ -5826,7 +5826,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     &derived_array);
 	}
       else if (UNLIMITED_POLY (fsym) && e->ts.type != BT_CLASS
-	       && gfc_expr_attr (e).flavor != FL_PROCEDURE)
+	       && e->ts.type != BT_PROCEDURE
+	       && (gfc_expr_attr (e).flavor != FL_PROCEDURE
+		   || gfc_expr_attr (e).proc != PROC_UNKNOWN))
 	{
 	  /* The intrinsic type needs to be converted to a temporary
 	     CLASS object for the unlimited polymorphic formal.  */

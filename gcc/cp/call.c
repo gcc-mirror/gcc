@@ -1731,7 +1731,8 @@ reference_binding (tree rto, tree rfrom, tree expr, bool c_cast_p, int flags,
 	 because A[] and A[2] are reference-related.  But we don't do it
 	 because grok_reference_init has deduced the array size (to 1), and
 	 A[1] and A[2] aren't reference-related.  */
-      if (CONSTRUCTOR_NELTS (expr) == 1)
+      if (CONSTRUCTOR_NELTS (expr) == 1
+	  && !CONSTRUCTOR_IS_DESIGNATED_INIT (expr))
 	{
 	  tree elt = CONSTRUCTOR_ELT (expr, 0)->value;
 	  if (error_operand_p (elt))
@@ -2095,6 +2096,7 @@ implicit_conversion_1 (tree to, tree from, tree expr, bool c_cast_p,
 	{
 	  if (BRACE_ENCLOSED_INITIALIZER_P (expr)
 	      && CONSTRUCTOR_NELTS (expr) == 1
+	      && !CONSTRUCTOR_IS_DESIGNATED_INIT (expr)
 	      && !is_list_ctor (cand->fn))
 	    {
 	      /* "If C is not an initializer-list constructor and the
@@ -5890,6 +5892,11 @@ perfect_candidate_p (z_candidate *cand)
 {
   if (cand->viable < 1)
     return false;
+  /* CWG1402 makes an implicitly deleted move op worse than other
+     candidates.  */
+  if (DECL_DELETED_FN (cand->fn) && DECL_DEFAULTED_FN (cand->fn)
+      && move_fn_p (cand->fn))
+    return false;
   int len = cand->num_convs;
   for (int i = 0; i < len; ++i)
     if (!perfect_conversion_p (cand->convs[i]))
@@ -7464,8 +7471,9 @@ maybe_warn_array_conv (location_t loc, conversion *c, tree expr)
       || TYPE_DOMAIN (type) == NULL_TREE)
     return;
 
-  if (conv_binds_to_array_of_unknown_bound (c))
-    pedwarn (loc, OPT_Wpedantic, "conversions to arrays of unknown bound "
+  if (pedantic && conv_binds_to_array_of_unknown_bound (c))
+    pedwarn (loc, OPT_Wc__20_extensions,
+	     "conversions to arrays of unknown bound "
 	     "are only available with %<-std=c++20%> or %<-std=gnu++20%>");
 }
 
@@ -10193,6 +10201,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
 
       if (BRACE_ENCLOSED_INITIALIZER_P (arg)
 	  && !TYPE_HAS_LIST_CTOR (class_type)
+	  && !CONSTRUCTOR_IS_DESIGNATED_INIT (arg)
 	  && CONSTRUCTOR_NELTS (arg) == 1)
 	arg = CONSTRUCTOR_ELT (arg, 0)->value;
 

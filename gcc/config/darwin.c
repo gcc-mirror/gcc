@@ -46,6 +46,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-section-names.h"
 #include "intl.h"
 #include "optabs.h"
+#include "flags.h"
 
 /* Fix and Continue.
 
@@ -3347,7 +3348,7 @@ darwin_override_options (void)
       && generating_for_darwin_version >= 9
       && (flag_gtoggle ? (debug_info_level == DINFO_LEVEL_NONE)
       : (debug_info_level >= DINFO_LEVEL_NORMAL))
-      && write_symbols == DWARF2_DEBUG)
+      && dwarf_debuginfo_p ())
     flag_var_tracking_uninit = flag_var_tracking;
 
   /* Final check on PCI options; for Darwin these are not dependent on the PIE

@@ -3,6 +3,12 @@
 
 ! { dg-do run }
 
+! { dg-additional-options "-fopt-info-note-omp" }
+! { dg-additional-options "--param=openacc-privatization=noisy" }
+! { dg-additional-options "-foffload=-fopt-info-note-omp" }
+! { dg-additional-options "-foffload=--param=openacc-privatization=noisy" }
+! for testing/documenting aspects of that functionality.
+
 program main
   type vec2
      integer x, y
@@ -17,18 +23,23 @@ program main
 
   !$acc kernels copy(arr)
   !$acc loop gang(num:32)
+  ! { dg-note {variable 'i' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
   do i = 0, 31
      !$acc loop worker(num:8) private(pt)
+     ! { dg-note {variable 'j' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
+     ! { dg-note {variable 'pt' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-2 }
      do j = 0, 31
         pt%x = ieor(i, j * 3)
         pt%y = ior(i, j * 5)
         
         !$acc loop vector(length:32)
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + pt%x * k
         end do
 
         !$acc loop vector(length:32)
+        ! { dg-note {variable 'k' in 'private' clause isn't candidate for adjusting OpenACC privatization level: not addressable} "" { target *-*-* } .-1 }
         do k = 0, 31
            arr(i * 1024 + j * 32 + k) = arr(i * 1024 + j * 32 + k) + pt%y * k
         end do

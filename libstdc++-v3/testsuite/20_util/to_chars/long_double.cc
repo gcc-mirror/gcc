@@ -35,6 +35,7 @@
 // { dg-xfail-run-if "Non-conforming printf (see PR98384)" { *-*-solaris* *-*-darwin* } }
 
 // { dg-require-effective-target ieee-floats }
+// { dg-require-effective-target size32plus }
 
 #include <charconv>
 

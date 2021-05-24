@@ -1726,6 +1726,36 @@ for allocating any storage for reductions when necessary.",
 void, (gcall *call),
 default_goacc_reduction)
 
+DEFHOOK
+(adjust_private_decl,
+"This hook, if defined, is used by accelerator target back-ends to adjust\n\
+OpenACC variable declarations that should be made private to the given\n\
+parallelism level (i.e. @code{GOMP_DIM_GANG}, @code{GOMP_DIM_WORKER} or\n\
+@code{GOMP_DIM_VECTOR}).  A typical use for this hook is to force variable\n\
+declarations at the @code{gang} level to reside in GPU shared memory.\n\
+@var{loc} may be used for diagnostic purposes.\n\
+\n\
+You may also use the @code{TARGET_GOACC_EXPAND_VAR_DECL} hook if the\n\
+adjusted variable declaration needs to be expanded to RTL in a non-standard\n\
+way.",
+tree, (location_t loc, tree var, int level),
+NULL)
+
+DEFHOOK
+(expand_var_decl,
+"This hook, if defined, is used by accelerator target back-ends to expand\n\
+specially handled kinds of @code{VAR_DECL} expressions.  A particular use is\n\
+to place variables with specific attributes inside special accelarator\n\
+memories.  A return value of @code{NULL} indicates that the target does not\n\
+handle this @code{VAR_DECL}, and normal RTL expanding is resumed.\n\
+\n\
+Only define this hook if your accelerator target needs to expand certain\n\
+@code{VAR_DECL} nodes in a way that differs from the default.  You can also adjust\n\
+private variables at OpenACC device-lowering time using the\n\
+@code{TARGET_GOACC_ADJUST_PRIVATE_DECL} target hook.",
+rtx, (tree var),
+NULL)
+
 HOOK_VECTOR_END (goacc)
 
 /* Functions relating to vectorization.  */

@@ -874,7 +874,7 @@ public:
 	Type *underlying = NULL;
 
 	/* Skip over the prefixing `__c_'.  */
-	gcc_assert (strncmp (ident, "__c_", strlen ("__c_")) == 0);
+	gcc_assert (startswith (ident, "__c_"));
 	ident = ident + strlen ("__c_");
 
 	/* To keep things compatible within the code generation we stick to

@@ -82,8 +82,8 @@ bar (void)
     #pragma omp section
     l07 = 2;
   }
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l08" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l08\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l08" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l08\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l08\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l08\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
   /* { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l08\\)" "gimple" } } *//* FIXME.  */
@@ -91,8 +91,8 @@ bar (void)
   #pragma omp target parallel for firstprivate (l08) lastprivate (l08)
   for (int i = 0; i < 64; i++)
     l08 = i;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l09" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l09\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l09" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l09\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l09\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l09\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
   /* { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l09\\)" "gimple" } } *//* FIXME.  */
@@ -102,8 +102,8 @@ bar (void)
   #pragma omp target parallel for simd firstprivate (l09) lastprivate (l09)
   for (int i = 0; i < 64; i++)
     l09 = i;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l10" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l10\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l10" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l10\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump-not "omp simd\[^\n\r]*firstprivate\\(l10\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*lastprivate\\(l10\\)" "gimple" } } */
   #pragma omp target simd firstprivate (l10) lastprivate (l10)

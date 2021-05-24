@@ -354,9 +354,9 @@ proc libgomp_check_effective_target_offload_target { target_name } {
     # decides.  This is somewhat modelled after
     # 'gcc/testsuite/lib/target-supports.exp:check_configured_with'.
     set gcc_output [libgomp_target_compile "" "" "none" $options]
-    if [regexp "(?n)^OFFLOAD_TARGET_NAMES=(.*)" $gcc_output dummy offload_targets] {
-	verbose "compiling for offload targets: $offload_targets"
-	return [string match "*:$target_name*:*" ":$offload_targets:"]
+    if [regexp "(?n)^OFFLOAD_TARGET_NAMES=(.*)" $gcc_output dummy gcc_offload_targets] {
+	verbose "compiling for offload targets: $gcc_offload_targets"
+	return [string match "*:$target_name*:*" ":$gcc_offload_targets:"]
     }
 
     verbose "not compiling for $target_name offload target"

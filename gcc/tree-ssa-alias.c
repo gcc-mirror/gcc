@@ -722,6 +722,8 @@ ao_ref_base_alias_set (ao_ref *ref)
   if (!ref->ref)
     return 0;
   base_ref = ref->ref;
+  if (TREE_CODE (base_ref) == WITH_SIZE_EXPR)
+    base_ref = TREE_OPERAND (base_ref, 0);
   while (handled_component_p (base_ref))
     base_ref = TREE_OPERAND (base_ref, 0);
   ref->base_alias_set = get_alias_set (base_ref);
@@ -752,6 +754,8 @@ ao_ref_base_alias_ptr_type (ao_ref *ref)
   if (!ref->ref)
     return NULL_TREE;
   base_ref = ref->ref;
+  if (TREE_CODE (base_ref) == WITH_SIZE_EXPR)
+    base_ref = TREE_OPERAND (base_ref, 0);
   while (handled_component_p (base_ref))
     base_ref = TREE_OPERAND (base_ref, 0);
   tree ret = reference_alias_ptr_type (base_ref);
@@ -2314,14 +2318,16 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 			|| TREE_CODE (ref1->ref) == STRING_CST
 			|| handled_component_p (ref1->ref)
 			|| TREE_CODE (ref1->ref) == MEM_REF
-			|| TREE_CODE (ref1->ref) == TARGET_MEM_REF)
+			|| TREE_CODE (ref1->ref) == TARGET_MEM_REF
+			|| TREE_CODE (ref1->ref) == WITH_SIZE_EXPR)
 		       && (!ref2->ref
 			   || TREE_CODE (ref2->ref) == SSA_NAME
 			   || DECL_P (ref2->ref)
 			   || TREE_CODE (ref2->ref) == STRING_CST
 			   || handled_component_p (ref2->ref)
 			   || TREE_CODE (ref2->ref) == MEM_REF
-			   || TREE_CODE (ref2->ref) == TARGET_MEM_REF));
+			   || TREE_CODE (ref2->ref) == TARGET_MEM_REF
+			   || TREE_CODE (ref2->ref) == WITH_SIZE_EXPR));
 
   /* Decompose the references into their base objects and the access.  */
   base1 = ao_ref_base (ref1);
@@ -2360,6 +2366,15 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       && ref2->volatile_p)
     return true;
 
+  /* refN->ref may convey size information, do not confuse our workers
+     with that but strip it - ao_ref_base took it into account already.  */
+  tree ref1ref = ref1->ref;
+  if (ref1ref && TREE_CODE (ref1ref) == WITH_SIZE_EXPR)
+    ref1ref = TREE_OPERAND (ref1ref, 0);
+  tree ref2ref = ref2->ref;
+  if (ref2ref && TREE_CODE (ref2ref) == WITH_SIZE_EXPR)
+    ref2ref = TREE_OPERAND (ref2ref, 0);
+
   /* Defer to simple offset based disambiguation if we have
      references based on two decls.  Do this before defering to
      TBAA to handle must-alias cases in conformance with the
@@ -2367,9 +2382,9 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   var1_p = DECL_P (base1);
   var2_p = DECL_P (base2);
   if (var1_p && var2_p)
-    return decl_refs_may_alias_p (ref1->ref, base1, offset1, max_size1,
+    return decl_refs_may_alias_p (ref1ref, base1, offset1, max_size1,
 				  ref1->size,
-				  ref2->ref, base2, offset2, max_size2,
+				  ref2ref, base2, offset2, max_size2,
 				  ref2->size);
 
   /* Handle restrict based accesses.
@@ -2379,14 +2394,14 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
   tree rbase2 = base2;
   if (var1_p)
     {
-      rbase1 = ref1->ref;
+      rbase1 = ref1ref;
       if (rbase1)
 	while (handled_component_p (rbase1))
 	  rbase1 = TREE_OPERAND (rbase1, 0);
     }
   if (var2_p)
     {
-      rbase2 = ref2->ref;
+      rbase2 = ref2ref;
       if (rbase2)
 	while (handled_component_p (rbase2))
 	  rbase2 = TREE_OPERAND (rbase2, 0);
@@ -2412,6 +2427,7 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
       std::swap (max_size1, max_size2);
       std::swap (base1, base2);
       std::swap (ref1, ref2);
+      std::swap (ref1ref, ref2ref);
       var1_p = true;
       ind1_p = false;
       var2_p = false;
@@ -2437,21 +2453,21 @@ refs_may_alias_p_2 (ao_ref *ref1, ao_ref *ref2, bool tbaa_p)
 
   /* Dispatch to the pointer-vs-decl or pointer-vs-pointer disambiguators.  */
   if (var1_p && ind2_p)
-    return indirect_ref_may_alias_decl_p (ref2->ref, base2,
+    return indirect_ref_may_alias_decl_p (ref2ref, base2,
 					  offset2, max_size2, ref2->size,
 					  ao_ref_alias_set (ref2),
 					  ao_ref_base_alias_set (ref2),
-					  ref1->ref, base1,
+					  ref1ref, base1,
 					  offset1, max_size1, ref1->size,
 					  ao_ref_alias_set (ref1),
 					  ao_ref_base_alias_set (ref1),
 					  tbaa_p);
   else if (ind1_p && ind2_p)
-    return indirect_refs_may_alias_p (ref1->ref, base1,
+    return indirect_refs_may_alias_p (ref1ref, base1,
 				      offset1, max_size1, ref1->size,
 				      ao_ref_alias_set (ref1),
 				      ao_ref_base_alias_set (ref1),
-				      ref2->ref, base2,
+				      ref2ref, base2,
 				      offset2, max_size2, ref2->size,
 				      ao_ref_alias_set (ref2),
 				      ao_ref_base_alias_set (ref2),

@@ -1087,7 +1087,8 @@ genericize_spaceship (location_t loc, tree type, tree op0, tree op1)
   gcc_checking_assert (tag < cc_last);
 
   tree r;
-  if (SCALAR_TYPE_P (TREE_TYPE (op0)))
+  bool scalar = SCALAR_TYPE_P (TREE_TYPE (op0));
+  if (scalar)
     {
       op0 = save_expr (op0);
       op1 = save_expr (op1);
@@ -1097,26 +1098,53 @@ genericize_spaceship (location_t loc, tree type, tree op0, tree op1)
 
   int flags = LOOKUP_NORMAL;
   tsubst_flags_t complain = tf_none;
+  tree comp;
 
   if (tag == cc_partial_ordering)
     {
       /* op0 == op1 ? equivalent : op0 < op1 ? less :
 	 op1 < op0 ? greater : unordered */
       tree uo = lookup_comparison_result (tag, type, 3);
-      tree comp = build_new_op (loc, LT_EXPR, flags, op1, op0, complain);
-      r = build_conditional_expr (loc, comp, gt, uo, complain);
+      if (scalar)
+	{
+	  /* For scalars use the low level operations; using build_new_op causes
+	     trouble with constexpr eval in the middle of genericize (100367).  */
+	  comp = fold_build2 (LT_EXPR, boolean_type_node, op1, op0);
+	  r = fold_build3 (COND_EXPR, type, comp, gt, uo);
+	}
+      else
+	{
+	  comp = build_new_op (loc, LT_EXPR, flags, op1, op0, complain);
+	  r = build_conditional_expr (loc, comp, gt, uo, complain);
+	}
     }
   else
     /* op0 == op1 ? equal : op0 < op1 ? less : greater */
     r = gt;
 
   tree lt = lookup_comparison_result (tag, type, 2);
-  tree comp = build_new_op (loc, LT_EXPR, flags, op0, op1, complain);
-  r = build_conditional_expr (loc, comp, lt, r, complain);
+  if (scalar)
+    {
+      comp = fold_build2 (LT_EXPR, boolean_type_node, op0, op1);
+      r = fold_build3 (COND_EXPR, type, comp, lt, r);
+    }
+  else
+    {
+      comp = build_new_op (loc, LT_EXPR, flags, op0, op1, complain);
+      r = build_conditional_expr (loc, comp, lt, r, complain);
+    }
 
   tree eq = lookup_comparison_result (tag, type, 0);
-  comp = build_new_op (loc, EQ_EXPR, flags, op0, op1, complain);
-  r = build_conditional_expr (loc, comp, eq, r, complain);
+  if (scalar)
+    {
+      comp = fold_build2 (EQ_EXPR, boolean_type_node, op0, op1);
+      r = fold_build3 (COND_EXPR, type, comp, eq, r);
+    }
+  else
+    {
+      comp = build_new_op (loc, EQ_EXPR, flags, op0, op1, complain);
+      r = build_conditional_expr (loc, comp, eq, r, complain);
+    }
 
   return r;
 }

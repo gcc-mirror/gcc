@@ -326,9 +326,11 @@ class GitCommit:
             # All modified files are only MISC files
             return
         elif project_files:
-            self.errors.append(Error('ChangeLog, DATESTAMP, BASE-VER and '
-                                     'DEV-PHASE updates should be done '
-                                     'separately from normal commits'))
+            err = 'ChangeLog, DATESTAMP, BASE-VER and DEV-PHASE updates ' \
+                  'should be done separately from normal commits\n' \
+                  '(note: ChangeLog entries will be automatically ' \
+                  'added by a cron job)'
+            self.errors.append(Error(err))
             return
 
         all_are_ignored = (len(project_files) + len(ignored_files)

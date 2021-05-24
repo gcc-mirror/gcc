@@ -348,6 +348,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_phiopt, false /* early_p */);
       NEXT_PASS (pass_fold_builtins);
       NEXT_PASS (pass_optimize_widening_mul);
+      NEXT_PASS (pass_sink_code);
       NEXT_PASS (pass_store_merging);
       NEXT_PASS (pass_tail_calls);
       /* If DCE is not run before checking for uninitialized uses,

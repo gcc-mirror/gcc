@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "flags.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -9489,7 +9490,7 @@ mips_output_filename (FILE *stream, const char *name)
 {
   /* If we are emitting DWARF-2, let dwarf2out handle the ".file"
      directives.  */
-  if (write_symbols == DWARF2_DEBUG)
+  if (dwarf_debuginfo_p ())
     return;
   else if (mips_output_filename_first_time)
     {
