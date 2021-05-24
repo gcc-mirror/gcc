@@ -22,20 +22,14 @@ dump content of gcda and gcno profile files offline.
 @node Invoking Gcov-dump
 @section Invoking @command{gcov-dump}
 
-@smallexample
-Usage: gcov-dump @r{[}@var{OPTION}@r{]} ... @var{gcovfiles}
-@end smallexample
-
-@command{gcov-dump} accepts the following options:
-
 @subsubheading Synopsis
 
-gcov-dump [@emph{-v}|@emph{--version}]
-     [@emph{-h}|@emph{--help}]
-     [@emph{-l}|@emph{--long}]
-     [@emph{-p}|@emph{--positions}]
-     [@emph{-r}|@emph{--raw}]
-     [@emph{gcovfiles}]
+gcov-dump [@option{-v}|@option{--version}]
+     [@option{-h}|@option{--help}]
+     [@option{-l}|@option{--long}]
+     [@option{-p}|@option{--positions}]
+     [@option{-r}|@option{--raw}]
+     [@var{gcovfiles}]
 
 @subsubheading Options
 
