@@ -342,7 +342,8 @@ extern int csky_arch_isa_features[];
 #define STACK_POINTER_REGNUM  CSKY_SP_REGNUM
 
 /* Base register for access to local variables of the function.  */
-#define FRAME_POINTER_REGNUM  8
+#define FRAME_POINTER_REGNUM  36
+#define HARD_FRAME_POINTER_REGNUM  8
 
 /* Base register for access to arguments of the function.  This is a fake
    register that is always eliminated.  */
@@ -370,7 +371,9 @@ extern int csky_arch_isa_features[];
 #define ELIMINABLE_REGS		  \
 {{ ARG_POINTER_REGNUM,	      STACK_POINTER_REGNUM	      },\
  { ARG_POINTER_REGNUM,	      FRAME_POINTER_REGNUM	      },\
- { FRAME_POINTER_REGNUM,      STACK_POINTER_REGNUM	      }}
+ { ARG_POINTER_REGNUM,	      HARD_FRAME_POINTER_REGNUM       },\
+ { FRAME_POINTER_REGNUM,      STACK_POINTER_REGNUM	      },\
+ { FRAME_POINTER_REGNUM,      HARD_FRAME_POINTER_REGNUM	      }}
 
 /* Define the offset between two registers, one to be eliminated, and the
    other its replacement, at the start of a routine.  */

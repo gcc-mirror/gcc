@@ -1751,12 +1751,12 @@ get_csky_live_regs (int *count)
 	save = true;
 
       /* Frame pointer marked used.  */
-      else if (frame_pointer_needed && reg == FRAME_POINTER_REGNUM)
+      else if (frame_pointer_needed && reg == HARD_FRAME_POINTER_REGNUM)
 	save = true;
 
       /* This is required for CK801/802 where FP is a fixed reg, otherwise
 	 we end up with no FP value available to the DWARF-2 unwinder.  */
-      else if (crtl->calls_eh_return && reg == FRAME_POINTER_REGNUM)
+      else if (crtl->calls_eh_return && reg == HARD_FRAME_POINTER_REGNUM)
 	save = true;
 
       /* CK801/802 also need special handling for LR because it's clobbered
@@ -1832,6 +1832,8 @@ csky_layout_stack_frame (void)
 static bool
 csky_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 {
+  if (to == FRAME_POINTER_REGNUM)
+    return from != ARG_POINTER_REGNUM;
   if (to == STACK_POINTER_REGNUM)
     return !frame_pointer_needed;
   return true;
@@ -1852,6 +1854,7 @@ csky_initial_elimination_offset (int from, int to)
   switch (from)
     {
     case FRAME_POINTER_REGNUM:
+    case HARD_FRAME_POINTER_REGNUM:
       offset = cfun->machine->reg_offset;
       break;
 
@@ -1866,7 +1869,7 @@ csky_initial_elimination_offset (int from, int to)
   /* If we are asked for the offset to the frame pointer instead,
      then subtract the difference between the frame pointer and stack
      pointer.  */
-  if (to == FRAME_POINTER_REGNUM)
+  if (to == FRAME_POINTER_REGNUM || to == HARD_FRAME_POINTER_REGNUM)
     offset -= cfun->machine->reg_offset;
   return offset;
 }
@@ -5785,7 +5788,7 @@ csky_expand_prologue (void)
      of the register save area.  */
   if (frame_pointer_needed)
     {
-      insn = emit_insn (gen_movsi (frame_pointer_rtx, stack_pointer_rtx));
+      insn = emit_insn (gen_movsi (hard_frame_pointer_rtx, stack_pointer_rtx));
       RTX_FRAME_RELATED_P (insn) = 1;
     }
 
@@ -5848,7 +5851,7 @@ csky_expand_epilogue (void)
   /* Restore the SP to the base of the register save area.  */
   if (frame_pointer_needed)
     {
-      insn = emit_move_insn (stack_pointer_rtx, frame_pointer_rtx);
+      insn = emit_move_insn (stack_pointer_rtx, hard_frame_pointer_rtx);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
@@ -6004,7 +6007,7 @@ csky_set_eh_return_address (rtx source, rtx scratch)
 
       if (frame_pointer_needed)
 	{
-	  basereg = frame_pointer_rtx;
+	  basereg = hard_frame_pointer_rtx;
 	  delta = 0;
 	}
       else
