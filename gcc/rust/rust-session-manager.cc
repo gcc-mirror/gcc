@@ -26,6 +26,7 @@
 
 #include "target.h"
 #include "tm.h"
+#include "memmodel.h"
 #include "tm_p.h"
 
 //#include "rust-target.h"
