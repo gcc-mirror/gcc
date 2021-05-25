@@ -7564,7 +7564,10 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
   else if (NULLPTR_TYPE_P (arg_type))
     {
       if (TREE_SIDE_EFFECTS (arg))
-	arg = cp_build_compound_expr (arg, null_pointer_node, complain);
+	{
+	  warning_sentinel w(warn_unused_result);
+	  arg = cp_build_compound_expr (arg, null_pointer_node, complain);
+	}
       else
 	arg = null_pointer_node;
     }
