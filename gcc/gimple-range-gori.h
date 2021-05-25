@@ -158,8 +158,8 @@ public:
   void dump (FILE *f);
 protected:
   virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
-  virtual bool compute_operand_range (irange &r, gimple *stmt,
-				      const irange &lhs, tree name);
+  bool compute_operand_range (irange &r, gimple *stmt,
+			      const irange &lhs, tree name);
 
   void expr_range_at_stmt (irange &r, tree expr, gimple *s);
   bool compute_logical_operands (irange &r, gimple *stmt,
@@ -215,33 +215,6 @@ protected:
   bitmap bm;
   bitmap_iterator bi;
   unsigned y;
-};
-
-// This class adds a cache to gori_computes for logical expressions.
-//       bool result = x && y
-// requires calcuation of both X and Y for both true and false results.
-// There are 4 combinations [0,0][0,0] [0,0][1,1] [1,1][0,0] and [1,1][1,1].
-// Note that each pair of possible results for X and Y are used twice, and
-// the calcuation of those results are the same each time.
-//
-// The cache simply checks if a stmt is cachable, and if so, saves both the
-// true and false results for the next time the query is made.
-//
-// This is used to speed up long chains of logical operations which
-// quickly become exponential.
-
-class gori_compute_cache : public gori_compute
-{
-public:
-  gori_compute_cache ();
-  ~gori_compute_cache ();
-protected:
-  virtual bool compute_operand_range (irange &r, gimple *stmt,
-				      const irange &lhs, tree name);
-private:
-  void cache_stmt (gimple *);
-  typedef gori_compute super;
-  class logical_stmt_cache *m_cache;
 };
 
 #endif // GCC_GIMPLE_RANGE_GORI_H
