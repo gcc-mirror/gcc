@@ -1,3 +1,9 @@
+2021-05-24  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/100537
+	* go-gcc.cc (class Gcc_backend): Update methods that create
+	variables to take a flags parameter.
+
 2021-01-28  Ian Lance Taylor  <iant@golang.org>
 
 	* gospec.c (lang_specific_driver): Add -g if no debugging options

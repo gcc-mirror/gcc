@@ -283,6 +283,9 @@ sanitize_attrs_match_for_inline_p (const_tree caller, const_tree callee)
 	!= sanitize_flags_p (codes[i], callee))
       return false;
 
+  if (sanitize_coverage_p (caller) != sanitize_coverage_p (callee))
+    return false;
+
   return true;
 }
 

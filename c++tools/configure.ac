@@ -1,5 +1,5 @@
 # Configure script for c++tools
-#   Copyright (C) 2020 Free Software Foundation, Inc.
+#   Copyright (C) 2020-2021 Free Software Foundation, Inc.
 #   Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 #
 # This file is free software; you can redistribute it and/or modify it
@@ -58,9 +58,9 @@ AS_HELP_STRING([--enable-maintainer-mode],
 [enable maintainer mode.  Add rules to rebuild configurey bits]),,
 [enable_maintainer_mode=no])
 case "$enable_maintainer_mode" in
-  ("yes") maintainer_mode=yes ;;
-  ("no") maintainer=no ;;
-  (*) AC_MSG_ERROR([unknown maintainer mode $enable_maintainer_mode]) ;;
+  yes) maintainer_mode=yes ;;
+  no) maintainer_mode=no ;;
+  *) AC_MSG_ERROR([unknown maintainer mode $enable_maintainer_mode]) ;;
 esac
 AC_MSG_CHECKING([maintainer-mode])
 AC_MSG_RESULT([$maintainer_mode])

@@ -1,3 +1,7 @@
+2021-05-24  Wang Liushuai  <wangliushuai@bytedance.com>
+
+	* lto-dump.c (get_size): Fix the NPD error about the thunk symbol.
+
 2021-04-15  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/98599

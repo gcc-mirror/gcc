@@ -6016,7 +6016,7 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
     logical_op_non_short_circuit
       = param_logical_op_non_short_circuit;
   if (logical_op_non_short_circuit
-      && !flag_sanitize_coverage
+      && !sanitize_coverage_p ()
       && lhs != 0 && rhs != 0
       && (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
       && operand_equal_p (lhs, rhs, 0))
@@ -9652,7 +9652,7 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
     logical_op_non_short_circuit
       = param_logical_op_non_short_circuit;
   if (logical_op_non_short_circuit
-      && !flag_sanitize_coverage
+      && !sanitize_coverage_p ()
       && (code == TRUTH_AND_EXPR
           || code == TRUTH_ANDIF_EXPR
           || code == TRUTH_OR_EXPR

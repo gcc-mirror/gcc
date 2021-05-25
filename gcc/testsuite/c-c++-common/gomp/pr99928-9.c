@@ -155,7 +155,7 @@ bar (void)
     r20[1]++;
   /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r21\\\[1\\\] \\\[len: 8\\\]" "gimple" { xfail *-*-* } } } */
   /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r21\\)" "gimple" } } */
-  /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:MEM\[^\n\r]*&r21 \\+ 4" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:MEM\[^\n\r]*&r21 \\+ 4" "gimple" } } */
   /* { dg-final { scan-tree-dump-not "omp distribute\[^\n\r]*reduction\\(\\+:MEM\[^\n\r]*&r21 \\+ 4" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:MEM\[^\n\r]*&r21 \\+ 4" "gimple" } } */
   #pragma omp target teams distribute simd reduction(+:r21[1:2])
@@ -202,7 +202,7 @@ bar (void)
   #pragma omp teams distribute parallel for simd reduction(+:r27[1:2])
   for (int i = 0; i < 64; i++)
     r27[1]++;
-  /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:MEM\[^\n\r]*&r28 \\+ 4" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:MEM\[^\n\r]*&r28 \\+ 4" "gimple" } } */
   /* { dg-final { scan-tree-dump-not "omp distribute\[^\n\r]*reduction\\(\\+:MEM\[^\n\r]*&r28 \\+ 4" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:MEM\[^\n\r]*&r28 \\+ 4" "gimple" } } */
   #pragma omp teams distribute simd reduction(+:r28[1:2])

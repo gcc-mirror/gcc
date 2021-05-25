@@ -1427,7 +1427,7 @@ Sink_expression::do_get_backend(Translate_context* context)
       Bstatement* decl;
       this->bvar_ =
 	gogo->backend()->temporary_variable(fn_ctx, context->bblock(), bt, NULL,
-					    false, loc, &decl);
+					    0, loc, &decl);
       Bexpression* var_ref =
           gogo->backend()->var_expression(this->bvar_, loc);
       var_ref = gogo->backend()->compound_expression(decl, var_ref, loc);
@@ -1724,10 +1724,12 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
       if (no->is_function() && no->func_value()->is_referenced_by_inline())
 	is_hidden = false;
 
+      unsigned int flags = 0;
+      if (is_hidden)
+	flags |= Backend::variable_is_hidden;
       bvar = context->backend()->immutable_struct(bname.name(),
 						  bname.optional_asm_name(),
-                                                  is_hidden, false,
-						  btype, bloc);
+						  flags, btype, bloc);
       Expression_list* vals = new Expression_list();
       vals->push_back(Expression::make_func_code_reference(this->fn_, bloc));
       Expression* init =
@@ -1736,8 +1738,7 @@ Func_descriptor_expression::do_get_backend(Translate_context* context)
       bcontext.set_is_const();
       Bexpression* binit = init->get_backend(&bcontext);
       context->backend()->immutable_struct_set_init(bvar, bname.name(),
-						    is_hidden, false, btype,
-						    bloc, binit);
+						    flags, btype, bloc, binit);
     }
 
   this->dvar_ = bvar;
@@ -5280,12 +5281,14 @@ Unary_expression::do_get_backend(Translate_context* context)
 	      copy_to_heap = (context->function() != NULL
                               || context->is_const());
 	    }
+	  unsigned int flags = (Backend::variable_is_hidden
+				| Backend::variable_address_is_taken);
+	  if (copy_to_heap)
+	    flags |= Backend::variable_is_constant;
 	  Bvariable* implicit =
-              gogo->backend()->implicit_variable(var_name, "", btype, true,
-						 copy_to_heap, false, 0);
+	    gogo->backend()->implicit_variable(var_name, "", btype, flags, 0);
 	  gogo->backend()->implicit_variable_set_init(implicit, var_name, btype,
-						      true, copy_to_heap, false,
-						      bexpr);
+						      flags, bexpr);
 	  bexpr = gogo->backend()->var_expression(implicit, loc);
 
 	  // If we are not copying a slice initializer to the heap,
@@ -5307,22 +5310,24 @@ Unary_expression::do_get_backend(Translate_context* context)
 	       && this->expr_->is_static_initializer())
         {
 	  std::string var_name(gogo->initializer_name());
+	  unsigned int flags = (Backend::variable_is_hidden
+				| Backend::variable_address_is_taken);
           Bvariable* decl =
-              gogo->backend()->immutable_struct(var_name, "", true, false,
-						btype, loc);
-          gogo->backend()->immutable_struct_set_init(decl, var_name, true,
-						     false, btype, loc, bexpr);
+	    gogo->backend()->immutable_struct(var_name, "", flags, btype, loc);
+          gogo->backend()->immutable_struct_set_init(decl, var_name, flags,
+						     btype, loc, bexpr);
           bexpr = gogo->backend()->var_expression(decl, loc);
         }
       else if (this->expr_->is_constant())
         {
           std::string var_name(gogo->initializer_name());
+	  unsigned int flags = (Backend::variable_is_hidden
+				| Backend::variable_is_constant
+				| Backend::variable_address_is_taken);
           Bvariable* decl =
-              gogo->backend()->implicit_variable(var_name, "", btype,
-                                                 true, true, false, 0);
+	    gogo->backend()->implicit_variable(var_name, "", btype, flags, 0);
           gogo->backend()->implicit_variable_set_init(decl, var_name, btype,
-                                                      true, true, false,
-                                                      bexpr);
+						      flags, bexpr);
           bexpr = gogo->backend()->var_expression(decl, loc);
         }
 
@@ -14888,7 +14893,9 @@ Allocation_expression::do_get_backend(Translate_context* context)
                            : gogo->backend()->zero_expression(btype));
       Bvariable* temp =
         gogo->backend()->temporary_variable(fndecl, context->bblock(), btype,
-                                            init, true, loc, &decl);
+                                            init,
+					    Backend::variable_address_is_taken,
+					    loc, &decl);
       Bexpression* ret = gogo->backend()->var_expression(temp, loc);
       ret = gogo->backend()->address_expression(ret, loc);
       ret = gogo->backend()->compound_expression(decl, ret, loc);
@@ -17238,7 +17245,9 @@ Heap_expression::do_get_backend(Translate_context* context)
   Bfunction* fndecl = fn->func_value()->get_or_make_decl(gogo, fn);
   Bvariable* space_temp =
     gogo->backend()->temporary_variable(fndecl, context->bblock(), btype,
-					space, true, loc, &decl);
+					space,
+					Backend::variable_address_is_taken,
+					loc, &decl);
   Btype* expr_btype = etype->get_backend(gogo);
 
   Bexpression* bexpr = this->expr_->get_backend(context);
@@ -17259,8 +17268,9 @@ Heap_expression::do_get_backend(Translate_context* context)
       Bstatement* edecl;
       Bvariable* btemp =
 	gogo->backend()->temporary_variable(fndecl, context->bblock(),
-					    expr_btype, bexpr, true, loc,
-					    &edecl);
+					    expr_btype, bexpr,
+					    Backend::variable_address_is_taken,
+					    loc, &edecl);
       Bexpression* btempref = gogo->backend()->var_expression(btemp,
 							      loc);
       space = gogo->backend()->var_expression(space_temp, loc);
@@ -18478,10 +18488,13 @@ Interface_mtable_expression::do_get_backend(Translate_context* context)
   Bexpression* ctor =
       gogo->backend()->constructor_expression(btype, ctor_bexprs, loc);
 
-  this->bvar_ = gogo->backend()->immutable_struct(mangled_name, "", false,
-						  !is_public, btype, loc);
-  gogo->backend()->immutable_struct_set_init(this->bvar_, mangled_name, false,
-                                             !is_public, btype, loc, ctor);
+  unsigned int flags = 0;
+  if (!is_public)
+    flags |= Backend::variable_is_hidden;
+  this->bvar_ = gogo->backend()->immutable_struct(mangled_name, "", flags,
+						  btype, loc);
+  gogo->backend()->immutable_struct_set_init(this->bvar_, mangled_name, flags,
+					     btype, loc, ctor);
   return gogo->backend()->var_expression(this->bvar_, loc);
 }
 

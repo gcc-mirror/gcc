@@ -1,3 +1,9 @@
+2021-05-24  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_commit.py: Add note that ChangeLog entries
+	are added automatically.
+	* gcc-changelog/test_email.py: Update test.
+
 2021-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* gcc-changelog/git_email.py: Remove use of non-strict mode.

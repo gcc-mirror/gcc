@@ -29,6 +29,7 @@ namespace __gnu_test
   struct counter
   {
     std::size_t _M_count;
+    std::size_t _M_increments, _M_decrements;
     bool	_M_throw;
 
     counter() : _M_count(0), _M_throw(true) { }
@@ -40,10 +41,20 @@ namespace __gnu_test
     }
 
     static void
-    increment() { get()._M_count++; }
+    increment()
+    {
+      counter& cntr = get();
+      cntr._M_count++;
+      cntr._M_increments++;
+    }
 
     static void
-    decrement() { get()._M_count--; }
+    decrement()
+    {
+      counter& cntr = get();
+      cntr._M_count--;
+      cntr._M_decrements++;
+    }
 
     static counter&
     get()
@@ -57,6 +68,13 @@ namespace __gnu_test
 
     static void
     exceptions(bool __b) { get()._M_throw = __b; }
+
+    static void
+    reset()
+    {
+      counter& cntr = get();
+      cntr._M_increments = cntr._M_decrements = 0;
+    }
   };
 
   template<typename Alloc, bool uses_global_new>

@@ -900,6 +900,8 @@ flush_mark_addressable_queue ()
 void
 mark_addressable (tree x)
 {
+  if (TREE_CODE (x) == WITH_SIZE_EXPR)
+    x = TREE_OPERAND (x, 0);
   while (handled_component_p (x))
     x = TREE_OPERAND (x, 0);
   if (TREE_CODE (x) == MEM_REF

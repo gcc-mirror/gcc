@@ -2397,7 +2397,8 @@ initialize_argument_information (int num_actuals ATTRIBUTE_UNUSED,
 	     already in memory, instead of making a copy.  Likewise if we want
 	     to make the copy in the callee instead of the caller.  */
 	  if ((call_from_thunk_p || callee_copies)
-	      && (base = get_base_address (args[i].tree_value))
+	      && TREE_CODE (args[i].tree_value) != WITH_SIZE_EXPR
+	      && ((base = get_base_address (args[i].tree_value)), true)
 	      && TREE_CODE (base) != SSA_NAME
 	      && (!DECL_P (base) || MEM_P (DECL_RTL (base))))
 	    {
