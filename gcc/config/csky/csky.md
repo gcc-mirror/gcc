@@ -1533,6 +1533,7 @@
   }"
 )
 
+;; hi -> si
 (define_insn "extendhisi2"
   [(set (match_operand:SI		  0 "register_operand" "=r")
 	(sign_extend:SI (match_operand:HI 1 "register_operand" "r")))]
@@ -1555,6 +1556,15 @@
 	(sign_extend:SI (match_operand:QI 1 "register_operand" "r")))]
   ""
   "sextb  %0, %1"
+)
+
+(define_insn "*cskyv2_sextend_ldbs"
+  [(set (match_operand:SI		  0 "register_operand" "=r")
+        (sign_extend:SI (match_operand:QI 1 "csky_simple_mem_operand" "m")))]
+  "CSKY_ISA_FEATURE (E2)"
+  "ld.bs\t%0, %1"
+  [(set_attr "length" "4")
+   (set_attr "type" "load")]
 )
 
 ;; qi -> hi
