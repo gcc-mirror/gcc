@@ -1,0 +1,8 @@
+2021-05-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-25  Richard Biener  <rguenther@suse.de>
+	
+	PR libgomp/100747
+	* configure: Make executable.
+	* plugin/configure: Likewise.
