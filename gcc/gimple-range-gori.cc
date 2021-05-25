@@ -582,10 +582,10 @@ gori_compute::ssa_range_in_bb (irange &r, tree name, basic_block)
 }
 
 void
-gori_compute::expr_range_in_bb (irange &r, tree expr, basic_block bb)
+gori_compute::expr_range_at_stmt (irange &r, tree expr, gimple *s)
 {
   if (gimple_range_ssa_p (expr))
-    ssa_range_in_bb (r, expr, bb);
+    ssa_range_in_bb (r, expr, gimple_bb (s));
   else
     get_tree_range (r, expr);
 }
@@ -606,7 +606,7 @@ gori_compute::compute_name_range_op (irange &r, gimple *stmt,
   // Operand 1 is the name being looked for, evaluate it.
   if (op1 == name)
     {
-      expr_range_in_bb (op1_range, op1, gimple_bb (stmt));
+      expr_range_at_stmt (op1_range, op1, stmt);
       if (!op2)
 	{
 	  // The second parameter to a unary operation is the range
@@ -616,7 +616,7 @@ gori_compute::compute_name_range_op (irange &r, gimple *stmt,
 	  return gimple_range_calc_op1 (r, stmt, lhs, op1_range);
 	}
       // If we need the second operand, get a value and evaluate.
-      expr_range_in_bb (op2_range, op2, gimple_bb (stmt));
+      expr_range_at_stmt (op2_range, op2, stmt);
       if (gimple_range_calc_op1 (r, stmt, lhs, op2_range))
 	r.intersect (op1_range);
       else
@@ -626,8 +626,8 @@ gori_compute::compute_name_range_op (irange &r, gimple *stmt,
 
   if (op2 == name)
     {
-      expr_range_in_bb (op1_range, op1, gimple_bb (stmt));
-      expr_range_in_bb (r, op2, gimple_bb (stmt));
+      expr_range_at_stmt (op1_range, op1, stmt);
+      expr_range_at_stmt (r, op2, stmt);
       if (gimple_range_calc_op2 (op2_range, stmt, lhs, op1_range))
         r.intersect (op2_range);
       return true;
@@ -877,7 +877,7 @@ gori_compute::optimize_logical_operands (tf_range &range,
     {
       if (!compute_operand_range (range.false_range, SSA_NAME_DEF_STMT (op),
 				  m_bool_zero, name))
-	expr_range_in_bb (range.false_range, name, gimple_bb (stmt));
+	expr_range_at_stmt (range.false_range, name, stmt);
       range.true_range = range.false_range;
       return true;
     }
@@ -886,7 +886,7 @@ gori_compute::optimize_logical_operands (tf_range &range,
     {
       if (!compute_operand_range (range.true_range, SSA_NAME_DEF_STMT (op),
 				  m_bool_one, name))
-	expr_range_in_bb (range.true_range, name, gimple_bb (stmt));
+	expr_range_at_stmt (range.true_range, name, stmt);
       range.false_range = range.true_range;
       return true;
     }
@@ -905,12 +905,12 @@ gori_compute::compute_logical_operands_in_chain (tf_range &range,
 						 tree op, bool op_in_chain)
 {
   gimple *src_stmt = gimple_range_ssa_p (op) ? SSA_NAME_DEF_STMT (op) : NULL;
-  basic_block bb = gimple_bb (stmt);
-  if (!op_in_chain || (src_stmt != NULL && bb != gimple_bb (src_stmt)))
+  if (!op_in_chain || (src_stmt != NULL
+      && gimple_bb (stmt) != gimple_bb (src_stmt)))
     {
       // If op is not in the def chain, or defined in this block,
       // use its known value on entry to the block.
-      expr_range_in_bb (range.true_range, name, gimple_bb (stmt));
+      expr_range_at_stmt (range.true_range, name, stmt);
       range.false_range = range.true_range;
       return;
     }
@@ -920,9 +920,9 @@ gori_compute::compute_logical_operands_in_chain (tf_range &range,
   // Calculate ranges for true and false on both sides, since the false
   // path is not always a simple inversion of the true side.
   if (!compute_operand_range (range.true_range, src_stmt, m_bool_one, name))
-    expr_range_in_bb (range.true_range, name, bb);
+    expr_range_at_stmt (range.true_range, name, stmt);
   if (!compute_operand_range (range.false_range, src_stmt, m_bool_zero, name))
-    expr_range_in_bb (range.false_range, name, bb);
+    expr_range_at_stmt (range.false_range, name, stmt);
 }
 
 // Given a logical STMT, calculate true and false for each potential
@@ -968,12 +968,12 @@ gori_compute::compute_operand1_range (irange &r, gimple *stmt,
   tree op1 = gimple_range_operand1 (stmt);
   tree op2 = gimple_range_operand2 (stmt);
 
-  expr_range_in_bb (op1_range, op1, gimple_bb (stmt));
+  expr_range_at_stmt (op1_range, op1, stmt);
 
   // Now calcuated the operand and put that result in r.
   if (op2)
     {
-      expr_range_in_bb (op2_range, op2, gimple_bb (stmt));
+      expr_range_at_stmt (op2_range, op2, stmt);
       if (!gimple_range_calc_op1 (r, stmt, lhs, op2_range))
 	return false;
     }
@@ -1015,8 +1015,8 @@ gori_compute::compute_operand2_range (irange &r, gimple *stmt,
   tree op1 = gimple_range_operand1 (stmt);
   tree op2 = gimple_range_operand2 (stmt);
 
-  expr_range_in_bb (op1_range, op1, gimple_bb (stmt));
-  expr_range_in_bb (op2_range, op2, gimple_bb (stmt));
+  expr_range_at_stmt (op1_range, op1, stmt);
+  expr_range_at_stmt (op2_range, op2, stmt);
 
   // Intersect with range for op2 based on lhs and op1.
   if (!gimple_range_calc_op2 (r, stmt, lhs, op1_range))
@@ -1449,7 +1449,7 @@ gori_compute_cache::cache_stmt (gimple *stmt)
     {
       range_operator *handler = range_op_handler (code, TREE_TYPE (lhs));
       int_range_max op2_range;
-      expr_range_in_bb (op2_range, op2, gimple_bb (stmt));
+      expr_range_at_stmt (op2_range, op2, stmt);
       tree type = TREE_TYPE (op1);
       handler->op1_range (r_true_side, type, m_bool_one, op2_range);
       handler->op1_range (r_false_side, type, m_bool_zero, op2_range);

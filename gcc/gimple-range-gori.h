@@ -161,7 +161,7 @@ protected:
   virtual bool compute_operand_range (irange &r, gimple *stmt,
 				      const irange &lhs, tree name);
 
-  void expr_range_in_bb (irange &r, tree expr, basic_block bb);
+  void expr_range_at_stmt (irange &r, tree expr, gimple *s);
   bool compute_logical_operands (irange &r, gimple *stmt,
 				 const irange &lhs,
 				 tree name);
