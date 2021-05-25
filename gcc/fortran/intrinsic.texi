@@ -6835,7 +6835,7 @@ Subroutine
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{RESULT}  @tab Shall of type @code{CHARACTER} and of default
+@item @var{RESULT}  @tab Shall be of type @code{CHARACTER} and of default kind.
 @end multitable
 
 @item @emph{Example}:
@@ -6885,7 +6885,6 @@ Subroutine
 the default integer kind; @math{@var{POS} \geq 0}
 @item @var{VALUE} @tab Shall be of type @code{CHARACTER} and of default
 kind.
-@item @var{VALUE} @tab Shall be of type @code{CHARACTER}. 
 @end multitable
 
 @item @emph{Return value}:
@@ -7259,7 +7258,7 @@ Subroutine
 @end multitable
 
 @item @emph{Return value}:
-Stores the current user name in @var{LOGIN}.  (On systems where POSIX
+Stores the current user name in @var{C}.  (On systems where POSIX
 functions @code{geteuid} and @code{getpwuid} are not available, and 
 the @code{getlogin} function is not implemented either, this will
 return a blank string.)
@@ -11202,7 +11201,7 @@ end program test_nint
 
 @table @asis
 @item @emph{Description}:
-Calculates the Euclidean vector norm (@math{L_2} norm) of
+Calculates the Euclidean vector norm (@math{L_2} norm)
 of @var{ARRAY} along dimension @var{DIM}.
 
 @item @emph{Standard}:
@@ -11555,7 +11554,7 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{LOGICAL} @tab Shall be an array of type @code{LOGICAL}
+@item @var{MASK} @tab Shall be an array of type @code{LOGICAL}
 @item @var{DIM}   @tab (Optional) shall be a scalar of type 
 @code{INTEGER} with a value in the range from 1 to n, where n 
 equals the rank of @var{MASK}.
@@ -12005,7 +12004,7 @@ is set to a processor-dependent value.
 @code{LOGICAL} type, and it is @code{INTENT(IN)}.  If it is @code{.true.},
 the seed is set to a processor-dependent value that is distinct from th
 seed set by a call to @code{RANDOM_INIT} in another image.  If it is
-@code{.false.}, the seed is set value that does depend which image called
+@code{.false.}, the seed is set to a value that does depend which image called
 @code{RANDOM_INIT}.
 @end multitable
 
@@ -12057,7 +12056,7 @@ Fortran 90 and later
 Subroutine
 
 @item @emph{Syntax}:
-@code{RANDOM_NUMBER(HARVEST)}
+@code{CALL RANDOM_NUMBER(HARVEST)}
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
