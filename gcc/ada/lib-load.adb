@@ -451,8 +451,8 @@ package body Lib.Load is
               With_Node  => With_Node);
 
          if Unump = No_Unit then
-            Parsing_Main_Extended_Source := Save_PMES;
-            return No_Unit;
+            Unum := No_Unit;
+            goto Done;
          end if;
 
          --  If parent is a renaming, then we use the renamed package as
