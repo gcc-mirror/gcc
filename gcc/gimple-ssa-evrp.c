@@ -117,11 +117,8 @@ class rvrp_folder : public substitute_and_fold_engine
 public:
 
   rvrp_folder () : substitute_and_fold_engine (), m_simplifier ()
-  { 
-    if (param_evrp_mode & EVRP_MODE_TRACE)
-      m_ranger = new trace_ranger ();
-    else
-      m_ranger = new gimple_ranger ();
+  {
+    m_ranger = enable_ranger (cfun);
     m_simplifier.set_range_query (m_ranger);
   }
       
@@ -129,7 +126,9 @@ public:
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
       m_ranger->dump (dump_file);
-    delete m_ranger;
+
+    m_ranger->export_global_ranges ();
+    disable_ranger (cfun);
   }
 
   tree value_of_expr (tree name, gimple *s = NULL) OVERRIDE
@@ -175,10 +174,7 @@ class hybrid_folder : public evrp_folder
 public:
   hybrid_folder (bool evrp_first)
   {
-    if (param_evrp_mode & EVRP_MODE_TRACE)
-      m_ranger = new trace_ranger ();
-    else
-      m_ranger = new gimple_ranger ();
+    m_ranger = enable_ranger (cfun);
 
     if (evrp_first)
       {
@@ -196,7 +192,9 @@ public:
   {
     if (dump_file && (dump_flags & TDF_DETAILS))
       m_ranger->dump (dump_file);
-    delete m_ranger;
+
+    m_ranger->export_global_ranges ();
+    disable_ranger (cfun);
   }
 
   bool fold_stmt (gimple_stmt_iterator *gsi) OVERRIDE
