@@ -158,6 +158,73 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       _List_node_base* _M_base() { return this; }
     };
+
+    // Used by list::sort to hold nodes being sorted.
+    struct _Scratch_list : _List_node_base
+    {
+      _Scratch_list() { _M_next = _M_prev = this; }
+
+      bool empty() const { return _M_next == this; }
+
+      void swap(_List_node_base& __l) { _List_node_base::swap(*this, __l); }
+
+      template<typename _Iter, typename _Cmp>
+	struct _Ptr_cmp
+	{
+	  _Cmp _M_cmp;
+
+	  bool
+	  operator()(const __detail::_List_node_base* __lhs,
+		     const __detail::_List_node_base* __rhs) /* not const */
+	  { return _M_cmp(*_Iter(__lhs), *_Iter(__rhs)); }
+	};
+
+      template<typename _Iter>
+	struct _Ptr_cmp<_Iter, void>
+	{
+	  bool
+	  operator()(const __detail::_List_node_base* __lhs,
+		     const __detail::_List_node_base* __rhs) const
+	  { return *_Iter(__lhs) < *_Iter(__rhs); }
+	};
+
+      // Merge nodes from __x into *this. Both lists must be sorted wrt _Cmp.
+      template<typename _Cmp>
+	void
+	merge(_List_node_base& __x, _Cmp __comp)
+	{
+	  _List_node_base* __first1 = _M_next;
+	  _List_node_base* const __last1 = this;
+	  _List_node_base* __first2 = __x._M_next;
+	  _List_node_base* const __last2 = std::__addressof(__x);
+
+	  while (__first1 != __last1 && __first2 != __last2)
+	    {
+	      if (__comp(__first2, __first1))
+		{
+		  _List_node_base* __next = __first2->_M_next;
+		  __first1->_M_transfer(__first2, __next);
+		  __first2 = __next;
+		}
+	      else
+		__first1 = __first1->_M_next;
+	    }
+	  if (__first2 != __last2)
+	    this->_M_transfer(__first2, __last2);
+	}
+
+      // Splice the node at __i into *this.
+      void _M_take_one(_List_node_base* __i)
+      { this->_M_transfer(__i, __i->_M_next); }
+
+      // Splice all nodes from *this after __i.
+      void _M_put_all(_List_node_base* __i)
+      {
+	if (!empty())
+	  __i->_M_transfer(_M_next, this);
+      }
+    };
+
   } // namespace detail
 
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER

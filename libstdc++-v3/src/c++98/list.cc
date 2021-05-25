@@ -94,6 +94,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _M_transfer(_List_node_base * const __first,
 		_List_node_base * const __last) _GLIBCXX_USE_NOEXCEPT
     {
+      __glibcxx_assert(__first != __last);
+
       if (this != __last)
 	{
 	  // Remove [first, last) from its old position.
