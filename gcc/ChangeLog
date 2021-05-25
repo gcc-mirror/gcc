@@ -1,3 +1,51 @@
+2021-05-24  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_logical_addsubf): Refactor to
+	add generation of logical-add and add-logical fusion pairs.
+	* config/rs6000/rs6000-cpus.def: Add new fusion to ISA 3.1 mask
+	and powerpc mask.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Turn on
+	logical-add and add-logical fusion by default.
+	* config/rs6000/rs6000.opt: Add -mpower10-fusion-logical-add and
+	-mpower10-fusion-add-logical options.
+	* config/rs6000/fusion.md: Regenerate file.
+
+2021-05-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (irange::legacy_equal_p): Check type when
+	comparing VR_VARYING types.
+	(range_tests_legacy): Test comparing VARYING ranges of different
+	sizes.
+
+2021-05-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (neoversen1_tunings):
+	Enable AARCH64_EXTRA_TUNE_CHEAP_SHIFT_EXTEND.
+
+2021-05-24  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_classify_symbol): Use GOT for
+	extern weak symbols.  Limit symbol offsets for non-GOT symbols with
+	PIC/PIE.
+
+2021-05-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/neon.md (vec_load_lanesxi<mode>)
+	(vec_store_lanexoi<mode>): Move ...
+	* config/arm/vec-common.md: here.
+
+2021-05-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/neon.md (vec_load_lanesoi<mode>)
+	(vec_store_lanesoi<mode>): Move ...
+	* config/arm/vec-common.md: here.
+
+2021-05-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100660
+	* config/i386/i386.c (ix86_gimple_fold_builtin): Replacing
+	stmt with GIMPLE_NOP when lhs doesn't exist.
+
 2021-05-23  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/100722
