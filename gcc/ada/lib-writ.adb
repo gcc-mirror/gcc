@@ -147,7 +147,7 @@ package body Lib.Writ is
    begin
       --  Nothing to do if we already compiled System
 
-      if Unit_Names.Get (System_Uname) /= No_Unit then
+      if Is_Loaded (System_Uname) then
          return;
       end if;
 
