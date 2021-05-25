@@ -435,17 +435,17 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 	  // Fold range, and register any dependency if available.
 	  int_range<2> r2 (type);
 	  handler->fold_range (r, type, range1, r2);
-	  if (lhs && src.m_cache)
-	    src.m_cache->register_dependency (lhs, op1);
+	  if (lhs && src.m_gori)
+	    src.m_gori->register_dependency (lhs, op1);
 	}
       else if (src.get_operand (range2, op2))
 	{
 	  // Fold range, and register any dependency if available.
 	  handler->fold_range (r, type, range1, range2);
-	  if (lhs && src.m_cache)
+	  if (lhs && src.m_gori)
 	    {
-	      src.m_cache->register_dependency (lhs, op1);
-	      src.m_cache->register_dependency (lhs, op2);
+	      src.m_gori->register_dependency (lhs, op1);
+	      src.m_gori->register_dependency (lhs, op2);
 	    }
 	}
       else
@@ -485,8 +485,8 @@ fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
     {
       tree ssa = TREE_OPERAND (base, 0);
       tree lhs = gimple_get_lhs (stmt);
-      if (src.m_cache && lhs && gimple_range_ssa_p (ssa))
-	src.m_cache->register_dependency (lhs, ssa);
+      if (src.m_gori && lhs && gimple_range_ssa_p (ssa))
+	src.m_gori->register_dependency (lhs, ssa);
       gcc_checking_assert (irange::supports_type_p (TREE_TYPE (ssa)));
       src.get_operand (r, ssa);
       range_cast (r, TREE_TYPE (gimple_assign_rhs1 (stmt)));
@@ -563,8 +563,8 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
       edge e = gimple_phi_arg_edge (phi, x);
 
       // Register potential dependencies for stale value tracking.
-      if (src.m_cache && gimple_range_ssa_p (arg))
-	src.m_cache->register_dependency (phi_def, arg);
+      if (src.m_gori && gimple_range_ssa_p (arg))
+	src.m_gori->register_dependency (phi_def, arg);
 
       // Get the range of the argument on its edge.
       fur_source e_src (src.m_query, e);
