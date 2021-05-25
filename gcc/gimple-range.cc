@@ -976,22 +976,15 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
 
   // If name is defined in this block, try to get an range from S.
   if (def_stmt && gimple_bb (def_stmt) == bb)
-    range_of_stmt (r, def_stmt, expr);
+    {
+      range_of_stmt (r, def_stmt, expr);
+      if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
+	  m_cache.m_non_null.non_null_deref_p (expr, bb))
+	r = range_nonzero (TREE_TYPE (expr));
+    }
   else
     // Otherwise OP comes from outside this block, use range on entry.
     range_on_entry (r, bb, expr);
-
-  // No range yet, see if there is a dereference in the block.
-  // We don't care if it's between the def and a use within a block
-  // because the entire block must be executed anyway.
-  // FIXME:?? For non-call exceptions we could have a statement throw
-  // which causes an early block exit.
-  // in which case we may need to walk from S back to the def/top of block
-  // to make sure the deref happens between S and there before claiming
-  // there is a deref.   Punt for now.
-  if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
-      m_cache.m_non_null.non_null_deref_p (expr, bb))
-    r = range_nonzero (TREE_TYPE (expr));
 
   return true;
 }
@@ -1010,6 +1003,10 @@ gimple_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   // Now see if there is any on_entry value which may refine it.
   if (m_cache.block_range (entry_range, bb, name))
     r.intersect (entry_range);
+
+  if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
+      m_cache.m_non_null.non_null_deref_p (name, bb))
+    r = range_nonzero (TREE_TYPE (name));
 }
 
 // Calculate the range for NAME at the end of block BB and return it in R.
@@ -1032,13 +1029,7 @@ gimple_ranger::range_on_exit (irange &r, basic_block bb, tree name)
   if (s)
     range_of_expr (r, name, s);
   else
-    {
-      range_on_entry (r, bb, name);
-      // See if there was a deref in this block, if applicable
-      if (!cfun->can_throw_non_call_exceptions && r.varying_p () &&
-	  m_cache.m_non_null.non_null_deref_p (name, bb))
-	r = range_nonzero (TREE_TYPE (name));
-    }
+    range_on_entry (r, bb, name);
   gcc_checking_assert (r.undefined_p ()
 		       || range_compatible_p (r.type (), TREE_TYPE (name)));
 }
@@ -1166,80 +1157,86 @@ gimple_ranger::export_global_ranges ()
 // Print the known table values to file F.
 
 void
-gimple_ranger::dump (FILE *f)
+gimple_ranger::dump_bb (FILE *f, basic_block bb)
 {
-  basic_block bb;
+  unsigned x;
+  edge_iterator ei;
+  edge e;
+  int_range_max range;
+  fprintf (f, "\n=========== BB %d ============\n", bb->index);
+  m_cache.dump (f, bb);
 
-  FOR_EACH_BB_FN (bb, cfun)
+  ::dump_bb (f, bb, 4, TDF_NONE);
+
+  // Now find any globals defined in this block.
+  for (x = 1; x < num_ssa_names; x++)
     {
-      unsigned x;
-      edge_iterator ei;
-      edge e;
-      int_range_max range;
-      fprintf (f, "\n=========== BB %d ============\n", bb->index);
-      m_cache.dump (f, bb);
+      tree name = ssa_name (x);
+      if (gimple_range_ssa_p (name) && SSA_NAME_DEF_STMT (name) &&
+	  gimple_bb (SSA_NAME_DEF_STMT (name)) == bb &&
+	  m_cache.get_global_range (range, name))
+	{
+	  if (!range.varying_p ())
+	    {
+	      print_generic_expr (f, name, TDF_SLIM);
+	      fprintf (f, " : ");
+	      range.dump (f);
+	      fprintf (f, "\n");
+	    }
 
-      dump_bb (f, bb, 4, TDF_NONE);
+	}
+    }
 
-      // Now find any globals defined in this block.
+  // And now outgoing edges, if they define anything.
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
       for (x = 1; x < num_ssa_names; x++)
 	{
-	  tree name = ssa_name (x);
-	  if (gimple_range_ssa_p (name) && SSA_NAME_DEF_STMT (name) &&
-	      gimple_bb (SSA_NAME_DEF_STMT (name)) == bb &&
-	      m_cache.get_global_range (range, name))
+	  tree name = gimple_range_ssa_p (ssa_name (x));
+	  if (name && m_cache.outgoing_edge_range_p (range, e, name))
 	    {
-	      if (!range.varying_p ())
-	       {
-		 print_generic_expr (f, name, TDF_SLIM);
-		 fprintf (f, " : ");
-		 range.dump (f);
-		 fprintf (f, "\n");
-	       }
-
-	    }
-	}
-
-      // And now outgoing edges, if they define anything.
-      FOR_EACH_EDGE (e, ei, bb->succs)
-	{
-	  for (x = 1; x < num_ssa_names; x++)
-	    {
-	      tree name = gimple_range_ssa_p (ssa_name (x));
-	      if (name && m_cache.outgoing_edge_range_p (range, e, name))
+	      gimple *s = SSA_NAME_DEF_STMT (name);
+	      // Only print the range if this is the def block, or
+	      // the on entry cache for either end of the edge is
+	      // set.
+	      if ((s && bb == gimple_bb (s)) ||
+		  m_cache.block_range (range, bb, name, false) ||
+		  m_cache.block_range (range, e->dest, name, false))
 		{
-		  gimple *s = SSA_NAME_DEF_STMT (name);
-		  // Only print the range if this is the def block, or
-		  // the on entry cache for either end of the edge is
-		  // set.
-		  if ((s && bb == gimple_bb (s)) ||
-		      m_cache.block_range (range, bb, name, false) ||
-		      m_cache.block_range (range, e->dest, name, false))
+		  range_on_edge (range, e, name);
+		  if (!range.varying_p ())
 		    {
-		      range_on_edge (range, e, name);
-		      if (!range.varying_p ())
-			{
-			  fprintf (f, "%d->%d ", e->src->index,
-				   e->dest->index);
-			  char c = ' ';
-			  if (e->flags & EDGE_TRUE_VALUE)
-			    fprintf (f, " (T)%c", c);
-			  else if (e->flags & EDGE_FALSE_VALUE)
-			    fprintf (f, " (F)%c", c);
-			  else
-			    fprintf (f, "     ");
-			  print_generic_expr (f, name, TDF_SLIM);
-			  fprintf(f, " : \t");
-			  range.dump(f);
-			  fprintf (f, "\n");
-			}
+		      fprintf (f, "%d->%d ", e->src->index,
+			       e->dest->index);
+		      char c = ' ';
+		      if (e->flags & EDGE_TRUE_VALUE)
+			fprintf (f, " (T)%c", c);
+		      else if (e->flags & EDGE_FALSE_VALUE)
+			fprintf (f, " (F)%c", c);
+		      else
+			fprintf (f, "     ");
+		      print_generic_expr (f, name, TDF_SLIM);
+		      fprintf(f, " : \t");
+		      range.dump(f);
+		      fprintf (f, "\n");
 		    }
 		}
 	    }
 	}
     }
+}
 
-  m_cache.dump (dump_file, (dump_flags & TDF_DETAILS) != 0);
+// Print the known table values to file F.
+
+void
+gimple_ranger::dump (FILE *f)
+{
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    dump_bb (f, bb);
+
+  m_cache.dump (f, false);
 }
 
 // If SCEV has any information about phi node NAME, return it as a range in R.

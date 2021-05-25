@@ -66,6 +66,7 @@ public:
   virtual void range_on_exit (irange &r, basic_block bb, tree name);
   void export_global_ranges ();
   void dump (FILE *f);
+  void dump_bb (FILE *f, basic_block bb);
 protected:
   bool fold_range_internal (irange &r, gimple *s, tree name);
   ranger_cache m_cache;
