@@ -2978,9 +2978,9 @@ else
 fi
 
 case "$enable_maintainer_mode" in
-  ("yes") maintainer_mode=yes ;;
-  ("no") maintainer=no ;;
-  (*) as_fn_error $? "unknown maintainer mode $enable_maintainer_mode" "$LINENO" 5 ;;
+  yes) maintainer_mode=yes ;;
+  no) maintainer_mode=no ;;
+  *) as_fn_error $? "unknown maintainer mode $enable_maintainer_mode" "$LINENO" 5 ;;
 esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking maintainer-mode" >&5
 $as_echo_n "checking maintainer-mode... " >&6; }
