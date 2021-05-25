@@ -2361,6 +2361,7 @@ package body Exp_Prag is
       S     : Entity_Id;
       E     : Entity_Id;
 
+      Remove_Inspection_Point : Boolean := False;
    begin
       if No (Pragma_Argument_Associations (N)) then
          A := New_List;
@@ -2400,6 +2401,36 @@ package body Exp_Prag is
          Expand (Expression (Assoc));
          Next (Assoc);
       end loop;
+
+      --  If any of the references have a freeze node, it must appear before
+      --  pragma Inspection_Point, otherwise the entity won't be available when
+      --  Gigi processes Inspection_Point.
+      --  When this requirement isn't met, turn the pragma into a no-op.
+
+      Assoc := First (Pragma_Argument_Associations (N));
+      while Present (Assoc) loop
+
+         if Present (Freeze_Node (Entity (Expression (Assoc)))) and then
+           not Is_Frozen (Entity (Expression (Assoc)))
+         then
+            Error_Msg_NE ("?inspection point references unfrozen object &",
+              Assoc,
+              Entity (Expression (Assoc)));
+            Remove_Inspection_Point := True;
+         end if;
+
+         Next (Assoc);
+      end loop;
+
+      if Remove_Inspection_Point then
+         Error_Msg_N ("\pragma will be ignored", N);
+
+         --  We can't just remove the pragma from the tree as it might be
+         --  iterated over by the caller. Turn it into a null statement
+         --  instead.
+
+         Rewrite (N, Make_Null_Statement (Sloc (N)));
+      end if;
    end Expand_Pragma_Inspection_Point;
 
    --------------------------------------
