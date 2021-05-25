@@ -1,3 +1,8 @@
+2021-05-24  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR c++/97938
+	* g++.dg/cpp2a/lambda-pack-init6.C: Use c++2a target selector.
+
 2021-05-21  Jason Merrill  <jason@redhat.com>
 
 	PR c++/97938
