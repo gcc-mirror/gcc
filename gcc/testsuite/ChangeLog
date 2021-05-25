@@ -1,3 +1,22 @@
+2021-05-24  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-05-10  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99960
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_s64.c:
+	Update now that we're (correctly) using full 128-bit vector
+	loads/stores.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_z_s64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vldrdq_gather_base_wb_z_u64.c:
+	Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vuninitializedq_int1.c:
+	Likewise.
+
 2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/derived_type7.adb, gnat.dg/derived_type7.ads: New test.
