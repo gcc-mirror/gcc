@@ -2250,11 +2250,13 @@ range_tests_legacy ()
   }
 
   // VARYING of different sizes should not be equal.
-  int_range_max r0 (integer_type_node);
-  int_range_max r1 (short_integer_type_node);
+  tree big_type = build_nonstandard_integer_type (32, 1);
+  tree small_type = build_nonstandard_integer_type (16, 1);
+  int_range_max r0 (big_type);
+  int_range_max r1 (small_type);
   ASSERT_TRUE (r0 != r1);
-  value_range vr0 (integer_type_node);
-  int_range_max vr1 (short_integer_type_node);
+  value_range vr0 (big_type);
+  int_range_max vr1 (small_type);
   ASSERT_TRUE (vr0 != vr1);
 }
 
