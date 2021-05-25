@@ -458,16 +458,6 @@ gori_compute::gori_compute ()
   // Create a boolean_type true and false range.
   m_bool_zero = int_range<2> (boolean_false_node, boolean_false_node);
   m_bool_one = int_range<2> (boolean_true_node, boolean_true_node);
-  unsigned x, lim = last_basic_block_for_fn (cfun);
-  // Calculate outgoing range info upfront.  This will fully populate the
-  // m_maybe_variant bitmap which will help eliminate processing of names
-  // which never have their ranges adjusted.
-  for (x = 0; x < lim ; x++)
-    {
-      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, x);
-      if (bb)
-	exports (bb);
-    }
 }
 
 // Provide a default of VARYING for all incoming SSA names.
