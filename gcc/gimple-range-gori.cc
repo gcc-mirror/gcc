@@ -91,21 +91,6 @@ is_gimple_logical_p (const gimple *gs)
     engine implements operations for.  */
 
 
-class range_def_chain
-{
-public:
-  range_def_chain ();
-  ~range_def_chain ();
-  bool has_def_chain (tree name);
-  bitmap get_def_chain (tree name);
-  bool in_chain_p (tree name, tree def);
-private:
-  vec<bitmap> m_def_chain;	// SSA_NAME : def chain components.
-  void build_def_chain (tree name, bitmap result, basic_block bb);
-  int m_logical_depth;
-};
-
-
 // Construct a range_def_chain.
 
 range_def_chain::range_def_chain ()
@@ -263,27 +248,6 @@ range_def_chain::get_def_chain (tree name)
    Generally speaking, the m_outgoing vector is the union of the
    entire def_chain of all SSA names used in the last statement of the
    block which generate ranges.  */
-
-class gori_map : public range_def_chain
-{
-public:
-  gori_map ();
-  ~gori_map ();
-
-  bool is_export_p (tree name, basic_block bb = NULL);
-  bool def_chain_in_export_p (tree name, basic_block bb);
-  bitmap exports (basic_block bb);
-  void set_range_invariant (tree name);
-
-  void dump (FILE *f);
-  void dump (FILE *f, basic_block bb);
-private:
-  bitmap_obstack m_bitmaps;
-  vec<bitmap> m_outgoing;	// BB: Outgoing ranges calculatable on edges
-  bitmap m_maybe_variant;	// Names which might have outgoing ranges.
-  void maybe_add_gori (tree name, basic_block bb);
-  void calculate_gori (basic_block bb);
-};
 
 
 // Initialize a gori-map structure.
@@ -494,7 +458,6 @@ gori_compute::gori_compute ()
   // Create a boolean_type true and false range.
   m_bool_zero = int_range<2> (boolean_false_node, boolean_false_node);
   m_bool_one = int_range<2> (boolean_true_node, boolean_true_node);
-  m_gori_map = new gori_map;
   unsigned x, lim = last_basic_block_for_fn (cfun);
   // Calculate outgoing range info upfront.  This will fully populate the
   // m_maybe_variant bitmap which will help eliminate processing of names
@@ -503,15 +466,8 @@ gori_compute::gori_compute ()
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (cfun, x);
       if (bb)
-	m_gori_map->exports (bb);
+	exports (bb);
     }
-}
-
-// Destruct a gori_compute_object.
-
-gori_compute::~gori_compute ()
-{
-  delete m_gori_map;
 }
 
 // Provide a default of VARYING for all incoming SSA names.
@@ -597,7 +553,7 @@ gori_compute::compute_operand_range_switch (irange &r, gswitch *s,
     }
 
   // If op1 is in the defintion chain, pass lhs back.
-  if (gimple_range_ssa_p (op1) && m_gori_map->in_chain_p (name, op1))
+  if (gimple_range_ssa_p (op1) && in_chain_p (name, op1))
     return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), lhs, name);
 
   return false;
@@ -635,8 +591,8 @@ gori_compute::compute_operand_range (irange &r, gimple *stmt,
 
   // NAME is not in this stmt, but one of the names in it ought to be
   // derived from it.
-  bool op1_in_chain = op1 && m_gori_map->in_chain_p (name, op1);
-  bool op2_in_chain = op2 && m_gori_map->in_chain_p (name, op2);
+  bool op1_in_chain = op1 && in_chain_p (name, op1);
+  bool op2_in_chain = op2 && in_chain_p (name, op2);
   if (op1_in_chain && op2_in_chain)
     return compute_operand1_and_operand2_range (r, stmt, lhs, name);
   if (op1_in_chain)
@@ -881,10 +837,8 @@ gori_compute::compute_logical_operands (irange &r, gimple *stmt,
   tree op2 = gimple_range_operand2 (stmt);
   gcc_checking_assert (op1 != name && op2 != name);
 
-  bool op1_in_chain = (gimple_range_ssa_p (op1)
-		       && m_gori_map->in_chain_p (name, op1));
-  bool op2_in_chain = (gimple_range_ssa_p (op2)
-		       && m_gori_map->in_chain_p (name, op2));
+  bool op1_in_chain = (gimple_range_ssa_p (op1) && in_chain_p (name, op1));
+  bool op2_in_chain = (gimple_range_ssa_p (op2) && in_chain_p (name, op2));
 
   // If neither operand is derived, then this stmt tells us nothing.
   if (!op1_in_chain && !op2_in_chain)
@@ -1014,18 +968,10 @@ gori_compute::has_edge_range_p (tree name, edge e)
 {
   // If no edge is specified, check if NAME is an export on any edge.
   if (!e)
-    return m_gori_map->is_export_p (name);
+    return is_export_p (name);
 
-  return (m_gori_map->is_export_p (name, e->src)
-	  || m_gori_map->def_chain_in_export_p (name, e->src));
-}
-
-// Clear the m_maybe_variant bit so ranges will not be tracked for NAME.
-
-void
-gori_compute::set_range_invariant (tree name)
-{
-  m_gori_map->set_range_invariant (name);
+  return (is_export_p (name, e->src)
+	  || def_chain_in_export_p (name, e->src));
 }
 
 // Dump what is known to GORI computes to listing file F.
@@ -1033,7 +979,7 @@ gori_compute::set_range_invariant (tree name)
 void
 gori_compute::dump (FILE *f)
 {
-  m_gori_map->dump (f);
+  gori_map::dump (f);
 }
 
 // Calculate a range on edge E and return it in R.  Try to evaluate a
@@ -1052,7 +998,7 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name)
     return false;
 
   // If NAME can be calculated on the edge, use that.
-  if (m_gori_map->is_export_p (name, e->src))
+  if (is_export_p (name, e->src))
     {
       if (compute_operand_range (r, stmt, lhs, name))
 	{

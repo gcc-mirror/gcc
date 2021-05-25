@@ -22,6 +22,49 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_RANGE_GORI_H
 #define GCC_GIMPLE_RANGE_GORI_H
 
+// RANGE_DEF_CHAIN is used to determine which SSA names in a block can
+// have range information calculated for them, and what the
+// dependencies on each other are.
+
+class range_def_chain
+{
+public:
+  range_def_chain ();
+  ~range_def_chain ();
+  bool has_def_chain (tree name);
+  bitmap get_def_chain (tree name);
+  bool in_chain_p (tree name, tree def);
+private:
+  vec<bitmap> m_def_chain;	// SSA_NAME : def chain components.
+  void build_def_chain (tree name, bitmap result, basic_block bb);
+  int m_logical_depth;
+};
+
+// GORI_MAP is used to accumulate what SSA names in a block can
+// generate range information, and provides tools for the block ranger
+// to enable it to efficiently calculate these ranges.
+
+class gori_map : public range_def_chain
+{
+public:
+  gori_map ();
+  ~gori_map ();
+
+  bool is_export_p (tree name, basic_block bb = NULL);
+  bool def_chain_in_export_p (tree name, basic_block bb);
+  bitmap exports (basic_block bb);
+  void set_range_invariant (tree name);
+
+  void dump (FILE *f);
+  void dump (FILE *f, basic_block bb);
+private:
+  bitmap_obstack m_bitmaps;
+  vec<bitmap> m_outgoing;	// BB: Outgoing ranges calculatable on edges
+  bitmap m_maybe_variant;	// Names which might have outgoing ranges.
+  void maybe_add_gori (tree name, basic_block bb);
+  void calculate_gori (basic_block bb);
+};
+
 
 // This class is used to determine which SSA_NAMES can have ranges
 // calculated for them on outgoing edges from basic blocks.  This represents
@@ -65,14 +108,12 @@ along with GCC; see the file COPYING3.  If not see
 //
 // The remaining routines are internal use only.
 
-class gori_compute 
+class gori_compute : public gori_map
 {
 public:
   gori_compute ();
-  ~gori_compute ();
   bool outgoing_edge_range_p (irange &r, edge e, tree name);
   bool has_edge_range_p (tree name, edge e = NULL);
-  void set_range_invariant (tree name);
   void dump (FILE *f);
 protected:
   virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
@@ -107,7 +148,6 @@ private:
   bool compute_operand1_and_operand2_range (irange &r, gimple *stmt,
 					    const irange &lhs, tree name);
 
-  class gori_map *m_gori_map;
   gimple_outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
 };
 
