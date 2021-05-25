@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <csignal>
 #include <cstring>
 #include <cstdarg>
+#include <cstdlib>
 // OS
 #include <unistd.h>
 #include <sys/types.h>
