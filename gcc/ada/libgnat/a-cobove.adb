@@ -415,7 +415,7 @@ package body Ada.Containers.Bounded_Vectors is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Constant_Reference_Type :=
-           (Element => A (J)'Access,
+           (Element => A (J)'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
@@ -439,7 +439,7 @@ package body Ada.Containers.Bounded_Vectors is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Constant_Reference_Type :=
-           (Element => A (J)'Access,
+           (Element => A (J)'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
@@ -2238,7 +2238,7 @@ package body Ada.Containers.Bounded_Vectors is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Reference_Type :=
-           (Element => A (J)'Access,
+           (Element => A (J)'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
@@ -2262,7 +2262,7 @@ package body Ada.Containers.Bounded_Vectors is
            Container.TC'Unrestricted_Access;
       begin
          return R : constant Reference_Type :=
-           (Element => A (J)'Access,
+           (Element => A (J)'Unchecked_Access,
             Control => (Controlled with TC))
          do
             Busy (TC.all);
