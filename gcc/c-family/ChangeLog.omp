@@ -1,3 +1,12 @@
+2021-05-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-omp.c (c_omp_split_clauses): Copy reduction to teams when teams is
+	combined with simd and not with taskloop or for.
+
 2021-05-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

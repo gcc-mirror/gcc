@@ -1,3 +1,11 @@
+2021-05-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* testsuite/libgomp.c-c++-common/reduction-17.c: New test.
+
 2021-05-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
