@@ -1,3 +1,53 @@
+2021-05-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/96088
+	* include/bits/hashtable_policy.h (_Select2nd): New.
+	(_NodeBuilder<>): New.
+	(_ReuseOrAllocNode<>::operator()): Use variadic template args.
+	(_AllocNode<>::operator()): Likewise.
+	* include/bits/hashtable.h
+	(_Hashtable<>::__node_builder_t): New.
+	(_Hashtable<>::_M_insert_unique<>(_Kt&&, _Arg&&, const _NodeGenerator&)):
+	 New.
+	(_Hashtable<>::_S_forward_key): New.
+	(_Hashtable<>::_M_insert): Use latter.
+	(_Hashtable<>::_M_insert(const_iterator, _Arg&&, const _NodeGenerator&, false_type)):
+	Instantiate node first, compute hash code second.
+	* testsuite/23_containers/unordered_map/96088.cc: New test.
+	* testsuite/23_containers/unordered_multimap/96088.cc: New test.
+	* testsuite/23_containers/unordered_multiset/96088.cc: New test.
+	* testsuite/23_containers/unordered_set/96088.cc: New test.
+	* testsuite/util/replacement_memory_operators.h
+	(counter::_M_increment): New.
+	(counter::_M_decrement): New.
+	(counter::reset()): New.
+
+2021-05-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100479
+	* include/std/ranges (__detail::__non_propagating_cache): Move
+	definition up to before that of _CachedPosition.  Make base
+	class _Optional_base protected instead of private.  Add const
+	overload for operator*.
+	(__detail::_CachedPosition): Rewrite the partial specialization
+	for forward ranges as a derived class of __non_propagating_cache.
+	Remove the size constraint on the partial specialization for
+	random access ranges.  Add copy/move/copy-assignment/move-assignment
+	members to the offset partial specialization for random
+	access ranges that propagate the cached value but additionally
+	invalidate it in the source object on move.
+	* testsuite/std/ranges/adaptors/100479.cc: New test.
+
+2021-05-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/inplace_merge/constrained.cc: Qualify
+	call to ranges::next.
+	* testsuite/25_algorithms/is_sorted/constrained.cc: Likewise.
+	* testsuite/25_algorithms/is_sorted_until/constrained.cc:
+	Likewise.
+	* testsuite/25_algorithms/swap_ranges/1.cc: Qualify call to
+	swap_ranges.
+
 2021-05-21  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/100606

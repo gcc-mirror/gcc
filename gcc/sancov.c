@@ -313,9 +313,9 @@ public:
     return new pass_sancov<O0> (m_ctxt);
   }
   virtual bool
-  gate (function *)
+  gate (function *fun)
   {
-    return flag_sanitize_coverage && (!O0 || !optimize);
+    return sanitize_coverage_p (fun->decl) && (!O0 || !optimize);
   }
   virtual unsigned int
   execute (function *fun)

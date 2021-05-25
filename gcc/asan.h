@@ -249,4 +249,14 @@ sanitize_flags_p (unsigned int flag, const_tree fn = current_function_decl)
   return result_flags;
 }
 
+/* Return true when coverage sanitization should happend for FN function.  */
+
+static inline bool
+sanitize_coverage_p (const_tree fn = current_function_decl)
+{
+  return (flag_sanitize_coverage
+	  && lookup_attribute ("no_sanitize_coverage",
+			       DECL_ATTRIBUTES (fn)) == NULL_TREE);
+}
+
 #endif /* TREE_ASAN */

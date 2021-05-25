@@ -1828,6 +1828,9 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	      init = build2 (INIT_EXPR, void_type_node, decl, init);
 	      gimplify_and_add (init, seq_p);
 	      ggc_free (init);
+	      /* Clear TREE_READONLY if we really have an initialization.  */
+	      if (!DECL_INITIAL (decl))
+		TREE_READONLY (decl) = 0;
 	    }
 	  else
 	    /* We must still examine initializers for static variables

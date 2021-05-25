@@ -2258,6 +2258,14 @@ Vector registers.
 
 @item z
 Stack pointer register (SP).
+
+@item Q
+A memory address which uses a base register with a short offset
+or with a index register with its scale.
+
+@item W
+A memory address which uses a base register with a index register
+with its scale.
 @end table
 
 @ifset INTERNALS

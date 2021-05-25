@@ -3446,7 +3446,7 @@ setup_one_parameter (copy_body_data *id, tree p, tree value, tree fn,
 	 sure that it cannot be modified from another path in the callee.  */
       if ((is_gimple_min_invariant (value)
 	   || (DECL_P (value) && TREE_READONLY (value))
-	   || (auto_var_in_fn_p (value, id->src_fn)
+	   || (auto_var_in_fn_p (value, id->dst_fn)
 	       && !TREE_ADDRESSABLE (value)))
 	  && useless_type_conversion_p (TREE_TYPE (p), TREE_TYPE (value))
 	  /* We have to be very careful about ADDR_EXPR.  Make sure

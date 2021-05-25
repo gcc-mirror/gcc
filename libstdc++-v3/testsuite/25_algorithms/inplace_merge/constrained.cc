@@ -41,7 +41,7 @@ test01()
 	ranges::sort(v);
 
 	test_range<int, bidirectional_iterator_wrapper> rz(v.data(), v.data()+i+j);
-	auto result = ranges::inplace_merge(rz, next(ranges::begin(rz), i));
+	auto result = ranges::inplace_merge(rz, ranges::next(ranges::begin(rz), i));
 	VERIFY( result == rz.end() );
 
 	VERIFY( ranges::is_sorted(rz) );

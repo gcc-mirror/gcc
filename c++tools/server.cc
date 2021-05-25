@@ -1,5 +1,5 @@
 /* C++ modules.  Experimental!
-   Copyright (C) 2018-2020 Free Software Foundation, Inc.
+   Copyright (C) 2018-2021 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
    This file is part of GCC.
@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <csignal>
 #include <cstring>
 #include <cstdarg>
+#include <cstdlib>
 // OS
 #include <unistd.h>
 #include <sys/types.h>
@@ -290,7 +291,7 @@ static void ATTRIBUTE_NORETURN
 print_version (void)
 {
   fnotice (stdout, "%s %s%s\n", progname, pkgversion_string, version_string);
-  fprintf (stdout, "Copyright %s 2018-2020 Free Software Foundation, Inc.\n",
+  fprintf (stdout, "Copyright %s 2018-2021 Free Software Foundation, Inc.\n",
 	   ("(C)"));
   fnotice (stdout,
 	   ("This is free software; see the source for copying conditions.\n"

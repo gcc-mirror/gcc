@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "tree-pretty-print.h"
 #include "fold-const.h"
+#include "gimple-range.h"
 
 // Here we copy between any two irange's.  The ranges can be legacy or
 // multi-ranges, and copying between any combination works correctly.
@@ -454,8 +455,10 @@ irange::legacy_equal_p (const irange &other) const
 
   if (m_kind != other.m_kind)
    return false;
-  if (m_kind == VR_UNDEFINED || m_kind == VR_VARYING)
+  if (m_kind == VR_UNDEFINED)
     return true;
+  if (m_kind == VR_VARYING)
+    return range_compatible_p (type (), other.type ());
   return (vrp_operand_equal_p (tree_lower_bound (0),
 			       other.tree_lower_bound (0))
 	  && vrp_operand_equal_p (tree_upper_bound (0),
@@ -2245,6 +2248,16 @@ range_tests_legacy ()
     copy = legacy_range;
     ASSERT_TRUE (copy.varying_p ());
   }
+
+  // VARYING of different sizes should not be equal.
+  tree big_type = build_nonstandard_integer_type (32, 1);
+  tree small_type = build_nonstandard_integer_type (16, 1);
+  int_range_max r0 (big_type);
+  int_range_max r1 (small_type);
+  ASSERT_TRUE (r0 != r1);
+  value_range vr0 (big_type);
+  int_range_max vr1 (small_type);
+  ASSERT_TRUE (vr0 != vr1);
 }
 
 // Simulate -fstrict-enums where the domain of a type is less than the

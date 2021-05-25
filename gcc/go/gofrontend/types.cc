@@ -1410,10 +1410,12 @@ Type::make_type_descriptor_var(Gogo* gogo)
   // ensure that type_descriptor_pointer will work if called while
   // converting INITIALIZER.
 
+  unsigned int flags = 0;
+  if (is_common)
+    flags |= Backend::variable_is_common;
   this->type_descriptor_var_ =
     gogo->backend()->immutable_struct(bname.name(), bname.optional_asm_name(),
-				      false, is_common, initializer_btype,
-				      loc);
+				      flags, initializer_btype, loc);
   if (phash != NULL)
     *phash = this->type_descriptor_var_;
 
@@ -1422,7 +1424,7 @@ Type::make_type_descriptor_var(Gogo* gogo)
   Bexpression* binitializer = initializer->get_backend(&context);
 
   gogo->backend()->immutable_struct_set_init(this->type_descriptor_var_,
-					     bname.name(), false, is_common,
+					     bname.name(), flags,
 					     initializer_btype, loc,
 					     binitializer);
 
@@ -2714,9 +2716,13 @@ Type::make_gc_symbol_var(Gogo* gogo)
   // Since we are building the GC symbol in this package, we must create the
   // variable before converting the initializer to its backend representation
   // because the initializer may refer to the GC symbol for this type.
+  unsigned int flags = Backend::variable_is_constant;
+  if (is_common)
+    flags |= Backend::variable_is_common;
+  else
+    flags |= Backend::variable_is_hidden;
   this->gc_symbol_var_ =
-      gogo->backend()->implicit_variable(sym_name, "", sym_btype, false, true,
-					 is_common, 0);
+    gogo->backend()->implicit_variable(sym_name, "", sym_btype, flags, 0);
   if (phash != NULL)
     *phash = this->gc_symbol_var_;
 
@@ -2724,8 +2730,7 @@ Type::make_gc_symbol_var(Gogo* gogo)
   context.set_is_const();
   Bexpression* sym_binit = sym_init->get_backend(&context);
   gogo->backend()->implicit_variable_set_init(this->gc_symbol_var_, sym_name,
-					      sym_btype, false, true, is_common,
-					      sym_binit);
+					      sym_btype, flags, sym_binit);
 }
 
 // Return whether this type needs a GC program, and set *PTRDATA to
@@ -3013,11 +3018,12 @@ Type::gc_ptrmask_var(Gogo* gogo, int64_t ptrsize, int64_t ptrdata)
   Bexpression* bval = val->get_backend(&context);
 
   Btype *btype = val->type()->get_backend(gogo);
+  unsigned int flags = (Backend::variable_is_constant
+			| Backend::variable_is_common);
   Bvariable* ret = gogo->backend()->implicit_variable(sym_name, "",
-						      btype, false, true,
-						      true, 0);
-  gogo->backend()->implicit_variable_set_init(ret, sym_name, btype, false,
-					      true, true, bval);
+						      btype, flags, 0);
+  gogo->backend()->implicit_variable_set_init(ret, sym_name, btype, flags,
+					      bval);
   ins.first->second = ret;
   return ret;
 }
@@ -8145,11 +8151,12 @@ Map_type::backend_zero_value(Gogo* gogo)
   Btype* barray_type = gogo->backend()->array_type(buint8_type, blength);
 
   std::string zname = Map_type::zero_value->name();
+  unsigned int flags = Backend::variable_is_common;
   Bvariable* zvar =
-      gogo->backend()->implicit_variable(zname, "", barray_type, false, false,
-					 true, Map_type::zero_value_align);
+    gogo->backend()->implicit_variable(zname, "", barray_type, flags,
+				       Map_type::zero_value_align);
   gogo->backend()->implicit_variable_set_init(zvar, zname, barray_type,
-					      false, false, true, NULL);
+					      flags, NULL);
   return zvar;
 }
 
