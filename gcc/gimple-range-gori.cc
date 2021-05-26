@@ -176,6 +176,8 @@ range_def_chain::register_dependency (tree name, tree dep, basic_block bb)
     return;
 
   unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_def_chain.length ())
+    m_def_chain.safe_grow_cleared (num_ssa_names + 1);
   struct rdc &src = m_def_chain[v];
   gimple *def_stmt = SSA_NAME_DEF_STMT (dep);
   unsigned dep_v = SSA_NAME_VERSION (dep);
