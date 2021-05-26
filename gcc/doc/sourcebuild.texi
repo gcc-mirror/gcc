@@ -1740,6 +1740,12 @@ circumstances.
 @item vect_variable_length
 Target has variable-length vectors.
 
+@item vect64
+Target supports vectors of 64 bits.
+
+@item vect32
+Target supports vectors of 32 bits.
+
 @item vect_widen_sum_hi_to_si
 Target supports a vector widening summation of @code{short} operands
 into @code{int} results, or can promote (unpack) from @code{short}
