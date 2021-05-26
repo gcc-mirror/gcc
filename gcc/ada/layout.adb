@@ -498,6 +498,7 @@ package body Layout is
          --  in GNAT, i.e. when Packed_Array_Impl_Type is set.
 
          if Is_Array_Type (E)
+           and then Present (First_Index (E))  --  Skip types in error
            and then Number_Dimensions (E) = 1
            and then not Present (Packed_Array_Impl_Type (E))
            and then Has_Pragma_Pack (E)
