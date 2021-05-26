@@ -1,3 +1,7 @@
+2021-05-25  Martin Liska  <mliska@suse.cz>
+
+	* doc/share/conf.py: Fix Sphinx 4.0.x error.
+
 2021-05-21  Piotr Trojanek  <trojanek@adacore.com>
 
 	* gcc-interface/trans.c (Raise_Error_to_gnu): Add an assertion.

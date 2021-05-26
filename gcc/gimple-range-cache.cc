@@ -474,42 +474,27 @@ ssa_global_cache::dump (FILE *f)
 // --------------------------------------------------------------------------
 
 
-// This struct provides a timestamp for a global range calculation.
-// it contains the time counter, as well as a limited number of ssa-names
-// that it is dependent upon.  If the timestamp for any of the dependent names
-// Are newer, then this range could need updating.
-
-struct range_timestamp
-{
-  unsigned time;
-  unsigned ssa1;
-  unsigned ssa2;
-};
-
 // This class will manage the timestamps for each ssa_name.
-// When a value is calcualted, its timestamp is set to the current time.
-// The ssanames it is dependent on have already been calculated, so they will
-// have older times.  If one fo those values is ever calculated again, it
-// will get a newer timestamp, and the "current_p" check will fail.
+// When a value is calculated, the timestamp is set to the current time.
+// Current time is then incremented.  Any dependencies will already have
+// been calculated, and will thus have older timestamps.
+// If one of those values is ever calculated again, it will get a newer
+// timestamp, and the "current_p" check will fail.
 
 class temporal_cache
 {
 public:
   temporal_cache ();
   ~temporal_cache ();
-  bool current_p (tree name) const;
+  bool current_p (tree name, tree dep1, tree dep2) const;
   void set_timestamp (tree name);
-  void set_dependency (tree name, tree dep);
   void set_always_current (tree name);
 private:
   unsigned temporal_value (unsigned ssa) const;
-  const range_timestamp *get_timestamp (unsigned ssa) const;
-  range_timestamp *get_timestamp (unsigned ssa);
 
   unsigned m_current_time;
-  vec <range_timestamp> m_timestamp;
+  vec <unsigned> m_timestamp;
 };
-
 
 inline
 temporal_cache::temporal_cache ()
@@ -525,65 +510,35 @@ temporal_cache::~temporal_cache ()
   m_timestamp.release ();
 }
 
-// Return a pointer to the timetamp for ssa-name at index SSA, if there is
-// one, otherwise return NULL.
-
-inline const range_timestamp *
-temporal_cache::get_timestamp (unsigned ssa) const
-{
-  if (ssa >= m_timestamp.length ())
-    return NULL;
-  return &(m_timestamp[ssa]);
-}
-
-// Return a reference to the timetamp for ssa-name at index SSA.  If the index
-// is past the end of the vector, extend the vector.
-
-inline range_timestamp *
-temporal_cache::get_timestamp (unsigned ssa)
-{
-  if (ssa >= m_timestamp.length ())
-    m_timestamp.safe_grow_cleared (num_ssa_names + 20);
-  return &(m_timestamp[ssa]);
-}
-
-// This routine will fill NAME's next operand slot with DEP if DEP is a valid
-// SSA_NAME and there is a free slot.
-
-inline void
-temporal_cache::set_dependency (tree name, tree dep)
-{
-  if (dep && TREE_CODE (dep) == SSA_NAME)
-    {
-      gcc_checking_assert (get_timestamp (SSA_NAME_VERSION (name)));
-      range_timestamp& ts = *(get_timestamp (SSA_NAME_VERSION (name)));
-      if (!ts.ssa1)
-	ts.ssa1 = SSA_NAME_VERSION (dep);
-      else if (!ts.ssa2 && ts.ssa1 != SSA_NAME_VERSION (name))
-	ts.ssa2 = SSA_NAME_VERSION (dep);
-    }
-}
-
 // Return the timestamp value for SSA, or 0 if there isnt one.
+
 inline unsigned
 temporal_cache::temporal_value (unsigned ssa) const
 {
-  const range_timestamp *ts = get_timestamp (ssa);
-  return ts ? ts->time : 0;
+  if (ssa >= m_timestamp.length ())
+    return 0;
+  return m_timestamp[ssa];
 }
 
 // Return TRUE if the timestampe for NAME is newer than any of its dependents.
+// Up to 2 dependencies can be checked.
 
 bool
-temporal_cache::current_p (tree name) const
+temporal_cache::current_p (tree name, tree dep1, tree dep2) const
 {
-  const range_timestamp *ts = get_timestamp (SSA_NAME_VERSION (name));
-  if (!ts || ts->time == 0)
+  unsigned ts = temporal_value (SSA_NAME_VERSION (name));
+  if (ts == 0)
     return true;
+
   // Any non-registered dependencies will have a value of 0 and thus be older.
   // Return true if time is newer than either dependent.
-  return ts->time > temporal_value (ts->ssa1)
-	 && ts->time > temporal_value (ts->ssa2);
+
+  if (dep1 && ts < temporal_value (SSA_NAME_VERSION (dep1)))
+    return false;
+  if (dep2 && ts < temporal_value (SSA_NAME_VERSION (dep2)))
+    return false;
+
+  return true;
 }
 
 // This increments the global timer and sets the timestamp for NAME.
@@ -591,8 +546,10 @@ temporal_cache::current_p (tree name) const
 inline void
 temporal_cache::set_timestamp (tree name)
 {
-  gcc_checking_assert (get_timestamp (SSA_NAME_VERSION (name)));
-  get_timestamp (SSA_NAME_VERSION (name))->time = ++m_current_time;
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_timestamp.length ())
+    m_timestamp.safe_grow_cleared (num_ssa_names + 20);
+  m_timestamp[v] = ++m_current_time;
 }
 
 // Set the timestamp to 0, marking it as "always up to date".
@@ -600,10 +557,11 @@ temporal_cache::set_timestamp (tree name)
 inline void
 temporal_cache::set_always_current (tree name)
 {
-  gcc_checking_assert (get_timestamp (SSA_NAME_VERSION (name)));
-  get_timestamp (SSA_NAME_VERSION (name))->time = 0;
+  unsigned v = SSA_NAME_VERSION (name);
+  if (v >= m_timestamp.length ())
+    m_timestamp.safe_grow_cleared (num_ssa_names + 20);
+  m_timestamp[v] = 0;
 }
-
 
 // --------------------------------------------------------------------------
 
@@ -618,6 +576,16 @@ ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
   m_poor_value_list.safe_grow_cleared (20);
   m_poor_value_list.truncate (0);
   m_temporal = new temporal_cache;
+  unsigned x, lim = last_basic_block_for_fn (cfun);
+  // Calculate outgoing range info upfront.  This will fully populate the
+  // m_maybe_variant bitmap which will help eliminate processing of names
+  // which never have their ranges adjusted.
+  for (x = 0; x < lim ; x++)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (cfun, x);
+      if (bb)
+	exports (bb);
+    }
 }
 
 ranger_cache::~ranger_cache ()
@@ -672,7 +640,7 @@ ranger_cache::get_non_stale_global_range (irange &r, tree name)
 {
   if (m_globals.get_global_range (r, name))
     {
-      if (m_temporal->current_p (name))
+      if (m_temporal->current_p (name, depend1 (name), depend2 (name)))
 	return true;
     }
   else
@@ -716,16 +684,6 @@ ranger_cache::set_global_range (tree name, const irange &r)
     }
   else
     m_temporal->set_timestamp (name);
-}
-
-// Register a dependency on DEP to name.  If the timestamp for DEP is ever
-// greateer than the timestamp for NAME, then it is newer and NAMEs value
-// becomes stale.
-
-void
-ranger_cache::register_dependency (tree name, tree dep)
-{
-  m_temporal->set_dependency (name, dep);
 }
 
 // Push a request for a new lookup in block BB of name.  Return true if

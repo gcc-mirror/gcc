@@ -512,9 +512,6 @@ csky_cpu_cpp_builtins (cpp_reader *pfile)
 #undef	TARGET_SPLIT_COMPLEX_ARG
 #define TARGET_SPLIT_COMPLEX_ARG hook_bool_const_tree_true
 
-#undef	TARGET_PROMOTE_PROTOTYPES
-#define TARGET_PROMOTE_PROTOTYPES hook_bool_const_tree_true
-
 #undef	TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 
@@ -610,9 +607,6 @@ csky_default_logical_op_non_short_circuit (void)
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P csky_modes_tieable_p
-
-#undef TARGET_CAN_CHANGE_MODE_CLASS
-#define TARGET_CAN_CHANGE_MODE_CLASS csky_can_change_mode_class
 
 #undef	TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE csky_conditional_register_usage
@@ -2373,19 +2367,6 @@ csky_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	   && (mode1 == DFmode || mode2 == DFmode));
 }
 
-/* Implement TARGET_CAN_CHANGE_MODE_CLASS.
-   V_REG registers can't do subreg as all values are reformatted to
-   internal precision.  */
-
-static bool
-csky_can_change_mode_class (machine_mode from,
-			    machine_mode to,
-			    reg_class_t rclass)
-{
-  return (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
-	  || !reg_classes_intersect_p (V_REGS, rclass));
-}
-
 /* Implement TARGET_CLASS_LIKELY_SPILLED_P.
    We need to define this for MINI_REGS when we only use r0 - r7.
    Otherwise we can end up using r0-r4 for function arguments, and don't
@@ -3155,7 +3136,8 @@ ck810_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
   /* The follow index is for ldr instruction, the ldr cannot
      load dword data, so the mode size should not be larger than
      4.  */
-  else if (GET_MODE_SIZE (mode) <= 4)
+  else if (GET_MODE_SIZE (mode) <= 4
+	   || (TARGET_HARD_FLOAT && CSKY_VREG_MODE_P (mode)))
     {
       if (is_csky_address_register_rtx_p (index, strict_p))
 	return 1;

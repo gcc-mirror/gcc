@@ -1,3 +1,9 @@
+2021-05-25  Tobias Burnus  <tobias@codesourcery.com>
+	    Johannes Nendwich  <a08727063@unet.univie.ac.at>
+
+	* intrinsic.texi (GERROR, GETARGS, GETLOG, NORM2, PARITY, RANDOM_INIT,
+	RANDOM_NUMBER): Fix typos and copy'n'paste errors.
+
 2021-05-24  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR fortran/86470

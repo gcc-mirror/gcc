@@ -1,3 +1,22 @@
+2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/100731
+	* server.cc: Include <cstdlib>.
+
+2021-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (--enable-maintainer-mode): Fix typo and weird syntax.
+	* configure: Regenerate.
+
+2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* Makefile.in: Update copyright year.
+	* configure.ac: Likewise.
+	* resolver.cc: Likewise.
+	* resolver.h: Likewise.
+	* server.cc: Likewise.
+	(print_version): Update copyright notice date.
+
 2021-05-10  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Include also ../gcc folder.

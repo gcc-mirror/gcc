@@ -539,3 +539,29 @@
     emit_insn (gen_mve_vst4q<mode> (operands[0], operands[1]));
   DONE;
 })
+
+(define_expand "reduc_plus_scal_<mode>"
+  [(match_operand:<V_elem> 0 "nonimmediate_operand")
+   (match_operand:VQ 1 "s_register_operand")]
+  "ARM_HAVE_<MODE>_ARITH
+   && !(TARGET_HAVE_MVE && FLOAT_MODE_P (<MODE>mode))
+   && !BYTES_BIG_ENDIAN"
+{
+  if (TARGET_NEON)
+    {
+      rtx step1 = gen_reg_rtx (<V_HALF>mode);
+
+      emit_insn (gen_quad_halves_plus<mode> (step1, operands[1]));
+      emit_insn (gen_reduc_plus_scal_<V_half> (operands[0], step1));
+    }
+  else
+    {
+      /* vaddv generates a 32 bits accumulator.  */
+      rtx op0 = gen_reg_rtx (SImode);
+
+      emit_insn (gen_mve_vaddvq (VADDVQ_S, <MODE>mode, op0, operands[1]));
+      emit_move_insn (operands[0], gen_lowpart (<V_elem>mode, op0));
+    }
+
+  DONE;
+})

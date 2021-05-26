@@ -9,6 +9,11 @@ void abort ();
 #define M(x, y, z) O(x, y, z)
 #define O(x, y, z) x ## _ ## y ## _ ## z
 
+#define DO_PRAGMA(x) _Pragma (#x)
+#define OMPTEAMS DO_PRAGMA (omp target teams)
+#define OMPFROM(v) DO_PRAGMA (omp target update from(v))
+#define OMPTO(v) DO_PRAGMA (omp target update to(v))
+
 #pragma omp declare target
 
 #define F distribute
@@ -81,33 +86,30 @@ int
 main ()
 {
   int err = 0;
-  #pragma omp target teams reduction(|:err)
-    {
-      err |= test_d_normal ();
-      err |= test_d_ds128_normal ();
-      err |= test_ds_normal ();
-      err |= test_ds_ds128_normal ();
-      err |= test_dpf_static ();
-      err |= test_dpf_static32 ();
-      err |= test_dpf_auto ();
-      err |= test_dpf_guided32 ();
-      err |= test_dpf_runtime ();
-      err |= test_dpf_ds128_static ();
-      err |= test_dpf_ds128_static32 ();
-      err |= test_dpf_ds128_auto ();
-      err |= test_dpf_ds128_guided32 ();
-      err |= test_dpf_ds128_runtime ();
-      err |= test_dpfs_static ();
-      err |= test_dpfs_static32 ();
-      err |= test_dpfs_auto ();
-      err |= test_dpfs_guided32 ();
-      err |= test_dpfs_runtime ();
-      err |= test_dpfs_ds128_static ();
-      err |= test_dpfs_ds128_static32 ();
-      err |= test_dpfs_ds128_auto ();
-      err |= test_dpfs_ds128_guided32 ();
-      err |= test_dpfs_ds128_runtime ();
-    }
+  err |= test_d_normal ();
+  err |= test_d_ds128_normal ();
+  err |= test_ds_normal ();
+  err |= test_ds_ds128_normal ();
+  err |= test_dpf_static ();
+  err |= test_dpf_static32 ();
+  err |= test_dpf_auto ();
+  err |= test_dpf_guided32 ();
+  err |= test_dpf_runtime ();
+  err |= test_dpf_ds128_static ();
+  err |= test_dpf_ds128_static32 ();
+  err |= test_dpf_ds128_auto ();
+  err |= test_dpf_ds128_guided32 ();
+  err |= test_dpf_ds128_runtime ();
+  err |= test_dpfs_static ();
+  err |= test_dpfs_static32 ();
+  err |= test_dpfs_auto ();
+  err |= test_dpfs_guided32 ();
+  err |= test_dpfs_runtime ();
+  err |= test_dpfs_ds128_static ();
+  err |= test_dpfs_ds128_static32 ();
+  err |= test_dpfs_ds128_auto ();
+  err |= test_dpfs_ds128_guided32 ();
+  err |= test_dpfs_ds128_runtime ();
   if (err)
     abort ();
   return 0;
