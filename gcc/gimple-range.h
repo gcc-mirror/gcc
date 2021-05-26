@@ -252,17 +252,6 @@ private:
 // Flag to enable debugging the various internal Caches.
 #define DEBUG_RANGE_CACHE (dump_file && (param_evrp_mode & EVRP_MODE_DEBUG))
 
-// Global ranges for SSA names using SSA_NAME_RANGE_INFO.
-
-class global_range_query : public range_query
-{
-public:
-  bool range_of_expr (irange &r, tree expr, gimple * = NULL) OVERRIDE;
-};
-
-extern global_range_query global_ranges;
-extern value_range gimple_range_global (tree name);
-
 extern gimple_ranger *enable_ranger (struct function *);
 extern void disable_ranger (struct function *);
 

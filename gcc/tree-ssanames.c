@@ -423,31 +423,6 @@ set_range_info (tree name, const value_range &vr)
   set_range_info (name, vr.kind (), min, max);
 }
 
-/* Gets range information corresponding to ssa_name NAME and stores it
-   in a value_range VR.  Returns the value_range_kind.  */
-
-enum value_range_kind
-get_range_info (const_tree name, irange &vr)
-{
-  tree type = TREE_TYPE (name);
-  gcc_checking_assert (!POINTER_TYPE_P (type));
-  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-
-  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
-
-  /* Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
-     with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.  */
-  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
-	      > 2 * HOST_BITS_PER_WIDE_INT))
-    vr.set_varying (type);
-  else
-    vr.set (wide_int_to_tree (type, ri->get_min ()),
-	    wide_int_to_tree (type, ri->get_max ()),
-	    SSA_NAME_RANGE_TYPE (name));
-
-  return vr.kind ();
-}
-
 /* Set nonnull attribute to pointer NAME.  */
 
 void
@@ -456,25 +431,6 @@ set_ptr_nonnull (tree name)
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
   struct ptr_info_def *pi = get_ptr_info (name);
   pi->pt.null = 0;
-}
-
-/* Return nonnull attribute of pointer NAME.  */
-bool
-get_ptr_nonnull (const_tree name)
-{
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
-  if (pi == NULL)
-    return false;
-  /* TODO Now pt->null is conservatively set to true in PTA
-     analysis. vrp is the only pass (including ipa-vrp)
-     that clears pt.null via set_ptr_nonull when it knows
-     for sure. PTA will preserves the pt.null value set by VRP.
-
-     When PTA analysis is improved, pt.anything, pt.nonlocal
-     and pt.escaped may also has to be considered before
-     deciding that pointer cannot point to NULL.  */
-  return !pi->pt.null;
 }
 
 /* Change non-zero bits bitmask of NAME.  */
