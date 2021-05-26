@@ -1276,19 +1276,20 @@ get_size_range (range_query *query, tree exp, gimple *stmt, tree range[2],
   wide_int min, max;
   enum value_range_kind range_type;
 
+  if (!query)
+    query = get_global_range_query ();
+
   if (integral)
     {
       value_range vr;
-      if (query && query->range_of_expr (vr, exp, stmt))
-	{
-	  if (vr.undefined_p ())
-	    vr.set_varying (TREE_TYPE (exp));
-	  range_type = vr.kind ();
-	  min = wi::to_wide (vr.min ());
-	  max = wi::to_wide (vr.max ());
-	}
-      else
-	range_type = determine_value_range (exp, &min, &max);
+
+      query->range_of_expr (vr, exp, stmt);
+
+      if (vr.undefined_p ())
+	vr.set_varying (TREE_TYPE (exp));
+      range_type = vr.kind ();
+      min = wi::to_wide (vr.min ());
+      max = wi::to_wide (vr.max ());
     }
   else
     range_type = VR_VARYING;
