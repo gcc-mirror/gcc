@@ -234,9 +234,10 @@ begin
          Error_Msg ("\\found unit $!", Loc);
       end if;
 
-      --  In both cases, remove the unit so that it is out of the way later
+      --  In both cases, flag the fatal error and give up
 
-      Remove_Unit (Cur_Unum);
+      Set_Fatal_Error (Cur_Unum, Error_Detected);
+      return;
    end if;
 
    --  If current unit is a body, load its corresponding spec
