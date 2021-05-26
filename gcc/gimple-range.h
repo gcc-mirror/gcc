@@ -66,6 +66,7 @@ public:
   virtual void range_on_exit (irange &r, basic_block bb, tree name);
   void export_global_ranges ();
   void dump (FILE *f);
+  void dump_bb (FILE *f, basic_block bb);
 protected:
   bool fold_range_internal (irange &r, gimple *s, tree name);
   ranger_cache m_cache;
@@ -83,10 +84,10 @@ class fur_source
 public:
   inline fur_source (range_query *q, edge e);
   inline fur_source (range_query *q, gimple *s);
-  inline fur_source (range_query *q, class ranger_cache *g, edge e, gimple *s);
+  inline fur_source (range_query *q, gori_compute *g, edge e, gimple *s);
   bool get_operand (irange &r, tree expr);
 protected:
-  ranger_cache *m_cache;
+  gori_compute *m_gori;
   range_query *m_query;
   edge m_edge;
   gimple *m_stmt;
@@ -123,7 +124,7 @@ inline
 fur_source::fur_source (range_query *q, edge e)
 {
   m_query = q;
-  m_cache = NULL;
+  m_gori = NULL;
   m_edge = e;
   m_stmt = NULL;
 }
@@ -134,7 +135,7 @@ inline
 fur_source::fur_source (range_query *q, gimple *s)
 {
   m_query = q;
-  m_cache = NULL;
+  m_gori = NULL;
   m_edge = NULL;
   m_stmt = s;
 }
@@ -143,10 +144,10 @@ fur_source::fur_source (range_query *q, gimple *s)
 // and can also set the dependency information as appropriate when invoked.
 
 inline
-fur_source::fur_source (range_query *q, ranger_cache *g, edge e, gimple *s)
+fur_source::fur_source (range_query *q, gori_compute *g, edge e, gimple *s)
 {
   m_query = q;
-  m_cache = g;
+  m_gori = g;
   m_edge = e;
   m_stmt = s;
 }

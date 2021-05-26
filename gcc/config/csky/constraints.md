@@ -38,6 +38,10 @@
   "Memory operands with base register, index register"
   (match_test "csky_valid_mem_constraint_operand (op, \"W\")"))
 
+(define_memory_constraint "Y"
+  "Memory operands without index register"
+  (not (match_test "csky_valid_mem_constraint_operand (op, \"W\")")))
+
 (define_constraint "R"
   "Memory operands whose address is a label_ref"
   (and (match_code "mem")

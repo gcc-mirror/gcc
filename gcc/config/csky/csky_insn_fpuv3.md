@@ -90,27 +90,27 @@
 )
 
 (define_insn "*fpv3_movdf"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r, r,m,v,?r,Q,v,v,v, v")
-	(match_operand:DF 1 "general_operand"      " r,m,mF,r,?r,v,v,Q,v,m,Dv"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=r, v,?r,Q,v,v,v, v,r, r,Y")
+	(match_operand:DF 1 "general_operand"      " r,?r, v,v,Q,v,m,Dv,Y,YF,r"))]
   "CSKY_ISA_FEATURE(fpv3_df)"
   "*
   switch (which_alternative)
     {
-    case 4:
+    case 1:
       if (TARGET_BIG_ENDIAN)
 	return \"fmtvr.64\\t%0, %R1, %1\";
       return \"fmtvr.64\\t%0, %1, %R1\";
-    case 5:
+    case 2:
       if (TARGET_BIG_ENDIAN)
 	return \"fmfvr.64\\t%R0, %0, %1\";
       return \"fmfvr.64\\t%0, %R0, %1\";
+    case 3:
+    case 4:
     case 6:
-    case 7:
-    case 9:
       return fpuv3_output_move(operands);
-    case 8:
+    case 5:
       return \"fmov.64\\t%0, %1\";
-    case 10:
+    case 7:
       return \"fmovi.64\\t%0, %1\";
     default:
       return csky_output_movedouble(operands, DFmode);

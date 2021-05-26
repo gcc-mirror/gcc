@@ -98,7 +98,6 @@ public:
   bool get_global_range (irange &r, tree name) const;
   bool get_non_stale_global_range (irange &r, tree name);
   void set_global_range (tree name, const irange &r);
-  void register_dependency (tree name, tree dep);
 
   non_null_ref m_non_null;
 

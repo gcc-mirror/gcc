@@ -480,8 +480,8 @@
 )
 
 (define_insn "*fpuv2_movdf"
-  [(set (match_operand:DF 0 "nonimmediate_operand" "=r,r, r,m, v,?r,Q,v,v,v")
-	(match_operand:DF 1 "general_operand"      " r,m,mF,r,?r, v,v,Q,v,m"))]
+  [(set (match_operand:DF 0 "nonimmediate_operand" "=r, v,?r,Q,v,v,v,r, r,Y")
+	(match_operand:DF 1 "general_operand"      " r,?r, v,v,Q,v,m,Y,YF,r"))]
   "CSKY_ISA_FEATURE (fpv2_df)"
   "* return csky_output_movedouble(operands, DFmode);"
   [(set (attr "length")
