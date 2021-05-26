@@ -449,7 +449,11 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-analyzer-shift-count-negative @gol
 -Wno-analyzer-shift-count-overflow @gol
 -Wno-analyzer-stale-setjmp-buffer @gol
+-Wno-analyzer-tainted-allocation-size @gol
 -Wno-analyzer-tainted-array-index @gol
+-Wno-analyzer-tainted-divisor @gol
+-Wno-analyzer-tainted-offset @gol
+-Wno-analyzer-tainted-size @gol
 -Wanalyzer-too-complex @gol
 -Wno-analyzer-unsafe-call-within-signal-handler @gol
 -Wno-analyzer-use-after-free @gol
@@ -9400,7 +9404,11 @@ Enabling this option effectively enables the following warnings:
 -Wanalyzer-shift-count-negative @gol
 -Wanalyzer-shift-count-overflow @gol
 -Wanalyzer-stale-setjmp-buffer @gol
+-Wanalyzer-tainted-allocation-size @gol
 -Wanalyzer-tainted-array-index @gol
+-Wanalyzer-tainted-divisor @gol
+-Wanalyzer-tainted-offset @gol
+-Wanalyzer-tainted-size @gol
 -Wanalyzer-unsafe-call-within-signal-handler @gol
 -Wanalyzer-use-after-free @gol
 -Wanalyzer-use-of-uninitialized-value @gol
@@ -9583,6 +9591,21 @@ when the function containing the @code{setjmp} call returns.  Attempting
 to rewind to it via @code{longjmp} would reference a stack frame that
 no longer exists, and likely lead to a crash (or worse).
 
+@item -Wno-analyzer-tainted-allocation-size
+@opindex Wanalyzer-tainted-allocation-size
+@opindex Wno-analyzer-tainted-allocation-size
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-allocation-size} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as the size
+of an allocation without being sanitized, so that an attacker could
+inject an excessively large allocation and potentially cause a denial
+of service attack.
+
+See @url{https://cwe.mitre.org/data/definitions/789.html, CWE-789: Memory Allocation with Excessive Size Value}.
+
 @item -Wno-analyzer-tainted-array-index
 @opindex Wanalyzer-tainted-array-index
 @opindex Wno-analyzer-tainted-array-index
@@ -9592,7 +9615,48 @@ use @option{-Wno-analyzer-tainted-array-index} to disable it.
 
 This diagnostic warns for paths through the code in which a value
 that could be under an attacker's control is used as the index
-of an array access without being sanitized.
+of an array access without being sanitized, so that an attacker
+could inject an out-of-bounds access.
+
+See @url{https://cwe.mitre.org/data/definitions/129.html, CWE-129: Improper Validation of Array Index}.
+
+@item -Wno-analyzer-tainted-divisor
+@opindex Wanalyzer-tainted-divisor
+@opindex Wno-analyzer-tainted-divisor
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-divisor} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as the divisor
+in a division or modulus operation without being sanitized, so that
+an attacker could inject a division-by-zero.
+
+@item -Wno-analyzer-tainted-offset
+@opindex Wanalyzer-tainted-offset
+@opindex Wno-analyzer-tainted-offset
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-offset} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as a pointer offset
+without being sanitized, so that an attacker could inject an out-of-bounds
+access.
+
+See @url{https://cwe.mitre.org/data/definitions/823.html, CWE-823: Use of Out-of-range Pointer Offset}.
+
+@item -Wno-analyzer-tainted-size
+@opindex Wanalyzer-tainted-size
+@opindex Wno-analyzer-tainted-size
+This warning requires both @option{-fanalyzer} and
+@option{-fanalyzer-checker=taint} to enable it;
+use @option{-Wno-analyzer-tainted-size} to disable it.
+
+This diagnostic warns for paths through the code in which a value
+that could be under an attacker's control is used as the size of
+an operation such as @code{memset} without being sanitized, so that an
+attacker could inject an out-of-bounds access.
 
 @item -Wno-analyzer-unsafe-call-within-signal-handler
 @opindex Wanalyzer-unsafe-call-within-signal-handler

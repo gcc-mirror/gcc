@@ -114,9 +114,25 @@ Wanalyzer-stale-setjmp-buffer
 Common Var(warn_analyzer_stale_setjmp_buffer) Init(1) Warning
 Warn about code paths in which a longjmp rewinds to a jmp_buf saved in a stack frame that has returned.
 
+Wanalyzer-tainted-allocation-size
+Common Var(warn_analyzer_tainted_allocation_size) Init(1) Warning
+Warn about code paths in which an unsanitized value is used as an allocation size.
+
 Wanalyzer-tainted-array-index
 Common Var(warn_analyzer_tainted_array_index) Init(1) Warning
 Warn about code paths in which an unsanitized value is used as an array index.
+
+Wanalyzer-tainted-divisor
+Common Var(warn_analyzer_tainted_divisor) Init(1) Warning
+Warn about code paths in which an unsanitized value is used as a divisor.
+
+Wanalyzer-tainted-offset
+Common Var(warn_analyzer_tainted_offset) Init(1) Warning
+Warn about code paths in which an unsanitized value is used as a pointer offset.
+
+Wanalyzer-tainted-size
+Common Var(warn_analyzer_tainted_size) Init(1) Warning
+Warn about code paths in which an unsanitized value is used as a size.
 
 Wanalyzer-use-after-free
 Common Var(warn_analyzer_use_after_free) Init(1) Warning

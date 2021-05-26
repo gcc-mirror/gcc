@@ -69,6 +69,15 @@ public:
      within a heap-allocated struct.  */
   virtual bool inherited_state_p () const = 0;
 
+  /* A vfunc for more general handling of inheritance.  */
+  virtual state_t
+  alt_get_inherited_state (const sm_state_map &,
+			   const svalue *,
+			   const extrinsic_state &) const
+  {
+    return NULL;
+  }
+
   virtual state_machine::state_t get_default_state (const svalue *) const
   {
     return m_start;

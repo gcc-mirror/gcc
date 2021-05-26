@@ -1,3 +1,4 @@
+// TODO: remove need for this option:
 /* { dg-additional-options "-fanalyzer-checker=taint" } */
 
 #include <stdio.h>
@@ -18,10 +19,10 @@ char test_1(FILE *f)
                                              /* { dg-message "\\(\[0-9\]+\\) following 'true' branch\\.\\.\\." "event: following true branch" { target *-*-* } .-1 } */
     /* BUG: the following array lookup trusts that the input data's index is
        in the range 0 <= i < 256; otherwise it's accessing the stack */
-    return tmp.buf[tmp.i]; // { dg-warning "use of tainted value 'tmp.i' in array lookup without bounds checking" "warning" } */
+    return tmp.buf[tmp.i]; // { dg-warning "use of attacker-controlled value 'tmp.i' in array lookup without bounds checking" "warning" } */
     /* { dg-message "23: \\(\[0-9\]+\\) \\.\\.\\.to here" "event: to here" { target *-*-* } .-1 } */
     /* { dg-message "23: \\(\[0-9\]+\\) 'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "event: tmp.i has an unchecked value" { xfail *-*-* } .-2 } */
-    /* { dg-message "\\(\[0-9\]+\\) use of tainted value 'tmp.i' in array lookup without bounds checking" "final event" { target *-*-* } .-3 } */
+    /* { dg-message "\\(\[0-9\]+\\) use of attacker-controlled value 'tmp.i' in array lookup without bounds checking" "final event" { target *-*-* } .-3 } */
     
     // TOOD: better messages for state changes
   }
@@ -53,8 +54,8 @@ char test_4(FILE *f)
 
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
     if (tmp.i >= 0) { /* { dg-message "'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "event: tmp.i has an unchecked value" { xfail *-*-* } } */
-      /* { dg-message "'tmp.i' has its lower bound checked here" "event: lower bound checked" { target *-*-* } .-1 } */
-      return tmp.buf[tmp.i]; /* { dg-warning "use of tainted value 'tmp.i' in array lookup without upper-bounds checking" "warning" } */
+      /* { dg-message "'tmp.i' has its lower bound checked here" "event: lower bound checked" { xfail *-*-* } .-1 } */
+      return tmp.buf[tmp.i]; /* { dg-warning "use of attacker-controlled value 'tmp.i' in array lookup without upper-bounds checking" "warning" } */
     }
   }
   return 0;
@@ -66,8 +67,8 @@ char test_5(FILE *f)
 
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
     if (tmp.i < 256) { /* { dg-message "'tmp.i' has an unchecked value here \\(from 'tmp'\\)" "event: tmp.i has an unchecked value" { xfail *-*-* } } */
-      /* { dg-message "'tmp.i' has its upper bound checked here" "event: upper bound checked" { target *-*-* } .-1 } */
-      return tmp.buf[tmp.i]; /* { dg-warning "use of tainted value 'tmp.i' in array lookup without lower-bounds checking" "warning" } */
+      /* { dg-message "'tmp.i' has its upper bound checked here" "event: upper bound checked" { xfail *-*-* } .-1 } */
+      return tmp.buf[tmp.i]; /* { dg-warning "use of attacker-controlled value 'tmp.i' in array lookup without checking for negative" "warning" } */
     }
   }
   return 0;
@@ -85,7 +86,7 @@ char test_6(FILE *f)
   struct bar tmp;
 
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
-    return tmp.buf[tmp.i]; /* { dg-warning "use of tainted value 'tmp.i' in array lookup without upper-bounds checking" } */
+    return tmp.buf[tmp.i]; /* { dg-warning "use of attacker-controlled value 'tmp.i' in array lookup without upper-bounds checking" } */
   }
   return 0;
 }
@@ -96,7 +97,7 @@ char test_7(FILE *f)
 
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
     if (tmp.i >= 0) {
-      return tmp.buf[tmp.i]; /* { dg-warning "use of tainted value 'tmp.i' in array lookup without upper-bounds checking" } */
+      return tmp.buf[tmp.i]; /* { dg-warning "use of attacker-controlled value 'tmp.i' in array lookup without upper-bounds checking" } */
     }
   }
   return 0;
@@ -122,7 +123,7 @@ char test_9(FILE *f)
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
     if (tmp.i == 42) {
       /* not a bug: tmp.i compared against a specific value: */
-      return tmp.buf[tmp.i]; /* { dg-bogus "tainted" "" { xfail *-*-* } } */
+      return tmp.buf[tmp.i]; /* { dg-bogus "attacker-controlled" "" { xfail *-*-* } } */
       // TODO: xfail
     }
   }

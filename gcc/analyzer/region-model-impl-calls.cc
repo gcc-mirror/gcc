@@ -221,7 +221,7 @@ void
 region_model::impl_call_alloca (const call_details &cd)
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
-  const region *new_reg = create_region_for_alloca (size_sval);
+  const region *new_reg = create_region_for_alloca (size_sval, cd.get_ctxt ());
   const svalue *ptr_sval
     = m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
   cd.maybe_set_lhs (ptr_sval);
@@ -302,7 +302,8 @@ region_model::impl_call_calloc (const call_details &cd)
   const svalue *prod_sval
     = m_mgr->get_or_create_binop (size_type_node, MULT_EXPR,
 				  nmemb_sval, size_sval);
-  const region *new_reg = create_region_for_heap_alloc (prod_sval);
+  const region *new_reg
+    = create_region_for_heap_alloc (prod_sval, cd.get_ctxt ());
   zero_fill_region (new_reg);
   if (cd.get_lhs_type ())
     {
@@ -408,7 +409,8 @@ void
 region_model::impl_call_malloc (const call_details &cd)
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
-  const region *new_reg = create_region_for_heap_alloc (size_sval);
+  const region *new_reg
+    = create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
@@ -471,7 +473,8 @@ void
 region_model::impl_call_operator_new (const call_details &cd)
 {
   const svalue *size_sval = cd.get_arg_svalue (0);
-  const region *new_reg = create_region_for_heap_alloc (size_sval);
+  const region *new_reg
+    = create_region_for_heap_alloc (size_sval, cd.get_ctxt ());
   if (cd.get_lhs_type ())
     {
       const svalue *ptr_sval
@@ -579,7 +582,7 @@ region_model::impl_call_realloc (const call_details &cd)
       const svalue *size_sval = cd.get_arg_svalue (1);
       if (const region *buffer_reg = ptr_sval->maybe_get_region ())
 	if (compat_types_p (size_sval->get_type (), size_type_node))
-	  model->set_dynamic_extents (buffer_reg, size_sval);
+	  model->set_dynamic_extents (buffer_reg, size_sval, ctxt);
       if (cd.get_lhs_region ())
 	{
 	  model->set_value (cd.get_lhs_region (), ptr_sval, cd.get_ctxt ());
@@ -619,7 +622,7 @@ region_model::impl_call_realloc (const call_details &cd)
 
       /* Create the new region.  */
       const region *new_reg
-	= model->create_region_for_heap_alloc (new_size_sval);
+	= model->create_region_for_heap_alloc (new_size_sval, ctxt);
       const svalue *new_ptr_sval
 	= model->m_mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
       if (cd.get_lhs_type ())
