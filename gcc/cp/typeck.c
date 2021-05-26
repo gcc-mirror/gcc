@@ -3201,9 +3201,19 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	{
 	  /* Look up the member.  */
 	  access_failure_info afi;
+	  if (processing_template_decl)
+	    /* Even though this class member access expression is at this
+	       point not dependent, the member itself may be dependent, and
+	       we must not potentially push a access check for a dependent
+	       member onto TI_DEFERRED_ACCESS_CHECKS.  So don't check access
+	       ahead of time here; we're going to redo this member lookup at
+	       instantiation time anyway.  */
+	    push_deferring_access_checks (dk_no_check);
 	  member = lookup_member (access_path, name, /*protect=*/1,
 				  /*want_type=*/false, complain,
 				  &afi);
+	  if (processing_template_decl)
+	    pop_deferring_access_checks ();
 	  afi.maybe_suggest_accessor (TYPE_READONLY (object_type));
 	  if (member == NULL_TREE)
 	    {
