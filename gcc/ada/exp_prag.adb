@@ -2413,7 +2413,7 @@ package body Exp_Prag is
          if Present (Freeze_Node (Entity (Expression (Assoc)))) and then
            not Is_Frozen (Entity (Expression (Assoc)))
          then
-            Error_Msg_NE ("?inspection point references unfrozen object &",
+            Error_Msg_NE ("??inspection point references unfrozen object &",
               Assoc,
               Entity (Expression (Assoc)));
             Remove_Inspection_Point := True;
