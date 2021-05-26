@@ -9407,9 +9407,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH_DETACH)
 		OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALWAYS_POINTER);
 	      if ((DECL_P (decl)
-		   || (component_ref_p
-		       && (INDIRECT_REF_P (decl)
-			   || TREE_CODE (decl) == MEM_REF)))
+		   || (component_ref_p && INDIRECT_REF_P (decl)))
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_TO_PSET
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH
 		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_DETACH
@@ -9510,18 +9508,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		      if (base_ref)
 			OMP_CLAUSE_DECL (l) = unshare_expr (base_ref);
 		      else
-			{
-			  OMP_CLAUSE_DECL (l) = unshare_expr (decl);
-			  if (!DECL_P (OMP_CLAUSE_DECL (l))
-			      && (gimplify_expr (&OMP_CLAUSE_DECL (l),
-						 pre_p, NULL, is_gimple_lvalue,
-						 fb_lvalue)
-				  == GS_ERROR))
-			    {
-			      remove = true;
-			      break;
-			    }
-			}
+			OMP_CLAUSE_DECL (l) = decl;
 		      OMP_CLAUSE_SIZE (l)
 			= (!attach
 			   ? size_int (1)
@@ -9564,30 +9551,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			flags |= GOVD_SEEN;
 		      if (has_attachments)
 			flags |= GOVD_MAP_HAS_ATTACHMENTS;
-
-		      /* If this is a *pointer-to-struct expression, make sure a
-			 firstprivate map of the base-pointer exists.  */
-		      if (component_ref_p
-			  && ((TREE_CODE (decl) == MEM_REF
-			       && integer_zerop (TREE_OPERAND (decl, 1)))
-			      || INDIRECT_REF_P (decl))
-			  && DECL_P (TREE_OPERAND (decl, 0))
-			  && !splay_tree_lookup (ctx->variables,
-						 ((splay_tree_key)
-						  TREE_OPERAND (decl, 0))))
-			{
-			  decl = TREE_OPERAND (decl, 0);
-			  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
-						      OMP_CLAUSE_MAP);
-			  enum gomp_map_kind mkind
-			    = GOMP_MAP_FIRSTPRIVATE_POINTER;
-			  OMP_CLAUSE_SET_MAP_KIND (c2, mkind);
-			  OMP_CLAUSE_DECL (c2) = decl;
-			  OMP_CLAUSE_SIZE (c2) = size_zero_node;
-			  OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
-			  OMP_CLAUSE_CHAIN (c) = c2;
-			}
-
 		      if (DECL_P (decl))
 			goto do_add_decl;
 		    }

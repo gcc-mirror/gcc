@@ -15831,8 +15831,7 @@ c_parser_omp_clause_map (c_parser *parser, tree list)
       c_parser_consume_token (parser);
     }
 
-  nl = c_parser_omp_variable_list (parser, clause_loc, OMP_CLAUSE_MAP, list,
-				   C_ORT_OMP, true);
+  nl = c_parser_omp_variable_list (parser, clause_loc, OMP_CLAUSE_MAP, list);
 
   for (c = nl; c != list; c = OMP_CLAUSE_CHAIN (c))
     OMP_CLAUSE_SET_MAP_KIND (c, kind);
