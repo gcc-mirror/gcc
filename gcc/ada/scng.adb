@@ -230,16 +230,16 @@ package body Scng is
 
       --  Initialize scan control variables
 
-      Current_Source_File       := Index;
-      Source                    := Source_Text (Current_Source_File);
-      Scan_Ptr                  := Source_First (Current_Source_File);
-      Token                     := No_Token;
-      Token_Ptr                 := Scan_Ptr;
-      Current_Line_Start        := Scan_Ptr;
-      Token_Node                := Empty;
-      Token_Name                := No_Name;
-      Start_Column              := Set_Start_Column;
-      First_Non_Blank_Location  := Scan_Ptr;
+      Current_Source_File      := Index;
+      Source                   := Source_Text (Current_Source_File);
+      Scan_Ptr                 := Source_First (Current_Source_File);
+      Token                    := No_Token;
+      Token_Ptr                := Scan_Ptr;
+      Current_Line_Start       := Scan_Ptr;
+      Token_Node               := Empty;
+      Token_Name               := No_Name;
+      Start_Column             := Set_Start_Column;
+      First_Non_Blank_Location := Scan_Ptr;
 
       Initialize_Checksum;
       Wide_Char_Byte_Count := 0;

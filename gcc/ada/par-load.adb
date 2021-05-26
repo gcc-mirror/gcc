@@ -129,8 +129,8 @@ begin
    Save_Style_Check_Options (Save_Style_Checks);
    Save_Style_Check := Opt.Style_Check;
 
-   --  If main unit, set Main_Unit_Entity (this will get overwritten if
-   --  the main unit has a separate spec, that happens later on in Load)
+   --  If main unit, set Main_Unit_Entity (this will get overwritten if the
+   --  main unit has a separate spec, that happens later on in Load).
 
    if Cur_Unum = Main_Unit then
       Main_Unit_Entity := Cunit_Entity (Main_Unit);

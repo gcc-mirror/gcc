@@ -823,7 +823,7 @@ package body Lib.Load is
                      Units.Table (Calling_Unit).Fatal_Error := Error_Detected;
 
                   --  If with'ed unit had an ignored error, then propagate it
-                  --  but do not overide an existring setting.
+                  --  but do not overide an existing setting.
 
                   when Error_Ignored =>
                      if Units.Table (Calling_Unit).Fatal_Error = None then
@@ -900,7 +900,7 @@ package body Lib.Load is
                Remove_Unit (Unum);
 
             --  If unit not required, remove load stack entry and the junk
-            --  file table entry, and return No_Unit to indicate not found,
+            --  file table entry, and return No_Unit to indicate not found.
 
             else
                Load_Stack.Decrement_Last;
