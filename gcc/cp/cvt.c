@@ -2072,7 +2072,8 @@ can_convert_tx_safety (tree to, tree from)
 	  && same_type_p (to, tx_unsafe_fn_variant (from)));
 }
 
-/* Return true iff FROM can convert to TO by dropping noexcept.  */
+/* Return true iff FROM can convert to TO by dropping noexcept.
+   This is just a subroutine of of fnptr_conv_p.  */
 
 static bool
 noexcept_conv_p (tree to, tree from)
@@ -2080,30 +2081,15 @@ noexcept_conv_p (tree to, tree from)
   if (!flag_noexcept_type)
     return false;
 
-  tree t = non_reference (to);
-  tree f = from;
-  if (TYPE_PTRMEMFUNC_P (t)
-      && TYPE_PTRMEMFUNC_P (f))
-    {
-      t = TYPE_PTRMEMFUNC_FN_TYPE (t);
-      f = TYPE_PTRMEMFUNC_FN_TYPE (f);
-    }
-  if (TYPE_PTR_P (t)
-      && TYPE_PTR_P (f))
-    {
-      t = TREE_TYPE (t);
-      f = TREE_TYPE (f);
-    }
-  tree_code code = TREE_CODE (f);
-  if (TREE_CODE (t) != code)
+  if (TREE_CODE (to) != TREE_CODE (from))
     return false;
-  if (code != FUNCTION_TYPE && code != METHOD_TYPE)
+  if (!FUNC_OR_METHOD_TYPE_P (from))
     return false;
-  if (!type_throw_all_p (t)
-      || type_throw_all_p (f))
+  if (!type_throw_all_p (to)
+      || type_throw_all_p (from))
     return false;
-  tree v = build_exception_variant (f, NULL_TREE);
-  return same_type_p (t, v);
+  tree v = build_exception_variant (from, NULL_TREE);
+  return same_type_p (to, v);
 }
 
 /* Return true iff FROM can convert to TO by a function pointer conversion.  */
@@ -2111,7 +2097,7 @@ noexcept_conv_p (tree to, tree from)
 bool
 fnptr_conv_p (tree to, tree from)
 {
-  tree t = non_reference (to);
+  tree t = to;
   tree f = from;
   if (TYPE_PTRMEMFUNC_P (t)
       && TYPE_PTRMEMFUNC_P (f))
@@ -2119,8 +2105,8 @@ fnptr_conv_p (tree to, tree from)
       t = TYPE_PTRMEMFUNC_FN_TYPE (t);
       f = TYPE_PTRMEMFUNC_FN_TYPE (f);
     }
-  if (TYPE_PTR_P (t)
-      && TYPE_PTR_P (f))
+  if (INDIRECT_TYPE_P (t)
+      && INDIRECT_TYPE_P (f))
     {
       t = TREE_TYPE (t);
       f = TREE_TYPE (f);
