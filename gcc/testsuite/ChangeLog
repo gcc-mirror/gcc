@@ -1,3 +1,65 @@
+2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100666
+	* g++.dg/cpp1z/nodiscard8.C: New test.
+	* g++.dg/cpp1z/nodiscard9.C: New test.
+
+2021-05-25  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/sancov/attribute.c: New test.
+
+2021-05-25  Cooper Qu  <cooper.qu@linux.alibaba.com>
+
+	* gcc.target/csky/fpuv3/fpuv3.exp : Amend copyright.
+
+2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-8.c: Remove xfails from omp teams r21 and
+	r28 checks.
+	* c-c++-common/gomp/pr99928-9.c: Likewise.
+	* c-c++-common/gomp/pr99928-10.c: Likewise.
+
+2021-05-25  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* gcc.target/csky/fpuv3/fpuv3.exp: New.
+	* gcc.target/csky/fpuv3/fpv3_div.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fadd.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fdtos.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fftoi_rm.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fftoi_rz.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fhtos.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fitof.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fmov.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fmovi.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fmula.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fmuls.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fneg.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fnmula.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fnmuls.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fstod.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fstoh.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fsub.c: New.
+	* gcc.target/csky/fpuv3/fpv3_fxtof.c: New.
+	* gcc.target/csky/fpuv3/fpv3_h.c: New.
+	* gcc.target/csky/fpuv3/fpv3_hs.c: New.
+	* gcc.target/csky/fpuv3/fpv3_hsz.c: New.
+	* gcc.target/csky/fpuv3/fpv3_hz.c: New.
+	* gcc.target/csky/fpuv3/fpv3_ls.c: New.
+	* gcc.target/csky/fpuv3/fpv3_lsz.c: New.
+	* gcc.target/csky/fpuv3/fpv3_lt.c: New.
+	* gcc.target/csky/fpuv3/fpv3_ltz.c: New.
+	* gcc.target/csky/fpuv3/fpv3_max.c: New.
+	* gcc.target/csky/fpuv3/fpv3_min.c: New.
+	* gcc.target/csky/fpuv3/fpv3_mul.c: New.
+	* gcc.target/csky/fpuv3/fpv3_mula.c: New.
+	* gcc.target/csky/fpuv3/fpv3_muls.c: New.
+	* gcc.target/csky/fpuv3/fpv3_ne.c: New.
+	* gcc.target/csky/fpuv3/fpv3_nez.c: New.
+	* gcc.target/csky/fpuv3/fpv3_recip.c: New.
+	* gcc.target/csky/fpuv3/fpv3_sqrt.c: New.
+	* gcc.target/csky/fpuv3/fpv3_unordered.c: New.
+
 2021-05-24  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* gcc.target/powerpc/fusion-p10-logadd.c: New file.

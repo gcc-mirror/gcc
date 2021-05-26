@@ -1,3 +1,297 @@
+2021-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (class logical_stmt_cache): Delete
+	(logical_stmt_cache::logical_stmt_cache ): Delete.
+	(logical_stmt_cache::~logical_stmt_cache): Delete.
+	(logical_stmt_cache::cache_entry::dump): Delete.
+	(logical_stmt_cache::get_range): Delete.
+	(logical_stmt_cache::cached_name ): Delete.
+	(logical_stmt_cache::same_cached_name): Delete.
+	(logical_stmt_cache::cacheable_p): Delete.
+	(logical_stmt_cache::slot_diagnostics ): Delete.
+	(logical_stmt_cache::dump): Delete.
+	(gori_compute_cache::gori_compute_cache): Delete.
+	(gori_compute_cache::~gori_compute_cache): Delete.
+	(gori_compute_cache::compute_operand_range): Delete.
+	(gori_compute_cache::cache_stmt): Delete.
+	* gimple-range-gori.h (gori_compute::compute_operand_range): Remove
+	virtual.
+	(class gori_compute_cache): Delete.
+
+2021-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (fold_using_range::range_of_range_op): Use m_gori
+	intead of m_cache.
+	(fold_using_range::range_of_address): Adjust.
+	(fold_using_range::range_of_phi): Adjust.
+	* gimple-range.h (class fur_source): Adjust.
+	(fur_source::fur_source): Adjust.
+
+2021-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::expr_range_at_stmt): Rename
+	from expr_range_in_bb and adjust.
+	(gori_compute::compute_name_range_op): Adjust.
+	(gori_compute::optimize_logical_operands): Adjust.
+	(gori_compute::compute_logical_operands_in_chain): Adjust.
+	(gori_compute::compute_operand1_range): Adjust.
+	(gori_compute::compute_operand2_range): Adjust.
+	(ori_compute_cache::cache_stmt): Adjust.
+	* gimple-range-gori.h (gori_compute): Rename prototype.
+
+2021-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::range_of_expr): Non-null should be
+	checked only after range_of_stmt, not range_on_entry.
+	(gimple_ranger::range_on_entry): Check for non-null in any
+	predecessor block, if it is not already non-null.
+	(gimple_ranger::range_on_exit): DOnt check for non-null after
+	range on entry call.
+	(gimple_ranger::dump_bb): New.  Split from dump.
+	(gimple_ranger::dump): Adjust.
+	* gimple-range.h (class gimple_ranger): Adjust.
+
+2021-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (struct range_timestamp): Delete.
+	(class temporal_cache): Adjust.
+	(temporal_cache::get_timestamp): Delete.
+	(temporal_cache::set_dependency): Delete.
+	(temporal_cache::temporal_value): Adjust.
+	(temporal_cache::current_p): Take dependencies as params.
+	(temporal_cache::set_timestamp): Adjust.
+	(temporal_cache::set_always_current): Adjust.
+	(ranger_cache::get_non_stale_global_range): Adjust.
+	(ranger_cache::register_dependency): Delete.
+	* gimple-range-cache.h (class range_cache): Adjust.
+
+2021-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (range_def_chain::range_def_chain): init
+	bitmap obstack.
+	(range_def_chain::~range_def_chain): Dispose of obstack rather than
+	each individual bitmap.
+	(range_def_chain::set_import): New.
+	(range_def_chain::get_imports): New.
+	(range_def_chain::chain_import_p): New.
+	(range_def_chain::register_dependency): Rename from build_def_chain
+	and set imports.
+	(range_def_chain::def_chain_in_bitmap_p): New.
+	(range_def_chain::add_def_chain_to_bitmap): New.
+	(range_def_chain::has_def_chain): Just check first depenedence.
+	(range_def_chain::get_def_chain): Process imports, use generic
+	register_dependency routine.
+	(range_def_chain::dump): New.
+	(gori_map::gori_map): Allocate import list.
+	(gori_map::~gori_map): Release imports.
+	(gori_map::exports): Check for past allocated block size.
+	(gori_map::imports): New.
+	(gori_map::def_chain_in_export_p): Delete.
+	(gori_map::is_import_p): New.
+	(gori_map::maybe_add_gori): Handle imports.
+	(gori_map::dump): Adjust output, add imports.
+	(gori_compute::has_edge_range_p): Remove def_chain_in_export call.
+	(gori_export_iterator::gori_export_iterator): New.
+	(gori_export_iterator::next): New.
+	(gori_export_iterator::get_name): New.
+	* gimple-range-gori.h (range_def_chain): Add imports and direct
+	dependecies via struct rdc.
+	(range_def_chain::depend1): New.
+	(range_def_chain::depend2): New.
+	(class gori_map): Adjust.
+	(FOR_EACH_GORI_IMPORT_NAME): New.
+	(FOR_EACH_GORI_EXPORT_NAME): New.
+	(class gori_export_iterator): New.
+
+2021-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache):  Move initial
+	export cache filling to here.
+	* gimple-range-gori.cc (gori_compute::gori_compute) : From Here.
+
+2021-05-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (range_def_chain): Move to gimple-range-gori.h.
+	(gori_map): Move to gimple-range-gori.h.
+	(gori_compute::gori_compute): Adjust.
+	(gori_compute::~gori_compute): Delete.
+	(gori_compute::compute_operand_range_switch): Adjust.
+	(gori_compute::compute_operand_range): Adjust.
+	(gori_compute::compute_logical_operands): Adjust.
+	(gori_compute::has_edge_range_p ): Adjust.
+	(gori_compute::set_range_invariant): Delete.
+	(gori_compute::dump): Adjust.
+	(gori_compute::outgoing_edge_range_p): Adjust.
+	* gimple-range-gori.h (class range_def_chain): Relocate here.
+	(class gori_map): Relocate here.
+	(class gori_compute): Inherit from gori_map, and adjust.
+
+2021-05-25  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-range.cc (range_tests_legacy): Use
+	build_nonstandard_integer_type instead of int and short.
+
+2021-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gimplify.c (gimplify_decl_expr): Clear TREE_READONLY on the DECL
+	when really creating an initialization statement for it.
+
+2021-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-inline.c (setup_one_parameter): Fix thinko in new condition.
+
+2021-05-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.h (ASM_SPEC): Pass -mno-relax.
+
+2021-05-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	PR target/99592
+	* optc-save-gen.awk: Remove exceptions.
+
+2021-05-25  Martin Liska  <mliska@suse.cz>
+
+	* asan.h (sanitize_coverage_p): New function.
+	* doc/extend.texi: Document it.
+	* fold-const.c (fold_range_test): Use sanitize_flags_p
+	instead of flag_sanitize_coverage.
+	(fold_truth_andor): Likewise.
+	* sancov.c: Likewise.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Likewise.
+	* ipa-inline.c (sanitize_attrs_match_for_inline_p): Handle
+	-fsanitize-coverage when inlining.
+
+2021-05-25  Cooper Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky-modes.def : Fix copyright.
+
+2021-05-25  Cooper Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky-modes.def : Amend copyright.
+	* config/csky/csky_insn_fpuv2.md : Likewise.
+	* config/csky/csky_insn_fpuv3.md : Likewise.
+
+2021-05-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100727
+	* calls.c (initialize_argument_information): Explicitely test
+	for WITH_SIZE_EXPR.
+	* gimple-expr.c (mark_addressable): Skip outer WITH_SIZE_EXPR.
+
+2021-05-25  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* config/csky/csky.h (FRAME_POINTER_REGNUM): Use
+	HARD_FRAME_POINTER_REGNUM and FRAME_POINTER_REGNUM instead of
+	the signle definition. The signle definition may not work well
+	at simplify_subreg_regno().
+	(HARD_FRAME_POINTER_REGNUM): New.
+	(ELIMINABLE_REGS): Add for HARD_FRAME_POINTER_REGNUM.
+	* config/csky/csky.c (get_csky_live_regs, csky_can_eliminate,
+	csky_initial_elimination_offset, csky_expand_prologue,
+	csky_expand_epilogue): Add for HARD_FRAME_POINTER_REGNUM.
+
+2021-05-25  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* config/csky/csky.c (csky_option_override):
+	Init csky_arch_isa_features[] in advance, so TARGET_DSP
+	and TARGET_DIV can be set well.
+
+2021-05-25  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* config/csky/constraints.md ("l", "h"): Delete.
+	* config/csky/csky.h (reg_class, REG_CLASS_NAMES,
+	REG_CLASS_CONTENTS):  Delete LO_REGS and HI_REGS.
+	* config/csky/csky.c (regno_reg_classm,
+	csky_secondary_reload, csky_register_move_cost):
+	Use HILO_REGS instead of LO_REGS and HI_REGS.
+
+2021-05-25  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* config/csky/constraints.md ("W"): New constriant for mem operand
+	with base reg, index register.
+	("Q"): Renamed and modified "csky_valid_fpuv2_mem_operand" to
+	"csky_valid_mem_constraint_operand" to deal with both "Q" and "W"
+	constraint.
+	("Dv"): New constraint for const double value that can be used at
+	fmovi instruction.
+	* config/csky/csky-modes.def (HFmode): New mode.
+	* config/csky/csky-protos.h (csky_valid_fpuv2_mem_operand): Rename
+	to "csky_valid_mem_constraint_operand" and support new constraint
+	"W".
+	(csky_get_movedouble_length): New.
+	(fpuv3_output_move): New.
+	(fpuv3_const_double): New.
+	* config/csky/csky.c (csky_option_override): New arch CK860 with fpv3.
+	(decompose_csky_address): Refine.
+	(csky_print_operand): New "CONST_DOUBLE" operand.
+	(csky_output_move): Support fpv3 instructions.
+	(csky_get_movedouble_length): New.
+	(fpuv3_output_move): New.
+	(fpuv3_const_double): New.
+	(csky_emit_compare): Cover float comparsion.
+	(csky_emit_compare_float): Refine.
+	(csky_vaild_fpuv2_mem_operand): Rename to
+	"csky_valid_mem_constraint_operand" and support new constraint "W".
+	(ck860_rtx_costs): New.
+	(csky_rtx_costs): Add the cost calculation of CK860.
+	(regno_reg_class): New vregs for fpuv3.
+	(csky_dbx_regno): Likewise.
+	(csky_cpu_cpp_builtins): New builtin macro for fpuv3.
+	(csky_conditional_register_usage): Suporrot fpuv3.
+	(csky_dwarf_register_span): Suporrot fpuv3.
+	(csky_init_builtins, csky_mangle_type): Support "__fp16" type.
+	(ck810_legitimate_index_p): Support fp16.
+	* config/csky/csky.h (TARGET_TLS): ADD CK860.
+	(CSKY_VREG_P, CSKY_VREG_LO_P, CSKY_VREG_HI_P): Support fpuv3.
+	(TARGET_SINGLE_FPU): Support fpuv3.
+	(TARGET_SUPPORT_FPV3): New.
+	(FIRST_PSEUDO_REGISTER): Change to 202 to hold the new fpuv3 registers.
+	(FIXED_REGISTERS, CALL_REALLY_USED_REGISTERS, REGISTER_NAMES,
+	 REG_CLASS_CONTENTS): Support fpuv3.
+	* config/csky/csky.md (movsf): Move to cksy_insn_fpu.md and refine.
+	(csky_movsf_fpv2): Likewise.
+	(ck801_movsf): Likewise.
+	(csky_movsf): Likewise.
+	(movdf): Likewise.
+	(csky_movdf_fpv2): Likewise.
+	(ck801_movdf): Likewise.
+	(csky_movdf): Likewise.
+	(movsicc): Refine. Use "comparison_operatior" instead of
+	"ordered_comparison_operatior".
+	(addsicc): Likewise.
+	(CSKY_FIRST_VFP3_REGNUM, CSKY_LAST_VFP3_REGNUM): New constant.
+	(call_value_internal_vh): New.
+	* config/csky/csky_cores.def (CK860): New arch and cpu.
+	(fpv3_hf): New.
+	(fpv3_hsf): New.
+	(fpv3_sdf): New.
+	(fpv3): New.
+	* config/csky/csky_insn_fpu.md: Refactor. Separate all float patterns
+	into emit-patterns and match-patterns, remain the emit-patterns here,
+	and move the match-patterns to csky_insn_fpuv2.md or
+	csky_insn_fpuv3.md.
+	* config/csky/csky_insn_fpuv2.md: New file for fpuv2 instructions.
+	* config/csky/csky_insn_fpuv3.md: New file and new patterns for fpuv3
+	isntructions.
+	* config/csky/csky_isa.def (fcr): New.
+	(fpv3_hi): New.
+	(fpv3_hf): New.
+	(fpv3_sf): New.
+	(fpv3_df): New.
+	(CK860): New definition for ck860.
+	* config/csky/csky_tables.opt (ck860): New processors ck860,
+	ck860f. And new arch ck860.
+	(fpv3_hf): New.
+	(fpv3_hsf): New.
+	(fpv3_hdf): New.
+	(fpv3): New.
+	* config/csky/predicates.md (csky_float_comparsion_operator): Delete
+	"geu", "gtu", "leu", "ltu", which will never appear at float comparison.
+	* config/csky/t-csky-elf: Support 860.
+	* config/csky/t-csky-linux: Likewise.
+	* doc/md.texi: Add "Q" and "W" constraints for C-SKY.
+
 2021-05-24  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/genfusion.pl (gen_logical_addsubf): Refactor to

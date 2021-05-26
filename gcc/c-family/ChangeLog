@@ -1,3 +1,23 @@
+2021-05-25  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/92860
+	PR target/99592
+	* c-attribs.c (handle_optimize_attribute): Save target node
+	before calling parse_optimize_options and save it in case
+	it changes.
+	* c-pragma.c (handle_pragma_target): Similarly for pragma.
+	(handle_pragma_pop_options): Likewise here.
+
+2021-05-25  Martin Liska  <mliska@suse.cz>
+
+	* c-attribs.c (handle_no_sanitize_coverage_attribute): New.
+
+2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-omp.c (c_omp_split_clauses): Copy reduction to teams when teams is
+	combined with simd and not with taskloop or for.
+
 2021-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/99928

@@ -1,3 +1,7 @@
+2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* update-copyright.py: Add c++tools.
+
 2021-05-24  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_commit.py: Add note that ChangeLog entries
