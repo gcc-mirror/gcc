@@ -845,9 +845,6 @@ lambda_expr_this_capture (tree lambda, int add_capture_p)
 	 type cast (_expr.cast_ 5.4) to the type of 'this'. [ The cast
 	 ensures that the transformed expression is an rvalue. ] */
       result = rvalue (result);
-
-      /* Acknowledge to OpenMP target that 'this' was referenced.  */
-      set_omp_target_this_expr (result);
     }
 
   return result;

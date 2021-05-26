@@ -12565,8 +12565,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	  case GOMP_MAP_ALWAYS_POINTER:
 	  case GOMP_MAP_ATTACH:
 	  case GOMP_MAP_DETACH:
-	  case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
-	  case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
 	    break;
 	  case GOMP_MAP_IF_PRESENT:
 	  case GOMP_MAP_FORCE_ALLOC:

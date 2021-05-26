@@ -1233,7 +1233,7 @@ extern uintptr_t gomp_map_val (struct target_mem_desc *, void **, size_t);
 extern void gomp_attach_pointer (struct gomp_device_descr *,
 				 struct goacc_asyncqueue *, splay_tree,
 				 splay_tree_key, uintptr_t, size_t,
-				 struct gomp_coalesce_buf *, bool);
+				 struct gomp_coalesce_buf *);
 extern void gomp_detach_pointer (struct gomp_device_descr *,
 				 struct goacc_asyncqueue *, splay_tree_key,
 				 uintptr_t, bool, struct gomp_coalesce_buf *);

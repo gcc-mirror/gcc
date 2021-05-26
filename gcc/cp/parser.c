@@ -42092,6 +42092,8 @@ static bool
 cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 		      enum pragma_context context, bool *if_p)
 {
+  tree *pc = NULL, stmt;
+
   if (flag_openmp)
     omp_requires_mask
       = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
@@ -42144,7 +42146,6 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 	  keep_next_level (true);
 	  tree sb = begin_omp_structured_block (), ret;
 	  unsigned save = cp_parser_begin_omp_structured_block (parser);
-	  set_omp_target_this_expr (NULL_TREE);
 	  switch (ccode)
 	    {
 	    case OMP_TEAMS:
@@ -42196,9 +42197,15 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 		    cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = tc;
 		  }
 	    }
-	  finish_omp_target (pragma_tok->location,
-			     cclauses[C_OMP_CLAUSE_SPLIT_TARGET], body, true);
-	  return true;
+	  tree stmt = make_node (OMP_TARGET);
+	  TREE_TYPE (stmt) = void_type_node;
+	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+	  OMP_TARGET_BODY (stmt) = body;
+	  OMP_TARGET_COMBINED (stmt) = 1;
+	  SET_EXPR_LOCATION (stmt, pragma_tok->location);
+	  add_stmt (stmt);
+	  pc = &OMP_TARGET_CLAUSES (stmt);
+	  goto check_clauses;
 	}
       else if (!flag_openmp)  /* flag_openmp_simd  */
 	{
@@ -42235,14 +42242,49 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
       return false;
     }
 
-  tree clauses = cp_parser_omp_all_clauses (parser, OMP_TARGET_CLAUSE_MASK,
-					    "#pragma omp target", pragma_tok);
-  c_omp_adjust_map_clauses (clauses, true);
-  keep_next_level (true);
-  set_omp_target_this_expr (NULL_TREE);
-  tree body = cp_parser_omp_structured_block (parser, if_p);
+  stmt = make_node (OMP_TARGET);
+  TREE_TYPE (stmt) = void_type_node;
 
-  finish_omp_target (pragma_tok->location, clauses, body, false);
+  OMP_TARGET_CLAUSES (stmt)
+    = cp_parser_omp_all_clauses (parser, OMP_TARGET_CLAUSE_MASK,
+				 "#pragma omp target", pragma_tok);
+  c_omp_adjust_map_clauses (OMP_TARGET_CLAUSES (stmt), true);
+
+  pc = &OMP_TARGET_CLAUSES (stmt);
+  keep_next_level (true);
+  OMP_TARGET_BODY (stmt) = cp_parser_omp_structured_block (parser, if_p);
+
+  SET_EXPR_LOCATION (stmt, pragma_tok->location);
+  add_stmt (stmt);
+
+check_clauses:
+  while (*pc)
+    {
+      if (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_MAP)
+	switch (OMP_CLAUSE_MAP_KIND (*pc))
+	  {
+	  case GOMP_MAP_TO:
+	  case GOMP_MAP_ALWAYS_TO:
+	  case GOMP_MAP_FROM:
+	  case GOMP_MAP_ALWAYS_FROM:
+	  case GOMP_MAP_TOFROM:
+	  case GOMP_MAP_ALWAYS_TOFROM:
+	  case GOMP_MAP_ALLOC:
+	  case GOMP_MAP_FIRSTPRIVATE_POINTER:
+	  case GOMP_MAP_FIRSTPRIVATE_REFERENCE:
+	  case GOMP_MAP_ALWAYS_POINTER:
+	  case GOMP_MAP_ATTACH_DETACH:
+	    break;
+	  default:
+	    error_at (OMP_CLAUSE_LOCATION (*pc),
+		      "%<#pragma omp target%> with map-type other "
+		      "than %<to%>, %<from%>, %<tofrom%> or %<alloc%> "
+		      "on %<map%> clause");
+	    *pc = OMP_CLAUSE_CHAIN (*pc);
+	    continue;
+	  }
+      pc = &OMP_CLAUSE_CHAIN (*pc);
+    }
   return true;
 }
 
