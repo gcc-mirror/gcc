@@ -31,26 +31,11 @@ namespace std
 
   namespace ranges
   {
-    template<input_or_output_iterator I, sentinel_for<I> S>
-      constexpr iter_difference_t<I> distance(I first, S last);
-    template<range R>
-      constexpr range_difference_t<R> distance(R&& r);
-
-    template<input_or_output_iterator I>
-      constexpr I next(I x);
-    template<input_or_output_iterator I>
-      constexpr I next(I x, iter_difference_t<I> n);
-    template<input_or_output_iterator I, sentinel_for<I> S>
-      constexpr I next(I x, S bound);
-    template<input_or_output_iterator I, sentinel_for<I> S>
-      constexpr I next(I x, iter_difference_t<I> n, S bound);
-
-    template<bidirectional_iterator I>
-      constexpr I prev(I x);
-    template<bidirectional_iterator I>
-      constexpr I prev(I x, iter_difference_t<I> n);
-    template<bidirectional_iterator I>
-      constexpr I prev(I x, iter_difference_t<I> n, I bound);
+    // These are function objects of unspecified type.
+    auto& _distance = distance;
+    auto& _advance = advance;
+    auto& _next = next;
+    auto& _prev = prev;
   }
 
   template<semiregular S> class move_sentinel;
