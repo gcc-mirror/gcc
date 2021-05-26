@@ -7567,7 +7567,7 @@ extern void finish_lambda_function		(tree body);
 extern bool regenerated_lambda_fn_p		(tree);
 extern tree most_general_lambda			(tree);
 extern tree finish_omp_target			(location_t, tree, tree, bool);
-extern void finish_omp_target_clauses		(location_t, tree, tree *);
+extern void set_omp_target_this_expr		(tree);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);

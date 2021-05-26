@@ -42144,6 +42144,7 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 	  keep_next_level (true);
 	  tree sb = begin_omp_structured_block (), ret;
 	  unsigned save = cp_parser_begin_omp_structured_block (parser);
+	  set_omp_target_this_expr (NULL_TREE);
 	  switch (ccode)
 	    {
 	    case OMP_TEAMS:
@@ -42238,6 +42239,7 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 					    "#pragma omp target", pragma_tok);
   c_omp_adjust_map_clauses (clauses, true);
   keep_next_level (true);
+  set_omp_target_this_expr (NULL_TREE);
   tree body = cp_parser_omp_structured_block (parser, if_p);
 
   finish_omp_target (pragma_tok->location, clauses, body, false);

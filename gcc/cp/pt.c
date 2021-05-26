@@ -18978,11 +18978,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
       t = copy_node (t);
       OMP_BODY (t) = stmt;
       OMP_CLAUSES (t) = tmp;
-
-      if (TREE_CODE (t) == OMP_TARGET)
-	finish_omp_target_clauses (EXPR_LOCATION (t), OMP_BODY (t),
-				   &OMP_CLAUSES (t));
-
       if (TREE_CODE (t) == OMP_TARGET && OMP_TARGET_COMBINED (t))
 	{
 	  tree teams = cp_walk_tree (&stmt, tsubst_find_omp_teams, NULL, NULL);
