@@ -3152,7 +3152,8 @@ ck810_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
   /* The follow index is for ldr instruction, the ldr cannot
      load dword data, so the mode size should not be larger than
      4.  */
-  else if (GET_MODE_SIZE (mode) <= 4)
+  else if (GET_MODE_SIZE (mode) <= 4
+	   || (TARGET_HARD_FLOAT && CSKY_VREG_MODE_P (mode)))
     {
       if (is_csky_address_register_rtx_p (index, strict_p))
 	return 1;
