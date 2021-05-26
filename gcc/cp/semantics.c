@@ -6597,7 +6597,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool order_seen = false;
   bool schedule_seen = false;
   bool oacc_async = false;
-  bool indirect_ref_p = false;
   bool indir_component_ref_p = false;
   tree last_iterators = NULL_TREE;
   bool last_iterators_remove = false;
@@ -7846,14 +7845,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      indir_component_ref_p = true;
 	      STRIP_NOPS (t);
 	    }
-	  indirect_ref_p = false;
-	  if ((ort == C_ORT_ACC || ort == C_ORT_OMP)
-	      && INDIRECT_REF_P (t))
-	    {
-	      t = TREE_OPERAND (t, 0);
-	      indirect_ref_p = true;
-	      STRIP_NOPS (t);
-	    }
 	  if (TREE_CODE (t) == COMPONENT_REF
 	      && ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
 		  || ort == C_ORT_ACC)
@@ -7889,12 +7880,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      break;
 		    }
 		  t = TREE_OPERAND (t, 0);
-		  if (INDIRECT_REF_P (t))
-		    {
-		      t = TREE_OPERAND (t, 0);
-		      indir_component_ref_p = true;
-		      STRIP_NOPS (t);
-		    }
 		}
 	      if (remove)
 		break;
@@ -7958,7 +7943,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		       || (OMP_CLAUSE_MAP_KIND (c)
 			   != GOMP_MAP_FIRSTPRIVATE_POINTER))
 		   && !indir_component_ref_p
-		   && !indirect_ref_p
 		   && !cxx_mark_addressable (t))
 	    remove = true;
 	  else if (!(OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
@@ -8053,8 +8037,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  else
 	    {
-	      if (!indirect_ref_p && !indir_component_ref_p)
-		bitmap_set_bit (&map_head, DECL_UID (t));
+	      bitmap_set_bit (&map_head, DECL_UID (t));
 	      if (t != OMP_CLAUSE_DECL (c)
 		  && TREE_CODE (OMP_CLAUSE_DECL (c)) == COMPONENT_REF)
 		bitmap_set_bit (&map_field_head, DECL_UID (t));
@@ -9115,12 +9098,9 @@ finish_omp_target (location_t loc, tree clauses, tree body, bool combined_p)
 	  tree closure = DECL_ARGUMENTS (current_function_decl);
 	  tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	  OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TO);
-	  OMP_CLAUSE_DECL (c)
-	    = build_indirect_ref (loc, closure, RO_UNARY_STAR);
+	  OMP_CLAUSE_DECL (c) = build_simple_mem_ref (closure);
 	  OMP_CLAUSE_SIZE (c)
-	    = (processing_template_decl
-	       ? NULL_TREE
-	       : TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (closure))));
+	    = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (closure)));
 
 	  tree c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	  OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
@@ -9140,8 +9120,7 @@ finish_omp_target (location_t loc, tree clauses, tree body, bool combined_p)
 	      /* Transform *this into *__closure->this in maps.  */
 	      tree this_map = *explicit_this_deref_map;
 	      OMP_CLAUSE_DECL (this_map)
-		= build_indirect_ref (loc, omp_target_this_expr, RO_UNARY_STAR);
-
+		= build_simple_mem_ref (omp_target_this_expr);
 	      tree nc = OMP_CLAUSE_CHAIN (this_map);
 	      gcc_assert (OMP_CLAUSE_CODE (nc) == OMP_CLAUSE_MAP
 			  && (OMP_CLAUSE_MAP_KIND (nc)
@@ -9161,11 +9140,9 @@ finish_omp_target (location_t loc, tree clauses, tree body, bool combined_p)
 	      tree c3 = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	      OMP_CLAUSE_SET_MAP_KIND (c3, GOMP_MAP_TOFROM);
 	      OMP_CLAUSE_DECL (c3)
-		= build_indirect_ref (loc, omp_target_this_expr, RO_UNARY_STAR);
+		= build_simple_mem_ref (omp_target_this_expr);
 	      OMP_CLAUSE_SIZE (c3)
-		= (processing_template_decl
-		   ? NULL_TREE
-		   : TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (omp_target_this_expr))));
+		= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (omp_target_this_expr)));
 
 	      tree c4 = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	      OMP_CLAUSE_SET_MAP_KIND (c4, GOMP_MAP_ALWAYS_POINTER);
@@ -9187,12 +9164,9 @@ finish_omp_target (location_t loc, tree clauses, tree body, bool combined_p)
 	    {
 	      tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	      OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_TOFROM);
-	      OMP_CLAUSE_DECL (c)
-		= build_indirect_ref (loc, omp_target_this_expr, RO_UNARY_STAR);
+	      OMP_CLAUSE_DECL (c) = build_simple_mem_ref (omp_target_this_expr);
 	      OMP_CLAUSE_SIZE (c)
-		= (processing_template_decl
-		   ? NULL_TREE
-		   : TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (omp_target_this_expr))));
+		= TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (omp_target_this_expr)));
 
 	      tree c2 = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
@@ -9274,7 +9248,8 @@ finish_omp_target (location_t loc, tree clauses, tree body, bool combined_p)
 	    tree c = build_omp_clause (loc, OMP_CLAUSE_MAP);
 	    OMP_CLAUSE_SET_MAP_KIND (c, GOMP_MAP_ALLOC);
 	    OMP_CLAUSE_DECL (c)
-	      = build_indirect_ref (loc, ptr_member, RO_UNARY_STAR);
+	      = build2 (MEM_REF, char_type_node, ptr_member,
+			build_int_cst (build_pointer_type (char_type_node), 0));
 	    OMP_CLAUSE_SIZE (c) = size_zero_node;
 	    OMP_CLAUSE_MAP_MAYBE_ZERO_LENGTH_ARRAY_SECTION (c) = 1;
 

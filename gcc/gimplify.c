@@ -9321,7 +9321,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			{
 			  indir_p = true;
 			  decl = TREE_OPERAND (decl, 0);
-			  STRIP_NOPS (decl);
 			}
 		      if (TREE_CODE (decl) == INDIRECT_REF
 			  && DECL_P (TREE_OPERAND (decl, 0))
@@ -9731,24 +9730,6 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		{
 		  remove = true;
 		  break;
-		}
-
-	      /* If this was of the form map(*pointer_to_struct), then the
-		 'pointer_to_struct' DECL should be considered deref'ed.  */
-	      if ((OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ALLOC
-		   || GOMP_MAP_COPY_TO_P (OMP_CLAUSE_MAP_KIND (c))
-		   || GOMP_MAP_COPY_FROM_P (OMP_CLAUSE_MAP_KIND (c)))
-		  && INDIRECT_REF_P (orig_decl)
-		  && DECL_P (TREE_OPERAND (orig_decl, 0))
-		  && TREE_CODE (TREE_TYPE (orig_decl)) == RECORD_TYPE)
-		{
-		  tree ptr = TREE_OPERAND (orig_decl, 0);
-		  if (!struct_deref_set || !struct_deref_set->contains (ptr))
-		    {
-		      if (!struct_deref_set)
-			struct_deref_set = new hash_set<tree> ();
-		      struct_deref_set->add (ptr);
-		    }
 		}
 
 	      if (!remove
