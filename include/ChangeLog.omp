@@ -1,12 +1,3 @@
-2021-05-05  Chung-Lin Tang  <cltang@codesourcery.com>
-
-	* gomp-constants.h (GOMP_MAP_IMPLICIT): New special map kind bits value.
-	(GOMP_MAP_FLAG_SPECIAL_BITS): Define helper mask for whole set of
-	special map kind bits.
-	(GOMP_MAP_NONCONTIG_ARRAY_P): Adjust test for non-contiguous array map
-	kind bits to be more specific.
-	(GOMP_MAP_IMPLICIT_P): New predicate macro for implicit map kinds.
-
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
             Julian Brown  <julian@codesourcery.com>
 

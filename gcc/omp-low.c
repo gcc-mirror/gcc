@@ -13143,19 +13143,6 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		    else if (integer_nonzerop (s))
 		      tkind_zero = tkind;
 		  }
-		if (tkind_zero == tkind
-		    && OMP_CLAUSE_MAP_IMPLICIT_P (c)
-		    && (((tkind & GOMP_MAP_FLAG_SPECIAL_BITS)
-			 & ~GOMP_MAP_IMPLICIT)
-			== 0))
-		  {
-		    /* If this is an implicit map, and the GOMP_MAP_IMPLICIT
-		       bits are not interfered by other special bit encodings,
-		       then turn the GOMP_IMPLICIT_BIT flag on for the runtime
-		       to see.  */
-		    tkind |= GOMP_MAP_IMPLICIT;
-		    tkind_zero = tkind;
-		  }
 		break;
 	      case OMP_CLAUSE_FIRSTPRIVATE:
 		gcc_checking_assert (is_gimple_omp_oacc (ctx->stmt));

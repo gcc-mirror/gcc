@@ -46,16 +46,6 @@
 					 | GOMP_MAP_FLAG_SPECIAL_0)
 #define GOMP_MAP_DEEP_COPY		(GOMP_MAP_FLAG_SPECIAL_4 \
 					 | GOMP_MAP_FLAG_SPECIAL_2)
-/* This value indicates the map was created implicitly according to
-   OpenMP rules.  */
-#define GOMP_MAP_IMPLICIT		(GOMP_MAP_FLAG_SPECIAL_3 \
-					 | GOMP_MAP_FLAG_SPECIAL_4)
-/* Mask for entire set of special map kind bits.  */
-#define GOMP_MAP_FLAG_SPECIAL_BITS	(GOMP_MAP_FLAG_SPECIAL_0 \
-					 | GOMP_MAP_FLAG_SPECIAL_1 \
-					 | GOMP_MAP_FLAG_SPECIAL_2 \
-					 | GOMP_MAP_FLAG_SPECIAL_3 \
-					 | GOMP_MAP_FLAG_SPECIAL_4)
 /* Flag to force a specific behavior (or else, trigger a run-time error).  */
 #define GOMP_MAP_FLAG_FORCE		(1 << 7)
 
@@ -235,12 +225,7 @@ enum gomp_map_kind
   (GOMP_MAP_ALWAYS_TO_P (X) || ((X) == GOMP_MAP_ALWAYS_FROM))
 
 #define GOMP_MAP_NONCONTIG_ARRAY_P(X) \
-  (((X) & GOMP_MAP_FLAG_SPECIAL_BITS) == GOMP_MAP_NONCONTIG_ARRAY	\
-   || (X) == GOMP_MAP_NONCONTIG_ARRAY_FORCE_PRESENT)
-
-#define GOMP_MAP_IMPLICIT_P(X) \
-  (((X) & GOMP_MAP_FLAG_SPECIAL_BITS) == GOMP_MAP_IMPLICIT)
-
+  ((X) & GOMP_MAP_NONCONTIG_ARRAY)
 
 /* Asynchronous behavior.  Keep in sync with
    libgomp/{openacc.h,openacc.f90,openacc_lib.h}:acc_async_t.  */

@@ -419,12 +419,12 @@ vla (int array_li)
   copyout (array_so)
   /* The gimplifier has created an implicit 'firstprivate' clause for the array
      length.
-     { dg-final { scan-tree-dump {(?n)#pragma omp target oacc_parallel firstprivate\(array_li.[0-9]+\) map\(from:array_so \[len: 4\]\)} omplower { target { ! c++ } } } }
-     { dg-final { scan-tree-dump {(?n)#pragma omp target oacc_parallel firstprivate\([^)]+\) map\(from:array_so \[len: 4\]\)} omplower { target { c++ } } } }
+     { dg-final { scan-tree-dump {(?n)#pragma omp target oacc_parallel map\(from:array_so \[len: 4\]\) firstprivate\(array_li.[0-9]+\)} omplower { target { ! c++ } } } }
+     { dg-final { scan-tree-dump {(?n)#pragma omp target oacc_parallel map\(from:array_so \[len: 4\]\) firstprivate\(} omplower { target { c++ } } } }
      (C++ computes an intermediate value, so can't scan for 'firstprivate(array_li)'.)  */
   /* For C, non-LP64, the gimplifier has also created a mapping for the array
      itself; PR90859.
-     { dg-final { scan-tree-dump {(?n)#pragma omp target oacc_parallel firstprivate\(array_li.[0-9]+\) map\(tofrom:\(\*array.[0-9]+\) \[len: D\.[0-9]+\]\[implicit\]\) map\(firstprivate:array \[pointer assign, bias: 0\]\) map\(from:array_so \[len: 4\]\) \[} omplower { target { c && { ! lp64 } } } } } */
+     { dg-final { scan-tree-dump {(?n)#pragma omp target oacc_parallel map\(from:array_so \[len: 4\]\) firstprivate\(array_li.[0-9]+\) map\(tofrom:\(\*array.[0-9]+\) \[len: D\.[0-9]+\]\) map\(firstprivate:array \[pointer assign, bias: 0\]\) \[} omplower { target { c && { ! lp64 } } } } } */
   {
     array_so = sizeof array;
   }
