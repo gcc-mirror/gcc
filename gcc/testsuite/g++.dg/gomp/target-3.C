@@ -33,4 +33,4 @@ T<N>::bar (int x)
 
 template struct T<0>;
 
-/* { dg-final { scan-tree-dump-times "map\\(struct:\\*this \\\[len: 2\\\]\\) map\\(alloc:this->a \\\[len: \[0-9\]+\\\]\\) map\\(alloc:this->b \\\[len: \[0-9\]+\\\]\\)" 4 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "map\\(alloc:this->b \\\[len: \[0-9\]+\\\]\\) map\\(alloc:this->a \\\[len: \[0-9\]+\\\]\\)" 4 "gimple" } } */
