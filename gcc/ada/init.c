@@ -1989,7 +1989,7 @@ __gnat_error_handler (int sig, siginfo_t *si, void *sc)
      anything else.
      This mechanism is only need in kernel mode. */
 #if !(defined (__RTP__) || defined (VTHREADS)) && ((CPU == PPCE500V2) || (CPU == PPC85XX))
-  register unsigned msr;
+  unsigned msr;
   /* Read the MSR value */
   asm volatile ("mfmsr %0" : "=r" (msr));
   /* Force the SPE bit if not set.  */

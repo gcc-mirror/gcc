@@ -1773,8 +1773,8 @@ function_arg_regno_p (int n)
 int
 symbolic_reference_mentioned_p (rtx op)
 {
-  register const char *fmt;
-  register int i;
+  const char *fmt;
+  int i;
 
   if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
     return 1;
@@ -1784,7 +1784,7 @@ symbolic_reference_mentioned_p (rtx op)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
