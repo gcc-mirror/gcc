@@ -76,6 +76,9 @@ struct X
 void
 test03()
 {
+  using ranges::next;
+  using ranges::begin;
+
   // LWG 3483
   std::pair<int, X> x[3];
   __gnu_test::test_forward_range<std::pair<int, X>> r(x);

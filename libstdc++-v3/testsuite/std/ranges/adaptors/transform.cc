@@ -132,6 +132,9 @@ struct Y
 void
 test06()
 {
+  using ranges::next;
+  using ranges::begin;
+
   // LWG 3483
   Y y[3];
   __gnu_test::test_forward_range<Y> r(y);
