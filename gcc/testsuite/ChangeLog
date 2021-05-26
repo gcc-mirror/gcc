@@ -1,3 +1,35 @@
+2021-05-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-05-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100551
+	* gfortran.dg/pr100551.f90: New test.
+
+2021-05-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100519
+	* gcc.dg/torture/pr100519.c: New testcase.
+
+2021-05-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100509
+	* gcc.dg/pr100509.c: New testcase.
+
+2021-05-25  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2021-05-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100492
+	* gcc.dg/torture/pr100492.c: New testcase.
+
 2021-05-24  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:

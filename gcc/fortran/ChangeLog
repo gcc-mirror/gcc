@@ -1,3 +1,22 @@
+2021-05-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-05-23  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100551
+	* trans-expr.c (gfc_conv_procedure_call): Adjust check for
+	implicit conversion of actual argument to an unlimited polymorphic
+	procedure argument.
+
+2021-05-25  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-25  Tobias Burnus  <tobias@codesourcery.com>
+		    Johannes Nendwich  <a08727063@unet.univie.ac.at>
+
+	* intrinsic.texi (GERROR, GETARGS, GETLOG, NORM2, PARITY, RANDOM_INIT,
+	RANDOM_NUMBER): Fix typos and copy'n'paste errors.
+
 2021-05-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
