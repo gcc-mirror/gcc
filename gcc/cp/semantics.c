@@ -5576,8 +5576,6 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	    }
 	  OMP_CLAUSE_DECL (c) = first;
 	  OMP_CLAUSE_SIZE (c) = size;
-	  if (TREE_CODE (t) == FIELD_DECL)
-	    t = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
 	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_MAP
 	      || (TREE_CODE (t) == COMPONENT_REF
 		  && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE))
@@ -5606,6 +5604,8 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      }
 	  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 				      OMP_CLAUSE_MAP);
+	  if (TREE_CODE (t) == FIELD_DECL)
+	    t = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
 	  if ((ort & C_ORT_OMP_DECLARE_SIMD) != C_ORT_OMP && ort != C_ORT_ACC)
 	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_POINTER);
 	  else if (TREE_CODE (t) == COMPONENT_REF)
