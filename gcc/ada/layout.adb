@@ -513,18 +513,28 @@ package body Layout is
 
             begin
                Get_Index_Bounds (First_Index (E), Lo, Hi);
-               Siz := (Expr_Value (Hi) - Expr_Value (Lo) + 1)
-                 * Component_Size (E);
 
-               --  Do not overwrite a different value of 'Size specified
-               --  explicitly by the user. In that case, also do not set Esize.
+               --  Even if the bounds are known at compile time, they could
+               --  have been replaced by an error node. Check each bound
+               --  explicitly.
 
-               if Unknown_RM_Size (E) or else RM_Size (E) = Siz then
-                  Set_RM_Size (E, Siz);
+               if Compile_Time_Known_Value (Lo)
+                 and then Compile_Time_Known_Value (Hi)
+               then
+                  Siz := (Expr_Value (Hi) - Expr_Value (Lo) + 1)
+                    * Component_Size (E);
 
-                  if Unknown_Esize (E) then
-                     Siz := ((Siz + (Abits - 1)) / Abits) * Abits;
-                     Set_Esize (E, Siz);
+                  --  Do not overwrite a different value of 'Size specified
+                  --  explicitly by the user. In that case, also do not set
+                  --  Esize.
+
+                  if Unknown_RM_Size (E) or else RM_Size (E) = Siz then
+                     Set_RM_Size (E, Siz);
+
+                     if Unknown_Esize (E) then
+                        Siz := ((Siz + (Abits - 1)) / Abits) * Abits;
+                        Set_Esize (E, Siz);
+                     end if;
                   end if;
                end if;
             end;
