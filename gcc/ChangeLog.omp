@@ -1,3 +1,19 @@
+2021-05-26  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libgomp/100573
+	* omp-low.c: Include omp-offload.h.
+	(create_omp_child_function): If current_function_decl has
+	"omp declare target" attribute and is_gimple_omp_offloaded,
+	remove that attribute from the copy of attribute list and
+	add "omp target entrypoint" attribute instead.
+	(lower_omp_target): Mark .omp_data_sizes.* and .omp_data_kinds.*
+	variables for offloading if in omp_maybe_offloaded_ctx.
+	* omp-offload.c (pass_omp_target_link::execute): Nullify second
+	argument to GOMP_target_data_ext in offloaded code.
+
 2021-05-23  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
@@ -338,7 +354,7 @@
 	GOMP_MAP_DECLARE_ALLOCATE and GOMP_MAP_DECLARE_DEALLOCATE.
 
 2018-10-04  Cesar Philippidis  <cesar@codesourcery.com>
-            Julian Brown  <julian@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
 
 	* omp-low.c (scan_sharing_clauses): Update handling of OpenACC declare
 	create, declare copyin and declare deviceptr to have local lifetimes.

@@ -2978,8 +2978,16 @@ pass_omp_target_link::execute (function *fun)
     {
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	if (walk_gimple_stmt (&gsi, NULL, find_link_var_op, NULL))
-	  gimple_regimplify_operands (gsi_stmt (gsi), &gsi);
+	{
+	  if (gimple_call_builtin_p (gsi_stmt (gsi), BUILT_IN_GOMP_TARGET))
+	    {
+	      /* Nullify the second argument of __builtin_GOMP_target_ext.  */
+	      gimple_call_set_arg (gsi_stmt (gsi), 1, null_pointer_node);
+	      update_stmt (gsi_stmt (gsi));
+	    }
+	  if (walk_gimple_stmt (&gsi, NULL, find_link_var_op, NULL))
+	    gimple_regimplify_operands (gsi_stmt (gsi), &gsi);
+	}
     }
 
   return 0;
