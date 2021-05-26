@@ -2488,8 +2488,8 @@ arc_address_cost (rtx addr, machine_mode, addr_space_t, bool speed)
 
     case PLUS :
       {
-	register rtx plus0 = XEXP (addr, 0);
-	register rtx plus1 = XEXP (addr, 1);
+	rtx plus0 = XEXP (addr, 0);
+	rtx plus1 = XEXP (addr, 1);
 
 	if (GET_CODE (plus0) != REG
 	    && (GET_CODE (plus0) != MULT
@@ -5032,7 +5032,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 void
 arc_print_operand_address (FILE *file , rtx addr)
 {
-  register rtx base, index = 0;
+  rtx base, index = 0;
 
   switch (GET_CODE (addr))
     {
@@ -5157,7 +5157,7 @@ static void
 arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 {
   /* BODY will hold the body of INSN.  */
-  register rtx body;
+  rtx body;
 
   /* This will be 1 if trying to repeat the trick (ie: do the `else' part of
      an if/then/else), and things need to be reversed.  */
@@ -6130,8 +6130,8 @@ arc_legitimate_pic_addr_p (rtx addr)
 static bool
 symbolic_reference_mentioned_p (rtx op)
 {
-  register const char *fmt;
-  register int i;
+  const char *fmt;
+  int i;
 
   if (GET_CODE (op) == SYMBOL_REF || GET_CODE (op) == LABEL_REF)
     return true;
@@ -6141,7 +6141,7 @@ symbolic_reference_mentioned_p (rtx op)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (symbolic_reference_mentioned_p (XVECEXP (op, i, j)))
@@ -6163,8 +6163,8 @@ symbolic_reference_mentioned_p (rtx op)
 bool
 arc_raw_symbolic_reference_mentioned_p (rtx op, bool skip_local)
 {
-  register const char *fmt;
-  register int i;
+  const char *fmt;
+  int i;
 
   if (GET_CODE(op) == UNSPEC)
     return false;
@@ -6184,7 +6184,7 @@ arc_raw_symbolic_reference_mentioned_p (rtx op, bool skip_local)
     {
       if (fmt[i] == 'E')
 	{
-	  register int j;
+	  int j;
 
 	  for (j = XVECLEN (op, i) - 1; j >= 0; j--)
 	    if (arc_raw_symbolic_reference_mentioned_p (XVECEXP (op, i, j),
