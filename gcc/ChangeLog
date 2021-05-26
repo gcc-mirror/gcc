@@ -1,3 +1,12 @@
+2021-05-25  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-05-10  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99960
+	* config/arm/mve.md (*mve_mov<mode>): Simplify output code. Use
+	vldrw.u32 and vstrw.32 for V2D[IF]mode loads and stores.
+
 2021-05-20  Alex Coplan  <alex.coplan@arm.com>
 	    Christophe Lyon  <christophe.lyon@linaro.org>
 
