@@ -827,7 +827,7 @@ ranger_cache::range_of_expr (irange &r, tree name, gimple *stmt)
 {
   if (!gimple_range_ssa_p (name))
     {
-      get_tree_range (r, name);
+      get_tree_range (r, name, stmt);
       return true;
     }
 
@@ -860,7 +860,7 @@ ranger_cache::range_of_expr (irange &r, tree name, gimple *stmt)
 	}
     }
   else
-    get_tree_range (r, expr);
+    get_tree_range (r, expr, NULL);
   return false;
 }
 

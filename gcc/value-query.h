@@ -100,6 +100,8 @@ public:
 protected:
   class value_range_equiv *allocate_value_range_equiv ();
   void free_value_range_equiv (class value_range_equiv *);
+  bool get_tree_range (irange &r, tree expr, gimple *stmt);
+  bool get_arith_expr_range (irange &r, tree expr, gimple *stmt);
 
 private:
   class equiv_allocator *equiv_alloc;

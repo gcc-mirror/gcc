@@ -159,6 +159,8 @@ inline bool
 fold_range (irange &r, gimple *s, range_query *q = NULL)
 {
   fold_using_range f;
+  if (q == NULL)
+    q = get_global_range_query ();
   fur_source src (q, s);
   return f.fold_stmt (r, s, src);
 }
@@ -169,12 +171,11 @@ inline bool
 fold_range (irange &r, gimple *s, edge on_edge, range_query *q = NULL)
 {
   fold_using_range f;
+  if (q == NULL)
+    q = get_global_range_query ();
   fur_source src (q, on_edge);
   return f.fold_stmt (r, s, src);
 }
-
-// Calculate a basic range for a tree node expression.
-extern bool get_tree_range (irange &r, tree expr);
 
 // These routines provide a GIMPLE interface to the range-ops code.
 extern tree gimple_range_operand1 (const gimple *s);

@@ -581,6 +581,11 @@ test_ranges ()
   push_cfun (fun);
   range_tests ();
   range_op_tests ();
+
+  build_cfg (fndecl);
+  convert_to_ssa (fndecl);
+  gimple_range_tests ();
+
   pop_cfun ();
 }
 

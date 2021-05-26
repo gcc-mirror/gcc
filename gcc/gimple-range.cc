@@ -54,16 +54,6 @@ along with GCC; see the file COPYING3.  If not see
 bool
 fur_source::get_operand (irange &r, tree expr)
 {
-  if (!gimple_range_ssa_p (expr))
-    return get_tree_range (r, expr);
-
-  // If no query engine is present, simply get the global value.
-  if (!m_query)
-    {
-       r = gimple_range_global (expr);
-       return true;
-    }
-
   // First look for a stmt.
   if (m_stmt)
     return m_query->range_of_expr (r, expr, m_stmt);
@@ -166,56 +156,6 @@ gimple_range_adjustment (irange &res, const gimple *stmt)
     default:
       break;
     }
-}
-
-// Return a range in R for the tree EXPR.  Return true if a range is
-// representable, and UNDEFINED/false if not.
-
-bool
-get_tree_range (irange &r, tree expr)
-{
-  tree type;
-  if (TYPE_P (expr))
-    type = expr;
-  else
-    type = TREE_TYPE (expr);
-
-  // Return false if the type isn't suported.
-  if (!irange::supports_type_p (type))
-    {
-      r.set_undefined ();
-      return false;
-    }
-
-  switch (TREE_CODE (expr))
-    {
-      case INTEGER_CST:
-	if (TREE_OVERFLOW_P (expr))
-	  expr = drop_tree_overflow (expr);
-	r.set (expr, expr);
-	return true;
-
-      case SSA_NAME:
-	r = gimple_range_global (expr);
-	return true;
-
-      case ADDR_EXPR:
-        {
-	  // Handle &var which can show up in phi arguments.
-	  bool ov;
-	  if (tree_single_nonzero_warnv_p (expr, &ov))
-	    {
-	      r = range_nonzero (type);
-	      return true;
-	    }
-	  break;
-	}
-
-      default:
-        break;
-    }
-  r.set_varying (type);
-  return true;
 }
 
 // Return the base of the RHS of an assignment.
@@ -961,7 +901,7 @@ bool
 gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
 {
   if (!gimple_range_ssa_p (expr))
-    return get_tree_range (r, expr);
+    return get_tree_range (r, expr, stmt);
 
   // If there is no statement, just get the global value.
   if (!stmt)
@@ -1466,3 +1406,5 @@ disable_ranger (struct function *fun)
 
   fun->x_range_query = &global_ranges;
 }
+
+#include "gimple-range-tests.cc"
