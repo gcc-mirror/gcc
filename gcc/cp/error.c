@@ -371,7 +371,35 @@ static void
 dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
                         vec<tree, va_gc> *typenames)
 {
-  bool need_semicolon = false;
+  /* Print "[with" and ']', conditional on whether anything is printed at all.
+     This is tied to whether a semicolon is needed to separate multiple template
+     parameters.  */
+  struct prepost_semicolon
+  {
+    cxx_pretty_printer *pp;
+    bool need_semicolon;
+
+    void operator() ()
+    {
+      if (need_semicolon)
+	pp_separate_with_semicolon (pp);
+      else
+	{
+	  pp_cxx_whitespace (pp);
+	  pp_cxx_left_bracket (pp);
+	  pp->translate_string ("with");
+	  pp_cxx_whitespace (pp);
+	  need_semicolon = true;
+	}
+    }
+
+    ~prepost_semicolon ()
+    {
+      if (need_semicolon)
+	pp_cxx_right_bracket (pp);
+    }
+  } semicolon_or_introducer = {pp, false};
+
   int i;
   tree t;
 
@@ -395,10 +423,20 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 	  if (lvl_args && NUM_TMPL_ARGS (lvl_args) > arg_idx)
 	    arg = TREE_VEC_ELT (lvl_args, arg_idx);
 
-	  if (need_semicolon)
-	    pp_separate_with_semicolon (pp);
-	  dump_template_parameter (pp, TREE_VEC_ELT (p, i),
-                                   TFF_PLAIN_IDENTIFIER);
+	  tree parm_i = TREE_VEC_ELT (p, i);
+	  /* If the template argument repeats the template parameter (T = T),
+	     skip the parameter.*/
+	  if (arg && TREE_CODE (arg) == TEMPLATE_TYPE_PARM
+		&& TREE_CODE (parm_i) == TREE_LIST
+		&& TREE_CODE (TREE_VALUE (parm_i)) == TYPE_DECL
+		&& TREE_CODE (TREE_TYPE (TREE_VALUE (parm_i)))
+		     == TEMPLATE_TYPE_PARM
+		&& DECL_NAME (TREE_VALUE (parm_i))
+		     == DECL_NAME (TREE_CHAIN (arg)))
+	    continue;
+
+	  semicolon_or_introducer ();
+	  dump_template_parameter (pp, parm_i, TFF_PLAIN_IDENTIFIER);
 	  pp_cxx_whitespace (pp);
 	  pp_equal (pp);
 	  pp_cxx_whitespace (pp);
@@ -414,7 +452,6 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 	    pp_string (pp, M_("<missing>"));
 
 	  ++arg_idx;
-	  need_semicolon = true;
 	}
 
       parms = TREE_CHAIN (parms);
@@ -436,8 +473,7 @@ dump_template_bindings (cxx_pretty_printer *pp, tree parms, tree args,
 
   FOR_EACH_VEC_SAFE_ELT (typenames, i, t)
     {
-      if (need_semicolon)
-	pp_separate_with_semicolon (pp);
+      semicolon_or_introducer ();
       dump_type (pp, t, TFF_PLAIN_IDENTIFIER);
       pp_cxx_whitespace (pp);
       pp_equal (pp);
@@ -1599,12 +1635,7 @@ dump_substitution (cxx_pretty_printer *pp,
       && !(flags & TFF_NO_TEMPLATE_BINDINGS))
     {
       vec<tree, va_gc> *typenames = t ? find_typenames (t) : NULL;
-      pp_cxx_whitespace (pp);
-      pp_cxx_left_bracket (pp);
-      pp->translate_string ("with");
-      pp_cxx_whitespace (pp);
       dump_template_bindings (pp, template_parms, template_args, typenames);
-      pp_cxx_right_bracket (pp);
     }
 }
 
@@ -1645,7 +1676,8 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
   bool constexpr_p;
   tree ret = NULL_TREE;
 
-  flags &= ~(TFF_UNQUALIFIED_NAME | TFF_TEMPLATE_NAME);
+  int dump_function_name_flags = flags & ~TFF_UNQUALIFIED_NAME;
+  flags = dump_function_name_flags & ~TFF_TEMPLATE_NAME;
   if (TREE_CODE (t) == TEMPLATE_DECL)
     t = DECL_TEMPLATE_RESULT (t);
 
@@ -1723,7 +1755,7 @@ dump_function_decl (cxx_pretty_printer *pp, tree t, int flags)
   else
     dump_scope (pp, CP_DECL_CONTEXT (t), flags);
 
-  dump_function_name (pp, t, flags);
+  dump_function_name (pp, t, dump_function_name_flags);
 
   if (!(flags & TFF_NO_FUNCTION_ARGUMENTS))
     {
@@ -1937,6 +1969,7 @@ dump_function_name (cxx_pretty_printer *pp, tree t, int flags)
   dump_module_suffix (pp, t);
 
   if (DECL_TEMPLATE_INFO (t)
+      && !(flags & TFF_TEMPLATE_NAME)
       && !DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (t)
       && (TREE_CODE (DECL_TI_TEMPLATE (t)) != TEMPLATE_DECL
 	  || PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (t))))
