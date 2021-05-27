@@ -4718,8 +4718,9 @@ done:
 
 	  /* For optional arguments, only check bounds if the argument is
 	     present.  */
-	  if (expr->symtree->n.sym->attr.optional
-	      || expr->symtree->n.sym->attr.not_always_present)
+	  if ((expr->symtree->n.sym->attr.optional
+	       || expr->symtree->n.sym->attr.not_always_present)
+	      && expr->symtree->n.sym->attr.dummy)
 	    tmp = build3_v (COND_EXPR,
 			    gfc_conv_expr_present (expr->symtree->n.sym),
 			    tmp, build_empty_stmt (input_location));
