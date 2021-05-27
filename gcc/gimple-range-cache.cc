@@ -639,7 +639,9 @@ ranger_cache::get_non_stale_global_range (irange &r, tree name)
 {
   if (m_globals.get_global_range (r, name))
     {
-      if (m_temporal->current_p (name, depend1 (name), depend2 (name)))
+      // Use this value if the range is constant or current.
+      if (r.singleton_p ()
+	  || m_temporal->current_p (name, depend1 (name), depend2 (name)))
 	return true;
     }
   else
@@ -674,15 +676,13 @@ ranger_cache::set_global_range (tree name, const irange &r)
   // undefined. Propagation works better with constants. PR 100512.
   // Pointers which resolve to non-zero also do not need
   // tracking in the cache as they will never change.  See PR 98866.
-  // Otherwise mark the value as up-to-date.
+  // Timestamp must always be updated, or dependent calculations may
+  // not include this latest value. PR 100774.
+
   if (r.singleton_p ()
       || (POINTER_TYPE_P (TREE_TYPE (name)) && r.nonzero_p ()))
-    {
-      set_range_invariant (name);
-      m_temporal->set_always_current (name);
-    }
-  else
-    m_temporal->set_timestamp (name);
+    set_range_invariant (name);
+  m_temporal->set_timestamp (name);
 }
 
 // Push a request for a new lookup in block BB of name.  Return true if
