@@ -9724,7 +9724,6 @@ package body Sem_Ch12 is
 
          if Nkind (Par_N) = N_Package_Specification
            and then Decls = Visible_Declarations (Par_N)
-           and then Present (Private_Declarations (Par_N))
            and then not Is_Empty_List (Private_Declarations (Par_N))
          then
             Decls := Private_Declarations (Par_N);

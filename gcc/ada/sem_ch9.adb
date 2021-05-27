@@ -1955,9 +1955,7 @@ package body Sem_Ch9 is
       Tasking_Used := True;
       Analyze_Declarations (Visible_Declarations (N));
 
-      if Present (Private_Declarations (N))
-        and then not Is_Empty_List (Private_Declarations (N))
-      then
+      if not Is_Empty_List (Private_Declarations (N)) then
          Last_Id := Last_Entity (Prot_Typ);
          Analyze_Declarations (Private_Declarations (N));
 
