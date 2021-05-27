@@ -10824,6 +10824,7 @@ gimplify_adjust_omp_clauses_1 (splay_tree_node n, void *data)
 	  gcc_unreachable ();
 	}
       OMP_CLAUSE_SET_MAP_KIND (clause, kind);
+      OMP_CLAUSE_MAP_IMPLICIT_P (clause) = 1;
       if (DECL_SIZE (decl)
 	  && TREE_CODE (DECL_SIZE (decl)) != INTEGER_CST)
 	{
@@ -11452,9 +11453,15 @@ gimplify_adjust_omp_clauses (gimple_seq *pre_p, gimple_seq body, tree *list_p,
 	list_p = &OMP_CLAUSE_CHAIN (c);
     }
 
-  /* Add in any implicit data sharing.  */
+  /* Add in any implicit data sharing. Implicit clauses are added at the start
+     of the clause list, but after any non-map clauses.  */
   struct gimplify_adjust_omp_clauses_data data;
-  data.list_p = list_p;
+  tree *implicit_add_list_p = orig_list_p;
+  while (*implicit_add_list_p
+	 && OMP_CLAUSE_CODE (*implicit_add_list_p) != OMP_CLAUSE_MAP)
+    implicit_add_list_p = &OMP_CLAUSE_CHAIN (*implicit_add_list_p);
+
+  data.list_p = implicit_add_list_p;
   data.pre_p = pre_p;
   splay_tree_foreach (ctx->variables, gimplify_adjust_omp_clauses_1, &data);
 

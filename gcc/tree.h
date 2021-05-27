@@ -1660,11 +1660,21 @@ class auto_suppress_location_wrappers
    variable.  */
 #define OMP_CLAUSE_MAP_IN_REDUCTION(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+
 /* Nonzero on map clauses added implicitly for reduction clauses on combined
    or composite constructs.  They shall be removed if there is an explicit
    map clause.  */
 #define OMP_CLAUSE_MAP_IMPLICIT(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.default_def_flag)
+/* Nonzero if this map clause was created through implicit data-mapping
+   rules.
+   NOTE: this bit is set during gimplify_adjust_omp_clauses_1, and passed to
+   libgomp runtime. Whether can be combined with above GOMP_CLAUSE_MAP_IMPLICIT
+   bit is still TBD. Currently allow both to co-exist on devel/omp/gcc-11
+   branch.  */
+#define OMP_CLAUSE_MAP_IMPLICIT_P(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.deprecated_flag)
+
 
 /* True on an OMP_CLAUSE_USE_DEVICE_PTR with an OpenACC 'if_present'
    clause.  */
