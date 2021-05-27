@@ -1,3 +1,27 @@
+2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100502
+	* typeck.c (finish_class_member_access_expr): Disable ahead
+	of time access checking during the member lookup.
+
+2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100368
+	* tree.c (build_target_expr_with_type): Don't call force_rvalue
+	on CALL_EXPR initializer.  Simplify now that bot_manip is no
+	longer a caller.
+	(bot_manip): Use force_target_expr instead of
+	build_target_expr_with_type.
+
+2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97420
+	* cvt.c (noexcept_conv_p): Remove redundant checks and simplify.
+	(fnptr_conv_p): Don't call non_reference.  Use INDIRECT_TYPE_P
+	instead of TYPE_PTR_P.
+	* pt.c (convert_nontype_argument_function): Look through
+	implicit INDIRECT_REFs before calling strip_fnptr_conv.
+
 2021-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/100666

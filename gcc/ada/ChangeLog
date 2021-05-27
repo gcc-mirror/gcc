@@ -1,3 +1,7 @@
+2021-05-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* init.c (__gnat_error_handler): Remove register keyword.
+
 2021-05-25  Martin Liska  <mliska@suse.cz>
 
 	* doc/share/conf.py: Fix Sphinx 4.0.x error.

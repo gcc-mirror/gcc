@@ -22190,11 +22190,14 @@ ix86_autovectorize_vector_modes (vector_modes *modes, bool all)
       modes->safe_push (V16QImode);
       modes->safe_push (V32QImode);
     }
-  else if (TARGET_MMX_WITH_SSE)
+  else if (TARGET_SSE2)
     modes->safe_push (V16QImode);
 
   if (TARGET_MMX_WITH_SSE)
     modes->safe_push (V8QImode);
+
+  if (TARGET_SSE2)
+    modes->safe_push (V4QImode);
 
   return 0;
 }

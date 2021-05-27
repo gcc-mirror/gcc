@@ -228,7 +228,7 @@ intersect_range_with_nonzero_bits (enum value_range_kind vr_type,
 	  vr_type = VR_RANGE;
 	}
     }
-  if (vr_type == VR_RANGE)
+  if (vr_type == VR_RANGE || vr_type == VR_VARYING)
     {
       *max = wi::round_down_for_mask (*max, nonzero_bits);
 
@@ -1717,7 +1717,7 @@ register_edge_assert_for_2 (tree name, edge e,
          simply register the same assert for it.  */
       if (CONVERT_EXPR_CODE_P (rhs_code))
 	{
-	  wide_int rmin, rmax;
+	  value_range vr;
 	  tree rhs1 = gimple_assign_rhs1 (def_stmt);
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 	      && TREE_CODE (rhs1) == SSA_NAME
@@ -1739,13 +1739,14 @@ register_edge_assert_for_2 (tree name, edge e,
 	      && int_fits_type_p (val, TREE_TYPE (rhs1))
 	      && ((TYPE_PRECISION (TREE_TYPE (name))
 		   > TYPE_PRECISION (TREE_TYPE (rhs1)))
-		  || (get_range_info (rhs1, &rmin, &rmax) == VR_RANGE
+		  || ((get_range_query (cfun)->range_of_expr (vr, rhs1)
+		       && vr.kind () == VR_RANGE)
 		      && wi::fits_to_tree_p
-			   (widest_int::from (rmin,
+			   (widest_int::from (vr.lower_bound (),
 					      TYPE_SIGN (TREE_TYPE (rhs1))),
 			    TREE_TYPE (name))
 		      && wi::fits_to_tree_p
-			   (widest_int::from (rmax,
+			   (widest_int::from (vr.upper_bound (),
 					      TYPE_SIGN (TREE_TYPE (rhs1))),
 			    TREE_TYPE (name)))))
 	    add_assert_info (asserts, rhs1, rhs1,
@@ -4044,7 +4045,7 @@ vrp_prop::finalize ()
   if (dump_file)
     {
       fprintf (dump_file, "\nValue ranges after VRP:\n\n");
-      m_vr_values->dump_all_value_ranges (dump_file);
+      m_vr_values->dump (dump_file);
       fprintf (dump_file, "\n");
     }
 
@@ -4631,16 +4632,14 @@ determine_value_range_1 (value_range *vr, tree expr)
     vr->set (expr);
   else
     {
-      value_range_kind kind;
-      wide_int min, max;
+      value_range r;
       /* For SSA names try to extract range info computed by VRP.  Otherwise
 	 fall back to varying.  */
       if (TREE_CODE (expr) == SSA_NAME
 	  && INTEGRAL_TYPE_P (TREE_TYPE (expr))
-	  && (kind = get_range_info (expr, &min, &max)) != VR_VARYING)
-	vr->set (wide_int_to_tree (TREE_TYPE (expr), min),
-		 wide_int_to_tree (TREE_TYPE (expr), max),
-		 kind);
+	  && get_range_query (cfun)->range_of_expr (r, expr)
+	  && !r.undefined_p ())
+	*vr = r;
       else
 	vr->set_varying (TREE_TYPE (expr));
     }

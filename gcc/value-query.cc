@@ -135,6 +135,11 @@ range_query::value_of_stmt (gimple *stmt, tree name)
 
 }
 
+void
+range_query::dump (FILE *)
+{
+}
+
 // valuation_query support routines for value_range_equiv's.
 
 class equiv_allocator : public object_allocator<value_range_equiv>

@@ -1035,14 +1035,23 @@ split_constant_offset (tree exp, tree *var, tree *off, value_range *exp_range,
       *exp_range = type;
       if (code == SSA_NAME)
 	{
-	  wide_int var_min, var_max;
-	  value_range_kind vr_kind = get_range_info (exp, &var_min, &var_max);
+	  value_range vr;
+	  get_range_query (cfun)->range_of_expr (vr, exp);
+	  if (vr.undefined_p ())
+	    vr.set_varying (TREE_TYPE (exp));
+	  wide_int var_min = wi::to_wide (vr.min ());
+	  wide_int var_max = wi::to_wide (vr.max ());
+	  value_range_kind vr_kind = vr.kind ();
 	  wide_int var_nonzero = get_nonzero_bits (exp);
 	  vr_kind = intersect_range_with_nonzero_bits (vr_kind,
 						       &var_min, &var_max,
 						       var_nonzero,
 						       TYPE_SIGN (type));
-	  if (vr_kind == VR_RANGE)
+	  /* This check for VR_VARYING is here because the old code
+	     using get_range_info would return VR_RANGE for the entire
+	     domain, instead of VR_VARYING.  The new code normalizes
+	     full-domain ranges to VR_VARYING.  */
+	  if (vr_kind == VR_RANGE || vr_kind == VR_VARYING)
 	    *exp_range = value_range (type, var_min, var_max);
 	}
     }
@@ -6298,11 +6307,18 @@ dr_step_indicator (struct data_reference *dr, int useful_min)
 
       /* Get the range of values that the unconverted step actually has.  */
       wide_int step_min, step_max;
+      value_range vr;
       if (TREE_CODE (step) != SSA_NAME
-	  || get_range_info (step, &step_min, &step_max) != VR_RANGE)
+	  || !get_range_query (cfun)->range_of_expr (vr, step)
+	  || vr.kind () != VR_RANGE)
 	{
 	  step_min = wi::to_wide (TYPE_MIN_VALUE (type));
 	  step_max = wi::to_wide (TYPE_MAX_VALUE (type));
+	}
+      else
+	{
+	  step_min = vr.lower_bound ();
+	  step_max = vr.upper_bound ();
 	}
 
       /* Check whether the unconverted step has an acceptable range.  */

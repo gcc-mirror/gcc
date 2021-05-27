@@ -79,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-outof-ssa.h"
 #include "attr-fnspec.h"
 #include "demangle.h"
+#include "gimple-range.h"
 
 struct target_builtins default_target_builtins;
 #if SWITCHABLE_TARGET
@@ -1218,14 +1219,15 @@ check_nul_terminated_array (tree expr, tree src,
   wide_int bndrng[2];
   if (bound)
     {
-      if (TREE_CODE (bound) == INTEGER_CST)
-	bndrng[0] = bndrng[1] = wi::to_wide (bound);
-      else
-	{
-	  value_range_kind rng = get_range_info (bound, bndrng, bndrng + 1);
-	  if (rng != VR_RANGE)
-	    return true;
-	}
+      value_range r;
+
+      get_global_range_query ()->range_of_expr (r, bound);
+
+      if (r.kind () != VR_RANGE)
+	return true;
+
+      bndrng[0] = r.lower_bound ();
+      bndrng[1] = r.upper_bound ();
 
       if (exact)
 	{
@@ -3831,9 +3833,12 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
     return NULL_RTX;
 
   wide_int min, max;
-  enum value_range_kind rng = get_range_info (bound, &min, &max);
-  if (rng != VR_RANGE)
+  value_range r;
+  get_global_range_query ()->range_of_expr (r, bound);
+  if (r.kind () != VR_RANGE)
     return NULL_RTX;
+  min = r.lower_bound ();
+  max = r.upper_bound ();
 
   if (!len || TREE_CODE (len) != INTEGER_CST)
     {
@@ -3901,7 +3906,16 @@ determine_block_size (tree len, rtx len_rtx,
 	*probable_max_size = *max_size = GET_MODE_MASK (GET_MODE (len_rtx));
 
       if (TREE_CODE (len) == SSA_NAME)
-	range_type = get_range_info (len, &min, &max);
+	{
+	  value_range r;
+	  get_global_range_query ()->range_of_expr (r, len);
+	  range_type = r.kind ();
+	  if (range_type != VR_UNDEFINED)
+	    {
+	      min = wi::to_wide (r.min ());
+	      max = wi::to_wide (r.max ());
+	    }
+	}
       if (range_type == VR_RANGE)
 	{
 	  if (wi::fits_uhwi_p (min) && *min_size < min.to_uhwi ())
@@ -4920,8 +4934,8 @@ check_read_access (tree exp, tree src, tree bound /* = NULL_TREE */,
 /* If STMT is a call to an allocation function, returns the constant
    maximum size of the object allocated by the call represented as
    sizetype.  If nonnull, sets RNG1[] to the range of the size.
-   When nonnull, uses RVALS for range information, otherwise calls
-   get_range_info to get it.
+   When nonnull, uses RVALS for range information, otherwise gets global
+   range info.
    Returns null when STMT is not a call to a valid allocation function.  */
 
 tree

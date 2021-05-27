@@ -117,14 +117,16 @@ vr_values::get_lattice_entry (const_tree var)
 	     default definitions of PARM_DECLs.  */
 	  if (POINTER_TYPE_P (TREE_TYPE (sym))
 	      && (nonnull_arg_p (sym)
-		  || get_ptr_nonnull (var)))
+		  || (get_global_range_query ()->range_of_expr (*vr,
+						const_cast <tree> (var))
+		      && vr->nonzero_p ())))
 	    {
 	      vr->set_nonzero (TREE_TYPE (sym));
 	      vr->equiv_clear ();
 	    }
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (sym)))
 	    {
-	      get_range_info (var, *vr);
+	      get_global_range_query ()->range_of_expr (*vr, const_cast <tree> (var));
 	      if (vr->undefined_p ())
 		vr->set_varying (TREE_TYPE (sym));
 	    }
@@ -262,7 +264,7 @@ vr_values::update_value_range (const_tree var, value_range_equiv *new_vr)
   if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
     {
       value_range_equiv nr;
-      get_range_info (var, nr);
+      get_global_range_query ()->range_of_expr (nr, const_cast <tree> (var));
       if (!nr.undefined_p ())
 	new_vr->intersect (&nr);
     }
@@ -1819,7 +1821,7 @@ vr_values::adjust_range_with_scev (value_range_equiv *vr, class loop *loop,
 /* Dump value ranges of all SSA_NAMEs to FILE.  */
 
 void
-vr_values::dump_all_value_ranges (FILE *file)
+vr_values::dump (FILE *file)
 {
   size_t i;
 
@@ -3829,13 +3831,13 @@ simplify_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
       || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (innerop))
     return false;
 
-  /* Get the value-range of the inner operand.  Use get_range_info in
+  /* Get the value-range of the inner operand.  Use global ranges in
      case innerop was created during substitute-and-fold.  */
   wide_int imin, imax;
   value_range vr;
   if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop)))
     return false;
-  get_range_info (innerop, vr);
+  get_global_range_query ()->range_of_expr (vr, innerop, stmt);
   if (vr.undefined_p () || vr.varying_p ())
     return false;
   innermin = widest_int::from (vr.lower_bound (), TYPE_SIGN (TREE_TYPE (innerop)));

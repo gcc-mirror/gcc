@@ -349,7 +349,13 @@ builtin_memref::extend_offset_range (tree offset)
 	  /* There is a global version here because
 	     check_bounds_or_overlap may be called from gimple
 	     fold during gimple lowering.  */
-	  rng = get_range_info (offset, &min, &max);
+	  get_range_query (cfun)->range_of_expr (vr, offset, stmt);
+	  rng = vr.kind ();
+	  if (!vr.undefined_p ())
+	    {
+	      min = wi::to_wide (vr.min ());
+	      max = wi::to_wide (vr.max ());
+	    }
 	}
       if (rng == VR_ANTI_RANGE && wi::lts_p (max, min))
 	{

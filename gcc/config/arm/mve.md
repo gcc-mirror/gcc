@@ -464,7 +464,7 @@
 ;;
 ;; [vaddvq_s, vaddvq_u])
 ;;
-(define_insn "mve_vaddvq_<supf><mode>"
+(define_insn "@mve_vaddvq_<supf><mode>"
   [
    (set (match_operand:SI 0 "s_register_operand" "=Te")
 	(unspec:SI [(match_operand:MVE_2 1 "s_register_operand" "w")]

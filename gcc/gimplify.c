@@ -1829,7 +1829,7 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	      gimplify_and_add (init, seq_p);
 	      ggc_free (init);
 	      /* Clear TREE_READONLY if we really have an initialization.  */
-	      if (!DECL_INITIAL (decl))
+	      if (!DECL_INITIAL (decl) && !omp_is_reference (decl))
 		TREE_READONLY (decl) = 0;
 	    }
 	  else

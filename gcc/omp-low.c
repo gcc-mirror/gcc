@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "omp-offload.h"
 
 /* Lowering of OMP parallel and workshare constructs proceeds in two
    phases.  The first phase scans the function looking for OMP statements
@@ -1944,16 +1945,25 @@ create_omp_child_function (omp_context *ctx, bool task_copy)
 	g->have_offload = true;
     }
 
-  if (cgraph_node::get_create (decl)->offloadable
-      && !lookup_attribute ("omp declare target",
-                           DECL_ATTRIBUTES (current_function_decl)))
+  if (cgraph_node::get_create (decl)->offloadable)
     {
       const char *target_attr = (is_gimple_omp_offloaded (ctx->stmt)
 				 ? "omp target entrypoint"
 				 : "omp declare target");
-      DECL_ATTRIBUTES (decl)
-	= tree_cons (get_identifier (target_attr),
-		     NULL_TREE, DECL_ATTRIBUTES (decl));
+      if (lookup_attribute ("omp declare target",
+			    DECL_ATTRIBUTES (current_function_decl)))
+	{
+	  if (is_gimple_omp_offloaded (ctx->stmt))
+	    DECL_ATTRIBUTES (decl)
+	      = remove_attribute ("omp declare target",
+				  copy_list (DECL_ATTRIBUTES (decl)));
+	  else
+	    target_attr = NULL;
+	}
+      if (target_attr)
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier (target_attr),
+		       NULL_TREE, DECL_ATTRIBUTES (decl));
     }
 
   t = build_decl (DECL_SOURCE_LOCATION (decl),
@@ -12959,6 +12969,23 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    gimple_seq_add_stmt (&olist,
 				 gimple_build_assign (TREE_VEC_ELT (t, i),
 						      clobber));
+	  }
+	else if (omp_maybe_offloaded_ctx (ctx->outer))
+	  {
+	    tree id = get_identifier ("omp declare target");
+	    tree decl = TREE_VEC_ELT (t, i);
+	    DECL_ATTRIBUTES (decl)
+	      = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (decl));
+	    varpool_node *node = varpool_node::get (decl);
+	    if (node)
+	      {
+		node->offloadable = 1;
+		if (ENABLE_OFFLOADING)
+		  {
+		    g->have_offload = true;
+		    vec_safe_push (offload_vars, t);
+		  }
+	      }
 	  }
 
       tree clobber = build_clobber (ctx->record_type);

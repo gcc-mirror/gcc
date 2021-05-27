@@ -66,7 +66,7 @@ void warn_ptrdiff_anti_range_add (ptrdiff_t i)
 {
   i |= 1;
 
-  char ca5[5];              // { dg-message "at offset \\\[1, 5]" "pr?????" { xfail *-*-* } }
+  char ca5[5];              // { dg-message "at offset \\\[1, 5]" "pr?????" }
   char *p0 = ca5;           // offset
   char *p1 = p0 + i;        //  1-5
   char *p2 = p1 + i;        //  2-5
@@ -74,7 +74,7 @@ void warn_ptrdiff_anti_range_add (ptrdiff_t i)
   char *p4 = p3 + i;        //  4-5
   char *p5 = p4 + i;        //   5
 
-  memset (p5, 0, 5);        // { dg-warning "writing 5 bytes into a region of size 0" "pr?????" { xfail *-*-* } }
+  memset (p5, 0, 5);        // { dg-warning "writing 5 bytes into a region of size" "pr?????" }
 
   sink (p0, p1, p2, p3, p4, p5);
 }
@@ -83,7 +83,7 @@ void warn_int_anti_range (int i)
 {
   i |= 1;
 
-  char ca5[5];              // { dg-message "at offset \\\[1, 5]" "pr?????" { xfail *-*-* } }
+  char ca5[5];              // { dg-message "at offset \\\[1, 5]" "pr?????" }
   char *p0 = ca5;           // offset
   char *p1 = p0 + i;        //  1-5
   char *p2 = p1 + i;        //  2-5
@@ -91,7 +91,7 @@ void warn_int_anti_range (int i)
   char *p4 = p3 + i;        //  4-5
   char *p5 = p4 + i;        //   5
 
-  memset (p5, 0, 5);        // { dg-warning "writing 5 bytes into a region of size 0" "pr?????" { xfail *-*-* } }
+  memset (p5, 0, 5);        // { dg-warning "writing 5 bytes into a region of size" "pr?????" }
 
   sink (p0, p1, p2, p3, p4, p5);
 }

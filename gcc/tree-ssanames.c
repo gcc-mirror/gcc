@@ -423,58 +423,29 @@ set_range_info (tree name, const value_range &vr)
   set_range_info (name, vr.kind (), min, max);
 }
 
-/* Gets range information MIN, MAX and returns enum value_range_kind
-   corresponding to tree ssa_name NAME.  enum value_range_kind returned
-   is used to determine if MIN and MAX are valid values.  */
-
-enum value_range_kind
-get_range_info (const_tree expr, wide_int *min, wide_int *max)
-{
-  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (expr)));
-  gcc_assert (min && max);
-  if (TREE_CODE (expr) == INTEGER_CST)
-    {
-      *min = wi::to_wide (expr);
-      *max = *min;
-      return VR_RANGE;
-    }
-  if (TREE_CODE (expr) != SSA_NAME)
-    return VR_VARYING;
-
-  range_info_def *ri = SSA_NAME_RANGE_INFO (expr);
-
-  /* Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
-     with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.  */
-  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (expr)))
-	      > 2 * HOST_BITS_PER_WIDE_INT))
-    return VR_VARYING;
-
-  *min = ri->get_min ();
-  *max = ri->get_max ();
-  return SSA_NAME_RANGE_TYPE (expr);
-}
-
 /* Gets range information corresponding to ssa_name NAME and stores it
    in a value_range VR.  Returns the value_range_kind.  */
 
 enum value_range_kind
 get_range_info (const_tree name, irange &vr)
 {
-  tree min, max;
-  wide_int wmin, wmax;
-  enum value_range_kind kind = get_range_info (name, &wmin, &wmax);
+  tree type = TREE_TYPE (name);
+  gcc_checking_assert (!POINTER_TYPE_P (type));
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
 
-  if (kind == VR_VARYING)
-    vr.set_varying (TREE_TYPE (name));
-  else if (kind == VR_UNDEFINED)
-    vr.set_undefined ();
+  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+
+  /* Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
+     with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.  */
+  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
+	      > 2 * HOST_BITS_PER_WIDE_INT))
+    vr.set_varying (type);
   else
-    {
-      min = wide_int_to_tree (TREE_TYPE (name), wmin);
-      max = wide_int_to_tree (TREE_TYPE (name), wmax);
-      vr.set (min, max, kind);
-    }
-  return kind;
+    vr.set (wide_int_to_tree (type, ri->get_min ()),
+	    wide_int_to_tree (type, ri->get_max ()),
+	    SSA_NAME_RANGE_TYPE (name));
+
+  return vr.kind ();
 }
 
 /* Set nonnull attribute to pointer NAME.  */

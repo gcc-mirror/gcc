@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "case-cfn-macros.h"
 #include "tree-ssa-reassoc.h"
 #include "tree-ssa-math-opts.h"
+#include "gimple-range.h"
 
 /*  This is a simple global reassociation pass.  It is, in part, based
     on the LLVM pass of the same name (They do some things more/less
@@ -3221,12 +3222,14 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
 	 amount, then we can merge the entry test in the bit test.  In this
 	 case, if we would need otherwise 2 or more comparisons, then use
 	 the bit test; in the other cases, the threshold is 3 comparisons.  */
-      wide_int min, max;
       bool entry_test_needed;
+      value_range r;
       if (TREE_CODE (exp) == SSA_NAME
-	  && get_range_info (exp, &min, &max) == VR_RANGE
-	  && wi::leu_p (max - min, prec - 1))
+	  && get_range_query (cfun)->range_of_expr (r, exp)
+	  && r.kind () == VR_RANGE
+	  && wi::leu_p (r.upper_bound () - r.lower_bound (), prec - 1))
 	{
+	  wide_int min = r.lower_bound ();
 	  wide_int ilowi = wi::to_wide (lowi);
 	  if (wi::lt_p (min, ilowi, TYPE_SIGN (TREE_TYPE (lowi))))
 	    {

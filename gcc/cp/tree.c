@@ -843,21 +843,22 @@ tree
 build_target_expr_with_type (tree init, tree type, tsubst_flags_t complain)
 {
   gcc_assert (!VOID_TYPE_P (type));
+  gcc_assert (!VOID_TYPE_P (TREE_TYPE (init)));
 
   if (TREE_CODE (init) == TARGET_EXPR
       || init == error_mark_node)
     return init;
   else if (CLASS_TYPE_P (type) && type_has_nontrivial_copy_init (type)
-	   && !VOID_TYPE_P (TREE_TYPE (init))
 	   && TREE_CODE (init) != COND_EXPR
 	   && TREE_CODE (init) != CONSTRUCTOR
-	   && TREE_CODE (init) != VA_ARG_EXPR)
-    /* We need to build up a copy constructor call.  A void initializer
-       means we're being called from bot_manip.  COND_EXPR is a special
+	   && TREE_CODE (init) != VA_ARG_EXPR
+	   && TREE_CODE (init) != CALL_EXPR)
+    /* We need to build up a copy constructor call.  COND_EXPR is a special
        case because we already have copies on the arms and we don't want
        another one here.  A CONSTRUCTOR is aggregate initialization, which
        is handled separately.  A VA_ARG_EXPR is magic creation of an
-       aggregate; there's no additional work to be done.  */
+       aggregate; there's no additional work to be done.  A CALL_EXPR
+       already creates a prvalue.  */
     return force_rvalue (init, complain);
 
   return force_target_expr (type, init, complain);
@@ -3112,8 +3113,8 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
 	    AGGR_INIT_ZERO_FIRST (TREE_OPERAND (u, 1)) = true;
 	}
       else
-	u = build_target_expr_with_type (TREE_OPERAND (t, 1), TREE_TYPE (t),
-					 tf_warning_or_error);
+	u = force_target_expr (TREE_TYPE (t), TREE_OPERAND (t, 1),
+			       tf_warning_or_error);
 
       TARGET_EXPR_IMPLICIT_P (u) = TARGET_EXPR_IMPLICIT_P (t);
       TARGET_EXPR_LIST_INIT_P (u) = TARGET_EXPR_LIST_INIT_P (t);

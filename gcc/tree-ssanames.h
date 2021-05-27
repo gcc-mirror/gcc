@@ -71,8 +71,6 @@ extern void set_range_info (tree, enum value_range_kind, const wide_int_ref &,
 			    const wide_int_ref &);
 extern void set_range_info (tree, const value_range &);
 /* Gets the value range from SSA.  */
-extern enum value_range_kind get_range_info (const_tree, wide_int *,
-					     wide_int *);
 extern enum value_range_kind get_range_info (const_tree, irange &);
 extern void set_nonzero_bits (tree, const wide_int_ref &);
 extern wide_int get_nonzero_bits (const_tree);
