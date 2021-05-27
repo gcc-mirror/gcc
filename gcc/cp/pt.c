@@ -5157,11 +5157,7 @@ process_partial_specialization (tree decl)
 		maintmpl);
     }
 
-  /* [temp.class.spec]
-
-     A partially specialized non-type argument expression shall not
-     involve template parameters of the partial specialization except
-     when the argument expression is a simple identifier.
+  /* [temp.spec.partial]
 
      The type of a template parameter corresponding to a specialized
      non-type argument shall not be dependent on a parameter of the
@@ -5222,63 +5218,55 @@ process_partial_specialization (tree decl)
 		    || TREE_CODE (arg) == VIEW_CONVERT_EXPR)
 		   && TREE_CODE (TREE_OPERAND (arg, 0)) == TEMPLATE_PARM_INDEX))
             {
-              if ((!packed_args && tpd.arg_uses_template_parms[i])
-                  || (packed_args && uses_template_parms (arg)))
-		error_at (cp_expr_loc_or_input_loc (arg),
-			  "template argument %qE involves template "
-			  "parameter(s)", arg);
-              else 
-                {
-                  /* Look at the corresponding template parameter,
-                     marking which template parameters its type depends
-                     upon.  */
-                  tree type = TREE_TYPE (parm);
+	      /* Look at the corresponding template parameter,
+		 marking which template parameters its type depends
+		 upon.  */
+	      tree type = TREE_TYPE (parm);
 
-                  if (!tpd2.parms)
-                    {
-                      /* We haven't yet initialized TPD2.  Do so now.  */
-                      tpd2.arg_uses_template_parms = XALLOCAVEC (int, nargs);
-                      /* The number of parameters here is the number in the
-                         main template, which, as checked in the assertion
-                         above, is NARGS.  */
-                      tpd2.parms = XALLOCAVEC (int, nargs);
-                      tpd2.level = 
-                        TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (maintmpl));
-                    }
+	      if (!tpd2.parms)
+		{
+		  /* We haven't yet initialized TPD2.  Do so now.  */
+		  tpd2.arg_uses_template_parms = XALLOCAVEC (int, nargs);
+		  /* The number of parameters here is the number in the
+		     main template, which, as checked in the assertion
+		     above, is NARGS.  */
+		  tpd2.parms = XALLOCAVEC (int, nargs);
+		  tpd2.level =
+		    TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (maintmpl));
+		}
 
-                  /* Mark the template parameters.  But this time, we're
-                     looking for the template parameters of the main
-                     template, not in the specialization.  */
-                  tpd2.current_arg = i;
-                  tpd2.arg_uses_template_parms[i] = 0;
-                  memset (tpd2.parms, 0, sizeof (int) * nargs);
-                  for_each_template_parm (type,
-                                          &mark_template_parm,
-                                          &tpd2,
-                                          NULL,
-					  /*include_nondeduced_p=*/false);
+	      /* Mark the template parameters.  But this time, we're
+		 looking for the template parameters of the main
+		 template, not in the specialization.  */
+	      tpd2.current_arg = i;
+	      tpd2.arg_uses_template_parms[i] = 0;
+	      memset (tpd2.parms, 0, sizeof (int) * nargs);
+	      for_each_template_parm (type,
+				      &mark_template_parm,
+				      &tpd2,
+				      NULL,
+				      /*include_nondeduced_p=*/false);
 
-                  if (tpd2.arg_uses_template_parms [i])
-                    {
-                      /* The type depended on some template parameters.
-                         If they are fully specialized in the
-                         specialization, that's OK.  */
-                      int j;
-                      int count = 0;
-                      for (j = 0; j < nargs; ++j)
-                        if (tpd2.parms[j] != 0
-                            && tpd.arg_uses_template_parms [j])
-                          ++count;
-                      if (count != 0)
-                        error_n (input_location, count,
-                                 "type %qT of template argument %qE depends "
-                                 "on a template parameter",
-                                 "type %qT of template argument %qE depends "
-                                 "on template parameters",
-                                 type,
-                                 arg);
-                    }
-                }
+	      if (tpd2.arg_uses_template_parms [i])
+		{
+		  /* The type depended on some template parameters.
+		     If they are fully specialized in the
+		     specialization, that's OK.  */
+		  int j;
+		  int count = 0;
+		  for (j = 0; j < nargs; ++j)
+		    if (tpd2.parms[j] != 0
+			&& tpd.arg_uses_template_parms [j])
+		      ++count;
+		  if (count != 0)
+		    error_n (input_location, count,
+			     "type %qT of template argument %qE depends "
+			     "on a template parameter",
+			     "type %qT of template argument %qE depends "
+			     "on template parameters",
+			     type,
+			     arg);
+		}
             }
         }
     }
@@ -10502,6 +10490,15 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
 	return error_mark_node;
       break;
 
+    case TRAIT_EXPR:
+    case PLUS_EXPR:
+    case MULT_EXPR:
+    case SCOPE_REF:
+      /* These are non-deduced contexts.  */
+      if (!pfd->include_nondeduced_p)
+	*walk_subtrees = 0;
+      break;
+
     case MODOP_EXPR:
     case CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
@@ -10515,11 +10512,6 @@ for_each_template_parm_r (tree *tp, int *walk_subtrees, void *d)
     case PSEUDO_DTOR_EXPR:
       if (!fn)
 	return error_mark_node;
-      break;
-
-    case SCOPE_REF:
-      if (pfd->include_nondeduced_p)
-	WALK_SUBTREE (TREE_OPERAND (t, 0));
       break;
 
     case REQUIRES_EXPR:
