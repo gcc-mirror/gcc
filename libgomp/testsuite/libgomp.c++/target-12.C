@@ -53,7 +53,7 @@ main ()
   int u[10] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, err = 0;
   S s = { 9, u + 3, { 10, 11, 12, 13, 14 } };
   int *v = u + 4;
-  #pragma omp target enter data map (to: s.s, s.u[0:5]) map (alloc: s.v[1:3])
+  #pragma omp target enter data map (to: s.s, s.u, s.u[0:5]) map (alloc: s.v[1:3])
   s.s++;
   u[3]++;
   s.v[1]++;

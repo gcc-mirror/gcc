@@ -2432,6 +2432,9 @@ gfc_trans_omp_array_section (stmtblock_t *block, gfc_omp_namelist *n,
 			       TREE_TYPE (TREE_TYPE (decl)),
 			       decl, offset, NULL_TREE, NULL_TREE);
 	  OMP_CLAUSE_DECL (node) = offset;
+
+	  if (ptr_kind == GOMP_MAP_ALWAYS_POINTER)
+	    return;
 	}
       else
 	{

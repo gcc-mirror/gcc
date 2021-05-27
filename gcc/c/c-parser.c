@@ -12897,6 +12897,15 @@ c_parser_oacc_wait_list (c_parser *parser, location_t clause_loc, tree list)
    The optional ALLOW_DEREF argument is true if list items can use the deref
    (->) operator.  */
 
+struct omp_dim
+{
+  tree low_bound, length;
+  location_t loc;
+  bool no_colon;
+  omp_dim (tree lb, tree len, location_t lo, bool nc)
+  : low_bound (lb), length (len), loc (lo), no_colon (nc) {}
+};
+
 static tree
 c_parser_omp_variable_list (c_parser *parser,
 			    location_t clause_loc,
@@ -12910,6 +12919,7 @@ c_parser_omp_variable_list (c_parser *parser,
 
   while (1)
     {
+      auto_vec<omp_dim> dims;
       bool array_section_p = false;
       if (kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 	{
@@ -13029,6 +13039,7 @@ c_parser_omp_variable_list (c_parser *parser,
 	    case OMP_CLAUSE_MAP:
 	    case OMP_CLAUSE_FROM:
 	    case OMP_CLAUSE_TO:
+	    start_component_ref:
 	      while (c_parser_next_token_is (parser, CPP_DOT)
 		     || (allow_deref
 			 && c_parser_next_token_is (parser, CPP_DEREF)))
@@ -13056,10 +13067,14 @@ c_parser_omp_variable_list (c_parser *parser,
 	    case OMP_CLAUSE_REDUCTION:
 	    case OMP_CLAUSE_IN_REDUCTION:
 	    case OMP_CLAUSE_TASK_REDUCTION:
+	      array_section_p = false;
+	      dims.truncate (0);
 	      while ((ort != C_ORT_ACC || kind != OMP_CLAUSE_REDUCTION)
 		     && c_parser_next_token_is (parser, CPP_OPEN_SQUARE))
 		{
+		  location_t loc = UNKNOWN_LOCATION;
 		  tree low_bound = NULL_TREE, length = NULL_TREE;
+		  bool no_colon = false;
 
 		  c_parser_consume_token (parser);
 		  if (!c_parser_next_token_is (parser, CPP_COLON))
@@ -13070,9 +13085,13 @@ c_parser_omp_variable_list (c_parser *parser,
 		      expr = convert_lvalue_to_rvalue (expr_loc, expr,
 						       false, true);
 		      low_bound = expr.value;
+		      loc = expr_loc;
 		    }
 		  if (c_parser_next_token_is (parser, CPP_CLOSE_SQUARE))
-		    length = integer_one_node;
+		    {
+		      length = integer_one_node;
+		      no_colon = true;
+		    }
 		  else
 		    {
 		      /* Look for `:'.  */
@@ -13101,7 +13120,33 @@ c_parser_omp_variable_list (c_parser *parser,
 		      break;
 		    }
 
-		  t = tree_cons (low_bound, length, t);
+		  dims.safe_push (omp_dim (low_bound, length, loc, no_colon));
+		}
+
+	      if (t != error_mark_node)
+		{
+		  if ((kind == OMP_CLAUSE_MAP
+		       || kind == OMP_CLAUSE_FROM
+		       || kind == OMP_CLAUSE_TO)
+		      && !array_section_p
+		      && (c_parser_next_token_is (parser, CPP_DOT)
+			  || (allow_deref
+			      && c_parser_next_token_is (parser,
+							 CPP_DEREF))))
+		    {
+		      for (unsigned i = 0; i < dims.length (); i++)
+			{
+			  gcc_assert (dims[i].length == integer_one_node);
+			  t = build_array_ref (dims[i].loc,
+					       t, dims[i].low_bound);
+			}
+		      goto start_component_ref;
+		    }
+		  else
+		    {
+		      for (unsigned i = 0; i < dims.length (); i++)
+			t = tree_cons (dims[i].low_bound, dims[i].length, t);
+		    }
 		}
 	      if ((kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 		  && t != error_mark_node
@@ -16023,7 +16068,8 @@ c_parser_omp_clause_device_type (c_parser *parser, tree list)
 static tree
 c_parser_omp_clause_to (c_parser *parser, tree list)
 {
-  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_TO, list);
+  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_TO, list,
+				       C_ORT_OMP, true);
 }
 
 /* OpenMP 4.0:
@@ -16032,7 +16078,8 @@ c_parser_omp_clause_to (c_parser *parser, tree list)
 static tree
 c_parser_omp_clause_from (c_parser *parser, tree list)
 {
-  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_FROM, list);
+  return c_parser_omp_var_list_parens (parser, OMP_CLAUSE_FROM, list,
+				       C_ORT_OMP, true);
 }
 
 /* OpenMP 4.0:

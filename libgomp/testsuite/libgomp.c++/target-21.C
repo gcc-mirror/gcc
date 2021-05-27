@@ -7,7 +7,7 @@ void
 foo (S s)
 {
   int err;
-  #pragma omp target map (s.x[0:N], s.y[0:N]) map (s.t.t[16:3]) map (from: err)
+  #pragma omp target map (s.x[0:N], s.y, s.y[0:N]) map (s.t.t[16:3]) map (from: err)
   {
     err = s.x[2] != 28 || s.y[2] != 37 || s.t.t[17] != 81;
     s.x[2]++;
@@ -38,7 +38,7 @@ void
 foo2 (S &s)
 {
   int err;
-  #pragma omp target map (s.x[N:10], s.y[N:10]) map (from: err) map (s.t.t[N+16:N+3])
+  #pragma omp target map (s.x[N:10], s.y, s.y[N:10]) map (from: err) map (s.t.t[N+16:N+3])
   {
     err = s.x[2] != 30 || s.y[2] != 38 || s.t.t[17] != 81;
     s.x[2]++;
@@ -69,7 +69,7 @@ void
 foo3 (U s)
 {
   int err;
-  #pragma omp target map (s.x[0:10], s.y[0:10]) map (from: err) map (s.t.t[16:3])
+  #pragma omp target map (s.x[0:10], s.y, s.y[0:10]) map (from: err) map (s.t.t[16:3])
   {
     err = s.x[2] != 32 || s.y[2] != 39 || s.t.t[17] != 82;
     s.x[2]++;
@@ -100,7 +100,7 @@ void
 foo4 (U &s)
 {
   int err;
-  #pragma omp target map (s.x[0:10], s.y[0:10]) map (from: err) map (s.t.t[16:3])
+  #pragma omp target map (s.x[0:10], s.y, s.y[0:10]) map (from: err) map (s.t.t[16:3])
   {
     err = s.x[2] != 34 || s.y[2] != 40 || s.t.t[17] != 82;
     s.x[2]++;

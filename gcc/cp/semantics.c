@@ -4940,6 +4940,18 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	t = TREE_OPERAND (t, 0);
       ret = t;
+      while (TREE_CODE (t) == INDIRECT_REF)
+	{
+	  t = TREE_OPERAND (t, 0);
+	  STRIP_NOPS (t);
+	  if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+	    t = TREE_OPERAND (t, 0);
+	}
+      while (TREE_CODE (t) == COMPOUND_EXPR)
+	{
+	  t = TREE_OPERAND (t, 1);
+	  STRIP_NOPS (t);
+	}
       if (TREE_CODE (t) == COMPONENT_REF
 	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TO
@@ -4964,12 +4976,16 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		  return error_mark_node;
 		}
 	      t = TREE_OPERAND (t, 0);
-	      if ((ort == C_ORT_ACC || ort == C_ORT_OMP)
-		  && TREE_CODE (t) == INDIRECT_REF)
-		{
-		  t = TREE_OPERAND (t, 0);
-		  STRIP_NOPS (t);
-		}
+	      if (ort == C_ORT_ACC || ort == C_ORT_OMP)
+		while (TREE_CODE (t) == MEM_REF
+		       || TREE_CODE (t) == INDIRECT_REF
+		       || TREE_CODE (t) == ARRAY_REF)
+		  {
+		    t = TREE_OPERAND (t, 0);
+		    STRIP_NOPS (t);
+		    if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		      t = TREE_OPERAND (t, 0);
+		  }
 	    }
 	  if (REFERENCE_REF_P (t))
 	    t = TREE_OPERAND (t, 0);
@@ -5268,7 +5284,7 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  return error_mark_node;
 	}
       /* If there is a pointer type anywhere but in the very first
-	 array-section-subscript, the array section can't be contiguous.
+	 array-section-subscript, the array section could be non-contiguous.
 	 Note that OpenACC does accept these kinds of non-contiguous pointer
 	 based arrays.  */
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
@@ -5276,13 +5292,25 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
 	{
 	  if (ort == C_ORT_ACC)
+	    /* Note that OpenACC does accept these kinds of non-contiguous
+	       pointer based arrays.  */
 	    non_contiguous = true;
 	  else
 	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"array section is not contiguous in %qs clause",
-			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
-	      return error_mark_node;
+	      /* If any prior dimension has a non-one length, then deem this
+		 array section as non-contiguous.  */
+	      for (tree d = TREE_CHAIN (t); TREE_CODE (d) == TREE_LIST;
+		   d = TREE_CHAIN (d))
+		{
+		  tree d_length = TREE_VALUE (d);
+		  if (d_length == NULL_TREE || !integer_onep (d_length))
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"array section is not contiguous in %qs clause",
+				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      return error_mark_node;
+		    }
+		}
 	    }
 	}
     }
@@ -5576,18 +5604,37 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      default:
 		break;
 	      }
+	  bool reference_always_pointer = true;
 	  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 				      OMP_CLAUSE_MAP);
 	  if ((ort & C_ORT_OMP_DECLARE_SIMD) != C_ORT_OMP && ort != C_ORT_ACC)
 	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_POINTER);
 	  else if (TREE_CODE (t) == COMPONENT_REF)
-	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+	    {
+	      OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+
+	      if (ort == C_ORT_OMP && TYPE_REF_P (TREE_TYPE (t)))
+		{
+		  if (TREE_CODE (TREE_TYPE (TREE_TYPE (t))) == ARRAY_TYPE)
+		    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
+		  else
+		    t = convert_from_reference (t);
+
+		  reference_always_pointer = false;
+		}
+	    }
 	  else if (REFERENCE_REF_P (t)
 		   && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	    {
-	      t = TREE_OPERAND (t, 0);
-	      gomp_map_kind k = (ort == C_ORT_ACC) ? GOMP_MAP_ATTACH_DETACH
-						   : GOMP_MAP_ALWAYS_POINTER;
+	      gomp_map_kind k;
+	      if (ort == C_ORT_OMP && TREE_CODE (TREE_TYPE (t)) == POINTER_TYPE)
+		k = GOMP_MAP_ATTACH_DETACH;
+	      else
+		{
+		  t = TREE_OPERAND (t, 0);
+		  k = (ort == C_ORT_ACC
+		       ? GOMP_MAP_ATTACH_DETACH : GOMP_MAP_ALWAYS_POINTER);
+		}
 	      OMP_CLAUSE_SET_MAP_KIND (c2, k);
 	    }
 	  else
@@ -5611,8 +5658,10 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	  OMP_CLAUSE_SIZE (c2) = t;
 	  OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (c);
 	  OMP_CLAUSE_CHAIN (c) = c2;
+
 	  ptr = OMP_CLAUSE_DECL (c2);
-	  if (OMP_CLAUSE_MAP_KIND (c2) != GOMP_MAP_FIRSTPRIVATE_POINTER
+	  if (reference_always_pointer
+	      && OMP_CLAUSE_MAP_KIND (c2) != GOMP_MAP_FIRSTPRIVATE_POINTER
 	      && TYPE_REF_P (TREE_TYPE (ptr))
 	      && INDIRECT_TYPE_P (TREE_TYPE (TREE_TYPE (ptr))))
 	    {
@@ -7727,15 +7776,22 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  if (TREE_CODE (t) == COMPONENT_REF
 		      && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
 		    {
-		      while (TREE_CODE (t) == COMPONENT_REF)
-			t = TREE_OPERAND (t, 0);
-		      if (REFERENCE_REF_P (t))
-			t = TREE_OPERAND (t, 0);
-		      if (TREE_CODE (t) == INDIRECT_REF)
+		      do
 			{
 			  t = TREE_OPERAND (t, 0);
-			  STRIP_NOPS (t);
+			  if (REFERENCE_REF_P (t))
+			    t = TREE_OPERAND (t, 0);
+			  if (TREE_CODE (t) == MEM_REF
+			      || TREE_CODE (t) == INDIRECT_REF)
+			    {
+			      t = TREE_OPERAND (t, 0);
+			      STRIP_NOPS (t);
+			      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+				t = TREE_OPERAND (t, 0);
+			    }
 			}
+		      while (TREE_CODE (t) == COMPONENT_REF);
+
 		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 			  && OMP_CLAUSE_MAP_IMPLICIT (c)
 			  && (bitmap_bit_p (&map_head, DECL_UID (t))
@@ -7806,16 +7862,34 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      && TREE_CODE (TREE_OPERAND (t, 0)) == COMPONENT_REF)
 	    {
 	      t = TREE_OPERAND (t, 0);
-	      OMP_CLAUSE_DECL (c) = t;
+	      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		  && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ATTACH_DETACH)
+		OMP_CLAUSE_DECL (c) = t;
+	    }
+	  while (TREE_CODE (t) == INDIRECT_REF
+		 || TREE_CODE (t) == ARRAY_REF)
+	    {
+	      t = TREE_OPERAND (t, 0);
+	      STRIP_NOPS (t);
+	      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		t = TREE_OPERAND (t, 0);
+	    }
+	  while (TREE_CODE (t) == COMPOUND_EXPR)
+	    {
+	      t = TREE_OPERAND (t, 1);
+	      STRIP_NOPS (t);
 	    }
 	  indir_component_ref_p = false;
 	  if ((ort == C_ORT_ACC || ort == C_ORT_OMP)
 	      && TREE_CODE (t) == COMPONENT_REF
-	      && TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF)
+	      && (TREE_CODE (TREE_OPERAND (t, 0)) == INDIRECT_REF
+		  || TREE_CODE (TREE_OPERAND (t, 0)) == ARRAY_REF))
 	    {
 	      t = TREE_OPERAND (TREE_OPERAND (t, 0), 0);
 	      indir_component_ref_p = true;
 	      STRIP_NOPS (t);
+	      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+		t = TREE_OPERAND (t, 0);
 	    }
 	  if (TREE_CODE (t) == COMPONENT_REF
 	      && ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
@@ -7852,6 +7926,25 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		      break;
 		    }
 		  t = TREE_OPERAND (t, 0);
+		  if ((ort == C_ORT_ACC || ort == C_ORT_OMP)
+		      && TREE_CODE (t) == MEM_REF)
+		    {
+		      if (maybe_ne (mem_ref_offset (t), 0))
+			error_at (OMP_CLAUSE_LOCATION (c),
+				  "cannot dereference %qE in %qs clause", t,
+				  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      else
+			t = TREE_OPERAND (t, 0);
+		    }
+		  while (TREE_CODE (t) == MEM_REF
+			 || TREE_CODE (t) == INDIRECT_REF
+			 || TREE_CODE (t) == ARRAY_REF)
+		    {
+		      t = TREE_OPERAND (t, 0);
+		      STRIP_NOPS (t);
+		      if (TREE_CODE (t) == POINTER_PLUS_EXPR)
+			t = TREE_OPERAND (t, 0);
+		    }
 		}
 	      if (remove)
 		break;
@@ -7959,7 +8052,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			    "%qD appears more than once in data clauses", t);
 		  remove = true;
 		}
-	      else if (bitmap_bit_p (&map_head, DECL_UID (t)))
+	      else if (bitmap_bit_p (&map_head, DECL_UID (t))
+		       && !bitmap_bit_p (&map_field_head, DECL_UID (t)))
 		{
 		  if (ort == C_ORT_ACC)
 		    error_at (OMP_CLAUSE_LOCATION (c),
@@ -8010,8 +8104,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  else
 	    {
 	      bitmap_set_bit (&map_head, DECL_UID (t));
-	      if (t != OMP_CLAUSE_DECL (c)
-		  && TREE_CODE (OMP_CLAUSE_DECL (c)) == COMPONENT_REF)
+
+	      tree decl = OMP_CLAUSE_DECL (c);
+	      if (t != decl
+		  && (TREE_CODE (decl) == COMPONENT_REF
+		      || (INDIRECT_REF_P (decl)
+			  && TREE_CODE (TREE_OPERAND (decl, 0)) == COMPONENT_REF
+			  && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (decl, 0))))))
 		bitmap_set_bit (&map_field_head, DECL_UID (t));
 	    }
 	handle_map_references:
@@ -8040,7 +8139,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  tree c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 					      OMP_CLAUSE_MAP);
 		  if (TREE_CODE (t) == COMPONENT_REF)
-		    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ATTACH_DETACH);
+		    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_ALWAYS_POINTER);
 		  else
 		    OMP_CLAUSE_SET_MAP_KIND (c2,
 					     GOMP_MAP_FIRSTPRIVATE_REFERENCE);

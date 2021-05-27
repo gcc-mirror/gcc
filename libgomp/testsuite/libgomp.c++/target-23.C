@@ -16,13 +16,13 @@ main (void)
     s->data[i] = 0;
 
   #pragma omp target enter data map(to: s)
-  #pragma omp target enter data map(to: s->data[:SZ])
+  #pragma omp target enter data map(to: s->data, s->data[:SZ])
   #pragma omp target
   {
     for (int i = 0; i < SZ; i++)
       s->data[i] = i;
   }
-  #pragma omp target exit data map(from: s->data[:SZ])
+  #pragma omp target exit data map(from: s->data, s->data[:SZ])
   #pragma omp target exit data map(from: s)
 
   for (int i = 0; i < SZ; i++)

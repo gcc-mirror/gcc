@@ -23,9 +23,11 @@ foo ()
   e = c + 18;
   D s = { a, b + 2, { 0, a + 16, 0, d }, c + 3, e };
   int err = 0;
-  #pragma omp target map (to:s.v.b[0:z + 7], s.template u[z + 1:z + 4]) \
-		     map (tofrom:s.s[3:3], s. template v. template d[z + 1:z + 3]) \
-		     map (from: s.w[z:4], s.x[1:3], err) private (i)
+  #pragma omp target map (to: s.v.b, s.v.b[0:z + 7])			\
+		     map (s.template u, s.template u[z + 1:z + 4])	\
+		     map (tofrom: s.s, s.s[3:3])			\
+		     map (tofrom: s. template v. template d[z + 1:z + 3])\
+		     map (from: s.w, s.w[z:4], s.x, s.x[1:3], err) private (i)
   {
     err = 0;
     for (i = 0; i < 7; i++)
@@ -80,9 +82,9 @@ main ()
   e = c + 18;
   S s = { a, b + 2, { 0, a + 16, 0, d }, c + 3, e };
   int err = 0;
-  #pragma omp target map (to:s.v.b[0:z + 7], s.u[z + 1:z + 4]) \
-		     map (tofrom:s.s[3:3], s.v.d[z + 1:z + 3]) \
-		     map (from: s.w[z:4], s.x[1:3], err) private (i)
+  #pragma omp target map (to: s.v.b, s.v.b[0:z + 7], s.u, s.u[z + 1:z + 4]) \
+		     map (tofrom: s.s, s.s[3:3], s.v.d[z + 1:z + 3])		\
+		     map (from: s.w, s.w[z:4], s.x, s.x[1:3], err) private (i)
   {
     err = 0;
     for (i = 0; i < 7; i++)
