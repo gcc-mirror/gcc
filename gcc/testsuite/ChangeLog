@@ -1,3 +1,58 @@
+2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100502
+	* g++.dg/template/access37.C: New test.
+	* g++.dg/template/access37a.C: New test.
+
+2021-05-26  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-55.c: Adapt for range query changes.
+	* gcc.dg/pr80776-1.c: Same.
+
+2021-05-26  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp (check_effective_target_vect32): New.
+	(available_vector_sizes): Append 32 for x86 targets.
+	* gcc.dg/vect/pr71264.c (dg-final): Xfail scan dump for vect32 targets.
+	* gcc.dg/vect/slp-28.c (dg-final): Adjust dumps for vect32 targets.
+	* gcc.dg/vect/slp-3.c (dg-final): Ditto.
+	* gcc.target/i386/pr100637-3b.c: New test.
+	* gcc.target/i386/pr100637-3w.c: Ditto.
+	* gcc.target/i386/pr100637-4b.c: Ditto.
+	* gcc.target/i386/pr100637-4w.c: Ditto.
+
+2021-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-13.c: New test.
+
+2021-05-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vaddv-1.c: New test.
+
+2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100368
+	* g++.dg/cpp1z/elide6.C: New test.
+
+2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97420
+	* g++.dg/cpp0x/noexcept68.C: New test.
+
+2021-05-26  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* gcc.target/csky/fldrd_fstrd.c: New.
+	* gcc.target/csky/fpuv3/fldr64_fstr64.c: New.
+
+2021-05-26  Geng Qi  <gengqi@linux.alibaba.com>
+
+	* gcc.target/csky/ldbs.c: New.
+
+2021-05-26  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/pr96928.c: Update test for slightly different IR.
+	* gcc.dg/tree-ssa/pr96928-1.c: New testcase.
+
 2021-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/100666

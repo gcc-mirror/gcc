@@ -1,3 +1,9 @@
+2021-05-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c/100653
+	* c-decl.c (finish_struct): Warn for a union containing an aggregate
+	field with a differing scalar storage order.
+
 2021-05-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/99928
