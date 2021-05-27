@@ -8004,7 +8004,14 @@ gfc_conv_intrinsic_size (gfc_se * se, gfc_expr * expr)
       tree temp;
       tree cond;
 
-      attr = sym ? sym->attr : gfc_expr_attr (e);
+      if (e->symtree->n.sym && IS_CLASS_ARRAY (e->symtree->n.sym))
+	{
+	  attr = CLASS_DATA (e->symtree->n.sym)->attr;
+	  attr.pointer = attr.class_pointer;
+	}
+      else
+	attr = gfc_expr_attr (e);
+
       if (attr.allocatable)
 	msg = xasprintf ("Allocatable argument '%s' is not allocated",
 			 e->symtree->n.sym->name);
