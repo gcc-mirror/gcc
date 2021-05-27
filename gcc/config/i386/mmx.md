@@ -2121,6 +2121,62 @@
    (set_attr "type" "ssecmp")
    (set_attr "mode" "TI")])
 
+(define_insn "*xop_maskcmp<mode>3"
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=x")
+	(match_operator:MMXMODEI 1 "ix86_comparison_int_operator"
+	 [(match_operand:MMXMODEI 2 "register_operand" "x")
+	  (match_operand:MMXMODEI 3 "register_operand" "x")]))]
+  "TARGET_XOP"
+  "vpcom%Y1<mmxvecsize>\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "sse4arg")
+   (set_attr "prefix_data16" "0")
+   (set_attr "prefix_rep" "0")
+   (set_attr "prefix_extra" "2")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "*xop_maskcmp<mode>3"
+  [(set (match_operand:VI_32 0 "register_operand" "=x")
+	(match_operator:VI_32 1 "ix86_comparison_int_operator"
+	 [(match_operand:VI_32 2 "register_operand" "x")
+	  (match_operand:VI_32 3 "register_operand" "x")]))]
+  "TARGET_XOP"
+  "vpcom%Y1<mmxvecsize>\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "sse4arg")
+   (set_attr "prefix_data16" "0")
+   (set_attr "prefix_rep" "0")
+   (set_attr "prefix_extra" "2")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "*xop_maskcmp_uns<mode>3"
+  [(set (match_operand:MMXMODEI 0 "register_operand" "=x")
+	(match_operator:MMXMODEI 1 "ix86_comparison_uns_operator"
+	 [(match_operand:MMXMODEI 2 "register_operand" "x")
+	  (match_operand:MMXMODEI 3 "register_operand" "x")]))]
+  "TARGET_XOP"
+  "vpcom%Y1u<mmxvecsize>\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "prefix_data16" "0")
+   (set_attr "prefix_rep" "0")
+   (set_attr "prefix_extra" "2")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "*xop_maskcmp_uns<mode>3"
+  [(set (match_operand:VI_32 0 "register_operand" "=x")
+	(match_operator:VI_32 1 "ix86_comparison_uns_operator"
+	 [(match_operand:VI_32 2 "register_operand" "x")
+	  (match_operand:VI_32 3 "register_operand" "x")]))]
+  "TARGET_XOP"
+  "vpcom%Y1u<mmxvecsize>\t{%3, %2, %0|%0, %2, %3}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "prefix_data16" "0")
+   (set_attr "prefix_rep" "0")
+   (set_attr "prefix_extra" "2")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
 (define_expand "vec_cmp<mode><mode>"
   [(set (match_operand:MMXMODEI 0 "register_operand")
 	(match_operator:MMXMODEI 1 ""
