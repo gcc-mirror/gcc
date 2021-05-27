@@ -408,8 +408,7 @@ arm_pragma_target_parse (tree args, tree pop_target)
        target_option_current_node, but not handle_pragma_target.  */
       target_option_current_node = cur_tree;
       arm_configure_build_target (&arm_active_target,
-				  TREE_TARGET_OPTION (cur_tree),
-				  &global_options_set, false);
+				  TREE_TARGET_OPTION (cur_tree), false);
     }
 
   /* Update macros if target_node changes. The global state will be restored
