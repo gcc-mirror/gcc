@@ -1628,6 +1628,27 @@
    (set_attr "mode"	"none")
    (set_attr "length"	"3")])
 
+(define_insn "*masktrue_bitcmpl"
+  [(set (pc)
+	(if_then_else (match_operator 3 "boolean_operator"
+			[(and:SI (not:SI (match_operand:SI 0 "register_operand" "r"))
+				 (match_operand:SI 1 "register_operand" "r"))
+			 (const_int 0)])
+		      (label_ref (match_operand 2 "" ""))
+		      (pc)))]
+  ""
+{
+  switch (GET_CODE (operands[3]))
+    {
+    case EQ:	return "ball\t%0, %1, %2";
+    case NE:	return "bnall\t%0, %1, %2";
+    default:	gcc_unreachable ();
+    }
+}
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"none")
+   (set_attr "length"	"3")])
+
 
 ;; Zero-overhead looping support.
 
