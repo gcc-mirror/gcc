@@ -501,6 +501,8 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
       else
 	{
 	  pp_cxx_cv_qualifier_seq (pp, t);
+	  if (! (flags & TFF_UNQUALIFIED_NAME))
+	    dump_scope (pp, CP_DECL_CONTEXT (decl), flags);
 	  pp_cxx_tree_identifier (pp, TYPE_IDENTIFIER (t));
 	  return;
 	}
