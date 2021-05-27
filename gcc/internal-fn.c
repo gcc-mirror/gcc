@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-iterators.h"
 #include "explow.h"
 #include "rtl-iter.h"
+#include "gimple-range.h"
 
 /* The names of each internal function, indexed by function number.  */
 const char *const internal_fn_name_array[] = {
@@ -680,8 +681,9 @@ get_min_precision (tree arg, signop sign)
     }
   if (TREE_CODE (arg) != SSA_NAME)
     return prec + (orig_sign != sign);
-  wide_int arg_min, arg_max;
-  while (get_range_info (arg, &arg_min, &arg_max) != VR_RANGE)
+  value_range r;
+  while (!get_global_range_query ()->range_of_expr (r, arg)
+	 || r.kind () != VR_RANGE)
     {
       gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)
@@ -709,14 +711,14 @@ get_min_precision (tree arg, signop sign)
     }
   if (sign == TYPE_SIGN (TREE_TYPE (arg)))
     {
-      int p1 = wi::min_precision (arg_min, sign);
-      int p2 = wi::min_precision (arg_max, sign);
+      int p1 = wi::min_precision (r.lower_bound (), sign);
+      int p2 = wi::min_precision (r.upper_bound (), sign);
       p1 = MAX (p1, p2);
       prec = MIN (prec, p1);
     }
-  else if (sign == UNSIGNED && !wi::neg_p (arg_min, SIGNED))
+  else if (sign == UNSIGNED && !wi::neg_p (r.lower_bound (), SIGNED))
     {
-      int p = wi::min_precision (arg_max, UNSIGNED);
+      int p = wi::min_precision (r.upper_bound (), UNSIGNED);
       prec = MIN (prec, p);
     }
   return prec + (orig_sign != sign);

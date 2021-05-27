@@ -1440,3 +1440,26 @@ trace_ranger::range_of_expr (irange &r, tree name, gimple *s)
 
   return trailer (idx, "range_of_expr", res, name, r);
 }
+
+gimple_ranger *
+enable_ranger (struct function *fun)
+{
+  gimple_ranger *r;
+
+  if (param_evrp_mode & EVRP_MODE_TRACE)
+    r = new trace_ranger;
+  else
+    r = new gimple_ranger;
+
+  fun->x_range_query = r;
+
+  return r;
+}
+
+void
+disable_ranger (struct function *fun)
+{
+  delete fun->x_range_query;
+
+  fun->x_range_query = &global_ranges;
+}

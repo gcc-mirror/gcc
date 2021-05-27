@@ -95,6 +95,7 @@ public:
   // rewrite all uses of it to the above API.
   virtual const class value_range_equiv *get_value_range (const_tree,
 							  gimple * = NULL);
+  virtual void dump (FILE *);
 
 protected:
   class value_range_equiv *allocate_value_range_equiv ();
@@ -103,5 +104,16 @@ protected:
 private:
   class equiv_allocator *equiv_alloc;
 };
+
+// Global ranges for SSA names using SSA_NAME_RANGE_INFO.
+
+class global_range_query : public range_query
+{
+public:
+  bool range_of_expr (irange &r, tree expr, gimple * = NULL) OVERRIDE;
+};
+
+extern global_range_query global_ranges;
+extern value_range gimple_range_global (tree name);
 
 #endif // GCC_QUERY_H

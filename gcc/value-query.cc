@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-range-equiv.h"
 #include "value-query.h"
 #include "alloc-pool.h"
+#include "gimple-range.h"
 
 // value_query default methods.
 
@@ -135,6 +136,11 @@ range_query::value_of_stmt (gimple *stmt, tree name)
 
 }
 
+void
+range_query::dump (FILE *)
+{
+}
+
 // valuation_query support routines for value_range_equiv's.
 
 class equiv_allocator : public object_allocator<value_range_equiv>
@@ -174,4 +180,150 @@ range_query::~range_query ()
 {
   equiv_alloc->release ();
   delete equiv_alloc;
+}
+
+// Return the range for NAME from SSA_NAME_RANGE_INFO.
+
+static inline void
+get_ssa_name_range_info (irange &r, const_tree name)
+{
+  tree type = TREE_TYPE (name);
+  gcc_checking_assert (!POINTER_TYPE_P (type));
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
+
+  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+
+  // Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
+  // with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.
+  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
+	      > 2 * HOST_BITS_PER_WIDE_INT))
+    r.set_varying (type);
+  else
+    r.set (wide_int_to_tree (type, ri->get_min ()),
+	   wide_int_to_tree (type, ri->get_max ()),
+	   SSA_NAME_RANGE_TYPE (name));
+}
+
+// Return nonnull attribute of pointer NAME from SSA_NAME_PTR_INFO.
+
+static inline bool
+get_ssa_name_ptr_info_nonnull (const_tree name)
+{
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+  if (pi == NULL)
+    return false;
+  /* TODO Now pt->null is conservatively set to true in PTA
+     analysis. vrp is the only pass (including ipa-vrp)
+     that clears pt.null via set_ptr_nonull when it knows
+     for sure. PTA will preserves the pt.null value set by VRP.
+
+     When PTA analysis is improved, pt.anything, pt.nonlocal
+     and pt.escaped may also has to be considered before
+     deciding that pointer cannot point to NULL.  */
+  return !pi->pt.null;
+}
+
+// Return the legacy global range for NAME if it has one, otherwise
+// return VARYING.
+
+static void
+get_range_global (irange &r, tree name)
+{
+  tree type = TREE_TYPE (name);
+
+  if (SSA_NAME_IS_DEFAULT_DEF (name))
+    {
+      tree sym = SSA_NAME_VAR (name);
+      // Adapted from vr_values::get_lattice_entry().
+      // Use a range from an SSA_NAME's available range.
+      if (TREE_CODE (sym) == PARM_DECL)
+	{
+	  // Try to use the "nonnull" attribute to create ~[0, 0]
+	  // anti-ranges for pointers.  Note that this is only valid with
+	  // default definitions of PARM_DECLs.
+	  if (POINTER_TYPE_P (type)
+	      && ((cfun && nonnull_arg_p (sym))
+		  || get_ssa_name_ptr_info_nonnull (name)))
+	    r.set_nonzero (type);
+	  else if (INTEGRAL_TYPE_P (type))
+	    {
+	      get_ssa_name_range_info (r, name);
+	      if (r.undefined_p ())
+		r.set_varying (type);
+	    }
+	  else
+	    r.set_varying (type);
+	}
+      // If this is a local automatic with no definition, use undefined.
+      else if (TREE_CODE (sym) != RESULT_DECL)
+	r.set_undefined ();
+      else
+	r.set_varying (type);
+   }
+  else if (!POINTER_TYPE_P (type) && SSA_NAME_RANGE_INFO (name))
+    {
+      get_ssa_name_range_info (r, name);
+      if (r.undefined_p ())
+	r.set_varying (type);
+    }
+  else if (POINTER_TYPE_P (type) && SSA_NAME_PTR_INFO (name))
+    {
+      if (get_ssa_name_ptr_info_nonnull (name))
+	r.set_nonzero (type);
+      else
+	r.set_varying (type);
+    }
+  else
+    r.set_varying (type);
+}
+
+// ?? Like above, but only for default definitions of NAME.  This is
+// so VRP passes using ranger do not start with known ranges,
+// otherwise we'd eliminate builtin_unreachables too early because of
+// inlining.
+//
+// Without this restriction, the test in g++.dg/tree-ssa/pr61034.C has
+// all of its unreachable calls removed too early.  We should
+// investigate whether we should just adjust the test above.
+
+value_range
+gimple_range_global (tree name)
+{
+  gcc_checking_assert (gimple_range_ssa_p (name));
+  tree type = TREE_TYPE (name);
+
+  if (SSA_NAME_IS_DEFAULT_DEF (name))
+    {
+      value_range vr;
+      get_range_global (vr, name);
+      return vr;
+    }
+  return value_range (type);
+}
+
+// ----------------------------------------------
+// global_range_query implementation.
+
+global_range_query global_ranges;
+
+// Like get_range_query, but for accessing global ranges.
+
+range_query *
+get_global_range_query ()
+{
+  return &global_ranges;
+}
+
+bool
+global_range_query::range_of_expr (irange &r, tree expr, gimple *)
+{
+  tree type = TREE_TYPE (expr);
+
+  if (!irange::supports_type_p (type) || !gimple_range_ssa_p (expr))
+    return get_tree_range (r, expr);
+
+  get_range_global (r, expr);
+
+  return true;
 }

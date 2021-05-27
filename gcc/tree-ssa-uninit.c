@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "builtins.h"
 #include "calls.h"
+#include "gimple-range.h"
 
 /* This implements the pass that does predicate aware warning on uses of
    possibly uninitialized variables.  The pass first collects the set of
@@ -1606,11 +1607,14 @@ find_var_cmp_const (pred_chain_union preds, gphi *phi, gimple **flag_def,
 	       flag_var <= [min, max] ->  flag_var < [min, max+1]
 	       flag_var >= [min, max] ->  flag_var > [min-1, max]
 	     if no overflow/wrap.  */
-	  wide_int min, max;
 	  tree type = TREE_TYPE (cond_lhs);
+	  value_range r;
 	  if (!INTEGRAL_TYPE_P (type)
-	      || get_range_info (cond_rhs, &min, &max) != VR_RANGE)
+	      || !get_range_query (cfun)->range_of_expr (r, cond_rhs)
+	      || r.kind () != VR_RANGE)
 	    continue;
+	  wide_int min = r.lower_bound ();
+	  wide_int max = r.upper_bound ();
 	  if (code == LE_EXPR
 	      && max != wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type)))
 	    {

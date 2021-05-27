@@ -165,7 +165,7 @@ adjusted_warn_limit (bool idx)
 // call was created by the gimplifier for a VLA.
 
 static class alloca_type_and_limit
-alloca_call_type (range_query &query, gimple *stmt, bool is_vla)
+alloca_call_type (gimple *stmt, bool is_vla)
 {
   gcc_assert (gimple_alloca_call_p (stmt));
   tree len = gimple_call_arg (stmt, 0);
@@ -217,7 +217,7 @@ alloca_call_type (range_query &query, gimple *stmt, bool is_vla)
   int_range_max r;
   if (warn_limit_specified_p (is_vla)
       && TREE_CODE (len) == SSA_NAME
-      && query.range_of_expr (r, len, stmt)
+      && get_range_query (cfun)->range_of_expr (r, len, stmt)
       && !r.varying_p ())
     {
       // The invalid bits are anything outside of [0, MAX_SIZE].
@@ -256,7 +256,7 @@ in_loop_p (gimple *stmt)
 unsigned int
 pass_walloca::execute (function *fun)
 {
-  gimple_ranger ranger;
+  gimple_ranger *ranger = enable_ranger (fun);
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -290,7 +290,7 @@ pass_walloca::execute (function *fun)
 	    continue;
 
 	  class alloca_type_and_limit t
-	    = alloca_call_type (ranger, stmt, is_vla);
+	    = alloca_call_type (stmt, is_vla);
 
 	  unsigned HOST_WIDE_INT adjusted_alloca_limit
 	    = adjusted_warn_limit (false);
@@ -383,6 +383,8 @@ pass_walloca::execute (function *fun)
 	    }
 	}
     }
+  ranger->export_global_ranges ();
+  disable_ranger (fun);
   return 0;
 }
 

@@ -1,3 +1,41 @@
+2021-05-26  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/formatter.h
+	(_Error_formatter::_Parameter::_Named): New.
+	(_Error_formatter::_Parameter::_Type): Inherit latter.
+	(_Error_formatter::_Parameter::_M_integer): Likewise.
+	(_Error_formatter::_Parameter::_M_string): Likewise.
+	* src/c++11/debug.cc: Include <cstring>.
+	(_Print_func_t): New.
+	(print_raw(PrintContext&, const char*, ptrdiff_t)): New.
+	(print_word): Use '%.*s' format in fprintf to render only expected number of chars.
+	(pretty_print(PrintContext&, const char*, _Print_func_t)): New.
+	(print_type): Rename in...
+	(print_type_info): ...this. Use pretty_print.
+	(print_address, print_integer): New.
+	(print_named_name, print_iterator_constness, print_iterator_state): New.
+	(print_iterator_seq_type): New.
+	(print_named_field, print_type_field, print_instance_field, print_iterator_field): New.
+	(print_field): Use latters.
+	(print_quoted_named_name, print_type_type, print_type, print_instance): New.
+	(print_string(PrintContext&, const char*, const _Parameter*, size_t)):
+	Change signature to...
+	(print_string(PrintContext&, const char*, ptrdiff_t, const _Parameter*, size_t)):
+	...this and adapt. Remove intermediate buffer to render input string.
+	(print_string(PrintContext&, const char*, ptrdiff_t)): New.
+
+2021-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100768
+	* include/bits/ranges_base.h (advance, distance, next, prev):
+	Replace function templates with function objects.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc:
+	Adjust for changes to function objects.
+	* testsuite/std/ranges/adaptors/elements.cc: Add using
+	declarations for names from namespace ranges.
+	* testsuite/std/ranges/adaptors/transform.cc: Likewise.
+	* testsuite/24_iterators/range_operations/100768.cc: New test.
+
 2021-05-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/96088

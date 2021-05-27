@@ -82,6 +82,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "options.h"
 #include "function-abi.h"
+#include "value-range.h"
+#include "gimple-range.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -4856,6 +4858,8 @@ allocate_struct_function (tree fndecl, bool abstract_p)
      binding annotations among them.  */
   cfun->debug_nonbind_markers = lang_hooks.emits_begin_stmt
     && MAY_HAVE_DEBUG_MARKER_STMTS;
+
+  cfun->x_range_query = &global_ranges;
 }
 
 /* This is like allocate_struct_function, but pushes a new cfun for FNDECL

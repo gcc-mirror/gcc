@@ -50,6 +50,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "target.h"
 #include "tree-into-ssa.h"
 #include "omp-general.h"
+#include "gimple-range.h"
 
 /* ??? For lang_hooks.types.type_for_mode, but is there a word_mode
    type in the GIMPLE type system that is language-independent?  */
@@ -1553,12 +1554,15 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 
   /* If every possible relative value of the index expression is a valid shift
      amount, then we can merge the entry test in the bit test.  */
-  wide_int min, max;
   bool entry_test_needed;
+  value_range r;
   if (TREE_CODE (index_expr) == SSA_NAME
-      && get_range_info (index_expr, &min, &max) == VR_RANGE
-      && wi::leu_p (max - min, prec - 1))
+      && get_range_query (cfun)->range_of_expr (r, index_expr)
+      && r.kind () == VR_RANGE
+      && wi::leu_p (r.upper_bound () - r.lower_bound (), prec - 1))
     {
+      wide_int min = r.lower_bound ();
+      wide_int max = r.upper_bound ();
       tree index_type = TREE_TYPE (index_expr);
       minval = fold_convert (index_type, minval);
       wide_int iminval = wi::to_wide (minval);

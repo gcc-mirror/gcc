@@ -43,6 +43,7 @@
 #include "attribs.h"
 #include "tree-ssa.h"
 #include "tree-cfg.h"
+#include "gimple-range.h"
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the
@@ -6740,7 +6741,9 @@ find_what_p_points_to (tree fndecl, tree p)
   struct ptr_info_def *pi;
   tree lookup_p = p;
   varinfo_t vi;
-  bool nonnull = get_ptr_nonnull (p);
+  value_range vr;
+  get_range_query (DECL_STRUCT_FUNCTION (fndecl))->range_of_expr (vr, p);
+  bool nonnull = vr.nonzero_p ();
 
   /* For parameters, get at the points-to set for the actual parm
      decl.  */
@@ -6758,8 +6761,7 @@ find_what_p_points_to (tree fndecl, tree p)
   pi->pt = find_what_var_points_to (fndecl, vi);
   /* Conservatively set to NULL from PTA (to true). */
   pi->pt.null = 1;
-  /* Preserve pointer nonnull computed by VRP.  See get_ptr_nonnull
-     in gcc/tree-ssaname.c for more information.  */
+  /* Preserve pointer nonnull globally computed.  */
   if (nonnull)
     set_ptr_nonnull (p);
 }

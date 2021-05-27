@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "tree-dfa.h"
+#include "gimple-range.h"
 
 /* Build and maintain data flow information for trees.  */
 
@@ -535,14 +536,23 @@ get_ref_base_and_extent (tree exp, poly_int64_pod *poffset,
 		   index.  */
 		seen_variable_array_ref = true;
 
-		wide_int min, max;
+		value_range vr;
+		range_query *query;
+		if (cfun)
+		  query = get_range_query (cfun);
+		else
+		  query = get_global_range_query ();
+
 		if (TREE_CODE (index) == SSA_NAME
 		    && (low_bound = array_ref_low_bound (exp),
 			poly_int_tree_p (low_bound))
 		    && (unit_size = array_ref_element_size (exp),
 			TREE_CODE (unit_size) == INTEGER_CST)
-		    && get_range_info (index, &min, &max) == VR_RANGE)
+		    && query->range_of_expr (vr, index)
+		    && vr.kind () == VR_RANGE)
 		  {
+		    wide_int min = vr.lower_bound ();
+		    wide_int max = vr.upper_bound ();
 		    poly_offset_int lbound = wi::to_poly_offset (low_bound);
 		    /* Try to constrain maxsize with range information.  */
 		    offset_int omax

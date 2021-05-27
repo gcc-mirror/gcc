@@ -663,11 +663,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (with
      {
        bool overflowed = true;
-       wide_int wmin0, wmax0, wmin1, wmax1;
+       value_range vr0, vr1;
        if (INTEGRAL_TYPE_P (type)
-	   && get_range_info (@0, &wmin0, &wmax0) == VR_RANGE
-	   && get_range_info (@1, &wmin1, &wmax1) == VR_RANGE)
+	   && get_global_range_query ()->range_of_expr (vr0, @0)
+	   && get_global_range_query ()->range_of_expr (vr1, @1)
+	   && vr0.kind () == VR_RANGE
+	   && vr1.kind () == VR_RANGE)
 	 {
+	   wide_int wmin0 = vr0.lower_bound ();
+	   wide_int wmax0 = vr0.upper_bound ();
+	   wide_int wmin1 = vr1.lower_bound ();
+	   wide_int wmax1 = vr1.upper_bound ();
 	   /* If the multiplication can't overflow/wrap around, then
 	      it can be optimized too.  */
 	   wi::overflow_type min_ovf, max_ovf;
@@ -2509,9 +2515,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  = wide_int::from (wi::to_wide (@1), TYPE_PRECISION (inner_type),
 			    TYPE_SIGN (inner_type));
 
-        wide_int wmin0, wmax0;
-        if (get_range_info (@0, &wmin0, &wmax0) == VR_RANGE)
+	value_range vr;
+	if (get_global_range_query ()->range_of_expr (vr, @0)
+	    && vr.kind () == VR_RANGE)
           {
+	    wide_int wmin0 = vr.lower_bound ();
+	    wide_int wmax0 = vr.upper_bound ();
             wi::add (wmin0, w1, TYPE_SIGN (inner_type), &min_ovf);
             wi::add (wmax0, w1, TYPE_SIGN (inner_type), &max_ovf);
           }
