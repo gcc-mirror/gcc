@@ -255,6 +255,14 @@
   "rolw\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+;; orc.b (or-combine) is added as an unspec for the benefit of the support
+;; for optimized string functions (such as strcmp).
+(define_insn "orcb<mode>2"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(unspec:X [(match_operand:X 1 "register_operand" "r")] UNSPEC_ORC_B))]
+  "TARGET_ZBB"
+  "orc.b\t%0,%1")
+
 (define_insn "bswap<mode>2"
   [(set (match_operand:X 0 "register_operand" "=r")
         (bswap:X (match_operand:X 1 "register_operand" "r")))]
