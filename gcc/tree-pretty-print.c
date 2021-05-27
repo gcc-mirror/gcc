@@ -835,6 +835,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	{
 	case GOMP_MAP_ALLOC:
 	case GOMP_MAP_POINTER:
+	case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
 	  pp_string (pp, "alloc");
 	  break;
 	case GOMP_MAP_IF_PRESENT:
@@ -946,6 +947,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	case GOMP_MAP_NONCONTIG_ARRAY_FORCE_PRESENT:
 	  pp_string (pp, "force_present,noncontig_array");
 	  break;
+	case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
+	  pp_string (pp, "attach_zero_length_array_section");
+	  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -971,6 +975,9 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    case GOMP_MAP_ALWAYS_POINTER:
 	      pp_string (pp, " [pointer assign, bias: ");
 	      break;
+	    case GOMP_MAP_POINTER_TO_ZERO_LENGTH_ARRAY_SECTION:
+	      pp_string (pp, " [pointer assign, zero-length array section, bias: ");
+	      break;
 	    case GOMP_MAP_TO_PSET:
 	      pp_string (pp, " [pointer set, len: ");
 	      break;
@@ -978,6 +985,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    case GOMP_MAP_DETACH:
 	    case GOMP_MAP_FORCE_DETACH:
 	    case GOMP_MAP_ATTACH_DETACH:
+	    case GOMP_MAP_ATTACH_ZERO_LENGTH_ARRAY_SECTION:
 	      pp_string (pp, " [bias: ");
 	      break;
 	    default:
