@@ -1999,8 +1999,7 @@
   [(set (match_operand:VF2 0 "register_operand")
 	(div:VF2 (match_operand:VF2 1 "register_operand")
 		 (match_operand:VF2 2 "vector_operand")))]
-  "TARGET_SSE2"
-  "ix86_fixup_binary_operands_no_copy (DIV, <MODE>mode, operands);")
+  "TARGET_SSE2")
 
 (define_expand "div<mode>3"
   [(set (match_operand:VF1 0 "register_operand")
@@ -2008,8 +2007,6 @@
 		 (match_operand:VF1 2 "vector_operand")))]
   "TARGET_SSE"
 {
-  ix86_fixup_binary_operands_no_copy (DIV, <MODE>mode, operands);
-
   if (TARGET_SSE_MATH
       && TARGET_RECIP_VEC_DIV
       && !optimize_insn_for_size_p ()
@@ -12801,7 +12798,7 @@
 {
   if (TARGET_AVX512F
       && (<MODE>mode == V8DImode || TARGET_AVX512VL))
-    ix86_fixup_binary_operands_no_copy (<CODE>, <MODE>mode, operands);
+    ;
   else 
     {
       enum rtx_code code;
@@ -17186,10 +17183,7 @@
 	      (match_dup 3))
 	    (const_int 1))))]
   "TARGET_MMX_WITH_SSE && TARGET_SSSE3"
-{
-  operands[3] = CONST1_RTX(V4HImode);
-  ix86_fixup_binary_operands_no_copy (MULT, V4HImode, operands);
-})
+  "operands[3] = CONST1_RTX(V4HImode);")
 
 (define_expand "ssse3_pmulhrswv4hi3"
   [(set (match_operand:V4HI 0 "register_operand")
@@ -17254,10 +17248,7 @@
 	      (match_dup 3))
 	    (const_int 1))))]
   "TARGET_SSSE3"
-{
-  operands[3] = CONST1_RTX(V2HImode);
-  ix86_fixup_binary_operands_no_copy (MULT, V2HImode, operands);
-})
+  "operands[3] = CONST1_RTX(V2HImode);")
 
 (define_insn "*smulhrsv2hi3"
   [(set (match_operand:V2HI 0 "register_operand" "=x,Yv")
