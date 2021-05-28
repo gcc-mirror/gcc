@@ -1,3 +1,118 @@
+2021-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (addv2sf3): Do not call
+	ix86_fixup_binary_operands_no_copy.
+	(subv2sf3): Ditto.
+	(mulv2sf3): Ditto.
+	(<smaxmin:code>v2sf3): Ditto.
+	(<plusminus:insn><MMXMODEI:mode>3): Ditto.
+	(<plusminus:insn><VI_32:mode>3): Remove expander.
+	(<plusminus:insn><VI_32:mode>3): Rename from
+	"*<plusminus:insn><VI_32:mode>3".
+	(mulv4hi): Do not call ix86_fixup_binary_operands_no_copy.
+	(mulv2hi3): Remove expander.
+	(mulv2hi3): Rename from *mulv2hi3.
+	(<s>mulv2hi3_highpart): Remove expander.
+	(<s>mulv2hi3_highpart): Rename from *<s>mulv2hi3_highpart.
+	(<smaxmin:code><MMXMODE14:mode>3): Rename from
+	"*mmx_<smaxmin:code><MMXMODE14:mode>3".
+	(<smaxmin:code><SMAXMIN_MMXMODEI:mode>3): Remove expander.
+	(SMAXMIN_MMXMODEI): Remove mode iterator.
+	(<smaxmin:code>v4hi3): New expander.
+	(<smaxmin:code>v4qi3): Rename from *<smaxmin:code>v4qi3.
+	(<smaxmin:code>v2hi3): Rename from *<smaxmin:code>v2hi3.
+	(<smaxmin:code><SMAXMIN_VI_32:mode>3): Remove expander.
+	(SMAXMIN_VI_32): Remove mode iterator.
+	(<umaxmin:code><MMXMODE24:mode>3): Rename from
+	"*mmx_<umaxmin:code><MMXMODE24:mode>3".
+	(<umaxmin:code><UMAXMIN_MMXMODEI:mode>3): Remove expander.
+	(UMAXMIN_MMXMODEI): Remove mode iterator.
+	(<umaxmin:code>v8qi3): New expander.
+	(<umaxmin:code>v4qi3): Rename from *<umaxmin:code>v4qi3.
+	(<umaxmin:code>v2hi3): Rename from *<umaxmin:code>v2hi3.
+	(<umaxmin:code><SMAXMIN_VI_32:mode>3): Remove expander.
+	(UMAXMIN_VI_32): Remove mode iterator.
+	(<any_shift:insn>v2hi3): Remove expander.
+	(<any_shift:insn>v2hi3): Rename from *<any_shift:insn>v2hi3.
+	(<any_logic:code><MMXMODEI:mode>3): Do not call
+	ix86_fixup_binary_operands_no_copy.
+	(<any_logic:code><VI_32:mode>3): Remove expander.
+	(<any_logic:code><VI_32:mode>3): Rename from
+	"*<any_logic:code><VI_32:mode>3".
+	(uavg<mode>3_ceil): Do not call ix86_fixup_binary_operands_no_copy.
+	* config/i386/sse.md (div<VF2:mode>3): Do not call
+	ix86_fixup_binary_operands_no_copy.
+	(div<VF1:mode>3): Ditto.
+	(<maxmin:code><VI8_AVX2_AVX512F:mode>3): Ditto.
+	(smulhrsv4hi3): Ditto.
+	(smulhrsv2hi3): Ditto.
+
+2021-05-27  Martin Sebor  <msebor@redhat.com>
+
+	* ggc.h (gt_ggc_mx): Add overloads for all integers.
+	(gt_pch_nx):  Same.
+	* hash-map.h (class hash_map): Add pch_nx_helper overloads for all
+	integers.
+	(hash_map::operator==): New function.
+
+2021-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/i386-expand.c (ix86_expand_int_sse_cmp):
+	For TARGET_XOP bypass SSE comparisons for all supported vector modes.
+	* config/i386/mmx.md (*xop_maskcmp<MMXMODEI:mode>3): New insn pattern.
+	(*xop_maskcmp<VI_32:mode>3): Ditto.
+	(*xop_maskcmp_uns<MMXMODEI:mode>3): Ditto.
+	(*xop_maskcmp_uns<VI_32:mode>3): Ditto.
+
+2021-05-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100767
+	* config/arm/arm.c (arm_configure_build_target): Remove parameter
+	opts_set, directly check opts parameters for being non-null.
+	(arm_option_restore): Update call to arm_configure_build_target.
+	(arm_option_override): Likewise.
+	(arm_can_inline_p): Likewise.
+	(arm_valid_target_attribute_tree): Likewise.
+	* config/arm/arm-c.c (arm_pragma_target_parse): Likewise.
+	* config/arm/arm-protos.h (arm_configure_build_target): Adjust
+	prototype.
+
+2021-05-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* vr-values.c (simplify_conversion_using_ranges): Use
+	get_range_query instead of get_global_range_query.
+
+2021-05-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range.cc (get_range_global): Move to value-query.cc.
+	(gimple_range_global): Same.
+	(get_global_range_query): Same.
+	(global_range_query::range_of_expr): Same.
+	* gimple-range.h (class global_range_query): Move to
+	value-query.h.
+	(gimple_range_global): Same.
+	* tree-ssanames.c (get_range_info): Move to value-query.cc.
+	(get_ptr_nonnull): Same.
+	* tree-ssanames.h (get_range_info): Remove.
+	(get_ptr_nonnull): Remove.
+	* value-query.cc (get_ssa_name_range_info): Move from
+	tree-ssanames.c.
+	(get_ssa_name_ptr_info_nonnull): Same.
+	(get_range_global): Move from gimple-range.cc.
+	(gimple_range_global): Same.
+	(get_global_range_query): Same.
+	(global_range_query::range_of_expr): Same.
+	* value-query.h (class global_range_query): Move from
+	gimple-range.h.
+	(gimple_range_global): Same.
+
+2021-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/mmx.md (uavgv4qi3_ceil): New insn pattern.
+	(uavgv2hi3_ceil): Ditto.
+
 2021-05-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c/100653

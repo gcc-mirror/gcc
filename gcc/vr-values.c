@@ -3837,7 +3837,7 @@ simplify_conversion_using_ranges (gimple_stmt_iterator *gsi, gimple *stmt)
   value_range vr;
   if (!INTEGRAL_TYPE_P (TREE_TYPE (innerop)))
     return false;
-  get_global_range_query ()->range_of_expr (vr, innerop, stmt);
+  get_range_query (cfun)->range_of_expr (vr, innerop, stmt);
   if (vr.undefined_p () || vr.varying_p ())
     return false;
   innermin = widest_int::from (vr.lower_bound (), TYPE_SIGN (TREE_TYPE (innerop)));

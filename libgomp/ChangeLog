@@ -1,3 +1,43 @@
+2021-05-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/lib/libgomp.exp (check_effective_target_openacc_cuda,
+	check_effective_target_openacc_cublas,
+	check_effective_target_openacc_cudart): New.
+	* testsuite/libgomp.oacc-fortran/host_data-4.f90: Require effective
+	target openacc_cublas.
+	* testsuite/libgomp.oacc-fortran/host_data-2.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/host_data-3.f: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-91.c: Require effective
+	target openacc_cuda.
+	* testsuite/libgomp.oacc-c-c++-common/lib-70.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-90.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-75.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-69.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-74.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-81.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-72.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-85.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/pr87835.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-82.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-73.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-83.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-78.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-76.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-84.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-79.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/host_data-1.c: Require effective
+	targets openacc_cublas and openacc_cudart.
+	* testsuite/libgomp.oacc-c-c++-common/context-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-2.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/context-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/acc_get_property-nvptx.c:
+	Require effective target openacc_cudart.
+	* testsuite/libgomp.oacc-c-c++-common/asyncwait-1.c: Add -DUSE_CUDA_H
+	for effective target openacc_cuda and add && defined USE_CUDA_H to
+	preprocessor conditionals.  Guard -lcuda also on openacc_cuda
+	effective target.
+
 2021-05-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libgomp/100573

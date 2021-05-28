@@ -479,3 +479,56 @@ proc check_effective_target_openacc_radeon_accel_selected { } {
     return 0;
 }
 
+# Return 1 if cuda.h and -lcuda are available.
+
+proc check_effective_target_openacc_cuda { } {
+    return [check_no_compiler_messages openacc_cuda executable {
+#include <cuda.h>
+int main() {
+    CUdevice dev;
+    CUresult r = cuDeviceGet (&dev, 0);
+    if (r != CUDA_SUCCESS)
+	return 1;
+    return 0;
+} } "-lcuda" ]
+}
+
+# Return 1 if cublas_v2.h and -lcublas are available.
+
+proc check_effective_target_openacc_cublas { } {
+    return [check_no_compiler_messages openacc_cublas executable {
+#include <cuda.h>
+#include <cublas_v2.h>
+int main() {
+    cublasStatus_t s;
+    cublasHandle_t h;
+    CUdevice dev;
+    CUresult r = cuDeviceGet (&dev, 0);
+    if (r != CUDA_SUCCESS)
+	return 1;
+    s = cublasCreate (&h);
+    if (s != CUBLAS_STATUS_SUCCESS)
+	return 1;
+    return 0;
+} } "-lcuda -lcublas" ]
+}
+
+# Return 1 if cuda_runtime_api.h and -lcudart are available.
+
+proc check_effective_target_openacc_cudart { } {
+    return [check_no_compiler_messages openacc_cudart executable {
+#include <cuda.h>
+#include <cuda_runtime_api.h>
+int main() {
+    cudaError_t e;
+    int devn;
+    CUdevice dev;
+    CUresult r = cuDeviceGet (&dev, 0);
+    if (r != CUDA_SUCCESS)
+	return 1;
+    e = cudaGetDevice (&devn);
+    if (e != cudaSuccess)
+	return 1;
+    return 0;
+} } "-lcuda -lcudart" ]
+}

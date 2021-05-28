@@ -1230,6 +1230,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op,
     case MATCH_OPERATOR:
     case MATCH_SCRATCH:
     case MATCH_PARALLEL:
+    case MATCH_DUP:
       XINT (pattern, 0) += max_op;
       break;
 
@@ -1290,6 +1291,9 @@ alter_constraints (rtx pattern, int n_dup, constraints_handler_t alter)
     {
     case MATCH_OPERAND:
       XSTR (pattern, 2) = alter (XSTR (pattern, 2), n_dup);
+      break;
+    case MATCH_SCRATCH:
+      XSTR (pattern, 1) = alter (XSTR (pattern, 1), n_dup);
       break;
 
     default:

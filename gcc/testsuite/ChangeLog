@@ -1,3 +1,56 @@
+2021-05-27  Matthias Kretz  <kretz@kde.org>
+
+	PR c++/100716
+	* g++.dg/diagnostic/pr100716.C: New test.
+	* g++.dg/diagnostic/pr100716-1.C: Same test with
+	-fno-pretty-templates.
+
+2021-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/99893
+	* g++.dg/cpp0x/static_assert17.C: New test.
+
+2021-05-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86355
+	* g++.dg/cpp0x/alias-decl-variadic2.C: New test.
+
+2021-05-27  Patrick Palka  <ppalka@redhat.com>
+
+	DR 1315
+	PR c++/67593
+	PR c++/96555
+	* g++.dg/template/partial16.C: New test.
+	* g++.dg/template/partial17.C: New test.
+	* g++.dg/template/partial18.C: New test.
+	* g++.dg/template/partial19.C: New test.
+	* g++.dg/cpp0x/pr68724.C: Adjust expected diagnostic for
+	ill-formed partial specialization.
+	* g++.dg/cpp0x/variadic38.C: Likewise.
+	* g++.dg/cpp1z/pr81016.C: Likewise.
+	* g++.dg/template/partial5.C: Likewise.
+	* g++.old-deja/g++.pt/spec21.C: Likewise.
+
+2021-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100602
+	* gfortran.dg/pointer_check_14.f90: New test.
+
+2021-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100656
+	* gfortran.dg/bounds_check_22.f90: New test.
+
+2021-05-27  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-55.c: Pass -fno-ipa-icf.
+
+2021-05-27  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* gcc.target/i386/pr100637-3b.c (avgu): New test.
+	* gcc.target/i386/pr100637-3w.c (avgu): Ditto.
+
 2021-05-26  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/100502

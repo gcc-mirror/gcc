@@ -35117,7 +35117,9 @@ cp_parser_omp_clause_name (cp_parser *parser)
       switch (p[0])
 	{
 	case 'a':
-	  if (!strcmp ("aligned", p))
+	  if (!strcmp ("affinity", p))
+	    result = PRAGMA_OMP_CLAUSE_AFFINITY;
+	  else if (!strcmp ("aligned", p))
 	    result = PRAGMA_OMP_CLAUSE_ALIGNED;
 	  else if (!strcmp ("allocate", p))
 	    result = PRAGMA_OMP_CLAUSE_ALLOCATE;
@@ -35376,7 +35378,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
     {
       tree name, decl;
 
-      if (kind == OMP_CLAUSE_DEPEND)
+      if (kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 	cp_parser_parse_tentatively (parser);
       token = cp_lexer_peek_token (parser->lexer);
       if (kind != 0
@@ -35405,7 +35407,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 					  /*optional_p=*/false);
 	  if (name == error_mark_node)
 	    {
-	      if (kind == OMP_CLAUSE_DEPEND
+	      if ((kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 		  && cp_parser_simulate_error (parser))
 		goto depend_lvalue;
 	      goto skip_comma;
@@ -35417,7 +35419,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	    decl = name;
 	  if (decl == error_mark_node)
 	    {
-	      if (kind == OMP_CLAUSE_DEPEND
+	      if ((kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 		  && cp_parser_simulate_error (parser))
 		goto depend_lvalue;
 	      cp_parser_name_lookup_error (parser, name, decl, NLE_NULL,
@@ -35463,6 +35465,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 							      &idk, loc);
 		}
 	      /* FALLTHROUGH.  */
+	    case OMP_CLAUSE_AFFINITY:
 	    case OMP_CLAUSE_DEPEND:
 	    case OMP_CLAUSE_REDUCTION:
 	    case OMP_CLAUSE_IN_REDUCTION:
@@ -35489,12 +35492,12 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		      /* Look for `:'.  */
 		      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
 			{
-			  if (kind == OMP_CLAUSE_DEPEND
+			  if ((kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 			      && cp_parser_simulate_error (parser))
 			    goto depend_lvalue;
 			  goto skip_comma;
 			}
-		      if (kind == OMP_CLAUSE_DEPEND)
+		      if (kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 			cp_parser_commit_to_tentative_parse (parser);
 		      if (!cp_lexer_next_token_is (parser->lexer,
 						   CPP_CLOSE_SQUARE))
@@ -35508,7 +35511,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		  if (!cp_parser_require (parser, CPP_CLOSE_SQUARE,
 					  RT_CLOSE_SQUARE))
 		    {
-		      if (kind == OMP_CLAUSE_DEPEND
+		      if ((kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 			  && cp_parser_simulate_error (parser))
 			goto depend_lvalue;
 		      goto skip_comma;
@@ -35521,7 +35524,7 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	      break;
 	    }
 
-	  if (kind == OMP_CLAUSE_DEPEND)
+	  if (kind == OMP_CLAUSE_DEPEND || kind == OMP_CLAUSE_AFFINITY)
 	    {
 	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA)
 		  && cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN)
@@ -37761,6 +37764,66 @@ cp_parser_omp_iterators (cp_parser *parser)
   return ret ? ret : error_mark_node;
 }
 
+/* OpenMP 5.0:
+   affinity ( [aff-modifier :] variable-list )
+   aff-modifier:
+     iterator ( iterators-definition )  */
+
+static tree
+cp_parser_omp_clause_affinity (cp_parser *parser, tree list)
+{
+  tree nlist, c, iterators = NULL_TREE;
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+      bool parse_iter = ((strcmp ("iterator", p) == 0)
+			 && (cp_lexer_nth_token_is (parser->lexer, 2,
+						    CPP_OPEN_PAREN)));
+      if (parse_iter)
+	{
+	  size_t n = cp_parser_skip_balanced_tokens (parser, 2);
+	  parse_iter = cp_lexer_nth_token_is (parser->lexer, n, CPP_COLON);
+	}
+      if (parse_iter)
+	{
+	  begin_scope (sk_omp, NULL);
+	  iterators = cp_parser_omp_iterators (parser);
+	  if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+	    {
+	      if (iterators)
+		poplevel (0, 1, 0);
+	      cp_parser_skip_to_closing_parenthesis (parser,
+						     /*recovering=*/true,
+						     /*or_comma=*/false,
+						     /*consume_paren=*/true);
+	      return list;
+	    }
+	}
+    }
+  nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_AFFINITY,
+					  list, NULL);
+  if (iterators)
+    {
+      tree block = poplevel (1, 1, 0);
+      if (iterators == error_mark_node)
+	iterators = NULL_TREE;
+      else
+	{
+	  TREE_VEC_ELT (iterators, 5) = block;
+	  for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
+	    OMP_CLAUSE_DECL (c) = build_tree_list (iterators,
+						   OMP_CLAUSE_DECL (c));
+	}
+    }
+  return nlist;
+}
+
 /* OpenMP 4.0:
    depend ( depend-kind : variable-list )
 
@@ -38752,6 +38815,10 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	    clauses = cp_parser_omp_clause_linear (parser, clauses, declare_simd);
 	  }
 	  c_name = "linear";
+	  break;
+	case PRAGMA_OMP_CLAUSE_AFFINITY:
+	  clauses = cp_parser_omp_clause_affinity (parser, clauses);
+	  c_name = "affinity";
 	  break;
 	case PRAGMA_OMP_CLAUSE_DEPEND:
 	  clauses = cp_parser_omp_clause_depend (parser, clauses,
@@ -41349,7 +41416,8 @@ cp_parser_omp_single (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DETACH))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DETACH)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_AFFINITY))
 
 static tree
 cp_parser_omp_task (cp_parser *parser, cp_token *pragma_tok, bool *if_p)

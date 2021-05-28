@@ -277,6 +277,9 @@ enum omp_clause_code {
   /* OpenMP clause: linear (variable-list[:linear-step]).  */
   OMP_CLAUSE_LINEAR,
 
+  /* OpenMP clause: affinity([depend-modifier :] variable-list).  */
+  OMP_CLAUSE_AFFINITY,
+
   /* OpenMP clause: aligned (variable-list[:alignment]).  */
   OMP_CLAUSE_ALIGNED,
 

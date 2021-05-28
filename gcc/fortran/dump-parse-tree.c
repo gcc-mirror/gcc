@@ -1298,10 +1298,55 @@ show_code (int level, gfc_code *c)
 }
 
 static void
+show_iterator (gfc_namespace *ns)
+{
+  for (gfc_symbol *sym = ns->proc_name; sym; sym = sym->tlink)
+    {
+      gfc_constructor *c;
+      if (sym != ns->proc_name)
+	fputc (',', dumpfile);
+      fputs (sym->name, dumpfile);
+      fputc ('=', dumpfile);
+      c = gfc_constructor_first (sym->value->value.constructor);
+      show_expr (c->expr);
+      fputc (':', dumpfile);
+      c = gfc_constructor_next (c);
+      show_expr (c->expr);
+      c = gfc_constructor_next (c);
+      if (c)
+	{
+	  fputc (':', dumpfile);
+	  show_expr (c->expr);
+	}
+    }
+}
+
+static void
 show_omp_namelist (int list_type, gfc_omp_namelist *n)
 {
+  gfc_namespace *ns_iter = NULL, *ns_curr = gfc_current_ns;
+  gfc_omp_namelist *n2 = n;
   for (; n; n = n->next)
     {
+      gfc_current_ns = ns_curr;
+      if (list_type == OMP_LIST_AFFINITY || list_type == OMP_LIST_DEPEND)
+	{
+	  gfc_current_ns = n->u2.ns ? n->u2.ns : ns_curr;
+	  if (n->u2.ns != ns_iter)
+	    {
+	      if (n != n2)
+		fputs (list_type == OMP_LIST_AFFINITY
+		       ? ") AFFINITY(" : ") DEPEND(", dumpfile);
+	      if (n->u2.ns)
+		{
+		  fputs ("ITERATOR(", dumpfile);
+		  show_iterator (n->u2.ns);
+		  fputc (')', dumpfile);
+		  fputc (list_type == OMP_LIST_AFFINITY ? ':' : ',', dumpfile);
+		}
+	    }
+	  ns_iter = n->u2.ns;
+	}
       if (list_type == OMP_LIST_REDUCTION)
 	switch (n->u.reduction_op)
 	  {
@@ -1321,8 +1366,8 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
 	  case OMP_REDUCTION_IOR: fputs ("ior:", dumpfile); break;
 	  case OMP_REDUCTION_IEOR: fputs ("ieor:", dumpfile); break;
 	  case OMP_REDUCTION_USER:
-	    if (n->udr)
-	      fprintf (dumpfile, "%s:", n->udr->udr->name);
+	    if (n->u2.udr)
+	      fprintf (dumpfile, "%s:", n->u2.udr->udr->name);
 	    break;
 	  default: break;
 	  }
@@ -1387,6 +1432,7 @@ show_omp_namelist (int list_type, gfc_omp_namelist *n)
       if (n->next)
 	fputc (',', dumpfile);
     }
+  gfc_current_ns = ns_curr;
 }
 
 
@@ -1610,6 +1656,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	  case OMP_LIST_SHARED: type = "SHARED"; break;
 	  case OMP_LIST_COPYIN: type = "COPYIN"; break;
 	  case OMP_LIST_UNIFORM: type = "UNIFORM"; break;
+	  case OMP_LIST_AFFINITY: type = "AFFINITY"; break;
 	  case OMP_LIST_ALIGNED: type = "ALIGNED"; break;
 	  case OMP_LIST_LINEAR: type = "LINEAR"; break;
 	  case OMP_LIST_DEPEND: type = "DEPEND"; break;

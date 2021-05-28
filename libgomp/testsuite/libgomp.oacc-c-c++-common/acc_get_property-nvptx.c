@@ -4,6 +4,7 @@
 /* { dg-additional-sources acc_get_property-aux.c } */
 /* { dg-additional-options "-lcuda -lcudart" } */
 /* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* { dg-require-effective-target openacc_cudart } */
 
 #include <openacc.h>
 #include <cuda.h>

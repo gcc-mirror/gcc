@@ -1654,6 +1654,11 @@ class auto_suppress_location_wrappers
    variable.  */
 #define OMP_CLAUSE_MAP_IN_REDUCTION(NODE) \
   TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP))
+/* Nonzero on map clauses added implicitly for reduction clauses on combined
+   or composite constructs.  They shall be removed if there is an explicit
+   map clause.  */
+#define OMP_CLAUSE_MAP_IMPLICIT(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_MAP)->base.default_def_flag)
 
 /* True on an OMP_CLAUSE_USE_DEVICE_PTR with an OpenACC 'if_present'
    clause.  */

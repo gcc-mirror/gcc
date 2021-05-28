@@ -1257,7 +1257,11 @@ typedef struct gfc_omp_namelist
       struct gfc_common_head *common;
       bool lastprivate_conditional;
     } u;
-  struct gfc_omp_namelist_udr *udr;
+  union
+    {
+      struct gfc_omp_namelist_udr *udr;
+      gfc_namespace *ns;
+    } u2;
   struct gfc_omp_namelist *next;
   locus where;
 }
@@ -1275,6 +1279,7 @@ enum
   OMP_LIST_SHARED,
   OMP_LIST_COPYIN,
   OMP_LIST_UNIFORM,
+  OMP_LIST_AFFINITY,
   OMP_LIST_ALIGNED,
   OMP_LIST_LINEAR,
   OMP_LIST_DEPEND,
@@ -3321,7 +3326,7 @@ void gfc_free_iterator (gfc_iterator *, int);
 void gfc_free_forall_iterator (gfc_forall_iterator *);
 void gfc_free_alloc_list (gfc_alloc *);
 void gfc_free_namelist (gfc_namelist *);
-void gfc_free_omp_namelist (gfc_omp_namelist *);
+void gfc_free_omp_namelist (gfc_omp_namelist *, bool);
 void gfc_free_equiv (gfc_equiv *);
 void gfc_free_equiv_until (gfc_equiv *, gfc_equiv *);
 void gfc_free_data (gfc_data *);

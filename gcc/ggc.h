@@ -332,19 +332,30 @@ gt_pch_nx (const char *)
 {
 }
 
-inline void
-gt_ggc_mx (int)
-{
-}
+inline void gt_pch_nx (bool) { }
+inline void gt_pch_nx (char) { }
+inline void gt_pch_nx (signed char) { }
+inline void gt_pch_nx (unsigned char) { }
+inline void gt_pch_nx (short) { }
+inline void gt_pch_nx (unsigned short) { }
+inline void gt_pch_nx (int) { }
+inline void gt_pch_nx (unsigned int) { }
+inline void gt_pch_nx (long int) { }
+inline void gt_pch_nx (unsigned long int) { }
+inline void gt_pch_nx (long long int) { }
+inline void gt_pch_nx (unsigned long long int) { }
 
-inline void
-gt_pch_nx (int)
-{
-}
-
-inline void
-gt_pch_nx (unsigned int)
-{
-}
+inline void gt_ggc_mx (bool) { }
+inline void gt_ggc_mx (char) { }
+inline void gt_ggc_mx (signed char) { }
+inline void gt_ggc_mx (unsigned char) { }
+inline void gt_ggc_mx (short) { }
+inline void gt_ggc_mx (unsigned short) { }
+inline void gt_ggc_mx (int) { }
+inline void gt_ggc_mx (unsigned int) { }
+inline void gt_ggc_mx (long int) { }
+inline void gt_ggc_mx (unsigned long int) { }
+inline void gt_ggc_mx (long long int) { }
+inline void gt_ggc_mx (unsigned long long int) { }
 
 #endif

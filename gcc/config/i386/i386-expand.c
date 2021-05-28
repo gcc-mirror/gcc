@@ -4124,8 +4124,8 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 
   /* XOP supports all of the comparisons on all 128-bit vector int types.  */
   if (TARGET_XOP
-      && (mode == V16QImode || mode == V8HImode
-	  || mode == V4SImode || mode == V2DImode))
+      && GET_MODE_CLASS (mode) == MODE_VECTOR_INT
+      && GET_MODE_SIZE (mode) <= 16)
     ;
   /* AVX512F supports all of the comparsions
      on all 128/256/512-bit vector int types.  */

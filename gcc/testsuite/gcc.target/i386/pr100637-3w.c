@@ -84,3 +84,13 @@ void _abs (void)
 }
 
 /* { dg-final { scan-assembler "pabsw" } } */
+
+void avgu (void)
+{
+  int i;
+
+  for (i = 0; i < 2; i++)
+    ur[i] = (ua[i] + ub[i] + 1) >> 1;
+}
+
+/* { dg-final { scan-assembler "pavgw" } } */
