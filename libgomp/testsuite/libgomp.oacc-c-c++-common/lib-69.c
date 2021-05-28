@@ -1,5 +1,6 @@
 /* { dg-do run { target openacc_nvidia_accel_selected } } */
 /* { dg-additional-options "-lcuda" } */
+/* { dg-require-effective-target openacc_cuda } */
 
 #include <stdio.h>
 #include <unistd.h>
