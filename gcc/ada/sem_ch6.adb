@@ -561,7 +561,7 @@ package body Sem_Ch6 is
                   Push_Scope (Def_Id);
                   Install_Formals (Def_Id);
                   Preanalyze_Formal_Expression (Expr, Typ);
-                  Check_Limited_Return (Original_Node (N), Expr, Typ);
+                  Check_Limited_Return (Orig_N, Expr, Typ);
                   End_Scope;
                end if;
 
@@ -630,7 +630,7 @@ package body Sem_Ch6 is
          Check_Dynamically_Tagged_Expression
            (Expr        => Expr,
             Typ         => Etype (Def_Id),
-            Related_Nod => Original_Node (N));
+            Related_Nod => Orig_N);
       end if;
 
       --  We must enforce checks for unreferenced formals in our newly
