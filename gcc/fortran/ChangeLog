@@ -1,3 +1,16 @@
+2021-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100602
+	* trans-intrinsic.c (gfc_conv_intrinsic_size): Use CLASS data
+	attributes for CLASS arrays for generation of runtime error.
+
+2021-05-27  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/100656
+	* trans-array.c (gfc_conv_ss_startstride): Do not call check for
+	presence of a dummy argument when a symbol actually refers to a
+	non-dummy.
+
 2021-05-25  Tobias Burnus  <tobias@codesourcery.com>
 	    Johannes Nendwich  <a08727063@unet.univie.ac.at>
 

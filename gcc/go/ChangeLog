@@ -1,3 +1,7 @@
+2021-05-27  Ian Lance Taylor  <iant@golang.org>
+
+	* gccgo.texi (Function Names): Don't HTML quote ampersand.
+
 2021-05-24  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/100537
