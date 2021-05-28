@@ -80,7 +80,7 @@ public:
 
   void visit (AST::TupleIndexExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
 
     HIR::Expr *tuple_expr
       = ASTLoweringExpr::translate (expr.get_tuple_expr ().get (), &terminated);
@@ -99,8 +99,8 @@ public:
 
   void visit (AST::TupleExpr &expr) override
   {
-    std::vector<HIR::Attribute> inner_attribs;
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec inner_attribs;
+    AST::AttrVec outer_attribs;
     std::vector<std::unique_ptr<HIR::Expr> > tuple_elements;
     for (auto &e : expr.get_tuple_elems ())
       {
@@ -163,7 +163,7 @@ public:
 
   void visit (AST::CallExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
     HIR::Expr *func
       = ASTLoweringExpr::translate (expr.get_function_expr ().get ());
     std::vector<std::unique_ptr<HIR::Expr> > params;
@@ -186,7 +186,7 @@ public:
 
   void visit (AST::MethodCallExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
 
     HIR::PathExprSegment method_path
       = lower_path_expr_seg (expr.get_method_name ());
@@ -240,8 +240,8 @@ public:
 
   void visit (AST::ArrayExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
-    std::vector<HIR::Attribute> inner_attribs;
+    AST::AttrVec outer_attribs;
+    AST::AttrVec inner_attribs;
 
     expr.get_array_elems ()->accept_vis (*this);
     rust_assert (translated_array_elems != nullptr);
@@ -259,7 +259,7 @@ public:
 
   void visit (AST::ArrayIndexExpr &expr) override
   {
-    std::vector<Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
     HIR::Expr *array_expr
       = ASTLoweringExpr::translate (expr.get_array_expr ().get ());
     HIR::Expr *array_index_expr
@@ -402,7 +402,7 @@ public:
 
   void visit (AST::NegationExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
 
     HIR::Expr *negated_value
       = ASTLoweringExpr::translate (expr.get_negated_expr ().get ());
@@ -482,8 +482,8 @@ public:
 
   void visit (AST::StructExprStructFields &struct_expr) override
   {
-    std::vector<HIR::Attribute> inner_attribs;
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec inner_attribs;
+    AST::AttrVec outer_attribs;
 
     // bit of a hack for now
     HIR::PathInExpression *path
@@ -522,8 +522,8 @@ public:
 
   void visit (AST::GroupedExpr &expr) override
   {
-    std::vector<HIR::Attribute> inner_attribs;
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec inner_attribs;
+    AST::AttrVec outer_attribs;
 
     HIR::Expr *paren_expr
       = ASTLoweringExpr::translate (expr.get_expr_in_parens ().get ());
@@ -541,8 +541,8 @@ public:
 
   void visit (AST::FieldAccessExpr &expr) override
   {
-    std::vector<HIR::Attribute> inner_attribs;
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec inner_attribs;
+    AST::AttrVec outer_attribs;
 
     HIR::Expr *receiver
       = ASTLoweringExpr::translate (expr.get_receiver_expr ().get ());
@@ -570,7 +570,7 @@ public:
 
   void visit (AST::BreakExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
     HIR::Lifetime break_label = lower_lifetime (expr.get_label ());
     HIR::Expr *break_expr
       = expr.has_break_expr ()
@@ -590,7 +590,7 @@ public:
 
   void visit (AST::ContinueExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
     HIR::Lifetime break_label = lower_lifetime (expr.get_label ());
 
     auto crate_num = mappings->get_current_crate ();
@@ -605,7 +605,7 @@ public:
 
   void visit (AST::BorrowExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
 
     HIR::Expr *borrow_lvalue
       = ASTLoweringExpr::translate (expr.get_borrowed_expr ().get ());
@@ -624,7 +624,7 @@ public:
 
   void visit (AST::DereferenceExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
 
     HIR::Expr *dref_lvalue
       = ASTLoweringExpr::translate (expr.get_dereferenced_expr ().get ());

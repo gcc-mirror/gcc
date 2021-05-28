@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_EXPR_H
 #define RUST_HIR_EXPR_H
 
+#include "rust-ast-full-decls.h"
 #include "rust-hir.h"
 #include "rust-hir-path.h"
 #include "operator.h"
@@ -32,7 +33,7 @@ class ExprWithBlock : public Expr
   // TODO: should this mean that a BlockExpr should be a member variable?
 protected:
   ExprWithBlock (Analysis::NodeMapping mappings,
-		 std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
+		 AST::AttrVec outer_attrs = AST::AttrVec ())
     : Expr (std::move (mappings), std::move (outer_attrs))
   {}
 
@@ -72,14 +73,13 @@ public:
 
   LiteralExpr (Analysis::NodeMapping mappings, std::string value_as_string,
 	       Literal::LitType type, PrimitiveCoreType type_hint,
-	       Location locus,
-	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
+	       Location locus, AST::AttrVec outer_attrs = AST::AttrVec ())
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
       literal (std::move (value_as_string), type, type_hint), locus (locus)
   {}
 
   LiteralExpr (Analysis::NodeMapping mappings, Literal literal, Location locus,
-	       std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
+	       AST::AttrVec outer_attrs = AST::AttrVec ())
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
       literal (std::move (literal)), locus (locus)
   {}
@@ -120,86 +120,6 @@ protected:
   }
 };
 
-// Literal expression attribute body (non-macro attribute)
-class AttrInputLiteral : public AttrInput
-{
-  // Literal expression WITHOUT SUFFIX
-  // std::unique_ptr<LiteralExpr> literal_expr;
-  LiteralExpr
-    literal_expr; // as not using polymorphic behaviour, doesn't require pointer
-  // TODO: will require pointer if LiteralExpr is changed to have subclassing
-
-  // TODO: should this store location data?
-
-public:
-  AttrInputLiteral (LiteralExpr lit_expr) : literal_expr (std::move (lit_expr))
-  {}
-
-  std::string as_string () const override
-  {
-    return " = " + literal_expr.as_string ();
-  }
-
-  void accept_vis (HIRVisitor &vis) override;
-
-protected:
-  /* Use covariance to implement clone function as returning this object rather
-   * than base */
-  AttrInputLiteral *clone_attr_input_impl () const override
-  {
-    return new AttrInputLiteral (*this);
-  }
-};
-
-/* literal expr only meta item inner - TODO possibly replace with inheritance of
- * LiteralExpr itself? */
-class MetaItemLitExpr : public MetaItemInner
-{
-  LiteralExpr lit_expr;
-
-public:
-  MetaItemLitExpr (LiteralExpr lit_expr) : lit_expr (std::move (lit_expr)) {}
-
-  std::string as_string () const override { return lit_expr.as_string (); }
-
-  void accept_vis (HIRVisitor &vis) override;
-
-protected:
-  // Use covariance to implement clone function as returning this type
-  MetaItemLitExpr *clone_meta_item_inner_impl () const override
-  {
-    return new MetaItemLitExpr (*this);
-  }
-};
-
-// more generic meta item "path = lit" form
-class MetaItemPathLit : public MetaItem
-{
-  SimplePath path;
-  LiteralExpr lit;
-
-public:
-  MetaItemPathLit (SimplePath path, LiteralExpr lit_expr)
-    : path (std::move (path)), lit (std::move (lit_expr))
-  {}
-
-  std::string as_string () const override
-  {
-    return path.as_string () + " = " + lit.as_string ();
-  }
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  Attribute to_attribute () const override;
-
-protected:
-  // Use covariance to implement clone function as returning this type
-  MetaItemPathLit *clone_meta_item_inner_impl () const override
-  {
-    return new MetaItemPathLit (*this);
-  }
-};
-
 /* Represents an expression using unary or binary operators as HIR node. Can be
  * overloaded. */
 class OperatorExpr : public ExprWithoutBlock
@@ -216,7 +136,7 @@ protected:
   // Constructor (only for initialisation of expr purposes)
   OperatorExpr (Analysis::NodeMapping mappings,
 		std::unique_ptr<Expr> main_or_left_expr,
-		std::vector<Attribute> outer_attribs, Location locus)
+		AST::AttrVec outer_attribs, Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       locus (locus), main_or_left_expr (std::move (main_or_left_expr))
   {}
@@ -261,8 +181,7 @@ public:
 
   BorrowExpr (Analysis::NodeMapping mappings,
 	      std::unique_ptr<Expr> borrow_lvalue, bool is_mut_borrow,
-	      bool is_double_borrow, std::vector<Attribute> outer_attribs,
-	      Location locus)
+	      bool is_double_borrow, AST::AttrVec outer_attribs, Location locus)
     : OperatorExpr (std::move (mappings), std::move (borrow_lvalue),
 		    std::move (outer_attribs), locus),
       is_mut (is_mut_borrow), double_borrow (is_double_borrow)
@@ -298,7 +217,7 @@ public:
   // Constructor calls OperatorExpr's protected constructor
   DereferenceExpr (Analysis::NodeMapping mappings,
 		   std::unique_ptr<Expr> deref_lvalue,
-		   std::vector<Attribute> outer_attribs, Location locus)
+		   AST::AttrVec outer_attribs, Location locus)
     : OperatorExpr (std::move (mappings), std::move (deref_lvalue),
 		    std::move (outer_attribs), locus)
   {}
@@ -330,7 +249,7 @@ public:
   // Constructor calls OperatorExpr's protected constructor
   ErrorPropagationExpr (Analysis::NodeMapping mappings,
 			std::unique_ptr<Expr> potential_error_value,
-			std::vector<Attribute> outer_attribs, Location locus)
+			AST::AttrVec outer_attribs, Location locus)
     : OperatorExpr (std::move (mappings), std::move (potential_error_value),
 		    std::move (outer_attribs), locus)
   {}
@@ -373,7 +292,7 @@ public:
   // Constructor calls OperatorExpr's protected constructor
   NegationExpr (Analysis::NodeMapping mappings,
 		std::unique_ptr<Expr> negated_value, ExprType expr_kind,
-		std::vector<Attribute> outer_attribs, Location locus)
+		AST::AttrVec outer_attribs, Location locus)
     : OperatorExpr (std::move (mappings), std::move (negated_value),
 		    std::move (outer_attribs), locus),
       expr_type (expr_kind)
@@ -422,7 +341,7 @@ public:
 			   std::unique_ptr<Expr> right_value,
 			   ExprType expr_kind, Location locus)
     : OperatorExpr (std::move (mappings), std::move (left_value),
-		    std::vector<Attribute> (), locus),
+		    AST::AttrVec (), locus),
       expr_type (expr_kind), right_expr (std::move (right_value))
   {}
   // outer attributes not allowed
@@ -496,7 +415,7 @@ public:
 		  std::unique_ptr<Expr> right_value, ExprType comparison_kind,
 		  Location locus)
     : OperatorExpr (std::move (mappings), std::move (left_value),
-		    std::vector<Attribute> (), locus),
+		    AST::AttrVec (), locus),
       expr_type (comparison_kind), right_expr (std::move (right_value))
   {}
   // outer attributes not allowed
@@ -566,7 +485,7 @@ public:
 		   std::unique_ptr<Expr> right_bool_expr, ExprType expr_kind,
 		   Location locus)
     : OperatorExpr (std::move (mappings), std::move (left_bool_expr),
-		    std::vector<Attribute> (), locus),
+		    AST::AttrVec (), locus),
       expr_type (expr_kind), right_expr (std::move (right_bool_expr))
   {}
   // outer attributes not allowed
@@ -632,7 +551,7 @@ public:
 		std::unique_ptr<Expr> expr_to_cast,
 		std::unique_ptr<TypeNoBounds> type_to_cast_to, Location locus)
     : OperatorExpr (std::move (mappings), std::move (expr_to_cast),
-		    std::vector<Attribute> (), locus),
+		    AST::AttrVec (), locus),
       type_to_convert_to (std::move (type_to_cast_to))
   {}
   // outer attributes not allowed
@@ -688,7 +607,7 @@ public:
 		  std::unique_ptr<Expr> value_to_assign_to,
 		  std::unique_ptr<Expr> value_to_assign, Location locus)
     : OperatorExpr (std::move (mappings), std::move (value_to_assign_to),
-		    std::vector<Attribute> (), locus),
+		    AST::AttrVec (), locus),
       right_expr (std::move (value_to_assign))
   {}
   // outer attributes not allowed
@@ -740,7 +659,7 @@ protected:
 // Expression in parentheses (i.e. like literally just any 3 + (2 * 6))
 class GroupedExpr : public ExprWithoutBlock
 {
-  std::vector<Attribute> inner_attrs;
+  AST::AttrVec inner_attrs;
   std::unique_ptr<Expr> expr_in_parens;
 
   Location locus;
@@ -748,12 +667,12 @@ class GroupedExpr : public ExprWithoutBlock
 public:
   std::string as_string () const override;
 
-  std::vector<Attribute> get_inner_attrs () const { return inner_attrs; }
+  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
 
   GroupedExpr (Analysis::NodeMapping mappings,
 	       std::unique_ptr<Expr> parenthesised_expr,
-	       std::vector<Attribute> inner_attribs,
-	       std::vector<Attribute> outer_attribs, Location locus)
+	       AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
+	       Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       expr_in_parens (std::move (parenthesised_expr)), locus (locus)
@@ -937,7 +856,7 @@ protected:
 // Array definition-ish expression
 class ArrayExpr : public ExprWithoutBlock
 {
-  std::vector<Attribute> inner_attrs;
+  AST::AttrVec inner_attrs;
   std::unique_ptr<ArrayElems> internal_elements;
 
   Location locus;
@@ -945,7 +864,7 @@ class ArrayExpr : public ExprWithoutBlock
 public:
   std::string as_string () const override;
 
-  std::vector<Attribute> get_inner_attrs () const { return inner_attrs; }
+  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
 
   // Returns whether array expr has array elems or if it is just empty.
   bool has_array_elems () const { return internal_elements != nullptr; }
@@ -953,8 +872,8 @@ public:
   // Constructor requires ArrayElems pointer
   ArrayExpr (Analysis::NodeMapping mappings,
 	     std::unique_ptr<ArrayElems> array_elems,
-	     std::vector<Attribute> inner_attribs,
-	     std::vector<Attribute> outer_attribs, Location locus)
+	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
+	     Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       internal_elements (std::move (array_elems)), locus (locus)
@@ -1024,7 +943,7 @@ public:
   ArrayIndexExpr (Analysis::NodeMapping mappings,
 		  std::unique_ptr<Expr> array_expr,
 		  std::unique_ptr<Expr> array_index_expr,
-		  std::vector<Attribute> outer_attribs, Location locus)
+		  AST::AttrVec outer_attribs, Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       array_expr (std::move (array_expr)),
       index_expr (std::move (array_index_expr)), locus (locus)
@@ -1079,7 +998,7 @@ protected:
 // HIR representation of a tuple
 class TupleExpr : public ExprWithoutBlock
 {
-  std::vector<Attribute> inner_attrs;
+  AST::AttrVec inner_attrs;
 
   std::vector<std::unique_ptr<Expr> > tuple_elems;
   // replaces (inlined version of) TupleElements
@@ -1089,12 +1008,12 @@ class TupleExpr : public ExprWithoutBlock
 public:
   std::string as_string () const override;
 
-  std::vector<Attribute> get_inner_attrs () const { return inner_attrs; }
+  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
 
   TupleExpr (Analysis::NodeMapping mappings,
 	     std::vector<std::unique_ptr<Expr> > tuple_elements,
-	     std::vector<Attribute> inner_attribs,
-	     std::vector<Attribute> outer_attribs, Location locus)
+	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
+	     Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       tuple_elems (std::move (tuple_elements)), locus (locus)
@@ -1179,7 +1098,7 @@ public:
 
   TupleIndexExpr (Analysis::NodeMapping mappings,
 		  std::unique_ptr<Expr> tuple_expr, TupleIndex index,
-		  std::vector<Attribute> outer_attribs, Location locus)
+		  AST::AttrVec outer_attribs, Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       tuple_expr (std::move (tuple_expr)), tuple_index (index), locus (locus)
   {}
@@ -1241,7 +1160,7 @@ protected:
 
   // Protected constructor to allow initialising struct_name
   StructExpr (Analysis::NodeMapping mappings, PathInExpression struct_path,
-	      std::vector<Attribute> outer_attribs)
+	      AST::AttrVec outer_attribs)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       struct_name (std::move (struct_path))
   {}
@@ -1255,20 +1174,19 @@ public:
 // Actual HIR node of the struct creator (with no fields). Not abstract!
 class StructExprStruct : public StructExpr
 {
-  std::vector<Attribute> inner_attrs;
+  AST::AttrVec inner_attrs;
 
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  std::vector<Attribute> get_inner_attrs () const { return inner_attrs; }
+  AST::AttrVec get_inner_attrs () const { return inner_attrs; }
 
   // Constructor has to call protected constructor of base class
   StructExprStruct (Analysis::NodeMapping mappings,
-		    PathInExpression struct_path,
-		    std::vector<Attribute> inner_attribs,
-		    std::vector<Attribute> outer_attribs, Location locus)
+		    PathInExpression struct_path, AST::AttrVec inner_attribs,
+		    AST::AttrVec outer_attribs, Location locus)
     : StructExpr (std::move (mappings), std::move (struct_path),
 		  std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)), locus (locus)
@@ -1520,9 +1438,8 @@ public:
   StructExprStructFields (
     Analysis::NodeMapping mappings, PathInExpression struct_path,
     std::vector<std::unique_ptr<StructExprField> > expr_fields, Location locus,
-    StructBase *base_struct,
-    std::vector<Attribute> inner_attribs = std::vector<Attribute> (),
-    std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
+    StructBase *base_struct, AST::AttrVec inner_attribs = AST::AttrVec (),
+    AST::AttrVec outer_attribs = AST::AttrVec ())
     : StructExprStruct (std::move (mappings), std::move (struct_path),
 			std::move (inner_attribs), std::move (outer_attribs),
 			locus),
@@ -1617,8 +1534,8 @@ public:
 
   StructExprStructBase (Analysis::NodeMapping mappings,
 			PathInExpression struct_path, StructBase base_struct,
-			std::vector<Attribute> inner_attribs,
-			std::vector<Attribute> outer_attribs, Location locus)
+			AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
+			Location locus)
     : StructExprStruct (std::move (mappings), std::move (struct_path),
 			std::move (inner_attribs), std::move (outer_attribs),
 			locus),
@@ -1647,7 +1564,7 @@ protected:
 // HIR node of a tuple struct creator
 class StructExprTuple : public StructExpr
 {
-  std::vector<Attribute> inner_attrs;
+  AST::AttrVec inner_attrs;
   std::vector<std::unique_ptr<Expr> > exprs;
 
   Location locus;
@@ -1655,7 +1572,7 @@ class StructExprTuple : public StructExpr
 public:
   std::string as_string () const override;
 
-  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
+  const AST::AttrVec &get_inner_attrs () const { return inner_attrs; }
 
   /*inline std::vector<std::unique_ptr<Expr>> get_exprs() const {
       return exprs;
@@ -1663,8 +1580,8 @@ public:
 
   StructExprTuple (Analysis::NodeMapping mappings, PathInExpression struct_path,
 		   std::vector<std::unique_ptr<Expr> > tuple_exprs,
-		   std::vector<Attribute> inner_attribs,
-		   std::vector<Attribute> outer_attribs, Location locus)
+		   AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
+		   Location locus)
     : StructExpr (std::move (mappings), std::move (struct_path),
 		  std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)), exprs (std::move (tuple_exprs)),
@@ -1728,7 +1645,7 @@ public:
   std::string as_string () const override { return struct_name.as_string (); }
 
   StructExprUnit (Analysis::NodeMapping mappings, PathInExpression struct_path,
-		  std::vector<Attribute> outer_attribs, Location locus)
+		  AST::AttrVec outer_attribs, Location locus)
     : StructExpr (std::move (mappings), std::move (struct_path),
 		  std::move (outer_attribs)),
       locus (locus)
@@ -1765,7 +1682,7 @@ protected:
   // Protected constructor for initialising enum_variant_path
   EnumVariantExpr (Analysis::NodeMapping mappings,
 		   PathInExpression path_to_enum_variant,
-		   std::vector<Attribute> outer_attribs)
+		   AST::AttrVec outer_attribs)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       enum_variant_path (std::move (path_to_enum_variant))
   {}
@@ -1920,7 +1837,7 @@ public:
   EnumExprStruct (Analysis::NodeMapping mappings,
 		  PathInExpression enum_variant_path,
 		  std::vector<std::unique_ptr<EnumExprField> > variant_fields,
-		  std::vector<Attribute> outer_attribs, Location locus)
+		  AST::AttrVec outer_attribs, Location locus)
     : EnumVariantExpr (std::move (mappings), std::move (enum_variant_path),
 		       std::move (outer_attribs)),
       fields (std::move (variant_fields)), locus (locus)
@@ -1990,7 +1907,7 @@ public:
   EnumExprTuple (Analysis::NodeMapping mappings,
 		 PathInExpression enum_variant_path,
 		 std::vector<std::unique_ptr<Expr> > variant_values,
-		 std::vector<Attribute> outer_attribs, Location locus)
+		 AST::AttrVec outer_attribs, Location locus)
     : EnumVariantExpr (std::move (mappings), std::move (enum_variant_path),
 		       std::move (outer_attribs)),
       values (std::move (variant_values)), locus (locus)
@@ -2057,7 +1974,7 @@ public:
 
   EnumExprFieldless (Analysis::NodeMapping mappings,
 		     PathInExpression enum_variant_path,
-		     std::vector<Attribute> outer_attribs, Location locus)
+		     AST::AttrVec outer_attribs, Location locus)
     : EnumVariantExpr (std::move (mappings), std::move (enum_variant_path),
 		       std::move (outer_attribs)),
       locus (locus)
@@ -2101,7 +2018,7 @@ public:
 
   CallExpr (Analysis::NodeMapping mappings, std::unique_ptr<Expr> function_expr,
 	    std::vector<std::unique_ptr<Expr> > function_params,
-	    std::vector<Attribute> outer_attribs, Location locus)
+	    AST::AttrVec outer_attribs, Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       function (std::move (function_expr)),
       params (std::move (function_params)), locus (locus)
@@ -2192,7 +2109,7 @@ public:
 		  std::unique_ptr<Expr> call_receiver,
 		  PathExprSegment method_path,
 		  std::vector<std::unique_ptr<Expr> > method_params,
-		  std::vector<Attribute> outer_attribs, Location locus)
+		  AST::AttrVec outer_attribs, Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       receiver (std::move (call_receiver)),
       method_name (std::move (method_path)), params (std::move (method_params)),
@@ -2286,7 +2203,7 @@ public:
 
   FieldAccessExpr (Analysis::NodeMapping mappings,
 		   std::unique_ptr<Expr> field_access_receiver,
-		   Identifier field_name, std::vector<Attribute> outer_attribs,
+		   Identifier field_name, AST::AttrVec outer_attribs,
 		   Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       receiver (std::move (field_access_receiver)),
@@ -2411,7 +2328,7 @@ class ClosureExpr : public ExprWithoutBlock
 protected:
   ClosureExpr (Analysis::NodeMapping mappings,
 	       std::vector<ClosureParam> closure_params, bool has_move,
-	       std::vector<Attribute> outer_attribs, Location locus)
+	       AST::AttrVec outer_attribs, Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       has_move (has_move), params (std::move (closure_params)), locus (locus)
   {}
@@ -2436,8 +2353,7 @@ public:
 		    std::unique_ptr<Expr> closure_inner_expr,
 		    std::vector<ClosureParam> closure_params, Location locus,
 		    bool is_move = false,
-		    std::vector<Attribute> outer_attribs
-		    = std::vector<Attribute> ())
+		    AST::AttrVec outer_attribs = AST::AttrVec ())
     : ClosureExpr (std::move (mappings), std::move (closure_params), is_move,
 		   std::move (outer_attribs), locus),
       closure_inner (std::move (closure_inner_expr))
@@ -2486,7 +2402,7 @@ protected:
 class BlockExpr : public ExprWithBlock
 {
 public:
-  std::vector<Attribute> inner_attrs;
+  AST::AttrVec inner_attrs;
 
   std::vector<std::unique_ptr<Stmt> > statements;
   std::unique_ptr<Expr> expr; // inlined from Statements
@@ -2507,8 +2423,8 @@ public:
   BlockExpr (Analysis::NodeMapping mappings,
 	     std::vector<std::unique_ptr<Stmt> > block_statements,
 	     std::unique_ptr<Expr> block_expr, bool tail_reachable,
-	     std::vector<Attribute> inner_attribs,
-	     std::vector<Attribute> outer_attribs, Location locus)
+	     AST::AttrVec inner_attribs, AST::AttrVec outer_attribs,
+	     Location locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
       inner_attrs (std::move (inner_attribs)),
       statements (std::move (block_statements)), expr (std::move (block_expr)),
@@ -2623,8 +2539,7 @@ public:
 			 std::unique_ptr<BlockExpr> closure_expr,
 			 std::vector<ClosureParam> closure_params,
 			 Location locus, bool is_move = false,
-			 std::vector<Attribute> outer_attribs
-			 = std::vector<Attribute> ())
+			 AST::AttrVec outer_attribs = AST::AttrVec ())
     : ClosureExpr (std::move (mappings), std::move (closure_params), is_move,
 		   std::move (outer_attribs), locus),
       return_type (std::move (closure_return_type)),
@@ -2687,8 +2602,7 @@ public:
 
   // Constructor for a ContinueExpr with a label.
   ContinueExpr (Analysis::NodeMapping mappings, Location locus, Lifetime label,
-		std::vector<Attribute> outer_attribs
-		= std::vector<Attribute> ())
+		AST::AttrVec outer_attribs = AST::AttrVec ())
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       label (std::move (label)), locus (locus)
   {}
@@ -2742,7 +2656,7 @@ public:
   BreakExpr (Analysis::NodeMapping mappings, Location locus,
 	     Lifetime break_label,
 	     std::unique_ptr<Expr> expr_in_break = nullptr,
-	     std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
+	     AST::AttrVec outer_attribs = AST::AttrVec ())
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       label (std::move (break_label)), break_expr (std::move (expr_in_break)),
       locus (locus)
@@ -2803,8 +2717,7 @@ class RangeExpr : public ExprWithoutBlock
 protected:
   // outer attributes not allowed before range expressions
   RangeExpr (Analysis::NodeMapping mappings, Location locus)
-    : ExprWithoutBlock (std::move (mappings), std::vector<Attribute> ()),
-      locus (locus)
+    : ExprWithoutBlock (std::move (mappings), AST::AttrVec ()), locus (locus)
   {}
 
 public:
@@ -3122,7 +3035,7 @@ public:
   // Constructor for ReturnExpr.
   ReturnExpr (Analysis::NodeMapping mappings, Location locus,
 	      std::unique_ptr<Expr> returned_expr = nullptr,
-	      std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
+	      AST::AttrVec outer_attribs = AST::AttrVec ())
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attribs)),
       return_expr (std::move (returned_expr)), locus (locus)
   {}
@@ -3190,7 +3103,7 @@ public:
 
   UnsafeBlockExpr (Analysis::NodeMapping mappings,
 		   std::unique_ptr<BlockExpr> block_expr,
-		   std::vector<Attribute> outer_attribs, Location locus)
+		   AST::AttrVec outer_attribs, Location locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
       expr (std::move (block_expr)), locus (locus)
   {}
@@ -3282,8 +3195,7 @@ protected:
   BaseLoopExpr (Analysis::NodeMapping mappings,
 		std::unique_ptr<BlockExpr> loop_block, Location locus,
 		LoopLabel loop_label,
-		std::vector<Attribute> outer_attribs
-		= std::vector<Attribute> ())
+		AST::AttrVec outer_attribs = AST::AttrVec ())
     : ExprWithBlock (std::move (mappings), std::move (outer_attribs)),
       loop_label (std::move (loop_label)), loop_block (std::move (loop_block)),
       locus (locus)
@@ -3331,8 +3243,7 @@ public:
   // Constructor for LoopExpr
   LoopExpr (Analysis::NodeMapping mappings,
 	    std::unique_ptr<BlockExpr> loop_block, Location locus,
-	    LoopLabel loop_label,
-	    std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
+	    LoopLabel loop_label, AST::AttrVec outer_attribs = AST::AttrVec ())
     : BaseLoopExpr (std::move (mappings), std::move (loop_block), locus,
 		    std::move (loop_label), std::move (outer_attribs))
   {}
@@ -3365,8 +3276,7 @@ public:
 		 std::unique_ptr<Expr> loop_condition,
 		 std::unique_ptr<BlockExpr> loop_block, Location locus,
 		 LoopLabel loop_label,
-		 std::vector<Attribute> outer_attribs
-		 = std::vector<Attribute> ())
+		 AST::AttrVec outer_attribs = AST::AttrVec ())
     : BaseLoopExpr (std::move (mappings), std::move (loop_block), locus,
 		    std::move (loop_label), std::move (outer_attribs)),
       condition (std::move (loop_condition))
@@ -3429,8 +3339,7 @@ public:
 		    std::unique_ptr<Expr> condition,
 		    std::unique_ptr<BlockExpr> loop_block, Location locus,
 		    LoopLabel loop_label,
-		    std::vector<Attribute> outer_attribs
-		    = std::vector<Attribute> ())
+		    AST::AttrVec outer_attribs = AST::AttrVec ())
     : BaseLoopExpr (std::move (mappings), std::move (loop_block), locus,
 		    std::move (loop_label), std::move (outer_attribs)),
       match_arm_patterns (std::move (match_arm_patterns)),
@@ -3502,7 +3411,7 @@ public:
 	       std::unique_ptr<Expr> iterator_expr,
 	       std::unique_ptr<BlockExpr> loop_body, Location locus,
 	       LoopLabel loop_label,
-	       std::vector<Attribute> outer_attribs = std::vector<Attribute> ())
+	       AST::AttrVec outer_attribs = AST::AttrVec ())
     : BaseLoopExpr (std::move (mappings), std::move (loop_body), locus,
 		    std::move (loop_label), std::move (outer_attribs)),
       pattern (std::move (loop_pattern)),
@@ -3566,7 +3475,7 @@ public:
 
   IfExpr (Analysis::NodeMapping mappings, std::unique_ptr<Expr> condition,
 	  std::unique_ptr<BlockExpr> if_block, Location locus)
-    : ExprWithBlock (std::move (mappings), std::vector<Attribute> ()),
+    : ExprWithBlock (std::move (mappings), AST::AttrVec ()),
       condition (std::move (condition)), if_block (std::move (if_block)),
       locus (locus)
   {}
@@ -3784,7 +3693,7 @@ public:
 	     std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 	     std::unique_ptr<Expr> value, std::unique_ptr<BlockExpr> if_block,
 	     Location locus)
-    : ExprWithBlock (std::move (mappings), std::vector<Attribute> ()),
+    : ExprWithBlock (std::move (mappings), AST::AttrVec ()),
       match_arm_patterns (std::move (match_arm_patterns)),
       value (std::move (value)), if_block (std::move (if_block)), locus (locus)
   {}
@@ -4119,7 +4028,7 @@ protected:
 struct MatchArm
 {
 private:
-  std::vector<Attribute> outer_attrs;
+  AST::AttrVec outer_attrs;
   // MatchArmPatterns patterns;
   std::vector<std::unique_ptr<Pattern> > match_arm_patterns; // inlined
 
@@ -4136,7 +4045,7 @@ public:
   // Constructor for match arm with a guard expression
   MatchArm (std::vector<std::unique_ptr<Pattern> > match_arm_patterns,
 	    std::unique_ptr<Expr> guard_expr = nullptr,
-	    std::vector<Attribute> outer_attrs = std::vector<Attribute> ())
+	    AST::AttrVec outer_attrs = AST::AttrVec ())
     : outer_attrs (std::move (outer_attrs)),
       match_arm_patterns (std::move (match_arm_patterns)),
       guard_expr (std::move (guard_expr))
@@ -4346,7 +4255,7 @@ protected:
 class MatchExpr : public ExprWithBlock
 {
   std::unique_ptr<Expr> branch_value;
-  std::vector<Attribute> inner_attrs;
+  AST::AttrVec inner_attrs;
 
   // bool has_match_arms;
   // MatchArms match_arms;
@@ -4364,9 +4273,8 @@ public:
 
   MatchExpr (Analysis::NodeMapping mappings, std::unique_ptr<Expr> branch_value,
 	     // std::vector<std::unique_ptr<MatchCase> > match_arms,
-	     std::vector<MatchCase> match_arms,
-	     std::vector<Attribute> inner_attrs,
-	     std::vector<Attribute> outer_attrs, Location locus)
+	     std::vector<MatchCase> match_arms, AST::AttrVec inner_attrs,
+	     AST::AttrVec outer_attrs, Location locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attrs)),
       branch_value (std::move (branch_value)),
       inner_attrs (std::move (inner_attrs)),
@@ -4433,7 +4341,7 @@ class AwaitExpr : public ExprWithoutBlock
 public:
   // TODO: ensure outer attributes are actually allowed
   AwaitExpr (Analysis::NodeMapping mappings, std::unique_ptr<Expr> awaited_expr,
-	     std::vector<Attribute> outer_attrs, Location locus)
+	     AST::AttrVec outer_attrs, Location locus)
     : ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
       awaited_expr (std::move (awaited_expr)), locus (locus)
   {}
@@ -4486,7 +4394,7 @@ class AsyncBlockExpr : public ExprWithBlock
 public:
   AsyncBlockExpr (Analysis::NodeMapping mappings,
 		  std::unique_ptr<BlockExpr> block_expr, bool has_move,
-		  std::vector<Attribute> outer_attrs, Location locus)
+		  AST::AttrVec outer_attrs, Location locus)
     : ExprWithBlock (std::move (mappings), std::move (outer_attrs)),
       has_move (has_move), block_expr (std::move (block_expr)), locus (locus)
   {}

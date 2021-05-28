@@ -67,9 +67,9 @@ struct MacroExpander
   AST::ASTFragment expand_decl_macro (AST::MacroInvocData &invoc,
 				      AST::MacroRulesDefinition &rules_def);
 
-  void expand_cfg_attrs (std::vector<AST::Attribute> &attrs);
-  bool fails_cfg (const std::vector<AST::Attribute> &attr) const;
-  bool fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const;
+  void expand_cfg_attrs (AST::AttrVec &attrs);
+  bool fails_cfg (const AST::AttrVec &attr) const;
+  bool fails_cfg_with_expand (AST::AttrVec &attrs) const;
 
   // Expand the data of a cfg! macro.
   void parse_macro_to_meta_item (AST::MacroInvocData &invoc);

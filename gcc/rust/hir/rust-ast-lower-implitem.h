@@ -60,7 +60,7 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
@@ -86,7 +86,7 @@ public:
   void visit (AST::Function &function) override
   {
     // ignore for now and leave empty
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (
@@ -169,7 +169,7 @@ public:
   void visit (AST::Method &method) override
   {
     // ignore for now and leave empty
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (

@@ -243,7 +243,8 @@ protected:
 
   /* Converts path segments to their equivalent SimplePath segments if possible,
    * and creates a SimplePath from them. */
-  SimplePath convert_to_simple_path (bool with_opening_scope_resolution) const;
+  AST::SimplePath
+  convert_to_simple_path (bool with_opening_scope_resolution) const;
 
 public:
   /* Returns whether the path is a single segment (excluding qualified path
@@ -285,8 +286,8 @@ public:
 		    std::vector<PathExprSegment> path_segments,
 		    Location locus = Location (),
 		    bool has_opening_scope_resolution = false,
-		    std::vector<Attribute> outer_attrs
-		    = std::vector<Attribute> ())
+		    std::vector<AST::Attribute> outer_attrs
+		    = std::vector<AST::Attribute> ())
     : PathPattern (std::move (path_segments)),
       PathExpr (std::move (mappings), std::move (outer_attrs)),
       has_opening_scope_resolution (has_opening_scope_resolution), locus (locus)
@@ -304,7 +305,7 @@ public:
 
   /* Converts PathInExpression to SimplePath if possible (i.e. no generic
    * arguments). Otherwise returns an empty SimplePath. */
-  SimplePath as_simple_path () const
+  AST::SimplePath as_simple_path () const
   {
     /* delegate to parent class as can't access segments. however,
      * QualifiedPathInExpression conversion to simple path wouldn't make sense,
@@ -655,7 +656,7 @@ public:
 
   /* Converts TypePath to SimplePath if possible (i.e. no generic or function
    * arguments). Otherwise returns an empty SimplePath. */
-  SimplePath as_simple_path () const;
+  AST::SimplePath as_simple_path () const;
 
   // Creates a trait bound with a clone of this type path as its only element.
   TraitBound *to_trait_bound (bool in_parens) const override;
@@ -750,8 +751,8 @@ public:
 			     QualifiedPathType qual_path_type,
 			     std::vector<PathExprSegment> path_segments,
 			     Location locus = Location (),
-			     std::vector<Attribute> outer_attrs
-			     = std::vector<Attribute> ())
+			     std::vector<AST::Attribute> outer_attrs
+			     = std::vector<AST::Attribute> ())
     : PathPattern (std::move (path_segments)),
       PathExpr (std::move (mappings), std::move (outer_attrs)),
       path_type (std::move (qual_path_type)), locus (locus)

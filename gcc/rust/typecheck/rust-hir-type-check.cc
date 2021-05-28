@@ -208,7 +208,7 @@ TypeCheckStructExpr::visit (HIR::StructExprStructFields &struct_expr)
 
 	      HIR::StructExprField *implicit_field = nullptr;
 
-	      std::vector<HIR::Attribute> outer_attribs;
+	      AST::AttrVec outer_attribs;
 	      auto crate_num = mappings->get_current_crate ();
 	      Analysis::NodeMapping mapping (
 		crate_num,

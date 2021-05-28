@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_MACRO_H
 #define RUST_HIR_MACRO_H
 
+#include "rust-ast-full-decls.h"
 #include "rust-hir.h"
 
 namespace Rust {
@@ -190,7 +191,7 @@ protected:
 // can't inline due to polymorphism
 class MacroMatcher : public MacroMatch
 {
-  DelimType delim_type;
+  AST::DelimType delim_type;
   std::vector<std::unique_ptr<MacroMatch> > matches;
 
   // TODO: think of way to mark invalid that doesn't take up more space
@@ -199,7 +200,7 @@ class MacroMatcher : public MacroMatch
   // TODO: should store location information?
 
 public:
-  MacroMatcher (DelimType delim_type,
+  MacroMatcher (AST::DelimType delim_type,
 		std::vector<std::unique_ptr<MacroMatch> > matches)
     : delim_type (delim_type), matches (std::move (matches)), is_invalid (false)
   {}
@@ -247,7 +248,8 @@ protected:
   }
 
   // constructor only used to create error matcher
-  MacroMatcher (bool is_invalid) : delim_type (PARENS), is_invalid (is_invalid)
+  MacroMatcher (bool is_invalid)
+    : delim_type (AST::DelimType::PARENS), is_invalid (is_invalid)
   {}
 };
 
@@ -255,12 +257,12 @@ protected:
 struct MacroTranscriber
 {
 private:
-  DelimTokenTree token_tree;
+  AST::DelimTokenTree token_tree;
 
   // TODO: should store location information?
 
 public:
-  MacroTranscriber (DelimTokenTree token_tree)
+  MacroTranscriber (AST::DelimTokenTree token_tree)
     : token_tree (std::move (token_tree))
   {}
 
@@ -288,7 +290,7 @@ public:
   static MacroRule create_error ()
   {
     return MacroRule (MacroMatcher::create_error (),
-		      MacroTranscriber (DelimTokenTree::create_empty ()));
+		      MacroTranscriber (AST::DelimTokenTree::create_empty ()));
   }
 
   std::string as_string () const;
@@ -300,7 +302,7 @@ class MacroRulesDefinition : public MacroItem
   Identifier rule_name;
   // MacroRulesDef rules_def; // TODO: inline
   // only curly without required semicolon at end
-  DelimType delim_type;
+  AST::DelimType delim_type;
   // MacroRules rules;
   std::vector<MacroRule> rules; // inlined form
 
@@ -310,8 +312,8 @@ public:
   std::string as_string () const override;
 
   MacroRulesDefinition (Analysis::NodeMapping mappings, Identifier rule_name,
-			DelimType delim_type, std::vector<MacroRule> rules,
-			std::vector<Attribute> outer_attrs, Location locus)
+			AST::DelimType delim_type, std::vector<MacroRule> rules,
+			AST::AttrVec outer_attrs, Location locus)
     : MacroItem (std::move (mappings), std::move (outer_attrs)),
       rule_name (std::move (rule_name)), delim_type (delim_type),
       rules (std::move (rules)), locus (locus)
@@ -334,16 +336,16 @@ class MacroInvocation : public TypeNoBounds,
 			public Pattern,
 			public ExprWithoutBlock
 {
-  SimplePath path;
-  DelimTokenTree token_tree;
+  AST::SimplePath path;
+  AST::DelimTokenTree token_tree;
   Location locus;
 
 public:
   std::string as_string () const override;
 
-  MacroInvocation (Analysis::NodeMapping mappings, SimplePath path,
-		   DelimTokenTree token_tree,
-		   std::vector<Attribute> outer_attrs, Location locus)
+  MacroInvocation (Analysis::NodeMapping mappings, AST::SimplePath path,
+		   AST::DelimTokenTree token_tree, AST::AttrVec outer_attrs,
+		   Location locus)
     : TypeNoBounds (mappings),
       ExprWithoutBlock (std::move (mappings), std::move (outer_attrs)),
       path (std::move (path)), token_tree (std::move (token_tree)),
@@ -392,235 +394,6 @@ protected:
   }
 };
 
-// more generic meta item path-only form
-class MetaItemPath : public MetaItem
-{
-  SimplePath path;
-
-public:
-  MetaItemPath (SimplePath path) : path (std::move (path)) {}
-
-  std::string as_string () const override { return path.as_string (); }
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  // HACK: used to simplify parsing - returns non-empty only in this case
-  SimplePath to_path_item () const override
-  {
-    // this should copy construct - TODO ensure it does
-    return path;
-  }
-
-  Attribute to_attribute () const override;
-
-protected:
-  // Use covariance to implement clone function as returning this type
-  MetaItemPath *clone_meta_item_inner_impl () const override
-  {
-    return new MetaItemPath (*this);
-  }
-};
-
-// more generic meta item sequence form
-class MetaItemSeq : public MetaItem
-{
-  SimplePath path;
-  std::vector<std::unique_ptr<MetaItemInner> > seq;
-
-public:
-  MetaItemSeq (SimplePath path,
-	       std::vector<std::unique_ptr<MetaItemInner> > seq)
-    : path (std::move (path)), seq (std::move (seq))
-  {}
-
-  // copy constructor with vector clone
-  MetaItemSeq (const MetaItemSeq &other) : path (other.path)
-  {
-    seq.reserve (other.seq.size ());
-    for (const auto &e : other.seq)
-      seq.push_back (e->clone_meta_item_inner ());
-  }
-
-  // overloaded assignment operator with vector clone
-  MetaItemSeq &operator= (const MetaItemSeq &other)
-  {
-    MetaItem::operator= (other);
-    path = other.path;
-
-    seq.reserve (other.seq.size ());
-    for (const auto &e : other.seq)
-      seq.push_back (e->clone_meta_item_inner ());
-
-    return *this;
-  }
-
-  // default move constructors
-  MetaItemSeq (MetaItemSeq &&other) = default;
-  MetaItemSeq &operator= (MetaItemSeq &&other) = default;
-
-  std::string as_string () const override;
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  Attribute to_attribute () const override;
-
-protected:
-  // Use covariance to implement clone function as returning this type
-  MetaItemSeq *clone_meta_item_inner_impl () const override
-  {
-    return new MetaItemSeq (*this);
-  }
-};
-
-// Preferred specialisation for single-identifier meta items.
-class MetaWord : public MetaItem
-{
-  Identifier ident;
-
-public:
-  MetaWord (Identifier ident) : ident (std::move (ident)) {}
-
-  std::string as_string () const override { return ident; }
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  Attribute to_attribute () const override;
-
-protected:
-  // Use covariance to implement clone function as returning this type
-  MetaWord *clone_meta_item_inner_impl () const override
-  {
-    return new MetaWord (*this);
-  }
-};
-
-// Preferred specialisation for "identifier '=' string literal" meta items.
-class MetaNameValueStr : public MetaItem
-{
-  Identifier ident;
-  std::string str;
-
-public:
-  MetaNameValueStr (Identifier ident, std::string str)
-    : ident (std::move (ident)), str (std::move (str))
-  {}
-
-  std::string as_string () const override { return ident + " = " + str; }
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  // HACK: used to simplify parsing - creates a copy of this
-  std::unique_ptr<MetaNameValueStr> to_meta_name_value_str () const override
-  {
-    return std::unique_ptr<MetaNameValueStr> (clone_meta_item_inner_impl ());
-  }
-
-  Attribute to_attribute () const override;
-
-protected:
-  // Use covariance to implement clone function as returning this type
-  MetaNameValueStr *clone_meta_item_inner_impl () const override
-  {
-    return new MetaNameValueStr (*this);
-  }
-};
-
-// doubles up as MetaListIdents - determine via iterating through each path?
-// Preferred specialisation for "identifier '(' SimplePath, SimplePath, ... ')'"
-class MetaListPaths : public MetaItem
-{
-  Identifier ident;
-  std::vector<SimplePath> paths;
-
-public:
-  MetaListPaths (Identifier ident, std::vector<SimplePath> paths)
-    : ident (std::move (ident)), paths (std::move (paths))
-  {}
-
-  std::string as_string () const override;
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  Attribute to_attribute () const override;
-
-protected:
-  // Use covariance to implement clone function as returning this type
-  MetaListPaths *clone_meta_item_inner_impl () const override
-  {
-    return new MetaListPaths (*this);
-  }
-};
-
-// Preferred specialisation for "identifier '(' MetaNameValueStr, ... ')'"
-class MetaListNameValueStr : public MetaItem
-{
-  Identifier ident;
-  std::vector<MetaNameValueStr> strs;
-
-public:
-  MetaListNameValueStr (Identifier ident, std::vector<MetaNameValueStr> strs)
-    : ident (std::move (ident)), strs (std::move (strs))
-  {}
-
-  std::string as_string () const override;
-
-  void accept_vis (HIRVisitor &vis) override;
-
-  Attribute to_attribute () const override;
-
-protected:
-  // Use covariance to implement clone function as returning this type
-  MetaListNameValueStr *clone_meta_item_inner_impl () const override
-  {
-    return new MetaListNameValueStr (*this);
-  }
-};
-
-// Object that parses macros from a token stream.
-struct MacroParser
-{
-private:
-  std::vector<std::unique_ptr<Token> > token_stream;
-  /* probably have to make this mutable (mutable int stream_pos) otherwise const
-   * has to be removed up to DelimTokenTree or further ok since this changing
-   * would have an effect on the results of the methods run (i.e. not logically
-   * const), the parsing methods shouldn't be const */
-  int stream_pos;
-
-public:
-  MacroParser (std::vector<std::unique_ptr<Token> > token_stream,
-	       int stream_start_pos = 0)
-    : token_stream (std::move (token_stream)), stream_pos (stream_start_pos)
-  {}
-
-  ~MacroParser () = default;
-
-  std::vector<std::unique_ptr<MetaItemInner> > parse_meta_item_seq ();
-
-private:
-  // Parses a MetaItemInner.
-  std::unique_ptr<MetaItemInner> parse_meta_item_inner ();
-  // Returns whether token can end a meta item.
-  bool is_end_meta_item_tok (TokenId id) const;
-  // Parses a simple path.
-  SimplePath parse_simple_path ();
-  // Parses a segment of a simple path (but not scope resolution operator).
-  SimplePathSegment parse_simple_path_segment ();
-  // Parses a MetaItemLitExpr.
-  std::unique_ptr<MetaItemLitExpr> parse_meta_item_lit ();
-  // Parses a literal.
-  Literal parse_literal ();
-  // Parses a meta item that begins with a simple path.
-  std::unique_ptr<MetaItem> parse_path_meta_item ();
-
-  // TODO: should this be const?
-  std::unique_ptr<Token> &peek_token (int i = 0)
-  {
-    return token_stream[stream_pos + i];
-  }
-
-  void skip_token (int i = 0) { stream_pos += 1 + i; }
-};
 } // namespace HIR
 } // namespace Rust
 

@@ -32,13 +32,7 @@ public:
   virtual ~HIRCompileBase () {}
 
   // rust-ast.h
-  // virtual void visit(AttrInput& attr_input) {}
-  // virtual void visit(TokenTree& token_tree) {}
-  // virtual void visit(MacroMatch& macro_match) {}
   virtual void visit (HIR::Token &tok) {}
-  virtual void visit (HIR::DelimTokenTree &delim_tok_tree) {}
-  virtual void visit (HIR::AttrInputMetaItemContainer &input) {}
-  // virtual void visit(MetaItem& meta_item) {}
   // virtual void visit(Stmt& stmt) {}
   // virtual void visit(Expr& expr) {}
   virtual void visit (HIR::IdentifierExpr &ident_expr) {}
@@ -63,9 +57,6 @@ public:
 
   // rust-expr.h
   virtual void visit (HIR::LiteralExpr &expr) {}
-  virtual void visit (HIR::AttrInputLiteral &attr_input) {}
-  virtual void visit (HIR::MetaItemLitExpr &meta_item) {}
-  virtual void visit (HIR::MetaItemPathLit &meta_item) {}
   virtual void visit (HIR::BorrowExpr &expr) {}
   virtual void visit (HIR::DereferenceExpr &expr) {}
   virtual void visit (HIR::ErrorPropagationExpr &expr) {}
@@ -179,12 +170,6 @@ public:
   virtual void visit (HIR::MacroMatcher &matcher) {}
   virtual void visit (HIR::MacroRulesDefinition &rules_def) {}
   virtual void visit (HIR::MacroInvocation &macro_invoc) {}
-  virtual void visit (HIR::MetaItemPath &meta_item) {}
-  virtual void visit (HIR::MetaItemSeq &meta_item) {}
-  virtual void visit (HIR::MetaWord &meta_item) {}
-  virtual void visit (HIR::MetaNameValueStr &meta_item) {}
-  virtual void visit (HIR::MetaListPaths &meta_item) {}
-  virtual void visit (HIR::MetaListNameValueStr &meta_item) {}
 
   // rust-pattern.h
   virtual void visit (HIR::LiteralPattern &pattern) {}

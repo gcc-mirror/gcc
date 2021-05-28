@@ -657,7 +657,7 @@ Session::register_plugins (AST::Crate &crate ATTRIBUTE_UNUSED)
 
 // TODO: move somewhere else
 bool
-contains_name (const std::vector<AST::Attribute> &attrs, std::string name)
+contains_name (const AST::AttrVec &attrs, std::string name)
 {
   for (const auto &attr : attrs)
     {

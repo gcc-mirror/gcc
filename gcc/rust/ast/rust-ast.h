@@ -38,6 +38,7 @@ struct Session;
 namespace AST {
 // foward decl: ast visitor
 class ASTVisitor;
+using AttrVec = std::vector<Attribute>;
 
 // Delimiter types - used in macros and whatever.
 enum DelimType
@@ -583,7 +584,7 @@ public:
     return std::unique_ptr<MetaItemInner> (clone_meta_item_inner_impl ());
   }
 
-  virtual ~MetaItemInner () {}
+  virtual ~MetaItemInner ();
 
   virtual std::string as_string () const = 0;
 
@@ -591,10 +592,7 @@ public:
 
   /* HACK: used to simplify parsing - creates a copy of that type, or returns
    * null */
-  virtual std::unique_ptr<MetaNameValueStr> to_meta_name_value_str () const
-  {
-    return nullptr;
-  }
+  virtual std::unique_ptr<MetaNameValueStr> to_meta_name_value_str () const;
 
   // HACK: used to simplify parsing - same thing
   virtual SimplePath to_path_item () const

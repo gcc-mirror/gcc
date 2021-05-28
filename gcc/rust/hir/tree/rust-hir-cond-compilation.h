@@ -19,6 +19,7 @@
 #ifndef RUST_AST_CONDCOMPILATION
 #define RUST_AST_CONDCOMPILATION
 
+#include "rust-ast-full-decls.h"
 #include "rust-hir.h"
 
 namespace Rust {
@@ -206,18 +207,18 @@ public:
 // TODO: inline
 struct CfgAttrs
 {
-  std::vector<Attribute> cfg_attrs;
+  AST::AttrVec cfg_attrs;
 };
 
 // TODO: relationship to other attributes?
 class CfgAttrAttribute
 {
   std::unique_ptr<ConfigurationPredicate> config_to_include;
-  std::vector<Attribute> cfg_attrs;
+  AST::AttrVec cfg_attrs;
 
 public:
   CfgAttrAttribute (ConfigurationPredicate *config_to_include,
-		    std::vector<Attribute> cfg_attrs)
+		    AST::AttrVec cfg_attrs)
     : config_to_include (config_to_include), cfg_attrs (cfg_attrs)
   {}
 

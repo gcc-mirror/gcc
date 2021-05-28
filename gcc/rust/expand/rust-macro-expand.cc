@@ -3273,7 +3273,7 @@ MacroExpander::expand_invoc (std::unique_ptr<AST::MacroInvocation> &invoc)
 /* Determines whether any cfg predicate is false and hence item with attributes
  * should be stripped. Note that attributes must be expanded before calling. */
 bool
-MacroExpander::fails_cfg (const std::vector<AST::Attribute> &attrs) const
+MacroExpander::fails_cfg (const AST::AttrVec &attrs) const
 {
   for (const auto &attr : attrs)
     {
@@ -3286,7 +3286,7 @@ MacroExpander::fails_cfg (const std::vector<AST::Attribute> &attrs) const
 /* Determines whether any cfg predicate is false and hence item with attributes
  * should be stripped. Will expand attributes as well. */
 bool
-MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
+MacroExpander::fails_cfg_with_expand (AST::AttrVec &attrs) const
 {
   // TODO: maybe have something that strips cfg attributes that evaluate true?
   for (auto &attr : attrs)
@@ -3329,7 +3329,7 @@ MacroExpander::fails_cfg_with_expand (std::vector<AST::Attribute> &attrs) const
 
 // Expands cfg_attr attributes.
 void
-MacroExpander::expand_cfg_attrs (std::vector<AST::Attribute> &attrs)
+MacroExpander::expand_cfg_attrs (AST::AttrVec &attrs)
 {
   for (std::size_t i = 0; i < attrs.size (); i++)
     {
@@ -3342,8 +3342,7 @@ MacroExpander::expand_cfg_attrs (std::vector<AST::Attribute> &attrs)
 	  if (attr.check_cfg_predicate (session))
 	    {
 	      // split off cfg_attr
-	      std::vector<AST::Attribute> new_attrs
-		= attr.separate_cfg_attrs ();
+	      AST::AttrVec new_attrs = attr.separate_cfg_attrs ();
 
 	      // remove attr from vector
 	      attrs.erase (attrs.begin () + i);
