@@ -94,48 +94,48 @@ bar (void)
     #pragma omp section
     r12++;
   }
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r13" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r13\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r13" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r13\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r13\\)" "gimple" } } */
   #pragma omp target parallel reduction(+:r13)
   r13++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r14" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r14\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r14" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r14\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r14\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
   /* { dg-final { scan-tree-dump-not "omp for\[^\n\r]*reduction\\(\\+:r14\\)" "gimple" } } *//* FIXME.  */
   #pragma omp target parallel for reduction(+:r14)
   for (int i = 0; i < 64; i++)
     r14++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r15" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r15\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r15" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r15\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r15\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
   /* { dg-final { scan-tree-dump-not "omp for\[^\n\r]*reduction\\(\\+:r15\\)" "gimple" } } *//* FIXME.  */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r15\\)" "gimple" } } */
   #pragma omp target parallel for simd reduction(+:r15)
   for (int i = 0; i < 64; i++)
     r15++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r16" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r16\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r16" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r16\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(r16\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp for\[^\n\r]*reduction\\(\\+:r16\\)" "gimple" } } *//* NOTE: This is implementation detail.  */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r16\\)" "gimple" } } *//* NOTE: This is implementation detail.  */
   #pragma omp target parallel loop reduction(+:r16)
   for (int i = 0; i < 64; i++)
     r16++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r17" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r17\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r17" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r17\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:r17\\)" "gimple" } } */
   #pragma omp target teams reduction(+:r17)
   r17++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r18" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r18\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r18" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r18\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:r18\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump-not "omp distribute\[^\n\r]*reduction\\(\\+:r18\\)" "gimple" } } */
   #pragma omp target teams distribute reduction(+:r18)
   for (int i = 0; i < 64; i++)
     r18++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r19" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r19\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r19" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r19\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:r19\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump-not "omp distribute\[^\n\r]*reduction\\(\\+:r19\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r19\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
@@ -143,8 +143,8 @@ bar (void)
   #pragma omp target teams distribute parallel for reduction(+:r19)
   for (int i = 0; i < 64; i++)
     r19++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r20" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r20\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r20" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r20\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:r20\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump-not "omp distribute\[^\n\r]*reduction\\(\\+:r20\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*reduction\\(\\+:r20\\)" "gimple" } } *//* FIXME: This should be on for instead.  */
@@ -153,16 +153,16 @@ bar (void)
   #pragma omp target teams distribute parallel for simd reduction(+:r20)
   for (int i = 0; i < 64; i++)
     r20++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r21" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r21\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r21" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r21\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*reduction\\(\\+:r21\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump-not "omp distribute\[^\n\r]*reduction\\(\\+:r21\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r21\\)" "gimple" } } */
   #pragma omp target teams distribute simd reduction(+:r21)
   for (int i = 0; i < 64; i++)
     r21++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r22" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r22\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r22" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r22\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp teams\[^\n\r]*shared\\(r22\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp distribute\[^\n\r]*reduction\\(\\+:r22\\)" "gimple" } } *//* NOTE: This is implementation detail.  */
   /* { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(r22\\)" "gimple" } } *//* NOTE: This is implementation detail.  */
@@ -171,8 +171,8 @@ bar (void)
   #pragma omp target teams loop reduction(+:r22)
   for (int i = 0; i < 64; i++)
     r22++;
-  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r23" "gimple" { xfail *-*-* } } } */
-  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r23\\)" "gimple" { xfail *-*-* } } } */
+  /* { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:r23" "gimple" } } */
+  /* { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(r23\\)" "gimple" } } */
   /* { dg-final { scan-tree-dump "omp simd\[^\n\r]*reduction\\(\\+:r23\\)" "gimple" } } */
   #pragma omp target simd reduction(+:r23)
   for (int i = 0; i < 64; i++)

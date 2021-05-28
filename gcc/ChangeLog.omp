@@ -1,6 +1,13 @@
 2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree.h (OMP_CLAUSE_MAP_IMPLICIT): Define.
+
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gimplify.c (gimplify_omp_affinity): New.

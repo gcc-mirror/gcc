@@ -1,6 +1,16 @@
 2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/pr99928-8.c: Remove all xfails.
+	* c-c++-common/gomp/pr99928-9.c: Likewise.
+	* c-c++-common/gomp/pr99928-10.c: Likewise.
+	* c-c++-common/gomp/pr99928-16.c: New test.
+
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* c-c++-common/gomp/affinity-1.c: New test.

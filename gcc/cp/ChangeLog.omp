@@ -1,6 +1,21 @@
 2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (handle_omp_array_sections): Copy
+	OMP_CLAUSE_MAP_IMPLICIT.
+	(finish_omp_clauses): Move not just OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT
+	marked clauses last, but also OMP_CLAUSE_MAP_IMPLICIT.  Add
+	map_firstprivate_head bitmap, set it for GOMP_MAP_FIRSTPRIVATE_POINTER
+	maps and silently remove OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT if it is
+	present too.  For OMP_CLAUSE_MAP_IMPLICIT silently remove the clause
+	if present in map_head, map_field_head or map_firstprivate_head
+	bitmaps.
+
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* parser.c (cp_parser_omp_clause_affinity): New.
