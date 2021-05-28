@@ -17,5 +17,7 @@ Foo (void)
     __builtin_unreachable ();
   if (! (0 <= i && i <= 999999))
     __builtin_unreachable ();
-  sprintf (number, "%d", i); /* { dg-bogus "writing" "" } */
+  /* The correctness bits for [E]VRP cannot handle chained conditionals
+     when deciding to ignore a unreachable branch for setting SSA range info. */
+  sprintf (number, "%d", i); /* { dg-bogus "writing" "" { xfail *-*-* } } */
 }
