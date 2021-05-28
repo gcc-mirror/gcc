@@ -1291,6 +1291,9 @@ alter_constraints (rtx pattern, int n_dup, constraints_handler_t alter)
     case MATCH_OPERAND:
       XSTR (pattern, 2) = alter (XSTR (pattern, 2), n_dup);
       break;
+    case MATCH_SCRATCH:
+      XSTR (pattern, 1) = alter (XSTR (pattern, 1), n_dup);
+      break;
 
     default:
       break;
