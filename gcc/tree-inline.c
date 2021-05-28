@@ -2132,6 +2132,7 @@ copy_bb (copy_body_data *id, basic_block bb,
 		 GF_CALL_VA_ARG_PACK.  */
 	      gimple_call_copy_flags (new_call, call_stmt);
 	      gimple_call_set_va_arg_pack (new_call, false);
+	      gimple_call_set_fntype (new_call, gimple_call_fntype (call_stmt));
 	      /* location includes block.  */
 	      gimple_set_location (new_call, gimple_location (stmt));
 	      gimple_call_set_lhs (new_call, gimple_call_lhs (call_stmt));
