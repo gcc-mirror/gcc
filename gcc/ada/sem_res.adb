@@ -1886,9 +1886,9 @@ package body Sem_Res is
 
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
-      Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
 
       if not With_Freezing then
+         Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
          Inside_Preanalysis_Without_Freezing :=
            Inside_Preanalysis_Without_Freezing - 1;
       end if;
