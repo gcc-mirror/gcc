@@ -4881,7 +4881,10 @@ build_delete (location_t loc, tree otype, tree addr,
 			    complain);
     }
 
-  if (!destroying_delete && type_build_dtor_call (type))
+  if (destroying_delete)
+    /* The operator delete will call the destructor.  */
+    expr = addr;
+  else if (type_build_dtor_call (type))
     expr = build_dtor_call (cp_build_fold_indirect_ref (addr),
 			    auto_delete, flags, complain);
   else
