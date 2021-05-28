@@ -18829,25 +18829,25 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	  {
 	    if (TREE_CODE (loc) != FUNCTION_DECL
 		&& early_dwarf
-		&& current_function_decl
 		&& want_address != 1
 		&& ! DECL_IGNORED_P (loc)
 		&& (INTEGRAL_TYPE_P (TREE_TYPE (loc))
 		    || POINTER_TYPE_P (TREE_TYPE (loc)))
-		&& DECL_CONTEXT (loc) == current_function_decl
 		&& (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (loc)))
 		    <= DWARF2_ADDR_SIZE))
 	      {
 		dw_die_ref ref = lookup_decl_die (loc);
-		ret = new_loc_descr (DW_OP_GNU_variable_value, 0, 0);
 		if (ref)
 		  {
+		    ret = new_loc_descr (DW_OP_GNU_variable_value, 0, 0);
 		    ret->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
 		    ret->dw_loc_oprnd1.v.val_die_ref.die = ref;
 		    ret->dw_loc_oprnd1.v.val_die_ref.external = 0;
 		  }
-		else
+		else if (current_function_decl
+			 && DECL_CONTEXT (loc) == current_function_decl)
 		  {
+		    ret = new_loc_descr (DW_OP_GNU_variable_value, 0, 0);
 		    ret->dw_loc_oprnd1.val_class = dw_val_class_decl_ref;
 		    ret->dw_loc_oprnd1.v.val_decl_ref = loc;
 		  }
@@ -19586,32 +19586,6 @@ static inline offset_int
 round_up_to_align (const offset_int &t, unsigned int align)
 {
   return wi::udiv_trunc (t + align - 1, align) * align;
-}
-
-/* Compute the size of TYPE in bytes.  If possible, return NULL and store the
-   size as an integer constant in CST_SIZE.  Otherwise, if possible, return a
-   DWARF expression that computes the size.  Return NULL and set CST_SIZE to -1
-   if we fail to return the size in one of these two forms.  */
-
-static dw_loc_descr_ref
-type_byte_size (const_tree type, HOST_WIDE_INT *cst_size)
-{
-  /* Return a constant integer in priority, if possible.  */
-  *cst_size = int_size_in_bytes (type);
-  if (*cst_size != -1)
-    return NULL;
-
-  struct loc_descr_context ctx = {
-    const_cast<tree> (type),	/* context_type */
-    NULL_TREE,	      		/* base_decl */
-    NULL,	      		/* dpi */
-    false,	      		/* placeholder_arg */
-    false,	      		/* placeholder_seen */
-    false	      		/* strict_signedness */
-  };
-
-  tree tree_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type));
-  return tree_size ? loc_descriptor_from_tree (tree_size, 0, &ctx) : NULL;
 }
 
 /* Helper structure for RECORD_TYPE processing.  */
@@ -21555,7 +21529,6 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
 {
   dw_die_ref decl_die;
   HOST_WIDE_INT size;
-  dw_loc_descr_ref size_expr = NULL;
 
   switch (TREE_CODE (tree_node))
     {
@@ -21572,7 +21545,7 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
 	  add_AT_die_ref (die, DW_AT_byte_size, decl_die);
 	  return;
 	}
-      size_expr = type_byte_size (tree_node, &size);
+      size = int_size_in_bytes (tree_node);
       break;
     case FIELD_DECL:
       /* For a data member of a struct or union, the DW_AT_byte_size is
@@ -21585,19 +21558,32 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
       gcc_unreachable ();
     }
 
-  /* Support for dynamically-sized objects was introduced by DWARFv3.
-     At the moment, GDB does not handle variable byte sizes very well,
-     though.  */
-  if ((dwarf_version >= 3 || !dwarf_strict)
-      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
-      && size_expr != NULL)
-    add_AT_loc (die, DW_AT_byte_size, size_expr);
-
   /* Note that `size' might be -1 when we get to this point.  If it is, that
-     indicates that the byte size of the entity in question is variable and
-     that we could not generate a DWARF expression that computes it.  */
+     indicates that the byte size of the entity in question is variable.  */
   if (size >= 0)
     add_AT_unsigned (die, DW_AT_byte_size, size);
+
+  /* Support for dynamically-sized objects was introduced in DWARF3.  */
+  else if (TYPE_P (tree_node)
+	   && (dwarf_version >= 3 || !dwarf_strict)
+	   && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    {
+      struct loc_descr_context ctx = {
+	const_cast<tree> (tree_node),	/* context_type */
+	NULL_TREE,	      		/* base_decl */
+	NULL,	      		/* dpi */
+	false,	      		/* placeholder_arg */
+	false,	      		/* placeholder_seen */
+	false	      		/* strict_signedness */
+      };
+
+      tree tree_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (tree_node));
+      add_scalar_info (die, DW_AT_byte_size, tree_size,
+		       dw_scalar_form_constant
+		       | dw_scalar_form_exprloc
+		       | dw_scalar_form_reference,
+		       &ctx);
+    }
 }
 
 /* Add a DW_AT_alignment attribute to DIE with TREE_NODE's non-default
