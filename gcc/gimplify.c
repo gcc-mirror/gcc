@@ -7841,6 +7841,131 @@ find_decl_expr (tree *tp, int *walk_subtrees, void *data)
   return NULL_TREE;
 }
 
+
+/* Gimplify the affinity clause but effectively ignore it.
+   Generate:
+     var = begin;
+     if ((step > 1) ? var <= end : var > end)
+       locatator_var_expr;  */
+
+static void
+gimplify_omp_affinity (tree *list_p, gimple_seq *pre_p)
+{
+  tree last_iter = NULL_TREE;
+  tree last_bind = NULL_TREE;
+  tree label = NULL_TREE;
+  tree *last_body = NULL;
+  for (tree c = *list_p; c; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY)
+      {
+	tree t = OMP_CLAUSE_DECL (c);
+	if (TREE_CODE (t) == TREE_LIST
+		    && TREE_PURPOSE (t)
+		    && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	  {
+	    if (TREE_VALUE (t) == null_pointer_node)
+	      continue;
+	    if (TREE_PURPOSE (t) != last_iter)
+	      {
+		if (last_bind)
+		  {
+		    append_to_statement_list (label, last_body);
+		    gimplify_and_add (last_bind, pre_p);
+		    last_bind = NULL_TREE;
+		  }
+		for (tree it = TREE_PURPOSE (t); it; it = TREE_CHAIN (it))
+		  {
+		    if (gimplify_expr (&TREE_VEC_ELT (it, 1), pre_p, NULL,
+				       is_gimple_val, fb_rvalue) == GS_ERROR
+			|| gimplify_expr (&TREE_VEC_ELT (it, 2), pre_p, NULL,
+					  is_gimple_val, fb_rvalue) == GS_ERROR
+			|| gimplify_expr (&TREE_VEC_ELT (it, 3), pre_p, NULL,
+					  is_gimple_val, fb_rvalue) == GS_ERROR
+			|| (gimplify_expr (&TREE_VEC_ELT (it, 4), pre_p, NULL,
+					   is_gimple_val, fb_rvalue)
+			    == GS_ERROR))
+		      return;
+		  }
+	    last_iter = TREE_PURPOSE (t);
+	    tree block = TREE_VEC_ELT (TREE_PURPOSE (t), 5);
+	    last_bind = build3 (BIND_EXPR, void_type_node, BLOCK_VARS (block),
+				NULL, block);
+	    last_body = &BIND_EXPR_BODY (last_bind);
+	    tree cond = NULL_TREE;
+	    location_t loc = OMP_CLAUSE_LOCATION (c);
+	    for (tree it = TREE_PURPOSE (t); it; it = TREE_CHAIN (it))
+	      {
+		tree var = TREE_VEC_ELT (it, 0);
+		tree begin = TREE_VEC_ELT (it, 1);
+		tree end = TREE_VEC_ELT (it, 2);
+		tree step = TREE_VEC_ELT (it, 3);
+		loc = DECL_SOURCE_LOCATION (var);
+		tree tem = build2_loc (loc, MODIFY_EXPR, void_type_node,
+				       var, begin);
+		append_to_statement_list_force (tem, last_body);
+
+		tree cond1 = fold_build2_loc (loc, GT_EXPR, boolean_type_node,
+			       step, build_zero_cst (TREE_TYPE (step)));
+		tree cond2 = fold_build2_loc (loc, LE_EXPR, boolean_type_node,
+					      var, end);
+		tree cond3 = fold_build2_loc (loc, GT_EXPR, boolean_type_node,
+					      var, end);
+		cond1 = fold_build3_loc (loc, COND_EXPR, boolean_type_node,
+					 cond1, cond2, cond3);
+		if (cond)
+		  cond = fold_build2_loc (loc, TRUTH_AND_EXPR,
+					  boolean_type_node, cond, cond1);
+		else
+		  cond = cond1;
+	      }
+	    tree cont_label = create_artificial_label (loc);
+	    label = build1 (LABEL_EXPR, void_type_node, cont_label);
+	    tree tem = fold_build3_loc (loc, COND_EXPR, void_type_node, cond,
+					void_node,
+					build_and_jump (&cont_label));
+	    append_to_statement_list_force (tem, last_body);
+	      }
+	    if (TREE_CODE (TREE_VALUE (t)) == COMPOUND_EXPR)
+	      {
+		append_to_statement_list (TREE_OPERAND (TREE_VALUE (t), 0),
+					  last_body);
+		TREE_VALUE (t) = TREE_OPERAND (TREE_VALUE (t), 1);
+	      }
+	    if (error_operand_p (TREE_VALUE (t)))
+	      return;
+	    append_to_statement_list_force (TREE_VALUE (t), last_body);
+	    TREE_VALUE (t) = null_pointer_node;
+	  }
+	else
+	  {
+	    if (last_bind)
+	      {
+		append_to_statement_list (label, last_body);
+		gimplify_and_add (last_bind, pre_p);
+		last_bind = NULL_TREE;
+	      }
+	    if (TREE_CODE (OMP_CLAUSE_DECL (c)) == COMPOUND_EXPR)
+	      {
+		gimplify_expr (&TREE_OPERAND (OMP_CLAUSE_DECL (c), 0), pre_p,
+			       NULL, is_gimple_val, fb_rvalue);
+		OMP_CLAUSE_DECL (c) = TREE_OPERAND (OMP_CLAUSE_DECL (c), 1);
+	      }
+	    if (error_operand_p (OMP_CLAUSE_DECL (c)))
+	      return;
+	    if (gimplify_expr (&OMP_CLAUSE_DECL (c), pre_p, NULL,
+			       is_gimple_val, fb_rvalue) == GS_ERROR)
+	      return;
+	    gimplify_and_add (OMP_CLAUSE_DECL (c), pre_p);
+	  }
+      }
+  if (last_bind)
+    {
+      append_to_statement_list (label, last_body);
+      gimplify_and_add (last_bind, pre_p);
+    }
+  return;
+}
+
 /* If *LIST_P contains any OpenMP depend clauses with iterators,
    lower all the depend clauses by populating corresponding depend
    array.  Returns 0 if there are no such depend clauses, or
@@ -9527,6 +9652,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
 	  goto do_add;
 
+	case OMP_CLAUSE_AFFINITY:
+	  gimplify_omp_affinity (list_p, pre_p);
+	  remove = true;
+	  break;
 	case OMP_CLAUSE_DEPEND:
 	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
 	    {

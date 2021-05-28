@@ -4993,7 +4993,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		    " clauses");
 	  return error_mark_node;
 	}
-      else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+      else if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 	       && VAR_P (t) && CP_DECL_THREAD_LOCAL_P (t))
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
@@ -5080,7 +5081,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
     {
       if (!integer_nonzerop (length))
 	{
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
@@ -5148,7 +5150,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		}
 	      if (tree_int_cst_equal (size, low_bound))
 		{
-		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY
+		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION
 		      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
@@ -5169,7 +5172,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	    }
 	  else if (length == NULL_TREE)
 	    {
-	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+	      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION
 		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IN_REDUCTION
 		  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TASK_REDUCTION)
@@ -5207,7 +5211,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	}
       else if (length == NULL_TREE)
 	{
-	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_IN_REDUCTION
 	      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_TASK_REDUCTION)
@@ -5251,7 +5256,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	}
       /* If there is a pointer type anywhere but in the very first
 	 array-section-subscript, the array section can't be contiguous.  */
-      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
+      if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND
 	  && TREE_CODE (TREE_CHAIN (t)) == TREE_LIST)
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
@@ -5299,7 +5305,8 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
   unsigned int first_non_one = 0;
   auto_vec<tree, 10> types;
   tree *tp = &OMP_CLAUSE_DECL (c);
-  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+  if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+       || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY)
       && TREE_CODE (*tp) == TREE_LIST
       && TREE_PURPOSE (*tp)
       && TREE_CODE (TREE_PURPOSE (*tp)) == TREE_VEC)
@@ -5311,7 +5318,8 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
     return true;
   if (first == NULL_TREE)
     return false;
-  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND)
+  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY)
     {
       tree t = *tp;
       tree tem = NULL_TREE;
@@ -7445,6 +7453,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  goto handle_field_decl;
 
+	case OMP_CLAUSE_AFFINITY:
 	case OMP_CLAUSE_DEPEND:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (t == NULL_TREE)
@@ -7453,7 +7462,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  == OMP_CLAUSE_DEPEND_SOURCE);
 	      break;
 	    }
-	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+	      && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
 	    {
 	      if (cp_finish_omp_clause_depend_sink (c))
 		remove = true;
@@ -7478,7 +7488,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    {
 	      if (handle_omp_array_sections (c, ort))
 		remove = true;
-	      else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_DEPOBJ)
+	      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		       && (OMP_CLAUSE_DEPEND_KIND (c)
+			   == OMP_CLAUSE_DEPEND_DEPOBJ))
 		{
 		  error_at (OMP_CLAUSE_LOCATION (c),
 			    "%<depend%> clause with %<depobj%> dependence "
@@ -7503,22 +7515,28 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (DECL_P (t))
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qD is not lvalue expression nor array section "
-			  "in %<depend%> clause", t);
+			  "in %qs clause", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      else
 		error_at (OMP_CLAUSE_LOCATION (c),
 			  "%qE is not lvalue expression nor array section "
-			  "in %<depend%> clause", t);
+			  "in %qs clause", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
 	  else if (TREE_CODE (t) == COMPONENT_REF
 		   && TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL
 		   && DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
 	    {
+	      gcc_assert (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+			  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY);
 	      error_at (OMP_CLAUSE_LOCATION (c),
-			"bit-field %qE in %qs clause", t, "depend");
+			"bit-field %qE in %qs clause", t,
+			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
-	  else if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_DEPOBJ)
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		   && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_DEPOBJ)
 	    {
 	      if (!c_omp_depend_t_p (TYPE_REF_P (TREE_TYPE (t))
 				     ? TREE_TYPE (TREE_TYPE (t))
@@ -7531,9 +7549,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  remove = true;
 		}
 	    }
-	  else if (c_omp_depend_t_p (TYPE_REF_P (TREE_TYPE (t))
-				     ? TREE_TYPE (TREE_TYPE (t))
-				     : TREE_TYPE (t)))
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
+		   && c_omp_depend_t_p (TYPE_REF_P (TREE_TYPE (t))
+					? TREE_TYPE (TREE_TYPE (t))
+					: TREE_TYPE (t)))
 	    {
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%qE should not have %<omp_depend_t%> type in "
