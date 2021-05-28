@@ -60,12 +60,19 @@ OBJCXX_OBJS = objcp/objcp-act.o objcp/objcp-lang.o objcp/objcp-decl.o \
 
 obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
 
+# compute checksum over all object files and the options
+# re-use the checksum from the prev-final stage so it passes
+# the bootstrap comparison and allows comparing of the cc1 binary
 cc1objplus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	$(OBJCXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS)
-	build/genchecksum$(build_exeext) $(OBJCXX_OBJS) $(BACKEND) $(CODYLIB) \
-		$(LIBDEPS) checksum-options > cc1objplus-checksum.c.tmp && \
-	$(srcdir)/../move-if-change cc1objplus-checksum.c.tmp \
-	cc1objplus-checksum.c
+	if [ -f ../stage_final ] \
+	   && cmp -s ../stage_current ../stage_final; then \
+	  cp ../prev-gcc/$@ $@; \
+	else \
+	  build/genchecksum$(build_exeext) $(OBJCXX_OBJS) $(BACKEND) \
+		$(CODYLIB) $(LIBDEPS) checksum-options > $@.tmp && \
+	  $(srcdir)/../move-if-change $@.tmp $@; \
+	fi
 
 cc1objplus$(exeext): $(OBJCXX_OBJS) cc1objplus-checksum.o $(BACKEND) \
 		     $(CODYLIB) $(LIBDEPS) $(obj-c++.prev)
