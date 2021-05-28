@@ -536,7 +536,7 @@ package body Sem_Ch6 is
             Typ   : constant Entity_Id := Etype (Def_Id);
 
          begin
-            --  If this is a wrapper created for in an instance for a formal
+            --  If this is a wrapper created in an instance for a formal
             --  subprogram, insert body after declaration, to be analyzed when
             --  the enclosing instance is analyzed.
 
