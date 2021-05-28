@@ -1,3 +1,8 @@
+2021-05-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* configure.ac (--enable-maintainer-mode): Fix typo and weird syntax.
+	* configure: Regenerate.
+
 2021-04-27  Release Manager
 
 	* GCC 11.1.0 released.
