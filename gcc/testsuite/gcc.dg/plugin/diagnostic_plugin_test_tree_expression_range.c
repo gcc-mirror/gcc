@@ -89,6 +89,8 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
+  global_dc->caret_max_width = 130;
+
   register_callback (plugin_name,
 		     PLUGIN_PRE_GENERICIZE,
 		     callback,
