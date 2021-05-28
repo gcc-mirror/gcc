@@ -27,11 +27,9 @@ beginning or end of a path.  For instance, if the value of
 @env{CPATH} is @code{:/special/include}, that has the same
 effect as @samp{@w{-I. -I/special/include}}.
 
-@c man end
 @ifset cppmanual
 See also @ref{Search Path}.
 @end ifset
-@c man begin ENVIRONMENT
 
 @item DEPENDENCIES_OUTPUT
 @cindex dependencies for make as output
