@@ -8309,19 +8309,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	  || CLASSTYPE_FINAL (TYPE_METHOD_BASETYPE (TREE_TYPE (fn))))
 	flags |= LOOKUP_NONVIRTUAL;
 
-      /* If we know the dynamic type of the object, look up the final overrider
-	 in the BINFO.  */
-      if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
-	  && resolves_to_fixed_type_p (arg))
-	{
-	  tree binfo = cand->conversion_path;
-	  if (BINFO_TYPE (binfo) != DECL_CONTEXT (fn))
-	    binfo = lookup_base (binfo, DECL_CONTEXT (fn), ba_unique,
-				 NULL, complain);
-	  fn = lookup_vfn_in_binfo (DECL_VINDEX (fn), binfo);
-	  flags |= LOOKUP_NONVIRTUAL;
-	}
-
       /* [class.mfct.nonstatic]: If a nonstatic member function of a class
 	 X is called for an object that is not of type X, or of a type
 	 derived from X, the behavior is undefined.
@@ -8331,10 +8318,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       gcc_assert (TYPE_PTR_P (parmtype));
       /* Convert to the base in which the function was declared.  */
       gcc_assert (cand->conversion_path != NULL_TREE);
-      converted_arg = build_base_path (PLUS_EXPR,
-				       arg,
-				       cand->conversion_path,
-				       1, complain);
       /* Check that the base class is accessible.  */
       if (!accessible_base_p (TREE_TYPE (argtype),
 			      BINFO_TYPE (cand->conversion_path), true))
@@ -8349,10 +8332,33 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       /* If fn was found by a using declaration, the conversion path
 	 will be to the derived class, not the base declaring fn. We
 	 must convert from derived to base.  */
-      base_binfo = lookup_base (TREE_TYPE (TREE_TYPE (converted_arg)),
+      base_binfo = lookup_base (cand->conversion_path,
 				TREE_TYPE (parmtype), ba_unique,
 				NULL, complain);
-      converted_arg = build_base_path (PLUS_EXPR, converted_arg,
+
+      /* If we know the dynamic type of the object, look up the final overrider
+	 in the BINFO.  */
+      if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
+	  && resolves_to_fixed_type_p (arg))
+	{
+	  tree ov = lookup_vfn_in_binfo (DECL_VINDEX (fn), base_binfo);
+
+	  /* And unwind base_binfo to match.  If we don't find the type we're
+	     looking for in BINFO_INHERITANCE_CHAIN, we're looking at diamond
+	     inheritance; for now do a normal virtual call in that case.  */
+	  tree octx = DECL_CONTEXT (ov);
+	  tree obinfo = base_binfo;
+	  while (obinfo && !SAME_BINFO_TYPE_P (BINFO_TYPE (obinfo), octx))
+	    obinfo = BINFO_INHERITANCE_CHAIN (obinfo);
+	  if (obinfo)
+	    {
+	      fn = ov;
+	      base_binfo = obinfo;
+	      flags |= LOOKUP_NONVIRTUAL;
+	    }
+	}
+
+      converted_arg = build_base_path (PLUS_EXPR, arg,
 				       base_binfo, 1, complain);
 
       argarray[j++] = converted_arg;
