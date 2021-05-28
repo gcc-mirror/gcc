@@ -6642,10 +6642,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& tree_to_uhwi (@3) == c2
 	&& tree_to_uhwi (@9) == c3
 	&& tree_to_uhwi (@7) == c3
-	&& tree_to_uhwi (@11) == c4
-	&& direct_internal_fn_supported_p (IFN_POPCOUNT, type,
-					   OPTIMIZE_FOR_BOTH))
-    (convert (IFN_POPCOUNT:type @0)))))
+	&& tree_to_uhwi (@11) == c4)
+    (if (direct_internal_fn_supported_p (IFN_POPCOUNT, type,
+					 OPTIMIZE_FOR_BOTH))
+     (convert (IFN_POPCOUNT:type @0))
+     /* Try to do popcount in two halves.  PREC must be at least
+	five bits for this to work without extension before adding.  */
+     (with {
+       tree half_type = NULL_TREE;
+       opt_machine_mode m = mode_for_size ((prec + 1) / 2, MODE_INT, 1);
+       int half_prec = 8;
+       if (m.exists ()
+	   && m.require () != TYPE_MODE (type))
+	 {
+	   half_prec = GET_MODE_PRECISION (as_a <scalar_int_mode> (m));
+	   half_type = build_nonstandard_integer_type (half_prec, 1);
+	 }
+       gcc_assert (half_prec > 2);
+      }
+      (if (half_type != NULL_TREE
+	   && direct_internal_fn_supported_p (IFN_POPCOUNT, half_type,
+					      OPTIMIZE_FOR_BOTH))
+       (convert (plus
+	 (IFN_POPCOUNT:half_type (convert @0))
+	 (IFN_POPCOUNT:half_type (convert (rshift @0
+	    { build_int_cst (integer_type_node, half_prec); } )))))))))))
 
 /* __builtin_ffs needs to deal on many targets with the possible zero
    argument.  If we know the argument is always non-zero, __builtin_ctz + 1
