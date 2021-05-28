@@ -268,7 +268,7 @@ gfc_free_statement (gfc_code *p)
       break;
 
     case EXEC_OMP_FLUSH:
-      gfc_free_omp_namelist (p->ext.omp_namelist);
+      gfc_free_omp_namelist (p->ext.omp_namelist, false);
       break;
 
     case EXEC_OMP_BARRIER:

@@ -1,3 +1,10 @@
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_AFFINITY.
+
 2021-05-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

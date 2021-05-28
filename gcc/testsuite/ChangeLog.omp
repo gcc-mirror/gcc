@@ -1,3 +1,26 @@
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/affinity-1.c: New test.
+	* c-c++-common/gomp/affinity-2.c: New test.
+	* c-c++-common/gomp/affinity-3.c: New test.
+	* c-c++-common/gomp/affinity-4.c: New test.
+	* c-c++-common/gomp/affinity-5.c: New test.
+	* c-c++-common/gomp/affinity-6.c: New test.
+	* c-c++-common/gomp/affinity-7.c: New test.
+	* gfortran.dg/gomp/affinity-clause-1.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-2.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-3.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-4.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-5.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-6.f90: New test.
+	* gfortran.dg/gomp/depend-iterator-1.f90: New test.
+	* gfortran.dg/gomp/depend-iterator-2.f90: New test.
+	* gfortran.dg/gomp/depend-iterator-3.f90: New test.
+	* gfortran.dg/gomp/taskwait.f90: New test.
+
 2021-05-25  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

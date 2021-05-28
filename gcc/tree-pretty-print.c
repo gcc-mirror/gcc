@@ -743,6 +743,22 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
+    case OMP_CLAUSE_AFFINITY:
+      pp_string (pp, "affinity(");
+      {
+	tree t = OMP_CLAUSE_DECL (clause);
+	if (TREE_CODE (t) == TREE_LIST
+	    && TREE_PURPOSE (t)
+	    && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	  {
+	    dump_omp_iterators (pp, TREE_PURPOSE (t), spc, flags);
+	    pp_colon (pp);
+	    t = TREE_VALUE (t);
+	  }
+	dump_generic_node (pp, t, spc, flags, false);
+      }
+      pp_right_paren (pp);
+      break;
     case OMP_CLAUSE_DEPEND:
       pp_string (pp, "depend(");
       switch (OMP_CLAUSE_DEPEND_KIND (clause))
@@ -803,8 +819,11 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	    pp_colon (pp);
 	    t = TREE_VALUE (t);
 	  }
-	pp_string (pp, name);
-	pp_colon (pp);
+	if (name[0])
+	  {
+	    pp_string (pp, name);
+	    pp_colon (pp);
+	  }
 	dump_generic_node (pp, t, spc, flags, false);
 	pp_right_paren (pp);
       }
