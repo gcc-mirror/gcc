@@ -314,9 +314,8 @@ extern int dot_symbols;
     }							\
   while (0)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in linux64.h (rs6000) - c++ undefines it and redefines it."
-#endif
+/* Override less-specific rs6000/sysv4.h definition. */
+#undef TARGET_RUST_OS_INFO
 #define TARGET_RUST_OS_INFO()          \
   do {                                 \
     GNU_USER_TARGET_RUST_OS_INFO();		\
