@@ -5548,6 +5548,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	    }
 	  else
 	    OMP_CLAUSE_SET_MAP_KIND (c2, GOMP_MAP_FIRSTPRIVATE_POINTER);
+	  OMP_CLAUSE_MAP_IMPLICIT (c2) = OMP_CLAUSE_MAP_IMPLICIT (c);
 	  if (OMP_CLAUSE_MAP_KIND (c2) != GOMP_MAP_FIRSTPRIVATE_POINTER
 	      && !cxx_mark_addressable (t))
 	    return false;
@@ -5574,6 +5575,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      tree c3 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
 					  OMP_CLAUSE_MAP);
 	      OMP_CLAUSE_SET_MAP_KIND (c3, OMP_CLAUSE_MAP_KIND (c2));
+	      OMP_CLAUSE_MAP_IMPLICIT (c2) = OMP_CLAUSE_MAP_IMPLICIT (c);
 	      OMP_CLAUSE_DECL (c3) = ptr;
 	      if (OMP_CLAUSE_MAP_KIND (c2) == GOMP_MAP_ALWAYS_POINTER
 		  || OMP_CLAUSE_MAP_KIND (c2) == GOMP_MAP_ATTACH_DETACH)
@@ -6510,7 +6512,8 @@ tree
 finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 {
   bitmap_head generic_head, firstprivate_head, lastprivate_head;
-  bitmap_head aligned_head, map_head, map_field_head, oacc_reduction_head;
+  bitmap_head aligned_head, map_head, map_field_head, map_firstprivate_head;
+  bitmap_head oacc_reduction_head;
   tree c, t, *pc;
   tree safelen = NULL_TREE;
   bool branch_seen = false;
@@ -6527,7 +6530,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool allocate_seen = false;
   tree detach_seen = NULL_TREE;
   bool mergeable_seen = false;
-  bool firstprivate_implicit_moved = false;
+  bool implicit_moved = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -6537,6 +6540,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   /* If ort == C_ORT_OMP_DECLARE_SIMD used as uniform_head instead.  */
   bitmap_initialize (&map_head, &bitmap_default_obstack);
   bitmap_initialize (&map_field_head, &bitmap_default_obstack);
+  bitmap_initialize (&map_firstprivate_head, &bitmap_default_obstack);
   /* If ort == C_ORT_OMP used as nontemporal_head or use_device_xxx_head
      instead.  */
   bitmap_initialize (&oacc_reduction_head, &bitmap_default_obstack);
@@ -6852,17 +6856,25 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 
 	case OMP_CLAUSE_FIRSTPRIVATE:
-	  if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
-	      && !firstprivate_implicit_moved)
+	  if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c) && !implicit_moved)
 	    {
-	      firstprivate_implicit_moved = true;
-	      /* Move firstprivate clauses with
-		 OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT set to the end of
+	    move_implicit:
+	      implicit_moved = true;
+	      /* Move firstprivate and map clauses with
+		 OMP_CLAUSE_{FIRSTPRIVATE,MAP}_IMPLICIT set to the end of
 		 clauses chain.  */
-	      tree cl = NULL, *pc1 = pc, *pc2 = &cl;
+	      tree cl1 = NULL_TREE, cl2 = NULL_TREE;
+	      tree *pc1 = pc, *pc2 = &cl1, *pc3 = &cl2;
 	      while (*pc1)
 		if (OMP_CLAUSE_CODE (*pc1) == OMP_CLAUSE_FIRSTPRIVATE
 		    && OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (*pc1))
+		  {
+		    *pc3 = *pc1;
+		    pc3 = &OMP_CLAUSE_CHAIN (*pc3);
+		    *pc1 = OMP_CLAUSE_CHAIN (*pc1);
+		  }
+		else if (OMP_CLAUSE_CODE (*pc1) == OMP_CLAUSE_MAP
+			 && OMP_CLAUSE_MAP_IMPLICIT (*pc1))
 		  {
 		    *pc2 = *pc1;
 		    pc2 = &OMP_CLAUSE_CHAIN (*pc2);
@@ -6870,10 +6882,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  }
 		else
 		  pc1 = &OMP_CLAUSE_CHAIN (*pc1);
-	      *pc2 = NULL;
-	      *pc1 = cl;
-	      if (pc1 != pc)
-		continue;
+	      *pc3 = NULL;
+	      *pc2 = cl2;
+	      *pc1 = cl1;
+	      continue;
 	    }
 	  t = omp_clause_decl_field (OMP_CLAUSE_DECL (c));
 	  if (t)
@@ -6904,6 +6916,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  t);
 	      remove = true;
 	    }
+	  else if (OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT (c)
+		   && !OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT_TARGET (c)
+		   && bitmap_bit_p (&map_firstprivate_head, DECL_UID (t)))
+	    remove = true;
 	  else if (bitmap_bit_p (&generic_head, DECL_UID (t))
 		   || bitmap_bit_p (&firstprivate_head, DECL_UID (t)))
 	    {
@@ -7620,6 +7636,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 
 	case OMP_CLAUSE_MAP:
+	  if (OMP_CLAUSE_MAP_IMPLICIT (c) && !implicit_moved)
+	    goto move_implicit;
+	  /* FALLTHRU */
 	case OMP_CLAUSE_TO:
 	case OMP_CLAUSE_FROM:
 	case OMP_CLAUSE__CACHE_:
@@ -7651,6 +7670,16 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			t = TREE_OPERAND (t, 0);
 		      if (REFERENCE_REF_P (t))
 			t = TREE_OPERAND (t, 0);
+		      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+			  && OMP_CLAUSE_MAP_IMPLICIT (c)
+			  && (bitmap_bit_p (&map_head, DECL_UID (t))
+			      || bitmap_bit_p (&map_field_head, DECL_UID (t))
+			      || bitmap_bit_p (&map_firstprivate_head,
+					       DECL_UID (t))))
+			{
+			  remove = true;
+			  break;
+			}
 		      if (bitmap_bit_p (&map_field_head, DECL_UID (t)))
 			break;
 		      if (bitmap_bit_p (&map_head, DECL_UID (t)))
@@ -7832,6 +7861,13 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      remove = true;
 	    }
 	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		   && OMP_CLAUSE_MAP_IMPLICIT (c)
+		   && (bitmap_bit_p (&map_head, DECL_UID (t))
+		       || bitmap_bit_p (&map_field_head, DECL_UID (t))
+		       || bitmap_bit_p (&map_firstprivate_head,
+					DECL_UID (t))))
+	    remove = true;
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 		   && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER)
 	    {
 	      if (bitmap_bit_p (&generic_head, DECL_UID (t))
@@ -7852,7 +7888,10 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  remove = true;
 		}
 	      else
-		bitmap_set_bit (&generic_head, DECL_UID (t));
+		{
+		  bitmap_set_bit (&generic_head, DECL_UID (t));
+		  bitmap_set_bit (&map_firstprivate_head, DECL_UID (t));
+		}
 	    }
 	  else if (bitmap_bit_p (&map_head, DECL_UID (t))
 		   && !bitmap_bit_p (&map_field_head, DECL_UID (t)))
