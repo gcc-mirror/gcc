@@ -532,7 +532,6 @@ package body Sem_Ch6 is
 
          declare
             Decls : List_Id            := List_Containing (N);
-            Expr  : constant Node_Id   := Expression (Ret);
             Par   : constant Node_Id   := Parent (Decls);
             Typ   : constant Entity_Id := Etype (Def_Id);
 
