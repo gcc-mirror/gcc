@@ -1,3 +1,28 @@
+2021-05-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2021-05-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/100767
+	* config/arm/arm.c (arm_configure_build_target): Remove parameter
+	opts_set, directly check opts parameters for being non-null.
+	(arm_option_restore): Update call to arm_configure_build_target.
+	(arm_option_override): Likewise.
+	(arm_can_inline_p): Likewise.
+	(arm_valid_target_attribute_tree): Likewise.
+	* config/arm/arm-c.c (arm_pragma_target_parse): Likewise.
+	* config/arm/arm-protos.h (arm_configure_build_target): Adjust
+	prototype.
+
+2021-05-27  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99725
+	* config/arm/arm.c (cmse_nonsecure_call_inline_register_clear):
+	Avoid emitting CFA adjusts on the sp if we have the fp.
+
 2021-05-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,11 @@
+2021-05-27  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-05-11  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/99725
+	* gcc.target/arm/cmse/pr99725.c: New test.
+
 2021-05-25  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
