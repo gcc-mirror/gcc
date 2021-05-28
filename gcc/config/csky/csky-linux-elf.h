@@ -133,3 +133,13 @@
 #ifdef IN_LIBGCC2
 extern int cacheflush (void *__addr, const int __nbytes, const int __op);
 #endif
+
+/* The SYNC operations are implemented as library functions, not
+   INSN patterns.  As a result, the HAVE defines for the patterns are
+   not defined.  We need to define them to generate the corresponding
+   __GCC_HAVE_SYNC_COMPARE_AND_SWAP_* and __GCC_ATOMIC_*_LOCK_FREE
+   defines.  */
+
+#define HAVE_sync_compare_and_swapqi 1
+#define HAVE_sync_compare_and_swaphi 1
+#define HAVE_sync_compare_and_swapsi 1

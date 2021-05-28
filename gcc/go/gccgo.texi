@@ -495,7 +495,7 @@ like (after importing the @code{os} package):
 
 @smallexample
 var name = [4]byte@{'f', 'o', 'o', 0@};
-i := c_open(&amp;name[0], os.O_RDONLY, 0);
+i := c_open(&name[0], os.O_RDONLY, 0);
 @end smallexample
 
 Note that this serves as an example only.  To open a file in Go please

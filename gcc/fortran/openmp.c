@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "arith.h"
 #include "match.h"
 #include "parse.h"
+#include "constructor.h"
 #include "diagnostic.h"
 #include "gomp-constants.h"
 
@@ -103,7 +104,8 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->num_workers_expr);
   gfc_free_expr (c->vector_length_expr);
   for (i = 0; i < OMP_LIST_NUM; i++)
-    gfc_free_omp_namelist (c->lists[i]);
+    gfc_free_omp_namelist (c->lists[i],
+			   i == OMP_LIST_AFFINITY || i == OMP_LIST_DEPEND);
   gfc_free_expr_list (c->wait_list);
   gfc_free_expr_list (c->tile_list);
   free (CONST_CAST (char *, c->critical_name));
@@ -355,7 +357,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP variable list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head);
+  gfc_free_omp_namelist (head, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -445,7 +447,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP variable list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head);
+  gfc_free_omp_namelist (head, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -552,7 +554,7 @@ syntax:
   gfc_error ("Syntax error in OpenMP DEPEND SINK list at %C");
 
 cleanup:
-  gfc_free_omp_namelist (head);
+  gfc_free_omp_namelist (head, false);
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
 }
@@ -843,6 +845,7 @@ enum omp_mask1
   OMP_CLAUSE_CAPTURE,  /* OpenMP 5.0.  */
   OMP_CLAUSE_MEMORDER,  /* OpenMP 5.0.  */
   OMP_CLAUSE_DETACH,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_AFFINITY,  /* OpenMP 5.0.  */
   OMP_CLAUSE_NOWAIT,
   /* This must come last.  */
   OMP_MASK1_LAST
@@ -996,6 +999,132 @@ gfc_match_omp_map_clause (gfc_omp_namelist **list, gfc_omp_map_op map_op,
   return false;
 }
 
+static match
+gfc_match_iterator (gfc_namespace **ns, bool permit_var)
+{
+  locus old_loc = gfc_current_locus;
+
+  if (gfc_match ("iterator ( ") != MATCH_YES)
+    return MATCH_NO;
+
+  gfc_typespec ts;
+  gfc_symbol *last = NULL;
+  gfc_expr *begin, *end, *step;
+  *ns = gfc_build_block_ns (gfc_current_ns);
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  while (true)
+    {
+      locus prev_loc = gfc_current_locus;
+      if (gfc_match_type_spec (&ts) == MATCH_YES
+	  && gfc_match (" :: ") == MATCH_YES)
+	{
+	  if (ts.type != BT_INTEGER)
+	    {
+	      gfc_error ("Expected INTEGER type at %L", &prev_loc);
+	      return MATCH_ERROR;
+	    }
+	  permit_var = false;
+	}
+      else
+	{
+	  ts.type = BT_INTEGER;
+	  ts.kind = gfc_default_integer_kind;
+	  gfc_current_locus = prev_loc;
+	}
+      prev_loc = gfc_current_locus;
+      if (gfc_match_name (name) != MATCH_YES)
+	{
+	  gfc_error ("Expected identifier at %C");
+	  goto failed;
+	}
+      if (gfc_find_symtree ((*ns)->sym_root, name))
+	{
+	  gfc_error ("Same identifier %qs specified again at %C", name);
+	  goto failed;
+	}
+
+      gfc_symbol *sym = gfc_new_symbol (name, *ns);
+      if (last)
+	last->tlink = sym;
+      else
+	(*ns)->proc_name = sym;
+      last = sym;
+      sym->declared_at = prev_loc;
+      sym->ts = ts;
+      sym->attr.flavor = FL_VARIABLE;
+      sym->attr.artificial = 1;
+      sym->attr.referenced = 1;
+      sym->refs++;
+      gfc_symtree *st = gfc_new_symtree (&(*ns)->sym_root, name);
+      st->n.sym = sym;
+
+      prev_loc = gfc_current_locus;
+      if (gfc_match (" = ") != MATCH_YES)
+	goto failed;
+      permit_var = false;
+      begin = end = step = NULL;
+      if (gfc_match ("%e : ", &begin) != MATCH_YES
+	  || gfc_match ("%e ", &end) != MATCH_YES)
+	{
+	  gfc_error ("Expected range-specification at %C");
+	  gfc_free_expr (begin);
+	  gfc_free_expr (end);
+	  return MATCH_ERROR;
+	}
+      if (':' == gfc_peek_ascii_char ())
+	{
+	  step = gfc_get_expr ();
+	  if (gfc_match (": %e ", &step) != MATCH_YES)
+	    {
+	      gfc_free_expr (begin);
+	      gfc_free_expr (end);
+	      gfc_free_expr (step);
+	      goto failed;
+	    }
+	}
+
+      gfc_expr *e = gfc_get_expr ();
+      e->where = prev_loc;
+      e->expr_type = EXPR_ARRAY;
+      e->ts = ts;
+      e->rank = 1;
+      e->shape = gfc_get_shape (1);
+      mpz_init_set_ui (e->shape[0], step ? 3 : 2);
+      gfc_constructor_append_expr (&e->value.constructor, begin, &begin->where);
+      gfc_constructor_append_expr (&e->value.constructor, end, &end->where);
+      if (step)
+	gfc_constructor_append_expr (&e->value.constructor, step, &step->where);
+      sym->value = e;
+
+      if (gfc_match (") ") == MATCH_YES)
+	break;
+      if (gfc_match (", ") != MATCH_YES)
+	goto failed;
+    }
+  return MATCH_YES;
+
+failed:
+  gfc_namespace *prev_ns = NULL;
+  for (gfc_namespace *it = gfc_current_ns->contained; it; it = it->sibling)
+    {
+      if (it == *ns)
+	{
+	  if (prev_ns)
+	    prev_ns->sibling = it->sibling;
+	  else
+	    gfc_current_ns->contained = it->sibling;
+	  gfc_free_namespace (it);
+	  break;
+	}
+      prev_ns = it;
+    }
+  *ns = NULL;
+  if (!permit_var)
+    return MATCH_ERROR;
+  gfc_current_locus = old_loc;
+  return MATCH_NO;
+}
+
 /* reduction ( reduction-modifier, reduction-operator : variable-list )
    in_reduction ( reduction-operator : variable-list )
    task_reduction ( reduction-operator : variable-list )  */
@@ -1138,7 +1267,7 @@ gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
       *head = NULL;
       gfc_error_now ("!$OMP DECLARE REDUCTION %s not found at %L",
 		     buffer, &old_loc);
-      gfc_free_omp_namelist (n);
+      gfc_free_omp_namelist (n, false);
     }
   else
     for (n = *head; n; n = n->next)
@@ -1146,8 +1275,8 @@ gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
 	n->u.reduction_op = rop;
 	if (udr)
 	  {
-	    n->udr = gfc_get_omp_namelist_udr ();
-	    n->udr->udr = udr;
+	    n->u2.udr = gfc_get_omp_namelist_udr ();
+	    n->u2.udr->udr = udr;
 	  }
      }
   return MATCH_YES;
@@ -1202,7 +1331,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 
 	      if (end_colon && gfc_match (" %e )", &alignment) != MATCH_YES)
 		{
-		  gfc_free_omp_namelist (*head);
+		  gfc_free_omp_namelist (*head, false);
 		  gfc_current_locus = old_loc;
 		  *head = NULL;
 		  break;
@@ -1228,6 +1357,36 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	    {
 	      c->memorder = OMP_MEMORDER_ACQUIRE;
 	      needs_space = true;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_AFFINITY)
+	      && gfc_match ("affinity ( ") == MATCH_YES)
+	    {
+	      gfc_namespace *ns_iter = NULL, *ns_curr = gfc_current_ns;
+	      match m = gfc_match_iterator (&ns_iter, true);
+	      if (m == MATCH_ERROR)
+		break;
+	      if (m == MATCH_YES && gfc_match (" : ") != MATCH_YES)
+		{
+		  gfc_error ("Expected %<:%> at %C");
+		  break;
+		}
+	      if (ns_iter)
+		gfc_current_ns = ns_iter;
+	      head = NULL;
+	      m = gfc_match_omp_variable_list ("", &c->lists[OMP_LIST_AFFINITY],
+					       false, NULL, &head, true);
+	      gfc_current_ns = ns_curr;
+	      if (m == MATCH_ERROR)
+		break;
+	      if (ns_iter)
+		{
+		  for (gfc_omp_namelist *n = *head; n; n = n->next)
+		    {
+		      n->u2.ns = ns_iter;
+		      ns_iter->refs++;
+		    }
+		}
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_ASYNC)
@@ -1374,6 +1533,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  if ((mask & OMP_CLAUSE_DEPEND)
 	      && gfc_match ("depend ( ") == MATCH_YES)
 	    {
+	      gfc_namespace *ns_iter = NULL, *ns_curr = gfc_current_ns;
+	      match m_it = gfc_match_iterator (&ns_iter, false);
+	      if (m_it == MATCH_ERROR)
+		break;
+	      if (m_it == MATCH_YES && gfc_match (" , ") != MATCH_YES)
+		break;
 	      match m = MATCH_YES;
 	      gfc_omp_depend_op depend_op = OMP_DEPEND_OUT;
 	      if (gfc_match ("inout") == MATCH_YES)
@@ -1389,11 +1554,24 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      else if (!c->depend_source
 		       && gfc_match ("source )") == MATCH_YES)
 		{
+		  if (m_it == MATCH_YES)
+		    {
+		      gfc_error ("ITERATOR may not be combined with SOURCE "
+				 "at %C");
+		      gfc_free_omp_clauses (c);
+		      return MATCH_ERROR;
+		    }
 		  c->depend_source = true;
 		  continue;
 		}
 	      else if (gfc_match ("sink : ") == MATCH_YES)
 		{
+		  if (m_it == MATCH_YES)
+		    {
+		      gfc_error ("ITERATOR may not be combined with SINK "
+				 "at %C");
+		      break;
+		    }
 		  if (gfc_match_omp_depend_sink (&c->lists[OMP_LIST_DEPEND])
 		      == MATCH_YES)
 		    continue;
@@ -1402,19 +1580,26 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      else
 		m = MATCH_NO;
 	      head = NULL;
-	      if (m == MATCH_YES
-		  && gfc_match_omp_variable_list (" : ",
-						  &c->lists[OMP_LIST_DEPEND],
-						  false, NULL, &head,
-						  true) == MATCH_YES)
+	      if (ns_iter)
+		gfc_current_ns = ns_iter;
+	      if (m == MATCH_YES)
+		m = gfc_match_omp_variable_list (" : ",
+						 &c->lists[OMP_LIST_DEPEND],
+						 false, NULL, &head, true);
+	      gfc_current_ns = ns_curr;
+	      if (m == MATCH_YES)
 		{
 		  gfc_omp_namelist *n;
 		  for (n = *head; n; n = n->next)
-		    n->u.depend_op = depend_op;
+		    {
+		      n->u.depend_op = depend_op;
+		      n->u2.ns = ns_iter;
+		      if (ns_iter)
+			ns_iter->refs++;
+		    }
 		  continue;
 		}
-	      else
-		gfc_current_locus = old_loc;
+	      break;
 	    }
 	  if ((mask & OMP_CLAUSE_DETACH)
 	      && !openacc
@@ -1666,7 +1851,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    end_colon = true;
 		  else if (gfc_match (" )") != MATCH_YES)
 		    {
-		      gfc_free_omp_namelist (*head);
+		      gfc_free_omp_namelist (*head, false);
 		      gfc_current_locus = old_loc;
 		      *head = NULL;
 		      break;
@@ -1674,7 +1859,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      if (end_colon && gfc_match (" %e )", &step) != MATCH_YES)
 		{
-		  gfc_free_omp_namelist (*head);
+		  gfc_free_omp_namelist (*head, false);
 		  gfc_current_locus = old_loc;
 		  *head = NULL;
 		  break;
@@ -2844,7 +3029,7 @@ cleanup:
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF | OMP_CLAUSE_DEFAULT		\
    | OMP_CLAUSE_UNTIED | OMP_CLAUSE_FINAL | OMP_CLAUSE_MERGEABLE	\
    | OMP_CLAUSE_DEPEND | OMP_CLAUSE_PRIORITY | OMP_CLAUSE_IN_REDUCTION	\
-   | OMP_CLAUSE_DETACH)
+   | OMP_CLAUSE_DETACH | OMP_CLAUSE_AFFINITY)
 #define OMP_TASKLOOP_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_SHARED | OMP_CLAUSE_IF		\
@@ -3097,14 +3282,14 @@ gfc_match_omp_flush (void)
     {
       gfc_error ("List specified together with memory order clause in FLUSH "
 		 "directive at %C");
-      gfc_free_omp_namelist (list);
+      gfc_free_omp_namelist (list, false);
       gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       gfc_error ("Unexpected junk after $OMP FLUSH statement at %C");
-      gfc_free_omp_namelist (list);
+      gfc_free_omp_namelist (list, false);
       gfc_free_omp_clauses (c);
       return MATCH_ERROR;
     }
@@ -4252,14 +4437,13 @@ gfc_match_omp_taskloop_simd (void)
 match
 gfc_match_omp_taskwait (void)
 {
-  if (gfc_match_omp_eos () != MATCH_YES)
+  if (gfc_match_omp_eos () == MATCH_YES)
     {
-      gfc_error ("Unexpected junk after TASKWAIT clause at %C");
-      return MATCH_ERROR;
+      new_st.op = EXEC_OMP_TASKWAIT;
+      new_st.ext.omp_clauses = NULL;
+      return MATCH_YES;
     }
-  new_st.op = EXEC_OMP_TASKWAIT;
-  new_st.ext.omp_clauses = NULL;
-  return MATCH_YES;
+  return match_omp (EXEC_OMP_TASKWAIT, omp_mask (OMP_CLAUSE_DEPEND));
 }
 
 
@@ -4825,7 +5009,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   gfc_omp_linear_op linear_op = OMP_LINEAR_DEFAULT;
   static const char *clause_names[]
     = { "PRIVATE", "FIRSTPRIVATE", "LASTPRIVATE", "COPYPRIVATE", "SHARED",
-	"COPYIN", "UNIFORM", "ALIGNED", "LINEAR", "DEPEND", "MAP",
+	"COPYIN", "UNIFORM", "AFFINITY", "ALIGNED", "LINEAR", "DEPEND", "MAP",
 	"TO", "FROM", "INCLUSIVE", "EXCLUSIVE",
 	"REDUCTION", "REDUCTION" /*inscan*/, "REDUCTION" /*task*/,
 	"IN_REDUCTION", "TASK_REDUCTION",
@@ -5273,6 +5457,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  }
 	      }
 	    break;
+	  case OMP_LIST_AFFINITY:
 	  case OMP_LIST_DEPEND:
 	  case OMP_LIST_MAP:
 	  case OMP_LIST_TO:
@@ -5280,6 +5465,40 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	  case OMP_LIST_CACHE:
 	    for (; n != NULL; n = n->next)
 	      {
+		if ((list == OMP_LIST_DEPEND || list == OMP_LIST_AFFINITY)
+		    && n->u2.ns && !n->u2.ns->resolved)
+		  {
+		    n->u2.ns->resolved = 1;
+		    for (gfc_symbol *sym = n->u2.ns->proc_name; sym;
+			 sym = sym->tlink)
+		      {
+			gfc_constructor *c;
+			c = gfc_constructor_first (sym->value->value.constructor);
+			if (!gfc_resolve_expr (c->expr)
+			    || c->expr->ts.type != BT_INTEGER
+			    || c->expr->rank != 0)
+			  gfc_error ("Scalar integer expression for range begin"
+				     " expected at %L", &c->expr->where);
+			c = gfc_constructor_next (c);
+			if (!gfc_resolve_expr (c->expr)
+			    || c->expr->ts.type != BT_INTEGER
+			    || c->expr->rank != 0)
+			  gfc_error ("Scalar integer expression for range end "
+				     "expected at %L", &c->expr->where);
+			c = gfc_constructor_next (c);
+			if (c && (!gfc_resolve_expr (c->expr)
+				  || c->expr->ts.type != BT_INTEGER
+				  || c->expr->rank != 0))
+			  gfc_error ("Scalar integer expression for range step "
+				     "expected at %L", &c->expr->where);
+			else if (c
+				 && c->expr->expr_type == EXPR_CONSTANT
+				 && mpz_cmp_si (c->expr->value.integer, 0) == 0)
+			  gfc_error ("Nonzero range step expected at %L",
+				     &c->expr->where);
+		      }
+		  }
+
 		if (list == OMP_LIST_DEPEND)
 		  {
 		    if (n->u.depend_op == OMP_DEPEND_SINK_FIRST
@@ -5421,7 +5640,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 					 n->sym->name, name, &n->where);
 			      break;
 			    }
-			  else if (list == OMP_LIST_DEPEND
+			  else if ((list == OMP_LIST_DEPEND
+				    || list == OMP_LIST_AFFINITY)
 				   && ar->start[i]
 				   && ar->start[i]->expr_type == EXPR_CONSTANT
 				   && ar->end[i]
@@ -5429,9 +5649,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 				   && mpz_cmp (ar->start[i]->value.integer,
 					       ar->end[i]->value.integer) > 0)
 			    {
-			      gfc_error ("%qs in DEPEND clause at %L is a "
+			      gfc_error ("%qs in %s clause at %L is a "
 					 "zero size array section",
-					 n->sym->name, &n->where);
+					 n->sym->name,
+					 list == OMP_LIST_DEPEND
+					 ? "DEPEND" : "AFFINITY", &n->where);
 			      break;
 			    }
 		      }
@@ -5675,23 +5897,23 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			break;
 		      }
 		    if (!bad)
-		      n->udr = NULL;
+		      n->u2.udr = NULL;
 		    else
 		      {
 			const char *udr_name = NULL;
-			if (n->udr)
+			if (n->u2.udr)
 			  {
-			    udr_name = n->udr->udr->name;
-			    n->udr->udr
+			    udr_name = n->u2.udr->udr->name;
+			    n->u2.udr->udr
 			      = gfc_find_omp_udr (NULL, udr_name,
 						  &n->sym->ts);
-			    if (n->udr->udr == NULL)
+			    if (n->u2.udr->udr == NULL)
 			      {
-				free (n->udr);
-				n->udr = NULL;
+				free (n->u2.udr);
+				n->u2.udr = NULL;
 			      }
 			  }
-			if (n->udr == NULL)
+			if (n->u2.udr == NULL)
 			  {
 			    if (udr_name == NULL)
 			      switch (n->u.reduction_op)
@@ -5730,14 +5952,14 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			  }
 			else
 			  {
-			    gfc_omp_udr *udr = n->udr->udr;
+			    gfc_omp_udr *udr = n->u2.udr->udr;
 			    n->u.reduction_op = OMP_REDUCTION_USER;
-			    n->udr->combiner
+			    n->u2.udr->combiner
 			      = resolve_omp_udr_clause (n, udr->combiner_ns,
 							udr->omp_out,
 							udr->omp_in);
 			    if (udr->initializer_ns)
-			      n->udr->initializer
+			      n->u2.udr->initializer
 				= resolve_omp_udr_clause (n,
 							  udr->initializer_ns,
 							  udr->omp_priv,
@@ -7369,6 +7591,7 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_TARGET_PARALLEL:
     case EXEC_OMP_TARGET_TEAMS:
     case EXEC_OMP_TASK:
+    case EXEC_OMP_TASKWAIT:
     case EXEC_OMP_TEAMS:
     case EXEC_OMP_WORKSHARE:
     case EXEC_OMP_DEPOBJ:

@@ -25,6 +25,7 @@ int popcount64c(unsigned long x)
     return (x * h01) >> shift;
 }
 
-/* { dg-final { scan-tree-dump-times "\.POPCOUNT" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\.POPCOUNT" 1 "optimized" { target int32plus } } } */
+/* { dg-final { scan-tree-dump "\.POPCOUNT" "optimized" { target { ! int32plus } } } } */
 
 

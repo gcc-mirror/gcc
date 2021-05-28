@@ -2112,6 +2112,14 @@ c_parser_gimple_paren_condition (gimple_parser &parser)
   if (! c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
     return error_mark_node;
   tree cond = c_parser_gimple_binary_expression (parser).value;
+  if (cond != error_mark_node
+      && ! COMPARISON_CLASS_P (cond)
+      && ! CONSTANT_CLASS_P (cond)
+      && ! SSA_VAR_P (cond))
+    {
+      c_parser_error (parser, "comparison required");
+      cond = error_mark_node;
+    }
   if (! c_parser_require (parser, CPP_CLOSE_PAREN, "expected %<)%>"))
     return error_mark_node;
   return cond;
