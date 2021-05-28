@@ -1230,6 +1230,7 @@ alter_predicate_for_insn (rtx pattern, int alt, int max_op,
     case MATCH_OPERATOR:
     case MATCH_SCRATCH:
     case MATCH_PARALLEL:
+    case MATCH_DUP:
       XINT (pattern, 0) += max_op;
       break;
 
