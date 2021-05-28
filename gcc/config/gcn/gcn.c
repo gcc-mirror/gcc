@@ -50,6 +50,7 @@
 #include "varasm.h"
 #include "intl.h"
 #include "rtl-iter.h"
+#include "dwarf2.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1495,6 +1496,32 @@ gcn_addr_space_convert (rtx op, tree from_type, tree to_type)
     return op;
   else
     gcc_unreachable ();
+}
+
+/* Implement TARGET_ADDR_SPACE_DEBUG.
+
+   Return the dwarf address space class for each hardware address space.  */
+
+static int
+gcn_addr_space_debug (addr_space_t as)
+{
+  switch (as)
+    {
+      case ADDR_SPACE_DEFAULT:
+      case ADDR_SPACE_FLAT:
+      case ADDR_SPACE_SCALAR_FLAT:
+      case ADDR_SPACE_FLAT_SCRATCH:
+	return DW_ADDR_none;
+      case ADDR_SPACE_GLOBAL:
+	return 1;      // DW_ADDR_LLVM_global
+      case ADDR_SPACE_LDS:
+	return 3;      // DW_ADDR_LLVM_group
+      case ADDR_SPACE_SCRATCH:
+	return 4;      // DW_ADDR_LLVM_private
+      case ADDR_SPACE_GDS:
+	return 0x8000; // DW_ADDR_AMDGPU_region
+    }
+  gcc_unreachable ();
 }
 
 
@@ -6391,6 +6418,8 @@ gcn_dwarf_register_span (rtx rtl)
 
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE gcn_addr_space_address_mode
+#undef  TARGET_ADDR_SPACE_DEBUG
+#define TARGET_ADDR_SPACE_DEBUG gcn_addr_space_debug
 #undef  TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P \
   gcn_addr_space_legitimate_address_p
