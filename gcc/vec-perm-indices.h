@@ -57,6 +57,7 @@ public:
 
   void new_vector (const vec_perm_builder &, unsigned int, poly_uint64);
   void new_expanded_vector (const vec_perm_indices &, unsigned int);
+  bool new_shrunk_vector (const vec_perm_indices &, unsigned int);
   void rotate_inputs (int delta);
 
   /* Return the underlying vector encoding.  */
