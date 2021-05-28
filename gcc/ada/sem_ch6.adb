@@ -524,6 +524,12 @@ package body Sem_Ch6 is
             Install_Formals (Def_Id);
             Preanalyze_Spec_Expression (Expr, Typ);
             End_Scope;
+         else
+            Push_Scope (Def_Id);
+            Install_Formals (Def_Id);
+            Preanalyze_Formal_Expression (Expr, Typ);
+            Check_Limited_Return (Orig_N, Expr, Typ);
+            End_Scope;
          end if;
 
          --  If this is a wrapper created in an instance for a formal
@@ -559,16 +565,6 @@ package body Sem_Ch6 is
 
                Insert_After (Last (Decls), New_Body);
             end;
-         end if;
-
-         --  Preanalyze the expression if not already done above
-
-         if not Inside_A_Generic then
-            Push_Scope (Def_Id);
-            Install_Formals (Def_Id);
-            Preanalyze_Formal_Expression (Expr, Typ);
-            Check_Limited_Return (Orig_N, Expr, Typ);
-            End_Scope;
          end if;
 
          --  In the case of an expression function marked with the aspect
