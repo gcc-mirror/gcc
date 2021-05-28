@@ -16407,11 +16407,13 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if ((!dwarf_strict || dwarf_version >= 5)
 	  && is_a <scalar_int_mode> (mode, &int_mode))
 	{
-	  if (GET_MODE_SIZE (int_mode) > DWARF2_ADDR_SIZE)
+	  /* We can use a signed divide if the sign bit is not set.  */
+	  if (GET_MODE_SIZE (int_mode) < DWARF2_ADDR_SIZE)
 	    {
 	      op = DW_OP_div;
 	      goto do_binop;
 	    }
+
 	  mem_loc_result = typed_binop (DW_OP_div, rtl,
 					base_type_for_mode (int_mode, 1),
 					int_mode, mem_mode);
@@ -18503,6 +18505,48 @@ function_to_dwarf_procedure (tree fndecl)
   return dwarf_proc_die;
 }
 
+/* Helper function for loc_list_from_tree.  Perform OP binary op,
+   but after converting arguments to type_die, afterwards convert
+   back to unsigned.  */
+
+static dw_loc_list_ref
+typed_binop_from_tree (enum dwarf_location_atom op, tree loc,
+		       dw_die_ref type_die, scalar_int_mode mode,
+		       struct loc_descr_context *context)
+{
+  dw_loc_list_ref op0, op1;
+  dw_loc_descr_ref cvt, binop;
+
+  if (type_die == NULL)
+    return NULL;
+
+  op0 = loc_list_from_tree (TREE_OPERAND (loc, 0), 0, context);
+  op1 = loc_list_from_tree (TREE_OPERAND (loc, 1), 0, context);
+  if (op0 == NULL || op1 == NULL)
+    return NULL;
+
+  cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
+  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+  add_loc_descr_to_each (op0, cvt);
+
+  cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
+  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+  add_loc_descr_to_each (op1, cvt);
+
+  add_loc_list (&op0, op1);
+  if (op0 == NULL)
+    return NULL;
+
+  binop = new_loc_descr (op, 0, 0);
+  convert_descriptor_to_mode (mode, binop);
+  add_loc_descr_to_each (op0, binop);
+
+  return op0;
+}
 
 /* Generate Dwarf location list representing LOC.
    If WANT_ADDRESS is false, expression computing LOC will be computed
@@ -19096,13 +19140,53 @@ loc_list_from_tree_1 (tree loc, int want_address,
       op = DW_OP_or;
       goto do_binop;
 
+    case EXACT_DIV_EXPR:
     case FLOOR_DIV_EXPR:
+    case TRUNC_DIV_EXPR:
+      /* Turn a divide by a power of 2 into a shift when possible.  */
+      if (TYPE_UNSIGNED (TREE_TYPE (loc))
+	  && tree_fits_uhwi_p (TREE_OPERAND (loc, 1)))
+	{
+	  const int log2 = exact_log2 (tree_to_uhwi (TREE_OPERAND (loc, 1)));
+	  if (log2 > 0)
+	    {
+	      list_ret
+		= loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
+	      if (list_ret == 0)
+		return 0;
+
+	      add_loc_descr_to_each (list_ret, uint_loc_descriptor (log2));
+	      add_loc_descr_to_each (list_ret,
+				     new_loc_descr (DW_OP_shr, 0, 0));
+	      break;
+	    }
+	}
+
+      /* fall through */
+
     case CEIL_DIV_EXPR:
     case ROUND_DIV_EXPR:
-    case TRUNC_DIV_EXPR:
-    case EXACT_DIV_EXPR:
       if (TYPE_UNSIGNED (TREE_TYPE (loc)))
-	return 0;
+	{
+	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (loc));
+	  scalar_int_mode int_mode;
+
+	  if ((dwarf_strict && dwarf_version < 5)
+	      || !is_a <scalar_int_mode> (mode, &int_mode))
+	    return 0;
+
+	  /* We can use a signed divide if the sign bit is not set.  */
+	  if (GET_MODE_SIZE (int_mode) < DWARF2_ADDR_SIZE)
+	    {
+	      op = DW_OP_div;
+	      goto do_binop;
+	    }
+
+	  list_ret = typed_binop_from_tree (DW_OP_div, loc,
+					    base_type_for_mode (int_mode, 1),
+					    int_mode, context);
+	  break;
+	}
       op = DW_OP_div;
       goto do_binop;
 
