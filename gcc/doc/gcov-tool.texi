@@ -2,33 +2,6 @@
 @c This is part of the GCC manual.
 @c For copying conditions, see the file gcc.texi.
 
-@ignore
-@c man begin COPYRIGHT
-Copyright @copyright{} 2014-2021 Free Software Foundation, Inc.
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``GNU General Public License'' and ``Funding
-Free Software'', the Front-Cover texts being (a) (see below), and with
-the Back-Cover Texts being (b) (see below).  A copy of the license is
-included in the gfdl(7) man page.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
-@c man end
-@c Set file name and title for the man page.
-@setfilename gcov-tool
-@settitle offline gcda profile processing tool
-@end ignore
-
 @node Gcov-tool
 @chapter @command{gcov-tool}---an Offline Gcda Profile Processing Tool
 
@@ -42,7 +15,8 @@ manipulate or process gcda profile files offline.
 
 @node Gcov-tool Intro
 @section Introduction to @command{gcov-tool}
-@c man begin DESCRIPTION
+
+@subsubheading Description
 
 @command{gcov-tool} is an offline tool to process gcc's gcda profile files.
 
@@ -97,8 +71,6 @@ are runtime dependent, like heap addresses. It's normal to see some difference
 in these kind of counters.
 @end itemize
 
-@c man end
-
 @node Invoking Gcov-tool
 @section Invoking @command{gcov-tool}
 
@@ -108,8 +80,8 @@ gcov-tool @r{[}@var{global-options}@r{]} SUB_COMMAND @r{[}@var{sub_command-optio
 
 @command{gcov-tool} accepts the following options:
 
-@ignore
-@c man begin SYNOPSIS
+@subsubheading Synopsis
+
 gcov-tool [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
 
 gcov-tool merge [merge-options] @var{directory1} @var{directory2}
@@ -131,14 +103,8 @@ gcov-tool overlap [overlap-options] @var{directory1} @var{directory2}
      [@option{-t}|@option{--hot_threshold}] @var{float}
      [@option{-v}|@option{--verbose}]
 
-@c man end
-@c man begin SEEALSO
-gpl(7), gfdl(7), fsf-funding(7), gcc(1), gcov(1) and the Info entry for
-@file{gcc}.
-@c man end
-@end ignore
+@subsubheading Options
 
-@c man begin OPTIONS
 @table @gcctabopt
 @item -h
 @itemx --help
@@ -227,5 +193,3 @@ Set the verbose mode.
 @end table
 
 @end table
-
-@c man end
