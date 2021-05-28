@@ -300,6 +300,7 @@ package body Sem_Ch6 is
       New_Spec : Node_Id;
       Orig_N   : Node_Id;
       Ret      : Node_Id;
+      Typ      : Entity_Id;
 
       Def_Id : Entity_Id := Empty;
       Prev   : Entity_Id;
@@ -332,6 +333,8 @@ package body Sem_Ch6 is
       then
          Def_Id := Analyze_Subprogram_Specification (Spec);
          Prev   := Find_Corresponding_Spec (N);
+
+         Typ := Etype (Def_Id);
 
          --  The previous entity may be an expression function as well, in
          --  which case the redeclaration is illegal.
@@ -406,7 +409,7 @@ package body Sem_Ch6 is
          if not Inside_A_Generic then
             Freeze_Expr_Types
               (Def_Id => Def_Id,
-               Typ    => Etype (Def_Id),
+               Typ    => Typ,
                Expr   => Expr,
                N      => N);
          end if;
@@ -496,6 +499,8 @@ package body Sem_Ch6 is
          Def_Id := Defining_Entity (N);
          Set_Is_Inlined (Def_Id);
 
+         Typ := Etype (Def_Id);
+
          --  Establish the linkages between the spec and the body. These are
          --  used when the expression function acts as the prefix of attribute
          --  'Access in order to freeze the original expression which has been
@@ -517,7 +522,7 @@ package body Sem_Ch6 is
             Set_Has_Completion (Def_Id, not Is_Ignored_Ghost_Entity (Def_Id));
             Push_Scope (Def_Id);
             Install_Formals (Def_Id);
-            Preanalyze_Spec_Expression (Expr, Etype (Def_Id));
+            Preanalyze_Spec_Expression (Expr, Typ);
             End_Scope;
          end if;
 
@@ -531,9 +536,8 @@ package body Sem_Ch6 is
          --  place at the point of declaration.
 
          declare
-            Decls : List_Id            := List_Containing (N);
-            Par   : constant Node_Id   := Parent (Decls);
-            Typ   : constant Entity_Id := Etype (Def_Id);
+            Decls : List_Id          := List_Containing (N);
+            Par   : constant Node_Id := Parent (Decls);
 
          begin
             --  If this is a wrapper created in an instance for a formal
@@ -624,12 +628,11 @@ package body Sem_Ch6 is
       --  nodes that don't come from source.
 
       if Present (Def_Id)
-        and then Nkind (Def_Id) in N_Has_Etype
-        and then Is_Tagged_Type (Etype (Def_Id))
+        and then Is_Tagged_Type (Typ)
       then
          Check_Dynamically_Tagged_Expression
            (Expr        => Expr,
-            Typ         => Etype (Def_Id),
+            Typ         => Typ,
             Related_Nod => Orig_N);
       end if;
 
