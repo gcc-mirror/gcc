@@ -6,13 +6,16 @@
 
 * If you're unable to find an open issue addressing the problem, [open a new one](https://github.com/Rust-GCC/gccrs/issues/new). Be sure to include a **title and clear description**, as much relevant information as possible, and a **code sample** or an **executable test case** demonstrating the expected behavior that is not occurring.
 
-#### **Did you write a patch that fixes a bug?**
+#### **Do you want to submit a patch?**
 
 * Open a new GitHub pull request with the patch.
 
 * Ensure the PR description clearly describes the problem and solution. Include the relevant issue number if applicable.
 
 * Before submitting, GCCRS requires copyright assignment. Please read the [Contributing to GCC](https://gcc.gnu.org/contribute.html) guide to know more.
+
+* Patches sent to the [`gcc-rust` mailing list](https://gcc.gnu.org/mailman/listinfo/gcc-rust) are likewise welcome.
+These will be imported into a GitHub PR to follow the normal review process, and the link to the GitHub PR sent to the submitter.
 
 #### **Do you intend to add a new feature or change an existing one?**
 
