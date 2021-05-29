@@ -1,3 +1,77 @@
+2021-05-28  Jason Merrill  <jason@redhat.com>
+
+	* tree-iterator.h (struct tree_stmt_iterator): Add operator++,
+	operator--, operator*, operator==, and operator!=.
+	(class tsi_range): New.
+
+2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* tree-vect-slp.c (vect_build_slp_tree_1): Prevent possibly
+	trapping ops in different BBs.
+
+2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100791
+	* tree-inline.c (copy_bb): When processing __builtin_va_arg_pack
+	copy fntype from original call.
+
+2021-05-28  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/100751
+	* doc/gcov.texi: Revert partially a hunk that was wrong.
+
+2021-05-28  Cooper Qu  <cooper.qu@linux.alibaba.com>
+
+	* config/csky/csky-linux-elf.h (HAVE_sync_compare_and_swapqi):
+	Defined.
+	(HAVE_sync_compare_and_swaphi): Likewise.
+	(HAVE_sync_compare_and_swapsi): Likewise.
+
+2021-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* tree.h (OMP_CLAUSE_MAP_IMPLICIT): Define.
+
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gimplify.c (gimplify_omp_affinity): New.
+	(gimplify_scan_omp_clauses): Call it; remove affinity clause afterwards.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_AFFINITY.
+	* tree-pretty-print.c (dump_omp_clause): Handle OMP_CLAUSE_AFFINITY.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add clause.
+	(walk_tree_1): Handle OMP_CLAUSE_AFFINITY.
+
+2021-05-28  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+	    Richard Biener   <rguenther@suse.de>
+
+	* match.pd <popcount & / + pattern matching>:
+	When generating popcount directly fails, try doing it in two halves.
+
+2021-05-28  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* Makefile.in (generated_files): Add gimple-match.c and
+	generic-match.c
+
+2021-05-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gensupport.c (alter_predicate_for_insn): Handle MATCH_DUP.
+
+2021-05-28  Joern Rennecke  <joern.rennecke@embecosm.com>
+
+	* gensupport.c (alter_constraints): Add MATCH_SCRATCH case.
+
+2021-05-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/99398
+	* tree-ssa-forwprop.c (simplify_permutation): Optimize some cases
+	where the fed operands are CTOR/CST and propagated through
+	VIEW_CONVERT_EXPR.  Call vec_perm_indices::new_shrunk_vector.
+	* vec-perm-indices.c (vec_perm_indices::new_shrunk_vector): New
+	function.
+	* vec-perm-indices.h (vec_perm_indices::new_shrunk_vector): New
+	declare.
+
 2021-05-27  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (addv2sf3): Do not call

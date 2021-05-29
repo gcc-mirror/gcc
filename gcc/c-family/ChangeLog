@@ -1,3 +1,13 @@
+2021-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-omp.c (c_omp_split_clauses): For reduction clause if combined with
+	target add a map tofrom clause with OMP_CLAUSE_MAP_IMPLICIT.
+
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_AFFINITY.
+
 2021-05-25  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/92860

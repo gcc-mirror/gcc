@@ -1,3 +1,69 @@
+2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100778
+	* gcc.dg/vect/bb-slp-pr100778-1.c: New testcase.
+
+2021-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100797
+	PR c++/95719
+	* g++.dg/inherit/virtual15.C: New test.
+	* g++.dg/inherit/virtual15a.C: New file.
+
+2021-05-28  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/100791
+	* gcc.dg/pr100791.c: New testcase.
+
+2021-05-28  Richard Biener   <rguenther@suse.de>
+
+	PR c/100803
+	* gcc.dg/gimplefe-error-11.c: New testcase.
+
+2021-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-8.c: Remove all xfails.
+	* c-c++-common/gomp/pr99928-9.c: Likewise.
+	* c-c++-common/gomp/pr99928-10.c: Likewise.
+	* c-c++-common/gomp/pr99928-16.c: New test.
+
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/affinity-1.c: New test.
+	* c-c++-common/gomp/affinity-2.c: New test.
+	* c-c++-common/gomp/affinity-3.c: New test.
+	* c-c++-common/gomp/affinity-4.c: New test.
+	* c-c++-common/gomp/affinity-5.c: New test.
+	* c-c++-common/gomp/affinity-6.c: New test.
+	* c-c++-common/gomp/affinity-7.c: New test.
+	* gfortran.dg/gomp/affinity-clause-1.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-2.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-3.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-4.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-5.f90: New test.
+	* gfortran.dg/gomp/affinity-clause-6.f90: New test.
+	* gfortran.dg/gomp/depend-iterator-1.f90: New test.
+	* gfortran.dg/gomp/depend-iterator-2.f90: New test.
+	* gfortran.dg/gomp/depend-iterator-3.f90: New test.
+	* gfortran.dg/gomp/taskwait.f90: New test.
+
+2021-05-28  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+	    Richard Biener   <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/popcount4ll.c: Remove lp64 condition.
+	Adjust scanning pattern for !lp64.
+	* gcc.dg/tree-ssa/popcount5ll.c: Likewise.
+	* gcc.dg/tree-ssa/popcount4l.c: Adjust scanning pattern
+	for ! int32plus.
+
+2021-05-28  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/99398
+	* gcc.target/powerpc/vec-perm-ctor-run.c: New test.
+	* gcc.target/powerpc/vec-perm-ctor.c: New test.
+	* gcc.target/powerpc/vec-perm-ctor.h: New test.
+
 2021-05-27  Matthias Kretz  <kretz@kde.org>
 
 	PR c++/100716

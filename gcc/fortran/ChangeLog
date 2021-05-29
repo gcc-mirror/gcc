@@ -1,3 +1,28 @@
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_iterator): New.
+	(show_omp_namelist): Handle iterators.
+	(show_omp_clauses): Handle affinity.
+	* gfortran.h (gfc_free_omp_namelist): New union with 'udr' and new 'ns'.
+	* match.c (gfc_free_omp_namelist): Add are to choose union element.
+	* openmp.c (gfc_free_omp_clauses, gfc_match_omp_detach,
+	gfc_match_omp_clause_reduction, gfc_match_omp_flush): Update
+	call to gfc_free_omp_namelist.
+	(gfc_match_omp_variable_list): Likewise; permit preceeding whitespace.
+	(enum omp_mask1): Add OMP_CLAUSE_AFFINITY.
+	(gfc_match_iterator): New.
+	(gfc_match_omp_clauses): Use it; update call to gfc_free_omp_namelist.
+	(OMP_TASK_CLAUSES): Add OMP_CLAUSE_AFFINITY.
+	(gfc_match_omp_taskwait): Match depend clause.
+	(resolve_omp_clauses): Handle affinity; update for udr/union change.
+	(gfc_resolve_omp_directive): Resolve clauses of taskwait.
+	* st.c (gfc_free_statement): Update gfc_free_omp_namelist call.
+	* trans-openmp.c (gfc_trans_omp_array_reduction_or_udr): Likewise
+	(handle_iterator): New.
+	(gfc_trans_omp_clauses): Handle iterators for depend/affinity clause.
+	(gfc_trans_omp_taskwait): Handle depend clause.
+	(gfc_trans_omp_directive): Update call.
+
 2021-05-27  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/100602
