@@ -1,3 +1,12 @@
+2021-05-28  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-05-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/98411
+	* trans-decl.c (gfc_finish_var_decl): Add check for explicit SAVE
+	attribute.
+
 2021-05-05  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
