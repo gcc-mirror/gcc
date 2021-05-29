@@ -1,3 +1,46 @@
+2021-05-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	Backported from master:
+	2021-04-24  David Edelsohn  <dje.gcc@gmail.com>
+
+	* testsuite/lib/dg-options.exp (atomic_link_flags): New.
+	(add_options_for_libatomic): Use atomic_link_flags.
+
+2021-05-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-04-30  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/ranges (__detail::__non_propating_cache): Define
+	as per P2328.
+	(join_view): Remove constraints on the value and reference types
+	of the wrapped iterator type as per P2328.
+	(join_view::_Iterator::_M_satisfy): Adjust as per P2328.
+	(join_view::_Iterator::operator++): Likewise.
+	(join_view::_M_inner): Use __non_propating_cache as per P2328.
+	Remove now-redundant use of __maybe_present_t.
+	* testsuite/std/ranges/adaptors/join.cc: Include <array>.
+	(test10): New test.
+
+2021-05-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-24  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100479
+	* include/std/ranges (__detail::__non_propagating_cache): Move
+	definition up to before that of _CachedPosition.  Make base
+	class _Optional_base protected instead of private.  Add const
+	overload for operator*.
+	(__detail::_CachedPosition): Rewrite the partial specialization
+	for forward ranges as a derived class of __non_propagating_cache.
+	Remove the size constraint on the partial specialization for
+	random access ranges.  Add copy/move/copy-assignment/move-assignment
+	members to the offset partial specialization for random
+	access ranges that propagate the cached value but additionally
+	invalidate it in the source object on move.
+	* testsuite/std/ranges/adaptors/100479.cc: New test.
+
 2021-05-20  Joern Rennecke  <joern.rennecke@riscy-ip.com>
 
 	PR libstdc++/100361
