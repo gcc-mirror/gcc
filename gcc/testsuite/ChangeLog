@@ -1,3 +1,37 @@
+2021-05-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (plugin_init): Fix caret_max_with.
+	* gcc.dg/plugin/diagnostic_plugin_test_inlining.c
+	(plugin_init): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_paths.c (plugin_init): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c
+	(plugin_init): Likewise.
+	* gcc.dg/plugin/diagnostic_plugin_test_tree_expression_range.c
+	(plugin_init): Likewise.
+
+2021-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* c-c++-common/gomp/pr99928-1.c: Add default(none) to constructs
+	combined with parallel, teams or taskloop and defaultmap(none)
+	to constructs combined with target.
+	* c-c++-common/gomp/pr99928-2.c: Likewise.
+	* c-c++-common/gomp/pr99928-3.c: Likewise.
+	* c-c++-common/gomp/pr99928-4.c: Likewise.
+	* c-c++-common/gomp/pr99928-5.c: Likewise.
+	* c-c++-common/gomp/pr99928-6.c: Likewise.
+	* c-c++-common/gomp/pr99928-7.c: Likewise.
+	* c-c++-common/gomp/pr99928-8.c: Likewise.
+	* c-c++-common/gomp/pr99928-9.c: Likewise.
+	* c-c++-common/gomp/pr99928-10.c: Likewise.
+	* c-c++-common/gomp/pr99928-13.c: Likewise.
+	* c-c++-common/gomp/pr99928-14.c: Likewise.
+
+2021-05-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-55.c:
+	* gcc.dg/pr80776-1.c:
+
 2021-05-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/100778

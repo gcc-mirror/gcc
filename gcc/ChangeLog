@@ -1,3 +1,23 @@
+2021-05-29  Jeff Law  <jlaw@tachyum.com>
+
+	* config/h8300/h8300.c (h8300_emit_stack_adjustment): Drop unused
+	parameter.  Call callers fixed.
+	(push): Likewise.
+	(output_plussi): Add FALLTHRU markers.
+	(h8300_shift_needs_scratch_p): Add gcc_unreachable marker.
+
+2021-05-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* gimplify.c (gimplify_scan_omp_clauses): For taskloop simd
+	combined with parallel, make sure to add shared clause to
+	parallel for explicit linear clause.
+
+2021-05-29  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/100787
+	* gimple-ssa-evrp.c: Disable exporting of global ranges.
+
 2021-05-28  Jason Merrill  <jason@redhat.com>
 
 	* tree-iterator.h (struct tree_stmt_iterator): Add operator++,
