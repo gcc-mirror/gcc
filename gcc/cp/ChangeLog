@@ -1,3 +1,44 @@
+2021-05-28  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (build_data_member_initialization): Use tsi_range.
+	(build_constexpr_constructor_member_initializers): Likewise.
+	(constexpr_fn_retval, cxx_eval_statement_list): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* coroutines.cc (await_statement_expander): Likewise.
+	(await_statement_walker): Likewise.
+	* module.cc (trees_out::core_vals): Likewise.
+	* pt.c (tsubst_expr): Likewise.
+	* semantics.c (set_cleanup_locs): Likewise.
+
+2021-05-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100797
+	PR c++/95719
+	* call.c (build_over_call): Adjust base_binfo in
+	resolves_to_fixed_type_p case.
+
+2021-05-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/99928
+	* semantics.c (handle_omp_array_sections): Copy
+	OMP_CLAUSE_MAP_IMPLICIT.
+	(finish_omp_clauses): Move not just OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT
+	marked clauses last, but also OMP_CLAUSE_MAP_IMPLICIT.  Add
+	map_firstprivate_head bitmap, set it for GOMP_MAP_FIRSTPRIVATE_POINTER
+	maps and silently remove OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT if it is
+	present too.  For OMP_CLAUSE_MAP_IMPLICIT silently remove the clause
+	if present in map_head, map_field_head or map_firstprivate_head
+	bitmaps.
+
+2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* parser.c (cp_parser_omp_clause_affinity): New.
+	(cp_parser_omp_clause_name, cp_parser_omp_var_list_no_open,
+	cp_parser_omp_all_clauses, OMP_TASK_CLAUSE_MASK): Handle affinity
+	clause.
+	* semantics.c (handle_omp_array_sections_1, handle_omp_array_sections,
+	finish_omp_clauses): Likewise.
+
 2021-05-27  Matthias Kretz  <kretz@kde.org>
 
 	PR c++/100716

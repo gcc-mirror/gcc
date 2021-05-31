@@ -450,6 +450,8 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
+  global_dc->caret_max_width = 80;
+
   pass_info.pass = make_pass_test_show_path (g);
   pass_info.reference_pass_name = "whole-program";
   pass_info.ref_pass_instance_number = 1;

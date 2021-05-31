@@ -1,3 +1,8 @@
+2021-05-29  Mike Frysinger  <vapier@gentoo.org>
+
+	* configure.ac: Add gnulib to configdirs for sim.
+	* configure: Regenerate.
+
 2021-05-18  Mike Frysinger  <vapier@gentoo.org>
 
 	* Makefile.def: Add configure-sim dependency on all-gnulib.

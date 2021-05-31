@@ -1,4 +1,4 @@
-! { dg-do run }
+! { dg-do compile }
 
 module mymod
   implicit none (type, external)

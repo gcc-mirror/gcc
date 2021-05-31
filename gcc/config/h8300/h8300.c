@@ -91,7 +91,7 @@ static int h8300_interrupt_function_p (tree);
 static int h8300_saveall_function_p (tree);
 static int h8300_monitor_function_p (tree);
 static int h8300_os_task_function_p (tree);
-static void h8300_emit_stack_adjustment (int, HOST_WIDE_INT, bool);
+static void h8300_emit_stack_adjustment (int, HOST_WIDE_INT);
 static HOST_WIDE_INT round_frame_size (HOST_WIDE_INT);
 static unsigned int compute_saved_regs (void);
 static const char *cond_string (enum rtx_code);
@@ -452,7 +452,7 @@ Fpa (rtx par)
    SIZE to adjust the stack pointer.  */
 
 static void
-h8300_emit_stack_adjustment (int sign, HOST_WIDE_INT size, bool in_prologue)
+h8300_emit_stack_adjustment (int sign, HOST_WIDE_INT size)
 {
   /* If the frame size is 0, we don't have anything to do.  */
   if (size == 0)
@@ -511,7 +511,7 @@ compute_saved_regs (void)
 /* Emit an insn to push register RN.  */
 
 static rtx
-push (int rn, bool in_prologue)
+push (int rn)
 {
   rtx reg = gen_rtx_REG (word_mode, rn);
   rtx x;
@@ -571,7 +571,7 @@ h8300_push_pop (int regno, int nregs, bool pop_p, bool return_p)
       if (pop_p)
 	pop (regno);
       else
-	push (regno, false);
+	push (regno);
       return;
     }
 
@@ -755,7 +755,7 @@ h8300_expand_prologue (void)
   if (frame_pointer_needed)
     {
       /* Push fp.  */
-      push (HARD_FRAME_POINTER_REGNUM, true);
+      push (HARD_FRAME_POINTER_REGNUM);
       F (emit_move_insn (hard_frame_pointer_rtx, stack_pointer_rtx), 0);
     }
 
@@ -787,7 +787,7 @@ h8300_expand_prologue (void)
     }
 
   /* Leave room for locals.  */
-  h8300_emit_stack_adjustment (-1, round_frame_size (get_frame_size ()), true);
+  h8300_emit_stack_adjustment (-1, round_frame_size (get_frame_size ()));
 
   if (flag_stack_usage_info)
     current_function_static_stack_size
@@ -828,7 +828,7 @@ h8300_expand_epilogue (void)
   returned_p = false;
 
   /* Deallocate locals.  */
-  h8300_emit_stack_adjustment (1, frame_size, false);
+  h8300_emit_stack_adjustment (1, frame_size);
 
   /* Pop the saved registers in descending order.  */
   saved_regs = compute_saved_regs ();
@@ -2707,9 +2707,13 @@ output_plussi (rtx *operands, bool need_flags)
 	  if (!need_flags)
 	    return "adds\t%2,%S0";
 
+	  /* FALLTHRU */
+
 	case 0xfffffffc:
 	  if (!need_flags)
 	    return "subs\t%G2,%S0";
+
+	  /* FALLTHRU */
 
 	case 0x00010000:
 	case 0x00020000:
@@ -2719,6 +2723,8 @@ output_plussi (rtx *operands, bool need_flags)
 	      return "inc.w\t%2,%e0";
 	    }
 
+	  /* FALLTHRU */
+
 	case 0xffff0000:
 	case 0xfffe0000:
 	  if (!need_flags)
@@ -2726,6 +2732,9 @@ output_plussi (rtx *operands, bool need_flags)
 	      operands[2] = GEN_INT (intval >> 16);
 	      return "dec.w\t%G2,%e0";
 	    }
+
+	  /* FALLTHRU */
+
 	}
 
       /* See if we can finish with 4 bytes.  */
@@ -2792,10 +2801,15 @@ compute_plussi_length (rtx *operands, bool need_flags)
 	  if (!need_flags)
 	    return 2;
 
+	  /* FALLTHRU */
+
 	case 0xffff0000:
 	case 0xfffe0000:
 	  if (!need_flags)
 	    return 2;
+
+	  /* FALLTHRU */
+
 	}
 
       /* See if we can finish with 4 bytes.  */
@@ -3999,6 +4013,7 @@ h8300_shift_needs_scratch_p (int count, machine_mode mode, enum rtx_code type)
   else if (type == ASHIFTRT)
     return (ar == SHIFT_LOOP
 	    || (TARGET_H8300H && mode == SImode && count == 8));
+  gcc_unreachable ();
 }
 
 /* Output the assembler code for doing shifts.  */

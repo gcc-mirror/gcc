@@ -333,7 +333,7 @@ unpack_ts_function_decl_value_fields (struct bitpack_d *bp, tree expr)
   DECL_IS_NOVOPS (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IS_RETURNS_TWICE (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_IS_MALLOC (expr) = (unsigned) bp_unpack_value (bp, 1);
-  DECL_SET_IS_OPERATOR_NEW (expr, (unsigned) bp_unpack_value (bp, 1));
+  FUNCTION_DECL_DECL_TYPE (expr) = (function_decl_type) bp_unpack_value (bp, 2);
   DECL_SET_IS_OPERATOR_DELETE (expr, (unsigned) bp_unpack_value (bp, 1));
   DECL_DECLARED_INLINE_P (expr) = (unsigned) bp_unpack_value (bp, 1);
   DECL_STATIC_CHAIN (expr) = (unsigned) bp_unpack_value (bp, 1);

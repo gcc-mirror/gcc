@@ -9014,6 +9014,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		 lastprivate and perhaps firstprivate too on the
 		 parallel.  Similarly for #pragma omp for simd.  */
 	      struct gimplify_omp_ctx *octx = outer_ctx;
+	      bool taskloop_seen = false;
 	      decl = NULL_TREE;
 	      do
 		{
@@ -9045,11 +9046,12 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 		  else if (octx
 			   && (octx->region_type & ORT_TASK) != 0
 			   && octx->combined_loop)
-		    ;
+		    taskloop_seen = true;
 		  else if (octx
 			   && octx->region_type == ORT_COMBINED_PARALLEL
-			   && ctx->region_type == ORT_WORKSHARE
-			   && octx == outer_ctx)
+			   && ((ctx->region_type == ORT_WORKSHARE
+				&& octx == outer_ctx)
+			       || taskloop_seen))
 		    flags = GOVD_SEEN | GOVD_SHARED;
 		  else if (octx
 			   && ((octx->region_type & ORT_COMBINED_TEAMS)

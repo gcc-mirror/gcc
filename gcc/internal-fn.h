@@ -233,6 +233,7 @@ extern void expand_addsub_overflow (location_t, tree_code, tree, tree, tree,
 extern void expand_internal_call (gcall *);
 extern void expand_internal_call (internal_fn, gcall *);
 extern void expand_PHI (internal_fn, gcall *);
+extern void expand_SHUFFLEVECTOR (internal_fn, gcall *);
 
 extern bool vectorized_internal_fn_supported_p (internal_fn, tree);
 

@@ -5989,6 +5989,42 @@ build_x_vec_perm_expr (location_t loc,
 			      orig_arg1, orig_arg2);
   return exp;
 }
+
+/* Build a VEC_PERM_EXPR.
+   This is a simple wrapper for c_build_shufflevector.  */
+tree
+build_x_shufflevector (location_t loc, vec<tree, va_gc> *args,
+		       tsubst_flags_t complain)
+{
+  tree arg0 = (*args)[0];
+  tree arg1 = (*args)[1];
+  if (processing_template_decl)
+    {
+      for (unsigned i = 0; i < args->length (); ++i)
+	if (type_dependent_expression_p ((*args)[i]))
+	  {
+	    tree exp = build_min_nt_call_vec (NULL, args);
+	    CALL_EXPR_IFN (exp) = IFN_SHUFFLEVECTOR;
+	    return exp;
+	  }
+      arg0 = build_non_dependent_expr (arg0);
+      arg1 = build_non_dependent_expr (arg1);
+      /* ???  Nothing needed for the index arguments?  */
+    }
+  auto_vec<tree, 16> mask;
+  for (unsigned i = 2; i < args->length (); ++i)
+    {
+      tree idx = maybe_constant_value ((*args)[i]);
+      mask.safe_push (idx);
+    }
+  tree exp = c_build_shufflevector (loc, arg0, arg1, mask, complain & tf_error);
+  if (processing_template_decl && exp != error_mark_node)
+    {
+      exp = build_min_non_dep_call_vec (exp, NULL, args);
+      CALL_EXPR_IFN (exp) = IFN_SHUFFLEVECTOR;
+    }
+  return exp;
+}
 
 /* Return a tree for the sum or difference (RESULTCODE says which)
    of pointer PTROP and integer INTOP.  */

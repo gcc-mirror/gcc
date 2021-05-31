@@ -4122,6 +4122,12 @@ vectorized_internal_fn_supported_p (internal_fn ifn, tree type)
 }
 
 void
+expand_SHUFFLEVECTOR (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+void
 expand_PHI (internal_fn, gcall *)
 {
     gcc_unreachable ();

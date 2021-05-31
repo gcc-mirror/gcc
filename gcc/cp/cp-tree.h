@@ -7895,6 +7895,9 @@ extern tree cp_build_binary_op                  (const op_location_t &,
 extern tree build_x_vec_perm_expr               (location_t,
 						 tree, tree, tree,
 						 tsubst_flags_t);
+extern tree build_x_shufflevector               (location_t,
+						 vec<tree, va_gc> *,
+						 tsubst_flags_t);
 #define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (input_location, T, SIZEOF_EXPR, false, true)
 extern tree build_simple_component_ref		(tree, tree);
 extern tree build_ptrmemfunc_access_expr	(tree, tree);

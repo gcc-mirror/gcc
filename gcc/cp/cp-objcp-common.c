@@ -390,6 +390,7 @@ names_builtin_p (const char *name)
     case RID_BUILTIN_CONVERTVECTOR:
     case RID_BUILTIN_HAS_ATTRIBUTE:
     case RID_BUILTIN_SHUFFLE:
+    case RID_BUILTIN_SHUFFLEVECTOR:
     case RID_BUILTIN_LAUNDER:
     case RID_BUILTIN_BIT_CAST:
     case RID_OFFSETOF:

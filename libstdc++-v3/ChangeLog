@@ -1,3 +1,9 @@
+2021-05-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/abi.xml: Remove dead reference to "Intel
+	Compilers for Linux: Compatibility with GNU Compilers" article.
+	* doc/html/manual/abi.html: Regenerate.
+
 2021-05-26  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/formatter.h
