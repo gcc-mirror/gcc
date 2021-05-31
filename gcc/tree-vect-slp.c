@@ -3705,6 +3705,7 @@ vect_optimize_slp (vec_info *vinfo)
 	      case CFN_COMPLEX_ADD_ROT270:
 	      case CFN_COMPLEX_MUL:
 	      case CFN_COMPLEX_MUL_CONJ:
+	      case CFN_VEC_ADDSUB:
 		continue;
 	      default:;
 	      }

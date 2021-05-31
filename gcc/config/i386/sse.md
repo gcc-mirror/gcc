@@ -2410,7 +2410,7 @@
    (set_attr "prefix" "<round_saeonly_scalar_prefix>")
    (set_attr "mode" "<ssescalarmode>")])
 
-(define_insn "avx_addsubv4df3"
+(define_insn "vec_addsubv4df3"
   [(set (match_operand:V4DF 0 "register_operand" "=x")
 	(vec_merge:V4DF
 	  (minus:V4DF
@@ -2424,7 +2424,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V4DF")])
 
-(define_insn "sse3_addsubv2df3"
+(define_insn "vec_addsubv2df3"
   [(set (match_operand:V2DF 0 "register_operand" "=x,x")
 	(vec_merge:V2DF
 	  (minus:V2DF
@@ -2442,7 +2442,7 @@
    (set_attr "prefix" "orig,vex")
    (set_attr "mode" "V2DF")])
 
-(define_insn "avx_addsubv8sf3"
+(define_insn "vec_addsubv8sf3"
   [(set (match_operand:V8SF 0 "register_operand" "=x")
 	(vec_merge:V8SF
 	  (minus:V8SF
@@ -2456,7 +2456,7 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "V8SF")])
 
-(define_insn "sse3_addsubv4sf3"
+(define_insn "vec_addsubv4sf3"
   [(set (match_operand:V4SF 0 "register_operand" "=x,x")
 	(vec_merge:V4SF
 	  (minus:V4SF
