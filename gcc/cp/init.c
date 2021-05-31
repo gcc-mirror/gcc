@@ -2214,7 +2214,7 @@ build_offset_ref (tree type, tree member, bool address_p,
 	  if (!ok)
 	    return error_mark_node;
 	  if (DECL_STATIC_FUNCTION_P (t))
-	    return t;
+	    return member;
 	  member = t;
 	}
       else
