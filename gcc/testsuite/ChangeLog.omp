@@ -1,6 +1,14 @@
 2021-05-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-05-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depend-iterator-1.f90: Use dg-do compile.
+	* gfortran.dg/gomp/depend-iterator-2.f90: Use dg-do compile.
+
+2021-05-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-05-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/99928
