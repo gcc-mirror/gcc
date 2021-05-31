@@ -92,9 +92,8 @@ public:
   ranger_cache (class gimple_ranger &q);
   ~ranger_cache ();
 
-  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt);
+  virtual bool range_of_expr (irange &r, tree name, gimple *stmt);
   virtual bool range_on_edge (irange &r, edge e, tree expr);
-  void ssa_range_in_bb (irange &r, tree name, basic_block bb);
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
 
   bool get_global_range (irange &r, tree name) const;
@@ -113,6 +112,10 @@ private:
   void add_to_update (basic_block bb);
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   void propagate_cache (tree name);
+
+  void range_of_def (irange &r, tree name, basic_block bb);
+  void entry_range (irange &r, tree expr, basic_block bb);
+  void exit_range (irange &r, tree expr, basic_block bb);
 
   void propagate_updated_value (tree name, basic_block bb);
 

@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "gimple-range.h"
+#include "tree-cfg.h"
 
 // During contructor, allocate the vector of ssa_names.
 
@@ -708,36 +709,51 @@ ranger_cache::push_poor_value (basic_block bb, tree name)
 //  of an ssa_name in any given basic block.  Note, this does no additonal
 //  lookups, just accesses the data that is already known.
 
+// Get the range of NAME when the def occurs in block BB
+
 void
-ranger_cache::ssa_range_in_bb (irange &r, tree name, basic_block bb)
+ranger_cache::range_of_def (irange &r, tree name, basic_block bb)
 {
-  gimple *s = SSA_NAME_DEF_STMT (name);
-  basic_block def_bb = ((s && gimple_bb (s)) ? gimple_bb (s) :
-					       ENTRY_BLOCK_PTR_FOR_FN (cfun));
-  if (bb == def_bb)
+  gcc_checking_assert (gimple_range_ssa_p (name));
+  gcc_checking_assert (bb == gimple_bb (SSA_NAME_DEF_STMT (name)));
+
+  if (!m_globals.get_global_range (r, name))
     {
-      // NAME is defined in this block, so request its current value
-      if (!m_globals.get_global_range (r, name))
+      // If it doesn't have a value calculated, it means it's a
+      // "poor" value being used in some calculation.  Queue it up
+      // as a poor value to be improved later.
+      r = gimple_range_global (name);
+      if (push_poor_value (bb, name))
 	{
-	  // If it doesn't have a value calculated, it means it's a
-	  // "poor" value being used in some calculation.  Queue it up
-	  // as a poor value to be improved later.
-	  r = gimple_range_global (name);
-	  if (push_poor_value (bb, name))
+	  if (DEBUG_RANGE_CACHE)
 	    {
-	      if (DEBUG_RANGE_CACHE)
-		{
-		  fprintf (dump_file,
-			   "*CACHE* no global def in bb %d for ", bb->index);
-		  print_generic_expr (dump_file, name, TDF_SLIM);
-		  fprintf (dump_file, " depth : %d\n",
-			   m_poor_value_list.length ());
-		}
+	      fprintf (dump_file,
+		       "*CACHE* no global def in bb %d for ", bb->index);
+	      print_generic_expr (dump_file, name, TDF_SLIM);
+	      fprintf (dump_file, " depth : %d\n",
+		       m_poor_value_list.length ());
 	    }
-	 }
+	}
     }
+  if (r.varying_p () && m_non_null.non_null_deref_p (name, bb, false) &&
+      !cfun->can_throw_non_call_exceptions)
+    r = range_nonzero (TREE_TYPE (name));
+}
+
+// Get the range of NAME as it occurs on entry to block BB.  If it is not set,
+// mark it as a poor value for possible later improvement.
+
+void
+ranger_cache::entry_range (irange &r, tree name, basic_block bb)
+{
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    {
+      r = gimple_range_global (name);
+      return;
+    }
+
   // Look for the on-entry value of name in BB from the cache.
-  else if (!m_on_entry.get_bb_range (r, name, bb))
+  if (!m_on_entry.get_bb_range (r, name, bb))
     {
       // If it has no entry but should, then mark this as a poor value.
       // Its not a poor value if it does not have *any* edge ranges,
@@ -764,28 +780,70 @@ ranger_cache::ssa_range_in_bb (irange &r, tree name, basic_block bb)
     r = range_nonzero (TREE_TYPE (name));
 }
 
+// Get the range of NAME as it occurs on exit from block BB.
+
+void
+ranger_cache::exit_range (irange &r, tree name, basic_block bb)
+{
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    {
+      r = gimple_range_global (name);
+      return;
+    }
+
+  gimple *s = SSA_NAME_DEF_STMT (name);
+  basic_block def_bb = gimple_bb (s);
+  if (def_bb == bb)
+    range_of_def (r, name, bb);
+  else
+    entry_range (r, name, bb);
+ }
+
+
 // Implement range_of_expr.
 
 bool
-ranger_cache::range_of_expr (irange &r, tree expr, gimple *stmt)
+ranger_cache::range_of_expr (irange &r, tree name, gimple *stmt)
 {
-  if (gimple_range_ssa_p (expr))
-    ssa_range_in_bb (r, expr, gimple_bb (stmt));
+  if (!gimple_range_ssa_p (name))
+    {
+      get_tree_range (r, name);
+      return true;
+    }
+
+  basic_block bb = gimple_bb (stmt);
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  basic_block def_bb = gimple_bb (def_stmt);
+
+  if (bb == def_bb)
+    range_of_def (r, name, bb);
   else
-    get_tree_range (r, expr);
+    entry_range (r, name, bb);
   return true;
 }
 
-// Implement range_on_edge which returns true ONLY if there is a range
-// calculated.
 
-bool
-ranger_cache::range_on_edge (irange &r, edge e, tree expr)
-{
-  if (gimple_range_ssa_p (expr))
-    return m_gori.outgoing_edge_range_p (r, e, expr, *this);
+// Implement range_on_edge. Return TRUE if the edge generates a range,
+// otherwise false.. but still return a range.
+
+ bool
+ ranger_cache::range_on_edge (irange &r, edge e, tree expr)
+ {
+   if (gimple_range_ssa_p (expr))
+    {
+      exit_range (r, expr, e->src);
+      int_range_max edge_range;
+      if (m_gori.outgoing_edge_range_p (edge_range, e, expr, *this))
+	{
+	  r.intersect (edge_range);
+	  return true;
+	}
+    }
+  else
+    get_tree_range (r, expr);
   return false;
 }
+
 
 // Return a static range for NAME on entry to basic block BB in R.  If
 // calc is true, fill any cache entries required between BB and the
@@ -879,7 +937,7 @@ ranger_cache::propagate_cache (tree name)
 	  // Get whatever range we can for this edge.
 	  if (!m_gori.outgoing_edge_range_p (e_range, e, name, *this))
 	    {
-	      ssa_range_in_bb (e_range, name, e->src);
+	      exit_range (e_range, name, e->src);
 	      if (DEBUG_RANGE_CACHE)
 		{
 		  fprintf (dump_file, "No outgoing edge range, picked up ");
