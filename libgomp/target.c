@@ -1559,7 +1559,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		size_t align = (size_t) 1 << (kind >> rshift);
 		tgt->list[i].key = k;
 		k->tgt = tgt;
-		k->refcount = 1;
+		k->refcount = 0;
 		k->dynamic_refcount = 0;
 		if (field_tgt_clear != FIELD_TGT_EMPTY)
 		  {
@@ -1572,7 +1572,6 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 			  {
 			    /* Set to first structure element of sequence.  */
 			    k->refcount |= REFCOUNT_STRUCTELEM_FLAG_FIRST;
-			    k->structelem_refcount = 1;
 			    field_tgt_structelem_first = k;
 			  }
 			else
@@ -1596,6 +1595,11 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		    k->tgt_offset = tgt_size;
 		    tgt_size += k->host_end - k->host_start;
 		  }
+		/* First increment, from 0 to 1. gomp_increment_refcount
+		   encapsulates the different increment cases, so use this
+		   instead of directly setting 1 during initialization.  */
+		gomp_increment_refcount (k, refcount_set);
+
 		tgt->list[i].copy_from = GOMP_MAP_COPY_FROM_P (kind & typemask);
 		tgt->list[i].always_copy_from
 		  = GOMP_MAP_ALWAYS_FROM_P (kind & typemask);
