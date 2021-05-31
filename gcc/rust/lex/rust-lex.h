@@ -16,7 +16,14 @@ private:
   FILE *file;
 
 public:
-  RAIIFile (const char *filename) : file (fopen (filename, "r")) {}
+  RAIIFile (const char *filename)
+  {
+    if (strncmp (filename, "-", 1) == 0)
+      file = stdin;
+    else
+      file = fopen (filename, "r");
+  }
+
   RAIIFile (const RAIIFile &other) = delete;
   RAIIFile &operator= (const RAIIFile &other) = delete;
 
@@ -32,7 +39,7 @@ public:
 
   ~RAIIFile ()
   {
-    if (file != nullptr)
+    if (file != nullptr && file != stdin)
       fclose (file);
   }
 
