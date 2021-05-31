@@ -4644,28 +4644,6 @@ gimplify_init_ctor_eval_range (tree object, tree lower, tree upper,
   gimplify_seq_add_stmt (pre_p, gimple_build_label (loop_exit_label));
 }
 
-/* Return true if FDECL is accessing a field that is zero sized.  */
-
-static bool
-zero_sized_field_decl (const_tree fdecl)
-{
-  if (TREE_CODE (fdecl) == FIELD_DECL && DECL_SIZE (fdecl)
-      && integer_zerop (DECL_SIZE (fdecl)))
-    return true;
-  return false;
-}
-
-/* Return true if TYPE is zero sized.  */
-
-static bool
-zero_sized_type (const_tree type)
-{
-  if (AGGREGATE_TYPE_P (type) && TYPE_SIZE (type)
-      && integer_zerop (TYPE_SIZE (type)))
-    return true;
-  return false;
-}
-
 /* A subroutine of gimplify_init_constructor.  Generate individual
    MODIFY_EXPRs for a CONSTRUCTOR.  OBJECT is the LHS against which the
    assignments should happen.  ELTS is the CONSTRUCTOR_ELTS of the
@@ -4699,11 +4677,13 @@ gimplify_init_ctor_eval (tree object, vec<constructor_elt, va_gc> *elts,
       gcc_assert (purpose);
 
       /* Skip zero-sized fields, unless value has side-effects.  This can
-	 happen with calls to functions returning a zero-sized type, which
+	 happen with calls to functions returning a empty type, which
 	 we shouldn't discard.  As a number of downstream passes don't
-	 expect sets of zero-sized fields, we rely on the gimplification of
+	 expect sets of empty type fields, we rely on the gimplification of
 	 the MODIFY_EXPR we make below to drop the assignment statement.  */
-      if (! TREE_SIDE_EFFECTS (value) && zero_sized_field_decl (purpose))
+      if (!TREE_SIDE_EFFECTS (value)
+	  && TREE_CODE (purpose) == FIELD_DECL
+	  && is_empty_type (TREE_TYPE (purpose)))
 	continue;
 
       /* If we have a RANGE_EXPR, we have to build a loop to assign the
@@ -5781,11 +5761,11 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
   if (ret != GS_UNHANDLED)
     return ret;
 
-  /* For zero sized types only gimplify the left hand side and right hand
+  /* For empty types only gimplify the left hand side and right hand
      side as statements and throw away the assignment.  Do this after
      gimplify_modify_expr_rhs so we handle TARGET_EXPRs of addressable
      types properly.  */
-  if (zero_sized_type (TREE_TYPE (*from_p))
+  if (is_empty_type (TREE_TYPE (*from_p))
       && !want_value
       /* Don't do this for calls that return addressable types, expand_call
 	 relies on those having a lhs.  */
