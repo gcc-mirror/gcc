@@ -10000,6 +10000,44 @@ c_parser_postfix_expression (c_parser *parser)
 	    set_c_expr_source_range (&expr, loc, close_paren_loc);
 	    break;
 	  }
+	case RID_BUILTIN_SHUFFLEVECTOR:
+	  {
+	    vec<c_expr_t, va_gc> *cexpr_list;
+	    unsigned int i;
+	    c_expr_t *p;
+	    location_t close_paren_loc;
+
+	    c_parser_consume_token (parser);
+	    if (!c_parser_get_builtin_args (parser,
+					    "__builtin_shufflevector",
+					    &cexpr_list, false,
+					    &close_paren_loc))
+	      {
+		expr.set_error ();
+		break;
+	      }
+
+	    FOR_EACH_VEC_SAFE_ELT (cexpr_list, i, p)
+	      *p = convert_lvalue_to_rvalue (loc, *p, true, true);
+
+	    if (vec_safe_length (cexpr_list) < 3)
+	      {
+		error_at (loc, "wrong number of arguments to "
+			       "%<__builtin_shuffle%>");
+		expr.set_error ();
+	      }
+	    else
+	      {
+		auto_vec<tree, 16> mask;
+		for (i = 2; i < cexpr_list->length (); ++i)
+		  mask.safe_push ((*cexpr_list)[i].value);
+		expr.value = c_build_shufflevector (loc, (*cexpr_list)[0].value,
+						    (*cexpr_list)[1].value,
+						    mask);
+	      }
+	    set_c_expr_source_range (&expr, loc, close_paren_loc);
+	    break;
+	  }
 	case RID_BUILTIN_CONVERTVECTOR:
 	  {
 	    location_t start_loc = loc;

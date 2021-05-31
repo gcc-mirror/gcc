@@ -1214,14 +1214,14 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		}
 	    }
 
-	  if (phi_p
+	  if ((phi_p || gimple_could_trap_p (stmt_info->stmt))
 	      && (gimple_bb (first_stmt_info->stmt)
 		  != gimple_bb (stmt_info->stmt)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				 "Build SLP failed: different BB for PHI "
-				 "in %G", stmt);
+				 "or possibly trapping operation in %G", stmt);
 	      /* Mismatch.  */
 	      continue;
 	    }

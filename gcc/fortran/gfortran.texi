@@ -1842,7 +1842,7 @@ type, then the real-literal-constant will be interpreted as a
 
 Besides decimal constants, Fortran also supports binary (@code{b}),
 octal (@code{o}) and hexadecimal (@code{z}) integer constants.  The
-syntax is: @samp{prefix quote digits quote}, were the prefix is
+syntax is: @samp{prefix quote digits quote}, where the prefix is
 either @code{b}, @code{o} or @code{z}, quote is either @code{'} or
 @code{"} and the digits are @code{0} or @code{1} for binary,
 between @code{0} and @code{7} for octal, and between @code{0} and

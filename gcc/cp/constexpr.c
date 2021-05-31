@@ -330,12 +330,9 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
     return false;
   if (TREE_CODE (t) == STATEMENT_LIST)
     {
-      tree_stmt_iterator i;
-      for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
-	{
-	  if (! build_data_member_initialization (tsi_stmt (i), vec))
-	    return false;
-	}
+      for (tree stmt : tsi_range (t))
+	if (! build_data_member_initialization (stmt, vec))
+	  return false;
       return true;
     }
   if (TREE_CODE (t) == CLEANUP_STMT)
@@ -577,10 +574,9 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
 	break;
 
       case STATEMENT_LIST:
-	for (tree_stmt_iterator i = tsi_start (body);
-	     !tsi_end_p (i); tsi_next (&i))
+	for (tree stmt : tsi_range (body))
 	  {
-	    body = tsi_stmt (i);
+	    body = stmt;
 	    if (TREE_CODE (body) == BIND_EXPR)
 	      break;
 	  }
@@ -617,10 +613,9 @@ build_constexpr_constructor_member_initializers (tree type, tree body)
     }
   else if (TREE_CODE (body) == STATEMENT_LIST)
     {
-      tree_stmt_iterator i;
-      for (i = tsi_start (body); !tsi_end_p (i); tsi_next (&i))
+      for (tree stmt : tsi_range (body))
 	{
-	  ok = build_data_member_initialization (tsi_stmt (i), &vec);
+	  ok = build_data_member_initialization (stmt, &vec);
 	  if (!ok)
 	    break;
 	}
@@ -675,11 +670,10 @@ constexpr_fn_retval (tree body)
     {
     case STATEMENT_LIST:
       {
-	tree_stmt_iterator i;
 	tree expr = NULL_TREE;
-	for (i = tsi_start (body); !tsi_end_p (i); tsi_next (&i))
+	for (tree stmt : tsi_range (body))
 	  {
-	    tree s = constexpr_fn_retval (tsi_stmt (i));
+	    tree s = constexpr_fn_retval (stmt);
 	    if (s == error_mark_node)
 	      return error_mark_node;
 	    else if (s == NULL_TREE)
@@ -5772,7 +5766,6 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
 			 bool *non_constant_p, bool *overflow_p,
 			 tree *jump_target)
 {
-  tree_stmt_iterator i;
   tree local_target;
   /* In a statement-expression we want to return the last value.
      For empty statement expression return void_node.  */
@@ -5782,9 +5775,8 @@ cxx_eval_statement_list (const constexpr_ctx *ctx, tree t,
       local_target = NULL_TREE;
       jump_target = &local_target;
     }
-  for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
+  for (tree stmt : tsi_range (t))
     {
-      tree stmt = tsi_stmt (i);
       /* We've found a continue, so skip everything until we reach
 	 the label its jumping to.  */
       if (continues (jump_target))
@@ -8282,16 +8274,10 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       }
 
     case STATEMENT_LIST:
-      {
-	tree_stmt_iterator i;
-	for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
-	  {
-	    if (!RECUR (tsi_stmt (i), any))
-	      return false;
-	  }
-	return true;
-      }
-      break;
+      for (tree stmt : tsi_range (t))
+	if (!RECUR (stmt, any))
+	  return false;
+      return true;
 
     case MODIFY_EXPR:
       if (cxx_dialect < cxx14)

@@ -1235,7 +1235,7 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
       compare_values (DECL_IS_NOVOPS);
       compare_values (DECL_IS_RETURNS_TWICE);
       compare_values (DECL_IS_MALLOC);
-      compare_values (DECL_IS_OPERATOR_NEW_P);
+      compare_values (FUNCTION_DECL_DECL_TYPE);
       compare_values (DECL_DECLARED_INLINE_P);
       compare_values (DECL_STATIC_CHAIN);
       compare_values (DECL_NO_INLINE_WARNING_P);

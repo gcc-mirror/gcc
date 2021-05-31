@@ -6094,9 +6094,8 @@ trees_out::core_vals (tree t)
       break;
 
     case STATEMENT_LIST:
-      for (tree_stmt_iterator iter = tsi_start (t);
-	   !tsi_end_p (iter); tsi_next (&iter))
-	if (tree stmt = tsi_stmt (iter))
+      for (tree stmt : tsi_range (t))
+	if (stmt)
 	  WT (stmt);
       WT (NULL_TREE);
       break;

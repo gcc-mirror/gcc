@@ -613,9 +613,8 @@ set_cleanup_locs (tree stmts, location_t loc)
       set_cleanup_locs (CLEANUP_BODY (stmts), loc);
     }
   else if (TREE_CODE (stmts) == STATEMENT_LIST)
-    for (tree_stmt_iterator i = tsi_start (stmts);
-	 !tsi_end_p (i); tsi_next (&i))
-      set_cleanup_locs (tsi_stmt (i), loc);
+    for (tree stmt : tsi_range (stmts))
+      set_cleanup_locs (stmt, loc);
 }
 
 /* Finish a scope.  */

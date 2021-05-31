@@ -18152,9 +18152,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     {
     case STATEMENT_LIST:
       {
-	tree_stmt_iterator i;
-	for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
-	  RECUR (tsi_stmt (i));
+	for (tree stmt : tsi_range (t))
+	  RECUR (stmt);
 	break;
       }
 
@@ -20397,6 +20396,15 @@ tsubst_copy_and_build (tree t,
 	      if (TREE_CODE (ret) == VIEW_CONVERT_EXPR)
 		RETURN (ret);
 	      break;
+
+	    case IFN_SHUFFLEVECTOR:
+	      {
+		ret = build_x_shufflevector (input_location, call_args,
+					     complain);
+		if (ret != error_mark_node)
+		  RETURN (ret);
+		break;
+	      }
 
 	    default:
 	      /* Unsupported internal function with arguments.  */

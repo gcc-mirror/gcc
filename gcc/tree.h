@@ -3111,7 +3111,7 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
     {
       gcc_assert (FUNCTION_DECL_DECL_TYPE (decl) == NONE
 		  || FUNCTION_DECL_DECL_TYPE (decl) == t);
-      decl->function_decl.decl_type = t;
+      FUNCTION_DECL_DECL_TYPE (decl) = t;
     }
   else if (FUNCTION_DECL_DECL_TYPE (decl) == t)
     FUNCTION_DECL_DECL_TYPE (decl) = NONE;
@@ -3126,7 +3126,7 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
    C++ operator new, meaning that it returns a pointer for which we
    should not use type based aliasing.  */
 #define DECL_IS_OPERATOR_NEW_P(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == OPERATOR_NEW)
+  (FUNCTION_DECL_DECL_TYPE (FUNCTION_DECL_CHECK (NODE)) == OPERATOR_NEW)
 
 #define DECL_IS_REPLACEABLE_OPERATOR_NEW_P(NODE) \
   (DECL_IS_OPERATOR_NEW_P (NODE) && DECL_IS_REPLACEABLE_OPERATOR (NODE))
@@ -3137,7 +3137,7 @@ set_function_decl_type (tree decl, function_decl_type t, bool set)
 /* Nonzero in a FUNCTION_DECL means this function should be treated as
    C++ operator delete.  */
 #define DECL_IS_OPERATOR_DELETE_P(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == OPERATOR_DELETE)
+  (FUNCTION_DECL_DECL_TYPE (FUNCTION_DECL_CHECK (NODE)) == OPERATOR_DELETE)
 
 #define DECL_SET_IS_OPERATOR_DELETE(NODE, VAL) \
   set_function_decl_type (FUNCTION_DECL_CHECK (NODE), OPERATOR_DELETE, VAL)
@@ -3288,7 +3288,7 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 
 /* In FUNCTION_DECL, this is set if this function is a lambda function.  */
 #define DECL_LAMBDA_FUNCTION_P(NODE) \
-  (FUNCTION_DECL_CHECK (NODE)->function_decl.decl_type == LAMBDA_FUNCTION)
+  (FUNCTION_DECL_DECL_TYPE (FUNCTION_DECL_CHECK (NODE)) == LAMBDA_FUNCTION)
 
 #define DECL_SET_LAMBDA_FUNCTION(NODE, VAL) \
   set_function_decl_type (FUNCTION_DECL_CHECK (NODE), LAMBDA_FUNCTION, VAL)

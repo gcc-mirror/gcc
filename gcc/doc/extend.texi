@@ -11849,6 +11849,34 @@ to and from other datatypes of the same size).
 You cannot operate between vectors of different lengths or different
 signedness without a cast.
 
+@findex __builtin_shufflevector
+Vector shuffling is available using the
+@code{__builtin_shufflevector (vec1, vec2, index...)}
+function.  @var{vec1} and @var{vec2} must be expressions with
+vector type with a compatible element type.  The result of
+@code{__builtin_shufflevector} is a vector with the same element type
+as @var{vec1} and @var{vec2} but that has an element count equal to
+the number of indices specified.
+
+The @var{index} arguments are a list of integers that specify the
+elements indices of the first two vectors that should be extracted and
+returned in a new vector. These element indices are numbered sequentially
+starting with the first vector, continuing into the second vector.
+An index of -1 can be used to indicate that the corresponding element in
+the returned vector is a don't care and can be freely chosen to optimized
+the generated code sequence performing the shuffle operation.
+
+Consider the following example,
+@smallexample
+typedef int v4si __attribute__ ((vector_size (16)));
+typedef int v8si __attribute__ ((vector_size (32)));
+
+v8si a = @{1,-2,3,-4,5,-6,7,-8@};
+v4si b = __builtin_shufflevector (a, a, 0, 2, 4, 6); /* b is @{1,3,5,7@} */
+v4si c = @{-2,-4,-6,-8@};
+v8si d = __builtin_shufflevector (c, b, 4, 0, 5, 1, 6, 2, 7, 3); /* d is a */
+@end smallexample
+
 @findex __builtin_convertvector
 Vector conversion is available using the
 @code{__builtin_convertvector (vec, vectype)}
