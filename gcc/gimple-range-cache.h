@@ -100,6 +100,8 @@ public:
   bool get_non_stale_global_range (irange &r, tree name);
   void set_global_range (tree name, const irange &r);
 
+  void enable_new_values ();
+  void disable_new_values ();
   non_null_ref m_non_null;
   gori_compute m_gori;
 
@@ -131,6 +133,7 @@ private:
   bool push_poor_value (basic_block bb, tree name);
   vec<update_record> m_poor_value_list;
   class gimple_ranger &query;
+  bool m_new_value_p;
 };
 
 #endif // GCC_SSA_RANGE_CACHE_H

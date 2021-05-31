@@ -971,6 +971,15 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
       return true;
     }
 
+  // For a debug stmt, pick the best value currently available, do not
+  // trigger new value calculations.  PR 100781.
+  if (is_gimple_debug (stmt))
+    {
+      m_cache.disable_new_values ();
+      m_cache.range_of_expr (r, expr, stmt);
+      m_cache.enable_new_values ();
+      return true;
+    }
   basic_block bb = gimple_bb (stmt);
   gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
 

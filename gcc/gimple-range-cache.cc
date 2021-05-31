@@ -586,6 +586,7 @@ ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
       if (bb)
 	m_gori.exports (bb);
     }
+  enable_new_values ();
 }
 
 ranger_cache::~ranger_cache ()
@@ -604,6 +605,23 @@ ranger_cache::dump (FILE *f)
 {
   m_globals.dump (f);
   fprintf (f, "\n");
+}
+
+// Allow the cache to flag and query new values when propagation is forced
+// to use an unknown value.
+
+void
+ranger_cache::enable_new_values ()
+{
+  m_new_value_p = true;
+}
+
+// Disable new value querying.
+
+void
+ranger_cache::disable_new_values ()
+{
+  m_new_value_p = false;
 }
 
 // Dump the caches for basic block BB to file F.
@@ -689,6 +707,8 @@ ranger_cache::set_global_range (tree name, const irange &r)
 bool
 ranger_cache::push_poor_value (basic_block bb, tree name)
 {
+  if (!m_new_value_p)
+    return false;
   if (m_poor_value_list.length ())
     {
       // Don't push anything else to the same block.  If there are multiple 
