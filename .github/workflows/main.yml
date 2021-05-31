@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  - push
+  - pull_request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install mpfr
+      run: sudo apt-get install gcc-10 libmpfr-dev libmpc-dev
+
+    - name: Build libgccjit
+      run: |
+        cd ..
+        ls
+        mkdir build install
+        cd build
+        ../gcc/configure --enable-host-shared --enable-languages=jit,c++ --disable-bootstrap --disable-multilib --prefix=$(pwd)/../install
+        make -j4
+
+    - uses: actions/upload-artifact@v2
+      with:
+          name: libgccjit.so
+          path: /home/runner/work/gcc/build/gcc/libgccjit.so
