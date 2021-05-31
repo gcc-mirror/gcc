@@ -40,7 +40,7 @@ HIR::Crate
 ASTLowering::go ()
 {
   std::vector<std::unique_ptr<HIR::Item> > items;
-  std::vector<HIR::Attribute> inner_attrs;
+  AST::AttrVec inner_attrs;
   bool has_utf8bom = false;
   bool has_shebang = false;
 
@@ -65,8 +65,8 @@ ASTLowering::go ()
 void
 ASTLoweringBlock::visit (AST::BlockExpr &expr)
 {
-  std::vector<HIR::Attribute> inner_attribs;
-  std::vector<HIR::Attribute> outer_attribs;
+  AST::AttrVec inner_attribs;
+  AST::AttrVec outer_attribs;
 
   std::vector<std::unique_ptr<HIR::Stmt> > block_stmts;
   bool block_did_terminate = false;
@@ -240,7 +240,7 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIdentifier &field)
 void
 ASTLoweringExprWithBlock::visit (AST::WhileLoopExpr &expr)
 {
-  std::vector<HIR::Attribute> outer_attribs;
+  AST::AttrVec outer_attribs;
   HIR::BlockExpr *loop_block
     = ASTLoweringBlock::translate (expr.get_loop_block ().get (), &terminated);
 

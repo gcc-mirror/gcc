@@ -376,26 +376,26 @@ protected:
 struct StructPatternEtc
 {
 private:
-  std::vector<Attribute> outer_attrs;
+  AST::AttrVec outer_attrs;
 
   // should this store location data?
 
 public:
-  StructPatternEtc (std::vector<Attribute> outer_attribs)
+  StructPatternEtc (AST::AttrVec outer_attribs)
     : outer_attrs (std::move (outer_attribs))
   {}
 
   // Creates an empty StructPatternEtc
   static StructPatternEtc create_empty ()
   {
-    return StructPatternEtc (std::vector<Attribute> ());
+    return StructPatternEtc (AST::AttrVec ());
   }
 };
 
 // Base class for a single field in a struct pattern - abstract
 class StructPatternField
 {
-  std::vector<Attribute> outer_attrs;
+  AST::AttrVec outer_attrs;
   Location locus;
 
 public:
@@ -415,7 +415,7 @@ public:
   virtual void accept_vis (HIRVisitor &vis) = 0;
 
 protected:
-  StructPatternField (std::vector<Attribute> outer_attribs, Location locus)
+  StructPatternField (AST::AttrVec outer_attribs, Location locus)
     : outer_attrs (std::move (outer_attribs)), locus (locus)
   {}
 
@@ -432,8 +432,7 @@ class StructPatternFieldTuplePat : public StructPatternField
 public:
   StructPatternFieldTuplePat (TupleIndex index,
 			      std::unique_ptr<Pattern> tuple_pattern,
-			      std::vector<Attribute> outer_attribs,
-			      Location locus)
+			      AST::AttrVec outer_attribs, Location locus)
     : StructPatternField (std::move (outer_attribs), locus), index (index),
       tuple_pattern (std::move (tuple_pattern))
   {}
@@ -483,8 +482,7 @@ class StructPatternFieldIdentPat : public StructPatternField
 public:
   StructPatternFieldIdentPat (Identifier ident,
 			      std::unique_ptr<Pattern> ident_pattern,
-			      std::vector<Attribute> outer_attrs,
-			      Location locus)
+			      AST::AttrVec outer_attrs, Location locus)
     : StructPatternField (std::move (outer_attrs), locus),
       ident (std::move (ident)), ident_pattern (std::move (ident_pattern))
   {}
@@ -534,7 +532,7 @@ class StructPatternFieldIdent : public StructPatternField
 
 public:
   StructPatternFieldIdent (Identifier ident, bool is_ref, bool is_mut,
-			   std::vector<Attribute> outer_attrs, Location locus)
+			   AST::AttrVec outer_attrs, Location locus)
     : StructPatternField (std::move (outer_attrs), locus), has_ref (is_ref),
       has_mut (is_mut), ident (std::move (ident))
   {}

@@ -295,7 +295,7 @@ public:
 
   void visit (AST::TypeParam &param) override
   {
-    HIR::Attribute outer_attr = HIR::Attribute::create_empty ();
+    AST::Attribute outer_attr = AST::Attribute::create_empty ();
     std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
     HIR::Type *type = param.has_type ()
 			? ASTLoweringType::translate (param.get_type ().get ())

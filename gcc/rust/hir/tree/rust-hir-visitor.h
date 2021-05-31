@@ -37,8 +37,8 @@ public:
   // virtual void visit(TokenTree& token_tree) = 0;
   // virtual void visit(MacroMatch& macro_match) = 0;
   virtual void visit (Token &tok) = 0;
-  virtual void visit (DelimTokenTree &delim_tok_tree) = 0;
-  virtual void visit (AttrInputMetaItemContainer &input) = 0;
+  // virtual void visit (DelimTokenTree &delim_tok_tree) = 0;
+  // virtual void visit (AttrInputMetaItemContainer &input) = 0;
   // virtual void visit(MetaItem& meta_item) = 0;
   // virtual void visit(Stmt& stmt) = 0;
   // virtual void visit(Expr& expr) = 0;
@@ -64,9 +64,9 @@ public:
 
   // rust-expr.h
   virtual void visit (LiteralExpr &expr) = 0;
-  virtual void visit (AttrInputLiteral &attr_input) = 0;
-  virtual void visit (MetaItemLitExpr &meta_item) = 0;
-  virtual void visit (MetaItemPathLit &meta_item) = 0;
+  // virtual void visit (AttrInputLiteral &attr_input) = 0;
+  // virtual void visit (MetaItemLitExpr &meta_item) = 0;
+  // virtual void visit (MetaItemPathLit &meta_item) = 0;
   virtual void visit (BorrowExpr &expr) = 0;
   virtual void visit (DereferenceExpr &expr) = 0;
   virtual void visit (ErrorPropagationExpr &expr) = 0;
@@ -179,12 +179,12 @@ public:
   virtual void visit (MacroMatcher &matcher) = 0;
   virtual void visit (MacroRulesDefinition &rules_def) = 0;
   virtual void visit (MacroInvocation &macro_invoc) = 0;
-  virtual void visit (MetaItemPath &meta_item) = 0;
-  virtual void visit (MetaItemSeq &meta_item) = 0;
-  virtual void visit (MetaWord &meta_item) = 0;
-  virtual void visit (MetaNameValueStr &meta_item) = 0;
-  virtual void visit (MetaListPaths &meta_item) = 0;
-  virtual void visit (MetaListNameValueStr &meta_item) = 0;
+  // virtual void visit (MetaItemPath &meta_item) = 0;
+  // virtual void visit (MetaItemSeq &meta_item) = 0;
+  // virtual void visit (MetaWord &meta_item) = 0;
+  // virtual void visit (MetaNameValueStr &meta_item) = 0;
+  // virtual void visit (MetaListPaths &meta_item) = 0;
+  // virtual void visit (MetaListNameValueStr &meta_item) = 0;
 
   // rust-pattern.h
   virtual void visit (LiteralPattern &pattern) = 0;

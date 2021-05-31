@@ -86,7 +86,7 @@ public:
 
   void visit (AST::LetStmt &stmt) override
   {
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
     HIR::Pattern *variables
       = ASTLoweringPattern::translate (stmt.get_pattern ().get ());
     HIR::Type *type = stmt.has_type ()

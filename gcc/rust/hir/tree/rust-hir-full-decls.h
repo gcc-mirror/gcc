@@ -24,19 +24,10 @@
 namespace Rust {
 namespace HIR {
 // rust-ast.h
-class AttrInput;
 class TokenTree;
 class MacroMatch;
 class Token;
 struct Literal;
-class DelimTokenTree;
-class PathSegment;
-class SimplePathSegment;
-class SimplePath;
-struct Attribute;
-class MetaItemInner;
-class AttrInputMetaItemContainer;
-class MetaItem;
 class Stmt;
 class Item;
 class Expr;
@@ -76,8 +67,6 @@ class QualifiedPathInType;
 class ExprWithBlock;
 class LiteralExpr;
 class AttrInputLiteral;
-class MetaItemLitExpr;
-class MetaItemPathLit;
 class OperatorExpr;
 class BorrowExpr;
 class DereferenceExpr;
@@ -227,12 +216,6 @@ struct MacroTranscriber;
 struct MacroRule;
 class MacroRulesDefinition;
 class MacroInvocation;
-class MetaItemPath;
-class MetaItemSeq;
-class MetaWord;
-class MetaNameValueStr;
-class MetaListPaths;
-class MetaListNameValueStr;
 
 // rust-pattern.h
 class LiteralPattern;

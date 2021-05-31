@@ -142,7 +142,7 @@ public:
 
   void visit (AST::LoopExpr &expr) override
   {
-    std::vector<HIR::Attribute> outer_attribs;
+    AST::AttrVec outer_attribs;
     HIR::BlockExpr *loop_block
       = ASTLoweringBlock::translate (expr.get_loop_block ().get (),
 				     &terminated);

@@ -58,7 +58,7 @@ public:
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
 
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     if (alias.has_generics ())
@@ -98,11 +98,11 @@ public:
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
 
     std::vector<HIR::TupleField> fields;
     struct_decl.iterate ([&] (AST::TupleField &field) mutable -> bool {
-      std::vector<HIR::Attribute> outer_attrs;
+      AST::AttrVec outer_attrs;
       HIR::Visibility vis = HIR::Visibility::create_public ();
       HIR::Type *type
 	= ASTLoweringType::translate (field.get_field_type ().get ());
@@ -154,12 +154,12 @@ public:
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
 
     bool is_unit = struct_decl.is_unit_struct ();
     std::vector<HIR::StructField> fields;
     struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
-      std::vector<HIR::Attribute> outer_attrs;
+      AST::AttrVec outer_attrs;
       HIR::Visibility vis = HIR::Visibility::create_public ();
       HIR::Type *type
 	= ASTLoweringType::translate (field.get_field_type ().get ());
@@ -201,7 +201,7 @@ public:
 
   void visit (AST::StaticItem &var) override
   {
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     HIR::Type *type = ASTLoweringType::translate (var.get_type ().get ());
@@ -227,7 +227,7 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
@@ -253,7 +253,7 @@ public:
   void visit (AST::Function &function) override
   {
     // ignore for now and leave empty
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (
@@ -337,8 +337,8 @@ public:
 
   void visit (AST::InherentImpl &impl_block) override
   {
-    std::vector<HIR::Attribute> inner_attrs;
-    std::vector<HIR::Attribute> outer_attrs;
+    AST::AttrVec inner_attrs;
+    AST::AttrVec outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
 
     HIR::WhereClause where_clause (std::move (where_clause_items));

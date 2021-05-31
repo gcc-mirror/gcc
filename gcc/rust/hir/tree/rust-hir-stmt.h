@@ -52,7 +52,7 @@ protected:
 class LetStmt : public Stmt
 {
   // bool has_outer_attrs;
-  std::vector<Attribute> outer_attrs;
+  AST::AttrVec outer_attrs;
 
   std::unique_ptr<Pattern> variables_pattern;
 
@@ -79,7 +79,7 @@ public:
   LetStmt (Analysis::NodeMapping mappings,
 	   std::unique_ptr<Pattern> variables_pattern,
 	   std::unique_ptr<Expr> init_expr, std::unique_ptr<Type> type,
-	   std::vector<Attribute> outer_attrs, Location locus)
+	   AST::AttrVec outer_attrs, Location locus)
     : Stmt (std::move (mappings)), outer_attrs (std::move (outer_attrs)),
       variables_pattern (std::move (variables_pattern)),
       type (std::move (type)), init_expr (std::move (init_expr)), locus (locus)

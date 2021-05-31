@@ -3998,6 +3998,14 @@ MaybeNamedParam::as_string () const
   return str;
 }
 
+MetaItemInner::~MetaItemInner () = default;
+
+std::unique_ptr<MetaNameValueStr>
+MetaItemInner::to_meta_name_value_str () const
+{
+  return nullptr;
+}
+
 std::string
 MetaItemSeq::as_string () const
 {
