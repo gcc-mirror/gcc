@@ -1,3 +1,7 @@
+2021-05-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* gfortran.texi (BOZ literal constants): Fix typo.
+
 2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* dump-parse-tree.c (show_iterator): New.
