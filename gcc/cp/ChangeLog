@@ -1,3 +1,12 @@
+2021-05-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-26  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100502
+	* typeck.c (finish_class_member_access_expr): Disable ahead
+	of time access checking during the member lookup.
+
 2021-05-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100489

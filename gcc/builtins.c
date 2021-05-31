@@ -4910,6 +4910,8 @@ check_read_access (tree exp, tree src, tree bound /* = NULL_TREE */,
   if (!warn_stringop_overread)
     return true;
 
+  if (bound && !useless_type_conversion_p (size_type_node, TREE_TYPE (bound)))
+    bound = fold_convert (size_type_node, bound);
   access_data data (exp, access_read_only, NULL_TREE, false, bound, true);
   compute_objsize (src, ost, &data.src);
   return check_access (exp, /*dstwrite=*/ NULL_TREE, /*maxread=*/ bound,

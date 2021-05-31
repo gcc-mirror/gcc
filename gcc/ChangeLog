@@ -1,3 +1,15 @@
+2021-05-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR target/94177
+	* calls.c (precompute_register_parameters): Additionally test
+	targetm.precompute_tls_p to pre-compute argument.
+	* config/rs6000/aix.h (TARGET_PRECOMPUTE_TLS_P): Define.
+	* config/rs6000/rs6000.c (rs6000_aix_precompute_tls_p): New.
+	* target.def (precompute_tls_p): New.
+	* doc/tm.texi.in (TARGET_PRECOMPUTE_TLS_P): Add hook documentation.
+	* doc/tm.texi: Regenerated.
+	(cherry-picked from commit a21b399708175f6fc0ac723a0cebc127da421c60)
+
 2021-05-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:

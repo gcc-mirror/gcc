@@ -5880,6 +5880,15 @@ This hook returns true if @var{x} is a legitimate constant for a
 The default definition returns true.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_PRECOMPUTE_TLS_P (machine_mode @var{mode}, rtx @var{x})
+This hook returns true if @var{x} is a TLS operand on the target
+machine that should be pre-computed when used as the argument in a call.
+You can assume that @var{x} satisfies @code{CONSTANT_P}, so you need not 
+check this.
+
+The default definition returns false.
+@end deftypefn
+
 @deftypefn {Target Hook} rtx TARGET_DELEGITIMIZE_ADDRESS (rtx @var{x})
 This hook is used to undo the possibly obfuscating effects of the
 @code{LEGITIMIZE_ADDRESS} and @code{LEGITIMIZE_RELOAD_ADDRESS} target
