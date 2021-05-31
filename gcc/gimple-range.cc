@@ -1051,7 +1051,7 @@ gimple_ranger::range_on_edge (irange &r, edge e, tree name)
 			|| range_compatible_p (r.type(), TREE_TYPE (name)));
 
   // Check to see if NAME is defined on edge e.
-  if (m_cache.outgoing_edge_range_p (edge_range, e, name))
+  if (m_cache.range_on_edge (edge_range, e, name))
     r.intersect (edge_range);
 
   return true;
@@ -1063,7 +1063,7 @@ bool
 gimple_ranger::fold_range_internal (irange &r, gimple *s, tree name)
 {
   fold_using_range f;
-  fur_source src (this, &m_cache, NULL, s);
+  fur_source src (this, &(gori ()), NULL, s);
   return f.fold_stmt (r, s, src, name);
 }
 
@@ -1164,7 +1164,7 @@ gimple_ranger::dump_bb (FILE *f, basic_block bb)
   edge e;
   int_range_max range;
   fprintf (f, "\n=========== BB %d ============\n", bb->index);
-  m_cache.dump (f, bb);
+  m_cache.dump_bb (f, bb);
 
   ::dump_bb (f, bb, 4, TDF_NONE);
 
@@ -1193,7 +1193,7 @@ gimple_ranger::dump_bb (FILE *f, basic_block bb)
       for (x = 1; x < num_ssa_names; x++)
 	{
 	  tree name = gimple_range_ssa_p (ssa_name (x));
-	  if (name && m_cache.outgoing_edge_range_p (range, e, name))
+	  if (name && m_cache.range_on_edge (range, e, name))
 	    {
 	      gimple *s = SSA_NAME_DEF_STMT (name);
 	      // Only print the range if this is the def block, or
@@ -1236,7 +1236,7 @@ gimple_ranger::dump (FILE *f)
   FOR_EACH_BB_FN (bb, cfun)
     dump_bb (f, bb);
 
-  m_cache.dump (f, false);
+  m_cache.dump (f);
 }
 
 // If SCEV has any information about phi node NAME, return it as a range in R.

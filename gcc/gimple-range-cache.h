@@ -86,13 +86,15 @@ private:
 // them available for gori-computes to query so outgoing edges can be
 // properly calculated.
 
-class ranger_cache : public gori_compute
+class ranger_cache : public range_query
 {
 public:
   ranger_cache (class gimple_ranger &q);
   ~ranger_cache ();
 
-  virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
+  virtual bool range_of_expr (irange &r, tree expr, gimple *stmt);
+  virtual bool range_on_edge (irange &r, edge e, tree expr);
+  void ssa_range_in_bb (irange &r, tree name, basic_block bb);
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
 
   bool get_global_range (irange &r, tree name) const;
@@ -100,9 +102,10 @@ public:
   void set_global_range (tree name, const irange &r);
 
   non_null_ref m_non_null;
+  gori_compute m_gori;
 
-  void dump (FILE *f, bool dump_gori = true);
-  void dump (FILE *f, basic_block bb);
+  void dump_bb (FILE *f, basic_block bb);
+  virtual void dump (FILE *f) OVERRIDE;
 private:
   ssa_global_cache m_globals;
   block_range_cache m_on_entry;
