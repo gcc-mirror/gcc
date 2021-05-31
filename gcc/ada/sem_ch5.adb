@@ -2176,9 +2176,11 @@ package body Sem_Ch5 is
       --  indicator, verify that the container type has an Iterate aspect that
       --  implements the reversible iterator interface.
 
-      procedure Check_Subtype_Indication (Comp_Type : Entity_Id);
+      procedure Check_Subtype_Definition (Comp_Type : Entity_Id);
       --  If a subtype indication is present, verify that it is consistent
       --  with the component type of the array or container name.
+      --  In Ada 2022, the subtype indication may be an access definition,
+      --  if the array or container has elements of an anonymous access type.
 
       function Get_Cursor_Type (Typ : Entity_Id) return Entity_Id;
       --  For containers with Iterator and related aspects, the cursor is
@@ -2209,24 +2211,46 @@ package body Sem_Ch5 is
       end Check_Reverse_Iteration;
 
       -------------------------------
-      --  Check_Subtype_Indication --
+      --  Check_Subtype_Definition --
       -------------------------------
 
-      procedure Check_Subtype_Indication (Comp_Type : Entity_Id) is
+      procedure Check_Subtype_Definition (Comp_Type : Entity_Id) is
       begin
-         if Present (Subt)
-           and then (not Covers (Base_Type ((Bas)), Comp_Type)
+         if not Present (Subt) then
+            return;
+         end if;
+
+         if Is_Anonymous_Access_Type (Entity (Subt)) then
+            if not Is_Anonymous_Access_Type (Comp_Type) then
+               Error_Msg_NE
+                 ("component type& is not an anonymous access",
+                  Subt, Comp_Type);
+
+            elsif not Conforming_Types
+                (Designated_Type (Entity (Subt)),
+                 Designated_Type (Comp_Type),
+                 Fully_Conformant)
+            then
+               Error_Msg_NE
+                 ("subtype indication does not match component type&",
+                  Subt, Comp_Type);
+            end if;
+
+         elsif Present (Subt)
+           and then (not Covers (Base_Type (Bas), Comp_Type)
                       or else not Subtypes_Statically_Match (Bas, Comp_Type))
          then
             if Is_Array_Type (Typ) then
-               Error_Msg_N
-                 ("subtype indication does not match component type", Subt);
+               Error_Msg_NE
+                 ("subtype indication does not match component type&",
+                  Subt, Comp_Type);
             else
-               Error_Msg_N
-                 ("subtype indication does not match element type", Subt);
+               Error_Msg_NE
+                 ("subtype indication does not match element type&",
+                  Subt, Comp_Type);
             end if;
          end if;
-      end Check_Subtype_Indication;
+      end Check_Subtype_Definition;
 
       ---------------------
       -- Get_Cursor_Type --
@@ -2286,6 +2310,39 @@ package body Sem_Ch5 is
             begin
                Insert_Before (Parent (Parent (N)), Decl);
                Analyze (Decl);
+               Rewrite (Subt, New_Occurrence_Of (S, Sloc (Subt)));
+            end;
+
+         --  Ada 2022: the subtype definition may be for an anonymous
+         --  access type.
+
+         elsif Nkind (Subt) = N_Access_Definition then
+            declare
+               S    : constant Entity_Id := Make_Temporary (Sloc (Subt), 'S');
+               Decl : Node_Id;
+            begin
+               if Present (Subtype_Mark (Subt)) then
+                  Decl :=
+                    Make_Full_Type_Declaration (Loc,
+                      Defining_Identifier => S,
+                      Type_Definition     =>
+                        Make_Access_To_Object_Definition (Loc,
+                          All_Present        => True,
+                          Subtype_Indication =>
+                            New_Copy_Tree (Subtype_Mark (Subt))));
+
+               else
+                  Decl :=
+                    Make_Full_Type_Declaration (Loc,
+                      Defining_Identifier => S,
+                      Type_Definition  =>
+                        New_Copy_Tree
+                          (Access_To_Subprogram_Definition (Subt)));
+               end if;
+
+               Insert_Before (Parent (Parent (N)), Decl);
+               Analyze (Decl);
+               Freeze_Before (First (Statements (Parent (Parent (N)))), S);
                Rewrite (Subt, New_Occurrence_Of (S, Sloc (Subt)));
             end;
          else
@@ -2565,7 +2622,7 @@ package body Sem_Ch5 is
                   & "component of a mutable object", N);
             end if;
 
-            Check_Subtype_Indication (Component_Type (Typ));
+            Check_Subtype_Definition (Component_Type (Typ));
 
          --  Here we have a missing Range attribute
 
@@ -2615,7 +2672,7 @@ package body Sem_Ch5 is
                   end if;
                end;
 
-               Check_Subtype_Indication (Etype (Def_Id));
+               Check_Subtype_Definition (Etype (Def_Id));
 
             --  For a predefined container, the type of the loop variable is
             --  the Iterator_Element aspect of the container type.
@@ -2642,7 +2699,7 @@ package body Sem_Ch5 is
                      Cursor_Type := Get_Cursor_Type (Typ);
                      pragma Assert (Present (Cursor_Type));
 
-                     Check_Subtype_Indication (Etype (Def_Id));
+                     Check_Subtype_Definition (Etype (Def_Id));
 
                      --  If the container has a variable indexing aspect, the
                      --  element is a variable and is modifiable in the loop.
