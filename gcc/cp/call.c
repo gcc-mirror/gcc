@@ -7206,8 +7206,10 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	 treat that as an implicit delete-expression.  This is also called for
 	 the delete if the constructor throws in a new-expression, and for a
 	 deleting destructor (which implements a delete-expression).  */
+      /* But leave this flag off for destroying delete to avoid wrong
+	 assumptions in the optimizers.  */
       tree call = extract_call_expr (ret);
-      if (TREE_CODE (call) == CALL_EXPR)
+      if (TREE_CODE (call) == CALL_EXPR && !destroying_delete_p (fn))
 	CALL_FROM_NEW_OR_DELETE_P (call) = 1;
 
       return ret;

@@ -1,3 +1,8 @@
+2021-05-31  Martin Liska  <mliska@suse.cz>
+
+	* lto-common.c (compare_tree_sccs_1): Compare
+	FUNCTION_DECL_DECL_TYPE.
+
 2021-05-24  Wang Liushuai  <wangliushuai@bytedance.com>
 
 	* lto-dump.c (get_size): Fix the NPD error about the thunk symbol.

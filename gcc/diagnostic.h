@@ -515,4 +515,6 @@ extern int num_digits (int);
 extern json::value *json_from_expanded_location (diagnostic_context *context,
 						 location_t loc);
 
+extern bool warning_enabled_at (location_t, int);
+
 #endif /* ! GCC_DIAGNOSTIC_H */

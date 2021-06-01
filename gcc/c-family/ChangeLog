@@ -1,3 +1,18 @@
+2021-05-31  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR testsuite/100749
+	* c-pch.c (c_common_valid_pch): Use xstrdup for debug format set names.
+
+2021-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR c++/88601
+	* c-common.c: Include tree-vector-builder.h and
+	vec-perm-indices.h.
+	(c_common_reswords): Add __builtin_shufflevector.
+	(c_build_shufflevector): New funtion.
+	* c-common.h (enum rid): Add RID_BUILTIN_SHUFFLEVECTOR.
+	(c_build_shufflevector): Declare.
+
 2021-05-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/99928

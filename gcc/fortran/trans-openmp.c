@@ -5380,6 +5380,14 @@ gfc_split_omp_clauses (gfc_code *code,
       mask = GFC_OMP_MASK_PARALLEL | GFC_OMP_MASK_DO | GFC_OMP_MASK_SIMD;
       innermost = GFC_OMP_SPLIT_SIMD;
       break;
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+      mask = GFC_OMP_MASK_PARALLEL | GFC_OMP_MASK_TASKLOOP | GFC_OMP_MASK_SIMD;
+      innermost = GFC_OMP_SPLIT_TASKLOOP;
+      break;
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+      mask = GFC_OMP_MASK_PARALLEL | GFC_OMP_MASK_TASKLOOP | GFC_OMP_MASK_SIMD;
+      innermost = GFC_OMP_SPLIT_SIMD;
+      break;
     case EXEC_OMP_SIMD:
       innermost = GFC_OMP_SPLIT_SIMD;
       break;
@@ -5427,9 +5435,11 @@ gfc_split_omp_clauses (gfc_code *code,
 	     | GFC_OMP_MASK_DISTRIBUTE | GFC_OMP_MASK_SIMD;
       innermost = GFC_OMP_SPLIT_SIMD;
       break;
+    case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_TASKLOOP:
       innermost = GFC_OMP_SPLIT_TASKLOOP;
       break;
+    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_TASKLOOP_SIMD:
       mask = GFC_OMP_MASK_TASKLOOP | GFC_OMP_MASK_SIMD;
       innermost = GFC_OMP_SPLIT_SIMD;
@@ -5821,28 +5831,6 @@ gfc_trans_omp_parallel_do_simd (gfc_code *code, stmtblock_t *pblock,
 }
 
 static tree
-gfc_trans_omp_parallel_master (gfc_code *code)
-{
-  stmtblock_t block;
-  tree stmt, omp_clauses;
-
-  gfc_start_block (&block);
-  omp_clauses = gfc_trans_omp_clauses (&block, code->ext.omp_clauses,
-				       code->loc);
-  pushlevel ();
-  stmt = gfc_trans_omp_master (code);
-  if (TREE_CODE (stmt) != BIND_EXPR)
-    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
-  else
-    poplevel (0, 0);
-  stmt = build2_loc (gfc_get_location (&code->loc), OMP_PARALLEL,
-		     void_type_node, stmt, omp_clauses);
-  OMP_PARALLEL_COMBINED (stmt) = 1;
-  gfc_add_expr_to_block (&block, stmt);
-  return gfc_finish_block (&block);
-}
-
-static tree
 gfc_trans_omp_parallel_sections (gfc_code *code)
 {
   stmtblock_t block;
@@ -6217,7 +6205,7 @@ gfc_trans_omp_target (gfc_code *code)
 }
 
 static tree
-gfc_trans_omp_taskloop (gfc_code *code)
+gfc_trans_omp_taskloop (gfc_code *code, gfc_exec_op op)
 {
   stmtblock_t block;
   gfc_omp_clauses clausesa[GFC_OMP_SPLIT_NUM];
@@ -6229,7 +6217,7 @@ gfc_trans_omp_taskloop (gfc_code *code)
     omp_clauses
       = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_TASKLOOP],
 			       code->loc);
-  switch (code->op)
+  switch (op)
     {
     case EXEC_OMP_TASKLOOP:
       /* This is handled in gfc_trans_omp_do.  */
@@ -6254,6 +6242,75 @@ gfc_trans_omp_taskloop (gfc_code *code)
       OMP_FOR_CLAUSES (taskloop) = omp_clauses;
       stmt = taskloop;
     }
+  gfc_add_expr_to_block (&block, stmt);
+  return gfc_finish_block (&block);
+}
+
+static tree
+gfc_trans_omp_master_taskloop (gfc_code *code, gfc_exec_op op)
+{
+  stmtblock_t block;
+  tree stmt;
+
+  gfc_start_block (&block);
+  pushlevel ();
+  if (op == EXEC_OMP_MASTER_TASKLOOP_SIMD)
+    stmt = gfc_trans_omp_taskloop (code, EXEC_OMP_TASKLOOP_SIMD);
+  else
+    {
+      gfc_omp_clauses clausesa[GFC_OMP_SPLIT_NUM];
+      gcc_assert (op == EXEC_OMP_MASTER_TASKLOOP);
+      if (op != code->op)
+	gfc_split_omp_clauses (code, clausesa);
+      stmt = gfc_trans_omp_do (code, EXEC_OMP_TASKLOOP, NULL,
+			       op != code->op
+			       ? &clausesa[GFC_OMP_SPLIT_TASKLOOP]
+			       : code->ext.omp_clauses, NULL);
+    }
+  if (TREE_CODE (stmt) != BIND_EXPR)
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
+  else
+    poplevel (0, 0);
+  stmt = build1_v (OMP_MASTER, stmt);
+  gfc_add_expr_to_block (&block, stmt);
+  return gfc_finish_block (&block);
+}
+
+static tree
+gfc_trans_omp_parallel_master (gfc_code *code)
+{
+  stmtblock_t block;
+  tree stmt, omp_clauses;
+  gfc_omp_clauses clausesa[GFC_OMP_SPLIT_NUM];
+
+  if (code->op != EXEC_OMP_PARALLEL_MASTER)
+    gfc_split_omp_clauses (code, clausesa);
+
+  gfc_start_block (&block);
+  omp_clauses = gfc_trans_omp_clauses (&block,
+				       code->op == EXEC_OMP_PARALLEL_MASTER
+				       ? code->ext.omp_clauses
+				       : &clausesa[GFC_OMP_SPLIT_PARALLEL],
+				       code->loc);
+  pushlevel ();
+  if (code->op == EXEC_OMP_PARALLEL_MASTER)
+    stmt = gfc_trans_omp_master (code);
+  else
+    {
+      gcc_assert (code->op == EXEC_OMP_PARALLEL_MASTER_TASKLOOP
+		  || code->op == EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD);
+      gfc_exec_op op = (code->op == EXEC_OMP_PARALLEL_MASTER_TASKLOOP
+			? EXEC_OMP_MASTER_TASKLOOP
+			: EXEC_OMP_MASTER_TASKLOOP_SIMD);
+      stmt = gfc_trans_omp_master_taskloop (code, op);
+    }
+  if (TREE_CODE (stmt) != BIND_EXPR)
+    stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
+  else
+    poplevel (0, 0);
+  stmt = build2_loc (gfc_get_location (&code->loc), OMP_PARALLEL,
+		     void_type_node, stmt, omp_clauses);
+  OMP_PARALLEL_COMBINED (stmt) = 1;
   gfc_add_expr_to_block (&block, stmt);
   return gfc_finish_block (&block);
 }
@@ -6568,6 +6625,9 @@ gfc_trans_omp_directive (gfc_code *code)
       return gfc_trans_omp_flush (code);
     case EXEC_OMP_MASTER:
       return gfc_trans_omp_master (code);
+    case EXEC_OMP_MASTER_TASKLOOP:
+    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
+      return gfc_trans_omp_master_taskloop (code, code->op);
     case EXEC_OMP_ORDERED:
       return gfc_trans_omp_ordered (code);
     case EXEC_OMP_PARALLEL:
@@ -6577,6 +6637,8 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_PARALLEL_DO_SIMD:
       return gfc_trans_omp_parallel_do_simd (code, NULL, NULL);
     case EXEC_OMP_PARALLEL_MASTER:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
       return gfc_trans_omp_parallel_master (code);
     case EXEC_OMP_PARALLEL_SECTIONS:
       return gfc_trans_omp_parallel_sections (code);
@@ -6610,7 +6672,7 @@ gfc_trans_omp_directive (gfc_code *code)
     case EXEC_OMP_TASKGROUP:
       return gfc_trans_omp_taskgroup (code);
     case EXEC_OMP_TASKLOOP_SIMD:
-      return gfc_trans_omp_taskloop (code);
+      return gfc_trans_omp_taskloop (code, code->op);
     case EXEC_OMP_TASKWAIT:
       return gfc_trans_omp_taskwait (code);
     case EXEC_OMP_TASKYIELD:

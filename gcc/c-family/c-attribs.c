@@ -5389,7 +5389,11 @@ handle_optimize_attribute (tree *node, tree name, tree args,
       /* If we previously had some optimization options, use them as the
 	 default.  */
       gcc_options *saved_global_options = NULL;
-      if (flag_checking)
+
+      /* When #pragma GCC optimize pragma is used, it modifies global_options
+	 without calling targetm.override_options_after_change.  That can leave
+	 target flags inconsistent for comparison.  */
+      if (flag_checking && optimization_current_node == optimization_default_node)
 	{
 	  saved_global_options = XNEW (gcc_options);
 	  *saved_global_options = global_options;

@@ -86,23 +86,27 @@ private:
 // them available for gori-computes to query so outgoing edges can be
 // properly calculated.
 
-class ranger_cache : public gori_compute
+class ranger_cache : public range_query
 {
 public:
   ranger_cache (class gimple_ranger &q);
   ~ranger_cache ();
 
-  virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
+  virtual bool range_of_expr (irange &r, tree name, gimple *stmt);
+  virtual bool range_on_edge (irange &r, edge e, tree expr);
   bool block_range (irange &r, basic_block bb, tree name, bool calc = true);
 
   bool get_global_range (irange &r, tree name) const;
   bool get_non_stale_global_range (irange &r, tree name);
   void set_global_range (tree name, const irange &r);
 
+  void enable_new_values ();
+  void disable_new_values ();
   non_null_ref m_non_null;
+  gori_compute m_gori;
 
-  void dump (FILE *f, bool dump_gori = true);
-  void dump (FILE *f, basic_block bb);
+  void dump_bb (FILE *f, basic_block bb);
+  virtual void dump (FILE *f) OVERRIDE;
 private:
   ssa_global_cache m_globals;
   block_range_cache m_on_entry;
@@ -110,6 +114,10 @@ private:
   void add_to_update (basic_block bb);
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   void propagate_cache (tree name);
+
+  void range_of_def (irange &r, tree name, basic_block bb);
+  void entry_range (irange &r, tree expr, basic_block bb);
+  void exit_range (irange &r, tree expr, basic_block bb);
 
   void propagate_updated_value (tree name, basic_block bb);
 
@@ -125,6 +133,7 @@ private:
   bool push_poor_value (basic_block bb, tree name);
   vec<update_record> m_poor_value_list;
   class gimple_ranger &query;
+  bool m_new_value_p;
 };
 
 #endif // GCC_SSA_RANGE_CACHE_H

@@ -1,3 +1,7 @@
+2021-05-31  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2021-05-29  Mike Frysinger  <vapier@gentoo.org>
 
 	* configure.ac: Add gnulib to configdirs for sim.

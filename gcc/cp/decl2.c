@@ -5499,10 +5499,10 @@ cp_warn_deprecated_use (tree decl, tsubst_flags_t complain)
       && DECL_NONSTATIC_MEMBER_FUNCTION_P (decl)
       && copy_fn_p (decl))
     {
-      if (warn_deprecated_copy
-	  /* Don't warn about system library classes (c++/86342).  */
-	  && (!DECL_IN_SYSTEM_HEADER (decl)
-	      || global_dc->dc_warn_system_headers))
+      /* Don't warn if the flag was disabled around the class definition
+	 (c++/94492).  */
+      if (warning_enabled_at (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wdeprecated_copy))
 	{
 	  auto_diagnostic_group d;
 	  tree ctx = DECL_CONTEXT (decl);
