@@ -3090,7 +3090,8 @@ df_get_call_refs (class df_collection_rec *collection_rec,
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {
-      if (i == STACK_POINTER_REGNUM)
+      if (i == STACK_POINTER_REGNUM
+	  && !FAKE_CALL_P (insn_info->insn))
 	/* The stack ptr is used (honorarily) by a CALL insn.  */
 	df_ref_record (DF_REF_BASE, collection_rec, regno_reg_rtx[i],
 		       NULL, bb, insn_info, DF_REF_REG_USE,
