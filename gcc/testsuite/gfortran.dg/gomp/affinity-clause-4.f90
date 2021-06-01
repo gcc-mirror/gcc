@@ -6,7 +6,7 @@ subroutine foo
     end function ibar
   end interface
 
-  !$omp parallel default(none)  ! { dg-note "enclosing 'parallel'" }
+  !$omp parallel default(none)  ! { dg-message "enclosing 'parallel'" }
   !$omp task affinity (iterator(j=ibar(0):ibar(1):ibar(2)) : a(ibar(j)), b(j), c(j))
   !$omp end task
   !$omp end parallel

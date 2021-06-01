@@ -1,3 +1,9 @@
+2021-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/affinity-6.c: Use dg-message
+	instead of dg-note.
+	* gfortran.dg/gomp/affinity-clause-4.f90: Likewise.
+
 2021-05-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
