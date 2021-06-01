@@ -18,7 +18,7 @@ private:
 public:
   RAIIFile (const char *filename)
   {
-    if (strncmp (filename, "-", 1) == 0)
+    if (strcmp (filename, "-") == 0)
       file = stdin;
     else
       file = fopen (filename, "r");
