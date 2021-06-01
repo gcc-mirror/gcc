@@ -1,3 +1,7 @@
+2021-06-01  Release Manager
+
+	* GCC 9.4.0 released.
+
 2021-05-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* objc-next-metadata-tags.h (OCTI_RT_META_IVAR_REF): New.

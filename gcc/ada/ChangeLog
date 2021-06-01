@@ -1,3 +1,7 @@
+2021-06-01  Release Manager
+
+	* GCC 9.4.0 released.
+
 2021-04-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init): Set default range bits to 0.

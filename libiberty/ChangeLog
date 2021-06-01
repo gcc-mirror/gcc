@@ -1,3 +1,7 @@
+2021-06-01  Release Manager
+
+	* GCC 9.4.0 released.
+
 2021-04-12  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
