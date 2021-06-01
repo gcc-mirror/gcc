@@ -4189,6 +4189,8 @@ rs6000_option_override_internal (bool global_init_p)
       else
 	rs6000_long_double_type_size = default_long_double_size;
     }
+  else if (rs6000_long_double_type_size == FLOAT_PRECISION_TFmode)
+    ; /* The option value can be seen when cl_target_option_restore is called.  */
   else if (rs6000_long_double_type_size == 128)
     rs6000_long_double_type_size = FLOAT_PRECISION_TFmode;
   else if (global_options_set.x_rs6000_ieeequad)
