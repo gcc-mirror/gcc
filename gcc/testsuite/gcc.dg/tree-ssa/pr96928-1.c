@@ -1,9 +1,9 @@
 /* PR tree-optimization/96928 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-phiopt2" } */
+/* { dg-options "-O2 -fdump-tree-phiopt2 -fdump-tree-optimized" } */
 /* { dg-final { scan-tree-dump-times " = a_\[0-9]*\\\(D\\\) >> " 5 "phiopt2" } } */
 /* { dg-final { scan-tree-dump-times " = ~c_\[0-9]*\\\(D\\\);" 1 "phiopt2" } } */
-/* { dg-final { scan-tree-dump-times " = ~" 1 "phiopt2" } } */
+/* { dg-final { scan-tree-dump-times " = ~" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times " = \[abc_0-9\\\(\\\)D]* \\\^ " 5 "phiopt2" } } */
 /* { dg-final { scan-tree-dump-not "a < 0" "phiopt2" } } */
 
