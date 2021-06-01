@@ -115,5 +115,6 @@ public:
 
 extern global_range_query global_ranges;
 extern value_range gimple_range_global (tree name);
+extern bool update_global_range (irange &r, tree name);
 
 #endif // GCC_QUERY_H

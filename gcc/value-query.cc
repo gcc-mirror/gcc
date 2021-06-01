@@ -224,6 +224,45 @@ get_ssa_name_ptr_info_nonnull (const_tree name)
   return !pi->pt.null;
 }
 
+// Update the global range for NAME into the SSA_RANGE_NAME_INFO and
+// SSA_NAME_PTR_INFO fields.  Return TRUE if the range for NAME was
+// updated.
+
+bool
+update_global_range (irange &r, tree name)
+{
+  tree type = TREE_TYPE (name);
+
+  if (r.undefined_p () || r.varying_p ())
+    return false;
+
+  if (INTEGRAL_TYPE_P (type))
+    {
+      // If a global range already exists, incorporate it.
+      if (SSA_NAME_RANGE_INFO (name))
+	{
+	  value_range glob;
+	  get_ssa_name_range_info (glob, name);
+	  r.intersect (glob);
+	}
+      if (r.undefined_p ())
+	return false;
+
+      value_range vr = r;
+      set_range_info (name, vr);
+      return true;
+    }
+  else if (POINTER_TYPE_P (type))
+    {
+      if (r.nonzero_p ())
+	{
+	  set_ptr_nonnull (name);
+	  return true;
+	}
+    }
+  return false;
+}
+
 // Return the legacy global range for NAME if it has one, otherwise
 // return VARYING.
 

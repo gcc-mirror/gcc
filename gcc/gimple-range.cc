@@ -1115,7 +1115,7 @@ gimple_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 }
 
 // This routine will export whatever global ranges are known to GCC
-// SSA_RANGE_NAME_INFO fields.
+// SSA_RANGE_NAME_INFO and SSA_NAME_PTR_INFO fields.
 
 void
 gimple_ranger::export_global_ranges ()
@@ -1136,24 +1136,18 @@ gimple_ranger::export_global_ranges ()
 	  && m_cache.get_global_range (r, name)
 	  && !r.varying_p())
 	{
-	  // Make sure the new range is a subset of the old range.
-	  int_range_max old_range;
-	  old_range = gimple_range_global (name);
-	  old_range.intersect (r);
-	  /* Disable this while we fix tree-ssa/pr61743-2.c.  */
-	  //gcc_checking_assert (old_range == r);
+	  bool updated = update_global_range (r, name);
 
-	  // WTF? Can't write non-null pointer ranges?? stupid set_range_info!
-	  if (!POINTER_TYPE_P (TREE_TYPE (name)) && !r.undefined_p ())
+	  if (updated && dump_file)
 	    {
 	      value_range vr = r;
-	      set_range_info (name, vr);
-	      if (dump_file)
+	      print_generic_expr (dump_file, name , TDF_SLIM);
+	      fprintf (dump_file, " --> ");
+	      vr.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	      int_range_max same = vr;
+	      if (same != r)
 		{
-		  print_generic_expr (dump_file, name , TDF_SLIM);
-		  fprintf (dump_file, " --> ");
-		  vr.dump (dump_file);
-		  fprintf (dump_file, "\n");
 		  fprintf (dump_file, "         irange : ");
 		  r.dump (dump_file);
 		  fprintf (dump_file, "\n");
