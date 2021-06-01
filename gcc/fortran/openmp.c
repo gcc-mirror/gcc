@@ -4007,6 +4007,22 @@ gfc_match_omp_parallel_master (void)
   return match_omp (EXEC_OMP_PARALLEL_MASTER, OMP_PARALLEL_CLAUSES);
 }
 
+match
+gfc_match_omp_parallel_master_taskloop (void)
+{
+  return match_omp (EXEC_OMP_PARALLEL_MASTER_TASKLOOP,
+		    (OMP_PARALLEL_CLAUSES | OMP_TASKLOOP_CLAUSES)
+		    & ~(omp_mask (OMP_CLAUSE_IN_REDUCTION)));
+}
+
+match
+gfc_match_omp_parallel_master_taskloop_simd (void)
+{
+  return match_omp (EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD,
+		    (OMP_PARALLEL_CLAUSES | OMP_TASKLOOP_CLAUSES
+		     | OMP_SIMD_CLAUSES)
+		    & ~(omp_mask (OMP_CLAUSE_IN_REDUCTION)));
+}
 
 match
 gfc_match_omp_parallel_sections (void)
@@ -4442,8 +4458,7 @@ match
 gfc_match_omp_taskloop_simd (void)
 {
   return match_omp (EXEC_OMP_TASKLOOP_SIMD,
-		    (OMP_TASKLOOP_CLAUSES | OMP_SIMD_CLAUSES)
-		    & ~(omp_mask (OMP_CLAUSE_REDUCTION)));
+		    OMP_TASKLOOP_CLAUSES | OMP_SIMD_CLAUSES);
 }
 
 
@@ -4546,6 +4561,18 @@ gfc_match_omp_master (void)
   return MATCH_YES;
 }
 
+match
+gfc_match_omp_master_taskloop (void)
+{
+  return match_omp (EXEC_OMP_MASTER_TASKLOOP, OMP_TASKLOOP_CLAUSES);
+}
+
+match
+gfc_match_omp_master_taskloop_simd (void)
+{
+  return match_omp (EXEC_OMP_MASTER_TASKLOOP_SIMD,
+		    OMP_TASKLOOP_CLAUSES | OMP_SIMD_CLAUSES);
+}
 
 match
 gfc_match_omp_ordered (void)
@@ -5086,6 +5113,16 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      ok = ifc == OMP_IF_PARALLEL || ifc == OMP_IF_SIMD;
 	      break;
 
+	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+	      ok = ifc == OMP_IF_PARALLEL || ifc == OMP_IF_TASKLOOP;
+	      break;
+
+	    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+	      ok = (ifc == OMP_IF_PARALLEL
+		    || ifc == OMP_IF_TASKLOOP
+		    || ifc == OMP_IF_SIMD);
+	      break;
+
 	    case EXEC_OMP_SIMD:
 	    case EXEC_OMP_DO_SIMD:
 	    case EXEC_OMP_DISTRIBUTE_SIMD:
@@ -5098,10 +5135,12 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	      break;
 
 	    case EXEC_OMP_TASKLOOP:
+	    case EXEC_OMP_MASTER_TASKLOOP:
 	      ok = ifc == OMP_IF_TASKLOOP;
 	      break;
 
 	    case EXEC_OMP_TASKLOOP_SIMD:
+	    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
 	      ok = ifc == OMP_IF_TASKLOOP || ifc == OMP_IF_SIMD;
 	      break;
 
@@ -5861,11 +5900,16 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			     n->sym->name, name, &n->where);
 		switch (list)
 		  {
-		  case OMP_LIST_REDUCTION_INSCAN:
 		  case OMP_LIST_REDUCTION_TASK:
-		    if (code && (code->op == EXEC_OMP_TASKLOOP
-				 || code->op == EXEC_OMP_TEAMS
-				 || code->op == EXEC_OMP_TEAMS_DISTRIBUTE))
+		    if (code
+			&& (code->op == EXEC_OMP_TASKLOOP
+			    || code->op == EXEC_OMP_TASKLOOP_SIMD
+			    || code->op == EXEC_OMP_MASTER_TASKLOOP
+			    || code->op == EXEC_OMP_MASTER_TASKLOOP_SIMD
+			    || code->op == EXEC_OMP_PARALLEL_MASTER_TASKLOOP
+			    || code->op == EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD
+			    || code->op == EXEC_OMP_TEAMS
+			    || code->op == EXEC_OMP_TEAMS_DISTRIBUTE))
 		      {
 			gfc_error ("Only DEFAULT permitted as reduction-"
 				   "modifier in REDUCTION clause at %L",
@@ -5876,6 +5920,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  case OMP_LIST_REDUCTION:
 		  case OMP_LIST_IN_REDUCTION:
 		  case OMP_LIST_TASK_REDUCTION:
+		  case OMP_LIST_REDUCTION_INSCAN:
 		    switch (n->u.reduction_op)
 		      {
 		      case OMP_REDUCTION_PLUS:
@@ -6779,6 +6824,10 @@ gfc_resolve_omp_parallel_blocks (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+    case EXEC_OMP_MASTER_TASKLOOP:
+    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_TARGET_PARALLEL_DO:
     case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
@@ -6920,6 +6969,18 @@ resolve_omp_do (gfc_code *code)
     case EXEC_OMP_PARALLEL_DO: name = "!$OMP PARALLEL DO"; break;
     case EXEC_OMP_PARALLEL_DO_SIMD:
       name = "!$OMP PARALLEL DO SIMD";
+      is_simd = true;
+      break;
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+      name = "!$OMP PARALLEL MASTER TASKLOOP";
+      break;
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+      name = "!$OMP PARALLEL MASTER TASKLOOP SIMD";
+      is_simd = true;
+      break;
+    case EXEC_OMP_MASTER_TASKLOOP: name = "!$OMP MASTER TASKLOOP"; break;
+    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
+      name = "!$OMP MASTER TASKLOOP SIMD";
       is_simd = true;
       break;
     case EXEC_OMP_SIMD: name = "!$OMP SIMD"; is_simd = true; break;
@@ -7100,6 +7161,10 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_PARALLEL;
     case EXEC_OMP_PARALLEL_MASTER:
       return ST_OMP_PARALLEL_MASTER;
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+      return ST_OMP_PARALLEL_MASTER_TASKLOOP;
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+      return ST_OMP_PARALLEL_MASTER_TASKLOOP_SIMD;
     case EXEC_OMP_PARALLEL_SECTIONS:
       return ST_OMP_PARALLEL_SECTIONS;
     case EXEC_OMP_SECTIONS:
@@ -7110,6 +7175,10 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_CRITICAL;
     case EXEC_OMP_MASTER:
       return ST_OMP_MASTER;
+    case EXEC_OMP_MASTER_TASKLOOP:
+      return ST_OMP_MASTER_TASKLOOP;
+    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
+      return ST_OMP_MASTER_TASKLOOP_SIMD;
     case EXEC_OMP_SINGLE:
       return ST_OMP_SINGLE;
     case EXEC_OMP_TASK:
@@ -7610,6 +7679,10 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_DO_SIMD:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+    case EXEC_OMP_MASTER_TASKLOOP:
+    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_SIMD:
     case EXEC_OMP_TARGET_PARALLEL_DO:
     case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:

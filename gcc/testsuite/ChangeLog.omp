@@ -1,5 +1,17 @@
 2021-06-01  Tobias Burnus  <tobias@codesourcery.com>
 
+	Backported from master:
+	2021-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* gfortran.dg/gomp/reduction5.f90: Remove dg-error; the issue is
+	now diagnosed with less error output.
+	* gfortran.dg/gomp/scan-1.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-3.f90: New test.
+	* gfortran.dg/gomp/taskloop-1.f90: New test.
+
+2021-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
 	* c-c++-common/gomp/affinity-6.c: Use dg-message
 	instead of dg-note.
 	* gfortran.dg/gomp/affinity-clause-4.f90: Likewise.
