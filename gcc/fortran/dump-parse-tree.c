@@ -1898,12 +1898,18 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_DO_SIMD: name = "DO SIMD"; break;
     case EXEC_OMP_FLUSH: name = "FLUSH"; break;
     case EXEC_OMP_MASTER: name = "MASTER"; break;
+    case EXEC_OMP_MASTER_TASKLOOP: name = "MASTER TASKLOOP"; break;
+    case EXEC_OMP_MASTER_TASKLOOP_SIMD: name = "MASTER TASKLOOP SIMD"; break;
     case EXEC_OMP_ORDERED: name = "ORDERED"; break;
     case EXEC_OMP_DEPOBJ: name = "DEPOBJ"; break;
     case EXEC_OMP_PARALLEL: name = "PARALLEL"; break;
     case EXEC_OMP_PARALLEL_DO: name = "PARALLEL DO"; break;
     case EXEC_OMP_PARALLEL_DO_SIMD: name = "PARALLEL DO SIMD"; break;
     case EXEC_OMP_PARALLEL_MASTER: name = "PARALLEL MASTER"; break;
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+      name = "PARALLEL MASTER TASKLOOP"; break;
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
+      name = "PARALLEL MASTER TASKLOOP SIMD"; break;
     case EXEC_OMP_PARALLEL_SECTIONS: name = "PARALLEL SECTIONS"; break;
     case EXEC_OMP_PARALLEL_WORKSHARE: name = "PARALLEL WORKSHARE"; break;
     case EXEC_OMP_SCAN: name = "SCAN"; break;
@@ -1976,6 +1982,8 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_MASTER:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_SCAN:
@@ -3184,11 +3192,15 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_DO_SIMD:
     case EXEC_OMP_FLUSH:
     case EXEC_OMP_MASTER:
+    case EXEC_OMP_MASTER_TASKLOOP:
+    case EXEC_OMP_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_ORDERED:
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
     case EXEC_OMP_PARALLEL_MASTER:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
+    case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_PARALLEL_SECTIONS:
     case EXEC_OMP_PARALLEL_WORKSHARE:
     case EXEC_OMP_SCAN:
