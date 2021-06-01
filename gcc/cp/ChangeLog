@@ -1,3 +1,13 @@
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100666
+	* call.c (convert_arg_to_ellipsis): For expressions with NULLPTR_TYPE
+	and side-effects, temporarily disable -Wunused-result warning when
+	building COMPOUND_EXPR.
+
 2021-05-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

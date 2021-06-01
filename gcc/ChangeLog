@@ -1,3 +1,40 @@
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100576
+	* builtins.c (check_read_access): Convert bound to size_type_node if
+	non-NULL.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100590
+	* regcprop.c (copyprop_hardreg_forward_1): Only DCE dead sets if
+	they are NONJUMP_INSN_P.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100580
+	* function.c (push_dummy_function): Set DECL_ARTIFICIAL and
+	DECL_ASSEMBLER_NAME on the fn_decl.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100342
+	* regcprop.c (copy_value): When copying a source reg in a wider
+	mode than it has recorded for the value, adjust recorded destination
+	mode too or punt if !REG_CAN_CHANGE_MODE_P.
+
 2021-05-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR target/94177

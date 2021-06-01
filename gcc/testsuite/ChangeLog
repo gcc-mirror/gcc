@@ -1,3 +1,53 @@
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100666
+	* g++.dg/cpp1z/nodiscard8.C: New test.
+	* g++.dg/cpp1z/nodiscard9.C: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/100646
+	* gcc.dg/cpp/pr100646-1.c: New test.
+	* gcc.dg/cpp/pr100646-2.c: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100576
+	* gcc.c-torture/compile/pr100576.c: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100590
+	* gcc.dg/pr100590.c: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100580
+	* g++.dg/other/pr100580.C: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100342
+	* gcc.target/i386/pr100342.c: New test.
+
 2021-05-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
