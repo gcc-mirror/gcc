@@ -1,3 +1,30 @@
+2021-05-31  Martin Liska  <mliska@suse.cz>
+
+	* tree-streamer-in.c (unpack_ts_function_decl_value_fields):
+	Unpack FUNCTION_DECL_DECL_TYPE.
+	* tree-streamer-out.c (pack_ts_function_decl_value_fields):
+	Stream FUNCTION_DECL_DECL_TYPE instead of
+	DECL_IS_OPERATOR_NEW_P.
+	* tree.h (set_function_decl_type): Use FUNCTION_DECL_DECL_TYPE
+	macro.
+	(DECL_IS_OPERATOR_NEW_P): Likewise.
+	(DECL_IS_OPERATOR_DELETE_P): Likewise.
+	(DECL_LAMBDA_FUNCTION_P): Likewise.
+
+2021-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR c++/88601
+	* internal-fn.c (expand_SHUFFLEVECTOR): Define.
+	* internal-fn.def (SHUFFLEVECTOR): New.
+	* internal-fn.h (expand_SHUFFLEVECTOR): Declare.
+	* doc/extend.texi: Document __builtin_shufflevector.
+
+2021-05-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99842
+	* config/rs6000/predicates.md(mma_assemble_input_operand): Allow
+	indexed form addresses.
+
 2021-05-29  Jeff Law  <jlaw@tachyum.com>
 
 	* config/h8300/h8300.c (h8300_emit_stack_adjustment): Drop unused

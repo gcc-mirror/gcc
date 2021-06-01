@@ -1,3 +1,9 @@
+2021-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR c++/88601
+	* c-decl.c (names_builtin_p): Handle RID_BUILTIN_SHUFFLEVECTOR.
+	* c-parser.c (c_parser_postfix_expression): Likewise.
+
 2021-05-28  Richard Biener   <rguenther@suse.de>
 
 	PR c/100803

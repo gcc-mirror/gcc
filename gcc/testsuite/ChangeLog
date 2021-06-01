@@ -1,3 +1,21 @@
+2021-05-31  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/depend-iterator-1.f90: Use dg-do compile.
+	* gfortran.dg/gomp/depend-iterator-2.f90: Use dg-do compile.
+
+2021-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR c++/88601
+	* c-c++-common/builtin-shufflevector-2.c: New testcase.
+	* c-c++-common/torture/builtin-shufflevector-1.c: Likewise.
+	* g++.dg/ext/builtin-shufflevector-1.C: Likewise.
+	* g++.dg/ext/builtin-shufflevector-2.C: Likewise.
+
+2021-05-31  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/99842
+	* g++.target/powerpc/pr99842.C: New.
+
 2021-05-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.dg/plugin/diagnostic_plugin_show_trees.c (plugin_init): Fix caret_max_with.

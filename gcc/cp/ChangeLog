@@ -1,3 +1,16 @@
+2021-05-31  Richard Biener  <rguenther@suse.de>
+
+	PR c++/88601
+	* cp-objcp-common.c (names_builtin_p): Handle
+	RID_BUILTIN_SHUFFLEVECTOR.
+	* cp-tree.h (build_x_shufflevector): Declare.
+	* parser.c (cp_parser_postfix_expression): Handle
+	RID_BUILTIN_SHUFFLEVECTOR.
+	* pt.c (tsubst_copy_and_build): Handle IFN_SHUFFLEVECTOR.
+	* typeck.c (build_x_shufflevector): Build either a lowered
+	VEC_PERM_EXPR or an unlowered shufflevector via a temporary
+	internal function IFN_SHUFFLEVECTOR.
+
 2021-05-28  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (build_data_member_initialization): Use tsi_range.
