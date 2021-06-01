@@ -192,3 +192,5 @@ We can be found on all usual Rust channels such as Zulip, but we also have our o
 
  * GCC Rust Zulip: https://gcc-rust.zulipchat.com/
  * Twitter: https://twitter.com/gcc_rust
+ * GCC Mailing List: https://gcc.gnu.org/mailman/listinfo/gcc-rust
+ * irc: irc.oftc.net - gccrust
