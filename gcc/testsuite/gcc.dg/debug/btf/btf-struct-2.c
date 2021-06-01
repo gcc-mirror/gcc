@@ -14,6 +14,6 @@
 struct with_float
 {
   int a;
-  float f;
+  float __attribute__((__vector_size__(16))) f;
   char c;
 } instance;

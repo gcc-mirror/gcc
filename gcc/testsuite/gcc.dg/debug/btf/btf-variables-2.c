@@ -16,7 +16,7 @@
 /* { dg-final { scan-assembler-times "ascii \"myst.0\"\[\t \]+\[^\n\]*btf_string" 1 } } */
 
 int foo;
-float bar;
+float __attribute__((__vector_size__(16))) bar;
 int baz[10];
 
 struct st

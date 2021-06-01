@@ -16,7 +16,7 @@
 /* Exactly one function parameter should have type_id=0.  */
 /* { dg-final { scan-assembler-times "\[\t \]0\[\t \]+\[^\n\]*farg_type" 1 } } */
 
-int foo (int a, float f, long b)
+int foo (int a, float __attribute__((__vector_size__(16))) f, long b)
 {
   return 0;
 }
