@@ -142,8 +142,8 @@ public:
 
   void debug () const
   {
-    printf ("[%p] %s\n", static_cast<const void *> (this),
-	    debug_str ().c_str ());
+    fprintf (stderr, "[%p] %s\n", static_cast<const void *> (this),
+	     debug_str ().c_str ());
   }
 
 protected:
@@ -319,7 +319,7 @@ public:
 
   StructFieldType *clone () const;
 
-  void debug () const { printf ("%s\n", as_string ().c_str ()); }
+  void debug () const { fprintf (stderr, "%s\n", as_string ().c_str ()); }
 
 private:
   HirId ref;
