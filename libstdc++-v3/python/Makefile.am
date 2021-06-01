@@ -48,5 +48,9 @@ install-data-local: gdb.py
 ## the correct name.
 	@libname=`sed -ne "/^library_names=/{s/.*='//;s/'$$//;s/ .*//;p;}" \
 	          $(DESTDIR)$(toolexeclibdir)/libstdc++.la`; \
+	if [ -z "$$libname" ]; then \
+	  libname=`sed -ne "/^old_library=/{s/.*='//;s/'$$//;s/ .*//;p;}" \
+		  $(DESTDIR)$(toolexeclibdir)/libstdc++.la`; \
+	fi; \
 	echo " $(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py"; \
 	$(INSTALL_DATA) gdb.py $(DESTDIR)$(toolexeclibdir)/$$libname-gdb.py
