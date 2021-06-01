@@ -749,7 +749,7 @@ namespace ranges
 	      }
 	  }
 	else if (__it == __bound || __n == 0)
-	  return iter_difference_t<_It>(0);
+	  return __n;
 	else if (__n > 0)
 	  {
 	    iter_difference_t<_It> __m = 0;
