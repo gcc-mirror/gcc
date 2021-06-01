@@ -1088,6 +1088,8 @@ handle_pragma_pop_options (cpp_reader *ARG_UNUSED(dummy))
    * overwritten by invoke_set_current_function_hook.  */
   cl_optimization_restore (&global_options, &global_options_set,
 			   TREE_OPTIMIZATION (p->optimize_binary));
+  cl_target_option_restore (&global_options, &global_options_set,
+			    TREE_TARGET_OPTION (p->target_binary));
 
   if (p->optimize_binary != optimization_current_node)
     {
