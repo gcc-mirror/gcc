@@ -456,7 +456,7 @@ Session::parse_files (int num_files, const char **files)
 
   for (int i = 0; i < num_files; i++)
     {
-      printf ("Attempting to parse file: %s\n", files[i]);
+      fprintf (stderr, "Attempting to parse file: %s\n", files[i]);
       parse_file (files[i]);
     }
   /* TODO: should semantic analysis be dealed with here? or per file? for now,
