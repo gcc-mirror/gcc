@@ -1744,12 +1744,19 @@ process_options (void)
 
   /* Enable -Werror=coverage-mismatch when -Werror and -Wno-error
      have not been set.  */
-  if (!global_options_set.x_warnings_are_errors
-      && warn_coverage_mismatch
-      && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==
-          DK_UNSPECIFIED))
-    diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_mismatch,
-                                    DK_ERROR, UNKNOWN_LOCATION);
+  if (!global_options_set.x_warnings_are_errors)
+    {
+      if (warn_coverage_mismatch
+	  && (global_dc->classify_diagnostic[OPT_Wcoverage_mismatch] ==
+	      DK_UNSPECIFIED))
+	diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_mismatch,
+					DK_ERROR, UNKNOWN_LOCATION);
+      if (warn_coverage_invalid_linenum
+	  && (global_dc->classify_diagnostic[OPT_Wcoverage_invalid_line_number] ==
+	      DK_UNSPECIFIED))
+	diagnostic_classify_diagnostic (global_dc, OPT_Wcoverage_invalid_line_number,
+					DK_ERROR, UNKNOWN_LOCATION);
+    }
 
   /* Save the current optimization options.  */
   optimization_default_node
