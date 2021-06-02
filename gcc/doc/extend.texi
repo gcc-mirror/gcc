@@ -3663,7 +3663,10 @@ take function pointer arguments.
 @cindex @code{optimize} function attribute
 The @code{optimize} attribute is used to specify that a function is to
 be compiled with different optimization options than specified on the
-command line.  Valid arguments are constant non-negative integers and
+command line.  The optimize attribute arguments of a function behave
+behave as if appended to the command-line.
+
+Valid arguments are constant non-negative integers and
 strings.  Each numeric argument specifies an optimization @var{level}.
 Each @var{string} argument consists of one or more comma-separated
 substrings.  Each substring that begins with the letter @code{O} refers
@@ -3867,7 +3870,8 @@ This attribute prevents stack protection code for the function.
 Multiple target back ends implement the @code{target} attribute
 to specify that a function is to
 be compiled with different target options than specified on the
-command line.  One or more strings can be provided as arguments.
+command line.  The original target command-line options are ignored.
+One or more strings can be provided as arguments.
 Each string consists of one or more comma-separated suffixes to
 the @code{-m} prefix jointly forming the name of a machine-dependent
 option.  @xref{Submodel Options,,Machine-Dependent Options}.

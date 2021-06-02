@@ -5904,9 +5904,22 @@ parse_optimize_options (tree args, bool attr_p)
       j++;
     }
   decoded_options_count = j;
-  /* And apply them.  */
+
+  /* Merge the decoded options with save_decoded_options.  */
+  unsigned save_opt_count = save_opt_decoded_options.length ();
+  unsigned merged_decoded_options_count
+    = save_opt_count + decoded_options_count;
+  cl_decoded_option *merged_decoded_options
+    = XNEWVEC (cl_decoded_option, merged_decoded_options_count);
+
+  for (unsigned i = 0; i < save_opt_count; ++i)
+    merged_decoded_options[i] = save_opt_decoded_options[i];
+  for (unsigned i = 0; i < decoded_options_count; ++i)
+    merged_decoded_options[save_opt_count + i] = decoded_options[i];
+
+   /* And apply them.  */
   decode_options (&global_options, &global_options_set,
-		  decoded_options, decoded_options_count,
+		  merged_decoded_options, merged_decoded_options_count,
 		  input_location, global_dc, NULL);
   free (decoded_options);
 
