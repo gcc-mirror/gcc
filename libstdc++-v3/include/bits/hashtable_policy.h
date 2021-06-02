@@ -1109,7 +1109,7 @@ namespace __detail
     struct _Hashtable_ebo_helper<_Nm, _Tp, true>
     : private _Tp
     {
-      _Hashtable_ebo_helper() = default;
+      _Hashtable_ebo_helper() noexcept(noexcept(_Tp())) : _Tp() { }
 
       template<typename _OtherTp>
 	_Hashtable_ebo_helper(_OtherTp&& __tp)
@@ -1135,7 +1135,7 @@ namespace __detail
       _Tp& _M_get() { return _M_tp; }
 
     private:
-      _Tp _M_tp;
+      _Tp _M_tp{};
     };
 
   /**
@@ -1789,6 +1789,7 @@ namespace __detail
 
   protected:
     _Hashtable_base() = default;
+
     _Hashtable_base(const _ExtractKey& __ex, const _H1& __h1, const _H2& __h2,
 		    const _Hash& __hash, const _Equal& __eq)
     : __hash_code_base(__ex, __h1, __h2, __hash), _EqualEBO(__eq)
