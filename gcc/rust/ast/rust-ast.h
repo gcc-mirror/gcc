@@ -1611,6 +1611,7 @@ public:
   }
 
   NodeId get_node_id () const { return node_id; }
+  const std::vector<Attribute> &get_inner_attrs () const { return inner_attrs; }
 };
 
 // Base path expression AST node - abstract

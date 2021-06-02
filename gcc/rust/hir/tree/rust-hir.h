@@ -290,6 +290,9 @@ public:
 
   virtual void accept_vis (HIRVisitor &vis ATTRIBUTE_UNUSED) {}
 
+  AST::AttrVec &get_outer_attrs () { return outer_attrs; }
+  const AST::AttrVec &get_outer_attrs () const { return outer_attrs; }
+
 protected:
   // Constructor
   Item (Analysis::NodeMapping mappings,

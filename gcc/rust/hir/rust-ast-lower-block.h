@@ -142,7 +142,6 @@ public:
 
   void visit (AST::LoopExpr &expr) override
   {
-    AST::AttrVec outer_attribs;
     HIR::BlockExpr *loop_block
       = ASTLoweringBlock::translate (expr.get_loop_block ().get (),
 				     &terminated);
@@ -158,7 +157,7 @@ public:
       = new HIR::LoopExpr (mapping,
 			   std::unique_ptr<HIR::BlockExpr> (loop_block),
 			   expr.get_locus (), std::move (loop_label),
-			   std::move (outer_attribs));
+			   expr.get_outer_attrs ());
   }
 
   void visit (AST::WhileLoopExpr &expr) override;

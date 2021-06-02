@@ -58,7 +58,6 @@ public:
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
-    AST::AttrVec outer_attrs;
 
     std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
     if (alias.has_generics ())
@@ -76,7 +75,7 @@ public:
 				     std::move (generic_params),
 				     std::move (where_clause),
 				     std::unique_ptr<HIR::Type> (existing_type),
-				     std::move (vis), std::move (outer_attrs),
+				     std::move (vis), alias.get_outer_attrs (),
 				     alias.get_locus ());
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
@@ -98,11 +97,9 @@ public:
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
-    AST::AttrVec outer_attrs;
 
     std::vector<HIR::TupleField> fields;
     struct_decl.iterate ([&] (AST::TupleField &field) mutable -> bool {
-      AST::AttrVec outer_attrs;
       HIR::Visibility vis = HIR::Visibility::create_public ();
       HIR::Type *type
 	= ASTLoweringType::translate (field.get_field_type ().get ());
@@ -118,7 +115,7 @@ public:
       Location field_locus;
       HIR::TupleField translated_field (mapping,
 					std::unique_ptr<HIR::Type> (type), vis,
-					field_locus, outer_attrs);
+					field_locus, field.get_outer_attrs ());
       fields.push_back (std::move (translated_field));
       return true;
     });
@@ -132,7 +129,7 @@ public:
 				       struct_decl.get_identifier (),
 				       std::move (generic_params),
 				       std::move (where_clause), vis,
-				       std::move (outer_attrs),
+				       struct_decl.get_outer_attrs (),
 				       struct_decl.get_locus ());
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
@@ -154,12 +151,10 @@ public:
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::Visibility vis = HIR::Visibility::create_public ();
-    AST::AttrVec outer_attrs;
 
     bool is_unit = struct_decl.is_unit_struct ();
     std::vector<HIR::StructField> fields;
     struct_decl.iterate ([&] (AST::StructField &field) mutable -> bool {
-      AST::AttrVec outer_attrs;
       HIR::Visibility vis = HIR::Visibility::create_public ();
       HIR::Type *type
 	= ASTLoweringType::translate (field.get_field_type ().get ());
@@ -175,7 +170,7 @@ public:
       Location field_locus;
       HIR::StructField translated_field (mapping, field.get_field_name (),
 					 std::unique_ptr<HIR::Type> (type), vis,
-					 field_locus, outer_attrs);
+					 field_locus, field.get_outer_attrs ());
       fields.push_back (std::move (translated_field));
       return true;
     });
@@ -189,7 +184,7 @@ public:
 					struct_decl.get_identifier (),
 					std::move (generic_params),
 					std::move (where_clause), is_unit, vis,
-					std::move (outer_attrs),
+					struct_decl.get_outer_attrs (),
 					struct_decl.get_locus ());
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
@@ -201,7 +196,6 @@ public:
 
   void visit (AST::StaticItem &var) override
   {
-    AST::AttrVec outer_attrs;
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     HIR::Type *type = ASTLoweringType::translate (var.get_type ().get ());
@@ -216,7 +210,7 @@ public:
       = new HIR::StaticItem (mapping, var.get_identifier (), var.is_mutable (),
 			     std::unique_ptr<HIR::Type> (type),
 			     std::unique_ptr<HIR::Expr> (expr), vis,
-			     outer_attrs, var.get_locus ());
+			     var.get_outer_attrs (), var.get_locus ());
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
@@ -227,7 +221,6 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    AST::AttrVec outer_attrs;
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
@@ -241,7 +234,8 @@ public:
     translated = new HIR::ConstantItem (mapping, constant.get_identifier (),
 					vis, std::unique_ptr<HIR::Type> (type),
 					std::unique_ptr<HIR::Expr> (expr),
-					outer_attrs, constant.get_locus ());
+					constant.get_outer_attrs (),
+					constant.get_locus ());
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
@@ -253,7 +247,6 @@ public:
   void visit (AST::Function &function) override
   {
     // ignore for now and leave empty
-    AST::AttrVec outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (
@@ -315,7 +308,7 @@ public:
 			   std::move (qualifiers), std::move (generic_params),
 			   std::move (function_params), std::move (return_type),
 			   std::move (where_clause), std::move (function_body),
-			   std::move (vis), std::move (outer_attrs), locus);
+			   std::move (vis), function.get_outer_attrs (), locus);
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);
     mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
@@ -337,8 +330,6 @@ public:
 
   void visit (AST::InherentImpl &impl_block) override
   {
-    AST::AttrVec inner_attrs;
-    AST::AttrVec outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
 
     HIR::WhereClause where_clause (std::move (where_clause_items));
@@ -397,8 +388,8 @@ public:
       = new HIR::InherentImpl (mapping, std::move (impl_items),
 			       std::move (generic_params),
 			       std::unique_ptr<HIR::Type> (trait_type),
-			       where_clause, vis, std::move (inner_attrs),
-			       std::move (outer_attrs),
+			       where_clause, vis, impl_block.get_inner_attrs (),
+			       impl_block.get_outer_attrs (),
 			       impl_block.get_locus ());
 
     mappings->insert_defid_mapping (mapping.get_defid (), translated);

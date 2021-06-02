@@ -86,7 +86,6 @@ public:
 
   void visit (AST::LetStmt &stmt) override
   {
-    AST::AttrVec outer_attrs;
     HIR::Pattern *variables
       = ASTLoweringPattern::translate (stmt.get_pattern ().get ());
     HIR::Type *type = stmt.has_type ()
@@ -105,7 +104,7 @@ public:
       = new HIR::LetStmt (mapping, std::unique_ptr<HIR::Pattern> (variables),
 			  std::unique_ptr<HIR::Expr> (init_expression),
 			  std::unique_ptr<HIR::Type> (type),
-			  std::move (outer_attrs), stmt.get_locus ());
+			  stmt.get_outer_attrs (), stmt.get_locus ());
     mappings->insert_location (crate_num, mapping.get_hirid (),
 			       stmt.get_locus ());
     mappings->insert_hir_stmt (crate_num, mapping.get_hirid (), translated);
