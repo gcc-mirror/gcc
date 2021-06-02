@@ -12,7 +12,7 @@ Here is a checklist to help you with your PR.
 - \[ ] Read contributing guidlines
 - \[ ] `make check-rust` passes locally
 - \[ ] Run `clang-format`
-- \[ ] Added any relevant test cases to gcc/testsuite/rust.test
+- \[ ] Added any relevant test cases to `gcc/testsuite/rust/`
 
 Note that you can skip the above if you are just opening a WIP PR in
 order to get feedback.
