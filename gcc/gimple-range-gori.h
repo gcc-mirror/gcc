@@ -153,41 +153,30 @@ class gori_compute : public gori_map
 {
 public:
   gori_compute ();
-  bool outgoing_edge_range_p (irange &r, edge e, tree name);
+  bool outgoing_edge_range_p (irange &r, edge e, tree name, range_query &q);
   bool has_edge_range_p (tree name, edge e = NULL);
   void dump (FILE *f);
-protected:
-  virtual void ssa_range_in_bb (irange &r, tree name, basic_block bb);
-  bool compute_operand_range (irange &r, gimple *stmt,
-			      const irange &lhs, tree name);
-
-  void expr_range_at_stmt (irange &r, tree expr, gimple *s);
-  bool compute_logical_operands (irange &r, gimple *stmt,
-				 const irange &lhs,
-				 tree name);
-  void compute_logical_operands_in_chain (class tf_range &range,
-					  gimple *stmt, const irange &lhs,
-					  tree name, tree op,
-					  bool op_in_chain);
-  bool optimize_logical_operands (tf_range &range, gimple *stmt,
-				  const irange &lhs, tree name, tree op);
-  bool logical_combine (irange &r, enum tree_code code, const irange &lhs,
-			const class tf_range &op1_range,
-			const class tf_range &op2_range);
-  int_range<2> m_bool_zero;           // Boolean false cached.
-  int_range<2> m_bool_one;            // Boolean true cached.
-
 private:
-  bool compute_operand_range_switch (irange &r, gswitch *stmt,
-				     const irange &lhs, tree name);
-  bool compute_name_range_op (irange &r, gimple *stmt, const irange &lhs,
-			      tree name);
+  bool compute_operand_range (irange &r, gimple *stmt, const irange &lhs,
+			      tree name, class fur_source &src);
+  bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,
+				     tree name, fur_source &src);
   bool compute_operand1_range (irange &r, gimple *stmt, const irange &lhs,
-			       tree name);
+			       tree name, fur_source &src);
   bool compute_operand2_range (irange &r, gimple *stmt, const irange &lhs,
-			       tree name);
+			       tree name, fur_source &src);
   bool compute_operand1_and_operand2_range (irange &r, gimple *stmt,
-					    const irange &lhs, tree name);
+					    const irange &lhs, tree name,
+					    fur_source &src);
+  void compute_logical_operands (irange &true_range, irange &false_range,
+				 gimple *stmt, const irange &lhs,
+				 tree name, fur_source &src, tree op,
+				 bool op_in_chain);
+  bool logical_combine (irange &r, enum tree_code code, const irange &lhs,
+			const irange &op1_true, const irange &op1_false,
+			const irange &op2_true, const irange &op2_false);
+  int_range<2> m_bool_zero;	// Boolean false cached.
+  int_range<2> m_bool_one;	// Boolean true cached.
 
   gimple_outgoing_range outgoing;	// Edge values for COND_EXPR & SWITCH_EXPR.
 };

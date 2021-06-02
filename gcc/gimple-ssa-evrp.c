@@ -127,8 +127,7 @@ public:
     if (dump_file && (dump_flags & TDF_DETAILS))
       m_ranger->dump (dump_file);
 
-    // FIXME: Do not export ranges until PR100787 is fixed.
-    //m_ranger->export_global_ranges ();
+    m_ranger->export_global_ranges ();
     disable_ranger (cfun);
   }
 
@@ -194,8 +193,7 @@ public:
     if (dump_file && (dump_flags & TDF_DETAILS))
       m_ranger->dump (dump_file);
 
-    // FIXME: Do not export ranges until PR100787 is fixed.
-    //m_ranger->export_global_ranges ();
+    m_ranger->export_global_ranges ();
     disable_ranger (cfun);
   }
 

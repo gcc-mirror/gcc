@@ -45,7 +45,9 @@ void test01()
   std::isxdigit(make_str<char, 7>(), loc);	// { dg-error "required from here" }
   std::isalnum(make_str<char, 8>(), loc);	// { dg-error "required from here" }
   std::isgraph(make_str<char, 9>(), loc);	// { dg-error "required from here" }
-  std::isblank(make_str<char, 10>(), loc);	// { dg-error "required from here" }
+#if __cplusplus >= 201103
+  std::isblank(make_str<char, 10>(), loc);	// { dg-error "required from here" "" { target c++11 } }
+#endif
   std::toupper(make_str<char, 11>(), loc);	// { dg-error "required from here" }
   std::tolower(make_str<char, 12>(), loc);	// { dg-error "required from here" }
 }
@@ -66,7 +68,9 @@ void test02()
   std::isxdigit(make_str<wchar_t, 7>(), loc);	// { dg-error "required from here" }
   std::isalnum(make_str<wchar_t, 8>(), loc);	// { dg-error "required from here" }
   std::isgraph(make_str<wchar_t, 9>(), loc);	// { dg-error "required from here" }
-  std::isblank(make_str<wchar_t, 10>(), loc);	// { dg-error "required from here" }
+#if __cplusplus >= 201103
+  std::isblank(make_str<wchar_t, 10>(), loc);	// { dg-error "required from here" "" { target c++11 } }
+#endif
   std::toupper(make_str<wchar_t, 11>(), loc);	// { dg-error "required from here" }
   std::tolower(make_str<wchar_t, 12>(), loc);	// { dg-error "required from here" }
 }

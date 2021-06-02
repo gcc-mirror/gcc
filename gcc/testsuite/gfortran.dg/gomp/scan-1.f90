@@ -100,7 +100,7 @@ subroutine f3 (c, d)
   use m
   implicit none
   integer i, c(64), d(64)
-  !$omp teams reduction (inscan, +: a)  ! { dg-error "Only DEFAULT permitted as reduction-modifier in REDUCTION clause at" }
+  !$omp teams reduction (inscan, +: a)
     ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" "" { target *-*-* } .-1 }
     ! ...
   !$omp end teams
@@ -135,7 +135,7 @@ subroutine f4 (c, d)
   use m
   implicit none
   integer i, c(64), d(64)
-  !$omp taskloop reduction (inscan, +: a)  ! { dg-error "Only DEFAULT permitted as reduction-modifier in REDUCTION clause" }
+  !$omp taskloop reduction (inscan, +: a)
   ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" "" { target *-*-* } .-1 }
   do i = 1, 64
     d(i) = a

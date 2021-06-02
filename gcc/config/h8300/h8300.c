@@ -1100,7 +1100,7 @@ h8300_and_costs (rtx x)
   operands[1] = XEXP (x, 0);
   operands[2] = XEXP (x, 1);
   operands[3] = x;
-  return compute_logical_op_length (GET_MODE (x), operands) / 2;
+  return compute_logical_op_length (GET_MODE (x), AND, operands) / 2;
 }
 
 /* Compute the cost of a shift insn.  */
@@ -1119,7 +1119,7 @@ h8300_shift_costs (rtx x)
   operands[1] = NULL;
   operands[2] = XEXP (x, 1);
   operands[3] = x;
-  return compute_a_shift_length (NULL, operands) / 2;
+  return compute_a_shift_length (operands) / 2;
 }
 
 /* Worker function for TARGET_RTX_COSTS.  */
@@ -2879,10 +2879,8 @@ compute_plussi_cc (rtx *operands)
 /* Output a logical insn.  */
 
 const char *
-output_logical_op (machine_mode mode, rtx *operands)
+output_logical_op (machine_mode mode, rtx_code code, rtx *operands)
 {
-  /* Figure out the logical op that we need to perform.  */
-  enum rtx_code code = GET_CODE (operands[3]);
   /* Pretend that every byte is affected if both operands are registers.  */
   const unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
@@ -2923,6 +2921,10 @@ output_logical_op (machine_mode mode, rtx *operands)
 
   switch (mode)
     {
+    case E_QImode:
+      sprintf (insn_buf, "%s.b\t%%X2,%%X0", opname);
+      output_asm_insn (insn_buf, operands);
+      break;
     case E_HImode:
       /* First, see if we can finish with one insn.  */
       if (b0 != 0 && b1 != 0)
@@ -3033,10 +3035,8 @@ output_logical_op (machine_mode mode, rtx *operands)
 /* Compute the length of a logical insn.  */
 
 unsigned int
-compute_logical_op_length (machine_mode mode, rtx *operands)
+compute_logical_op_length (machine_mode mode, rtx_code code, rtx *operands)
 {
-  /* Figure out the logical op that we need to perform.  */
-  enum rtx_code code = GET_CODE (operands[3]);
   /* Pretend that every byte is affected if both operands are registers.  */
   const unsigned HOST_WIDE_INT intval =
     (unsigned HOST_WIDE_INT) ((GET_CODE (operands[2]) == CONST_INT)
@@ -3061,6 +3061,9 @@ compute_logical_op_length (machine_mode mode, rtx *operands)
 
   switch (mode)
     {
+    case E_QImode:
+      return 2;
+
     case E_HImode:
       /* First, see if we can finish with one insn.  */
       if (b0 != 0 && b1 != 0)
@@ -4189,7 +4192,7 @@ h8300_asm_insn_count (const char *templ)
 /* Compute the length of a shift insn.  */
 
 unsigned int
-compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
+compute_a_shift_length (rtx *operands)
 {
   rtx shift = operands[3];
   machine_mode mode = GET_MODE (shift);

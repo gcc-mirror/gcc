@@ -710,9 +710,11 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
   ret_var = gimple_return_retval (as_a <greturn *> (stmt));
 
   /* We may proceed if there either is no return value, or the return value
-     is identical to the call's return.  */
+     is identical to the call's return or if the return decl is an empty type
+     variable and the call's return was not assigned. */
   if (ret_var
-      && (ret_var != ass_var))
+      && (ret_var != ass_var
+	  && !(is_empty_type (TREE_TYPE (ret_var)) && !ass_var)))
     return;
 
   /* If this is not a tail recursive call, we cannot handle addends or

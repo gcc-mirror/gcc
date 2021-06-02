@@ -1,4 +1,4 @@
-// { dg-do run { target c++11 } }
+// { dg-do run { target c++17 } }
 
 // Copyright (C) 2021 Free Software Foundation, Inc.
 //

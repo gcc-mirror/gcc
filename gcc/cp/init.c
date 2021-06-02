@@ -2078,9 +2078,9 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
      that's value-initialization.  */
   if (init == void_type_node)
     {
-      /* If the type has data but no user-provided ctor, we need to zero
+      /* If the type has data but no user-provided default ctor, we need to zero
 	 out the object.  */
-      if (!type_has_user_provided_constructor (type)
+      if (type_has_non_user_provided_default_constructor (type)
 	  && !is_really_empty_class (type, /*ignore_vptr*/true))
 	{
 	  tree field_size = NULL_TREE;
@@ -4881,7 +4881,10 @@ build_delete (location_t loc, tree otype, tree addr,
 			    complain);
     }
 
-  if (!destroying_delete && type_build_dtor_call (type))
+  if (destroying_delete)
+    /* The operator delete will call the destructor.  */
+    expr = addr;
+  else if (type_build_dtor_call (type))
     expr = build_dtor_call (cp_build_fold_indirect_ref (addr),
 			    auto_delete, flags, complain);
   else
