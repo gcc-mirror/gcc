@@ -175,7 +175,7 @@
   return output_a_shift (operands);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands)"))])
 
 (define_insn_and_split "*shiftqi_noscratch"
   [(set (match_operand:QI 0 "register_operand" "=r,r")
@@ -203,7 +203,7 @@
   return output_a_shift (operands);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands)"))])
 
 (define_insn_and_split "*shifthi"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
@@ -230,7 +230,7 @@
   return output_a_shift (operands);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands)"))])
 
 (define_insn_and_split "*shifthi_noscratch"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
@@ -258,7 +258,7 @@
   return output_a_shift (operands);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands)"))])
 
 (define_insn_and_split "*shiftsi"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -285,7 +285,7 @@
   return output_a_shift (operands);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands)"))])
 
 (define_insn_and_split "*shiftsi_noscratch"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -313,7 +313,7 @@
   return output_a_shift (operands);
 }
   [(set (attr "length")
-	(symbol_ref "compute_a_shift_length (insn, operands)"))])
+	(symbol_ref "compute_a_shift_length (operands)"))])
 
 ;; Split a variable shift into a loop.  If the register containing
 ;; the shift count dies, then we just use that register.

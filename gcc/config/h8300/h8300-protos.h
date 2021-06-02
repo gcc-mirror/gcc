@@ -29,16 +29,15 @@ extern unsigned int compute_mov_length (rtx *);
 extern const char *output_plussi (rtx *, bool);
 extern unsigned int compute_plussi_length (rtx *, bool);
 extern const char *output_a_shift (rtx *);
-extern unsigned int compute_a_shift_length (rtx, rtx *);
+extern unsigned int compute_a_shift_length (rtx *);
 extern const char *output_a_rotate (enum rtx_code, rtx *);
 extern unsigned int compute_a_rotate_length (rtx *);
 extern const char *output_simode_bld (int, rtx[]);
 extern void final_prescan_insn (rtx_insn *, rtx *, int);
 extern int h8300_expand_movsi (rtx[]);
 extern machine_mode  h8300_select_cc_mode (RTX_CODE, rtx, rtx);
-extern const char *output_logical_op (machine_mode, rtx *);
-extern unsigned int compute_logical_op_length (machine_mode,
-					       rtx *);
+extern const char *output_logical_op (machine_mode, rtx_code code, rtx *);
+extern unsigned int compute_logical_op_length (machine_mode, rtx_code, rtx *);
 
 extern int compute_logical_op_cc (machine_mode, rtx *);
 extern int compute_a_shift_cc (rtx, rtx *);
