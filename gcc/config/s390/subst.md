@@ -45,7 +45,7 @@
   "s390_match_ccmode(insn, CCSmode)"
   [(set (reg CC_REGNUM)
 	(compare (match_dup 1) (const_int 0)))
-   (clobber (match_scratch:DSI 0 "=d,d"))])
+   (clobber (match_scratch:DSI 0 "=d"))])
 
 (define_subst_attr "cconly" "cconly_subst" "" "_cconly")
 

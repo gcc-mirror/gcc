@@ -2078,9 +2078,9 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
      that's value-initialization.  */
   if (init == void_type_node)
     {
-      /* If the type has data but no user-provided ctor, we need to zero
+      /* If the type has data but no user-provided default ctor, we need to zero
 	 out the object.  */
-      if (!type_has_user_provided_constructor (type)
+      if (type_has_non_user_provided_default_constructor (type)
 	  && !is_really_empty_class (type, /*ignore_vptr*/true))
 	{
 	  tree field_size = NULL_TREE;

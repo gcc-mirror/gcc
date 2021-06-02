@@ -1,3 +1,64 @@
+2021-06-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/65816
+	* g++.dg/cpp0x/constexpr-delegating3.C: New test.
+	* g++.dg/cpp0x/dc10.C: New test.
+	* g++.dg/cpp0x/initlist-base4.C: New test.
+	* g++.dg/cpp2a/constexpr-init22.C: New test.
+
+2021-06-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/95481
+	* gcc.dg/tree-ssa/tailcall-10.c: New test.
+	* gcc.dg/tree-ssa/tailcall-11.c: New test.
+	* gcc.dg/tree-ssa/tailcall-12.c: New test.
+	* gcc.dg/tree-ssa/tailcall-13.c: New test.
+	* gcc.dg/tree-ssa/tailrecursion-8.c: New test.
+
+2021-06-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR testsuite/100750
+	* gcc.target/powerpc/rop-5.c: Require ELFv2 ABI.
+
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91859
+	* g++.dg/cpp2a/destroying-delete5.C: New test.
+
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94492
+	* g++.dg/cpp0x/depr-copy4.C: New test.
+
+2021-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/Wstringop-overflow-55.c: Adjust for global ranges changes.
+	* gcc.dg/pr80776-1.c: Same.
+
+2021-06-01  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* gfortran.dg/gomp/reduction5.f90: Remove dg-error; the issue is
+	now diagnosed with less error output.
+	* gfortran.dg/gomp/scan-1.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-3.f90: New test.
+	* gfortran.dg/gomp/taskloop-1.f90: New test.
+
+2021-06-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/98365
+	* gcc.target/i386/pr98365.c: New test.
+
+2021-06-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/100781
+	* gcc.dg/pr100781.c: New.
+
+2021-06-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/100774
+	* g++.dg/pr100774.C: New.
+
 2021-05-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	* gfortran.dg/gomp/depend-iterator-1.f90: Use dg-do compile.

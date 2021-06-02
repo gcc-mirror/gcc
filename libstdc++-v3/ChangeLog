@@ -1,3 +1,41 @@
+2021-06-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/65816
+	* testsuite/23_containers/deque/allocator/default_init.cc,
+	testsuite/23_containers/forward_list/allocator/default_init.cc,
+	testsuite/23_containers/list/allocator/default_init.cc,
+	testsuite/23_containers/map/allocator/default_init.cc,
+	testsuite/23_containers/set/allocator/default_init.cc,
+	testsuite/23_containers/vector/allocator/default_init.cc,
+	testsuite/23_containers/vector/bool/allocator/default_init.cc:
+	Remove xfail.
+
+2021-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/unordered_map/96088.cc: Change
+	effective target to c++17.
+	* testsuite/23_containers/unordered_set/96088.cc: Likewise.
+
+2021-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/ctype/is/string/89728_neg.cc: Only test
+	isblank for C++11 and later.
+
+2021-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100833
+	* include/bits/ranges_base.h (ranges::advance(iter, n, sentinel)):
+	Fix return value for no-op case.
+	* testsuite/24_iterators/range_operations/advance.cc: Test
+	return values of three-argument overload.
+
+2021-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99453
+	* python/Makefile.am: Use archive name for printer hook if no
+	dynamic library name is available.
+	* python/Makefile.in: Regenerate.
+
 2021-05-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/abi.xml: Remove dead reference to "Intel

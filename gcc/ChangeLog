@@ -1,3 +1,135 @@
+2021-06-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/25290
+	* tree-ssa-phiopt.c (match_simplify_replacement):
+	New function.
+	(tree_ssa_phiopt_worker): Use match_simplify_replacement.
+	(two_value_replacement): Change the comment about
+	conditional_replacement.
+	(conditional_replacement): Delete.
+
+2021-06-01  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/95481
+	* tree-tailcall.c (find_tail_calls): Handle empty typed
+	return decls.
+
+2021-06-01  Andrew Pinski  <apinski@marvell.com>
+
+	* gimplify.c (zero_sized_field_decl): Delete
+	(zero_sized_type): Delete
+	(gimplify_init_ctor_eval): Use is_empty_type instead
+	of zero_sized_field_decl.
+	(gimplify_modify_expr): Use is_empty_type instead of
+	zero_sized_type.
+
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91859
+	* tree.h (CALL_FROM_NEW_OR_DELETE_P): Adjust comment.
+
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94492
+	* diagnostic.h (warning_enabled_at): Declare.
+	* diagnostic.c (diagnostic_enabled): Factor out from...
+	(diagnostic_report_diagnostic): ...here.
+	(warning_enabled_at): New.
+
+2021-06-01  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp.c: Enable exporting of global ranges.
+
+2021-06-01  Martin Liska  <mliska@suse.cz>
+
+	PR other/100826
+	* doc/invoke.texi: Mention that -fgcse-after-reload
+	is enabled with -O3.
+
+2021-06-01  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/98365
+	* tree-if-conv.c (strip_nop_cond_scalar_reduction): New function.
+	(is_cond_scalar_reduction): Handle nop_expr in cond scalar reduction.
+	(convert_scalar_cond_reduction): Ditto.
+	(predicate_scalar_phi): Ditto.
+
+2021-06-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/100781
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Enable new
+	value calculation by default.
+	(ranger_cache::enable_new_values): New.
+	(ranger_cache::disable_new_values): New.
+	(ranger_cache::push_poor_value): Check if new values are allowed.
+	* gimple-range-cache.h (class ranger_cache): New member/methods.
+	* gimple-range.cc (gimple_ranger::range_of_expr): Check for debug
+	statement, and disable/renable new value calculation.
+
+2021-06-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ssa_range_in_bb): Delete.
+	(ranger_cache::range_of_def): New.
+	(ranger_cache::entry_range): New.
+	(ranger_cache::exit_range): New.
+	(ranger_cache::range_of_expr): Adjust.
+	(ranger_cache::range_on_edge): Adjust.
+	(ranger_cache::propagate_cache): Call exit_range directly.
+	* gimple-range-cache.h (class ranger_cache): Adjust.
+
+2021-06-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::ranger_cache): Adjust for
+	gori_compute being a member rather than base class.
+	dervied call to member call.
+	(ranger_cache::dump): No longer dump gori_map.
+	(ranger_cache::dump_bb): New.
+	(ranger_cache::get_non_stale_global_range): Adjust for gori_compute
+	being a member rather than base class.
+	(ranger_cache::set_global_range): Ditto.
+	(ranger_cache::ssa_range_in_bb): Ditto.
+	(ranger_cache::range_of_expr): New.
+	(ranger_cache::range_on_edge): New.
+	(ranger_cache::block_range): Adjust for gori_computes.  Debug changes.
+	(ranger_cache::propagate_cache):  Adjust debugging output.
+	(ranger_cache::fill_block_cache): Adjust for gori_computes.  Debug
+	output changes.
+	* gimple-range-cache.h (class ranger_cache): Make gori_compute a
+	member, and inherit from range_query instead.
+	(ranger_cache::dump_bb): New. split from dump.
+	* gimple-range-gori.cc (gori_compute::ssa_range_in_bb): Delete.
+	(gori_compute::expr_range_at_stmt): Delete.
+	(gori_compute::compute_name_range_op): Delete.
+	(gori_compute::compute_operand_range_switch): Add fur_source.
+	(gori_compute::compute_operand_range): Add fur_source param, inline
+	old compute_name_range_op and optimize_logical_operands.
+	(struct tf_range): Delete.
+	(gori_compute::logical_combine): Adjust
+	(gori_compute::optimize_logical_operands): Delete.
+	(gori_compute::compute_logical_operands_in_chain): Delete.
+	(gori_compute::compute_logical_operands): Adjust.
+	(gori_compute::compute_operand1_range): Adjust to fur_source.
+	(gori_compute::compute_operand2_range): Ditto.
+	(gori_compute::compute_operand1_and_operand2_range): Ditto.
+	(gori_compute::outgoing_edge_range_p): Add range_query parameter,
+	and adjust to fur_source.
+	* gimple-range-gori.h (class gori_compute): Simplify and adjust to
+	range_query and fur_source.
+	* gimple-range.cc (gimple_ranger::range_on_edge): Query range_on_edge
+	from the ranger_cache..
+	(gimple_ranger::fold_range_internal): Adjust to base class change of
+	ranger_cache.
+	(gimple_ranger::dump_bb): Adjust dump.
+	* gimple-range.h (gimple_ranger):export gori computes object.
+
+2021-06-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/100774
+	* gimple-range-cache.cc (ranger_cache::get_non_stale_global_range):
+	Constant values are also not stale.
+	(ranger_cache::set_global_range): Range invariant values should also
+	have the correct timestamp.
+
 2021-05-31  Martin Liska  <mliska@suse.cz>
 
 	* tree-streamer-in.c (unpack_ts_function_decl_value_fields):
