@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-options "-Wno-psabi -w" }
 
 template <typename T1, typename T2, int ...args>
 struct shufflevector
