@@ -1,3 +1,22 @@
+2021-06-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/65816
+	* init.c (expand_aggr_init_1): Check
+	type_has_non_user_provided_default_constructor instead of
+	type_has_user_provided_constructor.
+
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91859
+	* call.c (build_op_delete_call): Don't set CALL_FROM_NEW_OR_DELETE_P
+	for destroying delete.
+	* init.c (build_delete): Don't clobber before destroying delete.
+
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/94492
+	* decl2.c (cp_warn_deprecated_use): Check warning_enabled_at.
+
 2021-05-31  Richard Biener  <rguenther@suse.de>
 
 	PR c++/88601

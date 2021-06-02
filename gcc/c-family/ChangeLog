@@ -1,3 +1,12 @@
+2021-06-01  Martin Liska  <mliska@suse.cz>
+
+	PR other/100759
+	* c-attribs.c (handle_optimize_attribute): Limit sanity check
+	to a situation where we are not in processing of an optimize
+	pragma.
+	* c-pragma.c (handle_pragma_pop_options): Restore target
+	options.
+
 2021-05-31  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	PR testsuite/100749
