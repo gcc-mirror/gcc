@@ -8,7 +8,7 @@
 int8_t
 foo (int8x16_t a)
 {
-  return vgetq_lane_s8 (a, 0);
+  return vgetq_lane_s8 (a, 1);
 }
 
 /* { dg-final { scan-assembler "vmov.s8"  }  } */
@@ -16,7 +16,7 @@ foo (int8x16_t a)
 int8_t
 foo1 (int8x16_t a)
 {
-  return vgetq_lane (a, 0);
+  return vgetq_lane (a, 1);
 }
 
 /* { dg-final { scan-assembler "vmov.s8"  }  } */

@@ -90,6 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "print-rtl.h"
 #include "function-abi.h"
+#include "rtlanal.h"
 
 /* Number of attempts to combine instructions in this function.  */
 
@@ -6276,6 +6277,19 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 			      - 1,
 			      0));
       break;
+    case VEC_SELECT:
+      {
+	rtx trueop0 = XEXP (x, 0);
+	mode = GET_MODE (trueop0);
+	rtx trueop1 = XEXP (x, 1);
+	/* If we select a low-part subreg, return that.  */
+	if (vec_series_lowpart_p (GET_MODE (x), mode, trueop1))
+	  {
+	    rtx new_rtx = lowpart_subreg (GET_MODE (x), trueop0, mode);
+	    if (new_rtx != NULL_RTX)
+	      return new_rtx;
+	  }
+      }
 
     default:
       break;

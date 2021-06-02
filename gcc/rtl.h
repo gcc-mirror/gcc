@@ -2996,6 +2996,7 @@ extern unsigned int rtx_size (const_rtx);
 extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
 extern int rtx_equal_p (const_rtx, const_rtx);
 extern bool rtvec_all_equal_p (const_rtvec);
+extern bool rtvec_series_p (rtvec, int);
 
 /* Return true if X is a vector constant with a duplicated element value.  */
 
