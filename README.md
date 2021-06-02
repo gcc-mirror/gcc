@@ -76,33 +76,34 @@ export PATH=$HOME/gccrs-install/bin:$PATH
 
 ## Testsuite
 
-Invoke the full testsuite from the build directory (`gcc/gccrs-build` in the previous commands):
+Invoke the full testsuite from the build directory (`gccrs-build` in the previous commands):
 
 ```bash
 $ make check-rust
 ```
 
-Invoke a subset of the testsuite. For example, to only execute the tests that are expected to fail:
+Invoke a subset of the testsuite. For example, to only run tests that are currently known/expected to fail:
 
 ```bash
-$ make check-rust  RUNTESTFLAGS="xfail_compile.exp"
+$ make check-rust RUNTESTFLAGS="xfail.exp"
 ```
-The project currently has 3 sets of tests:
+There are the following sets of tests:
+- `compile.exp` : compilation tests
 - `execute.exp` : execution tests
-- `compile.exp` : compilation only tests, using combination of options
-- `xfail_compile.exp` : compilation only tests expected to fail
+- `xfail.exp` : tests that are currently known/expected to fail
 
 Invoke only a specific test :
 
 ```bash
-$ make check-rust  RUNTESTFLAGS="xfail_compile.exp=continue1.rs"
+$ make check-rust RUNTESTFLAGS="--all compile.exp=continue1.rs"
 ```
 
 Logs (with corresponding commands) can be found in : `gccrs-build/gcc/testsuite/rust/rust.log`.
 
 See [GCC Testing documentation](https://gcc.gnu.org/install/test.html) for more details.
 
-Test cases are located within [gcc/testsuite/rust.test](gcc/testsuite/rust.test) please feel free to contribute your specific
+Test cases are located within [`gcc/testsuite/rust/`](gcc/testsuite/rust/).
+Please contribute your specific
 test cases referencing any issues on Github.
 
 ## Debugging
@@ -152,28 +153,28 @@ If you want to build an object file:
 ```bash
 $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
     gccrs-dev:latest gccrs -g -O2 -c \
-    gcc/testsuite/rust.test/compilable/type_infer1.rs -o type_infer1.o
+    gcc/testsuite/rust/compile/torture/type_infer1.rs -o type_infer1.o
 ```
 
 If you want to build an executable file:
 ```bash
 $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
     gccrs-dev:latest gccrs -g -O2 \
-    gcc/testsuite/rust.test/compilable/type_infer1.rs -o type_infer1
+    gcc/testsuite/rust/compile/torture/type_infer1.rs -o type_infer1
 ```
 
 To emit assembly :
 ```bash
 $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
     gccrs-dev:latest gccrs -g -O2 \
-    gcc/testsuite/rust.test/compilable/type_infer1.rs -S -o type_infer1.s 
+    gcc/testsuite/rust/compile/torture/type_infer1.rs -S -o type_infer1.s 
 ```
 
 To emit the debug outputs you can add the option -frust-dump-all :
 ```bash
 $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
     gccrs-dev:latest gccrs -g -O2 \
-    gcc/testsuite/rust.test/compilable/type_infer1.rs -o type_infer1 -frust-dump-all
+    gcc/testsuite/rust/compile/torture/type_infer1.rs -o type_infer1 -frust-dump-all
 ```
 
 

@@ -14,10 +14,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+# Compile tests, no torture testing.
 #
-# Rust test suite.
-# These tests are expected to raise an error in the frontend
-#
+# These tests raise errors in the front end; torture testing doesn't apply.
 
 # Load support procs.
 load_lib rust-dg.exp

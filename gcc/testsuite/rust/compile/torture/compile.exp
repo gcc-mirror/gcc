@@ -14,9 +14,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-#
-# Rust torture test suite.
-#
+# Compile tests, torture testing.
 
 # Load support procs.
 load_lib rust-dg.exp

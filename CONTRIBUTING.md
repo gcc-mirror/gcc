@@ -35,7 +35,7 @@
 
 * Avoid PR's with merge commit unless there's a good reason
 
-* Where possible please add test cases to gcc/testsuite/rust.test for all PRs. Some issues may not be testable via dejagnu/automation such as debug dump changes.
+* Where possible please add test cases to `gcc/testsuite/rust/` for all PRs. Some issues may not be testable via dejagnu/automation such as debug dump changes.
 
 * PR's cannot be merged untill clang format and the build and tests pass.
 

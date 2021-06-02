@@ -14,7 +14,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-
+# Compile tests, no torture testing.
+#
 # These tests are used to keep track of known limitations :
 # 1- tests that are incorrecly build instead of being rejected
 # 2- tests that are build to an incorrect result
