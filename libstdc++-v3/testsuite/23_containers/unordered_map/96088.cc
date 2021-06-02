@@ -222,7 +222,8 @@ test03()
   std::vector<std::pair<std::string, int>> v;
   v.insert(v.end(), lst.begin(), lst.end());
 
-  auto __offset = __gnu_test::counter::count();
+  const auto origin = __gnu_test::counter::count();
+
   {
     __gnu_test::counter::reset();
     std::unordered_map<std::string, int,
@@ -231,15 +232,19 @@ test03()
     um.insert(v.begin(), v.end());
     VERIFY( um.size() == 1 );
 
-    VERIFY( __gnu_test::counter::count() - __offset == 3 );
-    VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+    // Allocate array of buckets, a node, and the std::string (unless COW).
+    constexpr std::size_t increments = _GLIBCXX_USE_CXX11_ABI ? 3 : 2;
+
+    VERIFY( __gnu_test::counter::count() == origin + increments );
+    VERIFY( __gnu_test::counter::get()._M_increments == increments );
 
     um.insert(v.begin(), v.end());
     VERIFY( um.size() == 1 );
 
-    VERIFY( __gnu_test::counter::count() - __offset == 3 );
-    VERIFY( __gnu_test::counter::get()._M_increments == 3 );
+    VERIFY( __gnu_test::counter::count() == origin + increments );
+    VERIFY( __gnu_test::counter::get()._M_increments == increments );
   }
+  VERIFY( __gnu_test::counter::count() == origin );
 
   {
     __gnu_test::counter::reset();
@@ -250,8 +255,11 @@ test03()
 	      std::make_move_iterator(v.end()));
     VERIFY( um.size() == 1 );
 
-    VERIFY( __gnu_test::counter::count() - __offset == 2 );
-    VERIFY( __gnu_test::counter::get()._M_increments == 2 );
+    // Allocate array of buckets and a node. String is moved.
+    constexpr std::size_t increments = 2;
+
+    VERIFY( __gnu_test::counter::count() == origin + increments );
+    VERIFY( __gnu_test::counter::get()._M_increments == increments );
   }
 }
 
