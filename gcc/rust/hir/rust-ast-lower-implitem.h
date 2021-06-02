@@ -60,7 +60,6 @@ public:
 
   void visit (AST::ConstantItem &constant) override
   {
-    AST::AttrVec outer_attrs;
     HIR::Visibility vis = HIR::Visibility::create_public ();
 
     HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
@@ -74,7 +73,8 @@ public:
     translated = new HIR::ConstantItem (mapping, constant.get_identifier (),
 					vis, std::unique_ptr<HIR::Type> (type),
 					std::unique_ptr<HIR::Expr> (expr),
-					outer_attrs, constant.get_locus ());
+					constant.get_outer_attrs (),
+					constant.get_locus ());
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id,
@@ -86,7 +86,6 @@ public:
   void visit (AST::Function &function) override
   {
     // ignore for now and leave empty
-    AST::AttrVec outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (
@@ -147,7 +146,7 @@ public:
 			   std::move (qualifiers), std::move (generic_params),
 			   std::move (function_params), std::move (return_type),
 			   std::move (where_clause), std::move (function_body),
-			   std::move (vis), std::move (outer_attrs), locus);
+			   std::move (vis), function.get_outer_attrs (), locus);
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id, fn);
@@ -169,7 +168,6 @@ public:
   void visit (AST::Method &method) override
   {
     // ignore for now and leave empty
-    AST::AttrVec outer_attrs;
     std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
     HIR::WhereClause where_clause (std::move (where_clause_items));
     HIR::FunctionQualifiers qualifiers (
@@ -228,7 +226,7 @@ public:
 			 std::move (self_param), std::move (function_params),
 			 std::move (return_type), std::move (where_clause),
 			 std::move (method_body), std::move (vis),
-			 std::move (outer_attrs), locus);
+			 method.get_outer_attrs (), locus);
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id, mth);

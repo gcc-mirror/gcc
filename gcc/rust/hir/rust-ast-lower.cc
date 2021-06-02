@@ -40,7 +40,6 @@ HIR::Crate
 ASTLowering::go ()
 {
   std::vector<std::unique_ptr<HIR::Item> > items;
-  AST::AttrVec inner_attrs;
   bool has_utf8bom = false;
   bool has_shebang = false;
 
@@ -57,7 +56,7 @@ ASTLowering::go ()
 				 mappings->get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
-  return HIR::Crate (std::move (items), std::move (inner_attrs), mapping,
+  return HIR::Crate (std::move (items), astCrate.get_inner_attrs (), mapping,
 		     has_utf8bom, has_shebang);
 }
 
@@ -65,9 +64,6 @@ ASTLowering::go ()
 void
 ASTLoweringBlock::visit (AST::BlockExpr &expr)
 {
-  AST::AttrVec inner_attribs;
-  AST::AttrVec outer_attribs;
-
   std::vector<std::unique_ptr<HIR::Stmt> > block_stmts;
   bool block_did_terminate = false;
   expr.iterate_stmts ([&] (AST::Stmt *s) mutable -> bool {
@@ -105,8 +101,8 @@ ASTLoweringBlock::visit (AST::BlockExpr &expr)
   translated
     = new HIR::BlockExpr (mapping, std::move (block_stmts),
 			  std::unique_ptr<HIR::ExprWithoutBlock> (tail_expr),
-			  tail_reachable, std::move (inner_attribs),
-			  std::move (outer_attribs), expr.get_locus ());
+			  tail_reachable, expr.get_inner_attrs (),
+			  expr.get_outer_attrs (), expr.get_locus ());
 
   terminated = block_did_terminate;
 }
@@ -240,7 +236,6 @@ ASTLowerStructExprField::visit (AST::StructExprFieldIdentifier &field)
 void
 ASTLoweringExprWithBlock::visit (AST::WhileLoopExpr &expr)
 {
-  AST::AttrVec outer_attribs;
   HIR::BlockExpr *loop_block
     = ASTLoweringBlock::translate (expr.get_loop_block ().get (), &terminated);
 
@@ -259,7 +254,7 @@ ASTLoweringExprWithBlock::visit (AST::WhileLoopExpr &expr)
 			      std::unique_ptr<HIR::Expr> (loop_condition),
 			      std::unique_ptr<HIR::BlockExpr> (loop_block),
 			      expr.get_locus (), std::move (loop_label),
-			      std::move (outer_attribs));
+			      expr.get_outer_attrs ());
 }
 
 // rust-ast-lower-expr.h
