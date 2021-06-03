@@ -851,7 +851,7 @@ package Checks is
    --    are not following the flow graph (more properly the flow of actual
    --    processing only corresponds to the flow graph for local assignments).
    --    For non-local variables, we preserve the current setting, i.e. a
-   --    validity check is performed when assigning to a knonwn valid global.
+   --    validity check is performed when assigning to a known valid global.
 
    --  Note: no validity checking is required if range checks are suppressed
    --  regardless of the setting of the validity checking mode.

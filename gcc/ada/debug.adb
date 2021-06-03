@@ -1101,7 +1101,7 @@ package body Debug is
    --       issues (e.g., assuming that a low bound of an array parameter
    --       of an unconstrained subtype belongs to the index subtype).
 
-   --  d.9  Enable build-in-place for function calls returning some nonlimited
+   --  d.9  Disable build-in-place for function calls returning nonlimited
    --       types.
 
    ------------------------------------------

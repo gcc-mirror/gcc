@@ -4913,7 +4913,7 @@ package body Exp_Ch6 is
       --  Optimization, if the returned value (which is on the sec-stack) is
       --  returned again, no need to copy/readjust/finalize, we can just pass
       --  the value thru (see Expand_N_Simple_Return_Statement), and thus no
-      --  attachment is needed
+      --  attachment is needed.
 
       if Nkind (Parent (N)) = N_Simple_Return_Statement then
          return;
@@ -7310,15 +7310,16 @@ package body Exp_Ch6 is
 
          Set_Enclosing_Sec_Stack_Return (N);
 
-         --  Optimize the case where the result is a function call. In this
-         --  case the result is already on the secondary stack and no further
-         --  processing is required except to set the By_Ref flag to ensure
-         --  that gigi does not attempt an extra unnecessary copy. (Actually
-         --  not just unnecessary but wrong in the case of a controlled type,
-         --  where gigi does not know how to do a copy.)
+         --  Optimize the case where the result is a function call that also
+         --  returns on the secondary stack. In this case the result is already
+         --  on the secondary stack and no further processing is required
+         --  except to set the By_Ref flag to ensure that gigi does not attempt
+         --  an extra unnecessary copy. (Actually not just unnecessary but
+         --  wrong in the case of a controlled type, where gigi does not know
+         --  how to do a copy.)
 
-         if Requires_Transient_Scope (Exp_Typ)
-           and then Exp_Is_Function_Call
+         pragma Assert (Requires_Transient_Scope (R_Type));
+         if Exp_Is_Function_Call and then Requires_Transient_Scope (Exp_Typ)
          then
             Set_By_Ref (N);
 
@@ -7849,7 +7850,7 @@ package body Exp_Ch6 is
 
       Compute_Returns_By_Ref (Subp);
 
-      --  Wnen freezing a null procedure, analyze its delayed aspects now
+      --  When freezing a null procedure, analyze its delayed aspects now
       --  because we may not have reached the end of the declarative list when
       --  delayed aspects are normally analyzed. This ensures that dispatching
       --  calls are properly rewritten when the generated _Postcondition
@@ -8218,10 +8219,6 @@ package body Exp_Ch6 is
       if not Expander_Active then
          return False;
       end if;
-
-      --  For now we test whether E denotes a function or access-to-function
-      --  type whose result subtype is inherently limited. Later this test
-      --  may be revised to allow composite nonlimited types.
 
       if Ekind (E) in E_Function | E_Generic_Function
         or else (Ekind (E) = E_Subprogram_Type

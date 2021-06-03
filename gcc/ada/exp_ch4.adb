@@ -1166,6 +1166,9 @@ package body Exp_Ch4 is
          --  secondary stack). In that case, the object will be moved, so we do
          --  want to Adjust. However, if it's a nonlimited build-in-place
          --  function call, Adjust is not wanted.
+         --
+         --  Needs_Finalization (DesigT) can differ from Needs_Finalization (T)
+         --  if one of the two types is class-wide, and the other is not.
 
          if Needs_Finalization (DesigT)
            and then Needs_Finalization (T)

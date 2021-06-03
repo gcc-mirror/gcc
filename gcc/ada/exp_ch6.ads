@@ -134,8 +134,11 @@ package Exp_Ch6 is
    --
    --  For inherently limited types in Ada 2005, True means that calls will
    --  actually be build-in-place in all cases. For other types, build-in-place
-   --  will be used when possible, but we need to make a copy at the call site
-   --  in some cases, notably assignment statements.
+   --  will be used when possible, but we need to make a copy in some
+   --  cases. For example, for "X := F(...);" if F can see X, or if F can
+   --  propagate exceptions, we need to store its result in a temp in general,
+   --  and copy the temp into X. Also, for "return Global_Var;" Global_Var
+   --  needs to be copied into the function result object.
 
    function Is_Build_In_Place_Function (E : Entity_Id) return Boolean;
    --  Ada 2005 (AI-318-02): Returns True if E denotes a function, generic
