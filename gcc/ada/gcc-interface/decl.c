@@ -2109,6 +2109,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
     case E_Array_Type:
       {
+	const Entity_Id PAT = Packed_Array_Impl_Type (gnat_entity);
 	const bool convention_fortran_p
 	  = (Convention (gnat_entity) == Convention_Fortran);
 	const int ndim = Number_Dimensions (gnat_entity);
@@ -2212,16 +2213,16 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  }
 
 	/* If the GNAT encodings are used, give the fat pointer type a name.
-	   If this is a packed array, tell the debugger how to interpret the
-	   underlying bits by fetching that of the implementation type.  But
-	   in any case, mark it as artificial so the debugger can skip it.  */
+	   If this is a packed type implemented specially, tell the debugger
+	   how to interpret the underlying bits by fetching the name of the
+	   implementation type.  But, in any case, mark it as artificial so
+	   the debugger can skip it.  */
 	const Entity_Id gnat_name
-	  = (Present (Packed_Array_Impl_Type (gnat_entity))
-	     && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
-	    ? Packed_Array_Impl_Type (gnat_entity)
+	  = Present (PAT) && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+	    ? PAT
 	    : gnat_entity;
 	tree xup_name
-	  = (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	  = gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
 	    ? create_concat_name (gnat_name, "XUP")
 	    : gnu_entity_name;
 	create_type_decl (xup_name, gnu_fat_type, true, debug_info_p,
@@ -2356,9 +2357,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	/* If this is a packed type implemented specially, then process the
 	   implementation type so it is elaborated in the proper scope.  */
-	if (Present (Packed_Array_Impl_Type (gnat_entity)))
-	  gnat_to_gnu_entity (Packed_Array_Impl_Type (gnat_entity), NULL_TREE,
-			      false);
+	if (Present (PAT))
+	  gnat_to_gnu_entity (PAT, NULL_TREE, false);
 
 	/* Otherwise, if an alignment is specified, use it if valid and, if
 	   the alignment was requested with an explicit clause, state so.  */
@@ -2383,8 +2383,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  tem = change_qualified_type (tem, TYPE_QUAL_VOLATILE);
 
 	/* Adjust the type of the pointer-to-array field of the fat pointer
-	   and record the aliasing relationships if necessary.  */
-	TREE_TYPE (TYPE_FIELDS (gnu_fat_type)) = build_pointer_type (tem);
+	   and record the aliasing relationships if necessary.  If this is
+	   a packed type implemented specially, then use a ref-all pointer
+	   type since the implementation type may vary between constrained
+	   subtypes and unconstrained base type.  */
+	if (Present (PAT))
+	  TREE_TYPE (TYPE_FIELDS (gnu_fat_type))
+	    = build_pointer_type_for_mode (tem, ptr_mode, true);
+	else
+	  TREE_TYPE (TYPE_FIELDS (gnu_fat_type)) = build_pointer_type (tem);
 	if (TYPE_ALIAS_SET_KNOWN_P (gnu_fat_type))
 	  record_component_aliases (gnu_fat_type);
 
@@ -2448,6 +2455,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	;
       else
 	{
+	  const Entity_Id PAT = Packed_Array_Impl_Type (gnat_entity);
 	  Entity_Id gnat_index, gnat_base_index;
 	  const bool convention_fortran_p
 	    = (Convention (gnat_entity) == Convention_Fortran);
@@ -2853,7 +2861,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
 	  /* If this is a packed type implemented specially, then replace our
 	     type with the implementation type.  */
-	  if (Present (Packed_Array_Impl_Type (gnat_entity)))
+	  if (Present (PAT))
 	    {
 	      /* First finish the type we had been making so that we output
 		 debugging information for it.  */
@@ -2878,8 +2886,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 this type again.  */
 	      save_gnu_tree (gnat_entity, gnu_tmp_decl, false);
 
-	      gnu_type
-		= gnat_to_gnu_type (Packed_Array_Impl_Type (gnat_entity));
+	      gnu_type = gnat_to_gnu_type (PAT);
 	      save_gnu_tree (gnat_entity, NULL_TREE, false);
 
 	      /* Set the ___XP suffix for GNAT encodings.  */
