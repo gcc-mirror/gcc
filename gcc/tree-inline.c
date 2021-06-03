@@ -1453,6 +1453,27 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 
 	  *walk_subtrees = 0;
 	}
+      else if (TREE_CODE (*tp) == OMP_CLAUSE
+	       && (OMP_CLAUSE_CODE (*tp) == OMP_CLAUSE_AFFINITY
+		   || OMP_CLAUSE_CODE (*tp) == OMP_CLAUSE_DEPEND))
+	{
+	  tree t = OMP_CLAUSE_DECL (*tp);
+	  if (TREE_CODE (t) == TREE_LIST
+	      && TREE_PURPOSE (t)
+	      && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
+	    {
+	      *walk_subtrees = 0;
+	      OMP_CLAUSE_DECL (*tp) = copy_node (t);
+	      t = OMP_CLAUSE_DECL (*tp);
+	      TREE_PURPOSE (t) = copy_node (TREE_PURPOSE (t));
+	      for (int i = 0; i <= 4; i++)
+		walk_tree (&TREE_VEC_ELT (TREE_PURPOSE (t), i),
+			   copy_tree_body_r, id, NULL);
+	      if (TREE_VEC_ELT (TREE_PURPOSE (t), 5))
+		remap_block (&TREE_VEC_ELT (TREE_PURPOSE (t), 5), id);
+	      walk_tree (&TREE_VALUE (t), copy_tree_body_r, id, NULL);
+	    }
+	}
     }
 
   /* Keep iterating.  */

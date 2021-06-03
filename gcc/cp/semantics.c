@@ -4968,7 +4968,11 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 	  if (REFERENCE_REF_P (t))
 	    t = TREE_OPERAND (t, 0);
 	}
-      if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
+      if (TREE_CODE (t) == FIELD_DECL
+	  && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY
+	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND))
+	ret = finish_non_static_data_member (t, NULL_TREE, NULL_TREE);
+      else if (!VAR_P (t) && TREE_CODE (t) != PARM_DECL)
 	{
 	  if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 	    return NULL_TREE;
@@ -4985,7 +4989,9 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
       else if (ort == C_ORT_OMP
 	       && TREE_CODE (t) == PARM_DECL
 	       && DECL_ARTIFICIAL (t)
-	       && DECL_NAME (t) == this_identifier)
+	       && DECL_NAME (t) == this_identifier
+	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_AFFINITY
+	       && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DEPEND)
 	{
 	  error_at (OMP_CLAUSE_LOCATION (c),
 		    "%<this%> allowed in OpenMP only in %<declare simd%>"
@@ -7468,7 +7474,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  goto handle_field_decl;
 
-	case OMP_CLAUSE_AFFINITY:
 	case OMP_CLAUSE_DEPEND:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (t == NULL_TREE)
@@ -7477,13 +7482,15 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  == OMP_CLAUSE_DEPEND_SOURCE);
 	      break;
 	    }
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-	      && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
 	    {
 	      if (cp_finish_omp_clause_depend_sink (c))
 		remove = true;
 	      break;
 	    }
+	  /* FALLTHRU */
+	case OMP_CLAUSE_AFFINITY:
+	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST
 	      && TREE_PURPOSE (t)
 	      && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
@@ -7516,13 +7523,6 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  if (t == error_mark_node)
 	    remove = true;
-	  else if (ort != C_ORT_ACC && t == current_class_ptr)
-	    {
-	      error_at (OMP_CLAUSE_LOCATION (c),
-			"%<this%> allowed in OpenMP only in %<declare simd%>"
-			" clauses");
-	      remove = true;
-	    }
 	  else if (processing_template_decl && TREE_CODE (t) != OVERLOAD)
 	    break;
 	  else if (!lvalue_p (t))
@@ -7543,11 +7543,9 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		   && TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL
 		   && DECL_BIT_FIELD (TREE_OPERAND (t, 1)))
 	    {
-	      gcc_assert (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-			  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_AFFINITY);
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"bit-field %qE in %qs clause", t,
-			  omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	      remove = true;
 	    }
 	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
