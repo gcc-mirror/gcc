@@ -1,3 +1,27 @@
+2021-06-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2021-01-21  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/98777
+	* gcc.target/riscv/pr98777.c: New.
+
+2021-06-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2021-01-20  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/98722
+	* g++.target/s390/pr98722.C: New.
+
+2021-06-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2021-01-12  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/97969
+	* gcc.target/arm/pr97969.c: New.
+
 2021-06-01  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:

@@ -1,3 +1,40 @@
+2021-06-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2021-01-21  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/98777
+	* lra-int.h (lra_pmode_pseudo): New extern.
+	* lra.c (lra_pmode_pseudo): New global.
+	(lra): Set it up.
+	* lra-eliminations.c (eliminate_regs_in_insn): Use it.
+
+2021-06-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2021-01-20  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/98722
+	* lra-eliminations.c (eliminate_regs_in_insn): Check that target
+	has no 3-op add insn to transform insns containing two pluses.
+
+2021-06-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	Backported from master:
+	2021-01-12  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/97969
+	* lra-eliminations.c (eliminate_regs_in_insn): Add transformation
+	of pattern 'plus (plus (hard reg, const), pseudo)'.
+
+2021-06-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2021-06-02  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (abs<MMXMODEI:mode>2):
+	Change define_insn to define_expand.
+
 2021-06-01  Alex Coplan  <alex.coplan@arm.com>
 
 	Backported from master:
