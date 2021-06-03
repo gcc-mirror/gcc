@@ -1,3 +1,67 @@
+2021-06-02  Christoph Muellner  <cmuellner@gcc.gnu.org>
+
+	PR rtl-optimization/100264
+	* ree.c (get_sub_rtx): Ignore SET expressions without register
+	destinations and remove assertion, as it is not valid anymore
+	with this new behaviour.
+	(merge_def_and_ext): Eliminate destination check for register
+	as such SET expressions can't occur anymore.
+	(combine_reaching_defs): Likewise.
+
+2021-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100841
+	* config/xtensa/xtensa.h (LEAF_REG_REMAP): Cast REGNO to int to avoid
+	-Wtype-limits warnings.
+	(DWARF_FRAME_REGISTER): Rewrite into ternary operator with addition
+	in operands to avoid -Wsign-compare warnings.
+
+2021-06-02  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000-logue.c (rs6000_emit_prologue): Use
+	gen_frame_store.
+
+2021-06-02  Vineet Gupta  <vgupta@synopsys.com>
+
+	* config/arc/arc.h (TARGET_CPU_DEFAULT): Change to hs38_linux.
+
+2021-06-02  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.md(*ashrdi3_31<setcc><cconly>): Use a single
+	constraint.
+	* config/s390/subst.md(cconly_subst): Use a single constraint
+	in (match_scratch).
+
+2021-06-02  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.h: Use auto_vec for memory_access_types.
+
+2021-06-02  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300-protos.h (compute_a_shift_length): Drop unused
+	argument from prototype.
+	(output_logical_op): Add rtx_code argument.
+	(compute_logical_op_length): Likewise.
+	* config/h8300/h8300.c (h8300_and_costs): Pass additional argument
+	to compute_a_shift_length.
+	(output_logical_op); New argument with the rtx code rather than
+	extracting it from an operand.  Handle QImode too.
+	(compute_logical_op_length): Similary.
+	(compute_a_shift_length): Drop unused argument.
+	* config/h8300/h8300.md (logicals): New code iterator.
+	* config/h8300/logical.md (<code><mode>3 expander): Combine
+	the "and" expander with the "ior"/"xor" expander.
+	(bclr<mode>msx): Combine the QI/HI mode patterns.
+	(<logical><mode>3 insns): Use code iterator rather than match_operator.
+	Handle QImode as well.   Update call to output_logical_op and
+	compute_logical_op_length to pass in rtx_code
+	Fix split condition on all define_insn_and_split patterns.
+	(one_cmpl<mode>2<cczn>): Use <cczn> to support both clobbering
+	the flags and setting ZN via existing define_subst.
+	* config/h8300/shiftrotate.md: Drop unused argument from
+	calls to compute_a_shift_length.
+	Signed-off-by: Jeff Law <jeffreyalaw@gmail.com>
+
 2021-06-01  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/25290
