@@ -75,9 +75,6 @@ static_assert( same_as<std::ranges::range_difference_t<C>,
 static_assert( same_as<std::ranges::range_difference_t<O>,
 		       std::ptrdiff_t> );
 
-static_assert( same_as<std::ranges::range_value_t<O>,
-		       char> );
-
 static_assert( same_as<std::ranges::range_reference_t<I>,
 		       char&> );
 static_assert( same_as<std::ranges::range_reference_t<O>,
