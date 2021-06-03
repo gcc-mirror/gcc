@@ -5016,34 +5016,6 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 	(if_then_else (match_test "get_attr_length (insn) == 6")
 		      (const_string "true") (const_string "false")))])
 
-; ??? When testing a bit from a DImode register, combine creates a
-; zero_extract in DImode.  This goes via an AND with a DImode constant,
-; so can only be observed on 64 bit hosts.
-(define_insn_and_split "*bbit_di"
-  [(set (pc)
-	(if_then_else
-	  (match_operator 3 "equality_comparison_operator"
-	    [(zero_extract:DI (match_operand:SI 1 "register_operand" "Rcqq,c")
-			      (const_int 1)
-			      (match_operand 2 "immediate_operand" "L,L"))
-	     (const_int 0)])
-	  (label_ref (match_operand 0 "" ""))
-	  (pc)))
-   (clobber (reg:CC_ZN CC_REG))]
-  "!CROSSING_JUMP_P (insn)"
-  "#"
-  ""
-  [(parallel
-     [(set (pc) (if_then_else (match_dup 3) (label_ref (match_dup 0)) (pc)))
-      (clobber (reg:CC_ZN CC_REG))])]
-{
-  rtx xtr;
-
-  xtr = gen_rtx_ZERO_EXTRACT (SImode, operands[1], const1_rtx, operands[2]);
-  operands[3] = gen_rtx_fmt_ee (GET_CODE (operands[3]), GET_MODE (operands[3]),
-				xtr, const0_rtx);
-})
-
 ;; -------------------------------------------------------------------
 ;; Hardware loop
 ;; -------------------------------------------------------------------
