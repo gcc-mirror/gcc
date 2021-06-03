@@ -8526,20 +8526,6 @@ extract_base_bit_offset (tree base, tree *base_ind, tree *base_ref,
   if (base_ref)
     *base_ref = NULL_TREE;
 
-  if (TREE_CODE (base) == ARRAY_REF)
-    {
-      while (TREE_CODE (base) == ARRAY_REF)
-	base = TREE_OPERAND (base, 0);
-      if (TREE_CODE (base) != COMPONENT_REF
-	  || TREE_CODE (TREE_TYPE (base)) != ARRAY_TYPE)
-	return NULL_TREE;
-    }
-  else if (TREE_CODE (base) == INDIRECT_REF
-	   && TREE_CODE (TREE_OPERAND (base, 0)) == COMPONENT_REF
-	   && (TREE_CODE (TREE_TYPE (TREE_OPERAND (base, 0)))
-	       == REFERENCE_TYPE))
-    base = TREE_OPERAND (base, 0);
-
   base = get_inner_reference (base, &bitsize, &bitpos, &offset, &mode,
 			      &unsignedp, &reversep, &volatilep);
 
@@ -9116,11 +9102,17 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
   poly_offset_int coffset;
   poly_int64 cbitpos;
   tree base_ind, base_ref, tree_coffset;
+  tree ocd = OMP_CLAUSE_DECL (c);
   bool openmp = !(region_type & ORT_ACC);
 
-  tree base = extract_base_bit_offset (OMP_CLAUSE_DECL (c), &base_ind,
-				       &base_ref, &cbitpos, &coffset,
-				       &tree_coffset, openmp);
+  while (TREE_CODE (ocd) == ARRAY_REF)
+    ocd = TREE_OPERAND (ocd, 0);
+
+  if (TREE_CODE (ocd) == INDIRECT_REF)
+    ocd = TREE_OPERAND (ocd, 0);
+
+  tree base = extract_base_bit_offset (ocd, &base_ind, &base_ref, &cbitpos,
+				       &coffset, &tree_coffset, openmp);
 
   bool do_map_struct = (base == decl && !tree_coffset);
 
@@ -9347,9 +9339,23 @@ build_struct_group (struct gimplify_omp_ctx *ctx,
 	    poly_offset_int offset;
 	    poly_int64 bitpos;
 	    tree tree_offset;
-	    tree base = extract_base_bit_offset (sc_decl, NULL, NULL,
-						 &bitpos, &offset,
-						 &tree_offset, openmp);
+
+	    if (TREE_CODE (sc_decl) == ARRAY_REF)
+	      {
+		while (TREE_CODE (sc_decl) == ARRAY_REF)
+		  sc_decl = TREE_OPERAND (sc_decl, 0);
+		if (TREE_CODE (sc_decl) != COMPONENT_REF
+		    || TREE_CODE (TREE_TYPE (sc_decl)) != ARRAY_TYPE)
+		  break;
+	      }
+	    else if (TREE_CODE (sc_decl) == INDIRECT_REF
+		     && TREE_CODE (TREE_OPERAND (sc_decl, 0)) == COMPONENT_REF
+		     && (TREE_CODE (TREE_TYPE (TREE_OPERAND (sc_decl, 0)))
+			 == REFERENCE_TYPE))
+	      sc_decl = TREE_OPERAND (sc_decl, 0);
+
+	    tree base = extract_base_bit_offset (sc_decl, NULL, NULL, &bitpos,
+						 &offset, &tree_offset, openmp);
 	    if (!base || !operand_equal_p (base, decl, 0))
 	      break;
 	    if (scp)
