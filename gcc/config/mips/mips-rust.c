@@ -204,7 +204,7 @@ void mips_rust_target_cpu_info(void) {
         rust_add_target_info("target_feature", "single-float");
     if (TARGET_SOFT_FLOAT_ABI)
         rust_add_target_info("target_feature", "soft-float");
-    if (!(ODD_SPREG))
+    if (!TARGET_ODD_SPREG)
         rust_add_target_info("target_feature", "nooddspreg");
     // TODO: find if vfpu (vector FPU instructions) are supported by gcc at all
     // TODO: ensure below switch variable and whatever works
