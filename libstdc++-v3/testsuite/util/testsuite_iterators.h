@@ -122,7 +122,7 @@ namespace __gnu_test
    */
   template<class T>
   struct output_iterator_wrapper
-  : public std::iterator<std::output_iterator_tag, T, std::ptrdiff_t, T*, T&>
+  : public std::iterator<std::output_iterator_tag, void, std::ptrdiff_t, void, void>
   {
   protected:
     output_iterator_wrapper() : ptr(0), SharedInfo(0)
