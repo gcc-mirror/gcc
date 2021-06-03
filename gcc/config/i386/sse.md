@@ -18115,10 +18115,10 @@
   "operands[1] = adjust_address_nv (operands[1], V8QImode, 0);")
 
 (define_insn_and_split "*sse4_1_zero_extendv8qiv8hi2_3"
-  [(set (match_operand:V16QI 0 "register_operand" "=Yr,*x,v")
+  [(set (match_operand:V16QI 0 "register_operand" "=Yr,*x,Yw")
 	(vec_select:V16QI
 	  (vec_concat:V32QI
-	    (match_operand:V16QI 1 "vector_operand" "YrBm,*xBm,vm")
+	    (match_operand:V16QI 1 "vector_operand" "YrBm,*xBm,Ywm")
 	    (match_operand:V16QI 2 "const0_operand" "C,C,C"))
 	  (match_parallel 3 "pmovzx_parallel"
 	    [(match_operand 4 "const_int_operand" "n,n,n")])))]
@@ -18803,9 +18803,9 @@
 })
 
 (define_expand "<insn>v4siv4di2"
-  [(set (match_operand:V4DI 0 "register_operand" "=v")
+  [(set (match_operand:V4DI 0 "register_operand")
 	(any_extend:V4DI
-	    (match_operand:V4SI 1 "nonimmediate_operand" "vm")))]
+	    (match_operand:V4SI 1 "nonimmediate_operand")))]
   "TARGET_AVX2")
 
 (define_insn "sse4_1_<code>v2siv2di2<mask_name>"
