@@ -2003,7 +2003,15 @@ dump_ada_enum_type (pretty_printer *buffer, tree node, tree type, tree parent,
 	  pp_semicolon (buffer);
 	  newline_and_indent (buffer, spc);
 
+	  if (TYPE_NAME (node))
+	    dump_ada_node (buffer, node, NULL_TREE, spc, false, true);
+	  else if (type)
+	    dump_ada_node (buffer, type, NULL_TREE, spc, false, true);
+	  else
+	    dump_anonymous_type_name (buffer, node, parent);
+	  pp_underscore (buffer);
 	  pp_ada_tree_identifier (buffer, TREE_PURPOSE (value), node, false);
+
 	  pp_string (buffer, " : constant ");
 
 	  if (TYPE_NAME (node))
@@ -2628,11 +2636,31 @@ struct overloaded_name_hasher : delete_ptr_hash<overloaded_name_hash>
     { return a->name == b->name; }
 };
 
-static hash_table<overloaded_name_hasher> *overloaded_names;
+typedef hash_table<overloaded_name_hasher> htable_t;
+
+static htable_t *overloaded_names;
+
+/* Add an overloaded NAME with N occurrences to TABLE.  */
+
+static void
+add_name (const char *name, unsigned int n, htable_t *table)
+{
+  struct overloaded_name_hash in, *h, **slot;
+  tree id = get_identifier (name);
+  hashval_t hash = htab_hash_pointer (id);
+  in.hash = hash;
+  in.name = id;
+  slot = table->find_slot_with_hash (&in, hash, INSERT);
+  h = new overloaded_name_hash;
+  h->hash = hash;
+  h->name = id;
+  h->n = n;
+  *slot = h;
+}
 
 /* Initialize the table with the problematic overloaded names.  */
 
-static hash_table<overloaded_name_hasher> *
+static htable_t *
 init_overloaded_names (void)
 {
   static const char *names[] =
@@ -2640,41 +2668,31 @@ init_overloaded_names (void)
   { "memchr", "rawmemchr", "memrchr", "strchr", "strrchr", "strchrnul",
     "strpbrk", "strstr", "strcasestr", "index", "rindex", "basename" };
 
-  hash_table<overloaded_name_hasher> *table
-    = new hash_table<overloaded_name_hasher> (64);
+  htable_t *table = new htable_t (64);
 
   for (unsigned int i = 0; i < ARRAY_SIZE (names); i++)
-    {
-      struct overloaded_name_hash in, *h, **slot;
-      tree id = get_identifier (names[i]);
-      hashval_t hash = htab_hash_pointer (id);
-      in.hash = hash;
-      in.name = id;
-      slot = table->find_slot_with_hash (&in, hash, INSERT);
-      h = new overloaded_name_hash;
-      h->hash = hash;
-      h->name = id;
-      h->n = 0;
-      *slot = h;
-    }
+    add_name (names[i], 0, table);
+
+  /* Consider that sigaction() is overloaded by struct sigaction for QNX.  */
+  add_name ("sigaction", 1, table);
+
+  /* Consider that stat() is overloaded by struct stat for QNX.  */
+  add_name ("stat", 1, table);
 
   return table;
 }
 
-/* Return whether NAME cannot be supported as overloaded name.  */
+/* Return the overloading index of NAME or 0 if NAME is not overloaded.  */
 
-static bool
-overloaded_name_p (tree name)
+static unsigned int
+overloading_index (tree name)
 {
-  if (!overloaded_names)
-    overloaded_names = init_overloaded_names ();
-
   struct overloaded_name_hash in, *h;
   hashval_t hash = htab_hash_pointer (name);
   in.hash = hash;
   in.name = name;
   h = overloaded_names->find_with_hash (&in, hash);
-  return h && ++h->n > 1;
+  return h ? ++h->n : 0;
 }
 
 /* Dump in BUFFER constructor spec corresponding to T for TYPE.  */
@@ -2798,14 +2816,17 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	}
 
       /* Skip unnamed or anonymous structs/unions/enum types.  */
-      if (!orig && !decl_name && !name
+      if (!orig
 	  && (RECORD_OR_UNION_TYPE_P (TREE_TYPE (t))
-	      || TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE))
+	      || TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE)
+	  && !decl_name
+	  && !name)
 	return 0;
 
-	/* Skip anonymous enum types (duplicates of real types).  */
+      /* Skip duplicates of structs/unions/enum types built in C++.  */
       if (!orig
-	  && TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE
+	  && (RECORD_OR_UNION_TYPE_P (TREE_TYPE (t))
+	      || TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE)
 	  && decl_name
 	  && (*IDENTIFIER_POINTER (decl_name) == '.'
 	      || *IDENTIFIER_POINTER (decl_name) == '$'))
@@ -2822,16 +2843,6 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		pp_string (buffer, "type ");
 		dump_ada_node (buffer, t, type, spc, false, true);
 		pp_string (buffer, " is null record;   -- incomplete struct");
-		TREE_VISITED (t) = 1;
-		return 1;
-	      }
-
-	    if (decl_name
-		&& (*IDENTIFIER_POINTER (decl_name) == '.'
-		    || *IDENTIFIER_POINTER (decl_name) == '$'))
-	      {
-		pp_string (buffer, "--  skipped anonymous struct ");
-		dump_ada_node (buffer, t, type, spc, false, true);
 		TREE_VISITED (t) = 1;
 		return 1;
 	      }
@@ -2869,7 +2880,11 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	  case POINTER_TYPE:
 	  case REFERENCE_TYPE:
 	    dump_forward_type (buffer, TREE_TYPE (TREE_TYPE (t)), t, spc);
-	    /* fallthrough */
+	    if (orig && TYPE_NAME (orig))
+	      pp_string (buffer, "subtype ");
+	    else
+	      pp_string (buffer, "type ");
+	    break;
 
 	  case ARRAY_TYPE:
 	    if ((orig && TYPE_NAME (orig)) || is_char_array (TREE_TYPE (t)))
@@ -2945,9 +2960,9 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
     }
   else if (TREE_CODE (t) == FUNCTION_DECL)
     {
+      tree decl_name = DECL_NAME (t);
       bool is_abstract_class = false;
       bool is_method = TREE_CODE (TREE_TYPE (t)) == METHOD_TYPE;
-      tree decl_name = DECL_NAME (t);
       bool is_abstract = false;
       bool is_assignment_operator = false;
       bool is_constructor = false;
@@ -2955,7 +2970,7 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       bool is_copy_constructor = false;
       bool is_move_constructor = false;
 
-      if (!decl_name || overloaded_name_p (decl_name))
+      if (!decl_name)
 	return 0;
 
       if (cpp_check)
@@ -3018,7 +3033,12 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       else if (is_assignment_operator)
 	print_assignment_operator (buffer, t, type);
       else
-	dump_ada_decl_name (buffer, t, false);
+	{
+	  const unsigned int suffix = overloading_index (decl_name);
+	  pp_ada_tree_identifier (buffer, decl_name, t, false);
+	  if (suffix > 1)
+	    pp_decimal_int (buffer, suffix);
+	}
 
       dump_ada_function_declaration
 	(buffer, t, is_method, is_constructor, is_destructor, spc);
@@ -3476,6 +3496,8 @@ dump_ada_specs (void (*collect_all_refs)(const char *),
 		int (*check)(tree, cpp_operation))
 {
   bitmap_obstack_initialize (NULL);
+
+  overloaded_names = init_overloaded_names ();
 
   /* Iterate over the list of files to dump specs for.  */
   for (int i = 0; i < source_refs_used; i++)
