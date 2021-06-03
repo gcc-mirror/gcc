@@ -8161,6 +8161,7 @@ struct atom_hasher : default_hash_traits<tree>
 extern bool subsumes                            (tree, tree);
 
 /* In class.c */
+extern void set_current_access_from_decl (tree);
 extern void cp_finish_injected_record_type (tree);
 
 /* in vtable-class-hierarchy.c */
