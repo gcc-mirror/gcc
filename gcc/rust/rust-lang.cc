@@ -31,6 +31,7 @@
 #include "convert.h"
 #include "langhooks.h"
 #include "langhooks-def.h"
+#include "rust-diagnostics.h"
 
 #include <mpfr.h>
 // note: header files must be in this order or else forward declarations don't
@@ -165,7 +166,7 @@ grs_langhook_init_options_struct (struct gcc_options * /* opts */)
 static void
 grs_langhook_parse_file (void)
 {
-  fprintf (stderr, "Preparing to parse files. \n");
+  rust_debug ("Preparing to parse files. ");
 
   session.parse_files (num_in_fnames, in_fnames);
 }

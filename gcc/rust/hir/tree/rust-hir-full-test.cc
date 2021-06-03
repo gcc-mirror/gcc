@@ -151,8 +151,8 @@ Crate::as_string () const
 	  // DEBUG: null pointer check
 	  if (item == nullptr)
 	    {
-	      fprintf (stderr, "something really terrible has gone wrong - "
-			       "null pointer item in crate.");
+	      rust_debug ("something really terrible has gone wrong - "
+			  "null pointer item in crate.");
 	      return "nullptr_POINTER_MARK";
 	    }
 
@@ -270,8 +270,8 @@ ModuleBodied::as_string () const
 	  // DEBUG: null pointer check
 	  if (item == nullptr)
 	    {
-	      fprintf (stderr, "something really terrible has gone wrong - "
-			       "null pointer item in crate.");
+	      rust_debug ("something really terrible has gone wrong - "
+			  "null pointer item in crate.");
 	      return "nullptr_POINTER_MARK";
 	    }
 
@@ -309,8 +309,8 @@ StaticItem::as_string () const
   // DEBUG: null pointer check
   if (type == nullptr)
     {
-      fprintf (stderr, "something really terrible has gone wrong - null "
-		       "pointer type in static item.");
+      rust_debug ("something really terrible has gone wrong - null "
+		  "pointer type in static item.");
       return "nullptr_POINTER_MARK";
     }
   str += "\n" + indent_spaces (stay) + "Type: " + type->as_string ();
@@ -318,8 +318,8 @@ StaticItem::as_string () const
   // DEBUG: null pointer check
   if (expr == nullptr)
     {
-      fprintf (stderr, "something really terrible has gone wrong - null "
-		       "pointer expr in static item.");
+      rust_debug ("something really terrible has gone wrong - null "
+		  "pointer expr in static item.");
       return "nullptr_POINTER_MARK";
     }
   str += "\n" + indent_spaces (stay) + "Expression: " + expr->as_string ();
@@ -362,8 +362,7 @@ TupleStruct::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in enum.");
 	      return "nullptr_POINTER_MARK";
@@ -410,8 +409,8 @@ ConstantItem::as_string () const
   // DEBUG: null pointer check
   if (type == nullptr)
     {
-      fprintf (stderr, "something really terrible has gone wrong - null "
-		       "pointer type in const item.");
+      rust_debug ("something really terrible has gone wrong - null "
+		  "pointer type in const item.");
       return "nullptr_POINTER_MARK";
     }
   str += "\n  Type: " + type->as_string ();
@@ -419,8 +418,8 @@ ConstantItem::as_string () const
   // DEBUG: null pointer check
   if (const_expr == nullptr)
     {
-      fprintf (stderr, "something really terrible has gone wrong - null "
-		       "pointer expr in const item.");
+      rust_debug ("something really terrible has gone wrong - null "
+		  "pointer expr in const item.");
       return "nullptr_POINTER_MARK";
     }
   str += "\n  Expression: " + const_expr->as_string ();
@@ -448,8 +447,7 @@ InherentImpl::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in inherent impl.");
 	      return "nullptr_POINTER_MARK";
@@ -526,8 +524,7 @@ Method::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in method.");
 	      return "nullptr_POINTER_MARK";
@@ -598,8 +595,7 @@ StructStruct::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in enum.");
 	      return "nullptr_POINTER_MARK";
@@ -648,8 +644,7 @@ UseDeclaration::as_string () const
   // DEBUG: null pointer check
   if (use_tree == nullptr)
     {
-      fprintf (
-	stderr,
+      rust_debug (
 	"something really terrible has gone wrong - null pointer use tree in "
 	"use declaration.");
       return "nullptr_POINTER_MARK";
@@ -709,9 +704,8 @@ UseTreeList::as_string () const
       // DEBUG: null pointer check
       if (*i == nullptr)
 	{
-	  fprintf (stderr,
-		   "something really terrible has gone wrong - null pointer "
-		   "tree in use tree list.");
+	  rust_debug ("something really terrible has gone wrong - null pointer "
+		      "tree in use tree list.");
 	  return "nullptr_POINTER_MARK";
 	}
 
@@ -773,8 +767,7 @@ Enum::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in enum.");
 	      return "nullptr_POINTER_MARK";
@@ -807,8 +800,7 @@ Enum::as_string () const
 	  // DEBUG: null pointer check
 	  if (item == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"enum item in enum.");
 	      return "nullptr_POINTER_MARK";
@@ -846,8 +838,7 @@ Trait::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in trait.");
 	      return "nullptr_POINTER_MARK";
@@ -869,8 +860,7 @@ Trait::as_string () const
 	  // DEBUG: null pointer check
 	  if (bound == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"type param bound in trait.");
 	      return "nullptr_POINTER_MARK";
@@ -902,8 +892,7 @@ Trait::as_string () const
 	  // DEBUG: null pointer check
 	  if (item == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"trait item in trait.");
 	      return "nullptr_POINTER_MARK";
@@ -936,8 +925,7 @@ Union::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in union.");
 	      return "nullptr_POINTER_MARK";
@@ -987,8 +975,7 @@ Function::as_string () const
       // DEBUG: null pointer check
       if (return_type == nullptr)
 	{
-	  fprintf (
-	    stderr,
+	  rust_debug (
 	    "something really terrible has gone wrong - null pointer return "
 	    "type in function.");
 	  return "nullptr_POINTER_MARK";
@@ -1013,9 +1000,8 @@ Function::as_string () const
       // DEBUG: null pointer check
       if (i == e)
 	{
-	  fprintf (stderr,
-		   "something really terrible has gone wrong - null pointer "
-		   "generic param in function item.");
+	  rust_debug ("something really terrible has gone wrong - null pointer "
+		      "generic param in function item.");
 	  return "nullptr_POINTER_MARK";
 	}
 
@@ -1056,8 +1042,7 @@ Function::as_string () const
   // DEBUG: null pointer check
   if (function_body == nullptr)
     {
-      fprintf (
-	stderr,
+      rust_debug (
 	"something really terrible has gone wrong - null pointer function "
 	"body in function.");
       return "nullptr_POINTER_MARK";
@@ -1124,8 +1109,7 @@ BlockExpr::as_string () const
 	  // DEBUG: null pointer check
 	  if (stmt == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"stmt in block expr.");
 	      return "nullptr_POINTER_MARK";
@@ -3772,8 +3756,7 @@ ExternalFunctionItem::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in external function item.");
 	      return "nullptr_POINTER_MARK";
@@ -3894,8 +3877,7 @@ TraitFunctionDecl::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in trait function decl.");
 	      return "nullptr_POINTER_MARK";
@@ -3992,8 +3974,7 @@ TraitMethodDecl::as_string () const
 	  // DEBUG: null pointer check
 	  if (param == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"generic param in trait function decl.");
 	      return "nullptr_POINTER_MARK";
@@ -4101,8 +4082,7 @@ TraitItemType::as_string () const
 	  // DEBUG: null pointer check
 	  if (bound == nullptr)
 	    {
-	      fprintf (
-		stderr,
+	      rust_debug (
 		"something really terrible has gone wrong - null pointer "
 		"type param bound in trait item type.");
 	      return "nullptr_POINTER_MARK";
@@ -4253,9 +4233,8 @@ ArrayElemsValues::as_string () const
       // DEBUG: null pointer check
       if (expr == nullptr)
 	{
-	  fprintf (stderr,
-		   "something really terrible has gone wrong - null pointer "
-		   "expr in array elems values.");
+	  rust_debug ("something really terrible has gone wrong - null pointer "
+		      "expr in array elems values.");
 	  return "nullptr_POINTER_MARK";
 	}
 

@@ -197,11 +197,6 @@ rust_error_at (const RichLocation location, const char *fmt, ...)
   va_end (ap);
 }
 
-// rust_debug uses normal printf formatting, not GCC diagnostic formatting.
-
-void
-rust_debug (const Location location, const char *fmt, ...) ATTRIBUTE_PRINTF_2;
-
 void
 rust_debug (const Location location, const char *fmt, ...)
 {

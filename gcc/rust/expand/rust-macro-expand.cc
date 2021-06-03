@@ -3150,7 +3150,7 @@ MacroExpander::parse_macro_to_meta_item (AST::MacroInvocData &invoc)
 
   if (converted_input == nullptr)
     {
-      fprintf (stderr, "DEBUG: failed to parse macro to meta item\n");
+      rust_debug ("DEBUG: failed to parse macro to meta item");
       // TODO: do something now? is this an actual error?
     }
   else
@@ -3298,18 +3298,17 @@ MacroExpander::fails_cfg_with_expand (AST::AttrVec &attrs) const
 
 	  // DEBUG
 	  if (!attr.is_parsed_to_meta_item ())
-	    fprintf (stderr, "failed to parse attr to meta item, right before "
-			     "cfg predicate check\n");
+	    rust_debug ("failed to parse attr to meta item, right before "
+			"cfg predicate check");
 	  else
-	    fprintf (stderr, "attr has been successfully parsed to meta item, "
-			     "right before cfg predicate check\n");
+	    rust_debug ("attr has been successfully parsed to meta item, "
+			"right before cfg predicate check");
 
 	  if (!attr.check_cfg_predicate (session))
 	    {
 	      // DEBUG
-	      fprintf (
-		stderr,
-		"cfg predicate failed for attribute: \033[0;31m'%s'\033[0m\n",
+	      rust_debug (
+		"cfg predicate failed for attribute: \033[0;31m'%s'\033[0m",
 		attr.as_string ().c_str ());
 
 	      return true;
@@ -3317,10 +3316,9 @@ MacroExpander::fails_cfg_with_expand (AST::AttrVec &attrs) const
 	  else
 	    {
 	      // DEBUG
-	      fprintf (stderr,
-		       "cfg predicate succeeded for attribute: "
-		       "\033[0;31m'%s'\033[0m\n",
-		       attr.as_string ().c_str ());
+	      rust_debug ("cfg predicate succeeded for attribute: "
+			  "\033[0;31m'%s'\033[0m",
+			  attr.as_string ().c_str ());
 	    }
 	}
     }

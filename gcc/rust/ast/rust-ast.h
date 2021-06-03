@@ -182,7 +182,7 @@ public:
 	str = lexer_token_ptr->get_str ();
 
 	// DEBUG
-	fprintf (stderr, "ast token created with str '%s'\n", str.c_str ());
+	rust_debug ("ast token created with str '%s'", str.c_str ());
       }
     else
       {
@@ -190,14 +190,14 @@ public:
 	str = lexer_token_ptr->get_token_description ();
 
 	// DEBUG
-	fprintf (stderr, "ast token created with string '%s'\n", str.c_str ());
+	rust_debug ("ast token created with string '%s'", str.c_str ());
       }
 
     // DEBUG
     if (lexer_token_ptr->should_have_str () && !lexer_token_ptr->has_str ())
       {
-	fprintf (stderr,
-		 "BAD: for token '%s', should have string but does not!\n",
+	rust_debug (
+		 "BAD: for token '%s', should have string but does not!",
 		 lexer_token_ptr->get_token_description ());
       }
   }

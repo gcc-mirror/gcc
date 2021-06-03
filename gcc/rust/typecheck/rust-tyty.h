@@ -22,6 +22,7 @@
 #include "rust-backend.h"
 #include "rust-hir-map.h"
 #include "rust-hir-full.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace TyTy {
@@ -142,8 +143,8 @@ public:
 
   void debug () const
   {
-    fprintf (stderr, "[%p] %s\n", static_cast<const void *> (this),
-	     debug_str ().c_str ());
+    rust_debug ("[%p] %s", static_cast<const void *> (this),
+		debug_str ().c_str ());
   }
 
 protected:
@@ -319,7 +320,7 @@ public:
 
   StructFieldType *clone () const;
 
-  void debug () const { fprintf (stderr, "%s\n", as_string ().c_str ()); }
+  void debug () const { rust_debug ("%s", as_string ().c_str ()); }
 
 private:
   HirId ref;

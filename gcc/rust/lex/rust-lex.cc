@@ -55,8 +55,7 @@ operator+= (std::string &str, Codepoint char32)
     }
   else
     {
-      fprintf (stderr, "Invalid unicode codepoint found: '%u' \n",
-	       char32.value);
+      rust_debug ("Invalid unicode codepoint found: '%u' ", char32.value);
     }
   return str;
 }
@@ -185,7 +184,7 @@ Lexer::replace_current_token (TokenPtr replacement)
 {
   token_queue.replace_current_value (replacement);
 
-  fprintf (stderr, "called 'replace_current_token' - this is deprecated");
+  rust_debug ("called 'replace_current_token' - this is deprecated");
 }
 
 /* shitty anonymous namespace that can only be accessed inside the compilation
@@ -794,12 +793,12 @@ Lexer::build_token ()
 
       // DEBUG: check for specific character problems:
       if (current_char == '0')
-	fprintf (stderr, "'0' uncaught before unexpected character\n");
+	rust_debug ("'0' uncaught before unexpected character");
       else if (current_char == ']')
-	fprintf (stderr, "']' uncaught before unexpected character\n");
+	rust_debug ("']' uncaught before unexpected character");
       else if (current_char == 0x5d)
-	fprintf (stderr, "whatever 0x5d is (not '0' or ']') uncaught before "
-			 "unexpected character\n");
+	rust_debug ("whatever 0x5d is (not '0' or ']') uncaught before "
+		    "unexpected character");
 
       // didn't match anything so error
       rust_error_at (loc, "unexpected character %<%x%>", current_char);
