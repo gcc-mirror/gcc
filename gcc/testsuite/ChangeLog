@@ -1,3 +1,22 @@
+2021-06-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100838
+	* g++.dg/init/no-elide2.C: New test.
+
+2021-06-02  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/ashr.c: New test.
+
+2021-06-02  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* gfortran.dg/gomp/taskloop-2.f90: New.
+
+2021-06-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ext/builtin-shufflevector-1.C: Add -Wno-psabi -w to
+	dg-options.
+
 2021-06-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/65816

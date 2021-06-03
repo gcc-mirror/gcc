@@ -1069,12 +1069,12 @@ split_constant_offset (tree exp, tree *var, tree *off, value_range *exp_range,
   if (INTEGRAL_TYPE_P (type))
     *var = fold_convert (sizetype, *var);
   *off = ssize_int (0);
-  if (exp_range && code != SSA_NAME)
-    {
-      wide_int var_min, var_max;
-      if (determine_value_range (exp, &var_min, &var_max) == VR_RANGE)
-	*exp_range = value_range (type, var_min, var_max);
-    }
+
+  value_range r;
+  if (exp_range && code != SSA_NAME
+      && get_range_query (cfun)->range_of_expr (r, exp)
+      && !r.undefined_p ())
+    *exp_range = r;
 }
 
 /* Expresses EXP as VAR + OFF, where OFF is a constant.  VAR has the same

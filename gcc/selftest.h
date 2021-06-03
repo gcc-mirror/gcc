@@ -249,6 +249,7 @@ extern void predict_c_tests ();
 extern void pretty_print_c_tests ();
 extern void range_tests ();
 extern void range_op_tests ();
+extern void gimple_range_tests ();
 extern void read_rtl_function_c_tests ();
 extern void rtl_tests_c_tests ();
 extern void sbitmap_c_tests ();

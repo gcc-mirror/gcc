@@ -1,3 +1,28 @@
+2021-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100863
+	PR libstdc++/65816
+	* include/bits/hashtable_policy.h (_Hashtable_ebo_helper):
+	Value-initialize subobject.
+	* testsuite/23_containers/unordered_map/allocator/default_init.cc:
+	Remove XFAIL.
+	* testsuite/23_containers/unordered_set/allocator/default_init.cc:
+	Remove XFAIL.
+
+2021-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/96088
+	* testsuite/23_containers/unordered_map/96088.cc: Adjust
+	expected number of allocations.
+	* testsuite/23_containers/unordered_set/96088.cc: Likewise.
+
+2021-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxxis29124.xml: Improve punctuation.
+	* doc/xml/manual/status_cxxtr1.xml: Likewise.
+	* doc/xml/manual/status_cxxtr24733.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 2021-06-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/65816

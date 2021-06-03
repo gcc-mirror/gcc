@@ -166,7 +166,7 @@ sub gen_logical_addsubf
 	$outer_op, $outer_comp, $outer_inv, $outer_rtl, $inner, @inner_ops,
 	$inner_comp, $inner_inv, $inner_rtl, $inner_op, $both_commute, $c4,
 	$bc, $inner_arg0, $inner_arg1, $inner_exp, $outer_arg2, $outer_exp,
-	$target_flag, $ftype, $insn, $is_rsubf, $outer_32, $outer_42,
+	$target_flag, $ftype, $insn, $is_subf, $is_rsubf, $outer_32, $outer_42,
 	$outer_name, $fuse_type);
   KIND: foreach $kind ('scalar','vector') {
       @outer_ops = @logicals;
@@ -188,11 +188,10 @@ sub gen_logical_addsubf
       $c4 = "${constraint},${constraint},${constraint},${constraint}";
     OUTER: foreach $outer ( @outer_ops ) {
 	$outer_name = "${vchr}${outer}";
-	if ( $outer eq "rsubf" ) {
-	    $is_rsubf = 1;
+	$is_subf = ( $outer eq "subf" );
+	$is_rsubf = ( $outer eq "rsubf" );
+	if ( $is_rsubf ) {
 	    $outer = "subf";
-	} else {
-	    $is_rsubf = 0;
 	}
 	$outer_op = "${vchr}${outer}";
 	$outer_comp = $complement{$outer};
@@ -241,16 +240,19 @@ sub gen_logical_addsubf
 	  if ( ($outer_comp & 2) == 2 ) {
 	      $inner_exp = "(not:${mode} $inner_exp)";
 	  }
-	  if ( $is_rsubf == 1 ) {
-	      $outer_exp = "(${outer_rtl}:${mode} ${outer_arg2}
-                 ${inner_exp})";
+	  if ( $is_subf ) {
 	      $outer_32 = "%2,%3";
 	      $outer_42 = "%2,%4";
 	  } else {
-	      $outer_exp = "(${outer_rtl}:${mode} ${inner_exp}
-                 ${outer_arg2})";
 	      $outer_32 = "%3,%2";
 	      $outer_42 = "%4,%2";
+	  }
+	  if ( $is_rsubf == 1 ) {
+	      $outer_exp = "(${outer_rtl}:${mode} ${outer_arg2}
+                 ${inner_exp})";
+	  } else {
+	      $outer_exp = "(${outer_rtl}:${mode} ${inner_exp}
+                 ${outer_arg2})";
 	  }
 	  if ( $outer_inv == 1 ) {
 	      $outer_exp = "(not:${mode} $outer_exp)";

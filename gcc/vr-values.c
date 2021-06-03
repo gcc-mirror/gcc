@@ -180,7 +180,7 @@ bool
 vr_values::range_of_expr (irange &r, tree expr, gimple *stmt)
 {
   if (!gimple_range_ssa_p (expr))
-    return get_tree_range (r, expr);
+    return get_tree_range (r, expr, stmt);
 
   if (const value_range *vr = get_value_range (expr, stmt))
     {

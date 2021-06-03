@@ -15176,7 +15176,7 @@ scompare_loc_descriptor_narrow (enum dwarf_location_atom op, rtx rtl,
   return compare_loc_descriptor (op, op0, op1);
 }
 
-/* Return location descriptor for unsigned comparison OP RTL.  */
+/* Return location descriptor for signed comparison OP RTL.  */
 
 static dw_loc_descr_ref
 scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
@@ -16407,11 +16407,13 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if ((!dwarf_strict || dwarf_version >= 5)
 	  && is_a <scalar_int_mode> (mode, &int_mode))
 	{
-	  if (GET_MODE_SIZE (int_mode) > DWARF2_ADDR_SIZE)
+	  /* We can use a signed divide if the sign bit is not set.  */
+	  if (GET_MODE_SIZE (int_mode) < DWARF2_ADDR_SIZE)
 	    {
 	      op = DW_OP_div;
 	      goto do_binop;
 	    }
+
 	  mem_loc_result = typed_binop (DW_OP_div, rtl,
 					base_type_for_mode (int_mode, 1),
 					int_mode, mem_mode);
@@ -17994,6 +17996,8 @@ struct loc_descr_context
   bool placeholder_arg;
   /* True if PLACEHOLDER_EXPR has been seen.  */
   bool placeholder_seen;
+  /* True if strict preservation of signedness has been requested.  */
+  bool strict_signedness;
 };
 
 /* DWARF procedures generation
@@ -18062,7 +18066,7 @@ new_dwarf_proc_die (dw_loc_descr_ref location, tree fndecl,
 
 /* Return whether TYPE is a supported type as a DWARF procedure argument
    type or return type (we handle only scalar types and pointer types that
-   aren't wider than the DWARF expression evaluation stack.  */
+   aren't wider than the DWARF expression evaluation stack).  */
 
 static bool
 is_handled_procedure_type (tree type)
@@ -18204,6 +18208,12 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_bit_piece:
 	case DW_OP_implicit_value:
 	case DW_OP_stack_value:
+	case DW_OP_deref_type:
+	case DW_OP_convert:
+	case DW_OP_reinterpret:
+	case DW_OP_GNU_deref_type:
+	case DW_OP_GNU_convert:
+	case DW_OP_GNU_reinterpret:
 	  break;
 
 	case DW_OP_addr:
@@ -18335,9 +18345,6 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_entry_value:
 	case DW_OP_const_type:
 	case DW_OP_regval_type:
-	case DW_OP_deref_type:
-	case DW_OP_convert:
-	case DW_OP_reinterpret:
 	case DW_OP_form_tls_address:
 	case DW_OP_GNU_push_tls_address:
 	case DW_OP_GNU_uninit:
@@ -18346,9 +18353,6 @@ resolve_args_picking_1 (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 	case DW_OP_GNU_entry_value:
 	case DW_OP_GNU_const_type:
 	case DW_OP_GNU_regval_type:
-	case DW_OP_GNU_deref_type:
-	case DW_OP_GNU_convert:
-	case DW_OP_GNU_reinterpret:
 	case DW_OP_GNU_parameter_ref:
 	  /* loc_list_from_tree will probably not output these operations for
 	     size functions, so assume they will not appear here.  */
@@ -18397,8 +18401,8 @@ resolve_args_picking (dw_loc_descr_ref loc, unsigned initial_frame_offset,
      this operation.  */
   hash_map<dw_loc_descr_ref, unsigned> frame_offsets;
 
-  return resolve_args_picking_1 (loc, initial_frame_offset, dpi,
-				 frame_offsets);
+  return
+    resolve_args_picking_1 (loc, initial_frame_offset, dpi, frame_offsets);
 }
 
 /* Try to generate a DWARF procedure that computes the same result as FNDECL.
@@ -18407,8 +18411,15 @@ resolve_args_picking (dw_loc_descr_ref loc, unsigned initial_frame_offset,
 static dw_die_ref
 function_to_dwarf_procedure (tree fndecl)
 {
-  struct loc_descr_context ctx;
   struct dwarf_procedure_info dpi;
+  struct loc_descr_context ctx = {
+    NULL_TREE,	/* context_type */
+    NULL_TREE,	/* base_decl */
+    &dpi,	/* dpi */
+    false,      /* placeholder_arg */
+    false,      /* placeholder_seen */
+    true	/* strict_signedness */
+  };
   dw_die_ref dwarf_proc_die;
   tree tree_body = DECL_SAVED_TREE (fndecl);
   dw_loc_descr_ref loc_body, epilogue;
@@ -18453,11 +18464,6 @@ function_to_dwarf_procedure (tree fndecl)
      cause an infinite recursion if its call graph has a cycle.  This is very
      unlikely for size functions, however, so don't bother with such things at
      the moment.  */
-  ctx.context_type = NULL_TREE;
-  ctx.base_decl = NULL_TREE;
-  ctx.dpi = &dpi;
-  ctx.placeholder_arg = false;
-  ctx.placeholder_seen = false;
   dpi.fndecl = fndecl;
   dpi.args_count = list_length (DECL_ARGUMENTS (fndecl));
   loc_body = loc_descriptor_from_tree (tree_body, 0, &ctx);
@@ -18499,6 +18505,48 @@ function_to_dwarf_procedure (tree fndecl)
   return dwarf_proc_die;
 }
 
+/* Helper function for loc_list_from_tree.  Perform OP binary op,
+   but after converting arguments to type_die, afterwards convert
+   back to unsigned.  */
+
+static dw_loc_list_ref
+typed_binop_from_tree (enum dwarf_location_atom op, tree loc,
+		       dw_die_ref type_die, scalar_int_mode mode,
+		       struct loc_descr_context *context)
+{
+  dw_loc_list_ref op0, op1;
+  dw_loc_descr_ref cvt, binop;
+
+  if (type_die == NULL)
+    return NULL;
+
+  op0 = loc_list_from_tree (TREE_OPERAND (loc, 0), 0, context);
+  op1 = loc_list_from_tree (TREE_OPERAND (loc, 1), 0, context);
+  if (op0 == NULL || op1 == NULL)
+    return NULL;
+
+  cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
+  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+  add_loc_descr_to_each (op0, cvt);
+
+  cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
+  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+  add_loc_descr_to_each (op1, cvt);
+
+  add_loc_list (&op0, op1);
+  if (op0 == NULL)
+    return NULL;
+
+  binop = new_loc_descr (op, 0, 0);
+  convert_descriptor_to_mode (mode, binop);
+  add_loc_descr_to_each (op0, binop);
+
+  return op0;
+}
 
 /* Generate Dwarf location list representing LOC.
    If WANT_ADDRESS is false, expression computing LOC will be computed
@@ -18586,47 +18634,48 @@ loc_list_from_tree_1 (tree loc, int want_address,
 
     case CALL_EXPR:
 	{
-	  const int nargs = call_expr_nargs (loc);
 	  tree callee = get_callee_fndecl (loc);
-	  int i;
 	  dw_die_ref dwarf_proc;
 
-	  if (callee == NULL_TREE)
-	    goto call_expansion_failed;
-
-	  /* We handle only functions that return an integer.  */
-	  if (!is_handled_procedure_type (TREE_TYPE (TREE_TYPE (callee))))
-	    goto call_expansion_failed;
-
-	  dwarf_proc = function_to_dwarf_procedure (callee);
-	  if (dwarf_proc == NULL)
-	    goto call_expansion_failed;
-
-	  /* Evaluate arguments right-to-left so that the first argument will
-	     be the top-most one on the stack.  */
-	  for (i = nargs - 1; i >= 0; --i)
+	  if (callee
+	      && is_handled_procedure_type (TREE_TYPE (TREE_TYPE (callee)))
+	      && (dwarf_proc = function_to_dwarf_procedure (callee)))
 	    {
-	      dw_loc_descr_ref loc_descr
-	        = loc_descriptor_from_tree (CALL_EXPR_ARG (loc, i), 0,
-					    context);
+	      /* DWARF procedures are used for size functions, which are built
+		 when size expressions contain conditional constructs, so we
+		 request strict preservation of signedness for comparisons.  */
+	      bool old_strict_signedness;
+	      if (context)
+		{
+		  old_strict_signedness = context->strict_signedness;
+		  context->strict_signedness = true;
+		}
 
-	      if (loc_descr == NULL)
-		goto call_expansion_failed;
+	      /* Evaluate arguments right-to-left so that the first argument
+		 will be the top-most one on the stack.  */
+	      for (int i = call_expr_nargs (loc) - 1; i >= 0; --i)
+		{
+		  tree arg = CALL_EXPR_ARG (loc, i);
+		  ret1 = loc_descriptor_from_tree (arg, 0, context);
+		  if (!ret1)
+		    {
+		      expansion_failed (arg, NULL_RTX, "CALL_EXPR argument");
+		      return NULL;
+		    }
+		  add_loc_descr (&ret, ret1);
+		}
 
-	      add_loc_descr (&ret, loc_descr);
+	      ret1 = new_loc_descr (DW_OP_call4, 0, 0);
+	      ret1->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+	      ret1->dw_loc_oprnd1.v.val_die_ref.die = dwarf_proc;
+	      ret1->dw_loc_oprnd1.v.val_die_ref.external = 0;
+	      add_loc_descr (&ret, ret1);
+	      if (context)
+		context->strict_signedness = old_strict_signedness;
 	    }
-
-	  ret1 = new_loc_descr (DW_OP_call4, 0, 0);
-	  ret1->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-	  ret1->dw_loc_oprnd1.v.val_die_ref.die = dwarf_proc;
-	  ret1->dw_loc_oprnd1.v.val_die_ref.external = 0;
-	  add_loc_descr (&ret, ret1);
+	  else
+	    expansion_failed (loc, NULL_RTX, "CALL_EXPR target");
 	  break;
-
-	call_expansion_failed:
-	  expansion_failed (loc, NULL_RTX, "CALL_EXPR");
-	  /* There are no opcodes for these operations.  */
-	  return 0;
 	}
 
     case PREINCREMENT_EXPR:
@@ -18780,25 +18829,25 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	  {
 	    if (TREE_CODE (loc) != FUNCTION_DECL
 		&& early_dwarf
-		&& current_function_decl
 		&& want_address != 1
 		&& ! DECL_IGNORED_P (loc)
 		&& (INTEGRAL_TYPE_P (TREE_TYPE (loc))
 		    || POINTER_TYPE_P (TREE_TYPE (loc)))
-		&& DECL_CONTEXT (loc) == current_function_decl
 		&& (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (loc)))
 		    <= DWARF2_ADDR_SIZE))
 	      {
 		dw_die_ref ref = lookup_decl_die (loc);
-		ret = new_loc_descr (DW_OP_GNU_variable_value, 0, 0);
 		if (ref)
 		  {
+		    ret = new_loc_descr (DW_OP_GNU_variable_value, 0, 0);
 		    ret->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
 		    ret->dw_loc_oprnd1.v.val_die_ref.die = ref;
 		    ret->dw_loc_oprnd1.v.val_die_ref.external = 0;
 		  }
-		else
+		else if (current_function_decl
+			 && DECL_CONTEXT (loc) == current_function_decl)
 		  {
+		    ret = new_loc_descr (DW_OP_GNU_variable_value, 0, 0);
 		    ret->dw_loc_oprnd1.val_class = dw_val_class_decl_ref;
 		    ret->dw_loc_oprnd1.v.val_decl_ref = loc;
 		  }
@@ -19091,13 +19140,53 @@ loc_list_from_tree_1 (tree loc, int want_address,
       op = DW_OP_or;
       goto do_binop;
 
+    case EXACT_DIV_EXPR:
     case FLOOR_DIV_EXPR:
+    case TRUNC_DIV_EXPR:
+      /* Turn a divide by a power of 2 into a shift when possible.  */
+      if (TYPE_UNSIGNED (TREE_TYPE (loc))
+	  && tree_fits_uhwi_p (TREE_OPERAND (loc, 1)))
+	{
+	  const int log2 = exact_log2 (tree_to_uhwi (TREE_OPERAND (loc, 1)));
+	  if (log2 > 0)
+	    {
+	      list_ret
+		= loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
+	      if (list_ret == 0)
+		return 0;
+
+	      add_loc_descr_to_each (list_ret, uint_loc_descriptor (log2));
+	      add_loc_descr_to_each (list_ret,
+				     new_loc_descr (DW_OP_shr, 0, 0));
+	      break;
+	    }
+	}
+
+      /* fall through */
+
     case CEIL_DIV_EXPR:
     case ROUND_DIV_EXPR:
-    case TRUNC_DIV_EXPR:
-    case EXACT_DIV_EXPR:
       if (TYPE_UNSIGNED (TREE_TYPE (loc)))
-	return 0;
+	{
+	  enum machine_mode mode = TYPE_MODE (TREE_TYPE (loc));
+	  scalar_int_mode int_mode;
+
+	  if ((dwarf_strict && dwarf_version < 5)
+	      || !is_a <scalar_int_mode> (mode, &int_mode))
+	    return 0;
+
+	  /* We can use a signed divide if the sign bit is not set.  */
+	  if (GET_MODE_SIZE (int_mode) < DWARF2_ADDR_SIZE)
+	    {
+	      op = DW_OP_div;
+	      goto do_binop;
+	    }
+
+	  list_ret = typed_binop_from_tree (DW_OP_div, loc,
+					    base_type_for_mode (int_mode, 1),
+					    int_mode, context);
+	  break;
+	}
       op = DW_OP_div;
       goto do_binop;
 
@@ -19286,7 +19375,14 @@ loc_list_from_tree_1 (tree loc, int want_address,
 	  = loc_list_from_tree_1 (TREE_OPERAND (loc, 2), 0, context);
 	dw_loc_descr_ref bra_node, jump_node, tmp;
 
-	list_ret = loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
+	/* DW_OP_bra is branch-on-nonzero so avoid doing useless work.  */
+	if (TREE_CODE (TREE_OPERAND (loc, 0)) == NE_EXPR
+	    && integer_zerop (TREE_OPERAND (TREE_OPERAND (loc, 0), 1)))
+	  list_ret
+	    = loc_list_from_tree_1 (TREE_OPERAND (TREE_OPERAND (loc, 0), 0),
+				    0, context);
+	else
+	  list_ret = loc_list_from_tree_1 (TREE_OPERAND (loc, 0), 0, context);
 	if (list_ret == 0 || lhs == 0 || rhs == 0)
 	  return 0;
 
@@ -19366,23 +19462,50 @@ loc_list_from_tree_1 (tree loc, int want_address,
   if (!want_address && have_address)
     {
       HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (loc));
+      enum machine_mode mode = TYPE_MODE (TREE_TYPE (loc));
+      scalar_int_mode int_mode;
+      dw_die_ref type_die;
+      dw_loc_descr_ref deref;
 
+      /* If the size is greater than DWARF2_ADDR_SIZE, bail out.  */
       if (size > DWARF2_ADDR_SIZE || size == -1)
 	{
 	  expansion_failed (loc, NULL_RTX,
 			    "DWARF address size mismatch");
 	  return 0;
 	}
+
+      /* If it is equal to DWARF2_ADDR_SIZE, extension does not matter.  */
       else if (size == DWARF2_ADDR_SIZE)
-	op = DW_OP_deref;
+	deref = new_loc_descr (DW_OP_deref, size, 0);
+
+      /* If it is lower than DWARF2_ADDR_SIZE, DW_OP_deref_size will zero-
+	 extend the value, which is really OK for unsigned types only.  */
+      else if (!(context && context->strict_signedness)
+	       || TYPE_UNSIGNED (TREE_TYPE (loc))
+	       || (dwarf_strict && dwarf_version < 5)
+	       || !is_a <scalar_int_mode> (mode, &int_mode)
+	       || !(type_die = base_type_for_mode (mode, false)))
+	deref = new_loc_descr (DW_OP_deref_size, size, 0);
+
+      /* Use DW_OP_deref_type for signed integral types if possible, but
+	 convert back to the generic type to avoid type mismatches later.  */
       else
-	op = DW_OP_deref_size;
+	{
+	  deref = new_loc_descr (dwarf_OP (DW_OP_deref_type), size, 0);
+	  deref->dw_loc_oprnd2.val_class = dw_val_class_die_ref;
+	  deref->dw_loc_oprnd2.v.val_die_ref.die = type_die;
+	  deref->dw_loc_oprnd2.v.val_die_ref.external = 0;
+	  add_loc_descr (&deref,
+			 new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0));
+	}
 
       if (ret)
-	add_loc_descr (&ret, new_loc_descr (op, size, 0));
+	add_loc_descr (&ret, deref);
       else
-	add_loc_descr_to_each (list_ret, new_loc_descr (op, size, 0));
+	add_loc_descr_to_each (list_ret, deref);
     }
+
   if (ret)
     list_ret = new_loc_list (ret, NULL, 0, NULL, 0, NULL);
 
@@ -19463,35 +19586,6 @@ static inline offset_int
 round_up_to_align (const offset_int &t, unsigned int align)
 {
   return wi::udiv_trunc (t + align - 1, align) * align;
-}
-
-/* Compute the size of TYPE in bytes.  If possible, return NULL and store the
-   size as an integer constant in CST_SIZE.  Otherwise, if possible, return a
-   DWARF expression that computes the size.  Return NULL and set CST_SIZE to -1
-   if we fail to return the size in one of these two forms.  */
-
-static dw_loc_descr_ref
-type_byte_size (const_tree type, HOST_WIDE_INT *cst_size)
-{
-  tree tree_size;
-  struct loc_descr_context ctx;
-
-  /* Return a constant integer in priority, if possible.  */
-  *cst_size = int_size_in_bytes (type);
-  if (*cst_size != -1)
-    return NULL;
-
-  ctx.context_type = const_cast<tree> (type);
-  ctx.base_decl = NULL_TREE;
-  ctx.dpi = NULL;
-  ctx.placeholder_arg = false;
-  ctx.placeholder_seen = false;
-
-  type = TYPE_MAIN_VARIANT (type);
-  tree_size = TYPE_SIZE_UNIT (type);
-  return ((tree_size != NULL_TREE)
-	  ? loc_descriptor_from_tree (tree_size, 0, &ctx)
-	  : NULL);
 }
 
 /* Helper structure for RECORD_TYPE processing.  */
@@ -19668,12 +19762,14 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
       *cst_offset = wi::to_offset (tree_result).to_shwi ();
       return NULL;
     }
+
   struct loc_descr_context loc_ctx = {
     ctx->struct_type, /* context_type */
     NULL_TREE,	      /* base_decl */
     NULL,	      /* dpi */
     false,	      /* placeholder_arg */
-    false	      /* placeholder_seen */
+    false,	      /* placeholder_seen */
+    false	      /* strict_signedness */
   };
   loc_result = loc_list_from_tree (tree_result, 0, &loc_ctx);
 
@@ -21433,7 +21529,6 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
 {
   dw_die_ref decl_die;
   HOST_WIDE_INT size;
-  dw_loc_descr_ref size_expr = NULL;
 
   switch (TREE_CODE (tree_node))
     {
@@ -21450,7 +21545,7 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
 	  add_AT_die_ref (die, DW_AT_byte_size, decl_die);
 	  return;
 	}
-      size_expr = type_byte_size (tree_node, &size);
+      size = int_size_in_bytes (tree_node);
       break;
     case FIELD_DECL:
       /* For a data member of a struct or union, the DW_AT_byte_size is
@@ -21463,19 +21558,32 @@ add_byte_size_attribute (dw_die_ref die, tree tree_node)
       gcc_unreachable ();
     }
 
-  /* Support for dynamically-sized objects was introduced by DWARFv3.
-     At the moment, GDB does not handle variable byte sizes very well,
-     though.  */
-  if ((dwarf_version >= 3 || !dwarf_strict)
-      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
-      && size_expr != NULL)
-    add_AT_loc (die, DW_AT_byte_size, size_expr);
-
   /* Note that `size' might be -1 when we get to this point.  If it is, that
-     indicates that the byte size of the entity in question is variable and
-     that we could not generate a DWARF expression that computes it.  */
+     indicates that the byte size of the entity in question is variable.  */
   if (size >= 0)
     add_AT_unsigned (die, DW_AT_byte_size, size);
+
+  /* Support for dynamically-sized objects was introduced in DWARF3.  */
+  else if (TYPE_P (tree_node)
+	   && (dwarf_version >= 3 || !dwarf_strict)
+	   && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+    {
+      struct loc_descr_context ctx = {
+	const_cast<tree> (tree_node),	/* context_type */
+	NULL_TREE,	      		/* base_decl */
+	NULL,	      		/* dpi */
+	false,	      		/* placeholder_arg */
+	false,	      		/* placeholder_seen */
+	false	      		/* strict_signedness */
+      };
+
+      tree tree_size = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (tree_node));
+      add_scalar_info (die, DW_AT_byte_size, tree_size,
+		       dw_scalar_form_constant
+		       | dw_scalar_form_exprloc
+		       | dw_scalar_form_reference,
+		       &ctx);
+    }
 }
 
 /* Add a DW_AT_alignment attribute to DIE with TREE_NODE's non-default
@@ -22308,8 +22416,14 @@ gen_descr_array_type_die (tree type, struct array_descr_info *info,
 {
   const dw_die_ref scope_die = scope_die_for (type, context_die);
   const dw_die_ref array_die = new_die (DW_TAG_array_type, scope_die, type);
-  struct loc_descr_context context = { type, info->base_decl, NULL,
-				       false, false };
+  struct loc_descr_context context = {
+    type, 		/* context_type */
+    info->base_decl,	/* base_decl */
+    NULL,		/* dpi */
+    false,		/* placeholder_arg */
+    false,		/* placeholder_seen */
+    false		/* strict_signedness */
+  };
   enum dwarf_tag subrange_tag = DW_TAG_subrange_type;
   int dim;
 
@@ -25292,13 +25406,6 @@ gen_variant_part (tree variant_part_decl, struct vlr_context *vlr_ctx,
 {
   const tree variant_part_type = TREE_TYPE (variant_part_decl);
   tree variant_part_offset = vlr_ctx->variant_part_offset;
-  struct loc_descr_context ctx = {
-    vlr_ctx->struct_type, /* context_type */
-    NULL_TREE,		  /* base_decl */
-    NULL,		  /* dpi */
-    false,		  /* placeholder_arg */
-    false		  /* placeholder_seen */
-  };
 
   /* The FIELD_DECL node in STRUCT_TYPE that acts as the discriminant, or
      NULL_TREE if there is no such field.  */
@@ -25329,11 +25436,19 @@ gen_variant_part (tree variant_part_decl, struct vlr_context *vlr_ctx,
     }
 
   /* If the offset for this variant part is more complex than a constant,
-     create a DWARF procedure for it so that we will not have to generate DWARF
-     expressions for it for each member.  */
+     create a DWARF procedure for it so that we will not have to generate
+     DWARF expressions for it for each member.  */
   if (TREE_CODE (variant_part_offset) != INTEGER_CST
       && (dwarf_version >= 3 || !dwarf_strict))
     {
+      struct loc_descr_context ctx = {
+	vlr_ctx->struct_type,	/* context_type */
+	NULL_TREE,		/* base_decl */
+	NULL,		  	/* dpi */
+	false,		  	/* placeholder_arg */
+	false,		  	/* placeholder_seen */
+	false		  	/* strict_signedness */
+      };
       const tree dwarf_proc_fndecl
         = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL, NULL_TREE,
 		      build_function_type (TREE_TYPE (variant_part_offset),

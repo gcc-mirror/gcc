@@ -1037,8 +1037,17 @@ Common Driver Joined
 Select what to sanitize.
 
 fsanitize-coverage=
-Common Joined
+Common Joined RejectNegative Enum(sanitize_coverage)
 Select type of coverage sanitization.
+
+Enum
+Name(sanitize_coverage) Type(int)
+
+EnumValue
+Enum(sanitize_coverage) String(trace-pc) Value(SANITIZE_COV_TRACE_PC)
+
+EnumValue
+Enum(sanitize_coverage) String(trace-cmp) Value(SANITIZE_COV_TRACE_CMP)
 
 fasan-shadow-offset=
 Common Joined RejectNegative Var(common_deferred_options) Defer
