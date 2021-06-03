@@ -1341,49 +1341,46 @@ pp_ada_tree_identifier (pretty_printer *buffer, tree node, tree type,
   char *s = to_ada_name (name, &space_found);
   tree decl = get_underlying_decl (type);
 
-  /* If the entity comes from another file, generate a package prefix.  */
   if (decl)
     {
-      expanded_location xloc = expand_location (decl_sloc (decl, false));
+      /* If the entity comes from another file, generate a package prefix.  */
+      const expanded_location xloc = expand_location (decl_sloc (decl, false));
 
-      if (xloc.file && xloc.line)
+      if (xloc.line && xloc.file && xloc.file != current_source_file)
 	{
-	  if (xloc.file != current_source_file)
+	  switch (TREE_CODE (type))
 	    {
-	      switch (TREE_CODE (type))
-		{
-		  case ENUMERAL_TYPE:
-		  case INTEGER_TYPE:
-		  case REAL_TYPE:
-		  case FIXED_POINT_TYPE:
-		  case BOOLEAN_TYPE:
-		  case REFERENCE_TYPE:
-		  case POINTER_TYPE:
-		  case ARRAY_TYPE:
-		  case RECORD_TYPE:
-		  case UNION_TYPE:
-		  case TYPE_DECL:
-		    if (package_prefix)
-		      {
-			char *s1 = get_ada_package (xloc.file);
-			append_withs (s1, limited_access);
-			pp_string (buffer, s1);
-			pp_dot (buffer);
-			free (s1);
-		      }
-		    break;
-		  default:
-		    break;
-		}
+	      case ENUMERAL_TYPE:
+	      case INTEGER_TYPE:
+	      case REAL_TYPE:
+	      case FIXED_POINT_TYPE:
+	      case BOOLEAN_TYPE:
+	      case REFERENCE_TYPE:
+	      case POINTER_TYPE:
+	      case ARRAY_TYPE:
+	      case RECORD_TYPE:
+	      case UNION_TYPE:
+	      case TYPE_DECL:
+		if (package_prefix)
+		  {
+		    char *s1 = get_ada_package (xloc.file);
+		    append_withs (s1, limited_access);
+		    pp_string (buffer, s1);
+		    pp_dot (buffer);
+		    free (s1);
+		  }
+		break;
+	      default:
+		break;
+	    }
 
-	      /* Generate the additional package prefix for C++ classes.  */
-	      if (separate_class_package (decl))
-		{
-		  pp_string (buffer, "Class_");
-		  pp_string (buffer, s);
-		  pp_dot (buffer);
-		}
-	     }
+	  /* Generate the additional package prefix for C++ classes.  */
+	  if (separate_class_package (decl))
+	    {
+	      pp_string (buffer, "Class_");
+	      pp_string (buffer, s);
+	      pp_dot (buffer);
+	    }
 	}
     }
 
@@ -2220,6 +2217,24 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		{
 		  tree type_name = TYPE_NAME (TREE_TYPE (node));
 
+		  /* Generate "access <type>" instead of "access <subtype>"
+		     if the subtype comes from another file, because subtype
+		     declarations do not contribute to the limited view of a
+		     package and thus subtypes cannot be referenced through
+		     a limited_with clause.  */
+		  if (type_name
+		      && TREE_CODE (type_name) == TYPE_DECL
+		      && DECL_ORIGINAL_TYPE (type_name)
+		      && TYPE_NAME (DECL_ORIGINAL_TYPE (type_name)))
+		    {
+		      const expanded_location xloc
+			= expand_location (decl_sloc (type_name, false));
+		      if (xloc.line
+			  && xloc.file
+			  && xloc.file != current_source_file)
+			type_name = DECL_ORIGINAL_TYPE (type_name);
+		    }
+
 		  /* For now, handle access-to-access as System.Address.  */
 		  if (TREE_CODE (TREE_TYPE (node)) == POINTER_TYPE)
 		    {
@@ -2241,8 +2256,8 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		    {
 		      if (!type || TREE_CODE (type) != FUNCTION_DECL)
 			{
-			  pp_string (buffer, "access ");
 			  is_access = true;
+			  pp_string (buffer, "access ");
 
 			  if (quals & TYPE_QUAL_CONST)
 			    pp_string (buffer, "constant ");
