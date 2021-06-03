@@ -51,7 +51,7 @@ $ make
 Running the compiler itself without make install we can simply invoke the compiler proper:
 
 ```bash
-$ ./gcc/rust1 test.rs -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
+$ ./gcc/rust1 test.rs -frust-debug -frust-dump-parse -Warray-bounds -dumpbase test.rs -mtune=generic -march=x86-64 -O0 -version -fdump-tree-gimple -o test.s -L/lib/x86_64-linux-gnu -L/lib/../lib64 -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib64
 ```
 
 To invoke the compiler driver (gccrs) we need to:
@@ -170,12 +170,7 @@ $ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
     gcc/testsuite/rust/compile/torture/type_infer1.rs -S -o type_infer1.s 
 ```
 
-To emit the debug outputs you can add the option -frust-dump-all :
-```bash
-$ docker run --rm -v "$PWD":/usr/src/myapp -w /usr/src/myapp \
-    gccrs-dev:latest gccrs -g -O2 \
-    gcc/testsuite/rust/compile/torture/type_infer1.rs -o type_infer1 -frust-dump-all
-```
+To emit Rust front end debug output, you may add options like `-frust-debug`, `-frust-dump-all`.
 
 
 ## Contributing

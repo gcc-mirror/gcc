@@ -35,6 +35,10 @@ L
 Rust Joined Separate
 ; Not documented
 
+frust-debug
+Rust Var(flag_rust_debug)
+Dump various Rust front end internals.
+
 frust-dump-
 Rust Joined RejectNegative
 -frust-dump-<type>	Dump Rust frontend internal information.

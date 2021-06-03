@@ -93,6 +93,8 @@ extern void
 rust_be_inform (const Location, const std::string &infomsg);
 extern void
 rust_be_get_quotechars (const char **open_quote, const char **close_quote);
+extern bool
+rust_be_debug_p (void);
 
 namespace Rust {
 /* A structure used to represent an error. Useful for enabling
