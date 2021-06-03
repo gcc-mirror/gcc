@@ -136,12 +136,8 @@ Target Mask(CODE_DENSITY)
 Enable code density instructions for ARCv2.
 
 mmixed-code
-Target Mask(MIXED_CODE_SET)
-Tweak register allocation to help 16-bit instruction generation.
-; originally this was:
-;Generate ARCompact 16-bit instructions intermixed with 32-bit instructions
-; but we do that without -mmixed-code, too, it's just a different instruction
-; count / size tradeoff.
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
 
 ; We use an explict definition for the negative form because that is the
 ; actually interesting option, and we want that to have its own comment.
@@ -292,11 +288,9 @@ mmul32x16
 Target Mask(MULMAC_32BY16_SET)
 Generate 32x16 multiply and mac instructions.
 
-; the initializer is supposed to be: Init(REG_BR_PROB_BASE/2) ,
-; alas, basic-block.h is not included in options.c .
 munalign-prob-threshold=
-Target RejectNegative Joined UInteger Var(arc_unalign_prob_threshold) Init(10000/2)
-Set probability threshold for unaligning branches.
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
 
 mmedium-calls
 Target Var(TARGET_MEDIUM_CALLS) Init(TARGET_MMEDIUM_CALLS_DEFAULT)
@@ -307,8 +301,8 @@ Target Var(TARGET_ANNOTATE_ALIGN)
 Explain what alignment considerations lead to the decision to make an insn short or long.
 
 malign-call
-Target Var(TARGET_ALIGN_CALL)
-Do alignment optimizations for call instructions.
+Target Ignore
+Does nothing.  Preserved for backward compatibility.
 
 mRcq
 Target Var(TARGET_Rcq)

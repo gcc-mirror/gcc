@@ -19255,7 +19255,7 @@ The following options fine tune code generation:
 @table @gcctabopt
 @item -malign-call
 @opindex malign-call
-Do alignment optimizations for call instructions.
+Does nothing.  Preserved for backward compatibility.
 
 @item -mauto-modify-reg
 @opindex mauto-modify-reg
@@ -19350,9 +19350,7 @@ code-density feature.
 
 @item -mmixed-code
 @opindex mmixed-code
-Tweak register allocation to help 16-bit instruction generation.
-This generally has the effect of decreasing the average instruction size
-while increasing the instruction count.
+Does nothing.  Preserved for backward compatibility.
 
 @item -mq-class
 @opindex mq-class
@@ -19428,12 +19426,7 @@ normal instruction.
 
 @item -munalign-prob-threshold=@var{probability}
 @opindex munalign-prob-threshold
-Set probability threshold for unaligning branches.
-When tuning for @samp{ARC700} and optimizing for speed, branches without
-filled delay slot are preferably emitted unaligned and long, unless
-profiling indicates that the probability for the branch to be taken
-is below @var{probability}.  @xref{Cross-profiling}.
-The default is (REG_BR_PROB_BASE/2), i.e.@: 5000.
+Does nothing.  Preserved for backward compatibility.
 
 @end table
 
