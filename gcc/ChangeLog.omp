@@ -1,3 +1,10 @@
+2021-06-03  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.cc (extract_base_bit_offset): Don't look through ARRAY_REFs or
+	INDIRECT_REFs here.
+	(build_struct_group): Reinstate previous behaviour for handling
+	ARRAY_REFs/INDIRECT_REFs.
+
 2021-06-02  Julian Brown  <julian@codesourcery.com>
 
 	* gimplify.cc (extract_base_bit_offset): Add BASE_IND and OPENMP
