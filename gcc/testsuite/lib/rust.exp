@@ -178,10 +178,5 @@ proc rust_target_compile { source dest type options } {
     set options [concat "$ALWAYS_RUSTFLAGS" $options]
     set options [dg-additional-files-options $options $source]
 
-    ## FIXME: until the compiler is made less verbose, we need to prune its output almost completely.
-    # Only keep lines containing certain diagnostics so that we can check these.
-    global additional_prunes
-    lappend additional_prunes "^((?!(error: |warning: |\[Ii\]nternal compiler error: )).)*$"
-
     return [target_compile $source $dest $type $options]
 }
