@@ -420,7 +420,7 @@ package body Sem_Util is
 
                else
                   return Make_Level_Literal
-                           (Subprogram_Access_Level (Current_Subprogram));
+                           (Subprogram_Access_Level (Entity (Name (N))));
                end if;
             end if;
 
@@ -791,12 +791,22 @@ package body Sem_Util is
             --  is an anonymous access type means that its associated
             --  level is that of the containing type - see RM 3.10.2 (16).
 
+            --  Note that when restriction No_Dynamic_Accessibility_Checks is
+            --  in effect we treat discriminant components as regular
+            --  components.
+
             elsif Nkind (E) = N_Selected_Component
               and then Ekind (Etype (E))   =  E_Anonymous_Access_Type
               and then Ekind (Etype (Pre)) /= E_Anonymous_Access_Type
-              and then not (Nkind (Selector_Name (E)) in N_Has_Entity
-                             and then Ekind (Entity (Selector_Name (E)))
-                                        = E_Discriminant)
+              and then (not (Nkind (Selector_Name (E)) in N_Has_Entity
+                              and then Ekind (Entity (Selector_Name (E)))
+                                         = E_Discriminant)
+
+                        --  The alternative accessibility models both treat
+                        --  discriminants as regular components.
+
+                        or else (No_Dynamic_Accessibility_Checks_Enabled (E)
+                                  and then Allow_Alt_Model))
             then
                --  When restriction No_Dynamic_Accessibility_Checks is active
                --  and -gnatd_b set, the level is that of the designated type.
@@ -7215,7 +7225,6 @@ package body Sem_Util is
 
          if Allow_Alt_Model
            and then No_Dynamic_Accessibility_Checks_Enabled (Typ)
-           and then not Debug_Flag_Underscore_B
          then
             return Type_Access_Level (Typ, Allow_Alt_Model);
          end if;
@@ -29157,7 +29166,8 @@ package body Sem_Util is
 
    function Type_Access_Level
      (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean := True) return Uint
+      Allow_Alt_Model : Boolean   := True;
+      Assoc_Ent       : Entity_Id := Empty) return Uint
    is
       Btyp    : Entity_Id := Base_Type (Typ);
       Def_Ent : Entity_Id;
@@ -29185,6 +29195,18 @@ package body Sem_Util is
                if Debug_Flag_Underscore_B then
                   return Type_Access_Level
                            (Designated_Type (Btyp), Allow_Alt_Model);
+               end if;
+
+               --  When an anonymous access type's Assoc_Ent is specifiedi,
+               --  calculate the result based on the general accessibility
+               --  level routine.
+
+               --  We would like to use Associated_Node_For_Itype here instead,
+               --  but in some cases it is not fine grained enough ???
+
+               if Present (Assoc_Ent) then
+                  return Static_Accessibility_Level
+                           (Assoc_Ent, Object_Decl_Level);
                end if;
 
                --  Otherwise take the context of the anonymous access type into
