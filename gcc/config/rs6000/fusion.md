@@ -1733,10 +1733,10 @@
    (clobber (match_scratch:GPR 4 "=X,X,X,&r"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_LOGADD)"
   "@
-   and %3,%1,%0\;subf %3,%3,%2
-   and %3,%1,%0\;subf %3,%3,%2
-   and %3,%1,%0\;subf %3,%3,%2
-   and %4,%1,%0\;subf %3,%4,%2"
+   and %3,%1,%0\;subf %3,%2,%3
+   and %3,%1,%0\;subf %3,%2,%3
+   and %3,%1,%0\;subf %3,%2,%3
+   and %4,%1,%0\;subf %3,%2,%4"
   [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
@@ -1751,10 +1751,10 @@
    (clobber (match_scratch:GPR 4 "=X,X,X,&r"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_LOGADD)"
   "@
-   nand %3,%1,%0\;subf %3,%3,%2
-   nand %3,%1,%0\;subf %3,%3,%2
-   nand %3,%1,%0\;subf %3,%3,%2
-   nand %4,%1,%0\;subf %3,%4,%2"
+   nand %3,%1,%0\;subf %3,%2,%3
+   nand %3,%1,%0\;subf %3,%2,%3
+   nand %3,%1,%0\;subf %3,%2,%3
+   nand %4,%1,%0\;subf %3,%2,%4"
   [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
@@ -1769,10 +1769,10 @@
    (clobber (match_scratch:GPR 4 "=X,X,X,&r"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_LOGADD)"
   "@
-   nor %3,%1,%0\;subf %3,%3,%2
-   nor %3,%1,%0\;subf %3,%3,%2
-   nor %3,%1,%0\;subf %3,%3,%2
-   nor %4,%1,%0\;subf %3,%4,%2"
+   nor %3,%1,%0\;subf %3,%2,%3
+   nor %3,%1,%0\;subf %3,%2,%3
+   nor %3,%1,%0\;subf %3,%2,%3
+   nor %4,%1,%0\;subf %3,%2,%4"
   [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
@@ -1787,10 +1787,10 @@
    (clobber (match_scratch:GPR 4 "=X,X,X,&r"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_LOGADD)"
   "@
-   or %3,%1,%0\;subf %3,%3,%2
-   or %3,%1,%0\;subf %3,%3,%2
-   or %3,%1,%0\;subf %3,%3,%2
-   or %4,%1,%0\;subf %3,%4,%2"
+   or %3,%1,%0\;subf %3,%2,%3
+   or %3,%1,%0\;subf %3,%2,%3
+   or %3,%1,%0\;subf %3,%2,%3
+   or %4,%1,%0\;subf %3,%2,%4"
   [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
@@ -1805,10 +1805,10 @@
    (clobber (match_scratch:GPR 4 "=X,X,X,&r"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_LOGADD)"
   "@
-   and %3,%1,%0\;subf %3,%2,%3
-   and %3,%1,%0\;subf %3,%2,%3
-   and %3,%1,%0\;subf %3,%2,%3
-   and %4,%1,%0\;subf %3,%2,%4"
+   and %3,%1,%0\;subf %3,%3,%2
+   and %3,%1,%0\;subf %3,%3,%2
+   and %3,%1,%0\;subf %3,%3,%2
+   and %4,%1,%0\;subf %3,%4,%2"
   [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
@@ -1823,10 +1823,10 @@
    (clobber (match_scratch:GPR 4 "=X,X,X,&r"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_LOGADD)"
   "@
-   nand %3,%1,%0\;subf %3,%2,%3
-   nand %3,%1,%0\;subf %3,%2,%3
-   nand %3,%1,%0\;subf %3,%2,%3
-   nand %4,%1,%0\;subf %3,%2,%4"
+   nand %3,%1,%0\;subf %3,%3,%2
+   nand %3,%1,%0\;subf %3,%3,%2
+   nand %3,%1,%0\;subf %3,%3,%2
+   nand %4,%1,%0\;subf %3,%4,%2"
   [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
@@ -1841,10 +1841,10 @@
    (clobber (match_scratch:GPR 4 "=X,X,X,&r"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_LOGADD)"
   "@
-   nor %3,%1,%0\;subf %3,%2,%3
-   nor %3,%1,%0\;subf %3,%2,%3
-   nor %3,%1,%0\;subf %3,%2,%3
-   nor %4,%1,%0\;subf %3,%2,%4"
+   nor %3,%1,%0\;subf %3,%3,%2
+   nor %3,%1,%0\;subf %3,%3,%2
+   nor %3,%1,%0\;subf %3,%3,%2
+   nor %4,%1,%0\;subf %3,%4,%2"
   [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
@@ -1859,10 +1859,10 @@
    (clobber (match_scratch:GPR 4 "=X,X,X,&r"))]
   "(TARGET_P10_FUSION && TARGET_P10_FUSION_LOGADD)"
   "@
-   or %3,%1,%0\;subf %3,%2,%3
-   or %3,%1,%0\;subf %3,%2,%3
-   or %3,%1,%0\;subf %3,%2,%3
-   or %4,%1,%0\;subf %3,%2,%4"
+   or %3,%1,%0\;subf %3,%3,%2
+   or %3,%1,%0\;subf %3,%3,%2
+   or %3,%1,%0\;subf %3,%3,%2
+   or %4,%1,%0\;subf %3,%4,%2"
   [(set_attr "type" "fused_arith_logical")
    (set_attr "cost" "6")
    (set_attr "length" "8")])
