@@ -4025,17 +4025,10 @@ inline_forbidden_p (tree fndecl)
   wi.info = (void *) fndecl;
   wi.pset = &visited_nodes;
 
-  /* We cannot inline a function with a VLA typed argument or result since
-     we have no implementation materializing a variable of such type in
-     the caller.  */
-  if (COMPLETE_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl)))
-      && !poly_int_tree_p (TYPE_SIZE (TREE_TYPE (TREE_TYPE (fndecl)))))
-    {
-      inline_forbidden_reason
-	= G_("function %q+F can never be inlined because "
-	     "it has a VLA return argument");
-      return true;
-    }
+  /* We cannot inline a function with a variable-sized parameter because we
+     cannot materialize a temporary of such a type in the caller if need be.
+     Note that the return case is not symmetrical because we can guarantee
+     that a temporary is not needed by means of CALL_EXPR_RETURN_SLOT_OPT.  */
   for (tree parm = DECL_ARGUMENTS (fndecl); parm; parm = DECL_CHAIN (parm))
     if (!poly_int_tree_p (DECL_SIZE (parm)))
       {
