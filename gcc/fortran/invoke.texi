@@ -2,31 +2,10 @@
 @c This is part of the GNU Fortran manual.   
 @c For copying conditions, see the file gfortran.texi.
 
-@ignore
-@c man begin COPYRIGHT
-Copyright @copyright{} 2004-2021 Free Software Foundation, Inc.
-
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with the
-Invariant Sections being ``Funding Free Software'', the Front-Cover
-Texts being (a) (see below), and with the Back-Cover Texts being (b)
-(see below).  A copy of the license is included in the gfdl(7) man page.
-
-(a) The FSF's Front-Cover Text is:
-
-     A GNU Manual
-
-(b) The FSF's Back-Cover Text is:
-
-     You have freedom to copy and modify this GNU Manual, like GNU
-     software.  Copies published by the Free Software Foundation raise
-     funds for GNU development.
-@c man end
-@c Set file name and title for the man page.
 @setfilename gfortran
-@settitle GNU Fortran compiler.
-@c man begin SYNOPSIS
+
+@subsubheading Synopsis
+
 gfortran [@option{-c}|@option{-S}|@option{-E}]
          [@option{-g}] [@option{-pg}] [@option{-O}@var{level}]
          [@option{-W}@var{warn}@dots{}] [@option{-pedantic}]
@@ -38,22 +17,12 @@ gfortran [@option{-c}|@option{-S}|@option{-E}]
 
 Only the most useful options are listed here; see below for the
 remainder.
-@c man end
-@c man begin SEEALSO
-gpl(7), gfdl(7), fsf-funding(7),
-cpp(1), gcov(1), gcc(1), as(1), ld(1), gdb(1), dbx(1)
-and the Info entries for @file{gcc}, @file{cpp}, @file{gfortran}, @file{as},
-@file{ld}, @file{binutils} and @file{gdb}.
-@c man end
-@c man begin BUGS
+
 For instructions on reporting bugs, see
 $$BUGURL$$.
-@c man end
-@c man begin AUTHOR
+
 See the Info entry for @command{gfortran} for contributors to GCC and
 GNU Fortran.
-@c man end
-@end ignore
 
 @node Invoking GNU Fortran
 @chapter GNU Fortran Command Options
@@ -61,7 +30,7 @@ GNU Fortran.
 @cindex command options
 @cindex options, @command{gfortran} command
 
-@c man begin DESCRIPTION
+@subsubheading Description
 
 The @command{gfortran} command supports all the options supported by the
 @command{gcc} command.  Only options specific to GNU Fortran are documented
@@ -85,7 +54,6 @@ In some cases, options have positive and negative forms;
 the negative form of @option{-ffoo} would be @option{-fno-foo}.
 This manual documents only one of these two forms, whichever
 one is not the default.
-@c man end
 
 @menu
 * Option Summary::      Brief list of all @command{gfortran} options,
@@ -108,7 +76,7 @@ one is not the default.
 @node Option Summary
 @section Option summary
 
-@c man begin OPTIONS
+@subsubheading Options
 
 Here is a summary of all the options specific to GNU Fortran, grouped
 by type.  Explanations are in the following sections.
@@ -1993,8 +1961,6 @@ gcc,Using the GNU Compiler Collection (GCC)}, for information on more options
 offered by the GBE
 shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
 
-@c man end
-
 @node Interoperability Options
 @section Options for interoperability with other languages
 
@@ -2053,7 +2019,7 @@ then  uses @code{#include "foo.h"}.
 @section Environment variables affecting @command{gfortran}
 @cindex environment variable
 
-@c man begin ENVIRONMENT
+@subsubheading Environment
 
 The @command{gfortran} compiler currently does not make use of any environment
 variables to control its operation above and beyond those
@@ -2065,4 +2031,3 @@ variables.
 
 @xref{Runtime}, for environment variables that affect the
 run-time behavior of programs compiled with GNU Fortran.
-@c man end
