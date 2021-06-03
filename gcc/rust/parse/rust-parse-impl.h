@@ -261,10 +261,9 @@ Parser<ManagedTokenSource>::left_binding_power (const_TokenPtr token)
 	  return LBP_DOT;*/
 
     case SCOPE_RESOLUTION:
-      fprintf (
-	stderr,
+      rust_debug (
 	"possible error - looked up LBP of scope resolution operator. should "
-	"be handled elsewhere. \n");
+	"be handled elsewhere.");
       return LBP_PATH;
 
     /* Resolved by lookahead HACK that should work with current code. If next
@@ -609,10 +608,10 @@ Parser<ManagedTokenSource>::parse_simple_path ()
     {
       if (seg.is_error ())
 	{
-	  fprintf (stderr,
-		   "when parsing simple path, somehow empty path segment was "
-		   "not filtered out. Path begins with '%s' \n",
-		   segments.at (0).as_string ().c_str ());
+	  rust_debug (
+	    "when parsing simple path, somehow empty path segment was "
+	    "not filtered out. Path begins with '%s'",
+	    segments.at (0).as_string ().c_str ());
 	}
     }
 
@@ -917,11 +916,10 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
       lexer.skip_token ();
 
       // DEBUG
-      fprintf (stderr,
-	       "finished parsing new delim token tree - peeked token is now "
-	       "'%s' while t is '%s'\n",
-	       lexer.peek_token ()->get_token_description (),
-	       t->get_token_description ());
+      rust_debug ("finished parsing new delim token tree - peeked token is now "
+		  "'%s' while t is '%s'",
+		  lexer.peek_token ()->get_token_description (),
+		  t->get_token_description ());
 
       return token_tree;
     }
@@ -1319,21 +1317,19 @@ Parser<ManagedTokenSource>::parse_macro_item (AST::AttrVec outer_attrs)
   else
     {
       // DEBUG: TODO: remove
-      fprintf (stderr,
-	       "DEBUG - parse_macro_item called and token is not macro_rules");
+      rust_debug (
+	"DEBUG - parse_macro_item called and token is not macro_rules");
       if (t->get_id () == IDENTIFIER)
 	{
-	  fprintf (stderr,
-		   "just add to last error: token is not macro_rules and is "
-		   "instead '%s'",
-		   t->get_str ().c_str ());
+	  rust_debug ("just add to last error: token is not macro_rules and is "
+		      "instead '%s'",
+		      t->get_str ().c_str ());
 	}
       else
 	{
-	  fprintf (stderr,
-		   "just add to last error: token is not macro_rules and is "
-		   "not an identifier either - it is '%s'",
-		   t->get_token_description ());
+	  rust_debug ("just add to last error: token is not macro_rules and is "
+		      "not an identifier either - it is '%s'",
+		      t->get_token_description ());
 	}
 
       return parse_macro_invocation_semi (std::move (outer_attrs));
@@ -1375,7 +1371,7 @@ Parser<ManagedTokenSource>::parse_macro_rules_def (AST::AttrVec outer_attrs)
   Identifier rule_name = ident_tok->get_str ();
 
   // DEBUG
-  fprintf (stderr, "in macro rules def, about to parse parens.\n");
+  rust_debug ("in macro rules def, about to parse parens.");
 
   // save delim type to ensure it is reused later
   AST::DelimType delim_type = AST::PARENS;
@@ -1421,7 +1417,7 @@ Parser<ManagedTokenSource>::parse_macro_rules_def (AST::AttrVec outer_attrs)
   macro_rules.push_back (std::move (initial_rule));
 
   // DEBUG
-  fprintf (stderr, "successfully pushed back initial macro rule\n");
+  rust_debug ("successfully pushed back initial macro rule");
 
   t = lexer.peek_token ();
   // parse macro rules
@@ -1434,9 +1430,8 @@ Parser<ManagedTokenSource>::parse_macro_rules_def (AST::AttrVec outer_attrs)
       if (token_id_matches_delims (lexer.peek_token ()->get_id (), delim_type))
 	{
 	  // DEBUG
-	  fprintf (
-	    stderr,
-	    "broke out of parsing macro rules loop due to finding delim\n");
+	  rust_debug (
+	    "broke out of parsing macro rules loop due to finding delim");
 
 	  break;
 	}
@@ -1455,7 +1450,7 @@ Parser<ManagedTokenSource>::parse_macro_rules_def (AST::AttrVec outer_attrs)
       macro_rules.push_back (std::move (rule));
 
       // DEBUG
-      fprintf (stderr, "successfully pushed back another macro rule\n");
+      rust_debug ("successfully pushed back another macro rule");
 
       t = lexer.peek_token ();
     }
@@ -1595,10 +1590,9 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 	}
 
       // DEBUG:
-      fprintf (stderr,
-	       "skipped token is '%s', next token (current peek) is '%s'\n",
-	       t->get_token_description (),
-	       lexer.peek_token ()->get_token_description ());
+      rust_debug ("skipped token is '%s', next token (current peek) is '%s'",
+		  t->get_token_description (),
+		  lexer.peek_token ()->get_token_description ());
 
       return std::unique_ptr<AST::MacroInvocationSemi> (
 	new AST::MacroInvocationSemi (std::move (invoc_data),
@@ -1688,7 +1682,7 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
   AST::DelimType delim_type = AST::PARENS;
 
   // DEBUG
-  fprintf (stderr, "begun parsing macro matcher\n");
+  rust_debug ("begun parsing macro matcher");
 
   // Map tokens to DelimType
   const_TokenPtr t = lexer.peek_token ();
@@ -1736,7 +1730,7 @@ Parser<ManagedTokenSource>::parse_macro_matcher ()
       matches.push_back (std::move (match));
 
       // DEBUG
-      fprintf (stderr, "pushed back a match in macro matcher\n");
+      rust_debug ("pushed back a match in macro matcher");
 
       t = lexer.peek_token ();
     }
@@ -2638,20 +2632,19 @@ Parser<ManagedTokenSource>::parse_generic_params_in_angles ()
   lexer.skip_token ();
 
   // DEBUG:
-  fprintf (stderr, "skipped left angle in generic param\n");
+  rust_debug ("skipped left angle in generic param");
 
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params (is_right_angle_tok);
 
   // DEBUG:
-  fprintf (stderr,
-	   "finished parsing actual generic params (i.e. inside angles)\n");
+  rust_debug ("finished parsing actual generic params (i.e. inside angles)");
 
   if (!skip_generics_right_angle ())
     {
       // DEBUG
-      fprintf (stderr, "failed to skip generics right angle - returning empty "
-		       "generic params\n");
+      rust_debug ("failed to skip generics right angle - returning empty "
+		  "generic params");
 
       return std::vector<std::unique_ptr<AST::GenericParam>> ();
     }
@@ -2671,8 +2664,7 @@ Parser<ManagedTokenSource>::parse_generic_params ()
   // thus, parse them all here
 
   // DEBUG
-  fprintf (stderr,
-	   "starting to parse generic params (inside angle brackets)\n");
+  rust_debug ("starting to parse generic params (inside angle brackets)");
 
   /* HACK: used to retain attribute data if a lifetime param is tentatively
    * parsed but it turns out to be type param */
@@ -2693,10 +2685,9 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 	  parsed_outer_attr = std::move (outer_attr);
 
 	  // DEBUG
-	  fprintf (
-	    stderr,
+	  rust_debug (
 	    "broke from parsing lifetime params as next token isn't lifetime - "
-	    "saved attribute\n");
+	    "saved attribute");
 
 	  break;
 	}
@@ -2705,7 +2696,7 @@ Parser<ManagedTokenSource>::parse_generic_params ()
       AST::Lifetime lifetime = parse_lifetime ();
 
       // DEBUG
-      fprintf (stderr, "parsed lifetime in lifetime params\n");
+      rust_debug ("parsed lifetime in lifetime params");
 
       // parse optional bounds
       std::vector<AST::Lifetime> lifetime_bounds;
@@ -2737,8 +2728,8 @@ Parser<ManagedTokenSource>::parse_generic_params ()
       && !parsed_outer_attr.is_empty ())
     {
       // DEBUG
-      fprintf (stderr, "as parsed outer attr isn't empty, started parsing type "
-		       "param reimpl\n");
+      rust_debug ("as parsed outer attr isn't empty, started parsing type "
+		  "param reimpl");
 
       // reimpl as type param definitely exists
       const_TokenPtr ident_tok = expect_token (IDENTIFIER);
@@ -2796,9 +2787,8 @@ Parser<ManagedTokenSource>::parse_generic_params ()
     }
 
   // DEBUG
-  fprintf (
-    stderr,
-    "about to start parsing normally-parsed type params in generic params\n");
+  rust_debug (
+    "about to start parsing normally-parsed type params in generic params");
 
   // parse rest of type params - reimpl due to right angle tokens
   t = lexer.peek_token ();
@@ -2816,7 +2806,7 @@ Parser<ManagedTokenSource>::parse_generic_params ()
 	}
 
       // DEBUG
-      fprintf (stderr, "successfully parsed type param\n");
+      rust_debug ("successfully parsed type param");
 
       generic_params.push_back (std::move (type_param));
 
@@ -3625,8 +3615,8 @@ Parser<ManagedTokenSource>::parse_for_lifetimes ()
   if (!skip_generics_right_angle ())
     {
       // DEBUG
-      fprintf (stderr, "failed to skip generics right angle after (supposedly) "
-		       "finished parsing where clause items\n");
+      rust_debug ("failed to skip generics right angle after (supposedly) "
+		  "finished parsing where clause items");
       // ok, well this gets called.
 
       // skip after somewhere?
@@ -5068,7 +5058,7 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
 	}
 
       // DEBUG
-      fprintf (stderr, "successfully parsed inherent impl\n");
+      rust_debug ("successfully parsed inherent impl");
 
       impl_items.shrink_to_fit ();
 
@@ -5135,10 +5125,10 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
 	  t = lexer.peek_token ();
 
 	  // DEBUG
-	  fprintf (stderr, "successfully parsed a trait impl item\n");
+	  rust_debug ("successfully parsed a trait impl item");
 	}
       // DEBUG
-      fprintf (stderr, "successfully finished trait impl items\n");
+      rust_debug ("successfully finished trait impl items");
 
       if (!skip_token (RIGHT_CURLY))
 	{
@@ -5147,7 +5137,7 @@ Parser<ManagedTokenSource>::parse_impl (AST::Visibility vis,
 	}
 
       // DEBUG
-      fprintf (stderr, "successfully parsed trait impl\n");
+      rust_debug ("successfully parsed trait impl");
 
       impl_items.shrink_to_fit ();
 
@@ -5525,18 +5515,16 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   Identifier ident = ident_tok->get_str ();
 
   // DEBUG:
-  fprintf (
-    stderr,
-    "about to start parsing generic params in trait impl function or method\n");
+  rust_debug (
+    "about to start parsing generic params in trait impl function or method");
 
   // parse generic params
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
     = parse_generic_params_in_angles ();
 
   // DEBUG:
-  fprintf (
-    stderr,
-    "finished parsing generic params in trait impl function or method\n");
+  rust_debug (
+    "finished parsing generic params in trait impl function or method");
 
   if (!skip_token (LEFT_PAREN))
     {
@@ -5561,14 +5549,12 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
 	}
 
       // DEBUG
-      fprintf (stderr,
-	       "successfully parsed self param in method trait impl item\n");
+      rust_debug ("successfully parsed self param in method trait impl item");
     }
 
   // DEBUG
-  fprintf (
-    stderr,
-    "started to parse function params in function or method trait impl item\n");
+  rust_debug (
+    "started to parse function params in function or method trait impl item");
 
   // parse trait function params (only if next token isn't right paren)
   std::vector<AST::FunctionParam> function_params;
@@ -5591,8 +5577,8 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
     }
 
   // DEBUG
-  fprintf (stderr, "successfully parsed function params in function or method "
-		   "trait impl item\n");
+  rust_debug ("successfully parsed function params in function or method "
+	      "trait impl item");
 
   if (!skip_token (RIGHT_PAREN))
     {
@@ -5604,17 +5590,15 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   std::unique_ptr<AST::Type> return_type = parse_function_return_type ();
 
   // DEBUG
-  fprintf (
-    stderr,
-    "successfully parsed return type in function or method trait impl item\n");
+  rust_debug (
+    "successfully parsed return type in function or method trait impl item");
 
   // parse where clause (optional)
   AST::WhereClause where_clause = parse_where_clause ();
 
   // DEBUG
-  fprintf (
-    stderr,
-    "successfully parsed where clause in function or method trait impl item\n");
+  rust_debug (
+    "successfully parsed where clause in function or method trait impl item");
 
   // parse function definition (in block) - semicolon not allowed
   if (lexer.peek_token ()->get_id () == SEMICOLON)
@@ -8513,7 +8497,7 @@ Parser<ManagedTokenSource>::parse_match_arm ()
   AST::AttrVec outer_attrs = parse_outer_attributes ();
 
   // DEBUG
-  fprintf (stderr, "about to start parsing match arm patterns\n");
+  rust_debug ("about to start parsing match arm patterns");
 
   // break early if find right curly
   if (lexer.peek_token ()->get_id () == RIGHT_CURLY)
@@ -8536,7 +8520,7 @@ Parser<ManagedTokenSource>::parse_match_arm ()
     }
 
   // DEBUG
-  fprintf (stderr, "successfully parsed match arm patterns\n");
+  rust_debug ("successfully parsed match arm patterns");
 
   // parse match arm guard expr if it exists
   std::unique_ptr<AST::Expr> guard_expr = nullptr;
@@ -8557,7 +8541,7 @@ Parser<ManagedTokenSource>::parse_match_arm ()
     }
 
   // DEBUG
-  fprintf (stderr, "successfully parsed match arm\n");
+  rust_debug ("successfully parsed match arm");
 
   return AST::MatchArm (std::move (match_arm_patterns), std::move (guard_expr),
 			std::move (outer_attrs));
@@ -8593,7 +8577,7 @@ Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
   patterns.push_back (std::move (initial_pattern));
 
   // DEBUG
-  fprintf (stderr, "successfully parsed initial match arm pattern\n");
+  rust_debug ("successfully parsed initial match arm pattern");
 
   // parse new patterns as long as next char is '|'
   const_TokenPtr t = lexer.peek_token ();
@@ -10331,7 +10315,7 @@ Parser<ManagedTokenSource>::parse_range_pattern_bound ()
 	  range_lower_locus));
     case FLOAT_LITERAL:
       lexer.skip_token ();
-      fprintf (stderr, "warning: used deprecated float range pattern bound");
+      rust_debug ("warning: used deprecated float range pattern bound");
       return std::unique_ptr<AST::RangePatternBoundLiteral> (
 	new AST::RangePatternBoundLiteral (
 	  AST::Literal (range_lower->get_str (), AST::Literal::FLOAT,
@@ -10351,8 +10335,7 @@ Parser<ManagedTokenSource>::parse_range_pattern_bound ()
 	      range_lower_locus, true));
 	case FLOAT_LITERAL:
 	  lexer.skip_token (1);
-	  fprintf (stderr,
-		   "warning: used deprecated float range pattern bound");
+	  rust_debug ("warning: used deprecated float range pattern bound");
 	  return std::unique_ptr<AST::RangePatternBoundLiteral> (
 	    new AST::RangePatternBoundLiteral (
 	      AST::Literal (range_lower->get_str (), AST::Literal::FLOAT,
@@ -10914,7 +10897,7 @@ Parser<ManagedTokenSource>::parse_identifier_pattern ()
       lexer.skip_token ();
 
       // DEBUG
-      fprintf (stderr, "parsed ref in identifier pattern\n");
+      rust_debug ("parsed ref in identifier pattern");
     }
 
   bool has_mut = false;
@@ -10934,7 +10917,7 @@ Parser<ManagedTokenSource>::parse_identifier_pattern ()
   Identifier ident = ident_tok->get_str ();
 
   // DEBUG
-  fprintf (stderr, "parsed identifier in identifier pattern\n");
+  rust_debug ("parsed identifier in identifier pattern");
 
   // parse optional pattern binding thing
   std::unique_ptr<AST::Pattern> bind_pattern = nullptr;
@@ -10955,7 +10938,7 @@ Parser<ManagedTokenSource>::parse_identifier_pattern ()
     }
 
   // DEBUG
-  fprintf (stderr, "about to return identifier pattern\n");
+  rust_debug ("about to return identifier pattern");
 
   return std::unique_ptr<AST::IdentifierPattern> (
     new AST::IdentifierPattern (std::move (ident), locus, has_ref, has_mut,
@@ -10993,7 +10976,7 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	lexer.skip_token ();
 
 	// DEBUG
-	fprintf (stderr, "parsing tuple struct pattern\n");
+	rust_debug ("parsing tuple struct pattern");
 
 	// check if empty tuple
 	if (lexer.peek_token ()->get_id () == RIGHT_PAREN)
@@ -11016,7 +10999,7 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	  }
 
 	// DEBUG
-	fprintf (stderr, "successfully parsed tuple struct items\n");
+	rust_debug ("successfully parsed tuple struct items");
 
 	if (!skip_token (RIGHT_PAREN))
 	  {
@@ -11024,7 +11007,7 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	  }
 
 	// DEBUG
-	fprintf (stderr, "successfully parsed tuple struct pattern\n");
+	rust_debug ("successfully parsed tuple struct pattern");
 
 	return std::unique_ptr<AST::TupleStructPattern> (
 	  new AST::TupleStructPattern (std::move (path), std::move (items)));
@@ -11042,7 +11025,7 @@ Parser<ManagedTokenSource>::parse_ident_leading_pattern ()
 	  }
 
 	// DEBUG
-	fprintf (stderr, "successfully parsed struct pattern\n");
+	rust_debug ("successfully parsed struct pattern");
 
 	return std::unique_ptr<AST::StructPattern> (
 	  new AST::StructPattern (std::move (path), std::move (elems)));
@@ -11114,7 +11097,7 @@ Parser<ManagedTokenSource>::parse_tuple_struct_items ()
   std::vector<std::unique_ptr<AST::Pattern>> lower_patterns;
 
   // DEBUG
-  fprintf (stderr, "started parsing tuple struct items\n");
+  rust_debug ("started parsing tuple struct items");
 
   // check for '..' at front
   if (lexer.peek_token ()->get_id () == DOT_DOT)
@@ -11123,7 +11106,7 @@ Parser<ManagedTokenSource>::parse_tuple_struct_items ()
       lexer.skip_token ();
 
       // DEBUG
-      fprintf (stderr, "'..' at front in tuple struct items detected\n");
+      rust_debug ("'..' at front in tuple struct items detected");
 
       std::vector<std::unique_ptr<AST::Pattern>> upper_patterns;
 
@@ -11152,9 +11135,8 @@ Parser<ManagedTokenSource>::parse_tuple_struct_items ()
 	}
 
       // DEBUG
-      fprintf (
-	stderr,
-	"finished parsing tuple struct items ranged (upper/none only)\n");
+      rust_debug (
+	"finished parsing tuple struct items ranged (upper/none only)");
 
       return std::unique_ptr<AST::TupleStructItemsRange> (
 	new AST::TupleStructItemsRange (std::move (lower_patterns),
@@ -11166,7 +11148,7 @@ Parser<ManagedTokenSource>::parse_tuple_struct_items ()
   while (t->get_id () != RIGHT_PAREN && t->get_id () != DOT_DOT)
     {
       // DEBUG
-      fprintf (stderr, "about to parse pattern in tuple struct items\n");
+      rust_debug ("about to parse pattern in tuple struct items");
 
       // parse pattern, which is required
       std::unique_ptr<AST::Pattern> pattern = parse_pattern ();
@@ -11181,13 +11163,13 @@ Parser<ManagedTokenSource>::parse_tuple_struct_items ()
       lower_patterns.push_back (std::move (pattern));
 
       // DEBUG
-      fprintf (stderr, "successfully parsed pattern in tuple struct items\n");
+      rust_debug ("successfully parsed pattern in tuple struct items");
 
       if (lexer.peek_token ()->get_id () != COMMA)
 	{
 	  // DEBUG
-	  fprintf (stderr, "broke out of parsing patterns in tuple struct "
-			   "items as no comma \n");
+	  rust_debug ("broke out of parsing patterns in tuple struct "
+		      "items as no comma");
 
 	  break;
 	}
@@ -12321,8 +12303,7 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
   if (expr == nullptr)
     {
       // DEBUG
-      fprintf (stderr,
-	       "null denotation is null; returning null for parse_expr\n");
+      rust_debug ("null denotation is null; returning null for parse_expr");
       return nullptr;
     }
 
@@ -12338,8 +12319,7 @@ Parser<ManagedTokenSource>::parse_expr (int right_binding_power,
       if (expr == nullptr)
 	{
 	  // DEBUG
-	  fprintf (stderr,
-		   "left denotation is null; returning null for parse_expr\n");
+	  rust_debug ("left denotation is null; returning null for parse_expr");
 
 	  return nullptr;
 	}
@@ -12378,15 +12358,15 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
     {
       case IDENTIFIER: {
 	// DEBUG
-	fprintf (stderr, "beginning null denotation identifier handling\n");
+	rust_debug ("beginning null denotation identifier handling");
 
 	/* best option: parse as path, then extract identifier, macro,
 	 * struct/enum, or just path info from it */
 	AST::PathInExpression path = parse_path_in_expression_pratt (tok);
 
 	// DEBUG:
-	fprintf (stderr, "finished null denotation identifier path parsing - "
-			 "next is branching \n");
+	rust_debug ("finished null denotation identifier path parsing - "
+		    "next is branching");
 
 	// branch on next token
 	const_TokenPtr t = lexer.peek_token ();
@@ -12411,15 +12391,15 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 	       *  path '{' ident ':' [not a type]
 	       * otherwise, assume block expr and thus path */
 	      // DEBUG
-	      fprintf (stderr, "values of lookahead: '%s' '%s' '%s' '%s' \n",
-		       lexer.peek_token (1)->get_token_description (),
-		       lexer.peek_token (2)->get_token_description (),
-		       lexer.peek_token (3)->get_token_description (),
-		       lexer.peek_token (4)->get_token_description ());
+	      rust_debug ("values of lookahead: '%s' '%s' '%s' '%s' ",
+			  lexer.peek_token (1)->get_token_description (),
+			  lexer.peek_token (2)->get_token_description (),
+			  lexer.peek_token (3)->get_token_description (),
+			  lexer.peek_token (4)->get_token_description ());
 
-	      fprintf (stderr, "can be struct expr: '%s', not a block: '%s'\n",
-		       restrictions.can_be_struct_expr ? "true" : "false",
-		       not_a_block ? "true" : "false");
+	      rust_debug ("can be struct expr: '%s', not a block: '%s'",
+			  restrictions.can_be_struct_expr ? "true" : "false",
+			  not_a_block ? "true" : "false");
 
 	      // struct/enum expr struct
 	      if (!restrictions.can_be_struct_expr && !not_a_block)
@@ -12668,18 +12648,18 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
     case CRATE:
       case SUPER: {
 	// DEBUG
-	fprintf (stderr, "beginning null denotation "
-			 "self/self-alias/dollar/crate/super handling\n");
+	rust_debug ("beginning null denotation "
+		    "self/self-alias/dollar/crate/super handling");
 
 	/* best option: parse as path, then extract identifier, macro,
 	 * struct/enum, or just path info from it */
 	AST::PathInExpression path = parse_path_in_expression_pratt (tok);
 
 	// DEBUG
-	fprintf (stderr,
-		 "just finished parsing path (going to disambiguate) - peeked "
-		 "token is '%s'\n",
-		 lexer.peek_token ()->get_token_description ());
+	rust_debug (
+	  "just finished parsing path (going to disambiguate) - peeked "
+	  "token is '%s'",
+	  lexer.peek_token ()->get_token_description ());
 
 	// HACK: always make "self" by itself a path (regardless of next tokens)
 	if (tok->get_id () == SELF && path.is_single_segment ())
@@ -12700,8 +12680,8 @@ Parser<ManagedTokenSource>::null_denotation (const_TokenPtr tok,
 						   std::move (outer_attrs));
 	    case LEFT_CURLY: {
 	      // struct/enum expr struct
-	      fprintf (stderr, "can_be_struct_expr: %s\n",
-		       restrictions.can_be_struct_expr ? "true" : "false");
+	      rust_debug ("can_be_struct_expr: %s",
+			  restrictions.can_be_struct_expr ? "true" : "false");
 
 	      bool not_a_block
 		= lexer.peek_token (1)->get_id () == IDENTIFIER
@@ -14288,7 +14268,7 @@ Parser<ManagedTokenSource>::parse_macro_invocation_partial (
 
   AST::DelimTokenTree tok_tree = parse_delim_token_tree ();
 
-  fprintf (stderr, "successfully parsed macro invocation (via partial)\n");
+  rust_debug ("successfully parsed macro invocation (via partial)");
 
   Location macro_locus = converted_path.get_locus ();
 
@@ -14351,31 +14331,30 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
 	      }
 
 	    // DEBUG:
-	    fprintf (stderr,
-		     "struct/enum expr field validated to not be null \n");
+	    rust_debug ("struct/enum expr field validated to not be null");
 
 	    fields.push_back (std::move (field));
 
 	    // DEBUG:
-	    fprintf (stderr, "struct/enum expr field pushed back \n");
+	    rust_debug ("struct/enum expr field pushed back");
 
 	    if (lexer.peek_token ()->get_id () != COMMA)
 	      {
 		// DEBUG:
-		fprintf (stderr, "lack of comma detected in struct/enum expr "
-				 "fields - break \n");
+		rust_debug ("lack of comma detected in struct/enum expr "
+			    "fields - break");
 		break;
 	      }
 	    lexer.skip_token ();
 
 	    // DEBUG:
-	    fprintf (stderr, "struct/enum expr fields comma skipped \n");
+	    rust_debug ("struct/enum expr fields comma skipped ");
 
 	    t = lexer.peek_token ();
 	  }
 
 	// DEBUG:
-	fprintf (stderr, "struct/enum expr about to parse struct base \n");
+	rust_debug ("struct/enum expr about to parse struct base ");
 
 	// parse struct base if it exists
 	AST::StructBase struct_base = AST::StructBase::error ();
@@ -14396,13 +14375,12 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
 	      }
 
 	    // DEBUG:
-	    fprintf (stderr,
-		     "struct/enum expr - parsed and validated base expr \n");
+	    rust_debug ("struct/enum expr - parsed and validated base expr");
 
 	    struct_base = AST::StructBase (std::move (base_expr));
 
 	    // DEBUG:
-	    fprintf (stderr, "assigned struct base to new struct base \n");
+	    rust_debug ("assigned struct base to new struct base ");
 	  }
 
 	if (!skip_token (RIGHT_CURLY))
@@ -14411,9 +14389,8 @@ Parser<ManagedTokenSource>::parse_struct_expr_struct_partial (
 	  }
 
 	// DEBUG:
-	fprintf (
-	  stderr,
-	  "struct/enum expr skipped right curly - done and ready to return \n");
+	rust_debug (
+	  "struct/enum expr skipped right curly - done and ready to return");
 
 	return std::unique_ptr<AST::StructExprStructFields> (
 	  new AST::StructExprStructFields (std::move (path), std::move (fields),
@@ -14500,8 +14477,8 @@ Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
   // HACK-y way of making up for pratt-parsing consuming first token
 
   // DEBUG
-  fprintf (stderr, "current peek token when starting path pratt parse: '%s'\n",
-	   lexer.peek_token ()->get_token_description ());
+  rust_debug ("current peek token when starting path pratt parse: '%s'",
+	      lexer.peek_token ()->get_token_description ());
 
   // create segment vector
   std::vector<AST::PathExprSegment> segments;
@@ -14562,7 +14539,7 @@ Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
       // don't necessarily throw error but yeah
 
       // DEBUG
-      fprintf (stderr, "initial segment is error - returning null\n");
+      rust_debug ("initial segment is error - returning null");
 
       return AST::PathInExpression::create_error ();
     }
@@ -14593,9 +14570,8 @@ Parser<ManagedTokenSource>::parse_path_in_expression_pratt (const_TokenPtr tok)
     }
 
   // DEBUG:
-  fprintf (
-    stderr,
-    "current token (just about to return path to null denotation): '%s'\n",
+  rust_debug (
+    "current token (just about to return path to null denotation): '%s'",
     lexer.peek_token ()->get_token_description ());
 
   return AST::PathInExpression (std::move (segments), {}, tok->get_locus (),
@@ -14745,8 +14721,7 @@ Parser<ManagedTokenSource>::parse_tuple_index_expr_float (
     return nullptr;
 
   // DEBUG:
-  fprintf (stderr, "exact string form of float: '%s'\n",
-	   tok->get_str ().c_str ());
+  rust_debug ("exact string form of float: '%s'", tok->get_str ().c_str ());
 
   // get float string and remove dot and initial 0
   std::string index_str = tok->get_str ();

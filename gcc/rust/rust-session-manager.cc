@@ -142,9 +142,8 @@ Session::enable_features ()
 {
   bool has_target_crt_static = false;
 
-  fprintf (
-    stderr,
-    "ERROR: Somewhere in call chain Session::enable_features is called.\n");
+  rust_debug (
+    "ERROR: Somewhere in call chain Session::enable_features is called.");
 
   if (has_target_crt_static)
     {
@@ -456,7 +455,7 @@ Session::parse_files (int num_files, const char **files)
 
   for (int i = 0; i < num_files; i++)
     {
-      fprintf (stderr, "Attempting to parse file: %s\n", files[i]);
+      rust_debug ("Attempting to parse file: %s", files[i]);
       parse_file (files[i]);
     }
   /* TODO: should semantic analysis be dealed with here? or per file? for now,
@@ -517,11 +516,11 @@ Session::parse_file (const char *filename)
    * maybe buffered lints)
    *  TODO not done */
 
-  fprintf (stderr, "\033[0;31mSUCCESSFULLY PARSED CRATE \n\033[0m");
+  rust_debug ("\033[0;31mSUCCESSFULLY PARSED CRATE \033[0m");
 
   // register plugins pipeline stage
   register_plugins (parsed_crate);
-  fprintf (stderr, "\033[0;31mSUCCESSFULLY REGISTERED PLUGINS \n\033[0m");
+  rust_debug ("\033[0;31mSUCCESSFULLY REGISTERED PLUGINS \033[0m");
   if (options.dump_option_enabled (CompileOptions::REGISTER_PLUGINS_DUMP))
     {
       // TODO: what do I dump here?
@@ -529,7 +528,7 @@ Session::parse_file (const char *filename)
 
   // injection pipeline stage
   injection (parsed_crate);
-  fprintf (stderr, "\033[0;31mSUCCESSFULLY FINISHED INJECTION \n\033[0m");
+  rust_debug ("\033[0;31mSUCCESSFULLY FINISHED INJECTION \033[0m");
   if (options.dump_option_enabled (CompileOptions::INJECTION_DUMP))
     {
       // TODO: what do I dump here? injected crate names?
@@ -537,13 +536,13 @@ Session::parse_file (const char *filename)
 
   // expansion pipeline stage
   expansion (parsed_crate);
-  fprintf (stderr, "\033[0;31mSUCCESSFULLY FINISHED EXPANSION \n\033[0m");
+  rust_debug ("\033[0;31mSUCCESSFULLY FINISHED EXPANSION \033[0m");
   if (options.dump_option_enabled (CompileOptions::EXPANSION_DUMP))
     {
       // dump AST with expanded stuff
-      fprintf (stderr, "BEGIN POST-EXPANSION AST DUMP\n");
+      rust_debug ("BEGIN POST-EXPANSION AST DUMP");
       dump_ast_expanded (parser, parsed_crate);
-      fprintf (stderr, "END POST-EXPANSION AST DUMP\n");
+      rust_debug ("END POST-EXPANSION AST DUMP");
     }
 
   // resolution pipeline stage
@@ -652,7 +651,7 @@ Session::debug_dump_load_crates (Parser<Lexer> &parser)
 void
 Session::register_plugins (AST::Crate &crate ATTRIBUTE_UNUSED)
 {
-  fprintf (stderr, "ran register_plugins (with no body)\n");
+  rust_debug ("ran register_plugins (with no body)");
 }
 
 // TODO: move somewhere else
@@ -671,7 +670,7 @@ contains_name (const AST::AttrVec &attrs, std::string name)
 void
 Session::injection (AST::Crate &crate)
 {
-  fprintf (stderr, "started injection\n");
+  rust_debug ("started injection");
 
   // lint checks in future maybe?
 
@@ -792,13 +791,13 @@ Session::injection (AST::Crate &crate)
    * type is not specified, so maybe just do that. Valid crate types: bin lib
    * dylib staticlib cdylib rlib proc-macro */
 
-  fprintf (stderr, "finished injection\n");
+  rust_debug ("finished injection");
 }
 
 void
 Session::expansion (AST::Crate &crate)
 {
-  fprintf (stderr, "started expansion\n");
+  rust_debug ("started expansion");
 
   /* rustc has a modification to windows PATH temporarily here, which may end up
    * being required */
@@ -821,7 +820,7 @@ Session::expansion (AST::Crate &crate)
 
   // maybe create macro crate if not rustdoc
 
-  fprintf (stderr, "finished expansion\n");
+  rust_debug ("finished expansion");
 }
 
 void
@@ -997,8 +996,7 @@ TargetOptions::enable_implicit_feature_reqs (std::string feature)
     {
       insert_key_value_pair ("target_feature", feature);
 
-      fprintf (stderr, "had to implicitly enable feature '%s'!",
-	       feature.c_str ());
+      rust_debug ("had to implicitly enable feature '%s'!", feature.c_str ());
     }
 }
 
