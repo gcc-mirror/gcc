@@ -3,6 +3,14 @@
 	Backported from master:
 	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
+	* dump-parse-tree.c (show_code_node): Handle
+	EXEC_OMP_(TARGET_)(,PARALLEL_,TEAMS_)LOOP.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
 	* scanner.c (skip_fixed_omp_sentinel): Set openacc_flag if
 	this is not an (OpenMP) continuation line.
 	(skip_fixed_oacc_sentinel): Likewise for openmp_flag and OpenACC.

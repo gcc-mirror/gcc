@@ -3214,6 +3214,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_DO:
     case EXEC_OMP_DO_SIMD:
     case EXEC_OMP_FLUSH:
+    case EXEC_OMP_LOOP:
     case EXEC_OMP_MASTER:
     case EXEC_OMP_MASTER_TASKLOOP:
     case EXEC_OMP_MASTER_TASKLOOP_SIMD:
@@ -3221,6 +3222,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_LOOP:
     case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
@@ -3237,12 +3239,14 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_TARGET_PARALLEL:
     case EXEC_OMP_TARGET_PARALLEL_DO:
     case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_PARALLEL_LOOP:
     case EXEC_OMP_TARGET_SIMD:
     case EXEC_OMP_TARGET_TEAMS:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TARGET_TEAMS_LOOP:
     case EXEC_OMP_TARGET_UPDATE:
     case EXEC_OMP_TASK:
     case EXEC_OMP_TASKGROUP:
@@ -3255,6 +3259,7 @@ show_code_node (int level, gfc_code *c)
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TEAMS_LOOP:
     case EXEC_OMP_WORKSHARE:
       show_omp_node (level, c);
       break;
