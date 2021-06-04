@@ -69,6 +69,6 @@ contains
      !$omp do ! { dg-error "Wrong OpenACC continuation" }
 
      !$omp parallel &
-     !$acc loop ! { dg-error "Wrong OpenMP continuation" }
+     !$acc kernels loop ! { dg-error "Wrong OpenMP continuation" }
    end subroutine nana
 end module test

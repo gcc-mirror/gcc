@@ -1,6 +1,27 @@
 2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* gfortran.dg/gomp/pr99928-3.f90: Add 'default(none)', following
+	C/C++ version of the patch.
+	* gfortran.dg/gomp/loop-1.f90: New test.
+	* gfortran.dg/gomp/loop-2.f90: New test.
+	* gfortran.dg/gomp/pr99928-1.f90: New test; based on C/C++ test.
+	* gfortran.dg/gomp/pr99928-11.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-2.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-4.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-5.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-6.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-8.f90: Likewise.
+	* gfortran.dg/goacc/omp.f95: Use 'acc kernels loops' instead
+	of 'acc loops' to hide unrelated bug for now.
+	* gfortran.dg/goacc/omp-fixed.f: Likewise
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-06-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/100872
