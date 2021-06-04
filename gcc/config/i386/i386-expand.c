@@ -13723,6 +13723,19 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 	}
       goto widen;
 
+    case E_V2HImode:
+      if (TARGET_SSE2)
+	{
+	  rtx x;
+
+	  val = gen_lowpart (SImode, val);
+	  x = gen_rtx_TRUNCATE (HImode, val);
+	  x = gen_rtx_VEC_DUPLICATE (mode, x);
+	  emit_insn (gen_rtx_SET (target, x));
+	  return true;
+	}
+      return false;
+
     case E_V8QImode:
       if (!mmx_ok)
 	return false;
@@ -14524,6 +14537,8 @@ quarter:
 
     case E_V4HImode:
     case E_V8QImode:
+
+    case E_V2HImode:
       break;
 
     default:
@@ -14532,12 +14547,14 @@ quarter:
 
     {
       int i, j, n_elts, n_words, n_elt_per_word;
-      machine_mode inner_mode;
+      machine_mode tmp_mode, inner_mode;
       rtx words[4], shift;
+
+      tmp_mode = (GET_MODE_SIZE (mode) < UNITS_PER_WORD) ? SImode : word_mode;
 
       inner_mode = GET_MODE_INNER (mode);
       n_elts = GET_MODE_NUNITS (mode);
-      n_words = GET_MODE_SIZE (mode) / UNITS_PER_WORD;
+      n_words = GET_MODE_SIZE (mode) / GET_MODE_SIZE (tmp_mode);
       n_elt_per_word = n_elts / n_words;
       shift = GEN_INT (GET_MODE_BITSIZE (inner_mode));
 
@@ -14548,15 +14565,15 @@ quarter:
 	  for (j = 0; j < n_elt_per_word; ++j)
 	    {
 	      rtx elt = XVECEXP (vals, 0, (i+1)*n_elt_per_word - j - 1);
-	      elt = convert_modes (word_mode, inner_mode, elt, true);
+	      elt = convert_modes (tmp_mode, inner_mode, elt, true);
 
 	      if (j == 0)
 		word = elt;
 	      else
 		{
-		  word = expand_simple_binop (word_mode, ASHIFT, word, shift,
+		  word = expand_simple_binop (tmp_mode, ASHIFT, word, shift,
 					      word, 1, OPTAB_LIB_WIDEN);
-		  word = expand_simple_binop (word_mode, IOR, word, elt,
+		  word = expand_simple_binop (tmp_mode, IOR, word, elt,
 					      word, 1, OPTAB_LIB_WIDEN);
 		}
 	    }
@@ -14570,14 +14587,14 @@ quarter:
 	{
 	  rtx tmp = gen_reg_rtx (mode);
 	  emit_clobber (tmp);
-	  emit_move_insn (gen_lowpart (word_mode, tmp), words[0]);
-	  emit_move_insn (gen_highpart (word_mode, tmp), words[1]);
+	  emit_move_insn (gen_lowpart (tmp_mode, tmp), words[0]);
+	  emit_move_insn (gen_highpart (tmp_mode, tmp), words[1]);
 	  emit_move_insn (target, tmp);
 	}
       else if (n_words == 4)
 	{
 	  rtx tmp = gen_reg_rtx (V4SImode);
-	  gcc_assert (word_mode == SImode);
+	  gcc_assert (tmp_mode == SImode);
 	  vals = gen_rtx_PARALLEL (V4SImode, gen_rtvec_v (4, words));
 	  ix86_expand_vector_init_general (false, V4SImode, tmp, vals);
 	  emit_move_insn (target, gen_lowpart (mode, tmp));
@@ -19548,6 +19565,7 @@ expand_vec_perm_even_odd_1 (struct expand_vec_perm_d *d, unsigned odd)
     case E_V2DImode:
     case E_V2SImode:
     case E_V4SImode:
+    case E_V2HImode:
       /* These are always directly implementable by expand_vec_perm_1.  */
       gcc_unreachable ();
 
@@ -19758,6 +19776,8 @@ expand_vec_perm_broadcast_1 (struct expand_vec_perm_d *d)
     case E_V2DImode:
     case E_V2SImode:
     case E_V4SImode:
+    case E_V2HImode:
+    case E_V4HImode:
       /* These are always implementable using standard shuffle patterns.  */
       gcc_unreachable ();
 
@@ -20267,6 +20287,10 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
       if (!TARGET_MMX_WITH_SSE)
 	return false;
       break;
+    case E_V2HImode:
+	if (!TARGET_SSE2)
+	  return false;
+	break;
     case E_V2DImode:
     case E_V2DFmode:
       if (!TARGET_SSE)
@@ -20298,10 +20322,11 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
       /* Check whether the mask can be applied to the vector type.  */
       d.one_operand_p = (which != 3);
 
-      /* Implementable with shufps or pshufd.  */
+      /* Implementable with shufps, pshufd or pshuflw.  */
       if (d.one_operand_p
 	  && (d.vmode == V4SFmode || d.vmode == V2SFmode
-	      || d.vmode == V4SImode || d.vmode == V2SImode))
+	      || d.vmode == V4SImode || d.vmode == V2SImode
+	      || d.vmode == V4HImode || d.vmode == V2HImode))
 	return true;
 
       /* Otherwise we have to go through the motions and see if we can
