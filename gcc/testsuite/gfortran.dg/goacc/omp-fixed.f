@@ -26,7 +26,7 @@
       ENDDO
 
 !$OMP PARALLEL                                                          &
-!$ACC& LOOP ! { dg-error "Wrong OpenMP continuation" }
+!$ACC& KERNELS LOOP ! { dg-error "Wrong OpenMP continuation" }
       DO I = 1, 10
       ENDDO
       END SUBROUTINE NI

@@ -1718,6 +1718,19 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fprintf (dumpfile, " PROC_BIND(%s)", type);
     }
+  if (omp_clauses->bind != OMP_BIND_UNSET)
+    {
+      const char *type;
+      switch (omp_clauses->bind)
+	{
+	case OMP_BIND_TEAMS: type = "TEAMS"; break;
+	case OMP_BIND_PARALLEL: type = "PARALLEL"; break;
+	case OMP_BIND_THREAD: type = "THREAD"; break;
+	default:
+	  gcc_unreachable ();
+	}
+      fprintf (dumpfile, " BIND(%s)", type);
+    }
   if (omp_clauses->num_teams)
     {
       fputs (" NUM_TEAMS(", dumpfile);
@@ -1896,6 +1909,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_DISTRIBUTE_SIMD: name = "DISTRIBUTE SIMD"; break;
     case EXEC_OMP_DO: name = "DO"; break;
     case EXEC_OMP_DO_SIMD: name = "DO SIMD"; break;
+    case EXEC_OMP_LOOP: name = "LOOP"; break;
     case EXEC_OMP_FLUSH: name = "FLUSH"; break;
     case EXEC_OMP_MASTER: name = "MASTER"; break;
     case EXEC_OMP_MASTER_TASKLOOP: name = "MASTER TASKLOOP"; break;
@@ -1905,6 +1919,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_PARALLEL: name = "PARALLEL"; break;
     case EXEC_OMP_PARALLEL_DO: name = "PARALLEL DO"; break;
     case EXEC_OMP_PARALLEL_DO_SIMD: name = "PARALLEL DO SIMD"; break;
+    case EXEC_OMP_PARALLEL_LOOP: name = "PARALLEL LOOP"; break;
     case EXEC_OMP_PARALLEL_MASTER: name = "PARALLEL MASTER"; break;
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
       name = "PARALLEL MASTER TASKLOOP"; break;
@@ -1924,6 +1939,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_TARGET_PARALLEL_DO: name = "TARGET PARALLEL DO"; break;
     case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
       name = "TARGET_PARALLEL_DO_SIMD"; break;
+    case EXEC_OMP_TARGET_PARALLEL_LOOP: name = "TARGET PARALLEL LOOP"; break;
     case EXEC_OMP_TARGET_SIMD: name = "TARGET SIMD"; break;
     case EXEC_OMP_TARGET_TEAMS: name = "TARGET TEAMS"; break;
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
@@ -1934,6 +1950,7 @@ show_omp_node (int level, gfc_code *c)
       name = "TARGET TEAMS DISTRIBUTE PARALLEL DO SIMD"; break;
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
       name = "TARGET TEAMS DISTRIBUTE SIMD"; break;
+    case EXEC_OMP_TARGET_TEAMS_LOOP: name = "TARGET TEAMS LOOP"; break;
     case EXEC_OMP_TARGET_UPDATE: name = "TARGET UPDATE"; break;
     case EXEC_OMP_TASK: name = "TASK"; break;
     case EXEC_OMP_TASKGROUP: name = "TASKGROUP"; break;
@@ -1948,6 +1965,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
       name = "TEAMS DISTRIBUTE PARALLEL DO SIMD"; break;
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD: name = "TEAMS DISTRIBUTE SIMD"; break;
+    case EXEC_OMP_TEAMS_LOOP: name = "TEAMS LOOP"; break;
     case EXEC_OMP_WORKSHARE: name = "WORKSHARE"; break;
     default:
       gcc_unreachable ();
@@ -1977,10 +1995,12 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_DISTRIBUTE_SIMD:
     case EXEC_OMP_DO:
     case EXEC_OMP_DO_SIMD:
+    case EXEC_OMP_LOOP:
     case EXEC_OMP_ORDERED:
     case EXEC_OMP_PARALLEL:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_LOOP:
     case EXEC_OMP_PARALLEL_MASTER:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
@@ -1997,12 +2017,14 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_TARGET_PARALLEL:
     case EXEC_OMP_TARGET_PARALLEL_DO:
     case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_PARALLEL_LOOP:
     case EXEC_OMP_TARGET_SIMD:
     case EXEC_OMP_TARGET_TEAMS:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TARGET_TEAMS_LOOP:
     case EXEC_OMP_TARGET_UPDATE:
     case EXEC_OMP_TASK:
     case EXEC_OMP_TASKLOOP:
@@ -2012,6 +2034,7 @@ show_omp_node (int level, gfc_code *c)
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TEAMS_LOOP:
     case EXEC_OMP_WORKSHARE:
       omp_clauses = c->ext.omp_clauses;
       break;

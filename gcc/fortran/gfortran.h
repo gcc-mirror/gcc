@@ -271,7 +271,11 @@ enum gfc_statement
   ST_OMP_END_PARALLEL_MASTER_TASKLOOP, ST_OMP_PARALLEL_MASTER_TASKLOOP_SIMD,
   ST_OMP_END_PARALLEL_MASTER_TASKLOOP_SIMD, ST_OMP_MASTER_TASKLOOP,
   ST_OMP_END_MASTER_TASKLOOP, ST_OMP_MASTER_TASKLOOP_SIMD,
-  ST_OMP_END_MASTER_TASKLOOP_SIMD, ST_NONE
+  ST_OMP_END_MASTER_TASKLOOP_SIMD, ST_OMP_LOOP, ST_OMP_END_LOOP,
+  ST_OMP_PARALLEL_LOOP, ST_OMP_END_PARALLEL_LOOP, ST_OMP_TEAMS_LOOP,
+  ST_OMP_END_TEAMS_LOOP, ST_OMP_TARGET_PARALLEL_LOOP,
+  ST_OMP_END_TARGET_PARALLEL_LOOP, ST_OMP_TARGET_TEAMS_LOOP,
+  ST_OMP_END_TARGET_TEAMS_LOOP, ST_NONE
 };
 
 /* Types of interfaces that we can have.  Assignment interfaces are
@@ -1401,6 +1405,14 @@ enum gfc_omp_memorder
   OMP_MEMORDER_RELAXED
 };
 
+enum gfc_omp_bind_type
+{
+  OMP_BIND_UNSET,
+  OMP_BIND_TEAMS,
+  OMP_BIND_PARALLEL,
+  OMP_BIND_THREAD
+};
+
 typedef struct gfc_omp_clauses
 {
   struct gfc_expr *if_expr;
@@ -1421,6 +1433,7 @@ typedef struct gfc_omp_clauses
   enum gfc_omp_cancel_kind cancel;
   enum gfc_omp_proc_bind_kind proc_bind;
   enum gfc_omp_depend_op depobj_update;
+  enum gfc_omp_bind_type bind;
   struct gfc_expr *safelen_expr;
   struct gfc_expr *simdlen_expr;
   struct gfc_expr *num_teams;
@@ -2717,7 +2730,8 @@ enum gfc_exec_op
   EXEC_OMP_TASKLOOP, EXEC_OMP_TASKLOOP_SIMD, EXEC_OMP_SCAN, EXEC_OMP_DEPOBJ,
   EXEC_OMP_PARALLEL_MASTER, EXEC_OMP_PARALLEL_MASTER_TASKLOOP,
   EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD, EXEC_OMP_MASTER_TASKLOOP,
-  EXEC_OMP_MASTER_TASKLOOP_SIMD
+  EXEC_OMP_MASTER_TASKLOOP_SIMD, EXEC_OMP_LOOP, EXEC_OMP_PARALLEL_LOOP,
+  EXEC_OMP_TEAMS_LOOP, EXEC_OMP_TARGET_PARALLEL_LOOP, EXEC_OMP_TARGET_TEAMS_LOOP
 };
 
 typedef struct gfc_code

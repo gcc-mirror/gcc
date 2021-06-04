@@ -846,6 +846,7 @@ enum omp_mask1
   OMP_CLAUSE_MEMORDER,  /* OpenMP 5.0.  */
   OMP_CLAUSE_DETACH,  /* OpenMP 5.0.  */
   OMP_CLAUSE_AFFINITY,  /* OpenMP 5.0.  */
+  OMP_CLAUSE_BIND,  /* OpenMP 5.0.  */
   OMP_CLAUSE_NOWAIT,
   /* This must come last.  */
   OMP_MASK1_LAST
@@ -1425,6 +1426,26 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					   OMP_MAP_ATTACH, false,
 					   allow_derived))
 	    continue;
+	  break;
+	case 'b':
+	  if ((mask & OMP_CLAUSE_BIND)
+	      && c->bind == OMP_BIND_UNSET
+	      && gfc_match ("bind ( ") == MATCH_YES)
+	    {
+	      if (gfc_match ("teams )") == MATCH_YES)
+		c->bind = OMP_BIND_TEAMS;
+	      else if (gfc_match ("parallel )") == MATCH_YES)
+		c->bind = OMP_BIND_PARALLEL;
+	      else if (gfc_match ("thread )") == MATCH_YES)
+		c->bind = OMP_BIND_THREAD;
+	      else
+		{
+		  gfc_error ("Expected TEAMS, PARALLEL or THEAD as binding in "
+			     "BIND at %C");
+		  break;
+		}
+	      continue;
+	    }
 	  break;
 	case 'c':
 	  if ((mask & OMP_CLAUSE_CAPTURE)
@@ -3016,6 +3037,9 @@ cleanup:
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION			\
    | OMP_CLAUSE_SCHEDULE | OMP_CLAUSE_ORDERED | OMP_CLAUSE_COLLAPSE	\
    | OMP_CLAUSE_LINEAR | OMP_CLAUSE_ORDER)
+#define OMP_LOOP_CLAUSES \
+  (omp_mask (OMP_CLAUSE_BIND) | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_ORDER	\
+   | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
 #define OMP_SECTIONS_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_REDUCTION)
@@ -3251,6 +3275,45 @@ match
 gfc_match_omp_do_simd (void)
 {
   return match_omp (EXEC_OMP_DO_SIMD, OMP_DO_CLAUSES | OMP_SIMD_CLAUSES);
+}
+
+
+match
+gfc_match_omp_loop (void)
+{
+  return match_omp (EXEC_OMP_LOOP, OMP_LOOP_CLAUSES);
+}
+
+
+match
+gfc_match_omp_teams_loop (void)
+{
+  return match_omp (EXEC_OMP_TEAMS_LOOP, OMP_TEAMS_CLAUSES | OMP_LOOP_CLAUSES);
+}
+
+
+match
+gfc_match_omp_target_teams_loop (void)
+{
+  return match_omp (EXEC_OMP_TARGET_TEAMS_LOOP,
+		    OMP_TARGET_CLAUSES | OMP_TEAMS_CLAUSES | OMP_LOOP_CLAUSES);
+}
+
+
+match
+gfc_match_omp_parallel_loop (void)
+{
+  return match_omp (EXEC_OMP_PARALLEL_LOOP,
+		    OMP_PARALLEL_CLAUSES | OMP_LOOP_CLAUSES);
+}
+
+
+match
+gfc_match_omp_target_parallel_loop (void)
+{
+  return match_omp (EXEC_OMP_TARGET_PARALLEL_LOOP,
+		    (OMP_TARGET_CLAUSES | OMP_PARALLEL_CLAUSES
+		     | OMP_LOOP_CLAUSES));
 }
 
 
@@ -5889,14 +5952,19 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  {
 		  case OMP_LIST_REDUCTION_TASK:
 		    if (code
-			&& (code->op == EXEC_OMP_TASKLOOP
+			&& (code->op == EXEC_OMP_LOOP
+			    || code->op == EXEC_OMP_TASKLOOP
 			    || code->op == EXEC_OMP_TASKLOOP_SIMD
 			    || code->op == EXEC_OMP_MASTER_TASKLOOP
 			    || code->op == EXEC_OMP_MASTER_TASKLOOP_SIMD
+			    || code->op == EXEC_OMP_PARALLEL_LOOP
 			    || code->op == EXEC_OMP_PARALLEL_MASTER_TASKLOOP
 			    || code->op == EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD
+			    || code->op == EXEC_OMP_TARGET_PARALLEL_LOOP
+			    || code->op == EXEC_OMP_TARGET_TEAMS_LOOP
 			    || code->op == EXEC_OMP_TEAMS
-			    || code->op == EXEC_OMP_TEAMS_DISTRIBUTE))
+			    || code->op == EXEC_OMP_TEAMS_DISTRIBUTE
+			    || code->op == EXEC_OMP_TEAMS_LOOP))
 		      {
 			gfc_error ("Only DEFAULT permitted as reduction-"
 				   "modifier in REDUCTION clause at %L",
@@ -6953,11 +7021,13 @@ resolve_omp_do (gfc_code *code)
       break;
     case EXEC_OMP_DO: name = "!$OMP DO"; break;
     case EXEC_OMP_DO_SIMD: name = "!$OMP DO SIMD"; is_simd = true; break;
+    case EXEC_OMP_LOOP: name = "!$OMP LOOP"; break;
     case EXEC_OMP_PARALLEL_DO: name = "!$OMP PARALLEL DO"; break;
     case EXEC_OMP_PARALLEL_DO_SIMD:
       name = "!$OMP PARALLEL DO SIMD";
       is_simd = true;
       break;
+    case EXEC_OMP_PARALLEL_LOOP: name = "!$OMP PARALLEL LOOP"; break;
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
       name = "!$OMP PARALLEL MASTER TASKLOOP";
       break;
@@ -6975,6 +7045,9 @@ resolve_omp_do (gfc_code *code)
     case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
       name = "!$OMP TARGET PARALLEL DO SIMD";
       is_simd = true;
+      break;
+    case EXEC_OMP_TARGET_PARALLEL_LOOP:
+      name = "!$OMP TARGET PARALLEL LOOP";
       break;
     case EXEC_OMP_TARGET_SIMD:
       name = "!$OMP TARGET SIMD";
@@ -6994,6 +7067,7 @@ resolve_omp_do (gfc_code *code)
       name = "!$OMP TARGET TEAMS DISTRIBUTE SIMD";
       is_simd = true;
       break;
+    case EXEC_OMP_TARGET_TEAMS_LOOP: name = "!$OMP TARGET TEAMS LOOP"; break;
     case EXEC_OMP_TASKLOOP: name = "!$OMP TASKLOOP"; break;
     case EXEC_OMP_TASKLOOP_SIMD:
       name = "!$OMP TASKLOOP SIMD";
@@ -7011,6 +7085,7 @@ resolve_omp_do (gfc_code *code)
       name = "!$OMP TEAMS DISTRIBUTE SIMD";
       is_simd = true;
       break;
+    case EXEC_OMP_TEAMS_LOOP: name = "!$OMP TEAMS LOOP"; break;
     default: gcc_unreachable ();
     }
 
@@ -7152,6 +7227,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_PARALLEL_WORKSHARE;
     case EXEC_OMP_DO:
       return ST_OMP_DO;
+    case EXEC_OMP_LOOP:
+      return ST_OMP_LOOP;
     case EXEC_OMP_ATOMIC:
       return ST_OMP_ATOMIC;
     case EXEC_OMP_BARRIER:
@@ -7190,6 +7267,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_TARGET_PARALLEL_DO;
     case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
       return ST_OMP_TARGET_PARALLEL_DO_SIMD;
+    case EXEC_OMP_TARGET_PARALLEL_LOOP:
+      return ST_OMP_TARGET_PARALLEL_LOOP;
     case EXEC_OMP_TARGET_SIMD:
       return ST_OMP_TARGET_SIMD;
     case EXEC_OMP_TARGET_TEAMS:
@@ -7202,6 +7281,8 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD;
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
       return ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD;
+    case EXEC_OMP_TARGET_TEAMS_LOOP:
+      return ST_OMP_TARGET_TEAMS_LOOP;
     case EXEC_OMP_TARGET_UPDATE:
       return ST_OMP_TARGET_UPDATE;
     case EXEC_OMP_TASKGROUP:
@@ -7224,10 +7305,14 @@ omp_code_to_statement (gfc_code *code)
       return ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD;
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
       return ST_OMP_TEAMS_DISTRIBUTE_SIMD;
+    case EXEC_OMP_TEAMS_LOOP:
+      return ST_OMP_TEAMS_LOOP;
     case EXEC_OMP_PARALLEL_DO:
       return ST_OMP_PARALLEL_DO;
     case EXEC_OMP_PARALLEL_DO_SIMD:
       return ST_OMP_PARALLEL_DO_SIMD;
+    case EXEC_OMP_PARALLEL_LOOP:
+      return ST_OMP_PARALLEL_LOOP;
     case EXEC_OMP_DEPOBJ:
       return ST_OMP_DEPOBJ;
     default:
@@ -7628,8 +7713,10 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_DISTRIBUTE_SIMD:
     case EXEC_OMP_DO:
     case EXEC_OMP_DO_SIMD:
+    case EXEC_OMP_LOOP:
     case EXEC_OMP_PARALLEL_DO:
     case EXEC_OMP_PARALLEL_DO_SIMD:
+    case EXEC_OMP_PARALLEL_LOOP:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
     case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
     case EXEC_OMP_MASTER_TASKLOOP:
@@ -7637,17 +7724,20 @@ gfc_resolve_omp_directive (gfc_code *code, gfc_namespace *ns)
     case EXEC_OMP_SIMD:
     case EXEC_OMP_TARGET_PARALLEL_DO:
     case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+    case EXEC_OMP_TARGET_PARALLEL_LOOP:
     case EXEC_OMP_TARGET_SIMD:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TARGET_TEAMS_LOOP:
     case EXEC_OMP_TASKLOOP:
     case EXEC_OMP_TASKLOOP_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
     case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+    case EXEC_OMP_TEAMS_LOOP:
       resolve_omp_do (code);
       break;
     case EXEC_OMP_CANCEL:

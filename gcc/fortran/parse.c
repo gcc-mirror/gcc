@@ -988,6 +988,9 @@ decode_omp_directive (void)
 	      ST_OMP_MASTER_TASKLOOP);
       matcho ("master", gfc_match_omp_master, ST_OMP_MASTER);
       break;
+    case 'l':
+      matcho ("loop", gfc_match_omp_loop, ST_OMP_LOOP);
+      break;
     case 'o':
       if (gfc_match ("ordered depend (") == MATCH_YES)
 	{
@@ -1004,6 +1007,8 @@ decode_omp_directive (void)
       matchs ("parallel do simd", gfc_match_omp_parallel_do_simd,
 	      ST_OMP_PARALLEL_DO_SIMD);
       matcho ("parallel do", gfc_match_omp_parallel_do, ST_OMP_PARALLEL_DO);
+      matcho ("parallel loop", gfc_match_omp_parallel_loop,
+	      ST_OMP_PARALLEL_LOOP);
       matcho ("parallel master taskloop simd",
 	      gfc_match_omp_parallel_master_taskloop_simd,
 	      ST_OMP_PARALLEL_MASTER_TASKLOOP_SIMD);
@@ -1037,6 +1042,8 @@ decode_omp_directive (void)
 	      ST_OMP_TARGET_PARALLEL_DO_SIMD);
       matcho ("target parallel do", gfc_match_omp_target_parallel_do,
 	      ST_OMP_TARGET_PARALLEL_DO);
+      matcho ("target parallel loop", gfc_match_omp_target_parallel_loop,
+	      ST_OMP_TARGET_PARALLEL_LOOP);
       matcho ("target parallel", gfc_match_omp_target_parallel,
 	      ST_OMP_TARGET_PARALLEL);
       matchs ("target simd", gfc_match_omp_target_simd, ST_OMP_TARGET_SIMD);
@@ -1051,6 +1058,8 @@ decode_omp_directive (void)
 	      ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD);
       matcho ("target teams distribute", gfc_match_omp_target_teams_distribute,
 	      ST_OMP_TARGET_TEAMS_DISTRIBUTE);
+      matcho ("target teams loop", gfc_match_omp_target_teams_loop,
+	      ST_OMP_TARGET_TEAMS_LOOP);
       matcho ("target teams", gfc_match_omp_target_teams, ST_OMP_TARGET_TEAMS);
       matcho ("target update", gfc_match_omp_target_update,
 	      ST_OMP_TARGET_UPDATE);
@@ -1072,6 +1081,7 @@ decode_omp_directive (void)
 	      ST_OMP_TEAMS_DISTRIBUTE_SIMD);
       matcho ("teams distribute", gfc_match_omp_teams_distribute,
 	      ST_OMP_TEAMS_DISTRIBUTE);
+      matcho ("teams loop", gfc_match_omp_teams_loop, ST_OMP_TEAMS_LOOP);
       matcho ("teams", gfc_match_omp_teams, ST_OMP_TEAMS);
       matchdo ("threadprivate", gfc_match_omp_threadprivate,
 	       ST_OMP_THREADPRIVATE);
@@ -1125,9 +1135,11 @@ decode_omp_directive (void)
     case ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
     case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
     case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+    case ST_OMP_TARGET_TEAMS_LOOP:
     case ST_OMP_TARGET_PARALLEL:
     case ST_OMP_TARGET_PARALLEL_DO:
     case ST_OMP_TARGET_PARALLEL_DO_SIMD:
+    case ST_OMP_TARGET_PARALLEL_LOOP:
     case ST_OMP_TARGET_SIMD:
     case ST_OMP_TARGET_UPDATE:
       {
@@ -1650,6 +1662,8 @@ next_statement (void)
   case ST_OMP_DISTRIBUTE_PARALLEL_DO_SIMD: case ST_OMP_TARGET_PARALLEL: \
   case ST_OMP_TARGET_PARALLEL_DO: case ST_OMP_TARGET_PARALLEL_DO_SIMD: \
   case ST_OMP_TARGET_SIMD: case ST_OMP_TASKLOOP: case ST_OMP_TASKLOOP_SIMD: \
+  case ST_OMP_LOOP: case ST_OMP_PARALLEL_LOOP: case ST_OMP_TEAMS_LOOP: \
+  case ST_OMP_TARGET_PARALLEL_LOOP: case ST_OMP_TARGET_TEAMS_LOOP: \
   case ST_CRITICAL: \
   case ST_OACC_PARALLEL_LOOP: case ST_OACC_PARALLEL: case ST_OACC_KERNELS: \
   case ST_OACC_DATA: case ST_OACC_HOST_DATA: case ST_OACC_LOOP: \
@@ -2359,6 +2373,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_END_SIMD:
       p = "!$OMP END SIMD";
       break;
+    case ST_OMP_END_LOOP:
+      p = "!$OMP END LOOP";
+      break;
     case ST_OMP_END_MASTER:
       p = "!$OMP END MASTER";
       break;
@@ -2379,6 +2396,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_END_PARALLEL_DO_SIMD:
       p = "!$OMP END PARALLEL DO SIMD";
+      break;
+    case ST_OMP_END_PARALLEL_LOOP:
+      p = "!$OMP END PARALLEL LOOP";
       break;
     case ST_OMP_END_PARALLEL_MASTER:
       p = "!$OMP END PARALLEL MASTER";
@@ -2419,6 +2439,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_END_TARGET_PARALLEL_DO_SIMD:
       p = "!$OMP END TARGET PARALLEL DO SIMD";
       break;
+    case ST_OMP_END_TARGET_PARALLEL_LOOP:
+      p = "!$OMP END TARGET PARALLEL LOOP";
+      break;
     case ST_OMP_END_TARGET_SIMD:
       p = "!$OMP END TARGET SIMD";
       break;
@@ -2436,6 +2459,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_SIMD:
       p = "!$OMP END TARGET TEAMS DISTRIBUTE SIMD";
+      break;
+    case ST_OMP_END_TARGET_TEAMS_LOOP:
+      p = "!$OMP END TARGET TEAMS LOOP";
       break;
     case ST_OMP_END_TASKGROUP:
       p = "!$OMP END TASKGROUP";
@@ -2461,11 +2487,17 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_END_TEAMS_DISTRIBUTE_SIMD:
       p = "!$OMP END TEAMS DISTRIBUTE SIMD";
       break;
+    case ST_OMP_END_TEAMS_LOOP:
+      p = "!$OMP END TEAMS LOP";
+      break;
     case ST_OMP_END_WORKSHARE:
       p = "!$OMP END WORKSHARE";
       break;
     case ST_OMP_FLUSH:
       p = "!$OMP FLUSH";
+      break;
+    case ST_OMP_LOOP:
+      p = "!$OMP LOOP";
       break;
     case ST_OMP_MASTER:
       p = "!$OMP MASTER";
@@ -2485,6 +2517,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_PARALLEL_DO:
       p = "!$OMP PARALLEL DO";
+      break;
+    case ST_OMP_PARALLEL_LOOP:
+      p = "!$OMP PARALLEL LOOP";
       break;
     case ST_OMP_PARALLEL_DO_SIMD:
       p = "!$OMP PARALLEL DO SIMD";
@@ -2543,6 +2578,9 @@ gfc_ascii_statement (gfc_statement st)
     case ST_OMP_TARGET_PARALLEL_DO_SIMD:
       p = "!$OMP TARGET PARALLEL DO SIMD";
       break;
+    case ST_OMP_TARGET_PARALLEL_LOOP:
+      p = "!$OMP TARGET PARALLEL LOOP";
+      break;
     case ST_OMP_TARGET_SIMD:
       p = "!$OMP TARGET SIMD";
       break;
@@ -2560,6 +2598,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
       p = "!$OMP TARGET TEAMS DISTRIBUTE SIMD";
+      break;
+    case ST_OMP_TARGET_TEAMS_LOOP:
+      p = "!$OMP TARGET TEAMS LOOP";
       break;
     case ST_OMP_TARGET_UPDATE:
       p = "!$OMP TARGET UPDATE";
@@ -2596,6 +2637,9 @@ gfc_ascii_statement (gfc_statement st)
       break;
     case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
       p = "!$OMP TEAMS DISTRIBUTE SIMD";
+      break;
+    case ST_OMP_TEAMS_LOOP:
+      p = "!$OMP TEAMS LOOP";
       break;
     case ST_OMP_THREADPRIVATE:
       p = "!$OMP THREADPRIVATE";
@@ -5044,9 +5088,13 @@ parse_omp_do (gfc_statement omp_st)
       break;
     case ST_OMP_DO: omp_end_st = ST_OMP_END_DO; break;
     case ST_OMP_DO_SIMD: omp_end_st = ST_OMP_END_DO_SIMD; break;
+    case ST_OMP_LOOP: omp_end_st = ST_OMP_END_LOOP; break;
     case ST_OMP_PARALLEL_DO: omp_end_st = ST_OMP_END_PARALLEL_DO; break;
     case ST_OMP_PARALLEL_DO_SIMD:
       omp_end_st = ST_OMP_END_PARALLEL_DO_SIMD;
+      break;
+    case ST_OMP_PARALLEL_LOOP:
+      omp_end_st = ST_OMP_END_PARALLEL_LOOP;
       break;
     case ST_OMP_SIMD: omp_end_st = ST_OMP_END_SIMD; break;
     case ST_OMP_TARGET_PARALLEL_DO:
@@ -5054,6 +5102,9 @@ parse_omp_do (gfc_statement omp_st)
       break;
     case ST_OMP_TARGET_PARALLEL_DO_SIMD:
       omp_end_st = ST_OMP_END_TARGET_PARALLEL_DO_SIMD;
+      break;
+    case ST_OMP_TARGET_PARALLEL_LOOP:
+      omp_end_st = ST_OMP_END_TARGET_PARALLEL_LOOP;
       break;
     case ST_OMP_TARGET_SIMD: omp_end_st = ST_OMP_END_TARGET_SIMD; break;
     case ST_OMP_TARGET_TEAMS_DISTRIBUTE:
@@ -5067,6 +5118,9 @@ parse_omp_do (gfc_statement omp_st)
       break;
     case ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
       omp_end_st = ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_SIMD;
+      break;
+    case ST_OMP_TARGET_TEAMS_LOOP:
+      omp_end_st = ST_OMP_END_TARGET_TEAMS_LOOP;
       break;
     case ST_OMP_TASKLOOP: omp_end_st = ST_OMP_END_TASKLOOP; break;
     case ST_OMP_TASKLOOP_SIMD: omp_end_st = ST_OMP_END_TASKLOOP_SIMD; break;
@@ -5091,6 +5145,9 @@ parse_omp_do (gfc_statement omp_st)
       break;
     case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
       omp_end_st = ST_OMP_END_TEAMS_DISTRIBUTE_SIMD;
+      break;
+    case ST_OMP_TEAMS_LOOP:
+      omp_end_st = ST_OMP_END_TEAMS_LOOP;
       break;
     default: gcc_unreachable ();
     }
@@ -5323,12 +5380,6 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     case ST_OMP_PARALLEL_MASTER:
       omp_end_st = ST_OMP_END_PARALLEL_MASTER;
       break;
-    case ST_OMP_PARALLEL_MASTER_TASKLOOP:
-      omp_end_st = ST_OMP_END_PARALLEL_MASTER_TASKLOOP;
-      break;
-    case ST_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
-      omp_end_st = ST_OMP_END_PARALLEL_MASTER_TASKLOOP_SIMD;
-      break;
     case ST_OMP_PARALLEL_SECTIONS:
       omp_end_st = ST_OMP_END_PARALLEL_SECTIONS;
       break;
@@ -5343,12 +5394,6 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
       break;
     case ST_OMP_MASTER:
       omp_end_st = ST_OMP_END_MASTER;
-      break;
-    case ST_OMP_MASTER_TASKLOOP:
-      omp_end_st = ST_OMP_END_MASTER_TASKLOOP;
-      break;
-    case ST_OMP_MASTER_TASKLOOP_SIMD:
-      omp_end_st = ST_OMP_END_MASTER_TASKLOOP_SIMD;
       break;
     case ST_OMP_SINGLE:
       omp_end_st = ST_OMP_END_SINGLE;
@@ -5365,18 +5410,6 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     case ST_OMP_TARGET_TEAMS:
       omp_end_st = ST_OMP_END_TARGET_TEAMS;
       break;
-    case ST_OMP_TARGET_TEAMS_DISTRIBUTE:
-      omp_end_st = ST_OMP_END_TARGET_TEAMS_DISTRIBUTE;
-      break;
-    case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
-      omp_end_st = ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO;
-      break;
-    case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
-      omp_end_st = ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD;
-      break;
-    case ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
-      omp_end_st = ST_OMP_END_TARGET_TEAMS_DISTRIBUTE_SIMD;
-      break;
     case ST_OMP_TASK:
       omp_end_st = ST_OMP_END_TASK;
       break;
@@ -5389,26 +5422,8 @@ parse_omp_structured_block (gfc_statement omp_st, bool workshare_stmts_only)
     case ST_OMP_TEAMS_DISTRIBUTE:
       omp_end_st = ST_OMP_END_TEAMS_DISTRIBUTE;
       break;
-    case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
-      omp_end_st = ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO;
-      break;
-    case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
-      omp_end_st = ST_OMP_END_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD;
-      break;
-    case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
-      omp_end_st = ST_OMP_END_TEAMS_DISTRIBUTE_SIMD;
-      break;
     case ST_OMP_DISTRIBUTE:
       omp_end_st = ST_OMP_END_DISTRIBUTE;
-      break;
-    case ST_OMP_DISTRIBUTE_PARALLEL_DO:
-      omp_end_st = ST_OMP_END_DISTRIBUTE_PARALLEL_DO;
-      break;
-    case ST_OMP_DISTRIBUTE_PARALLEL_DO_SIMD:
-      omp_end_st = ST_OMP_END_DISTRIBUTE_PARALLEL_DO_SIMD;
-      break;
-    case ST_OMP_DISTRIBUTE_SIMD:
-      omp_end_st = ST_OMP_END_DISTRIBUTE_SIMD;
       break;
     case ST_OMP_WORKSHARE:
       omp_end_st = ST_OMP_END_WORKSHARE;
@@ -5689,8 +5704,10 @@ parse_executable (gfc_statement st)
 	case ST_OMP_DISTRIBUTE_SIMD:
 	case ST_OMP_DO:
 	case ST_OMP_DO_SIMD:
+	case ST_OMP_LOOP:
 	case ST_OMP_PARALLEL_DO:
 	case ST_OMP_PARALLEL_DO_SIMD:
+	case ST_OMP_PARALLEL_LOOP:
 	case ST_OMP_PARALLEL_MASTER_TASKLOOP:
 	case ST_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
 	case ST_OMP_MASTER_TASKLOOP:
@@ -5698,17 +5715,20 @@ parse_executable (gfc_statement st)
 	case ST_OMP_SIMD:
 	case ST_OMP_TARGET_PARALLEL_DO:
 	case ST_OMP_TARGET_PARALLEL_DO_SIMD:
+	case ST_OMP_TARGET_PARALLEL_LOOP:
 	case ST_OMP_TARGET_SIMD:
 	case ST_OMP_TARGET_TEAMS_DISTRIBUTE:
 	case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	case ST_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	case ST_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	case ST_OMP_TARGET_TEAMS_LOOP:
 	case ST_OMP_TASKLOOP:
 	case ST_OMP_TASKLOOP_SIMD:
 	case ST_OMP_TEAMS_DISTRIBUTE:
 	case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	case ST_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	case ST_OMP_TEAMS_DISTRIBUTE_SIMD:
+	case ST_OMP_TEAMS_LOOP:
 	  st = parse_omp_do (st);
 	  if (st == ST_IMPLIED_ENDDO)
 	    return st;
