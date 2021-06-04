@@ -1,3 +1,50 @@
+2021-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100833
+	* include/bits/range_access.h (ranges::advance(iter, n, sentinel)):
+	Fix return value for no-op case.
+	* testsuite/24_iterators/range_operations/advance.cc: Test
+	return values of three-argument overload.
+
+2021-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100768
+	* include/bits/range_access.h (ranges::advance)
+	(ranges::distance, ranges::next, ranges::prev): Replace
+	function templates with function objects.
+	* testsuite/24_iterators/headers/iterator/synopsis_c++20.cc:
+	Adjust for changes to function objects.
+	* testsuite/std/ranges/adaptors/elements.cc: Add using
+	declarations for names from namespace ranges.
+	* testsuite/std/ranges/adaptors/transform.cc: Likewise.
+	* testsuite/24_iterators/range_operations/100768.cc: New test.
+
+2021-06-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99453
+	* python/Makefile.am: Use archive name for printer hook if no
+	dynamic library name is available.
+	* python/Makefile.in: Regenerate.
+
+2021-06-03  Philippe Blain  <levraiphilippeblain@gmail.com>
+
+	Backported from master:
+	2021-04-21  Philippe Blain  <levraiphilippeblain@gmail.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/99453
+	* python/Makefile.am: Install libstdc++*-gdb.py more robustly.
+	* python/Makefile.in: Regenerate.
+
 2021-05-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/100630
