@@ -3,6 +3,13 @@
 	Backported from master:
 	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/gomp/loop-3.f90: New test.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/goacc/omp-fixed.f: Re-add test item changed in previous
 	commit in addition - add more dg-errors and '... end ...' due to changed
 	parsing.
