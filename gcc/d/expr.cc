@@ -1870,15 +1870,10 @@ public:
       exp = d_convert (build_ctype (e->type), exp);
 
     /* If this call was found to be a constructor for a temporary with a
-       cleanup, then move the call inside the TARGET_EXPR.  The original
-       initializer is turned into an assignment, to keep its side effect.  */
+       cleanup, then move the call inside the TARGET_EXPR.  */
     if (cleanup != NULL_TREE)
       {
 	tree init = TARGET_EXPR_INITIAL (cleanup);
-	tree slot = TARGET_EXPR_SLOT (cleanup);
-	d_mark_addressable (slot);
-	init = build_assign (INIT_EXPR, slot, init);
-
 	TARGET_EXPR_INITIAL (cleanup) = compound_expr (init, exp);
 	exp = cleanup;
       }
