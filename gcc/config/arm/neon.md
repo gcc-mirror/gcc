@@ -739,7 +739,7 @@
   [(set_attr "type" "neon_move<q>")]
 )
 
-(define_insn "abs<mode>2"
+(define_insn "neon_abs<mode>2"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
 	(abs:VDQW (match_operand:VDQW 1 "s_register_operand" "w")))]
   "TARGET_NEON"

@@ -115,8 +115,6 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 
 /* Run-time compilation parameters selecting different hardware subsets.  */
 
-#define TARGET_MIXED_CODE (TARGET_MIXED_CODE_SET)
-
 #define TARGET_SPFP (TARGET_SPFP_FAST_SET || TARGET_SPFP_COMPACT_SET)
 #define TARGET_DPFP (TARGET_DPFP_FAST_SET || TARGET_DPFP_COMPACT_SET	\
 		     || TARGET_FP_DP_AX)
@@ -571,7 +569,7 @@ extern enum reg_class arc_regno_reg_class[];
    a scale factor or added to another register (as well as added to a
    displacement).  */
 
-#define INDEX_REG_CLASS (TARGET_MIXED_CODE ? ARCOMPACT16_REGS : GENERAL_REGS)
+#define INDEX_REG_CLASS GENERAL_REGS
 
 /* The class value for valid base registers. A base register is one used in
    an address which is the register value plus a displacement.  */

@@ -760,6 +760,10 @@ namespace views::__adaptor
     struct _Pipe;
 
   // The base class of every range adaptor closure.
+  //
+  // The derived class should define the optional static data member
+  // _S_has_simple_call_op to true if the behavior of this adaptor is
+  // independent of the constness/value category of the adaptor object.
   struct _RangeAdaptorClosure
   {
     // range | adaptor is equivalent to adaptor(range).
@@ -785,6 +789,10 @@ namespace views::__adaptor
   // The static data member _Derived::_S_arity must contain the total number of
   // arguments that the adaptor takes, and the class _Derived must introduce
   // _RangeAdaptor::operator() into the class scope via a using-declaration.
+  //
+  // The optional static data member _Derived::_S_has_simple_extra_args should
+  // be defined to true if the behavior of this adaptor is independent of the
+  // constness/value category of the extra arguments.
   template<typename _Derived>
     struct _RangeAdaptor
     {
@@ -799,6 +807,17 @@ namespace views::__adaptor
 	}
     };
 
+  // True if the range adaptor closure _Adaptor has a simple operator(), i.e.
+  // one that's not overloaded according to constness or value category of the
+  // _Adaptor object.
+  template<typename _Adaptor>
+    concept __closure_has_simple_call_op = _Adaptor::_S_has_simple_call_op;
+
+  // True if the behavior of the range adaptor non-closure _Adaptor is
+  // independent of the value category of its extra arguments.
+  template<typename _Adaptor>
+    concept __adaptor_has_simple_extra_args = _Adaptor::_S_has_simple_extra_args;
+
   // A range adaptor closure that represents partial application of
   // the range adaptor _Adaptor with arguments _Args.
   template<typename _Adaptor, typename... _Args>
@@ -812,7 +831,7 @@ namespace views::__adaptor
       { }
 
       // Invoke _Adaptor with arguments __r, _M_args... according to the
-      // value category of the range adaptor closure object.
+      // value category of this _Partial object.
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
 	constexpr auto
@@ -869,6 +888,59 @@ namespace views::__adaptor
 	operator()(_Range&& __r) const && = delete;
     };
 
+  // Partial specialization of the primary template for the case where the extra
+  // arguments of the adaptor can always be safely forwarded by const reference.
+  // This lets us get away with a single operator() overload, which makes
+  // overload resolution failure diagnostics more concise.
+  template<typename _Adaptor, typename... _Args>
+    requires __adaptor_has_simple_extra_args<_Adaptor>
+    struct _Partial<_Adaptor, _Args...> : _RangeAdaptorClosure
+    {
+      tuple<_Args...> _M_args;
+
+      constexpr
+      _Partial(_Args... __args)
+	: _M_args(std::move(__args)...)
+      { }
+
+      // Invoke _Adaptor with arguments __r, const _M_args&... regardless
+      // of the value category of this _Partial object.
+      template<typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{
+	  auto __forwarder = [&__r] (const auto&... __args) {
+	    return _Adaptor{}(std::forward<_Range>(__r), __args...);
+	  };
+	  return std::apply(__forwarder, _M_args);
+	}
+
+      static constexpr bool _S_has_simple_call_op = true;
+    };
+
+  // A lightweight specialization of the above template for the common case
+  // where _Adaptor accepts a single extra argument.
+  template<typename _Adaptor, typename _Arg>
+    requires __adaptor_has_simple_extra_args<_Adaptor>
+    struct _Partial<_Adaptor, _Arg> : _RangeAdaptorClosure
+    {
+      _Arg _M_arg;
+
+      constexpr
+      _Partial(_Arg __arg)
+	: _M_arg(std::move(__arg))
+      { }
+
+      template<typename _Range>
+	requires __adaptor_invocable<_Adaptor, _Range, const _Arg&>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{ return _Adaptor{}(std::forward<_Range>(__r), _M_arg); }
+
+      static constexpr bool _S_has_simple_call_op = true;
+    };
+
   template<typename _Lhs, typename _Rhs, typename _Range>
     concept __pipe_invocable
       = requires { std::declval<_Rhs>()(std::declval<_Lhs>()(std::declval<_Range>())); };
@@ -903,6 +975,32 @@ namespace views::__adaptor
       template<typename _Range>
 	constexpr auto
 	operator()(_Range&& __r) const && = delete;
+    };
+
+  // A partial specialization of the above primary template for the case where
+  // both adaptor operands have a simple operator().  This in turn lets us
+  // implement composition using a single simple operator(), which makes
+  // overload resolution failure diagnostics more concise.
+  template<typename _Lhs, typename _Rhs>
+    requires __closure_has_simple_call_op<_Lhs>
+      && __closure_has_simple_call_op<_Rhs>
+    struct _Pipe<_Lhs, _Rhs> : _RangeAdaptorClosure
+    {
+      [[no_unique_address]] _Lhs _M_lhs;
+      [[no_unique_address]] _Rhs _M_rhs;
+
+      constexpr
+      _Pipe(_Lhs __lhs, _Rhs __rhs)
+	: _M_lhs(std::move(__lhs)), _M_rhs(std::move(__rhs))
+      { }
+
+      template<typename _Range>
+	requires __pipe_invocable<const _Lhs&, const _Rhs&, _Range>
+	constexpr auto
+	operator()(_Range&& __r) const
+	{ return _M_rhs(_M_lhs(std::forward<_Range>(__r))); }
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 } // namespace views::__adaptor
 
@@ -985,6 +1083,8 @@ namespace views::__adaptor
 	  else
 	    return subrange{std::forward<_Range>(__r)};
 	}
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 
     inline constexpr _All all;
@@ -1438,6 +1538,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Filter>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _Filter filter;
@@ -1812,6 +1913,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Transform>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _Transform transform;
@@ -1992,6 +2094,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Take>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _Take take;
@@ -2111,6 +2214,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_TakeWhile>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _TakeWhile take_while;
@@ -2230,6 +2334,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Drop>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _Drop drop;
@@ -2314,6 +2419,7 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_DropWhile>::operator();
       static constexpr int _S_arity = 2;
+      static constexpr bool _S_has_simple_extra_args = true;
     };
 
     inline constexpr _DropWhile drop_while;
@@ -2671,6 +2777,8 @@ namespace views::__adaptor
 	  // 3474. Nesting join_views is broken because of CTAD
 	  return join_view<all_t<_Range>>{std::forward<_Range>(__r)};
 	}
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 
     inline constexpr _Join join;
@@ -3104,6 +3212,9 @@ namespace views::__adaptor
 
       using _RangeAdaptor<_Split>::operator();
       static constexpr int _S_arity = 2;
+      // The second argument of views::split is _not_ simple -- it can be a
+      // non-view range, the value category of which affects whether the call is
+      // well-formed.  So we must not define _S_has_simple_extra_args to true.
     };
 
     inline constexpr _Split split;
@@ -3243,6 +3354,8 @@ namespace views::__adaptor
 	  else
 	    return common_view{std::forward<_Range>(__r)};
 	}
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 
     inline constexpr _Common common;
@@ -3374,6 +3487,8 @@ namespace views::__adaptor
 	  else
 	    return reverse_view{std::forward<_Range>(__r)};
 	}
+
+      static constexpr bool _S_has_simple_call_op = true;
     };
 
     inline constexpr _Reverse reverse;
@@ -3757,6 +3872,8 @@ namespace views::__adaptor
 	  {
 	    return elements_view<all_t<_Range>, _Nm>{std::forward<_Range>(__r)};
 	  }
+
+	static constexpr bool _S_has_simple_call_op = true;
       };
 
     template<size_t _Nm>

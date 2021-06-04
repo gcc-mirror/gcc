@@ -3092,7 +3092,7 @@
   [(match_operand:V8QI 0 "register_operand")
    (match_operand:QI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
 {
   ix86_expand_vector_set (TARGET_MMX_WITH_SSE, operands[0], operands[1],
 			  INTVAL (operands[2]));
@@ -3103,7 +3103,7 @@
   [(match_operand:QI 0 "register_operand")
    (match_operand:V8QI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
-  "TARGET_MMX || TARGET_MMX_WITH_SSE"
+  "TARGET_SSE4_1 && TARGET_MMX_WITH_SSE"
 {
   ix86_expand_vector_extract (TARGET_MMX_WITH_SSE, operands[0],
 			      operands[1], INTVAL (operands[2]));
@@ -3117,6 +3117,178 @@
 {
   ix86_expand_vector_init (TARGET_MMX_WITH_SSE, operands[0],
 			   operands[1]);
+  DONE;
+})
+
+(define_insn "*pinsrw"
+  [(set (match_operand:V2HI 0 "register_operand" "=x,YW")
+        (vec_merge:V2HI
+          (vec_duplicate:V2HI
+            (match_operand:HI 2 "nonimmediate_operand" "rm,rm"))
+	  (match_operand:V2HI 1 "register_operand" "0,YW")
+          (match_operand:SI 3 "const_int_operand")))]
+  "TARGET_SSE2
+   && ((unsigned) exact_log2 (INTVAL (operands[3]))
+       < GET_MODE_NUNITS (V2HImode))"
+{
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
+  switch (which_alternative)
+    {
+    case 1:
+      if (MEM_P (operands[2]))
+	return "vpinsrw\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+      else
+	return "vpinsrw\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
+    case 0:
+      if (MEM_P (operands[2]))
+	return "pinsrw\t{%3, %2, %0|%0, %2, %3}";
+      else
+	return "pinsrw\t{%3, %k2, %0|%0, %k2, %3}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "*pinsrb"
+  [(set (match_operand:V4QI 0 "register_operand" "=x,YW")
+        (vec_merge:V4QI
+          (vec_duplicate:V4QI
+            (match_operand:QI 2 "nonimmediate_operand" "rm,rm"))
+	  (match_operand:V4QI 1 "register_operand" "0,YW")
+          (match_operand:SI 3 "const_int_operand")))]
+  "TARGET_SSE4_1
+   && ((unsigned) exact_log2 (INTVAL (operands[3]))
+       < GET_MODE_NUNITS (V4QImode))"
+{
+  operands[3] = GEN_INT (exact_log2 (INTVAL (operands[3])));
+  switch (which_alternative)
+    {
+    case 1:
+      if (MEM_P (operands[2]))
+	return "vpinsrb\t{%3, %2, %1, %0|%0, %1, %2, %3}";
+      else
+	return "vpinsrb\t{%3, %k2, %1, %0|%0, %1, %k2, %3}";
+    case 0:
+      if (MEM_P (operands[2]))
+	return "pinsrb\t{%3, %2, %0|%0, %2, %3}";
+      else
+	return "pinsrb\t{%3, %k2, %0|%0, %k2, %3}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*pextrw"
+  [(set (match_operand:HI 0 "register_sse4nonimm_operand" "=r,m")
+	(vec_select:HI
+	  (match_operand:V2HI 1 "register_operand" "YW,YW")
+	  (parallel [(match_operand:SI 2 "const_0_to_1_operand" "n,n")])))]
+  "TARGET_SSE2"
+  "@
+   %vpextrw\t{%2, %1, %k0|%k0, %1, %2}
+   %vpextrw\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "isa" "*,sse4")
+   (set_attr "type" "sselog1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*pextrw_zext"
+  [(set (match_operand:SWI48 0 "register_operand" "=r")
+	(zero_extend:SWI48
+	  (vec_select:HI
+	    (match_operand:V2HI 1 "register_operand" "YW")
+	    (parallel [(match_operand:SI 2 "const_0_to_1_operand" "n")]))))]
+  "TARGET_SSE2"
+  "%vpextrw\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*pextrb"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=r,m")
+	(vec_select:QI
+	  (match_operand:V4QI 1 "register_operand" "YW,YW")
+	  (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n,n")])))]
+  "TARGET_SSE4_1"
+  "@
+   %vpextrb\t{%2, %1, %k0|%k0, %1, %2}
+   %vpextrb\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*pextrb_zext"
+  [(set (match_operand:SWI248 0 "register_operand" "=r")
+	(zero_extend:SWI248
+	  (vec_select:QI
+	    (match_operand:V4QI 1 "register_operand" "YW")
+	    (parallel [(match_operand:SI 2 "const_0_to_3_operand" "n")]))))]
+  "TARGET_SSE4_1"
+  "%vpextrb\t{%2, %1, %k0|%k0, %1, %2}"
+  [(set_attr "type" "sselog1")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "TI")])
+
+(define_expand "vec_setv2hi"
+  [(match_operand:V2HI 0 "register_operand")
+   (match_operand:HI 1 "register_operand")
+   (match_operand 2 "const_int_operand")]
+  "TARGET_SSE2"
+{
+  ix86_expand_vector_set (false, operands[0], operands[1],
+			  INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_extractv2hihi"
+  [(match_operand:HI 0 "register_operand")
+   (match_operand:V2HI 1 "register_operand")
+   (match_operand 2 "const_int_operand")]
+  "TARGET_SSE2"
+{
+  ix86_expand_vector_extract (false, operands[0],
+			      operands[1], INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_setv4qi"
+  [(match_operand:V4QI 0 "register_operand")
+   (match_operand:QI 1 "register_operand")
+   (match_operand 2 "const_int_operand")]
+  "TARGET_SSE4_1"
+{
+  ix86_expand_vector_set (false, operands[0], operands[1],
+			  INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_extractv4qiqi"
+  [(match_operand:QI 0 "register_operand")
+   (match_operand:V4QI 1 "register_operand")
+   (match_operand 2 "const_int_operand")]
+  "TARGET_SSE4_1"
+{
+  ix86_expand_vector_extract (false, operands[0],
+			      operands[1], INTVAL (operands[2]));
   DONE;
 })
 

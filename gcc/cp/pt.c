@@ -190,7 +190,6 @@ static tree tsubst_arg_types (tree, tree, tree, tsubst_flags_t, tree);
 static tree tsubst_function_type (tree, tree, tsubst_flags_t, tree);
 static bool check_specialization_scope (void);
 static tree process_partial_specialization (tree);
-static void set_current_access_from_decl (tree);
 static enum template_base_result get_template_base (tree, tree, tree, tree,
 						    bool , tree *);
 static tree try_class_unification (tree, tree, tree, tree, bool);
@@ -26430,19 +26429,6 @@ tsubst_initializer_list (tree t, tree argvec)
         }
     }
   return inits;
-}
-
-/* Set CURRENT_ACCESS_SPECIFIER based on the protection of DECL.  */
-
-static void
-set_current_access_from_decl (tree decl)
-{
-  if (TREE_PRIVATE (decl))
-    current_access_specifier = access_private_node;
-  else if (TREE_PROTECTED (decl))
-    current_access_specifier = access_protected_node;
-  else
-    current_access_specifier = access_public_node;
 }
 
 /* Instantiate an enumerated type.  TAG is the template type, NEWTAG

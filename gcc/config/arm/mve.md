@@ -269,8 +269,7 @@
 (define_insn "mve_vabsq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(unspec:MVE_0 [(match_operand:MVE_0 1 "s_register_operand" "w")]
-	 VABSQ_F))
+	(abs:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vabs.f%#<V_sz_elem>  %q0, %q1"
@@ -481,8 +480,7 @@
 (define_insn "mve_vabsq_s<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")]
-	 VABSQ_S))
+	(abs:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
   "vabs.s%#<V_sz_elem>\t%q0, %q1"

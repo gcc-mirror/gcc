@@ -2011,14 +2011,6 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 
 ;; Absolute instructions
 
-(define_insn "*abssi2_mixed"
-  [(set (match_operand:SI 0 "compact_register_operand" "=q")
-	(abs:SI (match_operand:SI 1 "compact_register_operand" "q")))]
-  "TARGET_MIXED_CODE"
-  "abs%? %0,%1%&"
-  [(set_attr "type" "two_cycle_core")
-   (set_attr "iscompact" "true")])
-
 (define_insn "abssi2"
   [(set (match_operand:SI 0 "dest_reg_operand" "=Rcq#q,w,w")
 	(abs:SI (match_operand:SI 1 "nonmemory_operand" "Rcq#q,cL,Cal")))]

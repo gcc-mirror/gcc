@@ -14968,6 +14968,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       return;
 
     case E_V8HImode:
+    case E_V2HImode:
       use_vec_merge = TARGET_SSE2;
       break;
     case E_V4HImode:
@@ -14975,6 +14976,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       break;
 
     case E_V16QImode:
+    case E_V4QImode:
       use_vec_merge = TARGET_SSE4_1;
       break;
 
@@ -15274,6 +15276,7 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
       break;
 
     case E_V8HImode:
+    case E_V2HImode:
       use_vec_extr = TARGET_SSE2;
       break;
     case E_V4HImode:
@@ -15293,6 +15296,9 @@ ix86_expand_vector_extract (bool mmx_ok, rtx target, rtx vec, int elt)
 	  emit_insn (gen_rtx_SET (target, gen_lowpart (QImode, tmp)));
 	  return;
 	}
+      break;
+    case E_V4QImode:
+      use_vec_extr = TARGET_SSE4_1;
       break;
 
     case E_V8SFmode:

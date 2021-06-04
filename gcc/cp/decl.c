@@ -4136,10 +4136,15 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
     return error_mark_node;
 
   if (want_template)
-    return lookup_template_class (t, TREE_OPERAND (fullname, 1),
-				  NULL_TREE, context,
-				  /*entering_scope=*/0,
-				  complain | tf_user);
+    {
+      t = lookup_template_class (t, TREE_OPERAND (fullname, 1),
+				 NULL_TREE, context,
+				 /*entering_scope=*/0,
+				 complain | tf_user);
+      if (t == error_mark_node)
+	return error_mark_node;
+      t = TYPE_NAME (t);
+    }
   
   if (DECL_ARTIFICIAL (t) || !(complain & tf_keep_type_decl))
     t = TREE_TYPE (t);
@@ -16333,17 +16338,9 @@ incremented enumerator value is too large for %<long%>"));
 
 	 For which case we need to make sure that the access of `S::i'
 	 matches the access of `S::E'.  */
-      tree saved_cas = current_access_specifier;
-      if (TREE_PRIVATE (TYPE_NAME (enumtype)))
-	current_access_specifier = access_private_node;
-      else if (TREE_PROTECTED (TYPE_NAME (enumtype)))
-	current_access_specifier = access_protected_node;
-      else
-	current_access_specifier = access_public_node;
-
+      auto cas = make_temp_override (current_access_specifier);
+      set_current_access_from_decl (TYPE_NAME (enumtype));
       finish_member_declaration (decl);
-
-      current_access_specifier = saved_cas;
     }
   else
     pushdecl (decl);

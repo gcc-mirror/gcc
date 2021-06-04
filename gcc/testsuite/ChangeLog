@@ -1,3 +1,58 @@
+2021-06-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* gcc.target/i386/vperm-v2hi.c: New test.
+	* gcc.target/i386/vperm-v4qi.c: Ditto.
+
+2021-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/pr80776-1.c: XFAIL and document the reason why.
+
+2021-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100592
+	* g++.dg/cpp0x/alias-decl-71.C: New test.
+
+2021-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100862
+	* g++.dg/cpp2a/using-enum-9.C: New test.
+
+2021-06-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/sve/part_vect_single_iter_epilog.c: New test.
+
+2021-06-03  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vabs.c: New test.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/bit_packed_array6.adb: New test.
+	* gnat.dg/bit_packed_array6_pkg.ads: New helper.
+
+2021-06-03  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/spellcheck-options-23.c: New test.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline22.adb: New test.
+
+2021-06-03  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/cpunative/info_16: Update implementer.
+	* gcc.target/aarch64/cpunative/info_17: Likewise
+
+2021-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100859
+	* g++.dg/gomp/depend-iterator-3.C: New test.
+	* g++.dg/gomp/this-1.C: Don't expect any diagnostics for
+	this as base expression of depend array section, expect a different
+	error wording for this as depend locator and add testcases
+	for affinity clauses.
+
 2021-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100838

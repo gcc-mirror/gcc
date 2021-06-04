@@ -611,8 +611,6 @@ public:
 
   json::object *to_json () const;
 
-  const svalue *get_direct_binding (store_manager *mgr, const region *reg);
-  const svalue *get_default_binding (store_manager *mgr, const region *reg);
   const svalue *get_any_binding (store_manager *mgr, const region *reg) const;
 
   bool called_unknown_fn_p () const { return m_called_unknown_fn; }

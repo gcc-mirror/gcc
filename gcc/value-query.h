@@ -100,6 +100,8 @@ public:
 protected:
   class value_range_equiv *allocate_value_range_equiv ();
   void free_value_range_equiv (class value_range_equiv *);
+  bool get_tree_range (irange &r, tree expr, gimple *stmt);
+  bool get_arith_expr_range (irange &r, tree expr, gimple *stmt);
 
 private:
   class equiv_allocator *equiv_alloc;
@@ -115,5 +117,6 @@ public:
 
 extern global_range_query global_ranges;
 extern value_range gimple_range_global (tree name);
+extern bool update_global_range (irange &r, tree name);
 
 #endif // GCC_QUERY_H
