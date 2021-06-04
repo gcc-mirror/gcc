@@ -3,6 +3,17 @@
 	Backported from master:
 	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
+	* scanner.c (skip_fixed_omp_sentinel): Set openacc_flag if
+	this is not an (OpenMP) continuation line.
+	(skip_fixed_oacc_sentinel): Likewise for openmp_flag and OpenACC.
+	(gfc_next_char_literal): gfc_error_now to force error for mixed OMP/ACC
+	continuation once per location and return '\n'.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
 	PR middle-end/99928
 	* openmp.c (gfc_match_omp_clauses): Fix typo in error message.
 

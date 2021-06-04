@@ -3,6 +3,17 @@
 	Backported from master:
 	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/goacc/omp-fixed.f: Re-add test item changed in previous
+	commit in addition - add more dg-errors and '... end ...' due to changed
+	parsing.
+	* gfortran.dg/goacc/omp.f95: Likewise.
+	* gfortran.dg/goacc-gomp/mixed-1.f: New test.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/gomp/pr99928-5.f90: Really use the
 	proper iteration variable.
 
