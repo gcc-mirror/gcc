@@ -8499,6 +8499,10 @@ convert_template_argument (tree parm,
       if (invalid_nontype_parm_type_p (t, complain))
 	return error_mark_node;
 
+      /* Drop top-level cv-qualifiers on the substituted/deduced type of
+	 this non-type template parameter, as per [temp.param]/6.  */
+      t = cv_unqualified (t);
+
       if (t != TREE_TYPE (parm))
 	t = canonicalize_type_argument (t, complain);
 
