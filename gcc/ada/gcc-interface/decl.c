@@ -1998,10 +1998,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	     so we use an intermediate step for standard DWARF.  */
 	  if (debug_info_p)
 	    {
-	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_field_type);
-	      else if (DECL_PARALLEL_TYPE (t))
+	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		add_parallel_type (gnu_type, DECL_PARALLEL_TYPE (t));
+	      else
+		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_field_type);
 	    }
 	}
 
@@ -2210,11 +2210,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   implementation type.  But, in any case, mark it as artificial so
 	   the debugger can skip it.  */
 	const Entity_Id gnat_name
-	  = Present (PAT) && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+	  = Present (PAT) && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL
 	    ? PAT
 	    : gnat_entity;
 	tree xup_name
-	  = gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL
+	  = gnat_encodings == DWARF_GNAT_ENCODINGS_ALL
 	    ? create_concat_name (gnat_name, "XUP")
 	    : gnu_entity_name;
 	create_type_decl (xup_name, gnu_fat_type, true, debug_info_p,
@@ -2420,11 +2420,9 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   template at a negative offset, but this was somewhat of a kludge; we
 	   now shift thin pointer values explicitly but only those which have a
 	   TYPE_UNCONSTRAINED_ARRAY attached to the designated RECORD_TYPE.
-	   Note that GDB can handle standard DWARF information for them, so we
-	   don't have to name them as a GNAT encoding, except if specifically
-	   asked to.  */
+	   If the GNAT encodings are used, give it a name.  */
 	tree xut_name
-	  = (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	  = (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 	    ? create_concat_name (gnat_name, "XUT")
 	    : gnu_entity_name;
 	obj = build_unc_object_type (gnu_template_type, tem, xut_name,
@@ -2673,7 +2671,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		       && TREE_CODE (TREE_TYPE (gnu_index_type))
 			  != INTEGER_TYPE)
 		   || TYPE_BIASED_REPRESENTATION_P (gnu_index_type))
-		  && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+		  && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		need_index_type_struct = true;
 	    }
 
@@ -2850,7 +2848,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		    gnu_entity_name = gnu_name;
 		}
 
-	      else if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	      else if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		{
 		  tree gnu_base_decl
 		    = gnat_to_gnu_entity (Etype (gnat_entity), NULL_TREE,
@@ -2897,7 +2895,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      save_gnu_tree (gnat_entity, NULL_TREE, false);
 
 	      /* Set the ___XP suffix for GNAT encodings.  */
-	      if (gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		gnu_entity_name = DECL_NAME (TYPE_NAME (gnu_type));
 
 	      tree gnu_inner = gnu_type;
@@ -3372,14 +3370,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      = build_subst_list (gnat_entity, gnat_parent_type, definition);
 
 	    /* Set the layout of the type to match that of the parent type,
-	       doing required substitutions.  If we are in minimal GNAT
-	       encodings mode, we don't need debug info for the inner record
+	       doing required substitutions.  Note that, if we do not use the
+	       GNAT encodings, we don't need debug info for the inner record
 	       types, as they will be part of the embedding variant record's
 	       debug info.  */
 	    copy_and_substitute_in_layout
 	      (gnat_entity, gnat_parent_type, gnu_type, gnu_parent_type,
 	       gnu_subst_list,
-	       debug_info_p && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL);
+	       debug_info_p && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL);
 	  }
 	else
 	  {
@@ -3518,11 +3516,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      annotate_rep (gnat_entity, gnu_type);
 
 	      /* If debugging information is being written for the type and if
-		 we are asked to output such encodings, write a record that
+		 we are asked to output GNAT encodings, write a record that
 		 shows what we are a subtype of and also make a variable that
 		 indicates our size, if still variable.  */
 	      if (debug_info_p
-		  && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL)
+		  && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
 		{
 		  tree gnu_subtype_marker = make_node (RECORD_TYPE);
 		  tree gnu_unpad_base_name
@@ -3553,11 +3551,11 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 					 true, true, NULL, gnat_entity, false);
 		}
 
-	      /* Or else, if the subtype is artificial and encodings are not
-		 used, use the base record type as the debug type.  */
+	      /* Or else, if the subtype is artificial and GNAT encodings are
+		 not used, use the base record type as the debug type.  */
 	      else if (debug_info_p
 		       && artificial_p
-		       && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+		       && gnat_encodings != DWARF_GNAT_ENCODINGS_ALL)
 		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_unpad_base_type);
 	    }
 
@@ -6892,7 +6890,7 @@ elaborate_expression_1 (tree gnu_expr, Entity_Id gnat_entity, const char *s,
      we must be careful because we do not generate debug info for external
      variables so DECL_IGNORED_P is not stable across units.  */
   if (need_for_debug
-      && gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL
+      && gnat_encodings != DWARF_GNAT_ENCODINGS_ALL
       && (TREE_CONSTANT (gnu_expr)
 	  || (!expr_public_p
 	      && DECL_P (gnu_expr)
@@ -7777,7 +7775,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 		      tree *p_gnu_rep_list)
 {
   const bool needs_xv_encodings
-    = debug_info && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL;
+    = debug_info && gnat_encodings == DWARF_GNAT_ENCODINGS_ALL;
   bool all_rep_and_size = all_rep && TYPE_SIZE (gnu_record_type);
   bool variants_have_rep = all_rep;
   bool layout_with_rep = false;
@@ -10241,7 +10239,12 @@ associate_original_type_to_packed_array (tree gnu_type, Entity_Id gnat_entity)
 
   gcc_assert (TYPE_IMPL_PACKED_ARRAY_P (gnu_type));
 
-  if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
+  if (gnat_encodings == DWARF_GNAT_ENCODINGS_ALL)
+    {
+      add_parallel_type (gnu_type, gnu_original_array_type);
+      return NULL_TREE;
+    }
+  else
     {
       SET_TYPE_ORIGINAL_PACKED_ARRAY (gnu_type, gnu_original_array_type);
 
@@ -10249,11 +10252,6 @@ associate_original_type_to_packed_array (tree gnu_type, Entity_Id gnat_entity)
       if (TREE_CODE (original_name) == TYPE_DECL)
 	original_name = DECL_NAME (original_name);
       return original_name;
-    }
-  else
-    {
-      add_parallel_type (gnu_type, gnu_original_array_type);
-      return NULL_TREE;
     }
 }
 
