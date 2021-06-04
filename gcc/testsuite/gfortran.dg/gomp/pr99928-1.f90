@@ -3,6 +3,7 @@
 ! { dg-options "-fopenmp -fdump-tree-gimple" }
 
 module m
+  implicit none
   integer :: f00, f01, f02, f03, f04, f05, f06, f07, f08, f09
   integer :: f12, f13, f14, f15, f16, f17, f18, f19
   integer :: f20, f21, f22, f23, f24, f25, f26, f27, f28, f29
