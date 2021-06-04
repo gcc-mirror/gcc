@@ -925,8 +925,11 @@ namespace ranges
   struct default_sentinel_t { };
   inline constexpr default_sentinel_t default_sentinel{};
 
-  namespace __detail
+  // This is the namespace for [range.access] CPOs.
+  namespace ranges::__cust_access
   {
+    using std::__detail::__class_or_enum;
+
     template<typename _Tp>
       constexpr decay_t<_Tp>
       __decay_copy(_Tp&& __t)
@@ -936,9 +939,11 @@ namespace ranges
     template<typename _Tp>
       concept __member_begin = requires(_Tp& __t)
 	{
-	  { __detail::__decay_copy(__t.begin()) } -> input_or_output_iterator;
+	  { __cust_access::__decay_copy(__t.begin()) }
+	    -> input_or_output_iterator;
 	};
 
+    // Poison pills so that unqualified lookup doesn't find std::begin.
     void begin(auto&) = delete;
     void begin(const auto&) = delete;
 
@@ -946,7 +951,8 @@ namespace ranges
       concept __adl_begin = __class_or_enum<remove_reference_t<_Tp>>
 	&& requires(_Tp& __t)
 	{
-	  { __detail::__decay_copy(begin(__t)) } -> input_or_output_iterator;
+	  { __cust_access::__decay_copy(begin(__t)) }
+	    -> input_or_output_iterator;
 	};
 
     // Simplified version of std::ranges::begin that only supports lvalues,
@@ -954,24 +960,23 @@ namespace ranges
     template<typename _Tp>
       requires is_array_v<_Tp> || __member_begin<_Tp&> || __adl_begin<_Tp&>
       auto
-      __ranges_begin(_Tp& __t)
+      __begin(_Tp& __t)
       {
 	if constexpr (is_array_v<_Tp>)
-	  {
-	    static_assert(sizeof(remove_all_extents_t<_Tp>) != 0,
-			  "not array of incomplete type");
-	    return __t + 0;
-	  }
+	  return __t + 0;
 	else if constexpr (__member_begin<_Tp&>)
 	  return __t.begin();
 	else
 	  return begin(__t);
       }
+  } // namespace ranges::__cust_access
 
+  namespace __detail
+  {
     // Implementation of std::ranges::iterator_t, without using ranges::begin.
     template<typename _Tp>
       using __range_iter_t
-	= decltype(__detail::__ranges_begin(std::declval<_Tp&>()));
+	= decltype(ranges::__cust_access::__begin(std::declval<_Tp&>()));
 
   } // namespace __detail
 
