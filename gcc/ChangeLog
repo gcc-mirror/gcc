@@ -1,3 +1,30 @@
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ipa/99122
+	* tree-inline.c (inline_forbidden_p): Remove test on return type.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* range-op.cc (get_bool_state): Adjust head comment.
+	(operator_not_equal::op1_range): Fix comment.
+	(operator_bitwise_xor::op1_range): Remove call to gcc_unreachable.
+
+2021-06-03  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-05-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/100333
+	* config/arm/arm.md (nonsecure_call_internal): Always ensure
+	callee's address is in a register.
+
+2021-06-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backported from master:
+	2021-06-02  Vineet Gupta  <vgupta@synopsys.com>
+
+	* config/arc/arc.h (TARGET_CPU_DEFAULT): Change to hs38_linux.
+
 2021-06-02  Uroš Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/sse.md (abs<MMXMODEI:mode>2):

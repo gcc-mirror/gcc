@@ -1,3 +1,25 @@
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/bit_packed_array6.adb: New test.
+	* gnat.dg/bit_packed_array6_pkg.ads: New helper.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline22.adb: New test.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/opt5.ads: New test.
+	* gnat.dg/specs/opt5_pkg.ads: New helper.
+
+2021-06-03  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-05-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/100333
+	* gcc.target/arm/cmse/pr100333.c: New test.
+
 2021-06-01  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	PR testsuite/100750

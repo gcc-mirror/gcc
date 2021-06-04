@@ -1,3 +1,10 @@
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Add PAT
+	local constant and use it throughout.  If it is set, use a ref-all
+	pointer type for the pointer-to-array field of the fat pointer type.
+	<E_Array_Subtype>: Add PAT local constant and use it throughout.
+
 2021-05-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Array_Type>: Process
