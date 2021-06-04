@@ -88,7 +88,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump "omp taskloop\[^\n\r]*lastprivate\\(j10\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*linear\\(j10:1\\)" "gimple" } }
   !$omp taskloop simd linear (j10) default(none)
-  do j01 = 1, 64
+  do j10 = 1, 64
   end do
   ! { dg-final { scan-tree-dump "omp teams\[^\n\r]*shared\\(j11\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp distribute\[^\n\r]*lastprivate\\(j11\\)" "gimple" } }

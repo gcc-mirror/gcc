@@ -3,6 +3,14 @@
 	Backported from master:
 	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
+	* gfortran.dg/gomp/pr99928-5.f90: Really use the
+	proper iteration variable.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
 	* gfortran.dg/gomp/pr99928-1.f90: Add 'implicit none'.
 	* gfortran.dg/gomp/pr99928-11.f90: Likewise.
 	* gfortran.dg/gomp/pr99928-4.f90: Likewise.
