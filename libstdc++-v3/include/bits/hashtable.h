@@ -733,7 +733,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::pair<const_iterator, const_iterator>
       equal_range(const key_type& __k) const;
 
-#if __cplusplus > 201702L
+#if __cplusplus >= 202002L
+#define __cpp_lib_generic_unordered_lookup 201811L
+
       template<typename _Kt,
 	       typename = __has_is_transparent_t<_Hash, _Kt>,
 	       typename = __has_is_transparent_t<_Equal, _Kt>>
@@ -763,7 +765,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       typename = __has_is_transparent_t<_Equal, _Kt>>
 	pair<const_iterator, const_iterator>
 	_M_equal_range_tr(const _Kt& __k) const;
-#endif
+#endif // C++20
 
     private:
       // Bucket index computation helpers.
