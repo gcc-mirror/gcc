@@ -3,6 +3,7 @@
 ! { dg-options "-fopenmp -fdump-tree-gimple" }
 
 module m
+  implicit none
   integer :: j00, j01, j02, j03, j04, j06, j07, j08, j09
   integer :: j10
 

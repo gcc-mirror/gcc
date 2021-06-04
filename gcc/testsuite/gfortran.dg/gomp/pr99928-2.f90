@@ -3,12 +3,14 @@
 ! { dg-options "-fopenmp -fdump-tree-gimple" }
 
 module m
+  implicit none
   integer :: l00, l01, l02, l03, l04, l05, l06, l07
   integer :: l10, l11, l12, l13, l14, l15, l16, l17, l18
 
 contains
 
 subroutine foo ()
+  integer :: i
   ! { dg-final { scan-tree-dump "omp distribute\[^\n\r]*lastprivate\\(l00\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l00\\)" "gimple" } } ! FIXME: This should be on for instead. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l00\\)" "gimple" } } ! FIXME. 

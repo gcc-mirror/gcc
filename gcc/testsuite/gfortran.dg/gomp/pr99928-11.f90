@@ -3,6 +3,7 @@
 ! { dg-options "-fopenmp -fdump-tree-gimple" }
 
 module m
+  implicit none
   integer :: r00, r01, r02
 
 contains
