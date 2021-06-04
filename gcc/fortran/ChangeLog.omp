@@ -4,6 +4,14 @@
 	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/99928
+	* openmp.c (gfc_match_omp_clauses): Fix typo in error message.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
 	* dump-parse-tree.c (show_omp_clauses): Handle bind clause.
 	(show_omp_node): Handle loop directive.
 	* frontend-passes.c (gfc_code_walker): Likewise.
