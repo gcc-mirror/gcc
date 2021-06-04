@@ -263,9 +263,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	using _VTp = decay_t<_Tp>;
 	__do_emplace<_VTp>(std::forward<_Args>(__args)...);
-	any::_Arg __arg;
-	this->_M_manager(any::_Op_access, this, &__arg);
-	return *static_cast<_VTp*>(__arg._M_obj);
+	return *any::_Manager<_VTp>::_S_access(_M_storage);
       }
 
     /// Emplace with an object created from @p __il and @p __args as
@@ -276,9 +274,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	using _VTp = decay_t<_Tp>;
 	__do_emplace<_VTp, _Up>(__il, std::forward<_Args>(__args)...);
-	any::_Arg __arg;
-	this->_M_manager(any::_Op_access, this, &__arg);
-	return *static_cast<_VTp*>(__arg._M_obj);
+	return *any::_Manager<_VTp>::_S_access(_M_storage);
       }
 
     // modifiers
@@ -384,6 +380,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    void* __addr = &__storage._M_buffer;
 	    ::new (__addr) _Tp(std::forward<_Args>(__args)...);
 	  }
+
+	static _Tp*
+	_S_access(const _Storage& __storage)
+	{
+	  // The contained object is in __storage._M_buffer
+	  const void* __addr = &__storage._M_buffer;
+	  return static_cast<_Tp*>(const_cast<void*>(__addr));
+	}
       };
 
     // Manage external contained object.
@@ -405,6 +409,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    __storage._M_ptr = new _Tp(std::forward<_Args>(__args)...);
 	  }
+	static _Tp*
+	_S_access(const _Storage& __storage)
+	{
+	  // The contained object is in *__storage._M_ptr
+	  return static_cast<_Tp*>(__storage._M_ptr);
+	}
       };
   };
 
@@ -516,9 +526,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 	  )
 	{
-	  any::_Arg __arg;
-	  __any->_M_manager(any::_Op_access, __any, &__arg);
-	  return __arg._M_obj;
+	  return any::_Manager<_Up>::_S_access(__any->_M_storage);
 	}
       return nullptr;
     }
