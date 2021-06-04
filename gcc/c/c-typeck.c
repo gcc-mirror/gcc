@@ -14632,7 +14632,6 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	    }
 	  break;
 
-	case OMP_CLAUSE_AFFINITY:
 	case OMP_CLAUSE_DEPEND:
 	  t = OMP_CLAUSE_DECL (c);
 	  if (t == NULL_TREE)
@@ -14641,8 +14640,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			  == OMP_CLAUSE_DEPEND_SOURCE);
 	      break;
 	    }
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEPEND
-	      && OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
+	  if (OMP_CLAUSE_DEPEND_KIND (c) == OMP_CLAUSE_DEPEND_SINK)
 	    {
 	      gcc_assert (TREE_CODE (t) == TREE_LIST);
 	      for (; t; t = TREE_CHAIN (t))
@@ -14670,6 +14668,9 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		}
 	      break;
 	    }
+	  /* FALLTHRU */
+	case OMP_CLAUSE_AFFINITY:
+	  t = OMP_CLAUSE_DECL (c);
 	  if (TREE_CODE (t) == TREE_LIST
 	      && TREE_PURPOSE (t)
 	      && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)

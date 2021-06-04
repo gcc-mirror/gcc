@@ -1,3 +1,15 @@
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100859
+	* g++.dg/gomp/depend-iterator-3.C: New test.
+	* g++.dg/gomp/this-1.C: Don't expect any diagnostics for
+	this as base expression of depend array section, expect a different
+	error wording for this as depend locator and add testcases
+	for affinity clauses.
+
 2021-06-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

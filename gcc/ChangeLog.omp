@@ -1,3 +1,12 @@
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100859
+	* tree-inline.c (copy_tree_body_r): Handle iterators on
+	OMP_CLAUSE_AFFINITY or OMP_CLAUSE_DEPEND.
+
 2021-05-31  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
