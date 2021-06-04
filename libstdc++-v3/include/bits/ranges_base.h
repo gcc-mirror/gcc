@@ -495,8 +495,10 @@ namespace ranges
 				    && is_object_v<remove_pointer_t<_Tp>>;
 
     template<typename _Tp>
-      concept __member_data
-	= requires(_Tp& __t) { { __t.data() } -> __pointer_to_object; };
+      concept __member_data = requires(_Tp& __t)
+	{
+	  { __cust_access::__decay_copy(__t.data()) } -> __pointer_to_object;
+	};
 
     template<typename _Tp>
       concept __begin_data = requires(_Tp& __t)
