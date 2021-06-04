@@ -109,9 +109,8 @@
     /*TODO: is this even an OS? What should go here?*/ \
   } while (0)
 
-#ifdef TARGET_RUST_OS_INFO
-# error "TARGET_RUST_OS_INFO already defined in bpabi.h - c++ undefines it and redefines it."
-#endif
+/* Override less-specific arm/linux-elf.h definition. */
+#undef TARGET_RUST_OS_INFO
 #define TARGET_RUST_OS_INFO() \
   BPABI_TARGET_RUST_OS_INFO()
 
