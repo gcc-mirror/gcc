@@ -425,22 +425,32 @@ namespace ranges
 
     struct _SSize
     {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3403. Domain of ranges::ssize(E) doesn't match ranges::size(E)
       template<typename _Tp>
 	requires requires (_Tp& __t) { _Size{}(__t); }
 	constexpr auto
 	operator()(_Tp&& __t) const noexcept(noexcept(_Size{}(__t)))
 	{
-	  using __iter_type = decltype(_Begin{}(__t));
-	  using __diff_type = iter_difference_t<__iter_type>;
-	  using __gnu_cxx::__int_traits;
 	  auto __size = _Size{}(__t);
-	  if constexpr (integral<__diff_type>)
+	  using __size_type = decltype(__size);
+	  // Return the wider of ptrdiff_t and make-signed-like-t<__size_type>.
+	  if constexpr (integral<__size_type>)
 	    {
-	      if constexpr (__int_traits<__diff_type>::__digits
+	      using __gnu_cxx::__int_traits;
+	      if constexpr (__int_traits<__size_type>::__digits
 			    < __int_traits<ptrdiff_t>::__digits)
 		return static_cast<ptrdiff_t>(__size);
+	      else
+		return static_cast<make_signed_t<__size_type>>(__size);
 	    }
-	  return static_cast<__diff_type>(__size);
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+	  // For strict-ansi modes integral<__int128> is false
+	  else if constexpr (__detail::__is_int128<__size_type>)
+	    return static_cast<unsigned __int128>(__size);
+#endif
+	  else // Must be one of __max_diff_type or __max_size_type.
+	    return __detail::__max_diff_type(__size);
 	}
     };
 

@@ -76,9 +76,12 @@ void
 test06()
 {
   auto i = std::views::iota(1ull, 5u);
-  auto s = std::ranges::ssize(i);
-  using R = std::ranges::range_difference_t<decltype(i)>;
-  static_assert( std::same_as<decltype(s), R> );
+  auto s = std::ranges::size(i);
+  auto ss = std::ranges::ssize(i);
+  // std::ranges::range_difference_t<decltype(i)> is larger than long long,
+  // but LWG 3403 says ranges::ssize(i) returns the signed version of the
+  // type that ranges::size(i) returns, not the range's difference_type.
+  static_assert( std::same_as<decltype(ss), std::make_signed_t<decltype(s)>> );
   VERIFY( s == 4 );
 }
 
