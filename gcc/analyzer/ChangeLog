@@ -1,3 +1,13 @@
+2021-06-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.h (store::get_direct_binding): Remove unused decl.
+	(store::get_default_binding): Likewise.
+
+2021-06-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* svalue.cc (poisoned_svalue::dump_to_pp): Dump type.
+	(compound_svalue::dump_to_pp): Dump any type.
+
 2021-05-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/100615

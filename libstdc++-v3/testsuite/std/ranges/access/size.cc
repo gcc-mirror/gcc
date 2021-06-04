@@ -76,12 +76,14 @@ test03()
   const R3& c = r;
   VERIFY( std::ranges::size(r) == 1 );
   static_assert( noexcept(std::ranges::size(r)) );
-  VERIFY( std::ranges::size(std::move(r)) == 3U );
-  static_assert( !noexcept(std::ranges::size(std::move(r))) );
+  // PR libstdc++/100824
+  // ranges::size should treat the subexpression as an lvalue
+  VERIFY( std::ranges::size(std::move(r)) == 1 );
+  static_assert( noexcept(std::ranges::size(std::move(r))) );
   VERIFY( std::ranges::size(c) == 2L );
   static_assert( !noexcept(std::ranges::size(c)) );
-  VERIFY( std::ranges::size(std::move(c)) == 4UL );
-  static_assert( noexcept(std::ranges::size(std::move(c))) );
+  VERIFY( std::ranges::size(std::move(c)) == 2L );
+  static_assert( !noexcept(std::ranges::size(std::move(c))) );
 }
 
 void
@@ -109,6 +111,15 @@ test05()
   VERIFY( std::ranges::size(r) == 1 );
 }
 
+void
+test06()
+{
+  // PR libstdc++/100824
+  // ranges::size should treat the subexpression as an lvalue
+  struct R { constexpr int size() & { return 42; } };
+  static_assert( std::ranges::size(R{}) == 42 );
+}
+
 int
 main()
 {
@@ -117,4 +128,5 @@ main()
   test03();
   test04();
   test05();
+  test06();
 }

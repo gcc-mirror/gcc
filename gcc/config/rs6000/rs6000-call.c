@@ -6646,7 +6646,9 @@ rs6000_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 			      int *punsignedp ATTRIBUTE_UNUSED,
 			      const_tree, int for_return ATTRIBUTE_UNUSED)
 {
-  PROMOTE_MODE (mode, *punsignedp, type);
+  if (GET_MODE_CLASS (mode) == MODE_INT
+      && GET_MODE_SIZE (mode) < (TARGET_32BIT ? 4 : 8))
+    mode = TARGET_32BIT ? SImode : DImode;
 
   return mode;
 }

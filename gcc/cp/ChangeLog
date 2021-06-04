@@ -1,3 +1,33 @@
+2021-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100592
+	* decl.c (make_typename_type): After calling
+	lookup_template_class, adjust the result to its TYPE_NAME and
+	then consider the tf_keep_type_decl flag.
+
+2021-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100862
+	* pt.c (set_current_access_from_decl): Move to ...
+	* class.c (set_current_access_from_decl): ... here.
+	(handle_using_decl): Use it to propagate the access of the
+	using-enum decl to the copy of the imported enumerator.
+	* cp-tree.h (set_current_access_from_decl): Declare.
+	* decl.c (build_enumerator): Simplify using make_temp_override
+	and set_current_access_from_decl.
+
+2021-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100859
+	* semantics.c (handle_omp_array_sections_1): For
+	OMP_CLAUSE_{AFFINITY,DEPEND} handle FIELD_DECL base using
+	finish_non_static_data_member and allow this as base.
+	(finish_omp_clauses): Move OMP_CLAUSE_AFFINITY
+	after depend only cases.  Let this be diagnosed by !lvalue_p
+	case for OMP_CLAUSE_{AFFINITY,DEPEND} and remove useless
+	assert.
+	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_AFFINITY.
+
 2021-06-02  Jason Merrill  <jason@redhat.com>
 
 	PR c++/100838

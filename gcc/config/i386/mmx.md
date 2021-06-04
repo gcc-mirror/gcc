@@ -3292,6 +3292,88 @@
   DONE;
 })
 
+(define_insn_and_split "*punpckwd"
+  [(set (match_operand:V2HI 0 "register_operand" "=x,Yw")
+	(vec_select:V2HI
+	  (vec_concat:V4HI
+	    (match_operand:V2HI 1 "register_operand" "0,Yw")
+	    (match_operand:V2HI 2 "register_operand" "x,Yw"))
+          (parallel [(match_operand 3 "const_0_to_3_operand")
+                     (match_operand 4 "const_0_to_3_operand")])))]
+  "TARGET_SSE2"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 5)
+        (vec_select:V4HI
+	  (match_dup 5)
+          (parallel [(match_dup 3) (match_dup 4)
+                     (const_int 0) (const_int 0)])))]
+{
+  rtx dest = lowpart_subreg (V8HImode, operands[0], V2HImode);
+  rtx op1 = lowpart_subreg (V8HImode, operands[1], V2HImode);
+  rtx op2 = lowpart_subreg (V8HImode, operands[2], V2HImode);
+
+  emit_insn (gen_vec_interleave_lowv8hi (dest, op1, op2));
+
+  static const int map[4] = { 0, 2, 1, 3 };
+
+  int sel0 = map[INTVAL (operands[3])];
+  int sel1 = map[INTVAL (operands[4])];
+
+  if (sel0 == 0 && sel1 == 1)
+    DONE;
+
+  operands[3] = GEN_INT (sel0);
+  operands[4] = GEN_INT (sel1);
+
+  operands[5] = lowpart_subreg (V4HImode, dest, V8HImode);
+}
+  [(set_attr "isa" "noavx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "mode" "TI")])
+
+(define_insn "*pshufw_1"
+  [(set (match_operand:V2HI 0 "register_operand" "=Yw")
+        (vec_select:V2HI
+          (match_operand:V2HI 1 "register_operand" "Yw")
+          (parallel [(match_operand 2 "const_0_to_1_operand")
+                     (match_operand 3 "const_0_to_1_operand")])))]
+  "TARGET_SSE2"
+{
+  int mask = 0;
+  mask |= INTVAL (operands[2]) << 0;
+  mask |= INTVAL (operands[3]) << 2;
+  mask |= 2 << 4;
+  mask |= 3 << 6;
+  operands[2] = GEN_INT (mask);
+
+  return "%vpshuflw\t{%2, %1, %0|%0, %1, %2}";
+}
+  [(set_attr "type" "sselog1")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
+(define_insn "*vec_dupv2hi"
+  [(set (match_operand:V2HI 0 "register_operand" "=Yw")
+	(vec_duplicate:V2HI
+	  (truncate:HI
+	    (match_operand:SI 1 "register_operand" "Yw"))))]
+  "TARGET_SSE2"
+  "%vpshuflw\t{$0, %1, %0|%0, %1, 0}"
+  [(set_attr "type" "sselog1")
+   (set_attr "length_immediate" "1")
+   (set_attr "mode" "TI")])
+
+(define_expand "vec_initv2hihi"
+  [(match_operand:V2HI 0 "register_operand")
+   (match_operand 1)]
+  "TARGET_SSE2"
+{
+  ix86_expand_vector_init (false, operands[0],
+			   operands[1]);
+  DONE;
+})
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
 ;; Miscellaneous

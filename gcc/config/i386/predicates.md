@@ -734,13 +734,10 @@
 
 ;; Return true if OP is a GOT memory operand.
 (define_predicate "GOT_memory_operand"
-  (match_operand 0 "memory_operand")
-{
-  op = XEXP (op, 0);
-  return (GET_CODE (op) == CONST
-	  && GET_CODE (XEXP (op, 0)) == UNSPEC
-	  && XINT (XEXP (op, 0), 1) == UNSPEC_GOTPCREL);
-})
+  (and (match_operand 0 "memory_operand")
+       (match_code "const" "0")
+       (match_code "unspec" "00")
+       (match_test "XINT (XEXP (XEXP (op, 0), 0), 1) == UNSPEC_GOTPCREL")))
 
 ;; Test for a valid operand for a call instruction.
 ;; Allow constant call address operands in Pmode only.
@@ -767,9 +764,9 @@
 
 ;; Return true if OP is a 32-bit GOT symbol operand.
 (define_predicate "GOT32_symbol_operand"
-  (match_test "GET_CODE (op) == CONST
-               && GET_CODE (XEXP (op, 0)) == UNSPEC
-               && XINT (XEXP (op, 0), 1) == UNSPEC_GOT"))
+  (and (match_code "const")
+       (match_code "unspec" "0")
+       (match_test "XINT (XEXP (op, 0), 1) == UNSPEC_GOT")))
 
 ;; Match exactly zero.
 (define_predicate "const0_operand"

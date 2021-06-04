@@ -1,3 +1,9 @@
+2021-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100859
+	* c-typeck.c (c_finish_omp_clauses): Move OMP_CLAUSE_AFFINITY
+	after depend only cases.
+
 2021-05-31  Richard Biener  <rguenther@suse.de>
 
 	PR c++/88601

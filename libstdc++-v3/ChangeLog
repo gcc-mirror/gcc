@@ -1,3 +1,40 @@
+2021-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/ranges_algo.h (__detail::__can_reread_output):
+	Factor out this concept from ...
+	(__unique_copy_fn::operator()): ... here.  Use the concept
+	throughout.
+	* testsuite/std/ranges/range.cc: Remove now ill-formed use
+	of range_value_t on an output_range.
+	* testsuite/util/testsuite_iterators.h (output_iterator_wrapper):
+	Define value_type, pointer and reference member types to void.
+
+2021-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100577
+	* include/std/ranges (_RangeAdaptorClosure): Document
+	_S_has_simple_call_op mechanism.
+	(_RangeAdaptor): Document _S_has_simple_extra_args mechanism.
+	(__closure_has_simple_call_op): New concept.
+	(__adaptor_has_simple_extra_args): Likewise.
+	(_Partial<_Adaptor, _Args...>): New partial specialization.
+	(_Partial<_Adaptor, _Arg>): Likewise.
+	(_Pipe<_Lhs, _Rhs>): Likewise.
+	(views::_All::_S_has_simple_call_op): Define to true.
+	(views::_Filter::_S_has_simple_extra_args): Likewise.
+	(views::_Transform::_S_has_simple_extra_args): Likewise.
+	(views::_Take::_S_has_simple_extra_args): Likewise.
+	(views::_TakeWhile::_S_has_simple_extra_args): Likewise.
+	(views::_Drop::_S_has_simple_extra_args): Likewise.
+	(views::_DropWhile::_S_has_simple_extra_args): Likewise.
+	(views::_Join::_S_has_simple_call_op): Likewise.
+	(views::_Split): Document why we don't define
+	_S_has_simple_extra_args to true for this adaptor.
+	(views::_Common::_S_has_simple_call_op): Define to true.
+	(views::_Reverse::_S_has_simple_call_op): Likewise.
+	(views::_Elements::_S_has_simple_call_op): Likewise.
+	* testsuite/std/ranges/adaptors/100577.cc: New test.
+
 2021-06-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/100863

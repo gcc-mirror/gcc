@@ -2129,7 +2129,7 @@
    && !arm_const_double_rtx (operands[1])
    && !(TARGET_VFP_DOUBLE && vfp3_const_double_rtx (operands[1]))"
   "#"
-  ""
+  "&& 1"
   [(const_int 0)]
 {
   long buf[2];
@@ -2154,7 +2154,7 @@
    && TARGET_VFP_BASE
    && !vfp3_const_double_rtx (operands[1])"
   "#"
-  ""
+  "&& 1"
   [(const_int 0)]
 {
   long buf;
