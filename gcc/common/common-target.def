@@ -64,23 +64,23 @@ DEFHOOK
 
 DEFHOOK
 (supports_split_stack,
- "Whether this target supports splitting the stack when the options\
- described in @var{opts} have been passed.  This is called\
- after options have been parsed, so the target may reject splitting\
- the stack in some configurations.  The default version of this hook\
- returns false.  If @var{report} is true, this function may issue a warning\
- or error; if @var{report} is false, it must simply return a value",
+ "Whether this target supports splitting the stack when the options\n\
+described in @var{opts} have been passed.  This is called\n\
+after options have been parsed, so the target may reject splitting\n\
+the stack in some configurations.  The default version of this hook\n\
+returns false.  If @var{report} is true, this function may issue a warning\n\
+or error; if @var{report} is false, it must simply return a value",
  bool, (bool report, struct gcc_options *opts),
  hook_bool_bool_gcc_optionsp_false)
 
 DEFHOOK
 (get_valid_option_values,
-"The hook is used for options that have a non-trivial list of\
- possible option values.  OPTION_CODE is option code of opt_code\
- enum type.  PREFIX is used for bash completion and allows an implementation\
- to return more specific completion based on the prefix.  All string values\
- should be allocated from heap memory and consumers should release them. \
- The result will be pruned to cases with PREFIX if not NULL.",
+"The hook is used for options that have a non-trivial list of\n\
+possible option values.  OPTION_CODE is option code of opt_code\n\
+enum type.  PREFIX is used for bash completion and allows an implementation\n\
+to return more specific completion based on the prefix.  All string values\n\
+should be allocated from heap memory and consumers should release them.\n\
+The result will be pruned to cases with PREFIX if not NULL.",
  vec<const char *>, (int option_code, const char *prefix),
  default_get_valid_option_values)
 
@@ -100,10 +100,10 @@ DEFHOOKPOD
 
 DEFHOOKPOD
 (always_strip_dotdot,
- "True if @file{..} components should always be removed from directory names\
- computed relative to GCC's internal directories, false (default) if such\
- components should be preserved and directory names containing them passed\
- to other tools such as the linker.",
+ "True if @file{..} components should always be removed from directory names\n\
+computed relative to GCC's internal directories, false (default) if such\n\
+components should be preserved and directory names containing them passed\n\
+to other tools such as the linker.",
  bool, false)
  
 HOOK_VECTOR_END (C90_EMPTY_HACK)
