@@ -9136,9 +9136,12 @@ maybe_save_operator_binding (tree e)
   tree op_attr = lookup_attribute (op_bind_attrname, attributes);
   if (!op_attr)
     {
+      tree *ap = &DECL_ATTRIBUTES (cfn);
+      while (*ap && ATTR_IS_DEPENDENT (*ap))
+	ap = &TREE_CHAIN (*ap);
       op_attr = tree_cons (get_identifier (op_bind_attrname),
-			   NULL_TREE, attributes);
-      DECL_ATTRIBUTES (cfn) = op_attr;
+			   NULL_TREE, *ap);
+      *ap = op_attr;
     }
 
   tree op_bind = purpose_member (fnname, TREE_VALUE (op_attr));
