@@ -17425,7 +17425,7 @@
    (set (attr "prefix_rex") (symbol_ref "x86_extended_reg_mentioned_p (insn)"))
    (set_attr "mode" "DI,TI")])
 
-(define_insn "abs<mode>2"
+(define_expand "abs<mode>2"
   [(set (match_operand:MMXMODEI 0 "register_operand")
 	(abs:MMXMODEI
 	  (match_operand:MMXMODEI 1 "register_operand")))]
@@ -18431,8 +18431,8 @@
 {
   if (!MEM_P (operands[1]))
     {
-      operands[1] = force_reg (V8QImode, operands[1]);
-      operands[1] = simplify_gen_subreg (V16QImode, operands[1], V8QImode, 0);
+      operands[1] = force_reg (V4QImode, operands[1]);
+      operands[1] = simplify_gen_subreg (V16QImode, operands[1], V4QImode, 0);
       emit_insn (gen_avx2_<code>v4qiv4di2 (operands[0], operands[1]));
       DONE;
     }

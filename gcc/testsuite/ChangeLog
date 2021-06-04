@@ -1,3 +1,92 @@
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/bit_packed_array6.adb: New test.
+	* gnat.dg/bit_packed_array6_pkg.ads: New helper.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline22.adb: New test.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/opt5.ads: New test.
+	* gnat.dg/specs/opt5_pkg.ads: New helper.
+
+2021-06-03  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-05-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/100333
+	* gcc.target/arm/cmse/pr100333.c: New test.
+
+2021-06-01  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+	PR testsuite/100750
+	* gcc.target/powerpc/rop-5.c: Require ELFv2 ABI.
+
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91859
+	* g++.dg/cpp2a/destroying-delete5.C: New test.
+
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100797
+	PR c++/95719
+	* g++.dg/inherit/virtual15.C: New test.
+	* g++.dg/inherit/virtual15a.C: New file.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100666
+	* g++.dg/cpp1z/nodiscard8.C: New test.
+	* g++.dg/cpp1z/nodiscard9.C: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/100646
+	* gcc.dg/cpp/pr100646-1.c: New test.
+	* gcc.dg/cpp/pr100646-2.c: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100576
+	* gcc.c-torture/compile/pr100576.c: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100590
+	* gcc.dg/pr100590.c: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100580
+	* g++.dg/other/pr100580.C: New test.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/100342
+	* gcc.target/i386/pr100342.c: New test.
+
 2021-05-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

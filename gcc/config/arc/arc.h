@@ -34,7 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #define SYMBOL_FLAG_CMEM	(SYMBOL_FLAG_MACH_DEP << 3)
 
 #ifndef TARGET_CPU_DEFAULT
-#define TARGET_CPU_DEFAULT	PROCESSOR_arc700
+#define TARGET_CPU_DEFAULT	PROCESSOR_hs38_linux
 #endif
 
 /* Check if this symbol has a long_call attribute in its declaration */

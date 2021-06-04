@@ -1,3 +1,27 @@
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91859
+	* call.c (build_op_delete_call): Don't set CALL_FROM_NEW_OR_DELETE_P
+	for destroying delete.
+	* init.c (build_delete): Don't clobber before destroying delete.
+
+2021-06-01  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100797
+	PR c++/95719
+	* call.c (build_over_call): Adjust base_binfo in
+	resolves_to_fixed_type_p case.
+
+2021-05-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2021-05-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100666
+	* call.c (convert_arg_to_ellipsis): For expressions with NULLPTR_TYPE
+	and side-effects, temporarily disable -Wunused-result warning when
+	building COMPOUND_EXPR.
+
 2021-05-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

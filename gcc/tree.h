@@ -937,7 +937,7 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 
 /* In a CALL_EXPR, if the function being called is DECL_IS_OPERATOR_NEW_P or
    DECL_IS_OPERATOR_DELETE_P, true for allocator calls from C++ new or delete
-   expressions.  */
+   expressions.  Not set for C++20 destroying delete operators.  */
 #define CALL_FROM_NEW_OR_DELETE_P(NODE) \
   (CALL_EXPR_CHECK (NODE)->base.protected_flag)
 
