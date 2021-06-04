@@ -1451,8 +1451,10 @@ arc_override_options (void)
   if (TARGET_ARC700 && (arc_tune != ARC_TUNE_ARC7XX))
     flag_delayed_branch = 0;
 
-  /* Millicode thunks doesn't work with long calls.  */
-  if (TARGET_LONG_CALLS_SET)
+  /* Millicode thunks doesn't work for long calls.  */
+  if (TARGET_LONG_CALLS_SET
+      /* neither for RF16.  */
+      || TARGET_RF16)
     target_flags &= ~MASK_MILLICODE_THUNK_SET;
 
   /* Set unaligned to all HS cpus.  */
