@@ -1014,7 +1014,7 @@
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "=Z,Q")
         (match_operand:VSX_LE_128 1 "vsx_register_operand" "+wa,r"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
-   & !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
+   && !altivec_indexed_or_indirect_operand (operands[0], <MODE>mode)"
   "@
    #
    #"
