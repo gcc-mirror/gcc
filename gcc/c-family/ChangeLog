@@ -1,3 +1,40 @@
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_macros): Minor tweaks.
+	(dump_ada_decl_name): Likewise.
+	(dump_anonymous_type_name): Remove parent parameter and adjust.
+	(dump_sloc): Minor tweak.
+	(dump_ada_array_type): Remove type parameter and adjust.
+	(dump_ada_enum_type): Remove parent parameter and adjust.
+	(dump_ada_node): Adjust calls to above functions.
+	(dumped_anonymous_types): New global variable.
+	(dump_nested_types_1): Rename into...
+	(dump_nested_types): ...this.
+	(dump_nested_type): Remove parent and dumped_types parameters.
+	<ARRAY_TYPE>: Replace dumped_types with dumped_anonymous_types.
+	Adjust calls to dump_anonymous_type_name and dump_ada_array_type.
+	(dump_ada_specs): Initialize and free dumped_anonymous_types.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (pp_ada_tree_identifier): Tidy up.
+	(dump_ada_node) <POINTER_TYPE>: Deal specially with external subtypes.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_ada_enum_type): Dump a prefix for constants.
+	(htable_t): New typedef.
+	(overloaded_names): Use it.
+	(add_name): New function.
+	(init_overloaded_names): Use add_name to populate the table and add
+	special cases for sigaction and stat.
+	(overloaded_name_p): Rename into...
+	(overloading_index): ...this.  Do not initialize overloaded_names table
+	here.  Return the index or zero.
+	(dump_ada_declaration): Minor tweaks.  Do not skip overloaded functions
+	but add an overloading suffix instead.
+	(dump_ada_specs): Initialize overloaded_names tables here.
+
 2021-06-01  Martin Liska  <mliska@suse.cz>
 
 	PR other/100759

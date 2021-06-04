@@ -1,3 +1,170 @@
+2021-06-03  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/cris/cris.md (*addi_reload): Fix empty split condition.
+
+2021-06-03  Jim Wilson  <jimw@sifive.com>
+
+	* config.gcc (riscv*-*-*): If --with-riscv-attribute not used,
+	turn it on for all riscv targets.
+
+2021-06-03  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/i386-expand.c (ix86_expand_vector_set):
+	Handle V2HI and V4QI modes.
+	(ix86_expand_vector_extract): Ditto.
+	* config/i386/mmx.md (*pinsrw): New insn pattern.
+	(*pinsrb): Ditto.
+	(*pextrw): Ditto.
+	(*pextrw_zext): Ditto.
+	(*pextrb): Ditto.
+	(*pextrb_zext): Ditto.
+	(vec_setv2hi): New expander.
+	(vec_extractv2hihi): Ditto.
+	(vec_setv4qi): Ditto.
+	(vec_extractv4qiqi): Ditto.
+	(vec_setv8qi): Enable only for TARGET_SSE4_1.
+	(vec_extractv8qiqi): Ditto.
+
+2021-06-03  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_logical_addsubf): Fix input
+	order to subf instruction.
+	* config/rs6000/fusion.md: Regenerate.
+
+2021-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* calls.c (get_size_range): Use range_of_expr instead of
+	determine_value_range.
+	* tree-affine.c (expr_to_aff_combination): Same.
+	* tree-data-ref.c (split_constant_offset): Same.
+	* tree-vrp.c (determine_value_range_1): Remove.
+	(determine_value_range): Remove.
+	* tree-vrp.h (determine_value_range): Remove.
+
+2021-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* function-tests.c (test_ranges): Call gimple_range_tests.
+	* gimple-range-cache.cc (ranger_cache::range_of_expr): Pass stmt
+	to get_tree_range.
+	* gimple-range.cc (fur_source::get_operand): Do not call
+	get_tree_range or gimple_range_global.
+	get_tree_range.
+	(get_tree_range): Move to value-query.cc.
+	Call get_arith_expr_range.
+	(gimple_ranger::range_of_expr): Add argument to get_tree_range.
+	Include gimple-range-tests.cc.
+	* gimple-range.h (fold_range): Add argument.
+	(get_tree_range): Remove.
+	* selftest.h (gimple_range_tests): New.
+	* value-query.cc (global_range_query::range_of_expr): Add
+	stmt argument.
+	(range_query::get_tree_range): Move from gimple-range.cc.
+	* value-query.h (class range_query): Add get_tree_range and
+	get_arith_expr_range.  Make fur_source a friend.
+	* vr-values.c (vr_values::range_of_expr): Pass stmt to
+	get_tree_range.
+	* gimple-range-tests.cc: New file.
+
+2021-06-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::export_global_ranges): Call
+	  update_global_range.
+	* value-query.cc (update_global_range): New.
+	* value-query.h (update_global_range): New.
+
+2021-06-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (diagnostic_show_locus): Don't reject
+	printing the same location twice if there are fix-it hints,
+	multiple locations, or a label.
+
+2021-06-03  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* tree-vect-loop.c (vect_transform_loop): Use main loop's various'
+	thresholds to narrow the upper bound on epilogue iterations.
+
+2021-06-03  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/mve.md (mve_vabsq_f<mode>): Use 'abs' instead of unspec.
+	(mve_vabsq_s<mode>): Likewise.
+	* config/arm/neon.md (abs<mode>2): Rename to neon_abs<mode>2.
+	* config/arm/unspecs.md (VABSQ_F, VABSQ_S): Delete.
+	* config/arm/vec-common.md (neg<mode>2): Rename to
+	<absneg_str><mode>2.
+
+2021-06-03  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* common/config/arc/arc-common.c (arc_option_optimization_table):
+	Remove malign-call.
+	* config/arc/arc.c (arc_unalign_branch_p): Remove unused function.
+	* config/arc/arc.h (TARGET_MIXED_CODE): Remove macro.
+	(INDEX_REG_CLASS): Only refer to GENERAL_REGS.
+	* config/arc/arc.md (abssi2_mixed): Remove pattern.
+	* config/arc/arc.opt (munalign-prob-threshold): Mark it obsolete.
+	(malign-call): Likewise.
+	(mmixed-code): Likewise.
+	* doc/invoke.texi (ARC): Update doc.
+
+2021-06-03  Martin Liska  <mliska@suse.cz>
+
+	* common.opt: Use proper Enum values.
+	* opts.c (COVERAGE_SANITIZER_OPT): Remove.
+	(parse_sanitizer_options): Handle only sanitizer_opts.
+	(common_handle_option): Just assign value.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ipa/99122
+	* tree-inline.c (inline_forbidden_p): Remove test on return type.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (loc_list_from_tree_1) <FUNCTION_DECL>: Also generate
+	DW_OP_GNU_variable_value referencing an existing DIE at file scope.
+	(type_byte_size): Inline into...
+	(add_byte_size_attribute): ...this and call add_scalar_info.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (mem_loc_descriptor) <UDIV>: Fix typo.
+	(typed_binop_from_tree): New function.
+	(loc_list_from_tree_1) <EXACT_DIV_EXPR>: For an unsigned type,
+	turn a divide by a power of 2 into a shift.
+	<CEIL_DIV_EXPR>: For an unsigned type, use a signed divide if the
+	size of the mode is lower than DWARF2_ADDR_SIZE; otherwise, do a
+	typed divide by calling typed_binop_from_tree.
+
+2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.c (scompare_loc_descriptor): Fix head comment.
+	(is_handled_procedure_type): Likewise.
+	(struct loc_descr_context): Add strict_signedness field.
+	(resolve_args_picking_1): Deal with DW_OP_[GNU_]deref_type,
+	DW_OP_[GNU_]convert and DW_OP_[GNU_]reinterpret.
+	(resolve_args_picking): Minor tweak.
+	(function_to_dwarf_procedure): Initialize strict_signedness field.
+	(type_byte_size): Likewise.
+	(field_byte_offset): Likewise.
+	(gen_descr_array_type_die): Likewise.
+	(gen_variant_part): Likewise.
+	(loc_list_from_tree_1) <CALL_EXPR>: Tidy up and set strict_signedness
+	to true when a context is present before evaluating the arguments.
+	<COND_EXPR>: Do not generate a useless comparison with zero.
+	When dereferencing an address, if strict_signedness is true and the
+	type is small and signed, use DW_OP_deref_type to do the dereference
+	and then DW_OP_convert to convert back to the generic type.
+
+2021-06-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100859
+	* tree-inline.c (copy_tree_body_r): Handle iterators on
+	OMP_CLAUSE_AFFINITY or OMP_CLAUSE_DEPEND.
+
+2021-06-03  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/arc/arc.md (*bbit_di): Remove.
+
 2021-06-02  Christoph Muellner  <cmuellner@gcc.gnu.org>
 
 	PR rtl-optimization/100264
