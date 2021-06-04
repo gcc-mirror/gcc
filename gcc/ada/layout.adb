@@ -77,7 +77,7 @@ package body Layout is
    begin
       --  Nothing to do if size unknown
 
-      if Unknown_Esize (E) then
+      if not Known_Esize (E) then
          return;
       end if;
 
@@ -119,7 +119,7 @@ package body Layout is
       --  Now we have the size set, it must be a multiple of the alignment
       --  nothing more we can do here if the alignment is unknown here.
 
-      if Unknown_Alignment (E) then
+      if not Known_Alignment (E) then
          return;
       end if;
 
@@ -404,7 +404,7 @@ package body Layout is
          --  it now to a copy of the Esize if the Esize is set.
 
          else
-            if Known_Esize (E) and then Unknown_RM_Size (E) then
+            if Known_Esize (E) and then not Known_RM_Size (E) then
                Set_RM_Size (E, Esize (E));
             end if;
          end if;
@@ -425,15 +425,15 @@ package body Layout is
                PAT : constant Entity_Id := Packed_Array_Impl_Type (E);
 
             begin
-               if Unknown_Esize (E) then
+               if not Known_Esize (E) then
                   Set_Esize     (E, Esize     (PAT));
                end if;
 
-               if Unknown_RM_Size (E) then
+               if not Known_RM_Size (E) then
                   Set_RM_Size   (E, RM_Size   (PAT));
                end if;
 
-               if Unknown_Alignment (E) then
+               if not Known_Alignment (E) then
                   Set_Alignment (E, Alignment (PAT));
                end if;
             end;
@@ -446,7 +446,7 @@ package body Layout is
          --  gave up because, in this case, the object size is not a multiple
          --  of the alignment and, therefore, cannot be the component size.
 
-         if Ekind (E) = E_Array_Type and then Unknown_Component_Size (E) then
+         if Ekind (E) = E_Array_Type and then not Known_Component_Size (E) then
             declare
                CT : constant Entity_Id := Component_Type (E);
 
@@ -478,7 +478,7 @@ package body Layout is
 
          if Is_Array_Type (E)
            and then not Is_Packed (E)
-           and then Unknown_Alignment (E)
+           and then not Known_Alignment (E)
            and then Known_Alignment (Component_Type (E))
            and then Known_Static_Component_Size (E)
            and then Known_Static_Esize (Component_Type (E))
@@ -529,10 +529,10 @@ package body Layout is
                   --  explicitly by the user. In that case, also do not set
                   --  Esize.
 
-                  if Unknown_RM_Size (E) or else RM_Size (E) = Siz then
+                  if not Known_RM_Size (E) or else RM_Size (E) = Siz then
                      Set_RM_Size (E, Siz);
 
-                     if Unknown_Esize (E) then
+                     if not Known_Esize (E) then
                         Siz := ((Siz + (Abits - 1)) / Abits) * Abits;
                         Set_Esize (E, Siz);
                      end if;
@@ -576,7 +576,7 @@ package body Layout is
          --  arrays when passed to subprogram parameters (see special test
          --  in Exp_Ch6.Expand_Actuals).
 
-         if not Is_Packed (E) and then Unknown_Alignment (E) then
+         if not Is_Packed (E) and then not Known_Alignment (E) then
             if Known_Static_Component_Size (E)
               and then Component_Size (E) = 1
             then
@@ -748,7 +748,7 @@ package body Layout is
 
          if Known_Static_Esize (E) then
             Siz := Esize (E);
-         elsif Unknown_Esize (E) and then Known_Static_RM_Size (E) then
+         elsif not Known_Esize (E) and then Known_Static_RM_Size (E) then
             Siz := RM_Size (E);
          else
             return;
@@ -853,7 +853,7 @@ package body Layout is
 
                         if Calign > Align
                           and then
-                            (Unknown_Esize (Comp)
+                            (not Known_Esize (Comp)
                               or else (Known_Static_Esize (Comp)
                                         and then
                                        Esize (Comp) = Calign * SSU))
@@ -1020,7 +1020,7 @@ package body Layout is
          --  If alignment is currently not set, then we can safely set it to
          --  this new calculated value.
 
-         if Unknown_Alignment (E) then
+         if not Known_Alignment (E) then
             Init_Alignment (E, A);
 
          --  Cases where we have inherited an alignment

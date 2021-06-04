@@ -11825,7 +11825,7 @@ package body Sem_Util is
             if Default = Known_Compatible
               or else
                 (Etype (Obj) = Etype (Expr)
-                  and then (Unknown_Alignment (Obj)
+                  and then (not Known_Alignment (Obj)
                              or else
                                Alignment (Obj) = Alignment (Etype (Obj))))
             then
@@ -12070,7 +12070,7 @@ package body Sem_Util is
       --  do it when there is an address clause since we can do more if the
       --  alignment is known.
 
-      if Unknown_Alignment (Obj) then
+      if not Known_Alignment (Obj) then
          Set_Alignment (Obj, Alignment (Etype (Obj)));
       end if;
 

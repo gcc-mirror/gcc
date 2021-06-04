@@ -16824,7 +16824,7 @@ package body Sem_Ch3 is
       Set_Etype (Derived_Type, Implicit_Base);
       Set_Size_Info         (Derived_Type, Parent_Type);
 
-      if Unknown_RM_Size (Derived_Type) then
+      if not Known_RM_Size (Derived_Type) then
          Set_RM_Size (Derived_Type, RM_Size (Parent_Type));
       end if;
 

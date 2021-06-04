@@ -563,11 +563,11 @@ package body Exp_Pakd is
          --  Do not reset RM_Size if already set, as happens in the case of
          --  a modular type.
 
-         if Unknown_Esize (PAT) then
+         if not Known_Esize (PAT) then
             Set_Esize (PAT, PASize);
          end if;
 
-         if Unknown_RM_Size (PAT) then
+         if not Known_RM_Size (PAT) then
             Set_RM_Size (PAT, PASize);
          end if;
 

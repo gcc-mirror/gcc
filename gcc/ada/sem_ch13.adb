@@ -12370,7 +12370,7 @@ package body Sem_Ch13 is
       --  length (it may for example be appropriate to round up the size
       --  to some convenient boundary, based on alignment considerations, etc).
 
-      if Unknown_RM_Size (Rectype)
+      if not Known_RM_Size (Rectype)
         and then Hbit + 1 <= 32
         and then not Strict_Alignment (Rectype)
       then

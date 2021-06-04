@@ -9048,7 +9048,7 @@ package body Exp_Util is
 
                if Target_Strict_Alignment
                  and then Known_Alignment (Ptyp)
-                 and then (Unknown_Alignment (Styp)
+                 and then (not Known_Alignment (Styp)
                             or else Alignment (Styp) > Alignment (Ptyp))
                then
                   return True;
@@ -9072,7 +9072,7 @@ package body Exp_Util is
                begin
                   if Present (Component_Clause (Field))
                     and then
-                      (Unknown_Alignment (Styp)
+                      (not Known_Alignment (Styp)
                         or else
                          (Component_Bit_Offset (Field) mod
                            (System_Storage_Unit * Alignment (Styp))) /= 0)

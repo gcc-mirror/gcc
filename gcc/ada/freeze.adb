@@ -857,7 +857,7 @@ package body Freeze is
 
          --  Set size if not set already
 
-         elsif Unknown_RM_Size (T) then
+         elsif not Known_RM_Size (T) then
             Set_RM_Size (T, S);
          end if;
       end Set_Small_Size;
@@ -1043,7 +1043,7 @@ package body Freeze is
                   if not Is_Constrained (T)
                     and then
                       No (Discriminant_Default_Value (First_Discriminant (T)))
-                    and then Unknown_RM_Size (T)
+                    and then not Known_RM_Size (T)
                   then
                      return False;
                   end if;
@@ -3480,7 +3480,7 @@ package body Freeze is
          else
             --  Acquire alignment from base type
 
-            if Unknown_Alignment (Arr) then
+            if not Known_Alignment (Arr) then
                Set_Alignment (Arr, Alignment (Base_Type (Arr)));
                Adjust_Esize_Alignment (Arr);
             end if;
@@ -8632,7 +8632,7 @@ package body Freeze is
 
       --  If Esize of a subtype has not previously been set, set it now
 
-      if Unknown_Esize (Typ) then
+      if not Known_Esize (Typ) then
          Atype := Ancestor_Subtype (Typ);
 
          if Present (Atype) then
@@ -9127,7 +9127,7 @@ package body Freeze is
 
       --  Set Esize to calculated size if not set already
 
-      if Unknown_Esize (Typ) then
+      if not Known_Esize (Typ) then
          Init_Esize (Typ, Actual_Size);
       end if;
 

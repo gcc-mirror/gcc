@@ -1031,7 +1031,7 @@ package body Repinfo is
                   --  whose position is not specified have starting normalized
                   --  bit position of zero.
 
-                  if Unknown_Normalized_First_Bit (Comp)
+                  if not Known_Normalized_First_Bit (Comp)
                     and then not Is_Packed (Ent)
                   then
                      Set_Normalized_First_Bit (Comp, Uint_0);
@@ -1044,7 +1044,7 @@ package body Repinfo is
 
                   --  Complete annotation in case not done
 
-                  if Unknown_Normalized_First_Bit (Comp) then
+                  if not Known_Normalized_First_Bit (Comp) then
                      Set_Normalized_Position  (Comp, Npos);
                      Set_Normalized_First_Bit (Comp, Fbit);
                   end if;
@@ -1202,7 +1202,7 @@ package body Repinfo is
          --  No_Uint, not Uint_0. Really everyone should use No_Uint???
 
          elsif List_Representation_Info < 3
-           or else (Esize (Ent) /= Uint_0 and then Unknown_Esize (Ent))
+           or else (Esize (Ent) /= Uint_0 and then not Known_Esize (Ent))
          then
             Write_Unknown_Val;
 
