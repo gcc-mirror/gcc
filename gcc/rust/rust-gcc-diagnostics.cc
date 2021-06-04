@@ -21,6 +21,8 @@
 #include "rust-system.h"
 #include "rust-diagnostics.h"
 
+#include "options.h"
+
 void
 rust_be_error_at (const Location location, const std::string &errmsg)
 {
@@ -62,4 +64,10 @@ rust_be_get_quotechars (const char **open_qu, const char **close_qu)
 {
   *open_qu = open_quote;
   *close_qu = close_quote;
+}
+
+bool
+rust_be_debug_p (void)
+{
+  return !!flag_rust_debug;
 }

@@ -200,6 +200,9 @@ rust_error_at (const RichLocation location, const char *fmt, ...)
 void
 rust_debug (const Location location, const char *fmt, ...)
 {
+  if (!rust_be_debug_p ())
+    return;
+
   va_list ap;
 
   va_start (ap, fmt);
