@@ -3514,10 +3514,6 @@ bool
 gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
-  tree dest = gimple_call_arg (stmt, 0);
-  tree fmt = gimple_call_arg (stmt, 1);
-  tree orig = NULL_TREE;
-  const char *fmt_str = NULL;
 
   /* Verify the required arguments in the original call.  We deal with two
      types of sprintf() calls: 'sprintf (str, fmt)' and
@@ -3525,25 +3521,28 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
   if (gimple_call_num_args (stmt) > 3)
     return false;
 
+  tree orig = NULL_TREE;
   if (gimple_call_num_args (stmt) == 3)
     orig = gimple_call_arg (stmt, 2);
 
   /* Check whether the format is a literal string constant.  */
-  fmt_str = c_getstr (fmt);
+  tree fmt = gimple_call_arg (stmt, 1);
+  const char *fmt_str = c_getstr (fmt);
   if (fmt_str == NULL)
     return false;
 
+  tree dest = gimple_call_arg (stmt, 0);
+
   if (!init_target_chars ())
+    return false;
+
+  tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
+  if (!fn)
     return false;
 
   /* If the format doesn't contain % args or %%, use strcpy.  */
   if (strchr (fmt_str, target_percent) == NULL)
     {
-      tree fn = builtin_decl_implicit (BUILT_IN_STRCPY);
-
-      if (!fn)
-	return false;
-
       /* Don't optimize sprintf (buf, "abc", ptr++).  */
       if (orig)
 	return false;
@@ -3584,14 +3583,13 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
   /* If the format is "%s", use strcpy if the result isn't used.  */
   else if (fmt_str && strcmp (fmt_str, target_percent_s) == 0)
     {
-      tree fn;
-      fn = builtin_decl_implicit (BUILT_IN_STRCPY);
-
-      if (!fn)
-	return false;
-
       /* Don't crash on sprintf (str1, "%s").  */
       if (!orig)
+	return false;
+
+      /* Don't fold calls with source arguments of invalid (nonpointer)
+	 types.  */
+      if (!POINTER_TYPE_P (TREE_TYPE (orig)))
 	return false;
 
       tree orig_len = NULL_TREE;
