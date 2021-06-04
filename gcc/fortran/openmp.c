@@ -1440,7 +1440,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		c->bind = OMP_BIND_THREAD;
 	      else
 		{
-		  gfc_error ("Expected TEAMS, PARALLEL or THEAD as binding in "
+		  gfc_error ("Expected TEAMS, PARALLEL or THREAD as binding in "
 			     "BIND at %C");
 		  break;
 		}

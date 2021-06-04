@@ -33,7 +33,7 @@ end do
 do i = 1, 64
 end do
 
-!$omp loop bind(target)  ! { dg-error "17: Expected TEAMS, PARALLEL or THEAD as binding in BIND" }
+!$omp loop bind(target)  ! { dg-error "17: Expected TEAMS, PARALLEL or THREAD as binding in BIND" }
 do i = 1, 64
 end do
 
