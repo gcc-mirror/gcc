@@ -1,6 +1,16 @@
 2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100872
+	* name-lookup.c (maybe_save_operator_binding): Add op_attr after all
+	ATTR_IS_DEPENDENT attributes in the DECL_ATTRIBUTES list rather than
+	to the start.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/100859
