@@ -21,6 +21,10 @@
 #include <ranges>
 #include <testsuite_hooks.h>
 
+template<typename T>
+  concept has_cdata
+    = requires (T&& t) { std::ranges::cdata(std::forward<T>(t)); };
+
 void
 test01()
 {
@@ -31,12 +35,18 @@ test01()
     int* data() { return &j; }
     const R* data() const noexcept { return nullptr; }
   };
+  static_assert( has_cdata<R&> );
+  static_assert( has_cdata<const R&> );
   R r;
   const R& c = r;
   VERIFY( std::ranges::cdata(r) == (R*)nullptr );
   static_assert( noexcept(std::ranges::cdata(r)) );
   VERIFY( std::ranges::cdata(c) == (R*)nullptr );
   static_assert( noexcept(std::ranges::cdata(c)) );
+
+  // not lvalues and not borrowed ranges
+  static_assert( !has_cdata<R> );
+  static_assert( !has_cdata<const R> );
 }
 
 void
@@ -44,28 +54,36 @@ test02()
 {
   int a[] = { 0, 1 };
   VERIFY( std::ranges::cdata(a) == a + 0 );
+
+  static_assert( has_cdata<int(&)[2]> );
+  static_assert( !has_cdata<int(&&)[2]> );
 }
 
-struct R
+struct R3
 {
-  long l = 0;
+  static inline int i = 0;
+  static inline long l = 0;
 
-  int* data() const { return nullptr; }
-  friend long* begin(R&& r); // this function is not defined
-  friend const long* begin(const R& r) { return &r.l; }
-  friend const short* begin(const R&&); // not defined
+  int* data() &; // this function is not defined
+  friend long* begin(R3&& r); // not defined
+  friend const long* begin(const R3& r) { return &r.l; }
+  friend const short* begin(const R3&&); // not defined
 };
 
-// This is a lie, ranges::begin(R&&) returns a dangling iterator.
-template<> constexpr bool std::ranges::enable_borrowed_range<R> = true;
+template<> constexpr bool std::ranges::enable_borrowed_range<R3> = true;
 
 void
 test03()
 {
-  R r;
-  const R& c = r;
+  static_assert( has_cdata<R3&> );
+  static_assert( has_cdata<R3> );  // borrowed range
+  static_assert( has_cdata<const R3&> );
+  static_assert( has_cdata<const R3> );  // borrowed range
+
+  R3 r;
+  const R3& c = r;
   VERIFY( std::ranges::cdata(r) == std::ranges::data(c) );
-  VERIFY( std::ranges::cdata(std::move(r)) == std::ranges::begin(c) );
+  VERIFY( std::ranges::cdata(std::move(r)) == std::ranges::data(c) );
   VERIFY( std::ranges::cdata(std::move(c)) == std::ranges::begin(c) );
 }
 
