@@ -29,7 +29,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This is the HP version of this package
+--  This is the Posix 2008 version for 64 bit time_t.
 
 --  This package defines some system dependent parameters for GNAT. These
 --  are values that are referenced by the runtime library and are therefore
@@ -45,6 +45,8 @@
 
 --  Note: do not introduce any pragma Inline statements into this unit, since
 --  otherwise the relinking and rebinding capability would be deactivated.
+
+pragma Compiler_Unit_Warning;
 
 package System.Parameters is
    pragma Pure;
@@ -81,11 +83,11 @@ package System.Parameters is
    --    otherwise return given Size
 
    Default_Env_Stack_Size : constant Size_Type := 8_192_000;
-   --  Assumed size of the environment task, if no other information
-   --  is available. This value is used when stack checking is
-   --  enabled and no GNAT_STACK_LIMIT environment variable is set.
+   --  Assumed size of the environment task, if no other information is
+   --  available. This value is used when stack checking is enabled and
+   --  no GNAT_STACK_LIMIT environment variable is set.
 
-   Stack_Grows_Down  : constant Boolean := False;
+   Stack_Grows_Down  : constant Boolean := True;
    --  This constant indicates whether the stack grows up (False) or
    --  down (True) in memory as functions are called. It is used for
    --  proper implementation of the stack overflow check.
@@ -102,11 +104,12 @@ package System.Parameters is
    -- Characteristics of time_t type --
    ------------------------------------
 
-   time_t_bits : constant := Long_Integer'Size;
-   --  Number of bits in type time_t.
+   time_t_bits : constant := Long_Long_Integer'Size;
+   --  Number of bits in type time_t. Use for targets that are Posix 2008
+   --  compliant (fixes the year 2038 time_t overflow).
 
    ----------------------------------------------
-   -- Characteristics of Types in Interfaces.C --
+   -- Characteristics of types in Interfaces.C --
    ----------------------------------------------
 
    long_bits : constant := Long_Integer'Size;

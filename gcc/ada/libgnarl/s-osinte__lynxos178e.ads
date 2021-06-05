@@ -43,6 +43,7 @@ with Ada.Unchecked_Conversion;
 with Interfaces.C;
 
 with System.Multiprocessors;
+with System.Parameters;
 
 package System.OS_Interface is
    pragma Preelaborate;
@@ -539,7 +540,8 @@ private
 
    type pid_t is new long;
 
-   type time_t is new int64;
+   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
+     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
 
    type suseconds_t is new int;
 
