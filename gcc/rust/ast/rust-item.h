@@ -2765,6 +2765,8 @@ public:
   // Returns whether function has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
 
+  Identifier get_identifier () const { return function_name; }
+
   // Mega-constructor
   TraitFunctionDecl (Identifier function_name, FunctionQualifiers qualifiers,
 		     std::vector<std::unique_ptr<GenericParam> > generic_params,
@@ -2871,14 +2873,17 @@ public:
 
   TraitItemFunc (TraitFunctionDecl decl, std::unique_ptr<BlockExpr> block_expr,
 		 std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), decl (std::move (decl)),
-      block_expr (std::move (block_expr)), locus (locus)
+    : TraitItem (), outer_attrs (std::move (outer_attrs)),
+      decl (std::move (decl)), block_expr (std::move (block_expr)),
+      locus (locus)
   {}
 
   // Copy constructor with clone
   TraitItemFunc (TraitItemFunc const &other)
     : outer_attrs (other.outer_attrs), decl (other.decl), locus (other.locus)
   {
+    node_id = other.node_id;
+
     // guard to prevent null dereference
     if (other.block_expr != nullptr)
       block_expr = other.block_expr->clone_block_expr ();
@@ -2891,6 +2896,7 @@ public:
     outer_attrs = other.outer_attrs;
     decl = other.decl;
     locus = other.locus;
+    node_id = other.node_id;
 
     // guard to prevent null dereference
     if (other.block_expr != nullptr)
@@ -2982,6 +2988,8 @@ public:
 
   // Returns whether method has a where clause.
   bool has_where_clause () const { return !where_clause.is_empty (); }
+
+  Identifier get_identifier () const { return function_name; }
 
   // Mega-constructor
   TraitMethodDecl (Identifier function_name, FunctionQualifiers qualifiers,
@@ -3095,14 +3103,17 @@ public:
 
   TraitItemMethod (TraitMethodDecl decl, std::unique_ptr<BlockExpr> block_expr,
 		   std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), decl (std::move (decl)),
-      block_expr (std::move (block_expr)), locus (locus)
+    : TraitItem (), outer_attrs (std::move (outer_attrs)),
+      decl (std::move (decl)), block_expr (std::move (block_expr)),
+      locus (locus)
   {}
 
   // Copy constructor with clone
   TraitItemMethod (TraitItemMethod const &other)
     : outer_attrs (other.outer_attrs), decl (other.decl), locus (other.locus)
   {
+    node_id = other.node_id;
+
     // guard to prevent null dereference
     if (other.block_expr != nullptr)
       block_expr = other.block_expr->clone_block_expr ();
@@ -3115,6 +3126,7 @@ public:
     outer_attrs = other.outer_attrs;
     decl = other.decl;
     locus = other.locus;
+    node_id = other.node_id;
 
     // guard to prevent null dereference
     if (other.block_expr != nullptr)
@@ -3187,14 +3199,17 @@ public:
   TraitItemConst (Identifier name, std::unique_ptr<Type> type,
 		  std::unique_ptr<Expr> expr,
 		  std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), name (std::move (name)),
-      type (std::move (type)), expr (std::move (expr)), locus (locus)
+    : TraitItem (), outer_attrs (std::move (outer_attrs)),
+      name (std::move (name)), type (std::move (type)), expr (std::move (expr)),
+      locus (locus)
   {}
 
   // Copy constructor with clones
   TraitItemConst (TraitItemConst const &other)
     : outer_attrs (other.outer_attrs), name (other.name), locus (other.locus)
   {
+    node_id = other.node_id;
+
     // guard to prevent null dereference
     if (other.expr != nullptr)
       expr = other.expr->clone_expr ();
@@ -3211,6 +3226,7 @@ public:
     outer_attrs = other.outer_attrs;
     name = other.name;
     locus = other.locus;
+    node_id = other.node_id;
 
     // guard to prevent null dereference
     if (other.expr != nullptr)
@@ -3259,6 +3275,8 @@ public:
     return type;
   }
 
+  Identifier get_identifier () const { return name; }
+
 protected:
   // Clone function implementation as (not pure) virtual method
   TraitItemConst *clone_trait_item_impl () const override
@@ -3289,7 +3307,8 @@ public:
     Identifier name,
     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
     std::vector<Attribute> outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), name (std::move (name)),
+    : TraitItem (), outer_attrs (std::move (outer_attrs)),
+      name (std::move (name)),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
   {}
 
@@ -3297,6 +3316,7 @@ public:
   TraitItemType (TraitItemType const &other)
     : outer_attrs (other.outer_attrs), name (other.name), locus (other.locus)
   {
+    node_id = other.node_id;
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
       type_param_bounds.push_back (e->clone_type_param_bound ());
@@ -3309,6 +3329,7 @@ public:
     outer_attrs = other.outer_attrs;
     name = other.name;
     locus = other.locus;
+    node_id = other.node_id;
 
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -3345,6 +3366,8 @@ public:
   {
     return type_param_bounds;
   }
+
+  Identifier get_identifier () const { return name; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
