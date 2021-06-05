@@ -41,9 +41,9 @@ public:
 
   void visit (AST::TypeAlias &alias) override
   {
+    auto path = prefix.append (CanonicalPath (alias.get_new_type_name ()));
     resolver->get_type_scope ().insert (
-      CanonicalPath (alias.get_new_type_name ()), alias.get_node_id (),
-      alias.get_locus (), false,
+      path, alias.get_node_id (), alias.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (alias.get_locus ());
 	r.add_range (locus);
@@ -53,9 +53,9 @@ public:
 
   void visit (AST::TupleStruct &struct_decl) override
   {
+    auto path = prefix.append (CanonicalPath (struct_decl.get_identifier ()));
     resolver->get_type_scope ().insert (
-      CanonicalPath (struct_decl.get_identifier ()), struct_decl.get_node_id (),
-      struct_decl.get_locus (), false,
+      path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (struct_decl.get_locus ());
 	r.add_range (locus);
@@ -65,9 +65,9 @@ public:
 
   void visit (AST::StructStruct &struct_decl) override
   {
+    auto path = prefix.append (CanonicalPath (struct_decl.get_identifier ()));
     resolver->get_type_scope ().insert (
-      CanonicalPath (struct_decl.get_identifier ()), struct_decl.get_node_id (),
-      struct_decl.get_locus (), false,
+      path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (struct_decl.get_locus ());
 	r.add_range (locus);
@@ -77,9 +77,9 @@ public:
 
   void visit (AST::StaticItem &var) override
   {
+    auto path = prefix.append (CanonicalPath (var.get_identifier ()));
     resolver->get_name_scope ().insert (
-      CanonicalPath (var.get_identifier ()), var.get_node_id (),
-      var.get_locus (), false,
+      path, var.get_node_id (), var.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (var.get_locus ());
 	r.add_range (locus);
@@ -143,6 +143,36 @@ public:
 
     for (auto &impl_item : impl_block.get_impl_items ())
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
+  }
+
+  void visit (AST::TraitImpl &impl_block) override
+  {
+    bool canonicalize_type_args = !impl_block.has_generics ();
+    bool type_resolve_generic_args = false;
+    CanonicalPath impl_type
+      = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
+					     canonicalize_type_args,
+					     type_resolve_generic_args);
+    CanonicalPath impl_prefix = prefix.append (impl_type);
+
+    for (auto &impl_item : impl_block.get_impl_items ())
+      ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
+  }
+
+  void visit (AST::Trait &trait) override
+  {
+    CanonicalPath path
+      = prefix.append (CanonicalPath (trait.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, trait.get_node_id (), trait.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (trait.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    for (auto &item : trait.get_trait_items ())
+      ResolveTopLevelTraitItems::go (item.get ());
   }
 
 private:

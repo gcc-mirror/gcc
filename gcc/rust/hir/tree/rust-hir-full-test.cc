@@ -1170,7 +1170,7 @@ TraitImpl::as_string () const
       str += "false";
     }
 
-  str += "\n TypePath (to trait): " + trait_path.as_string ();
+  str += "\n TypePath (to trait): " + trait_path->as_string ();
 
   str += "\n Type (struct to impl on): " + trait_type->as_string ();
 

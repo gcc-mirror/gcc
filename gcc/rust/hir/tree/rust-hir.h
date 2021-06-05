@@ -770,29 +770,18 @@ protected:
 // Item used in trait declarations - abstract base class
 class TraitItem
 {
-  // bool has_outer_attrs;
-  // TODO: remove and rely on virtual functions and VisItem-derived attributes?
-  // std::vector<Attribute> outer_attrs;
-
-  // NOTE: all children should have outer attributes
-
 protected:
   // Constructor
-  /*TraitItem(std::vector<Attribute> outer_attrs = std::vector<Attribute>())
-    : outer_attrs(std::move(outer_attrs)) {}*/
+  TraitItem (Analysis::NodeMapping mappings) : mappings (mappings) {}
 
   // Clone function implementation as pure virtual method
   virtual TraitItem *clone_trait_item_impl () const = 0;
 
+  Analysis::NodeMapping mappings;
+
 public:
   virtual ~TraitItem () {}
 
-  // Returns whether TraitItem has outer attributes.
-  /*bool has_outer_attrs() const {
-      return !outer_attrs.empty();
-  }*/
-
-  // Unique pointer custom clone function
   std::unique_ptr<TraitItem> clone_trait_item () const
   {
     return std::unique_ptr<TraitItem> (clone_trait_item_impl ());
@@ -801,6 +790,8 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
+
+  const Analysis::NodeMapping &get_mappings () const { return mappings; }
 };
 
 /* Abstract base class for items used within an inherent impl block (the impl
@@ -847,6 +838,10 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
+
+  virtual Analysis::NodeMapping get_trait_impl_mappings () const = 0;
+
+  virtual Location get_trait_impl_locus () const = 0;
 };
 
 // A crate HIR object - holds all the data for a single compilation unit

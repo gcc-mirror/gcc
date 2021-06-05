@@ -442,7 +442,7 @@ legacy_hash (const std::string &fingerprint)
 
   char hex[16 + 1];
   memset (hex, 0, sizeof hex);
-  snprintf (hex, sizeof hex, "%08lx%08lx", lo, hi);
+  snprintf (hex, sizeof hex, "%08" PRIx64 "%08" PRIx64, lo, hi);
 
   return "h" + std::string (hex, sizeof (hex) - 1);
 }

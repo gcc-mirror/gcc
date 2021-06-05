@@ -1282,8 +1282,12 @@ class MacroItem : public Item
 class TraitItem
 {
 protected:
+  TraitItem () : node_id (Analysis::Mappings::get ()->get_next_node_id ()) {}
+
   // Clone function implementation as pure virtual method
   virtual TraitItem *clone_trait_item_impl () const = 0;
+
+  NodeId node_id;
 
 public:
   virtual ~TraitItem () {}
@@ -1300,6 +1304,8 @@ public:
 
   virtual void mark_for_strip () = 0;
   virtual bool is_marked_for_strip () const = 0;
+
+  NodeId get_node_id () const { return node_id; }
 };
 
 /* Abstract base class for items used within an inherent impl block (the impl
