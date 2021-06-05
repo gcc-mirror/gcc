@@ -42,6 +42,14 @@ public:
     item->accept_vis (compiler);
   }
 
+  static void Compile (TyTy::BaseType *self, HIR::TraitImplItem *item,
+		       Context *ctx, bool compile_fns,
+		       TyTy::BaseType *concrete = nullptr)
+  {
+    CompileInherentImplItem compiler (self, ctx, compile_fns, concrete);
+    item->accept_vis (compiler);
+  }
+
   void visit (HIR::ConstantItem &constant) override
   {
     TyTy::BaseType *resolved_type = nullptr;
