@@ -1,3 +1,12 @@
+2021-06-04  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2021-05-19  Alex Coplan  <alex.coplan@arm.com>
+
+	PR target/100333
+	* config/arm/arm.md (nonsecure_call_internal): Always ensure
+	callee's address is in a register.
+
 2021-06-02  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	Backported from master:
