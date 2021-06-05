@@ -21,7 +21,7 @@
 		 (match_operand:QI 2 "nibble_operand" "IP4>X")))]
   "TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (mult:HI (sign_extend:HI (match_dup 1)) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
@@ -41,7 +41,7 @@
 		 (sign_extend:HI (match_operand:QI 2 "register_operand" "r"))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (mult:HI (sign_extend:HI (match_dup 1))
 			    (sign_extend:HI (match_dup 2))))
@@ -73,7 +73,7 @@
 		 (match_operand:SI 2 "nibble_operand" "IP4>X")))]
   "TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (mult:SI (sign_extend:SI (match_dup 1)) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
@@ -93,7 +93,7 @@
 		 (sign_extend:SI (match_operand:HI 2 "register_operand" "r"))))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (mult:SI (sign_extend:SI (match_dup 1))
 			    (sign_extend:SI (match_dup 2))))
@@ -172,7 +172,7 @@
 		  (match_operand:HSI 2 "reg_or_nibble_operand" "r IP4>X")))]
   "TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (mult:HSI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -195,7 +195,7 @@
 	  (const_int 32))))]
   "TARGET_H8300SXMUL"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (truncate:SI (lshiftrt:DI (mult:DI
 					       (sign_extend:DI (match_dup 1))

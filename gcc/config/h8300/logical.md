@@ -223,7 +223,7 @@
   "#"
   "&& reload_completed"
   [(parallel [(set (match_dup 0)
-		   (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
+		   (logicals:QHSI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 
 (define_insn "*<code><mode>3_clobber_flags"

@@ -9,7 +9,7 @@
 	(match_operand:QI 1 "general_operand_src" " I,r>,r,n,m,r"))]
   "!TARGET_H8300SX && h8300_move_ok (operands[0], operands[1])"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -32,7 +32,7 @@
 	(match_operand:QI 1 "general_operand_src" "P4>X,rQi"))]
   "TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -69,7 +69,7 @@
 			 (match_operand:QI 1 "general_operand_src" "I,rmi>"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (strict_low_part (match_dup 0)) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -93,7 +93,7 @@
   "!TARGET_H8300SX
     && h8300_move_ok (operands[0], operands[1])"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -117,7 +117,7 @@
 	(match_operand:HI 1 "general_operand_src" "I,P3>X,P4>X,IP8>X,rQi"))]
   "TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
   
@@ -140,7 +140,7 @@
 			 (match_operand:HI 1 "general_operand_src" "I,P3>X,rmi"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (strict_low_part (match_dup 0)) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -163,7 +163,7 @@
   "(TARGET_H8300S || TARGET_H8300H) && !TARGET_H8300SX
     && h8300_move_ok (operands[0], operands[1])"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -240,7 +240,7 @@
 	(match_operand:SI 1 "general_operand_src" "I,P3>X,IP8>X,rQi,I,r,*a"))]
   "TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -265,7 +265,7 @@
 	(match_operand:SF 1 "general_operand_src" "G,rQi"))]
   "TARGET_H8300SX"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -287,7 +287,7 @@
     && (register_operand (operands[0], SFmode)
 	|| register_operand (operands[1], SFmode))"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -319,7 +319,7 @@
 	(match_operand:QHI 0 "register_no_sp_elim_operand" "r"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (mem:QHI
 		     (pre_modify:P (reg:P SP_REG)
 				   (plus:P (reg:P SP_REG) (const_int -4))))

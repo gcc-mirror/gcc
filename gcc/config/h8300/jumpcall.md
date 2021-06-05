@@ -22,7 +22,7 @@
 		      (pc)))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(set (reg:H8cc CC_REG)
 	(compare:H8cc (match_dup 1) (match_dup 2)))
    (set (pc)
