@@ -42,6 +42,45 @@ along with GCC; see the file COPYING3.  If not see
 #include "dependency.h"
 #include "gimplify.h"
 
+
+/* Calculate the number of characters in a string.  */
+
+tree
+gfc_get_character_len (tree type)
+{
+  tree len;
+  
+  gcc_assert (type && TREE_CODE (type) == ARRAY_TYPE
+	      && TYPE_STRING_FLAG (type));
+  
+  len = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+  len = (len) ? (len) : (integer_zero_node);
+  return fold_convert (gfc_charlen_type_node, len);
+}
+
+
+
+/* Calculate the number of bytes in a string.  */
+
+tree
+gfc_get_character_len_in_bytes (tree type)
+{
+  tree tmp, len;
+  
+  gcc_assert (type && TREE_CODE (type) == ARRAY_TYPE
+	      && TYPE_STRING_FLAG (type));
+  
+  tmp = TYPE_SIZE_UNIT (TREE_TYPE (type));
+  tmp = (tmp && !integer_zerop (tmp))
+    ? (fold_convert (gfc_charlen_type_node, tmp)) : (NULL_TREE);
+  len = gfc_get_character_len (type);
+  if (tmp && len && !integer_zerop (len))
+    len = fold_build2_loc (input_location, MULT_EXPR,
+			   gfc_charlen_type_node, len, tmp);
+  return len;
+}
+
+
 /* Convert a scalar to an array descriptor. To be used for assumed-rank
    arrays.  */
 
@@ -87,6 +126,8 @@ gfc_conv_scalar_to_descriptor (gfc_se *se, tree scalar, symbol_attribute attr)
   gfc_add_modify (&se->pre, gfc_conv_descriptor_dtype (desc),
 		  gfc_get_dtype_rank_type (0, etype));
   gfc_conv_descriptor_data_set (&se->pre, desc, scalar);
+  gfc_conv_descriptor_span_set (&se->pre, desc,
+				gfc_conv_descriptor_elem_len (desc));
 
   /* Copy pointer address back - but only if it could have changed and
      if the actual argument is a pointer and not, e.g., NULL().  */
@@ -9630,11 +9671,12 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  lse.direct_byref = 1;
 	  gfc_conv_expr_descriptor (&lse, expr2);
 	  strlen_rhs = lse.string_length;
+	  gfc_init_se (&rse, NULL);
 
 	  if (expr1->ts.type == BT_CLASS)
 	    {
 	      rse.expr = NULL_TREE;
-	      rse.string_length = NULL_TREE;
+	      rse.string_length = strlen_rhs;
 	      trans_class_vptr_len_assignment (&block, expr1, expr2, &rse,
 					       NULL, NULL);
 	    }
@@ -9692,6 +9734,19 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  gfc_conv_expr_descriptor (&lse, expr2);
 	  strlen_rhs = lse.string_length;
 	  gfc_add_modify (&lse.pre, desc, tmp);
+	}
+
+      if (expr1->ts.type == BT_CHARACTER
+	  && expr1->symtree->n.sym->ts.deferred
+	  && expr1->symtree->n.sym->ts.u.cl->backend_decl
+	  && VAR_P (expr1->symtree->n.sym->ts.u.cl->backend_decl))
+	{
+	  tmp = expr1->symtree->n.sym->ts.u.cl->backend_decl;
+	  if (expr2->expr_type != EXPR_NULL)
+	    gfc_add_modify (&block, tmp,
+			    fold_convert (TREE_TYPE (tmp), strlen_rhs));
+	  else
+	    gfc_add_modify (&block, tmp, build_zero_cst (TREE_TYPE (tmp)));
 	}
 
       gfc_add_block_to_block (&block, &lse.pre);
@@ -9854,19 +9909,6 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  msg = _("Target of rank remapping is too small (%ld < %ld)");
 	  gfc_trans_runtime_check (true, false, fault, &block, &expr2->where,
 				   msg, rsize, lsize);
-	}
-
-      if (expr1->ts.type == BT_CHARACTER
-	  && expr1->symtree->n.sym->ts.deferred
-	  && expr1->symtree->n.sym->ts.u.cl->backend_decl
-	  && VAR_P (expr1->symtree->n.sym->ts.u.cl->backend_decl))
-	{
-	  tmp = expr1->symtree->n.sym->ts.u.cl->backend_decl;
-	  if (expr2->expr_type != EXPR_NULL)
-	    gfc_add_modify (&block, tmp,
-			    fold_convert (TREE_TYPE (tmp), strlen_rhs));
-	  else
-	    gfc_add_modify (&block, tmp, build_zero_cst (TREE_TYPE (tmp)));
 	}
 
       /* Check string lengths if applicable.  The check is only really added

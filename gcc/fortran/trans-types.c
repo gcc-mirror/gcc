@@ -1482,6 +1482,7 @@ gfc_get_desc_dim_type (void)
 tree
 gfc_get_dtype_rank_type (int rank, tree etype)
 {
+  tree ptype;
   tree size;
   int n;
   tree tmp;
@@ -1489,12 +1490,24 @@ gfc_get_dtype_rank_type (int rank, tree etype)
   tree field;
   vec<constructor_elt, va_gc> *v = NULL;
 
-  size = TYPE_SIZE_UNIT (etype);
+  ptype = etype;
+  while (TREE_CODE (etype) == POINTER_TYPE
+	 || TREE_CODE (etype) == ARRAY_TYPE)
+    {
+      ptype = etype;
+      etype = TREE_TYPE (etype);
+    }
+
+  gcc_assert (etype);
 
   switch (TREE_CODE (etype))
     {
     case INTEGER_TYPE:
-      n = BT_INTEGER;
+      if (TREE_CODE (ptype) == ARRAY_TYPE
+	  && TYPE_STRING_FLAG (ptype))
+	n = BT_CHARACTER;
+      else
+	n = BT_INTEGER;
       break;
 
     case BOOLEAN_TYPE:
@@ -1516,27 +1529,36 @@ gfc_get_dtype_rank_type (int rank, tree etype)
 	n = BT_DERIVED;
       break;
 
-    /* We will never have arrays of arrays.  */
-    case ARRAY_TYPE:
-      n = BT_CHARACTER;
-      if (size == NULL_TREE)
-	size = TYPE_SIZE_UNIT (TREE_TYPE (etype));
+    case FUNCTION_TYPE:
+    case VOID_TYPE:
+      n = BT_VOID;
       break;
-
-    case POINTER_TYPE:
-      n = BT_ASSUMED;
-      if (TREE_CODE (TREE_TYPE (etype)) != VOID_TYPE)
-	size = TYPE_SIZE_UNIT (TREE_TYPE (etype));
-      else
-	size = build_int_cst (size_type_node, 0);
-    break;
 
     default:
       /* TODO: Don't do dtype for temporary descriptorless arrays.  */
       /* We can encounter strange array types for temporary arrays.  */
-      return gfc_index_zero_node;
+      gcc_unreachable ();
     }
 
+  switch (n)
+    {
+    case BT_CHARACTER:
+      gcc_assert (TREE_CODE (ptype) == ARRAY_TYPE);
+      size = gfc_get_character_len_in_bytes (ptype);
+      break;
+    case BT_VOID:
+      gcc_assert (TREE_CODE (ptype) == POINTER_TYPE);
+      size = size_in_bytes (ptype);
+      break;
+    default:
+      size = size_in_bytes (etype);
+      break;
+    }
+      
+  gcc_assert (size);
+
+  STRIP_NOPS (size);
+  size = fold_convert (size_type_node, size);
   tmp = get_dtype_type_node ();
   field = gfc_advance_chain (TYPE_FIELDS (tmp),
 			     GFC_DTYPE_ELEM_LEN);
@@ -1560,17 +1582,17 @@ gfc_get_dtype_rank_type (int rank, tree etype)
 
 
 tree
-gfc_get_dtype (tree type)
+gfc_get_dtype (tree type, int * rank)
 {
   tree dtype;
   tree etype;
-  int rank;
+  int irnk;
 
   gcc_assert (GFC_DESCRIPTOR_TYPE_P (type) || GFC_ARRAY_TYPE_P (type));
 
-  rank = GFC_TYPE_ARRAY_RANK (type);
+  irnk = (rank) ? (*rank) : (GFC_TYPE_ARRAY_RANK (type));
   etype = gfc_get_element_type (type);
-  dtype = gfc_get_dtype_rank_type (rank, etype);
+  dtype = gfc_get_dtype_rank_type (irnk, etype);
 
   GFC_TYPE_ARRAY_DTYPE (type) = dtype;
   return dtype;
@@ -1912,7 +1934,11 @@ gfc_get_array_type_bounds (tree etype, int dimen, int codimen, tree * lbound,
   TYPE_TYPELESS_STORAGE (fat_type) = 1;
   gcc_checking_assert (!get_alias_set (base_type) && !get_alias_set (fat_type));
 
-  tmp = TYPE_NAME (etype);
+  tmp = etype;
+  if (TREE_CODE (tmp) == ARRAY_TYPE
+      && TYPE_STRING_FLAG (tmp))
+    tmp = TREE_TYPE (etype);
+  tmp = TYPE_NAME (tmp);
   if (tmp && TREE_CODE (tmp) == TYPE_DECL)
     tmp = DECL_NAME (tmp);
   if (tmp)
