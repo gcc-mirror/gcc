@@ -85,6 +85,20 @@ test06()
   VERIFY( s == 4 );
 }
 
+void
+test07()
+{
+#ifdef __SIZEOF_INT128__
+  struct R
+  {
+    unsigned __int128 size() const { return 4; }
+  };
+  R r;
+  static_assert( std::same_as<decltype(std::ranges::ssize(r)), __int128> );
+  VERIFY( std::ranges::ssize(r) == 4 );
+#endif
+}
+
 int
 main()
 {
@@ -93,4 +107,5 @@ main()
   test04();
   test05();
   test06();
+  test07();
 }
