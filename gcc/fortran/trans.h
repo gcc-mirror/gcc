@@ -53,6 +53,9 @@ typedef struct gfc_se
      here.  */
   tree class_vptr;
 
+  /* Whether expr is a reference to an unlimited polymorphic object.  */
+  unsigned unlimited_polymorphic:1;
+  
   /* If set gfc_conv_variable will return an expression for the array
      descriptor. When set, want_pointer should also be set.
      If not set scalarizing variables will be substituted.  */
@@ -506,6 +509,8 @@ void gfc_conv_expr_type (gfc_se * se, gfc_expr *, tree);
 
 
 /* trans-expr.c */
+tree gfc_get_character_len (tree);
+tree gfc_get_character_len_in_bytes (tree);
 tree gfc_conv_scalar_to_descriptor (gfc_se *, tree, symbol_attribute);
 tree gfc_get_ultimate_alloc_ptr_comps_caf_token (gfc_se *, gfc_expr *);
 void gfc_conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr);
