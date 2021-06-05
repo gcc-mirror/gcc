@@ -385,7 +385,7 @@ int main ()
 	}
       else if (acc_on_device (acc_device_nvidia))
 	{
-	  /* The GCC nvptx back end enforces vector_length (32).  */
+	  /* The GCC nvptx back end reduces to vector_length (1024).  */
 	  vectors_actual = 1024;
 	}
       else if (acc_on_device (acc_device_radeon))
