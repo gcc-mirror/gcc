@@ -3420,6 +3420,8 @@ public:
   // Returns whether trait has inner attributes.
   bool has_inner_attrs () const { return !inner_attrs.empty (); }
 
+  Identifier get_identifier () const { return name; }
+
   // Mega-constructor
   Trait (Identifier name, bool is_unsafe,
 	 std::vector<std::unique_ptr<GenericParam> > generic_params,

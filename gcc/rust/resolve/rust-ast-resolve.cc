@@ -41,6 +41,9 @@
     }                                                                          \
   while (0)
 
+extern bool
+saw_errors (void);
+
 namespace Rust {
 namespace Resolver {
 
@@ -321,6 +324,9 @@ NameResolution::go (AST::Crate &crate)
   // first gather the top-level namespace names then we drill down
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)
     ResolveTopLevel::go (it->get ());
+
+  if (saw_errors ())
+    return;
 
   // next we can drill down into the items and their scopes
   for (auto it = crate.items.begin (); it != crate.items.end (); it++)

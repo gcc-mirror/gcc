@@ -145,6 +145,36 @@ public:
       ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
   }
 
+  void visit (AST::TraitImpl &impl_block) override
+  {
+    bool canonicalize_type_args = !impl_block.has_generics ();
+    bool type_resolve_generic_args = false;
+    CanonicalPath impl_type
+      = ResolveTypeToCanonicalPath::resolve (*impl_block.get_type ().get (),
+					     canonicalize_type_args,
+					     type_resolve_generic_args);
+    CanonicalPath impl_prefix = prefix.append (impl_type);
+
+    for (auto &impl_item : impl_block.get_impl_items ())
+      ResolveToplevelImplItem::go (impl_item.get (), impl_prefix);
+  }
+
+  void visit (AST::Trait &trait) override
+  {
+    CanonicalPath path
+      = prefix.append (CanonicalPath (trait.get_identifier ()));
+    resolver->get_type_scope ().insert (
+      path, trait.get_node_id (), trait.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (trait.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+
+    for (auto &item : trait.get_trait_items ())
+      ResolveTopLevelTraitItems::go (item.get ());
+  }
+
 private:
   ResolveTopLevel (const CanonicalPath &prefix)
     : ResolverBase (UNKNOWN_NODEID), prefix (prefix)

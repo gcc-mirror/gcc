@@ -52,6 +52,43 @@ public:
   }
 };
 
+class ResolveTraitItemFunctionToCanonicalPath
+{
+public:
+  static CanonicalPath resolve (AST::TraitItemFunc &function)
+  {
+    return CanonicalPath (
+      function.get_trait_function_decl ().get_identifier ());
+  }
+};
+
+class ResolveTraitItemMethodToCanonicalPath
+{
+public:
+  static CanonicalPath resolve (AST::TraitItemMethod &method)
+  {
+    return CanonicalPath (method.get_trait_method_decl ().get_identifier ());
+  }
+};
+
+class ResolveTraitItemConstToCanonicalPath
+{
+public:
+  static CanonicalPath resolve (AST::TraitItemConst &constant)
+  {
+    return CanonicalPath (constant.get_identifier ());
+  }
+};
+
+class ResolveTraitItemTypeToCanonicalPath
+{
+public:
+  static CanonicalPath resolve (AST::TraitItemType &type)
+  {
+    return CanonicalPath (type.get_identifier ());
+  }
+};
+
 class ResolveTypeToCanonicalPath : public ResolverBase
 {
   using Rust::Resolver::ResolverBase::visit;

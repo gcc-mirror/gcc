@@ -37,6 +37,12 @@ public:
     item->accept_vis (resolver);
   }
 
+  static void go (AST::TraitImplItem *item, const CanonicalPath &prefix)
+  {
+    ResolveToplevelImplItem resolver (prefix);
+    item->accept_vis (resolver);
+  }
+
   void visit (AST::ConstantItem &constant) override
   {
     auto path
@@ -91,6 +97,90 @@ private:
   {
     rust_assert (!prefix.is_error ());
   }
+
+  const CanonicalPath &prefix;
+};
+
+class ResolveTopLevelTraitItems : public ResolverBase
+{
+  using Rust::Resolver::ResolverBase::visit;
+
+public:
+  static void go (AST::TraitItem *item,
+		  const CanonicalPath &prefix = CanonicalPath::create_empty ())
+  {
+    ResolveTopLevelTraitItems resolver (prefix);
+    item->accept_vis (resolver);
+  };
+
+  void visit (AST::TraitItemFunc &function) override
+  {
+    auto path = prefix.append (
+      ResolveTraitItemFunctionToCanonicalPath::resolve (function));
+    resolver->get_name_scope ().insert (
+      path, function.get_node_id (), function.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (function.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (function.get_node_id (),
+				     Definition{function.get_node_id (),
+						function.get_node_id ()});
+  }
+
+  void visit (AST::TraitItemMethod &method) override
+  {
+    auto path
+      = prefix.append (ResolveTraitItemMethodToCanonicalPath::resolve (method));
+    resolver->get_name_scope ().insert (
+      path, method.get_node_id (), method.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (method.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (method.get_node_id (),
+				     Definition{method.get_node_id (),
+						method.get_node_id ()});
+  }
+
+  void visit (AST::TraitItemConst &constant) override
+  {
+    auto path = prefix.append (
+      ResolveTraitItemConstToCanonicalPath::resolve (constant));
+    resolver->get_name_scope ().insert (
+      path, constant.get_node_id (), constant.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (constant.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (constant.get_node_id (),
+				     Definition{constant.get_node_id (),
+						constant.get_node_id ()});
+  }
+
+  void visit (AST::TraitItemType &type) override
+  {
+    auto path
+      = prefix.append (ResolveTraitItemTypeToCanonicalPath::resolve (type));
+    resolver->get_name_scope ().insert (
+      path, type.get_node_id (), type.get_locus (), false,
+      [&] (const CanonicalPath &, NodeId, Location locus) -> void {
+	RichLocation r (type.get_locus ());
+	r.add_range (locus);
+	rust_error_at (r, "redefined multiple times");
+      });
+    resolver->insert_new_definition (type.get_node_id (),
+				     Definition{type.get_node_id (),
+						type.get_node_id ()});
+  }
+
+private:
+  ResolveTopLevelTraitItems (const CanonicalPath &prefix)
+    : ResolverBase (UNKNOWN_NODEID), prefix (prefix)
+  {}
 
   const CanonicalPath &prefix;
 };
