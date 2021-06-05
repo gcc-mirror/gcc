@@ -43,19 +43,14 @@ public:
     return resolver.translated;
   }
 
-  HIR::SelfParam lower_self (AST::SelfParam &self)
+  static HIR::TraitImplItem *translate (AST::TraitImplItem *item,
+					HirId parent_impl_id)
   {
-    HIR::Type *type = self.has_type ()
-			? ASTLoweringType::translate (self.get_type ().get ())
-			: nullptr;
-
-    auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, self.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
-				   mappings->get_next_localdef_id (crate_num));
-
-    return HIR::SelfParam (mapping, std::unique_ptr<HIR::Type> (type),
-			   self.get_is_mut (), self.get_locus ());
+    ASTLowerImplItem resolver (parent_impl_id);
+    item->accept_vis (resolver);
+    rust_assert (resolver.trait_impl_item != nullptr);
+    // can get a way with this for now since they have the same hierarchy
+    return resolver.trait_impl_item;
   }
 
   void visit (AST::ConstantItem &constant) override
@@ -70,11 +65,14 @@ public:
 				   mappings->get_next_hir_id (crate_num),
 				   mappings->get_next_localdef_id (crate_num));
 
-    translated = new HIR::ConstantItem (mapping, constant.get_identifier (),
-					vis, std::unique_ptr<HIR::Type> (type),
-					std::unique_ptr<HIR::Expr> (expr),
-					constant.get_outer_attrs (),
-					constant.get_locus ());
+    auto translated_constant
+      = new HIR::ConstantItem (mapping, constant.get_identifier (), vis,
+			       std::unique_ptr<HIR::Type> (type),
+			       std::unique_ptr<HIR::Expr> (expr),
+			       constant.get_outer_attrs (),
+			       constant.get_locus ());
+    translated = translated_constant;
+    trait_impl_item = translated_constant;
 
     mappings->insert_hir_implitem (mapping.get_crate_num (),
 				   mapping.get_hirid (), parent_impl_id,
@@ -163,6 +161,7 @@ public:
       }
 
     translated = fn;
+    trait_impl_item = fn;
   }
 
   void visit (AST::Method &method) override
@@ -251,15 +250,198 @@ public:
       }
 
     translated = mth;
+    trait_impl_item = mth;
   }
 
 private:
   ASTLowerImplItem (HirId parent_impl_id)
-    : translated (nullptr), parent_impl_id (parent_impl_id)
+    : translated (nullptr), trait_impl_item (nullptr),
+      parent_impl_id (parent_impl_id)
   {}
 
   HIR::InherentImplItem *translated;
+  HIR::TraitImplItem *trait_impl_item;
   HirId parent_impl_id;
+};
+
+class ASTLowerTraitItem : public ASTLoweringBase
+{
+  using Rust::HIR::ASTLoweringBase::visit;
+
+public:
+  static HIR::TraitItem *translate (AST::TraitItem *item)
+  {
+    ASTLowerTraitItem resolver;
+    item->accept_vis (resolver);
+    rust_assert (resolver.translated != nullptr);
+    return resolver.translated;
+  }
+
+  void visit (AST::TraitItemFunc &func) override
+  {
+    AST::TraitFunctionDecl &ref = func.get_trait_function_decl ();
+
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::FunctionQualifiers qualifiers (
+      HIR::FunctionQualifiers::AsyncConstStatus::NONE, false);
+
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (ref.has_generics ())
+      {
+	generic_params = lower_generic_params (ref.get_generic_params ());
+      }
+
+    std::unique_ptr<HIR::Type> return_type
+      = ref.has_return_type () ? std::unique_ptr<HIR::Type> (
+	  ASTLoweringType::translate (ref.get_return_type ().get ()))
+			       : nullptr;
+
+    std::vector<HIR::FunctionParam> function_params;
+    for (auto &param : ref.get_function_params ())
+      {
+	auto translated_pattern = std::unique_ptr<HIR::Pattern> (
+	  ASTLoweringPattern::translate (param.get_pattern ().get ()));
+	auto translated_type = std::unique_ptr<HIR::Type> (
+	  ASTLoweringType::translate (param.get_type ().get ()));
+
+	auto crate_num = mappings->get_current_crate ();
+	Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+				       mappings->get_next_hir_id (crate_num),
+				       UNKNOWN_LOCAL_DEFID);
+
+	auto hir_param
+	  = HIR::FunctionParam (mapping, std::move (translated_pattern),
+				std::move (translated_type),
+				param.get_locus ());
+	function_params.push_back (hir_param);
+      }
+
+    HIR::TraitFunctionDecl decl (ref.get_identifier (), std::move (qualifiers),
+				 std::move (generic_params),
+				 std::move (function_params),
+				 std::move (return_type),
+				 std::move (where_clause));
+    HIR::Expr *block_expr
+      = func.has_definition ()
+	  ? ASTLoweringExpr::translate (func.get_definition ().get ())
+	  : nullptr;
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, func.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::TraitItemFunc (mapping, std::move (decl),
+				std::unique_ptr<HIR::Expr> (block_expr),
+				func.get_outer_attrs (), func.get_locus ());
+  }
+
+  void visit (AST::TraitItemMethod &method) override
+  {
+    AST::TraitMethodDecl &ref = method.get_trait_method_decl ();
+
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::FunctionQualifiers qualifiers (
+      HIR::FunctionQualifiers::AsyncConstStatus::NONE, false);
+
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (ref.has_generics ())
+      {
+	generic_params = lower_generic_params (ref.get_generic_params ());
+      }
+
+    std::unique_ptr<HIR::Type> return_type
+      = ref.has_return_type () ? std::unique_ptr<HIR::Type> (
+	  ASTLoweringType::translate (ref.get_return_type ().get ()))
+			       : nullptr;
+
+    HIR::SelfParam self_param = lower_self (ref.get_self_param ());
+
+    std::vector<HIR::FunctionParam> function_params;
+    for (auto &param : ref.get_function_params ())
+      {
+	auto translated_pattern = std::unique_ptr<HIR::Pattern> (
+	  ASTLoweringPattern::translate (param.get_pattern ().get ()));
+	auto translated_type = std::unique_ptr<HIR::Type> (
+	  ASTLoweringType::translate (param.get_type ().get ()));
+
+	auto crate_num = mappings->get_current_crate ();
+	Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
+				       mappings->get_next_hir_id (crate_num),
+				       UNKNOWN_LOCAL_DEFID);
+
+	auto hir_param
+	  = HIR::FunctionParam (mapping, std::move (translated_pattern),
+				std::move (translated_type),
+				param.get_locus ());
+	function_params.push_back (hir_param);
+      }
+
+    HIR::TraitMethodDecl decl (ref.get_identifier (), std::move (qualifiers),
+			       std::move (generic_params),
+			       std::move (self_param),
+			       std::move (function_params),
+			       std::move (return_type),
+			       std::move (where_clause));
+    HIR::Expr *block_expr
+      = method.has_definition ()
+	  ? ASTLoweringExpr::translate (method.get_definition ().get ())
+	  : nullptr;
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, method.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::TraitItemMethod (mapping, std::move (decl),
+				  std::unique_ptr<HIR::Expr> (block_expr),
+				  method.get_outer_attrs (),
+				  method.get_locus ());
+  }
+
+  void visit (AST::TraitItemConst &constant) override
+  {
+    HIR::Type *type = ASTLoweringType::translate (constant.get_type ().get ());
+    HIR::Expr *expr
+      = constant.has_expression ()
+	  ? ASTLoweringExpr::translate (constant.get_expr ().get ())
+	  : nullptr;
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated = new HIR::TraitItemConst (mapping, constant.get_identifier (),
+					  std::unique_ptr<HIR::Type> (type),
+					  std::unique_ptr<HIR::Expr> (expr),
+					  constant.get_outer_attrs (),
+					  constant.get_locus ());
+  }
+
+  void visit (AST::TraitItemType &type) override
+  {
+    std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   UNKNOWN_LOCAL_DEFID);
+
+    translated
+      = new HIR::TraitItemType (mapping, type.get_identifier (),
+				std::move (type_param_bounds),
+				type.get_outer_attrs (), type.get_locus ());
+  }
+
+private:
+  ASTLowerTraitItem () : translated (nullptr) {}
+
+  HIR::TraitItem *translated;
 };
 
 } // namespace HIR

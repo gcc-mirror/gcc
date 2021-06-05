@@ -838,6 +838,10 @@ public:
   virtual std::string as_string () const = 0;
 
   virtual void accept_vis (HIRVisitor &vis) = 0;
+
+  virtual Analysis::NodeMapping get_trait_impl_mappings () const = 0;
+
+  virtual Location get_trait_impl_locus () const = 0;
 };
 
 // A crate HIR object - holds all the data for a single compilation unit

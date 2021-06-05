@@ -406,6 +406,149 @@ public:
       }
   }
 
+  void visit (AST::Trait &trait) override
+  {
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (trait.has_generics ())
+      {
+	generic_params = lower_generic_params (trait.get_generic_params ());
+
+	for (auto &generic_param : generic_params)
+	  {
+	    switch (generic_param->get_kind ())
+	      {
+		case HIR::GenericParam::GenericKind::TYPE: {
+		  const HIR::TypeParam &t
+		    = static_cast<const HIR::TypeParam &> (*generic_param);
+
+		  if (t.has_type ())
+		    {
+		      // see https://github.com/rust-lang/rust/issues/36887
+		      rust_error_at (
+			t.get_locus (),
+			"defaults for type parameters are not allowed here");
+		    }
+		}
+		break;
+
+	      default:
+		break;
+	      }
+	  }
+      }
+
+    std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
+
+    std::vector<std::unique_ptr<HIR::TraitItem> > trait_items;
+    for (auto &item : trait.get_trait_items ())
+      {
+	HIR::TraitItem *lowered = ASTLowerTraitItem::translate (item.get ());
+	trait_items.push_back (std::unique_ptr<HIR::TraitItem> (lowered));
+      }
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, trait.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    translated = new HIR::Trait (mapping, trait.get_identifier (),
+				 trait.is_unsafe (), std::move (generic_params),
+				 std::move (type_param_bounds), where_clause,
+				 std::move (trait_items), vis,
+				 trait.get_outer_attrs (), trait.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       trait.get_locus ());
+  }
+
+  void visit (AST::TraitImpl &impl_block) override
+  {
+    std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+    HIR::WhereClause where_clause (std::move (where_clause_items));
+    HIR::Visibility vis = HIR::Visibility::create_public ();
+
+    std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+    if (impl_block.has_generics ())
+      {
+	generic_params
+	  = lower_generic_params (impl_block.get_generic_params ());
+
+	for (auto &generic_param : generic_params)
+	  {
+	    switch (generic_param->get_kind ())
+	      {
+		case HIR::GenericParam::GenericKind::TYPE: {
+		  const HIR::TypeParam &t
+		    = static_cast<const HIR::TypeParam &> (*generic_param);
+
+		  if (t.has_type ())
+		    {
+		      // see https://github.com/rust-lang/rust/issues/36887
+		      rust_error_at (
+			t.get_locus (),
+			"defaults for type parameters are not allowed here");
+		    }
+		}
+		break;
+
+	      default:
+		break;
+	      }
+	  }
+      }
+
+    HIR::Type *trait_type
+      = ASTLoweringType::translate (impl_block.get_type ().get ());
+    HIR::Type *trait = nullptr;
+
+    auto crate_num = mappings->get_current_crate ();
+    Analysis::NodeMapping mapping (crate_num, impl_block.get_node_id (),
+				   mappings->get_next_hir_id (crate_num),
+				   mappings->get_next_localdef_id (crate_num));
+
+    std::vector<std::unique_ptr<HIR::TraitImplItem> > impl_items;
+    std::vector<HirId> impl_item_ids;
+    for (auto &impl_item : impl_block.get_impl_items ())
+      {
+	HIR::TraitImplItem *lowered
+	  = ASTLowerImplItem::translate (impl_item.get (),
+					 mapping.get_hirid ());
+	impl_items.push_back (std::unique_ptr<HIR::TraitImplItem> (lowered));
+	impl_item_ids.push_back (
+	  lowered->get_trait_impl_mappings ().get_hirid ());
+      }
+
+    translated
+      = new HIR::TraitImpl (mapping, std::unique_ptr<HIR::Type> (trait),
+			    impl_block.is_unsafe (), impl_block.is_exclam (),
+			    std::move (impl_items), std::move (generic_params),
+			    std::unique_ptr<HIR::Type> (trait_type),
+			    where_clause, vis, impl_block.get_inner_attrs (),
+			    impl_block.get_outer_attrs (),
+			    impl_block.get_locus ());
+
+    mappings->insert_defid_mapping (mapping.get_defid (), translated);
+    mappings->insert_hir_item (mapping.get_crate_num (), mapping.get_hirid (),
+			       translated);
+    mappings->insert_location (crate_num, mapping.get_hirid (),
+			       impl_block.get_locus ());
+
+    for (auto &impl_item_id : impl_item_ids)
+      {
+	mappings->insert_impl_item_mapping (impl_item_id,
+					    static_cast<HIR::InherentImpl *> (
+					      translated));
+      }
+  }
+
 private:
   ASTLoweringItem () : translated (nullptr) {}
 

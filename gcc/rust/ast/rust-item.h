@@ -3422,6 +3422,8 @@ public:
 
   Identifier get_identifier () const { return name; }
 
+  bool is_unsafe () const { return has_unsafe; }
+
   // Mega-constructor
   Trait (Identifier name, bool is_unsafe,
 	 std::vector<std::unique_ptr<GenericParam> > generic_params,
@@ -3757,8 +3759,6 @@ public:
       trait_path (std::move (trait_path)), impl_items (std::move (impl_items))
   {}
 
-  // TODO: constructors with less params
-
   // Copy constructor with vector clone
   TraitImpl (TraitImpl const &other)
     : Impl (other), has_unsafe (other.has_unsafe),
@@ -3789,6 +3789,9 @@ public:
   TraitImpl &operator= (TraitImpl &&other) = default;
 
   void accept_vis (ASTVisitor &vis) override;
+
+  bool is_unsafe () const { return has_unsafe; };
+  bool is_exclam () const { return has_exclam; }
 
   // TODO: think of better way to do this
   const std::vector<std::unique_ptr<TraitImplItem> > &get_impl_items () const

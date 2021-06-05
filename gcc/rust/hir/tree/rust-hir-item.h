@@ -700,6 +700,11 @@ public:
     return get_mappings ();
   };
 
+  Analysis::NodeMapping get_trait_impl_mappings () const override
+  {
+    return get_mappings ();
+  };
+
   // Returns whether function has return type - if not, it is void.
   bool has_function_return_type () const { return return_type != nullptr; }
 
@@ -747,6 +752,8 @@ public:
   Location get_locus () const { return locus; }
 
   Location get_impl_locus () const final { return get_locus (); }
+
+  Location get_trait_impl_locus () const final { return get_locus (); }
 
   std::unique_ptr<BlockExpr> &get_function_body () { return function_body; }
   const std::unique_ptr<BlockExpr> &get_function_body () const
@@ -1370,9 +1377,16 @@ public:
 
   Location get_impl_locus () const final { return get_locus (); }
 
+  Location get_trait_impl_locus () const final { return get_locus (); }
+
   void accept_vis (HIRVisitor &vis) override;
 
   Analysis::NodeMapping get_impl_mappings () const override
+  {
+    return get_mappings ();
+  };
+
+  Analysis::NodeMapping get_trait_impl_mappings () const override
   {
     return get_mappings ();
   };
@@ -1518,6 +1532,8 @@ public:
 
   Location get_locus () const { return locus; }
 
+  Location get_trait_impl_locus () const final { return get_locus (); }
+
   void accept_vis (HIRVisitor &vis) override;
 
   std::vector<std::unique_ptr<GenericParam> > &get_generic_params ()
@@ -1544,6 +1560,11 @@ public:
   }
 
   Identifier get_new_type_name () const { return new_type_name; }
+
+  Analysis::NodeMapping get_trait_impl_mappings () const override
+  {
+    return get_mappings ();
+  };
 
 protected:
   /* Use covariance to implement clone function as returning this object
@@ -2271,6 +2292,8 @@ public:
 
   Location get_impl_locus () const final { return get_locus (); }
 
+  Location get_trait_impl_locus () const final { return get_locus (); }
+
   void accept_vis (HIRVisitor &vis) override;
 
   Type *get_type () { return type.get (); }
@@ -2280,6 +2303,11 @@ public:
   std::string get_identifier () { return identifier; }
 
   Analysis::NodeMapping get_impl_mappings () const override
+  {
+    return get_mappings ();
+  };
+
+  Analysis::NodeMapping get_trait_impl_mappings () const override
   {
     return get_mappings ();
   };
@@ -2478,7 +2506,7 @@ class TraitItemFunc : public TraitItem
 {
   AST::AttrVec outer_attrs;
   TraitFunctionDecl decl;
-  std::unique_ptr<BlockExpr> block_expr;
+  std::unique_ptr<Expr> block_expr;
   Location locus;
 
 public:
@@ -2486,8 +2514,8 @@ public:
   bool has_definition () const { return block_expr != nullptr; }
 
   TraitItemFunc (Analysis::NodeMapping mappings, TraitFunctionDecl decl,
-		 std::unique_ptr<BlockExpr> block_expr,
-		 AST::AttrVec outer_attrs, Location locus)
+		 std::unique_ptr<Expr> block_expr, AST::AttrVec outer_attrs,
+		 Location locus)
     : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
       decl (std::move (decl)), block_expr (std::move (block_expr)),
       locus (locus)
@@ -2499,7 +2527,7 @@ public:
       decl (other.decl), locus (other.locus)
   {
     if (other.block_expr != nullptr)
-      block_expr = other.block_expr->clone_block_expr ();
+      block_expr = other.block_expr->clone_expr ();
   }
 
   // Overloaded assignment operator to clone
@@ -2511,7 +2539,7 @@ public:
     locus = other.locus;
     mappings = other.mappings;
     if (other.block_expr != nullptr)
-      block_expr = other.block_expr->clone_block_expr ();
+      block_expr = other.block_expr->clone_expr ();
 
     return *this;
   }
@@ -2526,7 +2554,7 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  BlockExpr *get_block_expr () { return block_expr.get (); }
+  std::unique_ptr<Expr> &get_block_expr () { return block_expr; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -2633,7 +2661,7 @@ class TraitItemMethod : public TraitItem
 {
   AST::AttrVec outer_attrs;
   TraitMethodDecl decl;
-  std::unique_ptr<BlockExpr> block_expr;
+  std::unique_ptr<Expr> block_expr;
   Location locus;
 
 public:
@@ -2641,8 +2669,8 @@ public:
   bool has_definition () const { return block_expr != nullptr; }
 
   TraitItemMethod (Analysis::NodeMapping mappings, TraitMethodDecl decl,
-		   std::unique_ptr<BlockExpr> block_expr,
-		   AST::AttrVec outer_attrs, Location locus)
+		   std::unique_ptr<Expr> block_expr, AST::AttrVec outer_attrs,
+		   Location locus)
     : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
       decl (std::move (decl)), block_expr (std::move (block_expr)),
       locus (locus)
@@ -2651,7 +2679,7 @@ public:
   // Copy constructor with clone
   TraitItemMethod (TraitItemMethod const &other)
     : TraitItem (other.mappings), outer_attrs (other.outer_attrs),
-      decl (other.decl), block_expr (other.block_expr->clone_block_expr ()),
+      decl (other.decl), block_expr (other.block_expr->clone_expr ()),
       locus (other.locus)
   {}
 
@@ -2661,7 +2689,7 @@ public:
     TraitItem::operator= (other);
     outer_attrs = other.outer_attrs;
     decl = other.decl;
-    block_expr = other.block_expr->clone_block_expr ();
+    block_expr = other.block_expr->clone_expr ();
     locus = other.locus;
     mappings = other.mappings;
 
@@ -2678,7 +2706,7 @@ public:
 
   void accept_vis (HIRVisitor &vis) override;
 
-  BlockExpr *get_block_expr () { return block_expr.get (); }
+  std::unique_ptr<Expr> &get_block_expr () { return block_expr; }
 
 protected:
   // Clone function implementation as (not pure) virtual method
@@ -3105,7 +3133,7 @@ class TraitImpl : public Impl
 {
   bool has_unsafe;
   bool has_exclam;
-  TypePath trait_path;
+  std::unique_ptr<Type> trait_path;
 
   // bool has_impl_items;
   std::vector<std::unique_ptr<TraitImplItem> > impl_items;
@@ -3117,7 +3145,7 @@ public:
   bool has_impl_items () const { return !impl_items.empty (); }
 
   // Mega-constructor
-  TraitImpl (Analysis::NodeMapping mappings, TypePath trait_path,
+  TraitImpl (Analysis::NodeMapping mappings, std::unique_ptr<Type> trait_path,
 	     bool is_unsafe, bool has_exclam,
 	     std::vector<std::unique_ptr<TraitImplItem> > impl_items,
 	     std::vector<std::unique_ptr<GenericParam> > generic_params,
@@ -3136,7 +3164,8 @@ public:
   // Copy constructor with vector clone
   TraitImpl (TraitImpl const &other)
     : Impl (other), has_unsafe (other.has_unsafe),
-      has_exclam (other.has_exclam), trait_path (other.trait_path)
+      has_exclam (other.has_exclam),
+      trait_path (other.trait_path->clone_type ())
   {
     impl_items.reserve (other.impl_items.size ());
     for (const auto &e : other.impl_items)
@@ -3147,7 +3176,7 @@ public:
   TraitImpl &operator= (TraitImpl const &other)
   {
     Impl::operator= (other);
-    trait_path = other.trait_path;
+    trait_path = other.trait_path->clone_type ();
     has_unsafe = other.has_unsafe;
     has_exclam = other.has_exclam;
 

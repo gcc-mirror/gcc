@@ -347,5 +347,21 @@ ASTLoweringBase::lower_generic_args (AST::GenericArgs &args)
 			   std::move (binding_args), args.get_locus ());
 }
 
+HIR::SelfParam
+ASTLoweringBase::lower_self (AST::SelfParam &self)
+{
+  HIR::Type *type = self.has_type ()
+		      ? ASTLoweringType::translate (self.get_type ().get ())
+		      : nullptr;
+
+  auto crate_num = mappings->get_current_crate ();
+  Analysis::NodeMapping mapping (crate_num, self.get_node_id (),
+				 mappings->get_next_hir_id (crate_num),
+				 mappings->get_next_localdef_id (crate_num));
+
+  return HIR::SelfParam (mapping, std::unique_ptr<HIR::Type> (type),
+			 self.get_is_mut (), self.get_locus ());
+}
+
 } // namespace HIR
 } // namespace Rust

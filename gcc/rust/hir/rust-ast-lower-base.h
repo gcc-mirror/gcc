@@ -293,6 +293,8 @@ protected:
   HIR::GenericArgs lower_generic_args (AST::GenericArgs &args);
 
   HIR::GenericArgsBinding lower_binding (AST::GenericArgsBinding &binding);
+
+  HIR::SelfParam lower_self (AST::SelfParam &self);
 };
 
 } // namespace HIR
