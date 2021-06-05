@@ -1,3 +1,68 @@
+2021-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (_SSize): Return the result of
+	ranges::size converted to the wider of make-signed-like-t<S> and
+	ptrdiff_t, rather than the ranges different type.
+	* testsuite/std/ranges/access/ssize.cc: Adjust expected result
+	for an iota_view that uses an integer class type for its
+	difference_type.
+
+2021-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100824
+	* include/bits/ranges_base.h (__member_data): Use __decay_copy.
+	* testsuite/std/ranges/access/data.cc: Add testcase from PR.
+
+2021-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100824
+	* include/bits/iterator_concepts.h (__detail::__decay_copy)
+	(__detail::__member_begin, __detail::__adl_begin): Move to
+	namespace ranges::__cust_access.
+	(__detail::__ranges_begin): Likewise, and rename to __begin.
+	Remove redundant static assertion.
+	* include/bits/ranges_base.h (_Begin, _End, _RBegin, _REnd):
+	Use lvalue in noexcept specifier.
+	(__as_const): Add non-deduced parameter for value category.
+	(_CBegin, _CEnd, _CRBegin, _CREnd, _CData): Adjust uses of
+	__as_const.
+	(__member_size, __adl_size, __member_empty, __size0_empty):
+	(__eq_iter_empty, __adl_data): Use lvalue objects in
+	requirements.
+	(__sentinel_size): Likewise. Add check for conversion to
+	unsigned-like.
+	(__member_data): Allow non-lvalue types to satisfy the concept,
+	but use lvalue object in requirements.
+	(_Size, _SSize): Remove forwarding to always use an lvalue.
+	(_Data): Likewise. Add static assertion for arrays.
+	* testsuite/std/ranges/access/cdata.cc: Adjust expected
+	behaviour for rvalues. Add negative tests for ill-formed
+	expressions.
+	* testsuite/std/ranges/access/data.cc: Likewise.
+	* testsuite/std/ranges/access/empty.cc: Adjust expected
+	behaviour for rvalues.
+	* testsuite/std/ranges/access/size.cc: Likewise.
+
+2021-06-04  Tim Adye  <Tim.Adye@cern.ch>
+
+	* include/std/any (any::_Manager::_S_access): New static
+	function to access the contained value.
+	(any::emplace, __any_caster): Use _S_access member of the
+	manager type.
+
+2021-06-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2020.xml:
+	* doc/html/*: Regenerate.
+	* include/bits/hashtable.h (__cpp_lib_generic_unordered_lookup):
+	Define.
+	* include/std/version (__cpp_lib_generic_unordered_lookup):
+	Define.
+	* testsuite/23_containers/unordered_map/operations/1.cc: Check
+	feature test macro.
+	* testsuite/23_containers/unordered_set/operations/1.cc:
+	Likewise.
+
 2021-06-03  Patrick Palka  <ppalka@redhat.com>
 
 	* include/bits/ranges_algo.h (__detail::__can_reread_output):

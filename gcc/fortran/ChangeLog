@@ -1,3 +1,62 @@
+2021-06-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99839
+	* frontend-passes.c (inline_matmul_assign): Do not inline matmul
+	if the assignment to the resulting array if it is not of canonical
+	type (real/integer/complex/logical).
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* dump-parse-tree.c (show_code_node): Handle
+	EXEC_OMP_(TARGET_)(,PARALLEL_,TEAMS_)LOOP.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* scanner.c (skip_fixed_omp_sentinel): Set openacc_flag if
+	this is not an (OpenMP) continuation line.
+	(skip_fixed_oacc_sentinel): Likewise for openmp_flag and OpenACC.
+	(gfc_next_char_literal): gfc_error_now to force error for mixed OMP/ACC
+	continuation once per location and return '\n'.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* openmp.c (gfc_match_omp_clauses): Fix typo in error message.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* dump-parse-tree.c (show_omp_clauses): Handle bind clause.
+	(show_omp_node): Handle loop directive.
+	* frontend-passes.c (gfc_code_walker): Likewise.
+	* gfortran.h (enum gfc_statement): Add
+	ST_OMP_(END_)(TARGET_)(|PARALLEL_|TEAMS_)LOOP.
+	(enum gfc_omp_bind_type): New.
+	(gfc_omp_clauses): Use it.
+	(enum gfc_exec_op): Add EXEC_OMP_(TARGET_)(|PARALLEL_|TEAMS_)LOOP.
+	* match.h (gfc_match_omp_loop, gfc_match_omp_parallel_loop,
+	gfc_match_omp_target_parallel_loop, gfc_match_omp_target_teams_loop,
+	gfc_match_omp_teams_loop): New.
+	* openmp.c (enum omp_mask1): Add OMP_CLAUSE_BIND.
+	(gfc_match_omp_clauses): Handle it.
+	(OMP_LOOP_CLAUSES, gfc_match_omp_loop, gfc_match_omp_teams_loop,
+	gfc_match_omp_target_teams_loop, gfc_match_omp_parallel_loop,
+	gfc_match_omp_target_parallel_loop): New.
+	(resolve_omp_clauses, resolve_omp_do, omp_code_to_statement,
+	gfc_resolve_omp_directive): Handle omp loop.
+	* parse.c (decode_omp_directive case_exec_markers, gfc_ascii_statement,
+	parse_omp_do, parse_executable): Likewise.
+	(parse_omp_structured_block): Remove ST_ which use parse_omp_do.
+	* resolve.c (gfc_resolve_blocks): Add omp loop.
+	* st.c (gfc_free_statement): Likewise.
+	* trans-openmp.c (gfc_trans_omp_clauses): Handle bind clause.
+	(gfc_trans_omp_do, gfc_trans_omp_parallel_do, gfc_trans_omp_distribute,
+	gfc_trans_omp_teams, gfc_trans_omp_target, gfc_trans_omp_directive):
+	Handle loop directive.
+	(gfc_split_omp_clauses): Likewise; fix firstprivate/lastprivate
+	and (in_)reduction for taskloop.
+	* trans.c (trans_code): Handle omp loop directive.
+
 2021-06-01  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/99928

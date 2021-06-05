@@ -1,3 +1,121 @@
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/100905
+	* gfortran.dg/gomp/loop-3.f90: New test.
+
+2021-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100882
+	* gdc.dg/pr100882a.d: New test.
+	* gdc.dg/pr100882b.d: New test.
+	* gdc.dg/pr100882c.d: New test.
+	* gdc.dg/torture/pr100882.d: New test.
+
+2021-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100893
+	* g++.dg/template/param4.C: New test.
+	* g++.dg/template/param5.C: New test.
+	* g++.dg/cpp1z/nontype-auto19.C: New test.
+	* g++.dg/cpp2a/concepts-decltype.C: Don't expect that the
+	deduced type of a decltype(auto) NTTP has top-level cv-quals.
+
+2021-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100102
+	* g++.dg/cpp0x/alias-decl-72.C: New test.
+	* g++.dg/cpp0x/alias-decl-72a.C: New test.
+
+2021-06-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99839
+	* gfortran.dg/inline_matmul_25.f90: New test.
+
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100783
+	* gcc.dg/nonnull-6.c: New test.
+
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100732
+	* gcc.dg/tree-ssa/builtin-snprintf-11.c: New test.
+	* gcc.dg/tree-ssa/builtin-snprintf-12.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-28.c: New test.
+	* gcc.dg/tree-ssa/builtin-sprintf-29.c: New test.
+	* gcc.dg/uninit-pr100732.c: New test.
+
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/Wvla-parameter-10.c: New test.
+	* gcc.dg/Wvla-parameter-11.c: New test.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/goacc/omp-fixed.f: Re-add test item changed in previous
+	commit in addition - add more dg-errors and '... end ...' due to changed
+	parsing.
+	* gfortran.dg/goacc/omp.f95: Likewise.
+	* gfortran.dg/goacc-gomp/mixed-1.f: New test.
+
+2021-06-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* gcc.dg/vect/slp-perm-9.c (dg-final): Adjust dumps for vect32 targets.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr99928-5.f90: Really use the
+	proper iteration variable.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gfortran.dg/gomp/pr99928-1.f90: Add 'implicit none'.
+	* gfortran.dg/gomp/pr99928-11.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-4.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-6.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-8.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-2.f90: Likewise. Add missing decl.
+	* gfortran.dg/gomp/pr99928-5.f90: Add implicit none;
+	fix loop-variable and remove xfail.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* gfortran.dg/gomp/loop-2.f90: Update for typo fix.
+
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* gfortran.dg/gomp/pr99928-3.f90: Add 'default(none)', following
+	C/C++ version of the patch.
+	* gfortran.dg/gomp/loop-1.f90: New test.
+	* gfortran.dg/gomp/loop-2.f90: New test.
+	* gfortran.dg/gomp/pr99928-1.f90: New test; based on C/C++ test.
+	* gfortran.dg/gomp/pr99928-11.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-2.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-4.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-5.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-6.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-8.f90: Likewise.
+	* gfortran.dg/goacc/omp.f95: Use 'acc kernels loops' instead
+	of 'acc loops' to hide unrelated bug for now.
+	* gfortran.dg/goacc/omp-fixed.f: Likewise
+
+2021-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100887
+	* gcc.target/i386/pr100887.c: New test.
+
+2021-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100872
+	* g++.dg/gomp/declare-simd-8.C: New test.
+
+2021-06-04  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* gcc.target/powerpc/not-promote-mode.c: New.
+
 2021-06-03  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/100637

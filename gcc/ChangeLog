@@ -1,3 +1,81 @@
+2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/100905
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_BIND.
+
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/100732
+	* gimple-fold.c (gimple_fold_builtin_sprintf): Avoid folding calls
+	with either source or destination argument of invalid type.
+	* tree-ssa-uninit.c (maybe_warn_pass_by_reference): Avoid checking
+	calls with arguments of invalid type.
+
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	* attribs.c (init_attr_rdwr_indices): Use VLA bounds in the expected
+	order.
+	(attr_access::vla_bounds): Also handle VLA bounds.
+
+2021-06-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (GOT_memory_operand):
+	Implement using match_code RTXes.
+	(GOT32_symbol_operand): Ditto.
+
+2021-06-04  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/i386-expand.c (ix86_expand_vector_init_duplicate):
+	Handle V2HI mode.
+	(ix86_expand_vector_init_general): Ditto.
+	Use SImode instead of word_mode for logic operations
+	when GET_MODE_SIZE (mode) < UNITS_PER_WORD.
+	(expand_vec_perm_even_odd_1): Assert that V2HI mode should be
+	implemented by expand_vec_perm_1.
+	(expand_vec_perm_broadcast_1): Assert that V2HI and V4HI modes
+	should be implemented using standard shuffle patterns.
+	(ix86_vectorize_vec_perm_const): Handle V2HImode.  Add V4HI and
+	V2HI modes to modes, implementable with shuffle for one operand.
+	* config/i386/mmx.md (*punpckwd): New insn_and_split pattern.
+	(*pshufw_1): New insn pattern.
+	(*vec_dupv2hi): Ditto.
+	(vec_initv2hihi): New expander.
+
+2021-06-04  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/arm/vfp.md (no_literal_pool_df_immediate,
+	no_literal_pool_sf_immediate): Fix empty split condition.
+
+2021-06-04  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/i386/i386.md (*load_tp_x32_zext, *add_tp_x32_zext,
+	*tls_dynamic_gnu2_combine_32): Fix empty split condition.
+	* config/i386/sse.md (*<sse2_avx2>_pmovmskb_lt,
+	*<sse2_avx2>_pmovmskb_zext_lt, *sse2_pmovmskb_ext_lt,
+	*<sse4_1_avx2>_pblendvb_lt): Likewise.
+
+2021-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100887
+	* config/i386/i386-expand.c (ix86_expand_vector_init): Handle
+	concatenation from half-sized modes with TImode elements.
+
+2021-06-04  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_override_options): Disable millicode
+	thunks when RF16 is on.
+
+2021-06-04  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000.h (PROMOTE_MODE): Remove.
+
+2021-06-04  Haochen Gui  <guihaoc@gcc.gnu.org>
+
+	* config/rs6000/rs6000-call.c (rs6000_promote_function_mode):
+	Replace PROMOTE_MODE marco with its content.
+
 2021-06-03  Kewen Lin  <linkw@linux.ibm.com>
 
 	* config/cris/cris.md (*addi_reload): Fix empty split condition.

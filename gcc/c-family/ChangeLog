@@ -1,3 +1,13 @@
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100783
+	* c-attribs.c (positional_argument): Bail on erroneous types.
+
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	* c-warn.c (warn_parm_array_mismatch): Check TREE_PURPOSE to test
+	for element presence.
+
 2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (dump_ada_macros): Minor tweaks.
