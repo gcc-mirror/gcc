@@ -447,7 +447,7 @@ namespace ranges
 #if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
 	  // For strict-ansi modes integral<__int128> is false
 	  else if constexpr (__detail::__is_int128<__size_type>)
-	    return static_cast<unsigned __int128>(__size);
+	    return static_cast<__int128>(__size);
 #endif
 	  else // Must be one of __max_diff_type or __max_size_type.
 	    return __detail::__max_diff_type(__size);
