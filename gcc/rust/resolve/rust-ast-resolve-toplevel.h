@@ -41,9 +41,9 @@ public:
 
   void visit (AST::TypeAlias &alias) override
   {
+    auto path = prefix.append (CanonicalPath (alias.get_new_type_name ()));
     resolver->get_type_scope ().insert (
-      CanonicalPath (alias.get_new_type_name ()), alias.get_node_id (),
-      alias.get_locus (), false,
+      path, alias.get_node_id (), alias.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (alias.get_locus ());
 	r.add_range (locus);
@@ -53,9 +53,9 @@ public:
 
   void visit (AST::TupleStruct &struct_decl) override
   {
+    auto path = prefix.append (CanonicalPath (struct_decl.get_identifier ()));
     resolver->get_type_scope ().insert (
-      CanonicalPath (struct_decl.get_identifier ()), struct_decl.get_node_id (),
-      struct_decl.get_locus (), false,
+      path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (struct_decl.get_locus ());
 	r.add_range (locus);
@@ -65,9 +65,9 @@ public:
 
   void visit (AST::StructStruct &struct_decl) override
   {
+    auto path = prefix.append (CanonicalPath (struct_decl.get_identifier ()));
     resolver->get_type_scope ().insert (
-      CanonicalPath (struct_decl.get_identifier ()), struct_decl.get_node_id (),
-      struct_decl.get_locus (), false,
+      path, struct_decl.get_node_id (), struct_decl.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (struct_decl.get_locus ());
 	r.add_range (locus);
@@ -77,9 +77,9 @@ public:
 
   void visit (AST::StaticItem &var) override
   {
+    auto path = prefix.append (CanonicalPath (var.get_identifier ()));
     resolver->get_name_scope ().insert (
-      CanonicalPath (var.get_identifier ()), var.get_node_id (),
-      var.get_locus (), false,
+      path, var.get_node_id (), var.get_locus (), false,
       [&] (const CanonicalPath &, NodeId, Location locus) -> void {
 	RichLocation r (var.get_locus ());
 	r.add_range (locus);
