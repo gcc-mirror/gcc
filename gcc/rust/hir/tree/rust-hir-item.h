@@ -2485,15 +2485,18 @@ public:
   // Returns whether function has a definition or is just a declaration.
   bool has_definition () const { return block_expr != nullptr; }
 
-  TraitItemFunc (TraitFunctionDecl decl, std::unique_ptr<BlockExpr> block_expr,
+  TraitItemFunc (Analysis::NodeMapping mappings, TraitFunctionDecl decl,
+		 std::unique_ptr<BlockExpr> block_expr,
 		 AST::AttrVec outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), decl (std::move (decl)),
-      block_expr (std::move (block_expr)), locus (locus)
+    : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
+      decl (std::move (decl)), block_expr (std::move (block_expr)),
+      locus (locus)
   {}
 
   // Copy constructor with clone
   TraitItemFunc (TraitItemFunc const &other)
-    : outer_attrs (other.outer_attrs), decl (other.decl), locus (other.locus)
+    : TraitItem (other.mappings), outer_attrs (other.outer_attrs),
+      decl (other.decl), locus (other.locus)
   {
     if (other.block_expr != nullptr)
       block_expr = other.block_expr->clone_block_expr ();
@@ -2506,6 +2509,7 @@ public:
     outer_attrs = other.outer_attrs;
     decl = other.decl;
     locus = other.locus;
+    mappings = other.mappings;
     if (other.block_expr != nullptr)
       block_expr = other.block_expr->clone_block_expr ();
 
@@ -2636,16 +2640,19 @@ public:
   // Returns whether method has a definition or is just a declaration.
   bool has_definition () const { return block_expr != nullptr; }
 
-  TraitItemMethod (TraitMethodDecl decl, std::unique_ptr<BlockExpr> block_expr,
+  TraitItemMethod (Analysis::NodeMapping mappings, TraitMethodDecl decl,
+		   std::unique_ptr<BlockExpr> block_expr,
 		   AST::AttrVec outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), decl (std::move (decl)),
-      block_expr (std::move (block_expr)), locus (locus)
+    : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
+      decl (std::move (decl)), block_expr (std::move (block_expr)),
+      locus (locus)
   {}
 
   // Copy constructor with clone
   TraitItemMethod (TraitItemMethod const &other)
-    : outer_attrs (other.outer_attrs), decl (other.decl),
-      block_expr (other.block_expr->clone_block_expr ()), locus (other.locus)
+    : TraitItem (other.mappings), outer_attrs (other.outer_attrs),
+      decl (other.decl), block_expr (other.block_expr->clone_block_expr ()),
+      locus (other.locus)
   {}
 
   // Overloaded assignment operator to clone
@@ -2656,6 +2663,7 @@ public:
     decl = other.decl;
     block_expr = other.block_expr->clone_block_expr ();
     locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -2696,18 +2704,19 @@ public:
   // Whether the constant item has an associated expression.
   bool has_expression () const { return expr != nullptr; }
 
-  TraitItemConst (Identifier name, std::unique_ptr<Type> type,
-		  std::unique_ptr<Expr> expr, AST::AttrVec outer_attrs,
-		  Location locus)
-    : outer_attrs (std::move (outer_attrs)), name (std::move (name)),
-      type (std::move (type)), expr (std::move (expr)), locus (locus)
+  TraitItemConst (Analysis::NodeMapping mappings, Identifier name,
+		  std::unique_ptr<Type> type, std::unique_ptr<Expr> expr,
+		  AST::AttrVec outer_attrs, Location locus)
+    : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
+      name (std::move (name)), type (std::move (type)), expr (std::move (expr)),
+      locus (locus)
   {}
 
   // Copy constructor with clones
   TraitItemConst (TraitItemConst const &other)
-    : outer_attrs (other.outer_attrs), name (other.name),
-      type (other.type->clone_type ()), expr (other.expr->clone_expr ()),
-      locus (other.locus)
+    : TraitItem (other.mappings), outer_attrs (other.outer_attrs),
+      name (other.name), type (other.type->clone_type ()),
+      expr (other.expr->clone_expr ()), locus (other.locus)
   {}
 
   // Overloaded assignment operator to clone
@@ -2719,6 +2728,7 @@ public:
     type = other.type->clone_type ();
     expr = other.expr->clone_expr ();
     locus = other.locus;
+    mappings = other.mappings;
 
     return *this;
   }
@@ -2760,16 +2770,18 @@ public:
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
 
   TraitItemType (
-    Identifier name,
+    Analysis::NodeMapping mappings, Identifier name,
     std::vector<std::unique_ptr<TypeParamBound> > type_param_bounds,
     AST::AttrVec outer_attrs, Location locus)
-    : outer_attrs (std::move (outer_attrs)), name (std::move (name)),
+    : TraitItem (mappings), outer_attrs (std::move (outer_attrs)),
+      name (std::move (name)),
       type_param_bounds (std::move (type_param_bounds)), locus (locus)
   {}
 
   // Copy constructor with vector clone
   TraitItemType (TraitItemType const &other)
-    : outer_attrs (other.outer_attrs), name (other.name), locus (other.locus)
+    : TraitItem (other.mappings), outer_attrs (other.outer_attrs),
+      name (other.name), locus (other.locus)
   {
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
@@ -2783,6 +2795,7 @@ public:
     outer_attrs = other.outer_attrs;
     name = other.name;
     locus = other.locus;
+    mappings = other.mappings;
 
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
