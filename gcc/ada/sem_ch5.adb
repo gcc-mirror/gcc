@@ -4233,9 +4233,49 @@ package body Sem_Ch5 is
    -------------------------
 
    procedure Analyze_Target_Name (N : Node_Id) is
+      procedure Report_Error;
+
+      ------------------
+      -- Report_Error --
+      ------------------
+
+      procedure Report_Error is
+      begin
+         Error_Msg_N
+           ("must appear in the right-hand side of an assignment statement",
+             N);
+         Rewrite (N, New_Occurrence_Of (Any_Id, Sloc (N)));
+      end Report_Error;
+
    begin
       --  A target name has the type of the left-hand side of the enclosing
       --  assignment.
+
+      --  First, verify that the context is the right-hand side of an
+      --  assignment statement.
+
+      if No (Current_Assignment) then
+         Report_Error;
+         return;
+
+      else
+         declare
+            P : Node_Id := N;
+         begin
+            while Present (P)
+              and then Nkind (Parent (P)) /= N_Assignment_Statement
+            loop
+               P := Parent (P);
+            end loop;
+
+            if No (P)
+              or else P /= Expression (Parent (P))
+            then
+               Report_Error;
+               return;
+            end if;
+         end;
+      end if;
 
       Set_Etype (N, Etype (Name (Current_Assignment)));
    end Analyze_Target_Name;
