@@ -20105,7 +20105,7 @@ For some ARM implementations better performance can be obtained by using
 this option.
 Permissible names are: @samp{arm7tdmi}, @samp{arm7tdmi-s}, @samp{arm710t},
 @samp{arm720t}, @samp{arm740t}, @samp{strongarm}, @samp{strongarm110},
-@samp{strongarm1100}, 0@samp{strongarm1110}, @samp{arm8}, @samp{arm810},
+@samp{strongarm1100}, @samp{strongarm1110}, @samp{arm8}, @samp{arm810},
 @samp{arm9}, @samp{arm9e}, @samp{arm920}, @samp{arm920t}, @samp{arm922t},
 @samp{arm946e-s}, @samp{arm966e-s}, @samp{arm968e-s}, @samp{arm926ej-s},
 @samp{arm940t}, @samp{arm9tdmi}, @samp{arm10tdmi}, @samp{arm1020t},
