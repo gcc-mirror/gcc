@@ -1,3 +1,22 @@
+2021-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100893
+	* pt.c (convert_template_argument): Strip top-level cv-quals
+	on the substituted type of a non-type template parameter.
+
+2021-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100102
+	* pt.c (tsubst_function_decl): Remove old code for reducing
+	args when it has excess levels.
+
+2021-06-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100872
+	* name-lookup.c (maybe_save_operator_binding): Add op_attr after all
+	ATTR_IS_DEPENDENT attributes in the DECL_ATTRIBUTES list rather than
+	to the start.
+
 2021-06-03  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/100592

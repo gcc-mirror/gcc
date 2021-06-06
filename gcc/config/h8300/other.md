@@ -7,7 +7,7 @@
 	(abs:SF (match_operand:SF 1 "register_operand" "0")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (abs:SF (match_dup 1)))
 	      (clobber (reg:CC CC_REG))])])
 

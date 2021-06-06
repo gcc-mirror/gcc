@@ -16562,7 +16562,7 @@
 	  UNSPEC_MOVMSK))]
   "TARGET_SSE2"
   "#"
-  ""
+  "&& 1"
   [(set (match_dup 0)
 	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))]
   ""
@@ -16584,7 +16584,7 @@
 	    UNSPEC_MOVMSK)))]
   "TARGET_64BIT && TARGET_SSE2"
   "#"
-  ""
+  "&& 1"
   [(set (match_dup 0)
 	(zero_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
   ""
@@ -16606,7 +16606,7 @@
 	    UNSPEC_MOVMSK)))]
   "TARGET_64BIT && TARGET_SSE2"
   "#"
-  ""
+  "&& 1"
   [(set (match_dup 0)
 	(sign_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
   ""
@@ -17911,7 +17911,7 @@
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
   "#"
-  ""
+  "&& 1"
   [(set (match_dup 0)
 	(unspec:VI1_AVX2
 	 [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPEC_BLENDV))]

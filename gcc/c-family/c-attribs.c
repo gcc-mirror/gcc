@@ -698,6 +698,9 @@ positional_argument (const_tree fntype, const_tree atname, tree pos,
 
   if (tree argtype = type_argument_type (fntype, ipos))
     {
+      if (argtype == error_mark_node)
+	return NULL_TREE;
+
       if (flags & POSARG_ELLIPSIS)
 	{
 	  if (argno < 1)

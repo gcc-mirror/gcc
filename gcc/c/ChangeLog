@@ -1,3 +1,8 @@
+2021-06-04  Martin Sebor  <msebor@redhat.com>
+
+	PR c/100783
+	* c-objc-common.c (print_type): Handle erroneous types.
+
 2021-06-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/100859

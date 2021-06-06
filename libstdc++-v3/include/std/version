@@ -169,7 +169,7 @@
 #define __cpp_lib_variant 201606L
 #endif
 
-#if __cplusplus > 201703L
+#if __cplusplus >= 202002L
 // c++20
 #define __cpp_lib_atomic_flag_test 201907L
 #define __cpp_lib_atomic_float 201711L
@@ -225,6 +225,7 @@
 #define __cpp_lib_constexpr_tuple 201811L
 #define __cpp_lib_constexpr_utility 201811L
 #define __cpp_lib_erase_if 202002L
+#define __cpp_lib_generic_unordered_lookup 201811L
 #define __cpp_lib_interpolate 201902L
 #ifdef _GLIBCXX_HAS_GTHREADS
 # define __cpp_lib_jthread 201911L

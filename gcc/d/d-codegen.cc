@@ -1330,6 +1330,7 @@ component_ref (tree object, tree field)
 tree
 build_assign (tree_code code, tree lhs, tree rhs)
 {
+  tree result;
   tree init = stabilize_expr (&lhs);
   init = compound_expr (init, stabilize_expr (&rhs));
 
@@ -1348,22 +1349,27 @@ build_assign (tree_code code, tree lhs, tree rhs)
   if (TREE_CODE (rhs) == TARGET_EXPR)
     {
       /* If CODE is not INIT_EXPR, can't initialize LHS directly,
-	 since that would cause the LHS to be constructed twice.
-	 So we force the TARGET_EXPR to be expanded without a target.  */
+	 since that would cause the LHS to be constructed twice.  */
       if (code != INIT_EXPR)
 	{
 	  init = compound_expr (init, rhs);
-	  rhs = TARGET_EXPR_SLOT (rhs);
+	  result = build_assign (code, lhs, TARGET_EXPR_SLOT (rhs));
 	}
       else
 	{
 	  d_mark_addressable (lhs);
-	  rhs = TARGET_EXPR_INITIAL (rhs);
+	  TARGET_EXPR_INITIAL (rhs) = build_assign (code, lhs,
+						    TARGET_EXPR_INITIAL (rhs));
+	  result = rhs;
 	}
     }
+  else
+    {
+      /* Simple assignment.  */
+      result = fold_build2_loc (input_location, code,
+				TREE_TYPE (lhs), lhs, rhs);
+    }
 
-  tree result = fold_build2_loc (input_location, code,
-				 TREE_TYPE (lhs), lhs, rhs);
   return compound_expr (init, result);
 }
 
@@ -1485,6 +1491,11 @@ compound_expr (tree arg0, tree arg1)
   if (arg0 == NULL_TREE || !TREE_SIDE_EFFECTS (arg0))
     return arg1;
 
+  /* Remove intermediate expressions that have no side-effects.  */
+  while (TREE_CODE (arg0) == COMPOUND_EXPR
+	 && !TREE_SIDE_EFFECTS (TREE_OPERAND (arg0, 1)))
+    arg0 = TREE_OPERAND (arg0, 0);
+
   if (TREE_CODE (arg1) == TARGET_EXPR)
     {
       /* If the rhs is a TARGET_EXPR, then build the compound expression
@@ -1505,6 +1516,19 @@ compound_expr (tree arg0, tree arg1)
 tree
 return_expr (tree ret)
 {
+  /* Same as build_assign, the DECL_RESULT assignment replaces the temporary
+     in TARGET_EXPR_SLOT.  */
+  if (ret != NULL_TREE && TREE_CODE (ret) == TARGET_EXPR)
+    {
+      tree exp = TARGET_EXPR_INITIAL (ret);
+      tree init = stabilize_expr (&exp);
+
+      exp = fold_build1_loc (input_location, RETURN_EXPR, void_type_node, exp);
+      TARGET_EXPR_INITIAL (ret) = compound_expr (init, exp);
+
+      return ret;
+    }
+
   return fold_build1_loc (input_location, RETURN_EXPR,
 			  void_type_node, ret);
 }

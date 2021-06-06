@@ -5835,7 +5835,7 @@
 		     (match_operand:SI 2 "immediate_operand" "I")))]
   "TARGET_MIPS16"
   "#"
-  ""
+  "&& 1"
   [(set (match_dup 0) (match_dup 1))
    (set (match_dup 0) (lshiftrt:SI (match_dup 0) (match_dup 2)))]
   ""
@@ -5871,7 +5871,7 @@
 	(bswap:SI (match_operand:SI 1 "register_operand" "d")))]
   "ISA_HAS_WSBH && ISA_HAS_ROR"
   "#"
-  ""
+  "&& 1"
   [(set (match_dup 0) (unspec:SI [(match_dup 1)] UNSPEC_WSBH))
    (set (match_dup 0) (rotatert:SI (match_dup 0) (const_int 16)))]
   ""
@@ -5882,7 +5882,7 @@
 	(bswap:DI (match_operand:DI 1 "register_operand" "d")))]
   "TARGET_64BIT && ISA_HAS_WSBH"
   "#"
-  ""
+  "&& 1"
   [(set (match_dup 0) (unspec:DI [(match_dup 1)] UNSPEC_DSBH))
    (set (match_dup 0) (unspec:DI [(match_dup 0)] UNSPEC_DSHD))]
   ""

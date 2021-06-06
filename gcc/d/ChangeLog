@@ -1,3 +1,14 @@
+2021-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100882
+	* d-codegen.cc (build_assign): Construct initializations inside
+	TARGET_EXPR_INITIAL.
+	(compound_expr): Remove intermediate expressions that have no
+	side-effects.
+	(return_expr): Construct returns inside TARGET_EXPR_INITIAL.
+	* expr.cc (ExprVisitor::visit (CallExp *)): Remove useless assignment
+	to TARGET_EXPR_SLOT.
+
 2021-05-18  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* d-incpath.cc (prefixed_path): Use filename_ncmp instead of strncmp.

@@ -35,7 +35,9 @@ test01()
   constexpr R r;
   static_assert( !std::ranges::empty(r) );
   static_assert( same_as<decltype(std::ranges::empty(r)), bool> );
-  static_assert( std::ranges::empty(std::move(r)) );
+  // PR libstdc++/100824
+  // ranges::empty should treat the subexpression as an lvalue
+  static_assert( !std::ranges::empty(std::move(r)) );
   static_assert( same_as<decltype(std::ranges::empty(std::move(r))), bool> );
 }
 
@@ -68,9 +70,29 @@ test02()
   VERIFY( !std::ranges::empty(so) );
 }
 
+void
+test03()
+{
+  // PR libstdc++/100824
+  // ranges::empty should treat the subexpression as an lvalue
+
+  struct R
+  {
+    constexpr bool empty() & { return true; }
+  };
+  static_assert( std::ranges::empty(R{}) );
+
+  struct R2
+  {
+    constexpr unsigned size() & { return 0; }
+  };
+  static_assert( std::ranges::empty(R2{}) );
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

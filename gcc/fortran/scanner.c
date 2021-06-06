@@ -942,6 +942,8 @@ skip_fixed_omp_sentinel (locus *start)
 	  && (continue_flag
 	      || c == ' ' || c == '\t' || c == '0'))
 	{
+	  if (c == ' ' || c == '\t' || c == '0')
+	    openacc_flag = 0;
 	  do
 	    c = next_char ();
 	  while (gfc_is_whitespace (c));
@@ -971,6 +973,8 @@ skip_fixed_oacc_sentinel (locus *start)
 	  && (continue_flag
 	      || c == ' ' || c == '\t' || c == '0'))
 	{
+	  if (c == ' ' || c == '\t' || c == '0')
+	    openmp_flag = 0;
 	  do
 	    c = next_char ();
 	  while (gfc_is_whitespace (c));
@@ -1205,6 +1209,7 @@ gfc_skip_comments (void)
 gfc_char_t
 gfc_next_char_literal (gfc_instring in_string)
 {
+  static locus omp_acc_err_loc = {};
   locus old_loc;
   int i, prev_openmp_flag, prev_openacc_flag;
   gfc_char_t c;
@@ -1403,14 +1408,16 @@ restart:
 	    {
 	      if (gfc_wide_tolower (c) != (unsigned char) "!$acc"[i])
 		is_openmp = 1;
-	      if (i == 4)
-		old_loc = gfc_current_locus;
 	    }
-	  gfc_error (is_openmp
-		     ? G_("Wrong OpenACC continuation at %C: "
-			  "expected !$ACC, got !$OMP")
-		     : G_("Wrong OpenMP continuation at %C: "
-			  "expected !$OMP, got !$ACC"));
+	  if (omp_acc_err_loc.nextc != gfc_current_locus.nextc
+	      || omp_acc_err_loc.lb != gfc_current_locus.lb)
+	    gfc_error_now (is_openmp
+			   ? G_("Wrong OpenACC continuation at %C: "
+				"expected !$ACC, got !$OMP")
+			   : G_("Wrong OpenMP continuation at %C: "
+				"expected !$OMP, got !$ACC"));
+	  omp_acc_err_loc = gfc_current_locus;
+	  goto not_continuation;
 	}
 
       if (c != '&')
@@ -1511,11 +1518,15 @@ restart:
 	      if (gfc_wide_tolower (c) != (unsigned char) "*$acc"[i])
 		is_openmp = 1;
 	    }
-	  gfc_error (is_openmp
-		     ? G_("Wrong OpenACC continuation at %C: "
-			  "expected !$ACC, got !$OMP")
-		     : G_("Wrong OpenMP continuation at %C: "
-			  "expected !$OMP, got !$ACC"));
+	  if (omp_acc_err_loc.nextc != gfc_current_locus.nextc
+	      || omp_acc_err_loc.lb != gfc_current_locus.lb)
+	    gfc_error_now (is_openmp
+			   ? G_("Wrong OpenACC continuation at %C: "
+				"expected !$ACC, got !$OMP")
+			   : G_("Wrong OpenMP continuation at %C: "
+				"expected !$OMP, got !$ACC"));
+	  omp_acc_err_loc = gfc_current_locus;
+	  goto not_continuation;
 	}
       else if (!openmp_flag && !openacc_flag)
 	for (i = 0; i < 5; i++)

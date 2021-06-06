@@ -67,8 +67,20 @@ contains
    subroutine nana
      !$acc parallel &
      !$omp do ! { dg-error "Wrong OpenACC continuation" }
+     do i = 1, 5 ! { dg-error "The !.OMP DO directive cannot be specified within a !.ACC PARALLEL region" "" { target *-*-* } .-1 }
+     end do
+     !$acc end parallel
+
+     !$omp parallel &
+     !$acc kernels loop ! { dg-error "Wrong OpenMP continuation" }
+     do i = 1, 5 ! { dg-error "The !.ACC KERNELS LOOP directive cannot be specified within a !.OMP PARALLEL region" "" { target *-*-* } .-1 }
+     end do
+     !$omp end parallel
 
      !$omp parallel &
      !$acc loop ! { dg-error "Wrong OpenMP continuation" }
+     do i = 1, 5 ! { dg-error "The !.ACC LOOP directive cannot be specified within a !.OMP PARALLEL region" "" { target *-*-* } .-1 }
+     end do
+     !$omp end parallel
    end subroutine nana
 end module test

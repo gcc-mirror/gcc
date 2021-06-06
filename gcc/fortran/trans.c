@@ -371,30 +371,16 @@ get_array_span (tree type, tree decl)
     return gfc_conv_descriptor_span_get (decl);
 
   /* Return the span for deferred character length array references.  */
-  if (type && TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
-      && (VAR_P (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
-	  || TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INDIRECT_REF)
-      && (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INDIRECT_REF
-	  || TREE_CODE (decl) == FUNCTION_DECL
-	  || DECL_CONTEXT (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
-					== DECL_CONTEXT (decl)))
+  if (type && TREE_CODE (type) == ARRAY_TYPE && TYPE_STRING_FLAG (type))
     {
-      span = fold_convert (gfc_array_index_type,
-			   TYPE_MAX_VALUE (TYPE_DOMAIN (type)));
-      span = fold_build2 (MULT_EXPR, gfc_array_index_type,
-			  fold_convert (gfc_array_index_type,
-					TYPE_SIZE_UNIT (TREE_TYPE (type))),
-			  span);
-    }
-  else if (type && TREE_CODE (type) == ARRAY_TYPE
-	   && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
-	   && integer_zerop (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
-    {
+      if (TREE_CODE (decl) == PARM_DECL)
+	decl = build_fold_indirect_ref_loc (input_location, decl);
       if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
 	span = gfc_conv_descriptor_span_get (decl);
       else
-	span = NULL_TREE;
+	span = gfc_get_character_len_in_bytes (type);
+      span = (span && !integer_zerop (span))
+	? (fold_convert (gfc_array_index_type, span)) : (NULL_TREE);
     }
   /* Likewise for class array or pointer array references.  */
   else if (TREE_CODE (decl) == FIELD_DECL
@@ -2168,6 +2154,7 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OMP_DISTRIBUTE_SIMD:
 	case EXEC_OMP_DO:
 	case EXEC_OMP_DO_SIMD:
+	case EXEC_OMP_LOOP:
 	case EXEC_OMP_FLUSH:
 	case EXEC_OMP_MASTER:
 	case EXEC_OMP_MASTER_TASKLOOP:
@@ -2176,6 +2163,7 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OMP_PARALLEL:
 	case EXEC_OMP_PARALLEL_DO:
 	case EXEC_OMP_PARALLEL_DO_SIMD:
+	case EXEC_OMP_PARALLEL_LOOP:
 	case EXEC_OMP_PARALLEL_MASTER:
 	case EXEC_OMP_PARALLEL_MASTER_TASKLOOP:
 	case EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD:
@@ -2191,12 +2179,14 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OMP_TARGET_PARALLEL:
 	case EXEC_OMP_TARGET_PARALLEL_DO:
 	case EXEC_OMP_TARGET_PARALLEL_DO_SIMD:
+	case EXEC_OMP_TARGET_PARALLEL_LOOP:
 	case EXEC_OMP_TARGET_SIMD:
 	case EXEC_OMP_TARGET_TEAMS:
 	case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
 	case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+	case EXEC_OMP_TARGET_TEAMS_LOOP:
 	case EXEC_OMP_TARGET_UPDATE:
 	case EXEC_OMP_TASK:
 	case EXEC_OMP_TASKGROUP:
@@ -2209,6 +2199,7 @@ trans_code (gfc_code * code, tree cond)
 	case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
 	case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
 	case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+	case EXEC_OMP_TEAMS_LOOP:
 	case EXEC_OMP_WORKSHARE:
 	  res = gfc_trans_omp_directive (code);
 	  break;

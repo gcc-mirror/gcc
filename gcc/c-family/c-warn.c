@@ -3511,7 +3511,7 @@ warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	  && newa->sizarg != UINT_MAX
 	  && newa->sizarg == cura->sizarg
 	  && newa->minsize == cura->minsize
-	  && !TREE_CHAIN (newa->size) && !TREE_CHAIN (cura->size))
+	  && !TREE_PURPOSE (newa->size) && !TREE_PURPOSE (cura->size))
 	continue;
 
       if (newa->size || cura->size)

@@ -855,7 +855,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_VIS3"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (ltu:W (reg:CCXC CC_REG) (const_int 0)))]
   ""
@@ -882,7 +882,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_SUBXC"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (neg:W (ltu:W (reg:CCXC CC_REG) (const_int 0))))]
   ""
@@ -984,7 +984,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_VIS3"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (plus:W (ltu:W (reg:CCXC CC_REG) (const_int 0))
 			      (match_dup 2)))]
@@ -1000,7 +1000,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_VIS3"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (plus:W (plus:W (ltu:W (reg:CCXC CC_REG) (const_int 0))
 				      (match_dup 2))
@@ -1048,7 +1048,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_SUBXC"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (minus:W (match_dup 2)
 			       (ltu:W (reg:CCXC CC_REG) (const_int 0))))]
@@ -1064,7 +1064,7 @@
    (clobber (reg:CCX CC_REG))]
   "TARGET_ARCH64 && TARGET_SUBXC"
   "#"
-  ""
+  "&& 1"
   [(set (reg:CCXC CC_REG) (compare:CCXC (not:DI (match_dup 1)) (const_int -1)))
    (set (match_dup 0) (minus:W (minus:W (match_dup 2)
 				        (ltu:W (reg:CCXC CC_REG) (const_int 0)))

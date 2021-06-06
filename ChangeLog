@@ -1,3 +1,12 @@
+2021-06-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Adjust my entry in the DCO section so that it does
+	not trigger testsuite failures.
+
+2021-06-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* MAINTAINERS: Add myself to DCO section with both email addresses.
+
 2021-06-03  Jason Merrill  <jason@redhat.com>
 
 	* MAINTAINERS: Add DCO version number.
