@@ -183,8 +183,10 @@ public:
 	  if (!ctx->get_tyctx ()->lookup_type (
 		expr.get_mappings ().get_hirid (), &tyty))
 	    {
-	      rust_fatal_error (expr.get_locus (),
-				"did not resolve type for this literal expr");
+	      rust_fatal_error (
+		expr.get_locus (),
+		"did not resolve type for this literal expr (HirId %d)",
+		expr.get_mappings ().get_hirid ());
 	      return;
 	    }
 
