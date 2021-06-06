@@ -170,6 +170,7 @@ tree gfor_fndecl_co_min;
 tree gfor_fndecl_co_reduce;
 tree gfor_fndecl_co_sum;
 tree gfor_fndecl_caf_is_present;
+tree gfor_fndecl_caf_random_init;
 
 
 /* Math functions.  Many other math functions are handled in
@@ -233,7 +234,7 @@ tree gfor_fndecl_cgemm;
 tree gfor_fndecl_zgemm;
 
 /* RANDOM_INIT function.  */
-tree gfor_fndecl_random_init;
+tree gfor_fndecl_random_init;      /* libgfortran, 1 image only.  */
 
 static void
 gfc_add_decl_to_parent_function (tree decl)
@@ -3516,6 +3517,8 @@ gfc_build_intrinsic_function_decls (void)
 	void_type_node, 3, gfc_logical4_type_node, gfc_logical4_type_node,
 	gfc_int4_type_node);
 
+ // gfor_fndecl_caf_rand_init is defined in the lib-coarray section below.
+
   gfor_fndecl_sc_kind = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("selected_char_kind")), ". . R ",
 	gfc_int4_type_node, 2, gfc_charlen_type_node, pchar_type_node);
@@ -4081,6 +4084,10 @@ gfc_build_builtin_function_decls (void)
 	get_identifier (PREFIX("caf_is_present")), ". r . r ",
 	integer_type_node, 3, pvoid_type_node, integer_type_node,
 	pvoid_type_node);
+
+      gfor_fndecl_caf_random_init = gfc_build_library_function_decl (
+	    get_identifier (PREFIX("caf_random_init")),
+	    void_type_node, 2, logical_type_node, logical_type_node);
     }
 
   gfc_build_intrinsic_function_decls ();
