@@ -30,7 +30,8 @@ extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 extern unsigned long sparc_type_code (tree);
 #endif /* TREE_CODE */
 
-extern void order_regs_for_local_alloc (void);
+extern void sparc_order_regs_for_local_alloc (void);
+extern int sparc_leaf_reg_remap (int);
 extern int sparc_initial_elimination_offset (int);
 extern void sparc_expand_prologue (void);
 extern void sparc_flat_expand_prologue (void);
