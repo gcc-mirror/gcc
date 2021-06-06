@@ -1,3 +1,14 @@
+2021-06-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100120
+	PR fortran/100816
+	PR fortran/100818
+	PR fortran/100819
+	PR fortran/100821
+	* gfortran.dg/PR100120.f90: New test.
+	* gfortran.dg/character_workout_1.f90: New test.
+	* gfortran.dg/character_workout_4.f90: New test.
+
 2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/100905

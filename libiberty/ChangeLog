@@ -1,3 +1,10 @@
+2021-06-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/100734
+	* configure.ac: Use libiberty snprintf and vsnprintf on
+	hppa*-*-hpux*.
+	* configure: Regenerate.
+
 2021-05-06  Tom Tromey  <tom@tromey.com>
 
 	* hashtab.c (htab_eq_string): New function.

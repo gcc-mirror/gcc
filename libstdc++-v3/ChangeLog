@@ -1,3 +1,9 @@
+2021-06-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100824
+	* include/bits/ranges_base.h (_SSize): Return signed type.
+	* testsuite/std/ranges/access/ssize.cc: Check with __int128.
+
 2021-06-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/ranges_base.h (_SSize): Return the result of

@@ -1,3 +1,37 @@
+2021-06-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100120
+	PR fortran/100816
+	PR fortran/100818
+	PR fortran/100819
+	PR fortran/100821
+	* trans-array.c (gfc_get_array_span): rework the way character
+	array "span" was calculated.
+	(gfc_conv_expr_descriptor): improve handling of character sections
+	and unlimited polymorphic objects.
+	* trans-expr.c (gfc_get_character_len): new function to calculate
+	character string length.
+	(gfc_get_character_len_in_bytes): new function to calculate
+	character string length in bytes.
+	(gfc_conv_scalar_to_descriptor): add call to set the "span".
+	(gfc_trans_pointer_assignment): set "_len" and antecipate the
+	initialization of the deferred character length hidden argument.
+	* trans-intrinsic.c (gfc_conv_associated): set "force_no_tmp" to
+	avoid the creation of a temporary.
+	* trans-types.c (gfc_get_dtype_rank_type): rework type detection
+	so that unlimited polymorphic objects get proper type infomation,
+	also important for bind(c).
+	(gfc_get_dtype): add argument to pass the rank if necessary.
+	(gfc_get_array_type_bounds): cosmetic change to have character
+	arrays called character instead of unknown.
+	* trans-types.h (gfc_get_dtype): modify prototype.
+	* trans.c (get_array_span): rework the way character array "span"
+	was calculated.
+	* trans.h (gfc_get_character_len): new prototype.
+	(gfc_get_character_len_in_bytes): new prototype.
+	Add "unlimited_polymorphic" flag to "gfc_se" type to signal when
+	expression carries an unlimited polymorphic object.
+
 2021-06-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/99839

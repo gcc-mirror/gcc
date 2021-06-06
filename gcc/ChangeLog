@@ -1,3 +1,44 @@
+2021-06-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/sh/sh.md (doloop_end_split): Fix empty split condition.
+
+2021-06-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/sparc/sparc.md (*snedi<W:mode>_zero_vis3,
+	*neg_snedi<W:mode>_zero_subxc, *plus_snedi<W:mode>_zero,
+	*plus_plus_snedi<W:mode>_zero, *minus_snedi<W:mode>_zero,
+	*minus_minus_snedi<W:mode>_zero): Fix empty split condition.
+
+2021-06-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/or1k/or1k.md (*movdi): Fix empty split condition.
+
+2021-06-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/mips/mips.md (<anonymous>, bswapsi2, bswapdi2): Fix empty
+	split condition.
+
+2021-06-05  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/m68k/m68k.md (*zero_extend_inc, *zero_extend_dec,
+	*zero_extendsidi2): Fix empty split condition.
+
+2021-06-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/addsub.md: Fix split condition in define_insn_and_split
+	patterns.
+	* config/h8300/bitfield.md: Likewise.
+	* config/h8300/combiner.md: Likewise.
+	* config/h8300/divmod.md: Likewise.
+	* config/h8300/extensions.md: Likewise.
+	* config/h8300/jumpcall.md: Likewise.
+	* config/h8300/movepush.md: Likewise.
+	* config/h8300/multiply.md: Likewise.
+	* config/h8300/other.md: Likewise.
+	* config/h8300/shiftrotate.md: Likewise.
+	* config/h8300/logical.md: Likewise.  Fix split pattern to use
+	code iterator that somehow slipped through.
+
 2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/100905
