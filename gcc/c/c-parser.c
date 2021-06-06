@@ -20014,6 +20014,7 @@ c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)
 	  tree stmt = make_node (OMP_TARGET);
 	  TREE_TYPE (stmt) = void_type_node;
 	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+	  c_omp_adjust_map_clauses (OMP_TARGET_CLAUSES (stmt), true);
 	  OMP_TARGET_BODY (stmt) = block;
 	  OMP_TARGET_COMBINED (stmt) = 1;
 	  SET_EXPR_LOCATION (stmt, loc);

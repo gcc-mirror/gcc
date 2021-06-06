@@ -42045,6 +42045,7 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 	  tree stmt = make_node (OMP_TARGET);
 	  TREE_TYPE (stmt) = void_type_node;
 	  OMP_TARGET_CLAUSES (stmt) = cclauses[C_OMP_CLAUSE_SPLIT_TARGET];
+	  c_omp_adjust_map_clauses (OMP_TARGET_CLAUSES (stmt), true);
 	  OMP_TARGET_BODY (stmt) = body;
 	  OMP_TARGET_COMBINED (stmt) = 1;
 	  SET_EXPR_LOCATION (stmt, pragma_tok->location);
