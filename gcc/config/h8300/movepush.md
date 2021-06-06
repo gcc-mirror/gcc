@@ -13,7 +13,7 @@
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*movqi_clobber_flags"
+(define_insn "*movqi<cczn>"
   [(set (match_operand:QI 0 "general_operand_dst" "=r,r ,<,r,r,m")
 	(match_operand:QI 1 "general_operand_src" " I,r>,r,n,m,r"))
    (clobber (reg:CC CC_REG))]
@@ -36,7 +36,7 @@
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*movqi_h8sx_clobber_flags"
+(define_insn "*movqi_h8sx<cczn>"
   [(set (match_operand:QI 0 "general_operand_dst" "=Z,rQ")
 	(match_operand:QI 1 "general_operand_src" "P4>X,rQi"))
    (clobber (reg:CC CC_REG))]
@@ -74,7 +74,7 @@
 	      (clobber (reg:CC CC_REG))])])
 
 
-(define_insn "movstrictqi_clobber_flags"
+(define_insn "*movstrictqi<cczn>"
   [(set (strict_low_part (match_operand:QI 0 "general_operand_dst" "+r,r"))
 			 (match_operand:QI 1 "general_operand_src" "I,rmi>"))
    (clobber (reg:CC CC_REG))]
@@ -97,7 +97,7 @@
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*movhi_clobber_flags"
+(define_insn "*movhi<cczn>"
   [(set (match_operand:HI 0 "general_operand_dst" "=r,r,<,r,r,m")
 	(match_operand:HI 1 "general_operand_src" "I,r>,r,i,m,r"))
    (clobber (reg:CC CC_REG))]
@@ -121,7 +121,7 @@
   [(parallel [(set (match_dup 0) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
   
-(define_insn "*movhi_h8sx_clobber_flags"
+(define_insn "*movhi_h8sx<cczn>"
   [(set (match_operand:HI 0 "general_operand_dst" "=r,r,Z,Q,rQ")
 	(match_operand:HI 1 "general_operand_src" "I,P3>X,P4>X,IP8>X,rQi"))
    (clobber (reg:CC CC_REG))]
@@ -144,7 +144,7 @@
   [(parallel [(set (strict_low_part (match_dup 0)) (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "movstricthi_clobber_flags"
+(define_insn "*movstricthi<cczn>"
   [(set (strict_low_part (match_operand:HI 0 "general_operand_dst" "+r,r,r"))
 			 (match_operand:HI 1 "general_operand_src" "I,P3>X,rmi"))
    (clobber (reg:CC CC_REG))]
@@ -168,8 +168,8 @@
 	      (clobber (reg:CC CC_REG))])])
 
 (define_insn "*movsi_clobber_flags"
-  [(set (match_operand:SI 0 "general_operand_dst" "=r,r,r,<,r,r,m,*a,*a,r")
-	(match_operand:SI 1 "general_operand_src" "I,r,i,r,>,m,r,I,r,*a"))
+  [(set (match_operand:SI 0 "general_operand_dst" "=r,r,r,<,r,r,m,*a,*a, r")
+	(match_operand:SI 1 "general_operand_src" " I,r,i,r,>,m,r, I, r,*a"))
    (clobber (reg:CC CC_REG))]
   "(TARGET_H8300S || TARGET_H8300H) && !TARGET_H8300SX
     && h8300_move_ok (operands[0], operands[1])"
@@ -235,6 +235,25 @@
 }
   [(set (attr "length") (symbol_ref "compute_mov_length (operands)"))])
 
+(define_insn "*movsi_cczn"
+  [(set (reg:CCZN CC_REG)
+	(compare:CCZN
+	  (match_operand:SI 1 "general_operand_src" " I,r,i,r,>,m,r")
+	  (const_int 0)))
+   (set (match_operand:SI 0 "general_operand_dst" "=r,r,r,<,r,r,m")
+	(match_dup 1))]
+  "(TARGET_H8300S || TARGET_H8300H) && !TARGET_H8300SX
+    && h8300_move_ok (operands[0], operands[1])"
+  "@
+   sub.l	%S0,%S0
+   mov.l	%S1,%S0
+   mov.l	%S1,%S0
+   mov.l	%S1,%S0
+   mov.l	%S1,%S0
+   mov.l	%S1,%S0
+   mov.l	%S1,%S0"
+  [(set (attr "length") (symbol_ref "compute_mov_length (operands)"))])
+
 (define_insn_and_split "*movsi_h8sx"
   [(set (match_operand:SI 0 "general_operand_dst" "=r,r,Q,rQ,*a,*a,r")
 	(match_operand:SI 1 "general_operand_src" "I,P3>X,IP8>X,rQi,I,r,*a"))]
@@ -259,6 +278,22 @@
    stmac	macl,%0"
   [(set_attr "length_table" "*,*,short_immediate,movl,*,*,*")
    (set_attr "length" "2,2,*,*,2,6,4")])
+
+(define_insn "*movsi_h8sx_ccnz"
+  [(set (reg:CCZN CC_REG)
+	(compare:CCZN
+	  (match_operand:SI 1 "general_operand_src" "I,P3>X,IP8>X,rQi")
+	  (const_int 0)))
+   (set (match_operand:SI 0 "general_operand_dst" "=r,r,Q,rQ")
+	(match_dup 1))]
+  "TARGET_H8300SX"
+  "@
+   sub.l	%S0,%S0
+   mov.l	%S1:3,%S0
+   mov.l	%S1,%S0
+   mov.l	%S1,%S0"
+  [(set_attr "length_table" "*,*,short_immediate,movl")
+   (set_attr "length" "2,2,*,*")])
 
 (define_insn_and_split "*movsf_h8sx"
   [(set (match_operand:SF 0 "general_operand_dst" "=r,rQ")
@@ -326,7 +361,7 @@
 		   (match_dup 0))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*push1_<QHI:mode>_clobber_flags"
+(define_insn "*push1_<QHI:mode><cczn>"
   [(set (mem:QHI
 	(pre_modify:P
 	  (reg:P SP_REG)
