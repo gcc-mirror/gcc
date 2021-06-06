@@ -42243,6 +42243,7 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 		    cclauses[C_OMP_CLAUSE_SPLIT_TARGET] = tc;
 		  }
 	    }
+	  c_omp_adjust_map_clauses (cclauses[C_OMP_CLAUSE_SPLIT_TARGET], true);
 	  finish_omp_target (pragma_tok->location,
 			     cclauses[C_OMP_CLAUSE_SPLIT_TARGET], body, true);
 	  return true;
