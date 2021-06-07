@@ -1,3 +1,12 @@
+2021-06-06  Andre Vehreschild  <vehre@gcc.gnu.org>
+	    Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/98301
+	* caf/libcaf.h (_gfortran_caf_random_init): New function.
+	* caf/single.c (_gfortran_caf_random_init): New function.
+	* gfortran.map: Added fndecl.
+	* intrinsics/random_init.f90: Implement random_init.
+
 2021-05-03  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
