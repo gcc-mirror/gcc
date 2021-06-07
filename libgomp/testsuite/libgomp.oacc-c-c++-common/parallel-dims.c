@@ -72,22 +72,9 @@ int main ()
       gangs_actual = 1;
       for (int i = 100 * gangs_actual; i > -100 * gangs_actual; --i)
 	{
-	  /* <https://gcc.gnu.org/PR80547>.  */
-#if 0
 	  gangs_min = gangs_max = acc_gang ();
 	  workers_min = workers_max = acc_worker ();
 	  vectors_min = vectors_max = acc_vector ();
-#else
-	  int gangs = acc_gang ();
-	  gangs_min = (gangs_min < gangs) ? gangs_min : gangs;
-	  gangs_max = (gangs_max > gangs) ? gangs_max : gangs;
-	  int workers = acc_worker ();
-	  workers_min = (workers_min < workers) ? workers_min : workers;
-	  workers_max = (workers_max > workers) ? workers_max : workers;
-	  int vectors = acc_vector ();
-	  vectors_min = (vectors_min < vectors) ? vectors_min : vectors;
-	  vectors_max = (vectors_max > vectors) ? vectors_max : vectors;
-#endif
 	}
     }
     if (gangs_actual != 1)
