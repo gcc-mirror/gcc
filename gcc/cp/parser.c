@@ -29505,6 +29505,19 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
   if (!decl || decl == error_mark_node)
     return error_mark_node;
 
+  /* If we have resolved the name of a member declaration, check to
+     see if the declaration is accessible.  When the name resolves to
+     set of overloaded functions, accessibility is checked when
+     overload resolution is done.  If we have a TREE_LIST, then the lookup
+     is either ambiguous or it found multiple injected-class-names, the
+     accessibility of which is trivially satisfied.
+
+     During an explicit instantiation, access is not checked at all,
+     as per [temp.explicit].  */
+  if (DECL_P (decl))
+    check_accessibility_of_qualified_id (decl, object_type, parser->scope,
+					 tf_warning_or_error);
+
   /* Pull out the template from an injected-class-name (or multiple).  */
   if (is_template)
     decl = maybe_get_template_decl_from_type_decl (decl);
@@ -29530,17 +29543,6 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	      || TREE_CODE (decl) == SCOPE_REF
 	      || TREE_CODE (decl) == UNBOUND_CLASS_TEMPLATE
 	      || BASELINK_P (decl));
-
-  /* If we have resolved the name of a member declaration, check to
-     see if the declaration is accessible.  When the name resolves to
-     set of overloaded functions, accessibility is checked when
-     overload resolution is done.
-
-     During an explicit instantiation, access is not checked at all,
-     as per [temp.explicit].  */
-  if (DECL_P (decl))
-    check_accessibility_of_qualified_id (decl, object_type, parser->scope,
-					 tf_warning_or_error);
 
   maybe_record_typedef_use (decl);
 
