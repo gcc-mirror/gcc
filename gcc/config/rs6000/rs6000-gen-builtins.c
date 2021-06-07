@@ -186,6 +186,52 @@ static char linebuf[LINELEN];
 static int line;
 static int pos;
 
+/* Used to determine whether a type can be void (only return types).  */
+enum void_status
+{
+ VOID_NOTOK,
+ VOID_OK
+};
+
+/* Legal base types for an argument or return type.  */
+enum basetype
+{
+  BT_CHAR,
+  BT_SHORT,
+  BT_INT,
+  BT_LONG,
+  BT_LONGLONG,
+  BT_FLOAT,
+  BT_DOUBLE,
+  BT_LONGDOUBLE,
+  BT_INT128,
+  BT_FLOAT128,
+  BT_BOOL,
+  BT_STRING,
+  BT_DECIMAL32,
+  BT_DECIMAL64,
+  BT_DECIMAL128,
+  BT_IBM128,
+  BT_VPAIR,
+  BT_VQUAD
+};
+
+/* Type modifiers for an argument or return type.  */
+struct typeinfo
+{
+  char isvoid;
+  char isconst;
+  char isvector;
+  char issigned;
+  char isunsigned;
+  char isbool;
+  char ispixel;
+  char ispointer;
+  basetype base;
+  char *val1;
+  char *val2;
+};
+
 /* Pointer to a diagnostic function.  */
 static void (*diag) (const char *, ...)
   __attribute__ ((format (printf, 1, 2)));
@@ -319,4 +365,325 @@ match_to_right_bracket (void)
 
   pos = lastpos + 1;
   return buf;
+}
+
+static inline void
+handle_pointer (typeinfo *typedata)
+{
+  consume_whitespace ();
+  if (linebuf[pos] == '*')
+    {
+      typedata->ispointer = 1;
+      safe_inc_pos ();
+    }
+}
+
+/* Match one of the allowable base types.  Consumes one token unless the
+   token is "long", which must be paired with a second "long".  Optionally
+   consumes a following '*' token for pointers.  Return 1 for success,
+   0 for failure.  */
+static int
+match_basetype (typeinfo *typedata)
+{
+  return 1;
+}
+
+/* A const int argument may be restricted to certain values.  This is
+   indicated by one of the following occurring after the "int' token:
+
+     <x>   restricts the constant to x bits, interpreted as unsigned
+     <x,y> restricts the constant to the inclusive range [x,y]
+     [x,y] restricts the constant to the inclusive range [x,y],
+	   but only applies if the argument is constant.
+     {x,y} restricts the constant to one of two values, x or y.
+
+   Here x and y are integer tokens.  Note that the "const" token is a
+   lie when the restriction is [x,y], but this simplifies the parsing
+   significantly and is hopefully forgivable.
+
+   Return 1 for success, else 0.  */
+static int
+match_const_restriction (typeinfo *typedata)
+{
+  return 1;
+}
+
+/* Look for a type, which can be terminated by a token that is not part of
+   a type, a comma, or a closing parenthesis.  Place information about the
+   type in TYPEDATA.  Return 1 for success, 0 for failure.  */
+static int
+match_type (typeinfo *typedata, int voidok)
+{
+  /* A legal type is of the form:
+
+       [const] [[signed|unsigned] <basetype> | <vectype>] [*]
+
+     Legal values of <basetype> are (for now):
+
+       char
+       short
+       int
+       long
+       long double
+       long long
+       float
+       double
+       __int128
+       _Float128
+       bool
+       string
+       _Decimal32
+       _Decimal64
+       _Decimal128
+       __ibm128
+
+     Legal values of <vectype> are as follows, and are shorthand for
+     the associated meaning:
+
+       vsc	vector signed char
+       vuc	vector unsigned char
+       vbc	vector bool char
+       vss	vector signed short
+       vus	vector unsigned short
+       vbs	vector bool short
+       vsi	vector signed int
+       vui	vector unsigned int
+       vbi	vector bool int
+       vsll	vector signed long long
+       vull	vector unsigned long long
+       vbll	vector bool long long
+       vsq	vector signed __int128
+       vuq	vector unsigned __int128
+       vbq	vector bool __int128
+       vp	vector pixel
+       vf	vector float
+       vd	vector double
+       v256	__vector_pair
+       v512	__vector_quad
+
+     For simplicity, We don't support "short int" and "long long int".
+     We don't currently support a <basetype> of "_Float16".  "signed"
+     and "unsigned" only apply to integral base types.  The optional *
+     indicates a pointer type.  */
+
+  consume_whitespace ();
+  memset (typedata, 0, sizeof *typedata);
+  int oldpos = pos;
+
+  char *token = match_identifier ();
+  if (!token)
+    return 0;
+
+  if (!strcmp (token, "const"))
+    {
+      typedata->isconst = 1;
+      consume_whitespace ();
+      oldpos = pos;
+      token = match_identifier ();
+    }
+
+  if (!strcmp (token, "void"))
+    typedata->isvoid = 1;
+
+  if (!strcmp (token, "vsc"))
+    {
+      typedata->isvector = 1;
+      typedata->issigned = 1;
+      typedata->base = BT_CHAR;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vuc"))
+    {
+      typedata->isvector = 1;
+      typedata->isunsigned = 1;
+      typedata->base = BT_CHAR;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vbc"))
+    {
+      typedata->isvector = 1;
+      typedata->isbool = 1;
+      typedata->base = BT_CHAR;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vss"))
+    {
+      typedata->isvector = 1;
+      typedata->issigned = 1;
+      typedata->base = BT_SHORT;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vus"))
+    {
+      typedata->isvector = 1;
+      typedata->isunsigned = 1;
+      typedata->base = BT_SHORT;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vbs"))
+    {
+      typedata->isvector = 1;
+      typedata->isbool = 1;
+      typedata->base = BT_SHORT;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vsi"))
+    {
+      typedata->isvector = 1;
+      typedata->issigned = 1;
+      typedata->base = BT_INT;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vui"))
+    {
+      typedata->isvector = 1;
+      typedata->isunsigned = 1;
+      typedata->base = BT_INT;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vbi"))
+    {
+      typedata->isvector = 1;
+      typedata->isbool = 1;
+      typedata->base = BT_INT;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vsll"))
+    {
+      typedata->isvector = 1;
+      typedata->issigned = 1;
+      typedata->base = BT_LONGLONG;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vull"))
+    {
+      typedata->isvector = 1;
+      typedata->isunsigned = 1;
+      typedata->base = BT_LONGLONG;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vbll"))
+    {
+      typedata->isvector = 1;
+      typedata->isbool = 1;
+      typedata->base = BT_LONGLONG;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vsq"))
+    {
+      typedata->isvector = 1;
+      typedata->issigned = 1;
+      typedata->base = BT_INT128;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vuq"))
+    {
+      typedata->isvector = 1;
+      typedata->isunsigned = 1;
+      typedata->base = BT_INT128;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vbq"))
+    {
+      typedata->isvector = 1;
+      typedata->isbool = 1;
+      typedata->base = BT_INT128;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vp"))
+    {
+      typedata->isvector = 1;
+      typedata->ispixel = 1;
+      typedata->base = BT_SHORT;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vf"))
+    {
+      typedata->isvector = 1;
+      typedata->base = BT_FLOAT;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "vd"))
+    {
+      typedata->isvector = 1;
+      typedata->base = BT_DOUBLE;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "v256"))
+    {
+      typedata->isvector = 1;
+      typedata->base = BT_VPAIR;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "v512"))
+    {
+      typedata->isvector = 1;
+      typedata->base = BT_VQUAD;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "signed"))
+    typedata->issigned = 1;
+  else if (!strcmp (token, "unsigned"))
+    typedata->isunsigned = 1;
+  else if (!typedata->isvoid && !typedata->isconst)
+    {
+      /* Push back token.  */
+      pos = oldpos;
+      return match_basetype (typedata);
+    }
+
+  if (typedata->isvoid)
+    {
+      consume_whitespace ();
+      if (linebuf[pos] == '*')
+	{
+	  typedata->ispointer = 1;
+	  safe_inc_pos ();
+	}
+      else if (!voidok)
+	return 0;
+      return 1;
+    }
+
+  if (!typedata->issigned && !typedata->isunsigned)
+    pos = oldpos;
+  if (!match_basetype (typedata))
+    return 0;
+
+  if (typedata->isconst)
+    {
+      if (typedata->ispointer)
+	return 1;
+      if (typedata->base != BT_INT)
+	{
+	  (*diag)("'const' at %d requires pointer or integer type",
+		  oldpos + 1);
+	  return 0;
+	}
+      consume_whitespace ();
+      if (linebuf[pos] == '<' || linebuf[pos] == '{' || linebuf[pos] == '[')
+	return match_const_restriction (typedata);
+    }
+
+  return 1;
 }
