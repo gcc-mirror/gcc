@@ -191,7 +191,7 @@ void arm_rust_target_cpu_info(void) {
                                 && arm_arch_cmse && arm_arch_thumb1;
     if (hasBaseline8MPreReqs)
         rust_add_target_info("target_feature", "v8m");
-    if (hasBaseLine8MPreReqs && arm_arch_thumb2 && arm_arch7)
+    if (hasBaseline8MPreReqs && arm_arch_thumb2 && arm_arch7)
         rust_add_target_info("target_feature", "v8m.main");
     if (arm_arch8_1)
         rust_add_target_info("target_feature", "v8.1a");
@@ -201,10 +201,6 @@ void arm_rust_target_cpu_info(void) {
         rust_add_target_info("target_feature", "v8.3a");
     if (arm_arch8_4)
         rust_add_target_info("target_feature", "v8.4a");
-    if (arm_arch8_5)
-        rust_add_target_info("target_feature", "v8.5a");
-    if (arm_arch8_6)
-        rust_add_target_info("target_feature", "v8.6a");
     if (bitmap_bit_p(arm_active_target.isa, isa_bit_armv8_1m_main))
         rust_add_target_info("target_feature", "v8.1m.main");
     if (bitmap_bit_p(arm_active_target.isa, isa_bit_mve)
