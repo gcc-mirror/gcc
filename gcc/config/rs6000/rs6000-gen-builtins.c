@@ -163,3 +163,50 @@ along with GCC; see the file COPYING3.  If not see
 #include <string.h>
 #include <assert.h>
 #include <unistd.h>
+
+/* Input and output file descriptors and pathnames.  */
+static FILE *bif_file;
+static FILE *ovld_file;
+static FILE *header_file;
+static FILE *init_file;
+static FILE *defines_file;
+
+static const char *pgm_path;
+static const char *bif_path;
+static const char *ovld_path;
+static const char *header_path;
+static const char *init_path;
+static const char *defines_path;
+
+/* Position information.  Note that "pos" is zero-indexed, but users
+   expect one-indexed column information, so representations of "pos"
+   as columns in diagnostic messages must be adjusted.  */
+#define LINELEN 1024
+static char linebuf[LINELEN];
+static int line;
+static int pos;
+
+/* Pointer to a diagnostic function.  */
+static void (*diag) (const char *, ...)
+  __attribute__ ((format (printf, 1, 2)));
+
+/* Custom diagnostics.  */
+static void __attribute__ ((format (printf, 1, 2)))
+bif_diag (const char * fmt, ...)
+{
+  va_list args;
+  fprintf (stderr, "%s:%d: ", bif_path, line);
+  va_start (args, fmt);
+  vfprintf (stderr, fmt, args);
+  va_end (args);
+}
+
+static void __attribute__ ((format (printf, 1, 2)))
+ovld_diag (const char * fmt, ...)
+{
+  va_list args;
+  fprintf (stderr, "%s:%d: ", ovld_path, line);
+  va_start (args, fmt);
+  vfprintf (stderr, fmt, args);
+  va_end (args);
+}
