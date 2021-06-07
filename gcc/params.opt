@@ -126,6 +126,10 @@ Maximum size (in bytes) of objects tracked bytewise by dead store elimination.
 Common Joined UInteger Var(param_early_inlining_insns) Init(6) Optimization Param
 Maximal estimated growth of function body caused by early inlining of single call.
 
+-param=evrp-sparse-threshold=
+Common Joined UInteger Var(param_evrp_sparse_threshold) Init(800) Optimization Param
+Maximum number of basic blocks before EVRP uses a sparse cache.
+
 -param=evrp-mode=
 Common Joined Var(param_evrp_mode) Enum(evrp_mode) Init(EVRP_MODE_EVRP_FIRST) Param Optimization
 --param=evrp-mode=[legacy|ranger|legacy-first|ranger-first|ranger-trace|ranger-debug|trace|debug] Specifies the mode Early VRP should operate in.
