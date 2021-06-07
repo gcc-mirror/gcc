@@ -1987,12 +1987,12 @@
 
 (define_insn "altivec_vrl<VI_char>mi"
   [(set (match_operand:VIlong 0 "register_operand" "=v")
-        (unspec:VIlong [(match_operand:VIlong 1 "register_operand" "0")
-	                (match_operand:VIlong 2 "register_operand" "v")
+        (unspec:VIlong [(match_operand:VIlong 1 "register_operand" "v")
+	                (match_operand:VIlong 2 "register_operand" "0")
 		        (match_operand:VIlong 3 "register_operand" "v")]
 		       UNSPEC_VRLMI))]
   "TARGET_P9_VECTOR"
-  "vrl<VI_char>mi %0,%2,%3"
+  "vrl<VI_char>mi %0,%1,%3"
   [(set_attr "type" "veclogical")])
 
 (define_insn "altivec_vrl<VI_char>nm"
