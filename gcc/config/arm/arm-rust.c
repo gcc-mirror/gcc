@@ -201,10 +201,6 @@ void arm_rust_target_cpu_info(void) {
         rust_add_target_info("target_feature", "v8.3a");
     if (arm_arch8_4)
         rust_add_target_info("target_feature", "v8.4a");
-    if (arm_arch8_5)
-        rust_add_target_info("target_feature", "v8.5a");
-    if (arm_arch8_6)
-        rust_add_target_info("target_feature", "v8.6a");
     if (bitmap_bit_p(arm_active_target.isa, isa_bit_armv8_1m_main))
         rust_add_target_info("target_feature", "v8.1m.main");
     if (bitmap_bit_p(arm_active_target.isa, isa_bit_mve)
