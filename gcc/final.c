@@ -4106,7 +4106,8 @@ leaf_function_p (void)
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
       if (CALL_P (insn)
-	  && ! SIBLING_CALL_P (insn))
+	  && ! SIBLING_CALL_P (insn)
+	  && ! FAKE_CALL_P (insn))
 	return 0;
       if (NONJUMP_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) == SEQUENCE

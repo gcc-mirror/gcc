@@ -1768,92 +1768,22 @@ convert_scalars_to_vector (bool timode_p)
   return 0;
 }
 
-/* Modify the vzeroupper pattern in INSN so that it describes the effect
-   that the instruction has on the SSE registers.  LIVE_REGS are the set
-   of registers that are live across the instruction.
-
-   For a live register R we use:
-
-     (set (reg:V2DF R) (reg:V2DF R))
-
-   which preserves the low 128 bits but clobbers the upper bits.  */
-
-static void
-ix86_add_reg_usage_to_vzeroupper (rtx_insn *insn, bitmap live_regs)
-{
-  rtx pattern = PATTERN (insn);
-  unsigned int nregs = TARGET_64BIT ? 16 : 8;
-  unsigned int npats = nregs;
-  for (unsigned int i = 0; i < nregs; ++i)
-    {
-      unsigned int regno = GET_SSE_REGNO (i);
-      if (!bitmap_bit_p (live_regs, regno))
-	npats--;
-    }
-  if (npats == 0)
-    return;
-  rtvec vec = rtvec_alloc (npats + 1);
-  RTVEC_ELT (vec, 0) = XVECEXP (pattern, 0, 0);
-  for (unsigned int i = 0, j = 0; i < nregs; ++i)
-    {
-      unsigned int regno = GET_SSE_REGNO (i);
-      if (!bitmap_bit_p (live_regs, regno))
-	continue;
-      rtx reg = gen_rtx_REG (V2DImode, regno);
-      ++j;
-      RTVEC_ELT (vec, j) = gen_rtx_SET (reg, reg);
-    }
-  XVEC (pattern, 0) = vec;
-  INSN_CODE (insn) = -1;
-  df_insn_rescan (insn);
-}
-
-/* Walk the vzeroupper instructions in the function and annotate them
-   with the effect that they have on the SSE registers.  */
-
-static void
-ix86_add_reg_usage_to_vzerouppers (void)
-{
-  basic_block bb;
-  rtx_insn *insn;
-  auto_bitmap live_regs;
-
-  df_analyze ();
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      bitmap_copy (live_regs, df_get_live_out (bb));
-      df_simulate_initialize_backwards (bb, live_regs);
-      FOR_BB_INSNS_REVERSE (bb, insn)
-	{
-	  if (!NONDEBUG_INSN_P (insn))
-	    continue;
-	  if (vzeroupper_pattern (PATTERN (insn), VOIDmode))
-	    ix86_add_reg_usage_to_vzeroupper (insn, live_regs);
-	  df_simulate_one_insn_backwards (bb, insn, live_regs);
-	}
-    }
-}
-
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)
 {
-  if (TARGET_VZEROUPPER
-      && flag_expensive_optimizations
-      && !optimize_size)
-    {
-      /* vzeroupper instructions are inserted immediately after reload to
-	 account for possible spills from 256bit or 512bit registers.  The pass
-	 reuses mode switching infrastructure by re-running mode insertion
-	 pass, so disable entities that have already been processed.  */
-      for (int i = 0; i < MAX_386_ENTITIES; i++)
-	ix86_optimize_mode_switching[i] = 0;
+  /* vzeroupper instructions are inserted immediately after reload to
+     account for possible spills from 256bit or 512bit registers.  The pass
+     reuses mode switching infrastructure by re-running mode insertion
+     pass, so disable entities that have already been processed.  */
+  for (int i = 0; i < MAX_386_ENTITIES; i++)
+    ix86_optimize_mode_switching[i] = 0;
 
-      ix86_optimize_mode_switching[AVX_U128] = 1;
+  ix86_optimize_mode_switching[AVX_U128] = 1;
 
-      /* Call optimize_mode_switching.  */
-      g->get_passes ()->execute_pass_mode_switching ();
-    }
-  ix86_add_reg_usage_to_vzerouppers ();
+  /* Call optimize_mode_switching.  */
+  g->get_passes ()->execute_pass_mode_switching ();
+
+  df_analyze ();
   return 0;
 }
 
@@ -1882,11 +1812,8 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return TARGET_AVX
-	     && ((TARGET_VZEROUPPER
-		  && flag_expensive_optimizations
-		  && !optimize_size)
-		 || cfun->machine->has_explicit_vzeroupper);
+      return TARGET_AVX && TARGET_VZEROUPPER
+	&& flag_expensive_optimizations && !optimize_size;
     }
 
   virtual unsigned int execute (function *)

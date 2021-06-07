@@ -395,8 +395,10 @@ shallow_copy_rtx (const_rtx orig MEM_STAT_DECL)
     case SCRATCH:
       break;
     default:
-      /* For all other RTXes clear the used flag on the copy.  */
-      RTX_FLAG (copy, used) = 0;
+      /* For all other RTXes clear the used flag on the copy.
+	 CALL_INSN use "used" flag to indicate it's a fake call.  */
+      if (!INSN_P (orig))
+	RTX_FLAG (copy, used) = 0;
       break;
     }
   return copy;

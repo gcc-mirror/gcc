@@ -21654,10 +21654,16 @@ rs6000_xcoff_asm_output_aligned_decl_common (FILE *stream,
 
       /* Globalize TLS BSS.  */
       if (TREE_PUBLIC (decl) && DECL_THREAD_LOCAL_P (decl))
-	fprintf (stream, "\t.globl %s\n", name);
+	{
+	  fputs (GLOBAL_ASM_OP, stream);
+	  assemble_name (stream, name);
+	  fputc ('\n', stream);
+	}
 
       /* Switch to section and skip space.  */
-      fprintf (stream, "\t.csect %s,%u\n", name, align2);
+      fputs ("\t.csect ", stream);
+      assemble_name (stream, name);
+      fprintf (stream, ",%u\n", align2);
       ASM_DECLARE_OBJECT_NAME (stream, name, decl);
       ASM_OUTPUT_SKIP (stream, size ? size : 1);
       return;

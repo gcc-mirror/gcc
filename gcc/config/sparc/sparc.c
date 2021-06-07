@@ -507,25 +507,6 @@ static const struct processor_costs *sparc_costs = &cypress_costs;
   ((TARGET_ARCH64 && !TARGET_CM_MEDLOW) || flag_pic)
 #endif
 
-/* Vector to say how input registers are mapped to output registers.
-   HARD_FRAME_POINTER_REGNUM cannot be remapped by this function to
-   eliminate it.  You must use -fomit-frame-pointer to get that.  */
-char leaf_reg_remap[] =
-{ 0, 1, 2, 3, 4, 5, 6, 7,
-  -1, -1, -1, -1, -1, -1, 14, -1,
-  -1, -1, -1, -1, -1, -1, -1, -1,
-  8, 9, 10, 11, 12, 13, -1, 15,
-
-  32, 33, 34, 35, 36, 37, 38, 39,
-  40, 41, 42, 43, 44, 45, 46, 47,
-  48, 49, 50, 51, 52, 53, 54, 55,
-  56, 57, 58, 59, 60, 61, 62, 63,
-  64, 65, 66, 67, 68, 69, 70, 71,
-  72, 73, 74, 75, 76, 77, 78, 79,
-  80, 81, 82, 83, 84, 85, 86, 87,
-  88, 89, 90, 91, 92, 93, 94, 95,
-  96, 97, 98, 99, 100, 101, 102};
-
 /* Vector, indexed by hard register number, which contains 1
    for a register that is allowable in a candidate for leaf
    function treatment.  */
@@ -8863,18 +8844,18 @@ epilogue_renumber (rtx *where, int test)
 
 /* Leaf functions and non-leaf functions have different needs.  */
 
-static const int
-reg_leaf_alloc_order[] = REG_LEAF_ALLOC_ORDER;
+static const int reg_leaf_alloc_order[] = REG_LEAF_ALLOC_ORDER;
 
-static const int
-reg_nonleaf_alloc_order[] = REG_ALLOC_ORDER;
+static const int reg_nonleaf_alloc_order[] = REG_ALLOC_ORDER;
 
-static const int *const reg_alloc_orders[] = {
+static const int *const reg_alloc_orders[] =
+{
   reg_leaf_alloc_order,
-  reg_nonleaf_alloc_order};
+  reg_nonleaf_alloc_order
+};
 
 void
-order_regs_for_local_alloc (void)
+sparc_order_regs_for_local_alloc (void)
 {
   static int last_order_nonleaf = 1;
 
@@ -8886,7 +8867,28 @@ order_regs_for_local_alloc (void)
 	      FIRST_PSEUDO_REGISTER * sizeof (int));
     }
 }
-
+
+int
+sparc_leaf_reg_remap (int regno)
+{
+  gcc_checking_assert (regno >= 0);
+
+  /* Do not remap in flat mode.  */
+  if (TARGET_FLAT)
+    return regno;
+
+  /* Do not remap global, stack pointer or floating-point registers.  */
+  if (regno < 8 || regno == STACK_POINTER_REGNUM || regno > SPARC_LAST_INT_REG)
+    return regno;
+
+  /* Neither out nor local nor frame pointer registers must appear.  */
+  if ((regno >= 8 && regno <= 23) || regno == HARD_FRAME_POINTER_REGNUM)
+    return -1;
+
+  /* Remap in to out registers.  */
+  return regno - 16;
+}
+
 /* Return 1 if REG and MEM are legitimate enough to allow the various
    MEM<-->REG splits to be run.  */
 
@@ -12983,14 +12985,11 @@ sparc_conditional_register_usage (void)
     fixed_regs[4] = 1;
   else if (fixed_regs[4] == 2)
     fixed_regs[4] = 0;
+
+  /* Disable leaf function optimization in flat mode.  */
   if (TARGET_FLAT)
-    {
-      int regno;
-      /* Disable leaf functions.  */
-      memset (sparc_leaf_regs, 0, FIRST_PSEUDO_REGISTER);
-      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-	leaf_reg_remap [regno] = regno;
-    }
+    memset (sparc_leaf_regs, 0, FIRST_PSEUDO_REGISTER);
+
   if (TARGET_VIS)
     global_regs[SPARC_GSR_REG] = 1;
 }

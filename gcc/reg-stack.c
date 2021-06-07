@@ -174,6 +174,7 @@
 #include "reload.h"
 #include "tree-pass.h"
 #include "rtl-iter.h"
+#include "function-abi.h"
 
 #ifdef STACK_REGS
 
@@ -2368,6 +2369,18 @@ subst_asm_stack_regs (rtx_insn *insn, stack_ptr regstack)
 	    }
       }
 }
+
+/* Return true if a function call is allowed to alter some or all bits
+   of any stack reg.  */
+static bool
+callee_clobbers_any_stack_reg (const function_abi & callee_abi)
+{
+  for (unsigned regno = FIRST_STACK_REG; regno <= LAST_STACK_REG; regno++)
+    if (callee_abi.clobbers_at_least_part_of_reg_p (regno))
+      return true;
+  return false;
+}
+
 
 /* Substitute stack hard reg numbers for stack virtual registers in
    INSN.  Non-stack register numbers are not changed.  REGSTACK is the
@@ -2382,7 +2395,10 @@ subst_stack_regs (rtx_insn *insn, stack_ptr regstack)
   bool control_flow_insn_deleted = false;
   int i;
 
-  if (CALL_P (insn))
+  /* If the target of the call doesn't clobber any stack registers,
+     Don't clear the arguments.  */
+  if (CALL_P (insn)
+      && callee_clobbers_any_stack_reg (insn_callee_abi (insn)))
     {
       int top = regstack->top;
 
