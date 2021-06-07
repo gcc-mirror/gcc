@@ -3583,7 +3583,7 @@ namespace views::__adaptor
 	  static auto _S_iter_cat()
 	  {
 	    using _Base = elements_view::_Base<_Const>;
-	    using _Cat = iterator_traits<iterator_t<_Base>>::iterator_category;
+	    using _Cat = typename iterator_traits<iterator_t<_Base>>::iterator_category;
 	    using _Res = decltype((std::get<_Nm>(*std::declval<iterator_t<_Base>>())));
 	    if constexpr (!is_lvalue_reference_v<_Res>)
 	      return input_iterator_tag{};
