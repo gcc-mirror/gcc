@@ -1570,14 +1570,43 @@ public:
       this->m_vec = r.m_vec;
       r.m_vec = NULL;
     }
+
+  auto_vec (auto_vec<T> &&r)
+    {
+      gcc_assert (!r.using_auto_storage ());
+      this->m_vec = r.m_vec;
+      r.m_vec = NULL;
+    }
+
   auto_vec& operator= (vec<T, va_heap>&& r)
     {
+	    if (this == &r)
+		    return *this;
+
       gcc_assert (!r.using_auto_storage ());
       this->release ();
       this->m_vec = r.m_vec;
       r.m_vec = NULL;
       return *this;
     }
+
+  auto_vec& operator= (auto_vec<T> &&r)
+    {
+	    if (this == &r)
+		    return *this;
+
+      gcc_assert (!r.using_auto_storage ());
+      this->release ();
+      this->m_vec = r.m_vec;
+      r.m_vec = NULL;
+      return *this;
+    }
+
+  // You probably don't want to copy a vector, so these are deleted to prevent
+  // unintentional use.  If you really need a copy of the vectors contents you
+  // can use copy ().
+  auto_vec(const auto_vec &) = delete;
+  auto_vec &operator= (const auto_vec &) = delete;
 };
 
 
@@ -2147,7 +2176,7 @@ template<typename T>
 inline bool
 vec<T, va_heap, vl_ptr>::using_auto_storage () const
 {
-  return m_vec->m_vecpfx.m_using_auto_storage;
+  return m_vec ? m_vec->m_vecpfx.m_using_auto_storage : false;
 }
 
 /* Release VEC and call release of all element vectors.  */
