@@ -480,12 +480,11 @@ package body Sem_Ch5 is
       Mark_And_Set_Ghost_Assignment (N);
 
       if Has_Target_Names (N) then
+         pragma Assert (No (Current_Assignment));
          Current_Assignment := N;
          Expander_Mode_Save_And_Set (False);
          Save_Full_Analysis := Full_Analysis;
          Full_Analysis      := False;
-      else
-         Current_Assignment := Empty;
       end if;
 
       Analyze (Lhs);
@@ -1302,6 +1301,7 @@ package body Sem_Ch5 is
          if Has_Target_Names (N) then
             Expander_Mode_Restore;
             Full_Analysis := Save_Full_Analysis;
+            Current_Assignment := Empty;
          end if;
 
          pragma Assert (not Should_Transform_BIP_Assignment (Typ => T1));
@@ -4234,6 +4234,8 @@ package body Sem_Ch5 is
 
    procedure Analyze_Target_Name (N : Node_Id) is
       procedure Report_Error;
+      --  Complain about illegal use of target_name and rewrite it into unknown
+      --  identifier.
 
       ------------------
       -- Report_Error --
@@ -4247,6 +4249,8 @@ package body Sem_Ch5 is
          Rewrite (N, New_Occurrence_Of (Any_Id, Sloc (N)));
       end Report_Error;
 
+   --  Start of processing for Analyze_Target_Name
+
    begin
       --  A target name has the type of the left-hand side of the enclosing
       --  assignment.
@@ -4257,27 +4261,39 @@ package body Sem_Ch5 is
       if No (Current_Assignment) then
          Report_Error;
          return;
+      end if;
 
-      else
-         declare
-            P : Node_Id := N;
-         begin
-            while Present (P)
-              and then Nkind (Parent (P)) /= N_Assignment_Statement
-            loop
-               P := Parent (P);
-            end loop;
+      declare
+         Current : Node_Id := N;
+         Context : Node_Id := Parent (N);
+      begin
+         while Present (Context) loop
 
-            if No (P)
-              or else P /= Expression (Parent (P))
-            then
+            --  Check if target_name appears in the expression of the enclosing
+            --  assignment.
+
+            if Nkind (Context) = N_Assignment_Statement then
+               if Current = Expression (Context) then
+                  pragma Assert (Context = Current_Assignment);
+                  Set_Etype (N, Etype (Name (Current_Assignment)));
+               else
+                  Report_Error;
+               end if;
+               return;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Context) then
                Report_Error;
                return;
             end if;
-         end;
-      end if;
 
-      Set_Etype (N, Etype (Name (Current_Assignment)));
+            Current := Context;
+            Context := Parent (Context);
+         end loop;
+
+         Report_Error;
+      end;
    end Analyze_Target_Name;
 
    ------------------------
