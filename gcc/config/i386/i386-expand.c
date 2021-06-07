@@ -93,9 +93,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "i386-builtins.h"
 #include "i386-expand.h"
 
-static bool ix86_expand_vector_init_duplicate (bool, machine_mode, rtx,
-					       rtx);
-
 /* Split one or more double-mode RTL references into pairs of half-mode
    references.  The RTL can be REG, offsettable MEM, integer constant, or
    CONST_DOUBLE.  "operands" is a pointer to an array of double-mode RTLs to
@@ -13909,7 +13906,7 @@ static bool expand_vec_perm_1 (struct expand_vec_perm_d *d);
 /* A subroutine of ix86_expand_vector_init.  Store into TARGET a vector
    with all elements equal to VAR.  Return true if successful.  */
 
-static bool
+bool
 ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
 				   rtx target, rtx val)
 {
