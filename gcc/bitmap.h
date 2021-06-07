@@ -438,6 +438,13 @@ extern bool bitmap_set_bit (bitmap, int);
 /* Return true if a bit is set in a bitmap.  */
 extern int bitmap_bit_p (const_bitmap, int);
 
+/* Set and get multiple bit values in a sparse bitmap.  This allows a bitmap to
+   function as a sparse array of bit patterns where the patterns are
+   multiples of power of 2. This is more efficient than performing this as
+   multiple individual operations.  */
+void bitmap_set_aligned_chunk (bitmap, unsigned int, unsigned int, BITMAP_WORD);
+BITMAP_WORD bitmap_get_aligned_chunk (const_bitmap, unsigned int, unsigned int);
+
 /* Debug functions to print a bitmap.  */
 extern void debug_bitmap (const_bitmap);
 extern void debug_bitmap_file (FILE *, const_bitmap);
