@@ -13733,6 +13733,7 @@ ix86_expand_vector_init_duplicate (bool mmx_ok, machine_mode mode,
       return false;
 
     case E_V8QImode:
+    case E_V4QImode:
       if (!mmx_ok)
 	return false;
       goto widen;
@@ -13877,6 +13878,9 @@ ix86_expand_vector_init_one_nonzero (bool mmx_ok, machine_mode mode,
       break;
     case E_V4HImode:
       use_vector_set = TARGET_SSE || TARGET_3DNOW_A;
+      break;
+    case E_V4QImode:
+      use_vector_set = TARGET_SSE4_1;
       break;
     case E_V32QImode:
     case E_V16HImode:
@@ -14086,6 +14090,10 @@ ix86_expand_vector_init_one_var (bool mmx_ok, machine_mode mode,
 	break;
       wmode = V4HImode;
       goto widen;
+    case E_V4QImode:
+      if (TARGET_SSE4_1)
+	break;
+      wmode = V2HImode;
     widen:
       /* There's no way to set one QImode entry easily.  Combine
 	 the variable value with its adjacent constant value, and
@@ -14535,6 +14543,7 @@ quarter:
     case E_V8QImode:
 
     case E_V2HImode:
+    case E_V4QImode:
       break;
 
     default:

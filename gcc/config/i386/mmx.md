@@ -3369,7 +3369,17 @@
    (match_operand 1)]
   "TARGET_SSE2"
 {
-  ix86_expand_vector_init (false, operands[0],
+  ix86_expand_vector_init (TARGET_MMX_WITH_SSE, operands[0],
+			   operands[1]);
+  DONE;
+})
+
+(define_expand "vec_initv4qiqi"
+  [(match_operand:V2HI 0 "register_operand")
+   (match_operand 1)]
+  "TARGET_SSE2"
+{
+  ix86_expand_vector_init (TARGET_MMX_WITH_SSE, operands[0],
 			   operands[1]);
   DONE;
 })
