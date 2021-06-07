@@ -5,6 +5,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 #define REV_ENDIANNESS __attribute__((scalar_storage_order("big-endian")))
@@ -42,12 +43,14 @@ int main(void)
 {
   t_s12 *msg1 = __builtin_alloca(10);
   t_u12 *msg2 = __builtin_alloca(10);
+  int same;
 
   msg1 = malloc (sizeof (t_s12));
   msg2 = malloc (sizeof (t_u12));
 
-  msg1->a[0].val = 0;
-  msg2->a[0].val = 0;
+  memset (msg1, 0, sizeof (t_s12));
+  memcpy (msg2, &msg1, sizeof (t_s12));
+  same = memcmp (msg1, msg2, sizeof (t_s12));
 
   return 0;
 }
