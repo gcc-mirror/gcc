@@ -216,6 +216,22 @@ enum basetype
   BT_VQUAD
 };
 
+/* Ways in which a const int value can be restricted.  RES_BITS indicates
+   that the integer is restricted to val1 bits, interpreted as an unsigned
+   number.  RES_RANGE indicates that the integer is restricted to values
+   between val1 and val2, inclusive.  RES_VAR_RANGE is like RES_RANGE, but
+   the argument may be variable, so it can only be checked if it is constant.
+   RES_VALUES indicates that the integer must have one of the values val1
+   or val2.  */
+enum restriction
+{
+  RES_NONE,
+  RES_BITS,
+  RES_RANGE,
+  RES_VAR_RANGE,
+  RES_VALUES
+};
+
 /* Type modifiers for an argument or return type.  */
 struct typeinfo
 {
@@ -228,6 +244,7 @@ struct typeinfo
   char ispixel;
   char ispointer;
   basetype base;
+  restriction restr;
   char *val1;
   char *val2;
 };
@@ -452,6 +469,53 @@ match_basetype (typeinfo *typedata)
   return 1;
 }
 
+/* Helper routine for match_const_restriction.  */
+static int
+match_bracketed_pair (typeinfo *typedata, char open, char close,
+		      restriction restr)
+{
+  if (linebuf[pos] == open)
+    {
+      safe_inc_pos ();
+      int oldpos = pos;
+      char *x = match_integer ();
+      if (x == NULL)
+	{
+	  (*diag) ("malformed integer at column %d.\n", oldpos + 1);
+	  return 0;
+	}
+      consume_whitespace ();
+      if (linebuf[pos] != ',')
+	{
+	  (*diag) ("missing comma at column %d.\n", pos + 1);
+	  return 0;
+	}
+      safe_inc_pos ();
+      consume_whitespace ();
+      oldpos = pos;
+      char *y = match_integer ();
+      if (y == NULL)
+	{
+	  (*diag) ("malformed integer at column %d.\n", oldpos + 1);
+	  return 0;
+	}
+      typedata->restr = restr;
+      typedata->val1 = x;
+      typedata->val2 = y;
+
+      consume_whitespace ();
+      if (linebuf[pos] != close)
+	{
+	  (*diag) ("malformed restriction at column %d.\n", pos + 1);
+	  return 0;
+	}
+      safe_inc_pos ();
+      return 1;
+    }
+
+  return 0;
+}
+
 /* A const int argument may be restricted to certain values.  This is
    indicated by one of the following occurring after the "int' token:
 
@@ -469,7 +533,56 @@ match_basetype (typeinfo *typedata)
 static int
 match_const_restriction (typeinfo *typedata)
 {
-  return 1;
+  int oldpos = pos;
+  if (linebuf[pos] == '<')
+    {
+      safe_inc_pos ();
+      oldpos = pos;
+      char *x = match_integer ();
+      if (x == NULL)
+	{
+	  (*diag) ("malformed integer at column %d.\n", oldpos + 1);
+	  return 0;
+	}
+      consume_whitespace ();
+      if (linebuf[pos] == '>')
+	{
+	  typedata->restr = RES_BITS;
+	  typedata->val1 = x;
+	  safe_inc_pos ();
+	  return 1;
+	}
+      else if (linebuf[pos] != ',')
+	{
+	  (*diag) ("malformed restriction at column %d.\n", pos + 1);
+	  return 0;
+	}
+      safe_inc_pos ();
+      oldpos = pos;
+      char *y = match_integer ();
+      if (y == NULL)
+	{
+	  (*diag) ("malformed integer at column %d.\n", oldpos + 1);
+	  return 0;
+	}
+      typedata->restr = RES_RANGE;
+      typedata->val1 = x;
+      typedata->val2 = y;
+
+      consume_whitespace ();
+      if (linebuf[pos] != '>')
+	{
+	  (*diag) ("malformed restriction at column %d.\n", pos + 1);
+	  return 0;
+	}
+      safe_inc_pos ();
+      return 1;
+    }
+  else if (match_bracketed_pair (typedata, '{', '}', RES_VALUES)
+	   || match_bracketed_pair (typedata, '[', ']', RES_VAR_RANGE))
+    return 1;
+
+  return 0;
 }
 
 /* Look for a type, which can be terminated by a token that is not part of
