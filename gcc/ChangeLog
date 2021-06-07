@@ -1,3 +1,47 @@
+2021-06-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-protos.h (order_regs_for_local_alloc): Rename
+	to...
+	(sparc_order_regs_for_local_alloc): ...this.
+	(sparc_leaf_reg_remap): Declare.
+	* config/sparc/sparc.h (ADJUST_REG_ALLOC_ORDER): Adjust.
+	(LEAF_REG_REMAP): Reimplement as call to sparc_leaf_reg_remap.
+	* config/sparc/sparc.c (leaf_reg_remap): Delete.
+	(order_regs_for_local_alloc): Rename to...
+	(sparc_order_regs_for_local_alloc): ...this.
+	(sparc_leaf_reg_remap): New function.
+	(sparc_conditional_register_usage): Do not modify leaf_reg_remap.
+
+2021-06-06  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_xcoff_asm_output_aligned_decl_common):
+	Use assemble_name to output BSS section name.
+
+2021-06-06  Uroš Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md (Bs):
+	Remove boolean operators from match_test RTX.
+	(Bw): Ditto.
+	(L): Ditto.
+	(M): Use "mode" variable instead of GET_MODE (op) in match_test RTX.
+	(Wz): Ditto.
+
+2021-06-06  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Add missing @headitem.
+	* doc/invoke.texi: Likewise.
+	* doc/objc.texi: Likewise.
+
+2021-06-06  Martin Liska  <mliska@suse.cz>
+
+	* genhooks.c (emit_findices): Remove unused function.
+	(emit_documentation): Do not call emit_findices
+	and do not search for @Fcode directives.
+
+2021-06-06  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Remove extra character.
+
 2021-06-05  Kewen Lin  <linkw@linux.ibm.com>
 
 	* config/sh/sh.md (doloop_end_split): Fix empty split condition.
