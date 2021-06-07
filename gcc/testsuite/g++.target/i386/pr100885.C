@@ -33,7 +33,7 @@ protected:
   }
 };
 __m128i _mm_set_epi64(__m64 __q0) {
-  __m128i __trans_tmp_5{(long)__q0};
+  __m128i __trans_tmp_5{(long long)__q0};
   return __trans_tmp_5;
 }
 long _mm_storel_epi64___P, Draw_dsts;
