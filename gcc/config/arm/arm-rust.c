@@ -191,7 +191,7 @@ void arm_rust_target_cpu_info(void) {
                                 && arm_arch_cmse && arm_arch_thumb1;
     if (hasBaseline8MPreReqs)
         rust_add_target_info("target_feature", "v8m");
-    if (hasBaseLine8MPreReqs && arm_arch_thumb2 && arm_arch7)
+    if (hasBaseline8MPreReqs && arm_arch_thumb2 && arm_arch7)
         rust_add_target_info("target_feature", "v8m.main");
     if (arm_arch8_1)
         rust_add_target_info("target_feature", "v8.1a");
