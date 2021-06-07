@@ -839,6 +839,11 @@ struct GTY(()) rtvec_def {
 /* Predicate yielding nonzero iff X is a call insn.  */
 #define CALL_P(X) (GET_CODE (X) == CALL_INSN)
 
+/* 1 if RTX is a call_insn for a fake call.
+   CALL_INSN use "used" flag to indicate it's a fake call.  */
+#define FAKE_CALL_P(RTX)                                        \
+  (RTL_FLAG_CHECK1 ("FAKE_CALL_P", (RTX), CALL_INSN)->used)
+
 /* Predicate yielding nonzero iff X is an insn that cannot jump.  */
 #define NONJUMP_INSN_P(X) (GET_CODE (X) == INSN)
 

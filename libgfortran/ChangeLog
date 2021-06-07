@@ -1,3 +1,11 @@
+2021-06-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
+
+	PR fortran/100120
+	* intrinsics/associated.c (associated): have associated verify if
+	the "span" matches insted of the "elem_len".
+	* libgfortran.h (GFC_DESCRIPTOR_SPAN): add macro to retrive the
+	descriptor "span".
+
 2021-05-22  Andre Vehreschild  <vehre@gcc.gnu.org>
 
 	PR fortran/98301

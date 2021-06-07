@@ -57,11 +57,19 @@ OBJC_OBJS = objc/objc-lang.o objc/objc-act.o hash-table.o \
 
 objc_OBJS = $(OBJC_OBJS) cc1obj-checksum.o
 
+# compute checksum over all object files and the options
+# re-use the checksum from the prev-final stage so it passes
+# the bootstrap comparison and allows comparing of the cc1 binary
 cc1obj-checksum.c : build/genchecksum$(build_exeext) checksum-options \
         $(OBJC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBDEPS)
-	build/genchecksum$(build_exeext) $(OBJC_OBJS) $(C_AND_OBJC_OBJS) \
-        $(BACKEND) $(LIBDEPS) checksum-options > cc1obj-checksum.c.tmp && \
-	$(srcdir)/../move-if-change cc1obj-checksum.c.tmp cc1obj-checksum.c
+	if [ -f ../stage_final ] \
+	   && cmp -s ../stage_current ../stage_final; then \
+	  cp ../prev-gcc/$@ $@; \
+	else \
+	  build/genchecksum$(build_exeext) $(OBJC_OBJS) $(C_AND_OBJC_OBJS) \
+		$(BACKEND) $(LIBDEPS) checksum-options > $@.tmp && \
+	  $(srcdir)/../move-if-change $@.tmp $@; \
+	fi
 
 cc1obj$(exeext): $(OBJC_OBJS) $(C_AND_OBJC_OBJS) cc1obj-checksum.o $(BACKEND) \
 		 $(LIBDEPS) $(objc.prev)

@@ -8854,12 +8854,21 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	    }
 	}
 
+      /* Warn on problematic type punning for storage order purposes.  */
       if (TREE_CODE (t) == UNION_TYPE
-	  && AGGREGATE_TYPE_P (TREE_TYPE (field))
-	  && TYPE_REVERSE_STORAGE_ORDER (t)
-	     != TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (field)))
-	warning_at (DECL_SOURCE_LOCATION (field), OPT_Wscalar_storage_order,
-		    "type punning toggles scalar storage order");
+	  && TREE_CODE (field) == FIELD_DECL
+	  && AGGREGATE_TYPE_P (TREE_TYPE (field)))
+	{
+	  tree ftype = TREE_TYPE (field);
+	  if (TREE_CODE (ftype) == ARRAY_TYPE)
+	    ftype = strip_array_types (ftype);
+	  if (RECORD_OR_UNION_TYPE_P (ftype)
+	      && TYPE_REVERSE_STORAGE_ORDER (ftype)
+		 != TYPE_REVERSE_STORAGE_ORDER (t))
+	    warning_at (DECL_SOURCE_LOCATION (field),
+			OPT_Wscalar_storage_order,
+			"type punning toggles scalar storage order");
+	}
     }
 
   /* Now we have the truly final field list.

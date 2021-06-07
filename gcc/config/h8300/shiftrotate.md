@@ -57,7 +57,7 @@
 	  (match_operand:QI 2 "const_int_operand" "")]))]
   "h8300_operands_match_p (operands)"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -107,7 +107,7 @@
 	  (match_operand:QI 2 "nonmemory_operand" "r P5>X")]))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -158,7 +158,7 @@
    (clobber (match_scratch:QI 4 "=X,&r"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (match_dup 4))
 	      (clobber (reg:CC CC_REG))])])
@@ -186,7 +186,7 @@
     && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), QImode,
 				     GET_CODE (operands[3])))"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -213,7 +213,7 @@
    (clobber (match_scratch:QI 4 "=X,&r"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (match_dup 4))
 	      (clobber (reg:CC CC_REG))])])
@@ -241,7 +241,7 @@
     && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), HImode,
 				     GET_CODE (operands[3])))"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -268,7 +268,7 @@
    (clobber (match_scratch:QI 4 "=X,&r"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (match_dup 4))
 	      (clobber (reg:CC CC_REG))])])
@@ -296,7 +296,7 @@
     && !h8300_shift_needs_scratch_p (INTVAL (operands[2]), SImode,
 				     GET_CODE (operands[3])))"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (match_op_dup 3 [(match_dup 1) (match_dup 2)]))
 	      (clobber (reg:CC CC_REG))])])
 
@@ -410,7 +410,7 @@
 		     (match_operand:QI 2 "immediate_operand" "")))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0) (rotate:QHSI (match_dup 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
 

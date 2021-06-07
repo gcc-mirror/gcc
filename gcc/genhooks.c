@@ -38,26 +38,6 @@ static struct hook_desc hook_array[] = {
 #undef DEFHOOK
 };
 
-/* For each @Fcode in the first paragraph of the documentation string DOC,
-   print an @findex directive.  HOOK_NAME is the name of the hook this bit of
-   documentation pertains to.  */
-static void
-emit_findices (const char *doc, const char *hook_name)
-{
-  const char *end = strstr (doc, "\n\n");
-  const char *fcode;
-
-  while ((fcode = strstr (doc, "@Fcode{")) && (!end || fcode < end))
-    {
-      fcode += strlen ("@Fcode{");
-      doc = strchr (fcode, '}');
-      if (!doc)
-	fatal ("Malformed @Fcode for hook %s\n", hook_name);
-      printf ("@findex %.*s\n", (int) (doc - fcode), fcode);
-      doc = fcode;
-    }
-}
-
 /* Return an upper-case copy of IN.  */
 static char *
 upstrdup (const char *in)
@@ -99,8 +79,8 @@ s_hook_eq_p (const void *p1, const void *p2)
    signature, followed by the string from the doc field.
    The documentation is bracketed in @deftypefn / @deftypevr and a matching
    @end.
-   While emitting the doc field, @Fcode is translated to @code, and an
-   @findex entry is added to the affected paragraph.
+   While emitting the doc field, an @findex entry is added
+   to the affected paragraph.
    If the doc field starts with '*', the leading '*' is stripped, and the doc
    field is otherwise emitted unaltered; no function signature/
    @deftypefn/deftypevr/@end is emitted.
@@ -206,7 +186,7 @@ emit_documentation (const char *in_fname)
 	{
 	  const char *q, *e;
 	  const char *deftype;
-	  const char *doc, *fcode, *p_end;
+	  const char *doc, *p_end;
 
 	  /* A leading '*' means to output the documentation string without
 	     further processing.  */
@@ -216,7 +196,6 @@ emit_documentation (const char *in_fname)
 	    {
 	      if (i != shp->pos)
 		printf ("\n\n");
-	      emit_findices (hook_array[i].doc, name);
 
 	      /* Print header.  Function-valued hooks have a parameter list, 
 		 unlike POD-valued ones.  */
@@ -262,13 +241,7 @@ emit_documentation (const char *in_fname)
 		      /* Find paragraph end.  */
 		      p_end = strstr (doc, "\n\n");
 		      p_end = (p_end ? p_end + 2 : doc + strlen (doc));
-		      /* Print paragraph, emitting @Fcode as @code.  */
-		      for (; (fcode = strstr (doc, "@Fcode{")) && fcode < p_end;
-			   doc = fcode + 2)
-			printf ("%.*s@", (int) (fcode - doc), doc);
 		      printf ("%.*s", (int) (p_end - doc), doc);
-		      /* Emit function indices for next paragraph.  */
-		      emit_findices (p_end, name);
 		    }
 		  printf ("\n@end %s", deftype);
 		}

@@ -24,7 +24,7 @@
   "(TARGET_H8300SX)
     && (1 << INTVAL (operands[2])) == INTVAL (operands[3])"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (zero_extract:HI (xor:HI (match_dup 1) (match_dup 3))
 				    (const_int 1)
@@ -54,7 +54,7 @@
 			 (match_operand 2 "const_int_operand" "n,n")))]
   "INTVAL (operands[2]) < 16"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (zero_extract:SI (match_dup 1) (const_int 1) (match_dup 2)))
 	      (clobber (reg:CC CC_REG))])])
@@ -84,7 +84,7 @@
   "INTVAL (operands[2]) < 16
     && (1 << INTVAL (operands[2])) == INTVAL (operands[3])"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (zero_extract:SI (xor:SI (match_dup 1) (match_dup 3))
 				    (const_int 1)
@@ -159,7 +159,7 @@
 	(match_operand:HI 2 "register_operand" "r"))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (zero_extract:HI (match_dup 0) (const_int 1) (match_dup 1))
 		   (match_dup 2))
 	      (clobber (reg:CC CC_REG))])])
@@ -231,7 +231,7 @@
 	  (match_operand:HI 3 "bit_operand" "0")]))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (match_op_dup 4 [(zero_extract:HI (match_dup 1)
 						     (const_int 1)
@@ -262,7 +262,7 @@
 			   (match_operand:HI 4 "immediate_operand" "n"))]))]
   ""
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (match_op_dup 5 [(zero_extract:HI (match_dup 1)
 						     (const_int 1)
@@ -293,7 +293,7 @@
 			 (match_operand:QI 3 "immediate_operand" "n")))]
   "TARGET_H8300SX && INTVAL (operands[2]) + INTVAL (operands[3]) <= 8"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (match_dup 0)
 		   (zero_extract:QI (match_dup 1) (match_dup 2) (match_dup 3)))
 	      (clobber (reg:CC CC_REG))])])
@@ -319,7 +319,7 @@
 	(match_operand:QI 1 "register_operand" "r"))]
   "TARGET_H8300SX && INTVAL (operands[2]) + INTVAL (operands[3]) <= 8"
   "#"
-  "reload_completed"
+  "&& reload_completed"
   [(parallel [(set (zero_extract:QI (match_dup 0) (match_dup 2) (match_dup 3))
 		   (match_dup 1))
 	      (clobber (reg:CC CC_REG))])])

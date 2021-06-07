@@ -2090,27 +2090,29 @@ copy_bb (copy_body_data *id, basic_block bb,
 	      tree p;
 	      gcall *new_call;
 	      vec<tree> argarray;
-	      size_t nargs = gimple_call_num_args (id->call_stmt);
-	      size_t n;
+	      size_t nargs_caller = gimple_call_num_args (id->call_stmt);
+	      size_t nargs = nargs_caller;
 
 	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
 		nargs--;
 
 	      /* Create the new array of arguments.  */
-	      n = nargs + gimple_call_num_args (call_stmt);
+	      size_t nargs_callee = gimple_call_num_args (call_stmt);
+	      size_t n = nargs + nargs_callee;
 	      argarray.create (n);
 	      argarray.safe_grow_cleared (n, true);
 
 	      /* Copy all the arguments before '...'  */
-	      memcpy (argarray.address (),
-		      gimple_call_arg_ptr (call_stmt, 0),
-		      gimple_call_num_args (call_stmt) * sizeof (tree));
+	      if (nargs_callee)
+		memcpy (argarray.address (),
+			gimple_call_arg_ptr (call_stmt, 0),
+			nargs_callee * sizeof (tree));
 
 	      /* Append the arguments passed in '...'  */
-	      memcpy (argarray.address () + gimple_call_num_args (call_stmt),
-		      gimple_call_arg_ptr (id->call_stmt, 0)
-		      + (gimple_call_num_args (id->call_stmt) - nargs),
-		      nargs * sizeof (tree));
+	      if (nargs)
+		memcpy (argarray.address () + nargs_callee,
+			gimple_call_arg_ptr (id->call_stmt, 0)
+			+ (nargs_caller - nargs), nargs * sizeof (tree));
 
 	      new_call = gimple_build_call_vec (gimple_call_fn (call_stmt),
 						argarray);

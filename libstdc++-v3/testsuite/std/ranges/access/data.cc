@@ -92,8 +92,12 @@ test03()
   // ranges::data should treat the subexpression as an lvalue
   VERIFY( std::ranges::data(std::move(r)) == &R3::i );
   VERIFY( std::ranges::data(std::move(c)) == &R3::l );
-}
 
+  // PR libstdc++/100824 comment 3
+  // Check for member data() should use decay-copy
+  struct A { int*&& data(); };
+  static_assert( has_data<A&> );
+}
 
 int
 main()

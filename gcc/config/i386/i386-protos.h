@@ -216,6 +216,7 @@ extern rtx ix86_split_stack_guard (void);
 extern void ix86_move_vector_high_sse_to_mmx (rtx);
 extern void ix86_split_mmx_pack (rtx[], enum rtx_code);
 extern void ix86_split_mmx_punpck (rtx[], bool);
+extern void ix86_expand_avx_vzeroupper (void);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);

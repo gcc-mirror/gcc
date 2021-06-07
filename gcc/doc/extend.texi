@@ -15419,7 +15419,7 @@ to make this classification clear at a glance, the arguments and return
 values are given the following pseudo types:
 
 @multitable @columnfractions .20 .30 .15 .35
-@item Pseudo type @tab Real C type @tab Constant? @tab Description
+@headitem Pseudo type @tab Real C type @tab Constant? @tab Description
 @item @code{uh} @tab @code{unsigned short} @tab No @tab an unsigned halfword
 @item @code{uw1} @tab @code{unsigned int} @tab No @tab an unsigned word
 @item @code{sw1} @tab @code{int} @tab No @tab a signed word
@@ -15455,7 +15455,7 @@ for more details.
 The functions listed below map directly to FR-V I-type instructions.
 
 @multitable @columnfractions .45 .32 .23
-@item Function prototype @tab Example usage @tab Assembly output
+@headitem Function prototype @tab Example usage @tab Assembly output
 @item @code{sw1 __ADDSS (sw1, sw1)}
 @tab @code{@var{c} = __ADDSS (@var{a}, @var{b})}
 @tab @code{ADDSS @var{a},@var{b},@var{c}}
@@ -15494,7 +15494,7 @@ The functions listed below map directly to FR-V I-type instructions.
 The functions listed below map directly to FR-V M-type instructions.
 
 @multitable @columnfractions .45 .32 .23
-@item Function prototype @tab Example usage @tab Assembly output
+@headitem Function prototype @tab Example usage @tab Assembly output
 @item @code{uw1 __MABSHS (sw1)}
 @tab @code{@var{b} = __MABSHS (@var{a})}
 @tab @code{MABSHS @var{a},@var{b}}
@@ -15886,7 +15886,7 @@ hardware support exists.  @code{a} and @code{b} are @code{v4i8} values,
 and @code{c} and @code{d} are @code{v2q15} values.
 
 @multitable @columnfractions .50 .50
-@item C code @tab MIPS instruction
+@headitem C code @tab MIPS instruction
 @item @code{a + b} @tab @code{addu.qb}
 @item @code{c + d} @tab @code{addq.ph}
 @item @code{a - b} @tab @code{subu.qb}
@@ -15898,7 +15898,7 @@ hardware support exists for the DSP ASE REV 2.  @code{e} and @code{f} are
 @code{v2i16} values.
 
 @multitable @columnfractions .50 .50
-@item C code @tab MIPS instruction
+@headitem C code @tab MIPS instruction
 @item @code{e * f} @tab @code{mul.ph}
 @end multitable
 
@@ -16284,7 +16284,7 @@ support exists.  @code{a}, @code{b} and @code{c} are @code{v2sf}
 values and @code{x} is an integral value.
 
 @multitable @columnfractions .50 .50
-@item C code @tab MIPS instruction
+@headitem C code @tab MIPS instruction
 @item @code{a + b} @tab @code{add.ps}
 @item @code{a - b} @tab @code{sub.ps}
 @item @code{-a} @tab @code{neg.ps}

@@ -14426,7 +14426,7 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
       break;
     case AVX_U128:
       if (mode == AVX_U128_CLEAN)
-	emit_insn (gen_avx_vzeroupper ());
+	ix86_expand_avx_vzeroupper ();
       break;
     case I387_ROUNDEVEN:
     case I387_TRUNC:
@@ -19497,15 +19497,63 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return false;
 }
 
+/* Implement TARGET_INSN_CALLEE_ABI.  */
+
+const predefined_function_abi &
+ix86_insn_callee_abi (const rtx_insn *insn)
+{
+  unsigned int abi_id = 0;
+  rtx pat = PATTERN (insn);
+  if (vzeroupper_pattern (pat, VOIDmode))
+    abi_id = ABI_VZEROUPPER;
+
+  return function_abis[abi_id];
+}
+
+/* Initialize function_abis with corresponding abi_id,
+   currently only handle vzeroupper.  */
+void
+ix86_initialize_callee_abi (unsigned int abi_id)
+{
+  gcc_assert (abi_id == ABI_VZEROUPPER);
+  predefined_function_abi &vzeroupper_abi = function_abis[abi_id];
+  if (!vzeroupper_abi.initialized_p ())
+    {
+      HARD_REG_SET full_reg_clobbers;
+      CLEAR_HARD_REG_SET (full_reg_clobbers);
+      vzeroupper_abi.initialize (ABI_VZEROUPPER, full_reg_clobbers);
+    }
+}
+
+void
+ix86_expand_avx_vzeroupper (void)
+{
+  /* Initialize vzeroupper_abi here.  */
+  ix86_initialize_callee_abi (ABI_VZEROUPPER);
+  rtx_insn *insn = emit_call_insn (gen_avx_vzeroupper_callee_abi ());
+  /* Return false for non-local goto in can_nonlocal_goto.  */
+  make_reg_eh_region_note (insn, 0, INT_MIN);
+  /* Flag used for call_insn indicates it's a fake call.  */
+  RTX_FLAG (insn, used) = 1;
+}
+
+
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The only ABI that
    saves SSE registers across calls is Win64 (thus no need to check the
    current ABI here), and with AVX enabled Win64 only guarantees that
    the low 16 bytes are saved.  */
 
 static bool
-ix86_hard_regno_call_part_clobbered (unsigned int, unsigned int regno,
+ix86_hard_regno_call_part_clobbered (unsigned int abi_id, unsigned int regno,
 				     machine_mode mode)
 {
+  /* Special ABI for vzeroupper which only clobber higher part of sse regs.  */
+  if (abi_id == ABI_VZEROUPPER)
+      return (GET_MODE_SIZE (mode) > 16
+	      && ((TARGET_64BIT
+		   && (IN_RANGE (regno, FIRST_REX_SSE_REG, LAST_REX_SSE_REG)))
+		  || (IN_RANGE (regno, FIRST_SSE_REG, LAST_SSE_REG))));
+
   return SSE_REGNO_P (regno) && GET_MODE_SIZE (mode) > 16;
 }
 
@@ -23925,6 +23973,9 @@ ix86_run_selftests (void)
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   ix86_hard_regno_call_part_clobbered
+
+#undef TARGET_INSN_CALLEE_ABI
+#define TARGET_INSN_CALLEE_ABI ix86_insn_callee_abi
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS ix86_can_change_mode_class
