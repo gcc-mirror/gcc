@@ -840,7 +840,7 @@ enum
 
 extern void doloop_optimize_loops (void);
 extern void move_loop_invariants (void);
-extern vec<basic_block> get_loop_hot_path (const class loop *loop);
+extern auto_vec<basic_block> get_loop_hot_path (const class loop *loop);
 
 /* Returns the outermost loop of the loop nest that contains LOOP.*/
 static inline class loop *
