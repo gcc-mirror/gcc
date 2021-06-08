@@ -883,17 +883,17 @@ set_immediate_dominator (enum cdi_direction dir, basic_block bb,
 
 /* Returns the list of basic blocks immediately dominated by BB, in the
    direction DIR.  */
-vec<basic_block> 
+auto_vec<basic_block> 
 get_dominated_by (enum cdi_direction dir, basic_block bb)
 {
   unsigned int dir_index = dom_convert_dir_to_idx (dir);
   struct et_node *node = bb->dom[dir_index], *son = node->son, *ason;
-  vec<basic_block> bbs = vNULL;
+  auto_vec<basic_block> bbs;
 
   gcc_checking_assert (dom_computed[dir_index]);
 
   if (!son)
-    return vNULL;
+    return bbs;
 
   bbs.safe_push ((basic_block) son->data);
   for (ason = son->right; ason != son; ason = ason->right)

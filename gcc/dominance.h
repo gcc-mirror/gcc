@@ -46,7 +46,7 @@ extern void free_dominance_info_for_region (function *,
 extern basic_block get_immediate_dominator (enum cdi_direction, basic_block);
 extern void set_immediate_dominator (enum cdi_direction, basic_block,
 				     basic_block);
-extern vec<basic_block> get_dominated_by (enum cdi_direction, basic_block);
+extern auto_vec<basic_block> get_dominated_by (enum cdi_direction, basic_block);
 extern vec<basic_block> get_dominated_by_region (enum cdi_direction,
 							 basic_block *,
 							 unsigned);

@@ -884,7 +884,7 @@ unroll_loop_runtime_iterations (class loop *loop)
 {
   rtx old_niter, niter, tmp;
   rtx_insn *init_code, *branch_code;
-  unsigned i, j;
+  unsigned i;
   profile_probability p;
   basic_block preheader, *body, swtch, ezc_swtch = NULL;
   int may_exit_copy;
@@ -908,15 +908,9 @@ unroll_loop_runtime_iterations (class loop *loop)
   body = get_loop_body (loop);
   for (i = 0; i < loop->num_nodes; i++)
     {
-      vec<basic_block> ldom;
-      basic_block bb;
-
-      ldom = get_dominated_by (CDI_DOMINATORS, body[i]);
-      FOR_EACH_VEC_ELT (ldom, j, bb)
+      for (basic_block bb : get_dominated_by (CDI_DOMINATORS, body[i]))
 	if (!flow_bb_inside_loop_p (loop, bb))
 	  dom_bbs.safe_push (bb);
-
-      ldom.release ();
     }
   free (body);
 
@@ -1013,7 +1007,7 @@ unroll_loop_runtime_iterations (class loop *loop)
       gcc_assert (ok);
 
       /* Create item for switch.  */
-      j = n_peel - i - (extra_zero_check ? 0 : 1);
+      unsigned j = n_peel - i - (extra_zero_check ? 0 : 1);
       p = profile_probability::always ().apply_scale (1, i + 2);
 
       preheader = split_edge (loop_preheader_edge (loop));
