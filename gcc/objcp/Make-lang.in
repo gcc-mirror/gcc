@@ -66,7 +66,8 @@ obj-c++_OBJS = $(OBJCXX_OBJS) cc1objplus-checksum.o
 cc1objplus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
 	$(OBJCXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS)
 	if [ -f ../stage_final ] \
-	   && cmp -s ../stage_current ../stage_final; then \
+	   && cmp -s ../stage_current ../stage_final \
+	   && [ -f ../prev-gcc/$@ ]; then \
 	  cp ../prev-gcc/$@ $@; \
 	else \
 	  build/genchecksum$(build_exeext) $(OBJCXX_OBJS) $(BACKEND) \

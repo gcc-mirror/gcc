@@ -63,7 +63,8 @@ objc_OBJS = $(OBJC_OBJS) cc1obj-checksum.o
 cc1obj-checksum.c : build/genchecksum$(build_exeext) checksum-options \
         $(OBJC_OBJS) $(C_AND_OBJC_OBJS) $(BACKEND) $(LIBDEPS)
 	if [ -f ../stage_final ] \
-	   && cmp -s ../stage_current ../stage_final; then \
+	   && cmp -s ../stage_current ../stage_final \
+	   && [ -f ../prev-gcc/$@ ]; then \
 	  cp ../prev-gcc/$@ $@; \
 	else \
 	  build/genchecksum$(build_exeext) $(OBJC_OBJS) $(C_AND_OBJC_OBJS) \
