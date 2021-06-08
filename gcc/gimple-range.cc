@@ -49,19 +49,284 @@ along with GCC; see the file COPYING3.  If not see
 
 // Evaluate expression EXPR using the source information the class was
 // instantiated with.  Place the result in R, and return TRUE.  If a range
-// cannot be calcluated, return FALSE.
+// cannot be calculated, return FALSE.
 
 bool
 fur_source::get_operand (irange &r, tree expr)
 {
-  // First look for a stmt.
-  if (m_stmt)
-    return m_query->range_of_expr (r, expr, m_stmt);
+  return get_range_query (cfun)->range_of_expr (r, expr);
+}
 
-  // Finally must be on an edge.
+// Evaluate EXPR for this stmt as a PHI argument on edge E.  Use the current
+// range_query to get the range on the edge.
+
+bool
+fur_source::get_phi_operand (irange &r, tree expr, edge e)
+{
+  return get_range_query (cfun)->range_on_edge (r, e, expr);
+}
+
+// Default is to not register any dependencies from fold_using_range.
+
+void
+fur_source::register_dependency (tree lhs ATTRIBUTE_UNUSED,
+				 tree rhs ATTRIBUTE_UNUSED)
+{
+}
+
+// Default object is the current range query.
+
+range_query *
+fur_source::query ()
+{
+  return get_range_query (cfun);
+}
+
+// This version of fur_source will pick a range up off an edge.
+
+class fur_edge : public fur_source
+{
+public:
+  fur_edge (edge e, range_query *q = NULL);
+  virtual bool get_operand (irange &r, tree expr) OVERRIDE;
+  virtual bool get_phi_operand (irange &r, tree expr, edge e) OVERRIDE;
+  virtual range_query *query () OVERRIDE;
+private:
+  range_query *m_query;
+  edge m_edge;
+};
+
+// Instantiate an edge based fur_source.
+
+inline
+fur_edge::fur_edge (edge e, range_query *q)
+{
+  m_edge = e;
+  if (q)
+    m_query = q;
+  else
+    m_query = get_range_query (cfun);
+}
+
+// Get the value of EXPR on edge m_edge.
+
+bool
+fur_edge::get_operand (irange &r, tree expr)
+{
   return m_query->range_on_edge (r, m_edge, expr);
 }
 
+// Evaluate EXPR for this stmt as a PHI argument on edge E.  Use the current
+// range_query to get the range on the edge.
+
+bool
+fur_edge::get_phi_operand (irange &r, tree expr, edge e)
+{
+  // edge to edge recalculations not supoprted yet, until we sort it out.
+  gcc_checking_assert (e == m_edge);
+  return m_query->range_on_edge (r, e, expr);
+}
+
+// Return the current range_query object.
+
+range_query *
+fur_edge::query ()
+{
+  return m_query;
+}
+
+
+// Instantiate a stmt based fur_source.
+
+
+fur_stmt::fur_stmt (gimple *s, range_query *q)
+{
+  m_stmt= s;
+  if (q)
+    m_query = q;
+  else
+    m_query = get_global_range_query ();
+}
+
+// Retirenve range of EXPR as it occurs as a use on stmt M_STMT.
+
+bool
+fur_stmt::get_operand (irange &r, tree expr)
+{
+  return m_query->range_of_expr (r, expr, m_stmt);
+}
+
+// Evaluate EXPR for this stmt as a PHI argument on edge E.  Use the current
+// range_query to get the range on the edge.
+
+bool
+fur_stmt::get_phi_operand (irange &r, tree expr, edge e)
+{
+  // Pick up the range of expr from edge E.
+  fur_edge e_src (e, m_query);
+  return e_src.get_operand (r, expr);
+}
+
+// Return the current range_query object.
+
+range_query *
+fur_stmt::query ()
+{
+  return m_query;
+}
+
+// This version of fur_source will pick a range from a stmt, and register
+// also dependencies via a gori_compute object.  This is mostly an internal API.
+
+class fur_depend : public fur_stmt
+{
+public:
+  fur_depend (gimple *s, gori_compute *gori, range_query *q = NULL);
+  virtual void register_dependency (tree lhs, tree rhs) OVERRIDE;
+private:
+  gori_compute *m_gori;
+};
+
+// Instantiate a stmt based fur_source witrh a GORI object
+inline
+fur_depend::fur_depend (gimple *s, gori_compute *gori, range_query *q)
+							      : fur_stmt (s, q)
+{
+  gcc_checking_assert (gori);
+  m_gori = gori;
+}
+
+
+// find and add any dependnecy between LHS and RHS
+
+void
+fur_depend::register_dependency (tree lhs, tree rhs)
+{
+  m_gori->register_dependency (lhs, rhs);
+}
+
+
+// This version of fur_source will pick a range up from a list of ranges
+// supplied by the caller.
+
+class fur_list : public fur_source
+{
+public:
+  fur_list (irange &r1);
+  fur_list (irange &r1, irange &r2);
+  fur_list (unsigned num, irange *list);
+  virtual bool get_operand (irange &r, tree expr) OVERRIDE;
+  virtual bool get_phi_operand (irange &r, tree expr, edge e) OVERRIDE;
+private:
+  int_range_max m_local[2];
+  irange *m_list;
+  unsigned m_index;
+  unsigned m_limit;
+};
+
+// One range supplied for unary operations.
+
+fur_list::fur_list (irange &r1)
+{
+  m_list = m_local;
+  m_index = 0;
+  m_limit = 1;
+  m_local[0] = r1;
+}
+
+// Two ranges supplied for binary operations.
+
+fur_list::fur_list (irange &r1, irange &r2)
+{
+  m_list = m_local;
+  m_index = 0;
+  m_limit = 2;
+  m_local[0] = r1;
+  m_local[0] = r2;
+}
+
+// Arbitrary number of ranges in a vector.
+
+fur_list::fur_list (unsigned num, irange *list)
+{
+  m_list = list;
+  m_index = 0;
+  m_limit = num;
+}
+
+// Get the next operand from the vector, ensure types are compatible,
+
+bool
+fur_list::get_operand (irange &r, tree expr)
+{
+  if (m_index >= m_limit)
+    return get_range_query (cfun)->range_of_expr (r, expr);
+  r = m_list[m_index++];
+  gcc_checking_assert (range_compatible_p (TREE_TYPE (expr), r.type ()));
+  return true;
+}
+
+// This will simply pick the next operand from the vector.
+bool
+fur_list::get_phi_operand (irange &r, tree expr, edge e ATTRIBUTE_UNUSED)
+{
+  return get_operand (r, expr);
+}
+
+// Fold stmt S into range R using R1 as the first operand.
+
+bool
+fold_range (irange &r, gimple *s, irange &r1)
+{
+  fold_using_range f;
+  fur_list src (r1);
+  return f.fold_stmt (r, s, src);
+}
+
+// Fold stmt S into range R using R1  and R2 as the first two operands.
+
+bool
+fold_range (irange &r, gimple *s, irange &r1, irange &r2)
+{
+  fold_using_range f;
+  fur_list src (r1, r2);
+  return f.fold_stmt (r, s, src);
+}
+
+
+// Fold stmt S into range R using NUM_ELEMENTS from VECTOR as the initial
+// operands encountered.
+
+bool
+fold_range (irange &r, gimple *s, unsigned num_elements, irange *vector)
+{
+  fold_using_range f;
+  fur_list src (num_elements, vector);
+  return f.fold_stmt (r, s, src);
+}
+
+
+// Fold stmt S into range R using range query Q.
+
+bool
+fold_range (irange &r, gimple *s, range_query *q)
+{
+  fold_using_range f;
+  fur_stmt src (s, q);
+  return f.fold_stmt (r, s, src);
+}
+
+// Recalculate stmt S into R using range query Q as if it were on edge ON_EDGE.
+
+bool
+fold_range (irange &r, gimple *s, edge on_edge, range_query *q)
+{
+  fold_using_range f;
+  fur_edge src (on_edge, q);
+  return f.fold_stmt (r, s, src);
+}
+
+// -------------------------------------------------------------------------
 
 // Adjust the range for a pointer difference where the operands came
 // from a memchr.
@@ -375,17 +640,17 @@ fold_using_range::range_of_range_op (irange &r, gimple *s, fur_source &src)
 	  // Fold range, and register any dependency if available.
 	  int_range<2> r2 (type);
 	  handler->fold_range (r, type, range1, r2);
-	  if (lhs && src.m_gori)
-	    src.m_gori->register_dependency (lhs, op1);
+	  if (lhs)
+	    src.register_dependency (lhs, op1);
 	}
       else if (src.get_operand (range2, op2))
 	{
 	  // Fold range, and register any dependency if available.
 	  handler->fold_range (r, type, range1, range2);
-	  if (lhs && src.m_gori)
+	  if (lhs)
 	    {
-	      src.m_gori->register_dependency (lhs, op1);
-	      src.m_gori->register_dependency (lhs, op2);
+	      src.register_dependency (lhs, op1);
+	      src.register_dependency (lhs, op2);
 	    }
 	}
       else
@@ -425,8 +690,8 @@ fold_using_range::range_of_address (irange &r, gimple *stmt, fur_source &src)
     {
       tree ssa = TREE_OPERAND (base, 0);
       tree lhs = gimple_get_lhs (stmt);
-      if (src.m_gori && lhs && gimple_range_ssa_p (ssa))
-	src.m_gori->register_dependency (lhs, ssa);
+      if (lhs && gimple_range_ssa_p (ssa))
+	src.register_dependency (lhs, ssa);
       gcc_checking_assert (irange::supports_type_p (TREE_TYPE (ssa)));
       src.get_operand (r, ssa);
       range_cast (r, TREE_TYPE (gimple_assign_rhs1 (stmt)));
@@ -503,19 +768,12 @@ fold_using_range::range_of_phi (irange &r, gphi *phi, fur_source &src)
       edge e = gimple_phi_arg_edge (phi, x);
 
       // Register potential dependencies for stale value tracking.
-      if (src.m_gori && gimple_range_ssa_p (arg))
-	src.m_gori->register_dependency (phi_def, arg);
+      if (gimple_range_ssa_p (arg))
+	src.register_dependency (phi_def, arg);
 
       // Get the range of the argument on its edge.
-      fur_source e_src (src.m_query, e);
-      e_src.get_operand (arg_range, arg);
+      src.get_phi_operand (arg_range, arg, e);
       // If we're recomputing the argument elsewhere, try to refine it.
-      if (src.m_stmt != phi)
-	{
-	  int_range_max tmp;
-	  e_src.get_operand (tmp, arg);
-	  arg_range.intersect (tmp);
-	}
       r.union_ (arg_range);
       // Once the value reaches varying, stop looking.
       if (r.varying_p ())
@@ -1012,7 +1270,7 @@ bool
 gimple_ranger::fold_range_internal (irange &r, gimple *s, tree name)
 {
   fold_using_range f;
-  fur_source src (this, &(gori ()), NULL, s);
+  fur_depend src (s, &(gori ()), this);
   return f.fold_stmt (r, s, src, name);
 }
 
@@ -1191,22 +1449,18 @@ fold_using_range::range_of_ssa_name_with_loop_info (irange &r, tree name,
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
   tree min, max, type = TREE_TYPE (name);
-  if (bounds_of_var_in_loop (&min, &max, src.m_query, l, phi, name))
+  if (bounds_of_var_in_loop (&min, &max, src.query (), l, phi, name))
     {
       if (TREE_CODE (min) != INTEGER_CST)
 	{
-	  if (src.m_query
-	      && src.m_query->range_of_expr (r, min, phi)
-	      && !r.undefined_p ())
+	  if (src.query ()->range_of_expr (r, min, phi) && !r.undefined_p ())
 	    min = wide_int_to_tree (type, r.lower_bound ());
 	  else
 	    min = vrp_val_min (type);
 	}
       if (TREE_CODE (max) != INTEGER_CST)
 	{
-	  if (src.m_query
-	      && src.m_query->range_of_expr (r, max, phi)
-	      && !r.undefined_p ())
+	  if (src.query ()->range_of_expr (r, max, phi) && !r.undefined_p ())
 	    max = wide_int_to_tree (type, r.upper_bound ());
 	  else
 	    max = vrp_val_max (type);
