@@ -1,6 +1,6 @@
 /* PR target/100887 */
 /* { dg-do compile } */
-/* { dg-options "" } */
+/* { dg-options "-Wno-psabi -w" } */
 /* { dg-additional-options "-mavx512f" { target { i?86-*-* x86_64-*-* } } } */
 
 typedef unsigned long long __attribute__((__vector_size__ (2 * sizeof (long long)))) U;
