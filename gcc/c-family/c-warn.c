@@ -2240,18 +2240,6 @@ warn_for_sign_compare (location_t location,
   int op1_signed = !TYPE_UNSIGNED (TREE_TYPE (orig_op1));
   int unsignedp0, unsignedp1;
 
-  /* In C++, check for comparison of different enum types.  */
-  if (c_dialect_cxx()
-      && TREE_CODE (TREE_TYPE (orig_op0)) == ENUMERAL_TYPE
-      && TREE_CODE (TREE_TYPE (orig_op1)) == ENUMERAL_TYPE
-      && TYPE_MAIN_VARIANT (TREE_TYPE (orig_op0))
-	 != TYPE_MAIN_VARIANT (TREE_TYPE (orig_op1)))
-    {
-      warning_at (location,
-		  OPT_Wsign_compare, "comparison between types %qT and %qT",
-		  TREE_TYPE (orig_op0), TREE_TYPE (orig_op1));
-    }
-
   /* Do not warn if the comparison is being done in a signed type,
      since the signed type will only be chosen if it can represent
      all the values of the unsigned type.  */
