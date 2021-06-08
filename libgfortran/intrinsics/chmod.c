@@ -271,7 +271,7 @@ chmod_internal (char *file, char *mode, gfc_charlen_type mode_len)
 	      part = 3;
 	      break;
 
-	    /* Tailing blanks are valid in Fortran.  */
+	    /* Trailing blanks are valid in Fortran.  */
 	    case ' ':
 	      for (i++; i < mode_len; i++)
 		if (mode[i] != ' ')

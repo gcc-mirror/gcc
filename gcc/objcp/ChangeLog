@@ -1,3 +1,8 @@
+2021-06-07  Bernd Edlinger  <bernd.edlinger@softing.com>
+
+	* Make-lang.in (cc1objplus-checksum.c): For stage-final re-use
+	the checksum from the previous stage.
+
 2021-01-05  Jakub Jelinek  <jakub@redhat.com>
 
 	* Make-lang.in (cc1objplus-checksum, cc1objplus$(exeext): Add

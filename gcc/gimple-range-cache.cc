@@ -235,12 +235,140 @@ sbr_vector::bb_range_p (const basic_block bb)
   return m_tab[bb->index] != NULL;
 }
 
+// This class implements the on entry cache via a sparse bitmap.
+// It uses the quad bit routines to access 4 bits at a time.
+// A value of 0 (the default) means there is no entry, and a value of
+// 1 thru SBR_NUM represents an element in the m_range vector.
+// Varying is given the first value (1) and pre-cached.
+// SBR_NUM + 1 represents the value of UNDEFINED, and is never stored.
+// SBR_NUM is the number of values that can be cached.
+// Indexes are 1..SBR_NUM and are stored locally at m_range[0..SBR_NUM-1]
+
+#define SBR_NUM		14
+#define SBR_UNDEF	SBR_NUM + 1
+#define SBR_VARYING	1
+
+class sbr_sparse_bitmap : public ssa_block_ranges
+{
+public:
+  sbr_sparse_bitmap (tree t, irange_allocator *allocator, bitmap_obstack *bm);
+  virtual void set_bb_range (const basic_block bb, const irange &r) OVERRIDE;
+  virtual bool get_bb_range (irange &r, const basic_block bb) OVERRIDE;
+  virtual bool bb_range_p (const basic_block bb) OVERRIDE;
+private:
+  void bitmap_set_quad (bitmap head, int quad, int quad_value);
+  int bitmap_get_quad (const_bitmap head, int quad);
+  irange_allocator *m_irange_allocator;
+  irange *m_range[SBR_NUM];
+  bitmap bitvec;
+  tree m_type;
+};
+
+// Initialize a block cache for an ssa_name of type T.
+
+sbr_sparse_bitmap::sbr_sparse_bitmap (tree t, irange_allocator *allocator,
+				bitmap_obstack *bm)
+{
+  gcc_checking_assert (TYPE_P (t));
+  m_type = t;
+  bitvec = BITMAP_ALLOC (bm);
+  m_irange_allocator = allocator;
+  // Pre-cache varying.
+  m_range[0] = m_irange_allocator->allocate (2);
+  m_range[0]->set_varying (t);
+  // Pre-cache zero and non-zero values for pointers.
+  if (POINTER_TYPE_P (t))
+    {
+      m_range[1] = m_irange_allocator->allocate (2);
+      m_range[1]->set_nonzero (t);
+      m_range[2] = m_irange_allocator->allocate (2);
+      m_range[2]->set_zero (t);
+    }
+  else
+    m_range[1] = m_range[2] = NULL;
+  // Clear SBR_NUM entries.
+  for (int x = 3; x < SBR_NUM; x++)
+    m_range[x] = 0;
+}
+
+// Set 4 bit values in a sparse bitmap. This allows a bitmap to
+// function as a sparse array of 4 bit values.
+// QUAD is the index, QUAD_VALUE is the 4 bit value to set.
+
+inline void
+sbr_sparse_bitmap::bitmap_set_quad (bitmap head, int quad, int quad_value)
+{
+  bitmap_set_aligned_chunk (head, quad, 4, (BITMAP_WORD) quad_value);
+}
+
+// Get a 4 bit value from a sparse bitmap. This allows a bitmap to
+// function as a sparse array of 4 bit values.
+// QUAD is the index.
+inline int
+sbr_sparse_bitmap::bitmap_get_quad (const_bitmap head, int quad)
+{
+  return (int) bitmap_get_aligned_chunk (head, quad, 4);
+}
+
+// Set the range on entry to basic block BB to R.
+
+void
+sbr_sparse_bitmap::set_bb_range (const basic_block bb, const irange &r)
+{
+  if (r.undefined_p ())
+    {
+      bitmap_set_quad (bitvec, bb->index, SBR_UNDEF);
+      return;
+    }
+
+  // Loop thru the values to see if R is already present.
+  for (int x = 0; x < SBR_NUM; x++)
+    if (!m_range[x] || r == *(m_range[x]))
+      {
+	if (!m_range[x])
+	  m_range[x] = m_irange_allocator->allocate (r);
+	bitmap_set_quad (bitvec, bb->index, x + 1);
+	return;
+      }
+  // All values are taken, default to VARYING.
+  bitmap_set_quad (bitvec, bb->index, SBR_VARYING);
+  return;
+}
+
+// Return the range associated with block BB in R.  Return false if
+// there is no range.
+
+bool
+sbr_sparse_bitmap::get_bb_range (irange &r, const basic_block bb)
+{
+  int value = bitmap_get_quad (bitvec, bb->index);
+
+  if (!value)
+    return false;
+
+  gcc_checking_assert (value <= SBR_UNDEF);
+  if (value == SBR_UNDEF)
+    r.set_undefined ();
+  else
+    r = *(m_range[value - 1]);
+  return true;
+}
+
+// Return true if a range is present.
+
+bool
+sbr_sparse_bitmap::bb_range_p (const basic_block bb)
+{
+  return (bitmap_get_quad (bitvec, bb->index) != 0);
+}
+
 // -------------------------------------------------------------------------
 
 // Initialize the block cache.
 
 block_range_cache::block_range_cache ()
 {
+  bitmap_obstack_initialize (&m_bitmaps);
   m_ssa_ranges.create (0);
   m_ssa_ranges.safe_grow_cleared (num_ssa_names);
   m_irange_allocator = new irange_allocator;
@@ -253,6 +381,7 @@ block_range_cache::~block_range_cache ()
   delete m_irange_allocator;
   // Release the vector itself.
   m_ssa_ranges.release ();
+  bitmap_obstack_release (&m_bitmaps);
 }
 
 // Set the range for NAME on entry to block BB to R.
@@ -268,9 +397,21 @@ block_range_cache::set_bb_range (tree name, const basic_block bb,
 
   if (!m_ssa_ranges[v])
     {
-      void *r = m_irange_allocator->get_memory (sizeof (sbr_vector));
-      m_ssa_ranges[v] = new (r) sbr_vector (TREE_TYPE (name),
-					    m_irange_allocator);
+      // Use sparse representation if there are too many basic blocks.
+      if (last_basic_block_for_fn (cfun) > param_evrp_sparse_threshold)
+	{
+	  void *r = m_irange_allocator->get_memory (sizeof (sbr_sparse_bitmap));
+	  m_ssa_ranges[v] = new (r) sbr_sparse_bitmap (TREE_TYPE (name),
+						       m_irange_allocator,
+						       &m_bitmaps);
+	}
+      else
+	{
+	  // Otherwise use the default vector implemntation.
+	  void *r = m_irange_allocator->get_memory (sizeof (sbr_vector));
+	  m_ssa_ranges[v] = new (r) sbr_vector (TREE_TYPE (name),
+						m_irange_allocator);
+	}
     }
   m_ssa_ranges[v]->set_bb_range (bb, r);
 }
