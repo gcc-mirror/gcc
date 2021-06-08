@@ -1,3 +1,17 @@
+2021-06-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* trans-openmp.c (gfc_add_clause_implicitly): New.
+	(gfc_split_omp_clauses): Use it.
+	(gfc_free_split_omp_clauses): New.
+	(gfc_trans_omp_do_simd, gfc_trans_omp_parallel_do,
+	gfc_trans_omp_parallel_do_simd, gfc_trans_omp_distribute,
+	gfc_trans_omp_teams, gfc_trans_omp_target, gfc_trans_omp_taskloop,
+	gfc_trans_omp_master_taskloop, gfc_trans_omp_parallel_master): Use it.
+
 2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:

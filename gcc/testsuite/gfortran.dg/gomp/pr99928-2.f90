@@ -79,7 +79,7 @@ subroutine bar ()
   !$omp parallel loop lastprivate (j00) default(none)
   do j00 = 1, 64
   end do
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(l08\\)" "gimple" { xfail *-*-* } } }
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(l08\\)" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp master\[^\n\r]*lastprivate\\(l08\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp taskloop\[^\n\r]*shared\\(l08\\)" "gimple" } } ! NOTE: This is implementation detail. 
   ! { dg-final { scan-tree-dump "omp taskloop\[^\n\r]*lastprivate\\(l08\\)" "gimple" } }
@@ -87,7 +87,7 @@ subroutine bar ()
   do i = 1, 64
     l08 = i
   end do
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(l09\\)" "gimple" { xfail *-*-* } } }
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(l09\\)" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp master\[^\n\r]*lastprivate\\(l09\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp taskloop\[^\n\r]*shared\\(l09\\)" "gimple" } } ! NOTE: This is implementation detail. 
   ! { dg-final { scan-tree-dump "omp taskloop\[^\n\r]*lastprivate\\(l09\\)" "gimple" } }
