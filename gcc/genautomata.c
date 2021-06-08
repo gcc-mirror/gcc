@@ -6787,7 +6787,7 @@ create_automata (void)
    finish_regexp_representation calls.  */
 
 /* This recursive function forms string representation of regexp
-   (without tailing '\0').  */
+   (without trailing '\0').  */
 static void
 form_regexp (regexp_t regexp)
 {

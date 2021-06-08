@@ -502,7 +502,7 @@ Inquiry function
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
 @item @var{NAME} @tab Scalar @code{CHARACTER} of default kind with the
-file name. Tailing blank are ignored unless the character @code{achar(0)}
+file name. Trailing blank are ignored unless the character @code{achar(0)}
 is present, then all characters up to and excluding @code{achar(0)} are
 used as file name.
 @item @var{MODE} @tab Scalar @code{CHARACTER} of default kind with the

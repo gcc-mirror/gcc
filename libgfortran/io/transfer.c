@@ -491,7 +491,7 @@ read_sf (st_parameter_dt *dtp, size_t *length)
 
    If the read is short, then it is because the current record does not
    have enough data to satisfy the read request and the file was
-   opened with PAD=YES.  The caller must assume tailing spaces for
+   opened with PAD=YES.  The caller must assume trailing spaces for
    short reads.  */
 
 void *
