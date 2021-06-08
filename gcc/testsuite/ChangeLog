@@ -1,3 +1,55 @@
+2021-06-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* gcc.target/i386/pr100637-5b.c: New test.
+	* gcc.target/i386/pr100637-5w.c: Ditto.
+
+2021-06-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/82735
+	* gcc.target/i386/pr82735-3.c: Don't compile for x32.
+	* gcc.target/i386/pr82735-4.c: Likewise.
+	* gcc.target/i386/pr82735-5.c: Likewise.
+
+2021-06-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-14.c: Adjust.
+
+2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100918
+	* g++.dg/template/access38.C: New test.
+
+2021-06-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/100885
+	* g++.target/i386/pr100885.C (_mm_set_epi64): Cast __m64 to long
+	long.
+
+2021-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100887
+	* gcc.dg/pr100887.c: New test.
+
+2021-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100898
+	* g++.dg/ext/va-arg-pack-3.C: New test.
+
+2021-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100885
+	* g++.target/i386/pr100885.C: New test.
+
+2021-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/82735
+	* gcc.target/i386/pr82735-1.c: New test.
+	* gcc.target/i386/pr82735-2.c: New test.
+	* gcc.target/i386/pr82735-3.c: New test.
+	* gcc.target/i386/pr82735-4.c: New test.
+	* gcc.target/i386/pr82735-5.c: New test.
+
 2021-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/scan-1.c: New test.
