@@ -1320,55 +1320,21 @@ goacc_exit_data_internal (struct gomp_device_descr *acc_dev, size_t mapnum,
   gomp_mutex_unlock (&acc_dev->lock);
 }
 
-void
-GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
-		       size_t *sizes, unsigned short *kinds, int async,
-		       int num_waits, ...)
+static void
+goacc_enter_exit_data_internal (int flags_m, size_t mapnum, void **hostaddrs,
+				size_t *sizes, unsigned short *kinds,
+				bool data_enter, int async, int num_waits,
+				va_list *ap)
 {
   int flags = GOACC_FLAGS_UNMARSHAL (flags_m);
 
   struct goacc_thread *thr;
   struct gomp_device_descr *acc_dev;
-  bool data_enter = false;
-  size_t i;
 
   goacc_lazy_initialize ();
 
   thr = goacc_thread ();
   acc_dev = thr->dev;
-
-  /* Determine if this is an "acc enter data".  */
-  for (i = 0; i < mapnum; ++i)
-    {
-      unsigned char kind = kinds[i] & 0xff;
-
-      if (kind == GOMP_MAP_POINTER
-	  || kind == GOMP_MAP_TO_PSET
-	  || kind == GOMP_MAP_STRUCT)
-	continue;
-
-      if (kind == GOMP_MAP_FORCE_ALLOC
-	  || kind == GOMP_MAP_FORCE_PRESENT
-	  || kind == GOMP_MAP_ATTACH
-	  || kind == GOMP_MAP_FORCE_TO
-	  || kind == GOMP_MAP_TO
-	  || kind == GOMP_MAP_ALLOC)
-	{
-	  data_enter = true;
-	  break;
-	}
-
-      if (kind == GOMP_MAP_RELEASE
-	  || kind == GOMP_MAP_DELETE
-	  || kind == GOMP_MAP_DETACH
-	  || kind == GOMP_MAP_FORCE_DETACH
-	  || kind == GOMP_MAP_FROM
-	  || kind == GOMP_MAP_FORCE_FROM)
-	break;
-
-      gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",
-		      kind);
-    }
 
   bool profiling_p = GOACC_PROFILING_DISPATCH_P (true);
 
@@ -1433,13 +1399,7 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
     }
 
   if (num_waits)
-    {
-      va_list ap;
-
-      va_start (ap, num_waits);
-      goacc_wait (async, num_waits, &ap);
-      va_end (ap);
-    }
+    goacc_wait (async, num_waits, ap);
 
   goacc_aq aq = get_goacc_asyncqueue (async);
 
@@ -1463,6 +1423,52 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
 }
 
 void
+GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
+		       size_t *sizes, unsigned short *kinds, int async,
+		       int num_waits, ...)
+{
+  /* Determine if this is an OpenACC "enter data".  */
+  bool data_enter = false;
+  for (size_t i = 0; i < mapnum; ++i)
+    {
+      unsigned char kind = kinds[i] & 0xff;
+
+      if (kind == GOMP_MAP_POINTER
+	  || kind == GOMP_MAP_TO_PSET
+	  || kind == GOMP_MAP_STRUCT)
+	continue;
+
+      if (kind == GOMP_MAP_FORCE_ALLOC
+	  || kind == GOMP_MAP_FORCE_PRESENT
+	  || kind == GOMP_MAP_ATTACH
+	  || kind == GOMP_MAP_FORCE_TO
+	  || kind == GOMP_MAP_TO
+	  || kind == GOMP_MAP_ALLOC)
+	{
+	  data_enter = true;
+	  break;
+	}
+
+      if (kind == GOMP_MAP_RELEASE
+	  || kind == GOMP_MAP_DELETE
+	  || kind == GOMP_MAP_DETACH
+	  || kind == GOMP_MAP_FORCE_DETACH
+	  || kind == GOMP_MAP_FROM
+	  || kind == GOMP_MAP_FORCE_FROM)
+	break;
+
+      gomp_fatal (">>>> GOACC_enter_exit_data UNHANDLED kind 0x%.2x",
+		      kind);
+    }
+
+  va_list ap;
+  va_start (ap, num_waits);
+  goacc_enter_exit_data_internal (flags_m, mapnum, hostaddrs, sizes, kinds,
+				  data_enter, async, num_waits, &ap);
+  va_end (ap);
+}
+
+void
 GOACC_declare (int flags_m, size_t mapnum,
 	       void **hostaddrs, size_t *sizes, unsigned short *kinds)
 {
@@ -1475,32 +1481,26 @@ GOACC_declare (int flags_m, size_t mapnum,
 
       switch (kind)
 	{
-	case GOMP_MAP_FORCE_ALLOC:
-	case GOMP_MAP_FORCE_FROM:
-	case GOMP_MAP_FORCE_TO:
-	case GOMP_MAP_RELEASE:
-	case GOMP_MAP_DELETE:
-	  GOACC_enter_exit_data (flags_m, 1, &hostaddrs[i], &sizes[i],
-				 &kinds[i], GOMP_ASYNC_SYNC, 0);
-	  break;
-
-	case GOMP_MAP_FORCE_DEVICEPTR:
-	  break;
-
 	case GOMP_MAP_ALLOC:
-	  if (!acc_is_present (hostaddrs[i], sizes[i]))
-	    GOACC_enter_exit_data (flags_m, 1, &hostaddrs[i], &sizes[i],
-				   &kinds[i], GOMP_ASYNC_SYNC, 0);
-	  break;
-
+	  if (acc_is_present (hostaddrs[i], sizes[i]))
+	    continue;
+	  /* FALLTHRU */
+	case GOMP_MAP_FORCE_ALLOC:
 	case GOMP_MAP_TO:
-	  GOACC_enter_exit_data (flags_m, 1, &hostaddrs[i], &sizes[i],
-				 &kinds[i], GOMP_ASYNC_SYNC, 0);
+	case GOMP_MAP_FORCE_TO:
+	  goacc_enter_exit_data_internal (flags_m, 1, &hostaddrs[i], &sizes[i],
+					  &kinds[i], true, GOMP_ASYNC_SYNC, 0, NULL);
 	  break;
 
 	case GOMP_MAP_FROM:
-	  GOACC_enter_exit_data (flags_m, 1, &hostaddrs[i], &sizes[i],
-				 &kinds[i], GOMP_ASYNC_SYNC, 0);
+	case GOMP_MAP_FORCE_FROM:
+	case GOMP_MAP_RELEASE:
+	case GOMP_MAP_DELETE:
+	  goacc_enter_exit_data_internal (flags_m, 1, &hostaddrs[i], &sizes[i],
+					  &kinds[i], false, GOMP_ASYNC_SYNC, 0, NULL);
+	  break;
+
+	case GOMP_MAP_FORCE_DEVICEPTR:
 	  break;
 
 	case GOMP_MAP_FORCE_PRESENT:
