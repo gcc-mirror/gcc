@@ -5878,6 +5878,9 @@ perfect_conversion_p (conversion *conv)
 			next_conversion (conv)->type))
 	return false;
     }
+  if (conv->check_narrowing)
+    /* Brace elision is imperfect.  */
+    return false;
   return true;
 }
 
