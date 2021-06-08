@@ -1461,3 +1461,57 @@ GOACC_enter_exit_data (int flags_m, size_t mapnum, void **hostaddrs,
       thr->api_info = NULL;
     }
 }
+
+void
+GOACC_declare (int flags_m, size_t mapnum,
+	       void **hostaddrs, size_t *sizes, unsigned short *kinds)
+{
+  for (size_t i = 0; i < mapnum; i++)
+    {
+      unsigned char kind = kinds[i] & 0xff;
+
+      if (kind == GOMP_MAP_POINTER || kind == GOMP_MAP_TO_PSET)
+	continue;
+
+      switch (kind)
+	{
+	case GOMP_MAP_FORCE_ALLOC:
+	case GOMP_MAP_FORCE_FROM:
+	case GOMP_MAP_FORCE_TO:
+	case GOMP_MAP_RELEASE:
+	case GOMP_MAP_DELETE:
+	  GOACC_enter_exit_data (flags_m, 1, &hostaddrs[i], &sizes[i],
+				 &kinds[i], GOMP_ASYNC_SYNC, 0);
+	  break;
+
+	case GOMP_MAP_FORCE_DEVICEPTR:
+	  break;
+
+	case GOMP_MAP_ALLOC:
+	  if (!acc_is_present (hostaddrs[i], sizes[i]))
+	    GOACC_enter_exit_data (flags_m, 1, &hostaddrs[i], &sizes[i],
+				   &kinds[i], GOMP_ASYNC_SYNC, 0);
+	  break;
+
+	case GOMP_MAP_TO:
+	  GOACC_enter_exit_data (flags_m, 1, &hostaddrs[i], &sizes[i],
+				 &kinds[i], GOMP_ASYNC_SYNC, 0);
+	  break;
+
+	case GOMP_MAP_FROM:
+	  GOACC_enter_exit_data (flags_m, 1, &hostaddrs[i], &sizes[i],
+				 &kinds[i], GOMP_ASYNC_SYNC, 0);
+	  break;
+
+	case GOMP_MAP_FORCE_PRESENT:
+	  if (!acc_is_present (hostaddrs[i], sizes[i]))
+	    gomp_fatal ("[%p,%ld] is not mapped", hostaddrs[i],
+			(unsigned long) sizes[i]);
+	  break;
+
+	default:
+	  assert (0);
+	  break;
+	}
+    }
+}
