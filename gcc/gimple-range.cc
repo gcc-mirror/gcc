@@ -945,7 +945,7 @@ gimple_ranger::range_of_expr (irange &r, tree expr, gimple *stmt)
     return get_tree_range (r, expr);
 
   // If there is no statement, just get the global value.
-  if (!stmt)
+  if (!stmt || is_gimple_debug (stmt))
     {
       if (!m_cache.get_global_range (r, expr))
         r = gimple_range_global (expr);
