@@ -46,10 +46,9 @@ end do
 
 end
  
-! TODO: xfailed due to PR99928: 
-! { dg-final { scan-tree-dump-times "#pragma omp target map\\(tofrom:r\\)\[\r\n\]" 2 "original" { xfail *-*-* } } }
-! { dg-final { scan-tree-dump-times "#pragma omp parallel\[\r\n\]" 2 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp teams\[\r\n\]" 2 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target map\\(tofrom:i\\) map\\(tofrom:r\\)\[\r\n\]" 2 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp parallel shared\\(i\\) shared\\(r\\)\[\r\n\]" 2 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp teams shared\\(i\\) shared\\(r\\)\[\r\n\]" 2 "original" } }
 
 ! { dg-final { scan-tree-dump-times "#pragma omp loop private\\(q\\) lastprivate\\(i\\) reduction\\(\\+:r\\) order\\(concurrent\\) collapse\\(2\\) bind\\(parallel\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp loop private\\(q\\) lastprivate\\(i\\) reduction\\(\\+:r\\) order\\(concurrent\\) collapse\\(2\\) bind\\(teams\\)" 1 "original" } }
