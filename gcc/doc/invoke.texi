@@ -14207,6 +14207,9 @@ we may be able to devirtualize speculatively.
 The maximum number of assertions to add along the default edge of a switch
 statement during VRP.
 
+@item evrp-sparse-threshold
+Maximum number of basic blocks before EVRP uses a sparse cache.
+
 @item evrp-mode
 Specifies the mode Early VRP should operate in.
 
