@@ -1,6 +1,14 @@
 2021-06-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100957
+	* g++.dg/gomp/doacross-2.C: New test.
+
+2021-06-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-06-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/99928

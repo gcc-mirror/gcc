@@ -1,3 +1,12 @@
+2021-06-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100957
+	* tree-inline.c (copy_tree_body_r): For OMP_CLAUSE_DEPEND don't
+	check TREE_CODE if OMP_CLAUSE_DECL is NULL.
+
 2021-06-04  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
