@@ -298,9 +298,9 @@ package body Sem_Ch6 is
       Asp      : Node_Id;
       New_Body : Node_Id;
       New_Spec : Node_Id;
-      Orig_N   : Node_Id;
+      Orig_N   : Node_Id := Empty;
       Ret      : Node_Id;
-      Typ      : Entity_Id;
+      Typ      : Entity_Id := Empty;
 
       Def_Id : Entity_Id := Empty;
       Prev   : Entity_Id;
