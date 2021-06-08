@@ -480,9 +480,49 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       break;
     case BIT_AND_EXPR:
       if (cst1)
-	if (zerop (cst1) && INTEGRAL_TYPE_P (type))
-	  /* "(ARG0 & 0)" -> "0".  */
-	  return get_or_create_constant_svalue (build_int_cst (type, 0));
+	{
+	  if (zerop (cst1) && INTEGRAL_TYPE_P (type))
+	    /* "(ARG0 & 0)" -> "0".  */
+	    return get_or_create_constant_svalue (build_int_cst (type, 0));
+
+	  /* Support masking out bits from a compound_svalue, as this
+	     is generated when accessing bitfields.  */
+	  if (const compound_svalue *compound_sval
+		= arg0->dyn_cast_compound_svalue ())
+	    {
+	      const binding_map &map = compound_sval->get_map ();
+	      unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (cst1);
+	      /* If "mask" is a contiguous range of set bits, see if the
+		 compound_sval has a value for those bits.  */
+	      bit_range bits (0, 0);
+	      if (bit_range::from_mask (mask, &bits))
+		{
+		  const concrete_binding *conc
+		    = get_store_manager ()->get_concrete_binding (bits,
+								  BK_direct);
+		  if (const svalue *sval = map.get (conc))
+		    {
+		      /* We have a value;
+			 shift it by the correct number of bits.  */
+		      const svalue *lhs = get_or_create_cast (type, sval);
+		      HOST_WIDE_INT bit_offset
+			= bits.get_start_bit_offset ().to_shwi ();
+		      tree shift_amt = build_int_cst (type, bit_offset);
+		      const svalue *shift_sval
+			= get_or_create_constant_svalue (shift_amt);
+		      const svalue *shifted_sval
+			= get_or_create_binop (type,
+					       LSHIFT_EXPR,
+					       lhs, shift_sval);
+		      /* Reapply the mask (needed for negative
+			 signed bitfields).  */
+		      return get_or_create_binop (type,
+						  BIT_AND_EXPR,
+						  shifted_sval, arg1);
+		    }
+		}
+	    }
+	}
       break;
     case TRUTH_ANDIF_EXPR:
     case TRUTH_AND_EXPR:

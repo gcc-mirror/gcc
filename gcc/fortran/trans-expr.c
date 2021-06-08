@@ -9513,7 +9513,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
     {
       gfc_add_data_component (expr2);
       /* The following is required as gfc_add_data_component doesn't
-	 update ts.type if there is a tailing REF_ARRAY.  */
+	 update ts.type if there is a trailing REF_ARRAY.  */
       expr2->ts.type = BT_DERIVED;
     }
 

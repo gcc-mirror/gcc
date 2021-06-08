@@ -61,6 +61,7 @@ private:
   ssa_block_ranges &get_block_ranges (tree name);
   ssa_block_ranges *query_block_ranges (tree name);
   irange_allocator *m_irange_allocator;
+  bitmap_obstack m_bitmaps;
 };
 
 // This global cache is used with the range engine as markers for what

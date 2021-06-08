@@ -16,9 +16,7 @@ program main
   integer, parameter :: c_size = sizeof (c)
   integer, parameter :: r_size = sizeof (r)
 
-  if (acc_get_num_devices (acc_device_nvidia) .eq. 0) call exit
-
-  call acc_init (acc_device_nvidia)
+  call acc_init (acc_device_default)
 
   call set3d (.FALSE., a_3d_i, a_3d_c, a_3d_r)
 
@@ -39,8 +37,6 @@ program main
       end do
     end do
   end do
-
-  call acc_shutdown (acc_device_nvidia)
 
 contains
 

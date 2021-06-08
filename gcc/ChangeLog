@@ -1,3 +1,123 @@
+2021-06-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (class sbr_sparse_bitmap): New.
+	(sbr_sparse_bitmap::sbr_sparse_bitmap): New.
+	(sbr_sparse_bitmap::bitmap_set_quad): New.
+	(sbr_sparse_bitmap::bitmap_get_quad): New.
+	(sbr_sparse_bitmap::set_bb_range): New.
+	(sbr_sparse_bitmap::get_bb_range): New.
+	(sbr_sparse_bitmap::bb_range_p): New.
+	(block_range_cache::block_range_cache): initialize bitmap obstack.
+	(block_range_cache::~block_range_cache): Destruct obstack.
+	(block_range_cache::set_bb_range): Decide when to utilze the
+	sparse on entry cache.
+	* gimple-range-cache.h (block_range_cache): Add bitmap obstack.
+	* params.opt (-param=evrp-sparse-threshold): New.
+
+2021-06-07  Andrew MacLeod  <amacleod@redhat.com>
+
+	* bitmap.c (bitmap_set_aligned_chunk): New.
+	(bitmap_get_aligned_chunk): New.
+	(test_aligned_chunk): New.
+	(bitmap_c_tests): Call test_aligned_chunk.
+	* bitmap.h (bitmap_set_aligned_chunk, bitmap_get_aligned_chunk): New.
+
+2021-06-07  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100637
+	* config/i386/i386-expand.c (ix86_expand_vector_init_duplicate):
+	Handle V4QI mode.
+	(ix86_expand_vector_init_one_nonzero): Ditto.
+	(ix86_expand_vector_init_one_var): Ditto.
+	(ix86_expand_vector_init_general): Ditto.
+	* config/i386/mmx.md (vec_initv4qiqi): New expander.
+
+2021-06-07  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/movepush.md: Change most _clobber_flags
+	patterns to instead use <cczn> subst.
+	(movsi_cczn): New pattern with usable CC cases split out.
+	(movsi_h8sx_cczn): Likewise.
+
+2021-06-07  Martin Liska  <mliska@suse.cz>
+
+	* common/common-target.def: Split long lines and replace them
+	with '\n\'.
+	* target.def: Likewise.
+	* doc/tm.texi: Re-generated.
+
+2021-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100887
+	* fold-const.c (fold_read_from_vector): Return NULL if trying to
+	read from a CONSTRUCTOR with vector type elements.
+
+2021-06-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/100898
+	* tree-inline.c (copy_bb): Only use gimple_call_arg_ptr if memcpy
+	should copy any arguments.  Don't call gimple_call_num_args
+	on id->call_stmt or call_stmt more than once.
+
+2021-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100885
+	* config/i386/sse.md (*sse4_1_zero_extendv8qiv8hi2_3): Refine
+	constraints.
+	(<insn>v4siv4di2): Delete constraints for define_expand.
+
+2021-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/82735
+	* config/i386/i386-expand.c (ix86_expand_builtin): Remove
+	assignment of cfun->machine->has_explicit_vzeroupper.
+	* config/i386/i386-features.c
+	(ix86_add_reg_usage_to_vzerouppers): Delete.
+	(ix86_add_reg_usage_to_vzeroupper): Ditto.
+	(rest_of_handle_insert_vzeroupper): Remove
+	ix86_add_reg_usage_to_vzerouppers, add df_analyze at the end
+	of the function.
+	(gate): Remove cfun->machine->has_explicit_vzeroupper.
+	* config/i386/i386-protos.h (ix86_expand_avx_vzeroupper):
+	Declared.
+	* config/i386/i386.c (ix86_insn_callee_abi): New function.
+	(ix86_initialize_callee_abi): Ditto.
+	(ix86_expand_avx_vzeroupper): Ditto.
+	(ix86_hard_regno_call_part_clobbered): Adjust for vzeroupper
+	ABI.
+	(TARGET_INSN_CALLEE_ABI): Define as ix86_insn_callee_abi.
+	(ix86_emit_mode_set): Call ix86_expand_avx_vzeroupper
+	directly.
+	* config/i386/i386.h (struct GTY(()) machine_function): Delete
+	has_explicit_vzeroupper.
+	* config/i386/i386.md (enum unspec): New member
+	UNSPEC_CALLEE_ABI.
+	(ABI_DEFAULT,ABI_VZEROUPPER,ABI_UNKNOWN): New
+	define_constants for insn callee abi index.
+	* config/i386/predicates.md (vzeroupper_pattern): Adjust.
+	* config/i386/sse.md (UNSPECV_VZEROUPPER): Deleted.
+	(avx_vzeroupper): Call ix86_expand_avx_vzeroupper.
+	(*avx_vzeroupper): Rename to ..
+	(avx_vzeroupper_callee_abi): .. this, and adjust pattern as
+	call_insn which has a special vzeroupper ABI.
+	(*avx_vzeroupper_1): Deleted.
+
+2021-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/82735
+	* df-scan.c (df_get_call_refs): When call_insn is a fake call,
+	it won't use stack pointer reg.
+	* final.c (leaf_function_p): When call_insn is a fake call, it
+	won't affect caller as a leaf function.
+	* reg-stack.c (callee_clobbers_any_stack_reg): New.
+	(subst_stack_regs): When call_insn doesn't clobber any stack
+	reg, don't clear the arguments.
+	* rtl.c (shallow_copy_rtx): Don't clear flag used when orig is
+	a insn.
+	* shrink-wrap.c (requires_stack_frame_p): No need for stack
+	frame for a fake call.
+	* rtl.h (FAKE_CALL_P): New macro.
+
 2021-06-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-protos.h (order_regs_for_local_alloc): Rename

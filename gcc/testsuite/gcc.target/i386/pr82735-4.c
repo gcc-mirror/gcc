@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! ia32 } } }  */
+/* { dg-do compile { target { lp64 } } }  */
 /* { dg-options "-mavx -O2 -mabi=ms -mno-avx512f -masm=att" } */
 /* { dg-final { scan-assembler-times {(?n)(?:vmovdqa[1-9]*|vmovap[sd])[\t ]*%xmm[0-9]+, [0-9]*\(%rsp\)} 10 } } */
 /* { dg-final { scan-assembler-times {(?n)(?:vmovdqa[1-9]*|vmovap[sd])[\t ]*[0-9]*\(%rsp\), %xmm[0-9]+} 10 } } */

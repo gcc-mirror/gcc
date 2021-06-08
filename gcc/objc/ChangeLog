@@ -1,3 +1,8 @@
+2021-06-07  Bernd Edlinger  <bernd.edlinger@softing.com>
+
+	* Make-lang.in (cc1obj-checksum.c): For stage-final re-use
+	the checksum from the previous stage.
+
 2021-05-20  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* objc-act.c (synth_module_prologue): Use uint32_t instead of enum

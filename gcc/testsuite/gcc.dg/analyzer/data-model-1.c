@@ -934,24 +934,20 @@ void test_43 (void)
 
 struct sbits
 {
-  int b0 : 1;
-  int b123 : 3;
-  int b456 : 3;
-  int b7 : 1;
+  signed int b0 : 1;
+  signed int b123 : 3;
+  signed int b456 : 3;
+  signed int b7 : 1;
 };
 
 void test_44 (void)
 {
   struct sbits bits;
-  bits.b0 = 1;
-  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "FALSE" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail): ^^^^
+  bits.b0 = -1;
+  __analyzer_eval (bits.b0 == -1); /* { dg-warning "TRUE" } */
 
-  bits.b456 = 5;
-  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "FALSE" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail): ^^^^
+  bits.b456 = -4;
+  __analyzer_eval (bits.b456 == -4); /* { dg-warning "TRUE" } */
 };
 
 struct ubits
@@ -962,20 +958,14 @@ struct ubits
   unsigned int b7 : 1;
 };
 
-/* FIXME: this requires BIT_FIELD_REF to work.  */
-
 void test_45 (void)
 {
   struct ubits bits;
   bits.b0 = 1;
-  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" "desired, PR99212" { xfail { ! { cris-*-* } } } } */
-  /* { dg-warning "UNKNOWN" "status quo, PR99212" { target { *-*-* } xfail { cris-*-* } } .-1 } */
-  // TODO(xfail): ^^^^
+  __analyzer_eval (bits.b0 == 1); /* { dg-warning "TRUE" } */
 
   bits.b456 = 5;
-  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
-  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
-  // TODO(xfail): ^^^^
+  __analyzer_eval (bits.b456 == 5); /* { dg-warning "TRUE" } */
 };
 
 extern const char *char_ptr;

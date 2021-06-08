@@ -22,7 +22,7 @@ if (ichar(var%str2(5:5)) /= int(Z'1F608')) stop 2
 deallocate(var%str2)
 end
 
-! Note: the last '\x00' is regarded as string terminator, hence, the tailing \0 byte is not in the dump
+! Note: the last '\x00' is regarded as string terminator, hence, the trailing \0 byte is not in the dump
 
 ! { dg-final { scan-tree-dump {  \(\*var\.str2\)\[1\]{lb: 1 sz: 4} = "(d\\x00\\x00|\\x00\\x00\\x00d)"\[1\]{lb: 1 sz: 4};} "original" } }
 ! { dg-final { scan-tree-dump {  __builtin_memmove \(\(void \*\) &\(\*var.str2\)\[2\]{lb: 1 sz: 4}, \(void \*\) &"(e\\x00\\x00\\x00f\\x00\\x00|\\x00\\x00\\x00e\\x00\\x00\\x00f)"\[1\]{lb: 1 sz: 4}, 8\);} "original" } }

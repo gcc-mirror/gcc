@@ -1,6 +1,6 @@
-/* Exercise acc_copyin and acc_copyout on nvidia targets.  */
+/* Exercise acc_copyin and acc_copyout.  */
 
-/* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } } */
 
 #include <stdio.h>
 #include <stdlib.h>

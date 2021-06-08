@@ -144,6 +144,8 @@ typedef offset_int bit_offset_t;
 typedef offset_int bit_size_t;
 typedef offset_int byte_size_t;
 
+extern bool int_size_in_bits (const_tree type, bit_size_t *out);
+
 /* The location of a region expressesd as an offset relative to a
    base region.  */
 

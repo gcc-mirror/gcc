@@ -3041,10 +3041,9 @@ gcn_exec (struct kernel_info *kernel, size_t mapnum, void **hostaddrs,
      problem size, so let's do a reasonable number of single-worker gangs.
      64 gangs matches a typical Fiji device.  */
 
-  /* NOTE: Until support for middle-end worker partitioning is merged, use 1
-     for the default number of workers.  */
   if (dims[0] == 0) dims[0] = get_cu_count (kernel->agent); /* Gangs.  */
-  if (dims[1] == 0) dims[1] = 1;  /* Workers.  */
+  /* NOTE: Until support for middle-end worker partitioning is merged, force 'num_workers (1)'.  */
+  if (/*TODO dims[1] == 0*/ true) dims[1] = 1;  /* Workers.  */
 
   /* The incoming dimensions are expressed in terms of gangs, workers, and
      vectors.  The HSA dimensions are expressed in terms of "work-items",

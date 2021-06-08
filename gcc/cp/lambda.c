@@ -1338,9 +1338,9 @@ is_lambda_ignored_entity (tree val)
 
   /* None of the lookups that use qualify_lookup want the op() from the
      lambda; they want the one from the enclosing class.  */
-  val = OVL_FIRST (val);
-  if (LAMBDA_FUNCTION_P (val))
-    return true;
+  if (tree fns = maybe_get_fns (val))
+    if (LAMBDA_FUNCTION_P (OVL_FIRST (fns)))
+      return true;
 
   return false;
 }

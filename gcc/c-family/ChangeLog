@@ -1,3 +1,8 @@
+2021-06-07  Martin Liska  <mliska@suse.cz>
+
+	* c-target.def: Split long lines and replace them
+	with '\n\'.
+
 2021-06-04  Martin Sebor  <msebor@redhat.com>
 
 	PR c/100783

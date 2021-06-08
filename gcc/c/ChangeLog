@@ -1,3 +1,9 @@
+2021-06-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c/100920
+	* c-typeck.c (convert_for_assignment): Test fndecl_built_in_p to
+	spot built-in functions.
+
 2021-06-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/100902

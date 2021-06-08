@@ -79,7 +79,7 @@ void t2 ()
 void t3 ()
 {
   int a, b[N], c, d, i;
-  int n = acc_get_device_type () == acc_device_nvidia ? N : 1;
+  int n = acc_get_device_type () != acc_device_host ? N : 1;
 
   a = 5;
   for (i = 0; i < n; i++)
