@@ -1,3 +1,22 @@
+2021-06-06  Andre Vehreschild  <vehre@gcc.gnu.org>
+	    Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/98301
+	* trans-decl.c (gfc_build_builtin_function_decls): Move decl.
+	* trans-intrinsic.c (conv_intrinsic_random_init): Use bool for
+	lib-call of caf_random_init instead of logical (4-byte).
+	* trans.h: Add tree var for random_init.
+
+2021-06-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-06-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99839
+	* frontend-passes.c (inline_matmul_assign): Do not inline matmul
+	if the assignment to the resulting array if it is not of canonical
+	type (real/integer/complex/logical).
+
 2021-05-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

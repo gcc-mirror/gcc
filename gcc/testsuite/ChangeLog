@@ -1,3 +1,53 @@
+2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100862
+	* g++.dg/cpp2a/using-enum-9.C: New test.
+
+2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100102
+	* g++.dg/cpp0x/alias-decl-72.C: New test.
+	* g++.dg/cpp0x/alias-decl-72a.C: New test.
+
+2021-06-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-06-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/100885
+	* g++.target/i386/pr100885.C (_mm_set_epi64): Cast __m64 to long
+	long.
+
+2021-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100885
+	* g++.target/i386/pr100885.C: New test.
+
+2021-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100882
+	* gdc.dg/pr100882a.d: New test.
+	* gdc.dg/pr100882b.d: New test.
+	* gdc.dg/pr100882c.d: New test.
+	* gdc.dg/torture/pr100882.d: New test.
+
+2021-06-04  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2021-06-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/99839
+	* gfortran.dg/inline_matmul_25.f90: New test.
+
 2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/bit_packed_array6.adb: New test.

@@ -1,3 +1,26 @@
+2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100862
+	* pt.c (set_current_access_from_decl): Move to ...
+	* class.c (set_current_access_from_decl): ... here.
+	(handle_using_decl): Use it to propagate the access of the
+	using-enum decl to the copy of the imported enumerator.
+	* cp-tree.h (set_current_access_from_decl): Declare.
+	* decl.c (build_enumerator): Simplify using make_temp_override
+	and set_current_access_from_decl.
+
+2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100102
+	* pt.c (tsubst_function_decl): Remove old code for reducing
+	args when it has excess levels.
+
 2021-06-01  Jason Merrill  <jason@redhat.com>
 
 	PR c++/91859

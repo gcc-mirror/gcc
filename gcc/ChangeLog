@@ -1,3 +1,10 @@
+2021-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100885
+	* config/i386/sse.md (*sse4_1_zero_extendv8qiv8hi2_3): Refine
+	constraints.
+	(<insn>v4siv4di2): Delete constraints for define_expand.
+
 2021-06-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ipa/99122
