@@ -2280,8 +2280,6 @@ execute_pred_commoning (class loop *loop, vec<chain_p> chains,
 	    remove_stmt (a->stmt);
 	}
     }
-
-  update_ssa (TODO_update_ssa_only_virtuals);
 }
 
 /* For each reference in CHAINS, if its defining statement is
@@ -3174,9 +3172,10 @@ insert_init_seqs (class loop *loop, vec<chain_p> chains)
       }
 }
 
-/* Performs predictive commoning for LOOP.  Sets bit 1<<0 of return value
-   if LOOP was unrolled; Sets bit 1<<1 of return value if loop closed ssa
-   form was corrupted.  */
+/* Performs predictive commoning for LOOP.  Sets bit 1<<1 of return value
+   if LOOP was unrolled; Sets bit 1<<2 of return value if loop closed ssa
+   form was corrupted.  Non-zero return value indicates some changes were
+   applied to this loop.  */
 
 static unsigned
 tree_predictive_commoning_loop (class loop *loop)
@@ -3188,7 +3187,6 @@ tree_predictive_commoning_loop (class loop *loop)
   unsigned unroll_factor;
   class tree_niter_desc desc;
   bool unroll = false, loop_closed_ssa = false;
-  edge exit;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Processing loop %d\n",  loop->num);
@@ -3244,13 +3242,22 @@ tree_predictive_commoning_loop (class loop *loop)
   determine_roots (loop, components, &chains);
   release_components (components);
 
+  auto cleanup = [&]() {
+    release_chains (chains);
+    free_data_refs (datarefs);
+    BITMAP_FREE (looparound_phis);
+    free_affine_expand_cache (&name_expansions);
+  };
+
   if (!chains.exists ())
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Predictive commoning failed: no suitable chains\n");
-      goto end;
+      cleanup ();
+      return 0;
     }
+
   prepare_initializers (loop, chains);
   loop_closed_ssa = prepare_finalizers (loop, chains);
 
@@ -3268,10 +3275,8 @@ tree_predictive_commoning_loop (class loop *loop)
   /* Determine the unroll factor, and if the loop should be unrolled, ensure
      that its number of iterations is divisible by the factor.  */
   unroll_factor = determine_unroll_factor (chains);
-  scev_reset ();
   unroll = (unroll_factor > 1
 	    && can_unroll_loop_p (loop, unroll_factor, &desc));
-  exit = single_dom_exit (loop);
 
   /* Execute the predictive commoning transformations, and possibly unroll the
      loop.  */
@@ -3285,8 +3290,6 @@ tree_predictive_commoning_loop (class loop *loop)
       dta.chains = chains;
       dta.tmp_vars = tmp_vars;
 
-      update_ssa (TODO_update_ssa_only_virtuals);
-
       /* Cfg manipulations performed in tree_transform_and_unroll_loop before
 	 execute_pred_commoning_cbck is called may cause phi nodes to be
 	 reallocated, which is a problem since CHAINS may point to these
@@ -3295,6 +3298,7 @@ tree_predictive_commoning_loop (class loop *loop)
 	 the phi nodes in execute_pred_commoning_cbck.  A bit hacky.  */
       replace_phis_by_defined_names (chains);
 
+      edge exit = single_dom_exit (loop);
       tree_transform_and_unroll_loop (loop, unroll_factor, exit, &desc,
 				      execute_pred_commoning_cbck, &dta);
       eliminate_temp_copies (loop, tmp_vars);
@@ -3307,14 +3311,9 @@ tree_predictive_commoning_loop (class loop *loop)
       execute_pred_commoning (loop, chains, tmp_vars);
     }
 
-end: ;
-  release_chains (chains);
-  free_data_refs (datarefs);
-  BITMAP_FREE (looparound_phis);
+  cleanup ();
 
-  free_affine_expand_cache (&name_expansions);
-
-  return (unroll ? 1 : 0) | (loop_closed_ssa ? 2 : 0);
+  return (unroll ? 2 : 1) | (loop_closed_ssa ? 4 : 1);
 }
 
 /* Runs predictive commoning.  */
@@ -3335,12 +3334,19 @@ tree_predictive_commoning (void)
 
   if (changed > 0)
     {
-      scev_reset ();
+      ret = TODO_update_ssa_only_virtuals;
 
+      /* Some loop(s) got unrolled.  */
       if (changed > 1)
-	rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+	{
+	  scev_reset ();
 
-      ret = TODO_cleanup_cfg;
+	  /* Need to fix up loop closed SSA.  */
+	  if (changed >= 4)
+	    rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+
+	  ret |= TODO_cleanup_cfg;
+	}
     }
 
   return ret;
@@ -3369,7 +3375,7 @@ const pass_data pass_data_predcom =
   0, /* properties_provided */
   0, /* properties_destroyed */
   0, /* todo_flags_start */
-  TODO_update_ssa_only_virtuals, /* todo_flags_finish */
+  0, /* todo_flags_finish */
 };
 
 class pass_predcom : public gimple_opt_pass
