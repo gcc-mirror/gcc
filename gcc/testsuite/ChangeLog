@@ -1,3 +1,34 @@
+2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100862
+	* g++.dg/cpp2a/using-enum-9.C: New test.
+
+2021-06-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-04  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100102
+	* g++.dg/cpp0x/alias-decl-72.C: New test.
+	* g++.dg/cpp0x/alias-decl-72a.C: New test.
+
+2021-06-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2021-06-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/100885
+	* g++.target/i386/pr100885.C (_mm_set_epi64): Cast __m64 to long
+	long.
+
+2021-06-07  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/100885
+	* g++.target/i386/pr100885.C: New test.
+
 2021-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
