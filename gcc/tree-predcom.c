@@ -3178,13 +3178,13 @@ insert_init_seqs (class loop *loop, vec<chain_p> chains)
    applied to this loop.  */
 
 static unsigned
-tree_predictive_commoning_loop (class loop *loop)
+tree_predictive_commoning_loop (class loop *loop, bool allow_unroll_p)
 {
   vec<data_reference_p> datarefs;
   vec<ddr_p> dependences;
   struct component *components;
   vec<chain_p> chains = vNULL;
-  unsigned unroll_factor;
+  unsigned unroll_factor = 0;
   class tree_niter_desc desc;
   bool unroll = false, loop_closed_ssa = false;
 
@@ -3272,11 +3272,13 @@ tree_predictive_commoning_loop (class loop *loop)
       dump_chains (dump_file, chains);
     }
 
-  /* Determine the unroll factor, and if the loop should be unrolled, ensure
-     that its number of iterations is divisible by the factor.  */
-  unroll_factor = determine_unroll_factor (chains);
-  unroll = (unroll_factor > 1
-	    && can_unroll_loop_p (loop, unroll_factor, &desc));
+  if (allow_unroll_p)
+    /* Determine the unroll factor, and if the loop should be unrolled, ensure
+       that its number of iterations is divisible by the factor.  */
+    unroll_factor = determine_unroll_factor (chains);
+
+  if (unroll_factor > 1)
+    unroll = can_unroll_loop_p (loop, unroll_factor, &desc);
 
   /* Execute the predictive commoning transformations, and possibly unroll the
      loop.  */
@@ -3319,7 +3321,7 @@ tree_predictive_commoning_loop (class loop *loop)
 /* Runs predictive commoning.  */
 
 unsigned
-tree_predictive_commoning (void)
+tree_predictive_commoning (bool allow_unroll_p)
 {
   class loop *loop;
   unsigned ret = 0, changed = 0;
@@ -3328,7 +3330,7 @@ tree_predictive_commoning (void)
   FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     if (optimize_loop_for_speed_p (loop))
       {
-	changed |= tree_predictive_commoning_loop (loop);
+	changed |= tree_predictive_commoning_loop (loop, allow_unroll_p);
       }
   free_original_copy_tables ();
 
@@ -3355,12 +3357,12 @@ tree_predictive_commoning (void)
 /* Predictive commoning Pass.  */
 
 static unsigned
-run_tree_predictive_commoning (struct function *fun)
+run_tree_predictive_commoning (struct function *fun, bool allow_unroll_p)
 {
   if (number_of_loops (fun) <= 1)
     return 0;
 
-  return tree_predictive_commoning ();
+  return tree_predictive_commoning (allow_unroll_p);
 }
 
 namespace {
@@ -3386,11 +3388,27 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *) { return flag_predictive_commoning != 0; }
-  virtual unsigned int execute (function *fun)
-    {
-      return run_tree_predictive_commoning (fun);
-    }
+  virtual bool
+  gate (function *)
+  {
+    if (flag_predictive_commoning != 0)
+      return true;
+    /* Loop vectorization enables predictive commoning implicitly
+       only if predictive commoning isn't set explicitly, and it
+       doesn't allow unrolling.  */
+    if (flag_tree_loop_vectorize
+	&& !global_options_set.x_flag_predictive_commoning)
+      return true;
+
+    return false;
+  }
+
+  virtual unsigned int
+  execute (function *fun)
+  {
+    bool allow_unroll_p = flag_predictive_commoning != 0;
+    return run_tree_predictive_commoning (fun, allow_unroll_p);
+  }
 
 }; // class pass_predcom
 
