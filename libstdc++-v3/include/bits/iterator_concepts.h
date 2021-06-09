@@ -264,8 +264,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __detail::__cond_value_type<typename _Tp::value_type>
     { };
 
-  // LWG 3446 doesn't add this, but it's needed for the case where
-  // value_type and element_type are both present, but not the same type.
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3541. indirectly_readable_traits should be SFINAE-friendly for all types
   template<__detail::__has_member_value_type _Tp>
     requires __detail::__has_member_element_type<_Tp>
     struct indirectly_readable_traits<_Tp>
