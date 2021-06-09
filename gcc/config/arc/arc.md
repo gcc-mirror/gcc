@@ -6025,47 +6025,63 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 
 ;; MAC and DMPY instructions
 
-; Use MAC instruction to emulate 16bit mac.
+; Use VMAC2H(U) instruction to emulate scalar 16bit mac.
 (define_expand "maddhisi4"
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:HI 1 "register_operand" "")
    (match_operand:HI 2 "extend_operand"   "")
    (match_operand:SI 3 "register_operand" "")]
-  "TARGET_PLUS_DMPY"
+  "TARGET_PLUS_MACD"
   "{
-   rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
-   rtx tmp1 = gen_reg_rtx (SImode);
-   rtx tmp2 = gen_reg_rtx (SImode);
-   rtx accl = gen_lowpart (SImode, acc_reg);
+   rtx acc_reg = gen_rtx_REG (SImode, ACC_REG_FIRST);
 
-   emit_move_insn (accl, operands[3]);
-   emit_insn (gen_rtx_SET (tmp1, gen_rtx_SIGN_EXTEND (SImode, operands[1])));
-   emit_insn (gen_rtx_SET (tmp2, gen_rtx_SIGN_EXTEND (SImode, operands[2])));
-   emit_insn (gen_mac (tmp1, tmp2));
-   emit_move_insn (operands[0], accl);
+   emit_move_insn (acc_reg, operands[3]);
+   emit_insn (gen_machi (operands[1], operands[2]));
+   emit_move_insn (operands[0], acc_reg);
    DONE;
   }")
 
-; The same for the unsigned variant, but using MACU instruction.
+(define_insn "machi"
+  [(set (reg:SI ARCV2_ACC)
+	(plus:SI
+	 (mult:SI (sign_extend:SI (match_operand:HI 0 "register_operand" "%r"))
+		  (sign_extend:SI (match_operand:HI 1 "register_operand" "r")))
+	 (reg:SI ARCV2_ACC)))]
+  "TARGET_PLUS_MACD"
+  "vmac2h\\t0,%0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
+
+; The same for the unsigned variant, but using VMAC2HU instruction.
 (define_expand "umaddhisi4"
   [(match_operand:SI 0 "register_operand" "")
    (match_operand:HI 1 "register_operand" "")
-   (match_operand:HI 2 "extend_operand"   "")
+   (match_operand:HI 2 "register_operand" "")
    (match_operand:SI 3 "register_operand" "")]
-  "TARGET_PLUS_DMPY"
+  "TARGET_PLUS_MACD"
   "{
-   rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
-   rtx tmp1 = gen_reg_rtx (SImode);
-   rtx tmp2 = gen_reg_rtx (SImode);
-   rtx accl = gen_lowpart (SImode, acc_reg);
+   rtx acc_reg = gen_rtx_REG (SImode, ACC_REG_FIRST);
 
-   emit_move_insn (accl, operands[3]);
-   emit_insn (gen_rtx_SET (tmp1, gen_rtx_ZERO_EXTEND (SImode, operands[1])));
-   emit_insn (gen_rtx_SET (tmp2, gen_rtx_ZERO_EXTEND (SImode, operands[2])));
-   emit_insn (gen_macu (tmp1, tmp2));
-   emit_move_insn (operands[0], accl);
+   emit_move_insn (acc_reg, operands[3]);
+   emit_insn (gen_umachi (operands[1], operands[2]));
+   emit_move_insn (operands[0], acc_reg);
    DONE;
   }")
+
+(define_insn "umachi"
+  [(set (reg:SI ARCV2_ACC)
+	(plus:SI
+	 (mult:SI (zero_extend:SI (match_operand:HI 0 "register_operand" "%r"))
+		  (zero_extend:SI (match_operand:HI 1 "register_operand" "r")))
+	 (reg:SI ARCV2_ACC)))]
+  "TARGET_PLUS_MACD"
+  "vmac2hu\\t0,%0,%1"
+  [(set_attr "length" "4")
+   (set_attr "type" "multi")
+   (set_attr "predicable" "no")
+   (set_attr "cond" "nocond")])
 
 (define_expand "maddsidi4"
   [(match_operand:DI 0 "register_operand" "")
