@@ -210,9 +210,9 @@ The following mathematical functions are available:
 @item @code{y0q}: Bessel function of the second kind, first order
 @item @code{y1q}: Bessel function of the second kind, second order
 @item @code{ynq}: Bessel function of the second kind, @var{n}-th order
-@item @code{cabsq} complex absolute value function
+@item @code{cabsq}: complex absolute value function
 @item @code{cargq}: calculate the argument
-@item @code{cimagq} imaginary part of complex number
+@item @code{cimagq}: imaginary part of complex number
 @item @code{crealq}: real part of complex number
 @item @code{cacoshq}: complex arc hyperbolic cosine function
 @item @code{cacosq}: complex arc cosine function
