@@ -2060,7 +2060,10 @@ Expression *Type::getProperty(Loc loc, Identifier *ident, int flag)
     }
     else if (ident == Id::__xalignof)
     {
-        e = new IntegerExp(loc, alignsize(), Type::tsize_t);
+        unsigned explicitAlignment = alignment();
+        unsigned naturalAlignment = alignsize();
+        unsigned actualAlignment = (explicitAlignment == STRUCTALIGN_DEFAULT ? naturalAlignment : explicitAlignment);
+        e = new IntegerExp(loc, actualAlignment, Type::tsize_t);
     }
     else if (ident == Id::_init)
     {
