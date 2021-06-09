@@ -1329,47 +1329,20 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)
    || (satisfies_constraint_Cm3 (operands[1])
-      && memory_operand (operands[0], DImode))"
-  "*
-{
-  switch (which_alternative)
-    {
-    default:
-      return \"#\";
-
-    case 0:
-    if (TARGET_PLUS_QMACW
-	&& even_register_operand (operands[0], DImode)
-	&& even_register_operand (operands[1], DImode))
-      return \"vadd2%?\\t%0,%1,0\";
-    return \"#\";
-
-    case 2:
-    if (TARGET_LL64
-        && memory_operand (operands[1], DImode)
-	&& even_register_operand (operands[0], DImode))
-      return \"ldd%U1%V1 %0,%1%&\";
-    return \"#\";
-
-    case 3:
-    if (TARGET_LL64
-	&& memory_operand (operands[0], DImode)
-	&& (even_register_operand (operands[1], DImode)
-	    || satisfies_constraint_Cm3 (operands[1])))
-     return \"std%U0%V0 %1,%0\";
-    return \"#\";
-    }
-}"
-  "&& reload_completed"
+       && memory_operand (operands[0], DImode))"
+  "@
+   vadd2\\t%0,%1,0
+   #
+   ldd%U1%V1\\t%0,%1
+   std%U0%V0\\t%1,%0"
+  "&& reload_completed && arc_split_move_p (operands)"
   [(const_int 0)]
   {
    arc_split_move (operands);
    DONE;
   }
   [(set_attr "type" "move,move,load,store")
-   ;; ??? The ld/st values could be 4 if it's [reg,bignum].
-   (set_attr "length" "8,16,*,*")])
-
+   (set_attr "length" "8,16,16,16")])
 
 ;; Floating point move insns.
 
@@ -1408,50 +1381,22 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 (define_insn_and_split "*movdf_insn"
   [(set (match_operand:DF 0 "move_dest_operand"      "=D,r,r,r,r,m")
 	(match_operand:DF 1 "move_double_src_operand" "r,D,r,E,m,r"))]
-  "register_operand (operands[0], DFmode)
-   || register_operand (operands[1], DFmode)"
-  "*
-{
- switch (which_alternative)
-   {
-    default:
-      return \"#\";
-
-    case 2:
-    if (TARGET_PLUS_QMACW
-	&& even_register_operand (operands[0], DFmode)
-	&& even_register_operand (operands[1], DFmode))
-      return \"vadd2%?\\t%0,%1,0\";
-    return \"#\";
-
-    case 4:
-    if (TARGET_LL64
-	&& ((even_register_operand (operands[0], DFmode)
-	     && memory_operand (operands[1], DFmode))
-	    || (memory_operand (operands[0], DFmode)
-	        && even_register_operand (operands[1], DFmode))))
-      return \"ldd%U1%V1 %0,%1%&\";
-    return \"#\";
-
-    case 5:
-    if (TARGET_LL64
-	&& ((even_register_operand (operands[0], DFmode)
-	     && memory_operand (operands[1], DFmode))
-	    || (memory_operand (operands[0], DFmode)
-		&& even_register_operand (operands[1], DFmode))))
-     return \"std%U0%V0 %1,%0\";
-    return \"#\";
-   }
-}"
-  "reload_completed"
+  "(register_operand (operands[0], DFmode)
+    || register_operand (operands[1], DFmode))"
+  "@
+   #
+   #
+   vadd2\\t%0,%1,0
+   #
+   ldd%U1%V1\\t%0,%1
+   std%U0%V0\\t%1,%0"
+  "&& reload_completed && arc_split_move_p (operands)"
   [(const_int 0)]
   {
    arc_split_move (operands);
    DONE;
   }
   [(set_attr "type" "move,move,move,move,load,store")
-   (set_attr "predicable" "no,no,no,yes,no,no")
-   ;; ??? The ld/st values could be 16 if it's [reg,bignum].
    (set_attr "length" "4,16,8,16,16,16")])
 
 (define_insn_and_split "*movdf_insn_nolrsr"
