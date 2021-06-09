@@ -8244,6 +8244,7 @@ extern bool reduced_constant_expression_p       (tree);
 extern bool is_instantiation_of_constexpr       (tree);
 extern bool var_in_constexpr_fn                 (tree);
 extern bool var_in_maybe_constexpr_fn           (tree);
+extern bool maybe_constexpr_fn			(tree);
 extern void explain_invalid_constexpr_fn        (tree);
 extern vec<tree> cx_error_context               (void);
 extern tree fold_sizeof_expr			(tree);
