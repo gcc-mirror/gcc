@@ -435,16 +435,22 @@
 ;;
 ;; [vclzq_u, vclzq_s])
 ;;
-(define_insn "mve_vclzq_<supf><mode>"
+(define_insn "@mve_vclzq_s<mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
-	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")]
-	 VCLZQ))
+	(clz:MVE_2 (match_operand:MVE_2 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE"
   "vclz.i%#<V_sz_elem>  %q0, %q1"
   [(set_attr "type" "mve_move")
 ])
+(define_expand "mve_vclzq_u<mode>"
+  [
+   (set (match_operand:MVE_2 0 "s_register_operand")
+	(clz:MVE_2 (match_operand:MVE_2 1 "s_register_operand")))
+  ]
+  "TARGET_HAVE_MVE"
+)
 
 ;;
 ;; [vclsq_s])

@@ -625,3 +625,10 @@
 			       operands[0], operands[1], operands[2]));
   DONE;
 })
+
+(define_expand "clz<mode>2"
+ [(set (match_operand:VDQIW 0 "s_register_operand")
+       (clz:VDQIW (match_operand:VDQIW 1 "s_register_operand")))]
+  "ARM_HAVE_<MODE>_ARITH
+   && !TARGET_REALLY_IWMMXT"
+)

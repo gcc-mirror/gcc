@@ -3018,22 +3018,13 @@
   [(set_attr "type" "neon_cls<q>")]
 )
 
-(define_insn "clz<mode>2"
+(define_insn "neon_vclz<mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
         (clz:VDQIW (match_operand:VDQIW 1 "s_register_operand" "w")))]
   "TARGET_NEON"
   "vclz.<V_if_elem>\t%<V_reg>0, %<V_reg>1"
   [(set_attr "type" "neon_cnt<q>")]
 )
-
-(define_expand "neon_vclz<mode>"
-  [(match_operand:VDQIW 0 "s_register_operand")
-   (match_operand:VDQIW 1 "s_register_operand")]
-  "TARGET_NEON"
-{
-  emit_insn (gen_clz<mode>2 (operands[0], operands[1]));
-  DONE;
-})
 
 (define_insn "popcount<mode>2"
   [(set (match_operand:VE 0 "s_register_operand" "=w")
