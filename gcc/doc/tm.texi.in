@@ -3828,6 +3828,7 @@ addresses.  Since GCC's generic function descriptors are
 not ABI-compliant, this option is typically used only on a
 per-language basis (notably by Ada) or when it can otherwise be
 applied to the whole program.
+
 For languages other than Ada, the @code{-ftrampolines} and
 @code{-fno-trampolines} options currently have no effect, and
 trampolines are always generated on platforms that need them
