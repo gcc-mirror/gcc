@@ -1,3 +1,8 @@
+2021-06-08  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/rs6000-logue.c (rs6000_emit_prologue): Use
+	gen_frame_store.
+
 2021-06-07  liuhongt  <hongtao.liu@intel.com>
 
 	PR target/100885

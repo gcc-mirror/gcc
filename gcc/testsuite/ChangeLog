@@ -1,3 +1,13 @@
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100963
+	* g++.dg/cpp0x/initlist124.C: New test.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91706
+	* g++.dg/template/lookup17.C: New test.
+
 2021-06-07  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
