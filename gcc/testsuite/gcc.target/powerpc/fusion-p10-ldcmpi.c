@@ -53,14 +53,26 @@ TEST(int16_t)
 TEST(uint8_t)
 TEST(int8_t)
 
-/* { dg-final { scan-assembler-times "lbz_cmpldi_cr0_QI_clobber_CCUNS_zero"   2 } } */
-/* { dg-final { scan-assembler-times "ld_cmpdi_cr0_DI_DI_CC_none"             4 } } */
-/* { dg-final { scan-assembler-times "ld_cmpdi_cr0_DI_clobber_CC_none"        4 } } */
-/* { dg-final { scan-assembler-times "ld_cmpldi_cr0_DI_DI_CCUNS_none"         1 } } */
-/* { dg-final { scan-assembler-times "ld_cmpldi_cr0_DI_clobber_CCUNS_none"    1 } } */
-/* { dg-final { scan-assembler-times "lha_cmpdi_cr0_HI_clobber_CC_sign"       8 } } */
-/* { dg-final { scan-assembler-times "lhz_cmpldi_cr0_HI_clobber_CCUNS_zero"   2 } } */
-/* { dg-final { scan-assembler-times "lwa_cmpdi_cr0_SI_EXTSI_CC_sign"         3 } } */
-/* { dg-final { scan-assembler-times "lwa_cmpdi_cr0_SI_clobber_CC_none"       4 } } */
-/* { dg-final { scan-assembler-times "lwz_cmpldi_cr0_SI_EXTSI_CCUNS_zero"     2 } } */
-/* { dg-final { scan-assembler-times "lwz_cmpldi_cr0_SI_clobber_CCUNS_none"   2 } } */
+/* { dg-final { scan-assembler-times "lbz_cmpldi_cr0_QI_clobber_CCUNS_zero"   2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "ld_cmpdi_cr0_DI_DI_CC_none"             4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "ld_cmpdi_cr0_DI_clobber_CC_none"        4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "ld_cmpldi_cr0_DI_DI_CCUNS_none"         1 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "ld_cmpldi_cr0_DI_clobber_CCUNS_none"    1 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "lha_cmpdi_cr0_HI_clobber_CC_sign"       8 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "lhz_cmpldi_cr0_HI_clobber_CCUNS_zero"   2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "lwa_cmpdi_cr0_SI_EXTSI_CC_sign"         3 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "lwa_cmpdi_cr0_SI_clobber_CC_none"       4 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "lwz_cmpldi_cr0_SI_EXTSI_CCUNS_zero"     2 { target lp64 } } } */
+/* { dg-final { scan-assembler-times "lwz_cmpldi_cr0_SI_clobber_CCUNS_none"   2 { target lp64 } } } */
+
+/* { dg-final { scan-assembler-times "lbz_cmpldi_cr0_QI_clobber_CCUNS_zero"   2 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "ld_cmpdi_cr0_DI_DI_CC_none"             0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "ld_cmpdi_cr0_DI_clobber_CC_none"        0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "ld_cmpldi_cr0_DI_DI_CCUNS_none"         0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "ld_cmpldi_cr0_DI_clobber_CCUNS_none"    0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "lha_cmpdi_cr0_HI_clobber_CC_sign"       8 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "lhz_cmpldi_cr0_HI_clobber_CCUNS_zero"   2 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "lwa_cmpdi_cr0_SI_EXTSI_CC_sign"         0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "lwa_cmpdi_cr0_SI_clobber_CC_none"       9 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "lwz_cmpldi_cr0_SI_EXTSI_CCUNS_zero"     0 { target ilp32 } } } */
+/* { dg-final { scan-assembler-times "lwz_cmpldi_cr0_SI_clobber_CCUNS_none"   6 { target ilp32 } } } */

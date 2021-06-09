@@ -1375,6 +1375,9 @@ fold_const_call_sss (real_value *result, combined_fn fn,
     CASE_CFN_FDIM:
       return do_mpfr_arg2 (result, mpfr_dim, arg0, arg1, format);
 
+    CASE_CFN_FMOD:
+      return do_mpfr_arg2 (result, mpfr_fmod, arg0, arg1, format);
+
     CASE_CFN_HYPOT:
       return do_mpfr_arg2 (result, mpfr_hypot, arg0, arg1, format);
 

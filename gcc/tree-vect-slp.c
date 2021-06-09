@@ -52,6 +52,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
 					  slp_tree, stmt_vector_for_cost *);
+static void vect_print_slp_tree (dump_flags_t, dump_location_t, slp_tree);
 
 static object_allocator<_slp_tree> *slp_tree_pool;
 static slp_tree slp_first_node;
@@ -108,6 +109,7 @@ _slp_tree::_slp_tree ()
   SLP_TREE_VECTYPE (this) = NULL_TREE;
   SLP_TREE_REPRESENTATIVE (this) = NULL;
   SLP_TREE_REF_COUNT (this) = 1;
+  this->failed = NULL;
   this->max_nunits = 1;
   this->lanes = 0;
 }
@@ -129,6 +131,8 @@ _slp_tree::~_slp_tree ()
   SLP_TREE_VEC_DEFS (this).release ();
   SLP_TREE_LOAD_PERMUTATION (this).release ();
   SLP_TREE_LANE_PERMUTATION (this).release ();
+  if (this->failed)
+    free (failed);
 }
 
 /* Recursively free the memory allocated for the SLP tree rooted at NODE.  */
@@ -1414,6 +1418,30 @@ bst_traits::equal (value_type existing, value_type candidate)
   return true;
 }
 
+/* ???  This was std::pair<std::pair<tree_code, vect_def_type>, tree>
+   but then vec::insert does memmove and that's not compatible with
+   std::pair.  */
+struct chain_op_t
+{
+  chain_op_t (tree_code code_, vect_def_type dt_, tree op_)
+      : code (code_), dt (dt_), op (op_) {}
+  tree_code code;
+  vect_def_type dt;
+  tree op;
+};
+
+/* Comparator for sorting associatable chains.  */
+
+static int
+dt_sort_cmp (const void *op1_, const void *op2_, void *)
+{
+  auto *op1 = (const chain_op_t *) op1_;
+  auto *op2 = (const chain_op_t *) op2_;
+  if (op1->dt != op2->dt)
+    return (int)op1->dt - (int)op2->dt;
+  return (int)op1->code - (int)op2->code;
+}
+
 typedef hash_map <vec <stmt_vec_info>, slp_tree,
 		  simple_hashmap_traits <bst_traits, slp_tree> >
   scalar_stmts_to_slp_tree_map_t;
@@ -1436,14 +1464,16 @@ vect_build_slp_tree (vec_info *vinfo,
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location, "re-using %sSLP tree %p\n",
-			 *leader ? "" : "failed ", *leader);
-      if (*leader)
+			 !(*leader)->failed ? "" : "failed ", *leader);
+      if (!(*leader)->failed)
 	{
 	  SLP_TREE_REF_COUNT (*leader)++;
 	  vect_update_max_nunits (max_nunits, (*leader)->max_nunits);
 	  stmts.release ();
+	  return *leader;
 	}
-      return *leader;
+      memcpy (matches, (*leader)->failed, sizeof (bool) * group_size);
+      return NULL;
     }
 
   /* Seed the bst_map with a stub node to be filled by vect_build_slp_tree_2
@@ -1458,17 +1488,20 @@ vect_build_slp_tree (vec_info *vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "SLP discovery limit exceeded\n");
-      bool existed_p = bst_map->put (stmts, NULL);
-      gcc_assert (existed_p);
       /* Mark the node invalid so we can detect those when still in use
 	 as backedge destinations.  */
       SLP_TREE_SCALAR_STMTS (res) = vNULL;
       SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
-      vect_free_slp_tree (res);
+      res->failed = XNEWVEC (bool, group_size);
+      memset (res->failed, 0, sizeof (bool) * group_size);
       memset (matches, 0, sizeof (bool) * group_size);
       return NULL;
     }
   --*limit;
+
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "starting SLP discovery for node %p\n", res);
 
   poly_uint64 this_max_nunits = 1;
   slp_tree res_ = vect_build_slp_tree_2 (vinfo, res, stmts, group_size,
@@ -1476,16 +1509,21 @@ vect_build_slp_tree (vec_info *vinfo,
 					matches, limit, tree_size, bst_map);
   if (!res_)
     {
-      bool existed_p = bst_map->put (stmts, NULL);
-      gcc_assert (existed_p);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "SLP discovery for node %p failed\n", res);
       /* Mark the node invalid so we can detect those when still in use
 	 as backedge destinations.  */
       SLP_TREE_SCALAR_STMTS (res) = vNULL;
       SLP_TREE_DEF_TYPE (res) = vect_uninitialized_def;
-      vect_free_slp_tree (res);
+      res->failed = XNEWVEC (bool, group_size);
+      memcpy (res->failed, matches, sizeof (bool) * group_size);
     }
   else
     {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "SLP discovery for node %p succeeded\n", res);
       gcc_assert (res_ == res);
       res->max_nunits = this_max_nunits;
       vect_update_max_nunits (max_nunits, this_max_nunits);
@@ -1493,6 +1531,48 @@ vect_build_slp_tree (vec_info *vinfo,
       SLP_TREE_REF_COUNT (res)++;
     }
   return res_;
+}
+
+/* Helper for building an associated SLP node chain.  */
+
+static void
+vect_slp_build_two_operator_nodes (slp_tree perm,
+				   slp_tree op0, slp_tree op1,
+				   stmt_vec_info oper1, stmt_vec_info oper2,
+				   vec<std::pair<unsigned, unsigned> > lperm)
+{
+  unsigned group_size = SLP_TREE_LANES (op1);
+  tree vectype = SLP_TREE_VECTYPE (op1);
+
+  slp_tree child1 = new _slp_tree;
+  SLP_TREE_DEF_TYPE (child1) = vect_internal_def;
+  SLP_TREE_VECTYPE (child1) = vectype;
+  SLP_TREE_LANES (child1) = group_size;
+  SLP_TREE_CHILDREN (child1).create (2);
+  SLP_TREE_CHILDREN (child1).quick_push (op0);
+  SLP_TREE_CHILDREN (child1).quick_push (op1);
+  SLP_TREE_REPRESENTATIVE (child1) = oper1;
+
+  slp_tree child2 = new _slp_tree;
+  SLP_TREE_DEF_TYPE (child2) = vect_internal_def;
+  SLP_TREE_VECTYPE (child2) = vectype;
+  SLP_TREE_LANES (child2) = group_size;
+  SLP_TREE_CHILDREN (child2).create (2);
+  SLP_TREE_CHILDREN (child2).quick_push (op0);
+  SLP_TREE_REF_COUNT (op0)++;
+  SLP_TREE_CHILDREN (child2).quick_push (op1);
+  SLP_TREE_REF_COUNT (op1)++;
+  SLP_TREE_REPRESENTATIVE (child2) = oper2;
+
+  SLP_TREE_DEF_TYPE (perm) = vect_internal_def;
+  SLP_TREE_CODE (perm) = VEC_PERM_EXPR;
+  SLP_TREE_VECTYPE (perm) = vectype;
+  SLP_TREE_LANES (perm) = group_size;
+  /* ???  We should set this NULL but that's not expected.  */
+  SLP_TREE_REPRESENTATIVE (perm) = oper1;
+  SLP_TREE_LANE_PERMUTATION (perm) = lperm;
+  SLP_TREE_CHILDREN (perm).quick_push (child1);
+  SLP_TREE_CHILDREN (perm).quick_push (child2);
 }
 
 /* Recursively build an SLP tree starting from NODE.
@@ -1671,6 +1751,353 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
       SLP_TREE_VECTYPE (node) = vectype;
       SLP_TREE_CHILDREN (node).quick_push (vnode);
       return node;
+    }
+  /* When discovery reaches an associatable operation see whether we can
+     improve that to match up lanes in a way superior to the operand
+     swapping code which at most looks at two defs.
+     ???  For BB vectorization we cannot do the brute-force search
+     for matching as we can succeed by means of builds from scalars
+     and have no good way to "cost" one build against another.  */
+  else if (is_a <loop_vec_info> (vinfo)
+	   /* ???  We don't handle !vect_internal_def defs below.  */
+	   && STMT_VINFO_DEF_TYPE (stmt_info) == vect_internal_def
+	   && is_gimple_assign (stmt_info->stmt)
+	   && (associative_tree_code (gimple_assign_rhs_code (stmt_info->stmt))
+	       || gimple_assign_rhs_code (stmt_info->stmt) == MINUS_EXPR)
+	   && ((FLOAT_TYPE_P (vectype) && flag_associative_math)
+	       || (INTEGRAL_TYPE_P (TREE_TYPE (vectype))
+		   && TYPE_OVERFLOW_WRAPS (TREE_TYPE (vectype)))))
+    {
+      /* See if we have a chain of (mixed) adds or subtracts or other
+	 associatable ops.  */
+      enum tree_code code = gimple_assign_rhs_code (stmt_info->stmt);
+      if (code == MINUS_EXPR)
+	code = PLUS_EXPR;
+      stmt_vec_info other_op_stmt_info = NULL;
+      stmt_vec_info op_stmt_info = NULL;
+      unsigned chain_len = 0;
+      auto_vec<chain_op_t> chain;
+      auto_vec<std::pair<tree_code, gimple *> > worklist;
+      auto_vec<vec<chain_op_t> > chains (group_size);
+      auto_vec<slp_tree, 4> children;
+      bool hard_fail = true;
+      for (unsigned lane = 0; lane < group_size; ++lane)
+	{
+	  /* For each lane linearize the addition/subtraction (or other
+	     uniform associatable operation) expression tree.  */
+	  worklist.safe_push (std::make_pair (code, stmts[lane]->stmt));
+	  while (!worklist.is_empty ())
+	    {
+	      auto entry = worklist.pop ();
+	      gassign *stmt = as_a <gassign *> (entry.second);
+	      enum tree_code in_code = entry.first;
+	      enum tree_code this_code = gimple_assign_rhs_code (stmt);
+	      /* Pick some stmts suitable for SLP_TREE_REPRESENTATIVE.  */
+	      if (!op_stmt_info
+		  && gimple_assign_rhs_code (stmt) == code)
+		op_stmt_info = vinfo->lookup_stmt (stmt);
+	      else if (!other_op_stmt_info
+		       && gimple_assign_rhs_code (stmt) == MINUS_EXPR)
+		other_op_stmt_info = vinfo->lookup_stmt (stmt);
+	      for (unsigned opnum = 1; opnum <= 2; ++opnum)
+		{
+		  tree op = gimple_op (stmt, opnum);
+		  vect_def_type dt;
+		  stmt_vec_info def_stmt_info;
+		  bool res = vect_is_simple_use (op, vinfo, &dt, &def_stmt_info);
+		  gcc_assert (res);
+		  gimple *use_stmt;
+		  use_operand_p use_p;
+		  if (dt == vect_internal_def
+		      && single_imm_use (op, &use_p, &use_stmt)
+		      && is_gimple_assign (def_stmt_info->stmt)
+		      && (gimple_assign_rhs_code (def_stmt_info->stmt) == code
+			  || (code == PLUS_EXPR
+			      && (gimple_assign_rhs_code (def_stmt_info->stmt)
+				  == MINUS_EXPR))))
+		    {
+		      tree_code op_def_code = this_code;
+		      if (op_def_code == MINUS_EXPR && opnum == 1)
+			op_def_code = PLUS_EXPR;
+		      if (in_code == MINUS_EXPR)
+			op_def_code
+			  = op_def_code == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR;
+		      worklist.safe_push (std::make_pair (op_def_code,
+							  def_stmt_info->stmt));
+		    }
+		  else
+		    {
+		      tree_code op_def_code = this_code;
+		      if (op_def_code == MINUS_EXPR && opnum == 1)
+			op_def_code = PLUS_EXPR;
+		      if (in_code == MINUS_EXPR)
+			op_def_code
+			  = op_def_code == PLUS_EXPR ? MINUS_EXPR : PLUS_EXPR;
+		      chain.safe_push (chain_op_t (op_def_code, dt, op));
+		    }
+		}
+	    }
+	  if (chain.length () == 2)
+	    {
+	      /* In a chain of just two elements resort to the regular
+		 operand swapping scheme.  If we run into a length
+		 mismatch still hard-FAIL.  */
+	      if (chain_len == 0)
+		hard_fail = false;
+	      break;
+	    }
+	  else if (chain_len == 0)
+	    chain_len = chain.length ();
+	  else if (chain.length () != chain_len)
+	    /* ???  Here we could slip in magic to compensate with
+	       neutral operands.  */
+	    break;
+	  chains.quick_push (chain.copy ());
+	  chain.truncate (0);
+	}
+      if (chains.length () == group_size)
+	{
+	  /* Now we have a set of chains with the same length.  */
+	  /* 1. pre-sort according to def_type and operation.  */
+	  for (unsigned lane = 0; lane < group_size; ++lane)
+	    chains[lane].sort (dt_sort_cmp, vinfo);
+	  if (dump_enabled_p ())
+	    {
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "pre-sorted chains of %s\n",
+			       get_tree_code_name (code));
+	      for (unsigned lane = 0; lane < group_size; ++lane)
+		{
+		  for (unsigned opnum = 0; opnum < chain_len; ++opnum)
+		    dump_printf (MSG_NOTE, "%s %T ",
+				 get_tree_code_name (chains[lane][opnum].code),
+				 chains[lane][opnum].op);
+		  dump_printf (MSG_NOTE, "\n");
+		}
+	    }
+	  /* 2. try to build children nodes, associating as necessary.  */
+	  for (unsigned n = 0; n < chain_len; ++n)
+	    {
+	      vect_def_type dt = chains[0][n].dt;
+	      unsigned lane;
+	      for (lane = 0; lane < group_size; ++lane)
+		if (chains[lane][n].dt != dt)
+		  {
+		    if (dt == vect_constant_def
+			&& chains[lane][n].dt == vect_external_def)
+		      dt = vect_external_def;
+		    else if (dt == vect_external_def
+			     && chains[lane][n].dt == vect_constant_def)
+		      ;
+		    else
+		      break;
+		  }
+	      if (lane != group_size)
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_NOTE, vect_location,
+				     "giving up on chain due to mismatched "
+				     "def types\n");
+		  goto out;
+		}
+	      if (dt == vect_constant_def
+		  || dt == vect_external_def)
+		{
+		/* We can always build those.  Might want to sort last
+		   or defer building.  */
+		   vec<tree> ops;
+		   ops.create (group_size);
+		   for (lane = 0; lane < group_size; ++lane)
+		     ops.quick_push (chains[lane][n].op);
+		   slp_tree child = vect_create_new_slp_node (ops);
+		   SLP_TREE_DEF_TYPE (child) = dt;
+		   children.safe_push (child);
+		}
+	      else if (dt != vect_internal_def)
+		{
+		  /* Not sure, we might need sth special.
+		     gcc.dg/vect/pr96854.c,
+		     gfortran.dg/vect/fast-math-pr37021.f90
+		     and gfortran.dg/vect/pr61171.f trigger.  */
+		  /* Soft-fail for now.  */
+		  hard_fail = false;
+		  goto out;
+		}
+	      else
+		{
+		  vec<stmt_vec_info> op_stmts;
+		  op_stmts.create (group_size);
+		  slp_tree child = NULL;
+		  /* Brute-force our way.  We have to consider a lane
+		     failing after fixing an earlier fail up in the
+		     SLP discovery recursion.  So track the current
+		     permute per lane.  */
+		  unsigned *perms = XALLOCAVEC (unsigned, group_size);
+		  memset (perms, 0, sizeof (unsigned) * group_size);
+		  do
+		    {
+		      op_stmts.truncate (0);
+		      for (lane = 0; lane < group_size; ++lane)
+			op_stmts.quick_push
+			  (vinfo->lookup_def (chains[lane][n].op));
+		      child = vect_build_slp_tree (vinfo, op_stmts,
+						   group_size, &this_max_nunits,
+						   matches, limit,
+						   &this_tree_size, bst_map);
+		      /* ???  We're likely getting too many fatal mismatches
+			 here so maybe we want to ignore them (but then we
+			 have no idea which lanes fatally mismatched).  */
+		      if (child || !matches[0])
+			break;
+		      /* Swap another lane we have not yet matched up into
+			 lanes that did not match.  If we run out of
+			 permute possibilities for a lane terminate the
+			 search.  */
+		      bool term = false;
+		      for (lane = 1; lane < group_size; ++lane)
+			if (!matches[lane])
+			  {
+			    if (n + perms[lane] + 1 == chain_len)
+			      {
+				term = true;
+				break;
+			      }
+			    std::swap (chains[lane][n],
+				       chains[lane][n + perms[lane] + 1]);
+			    perms[lane]++;
+			  }
+		      if (term)
+			break;
+		    }
+		  while (1);
+		  if (!child)
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_NOTE, vect_location,
+					 "failed to match up op %d\n", n);
+		      op_stmts.release ();
+		      goto out;
+		    }
+		  if (dump_enabled_p ())
+		    {
+		      dump_printf_loc (MSG_NOTE, vect_location,
+				       "matched up op %d to\n", n);
+		      vect_print_slp_tree (MSG_NOTE, vect_location, child);
+		    }
+		  children.safe_push (child);
+		}
+	    }
+	  /* 3. build SLP nodes to combine the chain.  */
+	  for (unsigned lane = 0; lane < group_size; ++lane)
+	    if (chains[lane][0].code != code)
+	      {
+		/* See if there's any alternate all-PLUS entry.  */
+		unsigned n;
+		for (n = 1; n < chain_len; ++n)
+		  {
+		    for (lane = 0; lane < group_size; ++lane)
+		      if (chains[lane][n].code != code)
+			break;
+		    if (lane == group_size)
+		      break;
+		  }
+		if (n != chain_len)
+		  {
+		    /* Swap that in at first position.  */
+		    std::swap (children[0], children[n]);
+		    for (lane = 0; lane < group_size; ++lane)
+		      std::swap (chains[lane][0], chains[lane][n]);
+		  }
+		else
+		  {
+		    /* ???  When this triggers and we end up with two
+		       vect_constant/external_def up-front things break (ICE)
+		       spectacularly finding an insertion place for the
+		       all-constant op.  We should have a fully
+		       vect_internal_def operand though(?) so we can swap
+		       that into first place and then prepend the all-zero
+		       constant.  */
+		    if (dump_enabled_p ())
+		      dump_printf_loc (MSG_NOTE, vect_location,
+				       "inserting constant zero to compensate "
+				       "for (partially) negated first "
+				       "operand\n");
+		    chain_len++;
+		    for (lane = 0; lane < group_size; ++lane)
+		      chains[lane].safe_insert
+			(0, chain_op_t (code, vect_constant_def, NULL_TREE));
+		    vec<tree> zero_ops;
+		    zero_ops.create (group_size);
+		    zero_ops.quick_push (build_zero_cst (TREE_TYPE (vectype)));
+		    for (lane = 1; lane < group_size; ++lane)
+		      zero_ops.quick_push (zero_ops[0]);
+		    slp_tree zero = vect_create_new_slp_node (zero_ops);
+		    SLP_TREE_DEF_TYPE (zero) = vect_constant_def;
+		    children.safe_insert (0, zero);
+		  }
+		break;
+	      }
+	  for (unsigned i = 1; i < children.length (); ++i)
+	    {
+	      slp_tree op0 = children[i - 1];
+	      slp_tree op1 = children[i];
+	      bool this_two_op = false;
+	      for (unsigned lane = 0; lane < group_size; ++lane)
+		if (chains[lane][i].code != chains[0][i].code)
+		  {
+		    this_two_op = true;
+		    break;
+		  }
+	      slp_tree child;
+	      if (i == children.length () - 1)
+		child = vect_create_new_slp_node (node, stmts, 2);
+	      else
+		child = vect_create_new_slp_node (2, ERROR_MARK);
+	      if (this_two_op)
+		{
+		  vec<std::pair<unsigned, unsigned> > lperm;
+		  lperm.create (group_size);
+		  for (unsigned lane = 0; lane < group_size; ++lane)
+		    lperm.quick_push (std::make_pair
+		      (chains[lane][i].code != chains[0][i].code, lane));
+		  vect_slp_build_two_operator_nodes (child, op0, op1,
+						     (chains[0][i].code == code
+						      ? op_stmt_info
+						      : other_op_stmt_info),
+						     (chains[0][i].code == code
+						      ? other_op_stmt_info
+						      : op_stmt_info),
+						     lperm);
+		}
+	      else
+		{
+		  SLP_TREE_DEF_TYPE (child) = vect_internal_def;
+		  SLP_TREE_VECTYPE (child) = vectype;
+		  SLP_TREE_LANES (child) = group_size;
+		  SLP_TREE_CHILDREN (child).quick_push (op0);
+		  SLP_TREE_CHILDREN (child).quick_push (op1);
+		  SLP_TREE_REPRESENTATIVE (child)
+		    = (chains[0][i].code == code
+		       ? op_stmt_info : other_op_stmt_info);
+		}
+	      children[i] = child;
+	    }
+	  *tree_size += this_tree_size + 1;
+	  *max_nunits = this_max_nunits;
+	  while (!chains.is_empty ())
+	    chains.pop ().release ();
+	  return node;
+	}
+out:
+      while (!children.is_empty ())
+	vect_free_slp_tree (children.pop ());
+      while (!chains.is_empty ())
+	chains.pop ().release ();
+      /* Hard-fail, otherwise we might run into quadratic processing of the
+	 chains starting one stmt into the chain again.  */
+      if (hard_fail)
+	return NULL;
+      /* Fall thru to normal processing.  */
     }
 
   /* Get at the operands, verifying they are compatible.  */

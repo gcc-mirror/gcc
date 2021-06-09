@@ -11326,17 +11326,7 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
 	{
 	  stmt_vinfo = vect_stmt_to_vectorize (stmt_vinfo);
 	  def_stmt = stmt_vinfo->stmt;
-	  switch (gimple_code (def_stmt))
-	    {
-	    case GIMPLE_PHI:
-	    case GIMPLE_ASSIGN:
-	    case GIMPLE_CALL:
-	      *dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
-	      break;
-	    default:
-	      *dt = vect_unknown_def_type;
-	      break;
-	    }
+	  *dt = STMT_VINFO_DEF_TYPE (stmt_vinfo);
 	  if (def_stmt_info_out)
 	    *def_stmt_info_out = stmt_vinfo;
 	}

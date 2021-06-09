@@ -17,7 +17,7 @@ void operator L"" "" _x(unsigned long long); // { dg-error "invalid encoding pre
 
 void operator u8"" "" _y(unsigned long long); // { dg-error "invalid encoding prefix in literal operator" }
 
-void operator u"" L"" _z(unsigned long long); // { dg-error "unsupported non-standard concatenation of string literals" }
+void operator u"" L"" _z(unsigned long long); // { dg-error "concatenation of string literals with conflicting encoding prefixes" }
 
 void operator ""_p ""_q(unsigned long long); // { dg-error "inconsistent user-defined literal suffixes" }
 

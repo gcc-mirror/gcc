@@ -73,27 +73,44 @@ protected:
   ranger_cache m_cache;
 };
 
-// Source of an operand for fold_using_range.
-// It can specify a stmt or and edge, or thru an internal API which uses
-// the ranger cache.
-// Its primary function is to retreive an operand from the source via a
-// call thru the range_query object.
+// Source of all operands for fold_using_range and gori_compute.
+// It abstracts out the source of an operand so it can come from a stmt or
+// and edge or anywhere a derived classof fur_source wants.
 
 class fur_source
 {
-  friend class fold_using_range;
 public:
-  inline fur_source (range_query *q, edge e);
-  inline fur_source (range_query *q, gimple *s);
-  inline fur_source (range_query *q, gori_compute *g, edge e, gimple *s);
-  bool get_operand (irange &r, tree expr);
-protected:
-  gori_compute *m_gori;
+  virtual bool get_operand (irange &r, tree expr);
+  virtual bool get_phi_operand (irange &r, tree expr, edge e);
+  virtual void register_dependency (tree lhs, tree rhs);
+  virtual range_query *query ();
+};
+
+// fur_stmt is the specification for drawing an operand from range_query Q
+// via a range_of_Expr call on stmt S.
+
+class fur_stmt : public fur_source
+{
+public:
+  fur_stmt (gimple *s, range_query *q = NULL);
+  virtual bool get_operand (irange &r, tree expr) OVERRIDE;
+  virtual bool get_phi_operand (irange &r, tree expr, edge e) OVERRIDE;
+  virtual range_query *query () OVERRIDE;
+private:
   range_query *m_query;
-  edge m_edge;
   gimple *m_stmt;
 };
 
+
+// Fold stmt S into range R using range query Q.
+bool fold_range (irange &r, gimple *s, range_query *q = NULL);
+// Recalculate stmt S into R using range query Q as if it were on edge ON_EDGE.
+bool fold_range (irange &r, gimple *s, edge on_edge, range_query *q = NULL);
+// These routines allow you to specify the operands to use when folding.
+// Any excess queries will be drawn from the current range_query.
+bool fold_range (irange &r, gimple *s, irange &r1);
+bool fold_range (irange &r, gimple *s, irange &r1, irange &r2);
+bool fold_range (irange &r, gimple *s, unsigned num_elements, irange *vector);
 
 // This class uses ranges to fold a gimple statement producinf a range for
 // the LHS.  The source of all operands is supplied via the fur_source class
@@ -118,64 +135,6 @@ protected:
 					 fur_source &src);
 };
 
-
-// Create a source for a query on an edge.
-
-inline
-fur_source::fur_source (range_query *q, edge e)
-{
-  m_query = q;
-  m_gori = NULL;
-  m_edge = e;
-  m_stmt = NULL;
-}
-
-// Create a source for a query at a statement.
-
-inline
-fur_source::fur_source (range_query *q, gimple *s)
-{
-  m_query = q;
-  m_gori = NULL;
-  m_edge = NULL;
-  m_stmt = s;
-}
-
-// Create a source for Ranger.  THis can recalculate from a different location
-// and can also set the dependency information as appropriate when invoked.
-
-inline
-fur_source::fur_source (range_query *q, gori_compute *g, edge e, gimple *s)
-{
-  m_query = q;
-  m_gori = g;
-  m_edge = e;
-  m_stmt = s;
-}
-
-// Fold stmt S into range R using range query Q.
-
-inline bool
-fold_range (irange &r, gimple *s, range_query *q = NULL)
-{
-  fold_using_range f;
-  if (q == NULL)
-    q = get_global_range_query ();
-  fur_source src (q, s);
-  return f.fold_stmt (r, s, src);
-}
-
-// Recalculate stmt S into R using range query Q as if it were on edge ON_EDGE.
-
-inline bool
-fold_range (irange &r, gimple *s, edge on_edge, range_query *q = NULL)
-{
-  fold_using_range f;
-  if (q == NULL)
-    q = get_global_range_query ();
-  fur_source src (q, on_edge);
-  return f.fold_stmt (r, s, src);
-}
 
 // These routines provide a GIMPLE interface to the range-ops code.
 extern tree gimple_range_operand1 (const gimple *s);

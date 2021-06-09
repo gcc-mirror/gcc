@@ -1,3 +1,104 @@
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* plugin/plugin-gcn.c (gcn_exec): Force 'num_workers (1)'
+	unconditionally.
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c:
+	Update.
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/routine-wv-2.c: Likewise.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/lib-11.c: Enable for all but
+	'-DACC_MEM_SHARED=0'.
+	* testsuite/libgomp.oacc-c-c++-common/lib-13.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-14.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-15.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-20.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-23.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-24.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-34.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-42.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-44.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-48.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-88.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-89.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-92.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-14.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-5.c: Add
+	'acc_device_radeon' testing.
+	* testsuite/libgomp.oacc-c-c++-common/lib-6.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-5.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-7.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-52.c: Enable for all.
+	* testsuite/libgomp.oacc-c-c++-common/lib-53.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-54.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-86.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-87.c: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-10.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/lib-8.f90: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-57.c: Improve checking
+	for non-'openacc_nvidia_accel_selected'.
+	* testsuite/libgomp.oacc-c-c++-common/lib-58.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-62.c: Clarify that "Not
+	all implement this checking".
+	* testsuite/libgomp.oacc-c-c++-common/lib-63.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-64.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-65.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-67.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/lib-68.c: Likewise.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Simplify.
+	* testsuite/libgomp.oacc-fortran/parallel-dims-aux.c: Update.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_prof-kernels-1.c: Fix
+	for 'acc_device_radeon'.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/firstprivate-1.c: Enhance
+	for non-'acc_device_nvidia'.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/acc_on_device-1.c: Add
+	'acc_device_radeon' testing.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-1.f90: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-2.f: Likewise.
+	* testsuite/libgomp.oacc-fortran/acc_on_device-1-3.f: Likewise.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/async_queue-1.c: Don't
+	require 'openacc_nvidia_accel_selected'.  Fix up for
+	'ACC_DEVICE_TYPE_radeon'.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/declare-1.C: Don't require
+	'openacc_nvidia_accel_selected'.
+	* testsuite/libgomp.oacc-c-c++-common/declare-3.c: Likewise.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_openacc_radeon_accel_selected):
+	Streamline.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c: Revert
+	PR80547 workaround.
+
+2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/parallel-dims.c
+	<acc_device_nvidia>: Update comment.
+
 2021-05-28  Tobias Burnus  <tobias@codesourcery.com>
 
 	* testsuite/libgomp.fortran/depend-iterator-2.f90: New test.

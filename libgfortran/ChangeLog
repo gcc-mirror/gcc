@@ -1,3 +1,8 @@
+2021-06-08  Martin Liska  <mliska@suse.cz>
+
+	* intrinsics/chmod.c (chmod_internal): Fix typo.
+	* io/transfer.c (read_sf): Likewise.
+
 2021-06-05  José Rui Faustino de Sousa  <jrfsousa@gmail.com>
 
 	PR fortran/100120

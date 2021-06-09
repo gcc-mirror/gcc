@@ -1,3 +1,49 @@
+2021-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99212
+	* region-model-manager.cc
+	(region_model_manager::maybe_fold_binop): Add support for folding
+	BIT_AND_EXPR of compound_svalue and a mask constant.
+	* region-model.cc (region_model::get_rvalue_1): Implement
+	BIT_FIELD_REF in terms of...
+	(region_model::get_rvalue_for_bits): New function.
+	* region-model.h (region_model::get_rvalue_for_bits): New decl.
+	* store.cc (bit_range::from_mask): New function.
+	(selftest::test_bit_range_intersects_p): New selftest.
+	(selftest::assert_bit_range_from_mask_eq): New.
+	(ASSERT_BIT_RANGE_FROM_MASK_EQ): New macro.
+	(selftest::assert_no_bit_range_from_mask_eq): New.
+	(ASSERT_NO_BIT_RANGE_FROM_MASK): New macro.
+	(selftest::test_bit_range_from_mask): New selftest.
+	(selftest::analyzer_store_cc_tests): Call the new selftests.
+	* store.h (bit_range::intersects_p): New.
+	(bit_range::from_mask): New decl.
+	(concrete_binding::get_bit_range): New accessor.
+	(store_manager::get_concrete_binding): New overload taking
+	const bit_range &.
+
+2021-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.h (int_size_in_bits): New decl.
+	* region.cc (int_size_in_bits): New function.
+	(region::get_bit_size): Reimplement in terms of the above.
+
+2021-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* store.cc (concrete_binding::dump_to_pp): Move bulk of
+	implementation to...
+	(bit_range::dump_to_pp): ...this new function.
+	(bit_range::cmp): New.
+	(concrete_binding::overlaps_p): Update for use of bit_range.
+	(concrete_binding::cmp_ptr_ptr): Likewise.
+	* store.h (struct bit_range): New.
+	(class concrete_binding): Replace fields m_start_bit_offset and
+	m_size_in_bits with new field m_bit_range.
+
+2021-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* svalue.h (conjured_svalue::iterator_t): Delete.
+
 2021-06-03  David Malcolm  <dmalcolm@redhat.com>
 
 	* store.h (store::get_direct_binding): Remove unused decl.

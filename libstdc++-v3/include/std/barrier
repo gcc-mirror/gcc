@@ -103,7 +103,6 @@ It looks different from literature pseudocode for two main reasons:
 			   static_cast<__barrier_phase_t>(__old_phase_val + 2);
 
 	size_t __current_expected = _M_expected;
-	std::hash<std::thread::id> __hasher;
 	__current %= ((_M_expected + 1) >> 1);
 
 	for (int __round = 0; ; ++__round)

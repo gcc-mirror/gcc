@@ -50,6 +50,7 @@ extern void arc_split_ior (rtx *);
 extern bool arc_check_mov_const (HOST_WIDE_INT );
 extern bool arc_split_mov_const (rtx *);
 extern bool arc_can_use_return_insn (void);
+extern bool arc_split_move_p (rtx *);
 #endif /* RTX_CODE */
 
 extern bool arc_ccfsm_branch_deleted_p (void);

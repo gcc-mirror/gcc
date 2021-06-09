@@ -5489,6 +5489,11 @@ not ABI-compliant, this option is typically used only on a
 per-language basis (notably by Ada) or when it can otherwise be
 applied to the whole program.
 
+For languages other than Ada, the @code{-ftrampolines} and
+@code{-fno-trampolines} options currently have no effect, and
+trampolines are always generated on platforms that need them
+for nested functions.
+
 Define the following hook if your backend either implements ABI-specified
 descriptor support, or can use GCC's generic descriptor implementation
 for nested functions.
