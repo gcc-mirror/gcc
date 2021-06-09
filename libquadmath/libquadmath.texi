@@ -103,8 +103,7 @@ The following macros are defined, which give the numeric limits of the
 @table @asis
 @item @code{FLT128_MAX}: largest finite number
 @item @code{FLT128_MIN}: smallest positive number with full precision
-@item @code{FLT128_EPSILON}: difference between 1 and the next larger
-                             representable number
+@item @code{FLT128_EPSILON}: difference between 1 and the next larger representable number
 @item @code{FLT128_DENORM_MIN}: smallest positive denormalized number
 @item @code{FLT128_MANT_DIG}: number of digits in the mantissa (bit precision)
 @item @code{FLT128_MIN_EXP}: maximal negative exponent
@@ -160,7 +159,6 @@ The following mathematical functions are available:
 @item @code{exp2q}: base 2 exponential function
 @item @code{expq}: exponential function
 @item @code{expm1q}: exponential minus 1 function
-@need 800
 @item @code{fabsq}: absolute value function
 @item @code{fdimq}: positive difference function
 @item @code{finiteq}: check finiteness of value
@@ -187,7 +185,6 @@ The following mathematical functions are available:
 @item @code{log10q}: base 10 logarithm function
 @item @code{log1pq}: compute natural logarithm of the value plus one
 @item @code{log2q}: base 2 logarithm function
-@need 800
 @item @code{lrintq}: round to nearest integer value
 @item @code{lroundq}: round to nearest integer value away from zero
 @item @code{modfq}: decompose the floating-point number
@@ -208,7 +205,6 @@ The following mathematical functions are available:
 @item @code{sqrtq}: square root function
 @item @code{tanq}: tangent function
 @item @code{tanhq}: hyperbolic tangent function
-@need 800
 @item @code{tgammaq}: true gamma function
 @item @code{truncq}: round to integer, towards zero
 @item @code{y0q}: Bessel function of the second kind, first order
@@ -227,9 +223,7 @@ The following mathematical functions are available:
 @item @code{ccosq} complex cosine function:
 @item @code{ccoshq}: complex hyperbolic cosine function
 @item @code{cexpq}: complex exponential function
-@need 800
-@item @code{cexpiq}: computes the exponential function of ``i'' times a
-                     real value
+@item @code{cexpiq}: computes the exponential function of ``i'' times a real value
 @item @code{clogq}: complex natural logarithm
 @item @code{clog10q}: complex base 10 logarithm
 @item @code{conjq}: complex conjugate function
