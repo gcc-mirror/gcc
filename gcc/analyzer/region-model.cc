@@ -1213,7 +1213,7 @@ region_model::handle_phi (const gphi *phi,
    emitting any diagnostics to CTXT.  */
 
 const region *
-region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt)
+region_model::get_lvalue_1 (path_var pv, region_model_context *ctxt) const
 {
   tree expr = pv.m_tree;
 
@@ -1312,7 +1312,7 @@ assert_compat_types (tree src_type, tree dst_type)
    emitting any diagnostics to CTXT.  */
 
 const region *
-region_model::get_lvalue (path_var pv, region_model_context *ctxt)
+region_model::get_lvalue (path_var pv, region_model_context *ctxt) const
 {
   if (pv.m_tree == NULL_TREE)
     return NULL;
@@ -1326,7 +1326,7 @@ region_model::get_lvalue (path_var pv, region_model_context *ctxt)
    recent stack frame if it's a local).  */
 
 const region *
-region_model::get_lvalue (tree expr, region_model_context *ctxt)
+region_model::get_lvalue (tree expr, region_model_context *ctxt) const
 {
   return get_lvalue (path_var (expr, get_stack_depth () - 1), ctxt);
 }
@@ -1337,7 +1337,7 @@ region_model::get_lvalue (tree expr, region_model_context *ctxt)
    emitting any diagnostics to CTXT.  */
 
 const svalue *
-region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt)
+region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt) const
 {
   gcc_assert (pv.m_tree);
 
@@ -1441,7 +1441,7 @@ region_model::get_rvalue_1 (path_var pv, region_model_context *ctxt)
    emitting any diagnostics to CTXT.  */
 
 const svalue *
-region_model::get_rvalue (path_var pv, region_model_context *ctxt)
+region_model::get_rvalue (path_var pv, region_model_context *ctxt) const
 {
   if (pv.m_tree == NULL_TREE)
     return NULL;
@@ -1457,7 +1457,7 @@ region_model::get_rvalue (path_var pv, region_model_context *ctxt)
    recent stack frame if it's a local).  */
 
 const svalue *
-region_model::get_rvalue (tree expr, region_model_context *ctxt)
+region_model::get_rvalue (tree expr, region_model_context *ctxt) const
 {
   return get_rvalue (path_var (expr, get_stack_depth () - 1), ctxt);
 }
@@ -1624,7 +1624,7 @@ region_model::region_exists_p (const region *reg) const
 
 const region *
 region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
-			    region_model_context *ctxt)
+			    region_model_context *ctxt) const
 {
   gcc_assert (ptr_sval);
   gcc_assert (POINTER_TYPE_P (ptr_sval->get_type ()));
@@ -1705,7 +1705,7 @@ region_model::deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 const svalue *
 region_model::get_rvalue_for_bits (tree type,
 				   const region *reg,
-				   const bit_range &bits)
+				   const bit_range &bits) const
 {
   const svalue *sval = get_store_value (reg);
   if (const compound_svalue *compound_sval = sval->dyn_cast_compound_svalue ())
