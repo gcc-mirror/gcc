@@ -4962,7 +4962,7 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 (define_expand "doloop_end"
   [(parallel [(set (pc)
 		   (if_then_else
-		    (ne (match_operand 0 "" "")
+		    (ne (match_operand 0 "nonimmediate_operand")
 			(const_int 1))
 		    (label_ref (match_operand 1 "" ""))
 		    (pc)))
@@ -4988,44 +4988,38 @@ core_3, archs4x, archs4xd, archs4xd_slow"
 
 ;; if by any chance the lp_count is not used, then use an 'r'
 ;; register, instead of going to memory.
-(define_insn "loop_end"
+;; split pattern for the very slim chance when the loop register is
+;; memory.
+(define_insn_and_split "loop_end"
   [(set (pc)
-	(if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,m")
+	(if_then_else (ne (match_operand:SI 0 "nonimmediate_operand" "+r,!m")
 			  (const_int 1))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
-   (set (match_operand:SI 0 "nonimmediate_operand" "=r,m")
-	(plus (match_dup 2) (const_int -1)))
-   (unspec [(const_int 0)] UNSPEC_ARC_LP)
-   (clobber (match_scratch:SI 3 "=X,&r"))]
-  ""
-  "; ZOL_END, begins @%l1"
-  [(set_attr "length" "0")
-   (set_attr "predicable" "no")
-   (set_attr "type" "loop_end")])
-
-;; split pattern for the very slim chance when the loop register is
-;; memory.
-(define_split
-  [(set (pc)
-	(if_then_else (ne (match_operand:SI 0 "memory_operand")
-			  (const_int 1))
-		      (label_ref (match_operand 1 ""))
-		      (pc)))
    (set (match_dup 0) (plus (match_dup 0) (const_int -1)))
    (unspec [(const_int 0)] UNSPEC_ARC_LP)
-   (clobber (match_scratch:SI 2))]
-  "memory_operand (operands[0], SImode)"
+   (clobber (match_scratch:SI 2 "=X,&r"))]
+  ""
+  "@
+   ; ZOL_END, begins @%l1
+   #"
+  "reload_completed && memory_operand (operands[0], Pmode)"
   [(set (match_dup 2) (match_dup 0))
-   (set (match_dup 2) (plus:SI (match_dup 2) (const_int -1)))
+   (parallel
+    [(set (reg:CC_ZN CC_REG)
+	  (compare:CC_ZN (plus:SI (match_dup 2) (const_int -1))
+			 (const_int 0)))
+     (set (match_dup 2) (plus:SI (match_dup 2) (const_int -1)))])
    (set (match_dup 0) (match_dup 2))
-   (set (reg:CC CC_REG) (compare:CC (match_dup 2) (const_int 0)))
    (set (pc)
-	(if_then_else (ne (reg:CC CC_REG)
+	(if_then_else (ne (reg:CC_ZN CC_REG)
 			  (const_int 0))
 		      (label_ref (match_dup 1))
 		      (pc)))]
-  "")
+  ""
+  [(set_attr "length" "0,24")
+   (set_attr "predicable" "no")
+   (set_attr "type" "loop_end")])
 
 (define_insn "loop_fail"
   [(set (reg:SI LP_COUNT)
