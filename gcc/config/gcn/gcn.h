@@ -46,9 +46,12 @@
 #define BYTES_BIG_ENDIAN 0
 #define WORDS_BIG_ENDIAN 0
 
-#define BITS_PER_WORD 32
-#define UNITS_PER_WORD (BITS_PER_WORD/BITS_PER_UNIT)
-#define LIBGCC2_UNITS_PER_WORD 4
+#ifdef IN_LIBGCC2
+/* We want DImode and TImode helpers.  */
+#define UNITS_PER_WORD 8
+#else
+#define UNITS_PER_WORD 4
+#endif
 
 #define POINTER_SIZE	     64
 #define PARM_BOUNDARY	     64
@@ -56,7 +59,7 @@
 #define FUNCTION_BOUNDARY    32
 #define BIGGEST_ALIGNMENT    64
 #define EMPTY_FIELD_BOUNDARY 32
-#define MAX_FIXED_MODE_SIZE  64
+#define MAX_FIXED_MODE_SIZE  128
 #define MAX_REGS_PER_ADDRESS 2
 #define STACK_SIZE_MODE      DImode
 #define Pmode		     DImode
