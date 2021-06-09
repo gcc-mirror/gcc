@@ -9833,6 +9833,13 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
       /* From here on, we're only interested in the most general
 	 template.  */
 
+      /* Shortcut looking up the current class scope again.  */
+      if (current_class_type)
+	if (tree ti = CLASSTYPE_TEMPLATE_INFO (current_class_type))
+	  if (gen_tmpl == most_general_template (TI_TEMPLATE (ti))
+	      && comp_template_args (arglist, TI_ARGS (ti)))
+	    return current_class_type;
+
       /* Calculate the BOUND_ARGS.  These will be the args that are
 	 actually tsubst'd into the definition to create the
 	 instantiation.  */
