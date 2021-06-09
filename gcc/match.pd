@@ -3733,10 +3733,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (integer_onep (@1))
      (convert (convert:boolean_type_node @0)))
     /* a ? -1 : 0 -> -a. */
-    (if (integer_all_onesp (@1))
+    (if (INTEGRAL_TYPE_P (type) && integer_all_onesp (@1))
      (negate (convert (convert:boolean_type_node @0))))
     /* a ? powerof2cst : 0 -> a << (log2(powerof2cst)) */
-    (if (!POINTER_TYPE_P (type) && integer_pow2p (@1))
+    (if (INTEGRAL_TYPE_P (type) && integer_pow2p (@1))
      (with {
        tree shift = build_int_cst (integer_type_node, tree_log2 (@1));
       }
@@ -3750,10 +3750,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (integer_onep (@2))
       (convert (bit_xor (convert:boolean_type_node @0) { booltrue; } )))
      /* a ? -1 : 0 -> -(!a). */
-     (if (integer_all_onesp (@2))
+     (if (INTEGRAL_TYPE_P (type) && integer_all_onesp (@2))
       (negate (convert (bit_xor (convert:boolean_type_node @0) { booltrue; } ))))
      /* a ? powerof2cst : 0 -> (!a) << (log2(powerof2cst)) */
-     (if (!POINTER_TYPE_P (type) && integer_pow2p (@2))
+     (if (INTEGRAL_TYPE_P (type) &&  integer_pow2p (@2))
       (with {
 	tree shift = build_int_cst (integer_type_node, tree_log2 (@2));
        }
