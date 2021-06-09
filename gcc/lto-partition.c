@@ -376,6 +376,43 @@ lto_max_map (void)
     new_partition ("empty");
 }
 
+void print_partitions_statistics()
+{
+  int n_partitions = ltrans_partitions.length();
+  int i;
+
+  printf ("Number of partitions: %d\n", n_partitions);
+
+  for (i = 0; i < n_partitions; i++)
+    {
+      ltrans_partition part = ltrans_partitions[i];
+      printf ("Partition: %d, Nr of insns: %d, Symbols: %d\n", i, part->insns,
+	      part->symbols);
+
+      lto_symtab_encoder_iterator lsei;
+      lto_symtab_encoder_t encoder = part->encoder;
+
+      for (lsei = lsei_start (encoder); !lsei_end_p (lsei); lsei_next (&lsei))
+	{
+	  if (cgraph_node *cnode = dyn_cast<cgraph_node *>(lsei_node (lsei)))
+	    {
+	      if (cnode->get_partitioning_class () == SYMBOL_PARTITION)
+		{
+		  ipa_size_summary *summary = ipa_size_summaries->get (cnode);
+		  if (summary)
+		    printf ("  Node id: %d, name: %s, insns: %d\n", cnode->order, cnode->name (), summary->size);      
+		}
+	      /*
+	      else 
+		printf ("  Node: %s, Boundary\n", cnode->name ());      
+		*/
+	    }
+	}
+    }
+
+  fflush (stdout);
+}
+
 /* Class implementing a union-find algorithm.  */
 
 class union_find
@@ -488,7 +525,6 @@ balance_partitions (union_find *ds, int n, int jobs)
 	  ipa_size_summary *summary = ipa_size_summaries->get (cnode);
 	  if (summary)
 	    {
-	      printf("%s; %d\n", cnode->name (), summary->size);
 	      sizes[root] += summary->size;
 	    }
 	  else

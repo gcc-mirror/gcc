@@ -456,8 +456,18 @@ compile_file (void)
   timevar_start (TV_PHASE_PARSING);
   timevar_push (TV_PARSE_GLOBAL);
 
+  struct timeval start, end;
+
+  gettimeofday(&start, NULL);
   /* Parse entire file and generate initial debug information.  */
   lang_hooks.parse_file ();
+
+  gettimeofday(&end, NULL);
+
+  long seconds = (end.tv_sec - start.tv_sec);
+  long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+
+  printf("Parsing: %ld.%06ld\n", seconds, micros);
 
   timevar_pop (TV_PARSE_GLOBAL);
   timevar_stop (TV_PHASE_PARSING);

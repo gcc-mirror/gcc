@@ -304,6 +304,7 @@ global_decl_processing (void)
   tree globals, decl, *vec;
   int len, i;
 
+
   timevar_stop (TV_PHASE_PARSING);
   timevar_start (TV_PHASE_DEFERRED);
   /* Really define vars that have had only a tentative definition.

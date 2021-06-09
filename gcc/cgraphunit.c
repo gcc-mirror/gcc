@@ -2782,6 +2782,8 @@ static bool is_number (const char *str)
 
 static int childno = -1;
 
+void print_partitions_statistics ();
+
 static bool
 maybe_compile_in_parallel (void)
 {
@@ -2799,6 +2801,10 @@ maybe_compile_in_parallel (void)
 
   if (!flag_parallel_jobs || !split_outputs)
     return false;
+
+
+  struct timeval start, end;
+  gettimeofday(&start, NULL);
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (cnode)
     {
@@ -2869,6 +2875,10 @@ maybe_compile_in_parallel (void)
       return false;
     }
 
+
+  //print_partitions_statistics();
+  //exit(0);
+
   /* Find out statics that need to be promoted
      to globals with hidden visibility because they are accessed from
      multiple partitions.  */
@@ -2901,6 +2911,16 @@ maybe_compile_in_parallel (void)
       num_jobs = partitions;
       jobserver_return_token ('p');
     }
+
+
+  gettimeofday(&end, NULL);
+
+  long seconds = (end.tv_sec - start.tv_sec);
+  long micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+
+  printf("Partitioner: %ld.%06ld\n", seconds, micros);
+
+  gettimeofday(&start, NULL);
 
   /* Spawn processes.  Spawn as soon as there is a free slot.  */
   for (j = 0, i = -num_jobs; i < partitions; i++, j++)
@@ -2942,6 +2962,14 @@ maybe_compile_in_parallel (void)
      now.  */
   if (jobserver)
     jobserver_get_token ();
+
+
+  gettimeofday(&end, NULL);
+
+  seconds = (end.tv_sec - start.tv_sec);
+  micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+
+  printf("LTRANS: %ld.%06ld\n", seconds, micros);
   exit (0);
 }
 
@@ -2951,6 +2979,9 @@ maybe_compile_in_parallel (void)
 void
 symbol_table::compile (void)
 {
+  struct timeval start, end;
+  long seconds, micros;
+
   if (seen_error ())
     return;
 
@@ -2970,8 +3001,18 @@ symbol_table::compile (void)
   /* Don't run the IPA passes if there was any error or sorry messages.  */
   if (!seen_error ())
   {
+
     timevar_start (TV_CGRAPH_IPA_PASSES);
+
+    gettimeofday(&start, NULL);
     ipa_passes ();
+    gettimeofday(&end, NULL);
+
+    seconds = (end.tv_sec - start.tv_sec);
+    micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+
+    printf("IPA: %ld.%06ld micros\n", seconds, micros);
+
     maybe_compile_in_parallel ();
     timevar_stop (TV_CGRAPH_IPA_PASSES);
   }
@@ -2983,6 +3024,9 @@ symbol_table::compile (void)
       timevar_pop (TV_CGRAPHOPT);
       return;
     }
+
+
+  gettimeofday(&start, NULL);
 
   global_info_ready = true;
   if (dump_file)
@@ -3050,6 +3094,13 @@ symbol_table::compile (void)
   process_new_functions ();
   state = FINISHED;
   output_weakrefs ();
+
+  gettimeofday(&end, NULL);
+
+  seconds = (end.tv_sec - start.tv_sec);
+  micros = ((seconds * 1000000) + end.tv_usec) - (start.tv_usec);
+
+  printf("Intraprocedural: %ld.%06ld\n", seconds, micros);
 
   if (dump_file)
     {
