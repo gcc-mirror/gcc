@@ -1488,7 +1488,7 @@
 
 ; vhadd and vrhadd.
 
-(define_insn "neon_v<r>hadd<sup><mode>"
+(define_insn "@neon_v<r>hadd<sup><mode>"
   [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
         (unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
 		       (match_operand:VDQIW 2 "s_register_operand" "w")]

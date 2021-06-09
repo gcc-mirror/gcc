@@ -1030,7 +1030,7 @@
 ;;
 ;; [vhaddq_s, vhaddq_u])
 ;;
-(define_insn "mve_vhaddq_<supf><mode>"
+(define_insn "@mve_vhaddq_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
@@ -1652,7 +1652,7 @@
 ;;
 ;; [vrhaddq_s, vrhaddq_u])
 ;;
-(define_insn "mve_vrhaddq_<supf><mode>"
+(define_insn "@mve_vrhaddq_<supf><mode>"
   [
    (set (match_operand:MVE_2 0 "s_register_operand" "=w")
 	(unspec:MVE_2 [(match_operand:MVE_2 1 "s_register_operand" "w")
