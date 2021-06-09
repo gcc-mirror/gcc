@@ -72,15 +72,15 @@ public:
     });
 
     auto crate_num = mappings->get_current_crate ();
-    Analysis::NodeMapping mapping (crate_num, path.get_node_id (),
-				   mappings->get_next_hir_id (crate_num),
+    auto hirid = mappings->get_next_hir_id (crate_num);
+    Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
 				   mappings->get_next_localdef_id (crate_num));
+
     translated
       = new HIR::TypePath (std::move (mapping), std::move (translated_segments),
 			   path.get_locus (),
 			   path.has_opening_scope_resolution_op ());
-    mappings->insert_hir_type (mapping.get_crate_num (), mapping.get_hirid (),
-			       translated);
+    mappings->insert_hir_type (crate_num, hirid, translated);
   }
 
 private:
