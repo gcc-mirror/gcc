@@ -798,7 +798,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up>
 	enable_if_t<__and_v<__not_<is_same<_Tp, _Up>>,
 			    is_constructible<_Tp, const _Up&>,
-			    is_assignable<_Tp&, _Up>,
+			    is_assignable<_Tp&, const _Up&>,
 			    __not_<__converts_from_optional<_Tp, _Up>>,
 			    __not_<__assigns_from_optional<_Tp, _Up>>>,
 		    optional&>
