@@ -5149,8 +5149,7 @@ might be printed in JSON form (after formatting) like this:
             @}
         ]
 	"column-origin": 1,
-    @},
-    @dots{}
+    @}
 ]
 @end smallexample
 
