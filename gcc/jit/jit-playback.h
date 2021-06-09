@@ -180,6 +180,11 @@ public:
 	    rvalue *expr,
 	    type *type_);
 
+  rvalue *
+  new_bitcast (location *loc,
+	       rvalue *expr,
+	       type *type_);
+
   lvalue *
   new_array_access (location *loc,
 		    rvalue *ptr,

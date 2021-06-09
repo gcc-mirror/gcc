@@ -1217,6 +1217,15 @@ gcc_jit_context_new_cast (gcc_jit_context *ctxt,
 			  gcc_jit_rvalue *rvalue,
 			  gcc_jit_type *type);
 
+/* Reinterpret a value as another type.
+
+   The types must be of the same size.  */
+extern gcc_jit_rvalue *
+gcc_jit_context_new_bitcast (gcc_jit_context *ctxt,
+			     gcc_jit_location *loc,
+			     gcc_jit_rvalue *rvalue,
+			     gcc_jit_type *type);
+
 extern gcc_jit_lvalue *
 gcc_jit_context_new_array_access (gcc_jit_context *ctxt,
 				  gcc_jit_location *loc,

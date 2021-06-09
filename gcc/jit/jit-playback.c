@@ -1411,6 +1411,20 @@ new_cast (playback::location *loc,
   return new rvalue (this, t_cast);
 }
 
+playback::rvalue *
+playback::context::
+new_bitcast (location *loc,
+		       rvalue *expr,
+		       type *type_)
+{
+    // TODO: use loc?
+  tree t_bitcast = build1 (VIEW_CONVERT_EXPR,
+			       type_->as_tree (), expr->as_tree ());
+  if (loc)
+    set_tree_location (t_bitcast, loc);
+  return new rvalue (this, t_bitcast);
+}
+
 /* Construct a playback::lvalue instance (wrapping a tree) for an
    array access.  */
 
