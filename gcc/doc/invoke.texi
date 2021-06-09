@@ -31850,8 +31850,8 @@ startup object and entry point.
 This option is available for Cygwin and MinGW targets.  It
 specifies that the @code{dllimport} attribute should be ignored.
 
-@item -mthread
-@opindex mthread
+@item -mthreads
+@opindex mthreads
 This option is available for MinGW targets. It specifies
 that MinGW-specific thread support is to be used.
 
