@@ -1,3 +1,99 @@
+2021-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100065
+	* g++.dg/cpp2a/explicit18.C: New test.
+
+2021-06-08  Andrew Pinski  <apinski@marvell.com>
+
+	* gcc.dg/tree-ssa/pr96928-1.c: Fix testcase for now that ~
+	happens on the outside of the bit_xor.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp0x/pr60209-neg.C: Update diagnostic.
+	* g++.dg/diagnostic/string-literal-concat.C: Likewise.
+	* g++.dg/ext/utf-badconcat.C: Likewise.
+	* g++.dg/ext/utf-badconcat2.C: Likewise.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/mixed-concat1.C: New test.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/whitespace-splice1.C: New test.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp23/narrowing-bool1.C: New test.
+
+2021-06-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/99212
+	* gcc.dg/analyzer/bitfields-1.c: New test.
+	* gcc.dg/analyzer/data-model-1.c (struct sbits): Make bitfields
+	explicitly signed.
+	(test_44): Update test values assigned to the bits to ones that
+	fit in the range of the bitfield type.  Remove xfails.
+	(test_45): Remove xfails.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100963
+	* g++.dg/cpp0x/initlist124.C: New test.
+
+2021-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100923
+	* gcc.dg/torture/pr100923.c: New testcase.
+
+2021-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100957
+	* g++.dg/gomp/doacross-2.C: New test.
+
+2021-06-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/100951
+	* gcc.target/i386/pr100951.c: New test.
+
+2021-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/100887
+	PR testsuite/100943
+	* gcc.dg/pr100887.c: Add -Wno-psabi -w to dg-options.
+
+2021-06-08  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR middle-end/99928
+	* gfortran.dg/gomp/openmp-simd-6.f90: Update scan-tree-dump.
+	* gfortran.dg/gomp/scan-5.f90: Likewise.
+	* gfortran.dg/gomp/loop-1.f90: Likewise; remove xfail.
+	* gfortran.dg/gomp/pr99928-1.f90: Remove xfail.
+	* gfortran.dg/gomp/pr99928-2.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-3.f90: Likewise.
+	* gfortran.dg/gomp/pr99928-8.f90: Likewise.
+
+2021-06-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/format/strfmon-1.c: Fix typo.
+	* gfortran.dg/char4-subscript.f90: Likewise.
+
+2021-06-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/100794
+	* gcc.dg/tree-ssa/pr100794.c: New test.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/91706
+	* g++.dg/template/lookup17.C: New test.
+
+2021-06-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100102
+	* g++.dg/cpp0x/alias-decl-73.C: New test.
+
 2021-06-07  Uroš Bizjak  <ubizjak@gmail.com>
 
 	PR target/100637

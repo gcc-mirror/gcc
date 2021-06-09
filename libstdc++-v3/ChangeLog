@@ -1,3 +1,21 @@
+2021-06-08  Thomas Rodgers  <rodgert@appliantology.com>
+
+	PR libstdc++/100889
+	* include/bits/atomic_base.h (atomic_ref<_Tp*>::wait):
+	Change parameter type from _Tp to _Tp*.
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Extend
+	coverage of types tested.
+
+2021-06-08  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* include/std/barrier (__tree_barrier::_M_arrive): Remove
+	unnecessary hasher instantiation.
+
+2021-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/propagate_const (swap): Constrain.
+	* testsuite/experimental/propagate_const/swap/lwg3413.cc: New test.
+
 2021-06-07  Avi Kivity  <avi@scylladb.com>
 
 	PR libstdc++/100900
