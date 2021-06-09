@@ -1478,6 +1478,9 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
     OMP_CLAUSE_SIZE (c)
       = DECL_P (decl) ? DECL_SIZE_UNIT (decl)
 		      : TYPE_SIZE_UNIT (TREE_TYPE (decl));
+  if (gimplify_expr (&OMP_CLAUSE_SIZE (c), pre_p,
+		     NULL, is_gimple_val, fb_rvalue) == GS_ERROR)
+    OMP_CLAUSE_SIZE (c) = size_int (0);
   if (c2)
     {
       OMP_CLAUSE_CHAIN (c2) = OMP_CLAUSE_CHAIN (last);
