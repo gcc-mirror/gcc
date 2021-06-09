@@ -220,7 +220,7 @@ The following mathematical functions are available:
 @item @code{casinq}: complex arc sine function
 @item @code{catanhq}: complex arc hyperbolic tangent function
 @item @code{catanq}: complex arc tangent function
-@item @code{ccosq} complex cosine function:
+@item @code{ccosq}: complex cosine function
 @item @code{ccoshq}: complex hyperbolic cosine function
 @item @code{cexpq}: complex exponential function
 @item @code{cexpiq}: computes the exponential function of ``i'' times a real value
