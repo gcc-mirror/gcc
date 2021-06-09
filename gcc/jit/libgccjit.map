@@ -238,6 +238,7 @@ LIBGCCJIT_ABI_18 {
 } LIBGCCJIT_ABI_17;
 
 LIBGCCJIT_ABI_19 {
+  global:
     gcc_jit_context_new_array_constructor;
     gcc_jit_context_new_struct_constructor;
     gcc_jit_context_new_union_constructor;
@@ -254,3 +255,7 @@ LIBGCCJIT_ABI_21 {
   global:
     gcc_jit_lvalue_set_register_name;
 } LIBGCCJIT_ABI_20;
+
+LIBGCCJIT_ABI_22 {
+    gcc_jit_context_new_bitcast;
+} LIBGCCJIT_ABI_21;

@@ -331,3 +331,12 @@ section of a variable:
 register name of a variable:
 
   * :func:`gcc_jit_lvalue_set_register_name`
+
+.. _LIBGCCJIT_ABI_22:
+
+``LIBGCCJIT_ABI_22``
+-----------------------
+``LIBGCCJIT_ABI_22`` covers the addition of an API entrypoint to bitcast a
+value from one type to another:
+
+  * :func:`gcc_jit_context_new_bitcast`

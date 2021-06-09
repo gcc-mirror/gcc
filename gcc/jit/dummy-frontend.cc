@@ -592,6 +592,8 @@ jit_langhook_init (void)
   global_dc->begin_diagnostic = jit_begin_diagnostic;
   global_dc->end_diagnostic = jit_end_diagnostic;
 
+  clear_nonstandard_integer_type_cache ();
+
   build_common_tree_nodes (false);
 
   /* I don't know why this has to be done explicitly.  */
