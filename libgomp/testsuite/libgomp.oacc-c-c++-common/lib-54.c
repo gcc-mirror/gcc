@@ -1,6 +1,4 @@
-/* Exercise acc_map_data with data size of zero on nvidia targets.  */
-
-/* { dg-do run { target openacc_nvidia_accel_selected } } */
+/* Exercise acc_map_data with data size of zero.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -30,6 +28,6 @@ main (int argc, char **argv)
 }
 
 /* { dg-output "CheCKpOInT(\n|\r\n|\r).*" } */
-/* { dg-output "\\\[\[0-9a-fA-FxX\]+,\\\+0\\\]->\\\[\[0-9a-fA-FxX\]+,\\\+0\\\] is a bad map" { target openacc_nvidia_accel_selected } } */
+/* { dg-output "\\\[\[0-9a-fA-FxX\]+,\\\+0\\\]->\\\[\[0-9a-fA-FxX\]+,\\\+0\\\] is a bad map" { target { ! openacc_host_selected } } } */
 /* { dg-output "cannot map data on shared-memory system" { target openacc_host_selected } } */
 /* { dg-shouldfail "" } */

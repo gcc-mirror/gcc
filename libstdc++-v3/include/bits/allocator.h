@@ -89,9 +89,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2103. std::allocator propagate_on_container_move_assignment
-      typedef true_type propagate_on_container_move_assignment;
+      using propagate_on_container_move_assignment = true_type;
 
-      typedef true_type is_always_equal;
+      using is_always_equal
+	_GLIBCXX20_DEPRECATED_SUGGEST("allocator_traits::is_always_equal")
+	= true_type;
 
 #if __cplusplus >= 202002L
       allocator() = default;
@@ -157,9 +159,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 2103. std::allocator propagate_on_container_move_assignment
-      typedef true_type propagate_on_container_move_assignment;
+      using propagate_on_container_move_assignment = true_type;
 
-      typedef true_type is_always_equal;
+      using is_always_equal
+	_GLIBCXX20_DEPRECATED_SUGGEST("allocator_traits::is_always_equal")
+	= true_type;
 #endif
 
       // _GLIBCXX_RESOLVE_LIB_DEFECTS

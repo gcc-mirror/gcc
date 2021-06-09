@@ -1458,7 +1458,8 @@ copy_tree_body_r (tree *tp, int *walk_subtrees, void *data)
 		   || OMP_CLAUSE_CODE (*tp) == OMP_CLAUSE_DEPEND))
 	{
 	  tree t = OMP_CLAUSE_DECL (*tp);
-	  if (TREE_CODE (t) == TREE_LIST
+	  if (t
+	      && TREE_CODE (t) == TREE_LIST
 	      && TREE_PURPOSE (t)
 	      && TREE_CODE (TREE_PURPOSE (t)) == TREE_VEC)
 	    {

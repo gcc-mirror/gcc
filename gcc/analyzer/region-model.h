@@ -509,6 +509,10 @@ class region_model
   const region *deref_rvalue (const svalue *ptr_sval, tree ptr_tree,
 			       region_model_context *ctxt);
 
+  const svalue *get_rvalue_for_bits (tree type,
+				     const region *reg,
+				     const bit_range &bits);
+
   void set_value (const region *lhs_reg, const svalue *rhs_sval,
 		  region_model_context *ctxt);
   void set_value (tree lhs, tree rhs, region_model_context *ctxt);

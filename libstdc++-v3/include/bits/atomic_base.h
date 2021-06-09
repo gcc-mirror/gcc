@@ -1870,7 +1870,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_lib_atomic_wait
       _GLIBCXX_ALWAYS_INLINE void
-      wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
+      wait(_Tp* __old, memory_order __m = memory_order_seq_cst) const noexcept
       { __atomic_impl::wait(_M_ptr, __old, __m); }
 
       // TODO add const volatile overload

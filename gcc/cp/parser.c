@@ -4378,8 +4378,8 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 		  rich_location rich_loc (line_table, tok->location);
 		  rich_loc.add_range (last_tok_loc);
 		  error_at (&rich_loc,
-			    "unsupported non-standard concatenation "
-			    "of string literals");
+			    "concatenation of string literals with "
+			    "conflicting encoding prefixes");
 		}
 	    }
 

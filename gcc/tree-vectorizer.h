@@ -197,7 +197,7 @@ public:
 
   /* For vector constructors, the constructor stmt that the SLP tree is built
      from, NULL otherwise.  */
-  stmt_vec_info root_stmt;
+  vec<stmt_vec_info> root_stmts;
 
   /* The unrolling factor required to vectorized this SLP instance.  */
   poly_uint64 unrolling_factor;
@@ -226,7 +226,7 @@ public:
 #define SLP_INSTANCE_TREE(S)                     (S)->root
 #define SLP_INSTANCE_UNROLLING_FACTOR(S)         (S)->unrolling_factor
 #define SLP_INSTANCE_LOADS(S)                    (S)->loads
-#define SLP_INSTANCE_ROOT_STMT(S)                (S)->root_stmt
+#define SLP_INSTANCE_ROOT_STMTS(S)               (S)->root_stmts
 #define SLP_INSTANCE_KIND(S)                     (S)->kind
 
 #define SLP_TREE_CHILDREN(S)                     (S)->children
@@ -861,11 +861,11 @@ loop_vec_info_for_loop (class loop *loop)
 struct slp_root
 {
   slp_root (slp_instance_kind kind_, vec<stmt_vec_info> stmts_,
-	    stmt_vec_info root_)
-    : kind(kind_), stmts(stmts_), root(root_) {}
+	    vec<stmt_vec_info> roots_)
+    : kind(kind_), stmts(stmts_), roots(roots_) {}
   slp_instance_kind kind;
   vec<stmt_vec_info> stmts;
-  stmt_vec_info root;
+  vec<stmt_vec_info> roots;
 };
 
 typedef class _bb_vec_info : public vec_info

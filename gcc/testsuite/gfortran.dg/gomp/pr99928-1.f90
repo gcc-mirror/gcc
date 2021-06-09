@@ -83,14 +83,14 @@ subroutine bar ()
   !$omp parallel master firstprivate (f09) default(none)
   f09 = f09 + 1
   !$omp end parallel master
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(f10\\)" "gimple" { xfail *-*-* } } }
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(f10\\)" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp master\[^\n\r]*firstprivate\\(f10\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp taskloop\[^\n\r]*firstprivate\\(f10\\)" "gimple" } }
   !$omp parallel master taskloop firstprivate (f10) default(none)
   do i = 1, 64
     f10 = f10 + 1
   end do
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(f11\\)" "gimple" { xfail *-*-* } } }
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(f11\\)" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp master\[^\n\r]*firstprivate\\(f11\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp taskloop\[^\n\r]*firstprivate\\(f11\\)" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp simd\[^\n\r]*firstprivate\\(f11\\)" "gimple" } }

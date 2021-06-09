@@ -1,3 +1,143 @@
+2021-06-08  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/25290
+	* tree-ssa-phiopt.c (xor_replacement): Delete.
+	(tree_ssa_phiopt_worker): Delete use of xor_replacement.
+	(match_simplify_replacement): Allow one cheap preparation
+	statement that can be moved to before the if.
+
+2021-06-08  Pat Haugen  <pthaugen@linux.ibm.com>
+
+	* config/rs6000/power10.md (power10-fused-load, power10-fused-store,
+	power10-fused_alu, power10-fused-vec, power10-fused-branch): New.
+
+2021-06-08  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/logical.md (andqi3_1): Move BCLR case into define_insn_and_split.
+	Create length attribute on define_insn_and_split.  Only split for cases which we
+	know will use AND.
+	(andqi3_1<cczn>): Renamed from andqi3_1_clobber_flags.  Only handle AND here and
+	fix length computation.
+	(b<code><mode>msx): Combine QImode and HImode H8/SX patterns using iterator.
+
+2021-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100923
+	* tree-ssa-sccvn.c (valueize_refs_1): Take a pointer to
+	the operand vector to be valueized.
+	(valueize_refs): Likewise.
+	(valueize_shared_reference_ops_from_ref): Adjust.
+	(valueize_shared_reference_ops_from_call): Likewise.
+	(vn_reference_lookup_3): Likewise.
+	(vn_reference_lookup_pieces): Likewise.  Re-valueize
+	with honoring availability when we are about to create
+	the ao_ref and valueized before.
+	(vn_reference_lookup): Likewise.
+	(vn_reference_insert_pieces): Adjust.
+
+2021-06-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_slp_instance::root_stmt): Change to...
+	(_slp_instance::root_stmts): ... a vector.
+	(SLP_INSTANCE_ROOT_STMT): Rename to ...
+	(SLP_INSTANCE_ROOT_STMTS): ... this.
+	(slp_root::root): Change to...
+	(slp_root::roots): ... a vector.
+	(slp_root::slp_root): Adjust.
+	* tree-vect-slp.c (_slp_instance::location): Adjust.
+	(vect_free_slp_instance): Release the root stmt vector.
+	(vect_build_slp_instance): Adjust.
+	(vect_analyze_slp): Likewise.
+	(_bb_vec_info::~_bb_vec_info): Likewise.
+	(vect_slp_analyze_operations): Likewise.
+	(vect_bb_vectorization_profitable_p): Likewise.  Adjust
+	costs for the root stmt.
+	(vect_slp_check_for_constructors): Gather all BIT_INSERT_EXPRs
+	as root stmts.
+	(vect_slp_analyze_bb_1): Simplify by marking all root stmts
+	as pure_slp.
+	(vectorize_slp_instance_root_stmt): Adjust.
+	(vect_schedule_slp): Likewise.
+
+2021-06-08  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp.c (class ssa_equiv_stack): New.
+	(ssa_equiv_stack::ssa_equiv_stack): New.
+	(ssa_equiv_stack::~ssa_equiv_stack): New.
+	(ssa_equiv_stack::enter): New.
+	(ssa_equiv_stack::leave): New.
+	(ssa_equiv_stack::push_replacement): New.
+	(ssa_equiv_stack::get_replacement): New.
+	(is_pointer_ssa): New.
+	(class pointer_equiv_analyzer): New.
+	(pointer_equiv_analyzer::pointer_equiv_analyzer): New.
+	(pointer_equiv_analyzer::~pointer_equiv_analyzer): New.
+	(pointer_equiv_analyzer::set_global_equiv): New.
+	(pointer_equiv_analyzer::set_cond_equiv): New.
+	(pointer_equiv_analyzer::get_equiv): New.
+	(pointer_equiv_analyzer::enter): New.
+	(pointer_equiv_analyzer::leave): New.
+	(pointer_equiv_analyzer::get_equiv_expr): New.
+	(pta_valueize): New.
+	(pointer_equiv_analyzer::visit_stmt): New.
+	(pointer_equiv_analyzer::visit_edge): New.
+	(hybrid_folder::value_of_expr): Call PTA.
+	(hybrid_folder::value_on_edge): Same.
+	(hybrid_folder::pre_fold_bb): New.
+	(hybrid_folder::post_fold_bb): New.
+	(hybrid_folder::pre_fold_stmt): New.
+	(rvrp_folder::pre_fold_bb): New.
+	(rvrp_folder::post_fold_bb): New.
+	(rvrp_folder::pre_fold_stmt): New.
+	(rvrp_folder::value_of_expr): Call PTA.
+	(rvrp_folder::value_on_edge): Same.
+
+2021-06-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100957
+	* tree-inline.c (copy_tree_body_r): For OMP_CLAUSE_DEPEND don't
+	check TREE_CODE if OMP_CLAUSE_DECL is NULL.
+
+2021-06-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/100951
+	* tree-vect-generic.c (expand_vector_piecewise): Build a
+	VECTOR_CST if all elements are constant.
+	(expand_vector_condition): Likewise.
+	(lower_vec_perm): Likewise.
+	(expand_vector_conversion): Likewise.
+
+2021-06-08  Martin Liska  <mliska@suse.cz>
+
+	* doc/invoke.texi: Document new param evrp-sparse-threshold.
+
+2021-06-08  Martin Liska  <mliska@suse.cz>
+
+	* genautomata.c (create_automata): Fix typo.
+
+2021-06-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	PR tree-optimization/100794
+	* tree-predcom.c (tree_predictive_commoning_loop): Add parameter
+	allow_unroll_p and only allow unrolling when it's true.
+	(tree_predictive_commoning): Add parameter allow_unroll_p and
+	adjust for it.
+	(run_tree_predictive_commoning): Likewise.
+	(pass_predcom::gate): Check flag_tree_loop_vectorize and
+	global_options_set.x_flag_predictive_commoning.
+	(pass_predcom::execute): Adjust for allow_unroll_p.
+
+2021-06-08  Kewen Lin  <linkw@linux.ibm.com>
+
+	* tree-predcom.c (execute_pred_commoning): Remove update_ssa call.
+	(tree_predictive_commoning_loop): Factor some cleanup stuffs into
+	lambda function cleanup, remove scev_reset call, and adjust return
+	value.
+	(tree_predictive_commoning): Adjust for different changed values,
+	only set flag TODO_update_ssa_only_virtuals if changed.
+	(pass_data pass_data_predcom): Remove TODO_update_ssa_only_virtuals
+	from todo_flags_finish.
+
 2021-06-07  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gimple-range-cache.cc (class sbr_sparse_bitmap): New.

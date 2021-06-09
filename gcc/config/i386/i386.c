@@ -13531,7 +13531,7 @@ ix86_print_operand_punct_valid_p (unsigned char code)
 
 static void
 ix86_print_operand_address_as (FILE *file, rtx addr,
-			       addr_space_t as, bool no_rip)
+			       addr_space_t as, bool raw)
 {
   struct ix86_address parts;
   rtx base, index, disp;
@@ -13570,7 +13570,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
   else
     gcc_assert (ADDR_SPACE_GENERIC_P (parts.seg));
 
-  if (!ADDR_SPACE_GENERIC_P (as))
+  if (!ADDR_SPACE_GENERIC_P (as) && !raw)
     {
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	putc ('%', file);
@@ -13589,7 +13589,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
     }
 
   /* Use one byte shorter RIP relative addressing for 64bit mode.  */
-  if (TARGET_64BIT && !base && !index && !no_rip)
+  if (TARGET_64BIT && !base && !index && !raw)
     {
       rtx symbol = disp;
 

@@ -1008,7 +1008,7 @@ gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
   if (!stmt)
     return false;
 
-  fur_source src (&q, NULL, e, stmt);
+  fur_stmt src (stmt, &q);
 
   // If NAME can be calculated on the edge, use that.
   if (is_export_p (name, e->src))

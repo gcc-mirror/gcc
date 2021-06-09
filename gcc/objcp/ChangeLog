@@ -1,4 +1,9 @@
-2021-06-07  Bernd Edlinger  <bernd.edlinger@softing.com>
+2021-06-08  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* Make-lang.in (cc1objplus-checksum.c): Check previous
+	stage checksum exists.
+
+2021-06-07  Bernd Edlinger  <bernd.edlinger@hotmai.de>
 
 	* Make-lang.in (cc1objplus-checksum.c): For stage-final re-use
 	the checksum from the previous stage.

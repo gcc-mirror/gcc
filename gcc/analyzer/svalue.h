@@ -1073,8 +1073,6 @@ namespace ana {
 class conjured_svalue : public svalue
 {
 public:
-  typedef binding_map::iterator_t iterator_t;
-
   /* A support class for uniquifying instances of conjured_svalue.  */
   struct key_t
   {

@@ -322,6 +322,7 @@ namespace pmr
 #endif
 
       template<typename _Up>
+	_GLIBCXX20_DEPRECATED_SUGGEST("allocator_traits::destroy")
 	__attribute__((__nonnull__))
 	void
 	destroy(_Up* __p)

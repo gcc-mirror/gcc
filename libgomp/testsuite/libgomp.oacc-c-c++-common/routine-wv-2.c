@@ -6,7 +6,8 @@
 #include <gomp-constants.h>
 
 #ifdef ACC_DEVICE_TYPE_radeon
-#define NUM_WORKERS 16
+/* Temporarily set this to 1 until multiple workers are permitted.  */
+#define NUM_WORKERS 1
 #define NUM_VECTORS 1
 #else
 #define NUM_WORKERS 16

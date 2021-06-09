@@ -21,6 +21,7 @@ if (.not. acc_on_device (acc_device_none)) STOP 1
 if (.not. acc_on_device (acc_device_host)) STOP 2
 if (acc_on_device (acc_device_not_host)) STOP 3
 if (acc_on_device (acc_device_nvidia)) STOP 4
+if (acc_on_device (acc_device_radeon)) STOP 4
 
 
 ! Host via offloading fallback mode.
@@ -32,6 +33,7 @@ if (.not. acc_on_device (acc_device_none)) STOP 5
 if (.not. acc_on_device (acc_device_host)) STOP 6
 if (acc_on_device (acc_device_not_host)) STOP 7
 if (acc_on_device (acc_device_nvidia)) STOP 8
+if (acc_on_device (acc_device_radeon)) STOP 8
 !$acc end parallel
 
 
@@ -48,6 +50,11 @@ if (.not. acc_on_device (acc_device_not_host)) STOP 11
 if (.not. acc_on_device (acc_device_nvidia)) STOP 12
 #else
 if (acc_on_device (acc_device_nvidia)) STOP 13
+#endif
+#if ACC_DEVICE_TYPE_radeon
+if (.not. acc_on_device (acc_device_radeon)) STOP 14
+#else
+if (acc_on_device (acc_device_radeon)) STOP 15
 #endif
 !$acc end parallel
 
