@@ -2398,7 +2398,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
       rtx_insn *prev_insn;
 
       /* First, look to see if we put a constant in a register.  */
-      prev_insn = prev_nonnote_insn (if_info->cond_earliest);
+      prev_insn = prev_nonnote_nondebug_insn (if_info->cond_earliest);
       if (prev_insn
 	  && BLOCK_FOR_INSN (prev_insn)
 	     == BLOCK_FOR_INSN (if_info->cond_earliest)
@@ -2669,7 +2669,7 @@ noce_try_abs (struct noce_if_info *if_info)
   if (REG_P (c))
     {
       rtx set;
-      rtx_insn *insn = prev_nonnote_insn (earliest);
+      rtx_insn *insn = prev_nonnote_nondebug_insn (earliest);
       if (insn
 	  && BLOCK_FOR_INSN (insn) == BLOCK_FOR_INSN (earliest)
 	  && (set = single_set (insn))
