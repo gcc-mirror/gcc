@@ -1,3 +1,12 @@
+2021-06-09  Martin Liska  <mliska@suse.cz>
+
+	* intrinsic.texi: Add missing @headitem to tables with a header.
+
+2021-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/100965
+	* trans-openmp.c (gfc_omp_finish_clause): Gimplify OMP_CLAUSE_SIZE.
+
 2021-06-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	PR middle-end/99928

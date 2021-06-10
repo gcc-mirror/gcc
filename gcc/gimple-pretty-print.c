@@ -1697,8 +1697,11 @@ dump_gimple_omp_target (pretty_printer *buffer, const gomp_target *gs,
     case GF_OMP_TARGET_KIND_OACC_UPDATE:
       kind = " oacc_update";
       break;
-    case GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA:
-      kind = " oacc_enter_exit_data";
+    case GF_OMP_TARGET_KIND_OACC_ENTER_DATA:
+      kind = " oacc_enter_data";
+      break;
+    case GF_OMP_TARGET_KIND_OACC_EXIT_DATA:
+      kind = " oacc_exit_data";
       break;
     case GF_OMP_TARGET_KIND_OACC_DECLARE:
       kind = " oacc_declare";

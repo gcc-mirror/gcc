@@ -1,3 +1,103 @@
+2021-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	* g++.dg/torture/pr100925.C: New test.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/int_128bit-runnable.c (extsd2q): Update expected
+	count.
+	Add tests for vec_signextq.
+	* gcc.target/powerpc/p9-sign_extend-runnable.c:  New test case.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/fp128_conversions.c: New file.
+	* gcc.target/powerpc/int_128bit-runnable.c(vextsd2q,
+	vcmpuq, vcmpsq, vcmpequq, vcmpequq., vcmpgtsq, vcmpgtsq.
+	vcmpgtuq, vcmpgtuq.): Update scan-assembler-times.
+	(ppc_native_128bit): Remove dg-require-effective-target.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/int_128bit-runnable.c: Add shift_right, shift_left
+	tests.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/int_128bit-runnable.c: Add 128-bit DFP
+	conversion tests.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/int_128bit-runnable.c: New test file.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/check-builtin-vec_rlnm-runnable.c:
+	New runnable test case.
+	* gcc.target/powerpc/vec-rlmi-rlnm.c: Update scan assembler times
+	for xxlor instruction.
+
+2021-06-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vclz.c: New test.
+
+2021-06-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vhadd-1.c: New test.
+	* gcc.target/arm/simd/mve-vhadd-2.c: New test.
+	* gcc.target/arm/simd/neon-vhadd-1.c: New test.
+	* gcc.target/arm/simd/neon-vhadd-2.c: New test.
+
+2021-06-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/builtins-70.c: New test.
+
+2021-06-09  Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-2logical.c: Update fused insn
+	counts to test 32 and 64 bit separately.
+	* gcc.target/powerpc/fusion-p10-addadd.c: Update fused insn
+	counts to test 32 and 64 bit separately.
+	* gcc.target/powerpc/fusion-p10-ldcmpi.c: Update fused insn
+	counts to test 32 and 64 bit separately.
+	* gcc.target/powerpc/fusion-p10-logadd.c: Update fused insn
+	counts to test 32 and 64 bit separately.
+
+2021-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100981
+	* gfortran.dg/vect/pr100981-1.f90: New testcase.
+
+2021-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97832
+	* gcc.dg/vect/pr97832-1.c: New testcase.
+	* gcc.dg/vect/pr97832-2.c: Likewise.
+	* gcc.dg/vect/pr97832-3.c: Likewise.
+	* g++.dg/vect/slp-pr98855.cc: XFAIL.
+	* gcc.dg/vect/slp-50.c: New file.
+
+2021-06-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/100965
+	* gfortran.dg/gomp/pr100965.f90: New test.
+
+2021-06-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100936
+	* gcc.target/i386/pr100936.c: New test.
+
+2021-06-09  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-call.c: Adjust.
+	* gcc.target/powerpc/pr100085.c: New test.
+
+2021-06-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/100879
+	* g++.dg/diagnostic/enum3.C: New test.
+
 2021-06-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/100065

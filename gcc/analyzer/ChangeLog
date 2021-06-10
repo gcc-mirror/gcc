@@ -1,3 +1,18 @@
+2021-06-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* region-model.cc (region_model::get_lvalue_1): Make const.
+	(region_model::get_lvalue): Likewise.
+	(region_model::get_rvalue_1): Likewise.
+	(region_model::get_rvalue): Likewise.
+	(region_model::deref_rvalue): Likewise.
+	(region_model::get_rvalue_for_bits): Likewise.
+	* region-model.h (region_model::get_lvalue): Likewise.
+	(region_model::get_rvalue): Likewise.
+	(region_model::deref_rvalue): Likewise.
+	(region_model::get_rvalue_for_bits): Likewise.
+	(region_model::get_lvalue_1): Likewise.
+	(region_model::get_rvalue_1): Likewise.
+
 2021-06-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/99212

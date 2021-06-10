@@ -53,7 +53,6 @@ class ssa_equiv_stack
 {
 public:
   ssa_equiv_stack ();
-  ~ssa_equiv_stack ();
   void enter (basic_block);
   void leave (basic_block);
   void push_replacement (tree name, tree replacement);
@@ -61,19 +60,13 @@ public:
 
 private:
   auto_vec<std::pair <tree, tree>> m_stack;
-  tree *m_replacements;
+  auto_vec<tree> m_replacements;
   const std::pair <tree, tree> m_marker = std::make_pair (NULL, NULL);
 };
 
 ssa_equiv_stack::ssa_equiv_stack ()
 {
-  m_replacements = new tree[num_ssa_names] ();
-}
-
-ssa_equiv_stack::~ssa_equiv_stack ()
-{
-  m_stack.release ();
-  delete m_replacements;
+  m_replacements.safe_grow_cleared (num_ssa_names);
 }
 
 // Pushes a marker at the given point.

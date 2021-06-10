@@ -162,8 +162,8 @@ f_omp (void)
 #pragma acc data /* { dg-error "OpenACC .data. construct inside of OpenMP .target. region" } */
     ;
 #pragma acc update host(i) /* { dg-error "OpenACC .update. construct inside of OpenMP .target. region" } */
-#pragma acc enter data copyin(i) /* { dg-error "OpenACC .enter/exit data. construct inside of OpenMP .target. region" } */
-#pragma acc exit data delete(i) /* { dg-error "OpenACC .enter/exit data. construct inside of OpenMP .target. region" } */
+#pragma acc enter data copyin(i) /* { dg-error "OpenACC .enter data. construct inside of OpenMP .target. region" } */
+#pragma acc exit data delete(i) /* { dg-error "OpenACC .exit data. construct inside of OpenMP .target. region" } */
 #pragma acc loop /* { dg-error "loop directive must be associated with an OpenACC compute region" } */
     for (i = 0; i < 2; ++i)
       ;

@@ -39,12 +39,12 @@ class value_query
 {
 public:
   value_query () { }
-  // Return the singleton expression for NAME at a gimple statement,
+  // Return the singleton expression for EXPR at a gimple statement,
   // or NULL if none found.
-  virtual tree value_of_expr (tree name, gimple * = NULL) = 0;
-  // Return the singleton expression for NAME at an edge, or NULL if
+  virtual tree value_of_expr (tree expr, gimple * = NULL) = 0;
+  // Return the singleton expression for EXPR at an edge, or NULL if
   // none found.
-  virtual tree value_on_edge (edge, tree name);
+  virtual tree value_on_edge (edge, tree expr);
   // Return the singleton expression for the LHS of a gimple
   // statement, assuming an (optional) initial value of NAME.  Returns
   // NULL if none found.
@@ -77,8 +77,8 @@ public:
   range_query ();
   virtual ~range_query ();
 
-  virtual tree value_of_expr (tree name, gimple * = NULL) OVERRIDE;
-  virtual tree value_on_edge (edge, tree name) OVERRIDE;
+  virtual tree value_of_expr (tree expr, gimple * = NULL) OVERRIDE;
+  virtual tree value_on_edge (edge, tree expr) OVERRIDE;
   virtual tree value_of_stmt (gimple *, tree name = NULL) OVERRIDE;
 
   // These are the range equivalents of the value_* methods.  Instead
@@ -86,9 +86,9 @@ public:
   // R.  TRUE is returned on success or FALSE if no range was found.
   //
   // Note that range_of_expr must always return TRUE unless ranges are
-  // unsupported for NAME's type (supports_type_p is false).
-  virtual bool range_of_expr (irange &r, tree name, gimple * = NULL) = 0;
-  virtual bool range_on_edge (irange &r, edge, tree name);
+  // unsupported for EXPR's type (supports_type_p is false).
+  virtual bool range_of_expr (irange &r, tree expr, gimple * = NULL) = 0;
+  virtual bool range_on_edge (irange &r, edge, tree expr);
   virtual bool range_of_stmt (irange &r, gimple *, tree name = NULL);
 
   // DEPRECATED: This method is used from vr-values.  The plan is to
