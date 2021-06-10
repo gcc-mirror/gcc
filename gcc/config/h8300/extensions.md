@@ -20,7 +20,7 @@
   [(parallel [(set (match_dup 0) (zero_extend:HI (match_dup 1)))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*zero_extendqihi2_clobber_flags"
+(define_insn "*zero_extendqihi2<cczn>"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
 	(zero_extend:HI (match_operand:QI 1 "general_operand_src" "0,g>")))
    (clobber (reg:CC CC_REG))]
@@ -95,7 +95,7 @@
   [(parallel [(set (match_dup 0) (zero_extend:SI (match_dup 1)))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*zero_extendqisi2_h8sx_clobber_flags"
+(define_insn "*zero_extendqisi2_h8sx<cczn>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_operand:QI 1 "register_operand" "0")))
    (clobber (reg:CC CC_REG))]
@@ -118,7 +118,7 @@
   [(parallel [(set (match_dup 0) (zero_extend:SI (match_dup 1)))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*zero_extendhisi2_clobber_flags"
+(define_insn "*zero_extendhisi2<cczn>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(zero_extend:SI (match_operand:HI 1 "register_operand" "0")))
    (clobber (reg:CC CC_REG))]
@@ -141,7 +141,7 @@
   [(parallel [(set (match_dup 0) (sign_extend:HI (match_dup 1)))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*extendqihi2_clobber_flags"
+(define_insn "*extendqihi2<cczn>"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(sign_extend:HI (match_operand:QI 1 "register_operand" "0")))
    (clobber (reg:CC CC_REG))]
@@ -176,7 +176,7 @@
   [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*extendqisi2_h8sx_clobber_flags"
+(define_insn "*extendqisi2_h8sx<cczn>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extend:SI (match_operand:QI 1 "register_operand" "0")))
    (clobber (reg:CC CC_REG))]
@@ -199,7 +199,7 @@
   [(parallel [(set (match_dup 0) (sign_extend:SI (match_dup 1)))
 	      (clobber (reg:CC CC_REG))])])
 
-(define_insn "*extendhisi2_clobber_flags"
+(define_insn "*extendhisi2<cczn>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(sign_extend:SI (match_operand:HI 1 "register_operand" "0")))
    (clobber (reg:CC CC_REG))]

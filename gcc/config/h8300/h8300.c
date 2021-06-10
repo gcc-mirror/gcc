@@ -1950,7 +1950,9 @@ h8300_select_cc_mode (enum rtx_code cond, rtx op0, rtx op1)
           || GET_CODE (op0) == NEG || GET_CODE (op0) == AND
           || GET_CODE (op0) == IOR || GET_CODE (op0) == XOR
           || GET_CODE (op0) == NOT || GET_CODE (op0) == ASHIFT
-	  || GET_CODE (op0) == REG || GET_CODE (op0) == MULT))
+	  || GET_CODE (op0) == MULT
+	  || GET_CODE (op0) == SIGN_EXTEND || GET_CODE (op0) == ZERO_EXTEND
+	  || REG_P (op0) || MEM_P (op0)))
     return CCZNmode;
 
   return CCmode;
