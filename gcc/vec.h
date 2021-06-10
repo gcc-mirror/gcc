@@ -612,6 +612,7 @@ public:
   void block_remove (unsigned, unsigned);
   void qsort (int (*) (const void *, const void *));
   void sort (int (*) (const void *, const void *, void *), void *);
+  void stablesort (int (*) (const void *, const void *, void *), void *);
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
   T *bsearch (const void *key,
 	      int (*compar)(const void *, const void *, void *), void *);
@@ -1160,6 +1161,17 @@ vec<T, A, vl_embed>::sort (int (*cmp) (const void *, const void *, void *),
     gcc_sort_r (address (), length (), sizeof (T), cmp, data);
 }
 
+/* Sort the contents of this vector with gcc_stablesort_r.  CMP is the
+   comparison function to pass to qsort.  */
+
+template<typename T, typename A>
+inline void
+vec<T, A, vl_embed>::stablesort (int (*cmp) (const void *, const void *,
+					     void *), void *data)
+{
+  if (length () > 1)
+    gcc_stablesort_r (address (), length (), sizeof (T), cmp, data);
+}
 
 /* Search the contents of the sorted vector with a binary search.
    CMP is the comparison function to pass to bsearch.  */
@@ -1488,6 +1500,7 @@ public:
   void block_remove (unsigned, unsigned);
   void qsort (int (*) (const void *, const void *));
   void sort (int (*) (const void *, const void *, void *), void *);
+  void stablesort (int (*) (const void *, const void *, void *), void *);
   T *bsearch (const void *key, int (*compar)(const void *, const void *));
   T *bsearch (const void *key,
 	      int (*compar)(const void *, const void *, void *), void *);
@@ -2053,6 +2066,17 @@ vec<T, va_heap, vl_ptr>::sort (int (*cmp) (const void *, const void *,
     m_vec->sort (cmp, data);
 }
 
+/* Sort the contents of this vector with gcc_stablesort_r.  CMP is the
+   comparison function to pass to qsort.  */
+
+template<typename T>
+inline void
+vec<T, va_heap, vl_ptr>::stablesort (int (*cmp) (const void *, const void *,
+						 void *), void *data)
+{
+  if (m_vec)
+    m_vec->stablesort (cmp, data);
+}
 
 /* Search the contents of the sorted vector with a binary search.
    CMP is the comparison function to pass to bsearch.  */

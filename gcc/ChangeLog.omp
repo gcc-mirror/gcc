@@ -1,3 +1,13 @@
+2022-01-25  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	Backport from master:
+	2021-06-10  Richard Biener  <rguenther@suse.de>
+
+	* system.h (gcc_stablesort_r): Declare.
+	* sort.cc (gcc_sort_r): Support stable sort.
+	(gcc_stablesort_r): Define.
+	* vec.h (vec<>::stablesort): Add.
+
 2022-01-19  Marcel Vollweiler  <marcel@codesourcery.com>
 
 	Backport from master:
