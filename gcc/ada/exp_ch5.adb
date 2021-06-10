@@ -3641,15 +3641,36 @@ package body Exp_Ch5 is
             return Result;
          end Elsif_Parts;
 
+         function Else_Statements return List_Id;
+         --  Returns a "raise Constraint_Error" statement if
+         --  exception propagate is permitted and No_List otherwise.
+
+         ---------------------
+         -- Else_Statements --
+         ---------------------
+
+         function Else_Statements return List_Id is
+         begin
+            if Restriction_Active (No_Exception_Propagation) then
+               return No_List;
+            else
+               return New_List (Make_Raise_Constraint_Error (Loc,
+                                  Reason => CE_Invalid_Data));
+            end if;
+         end Else_Statements;
+
+         --  Local constants
+
          If_Stmt : constant Node_Id :=
            Make_If_Statement (Loc,
               Condition       => Top_Level_Pattern_Match_Condition (First_Alt),
               Then_Statements => Statements (First_Alt),
-              Elsif_Parts     => Elsif_Parts);
-         --  Do we want an implicit "else raise Program_Error" here???
-         --  Perhaps only if Exception-related restrictions are not in effect.
+              Elsif_Parts     => Elsif_Parts,
+              Else_Statements => Else_Statements);
 
          Declarations : constant List_Id := New_List (Selector_Decl);
+
+      --  Start of processing for Expand_General_Case_Statment
 
       begin
          if Present (Choice_Index_Decl) then
