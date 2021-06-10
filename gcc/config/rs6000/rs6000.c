@@ -11014,10 +11014,10 @@ init_float128_ieee (machine_mode mode)
 
       if (TARGET_POWERPC64)
 	{
-	  set_conv_libfunc (sfix_optab, TImode, mode, "__fixkfti");
-	  set_conv_libfunc (ufix_optab, TImode, mode, "__fixunskfti");
-	  set_conv_libfunc (sfloat_optab, mode, TImode, "__floattikf");
-	  set_conv_libfunc (ufloat_optab, mode, TImode, "__floatuntikf");
+	  set_conv_libfunc (sfix_optab, TImode, mode, "__fixkfti_sw");
+	  set_conv_libfunc (ufix_optab, TImode, mode, "__fixunskfti_sw");
+	  set_conv_libfunc (sfloat_optab, mode, TImode, "__floattikf_sw");
+	  set_conv_libfunc (ufloat_optab, mode, TImode, "__floatuntikf_sw");
 	}
     }
 
@@ -20217,6 +20217,7 @@ rs6000_handle_altivec_attribute (tree *node,
     case 'b':
       switch (mode)
 	{
+	case E_TImode: case E_V1TImode: result = bool_V1TI_type_node; break;
 	case E_DImode: case E_V2DImode: result = bool_V2DI_type_node; break;
 	case E_SImode: case E_V4SImode: result = bool_V4SI_type_node; break;
 	case E_HImode: case E_V8HImode: result = bool_V8HI_type_node; break;

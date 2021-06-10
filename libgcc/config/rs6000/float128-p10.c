@@ -1,11 +1,12 @@
-/* Software floating-point emulation, convert a 128bit signed integer to IEEE
-   quad.
+/* Automatic switching between software and hardware IEEE 128-bit
+   ISA 3.1 floating-point emulation for PowerPC.
 
-   Copyright (C) 2016-2021 Free Software Foundation, Inc.
+   Copyright (C) 2016-2020 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
-   Contributed by Steven Munroe (munroesj@linux.vnet.ibm.com)
+   Contributed by Carl Love (cel@us.ibm.com)
    Code is based on the main soft-fp library written by:
-   	   Uros Bizjak (ubizjak@gmail.com).
+	Richard Henderson (rth@cygnus.com) and
+	Jakub Jelinek (jj@ultra.linux.cz).
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -30,22 +31,41 @@
    License along with the GNU C Library; if not, see
    <http://www.gnu.org/licenses/>.  */
 
-#ifdef _ARCH_PPC64
-#include "soft-fp.h"
-#include "quad-float128.h"
+/* Note, the hardware conversion instructions for 128-bit integers are
+   supported for ISA 3.1 and later.  Only compile this file with -mcpu=power10
+   or newer support.  */
+
+#include <soft-fp.h>
+#include <quad-float128.h>
+
+#ifndef __FLOAT128_HARDWARE__
+#error "This module must be compiled with IEEE 128-bit hardware support"
+#endif
+
+#ifndef _ARCH_PWR10
+#error "This module must be compiled for Power 10 support"
+#endif
 
 TFtype
-__floattikf (TItype i)
+__floattikf_hw (TItype_ppc a)
 {
-  FP_DECL_EX;
-  FP_DECL_Q (A);
-  TFtype a;
-
-  FP_INIT_ROUNDMODE;
-  FP_FROM_INT_Q (A, i, TI_BITS, UTItype);
-  FP_PACK_RAW_Q (a, A);
-  FP_HANDLE_EXCEPTIONS;
-
-  return a;
+  return (TFtype) a;
 }
-#endif
+
+TFtype
+__floatuntikf_hw (UTItype_ppc a)
+{
+  return (TFtype) a;
+}
+
+TItype_ppc
+__fixkfti_hw (TFtype a)
+{
+  return (TItype_ppc) a;
+}
+
+UTItype_ppc
+__fixunskfti_hw (TFtype a)
+{
+  return (UTItype_ppc) a;
+}

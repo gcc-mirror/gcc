@@ -30,17 +30,20 @@ template<typename S>
   void
   test (S va, S vb)
   {
-    S aa{ va };
-    S bb{ vb };
-    std::atomic_ref<S> a{ aa };
-    a.wait(bb);
-    std::thread t([&]
-      {
-	a.store(bb);
-	a.notify_one();
-      });
-    a.wait(aa);
-    t.join();
+    if constexpr (std::atomic_ref<S>::is_always_lock_free)
+    {
+      S aa{ va };
+      S bb{ vb };
+      std::atomic_ref<S> a{ aa };
+      a.wait(bb);
+      std::thread t([&]
+        {
+	  a.store(bb);
+	  a.notify_one();
+        });
+      a.wait(aa);
+      t.join();
+    }
   }
 
 int

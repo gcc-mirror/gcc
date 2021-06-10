@@ -1,3 +1,13 @@
+2021-06-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_init): Don't add -march=i486
+	if atomic compare-and-swap is supported on 'int'.
+
+2021-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100981
+	* testsuite/libgomp.fortran/pr100981-2.f90: New testcase.
+
 2021-06-08  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* plugin/plugin-gcn.c (gcn_exec): Force 'num_workers (1)'

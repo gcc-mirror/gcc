@@ -1,11 +1,11 @@
-/* Software floating-point emulation, convert IEEE quad to 128bit unsigned
-   integer.
+/* Software floating-point emulation, convert a 128bit unsigned integer to IEEE
+   quad.
 
    Copyright (C) 2016-2021 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Steven Munroe (munroesj@linux.vnet.ibm.com)
    Code is based on the main soft-fp library written by:
-   	   Uros Bizjak (ubizjak@gmail.com).
+	   Uros Bizjak (ubizjak@gmail.com).
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -34,18 +34,18 @@
 #include "soft-fp.h"
 #include "quad-float128.h"
 
-UTItype
-__fixunskfti (TFtype a)
+TFtype
+__floatuntikf_sw (UTItype i)
 {
   FP_DECL_EX;
   FP_DECL_Q (A);
-  UTItype r;
+  TFtype a;
 
-  FP_INIT_EXCEPTIONS;
-  FP_UNPACK_RAW_Q (A, a);
-  FP_TO_INT_Q (r, A, TI_BITS, 0);
+  FP_INIT_ROUNDMODE;
+  FP_FROM_INT_Q (A, i, TI_BITS, UTItype);
+  FP_PACK_RAW_Q (a, A);
   FP_HANDLE_EXCEPTIONS;
 
-  return r;
+  return a;
 }
 #endif

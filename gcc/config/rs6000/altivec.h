@@ -497,6 +497,8 @@
 
 #define vec_xlx __builtin_vec_vextulx
 #define vec_xrx __builtin_vec_vexturx
+#define vec_signexti  __builtin_vec_vsignexti
+#define vec_signextll __builtin_vec_vsignextll
 
 #endif
 
@@ -715,6 +717,10 @@ __altivec_scalar_pred(vec_any_nle,
 #define vec_step(x) __builtin_vec_step (* (__typeof__ (x) *) 0)
 
 #ifdef _ARCH_PWR10
+#define vec_signextq  __builtin_vec_vsignextq
+#define vec_dive __builtin_vec_dive
+#define vec_mod  __builtin_vec_mod
+
 /* May modify these macro definitions if future capabilities overload
    with support for different vector argument and result types.  */
 #define vec_cntlzm(a, b)	__builtin_altivec_vclzdm (a, b)

@@ -1,0 +1,24 @@
+# Support for adding __float128 hardware support to the powerpc.
+# Tell the float128 functions that the ISA 3.1 hardware support can
+# be compiled it to be selected via IFUNC functions.
+
+FLOAT128_HW_INSNS	= -DFLOAT128_HW_INSNS
+
+# New functions for hardware support
+
+fp128_3_1_hw_funcs	= float128-p10
+fp128_3_1_hw_src	= $(srcdir)/config/rs6000/float128-p10.c
+fp128_3_1_hw_static_obj	= $(addsuffix $(objext),$(fp128_3_1_hw_funcs))
+fp128_3_1_hw_shared_obj	= $(addsuffix _s$(objext),$(fp128_3_1_hw_funcs))
+fp128_3_1_hw_obj	= $(fp128_3_1_hw_static_obj) $(fp128_3_1_hw_shared_obj)
+
+# Build the hardware support functions with appropriate hardware support
+FP128_3_1_CFLAGS_HW	 = -Wno-type-limits -mvsx -mfloat128 \
+			   -mpower10 \
+			   -mfloat128-hardware -mno-gnu-attribute \
+			   -I$(srcdir)/soft-fp \
+			   -I$(srcdir)/config/rs6000 \
+			   $(FLOAT128_HW_INSNS)
+
+$(fp128_3_1_hw_obj)		 : INTERNAL_CFLAGS += $(FP128_3_1_CFLAGS_HW)
+$(fp128_3_1_hw_obj)		 : $(srcdir)/config/rs6000/t-float128-p10-hw

@@ -16611,6 +16611,11 @@ Moreover, code compiled with @option{-ftrampolines} and code compiled with
 present.  This option must therefore be used on a program-wide basis and be
 manipulated with extreme care.
 
+For languages other than Ada, the @code{-ftrampolines} and
+@code{-fno-trampolines} options currently have no effect, and
+trampolines are always generated on platforms that need them
+for nested functions.
+
 @item -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]}
 @opindex fvisibility
 Set the default ELF image symbol visibility to the specified option---all
@@ -31813,8 +31818,8 @@ startup object and entry point.
 This option is available for Cygwin and MinGW targets.  It
 specifies that the @code{dllimport} attribute should be ignored.
 
-@item -mthread
-@opindex mthread
+@item -mthreads
+@opindex mthreads
 This option is available for MinGW targets. It specifies
 that MinGW-specific thread support is to be used.
 

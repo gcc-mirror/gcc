@@ -544,6 +544,8 @@ complex_pattern::build (vec_info *vinfo)
     {
       /* Calculate the location of the statement in NODE to replace.  */
       stmt_info = SLP_TREE_REPRESENTATIVE (node);
+      stmt_vec_info reduc_def
+	= STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info));
       gimple* old_stmt = STMT_VINFO_STMT (stmt_info);
       tree lhs_old_stmt = gimple_get_lhs (old_stmt);
       tree type = TREE_TYPE (lhs_old_stmt);
@@ -568,9 +570,10 @@ complex_pattern::build (vec_info *vinfo)
 	= vinfo->add_pattern_stmt (call_stmt, stmt_info);
 
       /* Make sure to mark the representative statement pure_slp and
-	 relevant. */
+	 relevant and transfer reduction info. */
       STMT_VINFO_RELEVANT (call_stmt_info) = vect_used_in_scope;
       STMT_SLP_TYPE (call_stmt_info) = pure_slp;
+      STMT_VINFO_REDUC_DEF (call_stmt_info) = reduc_def;
 
       gimple_set_bb (call_stmt, gimple_bb (stmt_info->stmt));
       STMT_VINFO_VECTYPE (call_stmt_info) = SLP_TREE_VECTYPE (node);
