@@ -16807,9 +16807,11 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	    gcc_assert (VSX_REGNO_P (REGNO (dst)));
 
 	  reg_mode = GET_MODE (XVECEXP (src, 0, 0));
-	  for (int i = 0; i < XVECLEN (src, 0); i++)
+	  int nvecs = XVECLEN (src, 0);
+	  for (int i = 0; i < nvecs; i++)
 	    {
-	      rtx dst_i = gen_rtx_REG (reg_mode, reg + i);
+	      int index = WORDS_BIG_ENDIAN ? i : nvecs - 1 - i;
+	      rtx dst_i = gen_rtx_REG (reg_mode, reg + index);
 	      emit_insn (gen_rtx_SET (dst_i, XVECEXP (src, 0, i)));
 	    }
 
