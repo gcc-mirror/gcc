@@ -1,3 +1,11 @@
+2021-06-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR c/100920
+	* c-typeck.c (convert_for_assignment): Test fndecl_built_in_p to
+	spot built-in functions. Do not warn on pointer assignment and
+	initialization for storage order purposes if the RHS is a call
+	to a DECL_IS_MALLOC function.
+
 2021-05-13  Martin Sebor  <msebor@redhat.com>
 
 	PR c/100550

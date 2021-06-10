@@ -1,3 +1,21 @@
+2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100964
+	* dmd/expression.c (Expression::checkPostblit): Don't generate
+	TypeInfo when RTTI is disabled.
+
+2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100935
+	* dmd/mtype.c (Type::getProperty): Prefer explicit alignment over
+	natural alignment for alignof property.
+
 2021-06-04  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

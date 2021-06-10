@@ -1,3 +1,11 @@
+2021-06-09  Thomas Rodgers  <rodgert@appliantology.com>
+
+	Backported from master:
+	2021-06-09  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Guard
+	test logic with constexpr check for is_always_lock_free.
+
 2021-06-08  Thomas Rodgers  <rodgert@appliantology.com>
 
 	Backported from master:
