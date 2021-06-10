@@ -13,6 +13,14 @@ foo (__vector_quad *dst, vec_t *src)
 }
 
 void
+foo2 (__vector_quad *dst, vec_t *src)
+{
+  __vector_quad acc;
+  __builtin_mma_build_acc (&acc, src[12], src[8], src[4], src[0]);
+  *dst = acc;
+}
+
+void
 bar (vec_t *dst, __vector_quad *src)
 {
   vec_t res[4];
@@ -23,9 +31,17 @@ bar (vec_t *dst, __vector_quad *src)
   dst[12] = res[3];
 }
 
-/* { dg-final { scan-assembler-times {\mlxv\M} 4 } } */
+#if !__has_builtin (__builtin_mma_assemble_acc)
+#  error "__has_builtin (__builtin_mma_assemble_acc) failed"
+#endif
+
+#if !__has_builtin (__builtin_mma_build_acc)
+#  error "__has_builtin (__builtin_mma_build_acc) failed"
+#endif
+
+/* { dg-final { scan-assembler-times {\mlxv\M} 8 } } */
 /* { dg-final { scan-assembler-times {\mlxvp\M} 2 } } */
 /* { dg-final { scan-assembler-times {\mstxv\M} 4 } } */
-/* { dg-final { scan-assembler-times {\mstxvp\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mxxmfacc\M} 2 } } */
-/* { dg-final { scan-assembler-times {\mxxmtacc\M} 2 } } */
+/* { dg-final { scan-assembler-times {\mstxvp\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mxxmfacc\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mxxmtacc\M} 3 } } */
