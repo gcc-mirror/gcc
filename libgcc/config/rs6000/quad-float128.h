@@ -88,12 +88,16 @@ extern USItype_ppc __fixunskfsi_sw (TFtype);
 extern UDItype_ppc __fixunskfdi_sw (TFtype);
 extern TFtype __floatsikf_sw (SItype_ppc);
 extern TFtype __floatdikf_sw (DItype_ppc);
+#ifdef _ARCH_PPC64
 extern TFtype __floattikf_sw (TItype_ppc);
+#endif
 extern TFtype __floatunsikf_sw (USItype_ppc);
 extern TFtype __floatundikf_sw (UDItype_ppc);
+#ifdef _ARCH_PPC64
 extern TFtype __floatuntikf_sw (UTItype_ppc);
 extern TItype_ppc __fixkfti_sw (TFtype);
 extern UTItype_ppc __fixunskfti_sw (TFtype);
+#endif
 extern IBM128_TYPE __extendkftf2_sw (TFtype);
 extern TFtype __trunctfkf2_sw (IBM128_TYPE);
 extern TCtype __mulkc3_sw (TFtype, TFtype, TFtype, TFtype);
@@ -130,12 +134,16 @@ extern USItype_ppc __fixunskfsi_hw (TFtype);
 extern UDItype_ppc __fixunskfdi_hw (TFtype);
 extern TFtype __floatsikf_hw (SItype_ppc);
 extern TFtype __floatdikf_hw (DItype_ppc);
+#ifdef _ARCH_PPC64
 extern TFtype __floattikf_hw (TItype_ppc);
+#endif
 extern TFtype __floatunsikf_hw (USItype_ppc);
 extern TFtype __floatundikf_hw (UDItype_ppc);
+#ifdef _ARCH_PPC64
 extern TFtype __floatuntikf_hw (UTItype_ppc);
 extern TItype_ppc __fixkfti_hw (TFtype);
 extern UTItype_ppc __fixunskfti_hw (TFtype);
+#endif
 extern IBM128_TYPE __extendkftf2_hw (TFtype);
 extern TFtype __trunctfkf2_hw (IBM128_TYPE);
 extern TCtype __mulkc3_hw (TFtype, TFtype, TFtype, TFtype);
@@ -166,12 +174,16 @@ extern USItype_ppc __fixunskfsi (TFtype);
 extern UDItype_ppc __fixunskfdi (TFtype);
 extern TFtype __floatsikf (SItype_ppc);
 extern TFtype __floatdikf (DItype_ppc);
+#ifdef _ARCH_PPC64
 extern TFtype __floattikf (TItype_ppc);
+#endif
 extern TFtype __floatunsikf (USItype_ppc);
 extern TFtype __floatundikf (UDItype_ppc);
+#ifdef _ARCH_PPC64
 extern TFtype __floatuntikf (UTItype_ppc);
 extern TItype_ppc __fixkfti (TFtype);
 extern UTItype_ppc __fixunskfti (TFtype);
+#endif
 extern IBM128_TYPE __extendkftf2 (TFtype);
 extern TFtype __trunctfkf2 (IBM128_TYPE);
 
