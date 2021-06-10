@@ -363,9 +363,8 @@ is
       Going   : Direction := Forward;
       Mapping : Maps.Character_Mapping := Maps.Identity) return Natural
    with
-     Pre    => (if Length (Source) /= 0
-                then From <= Length (Source))
-                       and then Pattern'Length /= 0,
+     Pre    => (if Length (Source) /= 0 then From <= Length (Source))
+               and then Pattern'Length /= 0,
      Global => null;
    pragma Ada_05 (Index);
 
@@ -376,11 +375,9 @@ is
       Going   : Direction := Forward;
       Mapping : Maps.Character_Mapping_Function) return Natural
    with
-     Pre    => (if Length (Source) /= 0
-                then From <= Length (Source))
-                       and then Pattern'Length /= 0,
+     Pre    => (if Length (Source) /= 0 then From <= Length (Source))
+               and then Pattern'Length /= 0,
      Global => null;
-
    pragma Ada_05 (Index);
 
    function Index

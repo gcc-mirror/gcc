@@ -81,7 +81,7 @@ is
    --------------------------------------------------------
 
    function To_Unbounded_String
-     (Source : String) return Unbounded_String
+     (Source : String)  return Unbounded_String
    with
      Post   => Length (To_Unbounded_String'Result) = Source'Length,
      Global => null;
@@ -91,8 +91,7 @@ is
      (Length : Natural) return Unbounded_String
    with
      Post   =>
-       Ada.Strings.Unbounded.Length (To_Unbounded_String'Result)
-     = Length,
+       Ada.Strings.Unbounded.Length (To_Unbounded_String'Result) = Length,
      Global => null;
    --  Returns an Unbounded_String that represents an uninitialized String
    --  whose length is Length.
@@ -524,11 +523,11 @@ is
    with
      Pre            =>
        Low - 1 <= Length (Source)
-       and then (if High >= Low
-                 then Low - 1
-                   <= Natural'Last - By'Length
-                    - Natural'Max (Length (Source) - High, 0)
-                 else Length (Source) <= Natural'Last - By'Length),
+         and then (if High >= Low
+                   then Low - 1
+                     <= Natural'Last - By'Length
+                      - Natural'Max (Length (Source) - High, 0)
+                   else Length (Source) <= Natural'Last - By'Length),
      Contract_Cases =>
        (High >= Low =>
           Length (Replace_Slice'Result)
@@ -545,11 +544,11 @@ is
    with
      Pre            =>
        Low - 1 <= Length (Source)
-       and then (if High >= Low
-                 then Low - 1
-                   <= Natural'Last - By'Length
-                    - Natural'Max (Length (Source) - High, 0)
-                 else Length (Source) <= Natural'Last - By'Length),
+         and then (if High >= Low
+                   then Low - 1
+                     <= Natural'Last - By'Length
+                      - Natural'Max (Length (Source) - High, 0)
+                   else Length (Source) <= Natural'Last - By'Length),
      Contract_Cases =>
        (High >= Low =>
           Length (Source)
@@ -586,7 +585,7 @@ is
      Pre    => Position - 1 <= Length (Source)
                  and then (if New_Item'Length /= 0
                            then
-                           New_Item'Length <= Natural'Last - (Position - 1)),
+                             New_Item'Length <= Natural'Last - (Position - 1)),
      Post   =>
        Length (Overwrite'Result)
      = Natural'Max (Length (Source), Position - 1 + New_Item'Length),
@@ -600,7 +599,7 @@ is
      Pre    => Position - 1 <= Length (Source)
                  and then (if New_Item'Length /= 0
                            then
-                           New_Item'Length <= Natural'Last - (Position - 1)),
+                             New_Item'Length <= Natural'Last - (Position - 1)),
      Post   =>
        Length (Source)
      = Natural'Max (Length (Source)'Old, Position - 1 + New_Item'Length),
