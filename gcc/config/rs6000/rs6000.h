@@ -2460,6 +2460,7 @@ enum rs6000_builtin_type_index
   RS6000_BTI_const_str,		 /* pointer to const char * */
   RS6000_BTI_vector_pair,	 /* unsigned 256-bit types (vector pair).  */
   RS6000_BTI_vector_quad,	 /* unsigned 512-bit types (vector quad).  */
+  RS6000_BTI_const_ptr_void,     /* const pointer to void */
   RS6000_BTI_MAX
 };
 
@@ -2515,6 +2516,7 @@ enum rs6000_builtin_type_index
 #define const_str_type_node		 (rs6000_builtin_types[RS6000_BTI_const_str])
 #define vector_pair_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_pair])
 #define vector_quad_type_node		 (rs6000_builtin_types[RS6000_BTI_vector_quad])
+#define pcvoid_type_node		 (rs6000_builtin_types[RS6000_BTI_const_ptr_void])
 
 extern GTY(()) tree rs6000_builtin_types[RS6000_BTI_MAX];
 extern GTY(()) tree rs6000_builtin_decls[RS6000_BUILTIN_COUNT];
