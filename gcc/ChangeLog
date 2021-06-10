@@ -1,3 +1,302 @@
+2021-06-09  Andrew Pinski  <apinski@marvell.com>
+
+	PR tree-optimization/100925
+	* match.pd (a ? CST1 : CST2): Limit transformations
+	that would produce a negative to integeral types only.
+	Change !POINTER_TYPE_P to INTEGRAL_TYPE_P also.
+
+2021-06-09  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Revert:
+	2021-06-09  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* doc/tm.texi: Correctly update.
+
+2021-06-09  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* doc/tm.texi: Correctly update.
+
+2021-06-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR other/100735
+	* doc/tm.texi.in (Trampolines): Add a missing blank line.
+
+2021-06-09  Paul Eggert  <eggert@cs.ucla.edu>
+
+	PR other/100735
+	* doc/invoke.texi (Code Gen Options); Document that -fno-trampolines
+	and -ftrampolines work only with Ada.
+	* doc/tm.texi.in (Trampolines): Likewise.
+	* doc/tm.texi: Regenerated.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_signextll, vec_signexti, vec_signextq):
+	Add define for new builtins.
+	* config/rs6000/altivec.md(altivec_vreveti2): Add define_expand.
+	* config/rs6000/rs6000-builtin.def (VSIGNEXTI, VSIGNEXTLL):  Add
+	overloaded builtin definitions.
+	(VSIGNEXTSB2W, VSIGNEXTSH2W, VSIGNEXTSB2D, VSIGNEXTSH2D,VSIGNEXTSW2D,
+	VSIGNEXTSD2Q):	Add builtin expansions.
+	(SIGNEXT): Add P10 overload definition.
+	* config/rs6000/rs6000-call.c (P9V_BUILTIN_VEC_VSIGNEXTI, P9V_BUILTIN_VEC_VSIGNEXTLL,
+	P10_BUILTIN_VEC_SIGNEXT): Add overloaded argument definitions.
+	* config/rs6000/vsx.md (vsx_sign_extend_v2di_v1ti): Add define_insn.
+	(vsignextend_v2di_v1ti, vsignextend_qi_<mode>, vsignextend_hi_<mode>,
+	vsignextend_si_v2di)[VIlong]: Add define_expand.
+	Make define_insn vsx_sign_extend_si_v2di visible.
+	* doc/extend.texi:  Add documentation for the vec_signexti,
+	vec_signextll builtins and vec_signextq.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000.c (__fixkfti, __fixunskfti, __floattikf,
+	__floatuntikf): Names changed to __fixkfti_sw, __fixunskfti_sw,
+	__floattikf_sw, __floatuntikf_sw respectively.
+	* config/rs6000/rs6000.md (floatti<mode>2, floatunsti<mode>2,
+	fix_trunc<mode>ti2, fixuns_trunc<mode>ti2): Add
+	define_insn for mode IEEE 128.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vslq, altivec_vsrq):
+	Rename to altivec_vslq_<mode>, altivec_vsrq_<mode>, mode VEC_TI.
+	* config/rs6000/vector.md (VEC_TI): Was named VSX_TI in vsx.md.
+	(vashlv1ti3): Change to vashl<mode>3, mode VEC_TI.
+	(vlshrv1ti3): Change to vlshr<mode>3, mode VEC_TI.
+	* config/rs6000/vsx.md (VSX_TI): Remove define_mode_iterator. Update
+	uses of VSX_TI to VEC_TI.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/dfp.md (floattitd2, fixtdti2): New define_insns.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.h (vec_dive, vec_mod): Add define for new
+	builtins.
+	* config/rs6000/altivec.md (UNSPEC_VMULEUD, UNSPEC_VMULESD,
+	UNSPEC_VMULOUD, UNSPEC_VMULOSD): New unspecs.
+	(altivec_eqv1ti, altivec_gtv1ti, altivec_gtuv1ti, altivec_vmuleud,
+	altivec_vmuloud, altivec_vmulesd, altivec_vmulosd, altivec_vrlq,
+	altivec_vrlqmi, altivec_vrlqmi_inst, altivec_vrlqnm,
+	altivec_vrlqnm_inst, altivec_vslq, altivec_vsrq, altivec_vsraq,
+	altivec_vcmpequt_p, altivec_vcmpgtst_p, altivec_vcmpgtut_p): New
+	define_insn.
+	(vec_widen_umult_even_v2di, vec_widen_smult_even_v2di,
+	vec_widen_umult_odd_v2di, vec_widen_smult_odd_v2di, altivec_vrlqmi,
+	altivec_vrlqnm): New define_expands.
+	* config/rs6000/rs6000-builtin.def (VCMPEQUT_P, VCMPGTST_P,
+	VCMPGTUT_P): Add macro expansions.
+	(BU_P10V_AV_P): Add builtin predicate definition.
+	(VCMPGTUT, VCMPGTST, VCMPEQUT, CMPNET, CMPGE_1TI,
+	CMPGE_U1TI, CMPLE_1TI, CMPLE_U1TI, VNOR_V1TI_UNS, VNOR_V1TI, VCMPNET_P,
+	VCMPAET_P, VMULEUD, VMULESD, VMULOUD, VMULOSD, VRLQ,
+	VSLQ, VSRQ, VSRAQ, VRLQNM, DIV_V1TI, UDIV_V1TI, DIVES_V1TI, DIVEU_V1TI,
+	MODS_V1TI, MODU_V1TI, VRLQMI): New macro expansions.
+	(VRLQ, VSLQ, VSRQ, VSRAQ, DIVE, MOD): New overload expansions.
+	* config/rs6000/rs6000-call.c (P10_BUILTIN_VCMPEQUT,
+	P10V_BUILTIN_CMPGE_1TI, P10V_BUILTIN_CMPGE_U1TI,
+	P10V_BUILTIN_VCMPGTUT, P10V_BUILTIN_VCMPGTST,
+	P10V_BUILTIN_CMPLE_1TI, P10V_BUILTIN_VCMPLE_U1TI,
+	P10V_BUILTIN_DIV_V1TI, P10V_BUILTIN_UDIV_V1TI,
+	P10V_BUILTIN_VMULESD, P10V_BUILTIN_VMULEUD,
+	P10V_BUILTIN_VMULOSD, P10V_BUILTIN_VMULOUD,
+	P10V_BUILTIN_VNOR_V1TI, P10V_BUILTIN_VNOR_V1TI_UNS,
+	P10V_BUILTIN_VRLQ, P10V_BUILTIN_VRLQMI,
+	P10V_BUILTIN_VRLQNM, P10V_BUILTIN_VSLQ,
+	P10V_BUILTIN_VSRQ, P10V_BUILTIN_VSRAQ,
+	P10V_BUILTIN_VCMPGTUT_P, P10V_BUILTIN_VCMPGTST_P,
+	P10V_BUILTIN_VCMPEQUT_P, P10V_BUILTIN_VCMPGTUT_P,
+	P10V_BUILTIN_VCMPGTST_P, P10V_BUILTIN_CMPNET,
+	P10V_BUILTIN_VCMPNET_P, P10V_BUILTIN_VCMPAET_P,
+	P10V_BUILTIN_DIVES_V1TI, P10V_BUILTIN_MODS_V1TI,
+	P10V_BUILTIN_MODU_V1TI):
+	New overloaded definitions.
+	(rs6000_gimple_fold_builtin) [P10V_BUILTIN_VCMPEQUT,
+	P10V_BUILTIN_CMPNET, P10V_BUILTIN_CMPGE_1TI,
+	P10V_BUILTIN_CMPGE_U1TI, P10V_BUILTIN_VCMPGTUT,
+	P10V_BUILTIN_VCMPGTST, P10V_BUILTIN_CMPLE_1TI,
+	P10V_BUILTIN_CMPLE_U1TI]: New case statements.
+	(rs6000_init_builtins) [bool_V1TI_type_node, int_ftype_int_v1ti_v1ti]:
+	New assignments.
+	(altivec_init_builtins): New E_V1TImode case statement.
+	(builtin_function_type)[P10_BUILTIN_128BIT_VMULEUD,
+	P10_BUILTIN_128BIT_VMULOUD, P10_BUILTIN_128BIT_DIVEU_V1TI,
+	P10_BUILTIN_128BIT_MODU_V1TI, P10_BUILTIN_CMPGE_U1TI,
+	P10_BUILTIN_VCMPGTUT, P10_BUILTIN_VCMPEQUT]: New case statements.
+	* config/rs6000/rs6000.c (rs6000_handle_altivec_attribute) [E_TImode,
+	E_V1TImode]: New case statements.
+	* config/rs6000/rs6000.h (rs6000_builtin_type_index): New enum
+	value RS6000_BTI_bool_V1TI.
+	* config/rs6000/vector.md (vector_gtv1ti,vector_nltv1ti,
+	vector_gtuv1ti, vector_nltuv1ti, vector_ngtv1ti, vector_ngtuv1ti,
+	vector_eq_v1ti_p, vector_ne_v1ti_p, vector_ae_v1ti_p,
+	vector_gt_v1ti_p, vector_gtu_v1ti_p, vrotlv1ti3, vashlv1ti3,
+	vlshrv1ti3, vashrv1ti3): New define_expands.
+	* config/rs6000/vsx.md (UNSPEC_VSX_DIVSQ, UNSPEC_VSX_DIVUQ,
+	UNSPEC_VSX_DIVESQ, UNSPEC_VSX_DIVEUQ, UNSPEC_VSX_MODSQ,
+	UNSPEC_VSX_MODUQ): New unspecs.
+	(mulv2di3, vsx_div_v1ti, vsx_udiv_v1ti, vsx_dives_v1ti,
+	vsx_diveu_v1ti,	vsx_mods_v1ti, vsx_modu_v1ti, xxswapd_v1ti): New
+	define_insns.
+	(vcmpnet): New define_expand.
+	* doc/extend.texi: Add documentation for the new builtins vec_rl,
+	vec_rlmi, vec_rlnm, vec_sl, vec_sr, vec_sra, vec_mule, vec_mulo,
+	vec_div, vec_dive, vec_mod, vec_cmpeq, vec_cmpne, vec_cmpgt, vec_cmplt,
+	vec_cmpge, vec_cmple, vec_all_eq, vec_all_ne, vec_all_gt, vec_all_lt,
+	vec_all_ge, vec_all_le, vec_any_eq, vec_any_ne, vec_any_gt, vec_any_lt,
+	vec_any_ge, vec_any_le.
+
+2021-06-09  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.md (altivec_vrl<VI_char>mi): Fix
+	bug in argument generation.
+
+2021-06-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/iterators.md (<supf>): Remove VCLZQ_U, VCLZQ_S.
+	(VCLZQ): Remove.
+	* config/arm/mve.md (mve_vclzq_<supf><mode>): Add '@' prefix,
+	remove <supf> iterator.
+	(mve_vclzq_u<mode>): New.
+	* config/arm/neon.md (clz<mode>2): Rename to neon_vclz<mode>.
+	(neon_vclz<mode): Move to ...
+	* config/arm/unspecs.md (VCLZQ_U, VCLZQ_S): Remove.
+	* config/arm/vec-common.md: ... here. Add support for MVE.
+
+2021-06-09  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/mve.md (mve_vhaddq_<supf><mode>): Prefix with '@'.
+	(@mve_vrhaddq_<supf><mode): Likewise.
+	* config/arm/neon.md (neon_v<r>hadd<sup><mode>): Likewise.
+	* config/arm/vec-common.md (avg<mode>3_floor, uavg<mode>3_floor)
+	(avg<mode>3_ceil", uavg<mode>3_ceil): New patterns.
+
+2021-06-09  imba-tjd  <109224573@qq.com>
+
+	* doc/invoke.texi: Fix typo.
+
+2021-06-09  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/53267
+	* fold-const-call.c (fold_const_call_sss) [CASE_CFN_FMOD]:
+	Support evaluation of fmod/fmodf/fmodl at compile-time.
+
+2021-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100981
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Use
+	gimple_get_lhs to also handle calls.
+	* tree-vect-slp-patterns.c (complex_pattern::build): Transfer
+	reduction info.
+
+2021-06-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/97832
+	* tree-vectorizer.h (_slp_tree::failed): New.
+	* tree-vect-slp.c (_slp_tree::_slp_tree): Initialize
+	failed member.
+	(_slp_tree::~_slp_tree): Free failed.
+	(vect_build_slp_tree): Retain failed nodes and record
+	matches in them, copying that back out when running
+	into a cached fail.  Dump start and end of discovery.
+	(dt_sort_cmp): New.
+	(vect_build_slp_tree_2): Handle associatable chains
+	together doing more aggressive operand swapping.
+
+2021-06-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/100896
+	* config.gcc (gcc_cv_initfini_array): Set to yes for Linux and
+	GNU targets.
+	* doc/install.texi: Require glibc 2.1 and binutils 2.12 for
+	Linux and GNU targets.
+
+2021-06-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.c (vect_is_simple_use): Always get dt
+	from the stmt.
+
+2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (loop_end): Change it to
+	define_insn_and_split.
+
+2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (maddhisi4): Use VMAC2H instruction.
+	(machi): New pattern.
+	(umaddhisi4): Use VMAC2HU instruction.
+	(umachi): New pattern.
+
+2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (arc_split_move_p): New prototype.
+	* config/arc/arc.c (arc_split_move_p): New function.
+	(arc_split_move): Clean up.
+	* config/arc/arc.md (movdi_insn): Clean up, use arc_split_move_p.
+	(movdf_insn): Likewise.
+	* config/arc/simdext.md (mov<VWH>_insn): Likewise.
+
+2021-06-09  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/100936
+	* config/i386/i386.c (print_operand_address_as): Rename "no_rip"
+	argument to "raw".  Do not emit segment overrides when "raw" is true.
+
+2021-06-09  Martin Liska  <mliska@suse.cz>
+
+	* doc/gcov.texi: Create a proper JSON files.
+	* doc/invoke.texi: Remove dots in order to make it a valid
+	JSON object.
+
+2021-06-09  Xionghu Luo  <luoxhu@linux.ibm.com>
+
+	* config/rs6000/rs6000-p8swap.c (pattern_is_rotate64): New.
+	(insn_is_load_p): Use pattern_is_rotate64.
+	(insn_is_swap_p): Likewise.
+	(quad_aligned_load_p): Likewise.
+	(const_load_sequence_p): Likewise.
+	(replace_swapped_aligned_load): Likewise.
+	(recombine_lvx_pattern): Likewise.
+	(recombine_stvx_pattern): Likewise.
+
+2021-06-09  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-gori.cc (gori_compute::outgoing_edge_range_p): Use a
+	fur_stmt source record.
+	* gimple-range.cc (fur_source::get_operand): Generic range query.
+	(fur_source::get_phi_operand): New.
+	(fur_source::register_dependency): New.
+	(fur_source::query): New.
+	(class fur_edge): New.  Edge source for operands.
+	(fur_edge::fur_edge): New.
+	(fur_edge::get_operand): New.
+	(fur_edge::get_phi_operand): New.
+	(fur_edge::query): New.
+	(fur_stmt::fur_stmt): New.
+	(fur_stmt::get_operand): New.
+	(fur_stmt::get_phi_operand): New.
+	(fur_stmt::query): New.
+	(class fur_depend): New.  Statement source and process dependencies.
+	(fur_depend::fur_depend): New.
+	(fur_depend::register_dependency): New.
+	(class fur_list): New.  List source for operands.
+	(fur_list::fur_list): New.
+	(fur_list::get_operand): New.
+	(fur_list::get_phi_operand): New.
+	(fold_range): New.  Instantiate appropriate fur_source class and fold.
+	(fold_using_range::range_of_range_op): Use new API.
+	(fold_using_range::range_of_address): Ditto.
+	(fold_using_range::range_of_phi): Ditto.
+	(imple_ranger::fold_range_internal): Use fur_depend class.
+	(fold_using_range::range_of_ssa_name_with_loop_info): Use new API.
+	* gimple-range.h (class fur_source): Now a base class.
+	(class fur_stmt): New.
+	(fold_range): New prototypes.
+	(fur_source::fur_source): Delete.
+
 2021-06-08  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/25290

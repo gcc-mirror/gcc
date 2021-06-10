@@ -1,3 +1,25 @@
+2021-06-09  Thomas Rodgers  <rodgert@appliantology.com>
+
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Guard
+	test logic with constexpr check for is_always_lock_free.
+
+2021-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100982
+	* include/std/optional (optional::operator=(const optional<U>&)):
+	Fix value category used in is_assignable check.
+	* testsuite/20_util/optional/assignment/100982.cc: New test.
+
+2021-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h (allocator::is_always_equal): Deprecate.
+	* include/bits/iterator_concepts.h (indirectly_readable_traits):
+	Add LWG issue number to comment.
+	* include/std/memory_resource (polymorphic_allocator::release):
+	Deprecate.
+	* testsuite/20_util/allocator/requirements/typedefs.cc: Add
+	dg-warning for deprecation. Also check std::allocator<void>.
+
 2021-06-08  Thomas Rodgers  <rodgert@appliantology.com>
 
 	PR libstdc++/100889
