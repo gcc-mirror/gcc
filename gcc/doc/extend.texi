@@ -20953,10 +20953,10 @@ void __builtin_mma_xxmtacc (__vector_quad *);
 void __builtin_mma_xxmfacc (__vector_quad *);
 void __builtin_mma_xxsetaccz (__vector_quad *);
 
-void __builtin_mma_assemble_acc (__vector_quad *, vec_t, vec_t, vec_t, vec_t);
+void __builtin_mma_build_acc (__vector_quad *, vec_t, vec_t, vec_t, vec_t);
 void __builtin_mma_disassemble_acc (void *, __vector_quad *);
 
-void __builtin_vsx_assemble_pair (__vector_pair *, vec_t, vec_t);
+void __builtin_vsx_build_pair (__vector_pair *, vec_t, vec_t);
 void __builtin_vsx_disassemble_pair (void *, __vector_pair *);
 
 vec_t __builtin_vsx_xvcvspbf16 (vec_t);
