@@ -1806,6 +1806,11 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		  stmt_vec_info def_stmt_info;
 		  bool res = vect_is_simple_use (op, vinfo, &dt, &def_stmt_info);
 		  gcc_assert (res);
+		  if (dt == vect_internal_def)
+		    {
+		      def_stmt_info = vect_stmt_to_vectorize (def_stmt_info);
+		      op = gimple_get_lhs (def_stmt_info->stmt);
+		    }
 		  gimple *use_stmt;
 		  use_operand_p use_p;
 		  if (dt == vect_internal_def
