@@ -1806,11 +1806,19 @@ public:
         Expression *e;
         if (ea && ta->toBasetype()->ty == Tclass)
         {
-            /* Get the dynamic type, which is .classinfo
-            */
-            ea = semantic(ea, sc);
-            e = new TypeidExp(ea->loc, ea);
-            e->type = Type::typeinfoclass->type;
+            if (!Type::typeinfoclass)
+            {
+                error(exp->loc, "`object.TypeInfo_Class` could not be found, but is implicitly used");
+                e = new ErrorExp();
+            }
+            else
+            {
+                /* Get the dynamic type, which is .classinfo
+                */
+                ea = semantic(ea, sc);
+                e = new TypeidExp(ea->loc, ea);
+                e->type = Type::typeinfoclass->type;
+            }
         }
         else if (ta->ty == Terror)
         {
