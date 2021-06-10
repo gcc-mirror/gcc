@@ -1287,6 +1287,9 @@ func mPark() {
 	g := getg()
 	for {
 		notesleep(&g.m.park)
+		// Note, because of signal handling by this parked m,
+		// a preemptive mDoFixup() may actually occur via
+		// mDoFixupAndOSYield(). (See golang.org/issue/44193)
 		noteclear(&g.m.park)
 		if !mDoFixup() {
 			return
@@ -1949,9 +1952,21 @@ var mFixupRace struct {
 // mDoFixup runs any outstanding fixup function for the running m.
 // Returns true if a fixup was outstanding and actually executed.
 //
+// Note: to avoid deadlocks, and the need for the fixup function
+// itself to be async safe, signals are blocked for the working m
+// while it holds the mFixup lock. (See golang.org/issue/44193)
+//
 //go:nosplit
 func mDoFixup() bool {
 	_g_ := getg()
+	if used := atomic.Load(&_g_.m.mFixup.used); used == 0 {
+		return false
+	}
+
+	// slow path - if fixup fn is used, block signals and lock.
+	var sigmask sigset
+	sigsave(&sigmask)
+	sigblock(false)
 	lock(&_g_.m.mFixup.lock)
 	fn := _g_.m.mFixup.fn
 	if fn != nil {
@@ -1972,7 +1987,18 @@ func mDoFixup() bool {
 		fn(false)
 	}
 	unlock(&_g_.m.mFixup.lock)
+	msigrestore(sigmask)
 	return fn != nil
+}
+
+// mDoFixupAndOSYield is called when an m is unable to send a signal
+// because the allThreadsSyscall mechanism is in progress. That is, an
+// mPark() has been interrupted with this signal handler so we need to
+// ensure the fixup is executed from this context.
+//go:nosplit
+func mDoFixupAndOSYield() {
+	mDoFixup()
+	osyield()
 }
 
 // templateThread is a thread in a known-good state that exists solely
