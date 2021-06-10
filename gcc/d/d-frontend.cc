@@ -614,39 +614,8 @@ eval_builtin (Loc loc, FuncDeclaration *fd, Expressions *arguments)
 Type *
 getTypeInfoType (Loc loc, Type *type, Scope *sc)
 {
-  if (!global.params.useTypeInfo)
-    {
-      /* Even when compiling without RTTI we should still be able to evaluate
-	 TypeInfo at compile-time, just not at run-time.  */
-      if (!sc || !(sc->flags & SCOPEctfe))
-	{
-	  static int warned = 0;
-
-	  if (!warned)
-	    {
-	      error_at (make_location_t (loc),
-			"%<object.TypeInfo%> cannot be used with %<-fno-rtti%>");
-	      warned = 1;
-	    }
-	}
-    }
-
-  if (Type::dtypeinfo == NULL
-      || (Type::dtypeinfo->storage_class & STCtemp))
-    {
-      /* If TypeInfo has not been declared, warn about each location once.  */
-      static Loc warnloc;
-
-      if (!loc.equals (warnloc))
-	{
-	  error_at (make_location_t (loc),
-		    "%<object.TypeInfo%> could not be found, "
-		    "but is implicitly used");
-	  warnloc = loc;
-	}
-    }
-
   gcc_assert (type->ty != Terror);
+  check_typeinfo_type (loc, sc);
   create_typeinfo (type, sc ? sc->_module->importedFrom : NULL);
   return type->vtinfo->type;
 }

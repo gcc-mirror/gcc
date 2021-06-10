@@ -655,6 +655,7 @@ extern tree layout_typeinfo (TypeInfoDeclaration *);
 extern tree layout_classinfo (ClassDeclaration *);
 extern tree get_typeinfo_decl (TypeInfoDeclaration *);
 extern tree get_classinfo_decl (ClassDeclaration *);
+extern void check_typeinfo_type (const Loc &, Scope *);
 extern tree build_typeinfo (const Loc &, Type *);
 extern void create_typeinfo (Type *, Module *);
 extern void create_tinfo_types (Module *);

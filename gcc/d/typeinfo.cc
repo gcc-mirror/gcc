@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dmd/identifier.h"
 #include "dmd/module.h"
 #include "dmd/mtype.h"
+#include "dmd/scope.h"
 #include "dmd/template.h"
 #include "dmd/target.h"
 
@@ -244,8 +245,8 @@ create_tinfo_types (Module *mod)
 static void
 create_frontend_tinfo_types (void)
 {
-  /* If there's no Object class defined, then neither can TypeInfo be.  */
-  if (object_module == NULL || ClassDeclaration::object == NULL)
+  /* If there's no object module, then neither can there be TypeInfo.  */
+  if (object_module == NULL)
     return;
 
   /* Create all frontend TypeInfo classes declarations.  We rely on all
@@ -1370,16 +1371,19 @@ get_classinfo_decl (ClassDeclaration *decl)
   return decl->csym;
 }
 
-/* Returns typeinfo reference for TYPE.  */
+/* Performs sanity checks on the `object.TypeInfo' type, raising an error if
+   RTTI is disabled, or the type is missing.  */
 
-tree
-build_typeinfo (const Loc &loc, Type *type)
+void
+check_typeinfo_type (const Loc &loc, Scope *sc)
 {
   if (!global.params.useTypeInfo)
     {
       static int warned = 0;
 
-      if (!warned)
+      /* Even when compiling without RTTI we should still be able to evaluate
+	 TypeInfo at compile-time, just not at run-time.  */
+      if (!warned && (!sc || !(sc->flags & SCOPEctfe)))
 	{
 	  error_at (make_location_t (loc),
 		    "%<object.TypeInfo%> cannot be used with %<-fno-rtti%>");
@@ -1387,7 +1391,29 @@ build_typeinfo (const Loc &loc, Type *type)
 	}
     }
 
+  if (Type::dtypeinfo == NULL
+      || (Type::dtypeinfo->storage_class & STCtemp))
+    {
+      /* If TypeInfo has not been declared, warn about each location once.  */
+      static Loc warnloc;
+
+      if (!warnloc.equals (loc))
+	{
+	  error_at (make_location_t (loc),
+		    "%<object.TypeInfo%> could not be found, "
+		    "but is implicitly used");
+	  warnloc = loc;
+	}
+    }
+}
+
+/* Returns typeinfo reference for TYPE.  */
+
+tree
+build_typeinfo (const Loc &loc, Type *type)
+{
   gcc_assert (type->ty != Terror);
+  check_typeinfo_type (loc, NULL);
   create_typeinfo (type, NULL);
   return build_address (get_typeinfo_decl (type->vtinfo));
 }
