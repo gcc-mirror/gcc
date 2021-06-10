@@ -11442,6 +11442,46 @@ If a component of @code{T} is itself of a record or array type, the specfied
 attribute definition clause must be provided for the component type as well
 if desired.
 
+Representation changes that explicitly or implicitly toggle the scalar storage
+order are not supported and may result in erroneous execution of the program,
+except when performed by means of an instance of @code{Ada.Unchecked_Conversion}.
+
+In particular, overlays are not supported and a warning is given for them:
+
+@example
+type Rec_LE is record
+   I : Integer;
+end record;
+
+for Rec_LE use record
+   I at 0 range 0 .. 31;
+end record;
+
+for Rec_LE'Bit_Order use System.Low_Order_First;
+for Rec_LE'Scalar_Storage_Order use System.Low_Order_First;
+
+type Rec_BE is record
+   I : Integer;
+end record;
+
+for Rec_BE use record
+   I at 0 range 0 .. 31;
+end record;
+
+for Rec_BE'Bit_Order use System.High_Order_First;
+for Rec_BE'Scalar_Storage_Order use System.High_Order_First;
+
+R_LE : Rec_LE;
+
+R_BE : Rec_BE;
+for R_BE'Address use R_LE'Address;
+@end example
+
+@code{warning: overlay changes scalar storage order [enabled by default]}
+
+In most cases, such representation changes ought to be replaced by an
+instantiation of a function or procedure provided by @code{GNAT.Byte_Swapping}.
+
 Note that the scalar storage order only affects the in-memory data
 representation. It has no effect on the representation used by stream
 attributes.
