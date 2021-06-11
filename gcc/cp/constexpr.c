@@ -5121,6 +5121,16 @@ var_in_constexpr_fn (tree t)
 	  && DECL_DECLARED_CONSTEXPR_P (ctx));
 }
 
+/* True if a function might be constexpr: either a function that was
+   declared constexpr, or a C++17 lambda op().  */
+
+bool
+maybe_constexpr_fn (tree t)
+{
+  return (DECL_DECLARED_CONSTEXPR_P (t)
+	  || (cxx_dialect >= cxx17 && LAMBDA_FUNCTION_P (t)));
+}
+
 /* True if T was declared in a function that might be constexpr: either a
    function that was declared constexpr, or a C++17 lambda op().  */
 

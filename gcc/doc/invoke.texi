@@ -5757,6 +5757,17 @@ poorly optimized code and is useful only in the
 case of very minor changes such as bug fixes to an existing code-base.
 Completely disabling the warning is not recommended.
 
+@item -Wno-coverage-invalid-line-number
+@opindex Wno-coverage-invalid-line-number
+@opindex Wcoverage-invalid-line-number
+Warn in case a function ends earlier than it begins due
+to an invalid linenum macros.  The warning is emitted only
+with @option{--coverage} enabled.
+ By default, this warning is enabled and is treated as an
+error.  @option{-Wno-coverage-invalid-line-number} can be used to disable the
+warning or @option{-Wno-error=coverage-invalid-line-number} can be used to
+disable the error.
+
 @item -Wno-cpp
 @r{(C, Objective-C, C++, Objective-C++ and Fortran only)}
 @opindex Wno-cpp

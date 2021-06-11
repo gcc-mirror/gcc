@@ -826,6 +826,10 @@ Wcoverage-mismatch
 Common Var(warn_coverage_mismatch) Init(1) Warning
 Warn in case profiles in -fprofile-use do not match.
 
+Wcoverage-invalid-line-number
+Common Var(warn_coverage_invalid_linenum) Init(1) Warning
+Warn in case a function ends earlier than it begins due to an invalid linenum macros.
+
 Wmissing-profile
 Common Var(warn_missing_profile) Init(1) Warning
 Warn in case profiles in -fprofile-use do not exist.

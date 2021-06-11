@@ -927,6 +927,71 @@ is_std_constant_evaluated_p (tree fn)
   return name && id_equal (name, "is_constant_evaluated");
 }
 
+/* Callback function for maybe_warn_for_constant_evaluated that looks
+   for calls to std::is_constant_evaluated in TP.  */
+
+static tree
+find_std_constant_evaluated_r (tree *tp, int *walk_subtrees, void *)
+{
+  tree t = *tp;
+
+  if (TYPE_P (t) || TREE_CONSTANT (t))
+    {
+      *walk_subtrees = false;
+      return NULL_TREE;
+    }
+
+  switch (TREE_CODE (t))
+    {
+    case CALL_EXPR:
+      if (is_std_constant_evaluated_p (t))
+	return t;
+      break;
+    case EXPR_STMT:
+      /* Don't warn in statement expressions.  */
+      *walk_subtrees = false;
+      return NULL_TREE;
+    default:
+      break;
+    }
+
+  return NULL_TREE;
+}
+
+/* In certain contexts, std::is_constant_evaluated() is always true (for
+   instance, in a consteval function or in a constexpr if), or always false
+   (e.g., in a non-constexpr non-consteval function) so give the user a clue.  */
+
+static void
+maybe_warn_for_constant_evaluated (tree cond, bool constexpr_if)
+{
+  if (!warn_tautological_compare)
+    return;
+
+  /* Suppress warning for std::is_constant_evaluated if the conditional
+     comes from a macro.  */
+  if (from_macro_expansion_at (EXPR_LOCATION (cond)))
+    return;
+
+  cond = cp_walk_tree_without_duplicates (&cond, find_std_constant_evaluated_r,
+					  NULL);
+  if (cond)
+    {
+      if (constexpr_if)
+	warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
+		    "%<std::is_constant_evaluated%> always evaluates to "
+		    "true in %<if constexpr%>");
+      else if (!maybe_constexpr_fn (current_function_decl))
+	warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
+		    "%<std::is_constant_evaluated%> always evaluates to "
+		    "false in a non-%<constexpr%> function");
+      else if (DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
+	warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
+		    "%<std::is_constant_evaluated%> always evaluates to "
+		    "true in a %<consteval%> function");
+    }
+}
+
 /* Process the COND of an if-statement, which may be given by
    IF_STMT.  */
 
@@ -942,23 +1007,12 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
 	 converted to bool.  */
       && TYPE_MAIN_VARIANT (TREE_TYPE (cond)) == boolean_type_node)
     {
-      /* if constexpr (std::is_constant_evaluated()) is always true,
-	 so give the user a clue.  */
-      if (warn_tautological_compare)
-	{
-	  tree t = cond;
-	  if (TREE_CODE (t) == CLEANUP_POINT_EXPR)
-	    t = TREE_OPERAND (t, 0);
-	  if (TREE_CODE (t) == CALL_EXPR
-	      && is_std_constant_evaluated_p (t))
-	    warning_at (EXPR_LOCATION (cond), OPT_Wtautological_compare,
-			"%qs always evaluates to true in %<if constexpr%>",
-			"std::is_constant_evaluated");
-	}
-
+      maybe_warn_for_constant_evaluated (cond, /*constexpr_if=*/true);
       cond = instantiate_non_dependent_expr (cond);
       cond = cxx_constant_value (cond, NULL_TREE);
     }
+  else
+    maybe_warn_for_constant_evaluated (cond, /*constexpr_if=*/false);
   finish_cond (&IF_COND (if_stmt), cond);
   add_stmt (if_stmt);
   THEN_CLAUSE (if_stmt) = push_stmt_list ();

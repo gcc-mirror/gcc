@@ -36,9 +36,9 @@ along with GCC; see the file COPYING3.  If not see
 // value_query default methods.
 
 tree
-value_query::value_on_edge (edge, tree name)
+value_query::value_on_edge (edge, tree expr)
 {
-  return value_of_expr (name);
+  return value_of_expr (expr);
 }
 
 tree
@@ -57,9 +57,9 @@ value_query::value_of_stmt (gimple *stmt, tree name)
 // range_query default methods.
 
 bool
-range_query::range_on_edge (irange &r, edge, tree name)
+range_query::range_on_edge (irange &r, edge, tree expr)
 {
-  return range_of_expr (r, name);
+  return range_of_expr (r, expr);
 }
 
 bool
@@ -76,20 +76,20 @@ range_query::range_of_stmt (irange &r, gimple *stmt, tree name)
 }
 
 tree
-range_query::value_of_expr (tree name, gimple *stmt)
+range_query::value_of_expr (tree expr, gimple *stmt)
 {
   tree t;
   int_range_max r;
 
-  if (!irange::supports_type_p (TREE_TYPE (name)))
+  if (!irange::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
 
-  if (range_of_expr (r, name, stmt))
+  if (range_of_expr (r, expr, stmt))
     {
       // A constant used in an unreachable block oftens returns as UNDEFINED.
       // If the result is undefined, check the global value for a constant.
       if (r.undefined_p ())
-	range_of_expr (r, name);
+	range_of_expr (r, expr);
       if (r.singleton_p (&t))
 	return t;
     }
@@ -97,19 +97,19 @@ range_query::value_of_expr (tree name, gimple *stmt)
 }
 
 tree
-range_query::value_on_edge (edge e, tree name)
+range_query::value_on_edge (edge e, tree expr)
 {
   tree t;
   int_range_max r;
 
-  if (!irange::supports_type_p (TREE_TYPE (name)))
+  if (!irange::supports_type_p (TREE_TYPE (expr)))
     return NULL_TREE;
-  if (range_on_edge (r, e, name))
+  if (range_on_edge (r, e, expr))
     {
       // A constant used in an unreachable block oftens returns as UNDEFINED.
       // If the result is undefined, check the global value for a constant.
       if (r.undefined_p ())
-	range_of_expr (r, name);
+	range_of_expr (r, expr);
       if (r.singleton_p (&t))
 	return t;
     }

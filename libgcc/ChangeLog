@@ -1,3 +1,8 @@
+2021-06-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/quad-float128.h: Guard all uses of [U]TItype_ppc by
+	_ARCH_PPC64 .
+
 2021-06-09  Carl Love  <cel@us.ibm.com>
 
 	* config.host: Add if test and set for

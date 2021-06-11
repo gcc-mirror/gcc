@@ -715,7 +715,7 @@
   DONE;
 })
 
-(define_expand "vcond_mask_<mode><mode>"
+(define_expand "vcond_mask_<mode><tointvec>"
   [(set (match_operand:V 0 "register_operand" "")
 	(if_then_else:V
 	 (eq (match_operand:<TOINTVEC> 3 "register_operand" "")

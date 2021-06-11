@@ -1,3 +1,8 @@
+2021-06-11  Martin Liska  <mliska@suse.cz>
+
+	* gcc-changelog/git_update_version.py: Ignore commit that
+	violates rules and was somehow pushed.
+
 2021-05-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* update-copyright.py: Add c++tools.

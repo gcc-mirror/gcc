@@ -1806,6 +1806,11 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		  stmt_vec_info def_stmt_info;
 		  bool res = vect_is_simple_use (op, vinfo, &dt, &def_stmt_info);
 		  gcc_assert (res);
+		  if (dt == vect_internal_def)
+		    {
+		      def_stmt_info = vect_stmt_to_vectorize (def_stmt_info);
+		      op = gimple_get_lhs (def_stmt_info->stmt);
+		    }
 		  gimple *use_stmt;
 		  use_operand_p use_p;
 		  if (dt == vect_internal_def
@@ -1860,7 +1865,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  /* Now we have a set of chains with the same length.  */
 	  /* 1. pre-sort according to def_type and operation.  */
 	  for (unsigned lane = 0; lane < group_size; ++lane)
-	    chains[lane].sort (dt_sort_cmp, vinfo);
+	    chains[lane].stablesort (dt_sort_cmp, vinfo);
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,

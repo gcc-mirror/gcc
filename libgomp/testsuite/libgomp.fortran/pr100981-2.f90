@@ -9,6 +9,8 @@ complex function cdcdot(n, cx)
   double precision :: dsdotr, dsdoti, dt1, dt3
 
   kx = 1
+  dsdotr = 0
+  dsdoti = 0
   do i = 1, n
      dt1 = real(cx(kx))
      dt3 = aimag(cx(kx))
