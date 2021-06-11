@@ -17354,6 +17354,59 @@ expand_vec_perm_vpermil (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* For V*[QHS]Imode permutations, check if the same permutation
+   can't be performed in a 2x, 4x or 8x wider inner mode.  */
+
+static bool
+canonicalize_vector_int_perm (const struct expand_vec_perm_d *d,
+			      struct expand_vec_perm_d *nd)
+{
+  int i;
+  machine_mode mode = VOIDmode;
+
+  switch (d->vmode)
+    {
+    case E_V8QImode: mode = V4HImode; break;
+    case E_V16QImode: mode = V8HImode; break;
+    case E_V32QImode: mode = V16HImode; break;
+    case E_V64QImode: mode = V32HImode; break;
+    case E_V4HImode: mode = V2SImode; break;
+    case E_V8HImode: mode = V4SImode; break;
+    case E_V16HImode: mode = V8SImode; break;
+    case E_V32HImode: mode = V16SImode; break;
+    case E_V4SImode: mode = V2DImode; break;
+    case E_V8SImode: mode = V4DImode; break;
+    case E_V16SImode: mode = V8DImode; break;
+    default: return false;
+    }
+  for (i = 0; i < d->nelt; i += 2)
+    if ((d->perm[i] & 1) || d->perm[i + 1] != d->perm[i] + 1)
+      return false;
+  nd->vmode = mode;
+  nd->nelt = d->nelt / 2;
+  for (i = 0; i < nd->nelt; i++)
+    nd->perm[i] = d->perm[2 * i] / 2;
+  if (GET_MODE_INNER (mode) != DImode)
+    canonicalize_vector_int_perm (nd, nd);
+  if (nd != d)
+    {
+      nd->one_operand_p = d->one_operand_p;
+      nd->testing_p = d->testing_p;
+      if (d->op0 == d->op1)
+	nd->op0 = nd->op1 = gen_lowpart (nd->vmode, d->op0);
+      else
+	{
+	  nd->op0 = gen_lowpart (nd->vmode, d->op0);
+	  nd->op1 = gen_lowpart (nd->vmode, d->op1);
+	}
+      if (d->testing_p)
+	nd->target = gen_raw_REG (nd->vmode, LAST_VIRTUAL_REGISTER + 1);
+      else
+	nd->target = gen_reg_rtx (nd->vmode);
+    }
+  return true;
+}
+
 /* Return true if permutation D can be performed as VMODE permutation
    instead.  */
 
@@ -17391,6 +17444,7 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
   unsigned i, nelt, eltsz, mask;
   unsigned char perm[64];
   machine_mode vmode = V16QImode;
+  struct expand_vec_perm_d nd;
   rtx rperm[64], vperm, target, op0, op1;
 
   nelt = d->nelt;
@@ -17539,6 +17593,10 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	return false;
     }
 
+  /* Try to avoid variable permutation instruction.  */
+  if (canonicalize_vector_int_perm (d, &nd) && expand_vec_perm_1 (&nd))
+    return false;
+
   if (d->testing_p)
     return true;
 
@@ -17614,57 +17672,6 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
   if (target != d->target)
     emit_move_insn (d->target, gen_lowpart (d->vmode, target));
 
-  return true;
-}
-
-/* For V*[QHS]Imode permutations, check if the same permutation
-   can't be performed in a 2x, 4x or 8x wider inner mode.  */
-
-static bool
-canonicalize_vector_int_perm (const struct expand_vec_perm_d *d,
-			      struct expand_vec_perm_d *nd)
-{
-  int i;
-  machine_mode mode = VOIDmode;
-
-  switch (d->vmode)
-    {
-    case E_V16QImode: mode = V8HImode; break;
-    case E_V32QImode: mode = V16HImode; break;
-    case E_V64QImode: mode = V32HImode; break;
-    case E_V8HImode: mode = V4SImode; break;
-    case E_V16HImode: mode = V8SImode; break;
-    case E_V32HImode: mode = V16SImode; break;
-    case E_V4SImode: mode = V2DImode; break;
-    case E_V8SImode: mode = V4DImode; break;
-    case E_V16SImode: mode = V8DImode; break;
-    default: return false;
-    }
-  for (i = 0; i < d->nelt; i += 2)
-    if ((d->perm[i] & 1) || d->perm[i + 1] != d->perm[i] + 1)
-      return false;
-  nd->vmode = mode;
-  nd->nelt = d->nelt / 2;
-  for (i = 0; i < nd->nelt; i++)
-    nd->perm[i] = d->perm[2 * i] / 2;
-  if (GET_MODE_INNER (mode) != DImode)
-    canonicalize_vector_int_perm (nd, nd);
-  if (nd != d)
-    {
-      nd->one_operand_p = d->one_operand_p;
-      nd->testing_p = d->testing_p;
-      if (d->op0 == d->op1)
-	nd->op0 = nd->op1 = gen_lowpart (nd->vmode, d->op0);
-      else
-	{
-	  nd->op0 = gen_lowpart (nd->vmode, d->op0);
-	  nd->op1 = gen_lowpart (nd->vmode, d->op1);
-	}
-      if (d->testing_p)
-	nd->target = gen_raw_REG (nd->vmode, LAST_VIRTUAL_REGISTER + 1);
-      else
-	nd->target = gen_reg_rtx (nd->vmode);
-    }
   return true;
 }
 
