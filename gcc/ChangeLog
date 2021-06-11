@@ -1,3 +1,10 @@
+2021-06-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/100984
+	* gimple-ssa-evrp.c  (ssa_equiv_stack): Use auto_vec for
+	replacements table.
+	(ssa_equiv_stack::~ssa_equiv_stack): Remove.
+
 2021-06-11  Kewen Lin  <linkw@linux.ibm.com>
 
 	* config/rs6000/rs6000.md
