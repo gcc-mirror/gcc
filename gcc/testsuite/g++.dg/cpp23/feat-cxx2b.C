@@ -545,3 +545,9 @@
 #elif __cpp_size_t_suffix != 202011
 #  error "__cpp_size_t_suffix != 202011"
 #endif
+
+#ifndef __cpp_if_consteval
+#  error "__cpp_if_consteval"
+#elif __cpp_if_consteval != 202106
+#  error "__cpp_if_consteval != 202106"
+#endif

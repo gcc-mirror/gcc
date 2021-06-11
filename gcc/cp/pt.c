@@ -18413,6 +18413,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
     case IF_STMT:
       stmt = begin_if_stmt ();
       IF_STMT_CONSTEXPR_P (stmt) = IF_STMT_CONSTEXPR_P (t);
+      IF_STMT_CONSTEVAL_P (stmt) = IF_STMT_CONSTEVAL_P (t);
       if (IF_STMT_CONSTEXPR_P (t))
 	args = add_extra_args (IF_STMT_EXTRA_ARGS (t), args);
       tmp = RECUR (IF_COND (t));
@@ -18433,6 +18434,13 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	}
       if (IF_STMT_CONSTEXPR_P (t) && integer_zerop (tmp))
 	/* Don't instantiate the THEN_CLAUSE. */;
+      else if (IF_STMT_CONSTEVAL_P (t))
+	{
+	  bool save_in_consteval_if_p = in_consteval_if_p;
+	  in_consteval_if_p = true;
+	  RECUR (THEN_CLAUSE (t));
+	  in_consteval_if_p = save_in_consteval_if_p;
+	}
       else
 	{
 	  tree folded = fold_non_dependent_expr (tmp, complain);
@@ -19385,6 +19393,9 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       local_specialization_stack s (lss_copy);
 
+      bool save_in_consteval_if_p = in_consteval_if_p;
+      in_consteval_if_p = false;
+
       tree body = start_lambda_function (fn, r);
 
       /* Now record them for lookup_init_capture_pack.  */
@@ -19424,6 +19435,8 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       tsubst_expr (saved, args, complain, r, /*constexpr*/false);
 
       finish_lambda_function (body);
+
+      in_consteval_if_p = save_in_consteval_if_p;
 
       if (nested)
 	pop_function_context ();

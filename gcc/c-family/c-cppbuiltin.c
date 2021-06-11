@@ -1029,6 +1029,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	{
 	  /* Set feature test macros for C++23.  */
 	  cpp_define (pfile, "__cpp_size_t_suffix=202011L");
+	  cpp_define (pfile, "__cpp_if_consteval=202106L");
 	}
       if (flag_concepts)
         {

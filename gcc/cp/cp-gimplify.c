@@ -161,7 +161,13 @@ genericize_if_stmt (tree *stmt_p)
   if (!else_)
     else_ = build_empty_stmt (locus);
 
-  if (integer_nonzerop (cond) && !TREE_SIDE_EFFECTS (else_))
+  /* consteval if has been verified not to have the then_/else_ blocks
+     entered by gotos/case labels from elsewhere, and as then_ block
+     can contain unfolded immediate function calls, we have to discard
+     the then_ block regardless of whether else_ has side-effects or not.  */
+  if (IF_STMT_CONSTEVAL_P (stmt))
+    stmt = else_;
+  else if (integer_nonzerop (cond) && !TREE_SIDE_EFFECTS (else_))
     stmt = then_;
   else if (integer_zerop (cond) && !TREE_SIDE_EFFECTS (then_))
     stmt = else_;

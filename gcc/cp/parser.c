@@ -10902,6 +10902,11 @@ cp_parser_lambda_expression (cp_parser* parser)
     bool discarded = in_discarded_stmt;
     in_discarded_stmt = 0;
 
+    /* Similarly the body of a lambda in immediate function context is not
+       in immediate function context.  */
+    bool save_in_consteval_if_p = in_consteval_if_p;
+    in_consteval_if_p = false;
+
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
@@ -10932,6 +10937,7 @@ cp_parser_lambda_expression (cp_parser* parser)
 
     finish_struct (type, /*attributes=*/NULL_TREE);
 
+    in_consteval_if_p = save_in_consteval_if_p;
     in_discarded_stmt = discarded;
 
     parser->num_template_parameter_lists = saved_num_template_parameter_lists;
@@ -12323,6 +12329,102 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	      pedwarn (tok->location, OPT_Wc__17_extensions,
 		       "%<if constexpr%> only available with "
 		       "%<-std=c++17%> or %<-std=gnu++17%>");
+	  }
+	int ce = 0;
+	if (keyword == RID_IF && !cx)
+	  {
+	    if (cp_lexer_next_token_is_keyword (parser->lexer,
+						RID_CONSTEVAL))
+	      ce = 1;
+	    else if (cp_lexer_next_token_is (parser->lexer, CPP_NOT)
+		     && cp_lexer_nth_token_is_keyword (parser->lexer, 2,
+						       RID_CONSTEVAL))
+	      {
+		ce = -1;
+		cp_lexer_consume_token (parser->lexer);
+	      }
+	  }
+	if (ce)
+	  {
+	    cp_token *tok = cp_lexer_consume_token (parser->lexer);
+	    if (cxx_dialect < cxx23)
+	      pedwarn (tok->location, OPT_Wc__23_extensions,
+		       "%<if consteval%> only available with "
+		       "%<-std=c++2b%> or %<-std=gnu++2b%>");
+
+	    bool save_in_consteval_if_p = in_consteval_if_p;
+	    statement = begin_if_stmt ();
+	    IF_STMT_CONSTEVAL_P (statement) = true;
+	    condition = finish_if_stmt_cond (boolean_false_node, statement);
+
+	    gcc_rich_location richloc = tok->location;
+	    bool non_compound_stmt_p = false;
+	    if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
+	      {
+		non_compound_stmt_p = true;
+		richloc.add_fixit_insert_after (tok->location, "{");
+	      }
+
+	    in_consteval_if_p |= ce > 0;
+	    cp_parser_implicitly_scoped_statement (parser, NULL, guard_tinfo);
+
+	    if (non_compound_stmt_p)
+	      {
+		location_t before_loc
+		  = cp_lexer_peek_token (parser->lexer)->location;
+		richloc.add_fixit_insert_before (before_loc, "}");
+		error_at (&richloc,
+			  "%<if consteval%> requires compound statement");
+		non_compound_stmt_p = false;
+	      }
+
+	    finish_then_clause (statement);
+
+	    /* If the next token is `else', parse the else-clause.  */
+	    if (cp_lexer_next_token_is_keyword (parser->lexer,
+						RID_ELSE))
+	      {
+		cp_token *else_tok = cp_lexer_peek_token (parser->lexer);
+		gcc_rich_location else_richloc = else_tok->location;
+		guard_tinfo = get_token_indent_info (else_tok);
+		/* Consume the `else' keyword.  */
+		cp_lexer_consume_token (parser->lexer);
+
+		begin_else_clause (statement);
+
+		if (cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_BRACE))
+		  {
+		    non_compound_stmt_p = true;
+		    else_richloc.add_fixit_insert_after (else_tok->location,
+							 "{");
+		  }
+
+		in_consteval_if_p = save_in_consteval_if_p | (ce < 0);
+		cp_parser_implicitly_scoped_statement (parser, NULL,
+						       guard_tinfo);
+
+		if (non_compound_stmt_p)
+		  {
+		    location_t before_loc
+		      = cp_lexer_peek_token (parser->lexer)->location;
+		    else_richloc.add_fixit_insert_before (before_loc, "}");
+		    error_at (&else_richloc,
+			      "%<if consteval%> requires compound statement");
+		  }
+
+		finish_else_clause (statement);
+	      }
+
+	    in_consteval_if_p = save_in_consteval_if_p;
+	    if (ce < 0)
+	      {
+		std::swap (THEN_CLAUSE (statement), ELSE_CLAUSE (statement));
+		if (THEN_CLAUSE (statement) == NULL_TREE)
+		  THEN_CLAUSE (statement) = build_empty_stmt (tok->location);
+	      }
+
+	    finish_if_stmt (statement);
+	    return statement;
 	  }
 
 	/* Look for the `('.  */
