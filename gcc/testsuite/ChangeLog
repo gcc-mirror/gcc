@@ -1,3 +1,74 @@
+2021-06-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* gcc.target/powerpc/p9-fpcvt-3.c: New test.
+
+2021-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100995
+	* g++.dg/cpp2a/is-constant-evaluated9.C: Add dg-warning.
+	* g++.dg/cpp2a/is-constant-evaluated12.C: New test.
+
+2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67829
+	* g++.dg/template/ttp34.C: New test.
+	* g++.dg/template/ttp34a.C: New test.
+	* g++.dg/template/ttp34b.C: New test.
+
+2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100946
+	* g++.dg/cpp2a/concepts-return-req3.C: New test.
+
+2021-06-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-4.c (__builtin_vsx_build_pair): Add
+	tests.  Update expected counts.
+	* gcc.target/powerpc/mma-builtin-5.c (__builtin_mma_build_acc): Add
+	tests.  Update expected counts.
+
+2021-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100967
+	* gdc.dg/pr100967.d: New test.
+
+2021-06-10  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/vector/vcond-mixed-double.c: New test.
+	* gcc.target/s390/vector/vcond-mixed-float.c: New test.
+
+2021-06-10  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/vect/pr56541.c: Fix target selector.
+
+2021-06-10  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc-gomp/nesting-fail-1.c: Adjust patterns.
+	* c-c++-common/goacc/finalize-1.c: Likewise.
+	* c-c++-common/goacc/mdc-1.c: Likewise.
+	* c-c++-common/goacc/nesting-fail-1.c: Likewise.
+	* c-c++-common/goacc/struct-enter-exit-data-1.c: Likewise.
+	* gfortran.dg/goacc/attach-descriptor.f90: Likewise.
+	* gfortran.dg/goacc/finalize-1.f: Likewise.
+	* gfortran.dg/goacc/mapping-tests-3.f90: Likewise.
+
+2021-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/mdc-1.c: Fix '#pragma acc acc [...]' typo.
+	* c-c++-common/goacc/mdc-2.c: Likewise.
+	* g++.dg/goacc/mdc.C: Likewise.
+
+2021-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/feat-cxx2a.C: Uncomment __cpp_consteval test.
+	* g++.dg/cpp23/feat-cxx2b.C: Likewise.
+
+2021-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100852
+	* g++.dg/opt/pr100852.C: New test.
+
 2021-06-09  Andrew Pinski  <apinski@marvell.com>
 
 	* g++.dg/torture/pr100925.C: New test.

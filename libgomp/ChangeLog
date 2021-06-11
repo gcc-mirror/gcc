@@ -1,3 +1,36 @@
+2021-06-10  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* libgomp.map (GOACC_2.0.2): New symbol version.
+	* libgomp_g.h (GOACC_enter_data, GOACC_exit_data) New prototypes.
+	* oacc-mem.c (GOACC_enter_data, GOACC_exit_data) New functions.
+
+2021-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+	    Andrew Stubbs  <ams@codesourcery.com>
+
+	* oacc-mem.c (goacc_enter_exit_data_internal): New function,
+	extracted from...
+	(GOACC_enter_exit_data): ... here.
+	(GOACC_declare): Use it.
+
+2021-06-10  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_declare): Move...
+	* oacc-mem.c: ... here.
+	* libgomp_g.h: Adjust.
+
+2021-06-10  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* oacc-parallel.c (GOACC_declare): Clean up 'GOMP_MAP_POINTER'
+	handling.
+
+2021-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/100981
+	* testsuite/libgomp.fortran/pr100981-2.f90 (cdcdot): Initialize
+	dsdotr and dsdoti to 0.
+
 2021-06-09  H.J. Lu  <hjl.tools@gmail.com>
 
 	* testsuite/lib/libgomp.exp (libgomp_init): Don't add -march=i486
