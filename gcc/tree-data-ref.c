@@ -5112,6 +5112,8 @@ build_classic_dist_vector_1 (struct data_dependence_relation *ddr,
 	  non_affine_dependence_relation (ddr);
 	  return false;
 	}
+      else
+	*init_b = true;
     }
 
   return true;
@@ -5607,9 +5609,13 @@ compute_affine_dependence (struct data_dependence_relation *ddr,
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "(compute_affine_dependence\n");
-      fprintf (dump_file, "  stmt_a: ");
+      fprintf (dump_file, "  ref_a: ");
+      print_generic_expr (dump_file, DR_REF (dra));
+      fprintf (dump_file, ", stmt_a: ");
       print_gimple_stmt (dump_file, DR_STMT (dra), 0, TDF_SLIM);
-      fprintf (dump_file, "  stmt_b: ");
+      fprintf (dump_file, "  ref_b: ");
+      print_generic_expr (dump_file, DR_REF (drb));
+      fprintf (dump_file, ", stmt_b: ");
       print_gimple_stmt (dump_file, DR_STMT (drb), 0, TDF_SLIM);
     }
 
