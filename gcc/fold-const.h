@@ -196,7 +196,7 @@ extern bool tree_expr_signaling_nan_p (const_tree);
 extern bool tree_expr_maybe_signaling_nan_p (const_tree);
 extern bool tree_expr_nan_p (const_tree);
 extern bool tree_expr_maybe_nan_p (const_tree);
-extern bool tree_maybe_real_minus_zero_p (const_tree);
+extern bool tree_expr_maybe_real_minus_zero_p (const_tree);
 extern tree make_range (tree, int *, tree *, tree *, bool *);
 extern tree make_range_step (location_t, enum tree_code, tree, tree, tree,
 			     tree *, tree *, int *, bool *);
