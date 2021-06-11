@@ -22394,7 +22394,7 @@
 	    (match_operand:V 2 "const0_operand"))
 	  (match_parallel 3 "movq_parallel"
 	    [(match_operand 4 "const_int_operand")])))]
-  "ix86_pre_reload_split ()"
+  "TARGET_SSE2 && ix86_pre_reload_split ()"
   "#"
   "&& 1"
   [(set (match_dup 0)
