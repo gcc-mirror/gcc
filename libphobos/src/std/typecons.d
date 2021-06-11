@@ -5935,13 +5935,7 @@ mixin template Proxy(alias a)
             // built-in type field, manifest constant, and static non-mutable field
             enum opDispatch = mixin("a."~name);
         }
-        else static if (is(typeof(mixin("a."~name))) || __traits(getOverloads, a, name).length != 0)
-        {
-            // field or property function
-            @property auto ref opDispatch(this X)()                { return mixin("a."~name);        }
-            @property auto ref opDispatch(this X, V)(auto ref V v) { return mixin("a."~name~" = v"); }
-        }
-        else
+        else static if (__traits(isTemplate, mixin("a."~name)))
         {
             // member template
             template opDispatch(T...)
@@ -5950,6 +5944,13 @@ mixin template Proxy(alias a)
                 auto ref opDispatch(this X, Args...)(auto ref Args args){ return mixin("a."~name~targs~"(args)"); }
             }
         }
+        else
+        {
+            // field or property function
+            @property auto ref opDispatch(this X)()                { return mixin("a."~name);        }
+            @property auto ref opDispatch(this X, V)(auto ref V v) { return mixin("a."~name~" = v"); }
+        }
+
     }
 
     import std.traits : isArray;
