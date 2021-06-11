@@ -1703,12 +1703,15 @@
    (set_attr "type" "mov_reg")]
 )
 
+;; Both this and the next instruction are treated by GCC in the same
+;; way as a blockage pattern.  That's perhaps stronger than it needs
+;; to be, but we do not want accesses to the VFP register bank to be
+;; moved across either instruction.
+
 (define_insn "lazy_store_multiple_insn"
-  [(set (match_operand:SI 0 "s_register_operand" "+&rk")
-	(post_dec:SI (match_dup 0)))
-   (unspec_volatile [(const_int 0)
-		     (mem:SI (post_dec:SI (match_dup 0)))]
-		    VUNSPEC_VLSTM)]
+  [(unspec_volatile
+    [(mem:BLK (match_operand:SI 0 "s_register_operand" "rk"))]
+    VUNSPEC_VLSTM)]
   "use_cmse && reload_completed"
   "vlstm%?\\t%0"
   [(set_attr "predicable" "yes")
@@ -1716,11 +1719,9 @@
 )
 
 (define_insn "lazy_load_multiple_insn"
-  [(set (match_operand:SI 0 "s_register_operand" "+&rk")
-	(post_inc:SI (match_dup 0)))
-   (unspec_volatile:SI [(const_int 0)
-			(mem:SI (match_dup 0))]
-		       VUNSPEC_VLLDM)]
+  [(unspec_volatile
+    [(mem:BLK (match_operand:SI 0 "s_register_operand" "rk"))]
+    VUNSPEC_VLLDM)]
   "use_cmse && reload_completed"
   "vlldm%?\\t%0"
   [(set_attr "predicable" "yes")
