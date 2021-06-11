@@ -939,7 +939,7 @@ read_profile (void)
   unsigned version = gcov_read_unsigned ();
   if (version != AUTO_PROFILE_VERSION)
     {
-      error ("AutoFDO profile version %u does match %u",
+      error ("AutoFDO profile version %u does not match %u",
 	     version, AUTO_PROFILE_VERSION);
       return;
     }
