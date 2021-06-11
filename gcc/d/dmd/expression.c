@@ -1044,7 +1044,7 @@ bool Expression::checkPostblit(Scope *sc, Type *t)
     t = t->baseElemOf();
     if (t->ty == Tstruct)
     {
-        if (global.params.useTypeInfo)
+        if (global.params.useTypeInfo && Type::dtypeinfo)
         {
             // Bugzilla 11395: Require TypeInfo generation for array concatenation
             semanticTypeInfo(sc, t);
