@@ -35,7 +35,6 @@ class ConstFoldBase : public HIR::HIRVisitor
 public:
   virtual ~ConstFoldBase () {}
 
-  virtual void visit (HIR::Token &) override {}
   virtual void visit (HIR::IdentifierExpr &) override {}
   virtual void visit (HIR::Lifetime &) override {}
   virtual void visit (HIR::LifetimeParam &) override {}
@@ -153,12 +152,6 @@ public:
   virtual void visit (HIR::ExternalStaticItem &) override {}
   virtual void visit (HIR::ExternalFunctionItem &) override {}
   virtual void visit (HIR::ExternBlock &) override {}
-
-  virtual void visit (HIR::MacroMatchFragment &) override {}
-  virtual void visit (HIR::MacroMatchRepetition &) override {}
-  virtual void visit (HIR::MacroMatcher &) override {}
-  virtual void visit (HIR::MacroRulesDefinition &) override {}
-  virtual void visit (HIR::MacroInvocation &) override {}
 
   virtual void visit (HIR::LiteralPattern &) override {}
   virtual void visit (HIR::IdentifierPattern &) override {}

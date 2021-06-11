@@ -18,15 +18,10 @@
 
 #ifndef RUST_HIR_FULL_DECLS_H
 #define RUST_HIR_FULL_DECLS_H
-// Forward declarations for all HIR classes. Useful for not having to include
-// all definitions.
 
 namespace Rust {
 namespace HIR {
-// rust-ast.h
-class TokenTree;
-class MacroMatch;
-class Token;
+
 struct Literal;
 class Stmt;
 class Item;
@@ -40,7 +35,7 @@ class TypeParamBound;
 class Lifetime;
 class GenericParam;
 class LifetimeParam;
-class MacroItem;
+
 class TraitItem;
 class InherentImplItem;
 class TraitImplItem;
@@ -207,15 +202,6 @@ class ExternalStaticItem;
 struct NamedFunctionParam;
 class ExternalFunctionItem;
 class ExternBlock;
-
-// rust-macro.h
-class MacroMatchFragment;
-class MacroMatchRepetition;
-class MacroMatcher;
-struct MacroTranscriber;
-struct MacroRule;
-class MacroRulesDefinition;
-class MacroInvocation;
 
 // rust-pattern.h
 class LiteralPattern;
