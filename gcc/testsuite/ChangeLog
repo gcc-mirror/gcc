@@ -1,3 +1,24 @@
+2021-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100967
+	* gdc.dg/pr100967.d: New test.
+
+2021-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2019-06-16  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/90651
+	* gdc.test/fail_compilation/extra-files/minimal/object.d: New file.
+	* gdc.test/fail_compilation/fail19911a.d: New test.
+	* gdc.test/fail_compilation/fail19911b.d: New test.
+	* gdc.test/fail_compilation/fail19911c.d: New test.
+	* gdc.test/fail_compilation/fail19922.d: New test.
+	* gdc.test/fail_compilation/fail19923.d: New test.
+
 2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
