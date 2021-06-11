@@ -7127,11 +7127,13 @@ fold_binary_op_with_conditional_arg (location_t loc,
 }
 
 
-/* Subroutine of fold() that checks for the addition of +/- 0.0.
+/* Subroutine of fold() that checks for the addition of ARG +/- 0.0.
 
-   If !NEGATE, return true if ADDEND is +/-0.0 and, for all X of type
-   TYPE, X + ADDEND is the same as X.  If NEGATE, return true if X -
-   ADDEND is the same as X.
+   If !NEGATE, return true if ZERO_ARG is +/-0.0 and, for all ARG of
+   type TYPE, ARG + ZERO_ARG is the same as ARG.  If NEGATE, return true
+   if ARG - ZERO_ARG is the same as X.
+
+   If ARG is NULL, check for any value of type TYPE.
 
    X + 0 and X - 0 both give X when X is NaN, infinite, or nonzero
    and finite.  The problematic cases are when X is zero, and its mode
@@ -7140,13 +7142,14 @@ fold_binary_op_with_conditional_arg (location_t loc,
    modes, X + 0 is not the same as X because -0 + 0 is 0.  */
 
 bool
-fold_real_zero_addition_p (const_tree type, const_tree addend, int negate)
+fold_real_zero_addition_p (const_tree type, const_tree arg,
+                           const_tree zero_arg, int negate)
 {
-  if (!real_zerop (addend))
+  if (!real_zerop (zero_arg))
     return false;
 
   /* Don't allow the fold with -fsignaling-nans.  */
-  if (HONOR_SNANS (type))
+  if (arg ? tree_expr_maybe_signaling_nan_p (arg) : HONOR_SNANS (type))
     return false;
 
   /* Allow the fold if zeros aren't signed, or their sign isn't important.  */
@@ -7158,19 +7161,20 @@ fold_real_zero_addition_p (const_tree type, const_tree addend, int negate)
     return false;
 
   /* In a vector or complex, we would need to check the sign of all zeros.  */
-  if (TREE_CODE (addend) == VECTOR_CST)
-    addend = uniform_vector_p (addend);
-  if (!addend || TREE_CODE (addend) != REAL_CST)
+  if (TREE_CODE (zero_arg) == VECTOR_CST)
+    zero_arg = uniform_vector_p (zero_arg);
+  if (!zero_arg || TREE_CODE (zero_arg) != REAL_CST)
     return false;
 
   /* Treat x + -0 as x - 0 and x - -0 as x + 0.  */
-  if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (addend)))
+  if (REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (zero_arg)))
     negate = !negate;
 
   /* The mode has signed zeros, and we have to honor their sign.
-     In this situation, there is only one case we can return true for.
-     X - 0 is the same as X with default rounding.  */
-  return negate;
+     In this situation, there are only two cases we can return true for.
+     (i) X - 0 is the same as X with default rounding.
+     (ii) X + 0 is X when X can't possibly be -0.0.  */
+  return negate || (arg && !tree_expr_maybe_real_minus_zero_p (arg));
 }
 
 /* Subroutine of match.pd that optimizes comparisons of a division by
@@ -14373,6 +14377,44 @@ tree_expr_maybe_nan_p (const_tree x)
     default:
       return true;
     }
+}
+
+/* Return true if expression X could evaluate to -0.0.
+   This function returns true if uncertain.  */
+
+bool
+tree_expr_maybe_real_minus_zero_p (const_tree x)
+{
+  if (!HONOR_SIGNED_ZEROS (x))
+    return false;
+  switch (TREE_CODE (x))
+    {
+    case REAL_CST:
+      return REAL_VALUE_MINUS_ZERO (TREE_REAL_CST (x));
+    case INTEGER_CST:
+    case FLOAT_EXPR:
+    case ABS_EXPR:
+      return false;
+    case NON_LVALUE_EXPR:
+    case SAVE_EXPR:
+      return tree_expr_maybe_real_minus_zero_p (TREE_OPERAND (x, 0));
+    case COND_EXPR:
+      return tree_expr_maybe_real_minus_zero_p (TREE_OPERAND (x, 1))
+	     || tree_expr_maybe_real_minus_zero_p (TREE_OPERAND (x, 2));
+    case CALL_EXPR:
+      switch (get_call_combined_fn (x))
+	{
+	CASE_CFN_FABS:
+	  return false;
+	default:
+	  break;
+	}
+    default:
+      break;
+    }
+  /* Ideally !(tree_expr_nonzero_p (X) || tree_expr_nonnegative_p (X))
+   * but currently those predicates require tree and not const_tree.  */
+  return true;
 }
 
 #define tree_expr_nonnegative_warnv_p(X, Y) \
