@@ -4339,6 +4339,14 @@ build_vec_init (tree base, tree maxindex, tree init,
   else
     ptype = atype;
 
+  if (integer_all_onesp (maxindex))
+    {
+      /* Shortcut zero element case to avoid unneeded constructor synthesis.  */
+      if (init && TREE_SIDE_EFFECTS (init))
+	base = build2 (COMPOUND_EXPR, ptype, init, base);
+      return base;
+    }
+
   /* The code we are generating looks like:
      ({
        T* t1 = (T*) base;
