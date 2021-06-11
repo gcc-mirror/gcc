@@ -459,11 +459,6 @@ Expression *resolvePropertiesX(Scope *sc, Expression *e1, Expression *e2 = NULL)
             if (checkUnsafeAccess(sc, e1, true, true))
                 return new ErrorExp();
         }
-        else if (e1->op == TOKdot)
-        {
-            e1->error("expression has no value");
-            return new ErrorExp();
-        }
         else if (e1->op == TOKcall)
         {
             CallExp *ce = (CallExp *)e1;
@@ -2655,7 +2650,7 @@ bool Expression::checkPostblit(Scope *sc, Type *t)
     t = t->baseElemOf();
     if (t->ty == Tstruct)
     {
-        if (global.params.useTypeInfo)
+        if (global.params.useTypeInfo && Type::dtypeinfo)
         {
             // Bugzilla 11395: Require TypeInfo generation for array concatenation
             semanticTypeInfo(sc, t);

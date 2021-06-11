@@ -568,9 +568,6 @@ public:
             else
             {
                 e = resolveProperties(sc, e);
-                type = e->type;
-                if (paramtype)
-                    type = paramtype;
                 Initializer *ie = new ExpInitializer(Loc(), e);
                 VarDeclaration *v = new VarDeclaration(loc, type, ident, ie);
                 if (storageClass & STCref)
@@ -651,22 +648,23 @@ public:
                 }
             }
             p->type = p->type->semantic(loc, sc);
-            TY keyty = p->type->ty;
-            if (keyty != Tint32 && keyty != Tuns32)
+
+            if (!p->type->isintegral())
             {
-                if (global.params.isLP64)
-                {
-                    if (keyty != Tint64 && keyty != Tuns64)
-                    {
-                        fs->error("foreach: key type must be int or uint, long or ulong, not %s", p->type->toChars());
-                        return false;
-                    }
-                }
-                else
-                {
-                    fs->error("foreach: key type must be int or uint, not %s", p->type->toChars());
-                    return false;
-                }
+                fs->error("foreach: key cannot be of non-integral type `%s`",
+                          p->type->toChars());
+                return false;
+            }
+
+            unsigned length = te ? te->exps->dim : tuple->arguments->dim;
+            IntRange dimrange = IntRange(SignExtendedNumber(length)).cast(Type::tsize_t);
+            // https://issues.dlang.org/show_bug.cgi?id=12504
+            dimrange.imax = SignExtendedNumber(dimrange.imax.value-1);
+            if (!IntRange::fromType(p->type).contains(dimrange))
+            {
+                fs->error("index type `%s` cannot cover index range 0..%llu",
+			  p->type->toChars(), (ulonglong)length);
+                return false;
             }
             Initializer *ie = new ExpInitializer(Loc(), new IntegerExp(k));
             VarDeclaration *var = new VarDeclaration(loc, p->type, p->ident, ie);
@@ -1079,6 +1077,8 @@ public:
                             {
                                 TypeSArray *ta =  (TypeSArray *)tab;
                                 IntRange dimrange = getIntRange(ta->dim);
+                                // https://issues.dlang.org/show_bug.cgi?id=12504
+                                dimrange.imax = SignExtendedNumber(dimrange.imax.value-1);
                                 if (!IntRange::fromType(var->type).contains(dimrange))
                                 {
                                     fs->error("index type '%s' cannot cover index range 0..%llu", p->type->toChars(), ta->dim->toInteger());

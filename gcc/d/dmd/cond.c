@@ -114,6 +114,7 @@ static void lowerArrayAggregate(StaticForeach *sfe, Scope *sc)
         sfe->aggrfe->aggr = new TupleExp(aggr->loc, es);
         sfe->aggrfe->aggr = semantic(sfe->aggrfe->aggr, sc);
         sfe->aggrfe->aggr = sfe->aggrfe->aggr->optimize(WANTvalue);
+        sfe->aggrfe->aggr = sfe->aggrfe->aggr->ctfeInterpret();
     }
     else
     {
@@ -200,7 +201,8 @@ static TypeStruct *createTupleType(Loc loc, Expressions *e)
     Type *ty = new TypeTypeof(loc, new TupleExp(loc, e));
     sdecl->members->push(new VarDeclaration(loc, ty, fid, NULL));
     TypeStruct *r = (TypeStruct *)sdecl->type;
-    r->vtinfo = TypeInfoStructDeclaration::create(r); // prevent typeinfo from going to object file
+    if (global.params.useTypeInfo && Type::dtypeinfo)
+        r->vtinfo = TypeInfoStructDeclaration::create(r); // prevent typeinfo from going to object file
     return r;
 }
 
@@ -314,15 +316,25 @@ static void lowerNonArrayAggregate(StaticForeach *sfe, Scope *sc)
     Identifier *idres = Identifier::generateId("__res");
     VarDeclaration *vard = new VarDeclaration(aloc, aty, idres, NULL);
     Statements *s2 = new Statements();
-    s2->push(new ExpStatement(aloc, vard));
-    Expression *catass = new CatAssignExp(aloc, new IdentifierExp(aloc, idres), res[1]);
-    s2->push(createForeach(sfe, aloc, pparams[1], new ExpStatement(aloc, catass)));
-    s2->push(new ReturnStatement(aloc, new IdentifierExp(aloc, idres)));
+
+    // Run 'typeof' gagged to avoid duplicate errors and if it fails just create
+    // an empty foreach to expose them.
+    unsigned olderrors = global.startGagging();
+    ety = ety->semantic(aloc, sc);
+    if (global.endGagging(olderrors))
+        s2->push(createForeach(sfe, aloc, pparams[1], NULL));
+    else
+    {
+        s2->push(new ExpStatement(aloc, vard));
+        Expression *catass = new CatAssignExp(aloc, new IdentifierExp(aloc, idres), res[1]);
+        s2->push(createForeach(sfe, aloc, pparams[1], new ExpStatement(aloc, catass)));
+        s2->push(new ReturnStatement(aloc, new IdentifierExp(aloc, idres)));
+    }
 
     Expression *aggr;
     Type *indexty;
 
-    if (sfe->rangefe && (indexty = ety->semantic(aloc, sc))->isintegral())
+    if (sfe->rangefe && (indexty = ety)->isintegral())
     {
         sfe->rangefe->lwr->type = indexty;
         sfe->rangefe->upr->type = indexty;
@@ -386,11 +398,6 @@ void staticForeachPrepare(StaticForeach *sfe, Scope *sc)
         sfe->aggrfe->aggr = semantic(sfe->aggrfe->aggr, sc);
         sc = sc->endCTFE();
         sfe->aggrfe->aggr = sfe->aggrfe->aggr->optimize(WANTvalue);
-        Type *tab = sfe->aggrfe->aggr->type->toBasetype();
-        if (tab->ty != Ttuple)
-        {
-            sfe->aggrfe->aggr = sfe->aggrfe->aggr->ctfeInterpret();
-        }
     }
 
     if (sfe->aggrfe && sfe->aggrfe->aggr->type->toBasetype()->ty == Terror)
