@@ -1860,7 +1860,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  chains.quick_push (chain.copy ());
 	  chain.truncate (0);
 	}
-      if (chains.length () == group_size)
+      if (chains.length () == group_size
+	  /* We cannot yet use SLP_TREE_CODE to communicate the operation.  */
+	  && op_stmt_info)
 	{
 	  /* Now we have a set of chains with the same length.  */
 	  /* 1. pre-sort according to def_type and operation.  */
