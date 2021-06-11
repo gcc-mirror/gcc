@@ -268,6 +268,10 @@ Target Var(fix_cm3_ldrd) Init(2)
 Avoid overlapping destination and address registers on LDRD instructions
 that may trigger Cortex-M3 errata.
 
+mfix-cmse-cve-2021-35465
+Target Var(fix_vlldm) Init(2)
+Mitigate issues with VLLDM on some M-profile devices (CVE-2021-35465).
+
 munaligned-access
 Target Var(unaligned_access) Init(2) Save
 Enable unaligned word and halfword accesses to packed data.
