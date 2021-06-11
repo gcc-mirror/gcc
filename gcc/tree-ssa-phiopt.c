@@ -50,12 +50,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "internal-fn.h"
 #include "gimple-range.h"
+#include "gimple-match.h"
 
 static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool two_value_replacement (basic_block, basic_block, edge, gphi *,
 				   tree, tree);
 static bool match_simplify_replacement (basic_block, basic_block,
-					edge, edge, gphi *, tree, tree);
+					edge, edge, gphi *, tree, tree, bool);
 static gphi *factor_out_conditional_conversion (edge, edge, gphi *, tree, tree,
 						gimple *);
 static int value_replacement (basic_block, basic_block,
@@ -345,9 +346,9 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	  /* Do the replacement of conditional if it can be done.  */
 	  if (!early_p && two_value_replacement (bb, bb1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
-	  else if (!early_p
-		   && match_simplify_replacement (bb, bb1, e1, e2, phi,
-						  arg0, arg1))
+	  else if (match_simplify_replacement (bb, bb1, e1, e2, phi,
+					       arg0, arg1,
+					       early_p))
 	    cfgchanged = true;
 	  else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
@@ -811,6 +812,67 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
   return true;
 }
 
+/* Return TRUE if CODE should be allowed during early phiopt.
+   Currently this is to allow MIN/MAX and ABS/NEGATE.  */
+static bool
+phiopt_early_allow (enum tree_code code)
+{
+  switch (code)
+    {
+      case MIN_EXPR:
+      case MAX_EXPR:
+      case ABS_EXPR:
+      case ABSU_EXPR:
+      case NEGATE_EXPR:
+      case SSA_NAME:
+	return true;
+      default:
+	return false;
+    }
+}
+
+/* gimple_simplify_phiopt is like gimple_simplify but designed for PHIOPT.
+   Return NULL if nothing can be simplified or the resulting simplified value
+   with parts pushed if EARLY_P was true. Also rejects non allowed tree code
+   if EARLY_P is set.
+   Takes the comparison from COMP_STMT and two args, ARG0 and ARG1 and tries
+   to simplify CMP ? ARG0 : ARG1.  */
+static tree
+gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
+			tree arg0, tree arg1,
+			gimple_seq *seq)
+{
+  tree result;
+  enum tree_code comp_code = gimple_cond_code (comp_stmt);
+  location_t loc = gimple_location (comp_stmt);
+  tree cmp0 = gimple_cond_lhs (comp_stmt);
+  tree cmp1 = gimple_cond_rhs (comp_stmt);
+  /* To handle special cases like floating point comparison, it is easier and
+     less error-prone to build a tree and gimplify it on the fly though it is
+     less efficient.
+     Don't use fold_build2 here as that might create (bool)a instead of just
+     "a != 0".  */
+  tree cond = build2_loc (loc, comp_code, boolean_type_node,
+			  cmp0, cmp1);
+  gimple_match_op op (gimple_match_cond::UNCOND,
+		      COND_EXPR, type, cond, arg0, arg1);
+
+  if (op.resimplify (early_p ? NULL : seq, follow_all_ssa_edges))
+    {
+      /* Early we want only to allow some generated tree codes. */
+      if (!early_p
+	  || op.code.is_tree_code ()
+	  || phiopt_early_allow ((tree_code)op.code))
+	{
+	  result = maybe_push_res_to_seq (&op, seq);
+	  if (result)
+	    return result;
+	}
+    }
+
+  return NULL;
+}
+
 /*  The function match_simplify_replacement does the main work of doing the
     replacement using match and simplify.  Return true if the replacement is done.
     Otherwise return false.
@@ -820,10 +882,9 @@ two_value_replacement (basic_block cond_bb, basic_block middle_bb,
 static bool
 match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 			    edge e0, edge e1, gphi *phi,
-			    tree arg0, tree arg1)
+			    tree arg0, tree arg1, bool early_p)
 {
   gimple *stmt;
-  tree cond;
   gimple_stmt_iterator gsi;
   edge true_edge, false_edge;
   gimple_seq seq = NULL;
@@ -884,15 +945,6 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
 
   stmt = last_stmt (cond_bb);
 
-  /* To handle special cases like floating point comparison, it is easier and
-     less error-prone to build a tree and gimplify it on the fly though it is
-     less efficient.
-     Don't use fold_build2 here as that might create (bool)a instead of just
-     "a != 0".  */
-  cond = build2_loc (gimple_location (stmt),
-		     gimple_cond_code (stmt), boolean_type_node,
-		     gimple_cond_lhs (stmt), gimple_cond_rhs (stmt));
-
   /* We need to know which is the true edge and which is the false
      edge so that we know when to invert the condition below.  */
   extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
@@ -900,10 +952,9 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
     std::swap (arg0, arg1);
 
   tree type = TREE_TYPE (gimple_phi_result (phi));
-  result = gimple_simplify (COND_EXPR, type,
-			    cond,
-			    arg0, arg1,
-			    &seq, NULL);
+  result = gimple_simplify_phiopt (early_p, type, stmt,
+				   arg0, arg1,
+				   &seq);
   if (!result)
     return false;
 
