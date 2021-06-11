@@ -1865,7 +1865,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	  /* Now we have a set of chains with the same length.  */
 	  /* 1. pre-sort according to def_type and operation.  */
 	  for (unsigned lane = 0; lane < group_size; ++lane)
-	    chains[lane].sort (dt_sort_cmp, vinfo);
+	    chains[lane].stablesort (dt_sort_cmp, vinfo);
 	  if (dump_enabled_p ())
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
