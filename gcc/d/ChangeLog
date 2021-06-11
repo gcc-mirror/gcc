@@ -1,3 +1,16 @@
+2021-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100967
+	* d-frontend.cc (getTypeInfoType): Move TypeInfo checks to
+	check_typeinfo_type and call new function.
+	* d-tree.h (check_typeinfo_type): Declare.
+	* typeinfo.cc: Include dmd/scope.h.
+	(create_frontend_tinfo_types): Generate front-end types even if Object
+	is missing.
+	(build_typeinfo): Move TypeInfo checks to check_typeinfo_type and call
+	new function.
+	(check_typeinfo_type): New function.
+
 2021-06-09  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/100964

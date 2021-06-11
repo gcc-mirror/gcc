@@ -1315,7 +1315,10 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
     }
 
   /* For __builtin_is_constant_evaluated, defer it if not
-     ctx->manifestly_const_eval, otherwise fold it to true.  */
+     ctx->manifestly_const_eval (as sometimes we try to constant evaluate
+     without manifestly_const_eval even expressions or parts thereof which
+     will later be manifestly const_eval evaluated), otherwise fold it to
+     true.  */
   if (fndecl_built_in_p (fun, CP_BUILT_IN_IS_CONSTANT_EVALUATED,
 			 BUILT_IN_FRONTEND))
     {
@@ -3298,6 +3301,22 @@ cxx_eval_conditional_expression (const constexpr_ctx *ctx, tree t,
 					   /*lval*/false,
 					   non_constant_p, overflow_p);
   VERIFY_CONSTANT (val);
+  if (TREE_CODE (t) == IF_STMT && IF_STMT_CONSTEVAL_P (t))
+    {
+      /* Evaluate the condition as if it was
+	 if (__builtin_is_constant_evaluated ()), i.e. defer it if not
+	 ctx->manifestly_const_eval (as sometimes we try to constant evaluate
+	 without manifestly_const_eval even expressions or parts thereof which
+	 will later be manifestly const_eval evaluated), otherwise fold it to
+	 true.  */
+      if (ctx->manifestly_const_eval)
+	val = boolean_true_node;
+      else
+	{
+	  *non_constant_p = true;
+	  return t;
+	}
+    }
   /* Don't VERIFY_CONSTANT the other operands.  */
   if (integer_zerop (val))
     val = TREE_OPERAND (t, 2);
@@ -5119,6 +5138,16 @@ var_in_constexpr_fn (tree t)
   tree ctx = DECL_CONTEXT (t);
   return (ctx && TREE_CODE (ctx) == FUNCTION_DECL
 	  && DECL_DECLARED_CONSTEXPR_P (ctx));
+}
+
+/* True if a function might be constexpr: either a function that was
+   declared constexpr, or a C++17 lambda op().  */
+
+bool
+maybe_constexpr_fn (tree t)
+{
+  return (DECL_DECLARED_CONSTEXPR_P (t)
+	  || (cxx_dialect >= cxx17 && LAMBDA_FUNCTION_P (t)));
 }
 
 /* True if T was declared in a function that might be constexpr: either a
@@ -8799,10 +8828,17 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	return false;
       if (!processing_template_decl)
 	tmp = cxx_eval_outermost_constant_expr (tmp, true);
-      if (integer_zerop (tmp))
-	return RECUR (TREE_OPERAND (t, 2), want_rval);
-      else if (TREE_CODE (tmp) == INTEGER_CST)
-	return RECUR (TREE_OPERAND (t, 1), want_rval);
+      /* potential_constant_expression* isn't told if it is called for
+	 manifestly_const_eval or not, so for consteval if always
+	 process both branches as if the condition is not a known
+	 constant.  */
+      if (TREE_CODE (t) != IF_STMT || !IF_STMT_CONSTEVAL_P (t))
+	{
+	  if (integer_zerop (tmp))
+	    return RECUR (TREE_OPERAND (t, 2), want_rval);
+	  else if (TREE_CODE (tmp) == INTEGER_CST)
+	    return RECUR (TREE_OPERAND (t, 1), want_rval);
+	}
       tmp = *jump_target;
       for (i = 1; i < 3; ++i)
 	{

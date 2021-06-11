@@ -622,18 +622,16 @@ coverage_compute_cfg_checksum (struct function *fn)
 int
 coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
 {
-  expanded_location xloc;
-  unsigned long offset;
-
   /* We don't need to output .gcno file unless we're under -ftest-coverage
      (e.g. -fprofile-arcs/generate/use don't need .gcno to work). */
   if (no_coverage || !bbg_file_name)
     return 0;
 
-  xloc = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
+  expanded_location startloc
+    = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
 
   /* Announce function */
-  offset = gcov_write_tag (GCOV_TAG_FUNCTION);
+  unsigned long offset = gcov_write_tag (GCOV_TAG_FUNCTION);
   if (param_profile_func_internal_id)
     gcov_write_unsigned (current_function_funcdef_no + 1);
   else
@@ -650,16 +648,27 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl)
 		       && !DECL_FUNCTION_VERSIONED (current_function_decl)
 		       && !DECL_LAMBDA_FUNCTION_P (current_function_decl));
-  gcov_write_filename (xloc.file);
-  gcov_write_unsigned (xloc.line);
-  gcov_write_unsigned (xloc.column);
+  gcov_write_filename (startloc.file);
+  gcov_write_unsigned (startloc.line);
+  gcov_write_unsigned (startloc.column);
 
   expanded_location endloc = expand_location (cfun->function_end_locus);
 
   /* Function can start in a single file and end in another one.  */
-  int end_line = endloc.file == xloc.file ? endloc.line : xloc.line;
-  int end_column = endloc.file == xloc.file ? endloc.column: xloc.column;
-  gcc_assert (xloc.line <= end_line);
+  int end_line
+    = endloc.file == startloc.file ? endloc.line : startloc.line;
+  int end_column
+    = endloc.file == startloc.file ? endloc.column: startloc.column;
+
+  if (startloc.line > end_line)
+    {
+      warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		  OPT_Wcoverage_invalid_line_number,
+		  "function starts on a higher line number than it ends");
+      end_line = startloc.line;
+      end_column = startloc.column;
+    }
+
   gcov_write_unsigned (end_line);
   gcov_write_unsigned (end_column);
   gcov_write_length (offset);

@@ -1,3 +1,27 @@
+2021-06-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/100995
+	* constexpr.c (maybe_constexpr_fn): New.
+	* cp-tree.h (maybe_constexpr_fn): Declare.
+	* semantics.c (find_std_constant_evaluated_r): New.
+	(maybe_warn_for_constant_evaluated): New.
+	(finish_if_stmt_cond): Call it.
+
+2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/67829
+	* pt.c (unify) <case BOUND_TEMPLATE_TEMPLATE_PARM>: When
+	the TEMPLATE_DECL of a BOUND_TEMPLATE_TEMPLATE_PARM argument is
+	a template template parameter, adjust to the
+	TEMPLATE_TEMPLATE_PARAMETER before falling through.
+
+2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100946
+	* constraint.cc (normalize_placeholder_type_constraints): When
+	normalizing a non-templated return-type-requirement, add a dummy
+	level to initial_parms.
+
 2021-06-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/100065

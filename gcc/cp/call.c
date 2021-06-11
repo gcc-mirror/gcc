@@ -8840,6 +8840,7 @@ immediate_invocation_p (tree fn, int nargs)
 	      || !DECL_IMMEDIATE_FUNCTION_P (current_function_decl))
 	  && (current_binding_level->kind != sk_function_parms
 	      || !current_binding_level->immediate_fn_ctx_p)
+	  && !in_consteval_if_p
 	  /* As an exception, we defer std::source_location::current ()
 	     invocations until genericization because LWG3396 mandates
 	     special behavior for it.  */

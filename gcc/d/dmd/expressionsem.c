@@ -1082,11 +1082,6 @@ static Expression *resolvePropertiesX(Scope *sc, Expression *e1, Expression *e2 
             if (checkUnsafeAccess(sc, e1, true, true))
                 return new ErrorExp();
         }
-        else if (e1->op == TOKdot)
-        {
-            e1->error("expression has no value");
-            return new ErrorExp();
-        }
         else if (e1->op == TOKcall)
         {
             CallExp *ce = (CallExp *)e1;
@@ -4513,11 +4508,18 @@ public:
 
     void visit(DotTemplateExp *e)
     {
+        if (e->type)
+        {
+            result = e;
+            return;
+        }
         if (Expression *ex = unaSemantic(e, sc))
         {
             result = ex;
             return;
         }
+        // 'void' like TemplateExp
+        e->type = Type::tvoid;
         result = e;
     }
 

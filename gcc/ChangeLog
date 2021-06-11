@@ -1,3 +1,119 @@
+2021-06-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/100984
+	* gimple-ssa-evrp.c  (ssa_equiv_stack): Use auto_vec for
+	replacements table.
+	(ssa_equiv_stack::~ssa_equiv_stack): Remove.
+
+2021-06-11  Kewen Lin  <linkw@linux.ibm.com>
+
+	* config/rs6000/rs6000.md
+	(floatsi<SFDF:mode>2_lfiwax_<QHI:mode>_mem_zext): New
+	define_insn_and_split.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_build_slp_tree_2): Use stablesort
+	to sort operands of the associative chain.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	* system.h (gcc_stablesort_r): Declare.
+	* sort.cc (gcc_sort_r): Support stable sort.
+	(gcc_stablesort_r): Define.
+	* vec.h (vec<>::stablesort): Add.
+
+2021-06-10  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/89021
+	* config/i386/i386-expand.c (ix86_split_mmx_punpck):
+	Handle V2SF mode.  Emit SHUFPS to fixup unpack-high for V2SF mode.
+	(expand_vec_perm_blend): Handle 64bit modes for TARGET_SSE4_1.
+	(expand_vec_perm_pshufb): Handle 64bit modes for TARGET_SSSE3.
+	(expand_vec_perm_pblendv): Handle 64bit modes for TARGET_SSE4_1.
+	(expand_vec_perm_interleave2): Handle 64bit modes.
+	(expand_vec_perm_even_odd_pack): Handle V8QI mode.
+	(expand_vec_perm_even_odd_1): Ditto.
+	(ix86_vectorize_vec_perm_const): Ditto.
+	* config/i386/i386.md (UNSPEC_PSHUFB): Move from ...
+	* config/i386/sse.md: ... here.
+	* config/i386/mmx.md (*vec_interleave_lowv2sf):
+	New insn_and_split pattern.
+	(*vec_interleave_highv2sf): Ditto.
+	(mmx_pshufbv8qi3): New insn pattern.
+	(*mmx_pblendw): Ditto.
+
+2021-06-10  Peter Bergner  <bergner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (build_pair): New built-in.
+	(build_acc): Likewise.
+	* config/rs6000/rs6000-call.c (mma_expand_builtin): Swap assemble
+	source operands in little-endian mode.
+	(rs6000_gimple_fold_mma_builtin): Handle VSX_BUILTIN_BUILD_PAIR.
+	(mma_init_builtins): Likewise.
+	* config/rs6000/rs6000.c (rs6000_split_multireg_move): Handle endianness
+	ordering for the MMA assemble and build source operands.
+	* doc/extend.texi (__builtin_vsx_build_acc, __builtin_mma_build_pair):
+	Document.
+	(__builtin_mma_assemble_acc, __builtin_mma_assemble_pair): Remove
+	documentation.
+
+2021-06-10  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/h8300.c (select_cc_mode): Handle MEM.  Use
+	REG_P.
+	* config/h8300/extensions.md: Replace _clobber_flags patterns
+	with <cczn>.
+
+2021-06-10  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/vector.md (vcond_mask_<mode><mode>): Change to
+	(vcond_mask_<mode><tointvec>): this.
+
+2021-06-10  Andrew Stubbs  <ams@codesourcery.com>
+	    Thomas Schwinge  <thomas@codesourcery.com>
+
+	* omp-builtins.def (BUILT_IN_GOACC_ENTER_EXIT_DATA): Split into...
+	(BUILT_IN_GOACC_ENTER_DATA, BUILT_IN_GOACC_EXIT_DATA): ... these.
+	* gimple.h (enum gf_mask): Split
+	'GF_OMP_TARGET_KIND_OACC_ENTER_EXIT_DATA' into
+	'GF_OMP_TARGET_KIND_OACC_ENTER_DATA' and
+	'GF_OMP_TARGET_KIND_OACC_EXIT_DATA'.
+	(is_gimple_omp_oacc): Update.
+	* gimple-pretty-print.c (dump_gimple_omp_target): Likewise.
+	* gimplify.c (gimplify_omp_target_update): Likewise.
+	* omp-expand.c (expand_omp_target, build_omp_regions_1)
+	(omp_make_gimple_edges): Likewise.
+	* omp-low.c (check_omp_nesting_restrictions, lower_omp_target):
+	Likewise.
+
+2021-06-10  Aldy Hernandez  <aldyh@redhat.com>
+
+	* value-query.cc (value_query::value_on_edge): Rename name to
+	expr.
+	(range_query::range_on_edge): Same.
+	(range_query::value_of_expr): Same.
+	(range_query::value_on_edge): Same.
+	* value-query.h (class value_query): Same.
+	(class range_query): Same.
+
+2021-06-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101003
+	* tree-vect-slp.c (vect_build_slp_tree_2): Appropriately
+	use the pattern stmt defs when linearizing a chain.
+
+2021-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/100852
+	* ifcvt.c (noce_get_alt_condition, noce_try_abs): Use
+	prev_nonnote_nondebug_insn instead of prev_nonnote_insn.
+
+2021-06-10  Clement Chigot  <clement.chigot@atos.net>
+
+	* config/rs6000/aix71.h (ASM_CPU_SPEC): Add Power10 directive.
+	* config/rs6000/aix72.h (ASM_CPU_SPEC): Likewise.
+
 2021-06-09  Andrew Pinski  <apinski@marvell.com>
 
 	PR tree-optimization/100925
