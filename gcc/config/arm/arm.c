@@ -3614,6 +3614,15 @@ arm_option_override (void)
 	fix_cm3_ldrd = 0;
     }
 
+  /* Enable fix_vlldm by default if required.  */
+  if (fix_vlldm == 2)
+    {
+      if (bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_vlldm))
+	fix_vlldm = 1;
+      else
+	fix_vlldm = 0;
+    }
+
   /* Hot/Cold partitioning is not currently supported, since we can't
      handle literal pool placement in that case.  */
   if (flag_reorder_blocks_and_partition)
