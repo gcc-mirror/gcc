@@ -1,4 +1,5 @@
 // { dg-do compile }
+// { dg-additional-options "-Wno-psabi" }
 
 typedef double v2df __attribute__((vector_size(2 * sizeof (double))));
 
