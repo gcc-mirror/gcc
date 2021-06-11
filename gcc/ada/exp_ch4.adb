@@ -7763,8 +7763,8 @@ package body Exp_Ch4 is
 
          if Is_Unchecked_Union (Op_Type) then
             declare
-               Lhs_Type : constant Node_Id := Etype (L_Exp);
-               Rhs_Type : constant Node_Id := Etype (R_Exp);
+               Lhs_Type : constant Entity_Id := Etype (L_Exp);
+               Rhs_Type : constant Entity_Id := Etype (R_Exp);
 
                Lhs_Discr_Vals : Elist_Id;
                --  List of inferred discriminant values for left operand.

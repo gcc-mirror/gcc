@@ -4222,7 +4222,7 @@ package body Sprint is
          --  Itype to be printed
 
          declare
-            B : constant Node_Id := Etype (Typ);
+            B : constant Entity_Id := Etype (Typ);
             P : constant Node_Id := Parent (Typ);
             S : constant Saved_Output_Buffer := Save_Output_Buffer;
             --  Save current output buffer
