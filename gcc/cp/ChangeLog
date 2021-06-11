@@ -1,3 +1,13 @@
+2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-06-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/100946
+	* constraint.cc (normalize_placeholder_type_constraints): When
+	normalizing a non-templated return-type-requirement, add a dummy
+	level to initial_parms.
+
 2021-06-09  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

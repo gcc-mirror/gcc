@@ -1,3 +1,10 @@
+2021-06-11  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (define_attr "type"): Add types for fusion.
+	* config/rs6000/genfusion.pl (gen_ld_cmpi_p10): Use new fusion types.
+	(gen_2logical): Use new fusion types.
+	* config/rs6000/fusion.md: Regenerate.
+
 2021-06-09  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	Backported from master:
