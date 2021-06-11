@@ -442,8 +442,9 @@ dump_omp_iterators (pretty_printer *pp, tree iter, int spc, dump_flags_t flags)
 }
 
 
-/* Dump OpenMP clause CLAUSE.  PP, CLAUSE, SPC and FLAGS are as in
-   dump_generic_node.  */
+/* Dump OMP clause CLAUSE, without following OMP_CLAUSE_CHAIN.
+
+   PP, CLAUSE, SPC and FLAGS are as in dump_generic_node.  */
 
 static void
 dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
@@ -1315,23 +1316,22 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 }
 
 
-/* Dump the list of OpenMP clauses.  PP, SPC and FLAGS are as in
-   dump_generic_node.  */
+/* Dump chain of OMP clauses.
+
+   PP, SPC and FLAGS are as in dump_generic_node.  */
 
 void
-dump_omp_clauses (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
+dump_omp_clauses (pretty_printer *pp, tree clause, int spc, dump_flags_t flags,
+		  bool leading_space)
 {
-  if (clause == NULL)
-    return;
-
-  pp_space (pp);
-  while (1)
+  while (clause)
     {
+      if (leading_space)
+	pp_space (pp);
       dump_omp_clause (pp, clause, spc, flags);
+      leading_space = true;
+
       clause = OMP_CLAUSE_CHAIN (clause);
-      if (clause == NULL)
-	return;
-      pp_space (pp);
     }
 }
 
@@ -3641,7 +3641,10 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       goto dump_omp_body;
 
     case OMP_CLAUSE:
-      dump_omp_clause (pp, node, spc, flags);
+      /* If we come here, we're dumping something that's not an OMP construct,
+	 for example, OMP clauses attached to a function's '__attribute__'.
+	 Dump the whole OMP clause chain.  */
+      dump_omp_clauses (pp, node, spc, flags, false);
       is_expr = false;
       break;
 

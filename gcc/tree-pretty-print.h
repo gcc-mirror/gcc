@@ -39,7 +39,8 @@ extern void print_generic_stmt (FILE *, tree, dump_flags_t = TDF_NONE);
 extern void print_generic_stmt_indented (FILE *, tree, dump_flags_t, int);
 extern void print_generic_expr (FILE *, tree, dump_flags_t = TDF_NONE);
 extern char *print_generic_expr_to_str (tree);
-extern void dump_omp_clauses (pretty_printer *, tree, int, dump_flags_t);
+extern void dump_omp_clauses (pretty_printer *, tree, int, dump_flags_t,
+			      bool = true);
 extern void dump_omp_atomic_memory_order (pretty_printer *,
 					  enum omp_memory_order);
 extern void dump_omp_loop_non_rect_expr (pretty_printer *, tree, int,
