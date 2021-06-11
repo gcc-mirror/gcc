@@ -8401,9 +8401,13 @@ ix86_expand_prologue (void)
 		   || frame.stack_pointer_offset < CHECK_STACK_LIMIT))
 	{
 	  ix86_emit_save_regs_using_mov (frame.reg_save_offset);
+	  cfun->machine->red_zone_used = true;
 	  int_registers_saved = true;
 	}
     }
+
+  if (frame.red_zone_size != 0)
+    cfun->machine->red_zone_used = true;
 
   if (stack_realign_fp)
     {
@@ -15915,7 +15919,7 @@ ix86_output_indirect_jmp (rtx call_op)
     {
       /* We can't have red-zone since "call" in the indirect thunk
          pushes the return address onto stack, destroying red-zone.  */
-      if (ix86_red_zone_size != 0)
+      if (ix86_red_zone_used)
 	gcc_unreachable ();
 
       ix86_output_indirect_branch (call_op, "%0", true);
