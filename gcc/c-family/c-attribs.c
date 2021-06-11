@@ -1568,6 +1568,7 @@ handle_unused_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	  || VAR_OR_FUNCTION_DECL_P (decl)
 	  || TREE_CODE (decl) == LABEL_DECL
 	  || TREE_CODE (decl) == CONST_DECL
+	  || TREE_CODE (decl) == FIELD_DECL
 	  || TREE_CODE (decl) == TYPE_DECL)
 	{
 	  TREE_USED (decl) = 1;
