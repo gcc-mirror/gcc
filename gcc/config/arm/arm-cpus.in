@@ -186,6 +186,9 @@ define feature quirk_armv6kz
 # Cortex-M3 LDRD quirk.
 define feature quirk_cm3_ldrd
 
+# v8-m/v8.1-m VLLDM errata.
+define feature quirk_vlldm
+
 # Don't use .cpu assembly directive
 define feature quirk_no_asmcpu
 
@@ -322,7 +325,7 @@ define implied vfp_base MVE MVE_FP ALL_FP
 # architectures.
 # xscale isn't really a 'quirk', but it isn't an architecture either and we
 # need to ignore it for matching purposes.
-define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd xscale quirk_no_asmcpu
+define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd quirk_vlldm xscale quirk_no_asmcpu
 
 define fgroup IGNORE_FOR_MULTILIB cdecp0 cdecp1 cdecp2 cdecp3 cdecp4 cdecp5 cdecp6 cdecp7
 
@@ -1527,6 +1530,7 @@ begin cpu cortex-m33
  architecture armv8-m.main+dsp+fp
  option nofp remove ALL_FP
  option nodsp remove armv7em
+ isa quirk_vlldm
  costs v7m
 end cpu cortex-m33
 
@@ -1536,6 +1540,7 @@ begin cpu cortex-m35p
  architecture armv8-m.main+dsp+fp
  option nofp remove ALL_FP
  option nodsp remove armv7em
+ isa quirk_vlldm
  costs v7m
 end cpu cortex-m35p
 
@@ -1547,7 +1552,7 @@ begin cpu cortex-m55
  option nomve remove mve mve_float
  option nofp remove ALL_FP mve_float
  option nodsp remove MVE mve_float
- isa quirk_no_asmcpu
+ isa quirk_no_asmcpu quirk_vlldm
  costs v7m
  vendor 41
 end cpu cortex-m55
