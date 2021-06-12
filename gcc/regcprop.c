@@ -1404,12 +1404,9 @@ pass_cprop_hardreg::execute (function *fun)
      changed anything though.  */
   if (!worklist.is_empty ())
     {
-      unsigned int i;
-      int index;
-
       any_debug_changes = false;
       bitmap_clear (visited);
-      FOR_EACH_VEC_ELT (worklist, i, index)
+      for (int index : worklist)
 	{
 	  bb = BASIC_BLOCK_FOR_FN (fun, index);
 	  cprop_hardreg_bb (bb, all_vd, visited);

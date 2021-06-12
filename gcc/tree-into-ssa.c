@@ -1638,14 +1638,11 @@ debug_defs_stack (int n)
 void
 dump_currdefs (FILE *file)
 {
-  unsigned i;
-  tree var;
-
   if (symbols_to_rename.is_empty ())
     return;
 
   fprintf (file, "\n\nCurrent reaching definitions\n\n");
-  FOR_EACH_VEC_ELT (symbols_to_rename, i, var)
+  for (tree var : symbols_to_rename)
     {
       common_info *info = get_common_info (var);
       fprintf (file, "CURRDEF (");
@@ -2069,18 +2066,16 @@ rewrite_update_phi_arguments (basic_block bb)
 {
   edge e;
   edge_iterator ei;
-  unsigned i;
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      gphi *phi;
       vec<gphi *> phis;
 
       if (!bitmap_bit_p (blocks_with_phis_to_rewrite, e->dest->index))
 	continue;
 
       phis = phis_to_rewrite[e->dest->index];
-      FOR_EACH_VEC_ELT (phis, i, phi)
+      for (gphi *phi : phis)
 	{
 	  tree arg, lhs_sym, reaching_def = NULL;
 	  use_operand_p arg_p;

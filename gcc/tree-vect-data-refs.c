@@ -290,9 +290,7 @@ vect_analyze_possibly_independent_ddr (data_dependence_relation *ddr,
 				       int loop_depth, unsigned int *max_vf)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  lambda_vector dist_v;
-  unsigned int i;
-  FOR_EACH_VEC_ELT (DDR_DIST_VECTS (ddr), i, dist_v)
+  for (lambda_vector &dist_v : DDR_DIST_VECTS (ddr))
     {
       int dist = dist_v[loop_depth];
       if (dist != 0 && !(dist > 0 && DDR_REVERSED_P (ddr)))
@@ -729,9 +727,8 @@ vect_slp_analyze_node_dependences (vec_info *vinfo, slp_tree node,
 		{
 		  if (stmt_info != last_store_info)
 		    continue;
-		  unsigned i;
-		  stmt_vec_info store_info;
-		  FOR_EACH_VEC_ELT (stores, i, store_info)
+
+		  for (stmt_vec_info &store_info : stores)
 		    {
 		      data_reference *store_dr
 			= STMT_VINFO_DATA_REF (store_info);
@@ -804,9 +801,8 @@ vect_slp_analyze_node_dependences (vec_info *vinfo, slp_tree node,
 		{
 		  if (stmt_info != last_store_info)
 		    continue;
-		  unsigned i;
-		  stmt_vec_info store_info;
-		  FOR_EACH_VEC_ELT (stores, i, store_info)
+
+		  for (stmt_vec_info &store_info : stores)
 		    {
 		      data_reference *store_dr
 			= STMT_VINFO_DATA_REF (store_info);
@@ -868,9 +864,7 @@ vect_slp_analyze_instance_dependence (vec_info *vinfo, slp_instance instance)
 
   /* Verify we can sink loads to the vectorized stmt insert location,
      special-casing stores of this instance.  */
-  slp_tree load;
-  unsigned int i;
-  FOR_EACH_VEC_ELT (SLP_INSTANCE_LOADS (instance), i, load)
+  for (slp_tree &load : SLP_INSTANCE_LOADS (instance))
     if (! vect_slp_analyze_node_dependences (vinfo, load,
 					     store
 					     ? SLP_TREE_SCALAR_STMTS (store)
@@ -927,9 +921,7 @@ vect_record_base_alignments (vec_info *vinfo)
 {
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
-  data_reference *dr;
-  unsigned int i;
-  FOR_EACH_VEC_ELT (vinfo->shared->datarefs, i, dr)
+  for (data_reference *dr : vinfo->shared->datarefs)
     {
       dr_vec_info *dr_info = vinfo->lookup_dr (dr);
       stmt_vec_info stmt_info = dr_info->stmt;
@@ -1463,10 +1455,8 @@ vect_get_peeling_costs_all_drs (loop_vec_info loop_vinfo,
 				bool unknown_misalignment)
 {
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
-  unsigned i;
-  data_reference *dr;
 
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
+  for (data_reference *dr : datarefs)
     {
       dr_vec_info *dr_info = loop_vinfo->lookup_dr (dr);
       if (!vect_relevant_for_alignment_p (dr_info))
@@ -1575,13 +1565,11 @@ static bool
 vect_peeling_supportable (loop_vec_info loop_vinfo, dr_vec_info *dr0_info,
 			  unsigned npeel)
 {
-  unsigned i;
-  struct data_reference *dr = NULL;
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
   enum dr_alignment_support supportable_dr_alignment;
 
   /* Ensure that all data refs can be vectorized after the peel.  */
-  FOR_EACH_VEC_ELT (datarefs, i, dr)
+  for (data_reference *dr : datarefs)
     {
       int save_misalignment;
 

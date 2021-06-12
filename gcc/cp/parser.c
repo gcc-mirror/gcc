@@ -7299,8 +7299,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
     case RID_BUILTIN_LAUNDER:
       {
 	vec<tree, va_gc> *vec;
-	unsigned int i;
-	tree p;
 
 	cp_lexer_consume_token (parser->lexer);
 	vec = cp_parser_parenthesized_expression_list (parser, non_attr,
@@ -7312,7 +7310,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    break;
 	  }
 
-	FOR_EACH_VEC_ELT (*vec, i, p)
+	for (tree p : *vec)
 	  mark_exp_read (p);
 
 	switch (keyword)

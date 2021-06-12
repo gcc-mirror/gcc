@@ -5838,10 +5838,7 @@ compile_input_file_p (struct infile *infile)
 static void
 do_specs_vec (vec<char_p> vec)
 {
-  unsigned ix;
-  char *opt;
-
-  FOR_EACH_VEC_ELT (vec, ix, opt)
+  for (char *opt : vec)
     {
       do_spec_1 (opt, 1, NULL);
       /* Make each accumulated option a separate argument.  */
@@ -6436,8 +6433,6 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    {
 	      const char *p1 = p;
 	      char *string;
-	      char *opt;
-	      unsigned ix;
 
 	      /* Skip past the option value and make a copy.  */
 	      if (*p != '{')
@@ -6448,7 +6443,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	      string = save_string (p1 + 1, p - p1 - 2);
 
 	      /* See if we already recorded this option.  */
-	      FOR_EACH_VEC_ELT (linker_options, ix, opt)
+	      for (const char *opt : linker_options)
 		if (! strcmp (string, opt))
 		  {
 		    free (string);
@@ -8316,9 +8311,7 @@ driver::set_up_specs () const
       && do_spec_2 (startfile_prefix_spec, NULL) == 0
       && do_spec_1 (" ", 0, NULL) == 0)
     {
-      const char *arg;
-      int ndx;
-      FOR_EACH_VEC_ELT (argbuf, ndx, arg)
+      for (const char *arg : argbuf)
 	add_sysrooted_prefix (&startfile_prefixes, arg, "BINUTILS",
 			      PREFIX_PRIORITY_LAST, 0, 1);
     }

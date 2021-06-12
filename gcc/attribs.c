@@ -165,15 +165,12 @@ register_scoped_attributes (const struct attribute_spec *attributes,
 static scoped_attributes*
 find_attribute_namespace (const char* ns)
 {
-  unsigned ix;
-  scoped_attributes *iter;
-
-  FOR_EACH_VEC_ELT (attributes_table, ix, iter)
-    if (ns == iter->ns
-	|| (iter->ns != NULL
+  for (scoped_attributes &iter : attributes_table)
+    if (ns == iter.ns
+	|| (iter.ns != NULL
 	    && ns != NULL
-	    && !strcmp (iter->ns, ns)))
-      return iter;
+	    && !strcmp (iter.ns, ns)))
+      return &iter;
   return NULL;
 }
 

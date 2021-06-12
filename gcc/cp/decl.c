@@ -841,9 +841,7 @@ wrapup_namespace_globals ()
 {
   if (vec<tree, va_gc> *statics = static_decls)
     {
-      tree decl;
-      unsigned int i;
-      FOR_EACH_VEC_ELT (*statics, i, decl)
+      for (tree decl : *statics)
 	{
 	  if (warn_unused_function
 	      && TREE_CODE (decl) == FUNCTION_DECL
@@ -8260,8 +8258,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
      reference, insert it in the statement-tree now.  */
   if (cleanups)
     {
-      unsigned i; tree t;
-      FOR_EACH_VEC_ELT (*cleanups, i, t)
+      for (tree t : *cleanups)
 	push_cleanup (decl, t, false);
       release_tree_vector (cleanups);
     }
@@ -16415,11 +16412,9 @@ cxx_simulate_enum_decl (location_t loc, const char *name,
   SET_OPAQUE_ENUM_P (enumtype, false);
   DECL_SOURCE_LOCATION (TYPE_NAME (enumtype)) = loc;
 
-  string_int_pair *value;
-  unsigned int i;
-  FOR_EACH_VEC_ELT (values, i, value)
-    build_enumerator (get_identifier (value->first),
-		      build_int_cst (integer_type_node, value->second),
+  for (const string_int_pair &value : values)
+    build_enumerator (get_identifier (value.first),
+		      build_int_cst (integer_type_node, value.second),
 		      enumtype, NULL_TREE, loc);
 
   finish_enum_value_list (enumtype);
