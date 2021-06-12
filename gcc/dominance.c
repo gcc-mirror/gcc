@@ -933,10 +933,10 @@ get_dominated_by_region (enum cdi_direction dir, basic_block *region,
    produce a vector containing all dominated blocks.  The vector will be sorted
    in preorder.  */
 
-vec<basic_block> 
+auto_vec<basic_block> 
 get_dominated_to_depth (enum cdi_direction dir, basic_block bb, int depth)
 {
-  vec<basic_block> bbs = vNULL;
+  auto_vec<basic_block> bbs;
   unsigned i;
   unsigned next_level_start;
 
@@ -965,7 +965,7 @@ get_dominated_to_depth (enum cdi_direction dir, basic_block bb, int depth)
 /* Returns the list of basic blocks including BB dominated by BB, in the
    direction DIR.  The vector will be sorted in preorder.  */
 
-vec<basic_block> 
+auto_vec<basic_block> 
 get_all_dominated_blocks (enum cdi_direction dir, basic_block bb)
 {
   return get_dominated_to_depth (dir, bb, 0);

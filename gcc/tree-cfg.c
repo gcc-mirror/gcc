@@ -8683,7 +8683,6 @@ gimple_flow_call_edges_add (sbitmap blocks)
 void
 remove_edge_and_dominated_blocks (edge e)
 {
-  vec<basic_block> bbs_to_remove = vNULL;
   vec<basic_block> bbs_to_fix_dom = vNULL;
   edge f;
   edge_iterator ei;
@@ -8734,6 +8733,7 @@ remove_edge_and_dominated_blocks (edge e)
     }
 
   auto_bitmap df, df_idom;
+  auto_vec<basic_block> bbs_to_remove;
   if (none_removed)
     bitmap_set_bit (df_idom,
 		    get_immediate_dominator (CDI_DOMINATORS, e->dest)->index);
@@ -8800,7 +8800,6 @@ remove_edge_and_dominated_blocks (edge e)
 
   iterate_fix_dominators (CDI_DOMINATORS, bbs_to_fix_dom, true);
 
-  bbs_to_remove.release ();
   bbs_to_fix_dom.release ();
 }
 

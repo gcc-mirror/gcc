@@ -484,7 +484,6 @@ public:
 unsigned int
 pass_phiprop::execute (function *fun)
 {
-  vec<basic_block> bbs;
   struct phiprop_d *phivn;
   bool did_something = false;
   basic_block bb;
@@ -499,8 +498,9 @@ pass_phiprop::execute (function *fun)
   phivn = XCNEWVEC (struct phiprop_d, n);
 
   /* Walk the dominator tree in preorder.  */
-  bbs = get_all_dominated_blocks (CDI_DOMINATORS,
-				  single_succ (ENTRY_BLOCK_PTR_FOR_FN (fun)));
+  auto_vec<basic_block> bbs
+  = get_all_dominated_blocks (CDI_DOMINATORS,
+			      single_succ (ENTRY_BLOCK_PTR_FOR_FN (fun)));
   FOR_EACH_VEC_ELT (bbs, i, bb)
     {
       /* Since we're going to move dereferences across predecessor
@@ -514,7 +514,6 @@ pass_phiprop::execute (function *fun)
   if (did_something)
     gsi_commit_edge_inserts ();
 
-  bbs.release ();
   free (phivn);
 
   free_dominance_info (CDI_POST_DOMINATORS);
