@@ -1,3 +1,34 @@
+2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100999
+	* gdc.test/compilable/staticforeach.d: Add new tests.
+	* gdc.test/fail_compilation/diag16976.d: Likewise.
+	* gdc.test/fail_compilation/fail117.d: Likewise.
+	* gdc.test/fail_compilation/fail238_m32.d: Likewise.
+	* gdc.test/fail_compilation/fail238_m64.d: Likewise.
+	* gdc.test/fail_compilation/fail7424b.d: Likewise.
+	* gdc.test/fail_compilation/fail7424c.d: Likewise.
+	* gdc.test/fail_compilation/fail7424d.d: Likewise.
+	* gdc.test/fail_compilation/fail7424e.d: Likewise.
+	* gdc.test/fail_compilation/fail7424f.d: Likewise.
+	* gdc.test/fail_compilation/fail7424g.d: Likewise.
+	* gdc.test/fail_compilation/fail7424h.d: Likewise.
+	* gdc.test/fail_compilation/fail7424i.d: Likewise.
+	* gdc.test/fail_compilation/fail9766.d: Likewise.
+	* gdc.test/fail_compilation/ice9406.d: Likewise.
+	* gdc.test/compilable/extra-files/minimal/object.d: New file.
+	* gdc.test/compilable/interpret5.d: New test.
+	* gdc.test/compilable/minimal3.d: New test.
+	* gdc.test/compilable/test21742.d: New test.
+	* gdc.test/compilable/test22006.d: New test.
+	* gdc.test/fail_compilation/b12504.d: New test.
+	* gdc.test/fail_compilation/fail22006.d: New test.
+	* gdc.test/fail_compilation/test21927.d: New test.
+	* gdc.test/fail_compilation/test21939.d: New test.
+
 2021-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

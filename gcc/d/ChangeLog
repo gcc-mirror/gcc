@@ -1,3 +1,27 @@
+2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	Backported from master:
+	2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/100999
+	* dmd/cond.c (lowerArrayAggregate): Run CTFE interpret on foreach
+	input range.
+	(createTupleType): Don't generate typeinfo when disabled.
+	(lowerNonArrayAggregate): Suppress errors when running type semantic.
+	(staticForeachPrepare): Don't run CTFE interpret from here.
+	* dmd/dinterpret.c (ctfeInterpret): Add more shortcut cases.
+	* dmd/expression.c (resolvePropertiesX): Remove early error.
+	(Expression::checkPostblit): Don't generate typeinfo when type is
+	missing from library.
+	* dmd/expressionsem.c (ExpressionSemanticVisitor): Set type of
+	DotTemplateExp as void.
+	* dmd/statementsem.c (StatementSemanticVisitor::declareVariable):
+	Don't override index type.
+	(StatementSemanticVisitor::makeTupleForeachBody): Check index type is
+	integral and index range fits type size.
+	(StatementSemanticVisitor::visit (ForeachStatement*)): Adjust index
+	range before testing.
+
 2021-06-10  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:
