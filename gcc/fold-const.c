@@ -126,7 +126,8 @@ static tree range_binop (enum tree_code, tree, tree, int, tree, int);
 static tree range_predecessor (tree);
 static tree range_successor (tree);
 static tree fold_range_test (location_t, enum tree_code, tree, tree, tree);
-static tree fold_cond_expr_with_comparison (location_t, tree, tree, tree, tree);
+static tree fold_cond_expr_with_comparison (location_t, tree, enum tree_code,
+					    tree, tree, tree, tree);
 static tree unextend (tree, int, int, tree);
 static tree extract_muldiv (tree, tree, enum tree_code, tree, bool *);
 static tree extract_muldiv_1 (tree, tree, enum tree_code, tree, bool *);
@@ -5734,20 +5735,19 @@ merge_ranges (int *pin_p, tree *plow, tree *phigh, int in0_p, tree low0,
 
 
 /* Subroutine of fold, looking inside expressions of the form
-   A op B ? A : C, where ARG0, ARG1 and ARG2 are the three operands
-   of the COND_EXPR.  This function is being used also to optimize
-   A op B ? C : A, by reversing the comparison first.
+   A op B ? A : C, where (ARG00, COMP_CODE, ARG01), ARG1 and ARG2
+   are the three operands of the COND_EXPR.  This function is
+   being used also to optimize A op B ? C : A, by reversing the
+   comparison first.
 
    Return a folded expression whose code is not a COND_EXPR
    anymore, or NULL_TREE if no folding opportunity is found.  */
 
 static tree
 fold_cond_expr_with_comparison (location_t loc, tree type,
-				tree arg0, tree arg1, tree arg2)
+				enum tree_code comp_code,
+				tree arg00, tree arg01, tree arg1, tree arg2)
 {
-  enum tree_code comp_code = TREE_CODE (arg0);
-  tree arg00 = TREE_OPERAND (arg0, 0);
-  tree arg01 = TREE_OPERAND (arg0, 1);
   tree arg1_type = TREE_TYPE (arg1);
   tree tem;
 
@@ -12821,7 +12821,10 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0), op1)
 	  && !HONOR_SIGNED_ZEROS (element_mode (op1)))
 	{
-	  tem = fold_cond_expr_with_comparison (loc, type, arg0, op1, op2);
+	  tem = fold_cond_expr_with_comparison (loc, type, TREE_CODE (arg0),
+						TREE_OPERAND (arg0, 0),
+						TREE_OPERAND (arg0, 1),
+						op1, op2);
 	  if (tem)
 	    return tem;
 	}
@@ -12830,14 +12833,16 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && operand_equal_for_comparison_p (TREE_OPERAND (arg0, 0), op2)
 	  && !HONOR_SIGNED_ZEROS (element_mode (op2)))
 	{
-	  location_t loc0 = expr_location_or (arg0, loc);
-	  tem = fold_invert_truthvalue (loc0, arg0);
-	  if (tem && COMPARISON_CLASS_P (tem))
-	    {
-	      tem = fold_cond_expr_with_comparison (loc, type, tem, op2, op1);
-	      if (tem)
-		return tem;
-	    }
+	  enum tree_code comp_code = TREE_CODE (arg0);
+	  tree arg00 = TREE_OPERAND (arg0, 0);
+	  tree arg01 = TREE_OPERAND (arg0, 1);
+	  comp_code = invert_tree_comparison (comp_code, HONOR_NANS (arg00));
+	  tem = fold_cond_expr_with_comparison (loc, type, comp_code,
+						arg00,
+						arg01,
+						op2, op1);
+	  if (tem)
+	    return tem;
 	}
 
       /* If the second operand is simpler than the third, swap them
