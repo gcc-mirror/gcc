@@ -1,3 +1,98 @@
+2021-06-11  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/check-builtin-vec_rlnm-runnable.c
+	(dg-require-effective-target): Change target to p9vector_hw.
+
+2021-06-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc.dg/gomp/simd-clones-2.c: Enhance.
+
+2021-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	DR 1227
+	PR c++/96560
+	* g++.dg/template/sfinae-dr1227.C: New test.
+
+2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/101016
+	* gcc.target/arm/mve/intrinsics/pr101016.c: New test.
+
+2021-06-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/96392
+	* gcc.dg/pr96392.c: New test.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101025
+	* gcc.dg/torture/pr101025.c: New testcase.
+
+2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/99939
+	* gcc.target/arm/cmse/cmse-18.c: Add separate scan-assembler
+	directives check for target is v8.1-m.main+mve or not before
+	comparing the assembly output.
+	* gcc.target/arm/cmse/cmse-20.c: New test.
+
+2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100974
+	* g++.dg/cpp23/consteval-if1.C: New test.
+	* g++.dg/cpp23/consteval-if2.C: New test.
+	* g++.dg/cpp23/consteval-if3.C: New test.
+	* g++.dg/cpp23/consteval-if4.C: New test.
+	* g++.dg/cpp23/consteval-if5.C: New test.
+	* g++.dg/cpp23/consteval-if6.C: New test.
+	* g++.dg/cpp23/consteval-if7.C: New test.
+	* g++.dg/cpp23/consteval-if8.C: New test.
+	* g++.dg/cpp23/consteval-if9.C: New test.
+	* g++.dg/cpp23/consteval-if10.C: New test.
+	* g++.dg/cpp23/feat-cxx2b.C: Add __cpp_if_consteval tests.
+
+2021-06-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/loop-0-up-to-n-by-1-with-iter-obj.c: Update
+	expected number of enodes after the loop.
+	* gcc.dg/analyzer/paths-8.c: New test.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101028
+	* gcc.dg/pr101028.c: New testcase.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101026
+	* gfortran.dg/pr101026.f: New testcase.
+
+2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/101008
+	* gcc.dg/pr101008.c: New test.
+
+2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101007
+	* gcc.target/i386/sse-pr101007.c: New test.
+
+2021-06-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101021
+	* gcc.target/i386/pr101021-1.c: New test.
+	* gcc.target/i386/pr101021-2.c: Ditto.
+
+2021-06-11  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/100788
+	* gcc.dg/pr100788.c: New test.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101009
+	* gcc.dg/torture/pr101009.c: New testcase.
+
 2021-06-11  Kewen Lin  <linkw@linux.ibm.com>
 
 	* gcc.target/powerpc/p9-fpcvt-3.c: New test.

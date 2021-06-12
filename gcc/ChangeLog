@@ -1,3 +1,104 @@
+2021-06-12  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* auto-profile.c (read_profile): fix a typo in an error string
+
+2021-06-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-pretty-print.h (dump_omp_clauses): Add 'bool = true'
+	default argument.
+	* tree-pretty-print.c (dump_omp_clauses): Update.
+	(dump_generic_node) <OMP_CLAUSE>: Use it.
+
+2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/101016
+	* config/arm/arm_mve.h (__arm_vld1q): Change __ARM_mve_coerce(p0,
+	int8_t const *) to __ARM_mve_coerce1(p0, int8_t *) in the argument for
+	the polymorphic variants matching code.
+	(__arm_vld1q_z): Likewise.
+	(__arm_vld2q): Likewise.
+	(__arm_vld4q): Likewise.
+	(__arm_vldrbq_gather_offset): Likewise.
+	(__arm_vldrbq_gather_offset_z): Likewise.
+
+2021-06-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/96392
+	* fold-const.h (tree_expr_maybe_real_minus_zero_p): Fix prototype.
+
+2021-06-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/96392
+	* fold-const.c (fold_real_zero_addition_p): Take both arguments
+	of the addition or subtraction, not just the zero.  Use this
+	other argument in tests for signaling NaNs and signed zeros.
+	(tree_expr_maybe_real_minus_zero_p): New predicate.
+	* fold-const.h (fold_real_zero_addition_p): Update prototype.
+	(tree_expr_maybe_real_minus_zero_p): New function prototype.
+	* match.pd: Update calls to fold_real_zero_addition_p.
+	Replace HONOR_NANS with tree_expr_maybe_nan_p.
+	Replace HONOR_SIGNED_ZEROS with tree_expr_maybe_real_minus_zero_p.
+	Replace HONOR_SNANS with tree_expr_maybe_signaling_nan_p.
+	* tree-ssa-reassoc.c (eliminate_using_constants): Update
+	call to fold_real_zero_addition_p.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101025
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Make sure to process
+	all refs that require dependence checking.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101028
+	* tree-vect-slp.c (vect_build_slp_tree_2): When SLP
+	reassoc discovery fails fatally, mark appropriate lanes
+	in matches[] so.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101026
+	* tree-vect-slp.c (vect_build_slp_tree_2): Make sure we
+	have a representative for the associated chain nodes.
+
+2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/101008
+	* simplify-rtx.c (relational_result): New function.
+	(simplify_logical_relational_operation,
+	simplify_relational_operation): Use it.
+
+2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101007
+	* config/i386/sse.md (*vec_concat<mode>_0_1): Require TARGET_SSE2.
+
+2021-06-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101021
+	* config/i386/i386-expand.c (expand_vec_perm_pshufb): Return
+	false if the permutation can be implemented with constant
+	permutation instruction in wider mode.
+	(canonicalize_vector_int_perm): Move above expand_vec_perm_pshufb.
+	Handle V8QImode and V4HImode.
+
+2021-06-11  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/100788
+	* common.opt: Add new option.
+	* coverage.c (coverage_begin_function): Emit warning instead on
+	the internal compiler error.
+	* doc/invoke.texi: Document the option.
+	* toplev.c (process_options): Enable it by default.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101009
+	* tree-data-ref.c (build_classic_dist_vector_1): Make sure
+	to set *init_b to true when we encounter a constant equal
+	index pair.
+	(compute_affine_dependence): Also dump the actual DR_REF.
+
 2021-06-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/100984

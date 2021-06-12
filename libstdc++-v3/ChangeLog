@@ -1,3 +1,16 @@
+2021-06-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/fs_path.h (operator==, operator<=>): Use new
+	_S_compare function.
+	(path::_S_compare): New function to call path::compare in a
+	context where path::iterator is complete.
+	* include/experimental/bits/fs_path.h (operator<, operator==):
+	Define after path::iterator is complete.
+	* testsuite/27_io/filesystem/path/native/conv_c++23.cc: New
+	test.
+	* testsuite/experimental/filesystem/path/native/conv_c++23.cc:
+	New test.
+
 2021-06-09  Thomas Rodgers  <rodgert@appliantology.com>
 
 	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Guard
