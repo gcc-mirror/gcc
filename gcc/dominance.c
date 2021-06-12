@@ -906,13 +906,13 @@ get_dominated_by (enum cdi_direction dir, basic_block bb)
    direction DIR) by some block between N_REGION ones stored in REGION,
    except for blocks in the REGION itself.  */
 
-vec<basic_block> 
+auto_vec<basic_block> 
 get_dominated_by_region (enum cdi_direction dir, basic_block *region,
 			 unsigned n_region)
 {
   unsigned i;
   basic_block dom;
-  vec<basic_block> doms = vNULL;
+  auto_vec<basic_block> doms;
 
   for (i = 0; i < n_region; i++)
     region[i]->flags |= BB_DUPLICATED;

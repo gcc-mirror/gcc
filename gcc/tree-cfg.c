@@ -6495,7 +6495,6 @@ gimple_duplicate_sese_region (edge entry, edge exit,
   bool free_region_copy = false, copying_header = false;
   class loop *loop = entry->dest->loop_father;
   edge exit_copy;
-  vec<basic_block> doms = vNULL;
   edge redirected;
   profile_count total_count = profile_count::uninitialized ();
   profile_count entry_count = profile_count::uninitialized ();
@@ -6549,9 +6548,9 @@ gimple_duplicate_sese_region (edge entry, edge exit,
 
   /* Record blocks outside the region that are dominated by something
      inside.  */
+  auto_vec<basic_block> doms;
   if (update_dominance)
     {
-      doms.create (0);
       doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
     }
 
@@ -6596,7 +6595,6 @@ gimple_duplicate_sese_region (edge entry, edge exit,
       set_immediate_dominator (CDI_DOMINATORS, entry->dest, entry->src);
       doms.safe_push (get_bb_original (entry->dest));
       iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-      doms.release ();
     }
 
   /* Add the other PHI node arguments.  */
@@ -6662,7 +6660,6 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
   class loop *loop = exit->dest->loop_father;
   class loop *orig_loop = entry->dest->loop_father;
   basic_block switch_bb, entry_bb, nentry_bb;
-  vec<basic_block> doms;
   profile_count total_count = profile_count::uninitialized (),
 		exit_count = profile_count::uninitialized ();
   edge exits[2], nexits[2], e;
@@ -6705,7 +6702,8 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
 
   /* Record blocks outside the region that are dominated by something
      inside.  */
-  doms = get_dominated_by_region (CDI_DOMINATORS, region, n_region);
+  auto_vec<basic_block> doms = get_dominated_by_region (CDI_DOMINATORS, region,
+							n_region);
 
   total_count = exit->src->count;
   exit_count = exit->count ();
@@ -6785,7 +6783,6 @@ gimple_duplicate_sese_tail (edge entry, edge exit,
   /* Anything that is outside of the region, but was dominated by something
      inside needs to update dominance info.  */
   iterate_fix_dominators (CDI_DOMINATORS, doms, false);
-  doms.release ();
   /* Update the SSA web.  */
   update_ssa (TODO_update_ssa);
 
@@ -7567,7 +7564,7 @@ basic_block
 move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 		        basic_block exit_bb, tree orig_block)
 {
-  vec<basic_block> bbs, dom_bbs;
+  vec<basic_block> bbs;
   basic_block dom_entry = get_immediate_dominator (CDI_DOMINATORS, entry_bb);
   basic_block after, bb, *entry_pred, *exit_succ, abb;
   struct function *saved_cfun = cfun;
@@ -7599,9 +7596,9 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
 
   /* The blocks that used to be dominated by something in BBS will now be
      dominated by the new block.  */
-  dom_bbs = get_dominated_by_region (CDI_DOMINATORS,
-				     bbs.address (),
-				     bbs.length ());
+  auto_vec<basic_block> dom_bbs = get_dominated_by_region (CDI_DOMINATORS,
+							   bbs.address (),
+							   bbs.length ());
 
   /* Detach ENTRY_BB and EXIT_BB from CFUN->CFG.  We need to remember
      the predecessor edges to ENTRY_BB and the successor edges to
@@ -7937,7 +7934,6 @@ move_sese_region_to_fn (struct function *dest_cfun, basic_block entry_bb,
   set_immediate_dominator (CDI_DOMINATORS, bb, dom_entry);
   FOR_EACH_VEC_ELT (dom_bbs, i, abb)
     set_immediate_dominator (CDI_DOMINATORS, abb, bb);
-  dom_bbs.release ();
 
   if (exit_bb)
     {
