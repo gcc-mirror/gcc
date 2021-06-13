@@ -63,8 +63,6 @@ static int value_replacement (basic_block, basic_block,
 			      edge, edge, gphi *, tree, tree);
 static bool minmax_replacement (basic_block, basic_block,
 				edge, edge, gphi *, tree, tree);
-static bool abs_replacement (basic_block, basic_block,
-			     edge, edge, gphi *, tree, tree);
 static bool spaceship_replacement (basic_block, basic_block,
 				   edge, edge, gphi *, tree, tree);
 static bool cond_removal_in_popcount_clz_ctz_pattern (basic_block, basic_block,
@@ -349,8 +347,6 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 	  else if (match_simplify_replacement (bb, bb1, e1, e2, phi,
 					       arg0, arg1,
 					       early_p))
-	    cfgchanged = true;
-	  else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (!early_p
 		   && cond_removal_in_popcount_clz_ctz_pattern (bb, bb1, e1,
@@ -2606,134 +2602,6 @@ cond_removal_in_popcount_clz_ctz_pattern (basic_block cond_bb,
   return true;
 }
 
-/*  The function absolute_replacement does the main work of doing the absolute
-    replacement.  Return true if the replacement is done.  Otherwise return
-    false.
-    bb is the basic block where the replacement is going to be done on.  arg0
-    is argument 0 from the phi.  Likewise for arg1.  */
-
-static bool
-abs_replacement (basic_block cond_bb, basic_block middle_bb,
-		 edge e0 ATTRIBUTE_UNUSED, edge e1,
-		 gphi *phi, tree arg0, tree arg1)
-{
-  tree result;
-  gassign *new_stmt;
-  gimple *cond;
-  gimple_stmt_iterator gsi;
-  edge true_edge, false_edge;
-  gimple *assign;
-  edge e;
-  tree rhs, lhs;
-  bool negate;
-  enum tree_code cond_code;
-
-  /* If the type says honor signed zeros we cannot do this
-     optimization.  */
-  if (HONOR_SIGNED_ZEROS (arg1))
-    return false;
-
-  /* OTHER_BLOCK must have only one executable statement which must have the
-     form arg0 = -arg1 or arg1 = -arg0.  */
-
-  assign = last_and_only_stmt (middle_bb);
-  /* If we did not find the proper negation assignment, then we cannot
-     optimize.  */
-  if (assign == NULL)
-    return false;
-
-  /* If we got here, then we have found the only executable statement
-     in OTHER_BLOCK.  If it is anything other than arg = -arg1 or
-     arg1 = -arg0, then we cannot optimize.  */
-  if (gimple_code (assign) != GIMPLE_ASSIGN)
-    return false;
-
-  lhs = gimple_assign_lhs (assign);
-
-  if (gimple_assign_rhs_code (assign) != NEGATE_EXPR)
-    return false;
-
-  rhs = gimple_assign_rhs1 (assign);
-
-  /* The assignment has to be arg0 = -arg1 or arg1 = -arg0.  */
-  if (!(lhs == arg0 && rhs == arg1)
-      && !(lhs == arg1 && rhs == arg0))
-    return false;
-
-  cond = last_stmt (cond_bb);
-  result = PHI_RESULT (phi);
-
-  /* Only relationals comparing arg[01] against zero are interesting.  */
-  cond_code = gimple_cond_code (cond);
-  if (cond_code != GT_EXPR && cond_code != GE_EXPR
-      && cond_code != LT_EXPR && cond_code != LE_EXPR)
-    return false;
-
-  /* Make sure the conditional is arg[01] OP y.  */
-  if (gimple_cond_lhs (cond) != rhs)
-    return false;
-
-  if (FLOAT_TYPE_P (TREE_TYPE (gimple_cond_rhs (cond)))
-	       ? real_zerop (gimple_cond_rhs (cond))
-	       : integer_zerop (gimple_cond_rhs (cond)))
-    ;
-  else
-    return false;
-
-  /* We need to know which is the true edge and which is the false
-     edge so that we know if have abs or negative abs.  */
-  extract_true_false_edges_from_block (cond_bb, &true_edge, &false_edge);
-
-  /* For GT_EXPR/GE_EXPR, if the true edge goes to OTHER_BLOCK, then we
-     will need to negate the result.  Similarly for LT_EXPR/LE_EXPR if
-     the false edge goes to OTHER_BLOCK.  */
-  if (cond_code == GT_EXPR || cond_code == GE_EXPR)
-    e = true_edge;
-  else
-    e = false_edge;
-
-  if (e->dest == middle_bb)
-    negate = true;
-  else
-    negate = false;
-
-  /* If the code negates only iff positive then make sure to not
-     introduce undefined behavior when negating or computing the absolute.
-     ???  We could use range info if present to check for arg1 == INT_MIN.  */
-  if (negate
-      && (ANY_INTEGRAL_TYPE_P (TREE_TYPE (arg1))
-	  && ! TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg1))))
-    return false;
-
-  result = duplicate_ssa_name (result, NULL);
-
-  if (negate)
-    lhs = make_ssa_name (TREE_TYPE (result));
-  else
-    lhs = result;
-
-  /* Build the modify expression with abs expression.  */
-  new_stmt = gimple_build_assign (lhs, ABS_EXPR, rhs);
-
-  gsi = gsi_last_bb (cond_bb);
-  gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
-
-  if (negate)
-    {
-      /* Get the right GSI.  We want to insert after the recently
-	 added ABS_EXPR statement (which we know is the first statement
-	 in the block.  */
-      new_stmt = gimple_build_assign (result, NEGATE_EXPR, lhs);
-
-      gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
-    }
-
-  replace_phi_edge_with_variable (cond_bb, e1, phi, result);
-
-  /* Note that we optimized this PHI.  */
-  return true;
-}
-
 /* Auxiliary functions to determine the set of memory accesses which
    can't trap because they are preceded by accesses to the same memory
    portion.  We do that for MEM_REFs, so we only need to track
@@ -3670,7 +3538,7 @@ gate_hoist_loads (void)
    ABS Replacement
    ---------------
 
-   This transformation, implemented in abs_replacement, replaces
+   This transformation, implemented in match_simplify_replacement, replaces
 
      bb0:
        if (a >= 0) goto bb2; else goto bb1;
