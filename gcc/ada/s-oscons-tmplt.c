@@ -1689,7 +1689,13 @@ CND(IPV6_DSTOPTS, "Set the destination options delivery")
 CND(IPV6_HOPOPTS, "Set the hop options delivery")
 
 #ifndef IPV6_FLOWINFO
+#ifdef __linux__
+/* The IPV6_FLOWINFO is defined in linux/in6.h, but we can't include it because
+ * of conflicts with other headers. */
+# define IPV6_FLOWINFO 11
+#else
 # define IPV6_FLOWINFO -1
+#endif
 #endif
 CND(IPV6_FLOWINFO, "Set the flow ID delivery")
 
