@@ -2595,6 +2595,8 @@ df_ref_record (enum df_ref_class cl,
 	    ref_flags |= DF_REF_PARTIAL;
 	  ref_flags |= DF_REF_MW_HARDREG;
 
+	  gcc_assert (regno < endregno);
+
 	  hardreg = problem_data->mw_reg_pool->allocate ();
 	  hardreg->type = ref_type;
 	  hardreg->flags = ref_flags;
