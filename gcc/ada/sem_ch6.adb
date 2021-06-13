@@ -3454,7 +3454,12 @@ package body Sem_Ch6 is
                   --  Link the body and the generated spec
 
                   Set_Corresponding_Body (Decl, Body_Id);
-                  Set_Corresponding_Spec (N, Subp);
+
+                  if Nkind (N) = N_Subprogram_Body_Stub then
+                     Set_Corresponding_Spec_Of_Stub (N, Subp);
+                  else
+                     Set_Corresponding_Spec (N, Subp);
+                  end if;
 
                   Set_Defining_Unit_Name (Specification (Decl), Subp);
 
