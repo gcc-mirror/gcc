@@ -69,14 +69,6 @@
   ""
   [(set_attr "length" "8,2")])
 
-(define_insn "*andqi3_1<cczn>"
-  [(set (match_operand:QI 0 "register_operand" "=r")
-	(and:QI (match_operand:QI 1 "register_operand" "%0")
-		(match_operand:QI 2 "h8300_src_operand" "rn")))
-   (clobber (reg:CC CC_REG))]
-  ""
-  "and  %X2,%X0"
-  [(set_attr "length" "2")])
 
 (define_insn_and_split "*andor<mode>3"
   [(set (match_operand:QHSI 0 "register_operand" "=r")
@@ -179,27 +171,49 @@
 		(match_operand:QI 2 "h8300_src_operand" "Y2,rQi")))]
   "TARGET_H8300SX || register_operand (operands[0], QImode)
    || single_one_operand (operands[2], QImode)"
-  "#"
-  "&& reload_completed"
+  { return <CODE> == IOR ? "bset\\t%V2,%R0" : "bnot\\t%V2,%R0"; }
+  "&& reload_completed && !single_one_operand (operands[2], QImode)"
   [(parallel [(set (match_dup 0) (ors:QI (match_dup 1) (match_dup 2)))
-	      (clobber (reg:CC CC_REG))])])
+	      (clobber (reg:CC CC_REG))])]
+  ""
+  [(set_attr "length" "8")])
 
-(define_insn "<code>qi3_1_clobber_flags"
-  [(set (match_operand:QI 0 "bit_operand" "=U,rQ")
-	(ors:QI (match_operand:QI 1 "bit_operand" "%0,0")
-		(match_operand:QI 2 "h8300_src_operand" "Y2,rQi")))
+(define_insn "*<code>qi3_1<cczn>"
+  [(set (match_operand:QI 0 "bit_operand" "=rQ")
+	(ors:QI (match_operand:QI 1 "bit_operand" "%0")
+		(match_operand:QI 2 "h8300_src_operand" "rQi")))
    (clobber (reg:CC CC_REG))]
-  "TARGET_H8300SX || register_operand (operands[0], QImode)
-   || single_one_operand (operands[2], QImode)"
-  {
-    if (which_alternative == 0)
-      return <CODE> == IOR ? "bset\\t%V2,%R0" : "bnot\\t%V2,%R0";
-    else if (which_alternative == 1)
-      return <CODE> == IOR ? "or\\t%X2,%X0" : "xor\\t%X2,%X0";
-    gcc_unreachable ();
+  "TARGET_H8300SX"
+  { return <CODE> == IOR ? "or\\t%X2,%X0" : "xor\\t%X2,%X0"; }
+  [(set_attr "length" "*")
+   (set_attr "length_table" "logicb")])
+
+(define_insn "*<code>qi3_1<cczn>"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(ors:QI (match_operand:QI 1 "register_operand" "%0")
+		(match_operand:QI 2 "h8300_src_operand" "ri")))
+   (clobber (reg:CC CC_REG))]
+  "TARGET_H8300SX"
+  { return <CODE> == IOR ? "or\\t%X2,%X0" : "xor\\t%X2,%X0"; }
+  [(set_attr "length" "*")
+   (set_attr "length_table" "logicb")])
+
+(define_insn "*<code>qi3_1<cczn>"
+  [(set (match_operand:QI 0 "register_operand" "=r")
+	(logicals:QI (match_operand:QI 1 "register_operand" "%0")
+		     (match_operand:QI 2 "h8300_src_operand" "rn")))
+   (clobber (reg:CC CC_REG))]
+  ""
+  { 
+    if (<CODE> == IOR)
+      return "or\\t%X2,%X0";
+    else if (<CODE> == XOR)
+      return "xor\\t%X2,%X0";
+    else if (<CODE> == AND)
+      return "and\\t%X2,%X0";
+   gcc_unreachable ();
   }
-  [(set_attr "length" "8,*")
-   (set_attr "length_table" "*,logicb")])
+  [(set_attr "length" "2")])
 
 ;; ----------------------------------------------------------------------
 ;; {AND,IOR,XOR}{HI3,SI3} PATTERNS
