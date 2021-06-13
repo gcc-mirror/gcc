@@ -1,3 +1,19 @@
+2021-06-12  David Edelsohn  <dje.gcc@gmail.com>
+
+	* g++.dg/ext/builtin-shufflevector-2.C: Ignore psabi warning.
+	* gcc.dg/uninit-pr93100.c: Skip on AIX.
+	* gcc.target/powerpc/pr100085.c: Require int128 and float128.
+
+2021-06-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/ext/attrib62.C: No longer warn.
+	* g++.dg/diagnostic/maybe_unused1.C: New test.
+
+2021-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101029
+	* g++.dg/ext/array4.C: New test.
+
 2021-06-11  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/check-builtin-vec_rlnm-runnable.c
