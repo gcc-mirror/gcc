@@ -156,7 +156,9 @@ author_line_regex = \
         re.compile(r'^(?P<datetime>\d{4}-\d{2}-\d{2})\ {2}(?P<name>.*  <.*>)')
 additional_author_regex = re.compile(r'^\t(?P<spaces>\ *)?(?P<name>.*  <.*>)')
 changelog_regex = re.compile(r'^(?:[fF]or +)?([a-z0-9+-/]*)ChangeLog:?')
-pr_regex = re.compile(r'\tPR (?P<component>[a-z+-]+\/)?([0-9]+)$')
+subject_pr_regex = re.compile(r'(^|\W)PR\s+(?P<component>[a-zA-Z+-]+)/(?P<pr>\d{4,7})')
+subject_pr2_regex = re.compile(r'[(\[]PR\s*(?P<pr>\d{4,7})[)\]]')
+pr_regex = re.compile(r'\tPR (?P<component>[a-z+-]+\/)?(?P<pr>[0-9]+)$')
 dr_regex = re.compile(r'\tDR ([0-9]+)$')
 star_prefix_regex = re.compile(r'\t\*(?P<spaces>\ *)(?P<content>.*)')
 end_of_location_regex = re.compile(r'[\[<(:]')
@@ -298,6 +300,7 @@ class GitCommit:
         self.top_level_authors = []
         self.co_authors = []
         self.top_level_prs = []
+        self.subject_prs = set()
         self.cherry_pick_commit = None
         self.revert_commit = None
         self.commit_to_info_hook = commit_to_info_hook
@@ -307,6 +310,9 @@ class GitCommit:
         if self.info.lines and self.info.lines[0] == 'Update copyright years.':
             return
 
+        if self.info.lines and len(self.info.lines) > 1 and self.info.lines[1]:
+            self.errors.append(Error('Expected empty second line in commit message', info.lines[0]))
+
         # Identify first if the commit is a Revert commit
         for line in self.info.lines:
             m = revert_regex.match(line)
@@ -315,6 +321,19 @@ class GitCommit:
                 break
         if self.revert_commit:
             self.info = self.commit_to_info_hook(self.revert_commit)
+
+        # The following happens for get_email.py:
+        if not self.info:
+            return
+
+        # Extract PR numbers form the subject line
+        # Match either [PRnnnn] / (PRnnnn) or PR component/nnnn
+        if self.info.lines and not self.revert_commit:
+            self.subject_prs = {m.group('pr') for m in subject_pr2_regex.finditer(info.lines[0])}
+            for m in subject_pr_regex.finditer(info.lines[0]):
+                if not m.group('component') in bug_components:
+                    self.errors.append(Error('invalid PR component in subject', info.lines[0]))
+                self.subject_prs.add(m.group('pr'))
 
         # Allow complete deletion of ChangeLog files in a commit
         project_files = [f for f in self.info.modified_files
@@ -346,6 +365,9 @@ class GitCommit:
             if not self.errors:
                 self.check_mentioned_files()
                 self.check_for_correct_changelog()
+        if self.subject_prs:
+            self.errors.append(Error('PR %s in subject but not in changelog' %
+                                     ', '.join(self.subject_prs), self.info.lines[0]))
 
     @property
     def success(self):
@@ -460,7 +482,9 @@ class GitCommit:
                     else:
                         author_tuple = (m.group('name'), None)
                 elif pr_regex.match(line):
-                    component = pr_regex.match(line).group('component')
+                    m = pr_regex.match(line)
+                    component = m.group('component')
+                    pr = m.group('pr')
                     if not component:
                         self.errors.append(Error('missing PR component', line))
                         continue
@@ -469,6 +493,8 @@ class GitCommit:
                         continue
                     else:
                         pr_line = line.lstrip()
+                    if pr in self.subject_prs:
+                        self.subject_prs.remove(pr)
                 elif dr_regex.match(line):
                     pr_line = line.lstrip()
 

@@ -427,3 +427,16 @@ class TestGccChangelog(unittest.TestCase):
     def test_multi_same_file(self):
         email = self.from_patch_glob('0001-OpenMP-Fix-SIMT')
         assert email.errors[0].message == 'same file specified multiple times'
+
+    def test_pr_only_in_subject(self):
+        email = self.from_patch_glob('0001-rs6000-Support-doubleword')
+        assert (email.errors[0].message ==
+                'PR 100085 in subject but not in changelog')
+
+    def test_wrong_pr_comp_in_subject(self):
+        email = self.from_patch_glob('pr-wrong-comp.patch')
+        assert email.errors[0].message == 'invalid PR component in subject'
+
+    def test_copyright_years(self):
+        email = self.from_patch_glob('copyright-years.patch')
+        assert not email.errors

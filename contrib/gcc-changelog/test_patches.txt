@@ -1461,6 +1461,7 @@ Subject: [PATCH 0030/2034] 	PR c++/92746 - ICE with noexcept of function
 Another place that needs to specially handle Concepts TS function-style
 concepts.
 
+	PR c++/92746
 	* except.c (check_noexcept_r): Handle concept-check.
 ---
  gcc/cp/ChangeLog                            | 3 +++
@@ -1977,7 +1978,7 @@ index aac31d02b6c..56c470f6ecf 100644
 From 5194b51ed9714808d88827531e91474895b6c706 Mon Sep 17 00:00:00 2001
 From: Jason Merrill <jason@redhat.com>
 Date: Thu, 16 Jan 2020 16:55:39 -0500
-Subject: [PATCH 0121/2034] PR c++/93286 - ICE with __is_constructible and
+Subject: [PATCH 0121/2034] PR c++/12345 - ICE with __is_constructible and
  variadic template.
 
 Here we had been recursing in tsubst_copy_and_build if type2 was a TREE_LIST
@@ -3402,6 +3403,63 @@ new file mode 100644
 index 00000000000..21540512e23
 --- /dev/null
 +++ b/libgomp/testsuite/libgomp.c-c++-common/reduction-6.c
+@@ -0,0 +1,1 @@
++
+-- 
+2.25.1
+=== 0001-rs6000-Support-doubleword ===
+From f700e4b0ee3ef53b48975cf89be26b9177e3a3f3 Mon Sep 17 00:00:00 2001
+From: Xionghu Luo <luoxhu@linux.ibm.com>
+Date: Tue, 8 Jun 2021 21:48:12 -0500
+Subject: [PATCH] rs6000: Support doubleword swaps removal in rot64 load store
+ [PR100085]
+
+gcc/testsuite/ChangeLog:
+
+	* gcc.target/powerpc/pr100085.c: New test.
+---
+diff --git a/gcc/testsuite/gcc.target/powerpc/pr100085.c b/gcc/testsuite/gcc.target/powerpc/pr100085.c
+new file mode 100644
+index 00000000000..7d8b147b127
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/powerpc/pr100085.c
+@@ -0,0 +1,1 @@
++
+-- 
+2.25.1
+=== pr-wrong-comp.patch ===
+From 5194b51ed9714808d88827531e91474895b6c706 Mon Sep 17 00:00:00 2001
+From: Jason Merrill <jason@redhat.com>
+Date: Thu, 16 Jan 2020 16:55:39 -0500
+Subject: [PATCH 0121/2034] PR some/93286 - ICE with __is_constructible and
+ variadic template.
+
+gcc/testsuite/ChangeLog:
+
+	PR c++/93286
+	* gcc.target/powerpc/pr100085.c: New test.
+---
+diff --git a/gcc/testsuite/gcc.target/powerpc/pr100085.c b/gcc/testsuite/gcc.target/powerpc/pr100085.c
+new file mode 100644
+index 00000000000..7d8b147b127
+--- /dev/null
++++ b/gcc/testsuite/gcc.target/powerpc/pr100085.c
+@@ -0,0 +1,1 @@
++
+-- 
+2.25.1
+==== copyright-years.patch ===
+From 99dee82307f1e163e150c9c810452979994047ce Mon Sep 17 00:00:00 2001
+From: Jakub Jelinek <jakub@redhat.com>
+Date: Mon, 4 Jan 2021 10:26:59 +0100
+Subject: [PATCH] Update copyright years.
+
+---
+diff --git a/lto-plugin/lto-plugin.c b/lto-plugin/lto-plugin.c
+new file mode 100644
+index 6f67552d075..32478f070e8 100644
+--- a/lto-plugin/lto-plugin.c
++++ b/lto-plugin/lto-plugin.c
 @@ -0,0 +1,1 @@
 +
 -- 
