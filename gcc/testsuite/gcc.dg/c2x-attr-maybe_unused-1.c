@@ -20,7 +20,7 @@ g ([[maybe_unused]] int x, int y)
 
 struct [[maybe_unused]] s { double d; };
 
-struct s2 { [[__maybe_unused__]] int a; int b [[maybe_unused]]; } x; /* { dg-warning "attribute ignored" } */
+struct s2 { [[__maybe_unused__]] int a; int b [[maybe_unused]]; } x;
 
 enum e { E1 [[maybe_unused]] };
 
@@ -28,4 +28,4 @@ union [[maybe_unused]] u { int x; };
 
 enum [[maybe_unused]] eu { E2 };
 
-union u2 { [[maybe_unused]] int a; int b [[maybe_unused]]; } y; /* { dg-warning "attribute ignored" } */
+union u2 { [[maybe_unused]] int a; int b [[maybe_unused]]; } y;
