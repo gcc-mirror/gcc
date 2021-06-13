@@ -836,7 +836,8 @@ phiopt_early_allow (enum tree_code code)
    with parts pushed if EARLY_P was true. Also rejects non allowed tree code
    if EARLY_P is set.
    Takes the comparison from COMP_STMT and two args, ARG0 and ARG1 and tries
-   to simplify CMP ? ARG0 : ARG1.  */
+   to simplify CMP ? ARG0 : ARG1.
+   Also try to simplify (!CMP) ? ARG1 : ARG0 if the non-inverse failed.  */
 static tree
 gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
 			tree arg0, tree arg1,
@@ -865,6 +866,30 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
 	  || phiopt_early_allow ((tree_code)op.code))
 	{
 	  result = maybe_push_res_to_seq (&op, seq);
+	  if (result)
+	    return result;
+	}
+    }
+  /* Try the inverted comparison, that is !COMP ? ARG1 : ARG0. */
+  comp_code = invert_tree_comparison (comp_code, HONOR_NANS (cmp0));
+
+  if (comp_code == ERROR_MARK)
+    return NULL;
+
+  cond = build2_loc (loc,
+		     comp_code, boolean_type_node,
+		     cmp0, cmp1);
+  gimple_match_op op1 (gimple_match_cond::UNCOND,
+		       COND_EXPR, type, cond, arg1, arg0);
+
+  if (op1.resimplify (early_p ? NULL : seq, follow_all_ssa_edges))
+    {
+      /* Early we want only to allow some generated tree codes. */
+      if (!early_p
+	  || op1.code.is_tree_code ()
+	  || phiopt_early_allow ((tree_code)op1.code))
+	{
+	  result = maybe_push_res_to_seq (&op1, seq);
 	  if (result)
 	    return result;
 	}
