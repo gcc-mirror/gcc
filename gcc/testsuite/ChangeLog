@@ -1,3 +1,13 @@
+2021-06-13  Jason Merrill  <jason@redhat.com>
+
+	* gcc.dg/c2x-attr-maybe_unused-1.c: Expect no warnings.
+
+2021-06-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101023
+	* g++.target/i386/pr101023a.C: New test.
+	* g++.target/i386/pr101023b.C: Likewise.
+
 2021-06-12  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/ext/builtin-shufflevector-2.C: Ignore psabi warning.

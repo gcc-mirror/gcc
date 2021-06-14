@@ -1,3 +1,22 @@
+2021-06-13  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* call-string.cc (call_string::call_string): Use range based for
+	to iterate over vec<>.
+	(call_string::to_json): Likewise.
+	(call_string::hash): Likewise.
+	(call_string::calc_recursion_depth): Likewise.
+	* checker-path.cc (checker_path::fixup_locations): Likewise.
+	* constraint-manager.cc (equiv_class::equiv_class): Likewise.
+	(equiv_class::to_json): Likewise.
+	(equiv_class::hash): Likewise.
+	(constraint_manager::to_json): Likewise.
+	* engine.cc (impl_region_model_context::on_svalue_leak):
+	Likewise.
+	(on_liveness_change): Likewise.
+	(impl_region_model_context::on_unknown_change): Likewise.
+	* program-state.cc (sm_state_map::set_state): Likewise.
+	* region-model.cc (test_canonicalization_4): Likewise.
+
 2021-06-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* engine.cc (worklist::key_t::cmp): Move sort by call_string to

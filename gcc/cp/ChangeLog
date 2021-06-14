@@ -1,3 +1,14 @@
+2021-06-13  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* constexpr.c (cxx_eval_call_expression): Iterate over vec<>
+	with range based for.
+	(cxx_eval_store_expression): Likewise.
+	(cxx_eval_loop_expr): Likewise.
+	* decl.c (wrapup_namespace_globals): Likewise.
+	(cp_finish_decl): Likewise.
+	(cxx_simulate_enum_decl): Likewise.
+	* parser.c (cp_parser_postfix_expression): Likewise.
+
 2021-06-12  Jason Merrill  <jason@redhat.com>
 
 	PR c++/101029
