@@ -1097,8 +1097,10 @@ private:
   {
     TyTy::BaseType *root_tyty = nullptr;
     *offset = 0;
-    for (auto &seg : expr.get_segments ())
+    for (size_t i = 0; i < expr.get_num_segments (); i++)
       {
+	HIR::PathExprSegment &seg = expr.get_segments ().at (i);
+	bool have_more_segments = i < expr.get_num_segments ();
 	bool is_root = *offset == 0;
 	NodeId ast_node_id = seg.get_mappings ().get_nodeid ();
 
@@ -1146,6 +1148,25 @@ private:
 	      }
 	    return root_tyty;
 	  }
+
+	// FIXME
+	// modules are not going to have an explicit TyTy.In this case we
+	// can probably do some kind of check. By looking up if the HirId ref
+	// node is a module and continue. If the path expression is single
+	// segment of module we can error with expected value but found module
+	// or something.
+	//
+	// Something like this
+	//
+	// bool seg_is_module = mappings->lookup_module (ref);
+	// if (seg_is_module)
+	//   {
+	//     if (have_more_segments)
+	//       continue;
+	//
+	//     rust_error_at (seg.get_locus (), "expected value");
+	//     return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+	//   }
 
 	TyTy::BaseType *lookup = nullptr;
 	if (!context->lookup_type (ref, &lookup))
