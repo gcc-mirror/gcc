@@ -806,6 +806,16 @@ namespace std
 	}
     };
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3465. compare_partial_order_fallback requires F < E
+    template<typename _Tp, typename _Up>
+      concept __op_eq_lt_lt = __op_eq_lt<_Tp, _Up>
+	&& requires(_Tp&& __t, _Up&& __u)
+	{
+	  { static_cast<_Up&&>(__u) < static_cast<_Tp&&>(__t) }
+	    -> convertible_to<bool>;
+	};
+
     class _Partial_fallback
     {
       template<typename _Tp, typename _Up>
@@ -821,7 +831,7 @@ namespace std
 
     public:
       template<typename _Tp, __decayed_same_as<_Tp> _Up>
-	requires __partially_ordered<_Tp, _Up> || __op_eq_lt<_Tp, _Up>
+	requires __partially_ordered<_Tp, _Up> || __op_eq_lt_lt<_Tp, _Up>
 	constexpr partial_ordering
 	operator()(_Tp&& __e, _Up&& __f) const
 	noexcept(_S_noexcept<_Tp, _Up>())
@@ -829,7 +839,7 @@ namespace std
 	  if constexpr (__partially_ordered<_Tp, _Up>)
 	    return _Partial_order{}(static_cast<_Tp&&>(__e),
 				    static_cast<_Up&&>(__f));
-	  else // __op_eq_lt<_Tp, _Up>
+	  else // __op_eq_lt_lt<_Tp, _Up>
 	    return static_cast<_Tp&&>(__e) == static_cast<_Up&&>(__f)
 	      ? partial_ordering::equivalent
 	      : static_cast<_Tp&&>(__e) < static_cast<_Up&&>(__f)
