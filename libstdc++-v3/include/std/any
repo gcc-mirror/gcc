@@ -205,7 +205,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// the contained object.
     template <typename _Tp, typename _Up, typename... _Args,
 	      typename _VTp = decay_t<_Tp>, typename _Mgr = _Manager<_VTp>,
-	      __any_constructible_t<_VTp, initializer_list<_Up>,
+	      __any_constructible_t<_VTp, initializer_list<_Up>&,
 				    _Args&&...> = false>
       explicit
       any(in_place_type_t<_Tp>, initializer_list<_Up> __il, _Args&&... __args)
@@ -271,7 +271,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// Emplace with an object created from @p __il and @p __args as
     /// the contained object.
     template <typename _Tp, typename _Up, typename... _Args>
-      __emplace_t<decay_t<_Tp>, initializer_list<_Up>, _Args&&...>
+      __emplace_t<decay_t<_Tp>, initializer_list<_Up>&, _Args&&...>
       emplace(initializer_list<_Up> __il, _Args&&... __args)
       {
 	using _VTp = decay_t<_Tp>;
