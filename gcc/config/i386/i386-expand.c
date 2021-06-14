@@ -17593,12 +17593,15 @@ expand_vec_perm_pshufb (struct expand_vec_perm_d *d)
 	return false;
     }
 
-  /* Try to avoid variable permutation instruction.  */
-  if (canonicalize_vector_int_perm (d, &nd) && expand_vec_perm_1 (&nd))
-    return false;
-
   if (d->testing_p)
     return true;
+
+  /* Try to avoid variable permutation instruction.  */
+  if (canonicalize_vector_int_perm (d, &nd) && expand_vec_perm_1 (&nd))
+    {
+      emit_move_insn (d->target, gen_lowpart (d->vmode, nd.target));
+      return true;
+    }
 
   if (vmode == V8SImode)
     for (i = 0; i < 8; ++i)

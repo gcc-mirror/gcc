@@ -1284,16 +1284,19 @@ maybe_invalidate (gimple *stmt, bool zero_write = false)
 	continue;
 
       ao_ref r;
-      tree size = NULL_TREE;
-      if (si->nonzero_chars)
-	{
-	  /* Include the terminating nul in the size of the string
-	     to consider when determining possible clobber.  */
-	  tree type = TREE_TYPE (si->nonzero_chars);
-	  size = fold_build2 (PLUS_EXPR, type, si->nonzero_chars,
-			      build_int_cst (type, 1));
-	}
+      tree size = si->nonzero_chars;
       ao_ref_init_from_ptr_and_size (&r, si->ptr, size);
+      /* Include the terminating nul in the size of the string
+	 to consider when determining possible clobber.  But do not
+	 add it to 'size' since we don't know whether it would
+	 actually fit the allocated area.  */
+      if (known_size_p (r.size))
+	{
+	  if (known_le (r.size, HOST_WIDE_INT_MAX - BITS_PER_UNIT))
+	    r.max_size += BITS_PER_UNIT;
+	  else
+	    r.max_size = -1;
+	}
       if (stmt_may_clobber_ref_p_1 (stmt, &r))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))

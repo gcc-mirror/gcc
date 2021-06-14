@@ -198,10 +198,8 @@ timer::named_items::pop ()
 void
 timer::named_items::print (FILE *fp, const timevar_time_def *total)
 {
-  unsigned int i;
-  const char *item_name;
   fprintf (fp, "Client items:\n");
-  FOR_EACH_VEC_ELT (m_names, i, item_name)
+  for (const char *item_name : m_names)
     {
       timer::timevar_def *def = m_hash_map.get (item_name);
       gcc_assert (def);

@@ -365,11 +365,9 @@ static bool
 any_access_function_variant_p (const struct data_reference *a,
 			       const class loop *loop_nest)
 {
-  unsigned int i;
   vec<tree> fns = DR_ACCESS_FNS (a);
-  tree t;
 
-  FOR_EACH_VEC_ELT (fns, i, t)
+  for (tree t : fns)
     if (!evolution_function_is_invariant_p (t, loop_nest->num))
       return true;
 

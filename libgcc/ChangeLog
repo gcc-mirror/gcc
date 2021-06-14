@@ -1,3 +1,11 @@
+2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/99939
+	* config/arm/cmse_nonsecure_call.S: Add	__ARM_FEATURE_MVE
+	macro.
+	* config/arm/t-arm: To link cmse.o and cmse_nonsecure_call.o
+	on passing -mcmse option.
+
 2021-06-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/quad-float128.h: Guard all uses of [U]TItype_ppc by

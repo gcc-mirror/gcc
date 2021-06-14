@@ -1001,9 +1001,7 @@ checker_path::add_final_event (const state_machine *sm,
 void
 checker_path::fixup_locations (pending_diagnostic *pd)
 {
-  checker_event *e;
-  int i;
-  FOR_EACH_VEC_ELT (m_events, i, e)
+  for (checker_event *e : m_events)
     e->set_location (pd->fixup_location (e->get_location ()));
 }
 

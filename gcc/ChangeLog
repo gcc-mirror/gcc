@@ -1,3 +1,200 @@
+2021-06-13  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101021
+	* config/i386/i386-expand.c (expand_vec_perm_pshufb):
+	Emit constant permutation insn directly from here.
+
+2021-06-13  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* attribs.c (find_attribute_namespace): Iterate over vec<> with
+	range based for.
+	* auto-profile.c (afdo_find_equiv_class): Likewise.
+	* gcc.c (do_specs_vec): Likewise.
+	(do_spec_1): Likewise.
+	(driver::set_up_specs): Likewise.
+	* gimple-loop-jam.c (any_access_function_variant_p): Likewise.
+	* gimple-ssa-store-merging.c (compatible_load_p): Likewise.
+	(imm_store_chain_info::try_coalesce_bswap): Likewise.
+	(imm_store_chain_info::coalesce_immediate_stores): Likewise.
+	(get_location_for_stmts): Likewise.
+	* graphite-poly.c (print_iteration_domains): Likewise.
+	(free_poly_bb): Likewise.
+	(remove_gbbs_in_scop): Likewise.
+	(free_scop): Likewise.
+	(dump_gbb_cases): Likewise.
+	(dump_gbb_conditions): Likewise.
+	(print_pdrs): Likewise.
+	(print_scop): Likewise.
+	* ifcvt.c (cond_move_process_if_block): Likewise.
+	* lower-subreg.c (decompose_multiword_subregs): Likewise.
+	* regcprop.c (pass_cprop_hardreg::execute): Likewise.
+	* sanopt.c (sanitize_rewrite_addressable_params): Likewise.
+	* sel-sched-dump.c (dump_insn_vector): Likewise.
+	* store-motion.c (store_ops_ok): Likewise.
+	(store_killed_in_insn): Likewise.
+	* timevar.c (timer::named_items::print): Likewise.
+	* tree-cfgcleanup.c (cleanup_control_flow_pre): Likewise.
+	(cleanup_tree_cfg_noloop): Likewise.
+	* tree-data-ref.c (dump_data_references): Likewise.
+	(print_dir_vectors): Likewise.
+	(print_dist_vectors): Likewise.
+	(dump_data_dependence_relations): Likewise.
+	(dump_dist_dir_vectors): Likewise.
+	(dump_ddrs): Likewise.
+	(create_runtime_alias_checks): Likewise.
+	(free_subscripts): Likewise.
+	(save_dist_v): Likewise.
+	(save_dir_v): Likewise.
+	(invariant_access_functions): Likewise.
+	(same_access_functions): Likewise.
+	(access_functions_are_affine_or_constant_p): Likewise.
+	(find_data_references_in_stmt): Likewise.
+	(graphite_find_data_references_in_stmt): Likewise.
+	(free_dependence_relations): Likewise.
+	(free_data_refs): Likewise.
+	* tree-inline.c (copy_debug_stmts): Likewise.
+	* tree-into-ssa.c (dump_currdefs): Likewise.
+	(rewrite_update_phi_arguments): Likewise.
+	* tree-ssa-propagate.c (clean_up_loop_closed_phi): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_possibly_independent_ddr):
+	Likewise.
+	(vect_slp_analyze_node_dependences): Likewise.
+	(vect_slp_analyze_instance_dependence): Likewise.
+	(vect_record_base_alignments): Likewise.
+	(vect_get_peeling_costs_all_drs): Likewise.
+	(vect_peeling_supportable): Likewise.
+	* tree-vectorizer.c (vec_info::~vec_info): Likewise.
+	(vec_info::free_stmt_vec_infos): Likewise.
+
+2021-06-13  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/h8300/logical.md (<code>qi3_1<cczn>): New pattern.
+	(andqi3_1<cczn>): Removed.
+	(<ors>qi3_1): Do not split for IOR/XOR a single bit.
+	(H8/SX bit logicals): Split out from other patterns.
+	* config/h8300/multiply.md (mulqihi3_const<cczn>): Renamed from
+	mulqihi3_const_clobber_flags.
+	(mulqihi3<cczn>, mulhisi3_const<cczn>, mulhisi3<cczn>): Similarly
+
+2021-06-13  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/101023
+	* config/i386/i386.c (ix86_expand_prologue): Set red_zone_used
+	to true if red zone is used.
+	(ix86_output_indirect_jmp): Replace ix86_red_zone_size with
+	ix86_red_zone_used.
+	* config/i386/i386.h (machine_function): Add red_zone_used.
+	(ix86_red_zone_size): Removed.
+	(ix86_red_zone_used): New.
+	* config/i386/i386.md (peephole2 patterns): Replace
+	ix86_red_zone_size with ix86_red_zone_used.
+
+2021-06-12  Jason Merrill  <jason@redhat.com>
+
+	* doc/extend.texi (unused variable attribute): Applies to
+	structure fields as well.
+
+2021-06-12  Eugene Rozenfeld  <erozen@microsoft.com>
+
+	* auto-profile.c (read_profile): fix a typo in an error string
+
+2021-06-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-pretty-print.h (dump_omp_clauses): Add 'bool = true'
+	default argument.
+	* tree-pretty-print.c (dump_omp_clauses): Update.
+	(dump_generic_node) <OMP_CLAUSE>: Use it.
+
+2021-06-11  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	PR target/101016
+	* config/arm/arm_mve.h (__arm_vld1q): Change __ARM_mve_coerce(p0,
+	int8_t const *) to __ARM_mve_coerce1(p0, int8_t *) in the argument for
+	the polymorphic variants matching code.
+	(__arm_vld1q_z): Likewise.
+	(__arm_vld2q): Likewise.
+	(__arm_vld4q): Likewise.
+	(__arm_vldrbq_gather_offset): Likewise.
+	(__arm_vldrbq_gather_offset_z): Likewise.
+
+2021-06-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/96392
+	* fold-const.h (tree_expr_maybe_real_minus_zero_p): Fix prototype.
+
+2021-06-11  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/96392
+	* fold-const.c (fold_real_zero_addition_p): Take both arguments
+	of the addition or subtraction, not just the zero.  Use this
+	other argument in tests for signaling NaNs and signed zeros.
+	(tree_expr_maybe_real_minus_zero_p): New predicate.
+	* fold-const.h (fold_real_zero_addition_p): Update prototype.
+	(tree_expr_maybe_real_minus_zero_p): New function prototype.
+	* match.pd: Update calls to fold_real_zero_addition_p.
+	Replace HONOR_NANS with tree_expr_maybe_nan_p.
+	Replace HONOR_SIGNED_ZEROS with tree_expr_maybe_real_minus_zero_p.
+	Replace HONOR_SNANS with tree_expr_maybe_signaling_nan_p.
+	* tree-ssa-reassoc.c (eliminate_using_constants): Update
+	call to fold_real_zero_addition_p.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101025
+	* tree-ssa-loop-im.c (sm_seq_valid_bb): Make sure to process
+	all refs that require dependence checking.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101028
+	* tree-vect-slp.c (vect_build_slp_tree_2): When SLP
+	reassoc discovery fails fatally, mark appropriate lanes
+	in matches[] so.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101026
+	* tree-vect-slp.c (vect_build_slp_tree_2): Make sure we
+	have a representative for the associated chain nodes.
+
+2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/101008
+	* simplify-rtx.c (relational_result): New function.
+	(simplify_logical_relational_operation,
+	simplify_relational_operation): Use it.
+
+2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/101007
+	* config/i386/sse.md (*vec_concat<mode>_0_1): Require TARGET_SSE2.
+
+2021-06-11  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101021
+	* config/i386/i386-expand.c (expand_vec_perm_pshufb): Return
+	false if the permutation can be implemented with constant
+	permutation instruction in wider mode.
+	(canonicalize_vector_int_perm): Move above expand_vec_perm_pshufb.
+	Handle V8QImode and V4HImode.
+
+2021-06-11  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/100788
+	* common.opt: Add new option.
+	* coverage.c (coverage_begin_function): Emit warning instead on
+	the internal compiler error.
+	* doc/invoke.texi: Document the option.
+	* toplev.c (process_options): Enable it by default.
+
+2021-06-11  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/101009
+	* tree-data-ref.c (build_classic_dist_vector_1): Make sure
+	to set *init_b to true when we encounter a constant equal
+	index pair.
+	(compute_affine_dependence): Also dump the actual DR_REF.
+
 2021-06-10  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/100984

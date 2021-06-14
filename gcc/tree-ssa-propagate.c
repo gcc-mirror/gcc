@@ -1258,8 +1258,6 @@ propagate_tree_value_into_stmt (gimple_stmt_iterator *gsi, tree val)
 unsigned
 clean_up_loop_closed_phi (function *fun)
 {
-  unsigned i;
-  edge e;
   gphi *phi;
   tree rhs;
   tree lhs;
@@ -1280,7 +1278,7 @@ clean_up_loop_closed_phi (function *fun)
     {
       /* Check each exit edege of loop.  */
       auto_vec<edge> exits = get_loop_exit_edges (loop);
-      FOR_EACH_VEC_ELT (exits, i, e)
+      for (edge e : exits)
 	if (single_pred_p (e->dest))
 	  /* Walk over loop-closed PHIs.  */
 	  for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi);)

@@ -1,6 +1,7 @@
 /* PR tree-optimization/93100 - gcc -fsanitize=address inhibits -Wuninitialized
    { dg-do compile }
-   { dg-options "-Wall -fsanitize=address" } */
+   { dg-options "-Wall -fsanitize=address" }
+   { dg-skip-if "sanitize address" { "powerpc-ibm-aix*" } } */
 
 struct A
 {

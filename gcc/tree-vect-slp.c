@@ -1849,18 +1849,34 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		 mismatch still hard-FAIL.  */
 	      if (chain_len == 0)
 		hard_fail = false;
+	      else
+		{
+		  matches[lane] = false;
+		  /* ???  We might want to process the other lanes, but
+		     make sure to not give false matching hints to the
+		     caller for lanes we did not process.  */
+		  if (lane != group_size - 1)
+		    matches[0] = false;
+		}
 	      break;
 	    }
 	  else if (chain_len == 0)
 	    chain_len = chain.length ();
 	  else if (chain.length () != chain_len)
-	    /* ???  Here we could slip in magic to compensate with
-	       neutral operands.  */
-	    break;
+	    {
+	      /* ???  Here we could slip in magic to compensate with
+		 neutral operands.  */
+	      matches[lane] = false;
+	      if (lane != group_size - 1)
+		matches[0] = false;
+	      break;
+	    }
 	  chains.quick_push (chain.copy ());
 	  chain.truncate (0);
 	}
-      if (chains.length () == group_size)
+      if (chains.length () == group_size
+	  /* We cannot yet use SLP_TREE_CODE to communicate the operation.  */
+	  && op_stmt_info)
 	{
 	  /* Now we have a set of chains with the same length.  */
 	  /* 1. pre-sort according to def_type and operation.  */
@@ -1903,6 +1919,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		    dump_printf_loc (MSG_NOTE, vect_location,
 				     "giving up on chain due to mismatched "
 				     "def types\n");
+		  matches[lane] = false;
+		  if (lane != group_size - 1)
+		    matches[0] = false;
 		  goto out;
 		}
 	      if (dt == vect_constant_def
@@ -1981,6 +2000,9 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 			dump_printf_loc (MSG_NOTE, vect_location,
 					 "failed to match up op %d\n", n);
 		      op_stmts.release ();
+		      matches[lane] = false;
+		      if (lane != group_size - 1)
+			matches[0] = false;
 		      goto out;
 		    }
 		  if (dump_enabled_p ())

@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target int128 } */
+/* { dg-require-effective-target float128 } */
 /* { dg-options "-O2 -mdejagnu-cpu=power8" } */
 
 typedef __vector unsigned __int128 vui128_t;

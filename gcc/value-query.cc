@@ -397,14 +397,20 @@ get_range_global (irange &r, tree name)
     r.set_varying (type);
 }
 
-// ?? Like above, but only for default definitions of NAME.  This is
-// so VRP passes using ranger do not start with known ranges,
-// otherwise we'd eliminate builtin_unreachables too early because of
-// inlining.
+// This is where the ranger picks up global info to seed initial
+// requests.  It is a slightly restricted version of
+// get_range_global() above.
+//
+// The reason for the difference is that we can always pick the
+// default definition of an SSA with no adverse effects, but for other
+// SSAs, if we pick things up to early, we may prematurely eliminate
+// builtin_unreachables.
 //
 // Without this restriction, the test in g++.dg/tree-ssa/pr61034.C has
-// all of its unreachable calls removed too early.  We should
-// investigate whether we should just adjust the test above.
+// all of its unreachable calls removed too early.
+//
+// See discussion here:
+// https://gcc.gnu.org/pipermail/gcc-patches/2021-June/571709.html
 
 value_range
 gimple_range_global (tree name)
@@ -412,7 +418,7 @@ gimple_range_global (tree name)
   gcc_checking_assert (gimple_range_ssa_p (name));
   tree type = TREE_TYPE (name);
 
-  if (SSA_NAME_IS_DEFAULT_DEF (name))
+  if (SSA_NAME_IS_DEFAULT_DEF (name) || (cfun && cfun->after_inlining))
     {
       value_range vr;
       get_range_global (vr, name);

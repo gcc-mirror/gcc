@@ -121,9 +121,7 @@ void
 impl_region_model_context::on_svalue_leak (const svalue *sval)
 
 {
-  int sm_idx;
-  sm_state_map *smap;
-  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+  for (sm_state_map *smap : m_new_state->m_checker_states)
     smap->on_svalue_leak (sval, this);
 }
 
@@ -132,9 +130,7 @@ impl_region_model_context::
 on_liveness_change (const svalue_set &live_svalues,
 		    const region_model *model)
 {
-  int sm_idx;
-  sm_state_map *smap;
-  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+  for (sm_state_map *smap : m_new_state->m_checker_states)
     smap->on_liveness_change (live_svalues, model, this);
 }
 
@@ -142,9 +138,7 @@ void
 impl_region_model_context::on_unknown_change (const svalue *sval,
 					      bool is_mutable)
 {
-  int sm_idx;
-  sm_state_map *smap;
-  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+  for (sm_state_map *smap : m_new_state->m_checker_states)
     smap->on_unknown_change (sval, is_mutable, m_ext_state);
 }
 
@@ -2004,7 +1998,25 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
 	return cmp;
     }
 
-  /* First, order by SCC.  */
+  /* Sort by callstring, so that nodes with deeper call strings are processed
+     before those with shallower call strings.
+     If we have
+         splitting BB
+             /  \
+            /    \
+       fn call   no fn call
+            \    /
+             \  /
+            join BB
+     then we want the path inside the function call to be fully explored up
+     to the return to the join BB before we explore on the "no fn call" path,
+     so that both enodes at the join BB reach the front of the worklist at
+     the same time and thus have a chance of being merged.  */
+  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
+  if (cs_cmp)
+    return cs_cmp;
+
+  /* Order by SCC.  */
   int scc_id_a = ka.get_scc_id (ka.m_enode);
   int scc_id_b = kb.get_scc_id (kb.m_enode);
   if (scc_id_a != scc_id_b)
@@ -2032,11 +2044,6 @@ worklist::key_t::cmp (const worklist::key_t &ka, const worklist::key_t &kb)
     return snode_a->m_index - snode_b->m_index;
 
   gcc_assert (snode_a == snode_b);
-
-  /* The points might vary by callstring; try sorting by callstring.  */
-  int cs_cmp = call_string::cmp (call_string_a, call_string_b);
-  if (cs_cmp)
-    return cs_cmp;
 
   /* Order within supernode via program point.  */
   int within_snode_cmp

@@ -528,10 +528,7 @@ dump_flist (flist_t l)
 void
 dump_insn_vector (rtx_vec_t succs)
 {
-  int i;
-  rtx_insn *succ;
-
-  FOR_EACH_VEC_ELT (succs, i, succ)
+  for (rtx_insn *succ : succs)
     if (succ)
       dump_insn (succ);
     else

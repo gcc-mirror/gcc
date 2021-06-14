@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target powerpc_p9vector_ok } */
+/* { dg-require-effective-target p9vector_hw } */
 /* { dg-options "-O2 -mdejagnu-cpu=power9 -save-temps" } */
 
 /* Verify the vec_rlm and vec_rlmi builtins works correctly.  */

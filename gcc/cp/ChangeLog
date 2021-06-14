@@ -1,3 +1,61 @@
+2021-06-13  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* constexpr.c (cxx_eval_call_expression): Iterate over vec<>
+	with range based for.
+	(cxx_eval_store_expression): Likewise.
+	(cxx_eval_loop_expr): Likewise.
+	* decl.c (wrapup_namespace_globals): Likewise.
+	(cp_finish_decl): Likewise.
+	(cxx_simulate_enum_decl): Likewise.
+	* parser.c (cp_parser_postfix_expression): Likewise.
+
+2021-06-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/101029
+	* init.c (build_vec_init): Shortcut [0] case.
+
+2021-06-12  Jason Merrill  <jason@redhat.com>
+
+	* pt.c (lookup_template_class_1): Shortcut current_class_type.
+
+2021-06-11  Patrick Palka  <ppalka@redhat.com>
+
+	DR 1227
+	PR c++/96560
+	* pt.c (tsubst_arg_types): Rearrange so that we substitute into
+	TYPE_ARG_TYPES in forward order while short circuiting
+	appropriately.  Adjust formatting.
+
+2021-06-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/100974
+	* cp-tree.h (struct saved_scope): Add consteval_if_p
+	member.  Formatting fix for the discarded_stmt comment.
+	(in_consteval_if_p, IF_STMT_CONSTEVAL_P): Define.
+	* parser.c (cp_parser_lambda_expression): Temporarily disable
+	in_consteval_if_p when parsing lambda body.
+	(cp_parser_selection_statement): Parse consteval if.
+	* decl.c (struct named_label_entry): Add in_consteval_if member.
+	(level_for_consteval_if): New function.
+	(poplevel_named_label_1, check_previous_goto_1, check_goto): Handle
+	consteval if.
+	* constexpr.c (cxx_eval_builtin_function_call): Clarify in comment
+	why CP_BUILT_IN_IS_CONSTANT_EVALUATED needs to *non_constant_p
+	for !ctx->manifestly_const_eval.
+	(cxx_eval_conditional_expression): For IF_STMT_CONSTEVAL_P evaluate
+	condition as if it was __builtin_is_constant_evaluated call.
+	(potential_constant_expression_1): For IF_STMT_CONSTEVAL_P always
+	recurse on both branches.
+	* cp-gimplify.c (genericize_if_stmt): Genericize IF_STMT_CONSTEVAL_P
+	as the else branch.
+	* pt.c (tsubst_expr) <case IF_STMT>: Copy IF_STMT_CONSTEVAL_P.
+	Temporarily set in_consteval_if_p when recursing on
+	IF_STMT_CONSTEVAL_P then branch.
+	(tsubst_lambda_expr): Temporarily disable
+	in_consteval_if_p when instantiating lambda body.
+	* call.c (immediate_invocation_p): Return false when
+	in_consteval_if_p.
+
 2021-06-11  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/100995

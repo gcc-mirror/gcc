@@ -69,6 +69,5 @@ void test(int n)
 
   free (it);
 
-  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
-  // TODO: why 2 enodes here, rather than 1
+  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
 }

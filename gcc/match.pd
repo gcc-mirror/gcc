@@ -152,13 +152,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    Likewise if the operands are reversed.  */
 (simplify
  (plus:c @0 real_zerop@1)
- (if (fold_real_zero_addition_p (type, @1, 0))
+ (if (fold_real_zero_addition_p (type, @0, @1, 0))
   (non_lvalue @0)))
 
 /* See if ARG1 is zero and X - ARG1 reduces to X.  */
 (simplify
  (minus @0 real_zerop@1)
- (if (fold_real_zero_addition_p (type, @1, 1))
+ (if (fold_real_zero_addition_p (type, @0, @1, 1))
   (non_lvalue @0)))
 
 /* Even if the fold_real_zero_addition_p can't simplify X + 0.0
@@ -190,7 +190,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    is volatile.  */
 (simplify
  (minus @0 @0)
- (if (!FLOAT_TYPE_P (type) || !HONOR_NANS (type))
+ (if (!FLOAT_TYPE_P (type) || !tree_expr_maybe_nan_p (@0))
   { build_zero_cst (type); }))
 (simplify
  (pointer_diff @@0 @0)
@@ -206,14 +206,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    negative value by 0 gives -0, not +0.  */
 (simplify
  (mult @0 real_zerop@1)
- (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+ (if (!tree_expr_maybe_nan_p (@0)
+      && !tree_expr_maybe_real_minus_zero_p (@0)
+      && !tree_expr_maybe_real_minus_zero_p (@1))
   @1))
 
 /* In IEEE floating point, x*1 is not equivalent to x for snans.
    Likewise for complex arithmetic with signed zeros.  */
 (simplify
  (mult @0 real_onep)
- (if (!HONOR_SNANS (type)
+ (if (!tree_expr_maybe_signaling_nan_p (@0)
       && (!HONOR_SIGNED_ZEROS (type)
           || !COMPLEX_FLOAT_TYPE_P (type)))
   (non_lvalue @0)))
@@ -221,7 +223,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Transform x * -1.0 into -x.  */
 (simplify
  (mult @0 real_minus_onep)
-  (if (!HONOR_SNANS (type)
+  (if (!tree_expr_maybe_signaling_nan_p (@0)
        && (!HONOR_SIGNED_ZEROS (type)
            || !COMPLEX_FLOAT_TYPE_P (type)))
    (negate @0)))
@@ -259,7 +261,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* Transform X * (X <= 0.0 ? 1.0 : -1.0) into -abs(X). */
  (simplify
   (mult:c @0 (cond (cmp @0 real_zerop) real_onep@1 real_minus_onep))
-  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+  (if (!tree_expr_maybe_nan_p (@0) && !HONOR_SIGNED_ZEROS (type))
    (outp (abs @0))))
  /* Transform X * (X > 0.0 ? -1.0 : 1.0) into -abs(X). */
  /* Transform X * (X >= 0.0 ? -1.0 : 1.0) into -abs(X). */
@@ -267,19 +269,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* Transform X * (X <= 0.0 ? -1.0 : 1.0) into abs(X). */
  (simplify
   (mult:c @0 (cond (cmp @0 real_zerop) real_minus_onep real_onep@1))
-  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+  (if (!tree_expr_maybe_nan_p (@0) && !HONOR_SIGNED_ZEROS (type))
    (outn (abs @0)))))
 
 /* Transform X * copysign (1.0, X) into abs(X). */
 (simplify
  (mult:c @0 (COPYSIGN_ALL real_onep @0))
- (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+ (if (!tree_expr_maybe_nan_p (@0) && !HONOR_SIGNED_ZEROS (type))
   (abs @0)))
 
 /* Transform X * copysign (1.0, -X) into -abs(X). */
 (simplify
  (mult:c @0 (COPYSIGN_ALL real_onep (negate @0)))
- (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+ (if (!tree_expr_maybe_nan_p (@0) && !HONOR_SIGNED_ZEROS (type))
   (negate (abs @0))))
 
 /* Transform copysign (CST, X) into copysign (ABS(CST), X). */
@@ -444,13 +446,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* In IEEE floating point, x/1 is not equivalent to x for snans.  */
 (simplify
  (rdiv @0 real_onep)
- (if (!HONOR_SNANS (type))
+ (if (!tree_expr_maybe_signaling_nan_p (@0))
   (non_lvalue @0)))
 
 /* In IEEE floating point, x/-1 is not equivalent to -x for snans.  */
 (simplify
  (rdiv @0 real_minus_onep)
- (if (!HONOR_SNANS (type))
+ (if (!tree_expr_maybe_signaling_nan_p (@0))
   (negate @0)))
 
 (if (flag_reciprocal_math)
@@ -3543,7 +3545,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (-ARG1 + ARG0) reduces to -ARG1.  */
 (simplify
  (minus real_zerop@0 @1)
- (if (fold_real_zero_addition_p (type, @0, 0))
+ (if (fold_real_zero_addition_p (type, @1, @0, 0))
   (negate @1)))
 
 /* Transform x * -1 into -x.  */

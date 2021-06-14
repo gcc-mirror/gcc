@@ -2663,6 +2663,9 @@ struct GTY(()) machine_function {
      invalid calls.  */
   BOOL_BITFIELD silent_p : 1;
 
+  /* True if red zone is used.  */
+  BOOL_BITFIELD red_zone_used : 1;
+
   /* The largest alignment, in bytes, of stack slot actually used.  */
   unsigned int max_used_stack_alignment;
 
@@ -2693,7 +2696,7 @@ extern GTY(()) tree ms_va_list_type_node;
 #define ix86_current_function_calls_tls_descriptor \
   (ix86_tls_descriptor_calls_expanded_in_cfun && df_regs_ever_live_p (SP_REG))
 #define ix86_static_chain_on_stack (cfun->machine->static_chain_on_stack)
-#define ix86_red_zone_size (cfun->machine->frame.red_zone_size)
+#define ix86_red_zone_used (cfun->machine->red_zone_used)
 
 /* Control behavior of x86_file_start.  */
 #define X86_FILE_START_VERSION_DIRECTIVE false

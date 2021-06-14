@@ -3260,13 +3260,10 @@ copy_debug_stmt (gdebug *stmt, copy_body_data *id)
 static void
 copy_debug_stmts (copy_body_data *id)
 {
-  size_t i;
-  gdebug *stmt;
-
   if (!id->debug_stmts.exists ())
     return;
 
-  FOR_EACH_VEC_ELT (id->debug_stmts, i, stmt)
+  for (gdebug *stmt : id->debug_stmts)
     copy_debug_stmt (stmt, id);
 
   id->debug_stmts.release ();

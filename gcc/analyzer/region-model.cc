@@ -4294,9 +4294,7 @@ test_canonicalization_4 ()
   region_model_manager mgr;
   region_model model (&mgr);
 
-  unsigned i;
-  tree cst;
-  FOR_EACH_VEC_ELT (csts, i, cst)
+  for (tree cst : csts)
     model.get_rvalue (cst, NULL);
 
   model.canonicalize ();

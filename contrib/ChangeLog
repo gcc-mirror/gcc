@@ -1,3 +1,17 @@
+2021-06-13  Tobias Burnus  <tobias@codesourcery.com>
+
+	* gcc-changelog/git_commit.py (pr_regex): Add ?P<pr> for group('pr').
+	(subject_pr_regex, subject_pr2_regex): New.
+	(GitInfo.__init__, GitCommit.parse_changelog): Check subject PRs.
+	* gcc-changelog/git_email.py (SUBJECT_PREFIX, subject_patch_regex): New.
+	(GitEmail.__init__): Parse 'Subject:' and pass it to GitInfo.
+	* gcc-changelog/test_email.py (test_pr_only_in_subject,
+	test_wrong_pr_comp_in_subject, test_copyright_years): New.
+	* gcc-changelog/test_patches.txt (0030-PR-c-92746, pr-check1.patch):
+	Update to avoid triggering the new check.
+	(0001-rs6000-Support-doubleword, pr-wrong-comp.patch,
+	copyright-years.patch): New.
+
 2021-06-11  Martin Liska  <mliska@suse.cz>
 
 	* gcc-changelog/git_update_version.py: Ignore commit that

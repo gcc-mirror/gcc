@@ -3,10 +3,10 @@
 TEST_OUTPUT:
 ---
 fail_compilation/fail238_m64.d(21): Error: cannot implicitly convert expression `"a"` of type `string` to `ulong`
-fail_compilation/fail238_m64.d(24): Error: cannot interpret X!() at compile time
-fail_compilation/fail238_m64.d(29): Error: template instance fail238_m64.A!"a" error instantiating
-fail_compilation/fail238_m64.d(35):        instantiated from here: M!(q)
-fail_compilation/fail238_m64.d(35):        while evaluating pragma(msg, M!(q))
+fail_compilation/fail238_m64.d(24): Error: cannot implicitly convert expression `X!()` of type `void` to `const(string)`
+fail_compilation/fail238_m64.d(29): Error: template instance `fail238_m64.A!"a"` error instantiating
+fail_compilation/fail238_m64.d(35):        instantiated from here: `M!(q)`
+fail_compilation/fail238_m64.d(35):        while evaluating `pragma(msg, M!(q))`
 ---
 */
 

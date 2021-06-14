@@ -222,6 +222,7 @@ struct GTY((for_user)) named_label_entry {
   bool in_omp_scope;
   bool in_transaction_scope;
   bool in_constexpr_if;
+  bool in_consteval_if;
 };
 
 #define named_labels cp_function_chain->x_named_labels
@@ -491,6 +492,16 @@ level_for_constexpr_if (cp_binding_level *b)
 	  && IF_STMT_CONSTEXPR_P (b->this_entity));
 }
 
+/* True if B is the level for the condition of a consteval if.  */
+
+static bool
+level_for_consteval_if (cp_binding_level *b)
+{
+  return (b->kind == sk_cond && b->this_entity
+	  && TREE_CODE (b->this_entity) == IF_STMT
+	  && IF_STMT_CONSTEVAL_P (b->this_entity));
+}
+
 /* Update data for defined and undefined labels when leaving a scope.  */
 
 int
@@ -530,6 +541,8 @@ poplevel_named_label_1 (named_label_entry **slot, cp_binding_level *bl)
 	case sk_block:
 	  if (level_for_constexpr_if (bl->level_chain))
 	    ent->in_constexpr_if = true;
+	  else if (level_for_consteval_if (bl->level_chain))
+	    ent->in_consteval_if = true;
 	  break;
 	default:
 	  break;
@@ -828,9 +841,7 @@ wrapup_namespace_globals ()
 {
   if (vec<tree, va_gc> *statics = static_decls)
     {
-      tree decl;
-      unsigned int i;
-      FOR_EACH_VEC_ELT (*statics, i, decl)
+      for (tree decl : *statics)
 	{
 	  if (warn_unused_function
 	      && TREE_CODE (decl) == FUNCTION_DECL
@@ -3391,6 +3402,7 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
   bool complained = false;
   int identified = 0;
   bool saw_eh = false, saw_omp = false, saw_tm = false, saw_cxif = false;
+  bool saw_ceif = false;
 
   if (exited_omp)
     {
@@ -3469,6 +3481,12 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	      inf = G_("  enters %<constexpr if%> statement");
 	      loc = EXPR_LOCATION (b->level_chain->this_entity);
 	      saw_cxif = true;
+	    }
+	  else if (!saw_ceif && level_for_consteval_if (b->level_chain))
+	    {
+	      inf = G_("  enters %<consteval if%> statement");
+	      loc = EXPR_LOCATION (b->level_chain->this_entity);
+	      saw_ceif = true;
 	    }
 	  break;
 
@@ -3551,12 +3569,13 @@ check_goto (tree decl)
   unsigned ix;
 
   if (ent->in_try_scope || ent->in_catch_scope || ent->in_transaction_scope
-      || ent->in_constexpr_if
+      || ent->in_constexpr_if || ent->in_consteval_if
       || ent->in_omp_scope || !vec_safe_is_empty (ent->bad_decls))
     {
       diagnostic_t diag_kind = DK_PERMERROR;
       if (ent->in_try_scope || ent->in_catch_scope || ent->in_constexpr_if
-	  || ent->in_transaction_scope || ent->in_omp_scope)
+	  || ent->in_consteval_if || ent->in_transaction_scope
+	  || ent->in_omp_scope)
 	diag_kind = DK_ERROR;
       complained = identify_goto (decl, DECL_SOURCE_LOCATION (decl),
 				  &input_location, diag_kind);
@@ -3602,6 +3621,8 @@ check_goto (tree decl)
 	inform (input_location, "  enters synchronized or atomic statement");
       else if (ent->in_constexpr_if)
 	inform (input_location, "  enters %<constexpr if%> statement");
+      else if (ent->in_consteval_if)
+	inform (input_location, "  enters %<consteval if%> statement");
     }
 
   if (ent->in_omp_scope)
@@ -8237,8 +8258,7 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
      reference, insert it in the statement-tree now.  */
   if (cleanups)
     {
-      unsigned i; tree t;
-      FOR_EACH_VEC_ELT (*cleanups, i, t)
+      for (tree t : *cleanups)
 	push_cleanup (decl, t, false);
       release_tree_vector (cleanups);
     }
@@ -16392,11 +16412,9 @@ cxx_simulate_enum_decl (location_t loc, const char *name,
   SET_OPAQUE_ENUM_P (enumtype, false);
   DECL_SOURCE_LOCATION (TYPE_NAME (enumtype)) = loc;
 
-  string_int_pair *value;
-  unsigned int i;
-  FOR_EACH_VEC_ELT (values, i, value)
-    build_enumerator (get_identifier (value->first),
-		      build_int_cst (integer_type_node, value->second),
+  for (const string_int_pair &value : values)
+    build_enumerator (get_identifier (value.first),
+		      build_int_cst (integer_type_node, value.second),
 		      enumtype, NULL_TREE, loc);
 
   finish_enum_value_list (enumtype);
