@@ -15,6 +15,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-options "-std=gnu++17" }
 // { dg-do compile { target c++17 } }
 
 // Ensure the library only uses the __name__ form for attributes.
