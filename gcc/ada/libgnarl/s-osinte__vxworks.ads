@@ -242,9 +242,9 @@ package System.OS_Interface is
 
    type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
      .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
-   --  Time_t here used to be unsigned to match the VxWorks header
-   --  declaration. The header declaration has changed in newer release
-   --  and is now signed for applications.
+   --  Time_t here used to be unsigned to match the VxWorks header declaration.
+   --  The header declaration has changed in newer releases and is now signed
+   --  for applications.
 
    type timespec is record
       ts_sec  : time_t;

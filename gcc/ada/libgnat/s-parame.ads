@@ -105,7 +105,7 @@ package System.Parameters is
    ------------------------------------
 
    time_t_bits : constant := Long_Integer'Size;
-   --  Number of bits in type time_t.
+   --  Number of bits in type time_t
 
    ----------------------------------------------
    -- Characteristics of types in Interfaces.C --

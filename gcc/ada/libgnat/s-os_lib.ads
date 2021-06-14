@@ -168,18 +168,17 @@ package System.OS_Lib is
    -- Time_t Stuff --
    ------------------
 
-   --  Note: Do not use time_t in the compiler and host based tools,
-   --  instead use OS_Time. These 3 declarations are indended for use only
-   --  by consumers of the GNAT.OS_Lib renaming of this package.
+   --  Note: Do not use time_t in the compiler and host-based tools; instead
+   --  use OS_Time. These 3 declarations are intended for use only by consumers
+   --  of the GNAT.OS_Lib renaming of this package.
 
    subtype time_t is Long_Long_Integer;
-   --  C time_t can be either long or long long, but this is a subtype
-   --  not used in the compiler or tools, but only for user
-   --  applications, so we choose the Ada equivalent of the latter
-   --  because eventually that will be the type used out of necessity.
-   --  This may effect some user code on 32 bit targets that have not yet
-   --  migrated to the Posix 2008 standard, particularly pre version 5
-   --  32 bit Linux.
+   --  C time_t can be either long or long long, but this is a subtype not used
+   --  in the compiler or tools, but only for user applications, so we choose
+   --  the Ada equivalent of the latter because eventually that will be the
+   --  type used out of necessity. This may affect some user code on 32-bit
+   --  targets that have not yet migrated to the Posix 2008 standard,
+   --  particularly pre version 5 32-bit Linux.
 
    function To_C (Time : OS_Time) return time_t;
    --  Convert OS_Time to C time_t type
