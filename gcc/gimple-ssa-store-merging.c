@@ -2541,8 +2541,6 @@ compatible_load_p (merged_store_group *merged_store,
      clobbers those loads.  */
   gimple *first = merged_store->first_stmt;
   gimple *last = merged_store->last_stmt;
-  unsigned int i;
-  store_immediate_info *infoc;
   /* The stores are sorted by increasing store bitpos, so if info->stmt store
      comes before the so far first load, we'll be changing
      merged_store->first_stmt.  In that case we need to give up if
@@ -2550,7 +2548,7 @@ compatible_load_p (merged_store_group *merged_store,
      range.  */
   if (info->order < merged_store->first_order)
     {
-      FOR_EACH_VEC_ELT (merged_store->stores, i, infoc)
+      for (store_immediate_info *infoc : merged_store->stores)
 	if (stmts_may_clobber_ref_p (info->stmt, first, infoc->ops[idx].val))
 	  return false;
       first = info->stmt;
@@ -2560,7 +2558,7 @@ compatible_load_p (merged_store_group *merged_store,
      processed loads.  */
   else if (info->order > merged_store->last_order)
     {
-      FOR_EACH_VEC_ELT (merged_store->stores, i, infoc)
+      for (store_immediate_info *infoc : merged_store->stores)
 	if (stmts_may_clobber_ref_p (last, info->stmt, infoc->ops[idx].val))
 	  return false;
       last = info->stmt;
@@ -2884,9 +2882,7 @@ imm_store_chain_info::try_coalesce_bswap (merged_store_group *merged_store,
 	gather_bswap_load_refs (&refs,
 				gimple_assign_rhs1 (m_store_info[i]->stmt));
 
-      unsigned int i;
-      tree ref;
-      FOR_EACH_VEC_ELT (refs, i, ref)
+      for (tree ref : refs)
 	if (stmts_may_clobber_ref_p (first_stmt, last_stmt, ref))
 	  return false;
       n.vuse = NULL_TREE;
@@ -3199,9 +3195,7 @@ imm_store_chain_info::coalesce_immediate_stores ()
 		}
 	      else if (infof->rhs_code == MEM_REF && info->rhs_code != MEM_REF)
 		{
-		  store_immediate_info *infoj;
-		  unsigned int j;
-		  FOR_EACH_VEC_ELT (merged_store->stores, j, infoj)
+		  for (store_immediate_info *infoj : merged_store->stores)
 		    {
 		      infoj->rhs_code = BIT_INSERT_EXPR;
 		      infoj->ops[0].val = gimple_assign_rhs1 (infoj->stmt);
@@ -3323,10 +3317,7 @@ get_alias_type_for_stmts (vec<gimple *> &stmts, bool is_load,
 static location_t
 get_location_for_stmts (vec<gimple *> &stmts)
 {
-  gimple *stmt;
-  unsigned int i;
-
-  FOR_EACH_VEC_ELT (stmts, i, stmt)
+  for (gimple *stmt : stmts)
     if (gimple_has_location (stmt))
       return gimple_location (stmt);
 

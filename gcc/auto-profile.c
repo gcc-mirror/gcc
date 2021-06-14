@@ -939,7 +939,7 @@ read_profile (void)
   unsigned version = gcov_read_unsigned ();
   if (version != AUTO_PROFILE_VERSION)
     {
-      error ("AutoFDO profile version %u does match %u",
+      error ("AutoFDO profile version %u does not match %u",
 	     version, AUTO_PROFILE_VERSION);
       return;
     }
@@ -1156,14 +1156,12 @@ afdo_find_equiv_class (bb_set *annotated_bb)
   FOR_ALL_BB_FN (bb, cfun)
   {
     vec<basic_block> dom_bbs;
-    basic_block bb1;
-    int i;
 
     if (bb->aux != NULL)
       continue;
     bb->aux = bb;
     dom_bbs = get_dominated_by (CDI_DOMINATORS, bb);
-    FOR_EACH_VEC_ELT (dom_bbs, i, bb1)
+    for (basic_block bb1 : dom_bbs)
       if (bb1->aux == NULL && dominated_by_p (CDI_POST_DOMINATORS, bb, bb1)
 	  && bb1->loop_father == bb->loop_father)
 	{
@@ -1175,7 +1173,7 @@ afdo_find_equiv_class (bb_set *annotated_bb)
 	    }
 	}
     dom_bbs = get_dominated_by (CDI_POST_DOMINATORS, bb);
-    FOR_EACH_VEC_ELT (dom_bbs, i, bb1)
+    for (basic_block bb1 : dom_bbs)
       if (bb1->aux == NULL && dominated_by_p (CDI_DOMINATORS, bb, bb1)
 	  && bb1->loop_father == bb->loop_father)
 	{

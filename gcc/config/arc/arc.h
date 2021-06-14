@@ -100,7 +100,11 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
   "%:cpu_to_as(%{mcpu=*:%*}) %{mspfp*} %{mdpfp*} "                      \
   "%{mfpu=fpuda*:-mfpuda} %{mcode-density}"
 
+/* Support for a compile-time default CPU and FPU.  The rules are:
+   --with-cpu is ignored if -mcpu, mARC*, marc*, mA7, mA6 are specified.
+   --with-fpu is ignored if -mfpu is specified.  */
 #define OPTION_DEFAULT_SPECS						\
+  {"fpu", "%{!mfpu=*:-mfpu=%(VALUE)}"},					\
   {"cpu", "%{!mcpu=*:%{!mARC*:%{!marc*:%{!mA7:%{!mA6:-mcpu=%(VALUE)}}}}}" }
 
 #ifndef DRIVER_ENDIAN_SELF_SPECS

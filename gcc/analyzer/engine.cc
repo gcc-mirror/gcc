@@ -121,9 +121,7 @@ void
 impl_region_model_context::on_svalue_leak (const svalue *sval)
 
 {
-  int sm_idx;
-  sm_state_map *smap;
-  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+  for (sm_state_map *smap : m_new_state->m_checker_states)
     smap->on_svalue_leak (sval, this);
 }
 
@@ -132,9 +130,7 @@ impl_region_model_context::
 on_liveness_change (const svalue_set &live_svalues,
 		    const region_model *model)
 {
-  int sm_idx;
-  sm_state_map *smap;
-  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+  for (sm_state_map *smap : m_new_state->m_checker_states)
     smap->on_liveness_change (live_svalues, model, this);
 }
 
@@ -142,9 +138,7 @@ void
 impl_region_model_context::on_unknown_change (const svalue *sval,
 					      bool is_mutable)
 {
-  int sm_idx;
-  sm_state_map *smap;
-  FOR_EACH_VEC_ELT (m_new_state->m_checker_states, sm_idx, smap)
+  for (sm_state_map *smap : m_new_state->m_checker_states)
     smap->on_unknown_change (sval, is_mutable, m_ext_state);
 }
 

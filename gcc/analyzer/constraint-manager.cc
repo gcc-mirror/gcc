@@ -270,9 +270,7 @@ equiv_class::equiv_class (const equiv_class &other)
 : m_constant (other.m_constant), m_cst_sval (other.m_cst_sval),
   m_vars (other.m_vars.length ())
 {
-  int i;
-  const svalue *sval;
-  FOR_EACH_VEC_ELT (other.m_vars, i, sval)
+  for (const svalue *sval : other.m_vars)
     m_vars.quick_push (sval);
 }
 
@@ -310,9 +308,7 @@ equiv_class::to_json () const
   json::object *ec_obj = new json::object ();
 
   json::array *sval_arr = new json::array ();
-  int i;
-  const svalue *sval;
-  FOR_EACH_VEC_ELT (m_vars, i, sval)
+  for (const svalue *sval : m_vars)
     sval_arr->append (sval->to_json ());
   ec_obj->set ("svals", sval_arr);
 
@@ -337,9 +333,7 @@ equiv_class::hash () const
   inchash::hash hstate;
 
   inchash::add_expr (m_constant, hstate);
-  int i;
-  const svalue *sval;
-  FOR_EACH_VEC_ELT (m_vars, i, sval)
+  for (const svalue * sval : m_vars)
     hstate.add_ptr (sval);
   return hstate.end ();
 }
@@ -811,9 +805,7 @@ constraint_manager::to_json () const
   /* Equivalence classes.  */
   {
     json::array *ec_arr = new json::array ();
-    int i;
-    equiv_class *ec;
-    FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
+    for (const equiv_class *ec : m_equiv_classes)
       ec_arr->append (ec->to_json ());
     cm_obj->set ("ecs", ec_arr);
   }
@@ -821,10 +813,8 @@ constraint_manager::to_json () const
   /* Constraints.  */
   {
     json::array *con_arr = new json::array ();
-    int i;
-    constraint *c;
-    FOR_EACH_VEC_ELT (m_constraints, i, c)
-      con_arr->append (c->to_json ());
+    for (const constraint &c : m_constraints)
+      con_arr->append (c.to_json ());
     cm_obj->set ("constraints", con_arr);
   }
 

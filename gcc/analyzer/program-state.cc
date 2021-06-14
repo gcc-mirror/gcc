@@ -441,10 +441,8 @@ sm_state_map::set_state (const equiv_class &ec,
 			 const svalue *origin,
 			 const extrinsic_state &ext_state)
 {
-  int i;
-  const svalue *sval;
   bool any_changed = false;
-  FOR_EACH_VEC_ELT (ec.m_vars, i, sval)
+  for (const svalue *sval : ec.m_vars)
     any_changed |= impl_set_state (sval, state, origin, ext_state);
   return any_changed;
 }

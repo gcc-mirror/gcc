@@ -7299,8 +7299,6 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
     case RID_BUILTIN_LAUNDER:
       {
 	vec<tree, va_gc> *vec;
-	unsigned int i;
-	tree p;
 
 	cp_lexer_consume_token (parser->lexer);
 	vec = cp_parser_parenthesized_expression_list (parser, non_attr,
@@ -7312,7 +7310,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    break;
 	  }
 
-	FOR_EACH_VEC_ELT (*vec, i, p)
+	for (tree p : *vec)
 	  mark_exp_read (p);
 
 	switch (keyword)
@@ -37930,9 +37928,7 @@ cp_parser_omp_clause_affinity (cp_parser *parser, tree list)
   if (iterators)
     {
       tree block = poplevel (1, 1, 0);
-      if (iterators == error_mark_node)
-	iterators = NULL_TREE;
-      else
+      if (iterators != error_mark_node)
 	{
 	  TREE_VEC_ELT (iterators, 5) = block;
 	  for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))

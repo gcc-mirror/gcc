@@ -1246,9 +1246,7 @@ sanitize_rewrite_addressable_params (function *fun)
 
   /* Unset value expr for parameters for which we created debug bind
      expressions.  */
-  unsigned i;
-  tree arg;
-  FOR_EACH_VEC_ELT (clear_value_expr_list, i, arg)
+  for (tree arg : clear_value_expr_list)
     {
       DECL_HAS_VALUE_EXPR_P (arg) = 0;
       SET_DECL_VALUE_EXPR (arg, NULL_TREE);

@@ -4260,17 +4260,51 @@ case "${target}" in
 		;;
 
 	arc*-*-*)
-		supported_defaults="cpu"
+		supported_defaults="cpu fpu"
 
+		new_cpu=hs38_linux
 		if [ x"$with_cpu" = x ] \
-		    || grep "^ARC_CPU ($with_cpu," \
-		       ${srcdir}/config/arc/arc-cpus.def \
-		       > /dev/null; then
+		    || grep -q -E "^ARC_CPU[[:blank:]]*\($with_cpu," \
+		       ${srcdir}/config/arc/arc-cpus.def
+		then
 		 # Ok
-		 true
+		 new_cpu=$with_cpu
 		else
 		 echo "Unknown cpu used in --with-cpu=$with_cpu" 1>&2
 		 exit 1
+		fi
+
+		# see if --with-fpu matches any of the supported FPUs
+		case "$with_fpu" in
+		"")
+			# OK
+			;;
+		fpus | fpus_div | fpus_fma | fpus_all)
+			# OK if em or hs
+			flags_ok="[emhs]+"
+			;;
+		fpuda | fpuda_div | fpuda_fma | fpuda_all)
+			# OK only em
+			flags_ok="em"
+			;;
+		fpud | fpud_div | fpud_fma | fpud_all)
+			# OK only hs
+			flags_ok="hs"
+			;;
+		*)
+			echo "Unknown floating point type used in "\
+			     "--with-fpu=$with_fpu" 1>&2
+			exit 1
+			;;
+		esac
+
+		if [ -n "$flags_ok" ] \
+		   && ! grep -q -E "^ARC_CPU[[:blank:]]*\($new_cpu,[[:blank:]]*$flags_ok," \
+		   ${srcdir}/config/arc/arc-cpus.def
+		then
+		   echo "Unknown floating point type used in "\
+			 "--with-fpu=$with_fpu for cpu $new_cpu" 1>&2
+			 exit 1
 		fi
 		;;
 

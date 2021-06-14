@@ -50,9 +50,7 @@ along with GCC; see the file COPYING3.  If not see
 call_string::call_string (const call_string &other)
 : m_return_edges (other.m_return_edges.length ())
 {
-  const return_superedge *e;
-  int i;
-  FOR_EACH_VEC_ELT (other.m_return_edges, i, e)
+  for (const return_superedge *e : other.m_return_edges)
     m_return_edges.quick_push (e);
 }
 
@@ -118,9 +116,7 @@ call_string::to_json () const
 {
   json::array *arr = new json::array ();
 
-  const return_superedge *e;
-  int i;
-  FOR_EACH_VEC_ELT (m_return_edges, i, e)
+  for (const return_superedge *e : m_return_edges)
     {
       json::object *e_obj = new json::object ();
       e_obj->set ("src_snode_idx",
@@ -141,9 +137,7 @@ hashval_t
 call_string::hash () const
 {
   inchash::hash hstate;
-  int i;
-  const return_superedge *e;
-  FOR_EACH_VEC_ELT (m_return_edges, i, e)
+  for (const return_superedge *e : m_return_edges)
     hstate.add_ptr (e);
   return hstate.end ();
 }
@@ -173,9 +167,7 @@ call_string::calc_recursion_depth () const
     = m_return_edges[m_return_edges.length () - 1];
 
   int result = 0;
-  const return_superedge *e;
-  int i;
-  FOR_EACH_VEC_ELT (m_return_edges, i, e)
+  for (const return_superedge *e : m_return_edges)
     if (e == top_return_sedge)
       ++result;
   return result;
