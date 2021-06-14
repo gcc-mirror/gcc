@@ -5709,7 +5709,6 @@ resolve_variable (gfc_expr *e)
 	     part_ref.  */
 	  gfc_ref *ref = gfc_get_ref ();
 	  ref->type = REF_ARRAY;
-	  ref->u.ar = *gfc_get_array_ref();
 	  ref->u.ar.type = AR_FULL;
 	  if (sym->as)
 	    {

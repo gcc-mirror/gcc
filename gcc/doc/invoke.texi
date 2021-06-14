@@ -1139,8 +1139,8 @@ See RS/6000 and PowerPC Options.
 -mriscv-attribute  -mmo-riscv-attribute @gol
 -malign-data=@var{type} @gol
 -mbig-endian  -mlittle-endian @gol
-+-mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
-+-mstack-protector-guard-offset=@var{offset}}
+-mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
+-mstack-protector-guard-offset=@var{offset}}
 
 @emph{RL78 Options}
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs @gol

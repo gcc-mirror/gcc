@@ -73,7 +73,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   bool = __empty_not_final<_Head>::value>
     struct _Head_base;
 
-#if __has_cpp_attribute(no_unique_address)
+#if __has_cpp_attribute(__no_unique_address__)
   template<size_t _Idx, typename _Head>
     struct _Head_base<_Idx, _Head, true>
     {
