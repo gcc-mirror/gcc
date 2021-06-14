@@ -4287,8 +4287,7 @@ rebuild_frequencies (void)
 
   if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
     {
-      loop_optimizer_init (0);
-      mark_irreducible_loops ();
+      loop_optimizer_init (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS);
       connect_infinite_loops_to_exit ();
       estimate_bb_frequencies (true);
       remove_fake_exit_edges ();

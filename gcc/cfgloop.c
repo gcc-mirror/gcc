@@ -1555,11 +1555,17 @@ verify_loop_structure (void)
 	  error ("loop %d%'s header does not belong directly to it", i);
 	  err = 1;
 	}
-      if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)
-	  && (loop_latch_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP))
+      if (loops_state_satisfies_p (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS))
 	{
-	  error ("loop %d%'s latch is marked as part of irreducible region", i);
-	  err = 1;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, loop->header->preds)
+	    if (dominated_by_p (CDI_DOMINATORS, e->src, loop->header)
+		&& e->flags & EDGE_IRREDUCIBLE_LOOP)
+	      {
+		error ("loop %d%'s latch is marked as part of irreducible"
+		       " region", i);
+		err = 1;
+	      }
 	}
     }
 
