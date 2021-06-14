@@ -37928,9 +37928,7 @@ cp_parser_omp_clause_affinity (cp_parser *parser, tree list)
   if (iterators)
     {
       tree block = poplevel (1, 1, 0);
-      if (iterators == error_mark_node)
-	iterators = NULL_TREE;
-      else
+      if (iterators != error_mark_node)
 	{
 	  TREE_VEC_ELT (iterators, 5) = block;
 	  for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
