@@ -63,6 +63,10 @@ TEST_UNARY (vmovn, uint8x16_t, uint16x8_t, u16, u8)
 TEST_UNARY (vmovn, uint16x8_t, uint32x4_t, u32, u16)
 TEST_UNARY (vmovn, uint32x4_t, uint64x2_t, u64, u32)
 
+TEST_UNARY (vqmovun, uint8x16_t, int16x8_t, s16, u8)
+TEST_UNARY (vqmovun, uint16x8_t, int32x4_t, s32, u16)
+TEST_UNARY (vqmovun, uint32x4_t, int64x2_t, s64, u32)
+
 /* { dg-final { scan-assembler-not "dup\\t" } } */
 
 /* { dg-final { scan-assembler-times "\\tshrn\\tv" 6} }  */
@@ -74,3 +78,4 @@ TEST_UNARY (vmovn, uint32x4_t, uint64x2_t, u64, u32)
 /* { dg-final { scan-assembler-times "\\tsqshrun\\tv" 3} }  */
 /* { dg-final { scan-assembler-times "\\tsqrshrun\\tv" 3} }  */
 /* { dg-final { scan-assembler-times "\\txtn\\tv" 6} }  */
+/* { dg-final { scan-assembler-times "\\tsqxtun\\tv" 3} }  */
