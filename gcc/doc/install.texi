@@ -646,12 +646,7 @@ Note that the bootstrap compiler and the resulting GCC must be link
 compatible, else the bootstrap will fail with linker errors about
 incompatible object file formats.  Several multilibed targets are
 affected by this requirement, see
-@ifnothtml
-@ref{Specific, host/target specific installation notes}.
-@end ifnothtml
-@ifhtml
 @uref{specific.html,,host/target specific installation notes}.
-@end ifhtml
 @end ignore
 
 To configure GCC:
@@ -851,13 +846,7 @@ Specify additional command line driver SPECS.
 This can be useful if you need to turn on a non-standard feature by
 default without modifying the compiler's source code, for instance
 @option{--with-specs=%@{!fcommon:%@{!fno-common:-fno-common@}@}}.
-@ifnothtml
-@xref{Spec Files,, Specifying subprocesses and the switches to pass to them,
-gcc, Using the GNU Compiler Collection (GCC)},
-@end ifnothtml
-@ifhtml
 See ``Spec Files'' in the main manual
-@end ifhtml
 
 @end table
 
@@ -1195,13 +1184,7 @@ Makefile fragments might look like for this version of GCC.  The macros
 expected to be defined in these fragments are not stable across GCC
 releases, so make sure they define the @code{MULTILIB}-related macros
 expected by the version of GCC you are building.
-@ifnothtml
-@xref{Target Fragment,, Target Makefile Fragments, gccint, GNU Compiler
-Collection (GCC) Internals}.
-@end ifnothtml
-@ifhtml
 See ``Target Makefile Fragments'' in the internals manual.
-@end ifhtml
 
 The table below gives the combination of ISAs, architectures, FPUs and
 floating-point ABIs for which multilibs are built for each predefined
@@ -1758,13 +1741,7 @@ filename.
 enabled may bloat the TOC, eventually leading to @code{TOC overflow} errors,
 requiring the use of either the @option{-Wl,-bbigtoc} linker flag (seen to
 break with the @code{GDB} debugger) or some of the TOC-related compiler flags,
-@ifnothtml
-@xref{RS/6000 and PowerPC Options,, RS/6000 and PowerPC Options, gcc,
-Using the GNU Compiler Collection (GCC)}.
-@end ifnothtml
-@ifhtml
 see ``RS/6000 and PowerPC Options'' in the main manual.
-@end ifhtml
 
 @option{--with-aix-soname} is currently supported by @samp{libgcc_s} only, so
 this option is still experimental and not for normal use yet.
@@ -1871,26 +1848,14 @@ Turn on @option{-fPIE} and @option{-pie} by default.
 
 @item --enable-secureplt
 This option enables @option{-msecure-plt} by default for powerpc-linux.
-@ifnothtml
-@xref{RS/6000 and PowerPC Options,, RS/6000 and PowerPC Options, gcc,
-Using the GNU Compiler Collection (GCC)},
-@end ifnothtml
-@ifhtml
 See ``RS/6000 and PowerPC Options'' in the main manual
-@end ifhtml
 
 @item --enable-default-ssp
 Turn on @option{-fstack-protector-strong} by default.
 
 @item --enable-cld
 This option enables @option{-mcld} by default for 32-bit x86 targets.
-@ifnothtml
-@xref{i386 and x86-64 Options,, i386 and x86-64 Options, gcc,
-Using the GNU Compiler Collection (GCC)},
-@end ifnothtml
-@ifhtml
 See ``i386 and x86-64 Options'' in the main manual
-@end ifhtml
 
 @item --enable-large-address-aware
 The @option{--enable-large-address-aware} option arranges for MinGW
