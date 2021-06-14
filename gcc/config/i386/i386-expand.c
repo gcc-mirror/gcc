@@ -20446,9 +20446,12 @@ ix86_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
 	return false;
       break;
     case E_V2HImode:
-	if (!TARGET_SSE2)
-	  return false;
-	break;
+      if (!TARGET_SSE2)
+	return false;
+      /* All implementable with *punpckwd.  */
+      if (d.testing_p)
+	return true;
+      break;
     case E_V2DImode:
     case E_V2DFmode:
       if (!TARGET_SSE)

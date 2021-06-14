@@ -3368,16 +3368,18 @@
 	  (vec_concat:V4HI
 	    (match_operand:V2HI 1 "register_operand" "0,Yw")
 	    (match_operand:V2HI 2 "register_operand" "x,Yw"))
-          (parallel [(match_operand 3 "const_0_to_3_operand")
-                     (match_operand 4 "const_0_to_3_operand")])))]
+	  (parallel [(match_operand 3 "const_0_to_3_operand")
+		     (match_operand 4 "const_0_to_3_operand")])))]
   "TARGET_SSE2"
   "#"
   "&& reload_completed"
   [(set (match_dup 5)
-        (vec_select:V4HI
+	(vec_select:V8HI
 	  (match_dup 5)
           (parallel [(match_dup 3) (match_dup 4)
-                     (const_int 0) (const_int 0)])))]
+                     (const_int 2) (const_int 3)
+                     (const_int 4) (const_int 5)
+                     (const_int 6) (const_int 7)])))]
 {
   rtx dest = lowpart_subreg (V8HImode, operands[0], V2HImode);
   rtx op1 = lowpart_subreg (V8HImode, operands[1], V2HImode);
@@ -3395,8 +3397,7 @@
 
   operands[3] = GEN_INT (sel0);
   operands[4] = GEN_INT (sel1);
-
-  operands[5] = lowpart_subreg (V4HImode, dest, V8HImode);
+  operands[5] = dest;
 }
   [(set_attr "isa" "noavx,avx")
    (set_attr "type" "sselog")
