@@ -158,7 +158,7 @@ pointer_equiv_analyzer::pointer_equiv_analyzer (gimple_ranger *r)
 
 pointer_equiv_analyzer::~pointer_equiv_analyzer ()
 {
-  delete m_global_points;
+  delete[] m_global_points;
 }
 
 // Set the global pointer equivalency for SSA to POINTEE.
