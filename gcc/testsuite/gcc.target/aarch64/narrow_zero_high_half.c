@@ -74,6 +74,42 @@ TEST_UNARY (vqmovn, uint8x16_t, uint16x8_t, u16, u8)
 TEST_UNARY (vqmovn, uint16x8_t, uint32x4_t, u32, u16)
 TEST_UNARY (vqmovn, uint32x4_t, uint64x2_t, u64, u32)
 
+#define TEST_ARITH(name, rettype, intype, fs, rs) \
+  rettype test_ ## name ## _ ## fs ## _zero_high \
+		(intype a, intype b) \
+	{ \
+		return vcombine_ ## rs (name ## _ ## fs (a, b), \
+					vdup_n_ ## rs (0)); \
+	}
+
+TEST_ARITH (vaddhn, int8x16_t, int16x8_t, s16, s8)
+TEST_ARITH (vaddhn, int16x8_t, int32x4_t, s32, s16)
+TEST_ARITH (vaddhn, int32x4_t, int64x2_t, s64, s32)
+TEST_ARITH (vaddhn, uint8x16_t, uint16x8_t, u16, u8)
+TEST_ARITH (vaddhn, uint16x8_t, uint32x4_t, u32, u16)
+TEST_ARITH (vaddhn, uint32x4_t, uint64x2_t, u64, u32)
+
+TEST_ARITH (vraddhn, int8x16_t, int16x8_t, s16, s8)
+TEST_ARITH (vraddhn, int16x8_t, int32x4_t, s32, s16)
+TEST_ARITH (vraddhn, int32x4_t, int64x2_t, s64, s32)
+TEST_ARITH (vraddhn, uint8x16_t, uint16x8_t, u16, u8)
+TEST_ARITH (vraddhn, uint16x8_t, uint32x4_t, u32, u16)
+TEST_ARITH (vraddhn, uint32x4_t, uint64x2_t, u64, u32)
+
+TEST_ARITH (vsubhn, int8x16_t, int16x8_t, s16, s8)
+TEST_ARITH (vsubhn, int16x8_t, int32x4_t, s32, s16)
+TEST_ARITH (vsubhn, int32x4_t, int64x2_t, s64, s32)
+TEST_ARITH (vsubhn, uint8x16_t, uint16x8_t, u16, u8)
+TEST_ARITH (vsubhn, uint16x8_t, uint32x4_t, u32, u16)
+TEST_ARITH (vsubhn, uint32x4_t, uint64x2_t, u64, u32)
+
+TEST_ARITH (vrsubhn, int8x16_t, int16x8_t, s16, s8)
+TEST_ARITH (vrsubhn, int16x8_t, int32x4_t, s32, s16)
+TEST_ARITH (vrsubhn, int32x4_t, int64x2_t, s64, s32)
+TEST_ARITH (vrsubhn, uint8x16_t, uint16x8_t, u16, u8)
+TEST_ARITH (vrsubhn, uint16x8_t, uint32x4_t, u32, u16)
+TEST_ARITH (vrsubhn, uint32x4_t, uint64x2_t, u64, u32)
+
 /* { dg-final { scan-assembler-not "dup\\t" } } */
 
 /* { dg-final { scan-assembler-times "\\tshrn\\tv" 6} }  */
@@ -88,3 +124,7 @@ TEST_UNARY (vqmovn, uint32x4_t, uint64x2_t, u64, u32)
 /* { dg-final { scan-assembler-times "\\tsqxtun\\tv" 3} }  */
 /* { dg-final { scan-assembler-times "\\tuqxtn\\tv" 3} }  */
 /* { dg-final { scan-assembler-times "\\tsqxtn\\tv" 3} }  */
+/* { dg-final { scan-assembler-times "\\taddhn\\tv" 6} }  */
+/* { dg-final { scan-assembler-times "\\tsubhn\\tv" 6} }  */
+/* { dg-final { scan-assembler-times "\\trsubhn\\tv" 6} }  */
+/* { dg-final { scan-assembler-times "\\traddhn\\tv" 6} }  */
