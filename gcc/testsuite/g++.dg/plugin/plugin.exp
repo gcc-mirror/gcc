@@ -73,7 +73,8 @@ set plugin_test_list [list \
 	  ../../gcc.dg/plugin/diagnostic-test-string-literals-3.c \
 	  ../../gcc.dg/plugin/diagnostic-test-string-literals-4.c } \
     { ../../gcc.dg/plugin/location_overflow_plugin.c \
-	  location-overflow-test-pr96391.c } \
+	  location-overflow-test-pr96391.c \
+          location-overflow-test-pr100796.c } \
     { show_template_tree_color_plugin.c \
     	  show-template-tree-color.C \
     	  show-template-tree-color-labels.C \

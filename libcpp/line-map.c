@@ -1421,23 +1421,25 @@ linemap_compare_locations (line_maps *set,
 
   if (l0 == l1
       && pre_virtual_p
-      && post_virtual_p
-      && l0 <= LINE_MAP_MAX_LOCATION_WITH_COLS)
+      && post_virtual_p)
     {
       /* So pre and post represent two tokens that are present in a
 	 same macro expansion.  Let's see if the token for pre was
 	 before the token for post in that expansion.  */
-      unsigned i0, i1;
       const struct line_map *map =
 	first_map_in_common (set, pre, post, &l0, &l1);
 
       if (map == NULL)
-	/* This should not be possible.  */
-	abort ();
-
-      i0 = l0 - MAP_START_LOCATION (map);
-      i1 = l1 - MAP_START_LOCATION (map);
-      return i1 - i0;
+	/* This should not be possible while we have column information, but if
+	   we don't, the tokens could be from separate macro expansions on the
+	   same line.  */
+	gcc_assert (l0 > LINE_MAP_MAX_LOCATION_WITH_COLS);
+      else
+	{
+	  unsigned i0 = l0 - MAP_START_LOCATION (map);
+	  unsigned i1 = l1 - MAP_START_LOCATION (map);
+	  return i1 - i0;
+	}
     }
 
   if (IS_ADHOC_LOC (l0))
