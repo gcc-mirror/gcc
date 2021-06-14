@@ -38,5 +38,5 @@ static_assert( has_weak_order_fallback<S, S> );
 static_assert( has_weak_order_fallback<const S, S> );
 static_assert( ! has_weak_order_fallback<const S, const S> );
 static_assert( has_partial_order_fallback<S, S> );
-static_assert( has_partial_order_fallback<const S, S> );
+static_assert( ! has_partial_order_fallback<const S, S> ); // LWG 3465
 static_assert( ! has_partial_order_fallback<const S, const S> );
