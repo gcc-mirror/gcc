@@ -695,7 +695,8 @@ pass_dominator::execute (function *fun)
      gcc.dg/tree-ssa/pr21417.c can't be threaded if loop preheader is
      missing.  We should improve jump threading in future then
      LOOPS_HAVE_PREHEADERS won't be needed here.  */
-  loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES);
+  loop_optimizer_init (LOOPS_HAVE_PREHEADERS | LOOPS_HAVE_SIMPLE_LATCHES
+		       | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS);
 
   /* Initialize the value-handle array.  */
   threadedge_initialize_values ();
