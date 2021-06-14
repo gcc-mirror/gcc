@@ -19512,8 +19512,6 @@ This option is deprecated.
 @opindex mapcs
 This is a synonym for @option{-mapcs-frame} and is deprecated.
 
-@ignore
-@c not currently implemented
 @item -mapcs-stack-check
 @opindex mapcs-stack-check
 Generate code to check the amount of stack space available upon entry to
@@ -19524,12 +19522,10 @@ called, depending upon the amount of stack space required.  The runtime
 system is required to provide these functions.  The default is
 @option{-mno-apcs-stack-check}, since this produces smaller code.
 
-@c not currently implemented
 @item -mapcs-reentrant
 @opindex mapcs-reentrant
 Generate reentrant, position-independent code.  The default is
 @option{-mno-apcs-reentrant}.
-@end ignore
 
 @item -mthumb-interwork
 @opindex mthumb-interwork
