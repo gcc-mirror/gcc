@@ -19,7 +19,6 @@
 #ifndef RUST_HIR_FULL_H
 #define RUST_HIR_FULL_H
 
-// Use as a fast way of including all aspects of the HIR (i.e. all headers)
 #include "rust-hir.h"
 #include "rust-hir-expr.h"
 #include "rust-hir-item.h"
@@ -27,6 +26,5 @@
 #include "rust-hir-pattern.h"
 #include "rust-hir-stmt.h"
 #include "rust-hir-type.h"
-#include "rust-hir-macro.h"
 
 #endif // RUST_HIR_FULL_H

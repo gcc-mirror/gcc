@@ -69,45 +69,6 @@ get_string_in_delims (std::string str_input, AST::DelimType delim_type)
   gcc_unreachable ();
 }
 
-// Converts a frag spec enum item to a string form.
-std::string
-frag_spec_to_str (MacroFragSpec frag_spec)
-{
-  switch (frag_spec)
-    {
-    case BLOCK:
-      return "block";
-    case EXPR:
-      return "expr";
-    case IDENT:
-      return "ident";
-    case ITEM:
-      return "item";
-    case LIFETIME:
-      return "lifetime";
-    case LITERAL:
-      return "literal";
-    case META:
-      return "meta";
-    case PAT:
-      return "pat";
-    case PATH:
-      return "path";
-    case STMT:
-      return "stmt";
-    case TT:
-      return "tt";
-    case TY:
-      return "ty";
-    case VIS:
-      return "vis";
-    case INVALID:
-      return "INVALID_FRAG_SPEC";
-    default:
-      return "ERROR_MARK_STRING - unknown frag spec";
-    }
-}
-
 std::string
 Crate::as_string () const
 {
@@ -161,18 +122,6 @@ Crate::as_string () const
     }
 
   return str + "\n::" + get_mappings ().as_string () + "\n";
-}
-
-std::string
-Token::as_string () const
-{
-  /* FIXME: only works when not identifier or literal or whatever, i.e. when
-   * doesn't store string value */
-  // return get_token_description(token_id);
-
-  // maybe fixed - stores everything as string though, so storage-inefficient
-  std::string quote = is_string_lit () ? "\"" : "";
-  return quote + str + quote;
 }
 
 std::string
@@ -1301,66 +1250,6 @@ ExternBlock::as_string () const
 }
 
 std::string
-MacroRule::as_string () const
-{
-  std::string str ("Macro rule: ");
-
-  str += "\n Matcher: \n  ";
-  str += matcher.as_string ();
-
-  str += "\n Transcriber: \n  ";
-  str += transcriber.as_string ();
-
-  return str;
-}
-
-std::string
-MacroRulesDefinition::as_string () const
-{
-  std::string str ("macro_rules!");
-
-  str += rule_name;
-
-  str += "\n Macro rules: ";
-  if (rules.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &rule : rules)
-	{
-	  str += "\n  " + rule.as_string ();
-	}
-    }
-
-  str += "\n Delim type: ";
-  switch (delim_type)
-    {
-    case AST::DelimType::PARENS:
-      str += "parentheses";
-      break;
-    case AST::DelimType::SQUARE:
-      str += "square";
-      break;
-    case AST::DelimType::CURLY:
-      str += "curly";
-      break;
-    default:
-      return "ERROR_MARK_STRING - delim type in macro invocation";
-    }
-
-  return str;
-}
-
-std::string
-MacroInvocation::as_string () const
-{
-  return "MacroInvocation: " + path.as_string () + "!"
-	 + token_tree.as_string ();
-}
-
-std::string
 PathInExpression::as_string () const
 {
   std::string str;
@@ -2333,45 +2222,6 @@ TraitBound::as_string () const
 }
 
 std::string
-MacroMatcher::as_string () const
-{
-  std::string str ("Macro matcher: ");
-
-  str += "\n Delim type: ";
-
-  switch (delim_type)
-    {
-    case AST::DelimType::PARENS:
-      str += "parentheses";
-      break;
-    case AST::DelimType::SQUARE:
-      str += "square";
-      break;
-    case AST::DelimType::CURLY:
-      str += "curly";
-      break;
-    default:
-      return "ERROR_MARK_STRING - macro matcher delim";
-    }
-
-  str += "\n Matches: ";
-
-  if (matches.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &match : matches)
-	{
-	  str += "\n  " + match->as_string ();
-	}
-    }
-
-  return str;
-}
-
-std::string
 LifetimeParam::as_string () const
 {
   std::string str ("LifetimeParam: ");
@@ -2405,12 +2255,6 @@ LifetimeParam::as_string () const
 }
 
 std::string
-MacroMatchFragment::as_string () const
-{
-  return "$" + ident + ": " + frag_spec_to_str (frag_spec);
-}
-
-std::string
 QualifiedPathInType::as_string () const
 {
   std::string str = path_type.as_string ();
@@ -2418,56 +2262,6 @@ QualifiedPathInType::as_string () const
   for (const auto &segment : segments)
     {
       str += "::" + segment->as_string ();
-    }
-
-  return str;
-}
-
-std::string
-MacroMatchRepetition::as_string () const
-{
-  std::string str ("Macro match repetition: ");
-
-  str += "\n Matches: ";
-  if (matches.empty ())
-    {
-      str += "none";
-    }
-  else
-    {
-      for (const auto &match : matches)
-	{
-	  str += "\n  " + match->as_string ();
-	}
-    }
-
-  str += "\n Sep: ";
-  if (!has_sep ())
-    {
-      str += "none";
-    }
-  else
-    {
-      str += sep->as_string ();
-    }
-
-  str += "\n Op: ";
-  switch (op)
-    {
-    case ASTERISK:
-      str += "*";
-      break;
-    case PLUS:
-      str += "+";
-      break;
-    case QUESTION_MARK:
-      str += "?";
-      break;
-    case NONE:
-      str += "no op? shouldn't be allowed";
-      break;
-    default:
-      return "ERROR_MARK_STRING - unknown op in macro match repetition";
     }
 
   return str;
@@ -4280,27 +4074,6 @@ ModuleBodied::add_crate_name (std::vector<std::string> &names) const
     item->add_crate_name (names);
 }
 
-std::vector<std::unique_ptr<Token> >
-Token::to_token_stream () const
-{
-  /* initialisation list doesn't work as it needs copy constructor, so have to
-   * do this */
-  std::vector<std::unique_ptr<Token> > dummy_vector;
-  dummy_vector.reserve (1);
-  dummy_vector.push_back (std::unique_ptr<Token> (clone_token_impl ()));
-  return dummy_vector;
-}
-
-/* Visitor implementations - these are short but inlining can't happen anyway
- * due to virtual functions and I didn't want to make the ast header includes
- * any longer than they already are. */
-
-void
-Token::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
 void
 IdentifierExpr::accept_vis (HIRVisitor &vis)
 {
@@ -4939,36 +4712,6 @@ ExternalFunctionItem::accept_vis (HIRVisitor &vis)
 
 void
 ExternBlock::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-MacroMatchFragment::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-MacroMatchRepetition::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-MacroMatcher::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-MacroRulesDefinition::accept_vis (HIRVisitor &vis)
-{
-  vis.visit (*this);
-}
-
-void
-MacroInvocation::accept_vis (HIRVisitor &vis)
 {
   vis.visit (*this);
 }

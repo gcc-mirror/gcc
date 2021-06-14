@@ -32,19 +32,9 @@ public:
   virtual ~HIRCompileBase () {}
 
   // rust-ast.h
-  virtual void visit (HIR::Token &tok) {}
-  // virtual void visit(Stmt& stmt) {}
-  // virtual void visit(Expr& expr) {}
   virtual void visit (HIR::IdentifierExpr &ident_expr) {}
-  // virtual void visit(Pattern& pattern) {}
-  // virtual void visit(Type& type) {}
-  // virtual void visit(TypeParamBound& type_param_bound) {}
   virtual void visit (HIR::Lifetime &lifetime) {}
-  // virtual void visit(GenericParam& generic_param) {}
   virtual void visit (HIR::LifetimeParam &lifetime_param) {}
-  // virtual void visit(TraitItem& trait_item) {}
-  // virtual void visit(InherentImplItem& inherent_impl_item) {}
-  // virtual void visit(TraitImplItem& trait_impl_item) {}
 
   // rust-path.h
   virtual void visit (HIR::PathInExpression &path) {}
@@ -163,13 +153,6 @@ public:
   virtual void visit (HIR::ExternalStaticItem &item) {}
   virtual void visit (HIR::ExternalFunctionItem &item) {}
   virtual void visit (HIR::ExternBlock &block) {}
-
-  // rust-macro.h
-  virtual void visit (HIR::MacroMatchFragment &match) {}
-  virtual void visit (HIR::MacroMatchRepetition &match) {}
-  virtual void visit (HIR::MacroMatcher &matcher) {}
-  virtual void visit (HIR::MacroRulesDefinition &rules_def) {}
-  virtual void visit (HIR::MacroInvocation &macro_invoc) {}
 
   // rust-pattern.h
   virtual void visit (HIR::LiteralPattern &pattern) {}
