@@ -5769,8 +5769,7 @@ error.  @option{-Wno-coverage-invalid-line-number} can be used to disable the
 warning or @option{-Wno-error=coverage-invalid-line-number} can be used to
 disable the error.
 
-@item -Wno-cpp
-@r{(C, Objective-C, C++, Objective-C++ and Fortran only)}
+@item -Wno-cpp @r{(C, Objective-C, C++, Objective-C++ and Fortran only)}
 @opindex Wno-cpp
 @opindex Wcpp
 Suppress warning messages emitted by @code{#warning} directives.
