@@ -476,7 +476,7 @@ namespace ranges
 	_S_noexcept()
 	{
 	  if constexpr (__member_empty<_Tp>)
-	    return noexcept(std::declval<_Tp&>().empty());
+	    return noexcept(bool(std::declval<_Tp&>().empty()));
 	  else if constexpr (__size0_empty<_Tp>)
 	    return noexcept(_Size{}(std::declval<_Tp&>()) == 0);
 	  else
