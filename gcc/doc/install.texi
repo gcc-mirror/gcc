@@ -151,12 +151,7 @@ with their own installation instructions.  This document supersedes all
 package-specific installation instructions.
 
 @emph{Before} starting the build/install procedure please check the
-@ifnothtml
 @ref{Specific, host/target specific installation notes}.
-@end ifnothtml
-@ifhtml
-@uref{specific.html,,host/target specific installation notes}.
-@end ifhtml
 We recommend you browse the entire generic installation instructions before
 you proceed.
 
