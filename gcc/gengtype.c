@@ -143,6 +143,11 @@ get_ultimate_base_class (type_p s)
 const input_file **gt_files;
 size_t num_gt_files;
 
+/* Table of headers to be included in gtype-desc.c that are generated
+   during the build.  These are identified as "./<filename>.h".  */
+const char **build_headers;
+size_t num_build_headers;
+
 /* A number of places use the name of this "gengtype.c" file for a
    location for things that we can't rely on the source to define.
    Make sure we can still use pointer comparison on filenames.  */
@@ -1736,6 +1741,8 @@ open_base_files (void)
     gtype_desc_c = create_file ("GCC", "gtype-desc.c");
     for (ifp = ifiles; *ifp; ifp++)
       oprintf (gtype_desc_c, "#include \"%s\"\n", *ifp);
+    for (int j = 0; j < (int) num_build_headers; j++)
+      oprintf (gtype_desc_c, "#include \"%s\"\n", build_headers[j]);
 
     /* Make sure we handle "cfun" specially.  */
     oprintf (gtype_desc_c, "\n/* See definition in function.h.  */\n");
@@ -5216,11 +5223,20 @@ main (int argc, char **argv)
 			    &pos));
 #undef POS_HERE
       read_input_list (inputlist);
+      num_build_headers = 0;
       for (i = 0; i < num_gt_files; i++)
 	{
-	  parse_file (get_input_file_name (gt_files[i]));
-	  DBGPRINTF ("parsed file #%d %s", 
-		     (int) i, get_input_file_name (gt_files[i]));
+	  const char *fname = get_input_file_name (gt_files[i]);
+	  parse_file (fname);
+	  DBGPRINTF ("parsed file #%d %s", (int) i, fname);
+	  /* Check if this is a header file generated during the build.  */
+	  int len = strlen (fname);
+	  if (len >= 5
+	      && fname[0] == '.'
+	      && IS_DIR_SEPARATOR (fname[1])
+	      && fname[len-2] == '.'
+	      && fname[len-1] == 'h')
+	    num_build_headers++;
 	}
       if (verbosity_level >= 1)
 	printf ("%s parsed %d files with %d GTY types\n", 

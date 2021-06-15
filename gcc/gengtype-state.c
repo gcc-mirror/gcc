@@ -1269,7 +1269,7 @@ state_writer::write_state_files_list (void)
   int i = 0;
   /* Write the list of files with their lang_bitmap.  */
   begin_s_expr ("fileslist");
-  fprintf (state_file, "%d", (int) num_gt_files);
+  fprintf (state_file, "%d %d", (int) num_gt_files, (int) num_build_headers);
   for (i = 0; i < (int) num_gt_files; i++)
     {
       const char *cursrcrelpath = NULL;
@@ -2456,16 +2456,20 @@ read_state_files_list (void)
   struct state_token_st *t0 = peek_state_token (0);
   struct state_token_st *t1 = peek_state_token (1);
   struct state_token_st *t2 = peek_state_token (2);
+  struct state_token_st *t3 = peek_state_token (3);
 
   if (state_token_kind (t0) == STOK_LEFTPAR
       && state_token_is_name (t1, "!fileslist")
-      && state_token_kind (t2) == STOK_INTEGER)
+      && state_token_kind (t2) == STOK_INTEGER
+      && state_token_kind (t3) == STOK_INTEGER)
     {
-      int i = 0;
+      int i = 0, j = 0;
       num_gt_files = t2->stok_un.stok_num;
-      next_state_tokens (3);
-      t0 = t1 = t2 = NULL;
+      num_build_headers = t3->stok_un.stok_num;
+      next_state_tokens (4);
+      t0 = t1 = t2 = t3 = NULL;
       gt_files = XCNEWVEC (const input_file *, num_gt_files);
+      build_headers = XCNEWVEC (const char *, num_build_headers);
       for (i = 0; i < (int) num_gt_files; i++)
 	{
 	  bool issrcfile = FALSE;
@@ -2498,7 +2502,23 @@ read_state_files_list (void)
 		      free (fullpath);
 		    }
 		  else
-		    curgt = input_file_by_name (fnam);
+		    {
+		      curgt = input_file_by_name (fnam);
+		      /* Look for a header file created during the build,
+			 which looks like "./<filename>.h".  */
+		      int len = strlen (fnam);
+		      if (len >= 5
+			  && fnam[0] == '.'
+			  && IS_DIR_SEPARATOR (fnam[1])
+			  && fnam[len-2] == '.'
+			  && fnam[len-1] == 'h')
+			{
+			  char *buf = (char *) xmalloc (len - 1);
+			  /* Strip the leading "./" from the filename.  */
+			  strcpy (buf, &fnam[2]);
+			  build_headers[j++] = buf;
+			}
+		    }
 		  set_lang_bitmap (curgt, bmap);
 		  gt_files[i] = curgt;
 		  next_state_tokens (2);
