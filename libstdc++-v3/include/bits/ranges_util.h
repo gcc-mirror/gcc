@@ -205,15 +205,18 @@ namespace ranges
       _It _M_begin = _It();
       [[no_unique_address]] _Sent _M_end = _Sent();
 
+      using __size_type
+	= __detail::__make_unsigned_like_t<iter_difference_t<_It>>;
+
       template<typename, bool = _S_store_size>
 	struct _Size
 	{ };
 
       template<typename _Tp>
 	struct _Size<_Tp, true>
-	{ __detail::__make_unsigned_like_t<_Tp> _M_size; };
+	{ _Tp _M_size; };
 
-      [[no_unique_address]] _Size<iter_difference_t<_It>> _M_size = {};
+      [[no_unique_address]] _Size<__size_type> _M_size = {};
 
     public:
       subrange() = default;
@@ -226,12 +229,10 @@ namespace ranges
 
       constexpr
       subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s,
-	       __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
+	       __size_type __n)
 	requires (_Kind == subrange_kind::sized)
       : _M_begin(std::move(__i)), _M_end(__s)
       {
-	using __detail::__to_unsigned_like;
-	__glibcxx_assert(__n == __to_unsigned_like(ranges::distance(__i, __s)));
 	if constexpr (_S_store_size)
 	  _M_size._M_size = __n;
       }
@@ -258,8 +259,7 @@ namespace ranges
 	requires __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
-	subrange(_Rng&& __r,
-		 __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
+	subrange(_Rng&& __r, __size_type __n)
 	requires (_Kind == subrange_kind::sized)
 	: subrange{ranges::begin(__r), ranges::end(__r), __n}
 	{ }
@@ -267,9 +267,9 @@ namespace ranges
       template<__detail::__not_same_as<subrange> _PairLike>
 	requires __detail::__pair_like_convertible_from<_PairLike, const _It&,
 							const _Sent&>
-      constexpr
-      operator _PairLike() const
-      { return _PairLike(_M_begin, _M_end); }
+	constexpr
+	operator _PairLike() const
+	{ return _PairLike(_M_begin, _M_end); }
 
       constexpr _It
       begin() const requires copyable<_It>
@@ -283,7 +283,7 @@ namespace ranges
 
       constexpr bool empty() const { return _M_begin == _M_end; }
 
-      constexpr __detail::__make_unsigned_like_t<iter_difference_t<_It>>
+      constexpr __size_type
       size() const requires (_Kind == subrange_kind::sized)
       {
 	if constexpr (_S_store_size)
