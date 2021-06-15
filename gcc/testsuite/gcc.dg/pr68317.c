@@ -1,5 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fdisable-tree-ethread" } */
+
+/* Note: Threader will collapse loop.  */
 
 typedef int int32_t __attribute__((mode (__SI__)));
 

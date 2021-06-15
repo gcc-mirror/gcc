@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-thread4-details" } */
+/* { dg-options "-O2 -fdisable-tree-thread3 -fdump-tree-thread4-details" } */
 
 struct tree_common 
 { 

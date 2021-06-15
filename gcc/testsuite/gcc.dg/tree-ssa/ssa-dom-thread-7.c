@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-thread1-stats -fdump-tree-thread2-stats -fdump-tree-dom2-stats -fdump-tree-thread3-stats -fdump-tree-dom3-stats -fdump-tree-vrp2-stats -fno-guess-branch-probability" } */
+/* { dg-additional-options "--param=threader-mode=legacy" } */
 
 /* Here we have the same issue as was commented in ssa-dom-thread-6.c.
    The PHI coming into the threader has a lot more constants, so the

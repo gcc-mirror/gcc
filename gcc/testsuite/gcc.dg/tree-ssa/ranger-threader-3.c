@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-dom2-details -w --param logical-op-non-short-circuit=1" } */
-/* { dg-additional-options "-fdisable-tree-thread1 -fdisable-tree-ethread -fdisable-tree-thread2" } */
+/* { dg-options "-O2 -fdump-tree-ethread-details -w --param logical-op-non-short-circuit=1" } */
+
+// Copied from ssa-dom-thread-14.c
 
 enum optab_methods
 {
@@ -37,5 +38,4 @@ expand_shift_1 (int code, int unsignedp, int rotate,
    we will enter the TRUE arm of the conditional and we can thread
    the test to compute the first first argument of the expand_binop
    call if we look backwards through the boolean logicals.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 1 "dom2"} } */
-
+/* { dg-final { scan-tree-dump-times "Registering.*jump thread" 1 "ethread"} } */

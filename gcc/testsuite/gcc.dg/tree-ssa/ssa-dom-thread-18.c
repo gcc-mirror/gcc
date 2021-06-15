@@ -1,5 +1,5 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-vrp1-details -fdump-tree-dom2-details -std=gnu89 --param logical-op-non-short-circuit=0" } */
+/* { dg-options "-O2 -fdump-tree-vrp1-details -fdump-tree-thread1-details -std=gnu89 --param logical-op-non-short-circuit=0" } */
 
 #include "ssa-dom-thread-4.c"
 
@@ -21,4 +21,5 @@
 	 condition.
 
    All the cases are picked up by VRP1 as jump threads.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 4 "vrp1" } } */
+/* { dg-final { scan-tree-dump-times "Registering FSM jump" 6 "thread1" } } */
+/* { dg-final { scan-tree-dump-times "Threaded" 2 "vrp1" } } */

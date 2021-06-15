@@ -34,8 +34,8 @@
      SWITCH_BB -> BBx -> BBy -> BBz -> PHI
 
    We now know the value of the switch index at PHI.  */
-/* { dg-final { scan-tree-dump-times "FSM" 6 "thread1" } } */
-/* { dg-final { scan-tree-dump-times "FSM" 1 "thread2" } } */
+/* { dg-final { scan-tree-dump-times "Registering FSM jump" 6 "thread1" } } */
+/* { dg-final { scan-tree-dump-times "Registering FSM jump" 1 "thread2" } } */
 
 int sum0, sum1, sum2, sum3;
 int foo (char *s, char **ret)

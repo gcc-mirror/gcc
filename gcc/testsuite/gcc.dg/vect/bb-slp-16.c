@@ -1,5 +1,8 @@
 /* { dg-require-effective-target vect_int } */
 
+/* See note below as to why we disable threading.  */
+/* { dg-additional-options "-fdisable-tree-thread1" } */
+
 #include <stdarg.h>
 #include "tree-vect.h"
 
@@ -27,6 +30,10 @@ main1 (int dummy)
       *pout++ = *pin++ + a;
       *pout++ = *pin++ + a;
       *pout++ = *pin++ + a;
+      /* In some architectures like ppc64, jump threading may thread
+	 the iteration where i==0 such that we no longer optimize the
+	 BB.  Another alternative to disable jump threading would be
+	 to wrap the read from `i' into a function returning i.  */
       if (arr[i] = i)
         a = i;
       else

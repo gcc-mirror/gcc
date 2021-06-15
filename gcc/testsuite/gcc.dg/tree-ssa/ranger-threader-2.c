@@ -1,5 +1,8 @@
 /* { dg-do compile } */ 
-/* { dg-options "-O2 -fdump-tree-dom2-details -w -fdisable-tree-thread2" } */
+/* { dg-options "-O2 -fdump-tree-thread2-details -w" } */
+
+// Copied from ssa-dom-thread-12.c.
+
 typedef long unsigned int size_t;
 union tree_node;
 typedef union tree_node *tree;
@@ -33,4 +36,4 @@ scan_function (gimple stmt)
    that stmt->num_ops - 3 != 0.  When that test is false, we can derive
    a value for stmt->num_ops.  That in turn allows us to thread the jump
    for the conditional at the start of the call to gimple_op.  */
-/* { dg-final { scan-tree-dump-times "Threaded" 1 "dom2"} } */
+/* { dg-final { scan-tree-dump-times "Registering.*jump thread" 1 "thread2"} } */

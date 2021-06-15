@@ -454,6 +454,13 @@ enum evrp_mode
   EVRP_MODE_RVRP_DEBUG = EVRP_MODE_RVRP_ONLY | EVRP_MODE_DEBUG
 };
 
+/* Backwards threader mode.  */
+enum threader_mode
+{
+  THREADER_MODE_LEGACY = 0,
+  THREADER_MODE_RANGER = 1
+};
+
 /* Modes of OpenACC 'kernels' constructs handling.  */
 enum openacc_kernels
 {

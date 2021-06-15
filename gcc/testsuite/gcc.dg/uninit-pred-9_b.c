@@ -1,6 +1,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-Wuninitialized -O2" } */
+/* { dg-xfail-if "threading shuffles things around" { ppc64*-*-* } } */
 
 int g;
 void bar();
