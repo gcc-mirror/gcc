@@ -1,8 +1,3 @@
-c Copyright (C) 1988-2021 Free Software Foundation, Inc.
-
-@c This is part of the GCC manual.
-@c For copying conditions, see the file gcc.texi.
-
 @node C Extensions
 @chapter Extensions to the C Language Family
 @cindex extensions, C language
