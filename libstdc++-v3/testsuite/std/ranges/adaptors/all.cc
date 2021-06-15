@@ -130,6 +130,35 @@ test05()
   static_assert(!requires { 0 | all; });
 }
 
+template<bool B1, bool B2>
+struct BorrowedRange
+{
+  int* ptr = nullptr;
+
+  BorrowedRange(int (&arr)[3]) noexcept : ptr(arr) { }
+
+  int* begin() const noexcept(B1) { return ptr; }
+  int* end() const noexcept(B2) { return ptr + 3; }
+};
+
+template<bool B1, bool B2>
+const bool std::ranges::enable_borrowed_range<BorrowedRange<B1, B2>> = true;
+
+void
+test06()
+{
+  int x[] { 1, 2, 3 };
+
+  // Using ref_view:
+  static_assert(noexcept(views::all(x)));
+
+  // Using subrange:
+  static_assert(noexcept(views::all(BorrowedRange<true, true>(x))));
+  static_assert(!noexcept(views::all(BorrowedRange<true, false>(x))));
+  static_assert(!noexcept(views::all(BorrowedRange<false, true>(x))));
+  static_assert(!noexcept(views::all(BorrowedRange<false, false>(x))));
+}
+
 int
 main()
 {
@@ -138,4 +167,5 @@ main()
   static_assert(test03());
   static_assert(test04());
   test05();
+  test06();
 }

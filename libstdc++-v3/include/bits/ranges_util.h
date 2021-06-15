@@ -77,45 +77,67 @@ namespace ranges
 	return static_cast<const _Derived&>(*this);
       }
 
+      static constexpr bool
+      _S_bool(bool) noexcept; // not defined
+
+      template<typename _Tp>
+	static constexpr bool
+	_S_empty(_Tp& __t)
+	noexcept(noexcept(_S_bool(ranges::begin(__t) == ranges::end(__t))))
+	{ return ranges::begin(__t) == ranges::end(__t); }
+
+      template<typename _Tp>
+	static constexpr auto
+	_S_size(_Tp& __t)
+	noexcept(noexcept(ranges::end(__t) - ranges::begin(__t)))
+	{ return ranges::end(__t) - ranges::begin(__t); }
+
     public:
       constexpr bool
-      empty() requires forward_range<_Derived>
-      { return ranges::begin(_M_derived()) == ranges::end(_M_derived()); }
+      empty()
+      noexcept(noexcept(_S_empty(_M_derived())))
+      requires forward_range<_Derived>
+      { return _S_empty(_M_derived()); }
 
       constexpr bool
-      empty() const requires forward_range<const _Derived>
-      { return ranges::begin(_M_derived()) == ranges::end(_M_derived()); }
+      empty() const
+      noexcept(noexcept(_S_empty(_M_derived())))
+      requires forward_range<const _Derived>
+      { return _S_empty(_M_derived()); }
 
       constexpr explicit
-      operator bool() requires requires { ranges::empty(_M_derived()); }
+      operator bool() noexcept(noexcept(ranges::empty(_M_derived())))
+      requires requires { ranges::empty(_M_derived()); }
       { return !ranges::empty(_M_derived()); }
 
       constexpr explicit
-      operator bool() const requires requires { ranges::empty(_M_derived()); }
+      operator bool() const noexcept(noexcept(ranges::empty(_M_derived())))
+      requires requires { ranges::empty(_M_derived()); }
       { return !ranges::empty(_M_derived()); }
 
       constexpr auto
-      data() requires contiguous_iterator<iterator_t<_Derived>>
-      { return to_address(ranges::begin(_M_derived())); }
+      data() noexcept(noexcept(ranges::begin(_M_derived())))
+      requires contiguous_iterator<iterator_t<_Derived>>
+      { return std::to_address(ranges::begin(_M_derived())); }
 
       constexpr auto
-      data() const
+      data() const noexcept(noexcept(ranges::begin(_M_derived())))
       requires range<const _Derived>
 	&& contiguous_iterator<iterator_t<const _Derived>>
-      { return to_address(ranges::begin(_M_derived())); }
+      { return std::to_address(ranges::begin(_M_derived())); }
 
       constexpr auto
-      size()
+      size() noexcept(noexcept(_S_size(_M_derived())))
       requires forward_range<_Derived>
 	&& sized_sentinel_for<sentinel_t<_Derived>, iterator_t<_Derived>>
-      { return ranges::end(_M_derived()) - ranges::begin(_M_derived()); }
+      { return _S_size(_M_derived()); }
 
       constexpr auto
-      size() const
+      size() const noexcept(noexcept(_S_size(_M_derived())))
       requires forward_range<const _Derived>
 	&& sized_sentinel_for<sentinel_t<const _Derived>,
 			      iterator_t<const _Derived>>
-      { return ranges::end(_M_derived()) - ranges::begin(_M_derived()); }
+      { return _S_size(_M_derived()); }
 
       constexpr decltype(auto)
       front() requires forward_range<_Derived>
@@ -223,6 +245,8 @@ namespace ranges
 
       constexpr
       subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s)
+      noexcept(is_nothrow_constructible_v<_It, decltype(__i)>
+	       && is_nothrow_constructible_v<_Sent, _Sent&>)
 	requires (!_S_store_size)
       : _M_begin(std::move(__i)), _M_end(__s)
       { }
@@ -230,6 +254,8 @@ namespace ranges
       constexpr
       subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s,
 	       __size_type __n)
+      noexcept(is_nothrow_constructible_v<_It, decltype(__i)>
+	       && is_nothrow_constructible_v<_Sent, _Sent&>)
 	requires (_Kind == subrange_kind::sized)
       : _M_begin(std::move(__i)), _M_end(__s)
       {
@@ -242,7 +268,9 @@ namespace ranges
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
-	subrange(_Rng&& __r) requires _S_store_size && sized_range<_Rng>
+	subrange(_Rng&& __r)
+	noexcept(noexcept(subrange(__r, ranges::size(__r))))
+	requires _S_store_size && sized_range<_Rng>
 	: subrange(__r, ranges::size(__r))
 	{ }
 
@@ -251,7 +279,9 @@ namespace ranges
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
-	subrange(_Rng&& __r) requires (!_S_store_size)
+	subrange(_Rng&& __r)
+	noexcept(noexcept(subrange(ranges::begin(__r), ranges::end(__r))))
+	requires (!_S_store_size)
 	: subrange(ranges::begin(__r), ranges::end(__r))
 	{ }
 
@@ -260,6 +290,7 @@ namespace ranges
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
 	subrange(_Rng&& __r, __size_type __n)
+	noexcept(noexcept(subrange(ranges::begin(__r), ranges::end(__r), __n)))
 	requires (_Kind == subrange_kind::sized)
 	: subrange{ranges::begin(__r), ranges::end(__r), __n}
 	{ }
