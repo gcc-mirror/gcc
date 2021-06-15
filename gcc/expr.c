@@ -9537,6 +9537,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
       mode = TYPE_MODE (TREE_TYPE (treeop0));
+      subtarget = NULL_RTX;
       goto binop;
 
     case VEC_PACK_TRUNC_EXPR:
@@ -9560,6 +9561,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	  return eops[0].value;
 	}
       mode = TYPE_MODE (TREE_TYPE (treeop0));
+      subtarget = NULL_RTX;
       goto binop;
 
     case VEC_PACK_FLOAT_EXPR:
