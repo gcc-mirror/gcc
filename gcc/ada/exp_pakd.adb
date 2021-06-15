@@ -613,7 +613,7 @@ package body Exp_Pakd is
          --  type or component, take it into account.
 
          if Csize <= 2 or else Csize = 4 or else Csize mod 2 /= 0
-           or else Alignment (Typ) = 1
+           or else (Known_Alignment (Typ) and then Alignment (Typ) = 1)
            or else Component_Alignment (Typ) = Calign_Storage_Unit
          then
             if Reverse_Storage_Order (Typ) then
@@ -623,7 +623,7 @@ package body Exp_Pakd is
             end if;
 
          elsif Csize mod 4 /= 0
-           or else Alignment (Typ) = 2
+           or else (Known_Alignment (Typ) and then Alignment (Typ) = 2)
          then
             if Reverse_Storage_Order (Typ) then
                PB_Type := RTE (RE_Rev_Packed_Bytes2);

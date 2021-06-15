@@ -4417,9 +4417,13 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      const bool derived_p = Is_Derived_Type (gnat_entity);
 	      const Entity_Id gnat_parent
 		= derived_p ? Etype (Base_Type (gnat_entity)) : Empty;
+	      /* The following test for Known_Alignment preserves the old behavior,
+		 but is probably wrong. */
 	      const unsigned int inherited_align
 		= derived_p
-		  ? UI_To_Int (Alignment (gnat_parent)) * BITS_PER_UNIT
+		  ? (Known_Alignment (gnat_parent)
+		     ? UI_To_Int (Alignment (gnat_parent)) * BITS_PER_UNIT
+		     : 0)
 		  : POINTER_SIZE;
 	      const unsigned int align
 		= MAX (TYPE_ALIGN (gnu_type), inherited_align);
@@ -4724,7 +4728,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	   && Present (gnat_annotate_type))
     {
       if (!Known_Alignment (gnat_entity))
-	Set_Alignment (gnat_entity, Alignment (gnat_annotate_type));
+	Copy_Alignment (gnat_entity, gnat_annotate_type);
       if (!Known_Esize (gnat_entity))
 	Set_Esize (gnat_entity, Esize (gnat_annotate_type));
       if (!Known_RM_Size (gnat_entity))

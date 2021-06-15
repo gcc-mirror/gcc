@@ -454,6 +454,13 @@ package Einfo.Utils is
    procedure Init_Normalized_Position_Max  (Id : E);
    procedure Init_RM_Size                  (Id : E);
 
+   --  The following Copy_xxx procedures copy the value of xxx from From to
+   --  To. If xxx is set to its initial invalid (zero-bits) value, then it is
+   --  reset to invalid in To. We only have Copy_Alignment so far, but more are
+   --  planned.
+
+   procedure Copy_Alignment (To, From : E);
+
    pragma Inline (Init_Alignment);
    pragma Inline (Init_Component_Bit_Offset);
    pragma Inline (Init_Component_Size);

@@ -55,6 +55,10 @@ package Gen_IL.Types is
       Name_Id,
       String_Id,
       Uint,
+      Valid_Uint,
+      Unat,
+      Upos,
+      Nonzero_Uint,
       Ureal,
 
       Node_Kind_Type, -- Type of result of Nkind function, i.e. Node_Kind
@@ -562,14 +566,17 @@ package Gen_IL.Types is
       | N_Defining_Operator_Symbol;
 
    subtype Opt_Abstract_Type is Opt_Type_Enum with
-        Predicate => Opt_Abstract_Type = No_Type or
-        Opt_Abstract_Type in Abstract_Type;
+     Predicate => Opt_Abstract_Type = No_Type or
+       Opt_Abstract_Type in Abstract_Type;
 
    subtype Type_Boundaries is Type_Enum with
-        Predicate => Type_Boundaries in
-          Between_Abstract_Node_And_Abstract_Entity_Types |
-          Between_Abstract_Entity_And_Concrete_Node_Types |
-          Between_Concrete_Node_And_Concrete_Entity_Types;
+     Predicate => Type_Boundaries in
+       Between_Abstract_Node_And_Abstract_Entity_Types |
+       Between_Abstract_Entity_And_Concrete_Node_Types |
+       Between_Concrete_Node_And_Concrete_Entity_Types;
    --  These are not used, other than to separate the various subranges.
+
+   subtype Uint_Subtype is Type_Enum with
+     Predicate => Uint_Subtype in Valid_Uint | Unat | Upos | Nonzero_Uint;
 
 end Gen_IL.Types;

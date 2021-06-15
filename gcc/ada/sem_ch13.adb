@@ -8101,10 +8101,12 @@ package body Sem_Ch13 is
             elsif Val < Lo or else Hi < Val then
                Error_Msg_N ("value outside permitted range", Expr);
                Err := True;
+
+            else
+               Set_Enumeration_Rep (Elit, Val);
+               Set_Enumeration_Rep_Expr (Elit, Expr);
             end if;
 
-            Set_Enumeration_Rep (Elit, Val);
-            Set_Enumeration_Rep_Expr (Elit, Expr);
             Next (Expr);
             Next (Elit);
          end loop;
@@ -8178,9 +8180,10 @@ package body Sem_Ch13 is
                         elsif Val < Lo or else Hi < Val then
                            Error_Msg_N ("value outside permitted range", Expr);
                            Err := True;
-                        end if;
 
-                        Set_Enumeration_Rep (Elit, Val);
+                        else
+                           Set_Enumeration_Rep (Elit, Val);
+                        end if;
                      end if;
                   end if;
                end if;
@@ -8274,9 +8277,10 @@ package body Sem_Ch13 is
                Set_Enum_Esize (Enumtype);
             end if;
 
-            Set_RM_Size   (Base_Type (Enumtype), RM_Size   (Enumtype));
-            Set_Esize     (Base_Type (Enumtype), Esize     (Enumtype));
-            Set_Alignment (Base_Type (Enumtype), Alignment (Enumtype));
+            Set_RM_Size (Base_Type (Enumtype), RM_Size   (Enumtype));
+            Set_Esize   (Base_Type (Enumtype), Esize     (Enumtype));
+
+            Copy_Alignment (To => Base_Type (Enumtype), From => Enumtype);
          end;
       end if;
 
@@ -16299,9 +16303,13 @@ package body Sem_Ch13 is
             X_Offs : Uint;
 
          begin
-            --  Skip processing of this entry if warning already posted
+            --  Skip processing of this entry if warning already posted, or if
+            --  alignments are not set.
 
-            if not Address_Warning_Posted (ACCR.N) then
+            if not Address_Warning_Posted (ACCR.N)
+              and then Known_Alignment (ACCR.X)
+              and then Known_Alignment (ACCR.Y)
+            then
                Expr := Original_Node (Expression (ACCR.N));
 
                --  Get alignments, sizes and offset, if any

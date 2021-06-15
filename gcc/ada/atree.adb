@@ -25,7 +25,7 @@
 
 --  Assertions in this package are too slow, and are mostly needed when working
 --  on this package itself, or on gen_il, so we disable them.
---  To debug low-level bugs in this area, comment out the following pragmas,
+--  To debug low-level bugs in this area, comment out the following pragma,
 --  and run with -gnatd_v.
 
 pragma Assertion_Policy (Ignore);
@@ -521,18 +521,36 @@ package body Atree is
         (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Type
       is
          function Get_Field is new Get_32_Bit_Field (Field_Type) with Inline;
+         Result : Field_Type;
       begin
          --  If the field has not yet been set, it will be equal to zero.
          --  That is of the "wrong" type, so we fetch it as a
          --  Field_Size_32_Bit.
 
          if Get_32_Bit_Val (N, Offset) = 0 then
-            return Default_Val;
+            Result := Default_Val;
 
          else
-            return Get_Field (N, Offset);
+            Result := Get_Field (N, Offset);
          end if;
+
+         return Result;
       end Get_32_Bit_Field_With_Default;
+
+      function Get_Valid_32_Bit_Field
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Type
+      is
+         pragma Assert (Get_32_Bit_Val (N, Offset) /= 0);
+         --  If the field has not yet been set, it will be equal to zero.
+         --  This asserts that we don't call Get_ before Set_. Note that
+         --  the predicate on the Val parameter of Set_ checks for the No_...
+         --  value, so it can't possibly be (for example) No_Uint here.
+
+         function Get_Field is new Get_32_Bit_Field (Field_Type) with Inline;
+         Result : constant Field_Type := Get_Field (N, Offset);
+      begin
+         return Result;
+      end Get_Valid_32_Bit_Field;
 
       procedure Set_1_Bit_Field
         (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Type)

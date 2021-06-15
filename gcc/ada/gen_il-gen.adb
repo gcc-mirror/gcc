@@ -849,6 +849,7 @@ package body Gen_IL.Gen is
              | Name_Id
              | String_Id
              | Uint
+             | Uint_Subtype
              | Ureal
              | Source_Ptr
              | Union_Id
@@ -1562,22 +1563,25 @@ package body Gen_IL.Gen is
         (S : in out Sink; T : Type_Enum)
       is
       begin
-         --  Special case for types that have defaults; instantiate
+         --  Special case for subtypes of Uint that have predicates. Use
+         --  Get_Valid_32_Bit_Field in that case.
+
+         if T in Uint_Subtype then
+            pragma Assert (Field_Size (T) = 32);
+            Put (S, LF & "function " & Low_Level_Getter_Name (T) &
+                 " is new Get_Valid_32_Bit_Field (" &
+                 Get_Set_Id_Image (T) &
+                 ") with " & Inline & ";" & LF);
+
+         --  Special case for types that have special defaults; instantiate
          --  Get_32_Bit_Field_With_Default and pass in the Default_Val.
 
-         if T in Elist_Id | Uint then
+         elsif Field_Has_Special_Default (T) then
             pragma Assert (Field_Size (T) = 32);
-
-            declare
-               Default_Val : constant String :=
-                 (if T = Elist_Id then "No_Elist" else "Uint_0");
-
-            begin
-               Put (S, LF & "function " & Low_Level_Getter_Name (T) &
-                    " is new Get_32_Bit_Field_With_Default (" &
-                    Get_Set_Id_Image (T) & ", " & Default_Val &
-                    ") with " & Inline & ";" & LF);
-            end;
+            Put (S, LF & "function " & Low_Level_Getter_Name (T) &
+                 " is new Get_32_Bit_Field_With_Default (" &
+                 Get_Set_Id_Image (T) & ", " & Special_Default (T) &
+                 ") with " & Inline & ";" & LF);
 
          --  Otherwise, instantiate the normal getter for the right size in
          --  bits.
@@ -1588,16 +1592,16 @@ package body Gen_IL.Gen is
                  Get_Set_Id_Image (T) & ") with " & Inline & ";" & LF);
          end if;
 
-         --  No special case for the setter
-
          if T in Node_Kind_Type | Entity_Kind_Type then
             Put (S, "pragma Warnings (Off);" & LF);
             --  Set_Node_Kind_Type and Set_Entity_Kind_Type might not be called
          end if;
 
+         --  No special cases for the setter
+
          Put (S, "procedure " & Low_Level_Setter_Name (T) & " is new Set_" &
-              Image (Field_Size (T)) & "_Bit_Field (" & Get_Set_Id_Image (T) &
-              ") with " & Inline & ";" & LF);
+                 Image (Field_Size (T)) & "_Bit_Field (" & Get_Set_Id_Image (T) &
+                 ") with " & Inline & ";" & LF);
 
          if T in Node_Kind_Type | Entity_Kind_Type then
             Put (S, "pragma Warnings (On);" & LF);
@@ -1689,11 +1693,9 @@ package body Gen_IL.Gen is
 
       procedure Put_Getter_Spec (S : in out Sink; F : Field_Enum) is
       begin
-         Put (S, "function " & Image (F) & LF);
-         Increase_Indent (S, 2);
-         Put (S, "(N : " & N_Type (F) & ") return " &
+         Put (S, "function " & Image (F));
+         Put (S, " (N : " & N_Type (F) & ") return " &
               Get_Set_Id_Image (Field_Table (F).Field_Type));
-         Decrease_Indent (S, 2);
       end Put_Getter_Spec;
 
       ---------------------
@@ -1757,11 +1759,9 @@ package body Gen_IL.Gen is
          Default : constant String :=
            (if Rec.Field_Type = Flag then " := True" else "");
       begin
-         Put (S, "procedure Set_" & Image (F) & LF);
-         Increase_Indent (S, 2);
-         Put (S, "(N : " & N_Type (F) & "; Val : " &
+         Put (S, "procedure Set_" & Image (F));
+         Put (S, " (N : " & N_Type (F) & "; Val : " &
               Get_Set_Id_Image (Rec.Field_Type) & Default & ")");
-         Decrease_Indent (S, 2);
       end Put_Setter_Spec;
 
       ---------------------
@@ -2776,7 +2776,8 @@ package body Gen_IL.Gen is
 
          Put (S, "--  This package is not used by the compiler." & LF);
          Put (S, "--  The body contains tables that are intended to be used by humans to" & LF);
-         Put (S, "--  help understand the layout of various data structures." & LF & LF);
+         Put (S, "--  help understand the layout of various data structures." & LF);
+         Put (S, "--  Search for ""--"" to find major sections of code." & LF & LF);
 
          Put (S, "pragma Elaborate_Body;" & LF);
 
@@ -3001,20 +3002,19 @@ package body Gen_IL.Gen is
 
          Increase_Indent (S, 3);
 
-         --  Same special case as in Put_Low_Level_Accessor_Instantiations
+         --  Same special cases for getters as in
+         --  Put_Low_Level_Accessor_Instantiations.
 
-         if T in Elist_Id | Uint then
+         if T in Uint_Subtype then
             pragma Assert (Field_Size (T) = 32);
+            Put (S, "{ return (" & T_Image &
+                 ") Get_Valid_32_Bit_Field(N, Offset); }" & LF & LF);
 
-            declare
-               Default_Val : constant String :=
-                 (if T = Elist_Id then "No_Elist" else "Uint_0");
-
-            begin
-               Put (S, "{ return (" & T_Image &
-                    ") Get_32_Bit_Field_With_Default(N, Offset, " &
-                    Default_Val & "); }" & LF & LF);
-            end;
+         elsif Field_Has_Special_Default (T) then
+            pragma Assert (Field_Size (T) = 32);
+            Put (S, "{ return (" & T_Image &
+                 ") Get_32_Bit_Field_With_Default(N, Offset, " &
+                 Special_Default (T) & "); }" & LF & LF);
 
          else
             Put (S, "{ return (" & T_Image & ") Get_" &

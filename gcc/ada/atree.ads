@@ -764,6 +764,14 @@ package Atree is
 
       generic
          type Field_Type is private;
+      function Get_Valid_32_Bit_Field
+        (N : Node_Or_Entity_Id; Offset : Field_Offset) return Field_Type
+         with Inline;
+      --  Assert that the field has already been set. This is currently used
+      --  only for Uints, but could be used more generally.
+
+      generic
+         type Field_Type is private;
       procedure Set_1_Bit_Field
         (N : Node_Or_Entity_Id; Offset : Field_Offset; Val : Field_Type)
          with Inline;

@@ -410,15 +410,23 @@ package body Repinfo is
          end if;
       end if;
 
-      if List_Representation_Info_To_JSON then
-         Write_Str ("  ""Alignment"": ");
-         Write_Val (Alignment (Ent));
+      if Known_Alignment (Ent) then
+         if List_Representation_Info_To_JSON then
+            Write_Str ("  ""Alignment"": ");
+            Write_Val (Alignment (Ent));
+         else
+            Write_Str ("for ");
+            List_Name (Ent);
+            Write_Str ("'Alignment use ");
+            Write_Val (Alignment (Ent));
+            Write_Line (";");
+         end if;
+
+      --  Alignment is not always set for task and protected types
+
       else
-         Write_Str ("for ");
-         List_Name (Ent);
-         Write_Str ("'Alignment use ");
-         Write_Val (Alignment (Ent));
-         Write_Line (";");
+         pragma Assert
+           (Is_Concurrent_Type (Ent) or else Is_Class_Wide_Type (Ent));
       end if;
    end List_Common_Type_Info;
 
