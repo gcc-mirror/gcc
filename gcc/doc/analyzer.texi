@@ -480,6 +480,13 @@ will dump the copious information about the analyzer's state each time it
 reaches the call in its traversal of the source.
 
 @smallexample
+extern void __analyzer_dump_capacity (const void *ptr);
+@end smallexample
+
+will emit a warning describing the capacity of the base region of
+the region pointed to by the 1st argument.
+
+@smallexample
 __analyzer_dump_path ();
 @end smallexample
 

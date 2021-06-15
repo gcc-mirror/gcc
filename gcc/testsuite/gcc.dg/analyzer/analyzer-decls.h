@@ -15,6 +15,9 @@ extern void __analyzer_describe (int verbosity, ...);
 /* Dump copious information about the analyzer’s state when reached.  */
 extern void __analyzer_dump (void);
 
+/* Emit a warning describing the size of the base region of (*ptr).  */
+extern void __analyzer_dump_capacity (const void *ptr);
+
 /* Dump information after analysis on all of the exploded nodes at this
    program point.
 

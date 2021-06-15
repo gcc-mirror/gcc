@@ -198,33 +198,21 @@ class exploded_node : public dnode<eg_traits>
   /* The result of on_stmt.  */
   struct on_stmt_flags
   {
-    on_stmt_flags (bool sm_changes)
-    : m_sm_changes (sm_changes),
-      m_terminate_path (false)
+    on_stmt_flags () : m_terminate_path (false)
     {}
 
     static on_stmt_flags terminate_path ()
     {
-      return on_stmt_flags (true, true);
+      return on_stmt_flags (true);
     }
-
-    static on_stmt_flags state_change (bool any_sm_changes)
-    {
-      return on_stmt_flags (any_sm_changes, false);
-    }
-
-    /* Did any sm-changes occur handling the stmt.  */
-    bool m_sm_changes : 1;
 
     /* Should we stop analyzing this path (on_stmt may have already
        added nodes/edges, e.g. when handling longjmp).  */
     bool m_terminate_path : 1;
 
   private:
-    on_stmt_flags (bool sm_changes,
-		   bool terminate_path)
-    : m_sm_changes (sm_changes),
-      m_terminate_path (terminate_path)
+    on_stmt_flags (bool terminate_path)
+    : m_terminate_path (terminate_path)
     {}
   };
 

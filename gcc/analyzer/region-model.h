@@ -163,6 +163,8 @@ public:
     m_hash_map.remove (reg);
   }
 
+  bool is_empty () const { return m_hash_map.is_empty (); }
+
   void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
   void dump (bool simple) const;
 
@@ -450,12 +452,16 @@ private:
    a tree of regions, along with their associated values.
    The representation is graph-like because values can be pointers to
    regions.
-   It also stores a constraint_manager, capturing relationships between
-   the values.  */
+   It also stores:
+   - a constraint_manager, capturing relationships between the values, and
+   - dynamic extents, mapping dynamically-allocated regions to svalues (their
+   capacities).  */
 
 class region_model
 {
  public:
+  typedef region_to_value_map dynamic_extents_t;
+
   region_model (region_model_manager *mgr);
   region_model (const region_model &other);
   ~region_model ();
@@ -495,6 +501,8 @@ class region_model
   bool impl_call_alloca (const call_details &cd);
   void impl_call_analyzer_describe (const gcall *call,
 				    region_model_context *ctxt);
+  void impl_call_analyzer_dump_capacity (const gcall *call,
+					 region_model_context *ctxt);
   void impl_call_analyzer_eval (const gcall *call,
 				region_model_context *ctxt);
   bool impl_call_builtin_expect (const call_details &cd);
@@ -606,6 +614,16 @@ class region_model
   store *get_store () { return &m_store; }
   const store *get_store () const { return &m_store; }
 
+  const dynamic_extents_t &
+  get_dynamic_extents () const
+  {
+    return m_dynamic_extents;
+  }
+  const svalue *get_dynamic_extents (const region *reg) const;
+  void set_dynamic_extents (const region *reg,
+			    const svalue *size_in_bytes);
+  void unset_dynamic_extents (const region *reg);
+
   region_model_manager *get_manager () const { return m_mgr; }
 
   void unbind_region_and_descendents (const region *reg,
@@ -628,6 +646,8 @@ class region_model
   bool region_exists_p (const region *reg) const;
 
   void loop_replay_fixup (const region_model *dst_state);
+
+  const svalue *get_capacity (const region *reg) const;
 
  private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
@@ -676,9 +696,6 @@ class region_model
 
   void on_top_level_param (tree param, region_model_context *ctxt);
 
-  void record_dynamic_extents (const region *reg,
-			       const svalue *size_in_bytes);
-
   bool called_from_main_p () const;
   const svalue *get_initial_value_for_global (const region *reg) const;
 
@@ -693,6 +710,12 @@ class region_model
   constraint_manager *m_constraints; // TODO: embed, rather than dynalloc?
 
   const frame_region *m_current_frame;
+
+  /* Map from base region to size in bytes, for tracking the sizes of
+     dynamically-allocated regions.
+     This is part of the region_model rather than the region to allow for
+     memory regions to be resized (e.g. by realloc).  */
+  dynamic_extents_t m_dynamic_extents;
 };
 
 /* Some region_model activity could lead to warnings (e.g. attempts to use an

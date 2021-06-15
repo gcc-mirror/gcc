@@ -1270,6 +1270,15 @@ program_state::detect_leaks (const program_state &src_state,
   /* Purge dead svals from constraints.  */
   dest_state.m_region_model->get_constraints ()->on_liveness_change
     (maybe_dest_svalues, dest_state.m_region_model);
+
+  /* Purge dead heap-allocated regions from dynamic extents.  */
+  for (const svalue *sval : dead_svals)
+    if (const region_svalue *region_sval = sval->dyn_cast_region_svalue ())
+      {
+	const region *reg = region_sval->get_pointee ();
+	if (reg->get_kind () == RK_HEAP_ALLOCATED)
+	  dest_state.m_region_model->unset_dynamic_extents (reg);
+      }
 }
 
 #if CHECKING_P
@@ -1426,7 +1435,7 @@ test_program_state_1 ()
   program_state s (ext_state);
   region_model *model = s.m_region_model;
   const svalue *size_in_bytes
-    = mgr->get_or_create_unknown_svalue (integer_type_node);
+    = mgr->get_or_create_unknown_svalue (size_type_node);
   const region *new_reg = model->create_region_for_heap_alloc (size_in_bytes);
   const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
   model->set_value (model->get_lvalue (p, NULL),
@@ -1482,7 +1491,7 @@ test_program_state_merging ()
 
   region_model *model0 = s0.m_region_model;
   const svalue *size_in_bytes
-    = mgr->get_or_create_unknown_svalue (integer_type_node);
+    = mgr->get_or_create_unknown_svalue (size_type_node);
   const region *new_reg = model0->create_region_for_heap_alloc (size_in_bytes);
   const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
   model0->set_value (model0->get_lvalue (p, &ctxt),

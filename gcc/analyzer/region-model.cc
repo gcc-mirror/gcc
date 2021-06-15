@@ -66,6 +66,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer-selftests.h"
 #include "stor-layout.h"
 #include "attribs.h"
+#include "tree-object-size.h"
 
 #if ENABLE_ANALYZER
 
@@ -225,7 +226,8 @@ region_to_value_map::can_merge_with_p (const region_to_value_map &other,
 /* Ctor for region_model: construct an "empty" model.  */
 
 region_model::region_model (region_model_manager *mgr)
-: m_mgr (mgr), m_store (), m_current_frame (NULL)
+: m_mgr (mgr), m_store (), m_current_frame (NULL),
+  m_dynamic_extents ()
 {
   m_constraints = new constraint_manager (mgr);
 }
@@ -235,7 +237,8 @@ region_model::region_model (region_model_manager *mgr)
 region_model::region_model (const region_model &other)
 : m_mgr (other.m_mgr), m_store (other.m_store),
   m_constraints (new constraint_manager (*other.m_constraints)),
-  m_current_frame (other.m_current_frame)
+  m_current_frame (other.m_current_frame),
+  m_dynamic_extents (other.m_dynamic_extents)
 {
 }
 
@@ -261,6 +264,8 @@ region_model::operator= (const region_model &other)
 
   m_current_frame = other.m_current_frame;
 
+  m_dynamic_extents = other.m_dynamic_extents;
+
   return *this;
 }
 
@@ -283,6 +288,9 @@ region_model::operator== (const region_model &other) const
     return false;
 
   if (m_current_frame != other.m_current_frame)
+    return false;
+
+  if (m_dynamic_extents != other.m_dynamic_extents)
     return false;
 
   gcc_checking_assert (hash () == other.hash ());
@@ -346,6 +354,13 @@ region_model::dump_to_pp (pretty_printer *pp, bool simple,
   m_constraints->dump_to_pp (pp, multiline);
   if (!multiline)
     pp_string (pp, "}");
+
+  /* Dump sizes of dynamic regions, if any are known.  */
+  if (!m_dynamic_extents.is_empty ())
+    {
+      pp_string (pp, "dynamic_extents:");
+      m_dynamic_extents.dump_to_pp (pp, simple, multiline);
+    }
 }
 
 /* Dump a representation of this model to FILE.  */
@@ -1140,6 +1155,17 @@ region_model::handle_unrecognized_call (const gcall *call,
   /* Update bindings for all clusters that have escaped, whether above,
      or previously.  */
   m_store.on_unknown_fncall (call, m_mgr->get_store_manager ());
+
+  /* Purge dynamic extents from any regions that have escaped mutably:
+     realloc could have been called on them.  */
+  for (hash_set<const region *>::iterator
+	 iter = reachable_regs.begin_mutable_base_regs ();
+       iter != reachable_regs.end_mutable_base_regs ();
+       ++iter)
+    {
+      const region *base_reg = (*iter);
+      unset_dynamic_extents (base_reg);
+    }
 }
 
 /* Traverse the regions in this model, determining what regions are
@@ -1972,6 +1998,41 @@ region_model::check_for_writable_region (const region* dest_reg,
     }
 }
 
+/* Get the capacity of REG in bytes.  */
+
+const svalue *
+region_model::get_capacity (const region *reg) const
+{
+  switch (reg->get_kind ())
+    {
+    default:
+      break;
+    case RK_DECL:
+      {
+	const decl_region *decl_reg = as_a <const decl_region *> (reg);
+	tree decl = decl_reg->get_decl ();
+	if (TREE_CODE (decl) == SSA_NAME)
+	  {
+	    tree type = TREE_TYPE (decl);
+	    tree size = TYPE_SIZE (type);
+	    return get_rvalue (size, NULL);
+	  }
+	else
+	  {
+	    tree size = decl_init_size (decl, false);
+	    if (size)
+	      return get_rvalue (size, NULL);
+	  }
+      }
+      break;
+    }
+
+  if (const svalue *recorded = get_dynamic_extents (reg))
+    return recorded;
+
+  return m_mgr->get_or_create_unknown_svalue (sizetype);
+}
+
 /* Set the value of the region given by LHS_REG to the value given
    by RHS_SVAL.  */
 
@@ -2240,6 +2301,12 @@ region_model::add_constraint (tree lhs, enum tree_code op, tree rhs,
      when synthesizing constraints as above.  */
   if (ctxt)
     ctxt->on_condition (lhs, op, rhs);
+
+  /* If we have &REGION == NULL, then drop dynamic extents for REGION (for
+     the case where REGION is heap-allocated and thus could be NULL).  */
+  if (op == EQ_EXPR && zerop (rhs))
+    if (const region_svalue *region_sval = lhs_sval->dyn_cast_region_svalue ())
+      unset_dynamic_extents (region_sval->get_pointee ());
 
   return true;
 }
@@ -3146,7 +3213,8 @@ region_model::get_frame_at_index (int index) const
 
 /* Unbind svalues for any regions in REG and below.
    Find any pointers to such regions; convert them to
-   poisoned values of kind PKIND.  */
+   poisoned values of kind PKIND.
+   Also purge any dynamic extents.  */
 
 void
 region_model::unbind_region_and_descendents (const region *reg,
@@ -3167,6 +3235,15 @@ region_model::unbind_region_and_descendents (const region *reg,
 
   /* Find any pointers to REG or its descendents; convert to poisoned.  */
   poison_any_pointers_to_descendents (reg, pkind);
+
+  /* Purge dynamic extents of any base regions in REG and below
+     (e.g. VLAs and alloca stack regions).  */
+  for (auto iter : m_dynamic_extents)
+    {
+      const region *iter_reg = iter.first;
+      if (iter_reg->descendent_of_p (reg))
+	unset_dynamic_extents (iter_reg);
+    }
 }
 
 /* Implementation of BindingVisitor.
@@ -3239,6 +3316,10 @@ region_model::can_merge_with_p (const region_model &other_model,
   if (!store::can_merge_p (&m_store, &other_model.m_store,
 			   &out_model->m_store, m_mgr->get_store_manager (),
 			   &m))
+    return false;
+
+  if (!m_dynamic_extents.can_merge_with_p (other_model.m_dynamic_extents,
+					   &out_model->m_dynamic_extents))
     return false;
 
   /* Merge constraints.  */
@@ -3322,7 +3403,8 @@ const region *
 region_model::create_region_for_heap_alloc (const svalue *size_in_bytes)
 {
   const region *reg = m_mgr->create_region_for_heap_alloc ();
-  record_dynamic_extents (reg, size_in_bytes);
+  assert_compat_types (size_in_bytes->get_type (), size_type_node);
+  set_dynamic_extents (reg, size_in_bytes);
   return reg;
 }
 
@@ -3333,18 +3415,38 @@ const region *
 region_model::create_region_for_alloca (const svalue *size_in_bytes)
 {
   const region *reg = m_mgr->create_region_for_alloca (m_current_frame);
-  record_dynamic_extents (reg, size_in_bytes);
+  assert_compat_types (size_in_bytes->get_type (), size_type_node);
+  set_dynamic_extents (reg, size_in_bytes);
   return reg;
 }
 
-/* Placeholder hook for recording that the size of REG is SIZE_IN_BYTES.
-   Currently does nothing.  */
+/* Record that the size of REG is SIZE_IN_BYTES.  */
 
 void
-region_model::
-record_dynamic_extents (const region *reg ATTRIBUTE_UNUSED,
-			const svalue *size_in_bytes ATTRIBUTE_UNUSED)
+region_model::set_dynamic_extents (const region *reg,
+				   const svalue *size_in_bytes)
 {
+  assert_compat_types (size_in_bytes->get_type (), size_type_node);
+  m_dynamic_extents.put (reg, size_in_bytes);
+}
+
+/* Get the recording of REG in bytes, or NULL if no dynamic size was
+   recorded.  */
+
+const svalue *
+region_model::get_dynamic_extents (const region *reg) const
+{
+  if (const svalue * const *slot = m_dynamic_extents.get (reg))
+    return *slot;
+  return NULL;
+}
+
+/* Unset any recorded dynamic size of REG.  */
+
+void
+region_model::unset_dynamic_extents (const region *reg)
+{
+  m_dynamic_extents.remove (reg);
 }
 
 /* struct model_merger.  */
@@ -4644,7 +4746,7 @@ test_state_merging ()
   {
     test_region_model_context ctxt;
     region_model model0 (&mgr);
-    tree size = build_int_cst (integer_type_node, 1024);
+    tree size = build_int_cst (size_type_node, 1024);
     const svalue *size_sval = mgr.get_or_create_constant_svalue (size);
     const region *new_reg = model0.create_region_for_heap_alloc (size_sval);
     const svalue *ptr_sval = mgr.get_ptr_svalue (ptr_type_node, new_reg);
@@ -5034,7 +5136,7 @@ test_malloc_constraints ()
   tree null_ptr = build_int_cst (ptr_type_node, 0);
 
   const svalue *size_in_bytes
-    = mgr.get_or_create_unknown_svalue (integer_type_node);
+    = mgr.get_or_create_unknown_svalue (size_type_node);
   const region *reg = model.create_region_for_heap_alloc (size_in_bytes);
   const svalue *sval = mgr.get_ptr_svalue (ptr_type_node, reg);
   model.set_value (model.get_lvalue (p, NULL), sval, NULL);
@@ -5259,7 +5361,7 @@ test_malloc ()
   const region *reg = model.create_region_for_heap_alloc (size_sval);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);
-  // TODO: verify dynamic extents
+  ASSERT_EQ (model.get_capacity (reg), size_sval);
 }
 
 /* Verify that alloca works.  */
@@ -5294,7 +5396,7 @@ test_alloca ()
   ASSERT_EQ (reg->get_parent_region (), frame_reg);
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);
-  // TODO: verify dynamic extents
+  ASSERT_EQ (model.get_capacity (reg), size_sval);
 
   /* Verify that the pointers to the alloca region are replaced by
      poisoned values when the frame is popped.  */
