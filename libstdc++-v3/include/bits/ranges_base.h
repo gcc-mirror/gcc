@@ -91,7 +91,7 @@ namespace ranges
     using std::ranges::__detail::__maybe_borrowed_range;
     using std::__detail::__range_iter_t;
 
-    struct _Begin
+    struct _Begin final
     {
     private:
       template<typename _Tp>
@@ -105,6 +105,8 @@ namespace ranges
 	  else
 	    return noexcept(__decay_copy(begin(std::declval<_Tp&>())));
 	}
+
+      void operator&() const = delete;
 
     public:
       template<__maybe_borrowed_range _Tp>
@@ -142,7 +144,7 @@ namespace ranges
 	  { __decay_copy(end(__t)) } -> sentinel_for<__range_iter_t<_Tp>>;
 	};
 
-    struct _End
+    struct _End final
     {
     private:
       template<typename _Tp>
@@ -156,6 +158,8 @@ namespace ranges
 	  else
 	    return noexcept(__decay_copy(end(std::declval<_Tp&>())));
 	}
+
+      void operator&() const = delete;
 
     public:
       template<__maybe_borrowed_range _Tp>
@@ -189,7 +193,7 @@ namespace ranges
 	  return static_cast<const _Tp&&>(__t);
       }
 
-    struct _CBegin
+    struct _CBegin final
     {
       template<typename _Tp>
 	constexpr auto
@@ -199,9 +203,11 @@ namespace ranges
 	{
 	  return _Begin{}(__cust_access::__as_const<_Tp>(__e));
 	}
+
+      void operator&() const = delete;
     };
 
-    struct _CEnd
+    struct _CEnd final
     {
       template<typename _Tp>
 	constexpr auto
@@ -211,6 +217,8 @@ namespace ranges
 	{
 	  return _End{}(__cust_access::__as_const<_Tp>(__e));
 	}
+
+      void operator&() const = delete;
     };
 
     template<typename _Tp>
@@ -236,7 +244,7 @@ namespace ranges
 	  { _End{}(__t) } -> same_as<decltype(_Begin{}(__t))>;
 	};
 
-    struct _RBegin
+    struct _RBegin final
     {
     private:
       template<typename _Tp>
@@ -259,6 +267,8 @@ namespace ranges
 		return false;
 	    }
 	}
+
+      void operator&() const = delete;
 
     public:
       template<__maybe_borrowed_range _Tp>
@@ -294,7 +304,7 @@ namespace ranges
 	    -> sentinel_for<decltype(_RBegin{}(std::forward<_Tp>(__t)))>;
 	};
 
-    struct _REnd
+    struct _REnd final
     {
     private:
       template<typename _Tp>
@@ -318,6 +328,8 @@ namespace ranges
 	    }
 	}
 
+      void operator&() const = delete;
+
     public:
       template<__maybe_borrowed_range _Tp>
 	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
@@ -334,7 +346,7 @@ namespace ranges
 	}
     };
 
-    struct _CRBegin
+    struct _CRBegin final
     {
       template<typename _Tp>
 	constexpr auto
@@ -344,9 +356,11 @@ namespace ranges
 	{
 	  return _RBegin{}(__cust_access::__as_const<_Tp>(__e));
 	}
+
+      void operator&() const = delete;
     };
 
-    struct _CREnd
+    struct _CREnd final
     {
       template<typename _Tp>
 	constexpr auto
@@ -356,6 +370,8 @@ namespace ranges
 	{
 	  return _REnd{}(__cust_access::__as_const<_Tp>(__e));
 	}
+
+      void operator&() const = delete;
     };
 
     template<typename _Tp>
@@ -386,7 +402,7 @@ namespace ranges
 	  __detail::__to_unsigned_like(_End{}(__t) - _Begin{}(__t));
 	};
 
-    struct _Size
+    struct _Size final
     {
     private:
       template<typename _Tp>
@@ -403,6 +419,8 @@ namespace ranges
 	    return noexcept(_End{}(std::declval<_Tp&>())
 			    - _Begin{}(std::declval<_Tp&>()));
 	}
+
+      void operator&() const = delete;
 
     public:
       template<typename _Tp>
@@ -422,7 +440,7 @@ namespace ranges
 	}
     };
 
-    struct _SSize
+    struct _SSize final
     {
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 3403. Domain of ranges::ssize(E) doesn't match ranges::size(E)
@@ -451,6 +469,8 @@ namespace ranges
 	  else // Must be one of __max_diff_type or __max_size_type.
 	    return __detail::__max_diff_type(__size);
 	}
+
+      void operator&() const = delete;
     };
 
     template<typename _Tp>
@@ -467,7 +487,7 @@ namespace ranges
 	  bool(_Begin{}(__t) == _End{}(__t));
 	};
 
-    struct _Empty
+    struct _Empty final
     {
     private:
       template<typename _Tp>
@@ -482,6 +502,8 @@ namespace ranges
 	    return noexcept(bool(_Begin{}(std::declval<_Tp&>())
 		== _End{}(std::declval<_Tp&>())));
 	}
+
+      void operator&() const = delete;
 
     public:
       template<typename _Tp>
@@ -512,7 +534,7 @@ namespace ranges
     template<typename _Tp>
       concept __begin_data = contiguous_iterator<__range_iter_t<_Tp>>;
 
-    struct _Data
+    struct _Data final
     {
     private:
       template<typename _Tp>
@@ -524,6 +546,8 @@ namespace ranges
 	  else
 	    return noexcept(_Begin{}(std::declval<_Tp&>()));
 	}
+
+      void operator&() const = delete;
 
     public:
       template<__maybe_borrowed_range _Tp>
@@ -538,7 +562,7 @@ namespace ranges
 	}
     };
 
-    struct _CData
+    struct _CData final
     {
       template<typename _Tp>
 	constexpr auto
@@ -548,6 +572,8 @@ namespace ranges
 	{
 	  return _Data{}(__cust_access::__as_const<_Tp>(__e));
 	}
+
+      void operator&() const = delete;
     };
 
   } // namespace __cust_access
@@ -669,7 +695,7 @@ namespace ranges
 
   // [range.iter.ops] range iterator operations
 
-  struct __advance_fn
+  struct __advance_fn final
   {
     template<input_or_output_iterator _It>
       constexpr void
@@ -774,11 +800,13 @@ namespace ranges
 	    return __n;
 	  }
       }
+
+    void operator&() const = delete;
   };
 
   inline constexpr __advance_fn advance{};
 
-  struct __distance_fn
+  struct __distance_fn final
   {
     template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
       constexpr iter_difference_t<_It>
@@ -807,11 +835,13 @@ namespace ranges
 	else
 	  return (*this)(ranges::begin(__r), ranges::end(__r));
       }
+
+    void operator&() const = delete;
   };
 
   inline constexpr __distance_fn distance{};
 
-  struct __next_fn
+  struct __next_fn final
   {
     template<input_or_output_iterator _It>
       constexpr _It
@@ -844,11 +874,13 @@ namespace ranges
 	ranges::advance(__x, __n, __bound);
 	return __x;
       }
+
+    void operator&() const = delete;
   };
 
   inline constexpr __next_fn next{};
 
-  struct __prev_fn
+  struct __prev_fn final
   {
     template<bidirectional_iterator _It>
       constexpr _It
@@ -873,6 +905,8 @@ namespace ranges
 	ranges::advance(__x, -__n, __bound);
 	return __x;
       }
+
+    void operator&() const = delete;
   };
 
   inline constexpr __prev_fn prev{};
