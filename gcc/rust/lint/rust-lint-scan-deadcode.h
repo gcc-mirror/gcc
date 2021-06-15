@@ -19,19 +19,19 @@
 #ifndef RUST_HIR_SCAN_DEADCODE
 #define RUST_HIR_SCAN_DEADCODE
 
+#include <set>
 #include "rust-hir-full-decls.h"
 #include "rust-hir-map.h"
-#include "rust-hir-liveness-base.h"
+#include "rust-lint-marklive-base.h"
 #include "rust-name-resolver.h"
 #include "rust-diagnostics.h"
-#include <set>
 
 namespace Rust {
 namespace Analysis {
 
-class ScanDeadcode : public LivenessBase
+class ScanDeadcode : public MarkLiveBase
 {
-  using Rust::Analysis::LivenessBase::visit;
+  using Rust::Analysis::MarkLiveBase::visit;
 
 public:
   static void Scan (HIR::Crate &crate, std::set<HirId> live_symbols)

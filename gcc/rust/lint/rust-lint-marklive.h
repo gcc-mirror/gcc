@@ -19,18 +19,18 @@
 #ifndef RUST_HIR_LIVENESS
 #define RUST_HIR_LIVENESS
 
+#include <set>
 #include "rust-hir-full-decls.h"
 #include "rust-hir-map.h"
-#include "rust-hir-liveness-base.h"
+#include "rust-lint-marklive-base.h"
 #include "rust-name-resolver.h"
-#include <set>
 
 namespace Rust {
 namespace Analysis {
 
-class Liveness : public LivenessBase
+class MarkLive : public MarkLiveBase
 {
-  using Rust::Analysis::LivenessBase::visit;
+  using Rust::Analysis::MarkLiveBase::visit;
 
 public:
   static std::set<HirId> Analysis (HIR::Crate &crate);
@@ -142,7 +142,7 @@ private:
   std::set<HirId> scannedSymbols;
   Analysis::Mappings *mappings;
   Resolver::Resolver *resolver;
-  Liveness (std::vector<HirId> worklist)
+  MarkLive (std::vector<HirId> worklist)
     : worklist (worklist), mappings (Analysis::Mappings::get ()),
       resolver (Resolver::Resolver::get ()){};
 };
