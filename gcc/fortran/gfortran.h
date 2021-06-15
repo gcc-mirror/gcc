@@ -1244,6 +1244,29 @@ enum gfc_omp_map_op
   OMP_MAP_DECLARE_DEALLOCATE
 };
 
+enum gfc_omp_defaultmap
+{
+  OMP_DEFAULTMAP_UNSET,
+  OMP_DEFAULTMAP_ALLOC,
+  OMP_DEFAULTMAP_TO,
+  OMP_DEFAULTMAP_FROM,
+  OMP_DEFAULTMAP_TOFROM,
+  OMP_DEFAULTMAP_FIRSTPRIVATE,
+  OMP_DEFAULTMAP_NONE,
+  OMP_DEFAULTMAP_DEFAULT,
+  OMP_DEFAULTMAP_PRESENT
+};
+
+enum gfc_omp_defaultmap_category
+{
+  OMP_DEFAULTMAP_CAT_UNCATEGORIZED,
+  OMP_DEFAULTMAP_CAT_SCALAR,
+  OMP_DEFAULTMAP_CAT_AGGREGATE,
+  OMP_DEFAULTMAP_CAT_ALLOCATABLE,
+  OMP_DEFAULTMAP_CAT_POINTER,
+  OMP_DEFAULTMAP_CAT_NUM
+};
+
 enum gfc_omp_linear_op
 {
   OMP_LINEAR_DEFAULT,
@@ -1426,9 +1449,10 @@ typedef struct gfc_omp_clauses
   enum gfc_omp_device_type device_type;
   struct gfc_expr *chunk_size;
   enum gfc_omp_default_sharing default_sharing;
+  enum gfc_omp_defaultmap defaultmap[OMP_DEFAULTMAP_CAT_NUM];
   int collapse, orderedc;
   bool nowait, ordered, untied, mergeable;
-  bool inbranch, notinbranch, defaultmap, nogroup;
+  bool inbranch, notinbranch, nogroup;
   bool sched_simd, sched_monotonic, sched_nonmonotonic;
   bool simd, threads, depend_source, destroy, order_concurrent, capture;
   enum gfc_omp_atomic_op atomic_op;

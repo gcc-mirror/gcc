@@ -1,6 +1,25 @@
 2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
+	2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR fortran/92568
+	* gimplify.c (enum gimplify_defaultmap_kind): Add GDMK_SCALAR_TARGET.
+	(struct gimplify_omp_ctx): Extend defaultmap array by one.
+	(new_omp_context): Init defaultmap[GDMK_SCALAR_TARGET].
+	(omp_notice_variable): Update type classification for Fortran.
+	(gimplify_scan_omp_clauses): Update calls for new argument; handle
+	GDMK_SCALAR_TARGET; for Fortran, GDMK_POINTER avoid GOVD_MAP_0LEN_ARRAY.
+	* langhooks-def.h (lhd_omp_scalar_p): Add 'ptr_ok' argument.
+	* langhooks.c (lhd_omp_scalar_p): Likewise.
+	(LANG_HOOKS_OMP_ALLOCATABLE_P, LANG_HOOKS_OMP_SCALAR_TARGET_P): New.
+	(LANG_HOOKS_DECLS): Add them.
+	* langhooks.h (struct lang_hooks_for_decls): Add new hooks, update
+	omp_scalar_p pointer type to include the new bool argument.
+
+2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
 	2021-06-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* tree-pretty-print.h (dump_omp_clauses): Add 'bool = true'

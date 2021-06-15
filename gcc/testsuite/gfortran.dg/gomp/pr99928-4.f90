@@ -57,7 +57,7 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l05\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*shared\\(l05\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp for\[^\n\r]*linear\\(l05:1\\)" "gimple" } }
-  !$omp target parallel do linear (l05) default(none) ! defaultmap(none)
+  !$omp target parallel do linear (l05) default(none) defaultmap(none)
   do i = 1, 64
     l05 = l05 + 1
   end do
@@ -68,14 +68,14 @@ subroutine bar ()
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l06\\)" "gimple" } } ! FIXME. 
   ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l06\\)" "gimple" } } ! FIXME. 
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*linear\\(l06:1\\)" "gimple" } }
-  !$omp target parallel do simd linear (l06) default(none) ! defaultmap(none)
+  !$omp target parallel do simd linear (l06) default(none) defaultmap(none)
   do i = 1, 64
     l06 = l06 + 1
   end do
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l07" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l07\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*linear\\(l07:1\\)" "gimple" } }
-  !$omp target simd linear (l07) ! defaultmap(none)
+  !$omp target simd linear (l07) defaultmap(none)
   do i = 1, 64
     l07 = l07 + 1
   end do

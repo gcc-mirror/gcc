@@ -1541,10 +1541,87 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		continue;
 	    }
 	  if ((mask & OMP_CLAUSE_DEFAULTMAP)
-	      && !c->defaultmap
-	      && gfc_match ("defaultmap ( tofrom : scalar )") == MATCH_YES)
+	      && gfc_match ("defaultmap ( ") == MATCH_YES)
 	    {
-	      c->defaultmap = true;
+	      enum gfc_omp_defaultmap behavior;
+	      gfc_omp_defaultmap_category category
+		= OMP_DEFAULTMAP_CAT_UNCATEGORIZED;
+	      if (gfc_match ("alloc ") == MATCH_YES)
+		behavior = OMP_DEFAULTMAP_ALLOC;
+	      else if (gfc_match ("tofrom ") == MATCH_YES)
+		behavior = OMP_DEFAULTMAP_TOFROM;
+	      else if (gfc_match ("to ") == MATCH_YES)
+		behavior = OMP_DEFAULTMAP_TO;
+	      else if (gfc_match ("from ") == MATCH_YES)
+		behavior = OMP_DEFAULTMAP_FROM;
+	      else if (gfc_match ("firstprivate ") == MATCH_YES)
+		behavior = OMP_DEFAULTMAP_FIRSTPRIVATE;
+	      else if (gfc_match ("none ") == MATCH_YES)
+		behavior = OMP_DEFAULTMAP_NONE;
+	      else if (gfc_match ("default ") == MATCH_YES)
+		behavior = OMP_DEFAULTMAP_DEFAULT;
+	      else
+		{
+		  gfc_error ("Expected ALLOC, TO, FROM, TOFROM, FIRSTPRIVATE, "
+			   "NONE or DEFAULT at %C");
+		  break;
+		}
+	      if (')' == gfc_peek_ascii_char ())
+		;
+	      else if (gfc_match (": ") != MATCH_YES)
+		break;
+	      else
+		{
+		  if (gfc_match ("scalar ") == MATCH_YES)
+		    category = OMP_DEFAULTMAP_CAT_SCALAR;
+		  else if (gfc_match ("aggregate ") == MATCH_YES)
+		    category = OMP_DEFAULTMAP_CAT_AGGREGATE;
+		  else if (gfc_match ("allocatable ") == MATCH_YES)
+		    category = OMP_DEFAULTMAP_CAT_ALLOCATABLE;
+		  else if (gfc_match ("pointer ") == MATCH_YES)
+		    category = OMP_DEFAULTMAP_CAT_POINTER;
+		  else
+		    {
+		      gfc_error ("Expected SCALAR, AGGREGATE, ALLOCATABLE or "
+				 "POINTER at %C");
+		      break;
+		    }
+		}
+	      for (int i = 0; i < OMP_DEFAULTMAP_CAT_NUM; ++i)
+		{
+		  if (i != category
+		      && category != OMP_DEFAULTMAP_CAT_UNCATEGORIZED)
+		    continue;
+		  if (c->defaultmap[i] != OMP_DEFAULTMAP_UNSET)
+		    {
+		      const char *pcategory = NULL;
+		      switch (i)
+			{
+			case OMP_DEFAULTMAP_CAT_UNCATEGORIZED: break;
+			case OMP_DEFAULTMAP_CAT_SCALAR: pcategory = "SCALAR"; break;
+			case OMP_DEFAULTMAP_CAT_AGGREGATE:
+			  pcategory = "AGGREGATE";
+			  break;
+			case OMP_DEFAULTMAP_CAT_ALLOCATABLE:
+			  pcategory = "ALLOCATABLE";
+			  break;
+			case OMP_DEFAULTMAP_CAT_POINTER:
+			  pcategory = "POINTER";
+			  break;
+			default: gcc_unreachable ();
+			}
+		     if (i == OMP_DEFAULTMAP_CAT_UNCATEGORIZED)
+		      gfc_error ("DEFAULTMAP at %C but prior DEFAULTMAP with "
+				 "unspecified category");
+		     else
+		      gfc_error ("DEFAULTMAP at %C but prior DEFAULTMAP for "
+				 "category %s", pcategory);
+		     goto end;
+		    }
+		}
+	      c->defaultmap[category] = behavior;
+	      if (gfc_match (")") != MATCH_YES)
+		break;
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_DELETE)
@@ -2468,6 +2545,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
       break;
     }
 
+end:
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       if (!gfc_error_flag_test ())
