@@ -1,3 +1,17 @@
+2021-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion-p10-addadd.c: New file.
+
+2021-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.dg/sms-1.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-2.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-3.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-4.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-6.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-8.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-10.c: Remove scan-rtl-dump-times check.
+
 2021-06-11  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	Backported from master:

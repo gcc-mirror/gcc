@@ -1,3 +1,76 @@
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100894
+	* include/std/type_traits (__common_ref_impl<X&, Y&>): Only
+	use the type if it's a reference.
+	* testsuite/20_util/common_reference/100894.cc: New test.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc (__representable_as_double)
+	(__p1_representable_as_double): Add "" to static asserts.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/path/native/conv_c++23.cc:
+	Add dg-require-filesystem-ts directive.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101034
+	* include/std/any (any(in_place_t<T>, initializer_list<U>, A&&...))
+	(any::emplace<T>(initializer_list<U>, A&&...)): Fix constraint
+	to use lvalue.
+	* testsuite/20_util/any/cons/101034.cc: New test.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc: Add
+	-std=gnu++17 option.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101055
+	* include/std/tuple: Use reserved form of attribute name.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc: Add
+	check for no_unique_address.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc:
+	Likewise.
+
+2021-06-14  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2021-05-18  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/100475
+	* include/std/ranges (__box::__box): Use non-list-initialization
+	in member initializer list of in-place constructor of the
+	partial specialization for semiregular types.
+	(__box::operator->): Use std::__addressof.
+	* testsuite/std/ranges/adaptors/detail/semiregular_box.cc
+	(test02): New test.
+	* testsuite/std/ranges/single_view.cc (test04): New test.
+
 2021-06-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

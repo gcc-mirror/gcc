@@ -1,3 +1,13 @@
+2021-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/genfusion.pl (gen_addadd): New function.
+	* config/rs6000/fusion.md: Regenerate file.
+	* config/rs6000/rs6000-cpus.def: Add
+	OPTION_MASK_P10_FUSION_2ADD to masks.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Handle default value of OPTION_MASK_P10_FUSION_2ADD.
+	* config/rs6000/rs6000.opt: Add -mpower10-fusion-2add.
+
 2021-06-11  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000.md (define_attr "type"): Add types for fusion.
