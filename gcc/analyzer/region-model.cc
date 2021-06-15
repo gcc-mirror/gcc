@@ -110,6 +110,116 @@ print_quoted_type (pretty_printer *pp, tree t)
   pp_end_quote (pp, pp_show_color (pp));
 }
 
+/* class region_to_value_map.  */
+
+/* Assignment operator for region_to_value_map.  */
+
+region_to_value_map &
+region_to_value_map::operator= (const region_to_value_map &other)
+{
+  m_hash_map.empty ();
+  for (auto iter : other.m_hash_map)
+    {
+      const region *reg = iter.first;
+      const svalue *sval = iter.second;
+      m_hash_map.put (reg, sval);
+    }
+  return *this;
+}
+
+/* Equality operator for region_to_value_map.  */
+
+bool
+region_to_value_map::operator== (const region_to_value_map &other) const
+{
+  if (m_hash_map.elements () != other.m_hash_map.elements ())
+    return false;
+
+  for (auto iter : *this)
+    {
+      const region *reg = iter.first;
+      const svalue *sval = iter.second;
+      const svalue * const *other_slot = other.get (reg);
+      if (other_slot == NULL)
+	return false;
+      if (sval != *other_slot)
+	return false;
+    }
+
+  return true;
+}
+
+/* Dump this object to PP.  */
+
+void
+region_to_value_map::dump_to_pp (pretty_printer *pp, bool simple,
+				 bool multiline) const
+{
+  auto_vec<const region *> regs;
+  for (iterator iter = begin (); iter != end (); ++iter)
+    regs.safe_push ((*iter).first);
+  regs.qsort (region::cmp_ptr_ptr);
+  if (multiline)
+    pp_newline (pp);
+  else
+    pp_string (pp, " {");
+  unsigned i;
+  const region *reg;
+  FOR_EACH_VEC_ELT (regs, i, reg)
+    {
+      if (multiline)
+	pp_string (pp, "  ");
+      else if (i > 0)
+	pp_string (pp, ", ");
+      reg->dump_to_pp (pp, simple);
+      pp_string (pp, ": ");
+      const svalue *sval = *get (reg);
+      sval->dump_to_pp (pp, true);
+      if (multiline)
+	pp_newline (pp);
+    }
+  if (!multiline)
+    pp_string (pp, "}");
+}
+
+/* Dump this object to stderr.  */
+
+DEBUG_FUNCTION void
+region_to_value_map::dump (bool simple) const
+{
+  pretty_printer pp;
+  pp_format_decoder (&pp) = default_tree_printer;
+  pp_show_color (&pp) = pp_show_color (global_dc->printer);
+  pp.buffer->stream = stderr;
+  dump_to_pp (&pp, simple, true);
+  pp_newline (&pp);
+  pp_flush (&pp);
+}
+
+
+/* Attempt to merge THIS with OTHER, writing the result
+   to OUT.
+
+   For now, write (region, value) mappings that are in common between THIS
+   and OTHER to OUT, effectively taking the intersection, rather than
+   rejecting differences.  */
+
+bool
+region_to_value_map::can_merge_with_p (const region_to_value_map &other,
+				       region_to_value_map *out) const
+{
+  for (auto iter : *this)
+    {
+      const region *iter_reg = iter.first;
+      const svalue *iter_sval = iter.second;
+      const svalue * const * other_slot = other.get (iter_reg);
+      if (other_slot)
+	if (iter_sval == *other_slot)
+	  out->put (iter_reg, iter_sval);
+    }
+  return true;
+}
+
 /* class region_model.  */
 
 /* Ctor for region_model: construct an "empty" model.  */

@@ -128,6 +128,51 @@ one_way_id_map<T>::update (T *id) const
   *id = get_dst_for_src (*id);
 }
 
+/* A mapping from region to svalue for use when tracking state.  */
+
+class region_to_value_map
+{
+public:
+  typedef hash_map<const region *, const svalue *> hash_map_t;
+  typedef hash_map_t::iterator iterator;
+
+  region_to_value_map () : m_hash_map () {}
+  region_to_value_map (const region_to_value_map &other)
+  : m_hash_map (other.m_hash_map) {}
+  region_to_value_map &operator= (const region_to_value_map &other);
+
+  bool operator== (const region_to_value_map &other) const;
+  bool operator!= (const region_to_value_map &other) const
+  {
+    return !(*this == other);
+  }
+
+  iterator begin () const { return m_hash_map.begin (); }
+  iterator end () const { return m_hash_map.end (); }
+
+  const svalue * const *get (const region *reg) const
+  {
+    return const_cast <hash_map_t &> (m_hash_map).get (reg);
+  }
+  void put (const region *reg, const svalue *sval)
+  {
+    m_hash_map.put (reg, sval);
+  }
+  void remove (const region *reg)
+  {
+    m_hash_map.remove (reg);
+  }
+
+  void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
+  void dump (bool simple) const;
+
+  bool can_merge_with_p (const region_to_value_map &other,
+			 region_to_value_map *out) const;
+
+private:
+  hash_map_t m_hash_map;
+};
+
 /* Various operations delete information from a region_model.
 
    This struct tracks how many of each kind of entity were purged (e.g.
