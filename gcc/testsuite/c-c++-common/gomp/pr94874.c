@@ -18,9 +18,8 @@ vla (int array_li)
   return size1 + size2;
 }
 
+/* { dg-final { scan-tree-dump "omp parallel .*shared\\(array_li\.\[0-9\]\\)" "gimple" } } */
 /* C */
-/* { dg-final { scan-tree-dump "omp parallel .*shared\\(array_li\.\[0-9\]\\)" "gimple" { target { ! c++ } } } } */
 /* { dg-final { scan-tree-dump "omp target .*private\\(array_li\.\[0-9\]\\)" "gimple" { target { ! c++ } } } } */
 /* C++ */
-/* { dg-final { scan-tree-dump "omp parallel .*shared\\(D\.\[0-9\]+\\)" "gimple" { target { c++ } } } } */
-/* { dg-final { scan-tree-dump "omp target .*firstprivate\\(D\.\[0-9\]+\\)" "gimple" { target { c++ } } } } */
+/* { dg-final { scan-tree-dump "omp target .*firstprivate\\(array_li\.\[0-9\]\\)" "gimple" { target { c++ } } } } */

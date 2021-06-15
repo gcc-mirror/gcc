@@ -1,5 +1,12 @@
 2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
 
+	Revert:
+	2020-09-28  Tobias Burnus  <tobias@codesourcery.com>
+
+	* c-c++-common/gomp/pr94874.c: Update scan-tree-dump.
+
+2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
 	Backported from master:
 	2021-06-11  Thomas Schwinge  <thomas@codesourcery.com>
 
