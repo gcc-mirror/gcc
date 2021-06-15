@@ -1,3 +1,13 @@
+2021-06-15  Tobias Burnus  <tobias@codesourcery.com>
+
+	Backported from master:
+	2021-06-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* tree-pretty-print.h (dump_omp_clauses): Add 'bool = true'
+	default argument.
+	* tree-pretty-print.c (dump_omp_clauses): Update.
+	(dump_generic_node) <OMP_CLAUSE>: Use it.
+
 2021-06-08  Tobias Burnus  <tobias@codesourcery.com>
 
 	Backported from master:
