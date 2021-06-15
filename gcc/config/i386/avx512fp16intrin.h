@@ -45,6 +45,14 @@ typedef _Float16 __m128h __attribute__ ((__vector_size__ (16), __may_alias__));
 typedef _Float16 __m256h __attribute__ ((__vector_size__ (32), __may_alias__));
 typedef _Float16 __m512h __attribute__ ((__vector_size__ (64), __may_alias__));
 
+/* Unaligned version of the same type.  */
+typedef _Float16 __m128h_u __attribute__ ((__vector_size__ (16),	\
+					   __may_alias__, __aligned__ (1)));
+typedef _Float16 __m256h_u __attribute__ ((__vector_size__ (32),	\
+					   __may_alias__, __aligned__ (1)));
+typedef _Float16 __m512h_u __attribute__ ((__vector_size__ (64),	\
+					   __may_alias__, __aligned__ (1)));
+
 extern __inline __m128h
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_set_ph (_Float16 __A7, _Float16 __A6, _Float16 __A5,
@@ -362,12 +370,104 @@ _mm_load_sh (void const *__P)
 		     *(_Float16 const *) __P);
 }
 
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_load_ph (void const *__P)
+{
+  return *(const __m512h *) __P;
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_load_ph (void const *__P)
+{
+  return *(const __m256h *) __P;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_load_ph (void const *__P)
+{
+  return *(const __m128h *) __P;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_loadu_ph (void const *__P)
+{
+  return *(const __m512h_u *) __P;
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_loadu_ph (void const *__P)
+{
+  return *(const __m256h_u *) __P;
+}
+
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_loadu_ph (void const *__P)
+{
+  return *(const __m128h_u *) __P;
+}
+
 /* Stores the lower _Float16 value.  */
 extern __inline void
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_store_sh (void *__P, __m128h __A)
 {
   *(_Float16 *) __P = ((__v8hf)__A)[0];
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_store_ph (void *__P, __m512h __A)
+{
+   *(__m512h *) __P = __A;
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_store_ph (void *__P, __m256h __A)
+{
+   *(__m256h *) __P = __A;
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_store_ph (void *__P, __m128h __A)
+{
+   *(__m128h *) __P = __A;
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_storeu_ph (void *__P, __m512h __A)
+{
+   *(__m512h_u *) __P = __A;
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_storeu_ph (void *__P, __m256h __A)
+{
+   *(__m256h_u *) __P = __A;
+}
+
+extern __inline void
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_storeu_ph (void *__P, __m128h __A)
+{
+   *(__m128h_u *) __P = __A;
+}
+
+extern __inline __m512h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm512_abs_ph (__m512h __A)
+{
+  return (__m512h) _mm512_and_epi32 ( _mm512_set1_epi32 (0x7FFF7FFF),
+				      (__m512i) __A);
 }
 
 /* Intrinsics v[add,sub,mul,div]ph.  */

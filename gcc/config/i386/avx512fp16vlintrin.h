@@ -425,6 +425,22 @@ _mm256_maskz_min_ph (__mmask16 __A, __m256h __B, __m256h __C)
 				       _mm256_setzero_ph (), __A);
 }
 
+extern __inline __m128h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm_abs_ph (__m128h __A)
+{
+  return (__m128h) _mm_and_si128 ( _mm_set1_epi32 (0x7FFF7FFF),
+				   (__m128i) __A);
+}
+
+extern __inline __m256h
+__attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_abs_ph (__m256h __A)
+{
+  return (__m256h) _mm256_and_si256 ( _mm256_set1_epi32 (0x7FFF7FFF),
+				      (__m256i) __A);
+}
+
 /* vcmpph */
 #ifdef __OPTIMIZE
 extern __inline __mmask8
