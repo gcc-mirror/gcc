@@ -505,8 +505,14 @@ package body Ada.Strings.Unbounded is
       --  Note: Don't try to free statically allocated null string
 
       if Object.Reference /= Null_String'Access then
-         Deallocate (Object.Reference);
-         Object.Reference := Null_Unbounded_String.Reference;
+         declare
+            Reference_Copy : String_Access := Object.Reference;
+            --  The original reference cannot be null, so we must create a
+            --  copy which will become null when deallocated.
+         begin
+            Deallocate (Reference_Copy);
+            Object.Reference := Null_Unbounded_String.Reference;
+         end;
          Object.Last := 0;
       end if;
    end Finalize;

@@ -746,8 +746,8 @@ private
      renames To_Unbounded_String;
 
    type Unbounded_String is new AF.Controlled with record
-      Reference : String_Access := Null_String'Access;
-      Last      : Natural       := 0;
+      Reference : not null String_Access := Null_String'Access;
+      Last      : Natural                := 0;
    end record with Put_Image => Put_Image;
 
    procedure Put_Image
