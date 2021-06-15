@@ -1,3 +1,8 @@
+2021-06-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	* resolve.c (resolve_variable): Remove *XCNEW used to
+	nullify nullified memory.
+
 2021-06-09  Martin Liska  <mliska@suse.cz>
 
 	* intrinsic.texi: Add missing @headitem to tables with a header.

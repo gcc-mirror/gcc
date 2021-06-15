@@ -1,3 +1,55 @@
+2021-06-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/100876
+	* g++.dg/warn/Wmismatched-new-delete-4.C: New test.
+	* g++.dg/warn/Wmismatched-new-delete-5.C: New test.
+	* g++.dg/warn/Wstringop-overflow-7.C: New test.
+	* g++.dg/warn/Wfree-nonheap-object-6.C: New test.
+	* g++.dg/analyzer/placement-new.C: Prune out expected warning.
+
+2021-06-14  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/100777
+	* gcc.target/powerpc/pr100777.c: New test.
+
+2021-06-14  Uroš Bizjak  <ubizjak@gmail.com>
+
+	PR target/101058
+	* gcc.target/i386/pr101058.c: New test.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/101052
+	* g++.dg/spellcheck-stdlib.C: Add checks for <cstdlib> names.
+	* gcc.dg/spellcheck-stdlib.c: Likewise.
+
+2021-06-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/simd/mve-vclz.c: Update expected results.
+	* gcc.target/arm/simd/mve-vshl.c: Likewise.
+	* gcc.target/arm/simd/mve-vec-pack.c: New test.
+	* gcc.target/arm/simd/mve-vec-unpack.c: New test.
+
+2021-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/100934
+	* gcc.dg/torture/pr100934.c: New testcase.
+
+2021-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* gcc.dg/sms-1.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-2.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-3.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-4.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-6.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-8.c: Remove scan-rtl-dump-times check.
+	* gcc.dg/sms-10.c: Remove scan-rtl-dump-times check.
+
+2021-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101031
+	* gcc.dg/torture/pr101031.c: New testcase.
+
 2021-06-13  Jason Merrill  <jason@redhat.com>
 
 	* gcc.dg/c2x-attr-maybe_unused-1.c: Expect no warnings.

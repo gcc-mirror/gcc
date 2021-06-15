@@ -1,3 +1,10 @@
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/101052
+	* known-headers.cc (get_stdlib_header_for_name): Add known
+	headers for EXIT_FAILURE, EXIT_SUCCESS, abort, atexit, calloc,
+	exit, and getenv.
+
 2021-06-12  Jason Merrill  <jason@redhat.com>
 
 	* c-attribs.c (handle_unused_attribute): Handle FIELD_DECL.
