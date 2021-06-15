@@ -89,6 +89,7 @@ namespace ranges
   namespace __cust_access
   {
     using std::ranges::__detail::__maybe_borrowed_range;
+    using std::__detail::__range_iter_t;
 
     struct _Begin
     {
@@ -127,8 +128,7 @@ namespace ranges
     template<typename _Tp>
       concept __member_end = requires(_Tp& __t)
 	{
-	  { __decay_copy(__t.end()) }
-	    -> sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
+	  { __decay_copy(__t.end()) } -> sentinel_for<__range_iter_t<_Tp>>;
 	};
 
     // Poison pills so that unqualified lookup doesn't find std::end.
@@ -139,8 +139,7 @@ namespace ranges
       concept __adl_end = __class_or_enum<remove_reference_t<_Tp>>
 	&& requires(_Tp& __t)
 	{
-	  { __decay_copy(end(__t)) }
-	    -> sentinel_for<decltype(_Begin{}(std::forward<_Tp>(__t)))>;
+	  { __decay_copy(end(__t)) } -> sentinel_for<__range_iter_t<_Tp>>;
 	};
 
     struct _End
@@ -281,7 +280,7 @@ namespace ranges
       concept __member_rend = requires(_Tp& __t)
 	{
 	  { __decay_copy(__t.rend()) }
-	    -> sentinel_for<decltype(_RBegin{}(__t))>;
+	    -> sentinel_for<decltype(_RBegin{}(std::forward<_Tp>(__t)))>;
 	};
 
     void rend(auto&) = delete;
@@ -507,12 +506,11 @@ namespace ranges
     template<typename _Tp>
       concept __member_data = requires(_Tp& __t)
 	{
-	  { __cust_access::__decay_copy(__t.data()) } -> __pointer_to_object;
+	  { __decay_copy(__t.data()) } -> __pointer_to_object;
 	};
 
     template<typename _Tp>
-      concept __begin_data = requires(_Tp& __t)
-	{ { _Begin{}(__t) } -> contiguous_iterator; };
+      concept __begin_data = contiguous_iterator<__range_iter_t<_Tp>>;
 
     struct _Data
     {
