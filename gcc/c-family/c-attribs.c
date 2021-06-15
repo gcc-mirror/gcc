@@ -2338,14 +2338,17 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
       *no_add_attrs = true;
     }
   else if (TREE_CODE (decl) == FUNCTION_DECL
-	   && ((curalign = DECL_ALIGN (decl)) > bitalign
-	       || ((lastalign = DECL_ALIGN (last_decl)) > bitalign)))
+	   && (((curalign = DECL_ALIGN (decl)) > bitalign)
+	       | ((lastalign = DECL_ALIGN (last_decl)) > bitalign)))
     {
       /* Either a prior attribute on the same declaration or one
 	 on a prior declaration of the same function specifies
 	 stricter alignment than this attribute.  */
-      bool note = lastalign != 0;
-      if (lastalign)
+      bool note = (lastalign > curalign
+		   || (lastalign == curalign
+		       && (DECL_USER_ALIGN (last_decl)
+			   > DECL_USER_ALIGN (decl))));
+      if (note)
 	curalign = lastalign;
 
       curalign /= BITS_PER_UNIT;
@@ -2390,25 +2393,6 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
       This formally comes from the c++11 specification but we are
       doing it for the GNU attribute syntax as well.  */
     *no_add_attrs = true;
-  else if (!warn_if_not_aligned_p
-	   && TREE_CODE (decl) == FUNCTION_DECL
-	   && DECL_ALIGN (decl) > bitalign)
-    {
-      /* Don't warn for function alignment here if warn_if_not_aligned_p
-	 is true.  It will be warned about later.  */
-      if (DECL_USER_ALIGN (decl))
-	{
-	  /* Only reject attempts to relax/override an alignment
-	     explicitly specified previously and accept declarations
-	     that appear to relax the implicit function alignment for
-	     the target.  Both increasing and increasing the alignment
-	     set by -falign-functions setting is permitted.  */
-	  error ("alignment for %q+D was previously specified as %d "
-		 "and may not be decreased", decl,
-		 DECL_ALIGN (decl) / BITS_PER_UNIT);
-	  *no_add_attrs = true;
-	}
-    }
   else if (warn_if_not_aligned_p
 	   && TREE_CODE (decl) == FIELD_DECL
 	   && !DECL_C_BIT_FIELD (decl))
