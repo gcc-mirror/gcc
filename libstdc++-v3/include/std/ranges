@@ -264,8 +264,6 @@ namespace ranges
 	requires (_Kind == subrange_kind::sized)
       : _M_begin(std::move(__i)), _M_end(__s)
       {
-	using __detail::__to_unsigned_like;
-	__glibcxx_assert(__n == __to_unsigned_like(ranges::distance(__i, __s)));
 	if constexpr (_S_store_size)
 	  _M_size._M_size = __n;
       }
