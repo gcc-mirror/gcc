@@ -658,8 +658,8 @@ package body Exp_Put_Image is
                   if Chars (Defining_Identifier (Item)) = Name_uParent then
                      declare
                         Parent_Type : constant Entity_Id :=
-                          Underlying_Type (Base_Type (
-                            (Etype (Defining_Identifier (Item)))));
+                          Implementation_Base_Type
+                            (Etype (Defining_Identifier (Item)));
 
                         Parent_Aspect_Spec : constant Node_Id :=
                           Find_Aspect (Parent_Type, Aspect_Put_Image);
