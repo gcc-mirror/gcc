@@ -906,6 +906,7 @@ try_eliminate_compare (struct comparison *cmp)
 static unsigned int
 execute_compare_elim_after_reload (void)
 {
+  df_set_flags (DF_LR_RUN_DCE);
   df_analyze ();
 
   gcc_checking_assert (!all_compares.exists ());
