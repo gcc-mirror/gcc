@@ -149,7 +149,7 @@ package body Sem_Util is
    --  have a default.
 
    function Is_Preelaborable_Function (Id : Entity_Id) return Boolean;
-   --  Ada 2020: Determine whether the specified function is suitable as the
+   --  Ada 2022: Determine whether the specified function is suitable as the
    --  name of a call in a preelaborable construct (RM 10.2.1(7/5)).
 
    type Null_Status_Kind is
@@ -9371,6 +9371,10 @@ package body Sem_Util is
       Ent : out Entity_Id;
       Off : out Boolean)
    is
+      pragma Assert
+        (Nkind (N) = N_Attribute_Definition_Clause
+         and then Chars (N) = Name_Address);
+
       Expr : Node_Id;
 
    begin
@@ -9390,61 +9394,56 @@ package body Sem_Util is
       Ent := Empty;
       Off := False;
 
-      if Nkind (N) = N_Attribute_Definition_Clause
-        and then Chars (N) = Name_Address
-      then
-         Expr := Expression (N);
+      Expr := Expression (N);
 
-         --  This loop checks the form of the expression for Y'Address,
-         --  using recursion to deal with intermediate constants.
+      --  This loop checks the form of the expression for Y'Address, using
+      --  recursion to deal with intermediate constants.
 
-         loop
-            --  Check for Y'Address
+      loop
+         --  Check for Y'Address
 
-            if Nkind (Expr) = N_Attribute_Reference
-              and then Attribute_Name (Expr) = Name_Address
-            then
-               Expr := Prefix (Expr);
-               exit;
+         if Nkind (Expr) = N_Attribute_Reference
+           and then Attribute_Name (Expr) = Name_Address
+         then
+            Expr := Prefix (Expr);
+            exit;
 
-            --  Check for Const where Const is a constant entity
+         --  Check for Const where Const is a constant entity
 
-            elsif Is_Entity_Name (Expr)
-              and then Ekind (Entity (Expr)) = E_Constant
-            then
-               Expr := Constant_Value (Entity (Expr));
+         elsif Is_Entity_Name (Expr)
+           and then Ekind (Entity (Expr)) = E_Constant
+         then
+            Expr := Constant_Value (Entity (Expr));
 
-            --  Anything else does not need checking
+         --  Anything else does not need checking
 
-            else
-               return;
-            end if;
-         end loop;
+         else
+            return;
+         end if;
+      end loop;
 
-         --  This loop checks the form of the prefix for an entity, using
-         --  recursion to deal with intermediate components.
+      --  This loop checks the form of the prefix for an entity, using
+      --  recursion to deal with intermediate components.
 
-         loop
-            --  Check for Y where Y is an entity
+      loop
+         --  Check for Y where Y is an entity
 
-            if Is_Entity_Name (Expr) then
-               Ent := Entity (Expr);
-               return;
+         if Is_Entity_Name (Expr) then
+            Ent := Entity (Expr);
+            return;
 
-            --  Check for components
+         --  Check for components
 
-            elsif Nkind (Expr) in N_Selected_Component | N_Indexed_Component
-            then
-               Expr := Prefix (Expr);
-               Off := True;
+         elsif Nkind (Expr) in N_Selected_Component | N_Indexed_Component then
+            Expr := Prefix (Expr);
+            Off  := True;
 
-            --  Anything else does not need checking
+         --  Anything else does not need checking
 
-            else
-               return;
-            end if;
-         end loop;
-      end if;
+         else
+            return;
+         end if;
+      end loop;
    end Find_Overlaid_Entity;
 
    -------------------------
@@ -9990,6 +9989,18 @@ package body Sem_Util is
       Discrim_Value         : Node_Id;
       Discrim_Value_Subtype : Node_Id;
       Discrim_Value_Status  : Discriminant_Value_Status := Bad;
+
+      function OK_Scope_For_Discrim_Value_Error_Messages return Boolean is
+        (Scope (Original_Record_Component
+                        (Entity (First (Choices (Assoc))))) = Typ);
+      --  Used to avoid generating error messages having a source position
+      --  which refers to somewhere (e.g., a discriminant value in a derived
+      --  tagged type declaration) unrelated to the offending construct. This
+      --  is required for correctness - clients of Gather_Components such as
+      --  Sem_Ch3.Create_Constrained_Components depend on this function
+      --  returning True while processing semantically correct examples;
+      --  generating an error message in this case would be wrong.
+
    begin
       Report_Errors := False;
 
@@ -10134,7 +10145,7 @@ package body Sem_Util is
       then
          Discrim_Value_Status := Static_Expr;
       else
-         if Ada_Version >= Ada_2020 then
+         if Ada_Version >= Ada_2022 then
             if Original_Node (Discrim_Value) /= Discrim_Value
                and then Nkind (Discrim_Value) = N_Type_Conversion
                and then Etype (Original_Node (Discrim_Value))
@@ -10173,15 +10184,13 @@ package body Sem_Util is
             --  components are being gathered for an aggregate, in which case
             --  the caller must check Report_Errors.
             --
-            --  In Ada 2020 the above rules are relaxed. A nonstatic governing
+            --  In Ada 2022 the above rules are relaxed. A nonstatic governing
             --  discriminant is OK as long as it has a static subtype and
             --  every value of that subtype (and there must be at least one)
             --  selects the same variant.
 
-            if Scope (Original_Record_Component
-                        ((Entity (First (Choices (Assoc)))))) = Typ
-            then
-               if Ada_Version >= Ada_2020 then
+            if OK_Scope_For_Discrim_Value_Error_Messages then
+               if Ada_Version >= Ada_2022 then
                   Error_Msg_FE
                     ("value for discriminant & must be static or " &
                      "discriminant's nominal subtype must be static " &
@@ -10299,10 +10308,12 @@ package body Sem_Util is
                         (Subset => Discrim_Value_Subtype_Intervals,
                          Of_Set => Variant_Intervals)
                then
-                  Error_Msg_NE
-                    ("no single variant is associated with all values of " &
-                     "the subtype of discriminant value &",
-                     Discrim_Value, Discrim);
+                  if OK_Scope_For_Discrim_Value_Error_Messages then
+                     Error_Msg_NE
+                       ("no single variant is associated with all values of " &
+                        "the subtype of discriminant value &",
+                        Discrim_Value, Discrim);
+                  end if;
                   Report_Errors := True;
                   return;
                end if;
@@ -15375,8 +15386,9 @@ package body Sem_Util is
 
    function Is_Access_Variable (E : Entity_Id) return Boolean is
    begin
-      return Is_Access_Object_Type (E)
-        and then not Is_Access_Constant (E);
+      return Is_Access_Type (E)
+        and then not Is_Access_Constant (E)
+        and then Ekind (Directly_Designated_Type (E)) /= E_Subprogram_Type;
    end Is_Access_Variable;
 
    -----------------------------
@@ -15505,7 +15517,7 @@ package body Sem_Util is
          return Is_Tagged_Type (Etype (Obj))
            and then Is_Aliased_View (Expression (Obj));
 
-      --  Ada 202x AI12-0228
+      --  Ada 2022 AI12-0228
 
       elsif Nkind (Obj) = N_Qualified_Expression
         and then Ada_Version >= Ada_2012
@@ -15875,18 +15887,32 @@ package body Sem_Util is
                            Aspect_Spec_1, Aspect_Spec_2 : Node_Id)
                           return Boolean is
       function Names_Match (Nm1, Nm2 : Node_Id) return Boolean;
+
+      -----------------
+      -- Names_Match --
+      -----------------
+
       function Names_Match (Nm1, Nm2 : Node_Id) return Boolean is
       begin
          if Nkind (Nm1) /= Nkind (Nm2) then
             return False;
+            --  This may be too restrictive given that visibility
+            --  may allow an identifier in one case and an expanded
+            --  name in the other.
          end if;
          case Nkind (Nm1) is
             when N_Identifier =>
                return Name_Equals (Chars (Nm1), Chars (Nm2));
+
             when N_Expanded_Name =>
-               return Names_Match (Prefix (Nm1), Prefix (Nm2))
-                 and then Names_Match (Selector_Name (Nm1),
-                                       Selector_Name (Nm2));
+               --  An inherited operation has the same name as its
+               --  ancestor, but they may have different scopes.
+               --  This may be too permissive for Iterator_Element, which
+               --  is intended to be identical in parent and derived type.
+
+               return Names_Match (Selector_Name (Nm1),
+                                   Selector_Name (Nm2));
+
             when N_Empty =>
                return True; -- needed for Aggregate aspect checking
 
@@ -15914,8 +15940,7 @@ package body Sem_Util is
          when Aspect_Default_Iterator
             | Aspect_Iterator_Element
             | Aspect_Constant_Indexing
-            | Aspect_Variable_Indexing
-            | Aspect_Implicit_Dereference =>
+            | Aspect_Variable_Indexing =>
             declare
                Item_1 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_1);
                Item_2 : constant Node_Id := Aspect_Rep_Item (Aspect_Spec_2);
@@ -15930,6 +15955,13 @@ package body Sem_Util is
                return Names_Match (Expression (Item_1),
                                    Expression (Item_2));
             end;
+
+         --  A confirming aspect for Implicit_Derenfence on a derived type
+         --  has already been checked in Analyze_Aspect_Implicit_Dereference,
+         --  including the presence of renamed discriminants.
+
+         when Aspect_Implicit_Dereference =>
+            return True;
 
          --  one of a kind
          when Aspect_Aggregate =>
@@ -18350,10 +18382,10 @@ package body Sem_Util is
 
             when N_Function_Call =>
 
-               --  Ada 2020 (AI12-0175): Calls to certain functions that are
+               --  Ada 2022 (AI12-0175): Calls to certain functions that are
                --  essentially unchecked conversions are preelaborable.
 
-               if Ada_Version >= Ada_2020
+               if Ada_Version >= Ada_2022
                  and then Nkind (Expr) = N_Function_Call
                  and then Is_Entity_Name (Name (Expr))
                  and then Is_Preelaborable_Function (Entity (Name (Expr)))
@@ -18585,7 +18617,7 @@ package body Sem_Util is
                     and then Is_Object_Reference (Expression (N));
 
                else
-                  --  AI12-0226: In Ada 202x a value conversion of an object is
+                  --  AI12-0226: In Ada 2022 a value conversion of an object is
                   --  an object.
 
                   return Is_Object_Reference (Expression (N));
@@ -19279,8 +19311,8 @@ package body Sem_Util is
            and then Aggregate_Type /= Any_Composite
          then
             if Is_Array_Type (Aggregate_Type) then
-               if Ada_Version >= Ada_2020 then
-                  --  For Ada_2020, this predicate returns True for
+               if Ada_Version >= Ada_2022 then
+                  --  For Ada 2022, this predicate returns True for
                   --  any "repeatedly evaluated" expression.
                   return True;
                end if;
@@ -19693,10 +19725,10 @@ package body Sem_Util is
       elsif Nkind (N) = N_Null then
          return True;
 
-      --  Ada 2020 (AI12-0175): Calls to certain functions that are essentially
+      --  Ada 2022 (AI12-0175): Calls to certain functions that are essentially
       --  unchecked conversions are preelaborable.
 
-      elsif Ada_Version >= Ada_2020
+      elsif Ada_Version >= Ada_2022
         and then Nkind (N) = N_Function_Call
         and then Is_Entity_Name (Name (N))
         and then Is_Preelaborable_Function (Entity (Name (N)))
@@ -20198,11 +20230,11 @@ package body Sem_Util is
 
    function Is_Static_Function (Subp : Entity_Id) return Boolean is
    begin
-      --  Always return False for pre Ada 2020 to e.g. ignore the Static
-      --  aspect in package Interfaces for Ada_Version < 2020 and also
+      --  Always return False for pre Ada 2022 to e.g. ignore the Static
+      --  aspect in package Interfaces for Ada_Version < 2022 and also
       --  for efficiency.
 
-      return Ada_Version >= Ada_2020
+      return Ada_Version >= Ada_2022
         and then Has_Aspect (Subp, Aspect_Static)
         and then
           (No (Find_Value_Of_Aspect (Subp, Aspect_Static))
@@ -23054,7 +23086,6 @@ package body Sem_Util is
       --  valid syntactic fields. Par_Nod is the expected parent of the
       --  syntactic field. Flag Semantic should be set when the input is a
       --  semantic field.
-      --  ????So it's visiting sem fields twice?
 
       procedure Visit_Itype (Itype : Entity_Id);
       --  Visit itype Itype. This action may create a new entity for Itype and
@@ -24441,10 +24472,10 @@ package body Sem_Util is
                 (Chars (Related_Id), Suffix, Suffix_Index, Prefix));
 
    begin
-      Mutate_Ekind       (N, Kind);
-      Set_Is_Internal    (N, True);
-      Append_Entity      (N, Scope_Id);
-      Set_Public_Status  (N);
+      Mutate_Ekind      (N, Kind);
+      Set_Is_Internal   (N, True);
+      Append_Entity     (N, Scope_Id);
+      Set_Public_Status (N);
 
       if Kind in Type_Kind then
          Init_Size_Align (N);
@@ -26215,7 +26246,9 @@ package body Sem_Util is
          Part_IP := Partial_Invariant_Procedure (From_Typ);
 
          --  The setting of the attributes is intentionally conservative. This
-         --  prevents accidental clobbering of enabled attributes.
+         --  prevents accidental clobbering of enabled attributes. We need to
+         --  call Base_Type twice, because it is sometimes not set to an actual
+         --  base type.
 
          if Has_Inheritable_Invariants (From_Typ) then
             Set_Has_Inheritable_Invariants (Typ);
@@ -26226,7 +26259,7 @@ package body Sem_Util is
          end if;
 
          if Has_Own_Invariants (From_Typ) then
-            Set_Has_Own_Invariants (Base_Type (Typ));
+            Set_Has_Own_Invariants (Base_Type (Base_Type (Typ)));
          end if;
 
          if Present (Full_IP) and then No (Invariant_Procedure (Typ)) then
@@ -30831,7 +30864,7 @@ package body Sem_Util is
                --  type case correctly, so we avoid that problem by
                --  returning True here.
                return True;
-            elsif Ada_Version < Ada_2020 then
+            elsif Ada_Version < Ada_2022 then
                return False;
             elsif not Is_Conditionally_Evaluated (Expr) then
                return False;

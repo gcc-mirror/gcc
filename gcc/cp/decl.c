@@ -2805,6 +2805,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       SET_DECL_ALIGN (newdecl, DECL_ALIGN (olddecl));
       DECL_USER_ALIGN (newdecl) |= DECL_USER_ALIGN (olddecl);
     }
+  else if (DECL_ALIGN (olddecl) == DECL_ALIGN (newdecl)
+      && DECL_USER_ALIGN (olddecl) != DECL_USER_ALIGN (newdecl))
+    DECL_USER_ALIGN (newdecl) = 1;
+
   DECL_USER_ALIGN (olddecl) = DECL_USER_ALIGN (newdecl);
   if (DECL_WARN_IF_NOT_ALIGN (olddecl)
       > DECL_WARN_IF_NOT_ALIGN (newdecl))

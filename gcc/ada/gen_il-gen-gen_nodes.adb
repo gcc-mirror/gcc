@@ -37,35 +37,22 @@ procedure Gen_IL.Gen.Gen_Nodes is
    function Sy -- Short for "Syntactic"
      (Field : Node_Field; Field_Type : Type_Enum;
       Default_Value : Field_Default_Value := No_Default;
-      Pre : String := "") return Field_Desc
+      Pre, Pre_Get, Pre_Set : String := "") return Field_Desc
       renames Create_Syntactic_Field;
    function Sm -- Short for "Semantic"
      (Field : Field_Enum; Field_Type : Type_Enum;
       Type_Only  : Type_Only_Enum := No_Type_Only;
-      Pre : String := "") return Field_Desc
+      Pre, Pre_Get, Pre_Set : String := "") return Field_Desc
       renames Create_Semantic_Field;
 
    procedure Union (T : Abstract_Node; Children : Type_Array)
-     renames Create_Node_Union;
+     renames Create_Node_Union_Type;
 
 begin -- Gen_IL.Gen.Gen_Nodes
    pragma Style_Checks ("M200");
 
-   --  N_Empty should not inherit all of these fields????
-   --  But the following getters and setters are called on Empty:
-   --
-   --  Set_Comes_From_Source
-   --  Set_Sloc
-   --
-   --  Comes_From_Source
-   --  Error_Posted
-   --  In_List
-   --  Link
-   --  Rewrite_Ins
-   --  Sloc
-   --  Small_Paren_Count
    Create_Root_Node_Type (Node_Kind,
-       (Sm (Nkind, Nkind_Type),
+       (Sm (Nkind, Node_Kind_Type),
         Sm (Sloc, Source_Ptr),
         Sm (In_List, Flag),
         Sm (Rewrite_Ins, Flag),
@@ -121,6 +108,19 @@ begin -- Gen_IL.Gen.Gen_Nodes
 
    Cc (N_Empty, Node_Kind,
        (Sy (Chars, Name_Id, Default_No_Name)));
+   --  The following getters and setters are called on Empty,
+   --  and are currently inherited from Node_Kind:
+   --
+   --  Set_Comes_From_Source
+   --  Set_Sloc
+   --
+   --  Comes_From_Source
+   --  Error_Posted
+   --  In_List
+   --  Link
+   --  Rewrite_Ins
+   --  Sloc
+   --  Small_Paren_Count
 
    Cc (N_Pragma_Argument_Association, Node_Kind,
        (Sy (Chars, Name_Id, Default_No_Name),
@@ -147,6 +147,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Chars, Name_Id, Default_No_Name)));
 
    Ab (N_Subexpr, N_Has_Etype,
+   --  Nodes with expression fields
        (Sm (Assignment_OK, Flag),
         Sm (Do_Range_Check, Flag),
         Sm (Has_Dynamic_Length_Check, Flag),
@@ -157,6 +158,9 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Raises_Constraint_Error, Flag)));
 
    Ab (N_Has_Entity, N_Subexpr,
+   --  Nodes that have Entity fields
+   --  Warning: DOES NOT INCLUDE N_Freeze_Entity, N_Freeze_Generic_Entity,
+   --  N_Aspect_Specification, or N_Attribute_Definition_Clause.
        (Sm (Entity_Or_Associated_Node, Node_Id))); -- both
 
    Cc (N_Expanded_Name, N_Has_Entity,
@@ -247,6 +251,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Do_Division_Check, Flag)));
 
    Ab (N_Op_Boolean, N_Binary_Op);
+   --  Binary operators that take operands of a boolean type, and yield a
+   --  result of a boolean type.
 
    Cc (N_Op_And, N_Op_Boolean,
        (Sm (Chars, Name_Id),
@@ -566,6 +572,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Must_Not_Freeze, Flag)));
 
    Ab (N_Declaration, Node_Kind);
+   --  Note: this includes all constructs normally thought of as declarations
+   --  except those which are separately grouped as later declarations.
 
    Cc (N_Component_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
@@ -717,6 +725,13 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Parameter_Specifications, List_Id, Default_No_List)));
 
    Ab (N_Later_Decl_Item, Node_Kind);
+   --  Note: this is Ada 83 relevant only (see Ada 83 RM 3.9 (2)) and includes
+   --  only those items which can appear as later declarative items. This also
+   --  includes N_Implicit_Label_Declaration which is not specifically in the
+   --  grammar but may appear as a valid later declarative items. It does NOT
+   --  include N_Pragma which can also appear among later declarative items.
+   --  It does however include N_Protected_Body, which is a bit peculiar, but
+   --  harmless since this cannot appear in Ada 83 mode anyway.
 
    Cc (N_Task_Type_Declaration, N_Later_Decl_Item,
        (Sy (Defining_Identifier, Node_Id),
@@ -911,6 +926,10 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Name, Node_Id, Default_Empty)));
 
    Ab (N_Statement_Other_Than_Procedure_Call, Node_Kind);
+   --  Note that this includes all statement types except for the cases of the
+   --  N_Procedure_Call_Statement which is considered to be a subexpression
+   --  (since overloading is possible, so it needs to go through the normal
+   --  overloading resolution for expressions).
 
    Cc (N_Abort_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Names, List_Id)));

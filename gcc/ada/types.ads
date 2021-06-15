@@ -988,6 +988,10 @@ package Types is
    --  Offset of a node field, in units of the size of the field, which is
    --  always a power of 2.
 
+   subtype Slot_Count is Field_Offset;
+   --  Count of number of slots. Same type as Field_Offset to avoid
+   --  proliferation of type conversions.
+
    subtype Field_Size_In_Bits is Field_Offset with Predicate =>
      Field_Size_In_Bits in 1 | 2 | 4 | 8 | 32;
 

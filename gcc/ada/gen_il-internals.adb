@@ -23,12 +23,20 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-package body Gen_IL.Utils is
+package body Gen_IL.Internals is
+
+   ---------
+   -- Nil --
+   ---------
 
    procedure Nil (T : Node_Or_Entity_Type) is
    begin
       null;
    end Nil;
+
+   --------------------
+   -- Node_Or_Entity --
+   --------------------
 
    function Node_Or_Entity (Root : Root_Type) return String is
    begin
@@ -38,6 +46,10 @@ package body Gen_IL.Utils is
          return "Entity";
       end if;
    end Node_Or_Entity;
+
+   ------------------------------
+   -- Num_Concrete_Descendants --
+   ------------------------------
 
    function Num_Concrete_Descendants
      (T : Node_Or_Entity_Type) return Natural is
@@ -72,7 +84,10 @@ package body Gen_IL.Utils is
      (case Root is
         when Node_Kind => Node_Field'Last,
         when others => Entity_Field'Last);  -- Entity_Kind
-   --  First and Last node or entity fields
+
+   -----------------------
+   -- Verify_Type_Table --
+   -----------------------
 
    procedure Verify_Type_Table is
    begin
@@ -88,13 +103,17 @@ package body Gen_IL.Utils is
                      pragma Assert
                        (Type_Table (T).First < Type_Table (T).Last);
 
-                  when Boundaries =>
+                  when Type_Boundaries =>
                      null;
                end case;
             end if;
          end if;
       end loop;
    end Verify_Type_Table;
+
+   --------------
+   -- Id_Image --
+   --------------
 
    function Id_Image (T : Type_Enum) return String is
    begin
@@ -105,14 +124,18 @@ package body Gen_IL.Utils is
             return "Node_Id";
          when Entity_Kind =>
             return "Entity_Id";
-         when Nkind_Type =>
+         when Node_Kind_Type =>
             return "Node_Kind";
-         when Ekind_Type =>
+         when Entity_Kind_Type =>
             return "Entity_Kind";
          when others =>
             return Image (T) & "_Id";
       end case;
    end Id_Image;
+
+   ----------------------
+   -- Get_Set_Id_Image --
+   ----------------------
 
    function Get_Set_Id_Image (T : Type_Enum) return String is
    begin
@@ -121,14 +144,18 @@ package body Gen_IL.Utils is
             return "Node_Id";
          when Entity_Kind =>
             return "Entity_Id";
-         when Nkind_Type =>
+         when Node_Kind_Type =>
             return "Node_Kind";
-         when Ekind_Type =>
+         when Entity_Kind_Type =>
             return "Entity_Kind";
          when others =>
             return Image (T);
       end case;
    end Get_Set_Id_Image;
+
+   -----------
+   -- Image --
+   -----------
 
    function Image (T : Opt_Type_Enum) return String is
    begin
@@ -165,6 +192,10 @@ package body Gen_IL.Utils is
       end case;
    end Image;
 
+   ------------------
+   -- Image_Sans_N --
+   ------------------
+
    function Image_Sans_N (T : Opt_Type_Enum) return String is
       Im : constant String := Image (T);
       pragma Assert (Im (1 .. 2) = "N_");
@@ -172,7 +203,11 @@ package body Gen_IL.Utils is
       return Im (3 .. Im'Last);
    end Image_Sans_N;
 
-   procedure Put_Images (S : in out Sink'Class; U : Type_Vector) is
+   -------------------------
+   -- Put_Types_With_Bars --
+   -------------------------
+
+   procedure Put_Types_With_Bars (S : in out Sink'Class; U : Type_Vector) is
       First_Time : Boolean := True;
    begin
       Indent (S, 3);
@@ -188,9 +223,13 @@ package body Gen_IL.Utils is
       end loop;
 
       Outdent (S, 3);
-   end Put_Images;
+   end Put_Types_With_Bars;
 
-   procedure Put_Id_Images (S : in out Sink'Class; U : Type_Vector) is
+   ----------------------------
+   -- Put_Type_Ids_With_Bars --
+   ----------------------------
+
+   procedure Put_Type_Ids_With_Bars (S : in out Sink'Class; U : Type_Vector) is
       First_Time : Boolean := True;
    begin
       Indent (S, 3);
@@ -206,7 +245,11 @@ package body Gen_IL.Utils is
       end loop;
 
       Outdent (S, 3);
-   end Put_Id_Images;
+   end Put_Type_Ids_With_Bars;
+
+   -----------
+   -- Image --
+   -----------
 
    function Image (F : Opt_Field_Enum) return String is
    begin
@@ -315,6 +358,10 @@ package body Gen_IL.Utils is
    function Image (Default : Field_Default_Value) return String is
      (Capitalize (Default'Img));
 
+   -----------------
+   -- Value_Image --
+   -----------------
+
    function Value_Image (Default : Field_Default_Value) return String is
    begin
       if Default = No_Default then
@@ -332,6 +379,10 @@ package body Gen_IL.Utils is
          end;
       end if;
    end Value_Image;
+
+   -------------------
+   -- Iterate_Types --
+   -------------------
 
    procedure Iterate_Types
      (Root  : Node_Or_Entity_Type;
@@ -356,6 +407,10 @@ package body Gen_IL.Utils is
       Recursive (Root);
    end Iterate_Types;
 
+   -------------------
+   -- Is_Descendant --
+   -------------------
+
    function Is_Descendant (Ancestor, Descendant : Node_Or_Entity_Type)
      return Boolean is
    begin
@@ -370,6 +425,10 @@ package body Gen_IL.Utils is
       end if;
    end Is_Descendant;
 
+   ------------------------
+   -- Put_Type_Hierarchy --
+   ------------------------
+
    procedure Put_Type_Hierarchy (S : in out Sink'Class; Root : Root_Type) is
       Level : Natural := 0;
 
@@ -383,10 +442,7 @@ package body Gen_IL.Utils is
 
       procedure Pre (T : Node_Or_Entity_Type) is
       begin
-         if not Type_Table (T).Allow_Overlap then
-            Put (S, "--  \1\2\n", Indentation, Image (T));
-         end if;
-
+         Put (S, "--  \1\2\n", Indentation, Image (T));
          Level := Level + 1;
       end Pre;
 
@@ -394,13 +450,11 @@ package body Gen_IL.Utils is
       begin
          Level := Level - 1;
 
-         if not Type_Table (T).Allow_Overlap then
-            --  Put out an "end" line only if there are many descendants, for
-            --  an arbitrary definition of "many".
+         --  Put out an "end" line only if there are many descendants, for
+         --  an arbitrary definition of "many".
 
-            if Num_Concrete_Descendants (T) > 10 then
-               Put (S, "--  \1end \2\n", Indentation, Image (T));
-            end if;
+         if Num_Concrete_Descendants (T) > 10 then
+            Put (S, "--  \1end \2\n", Indentation, Image (T));
          end if;
       end Post;
 
@@ -408,6 +462,8 @@ package body Gen_IL.Utils is
         (case Root is
            when Node_Kind => "nodes",
            when others => "entities");  -- Entity_Kind
+
+   --  Start of processing for Put_Type_Hierarchy
 
    begin
       Put (S, "--  Type hierarchy for \1\n", N_Or_E);
@@ -418,6 +474,10 @@ package body Gen_IL.Utils is
       Put (S, "--\n");
       Put (S, "--  End type hierarchy for \1\n\n", N_Or_E);
    end Put_Type_Hierarchy;
+
+   ---------
+   -- Pos --
+   ---------
 
    function Pos (T : Concrete_Type) return Root_Nat is
       First : constant Concrete_Type :=
@@ -450,4 +510,4 @@ package body Gen_IL.Utils is
    end Pfields;
    pragma Warnings (On);
 
-end Gen_IL.Utils;
+end Gen_IL.Internals;

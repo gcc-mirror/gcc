@@ -1326,36 +1326,48 @@ package body Sem_Ch3 is
    ----------------------------
 
    procedure Access_Type_Declaration (T : Entity_Id; Def : Node_Id) is
+
+      procedure Setup_Access_Type (Desig_Typ : Entity_Id);
+      --  After type declaration is analysed with T being an incomplete type,
+      --  this routine will mutate the kind of T to the appropriate access type
+      --  and set its directly designated type to Desig_Typ.
+
+      -----------------------
+      -- Setup_Access_Type --
+      -----------------------
+
+      procedure Setup_Access_Type (Desig_Typ : Entity_Id) is
+      begin
+         if All_Present (Def) or else Constant_Present (Def) then
+            Mutate_Ekind (T, E_General_Access_Type);
+         else
+            Mutate_Ekind (T, E_Access_Type);
+         end if;
+
+         Set_Directly_Designated_Type (T, Desig_Typ);
+      end Setup_Access_Type;
+
+      --  Local variables
+
       P : constant Node_Id := Parent (Def);
       S : constant Node_Id := Subtype_Indication (Def);
 
       Full_Desig : Entity_Id;
 
+   --  Start of processing for Access_Type_Declaration
+
    begin
       --  Check for permissible use of incomplete type
 
       if Nkind (S) /= N_Subtype_Indication then
+
          Analyze (S);
 
          if Nkind (S) in N_Has_Entity
            and then Present (Entity (S))
            and then Ekind (Root_Type (Entity (S))) = E_Incomplete_Type
          then
-            --  The following "if" prevents us from blowing up if the access
-            --  type is illegally completing something else.
-
-            if T in E_Void_Id
-                    | Access_Kind_Id
-                    | E_Private_Type_Id
-                    | E_Limited_Private_Type_Id
-                    | Incomplete_Kind_Id
-            then
-               Set_Directly_Designated_Type (T, Entity (S));
-
-            else
-               pragma Assert (Error_Posted (T));
-               return;
-            end if;
+            Setup_Access_Type (Desig_Typ => Entity (S));
 
             --  If the designated type is a limited view, we cannot tell if
             --  the full view contains tasks, and there is no way to handle
@@ -1366,13 +1378,12 @@ package body Sem_Ch3 is
             if From_Limited_With (Entity (S))
               and then not Is_Class_Wide_Type (Entity (S))
             then
-               Mutate_Ekind (T, E_Access_Type);
                Build_Master_Entity (T);
                Build_Master_Renaming (T);
             end if;
 
          else
-            Set_Directly_Designated_Type (T, Process_Subtype (S, P, T, 'P'));
+            Setup_Access_Type (Desig_Typ => Process_Subtype (S, P, T, 'P'));
          end if;
 
          --  If the access definition is of the form: ACCESS NOT NULL ..
@@ -1404,14 +1415,7 @@ package body Sem_Ch3 is
          end if;
 
       else
-         Set_Directly_Designated_Type (T,
-           Process_Subtype (S, P, T, 'P'));
-      end if;
-
-      if All_Present (Def) or Constant_Present (Def) then
-         Mutate_Ekind (T, E_General_Access_Type);
-      else
-         Mutate_Ekind (T, E_Access_Type);
+         Setup_Access_Type (Desig_Typ => Process_Subtype (S, P, T, 'P'));
       end if;
 
       if not Error_Posted (T) then
@@ -3191,7 +3195,7 @@ package body Sem_Ch3 is
                --  so that pre/postconditions can be handled directly on the
                --  generated wrapper.
 
-               if Ada_Version >= Ada_2020
+               if Ada_Version >= Ada_2022
                  and then Present (Aspect_Specifications (N))
                then
                   Build_Access_Subprogram_Wrapper (N);
@@ -6186,6 +6190,12 @@ package body Sem_Ch3 is
       end if;
 
       if Nkind (Def) = N_Constrained_Array_Definition then
+
+         if Ekind (T) in Incomplete_Or_Private_Kind then
+            Reinit_Field_To_Zero (T, Stored_Constraint);
+         else
+            pragma Assert (Ekind (T) = E_Void);
+         end if;
 
          --  Establish Implicit_Base as unconstrained base type
 
@@ -9745,6 +9755,12 @@ package body Sem_Ch3 is
    begin
       --  Set common attributes
 
+      if Ekind (Derived_Type) in Incomplete_Or_Private_Kind
+        and then Ekind (Parent_Base) in Modular_Integer_Kind | Array_Kind
+      then
+         Reinit_Field_To_Zero (Derived_Type, Stored_Constraint);
+      end if;
+
       Set_Scope                  (Derived_Type, Current_Scope);
       Set_Etype                  (Derived_Type,        Parent_Base);
       Mutate_Ekind               (Derived_Type, Ekind (Parent_Base));
@@ -11084,7 +11100,7 @@ package body Sem_Ch3 is
             end if;
          end if;
 
-         --  Ada 2005 (AI95-0414) and Ada 2020 (AI12-0269): Diagnose failure to
+         --  Ada 2005 (AI95-0414) and Ada 2022 (AI12-0269): Diagnose failure to
          --  match No_Return in parent, but do it unconditionally in Ada 95 too
          --  for procedures, since this is our pragma.
 
@@ -15800,7 +15816,7 @@ package body Sem_Ch3 is
       --  that functions with controlling access results of record extensions
       --  with a null extension part require overriding (AI95-00391/06).
 
-      --  Ada 202x (AI12-0042): Similarly, set those properties for
+      --  Ada 2022 (AI12-0042): Similarly, set those properties for
       --  implementing the rule of RM 7.3.2(6.1/4).
 
       --  A subprogram subject to pragma Extensions_Visible with value False
@@ -15957,7 +15973,7 @@ package body Sem_Ch3 is
          Set_Mechanism (New_Subp, Mechanism (Parent_Subp));
       end if;
 
-      --  Ada 2020 (AI12-0279): If a Yield aspect is specified True for a
+      --  Ada 2022 (AI12-0279): If a Yield aspect is specified True for a
       --  primitive subprogram S of a type T, then the aspect is inherited
       --  by the corresponding primitive subprogram of each descendant of T.
 
@@ -19223,14 +19239,17 @@ package body Sem_Ch3 is
          Reinit_Field_To_Zero (CW_Type, Private_Dependents);
 
       elsif Ekind (CW_Type) in Concurrent_Kind then
-         if Ekind (CW_Type) = E_Task_Type then
+         Reinit_Field_To_Zero (CW_Type, First_Private_Entity);
+         Reinit_Field_To_Zero (CW_Type, Scope_Depth_Value);
+
+         if Ekind (CW_Type) in Task_Kind then
             Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Checks_OK_Id);
             Reinit_Field_To_Zero (CW_Type, Is_Elaboration_Warnings_OK_Id);
          end if;
 
-         Reinit_Field_To_Zero (CW_Type, First_Private_Entity);
-         Reinit_Field_To_Zero (CW_Type, Scope_Depth_Value);
-         Reinit_Field_To_Zero (CW_Type, SPARK_Aux_Pragma_Inherited);
+         if Ekind (CW_Type) in E_Task_Type | E_Protected_Type then
+            Reinit_Field_To_Zero (CW_Type, SPARK_Aux_Pragma_Inherited);
+         end if;
       end if;
 
       Mutate_Ekind                    (CW_Type, E_Class_Wide_Type);
@@ -19614,6 +19633,11 @@ package body Sem_Ch3 is
       --  Proceed with analysis of mod expression
 
       Analyze_And_Resolve (Mod_Expr, Any_Integer);
+
+      if Ekind (T) in Incomplete_Or_Private_Kind then
+         Reinit_Field_To_Zero (T, Stored_Constraint);
+      end if;
+
       Set_Etype (T, T);
       Mutate_Ekind (T, E_Modular_Integer_Type);
       Init_Alignment (T);
@@ -20414,7 +20438,7 @@ package body Sem_Ch3 is
       while Present (Discr) loop
          Id := Defining_Identifier (Discr);
 
-         if Ekind (Id) = E_In_Parameter then -- ????Above says E_Void
+         if Ekind (Id) = E_In_Parameter then
             Reinit_Field_To_Zero (Id, Discriminal_Link);
          end if;
 

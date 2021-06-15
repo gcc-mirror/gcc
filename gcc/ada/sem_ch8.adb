@@ -1530,7 +1530,7 @@ package body Sem_Ch8 is
       --  Ignore (accept) N_Raise_xxx_Error nodes in this context.
 
       elsif No_Raise_xxx_Error (Nam) = OK then
-         Error_Msg_Ada_2020_Feature ("value in renaming", Sloc (Nam));
+         Error_Msg_Ada_2022_Feature ("value in renaming", Sloc (Nam));
       end if;
 
       Set_Etype (Id, T2);

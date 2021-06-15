@@ -1380,6 +1380,12 @@ Alphabetical List of All Switches
   Allow full Ada 2012 features (same as :switch:`-gnat12`)
 
 
+.. index:: -gnat2022  (gcc)
+
+:switch:`-gnat2022`
+  Allow full Ada 2022 features
+
+
 :switch:`-gnat83`
   Enforce Ada 83 restrictions.
 
@@ -5502,15 +5508,23 @@ indicate Ada 83 compatibility mode.
   for further information).
 
 
+.. index:: -gnat2022  (gcc)
+.. index:: Ada 2022 mode
+
+:switch:`-gnat2022` (Ada 2022 mode)
+  This switch directs the compiler to implement the Ada 2022 version of the
+  language.
+
+
 .. index:: -gnatX  (gcc)
 .. index:: Ada language extensions
 .. index:: GNAT extensions
 
 :switch:`-gnatX` (Enable GNAT Extensions)
   This switch directs the compiler to implement the latest version of the
-  language (currently Ada 2012) and also to enable certain GNAT implementation
+  language (currently Ada 2022) and also to enable certain GNAT implementation
   extensions that are not part of any Ada standard. For a full list of these
-  extensions, see the GNAT reference manual.
+  extensions, see the GNAT reference manual, ``Pragma Extensions_Allowed``.
 
 
 .. _Character_Set_Control:

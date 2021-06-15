@@ -24,3 +24,5 @@ void test_3 (void)
   int *p = new(buf) int (42);
   delete p; // { dg-warning "memory not on the heap" }
 }
+
+// { dg-prune-output "-Wfree-nonheap-object" }

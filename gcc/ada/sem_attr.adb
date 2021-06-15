@@ -168,11 +168,11 @@ package body Sem_Attr is
       Attribute_Max_Alignment_For_Allocation => True,
       others                                 => False);
 
-   --  The following array is the list of attributes defined in the Ada 2020
+   --  The following array is the list of attributes defined in the Ada 2022
    --  RM which are not defined in Ada 2012. These are recognized in Ada
    --  95/2005/2012 modes, but are considered to be implementation defined.
 
-   Attribute_20 : constant Attribute_Class_Array := Attribute_Class_Array'(
+   Attribute_22 : constant Attribute_Class_Array := Attribute_Class_Array'(
       Attribute_Enum_Rep                     |
       Attribute_Enum_Val                     => True,
       others                                 => False);
@@ -1486,11 +1486,11 @@ package body Sem_Attr is
             --  Image_Type may be empty in case of another error detected,
             --  or if an N_Raise_xxx_Error node is a parent of N.
 
-            if Ada_Version < Ada_2020
+            if Ada_Version < Ada_2022
               and then Present (Image_Type)
               and then not Is_Scalar_Type (Image_Type)
             then
-               Error_Msg_Ada_2020_Feature ("nonscalar ''Image", Sloc (P));
+               Error_Msg_Ada_2022_Feature ("nonscalar ''Image", Sloc (P));
                Error_Attr;
             end if;
          end Check_Image_Type;
@@ -2870,17 +2870,17 @@ package body Sem_Attr is
 
          case Uneval_Old_Setting is
             when 'E' =>
-               --  ??? In the case where Ada_Version is < Ada_2020 and
-               --  an illegal 'Old prefix would be legal in Ada_2020,
-               --  we'd like to call Error_Msg_Ada_2020_Feature.
+               --  ??? In the case where Ada_Version is < Ada_2022 and
+               --  an illegal 'Old prefix would be legal in Ada_2022,
+               --  we'd like to call Error_Msg_Ada_2022_Feature.
                --  Identifying that case involves some work.
 
                Error_Attr_P
                  ("prefix of attribute % that is potentially "
                   & "unevaluated must statically name an entity"
 
-                  --  further text needed for accuracy if Ada_2020
-                  & (if Ada_Version >= Ada_2020
+                  --  further text needed for accuracy if Ada_2022
+                  & (if Ada_Version >= Ada_2022
                        and then Attr_Id = Attribute_Old
                      then " or be eligible for conditional evaluation"
                           & " (RM 6.1.1 (27))"
@@ -2957,13 +2957,13 @@ package body Sem_Attr is
 
       --  Deal with Ada 2005 attributes that are implementation attributes
       --  because they appear in a version of Ada before Ada 2005, ditto for
-      --  Ada 2012 and Ada 2020 attributes appearing in an earlier version.
+      --  Ada 2012 and Ada 2022 attributes appearing in an earlier version.
 
       if (Attribute_05 (Attr_Id) and then Ada_Version < Ada_2005)
             or else
          (Attribute_12 (Attr_Id) and then Ada_Version < Ada_2012)
             or else
-         (Attribute_20 (Attr_Id) and then Ada_Version < Ada_2020)
+         (Attribute_22 (Attr_Id) and then Ada_Version < Ada_2022)
       then
          Check_Restriction (No_Implementation_Attributes, N);
       end if;
@@ -5202,7 +5202,7 @@ package body Sem_Attr is
          else
             --  Ensure that the prefix of attribute 'Old is an entity when it
             --  is potentially unevaluated (6.1.1 (27/3)). This rule is
-            --  relaxed in Ada2020 - this relaxation is reflected in the
+            --  relaxed in Ada 2022 - this relaxation is reflected in the
             --  call (below) to Eligible_For_Conditional_Evaluation.
 
             if Is_Potentially_Unevaluated (N)
@@ -10887,34 +10887,10 @@ package body Sem_Attr is
                   if Convention (Designated_Type (Btyp)) /=
                      Convention (Entity (P))
                   then
-                     --  The rule in 6.3.1 (8) deserves a special error
-                     --  message.
-
-                     if Convention (Btyp) = Convention_Intrinsic
-                       and then Nkind (Parent (N)) = N_Procedure_Call_Statement
-                       and then Is_Entity_Name (Name (Parent (N)))
-                       and then Inside_A_Generic
-                     then
-                        declare
-                           Subp : constant Entity_Id :=
-                                    Entity (Name (Parent (N)));
-                        begin
-                           if Convention (Subp) = Convention_Intrinsic then
-                              Error_Msg_FE
-                                ("?subprogram and its formal access "
-                                 & "parameters have convention Intrinsic",
-                                 Parent (N), Subp);
-                              Error_Msg_N
-                                ("actual cannot be access attribute", N);
-                           end if;
-                        end;
-
-                     else
-                        Error_Msg_FE
-                          ("subprogram & has wrong convention", P, Entity (P));
-                        Error_Msg_Sloc := Sloc (Btyp);
-                        Error_Msg_FE ("\does not match & declared#", P, Btyp);
-                     end if;
+                     Error_Msg_FE
+                       ("subprogram & has wrong convention", P, Entity (P));
+                     Error_Msg_Sloc := Sloc (Btyp);
+                     Error_Msg_FE ("\does not match & declared#", P, Btyp);
 
                      if not Is_Itype (Btyp)
                        and then not Has_Convention_Pragma (Btyp)
@@ -11497,9 +11473,9 @@ package body Sem_Attr is
                end if;
 
                --  Check for nonatomic subcomponent of a full access object
-               --  in Ada 2020 (RM C.6 (12)).
+               --  in Ada 2022 (RM C.6 (12)).
 
-               if Ada_Version >= Ada_2020
+               if Ada_Version >= Ada_2022
                  and then Is_Subcomponent_Of_Full_Access_Object (P)
                  and then not Is_Atomic_Object (P)
                then

@@ -3762,10 +3762,10 @@ package body Sem_Elab is
       Set_Is_SPARK_Mode_On_Node (Marker, Is_SPARK_Mode_On_Node (N));
       Set_Target                (Marker, Subp_Id);
 
-      --  Ada 2020 (AI12-0175): Calls to certain functions that are essentially
+      --  Ada 2022 (AI12-0175): Calls to certain functions that are essentially
       --  unchecked conversions are preelaborable.
 
-      if Ada_Version >= Ada_2020 then
+      if Ada_Version >= Ada_2022 then
          Set_Is_Preelaborable_Call (Marker, Is_Preelaborable_Construct (N));
       else
          Set_Is_Preelaborable_Call (Marker, False);
@@ -8877,10 +8877,10 @@ package body Sem_Elab is
 
       Error_Msg_Warn := GNAT_Mode;
 
-      --  Ada 2020 (AI12-0175): Calls to certain functions that are essentially
+      --  Ada 2022 (AI12-0175): Calls to certain functions that are essentially
       --  unchecked conversions are preelaborable.
 
-      if Ada_Version >= Ada_2020 then
+      if Ada_Version >= Ada_2022 then
          Error_Msg_N
            ("<<non-preelaborable call not allowed in preelaborated unit", N);
       else
@@ -17558,14 +17558,14 @@ package body Sem_Elab is
             --  Complain if ref that comes from source in preelaborated unit
             --  and we are not inside a subprogram (i.e. we are in elab code).
 
-            --  Ada 2020 (AI12-0175): Calls to certain functions that are
+            --  Ada 2022 (AI12-0175): Calls to certain functions that are
             --  essentially unchecked conversions are preelaborable.
 
             if Comes_From_Source (N)
               and then In_Preelaborated_Unit
               and then not In_Inlined_Body
               and then Nkind (N) /= N_Attribute_Reference
-              and then not (Ada_Version >= Ada_2020
+              and then not (Ada_Version >= Ada_2022
                              and then Is_Preelaborable_Construct (N))
             then
                Error_Preelaborated_Call (N);

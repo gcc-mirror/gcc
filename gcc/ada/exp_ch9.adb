@@ -841,7 +841,7 @@ package body Exp_Ch9 is
       Insert_Before (Last (Statements (Stats)), Call);
       Analyze (Call);
 
-      --  Ada 2020 (AI12-0279)
+      --  Ada 2022 (AI12-0279)
 
       if Has_Yield_Aspect (Entity (Entry_Direct_Name (Astat)))
         and then RTE_Available (RE_Yield)
@@ -864,7 +864,7 @@ package body Exp_Ch9 is
             Append (Call, Statements (Hand));
             Analyze (Call);
 
-            --  Ada 2020 (AI12-0279)
+            --  Ada 2022 (AI12-0279)
 
             if Has_Yield_Aspect (Entity (Entry_Direct_Name (Astat)))
               and then RTE_Available (RE_Yield)
@@ -917,7 +917,7 @@ package body Exp_Ch9 is
 
             Statements => New_List (Call))));
 
-      --  Ada 2020 (AI12-0279)
+      --  Ada 2022 (AI12-0279)
 
       if Has_Yield_Aspect (Entity (Entry_Direct_Name (Astat)))
         and then RTE_Available (RE_Yield)
@@ -6209,11 +6209,11 @@ package body Exp_Ch9 is
       begin
          if Is_Static_Expression (N) then
             return True;
-         elsif Ada_Version >= Ada_2020
+         elsif Ada_Version >= Ada_2022
            and then Nkind (N) in N_Selected_Component | N_Indexed_Component
            and then Statically_Names_Object (N)
          then
-            --  Restriction relaxed in Ada2020 to allow statically named
+            --  Restriction relaxed in Ada 2022 to allow statically named
             --  subcomponents.
             return Is_Simple_Barrier (Prefix (N));
          end if;
@@ -6668,7 +6668,7 @@ package body Exp_Ch9 is
 
          Analyze (N);
 
-         --  Ada 2020 (AI12-0279)
+         --  Ada 2022 (AI12-0279)
 
          if Has_Yield_Aspect (Eent)
            and then RTE_Available (RE_Yield)
@@ -11005,7 +11005,7 @@ package body Exp_Ch9 is
                Entry_Id : constant Entity_Id :=
                            Entity (Entry_Direct_Name (Accept_Statement (Alt)));
             begin
-               --  Ada 2020 (AI12-0279)
+               --  Ada 2022 (AI12-0279)
 
                if Has_Yield_Aspect (Entry_Id)
                  and then RTE_Available (RE_Yield)

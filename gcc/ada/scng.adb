@@ -1303,7 +1303,7 @@ package body Scng is
          --  AI12-0125-03 : @ is target_name
 
          when '@' =>
-            Error_Msg_Ada_2020_Feature ("target name", Token_Ptr);
+            Error_Msg_Ada_2022_Feature ("target name", Token_Ptr);
 
             Accumulate_Checksum ('@');
             Scan_Ptr := Scan_Ptr + 1;
@@ -1707,7 +1707,7 @@ package body Scng is
             --  "abs"'Address. Other literals are included to give better error
             --  behavior for illegal cases like 123'Img.
             --
-            --  In Ada 2020, a target name (i.e. @) is a valid prefix of an
+            --  In Ada 2022, a target name (i.e. @) is a valid prefix of an
             --  attribute, and functions like a name.
 
             if Prev_Token = Tok_All
@@ -1827,10 +1827,10 @@ package body Scng is
             return;
 
          --  Right bracket or right brace, treated as right paren but proper
-         --  aggregate delimiter in Ada 2020.
+         --  aggregate delimiter in Ada 2022.
 
          when ']' | '}' =>
-            if Ada_Version >= Ada_2020 then
+            if Ada_Version >= Ada_2022 then
                Token := Tok_Right_Bracket;
 
             else

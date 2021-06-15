@@ -88,8 +88,7 @@ package Sinfo.Utils is
    procedure Walk_Sinfo_Fields (N : Node_Id);
    --  Walk the Sinfo fields of N, for all field types that Union_Id includes,
    --  and call Action on each one. However, skip the Link field, which is the
-   --  Parent, and would cause us to wander off into the weeds. ????It's not
-   --  clear why this should walk semantic fields.
+   --  Parent, and would cause us to wander off into the weeds.
 
    generic
       with function Transform (U : Union_Id) return Union_Id;
@@ -105,10 +104,11 @@ package Sinfo.Utils is
    --  Historically, the Entity, Associated_Node, and Entity_Or_Associated_Node
    --  fields shared the same slot. A further complication is that there is an
    --  N_Has_Entity that does not include all node types that have the Entity
+   --  field. N_Inclusive_Has_Entity are the node types that have the Entity
    --  field.
 
-   subtype N_Really_Has_Entity is Node_Id with Predicate =>
-     N_Really_Has_Entity in
+   subtype N_Inclusive_Has_Entity is Node_Id with Predicate =>
+     N_Inclusive_Has_Entity in
        N_Has_Entity_Id
        | N_Attribute_Definition_Clause_Id
        | N_Aspect_Specification_Id
@@ -128,7 +128,7 @@ package Sinfo.Utils is
       renames Entity_Or_Associated_Node;
 
    function Entity
-     (N : N_Really_Has_Entity) return Node_Id
+     (N : N_Inclusive_Has_Entity) return Node_Id
       renames Entity_Or_Associated_Node;
 
    procedure Set_Associated_Node
@@ -136,7 +136,7 @@ package Sinfo.Utils is
       renames Set_Entity_Or_Associated_Node;
 
    procedure Set_Entity
-     (N : N_Really_Has_Entity; Val : Node_Id)
+     (N : N_Inclusive_Has_Entity; Val : Node_Id)
       renames Set_Entity_Or_Associated_Node;
 
    function Associated_Node return Node_Field renames

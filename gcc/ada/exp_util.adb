@@ -7203,8 +7203,8 @@ package body Exp_Util is
 
                   --  Actions belong to the then expression, temporarily place
                   --  them as Then_Actions of the if expression. They will be
-                  --  moved to the proper place later when the if expression
-                  --  is expanded.
+                  --  moved to the proper place later when the if expression is
+                  --  expanded.
 
                   elsif N = ThenX then
                      if Present (Then_Actions (P)) then
@@ -7217,10 +7217,7 @@ package body Exp_Util is
 
                      return;
 
-                  --  Actions belong to the else expression, temporarily place
-                  --  them as Else_Actions of the if expression. They will be
-                  --  moved to the proper place later when the if expression
-                  --  is expanded.
+                  --  Else_Actions is treated the same as Then_Actions above
 
                   elsif N = ElseX then
                      if Present (Else_Actions (P)) then
@@ -9241,28 +9238,33 @@ package body Exp_Util is
          if W then
 
             --  We suppress the warning if this code is under control of an
-            --  if statement, whose condition is a simple identifier, and
-            --  either we are in an instance, or warnings off is set for this
-            --  identifier. The reason for killing it in the instance case is
-            --  that it is common and reasonable for code to be deleted in
-            --  instances for various reasons.
+            --  if/case statement and either
+            --    a) we are in an instance and the condition/selector
+            --       has a statically known value; or
+            --    b) the condition/selector is a simple identifier and
+            --       warnings off is set for this identifier.
+            --  Dead code is common and reasonable in instances, so we don't
+            --  want a warning in that case.
 
-            --  Could we use Is_Statically_Unevaluated here???
+            declare
+               C : Node_Id := Empty;
+            begin
+               if Nkind (Parent (N)) = N_If_Statement then
+                  C := Condition (Parent (N));
+               elsif Nkind (Parent (N)) = N_Case_Statement_Alternative then
+                  C := Expression (Parent (Parent (N)));
+               end if;
 
-            if Nkind (Parent (N)) = N_If_Statement then
-               declare
-                  C : constant Node_Id := Condition (Parent (N));
-               begin
-                  if Nkind (C) = N_Identifier
-                    and then
-                      (In_Instance
-                        or else (Present (Entity (C))
-                                  and then Has_Warnings_Off (Entity (C))))
+               if Present (C) then
+                  if (In_Instance and Compile_Time_Known_Value (C))
+                    or else (Nkind (C) = N_Identifier
+                             and then Present (Entity (C))
+                             and then Has_Warnings_Off (Entity (C)))
                   then
                      W := False;
                   end if;
-               end;
-            end if;
+               end if;
+            end;
 
             --  Generate warning if not suppressed
 
@@ -11488,7 +11490,8 @@ package body Exp_Util is
          return not Inside_A_Generic
            and then Full_Analysis
            and then Nkind (Enclosing_Declaration (Exp)) in
-                      N_Full_Type_Declaration
+                      N_Component_Declaration
+                    | N_Full_Type_Declaration
                     | N_Iterator_Specification
                     | N_Loop_Parameter_Specification
                     | N_Object_Renaming_Declaration
@@ -13460,15 +13463,25 @@ package body Exp_Util is
 
          --  A binary operator is side effect free if and both operands are
          --  side effect free. For this purpose binary operators include
-         --  membership tests and short circuit forms.
+         --  short circuit forms.
 
          when N_Binary_Op
-            | N_Membership_Test
             | N_Short_Circuit
          =>
             return Side_Effect_Free (Left_Opnd  (N), Name_Req, Variable_Ref)
                      and then
                    Side_Effect_Free (Right_Opnd (N), Name_Req, Variable_Ref);
+
+         --  Membership tests may have either Right_Opnd or Alternatives set
+
+         when N_Membership_Test =>
+            return Side_Effect_Free (Left_Opnd (N), Name_Req, Variable_Ref)
+                     and then
+                   (if Present (Right_Opnd (N))
+                    then Side_Effect_Free
+                           (Right_Opnd (N), Name_Req, Variable_Ref)
+                    else Side_Effect_Free
+                           (Alternatives (N), Name_Req, Variable_Ref));
 
          --  An explicit dereference is side effect free only if it is
          --  a side effect free prefixed reference.

@@ -72,7 +72,7 @@ package Opt is
    --  trying to specify other values will be ignored (in case of pragma
    --  Ada_xxx) or generate an error (in case of -gnat83/95/xx switches).
 
-   type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2020);
+   type Ada_Version_Type is (Ada_83, Ada_95, Ada_2005, Ada_2012, Ada_2022);
    pragma Ordered (Ada_Version_Type);
    pragma Convention (C, Ada_Version_Type);
    --  Versions of Ada for Ada_Version below. Note that these are ordered,
@@ -108,7 +108,7 @@ package Opt is
    --  remains set to Ada_Version_Default). This is used in the rare cases
    --  (notably pragma Obsolescent) where we want the explicit version set.
 
-   Ada_Version_Runtime : Ada_Version_Type := Ada_2020;
+   Ada_Version_Runtime : Ada_Version_Type := Ada_2022;
    --  GNAT
    --  Ada version used to compile the runtime. Used to set Ada_Version (but
    --  not Ada_Version_Explicit) when compiling predefined or internal units.
@@ -1726,11 +1726,11 @@ package Opt is
    --  including warnings on Ada 2012 obsolescent features used in Ada 2012
    --  mode. Modified by use of -gnatwy/Y.
 
-   Warn_On_Ada_202X_Compatibility : Boolean := True;
+   Warn_On_Ada_2022_Compatibility : Boolean := True;
    --  GNAT
-   --  Set to True to generate all warnings on Ada 202X compatibility issues,
-   --  including warnings on Ada 202X obsolescent features used in Ada 202X
-   --  mode. ???There is no warning switch for this yet.
+   --  Set to True to generate all warnings on Ada 2022 compatibility issues,
+   --  including warnings on Ada 2022 obsolescent features used in Ada 2022
+   --  mode.
 
    Warn_On_All_Unread_Out_Parameters : Boolean := False;
    --  GNAT

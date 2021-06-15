@@ -21,7 +21,7 @@ generic
 package Ada.Iterator_Interfaces is
    pragma Pure;
 
-   type Forward_Iterator is limited interface;
+   type Forward_Iterator is limited interface with No_Task_Parts;
 
    function First
      (Object : Forward_Iterator) return Cursor is abstract;
@@ -29,7 +29,8 @@ package Ada.Iterator_Interfaces is
      (Object   : Forward_Iterator;
       Position : Cursor) return Cursor is abstract;
 
-   type Reversible_Iterator is limited interface and Forward_Iterator;
+   type Reversible_Iterator is limited interface and Forward_Iterator with
+     No_Task_Parts;
 
    function Last
      (Object : Reversible_Iterator) return Cursor is abstract;

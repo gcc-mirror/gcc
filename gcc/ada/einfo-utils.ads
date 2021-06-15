@@ -34,12 +34,10 @@ package Einfo.Utils is
    --  See the comment in einfo.ads, "Renaming and Aliasing", which is somewhat
    --  incorrect. In fact, the compiler uses Alias, Renamed_Entity, and
    --  Renamed_Object more-or-less interchangeably, so we rename them here.
-   --  ????Should add preconditions.
+   --  Alias isn't really renamed, because we want an assertion in the body.
 
-   function Alias
-     (N : Entity_Id) return Node_Id renames Renamed_Or_Alias;
-   procedure Set_Alias
-     (N : Entity_Id; Val : Node_Id) renames Set_Renamed_Or_Alias;
+   function Alias (N : Entity_Id) return Node_Id;
+   procedure Set_Alias (N : Entity_Id; Val : Node_Id);
    function Renamed_Entity
      (N : Entity_Id) return Node_Id renames Renamed_Or_Alias;
    procedure Set_Renamed_Entity
@@ -49,26 +47,19 @@ package Einfo.Utils is
    procedure Set_Renamed_Object
      (N : Entity_Id; Val : Node_Id) renames Set_Renamed_Or_Alias;
 
-   --------------------------
-   -- Subtype Declarations --
-   --------------------------
-
-   --  ????
-   --  The above entities are arranged so that they can be conveniently grouped
-   --  into subtype ranges. Note that for each of the xxx_Kind ranges defined
-   --  below, there is a corresponding Is_xxx (or for types, Is_xxx_Type)
-   --  predicate which is to be used in preference to direct range tests using
-   --  the subtype name. However, the subtype names are available for direct
-   --  use, e.g. as choices in case statements.
+   pragma Inline (Alias);
+   pragma Inline (Set_Alias);
+   pragma Inline (Renamed_Entity);
+   pragma Inline (Set_Renamed_Entity);
+   pragma Inline (Renamed_Object);
+   pragma Inline (Set_Renamed_Object);
 
    -------------------
    -- Type Synonyms --
    -------------------
 
    --  The following type synonyms are used to tidy up the function and
-   --  procedure declarations that follow, and also to make it possible to meet
-   --  the requirement for the XEINFO utility that all function specs must fit
-   --  on a single source line.????
+   --  procedure declarations that follow.
 
    subtype B is Boolean;
    subtype C is Component_Alignment_Kind;
@@ -91,7 +82,6 @@ package Einfo.Utils is
    --  In some cases, the test is of an entity attribute (e.g. in the case of
    --  Is_Generic_Type where the Ekind does not provide the needed
    --  information).
-   --  ????Could automatically generate some of these?
 
    function Is_Access_Object_Type               (Id : E) return B;
    function Is_Access_Type                      (Id : E) return B;
@@ -220,6 +210,7 @@ package Einfo.Utils is
    function Has_Null_Visible_Refinement         (Id : E) return B;
    function Implementation_Base_Type            (Id : E) return E;
    function Is_Base_Type                        (Id : E) return B;
+   --  Note that Is_Base_Type returns True for nontypes
    function Is_Boolean_Type                     (Id : E) return B;
    function Is_Constant_Object                  (Id : E) return B;
    function Is_Controlled                       (Id : E) return B;
@@ -402,7 +393,11 @@ package Einfo.Utils is
    -- Access to Subprograms in Subprograms_For_Type --
    ---------------------------------------------------
 
-   function Is_Partial_DIC_Procedure            (Id : E) return B;
+   --  Now that we have variable-sized nodes, it might be possible to replace
+   --  the following with regular fields, and get rid of the flags used to mark
+   --  these kinds of subprograms.
+
+   function Is_Partial_DIC_Procedure             (Id : E) return B;
 
    function DIC_Procedure                        (Id : E) return E;
    function Partial_DIC_Procedure                (Id : E) return E;

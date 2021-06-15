@@ -43,6 +43,24 @@ package body Einfo.Utils is
    --  Determine whether abstract state State_Id has particular option denoted
    --  by the name Option_Nam.
 
+   -----------------------------------
+   -- Renamings of Renamed_Or_Alias --
+   -----------------------------------
+
+   function Alias (N : Entity_Id) return Node_Id is
+   begin
+      pragma Assert
+        (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
+      return Renamed_Or_Alias (N);
+   end Alias;
+
+   procedure Set_Alias (N : Entity_Id; Val : Node_Id) is
+   begin
+      pragma Assert
+        (Is_Overloadable (N) or else Ekind (N) = E_Subprogram_Type);
+      Set_Renamed_Or_Alias (N, Val);
+   end Set_Alias;
+
    ----------------
    -- Has_Option --
    ----------------
@@ -253,8 +271,7 @@ package body Einfo.Utils is
 
    function Is_Named_Access_Type                (Id : E) return B is
    begin
-      return Ekind (Id) in E_Access_Type .. -- ????
-                             E_Access_Protected_Subprogram_Type;
+      return Ekind (Id) in Named_Access_Kind;
    end Is_Named_Access_Type;
 
    function Is_Named_Number                     (Id : E) return B is
@@ -498,8 +515,8 @@ package body Einfo.Utils is
 
    function Known_Component_Size                  (E : Entity_Id) return B is
    begin
-      return Component_Size (Base_Type (E)) /= Uint_0
-        and then Component_Size (Base_Type (E)) /= No_Uint;
+      return Component_Size (Implementation_Base_Type (E)) /= Uint_0
+        and then Component_Size (Implementation_Base_Type (E)) /= No_Uint;
    end Known_Component_Size;
 
    function Known_Esize                           (E : Entity_Id) return B is
@@ -539,7 +556,7 @@ package body Einfo.Utils is
 
    function Known_Static_Component_Size           (E : Entity_Id) return B is
    begin
-      return Component_Size (Base_Type (E)) > Uint_0;
+      return Component_Size (Implementation_Base_Type (E)) > Uint_0;
    end Known_Static_Component_Size;
 
    function Known_Static_Esize                    (E : Entity_Id) return B is
@@ -587,9 +604,9 @@ package body Einfo.Utils is
 
    function Unknown_Component_Size                (E : Entity_Id) return B is
    begin
-      return Component_Size (Base_Type (E)) = Uint_0
+      return Component_Size (Implementation_Base_Type (E)) = Uint_0
                or else
-             Component_Size (Base_Type (E)) = No_Uint;
+             Component_Size (Implementation_Base_Type (E)) = No_Uint;
    end Unknown_Component_Size;
 
    function Unknown_Esize                         (E : Entity_Id) return B is
@@ -1425,8 +1442,6 @@ package body Einfo.Utils is
 
    function Is_Base_Type (Id : E) return Boolean is
    begin
---  ????      pragma Assert (Is_Type (Id));
---  Apparently, Is_Base_Type is called on non-types, and returns True!
       return Entity_Is_Base_Type (Ekind (Id));
    end Is_Base_Type;
 
@@ -3123,17 +3138,6 @@ package body Einfo.Utils is
 
    function Is_Volatile (Id : E) return B is
    begin
-      --  ????The old version has a comment that says:
-      --       The flag is not set reliably on private subtypes,
-      --       and is always retrieved from the base type (but this is not a
-      --       base-type-only attribute because it applies to other entities).
-      --  Perhaps it should be set reliably, and perhaps it should be
-      --  Base_Type_Only, but that doesn't work because it is currently
-      --  set on subtypes, so we have to explicitly fetch the Base_Type below.
-      --
-      --  It might be cleaner if the call sites called Is_Volatile_Type
-      --  or Is_Volatile_Object directly; surely they know which it is.
-
       pragma Assert (Nkind (Id) in N_Entity);
 
       if Is_Type (Id) then

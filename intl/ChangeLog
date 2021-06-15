@@ -1,3 +1,7 @@
+2021-06-14  Michael Forney  <mforney@mforney.org>
+
+	* configure: Regenerated.
+
 2021-04-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR jit/100096

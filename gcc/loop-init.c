@@ -48,7 +48,8 @@ apply_loop_flags (unsigned flags)
 	 not work).  However, we avoid modifying cfg, which some
 	 passes may want.  */
       gcc_assert ((flags & ~(LOOPS_MAY_HAVE_MULTIPLE_LATCHES
-			     | LOOPS_HAVE_RECORDED_EXITS)) == 0);
+			     | LOOPS_HAVE_RECORDED_EXITS
+			     | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS)) == 0);
       loops_state_set (LOOPS_MAY_HAVE_MULTIPLE_LATCHES);
     }
   else

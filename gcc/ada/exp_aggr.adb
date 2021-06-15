@@ -2466,7 +2466,7 @@ package body Exp_Aggr is
             Assoc := Last (Component_Associations (N));
 
             if Nkind (Assoc) = N_Iterated_Component_Association then
-               --  Ada 2020: generate a loop to have a proper scope for
+               --  Ada 2022: generate a loop to have a proper scope for
                --  the identifier that typically appears in the expression.
                --  The lower bound of the loop is the position after all
                --  previous positional components.

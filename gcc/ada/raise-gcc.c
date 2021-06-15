@@ -48,14 +48,13 @@
 # endif
 #endif
 
-#include <stdarg.h>
-
 #ifdef __cplusplus
+# include <cstdarg>
 # include <cstdlib>
 #else
-typedef char bool;
-# define true 1
-# define false 0
+# include <stdarg.h>
+# include <stdbool.h>
+# include <stdlib.h>
 #endif
 
 #include "raise.h"
@@ -123,7 +122,6 @@ extern void __gnat_raise_abort (void) __attribute__ ((noreturn));
 #define abort() __gnat_raise_abort()
 
 #elif defined(STANDALONE)
-#include <stdlib.h>
 #define inhibit_libc
 #endif
 
@@ -1606,7 +1604,7 @@ __gnat_personality_seh0 (PEXCEPTION_RECORD ms_exc, void *this_frame,
 
   return
     _GCC_specific_handler (ms_exc, this_frame, ms_orig_context, ms_disp,
-			   __gnat_personality_imp);
+			   PERSONALITY_FUNCTION);
 }
 
 /* Define __gnat_personality_v0 for convenience */

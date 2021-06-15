@@ -3900,7 +3900,7 @@ package body Exp_Ch5 is
 
    begin
       if Present (Iterator_Filter (I_Spec)) then
-         pragma Assert (Ada_Version >= Ada_2020);
+         pragma Assert (Ada_Version >= Ada_2022);
          Stats := New_List (Make_If_Statement (Loc,
             Condition => Iterator_Filter (I_Spec),
             Then_Statements => Stats));
@@ -4201,7 +4201,7 @@ package body Exp_Ch5 is
 
    begin
       if Present (Iterator_Filter (I_Spec)) then
-         pragma Assert (Ada_Version >= Ada_2020);
+         pragma Assert (Ada_Version >= Ada_2022);
          Stats := New_List (Make_If_Statement (Loc,
             Condition => Iterator_Filter (I_Spec),
             Then_Statements => Stats));
@@ -4701,7 +4701,7 @@ package body Exp_Ch5 is
             end if;
 
             if Present (Iterator_Filter (LPS)) then
-               pragma Assert (Ada_Version >= Ada_2020);
+               pragma Assert (Ada_Version >= Ada_2022);
                Set_Statements (N,
                   New_List (Make_If_Statement (Loc,
                     Condition => Iterator_Filter (LPS),

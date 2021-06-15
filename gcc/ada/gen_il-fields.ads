@@ -23,11 +23,21 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Gen_IL.Types;
+
 package Gen_IL.Fields is
 
    --  The following is "optional field enumeration" -- i.e. it is Field_Enum
-   --  (declared in Gen_IL.Utils) plus the special null value No_Field.
-   --  See the spec of Gen_IL.Gen for how to modify this.
+   --  (declared below) plus the special null value No_Field. See the spec of
+   --  Gen_IL.Gen for how to modify this. (Of course, in Ada we have to define
+   --  this backwards from the above conceptual description.)
+
+   --  Note that there are various subranges of this type declared below,
+   --  which might need to be kept in sync when modifying this.
+
+   --  Be sure to put new fields in the appropriate subrange (Field_Enum,
+   --  Node_Header_Field, Node_Field, Entity_Field -- search for comments
+   --  below).
 
    type Opt_Field_Enum is
      (No_Field,
@@ -411,6 +421,7 @@ package Gen_IL.Fields is
       Uninitialized_Variable,
       Used_Operations,
       Was_Attribute_Reference,
+      Was_Default_Init_Box_Association,
       Was_Expression_Function,
       Was_Originally_Stub,
 
@@ -430,7 +441,6 @@ package Gen_IL.Fields is
       Activation_Record_Component,
       Actual_Subtype,
       Address_Taken,
---  ??      Alias,
       Alignment,
       Anonymous_Designated_Type,
       Anonymous_Masters,
@@ -852,10 +862,8 @@ package Gen_IL.Fields is
       Related_Instance,
       Related_Type,
       Relative_Deadline_Variable,
---  ???      Renamed_Entity,
       Renamed_In_Spec,
---  ???      Renamed_Object,
-      Renamed_Or_Alias, -- ???Replaces Alias, Renamed_Entity, Renamed_Object
+      Renamed_Or_Alias, -- Shared among Alias, Renamed_Entity, Renamed_Object
       Renaming_Map,
       Requires_Overriding,
       Return_Applies_To,
@@ -913,11 +921,24 @@ package Gen_IL.Fields is
       Warnings_Off_Used,
       Warnings_Off_Used_Unmodified,
       Warnings_Off_Used_Unreferenced,
-      Was_Default_Init_Box_Association,
       Was_Hidden,
       Wrapped_Entity
 
       --  End of entity fields.
      ); -- Opt_Field_Enum
+
+   subtype Field_Enum is Opt_Field_Enum
+     range Opt_Field_Enum'Succ (No_Field) .. Opt_Field_Enum'Last;
+   --  Enumeration of fields -- Opt_Field_Enum without the special null value
+   --  No_Field.
+
+   subtype Node_Header_Field is Field_Enum with Predicate =>
+     Node_Header_Field in Nkind .. Link | Ekind;
+
+   use Gen_IL.Types;
+
+   subtype Node_Header_Type is Type_Enum range
+     Node_Kind_Type .. Union_Id;
+   --  Types of node header fields
 
 end Gen_IL.Fields;

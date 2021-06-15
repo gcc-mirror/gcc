@@ -85,7 +85,7 @@ package Ada.Containers.Bounded_Vectors is
 
    function New_Vector (First, Last : Index_Type) return Vector
      with Pre => First = Index_Type'First;
-   --  Ada_2020 aggregate operation.
+   --  Ada 2022 aggregate operation.
 
    function To_Vector (Length : Count_Type) return Vector;
 
