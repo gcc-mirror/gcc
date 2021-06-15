@@ -64,17 +64,17 @@ validate_macosx_version_min (const char *version_str)
 
   major = strtoul (version_str, &end, 10);
 
-  if (major < 10 || major > 11 ) /* MacOS 10 and 11 are known. */
+  if (major < 10 || major > 12 ) /* macOS 10, 11, and 12 are known. */
     return NULL;
 
   /* Skip a separating period, if there's one.  */
   version_str = end + ((*end == '.') ? 1 : 0);
 
-  if (major == 11 && *end != '\0' && !ISDIGIT (version_str[0]))
-     /* For MacOS 11, we allow just the major number, but if the minor is
+  if (major > 10 && *end != '\0' && !ISDIGIT (version_str[0]))
+     /* For macOS 11+, we allow just the major number, but if the minor is
 	there it must be numeric.  */
     return NULL;
-  else if (major == 11 && *end == '\0')
+  else if (major > 10 && *end == '\0')
     /* We will rewrite 11 =>  11.0.0.  */
     need_rewrite = true;
   else if (major == 10 && (*end == '\0' || !ISDIGIT (version_str[0])))
@@ -172,7 +172,7 @@ darwin_find_version_from_kernel (void)
       if (minor_vers > 0)
 	minor_vers -= 1; /* Kernel 20.3 => macOS 11.2.  */
       /* It's not yet clear whether patch level will be considered.  */
-      asprintf (&new_flag, "11.%02d.00", minor_vers);
+      asprintf (&new_flag, "%d.%02d.00", major_vers - 9, minor_vers);
     }
   else if (major_vers - 4 <= 4)
     /* On 10.4 and earlier, the old linker is used which does not
