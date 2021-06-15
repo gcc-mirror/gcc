@@ -1,3 +1,34 @@
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-05-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Add dg-error
+	for additional errors in C++20.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Likewise.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100982
+	* include/std/optional (optional::operator=(const optional<U>&)):
+	Fix value category used in is_assignable check.
+	* testsuite/20_util/optional/assignment/100982.cc: New test.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101034
+	* include/std/any (any(in_place_t<T>, initializer_list<U>, A&&...))
+	(any::emplace<T>(initializer_list<U>, A&&...)): Fix constraint
+	to use lvalue.
+	* testsuite/20_util/any/cons/101034.cc: New test.
+
 2021-06-10  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
