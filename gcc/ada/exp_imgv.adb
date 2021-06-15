@@ -952,7 +952,7 @@ package body Exp_Imgv is
          end;
 
          --  Generate:
-         --    S4 : String renames call_put_enumS (S2 .. S3 - 1);
+         --    P4 : String renames call_put_enumS (P2 .. P3 - 1);
 
          declare
             Sub_Node : constant Node_Id := New_Op_Node (N_Op_Subtract, Loc);
@@ -1041,7 +1041,7 @@ package body Exp_Imgv is
 
       Ptyp := Underlying_Type (Entity (Pref));
 
-      --  Ada 2020 allows 'Image on private types, so fetch the underlying
+      --  Ada 2022 allows 'Image on private types, so fetch the underlying
       --  type to obtain the structure of the type. We use the base type,
       --  not the root type for discrete types, to handle properly derived
       --  types, but we use the root type for enumeration types, because the
@@ -1259,7 +1259,7 @@ package body Exp_Imgv is
              Prefix         => New_Occurrence_Of (Ptyp, Loc),
              Expressions    => New_List (Expr)));
 
-      --  AI12-0020: Ada 2020 allows 'Image for all types, including private
+      --  AI12-0020: Ada 2022 allows 'Image for all types, including private
       --  types. If the full type is not a fixed-point type, then it is enough
       --  to set the Conversion_OK flag. However, that would not work for
       --  fixed-point types, because that flag changes the run-time semantics

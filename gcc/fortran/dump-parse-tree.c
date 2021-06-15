@@ -1751,7 +1751,7 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     }
   if (omp_clauses->dist_sched_kind != OMP_SCHED_NONE)
     {
-      fprintf (dumpfile, " DIST_SCHEDULE (STATIC");
+      fputs (" DIST_SCHEDULE (STATIC", dumpfile);
       if (omp_clauses->dist_chunk_size)
 	{
 	  fputc (',', dumpfile);
@@ -1759,8 +1759,40 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	}
       fputc (')', dumpfile);
     }
-  if (omp_clauses->defaultmap)
-    fputs (" DEFALTMAP (TOFROM: SCALAR)", dumpfile);
+  for (int i = 0; i < OMP_DEFAULTMAP_CAT_NUM; i++)
+    {
+      const char *dfltmap;
+      if (omp_clauses->defaultmap[i] == OMP_DEFAULTMAP_UNSET)
+	continue;
+      fputs (" DEFAULTMAP (", dumpfile);
+      switch (omp_clauses->defaultmap[i])
+	{
+	case OMP_DEFAULTMAP_ALLOC: dfltmap = "ALLOC"; break;
+	case OMP_DEFAULTMAP_TO: dfltmap = "TO"; break;
+	case OMP_DEFAULTMAP_FROM: dfltmap = "FROM"; break;
+	case OMP_DEFAULTMAP_TOFROM: dfltmap = "TOFROM"; break;
+	case OMP_DEFAULTMAP_FIRSTPRIVATE: dfltmap = "FIRSTPRIVATE"; break;
+	case OMP_DEFAULTMAP_NONE: dfltmap = "NONE"; break;
+	case OMP_DEFAULTMAP_DEFAULT: dfltmap = "DEFAULT"; break;
+	case OMP_DEFAULTMAP_PRESENT: dfltmap = "PRESENT"; break;
+	default: gcc_unreachable ();
+	}
+      fputs (dfltmap, dumpfile);
+      if (i != OMP_DEFAULTMAP_CAT_UNCATEGORIZED)
+	{
+	  fputc (':', dumpfile);
+	  switch ((enum gfc_omp_defaultmap) i)
+	    {
+	    case OMP_DEFAULTMAP_CAT_SCALAR: dfltmap = "SCALAR"; break;
+	    case OMP_DEFAULTMAP_CAT_AGGREGATE: dfltmap = "AGGREGATE"; break;
+	    case OMP_DEFAULTMAP_CAT_ALLOCATABLE: dfltmap = "ALLOCATABLE"; break;
+	    case OMP_DEFAULTMAP_CAT_POINTER: dfltmap = "POINTER"; break;
+	    default: gcc_unreachable ();
+	    }
+	  fputs (dfltmap, dumpfile);
+	}
+      fputc (')', dumpfile);
+    }
   if (omp_clauses->nogroup)
     fputs (" NOGROUP", dumpfile);
   if (omp_clauses->simd)

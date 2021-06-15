@@ -2708,11 +2708,11 @@ package body Sem_Ch10 is
                      Error_Msg_N ("& is an Ada 2012 unit?i?", Name (N));
                   end if;
 
-               when Ada_202X_Unit =>
-                  if Ada_Version < Ada_2020
-                    and then Warn_On_Ada_202X_Compatibility
+               when Ada_2022_Unit =>
+                  if Ada_Version < Ada_2022
+                    and then Warn_On_Ada_2022_Compatibility
                   then
-                     Error_Msg_N ("& is an Ada 202x unit?i?", Name (N));
+                     Error_Msg_N ("& is an Ada 2022 unit?i?", Name (N));
                   end if;
             end case;
          end if;

@@ -50,13 +50,11 @@ typedef struct Exception_Data *Exception_Id;
 
 struct Exception_Occurrence;
 
-extern void _gnat_builtin_longjmp	(void *, int);
 extern void __gnat_unhandled_terminate	(void);
 extern void *__gnat_malloc		(__SIZE_TYPE__);
 extern void __gnat_free			(void *);
 extern void *__gnat_realloc		(void *, __SIZE_TYPE__);
 extern void __gnat_finalize		(void);
-extern void set_gnat_exit_status	(int);
 extern void __gnat_set_globals		(void);
 extern void __gnat_initialize		(void *);
 extern void __gnat_init_float		(void);

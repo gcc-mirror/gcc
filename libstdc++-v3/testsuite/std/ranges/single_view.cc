@@ -73,10 +73,34 @@ test04()
   std::as_const(s).data();
 }
 
+void
+test05()
+{
+  int i = 0;
+  static_assert(noexcept(std::ranges::single_view<int>()));
+  static_assert(noexcept(std::ranges::single_view<int>(i)));
+  static_assert(noexcept(std::ranges::single_view<int>(1)));
+  static_assert(noexcept(std::ranges::single_view<int>(std::in_place, 2)));
+  static_assert(noexcept(std::ranges::views::single(i)));
+  auto s = std::ranges::views::single(i);
+  static_assert(noexcept(s.begin()));
+  static_assert(noexcept(s.end()));
+  static_assert(noexcept(s.size()));
+  static_assert(noexcept(s.data()));
+  static_assert(noexcept(s.empty())); // view_interface::empty()
+  const auto cs = s;
+  static_assert(noexcept(cs.begin()));
+  static_assert(noexcept(cs.end()));
+  static_assert(noexcept(cs.size()));
+  static_assert(noexcept(cs.data()));
+  static_assert(noexcept(cs.empty())); // view_interface::empty()
+}
+
 int main()
 {
   test01();
   test02();
   test03();
   test04();
+  test05();
 }

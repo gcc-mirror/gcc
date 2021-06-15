@@ -618,12 +618,12 @@ package body Impunit is
    );                 -- GNATCOLL.OMP
 
    --------------------
-   -- Ada 202X Units --
+   -- Ada 2022 Units --
    --------------------
 
-   --  The following units should be used only in Ada 202X mode
+   --  The following units should be used only in Ada 2022 mode
 
-   Non_Imp_File_Names_2X : constant File_List := (
+   Non_Imp_File_Names_22 : constant File_List := (
     ("a-nubinu", T),  -- Ada.Numerics.Big_Numbers
     ("a-nbnbin", T),  -- Ada.Numerics.Big_Numbers.Big_Integers
     ("a-nbnbre", T),  -- Ada.Numerics.Big_Numbers.Big_Reals
@@ -767,11 +767,11 @@ package body Impunit is
          end if;
       end loop;
 
-      --  See if name is in 202X list
+      --  See if name is in 2022 list
 
-      for J in Non_Imp_File_Names_2X'Range loop
-         if Buffer (1 .. 8) = Non_Imp_File_Names_2X (J).Fname then
-            return Ada_202X_Unit;
+      for J in Non_Imp_File_Names_22'Range loop
+         if Buffer (1 .. 8) = Non_Imp_File_Names_22 (J).Fname then
+            return Ada_2022_Unit;
          end if;
       end loop;
 

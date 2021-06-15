@@ -1,3 +1,9 @@
+2021-06-14  Tobias Burnus  <tobias@codesourcery.com>
+
+	PR c/100913
+	* c-parser.c (c_parser_omp_clause_affinity): No need to set iterator
+	var in the error case.
+
 2021-06-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR c/100920

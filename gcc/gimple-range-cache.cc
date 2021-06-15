@@ -727,7 +727,7 @@ ranger_cache::ranger_cache (gimple_ranger &q) : query (q)
       if (bb)
 	m_gori.exports (bb);
     }
-  enable_new_values ();
+  enable_new_values (true);
 }
 
 ranger_cache::~ranger_cache ()
@@ -748,21 +748,15 @@ ranger_cache::dump (FILE *f)
   fprintf (f, "\n");
 }
 
-// Allow the cache to flag and query new values when propagation is forced
-// to use an unknown value.
+// Allow or disallow the cache to flag and query new values when propagation
+// is forced to use an unknown value.  The previous state is returned.
 
-void
-ranger_cache::enable_new_values ()
+bool
+ranger_cache::enable_new_values (bool state)
 {
-  m_new_value_p = true;
-}
-
-// Disable new value querying.
-
-void
-ranger_cache::disable_new_values ()
-{
-  m_new_value_p = false;
+  bool ret = m_new_value_p;
+  m_new_value_p = state;
+  return ret;
 }
 
 // Dump the caches for basic block BB to file F.
@@ -1343,7 +1337,12 @@ ranger_cache::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 
 	  // Calculate a range at the exit from the block so the caches feeding
 	  // this block will be filled, and we'll get a "better" value.
+	  // Disallow additonal "poor values" during this phase to avoid
+	  // iterations that are unlikely to be profitable for this name.
+	  // See PR 101014.
+	  bool state = enable_new_values (false);
 	  query.range_on_exit (tmp, calc_bb, rec.calc);
+	  enable_new_values (state);
 	  
 	  // Then ask for NAME to be re-evaluated on outgoing edges and 
 	  // use any new values.

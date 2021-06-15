@@ -907,7 +907,7 @@ package body Sem_Aggr is
 
       elsif Present (Find_Aspect (Typ, Aspect_Aggregate))
         and then Ekind (Typ) /= E_Record_Type
-        and then Ada_Version >= Ada_2020
+        and then Ada_Version >= Ada_2022
       then
          Resolve_Container_Aggregate (N, Typ);
 
@@ -3140,7 +3140,7 @@ package body Sem_Aggr is
       Base : constant Node_Id := Expression (N);
 
    begin
-      Error_Msg_Ada_2020_Feature ("delta aggregate", Sloc (N));
+      Error_Msg_Ada_2022_Feature ("delta aggregate", Sloc (N));
 
       if not Is_Composite_Type (Typ) then
          Error_Msg_N ("not a composite type", N);

@@ -960,7 +960,7 @@ package body Ch12 is
 
             --    type DT is new T with private with Atomic;
 
-            Error_Msg_Ada_2020_Feature
+            Error_Msg_Ada_2022_Feature
               ("formal type with aspect specification", Token_Ptr);
 
             return Def_Node;

@@ -146,6 +146,7 @@ package Snames is
    Name_Full_Access_Only               : constant Name_Id := N + $;
    Name_Integer_Literal                : constant Name_Id := N + $;
    Name_No_Controlled_Parts            : constant Name_Id := N + $;
+   Name_No_Task_Parts                  : constant Name_Id := N + $;
    Name_Real_Literal                   : constant Name_Id := N + $;
    Name_Relaxed_Initialization         : constant Name_Id := N + $;
    Name_Stable_Properties              : constant Name_Id := N + $;
@@ -402,7 +403,7 @@ package Snames is
    Name_Ada_2005                       : constant Name_Id := N + $; -- GNAT
    Name_Ada_12                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
-   Name_Ada_2020                       : constant Name_Id := N + $; -- GNAT
+   Name_Ada_2022                       : constant Name_Id := N + $; -- GNAT
    Name_Aggregate_Individually_Assign  : constant Name_Id := N + $; -- GNAT
    Name_Allow_Integer_Address          : constant Name_Id := N + $; -- GNAT
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
@@ -1741,8 +1742,8 @@ package Snames is
       Pragma_Ada_2005,
       Pragma_Ada_12,
       Pragma_Ada_2012,
-      Pragma_Ada_2020,
-      --  Note that there is no Pragma_Ada_20. Pragma_Ada_05/12 are for
+      Pragma_Ada_2022,
+      --  Note that there is no Pragma_Ada_22. Pragma_Ada_05/12 are for
       --  compatibility reasons only; the full year names are preferred.
       Pragma_Aggregate_Individually_Assign,
       Pragma_Allow_Integer_Address,

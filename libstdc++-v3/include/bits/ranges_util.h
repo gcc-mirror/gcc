@@ -77,45 +77,67 @@ namespace ranges
 	return static_cast<const _Derived&>(*this);
       }
 
+      static constexpr bool
+      _S_bool(bool) noexcept; // not defined
+
+      template<typename _Tp>
+	static constexpr bool
+	_S_empty(_Tp& __t)
+	noexcept(noexcept(_S_bool(ranges::begin(__t) == ranges::end(__t))))
+	{ return ranges::begin(__t) == ranges::end(__t); }
+
+      template<typename _Tp>
+	static constexpr auto
+	_S_size(_Tp& __t)
+	noexcept(noexcept(ranges::end(__t) - ranges::begin(__t)))
+	{ return ranges::end(__t) - ranges::begin(__t); }
+
     public:
       constexpr bool
-      empty() requires forward_range<_Derived>
-      { return ranges::begin(_M_derived()) == ranges::end(_M_derived()); }
+      empty()
+      noexcept(noexcept(_S_empty(_M_derived())))
+      requires forward_range<_Derived>
+      { return _S_empty(_M_derived()); }
 
       constexpr bool
-      empty() const requires forward_range<const _Derived>
-      { return ranges::begin(_M_derived()) == ranges::end(_M_derived()); }
+      empty() const
+      noexcept(noexcept(_S_empty(_M_derived())))
+      requires forward_range<const _Derived>
+      { return _S_empty(_M_derived()); }
 
       constexpr explicit
-      operator bool() requires requires { ranges::empty(_M_derived()); }
+      operator bool() noexcept(noexcept(ranges::empty(_M_derived())))
+      requires requires { ranges::empty(_M_derived()); }
       { return !ranges::empty(_M_derived()); }
 
       constexpr explicit
-      operator bool() const requires requires { ranges::empty(_M_derived()); }
+      operator bool() const noexcept(noexcept(ranges::empty(_M_derived())))
+      requires requires { ranges::empty(_M_derived()); }
       { return !ranges::empty(_M_derived()); }
 
       constexpr auto
-      data() requires contiguous_iterator<iterator_t<_Derived>>
-      { return to_address(ranges::begin(_M_derived())); }
+      data() noexcept(noexcept(ranges::begin(_M_derived())))
+      requires contiguous_iterator<iterator_t<_Derived>>
+      { return std::to_address(ranges::begin(_M_derived())); }
 
       constexpr auto
-      data() const
+      data() const noexcept(noexcept(ranges::begin(_M_derived())))
       requires range<const _Derived>
 	&& contiguous_iterator<iterator_t<const _Derived>>
-      { return to_address(ranges::begin(_M_derived())); }
+      { return std::to_address(ranges::begin(_M_derived())); }
 
       constexpr auto
-      size()
+      size() noexcept(noexcept(_S_size(_M_derived())))
       requires forward_range<_Derived>
 	&& sized_sentinel_for<sentinel_t<_Derived>, iterator_t<_Derived>>
-      { return ranges::end(_M_derived()) - ranges::begin(_M_derived()); }
+      { return _S_size(_M_derived()); }
 
       constexpr auto
-      size() const
+      size() const noexcept(noexcept(_S_size(_M_derived())))
       requires forward_range<const _Derived>
 	&& sized_sentinel_for<sentinel_t<const _Derived>,
 			      iterator_t<const _Derived>>
-      { return ranges::end(_M_derived()) - ranges::begin(_M_derived()); }
+      { return _S_size(_M_derived()); }
 
       constexpr decltype(auto)
       front() requires forward_range<_Derived>
@@ -205,33 +227,38 @@ namespace ranges
       _It _M_begin = _It();
       [[no_unique_address]] _Sent _M_end = _Sent();
 
+      using __size_type
+	= __detail::__make_unsigned_like_t<iter_difference_t<_It>>;
+
       template<typename, bool = _S_store_size>
 	struct _Size
 	{ };
 
       template<typename _Tp>
 	struct _Size<_Tp, true>
-	{ __detail::__make_unsigned_like_t<_Tp> _M_size; };
+	{ _Tp _M_size; };
 
-      [[no_unique_address]] _Size<iter_difference_t<_It>> _M_size = {};
+      [[no_unique_address]] _Size<__size_type> _M_size = {};
 
     public:
       subrange() = default;
 
       constexpr
       subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s)
+      noexcept(is_nothrow_constructible_v<_It, decltype(__i)>
+	       && is_nothrow_constructible_v<_Sent, _Sent&>)
 	requires (!_S_store_size)
       : _M_begin(std::move(__i)), _M_end(__s)
       { }
 
       constexpr
       subrange(__detail::__convertible_to_non_slicing<_It> auto __i, _Sent __s,
-	       __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
+	       __size_type __n)
+      noexcept(is_nothrow_constructible_v<_It, decltype(__i)>
+	       && is_nothrow_constructible_v<_Sent, _Sent&>)
 	requires (_Kind == subrange_kind::sized)
       : _M_begin(std::move(__i)), _M_end(__s)
       {
-	using __detail::__to_unsigned_like;
-	__glibcxx_assert(__n == __to_unsigned_like(ranges::distance(__i, __s)));
 	if constexpr (_S_store_size)
 	  _M_size._M_size = __n;
       }
@@ -241,7 +268,9 @@ namespace ranges
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
-	subrange(_Rng&& __r) requires _S_store_size && sized_range<_Rng>
+	subrange(_Rng&& __r)
+	noexcept(noexcept(subrange(__r, ranges::size(__r))))
+	requires _S_store_size && sized_range<_Rng>
 	: subrange(__r, ranges::size(__r))
 	{ }
 
@@ -250,7 +279,9 @@ namespace ranges
 	  && __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
-	subrange(_Rng&& __r) requires (!_S_store_size)
+	subrange(_Rng&& __r)
+	noexcept(noexcept(subrange(ranges::begin(__r), ranges::end(__r))))
+	requires (!_S_store_size)
 	: subrange(ranges::begin(__r), ranges::end(__r))
 	{ }
 
@@ -258,8 +289,8 @@ namespace ranges
 	requires __detail::__convertible_to_non_slicing<iterator_t<_Rng>, _It>
 	  && convertible_to<sentinel_t<_Rng>, _Sent>
 	constexpr
-	subrange(_Rng&& __r,
-		 __detail::__make_unsigned_like_t<iter_difference_t<_It>> __n)
+	subrange(_Rng&& __r, __size_type __n)
+	noexcept(noexcept(subrange(ranges::begin(__r), ranges::end(__r), __n)))
 	requires (_Kind == subrange_kind::sized)
 	: subrange{ranges::begin(__r), ranges::end(__r), __n}
 	{ }
@@ -267,9 +298,9 @@ namespace ranges
       template<__detail::__not_same_as<subrange> _PairLike>
 	requires __detail::__pair_like_convertible_from<_PairLike, const _It&,
 							const _Sent&>
-      constexpr
-      operator _PairLike() const
-      { return _PairLike(_M_begin, _M_end); }
+	constexpr
+	operator _PairLike() const
+	{ return _PairLike(_M_begin, _M_end); }
 
       constexpr _It
       begin() const requires copyable<_It>
@@ -283,7 +314,7 @@ namespace ranges
 
       constexpr bool empty() const { return _M_begin == _M_end; }
 
-      constexpr __detail::__make_unsigned_like_t<iter_difference_t<_It>>
+      constexpr __size_type
       size() const requires (_Kind == subrange_kind::sized)
       {
 	if constexpr (_S_store_size)

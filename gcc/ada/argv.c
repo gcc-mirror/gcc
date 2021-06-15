@@ -44,6 +44,7 @@
 
 #ifdef IN_RTS
 #include "runtime.h"
+#include <stdlib.h>
 #include <string.h>
 #else
 #include "config.h"
@@ -60,14 +61,13 @@ extern "C" {
    envp of the main program is saved under gnat_envp.  */
 
 int gnat_argc = 0;
-const char **gnat_argv = (const char **) 0;
-const char **gnat_envp = (const char **) 0;
+char **gnat_argv = NULL;
+char **gnat_envp = NULL;
 
 #if defined (_WIN32) && !defined (RTX)
 /* Note that on Windows environment the environ point to a buffer that could
    be reallocated if needed. It means that gnat_envp needs to be updated
    before using gnat_envp to point to the right environment space */
-#include <stdlib.h>
 /* for the environ variable definition */
 #define gnat_envp (environ)
 #endif

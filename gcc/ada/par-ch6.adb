@@ -1620,7 +1620,7 @@ package body Ch6 is
          --  the time being.
 
          elsif Token = Tok_With then
-            Error_Msg_Ada_2020_Feature
+            Error_Msg_Ada_2022_Feature
               ("aspect on formal parameter", Token_Ptr);
 
             P_Aspect_Specifications (Specification_Node, False);

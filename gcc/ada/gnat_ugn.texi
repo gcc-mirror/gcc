@@ -8794,6 +8794,16 @@ Allow full Ada 2005 features (same as @code{-gnat05})
 @item @code{-gnat2012}
 
 Allow full Ada 2012 features (same as @code{-gnat12})
+@end table
+
+@geindex -gnat2022 (gcc)
+
+
+@table @asis
+
+@item @code{-gnat2022}
+
+Allow full Ada 2022 features
 
 @item @code{-gnat83}
 
@@ -14340,6 +14350,19 @@ may generally be compiled using this switch (see the description of the
 for further information).
 @end table
 
+@geindex -gnat2022 (gcc)
+
+@geindex Ada 2022 mode
+
+
+@table @asis
+
+@item @code{-gnat2022} (Ada 2022 mode)
+
+This switch directs the compiler to implement the Ada 2022 version of the
+language.
+@end table
+
 @geindex -gnatX (gcc)
 
 @geindex Ada language extensions
@@ -14352,9 +14375,9 @@ for further information).
 @item @code{-gnatX} (Enable GNAT Extensions)
 
 This switch directs the compiler to implement the latest version of the
-language (currently Ada 2012) and also to enable certain GNAT implementation
+language (currently Ada 2022) and also to enable certain GNAT implementation
 extensions that are not part of any Ada standard. For a full list of these
-extensions, see the GNAT reference manual.
+extensions, see the GNAT reference manual, @code{Pragma Extensions_Allowed}.
 @end table
 
 @node Character Set Control,File Naming Control,Compiling Different Versions of Ada,Compiler Switches

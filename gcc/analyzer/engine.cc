@@ -1185,6 +1185,8 @@ exploded_node::on_stmt (exploded_graph &eg,
 	       to stderr.  */
 	    state->dump (eg.get_ext_state (), true);
 	  }
+	else if (is_special_named_call_p (call, "__analyzer_dump_capacity", 1))
+	  state->m_region_model->impl_call_analyzer_dump_capacity (call, &ctxt);
 	else if (is_special_named_call_p (call, "__analyzer_dump_path", 0))
 	  {
 	    /* Handle the builtin "__analyzer_dump_path" by queuing a
@@ -1237,7 +1239,6 @@ exploded_node::on_stmt (exploded_graph &eg,
   if (terminate_path)
     return on_stmt_flags::terminate_path ();
 
-  bool any_sm_changes = false;
   int sm_idx;
   sm_state_map *smap;
   FOR_EACH_VEC_ELT (old_state.m_checker_states, sm_idx, smap)
@@ -1276,14 +1277,12 @@ exploded_node::on_stmt (exploded_graph &eg,
       /* Allow the state_machine to handle the stmt.  */
       if (sm.on_stmt (&sm_ctxt, snode, stmt))
 	unknown_side_effects = false;
-      if (*old_smap != *new_smap)
-	any_sm_changes = true;
     }
 
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
     state->m_region_model->on_call_post (call, unknown_side_effects, &ctxt);
 
-  return on_stmt_flags (any_sm_changes);
+  return on_stmt_flags ();
 }
 
 /* Consider the effect of following superedge SUCC from this node.
@@ -2925,6 +2924,36 @@ stmt_requires_new_enode_p (const gimple *stmt,
   return false;
 }
 
+/* Return true if OLD_STATE and NEW_STATE are sufficiently different that
+   we should split enodes and create an exploded_edge separating them
+   (which makes it easier to identify state changes of intereset when
+   constructing checker_paths).  */
+
+static bool
+state_change_requires_new_enode_p (const program_state &old_state,
+				   const program_state &new_state)
+{
+  /* Changes in dynamic extents signify creations of heap/alloca regions
+     and resizings of heap regions; likely to be of interest in
+     diagnostic paths.  */
+  if (old_state.m_region_model->get_dynamic_extents ()
+      != new_state.m_region_model->get_dynamic_extents ())
+    return true;
+
+  /* Changes in sm-state are of interest.  */
+  int sm_idx;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (old_state.m_checker_states, sm_idx, smap)
+    {
+      const sm_state_map *old_smap = old_state.m_checker_states[sm_idx];
+      const sm_state_map *new_smap = new_state.m_checker_states[sm_idx];
+      if (*old_smap != *new_smap)
+	return true;
+    }
+
+  return false;
+}
+
 /* The core of exploded_graph::process_worklist (the main analysis loop),
    handling one node in the worklist.
 
@@ -3067,7 +3096,8 @@ exploded_graph::process_node (exploded_node *node)
 	    next_state = next_state.prune_for_point (*this, next_point, node,
 						     &uncertainty);
 
-	    if (flags.m_sm_changes || flag_analyzer_fine_grained)
+	    if (flag_analyzer_fine_grained
+		|| state_change_requires_new_enode_p (old_state, next_state))
 	      {
 		program_point split_point
 		  = program_point::before_stmt (point.get_supernode (),

@@ -5159,11 +5159,46 @@ static tree
 gimple_call_return_array (gimple *stmt, offset_int offrng[2],
 			  range_query *rvals)
 {
-  if (!gimple_call_builtin_p (stmt, BUILT_IN_NORMAL)
-      || gimple_call_num_args (stmt) < 1)
+  {
+    /* Check for attribute fn spec to see if the function returns one
+       of its arguments.  */
+    attr_fnspec fnspec = gimple_call_fnspec (as_a <gcall *>(stmt));
+    unsigned int argno;
+    if (fnspec.returns_arg (&argno))
+      {
+	offrng[0] = offrng[1] = 0;
+	return gimple_call_arg (stmt, argno);
+      }
+  }
+
+  if (gimple_call_num_args (stmt) < 1)
     return NULL_TREE;
 
   tree fn = gimple_call_fndecl (stmt);
+  if (!gimple_call_builtin_p (stmt, BUILT_IN_NORMAL))
+    {
+      /* See if this is a call to placement new.  */
+      if (!fn
+	  || !DECL_IS_OPERATOR_NEW_P (fn)
+	  || DECL_IS_REPLACEABLE_OPERATOR_NEW_P (fn))
+	return NULL_TREE;
+
+      /* Check the mangling, keeping in mind that operator new takes
+	 a size_t which could be unsigned int or unsigned long.  */
+      tree fname = DECL_ASSEMBLER_NAME (fn);
+      if (!id_equal (fname, "_ZnwjPv")       // ordinary form
+	  && !id_equal (fname, "_ZnwmPv")    // ordinary form
+	  && !id_equal (fname, "_ZnajPv")    // array form
+	  && !id_equal (fname, "_ZnamPv"))   // array form
+	return NULL_TREE;
+
+      if (gimple_call_num_args (stmt) != 2)
+	return NULL_TREE;
+
+      offrng[0] = offrng[1] = 0;
+      return gimple_call_arg (stmt, 1);
+    }
+
   switch (DECL_FUNCTION_CODE (fn))
     {
     case BUILT_IN_MEMCPY:
@@ -13285,7 +13320,17 @@ fndecl_dealloc_argno (tree fndecl)
 {
   /* A call to operator delete isn't recognized as one to a built-in.  */
   if (DECL_IS_OPERATOR_DELETE_P (fndecl))
-    return 0;
+    {
+      if (DECL_IS_REPLACEABLE_OPERATOR (fndecl))
+	return 0;
+
+      /* Avoid placement delete that's not been inlined.  */
+      tree fname = DECL_ASSEMBLER_NAME (fndecl);
+      if (id_equal (fname, "_ZdlPvS_")       // ordinary form
+	  || id_equal (fname, "_ZdaPvS_"))   // array form
+	return UINT_MAX;
+      return 0;
+    }
 
   /* TODO: Handle user-defined functions with attribute malloc?  Handle
      known non-built-ins like fopen?  */

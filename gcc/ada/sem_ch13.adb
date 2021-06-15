@@ -247,7 +247,7 @@ package body Sem_Ch13 is
    --  are in keeping with the components of Address_Clause_Check_Record below.
 
    procedure Validate_Aspect_Aggregate (N : Node_Id);
-   --  Check legality of operations given in the Ada 202x Aggregate aspect for
+   --  Check legality of operations given in the Ada 2022 Aggregate aspect for
    --  containers.
 
    procedure Resolve_Aspect_Aggregate
@@ -258,7 +258,7 @@ package body Sem_Ch13 is
 
    procedure Validate_Aspect_Stable_Properties
      (E : Entity_Id; N : Node_Id; Class_Present : Boolean);
-   --  Check legality of functions given in the Ada 202x Stable_Properties
+   --  Check legality of functions given in the Ada 2022 Stable_Properties
    --  (or Stable_Properties'Class) aspect.
 
    procedure Resolve_Aspect_Stable_Properties
@@ -1033,7 +1033,7 @@ package body Sem_Ch13 is
          end if;
 
          --  For representation aspects, check for case of untagged derived
-         --  type whose parent either has primitive operations (pre Ada 202x),
+         --  type whose parent either has primitive operations (pre Ada 2022),
          --  or is a by-reference type (RM 13.1(10)).
          --  Strictly speaking the check also applies to Ada 2012 but it is
          --  really too constraining for existing code already, so relax it.
@@ -1049,8 +1049,8 @@ package body Sem_Ch13 is
               and then Has_Primitive_Operations (Parent_Type)
             then
                Error_Msg_N
-                 ("|representation aspect not permitted before Ada 202x: " &
-                  "use -gnat2020!", N);
+                 ("|representation aspect not permitted before Ada 2022: " &
+                  "use -gnat2022!", N);
                Error_Msg_NE
                  ("\parent type & has primitive operations!", N, Parent_Type);
 
@@ -1863,7 +1863,7 @@ package body Sem_Ch13 is
             --  Perform analysis of aspect Yield
 
             procedure Analyze_Aspect_Static;
-            --  Ada 202x (AI12-0075): Perform analysis of aspect Static
+            --  Ada 2022 (AI12-0075): Perform analysis of aspect Static
 
             procedure Check_Expr_Is_OK_Static_Expression
               (Expr : Node_Id;
@@ -2521,8 +2521,8 @@ package body Sem_Ch13 is
                Is_Imported_Intrinsic : Boolean;
 
             begin
-               if Ada_Version < Ada_2020 then
-                  Error_Msg_Ada_2020_Feature ("aspect %", Sloc (Aspect));
+               if Ada_Version < Ada_2022 then
+                  Error_Msg_Ada_2022_Feature ("aspect %", Sloc (Aspect));
                   return;
                end if;
 
@@ -2558,14 +2558,14 @@ package body Sem_Ch13 is
 
                   return;
 
-               --  Ada 202x (AI12-0075): Check that the function satisfies
+               --  Ada 2022 (AI12-0075): Check that the function satisfies
                --  several requirements of static functions as specified in
                --  RM 6.8(5.1-5.8). Note that some of the requirements given
                --  there are checked elsewhere.
 
                else
                   --  The expression of the expression function must be a
-                  --  potentially static expression (RM 202x 6.8(3.2-3.4)).
+                  --  potentially static expression (RM 2022 6.8(3.2-3.4)).
                   --  That's checked in Sem_Ch6.Analyze_Expression_Function.
 
                   --  The function must not contain any calls to itself, which
@@ -2936,7 +2936,7 @@ package body Sem_Ch13 is
                --  as is the case with generic derived types.
 
                if Nkind (Original_Node (N)) = N_Formal_Type_Declaration then
-                  if Ada_Version < Ada_2020 then
+                  if Ada_Version < Ada_2022 then
                      Error_Msg_N
                        ("aspect % not allowed for formal type declaration",
                         Aspect);
@@ -3944,9 +3944,9 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                   goto Continue;
 
-               --  No_Controlled_Parts
+               --  No_Controlled_Parts, No_Task_Parts
 
-               when Aspect_No_Controlled_Parts =>
+               when Aspect_No_Controlled_Parts | Aspect_No_Task_Parts =>
 
                   --  Check appropriate type argument
 
@@ -4326,7 +4326,7 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
-                  if Ada_Version < Ada_2020 then
+                  if Ada_Version < Ada_2022 then
                      Check_Restriction
                        (No_Implementation_Aspect_Specifications, N);
                   end if;
@@ -4643,7 +4643,7 @@ package body Sem_Ch13 is
                      Analyze_Aspect_Disable_Controlled;
                      goto Continue;
 
-                  --  Ada 202x (AI12-0129): Exclusive_Functions
+                  --  Ada 2022 (AI12-0129): Exclusive_Functions
 
                   elsif A_Id = Aspect_Exclusive_Functions then
                      if Ekind (E) /= E_Protected_Type then
@@ -4656,18 +4656,18 @@ package body Sem_Ch13 is
 
                      goto Continue;
 
-                  --  Ada 202x (AI12-0363): Full_Access_Only
+                  --  Ada 2022 (AI12-0363): Full_Access_Only
 
                   elsif A_Id = Aspect_Full_Access_Only then
-                     Error_Msg_Ada_2020_Feature ("aspect %", Sloc (Aspect));
+                     Error_Msg_Ada_2022_Feature ("aspect %", Sloc (Aspect));
 
-                  --  Ada 202x (AI12-0075): static expression functions
+                  --  Ada 2022 (AI12-0075): static expression functions
 
                   elsif A_Id = Aspect_Static then
                      Analyze_Aspect_Static;
                      goto Continue;
 
-                  --  Ada 2020 (AI12-0279)
+                  --  Ada 2022 (AI12-0279)
 
                   elsif A_Id = Aspect_Yield then
                      Analyze_Aspect_Yield;
@@ -11086,6 +11086,7 @@ package body Sem_Ch13 is
             | Aspect_Max_Queue_Length
             | Aspect_No_Caching
             | Aspect_No_Controlled_Parts
+            | Aspect_No_Task_Parts
             | Aspect_Obsolescent
             | Aspect_Part_Of
             | Aspect_Post
@@ -14497,7 +14498,7 @@ package body Sem_Ch13 is
         and then (Nkind (N) /= N_Pragma
                    or else Get_Pragma_Id (N) /= Pragma_Convention)
       then
-         if Ada_Version < Ada_2020 then
+         if Ada_Version < Ada_2022 then
             Error_Msg_N
               ("representation item not allowed for generic type", N);
             return True;
@@ -14619,7 +14620,7 @@ package body Sem_Ch13 is
          return True;
 
       --  Check for case of untagged derived type whose parent either has
-      --  primitive operations (pre Ada 202x), or is a by-reference type (RM
+      --  primitive operations (pre Ada 2022), or is a by-reference type (RM
       --  13.1(10)). In this case we do not output a Too_Late message, since
       --  there is no earlier point where the rep item could be placed to make
       --  it legal.
@@ -14639,7 +14640,7 @@ package body Sem_Ch13 is
            and then Has_Primitive_Operations (Parent_Type)
          then
             Error_Msg_N
-              ("|representation item not permitted before Ada 202x!", N);
+              ("|representation item not permitted before Ada 2022!", N);
             Error_Msg_NE
               ("\parent type & has primitive operations!", N, Parent_Type);
             return True;
@@ -15252,7 +15253,7 @@ package body Sem_Ch13 is
       Assign_Indexed_Subp : Node_Id := Empty;
 
    begin
-      Error_Msg_Ada_2020_Feature ("aspect Aggregate", Sloc (N));
+      Error_Msg_Ada_2022_Feature ("aspect Aggregate", Sloc (N));
 
       if Nkind (N) /= N_Aggregate
         or else Present (Expressions (N))
@@ -15371,7 +15372,7 @@ package body Sem_Ch13 is
    --  Start of processing for Validate_Aspect_Stable_Properties
 
    begin
-      Error_Msg_Ada_2020_Feature ("aspect Stable_Properties", Sloc (N));
+      Error_Msg_Ada_2022_Feature ("aspect Stable_Properties", Sloc (N));
 
       if (not Is_Aspect_Of_Type) and then (not Is_Subprogram (E)) then
          Error_Msg_N ("Stable_Properties aspect can only be specified for "

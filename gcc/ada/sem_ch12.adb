@@ -502,7 +502,7 @@ package body Sem_Ch12 is
 
    function Build_Subprogram_Decl_Wrapper
      (Formal_Subp : Entity_Id) return Node_Id;
-   --  Ada 2020 allows formal subprograms to carry pre/postconditions.
+   --  Ada 2022 allows formal subprograms to carry pre/postconditions.
    --  At the point of instantiation these contracts apply to uses of
    --  the actual subprogram. This is implemented by creating wrapper
    --  subprograms instead of the renamings previously used to link
@@ -1104,7 +1104,7 @@ package body Sem_Ch12 is
       --  package. As usual an other association must be last in the list.
 
       procedure Build_Subprogram_Wrappers;
-      --  Ada 2020: AI12-0272 introduces pre/postconditions for formal
+      --  Ada 2022: AI12-0272 introduces pre/postconditions for formal
       --  subprograms. The implementation of making the formal into a renaming
       --  of the actual does not work, given that subprogram renaming cannot
       --  carry aspect specifications. Instead we must create subprogram
@@ -3589,7 +3589,7 @@ package body Sem_Ch12 is
 
       Generate_Reference_To_Generic_Formals (Current_Scope);
 
-      --  For Ada 2020, some formal parameters can carry aspects, which must
+      --  For Ada 2022, some formal parameters can carry aspects, which must
       --  be name-resolved at the end of the list of formal parameters (which
       --  has the semantics of a declaration list).
 
@@ -8479,7 +8479,6 @@ package body Sem_Ch12 is
 
          --  Do not copy the associated node, which points to the generic copy
          --  of the aggregate.
-         --  ????We ought to be able to get rid of all the Union_Id conversions
 
          if Nkind (N) = N_Aggregate then
             Set_Aggregate_Bounds
@@ -11011,7 +11010,7 @@ package body Sem_Ch12 is
       --  constructed wrapper contains a call to the entity in the renaming.
       --  This is an expansion activity, as is the wrapper creation.
 
-      if Ada_Version >= Ada_2020
+      if Ada_Version >= Ada_2022
         and then Has_Contracts (Analyzed_Formal)
         and then not Is_Entity_Name (Actual)
         and then Expander_Active
@@ -11435,9 +11434,9 @@ package body Sem_Ch12 is
          end if;
 
          --  Check for instantiation on nonatomic subcomponent of a full access
-         --  object in Ada 2020 (RM C.6 (12)).
+         --  object in Ada 2022 (RM C.6 (12)).
 
-         if Ada_Version >= Ada_2020
+         if Ada_Version >= Ada_2022
             and then Is_Subcomponent_Of_Full_Access_Object (Actual)
             and then not Is_Atomic_Object (Actual)
          then
@@ -12681,7 +12680,7 @@ package body Sem_Ch12 is
       Subt       : Entity_Id;
 
       procedure Check_Shared_Variable_Control_Aspects;
-      --  Ada 2020: Verify that shared variable control aspects (RM C.6)
+      --  Ada 2022: Verify that shared variable control aspects (RM C.6)
       --  that may be specified for a formal type are obeyed by the actual.
 
       procedure Diagnose_Predicated_Actual;
@@ -12712,7 +12711,7 @@ package body Sem_Ch12 is
       --  Check_Shared_Variable_Control_Aspects --
       --------------------------------------------
 
-      --  Ada 2020: Verify that shared variable control aspects (RM C.6)
+      --  Ada 2022: Verify that shared variable control aspects (RM C.6)
       --  that may be specified for the formal are obeyed by the actual.
       --  If the formal is a derived type the aspect specifications must match.
       --  NOTE: AI12-0282 implies that matching of aspects is required between
@@ -12723,7 +12722,7 @@ package body Sem_Ch12 is
 
       procedure Check_Shared_Variable_Control_Aspects is
       begin
-         if Ada_Version >= Ada_2020 then
+         if Ada_Version >= Ada_2022 then
             if Is_Atomic (A_Gen_T) and then not Is_Atomic (Act_T) then
                Error_Msg_NE
                   ("actual for& must have Atomic aspect", Actual, A_Gen_T);
@@ -13413,7 +13412,7 @@ package body Sem_Ch12 is
          --  Perform atomic/volatile checks (RM C.6(12)). Note that AI05-0218-1
          --  removes the second instance of the phrase "or allow pass by copy".
 
-         --  For Ada 2020, the aspect may be specified explicitly for the
+         --  For Ada 2022, the aspect may be specified explicitly for the
          --  formal regardless of whether an ancestor obeys it.
 
          if Is_Atomic (Act_T)
@@ -15624,7 +15623,7 @@ package body Sem_Ch12 is
 
          --  E should be an entity, but it is not always
 
-         elsif Nkind (E) not in N_Entity then -- ????
+         elsif Nkind (E) not in N_Entity then
             return False;
 
          elsif Is_Child_Unit (E)

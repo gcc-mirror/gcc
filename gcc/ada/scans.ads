@@ -81,7 +81,7 @@ package Scans is
       --  exception-name". This degrades error recovery slightly, and perhaps
       --  we could do better, but not worth the effort.
 
-      --  Ada 2020 introduces square brackets as delimiters for array and
+      --  Ada 2022 introduces square brackets as delimiters for array and
       --  container aggregates.
 
       Tok_Raise,           -- RAISE

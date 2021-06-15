@@ -3340,11 +3340,17 @@ template <typename _From, typename _To>
   template<typename _Ap, typename _Bp>
     using __common_ref = typename __common_ref_impl<_Ap, _Bp>::type;
 
+  // COND-RES(COPYCV(X, Y) &, COPYCV(Y, X) &)
+  template<typename _Xp, typename _Yp>
+    using __condres_cvref
+      = __cond_res<__copy_cv<_Xp, _Yp>&, __copy_cv<_Yp, _Xp>&>;
+
   // If A and B are both lvalue reference types, ...
   template<typename _Xp, typename _Yp>
-    struct __common_ref_impl<_Xp&, _Yp&,
-      __void_t<__cond_res<__copy_cv<_Xp, _Yp>&, __copy_cv<_Yp, _Xp>&>>>
-    { using type = __cond_res<__copy_cv<_Xp, _Yp>&, __copy_cv<_Yp, _Xp>&>; };
+    struct __common_ref_impl<_Xp&, _Yp&, __void_t<__condres_cvref<_Xp, _Yp>>>
+    : enable_if<is_reference_v<__condres_cvref<_Xp, _Yp>>,
+		__condres_cvref<_Xp, _Yp>>
+    { };
 
   // let C be remove_reference_t<COMMON-REF(X&, Y&)>&&
   template<typename _Xp, typename _Yp>

@@ -276,10 +276,10 @@ package body Util is
 
       --  If we have a right paren, then that is taken as ending the list
       --  i.e. no comma is present.
-      --  Ditto for a right bracket in Ada 2020.
+      --  Ditto for a right bracket in Ada 2022.
 
       elsif Token = Tok_Right_Paren
-        or else (Token = Tok_Right_Bracket and then Ada_Version >= Ada_2020)
+        or else (Token = Tok_Right_Bracket and then Ada_Version >= Ada_2022)
       then
          return False;
 

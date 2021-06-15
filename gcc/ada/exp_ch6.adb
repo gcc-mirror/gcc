@@ -2665,7 +2665,7 @@ package body Exp_Ch6 is
       --  itself must not be rewritten, to prevent infinite recursion).
 
       Must_Rewrite_Indirect_Call : constant Boolean :=
-        Ada_Version >= Ada_2020
+        Ada_Version >= Ada_2022
           and then Nkind (Name (N)) = N_Explicit_Dereference
           and then Ekind (Etype (Name (N))) = E_Subprogram_Type
           and then Present
@@ -6244,7 +6244,7 @@ package body Exp_Ch6 is
                            (Postconditions_Proc (Spec_Id), Loc)))));
             end if;
 
-            --  Ada 2020 (AI12-0279): append the call to 'Yield unless this is
+            --  Ada 2022 (AI12-0279): append the call to 'Yield unless this is
             --  a generic subprogram (since in such case it will be added to
             --  the instantiations).
 
@@ -6700,7 +6700,7 @@ package body Exp_Ch6 is
                      (Postconditions_Proc (Scope_Id), Loc)))));
       end if;
 
-      --  Ada 2020 (AI12-0279)
+      --  Ada 2022 (AI12-0279)
 
       if Has_Yield_Aspect (Scope_Id)
         and then RTE_Available (RE_Yield)
@@ -7650,7 +7650,7 @@ package body Exp_Ch6 is
          Analyze_And_Resolve (Exp);
       end if;
 
-      --  Ada 2020 (AI12-0279)
+      --  Ada 2022 (AI12-0279)
 
       if Has_Yield_Aspect (Scope_Id)
         and then RTE_Available (RE_Yield)
@@ -9613,7 +9613,9 @@ package body Exp_Ch6 is
         and then not No_Run_Time_Mode
         and then (Has_Task (Typ)
                     or else (Is_Class_Wide_Type (Typ)
-                               and then Is_Limited_Record (Typ)));
+                               and then Is_Limited_Record (Typ)
+                               and then not Has_Aspect
+                                 (Etype (Typ), Aspect_No_Task_Parts)));
    end Might_Have_Tasks;
 
    ----------------------------

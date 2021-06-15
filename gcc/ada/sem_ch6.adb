@@ -579,7 +579,7 @@ package body Sem_Ch6 is
                --  the global flag Checking_Potentially_Static_Expression
                --  enabled. If the resulting expression is static, then it's
                --  OK, but if not, that means the expression violates the
-               --  requirements of the Ada 202x RM in 4.9(3.2/5-3.4/5) and
+               --  requirements of the Ada 2022 RM in 4.9(3.2/5-3.4/5) and
                --  we flag an error.
 
                if Is_Static_Function (Def_Id) then
@@ -744,7 +744,7 @@ package body Sem_Ch6 is
       --  Function result subtype
 
       procedure Check_No_Return_Expression (Return_Expr : Node_Id);
-      --  Ada 2020: Check that the return expression in a No_Return function
+      --  Ada 2022: Check that the return expression in a No_Return function
       --  meets the conditions specified by RM 6.5.1(5.1/5).
 
       procedure Check_Return_Construct_Accessibility (Return_Stmt : Node_Id);
@@ -1450,13 +1450,13 @@ package body Sem_Ch6 is
 
             Check_Return_Construct_Accessibility (N);
 
-            --  Ada 2020 (AI12-0269): Any return statement that applies to a
+            --  Ada 2022 (AI12-0269): Any return statement that applies to a
             --  nonreturning function shall be a simple_return_statement with
             --  an expression that is a raise_expression, or else a call on a
             --  nonreturning function, or else a parenthesized expression of
             --  one of these.
 
-            if Ada_Version >= Ada_2020
+            if Ada_Version >= Ada_2022
               and then No_Return (Scope_Id)
               and then Comes_From_Source (N)
             then
@@ -1550,10 +1550,10 @@ package body Sem_Ch6 is
                end if;
             end if;
 
-            --  Ada 2020 (AI12-0269): Any return statement that applies to a
+            --  Ada 2022 (AI12-0269): Any return statement that applies to a
             --  nonreturning function shall be a simple_return_statement.
 
-            if Ada_Version >= Ada_2020
+            if Ada_Version >= Ada_2022
               and then No_Return (Scope_Id)
               and then Comes_From_Source (N)
             then

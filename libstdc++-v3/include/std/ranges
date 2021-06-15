@@ -197,11 +197,13 @@ namespace ranges
 
       constexpr explicit
       single_view(const _Tp& __t)
+      noexcept(is_nothrow_copy_constructible_v<_Tp>)
       : _M_value(__t)
       { }
 
       constexpr explicit
       single_view(_Tp&& __t)
+      noexcept(is_nothrow_move_constructible_v<_Tp>)
       : _M_value(std::move(__t))
       { }
 
@@ -211,6 +213,7 @@ namespace ranges
 	requires constructible_from<_Tp, _Args...>
 	constexpr explicit
 	single_view(in_place_t, _Args&&... __args)
+	noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
 	: _M_value{in_place, std::forward<_Args>(__args)...}
 	{ }
 
@@ -604,6 +607,7 @@ namespace views
     template<typename _Tp>
       constexpr auto
       operator()(_Tp&& __e) const
+      noexcept(noexcept(single_view<decay_t<_Tp>>(std::forward<_Tp>(__e))))
       { return single_view<decay_t<_Tp>>(std::forward<_Tp>(__e)); }
   };
 
@@ -1022,6 +1026,7 @@ namespace views::__adaptor
 	  && requires { _S_fun(declval<_Tp>()); }
 	constexpr
 	ref_view(_Tp&& __t)
+	noexcept(noexcept(static_cast<_Range&>(std::declval<_Tp>())))
 	  : _M_r(std::__addressof(static_cast<_Range&>(std::forward<_Tp>(__t))))
 	{ }
 
@@ -1069,12 +1074,25 @@ namespace views::__adaptor
 
     struct _All : __adaptor::_RangeAdaptorClosure
     {
+      template<typename _Range>
+	static constexpr bool
+	_S_noexcept()
+	{
+	  if constexpr (view<decay_t<_Range>>)
+	    return is_nothrow_constructible_v<decay_t<_Range>, _Range>;
+	  else if constexpr (__detail::__can_ref_view<_Range>)
+	    return true;
+	  else
+	    return noexcept(subrange{std::declval<_Range>()});
+	}
+
       template<viewable_range _Range>
 	requires view<decay_t<_Range>>
 	  || __detail::__can_ref_view<_Range>
 	  || __detail::__can_subrange<_Range>
 	constexpr auto
 	operator()(_Range&& __r) const
+	noexcept(_S_noexcept<_Range>())
 	{
 	  if constexpr (view<decay_t<_Range>>)
 	    return std::forward<_Range>(__r);

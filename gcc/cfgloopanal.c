@@ -113,7 +113,7 @@ mark_irreducible_loops (void)
 
 	/* Ignore latch edges.  */
 	if (e->dest->loop_father->header == e->dest
-	    && e->dest->loop_father->latch == act)
+	    && dominated_by_p (CDI_DOMINATORS, act, e->dest))
 	  continue;
 
 	/* Edges inside a single loop should be left where they are.  Edges

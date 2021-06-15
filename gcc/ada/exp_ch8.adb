@@ -76,7 +76,7 @@ package body Exp_Ch8 is
    --  clause applies (that can specify an arbitrary bit boundary), or where
    --  the enclosing record itself has a non-standard representation.
 
-   --  In Ada 2020, a third case arises when the renamed object is a nonatomic
+   --  In Ada 2022, a third case arises when the renamed object is a nonatomic
    --  subcomponent of an atomic object, because reads of or writes to it must
    --  access the enclosing atomic object. That's also the case for an object
    --  subject to the Volatile_Full_Access GNAT aspect/pragma in any language

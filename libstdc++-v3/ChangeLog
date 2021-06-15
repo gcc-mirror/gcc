@@ -1,3 +1,64 @@
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::empty): Check whether
+	conversion to bool can throw.
+	* testsuite/std/ranges/access/empty.cc: Check for correct
+	noexcept-specifier.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/100894
+	* include/std/type_traits (__common_ref_impl<X&, Y&>): Only
+	use the type if it's a reference.
+	* testsuite/20_util/common_reference/100894.cc: New test.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/experimental/filesystem/path/native/conv_c++23.cc:
+	Add dg-require-filesystem-ts directive.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101034
+	* include/std/any (any(in_place_t<T>, initializer_list<U>, A&&...))
+	(any::emplace<T>(initializer_list<U>, A&&...)): Fix constraint
+	to use lvalue.
+	* testsuite/20_util/any/cons/101034.cc: New test.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc: Add
+	-std=gnu++17 option.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101056
+	* libsupc++/compare (compare_partial_order_fallback): Add
+	constraint using reversed parameter order, as per LWG 3465.
+	* testsuite/18_support/comparisons/algorithms/fallback.cc:
+	Adjust expected result.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/compare (__decayed_same_as): New helper concept.
+	(strong_order, weak_order, partial_order): Constrain with new
+	concept instead of using static_assert.
+	(compare_strong_order_fallback, compare_weak_order_fallback)
+	(compare_partial_order_fallback): Likewise. Do not deduce return
+	types. Remove redundant if-constexpr checks.
+	* testsuite/18_support/comparisons/algorithms/fallback.cc: New test.
+
+2021-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/101055
+	* include/std/tuple: Use reserved form of attribute name.
+	* testsuite/17_intro/headers/c++2011/all_attributes.cc: Add
+	check for no_unique_address.
+	* testsuite/17_intro/headers/c++2014/all_attributes.cc:
+	Likewise.
+	* testsuite/17_intro/headers/c++2017/all_attributes.cc:
+	Likewise.
+
 2021-06-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/fs_path.h (operator==, operator<=>): Use new

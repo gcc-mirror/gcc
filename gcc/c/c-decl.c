@@ -2620,6 +2620,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  SET_DECL_ALIGN (newdecl, DECL_ALIGN (olddecl));
 	  DECL_USER_ALIGN (newdecl) |= DECL_USER_ALIGN (olddecl);
 	}
+      else if (DECL_ALIGN (olddecl) == DECL_ALIGN (newdecl)
+	       && DECL_USER_ALIGN (olddecl) != DECL_USER_ALIGN (newdecl))
+	DECL_USER_ALIGN (newdecl) = 1;
       if (DECL_WARN_IF_NOT_ALIGN (olddecl)
 	  > DECL_WARN_IF_NOT_ALIGN (newdecl))
 	SET_DECL_WARN_IF_NOT_ALIGN (newdecl,

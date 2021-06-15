@@ -2122,6 +2122,8 @@ jump_thread_path_registry::mark_threaded_blocks (bitmap threaded_blocks)
 	{
 	  if (e->aux)
 	    {
+	      gcc_assert (loops_state_satisfies_p
+			    (LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS));
 	      vec<jump_thread_edge *> *path = THREAD_PATH (e);
 
 	      for (unsigned int i = 0, crossed_headers = 0;

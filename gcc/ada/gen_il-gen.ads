@@ -23,104 +23,121 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+--  "Language design is library design and library design is language design".
+--    -- Bjarne Stroustrup
+
+--  This package provides a "little language" for defining type hierarchies,
+--  which we call "Gen_IL.Gen". In particular, it is used to describe the type
+--  hierarchies rooted at Node_Id and Entity_Id in the intermediate language
+--  used by GNAT.
+
+--  The type hierarchy is a strict hierarchy (treeish, no multiple
+--  inheritance). We have "abstract" and "concrete" types. Each type has a
+--  "parent", except for the root type (Node_Id or Entity_Id). All leaf types
+--  in the hierarchy are concrete; all nonleaf types (including the two root
+--  types) are abstract. One can create instances of concrete, but not
+--  abstract, types.
+--
+--  Descendants of Node_Id/Node_Kind are node types, and descendants of
+--  Entity_Id/Entity_Kind are entity types.
+--
+--  Types have "fields". Each type inherits all the fields from its parent, and
+--  may add new ones. A node field can be marked "syntactic"; entity fields are
+--  never syntactic. A nonsyntactic field is "semantic".
+--
+--  If a field is syntactic, then the constructors in Nmake take a parameter to
+--  initialize that field. In addition, the tree-traversal routines in Atree
+--  (Traverse_Func and Traverse_Proc) traverse syntactic fields that are of
+--  type Node_Id (or subtypes of Node_Id) or List_Id. Finally, (with some
+--  exceptions documented in the body) the setter for a syntactic node or list
+--  field "Set_F (N, Val)" will set the Parent of Val to N, unless Val is Empty
+--  or Error[_List].
+--
+--  Note that the same field can be syntactic in some node types but semantic
+--  in other node types. This is an added complexity that we might want to
+--  eliminate someday. We shouldn't add any new such cases.
+--
+--  A "program" written in the Gen_IL.Gen language consists of calls to the
+--  "Create_..." routines below, followed by a call to Compile, also below. In
+--  order to understand what's going on, you need to look not only at the
+--  Gen_IL.Gen "code", but at the output of the compiler -- at least, look at
+--  the specs of Sinfo.Nodes and Einfo.Entities, because GNAT invokes those
+--  directly. It's not like a normal language where you don't usually have to
+--  look at the generated machine code.
+--
+--  Thus, the Gen_IL.Gen code is really Ada code, and when you run it as an Ada
+--  program, it generates the above-mentioned files. The program is somewhat
+--  unusual in that it has no input. Everything it needs to generate code is
+--  embodied in it.
+
+--  Why don't we just use a variant record, instead of inventing a wheel?
+--  Or a hierarchy of tagged types?
+--
+--  The key feature that Ada's variant records and tagged types lack, and that
+--  this little language has, is that if two types have a field with the same
+--  name, then those are the same field, even though they weren't inherited
+--  from a common ancestor. Such fields are required to have the same type, the
+--  same default value, and the same extra precondition.
+
 with Gen_IL.Types;  use Gen_IL.Types;
 pragma Warnings (Off);
 with Gen_IL.Fields; use Gen_IL.Fields; -- for children
 pragma Warnings (On);
-with Gen_IL.Utils;  use Gen_IL.Utils;
-use Gen_IL.Utils.Type_Vectors;
-use Gen_IL.Utils.Field_Vectors;
+with Gen_IL.Internals;  use Gen_IL.Internals;
+use Gen_IL.Internals.Type_Vectors;
+use Gen_IL.Internals.Field_Vectors;
 
 package Gen_IL.Gen is
-
-   --  "Language design is library design and library design is language
-   --  design".
-   --    -- Bjarne Stroustrup
-
-   --  This package provides a "little language" for defining type hierarchies,
-   --  which we call "Gen_IL.Gen". In particular, it is used to describe the
-   --  type hierarchies rooted at Node_Id and Entity_Id in the intermediate
-   --  language used by GNAT.
-
-   --  The type hierarchy is a strict hierarchy (treeish, no multiple
-   --  inheritance). We have "abstract" and "concrete" types. Each type has a
-   --  "parent", except for the root type (Node_Id or Entity_Id). All leaf
-   --  types in the hierarchy are concrete; all nonleaf types (including the
-   --  two root types) are abstract. One can create instances of concrete, but
-   --  not abstract, types.
-   --
-   --  Descendants of Node_Id/Node_Kind are node types, and descendants of
-   --  Entity_Id/Entity_Kind are entity types.
-   --
-   --  Types have "fields". Each type inherits all the fields from its parent,
-   --  and may add new ones. A node field can be marked "syntactic"; entity
-   --  fields are never syntactic. A nonsyntactic field is "semantic".
-   --
-   --  If a field is syntactic, then the constructors in Nmake take a parameter
-   --  to initialize that field. In addition, the tree-traversal routines in
-   --  Atree (Traverse_Func and Traverse_Proc) traverse syntactic fields that
-   --  are of type Node_Id (or subtypes of Node_Id) or List_Id. Finally, (with
-   --  some exceptions documented in the body) the setter for a syntactic node
-   --  or list field "Set_F (N, Val)" will set the Parent of Val to N, unless
-   --  Val is Empty or Error[_List].
-   --
-   --  Note that the same field can be syntactic in some node types but
-   --  semantic in other node types. This is an added complexity that we might
-   --  want to eliminate someday. We shouldn't add any new such cases.
-   --
-   --  A "program" written in the Gen_IL.Gen language consists of calls to the
-   --  "Create_..." routines below, followed by a call to Compile, also below.
-   --  In order to understand what's going on, you need to look not only at the
-   --  Gen_IL.Gen "code", but at the output of the compiler -- at least, look
-   --  at the specs of Sinfo.Nodes and Einfo.Entities, because GNAT invokes
-   --  those directly. It's not like a normal language where you don't usually
-   --  have to look at the generated machine code.
-   --
-   --  Thus, the Gen_IL.Gen code is really Ada code, and when you run it as an
-   --  Ada program, it generates the above-mentioned files. The program is
-   --  somewhat unusual in that it has no input. Everything it needs to
-   --  generate code is embodied in it.
-
-   --  Why don't we just use a variant record, instead of inventing a wheel?
-   --  Or a hierarchy of tagged types?
-   --
-   --  The key feature that Ada's variant records and tagged types lack, and
-   --  that this little language has, is that if two types have a field with
-   --  the same name, then those are the same field, even though they weren't
-   --  inherited from a common ancestor. Such fields are required to have the
-   --  same type, the same default value, and the same extra precondition.
 
    procedure Create_Root_Node_Type
      (T : Abstract_Node;
       Fields : Field_Sequence := No_Fields)
       with Pre => T = Node_Kind;
+   --  Create the root node type (Node_Kind), which is an abstract type
+
    procedure Create_Abstract_Node_Type
      (T : Abstract_Node; Parent : Abstract_Type;
       Fields : Field_Sequence := No_Fields);
+   --  Create an abstract node type (other than the root node type)
+
    procedure Create_Concrete_Node_Type
      (T : Concrete_Node; Parent : Abstract_Type;
       Fields : Field_Sequence := No_Fields);
+   --  Create a concrete node type. Every node is an instance of a concrete
+   --  node type.
+
    procedure Create_Root_Entity_Type
      (T : Abstract_Entity;
       Fields : Field_Sequence := No_Fields)
       with Pre => T = Entity_Kind;
+   --  Create the root entity type (Entity_Kind), which is an abstract type
+
    procedure Create_Abstract_Entity_Type
      (T : Abstract_Entity; Parent : Abstract_Type;
       Fields : Field_Sequence := No_Fields);
+   --  Create an abstract entity type (other than the root entity type)
+
    procedure Create_Concrete_Entity_Type
      (T : Concrete_Entity; Parent : Abstract_Type;
       Fields : Field_Sequence := No_Fields);
+   --  Create a concrete entity type. Every entity is an instance of a concrete
+   --  entity type.
 
    function Create_Syntactic_Field
      (Field      : Node_Field;
       Field_Type : Type_Enum;
       Default_Value : Field_Default_Value := No_Default;
-      Pre        : String := "") return Field_Desc;
+      Pre, Pre_Get, Pre_Set : String := "") return Field_Desc;
+   --  Create a syntactic field of a node type. Entities do not have syntactic
+   --  fields.
+
    function Create_Semantic_Field
      (Field      : Field_Enum;
       Field_Type : Type_Enum;
       Type_Only  : Type_Only_Enum := No_Type_Only;
-      Pre        : String := "") return Field_Desc;
+      Pre, Pre_Get, Pre_Set : String := "") return Field_Desc;
+   --  Create a semantic field of a node or entity type
+
    --  Create_Syntactic_Field is used for syntactic fields of nodes. The order
    --  of calls to Create_Syntactic_Field determines the order of the formal
    --  parameters of the Make_... functions in Nmake.
@@ -134,7 +151,9 @@ package Gen_IL.Gen is
    --  only for syntactic fields. Flag fields of syntactic nodes always have a
    --  default value, which is False unless specified as Default_True. Pre is
    --  an additional precondition for the field getter and setter, in addition
-   --  to the precondition that asserts that the type has that field.
+   --  to the precondition that asserts that the type has that field. Pre_Get
+   --  and Pre_Set are similar to Pre, but for the getter or setter only,
+   --  respectively.
    --
    --  If multiple calls to these occur for the same Field but different types,
    --  the Field_Type and Pre must match. Default_Value should match for
@@ -160,7 +179,7 @@ package Gen_IL.Gen is
    --
    --  If a type or field name does not follow the usual Mixed_Case convention,
    --  such as "SPARK_Pragma", then you have to add a special case to one of
-   --  the Image functions in Gen_IL.Utils.
+   --  the Image functions in Gen_IL.Internals and in Treepr.
 
    --  Forward references are not allowed. So if you say:
    --
@@ -176,8 +195,8 @@ package Gen_IL.Gen is
    --  (if it's a node or entity type) to create Field_Type.
    --
    --  To delete a node or entity type, delete it from Gen_IL.Types, update the
-   --  subranges in Gen_IL.Utils if necessary, and delete all occurrences from
-   --  Gen_IL.Gen.Gen_Entities. To delete a field, delete it from
+   --  subranges in Gen_IL.Internals if necessary, and delete all occurrences
+   --  from Gen_IL.Gen.Gen_Entities. To delete a field, delete it from
    --  Gen_IL.Fields, and delete all occurrences from Gen_IL.Gen.Gen_Entities.
 
    --  If a field is not set, it is initialized by default to whatever value is
@@ -185,8 +204,10 @@ package Gen_IL.Gen is
    --  to No_Elist, and Uint fields default to Uint_0. In retrospect, it would
    --  have been better to use No_Uint instead of Uint_0.
 
-   procedure Create_Node_Union (T : Abstract_Node; Children : Type_Array);
-   procedure Create_Entity_Union (T : Abstract_Entity; Children : Type_Array);
+   procedure Create_Node_Union_Type
+     (T : Abstract_Node; Children : Type_Array);
+   procedure Create_Entity_Union_Type
+     (T : Abstract_Entity; Children : Type_Array);
    --  Create a "union" type that is the union of the Children. This is used
    --  for nonhierachical types. This is the opposite of the normal "object
    --  oriented" routines above, which create child types based on existing
@@ -211,12 +232,12 @@ private
      (Field      : Node_Field;
       Field_Type : Type_Enum;
       Default_Value : Field_Default_Value := No_Default;
-      Pre        : String := "") return Field_Sequence;
+      Pre, Pre_Get, Pre_Set : String := "") return Field_Sequence;
    function Sm
      (Field      : Field_Enum;
       Field_Type : Type_Enum;
       Type_Only  : Type_Only_Enum := No_Type_Only;
-      Pre        : String := "") return Field_Sequence;
+      Pre, Pre_Get, Pre_Set : String := "") return Field_Sequence;
    --  The above functions return Field_Sequence. This is a trick to get around
    --  the fact that Ada doesn't allow singleton positional aggregates. It
    --  allows us to write things like:
@@ -225,6 +246,7 @@ private
    --         (Sy (Chars, Name_Id, Default_No_Name)));
    --
    --  where that thing pretending to be an aggregate is really a parenthesized
-   --  expression.
+   --  expression. See Gen_Nodes for documentation of the functions these are
+   --  standing in for.
 
 end Gen_IL.Gen;

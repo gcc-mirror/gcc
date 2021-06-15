@@ -925,13 +925,13 @@ package body Exp_Put_Image is
 
    function Image_Should_Call_Put_Image (N : Node_Id) return Boolean is
    begin
-      if Ada_Version < Ada_2020 then
+      if Ada_Version < Ada_2022 then
          return False;
       end if;
 
-      --  In Ada 2020, T'Image calls T'Put_Image if there is an explicit
+      --  In Ada 2022, T'Image calls T'Put_Image if there is an explicit
       --  aspect_specification for Put_Image, or if U_Type'Image is illegal
-      --  in pre-2020 versions of Ada.
+      --  in pre-2022 versions of Ada.
 
       declare
          U_Type : constant Entity_Id := Underlying_Type (Entity (Prefix (N)));

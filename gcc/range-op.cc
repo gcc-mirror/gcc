@@ -2534,11 +2534,20 @@ operator_bitwise_or::wi_fold (irange &r, tree type,
     new_lb = wi::max (new_lb, lh_lb, sign);
   if (wi::lt_p (rh_ub, 0, sign))
     new_lb = wi::max (new_lb, rh_lb, sign);
-  // If the limits got swapped around, return varying.
-  if (wi::gt_p (new_lb, new_ub,sign))
-    r.set_varying (type);
-  else
-    value_range_with_overflow (r, type, new_lb, new_ub);
+  // If the limits got swapped around, return a conservative range.
+  if (wi::gt_p (new_lb, new_ub, sign))
+    {
+      // Make sure that nonzero|X is nonzero.
+      if (wi::gt_p (lh_lb, 0, sign)
+	  || wi::gt_p (rh_lb, 0, sign)
+	  || wi::lt_p (lh_ub, 0, sign)
+	  || wi::lt_p (rh_ub, 0, sign))
+	r.set_nonzero (type);
+      else
+	r.set_varying (type);
+      return;
+    }
+  value_range_with_overflow (r, type, new_lb, new_ub);
 }
 
 bool
@@ -3744,6 +3753,18 @@ range_op_bitwise_and_tests ()
   i1 = int_range<1> (integer_type_node);
   op_bitwise_and.op1_range (res, integer_type_node, i1, i2);
   ASSERT_TRUE (res == int_range<1> (integer_type_node));
+
+  // (NONZERO | X) is nonzero.
+  i1.set_nonzero (integer_type_node);
+  i2.set_varying (integer_type_node);
+  op_bitwise_or.fold_range (res, integer_type_node, i1, i2);
+  ASSERT_TRUE (res.nonzero_p ());
+
+  // (NEGATIVE | X) is nonzero.
+  i1 = int_range<1> (INT (-5), INT (-3));
+  i2.set_varying (integer_type_node);
+  op_bitwise_or.fold_range (res, integer_type_node, i1, i2);
+  ASSERT_FALSE (res.contains_p (INT (0)));
 }
 
 void

@@ -21,5 +21,7 @@
 TYPE one (void) { return ONE; }
 void store (TYPE a, TYPE *p) { *p = a; }
 
-/* { dg-final { scan-assembler "lvx 2"  } } */
-/* { dg-final { scan-assembler "stvx 2" } } */
+/* { dg-final { scan-assembler {\mlxvd2x 34\M} {target be} } } */
+/* { dg-final { scan-assembler {\mstxvd2x 34\M} {target be} } } */
+/* { dg-final { scan-assembler {\mlvx 2\M} {target le} } }  */
+/* { dg-final { scan-assembler {\mstvx 2\M} {target le} } } */
