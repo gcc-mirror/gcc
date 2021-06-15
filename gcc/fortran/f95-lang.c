@@ -126,6 +126,8 @@ static const struct attribute_spec gfc_attribute_table[] =
 #undef LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR
 #undef LANG_HOOKS_OMP_CLAUSE_DTOR
 #undef LANG_HOOKS_OMP_FINISH_CLAUSE
+#undef LANG_HOOKS_OMP_ALLOCATABLE_P
+#undef LANG_HOOKS_OMP_SCALAR_TARGET_P
 #undef LANG_HOOKS_OMP_SCALAR_P
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
 #undef LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE
@@ -162,7 +164,9 @@ static const struct attribute_spec gfc_attribute_table[] =
 #define LANG_HOOKS_OMP_CLAUSE_LINEAR_CTOR	gfc_omp_clause_linear_ctor
 #define LANG_HOOKS_OMP_CLAUSE_DTOR		gfc_omp_clause_dtor
 #define LANG_HOOKS_OMP_FINISH_CLAUSE		gfc_omp_finish_clause
+#define LANG_HOOKS_OMP_ALLOCATABLE_P		gfc_omp_allocatable_p
 #define LANG_HOOKS_OMP_SCALAR_P			gfc_omp_scalar_p
+#define LANG_HOOKS_OMP_SCALAR_TARGET_P		gfc_omp_scalar_target_p
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR	gfc_omp_disregard_value_expr
 #define LANG_HOOKS_OMP_PRIVATE_DEBUG_CLAUSE	gfc_omp_private_debug_clause
 #define LANG_HOOKS_OMP_PRIVATE_OUTER_REF	gfc_omp_private_outer_ref

@@ -393,6 +393,28 @@ gfc_is_unlimited_polymorphic_nonptr (tree type)
   return true;
 }
 
+/* Return true if the DECL is for an allocatable array or scalar.  */
+
+bool
+gfc_omp_allocatable_p (tree decl)
+{
+  if (!DECL_P (decl))
+    return false;
+
+  if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl))
+    return true;
+
+  tree type = TREE_TYPE (decl);
+  if (gfc_omp_privatize_by_reference (decl))
+    type = TREE_TYPE (type);
+
+  if (GFC_DESCRIPTOR_TYPE_P (type)
+      && GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
+    return true;
+
+  return false;
+}
+
 
 /* Return true if DECL in private clause needs
    OMP_CLAUSE_PRIVATE_OUTER_REF on the private clause.  */
@@ -1663,10 +1685,11 @@ gfc_omp_finish_clause (tree c, gimple_seq *pre_p, bool openacc)
 
 
 /* Return true if DECL is a scalar variable (for the purpose of
-   implicit firstprivatization).  */
+   implicit firstprivatization/mapping). Only if 'ptr_alloc_ok.'
+   is true, allocatables and pointers are permitted. */
 
 bool
-gfc_omp_scalar_p (tree decl)
+gfc_omp_scalar_p (tree decl, bool ptr_alloc_ok)
 {
   tree type = TREE_TYPE (decl);
   if (TREE_CODE (type) == REFERENCE_TYPE)
@@ -1675,7 +1698,11 @@ gfc_omp_scalar_p (tree decl)
     {
       if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
 	  || GFC_DECL_GET_SCALAR_POINTER (decl))
-	type = TREE_TYPE (type);
+	{
+	  if (!ptr_alloc_ok)
+	    return false;
+	  type = TREE_TYPE (type);
+	}
       if (GFC_ARRAY_TYPE_P (type)
 	  || GFC_CLASS_TYPE_P (type))
 	return false;
@@ -1688,6 +1715,17 @@ gfc_omp_scalar_p (tree decl)
       || COMPLEX_FLOAT_TYPE_P (type))
     return true;
   return false;
+}
+
+
+/* Return true if DECL is a scalar with target attribute but does not have the
+   allocatable (or pointer) attribute (for the purpose of implicit mapping).  */
+
+bool
+gfc_omp_scalar_target_p (tree decl)
+{
+  return (DECL_P (decl) && GFC_DECL_GET_SCALAR_TARGET (decl)
+	  && gfc_omp_scalar_p (decl, false));
 }
 
 
@@ -4036,13 +4074,55 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_NOGROUP);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
-  if (clauses->defaultmap)
+
+  for (int i = 0; i < OMP_DEFAULTMAP_CAT_NUM; i++)
     {
+      if (clauses->defaultmap[i] == OMP_DEFAULTMAP_UNSET)
+       continue;
+      enum omp_clause_defaultmap_kind behavior, category;
+      switch ((gfc_omp_defaultmap_category) i)
+	{
+	case OMP_DEFAULTMAP_CAT_UNCATEGORIZED:
+	  category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
+	  break;
+	case OMP_DEFAULTMAP_CAT_SCALAR:
+	  category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR;
+	  break;
+	case OMP_DEFAULTMAP_CAT_AGGREGATE:
+	  category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE;
+	  break;
+	case OMP_DEFAULTMAP_CAT_ALLOCATABLE:
+	  category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_ALLOCATABLE;
+	  break;
+	case OMP_DEFAULTMAP_CAT_POINTER:
+	  category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER;
+	  break;
+	default: gcc_unreachable ();
+	}
+      switch (clauses->defaultmap[i])
+	{
+	case OMP_DEFAULTMAP_ALLOC:
+	  behavior = OMP_CLAUSE_DEFAULTMAP_ALLOC;
+	  break;
+	case OMP_DEFAULTMAP_TO: behavior = OMP_CLAUSE_DEFAULTMAP_TO; break;
+	case OMP_DEFAULTMAP_FROM: behavior = OMP_CLAUSE_DEFAULTMAP_FROM; break;
+	case OMP_DEFAULTMAP_TOFROM:
+	  behavior = OMP_CLAUSE_DEFAULTMAP_TOFROM;
+	  break;
+	case OMP_DEFAULTMAP_FIRSTPRIVATE:
+	  behavior = OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE;
+	  break;
+	case OMP_DEFAULTMAP_NONE: behavior = OMP_CLAUSE_DEFAULTMAP_NONE; break;
+	case OMP_DEFAULTMAP_DEFAULT:
+	  behavior = OMP_CLAUSE_DEFAULTMAP_DEFAULT;
+	  break;
+	default: gcc_unreachable ();
+	}
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DEFAULTMAP);
-      OMP_CLAUSE_DEFAULTMAP_SET_KIND (c, OMP_CLAUSE_DEFAULTMAP_TOFROM,
-				      OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR);
+      OMP_CLAUSE_DEFAULTMAP_SET_KIND (c, behavior, category);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
+
   if (clauses->depend_source)
     {
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DEPEND);
@@ -5672,8 +5752,9 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->lists[OMP_LIST_IS_DEVICE_PTR];
 	  clausesa[GFC_OMP_SPLIT_TARGET].device
 	    = code->ext.omp_clauses->device;
-	  clausesa[GFC_OMP_SPLIT_TARGET].defaultmap
-	    = code->ext.omp_clauses->defaultmap;
+	  for (int i = 0; i < OMP_DEFAULTMAP_CAT_NUM; i++)
+	    clausesa[GFC_OMP_SPLIT_TARGET].defaultmap[i]
+	      = code->ext.omp_clauses->defaultmap[i];
 	  clausesa[GFC_OMP_SPLIT_TARGET].if_exprs[OMP_IF_TARGET]
 	    = code->ext.omp_clauses->if_exprs[OMP_IF_TARGET];
 	  /* And this is copied to all.  */

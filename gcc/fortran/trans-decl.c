@@ -605,6 +605,11 @@ gfc_finish_decl_attrs (tree decl, symbol_attribute *attr)
 	  gfc_allocate_lang_decl (decl);
 	  GFC_DECL_SCALAR_POINTER (decl) = 1;
 	}
+      if (attr->target)
+	{
+	  gfc_allocate_lang_decl (decl);
+	  GFC_DECL_SCALAR_TARGET (decl) = 1;
+	}
     }
 }
 
