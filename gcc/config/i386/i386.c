@@ -20344,6 +20344,15 @@ x86_order_regs_for_local_alloc (void)
    int pos = 0;
    int i;
 
+   /* When allocano cost of GENERAL_REGS is same as MASK_REGS, allocate
+      MASK_REGS first since it has already been disparaged. This is for
+      testcase bitwise_mask_op3.c where the input is allocated as mask
+      registers, then mask bitwise instructions should be used there.
+      Refer to pr101142.  */
+   /* Mask register.  */
+   for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
+     reg_alloc_order [pos++] = i;
+
    /* First allocate the local general purpose registers.  */
    for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
      if (GENERAL_REGNO_P (i) && call_used_or_fixed_reg_p (i))
@@ -20368,10 +20377,6 @@ x86_order_regs_for_local_alloc (void)
 
    /* Extended REX SSE registers.  */
    for (i = FIRST_EXT_REX_SSE_REG; i <= LAST_EXT_REX_SSE_REG; i++)
-     reg_alloc_order [pos++] = i;
-
-   /* Mask register.  */
-   for (i = FIRST_MASK_REG; i <= LAST_MASK_REG; i++)
      reg_alloc_order [pos++] = i;
 
    /* x87 registers.  */

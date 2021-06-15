@@ -1,14 +1,30 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=skylake-avx512" } */
-
-#ifndef DTYPE
-#define DTYPE u32
-#endif
+/* { dg-options "-O2 -march=skylake-avx512 -DDTYPE32" } */
 
 typedef unsigned long long u64;
 typedef unsigned int u32;
 typedef unsigned short u16;
 typedef unsigned char u8;
+
+#ifdef DTYPE32
+typedef u32 DTYPE;
+#define byteswap byteswapu32
+#endif
+
+#ifdef DTYPE16
+typedef u16 DTYPE;
+#define byteswap byteswapu16
+#endif
+
+#ifdef DTYPE8
+typedef u16 DTYPE;
+#define byteswap byteswapu8
+#endif
+
+#ifdef DTYPE64
+typedef u16 DTYPE;
+#define byteswap byteswapu64
+#endif
 
 #define R(x,n) ( (x >> n) | (x << (32 - n)))
 
@@ -23,36 +39,51 @@ typedef unsigned char u8;
     d += tmp1;                                           \
 }
 
-static inline DTYPE byteswap(DTYPE x)
+static inline u32 byteswapu32(u32 x)
 {
-	x = (x & 0x0000FFFF) << 16 | (x & 0xFFFF0000) >> 16;
-	x = (x & 0x00FF00FF) << 8 | (x & 0xFF00FF00) >> 8;  
-	return x;
+  x = (x & 0x0000FFFF) << 16 | (x & 0xFFFF0000) >> 16;
+  x = (x & 0x00FF00FF) << 8 | (x & 0xFF00FF00) >> 8;  
+  return x;
 }
 
-#define BE_LOAD32(n,b,i) (n) = byteswap(*(DTYPE *)(b + i))
+static inline u16 byteswapu16(u16 x)
+{
+  x = (x & 0x00FF) << 8 | (x & 0xFF00) >> 8;  
+  return x;
+}
 
-void foo (u8 *in, DTYPE out[8], const DTYPE C[16])
+static inline u8 byteswapu8(u8 x)
+{
+  return x;
+}
+
+static inline u64 byteswapu64(u64 x)
+{
+  x = ((u64)(byteswapu32 (x & 0x00000000FFFFFFFF))) << 32 | byteswapu32((x & 0xFFFFFFFF00000000) >> 32);
+  return x;
+}
+
+void foo (DTYPE in[16], DTYPE out[8], const DTYPE C[16])
 {
     DTYPE tmp1 = 0, tmp2 = 0, a, b, c, d, e, f, g, h;
     DTYPE w0, w1, w2, w3, w4, w5, w6, w7,
 	w8, w9, w10, w11, w12, w13, w14, w15;
-    w0  = byteswap(*(DTYPE *)(in + 0));
-    w1  = byteswap(*(DTYPE *)(in + 4));
-    w2  = byteswap(*(DTYPE *)(in + 8));
-    w3  = byteswap(*(DTYPE *)(in + 12));
-    w4  = byteswap(*(DTYPE *)(in + 16));
-    w5  = byteswap(*(DTYPE *)(in + 20));
-    w6  = byteswap(*(DTYPE *)(in + 24));
-    w7  = byteswap(*(DTYPE *)(in + 28));
-    w8  = byteswap(*(DTYPE *)(in + 32));
-    w9  = byteswap(*(DTYPE *)(in + 36));
-    w10 = byteswap(*(DTYPE *)(in + 40));
-    w11 = byteswap(*(DTYPE *)(in + 44));
-    w12 = byteswap(*(DTYPE *)(in + 48));
-    w13 = byteswap(*(DTYPE *)(in + 52));
-    w14 = byteswap(*(DTYPE *)(in + 56));
-    w15 = byteswap(*(DTYPE *)(in + 60));
+    w0  = byteswap(in[0]);
+    w1  = byteswap(in[1]);
+    w2  = byteswap(in[2]);
+    w3  = byteswap(in[3]);
+    w4  = byteswap(in[4]);
+    w5  = byteswap(in[5]);
+    w6  = byteswap(in[6]);
+    w7  = byteswap(in[7]);
+    w8  = byteswap(in[8]);
+    w9  = byteswap(in[9]);
+    w10 = byteswap(in[10]);
+    w11 = byteswap(in[11]);
+    w12 = byteswap(in[12]);
+    w13 = byteswap(in[13]);
+    w14 = byteswap(in[14]);
+    w15 = byteswap(in[15]);
     a = out[0];
     b = out[1];
     c = out[2];
@@ -90,3 +121,7 @@ void foo (u8 *in, DTYPE out[8], const DTYPE C[16])
 }
 
 /* { dg-final { scan-assembler "kmovd" } } */
+/* { dg-final { scan-assembler-not "knot" } } */
+/* { dg-final { scan-assembler-not "kxor" } } */
+/* { dg-final { scan-assembler-not "kor" } } */
+/* { dg-final { scan-assembler-not "kandn" } } */
